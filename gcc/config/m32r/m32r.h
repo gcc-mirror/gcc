@@ -1420,36 +1420,6 @@ do {									\
 
 /* Costs.  */
 
-/* ??? I'm quite sure I don't understand enough of the subtleties involved
-   in choosing the right numbers to use here, but there doesn't seem to be
-   enough documentation on this.  What I've done is define an insn to cost
-   4 "units" and work from there.  COSTS_N_INSNS (N) is defined as (N) * 4 - 2
-   so that seems reasonable.  Some values are supposed to be defined relative
-   to each other and thus aren't necessarily related to COSTS_N_INSNS.  */
-
-/* Compute the cost of computing a constant rtl expression RTX
-   whose rtx-code is CODE.  The body of this macro is a portion
-   of a switch statement.  If the code is computed here,
-   return it with a return statement.  Otherwise, break from the switch.  */
-/* Small integers are as cheap as registers.  4 byte values can be fetched
-   as immediate constants - let's give that the cost of an extra insn.  */
-#define CONST_COSTS(X, CODE, OUTER_CODE)			\
-  case CONST_INT :						\
-    if (INT16_P (INTVAL (X)))					\
-      return 0;							\
-    /* fall through */						\
-  case CONST :							\
-  case LABEL_REF :						\
-  case SYMBOL_REF :						\
-    return 4;							\
-  case CONST_DOUBLE :						\
-    {								\
-      rtx high, low;						\
-      split_double (X, &high, &low);				\
-      return 4 * (!INT16_P (INTVAL (high))			\
-		  + !INT16_P (INTVAL (low)));			\
-    }
-
 /* Compute the cost of an address.  */
 #define ADDRESS_COST(ADDR) m32r_address_cost (ADDR)
 
@@ -1468,21 +1438,6 @@ do {									\
    while (a < N && a).  Branches aren't that expensive on the M32R so
    we define this as 1.  Defining it as 2 had a heavy hit in fp-bit.c.  */
 #define BRANCH_COST ((TARGET_BRANCH_COST) ? 2 : 1)
-
-/* Provide the costs of a rtl expression.  This is in the body of a
-   switch on CODE.  The purpose for the cost of MULT is to encourage
-   `synth_mult' to find a synthetic multiply when reasonable.
-
-   If we need more than 12 insns to do a multiply, then go out-of-line,
-   since the call overhead will be < 10% of the cost of the multiply.  */
-#define RTX_COSTS(X, CODE, OUTER_CODE)	\
-  case MULT :				\
-    return COSTS_N_INSNS (3);		\
-  case DIV :				\
-  case UDIV :				\
-  case MOD :				\
-  case UMOD :				\
-    return COSTS_N_INSNS (10);
 
 /* Nonzero if access to memory by bytes is slow and undesirable.
    For RISC chips, it means that access to memory by bytes is no

@@ -1166,22 +1166,6 @@ __transfer_from_trampoline ()		\
 
 #define ADDRESS_COST(RTX) calc_address_cost (RTX)
 
-/* Compute the cost of computing a constant rtl expression RTX
-   whose rtx-code is CODE.  The body of this macro is a portion
-   of a switch statement.  If the code is computed here,
-   return it with a return statement.  Otherwise, break from the switch.  */
-
-#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
-  case CONST_INT:						\
-    if (INTVAL (RTX) <= 7 && INTVAL (RTX) >= -8) return 0;	\
-    if (INTVAL (RTX) < 0x2000 && INTVAL (RTX) >= -0x2000)	\
-      return 1;							\
-  case CONST:							\
-  case LABEL_REF:						\
-  case SYMBOL_REF:						\
-    return 3;							\
-  case CONST_DOUBLE:						\
-    return 5;
 
 /* Tell final.c how to eliminate redundant test instructions.  */
 

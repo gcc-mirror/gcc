@@ -45,6 +45,8 @@ static int follows_p PARAMS ((rtx, rtx));
 static void vax_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void vax_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 					 HOST_WIDE_INT, tree));
+static int vax_rtx_costs_1 PARAMS ((rtx, enum rtx_code, enum rtx_code));
+static bool vax_rtx_costs PARAMS ((rtx, int, int, int *));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -57,6 +59,9 @@ static void vax_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 #define TARGET_ASM_OUTPUT_MI_THUNK vax_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS vax_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -482,16 +487,15 @@ vax_address_cost (addr)
   return reg + indexed + indir + offset + predec;
 }
 
-
 /* Cost of an expression on a VAX.  This version has costs tuned for the
    CVAX chip (found in the VAX 3 series) with comments for variations on
    other models.  */
 
-int
-vax_rtx_cost (x)
+static int
+vax_rtx_costs_1 (x, code, outer_code)
     register rtx x;
+    enum rtx_code code, outer_code;
 {
-  register enum rtx_code code = GET_CODE (x);
   enum machine_mode mode = GET_MODE (x);
   register int c;
   int i = 0;				/* may be modified in switch */
@@ -499,6 +503,40 @@ vax_rtx_cost (x)
 
   switch (code)
     {
+      /* On a VAX, constants from 0..63 are cheap because they can use the
+         1 byte literal constant format.  compare to -1 should be made cheap
+         so that decrement-and-branch insns can be formed more easily (if
+         the value -1 is copied to a register some decrement-and-branch
+	 patterns will not match).  */
+    case CONST_INT:
+      if (INTVAL (x) == 0)
+	return 0;
+      if (outer_code == AND)
+        return ((unsigned HOST_WIDE_INT) ~INTVAL (x) <= 077) ? 1 : 2;
+      if ((unsigned HOST_WIDE_INT) INTVAL (x) <= 077)
+	return 1;
+      if (outer_code == COMPARE && INTVAL (x) == -1)
+        return 1;
+      if (outer_code == PLUS && (unsigned HOST_WIDE_INT) -INTVAL (x) <= 077)
+        return 1;
+      /* FALLTHRU */
+
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      return 3;
+
+    case CONST_DOUBLE:
+      if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+        return vax_float_literal (x) ? 5 : 8;
+      else
+        return (((CONST_DOUBLE_HIGH (x) == 0
+		  && (unsigned HOST_WIDE_INT) CONST_DOUBLE_LOW (x) < 64)
+	         || (outer_code == PLUS
+		     && CONST_DOUBLE_HIGH (x) == -1		\
+		     && (unsigned HOST_WIDE_INT)-CONST_DOUBLE_LOW (x) < 64))
+	        ? 2 : 5);
+ 
     case POST_INC:
       return 2;
     case PRE_DEC:
@@ -617,7 +655,6 @@ vax_rtx_cost (x)
       break;
     }
 
-
   /* Now look inside the expression.  Operands which are not registers or
      short constants add to the cost.
 
@@ -677,6 +714,16 @@ vax_rtx_cost (x)
 	}
     }
   return c;
+}
+
+static bool
+vax_rtx_costs (x, code, outer_code, total)
+    rtx x;
+    int code, outer_code;
+    int *total;
+{
+  *total = vax_rtx_costs_1 (x, code, outer_code);
+  return true;
 }
 
 /* Return 1 if insn A follows B.  */

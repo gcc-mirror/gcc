@@ -5264,49 +5264,6 @@ These macros let you describe the relative speed of various operations
 on the target machine.
 
 @table @code
-@findex CONST_COSTS
-@item CONST_COSTS (@var{x}, @var{code}, @var{outer_code})
-A part of a C @code{switch} statement that describes the relative costs
-of constant RTL expressions.  It must contain @code{case} labels for
-expression codes @code{const_int}, @code{const}, @code{symbol_ref},
-@code{label_ref} and @code{const_double}.  Each case must ultimately
-reach a @code{return} statement to return the relative cost of the use
-of that kind of constant value in an expression.  The cost may depend on
-the precise value of the constant, which is available for examination in
-@var{x}, and the rtx code of the expression in which it is contained,
-found in @var{outer_code}.
-
-@var{code} is the expression code---redundant, since it can be
-obtained with @code{GET_CODE (@var{x})}.
-
-@findex RTX_COSTS
-@findex COSTS_N_INSNS
-@item RTX_COSTS (@var{x}, @var{code}, @var{outer_code})
-Like @code{CONST_COSTS} but applies to nonconstant RTL expressions.
-This can be used, for example, to indicate how costly a multiply
-instruction is.  In writing this macro, you can use the construct
-@code{COSTS_N_INSNS (@var{n})} to specify a cost equal to @var{n} fast
-instructions.  @var{outer_code} is the code of the expression in which
-@var{x} is contained.
-
-This macro is optional; do not define it if the default cost assumptions
-are adequate for the target machine.
-
-@findex DEFAULT_RTX_COSTS
-@item DEFAULT_RTX_COSTS (@var{x}, @var{code}, @var{outer_code})
-This macro, if defined, is called for any case not handled by the
-@code{RTX_COSTS} or @code{CONST_COSTS} macros.  This eliminates the need
-to put case labels into the macro, but the code, or any functions it
-calls, must assume that the RTL in @var{x} could be of any type that has
-not already been handled.  The arguments are the same as for
-@code{RTX_COSTS}, and the macro should execute a return statement giving
-the cost of any RTL expressions that it can handle.  The default cost
-calculation is used for any RTL for which this macro does not return a
-value.
-
-This macro is optional; do not define it if the default cost assumptions
-are adequate for the target machine.
-
 @findex ADDRESS_COST
 @item ADDRESS_COST (@var{address})
 An expression giving the cost of an addressing mode that contains
@@ -5550,6 +5507,27 @@ Define this macro if it is as good or better for a function to call
 itself with an explicit address than to call an address kept in a
 register.
 @end table
+
+@deftypefn {Target Hook} bool TARGET_RTX_COSTS (rtx @var{x}, int @var{code}, int @var{outer_code}, int *@var{total})
+This target hook describes the relative costs of RTL expressions.
+
+The cost may depend on the precise form of the expression, which is
+available for examination in @var{x}, and the rtx code of the expression
+in which it is contained, found in @var{outer_code}.  @var{code} is the
+expression code---redundant, since it can be obtained with
+@code{GET_CODE (@var{x})}.
+
+In implementing this hook, you can use the construct
+@code{COSTS_N_INSNS (@var{n})} to specify a cost equal to @var{n} fast
+instructions.
+
+On entry to the hook, @code{*@var{total}} contains a default estimate
+for the cost of the expression.  The hook should modify this value as
+necessary.
+
+The hook returns true when all subexpressions of @var{x} have been
+processed, and false when @code{rtx_cost} should recurse.
+@end deftypefn
 
 @node Scheduling
 @section Adjusting the Instruction Scheduler

@@ -2608,27 +2608,6 @@ do {                                                                    \
          : (sparc_cpu == PROCESSOR_ULTRASPARC3 \
             ? 9 : 3))
 
-/* The cases that RTX_COSTS handles.  */
-
-#define RTX_COSTS_CASES	\
-case PLUS: case MINUS: case ABS: case NEG: \
-case FLOAT: case UNSIGNED_FLOAT: \
-case FIX: case UNSIGNED_FIX: \
-case FLOAT_EXTEND: case FLOAT_TRUNCATE: \
-case SQRT: \
-case COMPARE: case IF_THEN_ELSE: \
-case MEM: \
-case MULT: case DIV: case UDIV: case MOD: case UMOD: \
-case CONST_INT: case HIGH: case CONST: \
-case LABEL_REF: case SYMBOL_REF: case CONST_DOUBLE:
-
-/* Provide the costs of a rtl expression.  This is in the body of a
-   switch on CODE.  */
-
-#define RTX_COSTS(X,CODE,OUTER_CODE)			\
-  RTX_COSTS_CASES					\
-    return sparc_rtx_costs(X,CODE,OUTER_CODE);
-
 #define ADDRESS_COST(RTX)  1
 
 #define PREFETCH_BLOCK \

@@ -155,6 +155,8 @@ static void mips_select_rtx_section PARAMS ((enum machine_mode, rtx,
 					     unsigned HOST_WIDE_INT));
 static int mips_use_dfa_pipeline_interface      PARAMS ((void));
 static void mips_encode_section_info		PARAMS ((tree, int));
+static bool mips_rtx_costs			PARAMS ((rtx, int, int, int *));
+
 
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
@@ -670,6 +672,8 @@ const struct mips_cpu_info mips_cpu_info_table[] = {
 
 #undef TARGET_VALID_POINTER_MODE
 #define TARGET_VALID_POINTER_MODE mips_valid_pointer_mode
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS mips_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2986,6 +2990,337 @@ mips_move_2words (operands, insn)
   return ret;
 }
 
+static bool
+mips_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code;
+     int *total;
+{
+  enum machine_mode mode = GET_MODE (x);
+
+  switch (code)
+    {
+    case CONST_INT:
+      if (! TARGET_MIPS16)
+	{
+	  /* Always return 0, since we don't have different sized insns,
+	     hence different costs according to Richard Kenner.  */
+	  *total = 0;
+	  return true;
+	}
+
+      if (outer_code == SET)
+	{
+	  if (INTVAL (x) >= 0 && INTVAL (x) < 0x100)
+	    *total = 0;
+	  else if ((INTVAL (x) >= 0 && INTVAL (x) < 0x10000)
+		   || (INTVAL (x) < 0 && INTVAL (x) > -0x100))
+	    *total = COSTS_N_INSNS (1);
+	  else
+	    *total = COSTS_N_INSNS (2);
+	  return true;
+	}
+
+      /* A PLUS could be an address.  We don't want to force an address
+	 to use a register, so accept any signed 16 bit value without
+	 complaint.  */
+      if (outer_code == PLUS
+	  && INTVAL (x) >= -0x8000 && INTVAL (x) < 0x8000)
+	{
+	  *total = 0;
+	  return true;
+	}
+
+      /* A number between 1 and 8 inclusive is efficient for a shift.
+	 Otherwise, we will need an extended instruction.  */
+      if (outer_code == ASHIFT || outer_code == ASHIFTRT
+	  || outer_code == LSHIFTRT)
+	{
+	  if (INTVAL (x) >= 1 && INTVAL (x) <= 8)
+	    *total = 0;
+	  else
+	    *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+
+      /* We can use cmpi for an xor with an unsigned 16 bit value.  */
+      if (outer_code == XOR
+	  && INTVAL (x) >= 0 && INTVAL (x) < 0x10000)
+	{
+	  *total = 0;
+	  return true;
+	}
+
+      /* We may be able to use slt or sltu for a comparison with a
+	 signed 16 bit value.  (The boundary conditions aren't quite
+	 right, but this is just a heuristic anyhow.)  */
+      if ((outer_code == LT || outer_code == LE
+	   || outer_code == GE || outer_code == GT
+	   || outer_code == LTU || outer_code == LEU
+	   || outer_code == GEU || outer_code == GTU)
+	  && INTVAL (x) >= -0x8000 && INTVAL (x) < 0x8000)
+	{
+	  *total = 0;
+	  return true;
+	}
+
+      /* Equality comparisons with 0 are cheap.  */
+      if ((outer_code == EQ || outer_code == NE)
+	  && INTVAL (x) == 0)
+	return 0;
+
+      /* Otherwise, work out the cost to load the value into a
+	 register.  */
+      if (INTVAL (x) >= 0 && INTVAL (x) < 0x100)
+	*total = COSTS_N_INSNS (1);
+      else if ((INTVAL (x) >= 0 && INTVAL (x) < 0x10000)
+	       || (INTVAL (x) < 0 && INTVAL (x) > -0x100))
+	*total = COSTS_N_INSNS (2);
+      else
+	*total = COSTS_N_INSNS (3);
+      return true;
+
+    case LABEL_REF:
+      *total = COSTS_N_INSNS (2);
+      return true;
+
+    case CONST:
+      {
+	rtx offset = const0_rtx;
+	rtx symref = eliminate_constant_term (XEXP (x, 0), &offset);
+
+	if (TARGET_MIPS16 && mips16_gp_offset_p (x))
+	  {
+	    /* Treat this like a signed 16 bit CONST_INT.  */
+	    if (outer_code == PLUS)
+	      *total = 0;
+	    else if (outer_code == SET)
+	      *total = COSTS_N_INSNS (1);
+	    else
+	      *total = COSTS_N_INSNS (2);
+	    return true;
+	  }
+
+	if (GET_CODE (symref) == LABEL_REF)
+	  *total = COSTS_N_INSNS (2);
+	else if (GET_CODE (symref) != SYMBOL_REF)
+	  *total = COSTS_N_INSNS (4);
+	else if (INTVAL (offset) < -32768 || INTVAL (offset) > 32767)
+	  *total = COSTS_N_INSNS (2);
+	else
+	  *total = COSTS_N_INSNS (SYMBOL_REF_FLAG (symref) ? 1 : 2);
+
+	return true;
+      }
+
+    case SYMBOL_REF:
+      *total = COSTS_N_INSNS (SYMBOL_REF_FLAG (x) ? 1 : 2);
+      return true;
+
+    case CONST_DOUBLE:
+      {
+	rtx high, low;
+	if (TARGET_MIPS16)
+	  {
+	    *total = COSTS_N_INSNS (4);
+	    return true;
+	  }
+
+	split_double (x, &high, &low);
+	*total = COSTS_N_INSNS ((high == CONST0_RTX (GET_MODE (high))
+				 || low == CONST0_RTX (GET_MODE (low)))
+				? 2 : 4);
+	return true;
+      }
+
+    case MEM:
+      {
+	int num_words = (GET_MODE_SIZE (mode) > UNITS_PER_WORD) ? 2 : 1;
+	if (simple_memory_operand (x, mode))
+	  *total = COSTS_N_INSNS (num_words);
+	else
+	  *total = COSTS_N_INSNS (2*num_words);
+	return true;
+      }
+
+    case FFS:
+      *total = COSTS_N_INSNS (6);
+      return true;
+
+    case NOT:
+      *total = COSTS_N_INSNS ((mode == DImode && !TARGET_64BIT) ? 2 : 1);
+      return true;
+
+    case AND:
+    case IOR:
+    case XOR:
+      if (mode == DImode && !TARGET_64BIT)
+	{
+	  *total = COSTS_N_INSNS (2);
+	  return true;
+	}
+      return false;
+
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+      if (mode == DImode && !TARGET_64BIT)
+	{
+	  *total = COSTS_N_INSNS ((GET_CODE (XEXP (x, 1)) == CONST_INT)
+				  ? 4 : 12);
+	  return true;
+	}
+      return false;
+
+    case ABS:
+      if (mode == SFmode || mode == DFmode)
+	*total = COSTS_N_INSNS (1);
+      else
+	*total = COSTS_N_INSNS (4);
+      return true;
+
+    case PLUS:
+    case MINUS:
+      if (mode == SFmode || mode == DFmode)
+	{
+	  if (TUNE_MIPS3000 || TUNE_MIPS3900)
+	    *total = COSTS_N_INSNS (2);
+	  else if (TUNE_MIPS6000)
+	    *total = COSTS_N_INSNS (3);
+	  else
+	    *total = COSTS_N_INSNS (6);
+	  return true;
+	}
+      if (mode == DImode && !TARGET_64BIT)
+	{
+	  *total = COSTS_N_INSNS (4);
+	  return true;
+	}
+      return false;
+
+    case NEG:
+      if (mode == DImode && !TARGET_64BIT)
+	{
+	  *total = 4;
+	  return true;
+	}
+      return false;
+
+    case MULT:
+      if (mode == SFmode)
+	{
+	  if (TUNE_MIPS3000
+	      || TUNE_MIPS3900
+	      || TUNE_MIPS5000)
+	    *total = COSTS_N_INSNS (4);
+	  else if (TUNE_MIPS6000
+		   || TUNE_MIPS5400
+		   || TUNE_MIPS5500)
+	    *total = COSTS_N_INSNS (5);
+	  else
+	    *total = COSTS_N_INSNS (7);
+	  return true;
+	}
+
+      if (mode == DFmode)
+	{
+	  if (TUNE_MIPS3000
+	      || TUNE_MIPS3900
+	      || TUNE_MIPS5000)
+	    *total = COSTS_N_INSNS (5);
+	  else if (TUNE_MIPS6000
+		   || TUNE_MIPS5400
+		   || TUNE_MIPS5500)
+	    *total = COSTS_N_INSNS (6);
+	  else
+	    *total = COSTS_N_INSNS (8);
+	  return true;
+	}
+
+      if (TUNE_MIPS3000)
+	*total = COSTS_N_INSNS (12);
+      else if (TUNE_MIPS3900)
+	*total = COSTS_N_INSNS (2);
+      else if (TUNE_MIPS5400 || TUNE_MIPS5500)
+	*total = COSTS_N_INSNS ((mode == DImode) ? 4 : 3);
+      else if (TUNE_MIPS6000)
+	*total = COSTS_N_INSNS (17);
+      else if (TUNE_MIPS5000)
+	*total = COSTS_N_INSNS (5);
+      else
+	*total = COSTS_N_INSNS (10);
+      return true;
+
+    case DIV:
+    case MOD:
+      if (mode == SFmode)
+	{
+	  if (TUNE_MIPS3000
+	      || TUNE_MIPS3900)
+	    *total = COSTS_N_INSNS (12);
+	  else if (TUNE_MIPS6000)
+	    *total = COSTS_N_INSNS (15);
+	  else if (TUNE_MIPS5400 || TUNE_MIPS5500)
+	    *total = COSTS_N_INSNS (30);
+	  else
+	    *total = COSTS_N_INSNS (23);
+	  return true;
+	}
+
+      if (mode == DFmode)
+	{
+	  if (TUNE_MIPS3000
+	      || TUNE_MIPS3900)
+	    *total = COSTS_N_INSNS (19);
+	  else if (TUNE_MIPS5400 || TUNE_MIPS5500)
+	    *total = COSTS_N_INSNS (59);
+	  else if (TUNE_MIPS6000)
+	    *total = COSTS_N_INSNS (16);
+	  else
+	    *total = COSTS_N_INSNS (36);
+	  return true;
+	}
+      /* FALLTHRU */
+
+    case UDIV:
+    case UMOD:
+      if (TUNE_MIPS3000
+	  || TUNE_MIPS3900)
+	*total = COSTS_N_INSNS (35);
+      else if (TUNE_MIPS6000)
+	*total = COSTS_N_INSNS (38);
+      else if (TUNE_MIPS5000)
+	*total = COSTS_N_INSNS (36);
+      else if (TUNE_MIPS5400 || TUNE_MIPS5500)
+	*total = COSTS_N_INSNS ((mode == SImode) ? 42 : 74);
+      else
+	*total = COSTS_N_INSNS (69);
+      return true;
+
+    case SIGN_EXTEND:
+      /* A sign extend from SImode to DImode in 64 bit mode is often
+	 zero instructions, because the result can often be used
+	 directly by another instruction; we'll call it one.  */
+      if (TARGET_64BIT && mode == DImode
+	  && GET_MODE (XEXP (x, 0)) == SImode)
+	*total = COSTS_N_INSNS (1);
+      else
+	*total = COSTS_N_INSNS (2);
+      return true;
+
+    case ZERO_EXTEND:
+      if (TARGET_64BIT && mode == DImode
+	  && GET_MODE (XEXP (x, 0)) == SImode)
+	*total = COSTS_N_INSNS (2);
+      else
+	*total = COSTS_N_INSNS (1);
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 /* Provide the costs of an addressing mode that contains ADDR.
    If ADDR is not a valid address, its cost is irrelevant.  */
 

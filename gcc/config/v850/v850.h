@@ -1025,64 +1025,6 @@ do {									\
 #define CC_NO_CARRY CC_NO_OVERFLOW
 #define NOTICE_UPDATE_CC(EXP, INSN) notice_update_cc(EXP, INSN)
 
-/* A part of a C `switch' statement that describes the relative costs
-   of constant RTL expressions.  It must contain `case' labels for
-   expression codes `const_int', `const', `symbol_ref', `label_ref'
-   and `const_double'.  Each case must ultimately reach a `return'
-   statement to return the relative cost of the use of that kind of
-   constant value in an expression.  The cost may depend on the
-   precise value of the constant, which is available for examination
-   in X, and the rtx code of the expression in which it is contained,
-   found in OUTER_CODE.
-
-   CODE is the expression code--redundant, since it can be obtained
-   with `GET_CODE (X)'. */
-
-#define CONST_COSTS(RTX,CODE,OUTER_CODE)				\
-  case CONST_INT:							\
-  case CONST_DOUBLE:							\
-  case CONST:								\
-  case SYMBOL_REF:							\
-  case LABEL_REF:							\
-    {									\
-      int _zxy = const_costs(RTX, CODE);				\
-      return (_zxy) ? COSTS_N_INSNS (_zxy) : 0;				\
-    }
-
-/* A crude cut at RTX_COSTS for the V850.  */
-
-/* Provide the costs of a rtl expression.  This is in the body of a
-   switch on CODE. 
-
-   There aren't DImode MOD, DIV or MULT operations, so call them
-   very expensive.  Everything else is pretty much a constant cost.  */
-
-#define RTX_COSTS(RTX,CODE,OUTER_CODE)					\
-  case MOD:								\
-  case DIV:								\
-  case UMOD:								\
-  case UDIV:								\
-    if (TARGET_V850E && optimize_size)					\
-      return 6;								\
-    return 60;								\
-  case MULT:								\
-    if (TARGET_V850E							\
-	&& (   GET_MODE (RTX) == SImode					\
-	    || GET_MODE (RTX) == HImode					\
-	    || GET_MODE (RTX) == QImode))				\
-      {									\
-	if (GET_CODE (XEXP (RTX, 1)) == REG)				\
-	  return 4;							\
-	else if (GET_CODE (XEXP (RTX, 1)) == CONST_INT)			\
-	  {								\
-	    if (CONST_OK_FOR_O (INTVAL (XEXP (RTX, 1))))		\
-	      return 6;							\
-	    else if (CONST_OK_FOR_K (INTVAL (XEXP (RTX, 1))))		\
-	      return 10;						\
-	  }								\
-      }									\
-    return 20;
-
 /* All addressing modes have the same cost on the V850 series.  */
 #define ADDRESS_COST(ADDR) 1
 

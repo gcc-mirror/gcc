@@ -147,6 +147,7 @@ static rtx gen_fr_spill_x PARAMS ((rtx, rtx, rtx));
 static rtx gen_fr_restore_x PARAMS ((rtx, rtx, rtx));
 
 static enum machine_mode hfa_element_mode PARAMS ((tree, int));
+static bool ia64_rtx_costs PARAMS ((rtx, int, int, int *));
 static void fix_range PARAMS ((const char *));
 static struct machine_function * ia64_init_machine_status PARAMS ((void));
 static void emit_insn_group_barriers PARAMS ((FILE *, rtx));
@@ -313,6 +314,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 #define TARGET_ASM_OUTPUT_MI_THUNK ia64_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_tree_hwi_hwi_tree_true
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS ia64_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3972,6 +3976,85 @@ ia64_print_operand (file, x, code)
   return;
 }
 
+/* Compute a (partial) cost for rtx X.  Return true if the complete
+   cost has been computed, and false if subexpressions should be
+   scanned.  In either case, *TOTAL contains the cost result.  */
+/* ??? This is incomplete.  */
+
+static bool
+ia64_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code;
+     int *total;
+{
+  switch (code)
+    {
+    case CONST_INT:
+      switch (outer_code)
+        {
+        case SET:
+	  *total = CONST_OK_FOR_J (INTVAL (x)) ? 0 : COSTS_N_INSNS (1);
+	  return true;
+        case PLUS:
+	  if (CONST_OK_FOR_I (INTVAL (x)))
+	    *total = 0;
+	  else if (CONST_OK_FOR_J (INTVAL (x)))
+	    *total = 1;
+	  else
+	    *total = COSTS_N_INSNS (1);
+	  return true;
+        default:
+	  if (CONST_OK_FOR_K (INTVAL (x)) || CONST_OK_FOR_L (INTVAL (x)))
+	    *total = 0;
+	  else
+	    *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+
+    case CONST_DOUBLE:
+      *total = COSTS_N_INSNS (1);
+      return true;
+
+    case CONST:
+    case SYMBOL_REF:
+    case LABEL_REF:
+      *total = COSTS_N_INSNS (3);
+      return true;
+
+    case MULT:
+      /* For multiplies wider than HImode, we have to go to the FPU,
+         which normally involves copies.  Plus there's the latency
+         of the multiply itself, and the latency of the instructions to
+         transfer integer regs to FP regs.  */
+      /* ??? Check for FP mode.  */
+      if (GET_MODE_SIZE (GET_MODE (x)) > 2)
+        *total = COSTS_N_INSNS (10);
+      else
+	*total = COSTS_N_INSNS (2);
+      return true;
+
+    case PLUS:
+    case MINUS:
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+      *total = COSTS_N_INSNS (1);
+      return true;
+
+    case DIV:
+    case UDIV:
+    case MOD:
+    case UMOD:
+      /* We make divide expensive, so that divide-by-constant will be
+         optimized to a multiply.  */
+      *total = COSTS_N_INSNS (60);
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 /* Calculate the cost of moving data from a register in class FROM to
    one in class TO, using MODE.  */
 

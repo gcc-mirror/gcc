@@ -1765,44 +1765,6 @@ do {									\
    is a suitable definition for this macro on machines where anything
    `CONSTANT_P' is valid.  */
 
-#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
-  case CONST_INT:			 \
-    return 0;				 \
-  case CONST:				 \
-    return 8;                            \
-  case LABEL_REF:			 \
-    return 0;				 \
-  case SYMBOL_REF:			 \
-    return 8;				 \
-  case CONST_DOUBLE:			 \
-    return 0;
-
-/* A part of a C `switch' statement that describes the relative costs
-   of constant RTL expressions.  It must contain `case' labels for
-   expression codes `const_int', `const', `symbol_ref', `label_ref'
-   and `const_double'.  Each case must ultimately reach a `return'
-   statement to return the relative cost of the use of that kind of
-   constant value in an expression.  The cost may depend on the
-   precise value of the constant, which is available for examination
-   in X, and the rtx code of the expression in which it is contained,
-   found in OUTER_CODE.
-
-   CODE is the expression code--redundant, since it can be obtained
-   with `GET_CODE (X)'.  */
-
-#define DEFAULT_RTX_COSTS(X, CODE, OUTER_CODE)			\
-  return default_rtx_costs ((X), (CODE), (OUTER_CODE))
-
-/* Like `CONST_COSTS' but applies to nonconstant RTL expressions.
-   This can be used, for example, to indicate how costly a multiply
-   instruction is.  In writing this macro, you can use the construct
-   `COSTS_N_INSNS (N)' to specify a cost equal to N fast
-   instructions.  OUTER_CODE is the code of the expression in which X
-   is contained.
-
-   This macro is optional; do not define it if the default cost
-   assumptions are adequate for the target machine.  */
-
 #define ADDRESS_COST(ADDRESS) ip2k_address_cost (ADDRESS)
 
 /* An expression giving the cost of an addressing mode that contains

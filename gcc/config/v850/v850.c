@@ -51,6 +51,8 @@
 /* Function prototypes for stupid compilers:  */
 static void const_double_split       PARAMS ((rtx, HOST_WIDE_INT *, HOST_WIDE_INT *));
 static int  const_costs_int          PARAMS ((HOST_WIDE_INT, int));
+static int  const_costs		     PARAMS ((rtx, enum rtx_code));
+static bool v850_rtx_costs	     PARAMS ((rtx, int, int, int *));
 static void substitute_ep_register   PARAMS ((rtx, rtx, int, int, rtx *, rtx *));
 static int  ep_memory_offset         PARAMS ((enum machine_mode, int));
 static void v850_set_data_area       PARAMS ((tree, v850_data_area));
@@ -104,6 +106,9 @@ static int v850_interrupt_p = FALSE;
 #define TARGET_ENCODE_SECTION_INFO v850_encode_section_info
 #undef TARGET_STRIP_NAME_ENCODING
 #define TARGET_STRIP_NAME_ENCODING v850_strip_name_encoding
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS v850_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -322,7 +327,7 @@ const_costs_int (value, zero_cost)
     return 4;
 }
 
-int
+static int
 const_costs (r, c)
      rtx r;
      enum rtx_code c;
@@ -354,6 +359,55 @@ const_costs (r, c)
     }
 }
 
+static bool
+v850_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code ATTRIBUTE_UNUSED, *total;
+{
+  switch (code)
+    {
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case CONST:
+    case SYMBOL_REF:
+    case LABEL_REF:
+      *total = COSTS_N_INSNS (const_costs (x, code));
+      return true;
+
+    case MOD:
+    case DIV:
+    case UMOD:
+    case UDIV:
+      if (TARGET_V850E && optimize_size)
+        *total = 6;
+      else
+	*total = 60;
+      return true;
+
+    case MULT:
+      if (TARGET_V850E
+	  && (   GET_MODE (x) == SImode
+	      || GET_MODE (x) == HImode
+	      || GET_MODE (x) == QImode))
+        {
+	  if (GET_CODE (XEXP (x, 1)) == REG)
+	    *total = 4;
+	  else if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+	    {
+	      if (CONST_OK_FOR_O (INTVAL (XEXP (x, 1))))
+	        *total = 6;
+	      else if (CONST_OK_FOR_K (INTVAL (XEXP (x, 1))))
+	        *total = 10;
+	    }
+        }
+      else
+	*total = 20;
+      return true;
+
+    default:
+      return false;
+    }
+}
 
 /* Print operand X using operand code CODE to assembly language output file
    FILE.  */

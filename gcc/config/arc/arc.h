@@ -995,34 +995,6 @@ arc_select_cc_mode (OP, X, Y)
 
 /* Costs.  */
 
-/* An insn is define to cost 4 "units", and we work from there.
-   COSTS_N_INSNS (N) is defined as (N) * 4 - 2 so that seems reasonable.
-   Some values are supposed to be defined relative to each other and thus
-   aren't necessarily related to COSTS_N_INSNS.  */
-
-/* Compute the cost of computing a constant rtl expression RTX
-   whose rtx-code is CODE.  The body of this macro is a portion
-   of a switch statement.  If the code is computed here,
-   return it with a return statement.  Otherwise, break from the switch.  */
-/* Small integers are as cheap as registers.  4 byte values can be fetched
-   as immediate constants - let's give that the cost of an extra insn.  */
-#define CONST_COSTS(X, CODE, OUTER_CODE) \
-  case CONST_INT :						\
-    if (SMALL_INT (INTVAL (X)))					\
-      return 0;							\
-    /* fall through */						\
-  case CONST :							\
-  case LABEL_REF :						\
-  case SYMBOL_REF :						\
-    return 4;							\
-  case CONST_DOUBLE :						\
-    {								\
-      rtx high, low;						\
-      split_double (X, &high, &low);				\
-      return 4 * (!SMALL_INT (INTVAL (high))			\
-		  + !SMALL_INT (INTVAL (low)));			\
-    }
-
 /* Compute the cost of an address.  */
 #define ADDRESS_COST(ADDR) (REG_P (ADDR) ? 1 : arc_address_cost (ADDR))
 
@@ -1040,22 +1012,6 @@ arc_select_cc_mode (OP, X, Y)
 /* ??? What's the right value here?  Branches are certainly more
    expensive than reg->reg moves.  */
 #define BRANCH_COST 2
-
-/* Provide the costs of a rtl expression.  This is in the body of a
-   switch on CODE.  The purpose for the cost of MULT is to encourage
-   `synth_mult' to find a synthetic multiply when reasonable.
-
-   If we need more than 12 insns to do a multiply, then go out-of-line,
-   since the call overhead will be < 10% of the cost of the multiply.  */
-#define RTX_COSTS(X, CODE, OUTER_CODE) \
-  case ASHIFT :						\
-  case ASHIFTRT :					\
-  case LSHIFTRT :					\
-    if (TARGET_SHIFTER)					\
-      return COSTS_N_INSNS (1);				\
-    if (GET_CODE (XEXP ((X), 1)) != CONST_INT)		\
-      return COSTS_N_INSNS (16);			\
-    return COSTS_N_INSNS (INTVAL (XEXP ((X), 1)));
 
 /* Nonzero if access to memory by bytes is slow and undesirable.
    For RISC chips, it means that access to memory by bytes is no

@@ -68,6 +68,8 @@ static int register_indirect_p PARAMS((rtx, enum machine_mode, int));
 static rtx m68hc11_expand_compare PARAMS((enum rtx_code, rtx, rtx));
 static int must_parenthesize PARAMS ((rtx));
 static int m68hc11_shift_cost PARAMS ((enum machine_mode, rtx, int));
+static int m68hc11_rtx_costs_1 PARAMS ((rtx, enum rtx_code, enum rtx_code));
+static bool m68hc11_rtx_costs PARAMS ((rtx, int, int, int *));
 static int m68hc11_auto_inc_p PARAMS ((rtx));
 static tree m68hc11_handle_fntype_attribute PARAMS ((tree *, tree, tree, int, bool *));
 const struct attribute_spec m68hc11_attribute_table[];
@@ -228,6 +230,9 @@ static int nb_soft_regs;
 
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO  m68hc11_encode_section_info
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS m68hc11_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5335,8 +5340,8 @@ m68hc11_shift_cost (mode, x, shift)
   return total;
 }
 
-int
-m68hc11_rtx_costs (x, code, outer_code)
+static int
+m68hc11_rtx_costs_1 (x, code, outer_code)
      rtx x;
      enum rtx_code code;
      enum rtx_code outer_code ATTRIBUTE_UNUSED;
@@ -5468,6 +5473,63 @@ m68hc11_rtx_costs (x, code, outer_code)
 
     default:
       return COSTS_N_INSNS (4);
+    }
+}
+
+static bool
+m68hc11_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code;
+     int *total;
+{
+  switch (code)
+    {
+      /* Constants are cheap.  Moving them in registers must be avoided
+         because most instructions do not handle two register operands.  */
+    case CONST_INT:
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+    case CONST_DOUBLE:
+      /* Logical and arithmetic operations with a constant operand are
+	 better because they are not supported with two registers.  */
+      /* 'clr' is slow */
+      if (outer_code == SET && x == const0_rtx)
+	 /* After reload, the reload_cse pass checks the cost to change
+	    a SET into a PLUS.  Make const0 cheap then.  */
+	*total = 1 - reload_completed;
+      else
+	*total = 0;
+      return true;
+    
+       if (outer_code == SET)
+	 *total = 1 - reload_completed;
+
+    case ROTATE:
+    case ROTATERT:
+    case ASHIFT:
+    case LSHIFTRT:
+    case ASHIFTRT:
+    case MINUS:
+    case PLUS:
+    case AND:
+    case XOR:
+    case IOR:
+    case UDIV:
+    case DIV:
+    case MOD:
+    case MULT:
+    case NEG:
+    case SIGN_EXTEND:
+    case NOT:
+    case COMPARE:
+    case ZERO_EXTEND:
+    case IF_THEN_ELSE:
+      *total = m68hc11_rtx_costs_1 (x, code, outer_code);
+      return true;
+
+    default:
+      return false;
     }
 }
 

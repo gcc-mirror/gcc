@@ -73,6 +73,8 @@ static void m68k_hp320_internal_label PARAMS ((FILE *, const char *, unsigned lo
 static void m68k_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 					  HOST_WIDE_INT, tree));
 static int m68k_save_reg PARAMS ((unsigned int));
+static int const_int_cost PARAMS ((rtx));
+static bool m68k_rtx_costs PARAMS ((rtx, int, int, int *));
 
 
 /* Alignment to use for loops and jumps */
@@ -138,6 +140,9 @@ int m68k_last_compare_had_fp_operands;
 #define TARGET_ASM_OUTPUT_MI_THUNK m68k_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS m68k_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1708,7 +1713,7 @@ const_method (constant)
   return MOVL;
 }
 
-int
+static int
 const_int_cost (constant)
      rtx constant;
 {
@@ -1727,6 +1732,125 @@ const_int_cost (constant)
 	return 2;
       default :
         abort ();
+    }
+}
+
+static bool
+m68k_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code;
+     int *total;
+{
+  switch (code)
+    {
+    case CONST_INT:
+      /* Constant zero is super cheap due to clr instruction.  */
+      if (x == const0_rtx)
+	*total = 0;
+      else
+        *total = const_int_cost (x);
+      return true;
+
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      *total = 3;
+      return true;
+
+    case CONST_DOUBLE:
+      /* Make 0.0 cheaper than other floating constants to
+         encourage creating tstsf and tstdf insns.  */
+      if (outer_code == COMPARE
+          && (x == CONST0_RTX (SFmode) || x == CONST0_RTX (DFmode)))
+	*total = 4;
+      else
+	*total = 5;
+      return true;
+
+    /* These are vaguely right for a 68020.  */
+    /* The costs for long multiply have been adjusted to work properly
+       in synth_mult on the 68020, relative to an average of the time
+       for add and the time for shift, taking away a little more because
+       sometimes move insns are needed.  */
+    /* div?.w is relatively cheaper on 68000 counted in COSTS_N_INSNS terms.  */
+#define MULL_COST (TARGET_68060 ? 2 : TARGET_68040 ? 5 : 13)
+#define MULW_COST (TARGET_68060 ? 2 : TARGET_68040 ? 3 : TARGET_68020 ? 8 : 5)
+#define DIVW_COST (TARGET_68020 ? 27 : 12)
+
+    case PLUS:
+      /* An lea costs about three times as much as a simple add.  */
+      if (GET_MODE (x) == SImode
+	  && GET_CODE (XEXP (x, 1)) == REG
+	  && GET_CODE (XEXP (x, 0)) == MULT
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == REG
+	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
+	  && (INTVAL (XEXP (XEXP (x, 0), 1)) == 2
+	      || INTVAL (XEXP (XEXP (x, 0), 1)) == 4
+	      || INTVAL (XEXP (XEXP (x, 0), 1)) == 8))
+	*total = COSTS_N_INSNS (3);	 /* lea an@(dx:l:i),am */
+      return false;
+
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+      if (TARGET_68060)
+	{
+          *total = COSTS_N_INSNS(1);
+	  return true;
+	}
+      if (! TARGET_68020)
+        {
+	  if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+	    {
+	      if (INTVAL (XEXP (x, 1)) < 16)
+	        *total = COSTS_N_INSNS (2) + INTVAL (XEXP (x, 1)) / 2;
+	      else
+	        /* We're using clrw + swap for these cases.  */
+	        *total = COSTS_N_INSNS (4) + (INTVAL (XEXP (x, 1)) - 16) / 2;
+	    }
+	  else
+	    *total = COSTS_N_INSNS (10); /* worst case */
+	  return true;
+        }
+      /* A shift by a big integer takes an extra instruction.  */
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && (INTVAL (XEXP (x, 1)) == 16))
+	{
+	  *total = COSTS_N_INSNS (2);	 /* clrw;swap */
+	  return true;
+	}
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && !(INTVAL (XEXP (x, 1)) > 0
+	       && INTVAL (XEXP (x, 1)) <= 8))
+	{
+	  *total = COSTS_N_INSNS (3);	 /* lsr #i,dn */
+	  return true;
+	}
+      return false;
+
+    case MULT:
+      if ((GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+	   || GET_CODE (XEXP (x, 0)) == SIGN_EXTEND)
+	  && GET_MODE (x) == SImode)
+        *total = COSTS_N_INSNS (MULW_COST);
+      else if (GET_MODE (x) == QImode || GET_MODE (x) == HImode)
+        *total = COSTS_N_INSNS (MULW_COST);
+      else
+        *total = COSTS_N_INSNS (MULL_COST);
+      return true;
+
+    case DIV:
+    case UDIV:
+    case MOD:
+    case UMOD:
+      if (GET_MODE (x) == QImode || GET_MODE (x) == HImode)
+        *total = COSTS_N_INSNS (DIVW_COST);	/* div.w */
+      else
+	*total = COSTS_N_INSNS (43);		/* div.l */
+      return true;
+
+    default:
+      return false;
     }
 }
 

@@ -613,7 +613,7 @@ typedef char _Bool;
 	ASM_OUTPUT_DESTRUCTOR SIGNED_CHAR_SPEC MAX_CHAR_TYPE_SIZE	\
 	WCHAR_UNSIGNED UNIQUE_SECTION SELECT_SECTION SELECT_RTX_SECTION	\
 	ENCODE_SECTION_INFO STRIP_NAME_ENCODING ASM_GLOBALIZE_LABEL	\
-	ASM_OUTPUT_MI_THUNK
+	ASM_OUTPUT_MI_THUNK CONST_COSTS RTX_COSTS DEFAULT_RTX_COSTS
 
 /* Other obsolete target macros, or macros that used to be in target
    headers and were not used, and may be obsolete or may never have

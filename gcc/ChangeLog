@@ -1,5 +1,102 @@
 2003-01-27  Richard Henderson  <rth@redhat.com>
 
+	* Makefile.in (cse.o): Depend on TARGET_H.
+	* cse.c (rtx_cost): Use targetm.rtx_costs.
+	* system.h (CONST_COSTS RTX_COSTS DEFAULT_RTX_COSTS): Poison.
+	* doc/tm.texi: Update.
+	
+	* target.h (targetm.rtx_costs): New.
+	* target-def.h (TARGET_RTX_COSTS): New.
+	* hooks.c (hook_bool_rtx_int_int_intp_false): New.
+	* hooks.h: Update.
+
+	* config/alpha/alpha.c (alpha_rtx_cost_data): New.
+	(alpha_rtx_costs, TARGET_RTX_COSTS): New.
+	* config/alpha/alpha.h (PROCESSOR_MAX): New.
+	(CONST_COSTS, RTX_COSTS): Remove.
+
+	* config/arc/arc.c, config/arc/arc.h, config/c4x/c4x.c,
+	config/c4x/c4x.h, config/cris/cris.c, config/cris/cris.h,
+	config/d30v/d30v.c, config/d30v/d30v.h, config/dsp16xx/dsp16xx.c,
+	config/dsp16xx/dsp16xx.h, config/frv/frv.c, config/frv/frv.h,
+	config/h8300/h8300.c, config/h8300/h8300.h, config/i370/i370.c,
+	config/i370/i370.h, config/i386/i386.c, config/i386/i386.h,
+	config/i960/i960.c, config/i960/i960.h, config/ia64/ia64.c,
+	config/ia64/ia64.h, config/m32r/m32r.c, config/m32r/m32r.h,
+	config/m68k/m68k.c, config/m68k/m68k.h, config/m88k/m88k.c,
+	config/m88k/m88k.h, config/mcore/mcore.c, config/mcore/mcore.h,
+	config/mips/mips.c, config/mips/mips.h, config/mn10200/mn10200.c,
+	config/mn10200/mn10200.h, config/mn10300/mn10300.c,
+	config/mn10300/mn10300.h, config/ns32k/ns32k.c, config/ns32k/ns32k.h,
+	config/pa/pa.c, config/pa/pa.h, config/pdp11/pdp11.c,
+	config/pdp11/pdp11.h, config/romp/romp.c, config/romp/romp.h,
+	config/rs6000/rs6000.c, config/rs6000/rs6000.h, config/s390/s390.c,
+	config/s390/s390.h, config/sh/sh.c, config/sh/sh.h,
+	config/stormy16/stormy16.c, config/stormy16/stormy16.h,
+	config/v850/v850.c, config/v850/v850.h,
+	config/xtensa/xtensa.c, config/xtensa/xtensa.h
+	(CONST_COSTS, RTX_COSTS): Move code ...
+	(foo_rtx_costs, TARGET_RTX_COSTS): ... here.
+
+	* config/arm/arm.c (arm_rtx_costs_1): Rename from arm_rtx_costs.
+	(arm_rtx_costs, TARGET_RTX_COSTS): New.
+	* config/arm/arm-protos.h: Update.
+	* config/arm/arm.h (DEFAULT_RTX_COSTS): Remove.
+
+	* config/avr/avr.h (CONST_COSTS): Move code ...
+	* config/avr/avr.c (avr_rtx_costs): ... here.
+	(default_rtx_costs): Make static.
+	* config/avr/avr-protos.h: Update.
+
+	* config/h8300/h8300.c (const_costs): Make static.
+	(h8300_and_costs, h8300_shift_costs): Likewise.
+	* config/h8300/h8300-protos.h: Update.
+
+	* config/ip2k/ip2k.h (DEFAULT_RTX_COSTS): Remove.
+	(CONST_COSTS): Move code ...
+	* config/ip2k/ip2k.c (ip2k_rtx_costs): ... here.  Rename from
+	default_rtx_costs; update for signature change.
+	* config/ip2k/ip2k-protos.h: Update.
+
+	* config/m68hc11/m68hc11.h (RTX_COSTS): Remove.
+	(CONST_COSTS): Move code ...
+	* config/m68hc11/m68hc11.c (m68hc11_rtx_costs): ... here.
+	(TARGET_RTX_COSTS): New.
+	(m68hc11_rtx_costs_1): Rename from m68hc11_rtx_costs; make static.
+	* config/m68hc11/m68hc11-protos.h: Update.
+
+	* config/m68k/m68k.c (const_int_cost): Make static.
+	* config/m68k/m68k-protos.h: Update.
+
+	* config/mcore/mcore.c (mcore_const_costs): Make static.
+	(mcore_and_cost, mcore_ior_cost): Likewise.
+	* config/mcore/mcore-protos.h: Update.
+
+	* config/mmix/mmix.c (mmix_rtx_costs, TARGET_RTX_COSTS): New.
+	(mmix_rtx_cost_recalculated): Remove.
+	* config/mmix/mmix.h (DEFAULT_RTX_COSTS): Remove.
+	* config/mmix/mmix-protos.h: Update.
+
+	* config/sh/sh.c (shiftcosts): Make static.
+	(addsubcosts, andcosts, multcosts): Likewise.
+	* config/sh/sh-protos.h: Update.
+
+	* config/sparc/sparc.c (TARGET_RTX_COSTS): New.
+	(sparc_rtx_costs): Make static; update for change in signature.
+	* config/sparc/sparc.h (RTX_COSTS_CASES, RTX_COSTS): Remove.
+	* config/sparc/sparc-protos.h: Update.
+
+	* config/v850/v850.c (const_costs): Make static.
+	* config/v850/v850-protos.h: Update.
+
+	* config/vax/vax.h (RTX_COSTS): Remove.
+	(CONST_COSTS): Move code ...
+	* config/vax/vax.c (vax_rtx_costs_1): ... here; rename
+	from vax_rtx_cost.
+	(vax_rtx_costs, TARGET_RTX_COSTS): New.
+
+2003-01-27  Richard Henderson  <rth@redhat.com>
+
 	* config/vax/vax.h (ASM_OUTPUT_MI_THUNK): Remove.  Really.
 	* config/vax/vax-protos.h: Update.  Really.
 

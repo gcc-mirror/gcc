@@ -50,6 +50,14 @@ Boston, MA 02111-1307, USA.  */
 #define CHECK_STACK_LIMIT (-1)
 #endif
 
+/* Return index of given mode in mult and division cost tables.  */
+#define MODE_INDEX(mode)					\
+  ((mode) == QImode ? 0						\
+   : (mode) == HImode ? 1					\
+   : (mode) == SImode ? 2					\
+   : (mode) == DImode ? 3					\
+   : 4)
+
 /* Processor costs (relative to an add) */
 static const
 struct processor_costs size_cost = {	/* costs for tunning for size */
@@ -872,6 +880,7 @@ static int ix86_value_regno PARAMS ((enum machine_mode));
 static bool ix86_ms_bitfield_layout_p PARAMS ((tree));
 static tree ix86_handle_struct_attribute PARAMS ((tree *, tree, tree, int, bool *));
 static int extended_reg_mentioned_1 PARAMS ((rtx *, void *));
+static bool ix86_rtx_costs PARAMS ((rtx, int, int, int *));
 
 #if defined (DO_GLOBAL_CTORS_BODY) && defined (HAS_INIT_SECTION)
 static void ix86_svr3_asm_out_constructor PARAMS ((rtx, int));
@@ -987,6 +996,9 @@ static enum x86_64_reg_class merge_classes PARAMS ((enum x86_64_reg_class,
 #define TARGET_ASM_OUTPUT_MI_THUNK x86_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK x86_can_output_mi_thunk
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS ix86_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -14455,6 +14467,257 @@ ix86_memory_move_cost (mode, class, in)
 	return ((in ? ix86_cost->int_load[2] : ix86_cost->int_store[2])
 		* ((int) GET_MODE_SIZE (mode)
 		   + UNITS_PER_WORD -1 ) / UNITS_PER_WORD);
+    }
+}
+
+/* Compute a (partial) cost for rtx X.  Return true if the complete
+   cost has been computed, and false if subexpressions should be
+   scanned.  In either case, *TOTAL contains the cost result.  */
+
+static bool
+ix86_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code;
+     int *total;
+{
+  enum machine_mode mode = GET_MODE (x);
+
+  switch (code)
+    {
+    case CONST_INT:
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      if (TARGET_64BIT && !x86_64_sign_extended_value (x))
+	*total = 3;
+      else if (TARGET_64BIT && !x86_64_zero_extended_value (x))
+	*total = 2;
+      else if (flag_pic && SYMBOLIC_CONST (x))
+	*total = 1;
+      else
+	*total = 0;
+      return true;
+
+    case CONST_DOUBLE:
+      if (mode == VOIDmode)
+	*total = 0;
+      else
+	switch (standard_80387_constant_p (x))
+	  {
+	  case 1: /* 0.0 */
+	    *total = 1;
+	    break;
+	  case 2: /* 1.0 */
+	    *total = 2;
+	    break;
+	  default:
+	    /* Start with (MEM (SYMBOL_REF)), since that's where
+	       it'll probably end up.  Add a penalty for size.  */
+	    *total = (COSTS_N_INSNS (1)
+		      + (flag_pic != 0)
+		      + (mode == SFmode ? 0 : mode == DFmode ? 1 : 2));
+	    break;
+	  }
+      return true;
+
+    case ZERO_EXTEND:
+      /* The zero extensions is often completely free on x86_64, so make
+	 it as cheap as possible.  */
+      if (TARGET_64BIT && mode == DImode
+	  && GET_MODE (XEXP (x, 0)) == SImode)
+	*total = 1;
+      else if (TARGET_ZERO_EXTEND_WITH_AND)
+	*total = COSTS_N_INSNS (ix86_cost->add);
+      else
+	*total = COSTS_N_INSNS (ix86_cost->movzx);
+      return false;
+
+    case SIGN_EXTEND:
+      *total = COSTS_N_INSNS (ix86_cost->movsx);
+      return false;
+
+    case ASHIFT:
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && (GET_MODE (XEXP (x, 0)) != DImode || TARGET_64BIT))
+	{
+	  HOST_WIDE_INT value = INTVAL (XEXP (x, 1));
+	  if (value == 1)
+	    {
+	      *total = COSTS_N_INSNS (ix86_cost->add);
+	      return false;
+	    }
+	  if ((value == 2 || value == 3)
+	      && !TARGET_DECOMPOSE_LEA
+	      && ix86_cost->lea <= ix86_cost->shift_const)
+	    {
+	      *total = COSTS_N_INSNS (ix86_cost->lea);
+	      return false;
+	    }
+	}
+      /* FALLTHRU */
+
+    case ROTATE:
+    case ASHIFTRT:
+    case LSHIFTRT:
+    case ROTATERT:
+      if (!TARGET_64BIT && GET_MODE (XEXP (x, 0)) == DImode)
+	{
+	  if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+	    {
+	      if (INTVAL (XEXP (x, 1)) > 32)
+		*total = COSTS_N_INSNS(ix86_cost->shift_const + 2);
+	      else
+		*total = COSTS_N_INSNS(ix86_cost->shift_const * 2);
+	    }
+	  else
+	    {
+	      if (GET_CODE (XEXP (x, 1)) == AND)
+		*total = COSTS_N_INSNS(ix86_cost->shift_var * 2);
+	      else
+		*total = COSTS_N_INSNS(ix86_cost->shift_var * 6 + 2);
+	    }
+	}
+      else
+	{
+	  if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+	    *total = COSTS_N_INSNS (ix86_cost->shift_const);
+	  else
+	    *total = COSTS_N_INSNS (ix86_cost->shift_var);
+	}
+      return false;
+
+    case MULT:
+      if (FLOAT_MODE_P (mode))
+	*total = COSTS_N_INSNS (ix86_cost->fmul);
+      else if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+	{
+	  unsigned HOST_WIDE_INT value = INTVAL (XEXP (x, 1));
+	  int nbits;
+
+	  for (nbits = 0; value != 0; value >>= 1)
+	    nbits++;
+
+	  *total = COSTS_N_INSNS (ix86_cost->mult_init[MODE_INDEX (mode)]
+			          + nbits * ix86_cost->mult_bit);
+	}
+      else
+	{
+	  /* This is arbitrary */
+	  *total = COSTS_N_INSNS (ix86_cost->mult_init[MODE_INDEX (mode)]
+			          + 7 * ix86_cost->mult_bit);
+	}
+      return false;
+
+    case DIV:
+    case UDIV:
+    case MOD:
+    case UMOD:
+      if (FLOAT_MODE_P (mode))
+	*total = COSTS_N_INSNS (ix86_cost->fdiv);
+      else
+	*total = COSTS_N_INSNS (ix86_cost->divide[MODE_INDEX (mode)]);
+      return false;
+
+    case PLUS:
+      if (FLOAT_MODE_P (mode))
+	*total = COSTS_N_INSNS (ix86_cost->fadd);
+      else if (!TARGET_DECOMPOSE_LEA
+	       && GET_MODE_CLASS (mode) == MODE_INT
+	       && GET_MODE_BITSIZE (mode) <= GET_MODE_BITSIZE (Pmode))
+	{
+	  if (GET_CODE (XEXP (x, 0)) == PLUS
+	      && GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT
+	      && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 1)) == CONST_INT
+	      && CONSTANT_P (XEXP (x, 1)))
+	    {
+	      HOST_WIDE_INT val = INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1));
+	      if (val == 2 || val == 4 || val == 8)
+		{
+		  *total = COSTS_N_INSNS (ix86_cost->lea);
+		  *total += rtx_cost (XEXP (XEXP (x, 0), 1), outer_code);
+		  *total += rtx_cost (XEXP (XEXP (XEXP (x, 0), 0), 0),
+				      outer_code);
+		  *total += rtx_cost (XEXP (x, 1), outer_code);
+		  return true;
+		}
+	    }
+	  else if (GET_CODE (XEXP (x, 0)) == MULT
+		   && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
+	    {
+	      HOST_WIDE_INT val = INTVAL (XEXP (XEXP (x, 0), 1));
+	      if (val == 2 || val == 4 || val == 8)
+		{
+		  *total = COSTS_N_INSNS (ix86_cost->lea);
+		  *total += rtx_cost (XEXP (XEXP (x, 0), 0), outer_code);
+		  *total += rtx_cost (XEXP (x, 1), outer_code);
+		  return true;
+		}
+	    }
+	  else if (GET_CODE (XEXP (x, 0)) == PLUS)
+	    {
+	      *total = COSTS_N_INSNS (ix86_cost->lea);
+	      *total += rtx_cost (XEXP (XEXP (x, 0), 0), outer_code);
+	      *total += rtx_cost (XEXP (XEXP (x, 0), 1), outer_code);
+	      *total += rtx_cost (XEXP (x, 1), outer_code);
+	      return true;
+	    }
+	}
+      /* FALLTHRU */
+
+    case MINUS:
+      if (FLOAT_MODE_P (mode))
+	{
+	  *total = COSTS_N_INSNS (ix86_cost->fadd);
+	  return false;
+	}
+      /* FALLTHRU */
+
+    case AND:
+    case IOR:
+    case XOR:
+      if (!TARGET_64BIT && mode == DImode)
+	{
+	  *total = (COSTS_N_INSNS (ix86_cost->add) * 2
+		    + (rtx_cost (XEXP (x, 0), outer_code)
+		       << (GET_MODE (XEXP (x, 0)) != DImode))
+		    + (rtx_cost (XEXP (x, 1), outer_code)
+ 	               << (GET_MODE (XEXP (x, 1)) != DImode)));
+	  return true;
+	}
+      /* FALLTHRU */
+
+    case NEG:
+      if (FLOAT_MODE_P (mode))
+	{
+	  *total = COSTS_N_INSNS (ix86_cost->fchs);
+	  return false;
+	}
+      /* FALLTHRU */
+
+    case NOT:
+      if (!TARGET_64BIT && mode == DImode)
+	*total = COSTS_N_INSNS (ix86_cost->add * 2);
+      else
+	*total = COSTS_N_INSNS (ix86_cost->add);
+      return false;
+
+    case FLOAT_EXTEND:
+      if (!TARGET_SSE_MATH || !VALID_SSE_REG_MODE (mode))
+	*total = 0;
+      return false;
+
+    case ABS:
+      if (FLOAT_MODE_P (mode))
+	*total = COSTS_N_INSNS (ix86_cost->fabs);
+      return false;
+
+    case SQRT:
+      if (FLOAT_MODE_P (mode))
+	*total = COSTS_N_INSNS (ix86_cost->fsqrt);
+      return false;
+
+    default:
+      return false;
     }
 }
 

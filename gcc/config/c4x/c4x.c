@@ -197,6 +197,7 @@ static void c4x_asm_named_section PARAMS ((const char *, unsigned int));
 static int c4x_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static void c4x_encode_section_info PARAMS ((tree, int));
 static void c4x_globalize_label PARAMS ((FILE *, const char *));
+static bool c4x_rtx_costs PARAMS ((rtx, int, int, int *));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -226,6 +227,9 @@ static void c4x_globalize_label PARAMS ((FILE *, const char *));
 
 #undef TARGET_ASM_GLOBALIZE_LABEL
 #define TARGET_ASM_GLOBALIZE_LABEL c4x_globalize_label
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS c4x_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -5061,4 +5065,99 @@ c4x_globalize_label (stream, name)
 {
   default_globalize_label (stream, name);
   c4x_global_label (name);
+}
+
+#define SHIFT_CODE_P(C) \
+  ((C) == ASHIFT || (C) == ASHIFTRT || (C) == LSHIFTRT)
+#define LOGICAL_CODE_P(C) \
+  ((C) == NOT || (C) == AND || (C) == IOR || (C) == XOR)
+
+/* Compute a (partial) cost for rtx X.  Return true if the complete
+   cost has been computed, and false if subexpressions should be
+   scanned.  In either case, *TOTAL contains the cost result.  */
+
+static bool
+c4x_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code;
+     int *total;
+{
+  HOST_WIDE_INT val;
+
+  switch (code)
+    {
+      /* Some small integers are effectively free for the C40.  We should
+         also consider if we are using the small memory model.  With
+         the big memory model we require an extra insn for a constant
+         loaded from memory.  */
+
+    case CONST_INT:
+      val = INTVAL (x);
+      if (c4x_J_constant (x))
+	*total = 0;
+      else if (! TARGET_C3X
+	       && outer_code == AND
+	       && (val == 255 || val == 65535))
+	*total = 0;
+      else if (! TARGET_C3X
+	       && (outer_code == ASHIFTRT || outer_code == LSHIFTRT)
+	       && (val == 16 || val == 24))
+	*total = 0;
+      else if (TARGET_C3X && SHIFT_CODE_P (outer_code))
+	*total = 3;
+      else if (LOGICAL_CODE_P (outer_code)
+               ? c4x_L_constant (x) : c4x_I_constant (x))
+	*total = 2;
+      else
+	*total = 4;
+      return true;
+
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      *total = 4;
+      return true;
+
+    case CONST_DOUBLE:
+      if (c4x_H_constant (x))
+	*total = 2;
+      else if (GET_MODE (x) == QFmode)
+	*total = 4;
+      else
+	*total = 8;
+      return true;
+
+    /* ??? Note that we return true, rather than false so that rtx_cost
+       doesn't include the constant costs.  Otherwise expand_mult will
+       think that it is cheaper to synthesize a multiply rather than to
+       use a multiply instruction.  I think this is because the algorithm
+       synth_mult doesn't take into account the loading of the operands,
+       whereas the calculation of mult_cost does.  */
+    case PLUS:
+    case MINUS:
+    case AND:
+    case IOR:
+    case XOR:
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+      *total = COSTS_N_INSNS (1);
+      return true;
+
+    case MULT:
+      *total = COSTS_N_INSNS (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
+			      || TARGET_MPYI ? 1 : 14);
+      return true;
+
+    case DIV:
+    case UDIV:
+    case MOD:
+    case UMOD:
+      *total = COSTS_N_INSNS (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
+			      ? 15 : 50);
+      return true;
+
+    default:
+      return false;
+    }
 }

@@ -114,8 +114,6 @@ extern const char * output_reload_inhi PARAMS ((rtx insn, rtx *operands,
 						int *len));
 extern const char * output_reload_insisf PARAMS ((rtx insn, rtx *operands,
 						int *len));
-extern int    default_rtx_costs      PARAMS ((rtx X, RTX_CODE code,
-					     RTX_CODE outer_code));
 extern enum reg_class secondary_input_reload_class PARAMS ((enum reg_class,
 							   enum machine_mode,
 							   rtx));

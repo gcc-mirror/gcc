@@ -311,7 +311,16 @@ struct gcc_target
   /* Undo the effects of encode_section_info on the symbol string.  */
   const char * (* strip_name_encoding) PARAMS ((const char *));
 
+  /* True if MODE is valid for a pointer in __attribute__((mode("MODE"))).  */
   bool (* valid_pointer_mode) PARAMS ((enum machine_mode mode));
+
+  /* Compute a (partial) cost for rtx X.  Return true if the complete
+     cost has been computed, and false if subexpressions should be
+     scanned.  In either case, *TOTAL contains the cost result.  */
+  /* Note that CODE and OUTER_CODE ought to be RTX_CODE, but that's
+     not necessarily defined at this point.  */
+  bool (* rtx_costs) PARAMS ((rtx x, int code, int outer_code, int *total));
+
   /* Leave the boolean fields at the end.  */
 
   /* True if arbitrary sections are supported.  */

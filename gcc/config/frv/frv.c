@@ -283,6 +283,7 @@ static rtx frv_expand_builtin			PARAMS ((tree, rtx, rtx, enum machine_mode, int)
 static bool frv_in_small_data_p			PARAMS ((tree));
 static void frv_asm_output_mi_thunk
   PARAMS ((FILE *, tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
+static bool frv_rtx_costs			PARAMS ((rtx, int, int, int*));
 
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
@@ -301,6 +302,8 @@ static void frv_asm_output_mi_thunk
 #define TARGET_EXPAND_BUILTIN frv_expand_builtin
 #undef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P frv_in_small_data_p
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS frv_rtx_costs
 
 #undef TARGET_ASM_OUTPUT_MI_THUNK
 #define TARGET_ASM_OUTPUT_MI_THUNK frv_asm_output_mi_thunk
@@ -9787,4 +9790,66 @@ frv_in_small_data_p (decl)
 
   return symbol_ref_small_data_p (XEXP (DECL_RTL (decl), 0))
     && size > 0 && size <= g_switch_value;
+}
+
+static bool
+frv_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code;
+     int *total;
+{
+  switch (code)
+    {
+    case CONST_INT:
+      /* Make 12 bit integers really cheap.  */
+      if (IN_RANGE_P (INTVAL (x), -2048, 2047))
+	{
+	  *total = 0;
+	  return true;
+	}
+      /* FALLTHRU */
+
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+    case CONST_DOUBLE:
+      *total = COSTS_N_INSNS (2);
+      return true;
+
+    case PLUS:
+    case MINUS:
+    case AND:
+    case IOR:
+    case XOR:
+    case ASHIFT:
+    case ASHIFTRT:
+    case LSHIFTRT:
+    case NOT:
+    case NEG:
+    case COMPARE:
+      if (GET_MODE (x) == SImode)
+	*total = COSTS_N_INSNS (1);
+      else if (GET_MODE (x) == DImode)
+        *total = COSTS_N_INSNS (2);
+      else
+        *total = COSTS_N_INSNS (3);
+      return true;
+
+    case MULT:
+      if (GET_MODE (x) == SImode)
+        *total = COSTS_N_INSNS (2);
+      else
+        *total = COSTS_N_INSNS (6);	/* guess */
+      return true;
+
+    case DIV:
+    case UDIV:
+    case MOD:
+    case UMOD:
+      *total = COSTS_N_INSNS (18);
+      return true;
+
+    default:
+      return false;
+    }
 }

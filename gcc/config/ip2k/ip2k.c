@@ -78,6 +78,8 @@ static tree ip2k_handle_progmem_attribute PARAMS ((tree *, tree, tree, int,
 						   bool *));
 static tree ip2k_handle_fndecl_attribute PARAMS ((tree *, tree, tree, int,
 						  bool *));
+static bool ip2k_rtx_costs PARAMS ((rtx, int, int, int *));
+
 const struct attribute_spec ip2k_attribute_table[];
 
 
@@ -99,6 +101,9 @@ const struct attribute_spec ip2k_attribute_table[];
 
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE ip2k_attribute_table
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS ip2k_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3273,23 +3278,34 @@ asm_file_end (file)
 
 /* Cost functions.  */
 
-/* Calculate the cost of X code of the expression in which it is contained,
-   found in OUTER_CODE.  */
+/* Compute a (partial) cost for rtx X.  Return true if the complete
+   cost has been computed, and false if subexpressions should be
+   scanned.  In either case, *TOTAL contains the cost result.  */
 
-int
-default_rtx_costs (x, code, outer_code)
+static bool
+ip2k_rtx_costs (x, code, outer_code, total)
      rtx x;
-     enum rtx_code code;
-     enum rtx_code outer_code;
+     int code, outer_code;
+     int *total;
 {
   enum machine_mode mode = GET_MODE (x);
   int extra_cost = 0;
-  int total;
 
   switch (code)
     {
+    case CONST_INT:
+    case CONST_DOUBLE:
+    case LABEL_REF:
+      *total = 0;
+      return true;
+    case CONST:
+    case SYMBOL_REF:
+      *total = 8;
+      return true;
+
     case MEM:
-      return ip2k_address_cost (XEXP (x, 0));
+      *total = ip2k_address_cost (XEXP (x, 0));
+      return true;
 
     case ROTATE:
     case ROTATERT:
@@ -3311,45 +3327,47 @@ default_rtx_costs (x, code, outer_code)
 	  /* Sign-preserving shifts require 2 extra instructions.  */
 	  if (code == ASHIFT)
             cost += COSTS_N_INSNS (2);
-	  return cost;
+
+	  *total = cost;
+	  return true;
 	}
-      total = rtx_cost (XEXP (x, 0), code);
-      total += COSTS_N_INSNS (GET_MODE_SIZE (mode) * 8);
-      return total;
+      *total = rtx_cost (XEXP (x, 0), code);
+      *total += COSTS_N_INSNS (GET_MODE_SIZE (mode) * 8);
+      return true;
 
     case MINUS:
     case PLUS:
     case AND:
     case XOR:
     case IOR:
-      total = rtx_cost (XEXP (x, 0), code)
-	+ rtx_cost (XEXP (x, 1), code);
-      total += COSTS_N_INSNS (GET_MODE_SIZE (mode) * 3);
-      return total;
+      *total = COSTS_N_INSNS (GET_MODE_SIZE (mode) * 3);
+      return false;
 
     case MOD:
     case DIV:
       if (mode == QImode)
-	return COSTS_N_INSNS (20);
-      if (mode == HImode)
-	return COSTS_N_INSNS (60);
+	*total = COSTS_N_INSNS (20);
+      else if (mode == HImode)
+	*total = COSTS_N_INSNS (60);
       else if (mode == SImode)
-	return COSTS_N_INSNS (180);
+	*total = COSTS_N_INSNS (180);
       else
-	return COSTS_N_INSNS (540);
+	*total = COSTS_N_INSNS (540);
+      return true;
 
     case MULT:
       /* These costs are OK, but should really handle subtle cases
          where we're using sign or zero extended args as these are
 	 *much* cheaper than those given below!  */
       if (mode == QImode)
-	return COSTS_N_INSNS (4);
-      if (mode == HImode)
-	return COSTS_N_INSNS (12);
-      if (mode == SImode)
-	return COSTS_N_INSNS (36);
+	*total = COSTS_N_INSNS (4);
+      else if (mode == HImode)
+	*total = COSTS_N_INSNS (12);
+      else if (mode == SImode)
+	*total = COSTS_N_INSNS (36);
       else
-        return COSTS_N_INSNS (108);
+        *total = COSTS_N_INSNS (108);
+      return true;
 
     case NEG:
     case SIGN_EXTEND:
@@ -3359,20 +3377,25 @@ default_rtx_costs (x, code, outer_code)
     case NOT:
     case COMPARE:
     case ABS:
-      total = rtx_cost (XEXP (x, 0), code);
-      return total + extra_cost + COSTS_N_INSNS (GET_MODE_SIZE (mode) * 2);
+      *total = extra_cost + COSTS_N_INSNS (GET_MODE_SIZE (mode) * 2);
+      return false;
 
     case TRUNCATE:
     case ZERO_EXTEND:
       if (outer_code == SET)
-	return rtx_cost (XEXP (x, 0), code)
-	       + COSTS_N_INSNS (GET_MODE_SIZE (mode) * 3 / 2);
+	{
+	  *total = COSTS_N_INSNS (GET_MODE_SIZE (mode) * 3 / 2);
+	  return false;
+	}
       else
-	return -(COSTS_N_INSNS (GET_MODE_SIZE (mode)) / 2);
+	{
+	  *total = -(COSTS_N_INSNS (GET_MODE_SIZE (mode)) / 2);
+	  return true;
+	}
 
     case IF_THEN_ELSE:
-      return rtx_cost (XEXP (x, 0), code)
-	     + COSTS_N_INSNS (2);
+      *total = rtx_cost (XEXP (x, 0), code) + COSTS_N_INSNS (2);
+      return true;
 
     case EQ:
     case NE:
@@ -3384,11 +3407,12 @@ default_rtx_costs (x, code, outer_code)
     case GT:
     case LE:
     case GE:
-      return rtx_cost (XEXP (x, 0), code)
-	     + rtx_cost (XEXP (x, 1), code);
+      *total = 0;
+      return false;
 
     default:
-      return COSTS_N_INSNS (4);
+      *total = COSTS_N_INSNS (4);
+      return true;
     }
 }
 

@@ -112,9 +112,12 @@ Boston, MA 02111-1307, USA.  */
    mirrors this list, so changes to alpha.md must be made at the same time.  */
 
 enum processor_type
- {PROCESSOR_EV4,			/* 2106[46]{a,} */
+{
+  PROCESSOR_EV4,			/* 2106[46]{a,} */
   PROCESSOR_EV5,			/* 21164{a,pc,} */
-  PROCESSOR_EV6};			/* 21264 */
+  PROCESSOR_EV6,			/* 21264 */
+  PROCESSOR_MAX
+};
 
 extern enum processor_type alpha_cpu;
 
@@ -1543,162 +1546,6 @@ do {									     \
 /* Define this to be nonzero if shift instructions ignore all but the low-order
    few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1
-
-/* Compute the cost of computing a constant rtl expression RTX
-   whose rtx-code is CODE.  The body of this macro is a portion
-   of a switch statement.  If the code is computed here,
-   return it with a return statement.  Otherwise, break from the switch.
-
-   If this is an 8-bit constant, return zero since it can be used
-   nearly anywhere with no cost.  If it is a valid operand for an
-   ADD or AND, likewise return 0 if we know it will be used in that
-   context.  Otherwise, return 2 since it might be used there later.
-   All other constants take at least two insns.  */
-
-#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
-  case CONST_INT:						\
-    if (INTVAL (RTX) >= 0 && INTVAL (RTX) < 256)		\
-      return 0;							\
-  case CONST_DOUBLE:						\
-    if ((RTX) == CONST0_RTX (GET_MODE (RTX)))			\
-      return 0;							\
-    else if (((OUTER_CODE) == PLUS && add_operand (RTX, VOIDmode)) \
-	|| ((OUTER_CODE) == AND && and_operand (RTX, VOIDmode))) \
-      return 0;							\
-    else if (add_operand (RTX, VOIDmode) || and_operand (RTX, VOIDmode)) \
-      return 2;							\
-    else							\
-      return COSTS_N_INSNS (2);					\
-  case CONST:							\
-  case SYMBOL_REF:						\
-  case LABEL_REF:						\
-  switch (alpha_cpu)						\
-    {								\
-    case PROCESSOR_EV4:						\
-      return COSTS_N_INSNS (3);					\
-    case PROCESSOR_EV5:						\
-    case PROCESSOR_EV6:						\
-      return COSTS_N_INSNS (2);					\
-    default: abort();						\
-    }
-    
-/* Provide the costs of a rtl expression.  This is in the body of a
-   switch on CODE.  */
-   
-#define RTX_COSTS(X,CODE,OUTER_CODE)			\
-  case PLUS:  case MINUS:				\
-    if (FLOAT_MODE_P (GET_MODE (X)))			\
-      switch (alpha_cpu)				\
-        {						\
-        case PROCESSOR_EV4:				\
-          return COSTS_N_INSNS (6);			\
-        case PROCESSOR_EV5:				\
-        case PROCESSOR_EV6:				\
-          return COSTS_N_INSNS (4); 			\
-	default: abort();				\
-	}						\
-    else if (GET_CODE (XEXP (X, 0)) == MULT		\
-	     && const48_operand (XEXP (XEXP (X, 0), 1), VOIDmode)) \
-      return (2 + rtx_cost (XEXP (XEXP (X, 0), 0), OUTER_CODE)	\
-	      + rtx_cost (XEXP (X, 1), OUTER_CODE));	\
-    break;						\
-  case MULT:						\
-    switch (alpha_cpu)					\
-      {							\
-      case PROCESSOR_EV4:				\
-        if (FLOAT_MODE_P (GET_MODE (X)))		\
-          return COSTS_N_INSNS (6);			\
-        return COSTS_N_INSNS (23);			\
-      case PROCESSOR_EV5:				\
-        if (FLOAT_MODE_P (GET_MODE (X)))		\
-          return COSTS_N_INSNS (4);			\
-        else if (GET_MODE (X) == DImode)		\
-          return COSTS_N_INSNS (12);			\
-        else						\
-          return COSTS_N_INSNS (8);			\
-      case PROCESSOR_EV6:				\
-	if (FLOAT_MODE_P (GET_MODE (X)))		\
-	  return COSTS_N_INSNS (4);			\
-	else 						\
-	  return COSTS_N_INSNS (7);			\
-      default: abort();					\
-      }							\
-  case ASHIFT:						\
-    if (GET_CODE (XEXP (X, 1)) == CONST_INT		\
-	&& INTVAL (XEXP (X, 1)) <= 3)			\
-      break;						\
-    /* ... fall through ...  */				\
-  case ASHIFTRT:  case LSHIFTRT:			\
-    switch (alpha_cpu)					\
-      {							\
-      case PROCESSOR_EV4:				\
-        return COSTS_N_INSNS (2);			\
-      case PROCESSOR_EV5:				\
-      case PROCESSOR_EV6:				\
-        return COSTS_N_INSNS (1); 			\
-      default: abort();					\
-      }							\
-  case IF_THEN_ELSE:					\
-    switch (alpha_cpu)					\
-      {							\
-      case PROCESSOR_EV4:				\
-      case PROCESSOR_EV6:				\
-        return COSTS_N_INSNS (2);			\
-      case PROCESSOR_EV5:				\
-        return COSTS_N_INSNS (1); 			\
-      default: abort();					\
-      }							\
-  case DIV:  case UDIV:  case MOD:  case UMOD:		\
-    switch (alpha_cpu)					\
-      {							\
-      case PROCESSOR_EV4:				\
-        if (GET_MODE (X) == SFmode)			\
-          return COSTS_N_INSNS (34);			\
-        else if (GET_MODE (X) == DFmode)		\
-          return COSTS_N_INSNS (63);			\
-        else						\
-          return COSTS_N_INSNS (70);			\
-      case PROCESSOR_EV5:				\
-        if (GET_MODE (X) == SFmode)			\
-          return COSTS_N_INSNS (15);			\
-        else if (GET_MODE (X) == DFmode)		\
-          return COSTS_N_INSNS (22);			\
-        else						\
-          return COSTS_N_INSNS (70);	/* ??? */	\
-      case PROCESSOR_EV6:				\
-	if (GET_MODE (X) == SFmode)			\
-	  return COSTS_N_INSNS (12);			\
-        else if (GET_MODE (X) == DFmode)		\
-          return COSTS_N_INSNS (15);			\
-        else						\
-          return COSTS_N_INSNS (70);	/* ??? */	\
-      default: abort();					\
-      }							\
-  case MEM:						\
-    switch (alpha_cpu)					\
-      {							\
-      case PROCESSOR_EV4:				\
-      case PROCESSOR_EV6:				\
-        return COSTS_N_INSNS (3);			\
-      case PROCESSOR_EV5:				\
-        return COSTS_N_INSNS (2); 			\
-      default: abort();					\
-      }							\
-  case NEG:  case ABS:					\
-    if (! FLOAT_MODE_P (GET_MODE (X)))			\
-      break;						\
-    /* ... fall through ...  */				\
-  case FLOAT:  case UNSIGNED_FLOAT:  case FIX:  case UNSIGNED_FIX: \
-  case FLOAT_EXTEND:  case FLOAT_TRUNCATE:		\
-    switch (alpha_cpu)					\
-      {							\
-      case PROCESSOR_EV4:				\
-        return COSTS_N_INSNS (6);			\
-      case PROCESSOR_EV5:				\
-      case PROCESSOR_EV6:				\
-        return COSTS_N_INSNS (4); 			\
-      default: abort();					\
-      }
 
 /* Control the assembler format that we output.  */
 

@@ -140,6 +140,9 @@ static void	 arm_internal_label		PARAMS ((FILE *, const char *, unsigned long));
 static void arm_output_mi_thunk			PARAMS ((FILE *, tree,
 							 HOST_WIDE_INT,
 							 HOST_WIDE_INT, tree));
+static int arm_rtx_costs_1			PARAMS ((rtx, enum rtx_code,
+							 enum rtx_code));
+static bool arm_rtx_costs			PARAMS ((rtx, int, int, int*));
 
 #undef Hint
 #undef Mmode
@@ -212,6 +215,9 @@ static void arm_output_mi_thunk			PARAMS ((FILE *, tree,
 #define TARGET_ASM_OUTPUT_MI_THUNK arm_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS arm_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2909,8 +2915,8 @@ thumb_legitimate_offset_p (mode, val)
 #define COSTS_N_INSNS(N) ((N) * 4 - 2)
 #endif
 
-int
-arm_rtx_costs (x, code, outer)
+static inline int
+arm_rtx_costs_1 (x, code, outer)
      rtx x;
      enum rtx_code code;
      enum rtx_code outer;
@@ -3292,6 +3298,16 @@ arm_rtx_costs (x, code, outer)
     default:
       return 99;
     }
+}
+
+static bool
+arm_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code;
+     int *total;
+{
+  *total = arm_rtx_costs_1 (x, code, outer_code);
+  return true;
 }
 
 static int

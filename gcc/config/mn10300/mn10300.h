@@ -800,37 +800,6 @@ struct cum_arg {int nbytes; };
 #define CC_NO_CARRY CC_NO_OVERFLOW
 #define NOTICE_UPDATE_CC(EXP, INSN) notice_update_cc(EXP, INSN)
 
-/* Compute the cost of computing a constant rtl expression RTX
-   whose rtx-code is CODE.  The body of this macro is a portion
-   of a switch statement.  If the code is computed here,
-   return it with a return statement.  Otherwise, break from the switch.  */
-
-#define CONST_COSTS(RTX,CODE,OUTER_CODE) \
-  case CONST_INT:							\
-    /* Zeros are extremely cheap.  */					\
-    if (INTVAL (RTX) == 0 && OUTER_CODE == SET)				\
-      return 0;								\
-    /* If it fits in 8 bits, then it's still relatively cheap.  */	\
-    if (INT_8_BITS (INTVAL (RTX)))					\
-      return 1;								\
-    /* This is the "base" cost, includes constants where either the	\
-       upper or lower 16bits are all zeros.  */				\
-    if (INT_16_BITS (INTVAL (RTX))					\
-	|| (INTVAL (RTX) & 0xffff) == 0					\
-	|| (INTVAL (RTX) & 0xffff0000) == 0)				\
-      return 2;								\
-    return 4;								\
-  /* These are more costly than a CONST_INT, but we can relax them,	\
-     so they're less costly than a CONST_DOUBLE.  */			\
-  case CONST:								\
-  case LABEL_REF:							\
-  case SYMBOL_REF:							\
-    return 6;								\
-  /* We don't optimize CONST_DOUBLEs well nor do we relax them well,	\
-     so their cost is very high.  */					\
-  case CONST_DOUBLE:							\
-    return 8;
-
 #define REGISTER_MOVE_COST(MODE, CLASS1, CLASS2) \
   ((CLASS1 == CLASS2 && (CLASS1 == ADDRESS_REGS || CLASS1 == DATA_REGS)) ? 2 :\
    ((CLASS1 == ADDRESS_REGS || CLASS1 == DATA_REGS) && \
@@ -844,19 +813,6 @@ struct cum_arg {int nbytes; };
    4)
 
 #define ADDRESS_COST(X) mn10300_address_cost((X), 0)
-
-/* A crude cut at RTX_COSTS for the MN10300.  */
-
-/* Provide the costs of a rtl expression.  This is in the body of a
-   switch on CODE.  */
-#define RTX_COSTS(RTX,CODE,OUTER_CODE) \
-  case UMOD:		\
-  case UDIV:		\
-  case MOD:		\
-  case DIV:		\
-    return 8;		\
-  case MULT:		\
-    return 8;
 
 /* Nonzero if access to memory by bytes or half words is no faster
    than accessing full words.  */

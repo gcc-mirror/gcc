@@ -46,7 +46,6 @@ extern int    v850_output_addr_const_extra  PARAMS ((FILE *, rtx));
 extern rtx    v850_return_addr              PARAMS ((int));
 extern void   print_operand                 PARAMS ((FILE *, rtx, int ));
 extern void   print_operand_address         PARAMS ((FILE *, rtx));
-extern int    const_costs                   PARAMS ((rtx, enum rtx_code));
 extern const char *output_move_double       PARAMS ((rtx *));
 extern const char *output_move_single       PARAMS ((rtx *));
 extern void   v850_reorg                    PARAMS ((rtx));

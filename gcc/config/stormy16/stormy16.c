@@ -57,6 +57,7 @@ static void xstormy16_asm_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 
 static void xstormy16_init_builtins PARAMS ((void));
 static rtx xstormy16_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
+static bool xstormy16_rtx_costs PARAMS ((rtx, int, int, int *));
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  */
@@ -96,6 +97,47 @@ inequality_operator (op, mode)
 {
   return comparison_operator (op, mode) && ! equality_operator (op, mode);
 }
+
+/* Compute a (partial) cost for rtx X.  Return true if the complete
+   cost has been computed, and false if subexpressions should be
+   scanned.  In either case, *TOTAL contains the cost result.  */
+
+static bool
+xstormy16_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code ATTRIBUTE_UNUSED;
+     int *total;
+{
+  switch (code)
+    {
+    case CONST_INT:
+      if (INTVAL (x) < 16 && INTVAL (x) >= 0)
+        *total = COSTS_N_INSNS (1) / 2;
+      else if (INTVAL (x) < 256 && INTVAL (x) >= 0)
+	*total = COSTS_N_INSNS (1);
+      else
+	*total = COSTS_N_INSNS (2);
+      return true;
+
+    case CONST_DOUBLE:
+    case CONST:
+    case SYMBOL_REF:
+    case LABEL_REF:
+      *total = COSTS_N_INSNS(2);
+      return true;
+
+    case MULT:
+      *total = COSTS_N_INSNS (35 + 6);
+      return true;
+    case DIV:
+      *total = COSTS_N_INSNS (51 - 6);
+      return true;
+
+    default:
+      return false;
+    }
+}
+
 
 /* Branches are handled as follows:
 
@@ -2164,5 +2206,8 @@ xstormy16_expand_builtin(exp, target, subtarget, mode, ignore)
 #define TARGET_ASM_OUTPUT_MI_THUNK xstormy16_asm_output_mi_thunk
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS xstormy16_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;

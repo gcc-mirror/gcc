@@ -1504,39 +1504,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    state with CC_STATUS_INIT for now.  */
 #define CC_STATUS_INIT m88k_volatile_code = '\0'
 
-/* Compute the cost of computing a constant rtl expression RTX
-   whose rtx-code is CODE.  The body of this macro is a portion
-   of a switch statement.  If the code is computed here,
-   return it with a return statement.  Otherwise, break from the switch.
-
-   We assume that any 16 bit integer can easily be recreated, so we
-   indicate 0 cost, in an attempt to get GCC not to optimize things
-   like comparison against a constant.
-
-   The cost of CONST_DOUBLE is zero (if it can be placed in an insn, it
-   is as good as a register; since it can't be placed in any insn, it
-   won't do anything in cse, but it will cause expand_binop to pass the
-   constant to the define_expands).  */
-#define CONST_COSTS(RTX,CODE,OUTER_CODE)		\
-  case CONST_INT:					\
-    if (SMALL_INT (RTX))				\
-      return 0;						\
-    else if (SMALL_INTVAL (- INTVAL (RTX)))		\
-      return 2;						\
-    else if (classify_integer (SImode, INTVAL (RTX)) != m88k_oru_or) \
-      return 4;						\
-    return 7;						\
-  case HIGH:						\
-    return 2;						\
-  case CONST:						\
-  case LABEL_REF:					\
-  case SYMBOL_REF:					\
-    if (flag_pic)					\
-      return (flag_pic == 2) ? 11 : 8;			\
-    return 5;						\
-  case CONST_DOUBLE:					\
-    return 0;
-
 /* Provide the costs of an addressing mode that contains ADDR.
    If ADDR is not a valid address, its cost is irrelevant.
    REG+REG is made slightly more expensive because it might keep
@@ -1548,19 +1515,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
    GET_CODE (ADDR) == MULT ? 1 :			\
    GET_CODE (ADDR) != PLUS ? 4 :			\
    (REG_P (XEXP (ADDR, 0)) && REG_P (XEXP (ADDR, 1))) ? 2 : 1)
-
-/* Provide the costs of a rtl expression.  This is in the body of a
-   switch on CODE.  */
-#define RTX_COSTS(X,CODE,OUTER_CODE)				\
-  case MEM:						\
-    return COSTS_N_INSNS (2);				\
-  case MULT:						\
-    return COSTS_N_INSNS (3);				\
-  case DIV:						\
-  case UDIV:						\
-  case MOD:						\
-  case UMOD:						\
-    return COSTS_N_INSNS (38);
 
 /* A C expressions returning the cost of moving data of MODE from a register
    to or from memory.  This is more costly than between registers.  */

@@ -50,6 +50,7 @@ static void i960_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void i960_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void i960_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 					  HOST_WIDE_INT, tree));
+static bool i960_rtx_costs PARAMS ((rtx, int, int, int *));
 
 /* Save the operands last given to a compare for use when we
    generate a scc or bcc insn.  */
@@ -106,6 +107,9 @@ static int ret_label = 0;
 #define TARGET_ASM_OUTPUT_MI_THUNK i960_output_mi_thunk
 #undef TARGET_CAN_ASM_OUTPUT_MI_THUNK
 #define TARGET_CAN_ASM_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
+
+#undef TARGET_RTX_COSTS
+#define TARGET_RTX_COSTS i960_rtx_costs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2855,4 +2859,53 @@ i960_output_mi_thunk (file, thunk, delta, vcall_offset, function)
   fprintf (file, "\tbx ");						
   assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));	
   fprintf (file, "\n");							
+}
+
+static bool
+i960_rtx_costs (x, code, outer_code, total)
+     rtx x;
+     int code, outer_code;
+     int *total;
+{
+  switch (code)
+    {
+      /* Constants that can be (non-ldconst) insn operands are cost 0.
+	 Constants that can be non-ldconst operands in rare cases are cost 1.
+         Other constants have higher costs.
+
+         Must check for OUTER_CODE of SET for power2_operand, because
+         reload_cse_move2add calls us with OUTER_CODE of PLUS to decide
+	 when to replace set with add.  */
+
+    case CONST_INT:
+      if ((INTVAL (x) >= 0 && INTVAL (x) < 32)
+	  || (outer_code == SET && power2_operand (x, VOIDmode)))
+	{
+	  *total = 0;
+	  return true;
+	}
+      else if (INTVAL (x) >= -31 && INTVAL (x) < 0)
+	{
+	  *total = 1;
+	  return true;
+	}
+      /* FALLTHRU */
+
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      *total = (TARGET_C_SERIES ? 6 : 8);
+      return true;
+
+    case CONST_DOUBLE:
+      if (x == CONST0_RTX (DFmode) || x == CONST0_RTX (SFmode)
+	  || x == CONST1_RTX (DFmode) || x == CONST1_RTX (SFmode))
+	*total = 1;
+      else
+	*total = 12;
+      return true;
+
+    default:
+      return false;
+    }
 }

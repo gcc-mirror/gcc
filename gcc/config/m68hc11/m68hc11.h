@@ -1391,60 +1391,8 @@ extern unsigned char m68hc11_reg_valid_for_index[FIRST_PSEUDO_REGISTER];
 #define NOTICE_UPDATE_CC(EXP, INSN) \
 	m68hc11_notice_update_cc ((EXP), (INSN))
 
-/* Compute the cost of computing a constant rtl expression RTX whose rtx-code
-   is CODE.  The body of this macro is a portion of a switch statement.  If
-   the code is computed here, return it with a return statement.  Otherwise,
-   break from the switch.
-
-   Constants are cheap.  Moving them in registers must be avoided
-   because most instructions do not handle two register operands.  */
-#define CONST_COSTS(RTX,CODE,OUTER_CODE)			\
- case CONST_INT:						\
-     /* Logical and arithmetic operations with a constant  */	\
-     /* operand are better because they are not supported  */	\
-     /* with two registers.  */					\
-     /* 'clr' is slow */					\
-   if ((OUTER_CODE) == SET && (RTX) == const0_rtx)		\
-     /* After reload, the reload_cse pass checks the cost */    \
-     /* to change a SET into a PLUS.  Make const0 cheap.  */    \
-     return 1 - reload_completed;				\
-   else								\
-     return 0;							\
- case CONST:							\
- case LABEL_REF:						\
- case SYMBOL_REF:						\
-   if ((OUTER_CODE) == SET)					\
-      return 1 - reload_completed;				\
-   return 0;							\
- case CONST_DOUBLE:						\
-   return 0;
-
-#define RTX_COSTS(X,CODE,OUTER_CODE)				\
- case ROTATE:							\
- case ROTATERT:							\
- case ASHIFT:							\
- case LSHIFTRT:							\
- case ASHIFTRT:							\
- case MINUS:							\
- case PLUS:							\
- case AND:							\
- case XOR:							\
- case IOR:							\
- case UDIV:							\
- case DIV:							\
- case MOD:							\
- case MULT:							\
- case NEG:							\
- case SIGN_EXTEND:						\
- case NOT:							\
- case COMPARE:							\
- case ZERO_EXTEND:						\
- case IF_THEN_ELSE:						\
-   return m68hc11_rtx_costs (X, CODE, OUTER_CODE);
-
 /* An expression giving the cost of an addressing mode that contains
-   ADDRESS.  If not defined, the cost is computed from the ADDRESS
-   expression and the `CONST_COSTS' values.  */
+   ADDRESS.  */
 
 #define ADDRESS_COST(RTX) m68hc11_address_cost (RTX)
 
