@@ -1,3 +1,9 @@
+2001-05-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (STAMP): New macro.
+	Replace all uses of `touch' with $(STAMP).
+	* fixinc/Makefile.in: Likewise.
+
 2001-05-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* i386.c (ix86_save_reg): Change `bool' parameter to `int'.
