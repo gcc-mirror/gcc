@@ -1,6 +1,6 @@
 // 2001-06-05 Benjamin Kosnik  <bkoz@redhat.com>
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,6 +30,7 @@
 // 27.4.2.1.6 class ios_base::init
 
 #include <fstream>
+#include <sstream>
 #include <iostream>
 #include <testsuite_hooks.h>
 
@@ -81,8 +82,58 @@ void test01()
   VERIFY( k1 == initial );
 }
 
+// Non-required instantiations don't have the required facets inbued,
+// by default, into the locale object. As such, basic_ios::init is
+// required to return a bad_cast for the first use of fill() call.
+// See 27.4.4.1
+void test02() 
+{
+  bool test = true;
+
+  // 01: Doesn't call basic_ios::init, which uses ctype<char_type>..
+  try
+    {
+      std::basic_ostringstream<unsigned short> 	oss;
+    }
+  catch(...)
+    { 
+      test = false; 
+    }
+
+  // 02: Calls basic_ios::init, which uses ctype<char_type>..
+  try
+    {
+      std::basic_string<unsigned short>        	str;
+      std::basic_ostringstream<unsigned short> 	oss(str);
+      
+      // Shouldn't get this far.
+      test = false; 
+
+      // Try each member functions for unformatted io.
+      // put
+      oss.put(324);
+
+      // write
+      const unsigned short us[4] = {1246, 433, 520, 0};
+      oss.write(us, 4);
+
+      // flush
+      oss.flush();
+    }
+  catch(const std::bad_cast& obj)
+    {
+      test = true;
+    }
+  catch(...)
+    {
+      test = false;
+    }
+  VERIFY( test );
+}
+
 int main()
 {
   test01();
+  test02();
   return 0;
 }

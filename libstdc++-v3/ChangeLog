@@ -1,3 +1,19 @@
+2002-01-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/27_io/ostream_inserter_char.cc (test07): New. 
+	
+2002-01-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/basic_ios.h (basic_ios::_M_check_facet): Make
+	const, tweak.
+	(basic_ios::fill(char_type)): Use fill().	
+	* include/bits/basic_ios.tcc (basic_ios::widen): Use _M_check_facet.
+	(basic_ios::narrow): Same.
+	(basic_ios::_M_cache_facets): Explicitly set cached facets to zero
+	if they are invalid.
+	(basic_ios::init): Comment.
+	* testsuite/27_io/ios_init.cc (test02): New.
+	
 2002-01-24  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/bits/stl_tempbuf.h (_Temporary_buffer):  Add doxygen hook.

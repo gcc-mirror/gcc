@@ -1,6 +1,6 @@
 // basic_ios locale and locale-related member functions -*- C++ -*-
 
-// Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -91,12 +91,22 @@ namespace std
   template<typename _CharT, typename _Traits>
     char
     basic_ios<_CharT, _Traits>::narrow(char_type __c, char __dfault) const
-    { return _M_ios_fctype->narrow(__c, __dfault); }
+    { 
+      char __ret;
+      if (_M_check_facet(_M_ios_fctype))
+	__ret = _M_ios_fctype->narrow(__c, __dfault); 
+      return __ret;
+    }
 
   template<typename _CharT, typename _Traits>
     _CharT
     basic_ios<_CharT, _Traits>::widen(char __c) const
-    { return _M_ios_fctype->widen(__c); }
+    {
+      char_type __ret;
+      if (_M_check_facet(_M_ios_fctype))
+	__ret = _M_ios_fctype->widen(__c); 
+      return __ret;
+    }
 
   // Locales:
   template<typename _CharT, typename _Traits>
@@ -119,7 +129,19 @@ namespace std
       ios_base::_M_init();
       _M_cache_facets(_M_ios_locale);
       _M_tie = 0;
+
+      // NB: The 27.4.4.1 Postconditions Table only specifies
+      // requirements after basic_ios::init() has been called. As part
+      // of this, fill() must return widen(' '), which needs an imbued
+      // ctype facet of char_type to return without throwing an
+      // exception. This is not a required facet, so streams with
+      // char_type != [char, wchar_t] will not have it by
+      // default. However, because fill()'s signature is const, this
+      // data member cannot be lazily initialized.  Thus, thoughts of
+      // using a non-const helper function in ostream inserters is
+      // really besides the point.
       _M_fill = this->widen(' ');
+
       _M_exception = goodbit;
       _M_streambuf = __sb;
       _M_streambuf_state = __sb ? goodbit : badbit;
@@ -131,15 +153,18 @@ namespace std
     {
       if (has_facet<__ctype_type>(__loc))
 	_M_ios_fctype = &use_facet<__ctype_type>(__loc);
+      else
+	_M_ios_fctype = 0;
       // Should be filled in by ostream and istream, respectively.
       if (has_facet<__numput_type>(__loc))
 	_M_fnumput = &use_facet<__numput_type>(__loc); 
+      else
+	_M_fnumput = 0;
       if (has_facet<__numget_type>(__loc))
 	_M_fnumget = &use_facet<__numget_type>(__loc); 
+      else
+	_M_fnumget = 0;
     }
 } // namespace std
 
-#endif // _CPP_BITS_BASICIOS_TCC
-
-
-
+#endif 
