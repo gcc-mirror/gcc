@@ -1,6 +1,10 @@
+Sun Dec  6 01:14:46 1998  Paul Eggert  <eggert@twinsun.com>
+
+	* collect2.c (mktemp): Remove unused decl.
+
 Sat Dec  5 21:02:13 1998  Paul Eggert  <eggert@twinsun.com>
 
-	Add new option --White-space, implied by -Wall.
+	Add new option -Wwhite-space, implied by -Wall.
 	If DEPENDENCIES_OUTPUT is `FILE TARGET', have TARGET depend on source.
 	Simplify VMS fwrite workaround.
 	Bug fixes (notably with backslash-newlines in strings).
