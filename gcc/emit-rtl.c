@@ -1543,6 +1543,7 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	 && (TYPE_READONLY (type) || (t != type && TREE_READONLY (t))))
 	|| (! TYPE_P (t) && TREE_CONSTANT (t)));
   MEM_POINTER (ref) = POINTER_TYPE_P (type);
+  MEM_NOTRAP_P (ref) = TREE_THIS_NOTRAP (t);
 
   /* If we are making an object of this type, or if this is a DECL, we know
      that it is a scalar if the type is not an aggregate.  */

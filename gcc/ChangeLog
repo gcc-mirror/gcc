@@ -1,3 +1,10 @@
+2004-06-26  Andrew Haley  <aph@redhat.com>
+
+	* emit-rtl.c (set_mem_attributes_minus_bitpos): Check
+	TREE_THIS_NOTRAP when setting MEM_NOTRAP_P.
+	* tree-eh.c (tree_could_trap_p): Check TREE_THIS_NOTRAP.
+	* tree.h (TREE_THIS_NOTRAP): New.
+
 2004-06-26  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* genattrtab.c (write_test_expr): Put a unsigned cast before

@@ -304,6 +304,9 @@ struct tree_common GTY(())
        TYPE_ALIGN_OK in
 	   ..._TYPE
 
+       TREE_THIS_NOTRAP in
+          INDIRECT_REF
+
    deprecated_flag:
 
 	TREE_DEPRECATED in
@@ -759,6 +762,12 @@ extern void tree_operand_check_failed (int, enum tree_code,
 
    If this bit is set in an expression, so is TREE_SIDE_EFFECTS.  */
 #define TREE_THIS_VOLATILE(NODE) ((NODE)->common.volatile_flag)
+
+/* Nonzero means this node will not trap.  In an INDIRECT_REF, means
+   accessing the memory pointed to won't generate a trap.  However,
+   this only applies to an object when used appropriately: it doesn't
+   mean that writing a READONLY mem won't trap.  */
+#define TREE_THIS_NOTRAP(NODE) ((NODE)->common.nothrow_flag)
 
 /* In a VAR_DECL, PARM_DECL or FIELD_DECL, or any kind of ..._REF node,
    nonzero means it may not be the lhs of an assignment.  */
