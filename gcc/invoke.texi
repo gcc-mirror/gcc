@@ -335,7 +335,7 @@ in the following sections.
 -mc300 -mc400
 
 @emph{H8/300 Options}
--mrelax  -mh  -mint32  -malign-300
+-mrelax  -mh -ms -mint32  -malign-300
 
 @emph{SH Options}
 -m1  -m2  -m3  -m3e  -mb  -ml  -mrelax
@@ -4857,6 +4857,9 @@ ld.info, Using ld}, for a fuller description.
 
 @item -mh
 Generate code for the H8/300H.
+
+@item -ms
+Generate code for the H8/S.
 
 @item -mint32
 Make @code{int} data 32 bits by default.
