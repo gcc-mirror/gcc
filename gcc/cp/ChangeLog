@@ -1,3 +1,7 @@
+2004-06-24  Andreas Schwab  <schwab@suse.de>
+
+	* cp-tree.h (enum cp_storage_class): Remove trailing comma.
+
 2004-06-23  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in (cp/lex.o): Do not depend on cp/lex.h.

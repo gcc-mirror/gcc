@@ -3513,7 +3513,7 @@ typedef enum cp_storage_class {
   sc_register,
   sc_static,
   sc_extern,
-  sc_mutable,
+  sc_mutable
 } cp_storage_class;
 
 /* An individual decl-specifier.  */
