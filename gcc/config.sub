@@ -152,9 +152,9 @@ case $basic_machine in
 	tahoe | i860 | m32r | m68k | m68000 | m88k | ns32k | arm \
 		| arme[lb] | pyramid | mn10200 | mn10300 \
 		| tron | a29k | 580 | i960 | h8300 | hppa | hppa1.0 | hppa1.1 \
-		| alpha | we32k | ns16k | clipper | i370 | sh \
-		| powerpc | powerpcle | 1750a | dsp16xx | mips64 | mipsel \
-		| pdp11 | mips64el | mips64orion | mips64orionel \
+		| alpha | alphaev5 | alphaev56 | we32k | ns16k | clipper \
+		| i370 | sh | powerpc | powerpcle | 1750a | dsp16xx | pdp11 \
+		| mips64 | mipsel | mips64el | mips64orion | mips64orionel \
 		| sparc | sparclet | sparclite | sparc64)
 		basic_machine=$basic_machine-unknown
 		;;
@@ -172,11 +172,13 @@ case $basic_machine in
 	# Recognize the basic CPU types with company name.
 	vax-* | tahoe-* | i[3456]86-* | i860-* | m32r-* | m68k-* | m68000-* \
 	      | m88k-* | sparc-* | ns32k-* | fx80-* | arm-* | c[123]* \
-	      | mips-* | pyramid-* | tron-* | a29k-* | romp-* | rs6000-* | power-* \
-	      | none-* | 580-* | cray2-* | h8300-* | i960-* | xmp-* | ymp-* \
-	      | hppa-* | hppa1.0-* | hppa1.1-* | alpha-* | we32k-* | cydra-* | ns16k-* \
-	      | pn-* | np1-* | xps100-* | clipper-* | orion-* | sparclite-* \
-	      | pdp11-* | sh-* | powerpc-* | powerpcle-* | sparc64-* | mips64-* | mipsel-* \
+	      | mips-* | pyramid-* | tron-* | a29k-* | romp-* | rs6000-* \
+	      | power-* | none-* | 580-* | cray2-* | h8300-* | i960-* \
+	      | xmp-* | ymp-* | hppa-* | hppa1.0-* | hppa1.1-* \
+	      | alpha-* | alphaev5-* | alphaev56-* | we32k-* | cydra-* \
+	      | ns16k-* | pn-* | np1-* | xps100-* | clipper-* | orion-* \
+	      | sparclite-* | pdp11-* | sh-* | powerpc-* | powerpcle-* \
+	      | sparc64-* | mips64-* | mipsel-* \
 	      | mips64el-* | mips64orion-* | mips64orionel-* | f301-*)
 		;;
 	# Recognize the various machine names and aliases which stand
