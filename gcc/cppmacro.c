@@ -605,9 +605,7 @@ funlike_invocation_p (pfile, node, list)
 {
   cpp_token maybe_paren;
   macro_arg *args = 0;
-  cpp_lexer_pos macro_pos;
 
-  macro_pos = pfile->lexer_pos;
   pfile->state.parsing_args = 1;
   pfile->state.prevent_expansion++;
 
@@ -629,10 +627,6 @@ funlike_invocation_p (pfile, node, list)
   pfile->state.prevent_expansion--;
   pfile->state.parsing_args = 0;
   pfile->keep_tokens--;
-
-  /* Reset the position in case of failure.  If success, the macro's
-     expansion appears where the name would have.  */
-  pfile->lexer_pos = macro_pos;
 
   if (args)
     {
@@ -1247,7 +1241,7 @@ _cpp_create_definition (pfile, node)
 
   macro = (cpp_macro *) _cpp_pool_alloc (&pfile->macro_pool,
 					 sizeof (cpp_macro));
-  macro->line = pfile->directive_pos.line;
+  macro->line = pfile->directive_line;
   macro->params = 0;
   macro->paramc = 0;
   macro->fun_like = 0;
@@ -1345,8 +1339,7 @@ _cpp_create_definition (pfile, node)
     {
       if (warn_of_redefinition (pfile, node, macro))
 	{
-	  cpp_pedwarn_with_line (pfile, pfile->directive_pos.line,
-				 pfile->directive_pos.col,
+	  cpp_pedwarn_with_line (pfile, pfile->directive_line, 0,
 				 "\"%s\" redefined", NODE_NAME (node));
 
 	  if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))

@@ -40,7 +40,7 @@ struct answer
 struct if_stack
 {
   struct if_stack *next;
-  cpp_lexer_pos pos;		/* line and column where condition started */
+  unsigned int line;		/* Line where condition started.  */
   const cpp_hashnode *mi_cmacro;/* macro name for #ifndef around entire file */
   bool skip_elses;		/* Can future #else / #elif be skipped?  */
   bool was_skipping;		/* If were skipping on entry.  */
@@ -220,8 +220,6 @@ start_directive (pfile)
   pfile->state.save_comments = 0;
 
   /* Some handlers need the position of the # for diagnostics.  */
-  pfile->directive_pos = pfile->lexer_pos;
-  pfile->directive_pos.line = pfile->line;
   pfile->directive_line = pfile->line;
 }
 
@@ -1154,18 +1152,27 @@ _cpp_do__Pragma (pfile)
   cpp_token string;
   unsigned char *buffer;
   unsigned int len;
-  cpp_lexer_pos orig_pos;
 
-  orig_pos = pfile->lexer_pos;
   if (get__Pragma_string (pfile, &string))
     cpp_error (pfile, "_Pragma takes a parenthesized string literal");
   else
     {
+      /* Ideally, we'd like
+			token1 _Pragma ("foo") token2
+	 to be output as
+			token1
+			# 7 "file.c"
+			#pragma foo
+			# 7 "file.c"
+					       token2
+	 Getting these correct line markers is a little tricky.  */
+
+      unsigned int orig_line = pfile->line;
       buffer = destringize (&string.val.str, &len);
       run_directive (pfile, T_PRAGMA, (char *) buffer, len);
       free ((PTR) buffer);
-      pfile->lexer_pos = orig_pos;
-      pfile->line = pfile->lexer_pos.line;
+      pfile->line = orig_line;
+      pfile->buffer->saved_flags = BOL;
     }
 }
 
@@ -1254,7 +1261,7 @@ do_else (pfile)
       if (ifs->type == T_ELSE)
 	{
 	  cpp_error (pfile, "#else after #else");
-	  cpp_error_with_line (pfile, ifs->pos.line, ifs->pos.col,
+	  cpp_error_with_line (pfile, ifs->line, 0,
 			       "the conditional began here");
 	}
       ifs->type = T_ELSE;
@@ -1289,7 +1296,7 @@ do_elif (pfile)
       if (ifs->type == T_ELSE)
 	{
 	  cpp_error (pfile, "#elif after #else");
-	  cpp_error_with_line (pfile, ifs->pos.line, ifs->pos.col,
+	  cpp_error_with_line (pfile, ifs->line, 0,
 			       "the conditional began here");
 	}
       ifs->type = T_ELIF;
@@ -1355,7 +1362,7 @@ push_conditional (pfile, skip, type, cmacro)
   cpp_buffer *buffer = pfile->buffer;
 
   ifs = xobnew (&pfile->buffer_ob, struct if_stack);
-  ifs->pos = pfile->directive_pos;
+  ifs->line = pfile->directive_line;
   ifs->next = buffer->if_stack;
   ifs->skip_elses = pfile->state.skipping || !skip;
   ifs->was_skipping = pfile->state.skipping;
@@ -1778,7 +1785,7 @@ _cpp_pop_buffer (pfile)
   /* Walk back up the conditional stack till we reach its level at
      entry to this file, issuing error messages.  */
   for (ifs = buffer->if_stack; ifs; ifs = ifs->next)
-    cpp_error_with_line (pfile, ifs->pos.line, ifs->pos.col,
+    cpp_error_with_line (pfile, ifs->line, 0,
 			 "unterminated #%s", dtable[ifs->type].name);
 
   /* In case of a missing #endif.  */

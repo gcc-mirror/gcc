@@ -242,9 +242,7 @@ struct cpp_reader
   const struct line_map *map;
   unsigned int line;
 
-  /* The position of the last lexed token and last lexed directive.  */
-  cpp_lexer_pos lexer_pos;
-  cpp_lexer_pos directive_pos;
+  /* The line of the '#' of the current directive.  */
   unsigned int directive_line;
 
   /* Memory pools.  */
@@ -278,7 +276,8 @@ struct cpp_reader
 
   /* Line and column where a newline was first seen in a string
      constant (multi-line strings).  */
-  cpp_lexer_pos mlstring_pos;
+  unsigned int mls_line;
+  unsigned int mls_col;
 
   /* Buffer to hold macro definition string.  */
   unsigned char *macro_buffer;

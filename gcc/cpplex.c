@@ -656,13 +656,11 @@ unterminated (pfile, term)
 {
   cpp_error (pfile, "missing terminating %c character", term);
 
-  if (term == '\"' && pfile->mlstring_pos.line
-      && pfile->mlstring_pos.line != pfile->lexer_pos.line)
+  if (term == '\"' && pfile->mls_line && pfile->mls_line != pfile->line)
     {
-      cpp_error_with_line (pfile, pfile->mlstring_pos.line,
-			   pfile->mlstring_pos.col,
+      cpp_error_with_line (pfile, pfile->mls_line, pfile->mls_col,
 			   "possible start of unterminated string literal");
-      pfile->mlstring_pos.line = 0;
+      pfile->mls_line = 0;
     }
 }
 
@@ -760,8 +758,11 @@ parse_string (pfile, token, terminator)
 	      cpp_pedwarn (pfile, "multi-line string literals are deprecated");
 	    }
 
-	  if (pfile->mlstring_pos.line == 0)
-	    pfile->mlstring_pos = pfile->lexer_pos;
+	  if (pfile->mls_line == 0)
+	    {
+	      pfile->mls_line = token->line;
+	      pfile->mls_col = token->col;
+	    }
 	      
 	  c = handle_newline (pfile, c);
 	  *dest++ = '\n';
@@ -998,7 +999,6 @@ lex_token (pfile, result)
   result->flags = buffer->saved_flags;
   buffer->saved_flags = 0;
  update_tokens_line:
-  pfile->lexer_pos.line = pfile->line;
   result->line = pfile->line;
 
  skipped_white:
@@ -1006,7 +1006,6 @@ lex_token (pfile, result)
   if (c == EOF && buffer->cur < buffer->rlimit)
     c = *buffer->cur++;
   result->col = CPP_BUF_COLUMN (buffer, buffer->cur);
-  pfile->lexer_pos.col = result->col;
   buffer->read_ahead = EOF;
 
  trigraph:
@@ -1171,9 +1170,7 @@ lex_token (pfile, result)
 
 	  /* Skip_line_comment updates buffer->read_ahead.  */
 	  if (skip_line_comment (pfile) && CPP_OPTION (pfile, warn_comments))
-	    cpp_warning_with_line (pfile, pfile->lexer_pos.line,
-				   pfile->lexer_pos.col,
-				   "multi-line comment");
+	    cpp_warning (pfile, "multi-line comment");
 	}
 
       /* Skipping the comment has updated buffer->read_ahead.  */
