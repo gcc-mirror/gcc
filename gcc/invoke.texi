@@ -872,8 +872,8 @@ two definitions were merged.
 
 @item -fdollars-in-identifiers
 Accept @samp{$} in identifiers.  You can also explicitly prohibit use of
-@samp{$} with the option @samp{-fno-dollars-in-identifiers}.  (GNU C++
-allows @samp{$} by default on some target systems but not others.)
+@samp{$} with the option @samp{-fno-dollars-in-identifiers}.  (GNU C allows
+@samp{$} by default on most target systems, but there are a few exceptions.)
 Traditional C allowed the character @samp{$} to form part of
 identifiers.  However, ANSI C and C++ forbid @samp{$} in identifiers.
 
