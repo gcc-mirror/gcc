@@ -1,3 +1,7 @@
+2002-03-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcse.c (insert_insn_end_bb): Fix typo in last change.
+
 Fri Mar  8 21:08:52 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* recog.c (peephole2_optimize): Re-distribute EH edges.
