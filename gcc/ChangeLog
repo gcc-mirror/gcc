@@ -1,3 +1,7 @@
+Fri Jul 30 03:00:41 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.c (compute_zdepwi_operands): Renamed from compute_zdepi_operands.
+
 Thu Jul 29 18:37:13 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.h (FIRST_PARM_CALLER_OFFSET): Delete.
