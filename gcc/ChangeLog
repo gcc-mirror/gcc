@@ -1,3 +1,10 @@
+2001-11-16  Andreas Jaeger  <aj@suse.de>
+
+	* cfglayout.c (fixup_fallthru_exit_predecesor): Make void, rename
+	to ....
+	(fixup_fallthru_exit_predecessor): ... this.
+	Change callers and prototype.
+
 2001-11-16  Bernd Schmidt  <bernds@redhat.com>
 
         * config/i386/i386.c (ix86_expand_sse_comi): Generate setcc by
@@ -83,10 +90,10 @@ Fri Nov 16 06:37:05 2001  Andreas Tobler  <a.tobler@schweiz.ch>
 2001-11-15  Stan Shebs  <shebs@apple.com>
 
 	* expr.c (expand_expr, case COMPONENT_REF): Fix variable ref.
-	
+
 2001-11-16  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
-	* config/s390/s390.md: Remove ALIGN arg from emit_cmp_and_jump_insns 
+	* config/s390/s390.md: Remove ALIGN arg from emit_cmp_and_jump_insns
 	call.
 	* config/i386/i386.md: Likewise.
 
