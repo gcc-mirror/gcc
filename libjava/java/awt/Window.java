@@ -703,7 +703,8 @@ public class Window extends Container implements Accessible
    */
   public void applyResourceBundle(String rbName)
   {
-    ResourceBundle rb = ResourceBundle.getBundle(rbName);
+    ResourceBundle rb = ResourceBundle.getBundle(rbName, Locale.getDefault(),
+      Window.class.getClassLoader());
     if (rb != null)
       applyResourceBundle(rb);    
   }

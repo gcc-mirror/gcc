@@ -325,7 +325,7 @@ public abstract class DateFormat extends Format implements Cloneable
     try
       {
 	res = ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
-				       loc);
+				       loc, DateFormat.class.getClassLoader());
       }
     catch (MissingResourceException x)
       {

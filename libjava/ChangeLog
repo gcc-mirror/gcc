@@ -1,3 +1,17 @@
+2004-06-14  Bryce McKinlay  <mckinlay@redhat.com>
+
+	* java/util/Calendar.java: Change ResourceBundle.getBundle() calls
+	to pass ClassLoader argument.
+	* java/util/GregorianCalendar.java: Likewise.
+	* java/util/Currency.java: Likewise.
+	* java/text/BreakIterator.java: Likewise.
+	* java/text/Collator.java: Likewise.
+	* java/text/DateFormat.java: Likewise.
+	* java/text/DateFormatSymbols.java: Likewise.
+	* java/text/DecimalFormatSymbols.java: Likewise.
+	* java/text/NumberFormat.java: Likewise.
+	* java/awt/Window.java: Likewise.
+
 2004-06-14  Andrew Haley  <aph@redhat.com>
 
 	* java/lang/System.java: (getenv0): New method.

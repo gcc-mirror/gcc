@@ -98,7 +98,8 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
   public DateFormatSymbols (Locale locale) throws MissingResourceException
   {
     ResourceBundle res
-      = ResourceBundle.getBundle("gnu.java.locale.LocaleInformation", locale);
+      = ResourceBundle.getBundle("gnu.java.locale.LocaleInformation", locale,
+      				 getClass().getClassLoader());
 
     ampms = res.getStringArray ("ampms");
     eras = res.getStringArray ("eras");
