@@ -922,38 +922,37 @@ static int
 add_binding (tree id, tree decl)
 {
   cxx_binding *binding = IDENTIFIER_BINDING (id);
+  tree bval = BINDING_VALUE (binding);
   int ok = 1;
 
   timevar_push (TV_NAME_LOOKUP);
   if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
     /* The new name is the type name.  */
     BINDING_TYPE (binding) = decl;
-  else if (!BINDING_VALUE (binding))
+  else if (!bval)
     /* This situation arises when push_class_level_binding moves an
        inherited type-binding out of the way to make room for a new
        value binding.  */
     BINDING_VALUE (binding) = decl;
-  else if (TREE_CODE (BINDING_VALUE (binding)) == TYPE_DECL
-	   && DECL_ARTIFICIAL (BINDING_VALUE (binding)))
+  else if (TREE_CODE (bval) == TYPE_DECL && DECL_ARTIFICIAL (bval))
     {
       /* The old binding was a type name.  It was placed in
 	 BINDING_VALUE because it was thought, at the point it was
 	 declared, to be the only entity with such a name.  Move the
 	 type name into the type slot; it is now hidden by the new
 	 binding.  */
-      BINDING_TYPE (binding) = BINDING_VALUE (binding);
+      BINDING_TYPE (binding) = bval;
       BINDING_VALUE (binding) = decl;
       INHERITED_VALUE_BINDING_P (binding) = 0;
     }
-  else if (TREE_CODE (BINDING_VALUE (binding)) == TYPE_DECL
+  else if (TREE_CODE (bval) == TYPE_DECL
 	   && TREE_CODE (decl) == TYPE_DECL
-	   && DECL_NAME (decl) == DECL_NAME (BINDING_VALUE (binding))
-	   && (same_type_p (TREE_TYPE (decl),
-			    TREE_TYPE (BINDING_VALUE (binding)))
+	   && DECL_NAME (decl) == DECL_NAME (bval)
+	   && (same_type_p (TREE_TYPE (decl), TREE_TYPE (bval))
 	       /* If either type involves template parameters, we must
 		  wait until instantiation.  */
 	       || uses_template_parms (TREE_TYPE (decl))
-	       || uses_template_parms (TREE_TYPE (BINDING_VALUE (binding)))))
+	       || uses_template_parms (TREE_TYPE (bval))))
     /* We have two typedef-names, both naming the same type to have
        the same name.  This is OK because of:
 
@@ -971,10 +970,8 @@ add_binding (tree id, tree decl)
 
        A member shall not be declared twice in the
        member-specification.  */
-  else if (TREE_CODE (decl) == VAR_DECL
-	   && TREE_CODE (BINDING_VALUE (binding)) == VAR_DECL
-	   && DECL_EXTERNAL (decl)
-	   && DECL_EXTERNAL (BINDING_VALUE (binding))
+  else if (TREE_CODE (decl) == VAR_DECL && TREE_CODE (bval) == VAR_DECL
+	   && DECL_EXTERNAL (decl) && DECL_EXTERNAL (bval)
 	   && !DECL_CLASS_SCOPE_P (decl))
     {
       duplicate_decls (decl, BINDING_VALUE (binding));
@@ -4273,47 +4270,54 @@ push_class_level_binding (tree name, tree x)
      class, then we will need to restore IDENTIFIER_CLASS_VALUE when
      we leave this class.  Record the shadowed declaration here.  */
   binding = IDENTIFIER_BINDING (name);
-  if (binding
-      && ((TREE_CODE (x) == OVERLOAD
-	   && BINDING_VALUE (binding)
-	   && is_overloaded_fn (BINDING_VALUE (binding)))
-	  || INHERITED_VALUE_BINDING_P (binding)))
+  if (binding && BINDING_VALUE (binding))
     {
-      tree shadow;
-      tree old_decl;
+      tree bval = BINDING_VALUE (binding);
+      tree old_decl = NULL_TREE;
 
-      /* If the old binding was from a base class, and was for a tag
-	 name, slide it over to make room for the new binding.  The
-	 old binding is still visible if explicitly qualified with a
-	 class-key.  */
-      if (INHERITED_VALUE_BINDING_P (binding)
-	  && BINDING_VALUE (binding)
-	  && TREE_CODE (BINDING_VALUE (binding)) == TYPE_DECL
-	  && DECL_ARTIFICIAL (BINDING_VALUE (binding))
-	  && !(TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x)))
+      if (INHERITED_VALUE_BINDING_P (binding))
 	{
-	  old_decl = BINDING_TYPE (binding);
-	  BINDING_TYPE (binding) = BINDING_VALUE (binding);
-	  BINDING_VALUE (binding) = NULL_TREE;
-	  INHERITED_VALUE_BINDING_P (binding) = 0;
+	  /* If the old binding was from a base class, and was for a
+  	     tag name, slide it over to make room for the new binding.
+  	     The old binding is still visible if explicitly qualified
+  	     with a class-key.  */
+	  if (TREE_CODE (bval) == TYPE_DECL && DECL_ARTIFICIAL (bval)
+	      && !(TREE_CODE (x) == TYPE_DECL && DECL_ARTIFICIAL (x)))
+	    {
+	      BINDING_TYPE (binding) = bval;
+	      BINDING_VALUE (binding) = NULL_TREE;
+	      INHERITED_VALUE_BINDING_P (binding) = 0;
+	    }
+	  old_decl = bval;
 	}
-      else
-	old_decl = BINDING_VALUE (binding);
-
-      /* Find the previous binding of name on the class-shadowed
-         list, and update it.  */
-      for (shadow = class_binding_level->class_shadowed;
-	   shadow;
-	   shadow = TREE_CHAIN (shadow))
-	if (TREE_PURPOSE (shadow) == name
-	    && TREE_TYPE (shadow) == old_decl)
-	  {
-	    BINDING_VALUE (binding) = x;
-	    INHERITED_VALUE_BINDING_P (binding) = 0;
-	    TREE_TYPE (shadow) = x;
-	    IDENTIFIER_CLASS_VALUE (name) = x;
-	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, true);
-	  }
+      else if (TREE_CODE (x) == OVERLOAD && is_overloaded_fn (bval))
+	old_decl = bval;
+      else if (TREE_CODE (x) == USING_DECL && TREE_CODE (bval) == USING_DECL)
+	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, true);
+      else if (TREE_CODE (x) == USING_DECL && is_overloaded_fn (bval))
+	old_decl = bval;
+      else if (TREE_CODE (bval) == USING_DECL && is_overloaded_fn (x))
+	POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, true);
+      
+      if (old_decl)
+	{
+	  tree shadow;
+	  
+	  /* Find the previous binding of name on the class-shadowed
+             list, and update it.  */
+	  for (shadow = class_binding_level->class_shadowed;
+	       shadow;
+	       shadow = TREE_CHAIN (shadow))
+	    if (TREE_PURPOSE (shadow) == name
+		&& TREE_TYPE (shadow) == old_decl)
+	      {
+		BINDING_VALUE (binding) = x;
+		INHERITED_VALUE_BINDING_P (binding) = 0;
+		TREE_TYPE (shadow) = x;
+		IDENTIFIER_CLASS_VALUE (name) = x;
+		POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, true);
+	      }
+	}
     }
 
   /* If we didn't replace an existing binding, put the binding on the

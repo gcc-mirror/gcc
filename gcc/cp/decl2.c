@@ -4126,7 +4126,7 @@ do_class_using_decl (tree decl)
 
   my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 980716);
 
-  value = build_lang_decl (USING_DECL, name, void_type_node);
+  value = build_lang_decl (USING_DECL, name, unknown_type_node);
   DECL_INITIAL (value) = TREE_OPERAND (decl, 0);
   return value;
 }
