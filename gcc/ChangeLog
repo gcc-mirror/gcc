@@ -1,3 +1,7 @@
+2002-06-28  Aaron Lehmann  <aaronl@vitelus.com>
+
+        * fold-cont.c: Remove unused CHARMASK.
+
 2002-06-29  Neil Booth  <neil@daikokuya.co.uk>
 
 	PR preprocessor/7150
