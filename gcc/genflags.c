@@ -34,8 +34,9 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_free free
 
 char *xmalloc PROTO((unsigned));
-static void fatal PVPROTO ((char *, ...)) ATTRIBUTE_PRINTF_1;
-void fancy_abort PROTO((void));
+static void fatal PVPROTO ((char *, ...))
+  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
 
 /* Names for patterns.  Need to allow linking with print-rtl.  */
 char **insn_name_ptr;

@@ -121,6 +121,10 @@ extern int pwait PROTO ((int, int *, int));
 #define PEXECUTE_LAST   2
 #define PEXECUTE_SEARCH 4
 
+static void usage PROTO ((void)) ATTRIBUTE_NORETURN;
+static void aux_info_corrupted PROTO ((void)) ATTRIBUTE_NORETURN;
+static void declare_source_confusing PROTO ((const char *)) ATTRIBUTE_NORETURN;
+
 /* Aliases for pointers to void.
    These were made to facilitate compilation with old brain-dead DEC C
    compilers which didn't properly grok `void*' types.  */

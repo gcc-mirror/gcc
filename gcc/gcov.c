@@ -218,7 +218,7 @@ static void open_files PROTO ((void));
 static void read_files PROTO ((void));
 static void scan_for_source_files PROTO ((void));
 static void output_data PROTO ((void));
-static void print_usage PROTO ((void));
+static void print_usage PROTO ((void)) ATTRIBUTE_NORETURN;
 char * xmalloc ();
 
 int

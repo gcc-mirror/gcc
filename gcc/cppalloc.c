@@ -27,6 +27,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "gansidecl.h"
 #include "cpplib.h"
 
+static void memory_full PROTO ((void)) ATTRIBUTE_NORETURN;
+
 static void
 memory_full ()
 {

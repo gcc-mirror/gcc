@@ -47,8 +47,9 @@ struct link
 };
 
 char *xmalloc PROTO((unsigned));
-static void fatal PVPROTO ((char *, ...)) ATTRIBUTE_PRINTF_1;
-void fancy_abort PROTO((void));
+static void fatal PVPROTO ((char *, ...))
+  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+void fancy_abort PROTO((void)) ATTRIBUTE_NORETURN;
 
 static int max_opno;
 

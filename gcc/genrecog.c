@@ -191,10 +191,11 @@ static void change_state	PROTO((char *, char *, int));
 static char *copystr		PROTO((char *));
 static void mybzero		PROTO((char *, unsigned));
 static void mybcopy		PROTO((char *, char *, unsigned));
-static void fatal		PVPROTO((char *, ...)) ATTRIBUTE_PRINTF_1;
+static void fatal		PVPROTO((char *, ...))
+  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 char *xrealloc			PROTO((char *, unsigned));
 char *xmalloc			PROTO((unsigned));
-void fancy_abort		PROTO((void));
+void fancy_abort		PROTO((void)) ATTRIBUTE_NORETURN;
 
 /* Construct and return a sequence of decisions
    that will recognize INSN.
