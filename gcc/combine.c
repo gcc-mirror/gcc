@@ -6415,20 +6415,21 @@ force_to_mode (x, mode, mask, reg, just_select)
                 unsigned HOST_WIDE_INT sp_mask = GET_MODE_MASK (mode);
           
 		sp_mask &= ~ (sp_alignment - 1);
-		if ((sp_mask & ~ mask) == 0
-		    && ((INTVAL (XEXP (x, 1)) - STACK_BIAS) & ~ mask) != 0)
+		if ((sp_mask & ~ smask) == 0
+		    && ((INTVAL (XEXP (x, 1)) - STACK_BIAS) & ~ smask) != 0)
 		  return force_to_mode (plus_constant (XEXP (x, 0),
 		  				       ((INTVAL (XEXP (x, 1)) -
-							 STACK_BIAS) & mask)
+							 STACK_BIAS) & smask)
 						       + STACK_BIAS),
-		 			mode, mask, reg, next_select);
+		 			mode, smask, reg, next_select);
               }
 #endif
-	    if ((nonzero_bits (XEXP (x, 0), mode) & ~ mask) == 0
-	        && (INTVAL (XEXP (x, 1)) & ~ mask) != 0)
+	    if ((nonzero_bits (XEXP (x, 0), mode) & ~ smask) == 0
+	        && (INTVAL (XEXP (x, 1)) & ~ smask) != 0)
 	      return force_to_mode (plus_constant (XEXP (x, 0),
-					           INTVAL (XEXP (x, 1)) & mask),
-				    mode, mask, reg, next_select);
+					           (INTVAL (XEXP (x, 1))
+						    & smask)),
+				    mode, smask, reg, next_select);
 	  }
       }
 

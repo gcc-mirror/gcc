@@ -1,3 +1,8 @@
+Thu Mar 25 01:15:33 1999  Donn Terry  <donn@interix.com>
+
+	* combine.c (force_to_mode, case PLUS): Use sign extended mask
+	when masking the low bits out of a constant.
+
 Tue Mar 23 15:45:25 1999  Richard Earnshaw (rearnsha@arm.com)
 			  Jeff Law <law@cygnus.com>
 
