@@ -4757,7 +4757,7 @@ instantiate_class_template (type)
       CLASSTYPE_TAGS (type) = CLASSTYPE_TAGS (pattern);
       /* Pretend that the type is complete, so that we will look
 	 inside it during name lookup and such.  */
-      TYPE_SIZE (type) = integer_zero_node;
+      TYPE_SIZE (type) = bitsize_zero_node;
       return type;
     }
 

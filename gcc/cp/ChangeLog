@@ -1,3 +1,8 @@
+2000-03-28  Jason Merrill  <jason@casey.cygnus.com>
+
+	* class.c (finish_struct): Use bitsize_zero_node.
+	* pt.c (instantiate_class_template): Likewise.
+
 2000-03-28  Mark Mitchell  <mark@codesourcery.com>
 
 	Put RTTI entries at negative offsets in new ABI.
@@ -121,30 +126,32 @@ Sat Mar 25 09:12:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2000-03-20 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
-	* call.c (check_dtor_name,build_new_method_call): Use DECL_P and
-	TYPE_P macros.
-	* decl.c (push_class_binding,poplevel,pushtag,lookup_namespace_name,
-	make_typename_type,check_initializer,cp_finish_decl,xref_tag): Likewise.
-	* decl2.c (grokfield,build_expr_from_tree,build_expr_from_tree,
-	decl_namespace,arg_assoc_template_arg,arg_assoc,
-	validate_nonmember_using_decl,do_class_using_decl): Likewise.
-	* error.c (dump_template_argument,dump_expr,cp_file_of,cp_line_of,
+	* call.c (check_dtor_name, build_new_method_call): Use TYPE_P and
+	DECL_P macros.
+	* decl.c (push_class_binding, poplevel, pushtag, lookup_namespace_name,
+	make_typename_type, check_initializer, cp_finish_decl,
+	xref_tag): Likewise.
+	* decl2.c (grokfield, build_expr_from_tree, build_expr_from_tree,
+	decl_namespace, arg_assoc_template_arg, arg_assoc,
+	validate_nonmember_using_decl, do_class_using_decl): Likewise.
+	* error.c (dump_template_argument, dump_expr, cp_file_of, cp_line_of,
 	args_to_string): Likewise.
 	* friend.c (is_friend): Likewise.
-	* lex.c (note_got_semicolon,note_list_got_semicolon,is_global): Likewise.
-	* method.c (build_overload_nested_name,build_overload_value,
-	build_qualified_name,build_qualified_name,hack_identifier): Likewise.
-	* parse.y (typename_sub,typename_sub1): Likewise.
-	* pt.c (push_inline_template_parms_recursive,check_template_shadow,
-	process_partial_specialization,convert_template_argument,
-	template_args_equal,add_pending_template,lookup_template_class,
-	for_each_template_parm_r,maybe_fold_nontype_arg,
-	tsubst,instantiate_template,type_unification_real,unify,
-	instantiate_pending_templates,set_mangled_name_for_template_decl):
+	* lex.c (note_got_semicolon, note_list_got_semicolon,
+	is_global): Likewise.
+	* method.c (build_overload_nested_name, build_overload_value,
+	build_qualified_name, build_qualified_name, hack_identifier): Likewise.
+	* parse.y (typename_sub, typename_sub1): Likewise.
+	* pt.c (push_inline_template_parms_recursive, check_template_shadow,
+	process_partial_specialization, convert_template_argument,
+	template_args_equal, add_pending_template, lookup_template_class,
+	for_each_template_parm_r, maybe_fold_nontype_arg,
+	tsubst, instantiate_template, type_unification_real, unify,
+	instantiate_pending_templates, set_mangled_name_for_template_decl):
 	Likewise.
-	* repo.c (repo_get_id,repo_template_used): Likewise.
+	* repo.c (repo_get_id, repo_template_used): Likewise.
 	* search.c (lookup_field_1): Likewise.
-	* tree.c (walk_tree,get_type_decl,cp_tree_equal,member_p): Likewise.
+	* tree.c (walk_tree, get_type_decl, cp_tree_equal, member_p): Likewise.
 	* xref.c (classname): Likewise.
 	
 2000-03-22  Mark Mitchell  <mark@codesourcery.com>
