@@ -1,3 +1,7 @@
+2002-02-21  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/extend.texi: Fix some more overfull hboxes.
+
 2002-02-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR optimization/4994
