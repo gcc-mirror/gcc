@@ -1,5 +1,5 @@
 /* IntViewBufferImpl.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,54 +40,47 @@ package java.nio;
 
 class IntViewBufferImpl extends IntBuffer
 {
-  private boolean readOnly;
+  /** Position in bb (i.e. a byte offset) where this buffer starts. */
   private int offset;
   private ByteBuffer bb;
+  private boolean readOnly;
   private ByteOrder endian;
   
-  public IntViewBufferImpl (ByteBuffer bb, boolean readOnly)
-  {
-    super (bb.remaining () >> 2, bb.remaining () >> 2, bb.position (), 0);
-    this.bb = bb;
-    this.readOnly = readOnly;
-    // FIXME: What if this is called from IntByteBufferImpl and ByteBuffer has changed its endianess ?
-    this.endian = bb.order ();
-  }
-
   public IntViewBufferImpl (ByteBuffer bb, int offset, int capacity,
-                               int limit, int position, int mark,
-                               boolean readOnly)
+			    int limit, int position, int mark,
+			    boolean readOnly, ByteOrder endian)
   {
     super (limit >> 2, limit >> 2, position >> 2, mark >> 2);
     this.bb = bb;
     this.offset = offset;
     this.readOnly = readOnly;
-    // FIXME: What if this is called from IntViewBufferImpl and ByteBuffer has changed its endianess ?
-    this.endian = bb.order ();
+    this.endian = endian;
   }
 
   public int get ()
   {
-    int result = bb.getInt ((position () << 2) + offset);
-    position (position () + 1);
+    int p = position();
+    int result = ByteBufferHelper.getInt(bb, (p << 2) + offset, endian);
+    position(p + 1);
     return result;
   }
 
   public int get (int index)
   {
-    return bb.getInt ((index << 2) + offset);
+    return ByteBufferHelper.getInt(bb, (index << 2) + offset, endian);
   }
 
   public IntBuffer put (int value)
   {
-    bb.putInt ((position () << 2) + offset, value);
-    position (position () + 1);
+    int p = position();
+    ByteBufferHelper.putInt(bb, (p << 2) + offset, value, endian);
+    position(p + 1);
     return this;
   }
   
   public IntBuffer put (int index, int value)
   {
-    bb.putInt ((index << 2) + offset, value);
+    ByteBufferHelper.putInt(bb, (index << 2) + offset, value, endian);
     return this;
   }
 
@@ -95,48 +88,42 @@ class IntViewBufferImpl extends IntBuffer
   {
     if (position () > 0)
       {
-        // Copy all data from position() to limit() to the beginning of the
-        // buffer, set position to end of data and limit to capacity
-        // XXX: This can surely be optimized, for direct and non-direct buffers
-        
         int count = limit () - position ();
-              
-        for (int i = 0; i < count; i++)
-          {
-            bb.putInt ((i >> 2) + offset,
-                          bb.getInt (((i + position ()) >> 2) + offset));
-          }
-
+	bb.shiftDown(offset, offset + 4 * position(), 4 * count);
         position (count);
         limit (capacity ());
       }
-
     return this;
-  }
-  
-  public IntBuffer duplicate ()
-  {
-    // Create a copy of this object that shares its content
-    // FIXME: mark is not correct
-    return new IntViewBufferImpl (bb, offset, capacity (), limit (),
-                                     position (), -1, isReadOnly ());
   }
   
   public IntBuffer slice ()
   {
     // Create a sliced copy of this object that shares its content.
     return new IntViewBufferImpl (bb, (position () >> 2) + offset,
-                                      remaining (), remaining (), 0, -1,
-                                     isReadOnly ());
+				  remaining(), remaining(), 0, -1,
+				  readOnly, endian);
   }
   
+  IntBuffer duplicate (boolean readOnly)
+  {
+    int pos = position();
+    reset();
+    int mark = position();
+    position(pos);
+    return new IntViewBufferImpl (bb, offset, capacity(), limit(),
+				  pos, mark, readOnly, endian);
+  }
+  
+  public IntBuffer duplicate ()
+  {
+    return duplicate(readOnly);
+  }
+
   public IntBuffer asReadOnlyBuffer ()
   {
-    // Create a copy of this object that shares its content and is read-only
-    return new IntViewBufferImpl (bb, (position () >> 2) + offset,
-                                     remaining (), remaining (), 0, -1, true);
+    return duplicate(true);
   }
-  
+
   public boolean isReadOnly ()
   {
     return readOnly;
@@ -149,6 +136,6 @@ class IntViewBufferImpl extends IntBuffer
   
   public ByteOrder order ()
   {
-    return ByteOrder.LITTLE_ENDIAN;
+    return endian;
   }
 }

@@ -1,5 +1,5 @@
 /* LongViewBufferImpl.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,54 +40,47 @@ package java.nio;
 
 class LongViewBufferImpl extends LongBuffer
 {
-  private boolean readOnly;
+  /** Position in bb (i.e. a byte offset) where this buffer starts. */
   private int offset;
   private ByteBuffer bb;
+  private boolean readOnly;
   private ByteOrder endian;
   
-  public LongViewBufferImpl (ByteBuffer bb, boolean readOnly)
-  {
-    super (bb.remaining () >> 3, bb.remaining () >> 3, bb.position (), 0);
-    this.bb = bb;
-    this.readOnly = readOnly;
-    // FIXME: What if this is called from LongByteBufferImpl and ByteBuffer has changed its endianess ?
-    this.endian = bb.order ();
-  }
-
   public LongViewBufferImpl (ByteBuffer bb, int offset, int capacity,
-                               int limit, int position, int mark,
-                               boolean readOnly)
+			     int limit, int position, int mark,
+			     boolean readOnly, ByteOrder endian)
   {
     super (limit >> 3, limit >> 3, position >> 3, mark >> 3);
     this.bb = bb;
     this.offset = offset;
     this.readOnly = readOnly;
-    // FIXME: What if this is called from LongViewBufferImpl and ByteBuffer has changed its endianess ?
-    this.endian = bb.order ();
+    this.endian = endian;
   }
 
   public long get ()
   {
-    long result = bb.getLong ((position () << 3) + offset);
-    position (position () + 1);
+    int p = position();
+    long result = ByteBufferHelper.getLong(bb, (p << 3) + offset, endian);
+    position(p + 1);
     return result;
   }
 
   public long get (int index)
   {
-    return bb.getLong ((index << 3) + offset);
+    return ByteBufferHelper.getLong(bb, (index << 3) + offset, endian);
   }
 
   public LongBuffer put (long value)
   {
-    bb.putLong ((position () << 3) + offset, value);
-    position (position () + 1);
+    int p = position();
+    ByteBufferHelper.putLong(bb, (p << 3) + offset, value, endian);
+    position(p + 1);
     return this;
   }
   
   public LongBuffer put (int index, long value)
   {
-    bb.putLong ((index << 3) + offset, value);
+    ByteBufferHelper.putLong(bb, (index << 3) + offset, value, endian);
     return this;
   }
 
@@ -95,48 +88,42 @@ class LongViewBufferImpl extends LongBuffer
   {
     if (position () > 0)
       {
-        // Copy all data from position() to limit() to the beginning of the
-        // buffer, set position to end of data and limit to capacity
-        // XXX: This can surely be optimized, for direct and non-direct buffers
-        
         int count = limit () - position ();
-              
-        for (int i = 0; i < count; i++)
-          {
-            bb.putLong ((i >> 3) + offset,
-                          bb.getLong (((i + position ()) >> 3) + offset));
-          }
-
+	bb.shiftDown(offset, offset + 8 * position(), 8 * count);
         position (count);
         limit (capacity ());
       }
-
     return this;
-  }
-  
-  public LongBuffer duplicate ()
-  {
-    // Create a copy of this object that shares its content
-    // FIXME: mark is not correct
-    return new LongViewBufferImpl (bb, offset, capacity (), limit (),
-                                     position (), -1, isReadOnly ());
   }
   
   public LongBuffer slice ()
   {
     // Create a sliced copy of this object that shares its content.
     return new LongViewBufferImpl (bb, (position () >> 3) + offset,
-                                      remaining (), remaining (), 0, -1,
-                                     isReadOnly ());
+				   remaining(), remaining(), 0, -1,
+				   readOnly, endian);
   }
   
+  LongBuffer duplicate (boolean readOnly)
+  {
+    int pos = position();
+    reset();
+    int mark = position();
+    position(pos);
+    return new LongViewBufferImpl (bb, offset, capacity(), limit(),
+				   pos, mark, readOnly, endian);
+  }
+  
+  public LongBuffer duplicate ()
+  {
+    return duplicate(readOnly);
+  }
+
   public LongBuffer asReadOnlyBuffer ()
   {
-    // Create a copy of this object that shares its content and is read-only
-    return new LongViewBufferImpl (bb, (position () >> 3) + offset,
-                                     remaining (), remaining (), 0, -1, true);
+    return duplicate(true);
   }
-  
+
   public boolean isReadOnly ()
   {
     return readOnly;
@@ -149,6 +136,6 @@ class LongViewBufferImpl extends LongBuffer
   
   public ByteOrder order ()
   {
-    return ByteOrder.LITTLE_ENDIAN;
+    return endian;
   }
 }

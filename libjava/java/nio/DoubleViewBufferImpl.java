@@ -1,5 +1,5 @@
 /* DoubleViewBufferImpl.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,54 +40,47 @@ package java.nio;
 
 class DoubleViewBufferImpl extends DoubleBuffer
 {
-  private boolean readOnly;
+  /** Position in bb (i.e. a byte offset) where this buffer starts. */
   private int offset;
   private ByteBuffer bb;
+  private boolean readOnly;
   private ByteOrder endian;
   
-  public DoubleViewBufferImpl (ByteBuffer bb, boolean readOnly)
-  {
-    super (bb.remaining () >> 3, bb.remaining () >> 3, bb.position (), 0);
-    this.bb = bb;
-    this.readOnly = readOnly;
-    // FIXME: What if this is called from DoubleByteBufferImpl and ByteBuffer has changed its endianess ?
-    this.endian = bb.order ();
-  }
-
   public DoubleViewBufferImpl (ByteBuffer bb, int offset, int capacity,
                                int limit, int position, int mark,
-                               boolean readOnly)
+                               boolean readOnly, ByteOrder endian)
   {
     super (limit >> 3, limit >> 3, position >> 3, mark >> 3);
     this.bb = bb;
     this.offset = offset;
     this.readOnly = readOnly;
-    // FIXME: What if this is called from DoubleViewBufferImpl and ByteBuffer has changed its endianess ?
-    this.endian = bb.order ();
+    this.endian = endian;
   }
 
   public double get ()
   {
-    double result = bb.getDouble ((position () << 3) + offset);
-    position (position () + 1);
+    int p = position();
+    double result = ByteBufferHelper.getDouble(bb, (p << 3) + offset, endian);
+    position(p + 1);
     return result;
   }
 
   public double get (int index)
   {
-    return bb.getDouble ((index << 3) + offset);
+    return ByteBufferHelper.getDouble(bb, (index << 3) + offset, endian);
   }
 
   public DoubleBuffer put (double value)
   {
-    bb.putDouble ((position () << 3) + offset, value);
-    position (position () + 1);
+    int p = position();
+    ByteBufferHelper.putDouble(bb, (p << 3) + offset, value, endian);
+    position(p + 1);
     return this;
   }
   
   public DoubleBuffer put (int index, double value)
   {
-    bb.putDouble ((index << 3) + offset, value);
+    ByteBufferHelper.putDouble(bb, (index << 3) + offset, value, endian);
     return this;
   }
 
@@ -95,48 +88,41 @@ class DoubleViewBufferImpl extends DoubleBuffer
   {
     if (position () > 0)
       {
-        // Copy all data from position() to limit() to the beginning of the
-        // buffer, set position to end of data and limit to capacity
-        // XXX: This can surely be optimized, for direct and non-direct buffers
-        
         int count = limit () - position ();
-              
-        for (int i = 0; i < count; i++)
-          {
-            bb.putDouble ((i >> 3) + offset,
-                          bb.getDouble (((i + position ()) >> 3) + offset));
-          }
-
+	bb.shiftDown(offset, offset + 8 * position(), 8 * count);
         position (count);
         limit (capacity ());
       }
-
     return this;
-  }
-  
-  public DoubleBuffer duplicate ()
-  {
-    // Create a copy of this object that shares its content
-    // FIXME: mark is not correct
-    return new DoubleViewBufferImpl (bb, offset, capacity (), limit (),
-                                     position (), -1, isReadOnly ());
   }
   
   public DoubleBuffer slice ()
   {
-    // Create a sliced copy of this object that shares its content.
     return new DoubleViewBufferImpl (bb, (position () >> 3) + offset,
-                                      remaining (), remaining (), 0, -1,
-                                     isReadOnly ());
+				     remaining(), remaining(), 0, -1,
+                                     readOnly, endian);
   }
   
+  DoubleBuffer duplicate (boolean readOnly)
+  {
+    int pos = position();
+    reset();
+    int mark = position();
+    position(pos);
+    return new DoubleViewBufferImpl (bb, offset, capacity(), limit(),
+                                     pos, mark, readOnly, endian);
+  }
+  
+  public DoubleBuffer duplicate ()
+  {
+    return duplicate(readOnly);
+  }
+
   public DoubleBuffer asReadOnlyBuffer ()
   {
-    // Create a copy of this object that shares its content and is read-only
-    return new DoubleViewBufferImpl (bb, (position () >> 3) + offset,
-                                     remaining (), remaining (), 0, -1, true);
+    return duplicate(true);
   }
-  
+
   public boolean isReadOnly ()
   {
     return readOnly;
@@ -149,6 +135,6 @@ class DoubleViewBufferImpl extends DoubleBuffer
   
   public ByteOrder order ()
   {
-    return ByteOrder.LITTLE_ENDIAN;
+    return endian;
   }
 }
