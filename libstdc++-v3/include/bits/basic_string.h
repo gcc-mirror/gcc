@@ -196,22 +196,6 @@ namespace std
 
 	_CharT* 
 	_M_clone(const _Alloc&, size_type __res = 0);
-
-#if _GLIBCPP_ALLOC_CONTROL
-	// These function pointers allow you to modify the allocation
-	// policy used by the string classes.  By default they expand by
-	// powers of two, but this may be excessive for space-critical
-	// applications.
-	
-	// Returns true if ALLOCATED is too much larger than LENGTH
-	static bool (*_S_excess_slop) (size_t __length, size_t __allocated);
-
-	inline static bool 
-	__default_excess(size_t, size_t);
-#else
-	inline static bool 
-	_S_excess_slop(size_t, size_t);
-#endif
       };
 
       // Use empty-base optimization: http://www.cantrip.org/emptyopt.html

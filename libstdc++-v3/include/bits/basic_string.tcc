@@ -349,13 +349,6 @@ namespace std
 	}
     }
 
-#ifdef _GLIBCPP_ALLOC_CONTROL
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    bool (*basic_string<_CharT, _Traits, _Alloc>::_Rep::_S_excess_slop) 
-    (size_t, size_t) = 
-    basic_string<_CharT, _Traits, _Alloc>::_Rep::_S_default_excess;
-#endif
-
   template<typename _CharT, typename _Traits, typename _Alloc>
     typename basic_string<_CharT, _Traits, _Alloc>::_Rep*
     basic_string<_CharT, _Traits, _Alloc>::_Rep::
@@ -450,19 +443,6 @@ namespace std
 	}
       __r->_M_length = _M_length;
       return __r->_M_refdata();
-    }
-  
-  template<typename _CharT, typename _Traits, typename _Alloc>
-  inline bool
-#ifdef _GLIBCPP_ALLOC_CONTROL
-    basic_string<_CharT, _Traits, _Alloc>::_Rep::
-    _S_default_excess(size_t __s, size_t __r)
-#else
-    basic_string<_CharT, _Traits, _Alloc>::_Rep::
-    _S_excess_slop(size_t __s, size_t __r)
-#endif
-    {
-      return 2 * (__s <= 16 ? 16 : __s) < __r;
     }
   
   template<typename _CharT, typename _Traits, typename _Alloc>
