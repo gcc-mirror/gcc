@@ -1,9 +1,9 @@
 /* Getopt for GNU.
    NOTE: getopt is now part of the C library, so if you don't know what
-   "Keep this file name-space clean" means, talk to roland@gnu.ai.mit.edu
+   "Keep this file name-space clean" means, talk to drepper@gnu.org
    before changing it!
 
-   Copyright (C) 1987, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97
+   Copyright (C) 1987, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98
    	Free Software Foundation, Inc.
 
    NOTE: The canonical source of this file is maintained with the GNU C Library.
@@ -34,7 +34,7 @@
 #include <config.h>
 #endif
 
-#if !defined (__STDC__) || !__STDC__
+#if !defined __STDC__ || !__STDC__
 /* This is a separate conditional since some stdc systems
    reject `defined (const)'.  */
 #ifndef const
@@ -53,7 +53,7 @@
    it is simpler to just do this in the source for each such file.  */
 
 #define GETOPT_INTERFACE_VERSION 2
-#if !defined (_LIBC) && defined (__GLIBC__) && __GLIBC__ >= 2
+#if !defined _LIBC && defined __GLIBC__ && __GLIBC__ >= 2
 #include <gnu-versions.h>
 #if _GNU_GETOPT_INTERFACE_VERSION == GETOPT_INTERFACE_VERSION
 #define ELIDE_CODE
@@ -225,7 +225,7 @@ my_index (str, chr)
 #ifdef __GNUC__
 /* Note that Motorola Delta 68k R3V7 comes with GCC but not stddef.h.
    That was relevant to code that was here before.  */
-#if !defined (__STDC__) || !__STDC__
+#if !defined __STDC__ || !__STDC__
 /* gcc with -traditional declares the built-in strlen to return int,
    and has done so at least since version 2.4.5. -- rms.  */
 extern int strlen (const char *);
@@ -292,7 +292,7 @@ text_set_element (__libc_subinit, store_args_and_env);
    `first_nonopt' and `last_nonopt' are relocated so that they describe
    the new indices of the non-options in ARGV after they are moved.  */
 
-#if defined (__STDC__) && __STDC__
+#if defined __STDC__ && __STDC__
 static void exchange (char **);
 #endif
 
@@ -378,7 +378,7 @@ exchange (argv)
 
 /* Initialize the internal data when the first call is made.  */
 
-#if defined (__STDC__) && __STDC__
+#if defined __STDC__ && __STDC__
 static const char *_getopt_initialize (int, char *const *, const char *);
 #endif
 static const char *
