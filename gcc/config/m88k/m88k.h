@@ -204,9 +204,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"21 Apr 1992"
+#define VERSION_INFO2	"27 Apr 1992"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.1.4.5 21 Apr 1992 08:02:51"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.1.4.6 27 Apr 1992 16:30:45"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -1563,6 +1563,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #undef	FINI_SECTION_ASM_OP
 #undef	TYPE_ASM_OP
 #undef	SIZE_ASM_OP
+#undef	WEAK_ASM_OP
 #undef	SKIP_ASM_OP
 #undef	COMMON_ASM_OP
 
