@@ -1,3 +1,10 @@
+2001-04-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* output.h (dump_flow_info, free_basic_block_vars,
+	which_alternative): Delete redundant prototypes.
+
+	* rtl.h (bss_section): Likewise.
+
 2001-04-17  Loren J. Rittle  <ljrittle@acm.org>
 
 	* dbxout.c (N_OPT): Define if not available from <stab.h>
