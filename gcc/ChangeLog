@@ -1,3 +1,9 @@
+Sun Aug 30 22:15:41 1998  H.J. Lu  (hjl@gnu.org)
+
+	* configure.in (gxx_include_dir): Changed to
+	'${prefix}/include/g++'-${libstdcxx_interface}.
+	* configure: Rebuilt.
+
 Sun Aug 30 20:19:43 1998  Hans-Peter Nilsson  <hp@axis.se>
 
 	* expr.c (expand_expr): Change ">" to ">=" making MOVE_RATIO use
