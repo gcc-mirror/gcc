@@ -4488,7 +4488,8 @@ write_test_expr (exp, in_comparison)
 
     /* The address of the branch target.  */
     case MATCH_DUP:
-      printf ("insn_addresses[INSN_UID (operands[%d])]", XINT (exp, 0));
+      printf ("insn_addresses[INSN_UID (GET_CODE (operands[%d]) == LABEL_REF ? XEXP (operands[%d], 0) : operands[%d])]",
+	      XINT (exp, 0), XINT (exp, 0), XINT (exp, 0));
       break;
 
     /* The address of the current insn.  It would be more consistent with

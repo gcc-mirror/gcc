@@ -1573,7 +1573,9 @@
 
 (define_insn "move_label_di"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(label_ref:DI (match_operand 1 "" "")))
+	; This was previously (label_ref:DI (match_operand 1 "" "")) but that
+	; loses the volatil and other flags of the original label_ref.
+	(match_operand:DI 1 "label_ref_operand" ""))
    (set (reg:DI 15) (pc))]
   "TARGET_ARCH64"
   "*
