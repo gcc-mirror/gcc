@@ -1,3 +1,11 @@
+2003-02-10  Josef Zlomek  <zlomekj@suse.cz>
+
+	* Makefile.in (sreal.o): Added.
+	(predict.o): Depends on sreal.h instead of real.h.
+	* sreal.c: New file.
+	* sreal.h: New file.
+	* predict.c: Use sreal.c instead of real.c.
+
 2003-02-10  Nick Clifton  <nickc@redhat.com>
 
 	* Contributed support for the Cirrus EP9312 "Maverick"
