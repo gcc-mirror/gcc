@@ -1,3 +1,9 @@
+2002-02-10  Tom Tromey  <tromey@redhat.com>
+
+	For PR java/5641:
+	* libjava.compile/PR5641.xfail: New file.
+	* libjava.compile/PR5641.java: New file.
+
 2002-02-10  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* lib/libjava.exp (libjava_find_lib): Remove duplicate .la files.
