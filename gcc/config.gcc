@@ -479,7 +479,6 @@ case ${target} in
 	tm_file="${tm_file} elfos.h svr4.h vxworks.h"
 	thread_file='vxworks'
 	use_collect2=yes
-	use_fixproto=no
 	;;
 esac
 
@@ -1708,6 +1707,7 @@ powerpc-wrs-vxworks*)
 	tm_file="${tm_file} vxworks.h rs6000/vxworks.h"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-ppccomm rs6000/t-vxworks"
 	extra_headers=ppc-asm.h
+	use_fixproto=no
 	;;
 powerpc-wrs-windiss*)
 	tm_file="${tm_file} elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h rs6000/windiss.h"
