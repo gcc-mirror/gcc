@@ -2087,7 +2087,7 @@ void
 exit (status)
      int status;
 {
-+ #if !defined (INIT_SECTION_ASM_OP) || !defined (OBJECT_FORMAT_ELF)
+#if !defined (INIT_SECTION_ASM_OP) || !defined (OBJECT_FORMAT_ELF)
   __do_global_dtors ();
 #endif
 #ifdef EXIT_BODY
