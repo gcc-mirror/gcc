@@ -1,3 +1,24 @@
+2003-01-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/fp-bit.h: Define macros for TFmode floating-point
+	constants in IEEE quad TFmode type.  Declare functions according
+	to L_ macros.
+	(TMODES): Define if __LDBL_MANT_DIG__ is 113.
+	(TFtype, TItype, UTItype): Define if TMODES is defined.
+	(MAX_UDI_INT, MAX_DI_INT, BITS_PER_DI): Likewise.
+	(F_T_BITOFF, D_T_BITOFF): Define.
+	(IMPLICIT_1, IMPLICIT_2): Cast constants to types that are
+	guaranteed to be wide enough.
+	* config/fp-bit.c: Check for L_ macros for tf functions.
+	(__thenan_tf): New.
+	(nan): Adjust.
+	(pack_d, unpack_d): Support IEEE 854 quad type.
+	(_fpmul_parts): Support TFmode.  Compute exponent adjustment
+	from FRAC_NBITS, FRAC_BITS and NGARDS.
+	(usi_to_float): Cast constants to be shifted to fractype
+	instead of assuming long long is wide enough.
+	(sf_to_tf, df_to_tf, __make_tp, tf_to_df, tf_to_sf): New.
+
 2003-01-26  Andreas Jaeger  <aj@suse.de>
 
 	* df.c: Remove prototype of unused function df_regno_rtl_debug.
