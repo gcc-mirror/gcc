@@ -320,7 +320,7 @@ static void init_gcc_specs              PARAMS ((struct obstack *,
 						 const char *));
 #endif
 #if defined(HAVE_TARGET_OBJECT_SUFFIX) || defined(HAVE_TARGET_EXECUTABLE_SUFFIX)
-static const char *convert_filename	PARAMS ((const char *, int));
+static const char *convert_filename	PARAMS ((const char *, int, int));
 #endif
 
 /* The Specs Language
@@ -2927,12 +2927,14 @@ static int *warn_std_ptr = 0;
 #if defined(HAVE_TARGET_OBJECT_SUFFIX) || defined(HAVE_TARGET_EXECUTABLE_SUFFIX)
 
 /* Convert NAME to a new name if it is the standard suffix.  DO_EXE
-   is true if we should look for an executable suffix as well.  */
+   is true if we should look for an executable suffix.  DO_OBJ
+   is true if we should look for an object suffix.  */
 
 static const char *
-convert_filename (name, do_exe)
+convert_filename (name, do_exe, do_obj)
      const char *name;
      int do_exe ATTRIBUTE_UNUSED;
+     int do_obj ATTRIBUTE_UNUSED;
 {
 #if defined(HAVE_TARGET_EXECUTABLE_SUFFIX)
   int i;
@@ -2946,7 +2948,7 @@ convert_filename (name, do_exe)
 
 #ifdef HAVE_TARGET_OBJECT_SUFFIX
   /* Convert x.o to x.obj if TARGET_OBJECT_SUFFIX is ".obj".  */
-  if (len > 2
+  if (do_obj && len > 2
       && name[len - 2] == '.'
       && name[len - 1] == 'o')
     {
@@ -3627,9 +3629,9 @@ process_command (argc, argv)
 #endif
 #if defined(HAVE_TARGET_EXECUTABLE_SUFFIX) || defined(HAVE_TARGET_OBJECT_SUFFIX)
 	      if (p[1] == 0)
-		argv[i + 1] = convert_filename (argv[i + 1], ! have_c);
+		argv[i + 1] = convert_filename (argv[i + 1], ! have_c, 0);
 	      else
-		argv[i] = convert_filename (argv[i], ! have_c);
+		argv[i] = convert_filename (argv[i], ! have_c, 0);
 #endif
 	      goto normal_switch;
 
@@ -3948,7 +3950,7 @@ process_command (argc, argv)
       else
 	{
 #ifdef HAVE_TARGET_OBJECT_SUFFIX
-	  argv[i] = convert_filename (argv[i], 0);
+	  argv[i] = convert_filename (argv[i], 0, access (argv[i], F_OK));
 #endif
 
 	  if (strcmp (argv[i], "-") != 0 && access (argv[i], F_OK) < 0)

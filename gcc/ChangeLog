@@ -1,3 +1,9 @@
+Mon Dec 10 18:37:31 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* gcc.c (convert_filename): Add do_obj parameter. Don't convert
+	unless do_obj true.
+	(process_command): Modify calls to convert_filename.
+
 2001-12-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/sparc/sol2-sld-64.h: Include dbxelf.h again.
