@@ -223,7 +223,7 @@ collect_iterators (exp, list)
 	case 'e':
 	case 'r':
 	  {
-	    int num_args = tree_code_length[TREE_CODE (exp)];
+	    int num_args = tree_code_length[(int) TREE_CODE (exp)];
 	    int i;
 
 	    /* Some tree codes have RTL, not trees, as operands.  */
