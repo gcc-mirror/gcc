@@ -1,5 +1,8 @@
 2000-08-07  Kazu Hirata  <kazu@hxi.com>
 
+	* invoke.texi (Options for Debugging Your Program or GCC): Remove
+	duplicate entries for 'w' and 'z'.
+
 	* flow.c: Fix a comment typo.
 
 Sun Aug  6 23:47:35 2000  Ovidiu Predescu  <ovidiu@cup.hp.com>
