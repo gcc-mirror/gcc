@@ -2972,7 +2972,14 @@ simplify_unary_operation (code, mode, op, op_mode)
       else
 	lv = CONST_DOUBLE_LOW (op),  hv = CONST_DOUBLE_HIGH (op);
 
-      if (GET_MODE_BITSIZE (op_mode) >= HOST_BITS_PER_WIDE_INT * 2)
+      if (op_mode == VOIDmode)
+	{
+	  /* We don't know how to interpret negative-looking numbers in
+	     this case, so don't try to fold those.  */
+	  if (hv < 0)
+	    return 0;
+	}
+      else if (GET_MODE_BITSIZE (op_mode) >= HOST_BITS_PER_WIDE_INT * 2)
 	;
       else
 	hv = 0, lv &= GET_MODE_MASK (op_mode);
