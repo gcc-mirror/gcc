@@ -3466,7 +3466,6 @@ extern bool commutative_tree_code (enum tree_code);
 extern void expand_expr_stmt (tree);
 extern void expand_expr_stmt_value (tree, int, int);
 extern int warn_if_unused_value (tree, location_t);
-extern void expand_decl_init (tree);
 extern void expand_label (tree);
 extern void expand_goto (tree);
 extern void expand_asm (tree, int);
