@@ -789,6 +789,24 @@ AC_CHECK_FUNCS(times clock dup2 kill getrlimit setrlimit atoll atoq \
 	fwrite_unlocked fprintf_unlocked getrusage nl_langinfo lstat \
         scandir alphasort gettimeofday mbstowcs wcswidth)
 
+if test x$ac_cv_func_mbstowcs = xyes; then
+  AC_CACHE_CHECK(whether mbstowcs works, gcc_cv_func_mbstowcs_works,
+[    AC_TRY_RUN([#include <stdlib.h>
+int main()
+{
+  mbstowcs(0, "", 0);
+  return 0;
+}],
+    gcc_cv_func_mbstowcs_works=yes,
+    gcc_cv_func_mbstowcs_works=no,
+    gcc_cv_func_mbstowcs_works=yes)])
+  if test x$gcc_cv_func_mbstowcs_works = xyes; then
+    AC_DEFINE(HAVE_WORKING_MBSTOWCS, 1,
+  [Define this macro if mbstowcs does not crash when its
+   first argument is NULL.])
+  fi
+fi
+
 AC_CHECK_TYPE(ssize_t, int)
 
 # Try to determine the array type of the second argument of getgroups

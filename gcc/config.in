@@ -397,6 +397,10 @@
 /* Define if you have a working <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define this macro if mbstowcs does not crash when its
+   first argument is NULL. */
+#undef HAVE_WORKING_MBSTOWCS
+
 /* Define if printf supports %p. */
 #undef HAVE_PRINTF_PTR
 

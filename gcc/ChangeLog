@@ -1,3 +1,9 @@
+2003-04-24  Krister Walfridsson  <cato@df.lth.se>
+
+	* configure.in: Check whether mbstowcs works.
+	* configure, config.in: Regenerate.
+	* intl.c: Use HAVE_WORKING_MBSTOWCS.
+
 2003-04-24  H.J. Lu <hjl@gnu.org>
 
 	* config/ia64/ia64.c (ia64_init_builtins): Add si_ftype_pdi_di_di
