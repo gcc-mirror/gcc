@@ -232,7 +232,7 @@ static int check_live_switch	PROTO((int, int));
 static char *handle_braces	PROTO((char *));
 static char *save_string	PROTO((char *, int));
 static char *concat		PVPROTO((char *, ...));
-static int do_spec		PROTO((char *));
+extern int do_spec		PROTO((char *));
 static int do_spec_1		PROTO((char *, int, char *));
 static char *find_file		PROTO((char *));
 static int is_directory		PROTO((char *, char *, int));
@@ -254,7 +254,14 @@ char *xmalloc ();
 char *xrealloc ();
 
 #ifdef LANG_SPECIFIC_DRIVER
+/* Called before processing to change/add/remove arguments. */
 extern void lang_specific_driver PROTO ((void (*) PVPROTO((char *, ...)), int *, char ***, int *));
+
+/* Called before linking.  Returns 0 on success and -1 on failure. */
+extern int lang_specific_pre_link ();
+
+/* Number of extra output files that lang_specific_pre_link may generate. */
+extern int lang_specific_extra_ofiles;
 #endif
 
 /* Specs are strings containing lines, each of which (if not blank)
@@ -3111,9 +3118,9 @@ process_command (argc, argv)
    sans all directory names, and basename_length is the number
    of characters starting there excluding the suffix .c or whatever.  */
 
-static char *input_filename;
+char *input_filename;
 static int input_file_number;
-static size_t input_filename_length;
+size_t input_filename_length;
 static int basename_length;
 static char *input_basename;
 static char *input_suffix;
@@ -3143,7 +3150,7 @@ static int input_from_pipe;
 /* Process the spec SPEC and run the commands specified therein.
    Returns 0 if the spec is successfully processed; -1 if failed.  */
 
-static int
+int
 do_spec (spec)
      char *spec;
 {
@@ -4739,7 +4746,11 @@ main (argc, argv)
   /* Make a place to record the compiler output file names
      that correspond to the input files.  */
 
-  outfiles = (char **) xmalloc (n_infiles * sizeof (char *));
+  i = n_infiles;
+#ifdef LANG_SPECIFIC_DRIVER
+  i += lang_specific_extra_ofiles;
+#endif
+  outfiles = (char **) xmalloc (i * sizeof (char *));
   bzero ((char *) outfiles, n_infiles * sizeof (char *));
 
   /* Record which files were specified explicitly as link input.  */
@@ -4834,6 +4845,12 @@ main (argc, argv)
       /* If this compilation succeeded, don't delete those files later.  */
       clear_failure_queue ();
     }
+
+#ifdef LANG_SPECIFIC_DRIVER
+  if (error_count == 0
+      && lang_specific_pre_link ())
+    error_count++;
+#endif
 
   /* Run ld to link all the compiler output files.  */
 
