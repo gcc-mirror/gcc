@@ -1,5 +1,11 @@
 2003-02-01  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.md (addsi_1_zext splitter): Add TARGET_64BIT
+	to the conditional.
+	(ashlsi3_1_zext splitter): Likewise.
+
+2003-02-01  Richard Henderson  <rth@redhat.com>
+
 	* optabs.c (expand_unop): Use word_mode for outmode of bit scaners.
 	* libgcc2.c (__ffsdi2, __clzsi2, __clzdi2, __ctzsi2, __ctzdi2,
 	__popcountsi2, __popcountdi2, __paritysi2 __paritydi2): Change
