@@ -42,15 +42,20 @@ public class XEventLoop
     anyEvent.interrupt();
   }
 
-  void postNextEvent(boolean block)
+  /** If there's an event available, post it.
+   * @return true if an event was posted
+   */
+  boolean postNextEvent(boolean block)
   {
     AWTEvent evt = getNextEvent(block);
     if (evt != null)
       queue.postEvent(evt);
+    return evt != null;
   }
     
-  /** get next event. Will block until events become available. */
- 
+  /** Get the next event.
+   * @param block If true, block until an event becomes available
+   */
   public AWTEvent getNextEvent(boolean block)
   {
     // ASSERT:
@@ -62,7 +67,7 @@ public class XEventLoop
       {
         event = createEvent();        
         event = lightweightRedirector.redirect(event);
-      }    
+      }
     return event;
   }
 
@@ -169,7 +174,7 @@ public class XEventLoop
         return null;
         
       default:
-        String msg = "Do no know how to handle event (" + anyEvent + ")";
+        String msg = "Do not know how to handle event (" + anyEvent + ")";
         throw new RuntimeException (msg);
     }
   }

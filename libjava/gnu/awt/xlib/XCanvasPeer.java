@@ -349,7 +349,8 @@ public class XCanvasPeer implements CanvasPeer
 
   public void setBackground(Color color)
   {
-    throw new UnsupportedOperationException("not implemented");
+    /* default canvas peer does not keep track of background, since it won't
+     * paint anything. */
   }
 
   public void setBounds(int x, int y, int width, int height)
@@ -405,13 +406,13 @@ public class XCanvasPeer implements CanvasPeer
 
   public void setFont(Font font)
   {
-    /* default canvas peer does keep track of font, since it won't
-       write anything. */
+    /* default canvas peer does not keep track of font, since it won't
+       paint anything. */
   }
 
   public void setForeground(Color color)
   {
-    /* default canvas peer does keep track of foreground, since it won't
+    /* default canvas peer does not keep track of foreground, since it won't
        paint anything. */
   }
 	
