@@ -2066,6 +2066,13 @@ eligible_for_epilogue_delay (trial, slot)
     return 0;
   if (get_attr_length (trial) != 1)
     return 0;
+
+  /* The epilogue clobbers whatever value is in %r2 before the 
+     delay slot executes, so insns which use %r2 can not be
+     used to fill the epilogue's delay slot.  */
+  if (refers_to_regno_p (2, 3, PATTERN (trial), NULL_PTR))
+    return 0;
+
   return (get_attr_in_branch_delay (trial) == IN_BRANCH_DELAY_TRUE);
 }
 
