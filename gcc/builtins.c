@@ -1128,8 +1128,11 @@ expand_builtin_apply_args_1 (void)
   tem = copy_to_reg (virtual_incoming_args_rtx);
 #ifdef STACK_GROWS_DOWNWARD
   /* We need the pointer as the caller actually passed them to us, not
-     as we might have pretended they were passed.  */
-  tem = plus_constant (tem, current_function_pretend_args_size);
+     as we might have pretended they were passed.  Make sure it's a valid
+     operand, as emit_move_insn isn't expected to handle a PLUS.  */
+  tem
+    = force_operand (plus_constant (tem, current_function_pretend_args_size),
+		     NULL_RTX);
 #endif
   emit_move_insn (adjust_address (registers, Pmode, 0), tem);
   
