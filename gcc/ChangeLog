@@ -1,3 +1,10 @@
+2001-01-08  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.c (arm_mark_machine_status): Check to see if
+	the machine structure has been allocated.
+	(arm_free_machine_status): New function: Free the machine
+	specific function structure.
+
 2001-01-08  Richard Henderson  <rth@redhat.com>
 
 	* jump.c (simplejump_p): Revert last change.
