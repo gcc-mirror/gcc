@@ -1,3 +1,10 @@
+2003-06-08  Anthony Green  <green@redhat.com>
+
+	* java/net/URLStreamHandler.java (sameFile): Fix port value
+	comparison.
+	* java/net/URL.java (handler): Make package private.
+	* gnu/gcj/protocol/http/Handler.java (getDefaultPort): New method.
+
 2003-06-07  Tom Tromey  <tromey@redhat.com>
 
 	For PR libgcj/11085:

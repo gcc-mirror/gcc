@@ -1,5 +1,5 @@
 /* URL.java -- Uniform Resource Locator Class
-   Copyright (C) 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2002, 2003  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -147,7 +147,7 @@ public final class URL implements Serializable
   /**
    * The protocol handler in use for this URL
    */
-  transient private URLStreamHandler handler;
+  transient URLStreamHandler handler;
 
   /**
    * This a table where we cache protocol handlers to avoid the overhead

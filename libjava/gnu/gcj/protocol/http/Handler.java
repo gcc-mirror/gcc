@@ -1,6 +1,6 @@
 // Handler.java - URLStreamHandler for http protocol.
 
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -16,7 +16,8 @@ import java.net.URLStreamHandler;
 import java.io.IOException;
 
 /**
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy
+ * @author Anthony Green <green@redhat.com>
  * @date March 26, 1999.
  */
 
@@ -31,5 +32,10 @@ public class Handler extends URLStreamHandler
   protected URLConnection openConnection(URL url) throws IOException
   {
     return new Connection(url);
+  }
+
+  protected int getDefaultPort ()
+  {
+    return 80;
   }
 }
