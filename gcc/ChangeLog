@@ -1,5 +1,18 @@
 2001-07-18  Andrew Haley  <aph@cambridge.redhat.com>
 
+        * config/sh/sh.md (ashlsi3_std splitter): Split only after reload.
+        (ashlsi3_n splitter): Likewise.
+        (lshrsi3_n splitter): Likewise.
+
+        (GOTaddr2picreg): Make const SImode.
+        (sym_label2reg): Likewise.
+        (symGOT2reg): Likewise.
+        (symGOTOFF2reg) Likewise.
+
+        (casesi_worker_0): Make unspec SImode.
+
+2001-07-18  Andrew Haley  <aph@cambridge.redhat.com>
+
         * config/sh/sh.c (barrier_align): Check that an operand really is
         an insn before extracting its INSN_CODE.
 
