@@ -1439,6 +1439,10 @@ extern struct rtx_def *legitimize_pic_address ();
 
 #define ASM_APP_OFF ""
 
+#define ASM_LONG	".word"
+#define ASM_SHORT	".half"
+#define ASM_BYTE_OP	".byte"
+
 /* Output before read-only data.  */
 
 #define TEXT_SECTION_ASM_OP ".text"
@@ -1536,14 +1540,14 @@ extern struct rtx_def *legitimize_pic_address ();
    They reject 99e9999, but accept inf.  */
 #define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
   {									\
-    if (REAL_VALUE_ISINF (VALUE))					\
-      fprintf (FILE, "\t.double 0r%sinf\n", (VALUE) > 0 ? "" : "-");	\
-    else if (REAL_VALUE_ISNAN (VALUE)					\
-	     || REAL_VALUE_MINUS_ZERO (VALUE))				\
+    if (REAL_VALUE_ISINF (VALUE)					\
+        || REAL_VALUE_ISNAN (VALUE)					\
+	|| REAL_VALUE_MINUS_ZERO (VALUE))				\
       {									\
-	union { double d; long l[2];} t;				\
-	t.d = (VALUE);							\
-	fprintf (FILE, "\t.word 0x%lx\n\t.word 0x%lx\n", t.l[0], t.l[1]); \
+	long t[2];							\
+	REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);			\
+	fprintf (FILE, "\t%s\t0x%lx\n\t%s\t0x%lx\n",			\
+		 ASM_LONG, t[0], ASM_LONG, t[1]);			\
       }									\
     else								\
       fprintf (FILE, "\t.double 0r%.17g\n", VALUE);			\
@@ -1553,14 +1557,13 @@ extern struct rtx_def *legitimize_pic_address ();
 
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
   {									\
-    if (REAL_VALUE_ISINF (VALUE))					\
-      fprintf (FILE, "\t.single 0r%sinf\n", (VALUE) > 0 ? "" : "-");	\
-    else if (REAL_VALUE_ISNAN (VALUE)					\
-	     || REAL_VALUE_MINUS_ZERO (VALUE))				\
+    if (REAL_VALUE_ISINF (VALUE)					\
+        || REAL_VALUE_ISNAN (VALUE)					\
+	|| REAL_VALUE_MINUS_ZERO (VALUE))				\
       {									\
-	union { float f; long l;} t;					\
-	t.f = (VALUE);							\
-	fprintf (FILE, "\t.word 0x%lx\n", t.l);				\
+	long t;								\
+	REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);			\
+	fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t);			\
       }									\
     else								\
       fprintf (FILE, "\t.single 0r%.9g\n", VALUE);			\
@@ -1569,7 +1572,7 @@ extern struct rtx_def *legitimize_pic_address ();
 /* This is how to output an assembler line defining an `int' constant.  */
 
 #define ASM_OUTPUT_INT(FILE,VALUE)  \
-( fprintf (FILE, "\t.word "),			\
+( fprintf (FILE, "\t%s\t", ASM_LONG),		\
   output_addr_const (FILE, (VALUE)),		\
   fprintf (FILE, "\n"))
 
@@ -1580,19 +1583,19 @@ extern struct rtx_def *legitimize_pic_address ();
 /* Likewise for `char' and `short' constants.  */
 
 #define ASM_OUTPUT_SHORT(FILE,VALUE)  \
-( fprintf (FILE, "\t.half "),			\
+( fprintf (FILE, "\t%s\t", ASM_SHORT),		\
   output_addr_const (FILE, (VALUE)),		\
   fprintf (FILE, "\n"))
 
 #define ASM_OUTPUT_CHAR(FILE,VALUE)  \
-( fprintf (FILE, "\t.byte "),			\
+( fprintf (FILE, "\t%s\t", ASM_BYTE_OP),	\
   output_addr_const (FILE, (VALUE)),		\
   fprintf (FILE, "\n"))
 
 /* This is how to output an assembler line for a numeric constant byte.  */
 
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
-  fprintf (FILE, "\t.byte 0x%x\n", (VALUE))
+  fprintf (FILE, "\t%s\t0x%x\n", ASM_BYTE_OP, (VALUE))
 
 /* This is how to output an element of a case-vector that is absolute.  */
 
