@@ -51,7 +51,7 @@ public class XGraphicsConfiguration extends GraphicsConfiguration
    * XXX: lruOrder rolls over after a few billion operations, so it might
    * on very rare occasions misinterpret which is the oldest entry
    */
-  class FontMetricsCache
+  static class FontMetricsCache
   {
     private java.util.Hashtable displays = new java.util.Hashtable ();
     
