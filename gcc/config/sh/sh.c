@@ -87,8 +87,6 @@ rtx sh_compare_op0;
 rtx sh_compare_op1;
 
 enum machine_mode sh_addr_diff_vec_mode;
-rtx *uid_align;
-int uid_align_max;
 
 /* Provides the class number of the smallest class containing
    reg number.  */
@@ -550,10 +548,11 @@ output_far_jump (insn, op)
   struct { rtx lab, reg, op; } this;
   char *jump;
   int far;
+  int offset = branch_dest (insn) - insn_addresses[INSN_UID (insn)];
 
   this.lab = gen_label_rtx ();
 
-  if (braf_branch_p (insn, 0))
+  if (offset >= -32764 && offset - get_attr_length (insn) <= 32766)
     {
       far = 0;
       jump = "mov.w	%O0,%1;braf	%1";
@@ -606,56 +605,51 @@ output_branch (logic, insn, operands)
      rtx insn;
      rtx *operands;
 {
-  int offset
-    = (insn_addresses[INSN_UID (XEXP (XEXP (SET_SRC (PATTERN (insn)), 1), 0))]
-       - insn_addresses[INSN_UID (insn)]);
-
-  if (offset == 260
-      && final_sequence
-      && ! INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0)))
+  switch (get_attr_length (insn))
     {
-      /* The filling of the delay slot has caused a forward branch to exceed
-	 its range.
-         Just emit the insn from the delay slot in front of the branch.  */
-      /* The call to print_slot will clobber the operands.  */
-      rtx op0 = operands[0];
-      print_slot (final_sequence);
-      operands[0] = op0;
-    }
-  else if (offset < -252 || offset > 258)
-    {
-      /* This can happen when other condbranches hoist delay slot insn
+    case 6:
+      /* This can happen if filling the delay slot has caused a forward
+	 branch to exceed its range (we could reverse it, but only
+	 when we know we won't overextend other branches; this should
+	 best be handled by relaxation).
+	 It can also happen when other condbranches hoist delay slot insn
 	 from their destination, thus leading to code size increase.
 	 But the branch will still be in the range -4092..+4098 bytes.  */
 
-      int label = lf++;
-      /* The call to print_slot will clobber the operands.  */
-      rtx op0 = operands[0];
-
-      /* If the instruction in the delay slot is annulled (true), then
-	 there is no delay slot where we can put it now.  The only safe
-	 place for it is after the label.  final will do that by default.  */
-
-      if (final_sequence
-	  && ! INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0)))
+      if (! TARGET_RELAX)
 	{
-	  asm_fprintf (asm_out_file, "\tb%s%ss\t%LLF%d\n", logic ? "f" : "t",
-		       ASSEMBLER_DIALECT ? "/" : ".", label);
-	  print_slot (final_sequence);
+	  int label = lf++;
+	  /* The call to print_slot will clobber the operands.  */
+	  rtx op0 = operands[0];
+    
+	  /* If the instruction in the delay slot is annulled (true), then
+	     there is no delay slot where we can put it now.  The only safe
+	     place for it is after the label.  final will do that by default.  */
+    
+	  if (final_sequence
+	      && ! INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0)))
+	    {
+	      asm_fprintf (asm_out_file, "\tb%s%ss\t%LLF%d\n", logic ? "f" : "t",
+	                   ASSEMBLER_DIALECT ? "/" : ".", label);
+	      print_slot (final_sequence);
+	    }
+	  else
+	    asm_fprintf (asm_out_file, "\tb%s\t%LLF%d\n", logic ? "f" : "t", label);
+    
+	  output_asm_insn ("bra\t%l0", &op0);
+	  fprintf (asm_out_file, "\tnop\n");
+	  ASM_OUTPUT_INTERNAL_LABEL(asm_out_file, "LF", label);
+    
+	  return "";
 	}
-      else
-	asm_fprintf (asm_out_file, "\tb%s\t%LLF%d\n", logic ? "f" : "t", label);
-
-      output_asm_insn ("bra\t%l0", &op0);
-      fprintf (asm_out_file, "\tnop\n");
-      ASM_OUTPUT_INTERNAL_LABEL(asm_out_file, "LF", label);
-
-      return "";
+      /* When relaxing, handle this like a short branch.  The linker
+	 will fix it up if it still doesn't fit after relaxation.  */
+    case 2:
+      return logic ? "bt%.\t%l0" : "bf%.\t%l0";
+    default:
+      abort ();
     }
-  return logic ? "bt%.\t%l0" : "bf%.\t%l0";
 }
-
-int branch_offset ();
 
 char *
 output_branchy_insn (code, template, insn, operands)
@@ -679,8 +673,9 @@ output_branchy_insn (code, template, insn, operands)
 	}
       else
 	{
-	  int offset = branch_offset (next_insn) + 4;
-	  if (offset >= -252 && offset <= 256)
+	  int offset = (branch_dest (next_insn)
+			- insn_addresses[INSN_UID (next_insn)] + 4);
+	  if (offset >= -252 && offset <= 258)
 	    {
 	      if (GET_CODE (src) == IF_THEN_ELSE)
 		/* branch_true */
@@ -1694,8 +1689,6 @@ typedef struct
 static pool_node pool_vector[MAX_POOL_SIZE];
 static int pool_size;
 
-static int max_uid_before_fixup_addr_diff_vecs;
-
 /* ??? If we need a constant in HImode which is the truncated value of a
    constant we need in SImode, we could combine the two entries thus saving
    two bytes.  Is this common enough to be worth the effort of implementing
@@ -1860,24 +1853,6 @@ broken_move (insn)
   return 0;
 }
 
-int
-cache_align_p (insn)
-     rtx insn;
-{
-  rtx pat;
-
-  if (! insn)
-    return 1;
-
-  if (GET_CODE (insn) != INSN)
-    return 0;
-
-  pat = PATTERN (insn);
-  return (GET_CODE (pat) == UNSPEC_VOLATILE
-	  && XINT (pat, 1) == 1
-	  && INTVAL (XVECEXP (pat, 0, 0)) == CACHE_LOG);
-}
-
 static int
 mova_p (insn)
      rtx insn;
@@ -1901,6 +1876,8 @@ find_barrier (num_mova, mova, from)
   int count_hi = 0;
   int found_hi = 0;
   int found_si = 0;
+  int hi_align = 2;
+  int si_align = 2;
   int leading_mova = num_mova;
   rtx barrier_before_mova, found_barrier = 0, good_barrier = 0;
   int si_limit;
@@ -1927,21 +1904,21 @@ find_barrier (num_mova, mova, from)
 
   while (from && count_si < si_limit && count_hi < hi_limit)
     {
-      int inc = 0;
+      int inc = get_attr_length (from);
+      int new_align = 1;
 
-      /* The instructions created by fixup_addr_diff_vecs have no valid length
-       info yet.  They should be considered to have zero at this point.  */
-      if (INSN_UID (from) < max_uid_before_fixup_addr_diff_vecs)
-	inc = get_attr_length (from);
+      if (GET_CODE (from) == CODE_LABEL)
+	new_align = optimize ? 1 << label_to_alignment (from) : 1;
 
       if (GET_CODE (from) == BARRIER)
 	{
+
 	  found_barrier = from;
+
 	  /* If we are at the end of the function, or in front of an alignment
 	     instruction, we need not insert an extra alignment.  We prefer
 	     this kind of barrier.  */
-	
-	  if (cache_align_p (next_real_insn (found_barrier)))
+	  if (barrier_align (from) > 2)
 	    good_barrier = from;
 	}
 
@@ -1971,6 +1948,8 @@ find_barrier (num_mova, mova, from)
 	    }
 	  else
 	    {
+	      while (si_align > 2 && found_si + si_align - 2 > count_si)
+		si_align >>= 1;
 	      if (found_si > count_si)
 		count_si = found_si;
 	      found_si += GET_MODE_SIZE (mode);
@@ -1979,10 +1958,7 @@ find_barrier (num_mova, mova, from)
 	    }
 	}
 
-      if (GET_CODE (from) == INSN
-	  && GET_CODE (PATTERN (from)) == SET
-	  && GET_CODE (SET_SRC (PATTERN (from))) == UNSPEC
-	  && XINT (SET_SRC (PATTERN (from)), 1) == 1)
+      if (mova_p (from))
 	{
 	  if (! num_mova++)
 	    {
@@ -1999,7 +1975,7 @@ find_barrier (num_mova, mova, from)
 	{
 	  if (num_mova)
 	    num_mova--;
-	  if (cache_align_p (NEXT_INSN (next_nonnote_insn (from))))
+	  if (found_barrier == good_barrier)
 	    {
 	      /* We have just passed the barrier in front front of the
 		 ADDR_DIFF_VEC.  Since the ADDR_DIFF_VEC is accessed
@@ -2008,15 +1984,32 @@ find_barrier (num_mova, mova, from)
 		 If we waited any longer, we could end up at a barrier in
 		 front of code, which gives worse cache usage for separated
 		 instruction / data caches.  */
-	      good_barrier = found_barrier;
 	      break;
 	    }
 	}
 
       if (found_si)
-	count_si += inc;
+	{
+	  if (new_align > si_align)
+	    {
+	      count_si = count_si + new_align - 1 & -si_align;
+	      si_align = new_align;
+	    }
+	  else
+	    count_si = count_si + new_align - 1 & -new_align;
+	  count_si += inc;
+	}
       if (found_hi)
-	count_hi += inc;
+	{
+	  if (new_align > hi_align)
+	    {
+	      count_hi = count_hi + new_align - 1 & -hi_align;
+	      hi_align = new_align;
+	    }
+	  else
+	    count_hi = count_hi + new_align - 1 & -new_align;
+	  count_hi += inc;
+	}
       from = NEXT_INSN (from);
     }
 
@@ -2039,21 +2032,8 @@ find_barrier (num_mova, mova, from)
 
   if (found_barrier)
     {
-      /* We have before prepared barriers to come in pairs, with an
-	 alignment instruction in-between.  We want to use the first
-	 barrier, so that the alignment applies to the code.
-	 If we are compiling for SH3 or newer, there are some exceptions
-	 when the second barrier and the alignment doesn't exist yet, so
-	 we have to add it.  */
-      if (good_barrier)
+      if (good_barrier && next_real_insn (found_barrier))
 	found_barrier = good_barrier;
-      else if (! TARGET_SMALLCODE)
-	{
-	  found_barrier
-	    = emit_insn_before (gen_align_log (GEN_INT (CACHE_LOG)),
-				found_barrier);
-	  found_barrier = emit_barrier_before (found_barrier);
-	}
     }
   else
     {
@@ -2083,11 +2063,6 @@ find_barrier (num_mova, mova, from)
       LABEL_NUSES (label) = 1;
       found_barrier = emit_barrier_after (from);
       emit_label_after (label, found_barrier);
-      if (! TARGET_SMALLCODE)
-	{
-	  emit_barrier_after (found_barrier);
-	  emit_insn_after (gen_align_log (GEN_INT (CACHE_LOG)), found_barrier);
-	}
     }
 
   return found_barrier;
@@ -2470,227 +2445,116 @@ gen_far_branch (bp)
   gen_block_redirect (jump, bp->address += 2, 2);
 }
 
-static void
-fixup_aligns ()
-{
-  rtx insn = get_last_insn ();
-  rtx align_tab[MAX_BITS_PER_WORD];
-  int i;
-
-  for (i = CACHE_LOG; i >= 0; i--)
-    align_tab[i] = insn;
-  bzero ((char *) uid_align, uid_align_max * sizeof *uid_align);
-  for (; insn; insn = PREV_INSN (insn))
-    {
-      int uid = INSN_UID (insn);
-      if (uid < uid_align_max)
-	uid_align[uid] = align_tab[1];
-      if (GET_CODE (insn) == INSN)
-	{
-	  rtx pat = PATTERN (insn);
-	  if (GET_CODE (pat) == UNSPEC_VOLATILE && XINT (pat, 1) == 1)
-	    {
-	      /* Found an alignment instruction.  */
-	      int log = INTVAL (XVECEXP (pat, 0, 0));
-	      uid_align[uid] = align_tab[log];
-	      for (i = log - 1; i >= 0; i--)
-		align_tab[i] = insn;
-	    }
-	}
-      else if (GET_CODE (insn) == JUMP_INSN
-	       && GET_CODE (PATTERN (insn)) == SET)
-	{
-	  rtx dest = SET_SRC (PATTERN (insn));
-	  if (GET_CODE (dest) == IF_THEN_ELSE)
-	    dest = XEXP (dest, 1);
-	  if (GET_CODE (dest) == LABEL_REF)
-	    {
-	      dest = XEXP (dest, 0);
-	      if (! uid_align[INSN_UID (dest)])
-		/* Mark backward branch.  */
-		uid_align[uid] = 0;
-	    }
-	}
-    }
-}
-
 /* Fix up ADDR_DIFF_VECs.  */
 void
 fixup_addr_diff_vecs (first)
      rtx first;
 {
   rtx insn;
-  int max_address;
-  int need_fixup_aligns = 0;
-  
-  if (optimize)
-    max_address = insn_addresses[INSN_UID (get_last_insn ())] + 2;
+
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
-      rtx vec_lab, rel_lab, pat, min_lab, max_lab, adj;
-      int len, i, min, max, size;
+      rtx vec_lab, pat, prev, prevpat, x;
 
       if (GET_CODE (insn) != JUMP_INSN
 	  || GET_CODE (PATTERN (insn)) != ADDR_DIFF_VEC)
 	continue;
       pat = PATTERN (insn);
-      rel_lab = vec_lab = XEXP (XEXP (pat, 0), 0);
-      if (TARGET_SH2)
-	{
-	  rtx prev, prevpat, x;
+      vec_lab = XEXP (XEXP (pat, 0), 0);
 
-	  /* Search the matching casesi_jump_2.  */
-	  for (prev = vec_lab; ; prev = PREV_INSN (prev))
-	    {
-	      if (GET_CODE (prev) != JUMP_INSN)
-		continue;
-	      prevpat = PATTERN (prev);
-	      if (GET_CODE (prevpat) != PARALLEL || XVECLEN (prevpat, 0) != 2)
-		continue;
-	      x = XVECEXP (prevpat, 0, 1);
-	      if (GET_CODE (x) != USE)
-		continue;
-	      x = XEXP (x, 0);
-	      if (GET_CODE (x) == LABEL_REF && XEXP (x, 0) == vec_lab)
-		break;
-	    }
-	  /* Fix up the ADDR_DIF_VEC to be relative
-	     to the reference address of the braf.  */
-	  XEXP (XEXP (pat, 0), 0)
-	    = rel_lab = XEXP (XEXP (SET_SRC (XVECEXP (prevpat, 0, 0)), 1), 0);
-	}
-      if (! optimize)
-	continue;
-      len = XVECLEN (pat, 1);
-      if (len <= 0)
-	abort ();
-      for (min = max_address, max = 0, i = len - 1; i >= 0; i--)
+      /* Search the matching casesi_jump_2.  */
+      for (prev = vec_lab; ; prev = PREV_INSN (prev))
 	{
-	  rtx lab = XEXP (XVECEXP (pat, 1, i), 0);
-	  int addr = insn_addresses[INSN_UID (lab)];
-	  if (addr < min)
-	    {
-	      min = addr;
-	      min_lab = lab;
-	    }
-	  if (addr > max)
-	    {
-	      max = addr;
-	      max_lab = lab;
-	    }
+	  if (GET_CODE (prev) != JUMP_INSN)
+	    continue;
+	  prevpat = PATTERN (prev);
+	  if (GET_CODE (prevpat) != PARALLEL || XVECLEN (prevpat, 0) != 2)
+	    continue;
+	  x = XVECEXP (prevpat, 0, 1);
+	  if (GET_CODE (x) != USE)
+	    continue;
+	  x = XEXP (x, 0);
+	  if (GET_CODE (x) == LABEL_REF && XEXP (x, 0) == vec_lab)
+	    break;
 	}
-      adj
-	= emit_insn_before (gen_addr_diff_vec_adjust (min_lab, max_lab, rel_lab,
-						      GEN_INT (len)), vec_lab);
-      size = (XVECLEN (pat, 1) * GET_MODE_SIZE (GET_MODE (pat))
-	      - addr_diff_vec_adjust (adj, 0));
-      /* If this is a very small table, we want to remove the alignment after
-	 the table.  */
-      if (! TARGET_SMALLCODE && size <= 1 << (CACHE_LOG - 2))
-	{
-	  rtx align = NEXT_INSN (next_nonnote_insn (insn));
-	  PUT_CODE (align, NOTE);
-	  NOTE_LINE_NUMBER (align) = NOTE_INSN_DELETED;
-	  NOTE_SOURCE_FILE (align) = 0;
-	  need_fixup_aligns = 1;
-	}
+      /* Fix up the ADDR_DIF_VEC to be relative
+	 to the reference address of the braf.  */
+      XEXP (XEXP (pat, 0), 0)
+	= XEXP (XEXP (SET_SRC (XVECEXP (prevpat, 0, 0)), 1), 0);
     }
-  if (need_fixup_aligns)
-    fixup_aligns ();
 }
 
-/* Say how much the ADDR_DIFF_VEC following INSN can be shortened.
-   If FIRST_PASS is nonzero, all addresses and length of following
-   insns are still uninitialized.  */
+/* BARRIER_OR_LABEL is either a BARRIER or a CODE_LABEL immediately following
+   a barrier.  Return the base 2 logarithm of the desired alignment.  */
 int
-addr_diff_vec_adjust (insn, first_pass)
-     rtx insn;
-     int first_pass;
+barrier_align (barrier_or_label)
+     rtx barrier_or_label;
 {
-  rtx pat = PATTERN (insn);
-  rtx min_lab = XEXP (XVECEXP (pat, 0, 0), 0);
-  rtx max_lab = XEXP (XVECEXP (pat, 0, 1), 0);
-  rtx rel_lab = XEXP (XVECEXP (pat, 0, 2), 0);
-  int len = INTVAL (XVECEXP (pat, 0, 3));
-  int addr, min_addr, max_addr, saving, prev_saving = 0, offset;
-  rtx align_insn = uid_align[INSN_UID (rel_lab)];
-  int standard_size = TARGET_BIGTABLE ? 4 : 2;
-  int last_size = GET_MODE_SIZE ( GET_MODE(pat));
-  int align_fuzz = 0;
-
-  if (! insn_addresses)
+  rtx next = next_real_insn (barrier_or_label), pat, prev;
+  int slot, credit;
+ 
+  if (! next)
     return 0;
-  if (first_pass)
-    /* If optimizing, we may start off with an optimistic guess.  */
-    return optimize ? len & ~1 : 0;
-  addr = insn_addresses[INSN_UID (rel_lab)];
-  min_addr = insn_addresses[INSN_UID (min_lab)];
-  max_addr = insn_addresses[INSN_UID (max_lab)];
-  if (! last_size)
-    last_size = standard_size;
-  if (TARGET_SH2)
-    prev_saving = ((standard_size - last_size) * len) & ~1;
 
-  /* The savings are linear to the vector length.  However, if we have an
-     odd saving, we need one byte again to reinstate 16 bit alignment.  */
-  saving = ((standard_size - 1) * len) & ~1;
-  offset = prev_saving - saving;
+  pat = PATTERN (next);
 
-  if ((insn_addresses[INSN_UID (align_insn)] < max_addr
-       || (insn_addresses[INSN_UID (align_insn)] == max_addr
-           && next_real_insn (max_lab) != align_insn))
-      && GET_CODE (align_insn) == INSN)
+  if (GET_CODE (pat) == ADDR_DIFF_VEC)
+    return 2;
+
+  if (GET_CODE (pat) == UNSPEC_VOLATILE && XINT (pat, 1) == 1)
+    /* This is a barrier in front of a constant table.  */
+    return 0;
+
+  prev = prev_real_insn (barrier_or_label);
+  if (GET_CODE (PATTERN (prev)) == ADDR_DIFF_VEC)
     {
-      int align = 1 << INTVAL (XVECEXP (PATTERN (align_insn), 0, 0));
-      int align_addr = insn_addresses[INSN_UID (align_insn)];
-      if (align_addr > insn_addresses[INSN_UID (insn)])
-	{
-	  int old_offset = offset;
-	  offset = (align_addr - 1 & align - 1) + offset & -align;
-	  align_addr += old_offset;
-	}
-      align_fuzz += (align_addr - 1)  & (align - 2);
-      align_insn = uid_align[INSN_UID (align_insn)];
-      if (insn_addresses[INSN_UID (align_insn)] <= max_addr
-          && GET_CODE (align_insn) == INSN)
-        {
-          int align2 = 1 << INTVAL (XVECEXP (PATTERN (align_insn), 0, 0));
-          align_addr = insn_addresses[INSN_UID (align_insn)];
-	  if (align_addr > insn_addresses[INSN_UID (insn)])
-	    {
-	      int old_offset = offset;
-	      offset = (align_addr - 1 & align2 - 1) + offset & -align2;
-	      align_addr += old_offset;
-	    }
-          align_fuzz += (align_addr - 1)  & (align2 - align);
-        }
+      pat = PATTERN (prev);
+      /* If this is a very small table, we want to keep the alignment after
+	 the table to the minimum for proper code alignment.  */
+      return ((TARGET_SMALLCODE
+	       || (XVECLEN (pat, 1) * GET_MODE_SIZE (GET_MODE (pat))
+		   <= 1 << (CACHE_LOG - 2)))
+	      ? 1 : CACHE_LOG);
     }
 
-  if (min_addr >= addr
-      && max_addr + offset - addr + align_fuzz <= 255)
+  if (TARGET_SMALLCODE)
+    return 0;
+
+  if (! TARGET_SH3 || ! optimize)
+    return CACHE_LOG;
+
+  /* Check if there is an immediately preceding branch to the insn beyond
+     the barrier.  We must weight the cost of discarding useful information
+     from the current cache line when executing this branch and there is
+     an alignment, against that of fetching unneeded insn in front of the
+     branch target when there is no alignment.  */
+
+  /* PREV is presumed to be the JUMP_INSN for the barrier under
+     investigation.  Skip to the insn before it.  */
+  prev = prev_real_insn (prev);
+
+  for (slot = 2, credit = 1 << (CACHE_LOG - 2) + 2;
+       credit >= 0 && prev && GET_CODE (prev) == INSN;
+       prev = prev_real_insn (prev))
     {
-      PUT_MODE (pat, QImode);
-      return saving;
+      if (GET_CODE (PATTERN (prev)) == USE
+          || GET_CODE (PATTERN (prev)) == CLOBBER)
+        continue;
+      if (GET_CODE (PATTERN (prev)) == SEQUENCE)
+	prev = XVECEXP (PATTERN (prev), 0, 1);
+      if (slot &&
+          get_attr_in_delay_slot (prev) == IN_DELAY_SLOT_YES)
+        slot = 0;
+      credit -= get_attr_length (prev);
     }
-  saving = 2 * len;
-/* Since alignment might play a role in min_addr if it is smaller than addr,
-   we may not use it without exact alignment compensation; a 'worst case'
-   estimate is not good enough, because it won't prevent infinite oscillation
-   of shorten_branches.
-   ??? We should fix that eventually, but the code to deal with alignments
-   should go in a new function.  */
-#if 0
-  if (TARGET_BIGTABLE && min_addr - ((1 << CACHE_LOG) - 2) - addr >= -32768
-#else
-  if (TARGET_BIGTABLE && (min_addr >= addr || addr <= 32768)
-#endif
-      && max_addr - addr <= 32767 + saving - prev_saving)
-    {
-      PUT_MODE (pat, HImode);
-      return saving;
-    }
-  PUT_MODE (pat, TARGET_BIGTABLE ? SImode : HImode);
-  return 0;
+  if (prev
+      && GET_CODE (prev) == JUMP_INSN
+      && JUMP_LABEL (prev)
+      && next_real_insn (JUMP_LABEL (prev)) == next_real_insn (barrier_or_label)
+      && (credit - slot >= (GET_CODE (SET_SRC (PATTERN (prev))) == PC ? 2 : 0)))
+    return 0;
+
+  return CACHE_LOG;
 }
 
 /* Exported to toplev.c.
@@ -2935,118 +2799,14 @@ machine_dependent_reorg (first)
 	}
     }
 
-  /* The following processing passes need length information.
-     addr_diff_vec_adjust needs to know if insn_addresses is valid.  */
-  insn_addresses = 0;
-
-  /* If not optimizing for space, we want extra alignment for code after
-     a barrier, so that it starts on a word / cache line boundary.
-     We used to emit the alignment for the barrier itself and associate the
-     instruction length with the following instruction, but that had two
-     problems:
-     i) A code label that follows directly after a barrier gets too low an
-     address.  When there is a forward branch to it, the incorrect distance
-     calculation can lead to out of range branches.  That happened with
-     compile/920625-2 -O -fomit-frame-pointer in copyQueryResult.
-     ii) barriers before constant tables get the extra alignment too.
-     That is just a waste of space.
-
-     So what we do now is to insert align_* instructions after the
-     barriers.  By doing that before literal tables are generated, we
-     don't have to care about these.  */
-  /* We also want alignment in front of ADDR_DIFF_VECs; this is done already
-     by ASM_OUTPUT_CASE_LABEL, but when optimizing, we have to make it
-     explicit in the RTL in order to correctly shorten branches.  */
-    
-  if (optimize)
-    for (insn = first; insn; insn = NEXT_INSN (insn))
-      {
-	rtx addr_diff_vec;
-
-	if (GET_CODE (insn) == BARRIER
-	    && (addr_diff_vec = next_real_insn (insn)))
-	  if (GET_CODE (PATTERN (addr_diff_vec)) == ADDR_DIFF_VEC)
-	    emit_insn_before (gen_align_4 (),
-			      XEXP (XEXP (PATTERN (addr_diff_vec), 0), 0));
-	  else if (TARGET_SMALLCODE)
-	    continue;
-	  else if (TARGET_SH3)
-	    {
-	      /* We align for an entire cache line.  If there is a immediately
-		 preceding branch to the insn beyond the barrier, it does not
-		 make sense to insert the align, because we are more likely
-		 to discard useful information from the current cache line
-		 when doing the align than to fetch unneeded insns when not.  */
-	      rtx prev = prev_real_insn (prev_real_insn (insn));
-	      int slot, credit;
-
-	      for (slot = 2, credit = 1 << (CACHE_LOG - 2) + 2;
-		   credit >= 0 && prev && GET_CODE (prev) == INSN;
-		   prev = prev_real_insn (prev))
-		{
-		  if (GET_CODE (PATTERN (prev)) == USE
-		      || GET_CODE (PATTERN (prev)) == CLOBBER)
-		    continue;
-		  if (slot &&
-		      get_attr_in_delay_slot (prev) == IN_DELAY_SLOT_YES)
-		    slot = 0;
-		  credit -= get_attr_length (prev);
-		}
-	      if (! prev || GET_CODE (prev) != JUMP_INSN
-		  || (next_real_insn (JUMP_LABEL (prev))
-		      != next_real_insn (insn))
-		  || (credit - slot
-		      < (GET_CODE (SET_SRC (PATTERN (prev))) == PC ? 2 : 0)))
-		{
-		  insn = emit_insn_after (gen_align_log (GEN_INT (CACHE_LOG)),
-					  insn);
-		  insn = emit_barrier_after (insn);
-		}
-	    }
-	  else
-	    {
-	      insn = emit_insn_after (gen_align_4 (), insn);
-	      insn = emit_barrier_after (insn);
-	    }
-	else if (TARGET_SMALLCODE)
-	  continue;
-	else if (GET_CODE (insn) == NOTE
-		 && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
-	  {
-	    rtx next = next_nonnote_insn (insn);
-            if (next && GET_CODE (next) == CODE_LABEL)
-	      emit_insn_after (gen_align_4 (), insn);
-	  }
-      }
-
-  /* If TARGET_IEEE, we might have to split some branches before fixup_align.
-     If optimizing, the double call to shorten_branches will split insns twice,
-     unless we split now all that is to split and delete the original insn.  */
-  if (TARGET_IEEE || optimize)
-    for (insn = NEXT_INSN (first); insn; insn = NEXT_INSN (insn))
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i' && ! INSN_DELETED_P (insn))
-	{
-	  rtx old = insn;
-	  insn = try_split (PATTERN (insn), insn, 1);
-	  if (INSN_DELETED_P (old))
-	    {
-	      PUT_CODE (old, NOTE);
-	      NOTE_LINE_NUMBER (old) = NOTE_INSN_DELETED;
-	      NOTE_SOURCE_FILE (old) = 0;
-	    }
-	}
-
-  max_uid_before_fixup_addr_diff_vecs = get_max_uid ();
+  if (TARGET_SH2)
+    fixup_addr_diff_vecs (first);
 
   if (optimize)
     {
-      uid_align_max = get_max_uid ();
-      uid_align = (rtx *) alloca (uid_align_max * sizeof *uid_align);
-      fixup_aligns ();
       mdep_reorg_phase = SH_SHORTEN_BRANCHES0;
       shorten_branches (first);
     }
-  fixup_addr_diff_vecs (first);
   /* Scan the function looking for move instructions which have to be
      changed to pc-relative loads and insert the literal tables.  */
 
@@ -3070,8 +2830,7 @@ machine_dependent_reorg (first)
 	  /* Some code might have been inserted between the mova and
 	     its ADDR_DIFF_VEC.  Check if the mova is still in range.  */
 	  for (scan = mova, total = 0; scan != insn; scan = NEXT_INSN (scan))
-	    if (INSN_UID (scan) < max_uid_before_fixup_addr_diff_vecs)
-	      total += get_attr_length (scan);
+	    total += get_attr_length (scan);
 
 	  /* range of mova is 1020, add 4 because pc counts from address of
 	     second instruction after this one, subtract 2 in case pc is 2
@@ -3234,9 +2993,6 @@ split_branches (first)
   int max_uid = get_max_uid ();
 
   /* Find out which branches are out of range.  */
-  uid_align_max = get_max_uid ();
-  uid_align = (rtx *) alloca (uid_align_max * sizeof *uid_align);
-  fixup_aligns ();
   shorten_branches (first);
 
   uid_branch = (struct far_branch **) alloca (max_uid * sizeof *uid_branch);
@@ -3335,13 +3091,15 @@ split_branches (first)
 		   is too far away.  */
 		/* We can't use JUMP_LABEL here because it might be undefined
 		   when not optimizing.  */
+		/* A syntax error might cause beyond to be NULL_RTX.  */
 		beyond
 		  = next_active_insn (XEXP (XEXP (SET_SRC (PATTERN (insn)), 1),
 					    0));
 	
-		if ((GET_CODE (beyond) == JUMP_INSN
-		     || (GET_CODE (beyond = next_active_insn (beyond))
-			 == JUMP_INSN))
+		if (beyond
+		    && (GET_CODE (beyond) == JUMP_INSN
+			|| (GET_CODE (beyond = next_active_insn (beyond))
+			    == JUMP_INSN))
 		    && GET_CODE (PATTERN (beyond)) == SET
 		    && recog_memoized (beyond) == CODE_FOR_jump
 		    && ((insn_addresses[INSN_UID (XEXP (SET_SRC (PATTERN (beyond)), 0))]
@@ -3432,9 +3190,6 @@ split_branches (first)
 	delete_insn (far_branch_list->far_label);
       far_branch_list = far_branch_list->prev;
     }
-  uid_align_max = get_max_uid ();
-  uid_align = (rtx *) oballoc (uid_align_max * sizeof *uid_align);
-  fixup_aligns ();
 }
 
 /* Dump out instruction addresses, which is useful for debugging the
@@ -4193,180 +3948,20 @@ braf_label_ref_operand(op, mode)
     return 0;
 }
 
-/* Return the offset of a branch.  Offsets for backward branches are
-   reported relative to the branch instruction, while offsets for forward
-   branches are reported relative to the following instruction.  */
+/* Return the destination address of a branch.  */
    
 int
-branch_offset (branch)
+branch_dest (branch)
      rtx branch;
 {
-  rtx dest = SET_SRC (PATTERN (branch)), dest_next;
-  int branch_uid = INSN_UID (branch);
-  int dest_uid, dest_addr;
-  rtx branch_align = uid_align[branch_uid];
+  rtx dest = SET_SRC (PATTERN (branch));
+  int dest_uid;
 
   if (GET_CODE (dest) == IF_THEN_ELSE)
     dest = XEXP (dest, 1);
   dest = XEXP (dest, 0);
   dest_uid = INSN_UID (dest);
-  dest_addr = insn_addresses[dest_uid];
-  if (branch_align)
-    {
-      /* Forward branch. */
-      /* If branch is in a sequence, get the successor of the sequence.  */
-      rtx next = NEXT_INSN (NEXT_INSN (PREV_INSN (branch)));
-      int next_addr = insn_addresses[INSN_UID (next)];
-      int diff;
-
-      /* If NEXT has been hoisted in a sequence further on, it address has
-	 been clobbered in the previous pass.  However, if that is the case,
-	 we know that it is exactly 2 bytes long (because it fits in a delay
-	 slot), and that there is a following label (the destination of the
-	 instruction that filled its delay slot with NEXT).  The address of
-	 this label is reliable.  */
-      if (NEXT_INSN (next))
-	{
-	  int next_next_addr = insn_addresses[INSN_UID (NEXT_INSN (next))];
-	  if (next_addr > next_next_addr)
-	    next_addr = next_next_addr - 2;
-	}
-      diff = dest_addr - next_addr;
-      /* If BRANCH_ALIGN has been the last insn, it might be a barrier or
-	 a note.  */
-      if ((insn_addresses[INSN_UID (branch_align)] < dest_addr
-	   || (insn_addresses[INSN_UID (branch_align)] == dest_addr
-	       && next_real_insn (dest) != branch_align))
-	  && GET_CODE (branch_align) == INSN)
-	{
-	  int align = 1 << INTVAL (XVECEXP (PATTERN (branch_align), 0, 0));
-	  int align_addr = insn_addresses[INSN_UID (branch_align)];
-	  diff += (align_addr - 1)  & (align - 2);
-	  branch_align = uid_align[INSN_UID (branch_align)];
-	  if (insn_addresses[INSN_UID (branch_align)] <= dest_addr
-	      && GET_CODE (branch_align) == INSN)
-	    {
-	      int align2 = 1 << INTVAL (XVECEXP (PATTERN (branch_align), 0, 0));
-	      align_addr = insn_addresses[INSN_UID (branch_align)];
-	      diff += (align_addr - 1)  & (align2 - align);
-	    }
-	}
-      return diff;
-    }
-  else
-    {
-      /* Backward branch. */
-      int branch_addr = insn_addresses[branch_uid];
-      int diff = dest_addr - branch_addr;
-      int old_align = 2;
-
-      while (dest_uid >= uid_align_max || ! uid_align[dest_uid])
-	{
-	  /* Label might be outside the insn stream, or even in a separate
-	     insn stream, after a syntax error.  */
-	  if (! NEXT_INSN (dest))
-	    return 0;
-	  dest = NEXT_INSN (dest), dest_uid = INSN_UID (dest);
-	}
-      
-      /* By searching for a known destination, we might already have
-	 stumbled on the alignment instruction.  */
-      if (GET_CODE (dest) == INSN
-	  && GET_CODE (PATTERN (dest)) == UNSPEC_VOLATILE
-	  && XINT (PATTERN (dest), 1) == 1
-	  && INTVAL (XVECEXP (PATTERN (dest), 0, 0)) > 1)
-	branch_align = dest;
-      else
-	branch_align = uid_align[dest_uid];
-      while (insn_addresses[INSN_UID (branch_align)] <= branch_addr
-	     && GET_CODE (branch_align) == INSN)
-	{
-	  int align = 1 << INTVAL (XVECEXP (PATTERN (branch_align), 0, 0));
-	  int align_addr = insn_addresses[INSN_UID (branch_align)];
-	  diff -= (align_addr - 1)  & (align - old_align);
-	  old_align = align;
-	  branch_align = uid_align[INSN_UID (branch_align)];
-	}
-      return diff;
-    }
-}
-
-int
-short_cbranch_p (branch)
-     rtx branch;
-{
-  int offset;
-
-  if (! insn_addresses)
-    return 0;
-  if (mdep_reorg_phase <= SH_FIXUP_PCLOAD)
-    return 0;
-  offset = branch_offset (branch);
-  return (offset >= -252
-	  && offset <= (NEXT_INSN (PREV_INSN (branch)) == branch ? 256 : 254));
-}
-
-/* The maximum range used for SImode constant pool entrys is 1018.  A final
-   instruction can add 8 bytes while only being 4 bytes in size, thus we
-   can have a total of 1022 bytes in the pool.  Add 4 bytes for a branch
-   instruction around the pool table, 2 bytes of alignment before the table,
-   and 30 bytes of alignment after the table.  That gives a maximum total
-   pool size of 1058 bytes.
-   Worst case code/pool content size ratio is 1:2 (using asms).
-   Thus, in the worst case, there is one instruction in front of a maximum
-   sized pool, and then there are 1052 bytes of pool for every 508 bytes of
-   code.  For the last n bytes of code, there are 2n + 36 bytes of pool.
-   If we have a forward branch, the initial table will be put after the
-   unconditional branch.
-
-   ??? We could do much better by keeping track of the actual pcloads within
-   the branch range and in the pcload range in front of the branch range.  */
-
-int
-med_branch_p (branch, condlen)
-     rtx branch;
-     int condlen;
-{
-  int offset;
-
-  if (! insn_addresses)
-    return 0;
-  offset = branch_offset (branch);
-  if (mdep_reorg_phase <= SH_FIXUP_PCLOAD)
-    return offset - condlen >= -990 && offset <= 998;
-  return offset - condlen >= -4092 && offset <= 4094;
-}
-
-int
-braf_branch_p (branch, condlen)
-     rtx branch;
-     int condlen;
-{
-  int offset;
-
-  if (! insn_addresses)
-    return 0;
-  if (! TARGET_SH2)
-    return 0;
-  offset = branch_offset (branch);
-  if (mdep_reorg_phase <= SH_FIXUP_PCLOAD)
-    return offset - condlen >= -10330 && offset <= 10330;
-  return offset -condlen >= -32764 && offset <= 32766;
-}
-
-int
-align_length (insn)
-     rtx insn;
-{
-  int align = 1 << INTVAL (XVECEXP (PATTERN (insn), 0, 0));
-  if (! insn_addresses)
-    if (optimize
-	&& (mdep_reorg_phase == SH_SHORTEN_BRANCHES0
-	    || mdep_reorg_phase == SH_SHORTEN_BRANCHES1))
-      return 0;
-    else
-      return align - 2;
-  return align - 2 - ((insn_addresses[INSN_UID (insn)] - 2) & (align - 2));
+  return insn_addresses[dest_uid];
 }
 
 /* Return non-zero if REG is not used after INSN.

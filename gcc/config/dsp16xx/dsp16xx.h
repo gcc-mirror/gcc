@@ -1880,7 +1880,7 @@ const_section ()                                                   \
 
 /* This macro should be provided on machines where the addresses in a dispatch
    table are relative to the table's own address. */
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  \
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)  \
   fprintf (FILE, "\tint L%d-L%d\n", VALUE, REL)
 
 /* This macro should be provided on machines where the addresses in a dispatch

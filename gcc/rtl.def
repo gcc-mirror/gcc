@@ -442,8 +442,27 @@ DEF_RTL_EXPR(ADDR_VEC, "addr_vec", "E", 'x')
 /* Vector of address differences X0 - BASE, X1 - BASE, ...
    First operand is BASE; the vector contains the X's.
    The machine mode of this rtx says how much space to leave
-   for each difference.  */
-DEF_RTL_EXPR(ADDR_DIFF_VEC, "addr_diff_vec", "eE", 'x')
+   for each difference and is adjusted by branch shortening if
+   CASE_VECTOR_SHORTEN_MODE is defined.
+   The third and fourth operands store the target labels with the
+   minimum and maximum addresses respectively.
+   The fifth operand stores flags for use by branch shortening.
+  Set at the start of shorten_branches:
+   min_align: the minimum alignment for any of the target labels.
+   base_after_vec: true iff BASE is after the ADDR_DIFF_VEC.
+   min_after_vec: true iff minimum addr target label is after the ADDR_DIFF_VEC.
+   max_after_vec: true iff maximum addr target label is after the ADDR_DIFF_VEC.
+   min_after_base: true iff minimum address target label is after BASE.
+   max_after_base: true iff maximum address target label is after BASE.
+  Set by the actual branch shortening process:
+   offset_unsigned: true iff offsets have to be treated as unsigned.
+   scale: scaling that is necessary to make offsets fit into the mode.
+
+   The third, fourth and fifth operands are only valid when
+   CASE_VECTOR_SHORTEN_MODE is defined, and only in an optimizing
+   compilations.  */
+     
+DEF_RTL_EXPR(ADDR_DIFF_VEC, "addr_diff_vec", "eEeei", 'x')
 
 /* ----------------------------------------------------------------------
    At the top level of an instruction (perhaps under PARALLEL).

@@ -1273,7 +1273,7 @@ do { char dstr[30];					\
 
 /* This is how to output an element of a case-vector that is relative.  */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) \
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
   fprintf (FILE, "\t%s .L%d-.L%d\n", ASM_WORD_OP, VALUE, REL)
 
 /* This is how to output an assembler line

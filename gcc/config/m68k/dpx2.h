@@ -605,7 +605,7 @@ do { long l;						\
 
 /* This is how to output an element of a case-vector that is relative.  */
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  \
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)  \
   asm_fprintf (FILE, "\tdc.w %LL%d-%LL%d\n", VALUE, REL)
 
 /* Currently, JUMP_TABLES_IN_TEXT_SECTION must be defined in order to

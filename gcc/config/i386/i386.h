@@ -2484,7 +2484,7 @@ do { long l;						\
    forward reference the differences.  
  */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL) \
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
   fprintf (FILE, "\t.word %s%d-%s%d\n",LPREFIX, VALUE,LPREFIX, REL)
 
 /* Define the parentheses used to group arithmetic operations

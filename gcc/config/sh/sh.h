@@ -265,6 +265,33 @@ do {								\
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 1
+
+/* If LABEL_AFTER_BARRIER demands an alignment, return its base 2 logarithm.  */
+#define LABEL_ALIGN_AFTER_BARRIER(LABEL_AFTER_BARRIER) \
+  barrier_align (LABEL_AFTER_BARRIER)
+
+#define LOOP_ALIGN(A_LABEL) (TARGET_SMALLCODE ? 0 : 2)
+
+#define LABEL_ALIGN(A_LABEL) \
+(									\
+  (PREV_INSN (A_LABEL)							\
+   && GET_CODE (PREV_INSN (A_LABEL)) == INSN				\
+   && GET_CODE (PATTERN (PREV_INSN (A_LABEL))) == UNSPEC_VOLATILE	\
+   && XINT (PATTERN (PREV_INSN (A_LABEL)), 1) == 1)			\
+   /* explicit alignment insn in constant tables. */			\
+  ? INTVAL (XVECEXP (PATTERN (PREV_INSN (A_LABEL)), 0, 0))		\
+  : 0)
+
+/* Jump tables must be 32 bit aligned, no matter the size of the element.  */
+#define ADDR_VEC_ALIGN(ADDR_VEC) 2
+
+/* The base two logarithm of the known minimum alignment of an insn length.  */
+#define INSN_LENGTH_ALIGNMENT(A_INSN)					\
+  (GET_CODE (A_INSN) == INSN						\
+   ? 1									\
+   : GET_CODE (A_INSN) == JUMP_INSN || GET_CODE (A_INSN) == CALL_INSN	\
+   ? 1									\
+   : CACHE_LOG)
 
 /* Standard register usage.  */
 
@@ -1188,6 +1215,14 @@ extern struct rtx_def *sh_builtin_saveregs ();
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE (TARGET_BIGTABLE ? SImode : HImode)
 
+#define CASE_VECTOR_SHORTEN_MODE(MIN_OFFSET, MAX_OFFSET, BODY) \
+((MIN_OFFSET) >= 0 && (MAX_OFFSET) <= 127 \
+ ? (ADDR_DIFF_VEC_FLAGS (BODY).offset_unsigned = 1, QImode) \
+ : (MIN_OFFSET) >= 0 && (MAX_OFFSET) <= 255 \
+ ? (ADDR_DIFF_VEC_FLAGS (BODY).offset_unsigned = 0, QImode) \
+ : (MIN_OFFSET) >= -32768 && (MAX_OFFSET) <= 32767 ? HImode \
+ : SImode)
+
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
    table.
@@ -1520,14 +1555,10 @@ dtors_section()							\
   ((OUTVAR) = (char *) alloca (strlen (NAME) + 10),	\
    sprintf ((OUTVAR), "%s.%d", (NAME), (NUMBER)))
 
-/* Jump tables must be 32 bit aligned, no matter the size of the element.  */
-#define ASM_OUTPUT_CASE_LABEL(STREAM,PREFIX,NUM,TABLE) \
-  fprintf ((STREAM), "\t.align 2\n%s%d:\n",  (PREFIX), (NUM));
-
 /* Output a relative address table.  */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM,VALUE,REL)  			\
-  switch (sh_addr_diff_vec_mode)					\
+#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM,BODY,VALUE,REL)  		\
+  switch (GET_MODE (BODY))						\
     {									\
     case SImode:							\
       asm_fprintf ((STREAM), "\t.long\t%LL%d-%LL%d\n", (VALUE),(REL));	\
@@ -1672,7 +1703,9 @@ extern enum processor_type sh_cpu;
 
 extern enum machine_mode sh_addr_diff_vec_mode;
 
-extern int optimize; /* needed for gen_casesi, and addr_diff_vec_adjust.  */
+extern int optimize; /* needed for gen_casesi.  */
+
+extern short *label_align;
 
 /* Declare functions defined in sh.c and used in templates.  */
 
@@ -1695,13 +1728,11 @@ enum mdep_reorg_phase_e
   SH_AFTER_MDEP_REORG
 };
 
+extern enum mdep_reorg_phase_e mdep_reorg_phase;
+
 void machine_dependent_reorg ();
-int short_cbranch_p ();
-int med_branch_p ();
-int braf_branch_p ();
-int align_length ();
-int addr_diff_vec_adjust ();
 struct rtx_def *sfunc_uses_reg ();
+int barrier_align ();
 
 #define MACHINE_DEPENDENT_REORG(X) machine_dependent_reorg(X)
 
@@ -1736,11 +1767,7 @@ sh_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 #define MOVE_RATIO (TARGET_SMALLCODE ? 2 : 16)
 
 /* Instructions with unfilled delay slots take up an extra two bytes for
-   the nop in the delay slot.  Instructions at the start of loops, or
-   after unconditional branches, may take up extra room when they are
-   aligned.  ??? We would get more accurate results if we did instruction
-   alignment based on the value of INSN_CURRENT_ADDRESS; the approach used
-   here is too conservative.  */
+   the nop in the delay slot.  */
 
 #define ADJUST_INSN_LENGTH(X, LENGTH)				\
   if (((GET_CODE (X) == INSN					\
@@ -1752,25 +1779,7 @@ sh_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 	   && GET_CODE (PATTERN (X)) != ADDR_VEC))		\
       && GET_CODE (PATTERN (NEXT_INSN (PREV_INSN (X)))) != SEQUENCE \
       && get_attr_needs_delay_slot (X) == NEEDS_DELAY_SLOT_YES)	\
-    (LENGTH) += 2;						\
-  if (GET_CODE (X) == INSN					\
-      && GET_CODE (PATTERN (X)) == UNSPEC_VOLATILE		\
-      && XINT (PATTERN (X), 1) == 7)				\
-    (LENGTH) -= addr_diff_vec_adjust (X, LENGTH);		\
-  if (GET_CODE (X) == INSN					\
-      && GET_CODE (PATTERN (X)) == UNSPEC_VOLATILE		\
-      && XINT (PATTERN (X), 1) == 1)				\
-    (LENGTH) = align_length (X);				\
-  if (GET_CODE (X) == JUMP_INSN					\
-      && GET_CODE (PATTERN (X)) == ADDR_DIFF_VEC)		\
-    {								\
-      /* The code before an ADDR_DIFF_VEC is even aligned,	\
-	 thus any odd estimate is wrong.  */			\
-      (LENGTH) &= ~1;						\
-      /* If not optimizing, the alignment is implicit.  */	\
-      if (! optimize)						\
-	(LENGTH) += 2;						\
-    }
+    (LENGTH) += 2;
 
 /* Enable a bug fix for the shorten_branches pass.  */
 #define SHORTEN_WITH_ADJUST_INSN_LENGTH

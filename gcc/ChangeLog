@@ -1,3 +1,58 @@
+Fri Mar  6 21:28:45 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* rtl.h (addr_diff_vec_flags): New typedef.
+	(union rtunion_def): New member rt_addr_diff_vec_flags.
+	(ADDR_DIFF_VEC_FLAGS): New macro.
+
+	* sh.c (output_branch): Fix offset overflow problems.
+
+	* final.c (shorten_branches): Implement CASE_VECTOR_SHORTEN_MODE.
+	(final_scan_insn): New argument BODY for ASM_OUTPUT_ADDR_DIFF_ELT.
+	* rtl.def (ADDR_DIFF_VEC): Three new fields (min, max and flags).
+	* stmt.c (expand_end_case): Supply new arguments to
+	gen_rtx_ADDR_DIFF_VEC.
+	* 1750a.h (ASM_OUTPUT_ADDR_DIFF_ELT): New argument BODY.
+	* alpha.h, arc.h, clipper.h, convex.h : Likewise.
+	* dsp16xx.h, elxsi.h, fx80.h, gmicro.h, h8300.h : Likewise.
+	* i370.h, i386.h, i860.h, i960.h, m32r.h, m68k.h, m88k.h : Likewise.
+	* mips.h, mn10200.h, mn10300.h, ns32k.h, pa.h, pyr.h : Likewise.
+	* rs6000.h, sh.h, sparc.h, spur.h, tahoe.h, v850.h : Likewise.
+	* vax.h, we32k.h, alpha/vms.h, arm/aof.h, arm/aout.h : Likewise.
+	* i386/386bsd.h, i386/freebsd-elf.h : Likewise.
+	* i386/freebsd.h, i386/linux.h : Likewise.
+	* i386/netbsd.h, i386/osfrose.h, i386/ptx4-i.h, i386/sco5.h : Likewise.
+	* i386/sysv4.h, m68k/3b1.h, m68k/dpx2.h, m68k/hp320.h : Likewise.
+	* m68k/mot3300.h, m68k/sgs.h : Likewise.
+	* m68k/tower-as.h, ns32k/encore.h, sparc/pbd.h : Likewise.
+	* sh.h (INSN_ALIGN, INSN_LENGTH_ALIGNMENT): Define.
+	(CASE_VECTOR_SHORTEN_MODE): Define.
+	(short_cbranch_p, align_length, addr_diff_vec_adjust): Don't declare.
+	(med_branch_p, braf_branch_p): Don't declare.
+	(mdep_reorg_phase, barrier_align): Declare.
+	(ADJUST_INSN_LENGTH): Remove alignment handling.
+	* sh.c (uid_align, uid_align_max): Deleted.
+	(max_uid_before_fixup_addr_diff_vecs, branch_offset): Deleted.
+	(short_cbranch_p, med_branch_p, braf_branch_p, align_length): Deleted.
+	(cache_align_p, fixup_aligns, addr_diff_vec_adjust): Deleted.
+	(output_far_jump): Don't use braf_branch_p.
+	(output_branchy_insn): Don't use branch_offset.
+	(find_barrier): Remove checks for max_uid_before_fixup_addr_diff_vecs.
+	Remove paired barrier stuff.
+	Don't use cache_align_p.
+	Take alignment insns into account.
+	(fixup_addr_diff_vecs): Reduce to only fixing up the base label of
+	the addr_diff_vec.
+	(barrier_align, branch_dest): New function.
+	(machine_dependent_reorg, split_branches): Remove infrastructure
+	for branch shortening that is now provided in the backend.
+	* sh.md (short_cbranch_p, med_branch_p, med_cbranch_p): New attributes.
+	(braf_branch_p, braf_cbranch_p): Likewise.
+	(attribute length): Use new attributes.
+	(casesi_worker): Get mode and unsignednedd from ADDR_DIFF_VEC.
+	(addr_diff_vec_adjust): Delete.
+	(align_2): Now a define_expand.
+	(align_log): Now length 0.
+
 Fri Mar  6 14:41:33 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* m32r.md (right): Correctly check for length == 2, not 1.
@@ -2670,7 +2725,7 @@ Fri Dec 19 17:31:11 1997  Ian Lance Taylor  <ian@cygnus.com>
 	* stmt.c (expand_end_case): Likewise.
 	* alpha.h (CASE_VECTOR_PC_RELATIVE): Update.
 	* fx80.h, gmicro.h, m68k.h, m88k.h, ns32k.h: Likewise.
-	* rs6000.h, sh.h, tahoe.h, v850.h vax.h z8k.h: Likewise.
+	* rs6000.h, sh.h, tahoe.h, v850.h, vax.h: Likewise.
 
 Tue Dec 16 15:14:09 1997  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 

@@ -1444,7 +1444,7 @@ do { union { float f; long l;} tem;			\
 
 /* This is how to output an element of a case-vector that is relative.  */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)  \
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)  \
   fprintf (FILE, "\t.data.w L%d-L%d\n", VALUE, REL)
 
 

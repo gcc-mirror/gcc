@@ -427,7 +427,7 @@ extern int switch_table_difference_label_flag;
 /* This is how to output an element of a case-vector that is relative.  */
 
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)	\
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)	\
   asm_fprintf (FILE, "\t%s %LL%d-%LL%d\n", WORD_ASM_OP, VALUE, REL)
 
 /* Currently, JUMP_TABLES_IN_TEXT_SECTION must be defined in order to

@@ -2957,7 +2957,7 @@ do {									\
 
 /* This is how to output an element of a case-vector that is relative.  */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)	\
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)\
   do { char buf[100];					\
        fputs ((TARGET_32BIT) ? "\t.long " : "\t.llong ", FILE);	\
        ASM_GENERATE_INTERNAL_LABEL (buf, "L", VALUE);	\

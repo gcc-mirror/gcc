@@ -4154,7 +4154,7 @@ do {									\
    This is used for pc-relative code (e.g. when TARGET_ABICALLS or
    TARGET_EMBEDDED_PIC).  */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, VALUE, REL)			\
+#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL)		\
 do {									\
   if (TARGET_MIPS16)							\
     fprintf (STREAM, "\t.half\t%sL%d-%sL%d\n",				\

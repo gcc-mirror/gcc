@@ -60,6 +60,24 @@ extern char *rtx_format[];
 extern char rtx_class[];
 #define GET_RTX_CLASS(CODE)		(rtx_class[(int) (CODE)])
 
+/* The flags and bitfields of an ADDR_DIFF_VEC.  BASE is the base label
+   relative to which the offsets are calculated, as explained in rtl.def.  */
+typedef struct
+{
+  /* Set at the start of shorten_branches - ONLY WHEN OPTIMIZING - : */
+  unsigned min_align: 8;
+  /* Flags: */
+  unsigned base_after_vec: 1; /* BASE is after the ADDR_DIFF_VEC.  */
+  unsigned min_after_vec: 1;  /* minimum address target label is after the ADDR_DIFF_VEC.  */
+  unsigned max_after_vec: 1;  /* maximum address target label is after the ADDR_DIFF_VEC.  */
+  unsigned min_after_base: 1; /* minimum address target label is after BASE.  */
+  unsigned max_after_base: 1; /* maximum address target label is after BASE.  */
+  /* Set by the actual branch shortening process - ONLY WHEN OPTIMIZING - : */
+  unsigned offset_unsigned: 1; /* offsets have to be treated as unsigned.  */
+  unsigned : 2;
+  unsigned scale : 8;
+} addr_diff_vec_flags;
+
 /* Common union for an element of an rtx.  */
 
 typedef union rtunion_def
@@ -70,6 +88,7 @@ typedef union rtunion_def
   struct rtx_def *rtx;
   struct rtvec_def *rtvec;
   enum machine_mode rttype;
+  addr_diff_vec_flags rt_addr_diff_vec_flags;
 } rtunion;
 
 /* RTL expression ("rtx").  */
@@ -317,6 +336,8 @@ typedef struct rtvec_def{
 
 
 #define REG_NOTES(INSN)	((INSN)->fld[6].rtx)
+
+#define ADDR_DIFF_VEC_FLAGS(RTX) ((RTX)->fld[4].rt_addr_diff_vec_flags)
 
 /* Don't forget to change reg_note_name in rtl.c.  */
 enum reg_note { REG_DEAD = 1, REG_INC = 2, REG_EQUIV = 3, REG_WAS_0 = 4,

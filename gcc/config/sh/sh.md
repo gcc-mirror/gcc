@@ -114,6 +114,83 @@
 ; In machine_dependent_reorg, we split all branches that are longer than
 ; 2 bytes.
 
+;; The maximum range used for SImode constant pool entrys is 1018.  A final
+;; instruction can add 8 bytes while only being 4 bytes in size, thus we
+;; can have a total of 1022 bytes in the pool.  Add 4 bytes for a branch
+;; instruction around the pool table, 2 bytes of alignment before the table,
+;; and 30 bytes of alignment after the table.  That gives a maximum total
+;; pool size of 1058 bytes.
+;; Worst case code/pool content size ratio is 1:2 (using asms).
+;; Thus, in the worst case, there is one instruction in front of a maximum
+;; sized pool, and then there are 1052 bytes of pool for every 508 bytes of
+;; code.  For the last n bytes of code, there are 2n + 36 bytes of pool.
+;; If we have a forward branch, the initial table will be put after the
+;; unconditional branch.
+;;
+;; ??? We could do much better by keeping track of the actual pcloads within
+;; the branch range and in the pcload range in front of the branch range.
+
+;; ??? This looks ugly because genattrtab won't allow if_then_else or cond
+;; inside an le.
+(define_attr "short_cbranch_p" "no,yes"
+  (cond [(ne (symbol_ref "mdep_reorg_phase <= SH_FIXUP_PCLOAD") (const_int 0))
+	 (const_string "no")
+	 (leu (plus (minus (match_dup 0) (pc)) (const_int 252)) (const_int 506))
+	 (const_string "yes")
+	 (ne (symbol_ref "NEXT_INSN (PREV_INSN (insn)) != insn") (const_int 0))
+	 (const_string "no")
+	 (leu (plus (minus (match_dup 0) (pc)) (const_int 252)) (const_int 508))
+	 (const_string "yes")
+         ] (const_string "no")))
+
+(define_attr "med_branch_p" "no,yes"
+  (cond [(leu (plus (minus (match_dup 0) (pc)) (const_int 990))
+	      (const_int 1988))
+	 (const_string "yes")
+	 (ne (symbol_ref "mdep_reorg_phase <= SH_FIXUP_PCLOAD") (const_int 0))
+	 (const_string "no")
+	 (leu (plus (minus (match_dup 0) (pc)) (const_int 4092))
+	      (const_int 8186))
+	 (const_string "yes")
+	 ] (const_string "no")))
+
+(define_attr "med_cbranch_p" "no,yes"
+  (cond [(leu (plus (minus (match_dup 0) (pc)) (const_int 988))
+	      (const_int 1986))
+	 (const_string "yes")
+	 (ne (symbol_ref "mdep_reorg_phase <= SH_FIXUP_PCLOAD") (const_int 0))
+	 (const_string "no")
+	 (leu (plus (minus (match_dup 0) (pc)) (const_int 4090))
+	       (const_int 8184))
+	 (const_string "yes")
+	 ] (const_string "no")))
+
+(define_attr "braf_branch_p" "no,yes"
+  (cond [(ne (symbol_ref "! TARGET_SH2") (const_int 0))
+	 (const_string "no")
+	 (leu (plus (minus (match_dup 0) (pc)) (const_int 10330))
+	      (const_int 20660))
+	 (const_string "yes")
+	 (ne (symbol_ref "mdep_reorg_phase <= SH_FIXUP_PCLOAD") (const_int 0))
+	 (const_string "no")
+	 (leu (plus (minus (match_dup 0) (pc)) (const_int 32764))
+	      (const_int 65530))
+	 (const_string "yes")
+	 ] (const_string "no")))
+
+(define_attr "braf_cbranch_p" "no,yes"
+  (cond [(ne (symbol_ref "! TARGET_SH2") (const_int 0))
+	 (const_string "no")
+	 (leu (plus (minus (match_dup 0) (pc)) (const_int 10328))
+	      (const_int 20658))
+	 (const_string "yes")
+	 (ne (symbol_ref "mdep_reorg_phase <= SH_FIXUP_PCLOAD") (const_int 0))
+	 (const_string "no")
+	 (leu (plus (minus (match_dup 0) (pc)) (const_int 32762))
+	      (const_int 65528))
+	 (const_string "yes")
+	 ] (const_string "no")))
+
 ; An unconditional jump in the range -4092..4098 can be 2 bytes long.
 ; For wider ranges, we need a combination of a code and a data part.
 ; If we can get a scratch register for a long range jump, the code
@@ -123,31 +200,34 @@
 
 ; All other instructions are two bytes long by default.
 
+;; ??? This should use something like *branch_p (minus (match_dup 0) (pc)),
+;; but getattrtab doesn't understand this.
 (define_attr "length" ""
   (cond [(eq_attr "type" "cbranch")
-	 (cond [(ne (symbol_ref "short_cbranch_p (insn)") (const_int 0))
+	 (cond [(eq_attr "short_cbranch_p" "yes")
 		(const_int 2)
-		(ne (symbol_ref "med_branch_p (insn, 2)") (const_int 0))
+		(eq_attr "med_cbranch_p" "yes")
 		(const_int 6)
-		(ne (symbol_ref "braf_branch_p (insn, 2)") (const_int 0))
-		(const_int 10)
-		(ne (pc) (pc))
+		(eq_attr "braf_cbranch_p" "yes")
 		(const_int 12)
+;; ??? using pc is not computed transitively.
+		(ne (match_dup 0) (match_dup 0))
+		(const_int 14)
 		] (const_int 16))
 	 (eq_attr "type" "jump")
-	 (cond [(ne (symbol_ref "med_branch_p (insn, 0)") (const_int 0))
+	 (cond [(eq_attr "med_branch_p" "yes")
 		(const_int 2)
 		(and (eq (symbol_ref "GET_CODE (PREV_INSN (insn))")
 			 (symbol_ref "INSN"))
 		     (eq (symbol_ref "INSN_CODE (PREV_INSN (insn))")
 			 (symbol_ref "code_for_indirect_jump_scratch")))
-		(if_then_else (ne (symbol_ref "braf_branch_p (insn, 0)")
-				  (const_int 0))
+		(if_then_else (eq_attr "braf_branch_p" "yes")
 			      (const_int 6)
 			      (const_int 10))
-		(ne (symbol_ref "braf_branch_p (insn, 0)") (const_int 0))
+		(eq_attr "braf_branch_p" "yes")
 		(const_int 10)
-		(ne (pc) (pc))
+;; ??? using pc is not computed transitively.
+		(ne (match_dup 0) (match_dup 0))
 		(const_int 12)
 		] (const_int 14))
 	 ] (const_int 2)))
@@ -2605,54 +2685,26 @@
   ""
   "*
 {
-  enum machine_mode mode
-    = optimize
-	? GET_MODE (PATTERN (prev_real_insn (operands[2])))
-	: sh_addr_diff_vec_mode;
-  switch (mode)
+  rtx diff_vec = PATTERN (next_real_insn (operands[2]));
+
+  if (GET_CODE (diff_vec) != ADDR_DIFF_VEC)
+    abort ();
+
+  switch (GET_MODE (diff_vec))
     {
     case SImode:
       return \"shll2	%1\;mov.l	@(r0,%1),%0\";
     case HImode:
       return \"add	%1,%1\;mov.w	@(r0,%1),%0\";
     case QImode:
-      {
-	rtx adj = PATTERN (prev_real_insn (operands[2]));
-	if ((insn_addresses[INSN_UID (XEXP ( XVECEXP (adj, 0, 1), 0))]
-	     - insn_addresses[INSN_UID (XEXP (XVECEXP (adj, 0, 2), 0))])
-	    <= 126)
-	  return \"mov.b	@(r0,%1),%0\";
+      if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
 	return \"mov.b	@(r0,%1),%0\;extu.b	%0,%0\";
-      }
+      return \"mov.b	@(r0,%1),%0\";
     default:
       abort ();
     }
 }"
   [(set_attr "length" "4")])
-
-;; Include ADDR_DIFF_VECS in the shorten_branches pass; we have to
-;; use a negative-length instruction to actually accomplish this.
-(define_insn "addr_diff_vec_adjust"
-  [(unspec_volatile [(label_ref (match_operand 0 "" ""))
-		     (label_ref (match_operand 1 "" ""))
-		     (label_ref (match_operand 2 "" ""))
-		     (match_operand 3 "const_int_operand" "")] 7)]
-  ""
-  "*
-{
-  /* ??? ASM_OUTPUT_ADDR_DIFF_ELT gets passed no context information, so
-     we must use a kludge with a global variable.  */
-  sh_addr_diff_vec_mode = GET_MODE (PATTERN (insn));
-  return \"\";
-}"
-;; Need a variable length for this to be processed in each shorten_branch pass.
-;; The actual work is done in ADJUST_INSN_LENGTH, because length attributes
-;; need to be (a choice of) constants.
-;; We use the calculated length before ADJUST_INSN_LENGTH to
-;; determine if the insn_addresses array contents are valid.
-  [(set (attr "length")
-	(if_then_else (eq (pc) (const_int -1))
-		      (const_int 2) (const_int 0)))])
 
 (define_insn "return"
   [(return)]
@@ -2900,12 +2952,10 @@
 
 ; align to a two byte boundary
 
-(define_insn "align_2"
+(define_expand "align_2"
  [(unspec_volatile [(const_int 1)] 1)]
  ""
- ".align 1"
- [(set_attr "length" "0")
-  (set_attr "in_delay_slot" "no")])
+ "")
 
 ; align to a four byte boundary
 ;; align_4 and align_log are instructions for the starts of loops, or
@@ -2921,12 +2971,8 @@
 (define_insn "align_log"
  [(unspec_volatile [(match_operand 0 "const_int_operand" "")] 1)]
  ""
- ".align %O0"
-;; Need a variable length for this to be processed in each shorten_branch pass.
-;; The actual work is done in ADJUST_INSN_LENGTH, because length attributes
-;; need to be (a choice of) constants.
-  [(set (attr "length")
-	(if_then_else (ne (pc) (pc)) (const_int 2) (const_int 0)))
+ ""
+ [(set_attr "length" "0")
   (set_attr "in_delay_slot" "no")])
 
 ; emitted at the end of the literal table, used to emit the

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for Advanced RISC Machines
    ARM compilation, AOF Assembler.
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@armltd.co.uk)
 
 This file is part of GNU CC.
@@ -60,12 +60,13 @@ char *aof_text_section ();
 char *aof_data_section ();
 #define DATA_SECTION_ASM_OP aof_data_section ()
 
-#define EXTRA_SECTIONS in_zero_init, in_ctor, in_dtor
+#define EXTRA_SECTIONS in_zero_init, in_ctor, in_dtor, in_common
 
 #define EXTRA_SECTION_FUNCTIONS	\
 ZERO_INIT_SECTION		\
 CTOR_SECTION			\
-DTOR_SECTION
+DTOR_SECTION			\
+COMMON_SECTION
 
 #define ZERO_INIT_SECTION					\
 void								\
@@ -118,6 +119,18 @@ dtor_section ()								\
     }									\
 }
 
+/* Used by ASM_OUTPUT_COMMON (below) to tell varasm.c that we've
+   changed areas.  */
+#define COMMON_SECTION						\
+void								\
+common_section ()						\
+{								\
+  static int common_count = 1;					\
+  if (in_section != in_common)					\
+    {								\
+      in_section = in_common;					\
+    }								\
+}
 #define CTOR_LIST_BEGIN					\
 asm (CTORS_SECTION_ASM_OP);				\
 extern func_ptr __CTOR_END__[1];			\
@@ -194,7 +207,7 @@ do {					\
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
    give the same symbol without quotes for an alternative entry point.  You
-   must define both, or niether. */
+   must define both, or neither. */
 #define NAME__MAIN "__gccmain"
 #define SYMBOL__MAIN __gccmain
 
@@ -277,7 +290,8 @@ do {							\
 /* Output of Uninitialized Variables */
 
 #define ASM_OUTPUT_COMMON(STREAM,NAME,SIZE,ROUNDED)		\
-  (fprintf ((STREAM), "\tAREA "),				\
+  (common_section (),						\
+   fprintf ((STREAM), "\tAREA "),				\
    assemble_name ((STREAM), (NAME)),				\
    fprintf ((STREAM), ", DATA, COMMON\n\t%% %d\t%s size=%d\n",	\
 	    (ROUNDED), ASM_COMMENT_START, SIZE))
@@ -302,7 +316,7 @@ do {							\
     arm_main_function = 1;				\
 } while (0)
 
-#define ARM_OUTPUT_LABEL(STREAM,NAME)	\
+#define ASM_OUTPUT_LABEL(STREAM,NAME)	\
 do {					\
   assemble_name (STREAM,NAME);		\
   fputs ("\n", STREAM);			\
@@ -408,7 +422,7 @@ do {						\
 
 /* Output of Dispatch Tables */
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM,VALUE,REL)		\
+#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM,BODY,VALUE,REL)		\
   fprintf ((STREAM), "\tb\t|L..%d|\n", (VALUE))
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM,VALUE)	\
