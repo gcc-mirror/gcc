@@ -1233,11 +1233,11 @@ struct rt_cargs {int gregs, fregs; };
 
 #define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
-    if (OUTER_CODE == IOR && exact_log2 (INTVAL (RTX)) >= 0	\
-	|| OUTER_CODE == AND && exact_log2 (~INTVAL (RTX)) >= 0	\
-	|| ((OUTER_CODE == PLUS || OUTER_CODE == MINUS)		\
+    if ((OUTER_CODE) == IOR && exact_log2 (INTVAL (RTX)) >= 0	\
+	|| (OUTER_CODE) == AND && exact_log2 (~INTVAL (RTX)) >= 0	\
+	|| (((OUTER_CODE) == PLUS || (OUTER_CODE) == MINUS)		\
 	    && (unsigned int) (INTVAL (RTX) + 15) < 31)		\
-	|| (OUTER_CODE == SET && (unsigned int) INTVAL (RTX) < 16))\
+	|| ((OUTER_CODE) == SET && (unsigned int) INTVAL (RTX) < 16))\
       return 0;							\
     return ((unsigned)(INTVAL(RTX) + 0x8000) < 0x10000 || (INTVAL (RTX) & 0xffff0000) == 0) ? 0 : COSTS_N_INSNS (2);\
   case CONST:							\

@@ -844,11 +844,13 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
 #define CONST_COSTS(RTX,CODE,OUTER_CODE) \
   case CONST_INT:						\
     if (INTVAL (RTX) == 0) return 0;				\
-    if (OUTER_CODE == AND)					\
+    if ((OUTER_CODE) == AND)					\
       return ((unsigned) ~INTVAL (RTX) <= 077) ? 1 : 2;		\
     if ((unsigned) INTVAL (RTX) <= 077) return 1;		\
-    if (OUTER_CODE == COMPARE && INTVAL (RTX) == -1) return 1;	\
-    if (OUTER_CODE == PLUS && (unsigned) -INTVAL (RTX) <= 077) return 1;\
+    if ((OUTER_CODE) == COMPARE && INTVAL (RTX) == -1)		\
+      return 1;							\
+    if ((OUTER_CODE) == PLUS && (unsigned) -INTVAL (RTX) <= 077)\
+      return 1;							\
   case CONST:							\
   case LABEL_REF:						\
   case SYMBOL_REF:						\
@@ -856,9 +858,13 @@ gen_rtx (PLUS, Pmode, frame, gen_rtx (CONST_INT, VOIDmode, 12))
   case CONST_DOUBLE:						\
     if (GET_MODE_CLASS (GET_MODE (RTX)) == MODE_FLOAT)		\
       return vax_float_literal (RTX) ? 5 : 8;			\
-    else return							\
-  (CONST_DOUBLE_HIGH (RTX) == 0 && (unsigned)CONST_DOUBLE_LOW (RTX) < 64 \
-   || OUTER_CODE == PLUS && CONST_DOUBLE_HIGH (RTX) == -1 && (unsigned)-CONST_DOUBLE_LOW (RTX) < 64) ? 2 : 5;
+    else							\
+      return (((CONST_DOUBLE_HIGH (RTX) == 0			\
+		&& (unsigned) CONST_DOUBLE_LOW (RTX) < 64)	\
+	       || ((OUTER_CODE) == PLUS				\
+		   && CONST_DOUBLE_HIGH (RTX) == -1		\
+		   && (unsigned)-CONST_DOUBLE_LOW (RTX) < 64))	\
+	      ? 2 : 5);
 
 #define RTX_COSTS(RTX,CODE,OUTER_CODE) case FIX: case FLOAT:	\
  case MULT: case DIV: case UDIV: case MOD: case UMOD:		\
