@@ -1,3 +1,11 @@
+2003-07-17  Eric Botcazou <ebotcazou@libertysurf.fr>
+            Phil Edwards <phil@jaj.com>
+
+	* doc/install.texi (*-*-solaris2*): Document the step-by-step
+	procedure to bootstrap and install.
+	Document the preference for the legacy Sun tools in /usr/bin
+	over the POSIX tools in /usr/xpg4/bin for the build process.
+
 2003-07-17  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c.opt: Document Uncodumented; use it.  Document ObjC options.
