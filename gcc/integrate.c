@@ -154,11 +154,6 @@ function_cannot_inline_p (fndecl)
   if (current_function_returns_pcc_struct)
     return "inline functions not supported for this return value type";
 
-  /* We can't inline functions that return BLKmode structures in registers.  */
-  if (TYPE_MODE (TREE_TYPE (TREE_TYPE (fndecl))) == BLKmode
-      && ! aggregate_value_p (TREE_TYPE (TREE_TYPE (fndecl))))
-    return "inline functions not supported for this return value type";
-
   /* We can't inline functions that return structures of varying size.  */
   if (int_size_in_bytes (TREE_TYPE (TREE_TYPE (fndecl))) < 0)
     return "function with varying-size return value cannot be inline";
@@ -1804,7 +1799,23 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	 Let the combiner substitute the MEM if that is valid.  */
       if (target == 0 || GET_CODE (target) != REG
 	  || GET_MODE (target) != departing_mode)
+	{
+	  /* Don't make BLKmode registers.  If this looks like
+	     a BLKmode object being returned in a register, get
+	     the mode from that, otherwise abort. */
+	  if (departing_mode == BLKmode)
+	    {
+	      if (REG == GET_CODE (DECL_RTL (DECL_RESULT (fndecl))))
+		{
+		  departing_mode = GET_MODE (DECL_RTL (DECL_RESULT (fndecl)));
+		  arriving_mode = departing_mode;
+		}
+	      else
+		abort();
+	    }
+	      
 	target = gen_reg_rtx (departing_mode);
+	}
 
       /* If function's value was promoted before return,
 	 avoid machine mode mismatch when we substitute INLINE_TARGET.
@@ -2164,6 +2175,12 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
   emit_line_note (input_filename, lineno);
 
+  /* If the function returns a BLKmode object in a register, copy it
+     out of the temp register into a BLKmode memory object. */
+  if (TYPE_MODE (TREE_TYPE (TREE_TYPE (fndecl))) == BLKmode
+      && ! aggregate_value_p (TREE_TYPE (TREE_TYPE (fndecl))))
+    target = copy_blkmode_from_reg (0, target, TREE_TYPE (TREE_TYPE (fndecl)));
+  
   if (structure_value_addr)
     {
       target = gen_rtx_MEM (TYPE_MODE (type),
@@ -2428,12 +2445,13 @@ copy_rtx_and_substitute (orig, map)
 	    {
 	      /* This is a reference to the function return value.  If
 		 the function doesn't have a return value, error.  If the
-		 mode doesn't agree, make a SUBREG.  */
+		 mode doesn't agree, and it ain't BLKmode, make a SUBREG.  */
 	      if (map->inline_target == 0)
 		/* Must be unrolling loops or replicating code if we
 		   reach here, so return the register unchanged.  */
 		return orig;
-	      else if (mode != GET_MODE (map->inline_target))
+	      else if (GET_MODE (map->inline_target) != BLKmode
+		       && mode != GET_MODE (map->inline_target))
 		return gen_lowpart (mode, map->inline_target);
 	      else
 		return map->inline_target;

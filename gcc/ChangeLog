@@ -1,3 +1,16 @@
+Thu Oct  1 15:56:01 1998  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* calls.c (expand_call) : Encapsulate code into 
+	copy_blkmode_from_reg.
+	* expr.c (copy_blkmode_from_reg): New function.
+	* expr.h (copy_blkmode_from_reg): New function.
+	* integrate.c (function_cannot_inline_p): We can inline
+	these now.
+	(expand_inline_function): Use copy_blkmode_from_reg
+	if needed.  Avoid creating BLKmode REGs.
+	(copy_rtx_and_substitute): Don't try to SUBREG a BLKmode
+	object.
+
 Thu Oct  1 10:42:27 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* c-pragma.c: Add support for HANDLE_PRAGMA_PACK and

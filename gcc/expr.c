@@ -2064,6 +2064,88 @@ emit_group_store (orig_dst, src, ssize, align)
     emit_move_insn (orig_dst, dst);
 }
 
+/* Generate code to copy a BLKmode object of TYPE out of a
+   set of registers starting with SRCREG into TGTBLK.  If TGTBLK
+   is null, a stack temporary is created.  TGTBLK is returned.
+
+   The primary purpose of this routine is to handle functions
+   that return BLKmode structures in registers.  Some machines
+   (the PA for example) want to return all small structures
+   in registers regardless of the structure's alignment.
+  */
+
+rtx
+copy_blkmode_from_reg(tgtblk,srcreg,type)
+     rtx tgtblk;
+     rtx srcreg;
+     tree type;
+{
+      int bytes = int_size_in_bytes (type);
+      rtx src = NULL, dst = NULL;
+      int bitsize = MIN (TYPE_ALIGN (type), BITS_PER_WORD);
+      int bitpos, xbitpos, big_endian_correction = 0;
+      
+      if (tgtblk == 0)
+	{
+	  tgtblk = assign_stack_temp (BLKmode, bytes, 0);
+	  MEM_IN_STRUCT_P (tgtblk) = AGGREGATE_TYPE_P (type);
+	  preserve_temp_slots (tgtblk);
+	}
+      
+      /* This code assumes srcreg is at least a full word.  If it isn't,
+	 copy it into a new pseudo which is a full word.  */
+      if (GET_MODE (srcreg) != BLKmode
+	  && GET_MODE_SIZE (GET_MODE (srcreg)) < UNITS_PER_WORD)
+	srcreg = convert_to_mode (word_mode, srcreg,
+				  TREE_UNSIGNED (type));
+
+      /* Structures whose size is not a multiple of a word are aligned
+	 to the least significant byte (to the right).  On a BYTES_BIG_ENDIAN
+	 machine, this means we must skip the empty high order bytes when
+	 calculating the bit offset.  */
+      if (BYTES_BIG_ENDIAN && bytes % UNITS_PER_WORD)
+	big_endian_correction = (BITS_PER_WORD - ((bytes % UNITS_PER_WORD)
+						  * BITS_PER_UNIT));
+
+      /* Copy the structure BITSIZE bites at a time.
+
+	 We could probably emit more efficient code for machines
+	 which do not use strict alignment, but it doesn't seem
+	 worth the effort at the current time.  */
+      for (bitpos = 0, xbitpos = big_endian_correction;
+	   bitpos < bytes * BITS_PER_UNIT;
+	   bitpos += bitsize, xbitpos += bitsize)
+	{
+
+	  /* We need a new source operand each time xbitpos is on a 
+	     word boundary and when xbitpos == big_endian_correction
+	     (the first time through).  */
+	  if (xbitpos % BITS_PER_WORD == 0
+	      || xbitpos == big_endian_correction)
+	    src = operand_subword_force (srcreg,
+					 xbitpos / BITS_PER_WORD, 
+					 BLKmode);
+
+	  /* We need a new destination operand each time bitpos is on
+	     a word boundary.  */
+	  if (bitpos % BITS_PER_WORD == 0)
+	    dst = operand_subword (tgtblk, bitpos / BITS_PER_WORD, 1, BLKmode);
+	      
+	  /* Use xbitpos for the source extraction (right justified) and
+	     xbitpos for the destination store (left justified).  */
+	  store_bit_field (dst, bitsize, bitpos % BITS_PER_WORD, word_mode,
+			   extract_bit_field (src, bitsize,
+					      xbitpos % BITS_PER_WORD, 1,
+					      NULL_RTX, word_mode,
+					      word_mode,
+					      bitsize / BITS_PER_UNIT,
+					      BITS_PER_WORD),
+			   bitsize / BITS_PER_UNIT, BITS_PER_WORD);
+	}
+      return tgtblk;
+}
+
+
 /* Add a USE expression for REG to the (possibly empty) list pointed
    to by CALL_FUSAGE.  REG must denote a hard register.  */
 
