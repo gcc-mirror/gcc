@@ -232,6 +232,9 @@ java::net::PlainSocketImpl::create (jboolean stream)
       char* strerr = strerror (errno);
       throw new java::io::IOException (JvNewStringUTF (strerr));
     }
+
+  _Jv_platform_close_on_exec (sock);
+
   fnum = sock;
   fd = new java::io::FileDescriptor (sock);
 }
@@ -374,6 +377,9 @@ java::net::PlainSocketImpl::accept (java::net::PlainSocketImpl *s)
   new_socket = _Jv_accept (fnum, (sockaddr*) &u, &addrlen);
   if (new_socket < 0)
     goto error;
+
+  _Jv_platform_close_on_exec (new_socket);
+
   jbyteArray raddr;
   jint rport;
   if (u.address.sin_family == AF_INET)

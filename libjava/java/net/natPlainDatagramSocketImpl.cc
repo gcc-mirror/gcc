@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -185,6 +185,9 @@ java::net::PlainDatagramSocketImpl::create ()
       char* strerr = strerror (errno);
       throw new java::net::SocketException (JvNewStringUTF (strerr));
     }
+
+  _Jv_platform_close_on_exec (sock);
+
   fnum = sock;
   fd = new java::io::FileDescriptor (sock);
 }
