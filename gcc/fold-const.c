@@ -411,7 +411,8 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
   /* Sign extend all bits that are beyond the precision.  */
 
   signmask = -((prec > HOST_BITS_PER_WIDE_INT
-		? (*hv >> (prec - HOST_BITS_PER_WIDE_INT - 1))
+		? ((unsigned HOST_WIDE_INT) *hv
+                   >> (prec - HOST_BITS_PER_WIDE_INT - 1))
 		: (*lv >> (prec - 1))) & 1);
 
   if (prec >= 2 * HOST_BITS_PER_WIDE_INT)
@@ -717,7 +718,7 @@ div_and_round_double (code, uns,
 
 	  /* If quo_est was high by one, then num[i] went negative and
 	     we need to correct things.  */
-	  if (num[num_hi_sig] < carry)
+	  if (num[num_hi_sig] < (HOST_WIDE_INT) carry)
 	    {
 	      quo_est--;
 	      carry = 0;		/* add divisor back in */
@@ -5339,17 +5340,6 @@ fold (expr)
       if (t1 != NULL_TREE)
 	return t1;
       /* Simplify ((int)c & 0x377) into (int)c, if c is unsigned char.  */
-      if (TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) == NOP_EXPR
-	  && TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (arg1, 0))))
-	{
-	  unsigned int prec
-	    = TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg1, 0)));
-
-	  if (prec < BITS_PER_WORD && prec < HOST_BITS_PER_WIDE_INT
-	      && (~TREE_INT_CST_LOW (arg0)
-		  & (((HOST_WIDE_INT) 1 << prec) - 1)) == 0)
-	    return build1 (NOP_EXPR, type, TREE_OPERAND (arg1, 0));
-	}
       if (TREE_CODE (arg1) == INTEGER_CST && TREE_CODE (arg0) == NOP_EXPR
 	  && TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (arg0, 0))))
 	{

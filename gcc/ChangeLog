@@ -1,3 +1,11 @@
+2002-05-06  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (lshift-double): Cast the high word to an unsigned
+	HOST_WIDE_INT when extracting sign bit to avoid compiler warning.
+	(div_and_round_double): Cast carry to a signed HOST_WIDE_INT to
+	avoid compiler warning.  (fold): Remove redundant code from
+	BIT_AND_EXPR as integer operands are canonicalized to be arg1.
+
 2002-05-06  Jeff Law  <law@redhat.com>
 
 	* pa-protos.h (hppa_fpstore_bypass_p): Declare.
