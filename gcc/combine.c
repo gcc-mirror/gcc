@@ -3256,8 +3256,9 @@ subst (x, from, to, in_dest, unique_copy)
 	 for example in cases like ((a & 1) + (a & 2)), which can
 	 become a & 3.  */
 
-      if ((significant_bits (XEXP (x, 0), mode)
-	   & significant_bits (XEXP (x, 1), mode)) == 0)
+      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	  && (significant_bits (XEXP (x, 0), mode)
+	      & significant_bits (XEXP (x, 1), mode)) == 0)
 	{
 	  x = gen_binary (IOR, mode, XEXP (x, 0), XEXP (x, 1));
 	  goto restart;
@@ -4067,6 +4068,7 @@ subst (x, from, to, in_dest, unique_copy)
     case IOR:
       /* (ior A C) is C if all significant bits of A are on in C.  */
       if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
 	  && (significant_bits (XEXP (x, 0), mode)
 	      & ~ INTVAL (XEXP (x, 1))) == 0)
 	return XEXP (x, 1);
@@ -5449,7 +5451,8 @@ make_field_assignment (x)
 
   pos = get_pos_from_mask (~c1, &len);
   if (pos < 0 || pos + len > GET_MODE_BITSIZE (GET_MODE (dest))
-      || (c1 & significant_bits (other, GET_MODE (other))) != 0)
+      || (GET_MODE_BITSIZE (GET_MODE (other)) <= HOST_BITS_PER_WIDE_INT
+	  && (c1 & significant_bits (other, GET_MODE (other))) != 0))
     return x;
 
   assign = make_extraction (VOIDmode, dest, pos, NULL_RTX, len, 1, 1, 0);
@@ -6247,7 +6250,8 @@ num_sign_bit_copies (x, mode)
       /* If the constant is negative, take its 1's complement and remask.
 	 Then see how many zero bits we have.  */
       sig = INTVAL (x) & GET_MODE_MASK (mode);
-      if (sig & ((HOST_WIDE_INT) 1 << (bitwidth - 1)))
+      if (bitwidth <= HOST_BITS_PER_WIDE_INT
+	  && (sig & ((HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0)
 	sig = (~ sig) & GET_MODE_MASK (mode);
 
       return (sig == 0 ? bitwidth : bitwidth - floor_log2 (sig) - 1);
@@ -6326,6 +6330,7 @@ num_sign_bit_copies (x, mode)
 
       num0 = num_sign_bit_copies (XEXP (x, 0), mode);
       if (num0 > 1
+	  && bitwidth <= HOST_BITS_PER_WIDE_INT
 	  && (((HOST_WIDE_INT) 1 << (bitwidth - 1)) & sig))
 	num0--;
 
@@ -6373,6 +6378,7 @@ num_sign_bit_copies (x, mode)
 
       result = bitwidth - (bitwidth - num0) - (bitwidth - num1);
       if (result > 0
+	  && bitwidth <= HOST_BITS_PER_INT
 	  && ((significant_bits (XEXP (x, 0), mode)
 	       & ((HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0)
 	  && (significant_bits (XEXP (x, 1), mode)
@@ -6395,6 +6401,7 @@ num_sign_bit_copies (x, mode)
 	 to add 1.  */
       result = num_sign_bit_copies (XEXP (x, 0), mode);
       if (result > 1
+	  && bitwidth <= HOST_BITS_PER_WIDE_INT
 	  && (significant_bits (XEXP (x, 1), mode)
 	      & ((HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0)
 	result --;
@@ -6404,6 +6411,7 @@ num_sign_bit_copies (x, mode)
     case MOD:
       result = num_sign_bit_copies (XEXP (x, 1), mode);
       if (result > 1
+	  && bitwidth <= HOST_BITS_PER_WIDE_INT
 	  && (significant_bits (XEXP (x, 1), mode)
 	      & ((HOST_WIDE_INT) 1 << (bitwidth - 1))) != 0)
 	result --;
@@ -6445,7 +6453,11 @@ num_sign_bit_copies (x, mode)
 
   /* If we haven't been able to figure it out by one of the above rules,
      see if some of the high-order bits are known to be zero.  If so,
-     count those bits and return one less than that amount.  */
+     count those bits and return one less than that amount.  If we can't
+     safely compute the mask for this mode, always return BITWIDTH.  */
+
+  if (bitwidth > HOST_BITS_PER_WIDE_INT)
+    return bitwidth;
 
   sig = significant_bits (x, mode);
   return sig == GET_MODE_MASK (mode) ? 1 : bitwidth - floor_log2 (sig) - 1;
@@ -6472,8 +6484,9 @@ extended_count (x, mode, unsignedp)
     return 0;
 
   return (unsignedp
-	  ? (GET_MODE_BITSIZE (mode) - 1
-	     - floor_log2 (significant_bits (x, mode)))
+	  ? (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	     && (GET_MODE_BITSIZE (mode) - 1
+		 - floor_log2 (significant_bits (x, mode))))
 	  : num_sign_bit_copies (x, mode) - 1);
 }
 
@@ -7148,6 +7161,7 @@ simplify_shift_const (x, code, result_mode, varop, count)
 	    }
 	  else if ((code == ASHIFTRT || code == LSHIFTRT)
 		   && count < HOST_BITS_PER_WIDE_INT
+		   && GET_MODE_BITSIZE (result_mode) <= HOST_BITS_PER_WIDE_INT
 		   && 0 == (significant_bits (XEXP (varop, 0), result_mode)
 			    >> count)
 		   && 0 == (significant_bits (XEXP (varop, 0), result_mode)
@@ -7667,6 +7681,8 @@ simplify_comparison (code, pop0, pop1)
 		    > GET_MODE_SIZE (GET_MODE (SUBREG_REG (XEXP (op0, 0)))))
 		&& (GET_MODE (SUBREG_REG (XEXP (op0, 0)))
 		    == GET_MODE (SUBREG_REG (XEXP (op1, 0))))
+		&& (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (XEXP (op0, 0))))
+		    <= HOST_BITS_PER_WIDE_INT)
 		&& (significant_bits (SUBREG_REG (XEXP (op0, 0)),
 				      GET_MODE (SUBREG_REG (XEXP (op0, 0))))
 		    & ~ INTVAL (XEXP (op0, 1))) == 0
@@ -8433,7 +8449,8 @@ simplify_comparison (code, pop0, pop1)
   else if (GET_CODE (op0) == SUBREG && subreg_lowpart_p (op0)
 	   && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT
 	   && (code == NE || code == EQ)
-	   && GET_MODE_BITSIZE (GET_MODE (op0)) <= HOST_BITS_PER_WIDE_INT
+	   && (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0)))
+	       <= HOST_BITS_PER_WIDE_INT)
 	   && (significant_bits (SUBREG_REG (op0), GET_MODE (SUBREG_REG (op0)))
 	       & ~ GET_MODE_MASK (GET_MODE (op0))) == 0
 	   && (tem = gen_lowpart_for_combine (GET_MODE (SUBREG_REG (op0)),
