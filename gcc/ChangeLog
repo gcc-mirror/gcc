@@ -1,5 +1,7 @@
 2003-09-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config.gcc: Move use_fixproto=no from generic NetBSD clause to
+	specific NetBSD clauses.
 	* config.gcc: Move use_fixproto=no from generic OpenBSD clause
 	to specific OpenBSD clauses.
 

@@ -406,7 +406,6 @@ case ${target} in
 		default_use_cxa_atexit=yes
 		;;
 	esac
-	use_fixproto=no
 	;;
 *-*-freebsd[12] | *-*-freebsd[12].* | *-*-freebsd*aout*)
 	# This is the place-holder for the generic a.out configuration
@@ -525,8 +524,8 @@ alpha*-*-netbsd*)
 	tm_file="${tm_file} netbsd.h alpha/elf.h netbsd-elf.h alpha/netbsd.h"
 	target_cpu_default="MASK_GAS"
 	tmake_file="${tmake_file} alpha/t-alpha alpha/t-ieee"
+	use_fixproto=no
 	;;
-
 alpha*-*-openbsd*)
 	tm_defines="OBSD_NO_DYNAMIC_LIBRARIES OBSD_HAS_DECLARE_FUNCTION_NAME OBSD_HAS_DECLARE_FUNCTION_SIZE OBSD_HAS_DECLARE_OBJECT"
 	tm_file="alpha/alpha.h openbsd.h alpha/openbsd.h"
@@ -602,6 +601,7 @@ arm*-*-freebsd*|strongarm*-*-freebsd*)
 arm*-*-netbsdelf*)
 	tm_file="dbxelf.h elfos.h netbsd.h netbsd-elf.h arm/elf.h arm/aout.h arm/arm.h arm/netbsd-elf.h"
 	tmake_file="${tmake_file} arm/t-netbsd"
+	use_fixproto=no
 	;;
 arm*-*-netbsd*)
 	tm_file="arm/aout.h arm/arm.h netbsd.h netbsd-aout.h arm/netbsd.h"
@@ -912,6 +912,7 @@ x86_64-*-freebsd*)
 	;;
 i[34567]86-*-netbsdelf*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-elf.h i386/netbsd-elf.h"
+	use_fixproto=no
 	;;
 i[34567]86-*-netbsd*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h netbsd.h netbsd-aout.h i386/netbsd.h"
@@ -922,6 +923,7 @@ i[34567]86-*-netbsd*)
 	;;
 x86_64-*-netbsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-elf.h i386/x86-64.h i386/netbsd64.h"
+	use_fixproto=no
 	;;
 i[34567]86-*-openbsd*)
 	tm_file="i386/i386.h i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h openbsd-oldgas.h openbsd.h i386/openbsd.h"
@@ -1314,6 +1316,7 @@ m68010-*-netbsdelf* | m68k*-*-netbsdelf*)
 		target_cpu_default="MASK_68020|MASK_68881|MASK_BITFIELD"
 		;;
 	esac
+	use_fixproto=no
 	;;
 m68k*-*-netbsd*)
 	tm_file="m68k/m68k.h netbsd.h netbsd-aout.h m68k/netbsd.h"
@@ -1439,6 +1442,7 @@ mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_GAS|MASK_ABICALLS"
 	tm_file="elfos.h ${tm_file} mips/elf.h netbsd.h netbsd-elf.h mips/netbsd.h"
 	tmake_file="${tmake_file}"
+	use_fixproto=no
 	;;
 mips64*-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h linux.h ${tm_file} mips/linux.h mips/linux64.h"
@@ -1556,6 +1560,7 @@ mn10300-*-*)
 	;;
 ns32k-*-netbsdelf*)
 	echo "GCC does not yet support the ${target} target"; exit 1
+	use_fixproto=no
 	;;
 ns32k-*-netbsd*)
 	tm_file="${tm_file} netbsd.h netbsd-aout.h ns32k/netbsd.h"
@@ -1611,6 +1616,7 @@ powerpc*-*-freebsd*)
 powerpc-*-netbsd*)
 	tm_file="${tm_file} dbxelf.h elfos.h netbsd.h netbsd-elf.h freebsd-spec.h rs6000/sysv4.h rs6000/netbsd.h"
 	tmake_file="${tmake_file} rs6000/t-netbsd"
+	use_fixproto=no
 	;;
 powerpc-*-chorusos*)
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h freebsd-spec.h rs6000/sysv4.h chorus.h"
@@ -1874,6 +1880,7 @@ sh-*-netbsdelf* | shl*-*-netbsdelf* | sh5-*-netbsd* | sh5l*-*-netbsd* | \
 		tmake_file="${tmake_file} sh/t-netbsd"
 		;;
 	esac
+	use_fixproto=no
 	;;
 sh-*-*)
 	tm_file="${tm_file} dbxcoff.h sh/coff.h"
@@ -1883,6 +1890,7 @@ sparc-tti-*)
 	;;
 sparc-*-netbsdelf*)
 	tm_file="${tm_file} elfos.h svr4.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
+	use_fixproto=no
 	;;
 sparc-*-openbsd*)
 	tm_defines=OBSD_OLD_GAS
@@ -2038,6 +2046,7 @@ sparc64-*-netbsd*)
 	tmake_file="${tmake_file} sparc/t-netbsd64"
 	tm_file="sparc/biarch64.h ${tm_file}"
 	tm_file="${tm_file} dbxelf.h elfos.h svr4.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
+	use_fixproto=no
 	;;
 strongarm-*-elf*)
 	tm_file="arm/strongarm-elf.h dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h arm/arm.h"
@@ -2112,6 +2121,7 @@ vax-*-sysv*)			# VAXen running system V
 	;;
 vax-*-netbsdelf*)
 	tm_file="${tm_file} elfos.h netbsd.h netbsd-elf.h vax/elf.h vax/netbsd-elf.h"
+	use_fixproto=no
 	;;
 vax-*-netbsd*)
 	tm_file="${tm_file} netbsd.h netbsd-aout.h vax/netbsd.h"
