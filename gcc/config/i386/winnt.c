@@ -578,9 +578,7 @@ i386_pe_strip_name_encoding_full (const char *str)
    whereas symbols for functions using other calling conventions don't
    have a prefix (unless they are marked dllimport or dllexport).  */
 
-void i386_pe_output_labelref (stream, name)
-     FILE *stream;
-     const char *name;
+void i386_pe_output_labelref (FILE *stream, const char *name)
 {
   if (strncmp (name, DLL_IMPORT_PREFIX, strlen (DLL_IMPORT_PREFIX))
       == 0)

@@ -122,7 +122,7 @@ union tree_node;
 
 #define DRECTVE_SECTION_FUNCTION \
 void									\
-drectve_section ()							\
+drectve_section (void)							\
 {									\
   if (in_section != in_drectve)						\
     {									\

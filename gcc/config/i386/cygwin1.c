@@ -26,10 +26,9 @@ Boston, MA 02111-1307, USA.  */
 #include <string.h>
 
 void
-mingw_scan (argc, argv, spec_machine)
-    int argc ATTRIBUTE_UNUSED;
-    const char *const *argv;
-    char **spec_machine;
+mingw_scan (int argc ATTRIBUTE_UNUSED,
+            const char *const *argv,
+            char **spec_machine)
 {
   putenv ("GCC_CYGWIN_MINGW=0");
  
