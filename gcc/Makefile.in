@@ -1498,7 +1498,7 @@ $(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) \
 mips-tfile: mips-tfile.o version.o $(LIBDEPS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ mips-tfile.o version.o $(LIBS)
 
-mips-tfile.o : mips-tfile.c $(CONFIG_H) $(RTL_H) system.h
+mips-tfile.o : mips-tfile.c $(CONFIG_H) $(RTL_H) system.h machmode.h
 
 mips-tdump: mips-tdump.o version.o $(LIBDEPS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ mips-tdump.o version.o $(LIBS)
