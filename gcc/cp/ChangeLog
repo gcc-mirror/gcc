@@ -1,3 +1,10 @@
+2004-02-19  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/14181
+	* parser.c (cp_parser_new_expression): Parse an ill-formed 
+	direct-new-declarator after a parenthesized type-id to emit good
+	diagnostic.
+
 2004-02-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11326

@@ -4457,6 +4457,15 @@ cp_parser_new_expression (cp_parser* parser)
       type = cp_parser_type_id (parser);
       /* Look for the closing `)'.  */
       cp_parser_require (parser, CPP_CLOSE_PAREN, "`)'");
+      /* There should not be a direct-new-declarator in this production, 
+         but GCC used to allowed this, so we check and emit a sensible error
+	 message for this case.  */
+      if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_SQUARE))
+	{
+	  error ("array bound forbidden after parenthesized type-id");
+	  inform ("try removing the parentheses around the type-id");
+	  cp_parser_direct_new_declarator (parser);
+	}
     }
   /* Otherwise, there must be a new-type-id.  */
   else
