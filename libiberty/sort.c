@@ -24,7 +24,12 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #include "libiberty.h"
 #include "sort.h"
+#ifdef HAVE_LIMITS_H
 #include <limits.h>
+#endif
+#ifdef HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif

@@ -5,6 +5,14 @@
 	(demangle_array_type): Handle empty and non-constant array length.
 
 2000-07-23  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
+	    Jeff Law <law@cygnus.com>
+
+	* configure.in (AC_CHECK_HEADERS): Add limits.h.
+	* configure, config.in: Regenerate.
+	* sort.c: Portably #include <limits.h> and/or <sys/param.h>.
+	* strtol.c, strtoul.c: #include "config.h". Portably #include
+	<limits.h> and/or <sys/param.h>.
+	* Makefile.in (strtol.o, strtoul.o): Update dependencies.
 
 	* aclocal.m4 (libiberty_AC_DECLARE_ERRNO): New macro.
 	* configure.in (libiberty_AC_DECLARE_ERRNO): Add check.
