@@ -338,7 +338,7 @@ extern char *getwd ();
 #endif
 
 #ifdef NEED_DECLARATION_SBRK
-extern char *sbrk ();
+extern PTR sbrk ();
 #endif
 
 #ifdef NEED_DECLARATION_STRSTR
@@ -350,15 +350,15 @@ extern char *strstr ();
 #endif
 
 #ifdef NEED_DECLARATION_MALLOC
-extern char *malloc ();
+extern PTR malloc ();
 #endif
 
 #ifdef NEED_DECLARATION_CALLOC
-extern char *calloc ();
+extern PTR calloc ();
 #endif
 
-#ifdef NEED_DECLARATION_REMALLOC
-extern char *realloc ();
+#ifdef NEED_DECLARATION_REALLOC
+extern PTR realloc ();
 #endif
 
 #ifdef HAVE_STRERROR
