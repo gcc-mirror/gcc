@@ -1,5 +1,5 @@
 // Special g++ Options: -O -Wall
-// Depeletes VM.
+// Depletes VM.
 
 #include <iostream.h>
 #include <list>
