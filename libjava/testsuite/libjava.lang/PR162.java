@@ -1,16 +1,16 @@
 interface I
 {
-  int i = 1, ii = Test.out ("ii", 2);
+  int i = 1, ii = PR162.out ("ii", 2);
 }
 
 interface J extends I
 {
-  int j = Test.out ("j", 3), jj = Test.out ("jj", 4);
+  int j = PR162.out ("j", 3), jj = PR162.out ("jj", 4);
 }
 
 interface K extends J
 {
-  int k = Test.out ("k", 5);
+  int k = PR162.out ("k", 5);
 }
 
 public class PR162
