@@ -3,7 +3,7 @@
    
    PowerPC Assembly glue.
 
-   $Id: darwin.S,v 1.0 2001/01/02 01:49:46 green Exp $
+   $Id: darwin.S,v 1.1 2001/10/09 05:32:15 bryce Exp $
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -147,7 +147,13 @@ L(float_return_value):
 	b	L(done_return_value)
 //END(_ffi_call_DARWIN)
 
-
-
-
+/* Provide a null definition of _ffi_call_AIX.  */
+.text
+	.align 2
+.globl _ffi_call_AIX
+.text
+	.align 2
+_ffi_call_AIX:
+	blr
+//END(_ffi_call_AIX)
 
