@@ -1,3 +1,8 @@
+1998-07-01  Dave Love  <d.love@dl.ac.uk>
+
+	* g77.f-torture/execute/980701-0.f,
+	g77.f-torture/execute/980701-1.f: New test from Craig.
+
 Wed Jul  1 00:52:51 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/980701-1.c: New test.
