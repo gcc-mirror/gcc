@@ -170,6 +170,7 @@ output_stack_adjust (size)
     }
 }
 
+
 /* Generate code to push the regs specified in the mask, and return
    the number of bytes the insns take. */
 
@@ -462,7 +463,7 @@ synth_constant (operands, mode)
 {
   rtx dst;
   int i = INTVAL (operands[1]) & 0xffffffff;
-
+    
   if (CONST_OK_FOR_I (i))
     return 0;
 
@@ -536,7 +537,19 @@ synth_constant (operands, mode)
   else
     return 0;
 
-  if (mode != SImode)
+  if (mode == DImode)
+    {
+      /* Moving from SI to DI, we've got to zero out the high part */
+
+      emit_insn (gen_rtx (SET, VOIDmode, 
+			  gen_rtx (SUBREG, SImode, operands[0], 0),
+			  dst));
+      emit_insn (gen_rtx (SET, VOIDmode,
+			  gen_rtx (SUBREG, SImode, operands[0], 1),
+			  const0_rtx));
+
+    }
+  else if (mode != SImode)
     {
       emit_insn (gen_rtx (SET, VOIDmode, operands[0],
 			  gen_rtx (SUBREG, mode, dst, 0)));
@@ -1240,9 +1253,9 @@ add_constant (x, mode)
 	      if (XINT (x, 3) != XINT (pool_vector[i].value, 3))
 		continue;
 	    }
+	  if (rtx_equal_p (x, pool_vector[i].value))
+	    return pool_vector[i].label;
 	}
-      if (rtx_equal_p (x, pool_vector[i].value))
-	return pool_vector[i].label;
     }
 
   /* Need a new one */
