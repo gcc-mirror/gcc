@@ -195,8 +195,11 @@ AM_CXXFLAGS =  	-fno-implicit-templates 	$(LIBSUPCXX_CXXFLAGS) 	$(WARN_CXXFLAGS)
 # can't decide which configuration to use, and it gives up.  The
 # correct solution is to add `--tag CXX' to LTCXXCOMPILE and maybe
 # CXXLINK, just after $(LIBTOOL), so that libtool doesn't have to
-# attempt to infer which configuration to use
-LTCXXCOMPILE = $(LIBTOOL) --tag CXX --mode=compile $(CXX) $(INCLUDES) 	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
+# attempt to infer which configuration to use.
+#
+# We have to put --tag disable-shared after --tag CXX lest things
+# CXX undo the affect of disable-shared.
+LTCXXCOMPILE = $(LIBTOOL) --tag CXX --tag disable-shared                --mode=compile $(CXX) $(INCLUDES) 	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
 
 
 # 3) We have a problem when building the shared libstdc++ object if
@@ -230,7 +233,7 @@ CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS
 CXXLD = $(CXX)
 HEADERS =  $(glibcppinstall_HEADERS)
 
-DIST_COMMON =  ChangeLog Makefile.am Makefile.in configure configure.in
+DIST_COMMON =  Makefile.am Makefile.in configure configure.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)

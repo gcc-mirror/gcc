@@ -353,6 +353,26 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1, [
   fi
 ])
 
+dnl
+dnl Like GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1, but does a bunch of
+dnl of functions at once.  It's an all-or-nothing check -- either 
+dnl HAVE_XYZ is defined for each of the functions, or for none of them
+dnl Doing it this way saves significant configure time.
+AC_DEFUN(GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1, [
+  AC_MSG_CHECKING([for $1 functions])
+  AC_CACHE_VAL(glibcpp_cv_func_$2_use, [
+    AC_LANG_SAVE
+    AC_LANG_CPLUSPLUS
+    AC_TRY_COMPILE([#include <math.h>],
+                   [ `for x in $3; do echo "$x (0);"; done` ],
+	           [glibcpp_cv_func_$2_use=yes],
+	           [glibcpp_cv_func_$2_use=no])
+    AC_LANG_RESTORE])
+  AC_MSG_RESULT($glibcpp_cv_func_$2_use)
+  if test x$glibcpp_cv_func_$2_use = x"yes"; then
+    AC_CHECK_FUNCS($3)
+  fi
+])
 
 dnl
 dnl Check to see if the (math function) argument passed is
@@ -612,16 +632,17 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(qfpclass)
 
   dnl Check to see if basic C math functions have float versions.
+  GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(float trig,
+	                                  float_trig,
+	                                  acosf asinf atanf \
+                                          cosf sinf tanf \
+	                                  coshf sinhf tanhf)
+  GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(float round,
+	                                  float_round,
+                                          ceilf floorf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isnanf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isinff)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(acosf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(asinf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(atanf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(ceilf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(cosf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(coshf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(fabsf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(floorf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(fmodf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(frexpf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(ldexpf)
@@ -629,28 +650,25 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(log10f)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(modff)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(powf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(sinf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(sinhf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(sqrtf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(tanf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(tanhf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3(sincosf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(finitef)
 
   dnl Check to see if basic C math functions have long double versions.
+  GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(long double trig,
+	                                  long_double_trig,
+	                                  acosl asinl atanl \
+                                          cosl sinl tanl \
+	                                  coshl sinhl tanhl)
+  GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(long double round,
+	                                  long_double_round,
+                                          ceill floorl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isnanl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(isinfl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(copysignl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(acosl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(asinl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(atanl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(atan2l)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(ceill)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(cosl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(coshl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(expl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(fabsl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(floorl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(fmodl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(frexpl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(ldexpl)
@@ -658,11 +676,7 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(log10l)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(modfl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(powl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(sinl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(sinhl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(sqrtl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(tanl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(tanhl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3(sincosl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(finitel)
 
@@ -679,16 +693,17 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_qfpclass)
 
   dnl Check to see if basic C math functions have float versions.
+  GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(_float trig,
+	                                  _float_trig,
+	                                  _acosf _asinf _atanf \
+                                          _cosf _sinf _tanf \
+	                                  _coshf _sinhf _tanhf)
+  GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(_float round,
+	                                  _float_round,
+                                          _ceilf _floorf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isnanf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isinff)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_acosf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_asinf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_atanf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_ceilf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_cosf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_coshf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_fabsf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_floorf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_fmodf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_frexpf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_ldexpf)
@@ -696,28 +711,25 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_log10f)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_modff)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_powf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_sinf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_sinhf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_sqrtf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_tanf)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_tanhf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3(_sincosf)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_finitef)
 
   dnl Check to see if basic C math functions have long double versions.
+  GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(_long double trig,
+	                                  _long_double_trig,
+	                                  _acosl _asinl _atanl \
+                                          _cosl _sinl _tanl \
+	                                  _coshl _sinhl _tanhl)
+  GLIBCPP_CHECK_MATH_DECLS_AND_LINKAGES_1(_long double round,
+	                                  _long_double_round,
+                                          _ceill _floorl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isnanl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_isinfl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_copysignl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_acosl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_asinl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_atanl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_atan2l)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_ceill)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_cosl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_coshl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_expl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_fabsl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_floorl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_fmodl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_frexpl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_ldexpl)
@@ -725,11 +737,7 @@ AC_DEFUN(GLIBCPP_CHECK_MATH_SUPPORT, [
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_log10l)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_modfl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_2(_powl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_sinl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_sinhl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_sqrtl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_tanl)
-  GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_tanhl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_3(_sincosl)
   GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE_1(_finitel)
 
@@ -792,149 +800,10 @@ AC_DEFUN(GLIBCPP_CHECK_CTYPE_SUPPORT, [
   AC_CHECK_HEADER(ctype.h, [
     
     dnl If doesn't match any specified, go with defaults.
-    ctype_default=yes
-
-    dnl Test for <ctype> functionality -- GNU/Linux
-    AC_MSG_CHECKING([<ctype> for GNU/Linux])
-    AC_TRY_COMPILE([#include <ctype.h>],
-    [int
-    foo (int a)
-    { return _ISspace + _ISprint + _IScntrl + _ISupper + _ISlower + _ISalpha \
-        + _ISdigit + _ISpunct + _ISxdigit + _ISalnum + _ISgraph \
-        + __ctype_tolower[a] + __ctype_toupper[a] + __ctype_b[a];}], \
-    ctype_linux=yes, ctype_linux=no)
-    AC_MSG_RESULT($ctype_linux)
-    if test $ctype_linux = "yes"; then
-      ctype_include_dir="config/os/gnu-linux"
+    if test x$ctype_include_dir != x; then
       ctype_default=no
-    fi
-
-    dnl Test for <ctype> functionality -- FreeBSD 4.0
-    if test $ctype_default = "yes"; then
-    AC_MSG_CHECKING([<ctype> for FreeBSD 4.0])
-    AC_TRY_COMPILE([#include <ctype.h>],
-    [int
-    foo (int a)
-    { return _CTYPE_S + _CTYPE_R + _CTYPE_C + _CTYPE_U + _CTYPE_L + _CTYPE_A \
-        + _CTYPE_D + _CTYPE_P + _CTYPE_X + _CTYPE_G ;}], \
-    ctype_bsd=yes, ctype_bsd=no)
-    AC_MSG_RESULT($ctype_bsd)
-    if test $ctype_bsd = "yes"; then
-      ctype_include_dir="config/os/bsd/freebsd"
-      ctype_default=no
-    fi
-    fi
-
-    dnl Test for <ctype> functionality -- FreeBSD 3.4
-    if test $ctype_default = "yes"; then
-    AC_MSG_CHECKING([<ctype> for FreeBSD 3.4])
-    AC_TRY_COMPILE([#include <ctype.h>],
-    [int
-    foo (int a)
-    { return _S + _R + _C + _U + _L + _A \
-      + _D + _P + _X + _G + __istype (a, 0);}], \
-    ctype_freebsd34=yes, ctype_freebsd34=no)
-    AC_MSG_RESULT($ctype_freebsd34)
-    if test $ctype_freebsd34 = "yes"; then
-      ctype_include_dir="config/os/bsd/freebsd"
-      ctype_default=no
-    fi
-    fi
-
-    dnl Test for <ctype> functionality -- NetBSD
-    if test $ctype_default = "yes"; then
-    AC_MSG_CHECKING([<ctype> for NetBSD])
-    AC_TRY_COMPILE([#include <ctype.h>],
-    [int
-    foo (int a)
-    { return _S + _C + _U + _L \
-      + _N + _P + _X + _tolower_tab_[a] + _toupper_tab_[a];}], \
-    ctype_netbsd=yes, ctype_netbsd=no)
-    AC_MSG_RESULT($ctype_netbsd)
-    if test $ctype_netbsd = "yes"; then
-      ctype_include_dir="config/os/bsd/netbsd"
-      ctype_default=no
-    fi
-    fi
-
-    dnl Test for <ctype> functionality -- Solaris 2.6 and up
-    if test $ctype_default = "yes"; then
-    AC_MSG_CHECKING([<ctype> for Solaris 2.6,7,8])
-    AC_TRY_COMPILE([#include <ctype.h>],
-    [int
-    foo (int a)
-    { return _ISSPACE + _ISPRINT + _ISCNTRL + _ISUPPER + _ISLOWER + _ISALPHA \
-        + _ISDIGIT + _ISPUNCT + _ISXDIGIT + _ISALNUM + _ISGRAPH \
-        + __trans_lower[a] + __trans_upper[a] + __ctype_mask[a];}], \
-    ctype_solaris=yes, ctype_solaris=no)
-    AC_MSG_RESULT($ctype_solaris)
-
-    if test $ctype_solaris = "yes"; then
-      AC_MSG_CHECKING([  for version])
-      AC_LANG_CPLUSPLUS 
-      AC_TRY_COMPILE([#include <ctype.h>],
-      [typedef long* __to_type; __to_type const& _M_toupper = __trans_upper;],\
-      ctype_solaris26=yes, ctype_solaris26=no)
-      AC_LANG_C
-      if test $ctype_solaris26 = "yes"; then
-        ctype_include_dir="config/os/solaris/solaris2.6"
-        AC_MSG_RESULT([Solaris 2.6])
-        ctype_default=no
-      else
-        ctype_include_dir="config/os/solaris/solaris2.7"
-        AC_MSG_RESULT([Solaris 7,8])
-        ctype_default=no
-      fi
-    fi
-    fi  
-
-    dnl Test for <ctype> functionality -- Solaris 2.5.1
-    if test $ctype_default = "yes"; then
-    AC_MSG_CHECKING([<ctype> for Solaris 2.5.1])
-    AC_TRY_COMPILE([#include <ctype.h>],
-    [int
-    foo (int a)
-    { return _U + _L + _N + _S + _P + _C + _X + _B \
-        + __ctype[a];}], \
-    ctype_solaris25=yes, ctype_solaris25=no)
-    AC_MSG_RESULT($ctype_solaris25)
-    if test $ctype_solaris25 = "yes"; then
-      ctype_include_dir="config/os/solaris/solaris2.5"
-      ctype_default=no
-    fi
-    fi
-
-    dnl Test for <ctype> functionality -- AIX
-    if test $ctype_default = "yes"; then
-    AC_MSG_CHECKING([<ctype> for AIX])
-    AC_TRY_COMPILE([#include <ctype.h>],
-    [int
-    foo (int a)
-    { return _ISSPACE + _ISPRINT + _ISCNTRL + _ISUPPER + _ISLOWER + _ISALPHA \
-        + _ISDIGIT + _ISPUNCT + _ISXDIGIT + _ISALNUM + _ISGRAPH \
-        + _VALC('a') + _IS('c', 0);}], \
-    ctype_aix=yes, ctype_aix=no)
-    AC_MSG_RESULT($ctype_aix)
-    if test $ctype_aix = "yes"; then
-      ctype_include_dir="config/os/aix"
-      ctype_default=no
-    fi
-    fi
-
-    dnl Test for <ctype> functionality -- IRIX
-    if test $ctype_default = "yes"; then 
-    AC_MSG_CHECKING([<ctype> for IRIX])
-    AC_TRY_COMPILE([#include <ctype.h>],
-    [int
-    foo (int a)
-    { return _U + _L + _N + _S + _P + _C + _B + _X + \
-             _A + _PR + _G + _BL;}], \
-    ctype_irix=yes, ctype_irix=no)
-    AC_MSG_RESULT($ctype_irix)
-    if test $ctype_irix = "yes"; then
-      ctype_include_dir="config/os/irix"
-      ctype_default=no
-    fi
+    else
+      ctype_default=yes
     fi
 
     dnl Test for <ctype> functionality -- newlib
