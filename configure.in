@@ -44,10 +44,6 @@
 #
 host_libs="intl mmalloc libiberty opcodes bfd readline gash db tcl tk tcl8.1 tk8.1 tclX itcl tix libgui zlib"
 
-if [ "${enable_gdbgui}" = "yes" ] ; then
-	host_libs="${host_libs} libgui"
-fi
-
 libstdcxx_version="target-libstdc++-v3"
 # Don't use libstdc++-v3's flags to configure/build itself.
 libstdcxx_flags='`case $$dir in libstdc++-v3 | libjava) ;; *) test ! -f $$r/$(TARGET_SUBDIR)/libstdc++-v3/testsuite_flags || $(SHELL) $$r/$(TARGET_SUBDIR)/libstdc++-v3/testsuite_flags --build-includes;; esac` -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs'
