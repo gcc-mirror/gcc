@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+/* Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
    Contributed by Jes Sorensen, <Jes.Sorensen@cern.ch>
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -61,6 +61,7 @@ __dso_handle:
 
 .section .init_array,"a","progbits"
 	data8 @fptr(__do_jv_register_classes)
+	data8 @fptr(__do_global_ctors_aux)
 
 #else /* !HAVE_INITFINI_ARRAY */
 /*

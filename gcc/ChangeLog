@@ -1,3 +1,11 @@
+2003-01-23  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/crtend.asm [HAVE_INITFINI_ARRAY]: Make
+	__do_global_ctors_aux hidden global and don't put it in
+	.init_array.
+	* config/ia64/crtbegin.asm [HAVE_INITFINI_ARRAY]: Put it here
+	instead so that it comes first.
+
 Sat Jan 25 16:11:22 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* df.c (read_modify_subreg_p):  When osize == UNITS_PER_WORD,
