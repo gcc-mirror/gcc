@@ -1,3 +1,7 @@
+2004-05-18  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-phiopt.c: Fix various formatting issues.
+
 2004-05-18  Steven Bosscher  <stevenb@suse.de>
 
 	* config/s390/s390.c (s390_expand_movstr, s390_expand_clrstr,
