@@ -1,3 +1,29 @@
+2000-01-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (num_extra_vtbl_entries): New function.
+	(size_extra_vtbl_entries): Likewise.
+	(dfs_vtable_path_unmark): Likewise.
+	(dfs_vtable_path_unmarked_real_bases_queue_p): Likewise.
+	(dfs_vtable_path_marked_real_bases_queue_p): Likewise.
+	* class.c (num_extra_vtbl_entries): New function.
+	(size_extra_vtbl_entries): Likewise.
+	(dfs_build_vbase_offset_vtbl_entries): New function.
+	(build_vbase_offset_vtbl_entries): Likewise.
+	(build_vtbl_initializer): Use it.
+	(finish_struct_1): Adjust vtable sizes (using
+	num_extra_vtbl_entries).
+	* expr.c (cplus_expand_expr): Assert that the DECL_RTL for a
+	THUNK_DECL is non-NULL before expanding it.
+	* init.c (expand_virtual_init): Adjust the vtable pointer by
+	size_extra_vtbl_entries before storing it.
+	* search.c (get_shared_vase_if_not_primary): Adjust prototype.
+	Handle TREE_LIST parameters here, not in the dfs_* functions.
+	(dfs_unmarked_real_bases_queue_p): Adjust.
+	(dfs_marked_real_bases_queue_p): Likewise.
+	(dfs_vtable_path_unmarked_real_bases_queue_p): New function.
+	(dfs_vtable_path_marked_real_bases_queue_p): New function.
+	(dfs_vtable_path_unmark): Likewise.
+	
 2000-01-14  Mark Mitchell  <mark@codesourcery.com>
 
 	* optimize.c (copy_body_r): Clear the operand three of a
