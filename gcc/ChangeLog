@@ -1,5 +1,11 @@
 2004-10-28  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.md (movqicc_internal): Allow exactly one
+	zero in the conditional.
+	(movhicc_internal, movsicc_internal, movdicc_internal): Likewise.
+
+2004-10-28  Richard Henderson  <rth@redhat.com>
+
 	* cse.c (memory_extend_rtx): Remove.
 	(cse_main): Don't set it.
 	(cse_insn): Use a local buffer instead.

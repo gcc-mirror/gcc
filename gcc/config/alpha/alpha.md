@@ -3061,7 +3061,7 @@
 			  (match_operand:DI 4 "reg_or_0_operand" "J,J,rJ,rJ")])
 	 (match_operand:QI 1 "add_operand" "rI,0,rI,0")
 	 (match_operand:QI 5 "add_operand" "0,rI,0,rI")))]
-  "(operands[3] == const0_rtx || operands[4] == const0_rtx)"
+  "(operands[3] == const0_rtx) ^ (operands[4] == const0_rtx)"
   "@
    cmov%C2 %r3,%1,%0
    cmov%D2 %r3,%5,%0
@@ -3077,7 +3077,7 @@
 			  (match_operand:DI 4 "reg_or_0_operand" "J,J,rJ,rJ")])
 	 (match_operand:HI 1 "add_operand" "rI,0,rI,0")
 	 (match_operand:HI 5 "add_operand" "0,rI,0,rI")))]
-  "(operands[3] == const0_rtx || operands[4] == const0_rtx)"
+  "(operands[3] == const0_rtx) ^ (operands[4] == const0_rtx)"
   "@
    cmov%C2 %r3,%1,%0
    cmov%D2 %r3,%5,%0
@@ -3093,7 +3093,7 @@
 			  (match_operand:DI 4 "reg_or_0_operand" "J,J,rJ,rJ")])
 	 (match_operand:SI 1 "add_operand" "rI,0,rI,0")
 	 (match_operand:SI 5 "add_operand" "0,rI,0,rI")))]
-  "(operands[3] == const0_rtx || operands[4] == const0_rtx)"
+  "(operands[3] == const0_rtx) ^ (operands[4] == const0_rtx)"
   "@
    cmov%C2 %r3,%1,%0
    cmov%D2 %r3,%5,%0
@@ -3109,7 +3109,7 @@
 			  (match_operand:DI 4 "reg_or_0_operand" "J,J,rJ,rJ")])
 	 (match_operand:DI 1 "add_operand" "rI,0,rI,0")
 	 (match_operand:DI 5 "add_operand" "0,rI,0,rI")))]
-  "(operands[3] == const0_rtx || operands[4] == const0_rtx)"
+  "(operands[3] == const0_rtx) ^ (operands[4] == const0_rtx)"
   "@
    cmov%C2 %r3,%1,%0
    cmov%D2 %r3,%5,%0
