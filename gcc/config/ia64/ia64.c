@@ -1640,17 +1640,16 @@ spill_xfmode_operand (rtx in, int force)
       && GET_MODE (SUBREG_REG (in)) == TImode
       && GET_CODE (SUBREG_REG (in)) == REG)
     {
-      rtx mem = gen_mem_addressof (SUBREG_REG (in), NULL_TREE, /*rescan=*/true);
-      return gen_rtx_MEM (XFmode, copy_to_reg (XEXP (mem, 0)));
+      rtx memt = assign_stack_temp (TImode, 16, 0);
+      emit_move_insn (memt, SUBREG_REG (in));
+      return adjust_address (memt, XFmode, 0);
     }
   else if (force && GET_CODE (in) == REG)
     {
-      rtx mem = gen_mem_addressof (in, NULL_TREE, /*rescan=*/true);
-      return gen_rtx_MEM (XFmode, copy_to_reg (XEXP (mem, 0)));
+      rtx memx = assign_stack_temp (XFmode, 16, 0);
+      emit_move_insn (memx, in);
+      return memx;
     }
-  else if (GET_CODE (in) == MEM
-	   && GET_CODE (XEXP (in, 0)) == ADDRESSOF)
-    return change_address (in, XFmode, copy_to_reg (XEXP (in, 0)));
   else
     return in;
 }
