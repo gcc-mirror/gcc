@@ -126,9 +126,14 @@ extern int warn_unknown_pragmas;
 
 extern int warn_shadow;
 
-/* Warn if a switch on an enum fails to have a case for every enum value.  */
+/* Warn if a switch on an enum, that does not have a default case,
+   fails to have a case for every enum value.  */
 
 extern int warn_switch;
+
+/* Warn if a switch does not have a default case.  */
+
+extern int warn_switch_default;
 
 /* Nonzero means warn about function definitions that default the return type
    or that use a null return and have a return-type other than void.  */

@@ -1356,6 +1356,9 @@ Some of these have no effect when compiling programs written in Fortran:
 @cindex -Wswitch option
 @cindex options, -Wswitch
 @item -Wswitch
+@cindex -Wswitch-default option
+@cindex options, -Wswitch-default
+@item -Wswitch-default
 @cindex -Wtraditional option
 @cindex options, -Wtraditional
 @item -Wtraditional

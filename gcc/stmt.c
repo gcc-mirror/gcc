@@ -5284,6 +5284,9 @@ expand_end_case_type (orig_index, orig_type)
 	  && TREE_CODE (index_expr) != INTEGER_CST)
 	check_for_full_enumeration_handling (orig_type);
 
+      if (warn_switch_default && !thiscase->data.case_stmt.default_label)
+	warning ("switch missing default case");
+
       /* If we don't have a default-label, create one here,
 	 after the body of the switch.  */
       if (thiscase->data.case_stmt.default_label == 0)

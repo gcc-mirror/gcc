@@ -228,7 +228,7 @@ in the following sections.
 -Wno-import  -Wpacked  -Wpadded @gol
 -Wparentheses  -Wpointer-arith  -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
--Wsign-compare  -Wswitch  -Wsystem-headers @gol
+-Wsign-compare  -Wswitch  -Wswitch-default  -Wsystem-headers @gol
 -Wtrigraphs  -Wundef  -Wuninitialized @gol
 -Wunknown-pragmas  -Wunreachable-code @gol
 -Wunused  -Wunused-function  -Wunused-label  -Wunused-parameter @gol
@@ -2033,6 +2033,11 @@ and lacks a @code{case} for one or more of the named codes of that
 enumeration.  (The presence of a @code{default} label prevents this
 warning.)  @code{case} labels outside the enumeration range also
 provoke warnings when this option is used.
+
+@item -Wswitch-default
+@opindex Wswitch-switch
+Warn whenever a @code{switch} statement does not have a @code{default}
+case.
 
 @item -Wtrigraphs
 @opindex Wtrigraphs
