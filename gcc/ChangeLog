@@ -1,3 +1,9 @@
+2005-04-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cse.c, tree-flow-inline.h, tree-flow.h, tree-ssa-operands.c,
+	tree-ssa-sink.c, tree.h, config/bfin/bfin.c,
+	config/bfin/bfin.h: Fix comment typos.
+
 2005-04-06  Ranjit Mathew  <rmathew@hotmail.com>
 
 	* doc/install.texi: Update the URL for Jacks.

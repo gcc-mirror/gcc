@@ -345,7 +345,7 @@ enum reg_class
   BREGS,
   LREGS,
   MREGS,
-  CIRCREGS, /* Circular buffering registers, Ix, Bx, Lx together form. See Automatic Circlur Buffering */
+  CIRCREGS, /* Circular buffering registers, Ix, Bx, Lx together form.  See Automatic Circular Buffering.  */
   DAGREGS,
   EVEN_AREGS,
   ODD_AREGS,

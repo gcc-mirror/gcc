@@ -243,7 +243,7 @@ typedef struct immediate_use_iterator_d
 } imm_use_iterator;
 
 
-/* Use this iterator when simply looking at stmts. Adding, deleteing or
+/* Use this iterator when simply looking at stmts.  Adding, deleting or
    modifying stmts will cause this iterator to malfunction.  */
 
 #define FOR_EACH_IMM_USE_FAST(DEST, ITER, SSAVAR)			\
