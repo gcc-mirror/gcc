@@ -1,3 +1,7 @@
+2001-08-27  Roman Zippel <zippel@linux-m68k.org>
+
+	* flow.c (verify_flow_info): Use checksums to verify edges.
+
 2001-08-27  Richard Henderson  <rth@redhat.com>
 
 	* genautomata.c (expand_automata): Always create a description.
