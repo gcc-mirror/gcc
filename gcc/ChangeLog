@@ -1,3 +1,8 @@
+2001-05-10  David Edelsohn  <edelsohn@gnu.org>
+
+	* expr.c (emit_group_load): extract_bit_field requires a REG or
+	MEM as an argument.
+
 Thu May 10 14:45:44 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* jump.c (jump_optimize_1): Do not wrap the new jump target
