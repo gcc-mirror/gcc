@@ -4812,8 +4812,8 @@ get_block_head_tail (bb, headp, tailp)
      rtx *tailp;
 {
 
-  rtx head = *headp;
-  rtx tail = *tailp;
+  rtx head;
+  rtx tail;
   int b;
 
   b = BB_TO_BLOCK (bb);
