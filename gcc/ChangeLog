@@ -1,5 +1,9 @@
 2002-08-06  Neil Booth  <neil@daikokuya.co.uk>
 
+	* dwarf2out.c: Remove unused macros.
+
+2002-08-06  Neil Booth  <neil@daikokuya.co.uk>
+
 	* function.c (TRAMPOLINE_ALIGNMENT): Always defined.
 
 2002-08-06  Neil Booth  <neil@daikokuya.co.uk>
