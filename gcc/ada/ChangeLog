@@ -1,3 +1,7 @@
+2003-03-12  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Make-lang.in, Makefile.in, config-lang.in: GCC, not GNU CC.
+
 2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
 
 	* misc.c (gnat_init): Update for new prototype.
