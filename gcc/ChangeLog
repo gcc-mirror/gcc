@@ -1,3 +1,8 @@
+2004-10-07  Richard Sandiford  <rsandifo@redhat.com>
+
+	PR target/17770
+	* config/mips/mips.md (mov_<load>l): Remove hazard=none attribute.
+
 2004-10-07  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR rtl-optimization/17791
