@@ -1,3 +1,9 @@
+2004-10-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.h (FUNCTION_ARG_REGNO_P): FPRs are only
+	available for TARGET_FPRS.
+	(FUNCTION_VALUE_REGNO_P): Same.
+
 2004-10-15  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/invoke.texi (RS/6000 and PowerPC Options): Document
