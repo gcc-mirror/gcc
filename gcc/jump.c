@@ -4069,9 +4069,6 @@ thread_jumps (f, max_reg, verbose)
 	      
 	      while (t1 != 0 && t2 != 0)
 		{
-		  if (t1 == 0 || t2 == 0)
-		    break;
-
 		  if (t2 == label)
 		    {
 		      /* We have reached the target of the first branch.
