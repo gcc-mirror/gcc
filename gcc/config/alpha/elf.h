@@ -526,3 +526,9 @@ do {									\
 
 /* We support #pragma.  */
 #define HANDLE_SYSV_PRAGMA
+
+/* Undo the auto-alignment stuff from alpha.h.  ELF has unaligned data
+   pseudos natively.  */
+#undef UNALIGNED_SHORT_ASM_OP
+#undef UNALIGNED_INT_ASM_OP
+#undef UNALIGNED_DOUBLE_INT_ASM_OP

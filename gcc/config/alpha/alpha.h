@@ -2145,6 +2145,11 @@ literal_section ()						\
   }									      \
   while (0)
 
+/* To get unaligned data, we have to turn off auto alignment.  */
+#define UNALIGNED_SHORT_ASM_OP		".align 0\n\t.word"
+#define UNALIGNED_INT_ASM_OP		".align 0\n\t.long"
+#define UNALIGNED_DOUBLE_INT_ASM_OP	".align 0\n\t.quad"
+
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
 

@@ -439,10 +439,6 @@ extern int vms_valid_decl_attribute_p ();
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
     fprintf (FILE, "\t.align %d\n", LOG);
 
-#define UNALIGNED_SHORT_ASM_OP	".word"
-#define UNALIGNED_INT_ASM_OP	".long"
-#define UNALIGNED_DOUBLE_INT_ASM_OP	".quad"
-
 #define ASM_OUTPUT_SECTION(FILE,SECTION)			\
    (strcmp (SECTION, ".text") == 0)				\
      ? text_section ()						\
