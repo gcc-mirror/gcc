@@ -1337,12 +1337,8 @@ graph.o: graph.c $(CONFIG_H) system.h toplev.h flags.h output.h $(RTL_H) \
     hard-reg-set.h $(BASIC_BLOCK_H)
 sbitmap.o: sbitmap.c $(CONFIG_H) system.h $(RTL_H) flags.h $(BASIC_BLOCK_H)
 
-collect2$(exeext): collect2.o tlink.o hash.o underscore.o \
-	version.o $(LIBDEPS)
-
-COLLECT2_OBJS = collect2.o tlink.o hash.o \
- intl.o underscore.o version.o 
-collect2 : $(COLLECT2_OBJS) $(LIBDEPS)
+COLLECT2_OBJS = collect2.o tlink.o hash.o intl.o underscore.o version.o 
+collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
 	-rm -f collect2$(exeext)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(COLLECT2_OBJS) $(LIBS)
