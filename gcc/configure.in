@@ -4588,6 +4588,18 @@ fi])
 AC_SUBST(GGC)
 echo "Using $GGC for garbage collection."
 
+# Build a new-abi (c++) system
+AC_ARG_ENABLE(new-gxx-abi,
+[  --enable-new-gxx-abi
+			  select the new abi for g++. You must select an ABI
+			  at configuration time, so that the correct runtime
+			  support is built. You cannot mix ABIs.],
+[AC_DEFINE(ENABLE_NEW_GXX_ABI)
+GXX_ABI_FLAG='-fnew-abi'
+echo "Building a new-abi g++ compiler."
+])
+AC_SUBST(GXX_ABI_FLAG)
+
 # Make empty files to contain the specs and options for each language.
 # Then add #include lines to for a compiler that has specs and/or options.
 

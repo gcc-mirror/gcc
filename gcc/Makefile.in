@@ -164,6 +164,9 @@ GCC_FOR_TARGET = ./xgcc -B$(build_tooldir)/bin/ -B./ -I$(build_tooldir)/include
 # It also specifies -I./include to find, e.g., stddef.h.
 GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) -I./include $(TCFLAGS)
 
+# Specify the abi to use when building the c++ runtime
+GXX_ABI_FLAG=@GXX_ABI_FLAG@
+
 # Sed command to transform gcc to installed name.  Overwritten by configure.
 program_transform_name = @program_transform_name@
 program_transform_cross_name = s,^,$(target_alias)-,
