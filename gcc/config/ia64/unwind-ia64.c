@@ -1783,8 +1783,10 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 	 an unwind table entry.
 
 	 This can only happen in the frame after unwinding through a signal
-	 handler.  Avoid infinite looping by requiring that B0 != RP.  */
-      if (context->br_loc[0] && *context->br_loc[0] != context->rp)
+	 handler.  Avoid infinite looping by requiring that B0 != RP.
+	 RP == 0 terminates the chain.  */
+      if (context->br_loc[0] && *context->br_loc[0] != context->rp
+	  && context->rp != 0)
 	{
 	  fs->curr.reg[UNW_REG_RP].where = UNW_WHERE_BR;
 	  fs->curr.reg[UNW_REG_RP].when = -1;
