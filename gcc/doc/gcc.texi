@@ -41,26 +41,6 @@
 @c
 @c anything else?                       --mew 10feb93
 
-@c For consistency, use the following:
-@c - "32-bit" rather than "32 bit" as an adjective.
-@c - American rather than British spelling (in particular -or and -ize).
-@c - "back end" as a noun, "back-end" as an adjective.
-@c - "bit-field" not "bitfield" or "bit field" (following the C and C++
-@c   standards).
-@c - "built-in" as an adjective ("built-in function"), or sometimes
-@c   "built in", not "builtin" (which isn't a word).
-@c - "dependent" as an adjective, and "dependency".
-@c - "front end" as a noun, "front-end" as an adjective.
-@c - "GCC" for the GNU Compiler Collection, both generally
-@c   and as the GNU C Compiler in the context of compiling C;
-@c   "G++" for the C++ compiler; "gcc" and "g++" (lowercase),
-@c   marked up with @command, for the commands for compilation when the
-@c   emphasis is on those; "GNU C" and "GNU C++" for language dialects;
-@c   and try to avoid the older term "GNU CC".
-@c - "nonzero" rather than "non-zero".
-@c - "@code{NULL}" rather than "NULL".
-@c - "Objective-C" rather than "Objective C".
-
 @macro gcctabopt{body}
 @code{\body\}
 @end macro
