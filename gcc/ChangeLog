@@ -1,5 +1,11 @@
 2003-07-02  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (addsi3): Remove workaround for adds of -32768.
+	(addsi3_internal, adddi3, adddi3_internal_2): Likewise.
+	(adddi3_internal_3, addsi3_internal_2): Likewise.
+
+2003-07-02  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.c (machine_function): Add new fields:
 	ignore_hazard_length_p and all_noreorder_p.
 	(mips_flag_delayed_branch): New variable.

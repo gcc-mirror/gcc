@@ -703,15 +703,6 @@
   ""
   "
 {
-  /* The mips16 assembler handles -32768 correctly, and so does gas,
-     but some other MIPS assemblers think that -32768 needs to be
-     loaded into a register before it can be added in.  */
-  if (! TARGET_MIPS16
-      && ! TARGET_GAS
-      && GET_CODE (operands[2]) == CONST_INT
-      && INTVAL (operands[2]) == -32768)
-    operands[2] = force_reg (SImode, operands[2]);
-
   /* If a large stack adjustment was forced into a register, we may be
      asked to generate rtx such as:
 
@@ -738,10 +729,7 @@
   [(set (match_operand:SI 0 "register_operand" "=d,d")
 	(plus:SI (match_operand:SI 1 "reg_or_0_operand" "dJ,dJ")
 		 (match_operand:SI 2 "arith_operand" "d,Q")))]
-  "! TARGET_MIPS16
-   && (TARGET_GAS
-       || GET_CODE (operands[2]) != CONST_INT
-       || INTVAL (operands[2]) != -32768)"
+  "!TARGET_MIPS16"
   "@
     addu\\t%0,%z1,%2
     addiu\\t%0,%z1,%2"
@@ -888,15 +876,6 @@
   "TARGET_64BIT || (!TARGET_DEBUG_G_MODE && !TARGET_MIPS16)"
   "
 {
-  /* The mips16 assembler handles -32768 correctly, and so does gas,
-     but some other MIPS assemblers think that -32768 needs to be
-     loaded into a register before it can be added in.  */
-  if (! TARGET_MIPS16
-      && ! TARGET_GAS
-      && GET_CODE (operands[2]) == CONST_INT
-      && INTVAL (operands[2]) == -32768)
-    operands[2] = force_reg (DImode, operands[2]);
-
   /* If a large stack adjustment was forced into a register, we may be
      asked to generate rtx such as:
 
@@ -1010,10 +989,7 @@
 	(plus:DI (match_operand:DI 1 "register_operand" "%d,%d,%d")
 		 (match_operand:DI 2 "small_int" "P,J,N")))
    (clobber (match_operand:SI 3 "register_operand" "=d,d,d"))]
-  "!TARGET_64BIT && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
-   && (TARGET_GAS
-       || GET_CODE (operands[2]) != CONST_INT
-       || INTVAL (operands[2]) != -32768)"
+  "!TARGET_64BIT && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16"
   "@
    addu\\t%L0,%L1,%2\;sltu\\t%3,%L0,%2\;addu\\t%M0,%M1,%3
    move\\t%L0,%L1\;move\\t%M0,%M1
@@ -1074,11 +1050,7 @@
   [(set (match_operand:DI 0 "register_operand" "=d,d")
 	(plus:DI (match_operand:DI 1 "reg_or_0_operand" "dJ,dJ")
 		 (match_operand:DI 2 "arith_operand" "d,Q")))]
-  "TARGET_64BIT
-   && !TARGET_MIPS16
-   && (TARGET_GAS
-       || GET_CODE (operands[2]) != CONST_INT
-       || INTVAL (operands[2]) != -32768)"
+  "TARGET_64BIT && !TARGET_MIPS16"
   "@
     daddu\\t%0,%z1,%2
     daddiu\\t%0,%z1,%2"
@@ -1221,11 +1193,7 @@
   [(set (match_operand:DI 0 "register_operand" "=d,d")
 	(sign_extend:DI (plus:SI (match_operand:SI 1 "reg_or_0_operand" "dJ,dJ")
 				 (match_operand:SI 2 "arith_operand" "d,Q"))))]
-  "TARGET_64BIT
-   && !TARGET_MIPS16
-   && (TARGET_GAS
-       || GET_CODE (operands[2]) != CONST_INT
-       || INTVAL (operands[2]) != -32768)"
+  "TARGET_64BIT && !TARGET_MIPS16"
   "@
     addu\\t%0,%z1,%2
     addiu\\t%0,%z1,%2"
