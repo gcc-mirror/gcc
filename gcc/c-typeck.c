@@ -4032,7 +4032,7 @@ warn_for_assignment (msg, opname, function, argnum)
    therefore, we do not need to check for such things as
    arithmetic-combinations of integers.  */
 
-static tree
+tree
 initializer_constant_valid_p (value, endtype)
      tree value;
      tree endtype;
