@@ -97,9 +97,8 @@ void test01()
   const char_type* cc2 = NULL;
 
   cc0 = strlit00;
-  m01[0] = m00;
-  m01[1] = m00;
-  m01[2] = m00;
+  for (std::size_t i = 0; i < 3; ++i)
+    m01[i] = m00;
   cc1 = gctype.is(cc0, cc0, m01);
   VERIFY( cc1 == strlit00 );
   VERIFY( m01[0] == m00 );
@@ -107,9 +106,8 @@ void test01()
   VERIFY( m01[2] == m00 );
 
   cc0 = strlit00;
-  m01[0] = m00;
-  m01[1] = m00;
-  m01[2] = m00;
+  for (std::size_t i = 0; i < 3; ++i)
+    m01[i] = m00;
   cc2 = gctype.is(cc0, cc0 + 3, m01);
   VERIFY( cc2 == strlit00 + 3);
   VERIFY( m01[0] != m00 );
@@ -120,6 +118,8 @@ void test01()
   VERIFY( gctype.is(m01[2], cc0[2]) );
 
   cc0 = strlit01;
+  for (std::size_t i = 0; i < 13; ++i)
+    m02[i] = m00;
   cc1 = gctype.is(cc0, cc0 + 13, m02);
   VERIFY( cc1 == strlit01 + 13);
   VERIFY( m02[6] != m00 );

@@ -1,3 +1,12 @@
+2003-09-25  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/locale/gnu/ctype_members.cc (ctype<wchar_t>::do_is): Fix.
+	* config/locale/generic/ctype_members.cc: Same.
+	* testsuite/22_locale/ctype/is/char/1.cc: Initialize mask.
+	* testsuite/22_locale/ctype/is/wchar_t/1.cc: Same.
+
+	* config/os/generic/ctype_inline.h: Update.
+	
 2003-09-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* src/Makefile.am (version_dep): New variable.
