@@ -2394,8 +2394,14 @@ expand_case (tree exp)
       BITMAP_FREE (label_bitmap);
 
       /* cleanup_tree_cfg removes all SWITCH_EXPR with a single
-	 destination, such as one with a default case only.  */
-      gcc_assert (count != 0);
+	 destination, such as one with a default case only.  However,
+	 it doesn't remove cases that are out of range for the switch
+	 type, so we may still get a zero here.  */
+      if (count == 0)
+	{
+	  emit_jump (default_label);
+	  return;
+	}
 
       /* Compute span of values.  */
       range = fold (build2 (MINUS_EXPR, index_type, maxval, minval));

@@ -1,3 +1,8 @@
+2005-02-18  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/20008
+	* g++.dg/opt/switch4.C: New.
+
 2005-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/20023
