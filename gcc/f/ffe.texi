@@ -11,6 +11,10 @@
 
 This chapter describes some aspects of the design and implementation
 of the @code{g77} front end.
+Much of the information below applies not to current
+releases of @code{g77},
+but to the 0.6 rewrite being designed and implemented
+as of late May, 1999.
 
 To find about things that are ``To Be Determined'' or ``To Be Done'',
 search for the string TBD.
@@ -539,6 +543,15 @@ to govern the treatment of backslashes in @code{CHARACTER}
 (or Hollerith) constants?
 
 Knowing what other compilers provide would help.
+
+@item
+Is it okay to drop support for the @samp{-fintrin-case-initcap},
+@samp{-fmatch-case-initcap}, @samp{-fsymbol-case-initcap},
+and @samp{-fcase-initcap} options?
+
+I've asked @email{info-gnu-fortran@@gnu.org} for input on this.
+Not having to support these makes it easier to write the new front end,
+and might also avoid complicated its design.
 @end itemize
 
 @node Philosophy of Code Generation
