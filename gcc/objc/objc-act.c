@@ -5298,9 +5298,11 @@ get_arg_type_list (tree meth, int context, int superflag)
     {
       tree arg_type = TREE_VALUE (TREE_TYPE (akey));
 
-      /* Decay arrays into pointers.  */
+      /* Decay arrays and functions into pointers.  */
       if (TREE_CODE (arg_type) == ARRAY_TYPE)
 	arg_type = build_pointer_type (TREE_TYPE (arg_type));
+      else if (TREE_CODE (arg_type) == FUNCTION_TYPE)
+	arg_type = build_pointer_type (arg_type);
 
       chainon (arglist, build_tree_list (NULL_TREE, arg_type));
     }
@@ -7379,11 +7381,21 @@ static GTY(()) tree objc_parmlist = NULL_TREE;
 static void
 objc_push_parm (tree parm)
 {
-  /* Convert array parameters of unknown size into pointers.  */
-  if (TREE_CODE (TREE_TYPE (parm)) == ARRAY_TYPE
-      && !TYPE_SIZE (TREE_TYPE (parm)))
+  /* Decay arrays and functions into pointers.  */
+  if (TREE_CODE (TREE_TYPE (parm)) == ARRAY_TYPE)
     TREE_TYPE (parm) = build_pointer_type (TREE_TYPE (TREE_TYPE (parm)));
+  else if (TREE_CODE (TREE_TYPE (parm)) == FUNCTION_TYPE)
+    TREE_TYPE (parm) = build_pointer_type (TREE_TYPE (parm));
 
+  DECL_ARG_TYPE_AS_WRITTEN (parm) = TREE_TYPE (parm);
+  DECL_ARG_TYPE (parm) = c_type_promotes_to (TREE_TYPE (parm));
+
+  /* Record constancy and volatility.  */
+  c_apply_type_quals_to_decl
+  ((TYPE_READONLY (TREE_TYPE (parm)) ? TYPE_QUAL_CONST : 0)
+   | (TYPE_RESTRICT (TREE_TYPE (parm)) ? TYPE_QUAL_RESTRICT : 0)
+   | (TYPE_VOLATILE (TREE_TYPE (parm)) ? TYPE_QUAL_VOLATILE : 0), parm);
+  
   objc_parmlist = chainon (objc_parmlist, parm);
 }
 
@@ -7415,7 +7427,8 @@ objc_get_parm_info (int have_ellipsis)
       tree next = TREE_CHAIN (parm_info);
 
       TREE_CHAIN (parm_info) = NULL_TREE; 
-      pushdecl (parm_info);
+      parm_info = pushdecl (parm_info);
+      finish_decl (parm_info, NULL_TREE, NULL_TREE);
       parm_info = next;
     }
   arg_info = get_parm_info (have_ellipsis);
@@ -7476,10 +7489,6 @@ start_method_def (tree method)
   while (parmlist)
     {
       tree type = TREE_VALUE (TREE_TYPE (parmlist)), parm;
-
-      /* Decay arrays into pointers.  */
-      if (TREE_CODE (type) == ARRAY_TYPE)
-	type = build_pointer_type (TREE_TYPE (type));
 
       parm = build_decl (PARM_DECL, KEYWORD_ARG_NAME (parmlist), type);
       objc_push_parm (parm);
@@ -7619,24 +7628,26 @@ objc_start_function (tree name, tree type, tree attrs,
 
 #ifdef OBJCPLUS
   DECL_ARGUMENTS (fndecl) = params;
-#endif
   DECL_INITIAL (fndecl) = error_mark_node;
   DECL_EXTERNAL (fndecl) = 0;
   TREE_STATIC (fndecl) = 1;
-
-#ifdef OBJCPLUS
   retrofit_lang_decl (fndecl);
   cplus_decl_attributes (&fndecl, attrs, 0);
   start_preparsed_function (fndecl, attrs, /*flags=*/SF_DEFAULT);
 #else
   decl_attributes (&fndecl, attrs, 0);
   announce_function (fndecl);
+  DECL_INITIAL (fndecl) = error_mark_node;
+  DECL_EXTERNAL (fndecl) = 0;
+  TREE_STATIC (fndecl) = 1;
   current_function_decl = pushdecl (fndecl);
   push_scope ();
   declare_parm_level ();
   DECL_RESULT (current_function_decl)
     = build_decl (RESULT_DECL, NULL_TREE,
 		  TREE_TYPE (TREE_TYPE (current_function_decl)));
+  DECL_ARTIFICIAL (DECL_RESULT (current_function_decl)) = 1;
+  DECL_IGNORED_P (DECL_RESULT (current_function_decl)) = 1;
   start_fname_decls ();
   store_parm_decls_from (params);
 #endif
