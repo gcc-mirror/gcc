@@ -21,11 +21,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* This describes the machine the compiler is hosted on.  */
-#define	HOST_BITS_PER_CHAR	8
-#define	HOST_BITS_PER_SHORT	16
-#define	HOST_BITS_PER_INT	32
 #define	HOST_BITS_PER_LONG	64
-#define HOST_BITS_PER_LONGLONG  64
 
 /* The host compiler has problems with enum bitfields since it makes
    them signed so we can't fit all our codes in.  */

@@ -1198,7 +1198,6 @@ i[34567]86-*-lynxos*)
 	else
 		tm_file=i386/lynx-ng.h
 	fi
-	xm_file=i386/xm-lynx.h
 	tmake_file=i386/t-i386bare
 	xmake_file=x-lynx
 	;;
@@ -1925,7 +1924,6 @@ m68k-*-lynxos*)
 	else
 		tm_file=m68k/lynx-ng.h
 	fi
-	xm_file=m68k/xm-lynx.h
 	xmake_file=x-lynx
 	tmake_file=m68k/t-lynx
 	extra_headers=math-68881.h
@@ -2962,7 +2960,6 @@ sparc-*-lynxos*)
 	else
 		tm_file=sparc/lynx-ng.h
 	fi
-	xm_file=sparc/xm-lynx.h
 	tmake_file=sparc/t-sunos41
 	xmake_file=x-lynx
 	;;
