@@ -1,5 +1,5 @@
 /* Definitions for C parsing and type checking.
-   Copyright (C) 1987, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -313,27 +313,44 @@ extern void store_parm_decls                    PROTO((void));
 extern tree xref_tag                            PROTO((enum tree_code, tree));
 
 /* in c-typeck.c */
-extern tree build_array_ref                     PROTO((tree, tree));
-extern tree build_binary_op                     PROTO((enum tree_code, tree, tree, int));
-extern tree build_c_cast                        PROTO((tree, tree));
-extern tree build_component_ref                 PROTO((tree, tree));
-extern tree build_compound_expr                 PROTO((tree));
-extern tree build_conditional_expr              PROTO((tree, tree, tree));
-extern tree build_function_call                 PROTO((tree, tree));
-extern tree build_indirect_ref                  PROTO((tree, char *));
-extern tree build_modify_expr                   PROTO((tree, enum tree_code, tree));
-extern tree build_unary_op                      PROTO((enum tree_code, tree, int));
-extern tree c_alignof                           PROTO((tree));
-extern tree c_alignof_expr                      PROTO((tree));
-extern tree c_sizeof                            PROTO((tree));
-extern tree c_expand_start_case                 PROTO((tree));
+extern tree require_complete_type		PROTO((tree));
+extern void incomplete_type_error		PROTO((tree, tree));
 /* Given two integer or real types, return the type for their sum.
    Given two compatible ANSI C types, returns the merged type.  */
 extern tree common_type                         PROTO((tree, tree));
+extern int comptypes				PROTO((tree, tree));
+extern int self_promoting_args_p		PROTO((tree));
+extern tree c_sizeof                            PROTO((tree));
+extern tree c_sizeof_nowarn                     PROTO((tree));
+extern tree c_size_in_bytes                     PROTO((tree));
+extern tree c_alignof				PROTO((tree));
+extern tree c_alignof_expr			PROTO((tree));
 extern tree default_conversion                  PROTO((tree));
-extern tree parser_build_binary_op              PROTO((enum tree_code, tree, tree));
-extern tree require_complete_type		PROTO((tree));
+extern tree build_component_ref                 PROTO((tree, tree));
+extern tree build_indirect_ref                  PROTO((tree, char *));
+extern tree build_array_ref                     PROTO((tree, tree));
+extern tree build_function_call                 PROTO((tree, tree));
+extern tree parser_build_binary_op              PROTO((enum tree_code,
+						       tree, tree));
+extern tree build_binary_op                     PROTO((enum tree_code,
+						       tree, tree, int));
+extern tree build_unary_op                      PROTO((enum tree_code,
+						       tree, int));
+extern int lvalue_p				PROTO((tree));
+extern int lvalue_or_else			PROTO((tree, char *));
+extern void readonly_warning			PROTO((tree, char *));
+extern int mark_addressable			PROTO((tree));
+extern tree build_conditional_expr              PROTO((tree, tree, tree));
+extern tree build_compound_expr                 PROTO((tree));
+extern tree build_c_cast                        PROTO((tree, tree));
+extern tree build_modify_expr                   PROTO((tree, enum tree_code,
+						       tree));
+extern tree initializer_constant_valid_p	PROTO((tree, tree));
 extern void store_init_value                    PROTO((tree, tree));
+extern void error_init				PROTO((char *, char *,
+						       char *));
+extern void pedwarn_init			PROTO((char *, char *,
+						       char *));
 extern void start_init				PROTO((tree, tree, int));
 extern void finish_init				PROTO((void));
 extern void really_start_incremental_init	PROTO((tree));
@@ -342,6 +359,10 @@ extern tree pop_init_level			PROTO((int));
 extern void set_init_index			PROTO((tree, tree));
 extern void set_init_label			PROTO((tree));
 extern void process_init_element		PROTO((tree));
+extern void c_expand_asm_operands		PROTO((tree, tree, tree, tree,
+						       int, char *, int));
+extern void c_expand_return			PROTO((tree));
+extern tree c_expand_start_case                 PROTO((tree));
 
 /* in c-iterate.c */
 extern void iterator_expand			PROTO((tree));
