@@ -1,3 +1,10 @@
+2004-07-13  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa-64.h (ARG_POINTER_REGNUM, STATIC_CHAIN_REGNUM): Delete.
+	* pa.h (ARG_POINTER_REGNUM, STATIC_CHAIN_REGNUM): Modify for hppa64.
+	* pa32-regs.h (REG_ALLOC_ORDER): Reorder caller-saved registers.
+	* pa64-regs.h (REG_ALLOC_ORDER): Likewise.
+
 2004-07-13  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/16443

@@ -118,22 +118,18 @@ Boston, MA 02111-1307, USA.  */
    registers will generally not be allocated across a call).
 
    Experimentation has shown slightly better results by allocating
-   FP registers first.  
-
-   FP registers are ordered so that all L registers are selected before
-   R registers.  This works around a false dependency interlock on the
-   PA8000 when accessing the high and low parts of an FP register
-   independently.  */
+   FP registers first.  We allocate the caller-saved registers more
+   or less in reverse order to their allocation as arguments.  */
 
 #define REG_ALLOC_ORDER \
  {					\
   /* caller-saved fp regs.  */		\
   50, 51, 52, 53, 54, 55, 56, 57,	\
-  58, 59, 36, 37, 38, 39, 32, 33,	\
-  34, 35,				\
+  58, 59, 39, 38, 37, 36, 35, 34,	\
+  33, 32,				\
   /* caller-saved general regs.  */	\
-  19, 20, 21, 22, 23, 24, 25, 26,	\
-  27, 28, 29, 31,  2,			\
+  28, 31, 19, 20, 21, 22, 23, 24,	\
+  25, 26, 29,  2,			\
   /* callee-saved fp regs.  */		\
   40, 41, 42, 43, 44, 45, 46, 47,	\
   48, 49,				\
@@ -141,7 +137,7 @@ Boston, MA 02111-1307, USA.  */
    3,  4,  5,  6,  7,  8,  9, 10, 	\
   11, 12, 13, 14, 15, 16, 17, 18,	\
   /* special registers.  */		\
-   1, 30,  0, 60}
+   1, 27, 30,  0, 60}
 
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
