@@ -1,3 +1,54 @@
+2000-05-09  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* Makefile.in (WARN_CFLAGS): Add -Wwrite-strings.
+	(tree.o): Depend on output.h.
+
+	* c-decl.c (pending_invalid_xref_file,
+	current_function_prototype_file): Constify.
+	(pushdecl): Constify a local char *.
+	(define_label): Constify filename parameter.
+	* c-lex.c (init_parse): Constify parameter and return value.
+	* c-typeck.c (c_expand_asm_operands): Constify filename parameter.
+	* c-tree.h: Update prototypes.
+	* c-parse.in: Constify filename member of %union, and if_stmt_file.
+	* c-parse.y, c-parse.c, c-parse.h, objc/objc-parse.y,
+	objc/objc-parse.c: Regenerate.
+
+	* dwarfout.c (dwarfout_init): Constify main_input_filename parameter.
+	* dwarfout.h: Update prototypes.
+	* expr.c (expand_expr): Constify a local char *.
+	* flags.h: Constify main_input_filename.
+	* function.c (expand_function_end): Constify filename parameter.
+	* genrecog.c (make_insn_sequence): Use a character array for
+	c_test_pos.
+	(main): Remove unused variables.
+	* input.h: Constify input_filename, main_input_filename, and
+	file_stack.name.  Update prototypes.
+	* output.h: Declare first_global_object_name and
+	weak_global_object_name here, as const char *.
+	* stmt.c (expand_asm_operands): Constify filename parameter.
+	* toplev.c (compile_file, push_srcloc, debug_start_source_file):
+	Constify filename parameter.
+	(input_filename, main_input_filename): Constify.
+	* toplev.h: Update prototypes.
+	* tree.c: Include output.h.  Don't declare
+	first_global_object_name or weak_global_object_name.  Clean up string
+	bashing in get_file_function_name_long.
+	* tree.h (struct tree_decl): Constify filename member.
+	(input_filename): Constify.
+	Update prototypes.
+	* varasm.c (first_global_object_name, weak_global_object_name):
+	Constify.
+	(assemble_start_function, assemble_variable): Clean up string bashing.
+
+	* gcc.c: Constify all spec-related strings initialized,
+	transitively, from string constants.  Constify all strings
+	and string variables related to multilibs.
+	(set_spec, read_specs): Cast argument to free to PTR.
+	(used_arg): Do not modify multilib_matches.  Use strncmp plus
+	length comparison to compare multilib switches.
+	* genmultilib: Constify everything declared in multilib.h.
+
 Tue May  9 22:28:03 2000  Denis Chertykov  <denisc@overta.ru>
 
 	* flow.c (flow_delete_insn): Use INSN_DELETED_P for marking insn

@@ -3151,7 +3151,7 @@ pushdecl_top_level (x)
 
 tree
 define_label (filename, line, name)
-     char *filename;
+     const char *filename;
      int line;
      tree name;
 {

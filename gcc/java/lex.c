@@ -1363,7 +1363,7 @@ java_is_eol (fp, c)
 
 char *
 java_get_line_col (filename, line, col)
-     char *filename ATTRIBUTE_UNUSED;
+     const char *filename ATTRIBUTE_UNUSED;
      int line ATTRIBUTE_UNUSED, col ATTRIBUTE_UNUSED;
 {
 #ifdef JC1_LITE

@@ -2544,9 +2544,7 @@ globalize_decl (decl)
   if (!TREE_PUBLIC (decl) && DECL_NAME (decl) &&
       (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == FUNCTION_DECL))
     {
-      extern	FILE	*asm_out_file;
-      extern	char	*first_global_object_name;
-      const char	*name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+      const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
 	
       if (!first_global_object_name)
 	first_global_object_name = name + (name[0] == '*');
@@ -2686,7 +2684,8 @@ write_grant_file ()
 void
 set_default_grant_file ()
 {
-    char	*p, *tmp, *fname;
+    char	*p, *tmp;
+    const char	*fname;
 
     if (dump_base_name)
       fname = dump_base_name; /* Probably invoked via gcc */
@@ -2993,18 +2992,18 @@ chill_finish_compile ()
 	 Perhaps rewrite this so nothing is done in pass 1. */
       if (pass == 1)
 	{
-	  extern char *first_global_object_name;
 	  /* If we don't do this spoof, we get the name of the first
 	     tasking_code variable, and not the file name. */
-	  char *tmp = first_global_object_name;
-
+	  char *q;
+	  const char *tmp = first_global_object_name;
 	  first_global_object_name = NULL;
 	  chill_init_name = get_file_function_name ('I');
 	  first_global_object_name = tmp;
+
 	  /* strip off the file's extension, if any. */
-	  tmp = strrchr (IDENTIFIER_POINTER (chill_init_name), '.');
-	  if (tmp)
-	    *tmp = '\0';
+	  q = strrchr (IDENTIFIER_POINTER (chill_init_name), '.');
+	  if (q)
+	    *q = '\0';
 	}
 
       start_chill_function (chill_init_name, void_type_node, NULL_TREE,

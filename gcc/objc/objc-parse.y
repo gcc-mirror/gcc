@@ -64,7 +64,7 @@ const char * const language_string = "GNU Obj-C";
 %start program
 
 %union {long itype; tree ttype; enum tree_code code;
-	char *filename; int lineno; int ends_in_label; }
+	const char *filename; int lineno; int ends_in_label; }
 
 /* All identifiers that are not reserved words
    and are not declared typedefs in the current block */
@@ -203,7 +203,7 @@ static int compstmt_count;
   
 /* Input file and line number of the end of the body of last simple_if;
    used by the stmt-rule immediately after simple_if returns.  */
-static char *if_stmt_file;
+static const char *if_stmt_file;
 static int if_stmt_line;
 
 /* List of types and structure classes of the current declaration.  */

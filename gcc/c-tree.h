@@ -191,7 +191,8 @@ extern void clear_parm_order                    PARAMS ((void));
 extern tree combine_parm_decls                  PARAMS ((tree, tree, int));
 extern int  complete_array_type                 PARAMS ((tree, tree, int));
 extern void declare_parm_level                  PARAMS ((int));
-extern tree define_label                        PARAMS ((char *, int, tree));
+extern tree define_label                        PARAMS ((const char *, int,
+							 tree));
 extern void delete_block                        PARAMS ((tree));
 extern void finish_decl                         PARAMS ((tree, tree, tree));
 extern void finish_decl_top_level               PARAMS ((tree, tree, tree));
@@ -290,8 +291,8 @@ extern void set_init_index			PARAMS ((tree, tree));
 extern void set_init_label			PARAMS ((tree));
 extern void process_init_element		PARAMS ((tree));
 extern void c_expand_asm_operands		PARAMS ((tree, tree, tree,
-							 tree, int, char *,
-							 int));
+							 tree, int,
+							 const char *, int));
 extern void c_expand_return			PARAMS ((tree));
 extern tree c_expand_start_case                 PARAMS ((tree));
 

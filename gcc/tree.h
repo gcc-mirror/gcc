@@ -1541,7 +1541,7 @@ struct tree_type
 struct tree_decl
 {
   char common[sizeof (struct tree_common)];
-  char *filename;
+  const char *filename;
   int linenum;
   unsigned int uid;
   union tree_node *size;
@@ -2309,7 +2309,7 @@ extern int real_zerop PARAMS ((tree));
 
 /* Points to the name of the input file from which the current input
    being parsed originally came (before it went into cpp).  */
-extern char *input_filename;
+extern const char *input_filename;
 
 /* Current line number in input file.  */
 extern int lineno;
@@ -2354,7 +2354,7 @@ extern const char *(*decl_printable_name)	PARAMS ((tree, int));
 
 extern void (*incomplete_decl_finalize_hook)	PARAMS ((tree));
 
-extern char *init_parse				PARAMS ((char *));
+extern const char *init_parse			PARAMS ((const char *));
 extern void finish_parse			PARAMS ((void));
 
 extern const char * const language_string;
@@ -2656,7 +2656,7 @@ extern void print_obstack_statistics	PARAMS ((const char *,
 #ifdef BUFSIZ
 extern void print_obstack_name		PARAMS ((char *, FILE *, const char *));
 #endif
-extern void expand_function_end		PARAMS ((char *, int, int));
+extern void expand_function_end		PARAMS ((const char *, int, int));
 extern void expand_function_start	PARAMS ((tree, int));
 extern int real_onep			PARAMS ((tree));
 extern int real_twop			PARAMS ((tree));
@@ -2790,7 +2790,7 @@ extern void emit_nop			PARAMS ((void));
 extern void expand_computed_goto	PARAMS ((tree));
 extern struct rtx_def *label_rtx	PARAMS ((tree));
 extern void expand_asm_operands		PARAMS ((tree, tree, tree, tree, int,
-						char *, int));
+						 const char *, int));
 extern int any_pending_cleanups		PARAMS ((int));
 extern void init_stmt			PARAMS ((void));
 extern void init_stmt_for_function	PARAMS ((void));

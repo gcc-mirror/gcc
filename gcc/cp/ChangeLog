@@ -1,3 +1,25 @@
+2000-05-09  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cp-tree.h: Constify tree_srcloc.filename, tinst_level.file,
+	and pending_inline.filename.  Update prototypes.
+	* decl.c (define_label): Constify filename parameter.
+	* decl2.c (warn_if_unknown_interface): Constify local char *.
+	* input.c Constify input_source.filename. Don't declare
+	input_filename or lineno.  Constify filename parameter to feed_input.
+	* lex.c (init_parse): Constify parameter and return value.
+	(cp_pragma_interface, cp_pragma_implementation): Constify
+	filename argument.
+	(reinit_parse_for_method, reinit_parse_for_block,
+	reinit_parse_for_expr, feed_defarg, handle_cp_pragma):
+	Constify local char *.
+	* pt.c: Don't declare lineno or input_filename.
+	(print_template_context, tsubst_friend_function, tsubst_decl,
+	tsubst, instantiate_decl): Constify local char *.
+	* semantics.c (expand_body): Constify local char *.
+	* tree.c (build_srcloc): Constify filename parameter.
+	* typeck.c (c_expand_asm_operands): Constify filename
+	parameter.
+
 2000-05-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tinfo.cc (__dynamic_cast): Use a reinterpret_cast. Fix

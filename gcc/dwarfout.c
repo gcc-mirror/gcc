@@ -5690,7 +5690,7 @@ dwarfout_undef (lineno, buffer)
 void
 dwarfout_init (asm_out_file, main_input_filename)
      register FILE *asm_out_file;
-     register char *main_input_filename;
+     register const char *main_input_filename;
 {
   /* Remember the name of the primary input file.  */
 

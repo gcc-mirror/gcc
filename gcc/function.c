@@ -6391,7 +6391,7 @@ use_return_register ()
 
 void
 expand_function_end (filename, line, end_bindings)
-     char *filename;
+     const char *filename;
      int line;
      int end_bindings;
 {

@@ -20,10 +20,10 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Source file current line is coming from.  */
-extern char *input_filename;
+extern const char *input_filename;
 
 /* Top-level source file.  */
-extern char *main_input_filename;
+extern const char *main_input_filename;
 
 /* Line number in current source file.  */
 extern int lineno;
@@ -33,7 +33,7 @@ extern FILE *finput;
 
 struct file_stack
   {
-    char *name;
+    const char *name;
     struct file_stack *next;
     int line;
     int indent_level;
@@ -46,5 +46,5 @@ extern struct file_stack *input_file_stack;
 /* Incremented on each change to input_file_stack.  */
 extern int input_file_stack_tick;
 
-extern void push_srcloc PARAMS ((char *name, int line));
+extern void push_srcloc PARAMS ((const char *name, int line));
 extern void pop_srcloc PARAMS ((void));

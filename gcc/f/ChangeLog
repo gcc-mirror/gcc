@@ -1,3 +1,21 @@
+2000-05-09  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* com.c (ffecom_subscript_check_): Constify array_name
+	parameter. Clean up string bashing.
+	(ffecom_arrayref_, ffecom_char_args_x_): Constify array_name
+	parameter.
+	(ffecom_do_entry_, ffecom_gen_sfuncdef_, ffecom_start_progunit_,
+	ffecom_sym_transform_, ffecom_sym_transform_assign_): Constify
+	local char *.
+	(init_parse): Constify parameter and return value.
+	* lex.c: Include dwarfout.h instead of prototyping dwarfout_*
+	functions here.
+	(ffelex_file_pop_, ffelex_file_push_): Constify filename parameter.
+	(ffelex_hash_, ffelex_include_): Constify local char *.
+	* std.c (ffestd_exec_end): Constify local char *.
+	* where.c (ffewhere_file_new): Constify filename parameter.
+	* where.h: Update prototypes.
+
 2000-05-06  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* com.c (ffecom_overlap_): Set source_offset to

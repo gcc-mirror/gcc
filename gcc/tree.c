@@ -44,6 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "ggc.h"
 #include "hashtab.h"
+#include "output.h"
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -5359,9 +5360,6 @@ dump_tree_statistics ()
 #endif	/* NO_DOT_IN_LABEL */
 #endif	/* NO_DOLLAR_IN_LABEL */
 
-extern char *first_global_object_name;
-extern char *weak_global_object_name;
-
 /* Appends 6 random characters to TEMPLATE to (hopefully) avoid name
    clashes in cases where we can't reliably choose a unique name.
 
@@ -5417,7 +5415,8 @@ get_file_function_name_long (type)
      const char *type;
 {
   char *buf;
-  register char *p;
+  const char *p;
+  char *q;
 
   if (first_global_object_name)
     p = first_global_object_name;
@@ -5434,10 +5433,11 @@ get_file_function_name_long (type)
       if (! file)
 	file = input_filename;
 
-      p = (char *) alloca (7 + strlen (name) + strlen (file));
+      q = (char *) alloca (7 + strlen (name) + strlen (file));
 
-      sprintf (p, "%s%s", name, file);
-      append_random_chars (p);
+      sprintf (q, "%s%s", name, file);
+      append_random_chars (q);
+      p = q;
     }
 
   buf = (char *) alloca (sizeof (FILE_FUNCTION_FORMAT) + strlen (p)
@@ -5452,22 +5452,17 @@ get_file_function_name_long (type)
   /* Don't need to pull weird characters out of global names.  */
   if (p != first_global_object_name)
     {
-      for (p = buf+11; *p; p++)
-	if (! ( ISDIGIT(*p)
-#if 0 /* we always want labels, which are valid C++ identifiers (+ `$') */
-#ifndef ASM_IDENTIFY_GCC	/* this is required if `.' is invalid -- k. raeburn */
-	       || *p == '.'
-#endif
-#endif
+      for (q = buf+11; *q; q++)
+	if (! ( ISDIGIT(*q)
 #ifndef NO_DOLLAR_IN_LABEL	/* this for `$'; unlikely, but... -- kr */
-	       || *p == '$'
+	       || *q == '$'
 #endif
 #ifndef NO_DOT_IN_LABEL		/* this for `.'; unlikely, but...  */
-	       || *p == '.'
+	       || *q == '.'
 #endif
-	       || ISUPPER(*p)
-	       || ISLOWER(*p)))
-	  *p = '_';
+	       || ISUPPER(*q)
+	       || ISLOWER(*q)))
+	  *q = '_';
     }
 
   return get_identifier (buf);

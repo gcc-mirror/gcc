@@ -51,9 +51,6 @@ typedef int (*tree_fn_t) PARAMS ((tree, void*));
 
 extern struct obstack permanent_obstack;
 
-extern int lineno;
-extern char *input_filename;
-
 /* The PENDING_TEMPLATES is a TREE_LIST of templates whose
    instantiations have been deferred, either because their definitions
    were not yet available, or because we were putting off doing the
@@ -4240,7 +4237,7 @@ print_template_context (err)
 {
   struct tinst_level *p = current_tinst_level;
   int line = lineno;
-  char *file = input_filename;
+  const char *file = input_filename;
 
   if (err && p)
     {
@@ -4375,7 +4372,7 @@ tsubst_friend_function (decl, args)
 {
   tree new_friend;
   int line = lineno;
-  char *file = input_filename;
+  const char *file = input_filename;
 
   lineno = DECL_SOURCE_LINE (decl);
   input_filename = DECL_SOURCE_FILE (decl);
@@ -5389,7 +5386,7 @@ tsubst_decl (t, args, type, in_decl)
      tree in_decl;
 {
   int saved_lineno;
-  char* saved_filename;
+  const char *saved_filename;
   tree r = NULL_TREE;
 
   /* Set the filename and linenumber to improve error-reporting.  */
@@ -6454,7 +6451,7 @@ tsubst (t, args, complain, in_decl)
 	    || (code == REFERENCE_TYPE && TREE_CODE (type) == VOID_TYPE))
 	  {
 	    static int   last_line = 0;
-	    static char* last_file = 0;
+	    static const char* last_file = 0;
 
 	    /* We keep track of the last time we issued this error
 	       message to avoid spewing a ton of messages during a
@@ -9434,7 +9431,7 @@ instantiate_decl (d, defer_ok)
   tree gen_tmpl;
   int pattern_defined;
   int line = lineno;
-  char *file = input_filename;
+  const char *file = input_filename;
 
   /* This function should only be used to instantiate templates for
      functions and static member variables.  */

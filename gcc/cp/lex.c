@@ -65,8 +65,8 @@ static void feed_defarg PARAMS ((tree, tree));
 static void store_pending_inline PARAMS ((tree, struct pending_inline *));
 static void reinit_parse_for_expr PARAMS ((struct obstack *));
 static int *init_cpp_parse PARAMS ((void));
-static void cp_pragma_interface PARAMS ((char *));
-static void cp_pragma_implementation PARAMS ((char *));
+static void cp_pragma_interface PARAMS ((const char *));
+static void cp_pragma_implementation PARAMS ((const char *));
 static int handle_cp_pragma PARAMS ((const char *));
 #ifdef HANDLE_GENERIC_PRAGMAS
 static int handle_generic_pragma PARAMS ((int));
@@ -510,9 +510,9 @@ init_cpp_parse ()
   return token_count;
 }
 
-char *
+const char *
 init_parse (filename)
-     char *filename;
+     const char *filename;
 {
   extern int flag_no_gnu_keywords;
   extern int flag_operator_names;
@@ -1188,7 +1188,7 @@ interface_strcmp (s)
 
 static void
 cp_pragma_interface (main_filename)
-     char *main_filename;
+     const char *main_filename;
 {
   tree fileinfo 
     = TIME_IDENTIFIER_FILEINFO (get_time_identifier (input_filename));
@@ -1235,7 +1235,7 @@ cp_pragma_interface (main_filename)
 
 static void
 cp_pragma_implementation (main_filename)
-     char *main_filename;
+     const char *main_filename;
 {
   struct impl_files *ifiles = impl_file_chain;
   for (; ifiles; ifiles = ifiles->next)
@@ -1514,7 +1514,7 @@ reinit_parse_for_method (yychar, decl)
 {
   int len;
   int starting_lineno = lineno;
-  char *starting_filename = input_filename;
+  const char *starting_filename = input_filename;
 
   reinit_parse_for_block (yychar, &inline_text_obstack);
 
@@ -1562,7 +1562,7 @@ reinit_parse_for_block (pyychar, obstackp)
   register int c;
   int blev = 1;
   int starting_lineno = lineno;
-  char *starting_filename = input_filename;
+  const char *starting_filename = input_filename;
   int len;
   int look_for_semicolon = 0;
   int look_for_lbrac = 0;
@@ -1728,7 +1728,7 @@ reinit_parse_for_expr (obstackp)
 {
   register int c;
   int starting_lineno = lineno;
-  char *starting_filename = input_filename;
+  const char *starting_filename = input_filename;
   int len;
   int plev = 0;
 
@@ -1868,7 +1868,7 @@ feed_defarg (f, p)
      tree f, p;
 {
   tree d = TREE_PURPOSE (p);
-  char *file;
+  const char *file;
   int line;
   if (TREE_CODE (f) == FUNCTION_DECL)
     {
@@ -2589,7 +2589,7 @@ handle_cp_pragma (pname)
     }
   else if (! strcmp (pname, "interface"))
     {
-      char *main_filename = input_filename;
+      const char *main_filename = input_filename;
 
       main_filename = file_name_nondirectory (main_filename);
 
@@ -2616,7 +2616,7 @@ handle_cp_pragma (pname)
     }
   else if (! strcmp (pname, "implementation"))
     {
-      char *main_filename = main_input_filename ? main_input_filename : input_filename;
+      const char *main_filename = main_input_filename ? main_input_filename : input_filename;
 
       main_filename = file_name_nondirectory (main_filename);
 

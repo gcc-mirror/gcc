@@ -672,7 +672,7 @@ extern void clear_parm_order                    PARAMS ((void));
 extern tree combine_parm_decls                  PARAMS ((tree, tree, int));
 extern int  complete_array_type                 PARAMS ((tree, tree, int));
 extern void declare_parm_level                  PARAMS ((int));
-extern tree define_label                        PARAMS ((char *, int, tree));
+extern tree define_label                        PARAMS ((const char *, int, tree));
 extern void delete_block                        PARAMS ((tree));
 extern void finish_decl                         PARAMS ((tree));
 extern tree finish_enum                         PARAMS ((tree, tree));
@@ -1110,16 +1110,6 @@ extern tree type_for_size                       PARAMS ((unsigned, int));
 extern int  valid_array_index                   PARAMS ((tree, tree));
 extern void validate_varying_array_ref          PARAMS ((tree, tree));
 
-/* in function.c */
-extern void expand_function_end                 PARAMS ((char *, int, int));
-extern void expand_function_start               PARAMS ((tree, int));
-extern void init_function_start                 PARAMS ((tree, const char *, int));
-extern void pop_function_context                PARAMS ((void));
-extern void push_function_context               PARAMS ((void));
-
-/* in integrate.c */
-extern void output_inline_function              PARAMS ((tree));
-
 /* in toplev.c */
 extern void announce_function                   PARAMS ((tree));
 extern int  floor_log2_wide                     PARAMS ((unsigned HOST_WIDE_INT));
@@ -1132,10 +1122,6 @@ extern void make_function_rtl                   PARAMS ((tree));
 extern void init_iterators                      PARAMS ((void));
 extern int  mark_addressable			PARAMS ((tree));
 extern tree chill_result_decl;
-#ifdef RTX_CODE
-extern rtx label_rtx                            PARAMS ((tree));
-#endif
-extern void permanent_allocation                PARAMS ((int));
 
 #ifndef SET_WORD_SIZE
 #define SET_WORD_SIZE BITS_PER_WORD

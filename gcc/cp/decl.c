@@ -4794,7 +4794,7 @@ declare_local_label (id)
 
 tree
 define_label (filename, line, name)
-     char *filename;
+     const char *filename;
      int line;
      tree name;
 {

@@ -320,7 +320,7 @@ push_class (class_type, class_name)
      tree class_type, class_name;
 {
   tree decl, signature;
-  char *save_input_filename = input_filename;
+  const char *save_input_filename = input_filename;
   int save_lineno = lineno;
   tree source_name = identifier_subst (class_name, "", '.', '/', ".java");
   push_obstacks (&permanent_obstack, &permanent_obstack);

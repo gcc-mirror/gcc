@@ -758,9 +758,11 @@ extern void jcf_print_char PARAMS ((FILE *, int));
 extern void jcf_print_utf8_replace PARAMS ((FILE *, const unsigned char *,
 					   int, int, int));
 # if JCF_USE_STDIO
-extern char* open_class PARAMS ((char *, struct JCF *, FILE *, const char *));
+extern const char* open_class PARAMS ((const char *, struct JCF *,
+				       FILE *, const char *));
 # else
-extern char* open_class PARAMS ((char *, struct JCF *, int, const char *));
+extern const char* open_class PARAMS ((const char *, struct JCF *,
+				       int, const char *));
 # endif /* JCF_USE_STDIO */
 #endif
 void java_debug_context PARAMS ((void));

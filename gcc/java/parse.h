@@ -705,7 +705,7 @@ typedef struct _jdeplist {
 /* Parser context data structure. */
 struct parser_ctxt {
 
-  char *filename;		    /* Current filename */
+  const char *filename;		    /* Current filename */
   FILE *finput;			    /* Current file input stream */
   struct parser_ctxt *next;
 
@@ -898,7 +898,7 @@ void java_expand_switch PARAMS ((tree));
 int java_report_errors PARAMS ((void));
 extern tree do_resolve_class PARAMS ((tree, tree, tree, tree));
 #endif
-char *java_get_line_col PARAMS ((char *, int, int));
+char *java_get_line_col PARAMS ((const char *, int, int));
 extern void reset_report PARAMS ((void));
 
 /* Always in use, no matter what you compile */

@@ -2281,10 +2281,11 @@ make_insn_sequence (insn, type)
   struct decision *last;
   struct decision_test *test, **place;
   struct decision_head head;
-  char *c_test_pos = "";
+  char c_test_pos[2];
 
   record_insn_name (next_insn_code, (type == RECOG ? XSTR (insn, 0) : NULL));
 
+  c_test_pos[0] = '\0';
   if (type == PEEPHOLE2)
     {
       int i, j;
@@ -2307,7 +2308,6 @@ make_insn_sequence (insn, type)
 	}
       XVECLEN (x, 0) = j;
 
-      c_test_pos = alloca (2);
       c_test_pos[0] = 'A' + j - 1;
       c_test_pos[1] = '\0';
     }
@@ -2473,8 +2473,6 @@ main (argc, argv)
 {
   rtx desc;
   struct decision_head recog_tree, split_tree, peephole2_tree, h;
-  FILE *infile;
-  register int c;
 
   progname = "genrecog";
 

@@ -2694,7 +2694,7 @@ expand_body (fn)
      tree fn;
 {
   int saved_lineno;
-  char *saved_input_filename;
+  const char *saved_input_filename;
 
   /* When the parser calls us after finishing the body of a template
      function, we don't really want to expand the body.  When we're

@@ -77,8 +77,8 @@ Boston, MA 02111-1307, USA.  */
 extern FILE *asm_out_file;
 
 /* The (assembler) name of the first globally-visible object output.  */
-char *first_global_object_name;
-char *weak_global_object_name;
+const char *first_global_object_name;
+const char *weak_global_object_name;
 
 extern struct obstack *current_obstack;
 extern struct obstack *saveable_obstack;
@@ -1061,16 +1061,16 @@ assemble_start_function (decl, fnname)
       if (! first_global_object_name)
 	{
 	  const char *p;
-	  char **name;
-
-	  if (! DECL_WEAK (decl) && ! DECL_ONE_ONLY (decl))
-	    name = &first_global_object_name;
-	  else
-	    name = &weak_global_object_name;
+	  char *name;
 
 	  STRIP_NAME_ENCODING (p, fnname);
-	  *name = permalloc (strlen (p) + 1);
-	  strcpy (*name, p);
+	  name = permalloc (strlen (p) + 1);
+	  strcpy (name, p);
+
+	  if (! DECL_WEAK (decl) && ! DECL_ONE_ONLY (decl))
+	    first_global_object_name = name;
+	  else
+	    weak_global_object_name = name;
 	}
 
 #ifdef ASM_WEAKEN_LABEL
@@ -1438,10 +1438,12 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
       && ! DECL_ONE_ONLY (decl))
     {
       const char *p;
+      char *xname;
 
       STRIP_NAME_ENCODING (p, name);
-      first_global_object_name = permalloc (strlen (p) + 1);
-      strcpy (first_global_object_name, p);
+      xname = permalloc (strlen (p) + 1);
+      strcpy (xname, p);
+      first_global_object_name = xname;
     }
 
   /* Compute the alignment of this data.  */

@@ -399,7 +399,7 @@ struct tree_wrapper
 struct tree_srcloc
 {
   char common[sizeof (struct tree_common)];
-  char *filename;
+  const char *filename;
   int linenum;
 };
 
@@ -3338,7 +3338,7 @@ struct tinst_level
 {
   tree decl;
   int line;
-  char *file;
+  const char *file;
   struct tinst_level *next;
 };
 
@@ -3533,7 +3533,7 @@ struct pending_inline
 {
   struct pending_inline *next;	/* pointer to next in chain */
   int lineno;			/* line number we got the text from */
-  char *filename;		/* name of file we were processing */
+  const char *filename;		/* name of file we were processing */
   tree fndecl;			/* FUNCTION_DECL that brought us here */
   int token;			/* token we were scanning */
   int token_value;		/* value of token we were scanning (YYSTYPE) */
@@ -3910,7 +3910,7 @@ extern void push_class_level_binding		PARAMS ((tree, tree));
 extern tree implicitly_declare			PARAMS ((tree));
 extern tree lookup_label			PARAMS ((tree));
 extern tree declare_local_label                 PARAMS ((tree));
-extern tree define_label			PARAMS ((char *, int, tree));
+extern tree define_label			PARAMS ((const char *, int, tree));
 extern void push_switch				PARAMS ((void));
 extern void pop_switch				PARAMS ((void));
 extern void define_case_label			PARAMS ((void));
@@ -4593,7 +4593,7 @@ extern tree build_x_modify_expr			PARAMS ((tree, enum tree_code, tree));
 extern tree build_modify_expr			PARAMS ((tree, enum tree_code, tree));
 extern tree dubious_conversion_warnings         PARAMS ((tree, tree, const char *, tree, int));
 extern tree convert_for_initialization		PARAMS ((tree, tree, tree, int, const char *, tree, int));
-extern void c_expand_asm_operands		PARAMS ((tree, tree, tree, tree, int, char *, int));
+extern void c_expand_asm_operands		PARAMS ((tree, tree, tree, tree, int, const char *, int));
 extern void c_expand_return			PARAMS ((tree));
 extern tree c_expand_start_case			PARAMS ((tree));
 extern int comp_ptr_ttypes			PARAMS ((tree, tree));

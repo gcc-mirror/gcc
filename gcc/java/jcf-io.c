@@ -183,9 +183,10 @@ DEFUN(open_in_zip, (jcf, zipfile, zipmember, is_system),
 }
 
 #if JCF_USE_STDIO
-char*
+const char *
 DEFUN(open_class, (filename, jcf, stream, dep_name),
-      char *filename AND JCF *jcf AND FILE* stream AND const char *dep_name)
+      const char *filename AND JCF *jcf AND FILE* stream
+      AND const char *dep_name)
 {
   if (jcf)
     {
@@ -204,9 +205,9 @@ DEFUN(open_class, (filename, jcf, stream, dep_name),
   return filename;
 }
 #else
-char*
+const char *
 DEFUN(open_class, (filename, jcf, fd, dep_name),
-      char *filename AND JCF *jcf AND int fd AND const char *dep_name)
+      const char *filename AND JCF *jcf AND int fd AND const char *dep_name)
 {
   if (jcf)
     {
@@ -441,9 +442,7 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
       close (fd);		/* We use STDIO for source file */
     }
   else
-    buffer = open_class (buffer, jcf, fd, dep_file);
-  jcf->classname = (char *) ALLOC (classname_length + 1);
-  strncpy (jcf->classname, classname, classname_length + 1);
+    buffer = (char *) open_class (buffer, jcf, fd, dep_file);
   jcf->classname = xstrdup (classname);
   return buffer;
 #endif

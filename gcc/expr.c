@@ -6077,7 +6077,7 @@ expand_expr (exp, target, tmode, modifier)
     case EXPR_WITH_FILE_LOCATION:
       {
 	rtx to_return;
-	char *saved_input_filename = input_filename;
+	const char *saved_input_filename = input_filename;
 	int saved_lineno = lineno;
 	input_filename = EXPR_WFL_FILENAME (exp);
 	lineno = EXPR_WFL_LINENO (exp);

@@ -867,7 +867,7 @@ warn_if_unknown_interface (decl)
     {
       struct tinst_level *til = tinst_for_decl ();
       int sl = lineno;
-      char *sf = input_filename;
+      const char *sf = input_filename;
 
       if (til)
 	{

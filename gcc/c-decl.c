@@ -80,7 +80,7 @@ int ggc_p = 1;
 
 tree pending_invalid_xref;
 /* File and line to appear in the eventual error message.  */
-char *pending_invalid_xref_file;
+const char *pending_invalid_xref_file;
 int pending_invalid_xref_line;
 
 /* While defining an enum type, this is 1 plus the last enumerator
@@ -116,7 +116,7 @@ static tree current_function_parm_tags;
 
 /* Similar, for the file and line that the prototype came from if this is
    an old-style definition.  */
-static char *current_function_prototype_file;
+static const char *current_function_prototype_file;
 static int current_function_prototype_line;
 
 /* A list (chain of TREE_LIST nodes) of all LABEL_DECLs in the function
@@ -2019,7 +2019,7 @@ pushdecl (x)
 
   if (name)
     {
-      char *file;
+      const char *file;
       int line;
       int different_binding_level = 0;
 
@@ -2674,7 +2674,7 @@ shadow_label (name)
 
 tree
 define_label (filename, line, name)
-     char *filename;
+     const char *filename;
      int line;
      tree name;
 {

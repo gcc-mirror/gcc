@@ -54,7 +54,7 @@ struct input_source {
   /* values to restore after reading all of current string */
   struct pending_input *input;
 #if !USE_CPPLIB
-  char *filename;
+  const char *filename;
   int lineno;
   struct putback_buffer putback;
 #endif
@@ -62,15 +62,12 @@ struct input_source {
 
 static struct input_source *input, *free_inputs;
 
-extern char *input_filename;
-extern int lineno;
-
 #if USE_CPPLIB
 extern unsigned char *yy_cur, *yy_lim;
 extern int yy_get_token ();
 #endif
 
-extern void feed_input PARAMS ((char *, int, char *, int));
+extern void feed_input PARAMS ((char *, int, const char *, int));
 extern void put_input PARAMS ((int));
 extern void put_back PARAMS ((int));
 extern int getch PARAMS ((void));
@@ -114,7 +111,7 @@ void
 feed_input (str, len, file, line)
      char *str;
      int len;
-     char *file;
+     const char *file;
      int line;
 {
   struct input_source *inp = allocate_input ();
