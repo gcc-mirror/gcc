@@ -1,3 +1,9 @@
+2000-11-15  Fred Fish  <fnf@be.com>
+
+	* fixinc/mkfixinc.sh (fixincludes): Add *-*-beos* to list of
+	machines for which fixincludes is not needed.
+	* config/i386/x-beos (STMP_FIXPROTO): Don't run fixproto.
+
 2000-11-15  Jason Merrill  <jason@redhat.com>
 
 	* diagnostic.c (finish_abort): New fn.

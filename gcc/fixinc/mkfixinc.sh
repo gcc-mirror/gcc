@@ -56,6 +56,7 @@ case $machine in
 	hppa1.1-*-bsd* | \
 	hppa1.0-*-bsd* | \
 	hppa*-*-lites* | \
+	*-*-beos* | \
 	*-*-linux* | \
 	*-*-gnu* | \
 	i?86-moss-msdos* | i?86-*-moss* | \
