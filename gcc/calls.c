@@ -133,7 +133,8 @@ static int compute_argument_block_size (int, struct args_size *, int);
 static void initialize_argument_information (int, struct arg_data *,
 					     struct args_size *, int, tree,
 					     tree, CUMULATIVE_ARGS *, int,
-					     rtx *, int *, int *, int *);
+					     rtx *, int *, int *, int *,
+					     bool);
 static void compute_argument_addresses (struct arg_data *, rtx, int);
 static rtx rtx_for_function_call (tree, tree);
 static void load_register_parameters (struct arg_data *, int, rtx *, int,
@@ -1023,7 +1024,10 @@ store_unaligned_arguments_into_pseudos (struct arg_data *args, int num_actuals)
    and may be modified by this routine.
 
    OLD_PENDING_ADJ, MUST_PREALLOCATE and FLAGS are pointers to integer
-   flags which may may be modified by this routine.  */
+   flags which may may be modified by this routine. 
+
+   CALL_FROM_THUNK_P is true if this call is the jump from a thunk to
+   the thunked-to function.  */
 
 static void
 initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
@@ -1034,7 +1038,8 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 				 CUMULATIVE_ARGS *args_so_far,
 				 int reg_parm_stack_space,
 				 rtx *old_stack_level, int *old_pending_adj,
-				 int *must_preallocate, int *ecf_flags)
+				 int *must_preallocate, int *ecf_flags,
+				 bool call_from_thunk_p)
 {
   /* 1 if scanning parms front to back, -1 if scanning back to front.  */
   int inc;
@@ -1107,7 +1112,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	{
 	  /* If we're compiling a thunk, pass through invisible
              references instead of making a copy.  */
-	  if (current_function_is_thunk
+	  if (call_from_thunk_p
 #ifdef FUNCTION_ARG_CALLEE_COPIES
 	      || (FUNCTION_ARG_CALLEE_COPIES (*args_so_far, TYPE_MODE (type),
 					     type, argpos < n_named_args)
@@ -2444,7 +2449,8 @@ expand_call (tree exp, rtx target, int ignore)
 				   n_named_args, actparms, fndecl,
 				   &args_so_far, reg_parm_stack_space,
 				   &old_stack_level, &old_pending_adj,
-				   &must_preallocate, &flags);
+				   &must_preallocate, &flags,
+				   CALL_FROM_THUNK_P (exp));
 
   if (args_size.var)
     {

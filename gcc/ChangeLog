@@ -1,3 +1,27 @@
+2004-02-05  Paul Brook  <paul@codesourcery.com>
+
+	Backport from mainline.
+
+	2003-11-22  Phil Edwards  <phil@codesourcery.com>
+
+	PR target/12476
+	* config/arm/arm.c (arm_output_mi_thunk):  In Thumb mode, use
+	'bx' instead of 'b' to avoid branch range restrictions.  Output
+	the thunk immediately before the thunked-to function.
+	* config/arm/arm.h (ARM_DECLARE_FUNCTION_NAME):  Do not emit
+	.thumb_func if a thunk is being generated.  Emit .code 16 along
+	with .thumb_func if a thunk is not being generated.
+
+	2003-11-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* calls.c (initialize_argument_information): Add CALL_FROM_THUNK_P
+	parameter.  Use it instead of current_function_is_thunk.
+	* function.h (struct function): Update documentation for is_thunk.
+	* tree.h (CALL_FROM_THUNK_P): New macro.
+	* config/alpha/alpha.c (alpha_sa_mask): Do not check
+	no_new_pseudos when testing current_function_is_thunk.
+	* config/rs6000/rs6000.c (rs6000_ra_ever_killed): Likeiwse.
+
 2004-02-05  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* sourcebuild.texi (Test Idioms): Update testcase naming

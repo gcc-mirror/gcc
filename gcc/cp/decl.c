@@ -11197,8 +11197,6 @@ cxx_push_function_context (struct function * f)
     {
       tree fn = f->decl;
 
-      current_function_is_thunk = DECL_THUNK_P (fn);
-
       if (DECL_SAVED_FUNCTION_DATA (fn))
 	{
 	  /* If we already parsed this function, and we're just expanding it

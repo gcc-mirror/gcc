@@ -10960,11 +10960,7 @@ rs6000_ra_ever_killed (void)
   rtx reg;
   rtx insn;
 
-  /* Irritatingly, there are two kinds of thunks -- those created with
-     TARGET_ASM_OUTPUT_MI_THUNK and those with DECL_THUNK_P that go
-     through the regular part of the compiler.  This is a very hacky
-     way to tell them apart.  */
-  if (current_function_is_thunk && !no_new_pseudos)
+  if (current_function_is_thunk)
     return 0;
 
   /* regs_ever_live has LR marked as used if any sibcalls are present,

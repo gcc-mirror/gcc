@@ -1,3 +1,14 @@
+2004-02-05  Paul Brook  <paul@codesourcery.com>
+
+	Backport from mainline.
+
+	2003-11-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (cxx_push_function_context): Do not set
+	current_function_is_thunk.
+	* method.c (use_thunk): Set CALL_FROM_THUNK on the call to the
+	actual function.
+
 2004-02-04  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13932
