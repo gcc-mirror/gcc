@@ -1,5 +1,9 @@
 2000-07-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-common.c (check_format_info): Do not make a pedantic objection
+	to the 'L' length modifier if used with a floating point type
+	character.
+
 	* c-lex.c (yylex): Don't pedwarn for hexadecimal floating point
 	constants in C99 mode.
 

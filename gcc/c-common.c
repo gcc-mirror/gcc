@@ -1780,7 +1780,7 @@ check_format_info (info, params)
 	  else if (*format_chars == 'q' || *format_chars == 'L')
 	    {
 	      length_char = *format_chars++;
-	      if (pedantic)
+	      if (length_char == 'q' && pedantic)
 		warning ("ANSI C does not support the `%c' length modifier",
 			 length_char);
 	    }
@@ -1936,6 +1936,13 @@ check_format_info (info, params)
       if (wanted_type == 0)
 	warning ("use of `%c' length character with `%c' type character",
 		 length_char, format_char);
+      else if (length_char == 'L' && pedantic
+	       && !(format_char == 'a' || format_char == 'A'
+		    || format_char == 'e' || format_char == 'E'
+		    || format_char == 'f' || format_char == 'F'
+		    || format_char == 'g' || format_char == 'G'))
+	warning ("ANSI C does not support the `L' length modifier with the `%c' type character",
+		 format_char);
 
       /* Finally. . .check type of argument against desired type!  */
       if (info->first_arg_num == 0)
