@@ -1,3 +1,11 @@
+2003-03-05  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.h (PAD_VARARGS_DOWN): Define and return
+	according to va_arg type.
+	(EXPAND_BUILTIN_VA_ARG): Remove.
+	* config/m68hc11/m68hc11.c (m68hc11_va_arg): Remove.
+	* config/m68hc11/m68hc11-protos.h (m68hc11_va_arg): Remove.
+
 Wed Mar  5 15:45:40 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation):  Do duplicate loop headers when

@@ -141,8 +141,6 @@ extern int m68hc11_function_arg_pass_by_reference PARAMS((const CUMULATIVE_ARGS*
                                                           int));
 extern int m68hc11_function_arg_padding PARAMS((enum machine_mode, tree));
 
-extern rtx m68hc11_va_arg PARAMS((tree,tree));
-
 extern void m68hc11_function_epilogue PARAMS((FILE*,int));
 
 #endif /* TREE_CODE */
