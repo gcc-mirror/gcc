@@ -1,3 +1,10 @@
+2004-11-24  Ben Elliston  <bje@au.ibm.com>
+
+	* config/i386/i386.h (ASM_OUTPUT_DWARF_ADDR_CONST): Remove.
+	* config/i386/i386.c (i386_dwarf_output_addr_const): Likewise.
+	* config/i386/i386-protos.h (i386_dwarf_output_addr_const):
+	Likewise.
+	
 2004-11-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree-sra.c (sra_walk_modify_expr): Handle RHS first, then LHS.

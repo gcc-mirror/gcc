@@ -5911,26 +5911,6 @@ output_pic_addr_const (FILE *file, rtx x, int code)
     }
 }
 
-/* This is called from dwarfout.c via ASM_OUTPUT_DWARF_ADDR_CONST.
-   We need to handle our special PIC relocations.  */
-
-void
-i386_dwarf_output_addr_const (FILE *file, rtx x)
-{
-#ifdef ASM_QUAD
-  fprintf (file, "%s", TARGET_64BIT ? ASM_QUAD : ASM_LONG);
-#else
-  if (TARGET_64BIT)
-    abort ();
-  fprintf (file, "%s", ASM_LONG);
-#endif
-  if (flag_pic)
-    output_pic_addr_const (file, x, '\0');
-  else
-    output_addr_const (file, x);
-  fputc ('\n', file);
-}
-
 /* This is called from dwarf2out.c via ASM_OUTPUT_DWARF_DTPREL.
    We need to emit DTP-relative relocations.  */
 
