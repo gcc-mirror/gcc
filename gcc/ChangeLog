@@ -1,5 +1,10 @@
 Tue Mar  7 21:41:17 2000  Jeffrey A Law  (law@cygnus.com)
 
+	2000-01-18  Clinton Popetz  <cpopetz@cygnus.com>
+	* loop.c (check_dbra_loop): When checking a loop for
+	reversability, check the source of any stores to ensure they 
+	don't depend on an initial value.
+
 	Sat Jan  8 12:12:46 2000  Nick Clifton  <nickc@cygnus.com>
 	* config/v850/v850.c (expand_epilogue): Interrupt functions no
 	longer allocate extra stack for function calls.
