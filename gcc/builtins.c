@@ -109,6 +109,8 @@ static rtx expand_builtin_bzero		PARAMS ((tree));
 static rtx expand_builtin_strlen	PARAMS ((tree, rtx));
 static rtx expand_builtin_strstr	PARAMS ((tree, rtx,
 						 enum machine_mode));
+static rtx expand_builtin_strpbrk	PARAMS ((tree, rtx,
+						 enum machine_mode));
 static rtx expand_builtin_alloca	PARAMS ((tree, rtx));
 static rtx expand_builtin_ffs		PARAMS ((tree, rtx, rtx));
 static rtx expand_builtin_frame_address	PARAMS ((tree));
@@ -1459,6 +1461,100 @@ expand_builtin_strstr (arglist, target, mode)
     }
 }
 
+/* Expand a call to the strpbrk builtin.  Return 0 if we failed the
+   caller should emit a normal call, otherwise try to get the result
+   in TARGET, if convenient (and in mode MODE if that's convenient).  */
+
+static rtx
+expand_builtin_strpbrk (arglist, target, mode)
+     tree arglist;
+     rtx target;
+     enum machine_mode mode;
+{
+  if (arglist == 0
+      || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
+      || TREE_CHAIN (arglist) == 0
+      || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE)
+    return 0;
+  else
+    {
+      tree s1 = TREE_VALUE (arglist), s2 = TREE_VALUE (TREE_CHAIN (arglist));
+      tree len1 = c_strlen (s1), len2 = c_strlen (s2);
+      tree stripped_s1 = s1, stripped_s2 = s2;
+
+      STRIP_NOPS (stripped_s1);
+      if (stripped_s1 && TREE_CODE (stripped_s1) == ADDR_EXPR)
+	stripped_s1 = TREE_OPERAND (stripped_s1, 0);
+      STRIP_NOPS (stripped_s2);
+      if (stripped_s2 && TREE_CODE (stripped_s2) == ADDR_EXPR)
+	stripped_s2 = TREE_OPERAND (stripped_s2, 0);
+
+      /* If both arguments are constants, calculate the result now.  */
+      if (len1 && len2
+	  && TREE_CODE (stripped_s1) == STRING_CST
+	  && TREE_CODE (stripped_s2) == STRING_CST)
+        {
+	  const char *const result =
+	    strpbrk (TREE_STRING_POINTER (stripped_s1),
+		     TREE_STRING_POINTER (stripped_s2));
+
+	  if (result)
+	    {
+	      long offset = result - TREE_STRING_POINTER (stripped_s1);
+
+	      /* Return an offset into the constant string argument.  */
+	      return expand_expr (fold (build (PLUS_EXPR, TREE_TYPE (s1),
+					       s1, ssize_int (offset))),
+				  target, mode, EXPAND_NORMAL);
+	    }
+	  else
+	    return const0_rtx;
+	}
+
+      /* We must have been able to figure out the second argument's
+         length to do anything else.  */
+      if (!len2)
+	return 0;
+
+      /* OK, handle some cases.  */
+      switch (compare_tree_int (len2, 1))
+        {
+	case -1: /* length is 0, return NULL.  */
+	  {
+	    /* Evaluate and ignore the arguments in case they had
+	       side-effects.  */
+	    expand_expr (s1, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	    expand_expr (s2, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	    return const0_rtx;
+	  }
+	case 0: /* length is 1, return strchr(s1, s2[0]).  */
+	  {
+	    tree call_expr, fn = built_in_decls[BUILT_IN_STRCHR];
+
+	    if (!fn)
+	      return 0;
+
+	    /* New argument list transforming strpbrk(s1, s2) to
+	       strchr(s1, s2[0]).  */
+	    arglist =
+	      build_tree_list (NULL_TREE, build_int_2
+			       (TREE_STRING_POINTER (stripped_s2)[0], 0));
+	    arglist = tree_cons (NULL_TREE, s1, arglist);
+	    call_expr = build1 (ADDR_EXPR,
+				build_pointer_type (TREE_TYPE (fn)), fn);
+	    call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+			       call_expr, arglist, NULL_TREE);
+	    TREE_SIDE_EFFECTS (call_expr) = 1;
+	    return expand_expr (call_expr, target, mode, EXPAND_NORMAL);
+	  }
+	case 1: /* length is greater than 1, really call strpbrk.  */
+	  return 0;
+	default:
+	  abort();
+	}
+    }
+}
+
 /* Expand a call to the memcpy builtin, with arguments in ARGLIST.  */
 static rtx
 expand_builtin_memcpy (arglist)
@@ -2503,7 +2599,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  || fcode == BUILT_IN_MEMCPY || fcode == BUILT_IN_MEMCMP
 	  || fcode == BUILT_IN_BCMP || fcode == BUILT_IN_BZERO
 	  || fcode == BUILT_IN_STRLEN || fcode == BUILT_IN_STRCPY
-	  || fcode == BUILT_IN_STRSTR
+	  || fcode == BUILT_IN_STRSTR || fcode == BUILT_IN_STRPBRK
 	  || fcode == BUILT_IN_STRCMP || fcode == BUILT_IN_FFS
 	  || fcode == BUILT_IN_PUTCHAR || fcode == BUILT_IN_PUTS
 	  || fcode == BUILT_IN_PRINTF || fcode == BUILT_IN_FPUTC
@@ -2634,6 +2730,12 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       
     case BUILT_IN_STRSTR:
       target = expand_builtin_strstr (arglist, target, mode);
+      if (target)
+	return target;
+      break;
+      
+    case BUILT_IN_STRPBRK:
+      target = expand_builtin_strpbrk (arglist, target, mode);
       if (target)
 	return target;
       break;
