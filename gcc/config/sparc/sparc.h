@@ -1475,8 +1475,9 @@ extern char leaf_reg_remap[];
    in class CLASS, return the class of reg to actually use.
    In general this is just CLASS; but on some machines
    in some cases it is preferable to use a more restrictive class.  */
-/* - We can't load constants into FP registers.  We can't load any FP
-     constant if an 'E' constraint fails to match it.
+/* - We can't load constants into FP registers.
+   - We can't load FP constants into integer registers when soft-float,
+     because there is no soft-float pattern with a r/F constraint.
    - Try and reload integer constants (symbolic or otherwise) back into
      registers directly, rather than having them dumped to memory.  */
 
@@ -1484,8 +1485,7 @@ extern char leaf_reg_remap[];
   (CONSTANT_P (X)					\
    ? ((FP_REG_CLASS_P (CLASS)				\
        || (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT	\
-	   && (HOST_FLOAT_FORMAT != IEEE_FLOAT_FORMAT	\
-	       || HOST_BITS_PER_INT != BITS_PER_WORD)))	\
+	   && ! TARGET_FPU))				\
       ? NO_REGS						\
       : (!FP_REG_CLASS_P (CLASS)			\
          && GET_MODE_CLASS (GET_MODE (X)) == MODE_INT)	\
