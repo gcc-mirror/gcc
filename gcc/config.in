@@ -23,6 +23,9 @@
 /* Whether getenv must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_GETENV
 
+/* Whether atol must be declared even if <stdlib.h> is included.  */
+#undef NEED_DECLARATION_ATOL
+
 /* Define if you have the ANSI C header files.  */
 #undef STDC_HEADERS
 
