@@ -122,6 +122,7 @@ namespace std
       operator() (const locale& __loc) const;
     };
 
+  // Specializations.
   template<typename _CharT>
     struct __use_cache<__numpunct_cache<_CharT> >
     {
@@ -148,6 +149,111 @@ namespace std
 	return static_cast<const __numpunct_cache<_CharT>*>(__caches[__i]);
       }
     };
+
+  template<typename _CharT, bool _Intl>
+    struct __use_cache<__moneypunct_cache<_CharT, _Intl> >
+    {
+      const __moneypunct_cache<_CharT, _Intl>*
+      operator() (const locale& __loc) const
+      {
+	const size_t __i = moneypunct<_CharT, _Intl>::id._M_id();
+	const locale::facet** __caches = __loc._M_impl->_M_caches;
+	if (!__caches[__i])
+	  {
+	    __moneypunct_cache<_CharT, _Intl>* __tmp = NULL;
+	    try
+	      {
+		__tmp = new __moneypunct_cache<_CharT, _Intl>;
+		__tmp->_M_cache(__loc);
+	      }
+	    catch(...)
+	      {
+		delete __tmp;
+		__throw_exception_again;
+	      }
+	    __loc._M_impl->_M_install_cache(__tmp, __i);
+	  }
+	return static_cast<
+	  const __moneypunct_cache<_CharT, _Intl>*>(__caches[__i]);
+      }
+    };
+
+  template<typename _CharT>
+    void
+    __numpunct_cache<_CharT>::_M_cache(const locale& __loc)
+    {
+      _M_allocated = true;
+
+      const numpunct<_CharT>& __np = use_facet<numpunct<_CharT> >(__loc);
+
+      _M_grouping_size = __np.grouping().size();
+      char* __grouping = new char[_M_grouping_size];
+      __np.grouping().copy(__grouping, _M_grouping_size);
+      _M_grouping = __grouping;
+      _M_use_grouping = _M_grouping_size && __np.grouping()[0] != 0;
+
+      _M_truename_size = __np.truename().size();
+      _CharT* __truename = new _CharT[_M_truename_size];
+      __np.truename().copy(__truename, _M_truename_size);
+      _M_truename = __truename;
+
+      _M_falsename_size = __np.falsename().size();
+      _CharT* __falsename = new _CharT[_M_falsename_size];
+      __np.falsename().copy(__falsename, _M_falsename_size);
+      _M_falsename = __falsename;
+
+      _M_decimal_point = __np.decimal_point();
+      _M_thousands_sep = __np.thousands_sep();
+
+      const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
+      __ct.widen(__num_base::_S_atoms_out,
+		 __num_base::_S_atoms_out + __num_base::_S_oend, _M_atoms_out);
+      __ct.widen(__num_base::_S_atoms_in,
+		 __num_base::_S_atoms_in + __num_base::_S_iend, _M_atoms_in);
+    }
+
+  template<typename _CharT, bool _Intl>
+    void
+    __moneypunct_cache<_CharT, _Intl>::_M_cache(const locale& __loc)
+    {
+      _M_allocated = true;
+
+      const moneypunct<_CharT, _Intl>& __mp =
+	use_facet<moneypunct<_CharT, _Intl> >(__loc);
+
+      _M_grouping_size = __mp.grouping().size();
+      char* __grouping = new char[_M_grouping_size];
+      __mp.grouping().copy(__grouping, _M_grouping_size);
+      _M_grouping = __grouping;
+      _M_use_grouping = _M_grouping_size && __mp.grouping()[0] != 0;
+      
+      _M_decimal_point = __mp.decimal_point();
+      _M_thousands_sep = __mp.thousands_sep();
+      _M_frac_digits = __mp.frac_digits();
+      
+      _M_curr_symbol_size = __mp.curr_symbol().size();
+      _CharT* __curr_symbol = new _CharT[_M_curr_symbol_size];
+      __mp.curr_symbol().copy(__curr_symbol, _M_curr_symbol_size);
+      _M_curr_symbol = __curr_symbol;
+      
+      _M_positive_sign_size = __mp.positive_sign().size();
+      _CharT* __positive_sign = new _CharT[_M_positive_sign_size];
+      __mp.positive_sign().copy(__positive_sign, _M_positive_sign_size);
+      _M_positive_sign = __positive_sign;
+
+      _M_negative_sign_size = __mp.negative_sign().size();
+      _CharT* __negative_sign = new _CharT[_M_negative_sign_size];
+      __mp.negative_sign().copy(__negative_sign, _M_negative_sign_size);
+      _M_negative_sign = __negative_sign;
+      
+      _M_pos_format = __mp.pos_format();
+      _M_neg_format = __mp.neg_format();
+
+      const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
+      __ct.widen(money_base::_S_atoms,
+		 money_base::_S_atoms + money_base::_S_end, _M_atoms);
+    }
+
 
   // Used by both numeric and monetary facets.
   // Check to make sure that the __grouping_tmp string constructed in
@@ -181,8 +287,8 @@ namespace std
       if (__beg != __end)
 	{
 	  const char_type __c = *__beg;
-	  const bool __plus = __c == __lit[_S_iplus];
-	  if ((__plus || __c == __lit[_S_iminus])
+	  const bool __plus = __c == __lit[__num_base::_S_iplus];
+	  if ((__plus || __c == __lit[__num_base::_S_iminus])
 	      && !(__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
 	      && !(__c == __lc->_M_decimal_point))
 	    {
@@ -198,7 +304,7 @@ namespace std
 	  if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep
 	      || __c == __lc->_M_decimal_point)
 	    break;
-	  else if (__c == __lit[_S_izero])
+	  else if (__c == __lit[__num_base::_S_izero])
 	    {
 	      if (!__found_mantissa)
 		{
@@ -218,7 +324,7 @@ namespace std
       if (__lc->_M_use_grouping)
 	__found_grouping.reserve(32);
       int __sep_pos = 0;
-      const char_type* __lit_zero = __lit + _S_izero;
+      const char_type* __lit_zero = __lit + __num_base::_S_izero;
       const char_type* __q;
       while (__beg != __end)
         {
@@ -264,12 +370,13 @@ namespace std
 	    }
           else if (__q = __traits_type::find(__lit_zero, 10, __c))
 	    {
-	      __xtrc += _S_atoms_in[__q - __lit];
+	      __xtrc += __num_base::_S_atoms_in[__q - __lit];
 	      __found_mantissa = true;
 	      ++__sep_pos;
 	      ++__beg;
 	    }
-	  else if ((__c == __lit[_S_ie] || __c == __lit[_S_iE])
+	  else if ((__c == __lit[__num_base::_S_ie] 
+		    || __c == __lit[__num_base::_S_iE])
 		   && __found_mantissa && !__found_sci)
 	    {
 	      // Scientific notation.
@@ -281,8 +388,8 @@ namespace std
 	      // Remove optional plus or minus sign, if they exist.
 	      if (++__beg != __end)
 		{
-		  const bool __plus = *__beg == __lit[_S_iplus];
-		  if ((__plus || *__beg == __lit[_S_iminus])
+		  const bool __plus = *__beg == __lit[__num_base::_S_iplus];
+		  if ((__plus || *__beg == __lit[__num_base::_S_iminus])
 		      && !(__lc->_M_use_grouping
 			   && *__beg == __lc->_M_thousands_sep)
 		      && !(*__beg == __lc->_M_decimal_point))
@@ -305,7 +412,8 @@ namespace std
 	  if (!__found_dec && !__found_sci)
 	    __found_grouping += static_cast<char>(__sep_pos);
 
-          if (!std::__verify_grouping(__lc->_M_grouping, __lc->_M_grouping_size,
+          if (!std::__verify_grouping(__lc->_M_grouping, 
+				      __lc->_M_grouping_size,
 				      __found_grouping))
 	    __err |= ios_base::failbit;
         }
@@ -345,8 +453,8 @@ namespace std
 	  {
 	    const char_type __c = *__beg;
 	    if (numeric_limits<_ValueT>::is_signed)
-	      __negative = __c == __lit[_S_iminus];
-	    if ((__negative || __c == __lit[_S_iplus])
+	      __negative = __c == __lit[__num_base::_S_iminus];
+	    if ((__negative || __c == __lit[__num_base::_S_iplus])
 		&& !(__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
 		&& !(__c == __lc->_M_decimal_point))
 	      ++__beg;
@@ -360,14 +468,16 @@ namespace std
 	    if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep
 		|| __c == __lc->_M_decimal_point)
 	      break;
-	    else if (__c == __lit[_S_izero] && (!__found_num || __base == 10))
+	    else if (__c == __lit[__num_base::_S_izero] 
+		     && (!__found_num || __base == 10))
 	      {
 		__found_num = true;
 		++__beg;
 	      }
 	    else if (__found_num)
 	      {
-		if (__c == __lit[_S_ix] || __c == __lit[_S_iX])
+		if (__c == __lit[__num_base::_S_ix] 
+		    || __c == __lit[__num_base::_S_iX])
 		  {
 		    if (__basefield == 0)
 		      __base = 16;
@@ -387,7 +497,7 @@ namespace std
 
 	// At this point, base is determined. If not hex, only allow
 	// base digits as valid input.
-	const size_t __len = __base == 16 ? _S_iend - _S_izero : __base;
+	const size_t __len = __base == 16 ? __num_base::_S_iend - __num_base::_S_izero : __base;
 
 	// Extract.
 	string __found_grouping;
@@ -396,7 +506,7 @@ namespace std
 	int __sep_pos = 0;
 	bool __overflow = false;
 	_ValueT __result = 0;
-	const char_type* __lit_zero = __lit + _S_izero;
+	const char_type* __lit_zero = __lit + __num_base::_S_izero;
 	const char_type* __q;
 	if (__negative)
 	  {
@@ -736,8 +846,8 @@ namespace std
 
   template<typename _CharT>
     inline int
-    __int_to_char(_CharT* __bufend, unsigned long long __v, const _CharT* __lit,
-		  ios_base::fmtflags __flags)
+    __int_to_char(_CharT* __bufend, unsigned long long __v, 
+		  const _CharT* __lit, ios_base::fmtflags __flags)
     { return __int_to_char(__bufend, __v, __lit, __flags, false); }
 #endif
 
@@ -960,7 +1070,7 @@ namespace std
 	int __cs_size = __max_digits * 3;
 	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
 
-	_S_format_float(__io, __fbuf, __mod);
+	__num_base::_S_format_float(__io, __fbuf, __mod);
 	__len = std::__convert_from_v(__cs, __cs_size, __fbuf, __v,
 				      _S_get_c_locale(), __prec);
 
@@ -987,7 +1097,7 @@ namespace std
 	                              : __max_digits * 3;
 	char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
 
-	_S_format_float(__io, __fbuf, __mod);
+	__num_base::_S_format_float(__io, __fbuf, __mod);
 	__len = std::__convert_from_v(__cs, 0, __fbuf, __v,
 				      _S_get_c_locale(), __prec);
 #endif
@@ -1133,34 +1243,6 @@ namespace std
       return __s;
     }
 
-  template<typename _CharT, bool _Intl>
-    struct __use_cache<__moneypunct_cache<_CharT, _Intl> >
-    {
-      const __moneypunct_cache<_CharT, _Intl>*
-      operator() (const locale& __loc) const
-      {
-	const size_t __i = moneypunct<_CharT, _Intl>::id._M_id();
-	const locale::facet** __caches = __loc._M_impl->_M_caches;
-	if (!__caches[__i])
-	  {
-	    __moneypunct_cache<_CharT, _Intl>* __tmp = NULL;
-	    try
-	      {
-		__tmp = new __moneypunct_cache<_CharT, _Intl>;
-		__tmp->_M_cache(__loc);
-	      }
-	    catch(...)
-	      {
-		delete __tmp;
-		__throw_exception_again;
-	      }
-	    __loc._M_impl->_M_install_cache(__tmp, __i);
-	  }
-	return static_cast<
-	  const __moneypunct_cache<_CharT, _Intl>*>(__caches[__i]);
-      }
-    };
-
   template<typename _CharT, typename _InIter>
     template<bool _Intl>
       _InIter
@@ -1205,7 +1287,7 @@ namespace std
 	string __res;
 	__res.reserve(32);
 
-	const char_type* __lit_zero = __lit + _S_zero;
+	const char_type* __lit_zero = __lit + money_base::_S_zero;
 	const char_type* __q;
 	const money_base::pattern __p = __lc->_M_neg_format;	
 	for (int __i = 0; __i < 4 && __testvalid; ++__i)
@@ -1222,9 +1304,9 @@ namespace std
 		    || __i == 0
 		    || (__i == 1 && (__mandatory_sign
 				     || (static_cast<part>(__p.field[0])
-					 == sign)
+					 == money_base::sign)
 				     || (static_cast<part>(__p.field[2])
-					 == space)))
+					 == money_base::space)))
 		    || (__i == 2 && ((static_cast<part>(__p.field[3])
 				      == money_base::value)
 				     || __mandatory_sign
@@ -1270,7 +1352,7 @@ namespace std
 		for (; __beg != __end; ++__beg)
 		  if (__q = __traits_type::find(__lit_zero, 10, *__beg))
 		    {
-		      __res += _S_atoms[__q - __lit];
+		      __res += money_base::_S_atoms[__q - __lit];
 		      ++__n;
 		    }
 		  else if (*__beg == __lc->_M_decimal_point && !__testdecfound)
@@ -1443,7 +1525,7 @@ namespace std
 	money_base::pattern __p;
 	const char_type* __sign;
 	size_type __sign_size;
-	if (*__beg != __lit[_S_minus])
+	if (*__beg != __lit[money_base::_S_minus])
 	  {
 	    __p = __lc->_M_pos_format;
 	    __sign = __lc->_M_positive_sign;
@@ -1501,13 +1583,14 @@ namespace std
 		else
 		  {
 		    // Have to pad zeros in the decimal position.
-		    __value.append(-__paddec, __lit[_S_zero]);
+		    __value.append(-__paddec, __lit[money_base::_S_zero]);
 		    __value.append(__beg, __len);
 		  }
   	      }
   
 	    // Calculate length of resulting string.
-	    const ios_base::fmtflags __f = __io.flags() & ios_base::adjustfield;
+	    const ios_base::fmtflags __f = __io.flags() 
+	                                   & ios_base::adjustfield;
 	    __len = __value.size() + __sign_size;
 	    __len += ((__io.flags() & ios_base::showbase)
 		      ? __lc->_M_curr_symbol_size : 0);
@@ -1515,7 +1598,7 @@ namespace std
 	    string_type __res;
 	    __res.reserve(2 * __len);
 	    
-	    const size_type __width = static_cast<size_type>(__io.width());	  
+	    const size_type __width = static_cast<size_type>(__io.width());  
 	    const bool __testipad = (__f == ios_base::internal
 				     && __len < __width);
 	    // Fit formatted digits into the required pattern.
@@ -1626,6 +1709,7 @@ namespace std
     { return __intl ? _M_insert<true>(__s, __io, __fill, __digits)
 	            : _M_insert<false>(__s, __io, __fill, __digits); }
 
+
   // NB: Not especially useful. Without an ios_base object or some
   // kind of locale reference, we are left clawing at the air where
   // the side of the mountain used to be...
@@ -1639,13 +1723,13 @@ namespace std
   // specific string, which may contain yet more strings.  I.e. %x => %r =>
   // %H:%M:%S => extracted characters.
   template<typename _CharT, typename _InIter>
-    void
+    _InIter
     time_get<_CharT, _InIter>::
-    _M_extract_via_format(iter_type& __beg, iter_type& __end, ios_base& __io,
+    _M_extract_via_format(iter_type __beg, iter_type __end, ios_base& __io,
 			  ios_base::iostate& __err, tm* __tm,
 			  const _CharT* __format) const
     {
-      const locale __loc = __io.getloc();
+      const locale& __loc = __io._M_getloc();
       const __timepunct<_CharT>& __tp = use_facet<__timepunct<_CharT> >(__loc);
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
       const size_t __len = char_traits<_CharT>::length(__format);
@@ -1667,81 +1751,81 @@ namespace std
 		  // Abbreviated weekday name [tm_wday]
 		  const char_type*  __days1[7];
 		  __tp._M_days_abbreviated(__days1);
-		  _M_extract_name(__beg, __end, __tm->tm_wday, __days1, 7,
-				  __ctype, __err);
+		  __beg = _M_extract_name(__beg, __end, __tm->tm_wday, __days1,
+					  7, __io, __err);
 		  break;
 		case 'A':
 		  // Weekday name [tm_wday].
 		  const char_type*  __days2[7];
 		  __tp._M_days(__days2);
-		  _M_extract_name(__beg, __end, __tm->tm_wday, __days2, 7,
-				  __ctype, __err);
+		  __beg = _M_extract_name(__beg, __end, __tm->tm_wday, __days2,
+					  7, __io, __err);
 		  break;
 		case 'h':
 		case 'b':
 		  // Abbreviated month name [tm_mon]
 		  const char_type*  __months1[12];
 		  __tp._M_months_abbreviated(__months1);
-		  _M_extract_name(__beg, __end, __tm->tm_mon, __months1, 12,
-				  __ctype, __err);
+		  __beg = _M_extract_name(__beg, __end, __tm->tm_mon, 
+					  __months1, 12, __io, __err);
 		  break;
 		case 'B':
 		  // Month name [tm_mon].
 		  const char_type*  __months2[12];
 		  __tp._M_months(__months2);
-		  _M_extract_name(__beg, __end, __tm->tm_mon, __months2, 12,
-				  __ctype, __err);
+		  __beg = _M_extract_name(__beg, __end, __tm->tm_mon, 
+					  __months2, 12, __io, __err);
 		  break;
 		case 'c':
 		  // Default time and date representation.
 		  const char_type*  __dt[2];
 		  __tp._M_date_time_formats(__dt);
-		  _M_extract_via_format(__beg, __end, __io, __err, __tm,
-					__dt[0]);
+		  __beg = _M_extract_via_format(__beg, __end, __io, __err, 
+						__tm, __dt[0]);
 		  break;
 		case 'd':
 		  // Day [01, 31]. [tm_mday]
-		  _M_extract_num(__beg, __end, __tm->tm_mday, 1, 31, 2,
-				 __ctype, __err);
+		  __beg = _M_extract_num(__beg, __end, __tm->tm_mday, 1, 31, 2,
+					 __io, __err);
 		  break;
 		case 'e':
 		  // Day [1, 31], with single digits preceded by
 		  // space. [tm_mday]
 		  if (__ctype.is(ctype_base::space, *__beg))
-		    _M_extract_num(++__beg, __end, __tm->tm_mday, 1, 9, 1,
-				   __ctype, __err);
+		    __beg = _M_extract_num(++__beg, __end, __tm->tm_mday, 1, 9,
+					   1, __io, __err);
 		  else
-		    _M_extract_num(__beg, __end, __tm->tm_mday, 10, 31, 2,
-				   __ctype, __err);
+		    __beg = _M_extract_num(__beg, __end, __tm->tm_mday, 10, 31,
+					   2, __io, __err);
 		  break;
 		case 'D':
 		  // Equivalent to %m/%d/%y.[tm_mon, tm_mday, tm_year]
 		  __cs = "%m/%d/%y";
 		  __ctype.widen(__cs, __cs + 9, __wcs);
-		  _M_extract_via_format(__beg, __end, __io, __err, __tm,
-					__wcs);
+		  __beg = _M_extract_via_format(__beg, __end, __io, __err, 
+						__tm, __wcs);
 		  break;
 		case 'H':
 		  // Hour [00, 23]. [tm_hour]
-		  _M_extract_num(__beg, __end, __tm->tm_hour, 0, 23, 2,
-				 __ctype, __err);
+		  __beg = _M_extract_num(__beg, __end, __tm->tm_hour, 0, 23, 2,
+					 __io, __err);
 		  break;
 		case 'I':
 		  // Hour [01, 12]. [tm_hour]
-		  _M_extract_num(__beg, __end, __tm->tm_hour, 1, 12, 2,
-				 __ctype, __err);
+		  __beg = _M_extract_num(__beg, __end, __tm->tm_hour, 1, 12, 2,
+					 __io, __err);
 		  break;
 		case 'm':
 		  // Month [01, 12]. [tm_mon]
-		  _M_extract_num(__beg, __end, __mem, 1, 12, 2, __ctype,
-				 __err);
+		  __beg = _M_extract_num(__beg, __end, __mem, 1, 12, 2, 
+					 __io, __err);
 		  if (!__err)
 		    __tm->tm_mon = __mem - 1;
 		  break;
 		case 'M':
 		  // Minute [00, 59]. [tm_min]
-		  _M_extract_num(__beg, __end, __tm->tm_min, 0, 59, 2,
-				 __ctype, __err);
+		  __beg = _M_extract_num(__beg, __end, __tm->tm_min, 0, 59, 2,
+					 __io, __err);
 		  break;
 		case 'n':
 		  if (__ctype.narrow(*__beg, 0) == '\n')
@@ -1753,13 +1837,13 @@ namespace std
 		  // Equivalent to (%H:%M).
 		  __cs = "%H:%M";
 		  __ctype.widen(__cs, __cs + 6, __wcs);
-		  _M_extract_via_format(__beg, __end, __io, __err, __tm,
-					__wcs);
+		  __beg = _M_extract_via_format(__beg, __end, __io, __err, 
+						__tm, __wcs);
 		  break;
 		case 'S':
 		  // Seconds.
-		  _M_extract_num(__beg, __end, __tm->tm_sec, 0, 59, 2,
-				 __ctype, __err);
+		  __beg = _M_extract_num(__beg, __end, __tm->tm_sec, 0, 59, 2,
+					 __io, __err);
 		  break;
 		case 't':
 		  if (__ctype.narrow(*__beg, 0) == '\t')
@@ -1771,33 +1855,33 @@ namespace std
 		  // Equivalent to (%H:%M:%S).
 		  __cs = "%H:%M:%S";
 		  __ctype.widen(__cs, __cs + 9, __wcs);
-		  _M_extract_via_format(__beg, __end, __io, __err, __tm,
-					__wcs);
+		  __beg = _M_extract_via_format(__beg, __end, __io, __err, 
+						__tm, __wcs);
 		  break;
 		case 'x':
 		  // Locale's date.
 		  const char_type*  __dates[2];
 		  __tp._M_date_formats(__dates);
-		  _M_extract_via_format(__beg, __end, __io, __err, __tm,
-					__dates[0]);
+		  __beg = _M_extract_via_format(__beg, __end, __io, __err, 
+						__tm, __dates[0]);
 		  break;
 		case 'X':
 		  // Locale's time.
 		  const char_type*  __times[2];
 		  __tp._M_time_formats(__times);
-		  _M_extract_via_format(__beg, __end, __io, __err, __tm,
-					__times[0]);
+		  __beg = _M_extract_via_format(__beg, __end, __io, __err, 
+						__tm, __times[0]);
 		  break;
 		case 'y':
 		case 'C': // C99
 		  // Two digit year. [tm_year]
-		  _M_extract_num(__beg, __end, __tm->tm_year, 0, 99, 2,
-				 __ctype, __err);
+		  __beg = _M_extract_num(__beg, __end, __tm->tm_year, 0, 99, 2,
+					 __io, __err);
 		  break;
 		case 'Y':
 		  // Year [1900). [tm_year]
-		  _M_extract_num(__beg, __end, __mem, 0, 9999, 4,
-				 __ctype, __err);
+		  __beg = _M_extract_num(__beg, __end, __mem, 0, 9999, 4,
+					 __io, __err);
 		  if (!__err)
 		    __tm->tm_year = __mem - 1900;
 		  break;
@@ -1806,19 +1890,19 @@ namespace std
 		  if (__ctype.is(ctype_base::upper, *__beg))
 		    {
 		      int __tmp;
-		      _M_extract_name(__beg, __end, __tmp,
-				      __timepunct_cache<_CharT>::_S_timezones,
-				      14, __ctype, __err);
+		      __beg = _M_extract_name(__beg, __end, __tmp,
+				       __timepunct_cache<_CharT>::_S_timezones,
+					      14, __io, __err);
 
 		      // GMT requires special effort.
 		      if (__beg != __end && !__err && __tmp == 0
 			  && (*__beg == __ctype.widen('-')
 			      || *__beg == __ctype.widen('+')))
 			{
-			  _M_extract_num(__beg, __end, __tmp, 0, 23, 2,
-					  __ctype, __err);
-			  _M_extract_num(__beg, __end, __tmp, 0, 59, 2,
-					  __ctype, __err);
+			  __beg = _M_extract_num(__beg, __end, __tmp, 0, 23, 2,
+						 __io, __err);
+			  __beg = _M_extract_num(__beg, __end, __tmp, 0, 59, 2,
+						 __io, __err);
 			}
 		    }
 		  else
@@ -1838,16 +1922,19 @@ namespace std
 		__err |= ios_base::failbit;
 	    }
 	}
+      return __beg;
     }
 
   template<typename _CharT, typename _InIter>
-    void
+    _InIter
     time_get<_CharT, _InIter>::
-    _M_extract_num(iter_type& __beg, iter_type& __end, int& __member,
+    _M_extract_num(iter_type __beg, iter_type __end, int& __member,
 		   int __min, int __max, size_t __len,
-		   const ctype<_CharT>& __ctype,
-		   ios_base::iostate& __err) const
+		   ios_base& __io, ios_base::iostate& __err) const
     {
+      const locale& __loc = __io._M_getloc();
+      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
+
       // As-is works for __len = 1, 2, 4, the values actually used.
       int __mult = __len == 2 ? 10 : (__len == 4 ? 1000 : 1);
 
@@ -1872,19 +1959,22 @@ namespace std
 	__member = __value;
       else
 	__err |= ios_base::failbit;
+      return __beg;
     }
 
   // Assumptions:
   // All elements in __names are unique.
   template<typename _CharT, typename _InIter>
-    void
+    _InIter
     time_get<_CharT, _InIter>::
-    _M_extract_name(iter_type& __beg, iter_type& __end, int& __member,
+    _M_extract_name(iter_type __beg, iter_type __end, int& __member,
 		    const _CharT** __names, size_t __indexlen,
-		    const ctype<_CharT>& __ctype,
-		    ios_base::iostate& __err) const
+		    ios_base& __io, ios_base::iostate& __err) const
     {
       typedef char_traits<_CharT>		__traits_type;
+      const locale& __loc = __io._M_getloc();
+      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
+
       int* __matches = static_cast<int*>(__builtin_alloca(sizeof(int)
 							  * __indexlen));
       size_t __nmatches = 0;
@@ -1911,7 +2001,7 @@ namespace std
 	  size_t __minlen = 10;
 	  for (size_t __i2 = 0; __i2 < __nmatches; ++__i2)
 	    __minlen = std::min(__minlen,
-				__traits_type::length(__names[__matches[__i2]]));
+			      __traits_type::length(__names[__matches[__i2]]));
 	  ++__beg;
 	  if (__pos < __minlen && __beg != __end)
 	    {
@@ -1951,6 +2041,7 @@ namespace std
 	__testvalid = false;
       if (!__testvalid)
 	__err |= ios_base::failbit;
+      return __beg;
     }
 
   template<typename _CharT, typename _InIter>
@@ -1961,10 +2052,10 @@ namespace std
     {
       _CharT __wcs[3];
       const char* __cs = "%X";
-      const locale __loc = __io.getloc();
+      const locale& __loc = __io._M_getloc();
       ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
       __ctype.widen(__cs, __cs + 3, __wcs);
-      _M_extract_via_format(__beg, __end, __io, __err, __tm, __wcs);
+      __beg = _M_extract_via_format(__beg, __end, __io, __err, __tm, __wcs);
       if (__beg == __end)
 	__err |= ios_base::eofbit;
       return __beg;
@@ -1978,10 +2069,10 @@ namespace std
     {
       _CharT __wcs[3];
       const char* __cs = "%x";
-      const locale __loc = __io.getloc();
+      const locale& __loc = __io._M_getloc();
       ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
       __ctype.widen(__cs, __cs + 3, __wcs);
-      _M_extract_via_format(__beg, __end, __io, __err, __tm, __wcs);
+      __beg = _M_extract_via_format(__beg, __end, __io, __err, __tm, __wcs);
       if (__beg == __end)
 	__err |= ios_base::eofbit;
       return __beg;
@@ -1994,13 +2085,13 @@ namespace std
 		   ios_base::iostate& __err, tm* __tm) const
     {
       typedef char_traits<_CharT>		__traits_type;
-      const locale __loc = __io.getloc();
+      const locale& __loc = __io._M_getloc();
       const __timepunct<_CharT>& __tp = use_facet<__timepunct<_CharT> >(__loc);
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
       const char_type*  __days[7];
       __tp._M_days_abbreviated(__days);
       int __tmpwday;
-      _M_extract_name(__beg, __end, __tmpwday, __days, 7, __ctype, __err);
+      __beg = _M_extract_name(__beg, __end, __tmpwday, __days, 7, __io, __err);
 
       // Check to see if non-abbreviated name exists, and extract.
       // NB: Assumes both _M_days and _M_days_abbreviated organized in
@@ -2038,13 +2129,14 @@ namespace std
                      ios_base& __io, ios_base::iostate& __err, tm* __tm) const
     {
       typedef char_traits<_CharT>		__traits_type;
-      const locale __loc = __io.getloc();
+      const locale& __loc = __io._M_getloc();
       const __timepunct<_CharT>& __tp = use_facet<__timepunct<_CharT> >(__loc);
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
       const char_type*  __months[12];
       __tp._M_months_abbreviated(__months);
       int __tmpmon;
-      _M_extract_name(__beg, __end, __tmpmon, __months, 12, __ctype, __err);
+      __beg = _M_extract_name(__beg, __end, __tmpmon, __months, 12, 
+			      __io, __err);
 
       // Check to see if non-abbreviated name exists, and extract.
       // NB: Assumes both _M_months and _M_months_abbreviated organized in
@@ -2082,7 +2174,7 @@ namespace std
     do_get_year(iter_type __beg, iter_type __end, ios_base& __io,
 		ios_base::iostate& __err, tm* __tm) const
     {
-      const locale __loc = __io.getloc();
+      const locale& __loc = __io._M_getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
 
       size_t __i = 0;
@@ -2110,7 +2202,7 @@ namespace std
     put(iter_type __s, ios_base& __io, char_type __fill, const tm* __tm,
 	const _CharT* __beg, const _CharT* __end) const
     {
-      const locale __loc = __io.getloc();
+      const locale& __loc = __io._M_getloc();
       ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
       for (; __beg != __end; ++__beg)
 	if (__ctype.narrow(*__beg, 0) != '%')
@@ -2132,8 +2224,7 @@ namespace std
 	      }
 	    else
 	      break;
-	    __s = this->do_put(__s, __io, __fill, __tm,
-			       __format, __mod);
+	    __s = this->do_put(__s, __io, __fill, __tm, __format, __mod);
 	  }
 	else
 	  break;
@@ -2146,16 +2237,15 @@ namespace std
     do_put(iter_type __s, ios_base& __io, char_type, const tm* __tm,
 	   char __format, char __mod) const
     {
-      const locale __loc = __io.getloc();
+      const locale& __loc = __io._M_getloc();
       ctype<_CharT> const& __ctype = use_facet<ctype<_CharT> >(__loc);
       __timepunct<_CharT> const& __tp = use_facet<__timepunct<_CharT> >(__loc);
 
       // NB: This size is arbitrary. Should this be a data member,
       // initialized at construction?
       const size_t __maxlen = 64;
-      char_type* __res =
-	static_cast<char_type*>(__builtin_alloca(sizeof(char_type)
-						 * __maxlen));
+      char_type* __res = 
+       static_cast<char_type*>(__builtin_alloca(sizeof(char_type) * __maxlen));
 
       // NB: In IEE 1003.1-200x, and perhaps other locale models, it
       // is possible that the format character will be longer than one

@@ -1,3 +1,22 @@
+2004-03-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.h: Tweaks for 80 column.
+	(__numpunct_cache::_M_cache): Move to locale_facets.tcc.
+	(__moneypunct_cache::_M_cache): Same.
+	(num_get): Don't inherit from __num_base.
+	(num_put): Same.
+	(money_get): Don't inherit from money_base.
+	(money_put): Same.
+	(__timepunct::_M_am_pm_format): New.
+	(time_get::_M_extract_num): Return iterator, use ios_base as argument.
+	(time_get::_M_extract_name): Same.
+	(time_get::_M_extract_via_format): Same.
+	* include/bits/locale_facets.tcc: Tweaks for 80 column.
+	Use _M_getloc instead of getloc.
+	* testsuite/22_locale/money_put/put/char/9780-3.cc: New.
+	* testsuite/22_locale/num_put/put/char/9780-2.cc: New.
+	* testsuite/22_locale/time_put/put/char/9780-1.cc: New.
+
 2004-03-22  Paolo Carlini  <pcarlini@suse.de>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_ALLOCATOR): Add pool_allocator.
