@@ -1,7 +1,10 @@
+2003-04-01  Ziemowit Laski <zlaski@apple.com>
+
+	* objc.dg/defs.m: New.
+
 2003-04-01  Aldy Hernandez  <aldyh@redhat.com>
 
         * g++.dg/eh/simd-1.C: New.
-
         * g++.dg/eh/simd-2.C: New.
 
 2003-03-01  Aldy Hernandez  <aldyh@redhat.com>
