@@ -97,7 +97,6 @@ struct induction
   unsigned shared : 1;
   unsigned no_const_addval : 1; /* 1 if add_val does not contain a const. */
   int lifetime;			/* Length of life of this giv */
-  int times_used;		/* # times this giv is used. */
   rtx derive_adjustment;	/* If nonzero, is an adjustment to be
 				   subtracted from add_val when this giv
 				   derives another.  This occurs when the

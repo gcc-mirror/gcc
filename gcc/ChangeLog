@@ -1,3 +1,13 @@
+Tue Dec 15 18:27:39 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.h (struct induction): Delete times_used member.
+	* loop.c (n_times_set): Rename to set_in_loop.  Changed all users.
+	(n_times_used): Rename to n_times_set.  Changed all users.
+	(scan_loop): Free reg_single_usage before strength reduction.
+	(record_giv, combine_givs): Remove handling of times_used member.
+	(combine_givs_used_once): Rename to:
+	(combine_givs_used_by_other) .  Changed all callers.
+
 Tue Dec 15 01:45:26 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* dwarf2out.c (gen_struct_or_union_type_die): Check AGGREGATE_TYPE_P
