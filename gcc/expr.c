@@ -10482,24 +10482,29 @@ do_jump (exp, if_false_label, if_true_label)
 
 	if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_FLOAT
 	    || GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_INT)
-	  do_jump
-	    (fold
-	     (build (TRUTH_ANDIF_EXPR, TREE_TYPE (exp),
-		     fold (build (EQ_EXPR, TREE_TYPE (exp),
+	  {
+	    tree exp0 = save_expr (TREE_OPERAND (exp, 0));
+	    tree exp1 = save_expr (TREE_OPERAND (exp, 1));
+
+	    do_jump
+	      (fold
+	       (build (TRUTH_ANDIF_EXPR, TREE_TYPE (exp),
+		       fold (build (EQ_EXPR, TREE_TYPE (exp),
+				    fold (build1 (REALPART_EXPR,
+						  TREE_TYPE (inner_type),
+						  exp0)),
 				  fold (build1 (REALPART_EXPR,
 						TREE_TYPE (inner_type),
-						TREE_OPERAND (exp, 0))),
-				  fold (build1 (REALPART_EXPR,
-						TREE_TYPE (inner_type),
-						TREE_OPERAND (exp, 1))))),
-		     fold (build (EQ_EXPR, TREE_TYPE (exp),
-				  fold (build1 (IMAGPART_EXPR,
-						TREE_TYPE (inner_type),
-						TREE_OPERAND (exp, 0))),
-				  fold (build1 (IMAGPART_EXPR,
-						TREE_TYPE (inner_type),
-						TREE_OPERAND (exp, 1))))))),
-	     if_false_label, if_true_label);
+						exp1)))),
+		       fold (build (EQ_EXPR, TREE_TYPE (exp),
+				    fold (build1 (IMAGPART_EXPR,
+						  TREE_TYPE (inner_type),
+						  exp0)),
+				    fold (build1 (IMAGPART_EXPR,
+						  TREE_TYPE (inner_type),
+						  exp1)))))),
+	       if_false_label, if_true_label);
+	  }
 
 	else if (integer_zerop (TREE_OPERAND (exp, 1)))
 	  do_jump (TREE_OPERAND (exp, 0), if_true_label, if_false_label);
@@ -10518,24 +10523,29 @@ do_jump (exp, if_false_label, if_true_label)
 
 	if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_FLOAT
 	    || GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_COMPLEX_INT)
-	  do_jump
-	    (fold
-	     (build (TRUTH_ORIF_EXPR, TREE_TYPE (exp),
-		     fold (build (NE_EXPR, TREE_TYPE (exp),
-				  fold (build1 (REALPART_EXPR,
-						TREE_TYPE (inner_type),
-						TREE_OPERAND (exp, 0))),
-				  fold (build1 (REALPART_EXPR,
-						TREE_TYPE (inner_type),
-						TREE_OPERAND (exp, 1))))),
-		     fold (build (NE_EXPR, TREE_TYPE (exp),
-				  fold (build1 (IMAGPART_EXPR,
-						TREE_TYPE (inner_type),
-						TREE_OPERAND (exp, 0))),
-				  fold (build1 (IMAGPART_EXPR,
-						TREE_TYPE (inner_type),
-						TREE_OPERAND (exp, 1))))))),
-	     if_false_label, if_true_label);
+	  {
+	    tree exp0 = save_expr (TREE_OPERAND (exp, 0));
+	    tree exp1 = save_expr (TREE_OPERAND (exp, 1));
+
+	    do_jump
+	      (fold
+	       (build (TRUTH_ORIF_EXPR, TREE_TYPE (exp),
+		       fold (build (NE_EXPR, TREE_TYPE (exp),
+				    fold (build1 (REALPART_EXPR,
+						  TREE_TYPE (inner_type),
+						  exp0)),
+				    fold (build1 (REALPART_EXPR,
+						  TREE_TYPE (inner_type),
+						  exp1)))),
+		       fold (build (NE_EXPR, TREE_TYPE (exp),
+				    fold (build1 (IMAGPART_EXPR,
+						  TREE_TYPE (inner_type),
+						  exp0)),
+				    fold (build1 (IMAGPART_EXPR,
+						  TREE_TYPE (inner_type),
+						  exp1)))))),
+	       if_false_label, if_true_label);
+	  }
 
 	else if (integer_zerop (TREE_OPERAND (exp, 1)))
 	  do_jump (TREE_OPERAND (exp, 0), if_false_label, if_true_label);
