@@ -1,3 +1,8 @@
+2003-06-11  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.in (libtool_VERSION): To 5:5:0.
+	* configure: Regenerated.
+	
 2003-06-07  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/11095
