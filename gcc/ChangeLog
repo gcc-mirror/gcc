@@ -1,5 +1,9 @@
 Thu Apr  8 19:20:18 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* expr.c (expand_expr, case ARRAY_REF, COMPONENT_REF, BIT_FIELD_REF):
+	Do not try to optimize a aggregate address which has VOIDmode.
+	Mirrors March 23 change to expand_assignment.
+
 	* flow.c (delete_unreachable_blocks): Do not require an edge to
 	be marked with EDGE_FALLTHRU when tidying an edge which connects
 	consecutive basic blocks.
