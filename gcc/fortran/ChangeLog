@@ -1,3 +1,9 @@
+2004-09-15  Aaron W. LaFramboise <aaronavay62@aaronwl.com>
+
+	* parse.c (eof_buf): Rename eof to eof_buf.
+	(unexpected_eof): Same.
+	(gfc_parse_file): Same.
+
 2004-09-15  Steven G. Kargl  <kargls@comcast.net>
 
 	* check.c (gfc_check_getcwd_sub): New function.
