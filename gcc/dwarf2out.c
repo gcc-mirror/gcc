@@ -838,7 +838,7 @@ char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 #ifdef PC_REGNUM
 #define DWARF_FRAME_RETURN_COLUMN 	DWARF_FRAME_REGNUM (PC_REGNUM)
 #else
-#define DWARF_FRAME_RETURN_COLUMN 	FIRST_PSEUDO_REGISTER + 1
+#define DWARF_FRAME_RETURN_COLUMN 	FIRST_PSEUDO_REGISTER
 #endif
 #endif
 
@@ -6042,17 +6042,13 @@ add_name_attribute (die, name_string)
 }
 
 /* Given a tree node describing an array bound (either lower or upper) output
-   a representation for that bound.
-
-   FIXME: This uses location descriptions for variable bounds, whereas the
-   DWARF-2 spec only allowes for constants or DIE references.  */
+   a representation for that bound.  */
 static void
 add_bound_info (subrange_die, bound_attr, bound)
      register dw_die_ref subrange_die;
      register enum dwarf_attribute bound_attr;
      register tree bound;
 {
-  register dw_loc_descr_ref bound_loc = NULL;
   register unsigned bound_value = 0;
   switch (TREE_CODE (bound))
     {
@@ -6077,43 +6073,36 @@ add_bound_info (subrange_die, bound_attr, bound)
       /* ... fall thru...  */
 
     case SAVE_EXPR:
-      /* Handle the simple case of `int ar[i];'.  */
-      if (bound_attr == DW_AT_upper_bound && is_c_family ()
-	  && TREE_CODE (TREE_OPERAND (bound, 0)) == MINUS_EXPR)
-	{
-	  tree t = TREE_OPERAND (bound, 0);
-	  if (integer_onep (TREE_OPERAND (bound, 1)))
-	    t = TREE_OPERAND (t, 0);
-	  if (TREE_CODE (t) == VAR_DECL || TREE_CODE (t) == PARM_DECL)
-	    {
-	      add_AT_die_ref (subrange_die, DW_AT_count, lookup_decl_die (t));
-	      return;
-	    }
-	}
-
       /* If optimization is turned on, the SAVE_EXPRs that describe how to
-         access the upper bound values are essentially bogus. They only
-         describe (at best) how to get at these values at the points in the
-         generated code right after they have just been computed.  Worse
-         yet, in the typical case, the upper bound values will not even
-         *be* computed in the optimized code, so these SAVE_EXPRs are
-         entirely bogus. In order to compensate for this fact, we check
-         here to see if optimization is enabled, and if so, we don't add an
-         attribute for the (unknown and unknowable) upper bound.  This
-         should not cause too much trouble for existing (stupid?)
-         debuggers because they have to deal with empty upper bounds
-         location descriptions anyway in order to be able to deal with
-         incomplete array types.  Of course an intelligent debugger (GDB?)
-         should be able to comprehend that a missing upper bound
-         specification in a array type used for a storage class `auto'
-         local array variable indicates that the upper bound is both
-         unknown (at compile- time) and unknowable (at run-time) due to
-         optimization.  */
-      if (!optimize)
+         access the upper bound values may be bogus.  If they refer to a
+         register, they may only describe how to get at these values at the
+         points in the generated code right after they have just been
+         computed.  Worse yet, in the typical case, the upper bound values
+         will not even *be* computed in the optimized code (though the
+         number of elements will), so these SAVE_EXPRs are entirely
+         bogus. In order to compensate for this fact, we check here to see
+         if optimization is enabled, and if so, we don't add an attribute
+         for the (unknown and unknowable) upper bound.  This should not
+         cause too much trouble for existing (stupid?)  debuggers because
+         they have to deal with empty upper bounds location descriptions
+         anyway in order to be able to deal with incomplete array types.
+         Of course an intelligent debugger (GDB?)  should be able to
+         comprehend that a missing upper bound specification in a array
+         type used for a storage class `auto' local array variable
+         indicates that the upper bound is both unknown (at compile- time)
+         and unknowable (at run-time) due to optimization.
+
+	 We assume that a MEM rtx is safe because gcc wouldn't put the
+	 value there unless it was going to be used repeatedly in the
+	 function, i.e. for cleanups.  */
+      if (! optimize || GET_CODE (SAVE_EXPR_RTL (bound)) == MEM)
 	{
-	  bound_loc = mem_loc_descriptor
-	    (eliminate_regs (SAVE_EXPR_RTL (bound), 0, NULL_RTX, 0));
-	  add_AT_loc (subrange_die, bound_attr, bound_loc);
+	  register dw_die_ref ctx = lookup_decl_die (current_function_decl);
+	  register dw_die_ref decl_die = new_die (DW_TAG_variable, ctx);
+	  add_AT_flag (decl_die, DW_AT_artificial, 1);
+	  add_type_attribute (decl_die, TREE_TYPE (bound), 1, 0, ctx);
+	  add_location_attribute (decl_die, SAVE_EXPR_RTL (bound));
+	  add_AT_die_ref (subrange_die, bound_attr, decl_die);
 	}
       /* else leave out the attribute.  */
       break;
