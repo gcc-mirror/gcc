@@ -1,3 +1,8 @@
+2002-01-02  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/bits/boost_concept_check.h:  Import some changes from
+	upsteam (Boost) version.
+
 2002-01-02  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/stl_algobase.h (copy_n + helpers,

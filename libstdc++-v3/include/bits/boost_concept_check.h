@@ -388,7 +388,7 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
       __function_requires< _DefaultConstructibleConcept<_Tp> >();
       __function_requires< _AssignableConcept<_Tp> >();
       __function_requires< _EqualityComparableConcept<_Tp> >();
-      typedef typename std::iterator_traits<_Tp>::value_type _V;
+//      typedef typename std::iterator_traits<_Tp>::value_type _V;
       (void)*__i;                       // require dereference operator
     }
     _Tp __i;
@@ -411,7 +411,7 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
       __function_requires< _TrivialIteratorConcept<_Tp> >();
       // require iterator_traits typedef's
       typedef typename std::iterator_traits<_Tp>::difference_type _D;
-      __function_requires< _SignedIntegerConcept<_D> >();
+//      __function_requires< _SignedIntegerConcept<_D> >();
       typedef typename std::iterator_traits<_Tp>::reference _R;
       typedef typename std::iterator_traits<_Tp>::pointer _Pt;
       typedef typename std::iterator_traits<_Tp>::iterator_category _Cat;
