@@ -1,3 +1,9 @@
+1999-09-22  Tom Tromey  <tromey@cygnus.com>
+
+	* javaop.h (WORD_TO_FLOAT): Use `inline' unconditionally.
+	(WORDS_TO_LONG): Likewise.
+	(WORDS_TO_DOUBLE): Likewise.
+
 1999-09-15  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.in (parse.o): Depend on $(JAVA_TREE_H).
