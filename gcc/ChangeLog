@@ -1,3 +1,8 @@
+2000-12-05  Geoffrey Keating  <geoffk@redhat.com>
+
+	* global.c (global_conflicts): Allow for a REG_UNUSED note
+	with a different mode to the REG set in the insn.
+
 2000-12-05  Kaveh R. Ghazi  <ghazi@teal.rutgers.edu>
 
 	* Makefile.in (fixinc.sh): Pass $WARN_CFLAGS into fixinc dir.
