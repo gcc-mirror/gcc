@@ -799,7 +799,7 @@ extern enum reg_class reg_class_from_letter[];
       : R0_REGS)							\
    : (CLASS == FPSCR_REGS						\
       && ((GET_CODE (X) == REG && REGNO (X) >= FIRST_PSEUDO_REGISTER)	\
-	  || GET_CODE (X) == MEM && GET_CODE (XEXP ((X), 0)) == PLUS))	\
+	  || (GET_CODE (X) == MEM && GET_CODE (XEXP ((X), 0)) == PLUS)))\
    ? GENERAL_REGS							\
    : SECONDARY_OUTPUT_RELOAD_CLASS((CLASS),(MODE),(X)))
 
@@ -1011,8 +1011,8 @@ struct sh_args {
 
 #define PASS_IN_REG_P(CUM, MODE, TYPE) \
   (((TYPE) == 0 \
-    || (! TREE_ADDRESSABLE ((tree)(TYPE))) \
-	&& (! TARGET_HITACHI || ! AGGREGATE_TYPE_P (TYPE))) \
+    || ((! TREE_ADDRESSABLE ((tree)(TYPE))) \
+	&& (! TARGET_HITACHI || ! AGGREGATE_TYPE_P (TYPE)))) \
    && (TARGET_SH3E \
        ? ((MODE) == BLKmode \
 	  ? (((CUM).arg_count[(int) SH_ARG_INT] * UNITS_PER_WORD \
@@ -1135,7 +1135,7 @@ extern int current_function_anonymous_args;
 
 /* Alignment required for a trampoline in bits .  */
 #define TRAMPOLINE_ALIGNMENT \
-  ((CACHE_LOG < 3 || TARGET_SMALLCODE && ! TARGET_HARVARD) ? 32 : 64)
+  ((CACHE_LOG < 3 || (TARGET_SMALLCODE && ! TARGET_HARVARD)) ? 32 : 64)
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
@@ -1166,7 +1166,6 @@ extern int current_function_anonymous_args;
    : (rtx) 0)
 
 /* Generate necessary RTL for __builtin_saveregs().  */
-extern struct rtx_def *sh_builtin_saveregs ();
 #define EXPAND_BUILTIN_SAVEREGS() sh_builtin_saveregs ()
 
 /* Addressing modes, and classification of registers for them.  */
@@ -1344,7 +1343,7 @@ extern struct rtx_def *sh_builtin_saveregs ();
       if (GET_MODE_SIZE (MODE) <= 8 && BASE_REGISTER_RTX_P (xop0))	\
 	GO_IF_LEGITIMATE_INDEX ((MODE), xop1, LABEL);			\
       if (GET_MODE_SIZE (MODE) <= 4					\
-	  || TARGET_SH4 && TARGET_FMOVD && MODE == DFmode)	\
+	  || (TARGET_SH4 && TARGET_FMOVD && MODE == DFmode))	\
 	{								\
 	  if (BASE_REGISTER_RTX_P (xop1) && INDEX_REGISTER_RTX_P (xop0))\
 	    goto LABEL;							\
@@ -1843,10 +1842,10 @@ dtors_section()							\
 }
 
 #define ASM_OUTPUT_REG_PUSH(file, v) \
-  fprintf ((file), "\tmov.l\tr%s,-@r15\n", (v));
+  fprintf ((file), "\tmov.l\tr%d,-@r15\n", (v));
 
 #define ASM_OUTPUT_REG_POP(file, v) \
-  fprintf ((file), "\tmov.l\t@r15+,r%s\n", (v));
+  fprintf ((file), "\tmov.l\t@r15+,r%d\n", (v));
 
 /* The assembler's names for the registers.  RFP need not always be used as
    the Real framepointer; it can also be used as a normal general register.
@@ -1918,7 +1917,7 @@ extern char fp_reg_names[][5];
 
 /* Make an internal label into a string.  */
 #define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM) \
-  sprintf ((STRING), "*%s%s%d", LOCAL_LABEL_PREFIX, (PREFIX), (NUM))
+  sprintf ((STRING), "*%s%s%ld", LOCAL_LABEL_PREFIX, (PREFIX), (long)(NUM))
 
 /* Output an internal label definition.  */
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM) \
@@ -1944,6 +1943,8 @@ extern char fp_reg_names[][5];
       break;								\
     case QImode:							\
       asm_fprintf ((STREAM), "\t.byte\t%LL%d-%LL%d\n", (VALUE),(REL));	\
+      break;								\
+    default:								\
       break;								\
     }
 
@@ -2062,7 +2063,6 @@ do { char dstr[30];					\
 
 extern struct rtx_def *sh_compare_op0;
 extern struct rtx_def *sh_compare_op1;
-extern struct rtx_def *prepare_scc_operands();
 
 /* Which processor to schedule for.  The elements of the enumeration must
    match exactly the cpu attribute in the sh.md file.  */
@@ -2082,17 +2082,6 @@ extern enum machine_mode sh_addr_diff_vec_mode;
 
 extern int optimize; /* needed for gen_casesi.  */
 
-/* Declare functions defined in sh.c and used in templates.  */
-
-extern char *output_branch();
-extern char *output_ieee_ccmpeq();
-extern char *output_branchy_insn();
-extern char *output_shift();
-extern char *output_movedouble();
-extern char *output_movepcrel();
-extern char *output_jump_label_table();
-extern char *output_far_jump();
-
 enum mdep_reorg_phase_e
 {
   SH_BEFORE_MDEP_REORG,
@@ -2105,10 +2094,6 @@ enum mdep_reorg_phase_e
 
 extern enum mdep_reorg_phase_e mdep_reorg_phase;
 
-void machine_dependent_reorg ();
-struct rtx_def *sfunc_uses_reg ();
-int barrier_align ();
-
 #define MACHINE_DEPENDENT_REORG(X) machine_dependent_reorg(X)
 
 /* Generate calls to memcpy, memcmp and memset.  */
@@ -2119,7 +2104,6 @@ int barrier_align ();
    is a C expression whose value is 1 if the pragma was handled by the
    macro, zero otherwise.  */
 #define HANDLE_PRAGMA(GETC, UNGETC, NODE) sh_handle_pragma (GETC, UNGETC, NODE)
-extern int sh_handle_pragma ();
 
 /* Set when processing a function with pragma interrupt turned on.  */
 
@@ -2132,18 +2116,15 @@ extern struct rtx_def *sp_switch;
 /* A C expression whose value is nonzero if IDENTIFIER with arguments ARGS
    is a valid machine specific attribute for DECL.
    The attributes in ATTRIBUTES have previously been assigned to DECL.  */
-extern int sh_valid_machine_decl_attribute ();
 #define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, IDENTIFIER, ARGS) \
 sh_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 
-extern void sh_pragma_insert_attributes ();
 #define PRAGMA_INSERT_ATTRIBUTES(node, pattr, prefix_attr) \
   sh_pragma_insert_attributes (node, pattr, prefix_attr)
 
 extern int sh_flag_remove_dead_before_cse;
 extern int rtx_equal_function_value_matters;
 extern struct rtx_def *fpscr_rtx;
-extern struct rtx_def *get_fpscr_rtx ();
 
 
 /* Instructions with unfilled delay slots take up an extra two bytes for

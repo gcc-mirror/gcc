@@ -1,5 +1,16 @@
 2000-01-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* sh-protos.h: New file.
+
+	* sh.c: Include insn-config.h, toplev.h, recog.h and tm_p.h.
+	Add static prototypes.  Fix compile time warnings.
+	
+	* sh.h: Move prototypes to sh-protos.h.  Fix compile time warnings.
+	* sh.md: Likewise.
+	* elf.h: Likewise.
+
+2000-01-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* arc-protos.h: New file.
 
 	* arc.c: Include tm_p.h.  Add static prototypes.  Fix compile
