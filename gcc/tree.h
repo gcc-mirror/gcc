@@ -2720,7 +2720,7 @@ extern void expand_fixups			PARAMS ((rtx));
 extern tree expand_start_stmt_expr		PARAMS ((void));
 extern tree expand_end_stmt_expr		PARAMS ((tree));
 extern void expand_expr_stmt			PARAMS ((tree));
-extern void expand_expr_stmt_value		PARAMS ((tree, int));
+extern void expand_expr_stmt_value		PARAMS ((tree, int, int));
 extern int warn_if_unused_value			PARAMS ((tree));
 extern void expand_decl_init			PARAMS ((tree));
 extern void clear_last_expr			PARAMS ((void));
