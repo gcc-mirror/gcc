@@ -707,7 +707,7 @@ c38-convex-*)
 c4x-*-rtems*)
 	xm_defines=POSIX
 	tmake_file="c4x/t-c4x t-rtems"
-	tm_file='c4x/c4x.h c4x/rtems.h rtems.h"
+	tm_file="c4x/c4x.h c4x/rtems.h rtems.h"
 	if test x$enable_threads = xyes; then
 	  thread_file='rtems'
 	fi
