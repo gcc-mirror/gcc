@@ -1,3 +1,7 @@
+Mon May 25 11:56:24 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Mon May 25 14:00:13 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* cpperror.c (v_cpp_message): Remove static prototype.
