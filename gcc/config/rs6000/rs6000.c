@@ -7542,7 +7542,7 @@ rs6000_unique_section (decl, reloc)
 	 + (DECL_INITIAL (decl) == 0
 	    || DECL_INITIAL (decl) == error_mark_node) ? 4 : 0);
 
-  name   = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+  STRIP_NAME_ENCODING (name, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
   prefix = prefixes[sec][DECL_ONE_ONLY (decl)];
   len    = strlen (name) + strlen (prefix);
   string = alloca (len + 1);
