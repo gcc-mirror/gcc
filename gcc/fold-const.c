@@ -2757,15 +2757,20 @@ make_range (exp, pin_p, plow, phigh)
 
 	  exp = arg0;
 
-	  /* If this is an unsigned comparison, we also know that EXP
-	     is greater than or equal to zero.  We base the range tests
-	     we make on that fact, so we record it here so we can parse
-	     existing range tests.  */
-	  if (TREE_UNSIGNED (type))
+	  /* If this is an unsigned comparison, we also know that EXP is
+	     greater than or equal to zero and less than the maximum value of
+	     the unsigned type.  We base the range tests we make on that fact,
+	     so we record it here so we can parse existing range tests.  */
+	  if (TREE_UNSIGNED (type) && (low == 0 || high == 0))
 	    {
 	      if (! merge_ranges (&n_in_p, &n_low, &n_high, in_p, low, high,
 				  1, convert (type, integer_zero_node),
-				  NULL_TREE))
+				  const_binop (MINUS_EXPR,
+					       convert (type,
+							integer_zero_node),
+					       convert (type,
+							integer_one_node),
+					       0)))
 		break;
 
 	      in_p = n_in_p, low = n_low, high = n_high;
