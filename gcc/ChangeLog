@@ -1,3 +1,9 @@
+2004-02-05  David Edelsohn  <edelsohn@gnu.org>
+
+	* reload.c (refers_to_regno_for_reload_p): Index hard_regno_nregs
+	with inner_regno, not regno.
+	* rtlanal.c (refers_to_regno_p): Same.
+
 2004-02-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config.gcc: Remove i370 support.
