@@ -1549,7 +1549,8 @@ set_Wunused (setting)
    -ffast-math and -fno-fast-math imply.  */
 
 void
-set_fast_math_flags (int set)
+set_fast_math_flags (set)
+     int set;
 {
   flag_trapping_math = !set;
   flag_unsafe_math_optimizations = set;
