@@ -1,7 +1,7 @@
 /* Scan linker error messages for missing template instantiations and provide
    them.
 
-   Copyright (C) 1995, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com).
 
 This file is part of GNU CC.
@@ -638,7 +638,11 @@ scan_linker_output (fname)
 	  else if (p = index (oldq, '"'), p)
 	    p++, q = index (p, '"');
 
-	  if (q)
+	  /* We need to check for certain error keywords here, or we would
+	     mistakenly use GNU ld's "In function `foo':" message.  */
+	  if (q && (strstr (oldq, "ndefined")
+		    || strstr (old, "nresolved")
+		    || strstr (oldq, "ultiple")))
 	    {
 	      *q = 0;
 	      dem = demangled_hash_lookup (p, false);

@@ -1,3 +1,8 @@
+Fri Sep 17 11:14:17 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tlink.c (scan_linker_output): Look for keywords before accepting
+	a mangled name in quotes.
+
 Thu Sep 16 16:47:08 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha/alpha-interix.h (DWARF2_UNWIND_INFO): Define to zero.
