@@ -1,3 +1,7 @@
+Wed Sep  4 11:22:14 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.md (mperm_w_little, mperm_w_big): Supply mode for zero_extract.
+
 2002-09-03  David Edelsohn  <edelsohn@gnu.org>
 
 	* varasm.c (default_section_type_flags): Append _1 to name with

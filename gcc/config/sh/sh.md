@@ -9737,11 +9737,11 @@
 	(vec_select:V4HI
 	 (match_operand:V4HI 1 "arith_reg_operand" "r")
 	 (parallel
-	  [(zero_extract (match_operand:QI 2 "extend_reg_or_0_operand" "rU")
-			 (const_int 2) (const_int 0))
-	   (zero_extract (match_dup 2) (const_int 2) (const_int 2))
-	   (zero_extract (match_dup 2) (const_int 2) (const_int 4))
-	   (zero_extract (match_dup 2) (const_int 2) (const_int 6))])))]
+	  [(zero_extract:QI (match_operand:QI 2 "extend_reg_or_0_operand" "rU")
+			    (const_int 2) (const_int 0))
+	   (zero_extract:QI (match_dup 2) (const_int 2) (const_int 2))
+	   (zero_extract:QI (match_dup 2) (const_int 2) (const_int 4))
+	   (zero_extract:QI (match_dup 2) (const_int 2) (const_int 6))])))]
   "TARGET_SHMEDIA && TARGET_LITTLE_ENDIAN"
   "mperm.w	%1, %N2, %0"
   [(set_attr "type" "arith_media")])
@@ -9751,12 +9751,13 @@
 	(vec_select:V4HI
 	 (match_operand:V4HI 1 "arith_reg_operand" "r")
 	 (parallel
-	  [(zero_extract (not:QI (match_operand:QI 2
-				  "extend_reg_or_0_operand" "rU"))
-			 (const_int 2) (const_int 0))
-	   (zero_extract (not:QI (match_dup 2)) (const_int 2) (const_int 2))
-	   (zero_extract (not:QI (match_dup 2)) (const_int 2) (const_int 4))
-	   (zero_extract (not:QI (match_dup 2)) (const_int 2) (const_int 6))])))]
+	  [(zero_extract:QI (not:QI (match_operand:QI 2
+				     "extend_reg_or_0_operand" "rU"))
+			    (const_int 2) (const_int 0))
+	   (zero_extract:QI (not:QI (match_dup 2)) (const_int 2) (const_int 2))
+	   (zero_extract:QI (not:QI (match_dup 2)) (const_int 2) (const_int 4))
+	   (zero_extract:QI (not:QI (match_dup 2))
+			    (const_int 2) (const_int 6))])))]
   "TARGET_SHMEDIA && ! TARGET_LITTLE_ENDIAN"
   "mperm.w	%1, %N2, %0"
   [(set_attr "type" "arith_media")])
