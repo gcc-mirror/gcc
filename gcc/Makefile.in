@@ -277,7 +277,7 @@ bindir = @bindir@
 libdir = @libdir@
 # Directory in which the compiler finds executables, libraries, etc.
 libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(version)
-# Used to produce a relative $(tooldir) in gcc.o
+# Used to produce a relative $(gcc_tooldir) in gcc.o
 unlibsubdir = ../../..
 # Directory in which the compiler finds g++ includes.
 gxx_include_dir= @gxx_include_dir@
@@ -285,7 +285,7 @@ gxx_include_dir= @gxx_include_dir@
 includedir = $(local_prefix)/include
 # assertdir is overridden in cross-make.
 # (But this currently agrees with what is in cross-make.)
-assertdir = $(tooldir)/include
+assertdir = $(gcc_tooldir)/include
 # where the info files go
 infodir = @infodir@
 # Extension (if any) to put in installed man-page filename.
@@ -299,7 +299,7 @@ mandir = @mandir@
 man1dir = $(mandir)/man1
 # Directory in which to find other cross-compilation tools and headers.
 # Used in install-cross.
-tooldir = $(libsubdir)/$(unlibsubdir)/../$(target_alias)
+gcc_tooldir = $(libsubdir)/$(unlibsubdir)/../$(target_alias)
 # Since tooldir does not exist at build-time, use -B$(build_tooldir)/bin/
 build_tooldir = $(exec_prefix)/$(target_alias)
 # Dir for temp files.
@@ -631,6 +631,7 @@ FLAGS_TO_PASS = \
 	"local_prefix=$(local_prefix)" \
 	"gxx_include_dir=$(gxx_include_dir)" \
 	"tooldir=$(tooldir)" \
+	"gcc_tooldir=$(gcc_tooldir)" \
 	"bindir=$(bindir)" \
 	"libsubdir=$(libsubdir)"
 #
@@ -1889,8 +1890,8 @@ cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status system.h \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
-	  -DCROSS_INCLUDE_DIR=\"$(tooldir)/sys-include\" \
-	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
+	  -DCROSS_INCLUDE_DIR=\"$(gcc_tooldir)/sys-include\" \
+	  -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
 	  -c `echo $(srcdir)/cccp.c | sed 's,^\./,,'`
 
 LIBCPP_OBJS =	cpplib.o cpphash.o cppalloc.o cpperror.o cppexp.o cppfiles.o \
@@ -1918,8 +1919,8 @@ cpplib.o: cpplib.c $(CONFIG_H) cpplib.h machmode.h cpphash.h config.status \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
-	  -DCROSS_INCLUDE_DIR=\"$(tooldir)/sys-include\" \
-	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
+	  -DCROSS_INCLUDE_DIR=\"$(gcc_tooldir)/sys-include\" \
+	  -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
 	  -c `echo $(srcdir)/cpplib.c | sed 's,^\./,,'`
 
 cpperror.o: cpperror.c $(CONFIG_H) cpplib.h machmode.h system.h
@@ -1956,8 +1957,8 @@ protoize.o: protoize.c $(srcdir)/../include/getopt.h $(CONFIG_H) system.h \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
-	  -DCROSS_INCLUDE_DIR=\"$(tooldir)/sys-include\" \
-	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
+	  -DCROSS_INCLUDE_DIR=\"$(gcc_tooldir)/sys-include\" \
+	  -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
 	  $(srcdir)/protoize.c
@@ -1967,8 +1968,8 @@ unprotoize.o: unprotoize.c protoize.c $(srcdir)/../include/getopt.h \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
           -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
-	  -DCROSS_INCLUDE_DIR=\"$(tooldir)/sys-include\" \
-	  -DTOOL_INCLUDE_DIR=\"$(tooldir)/include\" \
+	  -DCROSS_INCLUDE_DIR=\"$(gcc_tooldir)/sys-include\" \
+	  -DTOOL_INCLUDE_DIR=\"$(gcc_tooldir)/include\" \
 	  -DLOCAL_INCLUDE_DIR=\"$(includedir)\" \
 	  -DSTD_PROTO_DIR=\"$(libsubdir)\" \
 	  $(srcdir)/unprotoize.c
@@ -2098,13 +2099,13 @@ stmp-fixinc: $(FIXINCLUDES) gsyslimits.h
 	  cp $(srcdir)/gsyslimits.h include/syslimits.h; \
 	fi
 	chmod a+r include/syslimits.h
-# If $(SYSTEM_HEADER_DIR) is $(tooldir)/sys-include, and
+# If $(SYSTEM_HEADER_DIR) is $(gcc_tooldir)/sys-include, and
 # that directory exists, then make sure that $(libsubdir) exists.
-# This is because cpp is compiled to find $(tooldir)/include via
+# This is because cpp is compiled to find $(gcc_tooldir)/include via
 # $(libsubdir)/$(unlibsubdir), which will only work if $(libsubdir)
 # exists.
-	if [ "$(SYSTEM_HEADER_DIR)" = "$(tooldir)/sys-include" ] \
-	   && [ -d $(tooldir)/sys-include ]; then \
+	if [ "$(SYSTEM_HEADER_DIR)" = "$(gcc_tooldir)/sys-include" ] \
+	   && [ -d $(gcc_tooldir)/sys-include ]; then \
 	  if [ -d $(libdir) ] ; then true ; else mkdir $(libdir) ; fi; \
 	  if [ -d $(libdir)/gcc-lib ] ; then true ; else mkdir $(libdir)/gcc-lib; fi; \
 	  if [ -d $(libdir)/gcc-lib/$(target_alias) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target_alias) ; fi; \
@@ -2387,7 +2388,7 @@ installdirs:
 	done
 	-if [ -d $(bindir) ] ; then true ; else mkdir $(bindir) ; chmod a+rx $(bindir) ; fi
 	-if [ -d $(includedir) ] ; then true ; else mkdir $(includedir) ; chmod a+rx $(includedir) ; fi
-	-if [ -d $(tooldir) ] ; then true ; else mkdir $(tooldir) ; chmod a+rx $(tooldir) ; fi
+	-if [ -d $(gcc_tooldir) ] ; then true ; else mkdir $(gcc_tooldir) ; chmod a+rx $(gcc_tooldir) ; fi
 	-if [ -d $(assertdir) ] ; then true ; else mkdir $(assertdir) ; chmod a+rx $(assertdir) ; fi
 	-if [ -d $(infodir) ] ; then true ; else mkdir $(infodir) ; chmod a+rx $(infodir) ; fi
 # We don't use mkdir -p to create the parents of man1dir,
@@ -2453,14 +2454,14 @@ install-common: native installdirs $(EXTRA_PARTS) lang.install-common
 	fi
 
 # Install the driver program as $(target_alias)-gcc
-# and also as either gcc (if native) or $(tooldir)/bin/gcc.
+# and also as either gcc (if native) or $(gcc_tooldir)/bin/gcc.
 install-driver: xgcc$(exeext)
 	-if [ -f gcc-cross$(exeext) ] ; then \
 	  rm -f $(bindir)/$(GCC_CROSS_NAME)$(exeext); \
 	  $(INSTALL_PROGRAM) gcc-cross$(exeext) $(bindir)/$(GCC_CROSS_NAME)$(exeext); \
-	  if [ -d $(tooldir)/bin/. ] ; then \
-	    rm -f $(tooldir)/bin/gcc$(exeext); \
-	    $(INSTALL_PROGRAM) gcc-cross$(exeext) $(tooldir)/bin/gcc$(exeext); \
+	  if [ -d $(gcc_tooldir)/bin/. ] ; then \
+	    rm -f $(gcc_tooldir)/bin/gcc$(exeext); \
+	    $(INSTALL_PROGRAM) gcc-cross$(exeext) $(gcc_tooldir)/bin/gcc$(exeext); \
 	  else true; fi; \
 	else \
 	  rm -f $(bindir)/$(GCC_INSTALL_NAME)$(exeext); \
