@@ -1,3 +1,31 @@
+2004-06-30  Per Bothner  <per@bothner.com>
+
+	Conditionally compile support for --enable-mapped_location.
+	* input.h:  #include line-map.h for source_location typedef.
+	(BUILTINS_LOCATION, UNKNOWN_LOCATION, expand_location,
+	LOCATION_FILE, LOCATION_LINE):  New macros and functions.
+	(expanded_location, source_locus):  New typedefs.
+	(push_srcloc):  Change parameter list if USE_MAPPED_LOCATION.
+	* rtl.def (NOTE, ASM_OPERANDS):  Modify specifcation, if
+	USE_MAPPED_LOCATION.
+	* rtl.h (NOTE_DELETED_LABEL_NAME):  New macro.
+	(NOTE_SOURCE_LOCATION, NOTE_EXPNDED_LOCATION, SET_INSN_DELETED):
+	New conditional macros.
+	(ASM_OPERANDS_SOURCE_FILE, ASM_OPERANDS_SOURCE_LINE):  Replace
+	by ASM_OPERANDS_SOURCE_LOCATION if USE_MAPPED_LOCATION.
+	* tree.h (EXPR_LOCATION, SET_EXPR_LOCATION, EXPR_HAS_LOCATION,
+	EXPR_LOCUS, SET_EXPR_LOCUS, EXPR_FILENAME, EXPR_LINENO,
+	DECL_IS_BUILTIN):  New macros, most depending on USE_MAPPED__LOCATION.
+	(tree_exp):  Change type of locus to use new source_locus typedef.
+	* tree.c (build1_stat):  Use SET_EXPR_LOCATION.
+	(annotate_with_locus, annotate_with_file_line):  Conditionalize.
+	(expand_location):  New function.
+	* toplev.c (unknown_location):  New static, when USE_MAPPED_LOCATION.
+	(push_srcloc, pop_loc):  Adjust parameter handling.
+	(process_options):  Don't set input_filename by itself.
+	(lang_dependent_init):  Save, set input_location to <built-in>.
+	(warn_deprecated_use):  Use expand_location.
+
 2004-06-30  Richard Sandiford  <rsandifo@redhat.com>
 	    Eric Christopher  <echristo@redhat.com>
 

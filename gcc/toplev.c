@@ -140,6 +140,10 @@ static const char **save_argv;
 
 const char *main_input_filename;
 
+#ifndef USE_MAPPED_LOCATION
+location_t unknown_location = { NULL, 0 };
+#endif
+
 /* Used to enable -fvar-tracking, -fweb and -frename-registers according
    to optimize and default_debug_hooks in process_options ().  */
 #define AUTODETECT_FLAG_VAR_TRACKING 2
@@ -879,9 +883,12 @@ warn_deprecated_use (tree node)
     return;
 
   if (DECL_P (node))
-    warning ("`%s' is deprecated (declared at %s:%d)",
-	     IDENTIFIER_POINTER (DECL_NAME (node)),
-	     DECL_SOURCE_FILE (node), DECL_SOURCE_LINE (node));
+    {
+      expanded_location xloc = expand_location (DECL_SOURCE_LOCATION (node));
+      warning ("`%s' is deprecated (declared at %s:%d)",
+	       IDENTIFIER_POINTER (DECL_NAME (node)),
+	       xloc.file, xloc.line);
+    }
   else if (TYPE_P (node))
     {
       const char *what = NULL;
@@ -893,19 +900,24 @@ warn_deprecated_use (tree node)
 	       && DECL_NAME (TYPE_NAME (node)))
 	what = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (node)));
 
-      if (what)
+      if (decl)
 	{
-	  if (decl)
+	  expanded_location xloc
+	    = expand_location (DECL_SOURCE_LOCATION (decl));
+	  if (what)
 	    warning ("`%s' is deprecated (declared at %s:%d)", what,
-		     DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl));
+		       xloc.file, xloc.line);
+	  else
+	    warning ("type is deprecated (declared at %s:%d)",
+		     xloc.file, xloc.line);
+	}
+      else
+	{
+	  if (what)
+	    warning ("type is deprecated");
 	  else
 	    warning ("`%s' is deprecated", what);
 	}
-      else if (decl)
-	warning ("type is deprecated (declared at %s:%d)",
-		 DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl));
-      else
-	warning ("type is deprecated");
     }
 }
 
@@ -914,15 +926,23 @@ warn_deprecated_use (tree node)
    INPUT_LOCATION accordingly.  */
 
 void
+#ifdef USE_MAPPED_LOCATION
+push_srcloc (location_t fline)
+#else
 push_srcloc (const char *file, int line)
+#endif
 {
   struct file_stack *fs;
 
   fs = xmalloc (sizeof (struct file_stack));
   fs->location = input_location;
   fs->next = input_file_stack;
+#ifdef USE_MAPPED_LOCATION
+  input_location = fline;
+#else
   input_filename = file;
   input_line = line;
+#endif
   input_file_stack = fs;
   input_file_stack_tick++;
 }
@@ -1607,7 +1627,9 @@ process_options (void)
      sets the original filename if appropriate (e.g. foo.i -> foo.c)
      so we can correctly initialize debug output.  */
   no_backend = lang_hooks.post_options (&main_input_filename);
+#ifndef USE_MAPPED_LOCATION
   input_filename = main_input_filename;
+#endif
 
 #ifdef OVERRIDE_OPTIONS
   /* Some machines may reject certain combinations of options.  */
@@ -1928,12 +1950,20 @@ backend_init (void)
 static int
 lang_dependent_init (const char *name)
 {
+  location_t save_loc = input_location;
   if (dump_base_name == 0)
     dump_base_name = name ? name : "gccdump";
 
   /* Other front-end initialization.  */
+#ifdef USE_MAPPED_LOCATION
+  input_location = BUILTINS_LOCATION;
+#else
+  input_filename = "<built-in>";
+  input_line = 0;
+#endif
   if (lang_hooks.init () == 0)
     return 0;
+  input_location = save_loc;
 
   init_asm_output (name);
 

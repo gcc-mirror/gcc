@@ -1073,6 +1073,31 @@ struct tree_vec GTY(())
 /* In a LOOP_EXPR node.  */
 #define LOOP_EXPR_BODY(NODE) TREE_OPERAND_CHECK_CODE (NODE, LOOP_EXPR, 0)
 
+#ifdef USE_MAPPED_LOCATION
+/* The source location of this expression.  Non-tree_exp nodes such as
+   decls and constants can be shared among multiple locations, so
+   return nothing.  */
+#define EXPR_LOCATION(NODE)					\
+  (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (NODE)))	\
+   ? (NODE)->exp.locus						\
+   : UNKNOWN_LOCATION)
+#define SET_EXPR_LOCATION(NODE, FROM) \
+  (EXPR_CHECK (NODE)->exp.locus = (FROM))
+#define EXPR_HAS_LOCATION(NODE) (EXPR_LOCATION (NODE) != UNKNOWN_LOCATION)
+/* EXPR_LOCUS and SET_EXPR_LOCUS are deprecated. */
+#define EXPR_LOCUS(NODE)					\
+  (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (NODE)))	\
+   ? &(NODE)->exp.locus						\
+   : (location_t *)NULL)
+#define SET_EXPR_LOCUS(NODE, FROM) \
+  do { source_location *loc_tmp = FROM; \
+       EXPR_CHECK (NODE)->exp.locus \
+       = loc_tmp == NULL ? UNKNOWN_LOCATION : *loc_tmp; } while (0)
+#define EXPR_FILENAME(NODE) \
+  LOCATION_FILE (EXPR_CHECK (NODE)->exp.locus)
+#define EXPR_LINENO(NODE) \
+  LOCATION_LINE (EXPR_CHECK (NODE)->exp.locus)
+#else
 /* The source location of this expression.  Non-tree_exp nodes such as
    decls and constants can be shared among multiple locations, so
    return nothing.  */
@@ -1082,19 +1107,14 @@ struct tree_vec GTY(())
    : (location_t *)NULL)
 #define SET_EXPR_LOCUS(NODE, FROM) \
   (EXPR_CHECK (NODE)->exp.locus = (FROM))
+#define SET_EXPR_LOCATION(NODE, FROM) annotate_with_locus (NODE, FROM)
 #define EXPR_FILENAME(NODE) \
   (EXPR_CHECK (NODE)->exp.locus->file)
 #define EXPR_LINENO(NODE) \
   (EXPR_CHECK (NODE)->exp.locus->line)
-#ifdef USE_MAPPED_LOCATION
-#define EXPR_LOCATION(NODE)					\
-  (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (NODE)))	\
-   ? (NODE)->exp.locus						\
-   : UNKNOWN_LOCATION)
-#define EXPR_HAS_LOCATION(NODE) (EXPR_LOCATION (NODE) != UNKNOWN_LOCATION)
-#else
-#define EXPR_LOCATION(NODE) (*EXPR_LOCUS (NODE))
 #define EXPR_HAS_LOCATION(NODE) (EXPR_LOCUS (NODE) != NULL)
+#define EXPR_LOCATION(NODE) \
+  (EXPR_HAS_LOCATION(NODE) ? *(NODE)->exp.locus : UNKNOWN_LOCATION)
 #endif
 
 /* In a TARGET_EXPR node.  */
@@ -1172,7 +1192,7 @@ struct tree_vec GTY(())
 struct tree_exp GTY(())
 {
   struct tree_common common;
-  location_t *locus;
+  source_locus locus;
   int complexity;
   tree block;
   tree GTY ((special ("tree_exp"),
@@ -1773,8 +1793,14 @@ struct tree_type GTY(())
    function that is declared first and then defined later), this
    information should refer to the definition.  */
 #define DECL_SOURCE_LOCATION(NODE) (DECL_CHECK (NODE)->decl.locus)
-#define DECL_SOURCE_FILE(NODE) (DECL_SOURCE_LOCATION (NODE).file)
-#define DECL_SOURCE_LINE(NODE) (DECL_SOURCE_LOCATION (NODE).line)
+#define DECL_SOURCE_FILE(NODE) LOCATION_FILE (DECL_SOURCE_LOCATION (NODE))
+#define DECL_SOURCE_LINE(NODE) LOCATION_LINE (DECL_SOURCE_LOCATION (NODE))
+#ifdef USE_MAPPED_LOCATION
+#define DECL_IS_BUILTIN(DECL) \
+  (DECL_SOURCE_LOCATION (DECL) <= BUILTINS_LOCATION)
+#else
+#define DECL_IS_BUILTIN(DECL) (DECL_SOURCE_LINE(DECL) == 0)
+#endif
 /* Holds the size of the datum, in bits, as a tree expression.
    Need not be constant.  */
 #define DECL_SIZE(NODE) (DECL_CHECK (NODE)->decl.size)
@@ -2665,8 +2691,10 @@ extern tree build_tree_list_stat (tree, tree MEM_STAT_DECL);
 extern tree build_decl_stat (enum tree_code, tree, tree MEM_STAT_DECL);
 #define build_decl(c,t,q) build_decl_stat (c,t,q MEM_STAT_INFO)
 extern tree build_block (tree, tree, tree, tree, tree);
+#ifndef USE_MAPPED_LOCATION
 extern void annotate_with_file_line (tree, const char *, int);
 extern void annotate_with_locus (tree, location_t);
+#endif
 extern tree build_empty_stmt (void);
 
 /* Construct various nodes representing data types.  */

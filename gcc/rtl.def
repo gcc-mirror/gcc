@@ -640,11 +640,19 @@ DEF_RTL_EXPR(BARRIER, "barrier", "iuu000000", RTX_EXTRA)
    7: is the user-given name of the label, if any.  */
 DEF_RTL_EXPR(CODE_LABEL, "code_label", "iuuB00is", RTX_EXTRA)
 
+#ifdef USE_MAPPED_LOCATION
+/* Say where in the code a source line starts, for symbol table's sake.
+   Operand:
+   4: unused if line number > 0, note-specific data otherwise.
+   5: line number if > 0, enum note_insn otherwise.
+   6: CODE_LABEL_NUMBER if line number == NOTE_INSN_DELETED_LABEL.  */
+#else
 /* Say where in the code a source line starts, for symbol table's sake.
    Operand:
    4: filename, if line number > 0, note-specific data otherwise.
    5: line number if > 0, enum note_insn otherwise.
    6: unique number if line number == note_insn_deleted_label.  */
+#endif
 DEF_RTL_EXPR(NOTE, "note", "iuuB0ni", RTX_EXTRA)
 
 /* ----------------------------------------------------------------------
@@ -671,6 +679,20 @@ DEF_RTL_EXPR(PARALLEL, "parallel", "E", RTX_EXTRA)
      as a convenient way to hold a string.  */
 DEF_RTL_EXPR(ASM_INPUT, "asm_input", "s", RTX_EXTRA)
 
+#ifdef USE_MAPPED_LOCATION
+/* An assembler instruction with operands.
+   1st operand is the instruction template.
+   2nd operand is the constraint for the output.
+   3rd operand is the number of the output this expression refers to.
+     When an insn stores more than one value, a separate ASM_OPERANDS
+     is made for each output; this integer distinguishes them.
+   4th is a vector of values of input operands.
+   5th is a vector of modes and constraints for the input operands.
+     Each element is an ASM_INPUT containing a constraint string
+     and whose mode indicates the mode of the input operand.
+   6th is the source line number.  */
+DEF_RTL_EXPR(ASM_OPERANDS, "asm_operands", "ssiEEi", RTX_EXTRA)
+#else
 /* An assembler instruction with operands.
    1st operand is the instruction template.
    2nd operand is the constraint for the output.
@@ -684,6 +706,7 @@ DEF_RTL_EXPR(ASM_INPUT, "asm_input", "s", RTX_EXTRA)
    6th is the name of the containing source file.
    7th is the source line number.  */
 DEF_RTL_EXPR(ASM_OPERANDS, "asm_operands", "ssiEEsi", RTX_EXTRA)
+#endif
 
 /* A machine-specific operation.
    1st operand is a vector of operands being used by the operation so that

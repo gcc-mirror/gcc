@@ -914,7 +914,22 @@ extern const char * const reg_note_name[];
 
 /* Opaque data.  */
 #define NOTE_DATA(INSN)	        RTL_CHECKC1 (INSN, 4, NOTE)
+#define NOTE_DELETED_LABEL_NAME(INSN) XCSTR (INSN, 4, NOTE)
+#ifdef USE_MAPPED_LOCATION
+#define NOTE_SOURCE_LOCATION(INSN) XCUINT (INSN, 5, NOTE)
+#define NOTE_EXPANDED_LOCATION(XLOC, INSN)	\
+  (XLOC) = expand_location (NOTE_SOURCE_LOCATION (INSN))
+#define SET_INSN_DELETED(INSN) \
+  (PUT_CODE (INSN, NOTE), NOTE_LINE_NUMBER (INSN) = NOTE_INSN_DELETED)
+#else
+#define NOTE_EXPANDED_LOCATION(XLOC, INSN)	\
+  ((XLOC).file = NOTE_SOURCE_FILE (INSN),	\
+   (XLOC).line = NOTE_LINE_NUMBER (INSN))
 #define NOTE_SOURCE_FILE(INSN)	XCSTR (INSN, 4, NOTE)
+#define SET_INSN_DELETED(INSN) \
+  (PUT_CODE (INSN, NOTE),  NOTE_SOURCE_FILE (INSN) = 0, \
+   NOTE_LINE_NUMBER (INSN) = NOTE_INSN_DELETED)
+#endif
 #define NOTE_BLOCK(INSN)	XCTREE (INSN, 4, NOTE)
 #define NOTE_EH_HANDLER(INSN)	XCINT (INSN, 4, NOTE)
 #define NOTE_BASIC_BLOCK(INSN)	XCBBDEF (INSN, 4, NOTE)
@@ -1247,8 +1262,12 @@ do {									\
   XSTR (XCVECEXP (RTX, 4, N, ASM_OPERANDS), 0)
 #define ASM_OPERANDS_INPUT_MODE(RTX, N)  \
   GET_MODE (XCVECEXP (RTX, 4, N, ASM_OPERANDS))
+#ifdef USE_MAPPED_LOCATION
+#define ASM_OPERANDS_SOURCE_LOCATION(RTX) XCUINT (RTX, 5, ASM_OPERANDS)
+#else
 #define ASM_OPERANDS_SOURCE_FILE(RTX) XCSTR (RTX, 5, ASM_OPERANDS)
 #define ASM_OPERANDS_SOURCE_LINE(RTX) XCINT (RTX, 6, ASM_OPERANDS)
+#endif
 
 /* 1 if RTX is a mem and we should keep the alias set for this mem
    unchanged when we access a component.  Set to 1, or example, when we
@@ -2001,6 +2020,11 @@ extern GTY(()) rtx return_address_pointer_rtx;
 
 #ifndef NO_GENRTL_H
 #include "genrtl.h"
+#ifndef USE_MAPPED_LOCATION
+#undef gen_rtx_ASM_OPERANDS
+#define gen_rtx_ASM_OPERANDS(MODE, ARG0, ARG1, ARG2, ARG3, ARG4, LOC) \
+  gen_rtx_fmt_ssiEEsi (ASM_OPERANDS, (MODE), (ARG0), (ARG1), (ARG2), (ARG3), (ARG4), (LOC).file, (LOC).line)
+#endif
 #endif
 
 /* There are some RTL codes that require special attention; the
