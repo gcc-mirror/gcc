@@ -1,3 +1,8 @@
+1998-06-05  Per Bothner  <bothner@cygnus.com>
+
+	* g++spec (lang_specific_pre_link, lang_specific_extra_ofiles):
+	Define - update needed by gcc.c change.
+
 1998-06-05  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* error.c (cp_printers): Use 'o' instead of '_' for the null entry.
