@@ -189,6 +189,7 @@ static tree poplevel_class PROTO((void));
 static void warn_about_implicit_typename_lookup PROTO((tree, tree));
 static int walk_namespaces_r PROTO((tree, walk_namespaces_fn, void *));
 static int walk_globals_r PROTO((tree, void *));
+static void add_decl_to_level PROTO((tree, struct binding_level *));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -1099,9 +1100,29 @@ add_binding (id, decl)
   return ok;
 }
 
-/* Bind DECL to ID in the current_binding_level.
-   If PUSH_USING is set in FLAGS, we know that DECL doesn't really belong
-   to this binding level, that it got here through a using-declaration.  */
+/* Add DECL to the list of things declared in B.  */
+
+static void
+add_decl_to_level (decl, b)
+     tree decl;
+     struct binding_level *b;
+{
+  /* Only things that will live forever should go in the global
+     binding level.  */
+  my_friendly_assert (!(b == global_binding_level 
+			&& !TREE_PERMANENT (decl)),
+		      19990817);
+
+  /* We build up the list in reverse order, and reverse it later if
+     necessary.  */
+  TREE_CHAIN (decl) = b->names;
+  b->names = decl;
+}
+
+/* Bind DECL to ID in the current_binding_level, assumed to be a local
+   binding level.  If PUSH_USING is set in FLAGS, we know that DECL
+   doesn't really belong to this binding level, that it got here
+   through a using-declaration.  */
 
 void
 push_local_binding (id, decl, flags)
@@ -1138,8 +1159,7 @@ push_local_binding (id, decl, flags)
 
   /* And put DECL on the list of things declared by the current
      binding level.  */
-  TREE_CHAIN (decl) = b->names;
-  b->names = decl;
+  add_decl_to_level (decl, b);
 }
 
 /* Bind DECL to ID in the class_binding_level.  Returns nonzero if the
@@ -2148,7 +2168,7 @@ find_binding (name, scope)
       my_friendly_assert (TREE_CODE (iter) == CPLUS_BINDING, 374);
       if (BINDING_SCOPE (iter) == scope)
 	{
-	  /* Move binding found to the fron of the list, so
+	  /* Move binding found to the front of the list, so
              subsequent lookups will find it faster. */
 	  if (prev)
 	    {
@@ -3955,7 +3975,12 @@ pushdecl (x)
 	    need_new_binding = 0;
 	}
       else if (DECL_FUNCTION_TEMPLATE_P (x) && DECL_NAMESPACE_SCOPE_P (x))
-	return push_overloaded_decl (x, PUSH_GLOBAL);
+	{
+	  t = push_overloaded_decl (x, PUSH_GLOBAL);
+	  if (t == x)
+	    add_decl_to_level (x, NAMESPACE_LEVEL (CP_DECL_CONTEXT (t)));
+	  return t;
+	}
 
       /* If declaring a type as a typedef, copy the type (unless we're
 	 at line 0), and install this TYPE_DECL as the new type's typedef
@@ -4189,15 +4214,7 @@ pushdecl (x)
     }
 
   if (need_new_binding)
-    {
-      /* Put decls on list in reverse order.
-	 We will reverse them later if necessary.  */
-      TREE_CHAIN (x) = current_binding_level->names;
-      current_binding_level->names = x;
-      if (current_binding_level == global_binding_level
-	  && !TREE_PERMANENT (x))
-	my_friendly_abort (124);
-    }
+    add_decl_to_level (x, current_binding_level);
 
   return x;
 }

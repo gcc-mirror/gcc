@@ -606,7 +606,7 @@ dequeue_and_dump (di)
       if (DECL_CONV_FN_P (t))
 	dump_string (di, "conversion");
       if (dump_children_p)
-	dump_child ("body", DECL_INITIAL (t));
+	dump_child ("body", DECL_SAVED_TREE (t));
       break;
 
     case NAMESPACE_DECL:
@@ -616,6 +616,11 @@ dequeue_and_dump (di)
 	break;
       if (dump_children_p)
 	dump_child ("dcls", cp_namespace_decls (t));
+      break;
+
+    case TEMPLATE_DECL:
+      if (dump_children_p)
+	dump_child ("spcs", DECL_TEMPLATE_SPECIALIZATIONS (t));
       break;
 
     case OVERLOAD:

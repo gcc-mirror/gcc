@@ -1,5 +1,17 @@
 1999-08-17  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (add_decl_to_level): New function.
+	(push_local_binding): Use it.
+	(find_binding): Fix typo in comment.
+	(pushdecl): Use add_decl_to_level.  Put templates on the
+	corresponding namespace-scope binding levels.
+	* dump.c (dequeue_and_dump): Print the specializations of a
+	template.
+	* pt.c (push_template_decl_real): Don't push a template multiple
+	times.
+
+1999-08-17  Mark Mitchell  <mark@codesourcery.com>
+
 	* cp-tree.h (CALL_DECLARATOR_PARMS): New macro.
 	(CALL_DECLARATOR_QUALS): Likewise.
 	(CALL_DECARATOR_EXCEPTION_SPEC): Likewise.
