@@ -653,16 +653,6 @@ do { fprintf (asm_out_file, "\ttag\t");	\
 #define CTOR_LIST_END CTOR_LIST_BEGIN
 
 #define BSS_SECTION_ASM_OP	"section\t~bss"
-#define BSS_SECTION_FUNCTION \
-void								\
-bss_section ()							\
-{								\
-  if (in_section != in_bss)					\
-    {								\
-      fprintf (asm_out_file, "%s\n", BSS_SECTION_ASM_OP);	\
-      in_section = in_bss;					\
-    }								\
-}
 
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
   do {						\
