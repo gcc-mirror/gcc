@@ -384,8 +384,8 @@ is_ctor_dtor (s)
   static struct names special[] = {
 #ifdef NO_DOLLAR_IN_LABEL
 #ifdef NO_DOT_IN_LABEL
-    { "GLOBAL__I_", sizeof ("___GLOBAL__I_")-1, 1, 0 },
-    { "GLOBAL__D_", sizeof ("___GLOBAL__D_")-1, 2, 0 },
+    { "GLOBAL__I_", sizeof ("GLOBAL__I_")-1, 1, 0 },
+    { "GLOBAL__D_", sizeof ("GLOBAL__D_")-1, 2, 0 },
 #else
     { "GLOBAL_.I.", sizeof ("GLOBAL_.I.")-1, 1, 0 },
     { "GLOBAL_.D.", sizeof ("GLOBAL_.D.")-1, 2, 0 },
