@@ -1,3 +1,8 @@
+Mon Sep 20 14:56:34 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* crtstuff.c (ON_EXIT): Delete empty macro definition.
+	(__do_global_ctors_aux): Call atexit(), not ON_EXIT().
+
 Mon Sep 20 15:25:35 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* c-decl.c (c_decode_option): Extend comment.
