@@ -278,14 +278,16 @@ do {									\
 	fp_reg_names[regno][0] = 0;					\
     }									\
   if (flag_omit_frame_pointer < 0)					\
-   /* The debugging information is sufficient,				\
-      but gdb doesn't implement this yet */				\
-   if (0)								\
-    flag_omit_frame_pointer						\
-      = (PREFERRED_DEBUGGING_TYPE == DWARF_DEBUG			\
-	 || PREFERRED_DEBUGGING_TYPE == DWARF2_DEBUG);			\
-   else									\
-    flag_omit_frame_pointer = 0;					\
+   {									\
+     /* The debugging information is sufficient,			\
+        but gdb doesn't implement this yet */				\
+     if (0)								\
+      flag_omit_frame_pointer						\
+        = (PREFERRED_DEBUGGING_TYPE == DWARF_DEBUG			\
+	   || PREFERRED_DEBUGGING_TYPE == DWARF2_DEBUG);		\
+     else								\
+      flag_omit_frame_pointer = 0;					\
+   }									\
 									\
   if (flag_pic && ! TARGET_PREFERGOT)					\
     flag_no_function_cse = 1;						\
@@ -1240,7 +1242,9 @@ extern int current_function_anonymous_args;
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) do			\
 {									\
   emit_move_insn (gen_rtx_MEM (SImode, (TRAMP)),			\
-		  GEN_INT (TARGET_LITTLE_ENDIAN ? 0xd301d202 : 0xd202d301));\
+                  GEN_INT (trunc_int_for_mode                  		\
+                         (TARGET_LITTLE_ENDIAN ? 0xd301d202 : 0xd202d301,\
+                          SImode))); \
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 4)),	\
 		  GEN_INT (TARGET_LITTLE_ENDIAN ? 0x0009422b : 0x422b0009));\
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant ((TRAMP), 8)),	\
