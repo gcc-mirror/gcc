@@ -4306,7 +4306,9 @@ host_integerp (t, pos)
 	  && ((TREE_INT_CST_HIGH (t) == 0
 	       && (HOST_WIDE_INT) TREE_INT_CST_LOW (t) >= 0)
 	      || (! pos && TREE_INT_CST_HIGH (t) == -1
-		  && (HOST_WIDE_INT) TREE_INT_CST_LOW (t) < 0)));
+		  && (HOST_WIDE_INT) TREE_INT_CST_LOW (t) < 0)
+	      || (! pos && TREE_INT_CST_HIGH (t) == 0
+		  && TREE_UNSIGNED (TREE_TYPE (t)))));
 }
 
 /* Return the HOST_WIDE_INT least significant bits of T if it is an
