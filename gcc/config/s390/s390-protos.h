@@ -58,7 +58,7 @@ extern void s390_emit_jump (rtx, rtx);
 extern int symbolic_reference_mentioned_p (rtx);
 extern int tls_symbolic_reference_mentioned_p (rtx);
 extern int legitimate_la_operand_p (rtx);
-extern int preferred_la_operand_p (rtx);
+extern int preferred_la_operand_p (rtx, rtx);
 extern int legitimate_pic_operand_p (rtx);
 extern int legitimate_constant_p (rtx);
 extern int legitimate_reload_constant_p (rtx);
