@@ -1,3 +1,8 @@
+2004-08-16  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/extend.texi (AltiVec builtins): Document additional differences
+	from the Motorola AltiVec PIM.
+
 2004-08-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-typeck.c (build_c_cast): Only copy overflow from expr nodes.
