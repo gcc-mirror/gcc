@@ -179,6 +179,10 @@ extern int warn_format;
 
 extern int flag_traditional;
 
+/* Nonzero means enable C89 Amendment 1 features, other than digraphs.  */
+
+extern int flag_isoc94;
+
 /* Nonzero means use the ISO C99 dialect of C.  */
 
 extern int flag_isoc99;

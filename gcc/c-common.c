@@ -1195,6 +1195,9 @@ strip_attrs (specs_attrs)
 #define T_W	&wchar_type_node
 #define T_WI	&wint_type_node
 #define T_ST    &sizetype
+#define T_PD    &ptrdiff_type_node
+#define T_IM    NULL /* intmax_t not yet implemented.  */
+#define T_UIM   NULL /* uintmax_t not yet implemented.  */
 
 typedef struct {
   const char *format_chars;
@@ -1219,38 +1222,44 @@ typedef struct {
   /* Type of argument if length modifiers 'z' or `Z' is used.
      If NULL, then this modifier is not allowed.  */
   tree *zlen;
+  /* Type of argument if length modifier 't' is used.
+     If NULL, then this modifier is not allowed.  */
+  tree *tlen;
+  /* Type of argument if length modifier 'j' is used.
+     If NULL, then this modifier is not allowed.  */
+  tree *jlen;
   /* List of other modifier characters allowed with these options.  */
   const char *flag_chars;
 } format_char_info;
 
 static format_char_info print_char_table[] = {
-  { "di",	0,	T_I,	T_I,	T_I,	T_L,	T_LL,	T_LL,	T_ST,	"-wp0 +"	},
-  { "oxX",	0,	T_UI,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	"-wp0#"		},
-  { "u",	0,	T_UI,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	"-wp0"		},
+  { "di",	0,	T_I,	T_I,	T_I,	T_L,	T_LL,	T_LL,	T_ST,	T_PD,	T_IM,	"-wp0 +"	},
+  { "oxX",	0,	T_UI,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_PD,	T_UIM,	"-wp0#"		},
+  { "u",	0,	T_UI,	T_UI,	T_UI,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_PD,	T_UIM,	"-wp0"		},
 /* A GNU extension.  */
-  { "m",	0,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
-  { "feEgGaA",	0,	T_D,	NULL,	NULL,	NULL,	NULL,	T_LD,	NULL,	"-wp0 +#"	},
-  { "c",	0,	T_I,	NULL,	NULL,	T_WI,	NULL,	NULL,	NULL,	"-w"		},
-  { "C",	0,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
-  { "s",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	"-wp"		},
-  { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
-  { "p",	1,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
-  { "n",	1,	T_I,	NULL,	T_S,	T_L,	T_LL,	NULL,	NULL,	""		},
-  { NULL,	0,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL		}
+  { "m",	0,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
+  { "fFeEgGaA",	0,	T_D,	NULL,	NULL,	T_D,	NULL,	T_LD,	NULL,	NULL,	NULL,	"-wp0 +#"	},
+  { "c",	0,	T_I,	NULL,	NULL,	T_WI,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
+  { "C",	0,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
+  { "s",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
+  { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
+  { "p",	1,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
+  { "n",	1,	T_I,	NULL,	T_S,	T_L,	T_LL,	NULL,	T_ST,	T_PD,	T_IM,	""		},
+  { NULL,	0,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL		}
 };
 
 static format_char_info scan_char_table[] = {
-  { "di",	1,	T_I,	T_C,	T_S,	T_L,	T_LL,	T_LL,	T_ST,	"*"	},
-  { "ouxX",	1,	T_UI,	T_UC,	T_US,	T_UL,	T_ULL,	T_ULL,	T_ST,	"*"	},
-  { "efgEGaA",	1,	T_F,	NULL,	NULL,	T_D,	NULL,	T_LD,	NULL,	"*"	},
-  { "c",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	"*"	},
-  { "s",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	"*a"	},
-  { "[",	1,	T_C,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*a"	},
-  { "C",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
-  { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*a"	},
-  { "p",	2,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
-  { "n",	1,	T_I,	T_C,	T_S,	T_L,	T_LL,	NULL,	T_ST,	""	},
-  { NULL,	0,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL	}
+  { "di",	1,	T_I,	T_C,	T_S,	T_L,	T_LL,	T_LL,	T_ST,	T_PD,	T_IM,	"*"	},
+  { "ouxX",	1,	T_UI,	T_UC,	T_US,	T_UL,	T_ULL,	T_ULL,	T_ST,	T_PD,	T_UIM,	"*"	},
+  { "efFgEGaA",	1,	T_F,	NULL,	NULL,	T_D,	NULL,	T_LD,	NULL,	NULL,	NULL,	"*"	},
+  { "c",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
+  { "s",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*a"	},
+  { "[",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	"*a"	},
+  { "C",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
+  { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*a"	},
+  { "p",	2,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"*"	},
+  { "n",	1,	T_I,	T_C,	T_S,	T_L,	T_LL,	NULL,	T_ST,	T_PD,	T_IM,	""	},
+  { NULL,	0,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL	}
 };
 
 /* Handle format characters recognized by glibc's strftime.c.
@@ -1262,20 +1271,20 @@ static format_char_info scan_char_table[] = {
    'G' - other GNU extensions  */
 
 static format_char_info time_char_table[] = {
-  { "y", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "2EO-_0w" },
-  { "D", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "2" },
-  { "g", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "2O-_0w" },
-  { "cx", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "3E" },
-  { "%RTXnrt",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "" },
-  { "P",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "G" },
-  { "HIMSUWdemw",	0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Ow" },
-  { "Vju",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Oow" },
-  { "Gklsz",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0OGw" },
-  { "ABZa",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^#" },
-  { "p",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "#" },
-  { "bh",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^" },
-  { "CY",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0EOw" },
-  { NULL,		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
+  { "y", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "2EO-_0w" },
+  { "D", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "2" },
+  { "g", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "2O-_0w" },
+  { "cx", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "3E" },
+  { "%RTXnrt",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "" },
+  { "P",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "G" },
+  { "HIMSUWdemw",	0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Ow" },
+  { "Vju",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Oow" },
+  { "Gklsz",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0OGw" },
+  { "ABZa",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^#" },
+  { "p",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "#" },
+  { "bh",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^" },
+  { "CY",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0EOw" },
+  { NULL,		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 };
 
 typedef struct function_format_info
@@ -1595,6 +1604,7 @@ check_format_info (info, params)
   while (1)
     {
       int aflag;
+      int char_type_flag = 0;
       if (*format_chars == 0)
 	{
 	  if (format_chars - TREE_STRING_POINTER (format_tree) != format_length)
@@ -1756,8 +1766,6 @@ check_format_info (info, params)
 	    {
 	      precise = TRUE;
 	      ++format_chars;
-	      if (*format_chars != '*' && !ISDIGIT (*format_chars))
-		warning ("`.' not followed by `*' or digit in format");
 	      /* "...a...precision...may be indicated by an asterisk.
 		 In this case, an int argument supplies the...precision."  */
 	      if (*format_chars == '*')
@@ -1773,9 +1781,12 @@ check_format_info (info, params)
 		      cur_param = TREE_VALUE (params);
 		      params = TREE_CHAIN (params);
 		      ++arg_num;
-		      if (TYPE_MAIN_VARIANT (TREE_TYPE (cur_param))
-			  != integer_type_node)
-			warning ("field width is not type int (arg %d)",
+		      if ((TYPE_MAIN_VARIANT (TREE_TYPE (cur_param))
+			   != integer_type_node)
+			  &&
+			  (TYPE_MAIN_VARIANT (TREE_TYPE (cur_param))
+			   != unsigned_type_node))
+			warning ("field precision is not type int (arg %d)",
 				 arg_num);
 		    }
 		}
@@ -1804,6 +1815,13 @@ check_format_info (info, params)
 	    {
 	      length_char = *format_chars++;
 	      if (pedantic && (length_char == 'Z' || !flag_isoc99))
+		warning ("ANSI C does not support the `%c' length modifier",
+			 length_char);
+	    }
+	  else if (*format_chars == 't' || *format_chars == 'j')
+	    {
+	      length_char = *format_chars++;
+	      if (pedantic && !flag_isoc99)
 		warning ("ANSI C does not support the `%c' length modifier",
 			 length_char);
 	    }
@@ -1845,9 +1863,9 @@ check_format_info (info, params)
       if (pedantic && info->format_type != strftime_format_type
 	  && (format_char == 'm' || format_char == 'C' || format_char == 'S'))
 	warning ("ANSI C does not support the `%c' format", format_char);
-      /* The a and A formats are C99 extensions.  */
+      /* The a, A and F formats are C99 extensions.  */
       if (pedantic && info->format_type != strftime_format_type
-	  && (format_char == 'a' || format_char == 'A')
+	  && (format_char == 'a' || format_char == 'A' || format_char == 'F')
 	  && !flag_isoc99)
 	warning ("ANSI C does not support the `%c' format", format_char);
       format_chars++;
@@ -1952,6 +1970,8 @@ check_format_info (info, params)
 					      ? TYPE_DOMAIN (*fci->zlen)
 					      : *fci->zlen)
 					   : 0); break;
+	case 't': wanted_type = fci->tlen ? *(fci->tlen) : 0; break;
+	case 'j': wanted_type = fci->jlen ? *(fci->jlen) : 0; break;
 	}
       if (wanted_type == 0)
 	warning ("use of `%c' length character with `%c' type character",
@@ -1962,6 +1982,19 @@ check_format_info (info, params)
 		    || format_char == 'f' || format_char == 'F'
 		    || format_char == 'g' || format_char == 'G'))
 	warning ("ANSI C does not support the `L' length modifier with the `%c' type character",
+		 format_char);
+      else if (length_char == 'l'
+	       && (format_char == 'c' || format_char == 's'
+		   || format_char == '[')
+	       && pedantic && !flag_isoc94)
+	warning ("ANSI C89 does not support the `l' length modifier with the `%c' type character",
+		 format_char);
+      else if (info->format_type == printf_format_type && pedantic
+	       && !flag_isoc99 && length_char == 'l'
+	       && (format_char == 'f' || format_char == 'e'
+		   || format_char == 'E' || format_char == 'g'
+		   || format_char == 'G'))
+	warning ("ANSI C does not support the `l' length modifier with the `%c' type character",
 		 format_char);
 
       /* Finally. . .check type of argument against desired type!  */
@@ -2021,23 +2054,41 @@ check_format_info (info, params)
 		      || (DECL_P (cur_param) && TREE_READONLY (cur_param))))))
 	warning ("writing into constant object (arg %d)", arg_num);
 
+      /* Check whether the argument type is a character type.  */
+      if (TREE_CODE (cur_type) != ERROR_MARK)
+	char_type_flag = (TYPE_MAIN_VARIANT (cur_type) == char_type_node
+			  || TYPE_MAIN_VARIANT (cur_type) == signed_char_type_node
+			  || TYPE_MAIN_VARIANT (cur_type) == unsigned_char_type_node);
+
       /* Check the type of the "real" argument, if there's a type we want.  */
       if (i == fci->pointer_count + aflag && wanted_type != 0
 	  && TREE_CODE (cur_type) != ERROR_MARK
 	  && wanted_type != TYPE_MAIN_VARIANT (cur_type)
 	  /* If we want `void *', allow any pointer type.
-	     (Anything else would already have got a warning.)  */
+	     (Anything else would already have got a warning.)
+	     With -pedantic, only allow pointers to void and to character
+	     types.
+	  */
 	  && ! (wanted_type == void_type_node
-		&& fci->pointer_count > 0)
-	  /* Don't warn about differences merely in signedness.  */
+		&& fci->pointer_count > 0
+		&& (! pedantic
+		    || TYPE_MAIN_VARIANT (cur_type) == void_type_node
+		    || char_type_flag))
+	  /* Don't warn about differences merely in signedness, unless
+	     -pedantic.  With -pedantic, warn if the type is a pointer
+	     target and not a character type, and for character types at
+	     a second level of indirection.
+	  */
 	  && !(TREE_CODE (wanted_type) == INTEGER_TYPE
 	       && TREE_CODE (TYPE_MAIN_VARIANT (cur_type)) == INTEGER_TYPE
+	       && (! pedantic || i == 0 || (i == 1 && char_type_flag))
 	       && (TREE_UNSIGNED (wanted_type)
 		   ? wanted_type == (cur_type = unsigned_type (cur_type))
 		   : wanted_type == (cur_type = signed_type (cur_type))))
 	  /* Likewise, "signed char", "unsigned char" and "char" are
 	     equivalent but the above test won't consider them equivalent.  */
 	  && ! (wanted_type == char_type_node
+		&& (! pedantic || i < 2)
 		&& (TYPE_MAIN_VARIANT (cur_type) == signed_char_type_node
 		    || TYPE_MAIN_VARIANT (cur_type) == unsigned_char_type_node)))
 	{

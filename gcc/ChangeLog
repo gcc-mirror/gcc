@@ -1,5 +1,25 @@
 2000-08-04  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-common.h (flag_isoc94): Declare.
+	* c-decl.c (flag_isoc94): Define.
+	(c_decode_option): Set flag_isoc94 as appropriate.
+	* c-common.c (T_PD, T_IM, T_UIM): Define.
+	(format_char_info): Add tlen and jlen.
+	(print_char_table): Add entries for %t and %j.  Allow %zn.  Allow
+	%F.  Allow %lf.
+	(scan_char_table): Add entries for %t and %j.  Allow %F.  Allow
+	%l[.
+	(time_char_table): Add NULL entries for %t and %j.
+	(check_format_info): Allow for %t and %j.  Warn for %F if pedantic
+	and not C99.  Warn for %lc, %ls and %l[ if pedantic and not C94.
+	Warn for printf %lf if pedantic and not C99.  Don't warn for empty
+	precision.  Allow precision argument to be unsigned int.  If
+	pedantic, warn for %p passed an argument not a pointer to possibly
+	qualified void or a possibly qualified character type, and for
+	pointer targets of the wrong sign, except for character pointers.
+
+2000-08-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* ginclude/stddef.h: Don't declare wint_t unless __need_wint_t.
 	* c-common.h (enum c_tree_index): Add CTI_WINT_TYPE.
 	(wint_type_node): Define.
