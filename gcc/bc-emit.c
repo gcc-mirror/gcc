@@ -145,14 +145,14 @@ bc_sym_write (file)
 	      {
 		fprintf (file, "\n\t.comm ");
 		prsym (file, s->name);
-		fprintf (file, ", %d\n", s->val);
+		fprintf (file, ", %lu\n", s->val);
 	      }
 	  }
 	else if (s->common)
 	  {
 	    fprintf (file, "\n\t.lcomm ");
 	    prsym (file, s->name);
-	    fprintf (file, ", %d\n", s->val);
+	    fprintf (file, ", %lu\n", s->val);
 	  }
       }
 }
