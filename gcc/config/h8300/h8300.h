@@ -1020,20 +1020,20 @@ struct cum_arg
 
 /* Provide the costs of a rtl expression.  This is in the body of a
    switch on CODE.  */
-/* ??? Shifts need to have a *much* higher cost than this.  */
 
-#define RTX_COSTS(RTX, CODE, OUTER_CODE)	\
-  case MOD:					\
-  case DIV:					\
-    return 60;					\
-  case MULT:					\
-    return 20;					\
-  case ASHIFT:					\
-  case ASHIFTRT:				\
-  case LSHIFTRT:				\
-  case ROTATE:					\
-  case ROTATERT:				\
-    if (GET_MODE (RTX) == HImode) return 2;	\
+#define RTX_COSTS(RTX, CODE, OUTER_CODE)		\
+  case MOD:						\
+  case DIV:						\
+    return 60;						\
+  case MULT:						\
+    return 20;						\
+  case ASHIFT:						\
+  case ASHIFTRT:					\
+  case LSHIFTRT:					\
+    return COSTS_N_INSNS (h8300_shift_costs (RTX));	\
+  case ROTATE:						\
+  case ROTATERT:					\
+    if (GET_MODE (RTX) == HImode) return 2;		\
     return 8;
 
 /* Tell final.c how to eliminate redundant test instructions.  */

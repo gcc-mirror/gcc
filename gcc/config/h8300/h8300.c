@@ -1134,6 +1134,24 @@ const_costs (r, c, outer_code)
       return 4;
     }
 }
+
+int
+h8300_shift_costs (x)
+     rtx x;
+{
+  rtx operands[4];
+
+  if (GET_MODE (x) != QImode
+      && GET_MODE (x) != HImode
+      && GET_MODE (x) != SImode)
+    return 100;
+
+  operands[0] = NULL;
+  operands[1] = NULL;
+  operands[2] = XEXP (x, 1);
+  operands[3] = x;
+  return compute_a_shift_length (NULL, operands);
+}
 
 /* Documentation for the machine specific operand escapes:
 
