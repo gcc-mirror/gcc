@@ -6503,6 +6503,14 @@ package body Sem_Ch12 is
 
    begin
       Gen_Body_Id := Corresponding_Body (Gen_Decl);
+
+      --  The instance body may already have been processed, as the parent
+      --  of another instance that is inlined. (Load_Parent_Of_Generic).
+
+      if Present (Corresponding_Body (Instance_Spec (Inst_Node))) then
+         return;
+      end if;
+
       Expander_Mode_Save_And_Set (Body_Info.Expander_Status);
 
       if No (Gen_Body_Id) then

@@ -1,5 +1,10 @@
 2001-12-03  Ed Schonberg <schonber@gnat.com>
 
+	* sem_ch12.adb (Instantiate_Package_Body): Protect against double 
+	instantiation of a body that contains an inlined body.
+
+2001-12-03  Ed Schonberg <schonber@gnat.com>
+
 	* sem_ch12.adb:
 	(Analyze_generic_subprogram_Declaration): Set outer_generic_scope,
 	to prevent freezing within formal packages.
