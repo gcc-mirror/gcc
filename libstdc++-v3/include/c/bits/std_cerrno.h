@@ -37,7 +37,7 @@
 #define _CPP_CERRNO 1
 
 #pragma GCC system_header
-#include_next <errno.h>
+#include <errno.h>
 
 namespace std 
 {

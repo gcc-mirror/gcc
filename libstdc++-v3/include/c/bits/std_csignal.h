@@ -37,7 +37,7 @@
 #define _CPP_CSIGNAL 1
 
 #pragma GCC system_header
-#include_next <signal.h>
+#include <signal.h>
 
 namespace std
 {

@@ -42,7 +42,7 @@
 
 #if _GLIBCPP_USE_WCHAR_T
 #pragma GCC system_header
-#include_next <wchar.h>
+#include <wchar.h>
 
 // Get rid of those macros defined in <wchar.h> in lieu of real functions.
 #undef getwchar

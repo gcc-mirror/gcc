@@ -40,7 +40,7 @@
 #include <bits/std_cstdlib.h>
  
 #pragma GCC system_header
-#include_next <math.h>
+#include <math.h>
 
 namespace std 
 {

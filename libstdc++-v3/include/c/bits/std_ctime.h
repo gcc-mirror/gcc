@@ -37,7 +37,7 @@
 #define _CPP_CTIME 1
 
 #pragma GCC system_header
-#include_next <time.h>
+#include <time.h>
 
 namespace std
 {

@@ -37,7 +37,7 @@
 #define _CPP_CSTDDEF 1
 
 #pragma GCC system_header
-#include_next <stddef.h>
+#include <stddef.h>
 
 namespace std 
 {

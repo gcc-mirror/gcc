@@ -37,7 +37,7 @@
 #define _CPP_CSTDARG 1
 
 #pragma GCC system_header
-#include_next <stdarg.h>
+#include <stdarg.h>
 
 namespace std
 {

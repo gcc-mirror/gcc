@@ -1,3 +1,9 @@
+2000-12-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/c/bits/*.h: Remove include_next, replace with include,
+	as include_next does not work host-x-host, and include_next not
+	necessary.
+
 2000-12-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.h (ctype<char>): Remove throw specs not in
