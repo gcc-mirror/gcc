@@ -2204,18 +2204,29 @@ __gnat_to_canonical_dir_spec (char *dirspec, int prefixflag)
 }
 
 /* Translate a VMS syntax file specification into Unix syntax.
-   If no indicators of VMS syntax found, return input string.  */
+   If no indicators of VMS syntax found, check if its an uppercase
+   alphanumeric_ name and if so try it out as an environment
+   variable (logical name). If all else fails return the
+   input string.  */
 
 char *
 __gnat_to_canonical_file_spec (char *filespec)
 {
+  char *filespec1;
+
   strncpy (new_canonical_filespec, "", MAXPATH);
 
   if (strchr (filespec, ']') || strchr (filespec, ':'))
     {
       strncpy (new_canonical_filespec,
-	       (char *) decc$translate_vms (filespec),
-	       MAXPATH);
+	       (char *) decc$translate_vms (filespec), MAXPATH);
+    }
+  else if ((strlen (filespec) == strspn (filespec,
+	    "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"))
+	&& (filespec1 = getenv (filespec)))
+    {
+      strncpy (new_canonical_filespec,
+	       (char *) decc$translate_vms (filespec1), MAXPATH);
     }
   else
     {
