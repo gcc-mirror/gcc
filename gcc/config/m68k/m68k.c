@@ -3840,7 +3840,7 @@ void
 m68k_output_mi_thunk (file, thunk, delta, function)
      FILE *file;
      tree thunk ATTRIBUTE_UNUSED;
-     HOST_WIDE_INT d;
+     HOST_WIDE_INT delta;
      tree function;
 {
   if (delta > 0 && delta <= 8)						
