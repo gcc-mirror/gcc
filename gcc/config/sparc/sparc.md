@@ -8735,7 +8735,7 @@
   /* Restore %fp from stack pointer value for containing function.
      The restore insn that follows will move this to %sp,
      and reload the appropriate value into %fp.  */
-  emit_move_insn (frame_pointer_rtx, stack);
+  emit_move_insn (hard_frame_pointer_rtx, stack);
 
   /* USE of frame_pointer_rtx added for consistency; not clear if
      really needed.  */
