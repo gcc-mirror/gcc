@@ -1,6 +1,7 @@
-/* Definitions for 26-bit ARM running Linux-based GNU systems using ELF
-   Copyright (C) 1998 Free Software Foundation, Inc.
-   Contributed by Philip Blundell <philb@gnu.org>
+/* Definitions for ARM running Linux-based GNU systems 
+   using ELF and 26-bit APCS.
+   Copyright (C) 1999 Free Software Foundation, Inc.
+   Contributed by Philip Blundell <Philip.Blundell@pobox.com>
 
 This file is part of GNU CC.
 
@@ -19,14 +20,5 @@ along with this program; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* Tell linux-elf.h to default to 26-bit mode.  */
 #define SUBTARGET_DEFAULT_APCS26
-
-#define SUBTARGET_LINK_SPEC	\
-	" %{mapcs-32:-m elf32arm} %{!mapcs-32:-m elf32arm26}"
-
-#define SUBTARGET_EXTRA_ASM_SPEC	\
-	" %{mapcs-32:-mapcs-32} %(!mapcs-32:-mapcs-26}"
-
-#define TARGET_DEFAULT (ARM_FLAG_SHORT_BYTE)
-
-#include "arm/linux-elf.h"

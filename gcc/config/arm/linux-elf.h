@@ -28,13 +28,30 @@ Boston, MA 02111-1307, USA.  */
 /* We have libgcc2.  */
 #define HAVE_ATEXIT
 
-/* Default is to use APCS-32 mode.  */
 #ifndef SUBTARGET_DEFAULT_APCS26
-#define TARGET_DEFAULT (ARM_FLAG_APCS_32 | ARM_FLAG_SHORT_BYTE)
-#define SUBTARGET_EXTRA_LINK_SPEC	\
+/* Default is to use APCS-32 mode.  */
+# define TARGET_DEFAULT (ARM_FLAG_APCS_32 | ARM_FLAG_SHORT_BYTE)
+# ifdef SUBTARGET_OLD_LINKER
+#  define SUBTARGET_EXTRA_LINK_SPEC	\
 	" %{mapcs-26:-m elf32arm26} %{!mapcs-26:-m elf32arm}"
-#define SUBTARGET_EXTRA_ASM_SPEC	\
+# else	/* new linker */
+#  define SUBTARGET_EXTRA_LINK_SPEC	\
+	" %{mapcs-26:-m armelf_linux26} %{!mapcs-26:-m armelf_linux} -p"
+# endif
+# define SUBTARGET_EXTRA_ASM_SPEC	\
 	" %{mapcs-26:-mapcs-26} %(!mapcs-26:-mapcs-32}"
+# define CPP_APCS_PC_DEFAULT_SPEC "-D__APCS_32__"
+#else	/* default is APCS-26 */
+# define TARGET_DEFAULT (ARM_FLAG_SHORT_BYTE)
+# ifdef SUBTARGET_OLD_LINKER
+#  define SUBTARGET_LINK_SPEC	\
+	" %{mapcs-32:-m elf32arm} %{!mapcs-32:-m elf32arm26}"
+# else	/* new linker */
+#  define SUBTARGET_LINK_SPEC	\
+	" %{mapcs-32:-m armelf_linux} %{!mapcs-32:-m armelf_linux26} -p"
+# endif
+# define SUBTARGET_EXTRA_ASM_SPEC	\
+	" %{mapcs-32:-mapcs-32} %(!mapcs-32:-mapcs-26}"
 #endif
 
 /* This was defined in linux.h.  Define it here also. */
