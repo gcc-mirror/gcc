@@ -1,3 +1,9 @@
+2000-01-25  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (flow.o): Depend on $(EXPR_H).
+	* flow.c (mark_regs_live_at_end): Use hard_function_value, i.e.
+	duplicate the structure of diddle_return_value for keeping regs live.
+
 2000-01-26  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* loop.c (current_loop_info): Delete.
