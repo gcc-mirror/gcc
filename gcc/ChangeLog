@@ -1,3 +1,8 @@
+2002-04-09  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.md (movdi_er_maybe_g): New.
+	* config/alpha/alpha.c (alpha_expand_mov): Use it.
+
 2002-04-10  Alan Modra  <amodra@bigpond.net.au>
 
 	PR optimization/6233
