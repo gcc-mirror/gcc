@@ -59,8 +59,6 @@ extern void error			PARAMS ((const char *, ...));
 extern void fatal_error			PARAMS ((const char *, ...))
 					       ATTRIBUTE_NORETURN;
 extern void pedwarn			PARAMS ((const char *, ...));
-extern void pedwarn_with_file_and_line	PARAMS ((const char *, int,
-						 const char *, ...));
 extern void warning_with_file_and_line	PARAMS ((const char *, int,
 						 const char *, ...));
 extern void error_with_file_and_line	PARAMS ((const char *, int,
