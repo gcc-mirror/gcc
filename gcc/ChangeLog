@@ -1,3 +1,79 @@
+Mon Sep 10 14:21:26 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (cfg.o, cfganal.o, cfgloop.o, cfgbuild.o, cfgcleanup.o):
+	New.
+	* basic-block.h (flow_obstack, label_value_list,
+	tail_recursion_label_list): Declare
+	(tidy_fallthru_edges): Declare.
+	(expunge_block, last_loop_beg_note): Delete.
+	(can_fallthru, flow_nodes_print, flow_edge_list_print): Declare.
+	* cfg.c: New file
+	(basic_block_for_insn, label_value_list): Move from flow.c; make global.
+	(n_basic_blocks, n_edges, basic_block_info, entry_exit_blocks,
+	init_flow, clear_edges, can_delete_note_p, can_delete_label_p,
+	flow_delete_insn, flow_delete_insn_chain, create_basic_block, 
+	expunge_block, flow_delete_block, compute_bb_for_insn,
+	update_bb_for_insn, set_block_for_insn, set_block_for_new_insns,
+	make_edge, remove_edge, redirect_edge_succ, redirect_edge_succ_nodup,
+	redirect_edge_pred, split_block, marge_blocks_nomove, block_label,
+	try_redirect_by_replacing_jump, last_loop_beg_note,
+	redirect_edge_and_branch, redirect_edge_and_branch_force,
+	tidy_fallthru_edge, tidy_fallthru_edges, back_edge_of_syntactic_loop_p,
+	split_edge, insert_insn_on_edge, commit_one_edge_insertion,
+	commit_edge_insertions, dump_flow_info, debug_flow_info, 
+	dump_edge_info, dump_bb, debug_bb, debug_bb_n, print_rtl_with_bb,
+	verify_flow_info, purge_dead_edges, purge_all_dead_edges):
+	Move here from flow.c
+	* cfganal.c: New file.
+	(forwarder_block_p, can_fallthru, mark_critical_edges,
+	 mark_dfs_back_edges, need_fake_edge_p, flow_call_edges_add,
+	 find_unreachable_blocks, create_edge_list, free_edge_list,
+	 print_edge_list, verify_edge_list, find_edge_index, flow_nodes_print,
+	 flow_edge_list_print, remove_fake_successors, remove_fake_edges,
+	 add_noreturn_fake_exit_edges, connect_infinite_loops_to_exit,
+	 flow_reverse_top_sort_order_compute, flow_depth_first_order_compute,
+	 flow_dfs_compute_reverse_init, flow_dfs-compute_reverse_add_bb,
+	 flow_dfs-compute_reverse_execute, flow_dfs_compute_reverse_finish);
+	Move here from flow.c
+	* cfgbuild.c: New file
+	(count_basic_blocks, find_label_refs, make_label_edge, make_eh_edge,
+	 make_edges, find_basic_blocks_1, find_basic_blocks,
+	 find_sub_basic_blocks): Move here from flow.c
+	* cfgcleanup.c: New file.
+	(try_simplify_condjump, try_forward_edges, tail_recursion_label_p,
+	 merge_blocks_move_predecessor_nojumps,
+	 merge_blocks_move_successor_nojumps, merge_blocks,
+	 flow_find_cross_jump, outgoing_edges_match, try_crossjump_to_edge,
+	 try_crossjump_bb, try_optimize_cfg): Move here from flow.c
+	(delete_unreachable_blocks, cleanup_cfg): Likewise; return true
+	if succeeded.
+	* cfgloop.c: New file
+	(flow_loops_cfg_dump, flow_loop_nested_p, flow_loop_dump,
+	 flow_loops_dump, flow_loops_free, flow_loop_entry_edges_find,
+	 flow_loop_exit_edges_find, flow_loop_nodes_find,
+	 flow_loop_pre_header_scan, flow_loop_pre_header_find,
+	 flow_loop_tree_node_add, flow_loops_tree_build,
+	 flow_loop_level_compute, flow_loops_level_compute, flow_loop_scan,
+	 flow_loops_find, flow_loops_update, flow_loop_outside_edge_p):
+	Move here from flow.c
+	* flow.c: Remove everything moved elsewhere
+	* output.h (cleanup_cfg): Return bool.
+
+	* bb-reorder.c (reorder_block_def): Remove 'index'.
+	(insert_intra_1): Add argument BB, set block for new note.
+	(make_reorder_chain): Do not depdent on BB indexes.
+	(make_reorder_chain_1): Do not use BB indexes.
+	(label_for_bb): Likewise; set BB for new insn.
+	(emit_jump_to_block_after): Likewise.
+	(fixup_reoder_chain): Sanity check that all basic blocks
+	are chained; verify newly created insn chain; remove
+	undocnitional jump simplifying; Do not use BB indexes;
+	properly initialize count and frequency information;
+	dump reordered sequence.
+	(insert_intra_bb_scope_notes): update call of insert_intra_1.
+	(insert_inter_bb_scope_notes): Set block for new insn.
+	(reorder_basic_blocks): Dump flow info before reoredering.
+
 Mon Sep 10 06:47:35 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c (clear_reg_alias_info): Use K&R format definition.
