@@ -7939,8 +7939,7 @@ instantiate_decl (d)
 	    we don't need to look any further.  That's what the check for
 	    DECL_INITIAL is for.  */
 	|| (TREE_CODE (d) == FUNCTION_DECL
-	    && DECL_TEMPLATE_INFO (td) 
-	    && !DECL_TEMPLATE_SPECIALIZATION (td)
+	    && DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (td)
 	    && !DECL_INITIAL (DECL_TEMPLATE_RESULT (td)));
        )
     {

@@ -1,3 +1,9 @@
+1998-09-01  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION): New macro.
+	* decl2.c (import_export_decl): Likewise.
+	* pt.c (instantiate_decl): Use it.
+
 1998-09-01  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (lookup_name_real): Also do implicit typename thing for
