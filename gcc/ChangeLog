@@ -1,3 +1,7 @@
+2004-09-29  Aaron W. LaFramboise  <aaronavay62@aaronwl.com>
+
+	* read-rtl.c (apply_macro_to_string): Replace index with strchr.
+
 2004-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.h (enum tree_index): Add TI_VA_LIST_GPR_COUNTER_FIELD
