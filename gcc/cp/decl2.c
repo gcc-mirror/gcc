@@ -112,11 +112,6 @@ static size_t pending_statics_used;
 static varray_type saved_inlines;
 static size_t saved_inlines_used;
 
-/* Used to help generate temporary names which are unique within
-   a function.  Reset to 0 by start_function.  */
-
-int temp_name_counter;
-
 /* Same, but not reset.  Local temp variables and global temp variables
    can have the same name.  */
 static int global_temp_name_counter;
