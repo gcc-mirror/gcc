@@ -1923,7 +1923,7 @@ constrain_operands (insn_code_num, strict)
 		       || op_types[opno] != OP_OUT)
 		      && opno != eopno
 		      /* Ignore things like match_operator operands.  */
-		      && *constraints[opno] != 0
+		      && *insn_operand_constraint[insn_code_num][opno] != 0
 		      && ! (matching_operands[opno] == eopno
 			    && rtx_equal_p (recog_operand[opno],
 					    recog_operand[eopno]))
