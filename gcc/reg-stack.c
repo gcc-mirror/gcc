@@ -1904,7 +1904,7 @@ move_for_stack_reg (insn, regstack, pat)
 	  regstack->top--;
 	  CLEAR_HARD_REG_BIT (regstack->reg_set, REGNO (src));
 	}
-      else if (GET_MODE (src) == XFmode && regstack->top != REG_STACK_SIZE)
+      else if (GET_MODE (src) == XFmode && regstack->top < REG_STACK_SIZE - 1)
 	{
 	  /* A 387 cannot write an XFmode value to a MEM without
 	     clobbering the source reg.  The output code can handle
