@@ -26,10 +26,10 @@ Boston, MA 02111-1307, USA.  */
 #define MIPS_ISA_DEFAULT 3
 
 #ifndef MULTILIB_DEFAULTS
-#ifndef TARGET_ENDIAN_DEFAULT
-#define MULTILIB_DEFAULTS { "EB", "mips3" }
-#else
+#if TARGET_ENDIAN_DEFAULT == 0
 #define MULTILIB_DEFAULTS { "EL", "mips3" }
+#else
+#define MULTILIB_DEFAULTS { "EB", "mips3" }
 #endif
 #endif
 
