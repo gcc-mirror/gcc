@@ -1,6 +1,6 @@
 /* Subroutines for code generation on Motorola 68HC11 and 68HC12.
    Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
-   Contributed by Stephane Carrez (stcarrez@worldnet.fr)
+   Contributed by Stephane Carrez (stcarrez@nerim.fr)
 
 This file is part of GNU CC.
 
@@ -549,6 +549,12 @@ register_indirect_p (operand, mode, strict)
 
     case REG:
       return REGNO_OK_FOR_BASE_P2 (REGNO (operand), strict);
+
+    case CONST_INT:
+      if (TARGET_M6811)
+        return 0;
+
+      return VALID_CONSTANT_OFFSET_P (operand, mode);
 
     default:
       return 0;
