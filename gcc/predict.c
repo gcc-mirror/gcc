@@ -59,7 +59,7 @@
 
 static void combine_predictions_for_insn PARAMS ((rtx, basic_block));
 static void dump_prediction		 PARAMS ((enum br_predictor, int,
-						  basic_block, bool));
+						  basic_block, int));
 static void estimate_loops_at_level	 PARAMS ((struct loop *loop));
 static void propagate_freq		 PARAMS ((basic_block));
 static void estimate_bb_frequencies	 PARAMS ((struct loops *));
@@ -182,7 +182,7 @@ dump_prediction (predictor, probability, bb, used)
      enum br_predictor predictor;
      int probability;
      basic_block bb;
-     bool used;
+     int used;
 {
   edge e = bb->succ;
 
