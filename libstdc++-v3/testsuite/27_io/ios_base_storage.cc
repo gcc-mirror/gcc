@@ -138,10 +138,25 @@ void test02()
 
 }
 
+class derived : public std::ios_base
+{
+public:
+  derived() {}
+};
+
+void test03()
+{
+  derived d;
+
+  d.pword(0) = &d;
+  d.iword(0) = 1;
+}
+
 int main(void)
 {
   __gnu_cxx_test::set_memory_limits();
   test01();
   test02();
+  test03();
   return 0;
 }
