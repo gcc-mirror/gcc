@@ -2031,6 +2031,9 @@ extern void fancy_abort PARAMS ((const char *, int, const char *))
 extern rtx canon_rtx                    PARAMS ((rtx));
 extern int true_dependence		PARAMS ((rtx, enum machine_mode, rtx,
 						int (*)(rtx, int)));
+extern rtx get_addr                     PARAMS ((rtx));
+extern int canon_true_dependence        PARAMS ((rtx, enum machine_mode, rtx,
+                                                rtx, int (*)(rtx, int)));
 extern int read_dependence		PARAMS ((rtx, rtx));
 extern int anti_dependence		PARAMS ((rtx, rtx));
 extern int output_dependence		PARAMS ((rtx, rtx));

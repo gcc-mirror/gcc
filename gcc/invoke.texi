@@ -241,7 +241,7 @@ in the following sections.
 -fcse-follow-jumps  -fcse-skip-blocks  -fdata-sections  -fdce @gol
 -fdelayed-branch  -fdelete-null-pointer-checks @gol
 -fexpensive-optimizations  -ffast-math  -ffloat-store @gol
--fforce-addr  -fforce-mem  -ffunction-sections  -fgcse  @gol
+-fforce-addr  -fforce-mem  -ffunction-sections  -fgcse  -fgcse-lm -fgcse-sm @gol
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmove-all-movables @gol
 -fno-default-inline  -fno-defer-pop @gol
@@ -3033,6 +3033,18 @@ Run the loop optimizer twice.
 @item -fgcse
 Perform a global common subexpression elimination pass.
 This pass also performs global constant and copy propagation.
+
+@item -fgcse-lm
+When -fgcse-lm is enabled, global common subexpression elimination will
+attempt to move loads which are only killed by stores into themselves. This
+allows a loop containing a load/store sequence to be changed to a load outside
+the loop, and a copy/store within the loop. 
+
+@item -fgcse-sm
+When -fgcse-sm is enabled, A store motion pass is run after global common 
+subexpression elimination. This pass will attempt to move stores out of loops.
+When used in conjunction with -fgcse-lm, loops containing a load/store sequence
+can be changed to a load before the loop and a store after the loop.
 
 @item -fdelete-null-pointer-checks
 Use global dataflow analysis to identify and eliminate useless null
