@@ -23,7 +23,7 @@ c18             FINISHED, Note A
 c19             Note A
 c20             Note A
 c21             Public functions basic_string done, Note B
-c22             Untouched; see docs/html/22_locale/*
+c22             Most still to do; see docs/html/22_locale/*
 c23             See doxygroups.cc and Note B.  Notes on what invalidates
                 iterators need to be added.
 c24             stl_iterator.h (__normal_iterator, other small TODO bits)
