@@ -55,13 +55,10 @@ Boston, MA 02111-1307, USA.  */
 static tree grokparms (tree);
 static const char *redeclaration_error_message (tree, tree);
 
-static void push_binding_level (struct cp_binding_level *, int,
-				int);
+static void push_binding_level (cxx_scope *);
 static void pop_binding_level (void);
 static void suspend_binding_level (void);
 static void resume_binding_level (struct cp_binding_level *);
-static struct cp_binding_level *make_binding_level (void);
-static void declare_namespace_level (void);
 static int decl_jump_unsafe (tree);
 static void storedecls (tree);
 static void require_complete_types_for_parms (tree);
@@ -202,6 +199,9 @@ tree cp_global_trees[CPTI_MAX];
    that is not necessarily in scope at the moment.  */
 
 static GTY(()) tree global_type_node;
+
+/* The node that holds the "name" of the global scope.  */
+static GTY(()) tree global_scope_name;
 
 /* Used only for jumps to as-yet undefined labels, since jumps to
    defined labels can have their validity checked immediately.  */
@@ -358,8 +358,9 @@ struct cp_binding_level GTY(())
        that were entered and exited one level down.  */
     tree blocks;
 
-    /* The _TYPE node for this level, if parm_flag == 2.  */
-    tree this_class;
+    /* The entity (namespace, class, function) the scope of which this
+       binding contour corresponds to.  Otherwise NULL.  */
+    tree this_entity;
 
     /* The binding level which this one is contained in (inherits from).  */
     struct cp_binding_level *level_chain;
@@ -464,27 +465,84 @@ indent (int depth)
 
 static tree pushdecl_with_scope	(tree, struct cp_binding_level *);
 
+/* Return a string describing the kind of SCOPE we have.  */
+static const char *
+cxx_scope_descriptor (cxx_scope *scope)
+{
+  const char *desc;
+
+  if (scope->namespace_p)
+    desc = "namespace-scope";
+  else if (scope->parm_flag == 1)
+    desc = "function-prototype-scope";
+  else if (scope->parm_flag == 2)
+    desc = "class-scope";
+  else if (scope->is_for_scope)
+    desc = "for-scope";
+  else if (scope->is_try_scope)
+    desc = "try-scope";
+  else if (scope->is_catch_scope)
+    desc = "catch-scope";
+  else if (scope->template_spec_p)
+    desc = "template-explicit-spec-scope";
+  else if (scope->template_parms_p)
+    desc = "template-prototype-scope";
+  else
+    desc = "block-scope";
+
+  return desc;
+}
+
+/* Output a debugging information about SCOPE when performning
+   ACTION at LINE.  */
 static void
-push_binding_level (struct cp_binding_level *newlevel, 
-                    int tag_transparent, 
-                    int keep)
+cxx_scope_debug (cxx_scope *scope, int line, const char *action)
+{
+  const char *desc = cxx_scope_descriptor (scope);
+  if (scope->this_entity)
+    verbatim ("%s %s(%E) %p %d\n", action, desc,
+              scope->this_entity, (void *) scope, line);
+  else
+    verbatim ("%s %s %p %d\n", action, desc, (void *) scope, line);
+}
+
+/* Construct a scope that may be TAG-TRANSPARENT, the sub-blocks of
+   which may be KEPT.  */
+static inline cxx_scope *
+make_cxx_scope (bool tag_transparent, int keep)
+{
+  cxx_scope *scope;
+  
+  /* Reuse or create a struct for this binding level.  */
+  if (!ENABLE_SCOPE_CHECKING && free_binding_level)
+    {
+      scope = free_binding_level;
+      free_binding_level = scope->level_chain;
+    }
+  else
+    scope = ggc_alloc (sizeof (cxx_scope));
+
+  memset (scope, 0, sizeof (cxx_scope));
+  scope->tag_transparent = tag_transparent;
+  scope->keep = keep;
+  scope->more_cleanups_ok = true;
+
+  return scope;
+}
+
+static void
+push_binding_level (cxx_scope *newlevel)
 {
   /* Add this level to the front of the chain (stack) of levels that
      are active.  */
-  memset ((char*) newlevel, 0, sizeof (struct cp_binding_level));
   newlevel->level_chain = current_binding_level;
   current_binding_level = newlevel;
-  newlevel->tag_transparent = tag_transparent;
-  newlevel->more_cleanups_ok = 1;
 
-  newlevel->keep = keep;
   if (ENABLE_SCOPE_CHECKING)
     {
       newlevel->binding_depth = binding_depth;
       indent (binding_depth);
-      verbatim ("push %s level %p line %d\n",
-                (is_class_level) ? "class" : "block",
-                (void *) newlevel, input_line);
+      cxx_scope_debug (newlevel, input_location.line, "push");
       is_class_level = 0;
       binding_depth++;
     }
@@ -516,9 +574,7 @@ pop_binding_level (void)
   if (ENABLE_SCOPE_CHECKING)
     {
       indent (--binding_depth);
-      verbatim ("pop  %s level %p line %d\n",
-                (is_class_level) ? "class" : "block",
-                (void*) current_binding_level, input_line);
+      cxx_scope_debug (current_binding_level, input_location.line, "pop");
       if (is_class_level != (current_binding_level == class_binding_level))
         {
           indent (binding_depth);
@@ -556,9 +612,7 @@ suspend_binding_level (void)
   if (ENABLE_SCOPE_CHECKING)
     {
       indent (--binding_depth);
-      verbatim ("suspend  %s level %p line %d\n",
-                (is_class_level) ? "class" : "block",
-                (void *) current_binding_level, input_line);
+      cxx_scope_debug (current_binding_level, input_location.line, "suspend");
       if (is_class_level != (current_binding_level == class_binding_level))
         {
           indent (binding_depth);
@@ -584,23 +638,12 @@ resume_binding_level (struct cp_binding_level* b)
     {
       b->binding_depth = binding_depth;
       indent (binding_depth);
-      verbatim ("resume %s level %p line %d\n",
-                (is_class_level) ? "class" : "block", b, input_line);
+      cxx_scope_debug (b, input_location.line, "resume");
       is_class_level = 0;
       binding_depth++;
     }
 }
 
-/* Create a new `struct cp_binding_level'.  */
-
-static
-struct cp_binding_level *
-make_binding_level (void)
-{
-  /* NOSTRICT */
-  return (struct cp_binding_level *) ggc_alloc (sizeof (struct cp_binding_level));
-}
-
 /* Nonzero if we are currently in the global binding level.  */
 
 int
@@ -669,12 +712,6 @@ kept_level_p (void)
 	  || current_binding_level->names != NULL_TREE
 	  || (current_binding_level->type_decls != NULL
 	      && !current_binding_level->tag_transparent));
-}
-
-static void
-declare_namespace_level (void)
-{
-  current_binding_level->namespace_p = 1;
 }
 
 /* Returns nonzero if this scope was created to store template
@@ -787,21 +824,10 @@ set_class_shadows (tree shadows)
 void
 pushlevel (int tag_transparent)
 {
-  struct cp_binding_level *newlevel;
-
   if (cfun && !doing_semantic_analysis_p ())
     return;
 
-  /* Reuse or create a struct for this binding level.  */
-  if (!ENABLE_SCOPE_CHECKING && free_binding_level)
-    {
-      newlevel = free_binding_level;
-      free_binding_level = free_binding_level->level_chain;
-    }
-  else
-    newlevel = make_binding_level ();
-
-  push_binding_level (newlevel, tag_transparent, keep_next_level_flag);
+  push_binding_level (make_cxx_scope (tag_transparent, keep_next_level_flag));
   keep_next_level_flag = 0;
 }
 
@@ -1550,25 +1576,14 @@ set_block (tree block ATTRIBUTE_UNUSED )
 void
 pushlevel_class (void)
 {
-  register struct cp_binding_level *newlevel;
-
-  /* Reuse or create a struct for this binding level.  */
-  if (!ENABLE_SCOPE_CHECKING && free_binding_level)
-    {
-      newlevel = free_binding_level;
-      free_binding_level = free_binding_level->level_chain;
-    }
-  else
-    newlevel = make_binding_level ();
-
   if (ENABLE_SCOPE_CHECKING)
     is_class_level = 1;
 
-  push_binding_level (newlevel, 0, 0);
+  push_binding_level (make_cxx_scope (false, 0));
 
   class_binding_level = current_binding_level;
   class_binding_level->parm_flag = 2;
-  class_binding_level->this_class = current_class_type;
+  class_binding_level->this_entity = current_class_type;
 }
 
 /* ...and a poplevel for class declarations.  */
@@ -1988,6 +2003,31 @@ print_binding_stack (void)
    the identifier is polymorphic, with three possible values:
    NULL_TREE, a list of "cxx_binding"s.  */
 
+
+/* Push the initial binding contour of NAMESPACE-scope.  Any subsequent
+   push of NS is actually a resume.  */
+static void
+initial_push_namespace_scope (tree ns)
+{
+  tree name = DECL_NAME (ns);
+  cxx_scope *scope;
+
+  pushlevel (0);
+  scope = current_binding_level;
+  scope->namespace_p = true;
+  scope->type_decls = binding_table_new (name == std_identifier
+                                         ? NAMESPACE_STD_HT_SIZE
+                                         : (name == global_scope_name
+                                            ? GLOBAL_SCOPE_HT_SIZE
+                                            : NAMESPACE_ORDINARY_HT_SIZE));
+  VARRAY_TREE_INIT (scope->static_decls,
+                    name == std_identifier || name == global_scope_name
+                    ? 200 : 10,
+                    "Static declarations");
+  scope->this_entity = ns;
+  NAMESPACE_LEVEL (ns) = scope;
+}
+
 /* Push into the scope of the NAME namespace.  If NAME is NULL_TREE, then we
    select a name that is unique to this compilation unit.  */
 
@@ -1997,17 +2037,16 @@ push_namespace (tree name)
   tree d = NULL_TREE;
   int need_new = 1;
   int implicit_use = 0;
-  int global = 0;
 
   timevar_push (TV_NAME_LOOKUP);
   
-  if (!global_namespace)
-    {
-      /* This must be ::.  */
-      my_friendly_assert (name == get_identifier ("::"), 377);
-      global = 1;
-    }
-  else if (!name)
+  /* We should not get here if the global_namespace is not yet constructed
+     nor if NAME designates the global namespace:  The global scope is
+     constructed elsewhere.  */
+  my_friendly_assert (global_namespace != NULL && name != global_scope_name,
+                      20030531);
+
+  if (!name)
     {
       /* The name of anonymous namespace is unique for the translation
          unit.  */
@@ -2040,23 +2079,9 @@ push_namespace (tree name)
     {
       /* Make a new namespace, binding the name to it.  */
       d = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
-      /* The global namespace is not pushed, and the global binding
-	 level is set elsewhere.  */
-      if (!global)
-	{
-	  DECL_CONTEXT (d) = FROB_CONTEXT (current_namespace);
-	  d = pushdecl (d);
-	  pushlevel (0);
-	  declare_namespace_level ();
-	  NAMESPACE_LEVEL (d) = current_binding_level;
-          current_binding_level->type_decls =
-            binding_table_new (name == std_identifier
-                               ? NAMESPACE_STD_HT_SIZE
-                               : NAMESPACE_ORDINARY_HT_SIZE);
-	  VARRAY_TREE_INIT (current_binding_level->static_decls,
-			    name != std_identifier ? 10 : 200,
-			    "Static declarations");
-	}
+      DECL_CONTEXT (d) = FROB_CONTEXT (current_namespace);
+      d = pushdecl (d);
+      initial_push_namespace_scope (d);
     }
   else
     resume_binding_level (NAMESPACE_LEVEL (d));
@@ -2518,7 +2543,7 @@ pushtag (tree name, tree type, int globalize)
 		    of a static member variable. We allow this when
 		    not pedantic, and it is particularly useful for
 		    type punning via an anonymous union.  */
-		 || COMPLETE_TYPE_P (b->this_class))))
+		 || COMPLETE_TYPE_P (b->this_entity))))
     b = b->level_chain;
 
   if (b->type_decls == NULL)
@@ -5829,7 +5854,7 @@ lookup_name_real (tree name, int prefer_type, int nonclass,
 	    continue;
 	  
 	  /* Lookup the conversion operator in the class.  */
-	  class_type = level->this_class;
+	  class_type = level->this_entity;
 	  operators = lookup_fnfields (class_type, name, /*protect=*/0);
 	  if (operators)
 	    POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, operators);
@@ -6104,6 +6129,7 @@ initialize_predefined_identifiers (void)
     { VTABLE_PFN_NAME, &pfn_identifier, 0 },
     { "_vptr", &vptr_identifier, 0 },
     { "__vtt_parm", &vtt_parm_identifier, 0 },
+    { "::", &global_scope_name, 0 },
     { "std", &std_identifier, 0 },
     { NULL, NULL, 0 }
   };
@@ -6136,10 +6162,15 @@ cxx_init_decl_processing (void)
   /* Create the global variables.  */
   push_to_top_level ();
 
+  current_function_decl = NULL_TREE;
+  current_binding_level = NULL_BINDING_LEVEL;
+  free_binding_level = NULL_BINDING_LEVEL;
   /* Enter the global namespace.  */
   my_friendly_assert (global_namespace == NULL_TREE, 375);
-  push_namespace (get_identifier ("::"));
-  global_namespace = current_namespace;
+  global_namespace = build_lang_decl (NAMESPACE_DECL, global_scope_name,
+                                      void_type_node);
+  initial_push_namespace_scope (global_namespace);
+
   current_lang_name = NULL_TREE;
 
   /* Adjust various flags based on command-line settings.  */
@@ -6165,25 +6196,10 @@ cxx_init_decl_processing (void)
   /* Initially, C.  */
   current_lang_name = lang_name_c;
 
-  current_function_decl = NULL_TREE;
-  current_binding_level = NULL_BINDING_LEVEL;
-  free_binding_level = NULL_BINDING_LEVEL;
-
   build_common_tree_nodes (flag_signed_char);
 
   error_mark_list = build_tree_list (error_mark_node, error_mark_node);
   TREE_TYPE (error_mark_list) = error_mark_node;
-
-  /* Make the binding_level structure for global names.  */
-  pushlevel (0);
-  current_binding_level->type_decls = binding_table_new (GLOBAL_SCOPE_HT_SIZE);
-  /* The global level is the namespace level of ::.  */
-  NAMESPACE_LEVEL (global_namespace) = current_binding_level;
-  declare_namespace_level ();
-
-  VARRAY_TREE_INIT (current_binding_level->static_decls,
-		    200,
-		    "Static declarations");
 
   /* Create the `std' namespace.  */
   push_namespace (std_identifier);

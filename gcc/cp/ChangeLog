@@ -1,3 +1,28 @@
+2003-05-31  Gabriel Dos Reis <gdr@integrable-solutions.net>
+
+	* decl.c (cp_binding_level::this_entity): Rename from this_class.
+	(cxx_scope_descriptor): New function.
+	(cxx_scope_debug): Likewise.
+	(push_binding_level): Use it.
+	(pop_binding_level): Likewise.
+	(suspend_binding_level): Likewise.
+	(resume_binding_level): Likewise.
+	(pushlevel_class): Adjust use of this_class.
+	(pushtag): Likewise.
+	(lookup_name_real): Likewise.
+	(global_scope_name): New variable.
+	(initialize_predefined_identifiers): Initialize it.
+	(push_namespace): Use it.
+	(make_cxx_scope): New function.
+	(pushlevel): Use it.
+	(pushlevel_class): Likewise.
+	(push_binding_level): Simplify.  Loose the last two arguments.
+	(make_binding_level): Remove.
+	(initial_push__namespace_scope): New function.
+	(push_namespace): Use it.  Simplify.
+	(cxx_init_decl_processing): Likewise. 
+	(declare_namespace_level): Remove.
+
 2003-05-31  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10956
