@@ -1,3 +1,10 @@
+2002-05-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/g77.exp (g77_link_flags): Append all multilib dirs containing
+	libgcc_s*.so.1 below gcc object dir to LD_LIBRARY_PATH.
+	* lib/g++.exp (g++_link_flags): Likewise.
+	* lib/objc.exp (objc_target_compile): Likewise.
+
 2002-05-08  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c/6569

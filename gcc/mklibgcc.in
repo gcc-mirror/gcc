@@ -32,6 +32,7 @@
 # SHLIB_MAPFILES
 # SHLIB_NM_FLAGS
 # SHLIB_INSTALL
+# SHLIB_SLIBDIR_SUFFIXES
 
 # Make needs VPATH to be literal.
 echo 'srcdir = @srcdir@'
@@ -306,10 +307,30 @@ for ml in $MULTILIBS; do
     echo '	else true; fi;'
 
     if [ -z "$SHLIB_MULTILIB" ]; then
-      if [ "$dir" = "." ]; then
-	shlib_base_name="libgcc_s";
+      if [ "$dir" = . ]; then
+	shlib_base_name=libgcc_s
       else
 	shlib_base_name=libgcc_s_`echo $dir | sed s,/,_,g`
+      fi
+      shlib_so_name="$shlib_base_name"
+      shlib_dir=
+      if [ -n "$SHLIB_SLIBDIR_SUFFIXES" ]; then
+	if [ "$dir" != . ]; then
+	  shlib_dir="$dir"/
+	  for suffix_pair in $SHLIB_SLIBDIR_SUFFIXES ; do
+	    base_ml_dir=`echo ${suffix_pair} | sed -e 's/:.*$//' -e 's/=/$(EQ)/g'`
+	    if [ "$dir" = "$base_ml_dir" ]; then
+	      shlib_so_name=libgcc_s
+	      break
+	    else
+	      canon_dir=`echo $dir | sed -n -e "s:$base_ml_dir/::p"`
+	      if [ -n "$canon_dir" ]; then
+		shlib_so_name=libgcc_s_`echo $canon_dir | sed s,/,_,g`
+		break
+	      fi
+	    fi
+	  done
+	fi
       fi
       echo ""
       echo "${dir}/${shlib_base_name}${SHLIB_EXT}: $shlib_deps"
@@ -318,7 +339,9 @@ for ml in $MULTILIBS; do
 	       -e "s%@multilib_dir@%$dir%g" \
 	       -e "s%@shlib_objs@%$libgcc_sh_objs%g" \
 	       -e "s%@shlib_base_name@%$shlib_base_name%g" \
-	       -e "s%@shlib_map_file@%$mapfile%g"
+	       -e "s%@shlib_map_file@%$mapfile%g" \
+	       -e "s%@shlib_so_name@%$shlib_so_name%g" \
+	       -e "s%@shlib_dir@%$shlib_dir%g"
     elif [ "$SHLIB_MULTILIB" = "$dir" ]; then
       shlib_base_name="libgcc_s";
       echo ""
@@ -328,7 +351,9 @@ for ml in $MULTILIBS; do
 	       -e "s%@multilib_dir@%$dir%g" \
 	       -e "s%@shlib_objs@%$libgcc_sh_objs%g" \
 	       -e "s%@shlib_base_name@%$shlib_base_name%g" \
-	       -e "s%@shlib_map_file@%$mapfile%g"
+	       -e "s%@shlib_map_file@%$mapfile%g" \
+	       -e "s%@shlib_so_name@%$shlib_base_name%g" \
+	       -e "s%@shlib_dir@%%g"
     fi
   fi
 done
@@ -424,17 +449,60 @@ for ml in $MULTILIBS; do
     echo '	$(RANLIB_FOR_TARGET)' ${ldir}/libgcc_eh.a
 
     if [ -z "$SHLIB_MULTILIB" ]; then
-      if [ "$dir" = "." ]; then
-	shlib_base_name="libgcc_s";
+      if [ "$dir" = . ]; then
+	shlib_base_name=libgcc_s
       else
 	shlib_base_name=libgcc_s_`echo $dir | sed s,/,_,g`
       fi
+      shlib_so_name="$shlib_base_name"
+      shlib_dir=
+      shlib_slibdir_qual=none
+      if [ -n "$SHLIB_SLIBDIR_SUFFIXES" ]; then
+	if [ "$dir" != . ]; then
+	  shlib_dir="$dir"/
+	  for suffix_pair in $SHLIB_SLIBDIR_SUFFIXES ; do
+	    base_ml_dir=`echo ${suffix_pair} | sed -e 's/:.*$//' -e 's/=/$(EQ)/g'`
+	    if [ "$dir" = "$base_ml_dir" ]; then
+	      shlib_so_name=libgcc_s
+	      shlib_slibdir_qual=`echo ${suffix_pair} | sed -e 's/^[^:]*://'`
+	      break
+	    else
+	      canon_dir=`echo $dir | sed -n -e "s:$base_ml_dir/::p"`
+	      if [ -n "$canon_dir" ]; then
+		shlib_so_name=libgcc_s_`echo $canon_dir | sed s,/,_,g`
+		shlib_slibdir_qual=`echo ${suffix_pair} | sed -e 's/^[^:]*://'`
+		break
+	      fi
+	    fi
+	  done
+	fi
+	if [ "$shlib_slibdir_qual" = none ]; then
+	  for suffix_pair in $SHLIB_SLIBDIR_SUFFIXES ; do
+	    base_ml_dir=`echo ${suffix_pair} | sed -e 's/:.*$//' -e 's/=/$(EQ)/g'`
+	    shlib_slibdir_qual=`echo ${suffix_pair} | sed -e 's/^[^:]*://'`
+	    for ml2 in $MULTILIBS; do
+	      dir2=`echo ${ml2} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
+	      if [ "$base_ml_dir" = "$dir2" ]; then
+		shlib_slibdir_qual=
+		break
+	      fi
+	    done
+	    if [ -n "$shlib_slibdir_qual" ]; then break; fi
+	  done
+	fi
+      fi
       echo "	$SHLIB_INSTALL" \
-	| sed -e "s%@shlib_base_name@%$shlib_base_name%g"
+	| sed -e "s%@shlib_base_name@%$shlib_base_name%g" \
+	      -e "s%@shlib_so_name@%$shlib_so_name%g" \
+	      -e "s%@shlib_dir@%$shlib_dir%g" \
+	      -e "s%@shlib_slibdir_qual@%$shlib_slibdir_qual%g"
     elif [ "$SHLIB_MULTILIB" = "$dir" ]; then
       shlib_base_name="libgcc_s";
       echo "	$SHLIB_INSTALL" \
-	| sed -e "s%@shlib_base_name@%$shlib_base_name%g"
+	| sed -e "s%@shlib_base_name@%$shlib_base_name%g" \
+	      -e "s%@shlib_so_name@%$shlib_base_name%g" \
+	      -e "s%@shlib_dir@%%g" \
+	      -e "s%@shlib_slibdir_qual@%%g"
     fi
   fi
 done
