@@ -1,3 +1,7 @@
+2003-04-29  Geoffrey Keating  <geoffk@apple.com>
+
+	* Makefile.in (quickstrap): Pass BOOT_CFLAGS to submake.
+
 2003-04-29  Jason Merrill  <jason@redhat.com>
 
 	PR middle-end/10336
