@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GNU C-Compiler
-   Copyright (C) 1987, 88, 89, 91, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 91-94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2318,7 +2318,9 @@ optimize_bit_field (body, insn, equiv_mem)
 	      rtx dest = SET_DEST (body);
 
 	      while (GET_CODE (dest) == SUBREG
-		     && SUBREG_WORD (dest) == 0)
+		     && SUBREG_WORD (dest) == 0
+		     && (GET_MODE_CLASS (GET_MODE (dest))
+			 == GET_MODE_CLASS (GET_MODE (SUBREG_REG (dest)))))
 		dest = SUBREG_REG (dest);
 
 	      validate_change (insn, &SET_DEST (body), dest, 1);
