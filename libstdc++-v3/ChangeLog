@@ -1,5 +1,12 @@
 2003-02-17  Paolo Carlini  <pcarlini@unitus.it>
 
+	PR libstdc++/9580
+	* include/std/std_fstream.h: Declare underflow and uflow
+	specializations, change generic definitions to do nothing.
+	* src/fstream.cc: Add underflow and uflow specializations.
+
+2003-02-17  Paolo Carlini  <pcarlini@unitus.it>
+
 	PR libstdc++/9169
 	* include/bits/fstream.tcc (_M_convert_to_external):
 	Deal correctly with noconv, as prescribed by 27.8.1.4,p8.

@@ -100,6 +100,16 @@ namespace std
       return __ret;
     }
 
+  template<>
+    basic_filebuf<char>::int_type
+    basic_filebuf<char>::underflow() 
+    { return _M_underflow_common(false); }
+
+  template<>
+    basic_filebuf<char>::int_type
+    basic_filebuf<char>::uflow() 
+    { return _M_underflow_common(true); }
+
 #ifdef _GLIBCPP_USE_WCHAR_T
   template<> 
     basic_filebuf<wchar_t>::int_type 
@@ -189,5 +199,15 @@ namespace std
       _M_last_overflowed = false;	
       return __ret;
     }
+
+  template<>
+    basic_filebuf<wchar_t>::int_type
+    basic_filebuf<wchar_t>::underflow() 
+    { return _M_underflow_common(false); }
+
+  template<>
+    basic_filebuf<wchar_t>::int_type
+    basic_filebuf<wchar_t>::uflow() 
+    { return _M_underflow_common(true); }
 #endif
 } // namespace std
