@@ -1,3 +1,8 @@
+2000-05-08  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (init_propagate_block_info): Watch out for conditional
+	branch to next instruction, and thus one outgoing edge.
+
 2000-05-08  Nick Clifton  <nickc@cygnus.com>
 
 	* config/i386/i386.h (ELIMINABLE_REGS): Fix comment.
