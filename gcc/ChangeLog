@@ -1,3 +1,17 @@
+2004-11-15  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/altivec.md ("altivec_vsplth"): Rewrite with
+	vec_duplicate.
+	(altivec_vspltb): Same.
+	(altivec_vspltw): Same.
+	(altivec_vspltisb): Same.
+	(altivec_vspltish): Same.
+	(altivec_vspltisw): Same.
+	(altivec_vspltisw_v4sf): Same.
+	(define_constants): Remove UNSPEC_VSPLTISB, UNSPEC_VSPLTISW,
+	UNSPEC_VSPLTISH.
+	Move "End of vector xor's" comment to the right place.
+
 2004-11-15  Steve Ellcey  <sje@cup.hp.com>
 
 	* config/ia64/ia64.md (*movtf_internal):  Use destination_operand
