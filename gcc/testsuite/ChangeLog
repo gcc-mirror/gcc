@@ -1,3 +1,8 @@
+2004-10-24  Geoffrey Keating  <geoffk@redhat.com>
+
+	* gcc.dg/c90-const-expr-3.c: xfail all the ASSERT_NOT_NPC tests.
+	* gcc.dg/c99-const-expr-3.c: Likewise.
+
 2004-10-23  Andrew Pinski  <pinskia@physics.uc.edu>.
 
 	* gcc.dg/tree-ssa/loop-1.c: Add -static for *-*-darwin*.
