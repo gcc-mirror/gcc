@@ -1048,6 +1048,47 @@ output_move_double (operands)
       || (optype0 != REGOP && optype0 != CNSTOP && optype1 == REGOP
 	  && (REGNO (operands[1]) & 1) == 0))
     {
+      /* Now that all misaligned double parms are copied
+	 on function entry, we can assume any 64-bit object
+	 is 64-bit aligned.  */
+#if 1
+      rtx addr;
+      rtx base, offset;
+
+      if (optype0 == REGOP)
+	addr = operands[1];
+      else
+	addr = operands[0];
+
+      /* See what register we use in the address.  */
+      base = 0;
+      if (GET_CODE (XEXP (addr, 0)) == PLUS)
+	{
+	  rtx temp = XEXP (addr, 0);
+	  if (GET_CODE (XEXP (temp, 0)) == REG
+	      && GET_CODE (XEXP (temp, 1)) == CONST_INT)
+	    base = XEXP (temp, 0), offset = XEXP (temp, 1);
+	}
+      else if (GET_CODE (XEXP (addr, 0)) == REG)
+	base = XEXP (addr, 0), offset = const0_rtx;
+
+      /* If it's the  stack or frame pointer, check offset alignment.
+	 We can have improper aligment in the function entry code.  */
+      if (base
+	  && (REGNO (base) == FRAME_POINTER_REGNUM
+	      || REGNO (base) == STACK_POINTER_REGNUM))
+	{
+	  if ((INTVAL (offset) & 0x7) == 0)
+	    return (addr == operands[1] ? "ldd %1,%0" : "std %1,%0");
+	}
+      else
+	/* Anything else, we know is properly aligned.  */
+	return (addr == operands[1] ? "ldd %1,%0" : "std %1,%0");
+#else
+      /* This old code is preserved in case we ever need
+	 it for Fortran.  It won't be complete right;
+	 In Fortran, doubles can be just 32-bit aligned
+	 even in global variables and arrays.  */
       rtx addr;
       rtx base, offset;
 
@@ -1098,6 +1139,7 @@ output_move_double (operands)
 		   || MEM_IN_STRUCT_P (addr)
 		   || TARGET_HOPE_ALIGN))
 	return (addr == operands[1] ? "ldd %1,%0" : "std %1,%0");
+#endif /* 0 */
     }
 
   if (optype0 == REGOP && optype1 == REGOP
