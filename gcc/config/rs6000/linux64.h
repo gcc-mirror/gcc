@@ -45,11 +45,57 @@ Boston, MA 02111-1307, USA.  */
 %{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian} \
 %{v:-V} %{Qy:} %{!Qn:-Qy} -a64 %(asm_cpu) %{Wa,*:%*}"
 
+/* This is always a 64 bit compiler.  */
+#undef	TARGET_64BIT
+#define	TARGET_64BIT		1
+
 /* 64-bit PowerPC Linux always has a TOC.  */
 #undef  TARGET_NO_TOC
 #define TARGET_NO_TOC		0
 #undef  TARGET_TOC
 #define	TARGET_TOC		1
+
+/* Some things from sysv4.h we don't do.  */
+#undef	TARGET_RELOCATABLE
+#define	TARGET_RELOCATABLE	0
+#undef	TARGET_EABI
+#define	TARGET_EABI		0
+#undef	TARGET_PROTOTYPE
+#define	TARGET_PROTOTYPE	0
+
+/* Override sysv4.h.  */
+#undef	SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES						\
+  {"bit-align",	-MASK_NO_BITFIELD_TYPE,					\
+    N_("Align to the base type of the bit-field") },			\
+  {"no-bit-align",	 MASK_NO_BITFIELD_TYPE,				\
+    N_("Don't align to the base type of the bit-field") },		\
+  {"strict-align",	 MASK_STRICT_ALIGN,				\
+    N_("Don't assume that unaligned accesses are handled by the system") }, \
+  {"no-strict-align",	-MASK_STRICT_ALIGN,				\
+    N_("Assume that unaligned accesses are handled by the system") },	\
+  {"little-endian",	 MASK_LITTLE_ENDIAN,				\
+    N_("Produce little endian code") },					\
+  {"little",		 MASK_LITTLE_ENDIAN,				\
+    N_("Produce little endian code") },					\
+  {"big-endian",	-MASK_LITTLE_ENDIAN,				\
+    N_("Produce big endian code") },					\
+  {"big",		-MASK_LITTLE_ENDIAN,				\
+    N_("Produce big endian code") },					\
+  {"bit-word",		-MASK_NO_BITFIELD_WORD,				\
+    N_("Allow bit-fields to cross word boundaries") },			\
+  {"no-bit-word",	 MASK_NO_BITFIELD_WORD,				\
+    N_("Do not allow bit-fields to cross word boundaries") },		\
+  {"regnames",		 MASK_REGNAMES,					\
+    N_("Use alternate register names") },				\
+  {"no-regnames",	-MASK_REGNAMES,					\
+    N_("Don't use alternate register names") },
+
+#undef	SUBTARGET_OPTIONS
+#define	SUBTARGET_OPTIONS
+
+#undef	SUBTARGET_OVERRIDE_OPTIONS
+#define	SUBTARGET_OVERRIDE_OPTIONS {}
 
 /* We use glibc _mcount for profiling.  */
 #define NO_PROFILE_COUNTERS 1
@@ -109,6 +155,10 @@ Boston, MA 02111-1307, USA.  */
 /* Override svr4.h  */
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
+
+/* Override sysv4.h  */
+#undef	CPP_SYSV_SPEC
+#define	CPP_SYSV_SPEC ""
 
 #undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()            \
