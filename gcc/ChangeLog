@@ -1,3 +1,8 @@
+2003-03-21  Loren James Rittle  <ljrittle@acm.org>
+
+	* config/sparc/freebsd.h (CPP_CPU64_DEFAULT_SPEC): Add -D__sparcv9
+	-D__sparc__ to match system compiler convention.
+
 2003-05-20  Kevin Ryde <user42@zip.com.au>
 	    Wolfgang Bangerth <bangerth@dealii.org>
 
