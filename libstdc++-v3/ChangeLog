@@ -1,3 +1,94 @@
+2000-12-09  Phil Edwards  <pme@sources.redhat.com>
+
+	Move the HTML-containing subdirs from 'docs' to 'docs/html'.
+	* README:  Update the locations of instructions.
+	* docs/doxygen/run_doxygen:  New file, stub.
+
+	* docs/Makefile:  Moved...
+	* docs/configopts.html:  Likewise.
+	* docs/documentation.html:  Likewise.
+	* docs/install.html:  Likewise.
+	* docs/lib3styles.css:  Likewise.
+	* docs/17_intro/BADNAMES:  Likewise.
+	* docs/17_intro/BUGS:  Likewise.
+	* docs/17_intro/C++STYLE:  Likewise.
+	* docs/17_intro/CHECKLIST:  Likewise.
+	* docs/17_intro/COPYING:  Likewise.
+	* docs/17_intro/DESIGN:  Likewise.
+	* docs/17_intro/HEADER_POLICY:  Likewise.
+	* docs/17_intro/PROBLEMS:  Likewise.
+	* docs/17_intro/RELEASE-NOTES:  Likewise.
+	* docs/17_intro/TODO:  Likewise.
+	* docs/17_intro/contribute.html:  Likewise.
+	* docs/17_intro/headers_cc.txt:  Likewise.
+	* docs/17_intro/howto.html:  Likewise.
+	* docs/17_intro/libstdc++-assign.txt:  Likewise.
+	* docs/17_intro/organization:  Likewise.
+	* docs/17_intro/porting-howto.html:  Likewise.
+	* docs/18_support/howto.html:  Likewise.
+	* docs/19_diagnostics/howto.html:  Likewise.
+	* docs/20_util/howto.html:  Likewise.
+	* docs/21_strings/gotw29a.txt:  Likewise.
+	* docs/21_strings/howto.html:  Likewise.
+	* docs/21_strings/stringtok_h.txt:  Likewise.
+	* docs/21_strings/stringtok_std_h.txt:  Likewise.
+	* docs/22_locale/codecvt.html:  Likewise.
+	* docs/22_locale/ctype.html:  Likewise.
+	* docs/22_locale/howto.html:  Likewise.
+	* docs/22_locale/locale.html:  Likewise.
+	* docs/23_containers/howto.html:  Likewise.
+	* docs/23_containers/wrappers_h.txt:  Likewise.
+	* docs/24_iterators/howto.html:  Likewise.
+	* docs/25_algorithms/howto.html:  Likewise.
+	* docs/26_numerics/howto.html:  Likewise.
+	* docs/27_io/howto.html:  Likewise.
+	* docs/27_io/iostreams_hierarchy.pdf:  Likewise.
+	* docs/ext/howto.html:  Likewise.
+	* docs/faq/index.html:  Likewise.
+	* docs/faq/index.txt:  Likewise.
+	* docs/html/Makefile:  ...to here.
+	* docs/html/configopts.html:  Likewise.
+	* docs/html/documentation.html:  Likewise.
+	* docs/html/install.html:  Likewise.
+	* docs/html/lib3styles.css:  Likewise.
+	* docs/html/17_intro/BADNAMES:  Likewise.
+	* docs/html/17_intro/BUGS:  Likewise.
+	* docs/html/17_intro/C++STYLE:  Likewise.
+	* docs/html/17_intro/CHECKLIST:  Likewise.
+	* docs/html/17_intro/COPYING:  Likewise.
+	* docs/html/17_intro/DESIGN:  Likewise.
+	* docs/html/17_intro/HEADER_POLICY:  Likewise.
+	* docs/html/17_intro/PROBLEMS:  Likewise.
+	* docs/html/17_intro/RELEASE-NOTES:  Likewise.
+	* docs/html/17_intro/TODO:  Likewise.
+	* docs/html/17_intro/contribute.html:  Likewise.
+	* docs/html/17_intro/headers_cc.txt:  Likewise.
+	* docs/html/17_intro/howto.html:  Likewise.
+	* docs/html/17_intro/libstdc++-assign.txt:  Likewise.
+	* docs/html/17_intro/organization:  Likewise.
+	* docs/html/17_intro/porting-howto.html:  Likewise.
+	* docs/html/18_support/howto.html:  Likewise.
+	* docs/html/19_diagnostics/howto.html:  Likewise.
+	* docs/html/20_util/howto.html:  Likewise.
+	* docs/html/21_strings/gotw29a.txt:  Likewise.
+	* docs/html/21_strings/howto.html:  Likewise.
+	* docs/html/21_strings/stringtok_h.txt:  Likewise.
+	* docs/html/21_strings/stringtok_std_h.txt:  Likewise.
+	* docs/html/22_locale/codecvt.html:  Likewise.
+	* docs/html/22_locale/ctype.html:  Likewise.
+	* docs/html/22_locale/howto.html:  Likewise.
+	* docs/html/22_locale/locale.html:  Likewise.
+	* docs/html/23_containers/howto.html:  Likewise.
+	* docs/html/23_containers/wrappers_h.txt:  Likewise.
+	* docs/html/24_iterators/howto.html:  Likewise.
+	* docs/html/25_algorithms/howto.html:  Likewise.
+	* docs/html/26_numerics/howto.html:  Likewise.
+	* docs/html/27_io/howto.html:  Likewise.
+	* docs/html/27_io/iostreams_hierarchy.pdf:  Likewise.
+	* docs/html/ext/howto.html:  Likewise.
+	* docs/html/faq/index.html:  Likewise.
+	* docs/html/faq/index.txt:  Likewise.
+
 2000-12-08  Phil Edwards  <pme@sources.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO):  New conditional,

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+
+# This file is a placeholder to keep the doxygen subdir in place.  It
+# will be used to test for the presence of doxygen(1) and run it.
+
