@@ -1,3 +1,14 @@
+2004-11-09  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_canonicalize_comparison): Reverse condition
+	when eliminating an UNSPEC_CMPINT.
+	(s390_secondary_input_reload_class): Fix test for CC register reload.
+	(s390_secondary_output_reload_class): Likewise.
+	(s390_expand_cmpmem): Swap operands.  Use gen_cmpint. 
+	* config/s390/s390.md ("*cmpint_si", "*cmpint_di"): Remove.
+	("cmpint", "*cmpint_cc", "*cmpint_sign", "*cmpint_sign_cc"): New
+	insn patterns with splitters.
+
 2004-11-09  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_rtx_costs): Add EQ, GTU, and LTU.
