@@ -5075,7 +5075,8 @@ uninitialized_vars_warning (block)
   register tree decl, sub;
   for (decl = BLOCK_VARS (block); decl; decl = TREE_CHAIN (decl))
     {
-      if (TREE_CODE (decl) == VAR_DECL
+      if (warn_uninitialized
+          && TREE_CODE (decl) == VAR_DECL
 	  /* These warnings are unreliable for and aggregates
 	     because assigning the fields one by one can fail to convince
 	     flow.c that the entire aggregate was initialized.
@@ -5094,7 +5095,8 @@ uninitialized_vars_warning (block)
 	  && regno_uninitialized (REGNO (DECL_RTL (decl))))
 	warning_with_decl (decl,
 			   "`%s' might be used uninitialized in this function");
-      if (TREE_CODE (decl) == VAR_DECL
+      if (extra_warnings
+          && TREE_CODE (decl) == VAR_DECL
 	  && DECL_RTL (decl) != 0
 	  && GET_CODE (DECL_RTL (decl)) == REG
 	  && regno_clobbered_at_setjmp (REGNO (DECL_RTL (decl))))
