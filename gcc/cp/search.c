@@ -2542,7 +2542,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
 	      /* Dup it if it isn't in local scope yet.  */
 	      nvtbl = build_decl
 		(VAR_DECL, DECL_NAME (vtbl),
-		 TYPE_MAIN_VARIANT (TREE_TYPE (BINFO_VTABLE (binfo))));
+		 TYPE_MAIN_VARIANT (TREE_TYPE (vtbl)));
 	      DECL_ALIGN (nvtbl) = MAX (TYPE_ALIGN (double_type_node),
 					DECL_ALIGN (nvtbl));
 	      TREE_READONLY (nvtbl) = 0;

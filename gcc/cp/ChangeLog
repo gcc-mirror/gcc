@@ -1,3 +1,14 @@
+1998-10-26  Mark Mitchell  <mark@markmitchell.com>
+
+	* error.c (dump_decl): Deal with TEMPLATE_DECLs that are
+	VAR_DECLs.  Handle vtables whose DECL_CONTEXT is not a type.
+
+	* class.c (finish_struct_1): Use build_cplus_array_type to build
+	array types.
+	* decl.c (init_decl_processing): Likewise.
+	* except.c (expand_end_eh_spec): Likewise.
+	* search.c (expand_upcast_fixups): Simplify very slightly.
+	
 1998-10-26  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (grokdeclarator): Complain about a variable using

@@ -729,7 +729,13 @@ dump_decl (t, v)
       if (DECL_NAME (t) && VTABLE_NAME_P (DECL_NAME (t)))
 	{
 	  OB_PUTS ("vtable for ");
-	  dump_type (DECL_CONTEXT (t), v);
+	  if (TYPE_P (DECL_CONTEXT (t)))
+	    dump_type (DECL_CONTEXT (t), v);
+	  else
+	    /* This case can arise with -fno-vtable-thunks.  See
+	       expand_upcast_fixups.  It's not clear what to print
+	       here.  */
+	    OB_PUTS ("{unknown type}");
 	  break;
 	}
       /* else fall through */
@@ -863,6 +869,8 @@ dump_decl (t, v)
 
 	if (TREE_CODE (DECL_TEMPLATE_RESULT (t)) == TYPE_DECL)
 	  dump_type (TREE_TYPE (t), v);
+	else if (TREE_CODE (DECL_TEMPLATE_RESULT (t)) == VAR_DECL)
+	  dump_decl (DECL_TEMPLATE_RESULT (t), v);
 	else if (TREE_TYPE (t) == NULL_TREE)
 	   my_friendly_abort (353);
 	else switch (NEXT_CODE (t))

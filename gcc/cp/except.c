@@ -774,7 +774,7 @@ expand_end_eh_spec (raises)
   TREE_HAS_CONSTRUCTOR (types) = 1;
 
   /* We can't pass the CONSTRUCTOR directly, so stick it in a variable.  */
-  tmp = build_array_type (const_ptr_type_node, NULL_TREE);
+  tmp = build_cplus_array_type (const_ptr_type_node, NULL_TREE);
   decl = build_decl (VAR_DECL, NULL_TREE, tmp);
   DECL_ARTIFICIAL (decl) = 1;
   DECL_INITIAL (decl) = types;
