@@ -3969,7 +3969,16 @@ sh_expand_prologue ()
     emit_insn (gen_GOTaddr2picreg ());
 
   if (target_flags != save_flags)
-    emit_insn (gen_toggle_sz ());
+    {
+      rtx insn = emit_insn (gen_toggle_sz ());
+
+      /* If we're lucky, a mode switch in the function body will
+	 overwrite fpscr, turning this insn dead.  Tell flow this
+	 insn is ok to delete.  */
+      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD,
+					    const0_rtx,
+					    REG_NOTES (insn));
+    }
 
   target_flags = save_flags;
 
