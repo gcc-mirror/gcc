@@ -256,11 +256,11 @@ enum reg_class {NO_REGS,GENERAL_REGS,FPP_REG,ALL_REGS,LIM_REG_CLASSES};
 
 #define REGNO_REG_CLASS(REGNO) (REGNO == 16 ? FPP_REG : GENERAL_REGS)
 
-/* only gereral registers can be used as a base reg */
+/* only general registers can be used as a base reg */
 
 #define BASE_REG_CLASS GENERAL_REGS
 
-/* only gereral registers can be used to index */
+/* only general registers can be used to index */
 
 #define INDEX_REG_CLASS GENERAL_REGS
 
@@ -513,7 +513,7 @@ enum reg_class {NO_REGS,GENERAL_REGS,FPP_REG,ALL_REGS,LIM_REG_CLASSES};
 	      INDEX_TERM_P (xfooa, MODE)))				\
 	goto ADDR; } }
 
-/* Is the rtx X a valid memoy address for operand of mode MODE? */
+/* Is the rtx X a valid memory address for operand of mode MODE? */
 /* If it is, go to ADDR */
 
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)  \
