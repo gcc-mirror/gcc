@@ -521,8 +521,13 @@ output_move_double (rtx *operands)
     {
       if (GET_CODE (operands[1]) == CONST_DOUBLE)
 	split_double (operands[1], &operands[1], &latehalf[1]);
+#if 0
       else if (CONSTANT_P (operands[1]))
 	latehalf[1] = const0_rtx;
+#else
+      else if (CONSTANT_P (operands[1]))
+        split_double (operands[1], &operands[1], &latehalf[1]);
+#endif
     }
   else
     latehalf[1] = operands[1];

@@ -840,8 +840,8 @@ struct cumulative_args { int ints, floats; };
 
 #define DIVSI3_LIBCALL "*.div"
 #define UDIVSI3_LIBCALL "*.udiv"
-#define REMSI3_LIBCALL "*.rem"
-#define UREMSI3_LIBCALL "*.urem"
+#define MODSI3_LIBCALL "*.rem"
+#define UMODSI3_LIBCALL "*.urem"
 
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 1

@@ -1,5 +1,15 @@
 2003-08-22  Jason Eckhardt  <jle@rice.edu>
 
+	* config/i860/i860.c (output_move_double): Don't set latehalf
+	to zero for CONST_INT (since it could be, e.g., -1).
+
+	* config/i860/i860.h (REMSI3_LIBCALL): Replace this macro...
+	(MODSI3_LIBCALL): ...with this one.
+	(UREMSI3_LIBCALL): Replace this macro...
+	(UMODSI3_LIBCALL): ...with this one.
+
+2003-08-22  Jason Eckhardt  <jle@rice.edu>
+
 	* config/i860/i860-protos.h (output_delay_insn): Remove prototype.
 	(output_delayed_branch): Remove prototype.
 	(single_insn_src_p): Remove prototype.
@@ -71,7 +81,7 @@
 
 2003-08-22  Jason Eckhardt  <jle@rice.edu>
 
-	* config.gcc (i860-*-sysv4*): Add target.
+	* gcc/config.gcc (i860-*-sysv4*): Add target.
 	* config/i860/i860-protos.h: New.
 	* config/i860/i860.c: New.
 	* config/i860/i860.h: New.
