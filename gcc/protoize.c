@@ -732,6 +732,48 @@ outer:
   return 0;
 }
 
+/* Read LEN bytes at PTR from descriptor DESC, for file FILENAME,
+   retrying if necessary.  Return the actual number of bytes read.  */
+
+static int
+safe_read (desc, ptr, len)
+     int desc;
+     char *ptr;
+     int len;
+{
+  int left = len;
+  while (left > 0) {
+    int nchars = read (fileno (stdout), ptr, left);
+    if (nchars < 0)
+      return nchars;
+    if (nchars == 0)
+      break;
+    ptr += nchars;
+    left -= nchars;
+  }
+  return len - left;
+}
+
+/* Write LEN bytes at PTR to descriptor DESC,
+   retrying if necessary, and treating any real error as fatal.  */
+
+static void
+safe_write (desc, ptr, len, out_fname)
+     int desc;
+     char *ptr;
+     int len;
+     char *out_fname;
+{
+  while (len > 0) {
+    int written = write (fileno (stdout), ptr, len);
+    if (written < 0)
+      fprintf (stderr, "%s: error writing file `%s': %s\n",
+	       pname, shortpath (NULL, out_fname), sys_errlist[errno]);
+    ptr += written;
+    len -= written;
+  }
+}
+
 /* Get setup to recover in case the edit we are about to do goes awry.  */
 
 void
@@ -2228,7 +2270,7 @@ start_over: ;
   
     /* Read the aux_info file into memory.  */
   
-    if (read (aux_info_file, aux_info_base, aux_info_size) != aux_info_size)
+    if (safe_read (aux_info_file, aux_info_base, aux_info_size) != aux_info_size)
       {
         fprintf (stderr, "%s: error reading aux info file `%s': %s\n",
 		 pname, shortpath (NULL, aux_info_filename),
@@ -4033,26 +4075,6 @@ scan_for_missed_items (file_p)
     }
 }
 
-/* Write LEN bytes at PTR to descriptor DESC,
-   retrying if necessary, and treating any real error as fatal.  */
-
-static void
-safe_write (desc, ptr, len, out_fname)
-     int desc;
-     char *ptr;
-     int len;
-     char *out_fname;
-{
-  while (len > 0) {
-    int written = write (fileno (stdout), ptr, len);
-    if (written < 0)
-      fprintf (stderr, "%s: error writing file `%s': %s\n",
-	       pname, shortpath (NULL, out_fname), sys_errlist[errno]);
-    ptr += written;
-    len -= written;
-  }
-}
-
 /* Do all editing operations for a single source file (either a "base" file
    or an "include" file).  To do this we read the file into memory, keep a
    virgin copy there, make another cleaned in-core copy of the original file
@@ -4166,7 +4188,7 @@ edit_file (hp)
        in one swell fwoop.  Then figure out where the end of the text is and
        make sure that it ends with a newline followed by a null.  */
 
-    if (read (input_file, new_orig_text_base, orig_size) != orig_size)
+    if (safe_read (input_file, new_orig_text_base, orig_size) != orig_size)
       {
         close (input_file);
         fprintf (stderr, "\n%s: error reading input file `%s': %s\n",
