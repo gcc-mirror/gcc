@@ -1,7 +1,7 @@
 2002-01-24  Per Bothner  <per@bothner.com>
 
-	* verify.cc (is_assignable_from_slow): If source is an interface,
-	we must also check the the superclass.
+	* verify.cc (is_assignable_from_slow): If target is an interface,
+	we must still check the source's superclass before giving up.
 
 2002-01-24  Tom Tromey  <tromey@redhat.com>
 
