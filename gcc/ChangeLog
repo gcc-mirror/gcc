@@ -1,3 +1,36 @@
+2004-02-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/mips/t-iris6gld: Renamed to ...
+	* config/mips/t-irix-gld: ... this.
+	* config.gcc (mips-sgi-irix6*): Reflect this
+	(mips-sgi-irix5*): Use it with GNU ld.
+	
+	* config/mips/irix6-crti.asm, config/mips/irix6-crtn.asm: Renamed
+	to ...
+	* config/mips/irix-crti.asm, config/mips/irix-crtn.asm: ... this.
+	* config/mips/t-irix-gld: Reflect this.
+	* config/mips/iris6gld.h (STARTFILE_SPEC, ENDFILE_SPEC): Likewise.
+	
+	* config/mips/iris5gld.h: New file.
+	* config.gcc (mips-sgi-irix5*): Use it with GNU ld.
+	Only use collect2 without gas.
+	
+	* config/mips/iris6.h (IRIX6_STARTFILE_SPEC, IRIX6_ENDFILE_SPEC):
+	Renamed to IRIX_STARTFILE_SPEC, IRIX_ENDFILE_SPEC.
+	(STARTFILE_SPEC, ENDFILE_SPEC, SUBTARGET_EXTRA_SPECS): Reflect this.
+	* config/mips/iris6gld.h (STARTFILE_SPEC, ENDFILE_SPEC): Likewise.
+	
+	* config/mips/iris6.h (SUBTARGET_EXTRA_SPECS): Moved ...
+	* config/mips/iris5.h: ... here.
+
+	* config/mips/iris5.h (STARTFILE_SPEC, ENDFILE_SPEC): Renamed to
+	IRIX_STARTFILE_SPEC, IRIX_ENDFILE_SPEC. 
+	(STARTFILE_SPEC, ENDFILE_SPEC): Define.
+	
+	* config/mips/iris5gas.h (STARTFILE_SPEC, ENDFILE_SPEC): Simplify
+	using irix_startfile_spec, irix_endfile_spec.
+	* patches.summary (http): 
+
 2004-02-17  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/14178
