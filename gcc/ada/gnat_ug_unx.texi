@@ -64,6 +64,20 @@
 @syncodeindex fn cp
 @c %**end of header
 
+@copying
+Copyright @copyright{} 1995-2002, Free Software Foundation
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1
+or any later version published by the Free Software Foundation;
+with the Invariant Sections being ``GNU Free Documentation License'', with the
+Front-Cover Texts being
+``GNAT User's Guide for Unix Platforms'',
+and with no Back-Cover Texts.
+A copy of the license is included in the section entitled ``GNU
+Free Documentation License''.
+@end copying
+
 @titlepage
 
 
@@ -80,17 +94,7 @@
 @page
 @vskip 0pt plus 1filll
 
-Copyright @copyright{} 1995-2002, Free Software Foundation
-
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1
-or any later version published by the Free Software Foundation;
-with the Invariant Sections being ``GNU Free Documentation License'', with the
-Front-Cover Texts being
-``GNAT User's Guide for Unix Platforms'',
-and with no Back-Cover Texts.
-A copy of the license is included in the section entitled ``GNU
-Free Documentation License''.
+@insertcopying
 
 @end titlepage
 
@@ -109,17 +113,7 @@ GNAT Version for GCC @value{version-GCC}
 
 Ada Core Technologies, Inc.
 
-Copyright @copyright{} 1995-2002, Free Software Foundation
-
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1
-or any later version published by the Free Software Foundation;
-with the Invariant Sections being ``GNU Free Documentation License'', with the
-Front-Cover Texts being
-``GNAT User's Guide for Unix Platforms'',
-and with no Back-Cover Texts.
-A copy of the license is included in the section entitled ``GNU
-Free Documentation License''.
+@insertcopying
 
 @menu
 * About This Guide::

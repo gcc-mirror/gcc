@@ -1,3 +1,8 @@
+2002-12-28  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* docs/html/17_intro/porting.texi: Use @copying.
+	* docs/html/17_intro/porting.html: Regenerate.
+
 2002-12-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/locale/gnu/ctype_members.cc
