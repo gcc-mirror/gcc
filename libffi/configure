@@ -2480,6 +2480,7 @@ s390-*-linux-*) TARGET=S390; TARGETDIR=s390;;
 s390x-*-linux-*) TARGET=S390; TARGETDIR=s390;;
 x86_64-*-linux*) TARGET=X86_64; TARGETDIR=x86;;
 sh-*-linux* | sh[34]*-*-linux*) TARGET=SH; TARGETDIR=sh;;
+sh64-*-linux* | sh5*-*-linux*) TARGET=SH64; TARGETDIR=sh64;;
 esac
 
 if test $TARGETDIR = unknown; then
@@ -2629,6 +2630,14 @@ if test x$TARGET = xSH; then
 else
   SH_TRUE='#'
   SH_FALSE=
+fi
+
+if test x$TARGET = xSH64; then
+  SH64_TRUE=
+  SH64_FALSE='#'
+else
+  SH64_TRUE='#'
+  SH64_FALSE=
 fi
 
 if test x$TARGET = xMIPS_LINUX; then
@@ -3938,6 +3947,8 @@ s%@X86_64_TRUE@%$X86_64_TRUE%g
 s%@X86_64_FALSE@%$X86_64_FALSE%g
 s%@SH_TRUE@%$SH_TRUE%g
 s%@SH_FALSE@%$SH_FALSE%g
+s%@SH64_TRUE@%$SH64_TRUE%g
+s%@SH64_FALSE@%$SH64_FALSE%g
 s%@CPP@%$CPP%g
 s%@ALLOCA@%$ALLOCA%g
 s%@TARGET@%$TARGET%g

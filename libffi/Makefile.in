@@ -102,7 +102,8 @@ EXTRA_DIST = LICENSE ChangeLog.v1 src/mips/ffi.c src/mips/n32.S \
 		src/powerpc/darwin_closure.S src/powerpc/aix_closure.S \
 		src/arm/ffi.c src/arm/sysv.S \
 		src/s390/ffi.c src/s390/sysv.S \
-		src/sh/ffi.c src/sh/sysv.S
+		src/sh/ffi.c src/sh/sysv.S \
+		src/sh64/ffi.c src/sh64/sysv.S
 
 
 VPATH = @srcdir@:@srcdir@/src:@srcdir@/src/@TARGETDIR@
@@ -181,6 +182,7 @@ TARGET_SRC_ARM = src/arm/sysv.S src/arm/ffi.c
 TARGET_SRC_S390 = src/s390/sysv.S src/s390/ffi.c
 TARGET_SRC_X86_64 = src/x86/ffi64.c src/x86/unix64.S src/x86/ffi.c src/x86/sysv.S
 TARGET_SRC_SH = src/sh/sysv.S src/sh/ffi.c
+TARGET_SRC_SH64 = src/sh64/sysv.S src/sh64/ffi.c
 
 libffi_la_common_SOURCES = src/debug.c src/prep_cif.c src/types.c \
 		src/raw_api.c src/java_raw_api.c
@@ -201,6 +203,7 @@ libffi_la_common_SOURCES = src/debug.c src/prep_cif.c src/types.c \
 @S390_TRUE@libffi_la_SOURCES = @S390_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_S390)
 @X86_64_TRUE@libffi_la_SOURCES = @X86_64_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_X86_64)
 @SH_TRUE@libffi_la_SOURCES = @SH_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_SH)
+@SH64_TRUE@libffi_la_SOURCES = @SH64_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_SH64)
 @MIPS_GCC_TRUE@libffi_convenience_la_SOURCES = @MIPS_GCC_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_GCC)
 @MIPS_LINUX_TRUE@libffi_convenience_la_SOURCES = @MIPS_LINUX_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_LINUX)
 @MIPS_SGI_TRUE@libffi_convenience_la_SOURCES = @MIPS_SGI_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_SGI)
@@ -216,7 +219,8 @@ libffi_la_common_SOURCES = src/debug.c src/prep_cif.c src/types.c \
 @ARM_TRUE@libffi_convenience_la_SOURCES = @ARM_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_ARM)
 @S390_TRUE@libffi_convenience_la_SOURCES = @S390_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_S390)
 @X86_64_TRUE@libffi_convenience_la_SOURCES = @X86_64_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_X86_64)
-@SH_TRUE@libfficonvenience_la_SOURCES = @SH_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_SH)
+@SH_TRUE@libffi_convenience_la_SOURCES = @SH_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_SH)
+@SH64_TRUE@libffi_convenience_la_SOURCES = @SH64_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_SH64)
 
 AM_CFLAGS = -fexceptions
 
@@ -270,6 +274,12 @@ libffi_convenience_la_LIBADD =
 @X86_64_TRUE@src/prep_cif.lo src/types.lo src/raw_api.lo \
 @X86_64_TRUE@src/java_raw_api.lo src/x86/ffi64.lo src/x86/unix64.lo \
 @X86_64_TRUE@src/x86/ffi.lo src/x86/sysv.lo
+@SH_TRUE@libffi_convenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@SH_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo src/sh/sysv.lo \
+@SH_TRUE@src/sh/ffi.lo
+@SH64_TRUE@libffi_convenience_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
+@SH64_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
+@SH64_TRUE@src/sh64/sysv.lo src/sh64/ffi.lo
 @SPARC_TRUE@libffi_convenience_la_OBJECTS =  src/debug.lo \
 @SPARC_TRUE@src/prep_cif.lo src/types.lo src/raw_api.lo \
 @SPARC_TRUE@src/java_raw_api.lo src/sparc/ffi.lo src/sparc/v8.lo \
@@ -294,6 +304,9 @@ libffi_la_LIBADD =
 @SH_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo src/types.lo \
 @SH_TRUE@src/raw_api.lo src/java_raw_api.lo src/sh/sysv.lo \
 @SH_TRUE@src/sh/ffi.lo
+@SH64_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo src/types.lo \
+@SH64_TRUE@src/raw_api.lo src/java_raw_api.lo src/sh64/sysv.lo \
+@SH64_TRUE@src/sh64/ffi.lo
 @IA64_TRUE@libffi_la_OBJECTS =  src/debug.lo src/prep_cif.lo \
 @IA64_TRUE@src/types.lo src/raw_api.lo src/java_raw_api.lo \
 @IA64_TRUE@src/ia64/ffi.lo src/ia64/unix.lo

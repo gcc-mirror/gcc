@@ -1,3 +1,13 @@
+2003-06-13  Kaz Kojima  <kkojima@rr.iij4u.or.jp>
+
+	* Makefile.am: Add SHmedia support.  Fix a typo of SH support.
+	* Makefile.in: Regenerate.
+	* configure.in (sh64-*-linux*, sh5*-*-linux*): Add target.
+	* configure: Regenerate.
+	* include/ffi.h.in: Add SHmedia support.
+	* src/sh64/ffi.c: New file.
+	* src/sh64/sysv.S: New file.
+
 2003-05-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.in (HAVE_RO_EH_FRAME): Check whether .eh_frame section
