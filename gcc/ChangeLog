@@ -1,3 +1,8 @@
+Sun Mar 31 14:43:24 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* emit-rtl.c (adjust_address_1, offset_address): Cast value to
+	unsigned HOST_WIDE_INT, not unsigned int.
+
 2002-03-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/6096, middle-end/6098, middle-end/6099
