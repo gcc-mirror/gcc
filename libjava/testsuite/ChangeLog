@@ -1,5 +1,21 @@
 2001-05-03  Tom Tromey  <tromey@redhat.com>
 
+	* libjava.lang/Thread_Wait_Interrupt.xfail: New file.
+	* libjava.lang/Thread_Wait_2.xfail: New file.
+	* libjava.lang/Thread_Wait.xfail: New file.
+	* libjava.lang/Thread_Sleep.xfail: New file.
+	* libjava.lang/Thread_Monitor.xfail: New file.
+	* libjava.lang/Thread_Join.xfail: New file.
+	* libjava.lang/Thread_Interrupt.xfail: New file.
+	* libjava.lang/Thread_Alive.xfail: New file.
+	* lib/libjava.exp (libjava_init): Set global
+	libjava_uses_threads.
+	(test_libjava): Document `need-threads' tag.
+	(test_libjava_from_source): handle need-threads tag.
+	(test_libjava_from_javac): Likewise.
+
+2001-05-03  Tom Tromey  <tromey@redhat.com>
+
 	* libjava.lang/err11.xfail: Removed.
 
 2001-04-25  Tom Tromey  <tromey@redhat.com>
