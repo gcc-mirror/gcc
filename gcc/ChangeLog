@@ -1,3 +1,9 @@
+2000-05-01  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* config/mn10300/mn10300.c (expand_epilogue): If SP is to be
+	adjusted by less than 256 bytes, use ret regardless of having any
+	callee-saved register to restore.
+
 2000-05-01 Laurynas Biveinis <lauras@softhome.net>
 
 	* tm.texi (TARGET_HAS_F_SETFLKW): Fix typo.
