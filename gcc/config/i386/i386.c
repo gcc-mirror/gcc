@@ -3643,7 +3643,7 @@ output_387_binary_op (insn, operands)
 }
 
 /* Output code for INSN to convert a float to a signed int.  OPERANDS
-   are the insn operands.  The output may be [SD]Imode and the input
+   are the insn operands.  The output may be [HSD]Imode and the input
    operand may be [SDX]Fmode.  */
 
 const char *
@@ -3694,8 +3694,10 @@ output_fix_trunc (insn, operands)
 	  output_asm_insn ("mov{l}\t{%2, %0|%0, %2}", xops);
 	  output_asm_insn ("mov{l}\t{%3, %1|%1, %3}", xops);
 	}
-      else
+      else if (GET_MODE (operands[0]) == SImode)
 	output_asm_insn ("mov{l}\t{%3, %0|%0, %3}", operands);
+      else
+	output_asm_insn ("mov{w}\t{%3, %0|%0, %3}", operands);
     }
 
   return "";
