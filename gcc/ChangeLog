@@ -5,6 +5,10 @@ Tue Aug 18 12:40:27 1998  Richard Henderson  <rth@cygnus.com>
 
 Tue Aug 18 10:33:30 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* combine.c (can_combine_p): Allow combining insns with REG_RETVAL
+	notes.
+	(try_combine): Allow combining insns with REG_LIBCALL notes.
+
 	* expr.c (emit_block_move): Do not call memcpy as a libcall
 	instead build up a CALL_EXPR and call it like any other
 	function.
