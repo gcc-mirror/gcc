@@ -1305,7 +1305,7 @@ force_movables (movables)
 	  {
 	    m->forces = m1;
 	    m1->lifetime += m->lifetime;
-	    m1->savings += m1->savings;
+	    m1->savings += m->savings;
 	  }
       }
 }
