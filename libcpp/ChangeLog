@@ -1,3 +1,9 @@
+2004-10-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* pch.c (cpp_write_pch_state): Remove variable z as it is not
+	used.
+	(cpp_read_state): Remove unused variables, m, d and mac_count.
+
 2004-09-29  Per Bothner  <per@bothner.com>
 
 	* directives.c (cpp_handle_deferred_pragma):  Save, clear and restore

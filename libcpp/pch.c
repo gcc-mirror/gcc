@@ -345,8 +345,6 @@ cpp_write_pch_deps (cpp_reader *r, FILE *f)
 int
 cpp_write_pch_state (cpp_reader *r, FILE *f)
 {
-  struct macrodef_struct z;
-
   if (!r->deps)
     r->deps = deps_init ();
 
@@ -630,9 +628,7 @@ int
 cpp_read_state (cpp_reader *r, const char *name, FILE *f,
 		struct save_macro_data *data)
 {
-  struct macrodef_struct m;
-  struct save_macro_item *d;
-  size_t i, mac_count;
+  size_t i;
   struct lexer_state old_state;
 
   /* Restore spec_nodes, which will be full of references to the old 
