@@ -1,3 +1,9 @@
+2001-05-16  Jakub Jelinek  <jakub@redhat.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+	    
+        * gcc.c (give_switch): Don't write before start of string.
+	Always append suffix.
+
 2001-05-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cpplex.c (_cpp_lex_token, '/' case): Comments can't appear
