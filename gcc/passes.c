@@ -880,8 +880,15 @@ rest_of_handle_cfg (void)
      it as constant, otherwise -fbranch-probabilities will not read data back.
 
      life_analysis rarely eliminates modification of external memory.
-   */
-  if (optimize)
+
+     FIXME: now with tree based profiling we are in the trap described above
+     again.  It seems to be easiest to disable the optimization for time
+     being before the problem is either solved by moving the transformation
+     to the IPA level (we need the CFG for this) or the very early optimization
+     passes are made to ignore the const/pure flags so code does not change.  */
+  if (optimize
+      && (!flag_tree_based_profiling
+	  || (!profile_arc_flag && !flag_branch_probabilities)))
     {
       /* Alias analysis depends on this information and mark_constant_function
        depends on alias analysis.  */

@@ -1,3 +1,11 @@
+2004-09-25  Jan Hubicka  <jh@suse.cz>
+
+	* passes.c (rest_of_handle_cfg): Disable const/pure function
+	detection when doing tree based profiling.
+
+	* tree-inline.c (expand_call_inline): Fix incorrectly reversed
+	conditional.
+
 2004-09-25  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (struct mips_args): Clarify comments.
