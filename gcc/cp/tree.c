@@ -722,7 +722,11 @@ layout_basetypes (rec, max)
    here, as that is for this class, without any virtual base classes.  */
   TYPE_ALIGN (rec) = record_align;
   if (const_size != nonvirtual_const_size)
-    TYPE_SIZE (rec) = size_int (const_size);
+    {
+      TYPE_SIZE (rec) = size_int (const_size);
+      TYPE_SIZE_UNIT (rec) = size_binop (FLOOR_DIV_EXPR, TYPE_SIZE (rec),
+                                         size_int (BITS_PER_UNIT));
+    }
 
   /* Now propagate offset information throughout the lattice.  */
   for (i = 0; i < n_baseclasses; i++)

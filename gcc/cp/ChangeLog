@@ -1,3 +1,8 @@
+1998-05-29  scott snyder  <snyder@d0sgif.fnal.gov>
+
+	* tree.c (layout_basetypes): If we change TYPE_SIZE, change
+	TYPE_SIZE_UNIT too.
+
 1998-05-29  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl.c (grokdeclarator): Don't complain about in-class
