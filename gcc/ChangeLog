@@ -1,3 +1,8 @@
+2000-12-19  Catherine Moore  <clm@redhat.com>
+
+	* reload1.c (reload_combine): Take multi-hard-regs into account
+	when processing CALL_INSN_FUNCTION_USAGE.
+
 2000-12-19  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* invoke.texi (-print-search-dirs): Make references to cpp refer
