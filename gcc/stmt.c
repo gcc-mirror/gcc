@@ -2219,6 +2219,10 @@ expand_end_loop ()
 		    abort ();
 		}
 
+	      /* We must not walk into a nested loop.  */
+	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
+		break;
+
 	      /* We already know this INSN is a NOTE, so there's no
 		 point in looking at it to see if it's a JUMP.  */
 	      continue;
