@@ -1412,21 +1412,17 @@
   "blink	%1, r18")
 
 (define_expand "divsi3_i4_media"
-  [(set (match_dup 2) (reg:SI R4_REG))
-   (set (match_dup 3) (reg:SI R5_REG))
-   (set (match_dup 4) (float:DF (match_dup 2)))
-   (set (match_dup 5) (float:DF (match_dup 3)))
-   (set (match_dup 6) (div:DF (match_dup 4) (match_dup 5)))
+  [(set (match_dup 3) (float:DF (match_operand:SI 1 "register_operand" "r")))
+   (set (match_dup 4) (float:DF (match_operand:SI 2 "register_operand" "r")))
+   (set (match_dup 5) (div:DF (match_dup 3) (match_dup 4)))
    (set (match_operand:SI 0 "register_operand" "=r")
-	(fix:SI (match_dup 6)))]
+	(fix:SI (match_dup 5)))]
   "TARGET_SHMEDIA_FPU"
   "
 {
-  operands[2] = gen_reg_rtx (SImode);
-  operands[3] = gen_reg_rtx (SImode);
+  operands[3] = gen_reg_rtx (DFmode);
   operands[4] = gen_reg_rtx (DFmode);
   operands[5] = gen_reg_rtx (DFmode);
-  operands[6] = gen_reg_rtx (DFmode);
 }")
 
 (define_insn "divsi3_i4"
@@ -1472,7 +1468,7 @@
   ""
   "
 {
-  rtx first, last;
+  rtx first = 0, last;
 
   operands[3] = gen_reg_rtx (Pmode);
   /* Emit the move of the address to a pseudo outside of the libcall.  */
@@ -1486,7 +1482,12 @@
 	last = gen_divsi3_i4 (operands[0], operands[3]);
     }
   else if (TARGET_SHMEDIA_FPU)
-    last = gen_divsi3_i4_media (operands[0]);
+    {
+      operands[1] = force_reg (SImode, operands[1]);
+      operands[2] = force_reg (SImode, operands[2]);
+      last = gen_divsi3_i4_media (operands[0], operands[1], operands[2]);
+      first = XVECEXP (last, 0, 0);
+    }
   else if (TARGET_SH5)
     {
       emit_move_insn (operands[3],
@@ -1511,8 +1512,11 @@
       emit_move_insn (operands[3], gen_rtx_SYMBOL_REF (SImode, \"__sdivsi3\"));
       last = gen_divsi3_i1 (operands[0], operands[3]);
     }
-  first = emit_move_insn (gen_rtx_REG (SImode, 4), operands[1]);
-  emit_move_insn (gen_rtx_REG (SImode, 5), operands[2]);
+  if (! first)
+    {
+      first = emit_move_insn (gen_rtx_REG (SImode, 4), operands[1]);
+      emit_move_insn (gen_rtx_REG (SImode, 5), operands[2]);
+    }
   last = emit_insn (last);
   /* Wrap the sequence in REG_LIBCALL / REG_RETVAL notes so that loop
      invariant code motion can move it.  */
@@ -6458,9 +6462,10 @@
   [(set_attr "length" "4")])
 
 (define_insn "casesi_shift_media"
-  [(set (match_operand 0 "arith_reg_operand" "=r")
-	(ashift (match_operand 1 "arith_reg_operand" "r")
-		(unspec [(label_ref:DI (match_operand 2 "" ""))] 2)))]
+  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
+	(ashift:DI (match_operand:DI 1 "arith_reg_operand" "r")
+		   (unspec:DI [(label_ref:DI (match_operand 2 "" ""))]
+		    UNSPEC_CASESI)))]
   "TARGET_SHMEDIA"
   "*
 {

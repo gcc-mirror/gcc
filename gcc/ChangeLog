@@ -1,4 +1,12 @@
-Wed Apr 24 21:20:58 2002  J"orn Rennecke <joern.rennecke@superh.com>
+Wed Apr 24 21:25:59 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.md (divsi3_i4_media): Use match_operand for input values
+	rather than hard registers.
+	(divsi3 - TARGET_SHMEDIA_FPU case): Don't ferry values
+	unnecessarily through hard registers.  Keep copies of pseudo
+	registers outside of the libcall sequence.
+
+	* sh.md (casesi_shift_media): Add modes.
 
 	* sh.h (RETURN_IN_MEMORY): Return variable size BLKmode
 	values in memory.
