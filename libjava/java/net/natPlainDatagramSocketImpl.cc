@@ -63,6 +63,7 @@ _Jv_bind (int fd, struct sockaddr *addr, int addrlen)
 #include <java/net/SocketException.h>
 #include <java/net/PlainDatagramSocketImpl.h>
 #include <java/net/InetAddress.h>
+#include <java/net/NetworkInterface.h>
 #include <java/net/DatagramPacket.h>
 #include <java/lang/InternalError.h>
 #include <java/lang/Object.h>
@@ -136,6 +137,7 @@ java::net::PlainDatagramSocketImpl::getTimeToLive ()
 
 void
 java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *,
+                                              java::net::NetworkInterface *,
 					      jboolean)
 {
   throw new java::io::IOException (
@@ -504,8 +506,11 @@ java::net::PlainDatagramSocketImpl::getTimeToLive ()
 
 void
 java::net::PlainDatagramSocketImpl::mcastGrp (java::net::InetAddress *inetaddr,
+                                              java::net::NetworkInterface *,
 					      jboolean join)
 {
+  // FIXME: implement use of NetworkInterface
+
   union McastReq u;
   jbyteArray haddress = inetaddr->addr;
   jbyte *bytes = elements (haddress);
@@ -769,7 +774,8 @@ java::net::PlainDatagramSocketImpl::getOption (jint optID)
 	      }
 #endif
 	    else
-	      throw new java::net::SocketException (JvNewStringUTF ("invalid family"));
+	      throw new java::net::SocketException (
+			      JvNewStringUTF ("invalid family"));
 	    localAddress = new java::net::InetAddress (laddr, NULL);
 	  }
 	return localAddress;  

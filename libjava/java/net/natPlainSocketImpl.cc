@@ -381,7 +381,7 @@ java::net::PlainSocketImpl::connect (java::net::SocketAddress *addr,
 	throw new java::net::SocketTimeoutException ( 
 	         JvNewStringUTF("Connect timed out"));
     }
-    else
+  else
 #endif
     {
       if (_Jv_connect (fnum, ptr, len) != 0)
@@ -588,7 +588,8 @@ java::net::PlainSocketImpl::read(void)
     timeout_value.tv_sec = timeout / 1000;
     timeout_value.tv_usec = (timeout % 1000) * 1000;
     // Select on the fds.
-    int sel_retval = _Jv_select (fnum + 1, &read_fds, NULL, NULL, &timeout_value);
+    int sel_retval =
+	    _Jv_select (fnum + 1, &read_fds, NULL, NULL, &timeout_value);
     // If select returns 0 we've waited without getting data...
     // that means we've timed out.
     if (sel_retval == 0)
@@ -647,7 +648,8 @@ java::net::PlainSocketImpl::read(jbyteArray buffer, jint offset, jint count)
     timeout_value.tv_sec = timeout / 1000;
     timeout_value.tv_usec =(timeout % 1000) * 1000;
     // Select on the fds.
-    int sel_retval = _Jv_select (fnum + 1, &read_fds, NULL, NULL, &timeout_value);
+    int sel_retval = 
+	    _Jv_select (fnum + 1, &read_fds, NULL, NULL, &timeout_value);
     // We're only interested in the 0 return.
     // error returns still require us to try to read 
     // the socket to see what happened.
@@ -776,7 +778,8 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
     }
   else
     {
-      throw new java::lang::IllegalArgumentException (JvNewStringLatin1 ("`value' must be Boolean or Integer"));
+      throw new java::lang::IllegalArgumentException (
+        JvNewStringLatin1 ("`value' must be Boolean or Integer"));
     }
 
   switch (optID) 
@@ -968,8 +971,8 @@ java::net::PlainSocketImpl::getOption (jint optID)
 	      }
 #endif
 	    else
-	      throw
-		new java::net::SocketException (JvNewStringUTF ("invalid family"));
+	      throw new java::net::SocketException (
+			      JvNewStringUTF ("invalid family"));
 	    localAddress = new java::net::InetAddress (laddr, NULL);
 	  }
 	return localAddress;

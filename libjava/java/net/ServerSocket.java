@@ -38,6 +38,7 @@ exception statement from your version. */
 package java.net;
 
 import java.io.IOException;
+import java.nio.channels.ServerSocketChannel;
 
 /* Written using on-line Java Platform 1.2 API Specification.
  * Status:  I believe all methods are implemented.
@@ -73,6 +74,12 @@ public class ServerSocket
    * class are redirected
    */
   private SocketImpl impl;
+
+  /**
+   * ServerSocketChannel of this ServerSocket. This channel only exists
+   * when the socket is created by ServerSocketChannel.open().
+   */
+  private ServerSocketChannel ch;
 
   /**
    * Private constructor that simply sets the implementation.
@@ -279,6 +286,39 @@ public class ServerSocket
   public void close () throws IOException
   {
     impl.close();
+  }
+
+  /**
+   * Returns the unique ServerSocketChannel object
+   * associated with this socket, if any.
+   *
+   * The socket only has a ServerSocketChannel if its created
+   * by ServerSocketChannel.open.
+   * 
+   * @since 1.4
+   */
+  public ServerSocketChannel getChannel()
+  {
+    return ch;
+  }
+
+  /**
+   * Returns true then the socket is bound, otherwise false
+   * 
+   * @since 1.4
+   */
+  public boolean isBound()
+  {
+    try
+      {
+        Object bindaddr = impl.getOption (SocketOptions.SO_BINDADDR);
+      }
+    catch (SocketException e)
+      {
+	return false;
+      }
+    
+    return true;
   }
 
   /**

@@ -72,8 +72,8 @@ class PlainDatagramSocketImpl extends DatagramSocketImpl
   protected native void receive(DatagramPacket p) throws IOException;
   public native void setOption(int optID, Object value) throws SocketException;
   public native Object getOption(int optID) throws SocketException;
-  private native void mcastGrp(InetAddress inetaddr, boolean join)
-	  throws IOException;
+  private native void mcastGrp(InetAddress inetaddr, NetworkInterface netIf,
+		               boolean join) throws IOException;
   protected native void close();
 
   // Deprecated in JDK 1.2.
@@ -90,12 +90,24 @@ class PlainDatagramSocketImpl extends DatagramSocketImpl
 
   protected void join(InetAddress inetaddr) throws IOException
   {
-    mcastGrp(inetaddr, true);
+    mcastGrp(inetaddr, null, true);
   }
 
   protected void leave(InetAddress inetaddr) throws IOException
   {
-    mcastGrp(inetaddr, false);
+    mcastGrp(inetaddr, null, false);
+  }
+
+  protected void joinGroup (SocketAddress mcastaddr, NetworkInterface netIf)
+	  throws IOException
+  {
+    mcastGrp(((InetSocketAddress)mcastaddr).getAddress(), netIf, true);
+  }
+
+  protected void leaveGroup (SocketAddress mcastaddr, NetworkInterface netIf)
+	  throws IOException
+  {
+    mcastGrp(((InetSocketAddress)mcastaddr).getAddress(), netIf, false);
   }
 
   protected void finalize() throws Throwable
