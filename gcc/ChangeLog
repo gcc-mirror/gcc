@@ -1,3 +1,9 @@
+2002-10-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.h (EIGHTBIT_CONSTANT_ADDRESS_P): Simplify
+	using IN_RANGE.
+	(TINY_CONSTANT_ADDRESS_P): Likewise.
+
 Tue Oct 22 00:04:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (builtin_description): Add punpcklqdq and movdq2q
