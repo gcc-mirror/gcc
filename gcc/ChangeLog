@@ -1,3 +1,9 @@
+Thu Mar 15 12:51:00 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* reload1.c (reload_cse_simplify_set): For LOAD_EXTEND_OP, do not
+	"widen" a destination that is already wider than a word.  Also do
+	not widen if LOAD_EXTEND_OP is NIL for the given mode.
+
 2001-03-15  Zack Weinberg  <zackw@stanford.edu>
 
 	* config/xm-lynx.h, config/xm-std32.h, config/a29k/xm-a29k.h,

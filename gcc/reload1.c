@@ -8279,9 +8279,13 @@ reload_cse_simplify_set (set, insn)
 	      && GET_CODE (SET_SRC (set)) != REG))
 	{
 #ifdef LOAD_EXTEND_OP
-	  rtx wide_dest = gen_rtx_REG (word_mode, REGNO (SET_DEST (set)));
-	  ORIGINAL_REGNO (wide_dest) = ORIGINAL_REGNO (SET_DEST (set));
-	  validate_change (insn, &SET_DEST (set), wide_dest, 1);
+	  if (GET_MODE_BITSIZE (GET_MODE (SET_DEST (set))) < BITS_PER_WORD
+	      && extend_op != NIL)
+	    {
+	      rtx wide_dest = gen_rtx_REG (word_mode, REGNO (SET_DEST (set)));
+	      ORIGINAL_REGNO (wide_dest) = ORIGINAL_REGNO (SET_DEST (set));
+	      validate_change (insn, &SET_DEST (set), wide_dest, 1);
+	    }
 #endif
 
 	  validate_change (insn, &SET_SRC (set), copy_rtx (this_rtx), 1);
