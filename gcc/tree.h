@@ -97,7 +97,10 @@ enum built_in_function
   BUILT_IN_NEW,
   BUILT_IN_VEC_NEW,
   BUILT_IN_DELETE,
-  BUILT_IN_VEC_DELETE
+  BUILT_IN_VEC_DELETE,
+
+  /* Upper bound on non-language-specific builtins. */
+  END_BUILTINS
 };
 
 /* The definition of tree nodes fills the next several pages.  */
