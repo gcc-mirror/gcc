@@ -1,3 +1,23 @@
+2003-01-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* check-init.c: Fix comment typos.
+	* class.c: Likewise.
+	* constants.c: Likewise.
+	* decl.c: Likewise.
+	* except.c: Likewise.
+	* expr.c: Likewise.
+	* java-except.h: Likewise.
+	* java-tree.h: Likewise.
+	* javaop.h: Likewise.
+	* jcf-dump.c: Likewise.
+	* jcf-io.c: Likewise.
+	* jcf-parse.c: Likewise.
+	* jcf-write.c: Likewise.
+	* lang.c: Likewise.
+	* mangle.c: Likewise.
+	* typeck.c: Likewise.
+	* verify.c: Likewise.
+
 2003-01-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (java/jcf-write.o): Depend on $(TM_P_H).

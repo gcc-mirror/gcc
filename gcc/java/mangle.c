@@ -278,7 +278,7 @@ find_compression_array_template_match (tree string)
 
 /* We go through the compression table and try to find a complete or
    partial match. The function returns the compression table entry
-   that (evenutally partially) matches TYPE. *NEXT_CURRENT can be set
+   that (eventually partially) matches TYPE. *NEXT_CURRENT can be set
    to the rest of TYPE to be mangled. */
 
 static int
@@ -380,7 +380,7 @@ mangle_record_type (tree type, int for_pointer)
 }
 
 /* Mangle a pointer type. There are two cases: the pointer is already
-   in the compression table: the compression is emited sans 'P'
+   in the compression table: the compression is emitted sans 'P'
    indicator. Otherwise, a 'P' is emitted and, depending on the type,
    a partial compression or/plus the rest of the mangling. */
 
@@ -474,7 +474,7 @@ mangle_array_type (tree p_type)
   compression_table_add (p_type);
 }
 
-/* Write a substition string for entry I. Substitution string starts a
+/* Write a substitution string for entry I. Substitution string starts a
    -1 (encoded S_.) The base is 36, and the code shamlessly taken from
    cp/mangle.c.  */
 

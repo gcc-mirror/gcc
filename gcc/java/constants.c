@@ -401,7 +401,7 @@ build_ref_from_constant_pool (int index)
   return build1 (INDIRECT_REF, ptr_type_node, t);
 }
 
-/* Build an initializer for the constants field of the current constal pool.
+/* Build an initializer for the constants field of the current constant pool.
    Should only be called at top-level, since it may emit declarations. */
 
 tree

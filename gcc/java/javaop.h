@@ -39,7 +39,7 @@ typedef unsigned int16	uint16;
 #endif
 typedef unsigned int32	uint32;
 
-/* A signed 64-bit (or more) integral type, suiteable for Java's 'long'. */
+/* A signed 64-bit (or more) integral type, suitable for Java's 'long'.  */
 #ifndef int64
 #define int64 long long
 #endif

@@ -71,7 +71,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 extern struct obstack temporary_obstack;
 
-/* Set to nonzero value in order to emit class initilization code
+/* Set to nonzero value in order to emit class initialization code
    before static field references.  */
 extern int always_initialize_class_p;
 
@@ -357,7 +357,7 @@ handle_innerclass_attribute (int count, JCF *jcf)
 	 entry isn't a member (like an inner class) the value is 0. */
       int ocii = JCF_readu2 (jcf);
       /* Read inner_name_index. If the class we're dealing with is
-	 an annonymous class, it must be 0. */
+	 an anonymous class, it must be 0. */
       int ini = JCF_readu2 (jcf);
       /* Read the access flag. */
       int acc = JCF_readu2 (jcf);

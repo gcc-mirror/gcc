@@ -315,7 +315,7 @@ prepare_eh_table_type (tree type)
 
   /* The "type" (metch_info) in a (Java) exception table is one:
    * a) NULL - meaning match any type in a try-finally.
-   * b) a pointer to a (ccmpiled) class (low-order bit 0).
+   * b) a pointer to a (compiled) class (low-order bit 0).
    * c) a pointer to the Utf8Const name of the class, plus one
    * (which yields a value with low-order bit 1). */
 

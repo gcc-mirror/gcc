@@ -407,7 +407,7 @@ struct alternatives
   /* The value of num_current_locals at the start of this compound. */
   int num_locals;
 
-  /* The value of the "before" set at the start of the control stucture.
+  /* The value of the "before" set at the start of the control structure.
    Used for SWITCH_EXPR but not set for LABELED_BLOCK_EXPR. */
   words saved;
 
