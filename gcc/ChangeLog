@@ -1,5 +1,8 @@
 2002-12-28  Andreas Jaeger  <aj@suse.de>
 
+	* config/i386/i386.c (x86_function_profiler): Mark labelno as
+	possibly unused.
+
 	* c-parse.in (yyprint): Use HOST_WIDE_INT_PRINT_DOUBLE_HEX for
 	correct format.
 

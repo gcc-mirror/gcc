@@ -14676,7 +14676,7 @@ x86_field_alignment (field, computed)
 void
 x86_function_profiler (file, labelno)
      FILE *file;
-     int labelno;
+     int labelno ATTRIBUTE_UNUSED;
 {
   if (TARGET_64BIT)
     if (flag_pic)
