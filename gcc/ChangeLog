@@ -1,3 +1,8 @@
+Wed Oct 28 22:58:35 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (append_random_chars): New fn.
+	(get_file_function_name_long): Use it.
+
 Wed Oct 28 22:27:05 1998  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (cc1): Put C_OBJS, and thence @extra_c_objs@ last.

@@ -265,6 +265,7 @@ int (*lang_get_alias_set) PROTO((tree));
 #define TYPE_HASH(TYPE) ((unsigned long) (TYPE) & 0777777)
 
 static void set_type_quals PROTO((tree, int));
+static void append_random_chars PROTO((char *));
 
 extern char *mode_name[];
 
@@ -4820,8 +4821,55 @@ dump_tree_statistics ()
 extern char * first_global_object_name;
 extern char * weak_global_object_name;
 
-/* TYPE is some string to identify this function to the linker or
-   collect2.  */
+/* Appends 6 random characters to TEMPLATE to (hopefully) avoid name
+   clashes in cases where we can't reliably choose a unique name.
+
+   Derived from mkstemp.c in libiberty.  */
+
+static void
+append_random_chars (template)
+     char *template;
+{
+  static const char letters[]
+    = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  static unsigned HOST_WIDE_INT value;
+  unsigned HOST_WIDE_INT v;
+
+#ifdef HAVE_GETTIMEOFDAY
+  struct timeval tv;
+#endif
+
+  template += strlen (template);
+
+#ifdef HAVE_GETTIMEOFDAY
+  /* Get some more or less random data.  */
+  gettimeofday (&tv, NULL);
+  value += ((unsigned HOST_WIDE_INT) tv.tv_usec << 16) ^ tv.tv_sec ^ getpid ();
+#else
+  value += getpid ();
+#endif
+
+  v = value;
+
+  /* Fill in the random bits.  */
+  template[0] = letters[v % 62];
+  v /= 62;
+  template[1] = letters[v % 62];
+  v /= 62;
+  template[2] = letters[v % 62];
+  v /= 62;
+  template[3] = letters[v % 62];
+  v /= 62;
+  template[4] = letters[v % 62];
+  v /= 62;
+  template[5] = letters[v % 62];
+
+  template[6] = '\0';
+}
+
+/* Generate a name for a function unique to this translation unit.
+   TYPE is some string to identify the purpose of this function to the
+   linker or collect2.  */
 
 tree
 get_file_function_name_long (type)
@@ -4832,12 +4880,24 @@ get_file_function_name_long (type)
 
   if (first_global_object_name)
     p = first_global_object_name;
-  else if (weak_global_object_name)
-    p = weak_global_object_name;
-  else if (main_input_filename)
-    p = main_input_filename;
   else
-    p = input_filename;
+    {
+      /* We don't have anything that we know to be unique to this translation
+	 unit, so use what we do have and throw in some randomness.  */
+
+      char *name = weak_global_object_name;
+      char *file = main_input_filename;
+
+      if (! name)
+	name = "";
+      if (! file)
+	file = input_filename;
+
+      p = (char *) alloca (7 + strlen (name) + strlen (file));
+
+      sprintf (p, "%s%s", name, file);
+      append_random_chars (p);
+    }
 
   buf = (char *) alloca (sizeof (FILE_FUNCTION_FORMAT) + strlen (p)
 			 + strlen (type));
