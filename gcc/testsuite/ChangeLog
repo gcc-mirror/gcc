@@ -1,7 +1,7 @@
 2004-01-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13736
-	* g++.dg/parse/cast2.C (main): New test.
+	* g++.dg/parse/cast2.C: New test.
 
 2004-01-27  James E Wilson  <wilson@specifixinc.com>
 
