@@ -1,5 +1,8 @@
 2002-07-01  Matt Kraai  <kraai@alumni.cmu.edu>
 
+	* README.Portability (Function prototypes): Give an example of
+	declaring and defining a function with no arguments.
+
 	* README.Portability (Function prototypes): Document new
 	variable-argument function macros.
 
