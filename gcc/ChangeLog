@@ -1,3 +1,12 @@
+2001-05-16  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa-hpux10.h (THREAD_MODEL_SPEC): Define.
+
+	* gthr-dce.h (UNUSED): Attribute unused macro.
+	(__gthread_key_dtor): Make arguments UNUSED.
+	(__gthread_key_delete): Revise for compatibility with DRAFT4
+	implementation.
+
 2001-05-16  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/install.texi: Update AIX information.
