@@ -1,3 +1,9 @@
+2001-10-01  Loren J. Rittle  <ljrittle@acm.org>
+
+	* Makefile.in (STAGE2_FLAGS_TO_PASS): Propagate HOST_CC.
+	(fixinc.sh): Map CC, CFLAGS and LDFLAGS to HOST_* versions for
+	later recursive make invocation.
+
 2001-10-01  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md ("add-split"): Fix add split when
