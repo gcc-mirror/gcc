@@ -1,3 +1,11 @@
+2001-12-29  Kazu Hirata  <kazu@hxi.com>
+
+	* config/rs6000/darwin-tramp.asm: Fix comment formatting.
+	* config/rs6000/freebsd.h: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/sh/sh.h: Likewise.
+
 2001-12-28  Stan Shebs  <shebs@apple.com>
 
 	* objc/objc-act.c (build_module_descriptor): Make sure the init

@@ -722,7 +722,7 @@ xer_operand (op, mode)
 }
 
 /* Return 1 if OP is a signed 8-bit constant.  Int multiplication
-   by such constants completes more quickly. */
+   by such constants completes more quickly.  */
 
 int
 s8bit_cint_operand (op, mode)
@@ -1813,7 +1813,7 @@ rs6000_legitimize_reload_address (x, mode, opnum, type, ind_levels, win)
       && GET_CODE (XEXP (XEXP (XEXP (x, 1), 0), 1)) == SYMBOL_REF)
     {
       /* Result of previous invocation of this function on Darwin
-	 floating point constant. */
+	 floating point constant.  */
       push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
 		BASE_REG_CLASS, Pmode, VOIDmode, 0, 0,
 		opnum, (enum reload_type)type);
@@ -3982,7 +3982,7 @@ altivec_init_builtins (void)
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_ld_internal_16qi", v16qi_ftype_pchar, ALTIVEC_BUILTIN_LD_INTERNAL_16qi);
   def_builtin (MASK_ALTIVEC, "__builtin_altivec_st_internal_16qi", void_ftype_pchar_v16qi, ALTIVEC_BUILTIN_ST_INTERNAL_16qi);
 
-  /* Add the simple ternary operators. */
+  /* Add the simple ternary operators.  */
   d = (struct builtin_description *) bdesc_3arg;
   for (i = 0; i < sizeof (bdesc_3arg) / sizeof *d; i++, d++)
     {
@@ -4280,7 +4280,7 @@ expand_block_move (operands)
     return 1;
 
   /* store_one_arg depends on expand_block_move to handle at least the size of
-     reg_parm_stack_space. */	
+     reg_parm_stack_space.  */	
   if (bytes > (TARGET_POWERPC64 ? 64 : 32))
     return 0;
 
