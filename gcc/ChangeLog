@@ -1,3 +1,11 @@
+2000-07-25  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* toplev.c (pipe_closed): Delete.
+	(crash_signal): New.  Generate ICE for a fatal signal.
+	(float_signal): Call crash_signal outside a float-handler
+	block, not abort.
+	(main): Install crash_signal as handler for core-dumping signals.
+
 2000-07-25  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.c (print_operand, case 'T'): New case.
