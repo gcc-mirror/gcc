@@ -566,6 +566,7 @@ extern bool purge_all_dead_edges (int);
 extern bool purge_dead_edges (basic_block);
 extern void find_sub_basic_blocks (basic_block);
 extern void find_many_sub_basic_blocks (sbitmap);
+extern void make_eh_edge (sbitmap *, basic_block, rtx);
 extern bool can_fallthru (basic_block, basic_block);
 extern void flow_nodes_print (const char *, const sbitmap, FILE *);
 extern void flow_edge_list_print (const char *, const edge *, int, FILE *);
@@ -649,6 +650,7 @@ extern void verify_dominators (enum cdi_direction);
 extern basic_block first_dom_son (enum cdi_direction, basic_block);
 extern basic_block next_dom_son (enum cdi_direction, basic_block);
 extern bool try_redirect_by_replacing_jump (edge, basic_block, bool);
+extern void break_superblocks (void);
 
 #include "cfghooks.h"
 
