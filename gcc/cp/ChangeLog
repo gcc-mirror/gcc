@@ -1,3 +1,9 @@
+2003-06-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11131
+	* tree.c (cp_cannot_inline_fn): Check for "inline" before
+	instantiation.
+
 2003-06-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/10968
