@@ -1,3 +1,9 @@
+1999-12-14  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* std/bastring.h (basic_string::basic_string): Rename parameters
+	to avoid shadow warnings.
+	* std/bastring.cc (alloc): Likewise.
+
 1999-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* std/bastring.h (class basic_string::Rep): Use proper defines
