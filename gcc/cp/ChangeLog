@@ -1,3 +1,12 @@
+2003-07-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11503
+	* cp-tree.h (DECL_SELF_REFERENCE_P): New macro.
+	(SET_DECL_SELF_REFERENCE_P): Likewise.
+	* class.c (build_self_reference): Use SET_DECL_SELF_REFERENCE_P.
+	* pt.c (tsubst_decl): Copy it.
+	* search.c (lookup_base): Use DECL_SELF_REFERENCE_P.
+
 2003-07-11  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	Backport from mainline.

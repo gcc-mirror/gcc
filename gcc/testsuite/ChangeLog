@@ -1,3 +1,8 @@
+2003-07-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11503
+	* g++.dg/template/anon1.C: New test.
+
 2003-07-13  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/11059

@@ -6537,6 +6537,7 @@ build_self_reference ()
   DECL_NONLOCAL (value) = 1;
   DECL_CONTEXT (value) = current_class_type;
   DECL_ARTIFICIAL (value) = 1;
+  SET_DECL_SELF_REFERENCE_P (value);
 
   if (processing_template_decl)
     value = push_template_decl (value);

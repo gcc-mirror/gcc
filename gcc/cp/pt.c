@@ -6340,6 +6340,8 @@ tsubst_decl (t, args, type, complain)
 	r = copy_decl (t);
 	if (TREE_CODE (r) == VAR_DECL)
 	  type = complete_type (type);
+	else if (DECL_SELF_REFERENCE_P (t))
+	  SET_DECL_SELF_REFERENCE_P (r);
 	TREE_TYPE (r) = type;
 	c_apply_type_quals_to_decl (cp_type_quals (type), r);
 	DECL_CONTEXT (r) = ctx;
