@@ -40,7 +40,6 @@
 @BOTTOM@
 
 /* For gettext (NLS) */
-#include <libintl.h>
 #define _(String) gettext (String)
 #define N_(String) (String)
 
