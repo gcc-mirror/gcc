@@ -136,59 +136,6 @@ do {								\
 #endif
 
 
-/* Define this macro if references to a symbol must be treated
-   differently depending on something about the variable or
-   function named by the symbol (such as what section it is in).
-
-   The macro definition, if any, is executed immediately after the
-   rtl for DECL or other node is created.
-   The value of the rtl will be a `mem' whose address is a
-   `symbol_ref'.
-
-   The usual thing for this macro to do is to a flag in the
-   `symbol_ref' (such as `SYMBOL_REF_FLAG') or to store a modified
-   name string in the `symbol_ref' (if one bit is not enough
-   information).
-
-   On the HP-PA we use this to indicate if a symbol is in text or
-   data space.  Also, function labels need special treatment. */
-
-#define TEXT_SPACE_P(DECL)\
-  (TREE_CODE (DECL) == FUNCTION_DECL					\
-   || (TREE_CODE (DECL) == VAR_DECL					\
-       && TREE_READONLY (DECL) && ! TREE_SIDE_EFFECTS (DECL)		\
-       && (! DECL_INITIAL (DECL) || ! reloc_needed (DECL_INITIAL (DECL))) \
-       && !flag_pic)							\
-   || (TREE_CODE_CLASS (TREE_CODE (DECL)) == 'c'			\
-       && !(TREE_CODE (DECL) == STRING_CST && flag_writable_strings)))
-
-#define FUNCTION_NAME_P(NAME) \
-(*(NAME) == '@' || (*(NAME) == '*' && *((NAME) + 1) == '@'))
-
-#define ENCODE_SECTION_INFO(DECL)\
-do							\
-  { if (TEXT_SPACE_P (DECL))				\
-      {	rtx _rtl;					\
-	if (TREE_CODE (DECL) == FUNCTION_DECL		\
-	    || TREE_CODE (DECL) == VAR_DECL)		\
-	  _rtl = DECL_RTL (DECL);			\
-	else						\
-	  _rtl = TREE_CST_RTL (DECL);			\
-	SYMBOL_REF_FLAG (XEXP (_rtl, 0)) = 1;		\
-	if (TREE_CODE (DECL) == FUNCTION_DECL)		\
-	  hppa_encode_label (XEXP (DECL_RTL (DECL), 0), 0);\
-      }							\
-  }							\
-while (0)
-
-/* Store the user-specified part of SYMBOL_NAME in VAR.
-   This is sort of inverse to ENCODE_SECTION_INFO.  */
-
-#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)	\
-  (VAR) = ((SYMBOL_NAME)  + ((SYMBOL_NAME)[0] == '*' ?	\
-			     1 + (SYMBOL_NAME)[1] == '@'\
-			     : (SYMBOL_NAME)[0] == '@'))
-
 /* NAME refers to the function's name.  If we are placing each function into
    its own section, we need to switch to the section for this function.  Note
    that the section name will have a "." prefix.  */
@@ -395,7 +342,11 @@ DTORS_SECTION_FUNCTION
 
    We call assemble_name, which in turn sets TREE_SYMBOL_REFERENCED.  This
    macro will restore the original value of TREE_SYMBOL_REFERENCED to avoid
-   placing useless function definitions in the output file.  */
+   placing useless function definitions in the output file.
+
+   Also note that the SOM based tools need the symbol imported as a CODE
+   symbol, while the ELF based tools require the symbol to be imported as
+   an ENTRY symbol.  What a crock.  */
 
 #define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME)	\
   do { int save_referenced;					\
@@ -425,33 +376,7 @@ DTORS_SECTION_FUNCTION
        fputs (",CODE\n", FILE);						\
      } while (0)
 
-#define ASM_GLOBALIZE_LABEL(FILE, NAME)					\
-  do {									\
-    /* We only handle DATA objects here, functions are globalized in	\
-       ASM_DECLARE_FUNCTION_NAME.  */					\
-    if (! FUNCTION_NAME_P (NAME))					\
-      {									\
-	fputs ("\t.EXPORT ", FILE);					\
-	assemble_name (FILE, NAME);					\
-	fputs (",DATA\n", FILE);					\
-      }									\
-  } while (0)
-
 #define ASM_FILE_END(FILE) output_deferred_plabels (FILE)
-
-/* This is how to output an assembler line defining an `int' constant. 
-
-   This is made more complicated by the fact that functions must be
-   prefixed by a P% as well as code label references for the exception
-   table -- otherwise the linker chokes.  */
-
-#define ASM_OUTPUT_INT(FILE,VALUE)  \
-{ fputs ("\t.word ", FILE);			\
-  if (function_label_operand (VALUE, VOIDmode))	\
-    fputs ("P%", FILE);				\
-  output_addr_const (FILE, (VALUE));		\
-  fputs ("\n", FILE);}
-
 
 /* We want __gcc_plt_call to appear in every program built by
    gcc, so we make a reference to it out of __main.

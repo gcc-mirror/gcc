@@ -1586,6 +1586,59 @@ extern struct rtx_def *hppa_legitimize_address ();
   else					\
     readonly_data_section ();
 
+/* Define this macro if references to a symbol must be treated
+   differently depending on something about the variable or
+   function named by the symbol (such as what section it is in).
+
+   The macro definition, if any, is executed immediately after the
+   rtl for DECL or other node is created.
+   The value of the rtl will be a `mem' whose address is a
+   `symbol_ref'.
+
+   The usual thing for this macro to do is to a flag in the
+   `symbol_ref' (such as `SYMBOL_REF_FLAG') or to store a modified
+   name string in the `symbol_ref' (if one bit is not enough
+   information).
+
+   On the HP-PA we use this to indicate if a symbol is in text or
+   data space.  Also, function labels need special treatment. */
+
+#define TEXT_SPACE_P(DECL)\
+  (TREE_CODE (DECL) == FUNCTION_DECL					\
+   || (TREE_CODE (DECL) == VAR_DECL					\
+       && TREE_READONLY (DECL) && ! TREE_SIDE_EFFECTS (DECL)		\
+       && (! DECL_INITIAL (DECL) || ! reloc_needed (DECL_INITIAL (DECL))) \
+       && !flag_pic)							\
+   || (TREE_CODE_CLASS (TREE_CODE (DECL)) == 'c'			\
+       && !(TREE_CODE (DECL) == STRING_CST && flag_writable_strings)))
+
+#define FUNCTION_NAME_P(NAME) \
+(*(NAME) == '@' || (*(NAME) == '*' && *((NAME) + 1) == '@'))
+
+#define ENCODE_SECTION_INFO(DECL)\
+do							\
+  { if (TEXT_SPACE_P (DECL))				\
+      {	rtx _rtl;					\
+	if (TREE_CODE (DECL) == FUNCTION_DECL		\
+	    || TREE_CODE (DECL) == VAR_DECL)		\
+	  _rtl = DECL_RTL (DECL);			\
+	else						\
+	  _rtl = TREE_CST_RTL (DECL);			\
+	SYMBOL_REF_FLAG (XEXP (_rtl, 0)) = 1;		\
+	if (TREE_CODE (DECL) == FUNCTION_DECL)		\
+	  hppa_encode_label (XEXP (DECL_RTL (DECL), 0), 0);\
+      }							\
+  }							\
+while (0)
+
+/* Store the user-specified part of SYMBOL_NAME in VAR.
+   This is sort of inverse to ENCODE_SECTION_INFO.  */
+
+#define STRIP_NAME_ENCODING(VAR,SYMBOL_NAME)	\
+  (VAR) = ((SYMBOL_NAME)  + ((SYMBOL_NAME)[0] == '*' ?	\
+			     1 + (SYMBOL_NAME)[1] == '@'\
+			     : (SYMBOL_NAME)[0] == '@'))
+
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE (TARGET_BIG_SWITCH ? TImode : DImode)
@@ -1882,6 +1935,27 @@ extern struct rtx_def *hppa_legitimize_address ();
        fprintf (FILE, "\t.word 0x%lx\n", l);				\
      } while (0)
 
+/* This is how to output an assembler line defining an `int' constant. 
+
+   This is made more complicated by the fact that functions must be
+   prefixed by a P% as well as code label references for the exception
+   table -- otherwise the linker chokes.  */
+
+#define ASM_OUTPUT_INT(FILE,VALUE)  \
+{ fputs ("\t.word ", FILE);			\
+  if (function_label_operand (VALUE, VOIDmode))	\
+    fputs ("P%", FILE);				\
+  output_addr_const (FILE, (VALUE));		\
+  fputs ("\n", FILE);}
+
+/* Likewise for double integers.  */
+#define ASM_OUTPUT_DOUBLE_INT(FILE,VALUE)  \
+{ fputs ("\t.dword ", FILE);			\
+  if (function_label_operand (VALUE, VOIDmode))	\
+    fputs ("P%", FILE);				\
+  output_addr_const (FILE, (VALUE));		\
+  fputs ("\n", FILE);}
+
 /* Likewise for `short' and `char' constants.  */
 
 #define ASM_OUTPUT_SHORT(FILE,VALUE)  \
@@ -1898,6 +1972,18 @@ extern struct rtx_def *hppa_legitimize_address ();
 
 #define ASM_OUTPUT_BYTE(FILE,VALUE)  \
   fprintf (FILE, "\t.byte 0x%x\n", (VALUE))
+
+#define ASM_GLOBALIZE_LABEL(FILE, NAME)					\
+  do {									\
+    /* We only handle DATA objects here, functions are globalized in	\
+       ASM_DECLARE_FUNCTION_NAME.  */					\
+    if (! FUNCTION_NAME_P (NAME))					\
+      {									\
+	fputs ("\t.EXPORT ", FILE);					\
+	assemble_name (FILE, NAME);					\
+	fputs (",DATA\n", FILE);					\
+      }									\
+  } while (0)
 
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   output_ascii ((FILE), (P), (SIZE))

@@ -1,3 +1,19 @@
+Fri Aug  6 11:05:29 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* elf.h (TEXT_SPACE_P, FUNCTION_NAME_P): Delete.
+	(ASM_GLOBALIZE_LABEL, ASM_OUTPUT_INT, ASM_OUTPUT_DOUBLE_INT): Likewise.
+	(ASM_FILE_START): Import _mcount with the right type.
+	(ASM_DECLARE_FUNCTION_NAME): Define.
+	(ASM_OUTPUT_EXTERNAL, ASM_OUTPUT_EXTERNAL_LIBCALL): Define.
+	* pa.c (output_function_prologue): Always emit the function's label
+	here.
+	* pa.h (TEXT_SPACE_P): Define.
+	(FUNCTION_NAME_P, ENCODE_SECTION_INFO, STRIP_NAME_ENCODING): Likewise.
+	(ASM_OUTPUT_INT, ASM_OUTPUT_DOUBLE_INT, ASM_GLOBALIZE_LABEL): Likewise.
+	* som.h (TEXT_SPACE_P): Delete.
+	(FUNCTION_NAME_P, ENCODE_SECTION_INFO, STRIP_NAME_ENCODING): Likewise.
+	(ASM_GLOBALIZE_LABEL, ASM_OUTPUT_INT): Likewise.
+
 Thu Aug  5 19:29:39 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* expr.c (emit_group_load): Allow src to be a CONCAT.
