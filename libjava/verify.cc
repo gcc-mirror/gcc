@@ -1347,7 +1347,6 @@ private:
 	    break;
 
 	  case op_bipush:
-	  case op_sipush:
 	  case op_ldc:
 	  case op_iload:
 	  case op_lload:
@@ -1361,9 +1360,11 @@ private:
 	  case op_astore:
 	  case op_arraylength:
 	  case op_ret:
+	  case op_newarray:
 	    get_byte ();
 	    break;
 
+	  case op_sipush:
 	  case op_ldc_w:
 	  case op_ldc2_w:
 	  case op_getstatic:
@@ -1371,7 +1372,6 @@ private:
 	  case op_putfield:
 	  case op_putstatic:
 	  case op_new:
-	  case op_newarray:
 	  case op_anewarray:
 	  case op_instanceof:
 	  case op_checkcast:
