@@ -1,3 +1,9 @@
+2004-05-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/15202
+	* pa.md (movdi, movsi, movhi, movqi): Support move from shift amount
+	register to general register.
+
 2004-05-07  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.h (STACK_BOUNDARY): Use 128 bit for either
