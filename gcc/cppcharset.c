@@ -42,7 +42,7 @@ static int ucn_valid_in_identifier PARAMS ((cpp_reader *, cppchar_t));
    are not part of the relevant standard, or if the string beginning
    at *PSTR doesn't syntactically match the form 'NNNN' or 'NNNNNNNN'.
 
-   Otherwise the non-zero value of the UCN, whether valid or invalid,
+   Otherwise the nonzero value of the UCN, whether valid or invalid,
    is returned.  Diagnostics are emitted for invalid values.  PSTR
    is updated to point one beyond the UCN, or to the syntactically
    invalid character.

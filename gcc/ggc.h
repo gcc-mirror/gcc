@@ -103,7 +103,7 @@ extern const struct ggc_cache_tab * const gt_ggc_cache_rtab[];
 
 /* Actually set the mark on a particular region of memory, but don't
    follow pointers.  This function is called by ggc_mark_*.  It
-   returns zero if the object was not previously marked; non-zero if
+   returns zero if the object was not previously marked; nonzero if
    the object was already marked, or if, for any other reason,
    pointers in this data structure should not be traversed.  */
 extern int ggc_set_mark	(const void *);

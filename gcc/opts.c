@@ -163,7 +163,7 @@ handle_option (int argc ATTRIBUTE_UNUSED, char **argv, int lang_mask)
       if (!on && (option->flags & CL_REJECT_NEGATIVE))
 	goto done;
 
-      /* We've recognised this switch.  */
+      /* We've recognized this switch.  */
       result = 1;
 
       /* Sort out any argument the switch takes.  */

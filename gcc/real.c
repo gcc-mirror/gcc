@@ -2281,7 +2281,7 @@ real_nan (r, str, quiet, mode)
 }
 
 /* Fills R with the largest finite value representable in mode MODE.
-   If SIGN is non-zero, R is set to the most negative finite value.  */
+   If SIGN is nonzero, R is set to the most negative finite value.  */
 
 void
 real_maxval (r, sign, mode)
@@ -3033,7 +3033,7 @@ const struct real_format mips_double_format =
 
 
 /* IEEE extended double precision format.  This comes in three
-   flavours: Intel's as a 12 byte image, Intel's as a 16 byte image,
+   flavors: Intel's as a 12 byte image, Intel's as a 16 byte image,
    and Motorola's.  */
 
 static void encode_ieee_extended PARAMS ((const struct real_format *fmt,

@@ -340,7 +340,7 @@ get_coverage_counts (unsigned counter, unsigned expected,
   return entry->counts;
 }
 
-/* Allocate NUM counters of type COUNTER. Returns non-zero if the
+/* Allocate NUM counters of type COUNTER. Returns nonzero if the
    allocation succeeded.  */
 
 int
@@ -426,7 +426,7 @@ compute_checksum ()
 
 /* Begin output to the graph file for the current function.
    Opens the output file, if not already done. Writes the
-   function header, if not already done. Returns non-zero if data
+   function header, if not already done. Returns nonzero if data
    should be output.  */
 
 int

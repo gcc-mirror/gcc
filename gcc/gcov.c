@@ -1745,7 +1745,7 @@ accumulate_line_counts (src)
     }
 }
 
-/* Ouput information about ARC number IX.  Returns non-zero if
+/* Ouput information about ARC number IX.  Returns nonzero if
    anything is output.  */
 
 static int

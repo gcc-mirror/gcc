@@ -5592,7 +5592,7 @@ expand_end_case_type (orig_index, orig_type)
 	      /* For constant index expressions we need only
 		 issue an unconditional branch to the appropriate
 		 target code.  The job of removing any unreachable
-		 code is left to the optimisation phase if the
+		 code is left to the optimization phase if the
 		 "-O" option is specified.  */
 	      for (n = thiscase->data.case_stmt.case_list; n; n = n->right)
 		if (! tree_int_cst_lt (index_expr, n->low)

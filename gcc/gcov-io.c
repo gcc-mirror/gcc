@@ -313,7 +313,7 @@ gcov_write_tag_length (gcov_unsigned_t tag, gcov_unsigned_t length)
   return;
 }
 
-/* Write a summary structure to the gcov file.  Return non-zero on
+/* Write a summary structure to the gcov file.  Return nonzero on
    overflow.  */
 
 GCOV_LINKAGE void
@@ -489,7 +489,7 @@ gcov_sync (gcov_position_t base, gcov_unsigned_t length)
 
 #if IN_LIBGCOV
 /* Move to the a set position in a gcov file.  BASE is zero to move to
-   the end, and non-zero to move to that position. */
+   the end, and nonzero to move to that position. */
 
 GCOV_LINKAGE void
 gcov_seek (gcov_position_t base)
