@@ -640,7 +640,7 @@ expand_label (label)
     {
       if (! DECL_RTL (label))
 	DECL_RTL (label) = bc_gen_rtx ((char *) 0, 0, bc_get_bytecode_label ());
-      if (! bc_emit_bytecode_labeldef (DECL_RTL (label)->bc_label))
+      if (! bc_emit_bytecode_labeldef (BYTECODE_BC_LABEL (DECL_RTL (label))))
 	error ("multiply defined label");
       return;
     }
@@ -861,7 +861,7 @@ bc_expand_goto_internal (opcode, label, body)
 
       for (block = block_stack; block; block = block->next)
 	{
-	  if (block->data.block.first_insn->uid < label->uid)
+	  if (BYTECODE_BC_LABEL (block->data.block.first_insn)->uid < label->uid)
 	    break;
 	  if (block->data.block.bc_stack_level)
 	    stack_level = block->data.block.bc_stack_level;
@@ -2253,7 +2253,7 @@ bc_expand_start_cond (cond, exitflag)
   thiscond->data.case_stmt.nominal_type = cond;
   bc_expand_expr (cond);
   bc_emit_bytecode (jumpifnot);
-  bc_emit_bytecode_labelref (thiscond->exit_label->bc_label);
+  bc_emit_bytecode_labelref (BYTECODE_BC_LABEL (thiscond->exit_label));
 
 #ifdef DEBUG_PRINT_CODE
   fputc ('\n', stderr);
@@ -2267,7 +2267,7 @@ bc_expand_end_cond ()
 {
   struct nesting *thiscond = cond_stack;
 
-  bc_emit_bytecode_labeldef (thiscond->exit_label->bc_label);
+  bc_emit_bytecode_labeldef (BYTECODE_BC_LABEL (thiscond->exit_label));
 }
 
 /* Generate code for the start of the else- clause of
@@ -2280,13 +2280,13 @@ bc_expand_start_else ()
   thiscond->data.cond.endif_label = thiscond->exit_label;
   thiscond->exit_label = gen_label_rtx ();
   bc_emit_bytecode (jump);
-  bc_emit_bytecode_labelref (thiscond->exit_label->bc_label);
+  bc_emit_bytecode_labelref (BYTECODE_BC_LABEL (thiscond->exit_label));
 
 #ifdef DEBUG_PRINT_CODE
   fputc ('\n', stderr);
 #endif
 
-  bc_emit_bytecode_labeldef (thiscond->data.cond.endif_label->bc_label);
+  bc_emit_bytecode_labeldef (BYTECODE_BC_LABEL (thiscond->data.cond.endif_label));
 }
 
 /* Generate RTL for the start of a loop.  EXIT_FLAG is nonzero if this
@@ -2316,7 +2316,7 @@ expand_start_loop (exit_flag)
 
   if (output_bytecode)
     {
-      bc_emit_bytecode_labeldef (thisloop->data.loop.start_label->bc_label);
+      bc_emit_bytecode_labeldef (BYTECODE_BC_LABEL (thisloop->data.loop.start_label));
       return thisloop;
     }
 
@@ -2350,7 +2350,7 @@ expand_loop_continue_here ()
 {
   if (output_bytecode)
     {
-      bc_emit_bytecode_labeldef (loop_stack->data.loop.continue_label->bc_label);
+      bc_emit_bytecode_labeldef (BYTECODE_BC_LABEL (loop_stack->data.loop.continue_label));
       return;
     }
   do_pending_stack_adjust ();
@@ -2365,13 +2365,13 @@ bc_expand_end_loop ()
   struct nesting *thisloop = loop_stack;
 
   bc_emit_bytecode (jump);
-  bc_emit_bytecode_labelref (thisloop->data.loop.start_label->bc_label);
+  bc_emit_bytecode_labelref (BYTECODE_BC_LABEL (thisloop->data.loop.start_label));
 
 #ifdef DEBUG_PRINT_CODE
   fputc ('\n', stderr);
 #endif
 
-  bc_emit_bytecode_labeldef (thisloop->exit_label->bc_label);
+  bc_emit_bytecode_labeldef (BYTECODE_BC_LABEL (thisloop->exit_label));
   POPSTACK (loop_stack);
   last_expr_type = 0;
 }
@@ -2546,8 +2546,8 @@ expand_exit_loop_if_false (whichloop, cond)
   if (output_bytecode)
     {
       bc_expand_expr (cond);
-      bc_expand_goto_internal (jumpifnot,
-			       whichloop->exit_label->bc_label, NULL_RTX);
+      bc_expand_goto_internal (jumpifnot, BYTECODE_BC_LABEL (whichloop->exit_label),
+			       NULL_RTX);
     }
   else
     do_jump (cond, whichloop->data.loop.end_label, NULL_RTX);
@@ -3317,7 +3317,7 @@ bc_expand_end_bindings (vars, mark_ends, dont_jump_in)
       if (! TREE_USED (TREE_VALUE (decl)) && TREE_CODE (TREE_VALUE (decl)) == VAR_DECL)
 	warning_with_decl (decl, "unused variable `%s'");
 
-  bc_emit_bytecode_labeldef (thisbind->exit_label->bc_label);
+  bc_emit_bytecode_labeldef (BYTECODE_BC_LABEL (thisbind->exit_label));
 
   /* Pop block/bindings off stack */
   POPSTACK (nesting_stack);
@@ -3957,7 +3957,7 @@ bc_expand_start_case (thiscase, expr, type, printname)
 
   thiscase->data.case_stmt.skip_label = gen_label_rtx ();
   bc_emit_bytecode (jump);
-  bc_emit_bytecode_labelref (thiscase->data.case_stmt.skip_label->bc_label);
+  bc_emit_bytecode_labelref (BYTECODE_BC_LABEL (thiscase->data.case_stmt.skip_label));
 
 #ifdef DEBUG_PRINT_CODE
   fputc ('\n', stderr);
@@ -4851,7 +4851,7 @@ bc_expand_end_case (expr)
   struct case_node *c;
 
   bc_emit_bytecode (jump);
-  bc_emit_bytecode_labelref (thiscase->exit_label->bc_label);
+  bc_emit_bytecode_labelref (BYTECODE_BC_LABEL (thiscase->exit_label));
 
 #ifdef DEBUG_PRINT_CODE
   fputc ('\n', stderr);
@@ -4859,7 +4859,7 @@ bc_expand_end_case (expr)
 
   /* Now that the size of the jump table is known, emit the actual
      indexed jump instruction.  */
-  bc_emit_bytecode_labeldef (thiscase->data.case_stmt.skip_label->bc_label);
+  bc_emit_bytecode_labeldef (BYTECODE_BC_LABEL (thiscase->data.case_stmt.skip_label));
 
   opcode = TYPE_MODE (thiscase->data.case_stmt.nominal_type) == SImode
     ? TREE_UNSIGNED (thiscase->data.case_stmt.nominal_type) ? caseSU : caseSI
@@ -4879,10 +4879,9 @@ bc_expand_end_case (expr)
 			  sizeof thiscase->data.case_stmt.num_ranges);
 
   if (thiscase->data.case_stmt.default_label)
-    bc_emit_bytecode_labelref (DECL_RTL (thiscase->
-					 data.case_stmt.default_label)->bc_label);
+    bc_emit_bytecode_labelref (BYTECODE_BC_LABEL (DECL_RTL (thiscase->data.case_stmt.default_label)));
   else
-    bc_emit_bytecode_labelref (thiscase->exit_label->bc_label);
+    bc_emit_bytecode_labelref (BYTECODE_BC_LABEL (thiscase->exit_label));
 
   /* Output the jump table.  */
 
@@ -4898,7 +4897,7 @@ bc_expand_end_case (expr)
 	opcode = TREE_INT_CST_LOW (c->high);
 	bc_emit_bytecode_const ((char *) &opcode, sizeof opcode);
 
-	bc_emit_bytecode_labelref (DECL_RTL (c->code_label)->bc_label);
+	bc_emit_bytecode_labelref (BYTECODE_BC_LABEL (DECL_RTL (c->code_label)));
       }
   else
     if (TYPE_MODE (thiscase->data.case_stmt.nominal_type) == DImode)
@@ -4907,14 +4906,14 @@ bc_expand_end_case (expr)
 	  bc_emit_bytecode_DI_const (c->low);
 	  bc_emit_bytecode_DI_const (c->high);
 
-	  bc_emit_bytecode_labelref (DECL_RTL (c->code_label)->bc_label);
+	  bc_emit_bytecode_labelref (BYTECODE_BC_LABEL (DECL_RTL (c->code_label)));
 	}
     else
       /* Bad mode */
       abort ();
 
     
-  bc_emit_bytecode_labeldef (thiscase->exit_label->bc_label);
+  bc_emit_bytecode_labeldef (BYTECODE_BC_LABEL (thiscase->exit_label));
 
   /* Possibly issue enumeration warnings.  */
 
