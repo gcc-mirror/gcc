@@ -6974,7 +6974,7 @@ force_to_mode (x, mode, mask, reg, just_select)
 	{
 	  int i = -1;
 
-	  /* If the considered data is wider then HOST_WIDE_INT, we can't
+	  /* If the considered data is wider than HOST_WIDE_INT, we can't
 	     represent a mask for all its bits in a single scalar.
 	     But we only care about the lower bits, so calculate these.  */
 

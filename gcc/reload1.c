@@ -4313,7 +4313,7 @@ clear_reload_reg_in_use (regno, opnum, type, mode)
      excluding the intervals of of reload registers by them from the
      interval of freed reload registers.  Since we only keep track of
      one set of interval bounds, we might have to exclude somewhat
-     more then what would be necessary if we used a HARD_REG_SET here.
+     more than what would be necessary if we used a HARD_REG_SET here.
      But this should only happen very infrequently, so there should
      be no reason to worry about it.  */
 

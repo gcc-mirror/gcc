@@ -1,3 +1,10 @@
+2002-01-11  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	PR other/5299
+	* config/ns32k/ns32k.md: Fix spelling mistake of "than" in comments.
+	* combine.c (force_to_mode): Same.
+	* reload1.c (clear_reload_reg_in_use): Same.
+
 2002-01-11  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* config/arm/arm.c (arm_gen_constant): Correct test of 'remainder'
