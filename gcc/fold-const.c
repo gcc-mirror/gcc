@@ -4201,7 +4201,11 @@ fold (expr)
 	 and its values must be 0 or 1.
 	 ("true" is a fixed value perhaps depending on the language,
 	 but we don't handle values other than 1 correctly yet.)  */
-      return invert_truthvalue (arg0);
+      tem = invert_truthvalue (arg0);
+      /* Avoid infinite recursion.  */
+      if (TREE_CODE (tem) == TRUTH_NOT_EXPR)
+	return t;
+      return convert (type, tem);
 
     case TRUTH_ANDIF_EXPR:
       /* Note that the operands of this must be ints
