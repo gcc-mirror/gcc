@@ -1,5 +1,8 @@
 2004-07-06  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* dbxout.c (dbxout_type): Don't test whether the binfo slot of
+	RECORD, UNION & QUAL_UNION is actually a binfo.
+
 	* tree.h (TREE_VIA_VIRTUAL): Rename to ...
 	(BINFO_VIRTUAL_P): ... here. Require TREE_BINFO only.
 	(BINFO_MARKED, BINFO_FLAG_[16]): New binfo flags.
