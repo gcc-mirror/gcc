@@ -126,9 +126,9 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
   int indirect_files_count = 0;
 
   /* Name of file containing list of files to compile. */
-  char *filelist_filename;
+  char *filelist_filename = 0;
 
-  FILE *filelist_file;
+  FILE *filelist_file = 0;
 
   /* The number of arguments being added to what's in argv, other than
      libraries.  */

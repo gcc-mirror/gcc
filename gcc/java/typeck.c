@@ -40,6 +40,7 @@ static tree convert_ieee_real_to_integer PARAMS ((tree, tree));
 static tree parse_signature_type PARAMS ((const unsigned char **,
 					 const unsigned char *));
 static tree lookup_do PARAMS ((tree, tree, tree, tree, tree (*)(tree)));
+static tree build_null_signature PARAMS ((tree));
 
 tree * type_map;
 extern struct obstack permanent_obstack;
@@ -579,9 +580,9 @@ get_type_from_signature (tree signature)
   return type;
 }
 
-tree
+static tree
 build_null_signature (type)
-     tree type;
+     tree type ATTRIBUTE_UNUSED;
 {
   return NULL_TREE;
 }
