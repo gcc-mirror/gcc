@@ -92,14 +92,17 @@ extern int target_flags;
    for the arm processor chip, but it is needed for some MMU chips.  */
 #define TARGET_SHORT_BY_BYTES	(target_flags & 0x200)
 
-/* ARM_EXTRA_TARGET_SWITCHES is used in riscix.h to define some options which
-   are passed to the preprocessor and the assembler post-processor.  They
-   aren't needed in the main pass of the compiler, but if we don't define
-   them in target switches cc1 complains about them.  For the sake of
-   argument lets allocate bit 31 of target flags for such options. */
+/* Nonzero if GCC should use a floating point library.
+   GCC will assume the fp regs don't exist and will not emit any fp insns.
+   Note that this is different than fp emulation which still uses fp regs
+   and insns - the kernel catches the trap and performs the operation.  */
+#define TARGET_SOFT_FLOAT	(target_flags & 0x400)
+#define TARGET_HARD_FLOAT	(! TARGET_SOFT_FLOAT)
 
-#ifndef ARM_EXTRA_TARGET_SWITCHES
-#define ARM_EXTRA_TARGET_SWITCHES
+/* SUBTARGET_SWITCHES is used to add flags on a per-config basis.
+   Bit 31 is reserved.  See riscix.h.  */
+#ifndef SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES
 #endif
 
 #define TARGET_SWITCHES  				\
@@ -114,7 +117,9 @@ extern int target_flags;
   {"no-short-load-bytes",	-(0x200)},		\
   {"short-load-words", 		-(0x200)},		\
   {"no-short-load-words",	 (0x200)},		\
-  ARM_EXTRA_TARGET_SWITCHES				\
+  {"soft-float",		 (0x400)},		\
+  {"hard-float",		-(0x400)},		\
+  SUBTARGET_SWITCHES					\
   {"",   		 	 TARGET_DEFAULT }	\
 }
 
@@ -221,12 +226,10 @@ extern enum floating_point_type arm_fpu;
 #define BITS_BIG_ENDIAN  0
 
 /* Define this if most significant byte of a word is the lowest numbered.  
-   Most ARM processors are run in little endian mode, but it should now be
-   possible to build the compiler to support big endian code. (Note: This
-   is currently a compiler-build-time option, not a run-time one.  */
-#ifndef BYTES_BIG_ENDIAN
+   Most ARM processors are run in little endian mode, so that is the default.
+   If you want to have it run-time selectable, change the definition in a
+   cover file to be TARGET_BIG_ENDIAN.  */
 #define BYTES_BIG_ENDIAN  0
-#endif
 
 /* Define this if most significant word of a multiword number is the lowest
    numbered.  */
@@ -364,9 +367,15 @@ extern enum floating_point_type arm_fpu;
    XXX It is a hack, I know.
    XXX Is this still needed?  */
 #define CONDITIONAL_REGISTER_USAGE  \
-{			\
-  if (obey_regdecls)	\
-    fixed_regs[0] = 1;	\
+{							\
+  if (obey_regdecls)					\
+    fixed_regs[0] = 1;					\
+  if (TARGET_SOFT_FLOAT)				\
+    {							\
+      int regno;					\
+      for (regno = 16; regno < 24; ++regno)		\
+	fixed_regs[regno] = call_used_regs[regno] = 1;	\
+    }							\
 }
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
@@ -618,21 +627,21 @@ enum reg_class
    If the precise function being called is known, FUNC is its FUNCTION_DECL;
    otherwise, FUNC is 0.  */
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
-  (GET_MODE_CLASS (TYPE_MODE (VALTYPE)) == MODE_FLOAT  \
-   ? gen_rtx (REG, TYPE_MODE (VALTYPE), 16)            \
+  (GET_MODE_CLASS (TYPE_MODE (VALTYPE)) == MODE_FLOAT && TARGET_HARD_FLOAT \
+   ? gen_rtx (REG, TYPE_MODE (VALTYPE), 16) \
    : gen_rtx (REG, TYPE_MODE (VALTYPE), 0))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
 #define LIBCALL_VALUE(MODE)  \
-  (GET_MODE_CLASS (MODE) == MODE_FLOAT  \
-   ? gen_rtx (REG, MODE, 16)		\
+  (GET_MODE_CLASS (MODE) == MODE_FLOAT && TARGET_HARD_FLOAT \
+   ? gen_rtx (REG, MODE, 16) \
    : gen_rtx (REG, MODE, 0))
 
 /* 1 if N is a possible register number for a function value.
    On the ARM, only r0 and f0 can return results.  */
 #define FUNCTION_VALUE_REGNO_P(REGNO)  \
-  ((REGNO) == 0 || (REGNO) == 16)
+  ((REGNO) == 0 || ((REGNO) == 16) && TARGET_HARD_FLOAT)
 
 /* Define where to put the arguments to a function.
    Value is zero to push the argument on the stack,
