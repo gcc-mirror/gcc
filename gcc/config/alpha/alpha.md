@@ -4156,20 +4156,19 @@
   [(set_attr "type" "ilog,iadd,iadd,ldsym,ild,ist,fcpys,fld,fst")])
 
 (define_insn ""
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,f")
-	(match_operand:HI 1 "input_operand" "rJ,n,fJ"))]
+  [(set (match_operand:HI 0 "register_operand" "=r,r")
+	(match_operand:HI 1 "input_operand" "rJ,n"))]
   "! TARGET_BWX
    && (register_operand (operands[0], HImode)
        || register_operand (operands[1], HImode))"
   "@
    mov %r1,%0
-   lda %0,%L1
-   fmov %R1,%0"
-  [(set_attr "type" "ilog,iadd,fcpys")])
+   lda %0,%L1"
+  [(set_attr "type" "ilog,iadd")])
 
 (define_insn ""
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,m,f")
-	(match_operand:HI 1 "input_operand" "rJ,n,m,rJ,fJ"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,m")
+	(match_operand:HI 1 "input_operand" "rJ,n,m,rJ"))]
   "TARGET_BWX
    && (register_operand (operands[0], HImode)
        || reg_or_0_operand (operands[1], HImode))"
@@ -4177,25 +4176,23 @@
    mov %r1,%0
    lda %0,%L1
    ldwu %0,%1
-   stw %r1,%0
-   fmov %R1,%0"
-  [(set_attr "type" "ilog,iadd,ild,ist,fcpys")])
+   stw %r1,%0"
+  [(set_attr "type" "ilog,iadd,ild,ist")])
 
 (define_insn ""
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,f")
-	(match_operand:QI 1 "input_operand" "rJ,n,fJ"))]
+  [(set (match_operand:QI 0 "register_operand" "=r,r")
+	(match_operand:QI 1 "input_operand" "rJ,n"))]
   "! TARGET_BWX
    && (register_operand (operands[0], QImode)
        || register_operand (operands[1], QImode))"
   "@
    mov %r1,%0
-   lda %0,%L1
-   fmov %R1,%0"
-  [(set_attr "type" "ilog,iadd,fcpys")])
+   lda %0,%L1"
+  [(set_attr "type" "ilog,iadd")])
 
 (define_insn ""
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,m,f")
-	(match_operand:QI 1 "input_operand" "rJ,n,m,rJ,fJ"))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,m")
+	(match_operand:QI 1 "input_operand" "rJ,n,m,rJ"))]
   "TARGET_BWX
    && (register_operand (operands[0], QImode)
        || reg_or_0_operand (operands[1], QImode))"
@@ -4203,9 +4200,8 @@
    mov %r1,%0
    lda %0,%L1
    ldbu %0,%1
-   stb %r1,%0
-   fmov %R1,%0"
-  [(set_attr "type" "ilog,iadd,ild,ist,fcpys")])
+   stb %r1,%0"
+  [(set_attr "type" "ilog,iadd,ild,ist")])
 
 ;; We do two major things here: handle mem->mem and construct long
 ;; constants.
