@@ -2,6 +2,7 @@
    Copyright (C) 1991, 1993 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
               and Martin Simmons (@harleqn.co.uk).
+   More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
 
 This file is part of GNU CC.
 
@@ -29,6 +30,28 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define HOST_BITS_PER_INT 32
 #define HOST_BITS_PER_LONG 32
 
+/* A code distinguishing the floating point format of the host
+   machine.  There are three defined values: IEEE_FLOAT_FORMAT,
+   VAX_FLOAT_FORMAT, and UNKNOWN_FLOAT_FORMAT.  */
+
+#define HOST_FLOAT_FORMAT IEEE_FLOAT_FORMAT
+
+/* If not compiled with GNU C, use C alloca.  */
+#ifndef __GNUC__
+#define USE_C_ALLOCA
+#endif
+
+/* Define this if the library function putenv is available on your machine */
+#define HAVE_PUTENV 1
+
+/* Define this if the library function vprintf is available on your machine */
+#define HAVE_VPRINTF 1
+
+/* Define this to be 1 if you know the host compiler supports prototypes, even
+   if it doesn't define __STDC__, or define it to be 0 if you do not want any
+   prototypes when compiling GNU CC. */
+#define USE_PROTOTYPES 1
+
 /* target machine dependencies.
    tm.h is a symbolic link to the actual target specific file.  */
 #include "tm.h"
@@ -38,3 +61,5 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define FATAL_EXIT_CODE 33
 
 /* EOF xm-arm.h */
+
+
