@@ -6884,7 +6884,7 @@ mips_output_function_prologue (file, size)
 
 #ifdef SDB_DEBUGGING_INFO
   if (debug_info_level != DINFO_LEVEL_TERSE && write_symbols == SDB_DEBUG)
-    ASM_OUTPUT_SOURCE_LINE (file, DECL_SOURCE_LINE (current_function_decl));
+    ASM_OUTPUT_SOURCE_LINE (file, DECL_SOURCE_LINE (current_function_decl), 0);
 #endif
 
   /* In mips16 mode, we may need to generate a 32 bit to handle

@@ -7232,7 +7232,7 @@ alpha_start_function (FILE *file, const char *fnname,
 #ifdef ASM_OUTPUT_SOURCE_LINE
       if (debug_info_level != DINFO_LEVEL_TERSE)
         ASM_OUTPUT_SOURCE_LINE (file,
-				DECL_SOURCE_LINE (current_function_decl));
+				DECL_SOURCE_LINE (current_function_decl), 0);
 #endif
     }
 

@@ -30,18 +30,17 @@ Boston, MA 02111-1307, USA.  */
 /* We make the first line stab special to avoid adding several
    gross hacks to GAS.  */
 #undef  ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(file, line)		\
-  { static int sym_lineno = 1;				\
-    static tree last_function_decl = NULL;		\
+#define ASM_OUTPUT_SOURCE_LINE(file, line, counter)	\
+  { static tree last_function_decl = NULL;		\
     if (current_function_decl == last_function_decl)	\
       fprintf (file, "\t.stabn 68,0,%d,L$M%d-%s\nL$M%d:\n",	\
-	       line, sym_lineno,			\
+	       line, counter,			\
 	       XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0) + 1, \
-	       sym_lineno);				\
+	       counter);				\
     else						\
       fprintf (file, "\t.stabn 68,0,%d,0\n", line);	\
     last_function_decl = current_function_decl;		\
-    sym_lineno += 1; }
+  }
 
 /* gdb needs a null N_SO at the end of each file for scattered loading.  */
 

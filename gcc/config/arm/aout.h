@@ -291,9 +291,6 @@
 #define ASM_OUTPUT_ALIGNED_BSS(STREAM, DECL, NAME, SIZE, ALIGN) \
   asm_output_aligned_bss (STREAM, DECL, NAME, SIZE, ALIGN)
 #endif
-     
-/* Output a source line for the debugger.  */
-/* #define ASM_OUTPUT_SOURCE_LINE(STREAM,LINE) */
 
 /* Output a #ident directive.  */
 #ifndef ASM_OUTPUT_IDENT

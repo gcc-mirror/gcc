@@ -57,20 +57,18 @@ Boston, MA 02111-1307, USA.  */
    current function.  */
 
 #undef  ASM_OUTPUT_SOURCE_LINE
-#define ASM_OUTPUT_SOURCE_LINE(FILE, LINE)				\
+#define ASM_OUTPUT_SOURCE_LINE(FILE, LINE, COUNTER)			\
 do									\
   {									\
-    static int sym_lineno = 1;						\
     char temp[256];							\
-    ASM_GENERATE_INTERNAL_LABEL (temp, "LM", sym_lineno);		\
+    ASM_GENERATE_INTERNAL_LABEL (temp, "LM", COUNTER);			\
     fprintf (FILE, "\t.stabn 68,0,%d,", LINE);				\
     assemble_name (FILE, temp);						\
     putc ('-', FILE);							\
     assemble_name (FILE,						\
 		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));\
     putc ('\n', FILE);							\
-    (*targetm.asm_out.internal_label) (FILE, "LM", sym_lineno);			\
-    sym_lineno += 1;							\
+    (*targetm.asm_out.internal_label) (FILE, "LM", COUNTER);		\
   }									\
 while (0)
 
