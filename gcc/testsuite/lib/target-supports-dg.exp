@@ -32,7 +32,7 @@ proc dg-require-weak { args } {
 # test.
 
 proc dg-require-visibility { args } {
-    set visibility_available [ check_visibility_available ]
+    set visibility_available [ check_visibility_available [lindex $args 1 ] ]
     if { $visibility_available == -1 } {
 	upvar name name
 	unresolved "$name"

@@ -110,13 +110,14 @@ proc check_weak_available { } {
 }
 
 ###############################
-# proc check_visibility_available { }
+# proc check_visibility_available { what_kind }
 ###############################
 
 # The visibility attribute is only support in some object formats
 # This proc returns 1 if it is supported, 0 if not.
+# The argument is the kind of visibility, default/protected/hidden/internal.
 
-proc check_visibility_available { } {
+proc check_visibility_available { what_kind } {
     global visibility_available_saved
     global tool
     global target_triplet
@@ -126,18 +127,29 @@ proc check_visibility_available { } {
         return 0
     }
 
-    if {![info exists visibility_available_saved] } {
-	set lines [get_compiler_messages visibility object {
-	    void f() __attribute__((visibility("hidden")));
-	    void f() {}
-	}]
-	if [string match "" $lines] then {
-	    set visibility_available_saved 1
-	} else {
-	    set visibility_available_saved 0
+    if [string match "" $what_kind] { set what_kind "hidden" }
+
+    if { [info exists visibility_available_saved] } {
+	verbose "Saved result is <$visibility_available_saved>" 1
+	if { [ lsearch -exact $visibility_available_saved $what_kind ] != -1 } {
+	    return 1
+	} elseif { [ lsearch -exact $visibility_available_saved "!$what_kind" ] != -1 } {
+	    return 0
 	}
     }
-    return $visibility_available_saved
+
+    set lines [get_compiler_messages visibility object "
+	void f() __attribute__((visibility(\"$what_kind\")));
+	void f() {}
+    "]
+    if [string match "" $lines] then {
+	set answer 1
+	lappend visibility_available_saved $what_kind
+    } else {
+	set answer 0
+	lappend visibility_available_saved "!$what_kind"
+    }
+    return $answer
 }
 
 ###############################
