@@ -1195,6 +1195,13 @@ EOF
 		echo gxx_include_dir = ${with_gxx_include_dir} >> ${Makefile}
 	    fi
 
+	    # record if we want to build shared libs.
+	    if test -z "${enable_shared}"; then
+	        echo enable_shared = no >> ${Makefile}
+	    else
+	        echo enable_shared = ${enable_shared} >> ${Makefile}
+	    fi
+
             # reset prefix, exec_prefix, srcdir, SUBDIRS, NONSUBDIRS,
             # remove any form feeds.
             if [ -z "${subdirs}" ]; then
