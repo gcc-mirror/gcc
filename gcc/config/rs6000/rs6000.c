@@ -245,7 +245,7 @@ static void rs6000_elf_select_section (tree, int, unsigned HOST_WIDE_INT);
 static void rs6000_elf_unique_section (tree, int);
 static void rs6000_elf_select_rtx_section (enum machine_mode, rtx,
 						   unsigned HOST_WIDE_INT);
-static void rs6000_elf_encode_section_info (tree, rtx, int))
+static void rs6000_elf_encode_section_info (tree, rtx, int)
      ATTRIBUTE_UNUSED;
 static bool rs6000_elf_in_small_data_p (tree);
 #endif
