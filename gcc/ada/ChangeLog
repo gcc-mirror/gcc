@@ -1,3 +1,20 @@
+2004-08-16  Pascal Obry  <obry@gnat.com>
+
+	* adaint.c (__gnat_prj_add_obj_files): Set to 0 only on Win32 for GCC
+	backend prior to GCC 3.4. With GCC 3.4 we are using the GCC's shared
+	option and not mdll anymore. Update comment.
+
+2004-08-16  Pascal Obry  <obry@gnat.com>
+
+	* bld.adb (Put_Include_Project): Properly handle directory separators
+	on Windows.
+
+2004-08-16  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch4.adb (Try_Object_Operation): Restructure code. Optimize by
+	decreasing the number of allocated junk nodes while searching for the
+	appropriate subprogram.
+
 2004-08-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cuintp.c (UI_To_gnu): Use build_int_cst..

@@ -2388,7 +2388,8 @@ package body Bld is
             --  directory.
 
             if Last >= Included_Directory_Path'First
-              and then Included_Directory_Path (Last) = Directory_Separator
+              and then (Included_Directory_Path (Last) = Directory_Separator
+                          or else Included_Directory_Path (Last) = '/')
             then
                Last := Last - 1;
             end if;
