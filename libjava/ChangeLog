@@ -1,3 +1,7 @@
+2001-09-05  Tom Tromey  <tromey@redhat.com>
+
+	* java/text/DateFormatSymbols.java: Re-merged with Classpath.
+
 2001-09-05  Corey Minyard  <minyard@acm.org>
 	    Tom Tromey  <tromey@redhat.com>
 
