@@ -63,373 +63,368 @@
 
 #include <bits/concept_check.h>
 
-// Since this entire file is within namespace std, there's no reason to
-// waste two spaces along the left column.  Thus the leading indentation is
-// slightly violated from here on.
 namespace std
 {
-
-// Forward declarations of operators < and ==, needed for friend declaration.
-
-template <typename _Tp, typename _Sequence = deque<_Tp> >
-class queue;
-
-template <typename _Tp, typename _Seq>
-inline bool operator==(const queue<_Tp,_Seq>&, const queue<_Tp,_Seq>&);
-
-template <typename _Tp, typename _Seq>
-inline bool operator<(const queue<_Tp,_Seq>&, const queue<_Tp,_Seq>&);
-
-
-/**
- *  @brief  A standard container giving FIFO behavior.
- *
- *  @ingroup Containers
- *  @ingroup Sequences
- *
- *  Meets many of the requirements of a <a href="tables.html#65">container</a>,
- *  but does not define anything to do with iterators.  Very few of the
- *  other standard container interfaces are defined.
- *
- *  This is not a true container, but an @e adaptor.  It holds another
- *  container, and provides a wrapper interface to that container.  The
- *  wrapper is what enforces strict first-in-first-out %queue behavior.
- *
- *  The second template parameter defines the type of the underlying
- *  sequence/container.  It defaults to std::deque, but it can be any type
- *  that supports @c front, @c back, @c push_back, and @c pop_front,
- *  such as std::list or an appropriate user-defined type.
- *
- *  Members not found in "normal" containers are @c container_type,
- *  which is a typedef for the second Sequence parameter, and @c push and
- *  @c pop, which are standard %queue/FIFO operations.
-*/
-template <typename _Tp, typename _Sequence>
-  class queue
-{
-  // concept requirements
-  typedef typename _Sequence::value_type _Sequence_value_type;
-  __glibcpp_class_requires(_Tp, _SGIAssignableConcept)
-  __glibcpp_class_requires(_Sequence, _FrontInsertionSequenceConcept)
-  __glibcpp_class_requires(_Sequence, _BackInsertionSequenceConcept)
-  __glibcpp_class_requires2(_Tp, _Sequence_value_type, _SameTypeConcept)
-
-  template <typename _Tp1, typename _Seq1>
-  friend bool operator== (const queue<_Tp1, _Seq1>&,
-                          const queue<_Tp1, _Seq1>&);
-  template <typename _Tp1, typename _Seq1>
-  friend bool operator< (const queue<_Tp1, _Seq1>&,
-                         const queue<_Tp1, _Seq1>&);
-
-public:
-  typedef typename _Sequence::value_type                value_type;
-  typedef typename _Sequence::reference                 reference;
-  typedef typename _Sequence::const_reference           const_reference;
-  typedef typename _Sequence::size_type                 size_type;
-  typedef          _Sequence                            container_type;
-
-protected:
+  // Forward declarations of operators < and ==, needed for friend declaration.
+  
+  template <typename _Tp, typename _Sequence = deque<_Tp> >
+  class queue;
+  
+  template <typename _Tp, typename _Seq>
+  inline bool operator==(const queue<_Tp,_Seq>&, const queue<_Tp,_Seq>&);
+  
+  template <typename _Tp, typename _Seq>
+  inline bool operator<(const queue<_Tp,_Seq>&, const queue<_Tp,_Seq>&);
+  
+  
   /**
-   *  'c' is the underlying container.  Maintainers wondering why this isn't
-   *  uglified as per style guidelines should note that this name is
-   *  specified in the standard, [23.2.3.1].  (Why?  Presumably for the same
-   *  reason that it's protected instead of private:  to allow derivation.
-   *  But none of the other containers allow for derivation.  Odd.)
-  */
-  _Sequence c;
-
-public:
-  /**
-   *  @brief  Default constructor creates no elements.
-  */
-  explicit
-  queue(const _Sequence& __c = _Sequence())
-  : c(__c) {}
-
-  /**
-   *  Returns true if the %queue is empty.
-  */
-  bool
-  empty() const { return c.empty(); }
-
-  /**  Returns the number of elements in the %queue.  */
-  size_type
-  size() const { return c.size(); }
-
-  /**
-   *  Returns a read/write reference to the data at the first element of the
-   *  %queue.
-  */
-  reference
-  front() { return c.front(); }
-
-  /**
-   *  Returns a read-only (constant) reference to the data at the first
-   *  element of the %queue.
-  */
-  const_reference
-  front() const { return c.front(); }
-
-  /**
-   *  Returns a read/write reference to the data at the last element of the
-   *  %queue.
-  */
-  reference
-  back() { return c.back(); }
-
-  /**
-   *  Returns a read-only (constant) reference to the data at the last
-   *  element of the %queue.
-  */
-  const_reference
-  back() const { return c.back(); }
-
-  /**
-   *  @brief  Add data to the end of the %queue.
-   *  @param  x  Data to be added.
+   *  @brief  A standard container giving FIFO behavior.
    *
-   *  This is a typical %queue operation.  The function creates an element at
-   *  the end of the %queue and assigns the given data to it.
-   *  The time complexity of the operation depends on the underlying
-   *  sequence.
-  */
-  void
-  push(const value_type& __x) { c.push_back(__x); }
-
-  /**
-   *  @brief  Removes first element.
+   *  @ingroup Containers
+   *  @ingroup Sequences
    *
-   *  This is a typical %queue operation.  It shrinks the %queue by one.
-   *  The time complexity of the operation depends on the underlying
-   *  sequence.
+   *  Meets many of the requirements of a
+   *  <a href="tables.html#65">container</a>,
+   *  but does not define anything to do with iterators.  Very few of the
+   *  other standard container interfaces are defined.
    *
-   *  Note that no data is returned, and if the first element's data is
-   *  needed, it should be retrieved before pop() is called.
-  */
-  void
-  pop() { c.pop_front(); }
-};
-
-
-/**
- *  @brief  Queue equality comparison.
- *  @param  x  A %queue.
- *  @param  y  A %queue of the same type as @a x.
- *  @return  True iff the size and elements of the queues are equal.
- *
- *  This is an equivalence relation.  Complexity and semantics depend on the
- *  underlying sequence type, but the expected rules are:  this relation is
- *  linear in the size of the sequences, and queues are considered equivalent
- *  if their sequences compare equal.
-*/
-template <typename _Tp, typename _Sequence>
-  inline bool 
-  operator==(const queue<_Tp, _Sequence>& __x, const queue<_Tp, _Sequence>& __y)
-  { return __x.c == __y.c; }
-
-/**
- *  @brief  Queue ordering relation.
- *  @param  x  A %queue.
- *  @param  y  A %queue of the same type as @a x.
- *  @return  True iff @a x is lexographically less than @a y.
- *
- *  This is an total ordering relation.  Complexity and semantics depend on the
- *  underlying sequence type, but the expected rules are:  this relation is
- *  linear in the size of the sequences, the elements must be comparable
- *  with @c <, and std::lexographical_compare() is usually used to make the
- *  determination.
-*/
-template <typename _Tp, typename _Sequence>
-  inline bool
-  operator<(const queue<_Tp, _Sequence>& __x, const queue<_Tp, _Sequence>& __y)
-  { return __x.c < __y.c; }
-
-/// Based on operator==
-template <typename _Tp, typename _Sequence>
-  inline bool
-  operator!=(const queue<_Tp, _Sequence>& __x, const queue<_Tp, _Sequence>& __y)
-  { return !(__x == __y); }
-
-/// Based on operator<
-template <typename _Tp, typename _Sequence>
-  inline bool 
-  operator>(const queue<_Tp, _Sequence>& __x, const queue<_Tp, _Sequence>& __y)
-  { return __y < __x; }
-
-/// Based on operator<
-template <typename _Tp, typename _Sequence>
-  inline bool 
-  operator<=(const queue<_Tp, _Sequence>& __x, const queue<_Tp, _Sequence>& __y)
-  { return !(__y < __x); }
-
-/// Based on operator<
-template <typename _Tp, typename _Sequence>
-  inline bool 
-  operator>=(const queue<_Tp, _Sequence>& __x, const queue<_Tp, _Sequence>& __y)
-  { return !(__x < __y); }
-
-
-/**
- *  @brief  A standard container automatically sorting its contents.
- *
- *  @ingroup Containers
- *  @ingroup Sequences
- *
- *  This is not a true container, but an @e adaptor.  It holds another
- *  container, and provides a wrapper interface to that container.  The
- *  wrapper is what enforces sorting and first-in-first-out %queue behavior.
- *  Very few of the standard container/sequence interface requirements are
- *  met (e.g., iterators).
- *
- *  The second template parameter defines the type of the underlying
- *  sequence/container.  It defaults to std::vector, but it can be any type
- *  that supports @c front(), @c push_back, @c pop_back, and random-access
- *  iterators, such as std::deque or an appropriate user-defined type.
- *
- *  The third template parameter supplies the means of making priority
- *  comparisons.  It defaults to @c less<value_type> but can be anything
- *  defining a strict weak ordering.
- *
- *  Members not found in "normal" containers are @c container_type,
- *  which is a typedef for the second Sequence parameter, and @c push,
- *  @c pop, and @c top, which are standard %queue/FIFO operations.
- *
- *  @note  No equality/comparison operators are provided for %priority_queue.
- *
- *  @note  Sorting of the elements takes place as they are added to, and
- *         removed from, the %priority_queue using the %priority_queue's
- *         member functions.  If you access the elements by other means, and
- *         change their data such that the sorting order would be different,
- *         the %priority_queue will not re-sort the elements for you.  (How
- *         could it know to do so?)
-*/
-template <typename _Tp, typename _Sequence = vector<_Tp>,
-          typename _Compare  = less<typename _Sequence::value_type> >
-  class priority_queue
-{
-  // concept requirements
-  typedef typename _Sequence::value_type _Sequence_value_type;
-  __glibcpp_class_requires(_Tp, _SGIAssignableConcept)
-  __glibcpp_class_requires(_Sequence, _SequenceConcept)
-  __glibcpp_class_requires(_Sequence, _RandomAccessContainerConcept)
-  __glibcpp_class_requires2(_Tp, _Sequence_value_type, _SameTypeConcept)
-  __glibcpp_class_requires4(_Compare, bool, _Tp, _Tp, _BinaryFunctionConcept)
-
-public:
-  typedef typename _Sequence::value_type                value_type;
-  typedef typename _Sequence::reference                 reference;
-  typedef typename _Sequence::const_reference           const_reference;
-  typedef typename _Sequence::size_type                 size_type;
-  typedef          _Sequence                            container_type;
-
-protected:
-  //  See queue::c for notes on these names.
-  _Sequence  c;
-  _Compare   comp;
-
-public:
-  /**
-   *  @brief  Default constructor creates no elements.
-  */
-  explicit
-  priority_queue(const _Compare& __x = _Compare(),
-                 const _Sequence& __s = _Sequence()) 
-  : c(__s), comp(__x) 
-  { make_heap(c.begin(), c.end(), comp); }
-
-  /**
-   *  @brief  Builds a %queue from a range.
-   *  @param  first  An input iterator.
-   *  @param  last  An input iterator.
-   *  @param  x  A comparison functor describing a strict weak ordering.
-   *  @param  s  An initial sequence with which to start.
-   * 
-   *  Begins by copying @a s, inserting a copy of the elements from
-   *  @a [first,last) into the copy of @a s, then ordering the copy
-   *  according to @a x.
+   *  This is not a true container, but an @e adaptor.  It holds another
+   *  container, and provides a wrapper interface to that container.  The
+   *  wrapper is what enforces strict first-in-first-out %queue behavior.
    *
-   *  For more information on function objects, see the documentation on
-   *  @link s20_3_1_base functor base classes@endlink.
+   *  The second template parameter defines the type of the underlying
+   *  sequence/container.  It defaults to std::deque, but it can be any type
+   *  that supports @c front, @c back, @c push_back, and @c pop_front,
+   *  such as std::list or an appropriate user-defined type.
+   *
+   *  Members not found in "normal" containers are @c container_type,
+   *  which is a typedef for the second Sequence parameter, and @c push and
+   *  @c pop, which are standard %queue/FIFO operations.
   */
-  template <typename _InputIterator>
-    priority_queue(_InputIterator __first, _InputIterator __last,
-                   const _Compare& __x = _Compare(),
-                   const _Sequence& __s = _Sequence())
-    : c(__s), comp(__x)
-    { 
-      c.insert(c.end(), __first, __last);
-      make_heap(c.begin(), c.end(), comp);
+  template <typename _Tp, typename _Sequence>
+    class queue
+  {
+    // concept requirements
+    typedef typename _Sequence::value_type _Sequence_value_type;
+    __glibcpp_class_requires(_Tp, _SGIAssignableConcept)
+    __glibcpp_class_requires(_Sequence, _FrontInsertionSequenceConcept)
+    __glibcpp_class_requires(_Sequence, _BackInsertionSequenceConcept)
+    __glibcpp_class_requires2(_Tp, _Sequence_value_type, _SameTypeConcept)
+  
+    template <typename _Tp1, typename _Seq1>
+    friend bool operator== (const queue<_Tp1, _Seq1>&,
+                            const queue<_Tp1, _Seq1>&);
+    template <typename _Tp1, typename _Seq1>
+    friend bool operator< (const queue<_Tp1, _Seq1>&,
+                           const queue<_Tp1, _Seq1>&);
+  
+  public:
+    typedef typename _Sequence::value_type                value_type;
+    typedef typename _Sequence::reference                 reference;
+    typedef typename _Sequence::const_reference           const_reference;
+    typedef typename _Sequence::size_type                 size_type;
+    typedef          _Sequence                            container_type;
+  
+  protected:
+    /**
+     *  'c' is the underlying container.  Maintainers wondering why this isn't
+     *  uglified as per style guidelines should note that this name is
+     *  specified in the standard, [23.2.3.1].  (Why?  Presumably for the same
+     *  reason that it's protected instead of private:  to allow derivation.
+     *  But none of the other containers allow for derivation.  Odd.)
+    */
+    _Sequence c;
+  
+  public:
+    /**
+     *  @brief  Default constructor creates no elements.
+    */
+    explicit
+    queue(const _Sequence& __c = _Sequence())
+    : c(__c) {}
+  
+    /**
+     *  Returns true if the %queue is empty.
+    */
+    bool
+    empty() const { return c.empty(); }
+  
+    /**  Returns the number of elements in the %queue.  */
+    size_type
+    size() const { return c.size(); }
+  
+    /**
+     *  Returns a read/write reference to the data at the first element of the
+     *  %queue.
+    */
+    reference
+    front() { return c.front(); }
+  
+    /**
+     *  Returns a read-only (constant) reference to the data at the first
+     *  element of the %queue.
+    */
+    const_reference
+    front() const { return c.front(); }
+  
+    /**
+     *  Returns a read/write reference to the data at the last element of the
+     *  %queue.
+    */
+    reference
+    back() { return c.back(); }
+  
+    /**
+     *  Returns a read-only (constant) reference to the data at the last
+     *  element of the %queue.
+    */
+    const_reference
+    back() const { return c.back(); }
+  
+    /**
+     *  @brief  Add data to the end of the %queue.
+     *  @param  x  Data to be added.
+     *
+     *  This is a typical %queue operation.  The function creates an element at
+     *  the end of the %queue and assigns the given data to it.
+     *  The time complexity of the operation depends on the underlying
+     *  sequence.
+    */
+    void
+    push(const value_type& __x) { c.push_back(__x); }
+  
+    /**
+     *  @brief  Removes first element.
+     *
+     *  This is a typical %queue operation.  It shrinks the %queue by one.
+     *  The time complexity of the operation depends on the underlying
+     *  sequence.
+     *
+     *  Note that no data is returned, and if the first element's data is
+     *  needed, it should be retrieved before pop() is called.
+    */
+    void
+    pop() { c.pop_front(); }
+  };
+  
+  
+  /**
+   *  @brief  Queue equality comparison.
+   *  @param  x  A %queue.
+   *  @param  y  A %queue of the same type as @a x.
+   *  @return  True iff the size and elements of the queues are equal.
+   *
+   *  This is an equivalence relation.  Complexity and semantics depend on the
+   *  underlying sequence type, but the expected rules are:  this relation is
+   *  linear in the size of the sequences, and queues are considered equivalent
+   *  if their sequences compare equal.
+  */
+  template <typename _Tp, typename _Sequence>
+    inline bool 
+    operator==(const queue<_Tp,_Sequence>& __x, const queue<_Tp,_Sequence>& __y)
+    { return __x.c == __y.c; }
+  
+  /**
+   *  @brief  Queue ordering relation.
+   *  @param  x  A %queue.
+   *  @param  y  A %queue of the same type as @a x.
+   *  @return  True iff @a x is lexographically less than @a y.
+   *
+   *  This is an total ordering relation.  Complexity and semantics depend on
+   *  the underlying sequence type, but the expected rules are:  this relation
+   *  is linear in the size of the sequences, the elements must be comparable
+   *  with @c <, and std::lexographical_compare() is usually used to make the
+   *  determination.
+  */
+  template <typename _Tp, typename _Sequence>
+    inline bool
+    operator<(const queue<_Tp,_Sequence>& __x, const queue<_Tp,_Sequence>& __y)
+    { return __x.c < __y.c; }
+  
+  /// Based on operator==
+  template <typename _Tp, typename _Sequence>
+    inline bool
+    operator!=(const queue<_Tp,_Sequence>& __x, const queue<_Tp,_Sequence>& __y)
+    { return !(__x == __y); }
+  
+  /// Based on operator<
+  template <typename _Tp, typename _Sequence>
+    inline bool 
+    operator>(const queue<_Tp,_Sequence>& __x, const queue<_Tp,_Sequence>& __y)
+    { return __y < __x; }
+  
+  /// Based on operator<
+  template <typename _Tp, typename _Sequence>
+    inline bool 
+    operator<=(const queue<_Tp,_Sequence>& __x, const queue<_Tp,_Sequence>& __y)
+    { return !(__y < __x); }
+  
+  /// Based on operator<
+  template <typename _Tp, typename _Sequence>
+    inline bool 
+    operator>=(const queue<_Tp,_Sequence>& __x, const queue<_Tp,_Sequence>& __y)
+    { return !(__x < __y); }
+  
+  
+  /**
+   *  @brief  A standard container automatically sorting its contents.
+   *
+   *  @ingroup Containers
+   *  @ingroup Sequences
+   *
+   *  This is not a true container, but an @e adaptor.  It holds another
+   *  container, and provides a wrapper interface to that container.  The
+   *  wrapper is what enforces sorting and first-in-first-out %queue behavior.
+   *  Very few of the standard container/sequence interface requirements are
+   *  met (e.g., iterators).
+   *
+   *  The second template parameter defines the type of the underlying
+   *  sequence/container.  It defaults to std::vector, but it can be any type
+   *  that supports @c front(), @c push_back, @c pop_back, and random-access
+   *  iterators, such as std::deque or an appropriate user-defined type.
+   *
+   *  The third template parameter supplies the means of making priority
+   *  comparisons.  It defaults to @c less<value_type> but can be anything
+   *  defining a strict weak ordering.
+   *
+   *  Members not found in "normal" containers are @c container_type,
+   *  which is a typedef for the second Sequence parameter, and @c push,
+   *  @c pop, and @c top, which are standard %queue/FIFO operations.
+   *
+   *  @note  No equality/comparison operators are provided for %priority_queue.
+   *
+   *  @note  Sorting of the elements takes place as they are added to, and
+   *         removed from, the %priority_queue using the %priority_queue's
+   *         member functions.  If you access the elements by other means, and
+   *         change their data such that the sorting order would be different,
+   *         the %priority_queue will not re-sort the elements for you.  (How
+   *         could it know to do so?)
+  */
+  template <typename _Tp, typename _Sequence = vector<_Tp>,
+            typename _Compare  = less<typename _Sequence::value_type> >
+    class priority_queue
+  {
+    // concept requirements
+    typedef typename _Sequence::value_type _Sequence_value_type;
+    __glibcpp_class_requires(_Tp, _SGIAssignableConcept)
+    __glibcpp_class_requires(_Sequence, _SequenceConcept)
+    __glibcpp_class_requires(_Sequence, _RandomAccessContainerConcept)
+    __glibcpp_class_requires2(_Tp, _Sequence_value_type, _SameTypeConcept)
+    __glibcpp_class_requires4(_Compare, bool, _Tp, _Tp, _BinaryFunctionConcept)
+  
+  public:
+    typedef typename _Sequence::value_type                value_type;
+    typedef typename _Sequence::reference                 reference;
+    typedef typename _Sequence::const_reference           const_reference;
+    typedef typename _Sequence::size_type                 size_type;
+    typedef          _Sequence                            container_type;
+  
+  protected:
+    //  See queue::c for notes on these names.
+    _Sequence  c;
+    _Compare   comp;
+  
+  public:
+    /**
+     *  @brief  Default constructor creates no elements.
+    */
+    explicit
+    priority_queue(const _Compare& __x = _Compare(),
+                   const _Sequence& __s = _Sequence()) 
+    : c(__s), comp(__x) 
+    { make_heap(c.begin(), c.end(), comp); }
+  
+    /**
+     *  @brief  Builds a %queue from a range.
+     *  @param  first  An input iterator.
+     *  @param  last  An input iterator.
+     *  @param  x  A comparison functor describing a strict weak ordering.
+     *  @param  s  An initial sequence with which to start.
+     * 
+     *  Begins by copying @a s, inserting a copy of the elements from
+     *  @a [first,last) into the copy of @a s, then ordering the copy
+     *  according to @a x.
+     *
+     *  For more information on function objects, see the documentation on
+     *  @link s20_3_1_base functor base classes@endlink.
+    */
+    template <typename _InputIterator>
+      priority_queue(_InputIterator __first, _InputIterator __last,
+                     const _Compare& __x = _Compare(),
+                     const _Sequence& __s = _Sequence())
+      : c(__s), comp(__x)
+      { 
+        c.insert(c.end(), __first, __last);
+        make_heap(c.begin(), c.end(), comp);
+      }
+  
+    /**
+     *  Returns true if the %queue is empty.
+    */
+    bool
+    empty() const { return c.empty(); }
+  
+    /**  Returns the number of elements in the %queue.  */
+    size_type
+    size() const { return c.size(); }
+  
+    /**
+     *  Returns a read-only (constant) reference to the data at the first
+     *  element of the %queue.
+    */
+    const_reference
+    top() const { return c.front(); }
+  
+    /**
+     *  @brief  Add data to the %queue.
+     *  @param  x  Data to be added.
+     *
+     *  This is a typical %queue operation.
+     *  The time complexity of the operation depends on the underlying
+     *  sequence.
+    */
+    void 
+    push(const value_type& __x) 
+    {
+      try 
+        {
+          c.push_back(__x); 
+          push_heap(c.begin(), c.end(), comp);
+        }
+      catch(...)
+        {
+          c.clear();
+          __throw_exception_again; 
+        }
     }
-
-  /**
-   *  Returns true if the %queue is empty.
-  */
-  bool
-  empty() const { return c.empty(); }
-
-  /**  Returns the number of elements in the %queue.  */
-  size_type
-  size() const { return c.size(); }
-
-  /**
-   *  Returns a read-only (constant) reference to the data at the first
-   *  element of the %queue.
-  */
-  const_reference
-  top() const { return c.front(); }
-
-  /**
-   *  @brief  Add data to the %queue.
-   *  @param  x  Data to be added.
-   *
-   *  This is a typical %queue operation.
-   *  The time complexity of the operation depends on the underlying
-   *  sequence.
-  */
-  void 
-  push(const value_type& __x) 
-  {
-    try 
-      {
-        c.push_back(__x); 
-        push_heap(c.begin(), c.end(), comp);
-      }
-    catch(...)
-      {
-        c.clear();
-        __throw_exception_again; 
-      }
-  }
-
-  /**
-   *  @brief  Removes first element.
-   *
-   *  This is a typical %queue operation.  It shrinks the %queue by one.
-   *  The time complexity of the operation depends on the underlying
-   *  sequence.
-   *
-   *  Note that no data is returned, and if the first element's data is
-   *  needed, it should be retrieved before pop() is called.
-  */
-  void 
-  pop() 
-  {
-    try 
-      {
-        pop_heap(c.begin(), c.end(), comp);
-        c.pop_back();
-      }
-    catch(...)
-      {
-        c.clear();
-        __throw_exception_again; 
-      }
-  }
-};
-
-// No equality/comparison operators are provided for priority_queue.
-
+  
+    /**
+     *  @brief  Removes first element.
+     *
+     *  This is a typical %queue operation.  It shrinks the %queue by one.
+     *  The time complexity of the operation depends on the underlying
+     *  sequence.
+     *
+     *  Note that no data is returned, and if the first element's data is
+     *  needed, it should be retrieved before pop() is called.
+    */
+    void 
+    pop() 
+    {
+      try 
+        {
+          pop_heap(c.begin(), c.end(), comp);
+          c.pop_back();
+        }
+      catch(...)
+        {
+          c.clear();
+          __throw_exception_again; 
+        }
+    }
+  };
+  
+  // No equality/comparison operators are provided for priority_queue.
 } // namespace std
 
 #endif /* __GLIBCPP_INTERNAL_QUEUE_H */
-

@@ -1,3 +1,13 @@
+2002-08-09  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/bits/deque.tcc, include/bits/list.tcc,
+	include/bits/stl_deque.h, include/bits/stl_iterator_base_funcs.h,
+	include/bits/stl_list.h, include/bits/stl_map.h,
+	include/bits/stl_multimap.h, include/bits/stl_queue.h,
+	include/bits/stl_stack.h, include/bits/stl_vector.h,
+	include/bits/vector.tcc:  Re-indent contents of namespace std,
+	re-wrap comment lines as necessary.
+
 2002-08-08  Danny Smith  <dannysmith@users.sourceforge.net>
             Benjamin Kosnik  <bkoz@redhat.com>
 	
