@@ -85,10 +85,9 @@
 
 ;; Integer conditional branch delay slot description.
 ;; Nullification of conditional branches on the PA is dependent on the
-;; direction of the branch.  Forward branches nullify true (direction > 0),
-;; and backward branches nullify false (direction < 0).
-;; If direction == 0, then the direction is unknown and we do not allow
-;; any nullification.
+;; direction of the branch.  Forward branches nullify true and
+;; backward branches nullify false.  If the direction is unknown
+;; then nullification is not allowed.
 (define_delay (eq_attr "type" "cbranch")
   [(eq_attr "in_branch_delay" "true") 
    (and (eq_attr "in_nullified_branch_delay" "true") 
@@ -760,14 +759,10 @@
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length") 
-    (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 2))))
-		      (const_int 1023))
+    (if_then_else (lt (abs (minus (match_dup 0) (plus (pc) (const_int 2))))
+		      (const_int 2047))
            (const_int 1)
-	   (and (lt (match_dup 0) (pc))
-		(eq (symbol_ref "INSN_ANNULLED_BRANCH_P (insn)")
-		    (const_int 1)))
-	   (const_int 3)]
-	  (const_int 2)))])
+	   (const_int 2)))])
 
 ;; Match the negated branch.
 
@@ -787,14 +782,10 @@
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length") 
-    (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 2))))
-		      (const_int 1023))
+    (if_then_else (lt (abs (minus (match_dup 0) (plus (pc) (const_int 2))))
+		      (const_int 2047))
            (const_int 1)
-	   (and (lt (match_dup 0) (pc))
-		(eq (symbol_ref "INSN_ANNULLED_BRANCH_P (insn)")
-		    (const_int 1)))
-	   (const_int 3)]
-	  (const_int 2)))])
+	   (const_int 2)))])
 
 ;; Branch on Bit patterns.
 (define_insn ""
@@ -816,14 +807,10 @@
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length") 
-    (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 2))))
-		      (const_int 1023))
+    (if_then_else (lt (abs (minus (match_dup 0) (plus (pc) (const_int 2))))
+		      (const_int 2047))
            (const_int 1)
-	   (and (lt (match_dup 0) (pc))
-		(eq (symbol_ref "INSN_ANNULLED_BRANCH_P (insn)")
-		    (const_int 1)))
-	   (const_int 3)]
-	  (const_int 2)))])
+	   (const_int 2)))])
 
 (define_insn ""
   [(set (pc)
@@ -844,17 +831,12 @@
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length") 
-    (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 2))))
-		      (const_int 1023))
+    (if_then_else (lt (abs (minus (match_dup 0) (plus (pc) (const_int 2))))
+		      (const_int 2047))
            (const_int 1)
-	   (and (lt (match_dup 0) (pc))
-		(eq (symbol_ref "INSN_ANNULLED_BRANCH_P (insn)")
-		    (const_int 1)))
-	   (const_int 3)]
-	  (const_int 2)))])
+	   (const_int 2)))])
 
 ;; Floating point branches
-
 (define_insn ""
   [(set (pc) (if_then_else (ne (reg:CCFP 0) (const_int 0))
 			   (label_ref (match_operand 0 "" ""))
@@ -2927,113 +2909,120 @@
   [(set (pc)
 	(if_then_else
 	  (match_operator 2 "comparison_operator"
-	   [(plus:SI (match_operand:SI 0 "register_operand" "+!r,m")
-		     (match_operand:SI 1 "int5_operand" "L,L"))
+	   [(plus:SI (match_operand:SI 0 "register_operand" "+!r,!*fx,!*m")
+		     (match_operand:SI 1 "int5_operand" "L,L,L"))
 	    (const_int 0)])
 	  (label_ref (match_operand 3 "" ""))
 	  (pc)))
    (set (match_dup 0)
 	(plus:SI (match_dup 0) (match_dup 1)))
-   (clobber (match_scratch:SI 4 "=X,r"))]
-  "0"
+   (clobber (match_scratch:SI 4 "=X,r,r"))]
+  ""
 "*
 {
-  if (INSN_ANNULLED_BRANCH_P (insn))
+
+  if (which_alternative == 0)
     {
-      /* Loop counter is in a register.  */
-      if (which_alternative == 0)
-	/* Short branch.  Normal handling of nullification.  */
-        if (get_attr_length (insn) == 1)
-          return \"addib,%C2,n %1,%0,%3\";
-	/* Long Conditional branch forward with delay slot nullified if
-	   branch is taken.  */
-        else if (get_attr_length (insn) == 2)
-          return \"addi,%N2 %1,%0,%0\;bl,n %3,0\";
-	/* Long Conditional branch backwards with delay slot nullified
-	   if branch is not taken.  */
-        else
-          return \"addib,%N2 %1,%0,.+16\;nop\;bl %3,0\";
+      int nullify = INSN_ANNULLED_BRANCH_P (insn);
+      int length = get_attr_length (insn);
+
+      /* If this is a long branch with its delay slot unfilled, set `nullify'
+	 as it can nullify the delay slot and save a nop.  */
+      if (length == 2 && dbr_sequence_length () == 0)
+	nullify = 1;
+
+      /* If this is a short forward conditional branch which did not get
+	 its delay slot filled, the delay slot can still be nullified.  */
+      if (! nullify && length == 1 && dbr_sequence_length () == 0)
+	nullify = forward_branch_p (insn);
+
+      /* Handle short versions first.  */
+      if (length == 1 && nullify)
+	return \"addib,%C2,n %1,%0,%3\";
+      else if (length == 1 && ! nullify)
+	return \"addib,%C2 %1,%0,%3\";
+      else if (length == 2)
+	{
+	  /* Handle weird backwards branch with a fulled delay slot 
+	     which is nullified.  */
+	  if (dbr_sequence_length () != 0
+	      && ! forward_branch_p (insn)
+	      && nullify)
+	    return \"addib,%N2,n %1,%0,.+12\;bl %3,0\";
+	  
+	  /* Handle normal cases.  */  
+	  if (nullify)
+	    return \"addi,%N2 %1,%0,%0\;bl,n %3,0\";
+	  else
+	    return \"addi,%N2 %1,%0,%0\;bl %3,0\";
+	}
       else
-        {
-	  /* Must reload loop counter from memory.  Ugly.  */
-          output_asm_insn (\"ldw %0,%4\;ldo %1(%4),%4\;stw %4,%0\", operands);
-	  /* Short branch.  Normal handling of nullification.  */
-          if (get_attr_length (insn) == 4)
-	    return \"comb,%S2,n 0,%4,%3\";
-	  /* Long Conditional branch forward with delay slot nullified if
-	     branch is taken.  */
-          else if (get_attr_length (insn) == 5)
-	    return \"comclr,%B2 0,%4,0\;bl,n %3,0\";
-	  else 
-	  /* Long Conditional branch backwards with delay slot nullified
-	     if branch is not taken.  */
-	    return \"comb,%B2 0,%4,.+16\;nop\;bl %3,0\";
-        }
+	abort();
     }
+  /* Deal with gross reload from FP register case.  */
+  else if (which_alternative == 1)
+    {
+      /* Move loop counter from FP register to MEM then into a GR,
+	 increment the GR, store the GR into MEM, and finally reload
+	 the FP register from MEM from within the branch's delay slot.  */ 
+      output_asm_insn (\"fstws %0,-16(0,%%r30)\;ldw -16(0,%%r30),%4\",operands);
+      output_asm_insn (\"ldo %1(%4),%4\;stw %4,-16(0,%%r30)\", operands);
+      if (get_attr_length (insn) == 6)
+	return \"comb,%S2 0,%4,%3\;fldws -16(0,%%r30),%0\";
+      else
+	return \"comclr,%B2 0,%4,0\;bl %3,0\;fldws -16(0,%%r30),%0\";
+    }
+  /* Deal with gross reload from memory case.  */
   else
     {
-      /* We are not nullifying the delay slot.  Much simpler.  */
-      if (which_alternative == 0)
-        if (get_attr_length (insn) == 1)
-	  /* Short form.  */
-          return \"addib,%C2 %1,%0,%3%#\";
-        else
-	  /* Long form.  */
-          return \"addi,%N2 %1,%0,%0\;bl%* %3,0\";
+      /* Reload loop counter from memory, the store back to memory
+	 happens in the branch's delay slot.   */
+      output_asm_insn (\"ldw %0,%4\", operands);
+      if (get_attr_length (insn) == 3)
+	return \"addib,%C2 %1,%4,%3;stw %4,%0\";
       else
-        {
-	  /* Reload loop counter from memory.  */
-          output_asm_insn (\"ldw %0,%4\;ldo %1(%4),%4\;stw %4,%0\", operands);
-	  /* Short form.  */
-          if (get_attr_length (insn) == 4)
-	    return \"comb,%S2 0,%4,%3%#\";
-	  /* Long form.  */
-          else
-	    return \"comclr,%B2 0,%4,0\;bl%* %3,0\";
-        }
+	return \"addi,%N2 %1,%4,%0\;bl %3,0\;stw %4,%0\";
     }
 }"
 ;; Do not expect to understand this the first time through.  
-[(set_attr "type" "cbranch")
+[(set_attr "type" "cbranch,multi,multi")
  (set (attr "length")
-      (if_then_else 
-	(eq_attr "alternative" "0")
-;; Loop counter in register case.
-	(cond [(lt (abs (minus (match_dup 1) (plus (pc) (const_int 2))))
-		   (const_int 1023))
-;; Short branch has a length of 1.
-	       (const_int 1)
-;; Long backward branch with nullified delay slot has length of 3.
-	       (and (lt (match_dup 1) (pc))
-		    (eq (symbol_ref "INSN_ANNULLED_BRANCH_P (insn)")
-			(const_int 1)))
-	       (const_int 3)]
-;; Default others to 2.
-;; Long branches with unfilled delay slots  --or--
-;; Long forward with nullified delay slot.
-	      (const_int 2))
-;; Loop counter in memory case.   Similar to above except we pay
-;; 3 extra insns in each case for reloading the counter into a register.
-	(if_then_else (lt (match_dup 1) (pc))
-	  (cond [(lt (abs (minus (match_dup 1) (plus (pc) (const_int 5))))
-		     (const_int 1023))
-;; Short branch has length of 4 (the reloading costs 3 insns)
-		 (const_int 4)
-		 (and (lt (match_dup 1) (pc))
-		      (eq (symbol_ref "INSN_ANNULLED_BRANCH_P (insn)")
-			  (const_int 1)))
-;; Long backward branch with nullified delay slot has length of 6.
-		 (const_int 6)]
-;; Default others to 5.
-;; Long branches with unfilled delay slots  --or--
-;; Long forward with nullified delay slot.
-		(const_int 5))
-	  (if_then_else (lt (abs (minus (match_dup 1) 
-					(plus (pc) (const_int 2))))
-			    (const_int 1023))
-			(const_int 4)
-			(const_int 5)))))])
+      (if_then_else (eq_attr "alternative" "0")
+;; Loop counter in register case
+;; Short branch has length of 1
+;; Long branch has length of 2
+	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
+		      (const_int 2047))
+           (const_int 1)
+	   (const_int 2))
 
+;; Loop counter in FP reg case.
+;; Extra goo to deal with additional reload insns.
+	(if_then_else (eq_attr "alternative" "1")
+	  (if_then_else (lt (match_dup 3) (pc))
+	    (if_then_else 
+	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 6))))
+		  (const_int 2047))
+	      (const_int 6)
+	      (const_int 7))
+	    (if_then_else 
+	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
+		  (const_int 2047))
+	      (const_int 6)
+	      (const_int 7)))
+;; Loop counter in memory case.
+;; Extra goo to deal with additional reload insns.
+	(if_then_else (lt (match_dup 3) (pc))
+	  (if_then_else 
+	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 3))))
+		(const_int 2047))
+	    (const_int 3)
+	    (const_int 4))
+	  (if_then_else 
+	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 2))))
+		(const_int 2047))
+	    (const_int 3)
+	    (const_int 4))))))])
 
 ;; The next four peepholes take advantage of the new 5 operand 
 ;; fmpy{add,sub} instructions available on 1.1 CPUS.  Basically
