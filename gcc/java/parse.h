@@ -687,12 +687,11 @@ typedef struct _jdeplist {
   }
 
 /* Register an import */
-#define REGISTER_IMPORT(WHOLE, NAME)			\
-{							\
-  IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P ((NAME)) = 1;	\
-  node = build_tree_list ((WHOLE), (NAME));		\
-  TREE_CHAIN (node) = ctxp->import_list;		\
-  ctxp->import_list = node;				\
+#define REGISTER_IMPORT(WHOLE, NAME)					\
+{									\
+  IS_A_SINGLE_IMPORT_CLASSFILE_NAME_P ((NAME)) = 1;			\
+  ctxp->import_list = chainon (ctxp->import_list, 			\
+			       build_tree_list ((WHOLE), (NAME)));	\
 }
 
 /* Macro to access the osb (opening square bracket) count */

@@ -347,7 +347,7 @@ static void append_innerclasses_attribute_entry PARAMS ((struct jcf_partial *, t
    We assume a local variable 'ptr' points into where we want to
    write next, and we assume enoygh space has been allocated. */
 
-#ifdef ENABLE_CHECKING
+#ifdef ENABLE_JC1_CHECKING
 static int CHECK_PUT PARAMS ((void *, struct jcf_partial *, int));
 
 static int
@@ -403,7 +403,7 @@ alloc_chunk (last, data, size, work)
   return chunk;
 }
 
-#ifdef ENABLE_CHECKING
+#ifdef ENABLE_JC1_CHECKING
 static int CHECK_OP PARAMS ((struct jcf_partial *));
 
 static int
@@ -2358,6 +2358,7 @@ generate_bytecode_insns (exp, target, state)
 	  }
 
 	if (CAN_COMPLETE_NORMALLY (try_block)
+	    && TREE_CODE (try_block) == BLOCK
 	    && BLOCK_EXPR_BODY (try_block) != empty_stmt_node)
 	  emit_goto (finished_label, state);
 

@@ -1087,7 +1087,8 @@ build_instanceof (value, type)
 		    value,
 		    boolean_true_node, boolean_false_node);
     }
-  else if (! CLASS_INTERFACE (valclass)
+  else if (DECL_P (klass) && DECL_P (valclass)
+	   && ! CLASS_INTERFACE (valclass)
 	   && ! CLASS_INTERFACE (klass)
 	   && ! inherits_from_p (type, valtype)
 	   && (CLASS_FINAL (klass)
@@ -1097,7 +1098,7 @@ build_instanceof (value, type)
 	 tree, so we immediately know the answer.  */
       expr = boolean_false_node;
     }
-  else if (CLASS_FINAL (klass))
+  else if (DECL_P (klass) && CLASS_FINAL (klass))
     {
       tree save = save_expr (value);
       expr = build (COND_EXPR, itype,

@@ -325,7 +325,7 @@ prepare_eh_table_type (type)
 
   push_obstacks (&permanent_obstack, &permanent_obstack);
   if (type == NULL_TREE)
-    exp = null_pointer_node;
+    exp = CATCH_ALL_TYPE;
   else if (is_compiled_class (type))
     exp = build_class_ref (type);
   else

@@ -465,11 +465,12 @@ struct lang_identifier
 #define RETURN_MAP_ADJUSTED(NODE) TREE_LANG_FLAG_2(NODE)
 
 /* In the label of a sub-routine, a chain of the return location labels. */
-#define LABEL_RETURN_LABELS(node) DECL_RESULT (LABEL_RETURN_LABEL(node))
+#define LABEL_RETURN_LABELS(node) \
+  (LABEL_DECL_CHECK (LABEL_RETURN_LABEL(node))->decl.result)
 
 /* In a LABEL_DECL, the next pending label.
    See pending_blocks in expr.c. */
-#define LABEL_PENDING_CHAIN(NODE) DECL_RESULT(NODE)
+#define LABEL_PENDING_CHAIN(NODE) (LABEL_DECL_CHECK (NODE)->decl.result)
 
 /* In a LABEL_DECL, the corresponding bytecode program counter. */
 #define LABEL_PC(NODE) ((NODE)->decl.u2.i)

@@ -1,3 +1,43 @@
+2000-06-21  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* except.c (prepare_eh_table_type): Use `CATCH_ALL_TYPE'.
+
+2000-06-20  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* check-init.c (ENABLE_JC1_CHECKING): Replaces ENABLE_CHECKING for
+	Java specific checks.
+	* expr.c (build_instanceof): CLASS_INTERFACE and CLASS_FINAL usage
+	screened by DECL_P.
+	* java-tree.def (CASE_EXPR): Marked 'e'.
+	(DEFAULT_EXPR): Likewise.
+	* jcf-parse.c (set_source_filename): CLASS_COMPLETE_P usage
+	screened by DECL_P.
+	* jcf-write.c (ENABLE_JC1_CHECKING): Replaces ENABLE_CHECKING for
+	Java specific checks.
+	(generate_bytecode_insns): Test try_block for BLOCK before using
+	BLOCK_EXPR_BODY.
+	* parse.y (build_wfl_wrap): Added `location' argument. Set
+	EXPR_WFL_LINECOL accordingly.
+	(dim_expr:): Wrap constants with WFLs.
+	(method_declarator): Use TREE_TYPE not TYPE_NAME on GET_CPC.
+	(resolve_package): Check for `stmt' not being a BLOCK before
+	building a debuggable statement with it.
+	(make_qualified_primary): Added extra parameter to build_wfl_wrap
+	invocation.
+	(resolve_field_access): Make sure `decl' is a DECL before treating
+	it as such.
+	(maybe_build_primttype_type_ref): Make sure `wfl''s node is an
+	IDENTIFIER_NODE before treating it as such.
+	(patch_new_array_init): Make sure `elt' is a TREE_LIST before
+	treating it as such.
+	(find_applicable_accessible_methods_list): CLASS_INTERFACE macro
+	to be applied only on non array types.
+
+2000-06-16  Per Bothner  <per@bothner.com>
+
+	* java-tree.h (LABEL_RETURN_LABELS, LABEL_PENDING_CHAIN):  Don't
+	define in terms of DECL_RESULT, as that fails when --enable-checking.
+	
 2000-06-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* jcf-write.c (CHECK_PUT): Add static prototype.  Make pointer
@@ -18,6 +58,30 @@
 	`saved_context'.
 
 	* lang.c (lang_get_alias_set): Mark parameter with ATTRIBUTE_UNUSED.
+
+2000-06-06  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.h (REGISTER_IMPORT): Use `chainon' to link new entries.
+	* parse.y (find_in_imports): Returned type changed to void,
+	leading comment fixed.
+	(register_package): New function.
+	(qualify_and_find): Likewise.
+	(package_declaration:): Use `register_package'.
+	(single_type_import_declaration:): Removed local variable
+	`node'. Added missing `;' for consistency.
+	(type_import_on_demand_declaration:): Use `chainon' to link new
+	entries.
+	(lookup_field_wrapper): Lookup local variables defined in outer
+	contexts first.
+	(java_complete_class): Don't reverse the list of imported on demand.
+	(do_resolve_class): Reorganized. Removed local variable
+	`original_name'. Call `qualify_and_find' with the current package
+	name, invoke `find_in_imports_on_demand' right after. Call
+	`qualify_and_find' with the packages we've seen so far. Fixed
+	operations numbering in comments.
+	(java_expand_class): Don't reverse `package_list'.
+	(find_most_specific_methods_list): New local variables `abstract'
+	and `candidates'. Use them to pick the right method.
 
 Tue Jun  6 11:39:05 2000  Tom Tromey  <tromey@ferrule.cygnus.com>
 
