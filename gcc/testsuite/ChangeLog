@@ -1,3 +1,8 @@
+2003-09-11  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/11788
+	* g++.dg/overload/addr1.C: New test.
+
 2003-09-10  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* gcc.dg/20030909-1.c: New test.

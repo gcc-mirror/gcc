@@ -129,8 +129,8 @@ static int method_name_cmp (const void *, const void *);
 static int resort_method_name_cmp (const void *, const void *);
 static void add_implicitly_declared_members (tree, int, int, int);
 static tree fixed_type_or_null (tree, int *, int *);
-static tree resolve_address_of_overloaded_function (tree, tree, int,
-							  int, int, tree);
+static tree resolve_address_of_overloaded_function (tree, tree, tsubst_flags_t,
+						    bool, tree);
 static tree build_vtbl_ref_1 (tree, tree);
 static tree build_vtbl_initializer (tree, tree, tree, tree, int *);
 static int count_fields (tree);
@@ -5675,18 +5675,17 @@ pop_lang_context (void)
 
 /* Given an OVERLOAD and a TARGET_TYPE, return the function that
    matches the TARGET_TYPE.  If there is no satisfactory match, return
-   error_mark_node, and issue an error message if COMPLAIN is
-   nonzero.  Permit pointers to member function if PTRMEM is nonzero.
-   If TEMPLATE_ONLY, the name of the overloaded function
-   was a template-id, and EXPLICIT_TARGS are the explicitly provided
+   error_mark_node, and issue a error & warning messages under control
+   of FLAGS.  Permit pointers to member function if FLAGS permits.  If
+   TEMPLATE_ONLY, the name of the overloaded function was a
+   template-id, and EXPLICIT_TARGS are the explicitly provided
    template arguments.  */
 
 static tree
 resolve_address_of_overloaded_function (tree target_type, 
 					tree overload,
-					int complain,
-	                                int ptrmem,
-					int template_only,
+					tsubst_flags_t flags,
+					bool template_only,
 					tree explicit_targs)
 {
   /* Here's what the standard says:
@@ -5730,9 +5729,8 @@ resolve_address_of_overloaded_function (tree target_type,
 			&& (TREE_CODE (TREE_TYPE (target_type)) 
 			    == METHOD_TYPE)), 0);
 
-  if (TREE_CODE (overload) == COMPONENT_REF)
-    overload = TREE_OPERAND (overload, 1);
-
+  my_friendly_assert (is_overloaded_fn (overload), 20030910);
+  
   /* Check that the TARGET_TYPE is reasonable.  */
   if (TYPE_PTRFN_P (target_type))
     /* This is OK.  */;
@@ -5748,7 +5746,7 @@ resolve_address_of_overloaded_function (tree target_type,
     }
   else 
     {
-      if (complain)
+      if (flags & tf_error)
 	error ("\
 cannot resolve overloaded function `%D' based on conversion to type `%T'", 
 		  DECL_NAME (OVL_FUNCTION (overload)), target_type);
@@ -5842,8 +5840,7 @@ cannot resolve overloaded function `%D' based on conversion to type `%T'",
 	    continue;
 
 	  /* Instantiate the template.  */
-	  instantiation = instantiate_template (fn, targs,
-						complain ? tf_error : tf_none);
+	  instantiation = instantiate_template (fn, targs, flags);
 	  if (instantiation == error_mark_node)
 	    /* Instantiation failed.  */
 	    continue;
@@ -5873,7 +5870,7 @@ cannot resolve overloaded function `%D' based on conversion to type `%T'",
   if (matches == NULL_TREE)
     {
       /* There were *no* matches.  */
-      if (complain)
+      if (flags & tf_error)
 	{
  	  error ("no matches converting function `%D' to type `%#T'", 
 		    DECL_NAME (OVL_FUNCTION (overload)),
@@ -5894,7 +5891,7 @@ cannot resolve overloaded function `%D' based on conversion to type `%T'",
     {
       /* There were too many matches.  */
 
-      if (complain)
+      if (flags & tf_error)
 	{
 	  tree match;
 
@@ -5917,11 +5914,11 @@ cannot resolve overloaded function `%D' based on conversion to type `%T'",
   fn = TREE_PURPOSE (matches);
 
   if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
-      && !ptrmem && !flag_ms_extensions)
+      && !(flags & tf_ptrmem_ok) && !flag_ms_extensions)
     {
       static int explained;
       
-      if (!complain)
+      if (!(flags & tf_error))
         return error_mark_node;
 
       pedwarn ("assuming pointer to member `%D'", fn);
@@ -5948,7 +5945,7 @@ cannot resolve overloaded function `%D' based on conversion to type `%T'",
 
 /* This function will instantiate the type of the expression given in
    RHS to match the type of LHSTYPE.  If errors exist, then return
-   error_mark_node. FLAGS is a bit mask.  If ITF_COMPLAIN is set, then
+   error_mark_node. FLAGS is a bit mask.  If TF_ERROR is set, then
    we complain on errors.  If we are not complaining, never modify rhs,
    as overload resolution wants to try many possible instantiations, in
    the hope that at least one will work.
@@ -5959,14 +5956,13 @@ cannot resolve overloaded function `%D' based on conversion to type `%T'",
 tree
 instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 {
-  int complain = (flags & tf_error);
-  int allow_ptrmem = flags & tf_ptrmem_ok;
+  tsubst_flags_t flags_in = flags;
   
   flags &= ~tf_ptrmem_ok;
   
   if (TREE_CODE (lhstype) == UNKNOWN_TYPE)
     {
-      if (complain)
+      if (flags & tf_error)
 	error ("not enough type information");
       return error_mark_node;
     }
@@ -5983,7 +5979,7 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 	;
       else
 	{
-	  if (complain)
+	  if (flags & tf_error)
 	    error ("argument of type `%T' does not match `%T'",
 		   TREE_TYPE (rhs), lhstype);
 	  return error_mark_node;
@@ -6034,13 +6030,21 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
       return instantiate_type (lhstype, rhs, flags);
 
     case COMPONENT_REF:
-      return instantiate_type (lhstype, TREE_OPERAND (rhs, 1), flags);
+      {
+	tree addr = instantiate_type (lhstype, TREE_OPERAND (rhs, 1), flags);
+
+	if (addr != error_mark_node
+	    && TREE_SIDE_EFFECTS (TREE_OPERAND (rhs, 0)))
+	  /* Do not lose object's side effects. */
+	  addr = build (COMPOUND_EXPR, TREE_TYPE (addr),
+			TREE_OPERAND (rhs, 0), addr);
+	return addr;
+      }
 
     case OFFSET_REF:
       rhs = TREE_OPERAND (rhs, 1);
       if (BASELINK_P (rhs))
-	return instantiate_type (lhstype, BASELINK_FUNCTIONS (rhs),
-	                         flags | allow_ptrmem);
+	return instantiate_type (lhstype, BASELINK_FUNCTIONS (rhs), flags_in);
 
       /* This can happen if we are forming a pointer-to-member for a
 	 member template.  */
@@ -6054,22 +6058,16 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
 	tree args = TREE_OPERAND (rhs, 1);
 
 	return
-	  resolve_address_of_overloaded_function (lhstype,
-						  fns,
-						  complain,
-	                                          allow_ptrmem,
-						  /*template_only=*/1,
+	  resolve_address_of_overloaded_function (lhstype, fns, flags_in,
+						  /*template_only=*/true,
 						  args);
       }
 
     case OVERLOAD:
     case FUNCTION_DECL:
       return 
-	resolve_address_of_overloaded_function (lhstype, 
-						rhs,
-						complain,
-	                                        allow_ptrmem,
-						/*template_only=*/0,
+	resolve_address_of_overloaded_function (lhstype, rhs, flags_in,
+						/*template_only=*/false,
 						/*explicit_targs=*/NULL_TREE);
 
     case TREE_LIST:
@@ -6131,7 +6129,7 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
     case PREDECREMENT_EXPR:
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
-      if (complain)
+      if (flags & tf_error)
 	error ("invalid operation on uninstantiated type");
       return error_mark_node;
 
@@ -6147,14 +6145,14 @@ instantiate_type (tree lhstype, tree rhs, tsubst_flags_t flags)
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
     case TRUTH_NOT_EXPR:
-      if (complain)
+      if (flags & tf_error)
 	error ("not enough type information");
       return error_mark_node;
 
     case COND_EXPR:
       if (type_unknown_p (TREE_OPERAND (rhs, 0)))
 	{
-	  if (complain)
+	  if (flags & tf_error)
 	    error ("not enough type information");
 	  return error_mark_node;
 	}

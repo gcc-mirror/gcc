@@ -3581,9 +3581,7 @@ build_address (tree t)
   if (error_operand_p (t) || !cxx_mark_addressable (t))
     return error_mark_node;
 
-  addr = build1 (ADDR_EXPR, 
-		 build_pointer_type (TREE_TYPE (t)),
-		 t);
+  addr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (t)), t);
   if (staticp (t))
     TREE_CONSTANT (addr) = 1;
 
@@ -4003,12 +4001,24 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
       {
 	tree addr;
 
-	if (TREE_CODE (arg) == COMPONENT_REF
-	    && TREE_CODE (TREE_OPERAND (arg, 1)) == BASELINK)
-	  arg = BASELINK_FUNCTIONS (TREE_OPERAND (arg, 1));
-
 	if (TREE_CODE (arg) != COMPONENT_REF)
 	  addr = build_address (arg);
+	else if (TREE_CODE (TREE_OPERAND (arg, 1)) == BASELINK)
+	  {
+	    tree fn = BASELINK_FUNCTIONS (TREE_OPERAND (arg, 1));
+
+	    /* We can only get here with a single static member
+	       function.  */
+	    my_friendly_assert (TREE_CODE (fn) == FUNCTION_DECL
+				&& DECL_STATIC_FUNCTION_P (fn),
+				20030906);
+	    mark_used (fn);
+	    addr = build_address (fn);
+	    if (TREE_SIDE_EFFECTS (TREE_OPERAND (arg, 0)))
+	      /* Do not lose object's side effects.  */
+	      addr = build (COMPOUND_EXPR, TREE_TYPE (addr),
+			    TREE_OPERAND (arg, 0), addr);
+	  }
 	else if (DECL_C_BIT_FIELD (TREE_OPERAND (arg, 1)))
 	  {
 	    error ("attempt to take address of bit-field structure member `%D'",
