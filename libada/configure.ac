@@ -82,7 +82,7 @@ if test $build = $target \
   # Note that build=target is almost certainly the wrong test; FIXME
   default_gnatlib_target="gnatlib-shared"
 else
-  default_gnatlib_target="gnatlib-simple"
+  default_gnatlib_target="gnatlib-plain"
 fi
 AC_SUBST([default_gnatlib_target])
 

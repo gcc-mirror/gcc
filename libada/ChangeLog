@@ -1,3 +1,9 @@
+2004-04-17  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.ac: It's gnatlib-plain in the Makefile, not
+	gnatlib-simple; make configure match.
+	* configure: Regenerate.
+
 2004-04-14  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.in: Call gcc/ada/Makefile directly, not through the
