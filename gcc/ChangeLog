@@ -1,3 +1,7 @@
+2001-08-24  Andreas Jaeger  <aj@suse.de>, rkl@connect.org.uk
+
+	* cp/rtti.c (VPARAMS): Fix parameter.
+
 2001-08-24  Zack Weinberg  <zackw@panix.com>
 
 	* expmed.c: Default-#define HAVE_insv, HAVE_extv, and HAVE_extzv
@@ -100,7 +104,7 @@ Thu Aug 23 17:21:43 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* pa32-regs.h (CONDITIONAL_REGISTER_USAGE): Add declaration for
 	variable i.
 	* pa64-regs.h (CONDITIONAL_REGISTER_USAGE): Likewise.
-	
+
 2001-08-22  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpperror.c (print_location): Don't show _Pragma.
@@ -246,7 +250,7 @@ Thu Aug 23 17:21:43 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-08-21  Richard Henderson  <rth@redhat.com>
 
-	* config/ia64/sysv4.h (ASM_OUTPUT_LABELREF): Don't emit '#' if 
+	* config/ia64/sysv4.h (ASM_OUTPUT_LABELREF): Don't emit '#' if
 	ia64_asm_output_label.
 
 	* config/ia64/crtbegin.asm (__do_global_dtors_aux): Use saved
