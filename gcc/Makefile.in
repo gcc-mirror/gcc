@@ -1486,9 +1486,13 @@ install-common-headers: install-dir $(USER_H) gvarargs.h gstdarg.h gstddef.h
 	   $(INSTALL_DATA) `basename $$file` $$shelllibsubdir/include/`basename $$file`; \
 	   chmod a-x $$shelllibsubdir/include/`basename $$file`; \
 	done
-	-rm -f $(includedir)/assert.h
-	$(INSTALL_DATA) $(srcdir)/assert.h $(includedir)/assert.h
-	chmod a-x $(libsubdir)/include/assert.h
+	if [ -f $(includedir)/assert.h ] && ! grep "This is GCC's version of assert.h." $(includedir)/assert.h; \
+	then true; \
+	else \
+	  rm -f $(includedir)/assert.h; \
+	  $(INSTALL_DATA) $(srcdir)/assert.h $(includedir)/assert.h; \
+	  chmod a-x $(libsubdir)/include/assert.h; \
+	fi
 	-rm -f $(libsubdir)/include/varargs.h
 	$(INSTALL_DATA) $(srcdir)/gvarargs.h $(libsubdir)/include/varargs.h
 	chmod a-x $(libsubdir)/include/varargs.h
