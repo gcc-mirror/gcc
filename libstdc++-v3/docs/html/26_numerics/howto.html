@@ -1,13 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
-   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 26.">
-   <meta name="GENERATOR" content="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)" />
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL" />
+   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 26." />
+   <meta name="GENERATOR" content="vi and eight fingers" />
    <title>libstdc++-v3 HOWTO:  Chapter 26</title>
-<link rel="StyleSheet" href="../lib3styles.css">
+<link rel="StyleSheet" href="../lib3styles.css" />
 </head>
 <body>
 
@@ -15,29 +14,32 @@
 
 <p>Chapter 26 deals with building block abstractions to aid in
    numerical computing:
-   <ul>
-     <li>Template data structures such as <code>valarray&lt;&gt;</code>
-         and <code>complex&lt;&gt;</code>.
-     <li>Template numerical functions such as <code>accumulate</code>,
-         <code>inner_product</code>, <code>partial_sum</code>, and
-         <code>adjacent_difference</code>.
-   </ul>
-   All of the Standard C math functions are of course included in C++,
+</p>
+<ul>
+   <li>Template data structures such as <code>valarray&lt;&gt;</code>
+       and <code>complex&lt;&gt;</code>.
+   </li>
+   <li>Template numerical functions such as <code>accumulate</code>,
+       <code>inner_product</code>, <code>partial_sum</code>, and
+       <code>adjacent_difference</code>.
+   </li>
+</ul>
+<p>All of the Standard C math functions are of course included in C++,
    and overloaded versions for <code>long</code>, <code>float</code>, and
    <code>long double</code> have been added for all of them.
 </p>
 
 <!-- ####################################################### -->
-<hr>
+<hr />
 <h1>Contents</h1>
 <ul>
-   <li><a href="#1">Complex Number Processing</a>
-   <li><a href="#2">Array Processing</a>
-   <li><a href="#3">Numerical Functions</a>
-   <li><a href="#4">C99</a>
+   <li><a href="#1">Complex Number Processing</a></li>
+   <li><a href="#2">Array Processing</a></li>
+   <li><a href="#3">Numerical Functions</a></li>
+   <li><a href="#4">C99</a></li>
 </ul>
 
-<hr>
+<hr />
 
 <!-- ####################################################### -->
 
@@ -62,7 +64,7 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="2">Array Processing</a></h2>
    <p>One of the major reasons why FORTRAN can chew through numbers so well
       is that it is defined to be free of pointer aliasing, an assumption
@@ -87,22 +89,23 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="3">Numerical Functions</a></h2>
    <p>There are four generalized functions in the &lt;numeric&gt; header
       that follow the same conventions as those in &lt;algorithm&gt;.  Each
       of them is overloaded:  one signature for common default operations,
       and a second for fully general operations.  Their names are
       self-explanatory to anyone who works with numerics on a regular basis:
-      <ul>
-        <li><code>accumulate</code>
-        <li><code>inner_product</code>
-        <li><code>partial_sum</code>
-        <li><code>adjacent_difference</code>
-      </ul>
    </p>
+   <ul>
+      <li><code>accumulate</code></li>
+      <li><code>inner_product</code></li>
+      <li><code>partial_sum</code></li>
+      <li><code>adjacent_difference</code></li>
+   </ul>
    <p>Here is a simple example of the two forms of <code>accumulate</code>.
-      <pre>
+   </p>
+   <pre>
    int   ar[50];
    int   someval = somefunction();
 
@@ -111,8 +114,8 @@
    int  sum       = std::accumulate(ar,ar+50,0);
    int  sum_stuff = std::accumulate(ar,ar+50,someval);
    int  product   = std::accumulate(ar,ar+50,1,std::multiplies&lt;int&gt;());
-      </pre>
-      The first call adds all the members of the array, using zero as an
+   </pre>
+   <p>The first call adds all the members of the array, using zero as an
       initial value for <code>sum</code>.  The second does the same, but uses
       <code>someval</code> as the starting value (thus, <code>sum_stuff == sum +
       someval</code>).  The final call uses the second of the two signatures,
@@ -125,7 +128,7 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="4">C99</a></h2>
    <p>In addition to the other topics on this page, we'll note here some
       of the C99 features that appear in libstdc++-v3.
@@ -151,7 +154,7 @@
 
 <!-- ####################################################### -->
 
-<hr>
+<hr />
 <p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to

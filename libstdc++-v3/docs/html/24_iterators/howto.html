@@ -1,13 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
-   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 24.">
-   <meta name="GENERATOR" content="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)" />
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL" />
+   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 24." />
+   <meta name="GENERATOR" content="vi and eight fingers" />
    <title>libstdc++-v3 HOWTO:  Chapter 24</title>
-<link rel="StyleSheet" href="../lib3styles.css">
+<link rel="StyleSheet" href="../lib3styles.css" />
 </head>
 <body>
 
@@ -19,14 +18,14 @@
 
 
 <!-- ####################################################### -->
-<hr>
+<hr />
 <h1>Contents</h1>
 <ul>
-   <li><a href="#1">They ain't pointers!</a>
-   <li><a href="#2">It ends <em>where?</em></a>
+   <li><a href="#1">They ain't pointers!</a></li>
+   <li><a href="#2">It ends <em>where?</em></a></li>
 </ul>
 
-<hr>
+<hr />
 
 <!-- ####################################################### -->
 
@@ -67,41 +66,46 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="2">It ends <em>where?</em></a></h2>
    <p>This starts off sounding complicated, but is actually very easy,
       especially towards the end.  Trust me.
-  </p>
+   </p>
    <p>Beginners usually have a little trouble understand the whole
       'past-the-end' thing, until they remember their early algebra classes
-      (see, they </em>told</em> you that stuff would come in handy!) and
+      (see, they <em>told</em> you that stuff would come in handy!) and
       the concept of half-open ranges.
    </p>
    <p>First, some history, and a reminder of some of the funkier rules in
       C and C++ for builtin arrays.  The following rules have always been
       true for both languages:
-      <ol>
-       <li>You can point anywhere in the array, <em>or to the first element
-           past the end of the array</em>.  A pointer that points to one
-           past the end of the array is guaranteed to be as unique as a
-           pointer to somewhere inside the array, so that you can compare
-           such pointers safely.
-       <li>You can only dereference a pointer that points into an array.
-           If your array pointer points outside the array -- even to just
-           one past the end -- and you dereference it, Bad Things happen.
-       <li>Strictly speaking, simply pointing anywhere else invokes
-           undefined behavior.  Most programs won't puke until such a
-           pointer is actually dereferenced, but the standards leave that
-           up to the platform.
-      </ol>
-      The reason this past-the-end addressing was allowed is to make it
+   </p>
+   <ol>
+      <li>You can point anywhere in the array, <em>or to the first element
+          past the end of the array</em>.  A pointer that points to one
+          past the end of the array is guaranteed to be as unique as a
+          pointer to somewhere inside the array, so that you can compare
+          such pointers safely.
+      </li>
+      <li>You can only dereference a pointer that points into an array.
+          If your array pointer points outside the array -- even to just
+          one past the end -- and you dereference it, Bad Things happen.
+      </li>
+      <li>Strictly speaking, simply pointing anywhere else invokes
+          undefined behavior.  Most programs won't puke until such a
+          pointer is actually dereferenced, but the standards leave that
+          up to the platform.
+      </li>
+   </ol>
+   <p>The reason this past-the-end addressing was allowed is to make it
       easy to write a loop to go over an entire array, e.g.,
       while (*d++ = *s++);.
    </p>
    <p>So, when you think of two pointers delimiting an array, don't think
       of them as indexing 0 through n-1.  Think of them as <em>boundary
       markers</em>:
-      <pre>
+   </p>
+   <pre>
 
    beginning            end
      |                   |
@@ -121,8 +125,8 @@
      |                       |           dereference 'end'.
    beginning                end
 
-      </pre>
-      See?  Everything between the boundary markers is part of the array.
+   </pre>
+   <p>See?  Everything between the boundary markers is part of the array.
       Simple.
    </p>
    <p>Now think back to your junior-high school algebra course, when you
@@ -171,7 +175,7 @@
 
 <!-- ####################################################### -->
 
-<hr>
+<hr />
 <p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to

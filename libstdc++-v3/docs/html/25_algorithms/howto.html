@@ -1,13 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
-   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 25.">
-   <meta name="GENERATOR" content="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)" />
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL" />
+   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 25." />
+   <meta name="GENERATOR" content="vi and eight fingers" />
    <title>libstdc++-v3 HOWTO:  Chapter 25</title>
-<link rel="StyleSheet" href="../lib3styles.css">
+<link rel="StyleSheet" href="../lib3styles.css" />
 </head>
 <body>
 
@@ -19,14 +18,14 @@
 
 
 <!-- ####################################################### -->
-<hr>
+<hr />
 <h1>Contents</h1>
 <ul>
-   <li><a href="#1">Prerequisites</a>
-   <li><a href="#2">Special <code>swap</code>s</a>
+   <li><a href="#1">Prerequisites</a></li>
+   <li><a href="#2">Special <code>swap</code>s</a></li>
 </ul>
 
-<hr>
+<hr />
 
 <!-- ####################################################### -->
 
@@ -34,16 +33,18 @@
    <p>The neatest accomplishment of the algorithms chapter is that all the
       work is done via iterators, not containers directly.  This means two
       important things:
-      <ol>
-        <li>Anything that behaves like an iterator can be used in one of
-            these algorithms.  Raw pointers make great candidates, thus
-            built-in arrays are fine containers, as well as your own iterators.
-        <li>The algorithms do not (and cannot) affect the container as a
-            whole; only the things between the two iterator endpoints.  If
-            you pass a range of iterators only enclosing the middle third of
-            a container, then anything outside that range is inviolate.
-      </ol>
    </p>
+   <ol>
+      <li>Anything that behaves like an iterator can be used in one of
+          these algorithms.  Raw pointers make great candidates, thus
+          built-in arrays are fine containers, as well as your own iterators.
+      </li>
+      <li>The algorithms do not (and cannot) affect the container as a
+          whole; only the things between the two iterator endpoints.  If
+          you pass a range of iterators only enclosing the middle third of
+          a container, then anything outside that range is inviolate.
+      </li>
+   </ol>
    <p>Even strings can be fed through the algorithms here, although the
       string class has specialized versions of many of these functions (for
       example, <code>string::find()</code>).  Most of the examples on this
@@ -67,7 +68,7 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="2">Special <code>swap</code>s</a></h2>
    <p>If you call <code> std::swap(x,y); </code> where x and y are standard
       containers, then the call will automatically be replaced by a call to
@@ -90,7 +91,7 @@
 
 <!-- ####################################################### -->
 
-<hr>
+<hr />
 <p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to

@@ -1,13 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
-   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 23.">
-   <meta name="GENERATOR" content="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)" />
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL" />
+   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 23." />
+   <meta name="GENERATOR" content="vi and eight fingers" />
    <title>libstdc++-v3 HOWTO:  Chapter 23</title>
-<link rel="StyleSheet" href="../lib3styles.css">
+<link rel="StyleSheet" href="../lib3styles.css" />
 </head>
 <body>
 
@@ -18,19 +17,19 @@
 
 
 <!-- ####################################################### -->
-<hr>
+<hr />
 <h1>Contents</h1>
 <ul>
-   <li><a href="#1">Making code unaware of the container/array difference</a>
-   <li><a href="#2">Variable-sized bitmasks</a>
-   <li><a href="#3">Containers and multithreading</a>
-   <li><a href="#4">&quot;Hinting&quot; during insertion</a>
-   <li><a href="#5">Bitmasks and string arguments</a>
-   <li><a href="#6"><code>std::list::size()</code> is O(n)!</a>
-   <li><a href="#7">Space overhead management for vectors</a>
+   <li><a href="#1">Making code unaware of the container/array difference</a></li>
+   <li><a href="#2">Variable-sized bitmasks</a></li>
+   <li><a href="#3">Containers and multithreading</a></li>
+   <li><a href="#4">&quot;Hinting&quot; during insertion</a></li>
+   <li><a href="#5">Bitmasks and string arguments</a></li>
+   <li><a href="#6"><code>std::list::size()</code> is O(n)!</a></li>
+   <li><a href="#7">Space overhead management for vectors</a></li>
 </ul>
 
-<hr>
+<hr />
 
 <!-- ####################################################### -->
 
@@ -65,9 +64,10 @@
       code size or execution time.
    </p>
    <p>The result is that if all your algorithm calls look like
-      <pre>
+   </p>
+   <pre>
    std::transform(beginof(foo), endof(foo), beginof(foo), SomeFunction);</pre>
-      then the type of foo can change from an array of ints to a vector
+   <p>then the type of foo can change from an array of ints to a vector
       of ints to a deque of ints and back again, without ever changing any
       client code.
    </p>
@@ -86,19 +86,21 @@
       give the extra three lines and avoid confusion.
    </p>
    <p>Second, the line
-      <pre>
+   </p>
+   <pre>
     inline unsigned int lengthof (T (&amp;)[sz]) { return sz; } </pre>
-      looks just weird!  Hint:  unused parameters can be left nameless.
+   <p>looks just weird!  Hint:  unused parameters can be left nameless.
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="2">Variable-sized bitmasks</a></h2>
    <p>No, you cannot write code of the form
+   </p>
       <!-- Careful, the leading spaces in PRE show up directly. -->
-      <pre>
+   <pre>
       #include &lt;bitset&gt;
 
       void foo (size_t n)
@@ -106,19 +108,19 @@
           std::bitset&lt;n&gt;   bits;
           ....
       } </pre>
-      because <code>n</code> must be known at compile time.  Your compiler is
+   <p>because <code>n</code> must be known at compile time.  Your compiler is
       correct; it is not a bug.  That's the way templates work.  (Yes, it
       <em>is</em> a feature.)
    </p>
    <p>There are a couple of ways to handle this kind of thing.  Please
       consider all of them before passing judgement.  They include, in
       no particular order:
-      <ul>
-        <li>A very large N in <code>bitset&lt;N&gt;</code>.
-        <li>A container&lt;bool&gt;.
-        <li>Extremely weird solutions.
-      </ul>
    </p>
+      <ul>
+        <li>A very large N in <code>bitset&lt;N&gt;</code>.</li>
+        <li>A container&lt;bool&gt;.</li>
+        <li>Extremely weird solutions.</li>
+      </ul>
    <p><strong>A very large N in
       <code>bitset&lt;N&gt;</code>.&nbsp;&nbsp;</strong>  It has
       been pointed out a few times in newsgroups that N bits only takes up
@@ -192,7 +194,7 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="3">Containers and multithreading</a></h2>
    <p>This section discusses issues surrounding the design of
       multithreaded applications which use Standard C++ containers.
@@ -204,14 +206,14 @@
       multithreading as it relates to libstdc++, including details on
       the proper compilation of threaded code (and compatibility between
       threaded and non-threaded code), see Chapter 17.
-  </p>
+   </p>
    <p>Two excellent pages to read when working with the Standard C++
       containers and threads are
       <a href="http://www.sgi.com/tech/stl/thread_safety.html">SGI's
       http://www.sgi.com/tech/stl/thread_safety.html</a> and
       <a href="http://www.sgi.com/tech/stl/Allocators.html">SGI's
       http://www.sgi.com/tech/stl/Allocators.html</a>.
-  </p>
+   </p>
    <p><em>However, please ignore all discussions about the user-level
       configuration of the lock implementation inside the STL
       container-memory allocator on those pages.  For the sake of this
@@ -223,7 +225,7 @@
       STL.  This is no longer required for any port and should no
       longer be done unless you really know what you are doing and
       assume all responsibility.</em>
-  </p>
+   </p>
    <p>Since the container implementation of libstdc++-v3 uses the SGI
       code, we use the same definition of thread safety as SGI when
       discussing design.  A key point that beginners may miss is the
@@ -235,7 +237,7 @@
       element is constructed uses an internal lock obtained and
       released solely within libstdc++-v3 code (in fact, this is the
       reason STL requires any knowledge of the thread configuration).
-  </p>
+   </p>
    <p>For implementing a container which does its own locking, it is
       trivial to provide a wrapper class which obtains the lock (as
       SGI suggests), performs the container operation, and then
@@ -249,7 +251,8 @@
       you must change this on a global basis for your platform to better
       support multi-threading, then please consult all commentary in
       include/bits/stl_alloc.h and the allocators link below.
-      <blockquote>
+   </p> 
+   <blockquote>
       <p>(Explicit warning since so many people get confused while
       attempting this:)
       </p>
@@ -271,8 +274,8 @@
       one-definition rule of C/C++ and you might cause yourself untold
       problems.
       </p>
-      </blockquote>
-      If you find any platform where gcc reports a
+   </blockquote>
+   <p>If you find any platform where gcc reports a
       threading model other than single, and where libstdc++-v3 builds
       a buggy container allocator when used with threads unless you
       define __USE_MALLOC, we want to hear about it ASAP.  In the
@@ -290,13 +293,14 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="4">&quot;Hinting&quot; during insertion</a></h2>
    <p>Section [23.1.2], Table 69, of the C++ standard lists this function
       for all of the associative containers (map, set, etc):
-      <pre>
+   </p>
+   <pre>
       a.insert(p,t);</pre>
-      where 'p' is an iterator into the container 'a', and 't' is the item
+   <p>where 'p' is an iterator into the container 'a', and 't' is the item
       to insert.  The standard says that &quot;iterator p is a hint
       pointing to where the insert should start to search,&quot; but
       specifies nothing more.  (LWG Issue #233, currently in review,
@@ -321,23 +325,26 @@
       their new meanings in the next paragraph.  *grin*
    </p>
    <p>If the <code>hint</code> parameter ('p' above) is equivalent to:
+   </p>
      <ul>
       <li><code>begin()</code>, then the item being inserted should have a key
           less than all the other keys in the container.  The item will
           be inserted at the beginning of the container, becoming the new
           entry at <code>begin()</code>.
+      </li>
       <li><code>end()</code>, then the item being inserted should have a key
           greater than all the other keys in the container.  The item will
           be inserted at the end of the container, becoming the new entry
           at <code>end()</code>.
+      </li>
       <li>neither <code>begin()</code> nor <code>end()</code>, then:  Let <code>h</code>
           be the entry in the container pointed to by <code>hint</code>, that
           is, <code>h = *hint</code>.  Then the item being inserted should have
           a key less than that of <code>h</code>, and greater than that of the
           item preceding <code>h</code>.  The new item will be inserted
           between <code>h</code> and <code>h</code>'s predecessor.
+      </li>
      </ul>
-   </p>
    <p>For <code>multimap</code> and <code>multiset</code>, the restrictions are
       slightly looser:  &quot;greater than&quot; should be replaced by
       &quot;not less than&quot; and &quot;less than&quot; should be replaced
@@ -372,7 +379,7 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="5">Bitmasks and string arguments</a></h2>
    <p>Bitmasks do not take char* nor const char* arguments in their
       constructors.  This is something of an accident, but you can read
@@ -383,6 +390,7 @@
    </p>
    <p>For now you can simply make a temporary string object using the
       constructor expression:
+   </p>
       <pre>
       std::bitset&lt;5&gt; b ( std::string(&quot;10110&quot;) );
       </pre>
@@ -390,17 +398,17 @@
       <pre>
       std::bitset&lt;5&gt; b ( &quot;10110&quot; );    // invalid
       </pre>
-   </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="6"><code>std::list::size()</code> is O(n)!</a></h2>
    <p>Yes it is, and that's okay.  This is a decision that we preserved when
       we imported SGI's STL implementation.  The following is quoted from
       <a href="http://www.sgi.com/tech/stl/FAQ.html">their FAQ</a>:
-      <blockquote>
+   </p>
+   <blockquote>
       <p>The size() member function, for list and slist, takes time
       proportional to the number of elements in the list.  This was a
       deliberate tradeoff.  The only way to get a constant-time size() for
@@ -419,6 +427,7 @@
       is supposed to do something unless there is a good reason not to.
       </p>
       <p>One implication of linear time size(): you should never write
+      </p>
          <pre>
          if (L.size() == 0)
              ...</pre>
@@ -426,15 +435,13 @@
          <pre>
          if (L.empty())
              ...</pre>
-      </p>
-      </blockquote>
-   </p>
+   </blockquote>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
-<h2><a name="7">Space overhead management for vectors</h2>
+<hr />
+<h2><a name="7">Space overhead management for vectors</a></h2>
    <p>In
       <a href="http://gcc.gnu.org/ml/libstdc++/2002-04/msg00105.html">this
       message to the list</a>, Daniel Kostecky announced work on an
@@ -457,7 +464,7 @@
 
 <!-- ####################################################### -->
 
-<hr>
+<hr />
 <p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to

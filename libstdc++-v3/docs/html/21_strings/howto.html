@@ -1,13 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
-   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 21.">
-   <meta name="GENERATOR" content="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)" />
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL" />
+   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 21." />
+   <meta name="GENERATOR" content="vi and eight fingers" />
    <title>libstdc++-v3 HOWTO:  Chapter 21</title>
-<link rel="StyleSheet" href="../lib3styles.css">
+<link rel="StyleSheet" href="../lib3styles.css" />
 </head>
 <body>
 
@@ -18,17 +17,17 @@
 
 
 <!-- ####################################################### -->
-<hr>
+<hr />
 <h1>Contents</h1>
 <ul>
-   <li><a href="#1">MFC's CString</a>
-   <li><a href="#2">A case-insensitive string class</a>
-   <li><a href="#3">Breaking a C++ string into tokens</a>
-   <li><a href="#4">Simple transformations</a>
-   <li><a href="#5">Making strings of arbitrary character types</a>
+   <li><a href="#1">MFC's CString</a></li>
+   <li><a href="#2">A case-insensitive string class</a></li>
+   <li><a href="#3">Breaking a C++ string into tokens</a></li>
+   <li><a href="#4">Simple transformations</a></li>
+   <li><a href="#5">Making strings of arbitrary character types</a></li>
 </ul>
 
-<hr>
+<hr />
 
 <!-- ####################################################### -->
 
@@ -43,24 +42,29 @@
    <p>Things are not as bad as they seem.  In
       <a href="http://gcc.gnu.org/ml/gcc/1999-04n/msg00236.html">this
       message</a>, Joe Buck points out a few very important things:
+   </p>
       <ul>
          <li>The Standard <code>string</code> supports all the operations
              that CString does, with three exceptions.
+         </li>
          <li>Two of those exceptions (whitespace trimming and case 
              conversion) are trivial to implement.  In fact, we do so
              on this page.
+         </li>
          <li>The third is <code>CString::Format</code>, which allows formatting
              in the style of <code>sprintf</code>.  This deserves some mention:
+         </li>
       </ul>
-   </p>
-   <a name="1.1internal"> <!-- Coming from Chapter 27 -->
-   <p>The old libg++ library had a function called form(), which did much
+   <p><a name="1.1internal"> <!-- Coming from Chapter 27 -->
+      The old libg++ library had a function called form(), which did much
       the same thing.  But for a Standard solution, you should use the
       stringstream classes.  These are the bridge between the iostream
       hierarchy and the string class, and they operate with regular
       streams seamlessly because they inherit from the iostream
       hierarchy.  An quick example:
-      <pre>
+      </a>
+   </p>
+   <pre>
    #include &lt;iostream&gt;
    #include &lt;string&gt;
    #include &lt;sstream&gt;
@@ -80,10 +84,10 @@
 
        return output_stream.str();
    } </pre>
-   </p></a>
    <p>A serious problem with CString is a design bug in its memory
       allocation.  Specifically, quoting from that same message:
-      <pre>
+   </p>
+   <pre>
    CString suffers from a common programming error that results in
    poor performance.  Consider the following code:
    
@@ -104,22 +108,25 @@
    
    If you replace CString with string in the above function, the
    performance is O(n).
-      </pre>
-   </p>
+   </pre>
    <p>Joe Buck also pointed out some other things to keep in mind when
       comparing CString and the Standard string class:
+   </p>
       <ul>
          <li>CString permits access to its internal representation; coders
              who exploited that may have problems moving to <code>string</code>.
+         </li>
          <li>Microsoft ships the source to CString (in the files
              MFC\SRC\Str{core,ex}.cpp), so you could fix the allocation
              bug and rebuild your MFC libraries.
-             <em><B>Note:</B>  It looks like the the CString shipped with
-             VC++6.0 has fixed this, although it may in fact have been one
-             of the VC++ SPs that did it.</em>
+             <em><strong>Note:</strong> It looks like the the CString shipped
+             with VC++6.0 has fixed this, although it may in fact have been
+             one of the VC++ SPs that did it.</em>
+         </li>
          <li><code>string</code> operations like this have O(n) complexity
              <em>if the implementors do it correctly</em>.  The libstdc++
              implementors did it correctly.  Other vendors might not.
+         </li>
          <li>While parts of the SGI STL are used in libstdc++-v3, their
              string class is not.  The SGI <code>string</code> is essentially
              <code>vector&lt;char&gt;</code> and does not do any reference
@@ -129,13 +136,13 @@
              libstdc++ string, the SGI string, and the SGI rope, and this
              is all before any allocator or traits customizations!  (More
              choices than you can shake a stick at -- want fries with that?)
+         </li>
       </ul>
-   </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="2">A case-insensitive string class</a></h2>
    <p>The well-known-and-if-it-isn't-well-known-it-ought-to-be
       <a href="http://www.peerdirect.com/resources/">Guru of the Week</a>
@@ -144,7 +151,8 @@
       is identical to the standard 'string' class, but is
       case-insensitive in the same way as the (common but nonstandard)
       C function stricmp():&quot;
-      <pre>
+   </p>
+   <pre>
    ci_string s( "AbCdE" );
 
    // case insensitive
@@ -154,7 +162,6 @@
    // still case-preserving, of course
    assert( strcmp( s.c_str(), "AbCdE" ) == 0 );
    assert( strcmp( s.c_str(), "abcde" ) != 0 ); </pre>
-   </p>
 
    <p>The solution is surprisingly easy.  The original answer pages
       on the GotW website were removed into cold storage, in
@@ -189,7 +196,7 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="3">Breaking a C++ string into tokens</a></h2>
    <p>The Standard C (and C++) function <code>strtok()</code> leaves a lot to
       be desired in terms of user-friendliness.  It's unintuitive, it
@@ -210,21 +217,23 @@
       comments on what kind of string it will accept).  The author uses
       a more general (but less readable) form of it for parsing command
       strings and the like.  If you compiled and ran this code using it:
-      <pre>
+   </p>
+   <pre>
    std::list&lt;string&gt;  ls;
    stringtok (ls, " this  \t is\t\n  a test  ");
    for (std::list&lt;string&gt;const_iterator i = ls.begin();
         i != ls.end(); ++i)
    {
        std::cerr &lt;&lt; ':' &lt;&lt; (*i) &lt;&lt; ":\n";
-   }</pre>
-      You would see this as output:
-      <pre>
+   } </pre>
+   <p>You would see this as output:
+   </p>
+   <pre>
    :this:
    :is:
    :a:
-   :test:</pre>
-      with all the whitespace removed.  The original <code>s</code> is still
+   :test: </pre>
+   <p>with all the whitespace removed.  The original <code>s</code> is still
       available for use, <code>ls</code> will clean up after itself, and
       <code>ls.size()</code> will return how many tokens there were.
    </p>
@@ -248,7 +257,7 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="4">Simple transformations</a></h2>
    <p>Here are Standard, simple, and portable ways to perform common
       transformations on a <code>string</code> instance, such as &quot;convert
@@ -258,7 +267,8 @@
    </p>
    <p>This code will go through some iterations (no pun).  Here's the
       simplistic version usually seen on Usenet:
-      <pre>
+   </p>
+   <pre>
    #include &lt;string&gt;
    #include &lt;algorithm&gt;
    #include &lt;cctype&gt;      // old &lt;ctype.h&gt;
@@ -276,7 +286,7 @@
    std::string  capital_s;
    capital_s.reserve(s.size());
    std::transform (s.begin(), s.end(), capital_s.begin(), tolower); </pre>
-      <span class="larger"><strong>Note</strong></span> that these calls all
+   <p><span class="larger"><strong>Note</strong></span> that these calls all
       involve the global C locale through the use of the C functions
       <code>toupper/tolower</code>.  This is absolutely guaranteed to work --
       but <em>only</em> if the string contains <em>only</em> characters
@@ -287,12 +297,12 @@
       characters (hahahahahaha), then you're done.
    </p>
    <p>At minimum, you can write short wrappers like
-      <pre>
+   </p>
+   <pre>
    char toLower (char c)
    {
       return tolower(static_cast&lt;unsigned char&gt;(c));
-   }</pre>
-   </p>
+   } </pre>
    <p>The correct method is to use a facet for a particular locale
       and call its conversion functions.  These are discussed more in
       Chapter 22; the specific part is
@@ -304,7 +314,8 @@
       like transformations, this task is trivial with the use of string's
       <code>find</code> family.  These examples are broken into multiple
       statements for readability:
-      <pre>
+   </p>
+   <pre>
    std::string  str (" \t blah blah blah    \n ");
 
    // trim leading whitespace
@@ -314,7 +325,7 @@
    // trim trailing whitespace
    notwhite = str.find_last_not_of(" \t\n"); 
    str.erase(notwhite+1); </pre>
-      Obviously, the calls to <code>find</code> could be inserted directly
+   <p>Obviously, the calls to <code>find</code> could be inserted directly
       into the calls to <code>erase</code>, in case your compiler does not
       optimize named temporaries out of existence.
    </p>
@@ -322,7 +333,7 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="5">Making strings of arbitrary character types</a></h2>
    <p>how to work with char_traits -- in the archives, just need to
       go through and pull the examples together
@@ -335,7 +346,7 @@
 
 <!-- ####################################################### -->
 
-<hr>
+<hr />
 <p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to

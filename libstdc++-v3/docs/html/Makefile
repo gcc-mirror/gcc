@@ -13,7 +13,7 @@ documentation.html: $(wildcard */howto.html)
 	sed -n '1,/beginlist/p' $@ > tmp.top
 	sed -n '/endlist/,$$p' $@ > tmp.bottom
 	echo '  <ul>' > tmp.middle
-	for i in [[:digit:]]*/howto.html; do \
+	for i in [0-9]*/howto.html; do \
 	  title=`grep 'h1 ' $$i |\
 	  sed 's=.*\(Chapter [[:digit:]]*\):[[:space:]]*\(.*\)</a>.*=\2 (\1)='` ;\
 	  awk -v file=$$i -v "title=$$title" -f makedoc.awk $$i >> tmp.middle ;\

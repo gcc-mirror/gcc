@@ -1,13 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
-   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <meta name="DESCRIPTION" content="Notes for the libstdc++ extensions.">
-   <meta name="GENERATOR" content="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)" />
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL" />
+   <meta name="DESCRIPTION" content="Notes for the libstdc++ extensions." />
+   <meta name="GENERATOR" content="vi and eight fingers" />
    <title>libstdc++-v3 HOWTO:  Extensions</title>
-<link rel="StyleSheet" href="../lib3styles.css">
+<link rel="StyleSheet" href="../lib3styles.css" />
 </head>
 <body>
 
@@ -18,45 +17,46 @@
    and some just seemed to appear on the doorstep.
 </p>
 <p><strong>Before you leap in and use these</strong>, be aware of two things:
-   <ol>
-    <li>Non-Standard means exactly that.  The behavior, and the very
-        existence, of these extensions may change with little or no
-        warning.  (Ideally, the really good ones will appear in the next
-        revision of C++.)  Also, other platforms, other compilers, other
-        versions of g++ or libstdc++-v3 may not recognize these names, or
-        treat them differently, or...
-    <li>You should know how to <a href="../faq/index.html#5_4">access
-        these headers properly</a>.
-   </ol>
 </p>
+<ol>
+   <li>Non-Standard means exactly that.  The behavior, and the very
+       existence, of these extensions may change with little or no
+       warning.  (Ideally, the really good ones will appear in the next
+       revision of C++.)  Also, other platforms, other compilers, other
+       versions of g++ or libstdc++-v3 may not recognize these names, or
+       treat them differently, or... </li>
+   <li>You should know how to <a href="../faq/index.html#5_4">access
+       these headers properly</a>. </li>
+</ol>
 
 
 <!-- ####################################################### -->
-<hr>
+<hr />
 <h1>Contents</h1>
 <ul>
-   <li><a href="#1">Ropes and trees and hashes, oh my!</a>
-   <li><a href="#2">Added members and types</a>
-   <li><a href="#3">Allocators (versions 3.0, 3.1, 3.2)</a>
-   <li><a href="#6">Allocators (version 3.3)</a>
-   <li><a href="#4">Compile-time checks</a>
-   <li><a href="#5">LWG Issues</a>
+   <li><a href="#1">Ropes and trees and hashes, oh my!</a></li>
+   <li><a href="#2">Added members and types</a></li>
+   <li><a href="#3">Allocators (versions 3.0, 3.1, 3.2)</a></li>
+   <li><a href="#6">Allocators (version 3.3)</a></li>
+   <li><a href="#4">Compile-time checks</a></li>
+   <li><a href="#5">LWG Issues</a></li>
 </ul>
 
-<hr>
+<hr />
 
 <!-- ####################################################### -->
 
 <h2><a name="1">Ropes and trees and hashes, oh my!</a></h2>
-   <p>The SGI headers
-     <pre>
+   <p>The SGI headers</p>
+   <pre>
      &lt;bvector&gt;
      &lt;hash_map&gt;
      &lt;hash_set&gt;
      &lt;rope&gt;
      &lt;slist&gt;
      &lt;tree&gt;
-     </pre> are all here; <code>&lt;bvector&gt;</code> exposes the old bit_vector
+   </pre>
+   <p>are all here; <code>&lt;bvector&gt;</code> exposes the old bit_vector
       class that was used before specialization of vector&lt;bool&gt; was
       available (it's actually a typedef for the specialization now).
       <code>&lt;hash_map&gt;</code> and <code>&lt;hash_set&gt;</code>
@@ -88,25 +88,25 @@
    </p>
    <p>Why would you want to use a hashing class instead of the
       &quot;normal&quot; implementations?  Matt Austern writes:
-      <blockquote><em>[W]ith a well chosen hash function, hash tables
-      generally provide much better average-case performance than binary
-      search trees, and much worse worst-case performance.  So if your
-      implementation has hash_map, if you don't mind using nonstandard
-      components, and if you aren't scared about the possibility of
-      pathological cases, you'll probably get better performance from
-      hash_map.</em></blockquote>
    </p>
+   <blockquote><em>[W]ith a well chosen hash function, hash tables
+   generally provide much better average-case performance than binary
+   search trees, and much worse worst-case performance.  So if your
+   implementation has hash_map, if you don't mind using nonstandard
+   components, and if you aren't scared about the possibility of
+   pathological cases, you'll probably get better performance from
+   hash_map.</em></blockquote>
    <p>(Side note:  for those of you wondering, <strong>&quot;Why wasn't a hash
       table included in the Standard in the first #!$@ place?&quot;</strong>
       I'll give a quick answer:  it was proposed, but too late and in too
       unorganized a fashion.  Some sort of hashing will undoubtedly be
-      included in a future Standard.
+      included in a future Standard.)
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="2">Added members and types</a></h2>
    <p>Some of the classes in the Standard Library have additional
       publicly-available members, and some classes are themselves not in
@@ -114,29 +114,32 @@
       for example, additional typedefs.  Those won't be described here
       (or anywhere else).
    </p>
-   <p>
-    <ul>
+   <ul>
      <li>The extensions added by SGI are so numerous that they have
          <a href="sgiexts.html">their own page</a>.  Since the SGI STL is no
          longer actively maintained, we will try and keep this code working
          ourselves.</li>
-     <li>3.0.x <code>filebuf</code>s have another ctor with this signature:<br>
-<code>basic_filebuf(__c_file_type*, ios_base::openmode, int_type);</code>
-         <br>This comes in very handy in a number of places, such as
+     <li>3.0.x <code>filebuf</code>s have another ctor with this signature:
+         <br />
+        <code>basic_filebuf(__c_file_type*, ios_base::openmode, int_type);</code>
+         <br />This comes in very handy in a number of places, such as
          attaching Unix sockets, pipes, and anything else which uses file
          descriptors, into the IOStream buffering classes.  The three
          arguments are as follows:
          <ul>
           <li><code>__c_file_type*      F   </code>
               // the __c_file_type typedef usually boils down to stdio's FILE
+          </li>
           <li><code>ios_base::openmode  M   </code>
               // same as all the other uses of openmode
+          </li>
           <li><code>int_type            B   </code>
               // buffer size, defaults to BUFSIZ if not specified
+          </li>
          </ul>
          For those wanting to use file descriptors instead of FILE*'s, I
          invite you to contemplate the mysteries of C's <code>fdopen()</code>.
-         </li>
+     </li>
      <li>In library snapshot 3.0.95 and later, <code>filebuf</code>s bring
          back an old extension:  the <code>fd()</code> member function.  The
          integer returned from this function can be used for whatever file
@@ -144,31 +147,35 @@
          library cannot track what you do on your own with a file descriptor,
          so if you perform any I/O directly, don't expect the library to be
          aware of it.
+     </li>
      <li>Beginning with 3.1, the extra <code>filebuf</code> constructor and
          the <code>fd()</code> function were removed from the standard
          filebuf.  Instead, <code>&lt;ext/stdio_filebuf.h&gt;</code> contains
          a derived class called <code>__gnu_cxx::stdio_filebuf</code>.
-    </ul>
-   </p>
+     </li>
+   </ul>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="3">Allocators (versions 3.0, 3.1, 3.2)</a></h2>
    <p>Thread-safety, space efficiency, high speed, portability... this is a
       mess.  Where to begin?
    </p>
    <h3>The Rules</h3>
    <p>The C++ standard only gives a few directives in this area:
-     <ul>
+   </p>
+   <ul>
      <li>When you add elements to a container, and the container must allocate
          more memory to hold them, the container makes the request via its
          <code>Allocator</code> template parameter.  This includes adding
          char's to the string class, which acts as a regular STL container
          in this respect.
+     </li>
      <li>The default <code>Allocator</code> of every container-of-T is
          <code>std::allocator&lt;T&gt;</code>.
+     </li>
      <li>The interface of the <code>allocator&lt;T&gt;</code> class is
          extremely simple.  It has about 20 public declarations (nested
          typedefs, member functions, etc), but the two which concern us most
@@ -180,13 +187,14 @@
          The <code>&quot;n&quot;</code> arguments in both those functions is a
          <em>count</em> of the number of T's to allocate space for,
          <em>not their total size</em>.
+     </li>
      <li>&quot;The storage is obtained by calling
          <code>::operator new(size_t)</code>, but it is unspecified when or
          how often this function is called.  The use of <code>hint</code>
          is unspecified, but intended as an aid to locality if an
          implementation so desires.&quot; [20.4.1.1]/6
-     </ul>
-   </p>
+      </li>
+   </ul>
    <h3>Problems and Possibilities</h3>
    <p>The easiest way of fulfilling the requirements is to call operator new
       each time a container needs memory, and to call operator delete each
@@ -235,33 +243,39 @@
       information for maintainers and contributors in addition to users.
    </p>
    <p>These classes are always available:
-     <ul>
+   </p>
+   <ul>
      <li><code>__new_alloc</code> simply wraps <code>::operator new</code>
          and <code>::operator delete</code>.
+     </li>
      <li><code>__malloc_alloc_template&lt;int inst&gt;</code> simply wraps
          <code>malloc</code> and <code>free</code>.  There is also a hook
          for an out-of-memory handler (for new/delete this is taken care of
          elsewhere).  The <code>inst</code> parameter is described below.
          This class was called <code>malloc_alloc</code> in earlier versions.
+     </li>
      <li><code>allocator&lt;T&gt;</code> has already been described; it is
          The Standard Allocator for instances of T.  It uses the internal
          <code>__alloc</code> typedef (see below) to satisy its requests.
+     </li>
      <li><code>__simple_alloc&lt;T,A&gt;</code> is a wrapper around another
          allocator, A, which itself is an allocator for instances of T.
          This is primarily used in an internal &quot;allocator traits&quot;
          class which helps encapsulate the different styles of allocators.
+     </li>
      <li><code>__debug_alloc&lt;A&gt;</code> is also a wrapper around an
          arbitrary allocator A.  It passes on slightly increased size
          requests to A, and uses the extra memory to store size information.
          When a pointer is passed to <code>deallocate()</code>, the stored
          size is checked, and assert() is used to guarantee they match.
+     </li>
      <li><code>__allocator&lt;T,A&gt;</code> is an adaptor.  Many of these
          allocator classes have a consistent yet non-standard interface.
          Such classes can be changed to a conforming interface with this
          wrapper:  <code>__allocator&lt;T, __alloc&gt;</code> is thus the
          same as <code>allocator&lt;T&gt;</code>.
-     </ul>
-   </p>
+     </li>
+   </ul>
    <p>An internal typedef, <code> __mem_interface </code>, is defined to be
       <code>__new_alloc</code> by default.
    </p>
@@ -297,15 +311,15 @@
    <p>If you've already read <a href="../23_containers/howto.html#3">this
       advice</a> and decided to define this macro, then the situation changes
       thusly:
-     <ol>
-     <li><code>__mem_interface</code>, and
-     <li><code>__alloc</code>, and
-     <li><code>__single_client_alloc</code> are all typedef'd to
-         <code>__malloc_alloc_template</code>.
-     <li><code>__default_alloc_template</code> is no longer available.
-         At all.  Anywhere.
-     </ol>
    </p>
+   <ol>
+     <li><code>__mem_interface</code>, and</li>
+     <li><code>__alloc</code>, and</li>
+     <li><code>__single_client_alloc</code> are all typedef'd to
+         <code>__malloc_alloc_template</code>.</li>
+     <li><code>__default_alloc_template</code> is no longer available.
+         At all.  Anywhere.</li>
+   </ol>
    <h3>Writing your own allocators</h3>
    <p>Depending on your application (a specific program, a generic library,
       etc), allocator classes tend to be one of two styles:  &quot;SGI&quot;
@@ -326,12 +340,12 @@
       (but nonportable)
       method of specifying that only malloc/free should be used instead of
       the default node allocator is:
-      <pre>
+   </p>
+   <pre>
     std::list &lt;my_type, std::__malloc_alloc_template&lt;0&gt; &gt;  my_malloc_based_list;</pre>
       Likewise, a debugging form of whichever allocator is currently in use:
       <pre>
     std::deque &lt;my_type, std::__debug_alloc&lt;std::__alloc&gt; &gt;  debug_deque;</pre>
-   </p>
    <h3><code>inst</code></h3>
    <p>The <code>__malloc_alloc_template</code> and
       <code>__default_alloc_template</code> classes take an integer parameter,
@@ -339,11 +353,12 @@
    </p>
    <p>The point of the number is to allow multiple instantiations of the
       classes without changing the semantics at all.  All three of
-      <pre>
+   </p>
+   <pre>
     typedef  __default_alloc_template&lt;true,0&gt;    normal;
     typedef  __default_alloc_template&lt;true,1&gt;    private;
     typedef  __default_alloc_template&lt;true,42&gt;   also_private;</pre>
-      behave exactly the same way.  However, the memory pool for each type
+   <p>behave exactly the same way.  However, the memory pool for each type
       (and remember that different instantiations result in different types)
       remains separate.
    </p>
@@ -365,7 +380,7 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="6">Allocators (version 3.3)</a></h2>
    <p>Changes are coming...
    </p>
@@ -373,7 +388,7 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="4">Compile-time checks</a></h2>
    <p>Currently libstdc++-v3 uses the concept checkers from the Boost
       library to perform <a href="../19_diagnostics/howto.html#3">optional
@@ -384,7 +399,7 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="5">LWG Issues</a></h2>
    <p>Everybody's got issues.  Even the C++ Standard Library.
    </p>
@@ -418,134 +433,188 @@
       examples of style.  Note that we usually do not make changes to the code
       until an issue has reached <a href="lwg-active.html#DR">DR</a> status.
    </p>
-   <p><dl>
+   <dl>
     <dt><a href="lwg-defects.html#5">5</a>:
         <em>string::compare specification questionable</em>
+    </dt>
     <dd>This should be two overloaded functions rather than a single function.
+    </dd>
 
     <dt><a href="lwg-defects.html#17">17</a>:
         <em>Bad bool parsing</em>
+    </dt>
     <dd>Apparently extracting Boolean values was messed up...
+    </dd>
 
     <dt><a href="lwg-defects.html#22">22</a>:
         <em>Member open vs flags</em>
+    </dt>
     <dd>Re-opening a file stream does <em>not</em> clear the state flags.
+    </dd>
 
     <dt><a href="lwg-defects.html#25">25</a>:
         <em>String operator&lt;&lt; uses width() value wrong</em>
+    </dt>
     <dd>Padding issues.
+    </dd>
 
     <dt><a href="lwg-defects.html#48">48</a>:
         <em>Use of non-existent exception constructor</em>
+    </dt>
     <dd>An instance of <code>ios_base::failure</code> is constructed instead.
+    </dd>
 
     <dt><a href="lwg-defects.html#49">49</a>:
         <em>Underspecification of ios_base::sync_with_stdio</em>
+    </dt>
     <dd>The return type is the <em>previous</em> state of synchronization.
+    </dd>
 
     <dt><a href="lwg-defects.html#50">50</a>:
         <em>Copy constructor and assignment operator of ios_base</em>
+    </dt>
     <dd>These members functions are declared <code>private</code> and are
         thus inaccessible.  Specifying the correct semantics of
         &quot;copying stream state&quot; was deemed too complicated.
+    </dd>
 
     <dt><a href="lwg-defects.html#68">68</a>:
         <em>Extractors for char* should store null at end</em>
+    </dt>
     <dd>And they do now.  An editing glitch in the last item in the list of
         [27.6.1.2.3]/7.
+    </dd>
 
     <dt><a href="lwg-defects.html#74">74</a>:
         <em>Garbled text for codecvt::do_max_length</em>
+    </dt>
     <dd>The text of the standard was gibberish.  Typos gone rampant.
+    </dd>
 
     <dt><a href="lwg-defects.html#83">83</a>:
         <em>string::npos vs. string::max_size()</em>
+    </dt>
     <dd>Safety checks on the size of the string should test against
         <code>max_size()</code> rather than <code>npos</code>.
+    </dd>
 
     <dt><a href="lwg-defects.html#109">109</a>:
         <em>Missing binders for non-const sequence elements</em>
+    </dt>
     <dd>The <code>binder1st</code> and <code>binder2nd</code> didn't have an
         <code>operator()</code> taking a non-const parameter.
+    </dd>
 
     <dt><a href="lwg-defects.html#110">110</a>:
         <em>istreambuf_iterator::equal not const</em>
+    </dt>
     <dd>This was not a const member function.  Note that the DR says to
         replace the function with a const one; we have instead provided an
         overloaded version with identical contents.
+    </dd>
 
     <dt><a href="lwg-defects.html#117">117</a>:
         <em>basic_ostream uses nonexistent num_put member functions</em>
+    </dt>
     <dd><code>num_put::put()</code> was overloaded on the wrong types.
+    </dd>
 
     <dt><a href="lwg-defects.html#118">118</a>:
         <em>basic_istream uses nonexistent num_get member functions</em>
+    </dt>
     <dd>Same as 117, but for <code>num_get::get()</code>.
+    </dd>
 
     <dt><a href="lwg-defects.html#129">129</a>:
         <em>Need error indication from seekp() and seekg()</em>
+    </dt>
     <dd>These functions set <code>failbit</code> on error now.
+    </dd>
 
     <dt><a href="lwg-defects.html#136">136</a>:
         <em>seekp, seekg setting wrong streams?</em>
+    </dt>
     <dd><code>seekp</code> should only set the output stream, and
         <code>seekg</code> should only set the input stream.
+    </dd>
 
 <!--<dt><a href="lwg-defects.html#159">159</a>:
         <em>Strange use of underflow()</em>
+    </dt>
     <dd>In fstream.tcc, the basic_filebuf&lt;&gt;::showmanyc() function
-        should probably not be calling <code>underflow()</code>.-->
+        should probably not be calling <code>underflow()</code>.
+    </dd> -->
 
     <dt><a href="lwg-active.html#167">167</a>:
         <em>Improper use of traits_type::length()</em>
+    </dt>
     <dd><code>op&lt;&lt;</code> with a <code>const char*</code> was
         calculating an incorrect number of characters to write.
+    </dd>
 
     <dt><a href="lwg-defects.html#181">181</a>:
         <em>make_pair() unintended behavior</em>
+    </dt>
     <dd>This function used to take its arguments as reference-to-const, now
         it copies them (pass by value).
+    </dd>
 
     <dt><a href="lwg-defects.html#195">195</a>:
         <em>Should basic_istream::sentry's constructor ever set eofbit?</em>
+    </dt>
     <dd>Yes, it can, specifically if EOF is reached while skipping whitespace.
+    </dd>
 
     <dt><a href="lwg-defects.html#211">211</a>:
         <em>operator&gt;&gt;(istream&amp;, string&amp;) doesn't set failbit</em>
+    </dt>
     <dd>If nothing is extracted into the string, <code>op&gt;&gt;</code> now
         sets <code>failbit</code> (which can cause an exception, etc, etc).
+    </dd>
 
     <dt><a href="lwg-defects.html#214">214</a>:
         <em>set::find() missing const overload</em>
+    </dt>
     <dd>Both <code>set</code> and <code>multiset</code> were missing
         overloaded find, lower_bound, upper_bound, and equal_range functions
         for const instances.
+    </dd>
 
     <dt><a href="lwg-defects.html#251">251</a>:
         <em>basic_stringbuf missing allocator_type</em>
+    </dt>
     <dd>This nested typdef was originally not specified.
+    </dd>
 
     <dt><a href="lwg-defects.html#265">265</a>:
         <em>std::pair::pair() effects overly restrictive</em>
+    </dt>
     <dd>The default ctor would build its members from copies of temporaries;
         now it simply uses their respective default ctors.
+    </dd>
 
     <dt><a href="lwg-defects.html#266">266</a>:
         <em>bad_exception::~bad_exception() missing Effects clause</em>
+    </dt>
     <dd>The <code>bad_</code>* classes no longer have destructors (they
         are trivial), since no description of them was ever given.
+    </dd>
 
     <dt><a href="lwg-defects.html#275">275</a>:
         <em>Wrong type in num_get::get() overloads</em>
+    </dt>
     <dd>Similar to 118.
+    </dd>
 
 <!--
     <dt><a href="lwg-defects.html#"></a>:
         <em></em>
+    </dt>
     <dd>
+    </dd>
 
 -->
-   </dl></p>
+   </dl>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
@@ -553,7 +622,7 @@
 
 <!-- ####################################################### -->
 
-<hr>
+<hr />
 <p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to

@@ -1,13 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
-   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL">
-   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 27.">
-   <meta name="GENERATOR" content="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)" />
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL" />
+   <meta name="DESCRIPTION" content="HOWTO for the libstdc++ chapter 27." />
+   <meta name="GENERATOR" content="vi and eight fingers" />
    <title>libstdc++-v3 HOWTO:  Chapter 27</title>
-<link rel="StyleSheet" href="../lib3styles.css">
+<link rel="StyleSheet" href="../lib3styles.css" />
 </head>
 <body>
 
@@ -19,20 +18,20 @@
 
 
 <!-- ####################################################### -->
-<hr>
+<hr />
 <h1>Contents</h1>
 <ul>
-   <li><a href="#1">Copying a file</a>
-   <li><a href="#2">The buffering is screwing up my program!</a>
-   <li><a href="#3">Binary I/O</a>
-   <li><a href="#5">What is this &lt;sstream&gt;/stringstreams thing?</a>
-   <li><a href="#6">Deriving a stream buffer</a>
-   <li><a href="#7">More on binary I/O</a>
-   <li><a href="#8">Pathetic performance?  Ditch C.</a>
-   <li><a href="#9">Threads and I/O</a>
+   <li><a href="#1">Copying a file</a></li>
+   <li><a href="#2">The buffering is screwing up my program!</a></li>
+   <li><a href="#3">Binary I/O</a></li>
+   <li><a href="#5">What is this &lt;sstream&gt;/stringstreams thing?</a></li>
+   <li><a href="#6">Deriving a stream buffer</a></li>
+   <li><a href="#7">More on binary I/O</a></li>
+   <li><a href="#8">Pathetic performance?  Ditch C.</a></li>
+   <li><a href="#9">Threads and I/O</a></li>
 </ul>
 
-<hr>
+<hr />
 
 <!-- ####################################################### -->
 
@@ -40,27 +39,29 @@
    <p>So you want to copy a file quickly and easily, and most important,
       completely portably.  And since this is C++, you have an open
       ifstream (call it IN) and an open ofstream (call it OUT):
-      <pre>
+   </p>
+   <pre>
    #include &lt;fstream&gt;
 
    std::ifstream  IN ("input_file");
    std::ofstream  OUT ("output_file"); </pre>
-   </p>
    <p>Here's the easiest way to get it completely wrong:
-      <pre>
+   </p>
+   <pre>
    OUT &lt;&lt; IN;</pre>
-      For those of you who don't already know why this doesn't work
+   <p>For those of you who don't already know why this doesn't work
       (probably from having done it before), I invite you to quickly
       create a simple text file called &quot;input_file&quot; containing
       the sentence
+   </p>
       <pre>
-   The quick brown fox jumped over the lazy dog.</pre>
-      surrounded by blank lines.  Code it up and try it.  The contents
+      The quick brown fox jumped over the lazy dog.</pre>
+   <p>surrounded by blank lines.  Code it up and try it.  The contents
       of &quot;output_file&quot; may surprise you.
    </p>
    <p>Seriously, go do it.  Get surprised, then come back.  It's worth it.
    </p>
-   <hr width="60%">
+   <hr width="60%" />
    <p>The thing to remember is that the <code>basic_[io]stream</code> classes
       handle formatting, nothing else.  In particular, they break up on
       whitespace.  The actual reading, writing, and storing of data is
@@ -76,9 +77,9 @@
       as well as the streams themselves.  The pointer is easily retrieved
       using the <code>rdbuf()</code> member function.  Therefore, the easiest
       way to copy the file is:
-      <pre>
-   OUT &lt;&lt; IN.rdbuf();</pre>
    </p>
+   <pre>
+   OUT &lt;&lt; IN.rdbuf();</pre>
    <p>So what <em>was</em> happening with OUT&lt;&lt;IN?  Undefined
       behavior, since that particular &lt;&lt; isn't defined by the Standard.
       I have seen instances where it is implemented, but the character
@@ -89,7 +90,7 @@
       file then contains a perfect text representation of a hexidecimal
       address (quite a big surprise).  Others don't compile at all.
    </p>
-   <p>Also note that none of this is specific to o<B>*f*</B>streams. 
+   <p>Also note that none of this is specific to o<b>*f*</b>streams. 
       The operators shown above are all defined in the parent 
       basic_ostream class and are therefore available with all possible
       descendents.
@@ -98,7 +99,7 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="2">The buffering is screwing up my program!</a></h2>
 <!--
   This is not written very well.  I need to redo this section.
@@ -122,35 +123,38 @@
       is the effect you want when writing to a screen -- get the text
       out as soon as possible, etc -- but the buffering is largely
       wasted when doing this to a file:
-      <pre>
+   </p>
+   <pre>
    output &lt;&lt; &quot;a line of text&quot; &lt;&lt; endl;
    output &lt;&lt; some_data_variable &lt;&lt; endl;
    output &lt;&lt; &quot;another line of text&quot; &lt;&lt; endl; </pre>
-      The proper thing to do in this case to just write the data out
+   <p>The proper thing to do in this case to just write the data out
       and let the libraries and the system worry about the buffering.
       If you need a newline, just write a newline:
-      <pre>
+   </p>
+   <pre>
    output &lt;&lt; &quot;a line of text\n&quot;
           &lt;&lt; some_data_variable &lt;&lt; '\n'
           &lt;&lt; &quot;another line of text\n&quot;; </pre>
-      I have also joined the output statements into a single statement.
+   <p>I have also joined the output statements into a single statement.
       You could make the code prettier by moving the single newline to
       the start of the quoted text on the thing line, for example.
    </p>
    <p>If you do need to flush the buffer above, you can send an
       <code>endl</code> if you also need a newline, or just flush the buffer
       yourself:
-      <pre>
+   </p>
+   <pre>
    output &lt;&lt; ...... &lt;&lt; flush;    // can use std::flush manipulator
    output.flush();               // or call a member fn </pre>
-   </p>
    <p>On the other hand, there are times when writing to a file should
       be like writing to standard error; no buffering should be done 
       because the data needs to appear quickly (a prime example is a
       log file for security-related information).  The way to do this is
       just to turn off the buffering <em>before any I/O operations at
       all</em> have been done, i.e., as soon as possible after opening:
-      <pre>
+   </p>
+   <pre>
    std::ofstream    os (&quot;/foo/bar/baz&quot;);
    std::ifstream    is (&quot;/qux/quux/quuux&quot;);
    int   i;
@@ -160,7 +164,6 @@
    ...
    os &lt;&lt; &quot;this data is written immediately\n&quot;;
    is &gt;&gt; i;   // and this will probably cause a disk read </pre>
-   </p>
    <p>Since all aspects of buffering are handled by a streambuf-derived
       member, it is necessary to get at that member with <code>rdbuf()</code>.
       Then the public version of <code>setbuf</code> can be called.  The 
@@ -189,7 +192,7 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="3">Binary I/O</a></h2>
    <p>The first and most important thing to remember about binary I/O is
       that opening a file with <code>ios::binary</code> is not, repeat
@@ -234,25 +237,28 @@
       of <em>formatting</em> functions and classes to perform something
       which <em>requires</em> that formatting not be done?  There are a
       seemingly infinite number of solutions, and a few are listed here:
-      <ul>
-        <li>&quot;Derive your own fstream-type classes and write your own
-            &lt;&lt;/&gt;&gt; operators to do binary I/O on whatever data
-            types you're using.&quot;  This is a Bad Thing, because while
-            the compiler would probably be just fine with it, other humans
-            are going to be confused.  The overloaded bitshift operators
-            have a well-defined meaning (formatting), and this breaks it.
-        <li>&quot;Build the file structure in memory, then <code>mmap()</code>
-            the file and copy the structure.&quot;  Well, this is easy to
-            make work, and easy to break, and is pretty equivalent to
-            using <code>::read()</code> and <code>::write()</code> directly, and
-            makes no use of the iostream library at all...
-        <li>&quot;Use streambufs, that's what they're there for.&quot;
-            While not trivial for the beginner, this is the best of all
-            solutions.  The streambuf/filebuf layer is the layer that is
-            responsible for actual I/O.  If you want to use the C++
-            library for binary I/O, this is where you start.
-      </ul>
    </p>
+   <ul>
+      <li>&quot;Derive your own fstream-type classes and write your own
+          &lt;&lt;/&gt;&gt; operators to do binary I/O on whatever data
+          types you're using.&quot;  This is a Bad Thing, because while
+          the compiler would probably be just fine with it, other humans
+          are going to be confused.  The overloaded bitshift operators
+          have a well-defined meaning (formatting), and this breaks it.
+      </li>
+      <li>&quot;Build the file structure in memory, then <code>mmap()</code>
+          the file and copy the structure.&quot;  Well, this is easy to
+          make work, and easy to break, and is pretty equivalent to
+          using <code>::read()</code> and <code>::write()</code> directly, and
+          makes no use of the iostream library at all...
+      </li>
+      <li>&quot;Use streambufs, that's what they're there for.&quot;
+          While not trivial for the beginner, this is the best of all
+          solutions.  The streambuf/filebuf layer is the layer that is
+          responsible for actual I/O.  If you want to use the C++
+          library for binary I/O, this is where you start.
+      </li>
+   </ul>
    <p>How to go about using streambufs is a bit beyond the scope of this
       document (at least for now), but while streambufs go a long way,
       they still leave a couple of things up to you, the programmer.
@@ -287,7 +293,7 @@
       made are good ones.)
    </p>
  
-<hr>
+<hr />
 <h2><a name="5">What is this &lt;sstream&gt;/stringstreams thing?</a></h2>
    <p>Stringstreams (defined in the header <code>&lt;sstream&gt;</code>)
       are in this author's opinion one of the coolest things since
@@ -311,7 +317,7 @@
    <p>This only works if you've written your
       <code>&lt;&lt;</code>/<code>&gt;&gt;</code> functions correctly, though,
       and correctly means that they take istreams and ostreams as
-      parameters, not i<B>f</B>streams and o<B>f</B>streams.  If they
+      parameters, not i<b>f</b>streams and o<b>f</b>streams.  If they
       take the latter, then your I/O operators will work fine with
       file streams, but with nothing else -- including stringstreams.
    </p>
@@ -324,7 +330,7 @@
       support them, and 2) if you use them, people will laugh at you.
    </p>
 
-<hr>
+<hr />
 <h2><a name="6">Deriving a stream buffer</a></h2>
    <p>Creating your own stream buffers for I/O can be remarkably easy.
       If you are interested in doing so, we highly recommend two very
@@ -339,7 +345,8 @@
       transforms everything sent through it to uppercase.  This version
       assumes many things about the nature of the character type being
       used (for more information, read the books or the newsgroups):
-      <pre>
+   </p>
+   <pre>
     #include &lt;iostream&gt;
     #include &lt;streambuf&gt;
     #include &lt;locale&gt;
@@ -377,11 +384,11 @@
 	return 0;
     }
    </pre>
-      Try it yourself!  More examples can be found in 3.1.x code, in
+   <p>Try it yourself!  More examples can be found in 3.1.x code, in
       <code>include/ext/*_filebuf.h</code>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="7">More on binary I/O</a></h2>
    <p>Towards the beginning of February 2001, the subject of
       &quot;binary&quot; I/O was brought up in a couple of places at the
@@ -406,22 +413,23 @@
       a portable binary format.
    </p>
 
-<hr>
+<hr />
 <h2><a name="8">Pathetic performance?  Ditch C.</a></h2>
    <p>It sounds like a flame on C, but it isn't.  Really.  Calm down.
       I'm just saying it to get your attention.
    </p>
    <p>Because the C++ library includes the C library, both C-style and
       C++-style I/O have to work at the same time.  For example:
-      <pre>
+   </p>
+   <pre>
      #include &lt;iostream&gt;
      #include &lt;cstdio&gt;
 
      std::cout &lt;&lt; &quot;Hel&quot;;
      std::printf (&quot;lo, worl&quot;);
      std::cout &lt;&lt; &quot;d!\n&quot;;
-      </pre>
-      This must do what you think it does.
+   </pre>
+   <p>This must do what you think it does.
    </p>
    <p>Alert members of the audience will immediately notice that buffering
       is going to make a hash of the output unless special steps are taken.
@@ -440,12 +448,12 @@
       when both libraries' facilities are in use.  If your program only uses
       C++ I/O, then there's no need to sync with the C streams.  The right
       thing to do in this case is to call
-      <pre>
+   </p>
+   <pre>
      #include <em>any of the I/O headers such as ios, iostream, etc</em>
 
      std::ios::sync_with_stdio(false);
-      </pre>
-   </p>
+   </pre>
    <p>You must do this before performing any I/O via the C++ stream objects.
       Once you call this, the C++ streams will operate independently of the
       (unused) C streams.  For GCC 3.x, this means that <code>cout</code> and
@@ -459,7 +467,7 @@
       buffered.
    </p>
 
-<hr>
+<hr />
 <h2><a name="9">Threads and I/O</a></h2>
    <p>I'll assume that you have already read the
       <a href="../17_intro/howto.html#3">general notes on library threads</a>,
@@ -548,7 +556,7 @@
 
 <!-- ####################################################### -->
 
-<hr>
+<hr />
 <p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to

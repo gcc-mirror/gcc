@@ -9,7 +9,7 @@
 BEGIN {
   state = "looking";
   entries = 0;
-  printf ("   <li>%s</li>\n", title);
+  printf ("   <li>%s\n", title);
   printf ("   <ul>\n");
 }
 
@@ -39,7 +39,7 @@ state == "entries" && /^<\/ul>/ {
 END {
   for (i = 0; i < entries; i++)
     printf ("     %s\n", entry[i]);
-  printf ("   </ul>\n\n");
+  printf ("   </ul>\n   </li>\n\n");
 }
 
 function extract_info(line) {
@@ -58,7 +58,7 @@ function extract_info(line) {
   }
 
   # visible text
-  gsub("</a>","",line);
+  gsub("</a></li>","",line);
   start = index(line,"\">") + 2;
   thistext = substr(line,start);
 

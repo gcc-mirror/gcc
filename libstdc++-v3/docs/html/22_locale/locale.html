@@ -1,19 +1,20 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
-  <title>
-  Notes on the locale implementation.
-  </title>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+   <meta name="AUTHOR" content="bkoz@redhat.com (Benjamin Kosnik)" />
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, GCC, g++, libg++, STL" />
+   <meta name="DESCRIPTION" content="Notes on the locale implementation." />
+   <title>Notes on the locale implementation.</title>
+<link rel="StyleSheet" href="../lib3styles.css" />
 </head>
 <body>
   <h1>
   Notes on the locale implementation.
   </h1>
-<I>
+<em>
 prepared by Benjamin Kosnik (bkoz@redhat.com) on August 8, 2001
-</I>
+</em>
 
-<p>
 <h2>
 1. Abstract Describes the basic locale object, including nested
 classes id, facet, and the reference-counted implementation object,
@@ -22,14 +23,12 @@ class _Impl.
 <p>
 </p>
 
-<p>
 <h2>
 2. What the standard says
-See Chapter 22 of the standard.
 </h2>
+See Chapter 22 of the standard.
 
 
-<p>
 <h2>
 3. Problems with &quot;C&quot; locales : global locales, termination.
 </h2>
@@ -40,7 +39,7 @@ design ontop of POSIX and other relevant stanards, which include the
 Single Unix (nee X/Open.)
 
 Because POSIX falls down so completely, portibility is an issue.
-<p>
+</p>
 
 <h2>
 4. Design
@@ -74,7 +73,6 @@ Provides an index for looking up specific facets.
 
 class _Impl
 
-<p>
 <h2>
 5.  Examples
 </h2>
@@ -85,43 +83,40 @@ class _Impl
 
 More information can be found in the following testcases:
 <ul>
-<li> testsuite/22_locale/ctype_char_members.cc 
-<li> testsuite/22_locale/ctype_wchar_t_members.cc 
+<li> testsuite/22_locale/ctype_char_members.cc    </li>
+<li> testsuite/22_locale/ctype_wchar_t_members.cc </li>
 </ul>
 
-<p>
 <h2>
 6.  Unresolved Issues
 </h2>
 
 <ul>
-	<li> locale -a displays available locales on linux
+   <li> locale -a displays available locales on linux </li>
 
-	<li> locale initialization: at what point does _S_classic,
-	_S_global get initialized? Can named locales assume this
-	initialization has already taken place?
+   <li> locale initialization: at what point does _S_classic,
+   _S_global get initialized? Can named locales assume this
+   initialization has already taken place? </li>
 
-	<li> document how named locales error check when filling data
-	members. Ie, a fr_FR locale that doesn't have
-	numpunct::truename(): does it use "true"? Or is it a blank
-	string? What's the convention?
+   <li> document how named locales error check when filling data
+   members. Ie, a fr_FR locale that doesn't have
+   numpunct::truename(): does it use "true"? Or is it a blank
+   string? What's the convention? </li>
 
-	<li> explain how locale aliasing happens. When does "de_DE"
-	use "de" information? What is the rule for locales composed of
-	just an ISO language code (say, "de") and locales with both an
-	ISO language code and ISO country code (say, "de_DE").
+   <li> explain how locale aliasing happens. When does "de_DE"
+   use "de" information? What is the rule for locales composed of
+   just an ISO language code (say, "de") and locales with both an
+   ISO language code and ISO country code (say, "de_DE"). </li>
 
-	<li> what should non-required facet instantiations do?  If the
-	generic implemenation is provided, then how to end-users
-	provide specializations?
+   <li> what should non-required facet instantiations do?  If the
+   generic implemenation is provided, then how to end-users
+   provide specializations? </li>
 </ul>
 
-<p>
 <h2>
 7. Acknowledgments
 </h2>
 
-<p>
 <h2>
 8. Bibliography / Referenced Documents
 </h2>
@@ -130,20 +125,31 @@ Drepper, Ulrich, GNU libc (glibc) 2.2 manual. In particular, Chapters &quot;6. C
 
 <p>
 Drepper, Ulrich, Numerous, late-night email correspondence
+</p>
 
 <p>
 ISO/IEC 14882:1998 Programming languages - C++
+</p>
 
 <p>
 ISO/IEC 9899:1999 Programming languages - C
+</p>
 
 <p>
 Langer, Angelika and Klaus Kreft, Standard C++ IOStreams and Locales, Advanced Programmer's Guide and Reference, Addison Wesley Longman, Inc. 2000
+</p>
 
 <p>
 Stroustrup, Bjarne, Appendix D, The C++ Programming Language, Special Edition, Addison Wesley, Inc. 2000
+</p>
 
 <p>
 System Interface Definitions, Issue 6 (IEEE Std. 1003.1-200x)
 The Open Group/The Institute of Electrical and Electronics Engineers, Inc.
 http://www.opennc.org/austin/docreg.html
+</p>
+
+</body>
+</html>
+
+
