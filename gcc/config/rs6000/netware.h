@@ -182,34 +182,7 @@ toc_section ()								\
   fprintf (FILE, ".%s", PREFIX)
 
 #undef ASM_SPEC
-#define ASM_SPEC "\
--u \
-%{!mcpu*: \
-  %{mpower2: -mpwrx} \
-  %{mpowerpc*: %{!mpower: -mppc}} \
-  %{mno-powerpc: %{!mpower: %{!mpower2: -mcom}}} \
-  %{mno-powerpc: %{mpower: %{!mpower2: -mpwr}}} \
-  %{!mno-powerpc: %{mpower: -m601}} \
-  %{!mno-powerpc: %{!mpower: -mppc}}} \
-%{mcpu=common: -mcom} \
-%{mcpu=power: -mpwr} \
-%{mcpu=power2: -mpwrx} \
-%{mcpu=powerpc: -mppc} \
-%{mcpu=rios: -mpwr} \
-%{mcpu=rios1: -mpwr} \
-%{mcpu=rios2: -mpwrx} \
-%{mcpu=rsc: -mpwr} \
-%{mcpu=rsc1: -mpwr} \
-%{mcpu=403: -mppc} \
-%{mcpu=505: -mppc} \
-%{mcpu=601: -m601} \
-%{mcpu=602: -mppc} \
-%{mcpu=603: -mppc} \
-%{mcpu=603e: -mppc} \
-%{mcpu=604: -mppc} \
-%{mcpu=620: -mppc} \
-%{mcpu=821: -mppc} \
-%{mcpu=860: -mppc} \
+#define ASM_SPEC "-u %(asm_cpu) \
 %{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*}"
 /* This is the end of what might become sysv4.h.  */
 

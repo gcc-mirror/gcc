@@ -24,64 +24,20 @@ Boston, MA 02111-1307, USA.  */
 #include "rs6000/rs6000.h"
 
 #undef ASM_SPEC
-#define ASM_SPEC "-u \
-%{!mcpu*: \
-  %{mpower2: -mpwrx} \
-  %{mpowerpc*: %{!mpower: -mppc}} \
-  %{mpower: %{!mpower2: -mpwr}} \
-  %{mpowerpc*: %{mpower: -m601}} \
-  %{!mpowerpc*: %{!mpower*: -mcom}}} \
-%{mcpu=common: -mcom} \
-%{mcpu=power: -mpwr} \
-%{mcpu=power2: -mpwrx} \
-%{mcpu=powerpc: -mppc} \
-%{mcpu=rios: -mpwr} \
-%{mcpu=rios1: -mpwr} \
-%{mcpu=rios2: -mpwrx} \
-%{mcpu=rsc: -mpwr} \
-%{mcpu=rsc1: -mpwr} \
-%{mcpu=403: -mppc} \
-%{mcpu=505: -mppc} \
-%{mcpu=601: -m601} \
-%{mcpu=602: -mppc} \
-%{mcpu=603: -mppc} \
-%{mcpu=603e: -mppc} \
-%{mcpu=604: -mppc} \
-%{mcpu=620: -mppc} \
-%{mcpu=821: -mppc} \
-%{mcpu=860: -mppc}"
+#define ASM_SPEC "-u %(asm_cpu)"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D_IBMR2 -D_POWER -D_AIX -D_AIX32 \
 -Asystem(unix) -Asystem(aix)"
 
 #undef CPP_SPEC
-#define CPP_SPEC "\
-%{posix: -D_POSIX_SOURCE} \
-%{!mcpu*: \
-  %{mpower: %{!mpower2: -D_ARCH_PWR}} \
-  %{mpower2: -D_ARCH_PWR2} \
-  %{mpowerpc*: -D_ARCH_PPC} \
-  %{!mpower*: -D_ARCH_COM}} \
-%{mcpu=common: -D_ARCH_COM} \
-%{mcpu=power: -D_ARCH_PWR} \
-%{mcpu=power2: -D_ARCH_PWR2} \
-%{mcpu=powerpc: -D_ARCH_PPC} \
-%{mcpu=rios: -D_ARCH_PWR} \
-%{mcpu=rios1: -D_ARCH_PWR} \
-%{mcpu=rios2: -D_ARCH_PWR2} \
-%{mcpu=rsc: -D_ARCH_PWR} \
-%{mcpu=rsc1: -D_ARCH_PWR} \
-%{mcpu=403: -D_ARCH_PPC} \
-%{mcpu=505: -D_ARCH_PPC} \
-%{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
-%{mcpu=602: -D_ARCH_PPC} \
-%{mcpu=603: -D_ARCH_PPC} \
-%{mcpu=603e: -D_ARCH_PPC} \
-%{mcpu=604: -D_ARCH_PPC} \
-%{mcpu=620: -D_ARCH_PPC} \
-%{mcpu=821: -D_ARCH_PPC} \
-%{mcpu=860: -D_ARCH_PPC}"
+#define CPP_SPEC "%{posix: -D_POSIX_SOURCE} %(cpp_cpu)"
+
+#undef	CPP_DEFAULT_SPEC
+#define CPP_DEFAULT_SPEC "-D_ARCH_COM"
+
+#undef	ASM_DEFAULT_SPEC
+#define ASM_DEFAULT_SPEC "-mcom"
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT MASK_NEW_MNEMONICS

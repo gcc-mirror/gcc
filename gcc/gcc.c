@@ -546,6 +546,10 @@ static char *startfile_spec = STARTFILE_SPEC;
 static char *switches_need_spaces = SWITCHES_NEED_SPACES;
 static char *multilib_select = MULTILIB_SELECT;
 
+#ifdef EXTRA_SPECS
+static struct { char *name, *spec; } extra_specs[] = { EXTRA_SPECS };
+#endif
+
 /* This defines which switch letters take arguments.  */
 
 #ifndef SWITCH_TAKES_ARG
@@ -1254,6 +1258,21 @@ set_spec (name, spec)
     cross_compile = atoi (sl->spec);
   else if (! strcmp (name, "multilib"))
     multilib_select = sl->spec;
+#ifdef EXTRA_SPECS
+  else
+    {
+      int i;
+      for (i = 0; i < sizeof (extra_specs) / sizeof (extra_specs[0]); i++)
+	{
+	  if (! strcmp (name, extra_specs[i].name))
+	    {
+	      extra_specs[i].spec = sl->spec;
+	      break;
+	    }
+	}
+    }
+#endif
+
   /* Free the old spec */
   if (old_spec)
     free (old_spec);
@@ -2512,6 +2531,14 @@ process_command (argc, argv)
 	  printf ("*cross_compile:\n%d\n\n", cross_compile);
 	  printf ("*multilib:\n%s\n\n", multilib_select);
 
+#ifdef EXTRA_SPECS
+	  {
+	    int j;
+	    for (j = 0; j < sizeof (extra_specs) / sizeof (extra_specs[0]); j++)
+	      printf ("*%s:\n%s\n\n", extra_specs[j].name,
+		      (extra_specs[j].spec) ? extra_specs[j].spec : "");
+	  }
+#endif
 	  exit (0);
 	}
       else if (! strcmp (argv[i], "-dumpversion"))
@@ -4314,6 +4341,15 @@ main (argc, argv)
   if (specs_file != 0 && strcmp (specs_file, "specs"))
     read_specs (specs_file);
 
+#ifdef EXTRA_SPECS
+  else
+    {
+      int k;
+      for (k = 0; k < sizeof (extra_specs) / sizeof (extra_specs[0]); k++)
+	set_spec (extra_specs[k].name, extra_specs[k].spec);
+    }
+#endif
+
   /* If not cross-compiling, look for startfiles in the standard places.  */
   /* The fact that these are done here, after reading the specs file,
      means that it cannot be found in these directories.
@@ -4956,6 +4992,21 @@ validate_all_switches ()
     if (c == '%' && *p == '{')
       /* We have a switch spec.  */
       validate_switches (p + 1);
+
+#ifdef EXTRA_SPECS
+  {
+    int i;
+    for (i = 0; i < sizeof (extra_specs) / sizeof (extra_specs[0]); i++)
+      {
+	p = extra_specs[i].spec;
+	while (c = *p++)
+	  if (c == '%' && *p == '{')
+	    /* We have a switch spec.  */
+	    validate_switches (p + 1);
+      }
+  }
+#endif
+
 }
 
 /* Look at the switch-name that comes after START

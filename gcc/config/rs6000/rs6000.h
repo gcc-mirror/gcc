@@ -45,19 +45,22 @@ Boston, MA 02111-1307, USA.  */
    longer be needed.  Also, the extern declaration of mcount in ASM_FILE_START
    will no longer be needed.  */
 
-/* #define ASM_SPEC "-u" */
+/* #define ASM_SPEC "-u %(asm_cpu)" */
 
 /* Define appropriate architecture macros for preprocessor depending on
    target switches.  */
 
-#define CPP_SPEC "\
-%{posix: -D_POSIX_SOURCE} \
-%{!mcpu*: \
+#define CPP_SPEC "%{posix: -D_POSIX_SOURCE} %(cpp_cpu)"
+
+/* Common CPP definitions used by CPP_SPEC amonst the various targets
+   for handling -mcpu=xxx switches.  */
+#define CPP_CPU_SPEC \
+"%{!mcpu*: \
   %{mpower: %{!mpower2: -D_ARCH_PWR}} \
   %{mpower2: -D_ARCH_PWR2} \
   %{mpowerpc*: -D_ARCH_PPC} \
   %{mno-power: %{!mpowerpc*: -D_ARCH_COM}} \
-  %{!mno-power: %{!mpower2: -D_ARCH_PWR}}} \
+  %{!mno-power: %{!mpower2: %(cpp_default)}}} \
 %{mcpu=common: -D_ARCH_COM} \
 %{mcpu=power: -D_ARCH_PWR} \
 %{mcpu=power2: -D_ARCH_PWR2} \
@@ -70,13 +73,81 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=403: -D_ARCH_PPC} \
 %{mcpu=505: -D_ARCH_PPC} \
 %{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
-%{mcpu=602: -d_ARCH_PPC} \
+%{mcpu=602: -D_ARCH_PPC} \
 %{mcpu=603: -D_ARCH_PPC} \
 %{mcpu=603e: -D_ARCH_PPC} \
 %{mcpu=604: -D_ARCH_PPC} \
 %{mcpu=620: -D_ARCH_PPC} \
 %{mcpu=821: -D_ARCH_PPC} \
 %{mcpu=860: -D_ARCH_PPC}"
+
+#ifndef CPP_DEFAULT_SPEC
+#define CPP_DEFAULT_SPEC "-D_ARCH_PWR"
+#endif
+
+#ifndef CPP_SYSV_SPEC
+#define CPP_SYSV_SPEC ""
+#endif
+
+#ifndef CPP_ENDIAN_SPEC
+#define CPP_ENDIAN_SPEC ""
+#endif
+
+#ifndef CPP_SYSV_DEFAULT_SPEC
+#define CPP_SYSV_DEFAULT_SPEC ""
+#endif
+
+/* Common ASM definitions used by ASM_SPEC amonst the various targets
+   for handling -mcpu=xxx switches.  */
+#define ASM_CPU_SPEC \
+"%{!mcpu*: \
+  %{mpower: %{!mpower2: -mpwr}} \
+  %{mpower2: -mpwrx} \
+  %{mpowerpc*: -mppc} \
+  %{mno-power: %{!mpowerpc*: -mcom}} \
+  %{!mno-power: %{!mpower2: %(asm_default)}}} \
+%{mcpu=common: -mcom} \
+%{mcpu=power: -mpwr} \
+%{mcpu=power2: -mpwrx} \
+%{mcpu=powerpc: -mppc} \
+%{mcpu=rios: -mpwr} \
+%{mcpu=rios1: -mpwr} \
+%{mcpu=rios2: -mpwrx} \
+%{mcpu=rsc: -mpwr} \
+%{mcpu=rsc1: -mpwr} \
+%{mcpu=403: -mppc} \
+%{mcpu=505: -mppc} \
+%{mcpu=601: -m601} \
+%{mcpu=602: -mppc} \
+%{mcpu=603: -mppc} \
+%{mcpu=603e: -mppc} \
+%{mcpu=604: -mppc} \
+%{mcpu=620: -mppc} \
+%{mcpu=821: -mppc} \
+%{mcpu=860: -mppc}"
+
+#ifndef ASM_DEFAULT_SPEC
+#define ASM_DEFAULT_SPEC "-mpwr"
+#endif
+
+/* This macro defines names of additional specifications to put in the specs
+   that can be used in various specifications like CC1_SPEC.  Its definition
+   is an initializer with a subgrouping for each command option.
+
+   Each subgrouping contains a string constant, that defines the
+   specification name, and a string constant that used by the GNU CC driver
+   program.
+
+   Do not define this macro if it does not need to do anything.  */
+
+#define EXTRA_SPECS					\
+  { "cpp_cpu",		CPP_CPU_SPEC },			\
+  { "cpp_default",	CPP_DEFAULT_SPEC },		\
+  { "cpp_sysv",		CPP_SYSV_SPEC },		\
+  { "cpp_sysv_default",	CPP_SYSV_DEFAULT_SPEC },	\
+  { "cpp_endian",	CPP_ENDIAN_SPEC },		\
+  { "asm_cpu",		ASM_CPU_SPEC },			\
+  { "asm_default",	ASM_DEFAULT_SPEC }
 
 /* Define the options for the binder: Start text at 512, align all segments
    to 512 bytes, and warn if there is text relocation.
