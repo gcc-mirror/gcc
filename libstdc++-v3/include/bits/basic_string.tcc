@@ -374,6 +374,54 @@ namespace std
       // terminating null char_type() element, plus enough for the
       // _Rep data structure. Whew. Seemingly so needy, yet so elemental.
       size_t __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
+
+      // The standard places no restriction on allocating more memory
+      // than is strictly needed within this layer at the moment or as
+      // requested by an explicit application call to reserve().  Many
+      // malloc implementations perform quite poorly when an
+      // application attempts to allocate memory in a stepwise fashion
+      // growing each allocation size by only 1 char.  Additionally,
+      // it makes little sense to allocate less linear memory than the
+      // natural blocking size of the malloc implementation.
+      // Unfortunately, we would need a somewhat low-level calculation
+      // with tuned parameters to get this perfect for any particular
+      // malloc implementation.  Fortunately, generalizations about
+      // common features seen among implementations seems to suffice.
+      // This algorithm does not replace the need for an exponential
+      // growth shaper to meet library specification.  Note: THIS IS
+      // NOT THE CORRECT LOCATION FOR AN EXPONENTIAL GROWTH SHAPER
+      // (since this code affect initial allocation as well as
+      // reallocation).
+
+      // __pagesize need not match the actual VM page size for good
+      // results in practice, thus we pick a common value on the low
+      // side.  __malloc_header_size is an estimate of the amount of
+      // overhead per memory allocation (in practice seen N * sizeof
+      // (void*) where N is 0, 2 or 4).  According to folklore,
+      // picking this value on the high side is better than
+      // low-balling it (especially when this algorithm is used with
+      // malloc implementations that allocate memory blocks rounded up
+      // to a size which is a power of 2).
+      const size_t __pagesize = 4096; // must be 2^i * __subpagesize
+      const size_t __subpagesize = 128; // should be >> __malloc_header_size
+      const size_t __malloc_header_size = 4 * sizeof (void*);
+      if ((__size + __malloc_header_size) > __pagesize)
+	{
+	  size_t __extra =
+	    (__pagesize - ((__size + __malloc_header_size) % __pagesize))
+	    % __pagesize;
+	  __capacity += __extra / sizeof(_CharT);
+	  __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
+	}
+      else if (__size > __subpagesize)
+	{
+	  size_t __extra =
+	    (__subpagesize - ((__size + __malloc_header_size) % __subpagesize))
+	    % __subpagesize;
+	  __capacity += __extra / sizeof(_CharT);
+	  __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
+	}
+
       // NB: Might throw, but no worries about a leak, mate: _Rep()
       // does not throw.
       void* __place = _Raw_bytes_alloc(__alloc).allocate(__size);

@@ -1,3 +1,11 @@
+2001-11-27  Loren J. Rittle  <ljrittle@acm.org>
+	    Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/basic_string.tcc (basic_string::_Rep::_S_create):
+	Enforce allocation size blocking policy to reduce
+	fragmentation and enhance performance with common malloc
+	implementations.
+
 2001-11-27  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Numeric facets cleanup.
