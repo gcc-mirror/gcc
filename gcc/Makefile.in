@@ -679,7 +679,7 @@ libobjc.a: cc1obj libgcc2.ready
 	  GCC_FOR_TARGET="$${thisdir1}/xgcc -B$${thisdir1}/" \
 	  GCC_CFLAGS="$(GCC_CFLAGS)"
 	-rm -f libobjc.a
-	ln objc/libobjc.a .
+	ln objc/libobjc.a . >/dev/null 2>&1 || cp objc/libobjc.a .
 	-if $(RANLIB_TEST) ; then $(RANLIB) libobjc.a; else true; fi
 
 # This is used by objc/Makefile if the user runs that directly.
