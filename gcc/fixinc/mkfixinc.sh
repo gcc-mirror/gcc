@@ -35,17 +35,6 @@ esac
 
 # Check for special fix rules for particular targets
 case $machine in
-    i?86-*-sysv4.2uw2* )
-        ;;
-
-    *-*-sysv4* )
-        fixincludes=fixinc.svr4
-        ;;
-
-    i?86-sequent-ptx* | i?86-sequent-sysv[34]*)
-        fixincludes=fixinc.ptx
-        ;;
-
     alpha*-dec-*vms* | \
     arm-semi-aof | \
     hppa1.1-*-osf* | \
@@ -76,17 +65,6 @@ esac
 if test -z "$fixincludes"
 then
     (echo "#! /bin/sh" ; echo "exit 0" ) > ${target}
-    chmod 755 ${target}
-    exit 0
-fi
-
-#  IF the fixer is supplied in our source directory,
-#  THEN copy that into place
-#
-if test -f ${srcdir}/"${fixincludes}"
-then
-    echo copying ${srcdir}/$fixincludes to ${target}
-    cp ${srcdir}/$fixincludes ${target}
     chmod 755 ${target}
     exit 0
 fi
