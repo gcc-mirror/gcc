@@ -309,6 +309,12 @@ int
 objects_must_conflict_p (t1, t2)
      tree t1, t2;
 {
+  /* If neither has a type specified, we don't know if they'll conflict
+     because we may be using them to store objects of various types, for
+     example the argument and local variables areas of inlined functions.  */
+  if (t1 == 0 && t1 == 0)
+    return 0;
+
   /* If one or the other has readonly fields or is readonly,
      then they may not conflict.  */
   if ((t1 != 0 && readonly_fields_p (t1))

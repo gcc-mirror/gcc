@@ -4420,27 +4420,28 @@ insn_dead_p (pbi, x, call_ok, notes)
 	  /* Walk the set of memory locations we are currently tracking
 	     and see if one is an identical match to this memory location.
 	     If so, this memory write is dead (remember, we're walking
-	     backwards from the end of the block to the start).  */
-	  temp = pbi->mem_set_list;
-	  while (temp)
-	    {
-	      rtx mem = XEXP (temp, 0);
+	     backwards from the end of the block to the start).  Since
+	     rtx_equal_p does not check the alias set or flags, we also
+	     must have the potential for them to conflict (anti_dependence). */
+	  for (temp = pbi->mem_set_list; temp != 0; temp = XEXP (temp, 1))
+	    if (anti_dependence (r, XEXP (temp, 0)))
+	      {
+		rtx mem = XEXP (temp, 0);
 
-	      if (rtx_equal_p (mem, r))
-		return 1;
+		if (rtx_equal_p (mem, r))
+		  return 1;
 #ifdef AUTO_INC_DEC
-	      /* Check if memory reference matches an auto increment. Only
-		 post increment/decrement or modify are valid.  */
-	      if (GET_MODE (mem) == GET_MODE (r)
-	          && (GET_CODE (XEXP (mem, 0)) == POST_DEC
-	              || GET_CODE (XEXP (mem, 0)) == POST_INC
-	              || GET_CODE (XEXP (mem, 0)) == POST_MODIFY)
-		  && GET_MODE (XEXP (mem, 0)) == GET_MODE (r)
-		  && rtx_equal_p (XEXP (XEXP (mem, 0), 0), XEXP (r, 0)))
-		return 1;
+		/* Check if memory reference matches an auto increment. Only
+		   post increment/decrement or modify are valid.  */
+		if (GET_MODE (mem) == GET_MODE (r)
+		    && (GET_CODE (XEXP (mem, 0)) == POST_DEC
+			|| GET_CODE (XEXP (mem, 0)) == POST_INC
+			|| GET_CODE (XEXP (mem, 0)) == POST_MODIFY)
+		    && GET_MODE (XEXP (mem, 0)) == GET_MODE (r)
+		    && rtx_equal_p (XEXP (XEXP (mem, 0), 0), XEXP (r, 0)))
+		  return 1;
 #endif
-	      temp = XEXP (temp, 1);
-	    }
+	      }
 	}
       else
 	{
