@@ -1,3 +1,8 @@
+2004-03-14  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* doc/install.texi: Reflect autoconf and automake version for
+	libffi. Update autoconf version to 2.59.
+
 2004-03-13  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (negate_expr, operand_equal_for_comparison_p,
