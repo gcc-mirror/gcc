@@ -1,3 +1,7 @@
+2004-07-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/eabi.asm (__eabi_convert): Fix typo (cmpi vs. cmpwi).
+
 2004-07-16  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md: Changed every occurence of BASE_REGISTER
