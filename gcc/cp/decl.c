@@ -2786,7 +2786,9 @@ duplicate_decls (newdecl, olddecl)
       && ! DECL_ARTIFICIAL (olddecl)
       && !(new_defines_function && DECL_INITIAL (olddecl) == NULL_TREE)
       /* Don't warn about extern decl followed by (tentative) definition.  */
-      && !(DECL_EXTERNAL (olddecl) && ! DECL_EXTERNAL (newdecl)))
+      && !(DECL_EXTERNAL (olddecl) && ! DECL_EXTERNAL (newdecl))
+      /* Don't warn about friends, let add_friend take care of it. */
+      && ! DECL_FRIEND_P (newdecl))
     {
       cp_warning ("redundant redeclaration of `%D' in same scope", newdecl);
       cp_warning_at ("previous declaration of `%D'", olddecl);
