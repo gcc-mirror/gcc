@@ -1,3 +1,11 @@
+2004-08-07  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/generic/c_locale.h (__convert_from_v): Don't
+	use a default for __prec, assume __prec >= 0 and simplify.
+	* config/locale/gnu/c_locale.h (__convert_from_v): Likewise.
+	* include/bits/locale_facets.tcc (money_put<>::do_put(long double)):
+	Pass format "%.*Lf" + precision == 0, equivalent to "%.0Lf".
+
 2004-08-04  Phil Edwards  <phil@codesourcery.com>
 
 	* docs/html/configopts.html:  Emphasize that options change.

@@ -57,24 +57,17 @@ namespace std
     __convert_from_v(char* __out, 
 		     const int __size __attribute__((__unused__)),
 		     const char* __fmt,
-		     _Tv __v, const __c_locale&, int __prec = -1)
+		     _Tv __v, const __c_locale&, int __prec)
     {
       char* __old = std::setlocale(LC_ALL, NULL);
       char* __sav = new char[std::strlen(__old) + 1];
       std::strcpy(__sav, __old);
       std::setlocale(LC_ALL, "C");
 
-      int __ret;
 #ifdef _GLIBCXX_USE_C99
-      if (__prec >= 0)
-        __ret = std::snprintf(__out, __size, __fmt, __prec, __v);
-      else
-        __ret = std::snprintf(__out, __size, __fmt, __v);
+      const int __ret = std::snprintf(__out, __size, __fmt, __prec, __v);
 #else
-      if (__prec >= 0)
-        __ret = std::sprintf(__out, __fmt, __prec, __v);
-      else
-        __ret = std::sprintf(__out, __fmt, __v);
+      const int __ret = std::sprintf(__out, __fmt, __prec, __v);
 #endif
       std::setlocale(LC_ALL, __sav);
       delete [] __sav;
