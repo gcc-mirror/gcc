@@ -1,5 +1,24 @@
 2005-01-19  Richard Henderson  <rth@redhat.com>
 
+	PR target/19511
+	* config/i386/i386.c (ix86_preferred_reload_class): Return a proper
+	subclass of the input class.
+	(ix86_secondary_memory_needed): Always true for cross-MMX classes.
+	Always true for cross-SSE1 classes.  Rationalize conditionals.
+	* config/i386/i386.h (SSE_CLASS_P, MMX_CLASS_P): Use straight equality.
+	* config/i386/i386.md (movsi_1): Add MMX/SSE zeros.  Fix alternatives
+	for SSE1.  Don't check TARGET_INTER_UNIT_MOVES.
+	(movdi_2): Add MMX/SSE zeros.
+	(movdi_1_rex64): Likewise.  Don't check TARGET_INTER_UNIT_MOVES.
+	(movsf_1): Don't check TARGET_INTER_UNIT_MOVES.
+	(zero_extendsidi2_32, zero_extendsidi2_rex64): Likewise.
+	(movsi_1_nointernunit, movdi_1_rex64_nointerunit): Remove.
+	(movsf_1_nointerunit, zero_extendsidi2_32_1): Remove.
+	(zero_extendsidi2_rex64_1): Remove.
+	(MOV0 peephole): Check GENERAL_REG_P.
+
+2005-01-19  Richard Henderson  <rth@redhat.com>
+
 	PR target/19427
 	* config/i386/i386.c (ix86_expand_vector_set): Fix third and fourth
 	shufps elements.

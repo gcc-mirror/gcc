@@ -14599,6 +14599,8 @@ ix86_free_from_memory (enum machine_mode mode)
 enum reg_class
 ix86_preferred_reload_class (rtx x, enum reg_class class)
 {
+  if (class == NO_REGS)
+    return NO_REGS;
   if (GET_CODE (x) == CONST_VECTOR && x != CONST0_RTX (GET_MODE (x)))
     return NO_REGS;
   if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != VOIDmode)
@@ -14618,7 +14620,7 @@ ix86_preferred_reload_class (rtx x, enum reg_class class)
 	}
       /* General regs can load everything.  */
       if (reg_class_subset_p (class, GENERAL_REGS))
-	return GENERAL_REGS;
+	return class;
       /* In case we haven't resolved FLOAT or SSE yet, give up.  */
       if (MAYBE_FLOAT_CLASS_P (class) || MAYBE_SSE_CLASS_P (class))
 	return NO_REGS;
@@ -14640,6 +14642,7 @@ ix86_preferred_reload_class (rtx x, enum reg_class class)
 
    When STRICT is false, we are being called from REGISTER_MOVE_COST, so do not
    enforce these sanity checks.  */
+
 int
 ix86_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
 			      enum machine_mode mode, int strict)
@@ -14653,21 +14656,50 @@ ix86_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
     {
       if (strict)
 	abort ();
-      else
-	return 1;
+      return true;
     }
-  return (FLOAT_CLASS_P (class1) != FLOAT_CLASS_P (class2)
-	  || ((SSE_CLASS_P (class1) != SSE_CLASS_P (class2)
-	       || MMX_CLASS_P (class1) != MMX_CLASS_P (class2))
-	      && ((mode != SImode && (mode != DImode || !TARGET_64BIT))
-		  || (!TARGET_INTER_UNIT_MOVES && !optimize_size))));
+
+  if (FLOAT_CLASS_P (class1) != FLOAT_CLASS_P (class2))
+    return true;
+
+  /* ??? This is a lie.  We do have moves between mmx/general, and for
+     mmx/sse2.  But by saying we need secondary memory we discourage the
+     register allocator from using the mmx registers unless needed.  */
+  if (MMX_CLASS_P (class1) != MMX_CLASS_P (class2))
+    return true;
+
+  if (SSE_CLASS_P (class1) != SSE_CLASS_P (class2))
+    {
+      /* SSE1 doesn't have any direct moves from other classes.  */
+      if (!TARGET_SSE2)
+	return true;
+
+      /* If the target says that inter-unit moves are more expensive 
+	 than moving through memory, then don't generate them.  */
+      if (!TARGET_INTER_UNIT_MOVES && !optimize_size)
+	return true;
+
+      /* Between SSE and general, we have moves no larger than word size.  */
+      if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+	return true;
+
+      /* ??? For the cost of one register reformat penalty, we could use
+	 the same instructions to move SFmode and DFmode data, but the 
+	 relevant move patterns don't support those alternatives.  */
+      if (mode == SFmode || mode == DFmode)
+	return true;
+    }
+
+  return false;
 }
+
 /* Return the cost of moving data from a register in class CLASS1 to
    one in class CLASS2.
 
    It is not required that the cost always equal 2 when FROM is the same as TO;
    on some machines it is expensive to move between registers if they are not
    general registers.  */
+
 int
 ix86_register_move_cost (enum machine_mode mode, enum reg_class class1,
 			 enum reg_class class2)
