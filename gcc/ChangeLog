@@ -1,3 +1,11 @@
+2002-03-04  Geoffrey Keating  <geoffk@redhat.com>
+
+	* toplev.c (documented_lang_options): Document more
+	language-specific options.
+	* doc/invoke.texi (Warning Options): Correct documentation for
+	-Wno-multichar, -Wno-div-by-zero, and -Wsystem-headers.
+	* c-decl.c (c_decode_option): Use a table to handle warning options.
+
 2002-03-05  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.h (ENCODE_SECTION_INFO): Pass on new second

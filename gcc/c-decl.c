@@ -460,6 +460,50 @@ c_decode_option (argc, argv)
   int strings_processed;
   char *p = argv[0];
 
+  static const struct {
+      /* The name of the option.  */
+      const char *option;
+      /* If non-NULL, a flag variable to set to 0 or 1.  If NULL,
+         this means that cpp handles this option.  */
+      int *flag;
+  } warn_options[] = {
+    /* This list is in alphabetical order.  Keep it like that.  */
+    { "bad-function-cast", &warn_bad_function_cast },
+    { "cast-qual", &warn_cast_qual },
+    { "char-subscripts", &warn_char_subscripts },
+    { "comment", NULL },
+    { "comments", NULL },
+    { "conversion", &warn_conversion },
+    { "div-by-zero", &warn_div_by_zero },
+    { "float-equal", &warn_float_equal },
+    { "format-extra-args", &warn_format_extra_args },
+    { "format-nonliteral", &warn_format_nonliteral },
+    { "format-security", &warn_format_security },
+    { "format-y2k", &warn_format_y2k },
+    { "implicit-function-declaration", &mesg_implicit_function_declaration },
+    { "implicit-int", &warn_implicit_int },
+    { "import", NULL },
+    { "long-long", &warn_long_long },
+    { "main", &warn_main },
+    { "missing-braces", &warn_missing_braces },
+    { "missing-declarations", &warn_missing_declarations },
+    { "missing-format-attribute", &warn_missing_format_attribute },
+    { "missing-prototypes", &warn_missing_prototypes },
+    { "multichar", &warn_multichar },
+    { "nested-externs", &warn_nested_externs },
+    { "parentheses", &warn_parentheses },
+    { "pointer-arith", &warn_pointer_arith },
+    { "redundant-decls", &warn_redundant_decls },
+    { "return-type", &warn_return_type },
+    { "sequence-point", &warn_sequence_point },
+    { "sign-compare", &warn_sign_compare },
+    { "strict-prototypes", &warn_strict_prototypes },
+    { "traditional", &warn_traditional },
+    { "trigraphs", NULL },
+    { "undef", NULL },
+    { "write-strings", &flag_const_strings }
+  };
+
   strings_processed = cpp_handle_option (parse_in, argc, argv, 0);
 
   if (!strcmp (p, "-fhosted") || !strcmp (p, "-fno-freestanding"))
@@ -595,14 +639,12 @@ c_decode_option (argc, argv)
     goto iso_1990;
   else if (!strcmp (p, "-Werror-implicit-function-declaration"))
     mesg_implicit_function_declaration = 2;
-  else if (!strcmp (p, "-Wimplicit-function-declaration"))
-    mesg_implicit_function_declaration = 1;
-  else if (!strcmp (p, "-Wno-implicit-function-declaration"))
-    mesg_implicit_function_declaration = 0;
-  else if (!strcmp (p, "-Wimplicit-int"))
-    warn_implicit_int = 1;
-  else if (!strcmp (p, "-Wno-implicit-int"))
-    warn_implicit_int = 0;
+  else if (!strncmp (p, "-Wformat=", 9))
+    set_Wformat (atoi (p + 9));
+  else if (!strcmp (p, "-Wformat"))
+    set_Wformat (1);
+  else if (!strcmp (p, "-Wno-format"))
+    set_Wformat (0);
   else if (!strcmp (p, "-Wimplicit"))
     {
       warn_implicit_int = 1;
@@ -611,142 +653,8 @@ c_decode_option (argc, argv)
     }
   else if (!strcmp (p, "-Wno-implicit"))
     warn_implicit_int = 0, mesg_implicit_function_declaration = 0;
-  else if (!strcmp (p, "-Wlong-long"))
-    warn_long_long = 1;
-  else if (!strcmp (p, "-Wno-long-long"))
-    warn_long_long = 0;
-  else if (!strcmp (p, "-Wwrite-strings"))
-    flag_const_strings = 1;
-  else if (!strcmp (p, "-Wno-write-strings"))
-    flag_const_strings = 0;
-  else if (!strcmp (p, "-Wcast-qual"))
-    warn_cast_qual = 1;
-  else if (!strcmp (p, "-Wno-cast-qual"))
-    warn_cast_qual = 0;
-  else if (!strcmp (p, "-Wbad-function-cast"))
-    warn_bad_function_cast = 1;
-  else if (!strcmp (p, "-Wno-bad-function-cast"))
-    warn_bad_function_cast = 0;
-  else if (!strcmp (p, "-Wno-missing-noreturn"))
-    warn_missing_noreturn = 0;
-  else if (!strcmp (p, "-Wmissing-format-attribute"))
-    warn_missing_format_attribute = 1;
-  else if (!strcmp (p, "-Wno-missing-format-attribute"))
-    warn_missing_format_attribute = 0;
-  else if (!strcmp (p, "-Wpointer-arith"))
-    warn_pointer_arith = 1;
-  else if (!strcmp (p, "-Wno-pointer-arith"))
-    warn_pointer_arith = 0;
-  else if (!strcmp (p, "-Wstrict-prototypes"))
-    warn_strict_prototypes = 1;
-  else if (!strcmp (p, "-Wno-strict-prototypes"))
-    warn_strict_prototypes = 0;
-  else if (!strcmp (p, "-Wmissing-prototypes"))
-    warn_missing_prototypes = 1;
-  else if (!strcmp (p, "-Wno-missing-prototypes"))
-    warn_missing_prototypes = 0;
-  else if (!strcmp (p, "-Wmissing-declarations"))
-    warn_missing_declarations = 1;
-  else if (!strcmp (p, "-Wno-missing-declarations"))
-    warn_missing_declarations = 0;
-  else if (!strcmp (p, "-Wredundant-decls"))
-    warn_redundant_decls = 1;
-  else if (!strcmp (p, "-Wno-redundant-decls"))
-    warn_redundant_decls = 0;
-  else if (!strcmp (p, "-Wnested-externs"))
-    warn_nested_externs = 1;
-  else if (!strcmp (p, "-Wno-nested-externs"))
-    warn_nested_externs = 0;
-  else if (!strcmp (p, "-Wtraditional"))
-    warn_traditional = 1;
-  else if (!strcmp (p, "-Wno-traditional"))
-    warn_traditional = 0;
-  else if (!strncmp (p, "-Wformat=", 9))
-    set_Wformat (atoi (p + 9));
-  else if (!strcmp (p, "-Wformat"))
-    set_Wformat (1);
-  else if (!strcmp (p, "-Wno-format"))
-    set_Wformat (0);
-  else if (!strcmp (p, "-Wformat-y2k"))
-    warn_format_y2k = 1;
-  else if (!strcmp (p, "-Wno-format-y2k"))
-    warn_format_y2k = 0;
-  else if (!strcmp (p, "-Wformat-extra-args"))
-    warn_format_extra_args = 1;
-  else if (!strcmp (p, "-Wno-format-extra-args"))
-    warn_format_extra_args = 0;
-  else if (!strcmp (p, "-Wformat-nonliteral"))
-    warn_format_nonliteral = 1;
-  else if (!strcmp (p, "-Wno-format-nonliteral"))
-    warn_format_nonliteral = 0;
-  else if (!strcmp (p, "-Wformat-security"))
-    warn_format_security = 1;
-  else if (!strcmp (p, "-Wno-format-security"))
-    warn_format_security = 0;
-  else if (!strcmp (p, "-Wchar-subscripts"))
-    warn_char_subscripts = 1;
-  else if (!strcmp (p, "-Wno-char-subscripts"))
-    warn_char_subscripts = 0;
-  else if (!strcmp (p, "-Wconversion"))
-    warn_conversion = 1;
-  else if (!strcmp (p, "-Wno-conversion"))
-    warn_conversion = 0;
-  else if (!strcmp (p, "-Wparentheses"))
-    warn_parentheses = 1;
-  else if (!strcmp (p, "-Wno-parentheses"))
-    warn_parentheses = 0;
-  else if (!strcmp (p, "-Wreturn-type"))
-    warn_return_type = 1;
-  else if (!strcmp (p, "-Wno-return-type"))
-    warn_return_type = 0;
-  else if (!strcmp (p, "-Wsequence-point"))
-    warn_sequence_point = 1;
-  else if (!strcmp (p, "-Wno-sequence-point"))
-    warn_sequence_point = 0;
-  else if (!strcmp (p, "-Wcomment"))
-    ; /* cpp handles this one.  */
-  else if (!strcmp (p, "-Wno-comment"))
-    ; /* cpp handles this one.  */
-  else if (!strcmp (p, "-Wcomments"))
-    ; /* cpp handles this one.  */
-  else if (!strcmp (p, "-Wno-comments"))
-    ; /* cpp handles this one.  */
-  else if (!strcmp (p, "-Wtrigraphs"))
-    ; /* cpp handles this one.  */
-  else if (!strcmp (p, "-Wno-trigraphs"))
-    ; /* cpp handles this one.  */
-  else if (!strcmp (p, "-Wundef"))
-    ; /* cpp handles this one.  */
-  else if (!strcmp (p, "-Wno-undef"))
-    ; /* cpp handles this one.  */
-  else if (!strcmp (p, "-Wimport"))
-    ; /* cpp handles this one.  */
-  else if (!strcmp (p, "-Wno-import"))
-    ; /* cpp handles this one.  */
-  else if (!strcmp (p, "-Wmissing-braces"))
-    warn_missing_braces = 1;
-  else if (!strcmp (p, "-Wno-missing-braces"))
-    warn_missing_braces = 0;
-  else if (!strcmp (p, "-Wmain"))
-    warn_main = 1;
   else if (!strcmp (p, "-Wno-main"))
     warn_main = -1;
-  else if (!strcmp (p, "-Wsign-compare"))
-    warn_sign_compare = 1;
-  else if (!strcmp (p, "-Wno-sign-compare"))
-    warn_sign_compare = 0;
-  else if (!strcmp (p, "-Wfloat-equal"))
-    warn_float_equal = 1;
-  else if (!strcmp (p, "-Wno-float-equal"))
-    warn_float_equal = 0;
-  else if (!strcmp (p, "-Wmultichar"))
-    warn_multichar = 1;
-  else if (!strcmp (p, "-Wno-multichar"))
-    warn_multichar = 0;
-  else if (!strcmp (p, "-Wdiv-by-zero"))
-    warn_div_by_zero = 1;
-  else if (!strcmp (p, "-Wno-div-by-zero"))
-    warn_div_by_zero = 0;
   else if (!strcmp (p, "-Wunknown-pragmas"))
     /* Set to greater than 1, so that even unknown pragmas in system
        headers will be warned about.  */
@@ -777,7 +685,20 @@ c_decode_option (argc, argv)
       warn_unknown_pragmas = 1;
     }
   else
-    return strings_processed;
+    {
+      size_t i;
+      for (i = 0; i < sizeof (warn_options) / sizeof (warn_options[0]); i++)
+	if (strncmp (p, "-W", 2) == 0 
+	    && warn_options[i].flag
+	    && (strcmp (p+2, warn_options[i].option) == 0
+		|| (strncmp (p+2, "no-", 3) == 0
+		    && strcmp (p+5, warn_options[i].option) == 0)))
+	  {
+	    *(warn_options[i].flag) = strncmp (p+2, "no-", 3) != 0;
+	    return 1;
+	  }
+      return strings_processed;
+    }
 
   return 1;
 }
