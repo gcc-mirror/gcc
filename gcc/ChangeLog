@@ -1,3 +1,8 @@
+2002-07-12  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* config/avr/avr.c (test_hard_reg_class): Fix TEST_HARD_REG_BIT
+	usage on 64-bit hosts, return value was truncated to 32 bits.
+
 2002-06-28  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa-protos.h (xtensa_return_addr): Declare.

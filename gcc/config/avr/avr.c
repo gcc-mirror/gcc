@@ -5173,7 +5173,11 @@ test_hard_reg_class (class, x)
   int regno = true_regnum (x);
   if (regno < 0)
     return 0;
-  return TEST_HARD_REG_CLASS (class, regno);
+
+  if (TEST_HARD_REG_CLASS (class, regno))
+    return 1;
+
+  return 0;
 }
 
 void
