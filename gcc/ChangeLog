@@ -1,5 +1,11 @@
 2004-10-10  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	PR c/17301
+	* builtins.c (expand_builtin_va_start): Check for too few
+	arguments to va_start.
+
+2004-10-10  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	PR c/17189
 	* c-decl.c (grokfield): Make diagnostic for bad cases of unnamed
 	fields a pedwarn.  Pedwarn here for unnamed structs/unions if

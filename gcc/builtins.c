@@ -3861,6 +3861,11 @@ expand_builtin_va_start (tree arglist)
 
   chain = TREE_CHAIN (arglist);
 
+  if (!chain)
+    {
+      error ("too few arguments to function %<va_start%>");
+      return const0_rtx;
+    }
   if (TREE_CHAIN (chain))
     error ("too many arguments to function %<va_start%>");
 
