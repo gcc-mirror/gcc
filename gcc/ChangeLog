@@ -1,3 +1,11 @@
+2005-01-24  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/irix-csr.c: New file.
+	* config/mips/t-iris6 (irix-csr.o): New rule to build it.
+	(EXTRA_MULTILIB_PARTS): Add irix-csr.o.
+	* config/mips/iris6.h (ENDFILE_SPEC): Include it in n32 and n64
+	executables.
+
 2005-01-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR bootstrap/19364
