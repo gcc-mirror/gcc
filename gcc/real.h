@@ -98,7 +98,7 @@ REAL_VALUE_TYPE ereal_negate (), ereal_truncate ();
 
 #define REAL_VALUES_EQUAL(x, y) (ereal_cmp ((x), (y)) == 0)
 /* true if x < y : */
-#define REAL_VALUES_LESS(x, y) (ereal_cmp ((x), (y)) < 0)
+#define REAL_VALUES_LESS(x, y) (ereal_cmp ((x), (y)) == -1)
 #define REAL_VALUE_LDEXP(x, n) ereal_ldexp (x, n)
 
 /* These return REAL_VALUE_TYPE: */
