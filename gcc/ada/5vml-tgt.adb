@@ -209,7 +209,9 @@ package body MLib.Tgt is
          if Symbol_Data.Symbol_File = No_Name then
             return "symvec.opt";
          else
-            return Get_Name_String (Symbol_Data.Symbol_File);
+            Get_Name_String (Symbol_Data.Symbol_File);
+            To_Lower (Name_Buffer (1 .. Name_Len));
+            return Name_Buffer (1 .. Name_Len);
          end if;
       end Option_File_Name;
 
@@ -244,8 +246,7 @@ package body MLib.Tgt is
 
       Opt_File_Name  : constant String := Option_File_Name;
       Version        : constant String := Version_String;
-      For_Linker_Opt : constant String_Access :=
-                         new String'("--for-linker=" & Opt_File_Name);
+      For_Linker_Opt : String_Access;
 
    --  Start of processing for Build_Dynamic_Library
 
@@ -256,6 +257,19 @@ package body MLib.Tgt is
          Link_With_Shared_Libgcc := Shared_Libgcc_Switch'Access;
       else
          Link_With_Shared_Libgcc := No_Shared_Libgcc_Switch'Access;
+      end if;
+
+      --  If option file name does not ends with ".opt", append "/OPTIONS"
+      --  to its specification for the VMS linker.
+
+      if Opt_File_Name'Length > 4
+        and then
+          Opt_File_Name (Opt_File_Name'Last - 3 .. Opt_File_Name'Last) = ".opt"
+      then
+         For_Linker_Opt := new String'("--for-linker=" & Opt_File_Name);
+      else
+         For_Linker_Opt :=
+           new String'("--for-linker=" & Opt_File_Name & "/OPTIONS");
       end if;
 
       VMS_Options (VMS_Options'First + 1) := For_Linker_Opt;

@@ -58,6 +58,10 @@ package body VMS_Conv is
    --  if a COMMANDS_TRANSLATION switch has been encountered while processing
    --  a MAKE Command.
 
+   Output_File_Expected : Boolean := False;
+   --  True for GNAT LINK after -o switch, so that the ".ali" extension is
+   --  not added to the executable file name.
+
    package Buffer is new Table.Table
      (Table_Component_Type => Character,
       Table_Index_Type     => Integer,
@@ -1111,6 +1115,7 @@ package body VMS_Conv is
                end if;
 
                The_Command := Command.Command;
+               Output_File_Expected := False;
 
                --  Give usage information if only command given
 
@@ -1277,12 +1282,18 @@ package body VMS_Conv is
 
             elsif Arg.all = "/?" then
                Display_Command := True;
+               Output_File_Expected := False;
 
                --  Copy -switch unchanged
 
             elsif Arg (Arg'First) = '-' then
                Place (' ');
                Place (Arg.all);
+
+               --  Set Output_File_Expected for the next argument
+
+               Output_File_Expected :=
+                 Arg.all = "-o" and then The_Command = Link;
 
                --  Copy quoted switch with quotes stripped
 
@@ -1296,6 +1307,8 @@ package body VMS_Conv is
                   Place (' ');
                   Place (Arg (Arg'First + 1 .. Arg'Last - 1));
                end if;
+
+               Output_File_Expected := False;
 
                --  Parameter Argument
 
@@ -1357,8 +1370,12 @@ package body VMS_Conv is
                               Place (' ');
                               Place_Lower (Normal_File.all);
 
+                              --  Add extension if not present, except after
+                              --  switch -o.
+
                               if Is_Extensionless (Normal_File.all)
                                 and then Command.Defext /= "   "
+                                and then not Output_File_Expected
                               then
                                  Place ('.');
                                  Place (Command.Defext);
@@ -1488,9 +1505,15 @@ package body VMS_Conv is
                   end case;
                end if;
 
+               --  Reset Output_File_Expected, in case it was True
+
+               Output_File_Expected := False;
+
                --  Qualifier argument
 
             else
+               Output_File_Expected := False;
+
                --  This code is too heavily nested, should be
                --  separated out as separate subprogram ???
 

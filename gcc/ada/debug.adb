@@ -470,7 +470,7 @@ package body Debug is
    --       testing high integrity mode.
 
    --  d.x  No exception handlers in generated code. This causes exception
-   --       handles to be eliminated from the generated code. They are still
+   --       handlers to be eliminated from the generated code. They are still
    --       fully compiled and analyzed, they just get eliminated from the
    --       code generation step.
 

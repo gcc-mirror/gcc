@@ -1,3 +1,78 @@
+2004-02-18  Emmanuel Briot  <briot@act-europe.fr>
+
+	* ali.ads, ali.adb (First_Sdep_Entry): No longer a constant, so that
+	Scan_ALI can be used for multiple ALI files without reinitializing
+	between calls.
+
+2004-02-18  Robert Dewar  <dewar@gnat.com>
+
+	* debug.adb: Minor reformatting.
+
+2004-02-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* decl.c (gnat_to_gnu_entity, case object): Set DECL_POINTER_ALIAS_SET
+	to zero if there is an address clause.
+
+2004-02-18  Thomas Quinot  <quinot@act-europe.fr>
+
+	* exp_util.adb (Side_Effect_Free): Any literal is side effects free.
+
+2004-02-18  Gary Dismukes  <dismukes@gnat.com>
+
+	* layout.adb (Layout_Component_List): Revise generation of call to
+	discriminant-checking function to pass selections of all of the type's
+	discriminants rather than just the variant-controlling discriminant.
+
+2004-02-18  Olivier Hainque  <hainque@act-europe.fr>
+
+	* 5gmastop.adb (Pop_Frame): Do not call exc_unwind, which is bound to
+	fail in the current setup and triggers spurious system error messages.
+	Pretend it occurred and failed instead.
+
+2004-02-18  Vincent Celier  <celier@gnat.com>
+
+	* bld.adb: Mark FLDFLAGS as saved
+	(Process_Declarative_Items): Add Linker'Linker_Options to FLDFLAGS when
+	it is not the root project.  Put each directory to be
+	extended between double quotes to prevent it to be expanded on Windows.
+	(Recursive_Process): Reset CFLAGS/CXXFLAGS to nothing before processing
+	the project file. Set them back to their initial values if they have not
+	been set in the project file.
+
+	* gprcmd.adb: (Gprdebug, Debug): New global variables
+	(Display_Command): New procedure
+	(Usage): Document new command "linkopts"
+	Call Display_Command when env var GPRDEBUG has the value "TRUE"
+	Implement new command "linkopts"
+	Remove quotes that may be around arguments for "extend"
+	Always call Normalize_Pathname with arguments formatted for the platform
+
+	* Makefile.generic: Link C/C++ mains with $(FLDFLAGS)
+	Change @echo to @$(display) in target clean to be able to clean silently
+
+	* Makefile.prolog: Save FLDFLAGS and give it an initial empty value
+
+	* prj-part.adb (Project_Path_Name_Of): Do not put final result in
+	canonical case.
+
+	* prj-part.adb (Parse_Single_Project): Always call with From_Extended
+	= Extending_All when current project is an extending all project.
+
+	* vms_conv.adb (Output_File_Expected): New Boolean global variable,
+	set to True only for LINK command, after Unix switch -o.
+	(Process_Arguments): Set Output_File_Expected to True for LINK command
+	after Unix switch -o. When Output_File_Expected is True, never add an
+	extension to a file name.
+
+	* 5vml-tgt.adb (Build_Dynamic_Library): Do not append "/OPTIONS" to the
+	option file name, only to the --for-linker= switch.
+	(Option_File_Name): If option file name do not end with ".opt", append
+	"/OPTIONS".
+
+2004-02-18  GNAT Script  <nobody@gnat.com>
+
+	* Make-lang.in: Makefile automatically updated
+
 2004-02-17  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* Make-lang.in (stamp-sdefault): Do not depend on

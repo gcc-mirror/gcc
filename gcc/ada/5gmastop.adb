@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                         (Version for IRIX/MIPS)                          --
 --                                                                          --
---          Copyright (C) 1999-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1999-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -301,7 +301,25 @@ package body System.Machine_State_Operations is
       --  Lock_Task is used in many other places.
 
       Lock_Task.all;
-      Exc_Unwind (Scp);
+
+      --  ??? Calling exc_unwind in the current setup does not work and
+      --  triggers the emission of system warning messages. Why it does
+      --  not work remains to be investigated. Part of the problem is
+      --  probably a section naming issue (e.g. .eh_frame/.debug_frame).
+
+      --  Instead of letting the call take place for nothing and emit
+      --  messages we don't expect, we just arrange things to pretend it
+      --  occurred and failed.
+
+      --  ??? Until this is fixed, we shall document that the backtrace
+      --  computation facility does not work.
+
+      if False then
+         Exc_Unwind (Scp);
+      else
+         Scp.SC_PC := 0;
+      end if;
+
       Unlock_Task.all;
 
       if Scp.SC_PC = 0 or else Scp.SC_PC = 1 then

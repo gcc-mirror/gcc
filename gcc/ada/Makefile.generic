@@ -349,8 +349,8 @@ else
 
 link: $(EXEC_DIR)/$(EXEC) archive-objects
 $(EXEC_DIR)/$(EXEC): $(OBJ_FILES)
-	@$(display) $(LINKER) -o $(EXEC_DIR)/$(EXEC) $(OBJ_DIR)/$(MAIN_OBJECT) $(LDFLAGS)
-	$(LINKER) -o $(EXEC_DIR)/$(EXEC) $(OBJ_DIR)/$(MAIN_OBJECT) $(LDFLAGS)
+	@$(display) $(LINKER) -o $(EXEC_DIR)/$(EXEC) $(OBJ_DIR)/$(MAIN_OBJECT) $(LDFLAGS) $(FLDFLAGS)
+	@$(LINKER) -o $(EXEC_DIR)/$(EXEC) $(OBJ_DIR)/$(MAIN_OBJECT) $(LDFLAGS) $(FLDFLAGS)
 endif
 endif
 
@@ -363,7 +363,7 @@ ifeq ($(strip $(filter-out c c++ ada,$(LANGUAGES))),)
 ifeq ($(MAIN),ada)
 # Ada main
 link: $(LINKER) archive-objects force
-	@(display) $(GNATMAKE) -b -l -P$(PROJECT_FILE) $(ADA_SOURCES)
+	@$(display) $(GNATMAKE) -b -l -P$(PROJECT_FILE) $(ADA_SOURCES)
 	@$(GNATMAKE) -b -l -P$(PROJECT_FILE) $(ADA_SOURCES) \
 		 -largs $(LARGS) $(LDFLAGS)
 
@@ -376,15 +376,15 @@ else
 # C/C++ main
 
 link: $(LINKER) archive-objects force
-	@(display) $(GNATMAKE) $(EXEC_RULE) -B -P$(PROJECT_FILE) $(ADA_SOURCES)
+	@$(display) $(GNATMAKE) $(EXEC_RULE) -B -P$(PROJECT_FILE) $(ADA_SOURCES)
 	@$(GNATMAKE) $(EXEC_RULE) -B -P$(PROJECT_FILE) $(ADA_SOURCES) \
-		 -largs $(MAIN_OBJECT) $(LARGS) $(LDFLAGS)
+		 -largs $(MAIN_OBJECT) $(LARGS) $(LDFLAGS) $(FLDFLAGS)
 
 internal-build: $(LINKER) archive-objects force
 	@$(display) $(GNATMAKE) -B -P$(PROJECT_FILE) $(ADA_SOURCES) $(EXEC_RULE) $(ADAFLAGS)
 	@$(GNATMAKE) $(EXEC_RULE) \
 		 -B -P$(PROJECT_FILE) $(ADA_SOURCES) $(ADAFLAGS) \
-		 -largs $(MAIN_OBJECT) $(LARGS) $(LDFLAGS)
+		 -largs $(MAIN_OBJECT) $(LARGS) $(LDFLAGS) $(FLDFLAGS)
 endif
 
 else
@@ -483,20 +483,20 @@ internal-c++ : $(CXX_OBJECTS)
 .PHONY: force internal-clean internal-archive internal-build internal-compile internal-ada internal-c internal-c++ build compile clean ada c c++
 
 internal-clean:
-	@echo $(RM) $(OBJ_DIR)/*$(OBJ_EXT)
+	@$(display) $(RM) $(OBJ_DIR)/*$(OBJ_EXT)
 	@$(RM) $(OBJ_DIR)/*$(OBJ_EXT)
-	@echo $(RM) $(OBJ_DIR)/*.ali
+	@$(display) $(RM) $(OBJ_DIR)/*.ali
 	@$(RM) $(OBJ_DIR)/*.ali
-	@echo $(RM) $(OBJ_DIR)/b~*
+	@$(display) $(RM) $(OBJ_DIR)/b~*
 	@$(RM) $(OBJ_DIR)/b~*
-	@echo $(RM) $(OBJ_DIR)/b_*
+	@$(display) $(RM) $(OBJ_DIR)/b_*
 	@$(RM) $(OBJ_DIR)/b_*
-	@echo $(RM) $(OBJ_DIR)/*$(AR_EXT)
+	@$(display) $(RM) $(OBJ_DIR)/*$(AR_EXT)
 	@$(RM) $(OBJ_DIR)/*$(AR_EXT)
-	@echo $(RM) $(OBJ_DIR)/*.d
+	@$(display) $(RM) $(OBJ_DIR)/*.d
 	@$(RM) $(OBJ_DIR)/*.d
 ifneq ($(EXEC),)
-	@echo $(RM) $(EXEC_DIR)/$(EXEC)
+	@$(display) $(RM) $(EXEC_DIR)/$(EXEC)
 	@$(RM) $(EXEC_DIR)/$(EXEC)
 endif
 

@@ -40,6 +40,7 @@ GNATMAKE.saved:=$(GNATMAKE)
 ADAFLAGS.saved:=$(ADAFLAGS)
 CFLAGS.saved:=$(CFLAGS)
 CXXFLAGS.saved:=$(CXXFLAGS)
+FLDFLAGS.saved:=$(FLDFLAGS)
 LIBS.saved:=$(LIBS)
 LDFLAGS.saved:=$(LDFLAGS)
 ADA_SOURCES.saved:=$(ADA_SOURCES)
@@ -57,6 +58,7 @@ CXX_EXT:=.cc
 AR_EXT=.a
 OBJ_EXT=.o
 CC=gcc
+FLDFLAGS:=
 
 # Default target is to build (compile/bind/link)
 # Target build is defined in Makefile.generic
