@@ -199,7 +199,10 @@ public class File implements Serializable, Comparable
     checkWrite();
     return performCreate();
   }
-  
+ 
+  /*
+   * This native method handles the actual deleting of the file
+   */
   private native boolean performDelete ();
 
   /**
@@ -211,12 +214,13 @@ public class File implements Serializable, Comparable
    *
    * @exception SecurityException If deleting of the file is not allowed
    */
-  public boolean delete ()
+  public synchronized boolean delete ()
   {
-    SecurityManager s = System.getSecurityManager();
-    String name = path;
+    SecurityManager s = System.getSecurityManager ();
+    
     if (s != null)
-      s.checkDelete(path);
+      s.checkDelete (path);
+    
     return performDelete ();
   }
 
@@ -239,11 +243,12 @@ public class File implements Serializable, Comparable
   {
     if (! (obj instanceof File))
       return false;
+    
     File other = (File) obj;
     if (caseSensitive)
-      return (path.equals(other.path));
+      return path.equals(other.path);
     else
-      return (path.equalsIgnoreCase(other.path));      
+      return path.equalsIgnoreCase(other.path);
   }
 
   /**
@@ -663,7 +668,7 @@ public class File implements Serializable, Comparable
    *
    * @since 1.2
    */
-  public boolean isHidden()
+  public boolean isHidden ()
   {
     checkRead();
     return _stat (ISHIDDEN);
@@ -701,6 +706,11 @@ public class File implements Serializable, Comparable
     checkRead();
     return attr (LENGTH);
   }
+
+  /*
+   * This native function actually produces the list of file in this
+   * directory
+   */
     
   private final native Object[] performList (FilenameFilter filter,
 					     FileFilter fileFilter,
@@ -781,7 +791,7 @@ public class File implements Serializable, Comparable
    *
    * @since 1.2
    */
-  public File[] listFiles()
+  public File[] listFiles ()
   {
     checkRead();
     return (File[]) performList (null, null, File.class);
@@ -811,12 +821,12 @@ public class File implements Serializable, Comparable
    *
    * @since 1.2
    */
-  public File[] listFiles(FilenameFilter filter)
+  public File[] listFiles (FilenameFilter filter)
   {
     checkRead();
     return (File[]) performList (filter, null, File.class);
   }
-  
+
   /**
    * This method returns an array of <code>File</code> objects representing
    * all the files in the directory represented by this object. If this
@@ -841,7 +851,7 @@ public class File implements Serializable, Comparable
    *
    * @since 1.2
    */
-  public File[] listFiles(FileFilter filter)
+  public File[] listFiles (FileFilter filter)
   {
     checkRead();
     return (File[]) performList (null, filter, File.class);
@@ -880,6 +890,9 @@ public class File implements Serializable, Comparable
 		      + (isDirectory() ? "/" : ""));
   }
 
+  /*
+   * This native method actually creates the directory
+   */
   private final native boolean performMkdir ();
 
   /**
@@ -1025,6 +1038,9 @@ public class File implements Serializable, Comparable
     throw new IOException ("cannot create temporary file");
   }
 
+  /*
+   * This native method sets the permissions to make the file read only.
+   */
   private native boolean performSetReadOnly();
 
   /**
@@ -1041,7 +1057,7 @@ public class File implements Serializable, Comparable
    *
    * @since 1.2
    */
-  public boolean setReadOnly()
+  public boolean setReadOnly ()
   {
     checkWrite();
     return performSetReadOnly();
@@ -1060,7 +1076,7 @@ public class File implements Serializable, Comparable
    *
    * @since 1.2
    */
-  public static File[] listRoots()
+  public static File[] listRoots ()
   {
     File[] roots = performListRoots();
     
@@ -1180,6 +1196,9 @@ public class File implements Serializable, Comparable
     return compareTo (other);
   }
 
+  /*
+   * This native method actually performs the rename.
+   */
   private native boolean performRenameTo (File dest);
 
   /**
@@ -1194,7 +1213,7 @@ public class File implements Serializable, Comparable
    * @exception SecurityException If write access is not allowed to the 
    * file by the <code>SecurityMananger</code>.
    */
-  public boolean renameTo (File dest)
+  public synchronized boolean renameTo (File dest)
   {
     SecurityManager s = System.getSecurityManager();
     String sname = getName();
@@ -1207,6 +1226,9 @@ public class File implements Serializable, Comparable
     return performRenameTo (dest);
   }
 
+  /*
+   * This method does the actual setting of the modification time.
+   */
   private native boolean performSetLastModified(long time);
  
   /**
@@ -1225,7 +1247,7 @@ public class File implements Serializable, Comparable
    *
    * @since 1.2
    */
-  public boolean setLastModified(long time)
+  public boolean setLastModified (long time) 
   {
     checkWrite();
     return performSetLastModified(time);
@@ -1233,16 +1255,20 @@ public class File implements Serializable, Comparable
 
   private void checkWrite ()
   {
-    SecurityManager s = System.getSecurityManager();
+    // Check the SecurityManager
+    SecurityManager s = System.getSecurityManager ();
+    
     if (s != null)
-      s.checkWrite(path);
+      s.checkWrite (path);
   }
 
   private void checkRead ()
   {
-    SecurityManager s = System.getSecurityManager();
+    // Check the SecurityManager
+    SecurityManager s = System.getSecurityManager ();
+    
     if (s != null)
-      s.checkRead(path);
+      s.checkRead (path);
   }
 
   /** 
@@ -1254,6 +1280,7 @@ public class File implements Serializable, Comparable
   // FIXME: This should use the ShutdownHook API once we implement that.
   public void deleteOnExit ()
   {
+    // Check the SecurityManager
     SecurityManager sm = System.getSecurityManager ();
     if (sm != null)
       sm.checkDelete (getName ());
@@ -1275,8 +1302,9 @@ public class File implements Serializable, Comparable
     // If the file was from an OS with a different dir separator,
     // fixup the path to use the separator on this OS.
     char oldSeparatorChar = ois.readChar ();
+    
     if (oldSeparatorChar != separatorChar)
       path = path.replace (oldSeparatorChar, separatorChar);
   }
+} // class File
 
-}

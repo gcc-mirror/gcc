@@ -82,6 +82,7 @@ public class FileInputStream extends InputStream
     SecurityManager s = System.getSecurityManager();
     if (s != null)
       s.checkRead(name);
+
     fd = new FileDescriptor(name, FileDescriptor.READ);
   }
 
@@ -268,15 +269,15 @@ public class FileInputStream extends InputStream
    *
    * @exception IOException If an error occurs
    */
-  public long skip (long numBytes) throws IOException
+  public synchronized long skip (long numBytes) throws IOException
   {
     if (numBytes < 0)
-      throw new IllegalArgumentException ( "Can't skip negative bytes: " +
-                                           numBytes);
+      throw new IllegalArgumentException ("Can't skip negative bytes: " + 
+                                          numBytes);
 
     if (numBytes == 0)
       return 0;
-    
+
     long curPos = fd.getFilePointer ();
     long newPos = fd.seek (numBytes, FileDescriptor.CUR, true);
     return newPos - curPos;
