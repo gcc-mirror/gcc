@@ -39,7 +39,7 @@ strlen(@var{src}).
 #endif
 
 extern size_t strlen PARAMS ((const char *));
-extern PTR strncpy PARAMS ((char *, const char *, size_t));
+extern char *strncpy PARAMS ((char *, const char *, size_t));
 
 char *
 stpncpy (dst, src, len)
