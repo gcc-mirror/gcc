@@ -1486,7 +1486,8 @@ yylex ()
 	      case 'f': case 'F':
 		type = float_type_node;
 		value = REAL_VALUE_ATOF (token_buffer, TYPE_MODE (type));
-		if (REAL_VALUE_ISINF (value) && pedantic)
+		if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
+		    && REAL_VALUE_ISINF (value) && pedantic)
 		  pedwarn ("floating point number exceeds range of `float'");
 		garbage_chars = -1;
 		break;
@@ -1494,7 +1495,8 @@ yylex ()
 	      case 'l': case 'L':
 		type = long_double_type_node;
 		value = REAL_VALUE_ATOF (token_buffer, TYPE_MODE (type));
-		if (REAL_VALUE_ISINF (value) && pedantic)
+		if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
+		    && REAL_VALUE_ISINF (value) && pedantic)
 		  pedwarn (
 		      "floating point number exceeds range of `long double'");
 		garbage_chars = -1;
@@ -1509,7 +1511,8 @@ yylex ()
 
               default:
 		value = REAL_VALUE_ATOF (token_buffer, TYPE_MODE (type));
-		if (REAL_VALUE_ISINF (value) && pedantic)
+		if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
+		    && REAL_VALUE_ISINF (value) && pedantic)
 		  pedwarn ("floating point number exceeds range of `double'");
 	      }
 	    set_float_handler (NULL_PTR);
@@ -1519,8 +1522,9 @@ yylex ()
 	      {
   		/* ERANGE is also reported for underflow,
   		   so test the value to distinguish overflow from that.  */
-		if (REAL_VALUES_LESS (dconst1, value)
-		    || REAL_VALUES_LESS (value, dconstm1))
+		if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
+		    && (REAL_VALUES_LESS (dconst1, value)
+			|| REAL_VALUES_LESS (value, dconstm1)))
 		  {
 		    pedwarn ("floating point number exceeds range of `double'");
 		    exceeds_double = 1;
