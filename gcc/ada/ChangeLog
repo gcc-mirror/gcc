@@ -1,3 +1,345 @@
+2005-01-03  Thomas Quinot  <quinot@adacore.com>
+
+	* gen-soccon.c: New utility program to generate g-soccon.ads
+	automatically.
+
+	* socket.c, gsocket.h: Split inclusion of system header files into a
+	gsocket.h file separated from socket.c, to allow reuse in gen-soccon.c.
+
+	* g-soccon.ads, g-soccon-unixware.ads, g-soccon-tru64.ads,
+	g-soccon-aix.ads, g-soccon-irix.ads, g-soccon-hpux.ads,
+	g-soccon-interix.ads, g-soccon-solaris.ads, g-soccon-mingw.ads,
+	g-soccon-vxworks.ads, g-soccon-freebsd.ads: Note that these files
+	should not be edited by hand anymore, but should be regenerated using
+	gen-soccon.
+
+2005-01-03  Robert Dewar  <dewar@adacore.com>
+	    Ed Schonberg  <schonberg@adacore.com>
+	    Vincent Celier  <celier@adacore.com>
+
+	* s-atacco.ads, a-direio.adb: Protect use of 'Constrained by warnings
+	on/off, since this is an obsolescent feature, for which we now generate
+	a warning.
+
+	* sem_attr.adb (Analyze_Attribute, case Constrained): Issue warning if
+	warning mode is set and obsolescent usage of this attribute occurs.
+	(Resolve_Access, case 'Access): Note that GNAT uses the context type to
+	disambiguate overloaded prefixes, in accordance with AI-235. GNAT code
+	predates, and partly motivates, the adoption of the AI.
+	Implement new Ada 2005 attribute Mod
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Implement Ada 2005
+	attribute Mod.
+
+	* par-ch4.adb (P_Name): In Ada 2005 mode, recognize new attribute Mod
+
+	* snames.h, snames.ads, snames.adb: Add entry for No_Dependence for
+	pragma restrictions.
+	New entry for Ada 2005 attribute Mod.
+
+	* par-prag.adb: 
+	Add recognition of new pragma Restrictions No_Dependence
+	Recognize restriction No_Obsolescent_Features at parse time
+
+	* bcheck.adb: Add circuitry for checking for consistency of
+	No_Dependence restrictions.
+
+	* lib-writ.ads, lib-writ.adb: Output new R lines for No_Dependence
+	restrictions.
+
+	* restrict.ads, restrict.adb: Add subprograms to deal with
+	No_Dependence restrictions.
+
+	* rtsfind.adb: Check that implicit with's do not violate No_Dependence
+	restrictions.
+
+	* sem_ch3.adb, sem_ch11.adb, sem_ch13.adb, lib-xref.adb,
+	sem_attr.adb: Add check for new restriction No_Obsolescent_Features
+
+	* scn.ads, prj-err.ads, prj-err.adb, ali-util.adb, gprep.adb: Add new
+	dummy parameter to scng instantiation.
+	Needed for new restriction No_Obsolescent_Features
+
+	* scn.adb: (Obsolescent_Check): New procedure
+	Needed for new restriction No_Obsolescent_Features
+
+	* scng.ads, scng.adb: Always allow wide characters in Ada 2005 mode, as
+	specified by AI-285, needed for implementation of AI-388 (adding greek
+	pi to Ada.Numerics).
+	Add new generic formal to scng, needed for new restriction
+	No_Obsolescent_Features.
+
+	* s-rident.ads: Add new restriction No_Obsolescent_Features.
+
+	* ali.ads, ali.adb: Adjustments for reading new No_Dependence
+	restrictions lines.
+	(Scan_ALI): When finding an unexpected character on an R line, raise
+	exception Bad_R_Line, instead of calling Fatal_Error, so that, when
+	Ignore_Errors is True, default restrictions are set and scanning of the
+	ALI file continues with the next line. Also, when Bad_R_Line is raised
+	and Ignore_Errors is True, skip to the end of le line.
+
+	* sem_ch10.adb: Check that explicit with's do not violate
+	No_Dependence restrictions.
+	(Install_Withed_Unit): Add code to implement AI-377 and diagnose
+	illegal context clauses containing child units of instance.
+
+	* sem_prag.adb: Processing and checking for new No_Dependence
+	restrictions.
+	(Analyze_Pragma, case Psect_Object): Call Check_Arg_Is_External_Name to
+	analyze and check the External argument.
+
+	* a-numeri.ads: Add greek letter pi as alternative spelling of Pi
+
+2005-01-03  Robert Dewar  <dewar@adacore.com>
+
+	* atree.adb: Add a fifth component to entities
+	This allows us to add 32 flags and four new fields
+
+	* atree.ads: Add a fifth component to entities
+	This allows us to add 32 flags and four new fields
+
+	* einfo.ads, einfo.adb: Document new fields and new flags now available
+	Add routines for printing new fields
+
+	* treepr.adb: Call routines to print out additional fields if present
+
+2005-01-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* bld.ads, bld.adb, bld-io.ads, bld-io.adb, gprcmd.adb,
+	gpr2make.ads, gpr2make.adb: Remove gpr2make, replaced by gprmake.
+
+	* Makefile.in: Add support to build shared Ada libraries on solaris x86
+	Remove gpr2make, replaced by gprmake.
+	Remove references to gnatmem and libaddr2line.
+	Add indepsw.adb<indepsw-linux.adb to TOOLS_TARGET_PAIRS for IA64 linux.
+	(gnatlib-shared-darwin): Add "-fno-common" to GNATLIBCFLAGS.
+	Add support for specialized version of Ada.Numerics.Aux for Darwin: use
+	a-numaux-darwin.ads and a-numaux-darwin.adb
+	Enable mlib-tgt-lynxos.adb on lynxos.
+
+	* Make-lang.in: Remove rules for gpr2make.
+	When generating sdefault.adb, do not call Relocate_Path
+	on S3 for function Target_Name, as it is not a path.
+	Remove references to gnatmem and libaddr2line.
+
+	* a-numaux-darwin.ads, a-numaux-darwin.adb, g-soccon-darwin.ads: New
+	files.
+
+2005-01-03  Samuel Tardieu  <tardieu@adacore.com>
+
+	* checks.adb (Apply_Alignment_Check): Generate a warning if an object
+	address is incompatible with its base type alignment constraints when
+	this can be decided statically.
+
+2005-01-03  Olivier Hainque  <hainque@adacore.com>
+
+	* decl.c (compatible_signatures_p): New function. The intended purpose
+	is to check if two function signatures for a call-site and a callee are
+	compatible enough for the call to be valid. The underlying purpose is
+	to check if a call to a mapped builtin is using the right interface.
+	The current code actually does not check antyhing - this a placeholder
+	for future refinements.
+	(gnat_to_gnu_entity) <E_Subprogram_Call>: Add preliminary bits to handle
+	builtin calls for convention Intrinsic.
+
+	* gigi.h (builtin_decl_for): Declare (new function).
+
+	* utils.c (gnat_install_builtins): Install the target specific builtins.
+	(builtin_decl_for): New function, provide a dummy body for now.
+
+2005-01-03  Geert Bosch  <bosch@adacore.com>
+
+	* eval_fat.adb: (Eps_Model,Eps_Denorm): Remove, no longer used.
+	(Succ): Re-implement using Scaling, Exponent and Ceiling attributes.
+	(Pred): Implement in terms of Succ.
+	
+	* trans.c (convert_with_check): Reimplement conversion of float to
+	integer.
+
+2005-01-03  Ed Schonberg  <schonberg@adacore.com>
+	    Vincent Celier  <celier@adacore.com>
+
+	* exp_aggr.adb (Packed_Array_Aggregate_Handled): The values of the
+	bounds can be negative, and must be declared Int, not Nat.
+
+	* sem_elim.adb (Line_Num_Match): Correct wrong code when index in an
+	array is checked after using the index in the array.
+
+	* makegpr.adb (Add_Switches): Check if there is a package for the
+	processor. If there is no package, do not look for switches.
+
+2005-01-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Stream_Operations_OK): Predicate to determine when the
+	generation of predefined stream operations (specs and bodies) should
+	proceed. Under various restrictions these subprograms must not be
+	generated.
+
+2005-01-03  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_dist.adb: 
+	Declare subprogram index in Build_RPC_Receiver_Body, to reduce the
+	amount of PCS-specific code in RACW stubs generation.
+	(Copy_Specification): Set Etype on copied formal parameter entities, as
+	this information is needed for PolyORB stubs generation.
+	(PolyORB_Support.Build_Subprogram_Receiving_Stubs): Remove unused
+	variable Dynamic_Async.
+	(Build_Subprogram_Receiving_Stubs): Make PCS-specific
+	(Build_RPC_Receiver_Specification): Make generic again, as recent
+	changes have allowed RPC receivers to have the same profile for both
+	variants of the PCS.
+	Reorganise RPC receiver generation to reduce differences between the
+	structure of GARLIC and PolyORB RPC receivers.
+	(Add_Receiving_Stubs_To_Declarations): Make this subprogram
+	PCS-specific.
+	Simplify elaboration code for RCI packages.
+
+	* s-parint.ads, s-parint.adb, rtsfind.ads: Reorganise RPC receiver
+	generation to reduce differences between the structure of GARLIC and
+	PolyORB RPC receivers.
+
+	* s-stratt.adb: Fix typo in comment.
+
+2005-01-03  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_ch7.ads (Make_Final_Call): Rewrite comment (was incorrectly
+	copied from Make_Init_Call).
+
+	* exp_strm.adb (Build_Mutable_Record_Read_Procedure): Do component
+	reads and assignments on a temporary variable declared with appropriate
+	discriminants.
+
+2005-01-03  Robert Dewar  <dewar@adacore.com>
+
+	* i-c.adb (To_C): Raise CE if string is null and Append_Null
+
+2005-01-03  Robert Dewar  <dewar@adacore.com>
+
+	* i-cstrin.adb (Update): Do not append a null in form called with a
+	String. This avoids unintended behavior.
+
+2005-01-03  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/17527
+	* init.c: Fix warnings on Free BSD section.
+
+2005-01-03  Arnaud Charlet  <charlet@adacore.com>
+
+	PR ada/16949
+	* sinfo.ads: Fix obsolete reference to xsinfo.spt (replaced by
+	xsinfo.adb).
+
+2005-01-03  Vincent Celier  <celier@adacore.com>
+
+	* make.adb (Collect_Arguments_And_Compile): Do not attempt to build
+	libraries when Unique_Compile is True (-u switch).
+	(Gnatmake): ditto.
+
+2005-01-03  Robert Dewar  <dewar@adacore.com>
+
+	* namet.adb (Get_Decoded_Name_With_Brackets): Fix case of not allowing
+	upper case letter or underscore after W, as allowed by spec.
+
+2005-01-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-osinte-darwin.ads, s-osinte-darwin.adb: Clean up
+	darwin port by using proper type definitions from header files.
+	Use SIGTERM instead of SIGABRT for SIGADAABORT.
+
+2005-01-03  Robert Dewar  <dewar@adacore.com>
+
+	* par.adb: Enhance error message handling for configuration file
+	pragmas.
+
+2005-01-03  Robert Dewar  <dewar@adacore.com>
+
+	* s-arit64.adb (Double_Divide): Put back changes that got accidentally
+	removed during the previous update (test properly for case of dividing
+	largest negative number by -1, which generates overflow).
+
+2005-01-03  Ed Schonberg  <schonberg@adacore.com>
+	    Sergey Rybin  <rybin@adacore.com>
+
+	* sem_ch12.adb (Analyze_Package_Instantiation): Create a separate node
+	to use as the defining identifier for a formal package.
+	(Remove_Parent): If the instance takes place within (an instance of)
+	a sibling, preserve private declarations of common parent.
+
+2005-01-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Has_Fixed_Op): New predicate in Check_Arithmetic_Pair,
+	to determine whether one of the operands is a fixed-point type for
+	which a user-defined multiplication or division operation might be
+	defined.
+
+	* sem_res.adb (Valid_Conversion): The legality rules for conversions
+	of access types are symmetric in Ada 2005: either designated type can
+	be unconstrained.
+
+2005-01-03  Vincent Celier  <celier@adacore.com>
+
+	* s-fileio.adb (Temp_File_Record): Change length of string component
+	Name from L_tmpnam + 1 to max_path_len + 1.
+
+2005-01-03  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-tasini.ads, s-tasini.adb (Undefer_Abortion): Handle case of
+	Self_Id.Deferral_Level = 0.
+	(Do_Pending_Action): Move this function to the spec.
+
+	* s-tasren.adb (Selective_Wait [Terminate_Selected]): Call
+	Do_Pending_Action explicitely when needed, in case we're using
+	No_Abort restrictions.
+
+	* s-tassta.adb (Create_Task): If Abort is not allowed, reset the
+	deferral level since it will not get changed by the generated code.
+	Keeping a default value of 1 would prevent some operations (e.g.
+	select or delay) to proceed successfully.
+
+2005-01-03  Ben Brosgol  <brosgol@adacore.com>
+	    Robert Dewar  <dewar@adacore.com>
+	    Cyrille Comar  <comar@adacore.com>
+
+	* ug_words, gnat_ugn.texi: Added alpha-ivms transitioning section to
+	porting guide chapter (vms version).
+	Revised doc title (removed "for native platforms") and subtitle.
+	Add discussion on warning flag for obsolescent features. First we
+	note that it applies to obsolete GNAT features, which was previously
+	omitted. Second we contrast the behavior with that of the new
+	Ada 2005 AI-368 restriction No_Obsolescent_Features.
+	Preliminary rewriting of GNAT & libraries chapter in order to take
+	into account default project locations & new project manager
+	capabilities.
+
+2005-01-03  Robert Dewar  <dewar@adacore.com>
+
+	* cstand.adb (Create_Operators): Clean up format and documentation of
+	unary and binary operator result tables. No change in code, just
+	reformatting and addition of comments.
+
+	* errout.ads, gnatfind.adb, s-maccod.ads, sem.adb,
+	sem_ch2.adb: Minor reformatting
+
+	* atree.ads, elists.ads, lib.ads, namet.ads, nlists.ads, repinfo.ads,
+	sinput.ads, stringt.ads, uintp.ads, urealp.ads: Minor clarification to
+	comments for Tree_Read and Tree_Write.
+
+2005-01-03  Pascal Obry  <obry@adacore.com>
+
+	* exp_attr.ads: Minor reformatting.
+
+2005-01-03  Romain Berrendonner  <berrendo@adacore.com>
+
+	* comperr.adb (Compiler_Abort): Add specialized message for GAP
+	versions.
+
+2005-01-03  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_pakd.adb (Create_Packed_Array_Type): Add a guard to check
+	whether the ancestor type is private, as may be the case with nested
+	instantiations.
+
 2004-12-30  Sohail Somani <sohail@sohailsomani.com>
 
 	PR ada/19128
