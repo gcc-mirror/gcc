@@ -1,3 +1,8 @@
+2004-05-19  Jeff Law <law@redhat.com>
+
+        * stmt.c (expand_decl): Be more selective about calling
+        mark_reg_pointer.
+
 2004-06-01  Nicola Pero  <nicola@brainstorm.co.uk>
 
  	PR objc/7993
