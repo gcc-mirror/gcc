@@ -1,3 +1,8 @@
+Sat Mar 27 23:37:40 EST 1999  John Wehle  (john@feith.com)
+
+	* i386.md (movdicc+3, movdicc+4): Rewrite using split_di.
+	* i386.c (output_int_conditional_move): Delete unused code.
+
 Sat Mar 27 21:17:36 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000/{aix41.h,aix43.h} (ASM_CPU_SPEC): Add 604e.
