@@ -79,6 +79,8 @@ Boston, MA 02111-1307, USA.  */
 #undef  WCHAR_UNSIGNED
 #define WCHAR_UNSIGNED 0
 
+#define MATH_LIBRARY_PROFILE    "-lm_p"
+
 /* Code generation parameters.  */
 
 /* Use periods rather than dollar signs in special g++ assembler names.
