@@ -95,7 +95,7 @@ static struct include_file *
 				   enum include_type));
 static struct include_file *open_file PARAMS ((cpp_reader *, const char *));
 static int read_include_file	PARAMS ((cpp_reader *, struct include_file *));
-static void stack_include_file	PARAMS ((cpp_reader *, struct include_file *));
+static bool stack_include_file	PARAMS ((cpp_reader *, struct include_file *));
 static void purge_cache 	PARAMS ((struct include_file *));
 static void destroy_node	PARAMS ((splay_tree_value));
 static int report_missing_guard		PARAMS ((splay_tree_node, void *));
@@ -275,59 +275,59 @@ open_file (pfile, filename)
   return 0;
 }
 
-/* Place the file referenced by INC into a new buffer on PFILE's
-   stack.  If there are errors, or the file should not be re-included,
-   a null (zero-length) buffer is pushed.  */
+/* Place the file referenced by INC into a new buffer on the buffer
+   stack, unless there are errors, or the file is not re-included
+   because of e.g. multiple-include guards.  Returns true if a buffer
+   is stacked.  */
 
-static void
+static bool
 stack_include_file (pfile, inc)
      cpp_reader *pfile;
      struct include_file *inc;
 {
-  size_t len = 0;
   cpp_buffer *fp;
-  int sysp, deps_sysp;
+  int sysp;
   const char *filename;
 
-  /* We'll try removing deps_sysp after the release of 3.0.  */
-  deps_sysp = pfile->system_include_depth != 0;
+  if (DO_NOT_REREAD (inc))
+    return false;
+
   sysp = MAX ((pfile->map ? pfile->map->sysp : 0),
 	      (inc->foundhere ? inc->foundhere->sysp : 0));
 
   /* For -M, add the file to the dependencies on its first inclusion.  */
-  if (CPP_OPTION (pfile, print_deps) > deps_sysp && !inc->include_count)
+  if (CPP_OPTION (pfile, print_deps) > sysp && !inc->include_count)
     deps_add_dep (pfile->deps, inc->name);
 
   /* Not in cache?  */
-  if (! DO_NOT_REREAD (inc) && ! inc->buffer)
+  if (! inc->buffer)
     {
       /* If an error occurs, do not try to read this file again.  */
       if (read_include_file (pfile, inc))
-	_cpp_never_reread (inc);
+	{
+	  _cpp_never_reread (inc);
+	  return false;
+	}
       close (inc->fd);
       inc->fd = -1;
     }
 
-  if (! DO_NOT_REREAD (inc))
+  if (pfile->buffer)
     {
-      len = inc->st.st_size;
-      if (pfile->buffer)
-	{
-	  /* We don't want MI guard advice for the main file.  */
-	  inc->include_count++;
+      /* We don't want MI guard advice for the main file.  */
+      inc->include_count++;
 
-	  /* Handle -H option.  */
-	  if (CPP_OPTION (pfile, print_include_names))
-	    {
-	      for (fp = pfile->buffer; fp; fp = fp->prev)
-		putc ('.', stderr);
-	      fprintf (stderr, " %s\n", inc->name);
-	    }
+      /* Handle -H option.  */
+      if (CPP_OPTION (pfile, print_include_names))
+	{
+	  for (fp = pfile->buffer; fp; fp = fp->prev)
+	    putc ('.', stderr);
+	  fprintf (stderr, " %s\n", inc->name);
 	}
     }
 
   /* Push a buffer.  */
-  fp = cpp_push_buffer (pfile, inc->buffer, len, BUF_FILE, 0);
+  fp = cpp_push_buffer (pfile, inc->buffer, inc->st.st_size, BUF_FILE, 0);
   fp->inc = inc;
   fp->inc->refcnt++;
 
@@ -341,6 +341,8 @@ stack_include_file (pfile, inc)
   if (*filename == '\0')
     filename = _("<stdin>");
   _cpp_do_file_change (pfile, LC_ENTER, filename, 1, sysp);
+
+  return true;
 }
 
 /* Read the file referenced by INC into the file cache.
@@ -663,13 +665,15 @@ handle_missing_header (pfile, fname, angle_brackets)
     cpp_error_from_errno (pfile, fname);
 }
 
-/* Returns non-zero if a buffer was stacked.  */
-int
+/* Handles #include-family directives, and the command line -imacros
+   and -include.  Returns true if a buffer was stacked.  */
+bool
 _cpp_execute_include (pfile, header, type)
      cpp_reader *pfile;
      const cpp_token *header;
      enum include_type type;
 {
+  bool stacked = false;
   struct include_file *inc = find_include_file (pfile, header, type);
 
   if (inc == 0)
@@ -680,15 +684,13 @@ _cpp_execute_include (pfile, header, type)
       if (header->type == CPP_HEADER_NAME)
 	pfile->system_include_depth++;
 
-      stack_include_file (pfile, inc);
+      stacked = stack_include_file (pfile, inc);
 
       if (type == IT_IMPORT)
 	_cpp_never_reread (inc);
-
-      return 1;
     }
 
-  return 0;
+  return stacked;
 }
 
 /* Locate HEADER, and determine whether it is newer than the current
@@ -714,23 +716,23 @@ _cpp_compare_file_date (pfile, header)
 }
 
 
-/* Push an input buffer and load it up with the contents of FNAME.
-   If FNAME is "", read standard input.  */
-int
+/* Push an input buffer and load it up with the contents of FNAME.  If
+   FNAME is "", read standard input.  Return true if a buffer was
+   stacked.  */
+bool
 _cpp_read_file (pfile, fname)
      cpp_reader *pfile;
      const char *fname;
 {
   struct include_file *f = open_file (pfile, fname);
+  bool stacked = false;
 
   if (f == NULL)
-    {
-      cpp_error_from_errno (pfile, fname);
-      return 0;
-    }
+    cpp_error_from_errno (pfile, fname);
+  else
+    stacked = stack_include_file (pfile, f);
 
-  stack_include_file (pfile, f);
-  return 1;
+  return stacked;
 }
 
 /* Do appropriate cleanup when a file buffer is popped off the input

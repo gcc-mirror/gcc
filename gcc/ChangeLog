@@ -1,3 +1,13 @@
+2001-08-21  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppfiles.c (stack_include_file): Harmonize system headerness tests.
+	* cppfiles.c (stack_include_file): Only stack a file if there
+	is something to do.  Return a boolean indicating whether a
+	buffer was stacked or not.
+	(_cpp_execute_include): Similarly.
+	(_cpp_read_file): Similarly.
+	* cpphash.h (_cpp_read_file, _cpp_execute_include): Update prototypes.
+
 2001-08-21  Sam Steingold  <sds@gnu.org>
 
 	* tradcpp.c (rescan): define obufp_before_macroname before RECACHE
