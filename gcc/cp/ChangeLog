@@ -1,3 +1,16 @@
+2001-08-23  Jason Merrill  <jason_merrill@redhat.com>
+
+	* tree.c (cp_build_qualified_type_real): Use get_qualified_type.
+	(build_cplus_array_type): Use cp_build_qualified_type, not
+	TYPE_MAIN_VARIANT, to get an unqualified version.
+
+	* decl2.c (grok_alignof): Lose.
+	(build_expr_from_tree): Use expr_sizeof and c_alignof_expr.
+	* typeck.c (c_alignof): Lose.
+	* semantics.c (finish_sizeof, finish_alignof): New.
+	* parse.y: Use them.
+	* cp-tree.h: Declare them.
+
 2001-08-22  Jason Merrill  <jason_merrill@redhat.com>
 
 	* pt.c (tsubst_expr): Hand off to the TREE_CHAIN of a statement.

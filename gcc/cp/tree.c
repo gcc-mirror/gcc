@@ -487,7 +487,8 @@ build_cplus_array_type (elt_type, index_type)
   tree t;
   int type_quals = CP_TYPE_QUALS (elt_type);
 
-  elt_type = TYPE_MAIN_VARIANT (elt_type);
+  if (type_quals != TYPE_UNQUALIFIED)
+    elt_type = cp_build_qualified_type (elt_type, TYPE_UNQUALIFIED);
 
   t = build_cplus_array_type_1 (elt_type, index_type);
 
@@ -557,9 +558,7 @@ cp_build_qualified_type_real (type, type_quals, complain)
 	return error_mark_node;
 
       /* See if we already have an identically qualified type.  */
-      for (t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
-	if (CP_TYPE_QUALS (t) == type_quals)
-	  break;
+      t = get_qualified_type (type, type_quals);
 
       /* If we didn't already have it, create it now.  */
       if (!t)

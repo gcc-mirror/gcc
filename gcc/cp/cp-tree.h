@@ -943,11 +943,6 @@ extern int warn_ctor_dtor_privacy;
 
 extern int warn_write_strings;
 
-/* Nonzero means warn about sizeof(function) or addition/subtraction
-   of function pointers.  */
-
-extern int warn_pointer_arith;
-
 /* Nonzero means warn about multiple (redundant) decls for the same single
    variable or function.  */
 
@@ -3729,7 +3724,6 @@ extern void grok_x_components			PARAMS ((tree));
 extern void maybe_retrofit_in_chrg		PARAMS ((tree));
 extern void maybe_make_one_only			PARAMS ((tree));
 extern void grokclassfn				PARAMS ((tree, tree, enum overload_flags, tree));
-extern tree grok_alignof			PARAMS ((tree));
 extern tree grok_array_decl			PARAMS ((tree, tree));
 extern tree delete_sanity			PARAMS ((tree, tree, int, int));
 extern tree check_classfn			PARAMS ((tree, tree));
@@ -4125,6 +4119,8 @@ extern tree finish_base_specifier               PARAMS ((tree, tree));
 extern void finish_member_declaration           PARAMS ((tree));
 extern void check_multiple_declarators          PARAMS ((void));
 extern tree finish_typeof			PARAMS ((tree));
+extern tree finish_sizeof			PARAMS ((tree));
+extern tree finish_alignof			PARAMS ((tree));
 extern void finish_decl_cleanup                 PARAMS ((tree, tree));
 extern void finish_named_return_value           PARAMS ((tree, tree));
 extern void expand_body                         PARAMS ((tree));
@@ -4243,9 +4239,7 @@ extern int compparms				PARAMS ((tree, tree));
 extern int comp_cv_qualification                PARAMS ((tree, tree));
 extern int comp_cv_qual_signature               PARAMS ((tree, tree));
 extern tree expr_sizeof				PARAMS ((tree));
-extern tree c_sizeof				PARAMS ((tree));
 extern tree c_sizeof_nowarn			PARAMS ((tree));
-extern tree c_alignof				PARAMS ((tree));
 extern tree inline_conversion			PARAMS ((tree));
 extern tree decay_conversion			PARAMS ((tree));
 extern tree build_object_ref			PARAMS ((tree, tree, tree));

@@ -2851,7 +2851,87 @@ lang_get_alias_set (t)
 
   return -1;
 }
+
+/* Implement the __alignof keyword: Return the minimum required
+   alignment of TYPE, measured in bytes.  */
 
+tree
+c_alignof (type)
+     tree type;
+{
+  enum tree_code code = TREE_CODE (type);
+  tree t;
+
+  /* In C++, sizeof applies to the referent.  Handle alignof the same way.  */
+  if (code == REFERENCE_TYPE)
+    {
+      type = TREE_TYPE (type);
+      code = TREE_CODE (type);
+    }
+
+  if (code == FUNCTION_TYPE)
+    t = size_int (FUNCTION_BOUNDARY / BITS_PER_UNIT);
+  else if (code == VOID_TYPE || code == ERROR_MARK)
+    t = size_one_node;
+  else if (!COMPLETE_TYPE_P (type))
+    {
+      error ("__alignof__ applied to an incomplete type");
+      t = size_zero_node;
+    }
+  else
+    t = size_int (TYPE_ALIGN (type) / BITS_PER_UNIT);
+
+  return fold (build1 (NOP_EXPR, c_size_type_node, t));
+}
+
+/* Implement the __alignof keyword: Return the minimum required
+   alignment of EXPR, measured in bytes.  For VAR_DECL's and
+   FIELD_DECL's return DECL_ALIGN (which can be set from an
+   "aligned" __attribute__ specification).  */
+
+tree
+c_alignof_expr (expr)
+     tree expr;
+{
+  tree t;
+
+  if (TREE_CODE (expr) == VAR_DECL)
+    t = size_int (DECL_ALIGN (expr) / BITS_PER_UNIT);
+ 
+  else if (TREE_CODE (expr) == COMPONENT_REF
+	   && DECL_C_BIT_FIELD (TREE_OPERAND (expr, 1)))
+    {
+      error ("`__alignof' applied to a bit-field");
+      t = size_one_node;
+    }
+  else if (TREE_CODE (expr) == COMPONENT_REF
+      && TREE_CODE (TREE_OPERAND (expr, 1)) == FIELD_DECL)
+    t = size_int (DECL_ALIGN (TREE_OPERAND (expr, 1)) / BITS_PER_UNIT);
+ 
+  else if (TREE_CODE (expr) == INDIRECT_REF)
+    {
+      tree t = TREE_OPERAND (expr, 0);
+      tree best = t;
+      int bestalign = TYPE_ALIGN (TREE_TYPE (TREE_TYPE (t)));
+ 
+      while (TREE_CODE (t) == NOP_EXPR
+	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (t, 0))) == POINTER_TYPE)
+	{
+	  int thisalign;
+
+	  t = TREE_OPERAND (t, 0);
+	  thisalign = TYPE_ALIGN (TREE_TYPE (TREE_TYPE (t)));
+	  if (thisalign > bestalign)
+	    best = t, bestalign = thisalign;
+	}
+      return c_alignof (TREE_TYPE (TREE_TYPE (best)));
+    }
+  else
+    return c_alignof (TREE_TYPE (expr));
+
+  return fold (build1 (NOP_EXPR, c_size_type_node, t));
+}
+
 /* Build tree nodes and builtin functions common to both C and C++ language
    frontends.  */
 
