@@ -287,7 +287,7 @@ block_may_fallthru (tree block)
 	 branch to a selected label and hence can not fall through.
 	 Otherwise SWITCH_BODY is set, and the switch can fall
 	 through.  */
-      return SWITCH_LABELS (stmt) != NULL_TREE;
+      return SWITCH_LABELS (stmt) == NULL_TREE;
 
     case COND_EXPR:
       if (block_may_fallthru (COND_EXPR_THEN (stmt)))
