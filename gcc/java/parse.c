@@ -9262,6 +9262,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 
 	case CONDITIONAL_EXPR:
 	case STRING_CST:
+	case MODIFY_EXPR:
 	  *where_found = decl = java_complete_tree (qual_wfl);
 	  if (decl == error_mark_node)
 	    return 1;
@@ -10445,11 +10446,7 @@ qualify_ambiguous_name (id)
 	&& TREE_CODE (TREE_TYPE (qual_wfl)) == EXPR_WITH_FILE_LOCATION)
       name = EXPR_WFL_NODE (TREE_TYPE (qual_wfl));
 
-    else if (code == ARRAY_REF &&
-	     TREE_CODE (TREE_OPERAND (qual_wfl, 0)) == EXPR_WITH_FILE_LOCATION)
-      name = EXPR_WFL_NODE (TREE_OPERAND (qual_wfl, 0));
-
-    else if (code == CALL_EXPR && 
+    else if ((code == ARRAY_REF || code == CALL_EXPR || code == MODIFY_EXPR) &&
 	     TREE_CODE (TREE_OPERAND (qual_wfl, 0)) == EXPR_WITH_FILE_LOCATION)
       name = EXPR_WFL_NODE (TREE_OPERAND (qual_wfl, 0));
 

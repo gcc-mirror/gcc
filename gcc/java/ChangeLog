@@ -1,3 +1,8 @@
+Thu Oct 21 01:27:31 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (resolve_qualified_expression_name): Handle MODIFY_EXPR.
+	(qualify_ambiguous_name): Likewise.
+
 Wed Oct 20 01:41:47 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (java_complete_tree): fold_constant_for_init to work on
