@@ -51,7 +51,7 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
   private boolean blocking = true;
   private Object LOCK = new Object();
   private SelectorProvider provider;
-  private LinkedList keys;
+  private LinkedList keys = new LinkedList();
 
   /**
    * Initializes the channel
@@ -59,7 +59,6 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
   protected AbstractSelectableChannel (SelectorProvider provider)
   {
     this.provider = provider;
-    this.keys = new LinkedList();
   }
 
   /**
@@ -160,9 +159,6 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
 
   private SelectionKey locate (Selector selector)
   {
-    if (keys == null)
-      return null;
-    
     ListIterator it = keys.listIterator ();
     
     while (it.hasNext ())
@@ -174,11 +170,6 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
       }
     
     return null;
-  }
-
-  private void add (SelectionKey key)
-  {
-    keys.add (key);
   }
 
   /**
@@ -209,10 +200,21 @@ public abstract class AbstractSelectableChannel extends SelectableChannel
             key = selector.register (this, ops, att);
     		
             if (key != null)
-              add (key);
+              addSelectionKey (key);
           }
       }
 
     return key;
+  }
+
+  void addSelectionKey(SelectionKey key)
+  {
+    keys.add(key);
+  }
+
+  // This method gets called by AbstractSelector.deregister().
+  void removeSelectionKey(SelectionKey key)
+  {
+    keys.remove(key);
   }
 }

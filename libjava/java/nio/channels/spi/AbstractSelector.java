@@ -1,5 +1,5 @@
 /* AbstractSelector.java -- 
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -96,11 +96,17 @@ public abstract class AbstractSelector extends Selector
   {
   }
     
+  /**
+   * Returns the provider for this selector object.
+   */
   public final SelectorProvider provider ()
   {
     return provider;
   }
 
+  /**
+   * Returns the cancelled keys set.
+   */
   protected final Set cancelledKeys()
   {
     if (!isOpen())
@@ -109,11 +115,15 @@ public abstract class AbstractSelector extends Selector
     return cancelledKeys;
   }
 
+  /**
+   * Cancels a selection key.
+   */
+  // This method is only called by AbstractSelectionKey.cancel().
   final void cancelKey (AbstractSelectionKey key)
   {
     synchronized (cancelledKeys)
       {
-        cancelledKeys.remove(key);
+	cancelledKeys.add(key);
       }
   }
 
@@ -127,6 +137,6 @@ public abstract class AbstractSelector extends Selector
 
   protected final void deregister (AbstractSelectionKey key)
   {
-    // FIXME
+    ((AbstractSelectableChannel) key.channel()).removeSelectionKey(key);
   }
 }
