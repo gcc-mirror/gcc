@@ -524,7 +524,7 @@ java::lang::String::toCharArray()
 jboolean
 java::lang::String::equalsIgnoreCase (jstring anotherString)
 {
-  if (count != anotherString->count)
+  if (anotherString == NULL || count != anotherString->count)
     return false;
   register jchar *tptr = JvGetStringChars (this);
   register jchar *optr = JvGetStringChars (anotherString);

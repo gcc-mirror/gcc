@@ -1,7 +1,11 @@
 1999-12-02  Bryce McKinlay  <bryce@albatross.co.nz>
 
-	* libjava/java/net/ServerSocket.java (ServerSocket): Bind to any
-	interface if bindAddr is null.
+	* java/net/ServerSocket.java (ServerSocket): Bind to any interface 
+	if bindAddr is null.
+	* java/lang/natString.cc (equalsIgnoreCase): return false if
+	anotherString is null.
+	* java/lang/Boolean.java (valueOf): return FALSE if argument is
+	null.
 
 1999-11-30  Tom Tromey  <tromey@cygnus.com>
 
