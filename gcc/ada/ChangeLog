@@ -1,3 +1,120 @@
+2004-08-31  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* misc.c (gnat_print_type): Use TYPE_RM_SIZE_NUM.
+
+	* trans.c (struct stmt_group): Delete field GLOBAL.
+	(gnat_init_stmt_group): Do not initialize it.
+	(call_to_gnu): Use save_expr, not protect_multiple_eval.
+	(Exception_Handler_to_gnu_sjlj): Call build_int_cst, not build_int_2
+	(gnat_to_gnu, case N_Character_Literal, N_String_Literal): Likewise.
+	(gnat_to_gnu, case N_Compilation_Unit): Do not set GLOBAL in stmt group.
+	(start_stmt_group): Likewise.
+	(add_stmt, add_decl_expr): Rework handling of global DECL_EXPRs.
+
+	* utils2.c (ggc.h): Include.
+	(build_call_raise): Call build_int_cst, not build_int_2.
+
+	* utils.c (gnat_init_decl_processing): Fix arg to
+	build_common_tree_nodes.
+	(create_subprog_type): Do not use SET_TYPE_CI_CO_LIST.
+	(gnat_define_builtin): Set built_in_decls.
+	(init_gigi_decls): Call build_int_cst, not build_int_2.
+
+	* ada-tree.h (struct lang_decl, struct lang_type): Field is type tree.
+	(GET_TYPE_LANG_SPECIFIC, SET_TYPE_LANG_SPECIFIC): New macros.
+	(GET_DECL_LANG_SPECIFIC, SET_DECL_LANG_SPECIFIC): Likewise.
+	(TYPE_CI_CO_LIST, SET_TYPE_CI_CO_LIST, TYPE_MODULE,
+	SET_TYPE_MODULE): Use them.
+	(TYPE_INDEX_TYPE, SET_TYPE_INDEX_TYPE, TYPE_DIGITS_VALUE): Likewise.
+	(SET_TYPE_DIGITS_VALUE, TYPE_UNCONSTRAINED_ARRAY): Likewise.
+	(SET_TYPE_UNCONSTRAINED_ARRAY, TYPE_ADA_SIZE,
+	SET_TYPE_ADA_SIZE): Likewise.
+	(TYPE_ACTUAL_BOUNDS, SET_TYPE_ACTUAL_BOUNDS): Likewise.
+	(DECL_CONST_CORRESPONDING_VAR,
+	SET_DECL_CONST_CORRESPONDING_VAR): Likewise.
+	(DECL_ORIGINAL_FIELD, SET_DECL_ORIGINAL_FIELD): Likewise.
+	(TYPE_RM_SIZE_INT, TYPE_RM_SIZE_ENUM, SET_TYPE_RM_SIZE_ENUM): Deleted.
+	(TYPE_RM_SIZE_NUM): New macro.
+	(TYPE_RM_SIZE): Modified to use above.
+
+	* cuintp.c: (build_cst_from_int): New function.
+	(UI_To_gnu): Use it.
+
+	* decl.c (gnat_to_gnu_entity): Use TYPE_RM_SIZE_NUM.
+	(make_type_from_size): Avoid changing TYPE_UNSIGNED of a type.
+	(gnat_substitute_in_type, case ARRAY_TYPE): If old had a
+	MIN_EXPR for the size, copy it into new.
+
+2004-08-31  Robert Dewar  <dewar@gnat.com>
+
+	* exp_ch6.adb (Expand_Call): Properly handle validity checks for
+	packed indexed component where array is an IN OUT formal. This
+	generated garbage code previously.
+
+	* gnat_ugn.texi: Document -fverbose-asm
+
+	* gnat-style.texi: Minor updates (note that boolean constants and
+	variables are joined with AND/OR rather than short circuit forms).
+
+2004-08-31  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_util.adb (Safe_Unchecked_Type_Conversion): Conversion is safe if
+	it is an upward conversion of an untagged type with no representation
+	change.
+
+2004-08-31  Thomas Quinot  <quinot@act-europe.fr>
+
+	* rtsfind.ads: Move RCI_Subp_Info and RCI_Subp_Info_Array to
+	System.Partition_Interface.
+
+	* checks.adb (Apply_Access_Checks): Do not generate checks when
+	expander is not active (but check for unset reference to prefix of
+	dereference).
+
+	* sem_prag.adb (Analyze_Pragma, case Pragma_Debug): Uniformly rewrite
+	pragma Debug as an if statement with a constant condition, for
+	consistent treatment of entity references contained within the
+	enclosed procedure call.
+
+2004-08-31  Vincent Celier  <celier@gnat.com>
+
+	* bindgen.adb: (Set_EA_Last): New procedure
+	(Gen_Exception_Table_Ada, Gen_Exception_Table_C): Use new procedure
+	Set_EA_Last.
+	(Gen_Adafinal_Ada): If no finalization, adafinal does nothing
+	(Gen_Output_File_Ada): Always call Gen_Adafinal_Ada, so that SAL can be
+	linked without errors.
+	(Gen_Exception_Table_Ada): Correct bugs when generating code for arrays
+	ST and EA.
+	(Gen_Exception_Table_C): Correct same bugs
+
+	* vms_data.ads: Add new qualifier /VERBOSE_ASM to GCC_Switches
+
+	* g-os_lib.adb (Normalize_Pathname.Get_Directory): When Dir is empty,
+	on Windows, make sure that the drive letter is in upper case.
+
+	* g-os_lib.ads (Normalize_Pathname): Add a comment to indicate that on
+	Windows, when the drive letter is added and Case_Sensitive is True, the
+	drive letter is forced to upper case.
+
+	* mlib-tgt-irix.adb (Build_Dynamic_Library): Transfer all -lxxx options
+	to Options_2 for the call to MLib.Utl.Gcc.
+
+	* bld.adb (Put_Include_Project): Use '/', not '\' on Windows as
+	directory separator when defining BASE_DIR.
+
+2004-08-19  Pascal Obry  <obry@gnat.com>
+
+	* gprcmd.adb (Extend): Do not output trailing directory separator. This
+	is not needed and it confuses Windows GNU/make which does not report
+	directory terminated by a slash as a directory.
+	(gprcmd): Idem for "pwd" internal command.
+
+	* Makefile.generic: Use __GPRCOLON__ instead of pipe character in
+	target names rewrite to fix regressions with recent version of
+	GNU/make. Starting with GNU/make 3.80 the pipe character was not
+	handled properly anymore.
+
 2004-09-01  Andreas Schwab  <schwab@suse.de>
 
 	* Make-lang.in (EXTRA_GNATBIND_OBJS): Revert last change.

@@ -1350,7 +1350,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  tree gnu_field_type = gnu_type;
 	  tree gnu_field;
 
-	  TYPE_RM_SIZE_INT (gnu_field_type)
+	  TYPE_RM_SIZE_NUM (gnu_field_type)
 	    = UI_To_gnu (RM_Size (gnat_entity), bitsizetype);
 	  gnu_type = make_node (RECORD_TYPE);
 	  TYPE_NAME (gnu_type) = create_concat_name (gnat_entity, "LJM");
@@ -5978,9 +5978,9 @@ set_rm_size (Uint uint_size, tree gnu_type, Entity_Id gnat_entity)
   /* Otherwise, set the RM_Size.  */
   if (TREE_CODE (gnu_type) == INTEGER_TYPE
       && Is_Discrete_Or_Fixed_Point_Type (gnat_entity))
-    TYPE_RM_SIZE_INT (gnu_type) = size;
+    TYPE_RM_SIZE_NUM (gnu_type) = size;
   else if (TREE_CODE (gnu_type) == ENUMERAL_TYPE)
-    SET_TYPE_RM_SIZE_ENUM (gnu_type, size);
+    TYPE_RM_SIZE_NUM (gnu_type) = size;
   else if ((TREE_CODE (gnu_type) == RECORD_TYPE
 	    || TREE_CODE (gnu_type) == UNION_TYPE
 	    || TREE_CODE (gnu_type) == QUAL_UNION_TYPE)
@@ -5998,6 +5998,7 @@ make_type_from_size (tree type, tree size_tree, bool biased_p)
 {
   tree new_type;
   unsigned HOST_WIDE_INT size;
+  bool unsigned_p;
 
   /* If size indicates an error, just return TYPE to avoid propagating the
      error.  Likewise if it's too large to represent.  */
@@ -6017,20 +6018,20 @@ make_type_from_size (tree type, tree size_tree, bool biased_p)
 			      && TYPE_BIASED_REPRESENTATION_P (type))))
 	break;
 
+      biased_p |= (TREE_CODE (type) == INTEGER_TYPE
+		   && TYPE_BIASED_REPRESENTATION_P (type));
+      unsigned_p = TYPE_UNSIGNED (type) || biased_p;
+
       size = MIN (size, LONG_LONG_TYPE_SIZE);
-      new_type = make_signed_type (size);
+      new_type
+	= unsigned_p ? make_unsigned_type (size) : make_signed_type (size);
       TREE_TYPE (new_type) = TREE_TYPE (type) ? TREE_TYPE (type) : type;
       TYPE_MIN_VALUE (new_type)
 	= convert (TREE_TYPE (new_type), TYPE_MIN_VALUE (type));
       TYPE_MAX_VALUE (new_type)
 	= convert (TREE_TYPE (new_type), TYPE_MAX_VALUE (type));
-      TYPE_BIASED_REPRESENTATION_P (new_type)
-	= ((TREE_CODE (type) == INTEGER_TYPE
-	    && TYPE_BIASED_REPRESENTATION_P (type))
-	   || biased_p);
-      TYPE_UNSIGNED (new_type)
-	= TYPE_UNSIGNED (type) | TYPE_BIASED_REPRESENTATION_P (new_type);
-      TYPE_RM_SIZE_INT (new_type) = bitsize_int (size);
+      TYPE_BIASED_REPRESENTATION_P (new_type) = biased_p;
+      TYPE_RM_SIZE_NUM (new_type) = bitsize_int (size);
       return new_type;
 
     case RECORD_TYPE:
@@ -6262,6 +6263,17 @@ gnat_substitute_in_type (tree t, tree f, tree r)
 	TYPE_CONVENTION_FORTRAN_P (new) = TYPE_CONVENTION_FORTRAN_P (t);
 	layout_type (new);
 	TYPE_ALIGN (new) = TYPE_ALIGN (t);
+
+	/* If we had bounded the sizes of T by a constant, bound the sizes of
+	   NEW by the same constant.  */
+	if (TREE_CODE (TYPE_SIZE (t)) == MIN_EXPR)
+	  TYPE_SIZE (new)
+	    = size_binop (MIN_EXPR, TREE_OPERAND (TYPE_SIZE (t), 1),
+			  TYPE_SIZE (new));
+	if (TREE_CODE (TYPE_SIZE_UNIT (t)) == MIN_EXPR)
+	  TYPE_SIZE_UNIT (new)
+	    = size_binop (MIN_EXPR, TREE_OPERAND (TYPE_SIZE_UNIT (t), 1),
+			  TYPE_SIZE_UNIT (new));
 	return new;
       }
 

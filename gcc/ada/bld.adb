@@ -2384,12 +2384,12 @@ package body Bld is
             Last : Natural := Included_Directory_Path'Last;
 
          begin
-            --  Remove a possible directory separator at the end of the
-            --  directory.
+            --  Remove possible directory separator at end of the directory
 
             if Last >= Included_Directory_Path'First
               and then (Included_Directory_Path (Last) = Directory_Separator
-                          or else Included_Directory_Path (Last) = '/')
+                          or else
+                        Included_Directory_Path (Last) = '/')
             then
                Last := Last - 1;
             end if;
@@ -2402,7 +2402,7 @@ package body Bld is
             if not Is_Absolute_Path (Included_Directory_Path) then
                Put ("$(");
                Put (Including_Project_Name);
-               Put (".base_dir)" & Directory_Separator);
+               Put (".base_dir)/");
             end if;
 
             Put (Included_Directory_Path

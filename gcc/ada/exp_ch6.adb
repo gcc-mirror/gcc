@@ -1572,8 +1572,11 @@ package body Exp_Ch6 is
          --  are entities.
 
          if Validity_Checks_On then
-            if Ekind (Formal) = E_In_Parameter
-              and then Validity_Check_In_Params
+            if  (Ekind (Formal) = E_In_Parameter
+                   and then Validity_Check_In_Params)
+              or else
+                (Ekind (Formal) = E_In_Out_Parameter
+                   and then Validity_Check_In_Out_Params)
             then
                --  If the actual is an indexed component of a packed
                --  type, it has not been expanded yet. It will be
@@ -1584,11 +1587,6 @@ package body Exp_Ch6 is
                   Set_Analyzed (Actual, False);
                end if;
 
-               Ensure_Valid (Actual);
-
-            elsif Ekind (Formal) = E_In_Out_Parameter
-              and then Validity_Check_In_Out_Params
-            then
                Ensure_Valid (Actual);
             end if;
          end if;

@@ -381,7 +381,7 @@ gnat_init_decl_processing (void)
   free_binding_level = 0;
   gnat_pushlevel ();
 
-  build_common_tree_nodes (false, true);
+  build_common_tree_nodes (true, true);
 
   /* In Ada, we use a signed type for SIZETYPE.  Use the signed type
      corresponding to the size of Pmode.  In most cases when ptr_mode and
@@ -411,7 +411,7 @@ gnat_init_decl_processing (void)
 }
 
 /* Define a builtin function.  This is temporary and is just being done
-   to initialize implicit_built_in_decls for the middle-end.  We'll want
+   to initialize *_built_in_decls for the middle-end.  We'll want
    to do full builtin processing soon.  */
 
 static void
@@ -431,6 +431,7 @@ gnat_define_builtin (const char *name, tree type,
   TREE_READONLY (decl) = const_p;
 
   implicit_built_in_decls[function_code] = decl;
+  built_in_decls[function_code] = decl;
 }
 
 /* Install the builtin functions the middle-end needs.  */
@@ -513,7 +514,6 @@ gnat_install_builtins ()
   ftype = build_function_type (ptr_void_type_node, tmp);
   gnat_define_builtin ("__builtin_alloca", ftype, BUILT_IN_ALLOCA,
 		       "alloca", false);
-
 }
 
 /* Create the predefined scalar types such as `integer_type_node' needed
@@ -1196,7 +1196,7 @@ create_subprog_type (tree return_type, tree param_decl_list, tree cico_list,
       || TYPE_RETURNS_BY_REF_P (type) != returns_by_ref)
     type = copy_type (type);
 
-  SET_TYPE_CI_CO_LIST (type, cico_list);
+  TYPE_CI_CO_LIST (type) = cico_list;
   TYPE_RETURNS_UNCONSTRAINED_P (type) = returns_unconstrained;
   TYPE_RETURNS_STACK_DEPRESSED (type) = returns_with_dsp;
   TYPE_RETURNS_BY_REF_P (type) = returns_by_ref;

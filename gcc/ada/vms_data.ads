@@ -2321,6 +2321,15 @@ package VMS_Data is
    --   debugging purposes or if you need to be sure what version of the
    --   compiler you are executing.
 
+   S_GCC_Verb_Asm : aliased constant S := "/VERBOSE_ASM " &
+                                          "-S,-verbose_asm,!-c";
+   --        /NOASM (D)
+   --        /ASM
+   --
+   --   Use to cause the assembler source file to be generated, using S as the
+   --   filetype, instead of the object file. This may be useful if you need
+   --   to examine the generated assembly code.
+
    S_GCC_Warn    : aliased constant S := "/WARNINGS="                      &
                                             "DEFAULT "                     &
                                                "!-gnatws,!-gnatwe "        &
@@ -2866,6 +2875,7 @@ package VMS_Data is
       S_GCC_Upcase  'Access,
       S_GCC_Valid   'Access,
       S_GCC_Verbose 'Access,
+      S_GCC_Verb_Asm'Access,
       S_GCC_Warn    'Access,
       S_GCC_WarnX   'Access,
       S_GCC_Wide    'Access,

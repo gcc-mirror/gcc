@@ -299,21 +299,19 @@ procedure Gprcmd is
 
          loop
             Read (Iter, Buffer, Last);
-
             exit when Last = 0;
 
             if Buffer (1 .. Last) /= "."
               and then Buffer (1 .. Last) /= ".."
             then
                declare
-                  Abs_Dir : constant String := D & Buffer (1 .. Last);
-
+                  Abs_Dir : constant String := D & "/" & Buffer (1 .. Last);
                begin
                   if Is_Directory (Abs_Dir)
                     and then not Is_Symbolic_Link (Abs_Dir)
                   then
                      Put (' ' & Abs_Dir);
-                     Recursive_Extend (Abs_Dir & '/');
+                     Recursive_Extend (Abs_Dir);
                   end if;
                end;
             end if;
@@ -339,7 +337,7 @@ procedure Gprcmd is
       end if;
 
       declare
-         D : constant String := Dir (Dir'First .. Dir'Last - 2);
+         D : constant String := Dir (Dir'First .. Dir'Last - 3);
       begin
          Put (D);
          Recursive_Extend (D);
@@ -406,7 +404,11 @@ begin
          Usage;
 
       elsif Cmd = "pwd" then
-         Put (Format_Pathname (Get_Current_Dir, UNIX));
+         declare
+            CD : constant String := Get_Current_Dir;
+         begin
+            Put (Format_Pathname (CD (CD'First .. CD'Last - 1), UNIX));
+         end;
 
       elsif Cmd = "cat" then
          Check_Args (Argument_Count = 2);

@@ -274,6 +274,9 @@ package body Bindgen is
    --  Set given character in Statement_Buffer at the Last + 1 position
    --  and increment Last by one to reflect the stored character.
 
+   procedure Set_EA_Last;
+   --  Output the number of elements in array EA
+
    procedure Set_Int (N : Int);
    --  Set given value in decimal in Statement_Buffer with no spaces
    --  starting at the Last + 1 position, and updating Last past the value.
@@ -334,6 +337,11 @@ package body Bindgen is
 
       if Hostparm.Java_VM then
          WBI ("      System.Standard_Library.Adafinal;");
+
+      --  If there is no finalization, there is nothing to do
+
+      elsif Cumulative_Restrictions.Set (No_Finalization) then
+         WBI ("      null;");
       else
          WBI ("      Do_Finalize;");
       end if;
@@ -1262,45 +1270,51 @@ package body Bindgen is
       Set_String (") of System.Address := (");
 
       if Num = 1 then
-         Set_String ("1 => A1);");
-         Write_Statement_Buffer;
+         Set_String ("1 => ");
 
       else
          Write_Statement_Buffer;
-
-         for A in ALIs.First .. ALIs.Last loop
-            if not ALIs.Table (A).Interface
-              and then ALIs.Table (A).Unit_Exception_Table
-            then
-               Get_Decoded_Name_String_With_Brackets
-                 (Units.Table (ALIs.Table (A).First_Unit).Uname);
-               Set_Casing (Mixed_Case);
-               Set_String ("        ");
-               Set_String (Name_Buffer (1 .. Name_Len - 2));
-               Set_String ("'UET_Address");
-
-               if A = Last then
-                  Set_String (");");
-               else
-                  Set_Char (',');
-               end if;
-
-               Write_Statement_Buffer;
-            end if;
-         end loop;
       end if;
+
+      for A in ALIs.First .. ALIs.Last loop
+         if not ALIs.Table (A).Interface
+           and then ALIs.Table (A).Unit_Exception_Table
+         then
+            Get_Decoded_Name_String_With_Brackets
+              (Units.Table (ALIs.Table (A).First_Unit).Uname);
+            Set_Casing (Mixed_Case);
+
+            if Num /= 1 then
+               Set_String ("        ");
+            end if;
+
+            Set_String (Name_Buffer (1 .. Name_Len - 2));
+            Set_String ("'UET_Address");
+
+            if A = Last then
+               Set_String (");");
+            else
+               Set_Char (',');
+            end if;
+
+            Write_Statement_Buffer;
+         end if;
+      end loop;
 
       WBI (" ");
       Set_String ("      EA : aliased constant array (1 .. ");
-      Set_Int (Num_Elab_Calls + 2);
+      Set_EA_Last;
       Set_String (") of System.Address := (");
       Write_Statement_Buffer;
-      WBI ("        " & Ada_Init_Name.all & "'Code_Address,");
+      Set_String ("        " & Ada_Init_Name.all & "'Code_Address");
 
       --  If compiling for the JVM, we directly reference Adafinal because
       --  we don't import it via Do_Finalize (see Gen_Output_File_Ada).
 
       if not Cumulative_Restrictions.Set (No_Finalization) then
+         Set_Char (',');
+         Write_Statement_Buffer;
+
          if Hostparm.Java_VM then
             Set_String
               ("        System.Standard_Library.Adafinal'Code_Address");
@@ -1345,7 +1359,7 @@ package body Bindgen is
       Set_String ("      SDP_Table_Build (ST'Address, ");
       Set_Int (Num);
       Set_String (", EA'Address, ");
-      Set_Int (Num_Elab_Calls + 2);
+      Set_EA_Last;
       Set_String (");");
       Write_Statement_Buffer;
    end Gen_Exception_Table_Ada;
@@ -1460,13 +1474,15 @@ package body Bindgen is
 
       WBI ("");
       Set_String ("   void (*ea[");
-      Set_Int (Num_Elab_Calls + 2);
+      Set_EA_Last;
       Set_String ("]) () = {");
       Write_Statement_Buffer;
 
-      WBI ("     " & Ada_Init_Name.all & ",");
+      Set_String ("     " & Ada_Init_Name.all);
 
       if not Cumulative_Restrictions.Set (No_Finalization) then
+         Set_Char (',');
+         Write_Statement_Buffer;
          Set_String ("     system__standard_library__adafinal");
       end if;
 
@@ -1494,7 +1510,7 @@ package body Bindgen is
       Set_String ("   __gnat_SDP_Table_Build (&st, ");
       Set_Int (Num);
       Set_String (", ea, ");
-      Set_Int (Num_Elab_Calls + 2);
+      Set_EA_Last;
       Set_String (");");
       Write_Statement_Buffer;
    end Gen_Exception_Table_C;
@@ -2244,15 +2260,10 @@ package body Bindgen is
             """__gnat_ada_main_program_name"");");
       end if;
 
-      --  No need to generate a finalization routine if finalization
-      --  is restricted, since there is nothing to do in this case.
-
-      if not Cumulative_Restrictions.Set (No_Finalization) then
-         WBI ("");
-         WBI ("   procedure " & Ada_Final_Name.all & ";");
-         WBI ("   pragma Export (C, " & Ada_Final_Name.all & ", """ &
-              Ada_Final_Name.all & """);");
-      end if;
+      WBI ("");
+      WBI ("   procedure " & Ada_Final_Name.all & ";");
+      WBI ("   pragma Export (C, " & Ada_Final_Name.all & ", """ &
+           Ada_Final_Name.all & """);");
 
       WBI ("");
       WBI ("   procedure " & Ada_Init_Name.all & ";");
@@ -2371,11 +2382,7 @@ package body Bindgen is
 
       Gen_Adainit_Ada;
 
-      --  No need to generate a finalization routine if no finalization
-
-      if not Cumulative_Restrictions.Set (No_Finalization) then
-         Gen_Adafinal_Ada;
-      end if;
+      Gen_Adafinal_Ada;
 
       if Bind_Main_Program then
 
@@ -3022,6 +3029,24 @@ package body Bindgen is
       Last := Last + 1;
       Statement_Buffer (Last) := C;
    end Set_Char;
+
+   -----------------
+   -- Set_EA_Last --
+   -----------------
+
+   procedure Set_EA_Last is
+   begin
+      --  When there is no finalization, only adainit is added
+
+      if Cumulative_Restrictions.Set (No_Finalization) then
+         Set_Int (Num_Elab_Calls + 1);
+
+      --  When there is finalization, both adainit and adafinal are added
+
+      else
+         Set_Int (Num_Elab_Calls + 2);
+      end if;
+   end Set_EA_Last;
 
    -------------
    -- Set_Int --

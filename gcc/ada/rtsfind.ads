@@ -1018,7 +1018,10 @@ package Rtsfind is
      RE_Register_Passive_Package,        -- System.Partition_Interface
      RE_Register_Receiving_Stub,         -- System.Partition_Interface
      RE_RCI_Info,                        -- System.Partition_Interface
+     RE_RCI_Subp_Info,                   -- System.Partition_Interface
+     RE_RCI_Subp_Info_Array,             -- System.Partition_Interface
      RE_Subprogram_Id,                   -- System.Partition_Interface
+     RE_Get_RAS_Info,                    -- System.Partition_Interface
 
      RE_Global_Pool_Object,              -- System.Pool_Global
 
@@ -1075,9 +1078,6 @@ package Rtsfind is
      RE_Get_Reference,                   -- System.PolyORB_Interface
      RE_Local_Oid_To_Address,            -- System.PolyORB_Interface
      RE_RCI_Locator,                     -- System.PolyORB_Interface
-     RE_RCI_Subp_Info,                   -- System.PolyORB_Interface
-     RE_RCI_Subp_Info_Array,             -- System.PolyORB_Interface
-     RE_Get_RAS_Ref,                     -- System.PolyORB_Interface
      RE_Asynchronous_P_To_Sync_Scope,    -- System.PolyORB_Interface
      RE_Buffer_Stream_Type,              -- System.PolyORB_Interface
      RE_Allocate_Buffer,                 -- System.PolyORB_Interface
@@ -2100,7 +2100,10 @@ package Rtsfind is
      RE_Register_Passive_Package         => System_Partition_Interface,
      RE_Register_Receiving_Stub          => System_Partition_Interface,
      RE_RCI_Info                         => System_Partition_Interface,
+     RE_RCI_Subp_Info                    => System_Partition_Interface,
+     RE_RCI_Subp_Info_Array              => System_Partition_Interface,
      RE_Subprogram_Id                    => System_Partition_Interface,
+     RE_Get_RAS_Info                     => System_Partition_Interface,
 
      RE_To_PolyORB_String                => System_PolyORB_Interface,
      RE_To_Standard_String               => System_PolyORB_Interface,
@@ -2145,9 +2148,6 @@ package Rtsfind is
      RE_Get_Reference                    => System_PolyORB_Interface,
      RE_Local_Oid_To_Address             => System_PolyORB_Interface,
      RE_RCI_Locator                      => System_PolyORB_Interface,
-     RE_RCI_Subp_Info                    => System_PolyORB_Interface,
-     RE_RCI_Subp_Info_Array              => System_PolyORB_Interface,
-     RE_Get_RAS_Ref                      => System_PolyORB_Interface,
      RE_Asynchronous_P_To_Sync_Scope     => System_PolyORB_Interface,
      RE_Buffer_Stream_Type               => System_PolyORB_Interface,
      RE_Allocate_Buffer                  => System_PolyORB_Interface,

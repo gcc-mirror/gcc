@@ -490,7 +490,8 @@ following is allowed:
 
 @item
 Conditions should use short-circuit forms (@code{and then},
-@code{or else}).
+@code{or else}), except when the operands are boolean variables
+or boolean constants.
 @cindex Short-circuit forms
 
 @item
@@ -507,6 +508,23 @@ Complex conditions in @code{if} statements are indented two characters:
       end if;
 @end group
 @end smallexample
+
+@noindent
+There are some cases where complex conditionals can be laid out
+in manners that do not follow these rules to preserve better
+parallelism between branches, e.g.
+
+@smallexample @c adanocomment
+@group
+      if xyz.abc (gef) = 'c'
+           or else
+         xyz.abc (gef) = 'x'
+      then
+         ...
+      end if;
+@end group
+@end smallexample
+
 
 @item
 Every @code{if} block is preceded and followed by a blank line, except

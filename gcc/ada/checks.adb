@@ -369,14 +369,22 @@ package body Checks is
          Check_Unset_Reference (P);
       end if;
 
-      --  Don't need access check if prefix is known to be non-null
+      --  We do not need access checks if prefix is known to be non-null
 
       if Known_Non_Null (P) then
          return;
 
-      --  Don't need access checks if they are suppressed on the type
+      --  We do not need access checks if they are suppressed on the type
 
       elsif Access_Checks_Suppressed (Etype (P)) then
+         return;
+
+         --  We do not need checks if we are not generating code (i.e. the
+         --  expander is not active). This is not just an optimization, there
+         --  are cases (e.g. with pragma Debug) where generating the checks
+         --  can cause real trouble).
+
+      elsif not Expander_Active then
          return;
       end if;
 
@@ -569,8 +577,8 @@ package body Checks is
       --  flag is not set anyway, or we are not doing code expansion.
 
       if Backend_Overflow_Checks_On_Target
-        or not Do_Overflow_Check (N)
-        or not Expander_Active
+        or else not Do_Overflow_Check (N)
+        or else not Expander_Active
       then
          return;
       end if;
@@ -1364,7 +1372,6 @@ package body Checks is
          --  part of the test is not controlled by the -gnato switch.
 
          if Do_Division_Check (N) then
-
             if (not ROK) or else (Rlo <= 0 and then 0 <= Rhi) then
                Insert_Action (N,
                  Make_Raise_Constraint_Error (Loc,

@@ -33,10 +33,27 @@ enum gnat_tree_code {
 };
 #undef DEFTREECODE
 
-/* Ada uses the lang_decl and lang_type fields to hold more trees.  */
+/* Ada uses the lang_decl and lang_type fields to hold a tree.  */
 union lang_tree_node GTY((desc ("0"))) {union tree_node GTY((tag ("0"))) t; };
-struct lang_decl GTY(()) {union lang_tree_node t; };
-struct lang_type GTY(()) {union lang_tree_node t; };
+struct lang_decl GTY(()) {tree t; };
+struct lang_type GTY(()) {tree t; };
+
+/* Define macros to get and set the tree in TYPE_ and DECL_LANG_SPECIFIC.  */
+#define GET_TYPE_LANG_SPECIFIC(NODE) \
+  (TYPE_LANG_SPECIFIC (NODE) ? TYPE_LANG_SPECIFIC (NODE)->t : NULL_TREE)
+#define SET_TYPE_LANG_SPECIFIC(NODE, X)	\
+ (TYPE_LANG_SPECIFIC (NODE)			\
+  = (TYPE_LANG_SPECIFIC (NODE)			\
+     ? TYPE_LANG_SPECIFIC (NODE) : ggc_alloc (sizeof (struct lang_type))))   \
+ ->t = X;
+
+#define GET_DECL_LANG_SPECIFIC(NODE) \
+  (DECL_LANG_SPECIFIC (NODE) ? DECL_LANG_SPECIFIC (NODE)->t : NULL_TREE)
+#define SET_DECL_LANG_SPECIFIC(NODE, VALUE)	\
+ (DECL_LANG_SPECIFIC (NODE)			\
+  = (DECL_LANG_SPECIFIC (NODE)			\
+     ? DECL_LANG_SPECIFIC (NODE) : ggc_alloc (sizeof (struct lang_decl))))   \
+ ->t = VALUE;
 
 /* Flags added to GCC type nodes.  */
 
@@ -138,67 +155,58 @@ struct lang_type GTY(()) {union lang_tree_node t; };
    return values of the out (or in out) parameters that qualify to be passed
    by copy in copy out.  It is a CONSTRUCTOR.  For a full description of the
    cico parameter passing mechanism refer to the routine gnat_to_gnu_entity. */
-#define TYPE_CI_CO_LIST(NODE)   \
-  (&TYPE_LANG_SPECIFIC (FUNCTION_TYPE_CHECK (NODE))->t.t)
-#define SET_TYPE_CI_CO_LIST(NODE, X)   \
-  (TYPE_LANG_SPECIFIC (FUNCTION_TYPE_CHECK (NODE)) = (struct lang_type *)(X))
+#define TYPE_CI_CO_LIST(NODE)  TYPE_LANG_SLOT_1 (FUNCTION_TYPE_CHECK (NODE))
 
 /* For an INTEGER_TYPE with TYPE_MODULAR_P, this is the value of the
    modulus. */
-#define TYPE_MODULUS(NODE)  \
-  (&TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))->t.t)
+#define TYPE_MODULUS(NODE) GET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
 #define SET_TYPE_MODULUS(NODE, X)  \
-  (TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE)) = (struct lang_type *)(X))
+  SET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE), X)
 
 /* For an INTEGER_TYPE that is the TYPE_DOMAIN of some ARRAY_TYPE, points to
    the type corresponding to the Ada index type.  */
-#define TYPE_INDEX_TYPE(NODE)	\
-  (&TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))->t.t)
-#define SET_TYPE_INDEX_TYPE(NODE, X)	\
-  (TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE)) = (struct lang_type *) (X))
+#define TYPE_INDEX_TYPE(NODE) \
+  GET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
+#define SET_TYPE_INDEX_TYPE(NODE, X) \
+  SET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE), X)
 
 /* For an INTEGER_TYPE with TYPE_VAX_FLOATING_POINT_P, stores the
    Digits_Value.  */
 #define TYPE_DIGITS_VALUE(NODE) \
-  (&TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))->t.t)
+  GET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE))
 #define SET_TYPE_DIGITS_VALUE(NODE, X)  \
-  (TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE)) = (struct lang_type *) (X))
+  SET_TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE), X)
 
-/* For INTEGER_TYPE, stores the RM_Size of the type.  */
-#define TYPE_RM_SIZE_INT(NODE)	TYPE_LANG_SLOT_1 (INTEGER_TYPE_CHECK (NODE))
-
-/* Likewise for ENUMERAL_TYPE.  */
-#define TYPE_RM_SIZE_ENUM(NODE)	\
-  (&TYPE_LANG_SPECIFIC (ENUMERAL_TYPE_CHECK (NODE))->t.t)
-#define SET_TYPE_RM_SIZE_ENUM(NODE, X)	\
-  (TYPE_LANG_SPECIFIC (ENUMERAL_TYPE_CHECK (NODE)) = (struct lang_type *)(X))
+/* For numeric types, stores the RM_Size of the type.  */
+#define TYPE_RM_SIZE_NUM(NODE)	TYPE_LANG_SLOT_1 (NUMERICAL_TYPE_CHECK (NODE))
 
 #define TYPE_RM_SIZE(NODE)					\
-  (TREE_CODE (NODE) == ENUMERAL_TYPE ? TYPE_RM_SIZE_ENUM (NODE)	\
-   : TREE_CODE (NODE) == INTEGER_TYPE ? TYPE_RM_SIZE_INT (NODE)	\
-   : 0)
+  (INTEGRAL_TYPE_P (NODE) || TREE_CODE (NODE) == REAL_TYPE	\
+   ? TYPE_RM_SIZE_NUM (NODE) : 0)
 
 /* For a RECORD_TYPE that is a fat pointer, point to the type for the
    unconstrained object.  Likewise for a RECORD_TYPE that is pointed
    to by a thin pointer.  */
 #define TYPE_UNCONSTRAINED_ARRAY(NODE)  \
-  (&TYPE_LANG_SPECIFIC (RECORD_TYPE_CHECK (NODE))->t.t)
+  GET_TYPE_LANG_SPECIFIC (RECORD_TYPE_CHECK (NODE))
 #define SET_TYPE_UNCONSTRAINED_ARRAY(NODE, X)  \
-  (TYPE_LANG_SPECIFIC (RECORD_TYPE_CHECK (NODE)) = (struct lang_type *)(X))
+  SET_TYPE_LANG_SPECIFIC (RECORD_TYPE_CHECK (NODE), X)
 
 /* For other RECORD_TYPEs and all UNION_TYPEs and QUAL_UNION_TYPEs, the Ada
    size of the object.  This differs from the GCC size in that it does not
    include any rounding up to the alignment of the type.  */
-#define TYPE_ADA_SIZE(NODE)	(&TYPE_LANG_SPECIFIC (NODE)->t.t)
+#define TYPE_ADA_SIZE(NODE)   \
+  GET_TYPE_LANG_SPECIFIC (RECORD_OR_UNION_CHECK (NODE))
 #define SET_TYPE_ADA_SIZE(NODE, X) \
-  (TYPE_LANG_SPECIFIC (NODE) = (struct lang_type *)(X))
+  SET_TYPE_LANG_SPECIFIC (RECORD_OR_UNION_CHECK (NODE), X)
 
 /* For an INTEGER_TYPE with TYPE_HAS_ACTUAL_BOUNDS_P or an ARRAY_TYPE, this is
    the index type that should be used when the actual bounds are required for
    a template.  This is used in the case of packed arrays.  */
-#define TYPE_ACTUAL_BOUNDS(NODE)   (&TYPE_LANG_SPECIFIC (NODE)->t.t)
+#define TYPE_ACTUAL_BOUNDS(NODE)   \
+  GET_TYPE_LANG_SPECIFIC (TREE_CHECK2 (NODE, INTEGER_TYPE, ARRAY_TYPE))
 #define SET_TYPE_ACTUAL_BOUNDS(NODE, X) \
-  (TYPE_LANG_SPECIFIC (NODE) = (struct lang_type *)(X))
+  SET_TYPE_LANG_SPECIFIC (TREE_CHECK2 (NODE, INTEGER_TYPE, ARRAY_TYPE), X)
 
 /* In an UNCONSTRAINED_ARRAY_TYPE, points to the record containing both
    the template and object.
@@ -242,16 +250,16 @@ struct lang_type GTY(()) {union lang_tree_node t; };
    memory.  Used when a scalar constant is aliased or has its
    address taken.  */
 #define DECL_CONST_CORRESPONDING_VAR(NODE) \
-  (&DECL_LANG_SPECIFIC (CONST_DECL_CHECK (NODE))->t.t)
+  GET_DECL_LANG_SPECIFIC (CONST_DECL_CHECK (NODE))
 #define SET_DECL_CONST_CORRESPONDING_VAR(NODE, X) \
-  (DECL_LANG_SPECIFIC (CONST_DECL_CHECK (NODE)) = (struct lang_decl *)(X))
+  SET_DECL_LANG_SPECIFIC (CONST_DECL_CHECK (NODE), X)
 
 /* In a FIELD_DECL, points to the FIELD_DECL that was the ultimate
    source of the decl.  */
 #define DECL_ORIGINAL_FIELD(NODE) \
-  (&DECL_LANG_SPECIFIC (FIELD_DECL_CHECK (NODE))->t.t)
+  GET_DECL_LANG_SPECIFIC (FIELD_DECL_CHECK (NODE))
 #define SET_DECL_ORIGINAL_FIELD(NODE, X) \
-  (DECL_LANG_SPECIFIC (FIELD_DECL_CHECK (NODE)) = (struct lang_decl *)(X))
+  SET_DECL_LANG_SPECIFIC (FIELD_DECL_CHECK (NODE), X)
 
 /* In a FIELD_DECL corresponding to a discriminant, contains the
    discriminant number.  */
