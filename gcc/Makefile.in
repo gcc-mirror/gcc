@@ -1390,7 +1390,8 @@ objc-headers: force
 
 # Remake the info files.
 
-doc: $(srcdir)/cpp.info $(srcdir)/gcc.info
+doc: info
+info: $(srcdir)/cpp.info $(srcdir)/gcc.info
 
 $(srcdir)/cpp.info: cpp.texi
 	$(MAKEINFO) `echo $(srcdir)/cpp.texi | sed 's,^\./,,'`
@@ -1401,6 +1402,8 @@ $(srcdir)/cpp.info: cpp.texi
 $(srcdir)/gcc.info: gcc.texi extend.texi install.texi invoke.texi \
 		md.texi rtl.texi tm.texi 
 	$(MAKEINFO) `echo $(srcdir)/gcc.texi | sed 's,^\./,,'`
+
+dvi: $(srcdir)/gcc.dvi $(srcdir)/cpp.dvi
 
 # This works with GNU Make's default rule.
 $(srcdir)/gcc.dvi: gcc.texi extend.texi install.texi invoke.texi \
