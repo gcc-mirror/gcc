@@ -1,7 +1,7 @@
 2003-01-20  Zack Weinberg  <zack@codesourcery.com>
 
 	* configure.in: Check for system-provided 'uchar' type.
-	* configure: Regenerate.
+	* configure, config.in: Regenerate.
 	* cpphash.h: Only typedef 'uchar' if the system doesn't.
 
 2003-01-20  Richard Henderson  <rth@redhat.com>
