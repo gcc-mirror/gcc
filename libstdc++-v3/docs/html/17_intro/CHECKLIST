@@ -1,6 +1,6 @@
 
    Completion Checklist for the Standard C++ Library
-   Updated: 1999-05-18
+   Updated: 2003-04-25
 
    Status Code Legend:
     M - Missing
@@ -17,10 +17,8 @@
    issues appear [in brackets].
 
    Note that this checklist does not (yet) include all emendations
-   recommended by the ISO Library Working Group:  (restricted site)
-     http://www.cygnus.com/iso/wp/html/fdis/lwg-issues.html
-   The LWG has announced its intention to release a public version
-   of the issues list, URL to be added here.   XXX
+   recommended by the ISO Library Working Group:
+   http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-toc.html
 
    Detailed explanation of status codes:
 
@@ -36,7 +34,7 @@
         It may have an incorrect base class, wrong namespace, wrong
         storage class, or simply not fully implement requirements.
         However, it may be sufficiently usable to help test other
-	components.
+        components.
 
     T - Implemented, pending test/inspection:  Implementation believed
         to be complete, and informal testing suggests it is ready for
@@ -49,14 +47,14 @@
         Inspected, "implementation-defined" documentation accepted,
         local usability criteria satisfied, formally inspected for
         other untestable conformance.  (Untestable requirements
-	include exception-safety, thread-safety, worst-case
-	complexity, memory cleanliness, usefulness.)
+        include exception-safety, thread-safety, worst-case
+        complexity, memory cleanliness, usefulness.)
 
     P - Portability verified:  Qualified on all primary target platforms.
 
     C - Certified:  Formally certified to have passed all tests,
         inspections, qualifications; approved under "signing authority"
-	to be used to satisfy contractual guarantees.
+        to be used to satisfy contractual guarantees.
 
    ----------------------------------------------------------------------
        <algorithm>    <iomanip>    <list>      <ostream>     <streambuf>
@@ -89,20 +87,17 @@ X   wctrans_t, wctype_t, and wint_t.
     subroutines is implementation-defined.
 
    18.1  Types                                        [lib.support.types]
-X	<cstddef>
-X	NULL
-X  	offsetof
-X	ptrdiff_t
-X	size_t
+X      <cstddef>
+X      NULL
+X      offsetof
+X      ptrdiff_t
+X      size_t
 
    18.2  Implementation properties                   [lib.support.limits]
 
     <limits>, <climits>, and <cfloat>
 
    18.2.1  Numeric limits                                    [lib.limits]
-
-   [Note: the numeric_limits templates are now automatically
-    generated. ]
 
 X   template<class T> class numeric_limits;
 
@@ -192,7 +187,7 @@ T     denorm present = 1;
 
    1 Header <climits> (Table 3):
       CHAR_BIT   INT_MAX    LONG_MIN     SCHAR_MIN   UCHAR_MAX   USHRT_MAX
-X  	  CHAR_MAX   INT_MIN    MB_LEN_MAX   SHRT_MAX    UINT_MAX
+X     CHAR_MAX   INT_MIN    MB_LEN_MAX   SHRT_MAX    UINT_MAX
       CHAR_MIN   LONG_MAX   SCHAR_MAX    SHRT_MIN    ULONG_MAX
 
    3 Header <cfloat> (Table 4):
@@ -457,7 +452,7 @@ X                    |Macros:   EDOM   ERANGE   errno |
    Header <utility> synopsis
 
     // _lib.operators_, operators:
-X    namespace rel_ops {
+T    namespace rel_ops {
 T      template<class T> bool operator!=(const T&, const T&);
 T      template<class T> bool operator> (const T&, const T&);
 T      template<class T> bool operator<=(const T&, const T&);
@@ -2280,7 +2275,7 @@ X           Functions:   localeconv    setlocale
 
    Header <deque> synopsis
 
-X   template <class T, class Allocator = allocator<T> > class deque;
+T   template <class T, class Allocator = allocator<T> > class deque;
 T   template <class T, class Allocator>
       bool operator==(const deque<T,Allocator>& x, const deque<T,Allocator>& y);
 T   template <class T, class Allocator>
@@ -2299,7 +2294,7 @@ T   template <class T, class Allocator>
 
    Header <list> synopsis
 
-X   template <class T, class Allocator = allocator<T> > class list;
+T   template <class T, class Allocator = allocator<T> > class list;
 T   template <class T, class Allocator>
       bool operator==(const list<T,Allocator>& x, const list<T,Allocator>& y);
 T   template <class T, class Allocator>
@@ -2319,7 +2314,7 @@ T   template <class T, class Allocator>
    Header <queue> synopsis
 
    namespace std {
-X   template <class T, class Container = deque<T> > class queue;
+T   template <class T, class Container = deque<T> > class queue;
 T   template <class T, class Container>
       bool operator==(const queue<T, Container>& x,
                       const queue<T, Container>& y);
@@ -2418,13 +2413,13 @@ T   template <class Allocator>
    23.2.1  Template class deque                               [lib.deque]
 
     template <class T, class Allocator = allocator<T> >
-X   class deque {
+T   class deque {
     public:
       // types:
 T     typedef typename Allocator::reference         reference;
 T     typedef typename Allocator::const_reference   const_reference;
-X     typedef implementation defined                iterator;
-X     typedef implementation defined                const_iterator;
+T     typedef implementation defined                iterator;
+T     typedef implementation defined                const_iterator;
 T     typedef implementation defined                size_type;
 T     typedef implementation defined                difference_type;
 T     typedef T                                     value_type;
@@ -2511,14 +2506,14 @@ T   template <class T, class Allocator>
 
    23.2.2  Template class list                                 [lib.list]
 
-X   template <class T, class Allocator = allocator<T> >
+T   template <class T, class Allocator = allocator<T> >
     class list {
     public:
       // types:
 T     typedef typename Allocator::reference         reference;
 T     typedef typename Allocator::const_reference   const_reference;
-X     typedef implementation defined                iterator;
-X     typedef implementation defined                const_iterator;
+T     typedef implementation defined                iterator;
+T     typedef implementation defined                const_iterator;
 T     typedef implementation defined                size_type;
 T     typedef implementation defined                difference_type;
 T     typedef T                                     value_type;
@@ -2720,13 +2715,13 @@ T   template <class T, class Container>
    23.2.4  Template class vector                             [lib.vector]
 
     template <class T, class Allocator = allocator<T> >
-X   class vector {
+T   class vector {
     public:
       // types:
 T     typedef typename Allocator::reference         reference;
 T     typedef typename Allocator::const_reference   const_reference;
-X     typedef implementation defined                iterator;
-X     typedef implementation defined                const_iterator;
+T     typedef implementation defined                iterator;
+T     typedef implementation defined                const_iterator;
 T     typedef implementation defined                size_type;
 T     typedef implementation defined                difference_type;
 T     typedef T                                     value_type;
@@ -2814,12 +2809,12 @@ T   template <class T, class Allocator>
 
    23.2.5  Class vector<bool>                           [lib.vector.bool]
 
-X   template <class Allocator> class vector<bool, Allocator> {
+T   template <class Allocator> class vector<bool, Allocator> {
     public:
       // types:
 T     typedef bool                                  const_reference;
-X     typedef implementation defined                iterator;
-X     typedef implementation defined                const_iterator;
+T     typedef implementation defined                iterator;
+T     typedef implementation defined                const_iterator;
 T     typedef implementation defined                size_type;
 T     typedef implementation defined                difference_type;
 T     typedef bool                                  value_type;
@@ -2925,7 +2920,7 @@ T   template <class Allocator>
 
     template <class Key, class T, class Compare = less<Key>,
               class Allocator = allocator<pair<const Key, T> > >
-X     class map;
+T     class map;
 
 T   template <class Key, class T, class Compare, class Allocator>
       bool operator==(const map<Key,T,Compare,Allocator>& x,
@@ -2978,7 +2973,7 @@ T   template <class Key, class T, class Compare, class Allocator>
 
     template <class Key, class Compare = less<Key>,
               class Allocator = allocator<Key> >
-X     class set;
+T     class set;
 
 T   template <class Key, class Compare, class Allocator>
       bool operator==(const set<Key,Compare,Allocator>& x,
@@ -3031,7 +3026,7 @@ T   template <class Key, class Compare, class Allocator>
 
     template <class Key, class T, class Compare = less<Key>,
               class Allocator = allocator<pair<const Key, T> > >
-X     class map {
+T     class map {
     public:
       // types:
 T     typedef Key                                   key_type;
@@ -3041,8 +3036,8 @@ T     typedef Compare                               key_compare;
 T     typedef Allocator                             allocator_type;
 T     typedef typename Allocator::reference         reference;
 T     typedef typename Allocator::const_reference   const_reference;
-X     typedef implementation defined                iterator;
-X     typedef implementation defined                const_iterator;
+T     typedef implementation defined                iterator;
+T     typedef implementation defined                const_iterator;
 T     typedef implementation defined                size_type;
 T     typedef implementation defined                difference_type;
 T     typedef typename Allocator::pointer           pointer;
@@ -3140,7 +3135,7 @@ T   template <class Key, class T, class Compare, class Allocator>
 
     template <class Key, class T, class Compare = less<Key>,
               class Allocator = allocator<pair<const Key, T> > >
-X   class multimap {
+T   class multimap {
     public:
       // types:
 T     typedef Key                                   key_type;
@@ -3150,8 +3145,8 @@ T     typedef Compare                               key_compare;
 T     typedef Allocator                             allocator_type;
 T     typedef typename Allocator::reference         reference;
 T     typedef typename Allocator::const_reference   const_reference;
-X     typedef implementation defined                iterator;
-X     typedef implementation defined                const_iterator;
+T     typedef implementation defined                iterator;
+T     typedef implementation defined                const_iterator;
 T     typedef implementation defined                size_type;
 T     typedef implementation defined                difference_type
 T     typedef typename Allocator::pointer           pointer;
@@ -3248,7 +3243,7 @@ T   template <class Key, class T, class Compare, class Allocator>
 
     template <class Key, class Compare = less<Key>,
               class Allocator = allocator<Key> >
-X   class set {
+T   class set {
     public:
       // types:
 T     typedef Key                                   key_type;
@@ -3258,8 +3253,8 @@ T     typedef Compare                               value_compare;
 T     typedef Allocator                             allocator_type;
 T     typedef typename Allocator::reference         reference;
 T     typedef typename Allocator::const_reference   const_reference;
-X     typedef implementation defined                iterator;
-X     typedef implementation defined                const_iterator;
+T     typedef implementation defined                iterator;
+T     typedef implementation defined                const_iterator;
 T     typedef implementation defined                size_type;
 T     typedef implementation defined                difference_type;
 T     typedef typename Allocator::pointer           pointer;
@@ -3338,7 +3333,7 @@ T   template <class Key, class Compare, class Allocator>
 
     template <class Key, class Compare = less<Key>,
               class Allocator = allocator<Key> >
-X   class multiset {
+T   class multiset {
     public:
       // types:
 T     typedef Key                                   key_type;
@@ -3348,8 +3343,8 @@ T     typedef Compare                               value_compare;
 T     typedef Allocator                             allocator_type;
 T     typedef typename Allocator::reference         reference;
 T     typedef typename Allocator::const_reference   const_reference;
-X     typedef implementation defined                iterator;
-X     typedef implementation defined                const_iterator;
+T     typedef implementation defined                iterator;
+T     typedef implementation defined                const_iterator;
 T     typedef implementation defined                size_type;
 T     typedef implementation defined                difference_type
 T     typedef typename Allocator::pointer           pointer;
@@ -3430,14 +3425,7 @@ T   template <class Key, class Compare, class Allocator>
 
    Header <bitset> synopsis
 
-   [What's this stuff?
-   #include <cstddef>              // for size_t
-   #include <string>
-   #include <stdexcept>            // for invalid_argument,
-                                  //     out_of_range, overflow_error
-   #include <iosfwd>               // for istream, ostream
-   ]
-X   template <size_t N> class bitset;
+T   template <size_t N> class bitset;
     // _lib.bitset.operators_ bitset operations:
 T   template <size_t N>
       bitset<N> operator&(const bitset<N>&, const bitset<N>&);
@@ -3452,7 +3440,7 @@ T   template <class charT, class traits, size_t N>
       basic_ostream<charT, traits>&
       operator<<(basic_ostream<charT, traits>& os, const bitset<N>& x);
 
-X   template<size_t N> class bitset {
+T   template<size_t N> class bitset {
     public:
       // bit reference:
 T     class reference {

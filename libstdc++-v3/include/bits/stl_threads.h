@@ -208,7 +208,7 @@ namespace std
   private:
     void operator=(const _STL_auto_lock&);
     _STL_auto_lock(const _STL_auto_lock&);
-  };
+  } __attribute__ ((__unused__));
   
 } // namespace std
 

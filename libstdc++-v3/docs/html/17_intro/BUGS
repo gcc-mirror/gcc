@@ -1,7 +1,4 @@
-2000-03-24 libstdc++2.90.8
-
-- testsuite/27_io/istream_extractors_char.cc: 
-  Failing on all platforms with -O2, working with -O. Need to look at this.
+2003-04-26
 
 - _GLIBCPP_HAS_BUILTIN_SINF: We should still hold out for a cleaner solution the is currenly the case in bits/std_cmath.h. 
 

@@ -575,8 +575,8 @@ template <typename _Alloc>
     void _M_assign_dispatch(_Integer __n, _Integer __val, __true_type)
       { _M_fill_assign((size_t) __n, (bool) __val); }
   
-    template <class _InputIter>
-    void _M_assign_dispatch(_InputIter __first, _InputIter __last, __false_type)
+    template <class _InputIterator>
+    void _M_assign_dispatch(_InputIterator __first, _InputIterator __last, __false_type)
       { _M_assign_aux(__first, __last, __iterator_category(__first)); }
   
     template <class _InputIterator>

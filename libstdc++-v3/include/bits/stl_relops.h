@@ -135,7 +135,3 @@ inline bool operator>=(const _Tp& __x, const _Tp& __y) {
 } // namespace std
 
 #endif /* _CPP_BITS_STL_RELOPS_H */
-
-// Local Variables:
-// mode:C++
-// End:

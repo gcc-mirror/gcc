@@ -773,12 +773,12 @@ namespace std
      *  time, and does not invalidate iterators and references.
     */
     void
-    insert(iterator __pos, size_type __n, const value_type& __x)
-    { _M_fill_insert(__pos, __n, __x); }
+    insert(iterator __position, size_type __n, const value_type& __x)
+    { _M_fill_insert(__position, __n, __x); }
   
     /**
      *  @brief  Inserts a range into the %list.
-     *  @param  pos  An iterator into the %list.
+     *  @param  position  An iterator into the %list.
      *  @param  first  An input iterator.
      *  @param  last   An input iterator.
      *
@@ -790,11 +790,11 @@ namespace std
     */
     template<typename _InputIterator>
       void
-      insert(iterator __pos, _InputIterator __first, _InputIterator __last)
+      insert(iterator __position, _InputIterator __first, _InputIterator __last)
       {
         // Check whether it's an integral type.  If so, it's not an iterator.
         typedef typename _Is_integer<_InputIterator>::_Integral _Integral;
-        _M_insert_dispatch(__pos, __first, __last, _Integral());
+        _M_insert_dispatch(__position, __first, __last, _Integral());
       }
   
     /**
@@ -968,9 +968,9 @@ namespace std
       }
   
     // called by the range assign to implement [23.1.1]/9
-    template<typename _InputIter>
+    template<typename _InputIterator>
       void
-      _M_assign_dispatch(_InputIter __first, _InputIter __last, __false_type);
+      _M_assign_dispatch(_InputIterator __first, _InputIterator __last, __false_type);
   
     // Called by assign(n,t), and the range assign when it turns out to be the
     // same thing.

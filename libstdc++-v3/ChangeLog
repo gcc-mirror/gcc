@@ -1,3 +1,27 @@
+2003-06-10  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/17_intro/BUGS:  Update from 2.90.8 snapshot.
+	* docs/html/17_intro/CHECKLIST:  Bring up to date with respect to
+	correctness of container::iterator typedefs.  Fix whitespace.
+	* docs/html/20_util/howto.html, docs/html/ext/howto.html:  Add links
+	to allocator docs.
+	* docs/html/documentation.html:  Regenerate.
+
+	* include/bits/basic_string.h, include/bits/basic_string.tcc,
+	include/bits/deque.tcc, include/bits/list.tcc, include/bits/stl_algo.h,
+	include/bits/stl_algobase.h, include/bits/stl_bvector.h,
+	include/bits/stl_deque.h, include/bits/stl_iterator_base_funcs.h,
+	include/bits/stl_list.h, include/bits/stl_uninitialized.h,
+	include/bits/stl_vector.h, include/bits/vector.tcc,
+	include/ext/algorithm, include/ext/slist, include/std/std_bitset.h:
+	Change _Iter names to _Iterator, and __pos to __position.
+
+	* include/bits/stl_relops.h, include/bits/stl_numeric.h,
+	include/bits/stl_multiset.h, include/bits/stl_set.h:
+	Remove emacs markers.
+
+	* include/bits/stl_threads.h (_STL_auto_lock):  Add __unused__.
+
 2003-06-10  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/fstream.tcc (overflow): According to

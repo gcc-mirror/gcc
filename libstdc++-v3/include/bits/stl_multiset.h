@@ -271,7 +271,3 @@ inline void swap(multiset<_Key,_Compare,_Alloc>& __x,
 } // namespace std
 
 #endif /* __GLIBCPP_INTERNAL_MULTISET_H */
-
-// Local Variables:
-// mode:C++
-// End:
