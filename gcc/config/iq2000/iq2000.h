@@ -779,23 +779,6 @@ while (0)
 
 /* Miscellaneous Parameters.  */
 
-#define PREDICATE_CODES							\
-  {"uns_arith_operand",		{ REG, CONST_INT, SUBREG }},		\
-  {"arith_operand",		{ REG, CONST_INT, SUBREG }},		\
-  {"small_int",			{ CONST_INT }},				\
-  {"large_int",			{ CONST_INT }},				\
-  {"reg_or_0_operand",		{ REG, CONST_INT, CONST_DOUBLE, SUBREG }}, \
-  {"simple_memory_operand",	{ MEM, SUBREG }},			\
-  {"equality_op",		{ EQ, NE }},				\
-  {"cmp_op",			{ EQ, NE, GT, GE, GTU, GEU, LT, LE,	\
-				  LTU, LEU }},				\
-  {"pc_or_label_operand",	{ PC, LABEL_REF }},			\
-  {"call_insn_operand",		{ CONST_INT, CONST, SYMBOL_REF, REG}},	\
-  {"move_operand", 		{ CONST_INT, CONST_DOUBLE, CONST,	\
-				  SYMBOL_REF, LABEL_REF, SUBREG,	\
-				  REG, MEM}},				\
-  {"power_of_2_operand",	{ CONST_INT }},
-
 #define CASE_VECTOR_MODE SImode
 
 #define WORD_REGISTER_OPERATIONS
@@ -1060,13 +1043,6 @@ extern void		sbss_section  (void);
    be updated with the correct length of the insn.  */
 #define ADJUST_INSN_LENGTH(INSN, LENGTH) \
   ((LENGTH) = iq2000_adjust_insn_length ((INSN), (LENGTH)))
-
-
-/* A list of predicates that do special things with modes, and so
-   should not elicit warnings for VOIDmode match_operand.  */
-
-#define SPECIAL_MODE_PREDICATES \
-  "pc_or_label_operand",
 
 
 
