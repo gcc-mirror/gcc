@@ -1,3 +1,8 @@
+1999-07-01  Mark Kettenis  <kettenis@gnu.org>
+
+	* config/i386/gnu.h (CPP_SPEC): Define __PIC__ and __pic__ if
+	-fPIC or -fpic is specified.
+
 Wed Jun 30 23:56:01 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* expr.c (emit_block_move): Use copy_to_mode_reg for
