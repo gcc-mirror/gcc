@@ -63,6 +63,7 @@ static int operand_equal_for_comparison_p PROTO((tree, tree, tree));
 static int twoval_comparison_p PROTO((tree, tree *, tree *, int *));
 static tree eval_subst	PROTO((tree, tree, tree, tree, tree));
 static tree omit_one_operand PROTO((tree, tree, tree));
+static tree pedantic_omit_one_operand PROTO((tree, tree, tree));
 static tree distribute_bit_expr PROTO((enum tree_code, tree, tree, tree));
 static tree make_bit_field_ref PROTO((tree, tree, int, int, int));
 static tree optimize_bit_field_compare PROTO((enum tree_code, tree,
@@ -1997,6 +1998,22 @@ omit_one_operand (type, result, omitted)
 
   return non_lvalue (t);
 }
+
+/* Similar, but call pedantic_non_lvalue instead of non_lvalue.  */
+
+static tree
+pedantic_omit_one_operand (type, result, omitted)
+     tree type, result, omitted;
+{
+  tree t = convert (type, result);
+
+  if (TREE_SIDE_EFFECTS (omitted))
+    return build (COMPOUND_EXPR, type, omitted, t);
+
+  return pedantic_non_lvalue (t);
+}
+
+
 
 /* Return a simplified tree node for the truth-negation of ARG.  This
    never alters ARG itself.  We assume that ARG is an operation that
@@ -4679,7 +4696,7 @@ fold (expr)
 	return pedantic_non_lvalue
 	  (TREE_OPERAND (t, (integer_zerop (arg0) ? 2 : 1)));
       else if (operand_equal_p (arg1, TREE_OPERAND (expr, 2), 0))
-	return pedantic_non_lvalue (omit_one_operand (type, arg1, arg0));
+	return pedantic_omit_one_operand (type, arg1, arg0);
 
       /* If the second operand is zero, invert the comparison and swap
 	 the second and third operands.  Likewise if the second operand
