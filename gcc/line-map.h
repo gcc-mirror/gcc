@@ -55,9 +55,9 @@ struct line_map
   source_location start_location;
   int included_from;
   ENUM_BITFIELD (lc_reason) reason : CHAR_BIT;
-  /* The sysp field isn't really needed now that it's in cpp_buffer. */
+  /* The sysp field isn't really needed now that it's in cpp_buffer.  */
   unsigned char sysp;
-  /* Number of the low-order source_location bits used for a column number. */
+  /* Number of the low-order source_location bits used for a column number.  */
   unsigned int column_bits : 8;
 };
 
@@ -81,11 +81,11 @@ struct line_maps
   /* If true, prints an include trace a la -H.  */
   bool trace_includes;
 
-  /* Highest source_location "given out". */
+  /* Highest source_location "given out".  */
   source_location highest_location;
 
   /* The maximum column number we can quickly allocate.  Higher numbers
-     may require allocating a new line_map. */
+     may require allocating a new line_map.  */
   unsigned int max_column_hint;
 };
 
@@ -95,7 +95,7 @@ extern void linemap_init (struct line_maps *);
 /* Free a line map set.  */
 extern void linemap_free (struct line_maps *);
 
-/* Check for and warn about line_maps entered but not exited. */
+/* Check for and warn about line_maps entered but not exited.  */
 
 extern void linemap_check_files_exited (struct line_maps *);
 
@@ -103,7 +103,7 @@ extern void linemap_check_files_exited (struct line_maps *);
    (physical) line TO_LINE in the current source file (as in the
    most recent linemap_add).   MAX_COLUMN_HINT is the highest column
    number we expect to use in this line (but it does not change
-   the highest_location). */
+   the highest_location).  */
 
 extern source_location linemap_line_start
 (struct line_maps *, unsigned int,  unsigned int);
@@ -158,7 +158,7 @@ extern void linemap_print_containing_files (struct line_maps *,
 #define MAIN_FILE_P(MAP) ((MAP)->included_from < 0)
 
 /* Get a source position that for the same line as the most recent
-   linemap_line_start, but with the specified TO_COLUMN column number. */
+   linemap_line_start, but with the specified TO_COLUMN column number.  */
 
 static inline source_location
 linemap_position_for_column (struct line_maps *set, unsigned int to_column)
@@ -169,7 +169,7 @@ linemap_position_for_column (struct line_maps *set, unsigned int to_column)
     {
       if (r >= 0xC000000 || to_column > 1000000) /* FIXME */
 	{
-	  /* Running low on source_locations - disable column numbers. */
+	  /* Running low on source_locations - disable column numbers.  */
 	  return r - SOURCE_COLUMN (map, r);
 	}
       else

@@ -112,7 +112,7 @@ enum micro_operation_type
   MO_SET,	/* Set location.  */
   MO_CLOBBER,	/* Clobber location.  */
   MO_CALL,	/* Call insn.  */
-  MO_ADJUST	/* Adjust stack pointer. */
+  MO_ADJUST	/* Adjust stack pointer.  */
 };
 
 /* Where shall the note be emitted?  BEFORE or AFTER the instruction.  */

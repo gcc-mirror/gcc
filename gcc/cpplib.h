@@ -533,7 +533,7 @@ extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
    returns the name of the original file; this is the same as the
    input file, except for preprocessed input.  This will generate at
    least one file change callback, and possibly a line change callback
-   too.  If there was an error opening the file, it returns NULL. */
+   too.  If there was an error opening the file, it returns NULL.  */
 extern const char *cpp_read_main_file (cpp_reader *, const char *);
 
 /* Set up built-ins like __FILE__.  */

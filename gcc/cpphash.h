@@ -315,7 +315,7 @@ struct cpp_buffer
   unsigned char search_cached;
 
   /* One for a system header, two for a C system header file that therefore
-     needs to be extern "C" protected in C++, and zero otherwise. */
+     needs to be extern "C" protected in C++, and zero otherwise.  */
   unsigned char sysp;
 
   /* The directory of the this buffer's file.  Its NAME member is not

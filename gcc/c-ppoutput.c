@@ -346,7 +346,7 @@ pp_dir_change (cpp_reader *pfile ATTRIBUTE_UNUSED, const char *dir)
   unsigned char *to_file_quoted = alloca (to_file_len * 4 + 1);
   unsigned char *p;
 
-  /* cpp_quote_string does not nul-terminate, so we have to do it ourselves. */
+  /* cpp_quote_string does not nul-terminate, so we have to do it ourselves.  */
   p = cpp_quote_string (to_file_quoted, (unsigned char *) dir, to_file_len);
   *p = '\0';
   fprintf (print.outf, "# 1 \"%s//\"\n", to_file_quoted);

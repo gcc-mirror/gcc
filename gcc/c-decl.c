@@ -794,7 +794,7 @@ match_builtin_function_types (tree newtype, tree oldtype)
 
 /* Subroutine of diagnose_mismatched_decls.  Check for function type
    mismatch involving an empty arglist vs a nonempty one and give clearer
-   diagnostics. */
+   diagnostics.  */
 static void
 diagnose_arglist_conflict (tree newdecl, tree olddecl,
 			   tree newtype, tree oldtype)
@@ -970,7 +970,7 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	    {
 	      /* If types don't match for a built-in, throw away the
 		 built-in.  No point in calling locate_old_decl here, it
-		 won't print anything. */
+		 won't print anything.  */
 	      warning ("%Jconflicting types for built-in function '%D'",
 		       newdecl, newdecl);
 	      return false;

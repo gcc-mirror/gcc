@@ -1,3 +1,9 @@
+2004-02-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-decl.c, c-ppoutput.c, cpphash.h, cpplib.h, dbxout.c,
+	line-map.c, line-map.h, var-tracking.c: Fix comment
+	formatting.
+
 2004-02-16  Richard Henderson  <rth@redhat.com>
 
 	* cse.c (cse_insn): Don't lose REG_NON_LOCAL_GOTO note.
