@@ -264,6 +264,7 @@ extern int ix86_isa;
   { "align-loops=",	&i386_align_loops_string },			\
   { "align-jumps=",	&i386_align_jumps_string },			\
   { "align-functions=",	&i386_align_funcs_string },			\
+  { "branch-cost=",	&i386_branch_cost_string },			\
   SUBTARGET_OPTIONS							\
 }
 
@@ -529,9 +530,6 @@ extern int ix86_isa;
    for any hard reg, then this must be 0 for correct output.  */
 
 #define MODES_TIEABLE_P(MODE1, MODE2) ((MODE1) == (MODE2))
-
-/* Provide the cost of a branch.  Exact meaning under development.  */
-#define BRANCH_COST (TARGET_PENTIUMPRO ? 5 : 1)    
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -2016,7 +2014,7 @@ while (0)
 /* A C expression for the cost of a branch instruction.  A value of 1
    is the default; other values are interpreted relative to that.  */
 
-/* #define BRANCH_COST 1 */
+#define BRANCH_COST i386_branch_cost
 
 /* Define this macro as a C expression which is nonzero if accessing
    less than a word of memory (i.e. a `char' or a `short') is no
@@ -2636,10 +2634,12 @@ extern char *i386_regparm_string;		/* # registers to use to pass args */
 extern char *i386_align_loops_string;		/* power of two alignment for loops */
 extern char *i386_align_jumps_string;		/* power of two alignment for non-loop jumps */
 extern char *i386_align_funcs_string;		/* power of two alignment for functions */
+extern char *i386_branch_cost_string;		/* values 1-5: see jump.c */
 extern int i386_regparm;			/* i386_regparm_string as a number */
 extern int i386_align_loops;			/* power of two alignment for loops */
 extern int i386_align_jumps;			/* power of two alignment for non-loop jumps */
 extern int i386_align_funcs;			/* power of two alignment for functions */
+extern int i386_branch_cost;			/* values 1-5: see jump.c */
 extern char *hi_reg_name[];			/* names for 16 bit regs */
 extern char *qi_reg_name[];			/* names for 8 bit regs (low) */
 extern char *qi_high_reg_name[];		/* names for 8 bit regs (high) */
