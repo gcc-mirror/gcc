@@ -1,10 +1,10 @@
-2001-05-20  Bryce McKinlay  <bryce@albatross.co.nz>
+2001-05-19  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* include/jvm.h: Move "#pragma GCC java_exceptions" to ...
 	* gcj/javaprims.h: ... here.
 	* gnu/gcj/io/shs.cc: Add "#pragma GCC java_exceptions".
 
-2001-05-20  Zack Weinberg  <zackw@stanford.edu>
+2001-05-19  Zack Weinberg  <zackw@stanford.edu>
 
 	* Makefile.am (libgcj_la_OBJECTS): Remove libsupc++convenience.la.
 	* Makefile.in: Regenerate (by hand).
