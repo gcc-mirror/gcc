@@ -111,7 +111,6 @@ static void new_pending_directive	PARAMS ((struct cpp_pending *,
 						 cl_directive_handler));
 #ifdef HOST_EBCDIC
 static int opt_comp			PARAMS ((const void *, const void *));
-static void sort_options		PARAMS ((void));
 #endif
 static int parse_option			PARAMS ((const char *));
 
@@ -402,16 +401,24 @@ merge_include_chains (pfile)
   CPP_OPTION (pfile, bracket_include) = brack;
 }
 
+void
+cpp_init (void)
+{
+#ifdef HOST_EBCDIC
+  /* For non-ASCII hosts, the array needs to be sorted at runtime.  */
+  qsort (cl_options, N_OPTS, sizeof (struct cl_option), opt_comp);
+#endif
+
+  /* Set up the IStable.  This doesn't do anything if we were compiled
+     with a compiler that supports C99 designated initializers.  */
+  init_IStable ();
+}
 
 /* Initialize a cpp_reader structure. */
 void
 cpp_reader_init (pfile)
      cpp_reader *pfile;
 {
-#ifdef HOST_EBCDIC
-  sort_options ();
-#endif
-
   memset ((char *) pfile, 0, sizeof (cpp_reader));
 
   CPP_OPTION (pfile, dollars_in_ident) = 1;
@@ -592,7 +599,9 @@ initialize_builtins (pfile)
 	      str = xmalloc (b->len + strlen (val) + 2);
 	      sprintf(str, "%s=%s", b->name, val);
 	    }
+
 	  cpp_define (pfile, str);
+	  free (str);
 	}
       else
 	{
@@ -805,10 +814,6 @@ cpp_start_read (pfile, print, fname)
     || CPP_OPTION (pfile, debug_output)
     || CPP_OPTION (pfile, dump_macros) == dump_definitions
     || CPP_OPTION (pfile, dump_macros) == dump_only;
-
-  /* Set up the IStable.  This doesn't do anything if we were compiled
-     with a compiler that supports C99 designated initializers.  */
-  init_IStable ();
 
   /* Set up the tables used by read_and_prescan.  */
   _cpp_init_input_buffer (pfile);
@@ -1073,22 +1078,6 @@ static const struct cl_option cl_options[] =
 };
 #undef DEF_OPT
 #undef COMMAND_LINE_OPTIONS
-
-#ifdef HOST_EBCDIC
-static void
-sort_options (void)
-{
-  static int opts_sorted = 0;
-
-  if (!opts_sorted)
-    {
-      opts_sorted = 1;
-      /* For non-ASCII hosts, the array needs to be sorted at runtime */
-      qsort (cl_options, N_OPTS, sizeof (struct cl_option), opt_comp);
-    }
-}
-#endif
-
 
 /* Perform a binary search to find which, if any, option the given
    command-line matches.  Returns its index in the option array,

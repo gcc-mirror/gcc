@@ -71,6 +71,7 @@ main (argc, argv)
   (void) bindtextdomain (PACKAGE, localedir);
   (void) textdomain (PACKAGE);
 
+  cpp_init ();
   cpp_reader_init (pfile);
   
   argi += cpp_handle_options (pfile, argc - argi , argv + argi);

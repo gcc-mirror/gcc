@@ -637,6 +637,7 @@ struct cpp_hashnode
   const unsigned char name[1];		/* name[length] */
 };
 
+extern void cpp_init PARAMS ((void));
 extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
 extern int cpp_handle_option PARAMS ((cpp_reader *, int, char **));
 extern void cpp_reader_init PARAMS ((cpp_reader *));
