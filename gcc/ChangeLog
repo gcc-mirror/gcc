@@ -1,5 +1,17 @@
 2004-08-24  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (indirect_jump): Use force_reg.  Adjust names
+	of internal patterns.
+	(indirect_jump[sd]i): Renamed from indirect_jump_internal[12].
+	Redefine using :P.
+	(tablejump): Use expand_binop to calculate address.  Adjust names
+	of internal patterns.
+	(tablejump[sd]i): Renamed from tablejump_internal[12].
+	Redefine using :P.
+	(tablejump_mips16[12]): Delete.
+
+2004-08-24  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (*seq_[sd]i, *seq_[sd]i_mips16, *sne_[sd]i)
 	(*sgt_[sd]i, *sgt_[sd]i_mips16, *sge_[sd]i, *slt_[sd]i)
 	(*slt_[sd]i_mips16, *sle_[sd]i, *sle_[sd]i_mips16, *sgtu_[sd]i)
