@@ -1,3 +1,9 @@
+2004-10-16  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR rtl-optimization/17723
+	* cfgcleanup.c (merge_memattrs): Handle case when
+	MEM_SIZE == NULL_RTX.
+
 2004-10-15  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* toplev.c (dump_file_name): Change type to be const.

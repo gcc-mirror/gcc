@@ -934,6 +934,8 @@ merge_memattrs (rtx x, rtx y)
 	MEM_ATTRS (x) = 0;
       else 
 	{
+	  rtx mem_size;
+
 	  if (MEM_ALIAS_SET (x) != MEM_ALIAS_SET (y))
 	    {
 	      set_mem_alias_set (x, 0);
@@ -952,10 +954,16 @@ merge_memattrs (rtx x, rtx y)
 	      set_mem_offset (x, 0);
 	      set_mem_offset (y, 0);
 	    }
-	  
-	  set_mem_size (x, GEN_INT (MAX (INTVAL (MEM_SIZE (x)),
-					 INTVAL (MEM_SIZE (y)))));
-	  set_mem_size (y, MEM_SIZE (x));
+	 
+	  if (!MEM_SIZE (x))
+	    mem_size = NULL_RTX;
+	  else if (!MEM_SIZE (y))
+	    mem_size = NULL_RTX;
+	  else
+	    mem_size = GEN_INT (MAX (INTVAL (MEM_SIZE (x)),
+				     INTVAL (MEM_SIZE (y))));
+	  set_mem_size (x, mem_size);
+	  set_mem_size (y, mem_size);
 
 	  set_mem_align (x, MIN (MEM_ALIGN (x), MEM_ALIGN (y)));
 	  set_mem_align (y, MEM_ALIGN (x));
