@@ -1204,6 +1204,16 @@ output_prolog (file, size)
       a29k_debug_reg_map[R_AR (i)] = R_LR (a29k_regstack_size + i + 2);
     }
 
+  /* If using kernel register map, swap numbers for kernel and user
+     registers.  */
+  if (TARGET_KERNEL_REGISTERS)
+    for (i = 0; i < 32; i++)
+      {
+	int tem = a29k_debug_reg_map[i];
+	a29k_debug_reg_map[i] = a29k_debug_reg_map[R_KR (i)];
+	a29k_debug_reg_map[R_KR (i)] = tem;
+      }
+
   /* Compute memory stack size.  Add in number of bytes that the we should
      push and pretend the caller did and the size of outgoing arguments.
      Then round to a doubleword boundary.  */
