@@ -1,3 +1,8 @@
+2005-03-26  Steven G. Kargl  <kargls@comcast.net>
+
+	* gfortran.dg/underflow.f90:  New test.
+	* gfortran.dg/g77/20030326-1.f: Fix illegal code.
+
 2005-03-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/nonnull-3.c: Also test __builtin_strndup.
