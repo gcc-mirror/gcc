@@ -1422,7 +1422,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	arg_vals[i] = copy_to_mode_reg (GET_MODE (loc), arg_vals[i]);
 
       if (arg_vals[i] != 0 && GET_CODE (arg_vals[i]) == REG
-	  && TREE_CODE (TREE_TYPE (formal)) == POINTER_TYPE)
+	  && POINTER_TYPE_P (TREE_TYPE (formal)))
 	mark_reg_pointer (arg_vals[i],
 			  (TYPE_ALIGN (TREE_TYPE (TREE_TYPE (formal)))
 			   / BITS_PER_UNIT));
