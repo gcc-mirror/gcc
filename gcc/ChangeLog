@@ -1,3 +1,7 @@
+2000-10-17  Michael Chastain  <chastain@redhat.com>
+
+	* config/i386/i386-aout.h: define INT_ASM_OP.
+
 Tue Oct 17 20:11:08 2000  Alan Modra <alan@linuxcare.com.au>
 
 	* pa.c (print_operand): Handle case 'c' for .vtable_inherit
