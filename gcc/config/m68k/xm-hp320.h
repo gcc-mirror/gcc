@@ -8,6 +8,3 @@
 #ifndef __GNUC__
 #define USE_C_ALLOCA
 #endif
-
-/* Don't try to use sys_siglist.  */
-#define NO_SYS_SIGLIST

@@ -40,7 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #define OBJECT_FORMAT_COFF
-#define NO_SYS_SIGLIST
 
 #ifdef CPP_PREDEFINES
 #undef CPP_PREDEFINES

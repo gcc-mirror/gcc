@@ -41,9 +41,6 @@ Boston, MA 02111-1307, USA.  */
    tm.h is a symbolic link to the actual target specific file.   */
 #include "tm.h"
 
-/* Don't try to use sys_siglist.  */
-#define NO_SYS_SIGLIST
-
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 512
 #endif

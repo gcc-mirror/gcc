@@ -3773,24 +3773,6 @@ characters.
 @item POSIX
 Define this if your system is POSIX.1 compliant.
 
-@findex NO_SYS_SIGLIST
-@item NO_SYS_SIGLIST
-Define this if your system @emph{does not} provide the variable
-@code{sys_siglist}.
-
-@vindex sys_siglist
-Some systems do provide this variable, but with a different name such
-as @code{_sys_siglist}.  On these systems, you can define
-@code{sys_siglist} as a macro which expands into the name actually
-provided.
-
-Autoconf normally defines @code{SYS_SIGLIST_DECLARED} when it finds a
-declaration of @code{sys_siglist} in the system header files.
-However, when you define @code{sys_siglist} to a different name
-autoconf will not automatically define @code{SYS_SIGLIST_DECLARED}.
-Therefore, if you define @code{sys_siglist}, you should also define
-@code{SYS_SIGLIST_DECLARED}.
-
 @findex USE_PROTOTYPES
 @item USE_PROTOTYPES
 Define this to be 1 if you know that the host compiler supports

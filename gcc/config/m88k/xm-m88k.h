@@ -43,7 +43,6 @@ Boston, MA 02111-1307, USA.  */
 #ifndef USG
 #define USG
 #endif
-#define NO_SYS_SIGLIST
 #endif
 
 /* If not compiled with GNU C, use the C alloca */

@@ -41,7 +41,6 @@ Boston, MA 02111-1307, USA.  */
 #define HAVE_VPRINTF 1
 #endif
 
-#define NO_SYS_SIGLIST 1
 #define kill(a,b) raise(b)
 
 #define OBJECT_SUFFIX ".obj"
