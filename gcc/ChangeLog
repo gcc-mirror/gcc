@@ -1,3 +1,8 @@
+2004-03-12  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/winnt.c (i386_pe_strip_name_encoding_full): Strip
+	leading '@' on fastcall symbols before stripping suffix.
+
 2004-03-12  Roger Sayle  <roger@eyesopen.com>
 
 	* combine.c (unmentioned_reg_p): New function to check whether an
