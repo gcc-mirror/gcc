@@ -6678,15 +6678,42 @@ ffecom_finish_symbol_transform_ (ffesymbol s)
      VAR_DECLs for COMMON variables when we transform them for real
      use, and therefore we do all the VAR_DECL creating here.  */
 
-  if ((ffesymbol_hook (s).decl_tree == NULL_TREE)
-      && ((ffesymbol_kind (s) != FFEINFO_kindNONE)
-	  || ((ffesymbol_where (s) != FFEINFO_whereNONE)
-	      && (ffesymbol_where (s) != FFEINFO_whereINTRINSIC)))
-      && (ffesymbol_where (s) != FFEINFO_whereDUMMY))
-    /* Not transformed, and not CHARACTER*(*), and not a dummy
-       argument, which can happen only if the entry point names
-       it "rides in on" are all invalidated for other reasons.  */
-    s = ffecom_sym_transform_ (s);
+  if (ffesymbol_hook (s).decl_tree == NULL_TREE)
+    {
+      if (ffesymbol_where (s) == FFEINFO_whereCONSTANT
+	  && (ffesymbol_kind (s) == FFEINFO_kindFUNCTION
+	      || ffesymbol_kind (s) == FFEINFO_kindSUBROUTINE))
+	{
+	  /* An unreferenced statement function.  If this refers to
+	     an undeclared array, it'll look like a reference to
+	     an external function that might not exist.  Even if it
+	     does refer to an non-existent function, it seems silly
+	     to force a linker error when the function won't actually
+	     be called.  But before the 1998-05-15 change to egcs/gcc
+	     toplev.c by Mark Mitchell, to fix other problems, this
+	     didn't actually happen, since gcc would defer nested
+	     functions to be compiled later only if needed.  With that
+	     change, it makes sense to simply avoid telling the back
+	     end about the statement (nested) function at all.  But
+	     if -Wunused is specified, might as well warn about it.  */
+
+	  if (warn_unused)
+	    {
+	      ffebad_start (FFEBAD_SFUNC_UNUSED);
+	      ffebad_string (ffesymbol_text (s));
+	      ffebad_here (0, ffesymbol_where_line (s), ffesymbol_where_column (s));
+	      ffebad_finish ();
+	    }
+	}
+      else if (ffesymbol_kind (s) != FFEINFO_kindNONE
+	       || (ffesymbol_where (s) != FFEINFO_whereNONE
+		   && ffesymbol_where (s) != FFEINFO_whereINTRINSIC
+		   && ffesymbol_where (s) != FFEINFO_whereDUMMY))
+	/* Not transformed, and not CHARACTER*(*), and not a dummy
+	   argument, which can happen only if the entry point names
+	   it "rides in on" are all invalidated for other reasons.  */
+	s = ffecom_sym_transform_ (s);
+    }
 
   if ((ffesymbol_where (s) == FFEINFO_whereCOMMON)
       && (ffesymbol_hook (s).decl_tree != error_mark_node))
