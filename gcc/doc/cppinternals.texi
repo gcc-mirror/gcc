@@ -41,13 +41,13 @@ into another language, under the above conditions for modified versions.
 @titlepage
 @c @finalout
 @title Cpplib Internals
-@subtitle Last revised December 2001
+@subtitle Last revised January 2002
 @subtitle for GCC version 3.1
 @author Neil Booth
 @page
 @vskip 0pt plus 1filll
 @c man begin COPYRIGHT
-Copyright @copyright{} 2000, 2001
+Copyright @copyright{} 2000, 2001, 2002
 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
