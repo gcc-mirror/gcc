@@ -1,3 +1,9 @@
+2004-09-12  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* lib/g77-dg.exp: Remove unused file.
+	* lib/mike-g77.exp: Ditto.
+	* lib/g77.exp: Ditto.
+
 2004-09-12  Richard Henderson  <rth@redhat.com>
 
 	* g++.old-deja/g++.other/sizeof3.C: Fix abort declaration.
