@@ -230,11 +230,6 @@ override_options ()
 	  alpha_cpu = PROCESSOR_EV6;
 	  target_flags |= MASK_BWX | MASK_MAX | MASK_FIX;
 	  target_flags &= ~ (MASK_CIX);
-
-	  /* Except for EV6 pass 1 (not released), we always have 
-	     precise arithmetic traps.  Which means we can do 
-	     software completion without minding trap shadows.  */
-	  alpha_tp = ALPHA_TP_PROG;
 	}
       else
 	error ("bad value `%s' for -mcpu switch", alpha_cpu_string);
