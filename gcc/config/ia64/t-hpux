@@ -1,0 +1,6 @@
+# HP-UX gets an undefined main when building LIBGCC1_TEST because the
+# linkspec has "-u main" and we want that for linking but it makes
+# LIBGCC1_TEST fail because it uses -nostdlib -nostartup and main is
+# not defined in the test program.
+
+LIBGCC1_TEST =
