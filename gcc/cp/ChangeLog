@@ -1,3 +1,10 @@
+1998-08-01  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (init_init_processing): Remove BI* handling.
+	(build_builtin_call): Remove.
+	(build_builtin_delete_call): New fn.
+	(build_delete): Use it.
+	
 1998-07-31  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (PROCESSING_REAL_TEMPLATE_DECL_P): New macro.

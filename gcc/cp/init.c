@@ -55,16 +55,13 @@ static tree build_vec_delete_1 PROTO((tree, tree, tree, tree, tree,
 				      int));
 static void perform_member_init PROTO((tree, tree, tree, int));
 static void sort_base_init PROTO((tree, tree *, tree *));
-static tree build_builtin_call PROTO((tree, tree, tree));
+static tree build_builtin_delete_call PROTO((tree));
 static tree build_array_eh_cleanup PROTO((tree, tree, tree));
 static int member_init_ok_or_else PROTO((tree, tree, char *));
 static void expand_virtual_init PROTO((tree, tree));
 static tree sort_member_init PROTO((tree));
 static tree build_partial_cleanup_for PROTO((tree));
 static tree initializing_context PROTO((tree));
-
-/* Cache _builtin_new and _builtin_delete exprs.  */
-static tree BIN, BID, BIVN, BIVD;
 
 /* Cache the identifier nodes for the magic field of a new cookie.  */
 static tree nc_nelts_field_id;
@@ -80,15 +77,6 @@ void init_init_processing ()
 {
   tree fields[1];
 
-  /* Define implicit `operator new' and `operator delete' functions.  */
-  BIN = default_conversion (get_first_fn (IDENTIFIER_GLOBAL_VALUE (ansi_opname[(int) NEW_EXPR])));
-  TREE_USED (TREE_OPERAND (BIN, 0)) = 0;
-  BID = default_conversion (get_first_fn (IDENTIFIER_GLOBAL_VALUE (ansi_opname[(int) DELETE_EXPR])));
-  TREE_USED (TREE_OPERAND (BID, 0)) = 0;
-  BIVN = default_conversion (get_first_fn (IDENTIFIER_GLOBAL_VALUE (ansi_opname[(int) VEC_NEW_EXPR])));
-  TREE_USED (TREE_OPERAND (BIVN, 0)) = 0;
-  BIVD = default_conversion (get_first_fn (IDENTIFIER_GLOBAL_VALUE (ansi_opname[(int) VEC_DELETE_EXPR])));
-  TREE_USED (TREE_OPERAND (BIVD, 0)) = 0;
   minus_one = build_int_2 (-1, -1);
 
   /* Define the structure that holds header information for
@@ -1929,20 +1917,16 @@ decl_constant_value (decl)
 
 /* Common subroutines of build_new and build_vec_delete.  */
 
-/* Common interface for calling "builtin" functions that are not
-   really builtin.  */
+/* Call the global __builtin_delete to delete ADDR.  */
 
 static tree
-build_builtin_call (type, node, arglist)
-     tree type;
-     tree node;
-     tree arglist;
+build_builtin_delete_call (addr)
+     tree addr;
 {
-  tree rval = build (CALL_EXPR, type, node, arglist, NULL_TREE);
-  TREE_SIDE_EFFECTS (rval) = 1;
-  assemble_external (TREE_OPERAND (node, 0));
-  TREE_USED (TREE_OPERAND (node, 0)) = 1;
-  return rval;
+  tree BID = get_first_fn
+    (IDENTIFIER_GLOBAL_VALUE (ansi_opname[(int) DELETE_EXPR]));
+
+  return build_call (BID, void_type_node, build_expr_list (NULL_TREE, addr));
 }
 
 /* Generate a C++ "new" expression. DECL is either a TREE_LIST
@@ -2983,8 +2967,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       if (! IS_AGGR_TYPE (type))
 	{
 	  /* Call the builtin operator delete.  */
-	  return build_builtin_call (void_type_node, BID,
-				     build_expr_list (NULL_TREE, addr));
+	  return build_builtin_delete_call (addr);
 	}
       if (TREE_SIDE_EFFECTS (addr))
 	addr = save_expr (addr);
@@ -3050,8 +3033,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	{
 	  tree cond = fold (build (BIT_AND_EXPR, integer_type_node,
 				   auto_delete, integer_one_node));
-	  tree call = build_builtin_call
-	    (void_type_node, BID, build_expr_list (NULL_TREE, addr));
+	  tree call = build_builtin_delete_call (addr);
 
 	  cond = fold (build (COND_EXPR, void_type_node, cond,
 			      call, void_zero_node));
@@ -3103,8 +3085,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	{
 	  cond = build (COND_EXPR, void_type_node,
 			build (BIT_AND_EXPR, integer_type_node, auto_delete, integer_one_node),
-			build_builtin_call (void_type_node, BID,
-					    build_expr_list (NULL_TREE, addr)),
+			build_builtin_delete_call (addr),
 			void_zero_node);
 	}
       else
