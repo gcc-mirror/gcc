@@ -481,7 +481,6 @@ eligible_for_epilogue_delay (trial, slot)
      rtx trial;
      int slot;
 {
-  static char *this_function_name;
   rtx pat, src;
 
   if (slot >= 1)
@@ -1432,8 +1431,6 @@ char *
 output_fp_move_double (operands)
      rtx *operands;
 {
-  rtx addr;
-
   if (FP_REG_P (operands[0]))
     {
       if (FP_REG_P (operands[1]))
@@ -1472,7 +1469,6 @@ output_fp_move_quad (operands)
 {
   register rtx op0 = operands[0];
   register rtx op1 = operands[1];
-  register rtx addr;
 
   if (FP_REG_P (op0))
     {
@@ -2053,9 +2049,6 @@ restore_regs (file, low, high, base, offset, n_fregs)
 /* Number of live floating point registers needed to be saved.  */
 static int num_fregs;
 
-/* Nonzero if any floating point register was ever used.  */
-static int fregs_ever_live;
-
 int
 compute_frame_size (size, leaf_function)
      int size;
@@ -2202,7 +2195,6 @@ output_function_epilogue (file, size, leaf_function)
      int size;
      int leaf_function;
 {
-  int n_fregs, i;
   char *ret;
 
   if (leaf_label)
@@ -3350,7 +3342,6 @@ sparc_frw_output_function_prologue (file, size, ignored)
      int size;
 {
   extern char call_used_regs[];
-  int regno;
   int tsize;
   char *sp_str = reg_names[STACK_POINTER_REGNUM];
   frame_base_name
@@ -3413,7 +3404,6 @@ sparc_frw_output_function_epilogue (file, size, ignored1, ignored2)
   char *t1_str = "%g1";
   rtx epilogue_delay = current_function_epilogue_delay_list;
   int noepilogue = FALSE;
-  int load_nop = FALSE;
   int load_only_r15;
 
   /* The epilogue does not depend on any registers, but the stack
