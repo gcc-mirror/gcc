@@ -1105,6 +1105,10 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 #endif
     }
 
+  /* Use our current register alignment and pointer flags.  */
+  map->regno_pointer_flag = regno_pointer_flag;
+  map->regno_pointer_align = regno_pointer_align;
+
   /* If the loop is being partially unrolled, and the iteration variables
      are being split, and are being renamed for the split, then must fix up
      the compare/jump instruction at the end of the loop to refer to the new
