@@ -27,6 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ENDFILE_SPEC
 #undef LINK_SPEC
 #undef STARTFILE_SPEC
+#define STARTFILE_SPEC "%{!mno-crt0:%{!shared:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}}}"
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
@@ -58,6 +59,7 @@ extern int target_flags;
    { "am33", 		0x2,  N_("Target the AM33 processor")},	\
    { "am33", 		-(0x1), ""},\
    { "no-am33", 	-0x2, ""},	\
+   { "no-crt0",		0,    N_("No default crt0.o") }, \
    { "", TARGET_DEFAULT, NULL}}
 
 #ifndef TARGET_DEFAULT
