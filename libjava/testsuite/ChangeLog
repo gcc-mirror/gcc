@@ -1,3 +1,8 @@
+1999-05-24  Anthony Green  <green@cygnus.com>
+
+	* libjava.lang/Shazam.java: New file.
+	libjava.lang/Shazam.out: New file.
+
 1999-05-12  Andrew Haley  <aph@cygnus.com>
 
 	* libjava.lang/Invoke_2.java: New file.
