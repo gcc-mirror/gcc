@@ -3703,6 +3703,7 @@ extern void mark_decl_referenced (tree);
 extern void notice_global_symbol (tree);
 extern void set_user_assembler_name (tree, const char *);
 extern void process_pending_assemble_externals (void);
+extern void process_pending_assemble_output_defs (void);
 
 /* In stmt.c */
 extern void expand_computed_goto (tree);
