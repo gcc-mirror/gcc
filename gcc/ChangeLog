@@ -1,3 +1,10 @@
+2001-12-22  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* config.gcc (extra_headers): Move settings to math-68881.h and
+	ppc-asm.h to common code for CPU types.  Use math-68881.h on all
+	m68k targets.
+	(header_files): Remove unused setting.
+
 2001-12-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* elxsi.c: Include "hard-reg-set.h" and/or don't declare
