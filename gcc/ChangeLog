@@ -1,3 +1,10 @@
+Sat Dec  4 14:13:38 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* regmove.c (copy_src_to_dest): Remove loop_depth parameter.
+	(optimize_reg_copy_1): Remove REG_N_REFS updating code.
+	(optimize_reg_copy_2, copy_src_to_dest, fixup_match_2): Likewise.
+	(regmove_optimize, fixup_match_1): Likewise.
+
 1999-12-05  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* flow.c (flow_loops_dump): Add missing argument when calling
