@@ -645,22 +645,6 @@ gcjvers="`$GCJ -v 2>&1 | sed -n 's/^.*version \([^ ]*\).*$/\1/p'`"
 changequote([,])
 AC_DEFINE_UNQUOTED(GCJVERSION, "$gcjvers")
 
-# See if gcj supports -fuse-divide-subroutine.  gcc 2.95 does not, and
-# we want to continue to support that version.
-AC_MSG_CHECKING([whether gcj supports -fuse-divide-subroutine])
-cat > conftest.java << 'END'
-public class conftest { }
-END
-use_fuse=yes
-$GCJ -classpath $srcdir -fuse-divide-subroutine -fsyntax-only \
-   conftest.java > /dev/null 2>&1 \
-   || use_fuse=no
-rm -f conftest.java
-if test "$use_fuse" = no; then
-   DIVIDESPEC=
-fi
-AC_MSG_RESULT($use_fuse)
-
 AC_SUBST(AM_RUNTESTFLAGS)
 
 dnl Work around a g++ bug.  Reported to gcc-bugs@gcc.gnu.org on Jan 22, 2000.
