@@ -46,7 +46,7 @@
 @end ifset
 @ifset familyF77
 * ALog Intrinsic::      Natural logarithm (archaic).
-* ALog10 Intrinsic::    Natural logarithm (archaic).
+* ALog10 Intrinsic::    Common logarithm (archaic).
 * AMax0 Intrinsic::     Maximum value (archaic).
 * AMax1 Intrinsic::     Maximum value (archaic).
 * AMin0 Intrinsic::     Minimum value (archaic).
@@ -240,7 +240,7 @@
 @ifset familyF77
 * DInt Intrinsic::      Truncate to whole number (archaic).
 * DLog Intrinsic::      Natural logarithm (archaic).
-* DLog10 Intrinsic::    Natural logarithm (archaic).
+* DLog10 Intrinsic::    Common logarithm (archaic).
 * DMax1 Intrinsic::     Maximum value (archaic).
 * DMin1 Intrinsic::     Minimum value (archaic).
 * DMod Intrinsic::      Remainder (archaic).
@@ -274,10 +274,10 @@
 * DTanH Intrinsic::     Hyperbolic tangent (archaic).
 @end ifset
 @ifset familyF2U
-* Dtime Intrinsic (subroutine):: Get elapsed time since last time.
+* DTime Intrinsic (subroutine):: Get elapsed time since last time.
 @end ifset
 @ifset familyBADU77
-* Dtime Intrinsic (function):: Get elapsed time since last time.
+* DTime Intrinsic (function):: Get elapsed time since last time.
 @end ifset
 @ifset familyF90
 * EOShift Intrinsic::   (Reserved for future use.)
@@ -297,8 +297,8 @@
 * Exponent Intrinsic::  (Reserved for future use.)
 @end ifset
 @ifset familyF2U
-* Fdate Intrinsic (subroutine):: Get current time as Day Mon dd hh:mm:ss yyyy.
-* Fdate Intrinsic (function):: Get current time as Day Mon dd hh:mm:ss yyyy.
+* FDate Intrinsic (subroutine):: Get current time as Day Mon dd hh:mm:ss yyyy.
+* FDate Intrinsic (function):: Get current time as Day Mon dd hh:mm:ss yyyy.
 * FGet Intrinsic (subroutine):: Read a character from unit 5 stream-wise.
 @end ifset
 @ifset familyBADU77
@@ -530,7 +530,7 @@
 @end ifset
 @ifset familyF77
 * Log Intrinsic::       Natural logarithm.
-* Log10 Intrinsic::     Natural logarithm.
+* Log10 Intrinsic::     Common logarithm.
 @end ifset
 @ifset familyF90
 * Logical Intrinsic::   (Reserved for future use.)
@@ -2626,6 +2626,16 @@ Returns in @var{Seconds} the current value of the system time.
 This implementation of the Fortran 95 intrinsic is just an alias for
 @code{second} @xref{Second Intrinsic (subroutine)}.
 
+@cindex wraparound, timings
+@cindex limits, timings
+On some systems, the underlying timings are represented
+using types with sufficiently small limits that overflows
+(wraparounds) are possible, such as 32-bit types.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
+
 @node CShift Intrinsic
 @subsubsection CShift Intrinsic
 @cindex CShift intrinsic
@@ -2966,7 +2976,11 @@ representing the numeric day of the month @var{dd}, a three-character
 abbreviation of the month name @var{mmm} and the last two digits of
 the year @var{yy}, e.g.@: @samp{25-Nov-96}.
 
+@cindex Y2K compliance
+@cindex Year 2000 compliance
 This intrinsic is not recommended, due to the year 2000 approaching.
+Therefore, programs making use of this intrinsic
+might not be Year 2000 (Y2K) compliant.
 @xref{CTime Intrinsic (subroutine)}, for information on obtaining more digits
 for the current (or any) date.
 
@@ -3015,6 +3029,17 @@ The year, month of the year, day of the month, time difference in
 minutes from UTC, hour of the day, minutes of the hour and milliseconds
 of the second in successive values of the array.
 @end table
+
+@cindex Y10K compliance
+@cindex Year 10000 compliance
+@cindex wraparound, Y10K
+@cindex limits, Y10K
+Programs making use of this intrinsic
+might not be Year 10000 (Y10K) compliant.
+For example, the date might appear,
+to such programs, to wrap around
+(change from a larger value to a smaller one)
+as of the Year 10000.
 
 On systems where a millisecond timer isn't available, the millisecond
 value is returned as zero.
@@ -4087,14 +4112,14 @@ to one type for @var{X}.
 
 @end ifset
 @ifset familyF2U
-@node Dtime Intrinsic (subroutine)
-@subsubsection Dtime Intrinsic (subroutine)
-@cindex Dtime intrinsic
-@cindex intrinsics, Dtime
+@node DTime Intrinsic (subroutine)
+@subsubsection DTime Intrinsic (subroutine)
+@cindex DTime intrinsic
+@cindex intrinsics, DTime
 
 @noindent
 @example
-CALL Dtime(@var{Result}, @var{TArray})
+CALL DTime(@var{Result}, @var{TArray})
 @end example
 
 @noindent
@@ -4119,26 +4144,36 @@ The value of @var{Result} is equal to @samp{@var{TArray}(1) + @var{TArray}(2)}.
 Subsequent invocations of @samp{DTIME()} set values based on accumulations
 since the previous invocation.
 
+@cindex wraparound, timings
+@cindex limits, timings
+On some systems, the underlying timings are represented
+using types with sufficiently small limits that overflows
+(wraparounds) are possible, such as 32-bit types.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
+
 Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine.
 
 For information on other intrinsics with the same name:
-@xref{Dtime Intrinsic (function)}.
+@xref{DTime Intrinsic (function)}.
 
 @end ifset
 @ifset familyBADU77
-@node Dtime Intrinsic (function)
-@subsubsection Dtime Intrinsic (function)
-@cindex Dtime intrinsic
-@cindex intrinsics, Dtime
+@node DTime Intrinsic (function)
+@subsubsection DTime Intrinsic (function)
+@cindex DTime intrinsic
+@cindex intrinsics, DTime
 
 @noindent
 @example
-Dtime(@var{TArray})
+DTime(@var{TArray})
 @end example
 
 @noindent
-Dtime: @code{REAL(KIND=1)} function.
+DTime: @code{REAL(KIND=1)} function.
 
 @noindent
 @var{TArray}: @code{REAL(KIND=1)}; DIMENSION(2); INTENT(OUT).
@@ -4159,11 +4194,21 @@ The functions' value is equal to @samp{@var{TArray}(1) + @var{TArray}(2)}.
 Subsequent invocations of @samp{DTIME()} return values accumulated since the
 previous invocation.
 
+@cindex wraparound, timings
+@cindex limits, timings
+On some systems, the underlying timings are represented
+using types with sufficiently small limits that overflows
+(wraparounds) are possible, such as 32-bit types.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
+
 Due to the side effects performed by this intrinsic, the function
 form is not recommended.
 
 For information on other intrinsics with the same name:
-@xref{Dtime Intrinsic (subroutine)}.
+@xref{DTime Intrinsic (subroutine)}.
 
 @end ifset
 @ifset familyF90
@@ -4270,6 +4315,16 @@ and the user and system components of this in @samp{@var{TArray}(1)}
 and @samp{@var{TArray}(2)} respectively.
 The value of @var{Result} is equal to @samp{@var{TArray}(1) + @var{TArray}(2)}.
 
+@cindex wraparound, timings
+@cindex limits, timings
+On some systems, the underlying timings are represented
+using types with sufficiently small limits that overflows
+(wraparounds) are possible, such as 32-bit types.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
+
 Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine.
 
@@ -4304,6 +4359,16 @@ as the function value,
 and the user and system components of this in @samp{@var{TArray}(1)}
 and @samp{@var{TArray}(2)} respectively.
 The functions' value is equal to @samp{@var{TArray}(1) + @var{TArray}(2)}.
+
+@cindex wraparound, timings
+@cindex limits, timings
+On some systems, the underlying timings are represented
+using types with sufficiently small limits that overflows
+(wraparounds) are possible, such as 32-bit types.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
 
 For information on other intrinsics with the same name:
 @xref{ETime Intrinsic (subroutine)}.
@@ -4375,14 +4440,14 @@ external procedure.
 
 @end ifset
 @ifset familyF2U
-@node Fdate Intrinsic (subroutine)
-@subsubsection Fdate Intrinsic (subroutine)
-@cindex Fdate intrinsic
-@cindex intrinsics, Fdate
+@node FDate Intrinsic (subroutine)
+@subsubsection FDate Intrinsic (subroutine)
+@cindex FDate intrinsic
+@cindex intrinsics, FDate
 
 @noindent
 @example
-CALL Fdate(@var{Date})
+CALL FDate(@var{Date})
 @end example
 
 @noindent
@@ -4403,26 +4468,37 @@ Equivalent to:
 CALL CTIME(@var{Date}, TIME8())
 @end example
 
+@cindex Y10K compliance
+@cindex Year 10000 compliance
+@cindex wraparound, Y10K
+@cindex limits, Y10K
+Programs making use of this intrinsic
+might not be Year 10000 (Y10K) compliant.
+For example, the date might appear,
+to such programs, to wrap around
+(change from a larger value to a smaller one)
+as of the Year 10000.
+
 @xref{CTime Intrinsic (subroutine)}.
 
 Some non-GNU implementations of Fortran provide this intrinsic as
 only a function, not as a subroutine.
 
 For information on other intrinsics with the same name:
-@xref{Fdate Intrinsic (function)}.
+@xref{FDate Intrinsic (function)}.
 
-@node Fdate Intrinsic (function)
-@subsubsection Fdate Intrinsic (function)
-@cindex Fdate intrinsic
-@cindex intrinsics, Fdate
+@node FDate Intrinsic (function)
+@subsubsection FDate Intrinsic (function)
+@cindex FDate intrinsic
+@cindex intrinsics, FDate
 
 @noindent
 @example
-Fdate()
+FDate()
 @end example
 
 @noindent
-Fdate: @code{CHARACTER*(*)} function.
+FDate: @code{CHARACTER*(*)} function.
 
 @noindent
 Intrinsic groups: @code{unix}.
@@ -4438,10 +4514,21 @@ Equivalent to:
 CTIME(TIME8())
 @end example
 
+@cindex Y10K compliance
+@cindex Year 10000 compliance
+@cindex wraparound, Y10K
+@cindex limits, Y10K
+Programs making use of this intrinsic
+might not be Year 10000 (Y10K) compliant.
+For example, the date might appear,
+to such programs, to wrap around
+(change from a larger value to a smaller one)
+as of the Year 10000.
+
 @xref{CTime Intrinsic (function)}.
 
 For information on other intrinsics with the same name:
-@xref{Fdate Intrinsic (subroutine)}.
+@xref{FDate Intrinsic (subroutine)}.
 
 @node FGet Intrinsic (subroutine)
 @subsubsection FGet Intrinsic (subroutine)
@@ -5808,6 +5895,17 @@ of day, month (in the range 1--12), and year in elements 1, 2, and 3,
 respectively.
 The year has four significant digits.
 
+@cindex Y10K compliance
+@cindex Year 10000 compliance
+@cindex wraparound, Y10K
+@cindex limits, Y10K
+Programs making use of this intrinsic
+might not be Year 10000 (Y10K) compliant.
+For example, the date might appear,
+to such programs, to wrap around
+(change from a larger value to a smaller one)
+as of the Year 10000.
+
 For information on other intrinsics with the same name:
 @xref{IDate Intrinsic (VXT)}.
 
@@ -5843,7 +5941,20 @@ The month (in the range 1--12) is returned in @var{M},
 the day (in the range 1--7) in @var{D},
 and the year in @var{Y} (in the range 0--99).
 
+@cindex Y2K compliance
+@cindex Year 2000 compliance
+@cindex wraparound, Y2K
+@cindex limits, Y2K
 This intrinsic is not recommended, due to the year 2000 approaching.
+Therefore, programs making use of this intrinsic
+might not be Year 2000 (Y2K) compliant.
+For example, the date might appear,
+to such programs, to wrap around
+(change from a larger value to a smaller one)
+as of the Year 2000.
+
+@xref{IDate Intrinsic (UNIX)}, for information on obtaining more digits
+for the current date.
 
 For information on other intrinsics with the same name:
 @xref{IDate Intrinsic (UNIX)}.
@@ -7479,7 +7590,7 @@ be zero.
 
 @xref{Exp Intrinsic}, for the inverse of this function.
 
-@xref{Log10 Intrinsic}, for the base-10 logarithm function.
+@xref{Log10 Intrinsic}, for the `common' (base-10) logarithm function.
 
 @node Log10 Intrinsic
 @subsubsection Log10 Intrinsic
@@ -7503,9 +7614,8 @@ Intrinsic groups: (standard FORTRAN 77).
 @noindent
 Description:
 
-Returns the natural logarithm of @var{X}, which must
-be greater than zero or, if type @code{COMPLEX}, must not
-be zero.
+Returns the common logarithm (base 10) of @var{X}, which must
+be greater than zero or.
 
 The inverse of this function is @samp{10. ** LOG10(@var{X})}.
 
@@ -7992,9 +8102,16 @@ Description:
 Returns the number of clock ticks since the start of the process.
 Supported on systems with @code{clock(3)} (q.v.).
 
+@cindex wraparound, timings
+@cindex limits, timings
 This intrinsic is not fully portable, such as to systems
 with 32-bit @code{INTEGER} types but supporting times
 wider than 32 bits.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
+
 @xref{MClock8 Intrinsic}, for information on a
 similar intrinsic that might be portable to more
 GNU Fortran implementations, though to fewer
@@ -8024,6 +8141,19 @@ Description:
 
 Returns the number of clock ticks since the start of the process.
 Supported on systems with @code{clock(3)} (q.v.).
+
+@cindex wraparound, timings
+@cindex limits, timings
+@emph{Warning:} this intrinsic does not increase the range
+of the timing values over that returned by @code{clock(3)}.
+On a system with a 32-bit @code{clock(3)},
+@code{MCLOCK8} will return a 32-bit value,
+even though converted to an @samp{INTEGER(KIND=2)} value.
+That means overflows of the 32-bit value can still occur.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
 
 No Fortran implementations other than GNU Fortran are
 known to support this intrinsic at the time of this
@@ -9129,6 +9259,14 @@ Description:
 Returns the local time in seconds since midnight minus the value
 @var{T}.
 
+@cindex wraparound, timings
+@cindex limits, timings
+This values returned by this intrinsic
+become numerically less than previous values
+(they wrap around) during a single run of the
+compiler program, under normal circumstances
+(such as running through the midnight hour).
+
 @end ifset
 @ifset familyF2U
 @node Second Intrinsic (function)
@@ -9152,6 +9290,16 @@ Description:
 
 Returns the process's runtime in seconds---the same value as the
 UNIX function @code{etime} returns.
+
+@cindex wraparound, timings
+@cindex limits, timings
+On some systems, the underlying timings are represented
+using types with sufficiently small limits that overflows
+(wraparounds) are possible, such as 32-bit types.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
 
 For information on other intrinsics with the same name:
 @xref{Second Intrinsic (subroutine)}.
@@ -9177,6 +9325,16 @@ Description:
 
 Returns the process's runtime in seconds in @var{Seconds}---the same value
 as the UNIX function @code{etime} returns.
+
+@cindex wraparound, timings
+@cindex limits, timings
+On some systems, the underlying timings are represented
+using types with sufficiently small limits that overflows
+(wraparounds) are possible, such as 32-bit types.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
 
 This routine is known from Cray Fortran.  @xref{CPU_Time Intrinsic},
 for a standard equivalent.
@@ -10072,6 +10230,16 @@ isn't in general.
 in this implementation since it's just the maximum C @code{unsigned
 int} value.
 
+@cindex wraparound, timings
+@cindex limits, timings
+On some systems, the underlying timings are represented
+using types with sufficiently small limits that overflows
+(wraparounds) are possible, such as 32-bit types.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
+
 @end ifset
 @ifset familyF77
 @node Tan Intrinsic
@@ -10165,9 +10333,16 @@ Returns the current time encoded as an integer
 This value is suitable for passing to @code{CTIME},
 @code{GMTIME}, and @code{LTIME}.
 
+@cindex wraparound, timings
+@cindex limits, timings
 This intrinsic is not fully portable, such as to systems
 with 32-bit @code{INTEGER} types but supporting times
 wider than 32 bits.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
+
 @xref{Time8 Intrinsic}, for information on a
 similar intrinsic that might be portable to more
 GNU Fortran implementations, though to fewer
@@ -10200,7 +10375,18 @@ Description:
 Returns in @var{Time} a character representation of the current time as
 obtained from @code{ctime(3)}.
 
-@xref{Fdate Intrinsic (subroutine)} for an equivalent routine.
+@cindex Y10K compliance
+@cindex Year 10000 compliance
+@cindex wraparound, Y10K
+@cindex limits, Y10K
+Programs making use of this intrinsic
+might not be Year 10000 (Y10K) compliant.
+For example, the date might appear,
+to such programs, to wrap around
+(change from a larger value to a smaller one)
+as of the Year 10000.
+
+@xref{FDate Intrinsic (subroutine)} for an equivalent routine.
 
 For information on other intrinsics with the same name:
 @xref{Time Intrinsic (UNIX)}.
@@ -10230,6 +10416,19 @@ Returns the current time encoded as a long integer
 (in the manner of the UNIX function @code{time(3)}).
 This value is suitable for passing to @code{CTIME},
 @code{GMTIME}, and @code{LTIME}.
+
+@cindex wraparound, timings
+@cindex limits, timings
+@emph{Warning:} this intrinsic does not increase the range
+of the timing values over that returned by @code{time(3)}.
+On a system with a 32-bit @code{time(3)},
+@code{TIME8} will return a 32-bit value,
+even though converted to an @samp{INTEGER(KIND=2)} value.
+That means overflows of the 32-bit value can still occur.
+Therefore, the values returned by this intrinsic
+might be, or become, negative,
+or numerically less than previous values,
+during a single run of the compiled program.
 
 No Fortran implementations other than GNU Fortran are
 known to support this intrinsic at the time of this
