@@ -621,12 +621,12 @@
 ;; Move instructions
 
 (define_insn "movdi"
-  [(set (match_operand:DI 0 "general_operand" "=g")
-	(match_operand:DI 1 "general_operand" "g"))]
+  [(set (match_operand:DI 0 "general_operand" "=g,rm,m")
+	(match_operand:DI 1 "general_operand" "m,r,a"))]
   ""
   "* return output_move_quad (operands);"
 ;; what's the mose expensive code - say twice movsi = 16
-  [(set_attr "length" "16")])
+  [(set_attr "length" "16,16,16")])
 
 (define_insn "movsi"
   [(set (match_operand:SI 0 "general_operand" "=r,r,r,rm,m")
@@ -651,8 +651,8 @@
   [(set_attr "length" "1,2,2,3")])
 
 (define_insn "movqi"
-  [(set (match_operand:QI 0 "general_operand" "=rR,rR,Q,Q")
-	(match_operand:QI 1 "general_operand" "rRN,Qi,rRN,Qi"))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=g")
+	(match_operand:QI 1 "general_operand" "g"))]
   ""
   "*
 {
@@ -661,17 +661,22 @@
 
   return \"movb %1, %0\";
 }"
-  [(set_attr "length" "1,2,2,3")])
+  [(set_attr "length" "1")])
 
 ;; do we have to supply all these moves? e.g. to 
 ;; NO_LOAD_FPU_REGs ? 
 (define_insn "movdf"
-  [(set (match_operand:DF 0 "general_operand" "=f,R,f,Q,f,m")
-        (match_operand:DF 1 "general_operand" "fR,f,Q,f,F,m"))]
+  [(set (match_operand:DF 0 "general_operand" "=a,fR,a,Q,m")
+        (match_operand:DF 1 "general_operand" "fFR,a,Q,a,m"))]
   ""
-  "* return output_move_quad (operands);"
+  "* if (which_alternative ==0)
+       return \"ldd %1, %0\";
+     else if (which_alternative == 1)
+       return \"std %1, %0\";
+     else 
+       return output_move_quad (operands); "
 ;; just a guess..
-  [(set_attr "length" "1,1,2,2,5,16")])
+  [(set_attr "length" "1,1,5,5,16")])
 
 (define_insn "movsf"
   [(set (match_operand:SF 0 "general_operand" "=g,r,g")
@@ -760,7 +765,7 @@
   [(set (match_operand:HI 0 "general_operand" "=r")
 	(zero_extend:HI (match_operand:QI 1 "general_operand" "0")))]
   ""
-  "bic $(256*255), %0"
+  "bic $0177400, %0"
   [(set_attr "length" "2")])
 			 
 (define_expand "zero_extendhisi2"
@@ -919,7 +924,7 @@
        rtx latehalf[2];
 
        latehalf[0] = NULL; 
-       latehalf[1] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
+       latehalf[1] = gen_rtx_REG (HImode, REGNO (operands[1]) + 1);
        output_asm_insn(\"mov %1, -(sp)\", latehalf);
        output_asm_insn(\"mov %1, -(sp)\", operands);
        
@@ -1067,7 +1072,7 @@
 	return \"decb %0\";
     }
 
-  return \"addb %2, %0\";
+  return \"add %2, %0\";
 }"
   [(set_attr "length" "1,2,2,3")])
 
@@ -1143,53 +1148,14 @@
   if (GET_CODE (operands[2]) == CONST_INT)
     abort();
 
-  return \"subb %2, %0\";
+  return \"sub %2, %0\";
 }"
   [(set_attr "length" "1,2,2,3")])
 
 ;;;;- and instructions
 ;; Bit-and on the pdp (like on the VAX) is done with a clear-bits insn.
-(define_expand "andsi3"
-  [(set (match_operand:SI 0 "general_operand" "=g")
-	(and:SI (match_operand:SI 1 "general_operand" "0")
-		(not:SI (match_operand:SI 2 "general_operand" "g"))))]
-  ""
-  "
-{
-  if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = GEN_INT (~INTVAL (operands[2]));
-  else
-    operands[2] = expand_unop (SImode, one_cmpl_optab, operands[2], 0, 1);
-}")
 
-(define_expand "andhi3"
-  [(set (match_operand:HI 0 "general_operand" "=g")
-	(and:HI (match_operand:HI 1 "general_operand" "0")
-		(not:HI (match_operand:HI 2 "general_operand" "g"))))]
-  ""
-  "
-{
-  if (GET_CODE (operands[2]) == CONST_INT)
-    operands[2] = GEN_INT (~INTVAL (operands[2]));
-  else
-    operands[2] = expand_unop (HImode, one_cmpl_optab, operands[2], 0, 1);
-}")
-
-(define_expand "andqi3"
-  [(set (match_operand:QI 0 "general_operand" "=g")
-	(and:QI (match_operand:QI 1 "general_operand" "0")
-		(not:QI (match_operand:QI 2 "general_operand" "g"))))]
-  ""
-  "
-{
-  rtx op = operands[2];
-  if (GET_CODE (op) == CONST_INT)
-    operands[2] = GEN_INT (((1 << 8) - 1) & ~INTVAL (op));
-  else
-    operands[2] = expand_unop (QImode, one_cmpl_optab, op, 0, 1);
-}")
-
-(define_insn "andcbsi3"
+(define_insn "andsi3"
   [(set (match_operand:SI 0 "general_operand" "=r,r,o,o,r,r,r,o,o,o")
         (and:SI (match_operand:SI 1 "general_operand" "%0,0,0,0,0,0,0,0,0,0")
                 (not:SI (match_operand:SI 2 "general_operand" "r,o,r,o,I,J,K,I,J,K"))))]
@@ -1237,7 +1203,7 @@
 }"
   [(set_attr "length" "2,4,4,6,2,2,4,3,3,6")])
 
-(define_insn "andcbhi3"
+(define_insn "andhi3"
   [(set (match_operand:HI 0 "general_operand" "=rR,rR,Q,Q")
 	(and:HI (match_operand:HI 1 "general_operand" "0,0,0,0")
 		(not:HI (match_operand:HI 2 "general_operand" "rR,Qi,rR,Qi"))))]
@@ -1245,7 +1211,7 @@
   "bic %2, %0"
   [(set_attr "length" "1,2,2,3")])
 
-(define_insn "andcbqi3"
+(define_insn "andqi3"
   [(set (match_operand:QI 0 "general_operand" "=rR,rR,Q,Q")
 	(and:QI (match_operand:QI 1 "general_operand" "0,0,0,0")
 		(not:QI (match_operand:QI 2 "general_operand" "rR,Qi,rR,Qi"))))]
@@ -1319,9 +1285,9 @@
 
 ;;- xor instructions
 (define_insn "xorsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
-        (xor:SI (match_operand:SI 1 "register_operand" "%0,0,0,0")
-                  (match_operand:SI 2 "arith_operand" "r,I,J,K")))]
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (xor:SI (match_operand:SI 1 "register_operand" "%0")
+                (match_operand:SI 2 "arith_operand" "r")))]
   "TARGET_40_PLUS"
   "*
 { /* Here we trust that operands don't overlap */
@@ -1342,18 +1308,8 @@
       return \"\";
     }
 
-  lateoperands[2] = GEN_INT ((INTVAL (operands[2]) >> 16) & 0xffff);
-  operands[2] = GEN_INT (INTVAL(operands[2]) & 0xffff);
-  
-  if (INTVAL (operands[2]))
-    output_asm_insn (\"xor %2, %0\", operands);
-
-  if (INTVAL (lateoperands[2]))
-    output_asm_insn (\"xor %2, %0\", lateoperands);
-
-  return \"\";
 }"
-  [(set_attr "length" "2,1,1,2")])
+  [(set_attr "length" "2")])
 
 (define_insn "xorhi3"
   [(set (match_operand:HI 0 "general_operand" "=rR,Q")
@@ -1373,10 +1329,12 @@
   [(set_attr "length" "1,2")])
 
 (define_insn "one_cmplqi2"
-  [(set (match_operand:QI 0 "general_operand" "=rR,Q")
-        (not:QI (match_operand:QI 1 "general_operand" "0,0")))]
+  [(set (match_operand:QI 0 "general_operand" "=rR,rR")
+        (not:QI (match_operand:QI 1 "general_operand" "0,g")))]
   ""
-  "comb %0"
+  "@
+  comb %0
+  movb %1, %0\; comb %0"
   [(set_attr "length" "1,2")])
 
 ;;- arithmetic shift instructions
@@ -1422,6 +1380,38 @@
   ""
   "asr %0"
   [(set_attr "length" "1,2")])
+
+;; lsr
+(define_insn "" 
+  [(set (match_operand:HI 0 "general_operand" "=rR,Q")
+	(lshiftrt:HI (match_operand:HI 1 "general_operand" "0,0")
+		   (const_int 1)))]
+  ""
+  "clc\;ror %0"
+  [(set_attr "length" "1,2")])
+
+(define_insn "lshrsi3"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(lshiftrt:SI (match_operand:SI 1 "general_operand" "0")
+                   (const_int 1)))]
+  ""
+{ /* Here we trust that operands don't overlap */
+
+  rtx lateoperands[2];
+
+  lateoperands[0] = operands[0];
+  operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
+
+  lateoperands[1] = operands[1];
+  operands[1] = gen_rtx_REG (HImode, REGNO (operands[1]) + 1);
+
+  output_asm_insn (\"clc\", operands);
+  output_asm_insn (\"ror %0\", lateoperands);
+  output_asm_insn (\"ror %0\", operands);
+
+  return \"\";
+}
+  [(set_attr "length" "5")])
 
 ;; shift is by arbitrary count is expensive, 
 ;; shift by one cheap - so let's do that, if
@@ -1620,6 +1610,29 @@
   "{negd|negf} %0"
   [(set_attr "length" "1,2")])
 
+(define_insn "negsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(neg:SI (match_operand:SI 1 "general_operand" "0")))]
+  ""
+{ /* Here we trust that operands don't overlap */
+
+  rtx lateoperands[2];
+
+  lateoperands[0] = operands[0];
+  operands[0] = gen_rtx_REG (HImode, REGNO (operands[0]) + 1);
+
+  lateoperands[1] = operands[1];
+  operands[1] = gen_rtx_REG (HImode, REGNO (operands[1]) + 1);
+
+  output_asm_insn (\"com %0\", operands);
+  output_asm_insn (\"com %0\", lateoperands);
+  output_asm_insn (\"inc %0\", operands);
+  output_asm_insn (\"adc %0\", lateoperands);
+
+  return \"\";
+}
+  [(set_attr "length" "5")])
+
 (define_insn "neghi2"
   [(set (match_operand:HI 0 "general_operand" "=rR,Q")
 	(neg:HI (match_operand:HI 1 "general_operand" "0,0")))]
@@ -1670,7 +1683,7 @@
 ;;- jump to subroutine
 
 (define_insn "call"
-  [(call (match_operand:HI 0 "general_operand" "R,Q")
+  [(call (match_operand:HI 0 "general_operand" "rR,Q")
 	 (match_operand:HI 1 "general_operand" "g,g"))
 ;;   (use (reg:HI 0)) what was that ???
   ]
@@ -1682,7 +1695,7 @@
 ;;- jump to subroutine
 (define_insn "call_value"
   [(set (match_operand 0 "" "")
-	(call (match_operand:HI 1 "general_operand" "R,Q")
+	(call (match_operand:HI 1 "general_operand" "rR,Q")
 	      (match_operand:HI 2 "general_operand" "g,g")))
 ;;   (use (reg:HI 0)) - what was that ????
   ]
@@ -1788,7 +1801,7 @@
   "")
 
 (define_insn ""
-  [(set (subreg:HI (match_operand:SI 0 "general_operand" "=r") 4)
+  [(set (subreg:HI (match_operand:SI 0 "general_operand" "=r") 2)
 	(mod:HI (match_operand:SI 1 "general_operand" "0")
 		(match_operand:HI 2 "general_operand" "g")))]
   "TARGET_45"

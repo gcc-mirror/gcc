@@ -1,3 +1,35 @@
+2002-10-05  Naohiko Shimizu <nshimizu@keyaki.cc.u-tokai.ac.jp>
+
+	* t-pdp11: Add MULTILIB support for msoft-float.
+	* pdp11.h (LEGITIMATE_CONSTANT_P): Fix soft-float case.
+
+	* t-pdp11: Add LIB2FUNCS_EXTRA.
+	* pdp11.c (pdp11_output_function_prologue): Restrict offset to 16bit, 
+	add preceding 0 to the octal constant, rename 'fp' to 'r5', rename
+	'fldd' to 'ldd', rename 'fstd' to 'std'.
+	(pdp11_output_function_epilogue): Likewise.
+	(output_move_quad): Make the comment gas compatible.
+	(output_ascii): Add preceding 0 to the octal constant.
+	(print_operand_address): Add pre_modify, post_modify.
+	(output_addr_const_pdp11): Add preceding 0 to the octal constant.
+	* pdp11.h (GO_IF_LEGITIMATE_ADDRESS) : Add 'movb' pre_modify case
+	with the indication of Paul Koning. 
+	(PRINT_OPERAND): Fix floating constant.
+	* pdp11.md (movdi): Restrict matching pattern.
+	(movqi): Generalize the matching pattern.
+	(movdf): Restrict matching pattern.
+	(zero_extendqihi2): Change constant representation.
+	(floatsidf2): Fix wrong operands.
+	(addqi3): Fix wrong instruction name.
+	(subqi3): Fix wrong instruction name.
+	(andsi3, andhi3, andqi3): Simplify and fix to use 'bic'.
+	(xorsi3): Fix wrong insn.
+	(one_cmplqi2): Add two operand pattern.
+	(lsrsi3): New.
+	(negsi2): New.
+	(call): Add register indirect case.
+	(mod): Fix wrong subreg.
+
 2002-09-25  Eric Botcazou  <ebotcazou@libertysurf.fr>
             Volker Reichelt <reichelt@igpm.rwth-aachen.de>
 
