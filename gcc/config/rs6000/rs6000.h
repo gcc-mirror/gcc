@@ -1995,22 +1995,25 @@ toc_section ()						\
 
 /* Remove any trailing [DS] or the like from the symbol name.  */
 
-#define STRIP_NAME_ENCODING(VAR,NAME)				\
-  do								\
-    {								\
-      if ((NAME)[0] == '*')					\
-	(VAR) = (NAME)+1;					\
-      else if ((NAME)[strlen (NAME) - 1] != ']')		\
-	(VAR) = (NAME);						\
-      else							\
-	{							\
-          int _len = strlen (NAME);				\
-	  (VAR) = alloca (_len + 1);				\
-								\
-          strcpy ((VAR), NAME);					\
-          (VAR)[_len - 4] = '\0';				\
-        }							\
-    }								\
+#define STRIP_NAME_ENCODING(VAR,NAME)					\
+  do									\
+    {									\
+      char *_name = (NAME);						\
+      if (_name[0] == '*')						\
+	(VAR) = _name+1;						\
+      else								\
+	{								\
+	  int _len = strlen (_name);					\
+	  if (_name[_len - 1] != ']')					\
+	    (VAR) = _name;						\
+	  else								\
+	    {								\
+	      (VAR) = (char *) alloca (_len + 1);			\
+	      strcpy ((VAR), _name);					\
+	      (VAR)[_len - 4] = '\0';					\
+	    }								\
+	}								\
+    }									\
   while (0)
 
 /* Output something to declare an external symbol to the assembler.  Most
