@@ -1,5 +1,5 @@
 /* Functions related to invoking methods and overloaded functions.
-   Copyright (C) 1987, 92-97, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 92-99, 2000 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) and
    modified by Brendan Kehoe (brendan@cygnus.com).
 
@@ -4321,10 +4321,14 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 
   if (DECL_PURE_VIRTUAL_P (cand->fn)
       && instance == current_class_ref
-      && DECL_CONSTRUCTOR_P (current_function_decl)
+      && (DECL_CONSTRUCTOR_P (current_function_decl)
+	  || DECL_DESTRUCTOR_P (current_function_decl))
       && ! (flags & LOOKUP_NONVIRTUAL)
       && value_member (cand->fn, CLASSTYPE_PURE_VIRTUALS (basetype)))
-    cp_error ("abstract virtual `%#D' called from constructor", cand->fn);
+    cp_error ((DECL_CONSTRUCTOR_P (current_function_decl) ? 
+	       "abstract virtual `%#D' called from constructor"
+	       : "abstract virtual `%#D' called from destructor"),
+	      cand->fn);
   if (TREE_CODE (TREE_TYPE (cand->fn)) == METHOD_TYPE
       && is_dummy_object (instance_ptr))
     {

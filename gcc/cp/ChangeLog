@@ -1,3 +1,7 @@
+1999-01-01  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* call.c (build_new_method_call): Also check destructors.
+
 1999-12-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (VF_NORMAL_VALUE): Remove.
