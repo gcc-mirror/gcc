@@ -237,7 +237,7 @@ dump_file (filename)
 	    printf ("%s:record size mismatch %lu bytes unread\n",
 		    filename, length - actual_length);
 	}
-      gcov_seek (base, length);
+      gcov_sync (base, length);
       if ((error = gcov_is_error ()))
 	{
 	  printf (error < 0 ? "%s:counter overflow at %lu\n" :

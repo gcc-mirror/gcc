@@ -168,13 +168,20 @@ typedef long long gcov_type;
 #else
 #define GCOV_LOCKED 0
 #endif
-#endif /* IN_LIBGCOV */
+#else /* !IN_LIBGCOV */
+#if defined (HOST_HAS_F_SETLKW)
+#define GCOV_LOCKED 1
+#else
+#define GCOV_LOCKED 0
+#endif
 #if IN_GCOV
+#define GCOV_LINKAGE static
 typedef HOST_WIDEST_INT gcov_type;
 #if IN_GCOV > 0
 #include <sys/types.h>
 #endif
 #endif
+#endif /* !IN_LIBGCOV */
 
 /* In gcov we want function linkage to be static, so we do not
    polute the global namespace. In libgcov we need these functions
@@ -182,40 +189,33 @@ typedef HOST_WIDEST_INT gcov_type;
    In the compiler we want it extern, so that they can be accessed from
    elsewhere.  */
 #if IN_LIBGCOV
-
-#define GCOV_LINKAGE /* nothing */
 #define gcov_var __gcov_var
 #define gcov_open __gcov_open
 #define gcov_close __gcov_close
 #define gcov_write_bytes __gcov_write_bytes
 #define gcov_write_unsigned __gcov_write_unsigned
 #define gcov_write_counter __gcov_write_counter
-#define gcov_write_string __gcov_write_string
-#define gcov_write_tag __gcov_write_tag
-#define gcov_write_length __gcov_write_length
+#pragma GCC poison gcov_write_string
+#pragma GCC poison gcov_write_tag
+#pragma GCC poison gcov_write_length
+#define gcov_write_tag_length __gcov_write_tag_length
 #define gcov_write_summary __gcov_write_summary
 #define gcov_read_bytes __gcov_read_bytes
 #define gcov_read_unsigned __gcov_read_unsigned
 #define gcov_read_counter __gcov_read_counter
-#define gcov_read_string __gcov_read_string
+#pragma GCC poison gcov_read_string
 #define gcov_read_summary __gcov_read_summary
 #define gcov_position __gcov_position
+#define gcov_sync __gcov_sync
 #define gcov_seek __gcov_seek
-#define gcov_seek_end __gcov_seek_end
+#define gcov_rewrite __gcov_rewrite
 #define gcov_is_eof __gcov_is_eof
 #define gcov_is_error __gcov_is_error
-#define gcov_time __gcov_time
-
-#elif IN_GCOV
-
-#define GCOV_LINKAGE static
-
-#else /* !IN_LIBGCOV && !IN_GCOV */
+#pragma GCC poison gcov_time
+#endif
 
 #ifndef GCOV_LINKAGE
 #define GCOV_LINKAGE extern
-#endif
-
 #endif
 
 /* File suffixes.  */
@@ -237,12 +237,17 @@ typedef HOST_WIDEST_INT gcov_type;
    the data file.  */
 
 #define GCOV_TAG_FUNCTION	 ((unsigned)0x01000000)
+#define GCOV_TAG_FUNCTION_LENGTH (2 * 4)
 #define GCOV_TAG_BLOCKS		 ((unsigned)0x01410000)
+#define GCOV_TAG_BLOCKS_LENGTH(NUM) ((NUM) * 4)
 #define GCOV_TAG_ARCS		 ((unsigned)0x01430000)
+#define GCOV_TAG_ARCS_LENGTH(NUM)  (1 * 4 + (NUM) * (2 * 4))
 #define GCOV_TAG_LINES		 ((unsigned)0x01450000)
 #define GCOV_TAG_COUNTER_BASE 	 ((unsigned)0x01a10000) /* First counter */
+#define GCOV_TAG_COUNTER_LENGTH(NUM) ((NUM) * 8)
 #define GCOV_TAG_OBJECT_SUMMARY  ((unsigned)0xa1000000)
 #define GCOV_TAG_PROGRAM_SUMMARY ((unsigned)0xa3000000)
+#define GCOV_TAG_SUMMARY_LENGTH  (1 * 4 + GCOV_COUNTERS * (2 * 4 + 3 * 8))
 
 /* Counters that are collected.  */
 #define GCOV_COUNTER_ARCS 	0  /* Arc transitions.  */
@@ -359,6 +364,8 @@ extern void __gcov_flush (void);
 extern void __gcov_merge_add (gcov_type *, unsigned);
 #endif /* IN_LIBGCOV */
 
+#if IN_LIBGCOV >= 0
+
 /* Because small reads and writes, interspersed with seeks cause lots
    of disk activity, we buffer the entire count files.  */
 
@@ -384,8 +391,11 @@ GCOV_LINKAGE void gcov_write_counter (gcov_type);
 #else
 GCOV_LINKAGE void gcov_write_string (const char *);
 #endif
+#if !IN_LIBGCOV
 GCOV_LINKAGE unsigned long gcov_write_tag (unsigned);
 GCOV_LINKAGE void gcov_write_length (unsigned long /*position*/);
+#endif
+GCOV_LINKAGE void gcov_write_tag_length (unsigned, unsigned);
 #if IN_LIBGCOV
 GCOV_LINKAGE void gcov_write_summary (unsigned, const struct gcov_summary *);
 #endif
@@ -398,8 +408,9 @@ GCOV_LINKAGE const char *gcov_read_string (void);
 #endif
 GCOV_LINKAGE void gcov_read_summary (struct gcov_summary *);
 static unsigned long gcov_position (void);
-static void gcov_seek (unsigned long /*base*/, unsigned /*length */);
-static unsigned long gcov_seek_end (void);
+static void gcov_sync (unsigned long /*base*/, unsigned /*length */);
+static void gcov_seek (unsigned long /*position*/);
+static void gcov_rewrite (void);
 static int gcov_is_eof (void);
 static int gcov_is_error (void);
 #if IN_GCOV > 0
@@ -418,7 +429,7 @@ gcov_position (void)
    gcov_save_position, LENGTH should be a record length, or zero.  */
 
 static inline void
-gcov_seek (unsigned long base, unsigned length)
+gcov_sync (unsigned long base, unsigned length)
 {
   if (gcov_var.buffer)
     {
@@ -434,11 +445,18 @@ gcov_seek (unsigned long base, unsigned length)
 
 /* Move to the end of the gcov file.  */
 
-static inline unsigned long
-gcov_seek_end ()
+static inline void
+gcov_seek (unsigned long base)
 {
-  gcov_var.position = gcov_var.length;
-  return gcov_var.position;
+  gcov_var.position = base < gcov_var.length ? base : gcov_var.length;
+}
+
+/* Move to beginning of file and intialize for writing.  */
+
+static inline void
+gcov_rewrite (void)
+{
+  gcov_var.position = 0;
 }
 
 /* Tests whether we have reached end of .da file.  */
@@ -456,5 +474,7 @@ gcov_is_error ()
 {
   return gcov_var.file ? gcov_var.error : 1;
 }
+
+#endif /* IN_LIBGCOV >= 0 */
 
 #endif /* GCC_GCOV_IO_H */

@@ -1,3 +1,29 @@
+2003-05-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* gcov-io.h (GCOV_LOCKED): New #define.
+	(GCOV_LINKAGE): Make sure it is #defined.
+	(gcov_write_string, gcov_write_tag, gcov_write_length,
+	gcov_read_string, gcov_time): Poison in libgcov.
+	(gcov_seek_end): Remove.
+	(gcov_write_tag_length, gcov_sync, gcov_rewrite): New.
+	(GCOV_TAG_FUNCTION_LENGTH, GCOV_TAG_BLOCKS_LENGTH,
+	GCOV_TAG_ARCS_LENGTH, GCOV_TAG_COUNTER_LENGTH,
+	GCOV_TAG_SUMMARY_LENGTH): New #defines.
+	(gcov_write_tag, gcov_write_length): Not in libgcov.
+	* gcov-io.c (gcov_open): Use GCOV_LOCKED.
+	(gcov_write_tag, gcov_write_length): Not in libgcov.
+	(gcov_write_tag_length): New.
+	(gcov_write_summary): Use gcov_write_tag_length.
+	* libgcov.c: Always #include gcov-io.h.
+	(IN_LIBGCOV): -1 for inhibit_libc, +1 otherwise.
+	(GCOV_LINKAGE): Define to nothing for L_gcov.
+	(gcov_exit): Replace gcov_write_tag, gcov_write_length with
+	gcov_write_tag_length. Use gcov_rewrite & gcov_seek.
+	* gcov.c (read_graph_file): Replace gcov_seek by gcov_sync.
+	(read_count_file): Likewise.
+	* gcov-dump.c (dump_file): Likewise.
+	* coverag.c (read_counts_file): Likewise.
+
 2003-05-06  Mark Mitchell  <mark@codesourcery.com>
 
 	PR other/10658

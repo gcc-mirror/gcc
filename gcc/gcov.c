@@ -904,7 +904,7 @@ read_graph_file ()
 	  fn = NULL;
 	  current_tag = 0;
 	}
-      gcov_seek (base, length);
+      gcov_sync (base, length);
       if (gcov_is_error ())
 	{
 	corrupt:;
@@ -1059,7 +1059,7 @@ read_count_file ()
 	  for (ix = 0; ix != fn->num_counts; ix++)
 	    fn->counts[ix] += gcov_read_counter ();
 	}
-      gcov_seek (base, length);
+      gcov_sync (base, length);
       if ((error = gcov_is_error ()))
 	{
 	  fnotice (stderr, error < 0
