@@ -32,42 +32,50 @@ SH_FLAG="-Wl,--rpath -Wl,$BUILD_DIR/../../gcc \
          -Wl,--rpath -Wl,$BUILD_DIR/src/.libs"
 ST_FLAG="-static"
 LINK=$SH_FLAG
-CXX="$COMPILER $INCLUDES $PCH_FLAGS $FLAGS -DNOTHREAD $LINK"
-CXX_THREAD="$COMPILER $INCLUDES $PCH_FLAGS $FLAGS $THREAD_FLAG $LINK"
-
-
+CXX="$COMPILER $INCLUDES $PCH_FLAGS $FLAGS $LINK"
 TESTS_FILE="testsuite_files_performance"
 
 for NAME in `cat $TESTS_FILE`
 do
   RUN=true
+
+  # TEST_S == single thread
+  # TEST_B == do both single and multi-thread
+  # TEST_T == multi-thread
   for CYCLE in `sed -n 's,.*\(TEST_[SB][0-9]*\)$,\1,p' $SRC_DIR/testsuite/$NAME`
   do
     RUN=false
     echo $NAME $CYCLE
     FILE_NAME="`basename $NAME`"
-    EXE_NAME="`echo $FILE_NAME-$CYCLE | sed 's/cc$/exe/'`"
-    $CXX -D$CYCLE $SRC_DIR/testsuite/$NAME -o $EXE_NAME
-    ./$EXE_NAME
-    echo ""
+    FILE_NAME="`echo $FILE_NAME | sed 's/.cc//g'`"
+    EXE_NAME="`echo $FILE_NAME-$CYCLE.exe`"
+    $CXX -DNOTHREAD -D$CYCLE $SRC_DIR/testsuite/$NAME -o $EXE_NAME
+    if [ -f $EXE_NAME ]; then
+      ./$EXE_NAME
+    fi
   done
+
   for CYCLE in `sed -n 's,.*\(TEST_[TB][0-9]*\)$,\1,p' $SRC_DIR/testsuite/$NAME`
   do
     RUN=false
-    echo $NAME $CYCLE THREAD
+    echo $NAME $CYCLE thread
     FILE_NAME="`basename $NAME`"
-    EXE_NAME="`echo $FILE_NAME-$CYCLE | sed 's/cc$/exe/'`"
-    $CXX_THREAD -D$CYCLE $SRC_DIR/testsuite/$NAME -o $EXE_NAME
-    ./$EXE_NAME
-    echo ""
+    FILE_NAME="`echo $FILE_NAME | sed 's/.cc//g'`"
+    EXE_NAME="`echo $FILE_NAME-$CYCLE.exe`"
+    $CXX $THREAD_FLAG -D$CYCLE $SRC_DIR/testsuite/$NAME -o $EXE_NAME
+    if [ -f $EXE_NAME ]; then
+      ./$EXE_NAME
+    fi
   done
+
   if $RUN; then
     echo $NAME
     FILE_NAME="`basename $NAME`"
     EXE_NAME="`echo $FILE_NAME | sed 's/cc$/exe/'`"
     $CXX $SRC_DIR/testsuite/$NAME -o $EXE_NAME
-    ./$EXE_NAME
-    echo ""
+    if [ -f $EXE_NAME ]; then
+      ./$EXE_NAME
+    fi
   fi
 done
 
