@@ -2080,56 +2080,27 @@ find_cond_trap (test_bb, then_edge, else_edge)
      basic_block test_bb;
      edge then_edge, else_edge;
 {
-  basic_block then_bb, else_bb, join_bb, trap_bb;
+  basic_block then_bb, else_bb, trap_bb, other_bb;
   rtx trap, jump, cond, cond_earliest, seq;
   enum rtx_code code;
 
   then_bb = then_edge->dest;
   else_bb = else_edge->dest;
-  join_bb = NULL;
 
   /* Locate the block with the trap instruction.  */
   /* ??? While we look for no successors, we really ought to allow
      EH successors.  Need to fix merge_if_block for that to work.  */
-  /* ??? We can't currently handle merging the blocks if they are not
-     already adjacent.  Prevent losage in merge_if_block by detecting
-     this now.  */
   if ((trap = block_has_only_trap (then_bb)) != NULL)
-    {
-      trap_bb = then_bb;
-      if (else_bb->index != then_bb->index + 1)
-	return FALSE;
-      join_bb = else_bb;
-      else_bb = NULL;
-    }
+    trap_bb = then_bb, other_bb = else_bb;
   else if ((trap = block_has_only_trap (else_bb)) != NULL)
-    {
-      trap_bb = else_bb;
-      if (else_bb->index != then_bb->index + 1)
-	else_bb = NULL;
-      else if (then_bb->succ
-	  && ! then_bb->succ->succ_next
-	  && ! (then_bb->succ->flags & EDGE_COMPLEX)
-	  && then_bb->succ->dest->index == else_bb->index + 1)
-	join_bb = then_bb->succ->dest;
-    }
+    trap_bb = else_bb, other_bb = then_bb;
   else
     return FALSE;
 
   if (rtl_dump_file)
     {
-      if (trap_bb == then_bb)
-	fprintf (rtl_dump_file,
-		 "\nTRAP-IF block found, start %d, trap %d",
-		 test_bb->index, then_bb->index);
-      else
-	fprintf (rtl_dump_file,
-		 "\nTRAP-IF block found, start %d, then %d, trap %d",
-		 test_bb->index, then_bb->index, trap_bb->index);
-      if (join_bb)
-	fprintf (rtl_dump_file, ", join %d\n", join_bb->index);
-      else
-	fputc ('\n', rtl_dump_file);
+      fprintf (rtl_dump_file, "\nTRAP-IF block found, start %d, trap %d\n",
+	       test_bb->index, trap_bb->index);
     }
 
   /* If this is not a standard conditional jump, we can't parse it.  */
@@ -2162,24 +2133,36 @@ find_cond_trap (test_bb, then_edge, else_edge)
   if (seq == NULL)
     return FALSE;
 
-  /* Emit the new insns before cond_earliest; delete the old jump.  */
+  /* Emit the new insns before cond_earliest.  */
   emit_insn_before (seq, cond_earliest);
-  delete_insn (jump);
 
-  /* Delete the trap block together with its insn.  */
-  if (trap_bb == then_bb)
-    then_bb = NULL;
-  else if (else_bb == NULL)
-    ;
-  else if (trap_bb == else_bb)
-    else_bb = NULL;
+  /* Delete the trap block if possible.  */
+  remove_edge (trap_bb == then_bb ? then_edge : else_edge);
+  if (trap_bb->pred == NULL)
+    {
+      flow_delete_block (trap_bb);
+      num_removed_blocks++;
+    }
+
+  /* If the non-trap block and the test are now adjacent, merge them.
+     Otherwise we must insert a direct branch.  */
+  if (test_bb->index + 1 == other_bb->index)
+    {
+      delete_insn (jump);
+      merge_if_block (test_bb, NULL, NULL, other_bb);
+    }
   else
-    abort ();
-  flow_delete_block (trap_bb);
-  num_removed_blocks++;
+    {
+      rtx lab, newjump;
 
-  /* Merge what's left.  */
-  merge_if_block (test_bb, then_bb, else_bb, join_bb);
+      lab = JUMP_LABEL (jump);
+      newjump = emit_jump_insn_after (gen_jump (lab), jump);
+      LABEL_NUSES (lab) += 1;
+      JUMP_LABEL (newjump) = lab;
+      emit_barrier_after (newjump);
+
+      delete_insn (jump);
+    }
 
   return TRUE;
 }
