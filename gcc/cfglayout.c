@@ -415,6 +415,18 @@ insn_scope (rtx insn)
   int min = 0;
   int loc = INSN_LOCATOR (insn);
 
+  /* When block_locators_locs was initialized, the pro- and epilogue
+     insns didn't exist yet and can therefore not be found this way.
+     But we know that they belong to the outer most block of the
+     current function.
+     Without this test, the prologue would be put inside the block of
+     the first valid instruction in the function and when that first
+     insn is part of an inlined function then the low_pc of that
+     inlined function is messed up.  Likewise for the epilogue and
+     the last valid instruction. */
+  if (loc == prologue_locator || loc == epilogue_locator)
+    return DECL_INITIAL (cfun->decl);
+
   if (!max || !loc)
     return NULL;
   while (1)
