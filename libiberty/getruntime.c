@@ -17,6 +17,8 @@ License along with libiberty; see the file COPYING.LIB.  If
 not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#include "config.h"
+
 #include "ansidecl.h"
 #include "libiberty.h"
 
@@ -26,23 +28,13 @@ Boston, MA 02111-1307, USA.  */
 
 #include <time.h>
 
-/* These should go away when libiberty uses autoconf. */
-
-#if defined(__sun__) && !defined(__svr4__)
-#define HAVE_GETRUSAGE
-#endif
-
-#ifdef HAVE_SYSCONF
-#define HAVE_TIMES
-#endif
-
 #ifdef HAVE_GETRUSAGE
 #include <sys/time.h>
 #include <sys/resource.h>
 #endif
 
 #ifdef HAVE_TIMES
-#ifndef NO_SYS_PARAM_H
+#ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
 #endif
 #include <sys/times.h>

@@ -1,11 +1,159 @@
 Wed May 13 14:24:38 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
-        * cplus-dem.c (squangle_mop_up): Change return type to void.
-        (internal_cplus_demangle): Remove unused parameter `options'.
-        All callers changed.
-        (cplus_demangle_opname): Remove function wide variable `int i' and
-        replace with `size_t i' at each location where it is used.
-        (cplus_mangle_opname): change type of `i' from int to size_t.
+	* cplus-dem.c (squangle_mop_up): Change return type to void.
+	(internal_cplus_demangle): Remove unused parameter `options'.
+	All callers changed.
+	(cplus_demangle_opname): Remove function wide variable `int i' and
+	replace with `size_t i' at each location where it is used.
+	(cplus_mangle_opname): change type of `i' from int to size_t.
+
+Wed May 13 13:39:38 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* alloca-conf.h: Include config.h.  Check HAVE_ALLOCA_H rather
+	than sparc or sun.
+	* Makefile.in (argv.o): Depend upon config.h and alloca-conf.h.
+
+Fri May  8 00:23:51 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* configure.in: Set libiberty_topdir correctly when srcdir is
+	"." and with_target_subdir is not set.
+	* configure: Rebuild.
+
+Thu May  7 13:01:44 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* configure.in: Add *-*-mingw32* case.
+	* configure: Rebuild.
+
+Wed May  6 11:33:51 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* config.table: Never use a PIC file for *-*-cygwin32*.
+
+	* Makefile.in (config.status): Depend upon config.table.
+
+	* configure.in: On a cygwin32 host, always compile random, and
+	don't test for sys_siglist, strsignal, or psignal.
+	* configure: Rebuild.
+
+	* clock.c: Check HAVE_SYS_PARAM_H rather than NO_SYS_PARAM_H.
+	* getcwd.c: Likewise.
+	* getpagesize.c: Likewise.
+	* getruntime.c: Likewise.
+
+Tue May  5 18:08:32 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	Use autoconf tests rather than the old dummy.c test:
+	* configure.in: Add AC_ARG_WITH calls for --with-target-subdir and
+	--with-newlib.  Add AC_CONFIG_HEADER.  Use AC_REPLACE_FUNCS for
+	most functions.  Add special cases to handle newlib and VxWorks.
+	Remove target_makefile_frag.  Create stamp-h in AC_OUTPUT if
+	CONFIG_HEADERS is set.  Only call config-ml.in in AC_OUTPUT if
+	CONFIG_FILES is set; set ac_file before calling it.
+	* config.table (arm-*-riscix*, *-*-cygwin32): Remove.
+	(*-*-hpux*, *-*-hiux*, *-*-irix4*, *-*-solaris2*): Remove.
+	(*-*-sysv4*, *-*-go32, *-*-vxworks5*, *-*-vxworks): Remove
+	(i[3456]-*-mingw32*): Remove.
+	* Makefile.in (ERRORS_CC, CONFIG_H, NEEDED_LIST): Remove.
+	(LIBOBJS): New variable.
+	(HOST_OFILES, DO_ALSO, STAGESTUFF): Remove.
+	(all): Depend upon needed-list.  Don't check RULE1.
+	(@target_makefile_frag@): Remove.
+	(COMPILE.c): Include @DEFS@.
+	(HFILES): Add alloca-conf.h.
+	(REQUIRED_OFILES): Remove basename.o.
+	($(TARGETLIB)): New target.
+	(stamp-needed, lneeded-list, needed.awk, stamp-config): Remove.
+	(lconfig.h, needed2.awk, dummy.o, errors): Remove.
+	(needed-list, config.h): Rewrite.
+	(RULE1, $(RULE1), RULE2, $(RULE2)): Remove.
+	(.always.): Remove.
+	(Makefile): Set CONFIG_FILES and CONFIG_HEADERS.
+	(stamp-h): New target.
+	(atexit.o, clock.o, getcwd.o, getpagesize.o): New targets.
+	(basename.o): Don't depend upon config.h.
+	(getruntime.o): Depend upon config.h.
+	* atexit.c: Include config.h.  Check HAVE_ON_EXIT rather than
+	NEED_on_exit.
+	* basename.c: Don't include config.h.  Don't check NEED_basename.
+	* clock.c: Include config.h.
+	* getcwd.c: Likewise.
+	* getpagesize.c: Likewise.
+	* getruntime.c: Likewise.  Fix checks which set HAVE_GETRUSAGE and
+	HAVE_TIMES.
+	* strerror.c: Change uses of NEED_sys_errlist to
+	HAVE_SYS_ERRLIST.  Likewise for NEED_strerror and HAVE_STRERROR.
+	* strsignal.c: Likewise for NEED_sys_siglist and HAVE_SYS_SIGLIST,
+	and for NEED_strsignal and HAVE_STRSIGNAL and for NEED_psignal and
+	HAVE_PSIGNAL.
+	* acconfig.h: New file.
+	* dummy.c: Remove.
+	* functions.def: Remove.
+	* config/mh-cxux7 (HDEFINES): Remove -DHAVE_SYSCONF.
+	* config/mh-windows (HDEFINES): Remove.
+	* config/mh-cygwin32: Remove.
+	* config/mh-go32: Remove.
+	* config/mh-irix4: Remove.
+	* config/mh-riscix: Remove.
+	* config/mh-sysv4: Remove.
+	* config/mt-mingw32: Remove.
+	* config/mt-vxworks5: Remove.
+	* config.in: New file, generated using autoheader.
+	* configure: Rebuild.
+
+Mon May  4 13:00:28 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* configure.in: Rewrite to use autoconf.
+	* configure: Generate using autoconf.
+	* config/mh-a68bsd: Remove.
+	* config/mh-apollo68: Remove.
+	* config/mh-hpbsd: Remove.
+	* config/mh-ncr3000: Remove.
+	* config/mh-sysv: Remove.
+	* config/mh-aix (RANLIB, INSTALL): Don't define.
+	* config/mh-cxux7 (RANLIB, INSTALL): Don't define.
+	* config/mh-irix4 (CC, RANLIB, INSTALL): Don't define.
+	* config/mh-sysv4 (RANLIB, INSTALL): Don't define.
+	* config.table: Change config_shell to CONFIG_SHELL, and use
+	libiberty_topdir to find move-if-change.
+ 	(m68k-apollo-bsd*, m68k-apollo-sysv*): Remove.
+	(i[3456]86-ncr-sysv4*, *-*-dgux*, hppa*-hp-bsd*): Remove.
+	(*-*-irix*, *-*-m88kbcs*, *-*-sysv*): Remove.
+	* Makefile.in (srcdir): Set to @srcdir@.
+	(VPATH): Likewise.
+	(prefix, exec_prefix, bindir, libdir): Set to autoconf variables.
+	(SHELL, INSTALL, INSTALL_PROGRAM, INSTALL_DATA): Likewise.
+	(CC, CFLAGS, RANLIB)): Likewise.
+	(datadir, man*dir, infodir, includedir, MAKEINFO): Remove.
+	(target_makefile_frag, host_makefile_frag): Add substitutions.
+	(INSTALL_DEST): Set to @INSTALL_DEST@.
+	(Makefile): Depend upon config.status.  Don't depend upon
+	$(host_makefile_frag) or $(target_makefile_frag).
+	(config.status): New target.
+
+Sun May  3 17:58:49 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* config/mt-sunos4: Remove.  Should be handled by --with-headers
+	and --with-libraries options at top level.
+	* config.table: Never use mt-sunos4.
+
+	* alloca-conf.h: New file, combining alloca-norm.h and
+	alloca-botch.h.
+	* alloca-norm.h: Remove.
+	* alloca-botch.h: Remove.
+	* configure.in: Set shell variables files and links to empty.
+	* config.table: Don't set shell variable files.
+	* configure.bat: Don't create alloca-conf.h.
+	* makefile.vms: Likewise.
+	* mpw-config.in: Likewise.
+	* vmsbuild.com: Likewise.
+
+Fri May  1 11:41:42 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* Makefile.in ($(HOST_OFILES) $(REQUIRED_OFILES)): Remove old
+	target depending upon config.h.
+	(alloca.o): Add target depending upon config.h
+	(basename.o, choose-temp.o, fnmatch.o): Likewise.
+	(getopt.o, getopt1.o, pexecute.o, strerror.o): Likewise.
+	(strsignal.o, xstrerror.o): Likewise.
 
 Fri May  1 04:26:25 1998  Peter Schauer <pes@regent.e-technik.tu-muenchen.de>
 
@@ -39,22 +187,9 @@ Wed Apr 22 10:53:49 EDT 1998 Andrew MacLeod  <amacleod@cygnus.com>
 	(register_Btype, remember_Btype): New functions for B codes.
 	(forget_B_and_K_types): New function to destroy B and K info.
 
-Fri Apr 10 01:45:09 1998  Jeffrey A Law  (law@cygnus.com)
+Fri Apr 10 01:49:10 1998  Jeffrey A Law  (law@cygnus.com)
 
-	* cplus-dem.c: Sync with gcc.
-
-Thu Apr  2 13:53:54 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
-
-	* choose-temp.c: Include system.h when IN_GCC.
-
-1998-04-01  Mark Mitchell  <mmitchell@usa.net>
-
-	* cplus-dem.c (optable): Add sizeof.
-	(demangle_template_value_parm): New function containing code
-	previously found in demangle_template.
-	(demangle_integral_value): New function which handles complicated 
-	integral expressions.
-	(demangle_template): Use them.
+	* COPYING.LIB, choose-temp.c, cplus-dem.c: Sync with egcs & gcc.
 
 Thu Mar  5 09:23:28 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
@@ -64,6 +199,10 @@ Thu Mar  5 09:23:28 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 Mon Feb 23 14:33:15 1998  Ian Lance Taylor  <ian@cygnus.com>
 
 	* choose-temp.c: Fix handling of sys/file.h to work in libiberty.
+
+Sun Feb 22 18:03:23 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* choose-temp.c: Sync with copy in gcc.
 
 Thu Feb 12 16:29:49 1998  Ian Lance Taylor  <ian@cygnus.com>
 
@@ -75,16 +214,16 @@ Tue Feb 10 16:58:33 1998  Stan Shebs  <shebs@andros.cygnus.com>
 	* cplus-dem.c (gnu_special): Don't get confused by .<digits>
 	strings that are not actually lengths.
 
-Thu Feb  5 18:48:56 1998  Geoffrey Noer  <noer@cygnus.com>
-
-        * config/mh-cygwin32: remove vasprintf.o from EXTRA_OFILES
-        since it gets built automatically
-
 Fri Feb  6 01:35:17 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* Makefile.in (FLAGS_TO_PASS): Don't pass PICFLAG.
 	(.c.o): Check value of enable_shared, not PICFLAG.
 	(stamp-picdir): Dito.
+
+Thu Feb  5 18:48:56 1998  Geoffrey Noer  <noer@cygnus.com>
+
+        * config/mh-cygwin32: remove vasprintf.o from EXTRA_OFILES
+        since it gets built automatically
 
 Sun Feb  1 02:52:32 1998  Mike Stump  <mrs@wrs.com>
 
@@ -107,7 +246,7 @@ Sun Jan 18 15:57:28 1998  Michael Snyder  <msnyder@cleaver.cygnus.com>
 	* vasprintf.c (int_vasprintf): Increase buffer size for float/double
 	values.
 
-Sat Jan 17 22:28:38 1997  Mumit Khan  <khan@xraylith.wisc.edu>
+Sat Jan 17 22:28:38 1998  Mumit Khan  <khan@xraylith.wisc.edu>
 			  J.J. VanderHeijden <J.J.vanderHeijden@student.utwente.nl>
 
 	Add mingw32 support.
@@ -224,12 +363,6 @@ Tue Aug 19 17:10:56 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cplus-dem.c: Add 'extern' to prepends_underscore.
 
-Wed Jul 30 11:42:19 1997  Per Bothner  <bothner@cygnus.com>
-
-	* cplus-dem.c:  Various changes to produce Java output when passed
-	DMGL_JAVA.  Thus "::" becomes "." and "JArray<Foo>" becomes "Foo[]".
-	(main):  Support --java and -j flags to set DMGL_JAVA.
-	
 Tue Jul 22 19:05:23 1997  Robert Hoehne <robert.hoehne@Mathematik.TU-Chemnitz.DE>
 
 	* config/mh-go32 (CC, AR, RANLIB): Don't define.

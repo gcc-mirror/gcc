@@ -31,8 +31,6 @@ $ create config.h
 #define NEED_strsignal
 #define NEED_psignal
 #define NEED_basename
-$ if f$search("alloca-conf.h").eqs."" then -
-	copy alloca-norm.h alloca-conf.h
 $ LIBR 'WORK_LIB' /Create
 $
 $! first pass: compile "required" modules

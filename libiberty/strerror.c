@@ -7,7 +7,7 @@
 
 #include "config.h"
 
-#ifndef NEED_sys_errlist
+#ifdef HAVE_SYS_ERRLIST
 /* Note that errno.h (not sure what OS) or stdio.h (BSD 4.4, at least)
    might declare sys_errlist in a way that the compiler might consider
    incompatible with our later declaration, perhaps by using const
@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <errno.h>
 
-#ifndef NEED_sys_errlist
+#ifdef HAVE_SYS_ERRLIST
 #undef sys_errlist
 #endif
 
@@ -55,12 +55,12 @@ struct error_info
 {
   int value;		/* The numeric value from <errno.h> */
   const char *name;	/* The equivalent symbolic value */
-#ifdef NEED_sys_errlist
+#ifndef HAVE_SYS_ERRLIST
   const char *msg;	/* Short message about this value */
 #endif
 };
 
-#ifdef NEED_sys_errlist
+#ifndef HAVE_SYS_ERRLIST
 #   define ENTRY(value, name, msg)	{value, name, msg}
 #else
 #   define ENTRY(value, name, msg)	{value, name}
@@ -455,7 +455,7 @@ static int num_error_names = 0;
    same name, it differs from other implementations in that it is dynamically
    initialized rather than statically initialized. */
 
-#ifdef NEED_sys_errlist
+#ifndef HAVE_SYS_ERRLIST
 
 static int sys_nerr;
 static const char **sys_errlist;
@@ -532,7 +532,7 @@ init_error_tables ()
 	}
     }
 
-#ifdef NEED_sys_errlist
+#ifndef HAVE_SYS_ERRLIST
 
   /* Now attempt to allocate the sys_errlist table, zero it out, and then
      initialize it from the statically initialized error_table. */
@@ -595,7 +595,7 @@ errno_max ()
   return (maxsize - 1);
 }
 
-#ifdef NEED_strerror
+#ifndef HAVE_STRERROR
 
 /*
 
@@ -634,7 +634,7 @@ strerror (errnoval)
   char *msg;
   static char buf[32];
 
-#ifdef NEED_sys_errlist
+#ifndef HAVE_SYS_ERRLIST
 
   if (error_names == NULL)
     {
@@ -668,7 +668,7 @@ strerror (errnoval)
   return (msg);
 }
 
-#endif	/* NEED_strerror */
+#endif	/* ! HAVE_STRERROR */
 
 
 /*
