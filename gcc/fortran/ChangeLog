@@ -1,3 +1,7 @@
+2005-04-02  Steven G. Kargl  <kargls@comcast.net>
+
+	* intrinsic.texi: Document ALLOCATED, ANINT, ANY, ASIN; fix typos
+
 2005-04-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* decl.c, f95-lang.c, interface.c, module.c, trans-stmt.c,
