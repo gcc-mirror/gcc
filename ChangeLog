@@ -1,3 +1,11 @@
+Fri Dec  4 01:34:02 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* config.guess: Improve detection of hppa2.0 processors.
+
+Fri Dec  4 01:33:05 1998  Niall Smart <nialls@euristix.ie>
+
+	* config.guess: Recognize FreeBSD using ELF automatically.
+
 1998-11-26  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure (skip-this-dir): Add handling for new shell script, which
