@@ -58,9 +58,11 @@
 # if defined(__STDC__) || defined(__cplusplus)
 #   define GC_PROTO(args) args
     typedef void * GC_PTR;
+#   define GC_CONST const
 # else
 #   define GC_PROTO(args) ()
     typedef char * GC_PTR;
+#   define GC_CONST
 #  endif
 
 # ifdef __cplusplus
@@ -96,10 +98,30 @@ GC_API GC_PTR (*GC_oom_fn) GC_PROTO((size_t bytes_requested));
 			/* pointer to a previously allocated heap 	*/
 			/* object.					*/
 
+GC_API int GC_find_leak;
+			/* Do not actually garbage collect, but simply	*/
+			/* report inaccessible memory that was not	*/
+			/* deallocated with GC_free.  Initial value	*/
+			/* is determined by FIND_LEAK macro.		*/
+
 GC_API int GC_quiet;	/* Disable statistics output.  Only matters if	*/
 			/* collector has been compiled with statistics	*/
 			/* enabled.  This involves a performance cost,	*/
 			/* and is thus not the default.			*/
+
+GC_API int GC_finalize_on_demand;
+			/* If nonzero, finalizers will only be run in 	*/
+			/* response to an eplit GC_invoke_finalizers	*/
+			/* call.  The default is determined by whether	*/
+			/* the FINALIZE_ON_DEMAND macro is defined	*/
+			/* when the collector is built.			*/
+
+GC_API int GC_java_finalization;
+			/* Mark objects reachable from finalizable 	*/
+			/* objects in a separate postpass.  This makes	*/
+			/* it a bit safer to use non-topologically-	*/
+			/* ordered finalization.  Default value is	*/
+			/* determined by JAVA_FINALIZATION macro.	*/
 
 GC_API int GC_dont_gc;	/* Dont collect unless explicitly requested, e.g. */
 			/* because it's not safe.			  */
@@ -111,6 +133,12 @@ GC_API int GC_dont_expand;
 GC_API int GC_full_freq;    /* Number of partial collections between	*/
 			    /* full collections.  Matters only if	*/
 			    /* GC_incremental is set.			*/
+			    /* Full collections are also triggered if	*/
+			    /* the collector detects a substantial	*/
+			    /* increase in the number of in-use heap	*/
+			    /* blocks.  Values in the tens are now	*/
+			    /* perfectly reasonable, unlike for		*/
+			    /* earlier GC versions.			*/
 			
 GC_API GC_word GC_non_gc_bytes;
 			/* Bytes not considered candidates for collection. */
@@ -277,6 +305,9 @@ GC_API int GC_try_to_collect GC_PROTO((GC_stop_func stop_func));
 /* Includes some pages that were allocated but never written.		*/
 GC_API size_t GC_get_heap_size GC_PROTO((void));
 
+/* Return a lower bound on the number of free bytes in the heap.	*/
+GC_API size_t GC_get_free_bytes GC_PROTO((void));
+
 /* Return the number of bytes allocated since the last collection.	*/
 GC_API size_t GC_get_bytes_since_gc GC_PROTO((void));
 
@@ -321,10 +352,11 @@ GC_API GC_PTR GC_malloc_atomic_ignore_off_page GC_PROTO((size_t lb));
 
 #ifdef GC_ADD_CALLER
 #  define GC_EXTRAS GC_RETURN_ADDR, __FILE__, __LINE__
-#  define GC_EXTRA_PARAMS GC_word ra, char * descr_string, int descr_int
+#  define GC_EXTRA_PARAMS GC_word ra, GC_CONST char * descr_string,
+		          int descr_int
 #else
 #  define GC_EXTRAS __FILE__, __LINE__
-#  define GC_EXTRA_PARAMS char * descr_string, int descr_int
+#  define GC_EXTRA_PARAMS GC_CONST char * descr_string, int descr_int
 #endif
 
 /* Debugging (annotated) allocation.  GC_gcollect will check 		*/
@@ -510,7 +542,7 @@ GC_API int GC_invoke_finalizers GC_PROTO((void));
 	/* be finalized.  Return the number of finalizers	*/
 	/* that were run.  Normally this is also called		*/
 	/* implicitly during some allocations.	If		*/
-	/* FINALIZE_ON_DEMAND is defined, it must be called	*/
+	/* GC-finalize_on_demand is nonzero, it must be called	*/
 	/* explicitly.						*/
 
 /* GC_set_warn_proc can be used to redirect or filter warning messages.	*/
@@ -668,7 +700,7 @@ GC_API void (*GC_is_visible_print_proc)
 # endif /* SOLARIS_THREADS */
 
 
-#if defined(IRIX_THREADS) || defined(LINUX_THREADS)
+#if defined(IRIX_THREADS) || defined(LINUX_THREADS) || defined(HPUX_THREADS)
 /* We treat these similarly. */
 # include <pthread.h>
 # include <signal.h>
@@ -687,11 +719,12 @@ GC_API void (*GC_is_visible_print_proc)
 
 # if defined(PCR) || defined(SOLARIS_THREADS) || defined(WIN32_THREADS) || \
 	defined(IRIX_THREADS) || defined(LINUX_THREADS) || \
-	defined(IRIX_JDK_THREADS)
+	defined(IRIX_JDK_THREADS) || defined(HPUX_THREADS)
    	/* Any flavor of threads except SRC_M3.	*/
 /* This returns a list of objects, linked through their first		*/
 /* word.  Its use can greatly reduce lock contention problems, since	*/
 /* the allocation lock can be acquired and released many fewer times.	*/
+/* lb must be large enough to hold the pointer field.			*/
 GC_PTR GC_malloc_many(size_t lb);
 #define GC_NEXT(p) (*(GC_PTR *)(p)) 	/* Retrieve the next element	*/
 					/* in returned list.		*/

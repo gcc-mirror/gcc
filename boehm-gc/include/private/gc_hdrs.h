@@ -49,14 +49,16 @@ typedef struct bi {
     hdr * index[BOTTOM_SZ];
 	/*
  	 * The bottom level index contains one of three kinds of values:
-	 * 0 means we're not responsible for this block.
+	 * 0 means we're not responsible for this block,
+	 *   or this is a block other than the first one in a free block.
 	 * 1 < (long)X <= MAX_JUMP means the block starts at least
 	 *        X * HBLKSIZE bytes before the current address.
 	 * A valid pointer points to a hdr structure. (The above can't be
 	 * valid pointers due to the GET_MEM return convention.)
 	 */
     struct bi * asc_link;	/* All indices are linked in	*/
-    				/* ascending order.		*/
+    				/* ascending order...		*/
+    struct bi * desc_link;	/* ... and in descending order.	*/
     word key;			/* high order address bits.	*/
 # ifdef HASH_TL
     struct bi * hash_link;	/* Hash chain link.		*/
