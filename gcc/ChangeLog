@@ -10,7 +10,7 @@
 	* gcc/doc/invoke.texi (Optimization Options): List -O levels
 	for each optimization flag.
 
-2003-01-30	Ralf Corsepius <corsepiu@faw.uni-ulm.de>
+2003-01-30  Ralf Corsepius  <corsepiu@faw.uni-ulm.de>
 
 	PR target/9316 
 	* config/rs6000/rtems.h: Add CPP_OS_DEFAULT_SPEC.
@@ -40,29 +40,31 @@
         * config/ia64/hpux.h (TARGET_ASM_SELECT_SECTION,
         TARGET_ASM_UNIQUE_SECTION, TARGET_ASM_SELECT_RTX_SECTION): New.
 
-2003-01-29	Joel Sherrill <joel@OARcorp.com>
+2003-01-29  Joel Sherrill  <joel@OARcorp.com>
 
+	PR bootstrap/9296
 	* gthr-rtems.h: Define __GTHREAD_MUTEX_INIT.  Apparently no code
-	depended on it being defined until now. This was tracked as PR9296.
+	depended on it being defined until now.
 
-2003-01-13	Joel Sherrill <joel@OARcorp.com>
+2003-01-29  Joel Sherrill  <joel@OARcorp.com>
 
+	PR target/9295
 	* config/mips/rtems.h: Predefine __USE_INIT_FINI__ so generic
 	RTEMS code knows which C++ initialization style the toolset
-	configuration is using. This was tracked as PR9295.
+	configuration is using.
 
-2003-01-29	Joel Sherrill <joel@OARcorp.com>
+2003-01-29  Joel Sherrill  <joel@OARcorp.com>
 
+	PR bootstrap/9293
 	* config/m68k/t-crtstuff: Replace spaces with tabs, add 
 	 $(MULTILIB_CFLAGS) as compiler option and multilib crtbegin/end.o.
-	This issue was tracked as PR9293.
 
-2003-01-29	Joel Sherrill <joel@OARcorp.com>
+2003-01-29  Joel Sherrill  <joel@OARcorp.com>
 
+	PR bootstrap/9292
 	* config.gcc (hppa1.1-rtems):  Did not include t-rtems nor enable
 	RTEMS threads.
 	* config/pa/rtems.h (LIB_SPEC): Use -N when linking.
-	This issue was tracked as PR9292.
 
 2003-01-25  Andrew Haley  <aph@redhat.com>
 
