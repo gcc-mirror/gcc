@@ -34,10 +34,16 @@ java::util::logging::Logger::getCallerStackFrame ()
   _Jv_Method *meth = NULL;
   _Jv_StackTrace::GetCallerInfo (&Logger::class$, &klass, &meth);
 
+  jstring meth_name = NULL;
+  jstring klass_name = NULL;
+  if (klass != NULL)
+    klass_name = klass->getName();
+  if (meth != NULL)
+    meth_name = _Jv_NewStringUtf8Const (meth->name);
+  
   java::lang::StackTraceElement *e 
     = new java::lang::StackTraceElement
-    (JvNewStringUTF (""), 0, 
-     klass->getName(), _Jv_NewStringUtf8Const (meth->name), false);
+    (JvNewStringUTF (""), 0, klass_name, meth_name, false);
 
   return e;
 }

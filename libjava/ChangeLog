@@ -43,7 +43,6 @@
 	Handle error cases.  Added 'endp' argument.
 	* include/jvm.h (_Jv_FindClassFromSignature): Updated prototype.
 
->>>>>>> 1.3459
 2005-04-05  Tom Tromey  <tromey@redhat.com>
 
 	* Makefile.in: Rebuilt.
