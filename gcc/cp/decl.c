@@ -7872,8 +7872,6 @@ start_decl_1 (decl)
   if (type == error_mark_node)
     return;
 
-  maybe_push_cleanup_level (type);
-
   if (initialized)
     /* Is it valid for this decl to have an initializer at all?
        If not, set INITIALIZED to zero, which will indirectly
@@ -7929,6 +7927,14 @@ start_decl_1 (decl)
 
   if (! initialized)
     DECL_INITIAL (decl) = NULL_TREE;
+
+  /* Create a new scope to hold this declaration if necessary.
+     Whether or not a new scope is necessary cannot be determined
+     until after the type has been completed; if the type is a
+     specialization of a class template it is not until after
+     instantiation has occurred that TYPE_HAS_NONTRIVIAL_DESTRUCTOR
+     will be set correctly.  */
+  maybe_push_cleanup_level (type);
 }
 
 /* Handle initialization of references.  DECL, TYPE, and INIT have the

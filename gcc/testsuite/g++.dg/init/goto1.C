@@ -12,12 +12,12 @@ struct C {
 int main(int, char **) {
   {
     int i = 0;
- again:
+  again:
     C<int> v;
     if (++i < 10)
       goto again;
   }
-
+  
   return j;
 }
 
