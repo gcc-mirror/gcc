@@ -78,30 +78,3 @@ Boston, MA 02111-1307, USA.  */
 #undef INITIALIZE_TRAMPOLINE
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
   alpha_initialize_trampoline (TRAMP, FNADDR, CXT, 20, 16, 12)
-
-/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
-   Used for C++ multiple inheritance.  */
-/* ??? This is only used with the v2 ABI, and alpha.c makes assumptions
-   about current_function_is_thunk that are not valid with the v3 ABI.  */
-#if 0
-#undef ASM_OUTPUT_MI_THUNK
-#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
-do {									\
-  const char *op, *fn_name = XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0);	\
-  int reg;								\
-									\
-  /* Mark end of prologue.  */						\
-  output_end_prologue (FILE);						\
-									\
-  /* Rely on the assembler to macro expand a large delta.  */		\
-  reg = aggregate_value_p (TREE_TYPE (TREE_TYPE (FUNCTION))) ? 17 : 16; \
-  fprintf (FILE, "\tlda $%d,%ld($%d)\n", reg, (long)(DELTA), reg);      \
-									\
-  op = "jsr";								\
-  if (current_file_function_operand (XEXP (DECL_RTL (FUNCTION), 0)))	\
-    op = "br";								\
-  fprintf (FILE, "\t%s $31,", op);					\
-  assemble_name (FILE, fn_name);					\
-  fputc ('\n', FILE);							\
-} while (0)
-#endif

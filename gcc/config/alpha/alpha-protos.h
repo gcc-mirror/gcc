@@ -56,6 +56,7 @@ extern int some_operand PARAMS ((rtx, enum machine_mode));
 extern int some_ni_operand PARAMS ((rtx, enum machine_mode));
 extern int input_operand PARAMS ((rtx, enum machine_mode));
 extern int current_file_function_operand PARAMS ((rtx, enum machine_mode));
+extern int direct_call_operand PARAMS ((rtx, enum machine_mode));
 extern int local_symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int small_symbolic_operand PARAMS ((rtx, enum machine_mode));
 extern int global_symbolic_operand PARAMS ((rtx, enum machine_mode));

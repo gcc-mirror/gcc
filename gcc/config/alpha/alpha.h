@@ -824,7 +824,7 @@ enum reg_class { NO_REGS, PV_REG, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 
 #define EXTRA_CONSTRAINT(OP, C)				\
   ((C) == 'Q' ? normal_memory_operand (OP, VOIDmode)			\
-   : (C) == 'R' ? current_file_function_operand (OP, Pmode)		\
+   : (C) == 'R' ? direct_call_operand (OP, Pmode)		\
    : (C) == 'S' ? (GET_CODE (OP) == CONST_INT				\
 		   && (unsigned HOST_WIDE_INT) INTVAL (OP) < 64)	\
    : (C) == 'T' ? GET_CODE (OP) == HIGH					\
@@ -2093,44 +2093,6 @@ do {						\
 #define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
   sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
-
-/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
-   Used for C++ multiple inheritance.  */
-/* ??? This is only used with the v2 ABI, and alpha.c makes assumptions
-   about current_function_is_thunk that are not valid with the v3 ABI.  */
-#if 0
-#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
-do {									\
-  const char *fn_name = XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0);	\
-  int reg;								\
-									\
-  if (TARGET_ABI_OSF)							\
-    fprintf (FILE, "\tldgp $29,0($27)\n");				\
-									\
-  /* Mark end of prologue.  */						\
-  output_end_prologue (FILE);						\
-									\
-  /* Rely on the assembler to macro expand a large delta.  */		\
-  fprintf (FILE, "\t.set at\n");					\
-  reg = aggregate_value_p (TREE_TYPE (TREE_TYPE (FUNCTION))) ? 17 : 16;	\
-  fprintf (FILE, "\tlda $%d,%ld($%d)\n", reg, (long)(DELTA), reg);	\
-									\
-  if (current_file_function_operand (XEXP (DECL_RTL (FUNCTION), 0),	\
-				     VOIDmode))				\
-    {									\
-      fprintf (FILE, "\tbr $31,$");					\
-      assemble_name (FILE, fn_name);					\
-      fprintf (FILE, "..ng\n");						\
-    }									\
-  else									\
-    {									\
-      fprintf (FILE, "\tjmp $31,");					\
-      assemble_name (FILE, fn_name);					\
-      fputc ('\n', FILE);						\
-    }									\
-  fprintf (FILE, "\t.set noat\n");					\
-} while (0)
-#endif
 
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
@@ -2188,6 +2150,7 @@ do {									\
   {"divmod_operator", {DIV, MOD, UDIV, UMOD}},				\
   {"fp0_operand", {CONST_DOUBLE}},					\
   {"current_file_function_operand", {SYMBOL_REF}},			\
+  {"direct_call_operand", {SYMBOL_REF}},				\
   {"local_symbolic_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
   {"small_symbolic_operand", {SYMBOL_REF, CONST}},			\
   {"global_symbolic_operand", {SYMBOL_REF, CONST}},			\
