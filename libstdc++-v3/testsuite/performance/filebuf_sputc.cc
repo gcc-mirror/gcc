@@ -25,10 +25,11 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+#include <cstdio>
 #include <fstream>
 #include <testsuite_performance.h>
 
-// based on libstdc++/8761 poor fstream performance (converted to float)
+// libstdc++/9876
 int main() 
 {
   using namespace std;
@@ -36,17 +37,37 @@ int main()
 
   time_counter time;
   resource_counter resource;
-  const int iterations = 10000000;
+  const int iterations = 100000000;
 
-  ofstream out("tmp_perf_float.txt");
+  // C
+  FILE* file = fopen("tmp", "w+");
   start_counters(time, resource);
   for (int i = 0; i < iterations; ++i)
-    {
-      float f = static_cast<float>(i);
-      out << f << "\n";
-    }
+    putc(i % 100, file);
   stop_counters(time, resource);
-  report_performance(__FILE__, "", time, resource);
+  fclose(file);
+  report_performance(__FILE__, "C", time, resource);
+  clear_counters(time, resource);
+
+  // C unlocked
+  file = fopen("tmp", "w+");
+  start_counters(time, resource);
+  for (int i = 0; i < iterations; ++i)
+    putc_unlocked(i % 100, file);
+  stop_counters(time, resource);
+  fclose(file);
+  report_performance(__FILE__, "C unlocked", time, resource);
+  clear_counters(time, resource);
+
+
+  // C++
+  filebuf buf;
+  buf.open("tmp", ios_base::out | ios_base::in | ios_base::trunc);
+  start_counters(time, resource);
+  for (int i = 0; i < iterations; ++i)
+    buf.sputc(i % 100);
+  stop_counters(time, resource);
+  report_performance(__FILE__, "C++", time, resource);
 
   return 0;
-};
+}

@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+# Script to do performance testing.
+
+# Invocation 
+# check_performance SRC_DIR BUILD_DIR
+
+# 1: variables
+#
+SRC_DIR=$1
+BUILD_DIR=$2
+
+# Now that we've successfully translated the numerical option into
+# a symbolic one, we can safely ignore it.
+shift
+
+# This has been true all along.  Found out about it the hard way...
+case $BASH_VERSION in
+    1*)  
+	echo 'You need bash 2.x to run check_performance.  Exiting.'; 
+	exit 1 ;;
+    *)   ;;  
+esac
+
+flags_script=$BUILD_DIR/scripts/testsuite_flags
+INCLUDES=`$flags_script --build-includes`
+FLAGS=`$flags_script --cxxflags`
+COMPILER=`$flags_script --build-cxx`
+SH_FLAG="-Wl,--rpath -Wl,$BUILD_DIR/../../gcc \
+         -Wl,--rpath -Wl,$BUILD_DIR/src/.libs"
+ST_FLAG="-static"
+LINK=$SH_FLAG
+CXX="$COMPILER $INCLUDES $FLAGS $LINK"
+
+
+TESTS_FILE="testsuite_files_performance"
+
+for NAME in `cat $TESTS_FILE`
+do
+  echo $NAME
+  FILE_NAME="`basename $NAME`"
+  EXE_NAME="`echo $FILE_NAME | sed 's/cc$/exe/'`"
+  $CXX $SRC_DIR/testsuite/$NAME -o $EXE_NAME
+  ./$EXE_NAME
+  echo ""
+done
+
+exit 0

@@ -26,21 +26,32 @@
 // the GNU General Public License.
 
 #include <fstream>
+#include <testsuite_performance.h>
 
 // libstdc++/10672
 int main() 
 {
   using namespace std;
+  using namespace __gnu_cxx_test;
+
+  time_counter time;
+  resource_counter resource;
+  const int iterations = 300000;
+
   fstream s("tmp_perf_seek", ios::binary | ios::in | ios::out | ios::trunc);
   if (s.good())
     {
-      for (int i = 0; i < 300000; i++) 
+      start_counters(time, resource);
+      for (int i = 0; i < iterations; i++) 
 	{
 	  s.seekp(0);
 	  s.write((char *) & i, sizeof(int));
 	  s.seekp(sizeof(int));
 	  s.write((char *) & i, sizeof(int));
 	}
+      stop_counters(time, resource);
+      report_performance(__FILE__, "", time, resource);
     }
+
   return 0;
 }

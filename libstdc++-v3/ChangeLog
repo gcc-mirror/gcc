@@ -1,3 +1,25 @@
+2003-06-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/testsuite_performance.h (time_counter): New.
+	(resource_counter): New.
+	(report_performance): New.
+	(start_counters): New.
+	(stop_counters): New.
+	(clear_counters): New.	
+	* testsuite/performance/allocator.cc: Instrument.
+	* testsuite/performance/cout_insert_int.cc: Same.
+	* testsuite/performance/complex_norm.cc: Same.
+	* testsuite/performance/filebuf_sputc.cc: New.
+	* testsuite/performance/fstream_seek_write.cc: Same.
+	* testsuite/performance/ifstream_getline.cc: Same.
+	* testsuite/performance/map_create_fill.cc: Same.
+	* testsuite/performance/ofstream_insert_float.cc: Same.
+	* testsuite/performance/ofstream_insert_int.cc: Same.
+	* testsuite/performance/string_append.cc: Convert.	
+	* scripts/check_performance: New.
+	* testsuite/Makefile.am (check-performance): New.
+	(CLEANFILES): Add.
+	
 2003-06-18  Paolo Carlini  <pcarlini@unitus.it>
             Benjamin Kosnik  <bkoz@redhat.com>
 

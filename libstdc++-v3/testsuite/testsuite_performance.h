@@ -1,0 +1,184 @@
+// -*- C++ -*-
+// Testing performance utilities for the C++ library testsuite.
+//
+// Copyright (C) 2003 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+// USA.
+//
+// As a special exception, you may use this file as part of a free software
+// library without restriction.  Specifically, if other files instantiate
+// templates or use macros or inline functions from this file, or you compile
+// this file and link it with other files to produce an executable, this
+// file does not by itself cause the resulting executable to be covered by
+// the GNU General Public License.  This exception does not however
+// invalidate any other reasons why the executable file might be covered by
+// the GNU General Public License.
+
+#ifndef _GLIBCPP_PERFORMANCE_H
+#define _GLIBCPP_PERFORMANCE_H
+
+#include <sys/times.h>
+#include <sys/resource.h>
+#include <malloc.h>
+#include <string>
+#include <fstream>
+#include <iomanip>
+
+namespace __gnu_cxx_test
+{
+  class time_counter
+  {
+    clock_t	elapsed_begin;
+    clock_t	elapsed_end;
+    tms		tms_begin;
+    tms		tms_end;
+    
+  public:
+    time_counter() 
+    { this->clear(); }
+
+    void 
+    clear()
+    {
+      elapsed_begin = 0;
+      elapsed_end = 0;
+      memset(&tms_begin, 0, sizeof(tms));
+      memset(&tms_end, 0, sizeof(tms));
+    }
+
+    void
+    start()
+    { elapsed_begin = times(&tms_begin); }
+    
+    void
+    stop()
+    { elapsed_end = times(&tms_end); }
+
+    size_t
+    real_time() const
+    { return elapsed_end - elapsed_begin; }
+
+    size_t
+    user_time() const
+    { return tms_end.tms_utime - tms_begin.tms_utime; }
+
+    size_t
+    system_time() const
+    { return tms_end.tms_stime - tms_begin.tms_stime; }
+  };
+
+  class resource_counter
+  {
+    int		who;
+    rusage	rusage_begin;
+    rusage	rusage_end;
+    struct mallinfo  	allocation_begin;
+    struct mallinfo  	allocation_end;
+
+  public:
+    resource_counter(int i = RUSAGE_SELF) : who(i)
+    { this->clear(); }
+    
+    void 
+    clear()
+    { 
+      memset(&rusage_begin, 0, sizeof(rusage_begin)); 
+      memset(&rusage_end, 0, sizeof(rusage_end)); 
+      memset(&allocation_begin, 0, sizeof(allocation_begin)); 
+      memset(&allocation_end, 0, sizeof(allocation_end)); 
+    }
+
+    void
+    start()
+    { 
+      if (getrusage(who, &rusage_begin) != 0 )
+	memset(&rusage_begin, 0, sizeof(rusage_begin));
+      allocation_begin = mallinfo();
+    }
+    
+    void
+    stop()
+    { 
+      if (getrusage(who, &rusage_end) != 0 )
+	memset(&rusage_end, 0, sizeof(rusage_end));
+      allocation_end = mallinfo();
+    }
+
+    int
+    allocated_memory() const
+    { return allocation_end.arena - allocation_begin.arena; }
+    
+    long 
+    hard_page_fault() const
+    { return rusage_end.ru_majflt - rusage_begin.ru_majflt; }
+
+    long 
+    swapped() const
+    { return rusage_end.ru_nswap - rusage_begin.ru_nswap; }
+  };
+
+  void
+  start_counters(time_counter& t, resource_counter& r)
+  {
+    t.start();
+    r.start();
+  }
+
+  void
+  stop_counters(time_counter& t, resource_counter& r)
+  {
+    t.stop();
+    r.stop();
+  }
+
+  void
+  clear_counters(time_counter& t, resource_counter& r)
+  {
+    t.clear();
+    r.clear();
+  }
+
+  void
+  report_performance(const std::string file, const std::string comment, 
+		     const time_counter& t, const resource_counter& r)
+  {
+    const char space = ' ';
+    const char tab = '\t';
+    const char* name = "libstdc++-v3.performance";
+    std::string::const_iterator i = file.begin() + file.find_last_of('/') + 1;
+    std::string testname(i, file.end());
+
+    std::ofstream out(name, std::ios_base::app);
+
+    out.setf(std::ios_base::left);
+    out << std::setw(25) << testname << tab;
+    out << std::setw(10) << comment << tab;
+
+    out.setf(std::ios_base::right);
+    out << std::setw(4) << t.real_time() << "r" << space;
+    out << std::setw(4) << t.user_time() << "u" << space;
+    out << std::setw(4) << t.system_time() << "s" << space;
+    //    out << std::setw(4) << r.allocated_memory() << "mem" << space;
+    out << std::setw(4) << r.hard_page_fault() << "pf" << space;
+    
+    out << std::endl;
+    out.close();
+  }
+}; // namespace __gnu_cxx_test
+
+#endif // _GLIBCPP_PERFORMANCE_H
+

@@ -125,31 +125,31 @@ check-abi-verbose:
 endif
 
 
-# These two special 'check-script' rules use the bash script 'check'
-# to do testing. This script is not as portable as the dejagnu test
-# harness, and is thus off by default. It does produce interesting
-# output however, including various performance analysis items like
-# compile time, execution time, and binary size.
-check_survey = ${glibcpp_builddir}/scripts/check_survey
-check-script: ${check_survey}
-	-@(chmod + ${check_survey}; \
-	  ${check_survey} 0)
+# These two special 'check-script' rules use the bash script
+# 'check_survey' to do testing. This script is not as portable as the
+# dejagnu test harness, and is thus off by default. It does produce
+# interesting output however, including various performance analysis
+# items like compile time, execution time, and binary size.
+survey_script = ${glibcpp_builddir}/scripts/check_survey
+check-script: ${survey_script}
+	-@(chmod + ${survey_script}; \
+	  ${survey_script} 0)
 
-check-script-install: ${check_survey}
-	-@(chmod + ${check_survey}; \
-	  ${check_survey} 0)
+check-script-install: ${survey_script}
+	-@(chmod + ${survey_script}; \
+	  ${survey_script} 0)
 
 
 # Runs the testsuite/performance tests.  
 # Some of these tests create large (~75MB) files, allocate huge
 # ammounts of memory, or otherwise tie up machine resources. Thus,
 # running this is off by default.
-check_performance=${glibcpp_srcdir}/scripts/check_performance
-check-performance: ${check_performance}
-	-@(chmod + ${check_performance}; \
-	  ${check_performance} ${glibcpp_srcdir} ${glibcpp_builddir})
+performance_script=${glibcpp_srcdir}/scripts/check_performance
+check-performance: ${performance_script}
+	-@(chmod + ${performance_script}; \
+	  ${performance_script} ${glibcpp_srcdir} ${glibcpp_builddir})
 
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
-	     testsuite_* site.exp abi_check baseline_symbols
+	     testsuite_* site.exp abi_check baseline_symbols *.performance

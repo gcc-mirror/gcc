@@ -26,11 +26,23 @@
 // the GNU General Public License.
 
 #include <iostream>
+#include <testsuite_performance.h>
 
 // libstdc++/7076
 int main() 
 {
-  for (int i = 0; i < 150000; i++)
+  using namespace std;
+  using namespace __gnu_cxx_test;
+
+  time_counter time;
+  resource_counter resource;
+  const int iterations = 150000;
+
+  start_counters(time, resource);
+  for (int i = 0; i < iterations; i++)
     std::cout << i << '\n';
+  stop_counters(time, resource);
+  report_performance(__FILE__, "", time, resource);
+
   return 0;
 } 

@@ -181,24 +181,24 @@ abi_check_SOURCES = abi_check.cc
 
 baseline_dir = @baseline_dir@
 baseline_file = ${baseline_dir}/baseline_symbols.txt
-extract_symvers = @glibcpp_srcdir@/scripts/extract_symvers
+extract_symvers = @glibcpp_srcdir@/config/abi/extract_symvers
 
-# These two special 'check-script' rules use the bash script 'check'
-# to do testing. This script is not as portable as the dejagnu test
-# harness, and is thus off by default. It does produce interesting
-# output however, including various performance analysis items like
-# compile time, execution time, and binary size.
-check_survey = ${glibcpp_builddir}/scripts/check_survey
+# These two special 'check-script' rules use the bash script
+# 'check_survey' to do testing. This script is not as portable as the
+# dejagnu test harness, and is thus off by default. It does produce
+# interesting output however, including various performance analysis
+# items like compile time, execution time, and binary size.
+survey_script = ${glibcpp_builddir}/scripts/check_survey
 
 # Runs the testsuite/performance tests.  
 # Some of these tests create large (~75MB) files, allocate huge
 # ammounts of memory, or otherwise tie up machine resources. Thus,
 # running this is off by default.
-check_performance = ${glibcpp_srcdir}/scripts/check_performance
+performance_script = ${glibcpp_srcdir}/scripts/check_performance
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
-	     testsuite_* site.exp abi_check baseline_symbols
+	     testsuite_* site.exp abi_check baseline_symbols *.performance
 
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -527,16 +527,16 @@ new-abi-baseline:
 @GLIBCPP_TEST_ABI_TRUE@	-@(./abi_check --check-verbose ./current_symbols.txt ${baseline_file})
 @GLIBCPP_TEST_ABI_FALSE@check-abi:
 @GLIBCPP_TEST_ABI_FALSE@check-abi-verbose:
-check-script: ${check_survey}
-	-@(chmod + ${check_survey}; \
-	  ${check_survey} 0)
+check-script: ${survey_script}
+	-@(chmod + ${survey_script}; \
+	  ${survey_script} 0)
 
-check-script-install: ${check_survey}
-	-@(chmod + ${check_survey}; \
-	  ${check_survey} 0)
-check-performance: ${check_performance}
-	-@(chmod + ${check_performance}; \
-	  ${check_performance} ${glibcpp_srcdir} ${glibcpp_builddir})
+check-script-install: ${survey_script}
+	-@(chmod + ${survey_script}; \
+	  ${survey_script} 0)
+check-performance: ${performance_script}
+	-@(chmod + ${performance_script}; \
+	  ${performance_script} ${glibcpp_srcdir} ${glibcpp_builddir})
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

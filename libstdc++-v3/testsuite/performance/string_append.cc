@@ -28,6 +28,7 @@
 #include <ctime>
 #include <iostream>
 #include <string>
+#include <testsuite_performance.h>
 
 using namespace std;
 
@@ -36,7 +37,7 @@ test_append_char(int how_much)
 {
   string buf; // no preallocation
   for (int i = 0; i < how_much; ++i)
-     buf.append(static_cast<string::size_type>(1) , 'x');
+    buf.append(static_cast<string::size_type>(1) , 'x');
 }
 
 void
@@ -45,29 +46,31 @@ test_append_string(int how_much)
   string s(static_cast<string::size_type>(1) , 'x');
   string buf; // no preallocation
   for (int i = 0; i < how_much; ++i)
-     buf.append(s);
+    buf.append(s);
 }
 
 void 
 run_benchmark1(int how_much)
 {
-  clock_t t0 = clock();
+  using namespace __gnu_cxx_test;
+  time_counter time;
+  resource_counter resource;
+  start_counters(time, resource);
   test_append_char(how_much);
-  clock_t t1 = clock();
-  cout << "Execution time of " << how_much
-       << " string::append(char) calls: " 
-       << (static_cast<float>(t1 - t0)/CLOCKS_PER_SEC) << " sec."<< endl;
+  stop_counters(time, resource);
+  report_performance(__FILE__, "char", time, resource);
 }
 
 void 
 run_benchmark2(int how_much)
 {
-  clock_t t0 = clock();
+  using namespace __gnu_cxx_test;
+  time_counter time;
+  resource_counter resource;
+  start_counters(time, resource);
   test_append_string(how_much);
-  clock_t t1 = clock();
-  cout << "Execution time of " << how_much
-       << " string::append(const string&) calls: " 
-       << (static_cast<float>(t1 - t0)/CLOCKS_PER_SEC) << " sec." << endl;
+  stop_counters(time, resource);
+  report_performance(__FILE__, "string", time, resource);
 }
 
 // libstdc++/5380
