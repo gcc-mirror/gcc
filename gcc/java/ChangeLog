@@ -1,3 +1,8 @@
+2003-04-20  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* jcf-io.c (find_class): use DIR_SEPARATOR instead of
+	'/' when computing java source filename
+
 2003-04-13  Tom Tromey  <tromey@redhat.com>
 
 	* gjavah.c (print_c_decl): Indentation fix.
