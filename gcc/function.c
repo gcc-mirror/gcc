@@ -3117,8 +3117,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 
 		  start_sequence ();
 		  store_bit_field (sub, size_x, 0, GET_MODE (x),
-				   val, GET_MODE_SIZE (GET_MODE (sub)),
-				   GET_MODE_ALIGNMENT (GET_MODE (sub)));
+				   val, GET_MODE_SIZE (GET_MODE (sub)));
 
 		  /* Make sure to unshare any shared rtl that store_bit_field
 		     might have created.  */
@@ -3139,7 +3138,6 @@ purge_addressof_1 (loc, insn, force, store, ht)
 		  start_sequence ();
 		  val = extract_bit_field (sub, size_x, 0, 1, NULL_RTX,
 					   GET_MODE (x), GET_MODE (x),
-					   GET_MODE_SIZE (GET_MODE (sub)),
 					   GET_MODE_SIZE (GET_MODE (sub)));
 
 		  if (! validate_change (insn, loc, val, 0))
@@ -4493,8 +4491,7 @@ assign_parms (fndecl)
 		 locations.  The Irix 6 ABI has examples of this.  */
 	      if (GET_CODE (entry_parm) == PARALLEL)
 		emit_group_store (validize_mem (stack_parm), entry_parm,
-				  int_size_in_bytes (TREE_TYPE (parm)),
-				  TYPE_ALIGN (TREE_TYPE (parm)));
+				  int_size_in_bytes (TREE_TYPE (parm)));
 
 	      else
 		move_block_from_reg (REGNO (entry_parm),
@@ -4635,8 +4632,7 @@ assign_parms (fndecl)
 		 locations.  The Irix 6 ABI has examples of this.  */
 	      if (GET_CODE (entry_parm) == PARALLEL)
 		emit_group_store (validize_mem (stack_parm), entry_parm,
-				  int_size_in_bytes (TREE_TYPE (parm)),
-				  TYPE_ALIGN (TREE_TYPE (parm)));
+				  int_size_in_bytes (TREE_TYPE (parm)));
 	      else
 		move_block_from_reg (REGNO (entry_parm),
 				     validize_mem (stack_parm),
@@ -6909,8 +6905,7 @@ expand_function_end (filename, line, end_bindings)
 	    }
 	  else if (GET_CODE (real_decl_rtl) == PARALLEL)
 	    emit_group_load (real_decl_rtl, decl_rtl,
-			     int_size_in_bytes (TREE_TYPE (decl_result)),
-			     TYPE_ALIGN (TREE_TYPE (decl_result)));
+			     int_size_in_bytes (TREE_TYPE (decl_result)));
 	  else
 	    emit_move_insn (real_decl_rtl, decl_rtl);
 

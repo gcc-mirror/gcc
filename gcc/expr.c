@@ -153,14 +153,12 @@ static int is_zeros_p		PARAMS ((tree));
 static int mostly_zeros_p	PARAMS ((tree));
 static void store_constructor_field PARAMS ((rtx, unsigned HOST_WIDE_INT,
 					     HOST_WIDE_INT, enum machine_mode,
-					     tree, tree, unsigned int, int,
-					     int));
-static void store_constructor	PARAMS ((tree, rtx, unsigned int, int,
-					 HOST_WIDE_INT));
+					     tree, tree, int, int));
+static void store_constructor	PARAMS ((tree, rtx, int, HOST_WIDE_INT));
 static rtx store_field		PARAMS ((rtx, HOST_WIDE_INT,
 					 HOST_WIDE_INT, enum machine_mode,
 					 tree, enum machine_mode, int,
-					 unsigned int, HOST_WIDE_INT, int));
+					 HOST_WIDE_INT, int));
 static enum memory_use_mode
   get_memory_usage_from_modifier PARAMS ((enum expand_modifier));
 static rtx var_rtx		PARAMS ((tree));
@@ -1946,8 +1944,7 @@ move_block_from_reg (regno, x, nregs, size)
 
 /* Emit code to move a block SRC to a block DST, where DST is non-consecutive
    registers represented by a PARALLEL.  SSIZE represents the total size of
-   block SRC in bytes, or -1 if not known.  ALIGN is the known alignment of
-   SRC in bits.  */
+   block SRC in bytes, or -1 if not known.  */
 /* ??? If SSIZE % UNITS_PER_WORD != 0, we make the blatent assumption that
    the balance will be in what would be the low-order memory addresses, i.e.
    left justified for big endian, right justified for little endian.  This
@@ -1956,9 +1953,8 @@ move_block_from_reg (regno, x, nregs, size)
    would be needed.  */
 
 void
-emit_group_load (dst, orig_src, ssize, align)
+emit_group_load (dst, orig_src, ssize)
      rtx dst, orig_src;
-     unsigned int align;
      int ssize;
 {
   rtx *tmps, src;
@@ -2006,12 +2002,13 @@ emit_group_load (dst, orig_src, ssize, align)
 	    src = gen_reg_rtx (mode);
 	  else
 	    src = gen_reg_rtx (GET_MODE (orig_src));
+
 	  emit_move_insn (src, orig_src);
 	}
 
       /* Optimize the access just a bit.  */
       if (GET_CODE (src) == MEM
-	  && align >= GET_MODE_ALIGNMENT (mode)
+	  && MEM_ALIGN (src) >= GET_MODE_ALIGNMENT (mode)
 	  && bytepos * BITS_PER_UNIT % GET_MODE_ALIGNMENT (mode) == 0
 	  && bytelen == GET_MODE_SIZE (mode))
 	{
@@ -2028,11 +2025,10 @@ emit_group_load (dst, orig_src, ssize, align)
 	    tmps[i] = XEXP (src, 1);
 	  else if (bytepos == 0)
 	    {
-	      rtx mem;
-	      mem = assign_stack_temp (GET_MODE (src),
-				       GET_MODE_SIZE (GET_MODE (src)), 0);
+	      rtx mem = assign_stack_temp (GET_MODE (src),
+					   GET_MODE_SIZE (GET_MODE (src)), 0);
 	      emit_move_insn (mem, src);
-	      tmps[i] = change_address (mem, mode, XEXP (mem, 0));
+	      tmps[i] = adjust_address (mem, mode, 0);
 	    }
 	  else
 	    abort ();
@@ -2043,7 +2039,7 @@ emit_group_load (dst, orig_src, ssize, align)
       else
 	tmps[i] = extract_bit_field (src, bytelen * BITS_PER_UNIT,
 				     bytepos * BITS_PER_UNIT, 1, NULL_RTX,
-				     mode, mode, align, ssize);
+				     mode, mode, ssize);
 
       if (BYTES_BIG_ENDIAN && shift)
 	expand_binop (mode, ashl_optab, tmps[i], GEN_INT (shift),
@@ -2059,13 +2055,12 @@ emit_group_load (dst, orig_src, ssize, align)
 
 /* Emit code to move a block SRC to a block DST, where SRC is non-consecutive
    registers represented by a PARALLEL.  SSIZE represents the total size of
-   block DST, or -1 if not known.  ALIGN is the known alignment of DST.  */
+   block DST, or -1 if not known.  */
 
 void
-emit_group_store (orig_dst, src, ssize, align)
+emit_group_store (orig_dst, src, ssize)
      rtx orig_dst, src;
      int ssize;
-     unsigned int align;
 {
   rtx *tmps, dst;
   int start, i;
@@ -2109,8 +2104,8 @@ emit_group_store (orig_dst, src, ssize, align)
 	 the temporary.  */
 
       temp = assign_stack_temp (GET_MODE (dst), ssize, 0);
-      emit_group_store (temp, src, ssize, align);
-      emit_group_load (dst, temp, ssize, align);
+      emit_group_store (temp, src, ssize);
+      emit_group_load (dst, temp, ssize);
       return;
     }
   else if (GET_CODE (dst) != MEM)
@@ -2141,13 +2136,13 @@ emit_group_store (orig_dst, src, ssize, align)
 
       /* Optimize the access just a bit.  */
       if (GET_CODE (dst) == MEM
-	  && align >= GET_MODE_ALIGNMENT (mode)
+	  && MEM_ALIGN (dst) >= GET_MODE_ALIGNMENT (mode)
 	  && bytepos * BITS_PER_UNIT % GET_MODE_ALIGNMENT (mode) == 0
 	  && bytelen == GET_MODE_SIZE (mode))
 	emit_move_insn (adjust_address (dst, mode, bytepos), tmps[i]);
       else
 	store_bit_field (dst, bytelen * BITS_PER_UNIT, bytepos * BITS_PER_UNIT,
-			 mode, tmps[i], align, ssize);
+			 mode, tmps[i], ssize);
     }
 
   emit_queue ();
@@ -2228,8 +2223,8 @@ copy_blkmode_from_reg (tgtblk, srcreg, type)
 		       extract_bit_field (src, bitsize,
 					  xbitpos % BITS_PER_WORD, 1,
 					  NULL_RTX, word_mode, word_mode,
-					  bitsize, BITS_PER_WORD),
-		       bitsize, BITS_PER_WORD);
+					  BITS_PER_WORD),
+		       BITS_PER_WORD);
     }
 
   return tgtblk;
@@ -3655,7 +3650,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
       /* Handle calls that pass values in multiple non-contiguous locations.
 	 The Irix 6 ABI has examples of this.  */
       if (GET_CODE (reg) == PARALLEL)
-	emit_group_load (reg, x, -1, align);  /* ??? size? */
+	emit_group_load (reg, x, -1);  /* ??? size? */
       else
 	move_block_to_reg (REGNO (reg), x, partial, mode);
     }
@@ -3872,9 +3867,7 @@ expand_assignment (to, from, want_value, suggest_reg)
 				 ? ((enum machine_mode)
 				    TYPE_MODE (TREE_TYPE (to)))
 				 : VOIDmode),
-				unsignedp,
-				alignment,
-				int_size_in_bytes (TREE_TYPE (tem)),
+				unsignedp, int_size_in_bytes (TREE_TYPE (tem)),
 				get_alias_set (to));
 
 	  preserve_temp_slots (result);
@@ -3916,8 +3909,7 @@ expand_assignment (to, from, want_value, suggest_reg)
       /* Handle calls that return values in multiple non-contiguous locations.
 	 The Irix 6 ABI has examples of this.  */
       if (GET_CODE (to_rtx) == PARALLEL)
-	emit_group_load (to_rtx, value, int_size_in_bytes (TREE_TYPE (from)),
-			 TYPE_ALIGN (TREE_TYPE (from)));
+	emit_group_load (to_rtx, value, int_size_in_bytes (TREE_TYPE (from)));
       else if (GET_MODE (to_rtx) == BLKmode)
 	emit_block_move (to_rtx, value, expr_size (from));
       else
@@ -3951,8 +3943,7 @@ expand_assignment (to, from, want_value, suggest_reg)
       temp = expand_expr (from, 0, GET_MODE (to_rtx), 0);
 
       if (GET_CODE (to_rtx) == PARALLEL)
-	emit_group_load (to_rtx, temp, int_size_in_bytes (TREE_TYPE (from)),
-			 TYPE_ALIGN (TREE_TYPE (from)));
+	emit_group_load (to_rtx, temp, int_size_in_bytes (TREE_TYPE (from)));
       else
 	emit_move_insn (to_rtx, temp);
 
@@ -4362,8 +4353,7 @@ store_expr (exp, target, want_value)
       /* Handle calls that return values in multiple non-contiguous locations.
 	 The Irix 6 ABI has examples of this.  */
       else if (GET_CODE (target) == PARALLEL)
-	emit_group_load (target, temp, int_size_in_bytes (TREE_TYPE (exp)),
-			 TYPE_ALIGN (TREE_TYPE (exp)));
+	emit_group_load (target, temp, int_size_in_bytes (TREE_TYPE (exp)));
       else if (GET_MODE (temp) == BLKmode)
 	emit_block_move (target, temp, expr_size (exp));
       else
@@ -4464,7 +4454,7 @@ mostly_zeros_p (exp)
 /* Helper function for store_constructor.
    TARGET, BITSIZE, BITPOS, MODE, EXP are as for store_field.
    TYPE is the type of the CONSTRUCTOR, not the element type.
-   ALIGN and CLEARED are as for store_constructor.
+   CLEARED is as for store_constructor.
    ALIAS_SET is the alias set to use for any stores.
 
    This provides a recursive shortcut back to store_constructor when it isn't
@@ -4473,14 +4463,13 @@ mostly_zeros_p (exp)
    clear a substructure if the outer structure has already been cleared.  */
 
 static void
-store_constructor_field (target, bitsize, bitpos,
-			 mode, exp, type, align, cleared, alias_set)
+store_constructor_field (target, bitsize, bitpos, mode, exp, type, cleared,
+			 alias_set)
      rtx target;
      unsigned HOST_WIDE_INT bitsize;
      HOST_WIDE_INT bitpos;
      enum machine_mode mode;
      tree exp, type;
-     unsigned int align;
      int cleared;
      int alias_set;
 {
@@ -4500,11 +4489,7 @@ store_constructor_field (target, bitsize, bitpos,
 			    ? BLKmode : VOIDmode, bitpos / BITS_PER_UNIT);
 
 
-      /* Show the alignment may no longer be what it was and update the alias
-	 set, if required.  */
-      if (bitpos != 0)
-	align = MIN (align, (unsigned int) bitpos & - bitpos);
-
+      /* Update the alias set, if required.  */
       if (GET_CODE (target) == MEM && ! MEM_KEEP_ALIAS_SET_P (target)
 	  && MEM_ALIAS_SET (target) != 0)
 	{
@@ -4512,26 +4497,25 @@ store_constructor_field (target, bitsize, bitpos,
 	  set_mem_alias_set (target, alias_set);
 	}
 
-      store_constructor (exp, target, align, cleared, bitsize / BITS_PER_UNIT);
+      store_constructor (exp, target, cleared, bitsize / BITS_PER_UNIT);
     }
   else
-    store_field (target, bitsize, bitpos, mode, exp, VOIDmode, 0, align,
+    store_field (target, bitsize, bitpos, mode, exp, VOIDmode, 0,
 		 int_size_in_bytes (type), alias_set);
 }
 
 /* Store the value of constructor EXP into the rtx TARGET.
-   TARGET is either a REG or a MEM.
-   ALIGN is the maximum known alignment for TARGET.
+   TARGET is either a REG or a MEM; we know it cannot conflict, since
+   safe_from_p has been called.
    CLEARED is true if TARGET is known to have been zero'd.
    SIZE is the number of bytes of TARGET we are allowed to modify: this
    may not be the same as the size of EXP if we are assigning to a field
    which has been packed to exclude padding bits.  */
 
 static void
-store_constructor (exp, target, align, cleared, size)
+store_constructor (exp, target, cleared, size)
      tree exp;
      rtx target;
-     unsigned int align;
      int cleared;
      HOST_WIDE_INT size;
 {
@@ -4540,47 +4524,30 @@ store_constructor (exp, target, align, cleared, size)
   HOST_WIDE_INT exp_size = int_size_in_bytes (type);
 #endif
 
-  /* We know our target cannot conflict, since safe_from_p has been called.  */
-#if 0
-  /* Don't try copying piece by piece into a hard register
-     since that is vulnerable to being clobbered by EXP.
-     Instead, construct in a pseudo register and then copy it all.  */
-  if (GET_CODE (target) == REG && REGNO (target) < FIRST_PSEUDO_REGISTER)
-    {
-      rtx temp = gen_reg_rtx (GET_MODE (target));
-      store_constructor (exp, temp, align, cleared, size);
-      emit_move_insn (target, temp);
-      return;
-    }
-#endif
-
   if (TREE_CODE (type) == RECORD_TYPE || TREE_CODE (type) == UNION_TYPE
       || TREE_CODE (type) == QUAL_UNION_TYPE)
     {
       tree elt;
 
-      /* Inform later passes that the whole union value is dead.  */
+      /* We either clear the aggregate or indicate the value is dead.  */
       if ((TREE_CODE (type) == UNION_TYPE
 	   || TREE_CODE (type) == QUAL_UNION_TYPE)
-	  && ! cleared)
+	  && ! cleared
+	  && ! CONSTRUCTOR_ELTS (exp))
+	/* If the constructor is empty, clear the union.  */
 	{
-	  emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
-
-	  /* If the constructor is empty, clear the union.  */
-	  if (! CONSTRUCTOR_ELTS (exp)  && ! cleared)
-	    clear_storage (target, expr_size (exp));
+	  clear_storage (target, expr_size (exp));
+	  cleared = 1;
 	}
 
       /* If we are building a static constructor into a register,
 	 set the initial value as zero so we can fold the value into
 	 a constant.  But if more than one register is involved,
 	 this probably loses.  */
-      else if (GET_CODE (target) == REG && TREE_STATIC (exp)
+      else if (! cleared && GET_CODE (target) == REG && TREE_STATIC (exp)
 	       && GET_MODE_SIZE (GET_MODE (target)) <= UNITS_PER_WORD)
 	{
-	  if (! cleared)
-	    emit_move_insn (target, CONST0_RTX (GET_MODE (target)));
-
+	  emit_move_insn (target, CONST0_RTX (GET_MODE (target)));
 	  cleared = 1;
 	}
 
@@ -4589,20 +4556,19 @@ store_constructor (exp, target, align, cleared, size)
 	 clear the whole structure first.  Don't do this if TARGET is a
 	 register whose mode size isn't equal to SIZE since clear_storage
 	 can't handle this case.  */
-      else if (size > 0
+      else if (! cleared && size > 0
 	       && ((list_length (CONSTRUCTOR_ELTS (exp))
 		    != fields_length (type))
 		   || mostly_zeros_p (exp))
 	       && (GET_CODE (target) != REG
-		   || (HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (target)) == size))
+		   || ((HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (target))
+		       == size)))
 	{
-	  if (! cleared)
-	    clear_storage (target, GEN_INT (size));
-
+	  clear_storage (target, GEN_INT (size));
 	  cleared = 1;
 	}
-      else if (! cleared)
-	/* Inform later passes that the old value is dead.  */
+
+      if (! cleared)
 	emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
 
       /* Store each element of the constructor into
@@ -4672,8 +4638,6 @@ store_constructor (exp, target, align, cleared, size)
 
 	      to_rtx = offset_address (to_rtx, offset_rtx,
 				       highest_pow2_factor (offset));
-
-	      align = DECL_OFFSET_ALIGN (field);
 	    }
 
 	  if (TREE_READONLY (field))
@@ -4698,11 +4662,13 @@ store_constructor (exp, target, align, cleared, size)
 	      && bitpos + BITS_PER_WORD <= exp_size * BITS_PER_UNIT)
 	    {
 	      tree type = TREE_TYPE (value);
+
 	      if (TYPE_PRECISION (type) < BITS_PER_WORD)
 		{
 		  type = type_for_size (BITS_PER_WORD, TREE_UNSIGNED (type));
 		  value = convert (type, value);
 		}
+
 	      if (BYTES_BIG_ENDIAN)
 		value
 		  = fold (build (LSHIFT_EXPR, type, value,
@@ -4720,7 +4686,7 @@ store_constructor (exp, target, align, cleared, size)
 	    }
 
 	  store_constructor_field (to_rtx, bitsize, bitpos, mode,
-				   TREE_VALUE (elt), type, align, cleared,
+				   TREE_VALUE (elt), type, cleared,
 				   get_alias_set (TREE_TYPE (field)));
 	}
     }
@@ -4817,7 +4783,6 @@ store_constructor (exp, target, align, cleared, size)
 	  HOST_WIDE_INT bitpos;
 	  int unsignedp;
 	  tree value = TREE_VALUE (elt);
-	  unsigned int align = TYPE_ALIGN (TREE_TYPE (value));
 	  tree index = TREE_PURPOSE (elt);
 	  rtx xtarget = target;
 
@@ -4869,8 +4834,8 @@ store_constructor (exp, target, align, cleared, size)
 			}
 
 		      store_constructor_field
-			(target, bitsize, bitpos, mode, value, type, align,
-			 cleared, get_alias_set (elttype));
+			(target, bitsize, bitpos, mode, value, type, cleared,
+			 get_alias_set (elttype));
 		    }
 		}
 	      else
@@ -4912,7 +4877,7 @@ store_constructor (exp, target, align, cleared, size)
 					    highest_pow2_factor (position));
 		  xtarget = adjust_address (xtarget, mode, 0);
 		  if (TREE_CODE (value) == CONSTRUCTOR)
-		    store_constructor (value, xtarget, align, cleared,
+		    store_constructor (value, xtarget, cleared,
 				       bitsize / BITS_PER_UNIT);
 		  else
 		    store_expr (value, xtarget, 0);
@@ -4966,8 +4931,7 @@ store_constructor (exp, target, align, cleared, size)
 		}
 
 	      store_constructor_field (target, bitsize, bitpos, mode, value,
-				       type, align, cleared,
-				       get_alias_set (elttype));
+				       type, cleared, get_alias_set (elttype));
 
 	    }
 	}
@@ -5167,7 +5131,6 @@ store_constructor (exp, target, align, cleared, size)
    has mode VALUE_MODE if that is convenient to do.
    In this case, UNSIGNEDP must be nonzero if the value is an unsigned type.
 
-   ALIGN is the alignment that TARGET is known to have.
    TOTAL_SIZE is the size in bytes of the structure, or -1 if varying.
 
    ALIAS_SET is the alias set for the destination.  This value will
@@ -5175,8 +5138,8 @@ store_constructor (exp, target, align, cleared, size)
    reference to the containing structure.  */
 
 static rtx
-store_field (target, bitsize, bitpos, mode, exp, value_mode,
-	     unsignedp, align, total_size, alias_set)
+store_field (target, bitsize, bitpos, mode, exp, value_mode, unsignedp,
+	     total_size, alias_set)
      rtx target;
      HOST_WIDE_INT bitsize;
      HOST_WIDE_INT bitpos;
@@ -5184,7 +5147,6 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
      tree exp;
      enum machine_mode value_mode;
      int unsignedp;
-     unsigned int align;
      HOST_WIDE_INT total_size;
      int alias_set;
 {
@@ -5229,7 +5191,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 	emit_move_insn (object, target);
 
       store_field (blk_object, bitsize, bitpos, mode, exp, VOIDmode, 0,
-		   align, total_size, alias_set);
+		   total_size, alias_set);
 
       /* Even though we aren't returning target, we need to
 	 give it the updated value.  */
@@ -5259,11 +5221,11 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
       || GET_CODE (target) == SUBREG
       /* If the field isn't aligned enough to store as an ordinary memref,
 	 store it as a bit field.  */
-      || (mode != BLKmode && SLOW_UNALIGNED_ACCESS (mode, align)
-	  && (align < GET_MODE_ALIGNMENT (mode)
+      || (mode != BLKmode && SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (target))
+	  && (MEM_ALIGN (target) < GET_MODE_ALIGNMENT (mode)
 	      || bitpos % GET_MODE_ALIGNMENT (mode)))
-      || (mode == BLKmode && SLOW_UNALIGNED_ACCESS (mode, align)
-	  && (TYPE_ALIGN (TREE_TYPE (exp)) > align
+      || (mode == BLKmode && SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (target))
+	  && (TYPE_ALIGN (TREE_TYPE (exp)) > MEM_ALIGN (target)
 	      || bitpos % TYPE_ALIGN (TREE_TYPE (exp)) != 0))
       /* If the RHS and field are a constant size and the size of the
 	 RHS isn't the same size as the bitfield, we must use bitfield
@@ -5297,21 +5259,11 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 	 boundary.  If so, we simply do a block copy.  */
       if (GET_MODE (target) == BLKmode && GET_MODE (temp) == BLKmode)
 	{
-	  unsigned int exp_align = expr_align (exp);
-
 	  if (GET_CODE (target) != MEM || GET_CODE (temp) != MEM
 	      || bitpos % BITS_PER_UNIT != 0)
 	    abort ();
 
 	  target = adjust_address (target, VOIDmode, bitpos / BITS_PER_UNIT);
-
-	  /* Make sure that ALIGN is no stricter than the alignment of EXP.  */
-	  align = MIN (exp_align, align);
-
-	  /* Find an alignment that is consistent with the bit position.  */
-	  while ((bitpos % align) != 0)
-	    align >>= 1;
-
 	  emit_block_move (target, temp,
 			   bitsize == -1 ? expr_size (exp)
 			   : GEN_INT ((bitsize + BITS_PER_UNIT - 1)
@@ -5321,11 +5273,11 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 	}
 
       /* Store the value in the bitfield.  */
-      store_bit_field (target, bitsize, bitpos, mode, temp, align, total_size);
+      store_bit_field (target, bitsize, bitpos, mode, temp, total_size);
       if (value_mode != VOIDmode)
 	{
-	  /* The caller wants an rtx for the value.  */
-	  /* If possible, avoid refetching from the bitfield itself.  */
+	  /* The caller wants an rtx for the value.
+	     If possible, avoid refetching from the bitfield itself.  */
 	  if (width_mask != 0
 	      && ! (GET_CODE (target) == MEM && MEM_VOLATILE_P (target)))
 	    {
@@ -5340,6 +5292,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 				     GET_MODE (temp) == VOIDmode
 				     ? value_mode
 				     : GET_MODE (temp))), NULL_RTX);
+
 	      tmode = GET_MODE (temp);
 	      if (tmode == VOIDmode)
 		tmode = value_mode;
@@ -5347,8 +5300,9 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 	      temp = expand_shift (LSHIFT_EXPR, tmode, temp, count, 0, 0);
 	      return expand_shift (RSHIFT_EXPR, tmode, temp, count, 0, 0);
 	    }
+
 	  return extract_bit_field (target, bitsize, bitpos, unsignedp,
-				    NULL_RTX, value_mode, 0, align,
+				    NULL_RTX, value_mode, VOIDmode,
 				    total_size);
 	}
       return const0_rtx;
@@ -6823,7 +6777,7 @@ expand_expr (exp, target, tmode, modifier)
 						       * TYPE_QUAL_CONST))),
 			     TREE_ADDRESSABLE (exp), 1, 1);
 
-	  store_constructor (exp, target, TYPE_ALIGN (TREE_TYPE (exp)), 0,
+	  store_constructor (exp, target, 0,
 			     int_size_in_bytes (TREE_TYPE (exp)));
 	  return target;
 	}
@@ -7256,11 +7210,10 @@ expand_expr (exp, target, tmode, modifier)
 	    op0 = validize_mem (op0);
 
 	    if (GET_CODE (op0) == MEM && GET_CODE (XEXP (op0, 0)) == REG)
-	      mark_reg_pointer (XEXP (op0, 0), alignment);
+	      mark_reg_pointer (XEXP (op0, 0), MEM_ALIGN (op0));
 
 	    op0 = extract_bit_field (op0, bitsize, bitpos,
 				     unsignedp, target, ext_mode, ext_mode,
-				     alignment,
 				     int_size_in_bytes (TREE_TYPE (tem)));
 
 	    /* If the result is a record type and BITSIZE is narrower than
@@ -7548,8 +7501,7 @@ expand_expr (exp, target, tmode, modifier)
 			       * BITS_PER_UNIT),
 			      (HOST_WIDE_INT) GET_MODE_BITSIZE (mode)),
 			 0, TYPE_MODE (valtype), TREE_OPERAND (exp, 0),
-			 VOIDmode, 0, BITS_PER_UNIT,
-			 int_size_in_bytes (type), 0);
+			 VOIDmode, 0, int_size_in_bytes (type), 0);
 	  else
 	    abort ();
 
@@ -8740,9 +8692,7 @@ expand_expr (exp, target, tmode, modifier)
 	      if (GET_CODE (op0) == PARALLEL)
 		/* Handle calls that pass values in multiple non-contiguous
 		   locations.  The Irix 6 ABI has examples of this.  */
-		emit_group_store (memloc, op0,
-				  int_size_in_bytes (inner_type),
-				  TYPE_ALIGN (inner_type));
+		emit_group_store (memloc, op0, int_size_in_bytes (inner_type));
 	      else
 		emit_move_insn (memloc, op0);
 	      op0 = memloc;
@@ -9215,7 +9165,7 @@ expand_expr_unaligned (exp, palign)
 
 		op0 = extract_bit_field (validize_mem (op0), bitsize, bitpos,
 					 unsignedp, NULL_RTX, ext_mode,
-					 ext_mode, alignment,
+					 ext_mode,
 					 int_size_in_bytes (TREE_TYPE (tem)));
 
 		/* If the result is a record type and BITSIZE is narrower than
