@@ -14,8 +14,8 @@ using namespace abi;
 
 int expect (int flags, type_info const &info)
 {
-  __pointer_class_type_info const *ptr =
-      dynamic_cast <__pointer_class_type_info const *> (&info);
+  __pointer_type_info const *ptr =
+      dynamic_cast <__pointer_type_info const *> (&info);
   if (!ptr)
     return 0;
   if (ptr->quals != flags)
@@ -31,25 +31,29 @@ int main ()
     return 2;
   if (! expect (2, typeid (A volatile *)))
     return 3;
-  if (! expect (4, typeid (A __restrict__ *)))
+  if (! expect (4, typeid (A *__restrict__ *)))
     return 4;
-  if (! expect (0, typeid (void A::*))
+  if (! expect (0, typeid (int A::*)))
     return 5;
-  if (! expect (0, typeid (void A::**))
+  if (! expect (0, typeid (int A::**)))
     return 6;
 
   if (! expect (8 | 0, typeid (B *)))
-    return 1;
+    return 11;
   if (! expect (8 | 1, typeid (B const *)))
-    return 2;
+    return 12;
   if (! expect (8 | 2, typeid (B volatile *)))
-    return 3;
-  if (! expect (8 | 4, typeid (B __restrict__ *)))
-    return 4;
-  if (! expect (8 | 0, typeid (void B::*))
-    return 5;
-  if (! expect (8 | 0, typeid (void B::**))
-    return 6;
+    return 13;
+  if (! expect (8 | 4, typeid (B *__restrict__ *)))
+    return 14;
+  if (! expect (16 | 0, typeid (int B::*)))
+    return 15;
+  if (! expect (8 | 0, typeid (int B::**)))
+    return 16;
+  if (! expect (8 | 0, typeid (B A::*)))
+    return 17;
+  if (! expect (24, typeid (B B::*)))
+    return 18;
   
   return 0;
 }
