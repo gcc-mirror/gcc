@@ -1,3 +1,14 @@
+2004-08-06  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.def (bfd, opcodes, gcc, zlib): Mark as bootstrap module.
+	(bison, byacc, flex, texinfo): Do not mark as bootstrap module.
+	(Dependencies): New section.
+	* Makefile.tpl (Dependencies): Generate from Makefile.def.
+	(configure-target-[+module+]): Depend on maybe-all-gcc
+	(all-prebootstrap): New name of all-bootstrap.  Changed throughout.
+	(toplevel profiledbootstrap): Fix dependencies.
+	* Makefile.in: Regenerate.
+
 2004-08-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* configure.in (arm*-*-symbianelf*): Add ${libgcj} and
