@@ -2117,7 +2117,7 @@ compare: force
 	    && (cmp tmp-foo1 tmp-foo2 || echo $$file differs); \
 	done
 	for dir in tmp-foo $(SUBDIRS); do \
-	  if [ `echo $$dir/*.o` != "$$dir/*.o" ] ; then \
+	  if [ "`echo $$dir/*.o`" != "$$dir/*.o" ] ; then \
 	    for file in $$dir/*.o; do \
 	      tail +16c ./$$file > tmp-foo1; \
 	      tail +16c stage2/$$file > tmp-foo2 2>/dev/null \
@@ -2135,7 +2135,7 @@ compare3: force
 	    && (cmp tmp-foo1 tmp-foo2 || echo $$file differs); \
 	done
 	for dir in tmp-foo $(SUBDIRS); do \
-	  if [ `echo $$dir/*.o` != "$$dir/*.o" ] ; then \
+	  if [ "`echo $$dir/*.o`" != "$$dir/*.o" ] ; then \
 	    for file in $$dir/*.o; do \
 	      tail +16c ./$$file > tmp-foo1; \
 	      tail +16c stage3/$$file > tmp-foo2 2>/dev/null \
@@ -2154,7 +2154,7 @@ gnucompare: force
 	  cmp --ignore-initial=16 $$file stage2/$$file || true ; \
 	done
 	for dir in tmp-foo $(SUBDIRS); do \
-	  if [ `echo $$dir/*.o` != "$$dir/*.o" ] ; then \
+	  if [ "`echo $$dir/*.o`" != "$$dir/*.o" ] ; then \
 	    for file in $$dir/*.o; do \
 	      cmp --ignore-initial=16 $$file stage2/$$file || true ; \
 	    done \
@@ -2167,7 +2167,7 @@ gnucompare3: force
 	  cmp --ignore-initial=16 $$file stage3/$$file || true ; \
 	done
 	for dir in tmp-foo $(SUBDIRS); do \
-	  if [ `echo $$dir/*.o` != "$$dir/*.o" ] ; then \
+	  if [ "`echo $$dir/*.o`" != "$$dir/*.o" ] ; then \
 	    for file in $$dir/*.o; do \
 	      cmp --ignore-initial=16 $$file stage3/$$file || true ; \
 	    done \
