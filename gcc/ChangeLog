@@ -1,3 +1,9 @@
+2003-03-17  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* function.c (thread_prologue_and_epilogue_insns): Set delete_unused
+	argument to 0 for redirect_jump.
+	
+
 2003-03-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8805
