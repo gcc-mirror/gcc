@@ -783,21 +783,25 @@ fix = {
  *  This conflicts with C99.  Discovered on AIX.
  *  SunOS4 has its cabs() declaration followed by a comment which
  *  terminates on the following line.
+ *  Darwin hides its broken cabs in architecture-specific subdirs.
  */
 fix = {
     hackname = broken_cabs;
-    files  = "math.h";
-    select = '^extern[ \t]+double[ \t]+cabs';
+    files    = "math.h";
+    files    = "architecture/ppc/math.h";
+    files    = "architecture/i386/math.h";
+    select   = '^extern[ \t]+double[ \t]+cabs';
 
     c_fix     = format;
     c_fix_arg = "";
-    c_fix_arg = "^extern[ \t]+double[ \t]+cabs\\((struct dbl_hypot|)\\);";
+    c_fix_arg = "^extern[ \t]+double[ \t]+cabs[ \t]*\\([^\\)]*\\);";
 
     test_text = "#ifdef __STDC__\n"
                 "extern     double   cabs(struct dbl_hypot);\n"
                 "#else\n"
                 "extern     double   cabs();\n"
                 "#endif\n"
+                "extern double cabs ( _Complex z );\n"
                 "extern double cabs(); /* This is a comment\n"
                 "                         and it ends here. */";
 };
