@@ -1,3 +1,10 @@
+2000-09-07  Brad Garcia  <bgarcia@laurelnetworks.com>
+
+	* bits/stl_tree.h: Make operators !=, == type safe for map, set.
+	* testsuite/23_containers/set_operators.cc: New file. Should not
+	compile.  
+	* testsuite/23_containers/map_operators.cc: New file. Ditto.
+	
 2000-09-06  Richard Henderson  <rth@cygnus.com>
 	    Benjamin Kosnik  <bkoz@cygnus.com>
 
