@@ -1,5 +1,9 @@
 2004-11-24  Kelley Cook  <kcook@gcc.gnu.org>
 
+	* libtool.m4 (AC_DEPLIBS_CHECK_METHOD): Revert previous change.
+
+2004-11-24  Kelley Cook  <kcook@gcc.gnu.org>
+
 	* libtool.m4 (AC_DEPLIBS_CHECK_METHOD): Import linux-gnu case
 	from CVS libtool to always pass_all.
 
