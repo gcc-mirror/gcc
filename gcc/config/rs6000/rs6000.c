@@ -632,11 +632,18 @@ num_insns_constant (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (mode != SImode && mode != DImode && mode != SFmode && mode != DFmode)
-    abort ();
-
   if (GET_CODE (op) == CONST_INT)
     return num_insns_constant_wide (INTVAL (op));
+
+  else if (GET_CODE (op) == CONST_DOUBLE && mode == SFmode)
+    {
+      long l;
+      REAL_VALUE_TYPE rv;
+
+      REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
+      REAL_VALUE_TO_TARGET_SINGLE (rv, l);
+      return num_insns_constant_wide ((HOST_WIDE_INT)l);
+    }
 
   else if (GET_CODE (op) == CONST_DOUBLE && TARGET_32BIT)
     return (num_insns_constant_wide (CONST_DOUBLE_LOW (op))
