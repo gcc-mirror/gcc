@@ -1,3 +1,10 @@
+2002-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl2.c (cxx_decode_option): Pass 0 as last argument to
+	cpp_handle_option.
+	* lang-specs.h: Use cpp_unique_options instead of cpp_options
+	when used together with cc1_options.
+
 2002-01-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/5132

@@ -1,3 +1,22 @@
+2002-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/1502:
+	* cppinit.c (cpp_handle_option): Add ignore argument, if it is zero,
+	don't ignore unrecognized -W* options.
+	(cpp_handle_options): Pass 1 as last argument to cpp_handle_option.
+	* cpplib.h (cpp_handle_option): Adjust prototype.
+	* c-decl.c (c_decode_options): Pass 0 as last argument to
+	cpp_handle_option.
+
+	PR c/2896:
+	* gcc.c (cpp_unique_options): Split from cpp_options.
+	(cpp_options): Source cpp_unique_options.
+	(default_compilers): Use cpp_unique_options instead of cpp_options
+	when used together with cc1_options.
+	(static_specs): Add cpp_unique_options.
+	* objc/lang-specs.h: Use cpp_unique_options instead of cpp_options
+	when used together with cc1_options.
+
 2002-01-29  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300-protos.h: Update the prototype of

@@ -1,5 +1,5 @@
 /* Definitions for specs for Objective-C.
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 	    tradcpp0 -lang-objc %{ansi:-std=c89} %(cpp_options) %{!pipe:%g.mi} |\n\
 	    cc1obj -fpreprocessed %{!pipe:%g.mi} %(cc1_options) %{gen-decls}}\
 	  %{!traditional:%{!ftraditional:%{!traditional-cpp:\
-	    cc1obj %{ansi:-std=c89} %(cpp_options) %(cc1_options) %{gen-decls}}}}}\
+	    cc1obj %{ansi:-std=c89} %(cpp_unique_options) %(cc1_options) %{gen-decls}}}}}\
         %{!fsyntax-only:%(invoke_as)}}}}", 0},
   {".mi", "@objc-cpp-output", 0},
   {"@objc-cpp-output",
