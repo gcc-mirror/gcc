@@ -19,7 +19,7 @@ typedef struct objc_selector    *SEL;
 - (void) foo
 {
   SEL a,b,c;
-  a = @selector(b1ar); /* { dg-warning "creating selector for non existant method b1ar" } */
+  a = @selector(b1ar); /* { dg-warning "creating selector for nonexistent method .b1ar." } */
   b = @selector(bar);
 }
 @end

@@ -1,3 +1,9 @@
+2004-09-24  Zack Weinberg  <zack@codesourcery.com>
+
+	* objc.dg/proto-lossage-4.m: Use long instead of int to avoid
+	extra diagnostics on targets with 64-bit pointers.
+	* objc.dg/selector-1.m: Adjust dg-warning regexp.
+
 2004-09-24  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/17188

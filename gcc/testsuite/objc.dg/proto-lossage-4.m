@@ -7,25 +7,25 @@
 typedef struct objc_object { struct objc_class *class_pointer; } *id;
 
 @protocol Proto
-- (int)someValue;
+- (long)someValue;
 @end
 
 @interface Obj
-- (int)anotherValue;
+- (long)anotherValue;
 @end
 
-int foo(void) {
-  int receiver = 2;
+long foo(void) {
+  long receiver = 2;
   Obj *objrcvr;
   Obj <Proto> *objrcvr2;
 
-  receiver += [receiver someValue]; /* { dg-warning "invalid receiver type .int( )?." } */
+  receiver += [receiver someValue]; /* { dg-warning "invalid receiver type .long int." } */
 /* { dg-warning "Messages without a matching method signature" "" { target *-*-* } 22 } */
 /* { dg-warning "will be assumed to return .id. and accept" "" { target *-*-* } 22 } */
 /* { dg-warning ".\.\.\.. as arguments" "" { target *-*-* } 22 } */
 /* { dg-warning "assignment makes integer from pointer without a cast" "" { target *-*-* } 22 } */
 
-  receiver += [receiver anotherValue]; /* { dg-warning "invalid receiver type .int( )?." } */
+  receiver += [receiver anotherValue]; /* { dg-warning "invalid receiver type .long int." } */
 /* { dg-warning "assignment makes integer from pointer without a cast" "" { target *-*-* } 28 } */
   
   receiver += [(Obj *)receiver someValue]; /* { dg-warning ".Obj. may not respond to .\\-someValue." } */
