@@ -503,6 +503,9 @@ make_decl_rtl (decl, asmspec, top_level)
 	{
 	  warning_with_decl (decl,
 			     "section attribute ignored for uninitialized variable `%s'");
+	  /* Remove the section name so subsequent declarations won't see it.
+	     We are ignoring it, remember.  */
+	  DECL_SECTION_NAME (decl) = NULL_TREE;
 	}
 
       /* Now handle ordinary static variables and functions (in memory).
