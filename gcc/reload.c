@@ -3778,6 +3778,27 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	  goal_alternative_win[i] = 1;
       }
 
+  /* Likewise any invalid constants appearing as operand of a PLUS
+     that is to be reloaded.  */
+  for (i = 0; i < noperands; i++)
+    if (! goal_alternative_win[i]
+	&& GET_CODE (recog_data.operand[i]) == PLUS
+	&& CONST_POOL_OK_P (XEXP (recog_data.operand[i], 1))
+	&& (PREFERRED_RELOAD_CLASS (XEXP (recog_data.operand[i], 1),
+				    (enum reg_class) goal_alternative[i])
+	     == NO_REGS)
+	&& operand_mode[i] != VOIDmode)
+      {
+	rtx tem = force_const_mem (operand_mode[i],
+				   XEXP (recog_data.operand[i], 1));
+	tem = gen_rtx_PLUS (operand_mode[i],
+			    XEXP (recog_data.operand[i], 0), tem);
+
+	substed_operand[i] = recog_data.operand[i]
+	  = find_reloads_toplev (tem, i, address_type[i],
+				 ind_levels, 0, insn, NULL);
+      }
+
   /* Record the values of the earlyclobber operands for the caller.  */
   if (goal_earlyclobber)
     for (i = 0; i < noperands; i++)
