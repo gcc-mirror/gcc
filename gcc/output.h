@@ -1,7 +1,7 @@
 /* Declarations for insn-output.c.  These functions are defined in recog.c,
    final.c, and varasm.c.
    Copyright (C) 1987, 1991, 1994, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -35,7 +35,7 @@ extern void app_enable		PARAMS ((void));
    Called from varasm.c before most kinds of output.  */
 extern void app_disable		PARAMS ((void));
 
-/* Return the number of slots filled in the current 
+/* Return the number of slots filled in the current
    delayed branch sequence (we don't count the insn needing the
    delay slot).   Zero if not in a delayed branch sequence.  */
 extern int dbr_sequence_length	PARAMS ((void));
@@ -115,6 +115,11 @@ extern void split_double	PARAMS ((rtx, rtx *, rtx *));
 
 /* Return nonzero if this function has no function calls.  */
 extern int leaf_function_p	PARAMS ((void));
+
+/* Return 1 if branch is an forward branch.
+   Uses insn_shuid array, so it works only in the final pass.  May be used by
+   output templates to add branch prediction hints, for example.  */
+extern int final_forward_branch_p PARAMS ((rtx));
 
 /* Return 1 if this function uses only the registers that can be
    safely renumbered.  */

@@ -784,7 +784,7 @@ override_options ()
      ix86_regparm = REGPARM_MAX;
 
   /* If the user has provided any of the -malign-* options,
-     warn and use that value only if -falign-* is not set.  
+     warn and use that value only if -falign-* is not set.
      Remove this code in GCC 3.2 or later.  */
   if (ix86_align_loops_string)
     {
@@ -1204,7 +1204,7 @@ function_arg_advance (cum, mode, type, named)
 	  cum->sse_regno = 0;
 	}
     }
-  else         
+  else
     {
       cum->words += words;
       cum->nregs -= words;
@@ -1264,7 +1264,7 @@ function_arg (cum, mode, type, named)
     case TImode:
       if (cum->sse_nregs)
         ret = gen_rtx_REG (mode, cum->sse_regno);
-      break;    
+      break;
     }
 
   if (TARGET_DEBUG_ARG)
@@ -2273,7 +2273,7 @@ ix86_frame_pointer_required ()
      to be able to access the saved ebp value in our frame.  */
   if (cfun->machine->accesses_prev_frame)
     return 1;
-  
+
   /* Several x86 os'es need a frame pointer for other reasons,
      usually pertaining to setjmp.  */
   if (SUBTARGET_FRAME_POINTER_REQUIRED)
@@ -2735,7 +2735,7 @@ ix86_expand_epilogue (style)
 
   ix86_compute_frame_layout (&frame);
 
-  /* Calculate start of saved registers relative to ebp.  Special care 
+  /* Calculate start of saved registers relative to ebp.  Special care
      must be taken for the normal return case of a function using
      eh_return: the eax and edx registers are marked as saved, but not
      restored along this path.  */
@@ -4224,7 +4224,7 @@ print_operand (file, x, code)
 
 	    if (!optimize || optimize_size || !TARGET_BRANCH_PREDICTION_HINTS)
 	      return;
-	    
+
 	    x = find_reg_note (current_output_insn, REG_BR_PROB, 0);
 	    if (x)
 	      {
@@ -4752,7 +4752,7 @@ output_387_binary_op (insn, operands)
   return buf;
 }
 
-/* Output code to initialize control word copies used by 
+/* Output code to initialize control word copies used by
    trunc?f?i patterns.  NORMAL is set to current control word, while ROUND_DOWN
    is set to control word rounding downwards.  */
 void
@@ -4782,7 +4782,6 @@ output_fix_trunc (insn, operands)
 {
   int stack_top_dies = find_regno_note (insn, REG_DEAD, FIRST_STACK_REG) != 0;
   int dimode_p = GET_MODE (operands[0]) == DImode;
-  rtx xops[4];
 
   /* Jump through a hoop or two for DImode, since the hardware has no
      non-popping instruction.  We used to do this a different way, but
@@ -7565,7 +7564,7 @@ ix86_expand_movstr (dst, src, count_exp, align_exp)
          than 4 bytes, because gcc is able to optimize such code better (in
          the case the destination or the count really is aligned, gcc is often
          able to predict the branches) and also it is friendlier to the
-         hardware branch prediction.  
+         hardware branch prediction.
 
          Using loops is benefical for generic case, because we can
          handle small counts using the loops.  Many CPUs (such as Athlon)
@@ -8087,8 +8086,8 @@ ix86_expand_strlensi_unroll_1 (out, align_rtx)
        tmp = gen_rtx_EQ (VOIDmode, tmp, const0_rtx);
        emit_insn (gen_rtx_SET (VOIDmode, out,
 			       gen_rtx_IF_THEN_ELSE (Pmode, tmp,
-				       		     reg2,
-				       		     out)));
+						     reg2,
+						     out)));
 
     }
   else
@@ -10550,7 +10549,7 @@ ix86_secondary_memory_needed (class1, class2, mode, strict)
 	      && (mode) != SImode));
 }
 /* Return the cost of moving data from a register in class CLASS1 to
-   one in class CLASS2. 
+   one in class CLASS2.
 
    It is not required that the cost always equal 2 when FROM is the same as TO;
    on some machines it is expensive to move between registers if they are not
@@ -10621,8 +10620,8 @@ ix86_hard_regno_mode_ok (regno, mode)
 
    If moving between registers and memory is more expensive than
    between two registers, you should define this macro to express the
-   relative cost.  
- 
+   relative cost.
+
    Model also increased moving costs of QImode registers in non
    Q_REGS classes.
  */
