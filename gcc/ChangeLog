@@ -1,3 +1,77 @@
+2003-06-18  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc: Add an extra_header for ARM targets.
+        Support configuring with --with-cpu=iwmmxt.
+	* doc/invoke.texi: Document new value for -mcpu= ARM switch.
+        * config/arm/aof.h (REGISTER_NAMES): Add iwmmxt register
+	names.  Fix formatting.        
+        * config/arm/aout.h (REGISTER_NAMES): Add iwmmxt register
+	names.
+        * config/arm/arm-protos.h (arm_emit_vector_const): New
+	prototype.
+	(arm_output_load_gr): New prototype.
+	* config/arm/arm.c (extra_reg_names1): Delete.
+        (TARGET_INIT_BUILTINS, TARGET_EXPAND_BUILTIN, FL_IWMMXT,
+	* arch_is_iwmmxt): Define.
+	(all_cores, all_architecture): Add entry for iwmmxt.
+	(arm_override_options): Add support for iwmmxt.
+	(use_return_insn, arm_function_arg, arm_legitimate_index_p,
+	arm_print_value, arm_rtx_costs_1, output_move_double,
+	arm_compute_save_reg_mask, arm_output_epilogue,
+	arm_get_frame_size, arm_expand_prologue, arm_print_operand,
+	arm_assemble_integer, arm_hard_regno_ok, arm_regno_class):
+	Likewise.
+	(arm_init_cumulative_args): Count iwmmxt registers.
+	(arm_function_ok_for_sibcall): Return false of sibcall_blocked
+	has been set.
+	(struct minipool_node): Add fix_size field.
+	(add_minipool_forward_ref): Add support for 8-byte aligning of
+	the pool.
+	(add_minipool_backward_ref, add_minipool_offsets,
+	dump_minipool, push_minipool_fix): Likewise.
+	(struct builtin_description): New struct.
+        (builtin_description): New array of iwmmxt builtin functions.
+        (arm_init_iwmmxt_builtins): New function.
+        (arm_init_builtins): New function.
+        (safe_vector_operand): New function.
+        (arm_expand_binop_builtin): New function.
+        (arm_expand_unop_builtin): New function.
+        (arm_expand_builtin): New function.
+        (arm_emit_vector_const): New function.
+        (arm_output_load_gr): New function.
+        * config/arm/arm.h (TARGET_CPU_iwmmxt, TARGET_IWMMXT,
+	TARGET_REALLY_IWMMXT, arm_arch_iwmmxt, IWMMXT_ALIGNMENT,
+	TYPE_NEEDS_IWMMXT_ALIGNMENT, ADJUST_FIELD_ALIGN,
+	DATA_ALIGNMENT, LOCAL_ALIGNMENT, VECTOR_MODE_SUPPORTED_P): Define.
+        (BIGGEST_ALIGNMENT): Set to 64 if ATPCS support is enabled.
+        (CPP_CPU_ARCH_SPEC): Add entries for iwmmxt.
+        (FIXED_REGISTERS, CALL_USED_REGISTERS, REG_ALLOC_ORDER,
+	reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS,
+	REG_CLASS_FOR_LETTER): Add iwmmxt registers.
+        (SUBTARGET_CONDITIONAL_REGISTER_USAGE): Disable iwmmxt
+	registers unless the iwmmxt target is selected.
+        (FIRST_IWMMXT_GR_REGNUM, LAST_IWMMXT_GR_REGNUM,
+	FIRST_IWMMXT_REGNUM, LAST_IWMMXT_REGNUM, IS_IWMMXT_REGNUM,
+	IS_IWMMXT_GR_REGNUM): Define.
+        (FIRST_PSEUDO_REGISTER): Bump to 63.
+        (struct machine_function): Add sibcall_blocked field.
+        (Struct CUMULATIVE_ARGS): Add iwmmxt_nregs, named_count and
+	nargs fields.
+        (enum arm_builtins): New enum list.
+        * config/arm/arm.md (UNSPEC_WSHUFH, UNSPEC_WACC,
+	UNSPEC_TMOVMSK, UNSPEC_WSAD, UNSPEC_WSADZ, UNSPEC_WMACS,
+	UNSPEC_WMACU, UNSPEC_WMACSZ, UNSPEC_WMACUZ, UNSPEC_CLRDI,
+	UNSPEC_WMADDS, UNSPEC_WMADDU): New unspecs.
+	(VUNSPEC_TMRC, VUNSPEC_TMCR, VUNSPEC_ALIGN8, VUNSPEC_WCMP_EQ,
+	VUNSPEC_WCMP_GTU, VUNSPEC_WCMP_GT): New vunspecs.
+        (movv2si, movv4hi, movv8qi): New expands for vector moves.
+        Include iwmmxt.md.
+	* config/arm/t-xscale-elf (MULTILIB_OPITONS): Add iwmmxt
+	multilib.
+        (MULTILIB_DIRNAMES, MULTILIB_REDUNDANT_DIRS): Likewise.
+        * config/arm/mmintrin.h: New ARM specific header file.
+        * config/arm/iwmmx.md: New iWMMXt specific machine patterns.
+
 2003-06-18  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* toplev.c (Remaining -d letters summary): Update.

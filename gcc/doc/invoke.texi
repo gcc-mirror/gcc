@@ -6338,7 +6338,7 @@ assembly code.  Permissible names are: @samp{arm2}, @samp{arm250},
 @samp{strongarm}, @samp{strongarm110}, @samp{strongarm1100},
 @samp{arm8}, @samp{arm810}, @samp{arm9}, @samp{arm9e}, @samp{arm920},
 @samp{arm920t}, @samp{arm940t}, @samp{arm9tdmi}, @samp{arm10tdmi},
-@samp{arm1020t}, @samp{xscale}, @samp{ep9312}.
+@samp{arm1020t}, @samp{xscale}, @samp{iwmmxt}, @samp{ep9312}.
 
 @itemx -mtune=@var{name}
 @opindex mtune
@@ -6358,7 +6358,7 @@ name to determine what kind of instructions it can emit when generating
 assembly code.  This option can be used in conjunction with or instead
 of the @option{-mcpu=} option.  Permissible names are: @samp{armv2},
 @samp{armv2a}, @samp{armv3}, @samp{armv3m}, @samp{armv4}, @samp{armv4t},
-@samp{armv5}, @samp{armv5t}, @samp{armv5te}, @samp{ep9312}.
+@samp{armv5}, @samp{armv5t}, @samp{armv5te}, @samp{iwmmxt}, @samp{ep9312}.
 
 @item -mfpe=@var{number}
 @itemx -mfp=@var{number}

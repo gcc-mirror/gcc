@@ -158,11 +158,12 @@ divisor		.req	r1
 overdone	.req	r2
 result		.req	r2
 curbit		.req	r3
+#if 0
 ip		.req	r12
 sp		.req	r13
 lr		.req	r14
 pc		.req	r15
-
+#endif
 /* ------------------------------------------------------------------------ */
 /*		Bodies of the divsion and modulo routines.		    */
 /* ------------------------------------------------------------------------ */	

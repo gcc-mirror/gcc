@@ -97,6 +97,7 @@
 #define TARGET_CPU_arm9tdmi	0x0080
 #define TARGET_CPU_xscale       0x0100
 #define TARGET_CPU_ep9312	0x0200
+#define TARGET_CPU_iwmmxt	0x0400
 /* Configure didn't specify.  */
 #define TARGET_CPU_generic	0x8000
 
@@ -265,6 +266,9 @@ Unrecognized value in TARGET_CPU_DEFAULT.
  %{mcpu=xscale:-D__XSCALE__} \
  %{mcpu=ep9312:-D__ARM_ARCH_4T__} \
  %{mcpu=ep9312:-D__MAVERICK__} \
+ %{mcpu=iwmmxt:-D__ARM_ARCH_5TE__} \
+ %{mcpu=iwmmxt:-D__XSCALE__} \
+ %{mcpu=iwmmxt:-D__IWMMXT__} \
  %{!mcpu*:%(cpp_cpu_arch_default)}} \
 "
 
@@ -406,6 +410,8 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #define TARGET_HARD_FLOAT		(! TARGET_SOFT_FLOAT)
 #define TARGET_CIRRUS			(arm_is_cirrus)
 #define TARGET_ANY_HARD_FLOAT		(TARGET_HARD_FLOAT || TARGET_CIRRUS)
+#define TARGET_IWMMXT			(arm_arch_iwmmxt)
+#define TARGET_REALLY_IWMMXT		(TARGET_IWMMXT && TARGET_ARM)
 #define TARGET_VFP			(target_flags & ARM_FLAG_VFP)
 #define TARGET_BIG_END			(target_flags & ARM_FLAG_BIG_END)
 #define TARGET_INTERWORK		(target_flags & ARM_FLAG_INTERWORK)
@@ -623,6 +629,9 @@ extern int arm_is_strong;
 /* Nonzero if this chip is a Cirrus variant.  */
 extern int arm_is_cirrus;
 
+/* Nonzero if this chip supports Intel XScale with Wireless MMX technology.  */
+extern int arm_arch_iwmmxt;
+
 /* Nonzero if this chip is an XScale.  */
 extern int arm_arch_xscale;
 
@@ -729,6 +738,8 @@ extern int arm_is_6_or_7;
 
 #define PARM_BOUNDARY  	32
 
+#define IWMMXT_ALIGNMENT   64
+
 #define STACK_BOUNDARY  32
 
 #define PREFERRED_STACK_BOUNDARY (TARGET_ATPCS ? 64 : 32)
@@ -742,13 +753,46 @@ extern int arm_is_6_or_7;
 
 #define EMPTY_FIELD_BOUNDARY  32
 
-#define BIGGEST_ALIGNMENT  32
+#define BIGGEST_ALIGNMENT  (TARGET_ATPCS ? 64 : 32)
+
+#define TYPE_NEEDS_IWMMXT_ALIGNMENT(TYPE)	\
+ (TARGET_REALLY_IWMMXT				\
+   && ((TREE_CODE (TYPE) == VECTOR_TYPE) || (TYPE_MODE (TYPE) == DImode) || (TYPE_MODE (TYPE) == DFmode)))
+
+/* An expression for the alignment of a structure field FIELD if the
+   alignment computed in the usual way is COMPUTED.  GCC uses this
+   value instead of the value in `BIGGEST_ALIGNMENT' or
+   `BIGGEST_FIELD_ALIGNMENT', if defined, for structure fields only.  */
+#define ADJUST_FIELD_ALIGN(FIELD, COMPUTED)		\
+  (TYPE_NEEDS_IWMMXT_ALIGNMENT (TREE_TYPE (FIELD))	\
+   ? IWMMXT_ALIGNMENT					\
+   : (COMPUTED))
+
+/* If defined, a C expression to compute the alignment for a static variable.
+   TYPE is the data type, and ALIGN is the alignment that the object
+   would ordinarily have.  The value of this macro is used instead of that
+   alignment to align the object.
+
+   If this macro is not defined, then ALIGN is used.  */
+#define DATA_ALIGNMENT(TYPE, ALIGN) \
+  (TYPE_NEEDS_IWMMXT_ALIGNMENT (TYPE) ? IWMMXT_ALIGNMENT : ALIGN)
+
+/* If defined, a C expression to compute the alignment for a
+   variables in the local store.  TYPE is the data type, and
+   BASIC-ALIGN is the alignment that the object would ordinarily
+   have.  The value of this macro is used instead of that alignment
+   to align the object.
+
+   If this macro is not defined, then BASIC-ALIGN is used.  */
+#define LOCAL_ALIGNMENT(TYPE, ALIGN) \
+  (TYPE_NEEDS_IWMMXT_ALIGNMENT (TYPE) ? IWMMXT_ALIGNMENT : ALIGN)
 
 /* Make strings word-aligned so strcpy from constants will be faster.  */
 #define CONSTANT_ALIGNMENT_FACTOR (TARGET_THUMB || ! arm_arch_xscale ? 1 : 2)
     
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)				\
-  ((TREE_CODE (EXP) == STRING_CST				\
+  ((TARGET_REALLY_IWMMXT && TREE_CODE (EXP) == VECTOR_TYPE) ? IWMMXT_ALIGNMENT : \
+   (TREE_CODE (EXP) == STRING_CST				\
     && (ALIGN) < BITS_PER_WORD * CONSTANT_ALIGNMENT_FACTOR)	\
    ? BITS_PER_WORD * CONSTANT_ALIGNMENT_FACTOR : (ALIGN))
 
@@ -848,7 +892,10 @@ extern const char * structure_size_string;
   0,0,0,0,0,0,0,0,	 \
   1,1,1,		\
   1,1,1,1,1,1,1,1,	\
-  1,1,1,1,1,1,1,1	\
+  1,1,1,1,1,1,1,1,	 \
+  1,1,1,1,1,1,1,1,	 \
+  1,1,1,1,1,1,1,1,	 \
+  1,1,1,1		 \
 }
 
 /* 1 for registers not available across function calls.
@@ -866,7 +913,10 @@ extern const char * structure_size_string;
   1,1,1,1,0,0,0,0,	     \
   1,1,1,		     \
   1,1,1,1,1,1,1,1,	     \
-  1,1,1,1,1,1,1,1	     \
+  1,1,1,1,1,1,1,1,	     \
+  1,1,1,1,1,1,1,1,	     \
+  1,1,1,1,1,1,1,1,	     \
+  1,1,1,1		     \
 }
 
 #ifndef SUBTARGET_CONDITIONAL_REGISTER_USAGE
@@ -894,6 +944,26 @@ extern const char * structure_size_string;
 	{							\
 	  fixed_regs[regno] = 0;				\
 	  call_used_regs[regno] = regno < FIRST_CIRRUS_FP_REGNUM + 4; \
+	}							\
+    }								\
+								\
+  if (TARGET_REALLY_IWMMXT)					\
+    {								\
+      regno = FIRST_IWMMXT_GR_REGNUM;				\
+      /* The 2002/10/09 revision of the XScale ABI has wCG0     \
+         and wCG1 as call-preserved registers.  The 2002/11/21  \
+         revision changed this so that all wCG registers are    \
+         scratch registers.  */					\
+      for (regno = FIRST_IWMMXT_GR_REGNUM;			\
+	   regno <= LAST_IWMMXT_GR_REGNUM; ++ regno)		\
+	fixed_regs[regno] = call_used_regs[regno] = 0;		\
+      /* The XScale ABI has wR0 - wR9 as scratch registers,     \
+	 the rest as call-preserved registers.  */		\
+      for (regno = FIRST_IWMMXT_REGNUM;				\
+	   regno <= LAST_IWMMXT_REGNUM; ++ regno)		\
+	{							\
+	  fixed_regs[regno] = 0;				\
+	  call_used_regs[regno] = regno < FIRST_IWMMXT_REGNUM + 10; \
 	}							\
     }								\
 								\
@@ -1014,6 +1084,15 @@ extern const char * structure_size_string;
 #define FIRST_ARM_FP_REGNUM 	16
 #define LAST_ARM_FP_REGNUM  	23
 
+#define FIRST_IWMMXT_GR_REGNUM	43
+#define LAST_IWMMXT_GR_REGNUM	46
+#define FIRST_IWMMXT_REGNUM	47
+#define LAST_IWMMXT_REGNUM	62
+#define IS_IWMMXT_REGNUM(REGNUM) \
+  (((REGNUM) >= FIRST_IWMMXT_REGNUM) && ((REGNUM) <= LAST_IWMMXT_REGNUM))
+#define IS_IWMMXT_GR_REGNUM(REGNUM) \
+  (((REGNUM) >= FIRST_IWMMXT_GR_REGNUM) && ((REGNUM) <= LAST_IWMMXT_GR_REGNUM))
+
 /* Base register for access to local variables of the function.  */
 #define FRAME_POINTER_REGNUM	25
 
@@ -1027,7 +1106,8 @@ extern const char * structure_size_string;
 
 /* The number of hard registers is 16 ARM + 8 FPA + 1 CC + 1 SFP + 1 AFP.  */
 /* + 16 Cirrus registers take us up to 43.  */
-#define FIRST_PSEUDO_REGISTER	43
+/* Intel Wireless MMX Technology registers add 16 + 4 more.  */
+#define FIRST_PSEUDO_REGISTER   63
 
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms may be accessed
@@ -1064,6 +1144,12 @@ extern const char * structure_size_string;
 #define MODES_TIEABLE_P(MODE1, MODE2)  \
   (GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2))
 
+#define VECTOR_MODE_SUPPORTED_P(MODE) \
+ ((MODE) == V2SImode || (MODE) == V4HImode || (MODE) == V8QImode)
+
+#define VALID_IWMMXT_REG_MODE(MODE) \
+ (VECTOR_MODE_SUPPORTED_P (MODE) || (MODE) == DImode)
+
 /* The order in which register should be allocated.  It is good to use ip
    since no saving is required (though calls clobber it) and it never contains
    function parameters.  It is quite good to use lr since other calls may
@@ -1077,6 +1163,9 @@ extern const char * structure_size_string;
     16, 17, 18, 19, 20, 21, 22, 23, \
     27, 28, 29, 30, 31, 32, 33, 34, \
     35, 36, 37, 38, 39, 40, 41, 42, \
+    43, 44, 45, 46, 47, 48, 49, 50, \
+    51, 52, 53, 54, 55, 56, 57, 58, \
+    59, 60, 61, 62,		    \
     24, 25, 26			    \
 }
 
@@ -1096,6 +1185,8 @@ enum reg_class
   NO_REGS,
   FPA_REGS,
   CIRRUS_REGS,
+  IWMMXT_GR_REGS,
+  IWMMXT_REGS,
   LO_REGS,
   STACK_REG,
   BASE_REGS,
@@ -1114,6 +1205,8 @@ enum reg_class
   "NO_REGS",		\
   "FPA_REGS",		\
   "CIRRUS_REGS",	\
+  "IWMMXT_GR_REGS",	\
+  "IWMMXT_REGS",	\
   "LO_REGS",		\
   "STACK_REG",		\
   "BASE_REGS",		\
@@ -1131,13 +1224,15 @@ enum reg_class
   { 0x00000000, 0x0 },        /* NO_REGS  */	\
   { 0x00FF0000, 0x0 },        /* FPA_REGS */	\
   { 0xF8000000, 0x000007FF }, /* CIRRUS_REGS */	\
+  { 0x00000000, 0x00007800 }, /* IWMMXT_GR_REGS */\
+  { 0x00000000, 0x7FFF8000 }, /* IWMMXT_REGS */	\
   { 0x000000FF, 0x0 },        /* LO_REGS */	\
   { 0x00002000, 0x0 },        /* STACK_REG */	\
   { 0x000020FF, 0x0 },        /* BASE_REGS */	\
   { 0x0000FF00, 0x0 },        /* HI_REGS */	\
   { 0x01000000, 0x0 },        /* CC_REG */	\
   { 0x0200FFFF, 0x0 },        /* GENERAL_REGS */\
-  { 0xFAFFFFFF, 0x000007FF }  /* ALL_REGS */	\
+  { 0xFAFFFFFF, 0x7FFFFFFF }  /* ALL_REGS */	\
 }
 
 /* The same information, inverted:
@@ -1177,6 +1272,8 @@ enum reg_class
 #define REG_CLASS_FROM_LETTER(C)  	\
   (  (C) == 'f' ? FPA_REGS		\
    : (C) == 'v' ? CIRRUS_REGS		\
+   : (C) == 'y' ? IWMMXT_REGS		\
+   : (C) == 'z' ? IWMMXT_GR_REGS	\
    : (C) == 'l' ? (TARGET_ARM ? GENERAL_REGS : LO_REGS)	\
    : TARGET_ARM ? NO_REGS		\
    : (C) == 'h' ? HI_REGS		\
@@ -1292,6 +1389,9 @@ enum reg_class
      && (CONSTANT_P (X) || GET_CODE (X) == SYMBOL_REF))		\
     ? GENERAL_REGS :						\
   (TARGET_ARM ?							\
+   (((CLASS) == IWMMXT_REGS || (CLASS) == IWMMXT_GR_REGS)	\
+      && CONSTANT_P (X))					\
+   ? GENERAL_REGS :						\
    (((MODE) == HImode && ! arm_arch4 && TARGET_MMU_TRAPS	\
      && (GET_CODE (X) == MEM					\
 	 || ((GET_CODE (X) == REG || GET_CODE (X) == SUBREG)	\
@@ -1405,6 +1505,9 @@ enum reg_class
   (TARGET_ARM ?						\
    ((FROM) == FPA_REGS && (TO) != FPA_REGS ? 20 :	\
     (FROM) != FPA_REGS && (TO) == FPA_REGS ? 20 :	\
+    (FROM) == IWMMXT_REGS && (TO) != IWMMXT_REGS ? 4 :  \
+    (FROM) != IWMMXT_REGS && (TO) == IWMMXT_REGS ? 4 :  \
+    (FROM) == IWMMXT_GR_REGS || (TO) == IWMMXT_GR_REGS ? 20 :  \
     (FROM) == CIRRUS_REGS && (TO) != CIRRUS_REGS ? 20 :	\
     (FROM) != CIRRUS_REGS && (TO) == CIRRUS_REGS ? 20 :	\
    2)							\
@@ -1461,6 +1564,8 @@ enum reg_class
    ? gen_rtx_REG (MODE, FIRST_ARM_FP_REGNUM) \
    : TARGET_ARM && TARGET_CIRRUS && GET_MODE_CLASS (MODE) == MODE_FLOAT \
    ? gen_rtx_REG (MODE, FIRST_CIRRUS_FP_REGNUM) 			\
+   : TARGET_REALLY_IWMMXT && VECTOR_MODE_SUPPORTED_P (MODE)		\
+   ? gen_rtx_REG (MODE, FIRST_IWMMXT_REGNUM) 				\
    : gen_rtx_REG (MODE, ARG_REGISTER (1)))
 
 /* Define how to find the value returned by a function.
@@ -1476,6 +1581,7 @@ enum reg_class
 #define FUNCTION_VALUE_REGNO_P(REGNO)  \
   ((REGNO) == ARG_REGISTER (1) \
    || (TARGET_ARM && ((REGNO) == FIRST_CIRRUS_FP_REGNUM) && TARGET_CIRRUS) \
+   || (TARGET_ARM && ((REGNO) == FIRST_IWMMXT_REGNUM) && TARGET_IWMMXT) \
    || (TARGET_ARM && ((REGNO) == FIRST_ARM_FP_REGNUM) && TARGET_HARD_FLOAT))
 
 /* How large values are returned */
@@ -1546,6 +1652,9 @@ typedef struct machine_function GTY(())
   unsigned long func_type;
   /* Record if the function has a variable argument list.  */
   int uses_anonymous_args;
+  /* Records if sibcalls are blocked because an argument
+     register is needed to preserve stack alignment.  */
+  int sibcall_blocked;
 }
 machine_function;
 
@@ -1556,6 +1665,10 @@ typedef struct
 {
   /* This is the number of registers of arguments scanned so far.  */
   int nregs;
+  /* This is the number of iWMMXt register arguments scanned so far.  */
+  int iwmmxt_nregs;
+  int named_count;
+  int nargs;
   /* One of CALL_NORMAL, CALL_LONG or CALL_SHORT . */
   int call_cookie;
 } CUMULATIVE_ARGS;
@@ -1585,7 +1698,8 @@ typedef struct
    this is the number of registers used.
    For args passed entirely in registers or entirely in memory, zero.  */
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED)	\
-  (    NUM_ARG_REGS > (CUM).nregs				\
+  (VECTOR_MODE_SUPPORTED_P (MODE) ? 0 :				\
+       NUM_ARG_REGS > (CUM).nregs				\
    && (NUM_ARG_REGS < ((CUM).nregs + ARM_NUM_REGS2 (MODE, TYPE)))	\
    ?   NUM_ARG_REGS - (CUM).nregs : 0)
 
@@ -1608,11 +1722,27 @@ typedef struct
    of mode MODE and data type TYPE.
    (TYPE is null for libcalls where that information may not be available.)  */
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
+  (CUM).nargs += 1;					\
+  if (VECTOR_MODE_SUPPORTED_P (MODE))			\
+     if ((CUM).named_count <= (CUM).nargs)		\
+        (CUM).nregs += 2;				\
+     else						\
+        (CUM).iwmmxt_nregs += 1;			\
+  else							\
   (CUM).nregs += ARM_NUM_REGS2 (MODE, TYPE)
+
+/* If defined, a C expression that gives the alignment boundary, in bits, of an
+   argument with the specified mode and type.  If it is not defined,
+   `PARM_BOUNDARY' is used for all arguments.  */
+#define FUNCTION_ARG_BOUNDARY(MODE,TYPE) \
+  (TARGET_REALLY_IWMMXT && (VALID_IWMMXT_REG_MODE (MODE) || ((MODE) == DFmode)) \
+   ? IWMMXT_ALIGNMENT : PARM_BOUNDARY)
 
 /* 1 if N is a possible register number for function argument passing.
    On the ARM, r0-r3 are used to pass args.  */
-#define FUNCTION_ARG_REGNO_P(REGNO)	(IN_RANGE ((REGNO), 0, 3))
+#define FUNCTION_ARG_REGNO_P(REGNO)	\
+   (IN_RANGE ((REGNO), 0, 3)		\
+    || (TARGET_REALLY_IWMMXT && IN_RANGE ((REGNO), FIRST_IWMMXT_REGNUM, FIRST_IWMMXT_REGNUM + 9)))
 
 /* Implement `va_arg'.  */
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \
@@ -2333,14 +2463,14 @@ extern int making_const_table;
 /* To support -falign-* switches we need to use .p2align so
    that alignment directives in code sections will be padded
    with no-op instructions, rather than zeroes.  */
-#define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE,LOG,MAX_SKIP)		\
+#define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE, LOG, MAX_SKIP)		\
   if ((LOG) != 0)						\
     {								\
       if ((MAX_SKIP) == 0)					\
-        fprintf ((FILE), "\t.p2align %d\n", (LOG));		\
+        fprintf ((FILE), "\t.p2align %d\n", (int) (LOG));	\
       else							\
         fprintf ((FILE), "\t.p2align %d,,%d\n",			\
-                 (LOG), (MAX_SKIP));				\
+                 (int) (LOG), (int) (MAX_SKIP));		\
     }
 #endif
 
@@ -2491,7 +2621,12 @@ extern int making_const_table;
     ARM_PRINT_OPERAND_ADDRESS (STREAM, X)	\
   else						\
     THUMB_PRINT_OPERAND_ADDRESS (STREAM, X)
-     
+
+#define OUTPUT_ADDR_CONST_EXTRA(FILE, X, FAIL)	\
+  if (GET_CODE (X) != CONST_VECTOR		\
+      || ! arm_emit_vector_const (FILE, X))	\
+    goto FAIL;
+
 /* A C expression whose value is RTL representing the value of the return
    address for the frame COUNT steps up from the current frame.  */
 
@@ -2567,4 +2702,168 @@ extern int making_const_table;
 #define SPECIAL_MODE_PREDICATES			\
  "cc_register", "dominant_cc_register",
 
+enum arm_builtins
+{
+  ARM_BUILTIN_GETWCX,
+  ARM_BUILTIN_SETWCX,
+
+  ARM_BUILTIN_WZERO,
+
+  ARM_BUILTIN_WAVG2BR,
+  ARM_BUILTIN_WAVG2HR,
+  ARM_BUILTIN_WAVG2B,
+  ARM_BUILTIN_WAVG2H,
+
+  ARM_BUILTIN_WACCB,
+  ARM_BUILTIN_WACCH,
+  ARM_BUILTIN_WACCW,
+
+  ARM_BUILTIN_WMACS,
+  ARM_BUILTIN_WMACSZ,
+  ARM_BUILTIN_WMACU,
+  ARM_BUILTIN_WMACUZ,
+
+  ARM_BUILTIN_WSADB,
+  ARM_BUILTIN_WSADBZ,
+  ARM_BUILTIN_WSADH,
+  ARM_BUILTIN_WSADHZ,
+
+  ARM_BUILTIN_WALIGN,
+
+  ARM_BUILTIN_TMIA,
+  ARM_BUILTIN_TMIAPH,
+  ARM_BUILTIN_TMIABB,
+  ARM_BUILTIN_TMIABT,
+  ARM_BUILTIN_TMIATB,
+  ARM_BUILTIN_TMIATT,
+
+  ARM_BUILTIN_TMOVMSKB,
+  ARM_BUILTIN_TMOVMSKH,
+  ARM_BUILTIN_TMOVMSKW,
+
+  ARM_BUILTIN_TBCSTB,
+  ARM_BUILTIN_TBCSTH,
+  ARM_BUILTIN_TBCSTW,
+
+  ARM_BUILTIN_WMADDS,
+  ARM_BUILTIN_WMADDU,
+
+  ARM_BUILTIN_WPACKHSS,
+  ARM_BUILTIN_WPACKWSS,
+  ARM_BUILTIN_WPACKDSS,
+  ARM_BUILTIN_WPACKHUS,
+  ARM_BUILTIN_WPACKWUS,
+  ARM_BUILTIN_WPACKDUS,
+
+  ARM_BUILTIN_WADDB,
+  ARM_BUILTIN_WADDH,
+  ARM_BUILTIN_WADDW,
+  ARM_BUILTIN_WADDSSB,
+  ARM_BUILTIN_WADDSSH,
+  ARM_BUILTIN_WADDSSW,
+  ARM_BUILTIN_WADDUSB,
+  ARM_BUILTIN_WADDUSH,
+  ARM_BUILTIN_WADDUSW,
+  ARM_BUILTIN_WSUBB,
+  ARM_BUILTIN_WSUBH,
+  ARM_BUILTIN_WSUBW,
+  ARM_BUILTIN_WSUBSSB,
+  ARM_BUILTIN_WSUBSSH,
+  ARM_BUILTIN_WSUBSSW,
+  ARM_BUILTIN_WSUBUSB,
+  ARM_BUILTIN_WSUBUSH,
+  ARM_BUILTIN_WSUBUSW,
+
+  ARM_BUILTIN_WAND,
+  ARM_BUILTIN_WANDN,
+  ARM_BUILTIN_WOR,
+  ARM_BUILTIN_WXOR,
+
+  ARM_BUILTIN_WCMPEQB,
+  ARM_BUILTIN_WCMPEQH,
+  ARM_BUILTIN_WCMPEQW,
+  ARM_BUILTIN_WCMPGTUB,
+  ARM_BUILTIN_WCMPGTUH,
+  ARM_BUILTIN_WCMPGTUW,
+  ARM_BUILTIN_WCMPGTSB,
+  ARM_BUILTIN_WCMPGTSH,
+  ARM_BUILTIN_WCMPGTSW,
+
+  ARM_BUILTIN_TEXTRMSB,
+  ARM_BUILTIN_TEXTRMSH,
+  ARM_BUILTIN_TEXTRMSW,
+  ARM_BUILTIN_TEXTRMUB,
+  ARM_BUILTIN_TEXTRMUH,
+  ARM_BUILTIN_TEXTRMUW,
+  ARM_BUILTIN_TINSRB,
+  ARM_BUILTIN_TINSRH,
+  ARM_BUILTIN_TINSRW,
+
+  ARM_BUILTIN_WMAXSW,
+  ARM_BUILTIN_WMAXSH,
+  ARM_BUILTIN_WMAXSB,
+  ARM_BUILTIN_WMAXUW,
+  ARM_BUILTIN_WMAXUH,
+  ARM_BUILTIN_WMAXUB,
+  ARM_BUILTIN_WMINSW,
+  ARM_BUILTIN_WMINSH,
+  ARM_BUILTIN_WMINSB,
+  ARM_BUILTIN_WMINUW,
+  ARM_BUILTIN_WMINUH,
+  ARM_BUILTIN_WMINUB,
+
+  ARM_BUILTIN_WMULUH,
+  ARM_BUILTIN_WMULSH,
+  ARM_BUILTIN_WMULUL,
+
+  ARM_BUILTIN_PSADBH,
+  ARM_BUILTIN_WSHUFH,
+
+  ARM_BUILTIN_WSLLH,
+  ARM_BUILTIN_WSLLW,
+  ARM_BUILTIN_WSLLD,
+  ARM_BUILTIN_WSRAH,
+  ARM_BUILTIN_WSRAW,
+  ARM_BUILTIN_WSRAD,
+  ARM_BUILTIN_WSRLH,
+  ARM_BUILTIN_WSRLW,
+  ARM_BUILTIN_WSRLD,
+  ARM_BUILTIN_WRORH,
+  ARM_BUILTIN_WRORW,
+  ARM_BUILTIN_WRORD,
+  ARM_BUILTIN_WSLLHI,
+  ARM_BUILTIN_WSLLWI,
+  ARM_BUILTIN_WSLLDI,
+  ARM_BUILTIN_WSRAHI,
+  ARM_BUILTIN_WSRAWI,
+  ARM_BUILTIN_WSRADI,
+  ARM_BUILTIN_WSRLHI,
+  ARM_BUILTIN_WSRLWI,
+  ARM_BUILTIN_WSRLDI,
+  ARM_BUILTIN_WRORHI,
+  ARM_BUILTIN_WRORWI,
+  ARM_BUILTIN_WRORDI,
+
+  ARM_BUILTIN_WUNPCKIHB,
+  ARM_BUILTIN_WUNPCKIHH,
+  ARM_BUILTIN_WUNPCKIHW,
+  ARM_BUILTIN_WUNPCKILB,
+  ARM_BUILTIN_WUNPCKILH,
+  ARM_BUILTIN_WUNPCKILW,
+
+  ARM_BUILTIN_WUNPCKEHSB,
+  ARM_BUILTIN_WUNPCKEHSH,
+  ARM_BUILTIN_WUNPCKEHSW,
+  ARM_BUILTIN_WUNPCKEHUB,
+  ARM_BUILTIN_WUNPCKEHUH,
+  ARM_BUILTIN_WUNPCKEHUW,
+  ARM_BUILTIN_WUNPCKELSB,
+  ARM_BUILTIN_WUNPCKELSH,
+  ARM_BUILTIN_WUNPCKELSW,
+  ARM_BUILTIN_WUNPCKELUB,
+  ARM_BUILTIN_WUNPCKELUH,
+  ARM_BUILTIN_WUNPCKELUW,
+
+  ARM_BUILTIN_MAX
+};
 #endif /* ! GCC_ARM_H */

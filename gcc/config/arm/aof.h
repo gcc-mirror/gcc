@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for Advanced RISC Machines
    ARM compilation, AOF Assembler.
-   Copyright (C) 1995, 1996, 1997, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 2000, 2003 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@armltd.co.uk)
 
    This file is part of GCC.
@@ -59,64 +59,70 @@
 #define EXTRA_SECTIONS in_zero_init, in_common
 
 #define EXTRA_SECTION_FUNCTIONS	\
-ZERO_INIT_SECTION		\
-COMMON_SECTION
+  ZERO_INIT_SECTION		\
+  COMMON_SECTION
 
 #define ZERO_INIT_SECTION					\
-void								\
-zero_init_section ()						\
-{								\
-  static int zero_init_count = 1;				\
-  if (in_section != in_zero_init)				\
-    {								\
-      fprintf (asm_out_file, "\tAREA |C$$zidata%d|,NOINIT\n",	\
-	       zero_init_count++);				\
-      in_section = in_zero_init;				\
-    }								\
-}
+  void								\
+  zero_init_section ()						\
+  {								\
+    static int zero_init_count = 1;				\
+								\
+    if (in_section != in_zero_init)				\
+      {								\
+        fprintf (asm_out_file, "\tAREA |C$$zidata%d|,NOINIT\n",	\
+	         zero_init_count++);				\
+        in_section = in_zero_init;				\
+      }								\
+  }
 
 /* Used by ASM_OUTPUT_COMMON (below) to tell varasm.c that we've
    changed areas.  */
 #define COMMON_SECTION						\
-void								\
-common_section ()						\
-{								\
-  if (in_section != in_common)					\
-    {								\
+  void								\
+  common_section ()						\
+  {								\
+    if (in_section != in_common)				\
       in_section = in_common;					\
-    }								\
-}
-#define CTOR_LIST_BEGIN					\
-asm (CTORS_SECTION_ASM_OP);				\
-extern func_ptr __CTOR_END__[1];			\
-func_ptr __CTOR_LIST__[1] = {__CTOR_END__};
+  }
 
-#define CTOR_LIST_END					\
-asm (CTORS_SECTION_ASM_OP);				\
-func_ptr __CTOR_END__[1] = { (func_ptr) 0 };
+#define CTOR_LIST_BEGIN				\
+  asm (CTORS_SECTION_ASM_OP);			\
+  extern func_ptr __CTOR_END__[1];		\
+  func_ptr __CTOR_LIST__[1] = {__CTOR_END__};
 
-#define DO_GLOBAL_CTORS_BODY		\
-do {					\
-  func_ptr *ptr = __CTOR_LIST__ + 1;	\
-  while (*ptr)				\
-    (*ptr++) ();			\
-} while (0)
+#define CTOR_LIST_END				\
+  asm (CTORS_SECTION_ASM_OP);			\
+  func_ptr __CTOR_END__[1] = { (func_ptr) 0 };
 
-#define DTOR_LIST_BEGIN					\
-asm (DTORS_SECTION_ASM_OP);				\
-extern func_ptr __DTOR_END__[1];			\
-func_ptr __DTOR_LIST__[1] = {__DTOR_END__};
+#define DO_GLOBAL_CTORS_BODY			\
+  do						\
+    {						\
+      func_ptr *ptr = __CTOR_LIST__ + 1;	\
+						\
+      while (*ptr)				\
+        (*ptr++) ();				\
+    }						\
+  while (0)
 
-#define DTOR_LIST_END					\
-asm (DTORS_SECTION_ASM_OP);				\
-func_ptr __DTOR_END__[1] = { (func_ptr) 0 };
+#define DTOR_LIST_BEGIN				\
+  asm (DTORS_SECTION_ASM_OP);			\
+  extern func_ptr __DTOR_END__[1];		\
+  func_ptr __DTOR_LIST__[1] = {__DTOR_END__};
 
-#define DO_GLOBAL_DTORS_BODY		\
-do {					\
-  func_ptr *ptr = __DTOR_LIST__ + 1;	\
-  while (*ptr)				\
-    (*ptr++) ();			\
-} while (0)
+#define DTOR_LIST_END				\
+  asm (DTORS_SECTION_ASM_OP);			\
+  func_ptr __DTOR_END__[1] = { (func_ptr) 0 };
+
+#define DO_GLOBAL_DTORS_BODY			\
+  do						\
+    {						\
+      func_ptr *ptr = __DTOR_LIST__ + 1;	\
+						\
+      while (*ptr)				\
+        (*ptr++) ();				\
+    }						\
+  while (0)
 
 /* We really want to put Thumb tables in a read-only data section, but
    switching to another section during function output is not
@@ -171,12 +177,10 @@ do {					\
 #define SYMBOL__MAIN __gccmain
 
 #define ASM_COMMENT_START ";"
+#define ASM_APP_ON        ""
+#define ASM_APP_OFF       ""
 
-#define ASM_APP_ON ""
-
-#define ASM_APP_OFF ""
-
-#define ASM_OUTPUT_ASCII(STREAM,PTR,LEN)		\
+#define ASM_OUTPUT_ASCII(STREAM, PTR, LEN)		\
 {							\
   int i;						\
   const char *ptr = (PTR);				\
@@ -184,23 +188,23 @@ do {					\
   for (i = 0; i < (long)(LEN); i++)			\
     fprintf ((STREAM), " &%02x%s", 			\
 	     (unsigned ) *(ptr++),			\
-	     (i + 1 < (long)(LEN)				\
+	     (i + 1 < (long)(LEN)			\
 	      ? ((i & 3) == 3 ? "\n\tDCB" : ",")	\
 	      : "\n"));					\
 }
 
 #define IS_ASM_LOGICAL_LINE_SEPARATOR(C) ((C) == '\n')
 
-/* Output of Uninitialized Variables */
+/* Output of Uninitialized Variables.  */
 
-#define ASM_OUTPUT_COMMON(STREAM,NAME,SIZE,ROUNDED)		\
+#define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED)		\
   (common_section (),						\
    fprintf ((STREAM), "\tAREA "),				\
    assemble_name ((STREAM), (NAME)),				\
    fprintf ((STREAM), ", DATA, COMMON\n\t%% %d\t%s size=%d\n",	\
 	    (int)(ROUNDED), ASM_COMMENT_START, (int)(SIZE)))
 
-#define ASM_OUTPUT_LOCAL(STREAM,NAME,SIZE,ROUNDED)	\
+#define ASM_OUTPUT_LOCAL(STREAM, NAME, SIZE, ROUNDED)	\
    (zero_init_section (),				\
     assemble_name ((STREAM), (NAME)),			\
     fprintf ((STREAM), "\n"),				\
@@ -208,7 +212,6 @@ do {					\
 	     (int)(ROUNDED), ASM_COMMENT_START, (int)(SIZE)))
 
 /* Output and Generation of Labels */
-
 extern int arm_main_function;
 
 /* Globalizing directive for a label.  */
@@ -258,22 +261,31 @@ do {					\
 #define ASM_GENERATE_INTERNAL_LABEL(STRING,PREFIX,NUM)	\
   sprintf ((STRING), "*|%s..%ld|", (PREFIX), (long)(NUM))
 
-/* How initialization functions are handled */
+/* How initialization functions are handled.  */
 
 #define CTORS_SECTION_ASM_OP "\tAREA\t|C$$gnu_ctorsvec|, DATA, READONLY"
 #define DTORS_SECTION_ASM_OP "\tAREA\t|C$$gnu_dtorsvec|, DATA, READONLY"
 
-/* Output of Assembler Instructions */
+/* Output of Assembler Instructions.  */
 
-#define REGISTER_NAMES			\
-{					\
-  "a1", "a2", "a3", "a4",	\
-  "v1", "v2", "v3", "v4",	\
-  "v5", "v6", "sl", "fp",	\
-  "ip", "sp", "lr", "pc",	\
-  "f0", "f1", "f2", "f3",	\
-  "f4", "f5", "f6", "f7",	\
-  "cc", "sfp", "afp"		\
+#define REGISTER_NAMES				\
+{						\
+  "a1", "a2", "a3", "a4",			\
+  "v1", "v2", "v3", "v4",			\
+  "v5", "v6", "sl", "fp",			\
+  "ip", "sp", "lr", "pc",			\
+  "f0", "f1", "f2", "f3",			\
+  "f4", "f5", "f6", "f7",			\
+  "cc", "sfp", "afp",				\
+  "mv0",   "mv1",   "mv2",   "mv3",		\
+  "mv4",   "mv5",   "mv6",   "mv7",		\
+  "mv8",   "mv9",   "mv10",  "mv11",		\
+  "mv12",  "mv13",  "mv14",  "mv15",		\
+  "wcgr0", "wcgr1", "wcgr2", "wcgr3",		\
+  "wr0",   "wr1",   "wr2",   "wr3",		\
+  "wr4",   "wr5",   "wr6",   "wr7",		\
+  "wr8",   "wr9",   "wr10",  "wr11",		\
+  "wr12",  "wr13",  "wr14",  "wr15"
 }
 
 #define ADDITIONAL_REGISTER_NAMES		\
@@ -303,37 +315,40 @@ do {					\
 /* AOF does not prefix user function names with an underscore.  */
 #define ARM_MCOUNT_NAME "_mcount"
 
-/* Output of Dispatch Tables */
+/* Output of Dispatch Tables.  */
+#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM, BODY, VALUE, REL)			\
+  do										\
+    {										\
+      if (TARGET_ARM)								\
+        fprintf ((STREAM), "\tb\t|L..%d|\n", (VALUE));				\
+      else									\
+        fprintf ((STREAM), "\tDCD\t|L..%d| - |L..%d|\n", (VALUE), (REL));	\
+    }										\
+  while (0)
 
-#define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM,BODY,VALUE,REL)			\
-  do {									\
-    if (TARGET_ARM)							\
-      fprintf ((STREAM), "\tb\t|L..%d|\n", (VALUE));			\
-    else								\
-      fprintf ((STREAM), "\tDCD\t|L..%d| - |L..%d|\n", (VALUE), (REL));	\
-  } while (0)
-
-#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM,VALUE)	\
+#define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)	\
   fprintf ((STREAM), "\tDCD\t|L..%d|\n", (VALUE))
 
 /* A label marking the start of a jump table is a data label. */
-#define ASM_OUTPUT_CASE_LABEL(STREAM,PREFIX,NUM,TABLE)	\
+#define ASM_OUTPUT_CASE_LABEL(STREAM, PREFIX, NUM, TABLE)	\
   fprintf ((STREAM), "\tALIGN\n|%s..%d|\n", (PREFIX), (NUM))
 
-/* Assembler Commands for Alignment */
+/* Assembler Commands for Alignment.  */
+#define ASM_OUTPUT_SKIP(STREAM, NBYTES)		\
+ fprintf ((STREAM), "\t%%\t%d\n", (int) (NBYTES))
 
-#define ASM_OUTPUT_SKIP(STREAM,NBYTES)		\
- fprintf ((STREAM), "\t%%\t%d\n", (int)(NBYTES))
-
-#define ASM_OUTPUT_ALIGN(STREAM,POWER)			\
-do {							\
-  register int amount = 1 << (POWER);			\
-  if (amount == 2)					\
-    fprintf ((STREAM), "\tALIGN 2\n");			\
-  else if (amount == 4)					\
-    fprintf ((STREAM), "\tALIGN\n");			\
-  else							\
-    fprintf ((STREAM), "\tALIGN %d\n", amount);		\
-} while (0)
+#define ASM_OUTPUT_ALIGN(STREAM, POWER)			\
+  do							\
+    {							\
+      int amount = 1 << (POWER);			\
+							\
+      if (amount == 2)					\
+        fprintf ((STREAM), "\tALIGN 2\n");		\
+      else if (amount == 4)				\
+        fprintf ((STREAM), "\tALIGN\n");		\
+      else						\
+        fprintf ((STREAM), "\tALIGN %d\n", amount);	\
+    }							\
+  while (0)
 
 #undef DBX_DEBUGGING_INFO
