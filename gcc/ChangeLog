@@ -1,3 +1,8 @@
+2000-12-18  Christian Groessler <cpg@aladdin.de>
+
+	* toplev.c (check_lang_option): Use NUM_ELEM only on arrays, not on
+	pointers.
+
 2000-12-18  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* linux.h (DEFAULT_VTABLE_THUNKS): Switch back to version 1.

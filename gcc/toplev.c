@@ -4685,7 +4685,8 @@ check_lang_option (option, lang_option)
 {
   lang_independent_options * indep_options;
   int    len;
-  long    k;
+  int    numopts;
+  long   k;
   char * space;
   
   /* Ignore NULL entries.  */
@@ -4715,8 +4716,14 @@ check_lang_option (option, lang_option)
   
   switch (option[1])
     {
-    case 'f': indep_options = f_options; break;
-    case 'W': indep_options = W_options; break;
+    case 'f':
+      indep_options = f_options;
+      numopts = NUM_ELEM (f_options);
+      break;
+    case 'W':
+      indep_options = W_options;
+      numopts = NUM_ELEM (W_options);
+      break;
     default:  return 1;
     }
   
@@ -4728,7 +4735,7 @@ check_lang_option (option, lang_option)
   if (option[0] == 'n' && option[1] == 'o' && option[2] == '-')
     option += 3;
   
-  for (k = NUM_ELEM (indep_options); k--;)
+  for (k = numopts; k--;)
     {
       if (!strcmp (option, indep_options[k].string))
 	{
