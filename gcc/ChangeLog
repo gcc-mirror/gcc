@@ -1,5 +1,13 @@
 2002-11-18  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/sh/sh.c (pool_node): New field: part_of_sequence_p.
+	(add_constant): Set it.
+	(dump_table): Don't reorder a constant if part_of_sequence_p.
+	(machine_dependent_reorg): Assume that float constants will
+	stay in their original order if used as a sequence.
+
+2002-11-18  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/sh/sh.c (calc_live_regs): Update check for PIC liveness
 	in compact code.
 
