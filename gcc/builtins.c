@@ -296,29 +296,22 @@ c_getstr (src)
 {
   tree offset_node;
   HOST_WIDE_INT offset;
-  int max;
-  const char *ptr;
 
   src = string_constant (src, &offset_node);
   if (src == 0)
     return 0;
 
-  max = TREE_STRING_LENGTH (src) - 1;
-  ptr = TREE_STRING_POINTER (src);
-
-  if (offset_node == 0 || !host_integerp (offset_node, 0))
-    return ptr;
-
-  offset = tree_low_cst (offset_node, 0);
-  if (offset < 0 || offset > max)
+  if (offset_node == 0)
+    return TREE_STRING_POINTER (src);
+  else if (!host_integerp (offset_node, 1)
+	   || compare_tree_int (offset_node, TREE_STRING_LENGTH (src) - 1) > 0)
     return 0;
 
-  return ptr + offset;
+  return TREE_STRING_POINTER (src) + tree_low_cst (offset_node, 1);
 }
 
-/* Return a CONST_INT or CONST_DOUBLE corresponding to target
-   reading GET_MODE_BITSIZE (MODE) bits from string constant
-   STR.  */
+/* Return a CONST_INT or CONST_DOUBLE corresponding to target reading
+   GET_MODE_BITSIZE (MODE) bits from string constant STR.  */
 
 static rtx
 c_readstr (str, mode)
