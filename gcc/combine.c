@@ -10109,7 +10109,7 @@ move_deaths (x, from_cuid, to_insn, pnotes)
 		if (i < regno || i >= ourend)
 		  REG_NOTES (where_dead)
 		    = gen_rtx (EXPR_LIST, REG_DEAD,
-			       gen_rtx (REG, word_mode, i),
+			       gen_rtx (REG, reg_raw_mode[i], i),
 			       REG_NOTES (where_dead));
 	    }
 
