@@ -1,5 +1,18 @@
 2004-11-06  Tom Tromey  <tromey@redhat.com>
 
+	* gnu/java/rmi/server/UnicastConnectionManager.java (clients): Now
+	package-private.
+	(connections): Likewise.
+	(scavenger): Likewise.
+	* gnu/java/rmi/server/ConnectionRunnerPool.java (freelist): Now
+	package-private.
+	* gnu/java/rmi/server/UnicastRemoteCall.java (vec): Now
+	package-private.
+	(ptr): Likewise.
+	* gnu/classpath/ServiceFactory.java (log): Now package-private.
+
+2004-11-06  Tom Tromey  <tromey@redhat.com>
+
 	* javax/naming/directory/BasicAttributes.java (attributes): Now
 	package-private.
 	* javax/imageio/spi/ServiceRegistry.java (categories): Now

@@ -65,8 +65,9 @@ public class UnicastConnectionManager
 private static String localhost;
 // use different maps for server/client type UnicastConnectionManager
 private static Hashtable servers = new Hashtable();
-private static Hashtable clients = new Hashtable();
-private ArrayList connections; //client connection pool
+// Package-private to avoid trampolines.
+static Hashtable clients = new Hashtable();
+ArrayList connections; //client connection pool
 
 // make serverThread volatile for poll
 private volatile Thread serverThread;
@@ -74,7 +75,8 @@ private ServerSocket ssock;
 String serverName;
 int serverPort;
 
-static private Thread scavenger;
+// Package-private to avoid a trampoline.
+static Thread scavenger;
 
 // If client and server are in the same VM, serverobj represents server
 Object serverobj;

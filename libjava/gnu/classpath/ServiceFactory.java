@@ -521,6 +521,7 @@ public final class ServiceFactory
   }
 
 
+  // Package-private to avoid a trampoline.
   /**
    * Passes a log message to the <code>java.util.logging</code>
    * framework. This call returns very quickly if no log message will
@@ -542,7 +543,7 @@ public final class ServiceFactory
    * <code>null</code> if the log message is not associated with a
    * Throwable.
    */
-  private static void log(Level level, String msg, Object param, Throwable t)
+  static void log(Level level, String msg, Object param, Throwable t)
   {
     LogRecord rec;
 
