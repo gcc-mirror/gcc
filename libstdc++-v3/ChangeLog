@@ -1,3 +1,15 @@
+2001-02-28  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/2103
+	* include/bits/c++config (__GLIBCPP__): Bump number in
+	anticipation of 2.92.
+
+	* include/bits/codecvt.h: Fix typo.
+	* include/bits/basic_file.h (__basic_file): Don't use _M_wfile for
+	stdio model.
+	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Enable wchar_t
+	instantiations for stdio model.
+
 2001-02-28  Phil Edwards  <pme@sources.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_CONFIGURE):  Remove GLIBCPP_CFLAGS

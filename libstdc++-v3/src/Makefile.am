@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.74 2001/02/26 21:48:01 pme Exp $
+## $Id: Makefile.am,v 1.75 2001/02/28 03:20:36 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -33,7 +33,6 @@ toolexecdir = @glibcpp_toolexecdir@
 toolexeclibdir = @glibcpp_toolexeclibdir@
 toolexeclib_LTLIBRARIES = libstdc++.la
 EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
-
 
 # Compile flags that should be constant throughout the build, both for
 # SUBDIRS and for libstdc++-v3 in general.
@@ -179,9 +178,6 @@ VPATH += $(top_srcdir) $(top_srcdir)/src
 VPATH += $(GLIBCPP_INCLUDE_DIR) 
 VPATH += $(GLIBCPP_INCLUDE_DIR)/std $(C_INCLUDE_DIR)
 
-# Actual sources for the distro, but don't build these.
-#EXTRA_sources = string-inst.cc 
-
 libstdc___la_SOURCES = $(sources)
 
 libinst_wstring_la_SOURCES = $(wstring_sources)
@@ -194,6 +190,20 @@ libstdc___la_LIBADD = \
 libstdc___la_LDFLAGS = -version-info 3:0:0 -lm
 
 libstdc___la_DEPENDENCIES = $(libstdc___la_LIBADD)
+
+
+# Use special rules for the deprecated source files so that they find
+# deprecated include files.
+strstream.lo: strstream.cc
+	$(LTCXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -c $<
+strstream.o: strstream.cc
+	$(CXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -c $<
+
+# Make wstring-inst.cc from string-inst.cc
+wstring-inst.o: string-inst.cc
+	$(CXXCOMPILE) -c -DC=wchar_t $< -o $@
+wstring-inst.lo: string-inst.cc
+	$(LTCXXCOMPILE) -c -DC=wchar_t $< -o $@
 
 
 # Make sure cshadow headers are built first.
@@ -279,20 +289,6 @@ myinstallheaders:
           $(INSTALL_DATA) $$i $(gxx_include_dir); \
 	done; \
 	fi;
-
-
-# Use special rules for the deprecated source files so that they find
-# deprecated include files.
-strstream.lo: strstream.cc
-	$(LTCXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -c $<
-strstream.o: strstream.cc
-	$(CXXCOMPILE) -I$(GLIBCPP_INCLUDE_DIR)/backward -c $<
-
-# Make wstring-inst.cc from string-inst.cc
-wstring-inst.o: string-inst.cc
-	$(CXXCOMPILE) -c -DC=wchar_t $< -o $@
-wstring-inst.lo: string-inst.cc
-	$(LTCXXCOMPILE) -c -DC=wchar_t $< -o $@
 
 
 # Alexandre put this in here for some libtool-related reason.
