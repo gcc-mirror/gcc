@@ -191,7 +191,7 @@ line_to_symbol_info(std::string& input, symbol_info& output)
 	  istringstream iss(size);
 	  int x;
 	  iss >> x;
-	  if (iss.good())
+	  if (!iss.fail())
 	    output.size = x;
 	  input.erase(input.begin(), input.begin() + n + 1);
 	}
