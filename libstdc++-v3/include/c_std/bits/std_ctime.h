@@ -42,6 +42,8 @@
 #pragma GCC system_header
 #include <time.h>
 
+#undef difftime
+
 namespace std
 {
   using ::clock_t;
