@@ -2062,8 +2062,13 @@ parmlist_2:  /* empty */
 		{ $$ = get_parm_info (0); }
 	| ELLIPSIS
 		{ $$ = get_parm_info (0);
-		  if (pedantic)
-		    pedwarn ("ANSI C requires a named argument before `...'");
+		  /* Gcc used to allow this as an extension.  However, it does
+		     not work for all targets, and thus has been disabled.
+		     Also, since func (...) and func () are indistinguishable,
+		     it caused problems with the code in expand_builtin which
+		     tries to verify that BUILT_IN_NEXT_ARG is being used
+		     correctly.  */
+		  error ("ANSI C requires a named argument before `...'");
 		}
 	| parms
 		{ $$ = get_parm_info (1); }
