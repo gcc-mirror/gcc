@@ -293,46 +293,85 @@ void *function_arg ();
 {						\
   fprintf (FILE, "\t.quad 0\n");		\
   fprintf (FILE, "\t.linkage __tramp\n");	\
+  fprintf (FILE, "\t.quad 0\n");		\
 }
 
 /* Length in units of the trampoline for entering a nested function.  */
 
 #undef TRAMPOLINE_SIZE
-#define TRAMPOLINE_SIZE    24
+#define TRAMPOLINE_SIZE    32
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
    CXT is an RTX for the static chain value for the function.  */
 
 #undef INITIALIZE_TRAMPOLINE
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
-{									\
-  emit_move_insn (gen_rtx (MEM, Pmode, (TRAMP)), (FNADDR));		\
-  emit_move_insn (gen_rtx (MEM, Pmode,					\
-			   memory_address (Pmode,			\
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			  \
+{									  \
+  emit_move_insn (gen_rtx (MEM, Pmode,                                    \
+			   memory_address (Pmode,			  \
 					   plus_constant ((TRAMP), 16))), \
-		  (CXT));						\
+		  (FNADDR));		                                  \
+  emit_move_insn (gen_rtx (MEM, Pmode,					  \
+			   memory_address (Pmode,			  \
+					   plus_constant ((TRAMP), 24))), \
+		  (CXT));						  \
 }
 
 #undef TRANSFER_FROM_TRAMPOLINE
 
+#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRIBUTES, NAME, ARGS) \
+  (vms_valid_decl_attribute_p (DECL, ATTRIBUTES, NAME, ARGS))
+extern int vms_valid_decl_attribute_p ();
+
 #undef SDB_DEBUGGING_INFO
 #undef MIPS_DEBUGGING_INFO
-
-#ifndef DBX_DEBUGGING_INFO
-#define DBX_DEBUGGING_INFO
-#endif
+#undef DBX_DEBUGGING_INFO
 
 #define DWARF2_DEBUGGING_INFO
 
-#ifdef PREFERRED_DEBUGGING_TYPE
-#undef PREFERRED_DEBUGGING_TYPE
-#endif
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+/* This is how to output an assembler line
+   that says to advance the location counter
+   to a multiple of 2**LOG bytes.  */
 
-#ifdef ASM_FORMAT_PRIVATE_NAME
+#undef ASM_OUTPUT_ALIGN
+#define ASM_OUTPUT_ALIGN(FILE,LOG)	\
+    fprintf (FILE, "\t.align %d\n", LOG);
+
+#undef ASM_OUTPUT_ALIGNED_COMMON
+#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
+do {									\
+  fprintf ((FILE), "\t.comm\t");					\
+  assemble_name ((FILE), (NAME));					\
+  fprintf ((FILE), ",%u,%u\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
+} while (0)
+
+#define ASM_OUTPUT_SECTION(FILE,SECTION)			\
+   (strcmp (SECTION, ".text") == 0)				\
+     ? text_section ()					\
+     : named_section (NULL_TREE, SECTION, 0),			\
+       ASM_OUTPUT_ALIGN (FILE, 0)				\
+
+#define ASM_OUTPUT_SECTION_NAME(FILE,DECL,NAME,RELOC)		\
+  do								\
+    {								\
+      char *flags;						\
+      if (DECL && DECL_MACHINE_ATTRIBUTES (DECL)		\
+	  && lookup_attribute					\
+	      ("overlaid", DECL_MACHINE_ATTRIBUTES (DECL)))	\
+	flags = ",OVR";						\
+      else if (strncmp (NAME,".debug", 6) == 0)		\
+	flags = ",NOWRT";					\
+      else							\
+	flags = "";						\
+      fputc ('\n', (FILE));					\
+      fprintf (FILE, ".section\t%s%s\n", NAME, flags);	\
+    } while (0)
+
+#undef PREFERRED_DEBUGGING_TYPE
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
+
 #undef ASM_FORMAT_PRIVATE_NAME
-#endif
 #define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 12),	\
   sprintf ((OUTPUT), "%s___%d", (NAME), (LABELNO)))
@@ -341,9 +380,6 @@ void *function_arg ();
 #define ASM_SPEC "-nocpp %{pg}"
 
 #undef ASM_FINAL_SPEC
-
-#undef LIBGCC_SPEC
-#define LIBGCC_SPEC "-lgcc2 -lgcclib"
 
 #define OPTIMIZATION_OPTIONS                       \
 {                                                  \
@@ -360,13 +396,9 @@ void *function_arg ();
 }
 
 #undef LINK_SPEC
-#define LINK_SPEC "%{g3:-g3} %{g0:-g0}"
+#define LINK_SPEC "%{g3:-g3} %{g0:-g0} %{share:-share} %{v:-v}"
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC ""
-
-#undef ENDFILE_SPEC
-#define ENDFILE_SPEC "gnu:[000000]crt0.obj"
 
 /* Define the names of the division and modulus functions.  */
 #define DIVSI3_LIBCALL "ots$div_i"
