@@ -1,3 +1,13 @@
+Fri Sep 24 11:57:06 1999  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* config/mips/elf.h (ASM_OUTPUT_ALIGNED_BSS): Put the symbol
+	in .sbss if appropriate.
+	(EXTRA_SECTION_FUNCTIONS): Add sbss.
+	(SBSS_SECTION_ASM_OP): New macro.
+	* config/mips/linux.h (EXTRA_SECTION_FUNCTIONS): Add sbss.
+	(EXTRA_SECTIONS): Add in_sbss.
+	* config/mips/mips.h: Prototype sbss_section.
+
 Thu Sep 23 18:18:55 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* stmt.c (expand_start_bindings): Don't allow cleanup isntructions
