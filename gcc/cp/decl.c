@@ -4051,12 +4051,12 @@ pushdecl (x)
 	  if (oldlocal)
 	    {
 	      tree d = oldlocal;
+
 	      while (oldlocal
 		     && TREE_CODE (oldlocal) == VAR_DECL
 		     && DECL_DEAD_FOR_LOCAL (oldlocal))
-		{
-		  oldlocal = DECL_SHADOWED_FOR_VAR (oldlocal);
-		}
+		oldlocal = DECL_SHADOWED_FOR_VAR (oldlocal);
+
 	      if (oldlocal == NULL_TREE)
 		oldlocal = IDENTIFIER_NAMESPACE_VALUE (DECL_NAME (d));
 	    }
@@ -4452,8 +4452,8 @@ push_using_directive (used)
    want to be referenced by that name.  It is then up to the users of
    that name to decide what to do with that list.
 
-   DECL may also be a TEMPLATE_DECL, with a FUNCTION_DECL in its DECL_RESULT
-   slot.  It is dealt with the same way.
+   DECL may also be a TEMPLATE_DECL, with a FUNCTION_DECL in its
+   DECL_TEMPLATE_RESULT.  It is dealt with the same way.
 
    FLAGS is a bitwise-or of the following values:
      PUSH_LOCAL: Bind DECL in the current scope, rather than at
@@ -12436,7 +12436,7 @@ xref_tag (code_type_node, name, globalize)
 	      && template_class_depth (current_class_type) == 0)
 	    /* Since GLOBALIZE is true, we're declaring a global
 	       template, so we want this type.  */
-	    ref = DECL_RESULT (ref);
+	    ref = DECL_TEMPLATE_RESULT (ref);
 
 	  if (ref && TREE_CODE (ref) == TYPE_DECL
 	      && TREE_CODE (TREE_TYPE (ref)) == code)

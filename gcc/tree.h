@@ -1081,6 +1081,9 @@ struct tree_type
 /* VAR_DECL and PARM_DECL reserve the arguments slot
    for language-specific uses.  */
 #define DECL_ARGUMENTS(NODE) (DECL_CHECK (NODE)->decl.arguments)
+/* This field is used to reference anything in decl.result and is meant only
+   for use by the garbage collector.  */
+#define DECL_RESULT_FLD(NODE) (DECL_CHECK (NODE)->decl.result)
 /* In FUNCTION_DECL, holds the decl for the return value.  */
 #define DECL_RESULT(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.result)
 /* For a TYPE_DECL, holds the "original" type.  (TREE_TYPE has the copy.) */

@@ -1105,7 +1105,7 @@ determine_specialization (template_id, decl, targs_out,
     }
 
   /* It was a specialization of a template.  */
-  targs = DECL_TI_ARGS (DECL_RESULT (TREE_VALUE (templates)));
+  targs = DECL_TI_ARGS (DECL_TEMPLATE_RESULT (TREE_VALUE (templates)));
   if (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (targs))
     {
       *targs_out = copy_node (targs);
@@ -3699,7 +3699,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
       d1 = DECL_NAME (template);
     }
   else if (TREE_CODE (d1) == TEMPLATE_DECL
-	   && TREE_CODE (DECL_RESULT (d1)) == TYPE_DECL)
+	   && TREE_CODE (DECL_TEMPLATE_RESULT (d1)) == TYPE_DECL)
     {
       template = d1;
       d1 = DECL_NAME (template);
@@ -4460,9 +4460,9 @@ tsubst_friend_function (decl, args)
 	  DECL_PRIMARY_TEMPLATE (new_friend) = new_friend;
 	  
 	  new_friend_is_defn 
-	    = DECL_INITIAL (DECL_RESULT (new_friend)) != NULL_TREE;
+	    = DECL_INITIAL (DECL_TEMPLATE_RESULT (new_friend)) != NULL_TREE;
 	  new_friend_result_template_info
-	    = DECL_TEMPLATE_INFO (DECL_RESULT (new_friend));
+	    = DECL_TEMPLATE_INFO (DECL_TEMPLATE_RESULT (new_friend));
 	}
       else
 	{
@@ -4535,7 +4535,7 @@ tsubst_friend_function (decl, args)
 		  tree t;
 		  tree new_friend_args;
 
-		  DECL_TEMPLATE_INFO (DECL_RESULT (old_decl)) 
+		  DECL_TEMPLATE_INFO (DECL_TEMPLATE_RESULT (old_decl)) 
 		    = new_friend_result_template_info;
 		    
 		  new_friend_args = TI_ARGS (new_friend_template_info);
@@ -5416,7 +5416,7 @@ tsubst_decl (t, args, type, in_decl)
 	       plus the innermost args from the template decl.  */
 	    tree tmpl_args = DECL_CLASS_TEMPLATE_P (t) 
 	      ? CLASSTYPE_TI_ARGS (TREE_TYPE (t))
-	      : DECL_TI_ARGS (DECL_RESULT (t));
+	      : DECL_TI_ARGS (DECL_TEMPLATE_RESULT (t));
 	    tree full_args;
 	    
 	    full_args = tsubst_template_arg_vector (tmpl_args, args,
@@ -5448,7 +5448,7 @@ tsubst_decl (t, args, type, in_decl)
 	if (is_template_template_parm)
 	  {
 	    tree new_decl = tsubst (decl, args, /*complain=*/1, in_decl);
-	    DECL_RESULT (r) = new_decl;
+	    DECL_TEMPLATE_RESULT (r) = new_decl;
 	    TREE_TYPE (r) = TREE_TYPE (new_decl);
 	    break;
 	  }
@@ -5469,13 +5469,14 @@ tsubst_decl (t, args, type, in_decl)
 				    /*complain=*/1, in_decl);
 	    TREE_TYPE (r) = new_type;
 	    CLASSTYPE_TI_TEMPLATE (new_type) = r;
-	    DECL_RESULT (r) = TYPE_MAIN_DECL (new_type);
+	    DECL_TEMPLATE_RESULT (r) = TYPE_MAIN_DECL (new_type);
 	    DECL_TI_ARGS (r) = CLASSTYPE_TI_ARGS (new_type);
 	  }
 	else
 	  {
 	    tree new_decl = tsubst (decl, args, /*complain=*/1, in_decl);
-	    DECL_RESULT (r) = new_decl;
+
+	    DECL_TEMPLATE_RESULT (r) = new_decl;
 	    DECL_TI_TEMPLATE (new_decl) = r;
 	    TREE_TYPE (r) = TREE_TYPE (new_decl);
 	    DECL_TI_ARGS (r) = DECL_TI_ARGS (new_decl);
@@ -5546,8 +5547,9 @@ tsubst_decl (t, args, type, in_decl)
 
 	    spec_args = tsubst (DECL_TI_ARGS (fn), args,
 				/*complain=*/1, in_decl); 
-	    new_fn = tsubst (DECL_RESULT (most_general_template (fn)), 
-			     spec_args, /*complain=*/1, in_decl); 
+	    new_fn
+	      = tsubst (DECL_TEMPLATE_RESULT (most_general_template (fn)), 
+			spec_args, /*complain=*/1, in_decl); 
 	    DECL_TI_TEMPLATE (new_fn) = fn;
 	    register_specialization (new_fn, r, 
 				     innermost_args (spec_args));
@@ -5555,7 +5557,7 @@ tsubst_decl (t, args, type, in_decl)
 
 	/* Record this partial instantiation.  */
 	register_specialization (r, t, 
-				 DECL_TI_ARGS (DECL_RESULT (r)));
+				 DECL_TI_ARGS (DECL_TEMPLATE_RESULT (r)));
 
       }
       break;
@@ -5699,7 +5701,7 @@ tsubst_decl (t, args, type, in_decl)
 	DECL_ARGUMENTS (r) = tsubst (DECL_ARGUMENTS (t), args,
 				     /*complain=*/1, t);
 	DECL_MAIN_VARIANT (r) = r;
-	DECL_RESULT (r) = NULL_TREE;
+	DECL_TEMPLATE_RESULT (r) = NULL_TREE;
 
 	TREE_STATIC (r) = 0;
 	TREE_PUBLIC (r) = TREE_PUBLIC (t);
@@ -7434,7 +7436,8 @@ instantiate_template (tmpl, targ_ptr)
     }
 
   /* substitute template parameters */
-  fndecl = tsubst (DECL_RESULT (gen_tmpl), targ_ptr, /*complain=*/1, gen_tmpl);
+  fndecl = tsubst (DECL_TEMPLATE_RESULT (gen_tmpl),
+		   targ_ptr, /*complain=*/1, gen_tmpl);
   /* The DECL_TI_TEMPLATE should always be the immediate parent
      template, not the most general template.  */
   DECL_TI_TEMPLATE (fndecl) = tmpl;
@@ -7860,7 +7863,8 @@ resolve_overloaded_unification (tparms, targs, parm, arg, strict,
 	  if (TREE_CODE (fn) != TEMPLATE_DECL)
 	    continue;
 
-	  subargs = get_bindings_overload (fn, DECL_RESULT (fn), expl_subargs);
+	  subargs = get_bindings_overload (fn, DECL_TEMPLATE_RESULT (fn),
+					   expl_subargs);
 	  if (subargs)
 	    {
 	      elem = tsubst (TREE_TYPE (fn), subargs, /*complain=*/0,
@@ -8701,11 +8705,13 @@ more_specialized (pat1, pat2, explicit_args)
   tree targs;
   int winner = 0;
 
-  targs = get_bindings_overload (pat1, DECL_RESULT (pat2), explicit_args);
+  targs
+    = get_bindings_overload (pat1, DECL_TEMPLATE_RESULT (pat2), explicit_args);
   if (targs)
     --winner;
 
-  targs = get_bindings_overload (pat2, DECL_RESULT (pat1), explicit_args);
+  targs
+    = get_bindings_overload (pat2, DECL_TEMPLATE_RESULT (pat1), explicit_args);
   if (targs)
     ++winner;
 

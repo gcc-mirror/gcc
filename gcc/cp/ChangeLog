@@ -1,3 +1,20 @@
+Sun Mar 26 20:15:26 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* class.c (check_field_decl): Fix typo.
+	(build_vtbl_or_vbase_field): Don't clear DECL_SAVED_INSNS.
+	(check_methods): Likewise.
+	(check_field_decls): Likewise.
+	Use DECL_CONTEXT, not DECL_FIELD_CONTEXT.
+	* cp-tree.h (DECL_SHADOWED_FOR_VAR, DECL_TEMPLATE_RESULT):
+	Use DECL_RESULT_FLD, not DECL_RESULT.
+	* decl.c (xref_tag): Use DECL_TEMPLATE_RESULT.
+	* lex.c (identifier_type): Likewise.
+	* pt.c (determine_specialization, lookup_template_class): Likewise.
+	(tsubst_friend_function, tsubst_decl, instantiate_template): Likewise.
+	(resolve_overloaded_unification, more_specialized): Likewise.
+	* semantics.c (finish_member_declaration): Likewise.
+	* typeck.c (build_x_function_call): Likewise.
+	
 2000-03-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (layout_empty_base): Handle empty bases with non-byte

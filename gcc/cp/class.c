@@ -3758,7 +3758,7 @@ check_field_decl (field, t, cant_have_const_ctor,
       tree fields;
 
       for (fields = TYPE_FIELDS (type); fields; fields = TREE_CHAIN (fields))
-	if (TREE_CODE (field) == FIELD_DECL && !DECL_C_BIT_FIELD (field))
+	if (TREE_CODE (fields) == FIELD_DECL && !DECL_C_BIT_FIELD (field))
 	  check_field_decl (fields, t, cant_have_const_ctor,
 			    cant_have_default_ctor, no_const_asn_ref,
 			    any_default_members);
@@ -3922,7 +3922,7 @@ check_field_decls (t, access_decls, empty_p,
       /* If we've gotten this far, it's a data member, possibly static,
 	 or an enumerator.  */
 
-      DECL_FIELD_CONTEXT (x) = t;
+      DECL_CONTEXT (x) = t;
 
       /* ``A local class cannot have static data members.'' ARM 9.4 */
       if (current_function_decl && TREE_STATIC (x))
@@ -3953,8 +3953,6 @@ check_field_decls (t, access_decls, empty_p,
       if (type == error_mark_node)
 	continue;
 	  
-      DECL_SAVED_INSNS (x) = 0;
-
       /* When this goes into scope, it will be a non-local reference.  */
       DECL_NONLOCAL (x) = 1;
 
@@ -4110,7 +4108,6 @@ build_vtbl_or_vbase_field (name, assembler_name, type, class_type, fcontext,
   DECL_ARTIFICIAL (field) = 1;
   DECL_FIELD_CONTEXT (field) = class_type;
   DECL_FCONTEXT (field) = fcontext;
-  DECL_SAVED_INSNS (field) = 0;
   DECL_ALIGN (field) = TYPE_ALIGN (type);
 
   /* Return it.  */
@@ -4447,7 +4444,6 @@ check_methods (t)
       if (IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (x)))
 	continue;
 
-      DECL_SAVED_INSNS (x) = 0;
       check_for_override (x, t);
       if (DECL_PURE_VIRTUAL_P (x) && ! DECL_VINDEX (x))
 	cp_error_at ("initializer specified for non-virtual method `%D'", x);

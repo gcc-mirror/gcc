@@ -324,9 +324,10 @@ layout_decl (decl, known_align)
   /* Force alignment required for the data type.
      But if the decl itself wants greater alignment, don't override that.
      Likewise, if the decl is packed, don't override it.  */
-  if (!(code == FIELD_DECL && DECL_BIT_FIELD (decl))
+  if (! (code == FIELD_DECL && DECL_BIT_FIELD (decl))
       && (DECL_ALIGN (decl) == 0
-	  || (! DECL_PACKED (decl) && TYPE_ALIGN (type) > DECL_ALIGN (decl))))
+	  || (! (code == FIELD_DECL && DECL_PACKED (decl))
+	      && TYPE_ALIGN (type) > DECL_ALIGN (decl))))
     DECL_ALIGN (decl) = TYPE_ALIGN (type);
 
   /* For fields, set the bit field type and update the alignment.  */
@@ -342,7 +343,7 @@ layout_decl (decl, known_align)
   /* See if we can use an ordinary integer mode for a bit-field. 
      Conditions are: a fixed size that is correct for another mode
      and occupying a complete byte or bytes on proper boundary.  */
-  if (DECL_BIT_FIELD (decl)
+  if (code == FIELD_DECL && DECL_BIT_FIELD (decl)
       && TYPE_SIZE (type) != 0
       && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
       && GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT)
@@ -360,7 +361,7 @@ layout_decl (decl, known_align)
     }
 
   /* Turn off DECL_BIT_FIELD if we won't need it set.  */
-  if (DECL_BIT_FIELD (decl)
+  if (code == FIELD_DECL && DECL_BIT_FIELD (decl)
       && TYPE_MODE (type) == BLKmode && DECL_MODE (decl) == BLKmode
       && known_align > TYPE_ALIGN (type)
       && DECL_ALIGN (decl) >= TYPE_ALIGN (type)
@@ -376,7 +377,7 @@ layout_decl (decl, known_align)
 
   /* If requested, warn about definitions of large data objects.  */
   if (warn_larger_than
-      && (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
+      && (code == VAR_DECL || code == PARM_DECL)
       && ! DECL_EXTERNAL (decl))
     {
       tree size = DECL_SIZE_UNIT (decl);

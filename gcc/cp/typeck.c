@@ -2577,11 +2577,11 @@ build_x_function_call (function, params, decl)
   if ((TREE_CODE (function) == FUNCTION_DECL
        && DECL_STATIC_FUNCTION_P (function))
       || (TREE_CODE (function) == TEMPLATE_DECL
-	  && DECL_STATIC_FUNCTION_P (DECL_RESULT (function))))
-      return build_member_call(DECL_CONTEXT (function), 
-			       template_id 
-			       ? template_id : DECL_NAME (function), 
-			       params);
+	  && DECL_STATIC_FUNCTION_P (DECL_TEMPLATE_RESULT (function))))
+      return build_member_call (DECL_CONTEXT (function), 
+				template_id 
+				? template_id : DECL_NAME (function), 
+				params);
 
   is_method = ((TREE_CODE (function) == TREE_LIST
 		&& current_class_type != NULL_TREE

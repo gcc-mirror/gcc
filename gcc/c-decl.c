@@ -1805,11 +1805,14 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
       DECL_RTL (newdecl) = DECL_RTL (olddecl);
 
       /* Merge the type qualifiers.  */
-      if (DECL_BUILT_IN_NONANSI (olddecl) && TREE_THIS_VOLATILE (olddecl)
-	  && !TREE_THIS_VOLATILE (newdecl))
+      if (TREE_CODE (olddecl) == FUNCTION_DECL
+	  && DECL_BUILT_IN_NONANSI (olddecl) && TREE_THIS_VOLATILE (olddecl)
+	  && ! TREE_THIS_VOLATILE (newdecl))
 	TREE_THIS_VOLATILE (write_olddecl) = 0;
+
       if (TREE_READONLY (newdecl))
 	TREE_READONLY (write_olddecl) = 1;
+
       if (TREE_THIS_VOLATILE (newdecl))
 	{
 	  TREE_THIS_VOLATILE (write_olddecl) = 1;
@@ -1904,14 +1907,15 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
       TREE_PUBLIC (olddecl) = TREE_PUBLIC (newdecl);
     }
 
-  /* If either decl says `inline', this fn is inline,
-     unless its definition was passed already.  */
-  if (DECL_INLINE (newdecl) && DECL_INITIAL (olddecl) == 0)
-    DECL_INLINE (olddecl) = 1;
-  DECL_INLINE (newdecl) = DECL_INLINE (olddecl);
-
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
+      /* If either decl says `inline', this fn is inline,
+	 unless its definition was passed already.  */
+      if (DECL_INLINE (newdecl) && DECL_INITIAL (olddecl) == 0)
+	DECL_INLINE (olddecl) = 1;
+
+      DECL_INLINE (newdecl) = DECL_INLINE (olddecl);
+
       if (DECL_BUILT_IN (olddecl))
 	{
 	  /* Get rid of any built-in function if new arg types don't match it
@@ -2145,7 +2149,8 @@ pushdecl (x)
 
 	 We get warnings about inline functions where they are defined.
 	 Avoid duplicate warnings where they are used.  */
-      if (TREE_PUBLIC (x) && ! DECL_INLINE (x))
+      if (TREE_PUBLIC (x)
+	  && ! (TREE_CODE (x) == FUNCTION_DECL && DECL_INLINE (x)))
 	{
 	  tree decl;
 
@@ -2282,15 +2287,16 @@ pushdecl (x)
 	  /* Here to install a non-global value.  */
 	  tree oldlocal = IDENTIFIER_LOCAL_VALUE (name);
 	  tree oldglobal = IDENTIFIER_GLOBAL_VALUE (name);
+
 	  IDENTIFIER_LOCAL_VALUE (name) = x;
 
 	  /* If this is an extern function declaration, see if we
 	     have a global definition or declaration for the function.  */
 	  if (oldlocal == 0
-	      && DECL_EXTERNAL (x) && !DECL_INLINE (x)
 	      && oldglobal != 0
 	      && TREE_CODE (x) == FUNCTION_DECL
-	      && TREE_CODE (oldglobal) == FUNCTION_DECL)
+	      && TREE_CODE (oldglobal) == FUNCTION_DECL
+	      && DECL_EXTERNAL (x) && ! DECL_INLINE (x))
 	    {
 	      /* We have one.  Their types must agree.  */
 	      if (! comptypes (TREE_TYPE (x),
@@ -2537,8 +2543,8 @@ redeclaration_error_message (newdecl, olddecl)
       if (DECL_INITIAL (olddecl) != 0 && DECL_INITIAL (newdecl) != 0
 	  /* However, defining once as extern inline and a second
 	     time in another way is ok.  */
-	  && !(DECL_INLINE (olddecl) && DECL_EXTERNAL (olddecl)
-	       && !(DECL_INLINE (newdecl) && DECL_EXTERNAL (newdecl))))
+	  && ! (DECL_INLINE (olddecl) && DECL_EXTERNAL (olddecl)
+	       && ! (DECL_INLINE (newdecl) && DECL_EXTERNAL (newdecl))))
 	return 1;
       return 0;
     }
@@ -5932,7 +5938,9 @@ store_parm_decls ()
 	    {
 	      if (DECL_NAME (parm) == 0)
 		error_with_decl (parm, "parameter name omitted");
-	      else if (TYPE_MAIN_VARIANT (TREE_TYPE (parm)) == void_type_node)
+	      else if (TREE_CODE (TREE_TYPE (parm)) != ERROR_MARK
+		       && (TYPE_MAIN_VARIANT (TREE_TYPE (parm))
+			   == void_type_node))
 		{
 		  error_with_decl (parm, "parameter `%s' declared void");
 		  /* Change the type to error_mark_node so this parameter
@@ -5999,8 +6007,10 @@ store_parm_decls ()
 	 Associate decls with the names and store the decls
 	 into the TREE_PURPOSE slots.  */
 
+      /* We use DECL_WEAK as a flag to show which parameters have been
+	 seen already since it is not used on PARM_DECL or CONST_DECL.  */
       for (parm = parmdecls; parm; parm = TREE_CHAIN (parm))
-	DECL_RESULT (parm) = 0;
+	DECL_WEAK (parm) = 0;
 
       for (parm = specparms; parm; parm = TREE_CHAIN (parm))
 	{
@@ -6008,7 +6018,8 @@ store_parm_decls ()
 
 	  if (TREE_VALUE (parm) == 0)
 	    {
-	      error_with_decl (fndecl, "parameter name missing from parameter list");
+	      error_with_decl (fndecl,
+			       "parameter name missing from parameter list");
 	      TREE_PURPOSE (parm) = 0;
 	      continue;
 	    }
@@ -6025,7 +6036,7 @@ store_parm_decls ()
 
 	  /* If declaration already marked, we have a duplicate name.
 	     Complain, and don't use this decl twice.   */
-	  if (found && DECL_RESULT (found) != 0)
+	  if (found && DECL_WEAK (found))
 	    {
 	      error_with_decl (found, "multiple parameters named `%s'");
 	      found = 0;
@@ -6064,10 +6075,8 @@ store_parm_decls ()
 
 	  TREE_PURPOSE (parm) = found;
 
-	  /* Mark this decl as "already found" -- see test, above.
-	     It is safe to use DECL_RESULT for this
-	     since it is not used in PARM_DECLs or CONST_DECLs.  */
-	  DECL_RESULT (found) = error_mark_node;
+	  /* Mark this decl as "already found" */
+	  DECL_WEAK (found) = 1;
 	}
 
       /* Put anything which is on the parmdecls chain and which is
@@ -6093,7 +6102,7 @@ store_parm_decls ()
 	          TREE_TYPE (parm) = error_mark_node;
 	        }
 
-	      if (DECL_RESULT (parm) == 0)
+	      if (! DECL_WEAK (parm))
 	        {
 	          error_with_decl (parm,
 			           "declaration for parameter `%s' but no such parameter");
@@ -6309,7 +6318,7 @@ combine_parm_decls (specparms, parmlist, void_at_end)
   tree types = 0;
 
   for (parm = parmdecls; parm; parm = TREE_CHAIN (parm))
-    DECL_RESULT (parm) = 0;
+    DECL_WEAK (parm) = 0;
 
   for (parm = specparms; parm; parm = TREE_CHAIN (parm))
     {
@@ -6325,7 +6334,7 @@ combine_parm_decls (specparms, parmlist, void_at_end)
 
       /* If declaration already marked, we have a duplicate name.
 	 Complain, and don't use this decl twice.   */
-      if (found && DECL_RESULT (found) != 0)
+      if (found && DECL_WEAK (found))
 	{
 	  error_with_decl (found, "multiple parameters named `%s'");
 	  found = 0;
@@ -6363,10 +6372,8 @@ combine_parm_decls (specparms, parmlist, void_at_end)
 
       TREE_PURPOSE (parm) = found;
 
-      /* Mark this decl as "already found" -- see test, above.
-	 It is safe to use DECL_RESULT for this
-	 since it is not used in PARM_DECLs or CONST_DECLs.  */
-      DECL_RESULT (found) = error_mark_node;
+      /* Mark this decl as "already found".  */
+      DECL_WEAK (found) = 1;
     }
 
   /* Complain about any actual PARM_DECLs not matched with any names.  */
@@ -6383,7 +6390,7 @@ combine_parm_decls (specparms, parmlist, void_at_end)
 	  TREE_TYPE (parm) = error_mark_node;
 	}
 
-      if (DECL_RESULT (parm) == 0)
+      if (! DECL_WEAK (parm))
 	{
 	  error_with_decl (parm,
 			   "declaration for parameter `%s' but no such parameter");
