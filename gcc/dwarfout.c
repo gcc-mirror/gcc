@@ -1474,11 +1474,11 @@ output_mem_loc_descriptor (rtl)
 
 	/* Whenever a register number forms a part of the description of
 	   the method for calculating the (dynamic) address of a memory
-	   resident object, Dwarf rules require the register number to
+	   resident object, DWARF rules require the register number to
 	   be referred to as a "base register".  This distinction is not
 	   based in any way upon what category of register the hardware
 	   believes the given register belongs to.  This is strictly
-	   Dwarf terminology we're dealing with here.
+	   DWARF terminology we're dealing with here.  */
 
 	   Note that in cases where the location of a memory-resident data
 	   object could be expressed as:
@@ -1489,12 +1489,21 @@ output_mem_loc_descriptor (rtl)
 	   be OP_BASEREG (basereg).  This may look deceptively like the
 	   object in question was allocated to a register (rather than
 	   in memory) so DWARF consumers need to be aware of the subtle
-	   distinction between OP_REG and OP_BASEREG.
-	*/
+	   distinction between OP_REG and OP_BASEREG.  */
 
 	ASM_OUTPUT_DWARF_STACK_OP (asm_out_file, OP_BASEREG);
-        ASM_OUTPUT_DWARF_DATA4 (asm_out_file,
-				DBX_REGISTER_NUMBER (REGNO (rtl)));
+	{
+	  register unsigned regno = REGNO (rtl);
+
+	  if (regno >= FIRST_PSEUDO_REGISTER)
+	    {
+	      fprintf (stderr, "%s: regno botch detected: dwarfout.c:%u\n",
+		       language_string, __LINE__);
+	      debug_rtx(rtl);
+	      regno = 0;
+	    }
+	  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, DBX_REGISTER_NUMBER (regno));
+	}
 	break;
 
       case MEM:
@@ -1549,8 +1558,18 @@ output_loc_descriptor (rtl)
 
     case REG:
 	ASM_OUTPUT_DWARF_STACK_OP (asm_out_file, OP_REG);
-        ASM_OUTPUT_DWARF_DATA4 (asm_out_file,
-				DBX_REGISTER_NUMBER (REGNO (rtl)));
+	{
+	  register unsigned regno = REGNO (rtl);
+
+	  if (regno >= FIRST_PSEUDO_REGISTER)
+	    {
+	      fprintf (stderr, "%s: regno botch detected: dwarfout.c:%u\n",
+		       language_string, __LINE__);
+	      debug_rtx(rtl);
+	      regno = 0;
+	    }
+	  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, DBX_REGISTER_NUMBER (regno));
+	}
 	break;
 
     case MEM:
