@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler. Matsushita MN10300 series
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -42,6 +42,8 @@ extern int impossible_plus_operand PARAMS ((rtx, enum machine_mode));
 extern int const_8bit_operand PARAMS ((rtx, enum machine_mode));
 
 extern int mn10300_address_cost PARAMS ((rtx, int *));
+
+extern bool mn10300_wide_const_load_uses_clr PARAMS ((rtx operands[2]));
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
@@ -59,4 +61,3 @@ extern void expand_epilogue PARAMS ((void));
 extern int initial_offset PARAMS ((int, int));
 extern int can_use_return_insn PARAMS ((void));
 extern int mask_ok_for_mem_btst PARAMS ((int, int));
-

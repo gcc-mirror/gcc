@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Matsushita MN10300 series
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
@@ -1321,4 +1321,52 @@ mn10300_address_cost (x, unsig)
       abort ();
 
     }
+}
+
+/* Check whether a constant used to initialize a DImode or DFmode can
+   use a clr instruction.  The code here must be kept in sync with
+   movdf and movdi.  */
+
+bool
+mn10300_wide_const_load_uses_clr (operands)
+     rtx operands[2];
+{
+  long val[2];
+
+  if (GET_CODE (operands[0]) != REG
+      || REGNO_REG_CLASS (REGNO (operands[0])) != DATA_REGS)
+    return false;
+
+  switch (GET_CODE (operands[1]))
+    {
+    case CONST_INT:
+      {
+	rtx low, high;
+	split_double (operands[1], &low, &high);
+	val[0] = INTVAL (low);
+	val[1] = INTVAL (high);
+      }
+      break;
+      
+    case CONST_DOUBLE:
+      if (GET_MODE (operands[1]) == DFmode)
+	{
+	  REAL_VALUE_TYPE rv;
+
+	  REAL_VALUE_FROM_CONST_DOUBLE (rv, operands[1]);
+	  REAL_VALUE_TO_TARGET_DOUBLE (rv, val);
+	}
+      else if (GET_MODE (operands[1]) == VOIDmode
+	       || GET_MODE (operands[1]) == DImode)
+	{
+	  val[0] = CONST_DOUBLE_LOW (operands[1]);
+	  val[1] = CONST_DOUBLE_HIGH (operands[1]);
+	}
+      break;
+      
+    default:
+      return false;
+    }
+
+  return val[0] == 0 || val[1] == 0;
 }
