@@ -639,10 +639,11 @@ expand_builtin_setjmp (tree arglist, rtx target)
 
   expand_builtin_setjmp_setup (buf_addr, next_lab);
 
-  /* Set TARGET to zero and branch to the continue label.  */
+  /* Set TARGET to zero and branch to the continue label.  Use emit_jump to
+     ensure that pending stack adjustments are flushed.  */
   emit_move_insn (target, const0_rtx);
-  emit_jump_insn (gen_jump (cont_lab));
-  emit_barrier ();
+  emit_jump (cont_lab);
+
   emit_label (next_lab);
 
   expand_builtin_setjmp_receiver (next_lab);
