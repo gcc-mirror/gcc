@@ -101,12 +101,6 @@ static int process_imports PARAMS ((void));
 static void read_import_dir PARAMS ((tree));
 static int find_in_imports_on_demand PARAMS ((tree, tree));
 static void find_in_imports PARAMS ((tree, tree));
-static void check_static_final_variable_assignment_flag PARAMS ((tree));
-static void reset_static_final_variable_assignment_flag PARAMS ((tree));
-static void check_final_variable_local_assignment_flag PARAMS ((tree, tree));
-static void reset_final_variable_local_assignment_flag PARAMS ((tree));
-static int  check_final_variable_indirect_assignment PARAMS ((tree));
-static void check_final_variable_global_assignment_flag PARAMS ((tree));
 static void check_inner_class_access PARAMS ((tree, tree, tree));
 static int check_pkg_class_access PARAMS ((tree, tree, bool));
 static void register_package PARAMS ((tree));
@@ -163,7 +157,6 @@ static tree build_method_invocation PARAMS ((tree, tree));
 static tree build_new_invocation PARAMS ((tree, tree));
 static tree build_assignment PARAMS ((int, int, tree, tree));
 static tree build_binop PARAMS ((enum tree_code, int, tree, tree));
-static int check_final_assignment PARAMS ((tree ,tree));
 static tree patch_assignment PARAMS ((tree, tree));
 static tree patch_binop PARAMS ((tree, tree, tree));
 static tree build_unaryop PARAMS ((int, int, tree));
@@ -415,7 +408,7 @@ static tree wpv_id;
 /* The list of all packages we've seen so far */
 static tree package_list = NULL_TREE;
  
-/* Hold THIS for the scope of the current public method decl.  */
+/* Hold THIS for the scope of the current method decl.  */
 static tree current_this;
 
 /* Hold a list of catch clauses list. The first element of this list is
@@ -4351,14 +4344,12 @@ register_fields (flags, type, variable_list)
       /* If the field denotes a final instance variable, then we
 	 allocate a LANG_DECL_SPECIFIC part to keep track of its
 	 initialization. We also mark whether the field was
-	 initialized upon it's declaration. We don't do that if the
+	 initialized upon its declaration. We don't do that if the
 	 created field is an alias to a final local. */
       if (!ARG_FINAL_P (current) && (flags & ACC_FINAL))
 	{
 	  MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (field_decl);
 	  DECL_FIELD_FINAL_WFL (field_decl) = cl;
-	  if ((flags & ACC_STATIC) && init)
-	    DECL_FIELD_FINAL_IUD (field_decl) = 1;
 	}
 
       /* If the couple initializer/initialized is marked ARG_FINAL_P,
@@ -7273,7 +7264,7 @@ declare_local_variables (modifier, type, vlist)
 	 will be entered */
       decl = build_decl (VAR_DECL, name, real_type);
       MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (decl);
-      LOCAL_FINAL (decl) = final_p;
+      DECL_FINAL (decl) = final_p;
       BLOCK_CHAIN_DECL (decl);
       
       /* If doing xreferencing, replace the line number with the WFL
@@ -7348,11 +7339,11 @@ source_start_java_method (fndecl)
 	parm_decl = build_decl (PARM_DECL, name, type);
 
       /* Remember if a local variable was declared final (via its
-         TREE_LIST of type/name.) Set LOCAL_FINAL accordingly. */
+         TREE_LIST of type/name.) Set DECL_FINAL accordingly. */
       if (ARG_FINAL_P (tem))
 	{
 	  MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (parm_decl);
-	  LOCAL_FINAL (parm_decl) = 1;
+	  DECL_FINAL (parm_decl) = 1;
 	}
 
       BLOCK_CHAIN_DECL (parm_decl);
@@ -7658,14 +7649,6 @@ java_complete_expand_methods (class_decl)
 
   current_class = TREE_TYPE (class_decl);
 
-  /* Find whether the class has final variables */
-  for (decl = TYPE_FIELDS (current_class); decl; decl = TREE_CHAIN (decl))
-    if (FIELD_FINAL (decl))
-      {
-	TYPE_HAS_FINAL_VARIABLE (current_class) = 1;
-	break;
-      }
-
   /* Initialize a new constant pool */
   init_outgoing_cpool ();
 
@@ -7700,16 +7683,8 @@ java_complete_expand_methods (class_decl)
       if (no_body)
 	restore_line_number_status (1);
 
-      /* Reset the final local variable assignment flags */
-      if (TYPE_HAS_FINAL_VARIABLE (current_class))
-	reset_final_variable_local_assignment_flag (current_class);
-
       java_complete_expand_method (decl);
 
-      /* Check for missed out final variable assignment */
-      if (TYPE_HAS_FINAL_VARIABLE (current_class))
-	check_final_variable_local_assignment_flag (current_class, decl);
-      
       if (no_body)
 	restore_line_number_status (0);
     }
@@ -7741,17 +7716,10 @@ java_complete_expand_methods (class_decl)
   /* If there is indeed a <clinit>, fully expand it now */
   if (clinit)
     {
-      /* Reset the final local variable assignment flags */
-      if (TYPE_HAS_FINAL_VARIABLE (current_class))
-	reset_static_final_variable_assignment_flag (current_class);
       /* Prevent the use of `this' inside <clinit> */
       ctxp->explicit_constructor_p = 1;
       java_complete_expand_method (clinit);
       ctxp->explicit_constructor_p = 0;
-      /* Check for missed out static final variable assignment */
-      if (TYPE_HAS_FINAL_VARIABLE (current_class)
-	  && !CLASS_INTERFACE (class_decl))
-	check_static_final_variable_assignment_flag (current_class);
     }
   
   /* We might have generated a class$ that we now want to expand */
@@ -7765,15 +7733,6 @@ java_complete_expand_methods (class_decl)
       if (DECL_CONSTRUCTOR_P (decl) 
 	  && verify_constructor_circularity (decl, decl))
 	break;
-
-  /* Final check on the initialization of final variables. */
-  if (TYPE_HAS_FINAL_VARIABLE (current_class))
-    {
-      check_final_variable_global_assignment_flag (current_class);
-      /* If we have an interface, check for uninitialized fields. */
-      if (CLASS_INTERFACE (class_decl))
-	check_static_final_variable_assignment_flag (current_class);
-    }
 
   /* Save the constant pool. We'll need to restore it later. */
   TYPE_CPOOL (current_class) = outgoing_cpool;
@@ -8052,25 +8011,27 @@ java_complete_expand_method (mdecl)
       
       if (! flag_emit_xref && ! METHOD_NATIVE (mdecl))
 	{
-	  unsigned int state = check_for_initialization (block_body);
+	  check_for_initialization (block_body, mdecl);
 	  
 	  /* Go through all the flags marking the initialization of
 	     static variables and see whether they're definitively
 	     assigned, in which case the type is remembered as
 	     definitively initialized in MDECL. */
+	  /* FIXME this doesn't work state is too short.
 	  if (STATIC_CLASS_INIT_OPT_P ())
 	    {
 	      hash_traverse (&DECL_FUNCTION_INIT_TEST_TABLE (mdecl),
 			     attach_initialized_static_class, (PTR)&state);
 
-	      /* Always register the context as properly initialized in
+	      / * Always register the context as properly initialized in
 		 MDECL. This used with caution helps removing extra
-		 initialization of self. */
+		 initialization of self. * /
 	      if (METHOD_STATIC (mdecl))
 		hash_lookup (&DECL_FUNCTION_INITIALIZED_CLASS_TABLE (mdecl),
 			     (hash_table_key) DECL_CONTEXT (mdecl),
 			     TRUE, NULL);
 	    }
+	  */
 	}
       ctxp->explicit_constructor_p = 0;
     }
@@ -8292,14 +8253,6 @@ outer_field_access_fix (wfl, node, rhs)
   
   if (outer_field_expanded_access_p (node, &name, &arg_type, &arg))
     {
-      /* At any rate, check whether we're trying to assign a value to
-	 a final. */
-      tree accessed = (JDECL_P (node) ? node : 
-		       (TREE_CODE (node) == COMPONENT_REF ? 
-			TREE_OPERAND (node, 1) : node));
-      if (check_final_assignment (accessed, wfl))
-	return error_mark_node;
-  
       node = build_outer_field_access_expr (EXPR_WFL_LINECOL (wfl), 
 					    arg_type, name, arg, rhs);
       return java_complete_tree (node);
@@ -8886,6 +8839,8 @@ fix_constructors (mdecl)
 	  TREE_OPERAND (found_call, 0) = empty_stmt_node;
 	}
       
+      DECL_INIT_CALLS_THIS (mdecl) = invokes_this;
+
       /* Insert the instance initializer block right after. */
       if (!invokes_this && (iii = build_instinit_invocation (class_type)))
 	compound = add_stmt_to_compound (compound, NULL_TREE, iii);
@@ -11457,8 +11412,8 @@ java_complete_tree (node)
       DECL_INITIAL (node) = value;
       if (value != NULL_TREE)
 	{
-	  /* fold_constant_for_init sometimes widen the original type
-             of the constant (i.e. byte to int.) It's not desirable,
+	  /* fold_constant_for_init sometimes widens the original type
+             of the constant (i.e. byte to int). It's not desirable,
              especially if NODE is a function argument. */
 	  if ((TREE_CODE (value) == INTEGER_CST
 	       || TREE_CODE (value) == REAL_CST)
@@ -11467,8 +11422,6 @@ java_complete_tree (node)
 	  else
 	    return value;
 	}
-      else
-        DECL_FIELD_FINAL_IUD (node) = 0;
     }
   return node;
 }
@@ -11662,7 +11615,7 @@ java_complete_lhs (node)
 				       TREE_OPERAND (cn, 1));
 	}
       /* Accept final locals too. */
-      else if (TREE_CODE (cn) == VAR_DECL && LOCAL_FINAL (cn))
+      else if (TREE_CODE (cn) == VAR_DECL && DECL_FINAL (cn))
 	cn = fold_constant_for_init (DECL_INITIAL (cn), cn);
 
       if (!TREE_CONSTANT (cn) && !flag_emit_xref)
@@ -11972,13 +11925,12 @@ java_complete_lhs (node)
 		    DECL_INITIAL (nn) = patched;
 		  else
 		    DECL_INITIAL (nn) = TREE_OPERAND (node, 1);
+		  DECL_FIELD_FINAL_IUD (nn) = 1;
 		  return empty_stmt_node;
 		}
 	    }
 	  if (! flag_emit_class_files)
 	    DECL_INITIAL (nn) = NULL_TREE;
-	  if (CLASS_FINAL_VARIABLE_P (nn))
-	    DECL_FIELD_FINAL_IUD (nn) = 0;
 	}
       wfl_op2 = TREE_OPERAND (node, 1);
 
@@ -12056,9 +12008,6 @@ java_complete_lhs (node)
 	}
       else
 	{
-	  /* Can't assign to a (blank) final. */
-	  if (check_final_assignment (TREE_OPERAND (node, 0), wfl_op1))
-	    return error_mark_node;
 	  node = patch_assignment (node, wfl_op1);
 	  /* Reorganize the tree if necessary. */
 	  if (flag && (!JREFERENCE_TYPE_P (TREE_TYPE (node)) 
@@ -12541,270 +12490,8 @@ print_int_node (node)
 }
 
 
-
-/* This section of the code handle assignment check with FINAL
-   variables.  */
-
-static void
-reset_static_final_variable_assignment_flag (class)
-     tree class;
-{
-  tree field;
-  for (field = TYPE_FIELDS (class); field; field = TREE_CHAIN (field))
-    if (CLASS_FINAL_VARIABLE_P (field))
-      DECL_FIELD_FINAL_LIIC (field) = 0;
-}
-
-/* Figure whether all final static variable have been initialized.  */
-
-static void
-check_static_final_variable_assignment_flag (class)
-     tree class;
-{
-  tree field;
-
-  for (field = TYPE_FIELDS (class); field; field = TREE_CHAIN (field))
-    if (CLASS_FINAL_VARIABLE_P (field)
-	&& !DECL_FIELD_FINAL_IUD (field) && !DECL_FIELD_FINAL_LIIC (field))
-      parse_error_context
-	(DECL_FIELD_FINAL_WFL (field),
-	 "Blank static final variable `%s' may not have been initialized",
-	 IDENTIFIER_POINTER (DECL_NAME (field)));
-}
-
-/* This function marks all final variable locally unassigned.  */
-
-static void
-reset_final_variable_local_assignment_flag (class)
-     tree class;
-{
-  tree field;
-  for (field = TYPE_FIELDS (class); field; field = TREE_CHAIN (field))
-    if (FINAL_VARIABLE_P (field))
-      DECL_FIELD_FINAL_LIIC (field) = 0;
-}
-
-/* Figure whether all final variables have beem initialized in MDECL
-   and mark MDECL accordingly.  */
-
-static void
-check_final_variable_local_assignment_flag (class, mdecl)
-     tree class;
-     tree mdecl;
-{
-  tree field;
-  int initialized = 0;
-  int non_initialized = 0; 
-
-  if (DECL_FUNCTION_SYNTHETIC_CTOR (mdecl))
-    return;
-
-  /* First find out whether all final variables or no final variable
-     are initialized in this ctor. We don't take into account final
-     variable that have been initialized upon declaration.  */
-  for (field = TYPE_FIELDS (class); field; field = TREE_CHAIN (field))
-    if (FINAL_VARIABLE_P (field) && !DECL_FIELD_FINAL_IUD (field))
-      {
-	if (DECL_FIELD_FINAL_LIIC (field))
-	  initialized++;
-	else
-	  non_initialized++;
-      }
-
-  /* There were no non initialized variable and no initialized variable.
-     This ctor is fine. */
-  if (!non_initialized && !initialized)
-    DECL_FUNCTION_ALL_FINAL_INITIALIZED (mdecl) = 1;
-  /* If no variables have been initialized, that fine. We'll check
-     later whether this ctor calls a constructor which initializes
-     them. We mark the ctor as not initializing all its finals. */
-  else if (initialized == 0)
-    DECL_FUNCTION_ALL_FINAL_INITIALIZED (mdecl) = 0;
-  /* If we have a mixed bag, then we have a problem. We need to report
-     all the variables we're not initializing.  */
-  else if (initialized && non_initialized)
-    {
-      DECL_FUNCTION_ALL_FINAL_INITIALIZED (mdecl) = 0;
-      for (field = TYPE_FIELDS (class); field; field = TREE_CHAIN (field))
-	if (FIELD_FINAL (field)
-	    && !DECL_FIELD_FINAL_IUD (field) && !DECL_FIELD_FINAL_LIIC (field))
-	  {
-	    parse_error_context 
-	      (lookup_cl (mdecl),
-	       "Blank final variable `%s' may not have been initialized in this constructor",
-	       IDENTIFIER_POINTER (DECL_NAME (field)));
-	    DECL_FIELD_FINAL_IERR (field) = 1;
-	  }
-    }
-  /* Otherwise we know this ctor is initializing all its final
-     variable. We mark it so. */
-  else
-    DECL_FUNCTION_ALL_FINAL_INITIALIZED (mdecl) = 1;
-}
-
-/* This function recurses in a simple what through STMT and stops when
-   it finds a constructor call. It then verifies that the called
-   constructor initialized its final properly. Return 1 upon success,
-   0 or -1 otherwise.  */
-
-static int
-check_final_variable_indirect_assignment (stmt)
-     tree stmt;
-{
-  int res;
-  switch (TREE_CODE (stmt))
-    {
-    case EXPR_WITH_FILE_LOCATION:
-      return check_final_variable_indirect_assignment (EXPR_WFL_NODE (stmt));
-    case COMPOUND_EXPR:
-      res = check_final_variable_indirect_assignment (TREE_OPERAND (stmt, 0));
-      if (res > 0)
-	return res;
-      return check_final_variable_indirect_assignment (TREE_OPERAND (stmt, 1));
-    case SAVE_EXPR:
-      return check_final_variable_indirect_assignment (TREE_OPERAND (stmt, 0));
-    case CALL_EXPR:
-      {
-	tree decl = TREE_OPERAND (stmt, 0);
-	tree fbody;
-
-	if (TREE_CODE (decl) != FUNCTION_DECL)
-	  decl = TREE_OPERAND (TREE_OPERAND (decl, 0), 0);
-	if (TREE_CODE (decl) != FUNCTION_DECL)
-	  abort ();
-	if (DECL_FUNCTION_ALL_FINAL_INITIALIZED (decl))
-	  return 1;
-	if (DECL_FINIT_P (decl) || DECL_CONTEXT (decl) != current_class)
-	  return -1;
-	fbody = BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (decl));
-	if (fbody == error_mark_node)
-	  return -1;
-	fbody = BLOCK_EXPR_BODY (fbody);
-	return check_final_variable_indirect_assignment (fbody);
-      }
-    default:
-      break;
-    }
-  return 0;
-}
-
-/* This is the last chance to catch a final variable initialization
-   problem. This routine will report an error if a final variable was
-   never (globally) initialized and never reported as not having been
-   initialized properly. */
-
-static void
-check_final_variable_global_assignment_flag (class)
-     tree class;
-{
-  tree field, mdecl;
-  int nnctor = 0;
-  int error_found = 0;
-
-  /* We go through all natural ctors and see whether they're
-     initializing all their final variables or not. */
-  current_function_decl = NULL_TREE; /* For the error report. */
-  for (mdecl = TYPE_METHODS (class); mdecl; mdecl = TREE_CHAIN (mdecl))
-    if (DECL_CONSTRUCTOR_P (mdecl) && ! DECL_FUNCTION_SYNTHETIC_CTOR (mdecl))
-      {
-	if (!DECL_FUNCTION_ALL_FINAL_INITIALIZED (mdecl))
-	  {
-	    /* It doesn't. Maybe it calls a constructor that initializes
-	       them.  find out. */
-	    tree fbody = BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (mdecl));
-	    if (fbody == error_mark_node)
-	      continue;
-	    fbody = BLOCK_EXPR_BODY (fbody);
-	    if (check_final_variable_indirect_assignment (fbody) == 1)
-	      {
-		DECL_FUNCTION_ALL_FINAL_INITIALIZED (mdecl) = 1;
-		nnctor++;
-	      }
-	    else
-	      {
-		parse_error_context
-		  (lookup_cl (mdecl),
-		   "Final variable initialization error in this constructor");
-		error_found = 1;
-	      }
-	  }
-	else
-	  nnctor++;
-      }
-
-  /* Finally we catch final variables that never were initialized */
-  for (field = TYPE_FIELDS (class); field; field = TREE_CHAIN (field))
-    if (FINAL_VARIABLE_P (field)
-	/* If the field wasn't initialized upon declaration */
-	&& !DECL_FIELD_FINAL_IUD (field)
-	/* There wasn't a natural ctor in which the field could have been
-	   initialized or we found an error looking for one. */
-	&& (error_found || !nnctor)
-	/* If we never reported a problem with this field */
-	&& !DECL_FIELD_FINAL_IERR (field))
-      {
-	current_function_decl = NULL;
-	parse_error_context
-	  (DECL_FIELD_FINAL_WFL (field),
-	   "Final variable `%s' hasn't been initialized upon its declaration",
-	   IDENTIFIER_POINTER (DECL_NAME (field)));
-      }
-}
-
 /* Return 1 if an assignment to a FINAL is attempted in a non suitable
    context.  */
-
-static int
-check_final_assignment (lvalue, wfl)
-     tree lvalue, wfl;
-{
-  if (TREE_CODE (lvalue) != COMPONENT_REF && !JDECL_P (lvalue))
-    return 0;
-
-  if (TREE_CODE (lvalue) == COMPONENT_REF
-      && JDECL_P (TREE_OPERAND (lvalue, 1)))
-    lvalue = TREE_OPERAND (lvalue, 1);
-
-  if (!FIELD_FINAL (lvalue))
-    return 0;
-
-  /* Now the logic. We can modify a final VARIABLE:
-     1) in finit$, (its declaration was followed by an initialization,)
-     2) consistently in each natural ctor, if it wasn't initialized in
-        finit$ or once in <clinit>.  In any other cases, an error should be
-	reported. */
-  if (DECL_FINIT_P (current_function_decl))
-    {
-      DECL_FIELD_FINAL_IUD (lvalue) = 1;
-      return 0;
-    }
-
-  if (!DECL_FUNCTION_SYNTHETIC_CTOR (current_function_decl)
-      /* Only if it wasn't given a value upon initialization */
-      && DECL_LANG_SPECIFIC (lvalue) && !DECL_FIELD_FINAL_IUD (lvalue)
-      /* If it was never assigned a value in this constructor */
-      && !DECL_FIELD_FINAL_LIIC (lvalue))
-    {
-      /* Turn the locally assigned flag on, it will be checked later
-	 on to point out at discrepancies. */
-      DECL_FIELD_FINAL_LIIC (lvalue) = 1;
-      if (DECL_CLINIT_P (current_function_decl))
-	DECL_FIELD_FINAL_IUD (lvalue) = 1;
-      return 0;
-    }
-
-  /* Other problems should be reported right away. */
-  parse_error_context 
-    (wfl, "Can't %sassign a value to the final variable `%s'",
-     (FIELD_STATIC (lvalue) ? "re" : ""),
-     IDENTIFIER_POINTER (EXPR_WFL_NODE (wfl)));
-
-  /* Note that static field can be initialized once and only once. */
-  if (FIELD_STATIC (lvalue))
-    DECL_FIELD_FINAL_IERR (lvalue) = 1;
-
-  return 1;
-}
 
 /* 15.25 Assignment operators. */
 
@@ -12844,15 +12531,7 @@ patch_assignment (node, wfl_op1)
   else if (TREE_CODE (wfl_op1) == EXPR_WITH_FILE_LOCATION
 	   && resolve_expression_name (wfl_op1, &llvalue))
     {
-      if (!error_found && check_final_assignment (llvalue, wfl_op1))
-	{
-	  /* What we should do instead is resetting the all the flags
-	     previously set, exchange lvalue for llvalue and continue. */
-	  error_found = 1;
-	  return error_mark_node;
-	}
-      else 
-	lhs_type = TREE_TYPE (lvalue);
+      lhs_type = TREE_TYPE (lvalue);
     }
   else 
     {
@@ -13003,7 +12682,7 @@ patch_assignment (node, wfl_op1)
   /* Final locals can be used as case values in switch
      statement. Prepare them for this eventuality. */
   if (TREE_CODE (lvalue) == VAR_DECL 
-      && LOCAL_FINAL_P (lvalue)
+      && DECL_FINAL (lvalue)
       && TREE_CONSTANT (new_rhs)
       && IDENTIFIER_LOCAL_VALUE (DECL_NAME (lvalue))
       && JINTEGRAL_TYPE_P (TREE_TYPE (lvalue))
@@ -14267,26 +13946,14 @@ patch_unaryop (node, wfl_op)
 	       && TREE_OPERAND (decl, 1)
 	       && (TREE_CODE (TREE_OPERAND (decl, 1)) == INDIRECT_REF)))
 	{
-	  tree lvalue;
-	  /* Before screaming, check that we're not in fact trying to
-	     increment a optimized static final access, in which case
-	     we issue an different error message. */
-	  if (!(TREE_CODE (wfl_op) == EXPR_WITH_FILE_LOCATION
-		&& resolve_expression_name (wfl_op, &lvalue)
-		&& check_final_assignment (lvalue, wfl_op)))
-	    parse_error_context (wfl_operator, "Invalid argument to `%s'",
-				 operator_string (node));
 	  TREE_TYPE (node) = error_mark_node;
 	  error_found = 1;
 	}
       
-      if (check_final_assignment (op, wfl_op))
-	error_found = 1;
-
       /* From now on, we know that op if a variable and that it has a
          valid wfl. We use wfl_op to locate errors related to the
          ++/-- operand. */
-      else if (!JNUMERIC_TYPE_P (op_type))
+      if (!JNUMERIC_TYPE_P (op_type))
 	{
 	  parse_error_context
 	    (wfl_op, "Invalid argument type `%s' to `%s'",
@@ -16171,8 +15838,6 @@ fold_constant_for_init (node, context)
       DECL_INITIAL (node) = NULL_TREE;
       val = fold_constant_for_init (val, node);
       DECL_INITIAL (node) = val;
-      if (!val && CLASS_FINAL_VARIABLE_P (node))
-	DECL_FIELD_FINAL_IUD (node) = 0;
       return val;
 
     case EXPR_WITH_FILE_LOCATION:

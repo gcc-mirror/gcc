@@ -706,10 +706,12 @@ build_java_array_length_access (node)
   length = java_array_type_length (type);
   if (length >= 0)
     return build_int_2 (length, 0);
-  return fold (build1 (INDIRECT_REF, int_type_node,
-		       fold (build (PLUS_EXPR, ptr_type_node,
-				    java_check_reference (node, 1), 
-				    JAVA_ARRAY_LENGTH_OFFSET(node)))));
+  node = build1 (INDIRECT_REF, int_type_node,
+		 fold (build (PLUS_EXPR, ptr_type_node,
+			      java_check_reference (node, 1), 
+			      JAVA_ARRAY_LENGTH_OFFSET(node))));
+  IS_ARRAY_LENGTH_ACCESS (node) = 1;
+  return fold (node);
 }
 
 /* Optionally checks a reference against the NULL pointer.  ARG1: the

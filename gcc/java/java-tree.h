@@ -63,6 +63,7 @@ struct JCF;
    4: IS_A_COMMAND_LINE_FILENAME_P (in IDENTIFIER_NODE)
       RESOLVE_TYPE_NAME_P (in EXPR_WITH_FILE_LOCATION)
       CALL_USING_SUPER (in CALL_EXPR)
+      IS_ARRAY_LENGTH_ACCESS (in INDIRECT_REF)
    5: HAS_BEEN_ALREADY_PARSED_P (in IDENTIFIER_NODE)
       IS_BREAK_STMT_P (in EXPR_WITH_FILE_LOCATION)
       IS_CRAFTED_STRING_BUFFER_P (in CALL_EXPR)
@@ -92,6 +93,7 @@ struct JCF;
    3: METHOD_FINAL (in FUNCTION_DECL)
       FIELD_FINAL (in FIELD_DECL)
       CLASS_FINAL (in TYPE_DECL)
+      DECL_FINAL (in any decl)
    4: METHOD_SYNCHRONIZED (in FUNCTION_DECL).
       LABEL_IN_SUBR (in LABEL_DECL)
       CLASS_INTERFACE (in TYPE_DECL)
@@ -476,6 +478,7 @@ extern tree java_global_trees[JTI_MAX];
   java_global_trees[JTI_FINIT_IDENTIFIER_NODE]      /* "finit$" */
 #define finit_leg_identifier_node \
   java_global_trees[JTI_FINIT_LEG_IDENTIFIER_NODE]  /* "$finit$" */
+/* FIXME "instinit$" and "finit$" should be merged  */
 #define instinit_identifier_node \
   java_global_trees[JTI_INSTINIT_IDENTIFIER_NODE]  /* "instinit$" */
 #define void_signature_node \
@@ -740,10 +743,10 @@ struct lang_identifier
 /* True if DECL is a synthetic ctor.  */
 #define DECL_FUNCTION_SYNTHETIC_CTOR(DECL) \
   (DECL_LANG_SPECIFIC(DECL)->synthetic_ctor)
-/* True if DECL initializes all its finals */
-#define DECL_FUNCTION_ALL_FINAL_INITIALIZED(DECL) \
-  (DECL_LANG_SPECIFIC(DECL)->init_final)
 #define DECL_FIXED_CONSTRUCTOR_P(DECL) (DECL_LANG_SPECIFIC(DECL)->fixed_ctor)
+
+/* A constructor that calls this. */
+#define DECL_INIT_CALLS_THIS(DECL) (DECL_LANG_SPECIFIC(DECL)->init_calls_this)
 
 /* True when DECL aliases an outer context local variable.  */
 #define FIELD_LOCAL_ALIAS(DECL) DECL_LANG_FLAG_6 (DECL)
@@ -824,29 +827,18 @@ struct lang_identifier
 /* Safely tests whether FIELD_INNER_ACCESS exists or not. */
 #define FIELD_INNER_ACCESS_P(DECL) \
   DECL_LANG_SPECIFIC (DECL) && FIELD_INNER_ACCESS (DECL)
-/* True if a final variable was initialized upon its declaration. */
+/* True if a final variable was initialized upon its declaration,
+   or (if a field) in an initializer.  Set after definite assignment. */
 #define DECL_FIELD_FINAL_IUD(NODE) \
   (((struct lang_decl_var*)DECL_LANG_SPECIFIC(NODE))->final_iud)
-/* Set to true if a final variable is seen locally initialized on a
-   ctor. */
-#define DECL_FIELD_FINAL_LIIC(NODE) \
-  (((struct lang_decl_var*)DECL_LANG_SPECIFIC(NODE))->final_liic)
-/* Set to true if an initialization error was already found with this
-   final variable. */
-#define DECL_FIELD_FINAL_IERR(NODE) \
-  (((struct lang_decl_var*)DECL_LANG_SPECIFIC(NODE))->final_ierr)
 /* The original WFL of a final variable. */
 #define DECL_FIELD_FINAL_WFL(NODE) \
   (((struct lang_decl_var*)DECL_LANG_SPECIFIC(NODE))->wfl)
-/* True if NODE is a local final (as opposed to a final variable.)
-   This macro accesses the flag to read or set it. */
-#define LOCAL_FINAL(NODE) \
-  (((struct lang_decl_var*)DECL_LANG_SPECIFIC(NODE))->local_final)
-/* True if NODE is a local final. */
-#define LOCAL_FINAL_P(NODE) (DECL_LANG_SPECIFIC (NODE) && LOCAL_FINAL (NODE))
-/* True if NODE is a final variable. */
+/* True if NODE is a local variable final. */
+#define LOCAL_FINAL_P(NODE) (DECL_LANG_SPECIFIC (NODE) && DECL_FINAL (NODE))
+/* True if NODE is a final field. */
 #define FINAL_VARIABLE_P(NODE) (FIELD_FINAL (NODE) && !FIELD_STATIC (NODE))
-/* True if NODE is a class final variable. */
+/* True if NODE is a class final field. */
 #define CLASS_FINAL_VARIABLE_P(NODE) \
   (FIELD_FINAL (NODE) && FIELD_STATIC (NODE))
 /* True if NODE is a class initialization flag. This macro accesses
@@ -874,8 +866,9 @@ struct lang_identifier
 
 /* For a local VAR_DECL, holds the index into a words bitstring that
    specifies if this decl is definitively assigned.
-   A DECL_BIT_INDEX of -1 means we no longer care. */
-#define DECL_BIT_INDEX(DECL) (DECL_CHECK (DECL)->decl.u2.i)
+   The value -1 means the variable has been definitely assigned (and not
+   definitely unassigned).  The value -2 means we already reported an error. */
+#define DECL_BIT_INDEX(DECL) (DECL_CHECK (DECL)->decl.pointer_alias_set)
 
 /* DECL_LANG_SPECIFIC for FUNCTION_DECLs. */
 struct lang_decl
@@ -899,10 +892,11 @@ struct lang_decl
   tree inner_access;		/* The identifier of the access method
 				   used for invocation from inner classes */
   int nap;			/* Number of artificial parameters */
-  int native : 1;		/* Nonzero if this is a native method  */
-  int synthetic_ctor : 1;	/* Nonzero if this is a synthetic ctor */
-  int init_final : 1;		/* Nonzero all finals are initialized */
-  int fixed_ctor : 1;
+  unsigned int native : 1;	/* Nonzero if this is a native method  */
+  unsigned int synthetic_ctor : 1; /* Nonzero if this is a synthetic ctor */
+  unsigned int init_final : 1;	/* Nonzero all finals are initialized */
+  unsigned int fixed_ctor : 1;
+  unsigned int init_calls_this : 1;
 };
 
 /* init_test_table hash table entry structure.  */
@@ -922,11 +916,8 @@ struct lang_decl_var
   tree slot_chain;
   tree am;			/* Access method for this field (1.1) */
   tree wfl;			/* Original wfl */
-  int final_iud : 1;		/* Final initialized upon declaration */
-  int final_liic : 1;		/* Final locally initialized in ctors */
-  int final_ierr : 1;		/* Initialization error already detected */
-  int local_final : 1;		/* True if the decl is a local final */
-  int cif : 1;			/* True: decl is a class initialization flag */
+  unsigned int final_iud : 1;	/* Final initialized upon declaration */
+  unsigned int cif : 1;		/* True: decl is a class initialization flag */
 };
 
 /* Macro to access fields in `struct lang_type'.  */
@@ -954,7 +945,6 @@ struct lang_decl_var
 #define TYPE_IMPORT_DEMAND_LIST(T) (TYPE_LANG_SPECIFIC(T)->import_demand_list)
 #define TYPE_PRIVATE_INNER_CLASS(T) (TYPE_LANG_SPECIFIC(T)->pic)
 #define TYPE_PROTECTED_INNER_CLASS(T) (TYPE_LANG_SPECIFIC(T)->poic)
-#define TYPE_HAS_FINAL_VARIABLE(T) (TYPE_LANG_SPECIFIC(T)->hfv)
 
 struct lang_type
 {
@@ -974,7 +964,6 @@ struct lang_type
   tree import_demand_list;	/* Imported types, in the CU of this class */
   unsigned pic:1;		/* Private Inner Class. */
   unsigned poic:1;		/* Protected Inner Class. */
-  unsigned hfv:1;		/* Has final variables */
 };
 
 #ifdef JAVA_USE_HANDLES
@@ -1106,7 +1095,7 @@ extern void parse_error_context PARAMS ((tree cl, const char *, ...))
   ATTRIBUTE_PRINTF_2;
 extern void finish_class PARAMS ((void));
 extern void java_layout_seen_class_methods PARAMS ((void));
-extern unsigned int check_for_initialization PARAMS ((tree));
+extern void check_for_initialization PARAMS ((tree, tree));
 
 extern tree pushdecl_top_level PARAMS ((tree));
 extern int alloc_class_constant PARAMS ((tree));
@@ -1195,13 +1184,15 @@ struct rtx_def * java_lang_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 					       enum expand_modifier)); 
 #endif /* TREE_CODE && RTX_CODE && HAVE_MACHINE_MODES && ARGS_SIZE_RTX */
 
+#define DECL_FINAL(DECL) DECL_LANG_FLAG_3 (DECL)
+
 /* Access flags etc for a method (a FUNCTION_DECL): */
 
 #define METHOD_PUBLIC(DECL) DECL_LANG_FLAG_1 (DECL)
 #define METHOD_PRIVATE(DECL) TREE_PRIVATE (DECL)
 #define METHOD_PROTECTED(DECL) TREE_PROTECTED (DECL)
 #define METHOD_STATIC(DECL) DECL_LANG_FLAG_2 (DECL)
-#define METHOD_FINAL(DECL) DECL_LANG_FLAG_3 (DECL)
+#define METHOD_FINAL(DECL) DECL_FINAL (DECL)
 #define METHOD_SYNCHRONIZED(DECL) DECL_LANG_FLAG_4 (DECL)
 #define METHOD_NATIVE(DECL) (DECL_LANG_SPECIFIC(DECL)->native)
 #define METHOD_ABSTRACT(DECL) DECL_LANG_FLAG_5 (DECL)
@@ -1239,14 +1230,14 @@ struct rtx_def * java_lang_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 #define FIELD_PROTECTED(DECL) TREE_PROTECTED (DECL)
 #define FIELD_PUBLIC(DECL) DECL_LANG_FLAG_1 (DECL)
 #define FIELD_STATIC(DECL) TREE_STATIC (DECL)
-#define FIELD_FINAL(DECL) DECL_LANG_FLAG_3 (DECL)
+#define FIELD_FINAL(DECL) DECL_FINAL (DECL)
 #define FIELD_VOLATILE(DECL) DECL_LANG_FLAG_4 (DECL)
 #define FIELD_TRANSIENT(DECL) DECL_LANG_FLAG_5 (DECL)
 
 /* Access flags etc for a class (a TYPE_DECL): */
 
 #define CLASS_PUBLIC(DECL) DECL_LANG_FLAG_1 (DECL)
-#define CLASS_FINAL(DECL) DECL_LANG_FLAG_3 (DECL)
+#define CLASS_FINAL(DECL) DECL_FINAL (DECL)
 #define CLASS_INTERFACE(DECL) DECL_LANG_FLAG_4 (DECL)
 #define CLASS_ABSTRACT(DECL) DECL_LANG_FLAG_5 (DECL)
 #define CLASS_SUPER(DECL) DECL_LANG_FLAG_6 (DECL)
@@ -1349,6 +1340,9 @@ extern tree *type_map;
 
 /* True iff TYPE is a Java array type. */
 #define TYPE_ARRAY_P(TYPE) TYPE_LANG_FLAG_1 (TYPE)
+
+/* True for an INDIRECT_REF created from a 'ARRAY.length' operation. */
+#define IS_ARRAY_LENGTH_ACCESS(NODE) TREE_LANG_FLAG_4 (NODE)
 
 /* If FUNCTION_TYPE or METHOD_TYPE: cache for build_java_argument_signature. */
 #define TYPE_ARGUMENT_SIGNATURE(TYPE) TYPE_VFIELD(TYPE)
@@ -1610,9 +1604,10 @@ extern tree *type_map;
 
 /* True when we can perform static class initialization optimization */
 #define STATIC_CLASS_INIT_OPT_P() \
-  (flag_optimize_sci && (optimize >= 2) && ! flag_emit_class_files)
+  0 /* ??? Temporarily turn off this optimization -PB */
+/*  (flag_optimize_sci && (optimize >= 2) && ! flag_emit_class_files)*/
 
-extern int java_error_count;					\
+extern int java_error_count;
 
 /* Make the current function where this macro is invoked report error
    messages and and return, if any */
