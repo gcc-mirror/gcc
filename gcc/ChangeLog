@@ -1,3 +1,17 @@
+2000-11-27  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* flow.c (entry_exit_blocks): Add entry for cond_local_set.
+	(struct propagate_block_info): Add new member cond_local_set.
+	(propagate_block): Accept new arg cond_local_set.  All callers
+	changed.
+	(init_propagate_block_info): Likewise.
+	(calculate_global_regs_live): Allocate & free cond_local_set.  Always
+	rescan if there's overlap between cond_local_set and new_live_at_end.
+	(mark_set_1): Set bits either in cond_local_set or local_set, as
+	appropriate.
+	* basic-block.h (struct basic_block_def): New field cond_local_set.
+	(propagate_block, init_propagate_block_info): Update prototypes.
+
 Mon Nov 27 17:29:44 2000  kaz Kojima <kkojima@rr.iij4u.or.jp>
 
 	* gcc/config/sh/sh.md (udivsi3_i4, udivsi3_i4_single): Clobber

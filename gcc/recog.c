@@ -3053,9 +3053,9 @@ peephole2_optimize (dump_file)
       COPY_REG_SET (peep2_insn_data[MAX_INSNS_PER_PEEP2].live_before, live);
 
 #ifdef HAVE_conditional_execution
-      pbi = init_propagate_block_info (bb, live, NULL, 0);
+      pbi = init_propagate_block_info (bb, live, NULL, NULL, 0);
 #else
-      pbi = init_propagate_block_info (bb, live, NULL, PROP_DEATH_NOTES);
+      pbi = init_propagate_block_info (bb, live, NULL, NULL, PROP_DEATH_NOTES);
 #endif
 
       for (insn = bb->end; ; insn = prev)

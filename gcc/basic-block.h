@@ -165,6 +165,7 @@ typedef struct basic_block_def {
      not reflect the use of regs in phi functions, since the liveness
      of these regs may depend on which edge was taken into the block.  */
   regset local_set;
+  regset cond_local_set;
   regset global_live_at_start;
   regset global_live_at_end;
 
@@ -489,12 +490,13 @@ extern void life_analysis	PARAMS ((rtx, FILE *, int));
 extern void update_life_info	PARAMS ((sbitmap, enum update_life_extent,
 					 int));
 extern int count_or_remove_death_notes	PARAMS ((sbitmap, int));
-extern void propagate_block	PARAMS ((basic_block, regset, regset, int));
+extern void propagate_block	PARAMS ((basic_block, regset, regset, regset,
+					 int));
 
 struct propagate_block_info;
 extern rtx propagate_one_insn	PARAMS ((struct propagate_block_info *, rtx));
 extern struct propagate_block_info *init_propagate_block_info
-  PARAMS ((basic_block, regset, regset, int));
+  PARAMS ((basic_block, regset, regset, regset, int));
 extern void free_propagate_block_info PARAMS ((struct propagate_block_info *));
 
 /* In lcm.c */
