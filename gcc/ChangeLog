@@ -1,3 +1,11 @@
+2003-09-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/11646
+	* cfgrtl.c (purge_dead_edges) [JUMP_INSN]: Rematerialize the
+	EDGE_ABNORMAL flag for EH edges.
+	* toplev.c (rest_of_compilation): Delete unreachable blocks
+	if dead edges were purged after the first CSE pass.
+
 2003-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/linux.h (LINK_GCC_C_SEQUENCE_SPEC): Define.

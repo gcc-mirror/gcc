@@ -2261,8 +2261,12 @@ purge_dead_edges (bb)
 	    continue;
 	  else if ((e->flags & EDGE_EH) && can_throw_internal (insn))
 	    /* Keep the edges that correspond to exceptions thrown by
-	       this instruction.  */
-	    continue;
+	       this instruction and rematerialize the EDGE_ABNORMAL flag
+	       we just cleared above.  */
+	    {
+	      e->flags |= EDGE_ABNORMAL;
+	      continue;
+	    }
 
 	  /* We do not need this edge.  */
 	  bb->flags |= BB_DIRTY;

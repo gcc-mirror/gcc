@@ -2816,7 +2816,8 @@ rest_of_compilation (decl)
       tem = cse_main (insns, max_reg_num (), 0, rtl_dump_file);
       if (tem)
 	rebuild_jump_labels (insns);
-      purge_all_dead_edges (0);
+      if (purge_all_dead_edges (0))
+	delete_unreachable_blocks ();
 
       delete_trivially_dead_insns (insns, max_reg_num ());
 
