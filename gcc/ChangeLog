@@ -1,3 +1,8 @@
+Thu Oct 29 22:30:54 1998  Marcus Meissner <Marcus.Meissner@informatik.uni-erlangen.de>
+
+	* i386.c (i386_valid_type_attribute_p): Return nonzero for mismatched
+	"stdcall" and "cdecl" attributes.
+
 Thu Oct 29 19:05:17 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* sched.c (update_flow_info): Add code to ! found_orig_dest case to

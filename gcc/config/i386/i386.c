@@ -622,9 +622,19 @@ i386_valid_type_attribute_p (type, attributes, identifier, args)
 
 int
 i386_comp_type_attributes (type1, type2)
-     tree type1 ATTRIBUTE_UNUSED;
-     tree type2 ATTRIBUTE_UNUSED;
+     tree type1;
+     tree type2;
 {
+  /* Check for mismatch of non-default calling convention. */
+  char *rtdstr = TARGET_RTD ? "cdecl" : "stdcall";
+
+  if (TREE_CODE (type1) != FUNCTION_TYPE)
+    return 1;
+
+  /* Check for mismatched return types (cdecl vs stdcall).  */
+  if (lookup_attribute (rtdstr, TYPE_ATTRIBUTES (type1))
+      != lookup_attribute (rtdstr, TYPE_ATTRIBUTES (type2)))
+    return 0;
   return 1;
 }
 
