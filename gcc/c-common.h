@@ -299,7 +299,6 @@ extern tree pop_stmt_list (tree);
 extern tree add_stmt (tree);
 extern void push_cleanup (tree, tree, bool);
 
-extern tree walk_stmt_tree (tree *, walk_tree_fn, void *);
 extern int c_expand_decl (tree);
 
 extern int field_decl_cmp (const void *, const void *);

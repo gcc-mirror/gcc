@@ -1,3 +1,8 @@
+2004-11-14  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-common.c (walk_stmt_tree): Remove.
+	* c-common.h: Remove the corresponding prototype.
+
 2004-11-13  Richard Henderson  <rth@redhat.com>
 
 	* calls.c (precompute_register_parameters): Force all PARALLELs
