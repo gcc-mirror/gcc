@@ -1,3 +1,14 @@
+Sat Jan 25 15:55:08 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_expand_movstr, ix86_expand_clrstr): Consistently
+	do libcall for large blocks.
+	* i386.md (comi patterns): Set type to ssecomi.
+	(sse2_unpck?pd): Fix mode of vec_select.
+
+	* cse.c: Include except.h
+	(cse_set_around_loop):  Do not create new basic blocks.
+	* Makefile.in (cse.o): Add dependnecy on except.h
+
 Sat Jan 25 12:05:17 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.c (fold_trunc_transparent_mathfn): New function.

@@ -10639,7 +10639,6 @@ ix86_expand_movstr (dst, src, count_exp, align_exp)
   unsigned HOST_WIDE_INT count = 0;
   rtx insns;
 
-  start_sequence ();
 
   if (GET_CODE (align_exp) == CONST_INT)
     align = INTVAL (align_exp);
@@ -10649,7 +10648,11 @@ ix86_expand_movstr (dst, src, count_exp, align_exp)
     align = 64;
 
   if (GET_CODE (count_exp) == CONST_INT)
-    count = INTVAL (count_exp);
+    {
+      count = INTVAL (count_exp);
+      if (!TARGET_INLINE_ALL_STRINGOPS && count > 64)
+	return 0;
+    }
 
   /* Figure out proper mode for counter.  For 32bits it is always SImode,
      for 64bits use SImode when possible, otherwise DImode.
@@ -10659,6 +10662,8 @@ ix86_expand_movstr (dst, src, count_exp, align_exp)
     counter_mode = SImode;
   else
     counter_mode = DImode;
+
+  start_sequence ();
 
   if (counter_mode != SImode && counter_mode != DImode)
     abort ();
@@ -10877,7 +10882,11 @@ ix86_expand_clrstr (src, count_exp, align_exp)
     align = 32;
 
   if (GET_CODE (count_exp) == CONST_INT)
-    count = INTVAL (count_exp);
+    {
+      count = INTVAL (count_exp);
+      if (!TARGET_INLINE_ALL_STRINGOPS && count > 64)
+	return 0;
+    }
   /* Figure out proper mode for counter.  For 32bits it is always SImode,
      for 64bits use SImode when possible, otherwise DImode.
      Set count to number of bytes copied when known at compile time.  */
