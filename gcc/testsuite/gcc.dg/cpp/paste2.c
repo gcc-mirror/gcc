@@ -106,10 +106,12 @@ int main ()
       err ("Various operator pasting");
     if (strcmp (hh, "%:%:"))
       err ("Pasted digraph spelling");
+    if ((glue (., 1) glue (!, =) .1))
+      err ("Pasted numbers 1");
     /* glue3 here will only work if we paste left-to-right.  If a
        future implementation does not do this, change the test.  */
-    if ((glue (., 0) glue (=, =) .0) + (glue3 (1.0e, +, 1) == 10.0) != 2)
-      err ("Pasted numbers");
+    if (glue3 (1.0e, +, 1) != 10.0)
+      err ("Pasted numbers 2");
   }
 
   return 0;
