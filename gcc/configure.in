@@ -1530,7 +1530,7 @@ changequote(,)dnl
 	      ;;
 	   *,all,*)
 	      ;;
-	   *)
+	   *,$lang_alias,*)
 	      enable_languages="$enable_languages,$other"
 	      ;;
 	  esac
