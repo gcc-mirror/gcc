@@ -50,7 +50,14 @@ public abstract class UnicodeToBytes extends IOConverter
       }
     catch (Throwable ex)
       {
-	return new Output_8859_1();
+	try
+	  {
+	    return new Output_iconv (System.getProperty ("file.encoding"));
+	  }
+	catch (Throwable ex2)
+	  {
+	    return new Output_8859_1();
+	  }
       }
   }
 

@@ -24,6 +24,10 @@ details.  */
 #include <sys/utsname.h>
 #endif
 
+#ifdef HAVE_LANGINFO_H
+#include <langinfo.h>
+#endif
+
 #include <gcj/cni.h>
 #include <jvm.h>
 #include <java-props.h>
@@ -151,9 +155,26 @@ java::lang::System::identityHashCode (jobject obj)
   return _Jv_HashCode (obj);
 }
 
+#if ! defined (DEFAULT_FILE_ENCODING) && defined (HAVE_ICONV) \
+    && defined (HAVE_NL_LANGINFO)
+
+static char *
+file_encoding ()
+{
+  setlocale (LC_CTYPE, "");
+  char *e = nl_langinfo (CODESET);
+  if (e == NULL || *e == '\0')
+    e = "8859_1";
+}
+
+#define DEFAULT_FILE_ENCODING file_encoding ()
+
+#endif
+
 #ifndef DEFAULT_FILE_ENCODING
 #define DEFAULT_FILE_ENCODING "8859_1"
 #endif
+
 static char *default_file_encoding = DEFAULT_FILE_ENCODING;
 
 #if HAVE_GETPWUID_R
