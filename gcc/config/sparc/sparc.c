@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for SPARC.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -4539,7 +4539,7 @@ sparc_nonflat_function_epilogue (FILE *file,
 		     ? "\treturn\t%i7+12\n"
 		     : "\treturn\t%i7+8\n", file);
 	      final_scan_insn (XEXP (current_function_epilogue_delay_list, 0),
-			       file, 1, 0, 0);
+			       file, 1, 0, 0, NULL);
 	    }
 	  else
 	    {
@@ -4564,7 +4564,7 @@ sparc_nonflat_function_epilogue (FILE *file,
 	      insn = emit_jump_insn (insn);
 
 	      sparc_emitting_epilogue = true;
-	      final_scan_insn (insn, file, 1, 0, 1);
+	      final_scan_insn (insn, file, 1, 0, 1, NULL);
 	      sparc_emitting_epilogue = false;
 	    }
 	}
@@ -4586,7 +4586,7 @@ sparc_nonflat_function_epilogue (FILE *file,
 	abort ();
       fprintf (file, "\t%s\n", ret);
       final_scan_insn (XEXP (current_function_epilogue_delay_list, 0),
-		       file, 1, 0, 1);
+		       file, 1, 0, 1, NULL);
     }
   /* Output 'nop' instead of 'sub %sp,-0,%sp' when no frame, so as to
 	 avoid generating confusing assembly language output.  */
@@ -4629,7 +4629,7 @@ output_sibcall (rtx insn, rtx call_operand)
 	  if (! delay)
 	    abort ();
 
-	  final_scan_insn (delay, asm_out_file, 1, 0, 1);
+	  final_scan_insn (delay, asm_out_file, 1, 0, 1, NULL);
 	  PATTERN (delay) = gen_blockage ();
 	  INSN_CODE (delay) = -1;
 	  delay_slot = 0;
@@ -4659,7 +4659,7 @@ output_sibcall (rtx insn, rtx call_operand)
 	  if (! delay)
 	    abort ();
 
-	  final_scan_insn (delay, asm_out_file, 1, 0, 1);
+	  final_scan_insn (delay, asm_out_file, 1, 0, 1, NULL);
 	  PATTERN (delay) = gen_blockage ();
 	  INSN_CODE (delay) = -1;
 	  delay_slot = 0;
@@ -7916,7 +7916,7 @@ sparc_flat_function_epilogue (FILE *file, HOST_WIDE_INT size)
 	{
 	  if (size)
 	    abort ();
-	  final_scan_insn (XEXP (epilogue_delay, 0), file, 1, -2, 1);
+	  final_scan_insn (XEXP (epilogue_delay, 0), file, 1, -2, 1, NULL);
 	}
 
       else if (size > 4096)
