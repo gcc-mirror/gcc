@@ -1,3 +1,7 @@
+Sat Dec  9 10:20:11 2000  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* .cvsignore: New file; add info files.
+
 2000-12-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Make-lang.in (f77.info): Depend on info files in source
