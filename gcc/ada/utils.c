@@ -613,6 +613,20 @@ init_gigi_decls (tree long_long_float_type, tree exception_type)
 				       endlink)),
        NULL_TREE, false, true, true, NULL, Empty);
 
+  /* Dummy objects to materialize "others" and "all others" in the exception
+     tables.  These are exported by a-exexpr.adb, so see this unit for the
+     types to use.  */
+
+  others_decl
+    = create_var_decl (get_identifier ("OTHERS"),
+		       get_identifier ("__gnat_others_value"),
+		       integer_type_node, 0, 1, 0, 1, 1, 0, Empty);
+
+  all_others_decl
+    = create_var_decl (get_identifier ("ALL_OTHERS"),
+		       get_identifier ("__gnat_all_others_value"),
+		       integer_type_node, 0, 1, 0, 1, 1, 0, Empty);
+
   /* Hooks to call when entering/leaving an exception handler.  */
   begin_handler_decl
     = create_subprog_decl (get_identifier ("__gnat_begin_handler"), NULL_TREE,
@@ -1550,7 +1564,7 @@ process_attributes (tree decl, struct attrib *attr_list)
     switch (attr_list->type)
       {
       case ATTR_MACHINE_ATTRIBUTE:
-	decl_attributes (&decl, tree_cons (attr_list->name, attr_list->arg,
+	decl_attributes (&decl, tree_cons (attr_list->name, attr_list->args,
 					   NULL_TREE),
 			 ATTR_FLAG_TYPE_IN_PLACE);
 	break;
