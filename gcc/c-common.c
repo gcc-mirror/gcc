@@ -2284,6 +2284,12 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 
       type = signed_or_unsigned_type (unsignedp0, TREE_TYPE (primop0));
 
+      /* If TYPE is an enumeration, then we need to get its min/max
+	 values from it's underlying integral type, not the enumerated
+	 type itself.  */
+      if (TREE_CODE (type) == ENUMERAL_TYPE)
+	type = type_for_size (TYPE_PRECISION (type), unsignedp0);
+
       maxval = TYPE_MAX_VALUE (type);
       minval = TYPE_MIN_VALUE (type);
 
