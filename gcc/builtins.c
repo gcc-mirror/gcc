@@ -5944,7 +5944,7 @@ fold_trunc_transparent_mathfn (tree exp)
    type.  Return NULL_TREE if no simplification can be made.  */
 
 static tree
-fold_builtin_cabs (tree fndecl, tree arglist, tree type)
+fold_builtin_cabs (tree fndecl ATTRIBUTE_UNUSED, tree arglist, tree type)
 {
   tree arg;
 

@@ -1409,7 +1409,7 @@ fix_up_fall_thru_edges (void)
   edge succ1;
   edge succ2;
   edge fall_thru;
-  edge cond_jump;
+  edge cond_jump = NULL;
   edge e;
   bool cond_jump_crosses;
   int invert_worked;
