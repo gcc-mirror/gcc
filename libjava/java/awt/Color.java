@@ -38,7 +38,7 @@ public class Color extends Object implements Paint, java.io.Serializable
   // The internal sRGB representation.
   // Alpha is bits 24-31, if hasalpha is true.
   // Red is bits 16-23; Green is bits 8-15; Blue is bits 0-7.
-  private int rgba = 0xFFFFFFFF;
+  int rgba = 0xFFFFFFFF;
 
   public Color(int rgb)
   {

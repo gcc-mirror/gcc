@@ -14,7 +14,7 @@ package java.awt;
  * Status:  Believed complete and correct.
  */
 
-public class Event
+public class Event implements java.io.Serializable
 {
   public static final int SHIFT_MASK = 1,
 			  CTRL_MASK = 2,
@@ -82,9 +82,10 @@ public class Event
 			  WINDOW_ICONIFY = 203,
 			  WINDOW_MOVED = 205;
 
-  public Event evt;
   public Object arg;
   public int clickCount;
+  boolean consumed;		// Required by serialization spec.
+  public Event evt;
   public int id;
   public int key; 
   public int modifiers;

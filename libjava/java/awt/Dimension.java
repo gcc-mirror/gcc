@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libjava.
 
@@ -20,6 +20,7 @@ package java.awt;
  */
 
 public class Dimension extends java.awt.geom.Dimension2D
+  implements java.io.Serializable
 {
   public int height;
   public int width;

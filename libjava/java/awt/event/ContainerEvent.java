@@ -35,7 +35,7 @@ public class ContainerEvent extends ComponentEvent
     return child;
   }
 
-  public Component getComponent ()
+  public Component getContainer ()
   {
     return (Component) source;
   }

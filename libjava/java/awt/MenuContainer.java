@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libjava.
 
@@ -13,12 +13,12 @@ package java.awt;
  * Status:  Believed complete and correct.
  */
 
-public  interface MenuContainer
+public interface MenuContainer
 {
   public Font getFont();
 
   /**
-   * @deprected
+   * @deprecated
    */
   public boolean postEvent(Event evt);
 
