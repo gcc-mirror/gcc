@@ -1398,9 +1398,6 @@ finish_this_expr ()
 
   if (current_class_ptr)
     {
-#ifdef WARNING_ABOUT_CCD
-      TREE_USED (current_class_ptr) = 1;
-#endif
       result = current_class_ptr;
     }
   else if (current_function_decl
