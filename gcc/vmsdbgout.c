@@ -1462,7 +1462,7 @@ lookup_filename (file_name)
       ebk = 0;
       ffb = 0;
       rfo = 0;
-      fnam = "";
+      fnam = (char *) "";
       flen = 0;
     }
 
