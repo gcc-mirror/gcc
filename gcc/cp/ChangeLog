@@ -1,3 +1,9 @@
+1998-12-09  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (grokdeclarator): Update the name of the TEMPLATE_DECL, as
+	well as the TYPE_DECL, when a typedef name is assigned to a
+	previously anonymous type.
+
 1998-12-08  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* cp/except.c (call_eh_info): use __start_cp_handler instead of
