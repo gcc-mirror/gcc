@@ -1,3 +1,12 @@
+Mon Jul 13 10:50:17 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* cplus-dem.c (SCOPE_STRING): Remove DMGL_JAVA stuff.
+	(cplus_demangle_opname):  Initialize work.
+	(demangle_template): Remove is_java_array.
+	(do_type): Remove DMGL_JAVA stuff.
+	(long_options): Remove "java".
+	(main): Remove 'j' option.
+
 Mon Jul 13 10:19:00 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* expr.c (expand_expr): Only set MEM_IN_STRUCT_P if the memory address
