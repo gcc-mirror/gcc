@@ -44,7 +44,7 @@
 typedef GC_word word;
 typedef GC_signed_word signed_word;
 
-# ifndef CONFIG_H
+# ifndef GCCONFIG_H
 #   include "gcconfig.h"
 # endif
 

@@ -13,9 +13,9 @@
  * modified is included with the above copyright notice.
  */
  
-#ifndef CONFIG_H
+#ifndef GCCONFIG_H
 
-# define CONFIG_H
+# define GCCONFIG_H
 
 /* Machine dependent parameters.  Some tuning parameters can be found	*/
 /* near the top of gc_private.h.					*/
