@@ -138,11 +138,6 @@ struct lang_type GTY(())
 	|| (TYPE_ARG_TYPES (TREE_TYPE (EXP)) == 0	\
 	    && !DECL_BUILT_IN (EXP)))
 
-/* Nonzero for a decl which is at file scope.  */
-#define C_DECL_FILE_SCOPE(EXP) 					\
-  (! DECL_CONTEXT (EXP)						\
-   || TREE_CODE (DECL_CONTEXT (EXP)) == TRANSLATION_UNIT_DECL)
-
 /* For FUNCTION_TYPE, a hidden list of types of arguments.  The same as
    TYPE_ARG_TYPES for functions with prototypes, but created for functions
    without prototypes.  */

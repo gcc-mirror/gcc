@@ -127,7 +127,7 @@ inline_forbidden_p (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
       /* We cannot inline a nested function that jumps to a nonlocal
          label.  */
       if (TREE_CODE (t) == LABEL_DECL
-	  && !C_DECL_FILE_SCOPE (t) && DECL_CONTEXT (t) != fn)
+	  && !DECL_FILE_SCOPE_P (t) && DECL_CONTEXT (t) != fn)
 	return node;
 
       break;
@@ -184,7 +184,7 @@ c_cannot_inline_tree_fn (tree *fnp)
 	goto cannot_inline;
     }
 
-  if (! C_DECL_FILE_SCOPE (fn))
+  if (! DECL_FILE_SCOPE_P (fn))
     {
       /* If a nested function has pending sizes, we may have already
          saved them.  */

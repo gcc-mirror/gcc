@@ -1624,6 +1624,11 @@ struct tree_type GTY(())
 #define DECL_ESTIMATED_INSNS(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->decl.u1.i)
 
+/* Nonzero for a decl which is at file scope.  */
+#define DECL_FILE_SCOPE_P(EXP) 					\
+  (! DECL_CONTEXT (EXP)						\
+   || TREE_CODE (DECL_CONTEXT (EXP)) == TRANSLATION_UNIT_DECL)
+
 struct function;
 
 struct tree_decl GTY(())

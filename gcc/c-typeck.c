@@ -1545,7 +1545,7 @@ build_external_ref (tree id, int fun)
       /* Properly declared variable or function reference.  */
       if (!objc_ivar)
 	ref = decl;
-      else if (decl != objc_ivar && !C_DECL_FILE_SCOPE (decl))
+      else if (decl != objc_ivar && !DECL_FILE_SCOPE_P (decl))
 	{
 	  warning ("local declaration of `%s' hides instance variable",
 		   IDENTIFIER_POINTER (id));
@@ -1585,7 +1585,7 @@ build_external_ref (tree id, int fun)
       TREE_CONSTANT (ref) = 1;
     }
   else if (current_function_decl != 0
-	   && !C_DECL_FILE_SCOPE (current_function_decl)
+	   && !DECL_FILE_SCOPE_P (current_function_decl)
 	   && (TREE_CODE (ref) == VAR_DECL
 	       || TREE_CODE (ref) == PARM_DECL
 	       || TREE_CODE (ref) == FUNCTION_DECL))
@@ -2436,7 +2436,7 @@ build_unary_op (enum tree_code code, tree xarg, int flag)
 	   file-scope function counts as a constant.  */
 	if (staticp (arg)
 	    && ! (TREE_CODE (arg) == FUNCTION_DECL
-		  && !C_DECL_FILE_SCOPE (arg)))
+		  && !DECL_FILE_SCOPE_P (arg)))
 	  TREE_CONSTANT (addr) = 1;
 	return addr;
       }
