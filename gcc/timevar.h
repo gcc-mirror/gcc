@@ -84,7 +84,6 @@ extern void timevar_push (timevar_id_t);
 extern void timevar_pop (timevar_id_t);
 extern void timevar_start (timevar_id_t);
 extern void timevar_stop (timevar_id_t);
-extern void timevar_get (timevar_id_t, struct timevar_time_def *);
 extern void timevar_print (FILE *);
 
 /* Provided for backward compatibility.  */
