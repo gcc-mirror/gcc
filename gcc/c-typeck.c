@@ -2042,7 +2042,8 @@ convert_arguments (typelist, values, name, fundecl)
 	      /* Rather than truncating and then reextending,
 		 convert directly to int, if that's the type we will want.  */
 	      if (! flag_traditional
-		  && TREE_CODE (type) == INTEGER_TYPE
+		  && (TREE_CODE (type) == INTEGER_TYPE
+		      || TREE_CODE (type) == ENUMERAL_TYPE)
 		  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
 		type = integer_type_node;
 #endif
@@ -2145,7 +2146,8 @@ convert_arguments (typelist, values, name, fundecl)
 						fundecl, name, parmnum + 1);
 	      
 #ifdef PROMOTE_PROTOTYPES
-	      if (TREE_CODE (type) == INTEGER_TYPE
+	      if ((TREE_CODE (type) == INTEGER_TYPE
+		   || TREE_CODE (type) == ENUMERAL_TYPE)
 		  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
 		parmval = default_conversion (parmval);
 #endif
