@@ -41,7 +41,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #if !defined(__FreeBSD__) && !defined(__APPLE__)
 #define _POSIX_SOURCE
 #endif /* Some BSDs break <sys/socket.h> if this is defined. */
-#define _GNU_SOURCE 
+#define _GNU_SOURCE
 #define _XOPEN_SOURCE
 #define _BSD_TYPES
 #define __EXTENSIONS__
@@ -192,7 +192,7 @@ WRAPPER2(char *, strcpy, char *dest, const char *src)
 
   size_t n = strlen (src);
   TRACE ("%s\n", __PRETTY_FUNCTION__);
-  MF_VALIDATE_EXTENT(src, CLAMPADD(n, 1), __MF_CHECK_READ, "strcpy src"); 
+  MF_VALIDATE_EXTENT(src, CLAMPADD(n, 1), __MF_CHECK_READ, "strcpy src");
   MF_VALIDATE_EXTENT(dest, CLAMPADD(n, 1), __MF_CHECK_WRITE, "strcpy dest");
   return strcpy (dest, src);
 }
@@ -216,7 +216,7 @@ WRAPPER2(char *, strcat, char *dest, const char *src)
   size_t src_sz;
   TRACE ("%s\n", __PRETTY_FUNCTION__);
   dest_sz = strlen (dest);
-  src_sz = strlen (src);  
+  src_sz = strlen (src);
   MF_VALIDATE_EXTENT(src, CLAMPADD(src_sz, 1), __MF_CHECK_READ, "strcat src");
   MF_VALIDATE_EXTENT(dest, CLAMPADD(dest_sz, CLAMPADD(src_sz, 1)),
 		     __MF_CHECK_WRITE, "strcat dest");
@@ -228,15 +228,15 @@ WRAPPER2(char *, strncat, char *dest, const char *src, size_t n)
 {
 
   /* nb: validating the extents (s,n) might be a mistake for two reasons.
-     
-  (1) the string s might be shorter than n chars, and n is just a 
+
+  (1) the string s might be shorter than n chars, and n is just a
   poor choice by the programmer. this is not a "true" error in the
   sense that the call to strncat would still be ok.
-  
+
   (2) we could try to compensate for case (1) by calling strlen(s) and
   using that as a bound for the extent to verify, but strlen might fall off
   the end of a non-terminated string, leading to a false positive.
-  
+
   so we will call strnlen(s,n) and use that as a bound.
 
   if strnlen returns a length beyond the end of the registered extent
@@ -265,7 +265,7 @@ WRAPPER2(int, strcmp, const char *s1, const char *s2)
   size_t s2_sz;
   TRACE ("%s\n", __PRETTY_FUNCTION__);
   s1_sz = strlen (s1);
-  s2_sz = strlen (s2);  
+  s2_sz = strlen (s2);
   MF_VALIDATE_EXTENT(s1, CLAMPADD(s1_sz, 1), __MF_CHECK_READ, "strcmp 1st arg");
   MF_VALIDATE_EXTENT(s2, CLAMPADD(s2_sz, 1), __MF_CHECK_WRITE, "strcmp 2nd arg");
   return strcmp (s1, s2);
@@ -278,7 +278,7 @@ WRAPPER2(int, strcasecmp, const char *s1, const char *s2)
   size_t s2_sz;
   TRACE ("%s\n", __PRETTY_FUNCTION__);
   s1_sz = strlen (s1);
-  s2_sz = strlen (s2);  
+  s2_sz = strlen (s2);
   MF_VALIDATE_EXTENT(s1, CLAMPADD(s1_sz, 1), __MF_CHECK_READ, "strcasecmp 1st arg");
   MF_VALIDATE_EXTENT(s2, CLAMPADD(s2_sz, 1), __MF_CHECK_READ, "strcasecmp 2nd arg");
   return strcasecmp (s1, s2);
@@ -318,7 +318,7 @@ WRAPPER2(char *, strdup, const char *s)
   size_t n = strlen (s);
   TRACE ("%s\n", __PRETTY_FUNCTION__);
   MF_VALIDATE_EXTENT(s, CLAMPADD(n,1), __MF_CHECK_READ, "strdup region");
-  result = (char *)CALL_REAL(malloc, 
+  result = (char *)CALL_REAL(malloc,
 			     CLAMPADD(CLAMPADD(n,1),
 				      CLAMPADD(__mf_opts.crumple_zone,
 					       __mf_opts.crumple_zone)));
@@ -343,11 +343,11 @@ WRAPPER2(char *, strndup, const char *s, size_t n)
   MF_VALIDATE_EXTENT(s, sz, __MF_CHECK_READ, "strndup region"); /* nb: strNdup */
 
   /* note: strndup still adds a \0, even with the N limit! */
-  result = (char *)CALL_REAL(malloc, 
+  result = (char *)CALL_REAL(malloc,
 			     CLAMPADD(CLAMPADD(n,1),
 				      CLAMPADD(__mf_opts.crumple_zone,
 					       __mf_opts.crumple_zone)));
-  
+
   if (UNLIKELY(! result)) return result;
 
   result += __mf_opts.crumple_zone;
@@ -393,7 +393,7 @@ WRAPPER2(char *, strstr, const char *haystack, const char *needle)
 
 
 #ifdef HAVE_MEMMEM
-WRAPPER2(void *, memmem, 
+WRAPPER2(void *, memmem,
 	const void *haystack, size_t haystacklen,
 	const void *needle, size_t needlelen)
 {
