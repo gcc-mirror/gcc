@@ -1577,7 +1577,17 @@ yylex ()
 		&& !warn)
 	      pedwarn ("integer constant out of range");
 
-	    TREE_TYPE (yylval.ttype) = type;
+	    if (flag_traditional && !int_fits_type_p (yylval.ttype, type))
+	      /* The traditional constant 0x80000000 is signed
+		 but doesn't fit in the range of int.
+		 This will change it to -0x80000000, which does fit.  */
+	      {
+		TREE_TYPE (yylval.ttype) = unsigned_type (type);
+		yylval.ttype = convert (type, yylval.ttype);
+	      }
+	    else
+	      TREE_TYPE (yylval.ttype) = type;
+
 	    *p = 0;
 	  }
 
