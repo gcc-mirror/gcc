@@ -40,7 +40,6 @@ with Ada.Finalization;
 
 package Ada.Strings.Wide_Unbounded is
 pragma Preelaborate (Wide_Unbounded);
-
    type Unbounded_Wide_String is private;
 
    Null_Unbounded_Wide_String : constant Unbounded_Wide_String;
@@ -62,7 +61,13 @@ pragma Preelaborate (Wide_Unbounded);
      (Length : Natural) return Unbounded_Wide_String;
 
    function To_Wide_String
-     (Source : Unbounded_Wide_String) return Wide_String;
+     (Source : Unbounded_Wide_String)
+      return Wide_String;
+
+   procedure Set_Unbounded_Wide_String
+     (Target : out Unbounded_Wide_String;
+      Source : Wide_String);
+   pragma Ada_05 (Set_Unbounded_Wide_String);
 
    procedure Append
      (Source   : in out Unbounded_Wide_String;
@@ -77,7 +82,8 @@ pragma Preelaborate (Wide_Unbounded);
       New_Item : Wide_Character);
 
    function "&"
-     (Left, Right : Unbounded_Wide_String) return Unbounded_Wide_String;
+     (Left  : Unbounded_Wide_String;
+      Right : Unbounded_Wide_String) return Unbounded_Wide_String;
 
    function "&"
      (Left  : Unbounded_Wide_String;
@@ -108,6 +114,19 @@ pragma Preelaborate (Wide_Unbounded);
      (Source : Unbounded_Wide_String;
       Low    : Positive;
       High   : Natural) return Wide_String;
+
+   function Unbounded_Slice
+     (Source : Unbounded_Wide_String;
+      Low    : Positive;
+      High   : Natural) return Unbounded_Wide_String;
+   pragma Ada_05 (Unbounded_Slice);
+
+   procedure Unbounded_Slice
+     (Source : Unbounded_Wide_String;
+      Target : out Unbounded_Wide_String;
+      Low    : Positive;
+      High   : Natural);
+   pragma Ada_05 (Unbounded_Slice);
 
    function "="
      (Left  : Unbounded_Wide_String;
@@ -192,9 +211,40 @@ pragma Preelaborate (Wide_Unbounded);
       Test   : Membership := Inside;
       Going  : Direction  := Forward) return Natural;
 
+   function Index
+     (Source  : Unbounded_Wide_String;
+      Pattern : Wide_String;
+      From    : Positive;
+      Going   : Direction := Forward;
+      Mapping : Wide_Maps.Wide_Character_Mapping := Wide_Maps.Identity)
+      return Natural;
+   pragma Ada_05 (Index);
+
+   function Index
+     (Source  : Unbounded_Wide_String;
+      Pattern : Wide_String;
+      From    : Positive;
+      Going   : Direction := Forward;
+      Mapping : Wide_Maps.Wide_Character_Mapping_Function) return Natural;
+   pragma Ada_05 (Index);
+
+   function Index
+     (Source  : Unbounded_Wide_String;
+      Set     : Wide_Maps.Wide_Character_Set;
+      From    : Positive;
+      Test    : Membership := Inside;
+      Going   : Direction := Forward) return Natural;
+   pragma Ada_05 (Index);
+
    function Index_Non_Blank
      (Source : Unbounded_Wide_String;
       Going  : Direction := Forward) return Natural;
+
+   function Index_Non_Blank
+     (Source : Unbounded_Wide_String;
+      From   : Positive;
+      Going  : Direction := Forward) return Natural;
+   pragma Ada_05 (Index_Non_Blank);
 
    function Count
      (Source  : Unbounded_Wide_String;
@@ -219,12 +269,13 @@ pragma Preelaborate (Wide_Unbounded);
       Last   : out Natural);
 
    ------------------------------------
-   -- Wide_String Translation Subprograms --
+   -- String Translation Subprograms --
    ------------------------------------
 
    function Translate
      (Source  : Unbounded_Wide_String;
-      Mapping : Wide_Maps.Wide_Character_Mapping) return Unbounded_Wide_String;
+      Mapping : Wide_Maps.Wide_Character_Mapping)
+      return Unbounded_Wide_String;
 
    procedure Translate
      (Source  : in out Unbounded_Wide_String;
@@ -240,7 +291,7 @@ pragma Preelaborate (Wide_Unbounded);
       Mapping : Wide_Maps.Wide_Character_Mapping_Function);
 
    ---------------------------------------
-   -- Wide_String Transformation Subprograms --
+   -- String Transformation Subprograms --
    ---------------------------------------
 
    function Replace_Slice
@@ -250,10 +301,10 @@ pragma Preelaborate (Wide_Unbounded);
       By     : Wide_String) return Unbounded_Wide_String;
 
    procedure Replace_Slice
-     (Source   : in out Unbounded_Wide_String;
-      Low      : Positive;
-      High     : Natural;
-      By       : Wide_String);
+     (Source : in out Unbounded_Wide_String;
+      Low    : Positive;
+      High   : Natural;
+      By     : Wide_String);
 
    function Insert
      (Source   : Unbounded_Wide_String;
@@ -271,9 +322,9 @@ pragma Preelaborate (Wide_Unbounded);
       New_Item : Wide_String) return Unbounded_Wide_String;
 
    procedure Overwrite
-     (Source    : in out Unbounded_Wide_String;
-      Position  : Positive;
-      New_Item  : Wide_String);
+     (Source   : in out Unbounded_Wide_String;
+      Position : Positive;
+      New_Item : Wide_String);
 
    function Delete
      (Source  : Unbounded_Wide_String;
@@ -361,12 +412,29 @@ private
      (Unbounded_Wide_String, To_Unbounded_Wide, To_Wide_String);
 
    pragma Finalize_Storage_Only (Unbounded_Wide_String);
+   --  Finalization is required only for freeing storage
 
    procedure Initialize (Object : in out Unbounded_Wide_String);
    procedure Adjust     (Object : in out Unbounded_Wide_String);
    procedure Finalize   (Object : in out Unbounded_Wide_String);
 
+   procedure Realloc_For_Chunk
+     (Source     : in out Unbounded_Wide_String;
+      Chunk_Size : Natural);
+   --  Adjust the size allocated for the string. Add at least Chunk_Size so it
+   --  is safe to add a string of this size at the end of the current content.
+   --  The real size allocated for the string is Chunk_Size + x of the current
+   --  string size. This buffered handling makes the Append unbounded string
+   --  routines very fast.
+
    Null_Unbounded_Wide_String : constant Unbounded_Wide_String :=
-     (AF.Controlled with Reference => Null_Wide_String'Access, Last => 0);
+                                  (AF.Controlled with
+                                     Reference => Null_Wide_String'Access,
+                                     Last => 0);
+   --  Note: this declaration is illegal since library level controlled
+   --  objects are not allowed in preelaborated units. See AI-161 for a
+   --  discussion of this issue and an attempt to address it. Meanwhile,
+   --  what happens in GNAT is that this check is omitted for internal
+   --  implementation units (see check in sem_cat.adb).
 
 end Ada.Strings.Wide_Unbounded;

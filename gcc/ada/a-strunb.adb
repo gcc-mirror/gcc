@@ -39,16 +39,6 @@ package body Ada.Strings.Unbounded is
 
    use Ada.Finalization;
 
-   procedure Realloc_For_Chunk
-     (Source     : in out Unbounded_String;
-      Chunk_Size : Natural);
-   pragma Inline (Realloc_For_Chunk);
-   --  Adjust the size allocated for the string. Add at least Chunk_Size so it
-   --  is safe to add a string of this size at the end of the current content.
-   --  The real size allocated for the string is Chunk_Size + x of the current
-   --  string size. This buffered handling makes the Append unbounded string
-   --  routines very fast.
-
    ---------
    -- "&" --
    ---------
@@ -202,7 +192,7 @@ package body Ada.Strings.Unbounded is
       Result.Reference := new String (1 .. Result.Last);
 
       K := 1;
-      for I in 1 .. Left loop
+      for J in 1 .. Left loop
          Result.Reference (K .. K + Len - 1) :=
            Right.Reference (1 .. Right.Last);
          K := K + Len;
@@ -363,7 +353,7 @@ package body Ada.Strings.Unbounded is
    procedure Adjust (Object : in out Unbounded_String) is
    begin
       --  Copy string, except we do not copy the statically allocated null
-      --  string, since it can never be deallocated. Note that we do not copy
+      --  string since it can never be deallocated. Note that we do not copy
       --  extra string room here to avoid dragging unused allocated memory.
 
       if Object.Reference /= Null_String'Access then

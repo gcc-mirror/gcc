@@ -405,18 +405,31 @@ private
    pragma Stream_Convert (Unbounded_String, To_Unbounded, To_String);
 
    pragma Finalize_Storage_Only (Unbounded_String);
+   --  Finalization is required only for freeing storage
 
    procedure Initialize (Object : in out Unbounded_String);
    procedure Adjust     (Object : in out Unbounded_String);
    procedure Finalize   (Object : in out Unbounded_String);
 
-   --  Note: the following declaration is illegal since library level
-   --  controlled objects are not allowed in preelaborated units. See
-   --  AI-161 for a discussion of this issue and an attempt to address it.
-   --  Meanwhile, what happens in GNAT is that this check is omitted for
-   --  internal implementation units (see check in sem_cat.adb).
+   procedure Realloc_For_Chunk
+     (Source     : in out Unbounded_String;
+      Chunk_Size : Natural);
+   pragma Inline (Realloc_For_Chunk);
+   --  Adjust the size allocated for the string. Add at least Chunk_Size so it
+   --  is safe to add a string of this size at the end of the current content.
+   --  The real size allocated for the string is Chunk_Size + x of the current
+   --  string size. This buffered handling makes the Append unbounded string
+   --  routines very fast. This spec is in the private part so that it can be
+   --  accessed from children (e.g. from Unbounded.Text_IO).
 
    Null_Unbounded_String : constant Unbounded_String :=
-     (AF.Controlled with Reference => Null_String'Access, Last => 0);
+                             (AF.Controlled with
+                                Reference => Null_String'Access,
+                                Last => 0);
+   --  Note: this declaration is illegal since library level controlled
+   --  objects are not allowed in preelaborated units. See AI-161 for a
+   --  discussion of this issue and an attempt to address it. Meanwhile,
+   --  what happens in GNAT is that this check is omitted for internal
+   --  implementation units (see check in sem_cat.adb).
 
 end Ada.Strings.Unbounded;
