@@ -513,7 +513,7 @@ if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   cp $file_to_fix /tmp/$base
   chmod +w /tmp/$base
-  sed -e 'g/#define.*__std_hdr_/d' /tmp/$base > /tmp/$base.sed
+  sed -e '/#define.*__std_hdr_/d' /tmp/$base > /tmp/$base.sed
   if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then \
     true
   else
