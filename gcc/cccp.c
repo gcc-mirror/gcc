@@ -8991,15 +8991,16 @@ dump_defn_1 (base, start, length, of)
   U_CHAR *limit = base + start + length;
 
   while (p < limit) {
-    if (*p != '\n')
-      putc (*p, of);
-    else if (*p == '\"' || *p =='\'') {
+    if (*p == '\"' || *p =='\'') {
       U_CHAR *p1 = skip_quoted_string (p, limit, 0, NULL_PTR,
 				       NULL_PTR, NULL_PTR);
       fwrite (p, p1 - p, 1, of);
-      p = p1 - 1;
+      p = p1;
+    } else {
+      if (*p != '\n')
+	putc (*p, of);
+      p++;
     }
-    p++;
   }
 }
 
