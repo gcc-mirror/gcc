@@ -53,9 +53,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* TPF OS specific stack-pointer offset.  */
 #undef STACK_POINTER_OFFSET
 #define STACK_POINTER_OFFSET 		448
-/* TPF stack placeholder offset.  */
-#undef TPF_LOC_DIFF_OFFSET
-#define TPF_LOC_DIFF_OFFSET             168
 
 /* When building for TPF, set a generic default target that is 64 bits.  */
 #undef TARGET_DEFAULT
@@ -119,73 +116,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
         %{rdynamic:-export-dynamic} \
         %{!dynamic-linker:-dynamic-linker /lib/ld64.so}}}"
 
-extern unsigned int __isPATrange (void *);
-
-/* Exceptions macro defined for TPF so that functions without 
-   dwarf frame information can be used with exceptions.  */
-#define MD_FALLBACK_FRAME_STATE_FOR(CONTEXT, FS, SUCCESS)               \
-  do                                                                    \
-    {                                                                   \
-      unsigned long int regs_;                                          \
-      unsigned long int new_cfa_;                                       \
-      int i_;                                                           \
-                                                                        \
-      if ((CONTEXT)->cfa == NULL)                                       \
-        goto SUCCESS;                                                   \
-                                                                        \
-      /* Are we going through special linkage code?  */                 \
-      if (__isPATrange((CONTEXT)->ra))                                  \
-        {                                                               \
-          /* No stack frame.   */                                       \
-          (FS)->cfa_how = CFA_REG_OFFSET;                               \
-          (FS)->cfa_reg = 15;                                           \
-          (FS)->cfa_offset = STACK_POINTER_OFFSET;                      \
-                                                                        \
-          /* All registers remain unchanged ...  */                     \
-          for (i_ = 0; i_ < 32; i_++)                                   \
-            {                                                           \
-              (FS)->regs.reg[i_].how = REG_SAVED_REG;                   \
-              (FS)->regs.reg[i_].loc.reg = i_;                          \
-            }                                                           \
-                                                                        \
-          /* ... except for %r14, which is stored at CFA-112            \
-             and used as return address.  */                            \
-          (FS)->regs.reg[14].how = REG_SAVED_OFFSET;                    \
-          (FS)->regs.reg[14].loc.offset =                               \
-            TPF_LOC_DIFF_OFFSET - STACK_POINTER_OFFSET;                 \
-          (FS)->retaddr_column = 14;                                    \
-                                                                        \
-          goto SUCCESS;                                                 \
-                                                                        \
-        }                                                               \
-                                                                        \
-      regs_ = *((unsigned long int *)                                   \
-        (((unsigned long int) (CONTEXT)->cfa) - STACK_POINTER_OFFSET)); \
-      new_cfa_ = regs_ + STACK_POINTER_OFFSET;                          \
-      (FS)->cfa_how = CFA_REG_OFFSET;                                   \
-      (FS)->cfa_reg = 15;                                               \
-      (FS)->cfa_offset = new_cfa_ -                                     \
-        (unsigned long int) (CONTEXT)->cfa + STACK_POINTER_OFFSET;      \
-                                                                        \
-      for (i_ = 0; i_ < 16; i_++)                                       \
-        {                                                               \
-          (FS)->regs.reg[i_].how = REG_SAVED_OFFSET;                    \
-          (FS)->regs.reg[i_].loc.offset =                               \
-            (regs_+(i_*8)) - new_cfa_;                                  \
-        }                                                               \
-                                                                        \
-      for (i_ = 0; i_ < 4; i_++)                                        \
-        {                                                               \
-          (FS)->regs.reg[16+i_].how = REG_SAVED_OFFSET;                 \
-          (FS)->regs.reg[16+i_].loc.offset =                            \
-            (regs_+(16*8)+(i_*8)) - new_cfa_;                           \
-        }                                                               \
-                                                                        \
-      (FS)->retaddr_column = 14;                                        \
-                                                                        \
-      goto SUCCESS;                                                     \
-                                                                        \
-    } while (0)
+#define MD_UNWIND_SUPPORT "config/s390/tpf-unwind.h"
 
 #endif /* ! _TPF_H */
 

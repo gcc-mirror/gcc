@@ -1,38 +1,134 @@
-/* Exception handling routines for TPF.
+/* DWARF2 EH unwinding support for TPF OS.
    Copyright (C) 2004 Free Software Foundation, Inc.
    Contributed by P.J. Darcy (darcypj@us.ibm.com).
 
-   This file is part of GCC.
+This file is part of GCC.
 
-   GCC is free software; you can redistribute it and/or modify it
-   under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+GCC is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free
+Software Foundation; either version 2, or (at your option) any later
+version.
 
-   In addition to the permissions in the GNU General Public License, the
-   Free Software Foundation gives you unlimited permission to link the
-   compiled version of this file into combinations with other programs,
-   and to distribute those combinations without any restriction coming
-   from the use of this file.  (The General Public License restrictions
-   do apply in other respects; for example, they cover modification of
-   the file, and distribution when not linked into a combined
-   executable.)
+In addition to the permissions in the GNU General Public License, the
+Free Software Foundation gives you unlimited permission to link the
+compiled version of this file into combinations with other programs,
+and to distribute those combinations without any restriction coming
+from the use of this file.  (The General Public License restrictions
+do apply in other respects; for example, they cover modification of
+the file, and distribution when not linked into a combined
+executable.)
 
-   GCC is distributed in the hope that it will be useful, but WITHOUT
-   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-   License for more details.
+GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with GCC; see the file COPYING.  If not, write to the Free
-   Software Foundation, 59 Temple Place - Suite 330, Boston, MA
-   02111-1307, USA.  */
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING.  If not, write to the Free
+Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+02111-1307, USA.  */
 
 #define __USE_GNU 1
 #define _GNU_SOURCE
 #include <dlfcn.h>
 #undef __USE_GNU
 #undef _GNU_SOURCE
+
+/* Function Name: __isPATrange
+   Parameters passed into it:  address to check
+   Return Value: A 1 if address is in pat code "range", 0 if not
+   Description: This function simply checks to see if the address
+   passed to it is in the CP pat code range.  */
+
+#define MIN_PATRANGE 0x10000
+#define MAX_PATRANGE 0x800000
+
+static inline unsigned int
+__isPATrange (void *addr)
+{
+  if (addr > (void *)MIN_PATRANGE && addr < (void *)MAX_PATRANGE)
+    return 1;
+  else
+    return 0;
+}
+
+/* TPF stack placeholder offset.  */
+#define TPF_LOC_DIFF_OFFSET 168
+
+/* Exceptions macro defined for TPF so that functions without 
+   dwarf frame information can be used with exceptions.  */
+#define MD_FALLBACK_FRAME_STATE_FOR s390_fallback_frame_state
+
+static _Unwind_Reason_Code
+s390_fallback_frame_state (struct _Unwind_Context *context,
+			   _Unwind_FrameState *fs)
+{
+  unsigned long int regs;
+  unsigned long int new_cfa;
+  int i;
+
+  if (context->cfa == NULL)
+    return _URC_END_OF_STACK;
+
+  /* Are we going through special linkage code?  */
+  if (__isPATrange (context->ra))
+    {
+      /* No stack frame.  */
+      fs->cfa_how = CFA_REG_OFFSET;
+      fs->cfa_reg = 15;
+      fs->cfa_offset = STACK_POINTER_OFFSET;
+
+      /* All registers remain unchanged ...  */
+      for (i = 0; i < 32; i++)
+	{
+	  fs->regs.reg[i].how = REG_SAVED_REG;
+	  fs->regs.reg[i].loc.reg = i;
+	}
+
+      /* ... except for %r14, which is stored at CFA-112
+	 and used as return address.  */
+      fs->regs.reg[14].how = REG_SAVED_OFFSET;
+      fs->regs.reg[14].loc.offset = TPF_LOC_DIFF_OFFSET - STACK_POINTER_OFFSET;
+      fs->retaddr_column = 14;
+
+      return _URC_NO_REASON;
+    }
+
+  regs = *((unsigned long int *)
+        (((unsigned long int) context->cfa) - STACK_POINTER_OFFSET));
+  new_cfa = regs + STACK_POINTER_OFFSET;
+
+  fs->cfa_how = CFA_REG_OFFSET;
+  fs->cfa_reg = 15;
+  fs->cfa_offset = new_cfa -
+        (unsigned long int) context->cfa + STACK_POINTER_OFFSET;
+
+  for (i = 0; i < 16; i++)
+    {
+      fs->regs.reg[i].how = REG_SAVED_OFFSET;
+      fs->regs.reg[i].loc.offset = regs + i*8 - new_cfa;
+    }
+
+  for (i = 0; i < 4; i++)
+    {
+      fs->regs.reg[16 + i].how = REG_SAVED_OFFSET;
+      fs->regs.reg[16 + i].loc.offset = regs + 16*8 + i*8 - new_cfa;
+    }
+
+  fs->retaddr_column = 14;
+
+  return _URC_NO_REASON;
+}
+
+/* Function Name: __tpf_eh_return
+   Parameters passed into it: Destination address to jump to.
+   Return Value: Converted Destination address if a Pat Stub exists.
+   Description: This function swaps the uwinding return address
+      with the cp stub code.  The original target return address is
+      then stored into the tpf return address field.  The cp stub
+      code is searched for by climbing back up the stack and
+      comparing the tpf stored return address object address to
+      that of the targets object address.  */
 
 #define CURRENT_STACK_PTR() \
   ({ register unsigned long int *stack_ptr asm ("%r15"); stack_ptr; })
@@ -43,35 +139,12 @@
 #define RA_OFFSET_FROM_START_OF_STACK_FRAME 112
 #define CURRENT_STACK_PTR_OFFSET 120
 #define TPFRA_OFFSET_FROM_START_OF_STACK_FRAME 168
-#define MIN_PATRANGE 0x10000
-#define MAX_PATRANGE 0x800000
 #define INVALID_RETURN 0
 
-/* Function Name: __isPATrange
-   Parameters passed into it:  address to check
-   Return Value: A 1 if address is in pat code "range", 0 if not
-   Description: This function simply checks to see if the address
-   passed to it is in the CP pat code range.  */
+void * __tpf_eh_return (void *target);
 
-unsigned int __isPATrange(void *addr) 
-{
-  if (addr > (void *)MIN_PATRANGE && addr < (void *)MAX_PATRANGE)
-    return 1;
-  else
-    return 0;
-}
-
-/* Function Name: __tpf_eh_return
-   Parameters passed into it: Destination address to jump to.
-   Return Value: Converted Destination address if a Pat Stub exists.
-   Description: This function swaps the unwinding return address
-      with the cp stub code.  The original target return address is
-      then stored into the tpf return address field.  The cp stub
-      code is searched for by climbing back up the stack and
-      comparing the tpf stored return address object address to
-      that of the targets object address.  */
-
-void *__tpf_eh_return (void *target) 
+void *
+__tpf_eh_return (void *target)
 {
   Dl_info targetcodeInfo, currentcodeInfo;
   int retval;
@@ -158,7 +231,7 @@ void *__tpf_eh_return (void *target)
                      the exception handling unwinder so that it can 
                      actually do the "leap" shift out the low order 
                      bit designated to determine if we are in 64BIT mode.
-                     This is necessary for CTOA stubs.
+                     This is nececcary for CTOA stubs.
                      Otherwise we leap one byte past where we want to 
                      go to in the TPF pat stub linkage code.  */
                   shifter = *((unsigned long int *) 
@@ -180,4 +253,5 @@ void *__tpf_eh_return (void *target)
      target address.  */
   return target;
 }
+
 
