@@ -1,6 +1,6 @@
 // basic_ios member functions -*- C++ -*-
 
-// Copyright (C) 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -87,11 +87,6 @@ namespace std
 	  _M_callbacks = __cb;
 	  for (int __i = 0; __i < __rhs._M_word_size; ++__i)
 	    __words[__i] = __rhs._M_word[__i];
-	  if (_M_word != _M_local_word)
-	    {
-	      delete [] _M_word;
-	      _M_word = 0;
-	    }
 	  _M_word = __words;
 	  _M_word_size = __rhs._M_word_size;
 
