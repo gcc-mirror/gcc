@@ -1,3 +1,8 @@
+2004-05-31  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/15701
+	* g++.dg/template/friend29.C: New test.
+
 2004-05-31  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/15749
