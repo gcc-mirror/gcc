@@ -8,6 +8,9 @@
 	* Makefile.in: Rebuilt.
 	* libtool-version: Increment .so version number.
 
+	* Makefile.am: Escape quotes in echo.
+	* Makefile.in: Rebuilt.
+
 2002-03-16  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* Makefile.am: Use empty -classpath flag in addition to -bootclasspath.
