@@ -1,3 +1,7 @@
+2003-07-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/c-tree.texi (OFFSET_TYPE): Update description.
+
 2003-07-23  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/crti.asm (_init, _fini): Increase frame size to 64.
@@ -10,6 +14,8 @@
 	prototype.
 
 2003-07-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/c-tree.texi (Types): Update documentation for OFFSET_TYPE.
 
 	PR optimization/10679
 	* tree-inline.c (inlinable_function_p): Honor MIN_INLINE_INSNS.
