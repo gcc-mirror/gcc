@@ -208,9 +208,11 @@ public abstract class URLStreamHandler
       {
 	// Context is available, but only override it if there is a new file.
 	int lastSlash = file.lastIndexOf('/');
-
-	file =
-	  file.substring(0, lastSlash) + '/' + spec.substring(start, end);
+	if (lastSlash < 0)
+	  file = spec.substring(start, end);
+	else
+	  file = (file.substring(0, lastSlash)
+		  + '/' + spec.substring(start, end));
 
 	if (url.getProtocol().equals("file"))
 	  {
