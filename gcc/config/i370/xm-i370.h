@@ -1,7 +1,7 @@
 /* Configuration for GNU C-compiler for System/370.
    Copyright (C) 1989, 1993 Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
-   Modifed for MVS C/370 by Dave Pitts (pitts@mcdata.com)
+   Modified for MVS C/370 by Dave Pitts (pitts@mcdata.com)
 
 This file is part of GNU CC.
 

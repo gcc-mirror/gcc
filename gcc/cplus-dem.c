@@ -163,11 +163,11 @@ static const struct optable
   {"compound",	  ", ",		0},		/* old */
   {"cm",	  ", ",		DMGL_ANSI},	/* ansi */
   {"cond",	  "?:",		0},		/* old */
-  {"cn",	  "?:",		DMGL_ANSI},	/* psuedo-ansi */
+  {"cn",	  "?:",		DMGL_ANSI},	/* pseudo-ansi */
   {"max",	  ">?",		0},		/* old */
-  {"mx",	  ">?",		DMGL_ANSI},	/* psuedo-ansi */
+  {"mx",	  ">?",		DMGL_ANSI},	/* pseudo-ansi */
   {"min",	  "<?",		0},		/* old */
-  {"mn",	  "<?",		DMGL_ANSI},	/* psuedo-ansi */
+  {"mn",	  "<?",		DMGL_ANSI},	/* pseudo-ansi */
   {"nop",	  "",		0},		/* old (for operator=) */
   {"rm",	  "->*",	DMGL_ANSI}	/* ansi */
 };
@@ -955,7 +955,7 @@ demangle_template (work, mangled, tname, trawname)
 		    break;
 		  default:
 		    /* it's probably user defined type, let's assume
-		       it's integeral, it seems hard to figure out
+		       it's integral, it seems hard to figure out
 		       what it really is */
 		    done = is_integral = 1;
 		}
@@ -2397,9 +2397,8 @@ demangle_args (work, mangled, declp)
             {
               /* If we have 10 or more types we might have more than a 1 digit
                  index so we'll have to consume the whole count here. This
-                 will loose if the next thing is a type name preceeded by a
+                 will lose if the next thing is a type name preceded by a
                  count but it's impossible to demangle that case properly
-                 anyway. Eg if we already have 12 types is T12Pc "(..., type1,
                  anyway. Eg if we already have 12 types is T12Pc "(..., type1,
                  Pc, ...)"  or "(..., type12, char *, ...)" */
               if ((t = consume_count(mangled)) == 0)

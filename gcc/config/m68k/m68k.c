@@ -1040,7 +1040,7 @@ const_method (constant)
   /* Likewise, try with not.w */
   if (use_movq (i ^ 0xffff))
     return NOTW;
-  /* This is the only value where neg.w is usefull */
+  /* This is the only value where neg.w is useful */
   if (i == -65408)
     return NEGW;
   /* Try also with swap */

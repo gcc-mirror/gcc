@@ -190,7 +190,7 @@ build_vbase_path (code, type, expr, path, alias_this)
      (the static type of the complete object), and then convert back
      to the type we want.  Until that is done, or until we can
      recognize when that is, we cannot do the short cut logic. (mrs) */
-  /* Do this, until we can undo any previous convertions.  See net35.C
+  /* Do this, until we can undo any previous conversions.  See net35.C
      for a testcase. */
   fixed_type_p = complete_type_p (expr);
 
@@ -2276,7 +2276,7 @@ modify_one_vtable (binfo, t, fndecl, pfn)
 	     consideration the virtual base class pointers that we
 	     stick in before the virtual function table pointer.
 
-	     Also, we want just the delta bewteen the most base class
+	     Also, we want just the delta between the most base class
 	     that we derived this vfield from and us.  */
 	  base_offset = size_binop (PLUS_EXPR,
 				    get_derived_offset (binfo, DECL_CONTEXT (current_fndecl)),
@@ -2374,7 +2374,7 @@ fixup_vtable_deltas1 (binfo, t)
 	     consideration the virtual base class pointers that we
 	     stick in before the virtual function table pointer.
 
-	     Also, we want just the delta bewteen the most base class
+	     Also, we want just the delta between the most base class
 	     that we derived this vfield from and us.  */
 	  base_offset = size_binop (PLUS_EXPR,
 				    get_derived_offset (binfo, DECL_CONTEXT (fndecl)),
@@ -2583,7 +2583,7 @@ override_one_vtable (binfo, old, t)
 	      return;
 	    }
 	  {
-	    /* This MUST be overriden, or the class is ill-formed.  */
+	    /* This MUST be overridden, or the class is ill-formed.  */
 	    /* For now, we just make it abstract.  */
 	    tree fndecl = TREE_OPERAND (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (virtuals)), 0);
 	    tree vfn;
@@ -3722,7 +3722,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       vbases = CLASSTYPE_VBASECLASSES (t);
       while (vbases)
 	{
-	  /* We might be able to shorten the ammount of work we do by
+	  /* We might be able to shorten the amount of work we do by
 	     only doing this for vtables that come from virtual bases
 	     that have differing offsets, but don't want to miss any
 	     entries.  */
@@ -4340,7 +4340,7 @@ pushclass (type, modify)
 	{
 	  tree item;
 
-	  /* Hooray, our cacheing was successful, let's just install the
+	  /* Hooray, we successfully cached; let's just install the
 	     cached class_shadowed list, and walk through it to get the
 	     IDENTIFIER_TYPE_VALUEs correct.  */
 	  set_class_shadows (previous_class_values);

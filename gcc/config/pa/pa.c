@@ -64,7 +64,7 @@ static rtx find_addr_reg ();
 unsigned int total_code_bytes;
 
 /* Variables to handle plabels that we discover are necessary at assembly
-   output time.  They are output after the currrent function.  */
+   output time.  They are output after the current function.  */
 
 struct defer_plab
 {
@@ -416,7 +416,7 @@ zdepi_cint_p (x)
   unsigned HOST_WIDE_INT lsb_mask, t;
 
   /* This might not be obvious, but it's at least fast.
-     This function is critcal; we don't have the time loops would take.  */
+     This function is critical; we don't have the time loops would take.  */
   lsb_mask = x & -x;
   t = ((x >> 4) + lsb_mask) & ~(lsb_mask - 1);
   /* Return true iff t is a power of two.  */
@@ -619,7 +619,7 @@ legitimize_pic_address (orig, mode, reg)
 
    It is also beneficial to handle (plus (mult (X) (Y)) (Z)) in a special
    manner if Y is 2, 4, or 8.  (allows more shadd insns and shifted indexed
-   adressing modes to be used).
+   addressing modes to be used).
 
    Put X and Z into registers.  Then put the entire expression into
    a register.  */
@@ -1421,7 +1421,7 @@ output_fp_move_double (operands)
 	  output_asm_insn ("copy %%r0,%0\n\tcopy %%r0,%1", xoperands);
 	}
       /* This is a pain.  You have to be prepared to deal with an
-	 arbritary address here including pre/post increment/decrement.
+	 arbitrary address here including pre/post increment/decrement.
 
 	 so avoid this in the MD.  */
       else
@@ -2225,7 +2225,7 @@ hppa_expand_prologue()
      mcounts do, _mcount appears to behave differently on the HPPA.  It
      takes the return address of the caller, the address of this routine,
      and the address of the label.  Also, it isn't magic, so
-     argument registre hsave to be preserved.  */
+     argument registers have to be preserved.  */
   if (profile_flag)
     {
       int pc_offset, i, arg_offset, basereg, offsetadj;
@@ -2657,7 +2657,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		case TYPE_FPSQRTSGL:
 		case TYPE_FPSQRTDBL:
 		  /* A fpload can't be issued until one cycle before a
-		     preceeding arithmetic operation has finished if
+		     preceding arithmetic operation has finished if
 		     the target of the fpload is any of the sources
 		     (or destination) of the arithmetic operation.  */
 		  return cost - (pa_cpu_attr == PROCESSOR_700) ? 1 : 2;
@@ -2692,7 +2692,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		case TYPE_FPSQRTSGL:
 		case TYPE_FPSQRTDBL:
 		  /* An ALU flop can't be issued until two cycles before a
-		     preceeding divide or sqrt operation has finished if
+		     preceding divide or sqrt operation has finished if
 		     the target of the ALU flop is any of the sources
 		     (or destination) of the divide or sqrt operation.  */
 		  return cost - (pa_cpu_attr == PROCESSOR_700) ? 2 : 4;
@@ -2738,7 +2738,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		case TYPE_FPSQRTSGL:
 		case TYPE_FPSQRTDBL:
 		  /* A fpload can't be issued until one cycle before a
-		     preceeding arithmetic operation has finished if
+		     preceding arithmetic operation has finished if
 		     the target of the fpload is the destination of the
 		     arithmetic operation.  */
 		  return cost - (pa_cpu_attr == PROCESSOR_700) ? 1 : 2;
@@ -2773,7 +2773,7 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 		case TYPE_FPSQRTSGL:
 		case TYPE_FPSQRTDBL:
 		  /* An ALU flop can't be issued until two cycles before a
-		     preceeding divide or sqrt operation has finished if
+		     preceding divide or sqrt operation has finished if
 		     the target of the ALU flop is also the target of
 		     of the divide or sqrt operation.  */
 		  return cost - (pa_cpu_attr == PROCESSOR_700) ? 2 : 4;
@@ -4482,7 +4482,7 @@ jump_in_call_delay (insn)
    instructions!
 
    Because we actually jump into the table, the addresses of each entry
-   must stay contant in relation to the beginning of the table (which
+   must stay constant in relation to the beginning of the table (which
    itself must stay constant relative to the instruction to jump into
    it).  I don't believe we can guarantee earlier passes of the compiler
    will adhere to those rules.

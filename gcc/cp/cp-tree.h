@@ -1464,7 +1464,7 @@ extern tree unknown_type_node;
 extern tree opaque_type_node, signature_type_node;
 
 /* Node for "pointer to (virtual) function".
-   This may be distinct from ptr_type_node so gdb can distinuish them. */
+   This may be distinct from ptr_type_node so gdb can distinguish them. */
 #define vfunc_ptr_type_node \
   (flag_vtable_thunks ? vtable_entry_type : ptr_type_node)
 
@@ -1783,7 +1783,7 @@ extern int flag_external_templates;
 
 extern int flag_alt_external_templates;
 
-/* Nonzero means implicit template instantatiations are emitted.  */
+/* Nonzero means implicit template instantiations are emitted.  */
 
 extern int flag_implicit_templates;
 

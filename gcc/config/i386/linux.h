@@ -72,7 +72,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    for x86 FP registers, but the SDB on x86/svr4 is so completely
    broken with respect to FP registers that it is hardly worth thinking
    of it as something to strive for compatibility with.
-   The verison of x86/svr4 SDB I have at the moment does (partially)
+   The version of x86/svr4 SDB I have at the moment does (partially)
    seem to believe that DWARF register number 11 is associated with
    the x86 register %st(0), but that's about all.  Higher DWARF
    register numbers don't seem to be associated with anything in

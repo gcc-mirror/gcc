@@ -780,7 +780,7 @@ gen_compare_reg (code, x, y)
      we need the movcc patterns).  It is possible to provide the movcc
      patterns by using the ldxfsr/stxfsr v9 insns.  I tried it: you need two
      registers (say %g1,%g5) and it takes about 6 insns.  A better fix would be
-     to tell cse that CCFPE mode registers (even pseudoes) are call
+     to tell cse that CCFPE mode registers (even pseudos) are call
      clobbered.  */
 
   /* ??? This is an experiment.  Rather than making changes to cse which may
@@ -1952,7 +1952,7 @@ output_move_quad (operands)
       abort ();
     }
 
-  /* Normal case: move the four words in lowest to higest address order.  */
+  /* Normal case: move the four words in lowest to highest address order.  */
 
   output_asm_insn (singlemove_string (wordpart[0]), wordpart[0]);
 
@@ -4079,7 +4079,7 @@ sparc_type_code (type)
    (to store insns).  This is a bit excessive.  Perhaps a different
    mechanism would be better here.
 
-   Emit 3 FLUSH instructions to synchonize the data and instruction caches.
+   Emit 3 FLUSH instructions to synchronize the data and instruction caches.
 
    ??? v9: We assume the top 32 bits of function addresses are 0.  */
 
@@ -4513,7 +4513,7 @@ sparc_flat_output_function_prologue (file, size)
 	 Don't change the order of insns emitted here without checking with
 	 the gdb folk first.  */
 
-      /* Is the entire register save area offsetable from %sp?  */
+      /* Is the entire register save area offsettable from %sp?  */
       if (reg_offset < 4096 - 64 * UNITS_PER_WORD)
 	{
 	  if (size <= 4096)
@@ -4663,7 +4663,7 @@ sparc_flat_output_function_epilogue (file, size)
 		     fp_str, size, sp_str);
 	}
 
-      /* Is the entire register save area offsetable from %sp?  */
+      /* Is the entire register save area offsettable from %sp?  */
       if (reg_offset < 4096 - 64 * UNITS_PER_WORD)
 	{
 	  size1 = 0;

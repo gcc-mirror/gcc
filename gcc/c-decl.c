@@ -3553,7 +3553,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
      TEM may equal DECL or it may be a previous decl of the same name.  */
   tem = pushdecl (decl);
 
-  /* For C and Obective-C, we by default put things in .common when
+  /* For C and Objective-C, we by default put things in .common when
      possible.  */
   DECL_COMMON (tem) = 1;
 
@@ -3809,7 +3809,7 @@ finish_decl (decl, init, asmspec_tree)
 	    {
 	      preserve_initializer ();
 	      /* Hack?  Set the permanent bit for something that is permanent,
-		 but not on the permenent obstack, so as to convince
+		 but not on the permanent obstack, so as to convince
 		 output_constant_def to make its rtl on the permanent
 		 obstack.  */
 	      TREE_PERMANENT (DECL_INITIAL (decl)) = 1;

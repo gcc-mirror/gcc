@@ -59,7 +59,7 @@ int arm_compare_fp;
 /* What type of cpu are we compiling for? */
 enum processor_type arm_cpu;
 
-/* Waht type of floating point are we compiling for? */
+/* What type of floating point are we compiling for? */
 enum floating_point_type arm_fpu;
 
 /* In case of a PRE_INC, POST_INC, PRE_DEC, POST_DEC memory reference, we
@@ -2425,7 +2425,7 @@ shift_op (op, amountp)
 	 multiplication by a power of 2 with the recognizer for a
 	 shift.  >=32 is not a valid shift for "asl", so we must try and
 	 output a shift that produces the correct arithmetical result.
-	 Using lsr #32 is idendical except for the fact that the carry bit
+	 Using lsr #32 is identical except for the fact that the carry bit
 	 is not set correctly if we set the flags; but we never use the 
 	 carry bit from such an operation, so we can ignore that.  */
       if (code == ROTATERT)
@@ -3038,7 +3038,7 @@ arm_expand_prologue ()
   if (live_regs_mask)
     {
       /* If we have to push any regs, then we must push lr as well, or
-	 we won't get a propper return.  */
+	 we won't get a proper return.  */
       live_regs_mask |= 0x4000;
       emit_multi_reg_push (live_regs_mask);
     }
@@ -3075,13 +3075,13 @@ arm_expand_prologue ()
 
 /* If CODE is 'd', then the X is a condition operand and the instruction
    should only be executed if the condition is true.
-   if CODE is 'D', then the X is a condition operand and the instruciton
+   if CODE is 'D', then the X is a condition operand and the instruction
    should only be executed if the condition is false: however, if the mode
    of the comparison is CCFPEmode, then always execute the instruction -- we
    do this because in these circumstances !GE does not necessarily imply LT;
    in these cases the instruction pattern will take care to make sure that
    an instruction containing %d will follow, thereby undoing the effects of
-   doing this instrucion unconditionally.
+   doing this instruction unconditionally.
    If CODE is 'N' then X is a floating point operand that must be negated
    before output.
    If CODE is 'B' then output a bitwise inverted value of X (a const int).
@@ -3320,7 +3320,7 @@ output_load_symbol (insn, operands)
     abort ();
 
   /* When generating the instructions, we never mask out the bits that we
-     think will be always zero, then if a mistake has occured somewhere, the
+     think will be always zero, then if a mistake has occurred somewhere, the
      assembler will spot it and generate an error.  */
 
   /* If the symbol is word aligned then we might be able to reduce the
@@ -3522,7 +3522,7 @@ final_prescan_insn (insn, opvec, noperands)
   if (GET_CODE (insn) != JUMP_INSN)
     return;
 
-  /* This jump might be paralled with a clobber of the condition codes 
+  /* This jump might be paralleled with a clobber of the condition codes 
      the jump should always come first */
   if (GET_CODE (body) == PARALLEL && XVECLEN (body, 0) > 0)
     body = XVECEXP (body, 0, 0);
@@ -3740,7 +3740,7 @@ final_prescan_insn (insn, opvec, noperands)
 	}
       /* restore recog_operand (getting the attributes of other insns can
 	 destroy this array, but final.c assumes that it remains intact
-	 accross this call; since the insn has been recognized already we
+	 across this call; since the insn has been recognized already we
 	 call recog direct). */
       recog (PATTERN (insn), insn, NULL_PTR);
     }

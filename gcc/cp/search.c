@@ -566,7 +566,7 @@ get_base_distance_recursive (binfo, depth, is_private, basetype_path, rval,
    Return -3 if PARENT is private to TYPE, and PROTECT is non-zero.
 
    If PATH_PTR is non-NULL, then also build the list of types
-   from PARENT to TYPE, with TREE_VIA_VIRUAL and TREE_VIA_PUBLIC
+   from PARENT to TYPE, with TREE_VIA_VIRTUAL and TREE_VIA_PUBLIC
    set.
 
    PARENT can also be a binfo, in which case that exact parent is found
@@ -2743,7 +2743,7 @@ fixup_virtual_upcast_offsets (real_binfo, binfo, init_self, can_elide, addr, ori
    are initializing.
 
    When USE_COMPUTED_OFFSETS is non-zero, we can assume that the
-   object was laidout by a top-level contructor and the computed
+   object was laid out by a top-level constructor and the computed
    offsets are valid to store vtables.  When zero, we must store new
    vtables through virtual baseclass pointers.
 

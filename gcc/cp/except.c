@@ -175,7 +175,7 @@ It is a complete rewrite of all the EH stuff that was here before
 	Shortcomings:
 		1. The type of the throw and catch must still match
 		   exactly (no support yet for matching base classes)
-		2. Throw specifications of functions still doesnt't work.
+		2. Throw specifications of functions still don't work.
 	Cool Things:
 		1. Destructors are called properly :-)
 		2. No overhead for the non-exception thrown case.
@@ -1282,7 +1282,7 @@ void expand_end_catch_block ()
       /* label for the start of the protection region.  */
       start_protect_label_rtx = pop_label_entry (&false_label_stack);
 
-      /* Cleanup the EH paramater.  */
+      /* Cleanup the EH parameter.  */
       decls = getdecls ();
       expand_end_bindings (decls, decls != NULL_TREE, 0);
       
@@ -1331,7 +1331,7 @@ do_unwind (throw_label)
   params=tree_cons (NULL_TREE, integer_zero_node, NULL_TREE);
   fcall = build_function_call (BuiltinReturnAddress, params);
   return_val_rtx = expand_expr (fcall, NULL_RTX, SImode, 0);
-  /* In the return, the new pc is pc+8, as the value comming in is
+  /* In the return, the new pc is pc+8, as the value coming in is
      really the address of the call insn, not the next insn.  */
   emit_move_insn (return_val_rtx, plus_constant(gen_rtx (LABEL_REF,
 							 Pmode,
@@ -1404,9 +1404,9 @@ do_unwind (throw_label)
 }
 
 /* is called from expand_exception_blocks () to generate the code in a function
-   to "throw" if anything in the function needs to preform a throw.
+   to "throw" if anything in the function needs to perform a throw.
 
-   expands "throw" as the following psuedo code:
+   expands "throw" as the following pseudo code:
 
 	throw:
 		eh = find_first_exception_match (saved_pc);

@@ -442,7 +442,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
   extern int current_function_calls_alloca;						\
   /* this conditional is ONLY here because there is a BUG;		\
 	     EXIT_IGNORE_STACK is ignored itself when the first part of		\
-	     the condition is true! (atleast in version 1.35) */		\
+	     the condition is true! (at least in version 1.35) */		\
   /* the 8*10 is for 64 bits of .r5 - .r14 */				\
   if (current_function_calls_alloca || (SIZE)>=(256-8*10)) {		\
     /* use .r4 as a temporary! Ok for now.... */			\

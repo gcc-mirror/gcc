@@ -601,6 +601,6 @@ do { register int i;			\
   (! symbolic_operand (X, VOIDmode) \
    || ((GET_CODE(X) == SYMBOL_REF) && SYMBOL_REF_FLAG(X)))
 
-/* hpux8 and later have C++ compatable include files, so do not
+/* hpux8 and later have C++ compatible include files, so do not
    pretend they are `extern "C"'.  */
 #define NO_IMPLICIT_EXTERN_C

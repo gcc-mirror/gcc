@@ -53,7 +53,7 @@ __eabi:	mflr	0
 # Normal program, load up register 2
 
 	lwz	2,.Lgot(11)			# normal GOT address
-	b	__do_global_ctors		# do any C++ global contstructors (which returns to caller)
+	b	__do_global_ctors		# do any C++ global constructors (which returns to caller)
 
 # We need to relocate the .got2 pointers.  Don't load register 2
 
@@ -77,7 +77,7 @@ __eabi:	mflr	0
 # Done adjusting pointers, return
 
 .Ldone:
-	b	__do_global_ctors		# do any C++ global contstructors (which returns to caller)
+	b	__do_global_ctors		# do any C++ global constructors (which returns to caller)
 
 # Routines for saving floating point registers, called by the compiler.
 # Called with r11 pointing to the stack header word of the caller of the

@@ -58,7 +58,7 @@ extern int target_flags;
 
 /* Macros used in the machine description to test the flags.  */
 
-/* configure can arrage to make this 2, to force a 486.  */
+/* configure can arrange to make this 2, to force a 486.  */
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT 0
 #endif
@@ -717,7 +717,7 @@ enum reg_class
    register and zero otherwise.  On most machines, this default
    should be used.  Only define this macro to some other expression
    if pseudo allocated by `local-alloc.c' end up in memory because
-   their hard registers were needed for spill regisers.  If this
+   their hard registers were needed for spill registers.  If this
    macro returns nonzero for those classes, those pseudos will only
    be allocated by `global.c', which knows how to reallocate the
    pseudo to another register.  If there would not be another

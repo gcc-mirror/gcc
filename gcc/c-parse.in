@@ -814,7 +814,7 @@ string:
 	;
 
 ifobjc
-/* Produces an OBJC_STRING_CST with prehaps more OBJC_STRING_CSTs chained
+/* Produces an OBJC_STRING_CST with perhaps more OBJC_STRING_CSTs chained
    onto it.  */
 objc_string:
 	  OBJC_STRING
@@ -1164,7 +1164,7 @@ initelt:
 	| error
 	/* These are for labeled elements.  The syntax for an array element
 	   initializer conflicts with the syntax for an Objective-C message,
-	   so don't include these productions in the Objective-C grammer.  */
+	   so don't include these productions in the Objective-C grammar.  */
 ifc
 	| '[' expr_no_commas ELLIPSIS expr_no_commas ']' '='
 		{ set_init_index ($2, $4); }

@@ -101,7 +101,7 @@ struct bytecode
    The above applies to BYTE_LOW_ENDIAN machines. In BYTE_BIG_ENDIAN machines, the
    bit numbering is reversed (i.e. bit 0 is the sign bit).
 
-   (Alright, so I drew this to keep my tongue in cheek while writing the code below,
+   (All right, so I drew this to keep my tongue in cheek while writing the code below,
     not because I'm into ASCII art.) */
 
 

@@ -74,7 +74,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
    give the same symbol without quotes for an alternative entry point.  You
-   must define both, or niether. */
+   must define both, or neither. */
 #ifndef NAME__MAIN
 #define NAME__MAIN "__gccmain"
 #define SYMBOL__MAIN __gccmain

@@ -59,7 +59,7 @@ extern int mvs_function_name_length;
 
 extern int current_function_outgoing_args_size;
 
-/* Compile using char instructins (mvc, nc, oc, xc).  On 4341 use this since
+/* Compile using char instructions (mvc, nc, oc, xc).  On 4341 use this since
    these are more than twice as fast as load-op-store.
    On 3090 don't use this since load-op-store is much faster.  */
 
@@ -94,7 +94,7 @@ extern int current_function_outgoing_args_size;
 
 #define WORDS_BIG_ENDIAN 1
 
-/* Number of bits in an addressible storage unit.  */
+/* Number of bits in an addressable storage unit.  */
 
 #define BITS_PER_UNIT 8
 

@@ -117,7 +117,7 @@ int num_source_filenames = 0;
    start and end boundaries).  */
 int sdb_label_count = 0;
 
-/* Next label # for each statment for Silicon Graphics IRIS systems. */
+/* Next label # for each statement for Silicon Graphics IRIS systems. */
 int sym_lineno = 0;
 
 /* Non-zero if inside of a function, because the stupid MIPS asm can't
@@ -4716,7 +4716,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
     }
   else
     {
-      base_reg_rtx = (rtx)0;		/* Make sure these are initialzed */
+      base_reg_rtx = (rtx)0;		/* Make sure these are initialized */
       base_offset  = 0;
     }
 

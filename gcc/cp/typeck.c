@@ -2990,7 +2990,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	    resultcode = RDIV_EXPR;
 	  else
 	    /* When dividing two signed integers, we have to promote to int.
-	       unless we divide by a conatant != -1.  Note that default
+	       unless we divide by a constant != -1.  Note that default
 	       conversion will have been performed on the operands at this
 	       point, so we have to dig out the original type to find out if
 	       it was unsigned.  */
@@ -6171,7 +6171,7 @@ language_lvalue_valid (exp)
   return 1;
 }
 
-/* Get differnce in deltas for different pointer to member function
+/* Get difference in deltas for different pointer to member function
    types.  Return inetger_zero_node, if FROM cannot be converted to a
    TO type.  If FORCE is true, then allow reverse conversions as well.  */
 static tree
@@ -6253,7 +6253,7 @@ build_ptrmemfunc (type, pfn, force)
   tree npfn;
   tree u;
 
-  /* Handle multiple conversions of pointer to member fucntions. */
+  /* Handle multiple conversions of pointer to member functions. */
   if (TYPE_PTRMEMFUNC_P (TREE_TYPE (pfn)))
     {
       tree ndelta, ndelta2, nindex;

@@ -227,7 +227,7 @@ int warn_extern_inline;
 /* Non-zero means warn when the compiler will reorder code.  */
 int warn_reorder;
 
-/* Non-zero means warn when sysnthesis behavior differs from Cfront's.  */
+/* Non-zero means warn when synthesis behavior differs from Cfront's.  */
 int warn_synth;
 
 /* Nonzero means `$' can be in an identifier.
@@ -341,7 +341,7 @@ int flag_huge_objects;
 
 /* Nonzero if we want to conserve space in the .o files.  We do this
    by putting uninitialized data and runtime initialized data into
-   .common instead of .data at the expense of not flaging multiple
+   .common instead of .data at the expense of not flagging multiple
    definitions.  */
 
 int flag_conserve_space;
@@ -985,7 +985,7 @@ grokclassfn (ctype, cname, function, flags, quals)
 
 #if 0
       /* This code is going into the compiler, but currently, it makes
-	 libg++/src/Interger.cc not compile.  The problem is that the nice name
+	 libg++/src/Integer.cc not compile.  The problem is that the nice name
 	 winds up going into the symbol table, and conversion operations look
 	 for the manged name.  */
       substitute_nice_name (function);
@@ -1958,7 +1958,7 @@ build_push_scope (cname, name)
     return rval;
 
   /* We do need to push the scope in this case, since CTYPE helps
-     determine subsequent intializers (i.e., Foo::Bar x = foo_enum_1;).  */
+     determine subsequent initializers (i.e., Foo::Bar x = foo_enum_1;).  */
 
   push_nested_class (ctype, 3);
   TREE_COMPLEXITY (rval) = current_class_depth;
@@ -3001,7 +3001,7 @@ finish_file ()
 	      emit_note (input_filename, lineno);
 
 	      /* 9.5p5: The initializer of a static member of a class has
-		 the same acess rights as a member function.  */
+		 the same access rights as a member function.  */
 	      DECL_CLASS_CONTEXT (current_function_decl) = DECL_CONTEXT (decl);
 	      DECL_STATIC_FUNCTION_P (current_function_decl) = 1;
 

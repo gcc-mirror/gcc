@@ -1278,7 +1278,7 @@ do									\
 #define MEMORY_MOVE_COST(MODE)  10
 
 /* All address computations that can be done are free, but rtx cost returns
-   the same for practically all of them.  So we weight the differnt types
+   the same for practically all of them.  So we weight the different types
    of address here in the order (most pref first):
    PRE/POST_INC/DEC, SHIFT or NON-INT sum, INT sum, REG, MEM or LABEL. */
 #define ADDRESS_COST(X)							     \
@@ -1306,9 +1306,9 @@ do									\
 /* Condition code information. */
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison. 
-   CCFPEmode should be used with floating inequalites,
+   CCFPEmode should be used with floating inequalities,
    CCFPmode should be used with floating equalities.
-   CC_NOOVmode should be used with SImode integer equalites
+   CC_NOOVmode should be used with SImode integer equalities.
    CCmode should be used otherwise. */
 
 #define EXTRA_CC_MODES CC_NOOVmode, CCFPmode, CCFPEmode

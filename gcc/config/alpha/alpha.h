@@ -552,7 +552,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 /* Loading and storing HImode or QImode values to and from memory
    usually requires a scratch register.  The exceptions are loading
    QImode and HImode from an aligned address to a general register. 
-   We also cannot load an unaligned address or a paradodixal SUBREG into an
+   We also cannot load an unaligned address or a paradoxical SUBREG into an
    FP register.   */
 
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS,MODE,IN)			\
@@ -942,7 +942,7 @@ extern char *alpha_function_name;
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  Under OSF/1, profiling is enabled
-   by simply passing -pg to the assember and linker.  */
+   by simply passing -pg to the assembler and linker.  */
 
 #define FUNCTION_PROFILER(FILE, LABELNO)
 

@@ -341,7 +341,7 @@ iterator_loop_epilogue (idecl, start_note, end_note)
 
   ITERATOR_BOUND_P (idecl) = 0;
   /* we can reset rtl since there is not chance that this expansion */
-  /* would be superceded by a higher level one */
+  /* would be superseded by a higher level one */
   if (top_level_ixpansion_p ())
     DECL_RTL (idecl) = 0;
   if (end_note)
@@ -433,7 +433,7 @@ pop_iterator_stack ()
 
 
 /* Record an iterator expansion ("ixpansion") for IDECL.
-   The remaining paramters are the notes in the loop entry
+   The remaining parameters are the notes in the loop entry
    and exit rtl.  */
 
 static void

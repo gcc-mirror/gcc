@@ -435,7 +435,7 @@ unpack_d (FLO_union_type * src, fp_number_type * dst)
       /* Huge exponent*/
       if (fraction == 0)
 	{
-	  /* Attatched to a zero fraction - means infinity */
+	  /* Attached to a zero fraction - means infinity */
 	  dst->class = CLASS_INFINITY;
 	}
       else
@@ -569,7 +569,7 @@ _fpadd_parts (fp_number_type * a,
 	  tmp->normal_exp = a_normal_exp;
 	  tmp->fraction.ll = -tfraction;
 	}
-      /* and renomalize it */
+      /* and renormalize it */
 
       while (tmp->fraction.ll < IMPLICIT_1 && tmp->fraction.ll)
 	{

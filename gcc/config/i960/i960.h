@@ -307,7 +307,7 @@ extern int target_flags;
 /* Target machine storage layout.  */
 
 /* Define for cross-compilation from a host with a different float format
-   or endianess (e.g. VAX, x86).  */
+   or endianness (e.g. VAX, x86).  */
 #define REAL_ARITHMETIC
 
 /* Define this if most significant bit is lowest numbered

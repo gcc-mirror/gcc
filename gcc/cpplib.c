@@ -3111,7 +3111,7 @@ get_directive_token (pfile)
    This function expects to see "fname" or <fname> on the input.
 
    The input is normally in part of the output_buffer following
-   CPP_WRITTEN, and will get overwriiten by output_line_command.
+   CPP_WRITTEN, and will get overwritten by output_line_command.
    I.e. in input file specification has been popped by handle_directive.
    This is safe. */
 
@@ -4623,7 +4623,7 @@ cpp_get_token (pfile)
 	  if (CPP_BUFFER (pfile)->nominal_fname && next_buf != 0)
 	    {
 	      /* We're about to return from an #include file.
-		 Emit #line information now (as part of the CPP_POP) restult.
+		 Emit #line information now (as part of the CPP_POP) result.
 		 But the #line refers to the file we will pop to. */
 	      cpp_buffer *cur_buffer = CPP_BUFFER (pfile);
 	      CPP_BUFFER (pfile) = next_buf;
@@ -7441,7 +7441,7 @@ extern const char *const sys_errlist[];
 #else
 extern char *sys_errlist[];
 #endif
-#else	/* HAVE_STERRROR */
+#else	/* HAVE_STRERROR */
 char *strerror ();
 #endif
 #else	/* VMS */

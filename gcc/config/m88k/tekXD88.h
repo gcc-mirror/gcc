@@ -41,7 +41,7 @@
 
 /* The bundled ld program needs link editor directives which normally
    reside in /lib/default.ld.  We'll pass our own copy during the link
-   phase because additioal information about extra sections must be added
+   phase because additional information about extra sections must be added
    so that gcc generated files will link properly.
    --KRG.
    */

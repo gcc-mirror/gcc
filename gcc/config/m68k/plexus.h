@@ -15,7 +15,7 @@
    The Plexus port of gcc requires you to use gas ( either 1.3X with COFF 
    patches or 2.X ),  If you use gas 2.X you have to use binutils-2.X.
       
-   With using gas-2.X the Plexus gcc port is now capabable of generating
+   With using gas-2.X the Plexus gcc port is now capable of generating
    output suitable for use by gdb-4.X ( send mail to above address for
    info on getting gdb patches or other GNU items for the Plexus )
 

@@ -200,7 +200,7 @@ extern int target_flags;
    Unit. */
 #define TARGET_BMU (target_flags & MASK_BMU)
 
-/* Optimize to conseverve memory */
+/* Optimize to conserve memory */
 #define TARGET_OPTIMIZE_MEMORY (target_flags & MASK_OPTIMIZE_MEMORY)
 
 /* Optimize for maximum speed */
@@ -330,7 +330,7 @@ extern int target_flags;
    For the 1600 we can decide arbitrarily since there are no machine instructions for them. */
 #define WORDS_BIG_ENDIAN 1
 
-/* number of bits in an addressible storage unit */
+/* number of bits in an addressable storage unit */
 #define BITS_PER_UNIT 16
 
 /* Width in bits of a "word", which is the contents of a machine register.
@@ -598,7 +598,7 @@ extern int target_flags;
    controlled by target switches, then GCC will automatically avoid
    using these registers when the target switches are opposed to
    them.)  If the user tells us there is no BMU, we can't use
-   ar0-ar3 for regsiter allocation */
+   ar0-ar3 for register allocation */
 
 #define CONDITIONAL_REGISTER_USAGE					\
 do									\
@@ -1159,8 +1159,8 @@ extern struct dsp16xx_frame_info current_frame_info;
 /* Define the first register to be used for argument passing */
 #define FIRST_REG_FOR_FUNCTION_ARG REG_Y
 
-/* Define the profitablity of saving registers around calls.
-   NOTE: For now we turin this off because of a bug in the
+/* Define the profitability of saving registers around calls.
+   NOTE: For now we turn this off because of a bug in the
    caller-saves code and also because i'm not sure it is helpful
    on the 1610. */
 
@@ -1470,7 +1470,7 @@ extern struct dsp16xx_frame_info current_frame_info;
   case CONST_DOUBLE:						        \
     return COSTS_N_INSNS (2);
 
-/* Like CONST_COSTS but applies to nonsonstant RTL expressions.
+/* Like CONST_COSTS but applies to nonconstant RTL expressions.
    This can be used, for example to indicate how costly a multiply
    instruction is. */
 #define RTX_COSTS(X,CODE,OUTER_CODE)                            \
@@ -1896,7 +1896,7 @@ bss_section ()							   \
 
 /* This is how to output an assembler line that says to advance 
    the location counter to a multiple of 2**LOG bytes. We should
-   not have to do any alignemnt since the 1610 is a word machine. */
+   not have to do any alignment since the 1610 is a word machine. */
 #define ASM_OUTPUT_ALIGN(FILE,LOG)
 
 /* Define this macro if ASM_OUTPUT_SKIP should not be used in the text section
@@ -1944,8 +1944,8 @@ bss_section ()							   \
 /* Defining this macro causes the compiler to omit a sign-extend, zero-extend,
    or bitwise 'and' instruction that truncates the count of a shift operation
    to a width equal to the number of bits needed to represent the size of the
-   object being shifted. Do not define this macro unless the trucation applies
-   to both shoft operations and bit-field operations (if any). */
+   object being shifted. Do not define this macro unless the truncation applies
+   to both shift operations and bit-field operations (if any). */
 /* #define SHIFT_COUNT_TRUNCATED */
 
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits

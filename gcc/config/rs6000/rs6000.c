@@ -1577,7 +1577,7 @@ svr4_traceback (file, name, decl)
   long alloca_reg;				/* stack/frame register */
   long fpr_max		= 64 - first_fp_reg;	/* # of floating point registers saved */
   long gpr_max		= 32 - first_reg;	/* # of general purpose registers saved */
-  long sp_max;					/* 1 if the function aquires a stack frame */
+  long sp_max;					/* 1 if the function acquires a stack frame */
   long lr_max;					/* 1 if the function stores the link register */
   long cr_max;					/* 1 if the function has a CR save word */
   long fpscr_max	= 0;			/* 1 if the function has a FPSCR save word */

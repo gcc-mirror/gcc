@@ -994,7 +994,7 @@ yylex ()
 	      goto string_constant;
 	    }
 	  ungetc(c, finput);
-	  /* Fall through to treat '@' as the start of an indentifier.  */
+	  /* Fall through to treat '@' as the start of an identifier.  */
 	}
 
     case 'A':  case 'B':  case 'C':  case 'D':  case 'E':

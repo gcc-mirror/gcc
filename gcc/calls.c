@@ -161,7 +161,7 @@ calls_function_1 (exp, which)
   int type = TREE_CODE_CLASS (code);
   int length = tree_code_length[(int) code];
 
-  /* If this code is langauge-specific, we don't know what it will do.  */
+  /* If this code is language-specific, we don't know what it will do.  */
   if ((int) code >= NUM_TREE_CODES)
     return 1;
 
@@ -1757,7 +1757,7 @@ expand_call (exp, target, ignore)
 	args[i].aligned_regs = (rtx *) alloca (sizeof (rtx)
 					       * args[i].n_aligned_regs);
 
-	/* Structures smaller than a word are aligned to the least signifcant
+	/* Structures smaller than a word are aligned to the least significant
 	   byte (to the right).  On a BYTES_BIG_ENDIAN machine, this means we
 	   must skip the empty high order bytes when calculating the bit
 	   offset.  */
