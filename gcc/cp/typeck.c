@@ -452,15 +452,13 @@ composite_pointer_type (t1, t2, arg1, arg2, location)
   else if (TYPE_MAIN_VARIANT (TREE_TYPE (t1)) == void_type_node)
     {
       if (pedantic && TREE_CODE (t2) == FUNCTION_TYPE)
-	pedwarn ("ISO C++ forbids %s between pointer of type `void *'"
-                 " and pointer-to-function", location);
+	pedwarn ("ISO C++ forbids %s between pointer of type `void *' and pointer-to-function", location);
       result_type = qualify_type (t1, t2);
     }
   else if (TYPE_MAIN_VARIANT (TREE_TYPE (t2)) == void_type_node)
     {
       if (pedantic && TREE_CODE (t1) == FUNCTION_TYPE)
-	pedwarn ("ISO C++ forbids %s between pointer of type `void *'"
-                 " and pointer-to-function", location);
+	pedwarn ("ISO C++ forbids %s between pointer of type `void *' and pointer-to-function", location);
       result_type = qualify_type (t2, t1);
     }
   /* C++ */
@@ -1560,8 +1558,7 @@ c_sizeof (type)
   if (code == VOID_TYPE)
     {
       if (pedantic || warn_pointer_arith)
-	pedwarn ("ISO C++ forbids applying `sizeof' to type `void' which is"
-                 " an incomplete type");
+	pedwarn ("ISO C++ forbids applying `sizeof' to type `void' which is an incomplete type");
       return size_int (1);
     }
   if (code == ERROR_MARK)
@@ -1606,8 +1603,7 @@ expr_sizeof (e)
     error ("sizeof applied to a bit-field");
   if (is_overloaded_fn (e))
     {
-      pedwarn ("ISO C++ forbids applying `sizeof' to an expression"
-               " of function type");
+      pedwarn ("ISO C++ forbids applying `sizeof' to an expression of function type");
       return size_int (1);
     }
   else if (type_unknown_p (e))
@@ -3997,8 +3993,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 						signed_type (result_type)))))
 	    /* OK */;
 	  else
-	    warning ("comparison between a signed and an unsigned"
-                     " integer expressions");
+	    warning ("comparison between a signed and an unsigned integer expressions");
 
 	  /* Warn if two unsigned values are being compared in a size
 	     larger than their original size, and one (and only one) is the
@@ -4715,13 +4710,9 @@ build_unary_op (code, xarg, noconvert)
 	      if (current_class_type
 		  && TREE_OPERAND (arg, 0) == current_class_ref)
 		/* An expression like &memfn.  */
-		cp_pedwarn ("ISO C++ forbids taking the address of a"
-                            " non-static member function to form a pointer"
-                            " to member function.  Say `&%T::%D'", base, name);
+		cp_pedwarn ("ISO C++ forbids taking the address of a non-static member function to form a pointer to member function.  Say `&%T::%D'", base, name);
 	      else
-		cp_pedwarn ("ISO C++ forbids taking the address of a bound"
-                            " member function to form a pointer to member"
-                            " function", base, name);
+		cp_pedwarn ("ISO C++ forbids taking the address of a bound member function to form a pointer to member function", base, name);
 	    }
 
 	  arg = build_offset_ref (base, name);
@@ -4746,8 +4737,7 @@ build_unary_op (code, xarg, noconvert)
 	case FIX_ROUND_EXPR:
 	case FIX_CEIL_EXPR:
 	  if (! lvalue_p (arg) && pedantic)
-	    pedwarn ("ISO C++ forbids taking the address of a cast to a "
-                     "non-lvalue expression");
+	    pedwarn ("ISO C++ forbids taking the address of a cast to a non-lvalue expression");
 	  break;
 	  
 	default:
@@ -5279,8 +5269,7 @@ build_reinterpret_cast (type, expr)
     {
       if (! real_lvalue_p (expr))
 	{
-	  cp_error ("invalid reinterpret_cast of an rvalue expression of type"
-                    " `%T' to type `%T'", intype, type);
+	  cp_error ("invalid reinterpret_cast of an rvalue expression of type `%T' to type `%T'", intype, type);
 	  return error_mark_node;
 	}
       expr = build_unary_op (ADDR_EXPR, expr, 0);
@@ -5359,12 +5348,10 @@ build_const_cast (type, expr)
     }
 
   if (!POINTER_TYPE_P (type))
-    cp_error ("invalid use of const_cast with type `%T', which is not a"
-              " pointer, reference, nor a pointer-to-data-member type", type);
+    cp_error ("invalid use of const_cast with type `%T', which is not a pointer, reference, nor a pointer-to-data-member type", type);
   else if (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
     {
-      cp_error ("invalid use of const_cast with type `%T', which is a pointer"
-                " or reference to a function type", type);
+      cp_error ("invalid use of const_cast with type `%T', which is a pointer or reference to a function type", type);
       return error_mark_node;
     }
 
@@ -6061,8 +6048,7 @@ get_delta_difference (from, to, force)
       if (binfo_from_vbase (binfo))
 	{
 	  binfo = BINFO_FOR_VBASE (BINFO_TYPE (binfo), from);
-	  cp_warning ("pointer to member cast to virtual base `%T' will only"
-                      " work if you are very careful", BINFO_TYPE (binfo));
+	  cp_warning ("pointer to member cast to virtual base `%T' will only work if you are very careful", BINFO_TYPE (binfo));
 	}
       delta = BINFO_OFFSET (binfo);
       delta = cp_convert (ptrdiff_type_node, delta);
@@ -6076,8 +6062,7 @@ get_delta_difference (from, to, force)
     {
       if (force)
 	{
-	  cp_warning ("pointer to member cast from virtual base `%T' will "
-                      "only wokr if you are very careful", BINFO_TYPE (binfo));
+	  cp_warning ("pointer to member cast from virtual base `%T' will only wokr if you are very careful", BINFO_TYPE (binfo));
 	}
       else
 	cp_error ("pointer to member conversion from virtual base `%T'",
@@ -6772,8 +6757,7 @@ check_return_expr (retval)
      that's supposed to return a value.  */
   if (!retval && fn_returns_value_p)
     {
-      pedwarn ("return-statement with no value, in function declared with"
-               " a non-void return type");
+      pedwarn ("return-statement with no value, in function declared with a non-void return type");
       /* Clear this, so finish_function won't say that we reach the
 	 end of a non-void function (which we don't, we gave a
 	 return!).  */
@@ -6789,8 +6773,7 @@ check_return_expr (retval)
 	   its side-effects.  */
 	  finish_expr_stmt (retval);
       else
-	pedwarn ("return-statement with a value, in function declared with"
-                 " a void return type");
+	pedwarn ("return-statement with a value, in function declared with a void return type");
 
       current_function_returns_null = 1;
 

@@ -1,3 +1,10 @@
+2000-01-25  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* typeck.c (composite_pointer_type, c_sizeof, expr_sizeof,
+	build_binary_op_nodefault, build_unary_op, build_reinterpret_cast,
+	build_const_cast, get_delta_difference, check_return_expr): Avoid
+	ANSI string concatenation usage.  
+
 2000-01-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (layout_class_type): Put the fields required to make a
