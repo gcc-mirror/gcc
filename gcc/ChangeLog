@@ -1,3 +1,9 @@
+2004-01-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/13559
+	* config/sparc/sparc.c (function_arg_record_value_3): Revert
+	to 'word_mode' once the first slot has been filled.
+
 2004-01-22  Olivier Hainque  <hainque@act-europe.fr>
 
 	* config/sparc/sparc.c (function_arg_record_value_1): Fix
