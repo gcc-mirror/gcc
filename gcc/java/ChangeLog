@@ -1,3 +1,8 @@
+2002-10-15  Andrew Haley  <aph@redhat.com>
+
+	* java-tree.h (java_inlining_merge_static_initializers): Declare.
+	(java_inlining_map_static_initializers): Declare.
+
 2002-10-14  Andrew Haley  <aph@redhat.com>
 
 	* tree-inline.c (remap_block): All local class initialization

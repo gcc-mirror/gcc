@@ -1292,6 +1292,8 @@ extern tree decl_constant_value PARAMS ((tree));
 struct rtx_def * java_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 					   int)); 
 #endif
+extern void java_inlining_merge_static_initializers PARAMS ((tree, void *));
+extern void java_inlining_map_static_initializers PARAMS ((tree, void *));
 
 #define DECL_FINAL(DECL) DECL_LANG_FLAG_3 (DECL)
 
