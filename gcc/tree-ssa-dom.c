@@ -1177,7 +1177,9 @@ record_equivalences_from_phis (basic_block bb)
 	{
 	  tree t = PHI_ARG_DEF (phi, i);
 
-	  /* Ignore alternatives which are the same as our LHS.  */
+	  /* Ignore alternatives which are the same as our LHS.  Since
+	     LHS is a PHI_RESULT, it is known to be a SSA_NAME, so we
+	     can simply compare pointers.  */
 	  if (lhs == t)
 	    continue;
 
