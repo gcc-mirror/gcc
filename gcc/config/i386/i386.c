@@ -4331,6 +4331,7 @@ ix86_expand_prologue (void)
       /* Only valid for Win32.  */
       rtx eax = gen_rtx_REG (SImode, 0);
       bool eax_live = ix86_eax_live_at_start_p ();
+      rtx t;
 
       if (TARGET_64BIT)
         abort ();
@@ -4341,15 +4342,17 @@ ix86_expand_prologue (void)
 	  allocate -= 4;
 	}
 
-      insn = emit_move_insn (eax, GEN_INT (allocate));
-      RTX_FRAME_RELATED_P (insn) = 1;
+      emit_move_insn (eax, GEN_INT (allocate));
 
       insn = emit_insn (gen_allocate_stack_worker (eax));
       RTX_FRAME_RELATED_P (insn) = 1;
+      t = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (-allocate));
+      t = gen_rtx_SET (VOIDmode, stack_pointer_rtx, t);
+      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+					    t, REG_NOTES (insn));
 
       if (eax_live)
 	{
-	  rtx t;
 	  if (frame_pointer_needed)
 	    t = plus_constant (hard_frame_pointer_rtx,
 			       allocate
