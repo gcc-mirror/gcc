@@ -1,3 +1,7 @@
+2003-11-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (GCC_CFLAGS): Add @WERROR@ for target files.
+
 2003-11-01  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* config/rs6000/sysv4.h (EXTRA_SECTION_FUNCTIONS): Update to C90
@@ -65,14 +69,14 @@
 	* arm.h (CONDITIONAL_REGISTER_USAGE): Disable use of LR in Thumb
 	code.
 
-2003-10-31  Andreas Jaeger  <aj@suse.de>, 
-            Zack Weinberg  <zack@codesourcery.com>            
+2003-10-31  Andreas Jaeger  <aj@suse.de>,
+            Zack Weinberg  <zack@codesourcery.com>
 
 
         * crtstuff.c (__register_frame_info, __register_frame_info_bases)
         (__deregister_frame_info, __deregister_frame_info_bases):
         Constify void * argument.
-        * unwind-dw2-fde.h (struct fde_vector): 
+        * unwind-dw2-fde.h (struct fde_vector):
         Constify 'orig_data' and 'array' fields.
         (__register_frame_info, __register_frame_info_bases)
         (__deregister_frame_info, __deregister_frame_info_bases):
@@ -93,7 +97,7 @@
         Constify arguments, local variables, return values, and casts
         of type fde *, fde **, struct dwarf_fde *, and struct dwarf_cie *.
         Use const pointer types in sizeof expressions, for clarity.
-        * unwind-dw2-fde-glibc.c 
+        * unwind-dw2-fde-glibc.c
         (_Unwind_find_registered_FDE, _Unwind_find_FDE): Constify return value.
         (struct unw_eh_callback_data): Constify 'ret' field.
 
@@ -142,7 +146,7 @@
 
 2003-10-31  Richard Earnshaw  <rearnsha@arm.com>
 
-	* ggc-page.c (ggc_pch_read): Wrap call to poison_pages in 
+	* ggc-page.c (ggc_pch_read): Wrap call to poison_pages in
 	ENABLE_GC_CHECKING not in GGC_POISON.
 
 2003-10-31  Nathanael Nerode  <neroden@gcc.gnu.org>
