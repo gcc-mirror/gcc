@@ -380,6 +380,14 @@ do_friend (ctype, declarator, decl, parmdecls, attrlist,
 
       if (! DECL_USE_TEMPLATE (decl))
 	{
+	  /* We must check whether the decl refers to template
+	     arguments before push_template_decl_real adds a
+	     reference to the containing template class.  */
+	  int warn = (warn_nontemplate_friend
+		      && ! funcdef_flag && ! is_friend_template
+		      && current_template_parms
+		      && uses_template_parms (decl));
+
 	  /* We can call pushdecl here, because the TREE_CHAIN of this
 	     FUNCTION_DECL is not needed for other purposes.  Don't do
 	     this for a template instantiation.  However, we don't
@@ -393,9 +401,7 @@ do_friend (ctype, declarator, decl, parmdecls, attrlist,
 	  else 
 	    decl = push_template_decl_real (decl, /*is_friend=*/1); 
 
-	  if (warn_nontemplate_friend
-	      && ! funcdef_flag && ! is_friend_template
-	      && current_template_parms && uses_template_parms (decl))
+	  if (warn)
 	    {
 	      static int explained;
 	      cp_warning ("friend declaration `%#D' declares a non-template function", decl);
