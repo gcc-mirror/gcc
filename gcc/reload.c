@@ -695,9 +695,6 @@ push_reload (in, out, inloc, outloc, class,
     class = LIMIT_RELOAD_CLASS (GET_MODE (SUBREG_REG (out)), class);
 #endif
 
-  if (class == NO_REGS)
-    abort ();
-
   /* Verify that this class is at least possible for the mode that
      is specified.  */
   if (this_insn_is_asm)
@@ -707,6 +704,15 @@ push_reload (in, out, inloc, outloc, class,
 	mode = inmode;
       else
 	mode = outmode;
+      if (mode == VOIDmode)
+	{
+	  error_for_asm (this_insn, "cannot reload integer constant operand in `asm'");
+	  mode = word_mode;
+	  if (in != 0)
+	    inmode = word_mode;
+	  if (out != 0)
+	    outmode = word_mode;
+	}
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (HARD_REGNO_MODE_OK (i, mode)
 	    && TEST_HARD_REG_BIT (reg_class_contents[(int) class], i))
@@ -726,6 +732,9 @@ push_reload (in, out, inloc, outloc, class,
 	  class = ALL_REGS;
 	}
     }
+
+  if (class == NO_REGS)
+    abort ();
 
   /* We can use an existing reload if the class is right
      and at least one of IN and OUT is a match
