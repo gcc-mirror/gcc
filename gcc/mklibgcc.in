@@ -273,15 +273,15 @@ for ml in $MULTILIBS; do
   libgcc_a_objs="$libgcc_objs $libgcc_st_objs"
 
   if [ "@libgcc_visibility@" = yes ]; then
-    libgcc_a_objs=`echo "${libgcc_a_objs} " | sed s~${objext}' ~.oS ~g'`
-
-    # .oS objects will have all non-local symbol definitions .hidden
+    libgcc_a_objs=
     echo ""
-    echo "$libgcc_a_objs: libgcc/${dir}/%.oS: libgcc/${dir}/%${objext}"
-    echo "	@\$(NM_FOR_TARGET) $SHLIB_NM_FLAGS \$^" \\
-    echo "	 | \$(AWK) 'NF == 3 { print \".hidden\", \$\$3 }'" \\
-    echo '	 | $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -Wl,-r -nostdinc' \\ 
-    echo '	   -nostdlib -o $@ $^ -xassembler -'
+    for o in $libgcc_objs $libgcc_st_objs; do
+      # .oS objects will have all non-local symbol definitions .hidden
+      oS=`echo ${o} | sed s~${objext}'$~.oS~g'`
+      echo "${oS}: stmp-dirs ${o}"
+      echo '	@$(NM_FOR_TARGET) '${SHLIB_NM_FLAGS} ${o}' | $(AWK) '\''NF == 3 { print ".hidden", $$3 }'\'' | $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -r -nostdinc -nostdlib -o $@ '${o}' -xassembler -'
+      libgcc_a_objs="${libgcc_a_objs} ${oS}"
+    done
   fi
 
   echo ""
