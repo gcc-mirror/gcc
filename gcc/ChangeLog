@@ -1,5 +1,12 @@
 2004-01-13  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (movstrictqi): Add an alternative with
+	the source being post_inc.  Tighten the predicate for the
+	destination to register_operand.
+	(movstricthi): Likewise.
+
+2004-01-13  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* system.h (SHARED_BSS_SECTION_ASM_OP): Poison.
 	* varasm.c (bss_section): Don't use SHARED_BSS_SECTION_ASM_OP.
 	* doc/tm.texi (SHARED_BSS_SECTION_ASM_OP): Remove.
