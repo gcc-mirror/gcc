@@ -1,3 +1,7 @@
+2004-03-23  Ziemowit Laski  <zlaski@apple.com>
+
+	* g++.dg/ext/altivec-7.C: New test.
+
 2004-03-23  Zack Weinberg  <zack@codesourcery.com>
 
 	PR 12267, 12391, 12560, 13129, 14114, 14133

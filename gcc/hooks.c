@@ -211,3 +211,10 @@ hook_tree_tree_identity (tree a)
 {
   return a;
 }
+
+/* Generic hook that takes a tree and returns a NULL string.  */
+const char *
+hook_constcharptr_tree_null (tree t ATTRIBUTE_UNUSED)
+{
+  return NULL;
+}
