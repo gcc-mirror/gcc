@@ -4398,8 +4398,8 @@ macro, a reasonable default is used.
 @cindex @code{memset}, implicit usage
 @item TARGET_MEM_FUNCTIONS
 Define this macro if GCC should generate calls to the ISO C
-(and System V) library functions @code{memcpy} and @code{memset}
-rather than the BSD functions @code{bcopy} and @code{bzero}.
+(and System V) library functions @code{memcpy}, @code{memmove} and
+@code{memset} rather than the BSD functions @code{bcopy} and @code{bzero}.
 
 @findex LIBGCC_NEEDS_DOUBLE
 @item LIBGCC_NEEDS_DOUBLE
