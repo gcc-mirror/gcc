@@ -50,7 +50,7 @@ extern time_t time PROTO ((time_t *)); /* FIXME: use NEED_DECLARATION_TIME */
 # define assert(e) do { if (! (e)) abort (); } while (0)
 #endif
 
-extern char *getpwd ();
+extern char *getpwd PROTO((void));
 
 /* IMPORTANT NOTE: Please see the file README.DWARF for important details
    regarding the GNU implementation of Dwarf.  */
@@ -433,6 +433,10 @@ static void generate_new_sfname_entry	PROTO((void));
 static unsigned lookup_filename		PROTO((char *));
 static void generate_srcinfo_entry	PROTO((unsigned, unsigned));
 static void generate_macinfo_entry	PROTO((char *, char *));
+static int is_pseudo_reg		PROTO((rtx));
+static tree type_main_variant		PROTO((tree));
+static int is_tagged_type		PROTO((tree));
+static int is_redundant_typedef		PROTO((tree));
 
 /* Definitions of defaults for assembler-dependent names of various
    pseudo-ops and section names.
@@ -860,7 +864,7 @@ static void generate_macinfo_entry	PROTO((char *, char *));
 
 /************************ general utility functions **************************/
 
-inline int
+inline static int
 is_pseudo_reg (rtl)
      register rtx rtl;
 {
@@ -869,7 +873,7 @@ is_pseudo_reg (rtl)
 	      && (REGNO (XEXP (rtl, 0)) >= FIRST_PSEUDO_REGISTER)));
 }
 
-inline tree
+inline static tree
 type_main_variant (type)
      register tree type;
 {
@@ -891,7 +895,7 @@ type_main_variant (type)
 
 /* Return non-zero if the given type node represents a tagged type.  */
 
-inline int
+inline static int
 is_tagged_type (type)
      register tree type;
 {
@@ -4656,7 +4660,7 @@ output_decls_for_scope (stmt, depth)
 
 /* Is this a typedef we can avoid emitting?  */
 
-inline int
+inline static int
 is_redundant_typedef (decl)
      register tree decl;
 {
@@ -4997,7 +5001,7 @@ output_decl (decl, containing_scope)
 	 function.  */
 
       {
-        register void (*func) ();
+        register void (*func) PROTO((void *));
 	register tree origin = decl_ultimate_origin (decl);
 
 	if (origin != NULL && TREE_CODE (origin) == PARM_DECL)
