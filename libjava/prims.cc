@@ -1033,7 +1033,9 @@ void
 _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, 
 	     bool is_jar)
 {
+#ifndef DISABLE_MAIN_ARGS
   _Jv_SetArgs (argc, argv);
+#endif
 
   java::lang::Runtime *runtime = NULL;
 

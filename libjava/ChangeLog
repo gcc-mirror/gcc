@@ -1,5 +1,11 @@
 2004-07-20  Bryce McKinlay  <mckinlay@redhat.com>
 
+	PR libgcj/16591
+	* prims.cc (_Jv_RunMain): Don't call _Jv_SetArgs if DISABLE_MAIN_ARGS
+	is defined.
+
+2004-07-20  Bryce McKinlay  <mckinlay@redhat.com>
+
 	* java/net/Socket.java (getImpl): Now private. Remove comment.
 
 2004-07-20  Bryce McKinlay  <mckinlay@redhat.com>
