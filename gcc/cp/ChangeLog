@@ -1,3 +1,8 @@
+2001-10-16  Hans-Peter Nilsson  <hp@axis.com>
+
+	* cp-tree.h (VFIELD_NAME_FORMAT) [NO_DOLLAR_IN_LABEL &&
+	NO_DOT_IN_LABEL]: Adjust to match VFIELD_NAME.
+
 2001-10-15  Richard Sandiford  <rsandifo@redhat.com>
 
 	* pt.c (UNIFY_ALLOW_MAX_CORRECTION): Define.
