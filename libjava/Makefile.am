@@ -585,6 +585,7 @@ java/awt/Event.java \
 java/awt/EventDispatchThread.java \
 java/awt/EventQueue.java \
 java/awt/FileDialog.java \
+java/awt/FlowLayout.java \
 java/awt/Font.java \
 java/awt/FontMetrics.java \
 java/awt/Frame.java \
