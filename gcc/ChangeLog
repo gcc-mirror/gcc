@@ -1,3 +1,13 @@
+Sun Oct 26 11:32:16 1997  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* Makefile.in (compare, compare-lean, compare3): Combined to one
+	ruleset determining actions to be performed via $@.
+	(compare4, compare4-lean): New targets.
+	(gnucompare, gnucompare3): Combined to one ruleset determining
+	actions to be performed via $@. Also, note which files failed
+	the comparison test in .bad_compare.
+	(gnucompare-lean, gnucompare3-lean, gnucompare4-lean): New targets.
+
 Sun Oct 26 10:06:11 1997  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* fold-const (fold): Also simplify FLOOR_DIV_EXPR to EXACT_DIV_EXPR
