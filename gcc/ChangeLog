@@ -1,3 +1,8 @@
+2005-03-10  Kazuhiro Inaoka  <inaoka.lazuhiro@renesas.com>
+
+	* config/m32r/m32r.md (load_sda_base_32): New pattern.  Loads
+	sda base address on medium model.
+
 2005-03-10  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	* Makefile.in (tree-optimize.o): Add CFGLOOP_H dependence.
