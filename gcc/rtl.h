@@ -1776,6 +1776,7 @@ extern void preserve_rtl_expr_result			PARAMS ((rtx));
 extern void mark_temp_addr_taken			PARAMS ((rtx));
 extern void update_temp_slot_address			PARAMS ((rtx, rtx));
 extern void purge_addressof				PARAMS ((rtx));
+extern void purge_hard_subreg_sets			PARAMS ((rtx));
 
 /* In reload.c */
 extern int operands_match_p		PARAMS ((rtx, rtx));

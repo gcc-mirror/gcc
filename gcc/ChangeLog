@@ -1,3 +1,11 @@
+2000-09-15  Andrew Haley  <aph@redhat.com>
+
+	* toplev.c (rest_of_compilation): Call purge_hard_subreg_sets to
+	remove all SETs of SUBREGs of hard registers.
+ 	* function.c (purge_hard_subreg_sets): New function.
+	(purge_single_hard_subreg_set): New function.
+	* rtl.h: (purge_hard_subreg_sets): New function.
+
 2000-09-18  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64-protos.h: Update.

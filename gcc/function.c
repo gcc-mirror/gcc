@@ -294,6 +294,7 @@ static void emit_return_into_block PARAMS ((basic_block, rtx));
 static void put_addressof_into_stack PARAMS ((rtx, struct hash_table *));
 static boolean purge_addressof_1 PARAMS ((rtx *, rtx, int, int,
 					  struct hash_table *));
+static void purge_single_hard_subreg_set PARAMS ((rtx));
 #ifdef HAVE_epilogue
 static void keep_stack_depressed PARAMS ((rtx));
 #endif
@@ -3391,6 +3392,71 @@ purge_addressof (insns)
      It may be worth tracking whether or not we converted any REGs into
      MEMs to avoid this overhead when it is not needed.  */
   unshare_all_rtl_again (get_insns ());
+}
+
+/* Convert a SET of a hard subreg to a set of the appropriet hard
+   register.  A subroutine of purge_hard_subreg_sets.  */
+
+static void
+purge_single_hard_subreg_set (pattern)
+     rtx pattern;
+{
+  rtx reg = SET_DEST (pattern);
+  enum machine_mode mode = GET_MODE (SET_DEST (pattern));
+  int word = 0;
+		  
+  while (GET_CODE (reg) == SUBREG)
+    {
+      word += SUBREG_WORD (reg);
+      reg = SUBREG_REG (reg);
+    }
+	      
+  if (REGNO (reg) < FIRST_PSEUDO_REGISTER)
+    {
+      reg = gen_rtx_REG (mode, REGNO (reg) + word);
+      SET_DEST (pattern) = reg;
+    }
+}
+
+/* Eliminate all occurrences of SETs of hard subregs from INSNS.  The
+   only such SETs that we expect to see are those left in because
+   integrate can't handle sets of parts of a return value register.
+
+   We don't use alter_subreg because we only want to eliminate subregs
+   of hard registers.  */
+
+void
+purge_hard_subreg_sets (insn)
+     rtx insn;
+{
+  for (; insn; insn = NEXT_INSN (insn))
+    {
+      if (INSN_P (insn))
+	{
+	  rtx pattern = PATTERN (insn);
+	  switch (GET_CODE (pattern))
+	    {
+	    case SET:
+	      if (GET_CODE (SET_DEST (pattern)) == SUBREG)
+		purge_single_hard_subreg_set (pattern);
+	      break;	      
+	    case PARALLEL:
+	      {
+		int j;
+		for (j = XVECLEN (pattern, 0) - 1; j >= 0; j--)
+		  {
+		    rtx inner_pattern = XVECEXP (pattern, 0, j);
+		    if (GET_CODE (inner_pattern) == SET
+			&& GET_CODE (SET_DEST (inner_pattern)) == SUBREG)
+		      purge_single_hard_subreg_set (inner_pattern);
+		  }
+	      }
+	      break;
+	    default:
+	      break;
+	    }
+	}
+    }
 }
 
 /* Pass through the INSNS of function FNDECL and convert virtual register
