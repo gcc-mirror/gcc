@@ -30,23 +30,10 @@
 #ifndef _CPP_BITS_STL_CONFIG_H
 #include <bits/stl_config.h>
 #endif
-#ifndef _CPP_BITS_STL_RELOPS
-#include <bits/stl_relops.h>
-#endif
 #include <stddef.h>
 #ifndef _CPP_BITS_STL_FUNCTION_H
 #include <bits/stl_function.h>
 #endif
-
-#ifdef __STL_USE_NAMESPACE_FOR_RELOPS
-
-// Names from stl_relops.h
-using __STD_RELOPS::operator!=;
-using __STD_RELOPS::operator>;
-using __STD_RELOPS::operator<=;
-using __STD_RELOPS::operator>=;
-
-#endif /* __STL_USE_NAMESPACE_FOR_RELOPS */
 
 #ifdef __STL_USE_NAMESPACES
 

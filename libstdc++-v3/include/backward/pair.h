@@ -30,9 +30,6 @@
 #ifndef _CPP_BITS_STL_CONFIG_H
 #include <bits/stl_config.h>
 #endif
-#ifndef _CPP_BITS_STL_RELOPS_H
-#include <bits/stl_relops.h>
-#endif
 #ifndef _CPP_BITS_STL_PAIR_H
 #include <bits/stl_pair.h>
 #endif

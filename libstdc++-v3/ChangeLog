@@ -1,3 +1,10 @@
+2001-02-13  Dirk Mueller <dmuell@gmx.net>
+            Phil Edwards  <pme@sources.redhat.com>
+
+	* include/backward/function.h:  Do not use rel_ops for older
+	  headers either.
+	* include/backward/pair.h:  Likewise.
+
 2001-02-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* src/locale.cc: Remove bogus locale::id definitions.
