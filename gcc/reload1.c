@@ -8905,8 +8905,12 @@ reload_cse_move2add (first)
 	  /* ??? We don't know how zero / sign extension is handled, hence
 	     we can't go from a narrower to a wider mode.  */
 	  if (reg_set_luid[regno] > last_label_luid
-	      && (GET_MODE_SIZE (GET_MODE (reg))
-		  <= GET_MODE_SIZE (reg_mode[regno]))
+	      && ((GET_MODE_SIZE (GET_MODE (reg))
+		   == GET_MODE_SIZE (reg_mode[regno]))
+		  || ((GET_MODE_SIZE (GET_MODE (reg))
+		       <= GET_MODE_SIZE (reg_mode[regno]))
+		      && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE (reg)),
+						GET_MODE_BITSIZE (reg_mode[regno]))))
 	      && GET_CODE (reg_offset[regno]) == CONST_INT)
 	    {
 	      /* Try to transform (set (REGX) (CONST_INT A))

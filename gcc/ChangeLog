@@ -1,3 +1,7 @@
+Tue May 23 18:11:42 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (reload_cse_move2add): Honor TRULY_NOOP_TRUNCATION.
+
 2000-05-23  Jonathan Larmour  <jlarmour@redhat.co.uk>
 
 	* config/mips/elf64.h (CTOR_LISTS_DEFINED_EXTERNALLY): Define
