@@ -1284,7 +1284,7 @@ $1
 ]EOF
 if AC_TRY_EVAL(ac_compile); then
   od -c conftest.o |
-    sed ['s/^[0-7]*[ 	]*//
+    sed ['s/^[0-7]*[ 	]*/ /
 	  s/\*/./g
 	  s/ \\n/*/g
 	  s/ [0-9][0-9][0-9]/./g

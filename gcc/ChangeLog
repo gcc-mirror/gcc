@@ -1,3 +1,9 @@
+2001-03-16  Richard Henerson  <rth@redhat.com>
+
+	* aclocal.m4 (gcc_AC_EXAMINE_OBJECT): Substitute leading od
+	output with a space instead of deleting it.
+	* configure: Regenerate.
+
 2001-03-16  Zack Weinberg  <zackw@stanford.edu>
 
 	* aclocal.m4 (gcc_AC_EXAMINE_OBJECT): New utility macro which

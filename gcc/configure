@@ -2016,7 +2016,7 @@ EOF
 fi
 
 # Find some useful tools
-for ac_prog in mawk gawk nawk awk
+for ac_prog in gawk mawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -2643,7 +2643,7 @@ cat > conftest.$ac_ext <<EOF
 EOF
 if { (eval echo configure:2645: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   od -c conftest.o |
-    sed 's/^[0-7]*[ 	]*//
+    sed 's/^[0-7]*[ 	]*/ /
 	  s/\*/./g
 	  s/ \\n/*/g
 	  s/ [0-9][0-9][0-9]/./g
@@ -2717,7 +2717,7 @@ struct possibility table [] =
 EOF
 if { (eval echo configure:2719: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   od -c conftest.o |
-    sed 's/^[0-7]*[ 	]*//
+    sed 's/^[0-7]*[ 	]*/ /
 	  s/\*/./g
 	  s/ \\n/*/g
 	  s/ [0-9][0-9][0-9]/./g
