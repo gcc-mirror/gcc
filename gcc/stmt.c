@@ -3602,12 +3602,18 @@ check_for_full_enumeration_handling (type)
 	  ;
 
 	if (!chain)
-	  warning ("case value `%d' not in enumerated type `%s'",
-		   TREE_INT_CST_LOW (n->low),
-		   IDENTIFIER_POINTER ((TREE_CODE (TYPE_NAME (type))
-					== IDENTIFIER_NODE)
-				       ? TYPE_NAME (type)
-				       : DECL_NAME (TYPE_NAME (type))));
+	  {
+	    if (TYPE_NAME (type) == 0)
+	      warning ("case value `%d' not in enumerated type",
+		       TREE_INT_CST_LOW (n->low));
+	    else
+	      warning ("case value `%d' not in enumerated type `%s'",
+		       TREE_INT_CST_LOW (n->low),
+		       IDENTIFIER_POINTER ((TREE_CODE (TYPE_NAME (type))
+					    == IDENTIFIER_NODE)
+					   ? TYPE_NAME (type)
+					   : DECL_NAME (TYPE_NAME (type))));
+	  }
 	if (!tree_int_cst_equal (n->low, n->high))
 	  {
 	    for (chain = TYPE_VALUES (type);
@@ -3616,12 +3622,18 @@ check_for_full_enumeration_handling (type)
 	      ;
 
 	    if (!chain)
-	      warning ("case value `%d' not in enumerated type `%s'",
-		       TREE_INT_CST_LOW (n->high),
-		       IDENTIFIER_POINTER ((TREE_CODE (TYPE_NAME (type))
-					    == IDENTIFIER_NODE)
-					   ? TYPE_NAME (type)
-					   : DECL_NAME (TYPE_NAME (type))));
+	      {
+		if (TYPE_NAME (type) == 0)
+		  warning ("case value `%d' not in enumerated type",
+			   TREE_INT_CST_LOW (n->high));
+		else
+		  warning ("case value `%d' not in enumerated type `%s'",
+			   TREE_INT_CST_LOW (n->high),
+			   IDENTIFIER_POINTER ((TREE_CODE (TYPE_NAME (type))
+						== IDENTIFIER_NODE)
+					       ? TYPE_NAME (type)
+					       : DECL_NAME (TYPE_NAME (type))));
+	      }
 	  }
       }
 
