@@ -1636,20 +1636,14 @@ make_aggr_type (code)
 void
 compiler_error VPARAMS ((const char *msg, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *msg;
-#endif
   char buf[1024];
-  va_list ap;
 
-  VA_START (ap, msg);
-
-#ifndef ANSI_PROTOTYPES
-  msg = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msg);
+  VA_FIXEDARG (ap, const char *, msg);
 
   vsprintf (buf, msg, ap);
-  va_end (ap);
+  VA_CLOSE (ap);
+
   error_with_file_and_line (input_filename, lineno, "%s (compiler error)", buf);
 }
 

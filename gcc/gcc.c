@@ -6204,20 +6204,12 @@ fancy_abort ()
 void
 fatal VPARAMS ((const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-#endif
-  va_list ap;
-
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   fprintf (stderr, "%s: ", programname);
   vfprintf (stderr, _(msgid), ap);
-  va_end (ap);
+  VA_CLOSE (ap);
   fprintf (stderr, "\n");
   delete_temp_files ();
   exit (1);
@@ -6226,20 +6218,12 @@ fatal VPARAMS ((const char *msgid, ...))
 void
 error VPARAMS ((const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-#endif
-  va_list ap;
-
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   fprintf (stderr, "%s: ", programname);
   vfprintf (stderr, _(msgid), ap);
-  va_end (ap);
+  VA_CLOSE (ap);
 
   fprintf (stderr, "\n");
 }
@@ -6247,19 +6231,11 @@ error VPARAMS ((const char *msgid, ...))
 static void
 notice VPARAMS ((const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *msgid;
-#endif
-  va_list ap;
-
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   vfprintf (stderr, _(msgid), ap);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 static void

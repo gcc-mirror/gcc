@@ -5561,16 +5561,8 @@ free_thead (ptr)
 void
 fatal VPARAMS ((const char *format, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, format);
+  VA_FIXEDARG (ap, const char *, format);
 
   if (line_number > 0)
     fprintf (stderr, "%s, %s:%ld ", progname, input_name, line_number);
@@ -5578,7 +5570,7 @@ fatal VPARAMS ((const char *format, ...))
     fprintf (stderr, "%s:", progname);
 
   vfprintf (stderr, format, ap);
-  va_end (ap);
+  VA_CLOSE (ap);
   fprintf (stderr, "\n");
   if (line_number > 0)
     fprintf (stderr, "line:\t%s\n", cur_line_start);
@@ -5591,16 +5583,8 @@ fatal VPARAMS ((const char *format, ...))
 void
 error VPARAMS ((const char *format, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, char *);
-#endif
+  VA_OPEN (ap, format);
+  VA_FIXEDARG (ap, char *, format);
 
   if (line_number > 0)
     fprintf (stderr, "%s, %s:%ld ", progname, input_name, line_number);
@@ -5613,7 +5597,7 @@ error VPARAMS ((const char *format, ...))
     fprintf (stderr, "line:\t%s\n", cur_line_start);
 
   had_errors++;
-  va_end (ap);
+  VA_CLOSE (ap);
 
   saber_stop ();
 }

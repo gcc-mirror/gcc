@@ -39,20 +39,12 @@ int have_error = 0;
 void
 warning VPARAMS ((const char *format, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, format);
+  VA_FIXEDARG (ap, const char *, format);
 
   fprintf (stderr, "%s: warning: ", progname);
   vfprintf (stderr, format, ap);
-  va_end (ap);
+  VA_CLOSE (ap);
   fputc('\n', stderr);
 }
 
@@ -62,20 +54,12 @@ warning VPARAMS ((const char *format, ...))
 void
 error VPARAMS ((const char *format, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, format);
+  VA_FIXEDARG (ap, const char *, format);
 
   fprintf (stderr, "%s: ", progname);
   vfprintf (stderr, format, ap);
-  va_end (ap);
+  VA_CLOSE (ap);
   fputc('\n', stderr);
 
   have_error = 1;
@@ -87,20 +71,12 @@ error VPARAMS ((const char *format, ...))
 void
 fatal VPARAMS ((const char *format, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, format);
+  VA_FIXEDARG (ap, const char *, format);
 
   fprintf (stderr, "%s: ", progname);
   vfprintf (stderr, format, ap);
-  va_end (ap);
+  VA_CLOSE (ap);
   fputc('\n', stderr);
   exit (FATAL_EXIT_CODE);
 }
@@ -110,20 +86,12 @@ fatal VPARAMS ((const char *format, ...))
 void
 internal_error VPARAMS ((const char *format, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *format;
-#endif
-  va_list ap;
-
-  VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-  format = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, format);
+  VA_FIXEDARG (ap, const char *, format);
 
   fprintf (stderr, "%s: Internal error: ", progname);
   vfprintf (stderr, format, ap);
-  va_end (ap);
+  VA_CLOSE (ap);
   fputc ('\n', stderr);
   exit (FATAL_EXIT_CODE);
 }

@@ -84,20 +84,10 @@ void
 dw2_asm_output_data VPARAMS ((int size, unsigned HOST_WIDE_INT value,
 			      const char *comment, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  int size;
-  unsigned HOST_WIDE_INT value;
-  const char *comment;
-#endif
-  va_list ap;
-
-  VA_START (ap, comment);
-
-#ifndef ANSI_PROTOTYPES
-  size = va_arg (ap, int);
-  value = va_arg (ap, unsigned HOST_WIDE_INT);
-  comment = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, comment);
+  VA_FIXEDARG (ap, int, size);
+  VA_FIXEDARG (ap, unsigned HOST_WIDE_INT, value);
+  VA_FIXEDARG (ap, const char *, comment);
 
   if (size * 8 < HOST_BITS_PER_WIDE_INT)
     value &= ~(~(unsigned HOST_WIDE_INT)0 << (size * 8));
@@ -116,7 +106,7 @@ dw2_asm_output_data VPARAMS ((int size, unsigned HOST_WIDE_INT value,
     }
   fputc ('\n', asm_out_file);
 
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* Output the difference between two symbols in a given size.  */
@@ -129,21 +119,11 @@ void
 dw2_asm_output_delta VPARAMS ((int size, const char *lab1, const char *lab2,
 			       const char *comment, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  int size;
-  const char *lab1, *lab2;
-  const char *comment;
-#endif
-  va_list ap;
-
-  VA_START (ap, comment);
-
-#ifndef ANSI_PROTOTYPES
-  size = va_arg (ap, int);
-  lab1 = va_arg (ap, const char *);
-  lab2 = va_arg (ap, const char *);
-  comment = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, comment);
+  VA_FIXEDARG (ap, int, size);
+  VA_FIXEDARG (ap, const char *, lab1);
+  VA_FIXEDARG (ap, const char *, lab2);
+  VA_FIXEDARG (ap, const char *, comment);
 
 #ifdef UNALIGNED_INT_ASM_OP
   fputs (unaligned_integer_asm_op (size), asm_out_file);
@@ -163,7 +143,7 @@ dw2_asm_output_delta VPARAMS ((int size, const char *lab1, const char *lab2,
     }
   fputc ('\n', asm_out_file);
 
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* Output a section-relative reference to a label.  In general this
@@ -176,20 +156,10 @@ void
 dw2_asm_output_offset VPARAMS ((int size, const char *label,
 			       const char *comment, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  int size;
-  const char *label;
-  const char *comment;
-#endif
-  va_list ap;
-
-  VA_START (ap, comment);
-
-#ifndef ANSI_PROTOTYPES
-  size = va_arg (ap, int);
-  label = va_arg (ap, const char *);
-  comment = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, comment);
+  VA_FIXEDARG (ap, int, size);
+  VA_FIXEDARG (ap, const char *, label);
+  VA_FIXEDARG (ap, const char *, comment);
 
 #ifdef ASM_OUTPUT_DWARF_OFFSET
   ASM_OUTPUT_DWARF_OFFSET (asm_out_file, size, label);
@@ -209,7 +179,7 @@ dw2_asm_output_offset VPARAMS ((int size, const char *label,
     }
   fputc ('\n', asm_out_file);
 
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* Output a self-relative reference to a label, possibly in a
@@ -219,20 +189,10 @@ void
 dw2_asm_output_pcrel VPARAMS ((int size, const char *label,
 			       const char *comment, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  int size;
-  const char *label;
-  const char *comment;
-#endif
-  va_list ap;
-
-  VA_START (ap, comment);
-
-#ifndef ANSI_PROTOTYPES
-  size = va_arg (ap, int);
-  label = va_arg (ap, const char *);
-  comment = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, comment);
+  VA_FIXEDARG (ap, int, size);
+  VA_FIXEDARG (ap, const char *, label);
+  VA_FIXEDARG (ap, const char *, comment);
 
 #ifdef ASM_OUTPUT_DWARF_PCREL
   ASM_OUTPUT_DWARF_PCREL (asm_out_file, size, label);
@@ -254,7 +214,7 @@ dw2_asm_output_pcrel VPARAMS ((int size, const char *label,
     }
   fputc ('\n', asm_out_file);
 
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* Output an absolute reference to a label.  */
@@ -263,20 +223,10 @@ void
 dw2_asm_output_addr VPARAMS ((int size, const char *label,
 			      const char *comment, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  int size;
-  const char *label;
-  const char *comment;
-#endif
-  va_list ap;
-
-  VA_START (ap, comment);
-
-#ifndef ANSI_PROTOTYPES
-  size = va_arg (ap, int);
-  label = va_arg (ap, const char *);
-  comment = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, comment);
+  VA_FIXEDARG (ap, int, size);
+  VA_FIXEDARG (ap, const char *, label);
+  VA_FIXEDARG (ap, const char *, comment);
 
 #ifdef UNALIGNED_INT_ASM_OP
   fputs (unaligned_integer_asm_op (size), asm_out_file);
@@ -292,7 +242,7 @@ dw2_asm_output_addr VPARAMS ((int size, const char *label,
     }
   fputc ('\n', asm_out_file);
 
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* Similar, but use an RTX expression instead of a text label.  */
@@ -301,20 +251,10 @@ void
 dw2_asm_output_addr_rtx VPARAMS ((int size, rtx addr,
 				  const char *comment, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  int size;
-  rtx addr;
-  const char *comment;
-#endif
-  va_list ap;
-
-  VA_START (ap, comment);
-
-#ifndef ANSI_PROTOTYPES
-  size = va_arg (ap, int);
-  addr = va_arg (ap, rtx);
-  comment = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, comment);
+  VA_FIXEDARG (ap, int, size);
+  VA_FIXEDARG (ap, rtx, addr);
+  VA_FIXEDARG (ap, const char *, comment);
 
 #ifdef UNALIGNED_INT_ASM_OP
   fputs (unaligned_integer_asm_op (size), asm_out_file);
@@ -330,28 +270,21 @@ dw2_asm_output_addr_rtx VPARAMS ((int size, rtx addr,
     }
   fputc ('\n', asm_out_file);
 
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 void
 dw2_asm_output_nstring VPARAMS ((const char *str, size_t orig_len,
 				 const char *comment, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *str;
-  size_t orig_len;
-  const char *comment;
-#endif
-  va_list ap;
-  size_t i, len = orig_len;
+  size_t i, len;
 
-  VA_START (ap, comment);
+  VA_OPEN (ap, comment);
+  VA_FIXEDARG (ap, const char *, str);
+  VA_FIXEDARG (ap, size_t, len);
+  VA_FIXEDARG (ap, const char *, comment);
 
-#ifndef ANSI_PROTOTYPES
-  str = va_arg (ap, const char *);
-  len = va_arg (ap, size_t);
-  comment = va_arg (ap, const char *);
-#endif
+  len = orig_len;
 
   if (len == (size_t) -1)
     len = strlen (str);
@@ -384,7 +317,7 @@ dw2_asm_output_nstring VPARAMS ((const char *str, size_t orig_len,
 	fprintf (asm_out_file, "%s0\n", ASM_BYTE_OP);
     }
 
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 
@@ -617,18 +550,9 @@ void
 dw2_asm_output_data_uleb128 VPARAMS ((unsigned HOST_WIDE_INT value,
 				      const char *comment, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  unsigned HOST_WIDE_INT value;
-  const char *comment;
-#endif
-  va_list ap;
-
-  VA_START (ap, comment);
-
-#ifndef ANSI_PROTOTYPES
-  value = va_arg (ap, unsigned HOST_WIDE_INT);
-  comment = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, comment);
+  VA_FIXEDARG (ap, unsigned HOST_WIDE_INT, value);
+  VA_FIXEDARG (ap, const char *, comment);
 
 #ifdef HAVE_AS_LEB128
   fputs ("\t.uleb128 ", asm_out_file);
@@ -672,7 +596,7 @@ dw2_asm_output_data_uleb128 VPARAMS ((unsigned HOST_WIDE_INT value,
 #endif
   fputc ('\n', asm_out_file);
 
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* Output an signed LEB128 quantity.  */
@@ -681,18 +605,9 @@ void
 dw2_asm_output_data_sleb128 VPARAMS ((HOST_WIDE_INT value,
 				      const char *comment, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  HOST_WIDE_INT value;
-  const char *comment;
-#endif
-  va_list ap;
-
-  VA_START (ap, comment);
-
-#ifndef ANSI_PROTOTYPES
-  value = va_arg (ap, HOST_WIDE_INT);
-  comment = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, comment);
+  VA_FIXEDARG (ap, HOST_WIDE_INT, value);
+  VA_FIXEDARG (ap, const char *, comment);
 
 #ifdef HAVE_AS_LEB128
   fputs ("\t.sleb128 ", asm_out_file);
@@ -739,7 +654,7 @@ dw2_asm_output_data_sleb128 VPARAMS ((HOST_WIDE_INT value,
 #endif
   fputc ('\n', asm_out_file);
 
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 void
@@ -747,19 +662,10 @@ dw2_asm_output_delta_uleb128 VPARAMS ((const char *lab1 ATTRIBUTE_UNUSED,
 				       const char *lab2 ATTRIBUTE_UNUSED,
 				       const char *comment, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *lab1, *lab2;
-  const char *comment;
-#endif
-  va_list ap;
-
-  VA_START (ap, comment);
-
-#ifndef ANSI_PROTOTYPES
-  lab1 = va_arg (ap, const char *);
-  lab2 = va_arg (ap, const char *);
-  comment = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, comment);
+  VA_FIXEDARG (ap, const char *, lab1);
+  VA_FIXEDARG (ap, const char *, lab2);
+  VA_FIXEDARG (ap, const char *, comment);
 
 #ifdef HAVE_AS_LEB128
   fputs ("\t.uleb128 ", asm_out_file);
@@ -777,7 +683,7 @@ dw2_asm_output_delta_uleb128 VPARAMS ((const char *lab1 ATTRIBUTE_UNUSED,
     }
   fputc ('\n', asm_out_file);
 
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 void
@@ -785,19 +691,10 @@ dw2_asm_output_delta_sleb128 VPARAMS ((const char *lab1 ATTRIBUTE_UNUSED,
 				       const char *lab2 ATTRIBUTE_UNUSED,
 				       const char *comment, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  const char *lab1, *lab2;
-  const char *comment;
-#endif
-  va_list ap;
-
-  VA_START (ap, comment);
-
-#ifndef ANSI_PROTOTYPES
-  lab1 = va_arg (ap, const char *);
-  lab2 = va_arg (ap, const char *);
-  comment = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, comment);
+  VA_FIXEDARG (ap, const char *, lab1);
+  VA_FIXEDARG (ap, const char *, lab2);
+  VA_FIXEDARG (ap, const char *, comment);
 
 #ifdef HAVE_AS_LEB128
   fputs ("\t.sleb128 ", asm_out_file);
@@ -815,7 +712,7 @@ dw2_asm_output_delta_sleb128 VPARAMS ((const char *lab1 ATTRIBUTE_UNUSED,
     }
   fputc ('\n', asm_out_file);
 
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 static rtx dw2_force_const_mem PARAMS ((rtx));
@@ -912,21 +809,12 @@ dw2_asm_output_encoded_addr_rtx VPARAMS ((int encoding,
 					  rtx addr,
 					  const char *comment, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  int encoding;
-  rtx addr;
-  const char *comment;
-#endif
-  va_list ap;
   int size;
 
-  VA_START (ap, comment);
-
-#ifndef ANSI_PROTOTYPES
-  encoding = va_arg (ap, int);
-  addr = va_arg (ap, rtx);
-  comment = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, comment);
+  VA_FIXEDARG (ap, int, encoding);
+  VA_FIXEDARG (ap, rtx, addr);
+  VA_FIXEDARG (ap, const char *, comment);
 
   size = size_of_encoded_value (encoding);
 
@@ -1010,5 +898,5 @@ dw2_asm_output_encoded_addr_rtx VPARAMS ((int encoding,
     }
   fputc ('\n', asm_out_file);
 
-  va_end (ap);
+  VA_CLOSE (ap);
 }

@@ -1,3 +1,34 @@
+2001-08-27  Andreas Jaeger  <aj@suse.de>
+
+	* emit-rtl.c: Use VA_OPEN/VA_CLOSE/VA_FIXEDARG throughout.
+	* errors.c: Likewise.
+	* final.c: Likewise.
+	* dwarf2asm.c: Likewise.
+	* doprint.c (checkit): Likewise.
+	* diagnostic.c: Likewise.
+	* collect2.c: Likewise.
+	* calls.c: Likewise.
+	* c-semantics.c (build_stmt): Likewise.
+	* c-format.c (status_warning): Likewise.
+	* c-errors.c (pedwarn_c99): Likewise.
+	* builtins.c (validate_arglist): Likewise.
+	* config/pj/pj.c (pj_printf): Likewise.
+	* fix-header.c: Likewise.
+	* gcc.c: Likewise.
+	* gcov.c (fnotice): Likewise.
+	* gensupport.c (message_with_line): Likewise.
+	* mips-tfile.c: Likewise.
+	* protoize.c (notice): Likewise.
+	* read-rtl.c (fatal_with_file_and_line): Likewise.
+	* rtl-error.c: Likewise.
+	* tradcpp.c: Likewise.
+	* tree.c: Likewise.
+	* cp/tree.c (build_min_nt): Likewise.
+	(build_min): Likewise.
+	* cp/lex.c: Likewise.
+	* cp/errfn.c: Likewise.
+	* cp/rtti.c (create_pseudo_type_info): Likewise.
+
 Sun Aug 26 20:25:44 2001  Denis Chertykov  <denisc@overta.ru>
 
 	* df.c (df_uses_record): Return after recording all uses

@@ -1154,11 +1154,6 @@ create_real_tinfo_var (target_type, name, type, init, non_public)
 static tree
 create_pseudo_type_info VPARAMS((const char *real_name, int ident, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  char const *real_name;
-  int ident;
-#endif
-  va_list ap;
   tree real_type, pseudo_type;
   char *pseudo_name;
   tree vtable_decl;
@@ -1166,12 +1161,10 @@ create_pseudo_type_info VPARAMS((const char *real_name, int ident, ...))
   tree fields[10];
   tree field_decl;
   tree result;
-  
-  VA_START (ap, ident);
-#ifndef ANSI_PROTOTYPES
-  real_name = va_arg (ap, char const *);
-  ident = va_arg (ap, int);
-#endif
+
+  VA_OPEN (ap, ident);
+  VA_FIXEDARG (ap, const char *, real_name);
+  VA_FIXEDARG (ap, int, ident);
 
   /* Generate the pseudo type name. */
   pseudo_name = (char *)alloca (strlen (real_name) + 30);
@@ -1205,8 +1198,8 @@ create_pseudo_type_info VPARAMS((const char *real_name, int ident, ...))
   pseudo_type = make_aggr_type (RECORD_TYPE);
   finish_builtin_type (pseudo_type, pseudo_name, fields, ix, ptr_type_node);
   TYPE_HAS_CONSTRUCTOR (pseudo_type) = 1;
-  va_end (ap);
-  
+  VA_CLOSE (ap);
+
   result = tree_cons (NULL_TREE, NULL_TREE, NULL_TREE);
   TINFO_VTABLE_DECL (result) = vtable_decl;
   TINFO_PSEUDO_TYPE (result) = pseudo_type;

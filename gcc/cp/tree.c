@@ -1724,19 +1724,12 @@ break_out_target_exprs (t)
 tree
 build_min_nt VPARAMS ((enum tree_code code, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  enum tree_code code;
-#endif
-  va_list p;
   register tree t;
   register int length;
   register int i;
 
-  VA_START (p, code);
-
-#ifndef ANSI_PROTOTYPES
-  code = va_arg (p, enum tree_code);
-#endif
+  VA_OPEN (p, code);
+  VA_FIXEDARG (p, enum tree_code, code);
 
   t = make_node (code);
   length = TREE_CODE_LENGTH (code);
@@ -1748,7 +1741,7 @@ build_min_nt VPARAMS ((enum tree_code code, ...))
       TREE_OPERAND (t, i) = x;
     }
 
-  va_end (p);
+  VA_CLOSE (p);
   return t;
 }
 
@@ -1758,21 +1751,13 @@ build_min_nt VPARAMS ((enum tree_code code, ...))
 tree
 build_min VPARAMS ((enum tree_code code, tree tt, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  enum tree_code code;
-  tree tt;
-#endif
-  va_list p;
   register tree t;
   register int length;
   register int i;
 
-  VA_START (p, tt);
-
-#ifndef ANSI_PROTOTYPES
-  code = va_arg (p, enum tree_code);
-  tt = va_arg (p, tree);
-#endif
+  VA_OPEN (p, tt);
+  VA_FIXEDARG (p, enum tree_code, code);
+  VA_FIXEDARG (p, tree, tt);
 
   t = make_node (code);
   length = TREE_CODE_LENGTH (code);
@@ -1785,7 +1770,7 @@ build_min VPARAMS ((enum tree_code code, tree tt, ...))
       TREE_OPERAND (t, i) = x;
     }
 
-  va_end (p);
+  VA_CLOSE (p);
   return t;
 }
 

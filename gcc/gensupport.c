@@ -79,24 +79,15 @@ static void process_define_cond_exec PARAMS ((void));
 void
 message_with_line VPARAMS ((int lineno, const char *msg, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  int lineno;
-  const char *msg;
-#endif
-  va_list ap;
-
-  VA_START (ap, msg);
-
-#ifndef ANSI_PROTOTYPES
-  lineno = va_arg (ap, int);
-  msg = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msg);
+  VA_FIXEDARG (ap, int, lineno);
+  VA_FIXEDARG (ap, const char *, msg);
 
   fprintf (stderr, "%s:%d: ", read_rtx_filename, lineno);
   vfprintf (stderr, msg, ap);
   fputc ('\n', stderr);
 
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* Queue PATTERN on LIST_TAIL.  */

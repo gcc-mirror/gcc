@@ -53,21 +53,13 @@ const char *read_rtx_filename = "<unknown>";
 static void
 fatal_with_file_and_line VPARAMS ((FILE *infile, const char *msg, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  FILE *infile;
-  const char *msg;
-#endif
-  va_list ap;
   char context[64];
   size_t i;
   int c;
 
-  VA_START (ap, msg);
-
-#ifndef ANSI_PROTOTYPES
-  infile = va_arg (ap, FILE *);
-  msg = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msg);
+  VA_FIXEDARG (ap, FILE *, infile);
+  VA_FIXEDARG (ap, const char *, msg);
 
   fprintf (stderr, "%s:%d: ", read_rtx_filename, read_rtx_lineno);
   vfprintf (stderr, msg, ap);
@@ -88,7 +80,7 @@ fatal_with_file_and_line VPARAMS ((FILE *infile, const char *msg, ...))
   fprintf (stderr, "%s:%d: following context is `%s'\n",
 	   read_rtx_filename, read_rtx_lineno, context);
 
-  va_end (ap);
+  VA_CLOSE (ap);
   exit (1);
 }
 

@@ -424,21 +424,13 @@ gen_lowpart_SUBREG (mode, reg)
 rtx
 gen_rtx VPARAMS ((enum rtx_code code, enum machine_mode mode, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  enum rtx_code code;
-  enum machine_mode mode;
-#endif
-  va_list p;
   register int i;		/* Array indices...			*/
   register const char *fmt;	/* Current rtx's format...		*/
   register rtx rt_val;		/* RTX to return to caller...		*/
 
-  VA_START (p, mode);
-
-#ifndef ANSI_PROTOTYPES
-  code = va_arg (p, enum rtx_code);
-  mode = va_arg (p, enum machine_mode);
-#endif
+  VA_OPEN (p, mode);
+  VA_FIXEDARG (p, enum rtx_code, code);
+  VA_FIXEDARG (p, enum machine_mode, mode);
 
   switch (code)
     {
@@ -511,7 +503,7 @@ gen_rtx VPARAMS ((enum rtx_code code, enum machine_mode mode, ...))
       break;
     }
 
-  va_end (p);
+  VA_CLOSE (p);
   return rt_val;
 }
 
@@ -525,18 +517,11 @@ gen_rtx VPARAMS ((enum rtx_code code, enum machine_mode mode, ...))
 rtvec
 gen_rtvec VPARAMS ((int n, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  int n;
-#endif
   int i;
-  va_list p;
   rtx *vector;
 
-  VA_START (p, n);
-
-#ifndef ANSI_PROTOTYPES
-  n = va_arg (p, int);
-#endif
+  VA_OPEN (p, n);
+  VA_FIXEDARG (p, int, n);
 
   if (n == 0)
     return NULL_RTVEC;		/* Don't allocate an empty rtvec...	*/
@@ -545,7 +530,7 @@ gen_rtvec VPARAMS ((int n, ...))
 
   for (i = 0; i < n; i++)
     vector[i] = va_arg (p, rtx);
-  va_end (p);
+  VA_CLOSE (p);
 
   return gen_rtvec_v (n, vector);
 }

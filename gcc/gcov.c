@@ -273,21 +273,12 @@ static void fnotice PARAMS ((FILE *, const char *, ...)) ATTRIBUTE_PRINTF_2;
 static void
 fnotice VPARAMS ((FILE *file, const char *msgid, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  FILE *file;
-  const char *msgid;
-#endif
-  va_list ap;
-
-  VA_START (ap, msgid);
-
-#ifndef ANSI_PROTOTYPES
-  file = va_arg (ap, FILE *);
-  msgid = va_arg (ap, const char *);
-#endif
+  VA_OPEN (ap, msgid);
+  VA_FIXEDARG (ap, FILE *, file);
+  VA_FIXEDARG (ap, const char *, msgid);
 
   vfprintf (file, _(msgid), ap);
-  va_end (ap);
+  VA_CLOSE (ap);
 }
 
 /* More 'friendly' abort that prints the line and file.
