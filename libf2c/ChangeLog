@@ -1,3 +1,9 @@
+2004-01-31  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/12884
+	* libI77/rsne.c: Enable reading a '/' when reading
+	a '$' delimited namelist.
+
 2004-01-14 Kelley Cook  <kcook@gcc.gnu.org>
 
 	* libF77/configure.in: Update to AC_PREREQ(2.13)

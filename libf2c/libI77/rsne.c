@@ -278,6 +278,7 @@ x_rsne (cilist * a)
   char *vaddr;
   long iva, ivae;
   dimen dimens[MAXDIM], substr;
+  int dollarsign_delimited;
 
   if (!Alpha['a'])
     nl_init ();
@@ -285,14 +286,16 @@ x_rsne (cilist * a)
   f__formatted = 1;
   got1 = 0;
 top:
+  dollarsign_delimited = 0;
   for (;;)
     switch (GETC (ch))
       {
       case EOF:
       eof:
 	err (a->ciend, (EOF), where0);
-      case '&':
       case '$':
+        dollarsign_delimited = 1;
+      case '&':
 	goto have_amp;
 #ifndef No_Namelist_Questions
       case '?':
@@ -329,6 +332,8 @@ have_amp:
 	  case EOF:
 	    err (a->ciend, EOF, where0);
 	  case '/':
+            if (dollarsign_delimited)
+               continue;
 	  case '&':
 	  case '$':
 	    if (f__external)
