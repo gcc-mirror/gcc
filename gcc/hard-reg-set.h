@@ -18,6 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#ifndef _HARD_REG_SET_H
+#define _HARD_REG_SET_H 1
 
 /* Define the type of a set of hard registers.  */
 
@@ -472,3 +474,5 @@ extern int n_non_fixed_regs;
 /* Vector indexed by hardware reg giving its name.  */
 
 extern const char * reg_names[FIRST_PSEUDO_REGISTER];
+
+#endif /* _HARD_REG_SET_H */

@@ -365,6 +365,9 @@ struct loop
   /* Place in the loop where control enters.  */
   rtx scan_start;
 
+  /* The position where to sink insns out of the loop.  */
+  rtx sink;
+
   /* List of all LABEL_REFs which refer to code labels outside the
      loop.  Used by routines that need to know all loop exits, such as
      final_biv_value and final_giv_value.
