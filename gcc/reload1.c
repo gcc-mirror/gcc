@@ -3515,7 +3515,11 @@ eliminate_regs_in_insn (insn, replace)
 	 and one is inside RTL that has been copied while the other is not.  */
       new_body = old_body;
       if (! replace)
-	new_body = copy_insn (old_body);
+	{
+	  new_body = copy_insn (old_body);
+	  if (REG_NOTES (insn))
+	    REG_NOTES (insn) = copy_insn_1 (REG_NOTES (insn));
+	}
       PATTERN (insn) = new_body;
 
       /* If we had a move insn but now we don't, rerecognize it.  This will
