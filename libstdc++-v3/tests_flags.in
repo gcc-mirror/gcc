@@ -160,7 +160,7 @@ case ${query} in
     esac
     ;;
     --installed-library)
-	LIBS="${LIB_PATH}/libstdc++.la -no-install -rpath ${GCC_LIB_PATH}"
+	LIBS="${LIB_PATH}/libstdc++.la -no-install -rpath ${LIB_PATH}"
 	;;
 esac
 
