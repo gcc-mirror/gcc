@@ -30,6 +30,7 @@
 #include "hard-reg-set.h"
 #include "basic-block.h"
 #include "expr.h"
+#include "optabs.h"
 #include "real.h"
 #include "output.h"
 #include "toplev.h"

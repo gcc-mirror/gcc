@@ -1,3 +1,8 @@
+2001-08-13  Zack Weinberg  <zackw@panix.com>
+
+	* Make-lang.in (cp/except.o): Add libfuncs.h to dependencies.
+	* except.c: Include libfuncs.h.
+
 2001-08-11  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* decl.c (grokdeclarator): Clarify diagnostic message.

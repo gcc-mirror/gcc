@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "reload.h"
 #include "function.h"
 #include "expr.h"
+#include "optabs.h"
 #include "toplev.h"
 #include "tm_p.h"
 

@@ -223,6 +223,7 @@ output_prologue ()
   printf ("#include \"ggc.h\"\n");
   printf ("#include \"rtl.h\"\n");
   printf ("#include \"expr.h\"\n");
+  printf ("#include \"insn-codes.h\"\n");
   printf ("#include \"tm_p.h\"\n");
   printf ("#include \"function.h\"\n");
   printf ("#include \"regs.h\"\n");

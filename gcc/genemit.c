@@ -809,6 +809,7 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"tm_p.h\"\n");
   printf ("#include \"function.h\"\n");
   printf ("#include \"expr.h\"\n");
+  printf ("#include \"optabs.h\"\n");
   printf ("#include \"real.h\"\n");
   printf ("#include \"flags.h\"\n");
   printf ("#include \"output.h\"\n");
