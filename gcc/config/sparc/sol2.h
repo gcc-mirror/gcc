@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for SPARC running Solaris 2
-   Copyright 1992, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright 1992, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@netcom.com).
    Additional changes by David V. Henkel-Wallace (gumby@cygnus.com).
 
@@ -149,8 +149,8 @@ Boston, MA 02111-1307, USA.  */
   "%{h*} %{v:-V} \
    %{b} %{Wl,*:%*} \
    %{static:-dn -Bstatic} \
-   %{shared:-G -dy %{!mimpure-text:-z text} %{!h*:%{o*:-h %*}}} \
-   %{symbolic:-Bsymbolic -G -dy -z text %{!h*:%{o*:-h %*}}} \
+   %{shared:-G -dy %{!mimpure-text:-z text}} \
+   %{symbolic:-Bsymbolic -G -dy -z text} \
    %{G:-G} \
    %{YP,*} \
    %{R*} \
