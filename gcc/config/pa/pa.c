@@ -6100,7 +6100,7 @@ output_millicode_call (insn, call_dest)
 	  xoperands[0] = call_dest;
 	  output_asm_insn ("ldil L%%%0,%3", xoperands);
 	  if (TARGET_PA_20)
-	    output_asm_insn ("be,l R%%%0(%%sr4,%3),%sr0,%r31", xoperands);
+	    output_asm_insn ("be,l R%%%0(%%sr4,%3),%%sr0,%%r31", xoperands);
 	  else
 	    output_asm_insn ("ble R%%%0(%%sr4,%3)", xoperands);
 	  output_asm_insn ("nop", xoperands);
@@ -6359,7 +6359,7 @@ output_call (insn, call_dest, sibcall)
 		 add in the low part in the branch instruction.  */
 	      output_asm_insn ("ldil L%%$$dyncall,%%r2", xoperands);
 	      if (TARGET_PA_20)
-		output_asm_insn ("be,l R%%$$dyncall(%%sr4,%%r2),%sr0,%r31",
+		output_asm_insn ("be,l R%%$$dyncall(%%sr4,%%r2),%%sr0,%%r31",
 				 xoperands);
 	      else
 		output_asm_insn ("ble R%%$$dyncall(%%sr4,%%r2)", xoperands);
