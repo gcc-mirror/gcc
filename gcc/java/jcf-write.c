@@ -1086,6 +1086,7 @@ emit_if (target, opcode, inv_opcode, state)
      int opcode, inv_opcode;
      struct jcf_partial *state;
 {
+  RESERVE(3);
   OP1 (opcode);
   /* value is 1 byte from reloc back to start of instruction.  */
   emit_reloc (RELOCATION_VALUE_1, - inv_opcode, target, state);
@@ -1096,6 +1097,7 @@ emit_goto (target, state)
      struct jcf_block *target;
      struct jcf_partial *state;
 {
+  RESERVE(3);
   OP1 (OPCODE_goto);
   /* Value is 1 byte from reloc back to start of instruction.  */
   emit_reloc (RELOCATION_VALUE_1, OPCODE_goto_w, target, state);
@@ -1106,6 +1108,7 @@ emit_jsr (target, state)
      struct jcf_block *target;
      struct jcf_partial *state;
 {
+  RESERVE(3);
   OP1 (OPCODE_jsr);
   /* Value is 1 byte from reloc back to start of instruction.  */
   emit_reloc (RELOCATION_VALUE_1, OPCODE_jsr_w, target, state);

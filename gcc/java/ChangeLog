@@ -1,3 +1,9 @@
+2000-01-27  Andrew Haley  <aph@cygnus.com>
+
+        * jcf-write.c (emit_goto): RESERVE 3 bytes for insn.
+        (emit_if): Ditto.
+        (emit_jsr): Ditto.
+
 2000-01-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* parse.h (OBSOLETE_MODIFIER_WARNING): Don't use ANSI string
