@@ -1,4 +1,8 @@
-Mon Apr 26 02:24:47 1999 "Loren J. Rittle" <rittle@supra.rsch.comm.mot.com>  
+1999-05-07  Ulrich Drepper  <drepper@cygnus.com>
+
+	* stlinst.cc: Make it possible to compile with __USE_MALLOC.
+
+Mon Apr 26 02:24:47 1999 "Loren J. Rittle" <rittle@supra.rsch.comm.mot.com>
 
 	* config/freebsd.ml (LIBS): Add ARLINK.
 	* config/openbsd.ml (LIBS): Add ARLINK.
@@ -20,7 +24,7 @@ Thu Mar 11 01:07:55 1999  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
 Fri Mar  5 02:16:39 1999  Doug Rabson  <dfr@freebsd.org>
 
 	* configure.in: Support shared libs on FreeBSD 3.x and 4.x
-	* config/freebsd.ml: A copy of config/linux.ml since they are both 
+	* config/freebsd.ml: A copy of config/linux.ml since they are both
 	ELF and both have a shared libm.
 
 1999-02-24  Jason Merrill  <jason@yorick.cygnus.com>
