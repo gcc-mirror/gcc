@@ -339,7 +339,8 @@ void __objc_update_dispatch_table_for_class (Class class)
   __objc_install_premature_dtable (class); /* someone might require it... */
   sarray_free (arr);			   /* release memory */
 
-  __objc_install_dispatch_table_for_class (class); /* could have been lazy... */
+  /* could have been lazy... */
+  __objc_install_dispatch_table_for_class (class); 
 
   if (class->subclass_list)	/* Traverse subclasses */
     for (next = class->subclass_list; next; next = next->sibling_class)
@@ -488,7 +489,7 @@ __objc_word_forward (id rcv, SEL op, ...)
    architectural differences on some processors.  i386s for
    example which uses a floating point stack versus general
    registers for floating point numbers.  This forward routine 
-   makes sure that GCC restores the proper return values. */
+   makes sure that GCC restores the proper return values */
 static double
 __objc_double_forward (id rcv, SEL op, ...)
 {
@@ -584,9 +585,11 @@ void __objc_print_dtable_stats()
 #endif
 	 );
 
-  printf("arrays: %d = %ld bytes\n", narrays, (int)narrays*sizeof(struct sarray));
+  printf("arrays: %d = %ld bytes\n", narrays, 
+	 (int)narrays*sizeof(struct sarray));
   total += narrays*sizeof(struct sarray);
-  printf("buckets: %d = %ld bytes\n", nbuckets, (int)nbuckets*sizeof(struct sbucket));
+  printf("buckets: %d = %ld bytes\n", nbuckets, 
+	 (int)nbuckets*sizeof(struct sbucket));
   total += nbuckets*sizeof(struct sbucket);
 
   printf("idxtables: %d = %ld bytes\n", idxsize, (int)idxsize*sizeof(void*));
@@ -605,6 +608,3 @@ objc_get_uninstalled_dtable()
 {
   return __objc_uninstalled_dtable;
 }
-
-
-
