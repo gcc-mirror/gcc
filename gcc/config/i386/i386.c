@@ -143,10 +143,12 @@ int i386_regparm;				/* i386_regparm_string as a number */
 char *i386_align_loops_string;			/* power of two alignment for loops */
 char *i386_align_jumps_string;			/* power of two alignment for non-loop jumps */
 char *i386_align_funcs_string;			/* power of two alignment for functions */
+char *i386_branch_cost_string;			/* values 1-5: see jump.c */
 
 int i386_align_loops;				/* power of two alignment for loops */
 int i386_align_jumps;				/* power of two alignment for non-loop jumps */
 int i386_align_funcs;				/* power of two alignment for functions */
+int i386_branch_cost;				/* values 1-5: see jump.c */
 
 /* Sometimes certain combinations of command options do not make
    sense on a particular target machine.  You can define a macro
@@ -292,6 +294,17 @@ override_options ()
     }
   else
     i386_align_funcs = def_align;
+
+  /* Validate -mbranch-cost= value, or provide default */
+  if (i386_branch_cost_string)
+    {
+      i386_branch_cost = atoi (i386_branch_cost_string);
+      if (i386_branch_cost < 0 || i386_branch_cost > 5)
+	fatal ("-mbranch-cost=%d is not between 0 and 5",
+	       i386_branch_cost);
+    }
+  else
+    i386_branch_cost = TARGET_PENTIUMPRO ? 4 : 1;
 
   if (TARGET_OMIT_LEAF_FRAME_POINTER)	/* keep nonleaf frame pointers */
     flag_omit_frame_pointer = 1;
@@ -3549,6 +3562,7 @@ output_float_compare (insn, operands)
   rtx body = XVECEXP (PATTERN (insn), 0, 0);
   int unordered_compare = GET_MODE (SET_SRC (body)) == CCFPEQmode;
   int target_fcomi = TARGET_CMOVE && STACK_REG_P (operands[1]);
+  int target_fcomi = TARGET_CMOVE && STACK_REG_P (operands[1]);
 
   rtx tmp;
   if (! STACK_TOP_P (operands[0]))
@@ -3598,6 +3612,13 @@ output_float_compare (insn, operands)
 	strcat (buf, "p");
 
       if (NON_STACK_REG_P (operands[1]))
+      else if (target_fcomi) 
+	{
+	  rtx xops[] = {operands[0], operands[1], operands[0]};
+	  
+	  output_asm_insn (strcat (buf, AS2 (%z1,%y1,%2)), xops);
+	  RET;
+	}
 	output_op_from_reg (operands[1], strcat (buf, AS1 (%z0,%1)));
       else if (target_fcomi) 
 	{
