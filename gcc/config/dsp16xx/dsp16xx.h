@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  AT&T DSP1600.
-   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Michael Collison (collison@world.std.com).
 
 This file is part of GNU CC.
@@ -286,7 +286,7 @@ extern int target_flags;
 
 #define OVERRIDE_OPTIONS override_options ()
 
-#define OPTIMIZATION_OPTIONS(LEVEL)                   \
+#define OPTIMIZATION_OPTIONS(LEVEL,SIZE)              \
 {                                                     \
     flag_gnu_linker             = FALSE;              \
                                                       \
@@ -298,14 +298,15 @@ extern int target_flags;
                                                       \
     if (LEVEL >= 2)                                   \
     {                                                 \
-	flag_strength_reduce         = TRUE;          \
+        if (! SIZE)                                   \
+ 	  flag_strength_reduce       = TRUE;          \
 	flag_cse_follow_jumps        = TRUE;          \
 	flag_cse_skip_blocks         = TRUE;          \
 	flag_expensive_optimizations = TRUE;          \
 	flag_rerun_cse_after_loop    = TRUE;          \
     }                                                 \
                                                       \
-    if (LEVEL >= 3)                                   \
+    if ((LEVEL >= 3) && ! SIZE)                       \
     {                                                 \
        flag_inline_functions = 1;                     \
     }                                                 \

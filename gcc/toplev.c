@@ -1,5 +1,5 @@
 /* Top level of GNU C compiler
-   Copyright (C) 1987, 88, 89, 92-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-7, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -305,6 +305,13 @@ int use_gnu_debug_info_extensions = 0;
    based on this variable.  */
 
 int optimize = 0;
+
+/* Nonzero means optimize for size.  -Os.
+   The only valid values are zero and non-zero. When optimize_size is
+   non-zero, optimize defaults to 2, but certain individual code
+   bloating optimizations are disabled.  */
+
+int optimize_size = 0;
 
 /* Number of error messages and warning messages so far.  */
 
@@ -3719,18 +3726,27 @@ main (argc, argv, envp)
 	}
       else if (argv[i][0] == '-' && argv[i][1] == 'O')
 	{
-	  /* Handle -O2, -O3, -O69, ...  */
+	  /* Handle -Os, -O2, -O3, -O69, ...  */
 	  char *p = &argv[i][2];
 	  int c;
-
-	  while (c = *p++)
-	    if (! (c >= '0' && c <= '9'))
-	      break;
-	  if (c == 0)
-	    optimize = atoi (&argv[i][2]);
+	  
+	  if ((p[0] == 's') && (p[1] == 0))
+	    optimize_size = 1;
+	  else
+	    {	    
+	      while (c = *p++)
+		if (! (c >= '0' && c <= '9'))
+		  break;
+	      if (c == 0)
+		optimize = atoi (&argv[i][2]);
+	    }
 	}
     }
 
+  /* Optimizing for size forces optimize to be no less than 2. */
+  if (optimize_size && (optimize < 2))
+    optimize = 2;
+    
   obey_regdecls = (optimize == 0);
 
   if (optimize >= 1)
@@ -3767,6 +3783,12 @@ main (argc, argv, envp)
       flag_inline_functions = 1;
     }
 
+  /* Disable code bloating optimizations if optimizing for size. */
+  if (optimize_size)
+    {
+      flag_inline_functions = 0;
+    }
+
   /* Initialize target_flags before OPTIMIZATION_OPTIONS so the latter can
      modify it.  */
   target_flags = 0;
@@ -3774,7 +3796,7 @@ main (argc, argv, envp)
 
 #ifdef OPTIMIZATION_OPTIONS
   /* Allow default optimizations to be specified on a per-machine basis.  */
-  OPTIMIZATION_OPTIONS (optimize);
+  OPTIMIZATION_OPTIONS (optimize, optimize_size);
 #endif
 
   /* Initialize register usage now so switches may override.  */
@@ -3966,8 +3988,11 @@ main (argc, argv, envp)
 	  else if (str[0] == 'O')
 	    {
 	      register char *p = str+1;
-	      while (*p && *p >= '0' && *p <= '9')
+	      if (*p == 's')
 		p++;
+	      else
+		while (*p && *p >= '0' && *p <= '9')
+		  p++;
 	      if (*p == '\0')
 		;
 	      else

@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,89,92,93,94,96,1997 Free Software Foundation, Inc.
+@c Copyright (C) 1988,89,92-97,1998 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -591,7 +591,7 @@ Don't use this macro to turn on various extra optimizations for
 @samp{-O}.  That is what @code{OPTIMIZATION_OPTIONS} is for.
 
 @findex OPTIMIZATION_OPTIONS
-@item OPTIMIZATION_OPTIONS (@var{level})
+@item OPTIMIZATION_OPTIONS (@var{level}, @var{size})
 Some machines may desire to change what optimizations are performed for
 various optimization levels.   This macro, if defined, is executed once
 just after the optimization level is determined and before the remainder
@@ -600,6 +600,8 @@ used as the default values for the other command line options.
 
 @var{level} is the optimization level specified; 2 if @samp{-O2} is
 specified, 1 if @samp{-O} is specified, and 0 if neither is specified.
+
+@var{size} is non-zero if @samp{-Os} is specified and zero otherwise.
 
 You should not use this macro to change options that are not
 machine-specific.  These should uniformly selected by the same

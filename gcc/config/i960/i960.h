@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Intel 80960
-   Copyright (C) 1992, 1993, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1995, 1996, 1998 Free Software Foundation, Inc.
    Contributed by Steven McGeady, Intel Corp.
    Additional Work by Glenn Colon-Bonet, Jonathan Shapiro, Andy Wilson
    Converted to GCC 2.0 by Jim Wilson and Michael Tiemann, Cygnus Support.
@@ -94,7 +94,7 @@ Boston, MA 02111-1307, USA.  */
 #define CAN_DEBUG_WITHOUT_FP
 
 /* Do leaf procedure and tail call optimizations for -O2 and higher.  */
-#define OPTIMIZATION_OPTIONS(LEVEL)		\
+#define OPTIMIZATION_OPTIONS(LEVEL,SIZE)	\
 {						\
   if ((LEVEL) >= 2)				\
     {						\

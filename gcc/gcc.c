@@ -1,5 +1,5 @@
 /* Compiler driver program that can handle many languages.
-   Copyright (C) 1987, 89, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -601,7 +601,8 @@ static struct compiler default_compilers[] =
         -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
 	%{ansi:-trigraphs -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs} \
-        %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
+        %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
+        %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
@@ -622,7 +623,8 @@ static struct compiler default_compilers[] =
         -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
 	%{ansi:-trigraphs -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
-        %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
+        %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
+        %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %W{o*}}\
@@ -635,7 +637,8 @@ static struct compiler default_compilers[] =
         -undef -D__OBJC__ -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
 	 %{ansi:-trigraphs -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
-        %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
+        %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
+        %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
@@ -659,7 +662,8 @@ static struct compiler default_compilers[] =
         -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
 	 %{ansi:-trigraphs -D__STRICT_ANSI__}\
 	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
-        %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
+        %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
+        %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %W{o*}"},
@@ -685,7 +689,8 @@ static struct compiler default_compilers[] =
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG} %{trigraphs}\
         -undef -$ %{!undef:%p %P} -D__ASSEMBLER__ \
-        %c %{O*:%{!O0:-D__OPTIMIZE__}} %{traditional} %{ftraditional:-traditional}\
+        %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
+        %{traditional} %{ftraditional:-traditional}\
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.s}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",

@@ -1,3 +1,16 @@
+Tue Jan 20 16:01:03 1998  Anthony Green  <green@cygnus.com>
+
+	* flags.h: New flag (optimize_size).
+	* toplev.c (main): Parse -Os option and set optimize_space
+	accordingly.
+	* gcc.c (default_compilers), cp/lang-specs.h, f/lang-specs.h: Define 
+	__OPTIMIZE_SIZE__ when compiling with -Os.
+	* config/dsp16xx/dsp16xx.h, config/i386/i386.h,
+	config/i386/dgux.h, config/i960/i960.h, config/pdp11/pdp11.h,
+	config/v850/v850.h (OPTIMIZATION_OPTIONS): New SIZE argument
+	to macro.
+	* config/i386/i386.c (optimization_options): Accept new SIZE argument.
+
 Mon Jan 26 23:57:39 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* libgcc2.c (__clear_insn_cache): On sysV68 enable the memctl

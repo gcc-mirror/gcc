@@ -1,5 +1,5 @@
 /* Compilation switch flag definitions for GNU CC.
-   Copyright (C) 1987, 88, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 94-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -52,6 +52,10 @@ extern int use_gnu_debug_info_extensions;
 /* Nonzero means do optimizations.  -opt.  */
 
 extern int optimize;
+
+/* Nonzero means optimize for size.  -Os.  */
+
+extern int optimize_size;
 
 /* Nonzero means do stupid register allocation.  -noreg.
    Currently, this is 1 if `optimize' is 0.  */
