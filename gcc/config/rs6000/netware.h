@@ -183,7 +183,7 @@ toc_section ()								\
 
 #undef ASM_SPEC
 #define ASM_SPEC "-u %(asm_cpu) \
-%{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*}"
+{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*}"
 /* This is the end of what might become sysv4.h.  */
 
 /* Enable output of DBX (stabs) debugging information when asked for it.  */

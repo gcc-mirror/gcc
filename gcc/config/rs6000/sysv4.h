@@ -535,7 +535,7 @@ do {									\
 /* Pass various options to the assembler */
 #undef ASM_SPEC
 #define ASM_SPEC "-u %(asm_cpu) \
-%{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
+%{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
 %{mrelocatable} %{mrelocatable-lib} %{memb} %{msdata: -memb} \
 %{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian}"
 
@@ -728,7 +728,7 @@ do {									\
 
 #undef LINK_SPEC
 #define LINK_SPEC "\
-%{h*} %{V} %{v:%{!V:-V}} %{G*} \
+%{h*} %{v:-V} %{G*} \
 %{b} %{Wl,*:%*} \
 %{static:-dn -Bstatic} \
 %{shared:-G -dy -z text %{!h*:%{o*:-h %*}}} \
