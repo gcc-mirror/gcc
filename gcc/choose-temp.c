@@ -125,14 +125,13 @@ choose_temp_base ()
 #endif
 
   len = strlen (base);
-  if (len == 0)
-    abort ();
   temp_filename = xmalloc (len + 1 /*DIR_SEPARATOR*/
 			   + strlen (TEMP_FILE) + 1);
   strcpy (temp_filename, base);
 
 #ifndef MPW
-  if (temp_filename[len-1] != '/'
+  if (len != 0
+      && temp_filename[len-1] != '/'
       && temp_filename[len-1] != DIR_SEPARATOR)
     temp_filename[len++] = DIR_SEPARATOR;
 #else /* MPW */
