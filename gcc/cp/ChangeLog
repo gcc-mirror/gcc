@@ -1,3 +1,12 @@
+2000-01-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (tsubst_friend_function): Improve comment.
+	(instantiate_decl): Avoid crashing when a "nested" function is
+	instantiated from the top level.
+	
+	* dump.c (dqeueue_and_dump): Dump
+	DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION.
+
 2000-01-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* call.c: If GATHER_STATISTICS, declare `n_build_method_call'.

@@ -4465,9 +4465,9 @@ tsubst_friend_function (decl, args)
 	  new_friend_result_template_info = NULL_TREE;
 	}
 
-      /* Inside pushdecl_namespace_level, we will push into the 
-	 current namespace. However, the friend function should 
-	 tyically go into the namespace of the template. */
+      /* Inside pushdecl_namespace_level, we will push into the
+	 current namespace. However, the friend function should go
+	 into the namespace of the template. */
       ns = decl_namespace_context (new_friend);
       push_nested_namespace (ns);
       old_decl = pushdecl_namespace_level (new_friend);
@@ -9559,7 +9559,7 @@ instantiate_decl (d)
       && ! DECL_NEEDED_P (d)
       /* If the function that caused us to be instantiated is needed, we
 	 will be needed, too.  */
-      && (! nested || ! DECL_NEEDED_P (old_fn)))
+      && (! nested || (old_fn && ! DECL_NEEDED_P (old_fn))))
     DECL_DEFER_OUTPUT (d) = 1;
 
   /* We're now committed to instantiating this template.  Mark it as
