@@ -1776,7 +1776,7 @@ ix86_compute_frame_size (size, nregs_on_stack, rpadding1, rpadding2)
 #ifdef PREFERRED_STACK_BOUNDARY
   {
     int offset;
-    int preferred_alignment = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
+    int preferred_alignment = cfun->preferred_stack_boundary / BITS_PER_UNIT;
 
     offset = frame_pointer_needed ? 8 : 4;
 

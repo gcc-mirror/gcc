@@ -148,7 +148,8 @@ static void precompute_arguments 		PARAMS ((int, int, int,
 							 struct arg_data *,
 							 struct args_size *));
 static int compute_argument_block_size		PARAMS ((int, 
-							 struct args_size *));
+							 struct args_size *,
+							 int));
 static void initialize_argument_information	PARAMS ((int,
 							 struct arg_data *,
 							 struct args_size *,
@@ -1176,9 +1177,11 @@ initialize_argument_information (num_actuals, args, args_size, n_named_args,
    for arguments passed in registers.  */
 
 static int
-compute_argument_block_size (reg_parm_stack_space, args_size)
+compute_argument_block_size (reg_parm_stack_space, args_size,
+    			     preferred_stack_boundary)
      int reg_parm_stack_space;
      struct args_size *args_size;
+     int preferred_stack_boundary ATTRIBUTE_UNUSED;
 {
   int unadjusted_args_size = args_size->constant;
 
@@ -1192,8 +1195,9 @@ compute_argument_block_size (reg_parm_stack_space, args_size)
       args_size->constant = 0;
 
 #ifdef PREFERRED_STACK_BOUNDARY
-      if (PREFERRED_STACK_BOUNDARY != BITS_PER_UNIT)
-	args_size->var = round_up (args_size->var, STACK_BYTES);
+      preferred_stack_boundary /= BITS_PER_UNIT;
+      if (preferred_stack_boundary > 1)
+	args_size->var = round_up (args_size->var, preferred_stack_boundary);
 #endif
 
       if (reg_parm_stack_space > 0)
@@ -1214,10 +1218,12 @@ compute_argument_block_size (reg_parm_stack_space, args_size)
   else
     {
 #ifdef PREFERRED_STACK_BOUNDARY
+      preferred_stack_boundary /= BITS_PER_UNIT;
       args_size->constant = (((args_size->constant
 			       + pending_stack_adjust
-			       + STACK_BYTES - 1)
-			      / STACK_BYTES * STACK_BYTES)
+			       + preferred_stack_boundary - 1)
+			      / preferred_stack_boundary
+			      * preferred_stack_boundary)
 			     - pending_stack_adjust);
 #endif
 
@@ -1692,6 +1698,14 @@ expand_call (exp, target, ignore)
   rtx call_fusage = 0;
   register tree p;
   register int i;
+#ifdef PREFERRED_STACK_BOUNDARY
+  int preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
+#else
+  /* In this case preferred_stack_boundary variable is meaningless.
+     It is used only in order to keep ifdef noise down when calling
+     compute_argument_block_size.  */
+  int preferred_stack_boundary = 0;
+#endif
 
   /* The value of the function call can be put in a hard register.  But
      if -fcheck-memory-usage, code which invokes functions (and thus
@@ -1921,6 +1935,13 @@ expand_call (exp, target, ignore)
   if (fndecl && DECL_NAME (fndecl))
     name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
 
+  /* Ensure current function's preferred stack boundary is at least
+     what we need.  We don't have to increase alignment for recursive
+     functions.  */
+  if (cfun->preferred_stack_boundary < preferred_stack_boundary
+      && fndecl != current_function_decl)
+    cfun->preferred_stack_boundary = preferred_stack_boundary;
+
   /* See if this is a call to a function that can return more than once
      or a call to longjmp or malloc.  */
   special_function_p (fndecl, &returns_twice, &is_longjmp, &fork_or_exec,
@@ -2062,7 +2083,8 @@ expand_call (exp, target, ignore)
      and constant sizes must be combined, the size may have to be rounded,
      and there may be a minimum required size.  */
   unadjusted_args_size
-    = compute_argument_block_size (reg_parm_stack_space, &args_size);
+    = compute_argument_block_size (reg_parm_stack_space, &args_size,
+				   preferred_stack_boundary);
 
   /* Now make final decision about preallocating stack space.  */
   must_preallocate = finalize_must_preallocate (must_preallocate,
@@ -2703,6 +2725,13 @@ emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
 
   push_temp_slots ();
 
+#ifdef PREFERRED_STACK_BOUNDARY
+  /* Ensure current function's preferred stack boundary is at least
+     what we need.  */
+  if (cfun->preferred_stack_boundary < PREFERRED_STACK_BOUNDARY)
+    cfun->preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
+#endif
+
   for (count = 0; count < nargs; count++)
     {
       rtx val = va_arg (p, rtx);
@@ -3191,6 +3220,13 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
 
   is_const = no_queue;
   fun = orgfun;
+
+#ifdef PREFERRED_STACK_BOUNDARY
+  /* Ensure current function's preferred stack boundary is at least
+     what we need.  */
+  if (cfun->preferred_stack_boundary < PREFERRED_STACK_BOUNDARY)
+    cfun->preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
+#endif
 
   /* If this kind of value comes back in memory,
      decide where in memory it should come back.  */

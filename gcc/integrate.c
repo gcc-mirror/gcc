@@ -602,6 +602,12 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
   nargs = list_length (DECL_ARGUMENTS (fndecl));
 
+  if (cfun->preferred_stack_boundary < inl_f->preferred_stack_boundary)
+    cfun->preferred_stack_boundary = inl_f->preferred_stack_boundary;
+
+  if (cfun->stack_alignment_needed < inl_f->stack_alignment_needed)
+    cfun->stack_alignment_needed = inl_f->stack_alignment_needed;
+
   /* Check that the parms type match and that sufficient arguments were
      passed.  Since the appropriate conversions or default promotions have
      already been applied, the machine modes should match exactly.  */
@@ -1619,13 +1625,17 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 	    {
 	      rtx loc, seq;
 	      int size = get_func_frame_size (DECL_SAVED_INSNS (map->fndecl));
+	      int alignment
+		= (DECL_SAVED_INSNS (map->fndecl)->stack_alignment_needed
+		   / BITS_PER_UNIT);
 
 #ifdef FRAME_GROWS_DOWNWARD
 	      /* In this case, virtual_stack_vars_rtx points to one byte
 		 higher than the top of the frame area.  So make sure we
 		 allocate a big enough chunk to keep the frame pointer
 		 aligned like a real one.  */
-	      size = CEIL_ROUND (size, BIGGEST_ALIGNMENT / BITS_PER_UNIT);
+	      if (alignment)
+		size = CEIL_ROUND (size, alignment);
 #endif
 	      start_sequence ();
 	      loc = assign_stack_temp (BLKmode, size, 1);
