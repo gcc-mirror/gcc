@@ -33,11 +33,6 @@ toolexeclib_LTLIBRARIES = libgcj.la $(cond_x_ltlibrary)
 toolexeclib_DATA = libgcj.spec
 data_DATA = libgcj.jar
 
-if NEEDS_DATA_START
-toolexeclib_LIBRARIES = libgcjdata.a
-libgcjdata_a_SOURCES = libgcjdata.c
-endif
-
 ## For now, only on native systems.  FIXME.
 if NATIVE
 bin_PROGRAMS = jv-convert gij

@@ -7,10 +7,3 @@
 *lib: -lgcj -lm @GCSPEC@ @THREADSPEC@ @ZLIBSPEC@ @SYSTEMSPEC@ %(libgcc) %(liborig)
 
 *jc1: @HASH_SYNC_SPEC@ @DIVIDESPEC@ @JC1GCSPEC@ @EXCEPTIONSPEC@
-
-#
-# On some systems we force in a data_start symbol so that the GC will work
-# with shared libraries.
-# 
-%rename startfile startfileorig
-*startfile: %(startfileorig) @LIBDATASTARTSPEC@
