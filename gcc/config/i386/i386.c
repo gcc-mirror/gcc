@@ -4897,7 +4897,7 @@ ix86_expand_branch (code, label)
 	code = ix86_prepare_fp_compare_args (code, &ix86_compare_op0,
 					     &ix86_compare_op1);
 
-	tmp = gen_rtx_fmt_ee (code, ix86_fp_compare_mode (code),
+	tmp = gen_rtx_fmt_ee (code, VOIDmode,
 			      ix86_compare_op0, ix86_compare_op1);
 	tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
 				    gen_rtx_LABEL_REF (VOIDmode, label),

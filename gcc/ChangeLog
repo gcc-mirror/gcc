@@ -1,3 +1,11 @@
+Thu Aug  3 20:32:25 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* reg-stack.c (subst_stack_regs_pat):  Use replace_reg to swap
+	operands.
+
+	* i386.c (ix86_expand_branch): Mode of comparison in
+	IF_THEN_ELSE is VOIDmode.
+
 Thu Aug  3 10:05:53 2000  Akiko Matsushita <matusita@sra.co.jp>
 
 	* gengenrtl.c, rtl.c: Avoid #elif.
