@@ -1,3 +1,8 @@
+Wed Feb 13 09:45:08 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* alias.c (find_base_term, case ZERO_EXTEND, case SIGN_EXTEND):
+	Make same change as for find_base_value.
+
 2002-02-13  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.h (MODES_TIEABLE_P): Accept a combination

@@ -1242,8 +1242,6 @@ find_base_term (x)
       if (GET_MODE_SIZE (GET_MODE (x)) < GET_MODE_SIZE (Pmode))
         return 0;
       /* Fall through.  */
-    case ZERO_EXTEND:
-    case SIGN_EXTEND:	/* Used for Alpha/NT pointers */
     case HIGH:
     case PRE_INC:
     case PRE_DEC:
@@ -1252,6 +1250,19 @@ find_base_term (x)
     case PRE_MODIFY:
     case POST_MODIFY:
       return find_base_term (XEXP (x, 0));
+
+    case ZERO_EXTEND:
+    case SIGN_EXTEND:	/* Used for Alpha/NT pointers */
+      {
+	rtx temp = find_base_term (XEXP (x, 0));
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+	if (temp != 0 && CONSTANT_P (temp) && GET_MODE (temp) != Pmode)
+	  temp = convert_memory_address (Pmode, temp);
+#endif
+
+	return temp;
+      }
 
     case VALUE:
       val = CSELIB_VAL_PTR (x);
