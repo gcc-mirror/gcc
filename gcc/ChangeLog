@@ -1,6 +1,6 @@
 2005-01-13  Richard Henderson  <rth@redhat.com>
 
-	PR target/19099
+	PR target/19009
 	PR target/19250
 	PR target/19252
 	* config/i386/i386.md (cmpdf, cmpsf, bunordered, bordered, buneq,
