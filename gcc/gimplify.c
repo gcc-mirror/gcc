@@ -314,20 +314,6 @@ gimplify_and_add (tree t, tree *list_p)
   append_to_statement_list (t, list_p);
 }
 
-/* Add T to the end of a COMPOUND_EXPR pointed by LIST_P.  The type
-   of the result is the type of T.  */
-
-void
-append_to_compound_expr (tree t, tree *list_p)
-{
-  if (!t)
-    return;
-  if (!*list_p)
-    *list_p = t;
-  else
-    *list_p = build (COMPOUND_EXPR, TREE_TYPE (t), *list_p, t);
-}
-
 /* Strip off a legitimate source ending from the input string NAME of
    length LEN.  Rather than having to know the names used by all of
    our front ends, we strip off an ending of a period followed by
