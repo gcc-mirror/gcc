@@ -318,7 +318,6 @@ extern tree xref_tag                            PROTO((enum tree_code, tree));
 /* in c-typeck.c */
 extern tree require_complete_type		PROTO((tree));
 extern void incomplete_type_error		PROTO((tree, tree));
-extern tree merge_attributes			PROTO((tree, tree));
 /* Given two integer or real types, return the type for their sum.
    Given two compatible ANSI C types, returns the merged type.  */
 extern tree common_type                         PROTO((tree, tree));
