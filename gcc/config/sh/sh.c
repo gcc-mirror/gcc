@@ -552,8 +552,16 @@ output_branch (logic, insn, operands)
      rtx *operands;
 {
   int label = lf++;
+  int length = get_attr_length (insn);
+  int adjusted_length;
 
-  switch (get_attr_length (insn))
+  /* Undo the effects of ADJUST_INSN_LENGTH, so that we get the real
+     length.  */
+  adjusted_length = length;
+  ADJUST_INSN_LENGTH (insn, adjusted_length);
+  length -= (adjusted_length - length);
+
+  switch (length)
     {
     case 2:
       /* A branch with an unfilled delay slot.  */
@@ -626,7 +634,8 @@ output_branch (logic, insn, operands)
       }
       return "";
     }
-  return "bad";
+
+  abort ();
 }
 
 /* Output to FILE the start of the assembler file.  */
@@ -1204,6 +1213,27 @@ find_barrier (from)
     {
       si_limit = 1008;
       hi_limit = 500;
+    }
+
+  /* If not optimizing for space, then the constant pool will be
+     aligned to a 4 to 16 byte boundary.  We must make room for that
+     alignment that by reducing the limits.
+     ??? It would be better to not align the constant pool, but
+     ASM_OUTPUT_ALIGN_CODE does not make any provision for basing the
+     alignment on the instruction.  */
+
+  if (! TARGET_SMALLCODE)
+    {
+      if (TARGET_SH3 || TARGET_SH3E)
+	{
+	  si_limit -= 14;
+	  hi_limit -= 14;
+	}
+      else
+	{
+	  si_limit -= 2;
+	  hi_limit -= 2;
+	}
     }
 
   while (from && count_si < si_limit && count_hi < hi_limit)
@@ -2228,7 +2258,7 @@ fp_zero_operand (op)
     return 0;
 
   REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-  return REAL_VALUES_EQUAL (r, dconst0);
+  return REAL_VALUES_EQUAL (r, dconst0) && ! REAL_VALUE_MINUS_ZERO (r);
 }
 
 /* Nonzero if OP is a floating point value with value 1.0.  */
