@@ -140,8 +140,7 @@ struct rtx_def
      1 in a SYMBOL_REF if it addresses something in the per-function
      constants pool.
      1 in a CALL_INSN, NOTE, or EXPR_LIST for a const or pure call.
-     1 in an INSN in the delay slot of a branch insn if an annulling branch
-     should be used.  */
+     1 in a JUMP_INSN or CALL_INSN of an annulling branch.  */
   unsigned int unchanging : 1;
   /* 1 in a MEM or ASM_OPERANDS expression if the memory reference is volatile.
      1 in an INSN, CALL_INSN, JUMP_INSN, CODE_LABEL, BARRIER, or NOTE
@@ -168,7 +167,6 @@ struct rtx_def
      1 in an INSN, JUMP_INSN, or CALL_INSN if insn is in a delay slot and
      from the target of a branch.  Valid from reorg until end of compilation;
      cleared before used.
-     1 in an INSN in a delay slot that is the target of a branch, during reorg.
      1 in an INSN or related rtx if this insn is dead code.  Valid only during
      dead-code elimination phase; cleared before use.  */
   unsigned int in_struct : 1;
@@ -539,11 +537,9 @@ do {				\
 #define SIBLING_CALL_P(RTX)						\
   (RTL_FLAG_CHECK1("SIBLING_CALL_P", (RTX), CALL_INSN)->jump)
 
-/* 1 if RTX is an insn in the delay slot of a branch insn for which an
-   annulling branch should be used.  */
+/* 1 if RTX is an insn that is an annulling branch.  */
 #define INSN_ANNULLED_BRANCH_P(RTX)					\
-  (RTL_FLAG_CHECK2("INSN_ANNULLED_BRANCH_P", (RTX), INSN,		\
-		   JUMP_INSN)->unchanging)
+  (RTL_FLAG_CHECK2("INSN_ANNULLED_BRANCH_P", (RTX), JUMP_INSN, CALL_INSN)->unchanging)
 
 /* 1 if RTX is an insn that is dead code.  Valid only for dead-code
    elimination phase.  */
@@ -555,7 +551,7 @@ do {				\
    executed if the branch is taken.  For annulled branches with this bit
    clear, the insn should be executed only if the branch is not taken.  */
 #define INSN_FROM_TARGET_P(RTX)						\
-  (RTL_FLAG_CHECK2("INSN_FROM_TARGET_P", (RTX), INSN, JUMP_INSN)->in_struct)
+  (RTL_FLAG_CHECK3("INSN_FROM_TARGET_P", (RTX), INSN, JUMP_INSN, CALL_INSN)->in_struct)
 
 #define ADDR_DIFF_VEC_FLAGS(RTX) X0ADVFLAGS(RTX, 4)
 

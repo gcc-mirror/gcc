@@ -617,7 +617,8 @@ delete_from_delay_slot (insn)
      annul flag.  */
   if (delay_list)
     trial = emit_delay_sequence (trial, delay_list, XVECLEN (seq, 0) - 2);
-  else
+  else if (GET_CODE (trial) == JUMP_INSN
+	   || GET_CODE (trial) == CALL_INSN)
     INSN_ANNULLED_BRANCH_P (trial) = 0;
 
   INSN_FROM_TARGET_P (insn) = 0;
@@ -3628,7 +3629,9 @@ dbr_schedule (first, file)
     {
       rtx target;
 
-      INSN_ANNULLED_BRANCH_P (insn) = 0;
+      if (GET_CODE (insn) == JUMP_INSN
+	  || GET_CODE (insn) == CALL_INSN)
+	INSN_ANNULLED_BRANCH_P (insn) = 0;
       INSN_FROM_TARGET_P (insn) = 0;
 
       /* Skip vector tables.  We can't get attributes for them.  */
