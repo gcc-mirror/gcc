@@ -65,7 +65,7 @@ static int branch_ratio_cutoff;
 
 #define seen(bb) (RBI (bb)->visited || RBI (bb)->next)
 
-/* Return true if we should ignore the basic block for purposes of tracing. */
+/* Return true if we should ignore the basic block for purposes of tracing.  */
 static bool
 ignore_bb_p (bb)
      basic_block bb;

@@ -129,14 +129,14 @@ unknown arithmetic type
 
 #define REAL_WORDS_BIG_ENDIAN FLOAT_WORDS_BIG_ENDIAN
 
-/* Make sure that the endianness is correct for IBM and DEC. */
+/* Make sure that the endianness is correct for IBM and DEC.  */
 #if defined(DEC)
 #undef LARGEST_EXPONENT_IS_NORMAL
 #define LARGEST_EXPONENT_IS_NORMAL(x) 1
 #undef REAL_WORDS_BIG_ENDIAN
 /* Strangely enough, DEC float most closely resembles big endian IEEE */
 #define REAL_WORDS_BIG_ENDIAN 1
-/* ... but the halfwords are reversed from IEEE big endian. */
+/* ... but the halfwords are reversed from IEEE big endian.  */
 #ifndef VAX_HALFWORD_ORDER
 #define VAX_HALFWORD_ORDER 1
 #endif
@@ -3942,7 +3942,7 @@ toieee (x, y, fmt)
     }
 
   /* Shift denormal double extended Intel format significand down
-     one bit. */
+     one bit.  */
   if (fmt->precision == 64 && x[E] == 0 && ! REAL_WORDS_BIG_ENDIAN)
     eshdn1 (x);
 

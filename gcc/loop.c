@@ -4279,7 +4279,7 @@ for_each_insn_in_loop (loop, fncall)
   if (prev_nonnote_insn (loop->scan_start) != prev_nonnote_insn (loop->start))
     maybe_multiple = back_branch_in_range_p (loop, loop->scan_start);
 
-  /* Scan through loop and update NOT_EVERY_ITERATION and MAYBE_MULTIPLE. */
+  /* Scan through loop and update NOT_EVERY_ITERATION and MAYBE_MULTIPLE.  */
   for (p = next_insn_in_loop (loop, loop->scan_start);
        p != NULL_RTX;
        p = next_insn_in_loop (loop, p))

@@ -441,7 +441,7 @@ struct function GTY(())
      calls (if any) are sibling calls.  Such functions do not have to
      have EH tables generated, as they cannot throw.  A call to such a
      function, however, should be treated as throwing if any of its callees
-     can throw. */
+     can throw.  */
   unsigned int all_throwers_are_sibcalls : 1;
  
   /* Nonzero if instrumentation calls for function entry and exit should be

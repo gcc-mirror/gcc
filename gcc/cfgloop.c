@@ -617,7 +617,7 @@ make_forwarder_block (bb, redirect_latch, redirect_nonlatch, except,
   HEADER_BLOCK (dummy) = 0;
   HEADER_BLOCK (bb) = 1;
 
-  /* Redirect back edges we want to keep. */
+  /* Redirect back edges we want to keep.  */
   for (e = dummy->pred; e; e = next_e)
     {
       next_e = e->pred_next;

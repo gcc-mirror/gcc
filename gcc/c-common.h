@@ -465,7 +465,7 @@ extern int warn_write_strings;
 
 extern int warn_redundant_decls;
 
-/* Warn about testing equality of floating point numbers. */
+/* Warn about testing equality of floating point numbers.  */
 
 extern int warn_float_equal;
 

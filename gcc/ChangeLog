@@ -1,3 +1,30 @@
+2002-09-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* basic-block.h: Fix comment formatting.
+	* c-common.c: Likewise.
+	* c-common.h: Likewise.
+	* c-lex.c: Likewise.
+	* c-pretty-print.c: Likewise.
+	* cfglayout.c: Likewise.
+	* cfgloop.c: Likewise.
+	* defaults.h: Likewise.
+	* et-forest.c: Likewise.
+	* explow.c: Likewise.
+	* function.h: Likewise.
+	* gcov.c: Likewise.
+	* genattrtab.c: Likewise.
+	* gengtype.c: Likewise.
+	* ifcvt.c: Likewise.
+	* libgcc2.c: Likewise.
+	* loop.c: Likewise.
+	* profile.c: Likewise.
+	* ra-build.c: Likewise.
+	* real.c: Likewise.
+	* rtl.h: Likewise.
+	* tracer.c: Likewise.
+	* tree-inline.c: Likewise.
+	* varasm.c: Likewise.
+
 2002-09-08  Jan Hubicka  <jh@suse.cz>
 
 	* emit-rtl.c (set_mem_attributes_minus_bitpos): Fix array_ref

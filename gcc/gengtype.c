@@ -1081,7 +1081,7 @@ write_gc_structure_fields (of, s, val, prev_val, opts, indent, line, bitmap,
 		break;
 	      }
 	  }
-	  /* Fall through... */
+	  /* Fall through...  */
 	case TYPE_STRUCT:
 	case TYPE_UNION:
 	  {

@@ -342,7 +342,7 @@ scope_to_insns_finalize ()
 
       this_block = INSN_SCOPE (insn);
       /* For sequences compute scope resulting from merging all scopes
-         of instructions nested inside. */
+         of instructions nested inside.  */
       if (GET_CODE (PATTERN (insn)) == SEQUENCE)
 	{
 	  int i;
