@@ -1,3 +1,16 @@
+2002-09-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* Make-lang.in (EXTRA_GNATBIND_OBJS): Add version.o.
+	* Makefile.in (TOOLS_LIBS): Add ../../version.o.
+	* gnatvsn.ads: Gnat_Version_String is now a function.
+	* gnatvsn.adb: New file.  When asked for Gnat_Version_String,
+	copy the C version_string into a String and return it.
+	* gnatcmd.adb, gnatkr.adb, gnatlbr.adb, gnatlink.adb,
+	gnatls.adb,gnatmake.adb, gnatprep.adb, gnatpsta.adb:
+	Remove pragma Ident (Gnat_Version_String).  If this was the
+	sole use of package Gnatvsn, remove the with statement too.
+	* gnat1drv.adb: Tweak -gnatv output.
+
 2002-09-17  Richard Henderson  <rth@redhat.com>
 
 	* trans.c (tree_transform): Use real_ldexp not REAL_VALUE_LDEXP.
@@ -265,7 +278,7 @@
 
 2002-04-21  Florian Weimer  <fw@deneb.enyo.de>
 
-        * gnat_ug.texi: New file.
+	* gnat_ug.texi: New file.
 
 	* gnat_rm.texi: Do not include texiplus.texi.  Include fdl.texi
 	instead of gfdl.texi
@@ -273,7 +286,7 @@
 	* xgnatug.adb, ug_words: New files.
 
 	* Makefile.in (doc, dvi): New targets.  Build gnat_ug_*,
-        gnat_rm and gnat-style manuals.
+	gnat_rm and gnat-style manuals.
 
 2002-04-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
@@ -433,7 +446,7 @@
 2002-03-23  Florian Weimer  <fw@deneb.enyo.de>
 
 	* gnat_rm.texi: Sync with ACT version.
-          (From Ben Brosgol <brosgol@gnat.com>)
+	  (From Ben Brosgol <brosgol@gnat.com>)
 
 2002-03-20  Neil Booth  <neil@daikokuya.demon.co.uk>
 
@@ -1741,7 +1754,7 @@
 2001-12-03  Robert Dewar <dewar@gnat.com>
 
 	* sinfo.ads: Minor reformatting. N_Freeze_Entity node does not
-        have Associated_Node.
+	have Associated_Node.
 
 2001-12-03  Robert Dewar <dewar@gnat.com>
 
@@ -2114,7 +2127,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-10-26  Vincent Celier <celier@gnat.com>
 
 	* g-os_lib.adb (Normalize_Pathname): Preserve the double slash
-        ("//") that precede the drive letter on Interix.
+	("//") that precede the drive letter on Interix.
 
 2001-10-26  Geert Bosch <bosch@gnat.com>
 
@@ -2123,7 +2136,7 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-10-25  Robert Dewar <dewar@gnat.com>
 
 	* sem_ch8.adb (Analyze_Package_Renaming): Skip analysis if Name
-        is Error. Similar change for other renaming cases.
+	is Error. Similar change for other renaming cases.
 
 2001-10-25  Robert Dewar <dewar@gnat.com>
 
@@ -2133,22 +2146,22 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-10-25  Ed Schonberg <schonber@gnat.com>
 
 	* par-ch3.adb (P_Subtype_Mark_Resync): for an anonymous array
-        return Error rather than Empty so that analysis can proceed.
+	return Error rather than Empty so that analysis can proceed.
 
 2001-10-25  Ed Schonberg <schonber@gnat.com>
 
 	* sem_util.adb (Enter_Name): better handling of cascaded error
-        messages when a unit appears in its own context.
+	messages when a unit appears in its own context.
 
 2001-10-25  Ed Schonberg <schonber@gnat.com>
 
 	* sem_util.adb (Defining_Entity): in case of error, attach created
-        entity to specification, so that semantic analysis can proceed.
+	entity to specification, so that semantic analysis can proceed.
 
 2001-10-25  Robert Dewar <dewar@gnat.com>
 
 	* sem_util.adb
-        (Defining_Entity): Deal with Error.
+	(Defining_Entity): Deal with Error.
 	(Process_End_Label): Deal with bad end label for.
 
 2001-10-25  Ed Schonberg <schonber@gnat.com>
@@ -2168,20 +2181,20 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-10-25  Ed Schonberg <schonber@gnat.com>
 
 	* sem_res.adb (Resolve_Call): if the call is actually an indexing
-        operation on the result of a parameterless call, perform elaboration
-        check after the node has been properly rewritten.
+	operation on the result of a parameterless call, perform elaboration
+	check after the node has been properly rewritten.
 
 	* sem_ch12.adb (Copy_Generic_Node): after the proper body has been
-        inlined within the generic tree, the defining identifier is not a
-        compilation_unit.
+	inlined within the generic tree, the defining identifier is not a
+	compilation_unit.
 
 2001-10-25  Ed Schonberg <schonber@gnat.com>
 
 	* sem_res.adb (Resolve): special-case resolution of Null in an
-         instance or an inlined body to avoid view conflicts.
+	 instance or an inlined body to avoid view conflicts.
 
 	* sem_ch12.adb (Copy_Generic_Node): for allocators, check for view
-         compatibility by retrieving the access type of the generic copy.
+	 compatibility by retrieving the access type of the generic copy.
 
 2001-10-25  Robert Dewar <dewar@gnat.com>
 
@@ -2200,10 +2213,10 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-10-25  Pascal Obry <obry@gnat.com>
 
 	* gnatmem.adb (Read_Next): fix Curs2 value to properly handle quiet
-        mode case for ALLOC case.
+	mode case for ALLOC case.
 
 	* gnatmem.adb (Read_Next): correctly fix parsing in Quiet mode on
-        all platforms. Improvement of last change.
+	all platforms. Improvement of last change.
 
 2001-10-25  Robert Dewar <dewar@gnat.com>
 
@@ -2216,25 +2229,25 @@ Thu Nov 15 18:16:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-10-25  Pascal Obry <obry@gnat.com>
 
 	* osint.adb (Read_Default_Search_Dirs): correctly detect relative
-        pathnames in UNIX and DOS style with drive letter.
+	pathnames in UNIX and DOS style with drive letter.
 	(Is_Relative): new routine.
 
 	* osint.adb: Minor reformatting
 
 	* osint.adb (Is_Relative): implementation using
-        GNAT.OS_Lib.Is_Absolute_Path. Better fix.
+	GNAT.OS_Lib.Is_Absolute_Path. Better fix.
 
 2001-10-25  Pascal Obry <obry@gnat.com>
 
 	* g-dirope.adb (Basename): correctly compute offset between the
-        original Path and the translated one.
+	original Path and the translated one.
 
 	* g-dirope.adb: (Base_Name): add some comments.
 
 2001-10-25  Robert Dewar <dewar@gnat.com>
 
 	* exp_imgv.adb (Expand_Image_Attribute): Defend against bad use
-        in HIE mode, avoids compilation abandoned message
+	in HIE mode, avoids compilation abandoned message
 
 	* exp_imgv.adb: Correct typo in previous change
 

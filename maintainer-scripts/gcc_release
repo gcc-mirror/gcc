@@ -126,21 +126,11 @@ EOF
         error "Could not commit ${x}"
     done
 
-    # Update `gcc/version.c'.  There are other version files
-    # as well, which should have release status updated.
+    # Update `gcc/version.c'.
     for x in gcc/version.c; do 
       y=`basename ${x}`
       (changedir `dirname ${SOURCE_DIRECTORY}/${x}` && \
           sed -e 's|= \".*\"|= \"'${RELEASE}'\"|g' < ${y} > ${y}.new && \
-	  mv ${y}.new ${y} && \
-          ${CVS} ci -m 'Update version' ${y}) || \
-	  error "Could not update ${x}"
-    done
-    for x in gcc/ada/gnatvsn.ads gcc/f/version.c libf2c/libF77/Version.c \
-             libf2c/libI77/Version.c libf2c/libU77/Version.c; do
-      y=`basename ${x}`
-      (changedir `dirname ${SOURCE_DIRECTORY}/${x}` && \
-          sed -e 's/experimental\|prerelease/release/g' < ${y} > ${y}.new && \
 	  mv ${y}.new ${y} && \
           ${CVS} ci -m 'Update version' ${y}) || \
 	  error "Could not update ${x}"

@@ -1,3 +1,8 @@
+2002-09-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* update_version: Do not check in files which are unchanged.
+	* gcc_release: Only update the version in gcc/version.c.
+
 2002-09-17  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* update_web_docs (MANUALS): Add fastjar.

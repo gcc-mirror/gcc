@@ -41,7 +41,6 @@ with Targparm;    use Targparm;
 with Types;       use Types;
 
 procedure Gnatls is
-   pragma Ident (Gnat_Version_String);
 
    Max_Column : constant := 80;
 

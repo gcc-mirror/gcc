@@ -57,7 +57,6 @@ with GNAT.OS_Lib;             use GNAT.OS_Lib;
 with Table;
 
 procedure GNATCmd is
-   pragma Ident (Gnatvsn.Gnat_Version_String);
 
    Ada_Include_Path : constant String := "ADA_INCLUDE_PATH";
    Ada_Objects_Path : constant String := "ADA_OBJECTS_PATH";

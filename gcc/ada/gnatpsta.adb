@@ -34,13 +34,11 @@
 --  integer and floating point sizes.
 
 with Ada.Text_IO; use Ada.Text_IO;
-with Gnatvsn;
 with Ttypef;      use Ttypef;
 with Ttypes;      use Ttypes;
 with Types;       use Types;
 
 procedure GnatPsta is
-   pragma Ident (Gnatvsn.Gnat_Version_String);
 
    procedure P (Item : String) renames Ada.Text_IO.Put_Line;
 
