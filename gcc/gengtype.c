@@ -980,7 +980,7 @@ static outf_p output_files;
 
 /* The output header file that is included into pretty much every
    source file.  */
-outf_p header_file;
+static outf_p header_file;
 
 /* Number of files specified in gtfiles.  */
 #define NUM_GT_FILES (ARRAY_SIZE (all_files) - 1)
@@ -1911,8 +1911,8 @@ write_types_process_field (type_p f, const struct walk_type_data *d)
 */
 
 static void
-write_func_for_structure  (type_p orig_s, type_p s, type_p *param,
-			   const struct write_types_data *wtd)
+write_func_for_structure (type_p orig_s, type_p s, type_p *param,
+			  const struct write_types_data *wtd)
 {
   const char *fn = s->u.s.line.file;
   int i;
@@ -2306,7 +2306,7 @@ write_local (type_p structures, type_p param_structs)
 /* Write out the 'enum' definition for gt_types_enum.  */
 
 static void
-write_enum_defn  (type_p structures, type_p param_structs)
+write_enum_defn (type_p structures, type_p param_structs)
 {
   type_p s;
 
