@@ -1051,7 +1051,7 @@ simplejump_p (rtx insn)
 /* Return nonzero if INSN is a (possibly) conditional jump
    and nothing more.
 
-   Use this function is deprecated, since we need to support combined
+   Use of this function is deprecated, since we need to support combined
    branch and compare insns.  Use any_condjump_p instead whenever possible.  */
 
 int

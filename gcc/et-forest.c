@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.
 #include "basic-block.h"
 #endif
 
-/* The occurence of a node in the et tree.  */
+/* The occurrence of a node in the et tree.  */
 struct et_occ
 {
   struct et_node *of;		/* The node.  */
@@ -51,7 +51,7 @@ struct et_occ
   int min;			/* The minimum value of the depth in the subtree
 				   is obtained by adding sum of depth fields
 				   on the path to the root.  */
-  struct et_occ *min_occ;	/* The occurence in the subtree with the minimal
+  struct et_occ *min_occ;	/* The occurrence in the subtree with the minimal
 				   depth.  */
 };
 
@@ -112,7 +112,7 @@ set_next (struct et_occ *occ, struct et_occ *t)
     t->parent = occ;
 }
 
-/* Recompute minimum for occurence OCC.  */
+/* Recompute minimum for occurrence OCC.  */
 
 static inline void
 et_recomp_min (struct et_occ *occ)
@@ -310,7 +310,7 @@ check_path_after (struct et_occ *occ)
 
 #endif
 
-/* Splay the occurence OCC to the root of the tree.  */
+/* Splay the occurrence OCC to the root of the tree.  */
 
 static void
 et_splay (struct et_occ *occ)
@@ -452,7 +452,7 @@ et_splay (struct et_occ *occ)
 #endif
 }
 
-/* Create a new et tree occurence of NODE.  */
+/* Create a new et tree occurrence of NODE.  */
 
 static struct et_occ *
 et_new_occ (struct et_node *node)

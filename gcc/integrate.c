@@ -191,7 +191,7 @@ function_cannot_inline_p (tree fndecl)
   if (current_function_cannot_inline)
     return current_function_cannot_inline;
 
-  /* If its not even close, don't even look.  */
+  /* If it's not even close, don't even look.  */
   if (get_max_uid () > 3 * max_insns)
     return N_("function too large to be inline");
 

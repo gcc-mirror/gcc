@@ -2467,7 +2467,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 			undobuf.other_insn, NULL_RTX);
     }
 #ifdef HAVE_cc0
-  /* If I2 is the setter CC0 and I3 is the user CC0 then check whether
+  /* If I2 is the CC0 setter and I3 is the CC0 user then check whether
      they are adjacent to each other or not.  */
   {
     rtx p = prev_nonnote_insn (i3);

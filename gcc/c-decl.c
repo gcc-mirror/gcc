@@ -792,7 +792,7 @@ match_builtin_function_types (tree newtype, tree oldtype)
   return build_type_attribute_variant (trytype, TYPE_ATTRIBUTES (oldtype));
 }
 
-/* Subroutine of diagnose_mismathed_decls.  Check for function type
+/* Subroutine of diagnose_mismatched_decls.  Check for function type
    mismatch involving an empty arglist vs a nonempty one and give clearer
    diagnostics. */
 static void
