@@ -1,5 +1,7 @@
 1998-12-15  Mark Mitchell  <mark@markmitchell.com>
 
+	* decl.c (poplevel): Make sure ns_binding is initialized.
+	
 	* decl.c (finish_function): Undo inadvertant change in previous
 	patch.
 

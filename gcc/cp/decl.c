@@ -1365,7 +1365,9 @@ poplevel (keep, reverse, functionbody)
 
 	  if (!outer_binding)
 	    ns_binding = IDENTIFIER_NAMESPACE_VALUE (DECL_NAME (link));
-						   
+	  else
+	    ns_binding = NULL_TREE;
+
 	  if (outer_binding 
 	      && (BINDING_LEVEL (outer_binding) 
 		  == current_binding_level->level_chain))
