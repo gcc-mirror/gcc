@@ -1,5 +1,9 @@
 2004-04-08  Paul Brook  <paul@codesourcery.com>
 
+	* arm.h (CLASS_LIKELY_SPILLED_P): Define.
+
+2004-04-08  Paul Brook  <paul@codesourcery.com>
+
 	* explow.c (promote_mode): Use PROMOTE_FUNCTION_MODE instead of
 	PROMOTE_FOR_CALL_ONLY.
 	* config/arm/arm-protos.h (arm_function_value): Declare.
