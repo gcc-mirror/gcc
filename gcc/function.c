@@ -6727,6 +6727,12 @@ thread_prologue_and_epilogue_insns (f)
 		    continue;
 		  if (JUMP_LABEL (jump))
 		    LABEL_NUSES (JUMP_LABEL (jump))--;
+				  
+		  /* If this block has only one successor, it both jumps
+		     and falls through to the fallthru block, so we can't
+		     delete the edge.  */
+   		  /*if (bb->succ->succ_next == NULL)
+	     	    continue;*/
 		}
 	      else
 		continue;
