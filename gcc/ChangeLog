@@ -1,3 +1,7 @@
+Sat Aug  7 00:06:30 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.texi: Update bug reporting text.
+
 1999-08-6 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* reg-stack.c (change_stack) Fixed problem with negative array index.

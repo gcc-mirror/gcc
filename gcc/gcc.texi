@@ -2258,7 +2258,10 @@ for improvement of GCC are welcome in any case.
 @cindex bug report mailing lists
 @kindex gcc-bugs@@gcc.gnu.org or bug-gcc@@gnu.org
 Send bug reports for the GNU Compiler Collection to
-@samp{gcc-bugs@@gcc.gnu.org} or @samp{bug-gcc@@gnu.org}.
+@samp{gcc-bugs@@gcc.gnu.org}.  In accordance with the GNU-wide
+convention, in which bug reports for tool ``foo'' are sent
+to @samp{bug-foo@@gnu.org}, the address @samp{bug-gcc@@gnu.org}
+may also be used; it will forward to the address given above.
 
 Please read @samp{<URL:http://www.gnu.org/software/gcc/faq.html#bugreport>} for
 bug reporting instructions before you post a bug report.
