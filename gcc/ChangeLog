@@ -1,3 +1,7 @@
+Sat Aug 30 22:54:26 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* unroll.c (calculate_giv_inc): Handle increment with code PLUS.
+
 Sat Aug 30 10:49:46 1997  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.md: Make DF fused-add operations pay attention to
