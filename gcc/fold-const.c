@@ -1212,7 +1212,7 @@ const_binop (code, arg1, arg2, notrunc)
 	}
     got_it:
       if (TREE_TYPE (arg1) == sizetype && hi == 0
-	  && low <= TREE_INT_CST_LOW (TYPE_MAX_VALUE (sizetype))
+	  && low >= 0 && low <= TREE_INT_CST_LOW (TYPE_MAX_VALUE (sizetype))
 	  && ! overflow
 	  && ! TREE_OVERFLOW (arg1) && ! TREE_OVERFLOW (arg2))
 	t = size_int (low);
