@@ -16,7 +16,8 @@
 ###     flags and whatnot, we can take out all those things and source
 ###     that file from here.  (Write that file with this in mind...)
 
-### XXX Note that breaking out of this with ^C will not work.  Dunno why.
+### XXX Note that breaking out of this with ^C will not work under
+###     Solaris (at least).  Dunno why.
 
 
 # 1: variables
@@ -195,9 +196,9 @@ setup_size_command()
     function size_command()
     {
       case $1 in
-        TEXT)  TEXT=$(size -A $EXENAME | grep ^.text | awk '{print $2}')  ;;
-        DATA)  DATA=$(size -A $EXENAME | awk '/^\.data[         ]/{print $2}')  ;;
-        SIZE)  SIZE=$(size -A $EXENAME | grep otal | awk '{print $2}')  ;;
+        TEXT)  TEXT=$(size -B $EXENAME | tail -1 | awk '{print $1}')  ;;
+        DATA)  DATA=$(size -B $EXENAME | tail -1 | awk '{print $2}')  ;;
+        SIZE)  SIZE=$(size -B $EXENAME | tail -1 | awk '{print $4}')  ;;
       esac
     }
   else
@@ -212,6 +213,16 @@ setup_size_command()
             TEXT)  TEXT=$(size -X32_64 $EXENAME | awk '{print $2}')  ;;
             DATA)  DATA=$(size -X32_64 $EXENAME | awk '{print $4}')  ;;
             SIZE)  SIZE=$(size -X32_64 $EXENAME | awk '{print $12}')  ;;
+          esac
+        }
+        ;;
+      *hpux*)
+        function size_command()
+        {
+          case $1 in
+            TEXT)  TEXT=$(size  $EXENAME | awk '{print $1}')  ;;
+            DATA)  DATA=$(size  $EXENAME | awk '{print $3}')  ;;
+            SIZE)  SIZE=$(size  $EXENAME | awk '{print $7}')  ;;
           esac
         }
         ;;

@@ -1,3 +1,8 @@
+2001-05-13  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* mkcheck.in (setup_size_command): Use Berkeley "-B" mode with GNU
+	size.  Add hpux case for HP size.
+
 2001-05-11   Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/*/*.cc: Remove spaces, make sure testcases return zero.
