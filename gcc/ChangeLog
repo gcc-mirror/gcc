@@ -1,3 +1,18 @@
+2003-10-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_alc_comparison): Add prototype.
+	(s390_slb_comparison): Likewise.
+	* config/s390/s390.c (s390_alc_comparison, s390_slb_comparison):
+	New functions.
+	* config/s390/s390.h (PREDICATE_CODES): Add s390_alc_comparison
+	and s390_slb_comparison.
+	* config/s390/s390.md ("*adddi3_31", "*subdi3_31"): Do not use on 
+	zSeries machines.
+	("*adddi3_31z", "*subdi3_31z"): New insns.
+	("*adddi3_alc_cc", "*adddi3_alc", "*subdi3_slb_cc", "*subdi3_slb",
+	"*addsi3_alc_cc", "*addsi3_alc", "*subsi3_slb_cc", "*subsi3_slb"):
+	New insns.
+	
 2003-10-14  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.in: Clean up some feedback echoes.

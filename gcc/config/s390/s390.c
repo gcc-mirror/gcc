@@ -447,6 +447,90 @@ s390_select_ccmode (enum rtx_code code, rtx op0, rtx op1)
     }
 }
 
+/* Return nonzero if OP is a valid comparison operator
+   for an ALC condition in mode MODE.  */
+
+int
+s390_alc_comparison (rtx op, enum machine_mode mode)
+{
+  if (mode != VOIDmode && mode != GET_MODE (op))
+    return 0;
+
+  if (GET_RTX_CLASS (GET_CODE (op)) != '<')
+    return 0;
+
+  if (GET_CODE (XEXP (op, 0)) != REG
+      || REGNO (XEXP (op, 0)) != CC_REGNUM
+      || XEXP (op, 1) != const0_rtx)
+    return 0;
+
+  switch (GET_MODE (XEXP (op, 0)))
+    {
+    case CCL1mode:
+      return GET_CODE (op) == LTU;
+
+    case CCL2mode:
+      return GET_CODE (op) == LEU;
+
+    case CCUmode:
+      return GET_CODE (op) == GTU;
+
+    case CCURmode:
+      return GET_CODE (op) == LTU;
+
+    case CCSmode:
+      return GET_CODE (op) == UNGT;
+
+    case CCSRmode:
+      return GET_CODE (op) == UNLT;
+
+    default:
+      return 0;
+    }
+}
+
+/* Return nonzero if OP is a valid comparison operator
+   for an SLB condition in mode MODE.  */
+
+int
+s390_slb_comparison (rtx op, enum machine_mode mode)
+{
+  if (mode != VOIDmode && mode != GET_MODE (op))
+    return 0;
+
+  if (GET_RTX_CLASS (GET_CODE (op)) != '<')
+    return 0;
+
+  if (GET_CODE (XEXP (op, 0)) != REG
+      || REGNO (XEXP (op, 0)) != CC_REGNUM
+      || XEXP (op, 1) != const0_rtx)
+    return 0;
+
+  switch (GET_MODE (XEXP (op, 0)))
+    {
+    case CCL1mode:
+      return GET_CODE (op) == GEU;
+
+    case CCL2mode:
+      return GET_CODE (op) == GTU;
+
+    case CCUmode:
+      return GET_CODE (op) == LEU;
+
+    case CCURmode:
+      return GET_CODE (op) == GEU;
+
+    case CCSmode:
+      return GET_CODE (op) == LE;
+
+    case CCSRmode:
+      return GET_CODE (op) == GE;
+
+    default:
+      return 0;
+    }
+}
+
 /* Return branch condition mask to implement a branch
    specified by CODE.  */
 
