@@ -51,7 +51,6 @@
 	(expand_unreachable_stmt): Expand unreachable while statements
 	using genrtl_do_stmt_1.
 
->>>>>>> 1.17950
 2003-05-29  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips-protos.h (mips_output_load_label): Declare.
