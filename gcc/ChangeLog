@@ -1,5 +1,8 @@
 Tue Dec 14 12:07:29 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
+	* regclass.c  (record_reg_classes): Do not do the copying preferrencing
+	when source does not die.
+
 	* regclass.c (record_reg_classes): Handle INOUT operands propertly.
 
 1999-12-14  Jakub Jelinek  <jakub@redhat.com>
