@@ -40,7 +40,7 @@ static struct tm *timestamp	 PARAMS ((cpp_reader *));
 static void special_symbol	 PARAMS ((HASHNODE *, cpp_reader *));
 
 
-#define SKIP_WHITE_SPACE(p) do { while (is_hor_space[*p]) p++; } while (0)
+#define SKIP_WHITE_SPACE(p) do { while (is_hspace(*p)) p++; } while (0)
 #define CPP_IS_MACRO_BUFFER(PBUF) ((PBUF)->data != NULL)
 #define FORWARD(N) CPP_FORWARD (CPP_BUFFER (pfile), (N))
 
@@ -131,7 +131,7 @@ cpp_lookup (pfile, name, len, hash)
 
   if (len < 0)
     {
-      for (bp = name; is_idchar[*bp]; bp++);
+      for (bp = name; is_idchar(*bp); bp++);
       len = bp - name;
     }
 
@@ -224,7 +224,7 @@ cpp_install (pfile, name, len, type, value, hash)
   if (len < 0)
     {
       p = name;
-      while (is_idchar[*p])
+      while (is_idchar(*p))
 	p++;
       len = p - name;
     }
@@ -306,7 +306,7 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
 
   /* Find the beginning of the trailing whitespace.  */
   p = buf;
-  while (p < limit && is_space[limit[-1]])
+  while (p < limit && is_space(limit[-1]))
     limit--;
 
   /* Allocate space for the text in the macro definition.
@@ -376,7 +376,7 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
 		  /* ##: concatenate preceding and following tokens.  */
 		  /* Take out the first #, discard preceding whitespace.  */
 		  exp_p--;
-		  while (exp_p > lastp && is_hor_space[exp_p[-1]])
+		  while (exp_p > lastp && is_hspace(exp_p[-1]))
 		    --exp_p;
 		  /* Skip the second #.  */
 		  p++;
@@ -392,7 +392,7 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
 		     Don't leave the # in the expansion.  */
 		  exp_p--;
 		  SKIP_WHITE_SPACE (p);
-		  if (p == limit || !is_idstart[*p]
+		  if (p == limit || !is_idstart(*p)
 		      || (*p == 'L' && p + 1 < limit && (p[1] == '\'' ||
 							 p[1] == '"')))
 		    cpp_error (pfile,
@@ -457,17 +457,17 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
 	}
 
       /* Handle the start of a symbol.  */
-      if (is_idchar[c] && nargs > 0)
+      if (is_idchar(c) && nargs > 0)
 	{
 	  U_CHAR *id_beg = p - 1;
 	  int id_len;
 
 	  --exp_p;
-	  while (p != limit && is_idchar[*p])
+	  while (p != limit && is_idchar(*p))
 	    p++;
 	  id_len = p - id_beg;
 
-	  if (is_idstart[c]
+	  if (is_idstart(c)
 	      && !(id_len == 1 && c == 'L' && (*p == '\'' || *p == '"')))
 	    {
 	      register struct arglist *arg;
@@ -612,12 +612,12 @@ create_definition (buf, limit, pfile, predefinition)
 
   bp = buf;
 
-  while (is_hor_space[*bp])
+  while (is_hspace(*bp))
     bp++;
 
   symname = bp;			/* remember where it starts */
 
-  sym_length = check_macro_name (pfile, bp, 0);
+  sym_length = check_macro_name (pfile, bp);
   bp += sym_length;
 
   /* Lossage will occur if identifiers or control keywords are broken
@@ -648,11 +648,11 @@ create_definition (buf, limit, pfile, predefinition)
 	    cpp_pedwarn (pfile, "another parameter follows `%s'",
 			 rest_extension);
 
-	  if (!is_idstart[*bp])
+	  if (!is_idstart(*bp))
 	    cpp_pedwarn (pfile, "invalid character in macro parameter name");
 
 	  /* Find the end of the arg name.  */
-	  while (is_idchar[*bp])
+	  while (is_idchar(*bp))
 	    {
 	      bp++;
 	      /* do we have a "special" rest-args extension here? */
@@ -737,7 +737,7 @@ create_definition (buf, limit, pfile, predefinition)
 
       if (bp < limit)
 	{
-	  if (is_hor_space[*bp])
+	  if (is_hspace(*bp))
 	    {
 	      bp++;
 	      SKIP_WHITE_SPACE (bp);
@@ -1141,7 +1141,7 @@ macroexpand (pfile, hp)
 	  /* cpp.texi says for foo ( ) we provide one argument.
 	     However, if foo wants just 0 arguments, treat this as 0.  */
 	  if (nargs == 0)
-	    while (bp != lim && is_space[*bp])
+	    while (bp != lim && is_space(*bp))
 	      bp++;
 	  if (bp == lim)
 	    i = 0;
@@ -1227,7 +1227,7 @@ macroexpand (pfile, hp)
 			  /* Internal sequences of whitespace are
 			     replaced by one space except within
 			     a string or char token. */
-			  if (is_space[c])
+			  if (is_space(c))
 			    {
 			      if (CPP_WRITTEN (pfile) > (unsigned) arg->stringified
 				  && (CPP_PWRITTEN (pfile))[-1] == '\r')
@@ -1333,11 +1333,11 @@ macroexpand (pfile, hp)
 		      && last_ap->raw_after)))
 	    {
 	      /* Delete final whitespace.  */
-	      while (totlen > count_before && is_space[xbuf[totlen - 1]])
+	      while (totlen > count_before && is_space(xbuf[totlen - 1]))
 		totlen--;
 
 	      /* Delete the nonwhites before them.  */
-	      while (totlen > count_before && !is_space[xbuf[totlen - 1]])
+	      while (totlen > count_before && !is_space(xbuf[totlen - 1]))
 		totlen--;
 	    }
 
@@ -1357,7 +1357,7 @@ macroexpand (pfile, hp)
 		     whitespace markers, and no-reexpansion markers.  */
 		  while (p1 != l1)
 		    {
-		      if (is_space[p1[0]])
+		      if (is_space(p1[0]))
 			p1++;
 		      else if (p1[0] == '\r')
 			p1 += 2;
@@ -1371,7 +1371,7 @@ macroexpand (pfile, hp)
 		     whitespace markers, and no-reexpansion markers.  */
 		  while (p1 != l1)
 		    {
-		      if (is_space[l1[-1]])
+		      if (is_space(l1[-1]))
 			l1--;
 		      else if (l1[-1] == '\r')
 			l1--;
@@ -1510,7 +1510,7 @@ unsafe_chars (c1, c2)
     case 'U':  case 'V':  case 'W':  case 'X':  case 'Y':  case 'Z':
     letter:
     /* We're in the middle of either a name or a pre-processing number.  */
-      return (is_idchar[c2] || c2 == '.');
+      return (is_idchar(c2) || c2 == '.');
 
     case '<':  case '>':  case '!':  case '%':  case '#':  case ':':
     case '^':  case '&':  case '|':  case '*':  case '/':  case '=':
@@ -1551,7 +1551,7 @@ push_macro_expansion (pfile, xbuf, xbuf_len, hp)
      or some other (less common) characters.  */
 
   if (xbuf[0] == '\r' && xbuf[1] == ' '
-      && (is_idchar[xbuf[2]] || xbuf[2] == '(' || xbuf[2] == '\''
+      && (is_idchar(xbuf[2]) || xbuf[2] == '(' || xbuf[2] == '\''
 	  || xbuf[2] == '\"'))
     mbuf->cur += 2;
 
@@ -1627,25 +1627,25 @@ comp_def_part (first, beg1, len1, beg2, len2, last)
   register U_CHAR *end2 = beg2 + len2;
   if (first)
     {
-      while (beg1 != end1 && is_space[*beg1])
+      while (beg1 != end1 && is_space(*beg1))
 	beg1++;
-      while (beg2 != end2 && is_space[*beg2])
+      while (beg2 != end2 && is_space(*beg2))
 	beg2++;
     }
   if (last)
     {
-      while (beg1 != end1 && is_space[end1[-1]])
+      while (beg1 != end1 && is_space(end1[-1]))
 	end1--;
-      while (beg2 != end2 && is_space[end2[-1]])
+      while (beg2 != end2 && is_space(end2[-1]))
 	end2--;
     }
   while (beg1 != end1 && beg2 != end2)
     {
-      if (is_space[*beg1] && is_space[*beg2])
+      if (is_space(*beg1) && is_space(*beg2))
 	{
-	  while (beg1 != end1 && is_space[*beg1])
+	  while (beg1 != end1 && is_space(*beg1))
 	    beg1++;
-	  while (beg2 != end2 && is_space[*beg2])
+	  while (beg2 != end2 && is_space(*beg2))
 	    beg2++;
 	}
       else if (*beg1 == *beg2)

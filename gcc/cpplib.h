@@ -96,11 +96,11 @@ struct cpp_buffer
   struct cpp_buffer *prev;
 
   /* Real filename.  (Alias to ->ihash->fname, obsolete). */
-  char *fname;
+  const char *fname;
   /* Filename specified with #line command.  */
-  char *nominal_fname;
+  const char *nominal_fname;
   /* Last filename specified with #line command.  */
-  char *last_nominal_fname;
+  const char *last_nominal_fname;
   /* Actual directory of this file, used only for "" includes */
   struct file_name_list *actual_dir;
 
@@ -550,11 +550,12 @@ struct include_hash
   /* Location of the file in the include search path.
      Used for include_next */
   struct file_name_list *foundhere;
-  char *name;		/* (partial) pathname of file */
-  char *nshort;		/* name of file as referenced in #include */
-  const char *control_macro; /* macro, if any, preventing reinclusion - see
-				redundant_include_p */
-  char *buf, *limit;	/* for file content cache, not yet implemented */
+  const char *name;		/* (partial) pathname of file */
+  const char *nshort;		/* name of file as referenced in #include */
+  const char *control_macro;	/* macro, if any, preventing reinclusion -
+				   see redundant_include_p */
+  char *buf, *limit;		/* for file content cache,
+				   not yet implemented */
 };
 
 /* Name under which this program was invoked.  */
@@ -610,7 +611,7 @@ typedef struct macrodef MACRODEF;
 struct macrodef
 {
   struct definition *defn;
-  unsigned char *symnam;
+  const U_CHAR *symnam;
   int symlen;
 };
 
@@ -665,18 +666,30 @@ struct definition {
   } args;
 };
 
-/* These tables are not really `const', but they are only modified at
+/* Character classes.
+   If the definition of `numchar' looks odd to you, please look up the
+   definition of a pp-number in the C standard [section 6.4.8 of C99] */
+#define ISidnum		0x01	/* a-zA-Z0-9_ */
+#define ISidstart	0x02	/* _a-zA-Z */
+#define ISnumstart	0x04	/* 0-9 */
+#define IShspace	0x08	/* ' ' \t \f \v */
+#define ISspace		0x10	/* ' ' \t \f \v \n */
+
+#define is_idchar(x)	(IStable[x] & ISidnum)
+#define is_numchar(x)	(IStable[x] & ISidnum)
+#define is_idstart(x)	(IStable[x] & ISidstart)
+#define is_numstart(x)	(IStable[x] & ISnumstart)
+#define is_hspace(x)	(IStable[x] & IShspace)
+#define is_space(x)	(IStable[x] & ISspace)
+
+/* This table is not really `const', but it is only modified at
    initialization time, in a separate translation unit from the rest
-   of the library.  We let the rest of the library think they are `const'
-   to get better code and some additional sanity checks.  */
+   of the library.  We let the rest of the library think it is `const'
+   to get better code and some additional compile-time checks.  */
 #ifndef FAKE_CONST
 #define FAKE_CONST const
 #endif
-extern FAKE_CONST unsigned char is_idstart[256];
-extern FAKE_CONST unsigned char is_idchar[256];
-extern FAKE_CONST unsigned char is_hor_space[256];
-extern FAKE_CONST unsigned char is_space[256];
-extern FAKE_CONST unsigned char trigraph_table[256];
+extern FAKE_CONST unsigned char IStable[256];
 #undef FAKE_CONST
 
 /* Stack of conditionals currently in progress
@@ -684,7 +697,7 @@ extern FAKE_CONST unsigned char trigraph_table[256];
 
 struct if_stack {
   struct if_stack *next;	/* for chaining to the next stack frame */
-  char *fname;		/* copied from input when frame is made */
+  const char *fname;		/* copied from input when frame is made */
   int lineno;			/* similarly */
   int if_succeeded;		/* true if a leg of this if-group
 				    has been passed through rescan */
@@ -739,7 +752,7 @@ extern void quote_string		PARAMS ((cpp_reader *, const char *));
 extern void cpp_expand_to_buffer	PARAMS ((cpp_reader *, const U_CHAR *,
 						 int));
 extern void cpp_scan_buffer		PARAMS ((cpp_reader *));
-extern int check_macro_name		PARAMS ((cpp_reader *, const U_CHAR *, int));
+extern int check_macro_name		PARAMS ((cpp_reader *, const U_CHAR *));
 
 /* Last arg to output_line_command.  */
 enum file_change_code {same_file, enter_file, leave_file};

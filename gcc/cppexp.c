@@ -457,12 +457,12 @@ cpp_lex (pfile, skip_evaluation)
 	      cpp_skip_hspace (pfile);
 	    }
 
-	  if (!is_idstart[*ip->cur])
+	  if (!is_idstart(*ip->cur))
 	    goto oops;
 	  if (ip->cur[0] == 'L' && (ip->cur[1] == '\'' || ip->cur[1] == '"'))
 	    goto oops;
 	  tok = ip->cur;
-	  while (is_idchar[*ip->cur])
+	  while (is_idchar(*ip->cur))
 	    ++ip->cur;
 	  len = ip->cur - tok;
 	  cpp_skip_hspace (pfile);
@@ -1010,11 +1010,11 @@ cpp_parse_expr (pfile)
 		}
 	      break;
 	    default:
-	      cpp_error (pfile,
-			 (top[1].op >= ' ' && top[1].op <= '~'
-			  ? "unimplemented operator '%c'\n"
-			  : "unimplemented operator '\\%03o'\n"),
-			 top[1].op);
+	      if (ISGRAPH (top[1].op))
+		cpp_error (pfile, "unimplemented operator '%c'\n", top[1].op);
+	      else
+		cpp_error (pfile, "unimplemented operator '\\%03o'\n",
+			   top[1].op);
 	    }
 	}
       if (op.op == 0)
