@@ -1,3 +1,85 @@
+Wed Oct 27 12:33:40 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* rtl.h (note_stores): Add additional paramter.
+	* rtlanal.c (reg_set_p_1): Take additional paramter.
+	(reg_set_last_1): Likewise.
+	(reg_set_p): Adjust call to note_stores.
+	(reg_set_last): Likewise.
+	(note_stores): Pass data parameter to worker function.
+	* alias.c (record_set): Take additional parameter.
+	(init_alias_analysis): Pass it.
+	* caller-save.c (mark_set_regs): Take additional parameter.
+	(save_call_clobbered_regs): Pass NULL to note_stores.
+	* combine.c (set_nonzero_bits_and_sign_copies): Take additional
+	parameter.
+	(record_dead_and_set_regs_1): Likewise.
+	(reg_dead_at_p_1): Likewise.
+	(combine_instructions): Adjust calls to note_stores.
+	(try_combine): Likewise.
+	(record_dead_insn): Remove.
+	(record_dead_and_set_regs): Adjust calls to note_stores.
+	(reg_dead_at_p): Likewise.
+	* cse.c (invalidate_skipped_set): Take additional parameter.
+	(cse_check_loop_start): Likewise.
+	(cse_check_loop_start_value): Remove.
+	(cse_set_around_loop): Adjust calls to note_stores.
+	* flow.c (notice_stack_pointer_modification): Take additional
+	parameter.  Remove duplicate declaration.
+	(record_volatile_insns): Adjust calls to note_stores.
+	* gcse.c (record_set_info): Take additional parameter.
+	(record_last_set_info): Likewise.
+	(invalidate_nonnull_info): Likewise.
+	(record_set_insn): Remove.
+	(compute_sets): Adjust calls to note_stores.
+	(last_set_insn): Remove.
+	(compute_hash_table): Adjust calls to note_stores.
+	(insert_insn_end_bb): Likewise.
+	(delete_null_pointer_checks): Likewise.
+	* global.c (mark_reg_store): Take additional parameter.
+	(mark_reg_clobber): Likewise.
+	(reg_becomes_live): Likewise.
+	(global_conflicts): Adjust calls to note_stores.
+	(build_insn_chain): Likewise.
+	* integrate.c (note_modified_parmregs): Take additional parameter.
+	(mark_stores): Likewise.  Make it static.
+	(save_for_inline_nocopy): Adjust calls to note_stores.
+	(try_constants): Likewise.
+	* integrate.h (mark_stores): Remove declaration.
+	* jump.c (mark_modified_reg): Take additional parameter.
+	(thread_jumps): Adjust calls to note_stores.
+	* local-alloc.c (validate_equiv_mem_from_store): Take additional
+	parameter.
+	(no_equiv): Likewise.
+	(reg_is_set): Likewise.
+	(validate_equiv_mem): Adjust calls to note_stores.
+	(update_equiv_regs): Likewise.
+	(block_alloc): Likewise.
+	* loop.c (note_set_pseudo_multiple_uses_retval): Remove.
+	(note_addr_stored): Take additional parameter.
+	(note_set_pseudo_multiple_uses): Likewise.
+	(record_initial): Likewise.
+	(prescan_loop): Adjust calls to note_stores.
+	(strength_reduce): Likewise.
+	(check_dbra_loop): Likewise.
+	* regmove.c (flags_set_1): Take additional paramter.
+	(mark_flags_life_zones): Adjust calls to note_stores.
+	* reload1.c (mark_not_eliminable): Take additional parameter.
+	(forget_old_reloads_1): Likewise.
+	(reload_cse_invalidate_rtx): Likewise.
+	(reload_cse_check_clobber): Likewise.
+	(reload_combine_note_store): Likewise.
+	(move2add_note_store): Likewise.
+	(reload): Adjust calls to note_stores.
+	(reload_as_needed): Likewise.
+	(emit_reload_insns): Likewise.
+	(reload_cse_regs_1): Likewise.
+	(reload_cse_record_set): Adjust calls to reload_cse_invalidate_rtx.
+	(reload_combine): Adjust calls to note_stores.
+	* resource.c (update_live_status): Take additional paramter.
+	(mark_target_live_regs): Adjust calls to note_stores.
+	* stupid.c (find_clobbered_regs): Take additional parameter.
+	(stupid_life_analysis): Adjust calls to note_stores.
+	
 Wed Oct 27 19:26:12 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/coff.h (STRUCTURE_SIZE_BOUNDARY): Delete

@@ -57,7 +57,7 @@ struct match {
 
 static rtx discover_flags_reg PROTO((void));
 static void mark_flags_life_zones PROTO((rtx));
-static void flags_set_1 PROTO((rtx, rtx));
+static void flags_set_1 PROTO((rtx, rtx, void *));
 
 static int try_auto_increment PROTO((rtx, rtx, rtx, rtx, HOST_WIDE_INT, int));
 static int find_matches PROTO((rtx, struct match *));
@@ -302,7 +302,7 @@ mark_flags_life_zones (flags)
 	      /* In either case, birth is denoted simply by it's presence
 		 as the destination of a set.  */
 	      flags_set_1_set = 0;
-	      note_stores (PATTERN (insn), flags_set_1);
+	      note_stores (PATTERN (insn), flags_set_1, NULL);
 	      if (flags_set_1_set)
 		{
 		  live = 1;
@@ -322,8 +322,9 @@ mark_flags_life_zones (flags)
 /* A subroutine of mark_flags_life_zones, called through note_stores.  */
 
 static void
-flags_set_1 (x, pat)
+flags_set_1 (x, pat, data)
      rtx x, pat;
+     void *data ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (pat) == SET
       && reg_overlap_mentioned_p (x, flags_set_1_rtx))

@@ -63,7 +63,7 @@ extern struct obstack *function_maybepermanent_obstack;
 #endif
 
 static rtvec initialize_for_inline	PROTO((tree));
-static void note_modified_parmregs	PROTO((rtx, rtx));
+static void note_modified_parmregs	PROTO((rtx, rtx, void *));
 static void integrate_parm_decls	PROTO((tree, struct inline_remap *,
 					       rtvec));
 static tree integrate_decl_tree		PROTO((tree,
@@ -78,6 +78,7 @@ static void process_reg_param		PROTO((struct inline_remap *, rtx,
 void set_decl_abstract_flags		PROTO((tree, int));
 static tree copy_and_set_decl_abstract_origin PROTO((tree));
 static rtx expand_inline_function_eh_labelmap PROTO((rtx));
+static void mark_stores                 PROTO((rtx, rtx, void *));
 
 /* The maximum number of instructions accepted for inlining a
    function.  Increasing values mean more agressive inlining.
@@ -385,7 +386,7 @@ save_for_inline_nocopy (fndecl)
 
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	/* Record what interesting things happen to our parameters.  */
-	note_stores (PATTERN (insn), note_modified_parmregs);
+	note_stores (PATTERN (insn), note_modified_parmregs, NULL);
     }
 
   /* We have now allocated all that needs to be allocated permanently
@@ -404,9 +405,10 @@ save_for_inline_nocopy (fndecl)
 /* Note whether a parameter is modified or not.  */
 
 static void
-note_modified_parmregs (reg, x)
+note_modified_parmregs (reg, x, data)
      rtx reg;
      rtx x ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (reg) == REG && in_nonparm_insns
       && REGNO (reg) < max_parm_reg
@@ -1951,7 +1953,7 @@ try_constants (insn, map)
   apply_change_group ();
 
   /* Show we don't know the value of anything stored or clobbered.  */
-  note_stores (PATTERN (insn), mark_stores);
+  note_stores (PATTERN (insn), mark_stores, NULL);
   map->last_pc_value = 0;
 #ifdef HAVE_cc0
   map->last_cc0_value = 0;
@@ -2268,9 +2270,10 @@ subst_constants (loc, insn, map)
    called from note_stores with parts of the new insn.  */
 
 void
-mark_stores (dest, x)
+mark_stores (dest, x, data)
      rtx dest;
      rtx x ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
 {
   int regno = -1;
   enum machine_mode mode = VOIDmode;

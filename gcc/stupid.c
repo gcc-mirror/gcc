@@ -128,7 +128,7 @@ static int stupid_reg_compare	PROTO((const PTR,const PTR));
 static int stupid_find_reg	PROTO((int, enum reg_class, enum machine_mode,
 				       int, int, int));
 static void stupid_mark_refs	PROTO((rtx, struct insn_chain *));
-static void find_clobbered_regs	PROTO((rtx, rtx));
+static void find_clobbered_regs	PROTO((rtx, rtx, void *));
 
 /* For communication between stupid_life_analysis and find_clobbered_regs.  */
 static struct insn_chain *current_chain;
@@ -138,8 +138,9 @@ static struct insn_chain *current_chain;
    of the appropriate insn_chain structure.  */
 
 static void
-find_clobbered_regs (reg, setter)
+find_clobbered_regs (reg, setter, data)
      rtx reg, setter;
+     void *data ATTRIBUTE_UNUSED;
 {
   int regno, nregs;
   if (setter == 0 || GET_CODE (setter) != CLOBBER)
@@ -344,7 +345,7 @@ stupid_life_analysis (f, nregs, file)
 	     pattern.  */
 	  current_chain = chain;
 	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-	    note_stores (PATTERN (insn), find_clobbered_regs);
+	    note_stores (PATTERN (insn), find_clobbered_regs, NULL);
 	}
 
       if (GET_CODE (insn) == JUMP_INSN && computed_jump_p (insn))

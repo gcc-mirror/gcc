@@ -84,7 +84,7 @@ static HARD_REG_SET referenced_regs;
 static HARD_REG_SET this_insn_sets;
 
 
-static void mark_set_regs		PROTO((rtx, rtx));
+static void mark_set_regs		PROTO((rtx, rtx, void *));
 static void mark_referenced_regs	PROTO((rtx));
 static int insert_save			PROTO((struct insn_chain *, int, int,
 					       HARD_REG_SET *));
@@ -385,7 +385,7 @@ save_call_clobbered_regs ()
 	      /* Record all registers set in this call insn.  These don't need
 		 to be saved.  */
 	      CLEAR_HARD_REG_SET (this_insn_sets);
-	      note_stores (PATTERN (insn), mark_set_regs);
+	      note_stores (PATTERN (insn), mark_set_regs, NULL);
 
 	      /* Compute which hard regs must be saved before this call.  */
 	      AND_COMPL_HARD_REG_SET (hard_regs_to_save, call_fixed_reg_set);
@@ -465,9 +465,10 @@ save_call_clobbered_regs ()
    been assigned hard regs have had their register number changed already,
    so we can ignore pseudos.  */
 static void
-mark_set_regs (reg, setter)
+mark_set_regs (reg, setter, data)
      rtx reg;
      rtx setter ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
 {
   register int regno, endregno, i;
   enum machine_mode mode = GET_MODE (reg);

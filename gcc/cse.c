@@ -693,9 +693,9 @@ static int note_mem_written	PROTO((rtx));
 static void invalidate_from_clobbers PROTO((rtx));
 static rtx cse_process_notes	PROTO((rtx, rtx));
 static void cse_around_loop	PROTO((rtx));
-static void invalidate_skipped_set PROTO((rtx, rtx));
+static void invalidate_skipped_set PROTO((rtx, rtx, void *));
 static void invalidate_skipped_block PROTO((rtx));
-static void cse_check_loop_start PROTO((rtx, rtx));
+static void cse_check_loop_start PROTO((rtx, rtx, void *));
 static void cse_set_around_loop	PROTO((rtx, rtx, rtx));
 static rtx cse_basic_block	PROTO((rtx, rtx, struct branch_path *, int));
 static void count_reg_usage	PROTO((rtx, int *, rtx, int));
@@ -8205,9 +8205,10 @@ cse_around_loop (loop_start)
    since they are done elsewhere.  This function is called via note_stores.  */
 
 static void
-invalidate_skipped_set (dest, set)
+invalidate_skipped_set (dest, set, data)
      rtx set;
      rtx dest;
+     void *data ATTRIBUTE_UNUSED;
 {
   enum rtx_code code = GET_CODE (dest);
 
@@ -8262,30 +8263,29 @@ invalidate_skipped_block (start)
 	}
 
       invalidate_from_clobbers (PATTERN (insn));
-      note_stores (PATTERN (insn), invalidate_skipped_set);
+      note_stores (PATTERN (insn), invalidate_skipped_set, NULL);
     }
 }
 
-/* Used for communication between the following two routines; contains a
-   value to be checked for modification.  */
-
-static rtx cse_check_loop_start_value;
-
-/* If modifying X will modify the value in CSE_CHECK_LOOP_START_VALUE,
-   indicate that fact by setting CSE_CHECK_LOOP_START_VALUE to 0.  */
+/* If modifying X will modify the value in *DATA (which is really an
+   `rtx *'), indicate that fact by setting the pointed to value to
+   NULL_RTX.  */
 
 static void
-cse_check_loop_start (x, set)
+cse_check_loop_start (x, set, data)
      rtx x;
      rtx set ATTRIBUTE_UNUSED;
+     void *data;
 {
-  if (cse_check_loop_start_value == 0
+  rtx *cse_check_loop_start_value = (rtx *) data;
+
+  if (*cse_check_loop_start_value == NULL_RTX
       || GET_CODE (x) == CC0 || GET_CODE (x) == PC)
     return;
 
-  if ((GET_CODE (x) == MEM && GET_CODE (cse_check_loop_start_value) == MEM)
-      || reg_overlap_mentioned_p (x, cse_check_loop_start_value))
-    cse_check_loop_start_value = 0;
+  if ((GET_CODE (x) == MEM && GET_CODE (*cse_check_loop_start_value) == MEM)
+      || reg_overlap_mentioned_p (x, *cse_check_loop_start_value))
+    *cse_check_loop_start_value = NULL_RTX;
 }
 
 /* X is a SET or CLOBBER contained in INSN that was found near the start of
@@ -8350,11 +8350,12 @@ cse_set_around_loop (x, insn, loop_start)
 		       can modify it, or we would have invalidated it in
 		       the hash table.  */
 		    rtx q;
-
-		    cse_check_loop_start_value = SET_SRC (x);
+		    rtx cse_check_loop_start_value = SET_SRC (x);
 		    for (q = p; q != loop_start; q = NEXT_INSN (q))
 		      if (GET_RTX_CLASS (GET_CODE (q)) == 'i')
-			note_stores (PATTERN (q), cse_check_loop_start);
+			note_stores (PATTERN (q),
+				     cse_check_loop_start,
+				     &cse_check_loop_start_value);
 
 		    /* If nothing was changed and we can replace our
 		       SET_SRC, add an insn after P to copy its destination

@@ -243,13 +243,13 @@ static rtx *reg_equiv_init_insns;
 static int recorded_label_ref;
 
 static void alloc_qty		PROTO((int, enum machine_mode, int, int));
-static void validate_equiv_mem_from_store PROTO((rtx, rtx));
+static void validate_equiv_mem_from_store PROTO((rtx, rtx, void *));
 static int validate_equiv_mem	PROTO((rtx, rtx, rtx));
 static int contains_replace_regs PROTO((rtx, char *));
 static int memref_referenced_p	PROTO((rtx, rtx));
 static int memref_used_between_p PROTO((rtx, rtx, rtx));
 static void update_equiv_regs	PROTO((void));
-static void no_equiv		PROTO((rtx, rtx));
+static void no_equiv		PROTO((rtx, rtx, void *));
 static void block_alloc		PROTO((int));
 static int qty_sugg_compare    	PROTO((int, int));
 static int qty_sugg_compare_1	PROTO((const PTR, const PTR));
@@ -258,7 +258,7 @@ static int qty_compare_1	PROTO((const PTR, const PTR));
 static int combine_regs		PROTO((rtx, rtx, int, int, rtx, int));
 static int reg_meets_class_p	PROTO((int, enum reg_class));
 static void update_qty_class	PROTO((int, int));
-static void reg_is_set		PROTO((rtx, rtx));
+static void reg_is_set		PROTO((rtx, rtx, void *));
 static void reg_is_born		PROTO((rtx, int));
 static void wipe_dead_reg	PROTO((rtx, int));
 static int find_free_reg	PROTO((enum reg_class, enum machine_mode,
@@ -436,9 +436,10 @@ static int equiv_mem_modified;
    Called via note_stores.  */
 
 static void
-validate_equiv_mem_from_store (dest, set)
+validate_equiv_mem_from_store (dest, set, data)
      rtx dest;
      rtx set ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
 {
   if ((GET_CODE (dest) == REG
        && reg_overlap_mentioned_p (dest, equiv_mem))
@@ -483,7 +484,7 @@ validate_equiv_mem (start, reg, memref)
 	  && ! CONST_CALL_P (insn))
 	return 0;
 
-      note_stores (PATTERN (insn), validate_equiv_mem_from_store);
+      note_stores (PATTERN (insn), validate_equiv_mem_from_store, NULL);
 
       /* If a register mentioned in MEMREF is modified via an
 	 auto-increment, we lose the equivalence.  Do the same if one
@@ -708,7 +709,7 @@ update_equiv_regs ()
 
       for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
 	if (REG_NOTE_KIND (note) == REG_INC)
-	  no_equiv (XEXP (note, 0), note);
+	  no_equiv (XEXP (note, 0), note, NULL);
 
       set = single_set (insn);
 
@@ -716,7 +717,7 @@ update_equiv_regs ()
 	 only mark all destinations as having no known equivalence.  */
       if (set == 0)
 	{
-	  note_stores (PATTERN (insn), no_equiv);
+	  note_stores (PATTERN (insn), no_equiv, NULL);
 	  continue;
 	}
       else if (GET_CODE (PATTERN (insn)) == PARALLEL)
@@ -727,7 +728,7 @@ update_equiv_regs ()
 	    {
 	      rtx part = XVECEXP (PATTERN (insn), 0, i);
 	      if (part != set)
-		note_stores (part, no_equiv);
+		note_stores (part, no_equiv, NULL);
 	    }
 	}
 
@@ -792,7 +793,7 @@ update_equiv_regs ()
 	{
 	  /* This might be seting a SUBREG of a pseudo, a pseudo that is
 	     also set somewhere else to a constant.  */
-	  note_stores (set, no_equiv);
+	  note_stores (set, no_equiv, NULL);
 	  continue;
 	}
       /* Don't handle the equivalence if the source is in a register
@@ -801,7 +802,7 @@ update_equiv_regs ()
 	  && REGNO (src) >= FIRST_PSEUDO_REGISTER
 	  && CLASS_LIKELY_SPILLED_P (reg_preferred_class (REGNO (src))))
 	{
-	  no_equiv (dest, set);
+	  no_equiv (dest, set, NULL);
 	  continue;
 	}
 
@@ -814,7 +815,7 @@ update_equiv_regs ()
 		  && ! rtx_equal_p (XEXP (note, 0),
 				    reg_equiv_replacement[regno]))))
 	{
-	  no_equiv (dest, set);
+	  no_equiv (dest, set, NULL);
 	  continue;
 	}
       /* Record this insn as initializing this register.  */
@@ -1009,8 +1010,9 @@ update_equiv_regs ()
    assignment - a SET, CLOBBER or REG_INC note.  It is currently not used,
    but needs to be there because this function is called from note_stores.  */
 static void
-no_equiv (reg, store)
+no_equiv (reg, store, data)
      rtx reg, store ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
 {
   int regno;
   rtx list;
@@ -1259,7 +1261,7 @@ block_alloc (b)
 	     that are born (set) in this instruction.
 	     A pseudo that already has a qty is not changed.  */
 
-	  note_stores (PATTERN (insn), reg_is_set);
+	  note_stores (PATTERN (insn), reg_is_set, NULL);
 
 	  /* If anything is set in this insn and then unused, mark it as dying
 	     after this insn, so it will conflict with our outputs.  This
@@ -1802,9 +1804,10 @@ update_qty_class (qty, reg)
    carry info from `block_alloc'.  */
 
 static void
-reg_is_set (reg, setter)
+reg_is_set (reg, setter, data)
      rtx reg;
      rtx setter;
+     void *data ATTRIBUTE_UNUSED;
 {
   /* Note that note_stores will only pass us a SUBREG if it is a SUBREG of
      a hard register.  These may actually not exist any more.  */

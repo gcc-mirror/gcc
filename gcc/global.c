@@ -264,14 +264,14 @@ static void prune_preferences	PROTO((void));
 static void find_reg		PROTO((int, HARD_REG_SET, int, int, int));
 static void record_one_conflict PROTO((int));
 static void record_conflicts	PROTO((int *, int));
-static void mark_reg_store	PROTO((rtx, rtx));
-static void mark_reg_clobber	PROTO((rtx, rtx));
+static void mark_reg_store	PROTO((rtx, rtx, void *));
+static void mark_reg_clobber	PROTO((rtx, rtx, void *));
 static void mark_reg_conflicts	PROTO((rtx));
 static void mark_reg_death	PROTO((rtx));
 static void mark_reg_live_nc	PROTO((int, enum machine_mode));
 static void set_preference	PROTO((rtx, rtx));
 static void dump_conflicts	PROTO((FILE *));
-static void reg_becomes_live	PROTO((rtx, rtx));
+static void reg_becomes_live	PROTO((rtx, rtx, void *));
 static void reg_dies		PROTO((int, enum machine_mode));
 static void build_insn_chain	PROTO((rtx));
 
@@ -722,7 +722,7 @@ global_conflicts ()
 	      /* Mark any registers clobbered by INSN as live,
 		 so they conflict with the inputs.  */
 
-	      note_stores (PATTERN (insn), mark_reg_clobber);
+	      note_stores (PATTERN (insn), mark_reg_clobber, NULL);
 
 	      /* Mark any registers dead after INSN as dead now.  */
 
@@ -735,12 +735,12 @@ global_conflicts ()
 		 Clobbers are processed again, so they conflict with
 		 the registers that are set.  */
 
-	      note_stores (PATTERN (insn), mark_reg_store);
+	      note_stores (PATTERN (insn), mark_reg_store, NULL);
 
 #ifdef AUTO_INC_DEC
 	      for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
 		if (REG_NOTE_KIND (link) == REG_INC)
-		  mark_reg_store (XEXP (link, 0), NULL_RTX);
+		  mark_reg_store (XEXP (link, 0), NULL_RTX, NULL);
 #endif
 
 	      /* If INSN has multiple outputs, then any reg that dies here
@@ -1341,8 +1341,9 @@ record_conflicts (allocno_vec, len)
    a REG_INC note was found for it).  */
 
 static void
-mark_reg_store (reg, setter)
+mark_reg_store (reg, setter, data)
      rtx reg, setter;
+     void *data ATTRIBUTE_UNUSED;
 {
   register int regno;
 
@@ -1398,11 +1399,12 @@ mark_reg_store (reg, setter)
 /* Like mark_reg_set except notice just CLOBBERs; ignore SETs.  */
 
 static void
-mark_reg_clobber (reg, setter)
+mark_reg_clobber (reg, setter, data)
      rtx reg, setter;
+     void *data ATTRIBUTE_UNUSED;
 {
   if (GET_CODE (setter) == CLOBBER)
-    mark_reg_store (reg, setter);
+    mark_reg_store (reg, setter, data);
 }
 
 /* Record that REG has conflicts with all the regs currently live.
@@ -1623,9 +1625,10 @@ static regset live_relevant_regs;
 /* Record in live_relevant_regs that register REG became live.  This
    is called via note_stores.  */
 static void
-reg_becomes_live (reg, setter)
+reg_becomes_live (reg, setter, data)
      rtx reg;
      rtx setter ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
 {
   int regno;
 
@@ -1718,7 +1721,7 @@ build_insn_chain (first)
 
 	      /* Mark everything born in this instruction as live.  */
 
-	      note_stores (PATTERN (first), reg_becomes_live);
+	      note_stores (PATTERN (first), reg_becomes_live, NULL);
 	    }
 
 	  /* Remember which registers are live at the end of the insn, before

@@ -118,8 +118,6 @@ extern rtx copy_rtx_and_substitute PROTO((rtx, struct inline_remap *));
 
 extern void try_constants PROTO((rtx, struct inline_remap *));
 
-extern void mark_stores PROTO((rtx, rtx));
-
 /* Return the label indicated.  */
 extern rtx get_label_from_map PROTO((struct inline_remap *, int));
 

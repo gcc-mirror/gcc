@@ -521,7 +521,7 @@ static void free_gcse_mem	     PROTO ((void));
 static void alloc_reg_set_mem	 PROTO ((int));
 static void free_reg_set_mem	  PROTO ((void));
 static void record_one_set	    PROTO ((int, rtx));
-static void record_set_info	   PROTO ((rtx, rtx));
+static void record_set_info	   PROTO ((rtx, rtx, void *));
 static void compute_sets	      PROTO ((rtx));
 
 static void hash_scan_insn	    PROTO ((rtx, int, int));
@@ -542,7 +542,7 @@ static unsigned int hash_set	  PROTO ((int, int));
 static int expr_equiv_p	       PROTO ((rtx, rtx));
 static void record_last_reg_set_info  PROTO ((rtx, int));
 static void record_last_mem_set_info  PROTO ((rtx));
-static void record_last_set_info      PROTO ((rtx, rtx));
+static void record_last_set_info      PROTO ((rtx, rtx, void *));
 static void compute_hash_table	PROTO ((int));
 static void alloc_set_hash_table      PROTO ((int));
 static void free_set_hash_table       PROTO ((void));
@@ -621,7 +621,7 @@ static int can_disregard_other_sets   PROTO ((struct reg_set **, rtx, int));
 static int handle_avail_expr	  PROTO ((rtx, struct expr *));
 static int classic_gcse	       PROTO ((void));
 static int one_classic_gcse_pass      PROTO ((int));
-static void invalidate_nonnull_info	PROTO ((rtx, rtx));
+static void invalidate_nonnull_info	PROTO ((rtx, rtx, void *));
 static rtx process_insert_insn	PROTO ((struct expr *));
 static int pre_edge_insert	PROTO ((struct edge_list *, struct expr **));
 
@@ -1130,16 +1130,17 @@ record_one_set (regno, insn)
     }
 }
 
-/* For communication between next two functions (via note_stores).  */
-static rtx record_set_insn;
-
 /* Called from compute_sets via note_stores to handle one
-   SET or CLOBBER in an insn.  */
+   SET or CLOBBER in an insn.  The DATA is really the instruction
+   in which the SET is occurring.  */
 
 static void
-record_set_info (dest, setter)
+record_set_info (dest, setter, data)
      rtx dest, setter ATTRIBUTE_UNUSED;
+     void *data;
 {
+  rtx record_set_insn = (rtx) data;
+
   if (GET_CODE (dest) == SUBREG)
     dest = SUBREG_REG (dest);
 
@@ -1164,10 +1165,7 @@ compute_sets (f)
   while (insn)
     {
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
-	{
-	  record_set_insn = insn;
-	  note_stores (PATTERN (insn), record_set_info);
-	}
+	note_stores (PATTERN (insn), record_set_info, insn);
       insn = NEXT_INSN (insn);
     }
 }
@@ -2069,16 +2067,17 @@ record_last_mem_set_info (insn)
   mem_set_in_block[BLOCK_NUM (insn)] = 1;
 }
 
-/* Used for communicating between next two routines.  */
-static rtx last_set_insn;
-
 /* Called from compute_hash_table via note_stores to handle one
-   SET or CLOBBER in an insn.  */
+   SET or CLOBBER in an insn.  DATA is really the instruction in which
+   the SET is taking place.  */
 
 static void
-record_last_set_info (dest, setter)
+record_last_set_info (dest, setter, data)
      rtx dest, setter ATTRIBUTE_UNUSED;
+     void *data;
 {
+  rtx last_set_insn = (rtx) data;
+
   if (GET_CODE (dest) == SUBREG)
     dest = SUBREG_REG (dest);
 
@@ -2183,8 +2182,7 @@ compute_hash_table (set_p)
 		record_last_mem_set_info (insn);
 	    }
 
-	  last_set_insn = insn;
-	  note_stores (PATTERN (insn), record_last_set_info);
+	  note_stores (PATTERN (insn), record_last_set_info, insn);
 	}
 
       /* The next pass builds the hash table.  */
@@ -4433,8 +4431,7 @@ insert_insn_end_bb (expr, bb, pre)
 	  set_block_num (insn, bb);
 	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	    add_label_notes (PATTERN (insn), new_insn);
-	  record_set_insn = insn;
-	  note_stores (PATTERN (insn), record_set_info);
+	  note_stores (PATTERN (insn), record_set_info, insn);
 	}
     }
   else
@@ -4930,9 +4927,10 @@ static sbitmap *nonnull_killed;
 
    We ignore hard registers.  */
 static void
-invalidate_nonnull_info (x, setter)
+invalidate_nonnull_info (x, setter, data)
      rtx x;
      rtx setter ATTRIBUTE_UNUSED;
+     void *data ATTRIBUTE_UNUSED;
 {
   int offset, regno;
 
@@ -5058,7 +5056,7 @@ delete_null_pointer_checks (f)
 	  set = single_set (insn);
 	  if (!set)
 	    {
-	      note_stores (PATTERN (insn), invalidate_nonnull_info);
+	      note_stores (PATTERN (insn), invalidate_nonnull_info, NULL);
 	      continue;
 	    }
 
@@ -5072,7 +5070,7 @@ delete_null_pointer_checks (f)
 		     REGNO (XEXP (SET_SRC (set), 0)));
 
 	  /* Now invalidate stuff clobbered by this insn.  */
-	  note_stores (PATTERN (insn), invalidate_nonnull_info);
+	  note_stores (PATTERN (insn), invalidate_nonnull_info, NULL);
 
 	  /* And handle stores, we do these last since any sets in INSN can
 	     not kill the nonnull property if it is derived from a MEM

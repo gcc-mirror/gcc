@@ -82,7 +82,7 @@ static int rtx_equal_for_memref_p	PROTO((rtx, rtx));
 static rtx find_symbolic_term		PROTO((rtx));
 static int memrefs_conflict_p		PROTO((int, rtx, int, rtx,
 					       HOST_WIDE_INT));
-static void record_set			PROTO((rtx, rtx));
+static void record_set			PROTO((rtx, rtx, void *));
 static rtx find_base_term		PROTO((rtx));
 static int base_alias_check		PROTO((rtx, rtx, enum machine_mode,
 					       enum machine_mode));
@@ -451,8 +451,9 @@ static char *reg_seen;
 static int unique_id;
 
 static void
-record_set (dest, set)
+record_set (dest, set, data)
      rtx dest, set;
+     void *data ATTRIBUTE_UNUSED;
 {
   register unsigned regno;
   rtx src;
@@ -1652,9 +1653,9 @@ init_alias_analysis ()
 
 	      if (GET_CODE (PATTERN (insn)) == SET
 		  && (find_reg_note (insn, REG_NOALIAS, NULL_RTX)))
-		record_set (SET_DEST (PATTERN (insn)), NULL_RTX);
+		record_set (SET_DEST (PATTERN (insn)), NULL_RTX, NULL);
 	      else
-		note_stores (PATTERN (insn), record_set);
+		note_stores (PATTERN (insn), record_set, NULL);
 
 	      set = single_set (insn);
 
