@@ -26,6 +26,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <errno.h>
 #include "config.h"
 
+#ifdef index
+#undef index
+#undef rindex
+#endif
 #ifndef CROSS_COMPILE
 #include <a.out.h>
 #else
@@ -59,11 +63,6 @@ typedef char *CPTR_T;
 #define ushort	unsigned short
 #define uint	unsigned int
 #define ulong	unsigned long
-
-#ifdef index
-#undef index
-#undef rindex
-#endif
 
 
 /* Do to size_t being defined in sys/types.h and different
