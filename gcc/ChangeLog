@@ -1,3 +1,10 @@
+2004-04-28  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/15084
+	* config/i386/i386.md (*movsi_insv_1_rex64): Changed to DImode
+	and renamed to movdi_insv_1_rex64.
+	(insv): Support SImode for 32bit and DImode for 64bit.
+
 2004-04-24  Richard Henderson  <rth@redhat.com>
 
 	PR bootstrap/14671
