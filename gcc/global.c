@@ -542,7 +542,7 @@ global_alloc (file)
 	 for the sake of debugging information.  */
   if (n_basic_blocks > 0)
 #endif
-    reload (basic_block_head[0], 1, file);
+    reload (get_insns (), 1, file);
 }
 
 /* Sort predicate for ordering the allocnos.
@@ -778,7 +778,7 @@ prune_preferences ()
   /* Scan least most important to most important.
      For each allocno, remove from preferences registers that cannot be used,
      either because of conflicts or register type.  Then compute all registers
-     prefered by each lower-priority register that conflicts.  */
+     preferred by each lower-priority register that conflicts.  */
 
   for (i = max_allocno - 1; i >= 0; i--)
     {
@@ -875,7 +875,7 @@ find_reg (allocno, losers, all_regs_p, accept_call_clobbered, retrying)
   IOR_HARD_REG_SET (used1, hard_reg_conflicts[allocno]);
 
   /* Try each hard reg to see if it fits.  Do this in two passes.
-     In the first pass, skip registers that are prefered by some other pseudo
+     In the first pass, skip registers that are preferred by some other pseudo
      to give it a better chance of getting one of those registers.  Only if
      we can't get a register when excluding those do we take one of them.
      However, we never allocate a register for the first time in pass 0.  */

@@ -30,6 +30,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tree.h"
 #include "c-tree.h"
 
+#ifndef errno
+extern int errno;
+#endif
+
 extern char* xmalloc ();
 
 enum formals_style_enum {
@@ -231,7 +235,7 @@ gen_formal_list_for_type (fntype, style)
      more typing information (for the parameter list) should be added (by
      hand) at some convenient moment.
 
-     The string chozen here is a comment with question marks in it.  */
+     The string chosen here is a comment with question marks in it.  */
 
   if (!*formal_list)
     {
@@ -636,7 +640,7 @@ gen_aux_info_record (fndecl, is_definition, is_implicit, is_prototyped)
 	    fprintf (aux_info_file, "/* compiled from: %s */\n", wd);
 	}
 
-      /* Write the actual line of auxilliary info.  */
+      /* Write the actual line of auxiliary info.  */
 
       fprintf (aux_info_file, "/* %s:%d:%c%c */ %s;",
 	       DECL_SOURCE_FILE (fndecl),

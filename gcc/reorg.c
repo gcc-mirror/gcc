@@ -95,7 +95,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
    On machines that use CC0, we are very conservative.  We will not make
    a copy of an insn involving CC0 since we want to maintain a 1-1
-   correspondance between the insn that sets and uses CC0.  The insns are
+   correspondence between the insn that sets and uses CC0.  The insns are
    allowed to be separated by placing an insn that sets CC0 (but not an insn
    that uses CC0; we could do this, but it doesn't seem worthwhile) in a
    delay slot.  In that case, we point each insn at the other with REG_CC_USER
@@ -2666,7 +2666,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
      update THREAD and NEW_THREAD if it is done in the loop below.  Also
      initialize NEW_THREAD.  */
 
-  new_thread = thread = try_split (PATTERN (thread), thread);
+  new_thread = thread = try_split (PATTERN (thread), thread, 0);
 
   /* Scan insns at THREAD.  We are looking for an insn that can be removed
      from THREAD (it neither sets nor references resources that were set

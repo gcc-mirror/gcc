@@ -48,7 +48,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "loop.h"
 
 /* Vector mapping INSN_UIDs to luids.
-   The luids are like uids but increase monononically always.
+   The luids are like uids but increase monotonically always.
    We use them to see whether a jump comes from outside a given loop.  */
 
 int *uid_luid;
@@ -603,8 +603,7 @@ scan_loop (loop_start, end, nregs)
     }
 
   /* Scan through the loop finding insns that are safe to move.
-     In each such insn, store QImode as the mode, to mark it.
-     Then set n_times_set negative for the reg being set, so that
+     Set n_times_set negative for the reg being set, so that
      this reg will be considered invariant for subsequent insns.
      We consider whether subsequent insns use the reg
      in deciding whether it is worth actually moving.
@@ -3276,7 +3275,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
       else
 	{
 	  /* Biv initial value is not simple move,
-	     so let it keep intial value of "itself".  */
+	     so let it keep initial value of "itself".  */
 
 	  if (loop_dump_stream)
 	    fprintf (loop_dump_stream, "is complex\n");
@@ -3756,7 +3755,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	 This won't work if ! all_reduced,
 	 since the givs we planned to use might not have been reduced.
 
-	 We have to be careful that we didn't initially think we could elminate
+	 We have to be careful that we didn't initially think we could eliminate
 	 this biv because of a giv that we now think may be dead and shouldn't
 	 be used as a biv replacement.  
 
@@ -3863,7 +3862,7 @@ valid_initial_value_p (x, insn, call_seen, loop_start)
   if (CONSTANT_P (x))
     return 1;
 
-  /* Only consider psuedos we know about initialized in insns whose luids
+  /* Only consider pseudos we know about initialized in insns whose luids
      we know.  */
   if (GET_CODE (x) != REG
       || REGNO (x) >= max_reg_before_loop)
@@ -4106,7 +4105,7 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
      isn't computable if INSN insn't executed every iteration.
      However, for a DEST_ADDR giv, INSN merely uses the value of the giv;
      it does not compute a new value.  Hence the value is always computable
-     irregardless of whether INSN is executed each iteration.  */
+     regardless of whether INSN is executed each iteration.  */
 
   if (type == DEST_ADDR)
     v->always_computable = 1;
@@ -5818,7 +5817,7 @@ maybe_eliminate_biv_1 (x, insn, bl, eliminate_p, where)
 	     Insert insns to calculate new compare value.  */
 
 	  for (v = bl->giv; v; v = v->next_iv)
-	    if (CONSTANT_P (v->mult_val)
+	    if (CONSTANT_P (v->mult_val) && INTVAL (v->mult_val) > 0
 		&& ! v->ignore && ! v->maybe_dead
 		&& v->mode == mode)
 	      {

@@ -25,7 +25,8 @@ enum debug_info_type
   NO_DEBUG,	    /* Write no debug info.  */
   DBX_DEBUG,	    /* Write BSD .stabs for DBX (using dbxout.c).  */
   SDB_DEBUG,	    /* Write COFF for (old) SDB (using sdbout.c).  */
-  DWARF_DEBUG	    /* Write Dwarf debug info (using dwarfout.c).  */
+  DWARF_DEBUG,	    /* Write Dwarf debug info (using dwarfout.c).  */
+  XCOFF_DEBUG	    /* Write IBM/Xcoff debug info (using dbxout.c).  */
 };
 
 /* Specify which kind of debugging info to generate.  */
@@ -42,7 +43,7 @@ enum debug_info_level
 /* Specify how much debugging info to generate.  */
 extern enum debug_info_level debug_info_level;
 
-#ifdef DBX_DEBUGGING_INFO
+#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
 /* Nonzero means use GDB-only extensions of DBX format.  */
 extern int use_gdb_dbx_extensions;
 #endif
@@ -242,7 +243,7 @@ extern int flag_no_inline;
 
 extern int flag_syntax_only;
 
-/* Nonzero means we should save auxilliary info into a .X file.  */
+/* Nonzero means we should save auxiliary info into a .X file.  */
 
 extern int flag_gen_aux_info;
 

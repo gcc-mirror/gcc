@@ -236,7 +236,7 @@ int reload_in_progress = 0;
 enum insn_code reload_in_optab[NUM_MACHINE_MODES];
 enum insn_code reload_out_optab[NUM_MACHINE_MODES];
 
-/* This obstack is used for allocation of rtl during register elmination.
+/* This obstack is used for allocation of rtl during register elimination.
    The allocated storage can be freed once find_reloads has processed the
    insn.  */
 
@@ -744,7 +744,7 @@ reload (first, global, dumpfile)
   /* This loop scans the entire function each go-round
      and repeats until one repetition spills no additional hard regs.  */
 
-  /* This flag is set when a psuedo reg is spilled,
+  /* This flag is set when a pseudo reg is spilled,
      to require another pass.  Note that getting an additional reload
      reg does not necessarily imply any pseudo reg was spilled;
      sometimes we find a reload reg that no pseudo reg was allocated in.  */
@@ -880,7 +880,7 @@ reload (first, global, dumpfile)
 	      }
 	  }
 
-      /* If we allocated another psuedo to the stack, redo elimination
+      /* If we allocated another pseudo to the stack, redo elimination
 	 bookkeeping.  */
       if (something_changed)
 	continue;
@@ -1188,7 +1188,7 @@ reload (first, global, dumpfile)
 		 of that class should be quite rare.
 
 		 If a group is needed, the size and mode of the group will
-		 have been set up at the begining of this loop.  */
+		 have been set up at the beginning of this loop.  */
 
 	      if (GET_CODE (insn) == CALL_INSN
 		  && caller_save_spill_class != NO_REGS)
@@ -2171,7 +2171,7 @@ set_label_offsets (x, insn, initial_p)
 	}
 
       /* Otherwise, if this is the definition of a label and it is
-	 preceeded by a BARRIER, set our offsets to the known offset of
+	 preceded by a BARRIER, set our offsets to the known offset of
 	 that label.  */
 
       else if (x == insn
@@ -2579,7 +2579,7 @@ eliminate_regs (x, mem_mode, insn)
 
     case CLOBBER:
       /* If clobbering a register that is the replacement register for an
-	 elimination we still think can be peformed, note that it cannot
+	 elimination we still think can be performed, note that it cannot
 	 be performed.  Otherwise, we need not be concerned about it.  */
       for (ep = reg_eliminate; ep < &reg_eliminate[NUM_ELIMINABLE_REGS]; ep++)
 	if (ep->to_rtx == XEXP (x, 0))
@@ -4324,8 +4324,8 @@ choose_reload_regs (insn, avoid_return_reg)
 	    {
 	      int s = reload_order[i];
 
-	      if ((reload_in[s] == 0 && reload_out[s] == 0 &&
-		   ! reload_secondary_p[s])
+	      if ((reload_in[s] == 0 && reload_out[s] == 0
+		   && ! reload_secondary_p[s])
 		  || reload_optional[s])
 		continue;
 
@@ -4479,7 +4479,7 @@ emit_reload_insns (insn)
   /* Values to be put in spill_reg_store are put here first.  */
   rtx new_spill_reg_store[FIRST_PSEUDO_REGISTER];
 
-  /* If this is a CALL_INSN preceeded by USE insns, any reload insns
+  /* If this is a CALL_INSN preceded by USE insns, any reload insns
      must go in front of the first USE insn, not in front of INSN.  */
 
   if (GET_CODE (insn) == CALL_INSN && GET_CODE (PREV_INSN (insn)) == INSN
@@ -5637,9 +5637,9 @@ inc_for_reload (reloadreg, value, inc_amount, insn)
     {
       /* If incrementing a register, assume we can
 	 output an insn to increment it directly.  */
-      if (GET_CODE (incloc) == REG &&
-	  (REGNO (incloc) < FIRST_PSEUDO_REGISTER
-	   || reg_renumber[REGNO (incloc)] >= 0))
+      if (GET_CODE (incloc) == REG
+	  && (REGNO (incloc) < FIRST_PSEUDO_REGISTER
+	      || reg_renumber[REGNO (incloc)] >= 0))
 	{
 	  rtx first_new
 	    = emit_insn_before (gen_add2_insn (incloc,
@@ -5676,9 +5676,9 @@ inc_for_reload (reloadreg, value, inc_amount, insn)
 
       /* If incrementing a register, assume we can
 	 output an insn to increment it directly.  */
-      if (GET_CODE (incloc) == REG &&
-	  (REGNO (incloc) < FIRST_PSEUDO_REGISTER
-	   || reg_renumber[REGNO (incloc)] >= 0))
+      if (GET_CODE (incloc) == REG
+	  && (REGNO (incloc) < FIRST_PSEUDO_REGISTER
+	      || reg_renumber[REGNO (incloc)] >= 0))
 	{
 	  emit_insn_before (gen_add2_insn (incloc,
 					   gen_rtx (CONST_INT, VOIDmode,
