@@ -559,6 +559,14 @@ in the following sections.
 -mno-callgraph-data -mslow-bytes -mno-slow-bytes -mno-lsim @gol
 -mlittle-endian -mbig-endian -m210 -m340 -mstack-increment}
 
+@emph{IA-64 Options}
+@gccoptlist{
+-mbig-endian -mlittle-endian -mgnu-as -mgnu-ld -mno-pic @gol
+-mvolatile-asm-stop -mb-step -mregister-names -mno-sdata @gol
+-mconstant-gp -mauto-pic -minline-divide-min-latency @gol
+-minline-divide-max-throughput -mno-dwarf2-asm @gol
+-mfixed-range=@var{register range}}
+
 @item Code Generation Options
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
 @gccoptlist{
@@ -4365,6 +4373,7 @@ that macro, which enables you to change the defaults.
 * NS32K Options::
 * AVR Options::
 * MCore Options::
+* IA-64 Options::
 * D30V Options::
 @end menu
 
@@ -7694,6 +7703,77 @@ Generate code for a little endian target.
 @itemx -m210
 @itemx -m340
 Generate code for the 210 processor.
+@end table
+
+@node IA-64 Options
+@subsection IA-64 Options
+@cindex IA-64 Options
+
+These are the @samp{-m} options defined for the Intel IA-64 architecture.
+
+@table @gcctabopt
+@item -mbig-endian
+Generate code for a big endian target.  This is the default for HPUX.
+
+@item -mlittle-endian
+Generate code for a little endian target.  This is the default for AIX5
+and Linux.
+
+@item -mgnu-as
+@itemx -mno-gnu-as
+Generate code for the GNU assembler.  This is the default.  Also, this is
+the default if the configure option @samp{--with-gnu-as} is used.
+
+@item -mgnu-ld
+@itemx -mno-gnu-ld
+Generate code for the GNU linker.  This is the default.  Also, this is the
+default if the configure option @samp{--with-gnu-ld} is used.
+
+@item -mno-pic
+Generate code that does not use a global pointer register.
+
+@item -mvolatile-asm-stop
+@itemx -mno-volatile-asm-stop
+Generate a stop bit immediately before and after volatile asm statements.
+
+@item -mb-step
+Generate code that works around Itanium B step errata.
+
+@item -mregister-names
+@itemx -mno-register-names
+Generate @samp{in}, @samp{loc}, and @samp{out} register names for the
+stacked registers.
+
+@item -mno-sdata
+@itemx -msdata
+Disable optimizations that use the small data section.  This may be useful
+for working around optimizer bugs.
+
+@item -mconstant-gp
+Generate code that uses a single constant global pointer value.  This is
+useful when compiling kernel code.
+
+@item -mauto-pic
+Generate code that is self-relocatable.  This implies @samp{-mconstant-gp}.
+This is useful when compiling firmware code.
+
+@item -minline-divide-min-latency
+Generate code for inline divides using the minimum latency algorithm.
+
+@item -minline-divide-max-throughput
+Generate code for inline divides using the maximum throughput algorithm.
+
+@item -mno-dwarf2-asm
+@itemx -mdwarf2-asm
+Don't generate assembler code for the DWARF2 line number debugging info.
+This may be useful when not using the GNU assembler.
+
+@item -mfixed-range=@var{register range}
+Generate code treating the given register range as fixed registers.
+A fixed register is one that the register allocator can not use.  This is
+useful when compiling kernel code.  A register range is specified as
+two registers separated by a dash.  Multiple register ranges can be
+specified separated by a comma.
 @end table
 
 @node D30V Options
