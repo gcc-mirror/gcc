@@ -7,6 +7,20 @@
 	* calls.c (emit_library_call_value_1): Don't create a libcall
 	sequence here; our caller will in most cases do it.
 
+	* sh.h (SECONDARY_INPUT_RELOAD_CLASS): Handle moving T, MACL or
+	MACH into FPUL.
+	(SECONDARY_OUTPUT_RELOAD_CLASS): Similar case.
+	* sh.md (reload_outsf): Generate recognizable patterns for
+	TARGET_SH3E.
+	(floatsisf2, floatsisf2_ie, floatsisf2_i4, fix_truncsfsi2,
+	fix_truncsfsi2_i4, fixsfsi, floatsidf2, floatsidf2_i, fix_truncdfsi2,
+	fix_truncdfsi2_i, extendsfdf2, extendsfdf2_i4, truncdfsf2,
+	truncdfsf2_i4): Change not to use explicit references to fpul.
+	(floatsisf2_ie): Remove USE of fpscr.
+	(floatsisf2): Change default expansion to match this.
+	(fix_truncsfsi2_i4_2, fix_truncdfsi2_i4 & splitters): Comment out
+	unused patterns.
+
 2000-09-15  Richard Henderson  <rth@cygnus.com>
 
 	* expmed.c (store_bit_field): Consider naturally aligned
