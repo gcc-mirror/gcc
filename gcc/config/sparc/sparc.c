@@ -3131,7 +3131,7 @@ output_function_prologue (file, size, leaf_function)
     }
 
   /* This is only for the human reader.  */
-  fprintf (file, "\t!#PROLOGUE# 0\n");
+  fprintf (file, "\t%s#PROLOGUE# 0\n", ASM_COMMENT_START);
 
   if (actual_fsize == 0)
     /* do nothing.  */ ;
@@ -3209,7 +3209,7 @@ output_function_prologue (file, size, leaf_function)
 
   /* If doing anything with PIC, do it now.  */
   if (! flag_pic)
-    fprintf (file, "\t!#PROLOGUE# 1\n");
+    fprintf (file, "\t%s#PROLOGUE# 1\n", ASM_COMMENT_START);
 
   /* Call saved registers are saved just above the outgoing argument area.  */
   if (num_gfregs)
@@ -4799,8 +4799,9 @@ sparc_flat_output_function_prologue (file, size)
   unsigned long gmask = current_frame_info.gmask;
 
   /* This is only for the human reader.  */
-  fprintf (file, "\t!#PROLOGUE# 0\n");
-  fprintf (file, "\t!# vars= %d, regs= %d/%d, args= %d, extra= %d\n",
+  fprintf (file, "\t%s#PROLOGUE# 0\n", ASM_COMMENT_START);
+  fprintf (file, "\t%s# vars= %d, regs= %d/%d, args= %d, extra= %d\n",
+	   ASM_COMMENT_START,
 	   current_frame_info.var_size,
 	   current_frame_info.gp_reg_size / 4,
 	   current_frame_info.fp_reg_size / 4,
@@ -4856,8 +4857,8 @@ sparc_flat_output_function_prologue (file, size)
 		{
 		  fprintf (file, "\tst %s,[%s+%d]\n",
 			   fp_str, sp_str, reg_offset);
-		  fprintf (file, "\tsub %s,%d,%s\t!# set up frame pointer\n",
-			   sp_str, -size, fp_str);
+		  fprintf (file, "\tsub %s,%d,%s\t%s# set up frame pointer\n",
+			   sp_str, -size, fp_str, ASM_COMMENT_START);
 		  reg_offset += 4;
 		}
 	    }
@@ -4869,8 +4870,8 @@ sparc_flat_output_function_prologue (file, size)
 		{
 		  fprintf (file, "\tst %s,[%s+%d]\n",
 			   fp_str, sp_str, reg_offset);
-		  fprintf (file, "\tadd %s,%s,%s\t!# set up frame pointer\n",
-			   sp_str, t1_str, fp_str);
+		  fprintf (file, "\tadd %s,%s,%s\t%s# set up frame pointer\n",
+			   sp_str, t1_str, fp_str, ASM_COMMENT_START);
 		  reg_offset += 4;
 		}
 	    }
@@ -4914,8 +4915,9 @@ sparc_flat_output_function_prologue (file, size)
 		       sp_str, -size1, sp_str);
 	      if (gmask & FRAME_POINTER_MASK)
 		{
-		  fprintf (file, "\tst %s,[%s+%d]\n\tsub %s,%d,%s\t!# set up frame pointer\n",
-			   fp_str, sp_str, offset, sp_str, -size1, fp_str);
+		  fprintf (file, "\tst %s,[%s+%d]\n\tsub %s,%d,%s\t%s# set up frame pointer\n",
+			   fp_str, sp_str, offset, sp_str, -size1, fp_str,
+			   ASM_COMMENT_START);
 		  offset += 4;
 		}
 	    }
@@ -4925,8 +4927,9 @@ sparc_flat_output_function_prologue (file, size)
 		       size1, t1_str, sp_str, t1_str, sp_str);
 	      if (gmask & FRAME_POINTER_MASK)
 		{
-		  fprintf (file, "\tst %s,[%s+%d]\n\tadd %s,%s,%s\t!# set up frame pointer\n",
-			   fp_str, sp_str, offset, sp_str, t1_str, fp_str);
+		  fprintf (file, "\tst %s,[%s+%d]\n\tadd %s,%s,%s\t%s# set up frame pointer\n",
+			   fp_str, sp_str, offset, sp_str, t1_str, fp_str,
+			   ASM_COMMENT_START);
 		  offset += 4;
 		}
 	    }
@@ -4964,7 +4967,7 @@ sparc_flat_output_function_prologue (file, size)
 	}
     }
 
-  fprintf (file, "\t!#PROLOGUE# 1\n");
+  fprintf (file, "\t%s#PROLOGUE# 1\n", ASM_COMMENT_START);
 }
 
 /* Do any necessary cleanup after a function to restore stack, frame,
@@ -4979,7 +4982,7 @@ sparc_flat_output_function_epilogue (file, size)
   int noepilogue = FALSE;
 
   /* This is only for the human reader.  */
-  fprintf (file, "\t!#EPILOGUE#\n");
+  fprintf (file, "\t%s#EPILOGUE#\n", ASM_COMMENT_START);
 
   /* The epilogue does not depend on any registers, but the stack
      registers, so we assume that if we have 1 pending nop, it can be
@@ -5021,11 +5024,11 @@ sparc_flat_output_function_epilogue (file, size)
       if (frame_pointer_needed)
 	{
 	  if (size > 4095)
-	    fprintf (file,"\tsub %s,%s,%s\t\t!# sp not trusted here\n",
-		     fp_str, t1_str, sp_str);
+	    fprintf (file,"\tsub %s,%s,%s\t\t%s# sp not trusted here\n",
+		     fp_str, t1_str, sp_str, ASM_COMMENT_START);
 	  else
-	    fprintf (file,"\tsub %s,%d,%s\t\t!# sp not trusted here\n",
-		     fp_str, size, sp_str);
+	    fprintf (file,"\tsub %s,%d,%s\t\t%s# sp not trusted here\n",
+		     fp_str, size, sp_str, ASM_COMMENT_START);
 	}
 
       /* Is the entire register save area offsettable from %sp?  */
