@@ -151,6 +151,24 @@ namespace std {
 
 
   //
+  // ifstream
+  //
+  template class basic_ifstream<char>;
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template class basic_ifstream<wchar_t>;
+#endif
+
+
+  //
+  // ofstream
+  //
+  template class basic_ofstream<char>;
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template class basic_ofstream<wchar_t>;
+#endif
+
+
+  //
   // istringstream
   //
   template class basic_istringstream<char>;
