@@ -20,7 +20,9 @@
    Support NO_LONG_DOUBLE_IO in f_define and f_rep; new fn fake_f_rep, Apr 92.
    Enclose -f output in #ifndef _FLOAT_H___, Richard Stallman, May 92.
 
-   Add #undef before every #define, Jim Wilson, Dec 92.
+   Change by Jim Wilson:
+   Add #undef before every #define, Dec 92.
+   Use stddef.h not gstddef.h, Mar 94.
 
    Changes by Paul Eggert, installed Feb 93:
    (fake_f_rep): Clear all of u, initially.  Make the ints in u unsigned.
@@ -389,7 +391,7 @@
 
 #ifdef STDC
 #ifndef NO_STDDEF
-#include "gstddef.h" /* for size_t: if this fails, define NO_STDDEF */
+#include <stddef.h> /* for size_t: if this fails, define NO_STDDEF */
 #endif
 #endif
 
