@@ -38,10 +38,20 @@ exception statement from your version. */
 
 package java.nio;
 
+import gnu.classpath.Configuration;
 import gnu.gcj.RawData;
 
 class DirectByteBufferImpl extends ByteBuffer
 {
+  static
+  {
+    // load the shared library needed for native methods.
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+        System.loadLibrary ("javanio");
+      }
+  }
+  
   RawData address;
   private int offset;
   private boolean readOnly;
