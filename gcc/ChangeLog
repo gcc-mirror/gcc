@@ -1,3 +1,8 @@
+2002-04-13	Joel Sherrill <joel@OARcorp.com>
+
+	* config/sparc/t-elf: Enable v8 multilibs.  Impacts
+	sparc-elf and sparc-rtems targets.
+
 2002-04-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* alpha/linux.h: Define __gnu_linux__ wherever __linux__ is
