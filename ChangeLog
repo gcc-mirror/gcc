@@ -1,3 +1,7 @@
+2002-07-19  Michael Matz  <matz@suse.de>
+
+	* MAINTAINERS: Add myself as ra* maintainer.
+
 2002-07-16  Chris Demetriou  <cgd@broadcom.com>
 
 	* config.guess: Update to 2002-07-09 version.
