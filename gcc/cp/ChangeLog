@@ -1,5 +1,7 @@
 2002-01-31  Jason Merrill  <jason@redhat.com>
 
+	* Make-lang.in (parse.c): Handle .output file.
+
 	PR c++/3395
 	* decl.c (xref_tag): Remember early attributes in TYPE_ATTRIBUTES,
 	not TREE_TYPE.
