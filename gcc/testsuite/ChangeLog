@@ -1,5 +1,10 @@
 2003-10-11  Roger Sayle  <roger@eyesopen.com>
 
+	PR optimization/12260
+	* gcc.c-torture/compile/20031011-2.c: New test case.
+
+2003-10-11  Roger Sayle  <roger@eyesopen.com>
+
 	* gcc.c-torture/execute/20031011-1.c: New testcase.
 
 2003-10-11  Eric Botcazou  <ebotcazou@libertysurf.fr>

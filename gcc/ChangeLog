@@ -1,5 +1,16 @@
 2003-10-11  Roger Sayle  <roger@eyesopen.com>
 
+	PR optimization/12260
+	* simplify-rtx.c (simplify_unary_operation): Simplify all unary
+	operations through CONST nodes.  Optimize (neg (plus X C)) as
+	(minus -C X) for constant values C.
+	(simplify_binary_operation): Optimize (minus (neg X) C) as
+	(minus -C X) for constant values C.
+	(simplify_plus_minus): Avoid creating (neg (const (plus X C)),
+	instead create (minus -C X).
+
+2003-10-11  Roger Sayle  <roger@eyesopen.com>
+
 	* expr.c (expand_expr <PLUS_EXPR>): Let expand_operands call
 	safe_from_p for us, once it chooses an evaluation order.
 	(expand_expr <MULT_EXPR>): Likewise.
