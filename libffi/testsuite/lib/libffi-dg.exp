@@ -4,15 +4,15 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 load_lib dg.exp
 load_lib libgloss.exp
@@ -73,7 +73,7 @@ proc libffi-init { args } {
     global TOOL_OPTIONS
     global ld_library_path
     global libffi_include
-    global libffi_link_flags 
+    global libffi_link_flags
     global tool_root_dir
 
     set blddirffi [lookfor_file [get_multilibs] libffi]
@@ -83,7 +83,7 @@ proc libffi-init { args } {
 
     set gccdir [lookfor_file $tool_root_dir gcc/libgcc.a]
     if {$gccdir != ""} {
-        set gccdir [file dirname $gccdir]
+	set gccdir [file dirname $gccdir]
     }
     verbose "gccdir $gccdir"
 
@@ -106,7 +106,7 @@ proc libffi-init { args } {
     }
     # add the library path for libffi.
     append ld_library_path ":${blddirffi}/.libs"
-    # add the library path for libstdc++ as well. 
+    # add the library path for libstdc++ as well.
     append ld_library_path ":${blddircxx}/src/.libs"
 
     verbose "ld_library_path: $ld_library_path"
@@ -114,7 +114,7 @@ proc libffi-init { args } {
     # Point to the Libffi headers in libffi.
     set libffi_include "${blddirffi}/include"
     verbose "libffi_include $libffi_include"
-    
+
     set libffi_dir  "${blddirffi}/.libs"
     verbose "libffi_dir $libffi_dir"
     if { $libffi_dir != "" } {
@@ -122,17 +122,18 @@ proc libffi-init { args } {
 	set libffi_link_flags "-L${libffi_dir}/.libs"
 	lappend libffi_link_flags "-L${blddircxx}/src/.libs"
     }
-   
+
     # On IRIX 6, we have to set variables akin to LD_LIBRARY_PATH, but
     # called LD_LIBRARYN32_PATH (for the N32 ABI) and LD_LIBRARY64_PATH
     # (for the 64-bit ABI).  The right way to do this would be to modify
     # unix.exp -- but that's not an option since it's part of DejaGNU
-    # proper, so we do it here.  We really only need to do 
+    # proper, so we do it here.  We really only need to do
     # this on IRIX, but it shouldn't hurt to do it anywhere else.
     setenv  LD_LIBRARY_PATH     $ld_library_path
     setenv  SHLIB_PATH          $ld_library_path
     setenv  LD_LIBRARYN32_PATH  $ld_library_path
     setenv  LD_LIBRARY64_PATH   $ld_library_path
+    setenv  LD_LIBRARY_PATH_64  $ld_library_path
 }
 
 proc libffi_target_compile { source dest type options } {
@@ -143,7 +144,7 @@ proc libffi_target_compile { source dest type options } {
     global ld_library_path
     global libffi_link_flags
     global libffi_include
-    
+
 
     if { [target_info needs_status_wrapper]!="" && [info exists gluefile] } {
 	lappend options "libs=${gluefile}"
@@ -187,11 +188,11 @@ proc libffi-dg-runtest { testcases default-extra-flags } {
     global runtests
 
     foreach test $testcases {
-	# If we're only testing specific files and this isn't one of 
+	# If we're only testing specific files and this isn't one of
 	# them, skip it.
 	if ![runtest_file_p $runtests $test] {
 	    continue
-        }
+	}
 
 	# Look for a loop within the source code - if we don't find one,
 	# don't pass -funroll[-all]-loops.
@@ -228,7 +229,7 @@ proc dg-xfail-if { args } {
 # are both cleared out after every test.  It is not enough to clear
 # them out *before* the next test run because gcc-target-compile gets
 # run directly from some .exp files (outside of any test).  (Those
-# uses should eventually be eliminated.) 
+# uses should eventually be eliminated.)
 
 # Because the DG framework doesn't provide a hook that is run at the
 # end of a test, we must replace dg-test with a wrapper.
