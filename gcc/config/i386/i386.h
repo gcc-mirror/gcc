@@ -165,7 +165,9 @@ extern int target_flags;
 #define TARGET_USE_Q_REG (ix86_cpu == PROCESSOR_PENTIUM \
 			  || ix86_cpu == PROCESSOR_PENTIUMPRO)
 #define TARGET_USE_ANY_REG (ix86_cpu == PROCESSOR_I486)
-#define TARGET_CMOVE (ix86_arch == PROCESSOR_PENTIUMPRO)
+/* This is temporary for the release only.  Folks are working on a fix,
+   but the fix will likely not be suitable for the first egcs release.  */
+#define TARGET_CMOVE (0)                                         
 #define TARGET_DEEP_BRANCH_PREDICTION (ix86_cpu == PROCESSOR_PENTIUMPRO)
 #define TARGET_STACK_PROBE (target_flags & MASK_STACK_PROBE)
 

@@ -1,3 +1,7 @@
+Fri Nov 21 15:20:05 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* i386.h (TARGET_CMOV): Disable conditional moves for this release.
+
 Fri Nov 21 12:18:51 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* except.h: Add outer_context_label_stack.
