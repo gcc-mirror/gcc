@@ -78,7 +78,7 @@ public class BasicGraphicsUtils
    * Draws a rectangle that appears etched into the surface, given
    * four colors that are used for drawing.
    *
-   * <p><img src="BasicGraphicsUtils-1.png" width="360"
+   * <p><img src="doc-files/BasicGraphicsUtils-1.png" width="360"
    * height="200" alt="[An illustration that shows which pixels
    * get painted in what color]" />
    *
@@ -166,7 +166,7 @@ public class BasicGraphicsUtils
    * Draws a rectangle that appears etched into the surface, given
    * two colors that are used for drawing.
    *
-   * <p><img src="BasicGraphicsUtils-2.png" width="360"
+   * <p><img src="doc-files/BasicGraphicsUtils-2.png" width="360"
    * height="200" alt="[An illustration that shows which pixels
    * get painted in what color]" />
    *
@@ -224,7 +224,7 @@ public class BasicGraphicsUtils
    * Draws a border that is suitable for buttons of the Basic look and
    * feel.
    *
-   * <p><img src="BasicGraphicsUtils-3.png" width="500"
+   * <p><img src="doc-files/BasicGraphicsUtils-3.png" width="500"
    * height="300" alt="[An illustration that shows which pixels
    * get painted in what color]" />
    *
@@ -305,7 +305,7 @@ public class BasicGraphicsUtils
    * Draws a rectangle that appears lowered into the surface, given
    * four colors that are used for drawing.
    *
-   * <p><img src="BasicGraphicsUtils-4.png" width="360"
+   * <p><img src="doc-files/BasicGraphicsUtils-4.png" width="360"
    * height="200" alt="[An illustration that shows which pixels
    * get painted in what color]" />
    *
@@ -362,7 +362,7 @@ public class BasicGraphicsUtils
    * drawn without underlining. Drawing is performed in the current
    * color and font of <code>g</code>.
    *
-   * <p><img src="BasicGraphicsUtils-5.png" width="500"
+   * <p><img src="doc-files/BasicGraphicsUtils-5.png" width="500"
    * height="100" alt="[An illustration showing how to use the
    * method]" />
    *
@@ -413,7 +413,7 @@ public class BasicGraphicsUtils
    * at the specified index. Drawing is performed in the current color
    * and font of <code>g</code>.
    *
-   * <p><img src="BasicGraphicsUtils-5.png" width="500"
+   * <p><img src="doc-files/BasicGraphicsUtils-5.png" width="500"
    * height="100" alt="[An illustration showing how to use the
    * method]" />
    *
@@ -540,7 +540,7 @@ public class BasicGraphicsUtils
    * those pixels is the current color of the Graphics <code>g</code>.
    * Any other pixels are left unchanged.
    *
-   * <p><img src="BasicGraphicsUtils-7.png" width="360"
+   * <p><img src="doc-files/BasicGraphicsUtils-7.png" width="360"
    * height="200" alt="[An illustration that shows which pixels
    * get painted]" />
    *

@@ -85,7 +85,7 @@ public class BasicBorders
    * <code>&#x201c;Button.light&#x201d;</code>, and
    * <code>&#x201c;Button.highlight&#x201d;</code>.
    *
-   * <p><img src="BasicBorders.ButtonBorder-1.png" width="300"
+   * <p><img src="doc-files/BasicBorders.ButtonBorder-1.png" width="300"
    * height="170" alt="[A screen shot of the returned border]" />
    *
    * @return a {@link
@@ -135,7 +135,7 @@ public class BasicBorders
    * <code>&#x201c;RadioButton.light&#x201d;</code>, and
    * <code>&#x201c;RadioButton.highlight&#x201d;</code>.
    *
-   * <p><img src="BasicBorders.RadioButtonBorder-1.png" width="300"
+   * <p><img src="doc-files/BasicBorders.RadioButtonBorder-1.png" width="300"
    * height="135" alt="[A screen shot of the returned border]" />
    *
    * @return a {@link
@@ -187,7 +187,7 @@ public class BasicBorders
    * <code>&#x201c;ToggleButton.light&#x201d;</code>, and
    * <code>&#x201c;ToggleButton.highlight&#x201d;</code>.
    *
-   * <p><img src="BasicBorders.ToggleButtonBorder-1.png" width="270"
+   * <p><img src="doc-files/BasicBorders.ToggleButtonBorder-1.png" width="270"
    * height="135" alt="[A screen shot of the returned border]" />
    *
    * @return a {@link
@@ -238,7 +238,7 @@ public class BasicBorders
    * using the keys <code>&#x201c;MenuBar.shadow&#x201d;</code> and
    * <code>&#x201c;MenuBar.highlight&#x201d;</code>.
    *
-   * <p><img src="BasicBorders.MenuBarBorder-1.png" width="500"
+   * <p><img src="doc-files/BasicBorders.MenuBarBorder-1.png" width="500"
    * height="140" alt="[A screen shot of a JMenuBar with this border]" />
    *
    * @return a {@link #MenuBarBorder}.
@@ -266,10 +266,10 @@ public class BasicBorders
    * using the keys <code>&#x201c;SplitPane.darkShadow&#x201d;</code> and
    * <code>&#x201c;SplitPane.highlight&#x201d;</code>.
    *   
-   * <p><img src="BasicBorders.SplitPaneBorder-1.png" width="520"
+   * <p><img src="doc-files/BasicBorders.SplitPaneBorder-1.png" width="520"
    * height="200" alt="[A screen shot for JSplitPane.HORIZONTAL_SPLIT]" />
    *
-   * <p><img src="BasicBorders.SplitPaneBorder-2.png" width="520"
+   * <p><img src="doc-files/BasicBorders.SplitPaneBorder-2.png" width="520"
    * height="200" alt="[A screen shot for JSplitPane.VERTICAL_SPLIT]" />
    *
    * @return a {@link #SplitPaneBorder}.
@@ -299,8 +299,9 @@ public class BasicBorders
    * <code>&#x201c;SplitPane.highlight&#x201d;</code>. The color of the
    * other two edges is the background color of the divider.
    *
-   * <p><img src="BasicBorders.SplitPaneDividerBorder-1.png" width="520"
-   * height="200" alt="[A screen shot for JSplitPane.HORIZONTAL_SPLIT]" />
+   * <p><img src="doc-files/BasicBorders.SplitPaneDividerBorder-1.png"
+   * width="520" height="200" alt= 
+   * "[A screen shot for JSplitPane.HORIZONTAL_SPLIT]" />
    *
    * @return an instance of <code>SplitPaneDividerBorder</code>, which is
    *         not a public API class of this package.
@@ -334,7 +335,7 @@ public class BasicBorders
    * <code>&#x201c;TextField.light&#x201d;</code>, and
    * <code>&#x201c;TextField.highlight&#x201d;</code>.
    *
-   * <p><img src="BasicBorders.FieldBorder-1.png" width="500"
+   * <p><img src="doc-files/BasicBorders.FieldBorder-1.png" width="500"
    * height="200" alt="[A screen shot of a border returned by
    * this method]" />
    *
@@ -364,7 +365,7 @@ public class BasicBorders
    * feels better use different borders for their progress bars, or
    * they will look really terrible.
    *
-   * <p><img src="BasicBorders-1.png" width="120" height="80"
+   * <p><img src="doc-files/BasicBorders-1.png" width="120" height="80"
    * alt="[A screen shot of a border returned by this method]" />
    */
   public static Border getProgressBarBorder()
@@ -380,7 +381,7 @@ public class BasicBorders
    * Returns a border that is composed of a raised bevel border and a
    * one-pixel thick line border.
    *
-   * <p><img src="BasicBorders-2.png" width="300" height="200"
+   * <p><img src="doc-files/BasicBorders-2.png" width="300" height="200"
    * alt="[A screen shot of a border returned by this method]" />
    *
    * <p>The colors of the border are retrieved from the
@@ -440,7 +441,7 @@ public class BasicBorders
    * A border whose appearance depends on the state of
    * the enclosed button.
    *
-   * <p><img src="BasicBorders.ButtonBorder-1.png" width="300"
+   * <p><img src="doc-files/BasicBorders.ButtonBorder-1.png" width="300"
    * height="170" alt="[A screen shot of this border]" />
    *
    * @see javax.swing.plaf.basic.BasicGraphicsUtils#drawBezel
@@ -616,7 +617,7 @@ public class BasicBorders
    * A border that makes its enclosed component appear as lowered
    * into the surface. Typically used for text fields.
    *
-   * <p><img src="BasicBorders.FieldBorder-1.png" width="500"
+   * <p><img src="doc-files/BasicBorders.FieldBorder-1.png" width="500"
    * height="200" alt="[A screen shot of this border]" />
    *
    * @see javax.swing.plaf.basic.BasicGraphicsUtils#drawEtchedRect
@@ -784,7 +785,7 @@ public class BasicBorders
    * component.  If the enclosed component has no such method,
    * this border will not occupy any space.
    *
-   * <p><img src="BasicBorders.MarginBorder-1.png" width="325"
+   * <p><img src="doc-files/BasicBorders.MarginBorder-1.png" width="325"
    * height="200" alt="[An illustration that shows how MarginBorder
    * determines its borders]" />
    *
@@ -885,7 +886,7 @@ public class BasicBorders
   /**
    * A border for drawing a separator line below JMenuBar.
    *
-   * <p><img src="BasicBorders.MenuBarBorder-1.png" width="500"
+   * <p><img src="doc-files/BasicBorders.MenuBarBorder-1.png" width="500"
    * height="140" alt="[A screen shot of a JMenuBar with this border]" />
    *
    * @author Sascha Brawer (brawer@dandelis.ch)
@@ -919,7 +920,7 @@ public class BasicBorders
      * Constructs a new MenuBarBorder for drawing a JMenuBar in
      * the Basic look and feel.
      *
-     * <p><img src="BasicBorders.MenuBarBorder-1.png" width="500"
+     * <p><img src="doc-files/BasicBorders.MenuBarBorder-1.png" width="500"
      * height="140" alt="[A screen shot of a JMenuBar with this
      * border]" />
      *
@@ -1041,7 +1042,7 @@ public class BasicBorders
   /**
    * A border for drawing radio buttons in the Basic look and feel.
    *
-   * <p><img src="BasicBorders.RadioButtonBorder-1.png" width="300"
+   * <p><img src="doc-files/BasicBorders.RadioButtonBorder-1.png" width="300"
    * height="135" alt="[A screen shot of this border]" />
    *
    * <p>Note about the screen shot: Normally, the
@@ -1285,10 +1286,10 @@ public class BasicBorders
    * in the middle of the JSplitPane has its own border class, of which
    * an instance can be obtained with {@link #getSplitPaneDividerBorder()}.
    *
-   * <p><img src="BasicBorders.SplitPaneBorder-1.png" width="520"
+   * <p><img src="doc-files/BasicBorders.SplitPaneBorder-1.png" width="520"
    * height="200" alt="[A screen shot for JSplitPane.HORIZONTAL_SPLIT]" />
    *
-   * <p><img src="BasicBorders.SplitPaneBorder-2.png" width="520"
+   * <p><img src="doc-files/BasicBorders.SplitPaneBorder-2.png" width="520"
    * height="200" alt="[A screen shot for JSplitPane.VERTICAL_SPLIT]" />
    *
    * <p>In contrast to the other borders of the Basic look and feel,
@@ -1381,10 +1382,10 @@ public class BasicBorders
     /**
      * Paints the border around a <code>JSplitPane</code>.
      *
-     * <p><img src="BasicBorders.SplitPaneBorder-1.png" width="520"
+     * <p><img src="doc-files/BasicBorders.SplitPaneBorder-1.png" width="520"
      * height="200" alt="[A screen shot for JSplitPane.HORIZONTAL_SPLIT]" />
      *
-     * <p><img src="BasicBorders.SplitPaneBorder-2.png" width="520"
+     * <p><img src="doc-files/BasicBorders.SplitPaneBorder-2.png" width="520"
      * height="200" alt="[A screen shot for JSplitPane.VERTICAL_SPLIT]" />
      *
      * @param c the <code>JSplitPane</code> whose border is to be painted.
@@ -1535,7 +1536,7 @@ public class BasicBorders
   /**
    * A border for the divider inside a JSplitPane.
    *
-   * <p><img src="BasicBorders.SplitPaneDividerBorder-1.png"
+   * <p><img src="doc-files/BasicBorders.SplitPaneDividerBorder-1.png"
    * width="520" height="200" alt="[A screen shot of this border]" />
    *
    * @author Sascha Brawer (brawer@dandelis.ch)
@@ -1575,9 +1576,9 @@ public class BasicBorders
     /**
      * Paints the border around the divider of a <code>JSplitPane</code>.
      *
-     * <p><img src="BasicBorders.SplitPaneDividerBorder-1.png" width="520"
-     * height="200" alt="[A picture that shows which pixels get painted
-     * in what color]" />
+     * <p><img src="doc-files/BasicBorders.SplitPaneDividerBorder-1.png"
+     * width="520" height="200" alt="[A picture that shows which pixels
+     * get painted in what color]" />
      *
      * @param c the <code>JSplitPane</code> whose divider&#x2019;s border
      *        is to be painted.
@@ -1687,8 +1688,8 @@ public class BasicBorders
   /**
    * A border for toggle buttons in the Basic look and feel.
    *
-   * <p><img src="BasicBorders.ToggleButtonBorder-1.png" width="270"
-   * height="135" alt="[A screen shot of this border]" />
+   * <p><img src="doc-files/BasicBorders.ToggleButtonBorder-1.png"
+   * width="270" height="135" alt="[A screen shot of this border]" />
    *
    * <p>The Sun implementation always seems to draw exactly
    * the same border, irrespective of the state of the button.

@@ -132,7 +132,7 @@ public class BasicTreeUI
   /**
    * Finds the path that is closest to the specified position.
    *
-   * <p><img src="../TreeUI-1.png" width="300" height="250"
+   * <p><img src="../doc-files/TreeUI-1.png" width="300" height="250"
    * alt="[A screen shot of a JTree] />
    *
    * <p>As shown by the above illustration, the bounds of the

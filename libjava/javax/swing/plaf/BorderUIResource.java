@@ -277,7 +277,8 @@ public class BorderUIResource
      * constructed by this method will automatically reflect a change
      * to the component&#x2019;s background color.
      *
-     * <p><img src="../border/BevelBorder-1.png" width="500" height="150"
+     * <p><img src="../border/doc-files/BevelBorder-1.png"
+     * width="500" height="150"
      * alt="[An illustration showing raised and lowered BevelBorders]" />
      *
      * @param bevelType the desired appearance of the border. The value
@@ -297,9 +298,9 @@ public class BorderUIResource
      * Constructs a BevelBorderUIResource given its appearance type
      * and two colors for its highlight and shadow.
      *
-     * <p><img src="../border/BevelBorder-2.png" width="500" height="150"
-     * alt="[An illustration showing BevelBorders that were constructed
-     * with this method]" />
+     * <p><img src="../border/doc-files/BevelBorder-2.png" width="500"
+     * height="150" alt="[An illustration showing BevelBorders that were
+     * constructed with this method]" />
      *
      * @param bevelType the desired appearance of the border. The value
      *        must be either {@link javax.swing.border.BevelBorder#RAISED}
@@ -337,9 +338,9 @@ public class BorderUIResource
      * Constructs a BevelBorderUIResource given its appearance type
      * and all its colors.
      *
-     * <p><img src="../border/BevelBorder-3.png" width="500" height="150"
-     * alt="[An illustration showing BevelBorders that were constructed
-     * with this method]" />
+     * <p><img src="../border/doc-files/BevelBorder-3.png" width="500"
+     * height="150" alt="[An illustration showing BevelBorders that
+     * were constructed with this method]" />
      *
      * @param bevelType the desired appearance of the border. The value
      *        must be either {@link javax.swing.border.BevelBorder#RAISED}
@@ -429,7 +430,8 @@ public class BorderUIResource
    * always install borders that implement <code>UIResource</code>,
    * such as the borders provided by this class.
    *
-   * <p><img src="../border/EmptyBorder-1.png" width="290" height="200"
+   * <p><img src="../border/doc-files/EmptyBorder-1.png"
+   * width="290" height="200"
    * alt="[An illustration of EmptyBorder]" />
    *
    * @author Brian Jones (cbj@gnu.org)
@@ -483,8 +485,9 @@ public class BorderUIResource
    * always install borders that implement <code>UIResource</code>,
    * such as the borders provided by this class.
    *
-   * <p><img src="../border/EtchedBorder-1.png" width="500" height="200"
-   * alt="[An illustration of the two EtchedBorder variants]" />
+   * <p><img src="../border/doc-files/EtchedBorder-1.png" width="500"
+   * height="200" alt="[An illustration of the two EtchedBorder
+   * variants]" />
    *
    * @author Brian Jones (cbj@gnu.org)
    * @author Sascha Brawer (brawer@dandelis.ch)
@@ -509,8 +512,9 @@ public class BorderUIResource
      * appearance. The colors will be derived from the background
      * color of the enclosed Component when the border gets painted.
      *
-     * <p><img src="../border/EtchedBorder-1.png" width="500" height="200"
-     * alt="[An illustration of the two EtchedBorder variants]" />
+     * <p><img src="../border/doc-files/EtchedBorder-1.png"
+     * width="500" height="200" alt="[An illustration of the two
+     * EtchedBorder variants]" />
      *
      * @param etchType the desired appearance of the border. The value
      *        must be either {@link javax.swing.border.EtchedBorder#RAISED}
@@ -549,7 +553,7 @@ public class BorderUIResource
      * appearance, explicitly selecting the colors that will be used
      * for highlight and shadow.
      *
-     * <p><img src="../border/EtchedBorder-2.png" width="500"
+     * <p><img src="../border/doc-files/EtchedBorder-2.png" width="500"
      * height="200" alt="[An illustration that shows which pixels get
      * painted in what color]" />
      *
@@ -583,8 +587,8 @@ public class BorderUIResource
    * always install borders that implement <code>UIResource</code>,
    * such as the borders provided by this class.
    *
-   * <p><img src="../border/LineBorder-1.png" width="500" height="200"
-   * alt="[An illustration of two LineBorders] />
+   * <p><img src="../border/doc-files/LineBorder-1.png" width="500"
+   * height="200" alt="[An illustration of two LineBorders] />
    *
    * @author Brian Jones (cbj@gnu.org)
    * @author Sascha Brawer (brawer@dandelis.ch)
@@ -638,8 +642,8 @@ public class BorderUIResource
    * always install borders that implement <code>UIResource</code>,
    * such as the borders provided by this class.
    *
-   * <p><img src="../border/MatteBorder-1.png" width="500" height="150"
-   * alt="[An illustration of two MatteBorders] />
+   * <p><img src="../border/doc-files/MatteBorder-1.png" width="500"
+   * height="150" alt="[An illustration of two MatteBorders] />
    *
    * @author Brian Jones (cbj@gnu.org)
    * @author Sascha Brawer (brawer@dandelis.ch)
@@ -652,8 +656,9 @@ public class BorderUIResource
      * Constructs a MatteBorderUIResource given the width on each side
      * and a fill color.
      *
-     * <p><img src="../border/MatteBorder-2.png" width="500" height="150"
-     * alt="[A picture of a MatteBorder made by this constructor]" />
+     * <p><img src="../border/doc-files/MatteBorder-2.png" width="500"
+     * height="150" alt="[A picture of a MatteBorder made by this
+     * constructor]" />
      *
      * @param top the width of the border at its top edge.
      * @param left the width of the border at its left edge.
@@ -673,7 +678,7 @@ public class BorderUIResource
      * Constructs a MatteBorderUIResource given the width on each side
      * and an icon for tiling the border area.
      *
-     * <p><img src="../border/MatteBorder-4.png" width="500"
+     * <p><img src="../border/doc-files/MatteBorder-4.png" width="500"
      * height="150" alt="[A picture of a MatteBorder made by this
      * constructor]" />
      *
@@ -697,10 +702,11 @@ public class BorderUIResource
      * the left and right edge, the icon height for the top and bottom
      * edge.
      *
-     * <p><img src="../border/MatteBorder-6.png" width="500" height="150"
-     * alt="[A picture of a MatteBorder made by this constructor]" />
+     * <p><img src="../border/doc-files/MatteBorder-6.png" width="500"
+     * height="150" alt="[A picture of a MatteBorder made by this
+     * constructor]" />
      *
-     * @param tileIcon an icon for tiling the border area.
+     * @param tileIcon an icon for tiling the border area. 
      */
     public MatteBorderUIResource(Icon tileIcon)
     {

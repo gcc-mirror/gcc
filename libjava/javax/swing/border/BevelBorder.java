@@ -125,7 +125,7 @@ public class BevelBorder
    * constructed by this method will automatically reflect a change
    * to the component&#x2019;s background color.
    *
-   * <p><img src="BevelBorder-1.png" width="500" height="150"
+   * <p><img src="doc-files/BevelBorder-1.png" width="500" height="150"
    * alt="[An illustration showing raised and lowered BevelBorders]" />
    *
    * @param bevelType the desired appearance of the border. The value
@@ -147,7 +147,7 @@ public class BevelBorder
    * Constructs a BevelBorder given its appearance type and two colors
    * for its highlight and shadow.
    *
-   * <p><img src="BevelBorder-2.png" width="500" height="150"
+   * <p><img src="doc-files/BevelBorder-2.png" width="500" height="150"
    * alt="[An illustration showing BevelBorders that were constructed
    * with this method]" />
    *
@@ -188,7 +188,7 @@ public class BevelBorder
    * Constructs a BevelBorder given its appearance type and all
    * colors.
    *
-   * <p><img src="BevelBorder-3.png" width="500" height="150"
+   * <p><img src="doc-files/BevelBorder-3.png" width="500" height="150"
    * alt="[An illustration showing BevelBorders that were constructed
    * with this method]" />
    *
