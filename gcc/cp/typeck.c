@@ -4672,16 +4672,7 @@ unary_complex_lvalue (code, arg)
 		return error_mark_node;
 	      }
 
-	  type = TREE_TYPE (TREE_OPERAND (arg, 0));
-
-	  if (TREE_CODE (TREE_TYPE (arg)) == OFFSET_TYPE)
-	    {
-	      /* Add in the offset to the intermediate subobject, if any.  */
-	      offset = get_delta_difference (TYPE_OFFSET_BASETYPE (TREE_TYPE (arg)),
-					     type,
-					     0);
-	      type = TYPE_OFFSET_BASETYPE (TREE_TYPE (arg));
-	    }
+	  type = TYPE_OFFSET_BASETYPE (TREE_TYPE (arg));
 
 	  /* Now in the offset to the final subobject.  */
 	  offset = size_binop (PLUS_EXPR,

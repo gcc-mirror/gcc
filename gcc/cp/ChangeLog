@@ -1,5 +1,8 @@
 Thu Dec 18 14:43:19 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* typeck.c (unary_complex_lvalue): Ignore op0 when taking the 
+	address of an OFFSET_REF.
+
 	* cp-tree.def: Add AGGR_INIT_EXPR.
 	* error.c, tree.c, typeck.c: Replace uses of NEW_EXPR with
 	AGGR_INIT_EXPR where appropriate.
