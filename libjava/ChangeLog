@@ -1,3 +1,8 @@
+2003-09-28  Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	* java/text/SimpleDateFormat (parse): Revert patch of 2003-09-25.
+	Don't call setTimeZone on calendar.
+
 2003-09-27  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/URL.java (getURLStreamHandler): Compile fixes.
