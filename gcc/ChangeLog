@@ -1,3 +1,9 @@
+Fri Feb 12 18:29:11 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (loop_insn_first_p, biv_elimination_giv_has_0_offset):
+	New functions.
+	(maybe_eliminate_biv_1): Use biv_elimination_giv_has_0_offset.
+
 Fri Feb 12 16:56:10 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (load_mems): Don't guess how to do a load / store, use
