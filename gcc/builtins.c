@@ -5134,7 +5134,7 @@ expand_builtin_fork_or_exec (tree fn, tree arglist, rtx target, int ignore)
 
   /* Otherwise call the wrapper.  This should be equivalent for the rest of
      compiler, so the code does not diverge, and the wrapper may run the
-     code neccesary for keeping the profiling sane.  */
+     code necessary for keeping the profiling sane.  */
 
   switch (DECL_FUNCTION_CODE (fn))
     {

@@ -68,8 +68,8 @@ The callgraph:
       caller. 
 
       Each edge has "inline_failed" field.  When the field is set to NULL,
-      the call will be inlined.  When it is non-NULL it contains an reason
-      why inlining wasn't performaned.
+      the call will be inlined.  When it is non-NULL it contains a reason
+      why inlining wasn't performed.
 
 
 The varpool data structure:
@@ -99,8 +99,8 @@ The varpool data structure:
 /* Hash table used to convert declarations into nodes.  */
 static GTY((param_is (struct cgraph_node))) htab_t cgraph_hash;
 
-/* We destructivly update callgraph during inlining and thus we need to
-   keep information on whether inlining happent separately.  */
+/* We destructively update callgraph during inlining and thus we need to
+   keep information on whether inlining happend separately.  */
 htab_t cgraph_inline_hash;
 
 /* The linked list of cgraph nodes.  */
@@ -209,7 +209,7 @@ cgraph_edge (struct cgraph_node *node, tree call_expr)
 
   /* This loop may turn out to be performance problem.  In such case adding
      hashtables into call nodes with very many edges is probably best
-     sollution.  It is not good idea to add pointer into CALL_EXPR itself
+     solution.  It is not good idea to add pointer into CALL_EXPR itself
      because we want to make possible having multiple cgraph nodes representing
      different clones of the same body before the body is actually cloned.  */
   for (e = node->callees; e; e= e->next_callee)

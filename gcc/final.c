@@ -1713,7 +1713,7 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	  
 	case NOTE_INSN_BASIC_BLOCK:
 	  
-	  /* If we are performing the optimization that paritions
+	  /* If we are performing the optimization that partitions
 	     basic blocks into hot & cold sections of the .o file,
 	     then at the start of each new basic block, before
 	     beginning to write code for the basic block, we need to

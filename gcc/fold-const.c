@@ -4806,7 +4806,7 @@ count_cond (tree expr, int lim)
    expression, and ARG to `a'.  If COND_FIRST_P is nonzero, then the
    COND is the first argument to CODE; otherwise (as in the example
    given here), it is the second argument.  TYPE is the type of the
-   original expression.  Return NULL_TREE if no simplication is
+   original expression.  Return NULL_TREE if no simplification is
    possible.  */
 
 static tree
