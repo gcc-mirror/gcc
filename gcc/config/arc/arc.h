@@ -464,7 +464,7 @@ enum reg_class {
    Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
-extern enum reg_class arc_regno_reg_class[];
+extern enum reg_class arc_regno_reg_class[FIRST_PSEUDO_REGISTER];
 #define REGNO_REG_CLASS(REGNO) \
 (arc_regno_reg_class[REGNO])
 
@@ -1332,7 +1332,7 @@ arc_final_prescan_insn (INSN, OPVEC, NOPERANDS)
 
 /* A C expression which evaluates to true if CODE is a valid
    punctuation character for use in the `PRINT_OPERAND' macro.  */
-extern char arc_punct_chars[];
+extern char arc_punct_chars[256];
 #define PRINT_OPERAND_PUNCT_VALID_P(CHAR) \
 arc_punct_chars[(unsigned char) (CHAR)]
 

@@ -148,7 +148,7 @@ extern unsigned get_mode_alignment PARAMS ((enum machine_mode));
 
 /* For each class, get the narrowest mode in that class.  */
 
-extern const enum machine_mode class_narrowest_mode[];
+extern const enum machine_mode class_narrowest_mode[(int) MAX_MODE_CLASS];
 #define GET_CLASS_NARROWEST_MODE(CLASS) class_narrowest_mode[(int) (CLASS)]
 
 /* Define the integer modes whose sizes are BITS_PER_UNIT and BITS_PER_WORD

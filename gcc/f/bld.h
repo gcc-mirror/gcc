@@ -474,7 +474,7 @@ struct _ffebld_pool_stack_
 
 /* Global objects accessed by users of this module. */
 
-extern const ffebldArity ffebld_arity_op_[];
+extern const ffebldArity ffebld_arity_op_[(int) FFEBLD_op];
 extern struct _ffebld_pool_stack_ ffebld_pool_stack_;
 
 /* Declare functions with prototypes. */

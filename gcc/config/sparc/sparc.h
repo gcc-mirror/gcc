@@ -1302,7 +1302,7 @@ enum reg_class { NO_REGS, FPCC_REGS, I64_REGS, GENERAL_REGS, FP_REGS,
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-extern enum reg_class sparc_regno_reg_class[];
+extern enum reg_class sparc_regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 #define REGNO_REG_CLASS(REGNO) sparc_regno_reg_class[(REGNO)]
 

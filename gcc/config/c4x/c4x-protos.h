@@ -287,8 +287,8 @@ extern struct rtx_def *c4x_compare_op1;	/* Operand 1 for comparisons.  */
 #endif /* RTX_CODE */
 
 /* Smallest class containing REGNO.  */
-extern enum reg_class c4x_regclass_map[];
-extern enum machine_mode c4x_caller_save_map[];
+extern enum reg_class c4x_regclass_map[FIRST_PSEUDO_REGISTER];
+extern enum machine_mode c4x_caller_save_map[FIRST_PSEUDO_REGISTER];
 
 extern int c4x_rpts_cycles;	        /* Max cycles for RPTS.  */
 extern int c4x_cpu_version;		/* Cpu version C30/31/32/40/44.  */

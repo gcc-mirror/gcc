@@ -119,7 +119,7 @@ enum block_move_type {
 };
 
 extern char mips_reg_names[][8];	/* register names (a0 vs. $4).  */
-extern char mips_print_operand_punct[];	/* print_operand punctuation chars */
+extern char mips_print_operand_punct[256]; /* print_operand punctuation chars */
 extern const char *current_function_file; /* filename current function is in */
 extern int num_source_filenames;	/* current .file # */
 extern int inside_function;		/* != 0 if inside of a function */
@@ -2083,7 +2083,7 @@ extern const enum reg_class mips_regno_to_class[];
    'z'	FP Status register
    'b'	All registers */
 
-extern enum reg_class mips_char_to_class[];
+extern enum reg_class mips_char_to_class[256];
 
 #define REG_CLASS_FROM_LETTER(C) mips_char_to_class[(unsigned char)(C)]
 

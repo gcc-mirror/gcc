@@ -1,3 +1,25 @@
+2001-12-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* 1750a.h (datalbl, jmplbl): Declare array size explicitly.
+	* a29k.h (a29k_debug_reg_map): Likewise.
+	* arc.h (arc_regno_reg_class): Likewise.
+	* c4x-protos.h (c4x_regclass_map, c4x_caller_save_map): Likewise.
+	* convex.h (regno_reg_class, reg_class_from_letter): Likewise.
+	* d30v.h (regno_reg_class, reg_class_from_letter): Likewise.
+	* i386.h (regclass_map): Likewise.
+	* m32r.h (m32r_hard_regno_mode_ok, m32r_punct_chars): Likewise.
+	* mcore.h (regno_reg_class): Likewise.
+	* mips.h (mips_print_operand_punct, mips_char_to_class):
+	Likewise.
+	* ns32k.h (regclass_map): Likewise.
+	* pj.h (pj_debugreg_renumber_vec): Likewise.
+	* s390.h (regclass_map): Likewise.
+	* sh.h (regno_reg_class): Likewise.
+	* sparc.h (sparc_regno_reg_class): Likewise.
+
+	* hard-reg-set.h (reg_class_contents): Likewise.
+	* machmode.h (class_narrowest_mode): Likewise.
+
 2001-12-22  David Edelsohn  <edelsohn@gnu.org>
 
 	* loop.c (scan_loop, move_movables, count_one_set): Do not

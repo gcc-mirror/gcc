@@ -524,7 +524,7 @@ enum reg_class
 
 #define REGNO_REG_CLASS(REGNO) (regclass_map[REGNO])
 
-extern enum reg_class regclass_map[];	/* smalled class containing REGNO   */
+extern enum reg_class regclass_map[FIRST_PSEUDO_REGISTER]; /* smalled class containing REGNO   */
 
 /* The class value for index registers, and the one for base regs.  */
 

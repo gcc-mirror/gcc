@@ -1365,8 +1365,8 @@ enum reg_class {
 
 extern int target_cpu;
 extern int current_section_is_text;
-extern enum reg_class regno_reg_class[];
-extern enum reg_class reg_class_from_letter[];
+extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
+extern enum reg_class reg_class_from_letter[256];
 extern char regno_ok_for_index_p_base[];
 #define regno_ok_for_index_p (regno_ok_for_index_p_base + 1)
 

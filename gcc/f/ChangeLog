@@ -1,3 +1,8 @@
+Sat Dec 22 16:01:51 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bld.c (ffebld_arity_op_): Declare array size explicitly.
+	* bld.h (ffebld_arity_op_): Likewise.
+
 2001-12-20  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* config-lang.in (diff_excludes): Remove.
