@@ -1,3 +1,8 @@
+2003-09-04  Matt Austern  <austern@apple.com>
+
+	* c-common.c (fname_as_string): Use lang_hooks.decl_printable_name
+	with verbosity 0, instead of DECL_NAME, for human-readable string.
+	
 2003-09-04  Eric Christopher  <echristo@redhat.com>
 
 	* targhooks.c (default_return_in_memory): Allow
