@@ -1,5 +1,5 @@
 /* Prints out tree in human readable form - GNU C-compiler
-   Copyright (C) 1990, 1991, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -436,6 +436,8 @@ print_node (file, prefix, node, indent)
 
       fprintf (file, " align %d", TYPE_ALIGN (node));
       fprintf (file, " symtab %d", TYPE_SYMTAB_ADDRESS (node));
+
+      print_node (file, "attributes", TYPE_ATTRIBUTES (node), indent + 4);
 
       if (TREE_CODE (node) == ARRAY_TYPE || TREE_CODE (node) == SET_TYPE)
 	print_node (file, "domain", TYPE_DOMAIN (node), indent + 4);
