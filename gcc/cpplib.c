@@ -689,10 +689,9 @@ cpp_register_pragma_space (pfile, space)
   while (p)
     {
       if (p->isnspace && p->len == len && !memcmp (p->name, space, len))
-	{
-	  cpp_ice (pfile, "#pragma namespace %s already registered", space);
-	  return;
-	}
+	/* Multiple different callers are allowed to register the same
+	   namespace.  */
+	return;
       p = p->next;
     }
 
