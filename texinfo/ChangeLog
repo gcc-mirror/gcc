@@ -1,3 +1,7 @@
+Sun Apr 12 20:59:53 1998  Alexandre Oliva <oliva@dcc.unicamp.br>
+
+	* configure.in: only set HAVE_LIBZ if zlib.h exists
+
 Fri Apr 10 01:36:24 1998  Jim Wilson <wilson@cygnus.com>
 
 	* Makefile.am (SUBDIRS): Redefine to exclude info, po, util and doc.
