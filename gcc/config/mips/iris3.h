@@ -75,7 +75,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define NO_DOLLAR_IN_LABEL 1
 
-/* Specify wchar_t types.  */
+/* Specify wchar_t type.  */
 #define WCHAR_TYPE	"unsigned char"
 #define WCHAR_TYPE_SIZE BITS_PER_UNIT
 
