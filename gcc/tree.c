@@ -1725,7 +1725,7 @@ chain_member_value (elem, chain)
   return 0;
 }
 
-/* Return nonzero if ELEM is equal to TREE_PURPOSE (TREE_VALUE (CHAIN)) 
+/* Return nonzero if ELEM is equal to TREE_PURPOSE (CHAIN)
    for any piece of chain CHAIN. */
 
 int
@@ -1735,7 +1735,7 @@ chain_member_purpose (elem, chain)
 
   while (chain)
     {
-      if (elem == TREE_PURPOSE (TREE_VALUE (chain)))
+      if (elem == TREE_PURPOSE (chain))
 	return 1;
       chain = TREE_CHAIN (chain);
     }
