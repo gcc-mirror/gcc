@@ -1,3 +1,8 @@
+2000-09-15  Tom Tromey  <tromey@cygnus.com>
+
+	* configure, config.in: Rebuilt.
+	* configure.in: Check for iconv.h.  Define _XOPEN_SOURCE.
+
 2000-09-15  Greg McGary  <greg@mcgary.org>
 
 	* cppmacro.c (check_trad_stringification): Check token
