@@ -2227,7 +2227,7 @@ install-info: doc installdirs lang.install-info
 
 # Install the man pages.
 install-man: installdirs $(srcdir)/gcc.1 $(srcdir)/cccp.1 lang.install-man
-	-if [ -f gcc-cross ] ; then \
+	-if [ -f gcc-cross$(exeext) ] ; then \
 	  rm -f $(mandir)/$(GCC_CROSS_NAME)$(manext); \
 	  $(INSTALL_DATA) $(srcdir)/gcc.1 $(mandir)/$(GCC_CROSS_NAME)$(manext); \
 	  chmod a-x $(mandir)/$(GCC_CROSS_NAME)$(manext); \
