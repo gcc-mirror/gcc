@@ -856,7 +856,7 @@ dump_decl (t, v)
     case CONST_DECL:
       if ((TREE_TYPE (t) != NULL_TREE && NEXT_CODE (t) == ENUMERAL_TYPE)
 	  || (DECL_INITIAL (t) &&
-	      TREE_CODE (DECL_INITIAL (t)) == TEMPLATE_CONST_PARM))
+	      TREE_CODE (DECL_INITIAL (t)) == TEMPLATE_PARM_INDEX))
 	goto general;
       else if (DECL_NAME (t))
 	dump_decl (DECL_NAME (t), v);
@@ -1527,33 +1527,12 @@ dump_expr (t, nop)
 	break;
       }
 
-    case TEMPLATE_CONST_PARM:
+    case TEMPLATE_PARM_INDEX:
       {
 	int l = current_template_parms ? 
 	  list_length (current_template_parms) : 0;
 
-	if (l >= TEMPLATE_CONST_LEVEL (t))
-	  {
-	    int i;
-	    tree parms = current_template_parms;
-	    tree r;
-	    
-	    for (i = 0; i < l - TEMPLATE_CONST_LEVEL (t); ++i)
-	      {
-		parms = TREE_CHAIN (parms);
-		my_friendly_assert (parms != NULL_TREE, 0);
-	      }
-	    
-	    r = TREE_VEC_ELT (TREE_VALUE (parms),
-			      TEMPLATE_CONST_IDX (t));
-	    dump_decl (TREE_VALUE (r), -1);
-	  }
-	else
-	  {
-	    OB_PUTS ("<tparm ");
-	    OB_PUTI (TEMPLATE_CONST_IDX (t));
-	    OB_PUTS (">");
-	  }
+	dump_decl (TEMPLATE_PARM_DECL (t), -1);
       }
       break;
 

@@ -602,6 +602,24 @@ build_overload_int (value, in_template)
   icat (TREE_INT_CST_LOW (value));
 }
 
+
+/* Output S followed by a representation of the TEMPLATE_PARM_INDEX
+   supplied in INDEX.  */
+
+static void 
+build_mangled_template_parm_index (s, index)
+     char* s;
+     tree index;
+{
+  OB_PUTCP (s);
+  build_underscore_int (TEMPLATE_PARM_IDX (index));
+  /* We use the LEVEL, not the ORIG_LEVEL, because the mangling is a
+     representation of the function from the point of view of its
+     type.  */
+  build_underscore_int (TEMPLATE_PARM_LEVEL (index));
+}
+
+
 static void
 build_overload_value (type, value, in_template)
      tree type, value;
@@ -619,11 +637,9 @@ build_overload_value (type, value, in_template)
       numeric_output_need_bar = 0;
     }
 
-  if (TREE_CODE (value) == TEMPLATE_CONST_PARM)
+  if (TREE_CODE (value) == TEMPLATE_PARM_INDEX)
     {
-      OB_PUTC ('Y');
-      build_underscore_int (TEMPLATE_CONST_IDX (value));
-      build_underscore_int (TEMPLATE_CONST_LEVEL (value));
+      build_mangled_template_parm_index ("Y", value);
       return;
     }
 
@@ -761,13 +777,19 @@ build_overload_value (type, value, in_template)
 	  sorry ("template instantiation with pointer to method that is too complex");
 	  return;
 	}
-      if (TREE_CODE (value) == INTEGER_CST
-	  || TREE_CODE (value) == TEMPLATE_CONST_PARM)
+      if (TREE_CODE (value) == INTEGER_CST)
 	{
 	  build_overload_int (value, in_template);
 	  numeric_output_need_bar = 1;
 	  return;
 	}
+      else if (TREE_CODE (value) == TEMPLATE_PARM_INDEX)
+	{
+	  build_mangled_template_parm_index ("", value);
+	  numeric_output_need_bar = 1;
+	  return;
+	}
+
       value = TREE_OPERAND (value, 0);
       if (TREE_CODE (value) == VAR_DECL)
 	{
@@ -1374,33 +1396,27 @@ process_overload_item (parmtype, extra_Gcode)
          declaration. */
       if (CLASSTYPE_TEMPLATE_INFO (parmtype))
         {
-          OB_PUTC ('t');
-          OB_PUTC ('z');
-          OB_PUTC ('X');
-          build_underscore_int (TEMPLATE_TYPE_IDX (parmtype));
-          build_underscore_int (TEMPLATE_TYPE_LEVEL (parmtype));
-
-          build_template_parm_names (
-            DECL_INNERMOST_TEMPLATE_PARMS (CLASSTYPE_TI_TEMPLATE (parmtype)),
-            CLASSTYPE_TI_ARGS (parmtype));
+	  build_mangled_template_parm_index ("tzX",
+					     TEMPLATE_TYPE_PARM_INDEX 
+					     (parmtype));
+          build_template_parm_names
+            (DECL_INNERMOST_TEMPLATE_PARMS (CLASSTYPE_TI_TEMPLATE (parmtype)),
+	     CLASSTYPE_TI_ARGS (parmtype));
         }
       else
         {
-          OB_PUTC ('Z');
-          OB_PUTC ('z');
-          OB_PUTC ('X');
-          build_underscore_int (TEMPLATE_TYPE_IDX (parmtype));
-          build_underscore_int (TEMPLATE_TYPE_LEVEL (parmtype));
-
-          build_template_template_parm_names (
-            DECL_INNERMOST_TEMPLATE_PARMS (TYPE_STUB_DECL (parmtype)));
+	  build_mangled_template_parm_index ("ZzX",
+					     TEMPLATE_TYPE_PARM_INDEX 
+					     (parmtype));
+          build_template_template_parm_names
+            (DECL_INNERMOST_TEMPLATE_PARMS (TYPE_STUB_DECL (parmtype)));
         }
       break;
 
     case TEMPLATE_TYPE_PARM:
-      OB_PUTC ('X');
-      build_underscore_int (TEMPLATE_TYPE_IDX (parmtype));
-      build_underscore_int (TEMPLATE_TYPE_LEVEL (parmtype));
+      build_mangled_template_parm_index ("X", 
+					 TEMPLATE_TYPE_PARM_INDEX
+					 (parmtype));
       break;
         
     case TYPENAME_TYPE:

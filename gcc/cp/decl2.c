@@ -1431,19 +1431,22 @@ check_classfn (ctype, function)
 	  if (fn_name == DECL_NAME (*methods))
 	    {
 	    got_it:
-	      fndecl = *methods;
-	      while (fndecl)
+	      for (fndecl = *methods; fndecl != NULL_TREE;
+		   fndecl = DECL_CHAIN (fndecl))
 		{
-		  if (DECL_ASSEMBLER_NAME (function) == DECL_ASSEMBLER_NAME (fndecl))
+		  /* The DECL_ASSEMBLER_NAME for a TEMPLATE_DECL is
+		     not mangled, so the check below does not work
+		     correctly in that case.  */
+		  if (TREE_CODE (function) != TEMPLATE_DECL
+		      && TREE_CODE (fndecl) != TEMPLATE_DECL
+		      && (DECL_ASSEMBLER_NAME (function) 
+			  == DECL_ASSEMBLER_NAME (fndecl)))
 		    return fndecl;
-#if 0
-		  /* This doesn't work for static member functions that are
-                     pretending to be methods.  */
-		  /* We have to do more extensive argument checking here, as
-		     the name may have been changed by asm("new_name").  */
-		  if (decls_match (function, fndecl))
-		    return fndecl;
-#else
+
+		  /* We cannot simply call decls_match because this
+		     doesn't work for static member functions that are 
+                     pretending to be methods, and because the name
+		     may have been changed by asm("new_name").  */ 
 		  if (DECL_NAME (function) == DECL_NAME (fndecl))
 		    {
 		      tree p1 = TYPE_ARG_TYPES (TREE_TYPE (function));
@@ -1471,8 +1474,6 @@ check_classfn (ctype, function)
 			templates = 
 			  scratch_tree_cons (NULL_TREE, fndecl, templates);
 		    }
-#endif
-		  fndecl = DECL_CHAIN (fndecl);
 		}
 	      break;		/* loser */
 	    }

@@ -87,22 +87,59 @@ DEFTREECODE (VEC_INIT_EXPR, "vec_init_expr", 'e', 3)
  */
 DEFTREECODE (TEMPLATE_DECL, "template_decl", 'd', 0)
 
+/* Index into a template parameter list.  The TEMPLATE_PARM_IDX gives
+   the index (from 0) of the parameter, while the TEMPLATE_PARM_LEVEL
+   gives the level (from 1) of the parameter.
+
+   Here's an example:
+   
+   template <class T> // Index 0, Level 1.
+   struct S
+   {
+      template <class U, // Index 0, Level 2.
+                class V> // Index 1, Level 2.
+      void f();
+   };  
+
+   The DESCENDANTS will be a chain of TEMPLATE_PARM_INDEXs descended
+   from this one.  The first descendant will have the same IDX, but
+   its LEVEL will be one less.  The TREE_CHAIN field is used to chain
+   together the descendants.  The TEMPLATE_PARM_DECL is the
+   declaration of this parameter, either a TYPE_DECL or CONST_DECL.
+   The TEMPLATE_PARM_ORIG_LEVEL is the LEVEL of the most distant
+   parent, i.e., the LEVEL that the parameter originally had when it
+   was declared.  For example, if we instantiate S<int>, we will have:
+
+   struct S<int>
+   {
+     template <class U, // Index 0, Level 1, Orig Level 2
+               class V> // Index 1, Level 1, Orig Level 2
+     void f();
+   };
+  
+   The LEVEL is the level of the parameter when we are worrying about
+   the types of things; the ORIG_LEVEL is the level when we are
+   worrying about instantiating things.  */
+DEFTREECODE (TEMPLATE_PARM_INDEX, "template_parm_index", 'c', 
+	     /* The addition of (sizeof(char*) - 1) in the next
+		expression is to ensure against the case where
+		sizeof(char*) does not evenly divide
+		sizeof(HOST_WIDE_INT).  */
+	     2 + ((3 * sizeof (HOST_WIDE_INT) + sizeof(char*) - 1)
+		  / sizeof (char*)))
+
 /* Index into a template parameter list.  This parameter must be a type.
-   Use TYPE_FIELDS to find parmlist and index.  */
+   The TYPE_FIELDS value will be a TEMPLATE_PARM_INDEX.  */
 DEFTREECODE (TEMPLATE_TYPE_PARM, "template_type_parm", 't', 0)
 
 /* Index into a template parameter list.  This parameter must be a type.
    If it is used in signature of a template, TEMPLATE_INFO is NULL_TREE.
    Otherwise it is used to declare a type like TT<int>.
-   Use TYPE_FIELDS to find parmlist and index.  */
+   The TYPE_FIELDS value will be a TEMPLATE_PARM_INDEX.  */
 DEFTREECODE (TEMPLATE_TEMPLATE_PARM, "template_template_parm", 't', 0)
 
 /* A type designated by 'typename T::t'. */
 DEFTREECODE (TYPENAME_TYPE, "typename_type", 't', 0)
-
-/* Index into a template parameter list.  This parameter must not be a
-   type.  */
-DEFTREECODE (TEMPLATE_CONST_PARM, "template_const_parm", 'c', 3)
 
 /* A thunk is a stub function.
 
@@ -179,3 +216,9 @@ DEFTREECODE (AMBIG_CONV, "ambig_conv", 'e', 1)
 DEFTREECODE (RVALUE_CONV, "rvalue_conv", 'e', 1)
 
 DEFTREECODE (TAG_DEFN, "tag_defn", 'e', 0)
+
+/*
+Local variables:
+mode:c
+End:
+*/

@@ -33,22 +33,7 @@ Boston, MA 02111-1307, USA.  */
 static void add_friend PROTO((tree, tree));
 static void add_friends PROTO((tree, tree, tree));
 
-/* Friend data structures:
-
-   Lists of friend functions come from TYPE_DECL nodes.  Since all
-   aggregate types are automatically typedef'd, these nodes are guaranteed
-   to exist.
-
-   The TREE_PURPOSE of a friend list is the name of the friend,
-   and its TREE_VALUE is another list.
-
-   For each element of that list, either the TREE_VALUE or the TREE_PURPOSE
-   will be filled in, but not both.  The TREE_VALUE of that list is an
-   individual function which is a friend.  The TREE_PURPOSE of that list
-   indicates a type in which all functions by that name are friends.
-
-   Lists of friend classes come from _TYPE nodes.  Love that consistency
-   thang.  */
+/* Friend data structures are described in cp-tree.h.  */
 
 int
 is_friend (type, supplicant)
@@ -83,6 +68,31 @@ is_friend (type, supplicant)
 		{
 		  if (ctype == TREE_PURPOSE (friends))
 		    return 1;
+
+		  if (TREE_VALUE (friends) == NULL_TREE)
+		    continue;
+
+		  if (TREE_CODE (TREE_VALUE (friends)) == TEMPLATE_DECL)
+		    {
+		      tree t;
+
+		      /* Perhaps this function is a specialization of
+			 a friend template.  */
+		      for (t = supplicant;
+			   t != NULL_TREE;
+			   t = DECL_TEMPLATE_INFO (t) ? 
+			     DECL_TI_TEMPLATE (t) : NULL_TREE)
+			/* FIXME: The use of comptypes here, and below, is
+			   bogus, since two specializations of a
+			   template parameter with non-type parameters
+			   may have the same type, but be different.  */
+			if (comptypes (TREE_TYPE (t),
+				       TREE_TYPE (TREE_VALUE (friends)), 1))
+			  return 1;
+
+		      continue;
+		    }
+
 		  if (comptypes (TREE_TYPE (supplicant),
 				 TREE_TYPE (TREE_VALUE (friends)), 1))
 		    return 1;
@@ -302,8 +312,14 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
      tree quals;
      int funcdef_flag;
 {
+  int is_friend_template = 0;
+
   /* Every decl that gets here is a friend of something.  */
   DECL_FRIEND_P (decl) = 1;
+
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    is_friend_template = processing_template_decl >
+      template_class_depth (current_class_type);
 
   if (ctype)
     {
@@ -319,18 +335,21 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 
 	  /* This will set up DECL_ARGUMENTS for us.  */
 	  grokclassfn (ctype, cname, decl, flags, quals);
-	  if (TYPE_SIZE (ctype) != 0)
+
+	  if (is_friend_template)
+	    decl = DECL_TI_TEMPLATE (push_template_decl (decl));
+
+	  if (TYPE_SIZE (ctype) != 0 
+	      && template_class_depth (ctype) == 0)
 	    decl = check_classfn (ctype, decl);
 
 	  if (TREE_TYPE (decl) != error_mark_node)
 	    {
-	      if (TYPE_SIZE (ctype))
+	      if (TYPE_SIZE (ctype) || template_class_depth (ctype) > 0)
 		add_friend (current_class_type, decl);
 	      else
-		{
-		  cp_error ("member `%D' declared as friend before type `%T' defined",
-			    decl, ctype);
-		}
+		cp_error ("member `%D' declared as friend before type `%T' defined",
+			  decl, ctype);
 	    }
 	}
       else
@@ -386,10 +405,21 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 	{
 	  /* We can call pushdecl here, because the TREE_CHAIN of this
 	     FUNCTION_DECL is not needed for other purposes.  Don't do this
-	     for a template instantiation. */
-	  decl = pushdecl (decl);
+	     for a template instantiation.  */
+	  if (!is_friend_template)
+	    {  
+	      /* However, we don't call pushdecl() for a friend
+		 function of a template class, since in general,
+		 such a declaration depends on template
+		 parameters.  Instead, we call pushdecl when the
+		 class is instantiated.  */
+	      if (template_class_depth (current_class_type) == 0)
+		decl = pushdecl (decl);
+	    }
+	  else 
+	    decl = push_template_decl (decl); 
 
-	  if (! funcdef_flag && ! flag_guiding_decls
+	  if (! funcdef_flag && ! flag_guiding_decls && ! is_friend_template
 	      && current_template_parms && uses_template_parms (decl))
 	    {
 	      static int explained;
@@ -405,8 +435,8 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 	}
 
       make_decl_rtl (decl, NULL_PTR, 1);
-      add_friend (current_class_type, decl);
-
+      add_friend (current_class_type, 
+		  is_friend_template ? DECL_TI_TEMPLATE (decl) : decl);
       DECL_FRIEND_P (decl) = 1;
     }
   else
