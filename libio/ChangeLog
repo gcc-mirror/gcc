@@ -1,6 +1,11 @@
+Fri Dec  5 16:22:15 1997  H.J. Lu  (hjl@gnu.org)
+
+	* streambuf.cc (streambuf::~streambuf): Don't delete _lock
+	for _IO_stdin/_IO_stdout/_IO_stderr.
+
 Thu Nov 27 01:32:43 1997  Jeffrey A Law  (law@cygnus.com)
 
-	* Makefile.in (insatll): Change gxx_includedir to gcc_include_dir.
+	* Makefile.in (install): Change gxx_includedir to gcc_include_dir.
 	* config.shared (gxx_includedir): Remove default definition.
 	* config/linux.mt: Change gxx_includedir to gxx_include_dir.
 	* config/linuxaxp1.mt: Likewise.
