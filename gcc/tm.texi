@@ -1078,6 +1078,14 @@ A C expression for the size in bits of the type @code{long double} on
 the target machine.  If you don't define this, the default is two
 words.
 
+@findex WIDEST_HARDWARE_FP_SIZE
+@item WIDEST_HARDWARE_FP_SIZE
+A C expression for the size in bits of the widest floating-point format
+supported by the hardware.  If you define this macro, you must specify a
+value less than or equal to the value of @code{LONG_DOUBLE_TYPE_SIZE}.
+If you do not define this macro, the value of @code{LONG_DOUBLE_TYPE_SIZE}
+is the default.
+
 @findex DEFAULT_SIGNED_CHAR
 @item DEFAULT_SIGNED_CHAR
 An expression whose value is 1 or 0, according to whether the type
