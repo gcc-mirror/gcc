@@ -72,6 +72,8 @@ public class GtkComponentPeer extends GtkGenericPeer
 {
   Component awtComponent;
 
+  Insets insets;
+
   /* this isEnabled differs from Component.isEnabled, in that it
      knows if a parent is disabled.  In that case Component.isEnabled 
      may return true, but our isEnabled will always return false */
@@ -88,6 +90,11 @@ public class GtkComponentPeer extends GtkGenericPeer
   void create ()
   {
     throw new RuntimeException ();
+  }
+
+  void initializeInsets ()
+  {
+    insets = new Insets (0, 0, 0, 0);
   }
 
   native void connectHooks ();
@@ -115,13 +122,13 @@ public class GtkComponentPeer extends GtkGenericPeer
       //  	c.setFont (cp.getFont ());
       if (awtComponent.getFont() != null)
 	setFont(awtComponent.getFont());
-      
-      if (! (awtComponent instanceof Window))
-	{
-	  setCursor (awtComponent.getCursor ());
-	  Rectangle bounds = awtComponent.getBounds ();
-	  setBounds (bounds.x, bounds.y, bounds.width, bounds.height);
-	}
+
+      initializeInsets ();
+
+      setCursor (awtComponent.getCursor ());
+      Rectangle bounds = awtComponent.getBounds ();
+      setBounds (bounds.x, bounds.y, bounds.width, bounds.height);
+
     } catch (RuntimeException ex) { ; }
   }
 
@@ -278,11 +285,11 @@ public class GtkComponentPeer extends GtkGenericPeer
   {
     Component parent = awtComponent.getParent ();
     
-    if (parent instanceof Frame)
+    if (parent instanceof Window)
       {
-	Insets insets = ((Frame)parent).getInsets ();
-	/* convert Java's coordinate space into GTK+'s coordinate space */
-	setNativeBounds (x-insets.left, y-insets.top, width, height);
+	Insets insets = ((Window) parent).getInsets ();
+	// Convert from Java coordinates to GTK coordinates.
+	setNativeBounds (x - insets.left, y - insets.top, width, height);
       }
     else
       setNativeBounds (x, y, width, height);

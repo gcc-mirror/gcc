@@ -44,6 +44,8 @@ exception statement from your version. */
   struct state_table *native_state_table;
 #endif
 
+jmethodID setBoundsCallbackID;
+
 jmethodID postActionEventID;
 jmethodID postMenuActionEventID;
 jmethodID postMouseEventID;
@@ -74,7 +76,7 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit (JNIEnv *env, jclass clazz)
   char *homedir, *rcpath = NULL;
 /*    jclass gtkgenericpeer; */
   jclass gtkcomponentpeer, gtkwindowpeer, gtkscrollbarpeer, gtklistpeer,
-    gtkmenuitempeer, gtktextcomponentpeer;
+    gtkmenuitempeer, gtktextcomponentpeer, window;
 
   NSA_INIT (env, clazz);
 
@@ -127,6 +129,9 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit (JNIEnv *env, jclass clazz)
   /* setup cached IDs for posting GTK events to Java */
 /*    gtkgenericpeer = (*env)->FindClass (env,  */
 /*  				      "gnu/java/awt/peer/gtk/GtkGenericPeer"); */
+
+  window = (*env)->FindClass (env, "java/awt/Window");
+
   gtkcomponentpeer = (*env)->FindClass (env,
 				     "gnu/java/awt/peer/gtk/GtkComponentPeer");
   gtkwindowpeer = (*env)->FindClass (env,
@@ -144,6 +149,10 @@ Java_gnu_java_awt_peer_gtk_GtkMainThread_gtkInit (JNIEnv *env, jclass clazz)
 /*    postActionEventID = (*env)->GetMethodID (env, gtkgenericpeer,  */
 /*  					   "postActionEvent",  */
 /*  					   "(Ljava/lang/String;I)V"); */
+
+  setBoundsCallbackID = (*env)->GetMethodID (env, window,
+					     "setBoundsCallback",
+					     "(IIII)V");
 
   postMenuActionEventID = (*env)->GetMethodID (env, gtkmenuitempeer,
 					       "postMenuActionEvent",

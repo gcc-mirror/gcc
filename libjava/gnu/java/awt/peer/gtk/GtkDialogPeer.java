@@ -41,6 +41,7 @@ package gnu.java.awt.peer.gtk;
 import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Insets;
 import java.awt.peer.DialogPeer;
 
 public class GtkDialogPeer extends GtkWindowPeer
@@ -51,11 +52,19 @@ public class GtkDialogPeer extends GtkWindowPeer
     super (dialog);
   }
 
+  void initializeInsets ()
+  {
+    // Unfortunately, X does not provide a clean way to calculate the
+    // dimensions of a dialog's borders before it has been displayed.
+    // So we guess and then fix the dimensions upon receipt of the
+    // first configure event.
+    insets = new Insets (20, 6, 6, 6);
+  }
+
   void create ()
   {
-    create (GTK_WINDOW_TOPLEVEL,
-	    awtComponent.getWidth(),
-	    awtComponent.getHeight());
+    // Create a decorated dialog window.
+    create (GDK_WINDOW_TYPE_HINT_DIALOG, true);
   }
 
   public void getArgs (Component component, GtkArgList args)
