@@ -1,5 +1,20 @@
 2004-02-24  Ian Lance Taylor  <ian@wasabisystems.com>
 
+	* cp-demangle.h (enum d_builtin_type_print): Add D_PRINT_UNSIGNED,
+	D_PRINT_UNSIGNED_LONG, D_PRINT_LONG_LONG,
+	D_PRINT_UNSIGNED_LONG_LONG, D_PRINT_FLOAT.
+	* cp-demangle.c (cplus_demangle_builtin_types): Change char and
+	short types to D_PRINT_DEFAULT.  Change other integer types to use
+	new D_PRINT_* values where appropriate.  Change float types to
+	D_PRINT_FLOAT.
+	(d_print_comp) [LITERAL, LITERAL_NEG]: Handle new D_PRINT_*
+	values.
+	* testsuite/demangle-expected: Adjust two test cases.
+
+	* cp-demangle.c (d_print_function_type): Print a space before the
+	parenthesis around the function type in more cases.
+	* testsuite/demangle-expected: Adjust one test case.
+
 	* cp-demangle.c (d_print_comp) [UNARY]: Don't emit extra
 	parentheses around a cast.
 	* testsuite/demangle-expected: Adjust two test cases to match new

@@ -1748,31 +1748,33 @@ CP_STATIC_IF_GLIBCPP_V3
 const struct demangle_builtin_type_info
 cplus_demangle_builtin_types[D_BUILTIN_TYPE_COUNT] =
 {
-  /* a */ { NL ("signed char"),	NL ("signed char"),	D_PRINT_INT },
+  /* a */ { NL ("signed char"),	NL ("signed char"),	D_PRINT_DEFAULT },
   /* b */ { NL ("bool"),	NL ("boolean"),		D_PRINT_BOOL },
-  /* c */ { NL ("char"),	NL ("byte"),		D_PRINT_INT },
-  /* d */ { NL ("double"),	NL ("double"),		D_PRINT_DEFAULT },
-  /* e */ { NL ("long double"),	NL ("long double"),	D_PRINT_DEFAULT },
-  /* f */ { NL ("float"),	NL ("float"),		D_PRINT_DEFAULT },
-  /* g */ { NL ("__float128"),	NL ("__float128"),	D_PRINT_DEFAULT },
-  /* h */ { NL ("unsigned char"), NL ("unsigned char"),	D_PRINT_INT },
+  /* c */ { NL ("char"),	NL ("byte"),		D_PRINT_DEFAULT },
+  /* d */ { NL ("double"),	NL ("double"),		D_PRINT_FLOAT },
+  /* e */ { NL ("long double"),	NL ("long double"),	D_PRINT_FLOAT },
+  /* f */ { NL ("float"),	NL ("float"),		D_PRINT_FLOAT },
+  /* g */ { NL ("__float128"),	NL ("__float128"),	D_PRINT_FLOAT },
+  /* h */ { NL ("unsigned char"), NL ("unsigned char"),	D_PRINT_DEFAULT },
   /* i */ { NL ("int"),		NL ("int"),		D_PRINT_INT },
-  /* j */ { NL ("unsigned int"), NL ("unsigned"),	D_PRINT_INT },
+  /* j */ { NL ("unsigned int"), NL ("unsigned"),	D_PRINT_UNSIGNED },
   /* k */ { NULL, 0,		NULL, 0,		D_PRINT_DEFAULT },
   /* l */ { NL ("long"),	NL ("long"),		D_PRINT_LONG },
-  /* m */ { NL ("unsigned long"), NL ("unsigned long"),	D_PRINT_LONG },
+  /* m */ { NL ("unsigned long"), NL ("unsigned long"),	D_PRINT_UNSIGNED_LONG },
   /* n */ { NL ("__int128"),	NL ("__int128"),	D_PRINT_DEFAULT },
-  /* o */ { NL ("unsigned __int128"), NL ("unsigned __int128"),	D_PRINT_DEFAULT },
+  /* o */ { NL ("unsigned __int128"), NL ("unsigned __int128"),
+	    D_PRINT_DEFAULT },
   /* p */ { NULL, 0,		NULL, 0,		D_PRINT_DEFAULT },
   /* q */ { NULL, 0,		NULL, 0,		D_PRINT_DEFAULT },
   /* r */ { NULL, 0,		NULL, 0,		D_PRINT_DEFAULT },
-  /* s */ { NL ("short"),	NL ("short"),		D_PRINT_INT },
-  /* t */ { NL ("unsigned short"), NL ("unsigned short"), D_PRINT_INT },
+  /* s */ { NL ("short"),	NL ("short"),		D_PRINT_DEFAULT },
+  /* t */ { NL ("unsigned short"), NL ("unsigned short"), D_PRINT_DEFAULT },
   /* u */ { NULL, 0,		NULL, 0,		D_PRINT_DEFAULT },
   /* v */ { NL ("void"),	NL ("void"),		D_PRINT_VOID },
-  /* w */ { NL ("wchar_t"),	NL ("char"),		D_PRINT_INT },
-  /* x */ { NL ("long long"),	NL ("long"),		D_PRINT_DEFAULT },
-  /* y */ { NL ("unsigned long long"), NL ("unsigned long long"), D_PRINT_DEFAULT },
+  /* w */ { NL ("wchar_t"),	NL ("char"),		D_PRINT_DEFAULT },
+  /* x */ { NL ("long long"),	NL ("long"),		D_PRINT_LONG_LONG },
+  /* y */ { NL ("unsigned long long"), NL ("unsigned long long"),
+	    D_PRINT_UNSIGNED_LONG_LONG },
   /* z */ { NL ("..."),		NL ("..."),		D_PRINT_DEFAULT },
 };
 
@@ -3347,62 +3349,86 @@ d_print_comp (dpi, dc)
 
     case DEMANGLE_COMPONENT_LITERAL:
     case DEMANGLE_COMPONENT_LITERAL_NEG:
-      /* For some builtin types, produce simpler output.  */
-      if (d_left (dc)->type == DEMANGLE_COMPONENT_BUILTIN_TYPE)
-	{
-	  switch (d_left (dc)->u.s_builtin.type->print)
-	    {
-	    case D_PRINT_INT:
-	      if (d_right (dc)->type == DEMANGLE_COMPONENT_NAME)
-		{
-		  if (dc->type == DEMANGLE_COMPONENT_LITERAL_NEG)
-		    d_append_char (dpi, '-');
-		  d_print_comp (dpi, d_right (dc));
-		  return;
-		}
-	      break;
+      {
+	enum d_builtin_type_print tp;
 
-	    case D_PRINT_LONG:
-	      if (d_right (dc)->type == DEMANGLE_COMPONENT_NAME)
-		{
-		  if (dc->type == DEMANGLE_COMPONENT_LITERAL_NEG)
-		    d_append_char (dpi, '-');
-		  d_print_comp (dpi, d_right (dc));
-		  d_append_char (dpi, 'l');
-		  return;
-		}
-	      break;
+	/* For some builtin types, produce simpler output.  */
+	tp = D_PRINT_DEFAULT;
+	if (d_left (dc)->type == DEMANGLE_COMPONENT_BUILTIN_TYPE)
+	  {
+	    tp = d_left (dc)->u.s_builtin.type->print;
+	    switch (tp)
+	      {
+	      case D_PRINT_INT:
+	      case D_PRINT_UNSIGNED:
+	      case D_PRINT_LONG:
+	      case D_PRINT_UNSIGNED_LONG:
+	      case D_PRINT_LONG_LONG:
+	      case D_PRINT_UNSIGNED_LONG_LONG:
+		if (d_right (dc)->type == DEMANGLE_COMPONENT_NAME)
+		  {
+		    if (dc->type == DEMANGLE_COMPONENT_LITERAL_NEG)
+		      d_append_char (dpi, '-');
+		    d_print_comp (dpi, d_right (dc));
+		    switch (tp)
+		      {
+		      default:
+			break;
+		      case D_PRINT_UNSIGNED:
+			d_append_char (dpi, 'u');
+			break;
+		      case D_PRINT_LONG:
+			d_append_char (dpi, 'l');
+			break;
+		      case D_PRINT_UNSIGNED_LONG:
+			d_append_string_constant (dpi, "ul");
+			break;
+		      case D_PRINT_LONG_LONG:
+			d_append_string_constant (dpi, "ll");
+			break;
+		      case D_PRINT_UNSIGNED_LONG_LONG:
+			d_append_string_constant (dpi, "ull");
+			break;
+		      }
+		    return;
+		  }
+		break;
 
-	    case D_PRINT_BOOL:
-	      if (d_right (dc)->type == DEMANGLE_COMPONENT_NAME
-		  && d_right (dc)->u.s_name.len == 1
-		  && dc->type == DEMANGLE_COMPONENT_LITERAL)
-		{
-		  switch (d_right (dc)->u.s_name.s[0])
-		    {
-		    case '0':
-		      d_append_string_constant (dpi, "false");
-		      return;
-		    case '1':
-		      d_append_string_constant (dpi, "true");
-		      return;
-		    default:
-		      break;
-		    }
-		}
-	      break;
+	      case D_PRINT_BOOL:
+		if (d_right (dc)->type == DEMANGLE_COMPONENT_NAME
+		    && d_right (dc)->u.s_name.len == 1
+		    && dc->type == DEMANGLE_COMPONENT_LITERAL)
+		  {
+		    switch (d_right (dc)->u.s_name.s[0])
+		      {
+		      case '0':
+			d_append_string_constant (dpi, "false");
+			return;
+		      case '1':
+			d_append_string_constant (dpi, "true");
+			return;
+		      default:
+			break;
+		      }
+		  }
+		break;
 
-	    default:
-	      break;
-	    }
-	}
+	      default:
+		break;
+	      }
+	  }
 
-      d_append_char (dpi, '(');
-      d_print_comp (dpi, d_left (dc));
-      d_append_char (dpi, ')');
-      if (dc->type == DEMANGLE_COMPONENT_LITERAL_NEG)
-	d_append_char (dpi, '-');
-      d_print_comp (dpi, d_right (dc));
+	d_append_char (dpi, '(');
+	d_print_comp (dpi, d_left (dc));
+	d_append_char (dpi, ')');
+	if (dc->type == DEMANGLE_COMPONENT_LITERAL_NEG)
+	  d_append_char (dpi, '-');
+	if (tp == D_PRINT_FLOAT)
+	  d_append_char (dpi, '[');
+	d_print_comp (dpi, d_right (dc));
+	if (tp == D_PRINT_FLOAT)
+	  d_append_char (dpi, ']');
+      }
       return;
 
     default:
@@ -3612,11 +3638,13 @@ d_print_function_type (dpi, dc, mods)
 {
   int need_paren;
   int saw_mod;
+  int need_space;
   struct d_print_mod *p;
   struct d_print_mod *hold_modifiers;
 
   need_paren = 0;
   saw_mod = 0;
+  need_space = 0;
   for (p = mods; p != NULL; p = p->next)
     {
       if (p->printed)
@@ -3625,15 +3653,18 @@ d_print_function_type (dpi, dc, mods)
       saw_mod = 1;
       switch (p->mod->type)
 	{
+	case DEMANGLE_COMPONENT_POINTER:
+	case DEMANGLE_COMPONENT_REFERENCE:
+	  need_paren = 1;
+	  break;
 	case DEMANGLE_COMPONENT_RESTRICT:
 	case DEMANGLE_COMPONENT_VOLATILE:
 	case DEMANGLE_COMPONENT_CONST:
 	case DEMANGLE_COMPONENT_VENDOR_TYPE_QUAL:
-	case DEMANGLE_COMPONENT_POINTER:
-	case DEMANGLE_COMPONENT_REFERENCE:
 	case DEMANGLE_COMPONENT_COMPLEX:
 	case DEMANGLE_COMPONENT_IMAGINARY:
 	case DEMANGLE_COMPONENT_PTRMEM_TYPE:
+	  need_space = 1;
 	  need_paren = 1;
 	  break;
 	case DEMANGLE_COMPONENT_RESTRICT_THIS:
@@ -3652,18 +3683,14 @@ d_print_function_type (dpi, dc, mods)
 
   if (need_paren)
     {
-      switch (d_last_char (dpi))
+      if (! need_space)
 	{
-	case ' ':
-	case '(':
-	case '*':
-	  break;
-
-	default:
-	  d_append_char (dpi, ' ');
-	  break;
+	  if (d_last_char (dpi) != '('
+	      && d_last_char (dpi) != '*')
+	    need_space = 1;
 	}
-
+      if (need_space && d_last_char (dpi) != ' ')
+	d_append_char (dpi, ' ');
       d_append_char (dpi, '(');
     }
 
