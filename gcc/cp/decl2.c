@@ -172,6 +172,11 @@ int flag_implicit_templates = 1;
 
 int flag_implicit_inline_templates = 1;
 
+/* Nonzero means warn about things that will change when compiling
+   with an ABI-compliant compiler.  */
+
+int warn_abi = 0;
+
 /* Nonzero means warn about implicit declarations.  */
 
 int warn_implicit = 1;
@@ -600,7 +605,9 @@ cxx_decode_option (argc, argv)
       if (p[0] == 'n' && p[1] == 'o' && p[2] == '-')
 	setting = 0, p += 3;
 
-      if (!strcmp (p, "implicit"))
+      if (!strcmp (p, "abi"))
+	warn_abi = setting;
+      else if (!strcmp (p, "implicit"))
 	warn_implicit = setting;
       else if (!strcmp (p, "long-long"))
 	warn_long_long = setting;

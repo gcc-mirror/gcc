@@ -4557,6 +4557,7 @@ layout_virtual_bases (t, offsets)
 {
   tree vbases, dsize;
   unsigned HOST_WIDE_INT eoc;
+  bool first_vbase = true;
 
   if (CLASSTYPE_N_BASECLASSES (t) == 0)
     return;
@@ -4584,6 +4585,7 @@ layout_virtual_bases (t, offsets)
 
       if (!TREE_VIA_VIRTUAL (vbases))
 	continue;
+
       vbase = binfo_for_vbase (BINFO_TYPE (vbases), t);
 
       if (!BINFO_PRIMARY_P (vbase))
@@ -4601,7 +4603,6 @@ layout_virtual_bases (t, offsets)
 	  /* Add padding so that we can put the virtual base class at an
 	     appropriately aligned offset.  */
 	  dsize = round_up (dsize, desired_align);
-
 	  usize = size_binop (CEIL_DIV_EXPR, dsize, bitsize_unit_node);
 
 	  /* We try to squish empty virtual bases in just like
@@ -4629,11 +4630,30 @@ layout_virtual_bases (t, offsets)
 					      CLASSTYPE_SIZE (basetype)));
 	    }
 
+	  /* If the first virtual base might have been placed at a
+	     lower address, had we started from CLASSTYPE_SIZE, rather
+	     than TYPE_SIZE, issue a warning.  There can be both false
+	     positives and false negatives from this warning in rare
+	     cases; to deal with all the possibilities would probably
+	     require performing both layout algorithms and comparing
+	     the results which is not particularly tractable.  */
+	  if (warn_abi
+	      && first_vbase
+	      && tree_int_cst_lt (size_binop (CEIL_DIV_EXPR,
+					      round_up (CLASSTYPE_SIZE (t),
+							desired_align),
+					      bitsize_unit_node),
+				  BINFO_OFFSET (vbase)))
+	    warning ("offset of virtual base `%T' is not ABI-compliant and may change in a future version of GCC",
+		     basetype);
+
 	  /* Keep track of the offsets assigned to this virtual base.  */
 	  record_subobject_offsets (BINFO_TYPE (vbase), 
 				    BINFO_OFFSET (vbase),
 				    offsets,
 				    /*vbases_p=*/0);
+
+	  first_vbase = false;
 	}
     }
 
@@ -4771,6 +4791,8 @@ layout_class_type (t, empty_p, vfuns_p, virtuals_p)
   /* Maps offsets (represented as INTEGER_CSTs) to a TREE_LIST of
      types that appear at that offset.  */
   splay_tree empty_base_offsets;
+  /* True if the last field layed out was a bit-field.  */
+  bool last_field_was_bitfield = false;
 
   /* Keep track of the first non-static data member.  */
   non_static_data_members = TYPE_FIELDS (t);
@@ -4860,6 +4882,18 @@ layout_class_type (t, empty_p, vfuns_p, virtuals_p)
       layout_nonempty_base_or_field (rli, field, NULL_TREE,
 				     empty_base_offsets, t);
 
+      /* If a bit-field does not immediately follow another bit-field,
+	 and yet it starts in the middle of a byte, we have failed to
+	 comply with the ABI.  */
+      if (warn_abi
+	  && DECL_C_BIT_FIELD (field) 
+	  && !last_field_was_bitfield
+	  && !integer_zerop (size_binop (TRUNC_MOD_EXPR,
+					 DECL_FIELD_BIT_OFFSET (field),
+					 bitsize_unit_node)))
+	cp_warning_at ("offset of `%D' is not ABI-compliant and may change in a future version of GCC", 
+		       field);
+
       /* If we needed additional padding after this field, add it
 	 now.  */
       if (padding)
@@ -4877,6 +4911,8 @@ layout_class_type (t, empty_p, vfuns_p, virtuals_p)
 					 NULL_TREE, 
 					 empty_base_offsets, t);
 	}
+
+      last_field_was_bitfield = DECL_C_BIT_FIELD (field);
     }
 
   /* It might be the case that we grew the class to allocate a

@@ -1,3 +1,12 @@
+2002-08-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (warn_abi): Declare it.
+	* decl.c (warn_abi): Define it.
+	(cxx_decode_option): Set it.
+	* class.c (layout_virtual_bases): Warn about bugs in G++ that
+	result in incorrect object layouts.
+	(layout_class_type): Likewise.
+
 2002-08-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/5607

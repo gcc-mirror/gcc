@@ -934,6 +934,11 @@ extern int flag_operator_names;
 
 extern int flag_gnu_binutils;
 
+/* Nonzero means warn about things that will change when compiling
+   with an ABI-compliant compiler.  */
+
+extern int warn_abi;
+
 /* Nonzero means warn about implicit declarations.  */
 
 extern int warn_implicit;
