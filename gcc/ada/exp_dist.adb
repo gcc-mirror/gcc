@@ -434,11 +434,8 @@ package body Exp_Dist is
 
    procedure Specific_Add_RAST_Features
      (Vis_Decl : Node_Id;
-      RAS_Type : Entity_Id;
-      Decls    : List_Id);
-   --  Add declaration for TSSs for a given RAS type. The declarations are
-   --  added just after the declaration of the RAS type itself, while the
-   --  bodies are inserted at the end of Decls. PCS-specific ancillary
+      RAS_Type : Entity_Id);
+   --  Add declaration for TSSs for a given RAS type. PCS-specific ancillary
    --  subprogram for Add_RAST_Features.
 
    --  An RPC_Target record is used during construction of calling stubs
@@ -576,8 +573,7 @@ package body Exp_Dist is
 
       procedure Add_RAST_Features
         (Vis_Decl : Node_Id;
-         RAS_Type : Entity_Id;
-         Decls    : List_Id);
+         RAS_Type : Entity_Id);
 
       procedure Build_General_Calling_Stubs
         (Decls                     : List_Id;
@@ -652,8 +648,7 @@ package body Exp_Dist is
 
       procedure Add_RAST_Features
         (Vis_Decl : Node_Id;
-         RAS_Type : Entity_Id;
-         Decls    : List_Id);
+         RAS_Type : Entity_Id);
 
       procedure Build_General_Calling_Stubs
         (Decls                     : List_Id;
@@ -1711,20 +1706,10 @@ package body Exp_Dist is
    procedure Add_RAST_Features (Vis_Decl : Node_Id) is
       RAS_Type : constant Entity_Id :=
                    Equivalent_Type (Defining_Identifier (Vis_Decl));
-
-      Spec  : constant Node_Id :=
-                Specification (Unit (Enclosing_Lib_Unit_Node (Vis_Decl)));
-      Decls : List_Id := Private_Declarations (Spec);
-
    begin
       pragma Assert (No (TSS (RAS_Type, TSS_RAS_Access)));
-
-      if No (Decls) then
-         Decls := Visible_Declarations (Spec);
-      end if;
-
       Add_RAS_Dereference_TSS (Vis_Decl);
-      Specific_Add_RAST_Features (Vis_Decl, RAS_Type, Decls);
+      Specific_Add_RAST_Features (Vis_Decl, RAS_Type);
    end Add_RAST_Features;
 
    -------------------
@@ -3266,11 +3251,10 @@ package body Exp_Dist is
 
       procedure Add_RAST_Features
         (Vis_Decl : Node_Id;
-         RAS_Type : Entity_Id;
-         Decls    : List_Id)
+         RAS_Type : Entity_Id)
       is
          pragma Warnings (Off);
-         pragma Unreferenced (RAS_Type, Decls);
+         pragma Unreferenced (RAS_Type);
          pragma Warnings (On);
       begin
          Add_RAS_Access_TSS (Vis_Decl);
@@ -5094,19 +5078,13 @@ package body Exp_Dist is
          Declarations    : List_Id);
       --  Add the TypeCode TSS for this RACW type
 
-      procedure Add_RAS_From_Any
-        (RAS_Type     : Entity_Id;
-         Declarations : List_Id);
+      procedure Add_RAS_From_Any (RAS_Type : Entity_Id);
       --  Add the From_Any TSS for this RAS type
 
-      procedure Add_RAS_To_Any
-        (RAS_Type     : Entity_Id;
-         Declarations : List_Id);
+      procedure Add_RAS_To_Any   (RAS_Type : Entity_Id);
       --  Add the To_Any TSS for this RAS type
 
-      procedure Add_RAS_TypeCode
-        (RAS_Type     : Entity_Id;
-         Declarations : List_Id);
+      procedure Add_RAS_TypeCode (RAS_Type : Entity_Id);
       --  Add the TypeCode TSS for this RAS type
 
       procedure Add_RAS_Access_TSS (N : Node_Id);
@@ -5940,18 +5918,17 @@ package body Exp_Dist is
 
       procedure Add_RAST_Features
         (Vis_Decl : Node_Id;
-         RAS_Type : Entity_Id;
-         Decls    : List_Id)
+         RAS_Type : Entity_Id)
       is
       begin
          Add_RAS_Access_TSS (Vis_Decl);
 
-         Add_RAS_From_Any (RAS_Type, Decls);
-         Add_RAS_TypeCode (RAS_Type, Decls);
+         Add_RAS_From_Any (RAS_Type);
+         Add_RAS_TypeCode (RAS_Type);
 
          --  To_Any uses TypeCode, and therefore needs to be generated last
 
-         Add_RAS_To_Any (RAS_Type, Decls);
+         Add_RAS_To_Any   (RAS_Type);
       end Add_RAST_Features;
 
       ------------------------
@@ -6289,18 +6266,13 @@ package body Exp_Dist is
       -- Add_RAS_From_Any --
       ----------------------
 
-      procedure Add_RAS_From_Any
-        (RAS_Type     : Entity_Id;
-         Declarations : List_Id)
-      is
+      procedure Add_RAS_From_Any (RAS_Type : Entity_Id) is
          Loc : constant Source_Ptr := Sloc (RAS_Type);
 
-         Fnam : constant Entity_Id :=
-                  Make_Defining_Identifier (Loc, New_Internal_Name ('F'));
+         Fnam : constant Entity_Id := Make_Defining_Identifier (Loc,
+                  Make_TSS_Name (RAS_Type, TSS_From_Any));
 
          Func_Spec : Node_Id;
-         Func_Decl : Node_Id;
-         Func_Body : Node_Id;
 
          Statements : List_Id;
 
@@ -6334,45 +6306,30 @@ package body Exp_Dist is
                    New_Occurrence_Of (RTE (RE_Any), Loc))),
              Subtype_Mark => New_Occurrence_Of (RAS_Type, Loc));
 
-         --  NOTE: The usage occurrences of RACW_Parameter must
-         --  refer to the entity in the declaration spec, not those
-         --  of the body spec.
-
-         Func_Decl := Make_Subprogram_Declaration (Loc, Func_Spec);
-
-         Func_Body :=
+         Discard_Node (
            Make_Subprogram_Body (Loc,
-             Specification              =>
-               Copy_Specification (Loc, Func_Spec),
+             Specification              => Func_Spec,
              Declarations               => No_List,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => Statements));
-
-         Insert_After (Declaration_Node (RAS_Type), Func_Decl);
-         Append_To (Declarations, Func_Body);
-
-         Set_Renaming_TSS (RAS_Type, Fnam, TSS_From_Any);
+                 Statements => Statements)));
+         Set_TSS (RAS_Type, Fnam);
       end Add_RAS_From_Any;
 
       --------------------
       -- Add_RAS_To_Any --
       --------------------
 
-      procedure Add_RAS_To_Any
-        (RAS_Type     : Entity_Id;
-         Declarations : List_Id)
-      is
+      procedure Add_RAS_To_Any (RAS_Type : Entity_Id) is
          Loc : constant Source_Ptr := Sloc (RAS_Type);
 
-         Fnam : Entity_Id;
+         Fnam : constant Entity_Id := Make_Defining_Identifier (Loc,
+                  Make_TSS_Name (RAS_Type, TSS_To_Any));
 
-         Decls : List_Id;
+         Decls      : List_Id;
          Statements : List_Id;
 
          Func_Spec : Node_Id;
-         Func_Decl : Node_Id;
-         Func_Body : Node_Id;
 
          Any            : constant Entity_Id :=
                             Make_Defining_Identifier (Loc,
@@ -6411,9 +6368,6 @@ package body Exp_Dist is
              Expression =>
                New_Occurrence_Of (Any, Loc)));
 
-         Fnam := Make_Defining_Identifier (
-           Loc, New_Internal_Name ('T'));
-
          Func_Spec :=
            Make_Function_Specification (Loc,
              Defining_Unit_Name =>
@@ -6426,42 +6380,27 @@ package body Exp_Dist is
                    New_Occurrence_Of (RAS_Type, Loc))),
              Subtype_Mark => New_Occurrence_Of (RTE (RE_Any), Loc));
 
-         --  NOTE: The usage occurrences of RAS_Parameter must
-         --  refer to the entity in the declaration spec, not in
-         --  the body spec.
-
-         Func_Decl := Make_Subprogram_Declaration (Loc, Func_Spec);
-
-         Func_Body :=
+         Discard_Node (
            Make_Subprogram_Body (Loc,
-             Specification              =>
-               Copy_Specification (Loc, Func_Spec),
+             Specification              => Func_Spec,
              Declarations               => Decls,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => Statements));
-
-         Insert_After (Declaration_Node (RAS_Type), Func_Decl);
-         Append_To (Declarations, Func_Body);
-
-         Set_Renaming_TSS (RAS_Type, Fnam, TSS_To_Any);
+                 Statements => Statements)));
+         Set_TSS (RAS_Type, Fnam);
       end Add_RAS_To_Any;
 
       ----------------------
       -- Add_RAS_TypeCode --
       ----------------------
 
-      procedure Add_RAS_TypeCode
-        (RAS_Type     : Entity_Id;
-         Declarations : List_Id)
-      is
+      procedure Add_RAS_TypeCode (RAS_Type : Entity_Id) is
          Loc : constant Source_Ptr := Sloc (RAS_Type);
 
-         Fnam : Entity_Id;
+         Fnam : constant Entity_Id := Make_Defining_Identifier (Loc,
+                  Make_TSS_Name (RAS_Type, TSS_TypeCode));
 
          Func_Spec : Node_Id;
-         Func_Decl : Node_Id;
-         Func_Body : Node_Id;
 
          Decls : constant List_Id := New_List;
          Name_String, Repo_Id_String : String_Id;
@@ -6470,11 +6409,6 @@ package body Exp_Dist is
                            Make_Defining_Identifier (Loc, Name_R);
 
       begin
-
-         Fnam :=
-           Make_Defining_Identifier (Loc,
-             Chars => New_Internal_Name ('T'));
-
          --  The spec for this subprogram has a dummy 'access RAS'
          --  argument, which serves only for overloading purposes.
 
@@ -6491,19 +6425,12 @@ package body Exp_Dist is
                      Subtype_Mark => New_Occurrence_Of (RAS_Type, Loc)))),
              Subtype_Mark => New_Occurrence_Of (RTE (RE_TypeCode), Loc));
 
-         --  NOTE: The usage occurrences of RAS_Parameter must
-         --  refer to the entity in the declaration spec, not those
-         --  of the body spec.
-
-         Func_Decl := Make_Subprogram_Declaration (Loc, Func_Spec);
-
          PolyORB_Support.Helpers.Build_Name_And_Repository_Id
            (RAS_Type, Name_Str => Name_String, Repo_Id_Str => Repo_Id_String);
 
-         Func_Body :=
+         Discard_Node (
            Make_Subprogram_Body (Loc,
-             Specification              =>
-               Copy_Specification (Loc, Func_Spec),
+             Specification              => Func_Spec,
              Declarations               => Decls,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
@@ -6528,12 +6455,8 @@ package body Exp_Dist is
                                      RTE (RE_TA_String), Loc),
                                    Parameter_Associations => New_List (
                                      Make_String_Literal (Loc,
-                                       Repo_Id_String)))))))))));
-
-         Insert_After (Declaration_Node (RAS_Type), Func_Decl);
-         Append_To (Declarations, Func_Body);
-
-         Set_Renaming_TSS (RAS_Type, Fnam, TSS_TypeCode);
+                                       Repo_Id_String))))))))))));
+         Set_TSS (RAS_Type, Fnam);
       end Add_RAS_TypeCode;
 
       -----------------------------------------
@@ -10783,17 +10706,13 @@ package body Exp_Dist is
 
    procedure Specific_Add_RAST_Features
      (Vis_Decl : Node_Id;
-      RAS_Type : Entity_Id;
-      Decls    : List_Id)
-   is
+      RAS_Type : Entity_Id) is
    begin
       case Get_PCS_Name is
          when Name_PolyORB_DSA =>
-            PolyORB_Support.Add_RAST_Features (
-              Vis_Decl, RAS_Type, Decls);
+            PolyORB_Support.Add_RAST_Features (Vis_Decl, RAS_Type);
          when others =>
-            GARLIC_Support.Add_RAST_Features (
-              Vis_Decl, RAS_Type, Decls);
+            GARLIC_Support.Add_RAST_Features (Vis_Decl, RAS_Type);
       end case;
    end Specific_Add_RAST_Features;
 
