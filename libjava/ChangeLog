@@ -1,3 +1,9 @@
+2003-09-29  Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	* boehm.cc (_Jv_BuildGCDescr): Put first word of object in most 
+	significant bit of descriptor. Include the vtable and sync_info 
+	fields.
+
 2003-09-28  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
 	* java/text/DateFormat.java (format): Throw IllegalArgumentException
