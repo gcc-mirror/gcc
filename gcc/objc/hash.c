@@ -16,17 +16,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  * 
-  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.c,v 0.7 1991/11/23 22:18:29 dennisg Exp dennisg $
+  $Header: /usr/user/dennis_glatting/ObjC/c-runtime/lib/RCS/hash.c,v 0.8 1991/11/24 01:20:02 dennisg Exp dennisg $
   $Author: dennisg $
-  $Date: 1991/11/23 22:18:29 $
+  $Date: 1991/11/24 01:20:02 $
   $Log: hash.c,v $
+ * Revision 0.8  1991/11/24  01:20:02  dennisg
+ * changed shorts back to ints.
+ * the efficiency gained didn't out weight the grossness of the code.
+ *
  * Revision 0.7  1991/11/23  22:18:29  dennisg
  * deleted hashIndex() and moved it to hash-inline.h
- * converted hash_value_for_key() to a inline and moved it to hash-inline.h.
+ * converted hash_value_for_key () to a inline and moved it to hash-inline.h.
  *
  * Revision 0.6  1991/11/21  22:27:06  dennisg
  * changed hash value calculation.
- * func name changed from hashValue() to hashIndex().  the
+ * func name changed from hashValue () to hashIndex().  the
  * func really calculated a index anyway.
  * changed hash func impl.  essentially it was calculating a hash value
  * from a hash value.  this is a implementation thing.
@@ -35,8 +39,8 @@
  * converted hashIndex() to a inline.
  *
  * Revision 0.4  1991/11/19  12:34:41  dennisg
- * bug in hash_delete().  It was using void* to obtain nodes to
- * pass to hash_remove().  The value passed to hash_removed() is a
+ * bug in hash_delete ().  It was using void* to obtain nodes to
+ * pass to hash_remove ().  The value passed to hash_removed () is a
  * entry from the node structure rather than the node itself.  Using
  * void* removed compiler checking.
  * Modified to implement cache expansion.
@@ -70,78 +74,86 @@
 																									These equations are 
 																									percentages. */
 #define	FULLNESS(cache)	\
-	((((cache)->sizeOfHash * 75	) / 100 ) <= (cache)->entriesInHash)
+	 ((((cache)->sizeOfHash * 75	) / 100) <= (cache)->entriesInHash)
 #define	EXPANSION(cache) \
 	(((cache)->sizeOfHash * 175 ) / 100 )
 
+#define	MEMORY_ALLOCATION_ADJUST(i) \
+	((i&0x01)?i:(i-1))
 
-Cache_t hash_new( u_int sizeOfHash ) {
+Cache_t hash_new (u_int sizeOfHash) {
 
   Cache_t retCache;
+	
 
-
-  assert( sizeOfHash );
+  assert(sizeOfHash);
+	
+																								/* Memory is allocated on this
+																									machine in even address
+																									chunks.  Therefore the
+																									modulus must be odd. */
+	sizeOfHash = MEMORY_ALLOCATION_ADJUST(sizeOfHash);
 
                                                 /* Allocate the cache 
-                                                  structure.  calloc() insures
+                                                  structure.  calloc () insures
                                                   its initialization for
                                                   default values. */
-  retCache = calloc( 1, sizeof( Cache ));
-  assert( retCache );
+  retCache = calloc (1, sizeof (Cache));
+  assert(retCache);
   
                                                 /* Allocate the array of 
                                                   buckets for the cache.  
-                                                  calloc() initializes all of 
+                                                  calloc () initializes all of 
                                                   the pointers to NULL. */
-  retCache->theNodeTable = calloc( sizeOfHash, sizeof( CacheNode_t ));
-  assert( retCache->theNodeTable );
+  retCache->theNodeTable = calloc (sizeOfHash, sizeof (CacheNode_t));
+  assert(retCache->theNodeTable);
   
-  retCache->sizeOfHash = sizeOfHash;
+  retCache->sizeOfHash	= sizeOfHash;
 
   return retCache;
 }
 
 
-void hash_delete( Cache_t theCache ) {
+void hash_delete (Cache_t theCache) {
 
   CacheNode_t aNode;
   
 
                                                 /* Purge all key/value pairs 
                                                   from the table. */
-  while( aNode = hash_next( theCache, NULL ))
-    hash_remove( theCache, aNode->theKey );
+  while (aNode = hash_next (theCache, NULL))
+    hash_remove (theCache, aNode->theKey);
 
                                                 /* Release the array of nodes 
                                                   and the cache itself. */
-  free( theCache->theNodeTable );
-  free( theCache );
+  free (theCache->theNodeTable);
+  free (theCache);
 }
 
 
-void hash_add( Cache_t* theCache, void* aKey, void* aValue ) {
+void hash_add (Cache_t* theCache, void* aKey, void* aValue) {
 
-  u_int       indx = hashIndex( *theCache, aKey );
-  CacheNode_t aCacheNode = calloc( 1, sizeof( CacheNode ));
+  u_int       indx = hashIndex(*theCache, aKey);
+  CacheNode_t aCacheNode = calloc (1, sizeof (CacheNode));
 
 
-  assert( aCacheNode );
+  assert(aCacheNode);
   
                                                 /* Initialize the new node. */
   aCacheNode->theKey    = aKey;
   aCacheNode->theValue  = aValue;
-  aCacheNode->nextNode  = ( *( *theCache )->theNodeTable )[ indx ];
+  aCacheNode->nextNode  = (* (*theCache)->theNodeTable)[ indx ];
   
                                                 /* Debugging.
                                                 
                                                   Check the list for another 
                                                   key. */
 #ifdef DEBUG
-    { CacheNode_t checkHashNode = ( *( *theCache )->theNodeTable )[ indx ];
+    { CacheNode_t checkHashNode = (* (*theCache)->theNodeTable)[ indx ];
     
-      while( checkHashNode ) {
+      while (checkHashNode) {
     
-        assert( checkHashNode->theKey != aKey );
+        assert(checkHashNode->theKey != aKey);
         checkHashNode = checkHashNode->nextNode;
       }
     }
@@ -149,17 +161,17 @@ void hash_add( Cache_t* theCache, void* aKey, void* aValue ) {
 
                                                 /* Install the node as the
                                                   first element on the list. */
-  ( *( *theCache )->theNodeTable )[ indx ] = aCacheNode;
+  (* (*theCache)->theNodeTable)[ indx ] = aCacheNode;
 
 																								/* Bump the number of entries
 																									in the cache. */
-	++( *theCache )->entriesInHash;
+	++ (*theCache)->entriesInHash;
 	
 																								/* Check the hash table's
 																									fullness.   We're going
 																									to expand if it is above
 																									the fullness level. */
-	if(FULLNESS( *theCache )) {
+	if (FULLNESS (*theCache)) {
 																								/* The hash table has reached
 																									its fullness level.  Time to
 																									expand it. 
@@ -169,20 +181,21 @@ void hash_add( Cache_t* theCache, void* aKey, void* aValue ) {
 																									primitive functions thereby
 																									increasing its 
 																									correctness. */
-		Cache_t			newCache = hash_new(EXPANSION( *theCache ));
 		CacheNode_t	aNode = NULL;
+		Cache_t			newCache = 
+									hash_new (MEMORY_ALLOCATION_ADJUST( EXPANSION (*theCache)));
 
 		DEBUG_PRINTF (stderr, "Expanding cache %#x from %d to %d\n",
-			*theCache, ( *theCache )->sizeOfHash, newCache->sizeOfHash);
+			*theCache, (*theCache)->sizeOfHash, newCache->sizeOfHash);
 			
 																								/* Copy the nodes from the
 																									first hash table to the
 																									new one. */
-		while( aNode = hash_next( *theCache, aNode ))
-			hash_add( &newCache, aNode->theKey, aNode->theValue );
+		while (aNode = hash_next (*theCache, aNode))
+			hash_add (&newCache, aNode->theKey, aNode->theValue);
 
 																								/* Trash the old cache. */
-		hash_delete( *theCache );
+		hash_delete (*theCache);
 		
 																								/* Return a pointer to the new
 																									hash table. */
@@ -191,23 +204,23 @@ void hash_add( Cache_t* theCache, void* aKey, void* aValue ) {
 }
 
 
-void hash_remove( Cache_t theCache, void* aKey ) {
+void hash_remove (Cache_t theCache, void* aKey) {
 
-  u_int       indx = hashIndex( theCache, aKey );
-  CacheNode_t aCacheNode = ( *theCache->theNodeTable )[ indx ];
+  u_int       indx = hashIndex(theCache, aKey);
+  CacheNode_t aCacheNode = (*theCache->theNodeTable)[ indx ];
   
   
                                                 /* We assume there is an entry 
                                                   in the table.  Error if it 
                                                   is not. */
-  assert( aCacheNode );
+  assert(aCacheNode);
   
                                                 /* Special case.  First element 
                                                   is the key/value pair to be 
                                                   removed. */
-  if( aCacheNode->theKey == aKey ) {
-    ( *theCache->theNodeTable )[ indx ] = aCacheNode->nextNode;
-    free( aCacheNode );
+  if (aCacheNode->theKey == aKey) {
+    (*theCache->theNodeTable)[ indx ] = aCacheNode->nextNode;
+    free (aCacheNode);
   } else {
                                                 /* Otherwise, find the hash 
                                                   entry. */
@@ -216,13 +229,13 @@ void hash_remove( Cache_t theCache, void* aKey ) {
     
     do {
     
-      if( aCacheNode->theKey == aKey ) {
+      if (aCacheNode->theKey == aKey) {
         prevHashNode->nextNode = aCacheNode->nextNode, removed = YES;
-        free( aCacheNode );
+        free (aCacheNode);
       } else
         prevHashNode = aCacheNode, aCacheNode = aCacheNode->nextNode;
-    } while( !removed && aCacheNode );
-    assert( removed );
+    } while (!removed && aCacheNode);
+    assert(removed);
   }
 	
 																								/* Decrement the number of
@@ -231,7 +244,7 @@ void hash_remove( Cache_t theCache, void* aKey ) {
 }
 
 
-CacheNode_t hash_next( Cache_t theCache, CacheNode_t aCacheNode ) {
+CacheNode_t hash_next (Cache_t theCache, CacheNode_t aCacheNode) {
 
   CacheNode_t theCacheNode = aCacheNode;
   
@@ -240,7 +253,7 @@ CacheNode_t hash_next( Cache_t theCache, CacheNode_t aCacheNode ) {
                                                   then reset the last node 
                                                   visitied pointer and bucket 
                                                   index. */
-  if( !theCacheNode )
+  if (!theCacheNode)
     theCache->lastBucket  = 0;
   
                                                 /* If there is a node visited
@@ -248,8 +261,8 @@ CacheNode_t hash_next( Cache_t theCache, CacheNode_t aCacheNode ) {
                                                   entry in the same bucket; 
                                                   Otherwise step to the next 
                                                   bucket. */
-  if( theCacheNode )
-    if( theCacheNode->nextNode )
+  if (theCacheNode)
+    if (theCacheNode->nextNode)
                                                 /* There is a node which 
                                                   follows the last node 
                                                   returned.  Step to that node 
@@ -261,15 +274,15 @@ CacheNode_t hash_next( Cache_t theCache, CacheNode_t aCacheNode ) {
                                                 /* If the list isn't exhausted 
                                                   then search the buckets for 
                                                   other nodes. */
-  if( theCache->lastBucket < theCache->sizeOfHash ) {
+  if (theCache->lastBucket < theCache->sizeOfHash) {
                                                 /*  Scan the remainder of the 
                                                   buckets looking for an entry
                                                   at the head of the list.  
                                                   Return the first item 
                                                   found. */
-    while( theCache->lastBucket < theCache->sizeOfHash )
-      if(( *theCache->theNodeTable )[ theCache->lastBucket ])
-        return ( *theCache->theNodeTable )[ theCache->lastBucket ];
+    while (theCache->lastBucket < theCache->sizeOfHash)
+      if ((*theCache->theNodeTable)[ theCache->lastBucket ])
+        return (*theCache->theNodeTable)[ theCache->lastBucket ];
       else
         ++theCache->lastBucket;
   
