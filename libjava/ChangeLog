@@ -1,5 +1,14 @@
 2003-03-24  Michael Koch  <konqueror@gmx.de>
 
+	* java/rmi/activation/ActivationInstantiator.java:
+	Reformatted.
+	* java/rmi/activation/Activator.java:
+	Reformatted.
+	* java/rmi/registry/RegistryHandler.java:
+	Remerged from classpath.
+
+2003-03-24  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/Date.java:
 	Fixed documentation starting tag to make javadoc happy.
 	* java/util/regex/Pattern.java
