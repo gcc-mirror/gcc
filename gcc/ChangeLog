@@ -1,3 +1,9 @@
+2002-01-25  Steve Ellcey  <sje@cup.hp.com>
+
+	* emit-rtl.c (gen_rtx_REG): Always return the same rtx
+	for PIC_OFFSET_TABLE_REGNUM.
+	(init_emit_once): Use gen_raw_REG to initialize pic_offset_table_rtx.
+
 2002-01-25  David O'Brien  <obrien@FreeBSD.org>
 
 	* config.gcc (x86_64-*-freebsd*): New target.
