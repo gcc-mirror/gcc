@@ -1,3 +1,22 @@
+Mon Feb 22 14:13:23 1999  Vladimir N. Makarov  <vmakarov@cygnus.com>
+
+	* configure.in (i[34567]86-*-linux-gnu*,
+	i[34567]86-*-linux-gnulibc1, i[34567]86-*-linux-gnuaout*,
+	i[34567]86-*-linux-gnuoldld*): Use fixinc.x86-linux-gnu as
+	fixincludes.
+
+	* configure: Rebuilt.
+
+	* fixinc.x86-linux-gnu: New script for fixing asm-statements bug
+	on x86 linux.
+
+	* fixinc/fixinc.x86-linux-gnu: Copy of the previous one.
+
+	* fixinc/mkfixinc.sh (i[34567]86-*-linux-gnu*,
+	i[34567]86-*-linux-gnulibc1, i[34567]86-*-linux-gnuaout*,
+	i[34567]86-*-linux-gnuoldld*): Use fixinc.x86-linux-gnu as
+	fixincludes.
+
 Mon Feb 22 08:55:05 1999  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* objc/objc-act.c (encode_type): Temporary revert to the old
