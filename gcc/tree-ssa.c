@@ -118,6 +118,12 @@ verify_ssa_name (tree ssa_name, bool is_virtual)
       return true;
     }
 
+  if (TREE_TYPE (ssa_name) != TREE_TYPE (SSA_NAME_VAR (ssa_name)))
+    {
+      error ("Type mismatch between an SSA_NAME and its symbol.");
+      return true;
+    }
+
   if (SSA_NAME_IN_FREE_LIST (ssa_name))
     {
       error ("Found an SSA_NAME that had been released into the free pool");

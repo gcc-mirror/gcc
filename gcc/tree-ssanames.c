@@ -249,4 +249,14 @@ release_defs (tree stmt)
     release_ssa_name (V_MUST_DEF_OP (v_must_defs, i));
 }
 
+
+/* Replace the symbol associated with SSA_NAME with SYM.  */
+
+void
+replace_ssa_name_symbol (tree ssa_name, tree sym)
+{
+  SSA_NAME_VAR (ssa_name) = sym;
+  TREE_TYPE (ssa_name) = TREE_TYPE (sym);
+}
+
 #include "gt-tree-ssanames.h"

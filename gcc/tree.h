@@ -2648,6 +2648,7 @@ extern tree make_ssa_name (tree, tree);
 extern tree duplicate_ssa_name (tree, tree);
 extern void release_ssa_name (tree);
 extern void release_defs (tree);
+extern void replace_ssa_name_symbol (tree, tree);
 
 #ifdef GATHER_STATISTICS
 extern void ssanames_print_statistics (void);
