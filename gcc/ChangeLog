@@ -1,3 +1,7 @@
+2004-11-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (mem_min_alignment): Check MEM_ALIGN.
+
 2004-11-22  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/power4.md: Remove delay between dispatch and issue

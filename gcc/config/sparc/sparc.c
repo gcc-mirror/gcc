@@ -3983,6 +3983,12 @@ mem_min_alignment (rtx mem, int desired)
   if (GET_CODE (mem) != MEM)
     return 0;
 
+  /* Obviously...  */
+  if (MEM_ALIGN (mem) / BITS_PER_UNIT >= (unsigned)desired)
+    return 1;
+
+  /* ??? The rest of the function predates MEM_ALIGN so
+     there is probably a bit of redundancy.  */
   addr = XEXP (mem, 0);
   base = offset = NULL_RTX;
   if (GET_CODE (addr) == PLUS)
