@@ -105,12 +105,9 @@
 (define_delay (eq_attr "type" "call")
   [(eq_attr "in_call_delay" "true") (nil) (nil)])
 
-;; millicode call delay slot description.  Note it disallows delay slot
-;; when TARGET_PORTABLE_RUNTIME is true.
+;; Millicode call delay slot description.
 (define_delay (eq_attr "type" "milli")
-  [(and (eq_attr "in_call_delay" "true")
-	(eq (symbol_ref "TARGET_PORTABLE_RUNTIME") (const_int 0)))
-   (nil) (nil)])
+  [(eq_attr "in_call_delay" "true") (nil) (nil)])
 
 ;; Return and other similar instructions.
 (define_delay (eq_attr "type" "branch,parallel_branch")
@@ -4089,27 +4086,7 @@
   "!TARGET_64BIT"
   "* return output_mul_insn (0, insn);"
   [(set_attr "type" "milli")
-   (set (attr "length")
-     (cond [
-;; Target (or stub) within reach
-            (and (lt (plus (symbol_ref "total_code_bytes") (pc))
-                     (const_int 240000))
-                 (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-                     (const_int 0)))
-            (const_int 4)
-
-;; Out of reach PIC
-            (ne (symbol_ref "flag_pic")
-                (const_int 0))
-            (const_int 24)
-
-;; Out of reach PORTABLE_RUNTIME
-            (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
-                (const_int 0))
-            (const_int 20)]
-
-;; Out of reach, can use ble
-          (const_int 12)))])
+   (set (attr "length") (symbol_ref "attr_length_millicode_call (insn, 0)"))])
 
 (define_insn ""
   [(set (reg:SI 29) (mult:SI (reg:SI 26) (reg:SI 25)))
@@ -4120,7 +4097,7 @@
   "TARGET_64BIT"
   "* return output_mul_insn (0, insn);"
   [(set_attr "type" "milli")
-   (set (attr "length") (const_int 4))])
+   (set (attr "length") (symbol_ref "attr_length_millicode_call (insn, 0)"))])
 
 (define_expand "muldi3"
   [(set (match_operand:DI 0 "register_operand" "")
@@ -4211,27 +4188,7 @@
   "*
    return output_div_insn (operands, 0, insn);"
   [(set_attr "type" "milli")
-   (set (attr "length")
-     (cond [
-;; Target (or stub) within reach
-            (and (lt (plus (symbol_ref "total_code_bytes") (pc))
-                     (const_int 240000))
-                 (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-                     (const_int 0)))
-            (const_int 4)
-
-;; Out of reach PIC
-            (ne (symbol_ref "flag_pic")
-                (const_int 0))
-            (const_int 24)
-
-;; Out of reach PORTABLE_RUNTIME
-            (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
-                (const_int 0))
-            (const_int 20)]
-
-;; Out of reach, can use ble
-          (const_int 12)))])
+   (set (attr "length") (symbol_ref "attr_length_millicode_call (insn, 0)"))])
 
 (define_insn ""
   [(set (reg:SI 29)
@@ -4245,7 +4202,7 @@
   "*
    return output_div_insn (operands, 0, insn);"
   [(set_attr "type" "milli")
-   (set (attr "length") (const_int 4))])
+   (set (attr "length") (symbol_ref "attr_length_millicode_call (insn, 0)"))])
 
 (define_expand "udivsi3"
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
@@ -4261,6 +4218,7 @@
   "
 {
   operands[3] = gen_reg_rtx (SImode);
+
   if (TARGET_64BIT)
     {
       operands[5] = gen_rtx_REG (SImode, 2);
@@ -4287,27 +4245,7 @@
   "*
    return output_div_insn (operands, 1, insn);"
   [(set_attr "type" "milli")
-   (set (attr "length")
-     (cond [
-;; Target (or stub) within reach
-            (and (lt (plus (symbol_ref "total_code_bytes") (pc))
-                     (const_int 240000))
-                 (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-                     (const_int 0)))
-            (const_int 4)
-
-;; Out of reach PIC
-            (ne (symbol_ref "flag_pic")
-                (const_int 0))
-            (const_int 24)
-
-;; Out of reach PORTABLE_RUNTIME
-            (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
-                (const_int 0))
-            (const_int 20)]
-
-;; Out of reach, can use ble
-          (const_int 12)))])
+   (set (attr "length") (symbol_ref "attr_length_millicode_call (insn, 0)"))])
 
 (define_insn ""
   [(set (reg:SI 29)
@@ -4321,7 +4259,7 @@
   "*
    return output_div_insn (operands, 1, insn);"
   [(set_attr "type" "milli")
-   (set (attr "length") (const_int 4))])
+   (set (attr "length") (symbol_ref "attr_length_millicode_call (insn, 0)"))])
 
 (define_expand "modsi3"
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
@@ -4360,27 +4298,7 @@
   "*
   return output_mod_insn (0, insn);"
   [(set_attr "type" "milli")
-   (set (attr "length")
-     (cond [
-;; Target (or stub) within reach
-            (and (lt (plus (symbol_ref "total_code_bytes") (pc))
-                     (const_int 240000))
-                 (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-                     (const_int 0)))
-            (const_int 4)
-
-;; Out of reach PIC
-            (ne (symbol_ref "flag_pic")
-                (const_int 0))
-            (const_int 24)
-
-;; Out of reach PORTABLE_RUNTIME
-            (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
-                (const_int 0))
-            (const_int 20)]
-
-;; Out of reach, can use ble
-          (const_int 12)))])
+   (set (attr "length") (symbol_ref "attr_length_millicode_call (insn, 0)"))])
 
 (define_insn ""
   [(set (reg:SI 29) (mod:SI (reg:SI 26) (reg:SI 25)))
@@ -4393,7 +4311,7 @@
   "*
   return output_mod_insn (0, insn);"
   [(set_attr "type" "milli")
-   (set (attr "length") (const_int 4))])
+   (set (attr "length") (symbol_ref "attr_length_millicode_call (insn, 0)"))])
 
 (define_expand "umodsi3"
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
@@ -4432,27 +4350,7 @@
   "*
   return output_mod_insn (1, insn);"
   [(set_attr "type" "milli")
-   (set (attr "length")
-     (cond [
-;; Target (or stub) within reach
-            (and (lt (plus (symbol_ref "total_code_bytes") (pc))
-                     (const_int 240000))
-                 (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-                     (const_int 0)))
-            (const_int 4)
-
-;; Out of reach PIC
-            (ne (symbol_ref "flag_pic")
-                (const_int 0))
-            (const_int 24)
-
-;; Out of reach PORTABLE_RUNTIME
-            (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
-                (const_int 0))
-            (const_int 20)]
-
-;; Out of reach, can use ble
-          (const_int 12)))])
+   (set (attr "length") (symbol_ref "attr_length_millicode_call (insn, 0)"))])
 
 (define_insn ""
   [(set (reg:SI 29) (umod:SI (reg:SI 26) (reg:SI 25)))
@@ -4465,7 +4363,7 @@
   "*
   return output_mod_insn (1, insn);"
   [(set_attr "type" "milli")
-   (set (attr "length") (const_int 4))])
+   (set (attr "length") (symbol_ref "attr_length_millicode_call (insn, 0)"))])
 
 ;;- and instructions
 ;; We define DImode `and` so with DImode `not` we can get
@@ -6036,11 +5934,12 @@
       call_insn = emit_call_insn (gen_call_internal_reg (operands[1]));
     }
 
+  if (TARGET_64BIT)
+    use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), arg_pointer_rtx);
+
   if (flag_pic)
     {
       use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), pic_offset_table_rtx);
-      if (TARGET_64BIT)
-	use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), arg_pointer_rtx);
 
       /* After each call we must restore the PIC register, even if it
 	 doesn't appear to be used.  */
@@ -6052,6 +5951,7 @@
 (define_insn "call_internal_symref"
   [(call (mem:SI (match_operand 0 "call_operand_address" ""))
 	 (match_operand 1 "" "i"))
+   (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (use (const_int 0))]
   "! TARGET_PORTABLE_RUNTIME"
@@ -6061,21 +5961,7 @@
   return output_call (insn, operands[0], 0);
 }"
   [(set_attr "type" "call")
-   (set (attr "length")
-;;       If we're sure that we can either reach the target or that the
-;;	 linker can use a long-branch stub, then the length is at most
-;;	 8 bytes.
-;;
-;;	 For long-calls the length will be at most 68 bytes (non-pic)
-;;	 or 84 bytes (pic).  */
-;;	 Else we have to use a long-call;
-      (if_then_else (lt (plus (symbol_ref "total_code_bytes") (pc))
-			(const_int 240000))
-		    (const_int 8)
-		    (if_then_else (eq (symbol_ref "flag_pic")
-				      (const_int 0))
-				  (const_int 68)
-				  (const_int 84))))])
+   (set (attr "length") (symbol_ref "attr_length_call (insn, 0)"))])
 
 (define_insn "call_internal_reg_64bit"
   [(call (mem:SI (match_operand:DI 0 "register_operand" "r"))
@@ -6086,15 +5972,16 @@
   "*
 {
   /* ??? Needs more work.  Length computation, split into multiple insns,
-     do not use %r22 directly, expose delay slot.  */
-  return \"ldd 16(%0),%%r2\;ldd 24(%0),%%r27\;bve,l (%%r2),%%r2\;nop\";
+     expose delay slot.  */
+  return \"ldd 16(%0),%%r2\;bve,l (%%r2),%%r2\;ldd 24(%0),%%r27\";
 }"
   [(set_attr "type" "dyncall")
-   (set (attr "length") (const_int 16))])
+   (set (attr "length") (const_int 12))])
 
 (define_insn "call_internal_reg"
   [(call (mem:SI (reg:SI 22))
 	 (match_operand 0 "" "i"))
+   (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (use (const_int 1))]
   ""
@@ -6218,11 +6105,13 @@
       call_insn = emit_call_insn (gen_call_value_internal_reg (operands[0],
 							       operands[2]));
     }
+
+  if (TARGET_64BIT)
+    use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), arg_pointer_rtx);
+
   if (flag_pic)
     {
       use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), pic_offset_table_rtx);
-      if (TARGET_64BIT)
-	use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), arg_pointer_rtx);
 
       /* After each call we must restore the PIC register, even if it
 	 doesn't appear to be used.  */
@@ -6235,6 +6124,7 @@
   [(set (match_operand 0 "" "=rf")
 	(call (mem:SI (match_operand 1 "call_operand_address" ""))
 	      (match_operand 2 "" "i")))
+   (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (use (const_int 0))]
   ;;- Don't use operand 1 for most machines.
@@ -6245,21 +6135,7 @@
   return output_call (insn, operands[1], 0);
 }"
   [(set_attr "type" "call")
-   (set (attr "length")
-;;       If we're sure that we can either reach the target or that the
-;;	 linker can use a long-branch stub, then the length is at most
-;;	 8 bytes.
-;;
-;;	 For long-calls the length will be at most 68 bytes (non-pic)
-;;	 or 84 bytes (pic).  */
-;;	 Else we have to use a long-call;
-      (if_then_else (lt (plus (symbol_ref "total_code_bytes") (pc))
-			(const_int 240000))
-		    (const_int 8)
-		    (if_then_else (eq (symbol_ref "flag_pic")
-				      (const_int 0))
-				  (const_int 68)
-				  (const_int 84))))])
+   (set (attr "length") (symbol_ref "attr_length_call (insn, 0)"))])
 
 (define_insn "call_value_internal_reg_64bit"
   [(set (match_operand 0 "" "=rf")
@@ -6271,16 +6147,17 @@
   "*
 {
   /* ??? Needs more work.  Length computation, split into multiple insns,
-     do not use %r22 directly, expose delay slot.  */
-  return \"ldd 16(%1),%%r2\;ldd 24(%1),%%r27\;bve,l (%%r2),%%r2\;nop\";
+     expose delay slot.  */
+  return \"ldd 16(%1),%%r2\;bve,l (%%r2),%%r2\;ldd 24(%1),%%r27\";
 }"
   [(set_attr "type" "dyncall")
-   (set (attr "length") (const_int 16))])
+   (set (attr "length") (const_int 12))])
 
 (define_insn "call_value_internal_reg"
   [(set (match_operand 0 "" "=rf")
 	(call (mem:SI (reg:SI 22))
 	      (match_operand 1 "" "i")))
+   (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (use (const_int 1))]
   ""
@@ -6389,10 +6266,9 @@
 }")
 
 (define_expand "sibcall"
-  [(parallel [(call (match_operand:SI 0 "" "")
-		    (match_operand 1 "" ""))
-	      (clobber (reg:SI 0))])]
-  "! TARGET_PORTABLE_RUNTIME"
+  [(call (match_operand:SI 0 "" "")
+	 (match_operand 1 "" ""))]
+  "!TARGET_PORTABLE_RUNTIME"
   "
 {
   rtx op;
@@ -6400,8 +6276,21 @@
 
   op = XEXP (operands[0], 0);
 
-  /* We do not allow indirect sibling calls.  */
-  call_insn = emit_call_insn (gen_sibcall_internal_symref (op, operands[1]));
+  if (TARGET_64BIT)
+    emit_move_insn (arg_pointer_rtx,
+		    gen_rtx_PLUS (word_mode, virtual_outgoing_args_rtx,
+				  GEN_INT (64)));
+
+  /* Indirect sibling calls are not allowed.  */
+  if (TARGET_64BIT)
+    call_insn = gen_sibcall_internal_symref_64bit (op, operands[1]);
+  else
+    call_insn = gen_sibcall_internal_symref (op, operands[1]);
+
+  call_insn = emit_call_insn (call_insn);
+
+  if (TARGET_64BIT)
+    use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), arg_pointer_rtx);
 
   if (flag_pic)
     {
@@ -6417,38 +6306,39 @@
 (define_insn "sibcall_internal_symref"
   [(call (mem:SI (match_operand 0 "call_operand_address" ""))
 	 (match_operand 1 "" "i"))
-   (clobber (reg:SI 0))
+   (clobber (reg:SI 1))
    (use (reg:SI 2))
    (use (const_int 0))]
-  "! TARGET_PORTABLE_RUNTIME"
+  "!TARGET_PORTABLE_RUNTIME && !TARGET_64BIT"
   "*
 {
   output_arg_descriptor (insn);
   return output_call (insn, operands[0], 1);
 }"
   [(set_attr "type" "call")
-   (set (attr "length")
-;;       If we're sure that we can either reach the target or that the
-;;	 linker can use a long-branch stub, then the length is at most
-;;	 8 bytes.
-;;
-;;	 For long-calls the length will be at most 68 bytes (non-pic)
-;;	 or 84 bytes (pic).  */
-;;	 Else we have to use a long-call;
-      (if_then_else (lt (plus (symbol_ref "total_code_bytes") (pc))
-			(const_int 240000))
-		    (const_int 8)
-		    (if_then_else (eq (symbol_ref "flag_pic")
-				      (const_int 0))
-				  (const_int 68)
-				  (const_int 84))))])
+   (set (attr "length") (symbol_ref "attr_length_call (insn, 1)"))])
+
+(define_insn "sibcall_internal_symref_64bit"
+  [(call (mem:SI (match_operand 0 "call_operand_address" ""))
+	 (match_operand 1 "" "i"))
+   (clobber (reg:SI 1))
+   (clobber (reg:SI 27))
+   (use (reg:SI 2))
+   (use (const_int 0))]
+  "TARGET_64BIT"
+  "*
+{
+  output_arg_descriptor (insn);
+  return output_call (insn, operands[0], 1);
+}"
+  [(set_attr "type" "call")
+   (set (attr "length") (symbol_ref "attr_length_call (insn, 1)"))])
 
 (define_expand "sibcall_value"
-  [(parallel [(set (match_operand 0 "" "")
+  [(set (match_operand 0 "" "")
 		   (call (match_operand:SI 1 "" "")
-			 (match_operand 2 "" "")))
-	      (clobber (reg:SI 0))])]
-  "! TARGET_PORTABLE_RUNTIME"
+			 (match_operand 2 "" "")))]
+  "!TARGET_PORTABLE_RUNTIME"
   "
 {
   rtx op;
@@ -6456,10 +6346,24 @@
 
   op = XEXP (operands[1], 0);
 
-  /* We do not allow indirect sibling calls.  */
-  call_insn = emit_call_insn (gen_sibcall_value_internal_symref (operands[0],
-								 op,
-								 operands[2]));
+  if (TARGET_64BIT)
+    emit_move_insn (arg_pointer_rtx,
+		    gen_rtx_PLUS (word_mode, virtual_outgoing_args_rtx,
+				  GEN_INT (64)));
+
+  /* Indirect sibling calls are not allowed.  */
+  if (TARGET_64BIT)
+    call_insn
+      = gen_sibcall_value_internal_symref_64bit (operands[0], op, operands[2]);
+  else
+    call_insn
+      = gen_sibcall_value_internal_symref (operands[0], op, operands[2]);
+
+  call_insn = emit_call_insn (call_insn);
+
+  if (TARGET_64BIT)
+    use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), arg_pointer_rtx);
+
   if (flag_pic)
     {
       use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), pic_offset_table_rtx);
@@ -6475,32 +6379,34 @@
   [(set (match_operand 0 "" "=rf")
 	(call (mem:SI (match_operand 1 "call_operand_address" ""))
 	      (match_operand 2 "" "i")))
-   (clobber (reg:SI 0))
+   (clobber (reg:SI 1))
    (use (reg:SI 2))
    (use (const_int 0))]
-  ;;- Don't use operand 1 for most machines.
-  "! TARGET_PORTABLE_RUNTIME"
+  "!TARGET_PORTABLE_RUNTIME && !TARGET_64BIT"
   "*
 {
   output_arg_descriptor (insn);
   return output_call (insn, operands[1], 1);
 }"
   [(set_attr "type" "call")
-   (set (attr "length")
-;;       If we're sure that we can either reach the target or that the
-;;	 linker can use a long-branch stub, then the length is at most
-;;	 8 bytes.
-;;
-;;	 For long-calls the length will be at most 68 bytes (non-pic)
-;;	 or 84 bytes (pic).  */
-;;	 Else we have to use a long-call;
-      (if_then_else (lt (plus (symbol_ref "total_code_bytes") (pc))
-			(const_int 240000))
-		    (const_int 8)
-		    (if_then_else (eq (symbol_ref "flag_pic")
-				      (const_int 0))
-				  (const_int 68)
-				  (const_int 84))))])
+   (set (attr "length") (symbol_ref "attr_length_call (insn, 1)"))])
+
+(define_insn "sibcall_value_internal_symref_64bit"
+  [(set (match_operand 0 "" "=rf")
+	(call (mem:SI (match_operand 1 "call_operand_address" ""))
+	      (match_operand 2 "" "i")))
+   (clobber (reg:SI 1))
+   (clobber (reg:SI 27))
+   (use (reg:SI 2))
+   (use (const_int 0))]
+  "TARGET_64BIT"
+  "*
+{
+  output_arg_descriptor (insn);
+  return output_call (insn, operands[1], 1);
+}"
+  [(set_attr "type" "call")
+   (set (attr "length") (symbol_ref "attr_length_call (insn, 1)"))])
 
 (define_insn "nop"
   [(const_int 0)]
@@ -7392,6 +7298,12 @@
   "!TARGET_64BIT"
   "*
 {
+  int length = get_attr_length (insn);
+  rtx xoperands[2];
+
+  xoperands[0] = GEN_INT (length - 8);
+  xoperands[1] = GEN_INT (length - 16);
+
   /* Must import the magic millicode routine.  */
   output_asm_insn (\".IMPORT $$sh_func_adrs,MILLICODE\", NULL);
 
@@ -7400,60 +7312,24 @@
      First, copy our input parameter into %r29 just in case we don't
      need to call $$sh_func_adrs.  */
   output_asm_insn (\"copy %%r26,%%r29\", NULL);
+  output_asm_insn (\"{extru|extrw,u} %%r26,31,2,%%r31\", NULL);
 
   /* Next, examine the low two bits in %r26, if they aren't 0x2, then
      we use %r26 unchanged.  */
-  if (get_attr_length (insn) == 32)
-    output_asm_insn (\"{extru|extrw,u} %%r26,31,2,%%r31\;{comib|cmpib},<>,n 2,%%r31,.+24\", NULL);
-  else if (get_attr_length (insn) == 40)
-    output_asm_insn (\"{extru|extrw,u} %%r26,31,2,%%r31\;{comib|cmpib},<>,n 2,%%r31,.+32\", NULL);
-  else if (get_attr_length (insn) == 44)
-    output_asm_insn (\"{extru|extrw,u} %%r26,31,2,%%r31\;{comib|cmpib},<>,n 2,%%r31,.+36\", NULL);
-  else
-    output_asm_insn (\"{extru|extrw,u} %%r26,31,2,%%r31\;{comib|cmpib},<>,n 2,%%r31,.+20\", NULL);
+  output_asm_insn (\"{comib|cmpib},<>,n 2,%%r31,.+%0\", xoperands);
+  output_asm_insn (\"ldi 4096,%%r31\", NULL);
 
   /* Next, compare %r26 with 4096, if %r26 is less than or equal to
-     4096, then we use %r26 unchanged.  */
-  if (get_attr_length (insn) == 32)
-    output_asm_insn (\"ldi 4096,%%r31\;{comb|cmpb},<<,n %%r26,%%r31,.+16\",
-		     NULL);
-  else if (get_attr_length (insn) == 40)
-    output_asm_insn (\"ldi 4096,%%r31\;{comb|cmpb},<<,n %%r26,%%r31,.+24\",
-		     NULL);
-  else if (get_attr_length (insn) == 44)
-    output_asm_insn (\"ldi 4096,%%r31\;{comb|cmpb},<<,n %%r26,%%r31,.+28\",
-		     NULL);
-  else
-    output_asm_insn (\"ldi 4096,%%r31\;{comb|cmpb},<<,n %%r26,%%r31,.+12\",
-		     NULL);
+     4096, then again we use %r26 unchanged.  */
+  output_asm_insn (\"{comb|cmpb},<<,n %%r26,%%r31,.+%1\", xoperands);
 
-  /* Else call $$sh_func_adrs to extract the function's real add24.  */
+  /* Finally, call $$sh_func_adrs to extract the function's real add24.  */
   return output_millicode_call (insn,
 				gen_rtx_SYMBOL_REF (SImode,
-					 \"$$sh_func_adrs\"));
+						    \"$$sh_func_adrs\"));
 }"
   [(set_attr "type" "multi")
-   (set (attr "length")
-     (cond [
-;; Target (or stub) within reach
-            (and (lt (plus (symbol_ref "total_code_bytes") (pc))
-                     (const_int 240000))
-                 (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
-                     (const_int 0)))
-            (const_int 28)
-
-;; Out of reach PIC
-	    (ne (symbol_ref "flag_pic")
-		(const_int 0))
-	    (const_int 44)
-
-;; Out of reach PORTABLE_RUNTIME
-	    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
-		(const_int 0))
-	    (const_int 40)]
-
-;; Out of reach, can use ble
-          (const_int 32)))])
+   (set (attr "length") (symbol_ref "attr_length_millicode_call (insn, 20)"))])
 
 ;; On the PA, the PIC register is call clobbered, so it must
 ;; be saved & restored around calls by the caller.  If the call

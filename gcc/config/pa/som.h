@@ -371,3 +371,7 @@ do {						\
    on the location of the GCC tool directory.  The downside is GCC
    cannot be moved after installation using a symlink.  */
 #define ALWAYS_STRIP_DOTDOT 1
+
+/* Aggregates with a single float or double field should be passed and
+   returned in the general registers.  */
+#define MEMBER_TYPE_FORCES_BLK(FIELD, MODE) (MODE==SFmode || MODE==DFmode)

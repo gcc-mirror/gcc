@@ -196,6 +196,19 @@ Boston, MA 02111-1307, USA.  */
     }								\
   while (0)
 
+/* As well as globalizing the label, we need to encode the label
+   to ensure a plabel is generated in an indirect call.  */
+
+#undef ASM_OUTPUT_EXTERNAL_LIBCALL
+#define ASM_OUTPUT_EXTERNAL_LIBCALL(FILE, FUN)  		\
+  do								\
+    {								\
+      if (!FUNCTION_NAME_P (XSTR (FUN, 0)))			\
+	hppa_encode_label (FUN);				\
+      (*targetm.asm_out.globalize_label) (FILE, XSTR (FUN, 0));	\
+    }								\
+  while (0)
+
 /* Linux always uses gas.  */
 #undef TARGET_GAS
 #define TARGET_GAS 1
