@@ -292,6 +292,12 @@ extern int target_flags;
       flag_signed_char = 1;					\
       target_flags |= TARGET_FLAG_CLEAN_LINKAGE;		\
     }								\
+  /* ??? Function inlining is not supported, because the i960	\
+     calling convention requires the caller to manage the arg	\
+     pointer in a wierd fashion.  This is ordinarily done by	\
+     expand_call, but this is never called when inlining	\
+     functions, and no replacement for it exists.  */		\
+  flag_no_inline = 1;						\
   i960_initialize ();						\
 }
 
