@@ -1,3 +1,9 @@
+2004-07-08  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	PR fortran/16291
+	* libgfortran/io/write.c: (write_float): Added length check.
+	Remove pointless memset calls.
+
 2004-07-04  Bud Davis  <bdavis9659@comcast.net>
 	    Paul Brook  <paul@codesourcery.com>
 
@@ -5,9 +11,9 @@
 	* io/transfer.c(us_write): set recl for seq unform writes to max size.
 	* io/transfer.c(data_transfer_init): handle un-opened seq unform unit.
 	* io/unix.c(fd_alloc_w_at): handle requests at start, fd_flush at 
-	  right time.
+	right time.
 	* io/unix.c(is_seekable): set based upon the file/device, not the
-          method being used to access it (fd or mmap).
+	method being used to access it (fd or mmap).
 	* io/unix.c(fd_flush): don't set file_size if !seekable.
 	* io/unix.c(fd_truncate: ditto.
 
