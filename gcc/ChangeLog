@@ -1,3 +1,15 @@
+2003-07-31  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.md (UNSPEC_ROUND, UNSPEC_SETHIGH, 
+	UNSPECV_BLOCKAGE): New constants.
+	("*sethighqisi", "*sethighhisi", "*sethiqidi_64", "*sethiqidi_31",
+	"*extractqi", "*extracthi", "*extendqidi2" splitter, "*extendqisi2"
+	splitter, "fix_truncdfdi2_ieee", "fix_truncdfsi2_ieee",
+	"fix_truncsfdi2", "fix_truncsfsi2", "blockage"): Use them.
+
+	(all insns and expanders): Write output control string as brace block
+	where appropriate.  Remove \-escapes for doublequote characters.
+
 Thu Jul 31 01:04:19 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (insert_store): Fix typo in previous patch.
