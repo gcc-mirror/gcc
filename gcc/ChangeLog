@@ -1,3 +1,12 @@
+2000-09-25  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (format_char_info): Add flags2; update comments.
+	(print_char_table, scan_char_table, time_char_table): Split some
+	flags out into flags2.
+	(check_format_info): Use flags2 for those flags, for identifying
+	the initial character of a scanf scanset, and for identifying
+	printf formats where the '0' flag is ignored with precision.
+
 2000-09-25  Hans-Peter Nilsson  <hp@axis.com>
 
 	Changes below marked "here" add TABs on either or both sides,

@@ -1293,16 +1293,21 @@ typedef struct
   enum format_std_version std;
   /* Types accepted for each length modifier.  */
   format_type_detail types[FMT_LEN_MAX];
-  /* List of other modifier characters allowed with these options.
+  /* List of other modifier characters allowed with these specifiers.
      This lists flags, and additionally "w" for width, "p" for precision,
-     "c" for generic character pointers being allowed, "a" for scanf
-     "a" allocation extension (not applicable in C99 mode), "*" for
-     scanf suppression, "2" for strftime two digit year formats, "3"
-     for strftime formats giving two digit years in some locales, "E"
-     and "O" for those strftime modifiers, "o" if use of strftime "O"
-     is a GNU extension beyond C99, and "W" if the argument is a
-     pointer which is dereferenced and written into.  */
+     "a" for scanf "a" allocation extension (not applicable in C99 mode),
+     "*" for scanf suppression, and "E" and "O" for those strftime
+     modifiers.  */
   const char *flag_chars;
+  /* List of additional flags describing these conversion specifiers.
+     "c" for generic character pointers being allowed, "2" for strftime
+     two digit year formats, "3" for strftime formats giving two digit
+     years in some locales, "o" if use of strftime "O"
+     is a GNU extension beyond C99, "W" if the argument is a pointer
+     which is dereferenced and written into, "i" for printf integer
+     formats where the '0' flag is ignored with precision, and "["
+     for the starting character of a scanf scanset.  */
+  const char *flags2;
 } format_char_info;
 
 
@@ -1437,70 +1442,70 @@ static const format_length_info scanf_length_specs[] =
 static const format_char_info print_char_table[] =
 {
   /* C89 conversion specifiers.  */
-  { "di",  0, STD_C89, { T89_I,   T99_I,   T89_I,   T89_L,   T99_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM  }, "-wp0 +'I" },
-  { "oxX", 0, STD_C89, { T89_UI,  T99_UI,  T89_UI,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0#"    },
-  { "u",   0, STD_C89, { T89_UI,  T99_UI,  T89_UI,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0'I"   },
-  { "fgG", 0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#'" },
-  { "eE",  0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#"  },
-  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T94_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w"       },
-  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wpc"     },
-  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wc"      },
-  { "n",   1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM  }, "W"        },
+  { "di",  0, STD_C89, { T89_I,   T99_I,   T89_I,   T89_L,   T99_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM  }, "-wp0 +'I", "i" },
+  { "oxX", 0, STD_C89, { T89_UI,  T99_UI,  T89_UI,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0#",    "i" },
+  { "u",   0, STD_C89, { T89_UI,  T99_UI,  T89_UI,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0'I",   "i" },
+  { "fgG", 0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#'", ""  },
+  { "eE",  0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#",  ""  },
+  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T94_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w",       ""  },
+  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp",      "c" },
+  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w",       "c" },
+  { "n",   1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM  }, "",         "W" },
   /* C99 conversion specifiers.  */
-  { "F",   0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#'" },
-  { "aA",  0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#"  },
+  { "F",   0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#'", ""  },
+  { "aA",  0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#",  ""  },
   /* X/Open conversion specifiers.  */
-  { "C",   0, STD_EXT, { TEX_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w"       },
-  { "S",   1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp"      },
+  { "C",   0, STD_EXT, { TEX_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w",       ""  },
+  { "S",   1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp",      ""  },
   /* GNU conversion specifiers.  */
-  { "m",   0, STD_EXT, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp"      },
-  { NULL,  0, 0, NOLENGTHS, NULL }
+  { "m",   0, STD_EXT, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp",      ""  },
+  { NULL,  0, 0, NOLENGTHS, NULL, NULL }
 };
 
 static const format_char_info scan_char_table[] =
 {
   /* C89 conversion specifiers.  */
-  { "di",    1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM  }, "*wW"   },
-  { "ouxX",  1, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "*wW"   },
-  { "efgEG", 1, STD_C89, { T89_F,   BADLEN,  BADLEN,  T89_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "*wW"   },
-  { "c",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*cwW"  },
-  { "s",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*acwW" },
-  { "[",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*acwW" },
-  { "p",     2, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*wW"   },
-  { "n",     1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM  }, "W"     },
+  { "di",    1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM  }, "*w",  "W"   },
+  { "ouxX",  1, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "*w",  "W"   },
+  { "efgEG", 1, STD_C89, { T89_F,   BADLEN,  BADLEN,  T89_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "*w",  "W"   },
+  { "c",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*w",  "cW"  },
+  { "s",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*aw", "cW"  },
+  { "[",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*aw", "cW[" },
+  { "p",     2, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*w",  "W"   },
+  { "n",     1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM  }, "",    "W"   },
   /* C99 conversion specifiers.  */
-  { "FaA",   1, STD_C99, { T99_F,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "*wW"   },
+  { "FaA",   1, STD_C99, { T99_F,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "*w",  "W"   },
   /* X/Open conversion specifiers.  */
-  { "C",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*wW"   },
-  { "S",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*awW"  },
-  { NULL, 0, 0, NOLENGTHS, NULL }
+  { "C",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*w",  "W"   },
+  { "S",     1, STD_EXT, { TEX_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*aw", "W"   },
+  { NULL, 0, 0, NOLENGTHS, NULL, NULL }
 };
 
 static format_char_info time_char_table[] =
 {
   /* C89 conversion specifiers.  */
-  { "ABZab",		0, STD_C89, NOLENGTHS, "^#" },
-  { "cx", 		0, STD_C89, NOLENGTHS, "3E" },
-  { "HIMSUWdmw",	0, STD_C89, NOLENGTHS, "-_0Ow" },
-  { "j",		0, STD_C89, NOLENGTHS, "-_0Oow" },
-  { "p",		0, STD_C89, NOLENGTHS, "#" },
-  { "X",		0, STD_C89, NOLENGTHS, "E" },
-  { "y", 		0, STD_C89, NOLENGTHS, "2EO-_0w" },
-  { "Y",		0, STD_C89, NOLENGTHS, "-_0EOow" },
-  { "%",		0, STD_C89, NOLENGTHS, "" },
+  { "ABZab",		0, STD_C89, NOLENGTHS, "^#",     ""   },
+  { "cx", 		0, STD_C89, NOLENGTHS, "E",      "3"  },
+  { "HIMSUWdmw",	0, STD_C89, NOLENGTHS, "-_0Ow",  ""   },
+  { "j",		0, STD_C89, NOLENGTHS, "-_0Ow",  "o"  },
+  { "p",		0, STD_C89, NOLENGTHS, "#",      ""   },
+  { "X",		0, STD_C89, NOLENGTHS, "E",      ""   },
+  { "y", 		0, STD_C89, NOLENGTHS, "EO-_0w", "2"  },
+  { "Y",		0, STD_C89, NOLENGTHS, "-_0EOw", "o"  },
+  { "%",		0, STD_C89, NOLENGTHS, "",       ""   },
   /* C99 conversion specifiers.  */
-  { "C",		0, STD_C99, NOLENGTHS, "-_0EOow" },
-  { "D", 		0, STD_C99, NOLENGTHS, "2" },
-  { "eVu",		0, STD_C99, NOLENGTHS, "-_0Ow" },
-  { "FRTnrt",		0, STD_C99, NOLENGTHS, "" },
-  { "g", 		0, STD_C99, NOLENGTHS, "2Oo-_0w" },
-  { "G",		0, STD_C99, NOLENGTHS, "-_0Oow" },
-  { "h",		0, STD_C99, NOLENGTHS, "^#" },
-  { "z",		0, STD_C99, NOLENGTHS, "Oo" },
+  { "C",		0, STD_C99, NOLENGTHS, "-_0EOw", "o"  },
+  { "D", 		0, STD_C99, NOLENGTHS, "",       "2"  },
+  { "eVu",		0, STD_C99, NOLENGTHS, "-_0Ow",  ""   },
+  { "FRTnrt",		0, STD_C99, NOLENGTHS, "",       ""   },
+  { "g", 		0, STD_C99, NOLENGTHS, "O-_0w",  "2o" },
+  { "G",		0, STD_C99, NOLENGTHS, "-_0Ow",  "o"  },
+  { "h",		0, STD_C99, NOLENGTHS, "^#",     ""   },
+  { "z",		0, STD_C99, NOLENGTHS, "O",      "o"  },
   /* GNU conversion specifiers.  */
-  { "kls",		0, STD_EXT, NOLENGTHS, "-_0Ow" },
-  { "P",		0, STD_EXT, NOLENGTHS, "" },
-  { NULL,		0, 0, NOLENGTHS, NULL }
+  { "kls",		0, STD_EXT, NOLENGTHS, "-_0Ow",  ""   },
+  { "P",		0, STD_EXT, NOLENGTHS, "",       ""   },
+  { NULL,		0, 0, NOLENGTHS, NULL, NULL }
 };
 
 
@@ -2424,7 +2429,7 @@ check_format_info (status, info, params)
 		     format_char, fki->name);
 	  if (index (flag_chars, 'O') != 0)
 	    {
-	      if (index (fci->flag_chars, 'o') != 0)
+	      if (index (fci->flags2, 'o') != 0)
 		status_warning (status, "ISO C does not support `%%O%c'", format_char);
 	      else if (!flag_isoc99 && index (fci->flag_chars, 'O') != 0)
 		status_warning (status, "ISO C89 does not support `%%O%c'", format_char);
@@ -2434,11 +2439,11 @@ check_format_info (status, info, params)
 	}
       if (wide && index (fci->flag_chars, 'w') == 0)
 	status_warning (status, "width used with `%c' format", format_char);
-      if (index (fci->flag_chars, '3') != 0
+      if (index (fci->flags2, '3') != 0
 	  || (format_char == 'y' && index (flag_chars, 'E')))
 	status_warning (status, "`%%%c' yields only last 2 digits of year in some locales",
 		 format_char);
-      else if (index (fci->flag_chars, '2') != 0)
+      else if (index (fci->flags2, '2') != 0)
 	status_warning (status, "`%%%c' yields only last 2 digits of year", format_char);
       if (precise && index (fci->flag_chars, 'p') == 0)
 	status_warning (status, "precision used with `%c' format", format_char);
@@ -2451,7 +2456,7 @@ check_format_info (status, info, params)
       /* The a flag is a GNU extension.  */
       else if (pedantic && aflag)
 	status_warning (status, "ISO C does not support the `a' flag");
-      if (info->format_type == scanf_format_type && format_char == '[')
+      if (index (fci->flags2, '[') != 0)
 	{
 	  /* Skip over scan set, in case it happens to have '%' in it.  */
 	  if (*format_chars == '^')
@@ -2481,9 +2486,7 @@ check_format_info (status, info, params)
       if (info->format_type == strftime_format_type)
 	continue;
       if (precise && index (flag_chars, '0') != 0
-	  && (format_char == 'd' || format_char == 'i'
-	      || format_char == 'o' || format_char == 'u'
-	      || format_char == 'x' || format_char == 'X'))
+	  && (index (fci->flags2, 'i') != 0))
 	status_warning (status, "`0' flag ignored with precision specifier and `%c' format",
 		 format_char);
       wanted_type = (fci->types[length_chars_val].type
@@ -2558,10 +2561,10 @@ check_format_info (status, info, params)
 	  main_wanted_type.wanted_type_name = wanted_type_name;
 	  main_wanted_type.pointer_count = fci->pointer_count + aflag;
 	  main_wanted_type.char_lenient_flag = 0;
-	  if (index (fci->flag_chars, 'c') != 0)
+	  if (index (fci->flags2, 'c') != 0)
 	    main_wanted_type.char_lenient_flag = 1;
 	  main_wanted_type.writing_in_flag = 0;
-	  if (index (fci->flag_chars, 'W') != 0)
+	  if (index (fci->flags2, 'W') != 0)
 	    main_wanted_type.writing_in_flag = 1;
 	  main_wanted_type.name = NULL;
 	  main_wanted_type.param = cur_param;
