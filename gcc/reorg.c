@@ -1,5 +1,5 @@
 /* Perform instruction reorganizations for delay slot filling.
-   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu).
    Hacked by Michael Tiemann (tiemann@cygnus.com).
 
@@ -267,7 +267,7 @@ static rtx next_insn_no_annul	PROTO((rtx));
 static void mark_target_live_regs PROTO((rtx, struct resources *));
 static void fill_simple_delay_slots PROTO((int));
 static rtx fill_slots_from_thread PROTO((rtx, rtx, rtx, rtx, int, int,
-					 int, int, int *));
+					 int, int, int *, rtx));
 static void fill_eager_delay_slots PROTO((void));
 static void relax_delay_slots	PROTO((rtx));
 static void make_return_insns	PROTO((rtx));
@@ -275,7 +275,7 @@ static int redirect_with_delay_slots_safe_p PROTO ((rtx, rtx, rtx));
 static int redirect_with_delay_list_safe_p PROTO ((rtx, rtx, rtx));
 
 /* Given X, some rtl, and RES, a pointer to a `struct resource', mark
-   which resources are references by the insn.  If INCLUDE_CALLED_ROUTINE
+   which resources are references by the insn.  If INCLUDE_DELAYED_EFFECTS
    is TRUE, resources used by the called routine will be included for
    CALL_INSNs.  */
 
@@ -491,9 +491,10 @@ mark_referenced_resources (x, res, include_delayed_effects)
       }
 }
 
-/* Given X, a part of an insn, and a pointer to a `struct resource', RES,
-   indicate which resources are modified by the insn. If INCLUDE_CALLED_ROUTINE
-   is nonzero, also mark resources potentially set by the called routine.
+/* Given X, a part of an insn, and a pointer to a `struct resource',
+   RES, indicate which resources are modified by the insn. If
+   INCLUDE_DELAYED_EFFECTS is nonzero, also mark resources potentially
+   set by the called routine.
 
    If IN_DEST is nonzero, it means we are inside a SET.  Otherwise,
    objects are being referenced instead of set.
@@ -747,7 +748,7 @@ resource_conflicts_p (res1, res2)
 }
 
 /* Return TRUE if any resource marked in RES, a `struct resources', is
-   referenced by INSN.  If INCLUDE_CALLED_ROUTINE is set, return if the called
+   referenced by INSN.  If INCLUDE_DELAYED_EFFECTS is set, return if the called
    routine is using those resources.
 
    We compute this by computing all the resources referenced by INSN and
@@ -769,7 +770,7 @@ insn_references_resource_p (insn, res, include_delayed_effects)
 }
 
 /* Return TRUE if INSN modifies resources that are marked in RES.
-   INCLUDE_CALLED_ROUTINE is set if the actions of that routine should be
+   INCLUDE_DELAYED_EFFECTS is set if the actions of that routine should be
    included.   CC0 is only modified if it is explicitly set; see comments
    in front of mark_set_resources for details.  */
 
@@ -3335,7 +3336,8 @@ fill_simple_delay_slots (non_jumps_p)
 				    NULL, 1, 1,
 				    own_thread_p (JUMP_LABEL (insn),
 						  JUMP_LABEL (insn), 0),
-				    slots_to_fill, &slots_filled);
+				    slots_to_fill, &slots_filled,
+				    delay_list);
 
       if (delay_list)
 	unfilled_slots_base[i]
@@ -3464,7 +3466,7 @@ fill_simple_delay_slots (non_jumps_p)
 static rtx
 fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 			thread_if_true, own_thread,
-			slots_to_fill, pslots_filled)
+			slots_to_fill, pslots_filled, delay_list)
      rtx insn;
      rtx condition;
      rtx thread, opposite_thread;
@@ -3472,9 +3474,9 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
      int thread_if_true;
      int own_thread;
      int slots_to_fill, *pslots_filled;
+     rtx delay_list;
 {
   rtx new_thread;
-  rtx delay_list = 0;
   struct resources opposite_needed, set, needed;
   rtx trial;
   int lose = 0;
@@ -3491,7 +3493,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
   /* If our thread is the end of subroutine, we can't get any delay
      insns from that.  */
   if (thread == 0)
-    return 0;
+      return delay_list;
 
   /* If this is an unconditional branch, nothing is needed at the
      opposite thread.  Otherwise, compute what is needed there.  */
@@ -3648,6 +3650,8 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 
 		  delay_list = add_to_delay_list (temp, delay_list);
 
+		  mark_set_resources (trial, &opposite_needed, 0, 1);
+
 		  if (slots_to_fill == ++(*pslots_filled))
 		    {
 		      /* Even though we have filled all the slots, we
@@ -3717,7 +3721,9 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
     {
       /* If this is the `true' thread, we will want to follow the jump,
 	 so we can only do this if we have taken everything up to here.  */
-      if (thread_if_true && trial == new_thread)
+      if (thread_if_true && trial == new_thread
+	  && ! insn_references_resource_p (XVECEXP (PATTERN (trial), 0, 0),
+					   &opposite_needed, 0))
 	delay_list
 	  = steal_delay_list_from_target (insn, condition, PATTERN (trial),
 					  delay_list, &set, &needed,
@@ -3916,7 +3922,7 @@ fill_eager_delay_slots ()
 	    = fill_slots_from_thread (insn, condition, insn_at_target,
 				      fallthrough_insn, prediction == 2, 1,
 				      own_target,
-				      slots_to_fill, &slots_filled);
+				      slots_to_fill, &slots_filled, delay_list);
 
 	  if (delay_list == 0 && own_fallthrough)
 	    {
@@ -3931,7 +3937,8 @@ fill_eager_delay_slots ()
 		= fill_slots_from_thread (insn, condition, fallthrough_insn,
 					  insn_at_target, 0, 0,
 					  own_fallthrough,
-					  slots_to_fill, &slots_filled);
+					  slots_to_fill, &slots_filled,
+					  delay_list);
 	    }
 	}
       else
@@ -3948,7 +3955,8 @@ fill_eager_delay_slots ()
 	      = fill_slots_from_thread (insn, condition, insn_at_target,
 					next_active_insn (insn), 0, 1,
 					own_target,
-					slots_to_fill, &slots_filled);
+					slots_to_fill, &slots_filled,
+					delay_list);
 	}
 
       if (delay_list)
