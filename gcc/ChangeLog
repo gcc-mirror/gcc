@@ -1,3 +1,9 @@
+2004-06-07  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/14765
+	* c-parse.in (compstmt_primary_start): Set last_expr_type to
+	NULL_TREE.
+
 2004-06-07  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15815
