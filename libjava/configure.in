@@ -140,7 +140,9 @@ if test "$THREADS" = yes; then
        THREADS=win32
        ;;
     *-*-irix*)
-       THREADS=irix
+       # FIXME: for now, choose POSIX, because we implement that.
+       # Later, choose irix threads.
+       THREADS=posix
        ;;
     *-*-solaris*)
        # FIXME: for now, choose POSIX, because we implement that.
