@@ -1,3 +1,13 @@
+Wed Mar 17 20:38:08 1999  Jerry Quinn <jquinn@nortelnetworks.com>
+			  Jeff Law <law@cygnus.com>
+
+        * pa.h (processor_type):  Add PROCESSOR_8000 symbol.
+        (ISSUE_RATE):  Revamp, including PA8000 support.
+        * pa.c (override_options):  Add 8000 as -mschedule= option.
+	Do not call strcmp if pa_cpu_string is null.
+        * pa.md (attr cpu):  Add 8000.
+	* invoke.texi: Add documentation for PA8000 scheduling.
+        
 Wed Mar 17 18:20:24 1999  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.h (TARGET_SWITCHES, TARGET_OPTIONS):

@@ -39,7 +39,8 @@ enum processor_type
   PROCESSOR_700,
   PROCESSOR_7100,
   PROCESSOR_7100LC,
-  PROCESSOR_7200
+  PROCESSOR_7200,
+  PROCESSOR_8000
 };
 
 /* For -mschedule= option.  */
@@ -49,8 +50,15 @@ extern enum processor_type pa_cpu;
 #define pa_cpu_attr ((enum attr_cpu)pa_cpu)
 
 /* The 700 can only issue a single insn at a time.
-   The 7XXX processors can issue two insns at a time.  */
-#define ISSUE_RATE (pa_cpu == PROCESSOR_700 ? 1 : 2)
+   The 7XXX processors can issue two insns at a time.
+   The 8000 can issue 4 insns at a time.  */
+#define ISSUE_RATE \
+  (pa_cpu == PROCESSOR_700 ? 1 \
+   : pa_cpu == PROCESSOR_7100 ? 2 \
+   : pa_cpu == PROCESSOR_7100LC ? 2 \
+   : pa_cpu == PROCESSOR_7200 ? 2 \
+   : pa_cpu == PROCESSOR_8000 ? 4 \
+   : 2)
 
 /* Print subsidiary information on the compiler version in use.  */
 

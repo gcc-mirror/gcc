@@ -43,7 +43,7 @@
 ;;
 ;; FIXME: Add 800 scheduling for completeness?
 
-(define_attr "cpu" "700,7100,7100LC,7200" (const (symbol_ref "pa_cpu_attr")))
+(define_attr "cpu" "700,7100,7100LC,7200,8000" (const (symbol_ref "pa_cpu_attr")))
 
 ;; Length (in # of insns).
 (define_attr "length" ""
@@ -349,6 +349,16 @@
 ;; I don't have detailed information on the PA7200 FP pipeline, so I
 ;; treat it just like the 7100LC pipeline.
 ;; Similarly for the multi-issue fake units.
+
+;; PA8000 scheduling
+;;
+;; HP recommends against latency scheduling on the PA8000.
+;;
+;; For now we do not actually define any scheduling parameters for the PA8000.
+;;
+;; -msched=8000 is mostly so that we can retune the code sequences to improve
+;; performance on the PA8000 class machines.
+;; 
 
 
 ;; Compare instructions.
