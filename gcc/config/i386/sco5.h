@@ -60,7 +60,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_LONG			"\t.long\t"
 
 #undef ASM_QUAD
-#define ASM_QUAD "\t.quad\t"  /* Should not be used for 32bit compilation.  */
+#undef ASM_OUTPUT_DOUBLE_INT
 
 #undef TYPE_ASM_OP
 #define TYPE_ASM_OP			"\t.type\t"
@@ -384,9 +384,6 @@ do {									\
   ASM_OUTPUT_INTERNAL_LABEL((FILE),(PREFIX),(NUM));			\
 } while (0)
 
-#undef TARGET_ASM_CONSTRUCTOR
-#define TARGET_ASM_CONSTRUCTOR sco_asm_out_constructor
-
 #undef ASM_OUTPUT_IDENT
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
   fprintf (FILE, "%s\"%s\"\n", IDENT_ASM_OP, NAME);
@@ -412,11 +409,10 @@ do {									\
  * We rename 'gcc_except_table' to the shorter name in preparation
  * for the day when we're ready to do DWARF2 eh unwinding under COFF.
  */
-#define EXCEPTION_SECTION()		named_section (NULL, ".gccexc", 1)
+/* #define EXCEPTION_SECTION()		named_section (NULL, ".gccexc", 1) */
 
 /* Switch into a generic section.  */
-#undef TARGET_ASM_NAMED_SECTION
-#define TARGET_ASM_NAMED_SECTION  sco_asm_named_section
+#define TARGET_ASM_NAMED_SECTION default_elf_asm_named_section 
 
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE) \
@@ -775,7 +771,6 @@ init_section ()								\
  "%{!shared:-lgcc}"
 
 #define MASK_COFF     		010000000000	/* Mask for elf generation */
-#define TARGET_COFF             (target_flags & MASK_COFF)
 #define TARGET_ELF              (1) /* (!(target_flags & MASK_COFF)) */
 
 #undef SUBTARGET_SWITCHES
