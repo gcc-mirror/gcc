@@ -1852,6 +1852,66 @@ struct lang_decl
 #define TI_SPEC_INFO(NODE) (TREE_CHAIN (NODE))
 #define TI_PENDING_TEMPLATE_FLAG(NODE) TREE_LANG_FLAG_1 (NODE)
 
+/* We use TREE_VECs to hold template arguments.  If there is only one
+   level of template arguments, then the TREE_VEC contains the
+   arguments directly.  If there is more than one level of template
+   arguments, then each entry in the TREE_VEC is itself a TREE_VEC,
+   containing the template arguments for a single level.  The first
+   entry in the outer TREE_VEC is the outermost level of template
+   parameters; the last is the innermost.  
+
+   It is incorrect to ever form a template argument vector containing
+   only one level of arguments, but which is a TREE_VEC containing as
+   its only entry the TREE_VEC for that level.  */
+
+/* Non-zero if the template arguments is actually a vector of vectors,
+   rather than just a vector.  */
+#define TMPL_ARGS_HAVE_MULTIPLE_LEVELS(NODE) \
+  (NODE != NULL_TREE						\
+   && TREE_CODE (NODE) == TREE_VEC				\
+   && TREE_VEC_LENGTH (NODE) > 0				\
+   && TREE_VEC_ELT (NODE, 0) != NULL_TREE			\
+   && TREE_CODE (TREE_VEC_ELT (NODE, 0)) == TREE_VEC)
+
+/* The depth of a template argument vector.  When called directly by
+   the parser, we use a TREE_LIST rather than a TREE_VEC to represent
+   template arguments.  In fact, we may even see NULL_TREE if there
+   are no template arguments.  In both of those cases, there is only
+   one level of template arguments.  */
+#define TMPL_ARGS_DEPTH(NODE)					\
+  (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (NODE) ? TREE_VEC_LENGTH (NODE) : 1)
+
+/* The LEVELth level of the template ARGS.  Note that template
+   parameter levels are indexed from 1, not from 0.  */
+#define TMPL_ARGS_LEVEL(ARGS, LEVEL)		\
+  (TMPL_ARGS_HAVE_MULTIPLE_LEVELS (ARGS) 	\
+   ? TREE_VEC_ELT ((ARGS), (LEVEL) - 1) : ARGS)
+
+/* Set the LEVELth level of the template ARGS to VAL.  This macro does
+   not work with single-level argument vectors.  */
+#define SET_TMPL_ARGS_LEVEL(ARGS, LEVEL, VAL)	\
+  (TREE_VEC_ELT ((ARGS), (LEVEL) - 1) = (VAL))
+
+/* Accesses the IDXth parameter in the LEVELth level of the ARGS.  */
+#define TMPL_ARG(ARGS, LEVEL, IDX)				\
+  (TREE_VEC_ELT (TMPL_ARGS_LEVEL (ARGS, LEVEL), IDX))
+
+/* Set the IDXth element in the LEVELth level of ARGS to VAL.  This
+   macro does not work with single-level argument vectors.  */
+#define SET_TMPL_ARG(ARGS, LEVEL, IDX, VAL)			\
+  (TREE_VEC_ELT (TREE_VEC_ELT ((ARGS), (LEVEL) - 1), (IDX)) = (VAL))
+
+/* Given a single level of template arguments in NODE, return the
+   number of arguments.  */
+#define NUM_TMPL_ARGS(NODE) 				\
+  ((NODE) == NULL_TREE ? 0 				\
+   : (TREE_CODE (NODE) == TREE_VEC 			\
+      ? TREE_VEC_LENGTH (NODE) : list_length (NODE)))
+
+/* The number of levels of template parameters given by NODE.  */
+#define TMPL_PARMS_DEPTH(NODE) \
+  (TREE_INT_CST_HIGH (TREE_PURPOSE (NODE)))
+
 /* The TEMPLATE_DECL instantiated or specialized by NODE.  This
    TEMPLATE_DECL will be the immediate parent, not the most general
    template.  For example, in:

@@ -1,3 +1,20 @@
+1999-09-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (TMPL_ARGS_HAVE_MULTIPLE_LEVELS): Move here from pt.c.
+	(TMPL_ARGS_DEPTH, TMPL_ARGS_LEVEL, SET_TMPL_ARGS_LEVEL): Likewise.
+	(TMPL_ARG, SET_TMPL_ARG, NUM_TMPL_ARGS, TMPL_PARMS_DEPTH): Likewise.
+	* error.c (dump_template_bindings): Remove unused parameter.
+	Handle multiple levels of template parameters.
+	(dump_template_decl): Use `parms', not `args', for template
+	parameters.  Fix thinko.
+	(dump_function_decl): Use DECL_TEMPLATE_INSTANTIATION.  Don't pass
+	flags to dump_template_bindings.
+	* pt.c (TMPL_ARGS_HAVE_MULTIPLE_LEVELS): Move to cp-tree.h.
+	(TMPL_ARGS_DEPTH, TMPL_ARGS_LEVEL, SET_TMPL_ARGS_LEVEL): Likewise.
+	(TMPL_ARG, SET_TMPL_ARG, NUM_TMPL_ARGS, TMPL_PARMS_DEPTH): Likewise.
+	(tsubst_copy): Clarify variable name.
+	(most_general_template): Robustify.
+	
 1999-09-29  Nathan Sidwell  <nathan@acm.org>
 
 	* error.c (dump_template_parms): Don't use TS_PEDANTIC_NAME
