@@ -2376,7 +2376,6 @@ stabilize_reference_1 (e)
      tree e;
 {
   register tree result;
-  register int length;
   register enum tree_code code = TREE_CODE (e);
 
   /* We cannot ignore const expressions because it might be a reference
