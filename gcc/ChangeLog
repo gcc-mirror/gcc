@@ -1,3 +1,7 @@
+Sun Sep  5 10:13:19 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.h (CALLER_SAVE_PROFITABLE): Disable.
+
 Sat Sep  4 13:44:01 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (C_AND_C_OBJS): Add gcc-callbacks.o.

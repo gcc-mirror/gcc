@@ -1086,11 +1086,11 @@ extern struct rtx_def *c4x_function_arg();
   (c4x_function_arg(&CUM, MODE, TYPE, NAMED))
 
 /* Define the profitability of saving registers around calls.
-   NOTE: For now we turn this off because caller-save assumes
-   that a register with a QFmode quantity can be saved/restored
-   using QImode.  */
+   We disable caller save to avoid a bug in flow.c (this also affects
+   other targets such as m68k).  Since we must use stf/sti,
+   the profitability is marginal anyway.  */
 
-/* #define CALLER_SAVE_PROFITABLE(REFS,CALLS) 0 */
+#define CALLER_SAVE_PROFITABLE(REFS,CALLS) 0
 
 /* Never pass data by reference.  */
 
