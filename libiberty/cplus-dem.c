@@ -4393,6 +4393,66 @@ fancy_abort ()
   fatal ("Internal gcc abort.");
 }
 
+
+/* Fill in TABLE so that TABLE[C] is true iff C (as an unsigned char)
+   is a valid symbol component, in the standard assembler symbol
+   syntax.  */
+void
+standard_symbol_alphabet (char *table)
+{
+  int c;
+
+  for (c = 0; c < 256; c++)
+    table[c] = isalnum(c);
+
+  table['_'] = 1;
+  table['$'] = 1;
+  table['.'] = 1;
+}
+
+
+/* Fill in TABLE so that TABLE[C] is true iff C (as an unsigned char)
+   is a valid symbol name component in an HP object file.
+
+   Note that, since HP's compiler generates object code straight from
+   C++ source, without going through an assembler, its mangled
+   identifiers can use all sorts of characters that no assembler would
+   tolerate, so the alphabet this function creates is a little odd.
+   Here are some sample mangled identifiers offered by HP:
+
+	typeid*__XT24AddressIndExpClassMember_
+	[Vftptr]key:__dt__32OrdinaryCompareIndExpClassMemberFv
+	__ct__Q2_9Elf64_Dyn18{unnamed.union.#1}Fv
+
+   This still seems really weird to me, since nowhere else in this
+   file is there anything to recognize curly brackets, parens, etc.
+   I've talked with Srikanth <srikanth@cup.hp.com>, and he assures me
+   this is right, but I still strongly suspect that there's a
+   misunderstanding here.
+
+   If we decide it's better for c++filt to use HP's assembler syntax
+   to scrape identifiers out of its input, here's the definition of
+   the symbol name syntax from the HP assembler manual:
+
+       Symbols are composed of uppercase and lowercase letters, decimal
+       digits, dollar symbol, period (.), ampersand (&), pound sign(#) and
+       underscore (_). A symbol can begin with a letter, digit underscore or
+       dollar sign. If a symbol begins with a digit, it must contain a
+       non-digit character.
+
+   So have fun.  */
+void
+hp_symbol_alphabet (char *table)
+{
+  char *c;
+
+  standard_symbol_alphabet (table);
+
+  for (c = "<>#,*&[]:(){}"; *c; c++)
+    table[(unsigned char) *c] = 1;
+}
+
+
 int
 main (argc, argv)
      int argc;
@@ -4400,6 +4460,7 @@ main (argc, argv)
 {
   char *result;
   int c;
+  char symbol_alphabet[256];
 
   program_name = argv[0];
 
@@ -4466,16 +4527,30 @@ main (argc, argv)
     }
   else
     {
+      switch (current_demangling_style)
+	{
+	case gnu_demangling:
+	case lucid_demangling:
+	case arm_demangling:
+	case edg_demangling:
+	  standard_symbol_alphabet (symbol_alphabet);
+	  break;
+	case hp_demangling:
+	  hp_symbol_alphabet (symbol_alphabet);
+	  break;
+	default:
+	  /* Folks should explicitly indicate the appropriate alphabet for
+	     each demangling.  Providing a default would allow the
+	     question to go unconsidered.  */
+	  abort ();
+	}
+
       for (;;)
 	{
 	  int i = 0;
 	  c = getchar ();
 	  /* Try to read a label.  */
-	  while (c != EOF && (isalnum(c) || c == '_' || c == '$' || c == '.' ||
-                              c == '<' || c == '>' || c == '#' || c == ',' || c == '*' || c == '&' ||
-                              c == '[' || c == ']' || c == ':' || c == '(' || c == ')'))
-                              /* the ones in the 2nd & 3rd lines were added to handle
-                                 HP aCC template specialization manglings */
+	  while (c != EOF && symbol_alphabet[c])
 	    {
 	      if (i >= MBUF_SIZE-1)
 		break;
