@@ -86,6 +86,7 @@ union wait;
 #include <stddef.h>
 
 /* #include "sys/types.h" */
+#define ssize_t int
 
 /* The actual types used here are mostly wrong,
    but it is not supposed to matter what types we use here.  */
