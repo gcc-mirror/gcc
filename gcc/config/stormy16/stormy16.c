@@ -1222,7 +1222,7 @@ xstormy16_expand_builtin_va_arg (valist, type)
   count_plus_size = build (PLUS_EXPR, TREE_TYPE (count), count, size_tree);
   count_plus_size_rtx = expand_expr (count_plus_size, NULL_RTX, HImode, EXPAND_NORMAL);
   emit_cmp_and_jump_insns (count_plus_size_rtx, GEN_INT (size_of_reg_args),
-			   GTU, const1_rtx, HImode, 1, 1, lab_fromstack);
+			   GTU, const1_rtx, HImode, 1, lab_fromstack);
   
   t = build (PLUS_EXPR, ptr_type_node, base, count);
   r = expand_expr (t, addr_rtx, Pmode, EXPAND_NORMAL);
@@ -1241,8 +1241,7 @@ xstormy16_expand_builtin_va_arg (valist, type)
       rtx lab_notransition = gen_label_rtx ();
       emit_cmp_and_jump_insns (count_rtx, GEN_INT (NUM_ARGUMENT_REGISTERS 
 						   * UNITS_PER_WORD),
-			       GEU, const1_rtx, HImode, 1, 1, 
-			       lab_notransition);
+			       GEU, const1_rtx, HImode, 1, lab_notransition);
       
       t = build (MODIFY_EXPR, TREE_TYPE (count), count, 
 		 build_int_2 (NUM_ARGUMENT_REGISTERS * UNITS_PER_WORD, 0));
@@ -1626,7 +1625,7 @@ xstormy16_expand_casesi (index, lower_bound, range, table, default_label)
   index = expand_binop (SImode, sub_optab, index, lower_bound, NULL_RTX, 0,
 			OPTAB_LIB_WIDEN);
   emit_cmp_and_jump_insns (index, range, GTU, NULL_RTX, SImode, 1,
-			   0, default_label);
+			   default_label);
   int_index = gen_lowpart_common (HImode, index);
   emit_insn (gen_ashlhi3 (int_index, int_index, GEN_INT (2)));
   emit_jump_insn (gen_tablejump_pcrel (int_index, table));
