@@ -1,5 +1,10 @@
 2004-10-14  Richard Henderson  <rth@redhat.com>
 
+	PR debug/14492
+	* dwarf2out.c (loc_descriptor_from_tree_1): Handle FIX_*_EXPR.
+
+2004-10-14  Richard Henderson  <rth@redhat.com>
+
 	PR c/17023
 	* c-decl.c (store_parm_decls_oldstyle): Care for parameter type
 	as error_mark_node.
