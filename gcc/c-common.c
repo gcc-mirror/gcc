@@ -1331,14 +1331,14 @@ type_for_size (bits, unsignedp)
      unsigned bits;
      int unsignedp;
 {
+  if (bits == TYPE_PRECISION (integer_type_node))
+    return unsignedp ? unsigned_type_node : integer_type_node;
+
   if (bits == TYPE_PRECISION (signed_char_type_node))
     return unsignedp ? unsigned_char_type_node : signed_char_type_node;
 
   if (bits == TYPE_PRECISION (short_integer_type_node))
     return unsignedp ? short_unsigned_type_node : short_integer_type_node;
-
-  if (bits == TYPE_PRECISION (integer_type_node))
-    return unsignedp ? unsigned_type_node : integer_type_node;
 
   if (bits == TYPE_PRECISION (long_integer_type_node))
     return unsignedp ? long_unsigned_type_node : long_integer_type_node;
@@ -1371,14 +1371,14 @@ type_for_mode (mode, unsignedp)
      enum machine_mode mode;
      int unsignedp;
 {
+  if (mode == TYPE_MODE (integer_type_node))
+    return unsignedp ? unsigned_type_node : integer_type_node;
+
   if (mode == TYPE_MODE (signed_char_type_node))
     return unsignedp ? unsigned_char_type_node : signed_char_type_node;
 
   if (mode == TYPE_MODE (short_integer_type_node))
     return unsignedp ? short_unsigned_type_node : short_integer_type_node;
-
-  if (mode == TYPE_MODE (integer_type_node))
-    return unsignedp ? unsigned_type_node : integer_type_node;
 
   if (mode == TYPE_MODE (long_integer_type_node))
     return unsignedp ? long_unsigned_type_node : long_integer_type_node;
