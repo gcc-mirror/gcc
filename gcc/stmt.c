@@ -2185,6 +2185,7 @@ expand_return (retval)
   if (TREE_CODE (TREE_TYPE (TREE_TYPE (current_function_decl))) == VOID_TYPE)
     {
       expand_expr (retval, NULL_RTX, VOIDmode, 0);
+      emit_queue ();
       expand_null_return ();
       return;
     }
@@ -2476,7 +2477,8 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 
   if (warn_unused)
     for (decl = vars; decl; decl = TREE_CHAIN (decl))
-      if (! TREE_USED (decl) && TREE_CODE (decl) == VAR_DECL)
+      if (! TREE_USED (decl) && TREE_CODE (decl) == VAR_DECL
+	  && ! DECL_IN_SYSTEM_HEADER (decl))
 	warning_with_decl (decl, "unused variable `%s'");
 
   /* Mark the beginning and end of the scope if requested.  */
