@@ -1,3 +1,8 @@
+2000-09-20  Hans-Peter Nilsson  <hp@axis.com>
+
+	* except.c: Delete #if 0:d EXCEPTION_SECTION_ASM_OP-default and
+	users.
+
 2000-09-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (start_function): Robustify.
