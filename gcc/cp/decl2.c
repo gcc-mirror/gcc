@@ -5362,7 +5362,9 @@ handle_class_head (aggr, scope, id)
   tree decl;
 
   if (TREE_CODE (id) == TYPE_DECL)
-    decl = id;
+    /* We must bash typedefs back to the main decl of the type. Otherwise
+       we become confused about scopes.  */
+    decl = TYPE_MAIN_DECL (TREE_TYPE (id));
   else if (DECL_CLASS_TEMPLATE_P (id))
     decl = DECL_TEMPLATE_RESULT (id);
   else 

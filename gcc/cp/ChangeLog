@@ -1,3 +1,8 @@
+2000-06-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl2.c (handle_class_head): Bash typedefs to the type's main
+	decl.
+
 2000-06-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (genrtl_begin_stmt_expr): Rename to ...
