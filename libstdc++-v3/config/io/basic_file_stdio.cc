@@ -33,21 +33,26 @@
 
 #include <bits/basic_file.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <errno.h>
 
+#ifdef _GLIBCXX_HAVE_POLL
+#include <poll.h>
+#endif
+
+// Pick up ioctl on Solaris 2.8
+#ifdef _GLIBCXX_HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+// Pick up FIONREAD on Solaris 2
 #ifdef _GLIBCXX_HAVE_SYS_IOCTL_H
-#define BSD_COMP /* Get FIONREAD on Solaris2. */
+#define BSD_COMP 
 #include <sys/ioctl.h>
 #endif
 
 // Pick up FIONREAD on Solaris 2.5.
 #ifdef _GLIBCXX_HAVE_SYS_FILIO_H
 #include <sys/filio.h>
-#endif
-
-#ifdef _GLIBCXX_HAVE_POLL
-#include <poll.h>
 #endif
 
 #ifdef _GLIBCXX_HAVE_SYS_UIO_H

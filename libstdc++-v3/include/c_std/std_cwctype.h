@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -55,7 +55,9 @@
 // Get rid of those macros defined in <wctype.h> in lieu of real functions.
 #undef iswalnum
 #undef iswalpha
-#undef iswblank
+#if _GLIBCXX_HAVE_ISWBLANK
+# undef iswblank
+#endif 
 #undef iswcntrl
 #undef iswdigit
 #undef iswgraph
@@ -83,7 +85,9 @@ namespace std
 
   using ::iswalnum;
   using ::iswalpha;
+#if _GLIBCXX_HAVE_ISWBLANK
   using ::iswblank;
+#endif 
   using ::iswcntrl;
   using ::iswdigit;
   using ::iswgraph;

@@ -92,11 +92,17 @@ namespace std
 #undef swscanf
 #undef ungetwc
 #undef vfwprintf
-#undef vfwscanf
+#if _GLIBCXX_HAVE_VFWSCANF
+# undef vfwscanf
+#endif 
 #undef vswprintf
-#undef vswscanf
+#if _GLIBCXX_HAVE_VSWSCANF
+# undef vswscanf
+#endif 
 #undef vwprintf
-#undef vwscanf
+#if _GLIBCXX_HAVE_VWSCANF
+# undef vwscanf
+#endif 
 #undef wcrtomb
 #undef wcscat
 #undef wcschr
@@ -115,7 +121,9 @@ namespace std
 #undef wcsspn
 #undef wcsstr
 #undef wcstod
-#undef wcstof
+#if _GLIBCXX_HAVE_WCSTOF
+# undef wcstof
+#endif 
 #undef wcstok
 #undef wcstol
 #undef wcstoul
@@ -154,11 +162,17 @@ namespace std
   using ::swscanf;
   using ::ungetwc;
   using ::vfwprintf;
+#if _GLIBCXX_HAVE_VFWSCANF
   using ::vfwscanf;
+#endif 
   using ::vswprintf;
+#if _GLIBCXX_HAVE_VSWSCANF
   using ::vswscanf;
+#endif 
   using ::vwprintf;
+#if _GLIBCXX_HAVE_VWSCANF
   using ::vwscanf;
+#endif 
   using ::wcrtomb;
   using ::wcscat;
   using ::wcscmp;
@@ -173,7 +187,9 @@ namespace std
   using ::wcsrtombs;
   using ::wcsspn;
   using ::wcstod;
+#if _GLIBCXX_HAVE_WCSTOF
   using ::wcstof;
+#endif 
   using ::wcstok;
   using ::wcstol;
   using ::wcstoul;
