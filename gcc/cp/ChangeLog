@@ -1,3 +1,26 @@
+2002-10-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8006
+	* mangle.c (CLASSTYPE_TEMPLATE_ID_P): Handle instances of template
+	template parameters.
+	(globals): Add entity and need_abi_warning.
+	(decl_is_template_id): Use TYPE_TEMPLATE_INFO, not
+	CLASSTYPE_TEMPLATE_INFO.
+	(is_std_substitution): Use CLASSTYPE_TI_TEMPLATE, not
+	TYPE_TI_TEMPLATE.
+	(write_prefix): Handle typename types correctly.
+	(write_template_prefix): Handle template template parameters
+	correctly.
+	(start_mangling): Add entity parameter.
+	(finish_mangling): Warn about names whose mangling will change.
+	(mangle_decl_string): Adjust.
+	(mangle_type_string): Likewise.
+	(mangle_special_for_type): Likewise.
+	(mangle_ctor_vtbl_for_type): Likewise.
+	(mangle_thunk): Likewise.
+	(mangle_guard_variable): Likewise.
+	(mangle_ref_init_variable): Likewise.
+
 2002-10-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7188.

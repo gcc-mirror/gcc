@@ -1,3 +1,11 @@
+2002-10-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8006
+	* g++.dg/abi/mangle9.C: New test.
+	* g++.dg/abi/mangle10.C: New test.
+	* g++.dg/abi/mangle11.C: New test.
+	* g++.dg/abi/mangle12.C: New test.
+
 2002-10-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/7188.

@@ -1565,6 +1565,21 @@ G++ will place the @code{A} base class of @code{C} at a non-zero offset;
 it should be placed at offset zero.  G++ mistakenly believes that the
 @code{A} data member of @code{B} is already at offset zero.
 
+@item
+Names of template functions whose types involve @code{typename} or
+template template parameters can be mangled incorrectly.
+
+@smallexample
+template <typename Q>
+void f(typename Q::X) @{@}
+
+template <template <typename> class Q>
+void f(typename Q<int>::X) @{@}
+@end smallexample
+
+@noindent
+Instantions of these templates may be mangled incorrectly.
+
 @end itemize
 
 @item -Wctor-dtor-privacy @r{(C++ only)}
