@@ -155,7 +155,7 @@ gfc_handle_module_path_options (const char *arg)
       exit (3);
     }
 
-  gfc_option.module_dir = (char *) gfc_getmem (strlen (arg));
+  gfc_option.module_dir = (char *) gfc_getmem (strlen (arg) + 2);
   strcpy (gfc_option.module_dir, arg);
   strcat (gfc_option.module_dir, "/");
 }
