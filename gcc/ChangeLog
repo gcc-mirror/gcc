@@ -1,3 +1,7 @@
+2003-03-22  Alan Modra  <amodra@bigpond.net.au>
+
+	* combine.c (simplify_comparison <AND>): Use gen_int_mode.  Tidy.
+
 2003-03-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-common.c: Include intl.h.
@@ -414,8 +418,8 @@ Tue Mar 18 13:15:08 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(PROFILE_KERNEL): Remove hacks.
 	* config/rs6000/rs6000.c (TARGET_PROFILE_KERNEL): Define default.
 	(rs6000_stack_info): No need to save lr if just for profiling when
-	TARGET_KERNEL_PROFILE.
-	(output_profile_hook): Output nothing when TARGET_KERNEL_PROFILE.
+	TARGET_PROFILE_KERNEL.
+	(output_profile_hook): Output nothing when TARGET_PROFILE_KERNEL.
 	(output_function_profiler): Localize label generation.  Emit code
 	for kernel profiling.
 
