@@ -1,3 +1,13 @@
+2004-03-06  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float,
+	num_get<>::_M_extract_int, num_get<>::do_get(bool&),
+	__pad<>::_S_pad): Prefer plain operator== to traits::eq().
+	* testsuite/testsuite_character.h (struct __gnu_test::character):
+	Provide operator==.
+	* testsuite/testsuite_hooks.h (struct __gnu_test::pod_char):
+	Likewise.
+
 2004-03-05  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/fpos/14320-2.cc: Remove xfail.
