@@ -4407,7 +4407,7 @@ local_cprop_pass (int alter_jumps)
   rtx libcall_stack[MAX_NESTED_LIBCALLS + 1], *libcall_sp;
   bool changed = false;
 
-  cselib_init ();
+  cselib_init (false);
   libcall_sp = &libcall_stack[MAX_NESTED_LIBCALLS];
   *libcall_sp = 0;
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))

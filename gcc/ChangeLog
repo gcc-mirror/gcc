@@ -1,3 +1,16 @@
+2004-03-04  Jan Hubicka  <jh@suse.cz>
+
+	* cfgcleanup.c (thread_jump): Update call of cselib_init.
+	* cselib.c (cselib_record_memory): New static variable.
+	(cselib_lookup_mem, cselib_record_set, cselib_record_sets):
+	Give up on memories when asked for.
+	(cselib_init): Accept new argument.
+	* cselib.h (cselib_init): Update prototype.
+	* gcse.c (local_cprop_pass): Update call of cselib_init.
+	* loop.c (load_mems): Update call of cselib_init.
+	* postreload.c (reload_cse_regs_1): Update call of cselib_init.
+	* sched-deps.c (sched_analyze): Update call of cselib_init.
+
 2004-03-04  David Edelsohn  <edelsohn@gnu.org>
 	    GP <gp@qnx.com>
 

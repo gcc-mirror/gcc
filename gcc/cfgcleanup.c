@@ -349,7 +349,7 @@ thread_jump (int mode, edge e, basic_block b)
 	return NULL;
       }
 
-  cselib_init ();
+  cselib_init (false);
 
   /* First process all values computed in the source basic block.  */
   for (insn = NEXT_INSN (BB_HEAD (e->src)); insn != NEXT_INSN (BB_END (e->src));
