@@ -1516,8 +1516,12 @@ extern int split_branch_probability;
 extern rtx split_insns (rtx, rtx);
 
 /* In simplify-rtx.c  */
+extern rtx simplify_const_unary_operation (enum rtx_code, enum machine_mode,
+					   rtx, enum machine_mode);
 extern rtx simplify_unary_operation (enum rtx_code, enum machine_mode, rtx,
 				     enum machine_mode);
+extern rtx simplify_const_binary_operation (enum rtx_code, enum machine_mode,
+					    rtx, rtx);
 extern rtx simplify_binary_operation (enum rtx_code, enum machine_mode, rtx,
 				      rtx);
 extern rtx simplify_ternary_operation (enum rtx_code, enum machine_mode,
