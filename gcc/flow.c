@@ -1349,19 +1349,14 @@ split_edge (edge_in)
   n_edges++;
 
   memset (bb, 0, sizeof (*bb));
-  bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (function_obstack);
-  bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (function_obstack);
 
   /* ??? This info is likely going to be out of date very soon.  */
   if (old_succ->global_live_at_start)
     {
+      bb->global_live_at_start = OBSTACK_ALLOC_REG_SET (function_obstack);
+      bb->global_live_at_end = OBSTACK_ALLOC_REG_SET (function_obstack);
       COPY_REG_SET (bb->global_live_at_start, old_succ->global_live_at_start);
       COPY_REG_SET (bb->global_live_at_end, old_succ->global_live_at_start);
-    }
-  else
-    {
-      CLEAR_REG_SET (bb->global_live_at_start);
-      CLEAR_REG_SET (bb->global_live_at_end);
     }
 
   /* Wire them up.  */
