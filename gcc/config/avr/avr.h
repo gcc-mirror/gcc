@@ -44,7 +44,6 @@ Boston, MA 02111-1307, USA.  */
 /* This declaration should be present. */
 extern int target_flags;
 
-#define MASK_RTL_DUMP		0x00000010
 #define MASK_ALL_DEBUG		0x00000FE0
 #define MASK_ORDER_1		0x00001000
 #define MASK_INSN_SIZE_DUMP	0x00002000
@@ -65,11 +64,6 @@ extern int target_flags;
 #define TARGET_TINY_STACK	(target_flags & MASK_TINY_STACK)
 #define TARGET_NO_TABLEJUMP	(target_flags & MASK_NO_TABLEJUMP)
 #define TARGET_SHORT_CALLS	(target_flags & MASK_SHORT_CALLS)
-
-/* Dump each assembler insn's rtl into the output file.
-   This is for debugging the compiler itself.  */
-
-#define TARGET_RTL_DUMP		(target_flags & MASK_RTL_DUMP)
 #define TARGET_ALL_DEBUG	(target_flags & MASK_ALL_DEBUG)
 
 #define TARGET_SWITCHES {						\
@@ -86,7 +80,6 @@ extern int target_flags;
     N_("Do not generate tablejump insns") },				\
   { "short-calls", MASK_SHORT_CALLS,					\
     N_("Use rjmp/rcall (limited range) on >8K devices") },		\
-  { "rtl", MASK_RTL_DUMP, NULL },					\
   { "size", MASK_INSN_SIZE_DUMP,					\
     N_("Output instruction sizes to the asm file") },			\
   { "deb", MASK_ALL_DEBUG, NULL },					\

@@ -1,5 +1,13 @@
 2003-06-26  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/avr/avr.c (final_prescan_insn): Remove support for
+	-mrtl.
+	* config/avr/avr.h (MASK_RTL_DUMP): Remove.
+	(TARGET_RTL_DUMP): Likewise.
+	(TARGET_SWITCHES): Remove -mrtl.
+
+2003-06-26  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300-protos.h: Change emit_a_rotate to
 	output_a_rotate.  Add a prototype for compute_a_rotate_length.
 	* config/h8300/h8300.c (emit_a_rotate): Change to
