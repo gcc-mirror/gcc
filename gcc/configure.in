@@ -1013,7 +1013,8 @@ for machine in $build $host $target; do
 		fi
 		;;
        i[[34567]]86-*-sysv5*)           # Intel x86 on System V Release 5
-               xm_file=i386/xm-sysv4.h
+               xm_file="xm-alloca.h xm-siglist.h ${xm_file}"
+               xm_defines="USG POSIX"
                tm_file=i386/sysv4.h
                if [[ x$stabs = xyes ]]
                then
