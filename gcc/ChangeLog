@@ -1,3 +1,12 @@
+1998-06-02  Mike Stump  <mrs@wrs.com>
+
+	* expr.c (expand_builtin_setjmp): Handle BUILTIN_SETJMP_FRAME_VALUE.
+	* i960.h (SETUP_FRAME_ADDRESSES, BUILTIN_SETJMP_FRAME_VALUE): Define.
+	* i960.md (ret, flush_register_windows): Define.
+	(nonlocal_goto): Likewise.  Nested function nonlocal gotos don't
+	work yet.
+	* tm.texi (BUILTIN_SETJMP_FRAME_VALUE): Document new macro.
+
 Tue Jun  2 14:02:38 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (divsi3, udivsi3, modsi3, umodsi3): Enable, and work
