@@ -906,7 +906,7 @@ OBJS = $(OBJS-common) $(out_object_file) $(OBJS-archive)
 
 OBJS-onestep = libbackend.o $(OBJS-archive)
 
-BACKEND = main.o libbackend.a
+BACKEND = main.o @TREEBROWSER@ libbackend.a
 
 # Files to be copied away after each stage in building.
 STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
@@ -1155,9 +1155,9 @@ $(SPECS): xgcc$(exeext)
 gcc-cross: xgcc$(exeext)
 	cp xgcc$(exeext) gcc-cross$(exeext)
 
-cc1$(exeext): $(C_OBJS) $(BACKEND) $(LIBDEPS) @TREEBROWSER@
+cc1$(exeext): $(C_OBJS) $(BACKEND) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1$(exeext) \
-		$(C_OBJS) @TREEBROWSER@ $(BACKEND) $(LIBS)
+		$(C_OBJS) $(BACKEND) $(LIBS)
 
 # Build the version of limits.h that we will install.
 xlimits.h: glimits.h limitx.h limity.h
