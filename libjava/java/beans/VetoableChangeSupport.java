@@ -1,6 +1,6 @@
 /*
  * java.beans.VetoableChangeSupport: part of the Java Class Libraries project.
- * Copyright (C) 1998 Free Software Foundation
+ * Copyright (C) 1998, 2000 Free Software Foundation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -21,6 +21,11 @@
 package java.beans;
 import java.util.Hashtable;
 import java.util.Vector;
+import java.util.Enumeration;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
 
 /**
  ** VetoableChangeSupport makes it easy to fire vetoable
@@ -33,16 +38,48 @@ import java.util.Vector;
  **/
 
 public class VetoableChangeSupport implements java.io.Serializable {
-	Hashtable propertyListeners = new Hashtable();
-	Vector listeners = new Vector();
-	Object bean;
+	transient Hashtable propertyListeners = new Hashtable();
+	transient Vector listeners = new Vector();
+	Hashtable children;
+	Object source;
+	int vetoableChangeSupportSerializedDataVersion = 2;
+	private static final long serialVersionUID = -5090210921595982017L;
+
+	/**
+	 * Saves the state of the object to the stream. */
+	private void writeObject(ObjectOutputStream stream) throws IOException {
+		children = propertyListeners.isEmpty() ? null : propertyListeners;
+		stream.defaultWriteObject();
+		for (Enumeration e = listeners.elements(); e.hasMoreElements(); ) {
+			VetoableChangeListener l = (VetoableChangeListener)e.nextElement();
+			if (l instanceof Serializable)
+			  stream.writeObject(l);
+		}
+		stream.writeObject(null);
+	}
+
+	/**
+	 * Reads the object back from stream (deserialization).
+	 */
+	private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+		stream.defaultReadObject();
+		propertyListeners = (children == null) ? new Hashtable() : children;
+		VetoableChangeListener l;
+		while ((l = (VetoableChangeListener)stream.readObject()) != null) {
+			addVetoableChangeListener(l);
+		}
+		// FIXME: XXX: There is no spec for JDK 1.1 serialization
+		// so it is unclear what to do if the value of
+		// vetoableChangeSupportSerializedDataVersion is 1.
+	}
+
 
 	/** Create VetoableChangeSupport to work with a specific
 	 ** source bean.
-	 ** @param bean the source bean to use.
+	 ** @param source the source bean to use.
 	 **/
-	public VetoableChangeSupport(Object bean) {
-		this.bean = bean;
+	public VetoableChangeSupport(Object source) {
+		this.source = source;
 	}
 
 	/** Adds a VetoableChangeListener to the list of listeners.
@@ -199,7 +236,7 @@ public class VetoableChangeSupport implements java.io.Serializable {
 	 ** @exception PropertyVetoException if the change is vetoed.
 	 **/
 	public void fireVetoableChange(String propertyName, Object oldVal, Object newVal) throws PropertyVetoException {
-		fireVetoableChange(new PropertyChangeEvent(bean,propertyName,oldVal,newVal));
+		fireVetoableChange(new PropertyChangeEvent(source,propertyName,oldVal,newVal));
 	}
 
 	/** Fire a VetoableChangeEvent containing the old and new values of the property to all the listeners.
@@ -213,7 +250,7 @@ public class VetoableChangeSupport implements java.io.Serializable {
 	 ** @exception PropertyVetoException if the change is vetoed.
 	 **/
 	public void fireVetoableChange(String propertyName, boolean oldVal, boolean newVal) throws PropertyVetoException {
-		fireVetoableChange(new PropertyChangeEvent(bean,propertyName,new Boolean(oldVal),new Boolean(newVal)));
+		fireVetoableChange(new PropertyChangeEvent(source,propertyName,new Boolean(oldVal),new Boolean(newVal)));
 	}
 
 	/** Fire a VetoableChangeEvent containing the old and new values of the property to all the listeners.
@@ -227,7 +264,7 @@ public class VetoableChangeSupport implements java.io.Serializable {
 	 ** @exception PropertyVetoException if the change is vetoed.
 	 **/
 	public void fireVetoableChange(String propertyName, int oldVal, int newVal) throws PropertyVetoException {
-		fireVetoableChange(new PropertyChangeEvent(bean,propertyName,new Integer(oldVal),new Integer(newVal)));
+		fireVetoableChange(new PropertyChangeEvent(source,propertyName,new Integer(oldVal),new Integer(newVal)));
 	}
 
 
