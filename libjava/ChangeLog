@@ -1,3 +1,12 @@
+2004-01-29  Kim Ho  <kho@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkFramePeer.java
+	(gtkLayoutSetVisible): New method
+	(setMenuBar): Hide layout before setting MenuBar
+	and reshow it after.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
+	(gtkLayoutSetVisible): Hide or show the Gtk Layout.
+
 2004-01-28  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/lang/ClassHelper.java

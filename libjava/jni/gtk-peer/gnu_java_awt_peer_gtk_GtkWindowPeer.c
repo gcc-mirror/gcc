@@ -491,7 +491,38 @@ Java_gnu_java_awt_peer_gtk_GtkFramePeer_moveLayout
   gdk_threads_leave ();
 }
   
+JNIEXPORT void JNICALL
+Java_gnu_java_awt_peer_gtk_GtkFramePeer_gtkLayoutSetVisible
+  (JNIEnv *env, jobject obj, jboolean vis)
+{
+  void* ptr;
+  GList* children;
+  GtkBox* vbox;
+  GtkLayout* layout;
 
+  ptr = NSA_GET_PTR (env, obj);
+
+  gdk_threads_enter ();
+
+  children = gtk_container_get_children (GTK_CONTAINER (ptr));
+  vbox = children->data;
+  g_assert (GTK_IS_VBOX (vbox));
+
+  children = gtk_container_get_children (GTK_CONTAINER (vbox));
+  do
+  {
+    layout = children->data;
+    children = children->next;
+  }
+  while (!GTK_IS_LAYOUT (layout) && children != NULL);
+  g_assert (GTK_IS_LAYOUT (layout));  
+  
+  if (vis)
+    gtk_widget_show (GTK_WIDGET (layout));
+  else
+    gtk_widget_hide (GTK_WIDGET (layout));
+  gdk_threads_leave ();
+}
 static void
 window_get_frame_extents (GtkWidget *window,
                           int *top, int *left, int *bottom, int *right)
