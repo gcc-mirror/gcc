@@ -908,7 +908,6 @@ read_name_map (pfile, dirname)
   if (f)
     {
       int ch;
-      int dirlen = strlen (dirname);
 
       while ((ch = getc (f)) != EOF)
 	{
@@ -931,10 +930,7 @@ read_name_map (pfile, dirname)
 	    ptr->map_to = to;
 	  else
 	    {
-	      ptr->map_to = xmalloc (dirlen + strlen (to) + 2);
-	      strcpy (ptr->map_to, dirname);
-	      ptr->map_to[dirlen] = '/';
-	      strcpy (ptr->map_to + dirlen + 1, to);
+	      ptr->map_to = concat (dirname, "/", to, NULL);
 	      free (to);
 	    }
 

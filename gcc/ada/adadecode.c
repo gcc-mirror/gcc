@@ -313,12 +313,7 @@ ada_demangle (coded_name)
      const char *coded_name;
 {
   char ada_name[2048];
-  char *result;
 
   __gnat_decode (coded_name, ada_name, 0);
-
-  result = (char *) xmalloc (strlen (ada_name) + 1);
-  strcpy (result, ada_name);
-
-  return result;
+  return xstrdup (ada_name);
 }
