@@ -71,8 +71,8 @@ struct arg_data
   /* If REG was promoted from the actual mode of the argument expression,
      indicates whether the promotion is sign- or zero-extended.  */
   int unsignedp;
-  /* Number of registers to use.  0 means put the whole arg in registers.
-     Also 0 if not passed in registers.  */
+  /* Number of bytes to put in registers.  0 means put the whole arg
+     in registers.  Also 0 if not passed in registers.  */
   int partial;
   /* Nonzero if argument must be passed on stack.
      Note that some arguments may be passed on the stack
@@ -1473,10 +1473,10 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	  int nregs;
 	  int size = 0;
 	  rtx before_arg = get_last_insn ();
-	  /* Set to non-negative if must move a word at a time, even if just
-	     one word (e.g, partial == 1 && mode == DFmode).  Set to -1 if
-	     we just use a normal move insn.  This value can be zero if the
-	     argument is a zero size structure with no fields.  */
+	  /* Set non-negative if we must move a word at a time, even if
+	     just one word (e.g, partial == 4 && mode == DFmode).  Set
+	     to -1 if we just use a normal move insn.  This value can be
+	     zero if the argument is a zero size structure.  */
 	  nregs = -1;
 	  if (GET_CODE (reg) == PARALLEL)
 	    ;

@@ -1,3 +1,8 @@
+2005-03-30  Alan Modra  <amodra@bigpond.net.au>
+
+	* calls.c (struct arg_data): Update "partial" comment.
+	(load_register_parameters): Update "nregs" comment.
+
 2005-03-30  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/iq2000/iq2000.h (target_flags, MASK_GPOPT, MASK_EMBEDDED_DATA)
