@@ -3970,14 +3970,16 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
 
       /* (neg (mult A B)) becomes (mult (neg A) B).
          This works even for floating-point values.  */
-      if (GET_CODE (XEXP (x, 0)) == MULT)
+      if (GET_CODE (XEXP (x, 0)) == MULT
+	  && !HONOR_SIGN_DEPENDENT_ROUNDING (mode))
 	{
 	  temp = simplify_gen_unary (NEG, mode, XEXP (XEXP (x, 0), 0), mode);
 	  return gen_binary (MULT, mode, temp, XEXP (XEXP (x, 0), 1));
 	}
 
       /* (neg (xor A 1)) is (plus A -1) if A is known to be either 0 or 1.  */
-      if (GET_CODE (XEXP (x, 0)) == XOR && XEXP (XEXP (x, 0), 1) == const1_rtx
+      if (GET_CODE (XEXP (x, 0)) == XOR
+	  && XEXP (XEXP (x, 0), 1) == const1_rtx
 	  && nonzero_bits (XEXP (XEXP (x, 0), 0), mode) == 1)
 	return gen_binary (PLUS, mode, XEXP (XEXP (x, 0), 0), constm1_rtx);
 
