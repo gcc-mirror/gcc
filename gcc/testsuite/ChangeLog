@@ -1,3 +1,7 @@
+2000-10-17  Matthew Hiller  <hiller@redhat.com>
+
+	* gcc.c-torture/execute/20001017-2.c: New test.
+
 2000-10-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.c-torture/compile/20001018-1.c: New test.
