@@ -3265,6 +3265,7 @@ fold_rtx (rtx x, rtx insn)
     case SYMBOL_REF:
     case LABEL_REF:
     case REG:
+    case PC:
       /* No use simplifying an EXPR_LIST
 	 since they are used only for lists of args
 	 in a function call's REG_EQUAL note.  */
@@ -3275,17 +3276,6 @@ fold_rtx (rtx x, rtx insn)
     case CC0:
       return prev_insn_cc0;
 #endif
-
-    case PC:
-      /* If the next insn is a CODE_LABEL followed by a jump table,
-	 PC's value is a LABEL_REF pointing to that label.  That
-	 lets us fold switch statements on the VAX.  */
-      {
-	rtx next;
-	if (insn && tablejump_p (insn, &next, NULL))
-	  return gen_rtx_LABEL_REF (Pmode, next);
-      }
-      break;
 
     case SUBREG:
       /* See if we previously assigned a constant value to this SUBREG.  */

@@ -1,3 +1,7 @@
+2005-01-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cse.c (fold_rtx) <PC>: Don't optimize.
+
 2005-01-28  Jeff Law  <law@redhat.com>
 
 	* fold-const.c (fold, case CEIL_MOD_EXPR): Optimize 0 % X.
