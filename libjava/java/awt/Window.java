@@ -303,7 +303,7 @@ public class Window extends Container
   {
     // FIXME: return array containing all the windows this window currently 
     // owns.
-    return null;
+    return new Window[0];
   }
 
   /**
