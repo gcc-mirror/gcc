@@ -427,6 +427,67 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	  PUSH_PENDING (lookup_label (PC));
 	  INVALIDATE_PC;
 	}
+      /* Check if there are any more pending blocks in the current
+	 subroutine.  Because we push pending blocks in a
+	 last-in-first-out order, and because we don't push anything
+	 from our caller until we are done with this subroutine or
+	 anything nested in it, then we are done if the top of the
+	 pending_blocks stack is not in a subroutine, or it is in our
+	 caller. */
+      if (current_subr 
+	  && PC == INVALID_PC)
+	{
+	  tree caller = LABEL_SUBR_CONTEXT (current_subr);
+
+	  if (pending_blocks == NULL_TREE
+	      || ! LABEL_IN_SUBR (pending_blocks)
+	      || LABEL_SUBR_START (pending_blocks) == caller)
+	    {
+	      int size = DECL_MAX_LOCALS(current_function_decl)+stack_pointer;
+	      tree ret_map = LABEL_RETURN_TYPE_STATE (current_subr);
+	      tmp = LABEL_RETURN_LABELS (current_subr);
+	      
+	      /* FIXME: If we exit a subroutine via a throw, we might
+		 have returned to an earlier caller.  Obviously a
+		 "ret" can only return one level, but a throw may
+		 return many levels.*/
+	      current_subr = caller;
+
+	      if (RETURN_MAP_ADJUSTED (ret_map))
+		{
+		  /* Since we are done with this subroutine , set up
+		     the (so far known) return address as pending -
+		     with the merged type state. */
+		  for ( ; tmp != NULL_TREE;  tmp = TREE_CHAIN (tmp))
+		    {
+		      tree return_label = TREE_VALUE (tmp);
+		      tree return_state = LABEL_TYPE_STATE (return_label);
+		      if (return_state == NULL_TREE)
+			{
+			  /* This means means we had not verified the
+			     subroutine earlier, so this is the first jsr to
+			     call it.  In this case, the type_map of the return
+			     address is just the current type_map - and that
+			     is handled by the following PUSH_PENDING. */
+			}
+		      else
+			{
+			  /* In this case we have to do a merge.  But first
+			     restore the type_map for unused slots to those
+			     that were in effect at the jsr. */
+			  for (index = size;  --index >= 0; )
+			    {
+			      type_map[index] = TREE_VEC_ELT (ret_map, index);
+			      if (type_map[index] == TYPE_UNUSED)
+				type_map[index]
+				  = TREE_VEC_ELT (return_state, index);
+			    }
+			}
+		      PUSH_PENDING (return_label);
+		    }
+		}
+	    }
+	}
       if (PC == INVALID_PC)
 	{
 	  label = pending_blocks;
@@ -448,6 +509,8 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	}
       else if (PC >= length)
 	VERIFICATION_ERROR ("falling through end of method");
+
+      /* fprintf (stderr, "** %d\n", PC); */
 
       oldpc = PC;
 
@@ -1207,67 +1270,6 @@ verify_jvm_instructions (jcf, byte_ops, length)
           error ("unknown opcode %d@pc=%d during verification", op_code, PC-1);
           return 0;
         }
-
-	      /* Check if there are any more pending blocks in this subroutine.
-		 Because we push pending blocks in a last-in-first-out order,
-		 and because we don't push anything from our caller until we
-		 are done with this subroutine or anything nested in it,
-		 then we are done if the top of the pending_blocks stack is
-		 not in a subroutine, or it is in our caller. */
-      if (current_subr 
-	  && PC == INVALID_PC)
-	{
-	  tree caller = LABEL_SUBR_CONTEXT (current_subr);
-
-	      if (pending_blocks == NULL_TREE
-		  || ! LABEL_IN_SUBR (pending_blocks)
-		  || LABEL_SUBR_START (pending_blocks) == caller)
-		{
-	      int size = DECL_MAX_LOCALS(current_function_decl)+stack_pointer;
-	      tree ret_map = LABEL_RETURN_TYPE_STATE (current_subr);
-	      tmp = LABEL_RETURN_LABELS (current_subr);
-	      
-	      /* FIXME: If we exit a subroutine via a throw, we might
-		 have returned to an earlier caller.  Obviously a
-		 "ret" can only return one level, but a throw may
-		 return many levels.*/
-	      current_subr = caller;
-
-	      if (RETURN_MAP_ADJUSTED (ret_map))
-		{
-		  /* Since we are done with this subroutine , set up
-		     the (so far known) return address as pending -
-		     with the merged type state. */
-		  for ( ; tmp != NULL_TREE;  tmp = TREE_CHAIN (tmp))
-		    {
-		      tree return_label = TREE_VALUE (tmp);
-		      tree return_state = LABEL_TYPE_STATE (return_label);
-		      if (return_state == NULL_TREE)
-			{
-			  /* This means means we had not verified the
-			     subroutine earlier, so this is the first jsr to
-			     call it.  In this case, the type_map of the return
-			     address is just the current type_map - and that
-			     is handled by the following PUSH_PENDING. */
-			}
-		      else
-			{
-			  /* In this case we have to do a merge.  But first
-			     restore the type_map for unused slots to those
-			     that were in effect at the jsr. */
-			  for (index = size;  --index >= 0; )
-			    {
-			      type_map[index] = TREE_VEC_ELT (ret_map, index);
-			      if (type_map[index] == TYPE_UNUSED)
-				type_map[index]
-				  = TREE_VEC_ELT (return_state, index);
-			    }
-			}
-		      PUSH_PENDING (return_label);
-		    }
-		}
-	    }
-	}
 
       prevpc = oldpc;
 
