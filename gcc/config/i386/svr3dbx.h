@@ -48,13 +48,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef ASM_OUTPUT_ALIGN_CODE
 #define ASM_OUTPUT_ALIGN_CODE(FILE)			\
      fprintf ((FILE), "\t.align %d,0x90\n",		\
-	      TARGET_486 ? 16 : 4);  /* Use log of 16 or log of 4 as arg.  */
+	      1 << i386_align_jumps)
 
 /* Align start of loop at 4-byte boundary.  */
 
 #undef ASM_OUTPUT_LOOP_ALIGN
 #define ASM_OUTPUT_LOOP_ALIGN(FILE) \
-     fprintf ((FILE), "\t.align 4,0x90\n");
+     fprintf ((FILE), "\t.align %d,0x90\n", 1 << i386_align_loops);
 
 
 /* Additional overrides needed for dbx-in-coff gas, mostly taken from pbb.h */

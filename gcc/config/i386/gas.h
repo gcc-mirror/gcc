@@ -82,15 +82,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    For the 486, align to 16-byte boundary for sake of cache.  */
 
 #undef ASM_OUTPUT_ALIGN_CODE
-#define ASM_OUTPUT_ALIGN_CODE(FILE)			\
-     fprintf ((FILE), "\t.align %d,0x90\n",		\
-	      TARGET_486 ? 4 : 2);  /* Use log of 16 or log of 4 as arg.  */
+#define ASM_OUTPUT_ALIGN_CODE(FILE) \
+  fprintf ((FILE), "\t.align %d,0x90\n", 1 << i386_align_jumps)
 
 /* Align start of loop at 4-byte boundary.  */
 
 #undef ASM_OUTPUT_LOOP_ALIGN
 #define ASM_OUTPUT_LOOP_ALIGN(FILE) \
-     fprintf ((FILE), "\t.align 2,0x90\n");  /* Use log of 4 as arg.  */
+  fprintf ((FILE), "\t.align %d,0x90\n", 1 << i386_align_loops)
+
 
 /* A C statement or statements which output an assembler instruction
    opcode to the stdio stream STREAM.  The macro-operand PTR is a

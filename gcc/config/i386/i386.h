@@ -66,9 +66,9 @@ extern int target_flags;
 /* Masks for the -m switches */
 #define MASK_80387		000000000001	/* Hardware floating point */
 #define MASK_486		000000000002	/* 80486 specific */
-#define MASK_NOTUSED		000000000004	/* bit not currently used */
+#define MASK_NOTUSED1		000000000004	/* bit not currently used */
 #define MASK_RTD		000000000010	/* Use ret that pops args */
-#define MASK_REGPARM		000000000020	/* Pass args in eax, edx */
+#define MASK_ALIGN_DOUBLE	000000000020	/* align doubles to 2 word boundary */
 #define MASK_SVR3_SHLIB		000000000040	/* Uninit locals into bss */
 #define MASK_IEEE_FP		000000000100	/* IEEE fp comparisons */
 #define MASK_FLOAT_RETURNS	000000000200	/* Return float in st(0) */
@@ -78,6 +78,7 @@ extern int target_flags;
 #define MASK_DEBUG_ADDR		000001000000	/* Debug GO_IF_LEGITIMATE_ADDRESS */
 #define MASK_NO_WIDE_MULTIPLY	000002000000	/* Disable 32x32->64 multiplies */
 #define MASK_NO_MOVE		000004000000	/* Don't generate mem->mem */
+#define MASK_DEBUG_ARG		000010000000	/* Debug function_arg */   
 
 /* Use the floating point instructions */
 #define TARGET_80387 (target_flags & MASK_80387)
@@ -87,11 +88,10 @@ extern int target_flags;
    for all functions that can take varying numbers of args.  */  
 #define TARGET_RTD (target_flags & MASK_RTD)
 
-/* Compile passing first two args in regs 0 and 1.
-   This exists only to test compiler features that will
-   be needed for RISC chips.  It is not usable
-   and is not intended to be usable on this cpu.  */
-#define TARGET_REGPARM (target_flags & MASK_RTD)
+/* Align doubles to a two word boundary.  This breaks compatibility with
+   the published ABI's for structures containing doubles, but produces
+   faster code on the pentium.  */
+#define TARGET_ALIGN_DOUBLE (target_flags & MASK_ALIGN_DOUBLE)
 
 /* Put uninitialized locals into bss, not data.
    Meaningful only on svr3.  */
@@ -121,6 +121,9 @@ extern int target_flags;
 /* Debug GO_IF_LEGITIMATE_ADDRESS */
 #define TARGET_DEBUG_ADDR (target_flags & MASK_DEBUG_ADDR)
 
+/* Debug FUNCTION_ARG macros */
+#define TARGET_DEBUG_ARG (target_flags & MASK_DEBUG_ARG)
+
 /* Hack macros for tuning code generation */
 #define TARGET_MOVE	((target_flags & MASK_NO_MOVE) == 0)	/* Don't generate memory->memory */
 
@@ -140,8 +143,8 @@ extern int target_flags;
   { "no-486",			-MASK_486 },				\
   { "rtd",			 MASK_RTD },				\
   { "no-rtd",			-MASK_RTD },				\
-  { "regparm",			 MASK_REGPARM },			\
-  { "no-regparm",		-MASK_REGPARM },			\
+  { "align-double",		 MASK_ALIGN_DOUBLE },			\
+  { "no-align-double",		-MASK_ALIGN_DOUBLE },			\
   { "svr3-shlib",		 MASK_SVR3_SHLIB },			\
   { "no-svr3-shlib",		-MASK_SVR3_SHLIB },			\
   { "ieee-fp",			 MASK_IEEE_FP },			\
@@ -156,6 +159,8 @@ extern int target_flags;
   { "no-debug-addr",		-MASK_DEBUG_ADDR },			\
   { "move",			-MASK_NO_MOVE },			\
   { "no-move",			 MASK_NO_MOVE },			\
+  { "debug-arg",		 MASK_DEBUG_ARG },			\
+  { "no-debug-arg",		-MASK_DEBUG_ARG },			\
   SUBTARGET_SWITCHES							\
   { "", TARGET_DEFAULT | TARGET_CPU_DEFAULT}}
 
@@ -169,8 +174,13 @@ extern int target_flags;
    option if the fixed part matches.  The actual option name is made
    by appending `-m' to the specified name.  */
 #define TARGET_OPTIONS							\
-{ { "reg-alloc=", &i386_reg_alloc_order },				\
-  SUBTARGET_OPTIONS }
+{ { "reg-alloc=",	&i386_reg_alloc_order },			\
+  { "regparm=",		&i386_regparm_string },				\
+  { "align-loops=",	&i386_align_loops_string },			\
+  { "align-jumps=",	&i386_align_jumps_string },			\
+  { "align-functions=",	&i386_align_funcs_string },			\
+  SUBTARGET_OPTIONS							\
+}
 
 /* Sometimes certain combinations of command options do not make
    sense on a particular target machine.  You can define a macro
@@ -238,7 +248,7 @@ extern int target_flags;
 /* Allocation boundary (in *bits*) for the code of a function.
    For i486, we get better performance by aligning to a cache
    line (i.e. 16 byte) boundary.  */
-#define FUNCTION_BOUNDARY (TARGET_486 ? 128 : 32)
+#define FUNCTION_BOUNDARY (1 << (i386_align_funcs + 3))
 
 /* Alignment of field after `int : 0' in a structure. */
 
@@ -248,8 +258,11 @@ extern int target_flags;
    and all fundamental data types supported by the hardware
    might need to be aligned. No data type wants to be aligned
    rounder than this.  The i386 supports 64-bit floating point
-   quantities, but these can be aligned on any 32-bit boundary.  */
-#define BIGGEST_ALIGNMENT 32
+   quantities, but these can be aligned on any 32-bit boundary.
+   The published ABIs say that doubles should be aligned on word
+   boundaries, but the Pentium gets better performance with them
+   aligned on 64 bit boundaries. */
+#define BIGGEST_ALIGNMENT (TARGET_ALIGN_DOUBLE ? 64 : 32)
 
 /* Set this non-zero if move instructions will actually fail to work
    when given unaligned data.  */
@@ -260,15 +273,17 @@ extern int target_flags;
 /* Required on the 386 since it doesn't have bitfield insns.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
+/* Maximum power of 2 that code can be aligned to.  */
+#define MAX_CODE_ALIGN	6			/* 64 byte alignment */
+
 /* Align loop starts for optimal branching.  */
-#define ASM_OUTPUT_LOOP_ALIGN(FILE) \
-  ASM_OUTPUT_ALIGN (FILE, 2)
+#define ASM_OUTPUT_LOOP_ALIGN(FILE) ASM_OUTPUT_ALIGN (FILE, i386_align_loops)
 
 /* This is how to align an instruction for optimal branching.
    On i486 we'll get better performance by aligning on a
    cache line (i.e. 16 byte) boundary.  */
-#define ASM_OUTPUT_ALIGN_CODE(FILE)	\
-  ASM_OUTPUT_ALIGN ((FILE), (TARGET_486 ? 4 : 2))
+#define ASM_OUTPUT_ALIGN_CODE(FILE) ASM_OUTPUT_ALIGN ((FILE), i386_align_jumps)
+
 
 /* Standard register usage.  */
 
@@ -762,15 +777,12 @@ enum reg_class
      because the library is compiled with the Unix compiler.
    Use of RTD is a selectable option, since it is incompatible with
    standard Unix calling sequences.  If the option is not selected,
-   the caller must always pop the args.  */
+   the caller must always pop the args.
 
-#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE)   \
-  (TREE_CODE (FUNTYPE) == IDENTIFIER_NODE ? 0			\
-   : (TARGET_RTD						\
-      && (TYPE_ARG_TYPES (FUNTYPE) == 0				\
-	  || (TREE_VALUE (tree_last (TYPE_ARG_TYPES (FUNTYPE)))	\
-	      == void_type_node))) ? (SIZE)			\
-   : (aggregate_value_p (TREE_TYPE (FUNTYPE))) ? GET_MODE_SIZE (Pmode) : 0)
+   The attribute stdcall is equivalent to RTD on a per module basis.  */
+
+#define RETURN_POPS_ARGS(FUNDECL,FUNTYPE,SIZE) \
+  (i386_return_pops_args (FUNDECL, FUNTYPE, SIZE))
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
@@ -792,41 +804,34 @@ enum reg_class
 
 #define APPLY_RESULT_SIZE (8+108)
 
-/* 1 if N is a possible register number for function argument passing.
-   On the 80386, no registers are used in this way.
-      *NOTE* -mregparm does not work.
-   It exists only to test register calling conventions.  */
-
-#define FUNCTION_ARG_REGNO_P(N) 0
+/* 1 if N is a possible register number for function argument passing.  */
+#define FUNCTION_ARG_REGNO_P(N) ((N) >= 0 && (N) < REGPARM_MAX)
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
    hold all necessary information about the function itself
    and about the args processed so far, enough to enable macros
-   such as FUNCTION_ARG to determine where the next arg should go.
+   such as FUNCTION_ARG to determine where the next arg should go.  */
 
-   On the 80386, this is a single integer, which is a number of bytes
-   of arguments scanned so far.  */
-
-#define CUMULATIVE_ARGS int
+typedef struct i386_args {
+  int words;			/* # words passed so far */
+  int nregs;			/* # registers available for passing */
+  int regno;			/* next available register number */
+} CUMULATIVE_ARGS;
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
-   For a library call, FNTYPE is 0.
-
-   On the 80386, the offset starts at 0.  */
+   For a library call, FNTYPE is 0.  */
 
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME)	\
- ((CUM) = 0)
+  (init_cumulative_args (&CUM, FNTYPE, LIBNAME))
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
    (TYPE is null for libcalls where that information may not be available.)  */
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
- ((CUM) += ((MODE) != BLKmode			\
-	    ? (GET_MODE_SIZE (MODE) + 3) & ~3	\
-	    : (int_size_in_bytes (TYPE) + 3) & ~3))
+  (function_arg_advance (&CUM, MODE, TYPE, NAMED))
 
 /* Define where to put the arguments to a function.
    Value is zero to push the argument on the stack,
@@ -841,26 +846,15 @@ enum reg_class
    NAMED is nonzero if this argument is a named parameter
     (otherwise it is an extra parameter matching an ellipsis).  */
 
-
-/* On the 80386 all args are pushed, except if -mregparm is specified
-   then the first two words of arguments are passed in EAX, EDX.
-   *NOTE* -mregparm does not work.
-   It exists only to test register calling conventions.  */
-
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-((TARGET_REGPARM && (CUM) < 8) ? gen_rtx (REG, (MODE), (CUM) / 4) : 0)
+  (function_arg (&CUM, MODE, TYPE, NAMED))
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
    For args passed entirely in registers or entirely in memory, zero.  */
 
-
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) \
-((TARGET_REGPARM && (CUM) < 8					\
-  && 8 < ((CUM) + ((MODE) == BLKmode				\
-		      ? int_size_in_bytes (TYPE)		\
-		      : GET_MODE_SIZE (MODE))))  		\
- ? 2 - (CUM) / 4 : 0)
+  (function_arg_partial_nregs (&CUM, MODE, TYPE, NAMED))
 
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.
@@ -1314,6 +1308,41 @@ do									\
 while (0)
 
 
+/* If defined, a C expression whose value is nonzero if IDENTIFIER
+   with arguments ARGS is a valid machine specific attribute for DECL.
+   The attributes in ATTRIBUTES have previously been assigned to DECL.  */
+
+#define VALID_MACHINE_DECL_ATTRIBUTE(DECL, ATTRTRIBUTES, NAME, ARGS) \
+  (i386_valid_decl_attribute_p (DECL, ATTRTRIBUTES, NAME, ARGS))
+
+/* If defined, a C expression whose value is nonzero if IDENTIFIER
+   with arguments ARGS is a valid machine specific attribute for TYPE.
+   The attributes in ATTRIBUTES have previously been assigned to TYPE.  */
+
+#define VALID_MACHINE_TYPE_ATTRIBUTE(TYPE, ATTRTRIBUTES, NAME, ARGS) \
+  (i386_valid_type_attribute_p (TYPE, ATTRTRIBUTES, NAME, ARGS))
+
+/* If defined, a C expression whose value is zero if the attributes on
+   TYPE1 and TYPE2 are incompatible, one if they are compatible, and
+   two if they are nearly compatible (which causes a warning to be
+   generated).  */
+
+#define COMP_TYPE_ATTRIBUTES(TYPE1, TYPE2) \
+  (i386_comp_type_attributes (TYPE1, TYPE2))
+
+/* If defined, a C statement that assigns default attributes to newly
+   defined TYPE.  */
+
+/* #define SET_DEFAULT_TYPE_ATTRIBUTES (TYPE) */
+
+/* Max number of args passed in registers.  If this is more than 3, we will
+   have problems with ebx (register #4), since it is a caller save register and
+   is also used as the pic register in ELF.  So for now, don't allow more than
+   3 registers to be passed in registers.  */
+
+#define REGPARM_MAX 3
+
+
 /* Specify the machine mode that this machine uses
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE Pmode
@@ -1384,7 +1413,8 @@ while (0)
 /* Define this if addresses of constant functions
    shouldn't be put through pseudo regs where they can be cse'd.
    Desirable on the 386 because a CALL with a constant address is
-   not much slower than one with a register address.  */
+   not much slower than one with a register address.  On a 486,
+   it is faster to call with a constant address than indirect.  */
 #define NO_FUNCTION_CSE
 
 /* Provide the costs of a rtl expression.  This is in the body of a
@@ -1828,6 +1858,14 @@ extern char *qi_high_reg_name[];
 /* Functions in i386.c */
 extern void override_options ();
 extern void order_regs_for_local_alloc ();
+extern int i386_valid_decl_attribute_p ();
+extern int i386_valid_type_attribute_p ();
+extern int i386_return_pops_args ();
+extern int i386_comp_type_attributes ();
+extern void init_cumulative_args ();
+extern void function_arg_advance ();
+extern struct rtx_def *function_arg ();
+extern int function_arg_partial_nregs ();
 extern void output_op_from_reg ();
 extern void output_to_reg ();
 extern char *singlemove_string ();
@@ -1865,6 +1903,14 @@ extern struct rtx_def *assign_386_stack_local ();
 
 /* Variables in i386.c */
 extern char *i386_reg_alloc_order;		/* register allocation order */
+extern char *i386_regparm_string;		/* # registers to use to pass args */
+extern char *i386_align_loops_string;		/* power of two alignment for loops */
+extern char *i386_align_jumps_string;		/* power of two alignment for non-loop jumps */
+extern char *i386_align_funcs_string;		/* power of two alignment for functions */
+extern int i386_regparm;			/* i386_regparm_string as a number */
+extern int i386_align_loops;			/* power of two alignment for loops */
+extern int i386_align_jumps;			/* power of two alignment for non-loop jumps */
+extern int i386_align_funcs;			/* power of two alignment for functions */
 extern char *hi_reg_name[];			/* names for 16 bit regs */
 extern char *qi_reg_name[];			/* names for 8 bit regs (low) */
 extern char *qi_high_reg_name[];		/* names for 8 bit regs (high) */
