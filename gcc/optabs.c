@@ -4682,6 +4682,7 @@ init_optabs ()
   cbranch_optab = init_optab (UNKNOWN);
   cmov_optab = init_optab (UNKNOWN);
   cstore_optab = init_optab (UNKNOWN);
+  push_optab = init_optab (UNKNOWN);
 
   for (i = 0; i < NUM_MACHINE_MODES; i++)
     {

@@ -998,6 +998,9 @@ set_noop_p (set)
   if (GET_CODE (dst) == MEM && GET_CODE (src) == MEM)
     return rtx_equal_p (dst, src);
 
+  if (dst == pc_rtx && src == pc_rtx)
+    return 1;
+
   if (GET_CODE (dst) == SIGN_EXTRACT
       || GET_CODE (dst) == ZERO_EXTRACT)
     return rtx_equal_p (XEXP (dst, 0), src)
