@@ -1,3 +1,14 @@
+Thu Sep 24 18:48:43 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload.c (find_reloads): In code to promote RELOAD_FOR_X_ADDR_ADDR
+	reloads to RELOAD_FOR_X_ADDRESS reloads, test for reload sharing.
+
+	Properly keep track of first RELOAD_FOR_X_ADDRESS also for
+	more than 3 such reloads.
+
+	If there is not more than one RELOAD_FOR_X_ADDRESS, don't change
+	RELOAD_FOR_X_ADDR_ADDR reload.
+
 Thu Sep 24 17:45:55 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* expr.c (store_constructor): When initializing a field that is smaller
