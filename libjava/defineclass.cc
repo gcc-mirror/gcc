@@ -23,6 +23,7 @@ details.  */
 #include <java-interp.h>
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <java-cpool.h>
 #include <gcj/cni.h>
 
