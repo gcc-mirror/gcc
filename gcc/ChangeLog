@@ -1,3 +1,20 @@
+Mon Sep 22 11:21:33 1997  J. Kean Johnston  <jkj@sco.com>
+
+	* i386/sco5.h: Make ELF default file format and add -mcoff/-melf..
+	(MULTILIB_DEFAULTS): Define.
+	(ASM_SPEC, CPP_SPEC): Handle -mcoff.
+	(STARTFILE_SPEC, ENDFILE_SPEC, LINK_SPEC): Likewise.
+	(LIBGCC_SPEC): Likewise.
+	(MASK_COFF, TARGET_COFF, TARGET_ELF): Define.
+	(SUBTARGET_SWITCHES): Add -mcoff and -melf.
+	* i386/t-sco5 (CRTSTUFF_T_CFLAGS): Add -fPIC.
+	(CRTSTUFF_T_CFLAGS_S): Tweak for COFF.
+	(EXTRA_PARTS, TAROUTOPTS): Delete.
+	(libgcc1-elf, libgcc2-elf, libgcc-elf targets): Delete.
+	(MULTILIB_OPTIONS): Define.
+	(MULTILIB_DIRNAMES, MULTILIB_EXCEPTIONS): Likewise.
+	(MULTILIB_MATCHE, MULTILIB_EXTRA_OPTS): Likewise.
+
 Mon Sep 22 02:10:43 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
