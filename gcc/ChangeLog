@@ -1,3 +1,10 @@
+2004-12-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19148
+	* gimplify.c (gimplify_cond_expr): Add post_p parameter.
+	(gimplify_modify_expr_rhs): Adjust call to gimplify_cond_expr.
+	(gimplify_expr): Likewise.
+
 2004-12-27  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.h (UNITS_PER_SIMD_WORD): Don't use MMX/3DNOW.
