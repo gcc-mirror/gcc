@@ -39,6 +39,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Same as sparc.h */
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
 
+/* We use stabs-in-elf for debugging, as dwarf for C++ doesn't win yet.  */
+#define DBX_DEBUGGING_INFO
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 #define DBX_BLOCKS_FUNCTION_RELATIVE 1
