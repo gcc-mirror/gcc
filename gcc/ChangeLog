@@ -1,3 +1,7 @@
+Mon May 17 02:56:35 PDT 1999 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sat Oct 31 05:08:34 CET 1998 Jan Hubicka  (hubicka@freesoft.cz)
 
 	* reg-stack.c: Do not emit pop insns after cc0 setter.
