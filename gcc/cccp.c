@@ -4554,7 +4554,9 @@ get_filename:
 	 since it would put extra spaces in include file names.  */
       U_CHAR *src;
       int errors_before_expansion = errors;
-      FILE_BUF trybuf = expand_to_temp_buffer (buf, limit, 1, 0);
+      FILE_BUF trybuf;
+
+      trybuf = expand_to_temp_buffer (buf, limit, 1, 0);
       if (errors != errors_before_expansion) {
 	free (trybuf.buf);
 	goto invalid_include_file_name;

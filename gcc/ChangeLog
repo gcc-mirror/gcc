@@ -1,5 +1,7 @@
 Sun Nov 28 00:48:15 1999  Philippe De Muyter  <phdm@macqel.be>
 
+	* cccp.c (do_include): Avoid initialization of automatic variable.
+
 	* integrate.c (mark_stores): Function definition made void, to match
 	previous declaration.
 	* regclass.c (dump_regclass): Ditto.
