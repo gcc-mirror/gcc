@@ -1,5 +1,8 @@
 /* Configuration for an i386 running MS-DOS with djgpp/go32.  */
 
+/* Don't assume anything about the header files. */
+#define NO_IMPLICIT_EXTERN_C
+
 #define YES_UNDERSCORES
 
 #include "i386/gas.h"
