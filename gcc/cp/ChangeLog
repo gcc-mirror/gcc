@@ -1,3 +1,8 @@
+2001-12-21  Jason Merrill  <jason@redhat.com>
+
+	* class.c (update_vtable_entry_for_fn): Set delta to zero for a
+	lost primary.
+
 2001-12-18  Jason Merrill  <jason@redhat.com>
 
 	* class.c (add_method): Do compare 'this' quals when trying to match a

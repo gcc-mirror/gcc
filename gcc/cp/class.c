@@ -2801,6 +2801,7 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
   tree delta;
   tree virtual_base;
   tree first_defn;
+  bool lost = false;
 
   /* Find the nearest primary base (possibly binfo itself) which defines
      this function; this is the class the caller will convert to when
@@ -2809,6 +2810,10 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
     {
       if (look_for_overrides_here (BINFO_TYPE (b), fn))
 	break;
+
+      /* The nearest definition is from a lost primary.  */
+      if (BINFO_LOST_PRIMARY_P (b))
+	lost = true;
     }
   first_defn = b;
 
@@ -2821,10 +2826,9 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
      the final overrider, and not to an intermediate virtual base.  */
   virtual_base = NULL_TREE;
 
-  /* Under the new ABI, we will convert to an intermediate virtual
-     base first, and then use the vcall offset located there to finish
-     the conversion.  */
-  while (b)
+  /* See if we can convert to an intermediate virtual base first, and then
+     use the vcall offset located there to finish the conversion.  */
+  for (; b; b = BINFO_INHERITANCE_CHAIN (b))
     {
       /* If we find the final overrider, then we can stop
 	 walking.  */
@@ -2837,8 +2841,6 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
 	 declaring base (first_defn) and the final overrider.  */
       if (!virtual_base && TREE_VIA_VIRTUAL (b))
 	virtual_base = b;
-
-      b = BINFO_INHERITANCE_CHAIN (b);
     }
 
   /* Compute the constant adjustment to the `this' pointer.  The
@@ -2850,6 +2852,12 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
        the nearest virtual base.  */
     delta = size_diffop (BINFO_OFFSET (virtual_base),
 			 BINFO_OFFSET (first_defn));
+  else if (lost)
+    /* If the nearest definition is in a lost primary, we don't need an
+       entry in our vtable.  Except possibly in a constructor vtable,
+       if we happen to get our primary back.  In that case, the offset
+       will be zero, as it will be a primary base.  */
+    delta = size_zero_node;
   else
     {
       /* The `this' pointer needs to be adjusted from pointing to
