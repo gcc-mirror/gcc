@@ -1,3 +1,9 @@
+2000-04-04  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (awt_java_source_files): Added AWTException.java.
+	* java/awt/AWTException.java: New file.
+
 2000-04-03  Tom Tromey  <tromey@cygnus.com>
 
 	* include/jvm.h (_Jv_GetArrayElementFromElementType): More

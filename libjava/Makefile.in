@@ -284,6 +284,7 @@ special_java_source_files = java/lang/Class.java java/lang/Object.java
 
 awt_java_source_files = \
 java/awt/AWTEvent.java \
+java/awt/AWTException.java \
 java/awt/BorderLayout.java \
 java/awt/Component.java \
 java/awt/Color.java \
