@@ -58,7 +58,6 @@ case "${target}" in
   *-linux-gnulibc1)
 		 frags=linuxlibc1.mt ;;
   *-linux-gnu*)  frags="linux.mt mtsafe.mt" ;;
-  *-sco3.2v[45]*)   frags=sco4.mt ;;
   *-isc*)        frags=isc.mt ;;
   *-netware*)    frags=netware.mt ;;
   *-dgux*)	 frags=dgux.mt ;;

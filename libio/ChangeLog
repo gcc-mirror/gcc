@@ -1,3 +1,9 @@
+
+2000-05-11  Robert Lipe <robertlipe@usa.net>
+
+	* configure.in: Remove special casing for sco3.2v[45].
+	* config/sco4.mt: Deleted.
+
 2000-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.in: Use mh-sparcpic for sparc*-*-*.
