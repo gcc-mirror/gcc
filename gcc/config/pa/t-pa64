@@ -1,6 +1,5 @@
 TARGET_LIBGCC2_CFLAGS = -fPIC -Dpa64=1 -DELF=1
 
-T_ADAFLAGS=-mdisable-indexing
 LIB2FUNCS_EXTRA=quadlib.c
 
 # We'll need this once .init sections are enabled on PA64.

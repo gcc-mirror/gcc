@@ -1,5 +1,3 @@
-T_ADAFLAGS=-mdisable-indexing
-
 LIB2FUNCS_EXTRA=lib2funcs.asm 
 
 # We want fine grained libraries, so use the new code to build the
