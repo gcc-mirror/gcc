@@ -85,7 +85,7 @@ print_mem_expr (outfile, expr)
   if (TREE_CODE (expr) == COMPONENT_REF)
     {
       if (TREE_OPERAND (expr, 0))
-        print_mem_expr (outfile, TREE_OPERAND (expr, 0));
+	print_mem_expr (outfile, TREE_OPERAND (expr, 0));
       else
 	fputs (" <variable>", outfile);
       fprintf (outfile, ".%s",
@@ -151,7 +151,7 @@ print_rtx (in_rtx)
 	fputc ('(', outfile);
       else
 	fprintf (outfile, "(%s", GET_RTX_NAME (GET_CODE (in_rtx)));
-      
+
       if (! flag_simple)
 	{
 	  if (RTX_FLAG (in_rtx, in_struct))
@@ -159,26 +159,26 @@ print_rtx (in_rtx)
 
 	  if (RTX_FLAG (in_rtx, volatil))
 	    fputs ("/v", outfile);
-	  
+
 	  if (RTX_FLAG (in_rtx, unchanging))
 	    fputs ("/u", outfile);
-	  
+
 	  if (RTX_FLAG (in_rtx, integrated))
 	    fputs ("/i", outfile);
-	  
+
 	  if (RTX_FLAG (in_rtx, frame_related))
 	    fputs ("/f", outfile);
-	  
+
 	  if (RTX_FLAG (in_rtx, jump))
 	    fputs ("/j", outfile);
-	  
+
 	  if (RTX_FLAG (in_rtx, call))
 	    fputs ("/c", outfile);
 
 	  if (GET_MODE (in_rtx) != VOIDmode)
 	    {
 	      /* Print REG_NOTE names for EXPR_LIST and INSN_LIST.  */
-	      if (GET_CODE (in_rtx) == EXPR_LIST 
+	      if (GET_CODE (in_rtx) == EXPR_LIST
 		  || GET_CODE (in_rtx) == INSN_LIST)
 		fprintf (outfile, ":%s",
 			 GET_REG_NOTE_NAME (GET_MODE (in_rtx)));
@@ -246,7 +246,7 @@ print_rtx (in_rtx)
 		if (flag_dump_unnumbered)
 		  fprintf (outfile, "#");
 		else
-		  fprintf (outfile, HOST_PTR_PRINTF, 
+		  fprintf (outfile, HOST_PTR_PRINTF,
 			   (char *) NOTE_BLOCK (in_rtx));
 		sawclose = 1;
 		break;
@@ -284,15 +284,15 @@ print_rtx (in_rtx)
 		  fprintf (outfile, " \"\"");
 		break;
 
-              case NOTE_INSN_PREDICTION:
-                if (NOTE_PREDICTION (in_rtx))
-                  fprintf (outfile, " [ %d %d ] ",
-                    (int)NOTE_PREDICTION_ALG (in_rtx),
-                    (int) NOTE_PREDICTION_FLAGS (in_rtx));
-                else
-                  fprintf (outfile, " [ ERROR ]");
-                break;
-                            
+	      case NOTE_INSN_PREDICTION:
+		if (NOTE_PREDICTION (in_rtx))
+		  fprintf (outfile, " [ %d %d ] ",
+			   (int)NOTE_PREDICTION_ALG (in_rtx),
+			   (int) NOTE_PREDICTION_FLAGS (in_rtx));
+		else
+		  fprintf (outfile, " [ ERROR ]");
+		break;
+
 	      default:
 		{
 		  const char * const str = X0STR (in_rtx, i);
@@ -329,7 +329,7 @@ print_rtx (in_rtx)
 	if (sawclose)
 	  {
 	    fprintf (outfile, "\n%s%*s",
-                     print_rtx_head, indent * 2, "");
+		     print_rtx_head, indent * 2, "");
 	    sawclose = 0;
 	  }
 	fputs ("[ ", outfile);
@@ -531,7 +531,7 @@ print_rtx (in_rtx)
     case CODE_LABEL:
       fprintf (outfile, " [%d uses]", LABEL_NUSES (in_rtx));
       if (LABEL_ALTERNATE_NAME (in_rtx))
-        fprintf (outfile, " [alternate name: %s]",
+	fprintf (outfile, " [alternate name: %s]",
 		 LABEL_ALTERNATE_NAME (in_rtx));
       break;
 
@@ -731,14 +731,14 @@ print_rtl (outf, rtx_first)
 	  if (! flag_dump_unnumbered
 	      || GET_CODE (tmp_rtx) != NOTE || NOTE_LINE_NUMBER (tmp_rtx) < 0)
 	    {
-              fputs (print_rtx_head, outfile);
+	      fputs (print_rtx_head, outfile);
 	      print_rtx (tmp_rtx);
 	      fprintf (outfile, "\n");
 	    }
 	break;
 
       default:
-        fputs (print_rtx_head, outfile);
+	fputs (print_rtx_head, outfile);
 	print_rtx (rtx_first);
       }
 }

@@ -59,7 +59,7 @@ extern param_info *compiler_params;
 
 /* Add the N PARAMS to the current list of compiler parameters.  */
 
-extern void add_params 
+extern void add_params
   PARAMS ((const param_info params[], size_t n));
 
 /* Set the VALUE associated with the parameter given by NAME.  */
@@ -75,14 +75,14 @@ typedef enum compiler_param
 #define DEFPARAM(enumerator, option, msgid, default) \
   enumerator,
 #include "params.def"
-#undef DEFPARAM  
+#undef DEFPARAM
   LAST_PARAM
 } compiler_param;
 
 /* The value of the parameter given by ENUM.  */
 #define PARAM_VALUE(ENUM) \
   (compiler_params[(int) ENUM].value)
-  
+
 /* Macros for the various parameters.  */
 #define MAX_INLINE_INSNS_SINGLE \
   PARAM_VALUE (PARAM_MAX_INLINE_INSNS_SINGLE)

@@ -37,14 +37,14 @@ static size_t num_compiler_params;
 
 /* Add the N PARAMS to the current list of compiler parameters.  */
 
-void 
+void
 add_params (params, n)
      const param_info params[];
      size_t n;
 {
   /* Allocate enough space for the new parameters.  */
-  compiler_params = 
-    ((param_info *) 
+  compiler_params =
+    ((param_info *)
      xrealloc (compiler_params,
 	       (num_compiler_params + n) * sizeof (param_info)));
   /* Copy them into the table.  */
@@ -79,6 +79,3 @@ set_param_value (name, value)
   /* If we didn't find this parameter, issue an error message.  */
   error ("invalid parameter `%s'", name);
 }
-
-     
-  

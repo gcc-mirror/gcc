@@ -74,9 +74,9 @@ static void propagate_freq		 PARAMS ((basic_block));
 static void estimate_bb_frequencies	 PARAMS ((struct loops *));
 static void counts_to_freqs		 PARAMS ((void));
 static void process_note_predictions	 PARAMS ((basic_block, int *, int *,
-                                                  sbitmap *));
+						  sbitmap *));
 static void process_note_prediction	 PARAMS ((basic_block, int *, int *,
-                                                  sbitmap *, int, int));
+						  sbitmap *, int, int));
 static bool last_basic_block_p           PARAMS ((basic_block));
 static void compute_function_frequency	 PARAMS ((void));
 static void choose_function_section	 PARAMS ((void));
@@ -375,10 +375,10 @@ combine_predictions_for_insn (insn, bb)
 
 	  dump_prediction (predictor, probability, bb,
 			   !first_match || best_predictor == predictor);
-          *pnote = XEXP (*pnote, 1);
+	  *pnote = XEXP (*pnote, 1);
 	}
       else
-        pnote = &XEXP (*pnote, 1);
+	pnote = &XEXP (*pnote, 1);
     }
 
   if (!prob_note)
@@ -705,7 +705,7 @@ last_basic_block_p (bb)
    should be index of basic block in that we need to alter branch predictions
    (i.e. the first of our dominators such that we do not post-dominate it)
    (but we fill this information on demand, so -1 may be there in case this
-   was not needed yet). */
+   was not needed yet).  */
 
 static void
 process_note_prediction (bb, heads, dominators, post_dominators, pred, flags)
@@ -1117,7 +1117,7 @@ expensive_function_p (threshold)
      is available and function has not been executed at all.  */
   if (ENTRY_BLOCK_PTR->frequency == 0)
     return true;
-    
+
   /* Maximally BB_FREQ_MAX^2 so overflow won't happen.  */
   limit = ENTRY_BLOCK_PTR->frequency * threshold;
   for (i = 0; i < n_basic_blocks; i++)
