@@ -122,7 +122,7 @@ unsigned char mode_wider_mode[(int) MAX_MACHINE_MODE] = {
 
 /* Indexed by machine mode, gives mask of significant bits in mode.  */
 
-const unsigned HOST_WIDE_INT mode_mask_array[(int) MAX_MACHINE_MODE] = {
+unsigned HOST_WIDE_INT mode_mask_array[(int) MAX_MACHINE_MODE] = {
 #include "machmode.def"
 };
 
@@ -901,6 +901,7 @@ init_rtl ()
   for (i = (int) CCmode + 1; i < (int) MAX_MACHINE_MODE; i++)
     {
       mode_class[i] = MODE_CC;
+      mode_mask_array[i] = mode_mask_array[(int) CCmode];
       mode_size[i] = mode_size[(int) CCmode];
       mode_unit_size[i] = mode_unit_size[(int) CCmode];
       mode_wider_mode[i - 1] = i;

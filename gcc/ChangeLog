@@ -1,3 +1,8 @@
+Fri Oct 23 04:06:57 1998  Richard Earnshaw (rearnsha@arm.com)
+
+	* machmode.h (mode_mask_array): No longer const.
+	* rtl.c (init_rtl): Fully initialize it if EXTRA_CC_MODES defined.
+
 Fri Oct 23 11:19:06 1998  Martin v. Löwis <loewis@informatik.hu-berlin.de>
 
 	* frame.c: Somewhat explain `FDE'.
