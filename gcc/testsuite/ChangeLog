@@ -1,3 +1,7 @@
+2005-01-31  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/20041122-1.c: New test for missing optimization.
+
 2005-02-20  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.dg/do_iterator: Split loop, markup all lines for
