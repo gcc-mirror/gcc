@@ -1,3 +1,7 @@
+Fri Mar  9 09:00:36 2001  Mike Stump  <mrs@wrs.com>
+
+	* cselib.c (hash_rtx): Ensure that hash isn't zero upon return.
+
 Fri Mar  9 17:38:08 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (mask_64bit): New constant.
