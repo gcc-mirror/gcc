@@ -49,9 +49,8 @@ DIST_COMMON = $(am__configure_deps) $(include_HEADERS) \
 	$(srcdir)/mf-runtime.h.in $(top_srcdir)/configure ChangeLog
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../libtool.m4 \
-	$(top_srcdir)/../config/gcc-version.m4 \
-	$(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/../config/gcc-version.m4 \
+	$(top_srcdir)/../libtool.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -222,7 +221,7 @@ target_vendor = @target_vendor@
 toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 AUTOMAKE_OPTIONS = 1.8 foreign
-ACLOCAL_AMFLAGS = -I ..
+ACLOCAL_AMFLAGS = -I .. -I ../config
 MAINT_CHARSET = latin1
 SUBDIRS = testsuite
 AM_CFLAGS = -Wall $(SECTION_FLAGS)
