@@ -1,5 +1,9 @@
 2003-01-28  Tom Tromey  <tromey@redhat.com>
 
+	* jcf-write.c (generate_bytecode_conditional): Typo fixes.
+
+2003-01-28  Tom Tromey  <tromey@redhat.com>
+
 	* lex.c (java_lex): Don't include UEOF as part of token.
 	(java_read_unicode): Error if \u sequence prematurely terminated.
 
