@@ -223,6 +223,8 @@ extern void		sbss_section PARAMS ((void));
 #define MASK_UNINIT_CONST_IN_RODATA \
 			   0x00800000	/* Store uninitialized
 					   consts in rodata */
+#define MASK_NO_FUSED_MADD 0x01000000   /* Don't generate floating point
+					   multiply-add operations.  */
 
 					/* Debug switches, not documented */
 #define MASK_DEBUG	0		/* unused */
@@ -310,6 +312,8 @@ extern void		sbss_section PARAMS ((void));
 #define TARGET_DOUBLE_FLOAT	(! TARGET_SINGLE_FLOAT)
 
 #define TARGET_MAD		(target_flags & MASK_MAD)
+
+#define TARGET_FUSED_MADD	(! (target_flags & MASK_NO_FUSED_MADD))
 
 #define TARGET_4300_MUL_FIX     (target_flags & MASK_4300_MUL_FIX)
 
@@ -439,6 +443,10 @@ extern void		sbss_section PARAMS ((void));
      N_("Use multiply accumulate")},					\
   {"no-mad",		 -MASK_MAD,					\
      N_("Don't use multiply accumulate")},				\
+  {"no-fused-madd",       MASK_NO_FUSED_MADD,                           \
+     N_("Don't generate fused multiply/add instructions")},		\
+  {"fused-madd",         -MASK_NO_FUSED_MADD,                           \
+     N_("Generate fused multiply/add instructions")},			\
   {"fix4300",             MASK_4300_MUL_FIX,				\
      N_("Work around early 4300 hardware bug")},			\
   {"no-fix4300",         -MASK_4300_MUL_FIX,				\

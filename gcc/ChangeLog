@@ -1,3 +1,12 @@
+2001-08-19  Geoffrey Keating  <geoffk@redhat.com>
+
+	* doc/invoke.texi (MIPS Options): Document -mfused-madd.
+	* config/mips/mips.h (MASK_NO_FUSED_MADD): New.
+	(TARGET_FUSED_MADD): New.
+	(TARGET_SWITCHES): Add -mfused-madd, -mno-fused-madd.
+	* config/mips/mips.md: Add TARGET_FUSED_MADD as condition to
+	the multiply-add instructions.
+
 2001-08-19  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2asm.c (dw2_output_indirect_constant_1): The symbol ref 
