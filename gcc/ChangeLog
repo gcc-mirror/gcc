@@ -13,6 +13,9 @@ Mon Jul  6 22:50:48 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 Mon Jul  6 22:47:55 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
+	* flow.c (find_auto_inc): Clear UNCHANGING bit of register that is
+	changed.
+
 	* reload1.c (reload_reg_free_before_p): RELOAD_FOR_OPADDR_ADDR
 	precedes RELOAD_FOR_OUTADDR_ADDRESS.
 
