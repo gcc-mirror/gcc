@@ -1,5 +1,10 @@
 2001-12-23  Richard Henderson  <rth@redhat.com>
 
+	* utils.c (end_subprog_body): Push GC context around
+	rest_of_compilation for nested functions.
+
+2001-12-23  Richard Henderson  <rth@redhat.com>
+
 	* 5nosinte.ads: Get definition of "int" from Interfaces.C.
 
 2001-12-23  Florian Weimer  <fw@deneb.enyo.de>

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *                            $Revision: 1.6 $
+ *                            $Revision: 1.7 $
  *                                                                          *
  *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
  *                                                                          *
@@ -1844,7 +1844,17 @@ end_subprog_body ()
   DECL_CONTEXT (DECL_RESULT (current_function_decl)) = current_function_decl;
 
   expand_function_end (input_filename, lineno, 0);
+
+  /* If this is a nested function, push a new GC context.  That will keep
+     local variables on the stack from being collected while we're doing
+     the compilation of this function.  */
+  if (function_nesting_depth > 1)
+    ggc_push_context ();
+
   rest_of_compilation (current_function_decl);
+
+  if (function_nesting_depth > 1)
+    ggc_pop_context ();
 
 #if 0
   /* If we're sure this function is defined in this file then mark it
