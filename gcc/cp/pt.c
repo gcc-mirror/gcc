@@ -2675,15 +2675,43 @@ tsubst (t, args, nargs, in_decl)
       {
 	tree r;
 	enum tree_code code;
+
 	if (type == TREE_TYPE (t))
 	  return t;
 
 	code = TREE_CODE (t);
-	if (code == POINTER_TYPE)
+	if (TREE_CODE (type) == REFERENCE_TYPE) 
+	  {
+	    static int   last_line = 0;
+	    static char* last_file = 0;
+
+	    /* We keep track of the last time we issued this error
+	       message to avoid spewing a ton of messages during a
+	       single bad template instantiation.  */
+	    if (last_line != lineno ||
+		last_file != input_filename)
+	      {
+		cp_error ("cannot form type %s to reference type %T during template instantiation",
+			  (code == POINTER_TYPE) ? "pointer" : "reference",
+			  type);
+		last_line = lineno;
+		last_file = input_filename;
+	      }
+
+	    /* Use the underlying type in an attempt at error
+	       recovery; maybe the user meant vector<int> and wrote
+	       vector<int&>, or some such.  */
+	    if (code == REFERENCE_TYPE)
+	      r = type;
+	    else
+	      r = build_pointer_type (TREE_TYPE (type));
+	  }
+	else if (code == POINTER_TYPE)
 	  r = build_pointer_type (type);
 	else
 	  r = build_reference_type (type);
 	r = cp_build_type_variant (r, TYPE_READONLY (t), TYPE_VOLATILE (t));
+
 	/* Will this ever be needed for TYPE_..._TO values?  */
 	layout_type (r);
 	return r;

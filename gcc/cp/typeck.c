@@ -58,7 +58,7 @@ static tree build_ptrmemfunc1 PROTO((tree, tree, tree, tree, tree));
 static tree common_base_type PROTO((tree, tree));
 static tree convert_sequence PROTO((tree, tree));
 static tree lookup_anon_field PROTO((tree, tree));
-static tree pointer_diff PROTO((tree, tree));
+static tree pointer_diff PROTO((tree, tree, tree));
 static tree qualify_type PROTO((tree, tree));
 static tree expand_target_expr PROTO((tree));
 static tree get_delta_difference PROTO((tree, tree, int));
@@ -647,9 +647,9 @@ comp_array_types (cmp, t1, t2, strict)
 	0 : <= (compared according to C++)
 	-1: <= or >= (relaxed)
 
-   Otherwise, pointers involving base classes and derived classes
-   can be mixed as valid: i.e. a pointer to a base class may be assigned
-   to a pointer to one of its derived classes, as per C++. A pointer to
+   Otherwise, pointers involving base classes and derived classes can
+   be mixed as valid: i.e. a pointer to a derived class may be converted
+   to a pointer to one of its base classes, as per C++. A pointer to
    a derived class may be passed as a parameter to a function expecting a
    pointer to a base classes. These allowances do not commute. In this
    case, TYPE1 is assumed to be the base class, and TYPE2 is assumed to
@@ -848,8 +848,10 @@ comptypes (type1, type2, strict)
   return attrval == 2 && val == 1 ? 2 : val;
 }
 
-/* Return 1 if TTL and TTR are pointers to types that are equivalent,
-   ignoring their qualifiers.
+/* Return 1 or -1 if TTL and TTR are pointers to types that are equivalent,
+   ignoring their qualifiers, 0 if not. Return 1 means that TTR can be
+   converted to TTL. Return -1 means that TTL can be converted to TTR but
+   not vice versa.
 
    NPTRS is the number of pointers we can strip off and keep cool.
    This is used to permit (for aggr A, aggr B) A, B* to convert to A*,
@@ -930,7 +932,7 @@ comp_target_types (ttl, ttr, nptrs)
   if (TREE_CODE (ttr) == ARRAY_TYPE)
     return comp_array_types (comp_target_types, ttl, ttr, 0);
   else if (TREE_CODE (ttr) == FUNCTION_TYPE || TREE_CODE (ttr) == METHOD_TYPE)
-    if (comp_target_types (TREE_TYPE (ttl), TREE_TYPE (ttr), nptrs))
+    if (comp_target_types (TREE_TYPE (ttl), TREE_TYPE (ttr), -1))
       switch (comp_target_parms (TYPE_ARG_TYPES (ttl), TYPE_ARG_TYPES (ttr), 1))
 	{
 	case 0:
@@ -3196,7 +3198,7 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	 We must subtract them as integers, then divide by object size.  */
       if (code0 == POINTER_TYPE && code1 == POINTER_TYPE
 	  && comp_target_types (type0, type1, 1))
-	return pointer_diff (op0, op1);
+	return pointer_diff (op0, op1, common_type (type0, type1));
       /* Handle pointer minus int.  Just like pointer plus int.  */
       else if (code0 == POINTER_TYPE && code1 == INTEGER_TYPE)
 	return pointer_int_sum (MINUS_EXPR, op0, op1);
@@ -3956,12 +3958,13 @@ pointer_int_sum (resultcode, ptrop, intop)
    The resulting tree has type int.  */
 
 static tree
-pointer_diff (op0, op1)
+pointer_diff (op0, op1, ptrtype)
      register tree op0, op1;
+     register tree ptrtype;
 {
   register tree result, folded;
   tree restype = ptrdiff_type_node;
-  tree target_type = TREE_TYPE (TREE_TYPE (op0));
+  tree target_type = TREE_TYPE (ptrtype);
 
   if (pedantic || warn_pointer_arith)
     {
