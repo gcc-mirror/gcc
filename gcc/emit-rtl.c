@@ -2265,12 +2265,11 @@ try_split (pat, trial, last)
 	     time control returns here that insn will be fully split, so
 	     set LAST and continue from the insn after the one returned.
 	     We can't use next_active_insn here since AFTER may be a note.
-	     Ignore deleted insns, which can be occur if not optimizing,
-	     and ignore BARRIERs which can occur if we split the insn
-	     immediately before a BARRIER.  */
+	     Ignore deleted insns, which can be occur if not optimizing.  */
 	  for (tem = NEXT_INSN (before); tem != after;
 	       tem = NEXT_INSN (tem))
-	    if (! INSN_DELETED_P (tem) && GET_CODE (tem) != BARRIER)
+	    if (! INSN_DELETED_P (tem)
+		&& GET_RTX_CLASS (GET_CODE (tem)) == 'i')
 	      tem = try_split (PATTERN (tem), tem, 1);
 	}
       /* Avoid infinite loop if the result matches the original pattern.  */
