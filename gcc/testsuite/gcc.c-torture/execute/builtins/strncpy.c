@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation.
+/* Copyright (C) 2000, 2005  Free Software Foundation.
 
    Ensure all expected transformations of builtin strncpy occur and
    perform correctly.
@@ -8,9 +8,11 @@
 extern void abort (void);
 typedef __SIZE_TYPE__ size_t;
 extern char *strncpy (char *, const char *, size_t);
-extern int strcmp (const char *, const char *);
-extern int strncmp (const char *, const char *, size_t);
+extern int memcmp (const void *, const void *, size_t);
 extern void *memset (void *, int, size_t);
+
+/* Reset the destination buffer to a known state. */
+#define RESET_DST memset(dst, 'X', sizeof(dst))
 
 int i;
 
@@ -21,55 +23,53 @@ main_test (void)
   const char *src2;
   char dst[64], *dst2;
   
-  memset (dst, 0, sizeof (dst));
-  if (strncpy (dst, src, 4) != dst || strncmp (dst, src, 4))
+  RESET_DST;
+  if (strncpy (dst, src, 4) != dst || memcmp (dst, "hellXXX", 7))
     abort();
 
-  memset (dst, 0, sizeof (dst));
-  if (strncpy (dst+16, src, 4) != dst+16 || strncmp (dst+16, src, 4))
+  RESET_DST;
+  if (strncpy (dst+16, src, 4) != dst+16 || memcmp (dst+16, "hellXXX", 7))
     abort();
 
-  memset (dst, 0, sizeof (dst));
-  if (strncpy (dst+32, src+5, 4) != dst+32 || strncmp (dst+32, src+5, 4))
+  RESET_DST;
+  if (strncpy (dst+32, src+5, 4) != dst+32 || memcmp (dst+32, " worXXX", 7))
     abort();
 
-  memset (dst, 0, sizeof (dst));
+  RESET_DST;
   dst2 = dst;
-  if (strncpy (++dst2, src+5, 4) != dst+1 || strncmp (dst2, src+5, 4)
+  if (strncpy (++dst2, src+5, 4) != dst+1 || memcmp (dst2, " worXXX", 7)
       || dst2 != dst+1)
     abort();
 
-  memset (dst, 0, sizeof (dst));
-  if (strncpy (dst, src, 0) != dst || strcmp (dst, ""))
+  RESET_DST;
+  if (strncpy (dst, src, 0) != dst || memcmp (dst, "XXX", 3))
     abort();
   
-  memset (dst, 0, sizeof (dst));
+  RESET_DST;
   dst2 = dst; src2 = src;
-  if (strncpy (++dst2, ++src2, 0) != dst+1 || strcmp (dst2, "")
+  if (strncpy (++dst2, ++src2, 0) != dst+1 || memcmp (dst2, "XXX", 3)
       || dst2 != dst+1 || src2 != src+1)
     abort();
 
-  memset (dst, 0, sizeof (dst));
+  RESET_DST;
   dst2 = dst; src2 = src;
-  if (strncpy (++dst2+5, ++src2+5, 0) != dst+6 || strcmp (dst2+5, "")
+  if (strncpy (++dst2+5, ++src2+5, 0) != dst+6 || memcmp (dst2+5, "XXX", 3)
       || dst2 != dst+1 || src2 != src+1)
     abort();
 
-  memset (dst, 0, sizeof (dst));
-  if (strncpy (dst, src, 12) != dst || strcmp (dst, src))
+  RESET_DST;
+  if (strncpy (dst, src, 12) != dst || memcmp (dst, "hello world\0XXX", 15))
     abort();
 
   /* Test at least one instance of the __builtin_ style.  We do this
      to ensure that it works and that the prototype is correct.  */
-  memset (dst, 0, sizeof (dst));
-  if (__builtin_strncpy (dst, src, 4) != dst || strncmp (dst, src, 4))
+  RESET_DST;
+  if (__builtin_strncpy (dst, src, 4) != dst || memcmp (dst, "hellXXX", 7))
     abort();
 
-  memset (dst, 0, sizeof (dst));
+  RESET_DST;
   if (strncpy (dst, i++ ? "xfoo" + 1 : "bar", 4) != dst
-      || strcmp (dst, "bar")
+      || memcmp (dst, "bar\0XXX", 7)
       || i != 1)
     abort ();
-
-  return 0;
 }

@@ -1,5 +1,10 @@
 2005-04-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* gcc.c-torture/execute/builtins/strcat.c: Check the result
+	buffer past the terminating NUL using memcmp.
+	* gcc.c-torture/execute/builtins/strncat.c: Likewise.
+	* gcc.c-torture/execute/builtins/strncpy.c: Likewise.
+
 	* gcc.c-torture/execute/builtins/strncmp-2.c: Also test x86_64.
 	Fix unused/uninitialized variable warnings.
 

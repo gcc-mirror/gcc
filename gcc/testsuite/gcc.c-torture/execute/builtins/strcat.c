@@ -10,7 +10,6 @@ extern void abort (void);
 typedef __SIZE_TYPE__ size_t;
 extern char *strcat (char *, const char *);
 extern char *strcpy (char *, const char *);
-extern int strcmp (const char *, const char *);
 extern void *memset (void *, int, size_t);
 extern int memcmp (const void *, const void *, size_t);
 #define RESET_DST_WITH(FILLER) \
@@ -23,19 +22,22 @@ void main_test (void)
   char dst[64], *d2;
   
   RESET_DST_WITH (s1);
-  if (strcat (dst, "") != dst || strcmp (dst, s1))
+  if (strcat (dst, "") != dst || memcmp (dst, "hello world\0XXX", 15))
     abort();
   RESET_DST_WITH (s1);
-  if (strcat (dst, s2) != dst || strcmp (dst, s1))
+  if (strcat (dst, s2) != dst || memcmp (dst, "hello world\0XXX", 15))
     abort();
   RESET_DST_WITH (s1); d2 = dst;
-  if (strcat (++d2, s2) != dst+1 || d2 != dst+1 || strcmp (dst, s1))
+  if (strcat (++d2, s2) != dst+1 || d2 != dst+1
+      || memcmp (dst, "hello world\0XXX", 15))
     abort();
   RESET_DST_WITH (s1); d2 = dst;
-  if (strcat (++d2+5, s2) != dst+6 || d2 != dst+1 || strcmp (dst, s1))
+  if (strcat (++d2+5, s2) != dst+6 || d2 != dst+1
+      || memcmp (dst, "hello world\0XXX", 15))
     abort();
   RESET_DST_WITH (s1); d2 = dst;
-  if (strcat (++d2+5, s1+11) != dst+6 || d2 != dst+1 || strcmp (dst, s1))
+  if (strcat (++d2+5, s1+11) != dst+6 || d2 != dst+1
+      || memcmp (dst, "hello world\0XXX", 15))
     abort();
 
 #ifndef __OPTIMIZE_SIZE__
@@ -74,6 +76,6 @@ void main_test (void)
   /* Test at least one instance of the __builtin_ style.  We do this
      to ensure that it works and that the prototype is correct.  */
   RESET_DST_WITH (s1);
-  if (__builtin_strcat (dst, "") != dst || strcmp (dst, s1))
+  if (__builtin_strcat (dst, "") != dst || memcmp (dst, "hello world\0XXX", 15))
     abort();
 }
