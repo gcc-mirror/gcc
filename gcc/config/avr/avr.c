@@ -1458,7 +1458,7 @@ final_prescan_insn (insn, operand, num_operands)
 /* Return 0 if undefined, 1 if always true or always false.  */
 
 int
-avr_simplify_comparision_p (mode, operator, x)
+avr_simplify_comparison_p (mode, operator, x)
      enum machine_mode mode;
      RTX_CODE operator;
      rtx x;
@@ -5240,7 +5240,7 @@ avr_reorg ()
 		  rtx t = XEXP (src,0);
 		  enum machine_mode mode = GET_MODE (XEXP (pattern, 0));
 
-		  if (avr_simplify_comparision_p (mode, GET_CODE (t), x))
+		  if (avr_simplify_comparison_p (mode, GET_CODE (t), x))
 		    {
 		      XEXP (pattern, 1) = gen_int_mode (INTVAL (x) + 1, mode);
 		      PUT_CODE (t, avr_normalize_condition (GET_CODE (t)));

@@ -129,7 +129,7 @@ extern int    avr_hard_regno_mode_ok PARAMS ((int regno,
 extern int    call_insn_operand      PARAMS ((rtx op, enum machine_mode mode));
 extern void   final_prescan_insn     PARAMS ((rtx insn, rtx *operand,
 					      int num_operands));
-extern int    avr_simplify_comparision_p PARAMS ((enum machine_mode mode,
+extern int    avr_simplify_comparison_p PARAMS ((enum machine_mode mode,
 					      RTX_CODE operator, rtx x));
 extern RTX_CODE avr_normalize_condition  PARAMS ((RTX_CODE condition));
 extern int    compare_eq_p           PARAMS ((rtx insn));
