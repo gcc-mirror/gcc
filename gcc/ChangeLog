@@ -1,3 +1,11 @@
+2004-09-11  Jan Hubicka  <jh@suse.cz>
+
+	* profile.c (BB_TO_GCOV_INDEX): move more to the front.
+	(output_location): Break out from ....
+	(branch_prob): ... here; handle gcov output on trees.
+	* toplev.c (process_options): No longer be sorry about coverage for
+	trees.
+
 2004-09-11  Steven Bosscher  <stevenb@suse.de>
 
 	PR c++/17412
