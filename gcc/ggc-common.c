@@ -32,7 +32,18 @@
 
 /* Maintain global roots that are preserved during GC.  */
 
-struct ggc_root *roots;
+/* Global roots that are preserved during calls to gc.  */
+
+struct ggc_root
+{
+  struct ggc_root *next;
+  void *base;
+  int nelt;
+  int size;
+  void (*cb) PROTO ((void *));
+};
+
+static struct ggc_root *roots;
 
 /* Type-correct function to pass to ggc_add_root.  It just forwards
    *ELT (which is an rtx) to ggc_mark_tree_varray.  */
@@ -170,14 +181,28 @@ ggc_del_root (base)
 }
 
 void
-ggc_mark_rtx (r)
+ggc_mark_roots ()
+{
+  struct ggc_root* x;
+  
+  for (x = roots; x != NULL; x = x->next)
+    {
+      char *elt = x->base;
+      int s = x->size, n = x->nelt;
+      void (*cb) PROTO ((void *)) = x->cb;
+      int i;
+
+      for (i = 0; i < n; ++i, elt += s)
+	(*cb)(elt);
+    }
+}
+
+void
+ggc_mark_rtx_children (r)
      rtx r;
 {
   const char *fmt;
   int i;
-
-  if (r == NULL_RTX || ggc_set_mark_rtx (r))
-    return;
 
   /* ??? If (some of) these are really pass-dependant info, do we have
      any right poking our noses in?  */
@@ -256,13 +281,9 @@ ggc_mark_rtvec (v)
 }
 
 void
-ggc_mark_tree (t)
+ggc_mark_tree_children (t)
      tree t;
 {
-  /* FIXME what if t == NULL_TREE ? */
-  if (t == NULL || ggc_set_mark_tree (t))
-    return;
-
   /* Bits from common.  */
   ggc_mark_tree (TREE_TYPE (t));
   ggc_mark_tree (TREE_CHAIN (t));

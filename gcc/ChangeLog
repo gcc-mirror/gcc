@@ -1,3 +1,19 @@
+Thu Sep 16 11:50:52 1999  Alex Samuel  <samuel@codesourcery.com>
+
+	* ggc.h (ggc_root): Move to ggc-common.c.
+	(roots): Remove.
+	(ggc_mark_rtx, ggc_mark_tree): Change to macro.
+	(ggc_mark_rtvec, ggc_mark_tree_varray): Declare extern.
+	(ggc_mark_tree_hash_table, ggc_mark_string, ggc_mark): Likewise.
+	(ggc_mark_roots, ggc_mark_rtx_children, ggc_mark_tree_children): New.
+	* ggc-common.c (ggc_root): Move from ggc.h.
+	(roots): Declare, static.
+	(ggc_mark_rtx, ggc_mark_tree): Renamed to...
+	(ggc_mark_rtx_children, ggc_mark_tree_children): Don't check for
+	null or check/set mark bit.
+	(ggc_mark_roots): New.
+	* ggc-simple.c (ggc_collect): Call ggc_mark_roots.
+
 Thu Sep 16 11:37:32 1999  Richard Henderson  <rth@cygnus.com>
 
 	* m32r.c: Include toplev.h.
@@ -364,8 +380,8 @@ Tue Sep 14 04:01:46 1999  Loren Rittle  <ljrittle@acm.org>
 
 Tue Sep 14 03:58:44 1999  Andreas Jaeger  <aj@arthur.rhein-neckar.de>
 
-        * configure.in: Add crtbeginS.o, crtendS.o for mips-linux; add 
-        thread support.
+	* configure.in: Add crtbeginS.o, crtendS.o for mips-linux; add 
+	thread support.
 	* configure: Rebuilt.
 
 Tue Sep 14 03:47:23 1999  Joel Sherrill <joel@OARcorp.com>

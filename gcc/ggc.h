@@ -42,19 +42,6 @@ union  tree_node;
 struct varasm_status;
 struct varray_head_tag;
 
-/* Global roots that are preserved during calls to gc.  */
-
-struct ggc_root
-{
-  struct ggc_root *next;
-  void *base;
-  int nelt;
-  int size;
-  void (*cb) PROTO ((void *));
-};
-
-extern struct ggc_root *roots;
-
 /* Manipulate global roots that are needed between calls to gc.  */
 void ggc_add_root PROTO ((void *base, int nelt, int size, void (*)(void *)));
 void ggc_add_rtx_root PROTO ((struct rtx_def **, int nelt));
@@ -66,14 +53,29 @@ void ggc_del_root PROTO ((void *base));
 
 /* Mark nodes from the gc_add_root callback.  These functions follow
    pointers to mark other objects too.  */
-void ggc_mark_rtx PROTO ((struct rtx_def *));
-void ggc_mark_rtvec PROTO ((struct rtvec_def *));
-void ggc_mark_tree PROTO ((union tree_node *));
-void ggc_mark_tree_varray PROTO ((struct varray_head_tag *));
-void ggc_mark_tree_hash_table PROTO ((struct hash_table *));
-void ggc_mark_string PROTO ((char *));
-void ggc_mark PROTO ((void *));
+extern void ggc_mark_rtvec PROTO ((struct rtvec_def *));
+extern void ggc_mark_tree_varray PROTO ((struct varray_head_tag *));
+extern void ggc_mark_tree_hash_table PROTO ((struct hash_table *));
+extern void ggc_mark_string PROTO ((char *));
+extern void ggc_mark PROTO ((void *));
+extern void ggc_mark_roots PROTO((void));
 
+extern void ggc_mark_rtx_children PROTO ((struct rtx_def *));
+extern void ggc_mark_tree_children PROTO ((union tree_node *));
+
+#define ggc_mark_rtx(RTX_EXPR)				\
+  do {							\
+    rtx r__ = (RTX_EXPR);				\
+    if (r__ != NULL && ! ggc_set_mark_rtx (r__))	\
+      ggc_mark_rtx_children (r__);			\
+  } while (0)
+
+#define ggc_mark_tree(TREE_EXPR)			\
+  do {							\
+    tree t__ = (TREE_EXPR);				\
+    if (t__ != NULL && ! ggc_set_mark_tree (t__))	\
+      ggc_mark_tree_children (t__);			\
+  } while (0)
 
 /* A GC implementation must provide these functions.  */
 
