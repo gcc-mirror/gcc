@@ -1,3 +1,7 @@
+2003-04-15  DJ Delorie  <dj@redhat.com>
+
+	* MAINTAINERS: Remove myself as windows/cygwin/mingw maintainer.
+
 2003-04-13  Nick Clifton  <nickc@redhat.com>
 
 	* config-ml.in: Remove support for --disable-aix removing
