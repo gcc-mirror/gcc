@@ -1,5 +1,5 @@
 // Special g++ Options: -fexceptions -w
-// excess errors test - XFAIL a29k-*-* sparc64-*-elf arm-*-pe**-*
+// excess errors test - XFAIL sparc64-*-elf arm-*-pe**-*
 // Ensure that the return type of dynamic_cast is the real type.
 
 struct B {

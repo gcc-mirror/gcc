@@ -1,5 +1,5 @@
 // Special g++ Options: -fexceptions -O9
-// excess errors test - XFAIL a29k-*-* sparc64-*-elf arm-*-pe
+// excess errors test - XFAIL sparc64-*-elf arm-*-pe
 
 void main1() {
   throw 1;
