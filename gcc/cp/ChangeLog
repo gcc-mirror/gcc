@@ -1,3 +1,9 @@
+2000-12-05  Will Cohen  <wcohen@redhat.com>
+
+	* decl.c (finish_case_label): Cleared
+	more_cleanups_ok in surrounding function scopes.
+	(define_label): Likewise.
+
 2000-12-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (IDENTIFIER_VIRTUAL_P): Document.
