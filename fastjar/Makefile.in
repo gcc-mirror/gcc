@@ -77,7 +77,7 @@ CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(fastjar_SOURCES) $(grepjar_SOURCES)
 DIST_SOURCES = $(fastjar_SOURCES) $(grepjar_SOURCES)
-INFO_DEPS = $(srcdir)/fastjar.info
+INFO_DEPS = fastjar.info
 am__TEXINFO_TEX_DIR = $(srcdir)/../gcc/doc/include
 DVIS = fastjar.dvi
 PDFS = fastjar.pdf
@@ -259,7 +259,7 @@ POD2MAN = pod2man --center="GNU" --release="gcc-@gcc_version@"
 # and info documentation prebuilt.  This feature is enabled via 
 # --enable-generated-files-in-srcdir in the configure script.
 @GENINSRC_TRUE@STAMP_GENINSRC = stamp-geninsrc
-CLEANFILES = stamp-geninsrc
+CLEANFILES = stamp-geninsrc fastjar.info
 MAINTAINERCLEANFILES = $(srcdir)/fastjar.1 \
                        $(srcdir)/grepjar.1 \
                        $(srcdir)/fastjar.info
@@ -268,7 +268,7 @@ all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .1 .c .dvi .html .info .o .obj .pdf .pod .ps .texi
+.SUFFIXES: .1 .c .dvi .o .obj .pod .ps
 am--refresh:
 	@:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -393,10 +393,9 @@ fastjar-shift.o: shift.c
 fastjar-shift.obj: shift.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(fastjar_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o fastjar-shift.obj `if test -f 'shift.c'; then $(CYGPATH_W) 'shift.c'; else $(CYGPATH_W) '$(srcdir)/shift.c'; fi`
 
-.texi.info:
+fastjar.info: fastjar.texi $(fastjar_TEXINFOS)
 	restore=: && \
 	backupdir="$(am__leading_dot)am$$$$" && \
-	am__cwd=`pwd` && cd $(srcdir) && \
 	rm -rf $$backupdir && mkdir $$backupdir && \
 	for f in $@ $@-[0-9] $@-[0-9][0-9] $(@:.info=).i[0-9] $(@:.info=).i[0-9][0-9]; do \
 	  if test -f $$f; then \
@@ -404,39 +403,32 @@ fastjar-shift.obj: shift.c
 	    restore=mv; \
 	  fi; \
 	done; \
-	cd "$$am__cwd"; \
 	if $(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) \
-	 -o $@ $<; \
+	 -o $@ `test -f 'fastjar.texi' || echo '$(srcdir)/'`fastjar.texi; \
 	then \
 	  rc=0; \
-	  cd $(srcdir); \
 	else \
 	  rc=$$?; \
-	  cd $(srcdir) && \
 	  $$restore $$backupdir/* `echo "./$@" | sed 's|[^/]*$$||'`; \
 	fi; \
 	rm -rf $$backupdir; \
 	exit $$rc
 
-.texi.dvi:
+fastjar.dvi: fastjar.texi $(fastjar_TEXINFOS) 
 	TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
 	MAKEINFO='$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir)' \
-	$(TEXI2DVI) $<
+	$(TEXI2DVI) -o $@ `test -f 'fastjar.texi' || echo '$(srcdir)/'`fastjar.texi
 
-.texi.pdf:
+fastjar.pdf: fastjar.texi $(fastjar_TEXINFOS) 
 	TEXINPUTS="$(am__TEXINFO_TEX_DIR)$(PATH_SEPARATOR)$$TEXINPUTS" \
 	MAKEINFO='$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir)' \
-	$(TEXI2PDF) $<
+	$(TEXI2PDF) -o $@ `test -f 'fastjar.texi' || echo '$(srcdir)/'`fastjar.texi
 
-.texi.html:
+fastjar.html: fastjar.texi $(fastjar_TEXINFOS) 
 	$(MAKEINFOHTML) $(AM_MAKEINFOHTMLFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) \
-	 -o $@ $<
+	 -o $@ `test -f 'fastjar.texi' || echo '$(srcdir)/'`fastjar.texi
 	if test ! -d $@ && test -d $(@:.html=); then \
 	  mv $(@:.html=) $@; else :; fi
-$(srcdir)/fastjar.info: fastjar.texi $(fastjar_TEXINFOS)
-fastjar.dvi: fastjar.texi $(fastjar_TEXINFOS)
-fastjar.pdf: fastjar.texi $(fastjar_TEXINFOS)
-fastjar.html: fastjar.texi $(fastjar_TEXINFOS)
 .dvi.ps:
 	$(DVIPS) -o $@ $<
 

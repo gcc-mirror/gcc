@@ -1,3 +1,9 @@
+2004-08-11  Kelley Cook  <kcook@gcc.gnu.org>
+
+	PR bootstrap/16164
+	* Makefile.am: Force fastjar.info to be built in build directory.
+	* Makefile.in: Regenerate.
+
 2004-07-23  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* Makefile.am: Rename jar binary to fastjar.
