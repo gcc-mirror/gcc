@@ -3267,7 +3267,7 @@ output_constant (exp, size)
 
 
 /* Bytecode specific code to output assembler for integer. */
-void
+static void
 bc_assemble_integer (exp, size)
     tree exp;
     int size;
