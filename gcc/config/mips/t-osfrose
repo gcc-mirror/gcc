@@ -1,6 +1,6 @@
 EXTRA_OBJS	= halfpic.o
 LIMITS_H	=
-CONFIG2_H	= $(srcdir)/config/mips/mips.h $(srcdir)/config/mips/decrose.h $(srcdir)/halfpic.h
+CONFIG2_H	= $(srcdir)/config/mips/mips.h $(srcdir)/config/mips/osfrose.h $(srcdir)/halfpic.h
 
 # We have a premade insn-attrtab.c to save the hour it takes to run genattrtab.
 # PREMADE_ATTRTAB = $(srcdir)/config/mips/mips-at.c
