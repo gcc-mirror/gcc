@@ -1,3 +1,10 @@
+2001-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c (ASM_DEBUG_SPEC): Use conditional expression rather than
+	preprocessor define.  If only DBX_DEBUGGING_INFO or only
+	DWARF2_DEBUGGING_INFO is supported for the target, provide
+	appropriate definitions.
+
 2001-11-27  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in: Update, and add c-objc-common.o dependencies.
