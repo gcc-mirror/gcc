@@ -28,6 +28,15 @@ win32_exception_handler (LPEXCEPTION_POINTERS e)
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
+// Platform-specific executable name
+static char exec_name[MAX_PATH];
+  // initialized in _Jv_platform_initialize()
+
+const char *_Jv_ThisExecutable (void)
+{
+  return exec_name;
+}
+
 // Platform-specific VM initialization.
 void
 _Jv_platform_initialize (void)
@@ -37,8 +46,12 @@ _Jv_platform_initialize (void)
   if (WSAStartup (MAKEWORD (1, 1), &data))
     MessageBox (NULL, "Error initialising winsock library.", "Error",
 		MB_OK | MB_ICONEXCLAMATION);
+  
   // Install exception handler
   SetUnhandledExceptionFilter (win32_exception_handler);
+  
+  // Initialize our executable name
+  GetModuleFileName(NULL, exec_name, sizeof(exec_name));
 }
 
 // gettimeofday implementation.
