@@ -1,3 +1,17 @@
+2003-01-16  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (struct file_table): Remove.
+	(FILE_TABLE_INCREMENT): Remove.
+	(file_table): Make a varray; mark for GC.  Update all users.
+	(file_table_last_lookup_index): Extract from struct file_table.
+	(output_file_names): Fix unsigned compare warnings.
+	(add_name_attribute): Remove inline marker.
+	(add_comp_dir_attribute): Split out from gen_compile_unit_die.
+	(lookup_filename): Don't manage size of file_table.
+	(init_file_table): Allocate file_table with GC.
+	(dwarf2out_init): Don't record main_input_filename here.
+	(dwarf2out_finish): Do it here instead.
+
 2003-01-16  Bruce Korb  <bkorb@gnu.org>
 
 	* gcc/fixinc/inclhack.def(limits_ifndef): QNX needs a bypass, too.
