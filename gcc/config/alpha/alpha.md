@@ -2614,8 +2614,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:DI 0 "general_operand" "=r,r,r,r,r,r,r,m,f,f,f,m")
-	(match_operand:DI 1 "input_operand" "r,J,I,K,L,s,m,rJ,f,J,m,fG"))]
+  [(set (match_operand:DI 0 "general_operand" "=r,r,r,r,r,r,r,m,f,f,f,Q")
+	(match_operand:DI 1 "input_operand" "r,J,I,K,L,s,m,rJ,f,J,Q,fG"))]
   "register_operand (operands[0], DImode)
    || reg_or_0_operand (operands[1], DImode)"
   "@
