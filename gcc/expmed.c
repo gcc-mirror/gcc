@@ -678,7 +678,9 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
      rtx value;
      int align;
 {
-  int unit = align * BITS_PER_UNIT;
+  /* Make sure UNIT isn't larger than BITS_PER_WORD, we can only handle that
+     much at a time.  */
+  int unit = MIN (align * BITS_PER_UNIT, BITS_PER_WORD);
   rtx word;
   int bitsdone = 0;
 
@@ -699,7 +701,11 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
       offset = (bitpos + bitsdone) / unit;
       thispos = (bitpos + bitsdone) % unit;
 
-      thissize = unit - offset * BITS_PER_UNIT % unit;
+      /* THISSIZE must not overrun a word boundary.  Otherwise,
+	 store_fixed_bit_field will call us again, and we will mutually
+	 recurse forever.  */
+      thissize = MIN (bitsize - bitsdone, BITS_PER_WORD);
+      thissize = MIN (thissize, unit - thispos);
 
 #if BYTES_BIG_ENDIAN
       /* Fetch successively less significant portions.  */
@@ -736,7 +742,10 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
       if (word == 0)
 	abort ();
 
-      store_fixed_bit_field (word, offset, thissize, thispos, part, align);
+      /* OFFSET is in UNITs, and UNIT is in bits.
+         store_fixed_bit_field wants offset in bytes.  */
+      store_fixed_bit_field (word, offset * unit / BITS_PER_UNIT,
+			     thissize, thispos, part, align);
       bitsdone += thissize;
     }
 }
@@ -1434,7 +1443,9 @@ extract_split_bit_field (op0, bitsize, bitpos, unsignedp, align)
      rtx op0;
      int bitsize, bitpos, unsignedp, align;
 {
-  int unit = align * BITS_PER_UNIT;
+  /* Make sure UNIT isn't larger than BITS_PER_WORD, we can only handle that
+     much at a time.  */
+  int unit = MIN (align * BITS_PER_UNIT, BITS_PER_WORD);
   int bitsdone = 0;
   rtx result;
   int first = 1;
@@ -1449,7 +1460,11 @@ extract_split_bit_field (op0, bitsize, bitpos, unsignedp, align)
       offset = (bitpos + bitsdone) / unit;
       thispos = (bitpos + bitsdone) % unit;
 
-      thissize = unit - offset * BITS_PER_UNIT % unit;
+      /* THISSIZE must not overrun a word boundary.  Otherwise,
+	 extract_fixed_bit_field will call us again, and we will mutually
+	 recurse forever.  */
+      thissize = MIN (bitsize - bitsdone, BITS_PER_WORD);
+      thissize = MIN (thissize, unit - thispos);
 
       /* If OP0 is a register, then handle OFFSET here.
 	 In the register case, UNIT must be a whole word.  */
@@ -1465,8 +1480,11 @@ extract_split_bit_field (op0, bitsize, bitpos, unsignedp, align)
 	abort ();
 
       /* Extract the parts in bit-counting order,
-	 whose meaning is determined by BYTES_PER_UNIT.  */
-      part = extract_fixed_bit_field (word_mode, word, offset,
+	 whose meaning is determined by BYTES_PER_UNIT.
+	 OFFSET is in UNITs, and UNIT is in bits.
+	 extract_fixed_bit_field wants offset in bytes.  */
+      part = extract_fixed_bit_field (word_mode, word,
+				      offset * unit / BITS_PER_UNIT,
 				      thissize, thispos, 0, 1, align);
       bitsdone += thissize;
 
