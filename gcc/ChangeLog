@@ -1,3 +1,10 @@
+2004-01-16  Jan Hubicka  <jh@suse.cz>
+
+        PR opt/11350
+        * cfgcleanup.c (try_optimize_cfg): Suppress tablejump removal
+	after reload.
+        * cfgrtl.c (try_redirect_by_replacing_branch): Likewise.
+
 2004-01-15  J"orn Rennecke <joern.rennecke@superh.com>
 
 	PR optimization/10392
