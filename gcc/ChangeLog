@@ -1,5 +1,8 @@
 2004-06-14  Ian Lance Taylor  <ian@wasabisystems.com>
 
+	* config/sparc/sparc.h: Correct comment about availability of
+	little endian option.
+
 	* config.gcc: Remove sparc64-*-aout*.
 	* config/sparc/sparc.c (sparc_aout_select_rtx_section): Remove.
 	* config/sparc/sp64-aout.h: Remove.
