@@ -1,3 +1,16 @@
+Thu Dec 11 23:50:17 1997  John F. Carr  <jfc@mit.edu>
+
+	* tree.c, tree.h: Change tree_code_type, tree_code_length, and
+	tree_code_name from pointers to arrays.
+	* tree.c: Remove standard_tree_code_* variables, no longer used.
+	* print-tree.c: Remove declaration of tree_code_name.
+
+	* cp/lex.c (init_lex): Update for tree_code_* changes.
+	* objc/objc-act.c (init_objc): Likewise.
+
+	* tree.def, cp/cp-tree.def, objc/objc-tree.def: Update for tree_code
+	changes.
+
 Thu Dec 11 23:34:54 1997  Fred Fish  <fnf@ninemoons.com>
 
 	* config.sub: Add support for BeOS target.

@@ -47,16 +47,17 @@ enum tree_code {
    constant, `d' for a decl, `t' for a type, `s' for a statement,
    and `x' for anything else (TREE_LIST, IDENTIFIER, etc).  */
 
-extern char **tree_code_type;
-#define TREE_CODE_CLASS(CODE)	(*tree_code_type[(int) (CODE)])
+#define MAX_TREE_CODES 256
+extern char tree_code_type[MAX_TREE_CODES];
+#define TREE_CODE_CLASS(CODE)	tree_code_type[(int) (CODE)]
 
 /* Number of argument-words in each kind of tree-node.  */
 
-extern int *tree_code_length;
+extern int tree_code_length[MAX_TREE_CODES];
 
 /* Names of tree components.  */
 
-extern char **tree_code_name;
+extern char *tree_code_name[MAX_TREE_CODES];
 
 /* Codes that identify the various built in functions
    so that expand_call can identify them quickly.  */

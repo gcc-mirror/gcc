@@ -361,8 +361,8 @@ my_get_run_time ()
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
 
-char *cplus_tree_code_type[] = {
-  "x",
+char cplus_tree_code_type[] = {
+  'x',
 #include "cp-tree.def"
 };
 #undef DEFTREECODE
@@ -461,18 +461,9 @@ init_lex ()
 
   init_cplus_expand ();
 
-  tree_code_type
-    = (char **) realloc (tree_code_type,
-			 sizeof (char *) * LAST_CPLUS_TREE_CODE);
-  tree_code_length
-    = (int *) realloc (tree_code_length,
-		       sizeof (int) * LAST_CPLUS_TREE_CODE);
-  tree_code_name
-    = (char **) realloc (tree_code_name,
-			 sizeof (char *) * LAST_CPLUS_TREE_CODE);
-  bcopy ((char *)cplus_tree_code_type,
-	 (char *)(tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE),
-	 (LAST_CPLUS_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (char *));
+  bcopy (cplus_tree_code_type,
+	 tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE,
+	 (int)LAST_CPLUS_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE);
   bcopy ((char *)cplus_tree_code_length,
 	 (char *)(tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE),
 	 (LAST_CPLUS_TREE_CODE - (int)LAST_AND_UNUSED_TREE_CODE) * sizeof (int));
