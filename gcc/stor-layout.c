@@ -254,7 +254,7 @@ layout_decl (decl, known_align)
       DECL_BIT_FIELD_TYPE (decl) = DECL_BIT_FIELD (decl) ? type : 0;
       if (maximum_field_alignment != 0)
 	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), maximum_field_alignment);
-      else if (flag_pack_struct)
+      else if (DECL_PACKED (decl))
 	DECL_ALIGN (decl) = MIN (DECL_ALIGN (decl), BITS_PER_UNIT);
     }
 
@@ -391,7 +391,7 @@ layout_record (rec)
 	      int type_align = TYPE_ALIGN (TREE_TYPE (field));
 	      if (maximum_field_alignment != 0)
 		type_align = MIN (type_align, maximum_field_alignment);
-	      else if (flag_pack_struct)
+	      else if (TYPE_PACKED (rec))
 		type_align = MIN (type_align, BITS_PER_UNIT);
 
 	      record_align = MAX (record_align, type_align);
@@ -433,9 +433,7 @@ layout_record (rec)
 	  && TREE_TYPE (field) != error_mark_node
 	  && DECL_BIT_FIELD_TYPE (field)
 	  && !DECL_PACKED (field)
-	  /* If #pragma pack is in effect, turn off this feature.  */
 	  && maximum_field_alignment == 0
-	  && !flag_pack_struct
 	  && !integer_zerop (DECL_SIZE (field)))
 	{
 	  int type_align = TYPE_ALIGN (TREE_TYPE (field));
@@ -470,7 +468,7 @@ layout_record (rec)
 
 	  if (maximum_field_alignment != 0)
 	    type_align = MIN (type_align, maximum_field_alignment);
-	  else if (flag_pack_struct)
+	  else if (TYPE_PACKED (rec))
 	    type_align = MIN (type_align, BITS_PER_UNIT);
 
 	  /* A bit field may not span the unit of alignment of its type.
