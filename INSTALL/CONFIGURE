@@ -1,108 +1,90 @@
-Configuring egcs-1.0
 
-Like most GNU software, egcs must be configured before it can be built.
-This document attempts to describe the recommended configuration procedure
-for both native and cross targets.
-
-We use srcdir to refer to the toplevel source directory for
-egcs; we use objdir to refer to the toplevel build/object
-directory for egcs.
-
-First, we highly recommend that egcs be built into a separate
-directory than the sources.  This is how we generally build egcs; building
-where srcdir == objdir should still work, but doesn't get
-extensive testing.
-
-Second, when configuring a native system, either "cc" must be in your
-path or you must set CC in your environment before running configure.
-Otherwise the configuration scripts may fail.
-
-To configure egcs:
-
-  % mkdir objdir
-  % cd objdir
-  % srcdir/configure [target] [options]
-
-
-target specification
-
-  egcs has code to correctly determine the correct value for
-  target for nearly all native systems.  Therefore, we highly
-  recommend you not provide a configure target when configuring a
-  native compiler.
-
-  target must be specified when configuring a cross compiler;
-  examples of valid targets would be i960-rtems, m68k-coff, sh-elf, etc.
-
-
-options specification
-
-Use options to override several configure time options for
-egcs.  A partial list of supported options:
-
-
-  --prefix=dirname -- Specify the toplevel installation
-  directory.  This is the recommended way to install the tools into a directory
-  other than the default.  The toplevel installation directory defaults to
-  /usr/local.
-
-  These additional options control where certain parts of the distribution
-  are installed.  Normally you should not need to use these options.
-  
-     --with-local-prefix=dirname -- Specify the installation
-     directory for local include files.  The default is /usr/local.
-
-     --with-gxx-include-dir=dirname -- Specify the installation
-     directory for g++ header files.  The default is /usr/local/include/g++.
-  
-
-  --enable-shared -- Build shared versions of the C++ runtime
-  libraries if supported --disable-shared is the default.
-
-  --enable-haifa -- Enable the new Haifa instruction scheduler in the
-  compiler; the new scheduler can significantly improve code on some targets.
-  --disable-haifa is currently the default on all platforms except the HPPA.
-
-  --with-gnu-as -- Specify that the compiler should assume the GNU
-  assembler (aka gas) is available. 
-
-  --with-gnu-ld -- Specify that the compiler should assume the GNU
-  linker (aka gld) is available. 
-
-  --with-stabs -- Specify that stabs debugging information should be used
-  instead of whatever format the host normally uses.  Normally GCC uses the
-  same debug format as the host system. 
-
-  --enable-multilib -- Specify that multiple target libraries
-  should be built to support different target variants, calling conventions,
-  etc.  This is the default. 
-
-  --enable-threads -- Specify that the target supports threads.
-  This only effects the Objective-C compiler and runtime library.
-
-  --enable-threads=lib -- Specify that lib is the
-  thread support library.  This only effects the Objective-C compiler  and
-  runtime library.
-
-  --with-cpu=cpu -- Specify which cpu variant the compiler should
-  generate code for by default.  This is currently only supported on the
-  RS6000/PowerPC ports.
-
-
-Some options which only apply to building cross compilers:
-
-  --with-headers=dir -- Specifies a directory which has target
-  include files.
-  --with-libs=dirs -- Specifies a list of directories which contain
-  the target runtime libraries.
-  --with-newlib -- Specifies that "newlib" is being used as the target
-  C library.   This causes __eprintf to be omitted from libgcc.a on the
-  assumption that it will be provided by newlib.
-
- 
-Note that each --enable option has a corresponding --disable option and
-that each --with option has a corresponding --without option.
-
-
-
-Last modified on December 2, 1997.
+                           Configuring egcs-1.0.1
+                                      
+   Like most GNU software, egcs must be configured before it can be
+   built. This document attempts to describe the recommended
+   configuration procedure for both native and cross targets.
+   
+   We use srcdir to refer to the toplevel source directory for egcs; we
+   use objdir to refer to the toplevel build/object directory for egcs.
+   
+   First, we highly recommend that egcs be built into a separate
+   directory than the sources. This is how we generally build egcs;
+   building where srcdir == objdir should still work, but doesn't get
+   extensive testing.
+   
+   Second, when configuring a native system, either "cc" must be in your
+   path or you must set CC in your environment before running configure.
+   Otherwise the configuration scripts may fail.
+   
+   To configure egcs:
+   
+     
+     % mkdir objdir
+     % cd objdir
+     % srcdir/configure [target] [options]
+     
+   target specification
+     * egcs has code to correctly determine the correct value for target
+       for nearly all native systems. Therefore, we highly recommend you
+       not provide a configure target when configuring a native compiler.
+     * target must be specified when configuring a cross compiler;
+       examples of valid targets would be i960-rtems, m68k-coff, sh-elf,
+       etc.
+       
+   options specification
+   
+   Use options to override several configure time options for egcs. A
+   partial list of supported options:
+     * --prefix=dirname -- Specify the toplevel installation directory.
+       This is the recommended way to install the tools into a directory
+       other than the default. The toplevel installation directory
+       defaults to /usr/local.
+       These additional options control where certain parts of the
+       distribution are installed. Normally you should not need to use
+       these options.
+          + --with-local-prefix=dirname -- Specify the installation
+            directory for local include files. The default is /usr/local.
+          + --with-gxx-include-dir=dirname -- Specify the installation
+            directory for g++ header files. The default is
+            /usr/local/include/g++.
+     * --enable-shared -- Build shared versions of the C++ runtime
+       libraries if supported --disable-shared is the default.
+     * --enable-haifa -- Enable the new Haifa instruction scheduler in
+       the compiler; the new scheduler can significantly improve code on
+       some targets. --disable-haifa is currently the default on all
+       platforms except the HPPA.
+     * --with-gnu-as -- Specify that the compiler should assume the GNU
+       assembler (aka gas) is available.
+     * --with-gnu-ld -- Specify that the compiler should assume the GNU
+       linker (aka gld) is available.
+     * --with-stabs -- Specify that stabs debugging information should be
+       used instead of whatever format the host normally uses. Normally
+       GCC uses the same debug format as the host system.
+     * --enable-multilib -- Specify that multiple target libraries should
+       be built to support different target variants, calling
+       conventions, etc. This is the default.
+     * --enable-threads -- Specify that the target supports threads. This
+       only effects the Objective-C compiler and runtime library.
+     * --enable-threads=lib -- Specify that lib is the thread support
+       library. This only effects the Objective-C compiler and runtime
+       library.
+     * --with-cpu=cpu -- Specify which cpu variant the compiler should
+       generate code for by default. This is currently only supported on
+       the RS6000/PowerPC ports.
+       
+   Some options which only apply to building cross compilers:
+     * --with-headers=dir -- Specifies a directory which has target
+       include files.
+     * --with-libs=dirs -- Specifies a list of directories which contain
+       the target runtime libraries.
+     * --with-newlib -- Specifies that "newlib" is being used as the
+       target C library. This causes __eprintf to be omitted from
+       libgcc.a on the assumption that it will be provided by newlib.
+       
+   Note that each --enable option has a corresponding --disable option
+   and that each --with option has a corresponding --without option.
+   
+     _________________________________________________________________
+                                      
+   Last modified on Jan 2, 1998.

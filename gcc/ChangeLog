@@ -1,3 +1,10 @@
+Fri Jan  2 23:40:09 1998  Jim Wilson  (wilson@cygnus.com)
+			  Jeffrey A Law  (law@cygnus.com)
+
+	* crtstuff.c (__frame_dummy): New function for irix6.
+	(__do_global_ctors): Call __frame_dummy for irix6.
+	* iris6.h (LINK_SPEC): Hide __frame_dummy too.
+	 
 Wed Dec 24 23:03:42 1997  Jim Wilson  (wilson@cygnus.com)
 
 	* mips.c (mips_expand_epilogue): Emit blockage insn before call to

@@ -1,106 +1,122 @@
-Host/Target specific installation notes for egcs-1.0
 
-alpha*-*-*
-No specific installation needs/instructions.
-
-
-i?86-*-linux*
-You will need binutils-2.8.1.0.15 or newer for exception handling to work.
-
-i?86-*-sco3.2v5*
-The SCO assembler is currently required.    The GNU assembler is not up
-to the task of switching between ELF and COFF at runtime.
-
-Unlike various prereleases of GCC, that used '-belf' and defaulted to 
-COFF, you must now use the '-melf' and '-mcoff' flags to toggle between 
-the two object file formats.     ELF is now the default.
-
-Look in gcc/config/i386/sco5.h (search for "messy") for additional
-OpenServer-specific flags.
-
-
-
-hppa*-hp-hpux*
-We highly recommend using gas/binutils-2.8 on all hppa platforms; you
-may encounter a variety of problems when using the HP assembler.
-
-hppa*-hp-hpux9
-The HP assembler has major problems on this platform.  We've tried to work
-around the worst of the problems.  However, those workarounds may be causing
-linker crashes in some circumstances; the workarounds also probably prevent
-shared libraries from working.  Use the GNU assembler to avoid these problems.
-
-The configuration scripts for egcs will also trigger a bug in the hpux9
-shell.  To avoid this problem set CONFIG_SHELL to /bin/ksh and SHELL to
-/bin/ksh in your environment.
-
-hppa*-hp-hpux10
-For hpux10.20, we highly recommend you pick up the latest sed
-patch from HP.  HP has two sites which provide patches free of charge.
-
-http://us-support.external.hp.com for US, Canada, Asia-Pacific, and
-Latin-America
-http://europe-support.external.hp.com for Europe
-
-Retrieve patch PHCO_12862.
-
-The HP assembler on these systems is much better than the hpux9 assembler,
-but still has some problems.  Most notably the assembler inserts timestamps
-into each object file it creates, causing the 3-stage comparison test to fail
-during a "make bootstrap".  You should be able to continue by saying "make all"
-after getting the failure from "make bootstrap".
-
-m68k-*-nextstep*
-You absolutely must use GNU sed and GNU make on this platform.  
-
-If you try to build the integrated C++ & C++ runtime libraries on this system
-you will run into trouble with include files.  The way to get around this is
-to use the following sequence.  Note you must have write permission to
-prefix for this sequence to work.
-
-cd objdir
-make all-texinfo all-bison all-byacc all-binutils all-gas all-ld
-cd gcc
-make bootstrap
-make install-headers-tar
-cd ..
-make bootstrap3
-
-m68k-sun-sunos4.1.1
-It is reported that you may need the GNU assembler on this platform.
-
-mips*-sgi-irix4
-mips*-sgi-irix5
-You must use GAS on these platforms, the native assembler can not handle the
-code for exception handling support on this platform.
-
-These systems don't have ranlib, which various components in egcs need; you
-should be able to avoid this problem by installing GNU binutils, which includes
-a functional ranlib for this system.
-
-You may get the following warning on irix4 platforms, it can be safely
-ignored.
+           Host/Target specific installation notes for egcs-1.0.1
+                                      
+   alpha*-*-*
+   No specific installation needs/instructions.
+   
+   i?86-*-linux*
+   You will need binutils-2.8.1.0.15 or newer for exception handling to
+   work.
+   
+   i?86-*-sco3.2v5*
+   The SCO assembler is currently required. The GNU assembler is not up
+   to the task of switching between ELF and COFF at runtime.
+   Unlike various prereleases of GCC, that used '-belf' and defaulted to
+   COFF, you must now use the '-melf' and '-mcoff' flags to toggle
+   between the two object file formats. ELF is now the default.
+   Look in gcc/config/i386/sco5.h (search for "messy") for additional
+   OpenServer-specific flags.
+   
+   i?86-pc-solaris*
+   You'll need a patch to fix an egcs bug on this platform. [1]x86
+   solaris patch
+   
+   hppa*-hp-hpux*
+   We highly recommend using gas/binutils-2.8 on all hppa platforms; you
+   may encounter a variety of problems when using the HP assembler.
+   
+   hppa*-hp-hpux9
+   The HP assembler has major problems on this platform. We've tried to
+   work around the worst of the problems. However, those workarounds may
+   be causing linker crashes in some circumstances; the workarounds also
+   probably prevent shared libraries from working. Use the GNU assembler
+   to avoid these problems.
+   The configuration scripts for egcs will also trigger a bug in the
+   hpux9 shell. To avoid this problem set CONFIG_SHELL to /bin/ksh and
+   SHELL to /bin/ksh in your environment.
+   
+   hppa*-hp-hpux10
+   For hpux10.20, we highly recommend you pick up the latest sed patch
+   from HP. HP has two sites which provide patches free of charge.
+   [2]US, Canada, Asia-Pacific, and Latin-America
+   [3]Europe
+   
+   Retrieve patch PHCO_12862.
+   
+   The HP assembler on these systems is much better than the hpux9
+   assembler, but still has some problems. Most notably the assembler
+   inserts timestamps into each object file it creates, causing the
+   3-stage comparison test to fail during a "make bootstrap". You should
+   be able to continue by saying "make all" after getting the failure
+   from "make bootstrap".
+   
+   m68k-*-nextstep*
+   You absolutely must use GNU sed and GNU make on this platform.
+   
+   If you try to build the integrated C++ & C++ runtime libraries on this
+   system you will run into trouble with include files. The way to get
+   around this is to use the following sequence. Note you must have write
+   permission to prefix for this sequence to work.
+   
+   cd objdir
+   make all-texinfo all-bison all-byacc all-binutils all-gas all-ld
+   cd gcc
+   make bootstrap
+   make install-headers-tar
+   cd ..
+   make bootstrap3
+   
+   m68k-sun-sunos4.1.1
+   It is reported that you may need the GNU assembler on this platform.
+   
+   mips*-sgi-irix4
+   mips*-sgi-irix5
+   You must use GAS on these platforms, the native assembler can not
+   handle the code for exception handling support on this platform.
+   
+   These systems don't have ranlib, which various components in egcs
+   need; you should be able to avoid this problem by installing GNU
+   binutils, which includes a functional ranlib for this system.
+   
+   You may get the following warning on irix4 platforms, it can be safely
+   ignored.
 
     warning: foo.o does not have gp tables for all its sections.
 
-mips*-sgi-irix6
-You must not use GAS on irix6 platforms; doing so will only cause problems.
+   mips*-sgi-irix6
+   You must not use GAS on irix6 platforms; doing so will only cause
+   problems.
+   
+   These systems don't have ranlib, which various components in egcs
+   need; you should be able to avoid this problem by making a dummy
+   script called ranlib which just exits with zero status and placing it
+   in your path.
+   
+   rs6000-ibm-aix*
+   powerpc-ibm-aix*
+   At least one person as reported problems with older versions of
+   gnu-make on this platform. make-3.76 is reported to work correctly.
+   
+   powerpc-*-linux-gnu*
+   You will need [4]binutils-2.8.1.0.17 for a working egcs. It is
+   strongly recommended to recompile binutils with egcs if you initially
+   built it with gcc-2.7.2.*.
+   
+   sparc-unkonwn-linux-gnulibc1
+   It has been reported that you might need binutils-2.8.1.0.17 for this
+   platform too. [5]binutils-2.8.1.0.17
+   
+   exception handling
+   
+   XXX Linux stuff -k encaps stuff
+     _________________________________________________________________
+                                      
+   Last modified on Jan 2, 1998.
 
-These systems don't have ranlib, which various components in egcs need; you
-should be able to avoid this problem by making a dummy script called ranlib
-which just exits with zero status and placing it in your path.
+References
 
-rs6000-ibm-aix*
-powerpc-ibm-aix*
-At least one person as reported problems with older versions of gnu-make on
-this platform.  make-3.76 is reported to work correctly.
-
-powerpc-*-linux-gnu*
-You will need binutils-2.8.1.0.17 from ftp://ftp.yggdrasil.com/private/hjl for
-a working egcs. It is strongly recommended to recompile binutils with egcs
-if you initially built it with gcc-2.7.2.*.
-
-
-exception handling 
-XXX Linux stuff
-Last modified on December 2, 1997.
+   1. http://www.cygnus.com/egcs/faq.html#x86solaris
+   2. http://us-support.external.hp.com/
+   3. http://europe-support.external.hp.com/
+   4. ftp://ftp.yggdrasil.com/private/hjl
+   5. ftp://ftp.yggdrasil.com/private/hjl

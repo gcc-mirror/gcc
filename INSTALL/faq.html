@@ -8,6 +8,7 @@
 <ol>
   <li><a href="#gcc-2-diff">How is egcs be different from gcc2?</a>
   <li><a href="#open-development">What is an open development model?</a>
+  <li><a href="#release-fork">Releases and Forking</a>
   <li><a href="#libc-lock">bits/libc-lock.h:  No such file or directory</a>
   <li><a href="#morelibc">`_IO_stdfile_0_lock' was not declared in this scope</a>
   <li><a href="#fortran">Problems building the Fortran compiler</a>
@@ -25,6 +26,10 @@
   <li><a href="#memexhausted">Virtual memory exhausted</a>
   <li><a href="#gas">GCC can not find GAS</a>
   <li><a href="#rh5.0">egcs does not work on Red Hat 5.0</a>
+  <li><a href="#x86solaris">Unable to bootstrap on x86 Solaris2.{5,6}</a>
+  <li><a href="#windows">EGCS with Windows</a>
+  <li><a href="#environ">cpp: Usage:... Error<a>
+  <li><a href="#kde">EGCS will not build KDE<a>
 
 </ol>
 
@@ -71,7 +76,7 @@ time to address these again.
 
 <p>With egcs, we are going to try a bazaar style<a
 href="#cathedral-vs-bazaar"><b>[1]</b></a> approach to its
-development:  We're going to be making snapshots publically available
+development:  We're going to be making snapshots publicly available
 to anyone who wants to try them; we're going to welcome anyone to join
 the development mailing list.  All of the discussions on the
 development mailing list are available via the web.  We're going to be
@@ -118,9 +123,54 @@ before.
   for discussions.
 </blockquote>
 
+<hr>
+<h2><a name="release-fork">Releases and Forking?</a></h2>
+<p>Some folks have questioned whether or not making releases is consistent
+with the goals of the egcs project and whether or not making releases is
+a fork from gcc2.
+
+<pre>
+The egcs project has several goals, including:
+
+  * Experimenting with a new development model, release process and
+  release packaging,
+
+  * Using the new development model to accelerate development of new
+  features, optimizations, etc for future inclusion in gcc,
+
+  * Providing high quality releases to the public.
+
+An egcs release is a copy of the egcs sources that the developers have
+tested and are believed to be suitable for wider scale use and testing.
+
+Making releases of stable, tested sources is both a goal and a means by
+which we hope to achieve other goals of the egcs project.
+
+The existence of a stable tested release allows egcs to be more thoroughly
+used and tested by a wider audience than is capable of testing snapshots.
+The expanded audience provides developers with critical feedback in a
+timely manner, which is beneficial to GCC as a whole and is consistent with
+the stated goals of egcs.
+
+The gcc maintainers are encouraged to migrate tested fixes and new features
+from egcs into gcc at their discretion.  egcs maintainers are willing to
+assist the gcc maintainers as time permits.  egcs periodically merges in
+changes from gcc into the egcs sources.
+
+What will keep egcs from becoming a fork is cooperation between the
+developers of gcc and egcs.
+
+We don't see this situation as significantly different than other projects
+that make releases based on some version of the gcc sources (Cygnus, g77,
+etc).  All the code is still available for inclusion in gcc at the discretion
+of the gcc maintainers.
+</pre>
 
 <hr>
 <h2><a name="libc-lock">bits/libc-lock.h: No such file or directory</a></h2>
+<p>This entry should be obsolete, egcs should handle these beta versions of
+glibc2 correctly.
+
 <p>egcs includes a tightly integrated libio and libstdc++ implementation which
 can cause problems on hosts which have libio integrated into their C library
 (most notably Linux).
@@ -134,9 +184,6 @@ and correctly handling.
 a message "bits/libc-lock.h: No such file or directory" when building egcs.
 Unfortunately, to fix this problem you will need to update your C library to
 glibc2.0.5c.
-
-<p>Late breaking news: we may have at least a partial solution for these
-problems.  So this FAQ entry may no longer be needed.
 
 <hr>
 <h2><a name="morelibc">`_IO_stdfile_0_lock' was not declared in this scope</a></h2>
@@ -194,10 +241,10 @@ on Irix 6.
 exception handling is not working correctly, then odds are you're using a
 buggy assembler.
 
-<p>We recommend binutils-2.8.0.1.15 or newer.
-<br><a href="ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.15.tar.gz"> binutils-2.8.0.1.15 source</a>
-<br><a href="ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.15.bin.tar.gz"> binutils-2.8.0.1.15 x86 binary for libc5</a>
-<br><a href="ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.15.glibc.bin.tar.gz"> binutils-2.8.0.1.15 x86 binary for glibc2</a>
+<p>We recommend binutils-2.8.1.0.15 or newer.
+<br><a href="ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.15.tar.gz"> binutils-2.8.1.0.15 source</a>
+<br><a href="ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.15.bin.tar.gz"> binutils-2.8.1.0.15 x86 binary for libc5</a>
+<br><a href="ftp://tsx-11.mit.edu/pub/linux/packages/GCC/binutils-2.8.1.0.15.glibc.bin.tar.gz"> binutils-2.8.1.0.15 x86 binary for glibc2</a>
 Or, you can try a
 <a href="ftp://ftp.cygnus.com/pub/egcs/infrastructure/gas-970915.tar.gz"> binutils snapshot</a>; however, be aware that the binutils snapshot is untested
 and may not work (or even build).  Use it at your own risk.
@@ -254,7 +301,7 @@ not recreate it.
 <p>If you get a message about unable to find "standard.exp" when trying to
 run the egcs testsuites, then your dejagnu is too old to run the egcs tests.
 You will need to get a newer version of dejagnu; we've made a
-<a href="ftp://ftp.cygnus.com/pub/egcs/infrastructure/dejagnu-971028.tar.gz">
+<a href="ftp://ftp.cygnus.com/pub/egcs/infrastructure/dejagnu-971222.tar.gz">
 dejagnu snapshot</a> available until a new version of dejagnu can be released.
 
 <hr>
@@ -320,6 +367,13 @@ for the "g++", "c++" and "g77" compiler drivers.
 you may not be able to build the kernel because objdump does not understand
 the "-k" switch.  The solution for this problem is to remove /usr/bin/encaps.
 
+<p>The reason you must remove /usr/bin/encaps is because it is an obsolete
+program that was part of older binutils distributions; the Linux kernel's
+Makefile looks for this program to decide if you have an old or a new
+binutils.  Problems occur if you installed a new binutils but haven't
+removed encaps, because the Makefile thinks you have the old one.  So zap
+it; trust us, you won't miss it.
+
 <p>You may get an internal compiler error compiling process.c in newer
 versions of the Linux kernel on x86 machines.  This is a bug in an asm
 statement in process.c, not a bug in egcs.  XXX How to fix?!?
@@ -329,7 +383,7 @@ statement in process.c, not a bug in egcs.  XXX How to fix?!?
 _X11TransSocketUNIXConnect: Can't connect: errno = 111
 </pre>
 
-<p>It's a kernel bug. The function sys_iopl in arch/i386/kernel/process.c
+<p>It's a kernel bug. The function sys_iopl in arch/i386/kernel/ioport.c
 does an illegal hack which used to work but is now broken since GCC optimizes
 more aggressively . The newer 2.1.x kernels already have a fix which should
 also work in 2.0.32.
@@ -350,16 +404,103 @@ will need to specify -Wno-return-type to turn it off.
 <p>Some configurations like irix4, irix5, hpux* require the use of the GNU
 assembler intead of the system assembler.  To ensure that egcs finds the GNU
 assembler, you should configure the GNU assembler with the same --prefix
-option as you used for egcs.  Then build & install the GNU assembler.
+option as you used for egcs.  Then build & install the GNU assembler.  After
+the GNU assembler has been installed, proceed with building egcs.
 
 <hr>
 <h2> <a name="rh5.0">egcs does not work on Red Hat 5.0</a></h2>
-<p> egcs does not currently work with Red Hat 5.0; we'll update this
-entry with more information as it becomes available.
+<p> This entry is obsolete with the release of egcs-1.0.1 which should
+handle Red Hat 5.0 correctly.
+
+<p> egcs-1.0 does not currently work with Red Hat 5.0 on some platforms; we'll
+update this entry with more information as it becomes available.
+
+<p> You may want to try this
+<a href="http://www.cygnus.com/ml/egcs/1997-Dec/0594.html"> proposed patch</a>
+for Red Hat 5.0.  Please let us know if you use this patch and whether or
+not it works.
+
+<hr>
+<h2> <a name="x86solaris">Unable to bootstrap on x86 Solaris 2.{5,6}</a></h2>
+<p> This entry is obsolete with the release of egcs-1.0.1 which should
+handle x86 Solaris systems correctly.
+
+<p>This patch should fix the problem
+
+<pre>
+Index: t-sol2
+===================================================================
+RCS file: /cvs/cvsfiles/egcs/gcc/config/i386/t-sol2,v
+retrieving revision 1.2
+diff -c -3 -p -r1.2 t-sol2
+*** t-sol2	1997/09/04 23:54:04	1.2
+--- t-sol2	1997/12/04 07:19:07
+*************** crtn.o: $(srcdir)/config/i386/sol2-cn.as
+*** 31,36 ****
+  # to produce a shared library, but since we don't know ahead of time when
+  # we will be doing that, we just always use -fPIC when compiling the
+  # routines in crtstuff.c.
+  
+! CRTSTUFF_T_CFLAGS = -fPIC
+  TARGET_LIBGCC2_CFLAGS = -fPIC
+--- 31,40 ----
+  # to produce a shared library, but since we don't know ahead of time when
+  # we will be doing that, we just always use -fPIC when compiling the
+  # routines in crtstuff.c.
++ #
++ # We must also enable optimization to avoid having any code appear after
++ # the call & alignment statement, but before we switch back to the
++ # .text section.
+  
+! CRTSTUFF_T_CFLAGS = -fPIC -O2
+  TARGET_LIBGCC2_CFLAGS = -fPIC
+</pre>
+
+<hr>
+<h2> <a name="windows">EGCS with Windows</a></h2>
+<p>egcs does not currently support windows, either natively or with the
+cygwin32 dll.  However Mumit Khan has been working on supporting Windows
+with egcs.  You should check out his site if you're interested in Windows
+support.
+<a href="http://www.xraylith.wisc.edu/~khan/software/gnu-win32">GNU Win32 related projects</a>
+
+<hr>
+<h2> <a name="environ">cpp: Usage:... Error</a></h2>
+<p>If you get an error like this when building egcs (particularly when building
+__mulsi3), then you likely have a problem with your environment variables.
+<pre>
+cpp: Usage: /usr/lib/gcc-lib/i586-unknown-linux-gnulibc1/2.7.2.3/cpp
+[switches] input output
+</pre>
+
+<p>First look for an explicit '.' in either LIBRARY_PATH or GCC_EXEC_PREFIX
+from your environment.  If you do not find an explicit '.', look for 
+an empty pathname in those variables.  Note that ':' at either the start
+or end of these variables is an implicit '.' and will cause problems.
+
+<hr>
+<h2> <a name="kde">EGCS will not build KDE</a></h2>
+<p> Previous versions of g++ accepted (as a GNU extension)
+constructor-arguments for the objects in an array of objects
+dynamically allocated with new.  Here's an example of this construct:
+
+<pre>
+    struct S { S(int); }
+    void f() { new S[3](6); }
+</pre>
+
+<p>However, this construct is not allowed by the ANSI/ISO Standard, and
+is no longer accepted by g++.
+
+<p> KDE uses such constructs and therefore will not build with egcs; note
+patches are available to fix KDE.
+
+
+
 
 <hr>
 <p><a href="index.html">Return to the egcs home page</a>
-<p><i>Last modified:  December 2, 1997</i>
+<p><i>Last modified:  Jan 2, 1998</i>
 
 </body>
 </html>

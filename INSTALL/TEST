@@ -1,28 +1,34 @@
-Testing egcs-1.0
 
-Before you install egcs, you might wish to run the egcs testsuite; this
-step is optional and may require you to download additional software.
+                             Testing egcs-1.0.1
+                                      
+   Before you install egcs, you might wish to run the egcs testsuite;
+   this step is optional and may require you to download additional
+   software.
+   
+   First, you must have downloaded the egcs testsuites; the full
+   distribution contains testsuites. If you downloaded the "core"
+   compiler plus any front ends, then you do not have the testsuites. You
+   can download the testsuites from the same site where you downloaded
+   the core distribution and language front ends.
+   
+   Second, you must have a new version of dejagnu on your system;
+   dejagnu-1.3 will not work. We have made a [1]dejagnu snapshot
+   available in ftp.cygnus.com:/pub/egcs/infrastructure until a new
+   version of dejagnu can be released.
+   
+   Assuming you've got the testsuites unpacked and have installed an
+   appropriate dejagnu, you can run the testsuite with "cd objdir; make
+   -k check". This may take a long time. Go get some lunch.
+   
+   The testing process will try to test as many components in the egcs
+   distrubution as possible, including the C, C++ and Fortran compiler as
+   well as the C++ runtime libraries.
+   
+   How to interpret test results XXX.
+     _________________________________________________________________
+                                      
+   Last modified on Jan 2, 1998.
 
-First, you must have downloaded the egcs testsuites; the full distribution
-contains testsuites.  If you downloaded the "core" compiler plus any front
-ends, then you do not have the testsuites.  You can download the testsuites
-from the same site where you downloaded the core distribution and language
-front ends.
+References
 
-Second, you must have a new version of dejagnu on your system; dejagnu-1.3
-will not work.  We have made a  dejagnu snapshot
-ftp://ftp.cygnus.com/pub/egcs/infrastructure/dejagnu-971028.tar.gz
-dejagnu snapshot available in ftp.cygnus.com:/pub/egcs/infrastructure until
-a new version of dejagnu can be released.
-
-Assuming you've got the testsuites unpacked and have installed an appropriate
-dejagnu, you can run the testsuite with "cd objdir; make -k check".
-This may take a long time.  Go get some lunch.
-
-The testing process will try to test as many components in the egcs
-distrubution as possible, including the C, C++ and Fortran compiler as
-well as the C++ runtime libraries.
-
- How to interpret test results XXX.
-
-Last modified on December 2, 1997.
+   1. ftp://ftp.cygnus.com/pub/egcs/infrastructure/dejagnu-971222.tar.gz
