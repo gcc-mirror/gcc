@@ -1689,6 +1689,9 @@ while (0)
    for the index in the tablejump instruction.  */
 #define CASE_VECTOR_MODE (TARGET_BIG_SWITCH ? TImode : DImode)
 
+/* Jump tables must be 32 bit aligned, no matter the size of the element.  */
+#define ADDR_VEC_ALIGN(ADDR_VEC) 2
+
 /* Specify the tree operation to be used to convert reals to integers.  */
 #define IMPLICIT_FIX_EXPR FIX_ROUND_EXPR
 
