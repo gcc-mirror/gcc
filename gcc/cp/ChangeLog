@@ -1,5 +1,7 @@
 Mon May 18 03:00:57 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c (make_typename_type): Use currently_open_class.
+
 	* class.c (instantiate_type): Don't abort on TREE_NONLOCAL_FLAG.
 
 Mon May 18 01:43:01 1998  Martin v. Loewis  <loewis@informatik.hu-berlin.de>
