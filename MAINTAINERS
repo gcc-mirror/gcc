@@ -103,9 +103,10 @@ build machinery (*.in)	DJ Delorie		dj@redhat.com
 build machinery (*.in)	Alexandre Oliva		aoliva@redhat.com
 docs co-maintainer	Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
 Pico-Java port		Steve Chamberlain	sac@transmeta.com
-RTEMS Ports		Joel Sherrill	
+RTEMS Ports		Joel Sherrill
 s390 port		Hartmut Penner		hpenner@de.ibm.com
 s390 port		Ulrich Weigand		uweigand@de.ibm.com
+mips port               Eric Christopher        echristo@redhat.com
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
@@ -117,7 +118,6 @@ Laurynas Biveinis				lauras@softhome.net
 Phil Blundell					pb@futuretv.com
 Hans Boehm					hboehm@gcc.gnu.org
 Andrew cagney					cagney@redhat.com
-Eric Christopher				echristo@redhat.com
 William Cohen					wcohen@redhat.com
 *Paul Eggert					eggert@twinsun.com
 Ben Elliston					bje@redhat.com
@@ -199,4 +199,3 @@ Benjamin Chelf(?)
 James Dennett(?)
 Mark Galassi(?)
 Jeff Strum(?)
-
