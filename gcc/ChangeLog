@@ -1,3 +1,7 @@
+2002-05-20  Dale Johannesen  <dalej@apple.com>
+        * combine.c (cant_combine_insn_p):  Back out my
+        previous patch.
+
 2002-05-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* params.c: Fix formatting.
