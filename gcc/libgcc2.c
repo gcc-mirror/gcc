@@ -1050,7 +1050,7 @@ __floatdisf (u)
 #endif
 
 #if defined(L_fixunsxfsi) && LONG_DOUBLE_TYPE_SIZE == 96
-#include "glimits.h"
+#include <limits.h>
 
 USItype
 __fixunsxfsi (a)
@@ -1063,7 +1063,7 @@ __fixunsxfsi (a)
 #endif
 
 #ifdef L_fixunsdfsi
-#include "glimits.h"
+#include <limits.h>
 
 USItype
 __fixunsdfsi (a)
@@ -1076,7 +1076,7 @@ __fixunsdfsi (a)
 #endif
 
 #ifdef L_fixunssfsi
-#include "glimits.h"
+#include <limits.h>
 
 USItype
 __fixunssfsi (SFtype a)
