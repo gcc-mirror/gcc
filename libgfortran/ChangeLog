@@ -1,3 +1,10 @@
+2004-12-09  David Edelsohn  <edelsohn@gnu.org>
+
+	PR bootstrap/18895
+	Revert 2004-12-07 change.
+	* Makefile.am (AM_MAKEFLAGS): Delete.
+	* Makefile.in: Regenerate.
+
 2004-12-07  Steve Ellcey  <sje@cup.hp.com>
 
 	* libgfortran/Makefile.am (AM_MAKEFLAGS): New.
