@@ -200,6 +200,11 @@ enum direction {none, upward, downward};  /* Value has this type.  */
 #define FUNCTION_ARG_BOUNDARY(MODE, TYPE)	PARM_BOUNDARY
 #endif
 
+/* Provide a default value for STRICT_ARGUMENT_NAMING.  */
+#ifndef STRICT_ARGUMENT_NAMING
+#define STRICT_ARGUMENT_NAMING 0
+#endif
+
 /* Nonzero if we do not know how to pass TYPE solely in registers.
    We cannot do so in the following cases:
 
