@@ -1,3 +1,8 @@
+2000-11-21  Loren J. Rittle  <ljrittle@acm.org>
+
+        * mkcheck.in (explanation): Retain output of all failing
+        compiles.  Don't add gratuitous space to the log file.
+
 2000-11-21  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* src/strstream.cc: Adjust includes.
