@@ -25,7 +25,9 @@
 	* config/frv/ulltof.c: New file.
 	* config/frv/umodi.c: New file.
 	* config/frv/xm-frv.h: New file.
-		
+
+	* config/frv/media.h: Removed again.
+
 2002-08-04  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcov.c (bb_file_time): New static variable.
