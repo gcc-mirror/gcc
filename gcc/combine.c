@@ -2146,10 +2146,15 @@ try_combine (i3, i2, i1)
     rtx i3links, i2links, i1links = 0;
     rtx midnotes = 0;
     register int regno;
-    /* Compute which registers we expect to eliminate.  */
-    rtx elim_i2 = (newi2pat || i2dest_in_i2src || i2dest_in_i1src
+    /* Compute which registers we expect to eliminate.  newi2pat may be setting
+       either i3dest or i2dest, so we must check it.  Also, i1dest may be the
+       same as i3dest, in which case newi2pat may be setting i1dest.  */
+    rtx elim_i2 = ((newi2pat && reg_set_p (i2dest, newi2pat))
+		   || i2dest_in_i2src || i2dest_in_i1src
 		   ? 0 : i2dest);
-    rtx elim_i1 = i1 == 0 || i1dest_in_i1src ? 0 : i1dest;
+    rtx elim_i1 = (i1 == 0 || i1dest_in_i1src
+		   || (newi2pat && reg_set_p (i1dest, newi2pat))
+		   ? 0 : i1dest);
 
     /* Get the old REG_NOTES and LOG_LINKS from all our insns and
        clear them.  */
@@ -2312,12 +2317,12 @@ try_combine (i3, i2, i1)
 	if (newi2pat && reg_set_p (i3dest_killed, newi2pat))
 	  distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i3dest_killed,
 				     NULL_RTX),
-			    NULL_RTX, i2, NULL_RTX, NULL_RTX, NULL_RTX);
+			    NULL_RTX, i2, NULL_RTX, elim_i2, elim_i1);
 	else
 	  distribute_notes (gen_rtx (EXPR_LIST, REG_DEAD, i3dest_killed,
 				     NULL_RTX),
 			    NULL_RTX, i3, newi2pat ? i2 : NULL_RTX,
-			    NULL_RTX, NULL_RTX);
+			    elim_i2, elim_i1);
       }
 
     if (i2dest_in_i2src)

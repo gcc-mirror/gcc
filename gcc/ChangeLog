@@ -6,6 +6,11 @@ Tue Nov  4 18:49:42 1997  Jeffrey A Law  (law@cygnus.com)
 
 Tue Nov  4 16:55:11 1997  Jim Wilson  <wilson@cygnus.com>
 
+	* combine.c (try_combine): When setting elim_i2, check whether newi2pat
+	sets i2dest.  When calling distribute_notes for i3dest_killed, pass
+	elim_i2 and elim_i1.  When setting elim_i1, check if newi2pat
+	sets i1dest.
+
 	* mips.md (insv, extzv, extv): Add change_address call.
 	(movsi_ulw, movsi_usw): Change QImode to BLKmode in pattern.
 
