@@ -124,6 +124,18 @@ Boston, MA 02111-1307, USA.  */
 %{mabi=64: -D__mips64} \
 %{!mabi*: -D__mips64}"
 
+/* The GNU C++ standard library requires that __EXTENSIONS__ and
+   _SGI_SOURCE be defined on at least irix6.2 and probably all irix6
+   prior to 6.5.  They normally get defined in SUBTARGET_CPP_SPEC if
+   !ansi, for g++ we want them regardless.  We don't need this on
+   irix6.5 itself, but it shouldn't hurt other than the namespace
+   polution.  */
+#undef CPLUSPLUS_CPP_SPEC
+#define CPLUSPLUS_CPP_SPEC "\
+-D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS \
+%{ansi:-D__EXTENSIONS__ -D_SGI_SOURCE} %(cpp) \
+"
+
 /* Irix 6 uses DWARF-2.  */
 #define DWARF2_DEBUGGING_INFO
 #define MIPS_DEBUGGING_INFO

@@ -44,27 +44,11 @@
 // the command-line.
 #undef _POSIX_SOURCE
 
-/* On at least irix6.2 (which uses this file,) the header files are
-   very fragile and depend heavily on _SGI_SOURCE and __EXTENSIONS__
-   being defined.  If they're not, then features disappear that
-   configure was relying on which then breaks the libstdc++ headers.
-   These macros are normally implicitly defined by the command-line,
-   however they are not defined when -ansi is used, and -ansi is
-   passed to the testsuite.  The g++ test results (where it uses
-   libstdc++ headers) get dozens of extra failures without these
-   macros, so ensure they always are defined here.  */
-#ifndef _SGI_SOURCE
-# define _SGI_SOURCE
-#endif
-#ifndef __EXTENSIONS__
-# define __EXTENSIONS__
-#endif
-
 #define __off_t off_t
 #define __off64_t off64_t
 #define __ssize_t ssize_t
 
-// GCC does not use thunks on IRIX.
+// GCC does not use thunks on IRIX. 
 #define _G_USING_THUNKS 0
 
 #define __glibcpp_long_double_bits 64
@@ -74,3 +58,4 @@
 #endif
 
 #endif
+
