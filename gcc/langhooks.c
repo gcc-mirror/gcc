@@ -208,6 +208,13 @@ lhd_type_promotes_to (tree type ATTRIBUTE_UNUSED)
   abort ();
 }
 
+/* Registration of machine- or os-specific builtin types.  */
+void
+lhd_register_builtin_type (tree type ATTRIBUTE_UNUSED, 
+			   const char* name ATTRIBUTE_UNUSED)
+{
+}
+
 /* Invalid use of an incomplete type.  */
 void
 lhd_incomplete_type_error (tree value ATTRIBUTE_UNUSED, tree type)

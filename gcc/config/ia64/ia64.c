@@ -7694,6 +7694,48 @@ ia64_init_builtins (void)
   tree void_ftype_pdi
     = build_function_type_list (void_type_node, pdi_type_node, NULL_TREE);
 
+  tree fpreg_type;
+
+  /* The __fpreg type.  */
+  fpreg_type = make_node (REAL_TYPE);
+  /* ??? Once the IA64 back end supports both 80-bit and 128-bit
+     floating types, this type should have XFmode, not TFmode.
+     TYPE_PRECISION should be 80 bits, not 128.  And, the back end
+     should know to load/save __fpreg variables using the ldf.fill and
+     stf.spill instructions.  */
+  TYPE_PRECISION (fpreg_type) = 128;
+  layout_type (fpreg_type);
+  (*lang_hooks.types.register_builtin_type) (fpreg_type, "__fpreg");
+
+  /* The __float80 type.  */
+  if (INTEL_EXTENDED_IEEE_FORMAT)
+    /* The __float80 type is a synonym for "long double".  */
+    (*lang_hooks.types.register_builtin_type) (long_double_type_node,
+					       "__float80");
+  else
+    {
+      tree float80_type = make_node (REAL_TYPE);
+      /* ??? Once the IA64 back end supports both 80-bit and 128-bit
+	 floating types, this type should have XFmode, not TFmode.
+	 TYPE_PRECISION should be 80 bits, not 128.  */
+      TYPE_PRECISION (float80_type) = 128;
+      layout_type (float80_type);
+      (*lang_hooks.types.register_builtin_type) (float80_type, "__float80");
+    }
+
+  /* The __float128 type.  */
+  if (INTEL_EXTENDED_IEEE_FORMAT)
+    {
+      tree float128_type = make_node (REAL_TYPE);
+      TYPE_PRECISION (float128_type) = 128;
+      layout_type (float128_type);
+      (*lang_hooks.types.register_builtin_type) (float128_type, "__float128");
+    }
+  else
+    /* This is a synonym for "long double".  */
+    (*lang_hooks.types.register_builtin_type) (long_double_type_node,
+					       "__float128");
+
 #define def_builtin(name, type, code) \
   builtin_function ((name), (type), (code), BUILT_IN_MD, NULL, NULL_TREE)
 

@@ -136,6 +136,15 @@ struct lang_hooks_for_types
      arguments.  The default hook aborts.  */
   tree (*type_promotes_to) (tree);
 
+  /* Register TYPE as a builtin type with the indicated NAME.  The
+     TYPE is placed in the outermost lexical scope.  The semantics
+     should be analogous to:
+
+       typedef TYPE NAME;
+
+     in C.  The default hook ignores the declaration.  */
+  void (*register_builtin_type) (tree, const char *);
+
   /* This routine is called in tree.c to print an error message for
      invalid use of an incomplete type.  VALUE is the expression that
      was used (or 0 if that isn't known) and TYPE is the type that was
