@@ -1,3 +1,8 @@
+Fri Mar 26 19:42:19 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (combine_givs): Fix index into can_combine when doing
+	benefit adjustment for remaining givs when having combined a giv.
+
 Fri Mar 26 11:38:01 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/t-arm-elf (EXTRA_MULTILIB_PARTS): Define.

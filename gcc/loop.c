@@ -7001,7 +7001,7 @@ restart:
 	  for (j = 0; j < giv_count; ++j)
 	    {
 	      int m = stats[j].giv_number;
-	      if (can_combine[m*giv_count + j])
+	      if (can_combine[m*giv_count + i])
 		stats[j].total_benefit -= g1->benefit + extra_benefit;
 	    }
 
