@@ -1,3 +1,7 @@
+2002-10-22  Geoffrey Keating  <geoffk@apple.com>
+
+	* btest-gcc.sh: Add gdb.sum to TESTLOGS only when GDB testsuite is run.
+
 2002-10-11  Geoffrey Keating  <geoffk@apple.com>
 
 	* objs-gcc.sh: Don't install GDB testsuite if GDB was not built.
