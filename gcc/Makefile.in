@@ -658,7 +658,8 @@ crtend.o:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
 
 # C language specific files.
 
-c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h c-tree.h input.h flags.h
+c-parse.o : $(srcdir)/c-parse.c $(CONFIG_H) $(TREE_H) c-lex.h c-parse.h \
+    c-tree.h input.h flags.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/c-parse.c
 $(srcdir)/c-parse.c $(srcdir)/c-parse.h: $(srcdir)/c-parse.y
 	cd $(srcdir); $(BISON) $(BISONFLAGS) -d c-parse.y -o c-parse.c
@@ -1155,11 +1156,11 @@ unprotoize.1:	$(srcdir)/proto-man ./cpp
 
 # This info describes the target machine, so compile with GCC just built.
 SYSCALLS.c.X: $(srcdir)/sys-types.h $(srcdir)/sys-protos.h $(GCC_PASSES)
-	-rm -f SYSCALLS.c
+	-rm -f SYSCALLS.c tmp-SYSCALLS.s
 	cat $(srcdir)/sys-types.h $(srcdir)/sys-protos.h > SYSCALLS.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-	  -aux-info $@ -S -o /dev/null SYSCALLS.c
-	-rm -f SYSCALLS.c
+	  -aux-info $@ -S -o tmp-SYSCALLS.s SYSCALLS.c
+	-rm -f SYSCALLS.c tmp-SYSCALLS.s
 
 test-protoize-simple: ./protoize ./unprotoize $(GCC_PASSES)
 	-rm -f tmp-proto.[cso]
@@ -1223,7 +1224,7 @@ mostlyclean:
 	for name in $(LIB1FUNCS); do rm -f $${name}.c; done
 # Delete other temporary files.
 	-rm -f tmp-float.h tmp-gcc.xtar.Z tmp-limits.h gccnew
-	-rm -f tmp-foo1 tmp-foo2 tmp-proto.* tmp-unproto.1
+	-rm -f tmp-foo1 tmp-foo2 tmp-proto.* tmp-unproto.1 tmp-SYSCALLS.s
 # Delete the stamp files.
 	-rm -f stamp-* tmp-*
 # Delete debugging dump files.
