@@ -804,9 +804,16 @@ struct sh_args {
    This macro is only used in this file. */
 
 #define PASS_IN_REG_P(CUM, MODE, TYPE) \
-  (ROUND_REG ((CUM), (MODE)) < NPARM_REGS (MODE)		\
-   && ((TYPE) == 0 || ! TREE_ADDRESSABLE ((tree)(TYPE)))	\
-   && (! TARGET_SH3E || (ROUND_REG((CUM), (MODE)) + (GET_MODE_SIZE(MODE)/4) <= NPARM_REGS (MODE))))
+  (((TYPE) == 0 || ! TREE_ADDRESSABLE ((tree)(TYPE))) \
+   && (TARGET_SH3E \
+       ? ((MODE) == BLKmode \
+	  ? (((CUM).arg_count[(int) SH_ARG_INT] * UNITS_PER_WORD \
+	      + int_size_in_bytes (TYPE)) \
+	     <= NPARM_REGS (SImode) * UNITS_PER_WORD) \
+	  : ((ROUND_REG((CUM), (MODE)) \
+	      + HARD_REGNO_NREGS (BASE_ARG_REG (MODE), (MODE))) \
+	     <= NPARM_REGS (MODE))) \
+       : ROUND_REG ((CUM), (MODE)) < NPARM_REGS (MODE)))
 
 /* Define where to put the arguments to a function.
    Value is zero to push the argument on the stack,
@@ -1755,9 +1762,14 @@ sh_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
     (LENGTH) = align_length (X);				\
   if (GET_CODE (X) == JUMP_INSN					\
       && GET_CODE (PATTERN (X)) == ADDR_DIFF_VEC)		\
-    /* The code before an ADDR_DIFF_VEC is even aligned, thus	\
-       any odd estimate is wrong.  */				\
-    (LENGTH) &= ~1;
+    {								\
+      /* The code before an ADDR_DIFF_VEC is even aligned,	\
+	 thus any odd estimate is wrong.  */			\
+      (LENGTH) &= ~1;						\
+      /* If not optimizing, the alignment is implicit.  */	\
+      if (! optimize)						\
+	(LENGTH) += 2;						\
+    }
 
 /* Enable a bug fix for the shorten_branches pass.  */
 #define SHORTEN_WITH_ADJUST_INSN_LENGTH
