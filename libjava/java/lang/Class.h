@@ -1,6 +1,6 @@
 // Class.h - Header file for java.lang.Class.  -*- c++ -*-
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -364,6 +364,7 @@ private:
 
   friend class _Jv_BytecodeVerifier;
   friend class gnu::gcj::runtime::StackTrace;
+  friend class java::io::VMObjectStreamClass;
 
   // Chain for class pool.
   jclass next;

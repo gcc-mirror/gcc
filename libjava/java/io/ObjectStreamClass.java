@@ -525,7 +525,7 @@ public class ObjectStreamClass implements Serializable
       }
 
       // write class initializer method if present
-      if (hasClassInitializer (cl))
+      if (VMObjectStreamClass.hasClassInitializer (cl))
       {
 	data_out.writeUTF ("<clinit>");
 	data_out.writeInt (Modifier.STATIC);
@@ -611,31 +611,6 @@ public class ObjectStreamClass implements Serializable
       }
 
     return o;
-  }
-
-
-  // Returns true if CLAZZ has a static class initializer
-  // (a.k.a. <clinit>).
-  private static boolean hasClassInitializer (Class clazz)
-  {
-    Method m = null;
-
-    try
-      {
-	/*
-	 * There exists a problem here, according to the spec
-	 * clazz.getDeclaredMethod ("<clinit>", classArgs);
-	 * will always throw NoSuchMethodException, even if the static 
-	 * intializer does exist.
-	 */
-	Class classArgs[] = {};
-	m = clazz.getDeclaredMethod ("<clinit>", classArgs);
-      }
-    catch (java.lang.NoSuchMethodException e)
-      {
-      }
-
-    return m != null;
   }
 
   public static final ObjectStreamField[] NO_FIELDS = {};
