@@ -1,3 +1,8 @@
+2004-01-22  Olivier Hainque  <hainque@act-europe.fr>
+
+	* config/sparc/sparc.c (function_arg_record_value_1): Fix
+	computation of the number of integer registers required.
+
 2004-01-22  Hartmut Penner  <hpenner@de.ibm.com>
 
 	* gcc/config/rs6000/rs6000.c (function_arg) Handle 
