@@ -6,7 +6,7 @@ need a current DejaGnu snapshot, which is available from
 ftp://gcc.gnu.org/pub/gcc/infrastructure, for example.
 
 These tests are included "as is". If any of them fails, do not report
-a bug.  Bug reports for DejaGnu can go to bug-dejagnu@prep.ai.mit.edu.
+a bug.  Bug reports for DejaGnu can go to bug-dejagnu@gnu.org.
 Discussion and comments about this testsuite should be sent to
 gcc@gcc.gnu.org; additions and changes to should go to sent to
 gcc-patches@gcc.gnu.org.

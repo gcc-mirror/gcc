@@ -1,3 +1,9 @@
+2005-03-31  Ben Elliston  <bje@au.ibm.com>
+
+	* README: Update the DejaGnu bug reporting address.
+	* lib/c-torture.exp: Remove the DejaGnu bug reporting address.
+	* lib/objc-torture.exp: Likewise.
+
 2005-03-30  Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR c/772
