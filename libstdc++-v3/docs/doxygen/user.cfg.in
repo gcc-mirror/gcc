@@ -201,7 +201,7 @@ TAB_SIZE               = 4
 # disable (NO) the todo list. This list is created by putting \todo 
 # commands in the documentation.
 
-GENERATE_TODOLIST      = NO
+GENERATE_TODOLIST      = YES
 
 # The GENERATE_TESTLIST tag can be used to enable (YES) or 
 # disable (NO) the test list. This list is created by putting \test 
@@ -223,7 +223,8 @@ GENERATE_BUGLIST       = YES
 # You can put \n's in the value part of an alias to insert newlines.
 
 ALIASES                = "maint=@if maint" \
-                         "endmaint=@endif"
+                         "endmaint=@endif" \
+	"doctodo=@todo\nDoc me!  See docs/doxygen/TODO and http://gcc.gnu.org/ml/libstdc++/2002-02/msg00003.html for more."
 
 # The ENABLED_SECTIONS tag can be used to enable conditional 
 # documentation sections, marked by \if sectionname ... \endif.

@@ -1,3 +1,15 @@
+2002-02-08  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/doxygen/TODO:  Update.
+	* docs/doxygen/doxygroups.cc:  Tweak __gnu_cxx description.
+	* docs/doxygen/mainpage.html:  Add TODO list link.
+	* docs/doxygen/user.cfg.in:  Add @doctodo hook.
+	* docs/doxygen/tables.html:  New file, emoty structure only.
+
+	* include/bits/stl_iterator.h:  Doxygenate just about everything.
+	* include/bits/stl_iterator_base_funcs.h:  Ditto, clean up spaces.
+	* include/bits/stl_iterator_base_types.h:  Add notes.
+
 2002-02-07  Stephan Buys  <sbproxy@icon.co.za>
 
 	* include/bits/stl_map.h:  Tweak doxygen markup.
