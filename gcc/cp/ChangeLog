@@ -1,3 +1,15 @@
+2002-03-26  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/5682
+	* cp-tree.h (BINFO_PRIMARY_P): Explain meaning better.
+	(dfs_skip_nonprimary_vbases_unmarkedp): Remove.
+	(dfs_skip_nonprimary_vbases_markedp): Remove.
+	* search.c (get_shared_vbase_if_not_primary): Remove.
+	(dfs_skip_nonprimary_vbases_unmarkedp): Remove.
+	(dfs_skip_nonprimary_vbases_markedp): Remove.
+	(dfs_unmarked_real_bases_queue_p): Just get the canonical binfo.
+	(dfs_marked_real_bases_queue_p): Likewise.
+
 2002-03-26  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/4884.

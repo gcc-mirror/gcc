@@ -1632,12 +1632,10 @@ struct lang_type
 #define SET_BINFO_PUSHDECLS_MARKED(NODE) SET_BINFO_VTABLE_PATH_MARKED (NODE)
 #define CLEAR_BINFO_PUSHDECLS_MARKED(NODE) CLEAR_BINFO_VTABLE_PATH_MARKED (NODE)
 
-/* Nonzero if this BINFO is a primary base class.
+/* Nonzero if this BINFO is a primary base class.  Note, this can be
+   set for non-canononical virtual bases. For a virtual primary base
+   you might also need to check whether it is canonical.  */
 
-   In the TYPE_BINFO hierarchy, this flag is never set for a base
-   class of a non-primary virtual base.  This flag is only valid for
-   paths (given by BINFO_INHERITANCE_CHAIN) that really exist in the
-   final object.  */
 #define BINFO_PRIMARY_P(NODE) \
   (BINFO_PRIMARY_BASE_OF (NODE) != NULL_TREE)
 
@@ -4094,8 +4092,6 @@ extern tree dfs_walk_real                      PARAMS ((tree,
 extern tree dfs_unmark                          PARAMS ((tree, void *));
 extern tree markedp                             PARAMS ((tree, void *));
 extern tree unmarkedp                           PARAMS ((tree, void *));
-extern tree dfs_skip_nonprimary_vbases_unmarkedp PARAMS ((tree, void *));
-extern tree dfs_skip_nonprimary_vbases_markedp  PARAMS ((tree, void *));
 extern tree dfs_unmarked_real_bases_queue_p     PARAMS ((tree, void *));
 extern tree dfs_marked_real_bases_queue_p       PARAMS ((tree, void *));
 extern tree dfs_skip_vbases                     PARAMS ((tree, void *));
