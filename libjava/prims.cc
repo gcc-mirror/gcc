@@ -180,6 +180,24 @@ _Jv_makeUtf8Const (char* s, int len)
   return (m);
 }
 
+_Jv_Utf8Const *
+_Jv_makeUtf8Const (jstring string)
+{
+  jint hash = string->hashCode ();
+  jint len = _Jv_GetStringUTFLength (string);
+
+  Utf8Const* m = (Utf8Const*)
+    _Jv_AllocBytesChecked (sizeof(Utf8Const) + len + 1);
+
+  m->hash = hash;
+  m->length = len;
+
+  _Jv_GetStringUTFRegion (string, 0, string->length (), m->data);
+  m->data[len] = 0;
+  
+  return m;
+}
+
 
 
 #ifdef DEBUG
@@ -298,7 +316,10 @@ _Jv_NewObjectArray (jsize count, jclass elementClass, jobject init)
     JvThrow (no_memory);
 
   size_t size = count * sizeof (jobject) + sizeof (__JArray);
-  jclass clas = _Jv_FindArrayClass (elementClass);
+
+  // FIXME: second argument should be "current loader" //
+  jclass clas = _Jv_FindArrayClass (elementClass, 0);
+
   jobjectArray obj = (jobjectArray) _Jv_AllocArray (size);
   if (! obj)
     JvThrow (no_memory);
@@ -338,7 +359,7 @@ _Jv_NewPrimArray (jclass eltype, jint count)
   arr->length = count;
   // Note that we assume we are given zeroed memory by the allocator.
 
-  jclass klass = _Jv_FindArrayClass (eltype);
+  jclass klass = _Jv_FindArrayClass (eltype, 0);
   // Set the vtbl last to avoid problems if the GC happens during the
   // window in this function between the allocation and this
   // assignment.
@@ -531,9 +552,11 @@ _Jv_FindClassFromSignature (char *sig, java::lang::ClassLoader *loader)
 	  ;
 	_Jv_Utf8Const *name = _Jv_makeUtf8Const (&sig[1], i - 1);
 	return _Jv_FindClass (name, loader);
+
       }
     case '[':
-      return _Jv_FindArrayClass (_Jv_FindClassFromSignature (&sig[1], loader));
+      return _Jv_FindArrayClass (_Jv_FindClassFromSignature (&sig[1], loader),
+				 loader);
     }
   JvFail ("couldn't understand class signature");
   return NULL;			// Placate compiler.
@@ -588,15 +611,27 @@ JvRunMain (jclass klass, int argc, const char **argv)
   LTDL_SET_PRELOADED_SYMBOLS ();
 #endif
 
-  arg_vec = JvConvertArgv (argc - 1, argv + 1);
-  main_group = new java::lang::ThreadGroup (23);
-  main_thread = new java::lang::FirstThread (main_group, klass, arg_vec);
+  if (klass == NULL)
+    {
+      arg_vec = JvConvertArgv (argc - 2, argv + 2);
+      main_group = new java::lang::ThreadGroup (23);
+      main_thread = new java::lang::FirstThread (main_group,
+						 JvNewStringLatin1 (argv[1]),
+						 arg_vec);
+    }
+  else
+    {
+      arg_vec = JvConvertArgv (argc - 1, argv + 1);
+      main_group = new java::lang::ThreadGroup (23);
+      main_thread = new java::lang::FirstThread (main_group, klass, arg_vec);
+    }
 
   main_thread->start();
   _Jv_ThreadWait ();
 
   java::lang::Runtime::getRuntime ()->exit (0);
 }
+
 
 
 
@@ -630,7 +665,7 @@ _Jv_divI (jint dividend, jint divisor)
   if (divisor == 0)
     _Jv_Throw (arithexception);
   
-  if (dividend == 0x80000000L && divisor == -1)
+  if (dividend == (jint) 0x80000000L && divisor == -1)
     return dividend;
 
   return dividend / divisor;
@@ -642,7 +677,7 @@ _Jv_remI (jint dividend, jint divisor)
   if (divisor == 0)
     _Jv_Throw (arithexception);
   
-  if (dividend == 0x80000000L && divisor == -1)
+  if (dividend == (jint) 0x80000000L && divisor == -1)
     return 0;
 
   return dividend % divisor;
@@ -654,7 +689,7 @@ _Jv_divJ (jlong dividend, jlong divisor)
   if (divisor == 0)
     _Jv_Throw (arithexception);
   
-  if (dividend == 0x8000000000000000LL && divisor == -1)
+  if (dividend == (jlong) 0x8000000000000000LL && divisor == -1)
     return dividend;
 
   return dividend / divisor;
@@ -666,9 +701,15 @@ _Jv_remJ (jlong dividend, jlong divisor)
   if (divisor == 0)
     _Jv_Throw (arithexception);
   
-  if (dividend == 0x8000000000000000LL && divisor == -1)
+  if (dividend == (jlong) 0x8000000000000000LL && divisor == -1)
     return 0;
 
   return dividend % divisor;
 }
+
+
+
+
+
+
 

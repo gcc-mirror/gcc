@@ -39,6 +39,8 @@ details.  */
 #include <java/lang/System.h>
 #include <java/lang/SecurityManager.h>
 
+#include <java-cpool.h>
+
 
 
 #define CloneableClass _CL_Q34java4lang9Cloneable
@@ -58,28 +60,6 @@ extern java::lang::Class FieldClass;
 static _Jv_Utf8Const *void_signature = _Jv_makeUtf8Const ("()V", 3);
 static _Jv_Utf8Const *clinit_name = _Jv_makeUtf8Const ("<clinit>", 8);
 static _Jv_Utf8Const *init_name = _Jv_makeUtf8Const ("<init>", 6);
-
-// These are the possible values for the `state' field.  They more or
-// less follow the section numbers in the Java Language Spec.  Right
-// now we don't bother to represent other interesting states, e.g. the
-// states a class might inhabit before it is prepared.  Note that
-// ordering is important here; in particular `resolved' must come
-// between `nothing' and the other states.
-#define STATE_NOTHING      0
-#define STATE_RESOLVED     1
-#define STATE_IN_PROGRESS  6
-#define STATE_DONE         9
-#define STATE_ERROR       10
-
-// Size of local hash table.
-#define HASH_LEN 256
-
-// Hash function for Utf8Consts.
-#define HASH_UTF(Utf) (((Utf)->hash) % HASH_LEN)
-
-// This is the table we use to keep track of loaded classes.  See Spec
-// section 12.2.
-static jclass loaded_classes[HASH_LEN];
 
 
 
@@ -111,6 +91,9 @@ java::lang::Class::forName (jstring className)
 #endif
   if (! klass)
     JvThrow (new java::lang::ClassNotFoundException (className));
+
+  _Jv_InitClass (klass);
+
   return klass;
 }
 
@@ -380,33 +363,13 @@ java::lang::Class::newInstance (void)
   return r;
 }
 
-// Initialize the constants.
 void
-java::lang::Class::resolveConstants (void)
+java::lang::Class::finalize (void)
 {
-  for (int i = 0; i < constants.size; ++i)
-    {
-      if (constants.tags[i] == CONSTANT_String)
-	{
-	  jstring str;
-	  str = _Jv_NewStringUtf8Const ((_Jv_Utf8Const *) constants.data[i]);
-	  constants.data[i] = (void *) str;
-	  constants.tags[i] = CONSTANT_ResolvedString;
-	}
-      else if (constants.tags[i] == CONSTANT_Class)
-	{
-	  _Jv_Utf8Const *name = (_Jv_Utf8Const *) constants.data[i];
-	  jclass klass = _Jv_FindClassFromSignature (name->data, loader);
-	  if (! klass)
-	    {
-	      jstring str = _Jv_NewStringUtf8Const (name);
-	      JvThrow (new java::lang::ClassNotFoundException (str));
-	    }
-
-	  constants.data[i] = (void *) klass;
-	  constants.tags[i] = CONSTANT_ResolvedClass;
-	}
-    }
+#ifdef INTERPRETER
+  JvAssert (_Jv_IsInterpretedClass (this));
+  _Jv_UnregisterClass (this);
+#endif
 }
 
 // FIXME.
@@ -424,38 +387,52 @@ void
 java::lang::Class::initializeClass (void)
 {
   // Short-circuit to avoid needless locking.
-  if (state == STATE_DONE)
+  if (state == JV_STATE_DONE)
     return;
 
-  // Step 1.
-  _Jv_MonitorEnter (this);
-
-  // FIXME: This should actually be handled by calling into the class
-  // loader.  For now we put it here.
-  if (state < STATE_RESOLVED)
+  // do this before we enter the monitor below, since this can cause
+  // exceptions.  Here we assume, that reading "state" is an atomic
+  // operation, I pressume that is true? --Kresten
+  if (state < JV_STATE_LINKED)
     {
-      // We set the state before calling resolveConstants to avoid
-      // infinite recursion when processing String or Class.
-      state = STATE_RESOLVED;
-      resolveConstants ();
+#ifdef INTERPRETER
+      if (_Jv_IsInterpretedClass (this))
+	{
+	  java::lang::ClassLoader::resolveClass (this);
+
+	  // Step 1.
+	  _Jv_MonitorEnter (this);
+	}
+      else
+#endif
+        {
+          // Step 1.
+	  _Jv_MonitorEnter (this);
+	  _Jv_InternClassStrings (this);
+	}
+    }
+  else
+    {
+      // Step 1.
+      _Jv_MonitorEnter (this);
     }
 
   // Step 2.
   java::lang::Thread *self = java::lang::Thread::currentThread();
   // FIXME: `self' can be null at startup.  Hence this nasty trick.
   self = (java::lang::Thread *) ((long) self | 1);
-  while (state == STATE_IN_PROGRESS && thread && thread != self)
+  while (state == JV_STATE_IN_PROGRESS && thread && thread != self)
     wait ();
 
   // Steps 3 &  4.
-  if (state == STATE_DONE || state == STATE_IN_PROGRESS || thread == self)
+  if (state == JV_STATE_DONE || state == JV_STATE_IN_PROGRESS || thread == self)
     {
       _Jv_MonitorExit (this);
       return;
     }
 
   // Step 5.
-  if (state == STATE_ERROR)
+  if (state == JV_STATE_ERROR)
     {
       _Jv_MonitorExit (this);
       JvThrow (new java::lang::NoClassDefFoundError);
@@ -463,7 +440,7 @@ java::lang::Class::initializeClass (void)
 
   // Step 6.
   thread = self;
-  state = STATE_IN_PROGRESS;
+  state = JV_STATE_IN_PROGRESS;
   _Jv_MonitorExit (this);
 
   // Step 7.
@@ -477,7 +454,7 @@ java::lang::Class::initializeClass (void)
 	{
 	  // Caught an exception.
 	  _Jv_MonitorEnter (this);
-	  state = STATE_ERROR;
+	  state = JV_STATE_ERROR;
 	  notify ();
 	  _Jv_MonitorExit (this);
 	  JvThrow (except);
@@ -492,7 +469,7 @@ java::lang::Class::initializeClass (void)
   if (! except)
     {
       _Jv_MonitorEnter (this);
-      state = STATE_DONE;
+      state = JV_STATE_DONE;
     }
   else
     {
@@ -503,7 +480,7 @@ java::lang::Class::initializeClass (void)
 	  except = hackTrampoline(2, except);
 	}
       _Jv_MonitorEnter (this);
-      state = STATE_ERROR;
+      state = JV_STATE_ERROR;
     }
   notify ();
   _Jv_MonitorExit (this);
@@ -530,6 +507,64 @@ _Jv_GetMethodLocal (jclass klass, _Jv_Utf8Const *name,
   return NULL;
 }
 
+#define MCACHE_SIZE 1013
+
+struct _Jv_mcache {
+  jclass klass;
+  _Jv_Method *method;
+};
+
+static _Jv_mcache method_cache[MCACHE_SIZE];
+static int method_cache_count;
+
+static void*
+_Jv_FindMethodInCache (jclass klass,
+		       _Jv_Utf8Const *name,
+		       _Jv_Utf8Const *signature)
+{
+  for (int index = name->hash % MCACHE_SIZE;
+       method_cache[index].klass != NULL;
+       index = (index+1) % MCACHE_SIZE)
+    {
+      _Jv_mcache *mc = (method_cache+index);
+      _Jv_Method *m  = mc->method;
+
+      if (mc->klass == klass
+	  && m != NULL		// thread safe check
+	  && _Jv_equalUtf8Consts (m->name, name)
+	  && _Jv_equalUtf8Consts (m->signature, signature))
+	{
+	  return mc->method->ncode;
+	}
+    }  
+  return NULL;
+}
+
+static void
+_Jv_AddMethodToCache (jclass klass,
+			_Jv_Method *method)
+{
+  _Jv_MonitorEnter (&ClassClass); 
+
+  if (method_cache_count > MCACHE_SIZE*2/3)
+    {
+      for (int i = 0; i < MCACHE_SIZE; i++)
+	method_cache[i].klass = 0;
+    }
+
+  for (int index = method->name->hash % MCACHE_SIZE;
+       method_cache[index].klass != NULL;
+       index = (index+1) % MCACHE_SIZE)
+    {
+      method_cache[index].method = method;
+      method_cache[index].klass = klass;
+    }
+
+  method_cache_count += 1;
+  
+  _Jv_MonitorExit (&ClassClass);
+}
+
 void *
 _Jv_LookupInterfaceMethod (jclass klass, _Jv_Utf8Const *name,
 			   _Jv_Utf8Const *signature)
@@ -539,6 +574,14 @@ _Jv_LookupInterfaceMethod (jclass klass, _Jv_Utf8Const *name,
   // call a method of a class until the class is linked.  But this
   // captures the general idea.
   // klass->getClassLoader()->resolveClass(klass);
+  // 
+  // KKT: This is unnessecary, exactly for the reason you present: 
+  // _Jv_LookupInterfaceMethod is only called on object instances, and
+  // such have already been initialized (which includes resolving).
+
+  void *ncode = _Jv_FindMethodInCache (klass, name, signature);
+  if (ncode != 0)
+    return ncode;
 
   for (; klass; klass = klass->getSuperclass())
     {
@@ -553,6 +596,8 @@ _Jv_LookupInterfaceMethod (jclass klass, _Jv_Utf8Const *name,
       if (! java::lang::reflect::Modifier::isPublic(meth->accflags))
 	JvThrow (new java::lang::IllegalAccessError);
 
+      _Jv_AddMethodToCache (klass, meth);
+
       return meth->ncode;
     }
   JvThrow (new java::lang::IncompatibleClassChangeError);
@@ -563,219 +608,6 @@ void
 _Jv_InitClass (jclass klass)
 {
   klass->initializeClass();
-}
-
-// This function is called many times during startup, before main() is
-// run.  We do our runtime initialization here the very first time we
-// are called.  At that point in time we know for certain we are
-// running single-threaded, so we don't need to lock when modifying
-// `init'.  CLASSES is NULL-terminated.
-void
-_Jv_RegisterClasses (jclass *classes)
-{
-  static bool init = false;
-
-  if (! init)
-    {
-      init = true;
-      _Jv_InitThreads ();
-      _Jv_InitGC ();
-      _Jv_InitializeSyncMutex ();
-    }
-
-  JvSynchronize sync (&ClassClass);
-  for (; *classes; ++classes)
-    {
-      jclass klass = *classes;
-      jint hash = HASH_UTF (klass->name);
-      klass->next = loaded_classes[hash];
-      loaded_classes[hash] = klass;
-    }
-}
-
-void
-_Jv_RegisterClass (jclass klass)
-{
-  jclass classes[2];
-  classes[0] = klass;
-  classes[1] = NULL;
-  _Jv_RegisterClasses (classes);
-}
-
-jclass
-_Jv_FindClassInCache (_Jv_Utf8Const *name, java::lang::ClassLoader *loader)
-{
-  JvSynchronize sync (&ClassClass);
-  jint hash = HASH_UTF (name);
-  jclass klass;
-  for (klass = loaded_classes[hash]; klass; klass = klass->next)
-    {
-      if (loader == klass->loader && _Jv_equalUtf8Consts (name, klass->name))
-	break;
-    }
-  return klass;
-}
-
-#if 0
-jclass
-_Jv_FindClassInCache (jstring name, java::lang::ClassLoader *loader)
-{
-  JvSynchronize sync (&ClassClass);
-  jint hash = name->hashCode();
-  jclass klass = loaded_classes[(_Jv_ushort) hash % HASH_LEN];
-  for ( ; klass; klass = klass->next)
-    {
-      if (loader == klass->loader
-	  && _Jv_equalUtf8Consts (klass->name, name, hash))
-	break;
-    }
-  return klass;
-}
-#endif
-
-jclass
-_Jv_FindClass (_Jv_Utf8Const* name, java::lang::ClassLoader *loader)
-{
-  jclass klass = _Jv_FindClassInCache (name, loader);
-  if (loader && ! klass)
-    {
-      klass = loader->loadClass(_Jv_NewStringUtf8Const (name));
-      if (klass)
-	_Jv_RegisterClass (klass);
-    }
-  return klass;
-}
-
-#if 0
-jclass
-_Jv_FindClass (jstring name, java::lang::ClassLoader *loader)
-{
-  jclass klass = _Jv_FindClassInCache (name, loader);
-  if (loader && ! klass)
-    {
-      klass = loader->loadClass(name);
-      if (klass)
-	_Jv_RegisterClass (klass);
-    }
-  return klass;
-}
-#endif
-
-jclass
-_Jv_NewClass (_Jv_Utf8Const *name, jclass superclass,
-	      java::lang::ClassLoader *loader)
-{
-  jclass ret = (jclass) JvAllocObject (&ClassClass);
-
-  ret->next = NULL;
-  ret->name = name;
-  ret->accflags = 0;
-  ret->superclass = superclass;
-  ret->constants.size = 0;
-  ret->constants.tags = NULL;
-  ret->constants.data = NULL;
-  ret->methods = NULL;
-  ret->method_count = 0;
-  ret->vtable_method_count = 0;
-  ret->fields = NULL;
-  ret->size_in_bytes = 0;
-  ret->field_count = 0;
-  ret->static_field_count = 0;
-  ret->vtable = NULL;
-  ret->interfaces = NULL;
-  ret->loader = loader;
-  ret->interface_count = 0;
-  ret->state = 0;
-  ret->thread = NULL;
-
-  _Jv_RegisterClass (ret);
-
-  return ret;
-}
-
-jclass
-_Jv_FindArrayClass (jclass element)
-{
-  _Jv_Utf8Const *array_name;
-  int len;
-  if (element->isPrimitive())
-    {
-      // For primitive types the array is cached in the class.
-      jclass ret = (jclass) element->methods;
-      if (ret)
-	return ret;
-      len = 3;
-    }
-  else
-    len = element->name->length + 5;
-
-  {
-    char signature[len];
-    int index = 0;
-    signature[index++] = '[';
-    // Compute name of array class to see if we've already cached it.
-    if (element->isPrimitive())
-      {
-	signature[index++] = (char) element->method_count;
-      }
-    else
-      {
-	size_t length = element->name->length;
-	const char *const name = element->name->data;
-	if (name[0] != '[')
-	  signature[index++] = 'L';
-	memcpy (&signature[index], name, length);
-	index += length;
-	if (name[0] != '[')
-	  signature[index++] = ';';
-      }      
-    array_name = _Jv_makeUtf8Const (signature, index);
-  }
-
-  jclass array_class = _Jv_FindClassInCache (array_name, element->loader);
-
-  if (! array_class)
-    {
-      // Create new array class.
-      array_class = _Jv_NewClass (array_name, &ObjectClass, element->loader);
-
-      // Note that `vtable_method_count' doesn't include the initial
-      // NULL slot.
-      int dm_count = ObjectClass.vtable_method_count + 1;
-
-      // Create a new vtable by copying Object's vtable (except the
-      // class pointer, of course).  Note that we allocate this as
-      // unscanned memory -- the vtables are handled specially by the
-      // GC.
-      int size = (sizeof (_Jv_VTable) +
-		  ((dm_count - 1) * sizeof (void *)));
-      _Jv_VTable *vtable = (_Jv_VTable *) _Jv_AllocBytes (size);
-      vtable->clas = array_class;
-      memcpy (vtable->method, ObjectClass.vtable->method,
-	      dm_count * sizeof (void *));
-      array_class->vtable = vtable;
-      array_class->vtable_method_count = ObjectClass.vtable_method_count;
-
-      // Stash the pointer to the element type.
-      array_class->methods = (_Jv_Method *) element;
-
-      // Register our interfaces.
-      // FIXME: for JDK 1.2 we need Serializable.
-      static jclass interfaces[] = { &CloneableClass };
-      array_class->interfaces = interfaces;
-      array_class->interface_count = 1;
-
-      // FIXME: initialize other Class instance variables,
-      // e.g. `fields'.
-
-      array_class->state = STATE_DONE;
-    }
-
-  // For primitive types, point back at this array.
-  if (element->isPrimitive())
-    element->methods = (_Jv_Method *) array_class;
-
-  return array_class;
 }
 
 jboolean

@@ -162,6 +162,7 @@ extern "Java"
       class VerifyError;
       class VirtualMachineError;
       class Void;
+      class VMClassLoader;
       namespace reflect
       {
         class AccessibleObject;

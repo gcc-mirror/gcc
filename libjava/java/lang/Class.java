@@ -152,4 +152,7 @@ public final class Class implements Serializable
 
   // Initialize the class.
   private native void initializeClass ();
+
+  // finalization
+  protected native void finalize ();
 }

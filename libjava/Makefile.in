@@ -78,6 +78,7 @@ GCINCS = @GCINCS@
 GCLIBS = @GCLIBS@
 GCOBJS = @GCOBJS@
 GCSPEC = @GCSPEC@
+INTERPSPEC = @INTERPSPEC@
 LD = @LD@
 LIBGCJ_CFLAGS = @LIBGCJ_CFLAGS@
 LIBGCJ_CXXFLAGS = @LIBGCJ_CXXFLAGS@
@@ -120,7 +121,7 @@ toolexeclib_DATA = libgcj.spec
 data_DATA = libgcj.zip
 
 @NATIVE_TRUE@bin_PROGRAMS = \
-@NATIVE_TRUE@jv-convert
+@NATIVE_TRUE@jv-convert gij
 @CANADIAN_TRUE@@NULL_TARGET_TRUE@GCJ = \
 @CANADIAN_TRUE@@NULL_TARGET_TRUE@gcj
 @CANADIAN_TRUE@@NULL_TARGET_FALSE@GCJ = \
@@ -156,8 +157,10 @@ AM_CXXFLAGS = -fno-rtti -fvtable-thunks @LIBGCJ_CXXFLAGS@ $(WARNINGS)
 JCFLAGS = -g
 JC1FLAGS = -g @LIBGCJ_JAVAFLAGS@
 
+LIBFFIINCS = -I$(top_srcdir)/../libffi/include -I../libffi/include
+
 INCLUDES = -Iinclude -I$(top_srcdir)/include $(GCINCS) $(THREADINCS) \
-	$(EH_COMMON_INCLUDE) $(ZINCS)
+	$(EH_COMMON_INCLUDE) $(ZINCS) $(LIBFFIINCS)
 
 
 DIVIDESPEC = @DIVIDESPEC@
@@ -168,7 +171,11 @@ javao_files = $(java_source_files:.java=.lo) \
 	$(built_java_source_files:.java=.lo)
 
 
-libgcj_la_SOURCES = prims.cc jni.cc exception.cc
+libffi_files = `$(AR) t ../libffi/.libs/libffi.a 2>/dev/null | sed 's/\.o/\.lo/g' | sed 's/^/..\/libffi\//g'`
+
+libgcj_la_SOURCES = prims.cc jni.cc exception.cc \
+	resolve.cc defineclass.cc interpret.cc
+
 EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
 	$(c_source_files) $(java_source_files) $(built_java_source_files)
 
@@ -176,7 +183,7 @@ libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) $(nat_files) \
 	$(c_files) $(GCOBJS) $(THREADOBJS)
 
 libgcj_la_LIBADD = $(javao_files) $(nat_files) $(c_files) $(GCOBJS) \
-	$(THREADOBJS)
+	$(THREADOBJS) $(libffi_files)
 
 libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
@@ -214,6 +221,19 @@ jv_convert_LDADD = $(convert_source_files:.java=.lo) libgcj.la \
 	$(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
 
 jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
+	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
+
+
+gij_SOURCES = 
+EXTRA_gij_SOURCES = gij.cc
+gij_LDFLAGS = -rpath $(toolexeclibdir)
+gij_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) \
+	-o gij
+
+gij_LDADD = gij.lo libgcj.la \
+	$(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
+
+gij_DEPENDENCIES = gij.lo \
 	$(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
 
 
@@ -294,6 +314,13 @@ java/awt/peer/WindowPeer.java
 built_java_source_files = java/lang/ConcreteProcess.java
 
 ordinary_java_source_files = $(convert_source_files) \
+gnu/gcj/runtime/MethodInvocation.java \
+gnu/gcj/util/path/SearchPath.java \
+gnu/gcj/util/path/PathEntry.java \
+gnu/gcj/util/path/DirectoryPathEntry.java \
+gnu/gcj/util/path/ZipPathEntry.java \
+gnu/gcj/util/path/URLPathEntry.java \
+gnu/gcj/util/path/CacheEntry.java \
 gnu/gcj/text/BaseBreakIterator.java \
 gnu/gcj/text/CharacterBreakIterator.java \
 gnu/gcj/text/LineBreakIterator.java \
@@ -372,6 +399,7 @@ java/lang/ClassCastException.java \
 java/lang/ClassCircularityError.java \
 java/lang/ClassFormatError.java	\
 java/lang/ClassLoader.java \
+java/lang/VMClassLoader.java \
 java/lang/ClassNotFoundException.java \
 java/lang/CloneNotSupportedException.java \
 java/lang/Cloneable.java \
@@ -569,6 +597,7 @@ java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
 java/lang/natCharacter.cc \
 java/lang/natClass.cc \
+java/lang/natClassLoader.cc \
 java/lang/natConcreteProcess.cc \
 java/lang/natDouble.cc \
 java/lang/natFirstThread.cc \
@@ -655,13 +684,15 @@ DEFS = @DEFS@ -I. -I$(srcdir) -I./include
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-libgcj_la_OBJECTS =  prims.lo jni.lo exception.lo
-@NATIVE_TRUE@bin_PROGRAMS =  jv-convert$(EXEEXT)
+libgcj_la_OBJECTS =  prims.lo jni.lo exception.lo resolve.lo \
+defineclass.lo interpret.lo
+@NATIVE_TRUE@bin_PROGRAMS =  jv-convert$(EXEEXT) gij$(EXEEXT)
 @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS =  \
 @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS) $(noinst_PROGRAMS)
 
 jv_convert_OBJECTS = 
+gij_OBJECTS = 
 gen_from_JIS_OBJECTS = 
 gen_from_JIS_LDFLAGS = 
 CXXFLAGS = @CXXFLAGS@
@@ -688,9 +719,9 @@ GZIP_ENV = --best
 DIST_SUBDIRS =  testsuite
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/$(srcdir)/$(CONVERT_DIR)/make-trie.P .deps/boehm.P \
-.deps/exception.P .deps/gnu/gcj/RawData.P \
-.deps/gnu/gcj/convert/BytesToUnicode.P .deps/gnu/gcj/convert/Convert.P \
-.deps/gnu/gcj/convert/Input_8859_1.P \
+.deps/defineclass.P .deps/exception.P .deps/gij.P \
+.deps/gnu/gcj/RawData.P .deps/gnu/gcj/convert/BytesToUnicode.P \
+.deps/gnu/gcj/convert/Convert.P .deps/gnu/gcj/convert/Input_8859_1.P \
 .deps/gnu/gcj/convert/Input_EUCJIS.P \
 .deps/gnu/gcj/convert/Input_JavaSrc.P \
 .deps/gnu/gcj/convert/Input_SJIS.P .deps/gnu/gcj/convert/Input_UTF8.P \
@@ -703,6 +734,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/protocol/file/Handler.P \
 .deps/gnu/gcj/protocol/http/Connection.P \
 .deps/gnu/gcj/protocol/http/Handler.P \
+.deps/gnu/gcj/runtime/MethodInvocation.P \
 .deps/gnu/gcj/text/BaseBreakIterator.P \
 .deps/gnu/gcj/text/CharacterBreakIterator.P \
 .deps/gnu/gcj/text/LineBreakIterator.P \
@@ -711,6 +743,12 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/gcj/text/SentenceBreakIterator.P \
 .deps/gnu/gcj/text/WordBreakIterator.P \
 .deps/gnu/gcj/util/EnumerationChain.P \
+.deps/gnu/gcj/util/path/CacheEntry.P \
+.deps/gnu/gcj/util/path/DirectoryPathEntry.P \
+.deps/gnu/gcj/util/path/PathEntry.P \
+.deps/gnu/gcj/util/path/SearchPath.P \
+.deps/gnu/gcj/util/path/URLPathEntry.P \
+.deps/gnu/gcj/util/path/ZipPathEntry.P .deps/interpret.P \
 .deps/java/io/BufferedInputStream.P \
 .deps/java/io/BufferedOutputStream.P .deps/java/io/BufferedReader.P \
 .deps/java/io/BufferedWriter.P .deps/java/io/ByteArrayInputStream.P \
@@ -788,8 +826,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/Throwable.P .deps/java/lang/UnknownError.P \
 .deps/java/lang/UnsatisfiedLinkError.P \
 .deps/java/lang/UnsupportedOperationException.P \
-.deps/java/lang/VerifyError.P .deps/java/lang/VirtualMachineError.P \
-.deps/java/lang/Void.P .deps/java/lang/dtoa.P .deps/java/lang/e_acos.P \
+.deps/java/lang/VMClassLoader.P .deps/java/lang/VerifyError.P \
+.deps/java/lang/VirtualMachineError.P .deps/java/lang/Void.P \
+.deps/java/lang/dtoa.P .deps/java/lang/e_acos.P \
 .deps/java/lang/e_asin.P .deps/java/lang/e_atan2.P \
 .deps/java/lang/e_exp.P .deps/java/lang/e_fmod.P \
 .deps/java/lang/e_log.P .deps/java/lang/e_pow.P \
@@ -872,9 +911,9 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/util/zip/ZipException.P .deps/java/util/zip/ZipFile.P \
 .deps/java/util/zip/ZipInputStream.P \
 .deps/java/util/zip/ZipOutputStream.P .deps/jni.P .deps/no-threads.P \
-.deps/nogc.P .deps/posix-threads.P .deps/prims.P
-SOURCES = $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES) $(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES)
-OBJECTS = $(libgcj_la_OBJECTS) $(jv_convert_OBJECTS) $(gen_from_JIS_OBJECTS)
+.deps/nogc.P .deps/posix-threads.P .deps/prims.P .deps/resolve.P
+SOURCES = $(libgcj_la_SOURCES) $(EXTRA_libgcj_la_SOURCES) $(jv_convert_SOURCES) $(EXTRA_jv_convert_SOURCES) $(gij_SOURCES) $(EXTRA_gij_SOURCES) $(gen_from_JIS_SOURCES) $(EXTRA_gen_from_JIS_SOURCES)
+OBJECTS = $(libgcj_la_OBJECTS) $(jv_convert_OBJECTS) $(gij_OBJECTS) $(gen_from_JIS_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -1021,6 +1060,10 @@ maintainer-clean-noinstPROGRAMS:
 jv-convert$(EXEEXT): $(jv_convert_OBJECTS) $(jv_convert_DEPENDENCIES)
 	@rm -f jv-convert$(EXEEXT)
 	$(jv_convert_LINK) $(jv_convert_LDFLAGS) $(jv_convert_OBJECTS) $(jv_convert_LDADD) $(LIBS)
+
+gij$(EXEEXT): $(gij_OBJECTS) $(gij_DEPENDENCIES)
+	@rm -f gij$(EXEEXT)
+	$(gij_LINK) $(gij_LDFLAGS) $(gij_OBJECTS) $(gij_LDADD) $(LIBS)
 
 gen-from-JIS$(EXEEXT): $(gen_from_JIS_OBJECTS) $(gen_from_JIS_DEPENDENCIES)
 	@rm -f gen-from-JIS$(EXEEXT)
@@ -1449,6 +1492,16 @@ java/lang/reflect/Method.h: java/lang/reflect/Method.class libgcj.zip
 	$(GCJH) -classpath $(top_builddir) \
 	    -friend 'jmethodID _Jv_FromReflectedMethod (java::lang::reflect::Method *);' \
 	    -friend 'java::lang::Class;' \
+	    $(basename $<)
+
+java/lang/VMClassLoader.h: java/lang/VMClassLoader.class libgcj.zip
+	$(GCJH) -classpath $(top_builddir) \
+	    -friend 'java::lang::ClassLoader;' \
+	    $(basename $<)
+
+gnu/gcj/runtime/MethodInvocation.h: gnu/gcj/runtime/MethodInvocation.class libgcj.zip
+	$(GCJH) -classpath $(top_builddir) \
+	    -friend 'class _Jv_InterpMethod;' \
 	    $(basename $<)
 
 maintainer-check: libgcj.la

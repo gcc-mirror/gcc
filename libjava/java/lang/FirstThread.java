@@ -19,12 +19,30 @@ package java.lang;
 
 final class FirstThread extends Thread
 {
-  public native void run ();
+  public native void run0 ();
+  public void run () 
+  {
+    try {
+      run0 ();
+    } catch (Throwable ex) {
+      System.err.println ("uncaught exception at top level");
+      ex.printStackTrace ();
+    }
+  }
 
   public FirstThread (ThreadGroup g, Class k, Object o)
   {
     super (g, null, "main");
     klass = k;
+    klass_name = null;
+    args = o;
+  }
+
+  public FirstThread (ThreadGroup g, String class_name, Object o)
+  {
+    super (g, null, "main");
+    klass = null;
+    klass_name = class_name;
     args = o;
   }
 
@@ -36,5 +54,6 @@ final class FirstThread extends Thread
 
   // Private data.
   private Class klass;
+  private String klass_name;
   private Object args;
 }

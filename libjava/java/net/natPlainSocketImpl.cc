@@ -354,7 +354,7 @@ java::net::PlainSocketImpl::getOption (jint optID)
         if (l_val.l_onoff)
           return new java::lang::Integer (l_val.l_linger);
         else
-	  return new java::lang::Boolean (false);
+	  return new java::lang::Boolean ((__java_boolean)false);
 #else
         JvThrow (new java::lang::InternalError (
           JvNewStringUTF ("SO_LINGER not supported")));      
