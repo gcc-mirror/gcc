@@ -251,11 +251,11 @@ CXX_TREE_H = $(TREE_H) cp/cp-tree.h c-common.h cp/cp-tree.def c-common.def \
 	function.h varray.h $(SYSTEM_H) $(CONFIG_H) $(TARGET_H) \
 	$(srcdir)/../include/hashtab.h $(srcdir)/../include/splay-tree.h
 
-cp/spew.o: cp/spew.c $(CXX_TREE_H) cp/parse.h flags.h cp/lex.h toplev.h \
-  gt-cp-spew.h
-cp/lex.o: cp/lex.c $(CXX_TREE_H) cp/parse.h flags.h cp/lex.h c-pragma.h \
-  toplev.h output.h mbchar.h $(GGC_H) input.h diagnostic.h cp/operators.def \
-  $(TM_P_H)
+cp/spew.o: cp/spew.c $(CXX_TREE_H) $(srcdir)/cp/parse.h flags.h cp/lex.h \
+  toplev.h gt-cp-spew.h
+cp/lex.o: cp/lex.c $(CXX_TREE_H) $(srcdir)/cp/parse.h flags.h cp/lex.h \
+  c-pragma.h toplev.h output.h mbchar.h $(GGC_H) input.h diagnostic.h \
+  cp/operators.def $(TM_P_H)
 cp/cp-lang.o: cp/cp-lang.c $(CXX_TREE_H) toplev.h langhooks.h $(LANGHOOKS_DEF_H) \
   c-common.h
 cp/decl.o: cp/decl.c $(CXX_TREE_H) flags.h cp/lex.h cp/decl.h stack.h \
@@ -286,8 +286,8 @@ cp/except.o: cp/except.c $(CXX_TREE_H) flags.h $(RTL_H) except.h toplev.h \
   cp/cfns.h $(EXPR_H) libfuncs.h tree-inline.h
 cp/expr.o: cp/expr.c $(CXX_TREE_H) $(RTL_H) flags.h $(EXPR_H) toplev.h \
   except.h $(TM_P_H)
-cp/pt.o: cp/pt.c $(CXX_TREE_H) cp/decl.h cp/parse.h cp/lex.h toplev.h \
-  $(GGC_H) $(RTL_H) except.h tree-inline.h gt-cp-pt.h
+cp/pt.o: cp/pt.c $(CXX_TREE_H) cp/decl.h $(srcdir)/cp/parse.h cp/lex.h \
+  toplev.h $(GGC_H) $(RTL_H) except.h tree-inline.h gt-cp-pt.h
 cp/error.o: cp/error.c $(CXX_TREE_H) toplev.h diagnostic.h flags.h real.h \
   $(LANGHOOKS_DEF_H)
 cp/repo.o: cp/repo.c $(CXX_TREE_H) toplev.h $(GGC_H) diagnostic.h \

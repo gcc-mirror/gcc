@@ -1,3 +1,7 @@
+2002-08-02  Krister Walfridsson  <cato@df.lth.se>
+
+	* Make-lang.in (spew.o, lex.o, pt.o): Add path to parse.h dependencies.
+
 2002-08-02  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_method_call): Issue a more helpful error message
