@@ -331,6 +331,12 @@ case "${target}" in
   arc-*-*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
+  arm-*-coff | strongarm-*-coff | xscale-*-coff)
+    noconfigdirs="$noconfigdirs ${libgcj}"
+    ;;
+  arm-*-elf* | strongarm-*-elf* | xscale-*-elf*)
+    noconfigdirs="$noconfigdirs target-libffi target-qthreads"
+    ;;
   arm-*-pe*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
@@ -345,18 +351,6 @@ case "${target}" in
     ;;
   thumb-*-oabi)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
-    ;;
-  strongarm-*-elf)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  strongarm-*-coff)
-    noconfigdirs="$noconfigdirs ${libgcj}"
-    ;;
-  xscale-*-elf)
-    noconfigdirs="$noconfigdirs target-libffi target-qthreads"
-    ;;
-  xscale-*-coff)
-    noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
   thumb-*-pe)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
