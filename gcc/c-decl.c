@@ -126,6 +126,10 @@ static GTY(()) struct stmt_tree_s c_stmt_tree;
 
 static GTY(()) tree c_scope_stmt_stack;
 
+/* State saving variables. */
+int c_in_iteration_stmt;
+int c_in_case_stmt;
+
 /* A list of external DECLs that appeared at block scope when there was
    some other global meaning for that identifier.  */
 static GTY(()) tree truly_local_externals;
@@ -425,13 +429,13 @@ void
 objc_mark_locals_volatile (void *enclosing_blk)
 {
   struct c_scope *scope;
-  
-  for (scope = current_scope; 
+
+  for (scope = current_scope;
        scope && scope != enclosing_blk;
        scope = scope->outer)
     {
       tree decl;
-      
+
       for (decl = scope->names; decl; decl = TREE_CHAIN (decl))
 	{
 	  DECL_REGISTER (decl) = 0;
@@ -440,9 +444,9 @@ objc_mark_locals_volatile (void *enclosing_blk)
       /* Do not climb up past the current function.  */
       if (scope->function_body)
 	break;
-    }	
-}     
-  
+    }
+}
+
 /* Nonzero if we are currently in the global scope.  */
 
 int
@@ -1677,7 +1681,7 @@ pushdecl (tree x)
     DECL_CONTEXT (x) = current_file_decl;
   else
     DECL_CONTEXT (x) = current_function_decl;
-  
+
   if (name)
     {
       tree old;
@@ -1718,7 +1722,7 @@ pushdecl (tree x)
  	  tree ext = any_external_decl (name);
 	  if (ext)
 	    {
-	      if (duplicate_decls (x, ext, scope != global_scope, 
+	      if (duplicate_decls (x, ext, scope != global_scope,
 				   false))
 		x = copy_node (ext);
 	    }
@@ -2250,7 +2254,7 @@ c_init_decl_processing (void)
   tree endlink;
   tree ptr_ftype_void, ptr_ftype_ptr;
   location_t save_loc = input_location;
-  
+
   /* Adds some ggc roots, and reserved words for c-parse.in.  */
   c_parse_init ();
 
@@ -4637,7 +4641,7 @@ get_parm_info (int void_at_end)
 	default: abort ();
 	}
 
-      if (TREE_PURPOSE (decl)) 
+      if (TREE_PURPOSE (decl))
 	/* The first %s will be one of 'struct', 'union', or 'enum'.  */
 	warning ("\"%s %s\" declared inside parameter list",
 		 keyword, IDENTIFIER_POINTER (TREE_PURPOSE (decl)));
@@ -5088,23 +5092,23 @@ finish_struct (tree t, tree fieldlist, tree attributes)
         tree *field_array;
         struct lang_type *space;
         struct sorted_fields_type *space2;
-        
+
         len += list_length (x);
-  
+
         /* Use the same allocation policy here that make_node uses, to
           ensure that this lives as long as the rest of the struct decl.
           All decls in an inline function need to be saved.  */
-  
+
         space = ggc_alloc (sizeof (struct lang_type));
         space2 = ggc_alloc (sizeof (struct sorted_fields_type) + len * sizeof (tree));
-        
+
         len = 0;
 	space->s = space2;
 	field_array = &space2->elts[0];
         for (x = fieldlist; x; x = TREE_CHAIN (x))
           {
             field_array[len++] = x;
-          
+
             /* If there is anonymous struct or union, break out of the loop.  */
             if (DECL_NAME (x) == NULL)
               break;
@@ -5119,7 +5123,7 @@ finish_struct (tree t, tree fieldlist, tree attributes)
           }
       }
   }
-  
+
   for (x = TYPE_MAIN_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))
     {
       TYPE_FIELDS (x) = TYPE_FIELDS (t);
@@ -5438,6 +5442,8 @@ start_function (tree declspecs, tree declarator, tree attributes)
   current_function_returns_abnormally = 0;
   warn_about_return_type = 0;
   current_extern_inline = 0;
+  c_in_iteration_stmt = 0;
+  c_in_case_stmt = 0;
 
   /* Don't expand any sizes in the return type of the function.  */
   immediate_size_expand = 0;
@@ -6251,20 +6257,6 @@ check_for_loop_decls (void)
     }
 }
 
-/* Save and restore the variables in this file and elsewhere
-   that keep track of the progress of compilation of the current function.
-   Used for nested functions.  */
-
-struct language_function GTY(())
-{
-  struct c_language_function base;
-  int returns_value;
-  int returns_null;
-  int returns_abnormally;
-  int warn_about_return_type;
-  int extern_inline;
-};
-
 /* Save and reinitialize the variables
    used during compilation of a C function.  */
 
@@ -6277,6 +6269,8 @@ c_push_function_context (struct function *f)
 
   p->base.x_stmt_tree = c_stmt_tree;
   p->base.x_scope_stmt_stack = c_scope_stmt_stack;
+  p->x_in_iteration_stmt = c_in_iteration_stmt;
+  p->x_in_case_stmt = c_in_case_stmt;
   p->returns_value = current_function_returns_value;
   p->returns_null = current_function_returns_null;
   p->returns_abnormally = current_function_returns_abnormally;
@@ -6303,6 +6297,8 @@ c_pop_function_context (struct function *f)
 
   c_stmt_tree = p->base.x_stmt_tree;
   c_scope_stmt_stack = p->base.x_scope_stmt_stack;
+  c_in_iteration_stmt = p->x_in_iteration_stmt;
+  c_in_case_stmt = p->x_in_case_stmt;
   current_function_returns_value = p->returns_value;
   current_function_returns_null = p->returns_null;
   current_function_returns_abnormally = p->returns_abnormally;
@@ -6510,7 +6506,7 @@ merge_translation_unit_decls (void)
   tree decl;
   htab_t link_hash_table;
   tree block;
-  
+
   /* Create the BLOCK that poplevel would have created, but don't
      actually call poplevel since that's expensive.  */
   block = make_node (BLOCK);
@@ -6551,7 +6547,7 @@ merge_translation_unit_decls (void)
 		DECL_EXTERNAL (decl) = 1;
 	      else if (DECL_COMMON (old_decl) || DECL_ONE_ONLY (old_decl))
 		DECL_EXTERNAL (old_decl) = 1;
-	      
+
 	      if (DECL_EXTERNAL (decl))
 		{
 		  DECL_INITIAL (decl) = NULL_TREE;
@@ -6585,10 +6581,10 @@ merge_translation_unit_decls (void)
 	{
 	  tree global_decl;
 	  global_decl = htab_find (link_hash_table, decl);
-	  
+
 	  if (! global_decl)
 	    continue;
-	  
+
 	  /* Print any appropriate error messages, and partially merge
 	     the decls.  */
 	  (void) duplicate_decls (decl, global_decl, true, true);
@@ -6603,7 +6599,7 @@ void
 c_write_global_declarations(void)
 {
   tree link;
-  
+
   for (link = current_file_decl; link; link = TREE_CHAIN (link))
     {
       tree globals = BLOCK_VARS (DECL_INITIAL (link));
@@ -6611,16 +6607,16 @@ c_write_global_declarations(void)
       tree *vec = xmalloc (sizeof (tree) * len);
       int i;
       tree decl;
-      
+
       /* Process the decls in the order they were written.  */
 
       for (i = 0, decl = globals; i < len; i++, decl = TREE_CHAIN (decl))
 	vec[i] = decl;
-      
+
       wrapup_global_declarations (vec, len);
-      
+
       check_global_declarations (vec, len);
-      
+
       /* Clean up.  */
       free (vec);
     }
@@ -6633,7 +6629,7 @@ c_reset_state (void)
 {
   tree link;
   tree file_scope_decl;
-  
+
   /* Pop the global scope.  */
   if (current_scope != global_scope)
       current_scope = global_scope;
