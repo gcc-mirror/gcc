@@ -2,8 +2,8 @@
 /* { dg-options { -m68000 -O2 } { target m68k-*-* } } */
 /* { dg-options { -O2 } { target sparc-*-* } } */
 
-typedef SFtype __attribute__ ((mode (SF)));
-typedef DFtype __attribute__ ((mode (DF)));
+typedef float SFtype __attribute__ ((mode (SF)));
+typedef float DFtype __attribute__ ((mode (DF)));
 
 typedef int HItype __attribute__ ((mode (HI)));
 typedef int SItype __attribute__ ((mode (SI)));

@@ -1,3 +1,7 @@
+2004-10-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/bf-spl1.c: Use 'float' as the base type for FP types.
+
 2004-10-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/parse/error18.C: Remove.
