@@ -5132,27 +5132,11 @@
   ""
   "*
 {
-  static int label_no;
-  int count_regno = REGNO (operands[0]);
-  int ptr_regno = REGNO (operands[1]);
-  char label[64];
+  operands[2] = gen_label_rtx ();
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+			     CODE_LABEL_NUMBER (operands[2]));
 
-  /* Ho hum, output the hard way to get the label at the beginning of
-     the line.  Wish there were a magic char you could get
-     asm_output_printf to do that.  Then we could use %= as well and
-     get rid of the label_no bits here too.  */
-
-  ASM_GENERATE_INTERNAL_LABEL (label, \"LSC\", label_no);
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"LSC\", label_no++);
-
-  fprintf (asm_out_file, \"\\tstq $31,-8192($%d)\\n\", ptr_regno);
-  fprintf (asm_out_file, \"\\tsubq $%d,1,$%d\\n\", count_regno, count_regno);
-  fprintf (asm_out_file, \"\\tlda $%d,-8192($%d)\\n\", ptr_regno, ptr_regno);
-  fprintf (asm_out_file, \"\\tbne $%d,\", count_regno);
-  assemble_name (asm_out_file, label);
-  putc ('\\n', asm_out_file);
-
-  return \"\";
+  return \"stq $31,-8192(%1)\;subq %0,1,%0\;lda %1,-8192(%1)\;bne %0,%l2\";
 }"
   [(set_attr "length" "16")
    (set_attr "type" "multi")])
