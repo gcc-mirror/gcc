@@ -310,6 +310,8 @@ for ml in $MULTILIBS; do
   dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
   if [ $dir != . ]; then
     echo "libgcc/${dir}: libgcc; -mkdir libgcc/${dir}"
+    echo "${dir}:; -mkdir ${dir}"
+    all="$all ${dir} libgcc/${dir}"
   fi
   all="$all ${dir}/libgcc.a"
 done
