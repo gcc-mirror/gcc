@@ -2562,10 +2562,14 @@ cp_parser_primary_expression (cp_parser *parser,
 
 	/* If we didn't find anything, or what we found was a type,
 	   then this wasn't really an id-expression.  */
-	if (TREE_CODE (decl) == TYPE_DECL
-	    || TREE_CODE (decl) == NAMESPACE_DECL
-	    || (TREE_CODE (decl) == TEMPLATE_DECL
-		&& !DECL_FUNCTION_TEMPLATE_P (decl)))
+	if (TREE_CODE (decl) == TEMPLATE_DECL
+	    && !DECL_FUNCTION_TEMPLATE_P (decl))
+	  {
+	    cp_parser_error (parser, "missing template arguments");
+	    return error_mark_node;
+	  }
+	else if (TREE_CODE (decl) == TYPE_DECL
+		 || TREE_CODE (decl) == NAMESPACE_DECL)
 	  {
 	    cp_parser_error (parser, 
 			     "expected primary-expression");
@@ -6582,6 +6586,9 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	  cp_lexer_consume_token (parser->lexer);
 	  /* A constructor declarator cannot appear in a typedef.  */
 	  constructor_possible_p = false;
+	  /* The "typedef" keyword can only occur in a declaration; we
+	     may as well commit at this point.  */
+	  cp_parser_commit_to_tentative_parse (parser);
 	  break;
 
 	  /* storage-class-specifier:
