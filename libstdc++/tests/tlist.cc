@@ -160,6 +160,3 @@ main()
 
   cout << "\ndone\n";
 }
-
-template class __malloc_alloc_template<0>;
-template class __default_alloc_template<false, 0>;

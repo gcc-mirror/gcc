@@ -64,6 +64,3 @@ main(int argv, char** argc)
   for ( ; pit != phones.end(); pit++)
     cout << "phones[" << (*pit).first << "] = " << (*pit).second << endl; 
 }
-
-template class __malloc_alloc_template<0>;
-template class __default_alloc_template<false, 0>;

@@ -18,6 +18,3 @@ main ()
   copy (cvec.begin(), cvec.end(), ostream_iterator<char>(cout));
   cout << endl;
 }
-
-template class __malloc_alloc_template<0>;
-template class __default_alloc_template<false, 0>;
