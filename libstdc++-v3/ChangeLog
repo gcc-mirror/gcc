@@ -1,3 +1,8 @@
+2004-01-09  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/performance/allocator.cc: Demangle typeid(obj).name().
+	* testsuite/performance/allocator_thread.cc: Likewise.
+
 2004-01-07  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* crossconfig.m4: Add LFS, io bits to linux cross config.

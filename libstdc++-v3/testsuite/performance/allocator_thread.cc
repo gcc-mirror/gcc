@@ -40,6 +40,7 @@
 #include <pthread.h>
 #include <ext/mt_allocator.h>
 #include <ext/malloc_allocator.h>
+#include <cxxabi.h>
 #include <testsuite_performance.h>
 
 using namespace std;
@@ -110,6 +111,8 @@ template<typename Container>
   test_container(Container obj)
   {
     using namespace __gnu_test;
+    int status;
+
     time_counter time;
     resource_counter resource;
 
@@ -131,7 +134,8 @@ template<typename Container>
  
     std::ostringstream comment;
     comment << "iterations: " << iterations << '\t';
-    comment << "type: " << typeid(obj).name();
+    comment << "type: " << abi::__cxa_demangle(typeid(obj).name(),
+					       0, 0, &status);
     report_header(__FILE__, comment.str());
     report_performance(__FILE__, string(), time, resource);
   }
