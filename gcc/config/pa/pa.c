@@ -3001,21 +3001,6 @@ fmpysuboperands(operands)
   return 1;
 }
 
-/* Return 1 if OP is suitable for the second add operand (the unshifed 
-   operand) in an shadd instruction.   Allow CONST_INT to work around
-   a reload bug.  */
-int
-shadd_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (GET_CODE (op) == REG)
-    return 1;
-  if (GET_CODE (op) == CONST_INT)
-    return 1;
-  return 0;
-}
-
 int
 plus_xor_ior_operator (op, mode)
      rtx op;
