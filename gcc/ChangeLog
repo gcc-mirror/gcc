@@ -1,3 +1,10 @@
+2000-06-05  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* fixinc/inclhack.def: New include hacks for ultrix.
+	* (nested_ultrix): Replaced by ultrix_nested_svc.
+	* (ultrix_atof_param): test_text string added.
+	* (ultrix_ifdef): Modified select string.
+
 2000-06-05  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* objc/objc-act.c (generate_method_descriptors): Register
