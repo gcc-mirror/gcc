@@ -1,3 +1,9 @@
+Thu May  2 19:50:04 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* cfgrtl.c (try_redirect_by_replacing_jump): Do not kill computed
+	jumps post reload.
+	* toplev.c (rest_of_compilation): Revert Richard's patch.
+
 2001-05-02  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa/x-ada (ADA_CFLAGS): Rename to X_ADA_CFLAGS.

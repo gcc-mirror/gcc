@@ -3313,7 +3313,8 @@ rest_of_compilation (decl)
 	 splitting possibly introduced more crossjumping oppurtuntities.
 	 Except that we can't actually run crossjumping without running 
 	 another DCE pass, which we can't do after reg-stack.  */
-      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK);
+      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK
+		   | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0));
       if (flag_reorder_blocks)
 	{
 	  reorder_basic_blocks ();
