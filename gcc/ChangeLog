@@ -1,3 +1,11 @@
+2003-05-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.c (expand_builtin_mempcpy): New function.
+	(expand_builtin_stpcpy): Optimize stpcpy whose return value is
+	ignored into strcpy no matter what arguments it has.
+	(expand_builtin) <case BUILT_IN_MEMPCPY>: Call
+	expand_builtin_mempcpy.
+
 2003-05-05  Aldy Hernandez  <aldyh@redhat.com>
 
         * testsuite/gcc.dg/20030505.c: New.

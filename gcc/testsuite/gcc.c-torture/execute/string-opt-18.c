@@ -15,6 +15,9 @@ extern int memcmp (const void *, const void *, size_t);
 
 const char s1[] = "123";
 char p[32] = "";
+char *s2 = "defg";
+char *s3 = "FGH";
+size_t l1 = 1;
 
 int main()
 {
@@ -60,6 +63,17 @@ int main()
   if (__builtin_mempcpy (p, "ABCDE", 6) != p + 6 || memcmp (p, "ABCDE", 6))
     abort ();
 
+  /* If the result of stpcpy/mempcpy is ignored, gcc should use
+     strcpy/memcpy.  */
+  stpcpy (p + 3, s2);
+  if (memcmp (p, "ABCdefg", 8))
+    abort ();
+  mempcpy (p + 5, s3, 1);
+  if (memcmp (p, "ABCdeFg", 8))
+    abort ();
+  mempcpy (p + 6, s3 + 1, l1);
+  if (memcmp (p, "ABCdeFG", 8))
+    abort ();
   return 0;
 }
 
