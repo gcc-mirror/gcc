@@ -482,24 +482,24 @@ notice_update_cc (body, insn)
     case CC_NONE_0HIT:
       /* Insn does not change CC, but the 0'th operand has been changed.  */
       if (cc_status.value1 != 0
-	  && reg_overlap_mentioned_p (recog_operand[0], cc_status.value1))
+	  && reg_overlap_mentioned_p (recog_data.operand[0], cc_status.value1))
 	cc_status.value1 = 0;
       break;
 
     case CC_SET_ZN:
-      /* Insn sets the Z,N flags of CC to recog_operand[0].
+      /* Insn sets the Z,N flags of CC to recog_data.operand[0].
 	 V,C are unusable.  */
       CC_STATUS_INIT;
       cc_status.flags |= CC_NO_CARRY | CC_OVERFLOW_UNUSABLE;
-      cc_status.value1 = recog_operand[0];
+      cc_status.value1 = recog_data.operand[0];
       break;
 
     case CC_SET_ZNV:
-      /* Insn sets the Z,N,V flags of CC to recog_operand[0].
+      /* Insn sets the Z,N,V flags of CC to recog_data.operand[0].
 	 C is unusable.  */
       CC_STATUS_INIT;
       cc_status.flags |= CC_NO_CARRY;
-      cc_status.value1 = recog_operand[0];
+      cc_status.value1 = recog_data.operand[0];
       break;
 
     case CC_COMPARE:

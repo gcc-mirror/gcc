@@ -791,10 +791,10 @@ scan_one_insn (insn, pass)
   set = single_set (insn);
   extract_insn (insn);
 
-  for (i = 0; i < recog_n_operands; i++)
+  for (i = 0; i < recog_data.n_operands; i++)
     {
-      constraints[i] = recog_constraints[i];
-      modes[i] = recog_operand_mode[i];
+      constraints[i] = recog_data.constraints[i];
+      modes[i] = recog_data.operand_mode[i];
     }
   memset (subreg_changes_size, 0, sizeof (subreg_changes_size));
 
@@ -830,24 +830,22 @@ scan_one_insn (insn, pass)
      do this during our first pass.  */
 
   if (pass == 0 && optimize
-      && recog_n_operands >= 3
-      && recog_constraints[1][0] == '0'
-      && recog_constraints[1][1] == 0
-      && CONSTANT_P (recog_operand[1])
-      && ! rtx_equal_p (recog_operand[0], recog_operand[1])
-      && ! rtx_equal_p (recog_operand[0], recog_operand[2])
-      && GET_CODE (recog_operand[0]) == REG
-      && MODES_TIEABLE_P (GET_MODE (recog_operand[0]),
-			  recog_operand_mode[1]))
+      && recog_data.n_operands >= 3
+      && recog_data.constraints[1][0] == '0'
+      && recog_data.constraints[1][1] == 0
+      && CONSTANT_P (recog_data.operand[1])
+      && ! rtx_equal_p (recog_data.operand[0], recog_data.operand[1])
+      && ! rtx_equal_p (recog_data.operand[0], recog_data.operand[2])
+      && GET_CODE (recog_data.operand[0]) == REG
+      && MODES_TIEABLE_P (GET_MODE (recog_data.operand[0]),
+			  recog_data.operand_mode[1]))
     {
       rtx previnsn = prev_real_insn (insn);
       rtx dest
-	= gen_lowpart (recog_operand_mode[1],
-		       recog_operand[0]);
+	= gen_lowpart (recog_data.operand_mode[1],
+		       recog_data.operand[0]);
       rtx newinsn
-	= emit_insn_before (gen_move_insn (dest,
-					   recog_operand[1]),
-			    insn);
+	= emit_insn_before (gen_move_insn (dest, recog_data.operand[1]), insn);
 
       /* If this insn was the start of a basic block,
 	 include the new insn in that block.
@@ -863,12 +861,12 @@ scan_one_insn (insn, pass)
 	}
 
       /* This makes one more setting of new insns's dest.  */
-      REG_N_SETS (REGNO (recog_operand[0]))++;
+      REG_N_SETS (REGNO (recog_data.operand[0]))++;
 
-      *recog_operand_loc[1] = recog_operand[0];
-      for (i = recog_n_dups - 1; i >= 0; i--)
-	if (recog_dup_num[i] == 1)
-	  *recog_dup_loc[i] = recog_operand[0];
+      *recog_data.operand_loc[1] = recog_data.operand[0];
+      for (i = recog_data.n_dups - 1; i >= 0; i--)
+	if (recog_data.dup_num[i] == 1)
+	  *recog_data.dup_loc[i] = recog_data.operand[0];
 
       return PREV_INSN (newinsn);
     }
@@ -879,23 +877,23 @@ scan_one_insn (insn, pass)
      classes for any pseudos, doing it twice if some pair of
      operands are commutative.  */
 	     
-  for (i = 0; i < recog_n_operands; i++)
+  for (i = 0; i < recog_data.n_operands; i++)
     {
       op_costs[i] = init_cost;
 
-      if (GET_CODE (recog_operand[i]) == SUBREG)
+      if (GET_CODE (recog_data.operand[i]) == SUBREG)
 	{
-	  rtx inner = SUBREG_REG (recog_operand[i]);
+	  rtx inner = SUBREG_REG (recog_data.operand[i]);
 	  if (GET_MODE_SIZE (modes[i]) != GET_MODE_SIZE (GET_MODE (inner)))
 	    subreg_changes_size[i] = 1;
-	  recog_operand[i] = inner;
+	  recog_data.operand[i] = inner;
 	}
 
-      if (GET_CODE (recog_operand[i]) == MEM)
-	record_address_regs (XEXP (recog_operand[i], 0),
+      if (GET_CODE (recog_data.operand[i]) == MEM)
+	record_address_regs (XEXP (recog_data.operand[i], 0),
 			     BASE_REG_CLASS, loop_cost * 2);
       else if (constraints[i][0] == 'p')
-	record_address_regs (recog_operand[i],
+	record_address_regs (recog_data.operand[i],
 			     BASE_REG_CLASS, loop_cost * 2);
     }
 
@@ -903,7 +901,7 @@ scan_one_insn (insn, pass)
      have been initialized.  We must do this even if one operand
      is a constant--see addsi3 in m68k.md.  */
 
-  for (i = 0; i < recog_n_operands - 1; i++)
+  for (i = 0; i < recog_data.n_operands - 1; i++)
     if (constraints[i][0] == '%')
       {
 	const char *xconstraints[MAX_RECOG_OPERANDS];
@@ -912,27 +910,28 @@ scan_one_insn (insn, pass)
 	/* Handle commutative operands by swapping the constraints.
 	   We assume the modes are the same.  */
 
-	for (j = 0; j < recog_n_operands; j++)
+	for (j = 0; j < recog_data.n_operands; j++)
 	  xconstraints[j] = constraints[j];
 
 	xconstraints[i] = constraints[i+1];
 	xconstraints[i+1] = constraints[i];
-	record_reg_classes (recog_n_alternatives, recog_n_operands,
-			    recog_operand, modes, subreg_changes_size,
+	record_reg_classes (recog_data.n_alternatives, recog_data.n_operands,
+			    recog_data.operand, modes, subreg_changes_size,
 			    xconstraints, insn);
       }
 
-  record_reg_classes (recog_n_alternatives, recog_n_operands, recog_operand,
-		      modes, subreg_changes_size, constraints, insn);
+  record_reg_classes (recog_data.n_alternatives, recog_data.n_operands,
+		      recog_data.operand, modes, subreg_changes_size,
+		      constraints, insn);
 
   /* Now add the cost for each operand to the total costs for
      its register.  */
 
-  for (i = 0; i < recog_n_operands; i++)
-    if (GET_CODE (recog_operand[i]) == REG
-	&& REGNO (recog_operand[i]) >= FIRST_PSEUDO_REGISTER)
+  for (i = 0; i < recog_data.n_operands; i++)
+    if (GET_CODE (recog_data.operand[i]) == REG
+	&& REGNO (recog_data.operand[i]) >= FIRST_PSEUDO_REGISTER)
       {
-	int regno = REGNO (recog_operand[i]);
+	int regno = REGNO (recog_data.operand[i]);
 	struct costs *p = &costs[regno], *q = &op_costs[i];
 
 	p->mem_cost += q->mem_cost * loop_cost;
@@ -1472,10 +1471,10 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 
 	  else if (classes[i] != NO_REGS)
 	    {
-	      if (recog_op_type[i] != OP_OUT)
+	      if (recog_data.operand_type[i] != OP_OUT)
 		alt_cost += copy_cost (op, mode, classes[i], 1);
 
-	      if (recog_op_type[i] != OP_IN)
+	      if (recog_data.operand_type[i] != OP_IN)
 		alt_cost += copy_cost (op, mode, classes[i], 0);
 	    }
 
@@ -1499,7 +1498,7 @@ record_reg_classes (n_alts, n_ops, ops, modes, subreg_changes_size,
 	    && REGNO (ops[i]) >= FIRST_PSEUDO_REGISTER)
 	  {
 	    struct costs *pp = &op_costs[i], *qq = &this_op_costs[i];
-	    int scale = 1 + (recog_op_type[i] == OP_INOUT);
+	    int scale = 1 + (recog_data.operand_type[i] == OP_INOUT);
 
 	    pp->mem_cost = MIN (pp->mem_cost,
 				(qq->mem_cost + alt_cost) * scale);

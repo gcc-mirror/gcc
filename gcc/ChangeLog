@@ -1,3 +1,40 @@
+Sat Sep 11 18:37:04 1999  Richard Henderson  <rth@cygnus.com>
+
+	* recog.h (struct recog_data, recog_data): New.
+	(recog_foo variables): Kill.
+	* recog.c (recog_operand, recog_operand_loc): Kill.
+	(recog_dup_loc, recog_dup_num, recog_n_operands): Kill.
+	(recog_n_dups, recog_n_alternatives, recog_operand_mode): Kill.
+	(recog_constraints, recog_op_type, recog_operand_address_p): Kill.
+	(recog_data): Define.
+	(extract_insn): Update all recog_foo references to use recog_data.
+	(preprocess_constraints, constrain_operands): Likewise.
+	* final.c (final_scan_insn, cleanup_subreg_operands): Likewise.
+	* genattrtab.c (main): Likewise.
+	* genextract.c (main): Likewise.
+	* genoutput.c: Likewise.
+	* genrecog.c (write_subroutine, main): Likewise.
+	* local-alloc.c (block_alloc): Likewise.
+	* reg-stack.c (record_asm_reg_life, subst_asm_stack_regs): Likewise.
+	* regclass.c (scan_one_insn, record_reg_classes): Likewise.
+	* regmove.c (regmove_optimize, find_matches, fixup_match_1): Likewise.
+	* reload.c (find_reloads, find_reloads_toplev): Likewise.
+	* reload1.c (maybe_fix_stack_asms, eliminate_regs_in_insn): Likewise.
+	(reload_cse_simplify_operands): Likewise.
+
+	* arc/arc.c (arc_final_prescan_insn): Likewise.
+	* arm/arm.c (note_invalid_constants, arm_final_prescan_insn): Likewise.
+	* h8300/h8300.c (notice_update_cc): Likewise.
+	* i386/i386.c (ix86_attr_length_default, ix86_agi_dependant): Likewise.
+	* i860/i860.c (output_delayed_branch, output_delay_insn): Likewise.
+	* mn10200/mn10200.c (notice_update_cc): Likewise.
+	* mn10300/mn10300.c (notice_update_cc): Likewise.
+	* romp/romp.c (update_cc): Likewise.
+	* sparc/sparc.c (check_pic): Likewise.
+	* v850/v850.c (notice_update_cc): Likewise.
+
+	* genemit.c (main): Don't declare recog_operand.
+
 Sat Sep 11 12:41:55 1999  Alex Samuel  <samuel@codesourcery.com>
 
 	* ggc.h (rtvec_def): Forward declare.

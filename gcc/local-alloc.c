@@ -1111,12 +1111,12 @@ block_alloc (b)
 
 	  if (1
 #ifdef REGISTER_CONSTRAINTS
-	      && recog_n_operands > 1
-	      && recog_constraints[0][0] == '='
-	      && recog_constraints[0][1] != '&'
+	      && recog_data.n_operands > 1
+	      && recog_data.constraints[0][0] == '='
+	      && recog_data.constraints[0][1] != '&'
 #else
 	      && GET_CODE (PATTERN (insn)) == SET
-	      && rtx_equal_p (SET_DEST (PATTERN (insn)), recog_operand[0])
+	      && rtx_equal_p (SET_DEST (PATTERN (insn)), recog_data.operand[0])
 #endif
 	      )
 	    {
@@ -1127,19 +1127,19 @@ block_alloc (b)
 		 operand 0.  */
 	      int n_matching_alts = 0;
 
-	      for (i = 1; i < recog_n_operands; i++)
+	      for (i = 1; i < recog_data.n_operands; i++)
 		{
-		  const char *p = recog_constraints[i];
+		  const char *p = recog_data.constraints[i];
 		  int this_match = (requires_inout (p));
 
 		  n_matching_alts += this_match;
-		  if (this_match == recog_n_alternatives)
+		  if (this_match == recog_data.n_alternatives)
 		    must_match_0 = i;
 		}
 #endif
 
-	      r0 = recog_operand[0];
-	      for (i = 1; i < recog_n_operands; i++)
+	      r0 = recog_data.operand[0];
+	      for (i = 1; i < recog_data.n_operands; i++)
 		{
 #ifdef REGISTER_CONSTRAINTS
 		  /* Skip this operand if we found an operand that
@@ -1148,9 +1148,9 @@ block_alloc (b)
 
 		  if (must_match_0 >= 0 && i != must_match_0
 		      && ! (i == must_match_0 + 1
-			    && recog_constraints[i-1][0] == '%')
+			    && recog_data.constraints[i-1][0] == '%')
 		      && ! (i == must_match_0 - 1
-			    && recog_constraints[i][0] == '%'))
+			    && recog_data.constraints[i][0] == '%'))
 		    continue;
 
 		  /* Likewise if each alternative has some operand that
@@ -1158,21 +1158,21 @@ block_alloc (b)
 		     operand that doesn't list operand 0 since we know that
 		     the operand always conflicts with operand 0.  We
 		     ignore commutatity in this case to keep things simple.  */
-		  if (n_matching_alts == recog_n_alternatives
-		      && 0 == requires_inout (recog_constraints[i]))
+		  if (n_matching_alts == recog_data.n_alternatives
+		      && 0 == requires_inout (recog_data.constraints[i]))
 		    continue;
 #endif
 
-		  r1 = recog_operand[i];
+		  r1 = recog_data.operand[i];
 
 		  /* If the operand is an address, find a register in it.
 		     There may be more than one register, but we only try one
 		     of them.  */
 		  if (
 #ifdef REGISTER_CONSTRAINTS
-		      recog_constraints[i][0] == 'p'
+		      recog_data.constraints[i][0] == 'p'
 #else
-		      recog_operand_address_p[i]
+		      recog_data.operand_address_p[i]
 #endif
 		      )
 		    while (GET_CODE (r1) == PLUS || GET_CODE (r1) == MULT)
@@ -1186,7 +1186,7 @@ block_alloc (b)
 			 priority to an equivalence found from that insn.  */
 		      int may_save_copy
 #ifdef REGISTER_CONSTRAINTS
-			= (r1 == recog_operand[i] && must_match_0 >= 0);
+			= (r1 == recog_data.operand[i] && must_match_0 >= 0);
 #else
 			= (SET_DEST (body) == r0 && SET_SRC (body) == r1);
 #endif

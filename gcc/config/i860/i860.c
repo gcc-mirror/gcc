@@ -1440,7 +1440,7 @@ output_delayed_branch (template, operands, insn)
 
       /* Now recognize the insn which we put in its delay slot.
 	 We must do this after outputting the branch insn,
-	 since operands may just be a pointer to `recog_operand'.  */
+	 since operands may just be a pointer to `recog_data.operand'.  */
       INSN_CODE (delay_insn) = insn_code_number
 	= recog (pat, delay_insn, NULL_PTR);
       if (insn_code_number == -1)
@@ -1448,8 +1448,8 @@ output_delayed_branch (template, operands, insn)
 
       for (i = 0; i < insn_n_operands[insn_code_number]; i++)
 	{
-	  if (GET_CODE (recog_operand[i]) == SUBREG)
-	    recog_operand[i] = alter_subreg (recog_operand[i]);
+	  if (GET_CODE (recog_data.operand[i]) == SUBREG)
+	    recog_data.operand[i] = alter_subreg (recog_data.operand[i]);
 	}
 
       insn_extract (delay_insn);
@@ -1458,8 +1458,9 @@ output_delayed_branch (template, operands, insn)
 
       template = insn_template[insn_code_number];
       if (template == 0)
-	template = (*insn_outfun[insn_code_number]) (recog_operand, delay_insn);
-      output_asm_insn (template, recog_operand);
+	template = ((*insn_outfun[insn_code_number])
+		    (recog_data.operand, delay_insn));
+      output_asm_insn (template, recog_data.operand);
     }
   CC_STATUS_INIT;
   return "";
@@ -1476,7 +1477,7 @@ output_delay_insn (delay_insn)
 
   /* Now recognize the insn which we put in its delay slot.
      We must do this after outputting the branch insn,
-     since operands may just be a pointer to `recog_operand'.  */
+     since operands may just be a pointer to `recog_data.operand'.  */
   insn_code_number = recog_memoized (delay_insn);
   if (insn_code_number == -1)
     abort ();
@@ -1491,8 +1492,8 @@ output_delay_insn (delay_insn)
      make sure they get fixed up here.  -- This is a kludge.  */
   for (i = 0; i < insn_n_operands[insn_code_number]; i++)
     {
-      if (GET_CODE (recog_operand[i]) == SUBREG)
-	recog_operand[i] = alter_subreg (recog_operand[i]);
+      if (GET_CODE (recog_data.operand[i]) == SUBREG)
+	recog_data.operand[i] = alter_subreg (recog_data.operand[i]);
     }
 
 #ifdef REGISTER_CONSTRAINTS
@@ -1514,8 +1515,9 @@ output_delay_insn (delay_insn)
 
   template = insn_template[insn_code_number];
   if (template == 0)
-    template = (*insn_outfun[insn_code_number]) (recog_operand, delay_insn);
-  output_asm_insn (template, recog_operand);
+    template = ((*insn_outfun[insn_code_number])
+		(recog_data.operand, delay_insn));
+  output_asm_insn (template, recog_data.operand);
   return "";
 }
 #endif

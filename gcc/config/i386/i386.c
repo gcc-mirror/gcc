@@ -5103,29 +5103,29 @@ ix86_attr_length_default (insn)
     case TYPE_IDIV:
     case TYPE_PUSH:
     case TYPE_POP:
-      for (i = recog_n_operands - 1; i >= 0; --i)
-        if (CONSTANT_P (recog_operand[i]))
+      for (i = recog_data.n_operands - 1; i >= 0; --i)
+        if (CONSTANT_P (recog_data.operand[i]))
 	  {
-	    if (GET_CODE (recog_operand[i]) == CONST_INT
-		&& CONST_OK_FOR_LETTER_P (INTVAL (recog_operand[i]), 'K'))
+	    if (GET_CODE (recog_data.operand[i]) == CONST_INT
+		&& CONST_OK_FOR_LETTER_P (INTVAL (recog_data.operand[i]), 'K'))
 	      len += 1;
 	    else
-	      len += GET_MODE_SIZE (GET_MODE (recog_operand[0]));
+	      len += GET_MODE_SIZE (GET_MODE (recog_data.operand[0]));
 	  }
       break;
 
     case TYPE_IMOV:
-      if (CONSTANT_P (recog_operand[1]))
-        len += GET_MODE_SIZE (GET_MODE (recog_operand[0]));
+      if (CONSTANT_P (recog_data.operand[1]))
+        len += GET_MODE_SIZE (GET_MODE (recog_data.operand[0]));
       break;
 
     case TYPE_CALL:
-      if (constant_call_address_operand (recog_operand[0]))
+      if (constant_call_address_operand (recog_data.operand[0]))
 	return 5;
       break;
 
     case TYPE_CALLV:
-      if (constant_call_address_operand (recog_operand[1]))
+      if (constant_call_address_operand (recog_data.operand[1]))
 	return 5;
       break;
 
@@ -5138,19 +5138,19 @@ ix86_attr_length_default (insn)
       return 15;
 
     case TYPE_FXCH:
-      if (STACK_TOP_P (recog_operand[0]))
-	return 2 + (REGNO (recog_operand[1]) != FIRST_STACK_REG + 1);
+      if (STACK_TOP_P (recog_data.operand[0]))
+	return 2 + (REGNO (recog_data.operand[1]) != FIRST_STACK_REG + 1);
       else
-	return 2 + (REGNO (recog_operand[0]) != FIRST_STACK_REG + 1);
+	return 2 + (REGNO (recog_data.operand[0]) != FIRST_STACK_REG + 1);
 
     default:
       abort ();
     }
 
-  for (i = recog_n_operands - 1; i >= 0; --i)
-    if (GET_CODE (recog_operand[i]) == MEM)
+  for (i = recog_data.n_operands - 1; i >= 0; --i)
+    if (GET_CODE (recog_data.operand[i]) == MEM)
       {
-	len += memory_address_length (XEXP (recog_operand[i], 0));
+	len += memory_address_length (XEXP (recog_data.operand[i], 0));
 	break;
       }
 
@@ -5239,10 +5239,10 @@ ix86_agi_dependant (insn, dep_insn, insn_type)
     {
       int i;
       extract_insn (insn);
-      for (i = recog_n_operands - 1; i >= 0; --i)
-	if (GET_CODE (recog_operand[i]) == MEM)
+      for (i = recog_data.n_operands - 1; i >= 0; --i)
+	if (GET_CODE (recog_data.operand[i]) == MEM)
 	  {
-	    addr = XEXP (recog_operand[i], 0);
+	    addr = XEXP (recog_data.operand[i], 0);
 	    goto found;
 	  }
       return 0;

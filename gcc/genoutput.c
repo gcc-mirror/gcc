@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
 
    6. An array of ints `insn_n_dups' which is indexed by insn code number
    and contains the number of match_dup's that appear in the insn's pattern.
-   This says how many elements of `recog_dup_loc' are significant
+   This says how many elements of `recog_data.dup_loc' are significant
    after an insn has been recognized.
 
    7. An array of arrays of operand constraint strings,

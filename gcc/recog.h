@@ -127,44 +127,53 @@ extern int which_alternative;
 
 /* The following vectors hold the results from insn_extract.  */
 
-/* Indexed by N, gives value of operand N.  */
-extern rtx recog_operand[];
+struct recog_data
+{
+  /* It is very tempting to make the 5 operand related arrays into a
+     structure and index on that.  However, to be source compatible
+     with all of the existing md file insn constraints and output
+     templates, we need `operand' as a flat array.  Without that
+     member, making an array for the rest seems pointless.  */
 
-/* Indexed by N, gives location where operand N was found.  */
-extern rtx *recog_operand_loc[];
+  /* Gives value of operand N.  */
+  rtx operand[MAX_RECOG_OPERANDS];
 
-/* Indexed by N, gives location where the Nth duplicate-appearance of
-   an operand was found.  This is something that matched MATCH_DUP.  */
-extern rtx *recog_dup_loc[];
+  /* Gives location where operand N was found.  */
+  rtx *operand_loc[MAX_RECOG_OPERANDS];
 
-/* Indexed by N, gives the operand number that was duplicated in the
-   Nth duplicate-appearance of an operand.  */
-extern char recog_dup_num[];
+  /* Gives the constraint string for operand N.  */
+  const char *constraints[MAX_RECOG_OPERANDS];
 
-/* The next variables are set up by extract_insn.  */
+  /* Gives the mode of operand N.  */
+  enum machine_mode operand_mode[MAX_RECOG_OPERANDS];
 
-/* The number of operands of the insn.  */
-extern int recog_n_operands;
+  /* Gives the type (in, out, inout) for operand N.  */
+  enum op_type operand_type[MAX_RECOG_OPERANDS];
 
-/* The number of MATCH_DUPs in the insn.  */
-extern int recog_n_dups;
+  /* Gives location where the Nth duplicate-appearance of an operand
+     was found.  This is something that matched MATCH_DUP.  */
+  rtx *dup_loc[MAX_DUP_OPERANDS];
 
-/* The number of alternatives in the constraints for the insn.  */
-extern int recog_n_alternatives;
-
-/* Indexed by N, gives the mode of operand N.  */
-extern enum machine_mode recog_operand_mode[];
-
-/* Indexed by N, gives the constraint string for operand N.  */
-extern const char *recog_constraints[];
-
-/* Indexed by N, gives the type (in, out, inout) for operand N.  */
-extern enum op_type recog_op_type[];
+  /* Gives the operand number that was duplicated in the Nth
+     duplicate-appearance of an operand.  */
+  unsigned char dup_num[MAX_DUP_OPERANDS];
 
 #ifndef REGISTER_CONSTRAINTS
-/* Indexed by N, nonzero if operand N should be an address.  */
-extern char recog_operand_address_p[];
+  /* Nonzero if operand N should be an address.  */
+  unsigned char operand_address_p[MAX_RECOG_OPERANDS];
 #endif
+
+  /* The number of operands of the insn.  */
+  unsigned char n_operands;
+
+  /* The number of MATCH_DUPs in the insn.  */
+  unsigned char n_dups;
+
+  /* The number of alternatives in the constraints for the insn.  */
+  unsigned char n_alternatives;
+};
+
+extern struct recog_data recog_data;
 
 /* Contains a vector of operand_alternative structures for every operand.
    Set up by preprocess_constraints.  */

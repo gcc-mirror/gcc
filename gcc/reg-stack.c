@@ -711,7 +711,7 @@ record_asm_reg_life (insn, regstack)
   preprocess_constraints ();
 
   n_inputs = get_asm_operand_n_inputs (body);
-  n_outputs = recog_n_operands - n_inputs;
+  n_outputs = recog_data.n_operands - n_inputs;
 
   if (alt < 0)
     {
@@ -723,10 +723,10 @@ record_asm_reg_life (insn, regstack)
     }
 
   /* Strip SUBREGs here to make the following code simpler.  */
-  for (i = 0; i < recog_n_operands; i++)
-    if (GET_CODE (recog_operand[i]) == SUBREG
-	&& GET_CODE (SUBREG_REG (recog_operand[i])) == REG)
-      recog_operand[i] = SUBREG_REG (recog_operand[i]);
+  for (i = 0; i < recog_data.n_operands; i++)
+    if (GET_CODE (recog_data.operand[i]) == SUBREG
+	&& GET_CODE (SUBREG_REG (recog_data.operand[i])) == REG)
+      recog_data.operand[i] = SUBREG_REG (recog_data.operand[i]);
 
   /* Set up CLOBBER_REG.  */
 
@@ -762,7 +762,7 @@ record_asm_reg_life (insn, regstack)
 
   bzero ((char *) reg_used_as_output, sizeof (reg_used_as_output));
   for (i = 0; i < n_outputs; i++)
-    if (STACK_REG_P (recog_operand[i]))
+    if (STACK_REG_P (recog_data.operand[i]))
       {
 	if (reg_class_size[(int) recog_op_alt[i][alt].class] != 1)
 	  {
@@ -770,7 +770,7 @@ record_asm_reg_life (insn, regstack)
 	    malformed_asm = 1;
 	  }
         else
-	  reg_used_as_output[REGNO (recog_operand[i])] = 1;
+	  reg_used_as_output[REGNO (recog_data.operand[i])] = 1;
       }
 
 
@@ -796,18 +796,18 @@ record_asm_reg_life (insn, regstack)
 
   bzero ((char *) implicitly_dies, sizeof (implicitly_dies));
   for (i = n_outputs; i < n_outputs + n_inputs; i++)
-    if (STACK_REG_P (recog_operand[i]))
+    if (STACK_REG_P (recog_data.operand[i]))
       {
 	/* An input reg is implicitly popped if it is tied to an
 	   output, or if there is a CLOBBER for it.  */
 	int j;
 
 	for (j = 0; j < n_clobbers; j++)
-	  if (operands_match_p (clobber_reg[j], recog_operand[i]))
+	  if (operands_match_p (clobber_reg[j], recog_data.operand[i]))
 	    break;
 
 	if (j < n_clobbers || recog_op_alt[i][alt].matches >= 0)
-	  implicitly_dies[REGNO (recog_operand[i])] = 1;
+	  implicitly_dies[REGNO (recog_data.operand[i])] = 1;
       }
 
   /* Search for first non-popped reg.  */
@@ -839,7 +839,7 @@ record_asm_reg_life (insn, regstack)
 	int j;
 
 	for (j = 0; j < n_outputs; j++)
-	  if (operands_match_p (recog_operand[j], recog_operand[i]))
+	  if (operands_match_p (recog_data.operand[j], recog_data.operand[i]))
 	    {
 	      error_for_asm (insn,
 			     "Output operand %d must use `&' constraint", j);
@@ -858,7 +858,7 @@ record_asm_reg_life (insn, regstack)
   /* Process all outputs */
   for (i = 0; i < n_outputs; i++)
     {
-      rtx op = recog_operand[i];
+      rtx op = recog_data.operand[i];
 
       if (! STACK_REG_P (op))
 	{
@@ -882,7 +882,7 @@ record_asm_reg_life (insn, regstack)
   /* Process all inputs */
   for (i = n_outputs; i < n_outputs + n_inputs; i++)
     {
-      rtx op = recog_operand[i];
+      rtx op = recog_data.operand[i];
       if (! STACK_REG_P (op))
 	{
 	  if (stack_regs_mentioned_p (op))
@@ -2280,18 +2280,18 @@ subst_asm_stack_regs (insn, regstack)
   preprocess_constraints ();
 
   n_inputs = get_asm_operand_n_inputs (body);
-  n_outputs = recog_n_operands - n_inputs;
+  n_outputs = recog_data.n_operands - n_inputs;
   
   if (alt < 0)
     abort ();
 
   /* Strip SUBREGs here to make the following code simpler.  */
-  for (i = 0; i < recog_n_operands; i++)
-    if (GET_CODE (recog_operand[i]) == SUBREG
-	&& GET_CODE (SUBREG_REG (recog_operand[i])) == REG)
+  for (i = 0; i < recog_data.n_operands; i++)
+    if (GET_CODE (recog_data.operand[i]) == SUBREG
+	&& GET_CODE (SUBREG_REG (recog_data.operand[i])) == REG)
       {
-	recog_operand_loc[i] = & SUBREG_REG (recog_operand[i]);
-	recog_operand[i] = SUBREG_REG (recog_operand[i]);
+	recog_data.operand_loc[i] = & SUBREG_REG (recog_data.operand[i]);
+	recog_data.operand[i] = SUBREG_REG (recog_data.operand[i]);
       }
 
   /* Set up NOTE_REG, NOTE_LOC and NOTE_KIND.  */
@@ -2362,34 +2362,34 @@ subst_asm_stack_regs (insn, regstack)
   /* Put the input regs into the desired place in TEMP_STACK.  */
 
   for (i = n_outputs; i < n_outputs + n_inputs; i++)
-    if (STACK_REG_P (recog_operand[i])
+    if (STACK_REG_P (recog_data.operand[i])
 	&& reg_class_subset_p (recog_op_alt[i][alt].class,
 			       FLOAT_REGS)
 	&& recog_op_alt[i][alt].class != FLOAT_REGS)
       {
 	/* If an operand needs to be in a particular reg in
 	   FLOAT_REGS, the constraint was either 't' or 'u'.  Since
-	   these constraints are for single register classes, and reload
-	   guaranteed that operand[i] is already in that class, we can
-	   just use REGNO (recog_operand[i]) to know which actual reg this
-	   operand needs to be in.  */
+	   these constraints are for single register classes, and
+	   reload guaranteed that operand[i] is already in that class,
+	   we can just use REGNO (recog_data.operand[i]) to know which
+	   actual reg this operand needs to be in.  */
 
-	int regno = get_hard_regnum (&temp_stack, recog_operand[i]);
+	int regno = get_hard_regnum (&temp_stack, recog_data.operand[i]);
 
 	if (regno < 0)
 	  abort ();
 
-	if (regno != REGNO (recog_operand[i]))
+	if (regno != REGNO (recog_data.operand[i]))
 	  {
-	    /* recog_operand[i] is not in the right place.  Find it
-	       and swap it with whatever is already in I's place.
-	       K is where recog_operand[i] is now.  J is where it should
-	       be.  */
+	    /* recog_data.operand[i] is not in the right place.  Find
+	       it and swap it with whatever is already in I's place.
+	       K is where recog_data.operand[i] is now.  J is where it
+	       should be.  */
 	    int j, k, temp;
 
 	    k = temp_stack.top - (regno - FIRST_STACK_REG);
 	    j = (temp_stack.top
-		 - (REGNO (recog_operand[i]) - FIRST_STACK_REG));
+		 - (REGNO (recog_data.operand[i]) - FIRST_STACK_REG));
 
 	    temp = temp_stack.reg[k];
 	    temp_stack.reg[k] = temp_stack.reg[j];
@@ -2406,14 +2406,14 @@ subst_asm_stack_regs (insn, regstack)
      clobbers too, because these are for inputs, not outputs.  */
 
   for (i = n_outputs; i < n_outputs + n_inputs; i++)
-    if (STACK_REG_P (recog_operand[i]))
+    if (STACK_REG_P (recog_data.operand[i]))
       {
-	int regnum = get_hard_regnum (regstack, recog_operand[i]);
+	int regnum = get_hard_regnum (regstack, recog_data.operand[i]);
 
 	if (regnum < 0)
 	  abort ();
 
-	replace_reg (recog_operand_loc[i], regnum);
+	replace_reg (recog_data.operand_loc[i], regnum);
       }
 
   for (i = 0; i < n_notes; i++)
@@ -2446,23 +2446,23 @@ subst_asm_stack_regs (insn, regstack)
   /* Now remove from REGSTACK any inputs that the asm implicitly popped.  */
 
   for (i = n_outputs; i < n_outputs + n_inputs; i++)
-    if (STACK_REG_P (recog_operand[i]))
+    if (STACK_REG_P (recog_data.operand[i]))
       {
 	/* An input reg is implicitly popped if it is tied to an
 	   output, or if there is a CLOBBER for it.  */
 	int j;
 
 	for (j = 0; j < n_clobbers; j++)
-	  if (operands_match_p (clobber_reg[j], recog_operand[i]))
+	  if (operands_match_p (clobber_reg[j], recog_data.operand[i]))
 	    break;
 
 	if (j < n_clobbers || recog_op_alt[i][alt].matches >= 0)
 	  {
-	    /* recog_operand[i] might not be at the top of stack.  But that's
-	       OK, because all we need to do is pop the right number of regs
-	       off of the top of the reg-stack.  record_asm_stack_regs
-	       guaranteed that all implicitly popped regs were grouped
-	       at the top of the reg-stack.  */
+	    /* recog_data.operand[i] might not be at the top of stack.
+	       But that's OK, because all we need to do is pop the
+	       right number of regs off of the top of the reg-stack.
+	       record_asm_stack_regs guaranteed that all implicitly
+	       popped regs were grouped at the top of the reg-stack.  */
 
 	    CLEAR_HARD_REG_BIT (regstack->reg_set,
 				regstack->reg[regstack->top]);
@@ -2480,7 +2480,8 @@ subst_asm_stack_regs (insn, regstack)
       int j;
 
       for (j = 0; j < n_outputs; j++)
-	if (STACK_REG_P (recog_operand[j]) && REGNO (recog_operand[j]) == i)
+	if (STACK_REG_P (recog_data.operand[j])
+	    && REGNO (recog_data.operand[j]) == i)
 	  {
 	    regstack->reg[++regstack->top] = i;
 	    SET_HARD_REG_BIT (regstack->reg_set, i);
@@ -2496,32 +2497,32 @@ subst_asm_stack_regs (insn, regstack)
      in the death notes have already been substituted.  */
 
   for (i = 0; i < n_outputs; i++)
-    if (STACK_REG_P (recog_operand[i]))
+    if (STACK_REG_P (recog_data.operand[i]))
       {
 	int j;
 
 	for (j = 0; j < n_notes; j++)
-	  if (REGNO (recog_operand[i]) == REGNO (note_reg[j])
+	  if (REGNO (recog_data.operand[i]) == REGNO (note_reg[j])
 	      && note_kind[j] == REG_UNUSED)
 	    {
-	      insn = emit_pop_insn (insn, regstack, recog_operand[i],
+	      insn = emit_pop_insn (insn, regstack, recog_data.operand[i],
 				    emit_insn_after);
 	      break;
 	    }
       }
 
   for (i = n_outputs; i < n_outputs + n_inputs; i++)
-    if (STACK_REG_P (recog_operand[i]))
+    if (STACK_REG_P (recog_data.operand[i]))
       {
 	int j;
 
 	for (j = 0; j < n_notes; j++)
-	  if (REGNO (recog_operand[i]) == REGNO (note_reg[j])
+	  if (REGNO (recog_data.operand[i]) == REGNO (note_reg[j])
 	      && note_kind[j] == REG_DEAD
 	      && TEST_HARD_REG_BIT (regstack->reg_set,
-				    REGNO (recog_operand[i])))
+				    REGNO (recog_data.operand[i])))
 	    {
-	      insn = emit_pop_insn (insn, regstack, recog_operand[i],
+	      insn = emit_pop_insn (insn, regstack, recog_data.operand[i],
 				    emit_insn_after);
 	      break;
 	    }
