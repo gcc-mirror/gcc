@@ -1972,17 +1972,17 @@ convert_arguments (typelist, values, name)
 
 		  if (TREE_CODE (type) != REAL_TYPE
 		      && TREE_CODE (TREE_TYPE (val)) == REAL_TYPE)
-		    warning ("floating argument converted to integer");
+		    warn_for_assignment ("%s as integer rather than floating due to prototype", (char *) 0, name, parmnum + 1);
 		  else if (TREE_CODE (type) == REAL_TYPE
 		      && TREE_CODE (TREE_TYPE (val)) != REAL_TYPE)
-		    warning ("integer argument converted to floating");
+		    warn_for_assignment ("%s as floating rather than integer due to prototype", (char *) 0, name, parmnum + 1);
 		  else if (TREE_CODE (type) == REAL_TYPE
 			   && TREE_CODE (TREE_TYPE (val)) == REAL_TYPE)
 		    {
 		      /* Warn if any argument is passed as `float',
 			 since without a prototype it would be `double'.  */
 		      if (formal_prec == TYPE_PRECISION (float_type_node))
-			warning ("floating argument passed as `float' rather than `double'");
+			warn_for_assignment ("%s as `float' rather than `double' due to prototype", (char *) 0, name, parmnum + 1);
 		    }
 		  /* Detect integer changing in width or signedness.  */
 		  else if ((TREE_CODE (type) == INTEGER_TYPE
@@ -1993,8 +1993,13 @@ convert_arguments (typelist, values, name)
 		      tree would_have_been = default_conversion (val);
 		      tree type1 = TREE_TYPE (would_have_been);
 
-		      if (formal_prec != TYPE_PRECISION (type))
-			warning ("prototype changes width used for integer argument");
+		      if (TREE_CODE (type) == ENUMERAL_TYPE
+			  && type == TREE_TYPE (val))
+			/* No warning if function asks for enum
+			   and the actual arg is that enum type.  */
+			;
+		      else if (formal_prec != TYPE_PRECISION (type1))
+			warn_for_assignment ("%s with different width due to prototype", (char *) 0, name, parmnum + 1);
 		      else if (TREE_UNSIGNED (type) == TREE_UNSIGNED (type1))
 			;
 		      else if (TREE_CODE (val) == INTEGER_CST
@@ -2009,9 +2014,9 @@ convert_arguments (typelist, values, name)
 			   if an enum value is unaffected.  */
 			;
 		      else if (TREE_UNSIGNED (type))
-			warning ("argument passed as unsigned due to prototype");
+			warn_for_assignment ("%s as unsigned due to prototype", (char *) 0, name, parmnum + 1);
 		      else
-			warning ("argument passed as signed due to prototype");
+			warn_for_assignment ("%s as signed due to prototype", (char *) 0, name, parmnum + 1);
 		    }
 		}
 
