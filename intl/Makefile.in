@@ -196,7 +196,7 @@ distdir:
 Makefile: $(srcdir)/Makefile.in config.status
 	$(SHELL) ./config.status Makefile
 
-config.intl: config.intl.in config.status
+config.intl: $(srcdir)/config.intl.in config.status
 	$(SHELL) ./config.status config.intl
 	
 config.status: $(srcdir)/configure
@@ -220,11 +220,11 @@ $(srcdir)/aclocal.m4: @MAINT@ $(srcdir)/configure.ac \
 config.h: stamp-h1
 	test -f config.h || (rm -f stamp-h1 && $(MAKE) stamp-h1)
 
-stamp-h1: $(srcdir)/config.in config.status
+stamp-h1: $(srcdir)/config.h.in config.status
 	-rm -f stamp-h1
 	$(SHELL) ./config.status config.h
 
-$(srcdir)/config.in: @MAINT@ $(srcdir)/configure
+$(srcdir)/config.h.in: @MAINT@ $(srcdir)/aclocal.m4 $(srcdir)/configure.ac
 	cd $(srcdir) && $(AUTOHEADER)
 	-rm -f stamp-h1
 	

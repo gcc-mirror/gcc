@@ -1,3 +1,9 @@
+2004-09-23  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in (config.h.in): Correct dependencies.
+	(stamp-h1): Likewise.
+	(config.intl): Likewise.
+
 2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure.ac (AC_CONFIG_MACRO_DIR): New.
