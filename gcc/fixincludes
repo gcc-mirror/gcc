@@ -273,7 +273,7 @@ while [ $# != 0 ]; do
 	  s%^\([ 	]*#[ 	]*endif[ 	]*\)\([^/ 	].*\)$%\1/* \2 */%
 	  s%^\([ 	]*#[ 	]*else[ 	]*\)\([^/ 	].*\)$%\1/* \2 */%
 	  /\/\/[^*]/			s|//\(.*\)$|/*\1*/|
-	  /[ 	]_IO[A-Z]*[ 	]*(/	s/(\(.\),/('\''\1'\'',/
+	  /[ 	]_IO[A-Z]*[ 	]*(/	s/\(_IO[A-Z]*[ 	]*(\)\(.\),/\1'\''\2'\'',/
 	  /[ 	]BSD43__IO[A-Z]*[ 	]*(/	s/(\(.\),/('\''\1'\'',/
 	  /#define._IO/			s/'\''\([cgx]\)'\''/\1/g
 	  /#define.BSD43__IO/		s/'\''\([cgx]\)'\''/\1/g
@@ -814,6 +814,35 @@ if [ -r ${LIB}/$file ]; then
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
     rm -f ${LIB}/$file
+  fi
+fi
+
+# Fix line in IRIX 4.0.1 header file.  The sed script turns
+# #define EM_CTRL		(CUTIOC|0x1)
+# into
+# #define EM_CTRL		(CUTIOC|0x'1')
+file=sys/t3270reg.h
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, overeager sed script
+  sed -e "s/0x'1'/0x1/" ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  fi
+fi
+
+# Turning // comments into /* */ comments trashes this IRIX 4.0.1
+# header file, which embeds // comments inside multi-line /* */
+# comments.  If this looks like the IRIX header file, we refix it by
+# just throwing away the // comments.
+file=fam.h
+if [ -r ${LIB}/$file ]; then
+  if egrep indigo.esd ${LIB}/$file > /dev/null; then
+    echo Fixing $file, overeager sed script
+    rm ${LIB}/$file
+    sed -e 's|//.*$||g' $file > ${LIB}/$file
+    chmod +w ${LIB}/$file 2>/dev/null
+    chmod a+r ${LIB}/$file 2>/dev/null
   fi
 fi
 
