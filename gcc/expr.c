@@ -8643,10 +8643,66 @@ expand_expr_unaligned (exp, palign)
 				 TYPE_MODE (integer_type_node));
 	  }
 
-	/* Get a reference to just this component.  */
-	op0 = change_address (op0, mode1,
-			      plus_constant (XEXP (op0, 0),
-					     (bitpos / BITS_PER_UNIT)));
+	/* In cases where an aligned union has an unaligned object
+	   as a field, we might be extracting a BLKmode value from
+	   an integer-mode (e.g., SImode) object.  Handle this case
+	   by doing the extract into an object as wide as the field
+	   (which we know to be the width of a basic mode), then
+	   storing into memory, and changing the mode to BLKmode.
+	   If we ultimately want the address (EXPAND_CONST_ADDRESS or
+	   EXPAND_INITIALIZER), then we must not copy to a temporary.  */
+	if (mode1 == VOIDmode
+	    || GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
+	    || (SLOW_UNALIGNED_ACCESS
+		&& (TYPE_ALIGN (type) > alignment * BITS_PER_UNIT
+		    || bitpos % TYPE_ALIGN (type) != 0)))
+	  {
+	    enum machine_mode ext_mode = mode_for_size (bitsize, MODE_INT, 1);
+
+	    if (ext_mode == BLKmode)
+	      {
+		/* In this case, BITPOS must start at a byte boundary.  */
+		if (GET_CODE (op0) != MEM
+		    || bitpos % BITS_PER_UNIT != 0)
+		  abort ();
+
+		op0 = change_address (op0, VOIDmode,
+				      plus_constant (XEXP (op0, 0),
+						     bitpos / BITS_PER_UNIT));
+	      }
+	    else
+	      {
+		rtx new = assign_stack_temp (ext_mode,
+					     bitsize / BITS_PER_UNIT, 0);
+
+		op0 = extract_bit_field (validize_mem (op0), bitsize, bitpos,
+					 unsignedp, NULL_RTX, ext_mode,
+					 ext_mode, alignment,
+					 int_size_in_bytes (TREE_TYPE (tem)));
+
+		/* If the result is a record type and BITSIZE is narrower than
+		   the mode of OP0, an integral mode, and this is a big endian
+		   machine, we must put the field into the high-order bits.  */
+		if (TREE_CODE (type) == RECORD_TYPE && BYTES_BIG_ENDIAN
+		    && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT
+		    && bitsize < GET_MODE_BITSIZE (GET_MODE (op0)))
+		  op0 = expand_shift (LSHIFT_EXPR, GET_MODE (op0), op0,
+				      size_int (GET_MODE_BITSIZE
+						(GET_MODE (op0))
+						- bitsize),
+				      op0, 1);
+
+
+		emit_move_insn (new, op0);
+		op0 = copy_rtx (new);
+		PUT_MODE (op0, BLKmode);
+	      }
+	  }
+	else
+	  /* Get a reference to just this component.  */
+	  op0 = change_address (op0, mode1,
+				  plus_constant (XEXP (op0, 0),
+						 (bitpos / BITS_PER_UNIT)));
 
 	MEM_ALIAS_SET (op0) = get_alias_set (exp);
 
