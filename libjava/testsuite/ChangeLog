@@ -1,3 +1,8 @@
+1999-06-24  Tom Tromey  <tromey@cygnus.com>
+
+	* lib/libjava.exp (libjava_arguments): If `libtool' not found in
+	build tree, just use $GCJ_UNDER_TEST as compiler.
+
 1999-06-23  Tom Tromey  <tromey@cygnus.com>
 
 	* lib/libjava.exp (libjava_arguments): Handle -lzgcj.

@@ -200,14 +200,19 @@ proc libjava_arguments {{mode compile}} {
     }
 
     # Search for libtool.  We need it to link.
+    set found_compiler 0
     set d [absolute $objdir]
     foreach x {. .. ../.. ../../..} {
 	if {[file exists $d/$x/libtool]} then {
 	    # We have to run silently to avoid DejaGNU lossage.
 	    lappend args \
 	      "compiler=$d/$x/libtool --silent --mode=$mode $GCJ_UNDER_TEST"
+	    set found_compiler 1
 	    break
 	}
+    }
+    if {! $found_compiler} {
+	lappend args "compiler=$GCJ_UNDER_TEST"
     }
 
     return $args
