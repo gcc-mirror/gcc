@@ -1331,39 +1331,6 @@ EOF
 
 
 dnl
-dnl Check for template specializations for the 'long long' type extension.
-dnl
-dnl GLIBCPP_ENABLE_LONG_LONG
-dnl --enable-long-long defines _GLIBCPP_USE_LONG_LONG
-dnl --disable-long-long leaves _GLIBCPP_USE_LONG_LONG undefined
-dnl  +  Usage:  GLIBCPP_ENABLE_LONG_LONG[(DEFAULT)]
-dnl       Where DEFAULT is either `yes' or `no'.  If omitted, it
-dnl       defaults to `no'.
-dnl  +  If 'long long' stuff is not available, ignores DEFAULT and sets `no'.
-dnl
-dnl GLIBCPP_ENABLE_LONG_LONG
-AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
-  define([GLIBCPP_ENABLE_LONG_LONG_DEFAULT], ifelse($1, yes, yes, no))dnl
-
-  AC_ARG_ENABLE(long-long,
-  changequote(<<, >>)dnl
-  <<--enable-long-long      turns on 'long long' [default=>>GLIBCPP_ENABLE_LONG_LONG_DEFAULT],
-  changequote([, ])dnl
-  [case "$enableval" in
-   yes) enable_long_long=yes ;;
-   no)  enable_long_long=no ;;
-   *)   AC_MSG_ERROR([Unknown argument to enable/disable long long]) ;;
-   esac],
-  enable_long_long=GLIBCPP_ENABLE_LONG_LONG_DEFAULT)dnl
-
-  # Option parsed, now set things appropriately
-  if test x"$enable_long_long" = xyes; then
-    AC_DEFINE(_GLIBCPP_USE_LONG_LONG)
-  fi
-])
-
- 
-dnl
 dnl Check for ISO/IEC 9899:1999 "C99" support.
 dnl
 dnl GLIBCPP_ENABLE_C99
@@ -1442,6 +1409,49 @@ AC_DEFUN(GLIBCPP_ENABLE_C99, [dnl
   fi
 
   AC_LANG_RESTORE
+])
+
+
+dnl
+dnl Check for template specializations for the 'long long' type extension.
+dnl NB: Must check for C99 support before calling _GLIBCPP_ENABLE_LONG_LONG
+dnl
+dnl GLIBCPP_ENABLE_LONG_LONG
+dnl --enable-long-long defines _GLIBCPP_USE_LONG_LONG
+dnl --disable-long-long leaves _GLIBCPP_USE_LONG_LONG undefined
+dnl  +  Usage:  GLIBCPP_ENABLE_LONG_LONG[(DEFAULT)]
+dnl       Where DEFAULT is either `yes' or `no'.  If omitted, it
+dnl       defaults to `no'.
+dnl  +  If 'long long' stuff is not available, ignores DEFAULT and sets `no'.
+dnl
+dnl GLIBCPP_ENABLE_LONG_LONG
+AC_DEFUN(GLIBCPP_ENABLE_LONG_LONG, [dnl
+  define([GLIBCPP_ENABLE_LONG_LONG_DEFAULT], ifelse($1, yes, yes, no))dnl
+
+  AC_ARG_ENABLE(long-long,
+  changequote(<<, >>)dnl
+  <<--enable-long-long      turns on 'long long' [default=>>GLIBCPP_ENABLE_LONG_LONG_DEFAULT],
+  changequote([, ])dnl
+  [case "$enableval" in
+   yes) enable_long_long=yes ;;
+   no)  enable_long_long=no ;;
+   *)   AC_MSG_ERROR([Unknown argument to enable/disable long long]) ;;
+   esac],
+  enable_long_long=GLIBCPP_ENABLE_LONG_LONG_DEFAULT)dnl
+
+  # iostreams require strtoll, strtoull to compile. If the
+  # GLIBCPP_ENABLE_C99 tests found these, and if C99 support is enabled,
+  # go ahead and allow long long to be used.
+  if test x"$enable_c99" = x"no"; then
+    enable_long_long=no; 
+  fi
+
+  # Option parsed, now set things appropriately
+  AC_MSG_CHECKING([for enabled long long support])
+  if test x"$enable_long_long" = xyes; then
+    AC_DEFINE(_GLIBCPP_USE_LONG_LONG)
+  fi
+  AC_MSG_RESULT($enable_long_long)
 ])
 
 
