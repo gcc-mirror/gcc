@@ -1,6 +1,6 @@
 /* Definitions for Intel 386 running SCO Unix System V 3.2 Version 5.
-   Written by Kean Johnston (hug@netcom.com)
    Copyright (C) 1992, 1995, 1996 Free Software Foundation, Inc.
+   Contributed by Kean Johnston (hug@netcom.com)
 
 This file is part of GNU CC.
 
@@ -483,9 +483,10 @@ do {									\
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)			\
   fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
 
-#undef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE,NAME)					\
-  fprintf (FILE, "%s", NAME)
+/* The prefix to add to user-visible assembler symbols. */
+
+#undef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX ""
 
 #undef ASM_OUTPUT_SECTION_NAME
 #define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \

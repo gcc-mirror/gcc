@@ -1,8 +1,7 @@
 /* Definitions of target machine for GNU compiler.
    AT&T UNIX PC version (pc7300, 3b1)
-   Written by Alex Crain (alex@umbc3.umd.edu).
-
-   Copyright (C) 1987, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1996 Free Software Foundation, Inc.
+   Contributed by Alex Crain (alex@umbc3.umd.edu).
 
 This file is part of GNU CC.
 
@@ -119,7 +118,7 @@ output_file_directive ((FILE), main_input_filename)
 #undef ASM_OUTPUT_INTERNAL_LABEL
 #undef ASM_OUTPUT_OPCODE
 #undef ASM_OUTPUT_LOCAL
-#undef ASM_OUTPUT_LABELREF
+#undef USER_LABEL_PREFIX
 #undef ASM_OUTPUT_ASCII
 
 #define TARGET_VERSION fprintf (stderr, " (68k, SGS/AT&T unixpc syntax)");
@@ -437,8 +436,7 @@ int switch_table_difference_label_flag;
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ",%u\n", (ROUNDED)))
 
-#define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  fprintf (FILE, "%s", NAME)
+#define USER_LABEL_PREFIX ""
 
 /* Override usual definitions of SDB output macros.
    These definitions differ only in the absence of the period

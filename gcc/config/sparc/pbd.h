@@ -1,9 +1,6 @@
-/* Definitions of target machine for GNU compiler.
-
-   Citicorp/TTI Unicom PBD version
-   (using GAS and  COFF (encapsulated is unacceptable) )
-
-   Copyright (C) 1990 Free Software Foundation, Inc.
+/* Definitions of target machine for GNU compiler, Citicorp/TTI Unicom PBD
+   version (using GAS and COFF (encapsulated is unacceptable) )
+   Copyright (C) 1990, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -105,9 +102,10 @@ Boston, MA 02111-1307, USA.  */
   }
  */
 
-#undef  ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  fprintf (FILE, "%s", NAME)
+/* The prefix to add to user-visible assembler symbols. */
+
+#undef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX ""
 
 /* fixes: */
 /*

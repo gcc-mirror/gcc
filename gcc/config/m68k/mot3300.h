@@ -540,12 +540,10 @@ do { long l;					\
     fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
 #endif /* USE_GAS */
 
-/* This is how to output a reference to a user-level label named NAME.
-   `assemble_name' uses this.  */
+/* The prefix to add to user-visible assembler symbols. */
 
-#undef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  fprintf (FILE, "%s", NAME)
+#undef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX ""
 
 /* This is how to output an element of a case-vector that is absolute.
    (The 68000 does not use such vectors,

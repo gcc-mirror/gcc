@@ -96,8 +96,9 @@ Boston, MA 02111-1307, USA.  */
 #undef IMMEDIATE_PREFIX
 #define IMMEDIATE_PREFIX "&"
 
+/* The prefix to add to user-visible assembler symbols. */
+
 /* We do not want leading underscores.  */
 
-#undef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE,NAME)  \
-  fprintf (FILE, "%s", NAME)
+#undef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX ""

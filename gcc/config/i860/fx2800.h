@@ -330,8 +330,11 @@ Boston, MA 02111-1307, USA.  */
 
 #undef DWARF_DEBUGGING_INFO
 
-#undef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE,NAME) fprintf (FILE, "_%s", NAME)
+/* The prefix to add to user-visible assembler symbols. */
+
+#undef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX "_"
+
 #undef ASM_OUTPUT_EXTERNAL_LIBCALL
 
 /* ??? Is this used anywhere?  */
