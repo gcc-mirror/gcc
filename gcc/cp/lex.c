@@ -313,7 +313,7 @@ my_get_run_time ()
 
 /* Table indexed by tree code giving a string containing a character
    classifying the tree code.  Possibilities are
-   t, d, s, c, r, <, 1 and 2.  See cp-tree.def for details.  */
+   t, d, s, c, r, <, 1 and 2.  See cp/tree.def for details.  */
 
 #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
 
@@ -1036,7 +1036,7 @@ extract_interface_info ()
     interface_unknown = TREE_INT_CST_HIGH (fileinfo);
 }
 
-/* Return nonzero if S and T are not considered part of an
+/* Return nonzero if S is not considered part of an
    INTERFACE/IMPLEMENTATION pair.  Otherwise, return 0.  */
 static int
 interface_strcmp (s)
@@ -1045,8 +1045,6 @@ interface_strcmp (s)
   /* Set the interface/implementation bits for this scope.  */
   struct impl_files *ifiles;
   char *s1;
-
-  s = FILE_NAME_NONDIRECTORY (s);
 
   for (ifiles = impl_file_chain; ifiles; ifiles = ifiles->next)
     {
@@ -1087,7 +1085,7 @@ set_typedecl_interface_info (prev, vars)
   tree type = TREE_TYPE (vars);
 
   CLASSTYPE_INTERFACE_ONLY (type) = TREE_INT_CST_LOW (fileinfo)
-    = interface_strcmp (DECL_SOURCE_FILE (vars));
+    = interface_strcmp (FILE_NAME_NONDIRECTORY (DECL_SOURCE_FILE (vars)));
 }
 
 void
@@ -1109,7 +1107,7 @@ set_vardecl_interface_info (prev, vars)
 
 /* Called from the top level: if there are any pending inlines to
    do, set up to process them now.  This function sets up the first function
-   to be parsed; after it has been, the rule for fndef in cp-parse.y will
+   to be parsed; after it has been, the rule for fndef in parse.y will
    call process_next_inline to start working on the next one.  */
 void
 do_pending_inlines ()
@@ -2432,19 +2430,39 @@ check_newline ()
 		      && getch () == 'e'
 		      && ((c = getch ()) == ' ' || c == '\t' || c == '\n'))
 		    {
-		      int warned_interface = 0;
+		      int warned_already = 0;
+		      char *main_filename = input_filename;
 
-		      /* Read to newline.  */
+		      main_filename = FILE_NAME_NONDIRECTORY (main_filename);
+		      while (c == ' ' || c == '\t')
+			c = getch ();
+		      if (c != '\n')
+			{
+			  put_back (c);
+			  token = real_yylex ();
+			  if (token != STRING
+			      || TREE_CODE (yylval.ttype) != STRING_CST)
+			    {
+			      error ("invalid `#pragma interface'");
+			      goto skipline;
+			    }
+			  main_filename = TREE_STRING_POINTER (yylval.ttype);
+			  c = getch();
+			  put_back (c);
+			}
+
+		      while (c == ' ' || c == '\t')
+			c = getch ();
 
 		      while (c != '\n')
 			{
-			  c = getch ();
-			  if (!warned_interface && extra_warnings
+			  if (!warned_already && extra_warnings
 			      && c != ' ' && c != '\t' && c != '\n')
 			    {
 			      warning ("garbage after `#pragma interface' ignored");
-			      warned_interface = 1;
+			      warned_already = 1;
 			    }
+			  c = getch ();
 			}
 
 		      write_virtuals = 3;
@@ -2459,6 +2477,7 @@ check_newline ()
 			  if (main_input_filename == 0)
 			    main_input_filename = input_filename;
 
+#ifdef AUTO_IMPLEMENT
 			  filename = FILE_NAME_NONDIRECTORY (main_input_filename);
 			  fi = get_time_identifier (filename);
 			  fi = IDENTIFIER_CLASS_VALUE (fi);
@@ -2468,9 +2487,10 @@ check_newline ()
 			  impl_file_chain = (struct impl_files *)permalloc (sizeof (struct impl_files));
 			  impl_file_chain->filename = filename;
 			  impl_file_chain->next = 0;
+#endif
 			}
 
-		      interface_only = interface_strcmp (input_filename);
+		      interface_only = interface_strcmp (main_filename);
 		      interface_unknown = 0;
 		      TREE_INT_CST_LOW (fileinfo) = interface_only;
 		      TREE_INT_CST_HIGH (fileinfo) = interface_unknown;
@@ -2490,8 +2510,10 @@ check_newline ()
 			   && getch () == 'n'
 			   && ((c = getch ()) == ' ' || c == '\t' || c == '\n'))
 		    {
+		      int warned_already = 0;
 		      char *main_filename = main_input_filename ? main_input_filename : input_filename;
 
+		      main_filename = FILE_NAME_NONDIRECTORY (main_filename);
 		      while (c == ' ' || c == '\t')
 			c = getch ();
 		      if (c != '\n')
@@ -2505,12 +2527,23 @@ check_newline ()
 			      goto skipline;
 			    }
 			  main_filename = TREE_STRING_POINTER (yylval.ttype);
+			  c = getch();
+			  put_back (c);
 			}
-		      main_filename = FILE_NAME_NONDIRECTORY (main_filename);
 
-		      /* read to newline.  */
-		      while (c != '\n')
+		      while (c == ' ' || c == '\t')
 			c = getch ();
+
+		      while (c != '\n')
+			{
+			  if (!warned_already && extra_warnings
+			      && c != ' ' && c != '\t' && c != '\n')
+			    {
+			      warning ("garbage after `#pragma implementation' ignored");
+			      warned_already = 1;
+			    }
+			  c = getch ();
+			}
 
 		      if (write_virtuals == 3)
 			{

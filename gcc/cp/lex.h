@@ -1,4 +1,4 @@
-/* Define constants and variables for communication with cp-parse.y.
+/* Define constants and variables for communication with parse.y.
    Copyright (C) 1987, 1992, 1993 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
    and by Brendan Kehoe (brendan@cygnus.com).

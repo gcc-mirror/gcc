@@ -435,6 +435,8 @@ get_binfo (parent, binfo, protect)
     type = BINFO_TYPE (binfo);
   else if (TREE_CODE (binfo) == RECORD_TYPE)
     type = binfo;
+  else if (TREE_CODE (binfo) == UNION_TYPE)
+    return NULL_TREE;
   else
     my_friendly_abort (90);
   
@@ -479,9 +481,10 @@ get_base_distance_recursive (binfo, depth, is_private, basetype_path, rval,
 	}
       else
 	{
-	  int same_object = tree_int_cst_equal (BINFO_OFFSET (*new_binfo_ptr),
-						BINFO_OFFSET (binfo));
-
+	  int same_object = (tree_int_cst_equal (BINFO_OFFSET (*new_binfo_ptr),
+						 BINFO_OFFSET (binfo))
+			     && *via_virtual_ptr && via_virtual);
+			     
 	  if (*via_virtual_ptr && via_virtual==0)
 	    {
 	      *rval_private_ptr = is_private;
@@ -2535,7 +2538,8 @@ build_vbase_vtables_init (main_binfo, binfo, true_exp, decl_ptr,
 	      tree addr;
 	      tree vtbl = BINFO_VTABLE (vbases);
 	      tree init = build_unary_op (ADDR_EXPR, vtbl, 0);
-	      assemble_external (vtbl);
+	      if (!flag_vtable_hack)
+		assemble_external (vtbl);
 	      TREE_USED (vtbl) = 1;
 
 	      if (use_computed_offsets)
@@ -2580,112 +2584,42 @@ static void
 dfs_get_vbase_types (binfo)
      tree binfo;
 {
-  tree binfos = BINFO_BASETYPES (binfo);
-  tree type = BINFO_TYPE (binfo);
-  tree these_vbase_types = CLASSTYPE_VBASECLASSES (type);
-  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-
-  if (these_vbase_types)
+  if (TREE_VIA_VIRTUAL (binfo) && ! BINFO_VBASE_MARKED (binfo))
     {
-      while (these_vbase_types)
-	{
-	  tree this_type = BINFO_TYPE (these_vbase_types);
-
-	  /* We really need to start from a fresh copy of this
-	     virtual basetype!  CLASSTYPE_MARKED2 is the shortcut
-	     for BINFO_VBASE_MARKED.  */
-	  if (! CLASSTYPE_MARKED2 (this_type))
-	    {
-	      vbase_types = make_binfo (integer_zero_node,
-					this_type,
-					TYPE_BINFO_VTABLE (this_type),
-					TYPE_BINFO_VIRTUALS (this_type),
-					vbase_types);
-	      TREE_VIA_VIRTUAL (vbase_types) = 1;
-	      SET_CLASSTYPE_MARKED2 (this_type);
-	    }
-	  these_vbase_types = TREE_CHAIN (these_vbase_types);
-	}
-    }
-  else for (i = 0; i < n_baselinks; i++)
-    {
-      tree base_binfo = TREE_VEC_ELT (binfos, i);
-      if (TREE_VIA_VIRTUAL (base_binfo) && ! BINFO_VBASE_MARKED (base_binfo))
-	{
-	  vbase_types = make_binfo (integer_zero_node, BINFO_TYPE (base_binfo),
-				    BINFO_VTABLE (base_binfo),
-				    BINFO_VIRTUALS (base_binfo), vbase_types);
-	  TREE_VIA_VIRTUAL (vbase_types) = 1;
-	  SET_BINFO_VBASE_MARKED (base_binfo);
-	}
+      vbase_types = make_binfo (integer_zero_node, BINFO_TYPE (binfo),
+				BINFO_VTABLE (binfo),
+				BINFO_VIRTUALS (binfo), vbase_types);
+      TREE_VIA_VIRTUAL (vbase_types) = 1;
+      SET_BINFO_VBASE_MARKED (binfo);
     }
   SET_BINFO_MARKED (binfo);
 }
 
-/* Some virtual baseclasses might be virtual baseclasses for
-   other virtual baseclasses.  We sort the virtual baseclasses
-   topologically: in the list returned, the first virtual base
-   classes have no virtual baseclasses themselves, and any entry
-   on the list has no dependency on virtual base classes later in the
-   list.  */
+/* get a list of virtual base classes in dfs order.  */
 tree
 get_vbase_types (type)
      tree type;
 {
-  tree ordered_vbase_types = NULL_TREE, prev, next;
   tree vbases;
+  tree binfo;
+
+  if (TREE_CODE (type) == TREE_VEC)
+    binfo = type;
+  else
+    binfo = TYPE_BINFO (type);
 
   vbase_types = NULL_TREE;
-  dfs_walk (TYPE_BINFO (type), dfs_get_vbase_types, unmarkedp);
-  dfs_walk (TYPE_BINFO (type), dfs_unmark, markedp);
+  dfs_walk (binfo, dfs_get_vbase_types, unmarkedp);
+  dfs_walk (binfo, dfs_unmark, markedp);
   /* Rely upon the reverse dfs ordering from dfs_get_vbase_types, and now
      reverse it so that we get normal dfs ordering.  */
   vbase_types = nreverse (vbase_types);
 
-  /* Almost all of the below is not needed now.  We should be able to just
-     return vbase_types directly... (mrs) */
-  while (vbase_types)
-    {
-      /* Now sort these types.  This is essentially a bubble merge.  */
+  /* unmark marked vbases */
+  for (vbases = vbase_types; vbases; vbases = TREE_CHAIN (vbases))
+    CLEAR_BINFO_VBASE_MARKED (vbases);
 
-      /* Farm out virtual baseclasses which have no marked ancestors.  */
-      for (vbases = vbase_types, prev = NULL_TREE;
-	   vbases; vbases = next)
-	{
-	  next = TREE_CHAIN (vbases);
-	  /* If VBASES does not have any vbases itself, or it's
-	     topologically safe, it goes into the sorted list.  */
-	  if (1 /* ANSI C++ specifies dfs ordering now. */
-	      || ! CLASSTYPE_VBASECLASSES (BINFO_TYPE (vbases))
-	      || BINFO_VBASE_MARKED (vbases) == 0)
-	    {
-	      if (prev)
-		TREE_CHAIN (prev) = TREE_CHAIN (vbases);
-	      else
-		vbase_types = TREE_CHAIN (vbases);
-	      TREE_CHAIN (vbases) = NULL_TREE;
-	      ordered_vbase_types = chainon (ordered_vbase_types, vbases);
-	      CLEAR_BINFO_VBASE_MARKED (vbases);
-	    }
-	  else
-	    prev = vbases;
-	}
-
-      /* Now unmark types all of whose ancestors are now on the
-	 `ordered_vbase_types' list.  */
-      for (vbases = vbase_types; vbases; vbases = TREE_CHAIN (vbases))
-	{
-	  /* If all our virtual baseclasses are unmarked, ok.  */
-	  tree t = CLASSTYPE_VBASECLASSES (BINFO_TYPE (vbases));
-	  while (t && (BINFO_VBASE_MARKED (t) == 0
-		       || ! CLASSTYPE_VBASECLASSES (BINFO_TYPE (t))))
-	    t = TREE_CHAIN (t);
-	  if (t == NULL_TREE)
-	    CLEAR_BINFO_VBASE_MARKED (vbases);
-	}
-    }
-
-  return ordered_vbase_types;
+  return vbase_types;
 }
 
 static void

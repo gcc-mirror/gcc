@@ -329,7 +329,7 @@ ack (s, v, v2)
    silly.  So instead, we just do the equivalent of a call to fatal in the
    same situation (call exit).  */
 
-/* First used: 0 (reserved), Last used: 355.  Free: 5.  */
+/* First used: 0 (reserved), Last used: 355.  */
 
 static int abortcount = 0;
 
@@ -641,13 +641,17 @@ digest_init (type, init, tail)
   if (TREE_CODE (init) == NON_LVALUE_EXPR)
     init = TREE_OPERAND (init, 0);
 
+  if (init && TREE_TYPE (init) && TYPE_PTRMEMFUNC_P (type))
+    init = default_conversion (init);
+
   if (init && TYPE_PTRMEMFUNC_P (type)
       && ((TREE_CODE (init) == ADDR_EXPR
 	   && TREE_CODE (TREE_TYPE (init)) == POINTER_TYPE
 	   && TREE_CODE (TREE_TYPE (TREE_TYPE (init))) == METHOD_TYPE)
-	  || integer_zerop (init)))
+	  || integer_zerop (init)
+	  || (TREE_TYPE (init) && TYPE_PTRMEMFUNC_P (TREE_TYPE (init)))))
     {
-      init = build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), init, 0);
+      return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), init, 0);
     }
 
   raw_constructor = TREE_CODE (init) == CONSTRUCTOR && TREE_TYPE (init) == 0;
@@ -999,19 +1003,8 @@ process_init_constructor (type, init, elts)
 	    {
 	      tree tail1 = tail;
 
-	      if (TYPE_PTRMEMFUNC_P (TREE_TYPE (field)))
-		{
-		  tree t
-		    = build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (TREE_TYPE (field)),
-					default_conversion (TREE_VALUE (tail)),
-					0);
-		  if (t == NULL_TREE)
-		    return error_mark_node;
-		  next1 = digest_init (TREE_TYPE (field), t, &tail1);
-		}
-	      else
-		next1 = digest_init (TREE_TYPE (field),
-				     TREE_VALUE (tail), &tail1);
+	      next1 = digest_init (TREE_TYPE (field),
+				   TREE_VALUE (tail), &tail1);
 	      my_friendly_assert (tail1 == 0
 				  || TREE_CODE (tail1) == TREE_LIST, 320);
 	      tail = tail1;
@@ -1377,22 +1370,22 @@ build_m_component_ref (datum, component)
   if (datum == error_mark_node || component == error_mark_node)
     return error_mark_node;
 
-  if (! IS_AGGR_TYPE (objtype))
-    {
-      cp_error ("cannot apply member pointer `%D' to `%E'", component, datum);
-      cp_error ("which is of non-aggregate type `%T'", objtype);
-      return error_mark_node;
-    }
-  
   if (TREE_CODE (type) != OFFSET_TYPE && TREE_CODE (type) != METHOD_TYPE)
     {
-      error ("non-member type composed with object");
+      cp_error ("`%E' cannot be used as a member pointer, since it is of type `%T'", component, type);
       return error_mark_node;
     }
 
   if (TREE_CODE (objtype) == REFERENCE_TYPE)
     objtype = TREE_TYPE (objtype);
 
+  if (! IS_AGGR_TYPE (objtype))
+    {
+      cp_error ("cannot apply member pointer `%E' to `%E'", component, datum);
+      cp_error ("which is of non-aggregate type `%T'", objtype);
+      return error_mark_node;
+    }
+  
   if (! comptypes (TYPE_METHOD_BASETYPE (type), objtype, 0))
     {
       cp_error ("member type `%T::' incompatible with object type `%T'",

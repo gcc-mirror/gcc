@@ -25,7 +25,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* cp_printer is the type of a function which converts an argument into
    a string for digestion by printf.  The cp_printer function should deal
    with all memory management; the functions in this file will not free
-   the char*s returned.  See cp-error.c for an example use of this code.  */
+   the char*s returned.  See error.c for an example use of this code.  */
 
 typedef char* cp_printer PROTO((HOST_WIDE_INT, int));
 extern cp_printer * cp_printers[256];

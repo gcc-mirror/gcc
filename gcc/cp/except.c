@@ -349,7 +349,7 @@ void
 finish_exception_decl (cname, decl)
      tree cname, decl;
 {
-  /* In cp-decl.h.  */
+  /* In decl.h.  */
   extern tree last_function_parms;
 
   /* An exception declaration.  */

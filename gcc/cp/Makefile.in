@@ -44,10 +44,9 @@ X_CPPFLAGS =
 T_CPPFLAGS =
 
 CC = cc
-# CYGNUS LOCAL: we use byacc instead of bison, DO NOT SEND TO RMS
-BISON = `if [ -f ../../byacc/byacc ] ; then echo ../../byacc/byacc ;  else echo byacc ; fi`
+BISON = bison
 BISONFLAGS =
-LEX = `if [ -f ../../flex/flex ] ; then echo ../../flex/flex ;  else echo flex ; fi`
+LEX = flex
 LEXFLAGS=
 AR = ar
 OLDAR_FLAGS = qc
@@ -204,7 +203,7 @@ parse.o : $(srcdir)/parse.c $(CONFIG_H) $(CXX_TREE_H) ../flags.h lex.h
   `echo $(srcdir)/parse.c | sed 's,^\./,,'`
 
 $(srcdir)/parse.c $(srcdir)/parse.h : $(srcdir)/parse.y
-	@echo expect 28 shift/reduce conflicts, 14 reduce/reduce conflicts.
+	@echo expect 24 reduce/reduce conflicts.
 	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o parse.c parse.y
 	cd $(srcdir); grep '^#define[ 	]*YYEMPTY' parse.c >>parse.h
 

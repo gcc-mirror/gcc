@@ -169,8 +169,9 @@ end_template_parm_list (parms)
    D1 is template header; D2 is class_head_sans_basetype or a
    TEMPLATE_DECL with its DECL_RESULT field set.  */
 void
-end_template_decl (d1, d2, is_class)
+end_template_decl (d1, d2, is_class, defn)
      tree d1, d2, is_class;
+     int defn;
 {
   tree decl;
   struct template_info *tmpl;
@@ -254,37 +255,47 @@ end_template_decl (d1, d2, is_class)
     }
   DECL_TEMPLATE_INFO (decl) = tmpl;
   DECL_TEMPLATE_PARMS (decl) = d1;
-lose:
-  if (decl)
+
+  /* So that duplicate_decls can do the right thing.  */
+  if (defn)
+    DECL_INITIAL (decl) = error_mark_node;
+  
+  /* If context of decl is non-null (i.e., method template), add it
+     to the appropriate class template, and pop the binding levels.  */
+  if (! DECL_TEMPLATE_IS_CLASS (decl)
+      && DECL_CONTEXT (DECL_TEMPLATE_RESULT (decl)) != NULL_TREE)
     {
-      /* If context of decl is non-null (i.e., method template), add it
-	 to the appropriate class template, and pop the binding levels.  */
-      if (! DECL_TEMPLATE_IS_CLASS (decl)
-	  && DECL_CONTEXT (DECL_TEMPLATE_RESULT (decl)) != NULL_TREE)
-	{
-	  tree ctx = DECL_CONTEXT (DECL_TEMPLATE_RESULT (decl));
-	  tree tmpl;
-	  my_friendly_assert (TREE_CODE (ctx) == UNINSTANTIATED_P_TYPE, 266);
-	  tmpl = UPT_TEMPLATE (ctx);
-	  DECL_TEMPLATE_MEMBERS (tmpl) =
-	    perm_tree_cons (DECL_NAME (decl), decl,
-			    DECL_TEMPLATE_MEMBERS (tmpl));
-	  poplevel (0, 0, 0);
-	  poplevel (0, 0, 0);
-	}
-      /* Otherwise, go back to top level first, and push the template decl
-	 again there.  */
-      else
-	{
-	  poplevel (0, 0, 0);
-	  poplevel (0, 0, 0);
-	  if (TREE_TYPE (decl)
-	      && IDENTIFIER_GLOBAL_VALUE (DECL_NAME (decl)) != NULL_TREE)
-	    push_overloaded_decl (decl, 0);
-	  else
-	    pushdecl (decl);
-	}
+      tree ctx = DECL_CONTEXT (DECL_TEMPLATE_RESULT (decl));
+      tree tmpl;
+      my_friendly_assert (TREE_CODE (ctx) == UNINSTANTIATED_P_TYPE, 266);
+      tmpl = UPT_TEMPLATE (ctx);
+      DECL_TEMPLATE_MEMBERS (tmpl) =
+	perm_tree_cons (DECL_NAME (decl), decl,
+			DECL_TEMPLATE_MEMBERS (tmpl));
+      poplevel (0, 0, 0);
+      poplevel (0, 0, 0);
     }
+  /* Otherwise, go back to top level first, and push the template decl
+     again there.  */
+  else
+    {
+      poplevel (0, 0, 0);
+      poplevel (0, 0, 0);
+      if (TREE_TYPE (decl))
+	{
+	  /* Function template */
+	  tree t = IDENTIFIER_GLOBAL_VALUE (DECL_NAME (decl));
+	  if (t && is_overloaded_fn (t))
+	    for (t = get_first_fn (t); t; t = DECL_CHAIN (t))
+	      if (TREE_CODE (t) == TEMPLATE_DECL
+		  && duplicate_decls (decl, t))
+		decl = t;
+	  push_overloaded_decl (decl, 0);
+	}
+      else
+	pushdecl (decl);
+    }
+ lose:
 #if 0 /* It happens sometimes, with syntactic or semantic errors.
 
 	 One specific case:
@@ -671,7 +682,7 @@ pop_template_decls (parmlist, arglist, class_level)
     poplevel (0, 0, 0);
 }
 
-/* Should be defined in cp-parse.h.  */
+/* Should be defined in parse.h.  */
 extern int yychar;
 
 int
@@ -1842,8 +1853,7 @@ end_template_instantiation (name)
   extract_interface_info ();
 }
 
-/* Store away the text of an inline template function.	No rtl is
-   generated for this function until it is actually needed.  */
+/* Store away the text of an template.  */
 
 void
 reinit_parse_for_template (yychar, d1, d2)
@@ -1851,7 +1861,7 @@ reinit_parse_for_template (yychar, d1, d2)
      tree d1, d2;
 {
   struct template_info *template_info;
-  extern struct obstack inline_text_obstack; /* see comment in cp-lex.c */
+  extern struct obstack inline_text_obstack; /* see comment in lex.c */
 
   if (d2 == NULL_TREE || d2 == error_mark_node)
     {
@@ -1912,7 +1922,7 @@ type_unification (tparms, targs, parms, args, nsubsts, subr)
 
   my_friendly_assert (TREE_CODE (tparms) == TREE_VEC, 289);
   my_friendly_assert (TREE_CODE (parms) == TREE_LIST, 290);
-  /* ARGS could be NULL (via a call from cp-parse.y to
+  /* ARGS could be NULL (via a call from parse.y to
      build_x_function_call).  */
   if (args)
     my_friendly_assert (TREE_CODE (args) == TREE_LIST, 291);

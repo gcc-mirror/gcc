@@ -20,7 +20,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
 /* This file is the type analyzer for GNU C++.  To debug it, define SPEW_DEBUG
-   when compiling cp-parse.c and cp-spew.c.  */
+   when compiling parse.c and spew.c.  */
 
 #include "config.h"
 #include <stdio.h>
@@ -50,7 +50,7 @@ static struct token hack_scope ();
 static tree hack_ptype ();
 static tree hack_more_ids ();
 
-/* From cp-lex.c: */
+/* From lex.c: */
 /* the declaration found for the last IDENTIFIER token read in.
    yylex must look this up to detect typedefs, which get token type TYPENAME,
    so it is left around in case the identifier is not a typedef but is
@@ -74,7 +74,7 @@ static char follows_typename[END_OF_SAVED_INPUT+1];
 static char follows_identifier[END_OF_SAVED_INPUT+1];
 
 /* This is a hack!!! TEMPLATE_TYPE_SEEN_BEFORE_SCOPE consists of the name
- * of the last template_type parsed in cp-parse.y if it is followed by a
+ * of the last template_type parsed in parse.y if it is followed by a
  * scope operator.  It will be reset inside the next invocation of yylex().
  * This is used for recognizing nested types inside templates.
  * - niklas@appli.se */
@@ -271,7 +271,7 @@ probe_obstack (h, obj, nlevels)
   return nlevels != 0 && lp != 0;
 }
 
-/* from cp-lex.c: */
+/* from lex.c: */
 /* Value is 1 if we should try to make the next identifier look like a
    typename (when it may be a local variable or a class variable).
    Value is 0 if we treat this name in a default fashion.
@@ -306,7 +306,7 @@ yylex()
 	{
 	  /* Sync back again, leaving SCOPE on the token stream, because we
 	   * failed to substitute the original SCOPE token with a
-	   * SCOPED_TYPENAME.  See rule "template_type" in cp-parse.y */
+	   * SCOPED_TYPENAME.  See rule "template_type" in parse.y */
 	  consume_token ();
 	}
       else
@@ -364,7 +364,6 @@ yylex()
       goto retry;
 
     case IDENTIFIER:
-      /* Note: this calls arbitrate_lookup.  */
       trrr = lookup_name (tmp_token.yylval.ttype, -2);
       if (trrr)
 	{
@@ -436,6 +435,7 @@ yylex()
     case TYPESPEC:
       consume_token ();
     finish_typename_processing:
+#if 0
       /* Now see if we should insert a START_DECLARATOR token.
          Here are the cases caught:
 
@@ -487,6 +487,7 @@ yylex()
 	      nth_token (0)->yychar = START_DECLARATOR;
 	    }
 	}
+#endif
       break;
 
 #if 0
@@ -708,6 +709,7 @@ frob_identifier ()
   return rt;
 }
 
+#if 0
 /* When this function is called, nth_token(0) is the current
    token we are scanning.  This means that the next token we'll
    scan is nth_token (1).  Usually the next token we'll scan
@@ -874,6 +876,7 @@ arbitrate_lookup (name, exp_decl, type_decl)
       return t;
     }
 }
+#endif
 
 /* now returns decl_node */
 
@@ -1125,7 +1128,7 @@ static int
 debug_yychar (yy)
      int yy;
 {
-  /* In cp-parse.y: */
+  /* In parse.y: */
   extern char *debug_yytranslate ();
   
   int i;
