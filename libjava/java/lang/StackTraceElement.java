@@ -191,7 +191,7 @@ public class StackTraceElement implements Serializable
       }
     if (methodName != null)
       sb.append(methodName);
-    sb.append('(');
+    sb.append(" (");
     if (fileName != null)
       sb.append(fileName);
     else

@@ -57,76 +57,6 @@ import java.io.OutputStream;
  * bytecode not implemented.  JDK 1.1.
  */
 
-/* A CPlusPlusDemangler sits on top of a PrintWriter.  All input is
- * passed through the "c++filt" program (part of GNU binutils) which
- * demangles internal symbols to their C++ source form.
- *
- * Closing a CPlusPlusDemangler doesn't close the underlying
- * PrintWriter; it does, however close underlying process and flush
- * all its buffers, so it's possible to guarantee that after a
- * CPlusPlusDemangler has been closed no more will ever be written to
- * the underlying PrintWriter.
- *
- * FIXME: This implictly converts data from the input stream, which is
- * a stream of characters, to a stream of bytes.  We need a way of
- * handling Unicode characters in demangled identifiers.  */
-
-class CPlusPlusDemangler extends OutputStream
-{
-  java.io.OutputStream procOut;
-  java.io.InputStream procIn;
-  java.lang.Process proc;
-  PrintWriter p;
-
-  /* The number of bytes written to the underlying PrintWriter.  This
-     provides a crude but fairly portable way to determine whether or
-     not the attempt to exec c++filt worked. */  
-  public int written = 0;
-
-  CPlusPlusDemangler (PrintWriter writer) throws IOException
-  {
-    p = writer;
-    proc = Runtime.getRuntime ().exec ("c++filt -s java");
-    procOut = proc.getOutputStream ();
-    procIn = proc.getInputStream ();
-  }
-
-  public void write (int b) throws IOException
-  {
-    procOut.write (b);
-    while (procIn.available () != 0)
-      {
-	int c = procIn.read ();
-	if (c == -1)
-	  break;
-	else
-	  {
-	    p.write (c);
-	    written++;
-	  }
-      }
-  }
-  
-  public void close () throws IOException
-  {
-    procOut.close ();
-    int c;
-    while ((c = procIn.read ()) != -1)
-      {
-	p.write (c);
-	written++;
-      }
-    p.flush ();
-    try
-      {
-	proc.waitFor ();
-      }
-    catch (InterruptedException _)
-      {
-      }
-  }    
-}
-
 /**
  * Throwable is the superclass of all exceptions that can be raised.
  *
@@ -219,8 +149,7 @@ public class Throwable implements Serializable
    *         no null entries
    * @since 1.4
    */
-  // XXX Don't initialize this, once fillInStackTrace() does it.
-  private StackTraceElement[] stackTrace = {};
+  private StackTraceElement[] stackTrace;
 
   /**
    * Instantiate this Throwable with an empty message. The cause remains
@@ -449,26 +378,102 @@ public class Throwable implements Serializable
   }
 
   /**
-   * Print a stack trace to the specified PrintWriter. See
-   * {@link #printStackTrace()} for the sample format.
+   * <p>Prints the exception, the detailed message and the stack trace
+   * associated with this Throwable to the given <code>PrintWriter</code>.
+   * The actual output written is implemention specific. Use the result of
+   * <code>getStackTrace()</code> when more precise information is needed.
+   *
+   * <p>This implementation first prints a line with the result of this
+   * object's <code>toString()</code> method.
+   * <br>
+   * Then for all elements given by <code>getStackTrace</code> it prints
+   * a line containing three spaces, the string "at " and the result of calling
+   * the <code>toString()</code> method on the <code>StackTraceElement</code>
+   * object. If <code>getStackTrace()</code> returns an empty array it prints
+   * a line containing three spaces and the string
+   * "&lt;&lt;No stacktrace available&gt;&gt;".
+   * <br>
+   * Then if <code>getCause()</code> doesn't return null it adds a line
+   * starting with "Caused by: " and the result of calling
+   * <code>toString()</code> on the cause.
+   * <br>
+   * Then for every cause (of a cause, etc) the stacktrace is printed the
+   * same as for the top level <code>Throwable</code> except that as soon
+   * as all the remaining stack frames of the cause are the same as the
+   * the last stack frames of the throwable that the cause is wrapped in
+   * then a line starting with three spaces and the string "... X more" is
+   * printed, where X is the number of remaining stackframes.
    *
    * @param w the PrintWriter to write the trace to
    * @since 1.1
    */
-  public void printStackTrace (PrintWriter wr)
+  public void printStackTrace (PrintWriter pw)
   {
-    try
+    // First line
+    pw.println(toString());
+
+    // The stacktrace
+    StackTraceElement[] stack = getStackTrace();
+    if (stack == null || stack.length == 0)
       {
-	CPlusPlusDemangler cPlusPlusFilter = new CPlusPlusDemangler (wr);
-	PrintWriter writer = new PrintWriter (cPlusPlusFilter);
-	printRawStackTrace (writer);
-	writer.close ();
-	if (cPlusPlusFilter.written == 0) // The demangler has failed...
-	  printRawStackTrace (wr);
+	pw.println("   <<No stacktrace available>>");
+	return;
       }
-    catch (Exception e1)
+    else
       {
-	printRawStackTrace (wr);
+	for (int i = 0; i < stack.length; i++)
+	  pw.println("   at " + stack[i]);
+      }
+
+    // The cause(s)
+    Throwable cause = getCause();
+    while (cause != null)
+      {
+        // Cause first line
+        pw.println("Caused by: " + cause);
+
+        // Cause stacktrace
+        StackTraceElement[] parentStack = stack;
+        stack = cause.getStackTrace();
+	if (stack == null || stack.length == 0)
+	  {
+	    pw.println("   <<No stacktrace available>>");
+	  }
+	else if (parentStack == null || parentStack.length == 0)
+	  {
+	    for (int i = 0; i < stack.length; i++)
+	      pw.println("   at " + stack[i]);
+	  }
+	else
+	  {
+	    boolean equal = false; // Is rest of stack equal to parent frame?
+	    for (int i = 0; i < stack.length && ! equal; i++)
+	      {
+		// Check if we already printed the rest of the stack
+		// since it was the tail of the parent stack
+		int remaining = stack.length - i;
+		int element = i;
+		int parentElement = parentStack.length - remaining;
+		equal = parentElement >= 0
+		      && parentElement < parentStack.length; // be optimistic
+		while (equal && element < stack.length)
+		  {
+		    if (stack[element].equals(parentStack[parentElement]))
+		      {
+			element++;
+			parentElement++;
+		      }
+		    else
+		      equal = false;
+		  }
+		// Print stacktrace element or indicate the rest is equal 
+		if (! equal)
+		  pw.println("   at " + stack[i]);
+		else
+		  pw.println("   ..." + remaining + " more");
+	      }
+	  }
+        cause = cause.getCause();
       }
   }
 
@@ -493,6 +498,9 @@ public class Throwable implements Serializable
    */
   public StackTraceElement[] getStackTrace()
   {
+    if (stackTrace == null)
+      stackTrace = getStackTrace0();
+
     return stackTrace;
   }
 
@@ -513,8 +521,8 @@ public class Throwable implements Serializable
     this.stackTrace = stackTrace;
   }
 
-  private native final void printRawStackTrace (PrintWriter wr);
-  
+  private native final StackTraceElement[] getStackTrace0 ();
+
   // Setting this flag to false prevents fillInStackTrace() from running.
   static boolean trace_enabled = true;
   private transient byte stackTraceBytes[];
