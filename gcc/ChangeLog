@@ -1,3 +1,10 @@
+2004-06-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* fold-const.c (fold_checksum_tree <case 't'>): Only
+	look at TREE_VALUES if the EXPR is an ENUMERAL_TYPE.
+	Only look at TYPE_MIN_VALUE and TYPE_MAX_VALUE if
+	EXPR is an INTEGERAL_TYPE or a scalar float type.
+
 2004-06-13  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-sra.c (tree_sra): Update documentation.
