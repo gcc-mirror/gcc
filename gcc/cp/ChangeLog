@@ -1,3 +1,7 @@
+1999-08-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* semantics.c (do_poplevel): Always initialize the return value.
+
 1999-08-26  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* cp-tree.h (cplus_unsave_expr_now) : Correct return type.
