@@ -221,11 +221,13 @@ LTCXXCOMPILE = $(LIBTOOL) --tag CXX --tag disable-shared \
 	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
 
 
-# 3) We have a problem when building the shared libstdc++ object if
-# the rules automake generates would be used.  We cannot allow CXX to
-# be used in libtool since this would add -lstdc++ to the link line
-# which of course is problematic at this point.
-CXXLINK = $(LIBTOOL) --mode=link "$(CC)" \
+# 3) We'd have a problem when building the shared libstdc++ object if
+# the rules automake generates would be used.  We cannot allow g++ to
+# be used since this would add -lstdc++ to the link line which of
+# course is problematic at this point.  So, we get the top-level
+# directory to configure libstdc++-v3 to use gcc as the C++
+# compilation driver.
+CXXLINK = $(LIBTOOL) --tag CXX --mode=link $(CXX) \
 	  @OPT_LDFLAGS@ @SECTION_LDFLAGS@ $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
 CONFIG_HEADER = ../config.h
