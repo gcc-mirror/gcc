@@ -1,3 +1,8 @@
+2004-03-24  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cxx-pretty-print.c, cxx-pretty-print.h, decl.h, friend.c:
+	Update copyright.
+
 2004-03-23  Ziemowit Laski  <zlaski@apple.com>
 
 	* Make-lang.in (cp/mangle.o): Depend on $(TARGET_H).
