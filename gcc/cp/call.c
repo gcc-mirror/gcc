@@ -5155,7 +5155,8 @@ joust (cand1, cand2, warn)
     winner = more_specialized
       (TI_TEMPLATE (cand1->template), TI_TEMPLATE (cand2->template),
        /* Never do unification on the 'this' parameter.  */
-       TREE_VEC_LENGTH (cand1->convs) - !DECL_STATIC_FUNCTION_P (cand1->fn));
+       TREE_VEC_LENGTH (cand1->convs)
+       - DECL_NONSTATIC_MEMBER_FUNCTION_P (cand1->fn));
 
   /* or, if not that,
      the  context  is  an  initialization by user-defined conversion (see
