@@ -290,20 +290,22 @@ stmp-f2c.h: \
 	*f77*) top=`pwd`; \
 	src=`cd $(srcdir); pwd`; \
 	  cd f/runtime; \
+	  $(F77_FLAGS_TO_PASS) \
 	  CC="`case '$(GCC_FOR_TARGET)' in \
 	     './xgcc -B./') echo $${top}/xgcc -B$${top}/;; \
 	     *) echo '$(GCC_FOR_TARGET)';; esac`" \
-	  $(F77_FLAGS_TO_PASS) CONFIG_SITE=/dev/null $(SHELL) \
+	  CONFIG_SITE=/dev/null $(SHELL) \
 	  $${src}/f/runtime/configure --srcdir=$${src}/f/runtime ;; \
 	esac
 	case "$(LANGUAGES)" in \
 	*f77*) top=`pwd`; \
 	src=`cd $(srcdir); pwd`; \
 	  cd f/runtime/libU77; \
+	  $(F77_FLAGS_TO_PASS) \
 	  CC="`case '$(GCC_FOR_TARGET)' in \
 	     './xgcc -B./') echo $${top}/xgcc -B$${top}/;; \
 	     *) echo '$(GCC_FOR_TARGET)';; esac`" \
-	  $(F77_FLAGS_TO_PASS) CONFIG_SITE=/dev/null $(SHELL) \
+	  CONFIG_SITE=/dev/null $(SHELL) \
 	  $${src}/f/runtime/libU77/configure --srcdir=$${src}/f/runtime/libU77 ;; \
 	esac
 	touch stmp-f2c.h
