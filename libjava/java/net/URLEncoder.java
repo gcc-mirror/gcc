@@ -1,71 +1,153 @@
-// URLEncoder.java - Provides a method for encoding strings according to
-//		     application/x-www-form-urlencoded MIME type.
+/* URLEncoder.java -- Class to convert strings to a properly encoded URL
+   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
 
-/* Copyright (C) 1999  Free Software Foundation
+This file is part of GNU Classpath.
 
-   This file is part of libgcj.
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+ 
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
 
 package java.net;
+
 import java.io.UnsupportedEncodingException;
 
 /**
- * @author Warren Levy <warrenl@cygnus.com>
- * @date April 22, 1999.
- */
-
-/**
- * Written using on-line Java Platform 1.2 API Specification, as well
+ * Written using on-line Java Platform 1.2/1.4 API Specification, as well
  * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
  * Status:  Believed complete and correct.
  */
 
+ /**
+  * This utility class contains static methods that converts a 
+  * string into a fully encoded URL string in x-www-form-urlencoded
+  * format.  This format replaces certain disallowed characters with
+  * encoded equivalents.  All upper case and lower case letters in the
+  * US alphabet remain as is, the space character (' ') is replaced with
+  * '+' sign, and all other characters are converted to a "%XX" format
+  * where XX is the hexadecimal representation of that character in a
+  * certain encoding (by default "UTF-8").
+  * <p>
+  * This method is very useful for encoding strings to be sent to CGI scripts
+  *
+  * @author Aaron M. Renn (arenn@urbanophile.com)
+  * @author Warren Levy <warrenl@cygnus.com>
+  * @author Mark Wielaard (mark@klomp.org)
+  */
 public class URLEncoder
 {
-  // This method, per the JCL, is conservative in that it encodes
-  // some "allowable" characters as % triplets.
+  /**
+   * This method translates the passed in string into x-www-form-urlencoded
+   * format using the standard "UTF-8" character encoding to hex-encode the
+   * unsafe characters.
+   *
+   * @param s The String to convert
+   *
+   * @return The converted String
+   */
   public static String encode(String s)
   {
-    // Get the bytes in ISO-Latin-1 (i.e. 8859_1) per the JCL.
-    // Even though it is the default in most cases, it's specified here
-    // just in case System.getProperty("file.encoding") is not "8859_1".
-    String result = "";
     try
       {
-	byte[] buf = s.getBytes("8859_1");
-	int start = 0;
-	for (int i = 0; i < buf.length; i++)
-	  // For efficiency, check the byte in order of most likely
-	  // possibility so as to minimize the number of comparisons.
-	  // Hence, exclude all the alphanumeric & allowed special chars first.
-	  if ((buf[i] >= 'a' && buf[i] <= 'z') ||
-	      (buf[i] >= 'A' && buf[i] <= 'Z') ||
-	      (buf[i] >= '0' && buf[i] <= '9') ||
-	      buf[i] == '-' || buf[i] == '_' || buf[i] == '.' || buf[i] == '*')
-	    ; // This is the most likely case so exclude first for efficiency.
-	  else if (buf[i] == ' ')
-	    buf[i] = (byte) '+';  // Replace space char with plus symbol.
-	  else
-	    {
-	      result = result + new String(buf, start, i - start, "8859_1") +
-			"%" + Integer.toHexString(((int) buf[i]) & 0xFF);
-	      start = i + 1;
-	    }
-
-	// Append remainder of allowable chars from the string, if any.
-	if (start < buf.length)
-	  result = result +
-		   new String(buf, start, buf.length - start, "8859_1");
+        return encode(s, "UTF-8");
       }
-    catch (UnsupportedEncodingException ex)
+    catch (UnsupportedEncodingException uee)
       {
-	// This should never happen as "8859_1" is the default encoding.
+        // Should never happen since UTF-8 should always be supported
 	return s;
       }
-
-    return result;
   }
-}
+
+  /**
+   * This method translates the passed in string into x-www-form-urlencoded
+   * format using the character encoding to hex-encode the unsafe characters.
+   *
+   * @param s The String to convert
+   * @param encoding The encoding to use for unsafe characters
+   *
+   * @return The converted String
+   *
+   * @since 1.4
+   */
+  public static String encode(String s, String encoding)
+    throws UnsupportedEncodingException
+  {
+    StringBuffer result = new StringBuffer();
+    int length = s.length();
+    int start = 0;
+    int i = 0;
+
+    while (true)
+    {
+      while ( i < length && isSafe(s.charAt(i)) )
+	i++;
+
+      // Safe character can just be added
+      result.append(s.substring(start, i));
+
+      // Are we done?
+      if (i >= length)
+	return result.toString();
+      else if (s.charAt(i) == ' ')
+        {
+	  result.append('+');  // Replace space char with plus symbol.
+	  i++;
+	}
+      else
+	{
+	  // Get all unsafe characters
+	  start = i;
+	  char c;
+	  while ( i < length && (c = s.charAt(i)) != ' ' && !isSafe(c) )
+	    i++;
+
+	  // Convert them to %XY encoded strings
+	  String unsafe = s.substring(start,i);
+	  byte bytes[] = unsafe.getBytes(encoding);
+	  for (int j = 0; j < bytes.length; j++)
+	    {
+	      result.append('%');
+	      result.append(Integer.toHexString(((int) bytes[j]) & 0xFF));
+	    }
+	}
+      start = i;
+    }
+  }
+
+  /**
+   * Private static method that returns true if the given char is either
+   * a uppercase or lowercase letter from 'a' till 'z', or a digit froim
+   * '0' till '9', or one of the characters '-', '_', '.' or '*'. Such
+   * 'safe' character don't have to be url encoded.
+   */
+  private static boolean isSafe(char c)
+  {
+    return  ((c >= 'a' && c <= 'z') ||
+	     (c >= 'A' && c <= 'Z') ||
+	     (c >= '0' && c <= '9') ||
+	     c == '-' || c == '_' || c == '.' || c == '*');
+  }
+
+  /**
+   * Private constructor that does nothing. Included to avoid a default
+   * public constructor being created by the compiler.
+   */
+  private URLEncoder() { }
+
+} // class URLEncoder
