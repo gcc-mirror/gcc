@@ -1818,7 +1818,7 @@ expr_equiv_p (x, y)
     return 1;
 
   if (x == 0 || y == 0)
-    return x == y;
+    return 0;
 
   code = GET_CODE (x);
   if (code != GET_CODE (y))
@@ -1832,10 +1832,8 @@ expr_equiv_p (x, y)
     {
     case PC:
     case CC0:
-      return x == y;
-
     case CONST_INT:
-      return INTVAL (x) == INTVAL (y);
+      return 0;
 
     case LABEL_REF:
       return XEXP (x, 0) == XEXP (y, 0);

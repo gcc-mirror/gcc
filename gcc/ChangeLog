@@ -1,5 +1,10 @@
 2003-06-27  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* gcse.c (expr_equiv_p): Replace expressions that are known to
+	be 0 with 0.
+
+2003-06-27  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* cse.c (fold_rtx): Replace the equality comparison of INTVALs
 	with a pointer equality comparison.
 
