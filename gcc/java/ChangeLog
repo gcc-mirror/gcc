@@ -1,3 +1,23 @@
+Mon Dec 14 18:49:29 1998  Per Bothner  <bothner@cygnus.com>
+
+	* parse.y (fold_constant_for_init):  New function.
+	(resolve_expression_name):  Don't replace static final
+ 	constant-initialized fields by its value.
+	(java_complete_lhs):  New.  Same as java_complete_tree, except does
+	not replace static final constant-initialized fields by their values.
+	(register_fields):  If there is an initializer, set DECL_INITIAL and
+	MODIFY_EXPR_FROM_INITIALIZATION_P.
+	(java_complete_tree):  For MODIFY_EXPR, use java_complete_lhs for lhs.
+	Only call patch_initialized_static_field if
+	MODIFY_EXPR_FROM_INITIALIZATION_P.
+	(patch_initialized_static_field):  If not valid constant, clear
+	DECL_INITIAL.
+
+	* parse.y (lookup_field_wrapper):  Fix thinko.
+
+	* parse.y (java_complete_tree):  In EXPR_WITH_FILE_LOCATION,
+	set and restore global lineno.
+
 1998-12-14  Tom Tromey  <tromey@cygnus.com>
 
 	* gjavah.c (print_field_info): If value to print is the smallest
