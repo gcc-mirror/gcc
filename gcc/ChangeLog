@@ -1,3 +1,9 @@
+2002-11-01  Richard Earnshaw  (rearnsha@arm.com)
+
+	PR target/7856
+	* arm.c (use_return_insn): Don't use a return insn if there are
+	saved integer regs, but LR is not one of them.
+
 Fri Nov  1 10:33:15 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* expr.c (emit_move_insn):  Use SCALAR_FLOAT_MODE_P
