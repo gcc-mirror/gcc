@@ -18,8 +18,6 @@ proc libjava_tcompile {source destfile type options} {
     # This strange-looking expression really does quote the `$'.
     regsub -all -- {\$} $source {\$} source
     regsub -all -- {\$} $destfile {\$} destfile
-    verbose "Now source = $source"
-    verbose "Now destfile = $destfile"
     return [target_compile $source $destfile $type $options]
 }
 
@@ -88,19 +86,17 @@ proc bytecompile_file { file objdir {classpath {}} } {
     if {$classpath != ""} then {
         set env(CLASSPATH) $classpath
     }
+    set here [pwd]
+    cd $dirname
     if {[catch {
-	set here [pwd]
-	cd $dirname
 	set q [eval exec "$javac [list $file] -d $objdir 2>@ stdout"]
-	cd $here
-	# "return" a result
-	set q $q
     } msg]} then {
 	verbose "couldn't compile $file: $msg"
 	set r 0
     } else {
 	set r 1
     }
+    cd $here
     return $r
 }
 
@@ -581,8 +577,15 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
 	    }
 	}
     } else {
+	# This is no evil: we de-listify CLASS_FILES so that we can
+	# turn around and quote the `$' in it for the shell.  I really
+	# hate DejaGNU.  It is so !@#$!@# unpredictable.
+	set hack ""
+	foreach stupid $class_files {
+	    set hack "$hack $stupid"
+	}
 	set x [prune_warnings \
-		 [libjava_tcompile $class_files "$executable" $type $args]]
+		 [libjava_tcompile $hack "$executable" $type $args]]
     }
     if {[info exists opts(xfail-byte)]} {
 	setup_xfail *-*-*
