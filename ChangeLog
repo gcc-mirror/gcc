@@ -1,3 +1,8 @@
+2002-12-25  Svein E. Seldal  <Svein.Seldal@solidas.com>
+
+	* config.sub: Import from master repository
+	* config.guess: Ditto
+
 2002-12-13  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.in (check-gcc-c++): Renamed from check-c++.  Don't run
