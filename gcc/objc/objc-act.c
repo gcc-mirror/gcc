@@ -4465,7 +4465,7 @@ adjust_type_for_id_default (type)
        chain;
        chain = TREE_CHAIN (chain))
     {
-      if (TREE_CODE (TREE_VALUE (chain)) == RECORD_TYPE
+      if (TYPED_OBJECT (TREE_VALUE (chain))
           && !(TREE_VALUE (type) 
                && TREE_CODE (TREE_VALUE (type)) == INDIRECT_REF))
         error ("can not use an object as parameter to a method\n");
