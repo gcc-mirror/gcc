@@ -1219,12 +1219,16 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
 #endif
     emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
 
-  /* Push a block of memory onto the stack to store the memory arguments.
-     Save the address in a register, and copy the memory arguments.  ??? I
-     haven't figured out how the calling convention macros effect this,
-     but it's likely that the source and/or destination addresses in
-     the block copy will need updating in machine specific ways.  */
-  dest = allocate_dynamic_stack_space (argsize, 0, BITS_PER_UNIT);
+  /* Allocate a block of memory onto the stack and copy the memory
+     arguments to the outgoing arguments address.  */
+  allocate_dynamic_stack_space (argsize, 0, BITS_PER_UNIT);
+  dest = virtual_outgoing_args_rtx;
+#ifndef STACK_GROWS_DOWNWARD
+  if (GET_CODE (argsize) == CONST_INT)
+    dest = plus_constant (dest, -INTVAL (argsize));
+  else
+    dest = gen_rtx_PLUS (Pmode, dest, negate_rtx (Pmode, argsize));
+#endif
   dest = gen_rtx_MEM (BLKmode, dest);
   set_mem_align (dest, PARM_BOUNDARY);
   src = gen_rtx_MEM (BLKmode, incoming_args);
