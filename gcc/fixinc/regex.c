@@ -46,7 +46,7 @@
 #endif
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include "auto-host.h"
 #endif
 
 /* The `emacs' switch turns on certain matching commands

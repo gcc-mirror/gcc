@@ -30,7 +30,7 @@ Boston, MA 02111-1307, USA.  */
 # include "The fixincl program does not work properly on this system!"
 #endif
 
-#include "config.h"
+#include "auto-host.h"
 
 #include <sys/types.h>
 #include <sys/param.h>
