@@ -1845,20 +1845,28 @@ extern tree save_expr			PROTO((tree));
 extern int first_rtl_op			PROTO((enum tree_code));
 
 /* unsave_expr (EXP) returns an expression equivalent to EXP but it
-   can be used multiple times and will evaluate EXP, in its entirety
+   can be used multiple times and will evaluate EXP in its entirety
    each time.  */
 
 extern tree unsave_expr			PROTO((tree));
 
-/* unsave_expr_now (EXP) resets EXP in place, so that it can be
-   expanded again.  */
+/* Reset EXP in place so that it can be expaned again.  Does not
+   recurse into subtrees.  */
+
+extern void unsave_expr_1               PROTO((tree));
+
+/* Like unsave_expr_1, but recurses into all subtrees.  */
 
 extern tree unsave_expr_now		PROTO((tree));
 
-/* If non-null, a language specific helper for unsave_expr_now. */
+/* If non-null, these are language-specific helper functions for
+   unsave_expr_now.  If present, LANG_UNSAVE is called before its
+   argument (an UNSAVE_EXPR) is to be unsaved, and all other
+   processing in unsave_expr_now is aborted.  LANG_UNSAVE_EXPR_NOW is
+   called from unsave_expr_1 for language-specific tree codes.  */
+extern void (*lang_unsave)              PROTO((tree *));
+extern void (*lang_unsave_expr_now)     PROTO((tree));
 
-extern void (*lang_unsave_expr_now)      PROTO((tree));
-  
 /* Return 1 if EXP contains a PLACEHOLDER_EXPR; i.e., if it represents a size
    or offset that depends on a field within a record.
 
@@ -2045,6 +2053,7 @@ extern tree get_set_constructor_bytes		PROTO((tree,
 extern int get_alias_set                        PROTO((tree));
 extern int new_alias_set			PROTO((void));
 extern int (*lang_get_alias_set)                PROTO((tree));
+extern tree get_callee_fndecl                   PROTO((tree));
 
 /* In stmt.c */
 

@@ -48,6 +48,8 @@ Boston, MA 02111-1307, USA.  */
 /* obstack.[ch] explicitly declined to prototype this. */
 extern int _obstack_allocated_p PROTO ((struct obstack *h, PTR obj));
 
+static void unsave_expr_now_r PROTO ((tree));
+
 /* Tree nodes of permanent duration are allocated in this obstack.
    They are the identifier nodes, and everything outside of
    the bodies and parameters of function definitions.  */
@@ -275,8 +277,12 @@ static void build_real_from_int_cst_1 PROTO((PTR));
 static void mark_type_hash PROTO ((void *));
 static void fix_sizetype PROTO ((tree));
 
-/* If non-null, a language specific helper for unsave_expr_now. */
-
+/* If non-null, these are language-specific helper functions for
+   unsave_expr_now.  If present, LANG_UNSAVE is called before its
+   argument (an UNSAVE_EXPR) is to be unsaved, and all other
+   processing in unsave_expr_now is aborted.  LANG_UNSAVE_EXPR_NOW is
+   called from unsave_expr_1 for language-specific tree codes.  */
+void (*lang_unsave) PROTO((tree *));
 void (*lang_unsave_expr_now) PROTO((tree));
 
 /* The string used as a placeholder instead of a source file name for
@@ -2419,27 +2425,14 @@ first_rtl_op (code)
     }
 }
 
-/* Modify a tree in place so that all the evaluate only once things
-   are cleared out.  Return the EXPR given.  
+/* Perform any modifications to EXPR required when it is unsaved.  Does
+   not recurse into EXPR's subtrees.  */
 
-   LANG_UNSAVE_EXPR_NOW, if set, is a pointer to a function to handle
-   language specific nodes.
-*/
-
-tree
-unsave_expr_now (expr)
+void
+unsave_expr_1 (expr)
      tree expr;
 {
-  enum tree_code code;
-  register int i;
-  int first_rtl;
-
-  if (expr == NULL_TREE)
-    return expr;
-
-  code = TREE_CODE (expr);
-  first_rtl = first_rtl_op (code);
-  switch (code)
+  switch (TREE_CODE (expr))
     {
     case SAVE_EXPR:
       if (!SAVE_EXPR_PERSISTENT_P (expr))
@@ -2453,22 +2446,12 @@ unsave_expr_now (expr)
       
     case RTL_EXPR:
       /* I don't yet know how to emit a sequence multiple times.  */
-      if (RTL_EXPR_SEQUENCE (expr) != 0)
+      if (RTL_EXPR_SEQUENCE (expr))
 	abort ();
       break;
 
     case CALL_EXPR:
       CALL_EXPR_RTL (expr) = 0;
-      if (TREE_OPERAND (expr, 1)
-	  && TREE_CODE (TREE_OPERAND (expr, 1)) == TREE_LIST)
-	{
-	  tree exp = TREE_OPERAND (expr, 1);
-	  while (exp)
-	    {
-	      unsave_expr_now (TREE_VALUE (exp));
-	      exp = TREE_CHAIN (exp);
-	    }
-	}
       break;
 
     default:
@@ -2476,7 +2459,31 @@ unsave_expr_now (expr)
 	(*lang_unsave_expr_now) (expr);
       break;
     }
+}
 
+/* Helper function for unsave_expr_now.  */
+
+static void
+unsave_expr_now_r (expr)
+     tree expr;
+{
+  enum tree_code code;
+
+  unsave_expr_1 (expr);
+
+  code = TREE_CODE (expr);
+  if (code == CALL_EXPR 
+      && TREE_OPERAND (expr, 1)
+      && TREE_CODE (TREE_OPERAND (expr, 1)) == TREE_LIST)
+    {
+      tree exp = TREE_OPERAND (expr, 1);
+      while (exp)
+	{
+	  unsave_expr_now_r (TREE_VALUE (exp));
+	  exp = TREE_CHAIN (exp);
+	}
+    }
+ 
   switch (TREE_CODE_CLASS (code))
     {
     case 'c':  /* a constant */
@@ -2484,7 +2491,7 @@ unsave_expr_now (expr)
     case 'x':  /* something random, like an identifier or an ERROR_MARK.  */
     case 'd':  /* A decl node */
     case 'b':  /* A block node */
-      return expr;
+      break;
 
     case 'e':  /* an expression */
     case 'r':  /* a reference */
@@ -2492,13 +2499,32 @@ unsave_expr_now (expr)
     case '<':  /* a comparison expression */
     case '2':  /* a binary arithmetic expression */
     case '1':  /* a unary arithmetic expression */
-      for (i = first_rtl - 1; i >= 0; i--)
-	unsave_expr_now (TREE_OPERAND (expr, i));
-      return expr;
+      {
+	int i;
+	
+	for (i = first_rtl_op (code) - 1; i >= 0; i--)
+	  unsave_expr_now_r (TREE_OPERAND (expr, i));
+      }
+      break;
 
     default:
       abort ();
     }
+}
+
+/* Modify a tree in place so that all the evaluate only once things
+   are cleared out.  Return the EXPR given.  */
+
+tree
+unsave_expr_now (expr)
+     tree expr;
+{
+  if (lang_unsave)
+    (*lang_unsave) (&expr);
+  else
+    unsave_expr_now_r (expr);
+
+  return expr;
 }
 
 /* Return 1 if EXP contains a PLACEHOLDER_EXPR; i.e., if it represents a size
@@ -4813,6 +4839,35 @@ decl_type_context (decl)
 	/* Unhandled CONTEXT!?  */
 	abort ();
     }
+  return NULL_TREE;
+}
+
+/* CALL is a CALL_EXPR.  Return the declaration for the function
+   called, or NULL_TREE if the called function cannot be 
+   determined.  */
+
+tree
+get_callee_fndecl (call)
+     tree call;
+{
+  tree addr;
+
+  /* It's invalid to call this function with anything but a
+     CALL_EXPR.  */
+  if (TREE_CODE (call) != CALL_EXPR)
+    abort ();
+
+  /* The first operand to the CALL is the address of the function
+     called.  */
+  addr = TREE_OPERAND (call, 0);
+
+  /* If the address is just `&f' for some function `f', then we know
+     that `f' is being called.  */
+  if (TREE_CODE (addr) == ADDR_EXPR
+      && TREE_CODE (TREE_OPERAND (addr, 0)) == FUNCTION_DECL)
+    return TREE_OPERAND (addr, 0);
+
+  /* We couldn't figure out what was being called.  */
   return NULL_TREE;
 }
 

@@ -1,5 +1,16 @@
 1999-11-23  Mark Mitchell  <mark@codesourcery.com>
 
+	* tree.h (unsave_expr_1): New function.
+	(lang_unsave): New variable.
+	(get_callee_fndecl): New function.
+	* tree.c (unsave_expr_now_r): New function.
+	(lang_unsave): Define.
+	(unsave_expr_1): Likewise.
+	(unsave_expr_now_r): Split out from unsave_expr_now.
+	(unsave_expr_now): Call lang_unsave if it is non-NULL.  Otherwise,
+	call unsave_expr_now_r.
+	(get_callee_fndecl): Define.
+
 	* Makefile.in (gencheck): Don't depend on lang_tree_files.
 	(gencheck.o): Do depend on lang_tree_files.
 
