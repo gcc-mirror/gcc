@@ -1,3 +1,9 @@
+2000-09-11  Matthew Hiller  <hiller@redhat.com>
+
+	* config/h8300/h8300.md (movstrictqi): Changed constraint modifier
+	on operand 0 to '+'.
+	(movstricthi): Likewise.
+
 2000-09-12  Michael Hayes  <mhayes@cygnus.com>
 
 	* loop.h (LOOP_IVS): New macro.
