@@ -3975,7 +3975,7 @@ simplify_plus_minus (code, mode, op0, op1)
 	    if (n_ops != 7)
 	      {
 		ops[n_ops] = constm1_rtx;
-		negs[n_ops++] = ! negs[i];
+		negs[n_ops++] = negs[i];
 		ops[i] = XEXP (ops[i], 0);
 		negs[i] = ! negs[i];
 		changed = 1;
