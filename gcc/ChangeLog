@@ -1,3 +1,10 @@
+2001-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (SYSTEM_H): Define.
+	Depend on $(SYSTEM_H), not system.h.
+
+	* objc/Make-lang.in: Depend on $(SYSTEM_H), not system.h.
+
 2001-03-27  Jim Wilson  <wilson@redhat.com>
 
 	* flow.c (struct reg_cond_life_info): New fields orig_condition
