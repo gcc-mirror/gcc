@@ -1,3 +1,9 @@
+2004-09-15  James E Wilson  <wilson@specifixinc.com>
+
+	PR target/17455
+	* config/ia64/ia64.c (ia64_function_ok_for_sibcall): Return false
+	if current_function_decl is a sibcall.
+
 2004-09-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* varasm.c (default_function_rdodata_section): Make sure to pass
