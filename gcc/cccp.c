@@ -51,6 +51,11 @@ typedef unsigned char U_CHAR;
 # define PATH_SEPARATOR ':'
 #endif
 
+/* By default, a slash separates directory names.  */
+#ifndef DIR_SEPARATOR
+# define DIR_SEPARATOR '/'
+#endif
+
 /* By default, the suffix for object files is ".o".  */
 #ifdef OBJECT_SUFFIX
 # define HAVE_OBJECT_SUFFIX
@@ -4782,6 +4787,20 @@ absolute_filename (filename)
   return 0;
 }
 
+/* Returns whether or not a given character is a directory separator.
+   Used by simplify_filename.  */
+static inline
+int
+is_dir_separator(ch)
+     char ch;
+{
+  return (ch == DIR_SEPARATOR)
+#if defined (DIR_SEPARATOR_2)
+          || (ch == DIR_SEPARATOR_2)
+#endif
+         ;
+}
+
 /* Remove unnecessary characters from FILENAME in place,
    to avoid unnecessary filename aliasing.
    Return the length of the resulting string.
@@ -4799,55 +4818,70 @@ simplify_filename (filename)
   char *to0;
 
   /* Remove redundant initial /s.  */
-  if (*from == '/') {
-    *to++ = '/';
-    if (*++from == '/') {
-      if (*++from == '/') {
-	/* 3 or more initial /s are equivalent to 1 /.  */
-	while (*++from == '/')
-	  continue;
-      } else {
-	/* On some hosts // differs from /; Posix allows this.  */
-	static int slashslash_vs_slash;
-	if (slashslash_vs_slash == 0) {
-	  struct stat s1, s2;
-	  slashslash_vs_slash = ((stat ("/", &s1) == 0 && stat ("//", &s2) == 0
-				  && INO_T_EQ (s1.st_ino, s2.st_ino)
-				  && s1.st_dev == s2.st_dev)
-				 ? 1 : -1);
-	}
-	if (slashslash_vs_slash < 0)
-	  *to++ = '/';
-      }
+  if (is_dir_separator (*from))
+    {
+      *to++ = DIR_SEPARATOR;
+      if (is_dir_separator (*++from))
+        {
+          if (is_dir_separator (*++from))
+            {
+              /* 3 or more initial /s are equivalent to 1 /.  */
+              while (is_dir_separator (*++from))
+                continue;
+            }
+          else
+            {
+	      /* On some hosts // differs from /; Posix allows this.  */
+              static int slashslash_vs_slash;
+              if (slashslash_vs_slash == 0)
+                {
+                  struct stat s1, s2;
+                  slashslash_vs_slash = ((stat ("/", &s1) == 0
+					  && stat ("//", &s2) == 0
+                                          && INO_T_EQ (s1.st_ino, s2.st_ino)
+                                          && s1.st_dev == s2.st_dev)
+                                         ? 1 : -1);
+                }
+             if (slashslash_vs_slash < 0)
+               *to++ = DIR_SEPARATOR;
+            }
+        }
     }
-  }
+
   to0 = to;
 
-  for (;;) {
+  for (;;)
+    {
 #ifndef VMS
-    if (from[0] == '.' && from[1] == '/')
-      from += 2;
-    else
+      if (from[0] == '.' && from[1] == '/')
+        from += 2;
+      else
 #endif
-      {
-      /* Copy this component and trailing /, if any.  */
-      while ((*to++ = *from++) != '/') {
-	if (!to[-1]) {
-	  /* Trim . component at end of nonempty name.  */
-	  to -= filename <= to - 3 && to[-3] == '/' && to[-2] == '.';
+        {
+          /* Copy this component and trailing DIR_SEPARATOR, if any.  */
+          while (!is_dir_separator (*to++ = *from++))
+            {
+              if (!to[-1])
+                {
+                  /* Trim . component at end of nonempty name.  */
+                  to -= filename <= to - 3 && to[-3] == DIR_SEPARATOR && to[-2] == '.';
 
-	  /* Trim unnecessary trailing /s.  */
-	  while (to0 < --to && to[-1] == '/')
-	    continue;
+                  /* Trim unnecessary trailing /s.  */
+                  while (to0 < --to && to[-1] == DIR_SEPARATOR)
+                    continue;
 
-	  *to = 0;
-	  return to - filename;
-	}
-      }
-    }
+                  *to = 0;
+                  return to - filename;
+                }
+            }
+#if defined(DIR_SEPARATOR_2)
+          /* Simplify to one directory separator.  */
+          to[-1] = DIR_SEPARATOR;
+#endif
+        }
 
     /* Skip /s after a /.  */
-    while (*from == '/')
+    while (is_dir_separator (*from))
       from++;
   }
 }
@@ -10322,10 +10356,6 @@ make_assertion (option, str)
   --indepth;
 }
 
-#ifndef DIR_SEPARATOR
-#define DIR_SEPARATOR '/'
-#endif
-
 /* The previous include prefix, if any, is PREV_FILE_NAME.
    Translate any pathnames with COMPONENT.
    Allocate a new include prefix whose name is the
