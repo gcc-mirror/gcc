@@ -2714,9 +2714,11 @@ rest_of_handle_inlining (tree decl)
 	     for unreferenced symbols.  See g77.f-torture/execute/980520-1.f.
 	     But removing this line from the check breaks all languages that
 	     use the call graph to output symbols.  This hard-coded check is
-	     the least invasive work-around.  */
+	     the least invasive work-around.  Nested functions need to be
+	     deferred too.  */
 	  && (flag_inline_functions
-	      || strcmp (lang_hooks.name, "GNU F77") == 0)
+	      || strcmp (lang_hooks.name, "GNU F77") == 0
+	      || (cgraph_n_nodes > 0 && cgraph_node (decl)->origin))
 	  && ((! TREE_PUBLIC (decl) && ! TREE_ADDRESSABLE (decl)
 	       && ! TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
 	       && ! flag_keep_inline_functions)

@@ -1,3 +1,10 @@
+2004-07-21  Jakub Jelinek  <jakub@redhat.com>
+	    Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/15345
+	PR c/16450
+	* gcc.dg/torture/nested-fn-1.c: New test.
+
 2004-07-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16637

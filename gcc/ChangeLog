@@ -1,3 +1,13 @@
+2004-07-21  Jakub Jelinek  <jakub@redhat.com>
+	    Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/15345
+	PR c/16450
+	* toplev.c (rest_of_handle_inlining): Set DECL_DEFER_OUTPUT on C
+	nested functions as well.
+	* tree-optimize.c (tree_rest_of_compilation): Don't clear decl rtls
+	for deferred nested inlines.
+
 2004-07-17  Eric Botcazou  <ebotcazou@act-europe.fr>
 
 	* libgcc2.c (__enable_execute_stack): New symbol.

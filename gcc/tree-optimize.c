@@ -195,29 +195,33 @@ tree_rest_of_compilation (tree fndecl, bool nested_p)
 	}
     }
 
-  /* Since we don't need the RTL for this function anymore, stop pointing to
-     it.  That's especially important for LABEL_DECLs, since you can reach all
-     the instructions in the function from the CODE_LABEL stored in the
-     DECL_RTL for the LABEL_DECL.  Walk the BLOCK-tree, clearing DECL_RTL for
-     LABEL_DECLs and non-static local variables.  Note that we must check the
-     context of the variables, otherwise processing a nested function can kill
-     the rtl of a variable from an outer function.  */
-  walk_tree_without_duplicates (&DECL_SAVED_TREE (fndecl),
-				clear_decl_rtl,
-				fndecl);
-  if (!cgraph_function_possibly_inlined_p (fndecl))
+  if (! DECL_DEFER_OUTPUT (fndecl) || !cgraph_node (fndecl)->origin)
     {
-      DECL_SAVED_TREE (fndecl) = NULL;
-      if (DECL_SAVED_INSNS (fndecl) == 0
-	  && !cgraph_node (fndecl)->origin)
+      /* Since we don't need the RTL for this function anymore, stop pointing
+	 to it.  That's especially important for LABEL_DECLs, since you can
+	 reach all the instructions in the function from the CODE_LABEL stored
+	 in the DECL_RTL for the LABEL_DECL.  Walk the BLOCK-tree, clearing
+	 DECL_RTL for LABEL_DECLs and non-static local variables.  Note that
+	 we must check the context of the variables, otherwise processing a
+	 nested function can kill the rtl of a variable from an outer
+	 function.  */
+      walk_tree_without_duplicates (&DECL_SAVED_TREE (fndecl),
+				    clear_decl_rtl,
+				    fndecl);
+      if (!cgraph_function_possibly_inlined_p (fndecl))
 	{
-	  /* Stop pointing to the local nodes about to be freed.
-	     But DECL_INITIAL must remain nonzero so we know this
-	     was an actual function definition.
-	     For a nested function, this is done in c_pop_function_context.
-	     If rest_of_compilation set this to 0, leave it 0.  */
-	  if (DECL_INITIAL (fndecl) != 0)
-	    DECL_INITIAL (fndecl) = error_mark_node;
+	  DECL_SAVED_TREE (fndecl) = NULL;
+	  if (DECL_SAVED_INSNS (fndecl) == 0
+	      && !cgraph_node (fndecl)->origin)
+	    {
+	      /* Stop pointing to the local nodes about to be freed.
+		 But DECL_INITIAL must remain nonzero so we know this
+		 was an actual function definition.
+		 For a nested function, this is done in c_pop_function_context.
+		 If rest_of_compilation set this to 0, leave it 0.  */
+	      if (DECL_INITIAL (fndecl) != 0)
+		DECL_INITIAL (fndecl) = error_mark_node;
+	    }
 	}
     }
 
