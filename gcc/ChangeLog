@@ -1,3 +1,9 @@
+2002-12-28  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* configure.in: Increase makeinfo version requirement to 4.[2-9].
+	* configure: Regenerate.
+	* doc/install.texi: Update Texinfo version requirement.
+
 2002-12-27  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/include/texinfo.tex: Update to version 2002-12-26.16.
