@@ -392,52 +392,53 @@ AC_ARG_ENABLE(checking,
 [  --enable-checking[=LIST]
 			  enable expensive run-time checks.  With LIST,
 			  enable only specific categories of checks.
-			  Categories are: none,assert,fold,gc,gcac,misc,
-			  rtlflag,rtl,tree,valgrind;
-			  default is assert,gc,misc,rtlflag,tree],
-[ac_checking=
+			  Categories are: assert,fold,gc,gcac,misc,
+			  rtlflag,rtl,tree,valgrind,release,yes,all;],
+[ac_checking_flags="${enableval}"],[
+# Determine the default checks.
+if test x$is_release = x ; then
+  ac_checking_flags=yes
+else
+  ac_checking_flags=release
+fi])
+ac_assert_checking=1
+ac_checking=
 ac_tree_checking=
 ac_rtl_checking=
 ac_rtlflag_checking=
 ac_gc_checking=
 ac_gc_always_collect=
 ac_fold_checking=
-ac_assert_checking=
-case "${enableval}" in
-yes)	ac_checking=1 ; ac_tree_checking=1 ; ac_gc_checking=1 ;
-	ac_rtlflag_checking=1 ; ac_assert_checking=1 ;;
-no)	;;
-*)	IFS="${IFS= 	}"; ac_save_IFS="$IFS"; IFS="$IFS,"
-	set fnord $enableval; shift
-	IFS="$ac_save_IFS"
-	ac_assert_checking=1
-	for check
-	do
-		case $check in
-		assert) ac_assert_checking=1 ;;
-		fold)	ac_fold_checking=1 ;;
-		gc)	ac_gc_checking=1 ;;
-		gcac)	ac_gc_always_collect=1 ;;
-		misc)	ac_checking=1 ;;
-		rtlflag)	ac_rtlflag_checking=1 ;;
-		rtl)	ac_rtl_checking=1 ;;
-		tree)	ac_tree_checking=1 ;;
-		valgrind)	ac_checking_valgrind=1 ;;
-		*)	AC_MSG_ERROR(unknown check category $check) ;;
-		esac
-	done
-	;;
-esac
-], [
-# Determine the default checks.
-if test x$is_release = x ; then
-  # Enable some checks for development versions of GCC
-  ac_assert_checking=1;
-  ac_checking=1; ac_tree_checking=1; ac_gc_checking=1; ac_rtlflag_checking=1;
-else
-  # Disable all but assertions for release versions of GCC.
-  ac_assert_checking=1;
-fi])
+IFS="${IFS= 	}"; ac_save_IFS="$IFS"; IFS="$IFS,"
+for check in $ac_checking_flags
+do
+	case $check in
+	yes)		ac_assert_checking=1 ; ac_checking=1 ;
+			ac_tree_checking=1 ; ac_gc_checking=1 ;
+			ac_rtlflag_checking=1 ;;
+	no)		ac_assert_checking= ; ac_checking= ;
+			ac_tree_checking= ; ac_rtl_checking= ;
+			ac_rtlflag_checking= ; ac_gc_checking= ;
+			ac_gc_always_collect= ; ac_fold_checking= ;;
+	all)		ac_assert_checking=1 ; ac_checking=1 ;
+			ac_tree_checking=1 ; ac_rtl_checking=1 ;
+			ac_rtlflag_checking=1 ; ac_gc_checking=1 ;
+			ac_gc_always_collect=1 ; ac_fold_checking=1 ;;
+        release)	ac_assert_checking=1 ;;
+	assert) 	ac_assert_checking=1 ;;
+	fold)		ac_fold_checking=1 ;;
+	gc)		ac_gc_checking=1 ;;
+	gcac)		ac_gc_always_collect=1 ;;
+	misc)		ac_checking=1 ;;
+	rtlflag)	ac_rtlflag_checking=1 ;;
+	rtl)		ac_rtl_checking=1 ;;
+	tree)		ac_tree_checking=1 ;;
+	valgrind)	ac_checking_valgrind=1 ;;
+	*)	AC_MSG_ERROR(unknown check category $check) ;;
+	esac
+done
+IFS="$ac_save_IFS"
+
 nocommon_flag=""
 if test x$ac_checking != x ; then
   AC_DEFINE(ENABLE_CHECKING, 1,

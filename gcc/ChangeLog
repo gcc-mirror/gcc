@@ -1,3 +1,10 @@
+2004-09-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* configure.ac (enable-checking): Add release option. Reorganize
+	to avoid repetition.
+	* configure: Rebuilt.
+	* doc/install.texi (enable-checking): Amend documentation.
+
 2004-09-06  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR bootstrap/17313
