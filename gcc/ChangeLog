@@ -1,3 +1,12 @@
+2000-01-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* real.c (enan, einan, eiisnan, eiisneg, make_nan): Wrap in NANS.
+	(target_isinf, target_isnan, eisnan): Mark parameter with
+	ATTRIBUTE_UNUSED.
+	(eiisinf): Wrap in INFINITY.
+	(etoe113, etoe64, etoe53, etoe24): Wrap label `nonorm' in INFINITY.
+	(ibmtoe): Remove unused variable `rndsav'.
+
 Wed Jan 19 20:23:06 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.h (PASS_IN_REG_P): Remove extraneous paranthesis.
