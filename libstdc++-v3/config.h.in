@@ -459,9 +459,6 @@
 /* Define if you have the sqrtl function.  */
 #undef HAVE_SQRTL
 
-/* Define if you have the strtof function.  */
-#undef HAVE_STRTOF
-
 /* Define if you have the strtold function.  */
 #undef HAVE_STRTOLD
 

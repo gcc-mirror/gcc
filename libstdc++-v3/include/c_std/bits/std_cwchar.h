@@ -112,7 +112,6 @@ namespace std
 #undef wmemmove
 #undef wmemset
 #undef wcsftime
-
 #undef wcschr
 #undef wcspbrk
 #undef wcsrchr
@@ -212,6 +211,11 @@ namespace std
 }
 
 #if _GLIBCPP_USE_C99
+
+#undef wcstold
+#undef wcstoll
+#undef wcstoull
+
 namespace __gnu_cxx
 {
   using ::wcstold;

@@ -608,7 +608,6 @@ AC_DEFUN(GLIBCPP_CHECK_STDLIB_SUPPORT, [
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS='-fno-builtins -D_GNU_SOURCE'
 
-  AC_CHECK_FUNCS(strtof)
   GLIBCPP_CHECK_STDLIB_DECL_AND_LINKAGE_2(strtold)
   AC_CHECK_FUNCS(drand48)
 
@@ -1268,6 +1267,37 @@ AC_DEFUN(GLIBCPP_ENABLE_C99, [dnl
 	         [isunordered(0.0,0.0);],, [ac_c99_math=no])
   AC_MSG_RESULT($ac_c99_math)
 
+  # Check for the existence in <stdio.h> of vscanf, et. al.
+  ac_c99_stdio=yes;
+  AC_MSG_CHECKING([for ISO C99 support in <stdio.h>])
+  AC_TRY_COMPILE([#include <stdio.h>],
+		 [snprintf("12", 0, "%i");],, [ac_c99_stdio=no])
+  AC_TRY_COMPILE([#include <stdio.h>
+		  #include <stdarg.h>
+		  void foo(char* fmt, ...)
+		  {va_list args; va_start(args, fmt);
+	          vfscanf(stderr, "%i", args);}],
+	          [],, [ac_c99_stdio=no])	
+  AC_TRY_COMPILE([#include <stdio.h>
+		  #include <stdarg.h>
+		  void foo(char* fmt, ...)
+		  {va_list args; va_start(args, fmt);
+	          vscanf("%i", args);}],
+	          [],, [ac_c99_stdio=no])
+  AC_TRY_COMPILE([#include <stdio.h>
+		  #include <stdarg.h>
+		  void foo(char* fmt, ...)
+		  {va_list args; va_start(args, fmt);
+	          vsnprintf(fmt, 0, "%i", args);}],
+	          [],, [ac_c99_stdio=no])
+  AC_TRY_COMPILE([#include <stdio.h>
+		  #include <stdarg.h>
+		  void foo(char* fmt, ...)
+		  {va_list args; va_start(args, fmt);
+	          vsscanf(fmt, "%i", args);}],
+	          [],, [ac_c99_stdio=no])
+  AC_MSG_RESULT($ac_c99_stdio)
+
   # Check for the existence in <stdlib.h> of lldiv_t, et. al.
   ac_c99_stdlib=yes;
   AC_MSG_CHECKING([for lldiv_t declaration])
@@ -1280,12 +1310,17 @@ AC_DEFUN(GLIBCPP_ENABLE_C99, [dnl
 
   AC_MSG_CHECKING([for ISO C99 support in <stdlib.h>])
   AC_TRY_COMPILE([#include <stdlib.h>],
+	         [char* tmp; strtof("gnu", &tmp);],, [ac_c99_stdlib=no])
+  AC_TRY_COMPILE([#include <stdlib.h>],
+	         [char* tmp; strtold("gnu", &tmp);],, [ac_c99_stdlib=no])
+  AC_TRY_COMPILE([#include <stdlib.h>],
 	         [char* tmp; strtoll("gnu", &tmp, 10);],, [ac_c99_stdlib=no])
   AC_TRY_COMPILE([#include <stdlib.h>],
 	         [char* tmp; strtoull("gnu", &tmp, 10);],, [ac_c99_stdlib=no])
   AC_TRY_COMPILE([#include <stdlib.h>], [llabs(10);],, [ac_c99_stdlib=no])
   AC_TRY_COMPILE([#include <stdlib.h>], [lldiv(10,1);],, [ac_c99_stdlib=no])
   AC_TRY_COMPILE([#include <stdlib.h>], [atoll("10");],, [ac_c99_stdlib=no])
+  AC_TRY_COMPILE([#include <stdlib.h>], [_Exit(0);],, [ac_c99_stdlib=no])
   if test x"$ac_c99_lldiv_t" = x"no"; then
     ac_c99_stdlib=no; 
   fi; 
@@ -1303,8 +1338,9 @@ AC_DEFUN(GLIBCPP_ENABLE_C99, [dnl
   AC_MSG_RESULT($ac_c99_wchar)
 
   AC_MSG_CHECKING([for enabled ISO C99 support])
-  if test x"$ac_c99_math" = x"no" || test x"$ac_c99_wchar" = x"no" \
-	|| test x"$ac_c99_stdlib" = x"no"; then 
+  if test x"$ac_c99_math" = x"no" || test x"$ac_c99_stdio" = x"no" \
+	|| test x"$ac_c99_stdlib" = x"no" \
+	|| test x"$ac_c99_wchar" = x"no"; then
     enable_c99=no; 
   fi; 
   AC_MSG_RESULT($enable_c99)
