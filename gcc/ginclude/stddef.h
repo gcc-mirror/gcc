@@ -126,7 +126,7 @@ typedef __WCHAR_TYPE__ wchar_t;
 #endif
 #endif
 #endif
-#undef	__need_wchat_t
+#undef	__need_wchar_t
 
 #endif /* __sys_stdtypes_h */
 
