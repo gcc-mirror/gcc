@@ -1,3 +1,7 @@
+2000-02-11  Andreas Jaeger  <aj@suse.de>
+
+	* fixinc/Makefile.in (FIXINC_DEFS): Remove unneeded @fixinc_defs@.
+
 2000-02-11  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.c: Fix formatting, update commentary.
