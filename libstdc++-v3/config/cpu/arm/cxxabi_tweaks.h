@@ -45,12 +45,22 @@ namespace __cxxabiv1
   // We also want the element size in array cookies.
 #define _GLIBCXX_ELTSIZE_IN_COOKIE 1
   
-#else
+  // __cxa_vec_ctor should return a pointer to the array.
+  typedef void * __cxa_vec_ctor_return_type;
+#define _GLIBCXX_CXA_VEC_CTOR_RETURN(x) return x
+
+#else // __ARM_EABI__
+
   // The generic ABI uses the first byte of a 64-bit guard variable.
 #define _GLIBCXX_GUARD_ACQUIRE(x) (!*(char *) (x))
 #define _GLIBCXX_GUARD_RELEASE(x) *(char *) (x) = 1
   __extension__ typedef int __guard __attribute__((mode (__DI__)));
-#endif
+
+  // __cxa_vec_ctor has void return type.
+  typedef void __cxa_vec_ctor_return_type;
+#define _GLIBCXX_CXA_VEC_CTOR_RETURN(x) return
+
+#endif //!__ARM_EABI__
 
 #ifdef __cplusplus
 } // namespace __cxxabiv1

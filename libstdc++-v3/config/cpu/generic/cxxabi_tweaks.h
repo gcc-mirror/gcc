@@ -40,6 +40,10 @@ namespace __cxxabiv1
 #define _GLIBCXX_GUARD_RELEASE(x) *(char *) (x) = 1
   __extension__ typedef int __guard __attribute__((mode (__DI__)));
 
+  // __cxa_vec_ctor has void return type.
+  typedef void __cxa_vec_ctor_return_type;
+#define _GLIBCXX_CXA_VEC_CTOR_RETURN(x) return
+
 #ifdef __cplusplus
 } // namespace __cxxabiv1
 #endif

@@ -73,12 +73,12 @@ namespace __cxxabiv1
 		 void (*__dealloc) (void*, size_t));
 
   // Construct array.
-  void 
+  __cxa_vec_ctor_return_type
   __cxa_vec_ctor(void* __array_address, size_t __element_count,
 		 size_t __element_size, void (*__constructor) (void*),
 		 void (*__destructor) (void*));
 
-  void 
+  __cxa_vec_ctor_return_type
   __cxa_vec_cctor(void* dest_array, void* src_array, size_t element_count, 
 		  size_t element_size, void (*constructor) (void*, void*), 
 		  void (*destructor) (void*));
