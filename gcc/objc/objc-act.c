@@ -1,5 +1,5 @@
 /* Implement classes and message passing for Objective C.
-   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1997 Free Software Foundation, Inc.
    Contributed by Steve Naroff.
 
 This file is part of GNU CC.
@@ -6453,6 +6453,122 @@ encode_array (type, curtype, format)
 }
 
 static void
+encode_aggregate_within (type, curtype, format, left, right)
+     tree type;
+     int curtype;
+     int format;
+     char left;
+     char right;
+{
+  if (obstack_object_size (&util_obstack) > 0
+      && *(obstack_next_free (&util_obstack) - 1) == '^')
+    {
+      tree name = TYPE_NAME (type);
+
+      /* we have a reference; this is a NeXT extension. */
+
+      if (obstack_object_size (&util_obstack) - curtype == 1
+	  && format == OBJC_ENCODE_INLINE_DEFS)
+	{
+	  /* Output format of struct for first level only. */
+	  tree fields = TYPE_FIELDS (type);
+
+	  if (name && TREE_CODE (name) == IDENTIFIER_NODE)
+	    {
+	      obstack_1grow (&util_obstack, left);
+	      obstack_grow (&util_obstack,
+			    IDENTIFIER_POINTER (name),
+			    strlen (IDENTIFIER_POINTER (name)));
+	      obstack_1grow (&util_obstack, '=');
+	    }
+	  else
+	    {
+	      obstack_1grow (&util_obstack, left);
+	      obstack_grow (&util_obstack, "?=", 2);
+	    }
+
+	  for ( ; fields; fields = TREE_CHAIN (fields))
+	      encode_field_decl (fields, curtype, format);
+
+	  obstack_1grow (&util_obstack, right);
+	}
+
+      else if (name && TREE_CODE (name) == IDENTIFIER_NODE)
+	{
+	  obstack_1grow (&util_obstack, left);
+	  obstack_grow (&util_obstack,
+			IDENTIFIER_POINTER (name),
+			strlen (IDENTIFIER_POINTER (name)));
+	  obstack_1grow (&util_obstack, right);
+	}
+
+      else
+	{
+	  /* We have an untagged structure or a typedef. */
+	  obstack_1grow (&util_obstack, left);
+	  obstack_1grow (&util_obstack, '?');
+	  obstack_1grow (&util_obstack, right);
+	}
+    }
+
+  else
+    {
+      tree name = TYPE_NAME (type);
+      tree fields = TYPE_FIELDS (type);
+
+      if (format == OBJC_ENCODE_INLINE_DEFS
+	  || generating_instance_variables)
+	{
+	  obstack_1grow (&util_obstack, left);
+	  if (name && TREE_CODE (name) == IDENTIFIER_NODE)
+	      obstack_grow (&util_obstack,
+			  IDENTIFIER_POINTER (name),
+			  strlen (IDENTIFIER_POINTER (name)));
+	  else
+	      obstack_1grow (&util_obstack, '?');
+
+	  obstack_1grow (&util_obstack, '=');
+
+	  for (; fields; fields = TREE_CHAIN (fields))
+	    {
+	      if (generating_instance_variables)
+		{
+		  tree fname = DECL_NAME (fields);
+
+		  obstack_1grow (&util_obstack, '"');
+		  if (fname && TREE_CODE (fname) == IDENTIFIER_NODE)
+		    {
+		      obstack_grow (&util_obstack,
+				    IDENTIFIER_POINTER (fname),
+				    strlen (IDENTIFIER_POINTER (fname)));
+		    }
+
+		  obstack_1grow (&util_obstack, '"');
+		}
+
+	      encode_field_decl (fields, curtype, format);
+	    }
+
+	  obstack_1grow (&util_obstack, right);
+	}
+
+      else
+	{
+	  obstack_1grow (&util_obstack, left);
+	  if (name && TREE_CODE (name) == IDENTIFIER_NODE)
+	      obstack_grow (&util_obstack,
+			    IDENTIFIER_POINTER (name),
+			    strlen (IDENTIFIER_POINTER (name)));
+	  else
+	      /* We have an untagged structure or a typedef. */
+	      obstack_1grow (&util_obstack, '?');
+
+	  obstack_1grow (&util_obstack, right);
+	}
+    }
+}
+
+static void
 encode_aggregate (type, curtype, format)
      tree type;
      int curtype;
@@ -6464,140 +6580,12 @@ encode_aggregate (type, curtype, format)
     {
     case RECORD_TYPE:
       {
-	if (obstack_object_size (&util_obstack) > 0
-	    && *(obstack_next_free (&util_obstack) - 1) == '^')
-	  {
-	    tree name = TYPE_NAME (type);
-
-	    /* We have a reference; this is a NeXT extension.  */
-
-	    if (obstack_object_size (&util_obstack) - curtype == 1
-		&& format == OBJC_ENCODE_INLINE_DEFS)
-	      {
-		/* Output format of struct for first level only.  */
-		tree fields = TYPE_FIELDS (type);
-
-		if (name && TREE_CODE (name) == IDENTIFIER_NODE)
-		  {
-		    obstack_1grow (&util_obstack, '{');
-		    obstack_grow (&util_obstack,
-				  IDENTIFIER_POINTER (name),
-				  strlen (IDENTIFIER_POINTER (name)));
-		    obstack_1grow (&util_obstack, '=');
-		  }
-
-		else
-		  obstack_grow (&util_obstack, "{?=", 3);
-
-		for ( ; fields; fields = TREE_CHAIN (fields))
-		  encode_field_decl (fields, curtype, format);
-
-		obstack_1grow (&util_obstack, '}');
-	      }
-
-            else if (name && TREE_CODE (name) == IDENTIFIER_NODE)
-	      {
-		obstack_1grow (&util_obstack, '{');
-		obstack_grow (&util_obstack,
-			      IDENTIFIER_POINTER (name),
-			      strlen (IDENTIFIER_POINTER (name)));
-		obstack_1grow (&util_obstack, '}');
-	      }
-
-	    else
-	      /* We have an untagged structure or a typedef.  */
-	      obstack_grow (&util_obstack, "{?}", 3);
-	  }
-
-	else
-	  {
-	    tree name = TYPE_NAME (type);
-	    tree fields = TYPE_FIELDS (type);
-
-	    if (format == OBJC_ENCODE_INLINE_DEFS
-		|| generating_instance_variables)
-	      {
-		obstack_1grow (&util_obstack, '{');
-		if (name && TREE_CODE (name) == IDENTIFIER_NODE)
-		  obstack_grow (&util_obstack,
-				IDENTIFIER_POINTER (name),
-				strlen (IDENTIFIER_POINTER (name)));
-
-		else
-		  obstack_1grow (&util_obstack, '?');
-
-		obstack_1grow (&util_obstack, '=');
-
-		for (; fields; fields = TREE_CHAIN (fields))
-		  {
-                  if (generating_instance_variables)
-                    {
-                      tree fname = DECL_NAME (fields);
-
-		      obstack_1grow (&util_obstack, '"');
-		      if (fname && TREE_CODE (fname) == IDENTIFIER_NODE)
-		        {
-			  obstack_grow (&util_obstack,
-					IDENTIFIER_POINTER (fname),
-					strlen (IDENTIFIER_POINTER (fname)));
-			}
-
-		      obstack_1grow (&util_obstack, '"');
-                    }
-
-		  encode_field_decl (fields, curtype, format);
-		  }
-
-		obstack_1grow (&util_obstack, '}');
-	      }
-
-	    else
-	      {
-		obstack_1grow (&util_obstack, '{');
-		if (name && TREE_CODE (name) == IDENTIFIER_NODE)
-		  obstack_grow (&util_obstack,
-				IDENTIFIER_POINTER (name),
-				strlen (IDENTIFIER_POINTER (name)));
-		else
-		  /* We have an untagged structure or a typedef.  */
-		  obstack_1grow (&util_obstack, '?');
-
-		obstack_1grow (&util_obstack, '}');
-	      }
-	  }
+	encode_aggregate_within(type, curtype, format, '{', '}');
 	break;
       }
-
     case UNION_TYPE:
       {
-	if (*obstack_next_free (&util_obstack) == '^'
-	    || format != OBJC_ENCODE_INLINE_DEFS)
-	  {
-	    /* We have a reference (this is a NeXT extension)
-	       or we don't want the details.  */
-            if (TYPE_NAME (type)
-		&& TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
-	      {
-		obstack_1grow (&util_obstack, '(');
-		obstack_grow (&util_obstack,
-			      IDENTIFIER_POINTER (TYPE_NAME (type)),
-			      strlen (IDENTIFIER_POINTER (TYPE_NAME (type))));
-		obstack_1grow (&util_obstack, ')');
-	      }
-
-	    else
-	      /* We have an untagged structure or a typedef.  */
-	      obstack_grow (&util_obstack, "(?)", 3);
-	  }
-	else
-	  {
-	    tree fields = TYPE_FIELDS (type);
-	    obstack_1grow (&util_obstack, '(');
-	    for ( ; fields; fields = TREE_CHAIN (fields))
-	      encode_field_decl (fields, curtype, format);
-
-	    obstack_1grow (&util_obstack, ')');
-	  }
+	encode_aggregate_within(type, curtype, format, '(', ')');
 	break;
       }
 
