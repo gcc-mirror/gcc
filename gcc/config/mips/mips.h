@@ -1945,14 +1945,20 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
    kept in a register.  */
 #define NO_RECURSIVE_FUNCTION_CSE 1
 
-/* The register number of the register used to address a table of
-   static data addresses in memory.  In some cases this register is
-   defined by a processor's "application binary interface" (ABI).
-   When this macro is defined, RTL is generated for this register
-   once, as with the stack pointer and frame pointer registers.  If
-   this macro is not defined, it is up to the machine-dependent
-   files to allocate such a register (if necessary).  */
-#define PIC_OFFSET_TABLE_REGNUM (GP_REG_FIRST + 28)
+/* The ABI-defined global pointer.  Sometimes we use a different
+   register in leaf functions: see PIC_OFFSET_TABLE_REGNUM.  */
+#define GLOBAL_POINTER_REGNUM (GP_REG_FIRST + 28)
+
+/* We normally use $28 as the global pointer.  However, when generating
+   n32/64 PIC, it is better for leaf functions to use a call-clobbered
+   register instead.  They can then avoid saving and restoring $28
+   and perhaps avoid using a frame at all.
+
+   When a leaf function uses something other than $28, mips_expand_prologue
+   will modify pic_offset_table_rtx in place.  Take the register number
+   from there after reload.  */
+#define PIC_OFFSET_TABLE_REGNUM \
+  (reload_completed ? REGNO (pic_offset_table_rtx) : GLOBAL_POINTER_REGNUM)
 
 #define PIC_FUNCTION_ADDR_REGNUM (GP_REG_FIRST + 25)
 
@@ -2353,23 +2359,14 @@ extern enum reg_class mips_char_to_class[256];
 
 /* Stack layout; function entry, exit and calling.  */
 
-/* Define this if pushing a word on the stack
-   makes the stack pointer a smaller address.  */
 #define STACK_GROWS_DOWNWARD
 
-/* Define this if the nominal address of the stack frame
-   is at the high-address end of the local variables;
-   that is, each additional local variable allocated
-   goes at a more negative offset in the frame.  */
-/* #define FRAME_GROWS_DOWNWARD */
-
-/* Offset within stack frame to start allocating local variables at.
-   If FRAME_GROWS_DOWNWARD, this is the offset to the END of the
-   first local allocated.  Otherwise, it is the offset to the BEGINNING
-   of the first local allocated.  */
+/* The offset of the first local variable from the beginning of the frame.
+   See compute_frame_size for details about the frame layout.  */
 #define STARTING_FRAME_OFFSET						\
   (current_function_outgoing_args_size					\
-   + (TARGET_ABICALLS ? MIPS_STACK_ALIGN (UNITS_PER_WORD) : 0))
+   + (TARGET_ABICALLS && !TARGET_NEWABI					\
+      ? MIPS_STACK_ALIGN (UNITS_PER_WORD) : 0))
 
 /* Offset from the stack pointer register to an item dynamically
    allocated on the stack, e.g., by `alloca'.
@@ -2837,13 +2834,6 @@ typedef struct mips_args {
 	(mips_abi == ABI_EABI && UNITS_PER_FPVALUE >= UNITS_PER_DOUBLE)
 
 
-/* Tell prologue and epilogue if register REGNO should be saved / restored.  */
-
-#define MUST_SAVE_REGISTER(regno) \
- ((regs_ever_live[regno] && !call_used_regs[regno])			\
-  || (regno == HARD_FRAME_POINTER_REGNUM && frame_pointer_needed)	\
-  || (regno == (GP_REG_FIRST + 31) && regs_ever_live[GP_REG_FIRST + 31]))
-
 /* Say that the epilogue uses the return address register.  Note that
    in the case of sibcalls, the values "used by the epilogue" are
    considered live at the start of the called function.  */

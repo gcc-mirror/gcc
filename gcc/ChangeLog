@@ -1,4 +1,53 @@
 2003-06-09  Richard Sandiford  <rsandifo@redhat.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mips/mips.h (GLOBAL_POINTER_REGNUM): New macro.
+	(PIC_OFFSET_TABLE_REGNUM): Look at pic_offset_table_rtx after reload.
+	(STARTING_FRAME_OFFSET): Don't allocate a cprestore slot for
+	n32/64 PIC.
+	(MUST_SAVE_REGISTERS): Delete.
+	* config/mips/mips.c (mips_frame_info): Remove extra_size field.
+	(machine_function): Add global_pointer field.
+	(mips_classify_constant): Check for (const $gp) using pointer equality
+	with pic_offset_table_rtx.
+	(mips_classify_constant): Handle RELOC_LOADGP_HI and RELOC_LOADGP_LO.
+	(mips_restore_gp): Use current_function_outgoing_args_size.
+	(print_operand): Use PIC_OFFSET_TABLE_REGNUM instead of
+	GP_REG_FIRST + 28.  Handle relocation strings that have
+	more than one '('.
+	(mips_reloc_string): Handle RELOC_LOADGP_HI and RELOC_LOADGP_LO.
+	(mips_global_pointer): New function.
+	(mips_save_reg_p): New function, mostly split out from...
+	(compute_frame_size): ...here.  Remove handling of extra_size.
+	Reclaim args_size if no variables depend on it.  Don't treat gp
+	as a special case: handle it in the main GPR loop.
+	(mips_initial_elimination_offset): Fix comment.
+	(save_restore_insns): Save every register in the GPR mask,
+	removing distinction between mask and real_mask.
+	(mips_output_function_prologue): Update .frame psuedo-op after
+	the removal of extra_size.  Move the SVR4 PIC stack allocation
+	and cprestore instructions to mips_expand_prologue.
+	(mips_gp_insn): New function.
+	(mips_expand_prologue): Set REGNO (pic_offset_table_rtx) to
+	the chosen global pointer.  Handle SVR4 PIC stack allocation
+	in the same way as other ABIs.  Adjust varargs code accordingly.
+	Emit a cprestore insn after allocating the stack.  Use mips_gp_insn
+	to emit the loadgp sequence.  Follow it with a loadgp_blockage
+	if not using explicit relocs.
+	(mips_output_function_epilogue): Reinstate the default gp register.
+	(mips16_gp_pseudo_reg): Use pic_offset_table_rtx.
+	(mips16_optimize_gp): Likewise.
+	* config/mips/mips.md (UNSPEC_LOADGP): Remove.
+	(UNSPEC_SETJMP, UNSPEC_LONGJMP): Remove.
+	(UNSPEC_CPRESTORE, RELOC_LOADGP_HI, RELOC_LOADGP_LO): New.
+	(loadgp): Remove.
+	(loadgp_blockage, cprestore): New instructions.
+	(builtin_setjmp_setup): Implement using emit_move_insn.  Use
+	pic_offset_table_rtx.
+	(builtin_setjmp_setup_32, builtin_setjmp_setup_64): Remove.
+	(builtin_longjmp): Use gen_raw_REG to force use of $28.
+
+2003-06-09  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips-protos.h (mips_output_division): Declare.
 	* config/mips/mips.h (MASK_CHECK_RANGE_DIV): Remove.

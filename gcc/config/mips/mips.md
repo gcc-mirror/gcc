@@ -32,9 +32,7 @@
    (UNSPEC_STORE_DF_HIGH	 2)
    (UNSPEC_GET_FNADDR		 4)
    (UNSPEC_BLOCKAGE		 6)
-   (UNSPEC_LOADGP		 7)
-   (UNSPEC_SETJMP		 8)
-   (UNSPEC_LONGJMP		 9)
+   (UNSPEC_CPRESTORE		 8)
    (UNSPEC_EH_RECEIVER		10)
    (UNSPEC_EH_RETURN		11)
    (UNSPEC_CONSTTABLE_QI	12)
@@ -67,7 +65,9 @@
    (RELOC_GOT_DISP		104)
    (RELOC_CALL16		105)
    (RELOC_CALL_HI		106)
-   (RELOC_CALL_LO		107)])
+   (RELOC_CALL_LO		107)
+   (RELOC_LOADGP_HI		108)
+   (RELOC_LOADGP_LO		109)])
 
 
 ;; ....................
@@ -5428,21 +5428,28 @@ move\\t%0,%z4\\n\\
    (set_attr "mode"	"SF")
    (set_attr "length"	"4")])
 
-;; Instructions to load the global pointer register.
-;; This is volatile to make sure that the scheduler won't move any symbol_ref
-;; uses in front of it.  All symbol_refs implicitly use the gp reg.
-
-(define_insn "loadgp"
-  [(set (reg:DI 28)
-	(unspec_volatile:DI [(match_operand 0 "immediate_operand" "")
-			     (match_operand:DI 1 "register_operand" "")]
-			    UNSPEC_LOADGP))
-   (clobber (reg:DI 1))]
+;; The use of gp is hidden when not using explicit relocations.
+;; This blockage instruction prevents the gp load from being
+;; scheduled after an implicit use of gp.  It also prevents
+;; the load from being deleted as dead.
+(define_insn "loadgp_blockage"
+  [(unspec_volatile [(reg:DI 28)] UNSPEC_BLOCKAGE)]
   ""
-  "%[lui\\t$1,%%hi(%%neg(%%gp_rel(%0)))\\n\\taddiu\\t$1,$1,%%lo(%%neg(%%gp_rel(%0)))\\n\\tdaddu\\t$gp,$1,%1%]"
-  [(set_attr "type"	"move")
-   (set_attr "mode"	"DI")
-   (set_attr "length"	"12")])
+  ""
+  [(set_attr "type"	"unknown")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"0")])
+
+;; Emit a .cprestore directive, which expands to a single store instruction.
+;; Note that we continue to use .cprestore for explicit reloc code so that
+;; jals inside inlines asms will work correctly.
+(define_insn "cprestore"
+  [(unspec_volatile [(match_operand 0 "const_int_operand" "")]
+		    UNSPEC_CPRESTORE)]
+  ""
+  ".cprestore\t%0"
+  [(set_attr "type" "store")
+   (set_attr "length" "4")])
 
 ;; Block moves, see mips.c for more details.
 ;; Argument 0 is the destination
@@ -8776,55 +8783,45 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\\n\\t%*j\\t%2"
    (set_attr "mode"	"none")
    (set_attr "length"	"24")])
 
-;; For o32/n32/n64, we save the gp in the jmp_buf as well.  While it is
-;; possible to either pull it off the stack (in the o32 case) or recalculate
-;; it given t9 and our target label, it takes 3 or 4 insns to do so, and
-;; this is easy.
+;; For TARGET_ABICALLS, we save the gp in the jmp_buf as well.
+;; While it is possible to either pull it off the stack (in the
+;; o32 case) or recalculate it given t9 and our target label,
+;; it takes 3 or 4 insns to do so.
 
 (define_expand "builtin_setjmp_setup"
-  [(unspec [(match_operand 0 "register_operand" "r")] UNSPEC_SETJMP)]
+  [(use (match_operand 0 "register_operand" ""))]
   "TARGET_ABICALLS"
-  "
-{
-  if (Pmode == DImode)
-    emit_insn (gen_builtin_setjmp_setup_64 (operands[0]));
-  else
-    emit_insn (gen_builtin_setjmp_setup_32 (operands[0]));
-  DONE;
-}")
+  {
+    rtx addr;
 
-(define_expand "builtin_setjmp_setup_32"
-  [(set (mem:SI (plus:SI (match_operand:SI 0 "register_operand" "r")
-		   (const_int 12)))
-      (reg:SI 28))]
-  "TARGET_ABICALLS && ! (Pmode == DImode)"
-  "")
+    addr = plus_constant (operands[0], GET_MODE_SIZE (Pmode) * 3);
+    emit_move_insn (gen_rtx_MEM (Pmode, addr), pic_offset_table_rtx);
+    DONE;
+  })
 
-(define_expand "builtin_setjmp_setup_64"
-  [(set (mem:DI (plus:DI (match_operand:DI 0 "register_operand" "r")
-		   (const_int 24)))
-      (reg:DI 28))]
-  "TARGET_ABICALLS && Pmode == DImode"
-  "")
-
-;; For o32/n32/n64, we need to arrange for longjmp to put the
-;; target address in t9 so that we can use it for loading $gp.
+;; Restore the gp that we saved above.  Despite the comment, it seems that
+;; older code did recalculate the gp from $25.  Continue to jump through
+;; $25 for compatibility (we lose nothing by doing so).
 
 (define_expand "builtin_longjmp"
-  [(unspec_volatile [(match_operand 0 "register_operand" "r")] UNSPEC_LONGJMP)]
+  [(use (match_operand 0 "register_operand" "r"))]
   "TARGET_ABICALLS"
   "
 {
   /* The elements of the buffer are, in order:  */
-  int W = (Pmode == DImode ? 8 : 4);
+  int W = GET_MODE_SIZE (Pmode);
   rtx fp = gen_rtx_MEM (Pmode, operands[0]);
   rtx lab = gen_rtx_MEM (Pmode, plus_constant (operands[0], 1*W));
   rtx stack = gen_rtx_MEM (Pmode, plus_constant (operands[0], 2*W));
   rtx gpv = gen_rtx_MEM (Pmode, plus_constant (operands[0], 3*W));
-  rtx pv = gen_rtx_REG (Pmode, 25);
-  rtx gp = gen_rtx_REG (Pmode, 28);
+  rtx pv = gen_rtx_REG (Pmode, PIC_FUNCTION_ADDR_REGNUM);
+  /* Use gen_raw_REG to avoid being given pic_offset_table_rtx.
+     The target is bound to be using $28 as the global pointer
+     but the current function might not be.  */
+  rtx gp = gen_raw_REG (Pmode, GLOBAL_POINTER_REGNUM);
 
-  /* This bit is the same as expand_builtin_longjmp.  */
+  /* This bit is similar to expand_builtin_longjmp except that it
+     restores $gp as well.  */
   emit_move_insn (hard_frame_pointer_rtx, fp);
   emit_move_insn (pv, lab);
   emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);

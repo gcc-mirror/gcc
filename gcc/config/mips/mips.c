@@ -231,12 +231,15 @@ static void mips_arg_info		PARAMS ((const CUMULATIVE_ARGS *,
 						 struct mips_arg_info *));
 static bool mips_get_unaligned_mem		PARAMS ((rtx *, unsigned int,
 							 int, rtx *, rtx *));
+static unsigned int mips_global_pointer		PARAMS ((void));
+static bool mips_save_reg_p			PARAMS ((unsigned int));
 static rtx mips_add_large_offset_to_sp		PARAMS ((HOST_WIDE_INT));
 static void mips_set_frame_expr			PARAMS ((rtx));
 static rtx mips_frame_set			PARAMS ((rtx, int));
 static void mips_emit_frame_related_store	PARAMS ((rtx, rtx,
 							 HOST_WIDE_INT));
 static void save_restore_insns			PARAMS ((int, rtx, long));
+static void mips_gp_insn			PARAMS ((rtx, rtx));
 static void mips16_fp_args			PARAMS ((FILE *, int, int));
 static void build_mips16_function_stub		PARAMS ((FILE *));
 static void mips16_optimize_gp			PARAMS ((rtx));
@@ -298,7 +301,6 @@ struct mips_frame_info GTY(())
   long total_size;		/* # bytes that the entire frame takes up */
   long var_size;		/* # bytes that variables take up */
   long args_size;		/* # bytes that outgoing arguments take up */
-  long extra_size;		/* # bytes of extra gunk */
   int  gp_reg_size;		/* # bytes needed to store gp regs */
   int  fp_reg_size;		/* # bytes needed to store fp regs */
   long mask;			/* mask of saved gp registers */
@@ -327,6 +329,9 @@ struct machine_function GTY(()) {
 
   /* Length of instructions in function; mips16 only.  */
   long insns_len;
+
+  /* The register to use as the global pointer within this function.  */
+  unsigned int global_pointer;
 };
 
 /* Information about a single argument.  */
@@ -890,7 +895,7 @@ mips_classify_constant (info, x)
     {
       x = XEXP (x, 0);
 
-      if (GET_CODE (x) == REG && REGNO (x) == GP_REG_FIRST + 28)
+      if (x == pic_offset_table_rtx)
 	return CONSTANT_GP;
 
       while (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == CONST_INT)
@@ -913,6 +918,8 @@ mips_classify_constant (info, x)
 	  case RELOC_CALL16:
 	  case RELOC_CALL_HI:
 	  case RELOC_CALL_LO:
+	  case RELOC_LOADGP_HI:
+	  case RELOC_LOADGP_LO:
 	    /* These relocations should be applied to bare symbols only.  */
 	    return (info->offset == 0 ? CONSTANT_RELOC : CONSTANT_NONE);
 	  }
@@ -3033,7 +3040,7 @@ mips_restore_gp (operands)
     loc = hard_frame_pointer_rtx;
   else
     loc = stack_pointer_rtx;
-  loc = plus_constant (loc, cfun->machine->frame.args_size);
+  loc = plus_constant (loc, current_function_outgoing_args_size);
   operands[1] = gen_rtx_MEM (ptr_mode, loc);
 
   return mips_output_move (operands[0], operands[1]);
@@ -5861,7 +5868,7 @@ mips_debugger_offset (addr, offset)
    '.'	Print the name of the register with a hard-wired zero (zero or $0).
    '^'	Print the name of the pic call-through register (t9 or $25).
    '$'	Print the name of the stack pointer register (sp or $29).
-   '+'	Print the name of the gp register (gp or $28).
+   '+'	Print the name of the gp register (usually gp or $28).
    '~'	Output a branch alignment to LABEL_ALIGN(NULL).  */
 
 void
@@ -5872,6 +5879,7 @@ print_operand (file, op, letter)
 {
   register enum rtx_code code;
   struct mips_constant_info c;
+  const char *reloc;
 
   if (PRINT_OPERAND_PUNCT_VALID_P (letter))
     {
@@ -5899,7 +5907,7 @@ print_operand (file, op, letter)
 	  break;
 
 	case '+':
-	  fputs (reg_names[GP_REG_FIRST + 28], file);
+	  fputs (reg_names[PIC_OFFSET_TABLE_REGNUM], file);
 	  break;
 
 	case '&':
@@ -6159,15 +6167,17 @@ print_operand (file, op, letter)
 	break;
 
       case CONSTANT_GP:
-	fputs (reg_names[GP_REG_FIRST + 28], file);
+	fputs (reg_names[PIC_OFFSET_TABLE_REGNUM], file);
 	break;
 
       case CONSTANT_RELOC:
-	fputs (mips_reloc_string (XINT (c.symbol, 1)), file);
+	reloc = mips_reloc_string (XINT (c.symbol, 1));
+	fputs (reloc, file);
 	output_addr_const (file, plus_constant (XVECEXP (c.symbol, 0, 0),
 						c.offset));
-	fputc (')', file);
-	break;
+	while (*reloc != 0)
+	  if (*reloc++ == '(')
+	    fputc (')', file);
       }
 }
 
@@ -6187,6 +6197,8 @@ mips_reloc_string (reloc)
     case RELOC_CALL16:	  return "%call16(";
     case RELOC_CALL_HI:	  return "%call_hi(";
     case RELOC_CALL_LO:	  return "%call_lo(";
+    case RELOC_LOADGP_HI: return "%hi(%neg(%gp_rel(";
+    case RELOC_LOADGP_LO: return "%lo(%neg(%gp_rel(";
     }
   abort ();
 }
@@ -6615,6 +6627,117 @@ mips_declare_object (stream, name, init_string, final_string, size)
     }
 }
 
+/* Return the register that should be used as the global pointer
+   within this function.  Return 0 if the function doesn't need
+   a global pointer.  */
+
+static unsigned int
+mips_global_pointer ()
+{
+  unsigned int regno;
+
+  /* $gp is always available in non-abicalls code.  */
+  if (!TARGET_ABICALLS)
+    return GLOBAL_POINTER_REGNUM;
+
+  /* We must always provide $gp when it is used implicitly.  */
+  if (!TARGET_EXPLICIT_RELOCS)
+    return GLOBAL_POINTER_REGNUM;
+
+  /* FUNCTION_PROFILER includes a jal macro, so we need to give it
+     a valid gp.  */
+  if (current_function_profile)
+    return GLOBAL_POINTER_REGNUM;
+
+  /* If the gp is never referenced, there's no need to initialize it.
+     Note that reload can sometimes introduce constant pool references
+     into a function that otherwise didn't need them.  For example,
+     suppose we have an instruction like:
+
+	  (set (reg:DF R1) (float:DF (reg:SI R2)))
+
+     If R2 turns out to be constant such as 1, the instruction may have a
+     REG_EQUAL note saying that R1 == 1.0.  Reload then has the option of
+     using this constant if R2 doesn't get allocated to a register.
+
+     In cases like these, reload will have added the constant to the pool
+     but no instruction will yet refer to it.  */
+  if (!regs_ever_live[GLOBAL_POINTER_REGNUM]
+      && !current_function_uses_const_pool)
+    return 0;
+
+  /* We need a global pointer, but perhaps we can use a call-clobbered
+     register instead of $gp.  */
+  if (TARGET_NEWABI && current_function_is_leaf)
+    for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
+      if (!regs_ever_live[regno]
+	  && call_used_regs[regno]
+	  && !fixed_regs[regno])
+	return regno;
+
+  return GLOBAL_POINTER_REGNUM;
+}
+
+
+/* Return true if the current function must save REGNO.  */
+
+static bool
+mips_save_reg_p (regno)
+     unsigned int regno;
+{
+  /* We only need to save $gp for NewABI PIC.  */
+  if (regno == GLOBAL_POINTER_REGNUM)
+    return (TARGET_ABICALLS && TARGET_NEWABI
+	    && cfun->machine->global_pointer == regno);
+
+  /* Check call-saved registers.  */
+  if (regs_ever_live[regno] && !call_used_regs[regno])
+    return true;
+
+  /* We need to save the old frame pointer before setting up a new one.  */
+  if (regno == HARD_FRAME_POINTER_REGNUM && frame_pointer_needed)
+    return true;
+
+  /* We need to save the incoming return address if it is ever clobbered
+     within the function.  */
+  if (regno == GP_REG_FIRST + 31 && regs_ever_live[regno])
+    return true;
+
+  if (TARGET_MIPS16)
+    {
+      tree return_type;
+
+      return_type = DECL_RESULT (current_function_decl);
+
+      /* $18 is a special case in mips16 code.  It may be used to call
+	 a function which returns a floating point value, but it is
+	 marked in call_used_regs.  */
+      if (regno == GP_REG_FIRST + 18 && regs_ever_live[regno])
+	return true;
+
+      /* $31 is also a special case.  When not using -mentry, it will be
+	 used to copy a return value into the floating point registers if
+	 the return value is floating point.  */
+      if (regno == GP_REG_FIRST + 31
+	  && mips16_hard_float
+	  && !mips_entry
+	  && !aggregate_value_p (return_type)
+	  && GET_MODE_CLASS (DECL_MODE (return_type)) == MODE_FLOAT
+	  && GET_MODE_SIZE (DECL_MODE (return_type)) <= UNITS_PER_FPVALUE)
+	return true;
+
+      /* The entry and exit pseudo instructions can not save $17
+	 without also saving $16.  */
+      if (mips_entry
+	  && regno == GP_REG_FIRST + 16
+	  && mips_save_reg_p (GP_REG_FIRST + 17))
+	return true;
+    }
+
+  return false;
+}
+
+
 /* Return the bytes needed to compute the frame pointer from the current
    stack pointer.
 
@@ -6676,21 +6799,26 @@ compute_frame_size (size)
   HOST_WIDE_INT total_size;	/* # bytes that the entire frame takes up */
   HOST_WIDE_INT var_size;	/* # bytes that variables take up */
   HOST_WIDE_INT args_size;	/* # bytes that outgoing arguments take up */
-  HOST_WIDE_INT extra_size;	/* # extra bytes */
   HOST_WIDE_INT gp_reg_rounded;	/* # bytes needed to store gp after rounding */
   HOST_WIDE_INT gp_reg_size;	/* # bytes needed to store gp regs */
   HOST_WIDE_INT fp_reg_size;	/* # bytes needed to store fp regs */
   long mask;			/* mask of saved gp registers */
   long fmask;			/* mask of saved fp registers */
-  tree return_type;
+
+  cfun->machine->global_pointer = mips_global_pointer ();
 
   gp_reg_size = 0;
   fp_reg_size = 0;
   mask = 0;
   fmask	= 0;
-  extra_size = MIPS_STACK_ALIGN (((TARGET_ABICALLS) ? UNITS_PER_WORD : 0));
   var_size = MIPS_STACK_ALIGN (size);
-  args_size = MIPS_STACK_ALIGN (current_function_outgoing_args_size);
+  args_size = MIPS_STACK_ALIGN (STARTING_FRAME_OFFSET);
+
+  /* The space set aside by STARTING_FRAME_OFFSET isn't needed in leaf
+     functions.  If the function has local variables, we're committed
+     to allocating it anyway.  Otherwise reclaim it here.  */
+  if (var_size == 0 && current_function_is_leaf)
+    args_size = 0;
 
   /* The MIPS 3.0 linker does not like functions that dynamically
      allocate the stack and have 0 for STACK_DYNAMIC_OFFSET, since it
@@ -6700,44 +6828,15 @@ compute_frame_size (size)
   if (args_size == 0 && current_function_calls_alloca)
     args_size = 4 * UNITS_PER_WORD;
 
-  total_size = var_size + args_size + extra_size;
-  return_type = DECL_RESULT (current_function_decl);
+  total_size = var_size + args_size;
 
   /* Calculate space needed for gp registers.  */
   for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
-    {
-      /* $18 is a special case on the mips16.  It may be used to call
-         a function which returns a floating point value, but it is
-         marked in call_used_regs.  $31 is also a special case.  When
-         not using -mentry, it will be used to copy a return value
-         into the floating point registers if the return value is
-         floating point.  */
-      if (MUST_SAVE_REGISTER (regno)
-	  || (TARGET_MIPS16
-	      && regno == GP_REG_FIRST + 18
-	      && regs_ever_live[regno])
-	  || (TARGET_MIPS16
-	      && regno == GP_REG_FIRST + 31
-	      && mips16_hard_float
-	      && ! mips_entry
-	      && ! aggregate_value_p (return_type)
-	      && GET_MODE_CLASS (DECL_MODE (return_type)) == MODE_FLOAT
-	      && GET_MODE_SIZE (DECL_MODE (return_type)) <= UNITS_PER_FPVALUE))
-	{
-	  gp_reg_size += GET_MODE_SIZE (gpr_mode);
-	  mask |= 1L << (regno - GP_REG_FIRST);
-
-	  /* The entry and exit pseudo instructions can not save $17
-	     without also saving $16.  */
-	  if (mips_entry
-	      && regno == GP_REG_FIRST + 17
-	      && ! MUST_SAVE_REGISTER (GP_REG_FIRST + 16))
-	    {
-	      gp_reg_size += UNITS_PER_WORD;
-	      mask |= 1L << 16;
-	    }
-	}
-    }
+    if (mips_save_reg_p (regno))
+      {
+	gp_reg_size += GET_MODE_SIZE (gpr_mode);
+	mask |= 1L << (regno - GP_REG_FIRST);
+      }
 
   /* We need to restore these for the handler.  */
   if (current_function_calls_eh_return)
@@ -6759,7 +6858,7 @@ compute_frame_size (size)
        regno >= FP_REG_FIRST;
        regno -= FP_INC)
     {
-      if (regs_ever_live[regno] && !call_used_regs[regno])
+      if (mips_save_reg_p (regno))
 	{
 	  fp_reg_size += FP_INC * UNITS_PER_FPREG;
 	  fmask |= ((1 << FP_INC) - 1) << (regno - FP_REG_FIRST);
@@ -6768,25 +6867,6 @@ compute_frame_size (size)
 
   gp_reg_rounded = MIPS_STACK_ALIGN (gp_reg_size);
   total_size += gp_reg_rounded + MIPS_STACK_ALIGN (fp_reg_size);
-
-  /* The gp reg is caller saved in the 32 bit ABI, so there is no need
-     for leaf routines (total_size == extra_size) to save the gp reg.
-     The gp reg is callee saved in the 64 bit ABI, so all routines must
-     save the gp reg.  This is not a leaf routine if -p, because of the
-     call to mcount.  */
-  if (total_size == extra_size
-      && (mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_EABI)
-      && ! current_function_profile)
-    total_size = extra_size = 0;
-  else if (TARGET_ABICALLS)
-    {
-      /* Add the context-pointer to the saved registers.  */
-      gp_reg_size += UNITS_PER_WORD;
-      mask |= 1L << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST);
-      total_size -= gp_reg_rounded;
-      gp_reg_rounded = MIPS_STACK_ALIGN (gp_reg_size);
-      total_size += gp_reg_rounded;
-    }
 
   /* Add in space reserved on the stack by the callee for storing arguments
      passed in registers.  */
@@ -6801,7 +6881,6 @@ compute_frame_size (size)
   cfun->machine->frame.total_size = total_size;
   cfun->machine->frame.var_size = var_size;
   cfun->machine->frame.args_size = args_size;
-  cfun->machine->frame.extra_size = extra_size;
   cfun->machine->frame.gp_reg_size = gp_reg_size;
   cfun->machine->frame.fp_reg_size = fp_reg_size;
   cfun->machine->frame.mask = mask;
@@ -6817,8 +6896,7 @@ compute_frame_size (size)
       /* When using mips_entry, the registers are always saved at the
          top of the stack.  */
       if (! mips_entry)
-	offset = (args_size + extra_size + var_size
-		  + gp_reg_size - GET_MODE_SIZE (gpr_mode));
+	offset = args_size + var_size + gp_reg_size - GET_MODE_SIZE (gpr_mode);
       else
 	offset = total_size - GET_MODE_SIZE (gpr_mode);
 
@@ -6833,7 +6911,7 @@ compute_frame_size (size)
 
   if (fmask)
     {
-      unsigned long offset = (args_size + extra_size + var_size
+      unsigned long offset = (args_size + var_size
 			      + gp_reg_rounded + fp_reg_size
 			      - FP_INC * UNITS_PER_FPREG);
       cfun->machine->frame.fp_sp_offset = offset;
@@ -6850,8 +6928,8 @@ compute_frame_size (size)
 }
 
 /* Implement INITIAL_ELIMINATION_OFFSET.  FROM is either the frame
-   pointer, argument pointer, or return address pointer.  TO is either
-   the stack pointer or hard frame pointer.  */
+   pointer or argument pointer.  TO is either the stack pointer or
+   hard frame pointer.  */
 
 int
 mips_initial_elimination_offset (from, to)
@@ -6995,7 +7073,6 @@ save_restore_insns (store_p, large_reg, large_offset)
 {
   long mask = cfun->machine->frame.mask;
   long fmask = cfun->machine->frame.fmask;
-  long real_mask = mask;
   int regno;
   rtx base_reg_rtx;
   HOST_WIDE_INT base_offset;
@@ -7006,12 +7083,6 @@ save_restore_insns (store_p, large_reg, large_offset)
   if (frame_pointer_needed
       && ! BITSET_P (mask, HARD_FRAME_POINTER_REGNUM - GP_REG_FIRST))
     abort ();
-
-  /* Do not restore GP under certain conditions.  */
-  if (! store_p
-      && TARGET_ABICALLS
-      && (mips_abi == ABI_32 || mips_abi == ABI_O64))
-    mask &= ~(1L << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST));
 
   if (mask == 0 && fmask == 0)
     return;
@@ -7124,11 +7195,8 @@ save_restore_insns (store_p, large_reg, large_offset)
 		    emit_move_insn (gen_rtx (REG, gpr_mode, regno),
 				    reg_rtx);
 		}
+	      gp_offset -= GET_MODE_SIZE (gpr_mode);
 	    }
-	  /* If the restore is being supressed, still take into account
-	     the offset at which it is stored.  */
-	  if (BITSET_P (real_mask, regno - GP_REG_FIRST))
-	    gp_offset -= GET_MODE_SIZE (gpr_mode);
 	}
     }
   else
@@ -7252,7 +7320,7 @@ mips_output_function_prologue (file, size)
     {
       /* .frame FRAMEREG, FRAMESIZE, RETREG */
       fprintf (file,
-	       "\t.frame\t%s,%ld,%s\t\t# vars= %ld, regs= %d/%d, args= %d, extra= %ld\n",
+	       "\t.frame\t%s,%ld,%s\t\t# vars= %ld, regs= %d/%d, args= %d, gp= %ld\n",
 	       (reg_names[(frame_pointer_needed)
 			  ? HARD_FRAME_POINTER_REGNUM : STACK_POINTER_REGNUM]),
 	       ((frame_pointer_needed && TARGET_MIPS16)
@@ -7263,7 +7331,8 @@ mips_output_function_prologue (file, size)
 	       cfun->machine->frame.num_gp,
 	       cfun->machine->frame.num_fp,
 	       current_function_outgoing_args_size,
-	       cfun->machine->frame.extra_size);
+	       cfun->machine->frame.args_size
+	       - current_function_outgoing_args_size);
 
       /* .mask MASK, GPOFFSET; .fmask FPOFFSET */
       fprintf (file, "\t.mask\t0x%08lx,%ld\n\t.fmask\t0x%08lx,%ld\n",
@@ -7392,25 +7461,33 @@ mips_output_function_prologue (file, size)
       fprintf (file, "\n");
     }
 
-  if (TARGET_ABICALLS && (mips_abi == ABI_32 || mips_abi == ABI_O64))
-    {
-      const char *const sp_str = reg_names[STACK_POINTER_REGNUM];
-
-      fprintf (file, "\t.set\tnoreorder\n\t.cpload\t%s\n\t.set\treorder\n",
-	       reg_names[PIC_FUNCTION_ADDR_REGNUM]);
-      if (tsize > 0)
-	{
-	  fprintf (file, "\t%s\t%s,%s,%ld\n",
-		   (ptr_mode == DImode ? "dsubu" : "subu"),
-		   sp_str, sp_str, (long) tsize);
-	  fprintf (file, "\t.cprestore %ld\n", cfun->machine->frame.args_size);
-	}
-
-      if (dwarf2out_do_frame ())
-	dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, tsize);
-    }
+  /* Handle the initialization of $gp for SVR4 PIC.  */
+  if (TARGET_ABICALLS && !TARGET_NEWABI && cfun->machine->global_pointer > 0)
+    fprintf (file, "\t.set\tnoreorder\n\t.cpload\t%s\n\t.set\treorder\n",
+	     reg_names[PIC_FUNCTION_ADDR_REGNUM]);
 }
 
+/* Emit an instruction to move SRC into DEST.  When generating
+   explicit reloc code, mark the instruction as potentially dead.  */
+
+static void
+mips_gp_insn (dest, src)
+     rtx dest, src;
+{
+  rtx insn;
+
+  insn = emit_insn (gen_rtx_SET (VOIDmode, dest, src));
+  if (TARGET_EXPLICIT_RELOCS)
+    {
+      /* compute_frame_size assumes that any function which uses the
+	 constant pool will need a gp.  However, all constant
+	 pool references could be eliminated, in which case
+	 it is OK for flow to delete the gp load as well.  */
+      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, const0_rtx,
+					    REG_NOTES (insn));
+    }
+}
+
 /* Expand the prologue into a bunch of separate insns.  */
 
 void
@@ -7431,6 +7508,9 @@ mips_expand_prologue ()
   rtx reg_18_save = NULL_RTX;
   int store_args_on_stack = (mips_abi == ABI_32 || mips_abi == ABI_O64)
                             && (! mips_entry || mips_can_use_return_insn ());
+
+  if (cfun->machine->global_pointer > 0)
+    REGNO (pic_offset_table_rtx) = cfun->machine->global_pointer;
 
   /* If struct value address is treated as the first argument, make it so.  */
   if (aggregate_value_p (DECL_RESULT (fndecl))
@@ -7558,10 +7638,6 @@ mips_expand_prologue ()
       int offset = (regno - GP_ARG_FIRST) * UNITS_PER_WORD;
       rtx ptr = stack_pointer_rtx;
 
-      /* If we are doing svr4-abi, sp has already been decremented by tsize.  */
-      if (TARGET_ABICALLS)
-	offset += tsize;
-
       for (; regno <= GP_ARG_LAST; regno++)
 	{
 	  if (offset != 0)
@@ -7657,8 +7733,7 @@ mips_expand_prologue ()
       /* If we are doing svr4-abi, sp move is done by
          function_prologue.  In mips16 mode with a large frame, we
          save the registers before adjusting the stack.  */
-      if ((!TARGET_ABICALLS || (mips_abi != ABI_32 && mips_abi != ABI_O64))
-	  && (!TARGET_MIPS16 || tsize <= 32767))
+      if (!TARGET_MIPS16 || tsize <= 32767)
 	{
 	  rtx adjustment_rtx;
 
@@ -7687,9 +7762,11 @@ mips_expand_prologue ()
       else if (reg_18_save != NULL_RTX)
 	emit_insn (reg_18_save);
 
-      if ((!TARGET_ABICALLS || (mips_abi != ABI_32 && mips_abi != ABI_O64))
-	  && TARGET_MIPS16
-	  && tsize > 32767)
+      if (TARGET_ABICALLS && !TARGET_NEWABI && !current_function_is_leaf)
+	emit_insn (gen_cprestore
+		   (GEN_INT (current_function_outgoing_args_size)));
+
+      if (TARGET_MIPS16 && tsize > 32767)
 	{
 	  rtx reg_rtx;
 
@@ -7718,9 +7795,7 @@ mips_expand_prologue ()
              instructions when using the frame pointer by pointing the
              frame pointer ahead of the argument space allocated on
              the stack.  */
-	  if ((! TARGET_ABICALLS || (mips_abi != ABI_32 && mips_abi != ABI_O64))
-	      && TARGET_MIPS16
-	      && tsize > 32767)
+	  if (TARGET_MIPS16 && tsize > 32767)
 	    {
 	      /* In this case, we have already copied the stack
                  pointer into the frame pointer, above.  We need only
@@ -7760,10 +7835,24 @@ mips_expand_prologue ()
 	  if (insn)
 	    RTX_FRAME_RELATED_P (insn) = 1;
 	}
+    }
 
-      if (TARGET_ABICALLS && (mips_abi != ABI_32 && mips_abi != ABI_O64))
-	emit_insn (gen_loadgp (XEXP (DECL_RTL (current_function_decl), 0),
-			       gen_rtx_REG (DImode, 25)));
+  if (TARGET_ABICALLS && TARGET_NEWABI && cfun->machine->global_pointer > 0)
+    {
+      rtx temp, fnsymbol, fnaddr;
+
+      temp = gen_rtx_REG (Pmode, MIPS_TEMP1_REGNUM);
+      fnsymbol = XEXP (DECL_RTL (current_function_decl), 0);
+      fnaddr = gen_rtx_REG (Pmode, PIC_FUNCTION_ADDR_REGNUM);
+
+      mips_gp_insn (temp, mips_lui_reloc (fnsymbol, RELOC_LOADGP_HI));
+      mips_gp_insn (temp, gen_rtx_PLUS (Pmode, temp, fnaddr));
+      mips_gp_insn (pic_offset_table_rtx,
+		    gen_rtx_PLUS (Pmode, temp,
+				  mips_reloc (fnsymbol, RELOC_LOADGP_LO)));
+
+      if (!TARGET_EXPLICIT_RELOCS)
+	emit_insn (gen_loadgp_blockage ());
     }
 
   /* If we are profiling, make sure no instructions are scheduled before
@@ -7824,6 +7913,9 @@ mips_output_function_epilogue (file, size)
   for (string = mips16_strings; string != 0; string = XEXP (string, 1))
     SYMBOL_REF_FLAG (XEXP (string, 0)) = 0;
   free_EXPR_LIST_list (&mips16_strings);
+
+  /* Reinstate the normal $gp.  */
+  REGNO (pic_offset_table_rtx) = GLOBAL_POINTER_REGNUM;
 }
 
 /* Expand the epilogue into a bunch of separate insns.  SIBCALL_P is true
@@ -8680,9 +8772,7 @@ mips16_gp_pseudo_reg ()
 
       /* We want to initialize this to a value which gcc will believe
          is constant.  */
-      const_gp = gen_rtx (CONST, Pmode,
-			  gen_rtx (REG, Pmode, GP_REG_FIRST + 28));
-
+      const_gp = gen_rtx_CONST (Pmode, pic_offset_table_rtx);
       start_sequence ();
       emit_move_insn (cfun->machine->mips16_gp_pseudo_rtx,
 		      const_gp);
@@ -9223,8 +9313,7 @@ mips16_optimize_gp (first)
 
       if (gpcopy == NULL_RTX
 	  && GET_CODE (SET_SRC (set)) == CONST
-	  && GET_CODE (XEXP (SET_SRC (set), 0)) == REG
-	  && REGNO (XEXP (SET_SRC (set), 0)) == GP_REG_FIRST + 28
+	  && XEXP (SET_SRC (set), 0) == pic_offset_table_rtx
 	  && GET_CODE (SET_DEST (set)) == REG)
 	gpcopy = SET_DEST (set);
       else if (slot == NULL_RTX
@@ -9249,9 +9338,7 @@ mips16_optimize_gp (first)
 	       && (GET_CODE (SET_DEST (set)) != REG
 		   || REGNO (SET_DEST (set)) != REGNO (gpcopy)
 		   || ((GET_CODE (SET_SRC (set)) != CONST
-			|| GET_CODE (XEXP (SET_SRC (set), 0)) != REG
-			|| (REGNO (XEXP (SET_SRC (set), 0))
-			    != GP_REG_FIRST + 28))
+			|| XEXP (SET_SRC (set), 0) != pic_offset_table_rtx)
 		       && ! rtx_equal_p (SET_SRC (set), slot))))
 	break;
       else if (slot != NULL_RTX
@@ -9324,8 +9411,7 @@ mips16_optimize_gp (first)
 
 	  if (GET_CODE (SET_DEST (set1)) == REG
 	      && GET_CODE (SET_SRC (set1)) == CONST
-	      && GET_CODE (XEXP (SET_SRC (set1), 0)) == REG
-	      && REGNO (XEXP (SET_SRC (set1), 0)) == GP_REG_FIRST + 28
+	      && XEXP (SET_SRC (set1), 0) == pic_offset_table_rtx
 	      && rtx_equal_p (SET_DEST (set1), SET_DEST (set2))
 	      && GET_CODE (SET_SRC (set2)) == PLUS
 	      && rtx_equal_p (SET_DEST (set1), XEXP (SET_SRC (set2), 0))
@@ -9387,13 +9473,11 @@ mips16_optimize_gp (first)
 	       && rtx_equal_p (SET_SRC (set), slot))
 	{
 	  enum machine_mode mode;
+	  rtx src;
 
 	  mode = GET_MODE (SET_DEST (set));
-	  emit_insn_after (gen_rtx (SET, VOIDmode, SET_DEST (set),
-				    gen_rtx (CONST, mode,
-					     gen_rtx (REG, mode,
-						      GP_REG_FIRST + 28))),
-			   insn);
+	  src = gen_rtx_CONST (mode, pic_offset_table_rtx);
+	  emit_insn_after (gen_rtx_SET (VOIDmode, SET_DEST (set), src), insn);
 	  PUT_CODE (insn, NOTE);
 	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	  NOTE_SOURCE_FILE (insn) = 0;
