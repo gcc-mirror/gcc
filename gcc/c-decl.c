@@ -6728,6 +6728,7 @@ c_expand_body (fndecl, nested_p)
 
   /* Initialize the RTL code for the function.  */
   current_function_decl = fndecl;
+  input_filename = DECL_SOURCE_FILE (fndecl);
   init_function_start (fndecl, input_filename, DECL_SOURCE_LINE (fndecl));
 
   /* This function is being processed in whole-function mode.  */

@@ -1781,13 +1781,23 @@ simple_if:
 	;
 
 if_prefix:
-	  IF '(' expr ')'
-		{ c_expand_start_cond (truthvalue_conversion ($3), 
-				       compstmt_count);
+	  /* We must build the IF_STMT node before parsing its
+	     condition so that STMT_LINENO refers to the line
+	     containing the "if", and not the line containing
+	     the close-parenthesis.
+
+	     c_begin_if_stmt returns the IF_STMT node, which
+	     we later pass to c_expand_start_cond to fill
+	     in the condition and other tidbits.  */
+          IF
+                { $<ttype>$ = c_begin_if_stmt (); }
+            '(' expr ')'
+		{ c_expand_start_cond (truthvalue_conversion ($4), 
+				       compstmt_count,$<ttype>2);
 		  $<itype>$ = stmt_count;
 		  if_stmt_file = $<filename>-2;
 		  if_stmt_line = $<lineno>-1; }
-	;
+        ;
 
 /* This is a subroutine of stmt.
    It is used twice, once for valid DO statements
@@ -1882,12 +1892,22 @@ select_or_iter_stmt:
    Otherwise a crash is likely.  */
 	| simple_if ELSE error
 		{ c_expand_end_cond (); }
+       /* We must build the WHILE_STMT node before parsing its
+	  condition so that STMT_LINENO refers to the line
+	  containing the "while", and not the line containing
+	  the close-parenthesis.
+
+	  c_begin_while_stmt returns the WHILE_STMT node, which
+	  we later pass to c_finish_while_stmt_cond to fill
+	  in the condition and other tidbits.  */
 	| WHILE
-                { stmt_count++; }
+                { stmt_count++; 
+		  $<ttype>$ = c_begin_while_stmt (); }
 	  '(' expr ')'
                 { $4 = truthvalue_conversion ($4);
-		  $<ttype>$ 
-		    = add_stmt (build_stmt (WHILE_STMT, $4, NULL_TREE)); }
+		  c_finish_while_stmt_cond (truthvalue_conversion ($4),
+					    $<ttype>2);
+		  $<ttype>$ = add_stmt ($<ttype>2); }
 	  c99_block_lineno_labeled_stmt
 		{ RECHAIN_STMTS ($<ttype>6, WHILE_BODY ($<ttype>6)); }
 	| do_stmt_start

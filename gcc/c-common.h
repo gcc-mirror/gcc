@@ -329,6 +329,9 @@ extern tree walk_stmt_tree			PARAMS ((tree *,
 extern void prep_stmt                           PARAMS ((tree));
 extern void expand_stmt                         PARAMS ((tree));
 extern void mark_stmt_tree                      PARAMS ((void *));
+extern tree c_begin_if_stmt			PARAMS ((void));
+extern tree c_begin_while_stmt			PARAMS ((void));
+extern void c_finish_while_stmt_cond		PARAMS ((tree, tree));
 
 /* Extra information associated with a DECL.  Other C dialects extend
    this structure in various ways.  The C front-end only uses this
@@ -497,7 +500,7 @@ extern void c_apply_type_quals_to_decl		PARAMS ((int, tree));
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error			PARAMS ((enum tree_code));
 extern tree c_expand_expr_stmt			PARAMS ((tree));
-extern void c_expand_start_cond			PARAMS ((tree, int));
+extern void c_expand_start_cond			PARAMS ((tree, int, tree));
 extern void c_finish_then                       PARAMS ((void));
 extern void c_expand_start_else			PARAMS ((void));
 extern void c_finish_else                   PARAMS ((void));

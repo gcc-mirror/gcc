@@ -252,15 +252,20 @@ static int if_stack_space = 0;
 static int if_stack_pointer = 0;
 
 /* Record the start of an if-then, and record the start of it
-   for ambiguous else detection.  */
+   for ambiguous else detection.
+
+   COND is the condition for the if-then statement.
+
+   IF_STMT is the statement node that has already been created for
+   this if-then statement.  It is created before parsing the
+   condition to keep line number information accurate.  */
 
 void
-c_expand_start_cond (cond, compstmt_count)
+c_expand_start_cond (cond, compstmt_count, if_stmt)
      tree cond;
      int compstmt_count;
+     tree if_stmt;
 {
-  tree if_stmt;
-
   /* Make sure there is enough space on the stack.  */
   if (if_stack_space == 0)
     {
@@ -273,7 +278,6 @@ c_expand_start_cond (cond, compstmt_count)
       if_stack = (if_elt *)xrealloc (if_stack, if_stack_space * sizeof (if_elt));
     }
 
-  if_stmt = build_stmt (IF_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
   IF_COND (if_stmt) = cond;
   add_stmt (if_stmt);
 
@@ -337,6 +341,46 @@ c_finish_else ()
 {
   tree if_stmt = if_stack[if_stack_pointer - 1].if_stmt;
   RECHAIN_STMTS (if_stmt, ELSE_CLAUSE (if_stmt));
+}
+
+/* Begin an if-statement.  Returns a newly created IF_STMT if
+   appropriate.
+
+   Unlike the C++ front-end, we do not call add_stmt here; it is
+   probably safe to do so, but I am not very familiar with this
+   code so I am being extra careful not to change its behavior
+   beyond what is strictly necessary for correctness.  */
+
+tree
+c_begin_if_stmt ()
+{
+  tree r;
+  r = build_stmt (IF_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
+  return r;
+}
+
+/* Begin a while statement.  Returns a newly created WHILE_STMT if
+   appropriate.
+
+   Unlike the C++ front-end, we do not call add_stmt here; it is
+   probably safe to do so, but I am not very familiar with this
+   code so I am being extra careful not to change its behavior
+   beyond what is strictly necessary for correctness.  */
+
+tree
+c_begin_while_stmt ()
+{
+  tree r;
+  r = build_stmt (WHILE_STMT, NULL_TREE, NULL_TREE);
+  return r;
+}
+
+void
+c_finish_while_stmt_cond (cond, while_stmt)
+     tree while_stmt;
+     tree cond;
+{
+  WHILE_COND (while_stmt) = cond;
 }
 
 /* Make bindings for __FUNCTION__, __PRETTY_FUNCTION__, and __func__.  */

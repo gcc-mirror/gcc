@@ -1,3 +1,20 @@
+2002-01-31  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c (c_expand_body): Reset input_filename from
+	DECL_SOURCE_FILE (fndecl) before calling init_function_start.
+
+2002-01-31  Jeffrey A Law  <law@redhat.com>
+
+	* c-common.c (c_expand_start_cond): Expect the IF_STMT node to
+	be passed in, do not build it.
+	(c_begin_if_stmt): New function.
+	(c_begin_while_stmt, c_finish_while_stmt_cond): Likewise.
+	* c-common.h (c_expand_start_cond): Update prototype.
+	(c_begin_if_stmt): Prototype new function.
+	(c_begin_while_stmt, c_finish_while_stmt_cond): Likewise.
+	* c-parse.in (if_prefix): Use c_begin_if_stmt,
+	c_begin_while_stmt and c_finish_while_stmt_cond.
+
 2002-01-31  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/gcc.1: Regenerate.
