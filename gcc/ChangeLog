@@ -7,6 +7,9 @@
 
 Wed Feb 16 21:07:53 2000  Denis Chertykov  <denisc@overta.ru>
 
+	* configure.in: Add support for avr target.
+	* configure: Rebuilt.
+
 	* invoke.texi: Add AVR invocation docs.
 	* install.texi: Add information about AVR.
 	* md.texi: Add AVR constraint letters description.
