@@ -2718,9 +2718,7 @@ __clear_cache (char *beg, char *end)
 
 /* Jump to a trampoline, loading the static chain address.  */
 
-#ifdef WINNT
-
-#ifndef __CYGWIN32__
+#if defined(WINNT) && ! defined(__CYGWIN32__)
 
 long getpagesize()
 {
@@ -2731,28 +2729,32 @@ long getpagesize()
 #endif
 }
 
-#endif
-
 #ifdef i386
 extern int VirtualProtect (char *, int, int, int *) __attribute__((stdcall));
 #endif
 
-int mprotect(char *addr, int len, int prot)
+int
+mprotect (char *addr, int len, int prot)
 {
   int np, op;
 
-  if (prot == 7) np = 0x40;
-  else if (prot == 5) np = 0x20;
-  else if (prot == 4) np = 0x10;
-  else if (prot == 3) np = 0x04;
-  else if (prot == 1) np = 0x02;
-  else if (prot == 0) np = 0x01;
+  if (prot == 7)
+    np = 0x40;
+  else if (prot == 5)
+    np = 0x20;
+  else if (prot == 4)
+    np = 0x10;
+  else if (prot == 3)
+    np = 0x04;
+  else if (prot == 1)
+    np = 0x02;
+  else if (prot == 0)
+    np = 0x01;
 
   if (VirtualProtect (addr, len, np, &op))
     return 0;
   else
     return -1;
-    
 }
 
 #endif
