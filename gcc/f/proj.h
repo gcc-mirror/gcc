@@ -66,6 +66,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "config.j"		/* Must come before any other #includes in gcc. */
 #include "assert.j"		/* Use gcc's assert.h. */
+#include <ctype.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
