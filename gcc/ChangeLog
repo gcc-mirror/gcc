@@ -1,5 +1,10 @@
 2000-04-13  Andreas Jaeger  <aj@suse.de>
 
+	* config/mips/linux.h (CPP_PREDEFINES): Also define __PIC__ and
+	__pic__ for little endian.
+
+2000-04-13  Andreas Jaeger  <aj@suse.de>
+
 	* config/i386/i386-protos.h: Add prototype for
 	uno_comparison_operator.
 

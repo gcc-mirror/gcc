@@ -64,7 +64,7 @@ Boston, MA 02111-1307, USA.  */
 #if TARGET_ENDIAN_DEFAULT == 0
 #define CPP_PREDEFINES "-DMIPSEL -D_MIPSEL -Dunix -Dmips -D_mips \
 -DR3000 -D_R3000 -Dlinux -Asystem(posix) -Acpu(mips) \
--Amachine(mips) -D__ELF__"
+-Amachine(mips) -D__ELF__ -D__PIC__ -D__pic__"
 #else
 #define CPP_PREDEFINES "-DMIPSEB -D_MIPSEB -Dunix -Dmips -D_mips \
 -DR3000 -D_R3000 -Dlinux -Asystem(posix) -Acpu(mips) \
@@ -169,6 +169,7 @@ Boston, MA 02111-1307, USA.  */
 %{!fno-PIC:%{!fno-pic:-KPIC}} \
 %{fno-PIC:-non_shared} %{fno-pic:-non_shared}"
 
+#if 0
 /* Undefine the following which were defined in elf.h.  This will cause the linux
    port to continue to use collect2 for constructors/destructors.  These may be removed
    when .ctor/.dtor section support is desired. */
@@ -196,5 +197,5 @@ Boston, MA 02111-1307, USA.  */
 #undef CTOR_LIST_END
 #undef DTOR_LIST_BEGIN
 #undef DTOR_LIST_END
-
+#endif
 /*  End of undefines to turn off .ctor/.dtor section support */
