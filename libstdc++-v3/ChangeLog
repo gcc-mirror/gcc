@@ -1,3 +1,8 @@
+2003-04-04  Jerry Quinn  <jlquinn@optonline.net>
+
+	* src/ios.cc (ios_base::_M_init): Remove _M_callbacks
+	initialization.
+
 2003-03-31  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/ext/stdio_filebuf.h
