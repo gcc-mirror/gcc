@@ -3450,7 +3450,9 @@ check_class_interface_creation (is_interface, flags, raw_name, qualified_name, d
       else
 	{
 	  check_modifiers_consistency (flags);
-	  icaf = ACC_PRIVATE|ACC_PROTECTED;
+	  icaf = ACC_PROTECTED;
+	  if (! CLASS_INTERFACE (GET_CPC ()))
+	    icaf |= ACC_PRIVATE;
 	}
     }
 
@@ -3738,6 +3740,11 @@ create_interface (flags, id, super)
   tree q_name = parser_qualified_classname (raw_name);
   tree decl = IDENTIFIER_CLASS_VALUE (q_name);
 
+  /* Certain syntax errors are making SUPER be like ID. Avoid this
+     case. */
+  if (ctxp->class_err && id == super)
+    super = NULL;
+
   EXPR_WFL_NODE (id) = q_name;	/* Keep source location, even if refined. */
 
   /* Basic checks: scope, redefinition, modifiers */ 
@@ -3750,7 +3757,12 @@ create_interface (flags, id, super)
   /* Suspend the current parsing context if we're parsing an inner
      interface */
   if (CPC_INNER_P ())
-    java_parser_context_suspend ();
+    {
+      java_parser_context_suspend ();
+      /* Interface members are public. */
+      if (CLASS_INTERFACE (GET_CPC ()))
+	flags |= ACC_PUBLIC;
+    }
 
   /* Push a new context for (static) initialized upon declaration fields */
   java_parser_context_push_initialized_field ();
@@ -3870,6 +3882,11 @@ create_class (flags, id, super, interfaces)
   tree class_id, decl;
   tree super_decl_type;
 
+  /* Certain syntax errors are making SUPER be like ID. Avoid this
+     case. */
+  if (ctxp->class_err && id == super)
+    super = NULL;
+
   class_id = parser_qualified_classname (raw_name);
   decl = IDENTIFIER_CLASS_VALUE (class_id);
   EXPR_WFL_NODE (id) = class_id;
@@ -3884,7 +3901,13 @@ create_class (flags, id, super, interfaces)
   /* Suspend the current parsing context if we're parsing an inner
      class or an anonymous class. */
   if (CPC_INNER_P ())
-    java_parser_context_suspend ();
+    {
+      java_parser_context_suspend ();
+      /* Interface members are public. */
+      if (CLASS_INTERFACE (GET_CPC ()))
+	flags |= ACC_PUBLIC;
+    }
+    
   /* Push a new context for (static) initialized upon declaration fields */
   java_parser_context_push_initialized_field ();
 
@@ -7336,7 +7359,9 @@ java_reorder_fields ()
 	  }
       }
     }
-  stop_reordering = TREE_TYPE (TREE_VALUE (gclass_list));
+  /* There are cases were gclass_list will be empty. */
+  if (gclass_list)
+    stop_reordering = TREE_TYPE (TREE_VALUE (gclass_list));
 }
 
 /* Layout the methods of all classes loaded in one way or another.
@@ -11367,6 +11392,8 @@ java_complete_lhs (node)
 	}
 
       cn = fold (convert (int_type_node, cn));
+      TREE_CONSTANT_OVERFLOW (cn) = 0;
+      CAN_COMPLETE_NORMALLY (cn) = 1;
 
       /* Multiple instance of a case label bearing the same
 	 value is checked during code generation. The case

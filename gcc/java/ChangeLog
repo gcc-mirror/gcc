@@ -1,3 +1,9 @@
+2001-07-18  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (create_interface): Avoid cyclic inheritance report when
+	syntax error encountered during class definition.
+	Fixes PR java/2956
+
 2001-07-18  Tom Tromey  <tromey@redhat.com>
 
 	For PR java/2812:
@@ -7,9 +13,31 @@
 	* Make-lang.in (jc1$(exeext)): Link against LIBICONV.
 	(jv-scan$(exeext)): Likewise.
 
+2001-07-17  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.h (INTERFACE_INNER_MODIFIERS): Disallow `private.'
+	* parse.y (check_class_interface_creation): Allow `private' if the
+	enclosing is not an interface.
+	(create_interface): Interface tagged public if the enclosing
+	context	is an interface.
+	(create_class): Class tagged public if the enclosing context
+	is an interface.
+	Fixes PR java/2959
+
+2001-07-17  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* class.c (push_class): Set DECL_SIZE to `integer_zero_node.'
+	Fixes PR java/2665
+
 2001-07-14  Tim Josling  <tej@melbpc.org.au>
 
 	* check-init.c (check_init): Remove references to EXPON_EXPR.
+
+2001-07-13  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (java_complete_lsh): Set CAN_COMPLETE_NORMALLY and unset
+	TREE_CONSTANT_OVERFLOW of CASE_EXPR value.
+	Fixes PR java/3602
 
 2001-07-13  Tom Tromey  <tromey@redhat.com>
 
