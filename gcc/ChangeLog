@@ -1,3 +1,7 @@
+2001-05-06  Zack Weinberg  <zackw@stanford.edu>
+
+	* Makefile.in (tradcpp0): Correct typo in dependency list.
+
 2001-05-06  Geoff Keating  <geoffk@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_prologue): Don't save
