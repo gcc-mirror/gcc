@@ -1,3 +1,10 @@
+2004-03-11  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/std/std_complex.h (pow(const complex&, const _Tp&),
+	pow(const _Tp&, const complex&), pow(const complex&,
+	const complex&)): Fully qualify with std:: a few calls.
+	* testsuite/26_numerics/complex/13450.cc: Minor tweak.
+
 2004-03-11  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
 	PR libstdc++/11706
