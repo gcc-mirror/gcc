@@ -1533,8 +1533,9 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (gt (match_operand:SI 0 "general_operand" "+g")
-	     (const_int 1))
+	 (gt (plus:SI (match_operand:SI 0 "general_operand" "+g")
+		      (const_int -1))
+	     (const_int 0))
 	 (label_ref (match_operand 1 "" ""))
 	 (pc)))
    (set (match_dup 0)
@@ -1546,8 +1547,9 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (ge (match_operand:SI 0 "general_operand" "+g")
-	     (const_int 1))
+	 (ge (plus:SI (match_operand:SI 0 "general_operand" "+g")
+		      (const_int -1))
+	     (const_int 0))
 	 (label_ref (match_operand 1 "" ""))
 	 (pc)))
    (set (match_dup 0)

@@ -2459,7 +2459,7 @@ write_test_expr (exp, in_comparison)
 	  printf (" / ");
 	  break;
 	case MOD:
-	  printf (" % ");
+	  printf (" %% ");
 	  break;
 	case AND:
 	  if (in_comparison)
@@ -3025,8 +3025,7 @@ write_eligible_delay (kind)
 
   if (num_delays > 1)
     {
-      sprintf (str, "*delay_type", kind);
-      attr = find_attr (str, 0);
+      attr = find_attr ("*delay_type", 0);
       if (! attr) abort ();
       common_av = find_most_used (attr);
 
