@@ -2736,6 +2736,9 @@ build_new (placement, decl, init, use_global_new)
 	  if (placement)
 	    flags |= LOOKUP_SPECULATIVELY;
 
+	  /* Copy size to the saveable obstack.  */
+	  size = copy_node (size);
+
 	  cleanup = build_op_delete_call (dcode, alloc_expr, size, flags);
 
 	  resume_momentary (yes);

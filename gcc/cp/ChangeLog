@@ -1,3 +1,7 @@
+Tue Nov 25 11:28:21 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (build_new): Copy size to the saveable obstack.
+
 Mon Nov 24 12:15:55 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* init.c (build_new): Stick a CLEANUP_POINT_EXPR inside the
