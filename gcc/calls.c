@@ -3521,15 +3521,29 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 #endif
 #endif
 
-  /* No library functions can throw.  */
+  /* By default, library functions can not throw.  */
   flags = ECF_NOTHROW;
 
-  if (fn_type == LCT_CONST_MAKE_BLOCK)
-    flags |= ECF_CONST;
-  else if (fn_type == LCT_PURE_MAKE_BLOCK)
-    flags |= ECF_PURE;
-  else if (fn_type == LCT_NORETURN)
-    flags |= ECF_NORETURN;
+  switch (fn_type)
+    {
+    case LCT_NORMAL:
+    case LCT_CONST:
+    case LCT_PURE:
+      /* Nothing to do here.  */
+      break;
+    case LCT_CONST_MAKE_BLOCK:
+      flags |= ECF_CONST;
+      break;
+    case LCT_PURE_MAKE_BLOCK:
+      flags |= ECF_PURE;
+      break;
+    case LCT_NORETURN:
+      flags |= ECF_NORETURN;
+      break;
+    case LCT_THROW:
+      flags = ECF_NORETURN;
+      break;
+    }
   fun = orgfun;
 
 #ifdef PREFERRED_STACK_BOUNDARY

@@ -1818,7 +1818,7 @@ connect_post_landing_pads ()
       if (outer)
 	emit_jump (outer->post_landing_pad);
       else
-	emit_library_call (unwind_resume_libfunc, LCT_NORETURN,
+	emit_library_call (unwind_resume_libfunc, LCT_THROW,
 			   VOIDmode, 1, cfun->eh->exc_ptr, Pmode);
 
       seq = get_insns ();
