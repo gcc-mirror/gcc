@@ -1,3 +1,8 @@
+2004-10-13  Paolo Bonzini  <bonzini@gnu.org>
+
+	* tree-dump.c (dump_options): Remove TDF_TREE, TDF_RTL,
+	TDF_IPA from -fdump-tree-*-all.
+
 2004-10-13  Paul Brook  <paul@codesourcery.com>
 
 	* config/arm/arm-protos.h (arm_load_pic_register): Update prototype.
