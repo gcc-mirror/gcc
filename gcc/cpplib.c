@@ -6511,7 +6511,7 @@ cpp_handle_option (pfile, argc, argv)
     case 't':
       if (!strcmp (argv[i], "-traditional")) {
 	opts->traditional = 1;
-        opts->cplusplus_comments = 0;
+	opts->cplusplus_comments = 0;
       } else if (!strcmp (argv[i], "-trigraphs")) {
 	if (!opts->chill)
 	  opts->no_trigraphs = 0;
@@ -6816,7 +6816,7 @@ cpp_handle_option (pfile, argc, argv)
 	opts->out_fname = "";
 	break;
       }	/* else fall through into error */
-      
+
     default:
       return i;
     }

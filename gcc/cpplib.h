@@ -19,6 +19,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  In other words, you are welcome to use, share and improve this program.
  You are forbidden to forbid anyone else to use, share and improve
  what you give them.   Help stamp out software-hoarding!  */
+#ifndef __GCC_CPPLIB__
+#define __GCC_CPPLIB__
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -686,3 +688,5 @@ extern void cpp_print_containing_files PROTO ((cpp_reader *));
 #ifdef __cplusplus
 }
 #endif
+#endif /* __GCC_CPPLIB__ */
+
