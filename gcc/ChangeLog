@@ -1,3 +1,7 @@
+2002-11-06  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/sparc/freebsd: Fix typo.
+
 2002-11-06  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa64-hpux.h (LDD_SUFFIX, PARSE_LDD_OUTPUT): Define.
