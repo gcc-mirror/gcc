@@ -1,3 +1,54 @@
+2004-07-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (lang_type_class): Remove has_real_assign_ref and
+	has_abstract_assign_ref.  Make methods a VEC(tree) *.
+	(TYPE_HAS_CONST_ASSIGN_REF): Add documentation.
+	(CLASSTYPE_CONSTRUCTORS): Adjust for changes to CLASSTYPE_METHOD_VEC.
+	(CLASSTYPE_DESTRUCTORS): Likewise.
+	(TYPE_HAS_REAL_ASSIGN_REF): Remove.
+	(TYPE_HAS_ABSTRACT_ASSIGN_REF): Likewise.
+	(add_method): Change prototoype.
+	* class.c (add_method): Remove error_p parameter.  Adjust for
+	changes to CLASSTYPE_METHOD_VEC.
+	(handle_using_decl): Adjust call to add_method.
+	(maybe_warn_about_overly_private_class): Adjust for
+	changes to CLASSTYPE_METHOD_VEC.
+	(resort_type_method_vec): Likewise.
+	(finish_struct_methods): Likewise.
+	(check_for_override): Likewise.
+	(warn_hidden): Likewise.
+	(add_implicitly_declared_members): Defer creation of assignment
+	operators.  Adjust call to add_method.
+	(clone_function_decl): Adjust call to add_method.
+	(check_bases_and_members): Don't set TYPE_HAS_REAL_ASSIGN_REF.
+	(finish_struct_1): Use CLASSTYPE_DESTRUCTORS.
+	* decl.c (grok_special_member_properties): Don't set
+	TYPE_HAS_ABSTRACT_ASSIGN_REF.
+	* decl2.c (check_classfn): Adjust for
+	changes to CLASSTYPE_METHOD_VEC.
+	* method.c (locate_dtor): Use CLASSTYPE_DESTRUCTORS.
+	(locate_ctor): Use CLASSTYPE_CONSTRUCTORS.
+	(locate_copy): Adjust for changes to CLASSTYPE_METHOD_VEC.
+	(implicitly_declare_fn): Set DECL_SOURCE_LOCATION.  Do not call
+	cp_finish_decl.
+	* pt.c (check_explicit_specialization): Adjust for
+	changes to CLASSTYPE_METHOD_VEC.
+	(instantiate_class_template): Do not set
+	TYPE_HAS_ABSTRACT_ASSIGN_REF.
+	* ptree.c (cxx_print_type): Don't try to print
+	CLASSTYPE_METHOD_VEC.
+	* rtti.c (emit_support_tinfos): Use CLASSTYPE_DESTRUCTORS.
+	* search.c (lookup_field_r): Adjust for
+	changes to CLASSTYPE_METHOD_VEC.
+	(lookup_fnfields): Likewise.
+	(lookup_conversion_operator): Likewise.
+	(lookup_fnfields_1): Likewise.  Create assignment operators
+	lazily.
+	(look_for_overrides_here): Adjust for
+	changes to CLASSTYPE_METHOD_VEC.
+	(add_conversions): Likewise.
+	* semantics.c (finish_member_declaration): Adjust call to add_method.
+
 2004-07-15  Jason Merrill  <jason@redhat.com>
 
 	* cp-lang.c (cxx_types_compatible_p): To the middle-end,
@@ -13,7 +64,7 @@
 	(copy_binfo): Declare.
 
 2004-07-15  Mark Mitchell  <mark@codesourcery.com>
-
+	
 	* name-lookup.c (set_inherited_value_binding_p): Add class_type 
 	parameter.
 	(get_class_binding): Adjust.

@@ -244,6 +244,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    removed object.  This is an O(1) operation.  */
 #define VEC_unordered_remove(TDEF,V,I)	(VEC_OP(TDEF,unordered_remove)(V,I))
 
+/* Get the address of the array of elements
+   T *VEC_T_address (VEC(T) v)
+
+   If you need to directly manipulate the array (for instance, you
+   want to feed it to qsort), use this accessor.  */
+#define VEC_address(TDEF,V)		(VEC_OP(TDEF,address)(V))
+
 #if !IN_GENGTYPE
 /* Reallocate an array of elements with prefix.  */
 extern void *vec_p_reserve (void *, int MEM_STAT_DECL);
@@ -449,6 +456,12 @@ static inline TDEF VEC_OP (TDEF,unordered_remove)			  \
   return obj_;								  \
 }									  \
 									  \
+static inline TDEF *VEC_OP (TDEF,address)				  \
+     (VEC (TDEF) *vec_)							  \
+{									  \
+  return vec_ ? vec_->vec : 0;						  \
+}									  \
+									  \
 struct vec_swallow_trailing_semi
 #endif
 
@@ -610,6 +623,12 @@ static inline void VEC_OP (TDEF,unordered_remove)			  \
 {									  \
   VEC_ASSERT (ix_ < vec_->num, "remove", TDEF);				  \
   vec_->vec[ix_] = vec_->vec[--vec_->num];				  \
+}									  \
+									  \
+static inline TDEF *VEC_OP (TDEF,address)				  \
+     (VEC (TDEF) *vec_)							  \
+{									  \
+  return vec_ ? vec_->vec : 0;						  \
 }									  \
 									  \
 struct vec_swallow_trailing_semi

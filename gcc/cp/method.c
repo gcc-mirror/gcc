@@ -825,13 +825,7 @@ synthesize_exception_spec (tree type, tree (*extractor) (tree, void*),
 static tree
 locate_dtor (tree type, void *client ATTRIBUTE_UNUSED)
 {
-  tree fns;
-  
-  if (!TYPE_HAS_DESTRUCTOR (type))
-    return NULL_TREE;
-  fns = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type),
-                      CLASSTYPE_DESTRUCTOR_SLOT);
-  return fns;
+  return CLASSTYPE_DESTRUCTORS (type);
 }
 
 /* Locate the default ctor of TYPE.  */
@@ -843,10 +837,8 @@ locate_ctor (tree type, void *client ATTRIBUTE_UNUSED)
   
   if (!TYPE_HAS_DEFAULT_CONSTRUCTOR (type))
     return NULL_TREE;
-  
-  fns = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type),
-                      CLASSTYPE_CONSTRUCTOR_SLOT);
-  for (; fns; fns = OVL_NEXT (fns))
+
+  for (fns = CLASSTYPE_CONSTRUCTORS (type); fns; fns = OVL_NEXT (fns))
     {
       tree fn = OVL_CURRENT (fns);
       tree parms = TYPE_ARG_TYPES (TREE_TYPE (fn));
@@ -885,7 +877,7 @@ locate_copy (tree type, void *client_)
     ix = CLASSTYPE_CONSTRUCTOR_SLOT;
   if (ix < 0)
     return NULL_TREE;
-  fns = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), ix);
+  fns = VEC_index (tree, CLASSTYPE_METHOD_VEC (type), ix);
   
   for (; fns; fns = OVL_NEXT (fns))
     {
@@ -989,6 +981,7 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
   if (raises)
     fn_type = build_exception_variant (fn_type, raises);
   fn = build_lang_decl (FUNCTION_DECL, name, fn_type);
+  DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (TYPE_NAME (type));
   if (kind == sfk_constructor || kind == sfk_copy_constructor)
     DECL_CONSTRUCTOR_P (fn) = 1;
   else if (kind == sfk_destructor)
@@ -1013,8 +1006,8 @@ implicitly_declare_fn (special_function_kind kind, tree type, bool const_p)
 	       TYPE_UNQUALIFIED);
   grok_special_member_properties (fn);
   TREE_PUBLIC (fn) = !decl_function_context (TYPE_MAIN_DECL (type));
-  cp_finish_decl (fn, /*init=*/NULL_TREE, /*asmspec_tree=*/NULL_TREE,
-		  /*flags=*/LOOKUP_ONLYCONVERTING);
+  rest_of_decl_compilation (fn, /*asmspec=*/NULL,
+			    toplevel_bindings_p (), at_eof);
   DECL_IN_AGGR_P (fn) = 1;
   DECL_ARTIFICIAL (fn) = 1;
   DECL_NOT_REALLY_EXTERN (fn) = 1;
