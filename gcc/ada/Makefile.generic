@@ -47,6 +47,7 @@
 # CXX              name of the C++ compiler (optional, default to gcc)
 # AR_CMD           command to create an archive (optional, default to "ar rc")
 # AR_EXT           file extension of an archive (optional, default to ".a")
+# RANLIB        command to generate an index (optional, default to "ranlib")
 # GNATMAKE         name of the GNAT builder (optional, default to "gnatmake")
 # ADAFLAGS         additional Ada compilation switches, e.g "-gnatf" (optional)
 # CFLAGS           default C compilation switches, e.g "-O2 -g" (optional)
@@ -56,6 +57,7 @@
 # ADA_SOURCES      list of main Ada sources (optional)
 # EXEC             name of the final executable (optional)
 # MAIN             language of the main program (optional)
+# MAIN_OBJECT      main object file (optional)
 # PROJECT_FILE     name of the project file, without the .gpr extension
 # DEPS_PROJECTS    list of project dependencies (optional)
 
@@ -63,6 +65,10 @@
 
 ifndef MAIN
    MAIN=ada
+endif
+
+ifndef CC
+   CC=gcc
 endif
 
 ifndef ADA_SPEC
@@ -100,8 +106,16 @@ ifndef AR_CMD
    AR_CMD=ar rc
 endif
 
+ifndef RANLIB
+   RANLIB=ranlib
+endif
+
 ifndef GNATMAKE
    GNATMAKE=gnatmake
+endif
+
+ifndef ARCHIVE
+   ARCHIVE=$(OBJ_DIR)/lib$(PROJECT_BASE)-full$(AR_EXT)
 endif
 
 ifeq ($(EXEC_DIR),)
@@ -120,6 +134,7 @@ vpath %$(AR_EXT) $(OBJ_DIR)
 
 clean_deps = $(subst :,|,$(DEPS_PROJECTS:%=clean_%))
 compile_deps = $(subst :,|,$(DEPS_PROJECTS:%=compile_%))
+object_deps = $(subst :,|,$(DEPS_PROJECTS:%=object_%))
 ada_deps = $(subst :,|,$(DEPS_PROJECTS:%=ada_%))
 c_deps = $(subst :,|,$(DEPS_PROJECTS:%=c_%))
 c++_deps = $(subst :,|,$(DEPS_PROJECTS:%=c++_%))
@@ -131,6 +146,7 @@ clean: $(clean_deps) internal-clean
 build: $(compile_deps) internal-compile internal-build
 compile: $(compile_deps) internal-compile $(ADA_SOURCES)
 ada: $(ada_deps) internal-ada
+archive-objects: $(object_deps) internal-archive-objects
 c: $(c_deps) internal-c
 c++: $(c++deps) internal-c++
 
@@ -139,6 +155,9 @@ $(clean_deps): force
 
 $(compile_deps): force
 	@$(MAKE) -C $(dir $(subst |,:,$(@:compile_%=%))) -f Makefile.$(notdir $@) internal-compile
+
+$(object_deps): force
+	@$(MAKE) -C $(dir $(@:object_%=%)) -f Makefile.$(notdir $@) internal-archive-objects ARCHIVE=$(ARCHIVE)
 
 $(ada_deps): force
 	@$(MAKE) -C $(dir $(subst |,:,$(@:ada_%=%))) -f Makefile.$(notdir $@) internal-ada
@@ -238,6 +257,7 @@ DEP_FILES := $(OBJ_FILES:$(OBJ_EXT)=.d)
 
 ifeq ($(strip $(OBJECTS)),)
 internal-compile:
+internal-archive-objects:
 
 else
 internal-compile: lib$(PROJECT_BASE)$(AR_EXT)
@@ -245,7 +265,13 @@ internal-compile: lib$(PROJECT_BASE)$(AR_EXT)
 lib$(PROJECT_BASE)$(AR_EXT): $(OBJECTS)
 	@echo creating archive file for $(PROJECT_BASE)
 	cd $(OBJ_DIR); $(AR_CMD) $@ $(strip $(OBJECTS))
-	-ranlib $(OBJ_DIR)/$@
+	-$(RANLIB) $(OBJ_DIR)/$@
+
+internal-archive-objects: $(OBJECTS)
+#	@echo $(AR_CMD) $(ARCHIVE) $(strip $(OBJECTS))
+#	cd $(OBJ_DIR); $(AR_CMD) $(ARCHIVE) $(strip $(OBJECTS))
+#	-$(RANLIB) $(OBJ_DIR)/$@
+
 endif
 
 # Linking rules
@@ -260,9 +286,24 @@ endif
 
 ifeq ($(strip $(filter-out c c++,$(LANGUAGES))),)
 # link with C/C++
-link: $(EXEC_DIR)/$(EXEC)
+ifeq ($(MAIN_OBJECT),)
+link:
+	@echo link: no main object specified, exiting...
+	exit 1
+else
+ifeq ($(EXEC),)
+
+link:
+	@echo link: no executable specified, exiting...
+	exit 1
+else
+
+link: $(EXEC_DIR)/$(EXEC) archive-objects
 $(EXEC_DIR)/$(EXEC): $(OBJ_FILES)
-	$(LINKER) $(OBJ_FILES) -o $(EXEC_DIR)/$(EXEC) $(LDFLAGS)
+	@echo $(LINKER) -o $(EXEC_DIR)/$(EXEC) $(OBJ_DIR)/$(MAIN_OBJECT) $(LDFLAGS)
+	$(LINKER) -o $(EXEC_DIR)/$(EXEC) $(OBJ_DIR)/$(MAIN_OBJECT) $(LDFLAGS)
+endif
+endif
 
 internal-build: internal-compile link
 
@@ -272,11 +313,11 @@ ifeq ($(strip $(filter-out c c++ ada,$(LANGUAGES))),)
 
 ifeq ($(MAIN),ada)
 # Ada main
-link: $(LINKER) force
+link: $(LINKER) archive-objects force
 	$(GNATMAKE) -b -l -P$(PROJECT_FILE) $(ADA_SOURCES) \
 		 -largs $(LARGS) $(LDFLAGS)
 
-internal-build: $(LINKER) force
+internal-build: $(LINKER) archive-objects force
 	@echo $(GNATMAKE) -P$(PROJECT_FILE) $(ADA_SOURCES) $(EXEC_RULE) $(ADAFLAGS)
 	@$(GNATMAKE) -P$(PROJECT_FILE) $(EXEC_RULE) $(ADA_SOURCES) $(ADAFLAGS) \
 	 -largs $(LARGS) $(LDFLAGS)
@@ -288,11 +329,11 @@ else
 # close enough to our needs, and the usual -n gnatbind switch and --LINK=
 # gnatlink switch.
 
-link: $(LINKER) force
+link: $(LINKER) archive-objects force
 	$(GNATMAKE) $(EXEC_RULE) -z -P$(PROJECT_FILE) $(ADA_SOURCES) \
 		 -bargs -n -largs $(LARGS) $(LDFLAGS)
 
-internal-build: $(LINKER) force
+internal-build: $(LINKER) archive-objects force
 	@echo $(GNATMAKE) -z -P$(PROJECT_FILE) $(ADA_SOURCES) $(EXEC_RULE) $(ADAFLAGS)
 	@$(GNATMAKE) $(EXEC_RULE) -z \
 		 -P$(PROJECT_FILE) $(ADA_SOURCES) $(ADAFLAGS) \
@@ -385,7 +426,7 @@ internal-c : $(C_OBJECTS)
 # Compile all C++ files in the project
 internal-c++ : $(CXX_OBJECTS)
 
-.PHONY: force internal-clean internal-build internal-compile internal-ada internal-c internal-c++ build compile clean ada c c++
+.PHONY: force internal-clean internal-archive internal-build internal-compile internal-ada internal-c internal-c++ build compile clean ada c c++
 
 internal-clean:
 	@echo $(RM) $(OBJ_DIR)/*$(OBJ_EXT)

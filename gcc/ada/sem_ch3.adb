@@ -169,8 +169,7 @@ package body Sem_Ch3 is
       Derived_Base  : Entity_Id;
       Is_Tagged     : Boolean;
       Inherit_Discr : Boolean;
-      Discs         : Elist_Id)
-      return          Elist_Id;
+      Discs         : Elist_Id) return Elist_Id;
    --  Called from Build_Derived_Record_Type to inherit the components of
    --  Parent_Base (a base type) into the Derived_Base (the derived base type).
    --  For more information on derived types and component inheritance please
@@ -217,8 +216,7 @@ package body Sem_Ch3 is
    function Build_Discriminant_Constraints
      (T           : Entity_Id;
       Def         : Node_Id;
-      Derived_Def : Boolean := False)
-      return        Elist_Id;
+      Derived_Def : Boolean := False) return Elist_Id;
    --  Validate discriminant constraints, and return the list of the
    --  constraints in order of discriminant declarations. T is the
    --  discriminated unconstrained type. Def is the N_Subtype_Indication
@@ -256,8 +254,7 @@ package body Sem_Ch3 is
    function Build_Scalar_Bound
      (Bound : Node_Id;
       Par_T : Entity_Id;
-      Der_T : Entity_Id)
-      return  Node_Id;
+      Der_T : Entity_Id) return Node_Id;
    --  The bounds of a derived scalar type are conversions of the bounds of
    --  the parent type. Optimize the representation if the bounds are literals.
    --  Needs a more complete spec--what are the parameters exactly, and what
@@ -356,8 +353,7 @@ package body Sem_Ch3 is
       Constrained_Typ : Entity_Id;
       Related_Node    : Node_Id;
       Typ             : Entity_Id;
-      Constraints     : Elist_Id)
-      return            Entity_Id;
+      Constraints     : Elist_Id) return Entity_Id;
    --  Given a discriminated base type Typ, a list of discriminant constraint
    --  Constraints for Typ and the type of a component of Typ, Compon_Type,
    --  create and return the type corresponding to Compon_type where all
@@ -419,8 +415,7 @@ package body Sem_Ch3 is
      (Prot_Subt   : Entity_Id;
       Corr_Rec    : Entity_Id;
       Related_Nod : Node_Id;
-      Related_Id  : Entity_Id)
-      return Entity_Id;
+      Related_Id  : Entity_Id) return Entity_Id;
    --  When constraining a protected type or task type with discriminants,
    --  constrain the corresponding record with the same discriminant values.
 
@@ -521,8 +516,7 @@ package body Sem_Ch3 is
 
    function Expand_To_Stored_Constraint
      (Typ        : Entity_Id;
-      Constraint : Elist_Id)
-      return       Elist_Id;
+      Constraint : Elist_Id) return Elist_Id;
    --  Given a Constraint (ie a list of expressions) on the discriminants of
    --  Typ, expand it into a constraint on the stored discriminants and
    --  return the new list of expressions constraining the stored
@@ -530,8 +524,7 @@ package body Sem_Ch3 is
 
    function Find_Type_Of_Object
      (Obj_Def     : Node_Id;
-      Related_Nod : Node_Id)
-      return        Entity_Id;
+      Related_Nod : Node_Id) return Entity_Id;
    --  Get type entity for object referenced by Obj_Def, attaching the
    --  implicit types generated to Related_Nod
 
@@ -546,8 +539,7 @@ package body Sem_Ch3 is
 
    function Is_Valid_Constraint_Kind
      (T_Kind          : Type_Kind;
-      Constraint_Kind : Node_Kind)
-      return Boolean;
+      Constraint_Kind : Node_Kind) return Boolean;
    --  Returns True if it is legal to apply the given kind of constraint
    --  to the given kind of type (index constraint to an array type,
    --  for example).
@@ -670,8 +662,7 @@ package body Sem_Ch3 is
 
    function Access_Definition
      (Related_Nod : Node_Id;
-      N           : Node_Id)
-      return        Entity_Id
+      N           : Node_Id) return Entity_Id
    is
       Anon_Type : constant Entity_Id :=
                     Create_Itype (E_Anonymous_Access_Type, Related_Nod,
@@ -727,6 +718,7 @@ package body Sem_Ch3 is
    is
       Formals : constant List_Id   := Parameter_Specifications (T_Def);
       Formal  : Entity_Id;
+
       Desig_Type : constant Entity_Id :=
                    Create_Itype (E_Subprogram_Type, Parent (T_Def));
 
@@ -739,6 +731,7 @@ package body Sem_Ch3 is
             Error_Msg_N
              ("expect type in function specification", Subtype_Mark (T_Def));
          end if;
+
       else
          Set_Etype (Desig_Type, Standard_Void_Type);
       end if;
@@ -5322,8 +5315,7 @@ package body Sem_Ch3 is
    function Build_Discriminant_Constraints
      (T           : Entity_Id;
       Def         : Node_Id;
-      Derived_Def : Boolean := False)
-      return        Elist_Id
+      Derived_Def : Boolean := False) return Elist_Id
    is
       C          : constant Node_Id := Constraint (Def);
       Nb_Discr   : constant Nat     := Number_Discriminants (T);
@@ -5734,8 +5726,7 @@ package body Sem_Ch3 is
    function Build_Scalar_Bound
      (Bound : Node_Id;
       Par_T : Entity_Id;
-      Der_T : Entity_Id)
-      return  Node_Id
+      Der_T : Entity_Id) return Node_Id
    is
       New_Bound : Entity_Id;
 
@@ -6918,26 +6909,22 @@ package body Sem_Ch3 is
       Constrained_Typ : Entity_Id;
       Related_Node    : Node_Id;
       Typ             : Entity_Id;
-      Constraints     : Elist_Id)
-      return            Entity_Id
+      Constraints     : Elist_Id) return Entity_Id
    is
       Loc : constant Source_Ptr := Sloc (Constrained_Typ);
 
       function Build_Constrained_Array_Type
-        (Old_Type : Entity_Id)
-         return     Entity_Id;
+        (Old_Type : Entity_Id) return Entity_Id;
       --  If Old_Type is an array type, one of whose indices is
       --  constrained by a discriminant, build an Itype whose constraint
       --  replaces the discriminant with its value in the constraint.
 
       function Build_Constrained_Discriminated_Type
-        (Old_Type : Entity_Id)
-         return     Entity_Id;
+        (Old_Type : Entity_Id) return Entity_Id;
       --  Ditto for record components.
 
       function Build_Constrained_Access_Type
-        (Old_Type : Entity_Id)
-         return     Entity_Id;
+        (Old_Type : Entity_Id) return Entity_Id;
       --  Ditto for access types. Makes use of previous two functions, to
       --  constrain designated type.
 
@@ -6956,8 +6943,7 @@ package body Sem_Ch3 is
       -----------------------------------
 
       function Build_Constrained_Access_Type
-        (Old_Type : Entity_Id)
-        return      Entity_Id
+        (Old_Type : Entity_Id) return Entity_Id
       is
          Desig_Type    : constant Entity_Id := Designated_Type (Old_Type);
          Itype         : Entity_Id;
@@ -7043,8 +7029,7 @@ package body Sem_Ch3 is
       ----------------------------------
 
       function Build_Constrained_Array_Type
-        (Old_Type : Entity_Id)
-         return     Entity_Id
+        (Old_Type : Entity_Id) return Entity_Id
       is
          Lo_Expr     : Node_Id;
          Hi_Expr     : Node_Id;
@@ -7104,8 +7089,7 @@ package body Sem_Ch3 is
       ------------------------------------------
 
       function Build_Constrained_Discriminated_Type
-        (Old_Type : Entity_Id)
-         return     Entity_Id
+        (Old_Type : Entity_Id) return Entity_Id
       is
          Expr           : Node_Id;
          Constr_List    : List_Id;
@@ -7374,8 +7358,7 @@ package body Sem_Ch3 is
      (Prot_Subt   : Entity_Id;
       Corr_Rec    : Entity_Id;
       Related_Nod : Node_Id;
-      Related_Id  : Entity_Id)
-      return Entity_Id
+      Related_Id  : Entity_Id) return Entity_Id
    is
       T_Sub : constant Entity_Id
         := Create_Itype (E_Record_Subtype, Related_Nod, Related_Id, 'V');
@@ -9249,8 +9232,7 @@ package body Sem_Ch3 is
 
    function Expand_To_Stored_Constraint
      (Typ        : Entity_Id;
-      Constraint : Elist_Id)
-      return       Elist_Id
+      Constraint : Elist_Id) return Elist_Id
    is
       Explicitly_Discriminated_Type : Entity_Id;
       Expansion    : Elist_Id;
@@ -9517,8 +9499,7 @@ package body Sem_Ch3 is
 
    function Find_Type_Of_Object
      (Obj_Def     : Node_Id;
-      Related_Nod : Node_Id)
-      return        Entity_Id
+      Related_Nod : Node_Id) return Entity_Id
    is
       Def_Kind : constant Node_Kind := Nkind (Obj_Def);
       P        : constant Node_Id   := Parent (Obj_Def);
@@ -9810,14 +9791,12 @@ package body Sem_Ch3 is
    function Get_Discriminant_Value
      (Discriminant       : Entity_Id;
       Typ_For_Constraint : Entity_Id;
-      Constraint         : Elist_Id)
-      return               Node_Id
+      Constraint         : Elist_Id) return Node_Id
    is
       function Search_Derivation_Levels
         (Ti                    : Entity_Id;
          Discrim_Values        : Elist_Id;
-         Stored_Discrim_Values : Boolean)
-         return                  Node_Or_Entity_Id;
+         Stored_Discrim_Values : Boolean) return Node_Or_Entity_Id;
       --  This is the routine that performs the recursive search of levels
       --  as described above.
 
@@ -9828,8 +9807,7 @@ package body Sem_Ch3 is
       function Search_Derivation_Levels
         (Ti                    : Entity_Id;
          Discrim_Values        : Elist_Id;
-         Stored_Discrim_Values : Boolean)
-         return                  Node_Or_Entity_Id
+         Stored_Discrim_Values : Boolean) return Node_Or_Entity_Id
       is
          Assoc          : Elmt_Id;
          Disc           : Entity_Id;
@@ -10051,8 +10029,7 @@ package body Sem_Ch3 is
       Derived_Base  : Entity_Id;
       Is_Tagged     : Boolean;
       Inherit_Discr : Boolean;
-      Discs         : Elist_Id)
-      return          Elist_Id
+      Discs         : Elist_Id) return Elist_Id
    is
       Assoc_List : constant Elist_Id := New_Elmt_List;
 
@@ -10288,8 +10265,7 @@ package body Sem_Ch3 is
 
    function Is_Valid_Constraint_Kind
      (T_Kind          : Type_Kind;
-      Constraint_Kind : Node_Kind)
-      return            Boolean
+      Constraint_Kind : Node_Kind) return Boolean
    is
    begin
       case T_Kind is
@@ -12003,8 +11979,7 @@ package body Sem_Ch3 is
      (S           : Node_Id;
       Related_Nod : Node_Id;
       Related_Id  : Entity_Id := Empty;
-      Suffix      : Character := ' ')
-      return        Entity_Id
+      Suffix      : Character := ' ') return Entity_Id
    is
       P               : Node_Id;
       Def_Id          : Entity_Id;

@@ -101,16 +101,28 @@ package Prj.Env is
    function File_Name_Of_Library_Unit_Body
      (Name              : String;
       Project           : Project_Id;
-      Main_Project_Only : Boolean := True)
+      Main_Project_Only : Boolean := True;
+      Full_Path         : Boolean := False)
       return              String;
    --  Returns the file name of a library unit, in canonical case. Name may or
    --  may not have an extension (corresponding to the naming scheme of the
    --  project). If there is no body with this name, but there is a spec, the
-   --  name of the spec is returned. If neither a body or a spec can be found,
-   --  return an empty string.
+   --  name of the spec is returned.
+   --  If Full_Path is False (the default), the simple file name is returned.
+   --  If Full_Path is True, the absolute path name is returned.
+   --  If neither a body nor a spec can be found, an empty string is returned.
    --  If Main_Project_Only is True, the unit must be an immediate source of
    --  Project. If it is False, it may be a source of one of its imported
    --  projects.
+
+   function Project_Of
+     (Name         : String;
+      Main_Project : Project_Id)
+      return         Project_Id;
+   --  Get the project of a source. The source file name may be truncated
+   --  (".adb" or ".ads" may be missing). If the source is in a project being
+   --  extended, return the ultimate extending project. If it is not a source
+   --  of any project, return No_Project.
 
    procedure Get_Reference
      (Source_File_Name : String;

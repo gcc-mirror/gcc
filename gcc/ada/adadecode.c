@@ -2,11 +2,11 @@
  *                                                                          *
  *                         GNAT COMPILER COMPONENTS                         *
  *                                                                          *
- *                             G N A T D E C O                              *
+ *                            A D A D E C O D E                             *
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *           Copyright (C) 2001-2002, Free Software Foundation, Inc.        *
+ *           Copyright (C) 2001-2003, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -42,8 +42,12 @@
 #include "adadecode.h"
 
 static void add_verbose	PARAMS ((const char *, char *));
-static int has_prefix	PARAMS ((char *, const char *));
-static int has_suffix	PARAMS ((char *, const char *));
+static int has_prefix	PARAMS ((const char *, const char *));
+static int has_suffix	PARAMS ((const char *, const char *));
+
+/* This is a safe version of strcpy that can be used with overlapped
+   pointers. Does nothing if s2 <= s1.  */
+static void ostrcpy (char *s1, char *s2);
 
 /* Set to nonzero if we have written any verbose info.  */
 static int verbose_info;
@@ -65,7 +69,7 @@ static void add_verbose (text, ada_name)
 
 static int
 has_prefix (name, prefix)
-     char *name;
+     const char *name;
      const char *prefix;
 {
   return strncmp (name, prefix, strlen (prefix)) == 0;
@@ -75,13 +79,25 @@ has_prefix (name, prefix)
 
 static int
 has_suffix (name, suffix)
-     char *name;
+     const char *name;
      const char *suffix;
 {
   int nlen = strlen (name);
   int slen = strlen (suffix);
 
   return nlen > slen && strncmp (name + nlen - slen, suffix, slen) == 0;
+}
+
+/* Safe overlapped pointers version of strcpy.  */
+
+static void
+ostrcpy (char *s1, char *s2)
+{
+  if (s2 > s1)
+    {
+      while (*s2) *s1++ = *s2++;
+      *s1 = '\0';
+    }
 }
 
 /* This function will return the Ada name from the encoded form.
@@ -142,16 +158,14 @@ __gnat_decode (coded_name, ada_name, verbose)
   int in_task = 0;
   int body_nested = 0;
 
-  /* Copy the coded name into the ada name string, the rest of the code will
-     just replace or add characters into the ada_name.  */
-  strcpy (ada_name, coded_name);
-
   /* Check for library level subprogram.  */
-  if (has_prefix (ada_name, "_ada_"))
+  if (has_prefix (coded_name, "_ada_"))
     {
-      strcpy (ada_name, ada_name + 5);
+      strcpy (ada_name, coded_name + 5);
       lib_subprog = 1;
     }
+  else
+    strcpy (ada_name, coded_name);
 
   /* Check for task body.  */
   if (has_suffix (ada_name, "TKB"))
@@ -191,7 +205,7 @@ __gnat_decode (coded_name, ada_name, verbose)
 
     while ((tktoken = (char *) strstr (ada_name, "TK__")) != NULL)
       {
-	strcpy (tktoken, tktoken + 2);
+	ostrcpy (tktoken, tktoken + 2);
 	in_task = 1;
       }
   }
@@ -229,7 +243,7 @@ __gnat_decode (coded_name, ada_name, verbose)
 	if (ada_name[k] == '_' && ada_name[k+1] == '_')
 	  {
 	    ada_name[k] = '.';
-	    strcpy (ada_name + k + 1, ada_name + k + 2);
+	    ostrcpy (ada_name + k + 1, ada_name + k + 2);
 	    len = len - 1;
 	  }
 	k++;
@@ -259,7 +273,7 @@ __gnat_decode (coded_name, ada_name, verbose)
 
 	    if (codedlen > oplen)
 	      /* We shrink the space.  */
-	      strcpy (optoken, optoken + codedlen - oplen);
+	      ostrcpy (optoken, optoken + codedlen - oplen);
 	    else if (oplen > codedlen)
 	      {
 		/* We need more space.  */
@@ -285,7 +299,7 @@ __gnat_decode (coded_name, ada_name, verbose)
   }
 
   /* If verbose mode is on, we add some information to the Ada name.  */
-  if (verbose) 
+  if (verbose)
     {
       if (overloaded)
 	add_verbose ("overloaded", ada_name);

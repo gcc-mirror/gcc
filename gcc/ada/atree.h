@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2001, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2003, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -235,7 +235,7 @@ struct Extended
   Int	       field8;
   Int	       field9;
   Int	       field10;
-  union     
+  union
     {
       Int      field11;
       struct Flag_Word3 fw3;

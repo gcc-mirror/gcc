@@ -2,11 +2,11 @@
  *                                                                          *
  *                         GNAT COMPILER COMPONENTS                         *
  *                                                                          *
- *                             G N A T D E C O                              *
+ *                            A D A D E C O D E                             *
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *           Copyright (C) 2001-2002, Free Software Foundation, Inc.        *
+ *           Copyright (C) 2001-2003, Free Software Foundation, Inc.        *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
