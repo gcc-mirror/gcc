@@ -1,3 +1,7 @@
+Wed Sep 17 09:53:07 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Tue Sep 16 14:22:36 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* libgcc2.c (find_exception_handler): Not found is -1.
@@ -10,10 +14,6 @@ Tue Sep 16 11:13:46 1997  Jim Wilson  <wilson@cygnus.com>
 	* expr.c (expand_expr): Remove previous incorrect change.
 	If target and slot has no DECL_RTL, then call mark_addressable
 	again for the slot after we give it RTL.
-
-Tue Sep 16 10:14:55 1997  Jeffrey A Law  (law@cygnus.com)
-
-	* version.c: Bump for snapshot.
 
 Tue Sep 16 09:18:52 1997  Jason Merrill  (jason@cygnus.com)
 
@@ -433,8 +433,8 @@ Sun Sep  7 14:17:36 1997  Torbjorn Granlund  (tege@pdc.kth.se)
 
 Sun Sep  7 13:46:46 1997  Jeffrey A Law  (law@cygnus.com)
 
-        * final.c (shorten_branches): During first pass, assume worst
-        possible alignment for ADDR_VEC and ADDR_VEC_DIFF insns.
+	* final.c (shorten_branches): During first pass, assume worst
+	possible alignment for ADDR_VEC and ADDR_VEC_DIFF insns.
 
 	* Makefile.in (distclean): Remove various things left around
 	by running the testsuite.
@@ -447,7 +447,7 @@ Sun Sep  7 13:16:06 1997  Manfred Hollstein  <manfred@s-direktnet.de>
 
 Sun Sep  7 09:59:08 1997  Jan-Jaap van der Heijden (J.J.vanderHeijden@student.utwente.nl)
 
-        * configure.in: Make symlink to as-new rather than as.new.  Similarly
+	* configure.in: Make symlink to as-new rather than as.new.  Similarly
 	for ld-new.
 	* configure: Rebuilt.
 
@@ -495,7 +495,7 @@ Fri Sep  5 09:37:50 1997  Jim Wilson  (wilson@cygnus.com)
 
 Fri Sep  5 09:08:44 1997  Jeffrey A Law  (law@cygnus.com)
 
-        * install.sh: Delete duplicate install script.
+	* install.sh: Delete duplicate install script.
 
 Thu Sep  4 23:14:27 1997  Stan Cox  (coxs@dg-rtp.dg.com)
 
@@ -541,7 +541,7 @@ Thu Sep  4 11:51:43 1997  Jim Wilson  <wilson@cygnus.com>
 Thu Sep  4 11:17:16 1997  Mikeael Meissner  (meissner@cygnus.com)
 
 	* bitmap.c: Conditionally include stdlib.h.
-        (free): Provide a declaration if NEED_DECLARATION_FREE.
+	(free): Provide a declaration if NEED_DECLARATION_FREE.
 
 Thu Sep  4 09:58:53 1997  Joel Sherrill  (joel@OARcorp.com)
 
