@@ -23,6 +23,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define SGS_NO_LI		/* Suppress jump table label usage */
 #endif
 
+#define NO_DOLLAR_IN_LABEL
+#define NO_DOT_IN_LABEL
+
 #include "m68k/m68k.h"
 
 /* See m68k.h.  7 means 68020 with 68881.  */
