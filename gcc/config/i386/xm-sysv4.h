@@ -7,3 +7,7 @@
 #ifndef __GNUC__
 #define USE_C_ALLOCA
 #endif
+
+/* Univel, at least, has a small ARG_MAX.  Defining this is harmless
+   except for causing extra stat calls in the driver program.  */
+#define SMALL_ARG_MAX
