@@ -1921,6 +1921,11 @@ twoval_comparison_p (arg, cval1, cval2, save_p)
 	   && (code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR
 	       || code == COMPOUND_EXPR))
     class = '2';
+
+  /* ??? Disable this since the SAVE_EXPR might already be in use outside
+     the expression.  There may be no way to make this work, but it needs
+     to be looked at again for 2.6.  */
+#if 0
   else if (class == 'e' && code == SAVE_EXPR && SAVE_EXPR_RTL (arg) == 0)
     {
       /* If we've already found a CVAL1 or CVAL2, this expression is
@@ -1931,6 +1936,7 @@ twoval_comparison_p (arg, cval1, cval2, save_p)
       class = '1';
       *save_p = 1;
     }
+#endif
 
   switch (class)
     {
