@@ -1,3 +1,8 @@
+Sun May 17 19:31:05 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_emit_conditional_branch): Clear cmp_code after
+	using it with swap_condition, not before.
+
 Sun May 17 13:44:32 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* alias.c (mode_alias_check): Delete.
