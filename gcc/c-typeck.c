@@ -559,7 +559,7 @@ type_lists_compatible_p (args1, args2)
 {
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
   int val = 1;
-  int newval;
+  int newval = 0;
 
   while (1)
     {
@@ -5241,7 +5241,7 @@ pop_init_level (implicit)
      int implicit;
 {
   struct constructor_stack *p;
-  int size;
+  int size = 0;
   tree constructor = 0;
 
   if (implicit == 0)
@@ -5775,7 +5775,7 @@ output_pending_init_elements (all)
   if (constructor_incremental)
     {
       tree filled;
-      tree nextpos_tree;
+      tree nextpos_tree = size_int (0);
 
       if (TREE_CODE (constructor_type) == RECORD_TYPE
 	  || TREE_CODE (constructor_type) == UNION_TYPE)
