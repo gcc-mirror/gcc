@@ -640,6 +640,8 @@ dbxout_type_fields (type)
 		   || TREE_CODE (DECL_SIZE (tem)) != INTEGER_CST))
 	continue;
       /* Omit here the nameless fields that are used to skip bits.  */
+      else if (DECL_IGNORED_P (tem))
+	continue;
       else if (TREE_CODE (tem) != CONST_DECL)
 	{
 	  /* Continue the line if necessary,
