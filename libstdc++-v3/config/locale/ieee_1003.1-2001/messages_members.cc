@@ -46,4 +46,16 @@ namespace std
       nl_catd __nlc = reinterpret_cast<nl_catd>(__c);
       return string(catgets(__nlc, __setid, __msgid, __dfault.c_str())); 
     }
+
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template<>
+    wstring
+    messages<wchar_t>::do_get(catalog, int, int, const wstring& __dfault) const
+    {
+      nl_catd __nlc = reinterpret_cast<nl_catd>(__c);
+      char* __msg = catgets(__nlc, __setid, __msgid, 
+			    _M_convert_to_char(__dfault));
+      return _M_convert_from_char(__msg);
+    }
+#endif
 }
