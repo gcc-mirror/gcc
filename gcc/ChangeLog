@@ -1,5 +1,14 @@
 2005-03-14  Zdenek Dvorak  <dvorakz@suse.cz>
 
+	* tree-ssa-phiopt.c (minmax_replacement, blocks_in_phiopt_order):
+	New functions.
+	(tree_ssa_phiopt): Use blocks_in_phiopt_order and minmax_replacement.
+	Remove unused removed_phis variable.
+	(conditional_replacement): Use build1/build2.
+	(abs_replacement): Use last_and_only_stmt and build1/build2.
+
+2005-03-14  Zdenek Dvorak  <dvorakz@suse.cz>
+
 	* builtin-attrs.def (ATTR_NOVOPS, ATTR_NOVOPS_LIST,
 	ATTR_PURE_NOTHROW_NOVOPS_LIST): New.
 	* builtins.def (ATTR_MATHFN_FPROUNDING): Use NOVOPS.
