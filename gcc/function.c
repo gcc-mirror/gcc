@@ -60,10 +60,6 @@ Boston, MA 02111-1307, USA.  */
 #include "ggc.h"
 #include "tm_p.h"
 
-#ifndef ACCUMULATE_OUTGOING_ARGS
-#define ACCUMULATE_OUTGOING_ARGS 0
-#endif
-
 #ifndef TRAMPOLINE_ALIGNMENT
 #define TRAMPOLINE_ALIGNMENT FUNCTION_BOUNDARY
 #endif

@@ -93,19 +93,6 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "toplev.h"
 
-#ifndef ACCUMULATE_OUTGOING_ARGS
-#define ACCUMULATE_OUTGOING_ARGS 0
-#endif
-
-/* Supply a default definition for PUSH_ARGS.  */
-#ifndef PUSH_ARGS
-#ifdef PUSH_ROUNDING
-#define PUSH_ARGS	!ACCUMULATE_OUTGOING_ARGS
-#else
-#define PUSH_ARGS	0
-#endif
-#endif
-
 /* It is not safe to use ordinary gen_lowpart in combine.
    Use gen_lowpart_for_combine instead.  See comments there.  */
 #define gen_lowpart dont_use_gen_lowpart_you_dummy

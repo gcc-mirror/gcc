@@ -1,3 +1,10 @@
+2001-03-18  Richard Henderson  <rth@redhat.com>
+
+	* defaults.h (ACCUMULATE_OUTGOING_ARGS, PUSH_ARGS): Move from ...
+	* calls.c: ... here.
+	* combine.c, expr.c, final.c, function.c toplev.c: Don't provide
+	defaults for them here.
+
 2001-03-17  Anthony Green  <green@redhat.com>
 
 	* config/pj/lib1funcs.S: Fix broken comment.

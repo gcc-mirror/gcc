@@ -44,19 +44,6 @@ Boston, MA 02111-1307, USA.  */
 #include "intl.h"
 #include "tm_p.h"
 
-#ifndef ACCUMULATE_OUTGOING_ARGS
-#define ACCUMULATE_OUTGOING_ARGS 0
-#endif
-
-/* Supply a default definition for PUSH_ARGS.  */
-#ifndef PUSH_ARGS
-#ifdef PUSH_ROUNDING
-#define PUSH_ARGS	!ACCUMULATE_OUTGOING_ARGS
-#else
-#define PUSH_ARGS	0
-#endif
-#endif
-
 /* Decide whether a function's arguments should be processed
    from first to last or from last to first.
 
