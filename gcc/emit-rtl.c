@@ -2083,6 +2083,28 @@ emit_insn_after (pattern, after)
   return insn;
 }
 
+/* Similar to emit_insn_after, except that line notes are to be inserted so
+   as to act as if this insn were at FROM.  */
+
+void
+emit_insn_after_with_line_notes (pattern, after, from)
+     rtx pattern, after, from;
+{
+  rtx from_line = find_line_note (from);
+  rtx after_line = find_line_note (after);
+  rtx insn = emit_insn_after (pattern, after);
+
+  if (from_line)
+    emit_line_note_after (NOTE_SOURCE_FILE (from_line),
+			  NOTE_LINE_NUMBER (from_line),
+			  after);
+
+  if (after_line)
+    emit_line_note_after (NOTE_SOURCE_FILE (after_line),
+			  NOTE_LINE_NUMBER (after_line),
+			  insn);
+}
+
 /* Make an insn of code JUMP_INSN with body PATTERN
    and output it after the insn AFTER.  */
 
