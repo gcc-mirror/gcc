@@ -58,7 +58,7 @@ tree lastiddecl;
 
 int doing_objc_thang;
 
-extern tree lookup_interface ();
+extern tree is_class_name ();
 
 extern int yydebug;
 
@@ -93,15 +93,15 @@ int check_newline ();
 static int ignore_escape_flag = 0;
 
 /* C code produced by gperf version 2.5 (GNU C++ version) */
-/* Command-line: gperf -p -j1 -i 1 -g -o -t -N is_reserved_word -k1,3,$ c-parse.gperf  */ 
+/* Command-line: gperf -p -j1 -i 1 -g -o -t -G -N is_reserved_word -k1,3,$ c-parse.gperf  */
 struct resword { char *name; short token; enum rid rid; };
 
-#define TOTAL_KEYWORDS 61
+#define TOTAL_KEYWORDS 79
 #define MIN_WORD_LENGTH 2
-#define MAX_WORD_LENGTH 13
+#define MAX_WORD_LENGTH 20
 #define MIN_HASH_VALUE 10
-#define MAX_HASH_VALUE 95
-/* maximum key range = 86, duplicates = 0 */
+#define MAX_HASH_VALUE 144
+/* maximum key range = 135, duplicates = 0 */
 
 #ifdef __GNUC__
 __inline
@@ -113,19 +113,19 @@ hash (str, len)
 {
   static unsigned char asso_values[] =
     {
-     96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
-     96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
-     96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
-     96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
-     96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
-     96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
-     96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
-     96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
-     96, 96, 96, 96, 96, 96, 96, 96, 96, 96,
-     96, 96, 96, 96, 96,  1, 96, 15, 13, 23,
-      1,  6, 32, 36,  3,  5, 96,  1, 20, 29,
-     31, 44, 19, 96, 13,  2,  1, 54, 39, 11,
-      5, 96,  3, 96, 96, 96, 96, 96,
+     145, 145, 145, 145, 145, 145, 145, 145, 145, 145,
+     145, 145, 145, 145, 145, 145, 145, 145, 145, 145,
+     145, 145, 145, 145, 145, 145, 145, 145, 145, 145,
+     145, 145, 145, 145, 145, 145, 145, 145, 145, 145,
+     145, 145, 145, 145, 145, 145, 145, 145, 145, 145,
+     145, 145, 145, 145, 145, 145, 145, 145, 145, 145,
+     145, 145, 145, 145,  25, 145, 145, 145, 145, 145,
+     145, 145, 145, 145, 145, 145, 145, 145, 145, 145,
+     145, 145, 145, 145, 145, 145, 145, 145, 145, 145,
+     145, 145, 145, 145, 145,   1, 145,  46,   8,  15,
+      61,   6,  36,  48,   3,   5, 145,  18,  63,  25,
+      29,  76,   1, 145,  13,   2,   1,  51,  37,   9,
+       9,   1,   3, 145, 145, 145, 145, 145,
     };
   register int hval = len;
 
@@ -141,6 +141,119 @@ hash (str, len)
   return hval + asso_values[str[len - 1]];
 }
 
+static struct resword wordlist[] =
+{
+  {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, 
+  {"",}, 
+  {"int",  TYPESPEC, RID_INT},
+  {"",}, {"",}, 
+  {"__typeof__",  TYPEOF, NORID},
+  {"__signed__",  TYPESPEC, RID_SIGNED},
+  {"__imag__",  IMAGPART, NORID},
+  {"switch",  SWITCH, NORID},
+  {"__inline__",  SCSPEC, RID_INLINE},
+  {"else",  ELSE, NORID},
+  {"__iterator__",  SCSPEC, RID_ITERATOR},
+  {"__inline",  SCSPEC, RID_INLINE},
+  {"__extension__",  EXTENSION, NORID},
+  {"struct",  STRUCT, NORID},
+  {"__real__",  REALPART, NORID},
+  {"__const",  TYPE_QUAL, RID_CONST},
+  {"while",  WHILE, NORID},
+  {"__const__",  TYPE_QUAL, RID_CONST},
+  {"case",  CASE, NORID},
+  {"__complex__",  TYPESPEC, RID_COMPLEX},
+  {"__iterator",  SCSPEC, RID_ITERATOR},
+  {"bycopy",  TYPE_QUAL, RID_BYCOPY},
+  {"",}, {"",}, {"",}, 
+  {"__complex",  TYPESPEC, RID_COMPLEX},
+  {"",}, 
+  {"in",  TYPE_QUAL, RID_IN},
+  {"break",  BREAK, NORID},
+  {"@defs",  DEFS, NORID},
+  {"",}, {"",}, {"",}, 
+  {"extern",  SCSPEC, RID_EXTERN},
+  {"if",  IF, NORID},
+  {"typeof",  TYPEOF, NORID},
+  {"typedef",  SCSPEC, RID_TYPEDEF},
+  {"__typeof",  TYPEOF, NORID},
+  {"sizeof",  SIZEOF, NORID},
+  {"",}, 
+  {"return",  RETURN, NORID},
+  {"const",  TYPE_QUAL, RID_CONST},
+  {"__volatile__",  TYPE_QUAL, RID_VOLATILE},
+  {"@private",  PRIVATE, NORID},
+  {"@selector",  SELECTOR, NORID},
+  {"__volatile",  TYPE_QUAL, RID_VOLATILE},
+  {"__asm__",  ASM_KEYWORD, NORID},
+  {"",}, {"",}, 
+  {"continue",  CONTINUE, NORID},
+  {"__alignof__",  ALIGNOF, NORID},
+  {"__imag",  IMAGPART, NORID},
+  {"__attribute__",  ATTRIBUTE, NORID},
+  {"",}, {"",}, 
+  {"__attribute",  ATTRIBUTE, NORID},
+  {"for",  FOR, NORID},
+  {"",}, 
+  {"@encode",  ENCODE, NORID},
+  {"id",  OBJECTNAME, RID_ID},
+  {"static",  SCSPEC, RID_STATIC},
+  {"@interface",  INTERFACE, NORID},
+  {"",}, 
+  {"__signed",  TYPESPEC, RID_SIGNED},
+  {"",}, 
+  {"__label__",  LABEL, NORID},
+  {"",}, {"",}, 
+  {"__asm",  ASM_KEYWORD, NORID},
+  {"char",  TYPESPEC, RID_CHAR},
+  {"",}, 
+  {"inline",  SCSPEC, RID_INLINE},
+  {"out",  TYPE_QUAL, RID_OUT},
+  {"register",  SCSPEC, RID_REGISTER},
+  {"__real",  REALPART, NORID},
+  {"short",  TYPESPEC, RID_SHORT},
+  {"",}, 
+  {"enum",  ENUM, NORID},
+  {"inout",  TYPE_QUAL, RID_INOUT},
+  {"",}, 
+  {"oneway",  TYPE_QUAL, RID_ONEWAY},
+  {"union",  UNION, NORID},
+  {"",}, 
+  {"__alignof",  ALIGNOF, NORID},
+  {"",}, 
+  {"@implementation",  IMPLEMENTATION, NORID},
+  {"",}, 
+  {"@class",  CLASS, NORID},
+  {"",}, 
+  {"@public",  PUBLIC, NORID},
+  {"asm",  ASM_KEYWORD, NORID},
+  {"",}, {"",}, {"",}, {"",}, {"",}, 
+  {"default",  DEFAULT, NORID},
+  {"",}, 
+  {"void",  TYPESPEC, RID_VOID},
+  {"",}, 
+  {"@protected",  PROTECTED, NORID},
+  {"@protocol",  PROTOCOL, NORID},
+  {"",}, {"",}, {"",}, 
+  {"volatile",  TYPE_QUAL, RID_VOLATILE},
+  {"",}, {"",}, 
+  {"signed",  TYPESPEC, RID_SIGNED},
+  {"float",  TYPESPEC, RID_FLOAT},
+  {"@end",  END, NORID},
+  {"",}, {"",}, 
+  {"unsigned",  TYPESPEC, RID_UNSIGNED},
+  {"@compatibility_alias",  ALIAS, NORID},
+  {"double",  TYPESPEC, RID_DOUBLE},
+  {"",}, {"",}, 
+  {"auto",  SCSPEC, RID_AUTO},
+  {"",}, 
+  {"goto",  GOTO, NORID},
+  {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, 
+  {"do",  DO, NORID},
+  {"",}, {"",}, {"",}, {"",}, 
+  {"long",  TYPESPEC, RID_LONG},
+};
+
 #ifdef __GNUC__
 __inline
 #endif
@@ -149,86 +262,6 @@ is_reserved_word (str, len)
      register char *str;
      register unsigned int len;
 {
-  static struct resword wordlist[] =
-    {
-      {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, {"",}, 
-      {"",}, 
-      {"int",  TYPESPEC, RID_INT},
-      {"",}, 
-      {"__signed",  TYPESPEC, RID_SIGNED},
-      {"__typeof__",  TYPEOF, NORID},
-      {"__signed__",  TYPESPEC, RID_SIGNED},
-      {"__imag__",  IMAGPART, NORID},
-      {"switch",  SWITCH, NORID},
-      {"__inline__",  SCSPEC, RID_INLINE},
-      {"else",  ELSE, NORID},
-      {"__iterator__",  SCSPEC, RID_ITERATOR},
-      {"__inline",  SCSPEC, RID_INLINE},
-      {"__extension__",  EXTENSION, NORID},
-      {"struct",  STRUCT, NORID},
-      {"__real__",  REALPART, NORID},
-      {"__asm__",  ASM_KEYWORD, NORID},
-      {"break",  BREAK, NORID},
-      {"",}, 
-      {"while",  WHILE, NORID},
-      {"__alignof__",  ALIGNOF, NORID},
-      {"__iterator",  SCSPEC, RID_ITERATOR},
-      {"__attribute__",  ATTRIBUTE, NORID},
-      {"__label__",  LABEL, NORID},
-      {"__const",  TYPE_QUAL, RID_CONST},
-      {"__attribute",  ATTRIBUTE, NORID},
-      {"__const__",  TYPE_QUAL, RID_CONST},
-      {"case",  CASE, NORID},
-      {"__complex__",  TYPESPEC, RID_COMPLEX},
-      {"inline",  SCSPEC, RID_INLINE},
-      {"__complex",  TYPESPEC, RID_COMPLEX},
-      {"if",  IF, NORID},
-      {"__real",  REALPART, NORID},
-      {"default",  DEFAULT, NORID},
-      {"__typeof",  TYPEOF, NORID},
-      {"sizeof",  SIZEOF, NORID},
-      {"extern",  SCSPEC, RID_EXTERN},
-      {"signed",  TYPESPEC, RID_SIGNED},
-      {"static",  SCSPEC, RID_STATIC},
-      {"do",  DO, NORID},
-      {"__imag",  IMAGPART, NORID},
-      {"void",  TYPESPEC, RID_VOID},
-      {"__asm",  ASM_KEYWORD, NORID},
-      {"return",  RETURN, NORID},
-      {"short",  TYPESPEC, RID_SHORT},
-      {"__volatile__",  TYPE_QUAL, RID_VOLATILE},
-      {"",}, 
-      {"char",  TYPESPEC, RID_CHAR},
-      {"__volatile",  TYPE_QUAL, RID_VOLATILE},
-      {"__alignof",  ALIGNOF, NORID},
-      {"typeof",  TYPEOF, NORID},
-      {"typedef",  SCSPEC, RID_TYPEDEF},
-      {"const",  TYPE_QUAL, RID_CONST},
-      {"for",  FOR, NORID},
-      {"",}, {"",}, 
-      {"auto",  SCSPEC, RID_AUTO},
-      {"unsigned",  TYPESPEC, RID_UNSIGNED},
-      {"",}, 
-      {"double",  TYPESPEC, RID_DOUBLE},
-      {"continue",  CONTINUE, NORID},
-      {"",}, 
-      {"register",  SCSPEC, RID_REGISTER},
-      {"",}, {"",}, 
-      {"volatile",  TYPE_QUAL, RID_VOLATILE},
-      {"",}, {"",}, 
-      {"asm",  ASM_KEYWORD, NORID},
-      {"",}, {"",}, {"",}, {"",}, {"",}, 
-      {"float",  TYPESPEC, RID_FLOAT},
-      {"",}, {"",}, 
-      {"goto",  GOTO, NORID},
-      {"",}, {"",}, {"",}, {"",}, {"",}, 
-      {"long",  TYPESPEC, RID_LONG},
-      {"",}, 
-      {"enum",  ENUM, NORID},
-      {"",}, 
-      {"union",  UNION, NORID},
-    };
-
   if (len <= MAX_WORD_LENGTH && len >= MIN_WORD_LENGTH)
     {
       register int key = hash (str, len);
@@ -257,6 +290,34 @@ make_pointer_declarator (type_quals, target)
      tree type_quals, target;
 {
   return build1 (INDIRECT_REF, type_quals, target);
+}
+
+void
+forget_protocol_qualifiers ()
+{
+  int i, n = sizeof wordlist / sizeof (struct resword);
+
+  for (i = 0; i < n; i++)
+    if (wordlist[i].rid >= RID_IN && wordlist[i].rid <= RID_ONEWAY)
+      wordlist[i].name = "";
+}
+
+void
+remember_protocol_qualifiers ()
+{
+  int i, n = sizeof wordlist / sizeof (struct resword);
+
+  for (i = 0; i < n; i++)
+    if (wordlist[i].rid == RID_IN)
+      wordlist[i].name = "in";
+    else if (wordlist[i].rid == RID_OUT)
+      wordlist[i].name = "out";
+    else if (wordlist[i].rid == RID_INOUT)
+      wordlist[i].name = "inout";
+    else if (wordlist[i].rid == RID_BYCOPY)
+      wordlist[i].name = "bycopy";
+    else if (wordlist[i].rid == RID_ONEWAY)
+      wordlist[i].name = "oneway";   
 }
 
 void
@@ -296,12 +357,22 @@ init_lex ()
   ridpointers[(int) RID_REGISTER] = get_identifier ("register");
   ridpointers[(int) RID_ITERATOR] = get_identifier ("iterator");
   ridpointers[(int) RID_COMPLEX] = get_identifier ("complex");
+  ridpointers[(int) RID_ID] = get_identifier ("id");
+  ridpointers[(int) RID_IN] = get_identifier ("in");
+  ridpointers[(int) RID_OUT] = get_identifier ("out");
+  ridpointers[(int) RID_INOUT] = get_identifier ("inout");
+  ridpointers[(int) RID_BYCOPY] = get_identifier ("bycopy");
+  ridpointers[(int) RID_ONEWAY] = get_identifier ("oneway");
+  forget_protocol_qualifiers();
 
   /* Some options inhibit certain reserved words.
      Clear those words out of the hash table so they won't be recognized.  */
 #define UNSET_RESERVED_WORD(STRING) \
   do { struct resword *s = is_reserved_word (STRING, sizeof (STRING) - 1); \
        if (s) s->name = ""; } while (0)
+
+  if (! doing_objc_thang)
+    UNSET_RESERVED_WORD ("id");
 
   if (flag_traditional)
     {
@@ -341,6 +412,7 @@ yyprint (file, yychar, yylval)
     {
     case IDENTIFIER:
     case TYPENAME:
+    case OBJECTNAME:
       t = yylval.ttype;
       if (IDENTIFIER_POINTER (t))
 	fprintf (file, " `%s'", IDENTIFIER_POINTER (t));
@@ -1005,6 +1077,7 @@ yylex ()
   register char *p;
   register int value;
   int wide_flag = 0;
+  int objc_flag = 0;
 
   if (nextchar >= 0)
     c = nextchar, nextchar = -1;
@@ -1078,27 +1151,18 @@ yylex ()
 	  value = c;
 	  break;
 	}
-      p = token_buffer;
-      *p++ = '@';
-      c = getc (finput);
-      while (isalnum (c) || c == '_')
+      else
 	{
-	  if (p >= token_buffer + maxtoken)
-	    p = extend_token_buffer (p);
-
-	  *p++ = c;
-	  c = getc (finput);
+	  /* '@' may start a constant string object.  */
+	  register int c = getc(finput);
+	  if (c == '"')
+	    {
+	      objc_flag = 1;
+	      goto string_constant;
+	    }
+	  ungetc(c, finput);
+	  /* Fall through to treat '@' as the start of an indentifier.  */
 	}
-
-      *p = 0;
-      nextchar = c;
-      value = recognize_objc_keyword (token_buffer + 1);
-      if (value != 0)
-	break;
-      error ("invalid Objective C keyword `%s'", token_buffer);
-      /* Cause a syntax error--1 is not a valid token type.  */
-      value = 1;
-      break;
 
     case 'A':  case 'B':  case 'C':  case 'D':  case 'E':
     case 'F':  case 'G':  case 'H':  case 'I':  case 'J':
@@ -1147,6 +1211,16 @@ yylex ()
 	      yylval.ttype = ridpointers[(int) ptr->rid];
 	    value = (int) ptr->token;
 
+	    /* Only return OBJECTNAME if it is a typedef.  */
+	    if (doing_objc_thang && value == OBJECTNAME)
+	      {
+		lastiddecl = lookup_name(yylval.ttype);
+
+		if (lastiddecl == NULL_TREE
+		    || TREE_CODE (lastiddecl) != TYPE_DECL)
+		  value = IDENTIFIER;
+	      }
+
 	    /* Even if we decided to recognize asm, still perhaps warn.  */
 	    if (pedantic
 		&& (value == ASM_KEYWORD || value == TYPEOF
@@ -1162,6 +1236,9 @@ yylex ()
 
       if (value == IDENTIFIER)
 	{
+ 	  if (token_buffer[0] == '@')
+	    error("invalid identifier `%s'", token_buffer);
+
           yylval.ttype = get_identifier (token_buffer);
 	  lastiddecl = lookup_name (yylval.ttype);
 
@@ -1186,7 +1263,7 @@ yylex ()
 	    }
           else if (doing_objc_thang)
             {
-	      tree objc_interface_decl = lookup_interface (yylval.ttype);
+	      tree objc_interface_decl = is_class_name (yylval.ttype);
 
 	      if (objc_interface_decl)
 		{
@@ -1877,17 +1954,28 @@ yylex ()
 #endif
 	    yylval.ttype = build_string ((len + 1) * WCHAR_BYTES, widep);
 	    TREE_TYPE (yylval.ttype) = wchar_array_type_node;
+	    value = STRING;
+	  }
+	else if (objc_flag)
+	  {
+	    extern tree build_objc_string();
+	    /* Return an Objective-C @"..." constant string object.  */
+	    yylval.ttype = build_objc_string (p - token_buffer,
+					      token_buffer + 1);
+	    TREE_TYPE (yylval.ttype) = char_array_type_node;
+	    value = OBJC_STRING;
 	  }
 	else
 	  {
 	    yylval.ttype = build_string (p - token_buffer, token_buffer + 1);
 	    TREE_TYPE (yylval.ttype) = char_array_type_node;
+	    value = STRING;
 	  }
 
 	*p++ = '"';
 	*p = 0;
 
-	value = STRING; break;
+	break;
       }
 
     case '+':

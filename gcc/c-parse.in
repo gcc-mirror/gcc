@@ -160,7 +160,11 @@ void yyerror ();
 /* The Objective-C keywords.  These are included in C and in
    Objective C, so that the token codes are the same in both.  */
 %token INTERFACE IMPLEMENTATION END SELECTOR DEFS ENCODE
-%token CLASSNAME PUBLIC
+%token CLASSNAME PUBLIC PRIVATE PROTECTED PROTOCOL OBJECTNAME CLASS ALIAS
+
+/* Objective-C string constants in raw form.
+   yylval is an OBJC_STRING_CST node.  */
+%token OBJC_STRING
 
 
 %type <code> unop
@@ -206,7 +210,8 @@ ifobjc
 %type <ttype> keywordexpr keywordarglist keywordarg
 %type <ttype> myparms myparm optparmlist reservedwords objcselectorexpr
 %type <ttype> selectorarg keywordnamelist keywordname objcencodeexpr
-%type <ttype> CLASSNAME
+%type <ttype> objc_string protocolrefs identifier_list objcprotocolexpr
+%type <ttype> CLASSNAME OBJC_STRING OBJECTNAME
 end ifobjc
 
 %{
@@ -350,8 +355,8 @@ identifier:
 	IDENTIFIER
 	| TYPENAME
 ifobjc
+	| OBJECTNAME
         | CLASSNAME
-		{ $$ = CLASS_NAME ($1); }
 end ifobjc
 	;
 
@@ -534,14 +539,21 @@ primary:
 		      if (yychar == '(')
 			{
 ifobjc
+			  tree decl;
+
 			  if (objc_receiver_context
 			      && ! (objc_receiver_context
 				    && strcmp (IDENTIFIER_POINTER ($1), "super")))
 			    /* we have a message to super */
 			    $$ = get_super_receiver ();
 			  else if (objc_method_context
-				   && is_ivar (objc_ivar_chain, $1))
-			    $$ = build_ivar_reference ($1);
+				   && (decl = is_ivar (objc_ivar_chain, $1)))
+			    {
+			      if (is_private (decl))
+				$$ = error_mark_node;
+			      else
+				$$ = build_ivar_reference ($1);
+			    }
 			  else
 end ifobjc
 			    {
@@ -560,13 +572,20 @@ end ifobjc
 		      else
 			{
 ifobjc
+			  tree decl;
+
 		          if (objc_receiver_context
 			      && ! strcmp (IDENTIFIER_POINTER ($1), "super"))
 			    /* we have a message to super */
 			    $$ = get_super_receiver ();
 			  else if (objc_method_context
-				   && is_ivar (objc_ivar_chain, $1))
-			    $$ = build_ivar_reference ($1);
+				   && (decl = is_ivar (objc_ivar_chain, $1)))
+			    {
+			      if (is_private (decl))
+				$$ = error_mark_node;
+			      else
+				$$ = build_ivar_reference ($1);
+			    }
 			  else
 end ifobjc
 			    {
@@ -646,14 +665,21 @@ ifobjc
 			  || (objc_receiver_context
 			      && strcmp (IDENTIFIER_POINTER ($1), "super")))
                         {
+			  tree decl;
+
 			  if (objc_method_context
-			      && is_ivar (objc_ivar_chain, $1))
+			      && (decl = is_ivar (objc_ivar_chain, $1)))
                             {
                               if (IDENTIFIER_LOCAL_VALUE ($1))
                                 warning ("local declaration of `%s' hides instance variable",
 	                                 IDENTIFIER_POINTER ($1));
                               else
-                                $$ = build_ivar_reference ($1);
+ 				{
+ 				  if (is_private (decl))
+ 				    $$ = error_mark_node;
+ 				  else
+ 				    $$ = build_ivar_reference ($1);
+ 				}
                             }
 			}
                       else /* we have a message to super */
@@ -756,8 +782,12 @@ ifobjc
 		{ $$ = build_message_expr ($1); }
 	| objcselectorexpr
 		{ $$ = build_selector_expr ($1); }
+	| objcprotocolexpr
+		{ $$ = build_protocol_expr ($1); }
 	| objcencodeexpr
 		{ $$ = build_encode_expr ($1); }
+	| objc_string
+		{ $$ = build_objc_string_object ($1); }
 end ifobjc
 	;
 
@@ -767,6 +797,16 @@ string:
 	| string STRING
 		{ $$ = chainon ($1, $2); }
 	;
+
+ifobjc
+/* Produces an OBJC_STRING_CST with prehaps more OBJC_STRING_CSTs chained
+   onto it.  */
+objc_string:
+	  OBJC_STRING
+	| objc_string OBJC_STRING
+		{ $$ = chainon ($1, $2); }
+	;
+end ifobjc
 
 xdecls:
 	/* empty */
@@ -932,8 +972,10 @@ typespec: TYPESPEC
 		     In case of `foo foo, bar;'.  */
 		  $$ = lookup_name ($1); }
 ifobjc
-        | CLASSNAME
-		{ $$ = get_static_reference ($1); }
+	| CLASSNAME protocolrefs
+		{ $$ = get_static_reference ($1, $2); }
+	| OBJECTNAME protocolrefs
+		{ $$ = get_object_reference ($2); }
 end ifobjc
 	| TYPEOF '(' expr ')'
 		{ $$ = TREE_TYPE ($3); }
@@ -1074,7 +1116,10 @@ initlist:
 		{ $$ = build_tree_list (NULL_TREE, $1); }
 	| initlist ',' init
 		{ $$ = tree_cons (NULL_TREE, $3, $1); }
-	/* These are for labeled elements.  */
+	/* These are for labeled elements.  The syntax for an array element
+	   initializer conflicts with the syntax for an Objective-C message,
+	   so don't include these productions in the Objective-C grammer.  */
+ifc
 	| '[' expr_no_commas ELLIPSIS expr_no_commas ']' init
 		{ $$ = build_tree_list (tree_cons ($2, NULL_TREE,
 						   build_tree_list ($4, NULL_TREE)),
@@ -1088,6 +1133,7 @@ initlist:
 		{ $$ = build_tree_list ($2, $4); }
 	| initlist ',' '[' expr_no_commas ']' init
 		{ $$ = tree_cons ($4, $6, $1); }
+end ifc
 	| identifier ':' init
 		{ $$ = build_tree_list ($1, $3); }
 	| initlist ',' identifier ':' init
@@ -1161,6 +1207,9 @@ after_type_declarator:
 	| '*' type_quals after_type_declarator  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
 	| TYPENAME
+ifobjc
+	| OBJECTNAME
+end ifobjc
 	;
 
 /* Kinds of declarator that can appear in a parameter list
@@ -1271,7 +1320,18 @@ component_decl_list2:	/* empty */
 ifobjc
 	/* foo(sizeof(struct{ @defs(ClassName)})); */
 	| DEFS '(' CLASSNAME ')'
-		{ $$ = get_class_ivars ($3); }
+		{
+		  tree interface = lookup_interface ($3);
+
+		  if (interface)
+		    $$ = get_class_ivars (interface);
+		  else
+		    {
+		      error ("Cannot find interface declaration for `%s'",
+			     IDENTIFIER_POINTER ($3));
+		      $$ = NULL_TREE;
+		    }
+		}
 end ifobjc
 	;
 
@@ -2012,6 +2072,9 @@ ifobjc
 
 objcdef:
 	  classdef
+	| classdecl
+	| aliasdecl
+	| protocoldef
 	| methoddef
 	| END
 		{
@@ -2026,11 +2089,31 @@ objcdef:
 		}
 	;
 
+/* A nonempty list of identifiers.  */
+identifier_list:
+	identifier
+		{ $$ = build_tree_list (NULL_TREE, $1); }
+	| identifier_list ',' identifier
+		{ $$ = chainon ($1, build_tree_list (NULL_TREE, $3)); }
+	;
+
+classdecl:
+	  CLASS identifier_list ';'
+		{
+		  objc_declare_class ($2);
+		}
+
+aliasdecl:
+	  ALIAS identifier identifier ';'
+		{
+		  objc_declare_alias ($2, $3);
+		}
+
 classdef:
-	  INTERFACE identifier '{'
+	  INTERFACE identifier protocolrefs '{'
 		{
 		  objc_interface_context = objc_ivar_context
-		    = start_class (INTERFACE_TYPE, $2, NULL_TREE);
+		    = start_class (CLASS_INTERFACE_TYPE, $2, NULL_TREE, $3);
                   objc_public_flag = 0;
 		}
 	  ivar_decl_list '}'
@@ -2044,10 +2127,10 @@ classdef:
 		  objc_interface_context = NULL_TREE;
 		}
 
-	| INTERFACE identifier
+	| INTERFACE identifier protocolrefs
 		{
 		  objc_interface_context
-		    = start_class (INTERFACE_TYPE, $2, NULL_TREE);
+		    = start_class (CLASS_INTERFACE_TYPE, $2, NULL_TREE, $3);
                   continue_class (objc_interface_context);
 		}
 	  methodprotolist
@@ -2057,10 +2140,10 @@ classdef:
 		  objc_interface_context = NULL_TREE;
 		}
 
-	| INTERFACE identifier ':' identifier '{'
+	| INTERFACE identifier ':' identifier protocolrefs '{'
 		{
 		  objc_interface_context = objc_ivar_context
-		    = start_class (INTERFACE_TYPE, $2, $4);
+		    = start_class (CLASS_INTERFACE_TYPE, $2, $4, $5);
                   objc_public_flag = 0;
 		}
 	  ivar_decl_list '}'
@@ -2074,10 +2157,10 @@ classdef:
 		  objc_interface_context = NULL_TREE;
 		}
 
-	| INTERFACE identifier ':' identifier
+	| INTERFACE identifier ':' identifier protocolrefs
 		{
 		  objc_interface_context
-		    = start_class (INTERFACE_TYPE, $2, $4);
+		    = start_class (CLASS_INTERFACE_TYPE, $2, $4, $5);
                   continue_class (objc_interface_context);
 		}
 	  methodprotolist
@@ -2090,7 +2173,7 @@ classdef:
 	| IMPLEMENTATION identifier '{'
 		{
 		  objc_implementation_context = objc_ivar_context
-		    = start_class (IMPLEMENTATION_TYPE, $2, NULL_TREE);
+		    = start_class (CLASS_IMPLEMENTATION_TYPE, $2, NULL_TREE, NULL_TREE);
                   objc_public_flag = 0;
 		}
 	  ivar_decl_list '}'
@@ -2102,7 +2185,7 @@ classdef:
 	| IMPLEMENTATION identifier
 		{
 		  objc_implementation_context
-		    = start_class (IMPLEMENTATION_TYPE, $2, NULL_TREE);
+		    = start_class (CLASS_IMPLEMENTATION_TYPE, $2, NULL_TREE, NULL_TREE);
                   objc_ivar_chain
 		    = continue_class (objc_implementation_context);
 		}
@@ -2110,7 +2193,7 @@ classdef:
 	| IMPLEMENTATION identifier ':' identifier '{'
 		{
 		  objc_implementation_context = objc_ivar_context
-		    = start_class (IMPLEMENTATION_TYPE, $2, $4);
+		    = start_class (CLASS_IMPLEMENTATION_TYPE, $2, $4, NULL_TREE);
                   objc_public_flag = 0;
 		}
 	  ivar_decl_list '}'
@@ -2122,15 +2205,15 @@ classdef:
 	| IMPLEMENTATION identifier ':' identifier
 		{
 		  objc_implementation_context
-		    = start_class (IMPLEMENTATION_TYPE, $2, $4);
+		    = start_class (CLASS_IMPLEMENTATION_TYPE, $2, $4, NULL_TREE);
                   objc_ivar_chain
 		    = continue_class (objc_implementation_context);
 		}
 
-	| INTERFACE identifier '(' identifier ')'
+	| INTERFACE identifier '(' identifier ')' protocolrefs
 		{
 		  objc_interface_context
-		    = start_class (PROTOCOL_TYPE, $2, $4);
+		    = start_class (CATEGORY_INTERFACE_TYPE, $2, $4, $6);
                   continue_class (objc_interface_context);
 		}
 	  methodprotolist
@@ -2143,16 +2226,51 @@ classdef:
 	| IMPLEMENTATION identifier '(' identifier ')'
 		{
 		  objc_implementation_context
-		    = start_class (CATEGORY_TYPE, $2, $4);
+		    = start_class (CATEGORY_IMPLEMENTATION_TYPE, $2, $4, NULL_TREE);
                   objc_ivar_chain
 		    = continue_class (objc_implementation_context);
 		}
 	;
 
+protocoldef:
+	  PROTOCOL identifier protocolrefs
+		{
+		  remember_protocol_qualifiers ();
+		  objc_interface_context
+		    = start_protocol(PROTOCOL_INTERFACE_TYPE, $2, $3);
+		}
+	  methodprotolist END
+		{
+		  forget_protocol_qualifiers();
+		  finish_protocol(objc_interface_context);
+		  objc_interface_context = NULL_TREE;
+		}
+	;
+
+protocolrefs:
+	  /* empty */
+		{
+		  $$ = NULL_TREE;
+		}
+	| ARITHCOMPARE identifier_list ARITHCOMPARE
+		{
+		  if ($1 == LT_EXPR && $3 == GT_EXPR)
+		    $$ = $2;
+		  else
+		    YYERROR1;
+		}
+	;
+
 ivar_decl_list:
-          ivar_decls PUBLIC { objc_public_flag = 1; } ivar_decls
+          ivar_decl_list visibility_spec ivar_decls
         | ivar_decls
         ;
+
+visibility_spec:
+	  PRIVATE { objc_public_flag = 2; }
+	| PROTECTED { objc_public_flag = 0; }
+	| PUBLIC { objc_public_flag = 1; }
+	;
 
 ivar_decls:
           /* empty */
@@ -2225,6 +2343,7 @@ ivar_declarator:
 methoddef:
 	  '+'
 		{
+		  remember_protocol_qualifiers ();
 		  if (objc_implementation_context)
 		    objc_inherit_code = CLASS_METHOD_DECL;
                   else
@@ -2232,6 +2351,7 @@ methoddef:
 		}
 	  methoddecl
 		{
+		  forget_protocol_qualifiers ();
 		  add_class_method (objc_implementation_context, $3);
 		  start_method_def ($3);
 		  objc_method_context = $3;
@@ -2248,6 +2368,7 @@ methoddef:
 
 	| '-'
 		{
+		  remember_protocol_qualifiers ();
 		  if (objc_implementation_context)
 		    objc_inherit_code = INSTANCE_METHOD_DECL;
                   else
@@ -2255,6 +2376,7 @@ methoddef:
 		}
 	  methoddecl
 		{
+		  forget_protocol_qualifiers ();
 		  add_instance_method (objc_implementation_context, $3);
 		  start_method_def ($3);
 		  objc_method_context = $3;
@@ -2424,6 +2546,7 @@ keywordselector:
 selector:
 	  IDENTIFIER
         | TYPENAME
+  	| OBJECTNAME
 	| reservedwords
 	;
 
@@ -2559,6 +2682,13 @@ objcselectorexpr:
 		}
 	;
 
+objcprotocolexpr:
+	  PROTOCOL '(' identifier ')'
+		{
+		  $$ = $3;
+		}
+	;
+
 /* extension to support C-structures in the archiver */
 
 objcencodeexpr:
@@ -2570,44 +2700,3 @@ objcencodeexpr:
 
 end ifobjc
 %%
-ifobjc
-
-/* If STRING is the name of an Objective C @-keyword
-   (not including the @), return the token type for that keyword.
-   Otherwise return 0.  */
-
-int
-recognize_objc_keyword (string)
-     char *string;
-{
-  switch (string[0])
-    {
-    case 'd':
-      if (!strcmp (string, "defs"))
-	return DEFS;
-      break;
-    case 'e':
-      if (!strcmp (string, "end"))
-	return END;
-      if (!strcmp (string, "encode"))
-	return ENCODE;
-      break;
-    case 'i':
-      if (!strcmp (string, "interface"))
-	return INTERFACE;
-      if (!strcmp (string, "implementation"))
-	return IMPLEMENTATION;
-      break;
-    case 'p':
-      if (!strcmp (string, "public"))
-	return PUBLIC;
-      break;
-    case 's':
-      if (!strcmp (string, "selector"))
-	return SELECTOR;
-      break;
-    }
-  return 0;
-}
-
-end ifobjc
