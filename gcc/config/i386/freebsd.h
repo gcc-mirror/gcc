@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running FreeBSD with ELF format
-   Copyright (C) 1996, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1996, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu.
    Adapted from GNU/Linux version by John Polstra.
@@ -105,7 +105,7 @@ Boston, MA 02111-1307, USA.  */
    done.  */
 
 #undef	LINK_SPEC
-#define LINK_SPEC "-m elf_i386 \
+#define LINK_SPEC "\
   %{Wl,*:%*} \
   %{v:-V} \
   %{assert*} %{R*} %{rpath*} %{defsym*} \

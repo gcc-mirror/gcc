@@ -1,3 +1,13 @@
+2002-03-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/i386/freebsd.h (LINK_SPEC): Don't pass default
+	emulation to the linker.
+
+2002-03-28  Loren J. Rittle  <ljrittle@acm.org>
+
+	* config/alpha/freebsd.h (LINK_SPEC): Likewise.
+	* config/sparc/freebsd.h (LINK_SPEC): Likewise.
+
 2002-03-28  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa-linux.h (LOCAL_LABEL_PREFIX): Define.
