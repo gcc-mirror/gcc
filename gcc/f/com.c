@@ -12264,7 +12264,7 @@ ffecom_lookup_label (ffelab label)
 						   1, 0));
 	  TREE_CONSTANT (glabel) = 1;
 	  TREE_STATIC (glabel) = 1;
-	  DECL_CONTEXT (glabel) = 0;
+	  DECL_CONTEXT (glabel) = current_function_decl;
 	  DECL_INITIAL (glabel) = NULL;
 	  make_decl_rtl (glabel, NULL);
 	  expand_decl (glabel);
