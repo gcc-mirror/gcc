@@ -1893,7 +1893,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
       && XEXP (SET_SRC (PATTERN (i3)), 1) == const0_rtx
       && rtx_equal_p (XEXP (SET_SRC (PATTERN (i3)), 0), i2dest))
     {
-#ifdef EXTRA_CC_MODES
+#ifdef SELECT_CC_MODE
       rtx *cc_use;
       enum machine_mode compare_mode;
 #endif
@@ -1903,7 +1903,7 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 
       i2_is_used = 1;
 
-#ifdef EXTRA_CC_MODES
+#ifdef SELECT_CC_MODE
       /* See if a COMPARE with the operand we substituted in should be done
 	 with the mode that is currently being used.  If not, do the same
 	 processing we do in `subst' for a SET; namely, if the destination
@@ -5048,13 +5048,12 @@ simplify_set (rtx x)
       /* Simplify our comparison, if possible.  */
       new_code = simplify_comparison (old_code, &op0, &op1);
 
-#ifdef EXTRA_CC_MODES
+#ifdef SELECT_CC_MODE
       /* If this machine has CC modes other than CCmode, check to see if we
 	 need to use a different CC mode here.  */
       compare_mode = SELECT_CC_MODE (new_code, op0, op1);
-#endif /* EXTRA_CC_MODES */
 
-#if !defined (HAVE_cc0) && defined (EXTRA_CC_MODES)
+#ifndef HAVE_cc0
       /* If the mode changed, we have to change SET_DEST, the mode in the
 	 compare, and the mode in the place SET_DEST is used.  If SET_DEST is
 	 a hard register, just build new versions with the proper mode.  If it
@@ -5078,7 +5077,8 @@ simplify_set (rtx x)
 	      dest = new_dest;
 	    }
 	}
-#endif
+#endif  /* cc0 */
+#endif  /* SELECT_CC_MODE */
 
       /* If the code changed, we have to build a new comparison in
 	 undobuf.other_insn.  */

@@ -167,9 +167,6 @@ i960_initialize ()
       i960_maxbitalignment = 128;
       i960_last_maxbitalignment = 8;
     }
-
-  /* Tell the compiler which flavor of TFmode we're using.  */
-  REAL_MODE_FORMAT (TFmode) = &ieee_extended_intel_128_format;
 }
 
 /* Return true if OP can be used as the source of an fp move insn.  */

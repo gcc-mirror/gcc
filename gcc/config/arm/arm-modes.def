@@ -22,25 +22,29 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
+/* Extended precision floating point.
+   FIXME What format is this?  */
+FLOAT_MODE (XF, 12, 0);
+
 /* CCFPEmode should be used with floating inequalities,
    CCFPmode should be used with floating equalities.
    CC_NOOVmode should be used with SImode integer equalities.
    CC_Zmode should be used if only the Z flag is set correctly
    CCmode should be used otherwise. */
 
-CC (CC_NOOV)
-CC (CC_Z)
-CC (CC_SWP)
-CC (CCFP)
-CC (CCFPE)
-CC (CC_DNE)
-CC (CC_DEQ)
-CC (CC_DLE)
-CC (CC_DLT)
-CC (CC_DGE)
-CC (CC_DGT)
-CC (CC_DLEU)
-CC (CC_DLTU)
-CC (CC_DGEU)
-CC (CC_DGTU)
-CC (CC_C)
+CC_MODE (CC_NOOV);
+CC_MODE (CC_Z);
+CC_MODE (CC_SWP);
+CC_MODE (CCFP);
+CC_MODE (CCFPE);
+CC_MODE (CC_DNE);
+CC_MODE (CC_DEQ);
+CC_MODE (CC_DLE);
+CC_MODE (CC_DLT);
+CC_MODE (CC_DGE);
+CC_MODE (CC_DGT);
+CC_MODE (CC_DLEU);
+CC_MODE (CC_DLTU);
+CC_MODE (CC_DGEU);
+CC_MODE (CC_DGTU);
+CC_MODE (CC_C);

@@ -50,6 +50,13 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    A BITSIZE, BYTESIZE, or COUNT argument must be a positive integer
    constant.
 
+   A FORMAT argument must be one of the real_mode_format structures
+   declared in real.h, or else a literal 0.
+
+   This file defines only those modes which are of use on almost all
+   machines.  Other modes can be defined in the target-specific
+   mode definition file, config/ARCH/ARCH-modes.def.
+
    Order matters in this file in so far as statements which refer to
    other modes must appear after the modes they refer to.  However,
    statements which do not refer to other modes may appear in any
@@ -69,13 +76,20 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
         declares MODE to be of class INT, BYTESIZE bytes wide in
 	storage, but with only BITSIZE significant bits.
 
-     FLOAT_MODE (MODE, BYTESIZE);
-        declares MODE to be of class FLOAT and BYTESIZE bytes wide.
+     FLOAT_MODE (MODE, BYTESIZE, FORMAT);
+        declares MODE to be of class FLOAT and BYTESIZE bytes wide,
+	using floating point format FORMAT.
 	All of the bits of its representation are significant.
 
-     FRACTIONAL_FLOAT_MODE (MODE, BITSIZE, BYTESIZE);
+     FRACTIONAL_FLOAT_MODE (MODE, BITSIZE, BYTESIZE, FORMAT);
         declares MODE to be of class FLOAT, BYTESIZE bytes wide in
-	storage, but with only BITSIZE significant bits.
+	storage, but with only BITSIZE significant bits, using
+	floating point format FORMAT.
+
+     RESET_FLOAT_FORMAT (MODE, FORMAT);
+	changes the format of MODE, which must be class FLOAT,
+	to FORMAT.  Use in an ARCH-modes.def to reset the format
+	of one of the float modes defined in this file.
 
      PARTIAL_INT_MODE (MODE);
         declares a mode of class PARTIAL_INT with the same size as
@@ -106,10 +120,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	error if there is no 'F'.  For INT modes, the names are
 	derived by prefixing a C to the name.
 
-     BITS_PER_UNIT (COUNT);
-        Sets the number of bits in a machine byte (least addressable
-	unit).  If this statement does not appear, the default is 8.
-
    Note: If a mode is ever made which is more than 255 bytes wide,
    machmode.h and genmodes.c will have to be changed to allocate
    more space for the mode_size and mode_alignment arrays.  */
@@ -125,39 +135,34 @@ RANDOM_MODE (BLK);
 /* Single bit mode used for booleans.  */
 FRACTIONAL_INT_MODE (BI, 1, 1);
 
-/* Basic integer modes.  */
+/* Basic integer modes.  We go up to TI in generic code (128 bits).
+   The name OI is reserved for a 256-bit type (needed by some back ends).
+   FIXME TI shouldn't be generically available either.  */
 INT_MODE (QI, 1);
 INT_MODE (HI, 2);
 INT_MODE (SI, 4);
 INT_MODE (DI, 8);
 INT_MODE (TI, 16);
-INT_MODE (OI, 32);
 
-/* Pointers on some machines use these types to distinguish them from
-   ints.  Useful if a pointer is 4 bytes but has some bits that are
-   not significant, so it is really not quite as wide as an integer.  */
-PARTIAL_INT_MODE (QI);
-PARTIAL_INT_MODE (HI);
-PARTIAL_INT_MODE (SI);
-PARTIAL_INT_MODE (DI);
+/* No partial integer modes are defined by default.  */
 
-/* Basic floating point modes.  */
-FLOAT_MODE (QF, 1);	/* C4x single precision */
-FLOAT_MODE (HF, 2);	/* C4x double precision */
-FLOAT_MODE (TQF, 3);	/* MIL-STD-1750a */
-FLOAT_MODE (SF, 4);
-FLOAT_MODE (DF, 8);
-FLOAT_MODE (XF, 12);	/* IEEE extended (80-bit) */
-FLOAT_MODE (TF, 16);
+/* Basic floating point modes.  SF and DF are the only modes provided
+   by default.  The names QF, HF, XF, and TF are reserved for targets
+   that need 1-word, 2-word, 80-bit, or 128-bit float types respectively.
 
-/* Basic CC modes.  */
+   These are the IEEE mappings.  They can be overridden with
+   RESET_FLOAT_FORMAT or at runtime (in OVERRIDE_OPTIONS).  */
+
+FLOAT_MODE (SF, 4, ieee_single_format);
+FLOAT_MODE (DF, 8, ieee_double_format);
+
+/* Basic CC modes.
+   FIXME define this only for targets that need it.  */
 CC_MODE (CC);
 
 /* Allow the target to specify additional modes of various kinds.  */
 #if HAVE_EXTRA_MODES
-# define CC(X) CC_MODE(X);  /* backward compatibility, temporary */
 # include EXTRA_MODES_FILE
-# undef CC
 #endif
 
 /* Complex modes.  */
@@ -176,7 +181,12 @@ VECTOR_MODE (INT, SI, 8)
 VECTOR_MODE (INT, DI, 4);
 VECTOR_MODE (INT, DI, 8);
 
-VECTOR_MODE (INT, DI, 1);  /* PPC uses this.  Why not plain DI? */
+/* PPC uses this to distinguish between DImode passed in
+   float registers and DImode passed in vector registers.
+   It would be in rs6000-modes.def but it's referenced in
+   c-common.c.  FIXME.  */
+
+VECTOR_MODE (INT, DI, 1);
 
 VECTOR_MODES (FLOAT, 4);      /*                 V2HF */
 VECTOR_MODES (FLOAT, 8);      /*            V4HF V2SF */

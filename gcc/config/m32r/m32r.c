@@ -249,13 +249,10 @@ init_reg_tables ()
 	    m32r_mode_class[i] = 0;
 	  break;
 	case MODE_CC:
+	  m32r_mode_class[i] = 1 << (int) C_MODE;
+	  break;
 	default:
-	  /* mode_class hasn't been initialized yet for EXTRA_CC_MODES, so
-	     we must explicitly check for them here.  */
-	  if (i == (int) CCmode)
-	    m32r_mode_class[i] = 1 << (int) C_MODE;
-	  else
-	    m32r_mode_class[i] = 0;
+	  m32r_mode_class[i] = 0;
 	  break;
 	}
     }

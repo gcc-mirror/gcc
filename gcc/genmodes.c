@@ -59,6 +59,7 @@ struct mode_data
   unsigned int bytesize;	/* storage size in addressable units */
   unsigned int ncomponents;	/* number of subunits */
   unsigned int alignment;	/* mode alignment */
+  const char *format;		/* floating point format - MODE_FLOAT only */
 
   struct mode_data *component;	/* mode of components */
   struct mode_data *wider;	/* next wider mode */
@@ -74,7 +75,7 @@ static struct mode_data *void_mode;
 static const struct mode_data blank_mode = {
   0, "<unknown>", MAX_MODE_CLASS,
   -1, -1, -1, -1,
-  0, 0,
+  0, 0, 0,
   "<unknown>", 0
 };
 
@@ -180,12 +181,14 @@ validate_mode (struct mode_data *m,
 	       enum requirement r_bitsize,
 	       enum requirement r_bytesize,
 	       enum requirement r_component,
-	       enum requirement r_ncomponents)
+	       enum requirement r_ncomponents,
+	       enum requirement r_format)
 {
   validate_field (m, bitsize);
   validate_field (m, bytesize);
   validate_field (m, component);
   validate_field (m, ncomponents);
+  validate_field (m, format);
 }
 #undef validate_field
 #undef validate_field_
@@ -215,7 +218,7 @@ complete_mode (struct mode_data *m)
       if (!strcmp (m->name, "VOID"))
 	void_mode = m;
 
-      validate_mode (m, UNSET, UNSET, UNSET, UNSET);
+      validate_mode (m, UNSET, UNSET, UNSET, UNSET, UNSET);
 
       m->bitsize = 0;
       m->bytesize = 0;
@@ -226,7 +229,7 @@ complete_mode (struct mode_data *m)
     case MODE_CC:
       /* Again, nothing more need be said.  For historical reasons,
 	 the size of a CC mode is four units.  */
-      validate_mode (m, UNSET, UNSET, UNSET, UNSET);
+      validate_mode (m, UNSET, UNSET, UNSET, UNSET, UNSET);
 
       m->bytesize = 4;
       m->ncomponents = 0;
@@ -236,8 +239,10 @@ complete_mode (struct mode_data *m)
     case MODE_INT:
     case MODE_FLOAT:
       /* A scalar mode must have a byte size, may have a bit size,
-	 and must not have components.  */
-      validate_mode (m, OPTIONAL, SET, UNSET, UNSET);
+	 and must not have components.   A float mode must have a
+         format.  */
+      validate_mode (m, OPTIONAL, SET, UNSET, UNSET,
+		     m->class == MODE_FLOAT ? SET : UNSET);
 
       m->ncomponents = 0;
       m->component = 0;
@@ -247,7 +252,7 @@ complete_mode (struct mode_data *m)
       /* A partial integer mode uses ->component to say what the
 	 corresponding full-size integer mode is, and may also
 	 specify a bit size.  */
-      validate_mode (m, OPTIONAL, UNSET, SET, UNSET);
+      validate_mode (m, OPTIONAL, UNSET, SET, UNSET, UNSET);
 
       m->bytesize = m->component->bytesize;
 
@@ -258,7 +263,7 @@ complete_mode (struct mode_data *m)
     case MODE_COMPLEX_INT:
     case MODE_COMPLEX_FLOAT:
       /* Complex modes should have a component indicated, but no more.  */
-      validate_mode (m, UNSET, UNSET, SET, UNSET);
+      validate_mode (m, UNSET, UNSET, SET, UNSET, UNSET);
       m->ncomponents = 2;
       if (m->component->bitsize != (unsigned int)-1)
 	m->bitsize = 2 * m->component->bitsize;
@@ -268,7 +273,7 @@ complete_mode (struct mode_data *m)
     case MODE_VECTOR_INT:
     case MODE_VECTOR_FLOAT:
       /* Vector modes should have a component and a number of components.  */
-      validate_mode (m, UNSET, UNSET, SET, SET);
+      validate_mode (m, UNSET, UNSET, SET, SET, UNSET);
       if (m->component->bitsize != (unsigned int)-1)
 	m->bitsize = m->ncomponents * m->component->bitsize;
       m->bytesize = m->ncomponents * m->component->bytesize;
@@ -412,22 +417,49 @@ make_special_mode (enum mode_class class, const char *name,
   new_mode (class, name, file, line);
 }
 
-#define _SCALAR_MODE(C, N, B, Y) \
-  make_scalar_mode (MODE_##C, #N, B, Y, __FILE__, __LINE__)
-
-#define INT_MODE(N, Y)                 _SCALAR_MODE (INT, N, -1, Y)
-#define FRACTIONAL_INT_MODE(N, B, Y)   _SCALAR_MODE (INT, N, B, Y)
-#define FLOAT_MODE(N, Y)               _SCALAR_MODE (FLOAT, N, -1, Y)
-#define FRACTIONAL_FLOAT_MODE(N, B, Y) _SCALAR_MODE (FLOAT, N, B, Y)
+#define INT_MODE(N, Y) FRACTIONAL_INT_MODE (N, -1, Y)
+#define FRACTIONAL_INT_MODE(N, B, Y) \
+  make_int_mode (#N, B, Y, __FILE__, __LINE__)
 
 static void
-make_scalar_mode (enum mode_class class, const char *name,
-		  unsigned int bitsize, unsigned int bytesize,
-		  const char *file, unsigned int line)
+make_int_mode (const char *name,
+	       unsigned int bitsize, unsigned int bytesize,
+	       const char *file, unsigned int line)
 {
-  struct mode_data *m = new_mode (class, name, file, line);
+  struct mode_data *m = new_mode (MODE_INT, name, file, line);
   m->bytesize = bytesize;
   m->bitsize = bitsize;
+}
+
+#define FLOAT_MODE(N, Y, F)             FRACTIONAL_FLOAT_MODE (N, -1, Y, F)
+#define FRACTIONAL_FLOAT_MODE(N, B, Y, F) \
+  make_float_mode (#N, B, Y, #F, __FILE__, __LINE__)
+
+static void
+make_float_mode (const char *name,
+		 unsigned int bitsize, unsigned int bytesize,
+		 const char *format,
+		 const char *file, unsigned int line)
+{
+  struct mode_data *m = new_mode (MODE_FLOAT, name, file, line);
+  m->bytesize = bytesize;
+  m->bitsize = bitsize;
+  m->format = format;
+}
+
+#define RESET_FLOAT_FORMAT(N, F) \
+  reset_float_format (#N, #F, __FILE__, __LINE__)
+static void ATTRIBUTE_UNUSED
+reset_float_format (const char *name, const char *format,
+		    const char *file, const char *line)
+{
+  struct mode_data *m = find_mode (MODE_FLOAT, name);
+  if (!m)
+    {
+      error ("%s:%d: no mode \"%s\" in class FLOAT", file, line, name);
+      return;
+    }
+  m->format = format;
 }
 
 /* Partial integer modes are specified by relation to a full integer mode.
@@ -680,12 +712,26 @@ emit_insn_modes_c_header (void)
   puts ("\
    by genmodes.  */\n\
 \n\
-#define GENERATOR_FILE /* This inhibits insn-flags.h and\n\
-                          insn-constants.h, which don't exist yet.  */\n\
 #include \"config.h\"\n\
 #include \"system.h\"\n\
 #include \"coretypes.h\"\n\
 #include \"tm.h\"\n\
+#include \"machmode.h\"\n\
+#include \"real.h\"");
+}
+
+static void
+emit_min_insn_modes_c_header (void)
+{
+  printf ("/* Generated automatically from machmode.def%s%s\n",
+	   HAVE_EXTRA_MODES ? " and " : "",
+	   EXTRA_MODES_FILE);
+
+  puts ("\
+   by genmodes.  */\n\
+\n\
+#include \"bconfig.h\"\n\
+#include \"system.h\"\n\
 #include \"machmode.h\"");
 }
 
@@ -857,6 +903,25 @@ emit_class_narrowest_mode (void)
 }
 
 static void
+emit_real_format_for_mode (void)
+{
+  struct mode_data *m;
+
+  /* This will produce a table which is not constant, but points to
+     entities that are constant, which is what we want.  */
+  print_decl ("struct real_format *\n ", "real_format_for_mode",
+	      "MAX_MODE_FLOAT - MIN_MODE_FLOAT + 1");
+
+  for (m = known_modes[MODE_FLOAT]; m; m = m->next)
+    if (!strcmp (m->format, "0"))
+      tagged_printf ("%s", m->format, m->name);
+    else
+      tagged_printf ("&%s", m->format, m->name);
+
+  print_closer ();
+}
+
+static void
 emit_insn_modes_c (void)
 {
   emit_insn_modes_c_header ();
@@ -870,22 +935,35 @@ emit_insn_modes_c (void)
   emit_mode_inner ();
   emit_mode_base_align ();
   emit_class_narrowest_mode ();
+  emit_real_format_for_mode ();
+}
+
+static void
+emit_min_insn_modes_c (void)
+{
+  emit_min_insn_modes_c_header ();
+  emit_mode_name ();
+  emit_mode_class ();
+  emit_mode_wider ();
+  emit_class_narrowest_mode ();
 }
 
 /* Master control.  */
 int
 main(int argc, char **argv)
 {
-  bool gen_header;
+  bool gen_header = false, gen_min = false;
   progname = argv[0];
 
   if (argc == 1)
-    gen_header = false;
+    ;
   else if (argc == 2 && !strcmp (argv[1], "-h"))
     gen_header = true;
+  else if (argc == 2 && !strcmp (argv[1], "-m"))
+    gen_min = true;
   else
     {
-      error ("usage: %s [-h] > file", progname);
+      error ("usage: %s [-h|-m] > file", progname);
       return FATAL_EXIT_CODE;
     }
 
@@ -899,6 +977,8 @@ main(int argc, char **argv)
 
   if (gen_header)
     emit_insn_modes_h ();
+  else if (gen_min)
+    emit_min_insn_modes_c ();
   else
     emit_insn_modes_c ();
 

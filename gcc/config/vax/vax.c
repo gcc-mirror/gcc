@@ -85,9 +85,8 @@ void
 override_options (void)
 {
   /* We're VAX floating point, not IEEE floating point.  */
-  memset (real_format_for_mode, 0, sizeof real_format_for_mode);
-  REAL_MODE_FORMAT (SFmode) = &vax_f_format;
-  REAL_MODE_FORMAT (DFmode) = (TARGET_G_FLOAT ? &vax_g_format : &vax_d_format);
+  if (TARGET_G_FLOAT)
+    REAL_MODE_FORMAT (DFmode) = &vax_g_format;
 }
 
 /* Generate the assembly code for function entry.  FILE is a stdio

@@ -597,12 +597,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define ASM_COMMENT_START ";#"
 #endif
 
-/* How to print out a register name.  */
-#ifndef PRINT_REG
-#define PRINT_REG(RTX, CODE, FILE) \
-  fprintf ((FILE), "%s", reg_names[REGNO (RTX)])
-#endif
-
 /* Define a macro which returns nonzero for any tagged type which is
    used (directly or indirectly) in the specification of either some
    function's return type or some formal parameter of some function.

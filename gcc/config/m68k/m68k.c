@@ -290,9 +290,6 @@ override_options (void)
     flag_no_function_cse = 1;
 
   SUBTARGET_OVERRIDE_OPTIONS;
-
-  /* Tell the compiler which flavor of XFmode we're using.  */
-  REAL_MODE_FORMAT (XFmode) = &ieee_extended_motorola_format;
 }
 
 /* Return nonzero if FUNC is an interrupt function as specified by the

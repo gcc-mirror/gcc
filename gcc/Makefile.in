@@ -715,7 +715,7 @@ LDEXP_LIB = @LDEXP_LIB@
 BUILD_LIBS = $(BUILD_LIBIBERTY)
 
 BUILD_RTL = $(BUILD_PREFIX)rtl.o read-rtl.o $(BUILD_PREFIX)bitmap.o \
-		$(BUILD_PREFIX)ggc-none.o $(BUILD_PREFIX)insn-modes.o
+		$(BUILD_PREFIX)ggc-none.o min-insn-modes.o
 BUILD_SUPPORT = gensupport.o insn-conditions.o
 BUILD_EARLY_SUPPORT = gensupport.o dummy-conditions.o
 
@@ -863,7 +863,7 @@ BACKEND = main.o libbackend.a
 STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
  insn-attr.h insn-attrtab.c insn-opinit.c insn-constants.h tm-preds.h \
- tree-check.h insn-conditions.c insn-modes.c insn-modes.h \
+ tree-check.h insn-conditions.c min-insn-modes.c insn-modes.c insn-modes.h \
  s-flags s-config s-codes s-mlib s-genrtl s-modes s-gtype gtyp-gen.h \
  s-output s-recog s-emit s-extract s-peep s-check s-conditions \
  s-attr s-attrtab s-opinit s-preds s-constants s-crt0 \
@@ -1519,7 +1519,7 @@ rtl.o : rtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) $(RTL_H) real.h \
 	$(CC) -c $(ALL_CFLAGS) -DGENERATOR_FILE $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 print-rtl.o : print-rtl.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
-    hard-reg-set.h $(BASIC_BLOCK_H) real.h
+    hard-reg-set.h $(BASIC_BLOCK_H) real.h $(TM_P_H)
 rtlanal.o : rtlanal.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) toplev.h $(RTL_H) \
    hard-reg-set.h $(TM_P_H) insn-config.h $(RECOG_H) real.h flags.h
 
@@ -2010,13 +2010,15 @@ s-genrtl: gengenrtl$(build_exeext) $(srcdir)/move-if-change
 	$(SHELL) $(srcdir)/move-if-change tmp-genrtl.c genrtl.c
 	$(STAMP) s-genrtl
 
-insn-modes.o : insn-modes.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(GTM_H) \
-	       $(MACHMODE_H)
-insn-modes.c insn-modes.h : s-modes ; @true
+insn-modes.o : insn-modes.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+	       $(MACHMODE_H) real.h
+min-insn-modes.c insn-modes.c insn-modes.h : s-modes ; @true
 
 s-modes: genmodes$(build_exeext) $(srcdir)/move-if-change
 	$(RUN_GEN) ./genmodes$(build_exeext) -h > tmp-modes.h
 	$(SHELL) $(srcdir)/move-if-change tmp-modes.h insn-modes.h
+	$(RUN_GEN) ./genmodes$(build_exeext) -m > tmp-min-modes.c
+	$(SHELL) $(srcdir)/move-if-change tmp-min-modes.c min-insn-modes.c
 	$(RUN_GEN) ./genmodes$(build_exeext) > tmp-modes.c
 	$(SHELL) $(srcdir)/move-if-change tmp-modes.c insn-modes.c
 	$(STAMP) s-modes
@@ -2113,7 +2115,7 @@ genprogs=$(genprognames:%=%$(build_exeext))
 
 # Object files used in those programs.
 genobjs=$(genprognames:%=%.o) read-rtl.o gensupport.o genattrtab.o \
-        genautomata.o gengenrtl.o genpreds.o gengtype.o \
+        genautomata.o gengenrtl.o genmodes.o genpreds.o gengtype.o \
 	genconstants.o gen-protos.o scan.o fix-header.o scan-decls.o \
 	gencheck.o dummy-conditions.o genconditions.o
 
@@ -2261,7 +2263,7 @@ $(BUILD_PREFIX_1)rtl.o: $(srcdir)/rtl.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYST
 	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) $(BUILD_PREFIX)rtl.c $(OUTPUT_OPTION)
 
 print-rtl1.o: $(srcdir)/print-rtl.c $(BCONFIG_H) coretypes.h $(GTM_H) \
-  $(RTL_H) $(TREE_H) hard-reg-set.h $(BASIC_BLOCK_H)
+  $(RTL_H) $(TREE_H) hard-reg-set.h $(BASIC_BLOCK_H) $(TM_P_H)
 	rm -f print-rtl1.c
 	sed -e 's/config[.]h/bconfig.h/' $(srcdir)/print-rtl.c > print-rtl1.c
 	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) print-rtl1.c $(OUTPUT_OPTION)
@@ -2290,11 +2292,9 @@ $(BUILD_PREFIX_1)ggc-none.o: ggc-none.c $(BCONFIG_H) coretypes.h $(GTM_H) $(SYST
 	sed -e 's/config[.]h/bconfig.h/' $(srcdir)/ggc-none.c > $(BUILD_PREFIX)ggc-none.c
 	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) $(BUILD_PREFIX)ggc-none.c $(OUTPUT_OPTION)
 
-$(BUILD_PREFIX_1)insn-modes.o: insn-modes.c $(BCONFIG_H) $(SYSTEM_H) \
-			       coretypes.h $(GTM_H) $(MACHMODE_H)
-	rm -f $(BUILD_PREFIX)insn-modes.c
-	sed -e 's/config[.]h/bconfig.h/' $(srcdir)/insn-modes.c > $(BUILD_PREFIX)insn-modes.c
-	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) $(BUILD_PREFIX)insn-modes.c $(OUTPUT_OPTION)
+min-insn-modes.o: insn-modes.c $(BCONFIG_H) $(SYSTEM_H) $(MACHMODE_H)
+	$(CC_FOR_BUILD) -c $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) \
+	    min-insn-modes.c $(OUTPUT_OPTION)
 
 #
 # Remake internationalization support.

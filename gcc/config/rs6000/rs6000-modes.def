@@ -19,6 +19,15 @@
    Free Software Foundation, 59 Temple Place - Suite 330, Boston,
    MA 02111-1307, USA.  */
 
+/* 128-bit floating point.  ABI_V4 uses IEEE quad, AIX/Darwin
+   adjust this in rs6000_override_options. */
+FLOAT_MODE (TF, 16, ieee_quad_format);
+
+/* PSImode is used for the XER register.  The XER register
+   is not used for anything; perhaps it should be deleted,
+   except that that would change register numbers.  */
+PARTIAL_INT_MODE (SI);
+
 /* Add any extra modes needed to represent the condition code.
 
    For the RS/6000, we need separate modes when unsigned (logical) comparisons
@@ -26,6 +35,6 @@
    use a mode for the case when we are comparing the results of two
    comparisons, as then only the EQ bit is valid in the register.  */
 
-CC (CCUNS)
-CC (CCFP)
-CC (CCEQ)
+CC_MODE (CCUNS);
+CC_MODE (CCFP);
+CC_MODE (CCEQ);

@@ -5052,31 +5052,6 @@ that looks at an attribute (@pxref{Insn Attributes}) named, for example,
 two places, the @file{md} file and in @code{NOTICE_UPDATE_CC}.
 @end defmac
 
-@defmac EXTRA_CC_MODES
-Condition codes are represented in registers by machine modes of class
-@code{MODE_CC}.  By default, there is just one mode, @code{CCmode}, with
-this class.  If you need more such modes, create a file named
-@file{@var{machine}-modes.def} in your @file{config/@var{machine}}
-directory (@pxref{Back End, , Anatomy of a Target Back End}), containing
-a list of these modes.  Each entry in the list should be a call to the
-macro @code{CC}.  This macro takes one argument, which is the name of
-the mode: it should begin with @samp{CC}.  Do not put quotation marks
-around the name, or include the trailing @samp{mode}; these are
-automatically added.  There should not be anything else in the file
-except comments.
-
-A sample @file{@var{machine}-modes.def} file might look like this:
-
-@smallexample
-CC (CC_NOOV)   /* @r{Comparison only valid if there was no overflow.} */
-CC (CCFP)      /* @r{Floating point comparison that cannot trap.} */
-CC (CCFPE)     /* @r{Floating point comparison that may trap.} */
-@end smallexample
-
-When you create this file, the macro @code{EXTRA_CC_MODES} is
-automatically defined by @command{configure}, with value @samp{1}.
-@end defmac
-
 @defmac SELECT_CC_MODE (@var{op}, @var{x}, @var{y})
 Returns a mode from class @code{MODE_CC} to be used when comparison
 operation code @var{op} is applied to rtx @var{x} and @var{y}.  For
@@ -5093,7 +5068,8 @@ definition)
       ? CC_NOOVmode : CCmode))
 @end smallexample
 
-You need not define this macro if @code{EXTRA_CC_MODES} is not defined.
+You should define this macro if and only if you define extra CC modes
+in @file{@var{machine}-modes.def}.
 @end defmac
 
 @defmac CANONICALIZE_COMPARISON (@var{code}, @var{op0}, @var{op1})

@@ -2337,8 +2337,7 @@ print_operand (file, op, letter)
       REAL_VALUE_TO_TARGET_SINGLE (r, l);
       asm_fprintf (file, "%I0x%lx", l);
     }
-  else if (GET_CODE (op) == CONST_DOUBLE
-	   && (GET_MODE (op) == DFmode || GET_MODE (op) == XFmode))
+  else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == DFmode)
     {
       char dstr[30];
 

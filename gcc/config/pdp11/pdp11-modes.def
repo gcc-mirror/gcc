@@ -22,5 +22,4 @@ Boston, MA 02111-1307, USA.  */
 /* Add any extra modes needed to represent the condition code.
    CCFPmode is used for FPU, but should we use a separate reg? */
 
-CC (CCFP)
-
+CC_MODE (CCFP);

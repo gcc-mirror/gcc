@@ -1,5 +1,113 @@
 2003-10-13  Zack Weinberg  <zack@codesourcery.com>
 
+	* Makefile.in (BUILD_RTL): Replace $(BUILD_PREFIX)insn-modes.o
+	with min-insn-modes.o.
+	(STAGESTUFF): Add min-insn-modes.c.
+	(genobjs): Add genmodes.o.
+	(print-rtl.o, print-rtl1.o): Depend on $(TM_P_H).
+	(insn-modes.o): Depend on $(TM_H) not $(GTM_H); also real.h.
+	(min-insn-modes.c, min-insn-modes.o): New rules.
+	(s-modes): Also generate min-insn-modes.c.
+	($(BUILD_PREFIX_1)insn-modes.o): Kill.
+	* genmodes.c (struct mode_data): Add format field.
+	(blank_mode, validate_mode, complete_mode): Update to match.
+	(make_scalar_mode): Separate into make_int_mode and make_float_mode.
+	(_SCALAR_MODE): Kill.
+	(FLOAT_MODE, FRACTIONAL_FLOAT_MODE): Add format argument.
+	(emit_insn_modes_c_header): Adjust.
+	(emit_min_insn_modes_c_header, emit_real_format_for_mode)
+	(emit_min_insn_modes_c): New functions.
+	(emit_insn_modes_c): Call emit_real_format_for_mode.
+	(main): Add -m option to generate min-insn-modes.c.
+	* machmode.h: Update documentation.  Add format argument to
+	all uses of FLOAT_MODE.
+	* real.c: Don't define real_format_for_mode here.
+
+	* dwarfout.c: Move default definition of PRINT_REG...
+	* defaults.h: ...here.
+	* print-rtl.c: Include tm_p.h.
+	(DEBUG_PRINT_REG, DEBUG_REGISTER_NAMES, debug_reg_names, reg_names):
+	Kill.
+	(print_rtx): Use PRINT_REG, not DEBUG_PRINT_REG.  But surround
+	this entire block with #ifndef GENERATOR_FILE.
+	* regclass.c: Unconditionally define reg_names.
+	* config/mips/mips.h, config/rs6000/rs6000.h, config/sh/sh.h
+	Don't define DEBUG_REGISTER_NAMES.
+	* config/rs6000/darwin.h: Don't use DEBUG_REGISTER_NAMES in
+	redefinition of REGISTER_NAMES.
+	* config/i386/i386.h: Don't define DEBUG_PRINT_REG.
+
+	* combine.c: Change all preprocessor conditionals on
+	EXTRA_CC_MODES to use SELECT_CC_MODE instead; rearrange a bit
+	for clarity.
+	* genopinit.c: Remove mention of EXTRA_CC_MODES in comment.
+	* configure.in: Don't define EXTRA_CC_MODES.
+	* configure, config.in: Regenerate.
+	* doc/tm.texi: Remove documentation of EXTRA_CC_MODES.
+
+	* config/arc/arc.c, config/m32r/m32r.c, config/sparc/sparc.c:
+	May assume that GET_MODE_CLASS is accurate for extra CC modes
+	at all times.
+
+	* config/i860/i860.h (INIT_CUMULATIVE_ARGS): Pass correct
+	number of arguments to aggregate_value_p.
+
+	* genmodes.c (RESET_FLOAT_FORMAT, reset_float_format): New.
+	* machmode.def: Explain ARCH-modes.def.  Document
+	RESET_FLOAT_FORMAT.  Improve commentary on various mode
+	clusters.  Do not define OI, PQI, PHI, PSI, PDI, QF, HF, TQF,
+	XF, or TF modes here.  Remove backward-compatibility
+	definition of CC.
+
+	* config/alpha/alpha-modes.def: New file; define TF mode.
+	* config/arc/arm-modes.def: Define XF mode.
+	* config/c4x/c4x-modes.def: Define QF and HF modes.  Unset
+	float format for SF and DF modes.
+	* config/dsp16xx/dsp16xx-modes.def: New file; define HF mode.
+	* config/i386/i386-modes.def: Define XF and TF modes.
+	* config/i960/i960-modes.def: Define TF mode.
+	* config/ia64/ia64-modes.def: Define TF and OI modes.
+	* config/m68k/m68k-modes.def: New file; define XF mode.
+	* config/mips/mips-modes.def: New file; define TF mode, reset
+	formats for SF and DF modes.
+	* config/pa/pa-modes.def: Define TF mode.
+	* config/rs6000/rs6000.c: Define TF and PSI modes.
+	* config/s390/s390-modes.def: Define OI mode.
+	* config/sh/sh-modes.def: New file; define PSI mode.
+	* config/sparc/sparc-modes.def: Define TF mode.
+	* config/vax/vax-modes.def: New file; reset formats for SF and
+	DF modes.
+
+	* config/c4x/c4x.c (c4x_override_options): No need to mess
+	with real_format_for_mode or set REAL_MODE_FORMATs.
+	(c4x_immed_int_constant): Don't apply GET_MODE_CLASS to rtx
+	variable.
+	* config/i386/i386.c (override_options): No need to set
+	REAL_MODE_FORMATs here.
+	* config/i960/i960.c (i960_initialize): Likewise.
+	* config/m68k/m68k.c (m68k_override_options): Likewise.
+	* config/ia64/ia64.c (ia64_override_options): Set REAL_MODE_FORMAT
+	for TFmode only if not the default.
+	* config/mips/mips.c (override_options): Likewise.
+	* config/vax/vax.c (override_optionms): Set REAL_MODE_FORMAT for
+	DFmode only if not the default.
+
+	* config/i370/i370.h (RET_REG): Don't consider TFmode.
+	* config/m68hc11/m68hc11.c (print_operand): Don't consider XFmode.
+	* config/dsp16xx/dsp16xx.c (hard_regno_mode_ok): #if 0 out use
+	of modes that don't appear anywhere in the machine description.
+
+	* config/arc/arc-modes.def, config/arm/arm-modes.def
+	* config/c4x/c4x-modes.def, config/frv/frv-modes.def
+	* config/i386/i386-modes.def, config/i960/i960-modes.def
+	* config/ia64/ia64-modes.def, config/mmix/mmix-modes.def
+	* config/pa/pa-modes.def, config/pdp11/pdp11-modes.def
+	* config/rs6000/rs6000-modes.def, config/s390/s390-modes.def
+	* config/sparc/sparc-modes.def: Convert to new style for
+	declaring extra CC modes.
+
+2003-10-13  Zack Weinberg  <zack@codesourcery.com>
+
 	* cpplex.c (_cpp_clean_line): In the common case of a line
 	with no trigraphs and no \-newline, avoid writing to memory.
 	(_cpp_skip_block_comment): Use a local 'cur' pointer instead
