@@ -1,3 +1,14 @@
+2004-01-22  Daniel Jacobowitz  <drow@mvista.com>
+
+	* config/arm/arm.c: Include "debug.h".
+	(thumb_pushpop): Take two new arguments.  Add some commentary. 
+	Output frame information when pushing.
+	(thumb_exit, thumb_unexpanded_epilogue): Update calls to
+	thumb_pushpop.
+	(thumb_output_function_prologue): Likewise.  Accumulate a CFA
+	offset, and pass it to thumb_pushpop.  Output CFI information.
+	(thumb_expand_prologue): Add some frame-related markers and notes.
+
 2004-01-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_frame_info): Allow large frame sizes
