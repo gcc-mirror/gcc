@@ -1,3 +1,16 @@
+2002-03-01  Jason Merrill  <jason@redhat.com>
+
+	* except.c: Don't include decl.h or obstack.h.  Do include
+	tree-inline.h.
+	(build_throw): Destroy temporaries from the thrown
+	expression before calling __cxa_throw.  Construct a thrown 
+	temporary directly into the exception object.
+	(stabilize_throw_expr): New function.
+	(wrap_cleanups_r): New function.
+	* tree.c (stabilize_expr): New function.
+	* init.c (build_init): New function.
+	* Make-lang.in (cp/except.o): Adjust .h deps.
+
 2002-02-28  Jason Merrill  <jason@redhat.com>
 
 	* search.c (lookup_base_r): Don't clear is_non_public just because
