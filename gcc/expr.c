@@ -208,9 +208,8 @@ static char direct_store[NUM_MACHINE_MODES];
 #if defined (HAVE_movstrqi) || defined (HAVE_movstrhi) || defined (HAVE_movstrsi) || defined (HAVE_movstrdi) || defined (HAVE_movstrti)
 #define MOVE_RATIO 2
 #else
-/* A value of around 6 would minimize code size; infinity would minimize
-   execution time.  */
-#define MOVE_RATIO 15
+/* If we are optimizing for space (-Os), cut down the default move ratio */
+#define MOVE_RATIO (optimize_size ? 3 : 15)
 #endif
 #endif
 

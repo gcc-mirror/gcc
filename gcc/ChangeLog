@@ -1,3 +1,7 @@
+Tue Apr 14 16:19:03 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* expr.c (MOVE_RATIO): Set to 3 if optimizing for space.
+
 Tue Apr 14 11:31:28 1998  Krister Walfridsson <cato@df.lth.se>
 
 	* i386/bsd386.h (ASM_OUTPUT_ALIGN): Redefine.
