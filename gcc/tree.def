@@ -371,13 +371,14 @@ DEFTREECODE (ARRAY_REF, "array_ref", "r", 2)
    made out of a chain of TREE_LIST nodes.  */
 DEFTREECODE (CONSTRUCTOR, "constructor", "e", 2)
 
-/* The expression types are mostly straightforward,
-   with the fourth argument of DEFTREECODE saying
-   how many operands there are.
-   Unless otherwise specified, the operands are expressions.  */
+/* The expression types are mostly straightforward, with the fourth argument
+   of DEFTREECODE saying how many operands there are.
+   Unless otherwise specified, the operands are expressions and the
+   types of all the operands and the expression must all be the same.  */
 
 /* Contains two expressions to compute, one followed by the other.
-   the first value is ignored.  The second one's value is used.  */
+   the first value is ignored.  The second one's value is used.  The
+   type of the first expression need not agree with the other types.  */
 DEFTREECODE (COMPOUND_EXPR, "compound_expr", "e", 2)
 
 /* Assignment expression.  Operand 0 is the what to set; 1, the new value.  */
@@ -395,7 +396,9 @@ DEFTREECODE (TARGET_EXPR, "target_expr", "e", 3)
 /* Conditional expression ( ... ? ... : ...  in C).
    Operand 0 is the condition.
    Operand 1 is the then-value.
-   Operand 2 is the else-value.  */
+   Operand 2 is the else-value.
+   Operand 0 may be of any types, but the types of operands 1 and 2
+   must be the same and the same as the the of this expression.  */
 DEFTREECODE (COND_EXPR, "cond_expr", "e", 3)
 
 /* Declare local variables, including making RTL and allocating space.
@@ -507,17 +510,12 @@ DEFTREECODE (PLACEHOLDER_EXPR, "placeholder_expr", "x", 0)
    operand 0.  */
 DEFTREECODE (WITH_RECORD_EXPR, "with_record_expr", "e", 2)
 
-/* Simple arithmetic.  Operands must have the same machine mode
-   and the value shares that mode.  */
+/* Simple arithmetic.  */
 DEFTREECODE (PLUS_EXPR, "plus_expr", "2", 2)
 DEFTREECODE (MINUS_EXPR, "minus_expr", "2", 2)
 DEFTREECODE (MULT_EXPR, "mult_expr", "2", 2)
 
 /* Division for integer result that rounds the quotient toward zero.  */
-/* Operands must have the same machine mode.
-   In principle they may be real, but that is not currently supported.
-   The result is always fixed point, and it has the same type as the
-   operands if they are fixed point.   */
 DEFTREECODE (TRUNC_DIV_EXPR, "trunc_div_expr", "2", 2)
 
 /* Division for integer result that rounds the quotient toward infinity.  */
@@ -535,10 +533,7 @@ DEFTREECODE (CEIL_MOD_EXPR, "ceil_mod_expr", "2", 2)
 DEFTREECODE (FLOOR_MOD_EXPR, "floor_mod_expr", "2", 2)
 DEFTREECODE (ROUND_MOD_EXPR, "round_mod_expr", "2", 2)
 
-/* Division for real result.  The two operands must have the same type.
-   In principle they could be integers, but currently only real
-   operands are supported.  The result must have the same type
-   as the operands.  */
+/* Division for real result.  */
 DEFTREECODE (RDIV_EXPR, "rdiv_expr", "2", 2)
 
 /* Division which is not supposed to need rounding.
@@ -562,7 +557,7 @@ DEFTREECODE (FLOAT_EXPR, "float_expr", "1", 1)
    constraints on value type are not known yet.  */
 DEFTREECODE (EXPON_EXPR, "expon_expr", "2", 2)
 
-/* Unary negation.  Value has same type as operand.  */
+/* Unary negation.  */
 DEFTREECODE (NEGATE_EXPR, "negate_expr", "1", 1)
 
 DEFTREECODE (MIN_EXPR, "min_expr", "2", 2)
@@ -574,8 +569,7 @@ DEFTREECODE (FFS_EXPR, "ffs_expr", "1", 1)
    Shift is supposed to mean logical shift if done on an
    unsigned type, arithmetic shift on a signed type.
    The second operand is the number of bits to
-   shift by, and must always have mode SImode.
-   The result has the same mode as the first operand.  */
+   shift by; it need not be the same type as the first operand and result.  */
 DEFTREECODE (LSHIFT_EXPR, "alshift_expr", "2", 2)
 DEFTREECODE (RSHIFT_EXPR, "arshift_expr", "2", 2)
 DEFTREECODE (LROTATE_EXPR, "lrotate_expr", "2", 2)
@@ -621,7 +615,7 @@ DEFTREECODE (RANGE_EXPR, "range_expr", "2", 2)
 
 /* Represents a conversion of type of a value.
    All conversions, including implicit ones, must be
-   represented by CONVERT_EXPR nodes.  */
+   represented by CONVERT_EXPR or NOP_EXPR nodes.  */
 DEFTREECODE (CONVERT_EXPR, "convert_expr", "1", 1)
 
 /* Represents a conversion expected to require no code to be generated.  */
@@ -657,8 +651,7 @@ DEFTREECODE (ENTRY_VALUE_EXPR, "entry_value_expr", "e", 1)
    returns a complex value of the corresponding complex type.  */
 DEFTREECODE (COMPLEX_EXPR, "complex_expr", "2", 2)
 
-/* Complex conjugate of operand.  Used only on complex types.
-   The value has the same type as the operand.  */
+/* Complex conjugate of operand.  Used only on complex types.  */
 DEFTREECODE (CONJ_EXPR, "conj_expr", "1", 1)
 
 /* Used only on an operand of complex type, these return
@@ -705,6 +698,5 @@ DEFTREECODE (LOOP_EXPR, "loop_expr", "s", 1)
 /*
 Local variables:
 mode:c
-version-control: t
 End:
 */
