@@ -340,6 +340,44 @@
 ;; emit RTL for both the compare and the branch.
 ;;
 
+;; This expander is not used by the FSF compiler, refer to
+;; FUNCTION_POINTER_COMPARISON_MODE in pa.h for a brief discussion why.
+(define_expand "cmppsi"
+  [(set (reg:CC 0)
+	(compare:CC (match_operand:SI 0 "reg_or_0_operand" "")
+		    (match_operand:SI 1 "reg_or_0_operand" "")))]
+  ""
+  "
+{
+  rtx res0, res1;
+
+  /* We need two new pseudos to hold the value of the dereferenced
+     plabel.  */
+  res0 = gen_reg_rtx (Pmode);
+  res1 = gen_reg_rtx (Pmode);
+
+  /* Move the first function pointer into %r26 and call the
+     magic millicode routine to get the function's actual
+     address.   Copy the result from %r29 into the first
+     psuedo.  */
+  emit_move_insn (gen_rtx (REG, Pmode, 26), operands[0]);
+  emit_insn (gen_plabel_dereference (gen_reg_rtx (SImode)));
+  emit_move_insn (res0, gen_rtx (REG, Pmode, 29));
+
+  /* Likewise for the second function pointer. */
+  emit_move_insn (gen_rtx (REG, Pmode, 26), operands[1]);
+  emit_insn (gen_plabel_dereference (gen_reg_rtx (SImode)));
+  emit_move_insn (res1, gen_rtx (REG, Pmode, 29));
+
+  /* Put the results in hppa_compare_op0 and hppa_compare_op1.  */
+  hppa_compare_op0 = res0;
+  hppa_compare_op1 = res1;
+  /* The branch is really a SImode branch.  PSImode was used just
+     so we could identify this as a function pointer comparison.  */
+ hppa_branch_type = CMP_SI;
+ DONE;
+}")
+
 (define_expand "cmpsi"
   [(set (reg:CC 0)
 	(compare:CC (match_operand:SI 0 "reg_or_0_operand" "")
@@ -5261,4 +5299,89 @@
 }"
   [(set_attr "type" "multi")
    (set_attr "length" "8")])
+
+/* Given a function pointer (aka plabel) in %r26, return (in %r29) the
+   actual address of the function that would be called if the function
+   pointer was used in an indirect call.
+
+   We must show %r1 as clobbered since the linker might insert a stub
+   in the call path that clobbers %r1 (yes, it really happens).  */
+;; This expander is not used by the FSF compiler, refer to
+;; FUNCTION_POINTER_COMPARISON_MODE in pa.h for a brief discussion why.
+(define_insn "plabel_dereference"
+  [(set (reg:SI 29) (unspec:SI [(reg:SI 26)] 0))
+   (clobber (match_operand:SI 0 "register_operand" "=a"))
+   (clobber (reg:SI 26))
+   (clobber (reg:SI 22))
+   (clobber (reg:SI 31))]
+  ""
+  "*
+{
+  /* Must import the magic millicode routine.  */
+  output_asm_insn (\".IMPORT $$sh_func_adrs,MILLICODE\", NULL);
+
+  /* This is absolutely fucking amazing.
+
+     First, copy our input parameter into %r29 just in case we don't
+     need to call $$sh_func_adrs.  */
+  output_asm_insn (\"copy %%r26,%%r29\", NULL);
+
+  /* Next, examine the low two bits in %r26, if they aren't 0x2, then
+     we use %r26 unchanged.  */
+  if (get_attr_length (insn) == 32)
+    output_asm_insn (\"extru %%r26,31,2,%%r31\;comib,<>,n 2,%%r31,.+24\", NULL);
+  else if (get_attr_length (insn) == 40)
+    output_asm_insn (\"extru %%r26,31,2,%%r31\;comib,<>,n 2,%%r31,.+32\", NULL);
+  else if (get_attr_length (insn) == 44)
+    output_asm_insn (\"extru %%r26,31,2,%%r31\;comib,<>,n 2,%%r31,.+36\", NULL);
+  else
+    output_asm_insn (\"extru %%r26,31,2,%%r31\;comib,<>,n 2,%%r31,.+20\", NULL);
+
+  /* Next, compare %r26 with 4096, if %r26 is less than or equal to
+     4096, then we use %r26 unchanged.  */
+  if (get_attr_length (insn) == 32)
+    output_asm_insn (\"ldi 4096,%%r31\;comb,<<,n %%r26,%%r31,.+16\", NULL);
+  else if (get_attr_length (insn) == 40)
+    output_asm_insn (\"ldi 4096,%%r31\;comb,<<,n %%r26,%%r31,.+24\", NULL);
+  else if (get_attr_length (insn) == 44)
+    output_asm_insn (\"ldi 4096,%%r31\;comb,<<,n %%r26,%%r31,.+28\", NULL);
+  else
+    output_asm_insn (\"ldi 4096,%%r31\;comb,<<,n %%r26,%%r31,.+12\", NULL);
+
+  /* Else call $$sh_func_adrs to extract the function's real add24.  */
+  return output_millicode_call (insn,
+				gen_rtx (SYMBOL_REF, SImode,
+					 \"$$sh_func_adrs\"));
+}"
+  [(set_attr "type" "multi")
+   (set (attr "length")
+     (cond [
+;; Target (or stub) within reach
+            (and (lt (plus (symbol_ref "total_code_bytes") (pc))
+                     (const_int 240000))
+                 (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
+                     (const_int 0)))
+            (const_int 28)
+
+;; NO_SPACE_REGS
+            (ne (symbol_ref "TARGET_NO_SPACE_REGS")
+                (const_int 0))
+            (const_int 32)
+
+;; Out of reach, but not PIC or PORTABLE_RUNTIME
+;; same as NO_SPACE_REGS code
+            (and (eq (symbol_ref "TARGET_PORTABLE_RUNTIME")
+                     (const_int 0))
+                 (eq (symbol_ref "flag_pic")
+                     (const_int 0)))
+            (const_int 32)
+
+;; PORTABLE_RUTNIME
+	    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
+		(const_int 0))
+	    (const_int 40)]
+
+;; Out of range and PIC 
+	  (const_int 44)))])
+
 

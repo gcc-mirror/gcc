@@ -4462,9 +4462,7 @@ output_millicode_call (insn, call_dest)
      and we're sure that the branch will reach the beginning of the $CODE$
      subspace.  */
   if ((dbr_sequence_length () == 0
-/* CYGNUS LOCAL mentor6480hack/law */
        && (get_attr_length (insn) == 8 || get_attr_length (insn) == 28))
-/* END CYGNUS LOCAL */
       || (dbr_sequence_length () != 0
 	  && GET_CODE (NEXT_INSN (insn)) != JUMP_INSN
 	  && get_attr_length (insn) == 4))
