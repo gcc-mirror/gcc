@@ -30,6 +30,7 @@
 #include "tm.h"
 #include "tree.h"
 #include "rtl.h"
+#include "ggc.h"
 #include "flags.h"
 #include "output.h"
 #include "ada.h"

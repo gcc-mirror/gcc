@@ -1541,6 +1541,14 @@ package body GNAT.OS_Lib is
                   Buffer (Path_Len) := Directory_Separator;
                end if;
 
+               --  By default, the drive letter on Windows is in upper case
+
+               if On_Windows and then Path_Len >= 2 and then
+                 Buffer (2) = ':'
+               then
+                  System.Case_Util.To_Upper (Buffer (1 .. 1));
+               end if;
+
                return Buffer (1 .. Path_Len);
             end;
          end if;

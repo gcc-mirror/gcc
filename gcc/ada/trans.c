@@ -82,7 +82,6 @@ bool type_annotate_only;
 
 struct stmt_group GTY((chain_next ("%h.previous"))) {
   struct stmt_group *previous;	/* Previous code group.  */
-  struct stmt_group *global;	/* Global code group from the level.  */
   tree stmt_list;		/* List of statements for this code group. */
   tree block;			/* BLOCK for this code group, if any. */
   tree cleanups;		/* Cleanups for this code group, if any.  */
@@ -285,8 +284,6 @@ gnat_init_stmt_group ()
   /* Initialize ourselves.  */
   init_code_table ();
   start_stmt_group ();
-
-  current_stmt_group->global = current_stmt_group;
 
   /* Enable GNAT stack checking method if needed */
   if (!Stack_Check_Probes_On_Target)
@@ -1862,7 +1859,7 @@ call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	{
 	  tree gnu_name;
 
-	  gnu_subprog_call = protect_multiple_eval (gnu_subprog_call);
+	  gnu_subprog_call = save_expr (gnu_subprog_call);
 	  gnu_name_list = nreverse (gnu_name_list);
 
 	  /* If any of the names had side-effects, ensure they are all
@@ -2217,8 +2214,7 @@ Exception_Handler_to_gnu_sjlj (Node_Id gnat_node)
 		= build_binary_op
 		  (TRUTH_ORIF_EXPR, integer_type_node,
 		   build_binary_op (EQ_EXPR, integer_type_node, gnu_comp,
-				    convert (TREE_TYPE (gnu_comp),
-					     build_int_cst (NULL_TREE, 'V'))),
+				    build_int_cst (TREE_TYPE (gnu_comp), 'V')),
 		   this_choice);
 	    }
 	}
@@ -2504,9 +2500,10 @@ gnat_to_gnu (Node_Id gnat_node)
       if (Present (Entity (gnat_node)))
 	gnu_result = DECL_INITIAL (get_gnu_tree (Entity (gnat_node)));
       else
-	gnu_result = convert (gnu_result_type,
-			      build_int_cst (NULL_TREE,
-					     Char_Literal_Value (gnat_node)));
+	gnu_result
+	  = force_fit_type
+	    (build_int_cst (gnu_result_type, Char_Literal_Value (gnat_node)),
+	     false, false, false);
       break;
 
     case N_Real_Literal:
@@ -2619,11 +2616,10 @@ gnat_to_gnu (Node_Id gnat_node)
 	    {
 	      gnu_list
 		= tree_cons (gnu_idx,
-			     convert (TREE_TYPE (gnu_result_type),
-				      build_int_cst
-				      (NULL_TREE,
-				       Get_String_Char (gnat_string, i + 1))),
-			   gnu_list);
+			     build_int_cst (TREE_TYPE (gnu_result_type),
+					    Get_String_Char (gnat_string,
+							     i + 1)),
+			     gnu_list);
 
 	      gnu_idx = int_const_binop (PLUS_EXPR, gnu_idx, integer_one_node,
 					 0);
@@ -3657,7 +3653,6 @@ gnat_to_gnu (Node_Id gnat_node)
       /* This is not called for the main unit, which is handled in function
 	 gigi above.  */
       start_stmt_group ();
-      current_stmt_group->global = current_stmt_group;
       gnat_pushlevel ();
 
       Compilation_Unit_to_gnu (gnat_node);
@@ -4114,7 +4109,6 @@ start_stmt_group ()
 
   group->previous = current_stmt_group;
   group->stmt_list = group->block = group->cleanups = NULL_TREE;
-  group->global = current_stmt_group ? current_stmt_group->global : NULL;
   current_stmt_group = group;
 }
 
@@ -4126,25 +4120,10 @@ add_stmt (tree gnu_stmt)
   append_to_statement_list (gnu_stmt, &current_stmt_group->stmt_list);
 
   /* If we're at top level, show everything in here is in use in case
-     any of it is shared by a subprogram.
-
-     ??? If this is a DECL_EXPR for a VAR_DECL or CONST_DECL, we must
-     walk the sizes and DECL_INITIAL since we won't be walking the
-     BIND_EXPR here.  This whole thing is a mess!  */
+     any of it is shared by a subprogram.  */
   if (global_bindings_p ())
-    {
-      walk_tree (&gnu_stmt, mark_visited, NULL, NULL);
-      if (TREE_CODE (gnu_stmt) == DECL_EXPR
-	  && (TREE_CODE (DECL_EXPR_DECL (gnu_stmt)) == VAR_DECL
-	      || TREE_CODE (DECL_EXPR_DECL (gnu_stmt)) == CONST_DECL))
-	{
-	  tree gnu_decl = DECL_EXPR_DECL (gnu_stmt);
+    walk_tree (&gnu_stmt, mark_visited, NULL, NULL);
 
-	  walk_tree (&DECL_SIZE (gnu_decl), mark_visited, NULL, NULL);
-	  walk_tree (&DECL_SIZE_UNIT (gnu_decl), mark_visited, NULL, NULL);
-	  walk_tree (&DECL_INITIAL (gnu_decl), mark_visited, NULL, NULL);
-	}
-    }
 }
 
 /* Similar, but set the location of GNU_STMT to that of GNAT_NODE.  */
@@ -4163,7 +4142,7 @@ add_stmt_with_node (tree gnu_stmt, Node_Id gnat_node)
 void
 add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 {
-  struct stmt_group *save_stmt_group = current_stmt_group;
+  tree gnu_stmt;
 
   /* If this is a variable that Gigi is to ignore, we may have been given
      an ERROR_MARK.  So test for it.  We also might have been given a
@@ -4174,14 +4153,24 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 	  && TREE_CODE (TREE_TYPE (gnu_decl)) == UNCONSTRAINED_ARRAY_TYPE))
     return;
 
-  if (global_bindings_p ())
-    current_stmt_group = current_stmt_group->global;
-
-  add_stmt_with_node (build (DECL_EXPR, void_type_node, gnu_decl),
-		      gnat_entity);
-
-  if (global_bindings_p ())
-    current_stmt_group = save_stmt_group;
+  /* If we are global, we don't want to actually output the DECL_EXPR for
+     this decl since we already have evaluated the expressions in the
+     sizes and positions as globals and doing it again would be wrong.
+     But we do have to mark everything as used.  */
+  gnu_stmt = build (DECL_EXPR, void_type_node, gnu_decl);
+  if (!global_bindings_p ())
+    add_stmt_with_node (gnu_stmt, gnat_entity);
+  else
+    {
+      walk_tree (&gnu_stmt, mark_visited, NULL, NULL);
+      if (TREE_CODE (gnu_decl) == VAR_DECL
+	  || TREE_CODE (gnu_decl) == CONST_DECL)
+	{
+	  walk_tree (&DECL_SIZE (gnu_decl), mark_visited, NULL, NULL);
+	  walk_tree (&DECL_SIZE_UNIT (gnu_decl), mark_visited, NULL, NULL);
+	  walk_tree (&DECL_INITIAL (gnu_decl), mark_visited, NULL, NULL);
+	}
+    }
 
   /* If this is a DECL_EXPR for a variable with DECL_INITIAl set,
      there are two cases we need to handle here.  */

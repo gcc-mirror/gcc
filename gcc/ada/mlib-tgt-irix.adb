@@ -122,6 +122,16 @@ package body MLib.Tgt is
 
       Init_Fini : Argument_List_Access := Empty_Argument_List;
 
+      N_Options    : Argument_List := Options;
+      Options_Last : Natural := N_Options'Last;
+      --  After moving -lxxx to Options_2, N_Options up to index Options_Last
+      --  will contain the Options to pass to MLib.Utl.Gcc.
+
+      Options_2      : Argument_List (Options'Range);
+      Options_2_Last : Natural := Options_2'First - 1;
+      --  Options_2 up to index Options_2_Last will contain the Options_2 to
+      --  pass to MLib.Utl.Gcc.
+
    begin
       if Opt.Verbose_Mode then
          Write_Str ("building relocatable shared library ");
@@ -136,12 +146,39 @@ package body MLib.Tgt is
          Init_Fini (4) := new String'("-Wl," & Lib_Filename & "final");
       end if;
 
+      --  Move all -lxxx to Options_2
+
+      declare
+         Index : Natural := N_Options'First;
+         Arg   : String_Access;
+
+      begin
+         while Index <= Options_Last loop
+            Arg := N_Options (Index);
+
+            if Arg'Length > 2
+              and then Arg (Arg'First .. Arg'First + 1) = "-l"
+            then
+               Options_2_Last := Options_2_Last + 1;
+               Options_2 (Options_2_Last) := Arg;
+               N_Options (Index .. Options_Last - 1) :=
+                 N_Options (Index + 1 .. Options_Last);
+               Options_Last := Options_Last - 1;
+
+            else
+               Index := Index + 1;
+            end if;
+         end loop;
+      end;
+
       if Lib_Version = "" then
          MLib.Utl.Gcc
            (Output_File => Lib_File,
             Objects     => Ofiles,
-            Options     => Options & Init_Fini.all,
-            Driver_Name => Driver_Name);
+            Options     => N_Options (N_Options'First .. Options_Last) &
+                           Init_Fini.all,
+            Driver_Name => Driver_Name,
+            Options_2   => Options_2 (Options_2'First .. Options_2_Last));
 
       else
          Version_Arg := new String'("-Wl,-soname," & Lib_Version);
@@ -150,16 +187,20 @@ package body MLib.Tgt is
             MLib.Utl.Gcc
               (Output_File => Lib_Version,
                Objects     => Ofiles,
-               Options     => Options & Version_Arg & Init_Fini.all,
-               Driver_Name => Driver_Name);
+               Options     => N_Options (N_Options'First .. Options_Last) &
+                              Version_Arg & Init_Fini.all,
+               Driver_Name => Driver_Name,
+               Options_2   => Options_2 (Options_2'First .. Options_2_Last));
             Symbolic_Link_Needed := Lib_Version /= Lib_File;
 
          else
             MLib.Utl.Gcc
               (Output_File => Lib_Dir & Directory_Separator & Lib_Version,
                Objects     => Ofiles,
-               Options     => Options & Version_Arg & Init_Fini.all,
-               Driver_Name => Driver_Name);
+               Options     => N_Options (N_Options'First .. Options_Last) &
+                              Version_Arg & Init_Fini.all,
+               Driver_Name => Driver_Name,
+               Options_2   => Options_2 (Options_2'First .. Options_2_Last));
             Symbolic_Link_Needed :=
               Lib_Dir & Directory_Separator & Lib_Version /= Lib_File;
          end if;

@@ -518,7 +518,7 @@ gnat_print_type (FILE *file, tree node, int indent)
       break;
 
     case ENUMERAL_TYPE:
-      print_node (file, "RM size", TYPE_RM_SIZE_ENUM (node), indent + 4);
+      print_node (file, "RM size", TYPE_RM_SIZE_NUM (node), indent + 4);
       break;
 
     case INTEGER_TYPE:
@@ -532,7 +532,7 @@ gnat_print_type (FILE *file, tree node, int indent)
       else
 	print_node (file, "index type", TYPE_INDEX_TYPE (node), indent + 4);
 
-      print_node (file, "RM size", TYPE_RM_SIZE_INT (node), indent + 4);
+      print_node (file, "RM size", TYPE_RM_SIZE_NUM (node), indent + 4);
       break;
 
     case ARRAY_TYPE:

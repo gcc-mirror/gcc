@@ -398,6 +398,14 @@ pragma Elaborate_Body (OS_Lib);
    --  not true; for example, this is not true in Unix for two hard links
    --  designating the same file.
    --
+   --  On Windows, the returned path will start with a drive letter except
+   --  when Directory is not empty and does not include a drive letter.
+   --  If Directory is empty (the default) and Name is a relative path
+   --  or an absolute path without drive letter, the letter of the current
+   --  drive will start the returned path. If Case_Sensitive is True
+   --  (the default), then this drive letter will be forced to upper case
+   --  ("C:\...").
+   --
    --  If Resolve_Links is set to True, then the symbolic links, on systems
    --  that support them, will be fully converted to the name of the file
    --  or directory pointed to. This is slightly less efficient, since it

@@ -1327,7 +1327,7 @@ package body Exp_Util is
 
    begin
       --  Loop to determine whether there is a component reference in
-      --  the left hand side if this appears on the left side of an
+      --  the left hand side if Exp appears on the left side of an
       --  assignment statement. Needed to determine if form of result
       --  must be a variable.
 
@@ -3842,6 +3842,16 @@ package body Exp_Util is
       --  this conversion will be a noop.
 
       if Implementation_Base_Type (Otyp) = Implementation_Base_Type (Ityp) then
+         return True;
+
+      --  Same if this is an upwards conversion of an untagged type, and there
+      --  are no constraints involved (could be more general???)
+
+      elsif Etype (Ityp) = Otyp
+        and then not Is_Tagged_Type (Ityp)
+        and then not Has_Discriminants (Ityp)
+        and then No (First_Rep_Item (Base_Type (Ityp)))
+      then
          return True;
 
       --  If the size of output type is known at compile time, there is

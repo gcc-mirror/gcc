@@ -37,7 +37,6 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
-with Expander; use Expander;
 with Exp_Dist; use Exp_Dist;
 with Fname;    use Fname;
 with Hostparm; use Hostparm;
@@ -5366,29 +5365,14 @@ package body Sem_Prag is
          when Pragma_Debug => Debug : begin
             GNAT_Pragma;
 
-            --  If assertions are enabled, and we are expanding code, then
-            --  we rewrite the pragma with its corresponding procedure call
-            --  and then analyze the call.
+            --  Rewrite into a conditional with a static condition
 
-            if Assertions_Enabled and Expander_Active then
-               Rewrite (N, Relocate_Node (Debug_Statement (N)));
-               Analyze (N);
-
-            --  Otherwise we work a bit to get a tree that makes sense
-            --  for ASIS purposes, namely a pragma with an analyzed
-            --  argument that looks like a procedure call.
-
-            else
-               Expander_Mode_Save_And_Set (False);
-               Rewrite (N, Relocate_Node (Debug_Statement (N)));
-               Analyze (N);
-               Rewrite (N,
-                 Make_Pragma (Loc,
-                   Chars => Name_Debug,
-                   Pragma_Argument_Associations =>
-                     New_List (Relocate_Node (N))));
-               Expander_Mode_Restore;
-            end if;
+            Rewrite (N, Make_Implicit_If_Statement (N,
+              Condition => New_Occurrence_Of (Boolean_Literals (
+                Assertions_Enabled and Expander_Active), Loc),
+              Then_Statements => New_List (
+                Relocate_Node (Debug_Statement (N)))));
+            Analyze (N);
          end Debug;
 
          ---------------------
