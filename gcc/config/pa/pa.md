@@ -30,7 +30,7 @@
 ;; type "binary" insns have two input operands (1,2) and one output (0)
 
 (define_attr "type"
-  "move,unary,binary,compare,load,store,branch,cbranch,call,dyncall,fpload,fpstore,fpalu,fpcc,fpmul,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,multi,misc,milli"
+  "move,unary,binary,compare,load,store,branch,cbranch,fbranch,call,dyncall,fpload,fpstore,fpalu,fpcc,fpmul,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,multi,misc,milli"
   (const_string "binary"))
 
 ;; Length (in # of insns).
@@ -59,22 +59,24 @@
 
 ;; Attributes for instruction and branch scheduling
 
-(define_delay (eq_attr "type" "call")
-  [(eq_attr "in_branch_delay" "true") (nil) (nil)])
-
 (define_attr "in_branch_delay" "false,true"
-  (if_then_else (and (eq_attr "type" "!branch,cbranch,call,dyncall,multi,milli")
+  (if_then_else (and (eq_attr "type" "!branch,cbranch,fbranch,call,dyncall,multi,milli")
 		     (eq_attr "length" "1"))
 		(const_string "true")
 		(const_string "false")))
 
-(define_delay (eq_attr "type" "branch")
+;; Unconditional branch, call, and millicode call delay slot description.
+(define_delay (eq_attr "type" "branch,call,milli")
   [(eq_attr "in_branch_delay" "true") (nil) (nil)])
 
+;; Floating point conditional branch delay slot description.
+(define_delay (eq_attr "type" "fbranch")
+  [(eq_attr "in_branch_delay" "true") 
+   (eq_attr "in_branch_delay" "true") 
+   (nil)])
+
+;; Integer conditional branch delay slot description.
 (define_delay (eq_attr "type" "cbranch")
-  [(eq_attr "in_branch_delay" "true") (nil) (nil)])
-
-(define_delay (eq_attr "type" "milli")
   [(eq_attr "in_branch_delay" "true") (nil) (nil)])
 
 ;; Function units of the HPPA. The following data is for the "Snake"
@@ -627,8 +629,14 @@
 			   (label_ref (match_operand 0 "" ""))
 			   (pc)))]
   ""
-  "ftest\;bl%* %0,0"
-  [(set_attr "type" "cbranch")
+  "*
+{
+  if (INSN_ANNULLED_BRANCH_P (insn))
+    return \"ftest\;bl,n %0,0\";
+  else
+    return \"ftest\;bl%* %0,0\";
+}"
+  [(set_attr "type" "fbranch")
    (set_attr "length" "2")])
 
 (define_insn ""
@@ -636,8 +644,14 @@
 			   (pc)
 			   (label_ref (match_operand 0 "" ""))))]
   ""
-  "ftest\;add,tr 0,0,0\;bl%* %0,0"
-  [(set_attr "type" "cbranch")
+  "*
+{
+  if (INSN_ANNULLED_BRANCH_P (insn))
+    return \"ftest\;add,tr 0,0,0\;bl,n %0,0\";
+  else
+    return \"ftest\;add,tr 0,0,0\;bl%* %0,0\";
+}"
+  [(set_attr "type" "fbranch")
    (set_attr "length" "3")])
 
 ;; Move instructions
