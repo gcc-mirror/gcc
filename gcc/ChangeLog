@@ -1,5 +1,9 @@
 Fri Nov 13 11:02:11 1998  Stan Cox  <scox@cygnus.com>
 
+	* splet.h (SUBTARGET_OVERRIDE_OPTIONS): New to
+	deprecate -mlive-g0 and -mbroken-saverestore.
+	* t-splet (MULTILIB_OPTIONS): Likewise.
+	
 	* sparc.c (sparc_flat_compute_frame_size): Correctly calc args_size
 	in a leaf function.  Clarify total_size/extra_size relationship.
 

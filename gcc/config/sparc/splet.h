@@ -51,3 +51,19 @@ Boston, MA 02111-1307, USA.  */
 #define BYTES_BIG_ENDIAN (! TARGET_LITTLE_ENDIAN)
 #undef WORDS_BIG_ENDIAN
 #define WORDS_BIG_ENDIAN (! TARGET_LITTLE_ENDIAN)
+
+#undef SUBTARGET_OVERRIDE_OPTIONS
+#define SUBTARGET_OVERRIDE_OPTIONS 					\
+  do {									\
+    if (TARGET_LIVE_G0)							\
+      {									\
+	warning ("Option '-mlive-g0' deprecated.");			\
+        target_flags &= ~MASK_LIVE_G0;					\
+      }									\
+    else if (TARGET_BROKEN_SAVERESTORE)					\
+      {									\
+	warning ("Option '-mbroken-saverestore' deprecated.");		\
+        target_flags &= ~MASK_BROKEN_SAVERESTORE;			\
+      }									\
+  } while (0)
+
