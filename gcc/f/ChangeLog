@@ -1,3 +1,11 @@
+Sat Feb 19 18:43:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* com.c (ffecom_sym_transform): Use DECL_SIZE_UNIT.
+	(ffecom_transform_common_, ffecom_transform_equiv_): Likewise.
+	(duplicate_decls): Likewise.
+	(ffecom_tree_canonize_ptr_): Delete extra arg to bitsize_int.
+	(finish_decl): Delete -Wlarger-than processing.
+
 Fri Feb 18 13:19:34 2000  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
 	* g77spec.c (lang_specific_driver): Use GCCBUGURL.

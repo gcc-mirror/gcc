@@ -1,3 +1,8 @@
+Sat Feb 19 18:43:13 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* class.c (build_class_ref, push_super_field): Set DECL_SIZE_UNIT.
+	* constants.c (build_constants_constructor): Likewise.
+
 2000-02-19  Anthony Green  <green@cygnus.com>
 
 	* jcf-depend.c (add_entry): Add entries to the end of the list.
@@ -791,6 +796,10 @@ Thu Sep  9 17:33:28 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (finish_class): We're now outside a valid method
  	declaration. Tell the rest of gcc so.
+
+1999-09-08  Bruce Korb  autogen@linuxbox.com
+
+	* Makefile.in: Give the gperf user a hint about why "gperf -F" fails.
 
 1999-09-07  Tom Tromey  <tromey@cygnus.com>
 
