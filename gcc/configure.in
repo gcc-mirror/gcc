@@ -134,13 +134,31 @@ AC_PROG_MAKE_SET
 # Find some useful tools
 AC_PROG_AWK
 AC_PROG_LEX
+GCC_C_VOLATILE
 AC_PROG_RANLIB
 AC_PROG_YACC
 AC_PROG_INSTALL
 
 AC_HEADER_STDC
 AC_HEADER_TIME
-AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h fcntl.h unistd.h stab.h sys/file.h sys/time.h sys/resource.h sys/param.h sys/times.h sys/types.h sys/stat.h)
+GCC_HEADER_STRING
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h \
+		 fcntl.h unistd.h stab.h sys/file.h sys/time.h \
+		 sys/resource.h sys/param.h sys/times.h sys/types.h sys/stat.h)
+
+# See if the system preprocessor understands the ANSI C preprocessor
+# stringification operator.
+AC_MSG_CHECKING(whether cpp understands the stringify operator)
+AC_CACHE_VAL(gcc_cv_c_have_stringify,
+[AC_TRY_COMPILE(,
+[#define S(x)   #x
+char *test = S(foo);],
+gcc_cv_c_have_stringify=yes, gcc_cv_c_have_stringify=no)])
+AC_MSG_RESULT($gcc_cv_c_have_stringify)
+if test $gcc_cv_c_have_stringify = yes; then
+  AC_DEFINE(HAVE_CPP_STRINGIFY)
+fi
 
 # Use <inttypes.h> only if it exists,
 # doesn't clash with <sys/types.h>, and declares intmax_t.
@@ -157,28 +175,30 @@ if test $gcc_cv_header_inttypes_h = yes; then
   AC_DEFINE(HAVE_INTTYPES_H)
 fi
 
-AC_CHECK_FUNCS(strerror)
-AC_CHECK_FUNCS(putenv)
-AC_CHECK_FUNCS(popen)
-AC_CHECK_FUNCS(vprintf)
-AC_CHECK_FUNCS(bcopy)
-AC_CHECK_FUNCS(bzero)
-AC_CHECK_FUNCS(bcmp)
-AC_CHECK_FUNCS(index)
-AC_CHECK_FUNCS(rindex)
-AC_CHECK_FUNCS(kill)
-AC_CHECK_FUNCS(getrlimit)
-AC_CHECK_FUNCS(setrlimit)
-AC_CHECK_FUNCS(sysconf)
+AC_CHECK_FUNCS(strtoul bsearch strerror putenv popen bcopy bzero bcmp \
+	       index rindex kill getrlimit setrlimit atoll atoq sysconf \
+	       isascii gettimeofday strsignal)
 
-GCC_NEED_DECLARATION(malloc)
-GCC_NEED_DECLARATION(realloc)
-GCC_NEED_DECLARATION(calloc)
-GCC_NEED_DECLARATION(free)
-GCC_NEED_DECLARATION(index)
-GCC_NEED_DECLARATION(rindex)
-GCC_NEED_DECLARATION(getenv)
-GCC_NEED_DECLARATION(sbrk)
+GCC_FUNC_VFPRINTF_DOPRNT
+
+GCC_NEED_DECLARATIONS(malloc realloc calloc free bcopy bzero bcmp \
+		      index rindex getenv atol sbrk abort strerror getcwd \
+		      getwd strsignal)
+
+GCC_FUNC_VFPRINTF_DOPRNT
+GCC_FUNC_PRINTF_PTR
+AC_FUNC_VFORK
+
+GCC_NEED_DECLARATIONS(malloc realloc calloc free bcopy bzero bcmp \
+	index rindex getenv atol sbrk abort atof strerror getcwd getwd \
+	strsignal)
+
+GCC_NEED_DECLARATIONS(getrlimit setrlimit, [
+#include <sys/types.h>
+#ifdef HAVE_SYS_RESOURCE_H
+#include <sys/resource.h>
+#endif
+])
 
 AC_DECL_SYS_SIGLIST
 
