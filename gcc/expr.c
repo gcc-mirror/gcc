@@ -6635,7 +6635,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       if (arglist == 0
 	  /* Arg could be wrong type if user redeclared this fcn wrong.  */
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != REAL_TYPE)
-	return CONST0_RTX (TYPE_MODE (TREE_TYPE (exp)));
+	break;
 
       /* Stabilize and compute the argument.  */
       if (TREE_CODE (TREE_VALUE (arglist)) != VAR_DECL
@@ -7051,7 +7051,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       if (arglist == 0
 	  /* Arg could be non-integer if user redeclared this fcn wrong.  */
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != INTEGER_TYPE)
-	return const0_rtx;
+	break;
       current_function_calls_alloca = 1;
       /* Compute the argument.  */
       op0 = expand_expr (TREE_VALUE (arglist), NULL_RTX, VOIDmode, 0);
@@ -7072,7 +7072,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       if (arglist == 0
 	  /* Arg could be non-integer if user redeclared this fcn wrong.  */
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != INTEGER_TYPE)
-	return const0_rtx;
+	break;
 
       /* Compute the argument.  */
       op0 = expand_expr (TREE_VALUE (arglist), subtarget, VOIDmode, 0);
@@ -7092,7 +7092,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       if (arglist == 0
 	  /* Arg could be non-pointer if user redeclared this fcn wrong.  */
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE)
-	return const0_rtx;
+	break;
       else
 	{
 	  tree src = TREE_VALUE (arglist);
@@ -7176,7 +7176,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
 	  || TREE_CHAIN (arglist) == 0
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE)
-	return const0_rtx;
+	break;
       else
 	{
 	  tree len = c_strlen (TREE_VALUE (TREE_CHAIN (arglist)));
@@ -7202,7 +7202,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE
 	  || TREE_CHAIN (TREE_CHAIN (arglist)) == 0
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist))))) != INTEGER_TYPE)
-	return const0_rtx;
+	break;
       else
 	{
 	  tree dest = TREE_VALUE (arglist);
@@ -7254,7 +7254,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE
 	  || TREE_CHAIN (arglist) == 0
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE)
-	return const0_rtx;
+	break;
       else if (!HAVE_cmpstrsi)
 	break;
       {
@@ -7309,7 +7309,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist)))) != POINTER_TYPE
 	  || TREE_CHAIN (TREE_CHAIN (arglist)) == 0
 	  || TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist))))) != INTEGER_TYPE)
-	return const0_rtx;
+	break;
       else if (!HAVE_cmpstrsi)
 	break;
       {
