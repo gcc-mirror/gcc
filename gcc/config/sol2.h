@@ -194,8 +194,7 @@ static void check_enabling(void)					\
 									\
 extern void __enable_execute_stack (void *);				\
 void									\
-__enable_execute_stack (addr)						\
-     void *addr;							\
+__enable_execute_stack (void *addr)					\
 {									\
   if (!need_enable_exec_stack)						\
     return;								\
