@@ -1,3 +1,5 @@
+// ZipFile.java - Read contents of a ZIP file.
+
 /* Copyright (C) 1999  Cygnus Solutions
 
    This file is part of libgcj.
@@ -9,16 +11,13 @@ details.  */
 package java.util.zip;
 import java.io.*;
 
-/** UNFINISHED, but can read non-comrepssed .zip archives. */
+/* Written using on-line Java Platform 1.2 API Specification
+ * and JCL book.
+ * Believed complete and correct.
+ */
 
 public class ZipFile implements ZipConstants
 {
-
-  ZipEntry entries;
-  int numEntries;
-  RandomAccessFile file;
-  String name;
-
   public ZipFile (String fname) throws IOException
   {
     file = new RandomAccessFile(fname, "r");
@@ -35,7 +34,7 @@ public class ZipFile implements ZipConstants
   {
     long size = file.length ();
     if (size < ZipConstants.END_CENTRAL_DIR_SIZE)
-      throw new IOException ("zipfile too short");
+      throw new ZipException ("zipfile too short");
     // We do not handle a "zipfile comment", which the appnote says can
     // be at the end of a .zip file.  We could handle this by seeking
     // to the beginning and reading forwards.
@@ -44,7 +43,7 @@ public class ZipFile implements ZipConstants
 	|| file.read() != 'K'
 	|| file.read() != '\005'
 	|| file.read() != '\006')
-      throw new IOException("not a valid zipfile");
+      throw new ZipException("not a valid zipfile");
     file.skipBytes(6);
     numEntries = readu2();
     int dir_size = read4 ();  // Read "size of the central directory".
@@ -103,7 +102,6 @@ public class ZipFile implements ZipConstants
 
   public void close() throws IOException
   {
-    //  FIXME - check this
     file.close();
     entries = null;
     numEntries = 0;
@@ -121,14 +119,17 @@ public class ZipFile implements ZipConstants
 
   public InputStream getInputStream(ZipEntry ze)  throws IOException
   {
-    // FIXME - does not handle compression!
     byte[] buffer = new byte[(int) ze.getSize()];
     int data_offset = ZipConstants.LOCAL_FILE_HEADER_SIZE + name.length();
     if (ze.extra != null)
       data_offset += ze.extra.length;
     file.seek(ze.relativeOffset + data_offset);
     file.readFully(buffer);
-    return new ByteArrayInputStream(buffer);
+
+    InputStream is = new ByteArrayInputStream (buffer);
+    if (ze.getMethod() == ZipEntry.DEFLATED)
+      is = new InflaterInputStream (is);
+    return is;
   }
 
   public String getName () { return name; }
@@ -138,7 +139,7 @@ public class ZipFile implements ZipConstants
     int byte0 = file.read();
     int byte1 = file.read();
     if (byte0 < 0 || byte1 < 0)
-      throw new EOFException(".zip archive ended prematurely");
+      throw new ZipException (".zip archive ended prematurely");
     return ((byte1 & 0xFF) << 8) | (byte0 & 0xFF);
   }
 
@@ -149,10 +150,15 @@ public class ZipFile implements ZipConstants
     int byte2 = file.read();
     int byte3 = file.read();
     if (byte3 < 0)
-      throw new EOFException(".zip archive ended prematurely");
+      throw new ZipException (".zip archive ended prematurely");
     return ((byte3 & 0xFF) << 24) + ((byte2 & 0xFF) << 16)
       + ((byte1 & 0xFF) << 8) + (byte0 & 0xFF);
   }
+
+  ZipEntry entries;
+  int numEntries;
+  RandomAccessFile file;
+  String name;
 }
 
 class ZipEnumeration implements java.util.Enumeration
