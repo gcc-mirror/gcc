@@ -1,3 +1,7 @@
+Mon Sep 22 19:33:53 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* mips.c (save_restore_insns): Only set RTX_FRAME_RELATED_P if store_p.
+
 Mon Sep 22 14:41:00 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* reg-stack.c (find_blocks): Fix thinko in last change.

@@ -4989,7 +4989,8 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		insn = emit_insn (gen_adddi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
 	      else
 		insn = emit_insn (gen_addsi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
-	      RTX_FRAME_RELATED_P (insn) = 1;
+	      if (store_p)
+		RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	  else
 	    fprintf (file, "\t%s\t%s,%s,%s\n",
@@ -5006,12 +5007,14 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	  if (file == (FILE *)0)
 	    {
 	      insn = emit_move_insn (base_reg_rtx, GEN_INT (gp_offset));
-	      RTX_FRAME_RELATED_P (insn) = 1;
+	      if (store_p)
+		RTX_FRAME_RELATED_P (insn) = 1;
 	      if (TARGET_LONG64)
 		insn = emit_insn (gen_adddi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
 	      else
 		insn = emit_insn (gen_addsi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
-	      RTX_FRAME_RELATED_P (insn) = 1;
+	      if (store_p)
+		RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	  else
 	    fprintf (file, "\tli\t%s,0x%.08lx\t# %ld\n\t%s\t%s,%s,%s\n",
@@ -5106,7 +5109,8 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		insn = emit_insn (gen_adddi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
 	      else
 		insn = emit_insn (gen_addsi3 (base_reg_rtx, large_reg, stack_pointer_rtx));
-	      RTX_FRAME_RELATED_P (insn) = 1;
+	      if (store_p)
+		RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	  else
 	    fprintf (file, "\t%s\t%s,%s,%s\n",
@@ -5123,12 +5127,14 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	  if (file == (FILE *)0)
 	    {
 	      insn = emit_move_insn (base_reg_rtx, GEN_INT (fp_offset));
-	      RTX_FRAME_RELATED_P (insn) = 1;
+	      if (store_p)
+		RTX_FRAME_RELATED_P (insn) = 1;
 	      if (TARGET_LONG64)
 		insn = emit_insn (gen_adddi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
 	      else
 		insn = emit_insn (gen_addsi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
-	      RTX_FRAME_RELATED_P (insn) = 1;
+	      if (store_p)
+		RTX_FRAME_RELATED_P (insn) = 1;
 	    }
 	  else
 	    fprintf (file, "\tli\t%s,0x%.08lx\t# %ld\n\t%s\t%s,%s,%s\n",
