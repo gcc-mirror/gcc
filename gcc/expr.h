@@ -950,5 +950,7 @@ extern void init_mov_optab			PROTO ((void));
 extern void do_jump_by_parts_greater_rtx	PROTO ((enum machine_mode, int,
 							rtx, rtx, rtx, rtx));
 
+#ifdef TREE_CODE   /* Don't lose if tree.h not included.  */
 extern void mark_seen_cases			PROTO ((tree, unsigned char *,
 							long, int));
+#endif
