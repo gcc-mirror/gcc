@@ -141,8 +141,8 @@ extern int target_flags;
 { {"0",	        (SH0_BIT) },			\
   {"1",	        (SH1_BIT) },			\
   {"2",	        (SH2_BIT) },			\
-  {"3",	        (SH3_BIT) },			\
-  {"3l",        (SH3_BIT|LITTLE_ENDIAN_BIT)},	\
+  {"3",	        (SH3_BIT|SH2_BIT) },		\
+  {"3l",        (SH3_BIT|SH2_BIT|LITTLE_ENDIAN_BIT)},	\
   {"R",  	(R_BIT) },			\
   {"b",		(-LITTLE_ENDIAN_BIT) },  	\
   {"bigtable", 	(BIGTABLE_BIT)},		\
@@ -176,8 +176,8 @@ do {								\
     sh_cpu = CPU_SH1;						\
   if (TARGET_SH2)						\
     sh_cpu = CPU_SH2;						\
- if (TARGET_SH3)						\
-    sh_cpu = CPU_SH3|CPU_SH2;					\
+  if (TARGET_SH3)						\
+    sh_cpu = CPU_SH3;						\
 								\
   /*  We *MUST* always define optimize since we *HAVE* to run   \
       shorten branches to get correct code.  */                 \
