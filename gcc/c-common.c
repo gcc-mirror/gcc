@@ -4784,7 +4784,9 @@ cb_register_builtins (pfile)
   if (flag_signaling_nans)
     cpp_define (pfile, "__SUPPORT_SNAN__");
   if (flag_finite_math_only)
-    cpp_define (pfile, "__FINITE_MATH_ONLY__");
+    cpp_define (pfile, "__FINITE_MATH_ONLY__=1");
+  else
+    cpp_define (pfile, "__FINITE_MATH_ONLY__=0");
 
   if (flag_iso)
     cpp_define (pfile, "__STRICT_ANSI__");
