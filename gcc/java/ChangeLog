@@ -1,3 +1,39 @@
+2000-10-16  Tom Tromey  <tromey@cygnus.com>
+
+	* jvspec.c (lang_specific_driver): Recognize -MF and -MT.
+	* lang-specs.h: Added %{MA}, %{MF*}, %{MT*}.
+	* lang-options.h: Added -MA, -MT, -MF..
+	* lang.c (lang_decode_option): Recognize -MA, -MT, -MF.
+	(DEPEND_TARGET_SET): New macro.
+	(DEPEND_FILE_ALREADY_SET): Likewise.
+	(init_parse): Handle new flags.
+	* jcf.h (jcf_dependency_print_dummies): Declare.
+	* Make-lang.in (s-java): Added mkdeps.o.
+	* Makefile.in (BACKEND): Added mkdeps.o.
+	(../gcjh$(exeext)): Added mkdeps.o.
+	(../jcf-dump$(exeext)): Added mkdeps.o.
+	* jcf-depend.c: Include mkdeps.h.
+	(struct entry, dependencies, targets, MAX_OUTPUT_COLUMNS,
+	add_entry): Removed.
+	(jcf_dependency_reset): Rewrote.
+	(dependencies): New global.
+	(jcf_dependency_set_target): Rewrote.
+	(jcf_dependency_add_target): Likewise.
+	(jcf_dependency_add_file): Likewise.
+	(munge): Removed.
+	(print_ents): Removed.
+	(jcf_dependency_write): Rewrote.
+	(print_dummies): New global.
+	(jcf_dependency_print_dummies): New function
+	(jcf_dependency_write): Call deps_dummy_targets if required.
+
+2000-10-12  Tom Tromey  <tromey@cygnus.com>
+
+	* lex.c (java_new_lexer): Initialize new fields.
+	(java_read_char): Swap bytes if required.
+	* lex.h (java_lexer): New fields read_anything and byte_swap.
+	Made out_buffer unsigned.
+
 2000-10-18  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* gjavah.c (add_class_decl): Removed unused variables `tname',

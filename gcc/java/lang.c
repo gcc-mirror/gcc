@@ -159,6 +159,8 @@ static int dependency_tracking = 0;
 /* Flag values for DEPENDENCY_TRACKING.  */
 #define DEPEND_SET_FILE 1
 #define DEPEND_ENABLE   2
+#define DEPEND_TARGET_SET 4
+#define DEPEND_FILE_ALREADY_SET 8
 
 /*
  * process java-specific compiler command-line options
@@ -316,6 +318,23 @@ lang_decode_option (argc, argv)
       dependency_tracking |= DEPEND_ENABLE;
       return 1;
     }
+  else if (strcmp (p, "-MA") == 0)
+    {
+      jcf_dependency_print_dummies ();
+      return 1;
+    }
+  else if (strcmp (p, "-MT") == 0)
+    {
+      jcf_dependency_set_target (argv[1]);
+      dependency_tracking |= DEPEND_TARGET_SET;
+      return 2;
+    }
+  else if (strcmp (p, "-MF") == 0)
+    {
+      jcf_dependency_set_dep_file (argv[1]);
+      dependency_tracking |= DEPEND_FILE_ALREADY_SET;
+      return 2;
+    }
 
   return 0;
 }
@@ -342,36 +361,48 @@ init_parse (filename)
       if (dependency_tracking)
 	{
 	  char *dot;
-	  dot = strrchr (filename, '.');
-	  if (dot == NULL)
-	    error ("couldn't determine target name for dependency tracking");
-	  else
+
+	  /* If the target is set and the output filename is set, then
+	     there's no processing to do here.  Otherwise we must
+	     compute one or the other.  */
+	  if (! ((dependency_tracking & DEPEND_TARGET_SET)
+		 && (dependency_tracking & DEPEND_FILE_ALREADY_SET)))
 	    {
-	      char *buf = (char *) xmalloc (dot - filename +
-					    3 + sizeof (OBJECT_SUFFIX));
-	      strncpy (buf, filename, dot - filename);
-
-	      /* If emitting class files, we might have multiple
-		 targets.  The class generation code takes care of
-		 registering them.  Otherwise we compute the target
-		 name here.  */
-	      if (flag_emit_class_files)
-		jcf_dependency_set_target (NULL);
+	      dot = strrchr (filename, '.');
+	      if (dot == NULL)
+		error ("couldn't determine target name for dependency tracking");
 	      else
 		{
-		  strcpy (buf + (dot - filename), OBJECT_SUFFIX);
-		  jcf_dependency_set_target (buf);
-		}
+		  char *buf = (char *) xmalloc (dot - filename +
+						3 + sizeof (OBJECT_SUFFIX));
+		  strncpy (buf, filename, dot - filename);
 
-	      if ((dependency_tracking & DEPEND_SET_FILE))
-		{
-		  strcpy (buf + (dot - filename), ".d");
-		  jcf_dependency_set_dep_file (buf);
-		}
-	      else
-		jcf_dependency_set_dep_file ("-");
+		  /* If emitting class files, we might have multiple
+		     targets.  The class generation code takes care of
+		     registering them.  Otherwise we compute the
+		     target name here.  */
+		  if ((dependency_tracking & DEPEND_TARGET_SET))
+		    ; /* Nothing.  */
+		  else if (flag_emit_class_files)
+		    jcf_dependency_set_target (NULL);
+		  else
+		    {
+		      strcpy (buf + (dot - filename), OBJECT_SUFFIX);
+		      jcf_dependency_set_target (buf);
+		    }
 
-	      free (buf);
+		  if ((dependency_tracking & DEPEND_FILE_ALREADY_SET))
+		    ; /* Nothing.  */
+		  else if ((dependency_tracking & DEPEND_SET_FILE))
+		    {
+		      strcpy (buf + (dot - filename), ".d");
+		      jcf_dependency_set_dep_file (buf);
+		    }
+		  else
+		    jcf_dependency_set_dep_file ("-");
+
+		  free (buf);
+		}
 	    }
 	}
     }
