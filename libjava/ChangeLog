@@ -1,5 +1,17 @@
 2005-02-19  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/SelectorImpl.java:
+	Reworked import statements.
+	(register): Removed unused code.
+	* java/nio/channels/Channels.java: Reformatted.
+	* java/nio/charset/Charset.java: Likewise.
+	* java/rmi/server/RemoteObject.java
+	(serialVersionUID): Made private.
+	* java/rmi/server/UID.java
+	(serialVersionUID): Likewise.
+
+2005-02-19  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/net/protocol/ftp/ActiveModeDTP.java,
 	gnu/java/net/protocol/ftp/BlockInputStream.java,
 	gnu/java/net/protocol/ftp/BlockOutputStream.java,

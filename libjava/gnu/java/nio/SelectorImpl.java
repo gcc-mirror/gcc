@@ -1,5 +1,5 @@
 /* SelectorImpl.java -- 
-   Copyright (C) 2002, 2003  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package gnu.java.nio;
 
 import java.io.IOException;
@@ -49,11 +50,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import gnu.classpath.Configuration;
 
 public class SelectorImpl extends AbstractSelector
 {
-  
   private Set keys;
   private Set selected;
 
@@ -375,24 +374,13 @@ public class SelectorImpl extends AbstractSelector
     SelectionKeyImpl result;
     
     if (ch instanceof SocketChannelImpl)
-      {
-        SocketChannelImpl sc = (SocketChannelImpl) ch;
-        result = new SocketChannelSelectionKey (ch, this);
-      }
+      result = new SocketChannelSelectionKey (ch, this);
     else if (ch instanceof DatagramChannelImpl)
-      {
-        DatagramChannelImpl dc = (DatagramChannelImpl) ch;
-        result = new DatagramChannelSelectionKey (ch, this);
-      }
+      result = new DatagramChannelSelectionKey (ch, this);
     else if (ch instanceof ServerSocketChannelImpl)
-      {
-        ServerSocketChannelImpl ssc = (ServerSocketChannelImpl) ch;
-        result = new ServerSocketChannelSelectionKey (ch, this);
-      }
+      result = new ServerSocketChannelSelectionKey (ch, this);
     else
-      {
-        throw new InternalError ("No known channel type");
-      }
+      throw new InternalError ("No known channel type");
 
     synchronized (keys)
       {
