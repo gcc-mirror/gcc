@@ -1,6 +1,6 @@
 /* Report error messages, build initializers, and perform
    some front-end optimizations for C++ compiler.
-   Copyright (C) '87, '88, '89, '92, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 93, 94, 1995 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -503,18 +503,18 @@ store_init_value (decl, init)
 
 	  /* Check that we're really an aggregate as ARM 8.4.1 defines it.  */
 	  if (CLASSTYPE_N_BASECLASSES (type))
-	    cp_error_at ("initializer list construction illegal for derived class object `%D'", decl);
+	    cp_error_at ("initializer list construction invalid for derived class object `%D'", decl);
 	  if (CLASSTYPE_VTBL_PTR (type))
-	    cp_error_at ("initializer list construction illegal for polymorphic class object `%D'", decl);
+	    cp_error_at ("initializer list construction invalid for polymorphic class object `%D'", decl);
 	  if (TYPE_NEEDS_CONSTRUCTING (type))
 	    {
-	      cp_error_at ("initializer list construction illegal for `%D'", decl);
+	      cp_error_at ("initializer list construction invalid for `%D'", decl);
 	      error ("due to the presence of a constructor");
 	    }
 	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	    if (TREE_PRIVATE (field) || TREE_PROTECTED (field))
 	      {
-		cp_error_at ("initializer list construction illegal for `%D'", decl);
+		cp_error_at ("initializer list construction invalid for `%D'", decl);
 		cp_error_at ("due to non-public access of member `%D'", field);
 	      }
 	  funcs = TYPE_METHODS (type);
@@ -524,7 +524,7 @@ store_init_value (decl, init)
 		field = TREE_VEC_ELT (funcs, func);
 		if (field && (TREE_PRIVATE (field) || TREE_PROTECTED (field)))
 		  {
-		    cp_error_at ("initializer list construction illegal for `%D'", decl);
+		    cp_error_at ("initializer list construction invalid for `%D'", decl);
 		    cp_error_at ("due to non-public access of member `%D'", field);
 		  }
 	      }
