@@ -1465,6 +1465,7 @@ safe_insert_insn_on_edge (rtx insn, edge e)
   rtx save_regs = NULL_RTX;
   int regno, noccmode;
   enum machine_mode mode;
+  reg_set_iterator rsi;
 
 #ifdef AVOID_CCMODE_COPIES
   noccmode = true;
@@ -1478,7 +1479,7 @@ safe_insert_insn_on_edge (rtx insn, edge e)
   bitmap_operation (killed, killed, e->dest->global_live_at_start,
 		    BITMAP_AND);
 
-  EXECUTE_IF_SET_IN_REG_SET (killed, 0, regno,
+  EXECUTE_IF_SET_IN_REG_SET (killed, 0, regno, rsi)
     {
       mode = regno < FIRST_PSEUDO_REGISTER
 	      ? reg_raw_mode[regno]
@@ -1494,7 +1495,7 @@ safe_insert_insn_on_edge (rtx insn, edge e)
 						    gen_reg_rtx (mode),
 						    gen_raw_REG (mode, regno)),
 				   save_regs);
-    });
+    }
 
   if (save_regs)
     {

@@ -822,6 +822,7 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
   RTX_CODE code = GET_CODE (x);
   rtx link;
   int i;
+  reg_set_iterator rsi;
 
   if (code == COND_EXEC)
     {
@@ -895,14 +896,14 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
 	  (*current_sched_info->compute_jump_reg_dependencies)
 	    (insn, &deps->reg_conditional_sets, &tmp_uses, &tmp_sets);
 	  /* Make latency of jump equal to 0 by using anti-dependence.  */
-	  EXECUTE_IF_SET_IN_REG_SET (&tmp_uses, 0, i,
+	  EXECUTE_IF_SET_IN_REG_SET (&tmp_uses, 0, i, rsi)
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[i];
 	      add_dependence_list (insn, reg_last->sets, REG_DEP_ANTI);
 	      add_dependence_list (insn, reg_last->clobbers, REG_DEP_ANTI);
 	      reg_last->uses_length++;
 	      reg_last->uses = alloc_INSN_LIST (insn, reg_last->uses);
-	    });
+	    }
 	  IOR_REG_SET (reg_pending_sets, &tmp_sets);
 
 	  CLEAR_REG_SET (&tmp_uses);
@@ -975,7 +976,7 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
          real, so we use anti-dependence here.  */
       if (GET_CODE (PATTERN (insn)) == COND_EXEC)
 	{
-	  EXECUTE_IF_SET_IN_REG_SET (&deps->reg_last_in_use, 0, i,
+	  EXECUTE_IF_SET_IN_REG_SET (&deps->reg_last_in_use, 0, i, rsi)
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[i];
 	      add_dependence_list (insn, reg_last->uses, REG_DEP_ANTI);
@@ -985,11 +986,11 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
 	      add_dependence_list
 		(insn, reg_last->clobbers,
 		 reg_pending_barrier == TRUE_BARRIER ? 0 : REG_DEP_ANTI);
-	    });
+	    }
 	}
       else
 	{
-	  EXECUTE_IF_SET_IN_REG_SET (&deps->reg_last_in_use, 0, i,
+	  EXECUTE_IF_SET_IN_REG_SET (&deps->reg_last_in_use, 0, i, rsi)
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[i];
 	      add_dependence_list_and_free (insn, &reg_last->uses,
@@ -1002,7 +1003,7 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
 		 reg_pending_barrier == TRUE_BARRIER ? 0 : REG_DEP_ANTI);
 	      reg_last->uses_length = 0;
 	      reg_last->clobbers_length = 0;
-	    });
+	    }
 	}
 
       for (i = 0; i < deps->max_reg; i++)
@@ -1022,23 +1023,23 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
 	 of the lists.  */
       if (GET_CODE (PATTERN (insn)) == COND_EXEC)
 	{
-	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_uses, 0, i,
+	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_uses, 0, i, rsi)
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[i];
 	      add_dependence_list (insn, reg_last->sets, 0);
 	      add_dependence_list (insn, reg_last->clobbers, 0);
 	      reg_last->uses = alloc_INSN_LIST (insn, reg_last->uses);
 	      reg_last->uses_length++;
-	    });
-	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_clobbers, 0, i,
+	    }
+	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_clobbers, 0, i, rsi)
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[i];
 	      add_dependence_list (insn, reg_last->sets, REG_DEP_OUTPUT);
 	      add_dependence_list (insn, reg_last->uses, REG_DEP_ANTI);
 	      reg_last->clobbers = alloc_INSN_LIST (insn, reg_last->clobbers);
 	      reg_last->clobbers_length++;
-	    });
-	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_sets, 0, i,
+	    }
+	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_sets, 0, i, rsi)
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[i];
 	      add_dependence_list (insn, reg_last->sets, REG_DEP_OUTPUT);
@@ -1046,19 +1047,19 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
 	      add_dependence_list (insn, reg_last->uses, REG_DEP_ANTI);
 	      reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
 	      SET_REGNO_REG_SET (&deps->reg_conditional_sets, i);
-	    });
+	    }
 	}
       else
 	{
-	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_uses, 0, i,
+	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_uses, 0, i, rsi)
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[i];
 	      add_dependence_list (insn, reg_last->sets, 0);
 	      add_dependence_list (insn, reg_last->clobbers, 0);
 	      reg_last->uses_length++;
 	      reg_last->uses = alloc_INSN_LIST (insn, reg_last->uses);
-	    });
-	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_clobbers, 0, i,
+	    }
+	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_clobbers, 0, i, rsi)
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[i];
 	      if (reg_last->uses_length > MAX_PENDING_LIST_LENGTH
@@ -1081,8 +1082,8 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
 		}
 	      reg_last->clobbers_length++;
 	      reg_last->clobbers = alloc_INSN_LIST (insn, reg_last->clobbers);
-	    });
-	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_sets, 0, i,
+	    }
+	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_sets, 0, i, rsi)
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[i];
 	      add_dependence_list_and_free (insn, &reg_last->sets,
@@ -1095,7 +1096,7 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
 	      reg_last->uses_length = 0;
 	      reg_last->clobbers_length = 0;
 	      CLEAR_REGNO_REG_SET (&deps->reg_conditional_sets, i);
-	    });
+	    }
 	}
 
       IOR_REG_SET (&deps->reg_last_in_use, reg_pending_uses);
@@ -1461,6 +1462,7 @@ void
 free_deps (struct deps *deps)
 {
   int i;
+  reg_set_iterator rsi;
 
   free_INSN_LIST_list (&deps->pending_read_insns);
   free_EXPR_LIST_list (&deps->pending_read_mems);
@@ -1471,7 +1473,7 @@ free_deps (struct deps *deps)
   /* Without the EXECUTE_IF_SET, this loop is executed max_reg * nr_regions
      times.  For a testcase with 42000 regs and 8000 small basic blocks,
      this loop accounted for nearly 60% (84 sec) of the total -O2 runtime.  */
-  EXECUTE_IF_SET_IN_REG_SET (&deps->reg_last_in_use, 0, i,
+  EXECUTE_IF_SET_IN_REG_SET (&deps->reg_last_in_use, 0, i, rsi)
     {
       struct deps_reg *reg_last = &deps->reg_last[i];
       if (reg_last->uses)
@@ -1480,7 +1482,7 @@ free_deps (struct deps *deps)
 	free_INSN_LIST_list (&reg_last->sets);
       if (reg_last->clobbers)
 	free_INSN_LIST_list (&reg_last->clobbers);
-    });
+    }
   CLEAR_REG_SET (&deps->reg_last_in_use);
   CLEAR_REG_SET (&deps->reg_conditional_sets);
 

@@ -282,6 +282,7 @@ thread_jump (int mode, edge e, basic_block b)
   int i;
   regset nonequal;
   bool failed = false;
+  reg_set_iterator rsi;
 
   if (BB_FLAGS (b) & BB_NONTHREADABLE_BLOCK)
     return NULL;
@@ -396,7 +397,8 @@ thread_jump (int mode, edge e, basic_block b)
   if (mode & CLEANUP_UPDATE_LIFE)
     AND_REG_SET (nonequal, b->global_live_at_end);
 
-  EXECUTE_IF_SET_IN_REG_SET (nonequal, 0, i, goto failed_exit;);
+  EXECUTE_IF_SET_IN_REG_SET (nonequal, 0, i, rsi)
+    goto failed_exit;
 
   BITMAP_XFREE (nonequal);
   cselib_finish ();

@@ -523,28 +523,28 @@ void
 compute_use_by_pseudos (HARD_REG_SET *to, regset from)
 {
   unsigned int regno;
+  reg_set_iterator rsi;
 
-  EXECUTE_IF_SET_IN_REG_SET
-    (from, FIRST_PSEUDO_REGISTER, regno,
-     {
-       int r = reg_renumber[regno];
-       int nregs;
+  EXECUTE_IF_SET_IN_REG_SET (from, FIRST_PSEUDO_REGISTER, regno, rsi)
+    {
+      int r = reg_renumber[regno];
+      int nregs;
 
-       if (r < 0)
-	 {
-	   /* reload_combine uses the information from
-	      BASIC_BLOCK->global_live_at_start, which might still
-	      contain registers that have not actually been allocated
-	      since they have an equivalence.  */
-	   gcc_assert (reload_completed);
-	 }
-       else
-	 {
-	   nregs = hard_regno_nregs[r][PSEUDO_REGNO_MODE (regno)];
-	   while (nregs-- > 0)
-	     SET_HARD_REG_BIT (*to, r + nregs);
-	 }
-     });
+      if (r < 0)
+	{
+	  /* reload_combine uses the information from
+	     BASIC_BLOCK->global_live_at_start, which might still
+	     contain registers that have not actually been allocated
+	     since they have an equivalence.  */
+	  gcc_assert (reload_completed);
+	}
+      else
+	{
+	  nregs = hard_regno_nregs[r][PSEUDO_REGNO_MODE (regno)];
+	  while (nregs-- > 0)
+	    SET_HARD_REG_BIT (*to, r + nregs);
+	}
+    }
 }
 
 /* Replace all pseudos found in LOC with their corresponding
@@ -1593,6 +1593,7 @@ order_regs_for_reload (struct insn_chain *chain)
   int i;
   HARD_REG_SET used_by_pseudos;
   HARD_REG_SET used_by_pseudos2;
+  reg_set_iterator rsi;
 
   COPY_HARD_REG_SET (bad_spill_regs, fixed_reg_set);
 
@@ -1613,15 +1614,15 @@ order_regs_for_reload (struct insn_chain *chain)
   CLEAR_REG_SET (&pseudos_counted);
 
   EXECUTE_IF_SET_IN_REG_SET
-    (&chain->live_throughout, FIRST_PSEUDO_REGISTER, i,
-     {
-       count_pseudo (i);
-     });
+    (&chain->live_throughout, FIRST_PSEUDO_REGISTER, i, rsi)
+    {
+      count_pseudo (i);
+    }
   EXECUTE_IF_SET_IN_REG_SET
-    (&chain->dead_or_set, FIRST_PSEUDO_REGISTER, i,
-     {
-       count_pseudo (i);
-     });
+    (&chain->dead_or_set, FIRST_PSEUDO_REGISTER, i, rsi)
+    {
+      count_pseudo (i);
+    }
   CLEAR_REG_SET (&pseudos_counted);
 }
 
@@ -1667,6 +1668,7 @@ find_reg (struct insn_chain *chain, int order)
   int k;
   HARD_REG_SET not_usable;
   HARD_REG_SET used_by_other_reload;
+  reg_set_iterator rsi;
 
   COPY_HARD_REG_SET (not_usable, bad_spill_regs);
   IOR_HARD_REG_SET (not_usable, bad_spill_regs_global);
@@ -1735,16 +1737,16 @@ find_reg (struct insn_chain *chain, int order)
   rl->regno = best_reg;
 
   EXECUTE_IF_SET_IN_REG_SET
-    (&chain->live_throughout, FIRST_PSEUDO_REGISTER, j,
-     {
-       count_spilled_pseudo (best_reg, rl->nregs, j);
-     });
+    (&chain->live_throughout, FIRST_PSEUDO_REGISTER, j, rsi)
+    {
+      count_spilled_pseudo (best_reg, rl->nregs, j);
+    }
 
   EXECUTE_IF_SET_IN_REG_SET
-    (&chain->dead_or_set, FIRST_PSEUDO_REGISTER, j,
-     {
-       count_spilled_pseudo (best_reg, rl->nregs, j);
-     });
+    (&chain->dead_or_set, FIRST_PSEUDO_REGISTER, j, rsi)
+    {
+      count_spilled_pseudo (best_reg, rl->nregs, j);
+    }
 
   for (i = 0; i < rl->nregs; i++)
     {
@@ -3552,6 +3554,7 @@ finish_spills (int global)
   struct insn_chain *chain;
   int something_changed = 0;
   int i;
+  reg_set_iterator rsi;
 
   /* Build the spill_regs array for the function.  */
   /* If there are some registers still to eliminate and one of the spill regs
@@ -3578,20 +3581,19 @@ finish_spills (int global)
     else
       spill_reg_order[i] = -1;
 
-  EXECUTE_IF_SET_IN_REG_SET
-    (&spilled_pseudos, FIRST_PSEUDO_REGISTER, i,
-     {
-       /* Record the current hard register the pseudo is allocated to in
-	  pseudo_previous_regs so we avoid reallocating it to the same
-	  hard reg in a later pass.  */
-       gcc_assert (reg_renumber[i] >= 0);
+  EXECUTE_IF_SET_IN_REG_SET (&spilled_pseudos, FIRST_PSEUDO_REGISTER, i, rsi)
+    {
+      /* Record the current hard register the pseudo is allocated to in
+	 pseudo_previous_regs so we avoid reallocating it to the same
+	 hard reg in a later pass.  */
+      gcc_assert (reg_renumber[i] >= 0);
 
-       SET_HARD_REG_BIT (pseudo_previous_regs[i], reg_renumber[i]);
-       /* Mark it as no longer having a hard register home.  */
-       reg_renumber[i] = -1;
-       /* We will need to scan everything again.  */
-       something_changed = 1;
-     });
+      SET_HARD_REG_BIT (pseudo_previous_regs[i], reg_renumber[i]);
+      /* Mark it as no longer having a hard register home.  */
+      reg_renumber[i] = -1;
+      /* We will need to scan everything again.  */
+      something_changed = 1;
+    }
 
   /* Retry global register allocation if possible.  */
   if (global)
@@ -3603,17 +3605,17 @@ finish_spills (int global)
       for (chain = insns_need_reload; chain; chain = chain->next_need_reload)
 	{
 	  EXECUTE_IF_SET_IN_REG_SET
-	    (&chain->live_throughout, FIRST_PSEUDO_REGISTER, i,
-	     {
-	       ior_hard_reg_set (pseudo_forbidden_regs + i,
-				 &chain->used_spill_regs);
-	     });
+	    (&chain->live_throughout, FIRST_PSEUDO_REGISTER, i, rsi)
+	    {
+	      ior_hard_reg_set (pseudo_forbidden_regs + i,
+				&chain->used_spill_regs);
+	    }
 	  EXECUTE_IF_SET_IN_REG_SET
-	    (&chain->dead_or_set, FIRST_PSEUDO_REGISTER, i,
-	     {
-	       ior_hard_reg_set (pseudo_forbidden_regs + i,
-				 &chain->used_spill_regs);
-	     });
+	    (&chain->dead_or_set, FIRST_PSEUDO_REGISTER, i, rsi)
+	    {
+	      ior_hard_reg_set (pseudo_forbidden_regs + i,
+				&chain->used_spill_regs);
+	    }
 	}
 
       /* Retry allocating the spilled pseudos.  For each reg, merge the
