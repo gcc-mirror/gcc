@@ -13,6 +13,10 @@
 	TARGET_H8300SX.
 	* config/h8300/h8300.opt: New.
 
+	* config/alpha/alpha.opt, config/arc/arc.opt,
+	config/h8300/h8300.opt, config/mips/mips.opt: Add copyright
+	notices.
+
 2005-03-17  Ian Lance Taylor  <ian@airs.com>
 
 	* gmon.c: Remove.
