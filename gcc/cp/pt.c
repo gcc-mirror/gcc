@@ -6444,8 +6444,8 @@ mark_decl_instantiated (result, extern_p)
 
       /* For WIN32 we also want to put explicit instantiations in
 	 linkonce sections.  */
-      if (supports_one_only () && ! SUPPORTS_WEAK && TREE_PUBLIC (result))
-	make_decl_one_only (result);
+      if (TREE_PUBLIC (result))
+	maybe_make_one_only (result);
     }
   else if (TREE_CODE (result) == FUNCTION_DECL)
     mark_inline_for_output (result);
