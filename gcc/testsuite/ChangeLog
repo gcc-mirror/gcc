@@ -1,3 +1,8 @@
+2003-12-22  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c++/5050
+	* g++.dg/template/recurse1.C: New test.
+
 2003-12-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11554

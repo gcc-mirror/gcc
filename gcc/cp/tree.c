@@ -2302,30 +2302,6 @@ cp_copy_res_decl_for_inlining (result, fn, caller, decl_map_,
   return var;
 }
 
-/* Record that we're about to start inlining FN, and return nonzero if
-   that's OK.  Used for lang_hooks.tree_inlining.start_inlining.  */
-
-int
-cp_start_inlining (fn)
-     tree fn;
-{
-  if (DECL_TEMPLATE_INSTANTIATION (fn))
-    return push_tinst_level (fn);
-  else
-    return 1;
-}
-
-/* Record that we're done inlining FN.  Used for
-   lang_hooks.tree_inlining.end_inlining.  */
-
-void
-cp_end_inlining (fn)
-     tree fn ATTRIBUTE_UNUSED;
-{
-  if (DECL_TEMPLATE_INSTANTIATION (fn))
-    pop_tinst_level ();
-}
-
 /* Initialize tree.c.  */
 
 void
