@@ -21,20 +21,20 @@ foo (quad_t *qp, u_quad_t *uqp, quad_t *qn, long long int *llp,
      This is largely obsoleted in C99 by %j, %ll and SCNd64.
   */
   scanf ("%qd%qi%qo%qu%qx%qX%qn", qp, qp, uqp, uqp, uqp, uqp, qn);
-  scanf ("%qf", fp); /* { dg-warning "length character" "bad use of %q" } */
-  scanf ("%qF", fp); /* { dg-warning "length character" "bad use of %q" } */
-  scanf ("%qe", fp); /* { dg-warning "length character" "bad use of %q" } */
-  scanf ("%qE", fp); /* { dg-warning "length character" "bad use of %q" } */
-  scanf ("%qg", fp); /* { dg-warning "length character" "bad use of %q" } */
-  scanf ("%qG", fp); /* { dg-warning "length character" "bad use of %q" } */
-  scanf ("%qa", fp); /* { dg-warning "length character" "bad use of %q" } */
-  scanf ("%qA", fp); /* { dg-warning "length character" "bad use of %q" } */
-  scanf ("%qs", s); /* { dg-warning "length character" "bad use of %q" } */
-  scanf ("%q[abc]", s); /* { dg-warning "length character" "bad use of %q" } */
-  scanf ("%qc", s); /* { dg-warning "length character" "bad use of %q" } */
-  scanf ("%qp", pp); /* { dg-warning "length character" "bad use of %q" } */
-  scanf ("%qC", ls); /* { dg-warning "length character" "bad use of %q" } */
-  scanf ("%qS", ls); /* { dg-warning "length character" "bad use of %q" } */
+  scanf ("%qf", fp); /* { dg-warning "length" "bad use of %q" } */
+  scanf ("%qF", fp); /* { dg-warning "length" "bad use of %q" } */
+  scanf ("%qe", fp); /* { dg-warning "length" "bad use of %q" } */
+  scanf ("%qE", fp); /* { dg-warning "length" "bad use of %q" } */
+  scanf ("%qg", fp); /* { dg-warning "length" "bad use of %q" } */
+  scanf ("%qG", fp); /* { dg-warning "length" "bad use of %q" } */
+  scanf ("%qa", fp); /* { dg-warning "length" "bad use of %q" } */
+  scanf ("%qA", fp); /* { dg-warning "length" "bad use of %q" } */
+  scanf ("%qs", s); /* { dg-warning "length" "bad use of %q" } */
+  scanf ("%q[abc]", s); /* { dg-warning "length" "bad use of %q" } */
+  scanf ("%qc", s); /* { dg-warning "length" "bad use of %q" } */
+  scanf ("%qp", pp); /* { dg-warning "length" "bad use of %q" } */
+  scanf ("%qC", ls); /* { dg-warning "length" "bad use of %q" } */
+  scanf ("%qS", ls); /* { dg-warning "length" "bad use of %q" } */
   /* As an extension, GCC allows the length "L" on integer formats
      (but not %n) as a synonym for "ll".
      This should be considered deprecated.
