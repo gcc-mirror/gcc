@@ -1,0 +1,5 @@
+enum {
+  DEFINED_VALUE
+};
+
+

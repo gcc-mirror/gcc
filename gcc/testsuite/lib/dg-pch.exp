@@ -21,7 +21,7 @@ proc dg-pch { subdir test options suffix } {
 
     # If we're only testing specific files and this isn't one of them, skip it.
     if ![runtest_file_p $runtests $test] {
-	continue
+	return
     }
     set nshort "$subdir/[file tail $test]"
     set bname "[file rootname [file tail $nshort]]"

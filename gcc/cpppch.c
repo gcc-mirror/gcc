@@ -509,7 +509,13 @@ cpp_valid_state (cpp_reader *r, const char *name, int fd)
       else if (cmp > 0)
  	++i;
       else
-	goto fail;
+	{
+	  if (CPP_OPTION (r, warn_invalid_pch))
+	    cpp_error (r, DL_WARNING_SYSHDR, 
+		       "%s: not used because `%s' is defined",
+		       name, first);
+	  goto fail;
+	}
     }
    
   free(nl.defs);
