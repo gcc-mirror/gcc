@@ -1,3 +1,8 @@
+2004-11-22  Nick Clifton  <nickc@redhat.com>
+
+	* sbitmap.c (sbitmap_union_of_preds): Remove redundant
+	initialisation of 'e'.
+
 2004-11-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR rtl-optimization/18599

@@ -637,7 +637,7 @@ sbitmap_union_of_preds (sbitmap dst, sbitmap *src, int bb)
   edge e;
   unsigned ix;
 
-  for (e = NULL, ix = 0; ix < EDGE_COUNT (b->preds); ix++)
+  for (ix = 0; ix < EDGE_COUNT (b->preds); ix++)
     {
       e = EDGE_PRED (b, ix);
       if (e->src== ENTRY_BLOCK_PTR)
