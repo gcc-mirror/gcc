@@ -1,3 +1,18 @@
+2001-10-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* c-common.h (rid): Add RID_CHOOSE_EXPR and
+        RID_TYPES_COMPATIBLE_P.
+
+        * c-parse.in (reswords): Add __builtin_choose_expr.
+        Add __builtin_types_compatible_p.
+        Add CHOOSE_EXPR token.
+	Add TYPES_COMPATIBLE_P token.
+        Add production for CHOOSE_EXPR.
+        Add production for TYPES_COMPATIBLE_P.
+
+        * doc/extend.texi (__builtin_choose_expr): Add documentation.
+        (__builtin_types_compatible_p): Likewise.
+
 2001-12-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* stor-layout.c (place_union_field): Apply ADJUST_FIELD_ALIGN
