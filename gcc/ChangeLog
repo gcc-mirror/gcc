@@ -1,3 +1,8 @@
+2004-10-31  Graham Stott <graham.stott@btinternet.com>
+
+	* config/pa/pa.md: (prefetch_64, prefetch_32): Fix typo.  Use
+	INT_5_BITS instead of VAL_5_BITS_P.
+
 2004-10-31  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/14521
