@@ -1,3 +1,11 @@
+2003-11-21  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/mips/t-iris6 (CRTSTUFF_T_CFLAGS): Add -Wno-error.
+	(TARGET_LIBGCC2_CFLAGS): Define.
+
+	* crtstuff.c [HAS_INIT_SECTION] (__do_global_dtors): Declare.
+	(__do_global_ctors): Likewise.
+
 2003-11-21  Mark Wielaard  <mark@klomp.org>
 
 	* doc/invoke.texi (-O2): Doesn't enable -fweb.

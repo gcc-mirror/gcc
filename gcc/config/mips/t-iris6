@@ -10,9 +10,13 @@ INSTALL_LIBGCC = install-multilib
 
 # For svr4 we build crtbegin.o and crtend.o which serve to add begin and
 # end labels to the .ctors and .dtors section when we link using gcc.
-
 EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o
-CRTSTUFF_T_CFLAGS=-g1
+
+# When the native assembler is in use, -g is not supported with the O32 ABI
+# and we get a warning for every -mabi=32 compilation.  Work around this
+# by adding -Wno-error.
+CRTSTUFF_T_CFLAGS=-g1 -Wno-error
+TARGET_LIBGCC2_CFLAGS = -Wno-error
 
 LIB2FUNCS_EXTRA = $(srcdir)/config/mips/_tilib.c
 
