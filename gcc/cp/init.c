@@ -1001,7 +1001,7 @@ expand_member_init (tree name)
 
       if (!direct_binfo && !virtual_binfo)
 	{
-	  if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
+	  if (CLASSTYPE_VBASECLASSES (current_class_type))
 	    error ("type `%D' is not a direct or virtual base of `%T'",
 		   name, current_class_type);
 	  else
@@ -2855,7 +2855,7 @@ push_base_cleanups (void)
   VEC (tree) *vbases;
 
   /* Run destructors for all virtual baseclasses.  */
-  if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
+  if (CLASSTYPE_VBASECLASSES (current_class_type))
     {
       tree cond = (condition_conversion
 		   (build2 (BIT_AND_EXPR, integer_type_node,

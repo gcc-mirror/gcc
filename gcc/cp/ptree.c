@@ -123,8 +123,6 @@ cxx_print_type (FILE *file, tree node, int indent)
     fputs (" delete[]", file);
   if (TYPE_HAS_ASSIGN_REF (node))
     fputs (" this=(X&)", file);
-  if (TYPE_USES_MULTIPLE_INHERITANCE (node))
-    fputs (" uses-multiple-inheritance", file);
 
   if (TREE_CODE (node) == RECORD_TYPE)
     {

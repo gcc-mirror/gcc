@@ -198,7 +198,7 @@ maybe_retrofit_in_chrg (tree fn)
   /* We don't need an in-charge parameter for constructors that don't
      have virtual bases.  */
   if (DECL_CONSTRUCTOR_P (fn)
-      && !TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
+      && !CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fn)))
     return;
 
   arg_types = TYPE_ARG_TYPES (TREE_TYPE (fn));
@@ -209,7 +209,7 @@ maybe_retrofit_in_chrg (tree fn)
 
   /* If this is a subobject constructor or destructor, our caller will
      pass us a pointer to our VTT.  */
-  if (TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
+  if (CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fn)))
     {
       parm = build_artificial_parm (vtt_parm_identifier, vtt_parm_type);
 

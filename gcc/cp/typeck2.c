@@ -947,23 +947,10 @@ process_init_constructor (tree type, tree init, tree* elts)
 
       if (tail)
 	{
-	  if (TYPE_USES_VIRTUAL_BASECLASSES (type))
-	    {
-	      sorry ("initializer list for object of class with virtual base classes");
-	      return error_mark_node;
-	    }
-
-	  if (TYPE_BINFO (type) && BINFO_N_BASE_BINFOS (TYPE_BINFO (type)))
-	    {
-	      sorry ("initializer list for object of class with base classes");
-	      return error_mark_node;
-	    }
-
-	  if (TYPE_POLYMORPHIC_P (type))
-	    {
-	      sorry ("initializer list for object using virtual functions");
-	      return error_mark_node;
-	    }
+	  gcc_assert (!CLASSTYPE_VBASECLASSES (type));
+	  gcc_assert (!TYPE_BINFO (type)
+		      || !BINFO_N_BASE_BINFOS (TYPE_BINFO (type)));
+	  gcc_assert (!TYPE_POLYMORPHIC_P (type));
 	}
 
       for (field = TYPE_FIELDS (type); field;

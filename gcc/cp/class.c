@@ -1405,11 +1405,7 @@ finish_struct_bits (tree t)
       TYPE_HAS_NONTRIVIAL_DESTRUCTOR (variants) 
 	= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t);
 
-      TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (variants) 
-	= TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (t);
       TYPE_POLYMORPHIC_P (variants) = TYPE_POLYMORPHIC_P (t);
-      TYPE_USES_VIRTUAL_BASECLASSES (variants)
-	= TYPE_USES_VIRTUAL_BASECLASSES (t);
       
       TYPE_BINFO (variants) = TYPE_BINFO (t);
 
@@ -4126,15 +4122,11 @@ check_bases_and_members (tree t)
   /* Do some bookkeeping that will guide the generation of implicitly
      declared member functions.  */
   TYPE_HAS_COMPLEX_INIT_REF (t)
-    |= (TYPE_HAS_INIT_REF (t) 
-	|| TYPE_USES_VIRTUAL_BASECLASSES (t)
-	|| TYPE_POLYMORPHIC_P (t));
+    |= (TYPE_HAS_INIT_REF (t) || TYPE_CONTAINS_VPTR_P (t));
   TYPE_NEEDS_CONSTRUCTING (t)
-    |= (TYPE_HAS_CONSTRUCTOR (t) 
-	|| TYPE_USES_VIRTUAL_BASECLASSES (t)
-	|| TYPE_POLYMORPHIC_P (t));
-  CLASSTYPE_NON_AGGREGATE (t) |= (TYPE_HAS_CONSTRUCTOR (t)
-				  || TYPE_POLYMORPHIC_P (t));
+    |= (TYPE_HAS_CONSTRUCTOR (t) || TYPE_CONTAINS_VPTR_P (t));
+  CLASSTYPE_NON_AGGREGATE (t)
+    |= (TYPE_HAS_CONSTRUCTOR (t) || TYPE_POLYMORPHIC_P (t));
   CLASSTYPE_NON_POD_P (t)
     |= (CLASSTYPE_NON_AGGREGATE (t) || TYPE_HAS_DESTRUCTOR (t) 
 	|| TYPE_HAS_ASSIGN_REF (t));
@@ -4228,13 +4220,6 @@ create_vtable_ptr (tree t, tree* virtuals_p)
       
       /* This class is non-empty.  */
       CLASSTYPE_EMPTY_P (t) = 0;
-
-      if (BINFO_N_BASE_BINFOS (TYPE_BINFO (t)))
-	/* If there were any baseclasses, they can't possibly be at
-	   offset zero any more, because that's where the vtable
-	   pointer is.  So, converting to a base class is going to
-	   take work.  */
-	TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (t) = 1;
 
       return field;
     }
@@ -6780,7 +6765,7 @@ build_vtt_inits (tree binfo, tree t, tree* inits, tree* index)
   int top_level_p = same_type_p (TREE_TYPE (binfo), t);
 
   /* We only need VTTs for subobjects with virtual bases.  */
-  if (!TYPE_USES_VIRTUAL_BASECLASSES (BINFO_TYPE (binfo)))
+  if (!CLASSTYPE_VBASECLASSES (BINFO_TYPE (binfo)))
     return inits;
 
   /* We need to use a construction vtable if this is not the primary
@@ -6897,7 +6882,7 @@ dfs_build_secondary_vptr_vtt_inits (tree binfo, void *data)
 
   /* If BINFO has virtual bases or is reachable via a virtual path
      from T, it'll have a secondary vptr.  */
-  if (!TYPE_USES_VIRTUAL_BASECLASSES (BINFO_TYPE (binfo))
+  if (!CLASSTYPE_VBASECLASSES (BINFO_TYPE (binfo))
       && !binfo_via_virtual (binfo, t))
     return NULL_TREE;
 
@@ -7052,7 +7037,7 @@ accumulate_vtbl_inits (tree binfo,
   /* If we're building a construction vtable, we're not interested in
      subobjects that don't require construction vtables.  */
   if (ctor_vtbl_p 
-      && !TYPE_USES_VIRTUAL_BASECLASSES (BINFO_TYPE (binfo))
+      && !CLASSTYPE_VBASECLASSES (BINFO_TYPE (binfo))
       && !binfo_via_virtual (orig_binfo, BINFO_TYPE (rtti_binfo)))
     return;
 
@@ -7411,7 +7396,7 @@ build_vbase_offset_vtbl_entries (tree binfo, vtbl_init_data* vid)
 
   /* If there are no virtual baseclasses, then there is nothing to
      do.  */
-  if (!TYPE_USES_VIRTUAL_BASECLASSES (BINFO_TYPE (binfo)))
+  if (!CLASSTYPE_VBASECLASSES (BINFO_TYPE (binfo)))
     return;
 
   t = vid->derived;
