@@ -372,7 +372,7 @@ namespace std
 	  
 	  // Argument list for iconv specifies a byte sequence. Thus,
 	  // all to/from arrays must be brutally casted to char*.
-	  const char* __cfrom = reinterpret_cast<const char*>(__from);
+	  char* __cfrom = reinterpret_cast<char*>(const_cast<intern_type*>(__from));
 	  char* __cto = reinterpret_cast<char*>(__to);
 	  size_t __conv = iconv(*__desc, &__cfrom, &__flen, &__cto, &__tlen); 
 	  
@@ -452,7 +452,7 @@ namespace std
 	  
 	  // Argument list for iconv specifies a byte sequence. Thus,
 	  // all to/from arrays must be brutally casted to char*.
-	  const char* __cfrom = reinterpret_cast<const char*>(__from);
+	  char* __cfrom = reinterpret_cast<char*>(const_cast<extern_type*>(__from));
 	  char* __cto = reinterpret_cast<char*>(__to);
 	  size_t __conv = iconv(*__desc, &__cfrom, &__flen, &__cto, &__tlen); 
 	  

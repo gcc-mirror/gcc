@@ -1565,7 +1565,7 @@ AC_DEFUN(
           _cv_gnu_make_command='' ;
 dnl Search all the common names for GNU make
           for a in "${MAKE:-make}" make gmake gnumake ; do
-                  if [ "`$a --version 2> /dev/null | grep -c GNU`" != "0" ]
+                  if ( $a --version 2> /dev/null | grep -c GNU )
                   then
                           _cv_gnu_make_command=$a ;
                           break;
