@@ -1,3 +1,8 @@
+2003-02-01  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/faq/index.html:  Correct link to libg++ information.
+	* docs/html/faq/index.txt:  Regenerated.
+
 2003-02-01  Paolo Carlini  <pcarlini@unitus.it>
             Benjamin Kosnik  <bkoz@redhat.com>
 
