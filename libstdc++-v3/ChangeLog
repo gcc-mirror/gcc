@@ -1,3 +1,10 @@
+2003-05-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: Remove
+	excess errors dg marker, use dg-errors instead.
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: Same.
+	* testsuite/20_util/auto_ptr_neg.cc: Same.
+	
 2003-05-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/std_fstream.h (basic_filebuf::_M_codecvt): Add

@@ -1,4 +1,6 @@
-// Copyright (C) 2002 Free Software Foundation
+// { dg-do compile }
+
+// Copyright (C) 2002, 2003 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,9 +23,6 @@
 #include <memory>
 #include <testsuite_hooks.h>
 
-// { dg-do compile }
-// { dg-excess-errors "" }
-
 // via Jack Reeves <jack_reeves@hispeed.ch>
 // libstdc++/3946
 // http://gcc.gnu.org/ml/libstdc++/2002-07/msg00024.html
@@ -37,7 +36,7 @@ int
 test01()
 {
   std::auto_ptr<Base> ptr2;
-  ptr2 = new Base; // { dg-error "no" "candidates" "auto_ptr"} 
+  ptr2 = new Base; // { dg-error "no match" }
   return 0;
 }
 
@@ -45,6 +44,7 @@ int
 main()
 {
   test01();
-
   return 0;
 }
+// { dg-error "candidates" "" { target *-*-* } 216 } 
+// { dg-error "std::auto_ptr" "" { target *-*-* } 338 } 

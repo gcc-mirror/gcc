@@ -1,5 +1,4 @@
 // { dg-do compile }
-// { dg-excess-errors "" }
 
 // Copyright (C) 2003 Free Software Foundation, Inc.
 //
@@ -41,3 +40,6 @@ void test01()
   test_base io2;
   io1 = io2;
 }
+// { dg-error "within this context" "" { target *-*-* } 41 } 
+// { dg-error "is private" "" { target *-*-* } 666 } 
+// { dg-error "operator=" "" { target *-*-* } 0 } 
