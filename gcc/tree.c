@@ -2138,19 +2138,42 @@ int_size_in_bytes (type)
 }
 
 /* Return, as a tree node, the number of elements for TYPE (which is an
-   ARRAY_TYPE) minus one. This counts only elements of the top array.  */
+   ARRAY_TYPE) minus one. This counts only elements of the top array.
+
+   Don't let any SAVE_EXPRs escape; if we are called as part of a cleanup
+   action, they would get unsaved.  */
 
 tree
 array_type_nelts (type)
      tree type;
 {
   tree index_type = TYPE_DOMAIN (type);
+  tree min = TYPE_MIN_VALUE (index_type);
+  tree max = TYPE_MAX_VALUE (index_type);
 
-  return (integer_zerop (TYPE_MIN_VALUE (index_type))
-	  ? TYPE_MAX_VALUE (index_type)
-	  : fold (build (MINUS_EXPR, TREE_TYPE (TYPE_MAX_VALUE (index_type)),
-			 TYPE_MAX_VALUE (index_type),
-			 TYPE_MIN_VALUE (index_type))));
+  if (! TREE_CONSTANT (min))
+    {
+      STRIP_NOPS (min);
+      if (TREE_CODE (min) == SAVE_EXPR)
+	min = build (RTL_EXPR, TREE_TYPE (TYPE_MIN_VALUE (index_type)), 0,
+		     SAVE_EXPR_RTL (min));
+      else
+	min = TYPE_MIN_VALUE (index_type);
+    }
+
+  if (! TREE_CONSTANT (max))
+    {
+      STRIP_NOPS (max);
+      if (TREE_CODE (max) == SAVE_EXPR)
+	max = build (RTL_EXPR, TREE_TYPE (TYPE_MAX_VALUE (index_type)), 0,
+		     SAVE_EXPR_RTL (max));
+      else
+	max = TYPE_MAX_VALUE (index_type);
+    }
+
+  return (integer_zerop (min)
+	  ? max
+	  : fold (build (MINUS_EXPR, TREE_TYPE (max), max, min)));
 }
 
 /* Return nonzero if arg is static -- a reference to an object in

@@ -5208,10 +5208,13 @@ expand_expr (exp, target, tmode, modifier)
       }
 
     case RTL_EXPR:
-      if (RTL_EXPR_SEQUENCE (exp) == const0_rtx)
-	abort ();
-      emit_insns (RTL_EXPR_SEQUENCE (exp));
-      RTL_EXPR_SEQUENCE (exp) = const0_rtx;
+      if (RTL_EXPR_SEQUENCE (exp))
+	{
+	  if (RTL_EXPR_SEQUENCE (exp) == const0_rtx)
+	    abort ();
+	  emit_insns (RTL_EXPR_SEQUENCE (exp));
+	  RTL_EXPR_SEQUENCE (exp) = const0_rtx;
+	}
       preserve_rtl_expr_result (RTL_EXPR_RTL (exp));
       free_temps_for_rtl_expr (exp);
       return RTL_EXPR_RTL (exp);
