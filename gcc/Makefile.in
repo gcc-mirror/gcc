@@ -1709,7 +1709,7 @@ s-attrtab : $(md_file) genattrtab$(build_exeext) $(srcdir)/move-if-change
 	touch s-attrtab
 
 insn-output.o : insn-output.c $(CONFIG_H) $(RTL_H) $(GGC_H) $(REGS_H) real.h \
-    conditions.h hard-reg-set.h insn-config.h $(INSN_ATTR_H) \
+    conditions.h hard-reg-set.h insn-config.h $(INSN_ATTR_H) $(EXPR_H) \
     output.h $(RECOG_H) function.h $(SYSTEM_H) toplev.h flags.h \
     $(TM_P_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c insn-output.c
