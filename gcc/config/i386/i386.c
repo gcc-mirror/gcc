@@ -2672,6 +2672,28 @@ function_arg (CUMULATIVE_ARGS *cum,	/* current arg information */
   int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
   static bool warnedsse, warnedmmx;
 
+  /* To simplify the code below, represent vector types with a vector mode
+     even if MMX/SSE are not active.  */
+  if (type
+      && TREE_CODE (type) == VECTOR_TYPE
+      && (bytes == 8 || bytes == 16)
+      && GET_MODE_CLASS (TYPE_MODE (type)) != MODE_VECTOR_INT
+      && GET_MODE_CLASS (TYPE_MODE (type)) != MODE_VECTOR_FLOAT)
+    {
+      enum machine_mode innermode = TYPE_MODE (TREE_TYPE (type));
+      mode = TREE_CODE (TREE_TYPE (type)) == REAL_TYPE
+	     ? MIN_MODE_VECTOR_FLOAT : MIN_MODE_VECTOR_INT;
+
+      /* Get the mode which has this inner mode and number of units.  */
+      while (GET_MODE_NUNITS (mode) != TYPE_VECTOR_SUBPARTS (type)
+	     || GET_MODE_INNER (mode) != innermode)
+	{
+	  mode = GET_MODE_WIDER_MODE (mode);
+	  if (mode == VOIDmode)
+	    abort ();
+	}
+    }
+
   /* Handle a hidden AL argument containing number of registers for varargs
      x86-64 functions.  For i386 ABI just return constm1_rtx to avoid
      any AL settings.  */
@@ -2802,7 +2824,7 @@ ix86_pass_by_reference (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
 }
 
 /* Return true when TYPE should be 128bit aligned for 32bit argument passing
-   ABI  */
+   ABI.  Only called if TARGET_SSE.  */
 static bool
 contains_128bit_aligned_vector_p (tree type)
 {
