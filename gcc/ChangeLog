@@ -1,3 +1,9 @@
+2000-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.c (mem_min_alignment): If not optimizing,
+	we cannot be sure that if reload_completed base register will
+	be properly aligned.
+
 2000-03-21  Richard Henderson  <rth@cygnus.com>
 
         * flow.c (delete_block): Fix typo last change.
