@@ -1,3 +1,8 @@
+Tue Aug 19 09:34:57 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (EXPECT, RUNTEST, RUNTESTFLAGS): Define.
+	(site.exp, check, check-g++, check-gcc): New targets.
+
 Mon Aug 18 17:39:02 1997  Mike Meissner  <meissner@cygnus.com>
 
 	* configure.in ({powerpc,rs6000}*-*-*, --with-cpu): Remove single
