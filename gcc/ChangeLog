@@ -8,6 +8,8 @@ Sun Oct 10 13:28:48 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 	* gmicro.md (load address pattern): Use 'p' constraint, delete use
 	of ADDRESS rtx.
 
+	* emit-rtl.c (copy_insn_1): Make format_ptr a const char *.
+
 Sun Oct 10 02:41:41 1999  Richard Henderson  <rth@cygnus.com>
 
 	* genrecog.c (add_to_sequence): Move allow_const_int test outside
@@ -139,7 +141,7 @@ Fri Oct  8 18:46:11 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* jump.c (duplicate_loop_exit_test): Use copy_insn/copy_insn_1
 	instead of copy_rtx.  Accept sequences that contain asm statements.
-	* emit_rtl.c (copy_insn_1, copy_insn): New functions.
+	* emit-rtl.c (copy_insn_1, copy_insn): New functions.
 	(copy_insn_scratch_in, copy_insn_scratch_out, copy_insn_n_scratches,
 	orig_asm_operands_vector, copy_asm_operands_vector,
 	orig_asm_constraints_vecotr, copy_asm_constraints_vector): New static

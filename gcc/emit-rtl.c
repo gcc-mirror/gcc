@@ -3408,7 +3408,7 @@ copy_insn_1 (orig)
   register rtx copy;
   register int i, j;
   register RTX_CODE code;
-  register char *format_ptr;
+  register const char *format_ptr;
 
   code = GET_CODE (orig);
 
