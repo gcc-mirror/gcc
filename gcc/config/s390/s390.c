@@ -1059,6 +1059,76 @@ s390_split_ok_p (rtx dst, rtx src, enum machine_mode mode, int first_subword)
   return true;
 }
 
+/* Expand logical operator CODE in mode MODE with operands OPERANDS.  */
+
+void
+s390_expand_logical_operator (enum rtx_code code, enum machine_mode mode,
+			      rtx *operands)
+{
+  enum machine_mode wmode = mode;
+  rtx dst = operands[0];
+  rtx src1 = operands[1];
+  rtx src2 = operands[2];
+  rtx op, clob, tem;
+
+  /* If we cannot handle the operation directly, use a temp register.  */
+  if (!s390_logical_operator_ok_p (operands))
+    dst = gen_reg_rtx (mode);
+
+  /* QImode and HImode patterns make sense only if we have a destination
+     in memory.  Otherwise perform the operation in SImode.  */
+  if ((mode == QImode || mode == HImode) && GET_CODE (dst) != MEM)
+    wmode = SImode;
+
+  /* Widen operands if required.  */
+  if (mode != wmode)
+    {
+      if (GET_CODE (dst) == SUBREG
+	  && (tem = simplify_subreg (wmode, dst, mode, 0)) != 0)
+	dst = tem;
+      else if (REG_P (dst))
+	dst = gen_rtx_SUBREG (wmode, dst, 0);
+      else
+        dst = gen_reg_rtx (wmode);
+
+      if (GET_CODE (src1) == SUBREG
+	  && (tem = simplify_subreg (wmode, src1, mode, 0)) != 0)
+	src1 = tem;
+      else if (GET_MODE (src1) != VOIDmode)
+	src1 = gen_rtx_SUBREG (wmode, force_reg (mode, src1), 0);
+
+      if (GET_CODE (src2) == SUBREG
+	  && (tem = simplify_subreg (wmode, src2, mode, 0)) != 0)
+	src2 = tem;
+      else if (GET_MODE (src2) != VOIDmode)
+	src2 = gen_rtx_SUBREG (wmode, force_reg (mode, src2), 0);
+    }
+
+  /* Emit the instruction.  */
+  op = gen_rtx_SET (VOIDmode, dst, gen_rtx_fmt_ee (code, wmode, src1, src2));
+  clob = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CCmode, CC_REGNUM));
+  emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, op, clob)));
+
+  /* Fix up the destination if needed.  */
+  if (dst != operands[0])
+    emit_move_insn (operands[0], gen_lowpart (mode, dst));
+}
+
+/* Check whether OPERANDS are OK for a logical operation (AND, IOR, XOR).  */
+
+bool
+s390_logical_operator_ok_p (rtx *operands)
+{
+  /* If the destination operand is in memory, it needs to coincide
+     with one of the source operands.  After reload, it has to be
+     the first source operand.  */
+  if (GET_CODE (operands[0]) == MEM)
+    return rtx_equal_p (operands[0], operands[1])
+	   || (!reload_completed && rtx_equal_p (operands[0], operands[2]));
+
+  return true;
+}
+
 
 /* Change optimizations to be performed, depending on the
    optimization level.

@@ -1,3 +1,47 @@
+2004-09-30  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_expand_logical_operator): Add
+	prototype.
+	(s390_logical_operator_ok_p): Likewise.
+	* config/s390/s390.c (s390_expand_logical_operator): New function.
+	(s390_logical_operator_ok_p): Likewise.
+	* config/s390/s390.md ("anddi3"): New expander.
+	("*anddi3"): Rename from old anddi3 pattern, add Q->Q alternative.
+	("*anddi3_ss", "*anddi3_ss_inv"): Remove.
+	("andsi3"): Use s390_expand_logical_operator.
+	("*andsi3_esa", "*andsi3_zarch"): Add Q->Q alternative.
+	("*andsi3_ss", "*andsi3_ss_inv"): Remove.
+	("andhi3"): New expander.
+	("*andhi3_zarch", "*andhi3_esa"): New patterns.
+	("andhi3", "*andhi3_ni", "*andhi3_ss", "*andhi3_ss_inv"): Remove.
+	("andqi3"): New expander.
+	("*andqi3_zarch", "*andqi3_esa"): New patterns.
+	("andqi3", "*andqi3_ni", "*andqi3_ss", "*andqi3_ss_inv"): Remove.
+	("iordi3"): New expander.
+	("*iordi3"): Rename from old iordi3 pattern, add Q->Q alternative.
+	("*iordi3_ss", "*iordi3_ss_inv"): Remove.
+	("iorsi3"): Use s390_expand_logical_operator.
+	("*iorsi3_esa", "*iorsi3_zarch"): Add Q->Q alternative.
+	("*iorsi3_ss", "*iorsi3_ss_inv"): Remove.
+	("iorhi3"): New expiorer.
+	("*iorhi3_zarch", "*iorhi3_esa"): New patterns.
+	("iorhi3", "*iorhi3_ni", "*iorhi3_ss", "*iorhi3_ss_inv"): Remove.
+	("iorqi3"): New expiorer.
+	("*iorqi3_zarch", "*iorqi3_esa"): New patterns.
+	("iorqi3", "*iorqi3_ni", "*iorqi3_ss", "*iorqi3_ss_inv"): Remove.
+	("xordi3"): New expander.
+	("*xordi3"): Rename from old xordi3 pattern, add Q->Q alternative.
+	("*xordi3_ss", "*xordi3_ss_inv"): Remove.
+	("xorsi3"): New expander.
+	("*xorsi3"): Rename from old xorsi3 pattern, add Q->Q alternative.
+	("*xorsi3_ss", "*xorsi3_ss_inv"): Remove.
+	("xorhi3"): New expander.
+	("*xorqi3"): Rename from old xorhi3 pattern, add Q->Q alternative.
+	("*xorhi3_ss", "*xorhi3_ss_inv"): Remove.
+	("xorqi3"): New expander.
+	("*xorqi3"): Rename from old xorqi3 pattern, add Q->Q alternative.
+	("*xorqi3_ss", "*xorqi3_ss_inv"): Remove.
+
 2004-09-30  Roger Sayle  <roger@eyesopen.com>
 
 	* combine.c (force_to_mode) <NE_EXPR>: Only convert the expression
