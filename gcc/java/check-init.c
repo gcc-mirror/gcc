@@ -164,6 +164,11 @@ static void check_final_reassigned (tree, words);
 static tree
 get_variable_decl (tree exp)
 {
+  /* A static field can be wrapped in a COMPOUND_EXPR where the first
+     argument initializes the class.  */
+  if (TREE_CODE (exp) == COMPOUND_EXPR)
+    exp = extract_field_decl (exp);
+
   if (TREE_CODE (exp) == VAR_DECL)
     {
       if (! TREE_STATIC (exp) ||  FIELD_FINAL (exp))

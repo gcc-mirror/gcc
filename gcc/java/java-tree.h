@@ -1801,4 +1801,7 @@ enum
 };
 
 #undef DEBUG_JAVA_BINDING_LEVELS
+
+extern tree extract_field_decl (tree);
+
 #endif /* ! GCC_JAVA_TREE_H */
