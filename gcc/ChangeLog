@@ -1,3 +1,7 @@
+Mon Jan 19 09:43:15 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+        * Makefile.in (genrtl.c genrtl.h): Add dummy command for GNU make.
+
 Mon Jan 19 09:38:18 1998  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in: Find declaration for sbrk.
