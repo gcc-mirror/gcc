@@ -286,7 +286,7 @@ extern char *strdup(), *float_label();
    This naming inversion is due to the GCC defined capabilities of
    "Base" vs. "Index" regs. */
 
-enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
+enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
@@ -297,7 +297,7 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* Give names of register classes as strings for dump file.   */
 
 #define REG_CLASS_NAMES \
- { "NO_REGS", "INDEX_REGS", "BASE_REGS", "ALL_REGS" }
+ { "NO_REGS", "R2", "R0_1", "INDEX_REGS", "BASE_REGS", "ALL_REGS" }
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
@@ -305,14 +305,14 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
    1750 "index" (remember, in the *GCC* sense!) regs are R12 through R15. 
    The only 1750 register not usable as BASE_REG is R0. */
 
-#define REG_CLASS_CONTENTS  {0, 0xf000, 0xfffe, 0xffff}
+#define REG_CLASS_CONTENTS  {0, 0x0004, 0x0003, 0xf000, 0xfffe, 0xffff}
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
-#define REGNO_REG_CLASS(REGNO)	\
- ((REGNO) >= 12 ? INDEX_REGS : (REGNO) >  0 ? BASE_REGS : ALL_REGS)
+#define REGNO_REG_CLASS(REGNO) ((REGNO) == 2 ? R2 : (REGNO) == 0 ? R0_1 : \
+  (REGNO) >= 12 ? INDEX_REGS : (REGNO) >  0 ? BASE_REGS : ALL_REGS)
 
 /* The class value for index registers, and the one for base regs. */
 
@@ -320,9 +320,12 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 #define INDEX_REG_CLASS INDEX_REGS
 
 /* Get reg_class from a letter such as appears in the machine description.
-   For the 1750, we have 'b' for gcc Base regs and 'x' for gcc Index regs. */
+   For the 1750, we have 'z' for R0_1, 't' for R2, 'b' for gcc Base regs 
+   and 'x' for gcc Index regs. */
 
-#define REG_CLASS_FROM_LETTER(C) ((C) == 'b' ? BASE_REGS : \
+#define REG_CLASS_FROM_LETTER(C) ((C) == 't' ? R2 : \
+				  (C) == 'z' ? R0_1 : \
+				  (C) == 'b' ? BASE_REGS : \
 				  (C) == 'x' ? INDEX_REGS : NO_REGS)
 
 /* The letters I,J,K,.. to P in a register constraint string
@@ -351,6 +354,16 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 /* Similar, but for floating constants, and defining letter 'G'.
    Here VALUE is the CONST_DOUBLE rtx itself.  */
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  0
+
+/* Optional extra constraints for this machine.
+
+   For the 1750, `Q' means that this is a memory operand consisting
+   of the sum of an Index Register (in the GCC sense, i.e. R12..R15)
+   and a constant in the range 0..255. This constraint is used for
+   the Base Register with Offset address mode instructions (LB,STB,AB,..)  */
+
+#define EXTRA_CONSTRAINT(OP, C)				\
+  ((C) == 'Q' && b_mode_operand (OP))
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
@@ -663,8 +676,8 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
    Since they use reg_renumber, they are safe only once reg_renumber
    has been allocated, which happens in local-alloc.c. 
    1750 note: The words BASE and INDEX are used in their GCC senses:
-   The "Index Registers", R12 through R15, can have an address displacement
-   int the range 0..255 words.
+   The "Index Registers", R12 through R15, are used in the 1750
+   instructions LB,STB,AB,SBB,MB,DB,LBX,STBX,...
    */
 
 #define REGNO_OK_FOR_BASE_P(REGNO)  \
@@ -1278,7 +1291,9 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
 		  E=single precision) label name
 	'F': print a label defining a floating-point constant value
 	'J': print the absolute value of a negative INT_CONST
-	     (this is used in LISN/CISN/MISN/SISP and others)   */
+	     (this is used in LISN/CISN/MISN/SISP and others)
+	'Q': print a 1750 Base-Register-with-offset instruction's operands
+ */
 
 /* 1750A: see file aux-output.c */
 #define PRINT_OPERAND(FILE, X, CODE)  print_operand(FILE,X,CODE)
