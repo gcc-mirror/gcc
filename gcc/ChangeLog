@@ -1,3 +1,11 @@
+2003-03-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (addsf3, adddf3, subsf3, subdf3, mulsf3, muldf3, negsf2)
+	(negdf2, abssi2, abssf2, absdf2, floatsisf2, floatsidf2)
+	(fix_truncsfsi2, fix_truncdfsi2, truncdfsf2): Moved back into main
+	machine description file from ...
+	* cirrus.md: ... here.
+
 2003-03-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (a peephole2): Don't use
