@@ -22,6 +22,10 @@ Boston, MA 02111-1307, USA. */
 #define EXECUTABLE_SUFFIX ".exe"
 #define NO_SYS_SIGLIST 1
 
+/* Even though Cygwin tries to hide the DOS based filesystem, it
+   still shows though at times.  */
+#define HAVE_DOS_BASED_FILE_SYSTEM
+
 /* We support both "/" and "\" since everybody tests both but we
    default to "/".  This is important because if gcc produces Win32
    paths containing backslashes, make and configure may treat the
