@@ -1,3 +1,7 @@
+2004-07-19  Mark Mitchell  <mark@codesourcery.com>
+
+	Revert patch for PR c++/16623.
+	
 2004-07-19  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* except.c: Remove two spurious carriage returns.

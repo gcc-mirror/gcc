@@ -1068,8 +1068,6 @@ lazily_declare_fn (special_function_kind sfk, tree type)
       /* Create appropriate clones.  */
       clone_function_decl (fn, /*update_method_vec=*/true);
     }
-  else if (sfk == sfk_assignment_operator)
-    CLASSTYPE_LAZY_ASSIGNMENT_OP (type) = 0;
 
   return fn;
 }
