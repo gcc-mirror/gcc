@@ -1,5 +1,6 @@
 2004-11-29  Diego Novillo  <dnovillo@redhat.com>
 
+	PR tree-optimization/18712
 	* tree-into-ssa.c (insert_phi_nodes_for): Pass argument
 	WORK_STACK by reference.
 	Call VEC_safe_push instead of VEC_quick_push.
