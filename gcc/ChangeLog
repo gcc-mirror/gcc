@@ -1,3 +1,9 @@
+2004-08-31  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+	    Jeff Law  <law@redhat.com>
+
+	* tree-cfg.c (cfg_remove_useless_stmts_bb): Also invalidate if VAL
+	gets modified.
+
 2004-08-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* hooks.c (hook_bool_void_true): New function.
