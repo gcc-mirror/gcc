@@ -4982,8 +4982,13 @@ used_arg (p, len)
 	    break;
 	}
 
-      /* Now build a list of the replacement string for switches that we care about */
-      mswitches = (struct mswitchstr *) xmalloc ((sizeof (struct mswitchstr)) * n_switches);
+      /* Now build a list of the replacement string for switches that we care
+	 about.  Make sure we allocate at least one entry.  This prevents
+	 xmalloc from calling fatal, and prevents us from re-executing this
+	 block of code.  */
+      mswitches
+	= (struct mswitchstr *) xmalloc ((sizeof (struct mswitchstr))
+					 * (n_switches ? n_switches : 1));
       for (i = 0; i < n_switches; i++)
 	{
 	  int xlen = strlen (switches[i].part1);
