@@ -1,3 +1,11 @@
+2002-06-12  Daniel Jacobowitz  <drow@mvista.com>
+
+	* config/mips/elf.h (DWARF2_DEBUG_INFO): Define.
+	* config/mips/mips.c (mips_output_filename): Don't print a
+	".file" directive if we are using DWARF-2.
+	(mips_output_function_prologue): Do not emit source file
+	name for TARGET_GAS.
+
 2002-06-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.md (movsi): Only use floating point

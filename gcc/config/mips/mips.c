@@ -5916,7 +5916,11 @@ mips_output_filename (stream, name)
   static int first_time = 1;
   char ltext_label_name[100];
 
-  if (first_time)
+  /* If we are emitting DWARF-2, let dwarf2out handle the ".file"
+     directives.  */
+  if (write_symbols == DWARF2_DEBUG)
+    return;
+  else if (first_time)
     {
       first_time = 0;
       SET_FILE_NUMBER ();
@@ -6956,7 +6960,11 @@ mips_output_function_prologue (file, size)
 #endif
   HOST_WIDE_INT tsize = current_frame_info.total_size;
 
-  ASM_OUTPUT_SOURCE_FILENAME (file, DECL_SOURCE_FILE (current_function_decl));
+  /* ??? When is this really needed?  At least the GNU assembler does not
+     need the source filename more than once in the file, beyond what is
+     emitted by the debug information.  */
+  if (!TARGET_GAS)
+    ASM_OUTPUT_SOURCE_FILENAME (file, DECL_SOURCE_FILE (current_function_decl));
 
 #ifdef SDB_DEBUGGING_INFO
   if (debug_info_level != DINFO_LEVEL_TERSE && write_symbols == SDB_DEBUG)
