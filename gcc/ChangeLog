@@ -1,3 +1,8 @@
+2003-04-29  Aldy Hernandez  <aldyh@redhat.com>
+
+        * expr.c (emit_group_load): Dump parallels of simd types to
+        memory.
+
 2003-04-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* genautomata.c (add_vect): Check undefined value for range type
