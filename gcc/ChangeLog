@@ -1,3 +1,8 @@
+2003-05-15 Eric Christopher <echristo@redhat.com>
+
+        * combine.c (expand_compound_operation): Make sure
+        that zero_extend operation is profitable.
+
 2003-05-15  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/linux.h, config/alpha/linux-elf.h: Remove
