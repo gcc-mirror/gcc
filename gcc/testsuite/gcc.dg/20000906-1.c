@@ -1,5 +1,4 @@
-/* The target must support __builtin_trap to run this test.  */
-/* { dg-do run { target i?86-*-* mips*-*-* powerpc*-*-* m68k-*-* sparc*-*-* i960*-*-* } } */
+/* { dg-do run } */
 
 /* Testcase distilled from glibc's nss_parse_service_list in nss/nsswitch.c
    It can't be distilled further.  Fails with `-O2' for i[3456]86.  */
