@@ -1,4 +1,5 @@
 2005-02-15  David Edelsohn  <edelsohn@gnu.org>
+	    Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/19019
 	* config/rs6000/darwin-ldouble.c (_xlqadd): Rename to __gcc_qadd.
