@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler, for AMD Am29000 CPU.
-   Copyright (C) 1988, 90-98, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   2000 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
