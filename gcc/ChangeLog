@@ -1,3 +1,8 @@
+2003-07-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR optimization/10679
+	* tree-inline.c (inlinable_function_p): Honor MIN_INLINE_INSNS.
+
 2003-07-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/11607 and PR target/11516
