@@ -1910,7 +1910,7 @@ arc_final_prescan_insn (insn, opvec, noperands)
   record_cc_ref (insn);
 
   /* Allow -mdebug-ccfsm to turn this off so we can see how well it does.
-     We can't do this in macro FINAL_PRESCAN_INSN because it's called from
+     We can't do this in macro FINAL_PRESCAN_INSN because its called from
      final_scan_insn which has `optimize' as a local.  */
   if (optimize < 2 || TARGET_NO_COND_EXEC)
     return;

@@ -4497,7 +4497,7 @@
 ;; This insn is used for some loop tests, typically loops reversed when
 ;; strength reduction is used.  It is actually created when the instruction
 ;; combination phase combines the special loop test.  Since this insn
-;; is both a jump insn and has an output, it must deal with it's own
+;; is both a jump insn and has an output, it must deal with its own
 ;; reloads, hence the `m' constraints.  The `!' constraints direct reload
 ;; to not choose the register alternatives in the event a reload is needed.
 (define_insn "decrement_and_branch_until_zero"

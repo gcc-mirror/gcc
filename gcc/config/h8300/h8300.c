@@ -2974,7 +2974,7 @@ output_simode_bld (bild, log2, operands)
   return "";
 }
 
-/* Given INSN and it's current length LENGTH, return the adjustment
+/* Given INSN and its current length LENGTH, return the adjustment
    (in bytes) to correctly compute INSN's length.
 
    We use this to get the lengths of various memory references correct.  */

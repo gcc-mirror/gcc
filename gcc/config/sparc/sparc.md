@@ -5110,7 +5110,7 @@
   if (GET_CODE (XEXP (operands[0], 0)) == LABEL_REF)
     {
       /* This is really a PIC sequence.  We want to represent
-	 it as a funny jump so it's delay slots can be filled. 
+	 it as a funny jump so its delay slots can be filled. 
 
 	 ??? But if this really *is* a CALL, will not it clobber the
 	 call-clobbered registers?  We lose this if it is a JUMP_INSN.

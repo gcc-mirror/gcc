@@ -22,7 +22,7 @@
    64kb can be mapped out, thus catching references through null
    pointers.  We actually start at 0x10200 (for efficiency).  Ideally,
    we want the page offset of a given word of the .text (output)
-   section to be the same as it's page offset in the actual (output)
+   section to be the same as its page offset in the actual (output)
    linked core file so that paging of the .text section is efficient.
    In order to do this we allow for up to 0x200 bytes of header stuff
    in the output (linked) object file.

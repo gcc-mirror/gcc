@@ -1343,7 +1343,7 @@ extern char leaf_reg_remap[];
    : gen_rtx (MEM, MODE, gen_rtx (PLUS, Pmode, frame_pointer_rtx,	\
 				  GEN_INT (STARTING_FRAME_OFFSET))))
 
-/* Get_secondary_mem widens it's argument to BITS_PER_WORD which loses on v9
+/* Get_secondary_mem widens its argument to BITS_PER_WORD which loses on v9
    because the movsi and movsf patterns don't handle r/f moves.
    For v8 we copy the default definition.  */
 #define SECONDARY_MEMORY_NEEDED_MODE(MODE) \

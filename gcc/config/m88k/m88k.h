@@ -198,13 +198,13 @@ extern char * reg_names[];
    Redefined in sysv4.h, and luna.h.  */
 #define VERSION_INFO1	"m88k, "
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.74 $"
+#define VERSION_INFO2   "$Revision: 1.75 $"
 #endif
 
 #ifndef VERSION_STRING
 #define VERSION_STRING  version_string
 #ifdef __STDC__
-#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.74 $ " __DATE__
+#define TM_RCS_ID      "@(#)" __FILE__ " $Revision: 1.75 $ " __DATE__
 #else
 #define TM_RCS_ID      "$What: <@(#) m88k.h,v	1.1.1.2.2.2> $"
 #endif  /* __STDC__ */
@@ -2076,7 +2076,7 @@ do {									 \
   sprintf (LABEL, TARGET_SVR4 ? "*.%s%d" : "*@%s%d", PREFIX, NUM)
 
 /* Internal macro to get a single precision floating point value into
-   an int, so we can print it's value in hex.  */
+   an int, so we can print its value in hex.  */
 #define FLOAT_TO_INT_INTERNAL( FVALUE, IVALUE )				\
   { union {								\
       REAL_VALUE_TYPE d;						\
