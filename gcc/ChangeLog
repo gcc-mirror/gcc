@@ -1,5 +1,11 @@
 2001-05-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
+	* config/m68hc11/m68hc11.h (CPP_SPEC): Pass -D__HAVE_SHORT_DOUBLE__
+	to the pre-processor when -fshort-double is specified.
+	* config/m68hc11/m68hc11.2 (CPP_SPEC): Likewise.
+
+2001-05-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
 	* config/m68hc11/larith.asm (divmodhi4): Empty for 68HC12.
 	(__mulsi3): Rewrite for 68HC12.
 	* config/m68hc11/m68hc11.md (divmodhi4): Use idivs for 68HC12.
