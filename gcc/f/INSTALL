@@ -219,7 +219,7 @@ Enough disk space
 
      `makeinfo' is part of the GNU `texinfo' package; `makeinfo'
      version 1.68 is distributed as part of GNU `texinfo' version
-     3.11.
+     3.12.
 
      `makeinfo' is not needed in the typical case of installing `gcc'
      and `g77'.  *Note Missing tools?::, for information on when it
