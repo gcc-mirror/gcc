@@ -178,15 +178,29 @@ public class BigDecimal extends Number implements Comparable
     // Now parse exponent.
     if (point < len)
       {
-	int exp = Integer.parseInt (num.substring (point + 1));
-	exp -= scale;
-	if (exp > 0)
+        point++;
+        if (num.charAt(point) == '+')
+          point++;
+
+        if (point >= len )
+          throw new NumberFormatException ("no exponent following e or E");
+	
+        try 
 	  {
-	    intVal = intVal.multiply (BigInteger.valueOf (10).pow (exp));
-	    scale = 0;
+	    int exp = Integer.parseInt (num.substring (point));
+	    exp -= scale;
+	    if (exp > 0)
+	      {
+		intVal = intVal.multiply (BigInteger.valueOf (10).pow (exp));
+		scale = 0;
+	      }
+	    else
+	      scale = - exp;
 	  }
-	else
-	  scale = - exp;
+        catch (NumberFormatException ex) 
+	  {
+	    throw new NumberFormatException ("malformed exponent");
+	  }
       }
   }
 
@@ -198,7 +212,7 @@ public class BigDecimal extends Number implements Comparable
   public static BigDecimal valueOf (long val, int scale) 
     throws NumberFormatException 
   {
-    if (scale == 0)
+    if ((scale == 0) && ((int)val == val))
       switch ((int) val)
 	{
 	case 0:
@@ -431,19 +445,29 @@ public class BigDecimal extends Number implements Comparable
     if (scale == 0) 
       return bigStr;
 
-    int point = bigStr.length() - scale;
     boolean negative = (bigStr.charAt(0) == '-');
-    StringBuffer sb = new StringBuffer(bigStr.length() + 1 + 
-				       (point <= 0 ? -point+1 : 0));
-    if (negative)
-      sb.append('-');
-    while (point <= 0)
+
+    int point = bigStr.length() - scale - (negative ? 1 : 0);
+
+    StringBuffer sb = new StringBuffer(bigStr.length() + 2 +
+				       (point <= 0 ? (-point + 1) : 0));
+    if (point <= 0)
       {
-	sb.append('0');
-	point++;
+        if (negative)
+          sb.append('-');
+        sb.append('0').append('.');
+        while (point < 0)
+          {
+            sb.append('0');
+            point++;
+          }
+        sb.append(bigStr.substring(negative ? 1 : 0));
       }
-    sb.append(bigStr.substring(negative ? 1 : 0));
-    sb.insert(point, '.');
+    else
+      {
+	sb.append(bigStr);
+	sb.insert(point + (negative ? 1 : 0), '.');
+      }
     return sb.toString();
   }
 
