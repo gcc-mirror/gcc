@@ -44,7 +44,9 @@ typedef struct _Jv_JavaVM JavaVM;
 # ifdef __GNUC__
 
 /* If we're using gcc, we can use a platform-independent scheme to get
-   the right integer types.  */
+   the right integer types.  FIXME: this is not always correct, for
+   instance on the c4x it will be wrong -- it depends on whether
+   QImode is 8 bits.  */
 typedef int    jbyte  __attribute__((__mode__(__QI__)));
 typedef int    jshort __attribute__((__mode__(__HI__)));
 typedef int    jint   __attribute__((__mode__(__SI__)));
