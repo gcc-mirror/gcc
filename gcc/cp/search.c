@@ -2855,8 +2855,27 @@ add_conversions (binfo, data)
       /* Make sure we don't already have this conversion.  */
       if (! IDENTIFIER_MARKED (name))
 	{
-	  *conversions = tree_cons (binfo, tmp, *conversions);
-	  IDENTIFIER_MARKED (name) = 1;
+	  tree t;
+
+	  /* Make sure that we do not already have a conversion
+	     operator for this type.  Merely checking the NAME is not
+	     enough because two conversion operators to the same type
+	     may not have the same NAME.  */
+	  for (t = *conversions; t; t = TREE_CHAIN (t))
+	    {
+	      tree fn;
+	      for (fn = TREE_VALUE (t); fn; fn = OVL_NEXT (fn))
+		if (same_type_p (TREE_TYPE (name),
+				 DECL_CONV_FN_TYPE (OVL_CURRENT (fn))))
+		  break;
+	      if (fn)
+		break;
+	    }
+	  if (!t)
+	    {
+	      *conversions = tree_cons (binfo, tmp, *conversions);
+	      IDENTIFIER_MARKED (name) = 1;
+	    }
 	}
     }
   return NULL_TREE;

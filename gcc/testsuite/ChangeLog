@@ -1,3 +1,8 @@
+2003-08-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11928
+	* g++.dg/inherit/conv1.C: New test.
+
 2003-08-26  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* gcc.dg/noncompile/20030818-1.c: Expect second line of error.
