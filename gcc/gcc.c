@@ -581,8 +581,10 @@ static struct compiler default_compilers[] =
      were not present when we built the driver, we will hit these copies
      and be given a more meaningful error than "file not used since
      linking is not done".  */
-  {".cc", {"#C++"}}, {".cxx", {"#C++"}}, {".cpp", {"#C++"}}, {".c++", {"#C++"}},
-  {".C", {"#C++"}}, {".ads", {"#Ada"}}, {".adb", {"#Ada"}}, {".ada", {"#Ada"}},
+  {".m", {"#Objective-C"}},
+  {".cc", {"#C++"}}, {".cxx", {"#C++"}}, {".cpp", {"#C++"}},
+  {".c++", {"#C++"}}, {".C", {"#C++"}},
+  {".ads", {"#Ada"}}, {".adb", {"#Ada"}}, {".ada", {"#Ada"}},
   {".f", {"#Fortran"}}, {".for", {"#Fortran"}}, {".F", {"#Fortran"}},
   {".fpp", {"#Fortran"}},
   {".p", {"#Pascal"}}, {".pas", {"#Pascal"}},
@@ -664,31 +666,6 @@ static struct compiler default_compilers[] =
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %W{o*}}\
     %{!E:%e-E required when input is from standard input}"}},
-  {".m", {"@objective-c"}},
-  {"@objective-c",
-   {"cpp -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
-	%{C:%{!E:%eGNU C does not support -C without using -E}}\
-	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        -undef -D__OBJC__ -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
-	 %{ansi:-trigraphs -D__STRICT_ANSI__}\
-	%{!undef:%{!ansi:%p} %P} %{trigraphs}\
-        %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
-        %{traditional} %{ftraditional:-traditional}\
-        %{traditional-cpp:-traditional}\
-	%{fleading-underscore} %{fno-leading-underscore}\
-	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
-        %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
-    "%{!M:%{!MM:%{!E:cc1obj %{!pipe:%g.i} %1 \
-		   %{!Q:-quiet} -dumpbase %b.m %{d*} %{m*} %{a*}\
-		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
-		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*} \
-    		   -lang-objc %{gen-decls} \
-		   %{aux-info*}\
-		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
-		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
-              %{!S:as %a %Y\
-		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-                      %{!pipe:%g.s} %A\n }}}}"}},
   {".h", {"@c-header"}},
   {"@c-header",
    {"%{!E:%eCompilation of header file requested} \

@@ -592,6 +592,10 @@ generate_struct_by_value_array ()
   exit (0);
 }
 
+#if USE_CPPLIB
+extern char *yy_cur;
+#endif
+
 void
 lang_init_options ()
 {
@@ -605,7 +609,10 @@ lang_init ()
      With luck, we discover the real source file's name from that
      and put it in input_filename.  */
   ungetc (check_newline (), finput);
-#endif
+#else
+  check_newline ();
+  yy_cur--;
+#endif 
 
   /* The line number can be -1 if we had -g3 and the input file
      had a directive specifying line 0.  But we want predefined
