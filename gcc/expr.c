@@ -228,15 +228,15 @@ bc_init_mode_to_opcode_maps ()
 {
   int mode;
 
-  for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
+  for (mode = 0; mode < (int) MAX_MACHINE_MODE; mode++)
     mode_to_const_map[mode] =
       mode_to_load_map[mode] =
 	mode_to_store_map[mode] = neverneverland;
       
 #define DEF_MODEMAP(SYM, CODE, UCODE, CONST, LOAD, STORE) \
-  mode_to_const_map[(enum machine_mode) SYM] = CONST; \
-  mode_to_load_map[(enum machine_mode) SYM] = LOAD; \
-  mode_to_store_map[(enum machine_mode) SYM] = STORE;
+  mode_to_const_map[(int) SYM] = CONST; \
+  mode_to_load_map[(int) SYM] = LOAD; \
+  mode_to_store_map[(int) SYM] = STORE;
 
 #include "modemap.def"
 #undef DEF_MODEMAP
@@ -5855,9 +5855,9 @@ bc_expand_expr (exp)
 #ifdef DEBUG_PRINT_CODE
       fprintf (stderr, " [%x]\n", TREE_INT_CST_LOW (exp));
 #endif
-      bc_emit_instruction (mode_to_const_map[DECL_BIT_FIELD (exp)
+      bc_emit_instruction (mode_to_const_map[(int) (DECL_BIT_FIELD (exp)
 					     ? SImode
-					     : TYPE_MODE (TREE_TYPE (exp))],
+					     : TYPE_MODE (TREE_TYPE (exp)))],
 			   (HOST_WIDE_INT) TREE_INT_CST_LOW (exp));
       return;
       
@@ -9077,7 +9077,7 @@ bc_load_memory (type, decl)
 	|| TYPE_MODE (type) == VOIDmode)
       return;
     else
-      opcode = mode_to_load_map [TYPE_MODE (type)];
+      opcode = mode_to_load_map [(int) TYPE_MODE (type)];
 
   if (opcode == neverneverland)
     abort ();
@@ -9124,7 +9124,7 @@ bc_store_memory (type, decl)
 	opcode = storeBLK;
       }
     else
-      opcode = mode_to_store_map [TYPE_MODE (type)];
+      opcode = mode_to_store_map [(int) TYPE_MODE (type)];
 
   if (opcode == neverneverland)
     abort ();
@@ -9497,7 +9497,7 @@ bc_runtime_type_code (type)
     case POINTER_TYPE:
     case RECORD_TYPE:
 
-      val = TYPE_MODE (type) | TYPE_ALIGN (type) << 8;
+      val = (int) TYPE_MODE (type) | TYPE_ALIGN (type) << 8;
       break;
 
     case ERROR_MARK:
