@@ -5116,6 +5116,9 @@ handle_class_ref (chain)
   /* Make following constant read-only (why not)?  */
   text_section ();
 
+  /* Inform the assembler about this new external thing.  */
+  assemble_external (decl);
+
   /* Output a constant to reference this address.  */
   output_constant (build1 (ADDR_EXPR, string_type_node, decl),
 		   int_size_in_bytes (string_type_node));
