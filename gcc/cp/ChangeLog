@@ -1,3 +1,9 @@
+2004-03-08  Matt Austern  <austern@apple.com>
+
+	PR debug/14079
+	* name-lookup.c (add_decl_to_level): Add extern variables, as well
+	as static, to static_decls array.
+	
 2004-03-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/13944
