@@ -1,3 +1,10 @@
+2004-03-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_parse_abi_options): SPE and
+	AltiVec abi cannot co-exist.
+
+	* config/rs6000/eabispe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Same.
+
 2004-03-07  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/14471

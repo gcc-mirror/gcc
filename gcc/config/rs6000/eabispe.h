@@ -1,6 +1,6 @@
 /* Core target definitions for GNU compiler
    for PowerPC embedded targeted systems with SPE support.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez (aldyh@redhat.com).
 
    This file is part of GCC.
@@ -30,7 +30,7 @@
 #define SUBSUBTARGET_OVERRIDE_OPTIONS \
   if (rs6000_select[1].string == NULL) \
     rs6000_cpu = PROCESSOR_PPC8540; \
-  if (rs6000_abi_string == NULL || strstr (rs6000_abi_string, "spe") == NULL) \
+  if (rs6000_abi_string == NULL) \
     rs6000_spe_abi = 1; \
   if (rs6000_float_gprs_string == NULL) \
     rs6000_float_gprs = 1; \
