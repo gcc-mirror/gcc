@@ -1,15 +1,9 @@
 2004-08-19  Thomas Fitzsimmons  <fitzsim@redhat.com>
 	    Michael Koch  <konqueror@gmx.de>
 
-	* configure.in,
-	Makefile.am: Ported to automake 1.9.
-	* Makefile.in:
-	aclocal.m4
-	configure
-	gcj/Makefile.in
-	include/Makefile.in
-	testsuite/Makefile.in
-	include/config.h.in:
+	* configure.in,	Makefile.am: Ported to automake 1.9.
+	* Makefile.in, aclocal.m4, configure, gcj/Makefile.in, 
+	include/Makefile.in, testsuite/Makefile.in, include/config.h.in:
 	Regenerated.
 
 2004-08-19  Tom Tromey  <tromey@redhat.com>
