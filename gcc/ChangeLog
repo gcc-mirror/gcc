@@ -2,6 +2,8 @@
 
 	* combine.c (combine_simplify_rtx): Try to simplify VEC_SELECT of a
 	VEC_CONCAT.
+	From Richard Henderson:
+	* reload1.c (choose_reload_regs): Compute need_mode properly.
 
 2000-09-07  Richard Henderson  <rth@cygnus.com>
 

@@ -5304,8 +5304,13 @@ choose_reload_regs (chain)
 		  i = REGNO (last_reg) + word;
 		  last_class = REGNO_REG_CLASS (i);
 
-		  need_mode = smallest_mode_for_size ((word+1) * UNITS_PER_WORD,
-						      GET_MODE_CLASS (mode));
+		  if (word == 0)
+		    need_mode = mode;
+		  else
+		    need_mode
+		      = smallest_mode_for_size (GET_MODE_SIZE (mode)
+						+ word * UNITS_PER_WORD,
+						GET_MODE_CLASS (mode));
 
 		  if (
 #ifdef CLASS_CANNOT_CHANGE_MODE
