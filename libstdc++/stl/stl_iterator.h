@@ -85,7 +85,6 @@ template <class _Tp, class _Distance> struct random_access_iterator {
   typedef _Tp&                       reference;
 };
 
-#ifdef __STL_USE_NAMESPACES
 template <class _Category, class _Tp, class _Distance = ptrdiff_t,
           class _Pointer = _Tp*, class _Reference = _Tp&>
 struct iterator {
@@ -95,7 +94,6 @@ struct iterator {
   typedef _Pointer   pointer;
   typedef _Reference reference;
 };
-#endif /* __STL_USE_NAMESPACES */
 
 #ifdef __STL_CLASS_PARTIAL_SPECIALIZATION
 

@@ -1,3 +1,8 @@
+2000-01-19  Gabriel Dos Reis  <dosreis@cmla.ens-cachan.fr>
+
+	* stl_iterator.h: Make it possible to use standard class
+	`iterator'. 
+
 1999-12-14  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* stl_config.h (__MINGW32__): Define __STL_WIN32THREADS for thread
