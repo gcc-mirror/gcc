@@ -744,25 +744,17 @@ attr_rtx VPARAMS ((enum rtx_code code, ...))
 char *
 attr_printf VPARAMS ((register int len, const char *fmt, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  register int len;
-  const char *fmt;
-#endif
-  va_list p;
   char str[256];
 
-  VA_START (p, fmt);
-
-#ifndef ANSI_PROTOTYPES
-  len = va_arg (p, int);
-  fmt = va_arg (p, const char *);
-#endif
-
-  if (len > 255) /* leave room for \0 */
+  VA_OPEN (p, fmt);
+  VA_FIXEDARG (p, int, len);
+  VA_FIXEDARG (p, const char *, fmt);
+  
+  if (len > (sizeof(str) - 1)) /* leave room for \0 */
     abort ();
 
   vsprintf (str, fmt, p);
-  va_end (p);
+  VA_CLOSE (p);
 
   return attr_string (str, strlen (str));
 }
