@@ -329,7 +329,6 @@ BASE_FLAGS_TO_PASS = \
 	"CXXFLAGS_FOR_TARGET=$(CXXFLAGS_FOR_TARGET)" \
 	"CXX_FOR_TARGET=$(CXX_FOR_TARGET)" \
 	"DLLTOOL_FOR_TARGET=$(DLLTOOL_FOR_TARGET)" \
-	"gxx_include_dir=$(gxx_include_dir)" \
 	"INSTALL=$(INSTALL)" \
 	"INSTALL_DATA=$(INSTALL_DATA)" \
 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
@@ -341,7 +340,6 @@ BASE_FLAGS_TO_PASS = \
 	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" \
 	"LIBCXXFLAGS=$(LIBCXXFLAGS)" \
 	"LIBCXXFLAGS_FOR_TARGET=$(LIBCXXFLAGS_FOR_TARGET)" \
-	"local_prefix=$(local_prefix)" \
 	"M4=$(M4)" \
 	"MAKE=$(MAKE)" \
 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
@@ -357,7 +355,8 @@ BASE_FLAGS_TO_PASS = \
 	"YACC=$(YACC)" \
 	"exec_prefix=$(exec_prefix)" \
 	"prefix=$(prefix)" \
-	"tooldir=$(tooldir)" 
+	"tooldir=$(tooldir)" \
+	"gxx_include_dir=$(gxx_include_dir)"
 
 # Flags to pass down to most sub-makes, in which we're building with
 # the host environment.
