@@ -1,3 +1,7 @@
+2004-02-29  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* doc/install.texi: Update for conversion of intl to autoconf 2.57.
+
 2004-02-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md: Add comments about peephole2's.
