@@ -1,3 +1,8 @@
+2001-12-20  Josef Zlomek  <zlomek@matfyz.cz>
+
+	* cfgloop.c (flow_loops_find): Use the information of the depth
+	first search order of the CFG correctly when finding natural loops.
+
 2001-12-20  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.md (prologue_mcount): Update for explicit relocs.
