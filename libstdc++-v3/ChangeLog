@@ -1,4 +1,4 @@
-2004-01-29  Eric Christopher  <echristo@redhat.com>
+2004-02-02  Eric Christopher  <echristo@redhat.com>
             Zack Weinberg  <zack@codesourcery.com>
 
 	* testsuite/22_locale/collate/compare/wchar_t/2.cc: Remove xfail. Use
