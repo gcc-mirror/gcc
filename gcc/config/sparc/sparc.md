@@ -8597,7 +8597,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(plus:SI (match_operand:SI 1 "register_operand" "r")
 		 (unspec:SI [(match_operand:SI 2 "register_operand" "r")
-			     (match_operand 3 "tld_symbolic_operand" "")]
+			     (match_operand 3 "tie_symbolic_operand" "")]
 			    UNSPEC_TLSIE)))]
   "TARGET_SUN_TLS && TARGET_ARCH32"
   "add\\t%1, %2, %0, %%tie_add(%a3)")
@@ -8606,7 +8606,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI (match_operand:DI 1 "register_operand" "r")
 		 (unspec:DI [(match_operand:DI 2 "register_operand" "r")
-			     (match_operand 3 "tld_symbolic_operand" "")]
+			     (match_operand 3 "tie_symbolic_operand" "")]
 			    UNSPEC_TLSIE)))]
   "TARGET_SUN_TLS && TARGET_ARCH64"
   "add\\t%1, %2, %0, %%tie_add(%a3)")
