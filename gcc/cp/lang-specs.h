@@ -26,15 +26,15 @@ Boston, MA 02111-1307, USA.  */
 #define CPLUSPLUS_CPP_SPEC 0
 #endif
 
-  {".cc",  "@c++", 0},
-  {".cp",  "@c++", 0},
-  {".cxx", "@c++", 0},
-  {".cpp", "@c++", 0},
-  {".c++", "@c++", 0},
-  {".C",   "@c++", 0},
-  {".CPP", "@c++", 0},
-  {".H",   "@c++-header", 0},
-  {".hh",  "@c++-header", 0},
+  {".cc",  "@c++", 0, 0, 0},
+  {".cp",  "@c++", 0, 0, 0},
+  {".cxx", "@c++", 0, 0, 0},
+  {".cpp", "@c++", 0, 0, 0},
+  {".c++", "@c++", 0, 0, 0},
+  {".C",   "@c++", 0, 0, 0},
+  {".CPP", "@c++", 0, 0, 0},
+  {".H",   "@c++-header", 0, 0, 0},
+  {".hh",  "@c++-header", 0, 0, 0},
   {"@c++-header",
     "%{E|M|MM:cc1plus -E %(cpp_options) %2 %(cpp_debug_options)}\
      %{!E:%{!M:%{!MM:\
@@ -44,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
 	      %{!save-temps:%{!no-integrated-cpp:%(cpp_unique_options)}}\
 	%(cc1_options) %2 %{+e1*}\
         -o %g.s %{!o*:--output-pch=%i.gch} %W{o*:--output-pch=%*}%V}}}",
-     CPLUSPLUS_CPP_SPEC},
+     CPLUSPLUS_CPP_SPEC, 0, 0},
   {"@c++",
     "%{E|M|MM:cc1plus -E %(cpp_options) %2 %(cpp_debug_options)}\
      %{!E:%{!M:%{!MM:\
@@ -54,9 +54,9 @@ Boston, MA 02111-1307, USA.  */
 	      %{!save-temps:%{!no-integrated-cpp:%(cpp_unique_options)}}\
 	%(cc1_options) %2 %{+e1*}\
        %{!fsyntax-only:%(invoke_as)}}}}",
-     CPLUSPLUS_CPP_SPEC},
+     CPLUSPLUS_CPP_SPEC, 0, 0},
   {".ii", "@c++-cpp-output", 0},
   {"@c++-cpp-output",
    "%{!M:%{!MM:%{!E:\
     cc1plus -fpreprocessed %i %(cc1_options) %2 %{+e*}\
-    %{!fsyntax-only:%(invoke_as)}}}}", 0},
+    %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},

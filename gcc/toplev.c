@@ -1056,7 +1056,12 @@ bool
 set_src_pwd (const char *pwd)
 {
   if (src_pwd)
-    return false;
+    {
+      if (strcmp (src_pwd, pwd) == 0)
+	return true;
+      else
+	return false;
+    }
 
   src_pwd = xstrdup (pwd);
   return true;

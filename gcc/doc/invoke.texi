@@ -155,7 +155,7 @@ in the following sections.
 @table @emph
 @item Overall Options
 @xref{Overall Options,,Options Controlling the Kind of Output}.
-@gccoptlist{-c  -S  -E  -o @var{file}  -pipe  -pass-exit-codes  @gol
+@gccoptlist{-c  -S  -E  -o @var{file}  -combine -pipe  -pass-exit-codes  @gol
 -x @var{language}  -v  -###  --help  --target-help  --version}
 
 @item C Language Options
@@ -868,10 +868,6 @@ Place output in file @var{file}.  This applies regardless to whatever
 sort of output is being produced, whether it be an executable file,
 an object file, an assembler file or preprocessed C code.
 
-If you specify @option{-o} when compiling more than one input file, or
-you are producing an executable file as output, all the source files
-on the command line will be compiled at once.
-
 If @option{-o} is not specified, the default is to put an executable file
 in @file{a.out}, the object file for @file{@var{source}.@var{suffix}} in
 @file{@var{source}.o}, its assembler file in @file{@var{source}.s}, and
@@ -895,6 +891,21 @@ Use pipes rather than temporary files for communication between the
 various stages of compilation.  This fails to work on some systems where
 the assembler is unable to read from a pipe; but the GNU assembler has
 no trouble.
+
+@item -combine
+@opindex combine
+If you are compiling multiple source files, this option tells the driver
+to pass all the source files to the compiler at once (for those 
+languages for which the compiler can handle this).  This will allow
+intermodule analysis (IMA) to be performed by the compiler.  Currently the only
+language for which this is supported is C.  If you pass source files for
+multiple languages to the driver, using this option, the driver will invoke
+the compiler(s) that support IMA once each, passing each compiler all the
+source files appropriate for it.  For those languages that do not support
+IMA this option will be ignored, and the compiler will be invoked once for
+each source file in that language.  If you use this option in conjunction
+with -save-temps, the compiler will generate multiple pre-processed files
+(one for each source file), but only one (combined) .o or .s file. 
 
 @item --help
 @opindex help
