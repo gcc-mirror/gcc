@@ -146,7 +146,8 @@ tree access_protected_node; /* 2 */
 tree access_private_node; /* 3 */
 tree access_default_virtual_node; /* 4 */
 tree access_public_virtual_node; /* 5 */
-tree access_private_virtual_node; /* 6 */
+tree access_protected_virtual_node; /* 6 */
+tree access_private_virtual_node; /* 7 */
 
 /* Variables shared between class.c and call.c.  */
 
@@ -4683,7 +4684,8 @@ init_class_processing ()
   access_private_node = build_int_2 (3, 0);
   access_default_virtual_node = build_int_2 (4, 0);
   access_public_virtual_node = build_int_2 (5, 0);
-  access_private_virtual_node = build_int_2 (6, 0);
+  access_protected_virtual_node = build_int_2 (6, 0);
+  access_private_virtual_node = build_int_2 (7, 0);
 
   /* Keep these values lying around.  */
   base_layout_decl = build_lang_field_decl (FIELD_DECL, NULL_TREE, error_mark_node);

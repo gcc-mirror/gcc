@@ -1,3 +1,13 @@
+Fri Feb 13 00:21:59 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h: Add access_protected_virtual_node.
+	* class.c (init_class_processing): Initialize it.
+	* decl.c (xref_basetypes): Use it.
+	* parse.y (base_class_access_list): Likewise.
+
+	* Make-lang.in (DEMANGLER_PROG): Add $(exeext).
+	(c++.install-common): Install c++filt.
+
 Thu Feb 12 12:46:51 1998  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
 
 	* decl.c (shadow_tag): Give error for typedef-ing built-in types.
@@ -687,10 +697,6 @@ Wed Jan  7 23:47:13 1998  Jason Merrill  <jason@yorick.cygnus.com>
 	(expand_throw): Use it.  Protect exception init with terminate.
 	* typeck.c (build_modify_expr): Remove code that ignores trivial 
 	methods.
-
-Mon Dec 22 17:46:17 1997  Mark Mitchell  <mmitchell@usa.net>
-
-	* method.c (build_overload_name): Fix mangling for __null.
 
 Mon Dec 22 11:36:27 1997  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
  
