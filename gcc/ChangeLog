@@ -1,5 +1,8 @@
 Sat Nov 24 17:04:10 2001  Douglas B. Rupp  <rupp@gnat.com>
 
+	* fix-header.c (main): Move inf_buffer termination and inf_limit
+	calculation to after read.
+
 	* config/alpha/xm-vms.h (FILE_TYPE): Remove undef and baggage.
 	(__UNIX_FOPEN): Define.
 
