@@ -1,3 +1,7 @@
+1999-05-13  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* tmpnam.c (L_tmpnam): Fix typo.
+
 Thu May 13 01:14:46 1999 Marc Espie <espie@cvs.openbsd.org>
 
 	* cplus-dem.c (standard_symbol_characters): Renamed from
