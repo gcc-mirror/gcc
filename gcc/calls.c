@@ -1022,7 +1022,7 @@ expand_call (exp, target, ignore)
       /* See if this argument should be passed by invisible reference.  */
       if ((TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
 	   && contains_placeholder_p (TYPE_SIZE (type)))
-	  || TYPE_NEEDS_CONSTRUCTING (type)
+	  || TREE_ADDRESSABLE (type)
 #ifdef FUNCTION_ARG_PASS_BY_REFERENCE
 	  || FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, TYPE_MODE (type),
 					     type, argpos < n_named_args)
@@ -1325,6 +1325,10 @@ expand_call (exp, target, ignore)
 	|| (must_preallocate && (args_size.var != 0 || args_size.constant != 0)
 	    && calls_function (args[i].tree_value, 0)))
       {
+	/* If this is an addressable type, we cannot pre-evaluate it.  */
+	if (TREE_ADDRESSABLE (TREE_TYPE (args[i].tree_value)))
+	  abort ();
+
 	push_temp_slots ();
 
 	args[i].initial_value = args[i].value
