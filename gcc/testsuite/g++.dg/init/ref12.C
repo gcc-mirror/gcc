@@ -1,4 +1,5 @@
 // PR c++/17435
+// { dg-do run }
 
 extern "C" void abort ();
 

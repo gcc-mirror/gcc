@@ -1,5 +1,7 @@
 2004-10-27  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/init/ref12.C: Add "run" marker.
+
 	PR c++/17435
 	* g++.dg/init/ref12.C: New test.
 
