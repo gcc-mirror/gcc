@@ -2139,6 +2139,10 @@ do {									\
    '	Generates trap-mode suffix for instructions that accept the
         su suffix only (cmpt et al).
 
+   (	Generates trap-mode suffix for instructions that accept the
+	v, sv, and svi suffix.  The only instruction that needs this
+	is cvttq.
+
    )    Generates trap-mode suffix for instructions that accept the
 	u, su, and sui suffix.  This is the bulk of the IEEE floating
 	point instructions (addt et al).
@@ -2154,8 +2158,8 @@ do {									\
    */
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
-  ((CODE) == '&' || (CODE) == '\'' || (CODE) == ')' || (CODE) == '+'	\
-   || (CODE) == ',' || (CODE) == '-')
+  ((CODE) == '&' || (CODE) == '\'' || (CODE) == '(' || (CODE) == ')'	\
+   || (CODE) == '+' || (CODE) == ',' || (CODE) == '-')
 
 /* Print a memory address as an operand to reference that memory location.  */
 
