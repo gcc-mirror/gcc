@@ -3677,7 +3677,7 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
   (ALTIVEC_VECTOR_MODE (MODE)				\
    && (CUM)->vregno <= ALTIVEC_ARG_MAX_REG		\
    && TARGET_ALTIVEC_ABI				\
-   && (DEFAULT_ABI == ABI_V4 || (NAMED)))
+   && (NAMED))
 
 /* Return a nonzero value to say to return the function value in
    memory, just as large structures are always returned.  TYPE will be
