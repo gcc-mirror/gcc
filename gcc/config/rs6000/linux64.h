@@ -100,7 +100,7 @@ extern int dot_symbols;
 	      target_flags &= ~MASK_PROTOTYPE;			\
 	      error (INVALID_64BIT, "prototype");		\
 	    }							\
-          if ((target_flags & MASK_POWERPC64) == 0)		\
+	  if ((target_flags & MASK_POWERPC64) == 0)		\
 	    {							\
 	      target_flags |= MASK_POWERPC64;			\
 	      error ("-m64 requires a PowerPC64 cpu");		\
@@ -134,16 +134,16 @@ extern int dot_symbols;
 
 #ifndef	RS6000_BI_ARCH
 #define	ASM_DEFAULT_SPEC "-mppc64"
-#define	ASM_SPEC         "%(asm_spec64) %(asm_spec_common)"
+#define	ASM_SPEC	 "%(asm_spec64) %(asm_spec_common)"
 #define	LINK_OS_LINUX_SPEC "%(link_os_linux_spec64)"
 #else
 #if DEFAULT_ARCH64_P
 #define	ASM_DEFAULT_SPEC "-mppc%{!m32:64}"
-#define	ASM_SPEC         "%{m32:%(asm_spec32)}%{!m32:%(asm_spec64)} %(asm_spec_common)"
+#define	ASM_SPEC	 "%{m32:%(asm_spec32)}%{!m32:%(asm_spec64)} %(asm_spec_common)"
 #define	LINK_OS_LINUX_SPEC "%{m32:%(link_os_linux_spec32)}%{!m32:%(link_os_linux_spec64)}"
 #else
 #define	ASM_DEFAULT_SPEC "-mppc%{m64:64}"
-#define	ASM_SPEC         "%{!m64:%(asm_spec32)}%{m64:%(asm_spec64)} %(asm_spec_common)"
+#define	ASM_SPEC	 "%{!m64:%(asm_spec32)}%{m64:%(asm_spec64)} %(asm_spec_common)"
 #define	LINK_OS_LINUX_SPEC "%{!m64:%(link_os_linux_spec32)}%{m64:%(link_os_linux_spec64)}"
 #endif
 #endif
@@ -296,7 +296,7 @@ extern int dot_symbols;
 #define TARGET_C99_FUNCTIONS 1
 
 #undef  TARGET_OS_CPP_BUILTINS
-#define TARGET_OS_CPP_BUILTINS()            		\
+#define TARGET_OS_CPP_BUILTINS()			\
   do							\
     {							\
       if (TARGET_64BIT)					\

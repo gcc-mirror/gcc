@@ -1,3 +1,12 @@
+2004-10-05  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/linux.h: Formatting, whitespace.
+	* config/rs6000/linux64.h: Likewise.
+	* config/rs6000/rs6000-protos.h: Likewise.
+	* config/rs6000/rs6000.c: Likewise.
+	(easy_vector_splat_const): Add fall thru comments.
+	(output_vec_const_move): Likewise.
+
 2004-10-05  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in: Update -Wno-error exceptions for move to build dir.
