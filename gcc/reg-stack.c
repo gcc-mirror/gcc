@@ -654,13 +654,8 @@ constrain_asm_operands (n_operands, operands, operand_constraints,
 	  while (*p && (c = *p++) != ',')
 	    switch (c)
 	      {
-	      case '=':
-	      case '+':
-	      case '?':
-	      case '&':
-	      case '!':
-	      case '*':
-	      case '%':
+	      case '=':  case '+':  case '?':  case '&': case '!':
+	      case '*':  case '%':
 		/* Ignore these.  */
 		break;
 
@@ -669,12 +664,9 @@ constrain_asm_operands (n_operands, operands, operand_constraints,
 		while (*p && *p != ',') p++;
 		break;
 
-	      case '0':
-	      case '1':
-	      case '2':
-	      case '3':
-	      case '4':
-	      case '5':
+	      case '0':  case '1':  case '2':  case '3':  case '4':
+	      case '5':  case '6':  case '7':  case '8':  case '9':
+
 		/* This operand must be the same as a previous one.
 		   This kind of constraint is used for instructions such
 		   as add when they take only two operands.
