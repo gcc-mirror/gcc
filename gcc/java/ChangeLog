@@ -1,3 +1,8 @@
+Sat Mar 13 18:16:34 1999  Per Bothner  <bothner@cygnus.com>
+
+	* lex.c (java_read_char):  UNGET invalid non-initial utf8 character.
+	* lex.h (UNGETC):  Change misleading macro.
+
 1999-03-12  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (java_stabilize_reference): Return NODE when patching a
