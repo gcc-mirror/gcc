@@ -10756,18 +10756,6 @@ finish_function (int flags)
   if (!processing_template_decl)
     save_function_data (fndecl);
 
-  /* If this function calls `setjmp' it cannot be inlined.  When
-     `longjmp' is called it is not guaranteed to restore the value of
-     local variables that have been modified since the call to
-     `setjmp'.  So, if were to inline this function into some caller
-     `c', then when we `longjmp', we might not restore all variables
-     in `c'.  (It might seem, at first blush, that there's no way for
-     this function to modify local variables in `c', but their
-     addresses may have been stored somewhere accessible to this
-     function.)  */
-  if (!processing_template_decl && calls_setjmp_p (fndecl))
-    DECL_UNINLINABLE (fndecl) = 1;
-
   /* Complain if there's just no return statement.  */
   if (warn_return_type
       && TREE_CODE (TREE_TYPE (fntype)) != VOID_TYPE
