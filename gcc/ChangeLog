@@ -1,4 +1,10 @@
-2004-03-25  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+2004-04-25  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	PR/c++ 15119
+	* tree.c (substitute_placeholder_in_expr, case 4): New case,
+	for TARGET_EXPR.
+
+2004-04-25  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* gcov-io.h (__gcov_fork, __gcov_execl, __gcov_execlp, __gcov_execle,
 	__gcov_execv, __gcov_execvp, __gcov_execve): Do not declare when
