@@ -1,5 +1,8 @@
 Tue May 25 14:06:06 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* output.h (STRIP_NAME_ENCODING): Provide default definition.
+	* dwarf2out.c (ASM_NAME_TO_STRING): Use STRIP_NAME_ENCODING.
+
 	* flow.c (mark_set_1): Do not record BLKmode stores as dead
 	store elimination candidates.
 

@@ -2728,8 +2728,10 @@ static char debug_line_section_label[MAX_ARTIFICIAL_LABEL_BYTES];
 	dyn_string_append (STR, NAME + 1);		\
       else						\
 	{						\
+	  char *newstr;					\
+	  STRIP_NAME_ENCODING (newstr, NAME);		\
 	  dyn_string_append (STR, user_label_prefix);	\
-	  dyn_string_append (STR, NAME);		\
+	  dyn_string_append (STR, newstr);		\
 	}						\
   }							\
   while (0)
