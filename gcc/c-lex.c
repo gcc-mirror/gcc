@@ -590,6 +590,10 @@ linenum:
 	      p->name = input_filename;
 	      input_file_stack = p;
 	      input_file_stack_tick++;
+#ifdef DBX_DEBUGGING_INFO
+	      if (write_symbols == DBX_DEBUG)
+		dbxout_start_new_source_file (input_filename);
+#endif
 #ifdef DWARF_DEBUGGING_INFO
 	      if (debug_info_level == DINFO_LEVEL_VERBOSE
 		  && write_symbols == DWARF_DEBUG)
@@ -607,6 +611,10 @@ linenum:
 		  input_file_stack = p->next;
 		  free (p);
 		  input_file_stack_tick++;
+#ifdef DBX_DEBUGGING_INFO
+		  if (write_symbols == DBX_DEBUG)
+		    dbxout_resume_previous_source_file ();
+#endif
 #ifdef DWARF_DEBUGGING_INFO
 		  if (debug_info_level == DINFO_LEVEL_VERBOSE
 		      && write_symbols == DWARF_DEBUG)
