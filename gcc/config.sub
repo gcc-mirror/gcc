@@ -170,6 +170,10 @@ case $basic_machine in
 		basic_machine=ns32k-sequent
 		os=-dynix
 		;;
+	m68k-ccur)
+		basic_machine=m68k-ccur
+		os=-rtu
+		;;
 	convex-c1)
 		basic_machine=c1-convex
 		os=-bsd
