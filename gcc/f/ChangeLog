@@ -1,3 +1,10 @@
+2003-01-05  Steven Bosscher  <s.bosscher@student.tudelft.nl>
+
+	PR Fortran/9038
+	* lang-specs.h: Prevent -f<option> from being passed
+	to cc1.
+	* news.texi: Document this fix.
+
 2003-01-03  Bud Davis <bdavis11@directvinternet.com>
 
 	* stc.c (ffestc_R810): Allow any kind integer in

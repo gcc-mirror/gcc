@@ -182,6 +182,9 @@ gave wrong results)
 Incorrect output with 0-based array of characters
 @item 8587
 Double complex zero ** double precision number -> NaN instead of zero
+@item 9038
+-ffixed-line-length-none -x f77-cpp-input gives: Warning: unknown
+register name line-length-none
 @end table
 @item
 Richard Henderson (@email{rth@@redhat.com}) analyzed and improved the handling
