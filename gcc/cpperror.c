@@ -458,3 +458,11 @@ cpp_notice_from_errno (pfile, name)
     name = "stdout";
   cpp_notice (pfile, "%s: %s", name, xstrerror (errno));
 }
+
+const char *
+cpp_type2name (type)
+     enum cpp_ttype type;
+{
+  return (const char *) _cpp_token_spellings[type].name;
+}
+

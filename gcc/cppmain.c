@@ -39,9 +39,11 @@ static void cb_undef	PARAMS ((cpp_reader *, cpp_hashnode *));
 static void cb_include	PARAMS ((cpp_reader *, const unsigned char *,
 				 const unsigned char *, unsigned int, int));
 
-static void cb_ident	  PARAMS ((cpp_reader *, const cpp_token *));
+static void cb_ident	  PARAMS ((cpp_reader *, const unsigned char *,
+				   unsigned int));
 static void cb_enter_file PARAMS ((cpp_reader *));
 static void cb_leave_file PARAMS ((cpp_reader *));
+static void cb_rename_file PARAMS ((cpp_reader *));
 static void cb_def_pragma PARAMS ((cpp_reader *));
 
 static void do_pragma_implementation PARAMS ((cpp_reader *));
@@ -90,6 +92,7 @@ main (argc, argv)
     {
       pfile->cb.enter_file = cb_enter_file;
       pfile->cb.leave_file = cb_leave_file;
+      pfile->cb.rename_file = cb_rename_file;
     }
   if (CPP_OPTION (pfile, dump_includes))
     pfile->cb.include  = cb_include;
@@ -132,12 +135,12 @@ main (argc, argv)
 /* Callbacks */
 
 static void
-cb_ident (pfile, token)
+cb_ident (pfile, str, len)
      cpp_reader *pfile;
-     const cpp_token *token;
+     const unsigned char *str;
+     unsigned int len;
 {
-  cpp_printf (pfile, &parse_out, "#ident \"%.*s\"\n",
-	      (int) token->val.str.len, token->val.str.text);
+  cpp_printf (pfile, &parse_out, "#ident \"%.*s\"\n", (int) len, str);
 }
 
 static void
@@ -202,6 +205,19 @@ cb_leave_file (pfile)
   cpp_buffer *ip = CPP_BUFFER (pfile);
 
   cpp_printf (pfile, &parse_out, "# %u \"%s\" 2%s\n", ip->lineno,
+	      ip->nominal_fname, cpp_syshdr_flags (pfile, ip));
+
+  parse_out.lineno = ip->lineno;
+  parse_out.last_fname = ip->nominal_fname;
+}
+
+static void
+cb_rename_file (pfile)
+     cpp_reader *pfile;
+{
+  cpp_buffer *ip = CPP_BUFFER (pfile);
+
+  cpp_printf (pfile, &parse_out, "# %u \"%s\"%s\n", ip->lineno,
 	      ip->nominal_fname, cpp_syshdr_flags (pfile, ip));
 
   parse_out.lineno = ip->lineno;

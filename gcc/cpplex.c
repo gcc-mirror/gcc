@@ -1294,7 +1294,8 @@ lex_line (pfile, list)
 
   if (!(list->flags & LIST_OFFSET))
     (abort) ();
-  
+
+ retry:
   list->file = buffer->nominal_fname;
   list->line = CPP_BUF_LINE (buffer);
   pfile->col_adjust = 0;
@@ -1823,6 +1824,10 @@ lex_line (pfile, list)
 		   first[1].val.node->name);
       else
 	cpp_error (pfile, "invalid preprocessing directive");
+
+      /* Discard this line to prevent further errors from cc1.  */
+      _cpp_clear_toklist (list);
+      goto retry;
     }
 
   /* Put EOF at end of known directives.  This covers "directives do

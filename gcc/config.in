@@ -308,6 +308,14 @@
    every opportunity.  This is extremely expensive. */
 #undef ENABLE_GC_ALWAYS_COLLECT
 
+/* Define if you want the preprocessor merged into the C and C++ compilers.
+   This mode is not ready for production use. */
+#undef USE_CPPLIB
+
+/* Define if you want the C and C++ compilers to support multibyte
+   character sets for source code. */
+#undef MULTIBYTE_CHARS
+
 /* Define if your compiler understands volatile. */
 #undef HAVE_VOLATILE
 

@@ -595,7 +595,7 @@ dump_macro_args (fp, list)
       unsigned int len;
 
       len = ustrlen (param);
-      if (!list->flags & VAR_ARGS || ustrcmp (param, U"__VA_ARGS__"))
+      if (!(list->flags & VAR_ARGS) || ustrcmp (param, U"__VA_ARGS__"))
 	ufputs (param, fp);
       if (i < list->paramc)
 	fputs (", ", fp);
