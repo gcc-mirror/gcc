@@ -2766,7 +2766,7 @@ extern char *output_fp_conditional_move ();
 extern int ix86_can_use_return_insn_p ();
 extern int small_shift_operand ();
 extern char *output_ashlsi3 ();
-extern int memory_address_length ();
+extern int memory_address_info ();
 
 #ifdef NOTYET
 extern struct rtx_def *copy_all_rtx ();
