@@ -1,3 +1,11 @@
+2000-05-02  Andrew Haley  <aph@cygnus.com>
+
+	* config/ia64/ia64.c (ia64_encode_section_info): Handle the case
+	where this function is called for the second time on a decl that
+	has had its section info changed in such a way as to move it out
+	of small data/bss.  
+	* config/ia64/ia64.h (REDO_SECTION_INFO_P): New definition.
+
 2000-05-01  Richard Henderson  <rth@cygnus.com>
 
 	* ifcvt.c (dead_or_predicable): Set merge_bb->end to the insn before
