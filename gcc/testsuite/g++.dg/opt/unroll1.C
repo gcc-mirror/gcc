@@ -9,7 +9,9 @@
 // { dg-do run }
 // { dg-options "-O2 -fno-exceptions -funroll-loops" }
 
-inline void* operator new(unsigned int, void* __p) throw() { return __p; }
+typedef __SIZE_TYPE__ size_t;
+
+inline void* operator new(size_t, void* __p) throw() { return __p; }
 inline void operator delete (void*, void*) throw() { };
 
 class Loc;
