@@ -1,3 +1,7 @@
+2004-09-09  James E Wilson  <wilson@specifixinc.com>
+
+	* doc/sourcebuild.texi: Delete libbanshee reference.
+
 2004-09-10  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.in (s-gtype): Add $(build_exeext) to gengtype command.

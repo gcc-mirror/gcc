@@ -53,9 +53,6 @@ Headers for the @code{libiberty} library.
 @item libada
 The Ada runtime library.
 
-@item libbanshee
-The @code{libbanshee} library, used for Andersen-style points-to analysis.
-
 @item libcpp
 The C preprocessor library.
 
