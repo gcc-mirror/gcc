@@ -1,3 +1,16 @@
+2003-07-07  Andreas Jaeger  <aj@suse.de>
+
+	* genextract.c: Convert remaining prototypes to ISO C90.
+
+	* cpplex.c (_cpp_free_buff): Convert prototype to ISO C90.
+	* fold-const.c (fold_single_bit_test): Likewise.
+	* diagnostic.c (default_diagnostic_finalizer): Likewise.
+	* cfgrtl.c (rtl_redirect_edge_and_branch): Likewise.
+
+	* gengtype.c (write_array): Generate ISO C90 prototypes.
+
+	* genflags.c (gen_proto): Generate ISO C90 prototypes.
+
 2003-07-07  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/11059

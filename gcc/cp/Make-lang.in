@@ -99,7 +99,7 @@ cc1plus$(exeext): $(CXX_OBJS) $(CXX_C_OBJS) $(BACKEND) \
 
 # Special build rules.
 $(srcdir)/cp/cfns.h: $(srcdir)/cp/cfns.gperf
-	gperf -o -C -E -k '1-6,$$' -j1 -D -N 'libc_name_p' \
+	gperf -o -C -E -k '1-6,$$' -j1 -D -N 'libc_name_p' -L ANSI-C \
 		$(srcdir)/cp/cfns.gperf > $(srcdir)/cp/cfns.h
 
 gtype-cp.h gt-cp-call.h gt-cp-decl.h gt-cp-decl2.h : s-gtype; @true

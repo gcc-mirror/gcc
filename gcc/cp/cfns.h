@@ -1,5 +1,5 @@
-/* C code produced by gperf version 2.7.2 */
-/* Command-line: gperf -o -C -E -k '1-6,$' -j1 -D -N libc_name_p ../../../src-gcc/gcc/cp/cfns.gperf  */
+/* ANSI-C code produced by gperf version 2.7.2 */
+/* Command-line: gperf -o -L ANSI-C -C -E -k '1-6,$' -j1 -D -N libc_name_p -L ANSI-C cp/cfns.gperf  */
 #ifdef __GNUC__
 __inline
 #endif
@@ -18,9 +18,7 @@ inline
 #endif
 #endif
 static unsigned int
-hash (str, len)
-     register const char *str;
-     register unsigned int len;
+hash (register const char *str, register unsigned int len)
 {
   static const unsigned short asso_values[] =
     {
@@ -77,9 +75,7 @@ hash (str, len)
 __inline
 #endif
 const char *
-libc_name_p (str, len)
-     register const char *str;
-     register unsigned int len;
+libc_name_p (register const char *str, register unsigned int len)
 {
   enum
     {

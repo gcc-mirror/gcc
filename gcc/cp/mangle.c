@@ -1333,9 +1333,8 @@ discriminator_for_local_entity (tree entity)
    string literals used in FUNCTION.  */
 
 static int
-discriminator_for_string_literal (function, string)
-     tree function ATTRIBUTE_UNUSED;
-     tree string ATTRIBUTE_UNUSED;
+discriminator_for_string_literal (tree function ATTRIBUTE_UNUSED,
+				  tree string ATTRIBUTE_UNUSED)
 {
   /* For now, we don't discriminate amongst string literals.  */
   return 0;

@@ -179,13 +179,11 @@ gen_proto (rtx insn)
 	{
 	  putchar ('(');
 	  for (i = 0; i < num-1; i++)
-	    printf ("%c, ", 'a' + i);
-	  printf ("%c)\n", 'a' + i);
-	  for (i = 0; i < num; i++)
-	    printf ("     rtx %c ATTRIBUTE_UNUSED;\n", 'a' + i);
+	    printf ("rtx %c ATTRIBUTE_UNUSED, ", 'a' + i);
+	  printf ("rtx %c ATTRIBUTE_UNUSED)\n", 'a' + i);
 	}
       else
-	puts ("()");
+	puts ("(void)");
       puts ("{\n  return 0;\n}");
     }
 

@@ -2942,8 +2942,7 @@ finish_file ()
    performing semantic analysis.  */
 
 tree
-build_expr_from_tree (t)
-     tree t;
+build_expr_from_tree (tree t)
 {
   if (t == NULL_TREE || t == error_mark_node)
     return t;

@@ -4784,11 +4784,8 @@ fold_inf_compare (enum tree_code code, tree type, tree arg0, tree arg1)
    NULL.  TYPE is the desired result type.  */
  
 tree
-fold_single_bit_test (code, arg0, arg1, result_type)
-    enum tree_code code;
-    tree arg0;
-    tree arg1;
-    tree result_type;
+fold_single_bit_test (enum tree_code code, tree arg0, tree arg1,
+		      tree result_type)
 {
   /* If this is a TRUTH_NOT_EXPR, it may have a single bit test inside
      operand 0.  */

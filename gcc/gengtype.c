@@ -2623,12 +2623,11 @@ write_array (outf_p f, pair_p v, const struct write_types_data *wtd)
       oprintf (f, "static void gt_%sa_%s\n", wtd->param_prefix, v->name);
       oprintf (f,
        "    (void *, void *, gt_pointer_operator, void *);\n");
-      oprintf (f, "static void gt_%sa_%s (this_obj, x_p, op, cookie)\n",
+      oprintf (f, "static void gt_%sa_%s (void *this_obj ATTRIBUTE_UNUSED,\n",
 	       wtd->param_prefix, v->name);
-      oprintf (d.of, "      void *this_obj ATTRIBUTE_UNUSED;\n");
-      oprintf (d.of, "      void *x_p ATTRIBUTE_UNUSED;\n");
-      oprintf (d.of, "      gt_pointer_operator op ATTRIBUTE_UNUSED;\n");
-      oprintf (d.of, "      void *cookie ATTRIBUTE_UNUSED;\n");
+      oprintf (d.of, "      void *x_p ATTRIBUTE_UNUSED,\n");
+      oprintf (d.of, "      gt_pointer_operator op ATTRIBUTE_UNUSED,\n");
+      oprintf (d.of, "      void *cookie ATTRIBUTE_UNUSED)\n");
       oprintf (d.of, "{\n");
       d.prev_val[0] = d.prev_val[1] = d.prev_val[2] = d.val = v->name;
       d.process_field = write_types_local_process_field;
@@ -2639,9 +2638,8 @@ write_array (outf_p f, pair_p v, const struct write_types_data *wtd)
   d.opt = v->opt;
   oprintf (f, "static void gt_%sa_%s (void *);\n",
 	   wtd->prefix, v->name);
-  oprintf (f, "static void\ngt_%sa_%s (x_p)\n",
+  oprintf (f, "static void\ngt_%sa_%s (void *x_p ATTRIBUTE_UNUSED)\n",
 	   wtd->prefix, v->name);
-  oprintf (f, "      void *x_p ATTRIBUTE_UNUSED;\n");
   oprintf (f, "{\n");
   d.prev_val[0] = d.prev_val[1] = d.prev_val[2] = d.val = v->name;
   d.process_field = write_types_process_field;

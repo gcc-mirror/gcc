@@ -1004,9 +1004,8 @@ default_diagnostic_starter (diagnostic_context *context,
 }
 
 static void
-default_diagnostic_finalizer (context, diagnostic)
-     diagnostic_context *context;
-     diagnostic_info *diagnostic __attribute__((unused));
+default_diagnostic_finalizer (diagnostic_context *context,
+			      diagnostic_info *diagnostic __attribute__((unused)))
 {
   output_destroy_prefix (&context->buffer);
 }

@@ -1422,8 +1422,7 @@ _cpp_extend_buff (cpp_reader *pfile, _cpp_buff **pbuff, size_t min_extra)
 
 /* Free a chain of buffers starting at BUFF.  */
 void
-_cpp_free_buff (buff)
-     _cpp_buff *buff;
+_cpp_free_buff (_cpp_buff *buff)
 {
   _cpp_buff *next;
 

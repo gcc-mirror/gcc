@@ -490,8 +490,7 @@ from the machine description file `md'.  */\n\n");
 
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
 const char *
-get_insn_name (code)
-     int code ATTRIBUTE_UNUSED;
+get_insn_name (int code ATTRIBUTE_UNUSED)
 {
   if (code < insn_name_ptr_size)
     return insn_name_ptr[code];
@@ -500,9 +499,7 @@ get_insn_name (code)
 }
 
 static void
-record_insn_name (code, name)
-     int code;
-     const char *name;
+record_insn_name (int code, const char *name)
 {
   static const char *last_real_name = "insn";
   static int last_real_code = 0;

@@ -43,10 +43,8 @@ static struct obstack search_obstack;
 /* Methods for pushing and popping objects to and from obstacks.  */
 
 struct stack_level *
-push_stack_level (obstack, tp, size)
-     struct obstack *obstack;
-     char *tp;  /* Sony NewsOS 5.0 compiler doesn't like void * here.  */
-     int size;
+push_stack_level (struct obstack *obstack, char *tp,/* Sony NewsOS 5.0 compiler doesn't like void * here.  */
+		  int size)
 {
   struct stack_level *stack;
   obstack_grow (obstack, tp, size);
@@ -59,8 +57,7 @@ push_stack_level (obstack, tp, size)
 }
 
 struct stack_level *
-pop_stack_level (stack)
-     struct stack_level *stack;
+pop_stack_level (struct stack_level *stack)
 {
   struct stack_level *tem = stack;
   struct obstack *obstack = tem->obstack;
