@@ -1,5 +1,6 @@
 /* InflaterInputStream.java - Input stream filter for decompressing
-   Copyright (C) 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -54,7 +55,20 @@ import java.io.IOException;
  */
 public class InflaterInputStream extends FilterInputStream
 {
+  /**
+   * Decompressor for this filter 
+   */
+  protected Inflater inf;
 
+  /**
+   * Byte array used as a buffer 
+   */
+  protected byte[] buf;
+
+  /**
+   * Size of buffer   
+   */
+  protected int len;
 
   protected void fill () throws IOException
   {
@@ -63,26 +77,45 @@ public class InflaterInputStream extends FilterInputStream
       inf.setInput(buf, 0, len);
   }
 
-  public InflaterInputStream (InputStream in)
+  /**
+   * Create an InflaterInputStream with the default decompresseor
+   * and a default buffer size.
+   *
+   * @param in the InputStream to read bytes from
+   */
+  public InflaterInputStream(InputStream in) 
   {
     this (in, new Inflater (), 512);
   }
 
-  public InflaterInputStream (InputStream in, Inflater infl)
+  /**
+   * Create an InflaterInputStream with the specified decompresseor
+   * and a default buffer size.
+   *
+   * @param in the InputStream to read bytes from
+   * @param inf the decompressor used to decompress data read from in
+   */
+  public InflaterInputStream(InputStream in, Inflater inf) 
   {
-    this (in, infl, 512);
+    this (in, inf, 512);
   }
 
-  public InflaterInputStream (InputStream in, Inflater inf, int size)
+  /**
+   * Create an InflaterInputStream with the specified decompresseor
+   * and a specified buffer size.
+   *
+   * @param in the InputStream to read bytes from
+   * @param inf the decompressor used to decompress data read from in
+   * @param size size of the buffer to use
+   */
+  public InflaterInputStream(InputStream in, Inflater inf, int size) 
   {
-    super (in);
+    super(in);
 
     if (in == null)
       throw new NullPointerException ("in may not be null");
-
     if (inf == null)
       throw new NullPointerException ("inf may not be null");
-    
     if (size < 0)
       throw new IllegalArgumentException ("size may not be negative");
     
@@ -99,7 +132,15 @@ public class InflaterInputStream extends FilterInputStream
     return r;
   }
 
-  public int read (byte[] buf, int off, int len) throws IOException
+
+  /**
+   * Decompresses data into the byte array
+   *
+   * @param b the array to read and decompress data into
+   * @param off the offset indicating where the data should be placed
+   * @param len the number of bytes to decompress
+   */
+  public int read(byte[] b, int off, int len) throws IOException
   {
     if (inf == null)
       throw new IOException ("stream closed");
@@ -113,9 +154,10 @@ public class InflaterInputStream extends FilterInputStream
       {
 	if (inf.needsInput())
 	  fill ();
+	
 	try
 	  {
-	    count = inf.inflate(buf, off, len);	
+	    count = inf.inflate(b, off, len);
 	    if (count == 0)
 	      {
 		if (this.len == -1)
@@ -126,10 +168,10 @@ public class InflaterInputStream extends FilterInputStream
 		if (inf.needsDictionary())
 		  throw new ZipException ("Inflater needs Dictionary");
 	      }
-	  }
-	catch (DataFormatException dfe)
+	  } 
+	catch (DataFormatException dfe) 
 	  {
-	    throw new ZipException (dfe.getMessage());
+	    throw new ZipException(dfe.getMessage());
 	  }
       }
     return count;
@@ -150,7 +192,12 @@ public class InflaterInputStream extends FilterInputStream
     return inf.finished () ? 0 : 1;
   }
 
-  public long skip (long n) throws IOException
+  /**
+   * Skip specified number of bytes of uncompressed data
+   *
+   * @param n number of bytes to skip
+   */
+  public long skip(long n) throws IOException
   {
     if (inf == null)
       throw new IOException ("stream closed");
@@ -173,14 +220,5 @@ public class InflaterInputStream extends FilterInputStream
       }
 
     return s;
-  }
-
-  // Buffer for delivering uncompressed data to inflater.
-  protected byte[] buf;
-
-  // Inflater used to decompress data.
-  protected Inflater inf;
-
-  // Number of read bytes in buf.
-  protected int len;
+ }
 }
