@@ -1,3 +1,7 @@
+1998-07-06  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure.in (INSTALLDIR): Make sed pattern failsafe.
+
 1998-07-06  Ulrich Drepper  <drepper@cygnus.com>
 
 	* std/bastring.h (class basic_string): Correct iterator return
@@ -13,8 +17,8 @@
 	* Makefile.in (INSTALLDIR): Add comment to document the fact,
 	this macro will be properly initialized at make's runtime.
 	(install): Add initialization of INSTALLDIR depending on $(libsubdir)
-	and ${enable_version_specific_runtime_libs}; use $${INSTALLDIR} shell variable
-	instead of the $(INSTALLDIR) make macro.
+	and ${enable_version_specific_runtime_libs}; use $${INSTALLDIR} shell
+	variable instead of the $(INSTALLDIR) make macro.
 
 Tue Mar 24 10:13:07 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
