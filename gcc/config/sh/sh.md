@@ -4414,10 +4414,9 @@
 
   size /= 8;
   orig_address = XEXP (operands[0], 0);
-  addr_target = gen_reg_rtx (SImode);
   shift_reg = gen_reg_rtx (SImode);
   emit_insn (gen_movsi (shift_reg, operands[3]));
-  emit_insn (gen_addsi3 (addr_target, orig_address, GEN_INT (size - 1)));
+  addr_target = copy_addr_to_reg (plus_constant (orig_address, size - 1));
 
   operands[0] = change_address (operands[0], QImode, addr_target);
   emit_insn (gen_movqi (operands[0], gen_rtx (SUBREG, QImode, shift_reg, 0)));

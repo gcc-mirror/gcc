@@ -627,6 +627,9 @@ dbr_sequence_length ()
 static short *insn_lengths;
 int *insn_addresses;
 
+/* Max uid for which the above arrays are valid.  */
+static int insn_lengths_max_uid;
+
 /* Address of insn being processed.  Used by `insn_current_length'.  */
 int insn_current_address;
 
@@ -673,6 +676,7 @@ init_insn_lengths ()
     {
       free (insn_lengths);
       insn_lengths = 0;
+      insn_lengths_max_uid = 0;
     }
   if (insn_addresses)
     {
@@ -698,7 +702,7 @@ get_attr_length (insn)
   int i;
   int length = 0;
 
-  if (insn_lengths)
+  if (insn_lengths_max_uid > INSN_UID (insn))
     return insn_lengths[INSN_UID (insn)];
   else
     switch (GET_CODE (insn))
@@ -1128,6 +1132,7 @@ shorten_branches (first)
   /* Allocate the rest of the arrays.  */
   insn_lengths = (short *) xmalloc (max_uid * sizeof (short));
   insn_addresses = (int *) xmalloc (max_uid * sizeof (int));
+  insn_lengths_max_uid = max_uid;
   /* Syntax errors can lead to labels being outside of the main insn stream.
      Initialize insn_addresses, so that we get reproducible results.  */
   bzero ((char *)insn_addresses, max_uid * sizeof *insn_addresses);
