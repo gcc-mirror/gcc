@@ -4,11 +4,11 @@
 <table>
 <tbody><tr>
 <td align="left">Doc. no.</td>
-<td align="left">N1516 = 03-0099</td>
+<td align="left">N1538=03-0121</td>
 </tr>
 <tr>
 <td align="left">Date:</td>
-<td align="left">20 Sep 2003</td>
+<td align="left">13 Nov 2003</td>
 </tr>
 <tr>
 <td align="left">Project:</td>
@@ -19,7 +19,7 @@
 <td align="left">Matt Austern &lt;austern@apple.com&gt;</td>
 </tr>
 </tbody></table>
-<h1>C++ Standard Library Defect Report List (Revision 27)</h1>
+<h1>C++ Standard Library Defect Report List (Revision 28)</h1>
   <p>Reference ISO/IEC IS 14882:1998(E)</p>
   <p>Also see:</p>
     <ul>
@@ -41,6 +41,10 @@
   document.</p>
 <h2>Revision History</h2>
 <ul>
+<li>R28: 
+Post-Kona mailing: reflects decisiosn made at the Kona meeting.
+Added new issues <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#432">432</a>-<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#440">440</a>.
+</li>
 <li>R27: 
 Pre-Kona mailing.  Added new issues <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#404">404</a>-<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#431">431</a>.
 </li>
@@ -190,7 +194,7 @@ post-Dublin mailing. Updated to reflect LWG and full committee actions
 in Dublin. (99-0016/N1193, 21 Apr 99)
 </li>
 <li>R7: 
-pre-Dublin updated: Added issues <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-closed.html#130">130</a>, <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-closed.html#131">131</a>,
+pre-Dublin updated: Added issues <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#130">130</a>, <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-closed.html#131">131</a>,
 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-defects.html#132">132</a>, <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-defects.html#133">133</a>, <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-defects.html#134">134</a>,
 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-closed.html#135">135</a>, <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-defects.html#136">136</a>, <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-defects.html#137">137</a>,
 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-closed.html#138">138</a>, <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-defects.html#139">139</a> (31 Mar 99)
@@ -452,7 +456,7 @@ becomes const, matching the existing synopsis.</p>
 the Standard which must be fixed.&nbsp; The same problem was also
 identified in issues 7 (item 5) and 87.</p>
 <hr>
-<a name="7"></a><h3><a name="7">7.&nbsp;String clause minor problems</a></h3><p>
+<a name="7"><h3>7.&nbsp;String clause minor problems</h3></a><p>
 <b>Section:</b>&nbsp;21 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-strings.html#lib.strings"> [lib.strings]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;15 Dec 1997</p>
 <p>(1) In 21.3.5.4 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-strings.html#lib.string::insert"> [lib.string::insert]</a>, the description of template
 &lt;class InputIterator&gt; insert(iterator, InputIterator,
@@ -673,7 +677,7 @@ time, but the omission was not noticed. </p>
   <pre>template &lt;class Facet&gt; locale combine(const locale&amp; other) const; </pre>
 </blockquote>
 <hr>
-<a name="15"><h3>15.&nbsp;Locale::name requirement inconsistent</h3></a><p>
+<a name="15"></a><h3><a name="15">15.&nbsp;Locale::name requirement inconsistent</a></h3><p>
 <b>Section:</b>&nbsp;22.1.1.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.members"> [lib.locale.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>locale::name() is described as returning a string that can be passed to a locale
 constructor, but there is no matching constructor. </p>
@@ -946,7 +950,7 @@ while 'd' has not been erased. </p>
   other elements being erased. </p>
 </blockquote>
 <hr>
-<a name="28"></a><h3><a name="28">28.&nbsp;Ctype&lt;char&gt;is ambiguous</a></h3><p>
+<a name="28"><h3>28.&nbsp;Ctype&lt;char&gt;is ambiguous</h3></a><p>
 <b>Section:</b>&nbsp;22.2.1.3.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.ctype.char.members"> [lib.facet.ctype.char.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Nathan Myers&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>The description of the vector form of ctype&lt;char&gt;::is can be interpreted to mean
 something very different from what was intended. Paragraph 4 says </p>
@@ -1311,7 +1315,7 @@ Kona: issue editing snafu fixed - the proposed resolution now correctly
 reflects the LWG consensus.
 ]</i></p>
 <hr>
-<a name="46"></a><h3><a name="46">46.&nbsp;Minor Annex D errors</a></h3><p>
+<a name="46"><h3>46.&nbsp;Minor Annex D errors</h3></a><p>
 <b>Section:</b>&nbsp;D.7 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/future.html#depr.str.strstreams"> [depr.str.strstreams]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Brendan Kehoe&nbsp; <b>Date:</b>&nbsp; 1 Jun 1998</p>
 <p>See lib-6522 and edit-814.</p>
 <p><b>Proposed resolution:</b></p>
@@ -2022,7 +2026,7 @@ parenthetical comment: "(Exceptions thrown from
 <p>The LWG looked to two alternative wordings, and choose the proposed
 resolution as better standardese.</p>
 <hr>
-<a name="62"></a><h3><a name="62">62.&nbsp;<tt>Sync</tt>'s return value</a></h3><p>
+<a name="62"><h3>62.&nbsp;<tt>Sync</tt>'s return value</h3></a><p>
 <b>Section:</b>&nbsp;27.6.1.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.istream.unformatted"> [lib.istream.unformatted]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;6 Aug 1998</p>
 <p>The Effects clause for sync() (27.6.1.3, paragraph 36) says that it
 "calls rdbuf()-&gt;pubsync() and, if that function returns -1
@@ -2514,7 +2518,7 @@ returning eof or by throwing an exception; there are no other
 possibilities.  The proposed resolution makes it clear that these two
 functions do get characters from a streambuf.</p>
 <hr>
-<a name="103"></a><h3><a name="103">103.&nbsp;set::iterator is required to be modifiable, but this allows modification of keys</a></h3><p>
+<a name="103"><h3>103.&nbsp;set::iterator is required to be modifiable, but this allows modification of keys</h3></a><p>
 <b>Section:</b>&nbsp;23.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.associative.reqmts"> [lib.associative.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;AFNOR&nbsp; <b>Date:</b>&nbsp;7 Oct 1998</p>
 <p>Set::iterator is described as implementation-defined with a
 reference to the container requirement; the container requirement says
@@ -2665,7 +2669,7 @@ to set internal state that should affect the contents of the string
 returned by <tt>what()</tt>.
 </p>
 <hr>
-<a name="109"></a><h3><a name="109">109.&nbsp;Missing binders for non-const sequence elements</a></h3><p>
+<a name="109"><h3>109.&nbsp;Missing binders for non-const sequence elements</h3></a><p>
 <b>Section:</b>&nbsp;20.3.6 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.binders"> [lib.binders]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Bjarne Stroustrup&nbsp; <b>Date:</b>&nbsp;7 Oct 1998</p>
 
 <p>There are no versions of binders that apply to non-const elements
@@ -3220,7 +3224,7 @@ latter appears to be correct. </p>
 <tt>operator!()</tt> so that the return type is
 <tt>valarray&lt;bool&gt;</tt>. </p>
 <hr>
-<a name="126"></a><h3><a name="126">126.&nbsp;typos in Effects clause of ctype::do_narrow()</a></h3><p>
+<a name="126"><h3>126.&nbsp;typos in Effects clause of ctype::do_narrow()</h3></a><p>
 <b>Section:</b>&nbsp;22.2.1.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.ctype.virtuals"> [lib.locale.ctype.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Judy Ward&nbsp; <b>Date:</b>&nbsp;15 Dec 1998</p>
 <p>Typos in 22.2.1.1.2 need to be fixed.</p>
 <p><b>Proposed resolution:</b></p>
@@ -3330,7 +3334,7 @@ stream state in case of failure.</p>
 <p><b>Rationale:</b></p>
 <p>Setting failbit is the usual error reporting mechanism for streams</p>
 <hr>
-<a name="132"><h3>132.&nbsp;list::resize description uses random access iterators</h3></a><p>
+<a name="132"></a><h3><a name="132">132.&nbsp;list::resize description uses random access iterators</a></h3><p>
 <b>Section:</b>&nbsp;23.2.2.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.list.capacity"> [lib.list.capacity]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Howard Hinnant&nbsp; <b>Date:</b>&nbsp;6 Mar 1999</p>
 <p>The description reads:</p>
 
@@ -3806,7 +3810,7 @@ iterators or certain kinds of iterators is unnecessary.
 </p>
 </blockquote>
 <hr>
-<a name="152"></a><h3><a name="152">152.&nbsp;Typo in <tt>scan_is()</tt> semantics</a></h3><p>
+<a name="152"><h3>152.&nbsp;Typo in <tt>scan_is()</tt> semantics</h3></a><p>
 <b>Section:</b>&nbsp;22.2.1.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.locale.ctype.virtuals"> [lib.locale.ctype.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar Kühl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
 <p>The semantics of <tt>scan_is()</tt> (paragraphs 4 and 6) is not exactly described
 because there is no function <tt>is()</tt> which only takes a character as
@@ -3867,8 +3871,8 @@ saying "dfault" needed to be uncommented?]</i></p>
 proposed resolution from issue <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-closed.html#207">207</a>, which addresses the
 same paragraphs.]</i></p>
 <hr>
-<a name="154"><h3>154.&nbsp;Missing <tt>double</tt> specifier for <tt>do_get()</tt>
-</h3></a><p>
+<a name="154"></a><h3><a name="154">154.&nbsp;Missing <tt>double</tt> specifier for <tt>do_get()</tt>
+</a></h3><p>
 <b>Section:</b>&nbsp;22.2.2.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.get.virtuals"> [lib.facet.num.get.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar Kühl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
 <p>The table in paragraph 7 for the length modifier does not list the length
 modifier <tt>l</tt> to be applied if the type is <tt>double</tt>. Thus, the
@@ -3896,7 +3900,7 @@ it is defined as <tt>basic_ios::Init</tt>, according to 27.4.2 <a href="http://a
 <p>Although not strictly wrong, the standard was misleading enough to warrant
 the change.</p>
 <hr>
-<a name="156"></a><h3><a name="156">156.&nbsp;Typo in <tt>imbue()</tt> description</a></h3><p>
+<a name="156"><h3>156.&nbsp;Typo in <tt>imbue()</tt> description</h3></a><p>
 <b>Section:</b>&nbsp;27.4.2.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ios.base.locales"> [lib.ios.base.locales]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar Kühl&nbsp; <b>Date:</b>&nbsp;20 Jul 1999</p>
 <p>There is a small discrepancy between the declarations of
 <tt>imbue()</tt>: in 27.4.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iostreams.html#lib.ios.base"> [lib.ios.base]</a> the argument is passed as
@@ -4228,7 +4232,7 @@ argument is not specified.</p>
 <tt>basic_ofstream::open().</tt>
 </p>
 <hr>
-<a name="176"><h3>176.&nbsp;<tt>exceptions()</tt> in <tt>ios_base</tt>...?</h3></a><p>
+<a name="176"></a><h3><a name="176">176.&nbsp;<tt>exceptions()</tt> in <tt>ios_base</tt>...?</a></h3><p>
 <b>Section:</b>&nbsp;D.6 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/future.html#depr.ios.members"> [depr.ios.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dietmar Kühl&nbsp; <b>Date:</b>&nbsp;23 Jul 1999</p>
 <p>The "overload" for the function <tt>exceptions()</tt> in
 paragraph 8 gives the impression that there is another function of
@@ -5384,7 +5388,7 @@ above.  The LWG felt that this was sufficient reason to merit the
 change.
 </p>
 <hr>
-<a name="210"><h3>210.&nbsp;distance first and last confused</h3></a><p>
+<a name="210"></a><h3><a name="210">210.&nbsp;distance first and last confused</a></h3><p>
 <b>Section:</b>&nbsp;25 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.algorithms"> [lib.algorithms]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Lisa Lippincott&nbsp; <b>Date:</b>&nbsp;15 Feb 2000</p>
 <p>In paragraph 9 of section 25 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.algorithms"> [lib.algorithms]</a>, it is written:</p>
 <blockquote>
@@ -5639,7 +5643,7 @@ throw.  The inconsistent wording is in a footnote, and thus
 non-normative. The proposed resolution from the LWG clarifies the
 footnote.</p>
 <hr>
-<a name="223"></a><h3><a name="223">223.&nbsp;reverse algorithm should use iter_swap rather than swap</a></h3><p>
+<a name="223"><h3>223.&nbsp;reverse algorithm should use iter_swap rather than swap</h3></a><p>
 <b>Section:</b>&nbsp;25.2.9 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-algorithms.html#lib.alg.reverse"> [lib.alg.reverse]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#TC">TC</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;21 Mar 2000</p>
 <p>Shouldn't the effects say "applies iter_swap to all pairs..."?</p>
 <p><b>Proposed resolution:</b></p>
@@ -6602,7 +6606,7 @@ had language that made this an unambiguous requirement; those words
 were moved to a place where their context made them less clear.  See
 Jerry Schwarz's message c++std-lib-7618.</p>
 <hr>
-<a name="248"></a><h3><a name="248">248.&nbsp;time_get fails to set eofbit</a></h3><p>
+<a name="248"><h3>248.&nbsp;time_get fails to set eofbit</h3></a><p>
 <b>Section:</b>&nbsp;22.2.5 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.category.time"> [lib.category.time]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;22 June 2000</p>
 <p>There is no requirement that any of time_get member functions set
 ios::eofbit when they reach the end iterator while parsing their input.
@@ -6795,8 +6799,8 @@ given the Effects clause below (since a temporary is returned). The
  </pre>
 <p>(that is, remove the `&amp;').</p>
 <hr>
-<a name="261"></a><h3><a name="261">261.&nbsp;Missing description of <tt>istream_iterator::operator!=</tt>
-</a></h3><p>
+<a name="261"><h3>261.&nbsp;Missing description of <tt>istream_iterator::operator!=</tt>
+</h3></a><p>
 <b>Section:</b>&nbsp;24.5.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-iterators.html#lib.istream.iterator.ops"> [lib.istream.iterator.ops]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;27 Aug 2000</p>
 <p>
 24.5.1, p3 lists the synopsis for
@@ -6823,7 +6827,7 @@ Add paragraph 7 to the end of section 24.5.1.2 with the following text:
 
 <p>-7- Returns: !(x == y).</p>
 <hr>
-<a name="262"></a><h3><a name="262">262.&nbsp;Bitmask operator ~ specified incorrectly</a></h3><p>
+<a name="262"><h3>262.&nbsp;Bitmask operator ~ specified incorrectly</h3></a><p>
 <b>Section:</b>&nbsp;17.3.2.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-intro.html#lib.bitmask.types"> [lib.bitmask.types]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Beman Dawes&nbsp; <b>Date:</b>&nbsp;03 Sep 2000</p>
 <p>
 The ~ operation should be applied after the cast to int_type.
@@ -6845,7 +6849,7 @@ to:
      { return static_cast&lt; bitmask&gt;(~static_cast&lt;int_type&gt;(X)); }
 </pre>
 <hr>
-<a name="263"><h3>263.&nbsp;Severe restriction on <tt>basic_string</tt> reference counting</h3></a><p>
+<a name="263"></a><h3><a name="263">263.&nbsp;Severe restriction on <tt>basic_string</tt> reference counting</a></h3><p>
 <b>Section:</b>&nbsp;21.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-strings.html#lib.basic.string"> [lib.basic.string]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Kevlin Henney&nbsp; <b>Date:</b>&nbsp;04 Sep 2000</p>
 <p>
 The note in paragraph 6 suggests that the invalidation rules for
@@ -6916,7 +6920,7 @@ Change the following sentence in 21.3 paragraph 5 from
     or rend().
 </blockquote>
 <hr>
-<a name="264"><h3>264.&nbsp;Associative container <tt>insert(i, j)</tt> complexity requirements are not feasible.</h3></a><p>
+<a name="264"></a><h3><a name="264">264.&nbsp;Associative container <tt>insert(i, j)</tt> complexity requirements are not feasible.</a></h3><p>
 <b>Section:</b>&nbsp;23.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-containers.html#lib.associative.reqmts"> [lib.associative.reqmts]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;John Potter&nbsp; <b>Date:</b>&nbsp;07 Sep 2000</p>
 <p>
 Table 69 requires linear time if [i, j) is sorted.  Sorted is necessary but not sufficient.
@@ -8706,7 +8710,7 @@ comment in c++std-lib-8939.
 ]</i></p>
 
 <hr>
-<a name="312"></a><h3><a name="312">312.&nbsp;Table 27 is missing headers</a></h3><p>
+<a name="312"><h3>312.&nbsp;Table 27 is missing headers</h3></a><p>
 <b>Section:</b>&nbsp;20 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.utilities"> [lib.utilities]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;29 Mar 2001</p>
 <p>Table 27 in section 20 lists the header &lt;memory&gt; (only) for
 Memory (lib.memory) but neglects to mention the headers
@@ -8822,7 +8826,7 @@ template at all, but simply provide the primary template.</p>
 <p>Remove the comment from the text in 22.2.3.2 and from the proposed
 resolution of library issue <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-defects.html#228">228</a>.</p>
 <hr>
-<a name="319"></a><h3><a name="319">319.&nbsp;Storage allocation wording confuses "Required behavior", "Requires"</a></h3><p>
+<a name="319"><h3>319.&nbsp;Storage allocation wording confuses "Required behavior", "Requires"</h3></a><p>
 <b>Section:</b>&nbsp;18.4.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.single"> [lib.new.delete.single]</a>, 18.4.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-support.html#lib.new.delete.array"> [lib.new.delete.array]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Beman Dawes&nbsp; <b>Date:</b>&nbsp;15 May 2001</p>
 <p>The standard specifies 17.3.1.3 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-intro.html#lib.structure.specifications"> [lib.structure.specifications]</a> that "Required
 behavior" elements describe "the semantics of a function definition
@@ -8944,7 +8948,7 @@ with "Replaces the elements of a with a copy of [i, j)."
 Changes not deemed serious enough to requre rereview.]</i></p>
 
 <hr>
-<a name="321"><h3>321.&nbsp;Typo in num_get</h3></a><p>
+<a name="321"></a><h3><a name="321">321.&nbsp;Typo in num_get</a></h3><p>
 <b>Section:</b>&nbsp;22.2.2.1.2 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-locales.html#lib.facet.num.get.virtuals"> [lib.facet.num.get.virtuals]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Kevin Djang&nbsp; <b>Date:</b>&nbsp;17 May 2001</p>
 <p>
 Section 22.2.2.1.2 at p7 states that "A length specifier is added to
@@ -10248,5 +10252,28 @@ Change the guarantee to "postcondition: r is dereferenceable."
 </p>
 <p><b>Rationale:</b></p>
 <p>Fixes an obvious typo</p>
+<hr>
+<a name="400"><h3>400.&nbsp;redundant type cast in lib.allocator.members</h3></a><p>
+<b>Section:</b>&nbsp;20.4.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lwg-active.html#WP">WP</a>&nbsp; <b>Submitter:</b>&nbsp;Markus Mauhart&nbsp; <b>Date:</b>&nbsp;27 Feb 2003</p>
+<p>
+20.4.1.1 <a href="http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/lib-utilities.html#lib.allocator.members"> [lib.allocator.members]</a> allocator members, contains
+the following 3 lines:
+</p>
+
+<pre>  12 Returns: new((void *) p) T( val)
+     void destroy(pointer p);
+  13 Returns: ((T*) p)-&gt;~T()
+</pre>
+
+<p>
+The type cast "(T*) p" in the last line is redundant cause
+we know that std::allocator&lt;T&gt;::pointer is a typedef for T*.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+Replace "((T*) p)" with "p".
+</p>
+<p><b>Rationale:</b></p>
+<p>Just a typo, this is really editorial.</p>
 <p>----- End of document -----</p>
 </body></html>
