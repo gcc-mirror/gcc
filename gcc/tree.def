@@ -204,14 +204,14 @@ DEFTREECODE (FILE_TYPE, "file_type", 't', 0)
  The field TYPE_POINTER_TO (TREE_TYPE (array_type)) is always nonzero
  and holds the type to coerce a value of that array type to in C.
  TYPE_STRING_FLAG indicates a string (in contrast to an array of chars)
- in languages (such as Chill) that make a distinction. */
+ in languages (such as Chill) that make a distinction.  */
 /* Array types in C or Pascal */
 DEFTREECODE (ARRAY_TYPE, "array_type", 't', 0)
 
 /* Types of sets for Pascal.  Special fields are the same as
    in an array type.  The target type is always a boolean type.
    Used for both bitstrings and powersets in Chill;
-   TYPE_STRING_FLAG indicates a bitstring. */
+   TYPE_STRING_FLAG indicates a bitstring.  */
 DEFTREECODE (SET_TYPE, "set_type", 't', 0)
 
 /* Struct in C, or record in Pascal.  */
@@ -369,7 +369,7 @@ DEFTREECODE (INDIRECT_REF, "indirect_ref", 'r', 1)
 DEFTREECODE (BUFFER_REF, "buffer_ref", 'r', 1)
 
 /* Array indexing.
-   Operand 0 is the array; operand 1 is a (single) array index. */
+   Operand 0 is the array; operand 1 is a (single) array index.  */
 DEFTREECODE (ARRAY_REF, "array_ref", 'r', 2)
 
 /* Likewise, except that the result is a range ("slice") of the array.  The
@@ -670,7 +670,7 @@ DEFTREECODE (NE_EXPR, "ne_expr", '<', 2)
 DEFTREECODE (UNORDERED_EXPR, "unordered_expr", '<', 2)
 DEFTREECODE (ORDERED_EXPR, "ordered_expr", '<', 2)
 
-/* These are equivalent to unordered or ... */
+/* These are equivalent to unordered or ...  */
 DEFTREECODE (UNLT_EXPR, "unlt_expr", '<', 2)
 DEFTREECODE (UNLE_EXPR, "unle_expr", '<', 2)
 DEFTREECODE (UNGT_EXPR, "ungt_expr", '<', 2)
@@ -846,7 +846,7 @@ DEFTREECODE (EXPR_WITH_FILE_LOCATION, "expr_with_file_location", 'e', 3)
 /* Switch expression.
    Operand 0 is the expression used to perform the branch,
    Operand 1 contains the case values. The way they're organized is
-   front-end implementation defined. */
+   front-end implementation defined.  */
 DEFTREECODE (SWITCH_EXPR, "switch_expr", 'e', 2)
 
 /* The exception object from the runtime.  */

@@ -23,7 +23,7 @@ Boston, MA 02111-1307, USA.  */
    STARTFILE_SPEC is all wrong.  */
 
 /* The libgloss standard for crt0.s has the name based on the command line
-   option. */
+   option.  */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{!shared:%{pg:pgcrt0%O%s}%{!pg:%{p:pcrt0%O%s}%{!p:crt0%O%s}}}"
 

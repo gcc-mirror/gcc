@@ -51,13 +51,13 @@ Boston, MA 02111-1307, USA.
    board-support package (e.g. M162) and the run-time configuration
    (e.g. application vs. ram-image vs. rom-image). Specify the
    startfile in a linker-script created from the generic
-   architecture-specific linker-scripts. */
+   architecture-specific linker-scripts.  */
 
 #undef	STARTFILE_SPEC
 #define STARTFILE_SPEC ""
 
 
-/* Predefined macros (independent of processor type). */
+/* Predefined macros (independent of processor type).  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dpsos"

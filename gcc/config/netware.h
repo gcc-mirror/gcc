@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
    anyway for cross-compilers, and the other specs won't get picked up
    'coz the user is supposed to do ld -r (hmm, perhaps that should be
    the default).  In any case, setting them thus will catch some
-   common user errors. */
+   common user errors.  */
 
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX

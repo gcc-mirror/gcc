@@ -136,7 +136,7 @@ INLINE
 static fp_number_type *
 nan (void)
 {
-  /* Discard the const qualifier... */
+  /* Discard the const qualifier...  */
 #ifdef FLOAT  
   return (fp_number_type *) (& __thenan_sf);
 #else
@@ -745,14 +745,14 @@ _fpmul_parts ( fp_number_type *  a,
 	high |= 1;
       low <<= 1;
     }
-  /* rounding is tricky. if we only round if it won't make us round later. */
+  /* rounding is tricky. if we only round if it won't make us round later.  */
 #if 0
   if (low & FRACHIGH2)
     {
       if (((high & GARDMASK) != GARDMSB)
 	  && (((high + 1) & GARDMASK) == GARDMSB))
 	{
-	  /* don't round, it gets done again later. */
+	  /* don't round, it gets done again later.  */
 	}
       else
 	{
@@ -920,7 +920,7 @@ int
 __fpcmp_parts (fp_number_type * a, fp_number_type * b)
 {
 #if 0
-  /* either nan -> unordered. Must be checked outside of this routine. */
+  /* either nan -> unordered. Must be checked outside of this routine.  */
   if (isnan (a) && isnan (b))
     {
       return 1;			/* still unordered! */
@@ -944,7 +944,7 @@ __fpcmp_parts (fp_number_type * a, fp_number_type * b)
        */
       return b->sign - a->sign;
     }
-  /* but not both... */
+  /* but not both...  */
   if (isinf (a))
     {
       return a->sign ? -1 : 1;
@@ -965,7 +965,7 @@ __fpcmp_parts (fp_number_type * a, fp_number_type * b)
     {
       return a->sign ? -1 : 1;
     }
-  /* now both are "normal". */
+  /* now both are "normal".  */
   if (a->sign != b->sign)
     {
       /* opposite signs */
@@ -980,7 +980,7 @@ __fpcmp_parts (fp_number_type * a, fp_number_type * b)
     {
       return a->sign ? 1 : -1;
     }
-  /* same exponents; check size. */
+  /* same exponents; check size.  */
   if (a->fraction.ll > b->fraction.ll)
     {
       return a->sign ? -1 : 1;
@@ -989,7 +989,7 @@ __fpcmp_parts (fp_number_type * a, fp_number_type * b)
     {
       return a->sign ? 1 : -1;
     }
-  /* after all that, they're equal. */
+  /* after all that, they're equal.  */
   return 0;
 }
 #endif
@@ -1246,7 +1246,7 @@ float_to_si (FLO_type arg_a)
     return 0;
   if (isnan (&a))
     return 0;
-  /* get reasonable MAX_SI_INT... */
+  /* get reasonable MAX_SI_INT...  */
   if (isinf (&a))
     return a.sign ? (-MAX_SI_INT)-1 : MAX_SI_INT;
   /* it is a number, but a small one */
@@ -1283,7 +1283,7 @@ float_to_usi (FLO_type arg_a)
   /* it is a negative number */
   if (a.sign)
     return 0;
-  /* get reasonable MAX_USI_INT... */
+  /* get reasonable MAX_USI_INT...  */
   if (isinf (&a))
     return MAX_USI_INT;
   /* it is a number, but a small one */

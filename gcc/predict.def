@@ -74,7 +74,7 @@ DEF_PREDICTOR (PRED_NORETURN, "noreturn call", HITRATE (99),
 DEF_PREDICTOR (PRED_LOOP_BRANCH, "loop branch", HITRATE (89),
 	       PRED_FLAG_FIRST_MATCH)
 
-/* Edge causing loop to terminate is probably not taken. */
+/* Edge causing loop to terminate is probably not taken.  */
 DEF_PREDICTOR (PRED_LOOP_EXIT, "loop exit", HITRATE (90),
 	       PRED_FLAG_FIRST_MATCH)
 

@@ -207,7 +207,7 @@ DEF_RTL_EXPR(DEFINE_PEEPHOLE, "define_peephole", "EsTV", 'x')
 	insns.  This might, for example, create some RTX's and store them in
 	elements of `recog_data.operand' for use by the vector of
 	insn-patterns.
-	(`operands' is an alias here for `recog_data.operand').   */
+	(`operands' is an alias here for `recog_data.operand').  */
 DEF_RTL_EXPR(DEFINE_SPLIT, "define_split", "EsES", 'x')
 
 /* Definition of an insn and associated split.
@@ -497,10 +497,10 @@ DEF_RTL_EXPR(DEFINE_INSN_RESERVATION, "define_insn_reservation", "sies", 'x')
 /* Definition of an insn attribute.
    1st operand: name of the attribute
    2nd operand: comma-separated list of possible attribute values
-   3rd operand: expression for the default value of the attribute. */
+   3rd operand: expression for the default value of the attribute.  */
 DEF_RTL_EXPR(DEFINE_ATTR, "define_attr", "sse", 'x')
 
-/* Marker for the name of an attribute. */
+/* Marker for the name of an attribute.  */
 DEF_RTL_EXPR(ATTR, "attr", "s", 'x')
 
 /* For use in the last (optional) operand of DEFINE_INSN or DEFINE_PEEPHOLE and
@@ -964,7 +964,7 @@ DEF_RTL_EXPR(LTU, "ltu", "ee", '<')
 DEF_RTL_EXPR(UNORDERED, "unordered", "ee", '<')
 DEF_RTL_EXPR(ORDERED, "ordered", "ee", '<')
 
-/* These are equivalent to unordered or ... */
+/* These are equivalent to unordered or ...  */
 DEF_RTL_EXPR(UNEQ, "uneq", "ee", '<')
 DEF_RTL_EXPR(UNGE, "unge", "ee", '<')
 DEF_RTL_EXPR(UNGT, "ungt", "ee", '<')
@@ -1067,7 +1067,7 @@ DEF_RTL_EXPR(RANGE_INFO, "range_info", "uuEiiiiiibbii", 'x')
    live length.  Operand 7 is the number of calls that this register is live
    across.  Operand 8 is the symbol node of the variable if the register is a
    user variable.  Operand 9 is the block node that the variable is declared
-   in if the register is a user variable. */
+   in if the register is a user variable.  */
 DEF_RTL_EXPR(RANGE_REG, "range_reg", "iiiiiiiitt", 'x')
 
 /* Information about a local variable's ranges.  Operand 0 is an EXPR_LIST of
@@ -1082,7 +1082,7 @@ DEF_RTL_EXPR(RANGE_LIVE, "range_live", "bi", 'x')
 
 /* A unary `__builtin_constant_p' expression.  These are only emitted
    during RTL generation, and then only if optimize > 0.  They are
-   eliminated by the first CSE pass. */
+   eliminated by the first CSE pass.  */
 DEF_RTL_EXPR(CONSTANT_P_RTX, "constant_p_rtx", "e", 'x')
 
 /* A placeholder for a CALL_INSN which may be turned into a normal call,

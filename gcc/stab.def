@@ -47,10 +47,10 @@ __define_stab (N_MAIN, 0x2a, "MAIN")
    Supposedly the value is its line number; I'm skeptical.  */
 __define_stab (N_PC, 0x30, "PC")
 
-/* Number of symbols:  0, files,,funcs,lines according to Ultrix V4.0. */
+/* Number of symbols:  0, files,,funcs,lines according to Ultrix V4.0.  */
 __define_stab (N_NSYMS, 0x32, "NSYMS")
 
-/* "No DST map for sym: name, ,0,type,ignored"  according to Ultrix V4.0. */
+/* "No DST map for sym: name, ,0,type,ignored"  according to Ultrix V4.0.  */
 __define_stab (N_NOMAP, 0x34, "NOMAP")
 
 /* New stab from Solaris.  I don't know what it means, but it
@@ -90,7 +90,7 @@ __define_stab (N_BROWS, 0x48, "BROWS")
 __define_stab(N_DEFD, 0x4a, "DEFD")
 
 /* THE FOLLOWING TWO STAB VALUES CONFLICT.  Happily, one is for Modula-2
-   and one is for C++.   Still,... */
+   and one is for C++.   Still,...  */
 /* GNU C++ exception variable.  Name is variable name.  */
 __define_stab (N_EHDECL, 0x50, "EHDECL")
 /* Modula2 info "for imc":  name,,0,0,0  according to Ultrix V4.0.  */
@@ -168,7 +168,7 @@ __define_stab (N_ECOML, 0xe8, "ECOML")
 
 /* These STAB's are used on Gould systems for Non-Base register symbols
    or something like that.  FIXME.  I have assigned the values at random
-   since I don't have a Gould here.  Fixups from Gould folk welcome... */
+   since I don't have a Gould here.  Fixups from Gould folk welcome...  */
 __define_stab (N_NBTEXT, 0xF0, "NBTEXT")
 __define_stab (N_NBDATA, 0xF2, "NBDATA")
 __define_stab (N_NBBSS,  0xF4, "NBBSS")

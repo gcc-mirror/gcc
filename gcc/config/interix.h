@@ -104,7 +104,7 @@ for windows/multi thread */
 #define WCHAR_TYPE_SIZE 16
 
 /* Our strategy for finding global constructors is a bit different, although
-   not a lot. */
+   not a lot.  */
 #define DO_GLOBAL_CTORS_BODY						\
 do {									\
   int i;								\

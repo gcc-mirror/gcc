@@ -20,27 +20,27 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* LynxOS is a multi-platform Unix, similar to SVR3, but not identical.
-   We can get quite a bit from generic svr3, but have to do some overrides. */
+   We can get quite a bit from generic svr3, but have to do some overrides.  */
 
 #include "svr3.h"
 
-/* Define various macros, depending on the combination of flags. */
+/* Define various macros, depending on the combination of flags.  */
 
 #undef CPP_SPEC
 #define CPP_SPEC "%{mthreads:-D_MULTITHREADED}  \
   %{mposix:-D_POSIX_SOURCE}  \
   %{msystem-v:-I/usr/include_v}"
 
-/* No asm spec needed, since using GNU assembler always. */
+/* No asm spec needed, since using GNU assembler always.  */
 
-/* No linker spec needed, since using GNU linker always. */
+/* No linker spec needed, since using GNU linker always.  */
 
 #undef LIB_SPEC
 #define LIB_SPEC "%{mthreads:-L/lib/thread/}  \
   %{msystem-v:-lc_v}  \
   %{!msystem-v:%{mposix:-lc_p} -lc -lm}"
 
-/* Set the appropriate names for the Lynx startfiles. */
+/* Set the appropriate names for the Lynx startfiles.  */
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{p:%{mthreads:thread/pinit1.o%s}%{!mthreads:pinit1.o%s}}%{!p:%{msystem-v:vinit1.o%s -e_start}%{!msystem-v:%{mthreads:thread/init1.o%s}%{!mthreads:init1.o%s}}}"
@@ -48,7 +48,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC "%{p:_etext.o%s}%{!p:initn.o%s}"
 
-/* Override the svr3 versions. */
+/* Override the svr3 versions.  */
 
 #undef WCHAR_TYPE
 #define WCHAR_TYPE "int"
@@ -63,11 +63,11 @@ Boston, MA 02111-1307, USA.  */
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 /* It is convenient to be able to generate standard coff debugging
-   if requested via -gcoff. */
+   if requested via -gcoff.  */
 
 #define SDB_DEBUGGING_INFO 1
 
-/* Be function-relative for block and source line stab directives. */
+/* Be function-relative for block and source line stab directives.  */
 
 #define DBX_BLOCKS_FUNCTION_RELATIVE 1
 
@@ -97,7 +97,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define HANDLE_SYSV_PRAGMA
 
-/* Some additional command-line options. */
+/* Some additional command-line options.  */
 
 #define TARGET_THREADS	(target_flags & MASK_THREADS)
 #define MASK_THREADS	0x40000000
@@ -124,7 +124,7 @@ do {								\
 } while (0)
 
 /* Since init.o et al put all sorts of stuff into the init section,
-   we can't use the standard init section support in crtbegin.o. */
+   we can't use the standard init section support in crtbegin.o.  */
 
 #undef INIT_SECTION_ASM_OP
 
@@ -143,6 +143,6 @@ do {								\
 #undef DO_GLOBAL_CTORS_BODY
 #undef DO_GLOBAL_DTORS_BODY
 
-/* LynxOS doesn't have mcount. */
+/* LynxOS doesn't have mcount.  */
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(file, profile_label_no)

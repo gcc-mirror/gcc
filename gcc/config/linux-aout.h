@@ -19,11 +19,11 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Don't assume anything about the header files. */
+/* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
 /* GNU/Linux uses ctype from glibc.a. I am not sure how complete it is.
-   For now, we play safe. It may change later. */
+   For now, we play safe. It may change later.  */
 
 #if 0
 #undef MULTIBYTE_CHARS
@@ -41,5 +41,5 @@ Boston, MA 02111-1307, USA.  */
 
 #define SET_ASM_OP	"\t.set\t"
 
-/* We need that too. */
+/* We need that too.  */
 #define HANDLE_SYSV_PRAGMA

@@ -1,3 +1,34 @@
+2002-09-29  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* builtins.def: Fix comment formatting.
+	* c-common.def: Likewise.
+	* cfgcleanup.c: Likewise.
+	* combine.c: Likewise.
+	* gengtype.c: Likewise.
+	* params.def: Likewise.
+	* predict.def: Likewise.
+	* rtl.def: Likewise.
+	* stab.def: Likewise.
+	* stor-layout.c: Likewise.
+	* tree.def: Likewise.
+	* config/darwin.c: Likewise.
+	* config/darwin.h: Likewise.
+	* config/dbxcoff.h: Likewise.
+	* config/elfos.h: Likewise.
+	* config/fp-bit.c: Likewise.
+	* config/freebsd-spec.h: Likewise.
+	* config/interix.h: Likewise.
+	* config/libgloss.h: Likewise.
+	* config/linux-aout.h: Likewise.
+	* config/linux.h: Likewise.
+	* config/lynx-ng.h: Likewise.
+	* config/lynx.h: Likewise.
+	* config/netbsd-aout.h: Likewise.
+	* config/netbsd.h: Likewise.
+	* config/netware.h: Likewise.
+	* config/psos.h: Likewise.
+	* config/ptx4.h: Likewise.
+
 2002-09-28  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* ChangeLog.4: Fix typos.

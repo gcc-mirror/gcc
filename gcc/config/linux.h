@@ -20,11 +20,11 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Don't assume anything about the header files. */
+/* Don't assume anything about the header files.  */
 #define NO_IMPLICIT_EXTERN_C
 
 /* GNU/Linux uses ctype from glibc.a. I am not sure how complete it is.
-   For now, we play safe. It may change later. */
+   For now, we play safe. It may change later.  */
 
 #if 0
 #undef MULTIBYTE_CHARS
@@ -43,7 +43,7 @@ Boston, MA 02111-1307, USA.  */
 /* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
    the GNU/Linux magical crtbegin.o file (see crtstuff.c) which
    provides part of the support for getting C++ file-scope static
-   object constructed before entering `main'. */
+   object constructed before entering `main'.  */
    
 #undef	STARTFILE_SPEC
 #ifdef USE_GNULIBC_1
@@ -73,7 +73,7 @@ Boston, MA 02111-1307, USA.  */
 #define ENDFILE_SPEC \
   "%{!shared:crtend.o%s} %{shared:crtendS.o%s} crtn.o%s"
 
-/* This is for -profile to use -lc_p instead of -lc. */
+/* This is for -profile to use -lc_p instead of -lc.  */
 #ifndef CC1_SPEC
 #define CC1_SPEC "%{profile:-p}"
 #endif
@@ -85,7 +85,7 @@ Boston, MA 02111-1307, USA.  */
 #undef	LIB_SPEC
 /* We no longer link with libc_p.a or libg.a by default. If you
    want to profile or debug the GNU/Linux C library, please add
-   -profile or -ggdb to LDFLAGS at the link time, respectively. */
+   -profile or -ggdb to LDFLAGS at the link time, respectively.  */
 #if 1
 #ifdef USE_GNULIBC_1
 #define LIB_SPEC \

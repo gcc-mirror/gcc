@@ -87,7 +87,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    `__builtin' version, we will create an ordinary version (e.g,
    `strchr') as well.  If we cannot compute the answer using the
    builtin function, we will fall back to the standard library
-   version. */
+   version.  */
 #undef DEF_LIB_BUILTIN					
 #define DEF_LIB_BUILTIN(ENUM, NAME, TYPE, ATTRS)	\
   DEF_BUILTIN (ENUM, NAME, BUILT_IN_NORMAL, TYPE, TYPE,	\

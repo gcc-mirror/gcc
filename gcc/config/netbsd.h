@@ -42,7 +42,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* NETBSD_NATIVE is defined when gcc is integrated into the NetBSD
    source tree so it can be configured appropriately without using
-   the GNU configure/build mechanism. */
+   the GNU configure/build mechanism.  */
 
 #ifdef NETBSD_NATIVE
 

@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
     }						\
   while (0)
 
-/* This defines which switch letters take arguments. */
+/* This defines which switch letters take arguments.  */
 
 #undef SWITCH_TAKES_ARG
 #define SWITCH_TAKES_ARG(CHAR)		\
