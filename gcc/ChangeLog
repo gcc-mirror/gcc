@@ -1,3 +1,8 @@
+2002-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR optimization/5891
+	* unroll.c (copy_loop_body) [CALL_INSN]: Copy SIBLING_CALL_P flag.
+
 2002-03-14  David Mosberger <davidm@hpl.hp.com>, Hans Boehm <Hans_Boehm@hp.com>
 
 	* config/ia64/unwind-ia64.c: Handle copy_state and label_state
