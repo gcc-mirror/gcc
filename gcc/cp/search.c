@@ -3363,7 +3363,7 @@ binfo_for_vtable (var)
 }
 
 /* Returns the binfo of the first direct or indirect virtual base from
-   which BINFO is derrived, or NULL if binfo is not via virtual.  */
+   which BINFO is derived, or NULL if binfo is not via virtual.  */
 
 tree
 binfo_from_vbase (binfo)
