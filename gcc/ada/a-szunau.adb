@@ -33,63 +33,36 @@
 
 package body Ada.Strings.Wide_Wide_Unbounded.Aux is
 
-   --------------------------
+   --------------------
    -- Get_Wide_Wide_String --
-   --------------------------
+   ---------------------
 
-   function Get_Wide_Wide_String
-     (U : Unbounded_Wide_Wide_String) return Wide_Wide_String_Access
+   procedure Get_Wide_Wide_String
+     (U : Unbounded_Wide_Wide_String;
+      S : out Wide_Wide_String_Access;
+      L : out Natural)
    is
    begin
-      if U.Last = U.Reference'Length then
-         return U.Reference;
-
-      else
-         declare
-            type Unbounded_Wide_Wide_String_Access is
-              access all Unbounded_Wide_Wide_String;
-
-            U_Ptr : constant Unbounded_Wide_Wide_String_Access :=
-                      U'Unrestricted_Access;
-            --  Unbounded_Wide_Wide_String is a controlled type which is always
-            --  passed by copy it is always safe to take the pointer to such
-            --  object here. This pointer is used to set the U.Reference value
-            --  which would not be possible otherwise as U is read-only.
-
-            Old : Wide_Wide_String_Access := U.Reference;
-
-         begin
-            U_Ptr.Reference :=
-              new Wide_Wide_String'(U.Reference (1 .. U.Last));
-            Free (Old);
-            return U.Reference;
-         end;
-      end if;
+      S := U.Reference;
+      L := U.Last;
    end Get_Wide_Wide_String;
 
-   --------------------------
+   ---------------------
    -- Set_Wide_Wide_String --
-   --------------------------
+   ---------------------
 
    procedure Set_Wide_Wide_String
      (UP : in out Unbounded_Wide_Wide_String;
       S  : Wide_Wide_String)
    is
    begin
-      if UP.Last = S'Length then
-         UP.Reference.all := S;
-
-      else
-         declare
-            subtype String_1 is Wide_Wide_String (1 .. S'Length);
-            Tmp : Wide_Wide_String_Access;
-         begin
-            Tmp := new Wide_Wide_String'(String_1 (S));
-            Finalize (UP);
-            UP.Reference := Tmp;
-            UP.Last := UP.Reference'Length;
-         end;
+      if S'Length > UP.Last then
+         Finalize (UP);
+         UP.Reference := new Wide_Wide_String (1 .. S'Length);
       end if;
+
+      UP.Reference (1 .. S'Length) := S;
+      UP.Last := S'Length;
    end Set_Wide_Wide_String;
 
    procedure Set_Wide_Wide_String

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1997-1999 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1997-2005 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -120,15 +120,13 @@ pragma Preelaborate (Spitbol);
    --  Equivalent to Character'Val (Num)
 
    function Lpad
-     (Str  : VString;
-      Len  : Natural;
-      Pad  : Character := ' ')
-      return VString;
+     (Str : VString;
+      Len : Natural;
+      Pad : Character := ' ') return VString;
    function Lpad
-     (Str  : String;
-      Len  : Natural;
-      Pad  : Character := ' ')
-      return VString;
+     (Str : String;
+      Len : Natural;
+      Pad : Character := ' ') return VString;
    --  If the length of Str is greater than or equal to Len, then Str is
    --  returned unchanged. Otherwise, The value returned is obtained by
    --  concatenating Length (Str) - Len instances of the Pad character to
@@ -151,15 +149,13 @@ pragma Preelaborate (Spitbol);
    --  result overwrites the input argument Str.
 
    function Rpad
-     (Str  : VString;
-      Len  : Natural;
-      Pad  : Character := ' ')
-      return VString;
+     (Str : VString;
+      Len : Natural;
+      Pad : Character := ' ') return VString;
    function Rpad
-     (Str  : String;
-      Len  : Natural;
-      Pad  : Character := ' ')
-      return VString;
+     (Str : String;
+      Len : Natural;
+      Pad : Character := ' ') return VString;
    --  If the length of Str is greater than or equal to Len, then Str is
    --  returned unchanged. Otherwise, The value returned is obtained by
    --  concatenating Length (Str) - Len instances of the Pad character to
@@ -178,13 +174,11 @@ pragma Preelaborate (Spitbol);
    function Substr
      (Str   : VString;
       Start : Positive;
-      Len   : Natural)
-      return  VString;
+      Len   : Natural) return  VString;
    function Substr
      (Str   : String;
       Start : Positive;
-      Len   : Natural)
-      return  VString;
+      Len   : Natural) return  VString;
    --  Returns the substring starting at the given character position (which
    --  is always counted from the start of the string, regardless of bounds,
    --  e.g. 2 means starting with the second character of the string), and

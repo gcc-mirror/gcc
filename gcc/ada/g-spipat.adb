@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1998-2004, Ada Core Technologies, Inc.           --
+--           Copyright (C) 1998-2005, Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2802,16 +2802,20 @@ package body GNAT.Spitbol.Patterns is
 
    function Match
      (Subject : VString;
-      Pat     : Pattern)
-      return    Boolean
+      Pat     : Pattern) return Boolean
    is
-      Start, Stop : Natural;
+      Start : Natural;
+      Stop  : Natural;
+      S     : String_Access;
+      L     : Natural;
 
    begin
+      Get_String (Subject, S, L);
+
       if Debug_Mode then
-         XMatchD (Get_String (Subject).all, Pat.P, Pat.Stk, Start, Stop);
+         XMatchD (S (1 .. L), Pat.P, Pat.Stk, Start, Stop);
       else
-         XMatch  (Get_String (Subject).all, Pat.P, Pat.Stk, Start, Stop);
+         XMatch  (S (1 .. L), Pat.P, Pat.Stk, Start, Stop);
       end if;
 
       return Start /= 0;
@@ -2819,8 +2823,7 @@ package body GNAT.Spitbol.Patterns is
 
    function Match
      (Subject : String;
-      Pat     : Pattern)
-      return    Boolean
+      Pat     : Pattern) return Boolean
    is
       Start, Stop : Natural;
       subtype String1 is String (1 .. Subject'Length);
@@ -2838,24 +2841,28 @@ package body GNAT.Spitbol.Patterns is
    function Match
      (Subject : VString_Var;
       Pat     : Pattern;
-      Replace : VString)
-      return    Boolean
+      Replace : VString) return Boolean
    is
-      Start, Stop : Natural;
+      Start : Natural;
+      Stop  : Natural;
+      S     : String_Access;
+      L     : Natural;
 
    begin
+      Get_String (Subject, S, L);
+
       if Debug_Mode then
-         XMatchD (Get_String (Subject).all, Pat.P, Pat.Stk, Start, Stop);
+         XMatchD (S (1 .. L), Pat.P, Pat.Stk, Start, Stop);
       else
-         XMatch  (Get_String (Subject).all, Pat.P, Pat.Stk, Start, Stop);
+         XMatch  (S (1 .. L), Pat.P, Pat.Stk, Start, Stop);
       end if;
 
       if Start = 0 then
          return False;
       else
+         Get_String (Replace, S, L);
          Replace_Slice
-           (Subject'Unrestricted_Access.all,
-            Start, Stop, Get_String (Replace).all);
+           (Subject'Unrestricted_Access.all, Start, Stop, S (1 .. L));
          return True;
       end if;
    end Match;
@@ -2863,16 +2870,20 @@ package body GNAT.Spitbol.Patterns is
    function Match
      (Subject : VString_Var;
       Pat     : Pattern;
-      Replace : String)
-      return    Boolean
+      Replace : String) return Boolean
    is
-      Start, Stop : Natural;
+      Start : Natural;
+      Stop  : Natural;
+      S     : String_Access;
+      L     : Natural;
 
    begin
+      Get_String (Subject, S, L);
+
       if Debug_Mode then
-         XMatchD (Get_String (Subject).all, Pat.P, Pat.Stk, Start, Stop);
+         XMatchD (S (1 .. L), Pat.P, Pat.Stk, Start, Stop);
       else
-         XMatch  (Get_String (Subject).all, Pat.P, Pat.Stk, Start, Stop);
+         XMatch  (S (1 .. L), Pat.P, Pat.Stk, Start, Stop);
       end if;
 
       if Start = 0 then
@@ -2888,15 +2899,19 @@ package body GNAT.Spitbol.Patterns is
      (Subject : VString;
       Pat     : Pattern)
    is
-      Start, Stop : Natural;
+      Start : Natural;
+      Stop  : Natural;
+      S     : String_Access;
+      L     : Natural;
 
    begin
-      if Debug_Mode then
-         XMatchD (Get_String (Subject).all, Pat.P, Pat.Stk, Start, Stop);
-      else
-         XMatch  (Get_String (Subject).all, Pat.P, Pat.Stk, Start, Stop);
-      end if;
+      Get_String (Subject, S, L);
 
+      if Debug_Mode then
+         XMatchD (S (1 .. L), Pat.P, Pat.Stk, Start, Stop);
+      else
+         XMatch  (S (1 .. L), Pat.P, Pat.Stk, Start, Stop);
+      end if;
    end Match;
 
    procedure Match
@@ -2918,17 +2933,23 @@ package body GNAT.Spitbol.Patterns is
       Pat     : Pattern;
       Replace : VString)
    is
-      Start, Stop : Natural;
+      Start : Natural;
+      Stop  : Natural;
+      S     : String_Access;
+      L     : Natural;
 
    begin
+      Get_String (Subject, S, L);
+
       if Debug_Mode then
-         XMatchD (Get_String (Subject).all, Pat.P, Pat.Stk, Start, Stop);
+         XMatchD (S (1 .. L), Pat.P, Pat.Stk, Start, Stop);
       else
-         XMatch  (Get_String (Subject).all, Pat.P, Pat.Stk, Start, Stop);
+         XMatch  (S (1 .. L), Pat.P, Pat.Stk, Start, Stop);
       end if;
 
       if Start /= 0 then
-         Replace_Slice (Subject, Start, Stop, Get_String (Replace).all);
+         Get_String (Replace, S, L);
+         Replace_Slice (Subject, Start, Stop, S (1 .. L));
       end if;
    end Match;
 
@@ -2937,13 +2958,18 @@ package body GNAT.Spitbol.Patterns is
       Pat     : Pattern;
       Replace : String)
    is
-      Start, Stop : Natural;
+      Start : Natural;
+      Stop  : Natural;
+      S     : String_Access;
+      L     : Natural;
 
    begin
+      Get_String (Subject, S, L);
+
       if Debug_Mode then
-         XMatchD (Get_String (Subject).all, Pat.P, Pat.Stk, Start, Stop);
+         XMatchD (S (1 .. L), Pat.P, Pat.Stk, Start, Stop);
       else
-         XMatch  (Get_String (Subject).all, Pat.P, Pat.Stk, Start, Stop);
+         XMatch  (S (1 .. L), Pat.P, Pat.Stk, Start, Stop);
       end if;
 
       if Start /= 0 then
@@ -2953,24 +2979,25 @@ package body GNAT.Spitbol.Patterns is
 
    function Match
      (Subject : VString;
-      Pat     : PString)
-      return    Boolean
+      Pat     : PString) return Boolean
    is
-      Pat_Len : constant Natural       := Pat'Length;
-      Sub_Len : constant Natural       := Length (Subject);
-      Sub_Str : constant String_Access := Get_String (Subject);
+      Pat_Len : constant Natural := Pat'Length;
+      S       : String_Access;
+      L       : Natural;
 
    begin
+      Get_String (Subject, S, L);
+
       if Anchored_Mode then
-         if Pat_Len > Sub_Len then
+         if Pat_Len > L then
             return False;
          else
-            return Pat = Sub_Str.all (1 .. Pat_Len);
+            return Pat = S (1 .. Pat_Len);
          end if;
 
       else
-         for J in 1 .. Sub_Len - Pat_Len + 1 loop
-            if Pat = Sub_Str.all (J .. J + (Pat_Len - 1)) then
+         for J in 1 .. L - Pat_Len + 1 loop
+            if Pat = S (J .. J + (Pat_Len - 1)) then
                return True;
             end if;
          end loop;
@@ -2981,8 +3008,7 @@ package body GNAT.Spitbol.Patterns is
 
    function Match
      (Subject : String;
-      Pat     : PString)
-      return    Boolean
+      Pat     : PString) return Boolean
    is
       Pat_Len : constant Natural := Pat'Length;
       Sub_Len : constant Natural := Subject'Length;
@@ -3010,24 +3036,28 @@ package body GNAT.Spitbol.Patterns is
    function Match
      (Subject : VString_Var;
       Pat     : PString;
-      Replace : VString)
-      return    Boolean
+      Replace : VString) return Boolean
    is
-      Start, Stop : Natural;
+      Start : Natural;
+      Stop  : Natural;
+      S     : String_Access;
+      L     : Natural;
 
    begin
+      Get_String (Subject, S, L);
+
       if Debug_Mode then
-         XMatchD (Get_String (Subject).all, S_To_PE (Pat), 0, Start, Stop);
+         XMatchD (S (1 .. L), S_To_PE (Pat), 0, Start, Stop);
       else
-         XMatch  (Get_String (Subject).all, S_To_PE (Pat), 0, Start, Stop);
+         XMatch  (S (1 .. L), S_To_PE (Pat), 0, Start, Stop);
       end if;
 
       if Start = 0 then
          return False;
       else
+         Get_String (Replace, S, L);
          Replace_Slice
-           (Subject'Unrestricted_Access.all,
-            Start, Stop, Get_String (Replace).all);
+           (Subject'Unrestricted_Access.all, Start, Stop, S (1 .. L));
          return True;
       end if;
    end Match;
@@ -3035,16 +3065,20 @@ package body GNAT.Spitbol.Patterns is
    function Match
      (Subject : VString_Var;
       Pat     : PString;
-      Replace : String)
-      return    Boolean
+      Replace : String) return Boolean
    is
-      Start, Stop : Natural;
+      Start : Natural;
+      Stop  : Natural;
+      S     : String_Access;
+      L     : Natural;
 
    begin
+      Get_String (Subject, S, L);
+
       if Debug_Mode then
-         XMatchD (Get_String (Subject).all, S_To_PE (Pat), 0, Start, Stop);
+         XMatchD (S (1 .. L), S_To_PE (Pat), 0, Start, Stop);
       else
-         XMatch  (Get_String (Subject).all, S_To_PE (Pat), 0, Start, Stop);
+         XMatch  (S (1 .. L), S_To_PE (Pat), 0, Start, Stop);
       end if;
 
       if Start = 0 then
@@ -3060,13 +3094,18 @@ package body GNAT.Spitbol.Patterns is
      (Subject : VString;
       Pat     : PString)
    is
-      Start, Stop : Natural;
+      Start : Natural;
+      Stop  : Natural;
+      S     : String_Access;
+      L     : Natural;
 
    begin
+      Get_String (Subject, S, L);
+
       if Debug_Mode then
-         XMatchD (Get_String (Subject).all, S_To_PE (Pat), 0, Start, Stop);
+         XMatchD (S (1 .. L), S_To_PE (Pat), 0, Start, Stop);
       else
-         XMatch  (Get_String (Subject).all, S_To_PE (Pat), 0, Start, Stop);
+         XMatch  (S (1 .. L), S_To_PE (Pat), 0, Start, Stop);
       end if;
    end Match;
 
@@ -3090,17 +3129,23 @@ package body GNAT.Spitbol.Patterns is
       Pat     : PString;
       Replace : VString)
    is
-      Start, Stop : Natural;
+      Start : Natural;
+      Stop  : Natural;
+      S     : String_Access;
+      L     : Natural;
 
    begin
+      Get_String (Subject, S, L);
+
       if Debug_Mode then
-         XMatchD (Get_String (Subject).all, S_To_PE (Pat), 0, Start, Stop);
+         XMatchD (S (1 .. L), S_To_PE (Pat), 0, Start, Stop);
       else
-         XMatch  (Get_String (Subject).all, S_To_PE (Pat), 0, Start, Stop);
+         XMatch  (S (1 .. L), S_To_PE (Pat), 0, Start, Stop);
       end if;
 
       if Start /= 0 then
-         Replace_Slice (Subject, Start, Stop, Get_String (Replace).all);
+         Get_String (Replace, S, L);
+         Replace_Slice (Subject, Start, Stop, S (1 .. L));
       end if;
    end Match;
 
@@ -3109,13 +3154,18 @@ package body GNAT.Spitbol.Patterns is
       Pat     : PString;
       Replace : String)
    is
-      Start, Stop : Natural;
+      Start : Natural;
+      Stop  : Natural;
+      S     : String_Access;
+      L     : Natural;
 
    begin
+      Get_String (Subject, S, L);
+
       if Debug_Mode then
-         XMatchD (Get_String (Subject).all, S_To_PE (Pat), 0, Start, Stop);
+         XMatchD (S (1 .. L), S_To_PE (Pat), 0, Start, Stop);
       else
-         XMatch  (Get_String (Subject).all, S_To_PE (Pat), 0, Start, Stop);
+         XMatch  (S (1 .. L), S_To_PE (Pat), 0, Start, Stop);
       end if;
 
       if Start /= 0 then
@@ -3126,16 +3176,20 @@ package body GNAT.Spitbol.Patterns is
    function Match
      (Subject : VString_Var;
       Pat     : Pattern;
-      Result  : Match_Result_Var)
-      return    Boolean
+      Result  : Match_Result_Var) return Boolean
    is
-      Start, Stop : Natural;
+      Start : Natural;
+      Stop  : Natural;
+      S     : String_Access;
+      L     : Natural;
 
    begin
+      Get_String (Subject, S, L);
+
       if Debug_Mode then
-         XMatchD (Get_String (Subject).all, Pat.P, Pat.Stk, Start, Stop);
+         XMatchD (S (1 .. L), Pat.P, Pat.Stk, Start, Stop);
       else
-         XMatch  (Get_String (Subject).all, Pat.P, Pat.Stk, Start, Stop);
+         XMatch  (S (1 .. L), Pat.P, Pat.Stk, Start, Stop);
       end if;
 
       if Start = 0 then
@@ -3155,18 +3209,22 @@ package body GNAT.Spitbol.Patterns is
       Pat     : Pattern;
       Result  : out Match_Result)
    is
-      Start, Stop : Natural;
+      Start : Natural;
+      Stop  : Natural;
+      S     : String_Access;
+      L     : Natural;
 
    begin
+      Get_String (Subject, S, L);
+
       if Debug_Mode then
-         XMatchD (Get_String (Subject).all, Pat.P, Pat.Stk, Start, Stop);
+         XMatchD (S (1 .. L), Pat.P, Pat.Stk, Start, Stop);
       else
-         XMatch  (Get_String (Subject).all, Pat.P, Pat.Stk, Start, Stop);
+         XMatch  (S (1 .. L), Pat.P, Pat.Stk, Start, Stop);
       end if;
 
       if Start = 0 then
          Result.Var := null;
-
       else
          Result.Var   := Subject'Unrestricted_Access;
          Result.Start := Start;
@@ -3302,13 +3360,14 @@ package body GNAT.Spitbol.Patterns is
      (Result  : in out Match_Result;
       Replace : VString)
    is
+      S : String_Access;
+      L : Natural;
+
    begin
+      Get_String (Replace, S, L);
+
       if Result.Var /= null then
-         Replace_Slice
-           (Result.Var.all,
-            Result.Start,
-            Result.Stop,
-            Get_String (Replace).all);
+         Replace_Slice (Result.Var.all, Result.Start, Result.Stop, S (1 .. L));
          Result.Var := null;
       end if;
    end Replace;
@@ -3487,7 +3546,6 @@ package body GNAT.Spitbol.Patterns is
 
    function Str_BF (A : Boolean_Func) return String is
       function To_A is new Unchecked_Conversion (Boolean_Func, Address);
-
    begin
       return "BF(" & Image (To_A (A)) & ')';
    end Str_BF;
@@ -3507,7 +3565,6 @@ package body GNAT.Spitbol.Patterns is
 
    function Str_NF (A : Natural_Func) return String is
       function To_A is new Unchecked_Conversion (Natural_Func, Address);
-
    begin
       return "NF(" & Image (To_A (A)) & ')';
    end Str_NF;
@@ -3536,7 +3593,6 @@ package body GNAT.Spitbol.Patterns is
 
    function Str_VF (A : VString_Func) return String is
       function To_A is new Unchecked_Conversion (VString_Func, Address);
-
    begin
       return "VF(" & Image (To_A (A)) & ')';
    end Str_VF;
@@ -3897,12 +3953,15 @@ package body GNAT.Spitbol.Patterns is
          --  Any (string function case)
 
          when PC_Any_VF => declare
-            U   : constant VString       := Node.VF.all;
-            Str : constant String_Access := Get_String (U);
+            U : constant VString := Node.VF.all;
+            S : String_Access;
+            L : Natural;
 
          begin
+            Get_String (U, S, L);
+
             if Cursor < Length
-              and then Is_In (Subject (Cursor + 1), Str.all)
+              and then Is_In (Subject (Cursor + 1), S (1 .. L))
             then
                Cursor := Cursor + 1;
                goto Succeed;
@@ -3914,11 +3973,15 @@ package body GNAT.Spitbol.Patterns is
          --  Any (string pointer case)
 
          when PC_Any_VP => declare
-            Str : constant String_Access := Get_String (Node.VP.all);
+            U : constant VString := Node.VP.all;
+            S : String_Access;
+            L : Natural;
 
          begin
+            Get_String (U, S, L);
+
             if Cursor < Length
-              and then Is_In (Subject (Cursor + 1), Str.all)
+              and then Is_In (Subject (Cursor + 1), S (1 .. L))
             then
                Cursor := Cursor + 1;
                goto Succeed;
@@ -4077,12 +4140,15 @@ package body GNAT.Spitbol.Patterns is
          --  Break (string function case)
 
          when PC_Break_VF => declare
-            U   : constant VString       := Node.VF.all;
-            Str : constant String_Access := Get_String (U);
+            U : constant VString := Node.VF.all;
+            S : String_Access;
+            L : Natural;
 
          begin
+            Get_String (U, S, L);
+
             while Cursor < Length loop
-               if Is_In (Subject (Cursor + 1), Str.all) then
+               if Is_In (Subject (Cursor + 1), S (1 .. L)) then
                   goto Succeed;
                else
                   Cursor := Cursor + 1;
@@ -4095,11 +4161,15 @@ package body GNAT.Spitbol.Patterns is
          --  Break (string pointer case)
 
          when PC_Break_VP => declare
-            Str : constant String_Access := Get_String (Node.VP.all);
+            U : constant VString := Node.VP.all;
+            S : String_Access;
+            L : Natural;
 
          begin
+            Get_String (U, S, L);
+
             while Cursor < Length loop
-               if Is_In (Subject (Cursor + 1), Str.all) then
+               if Is_In (Subject (Cursor + 1), S (1 .. L)) then
                   goto Succeed;
                else
                   Cursor := Cursor + 1;
@@ -4138,12 +4208,15 @@ package body GNAT.Spitbol.Patterns is
          --  BreakX (string function case)
 
          when PC_BreakX_VF => declare
-            U   : constant VString       := Node.VF.all;
-            Str : constant String_Access := Get_String (U);
+            U : constant VString := Node.VF.all;
+            S : String_Access;
+            L : Natural;
 
          begin
+            Get_String (U, S, L);
+
             while Cursor < Length loop
-               if Is_In (Subject (Cursor + 1), Str.all) then
+               if Is_In (Subject (Cursor + 1), S (1 .. L)) then
                   goto Succeed;
                else
                   Cursor := Cursor + 1;
@@ -4156,11 +4229,15 @@ package body GNAT.Spitbol.Patterns is
          --  BreakX (string pointer case)
 
          when PC_BreakX_VP => declare
-            Str : constant String_Access := Get_String (Node.VP.all);
+            U : constant VString := Node.VP.all;
+            S : String_Access;
+            L : Natural;
 
          begin
+            Get_String (U, S, L);
+
             while Cursor < Length loop
-               if Is_In (Subject (Cursor + 1), Str.all) then
+               if Is_In (Subject (Cursor + 1), S (1 .. L)) then
                   goto Succeed;
                else
                   Cursor := Cursor + 1;
@@ -4298,13 +4375,16 @@ package body GNAT.Spitbol.Patterns is
          --  NotAny (string function case)
 
          when PC_NotAny_VF => declare
-            U   : constant VString       := Node.VF.all;
-            Str : constant String_Access := Get_String (U);
+            U : constant VString := Node.VF.all;
+            S : String_Access;
+            L : Natural;
 
          begin
+            Get_String (U, S, L);
+
             if Cursor < Length
               and then
-                not Is_In (Subject (Cursor + 1), Str.all)
+                not Is_In (Subject (Cursor + 1), S (1 .. L))
             then
                Cursor := Cursor + 1;
                goto Succeed;
@@ -4316,12 +4396,16 @@ package body GNAT.Spitbol.Patterns is
          --  NotAny (string pointer case)
 
          when PC_NotAny_VP => declare
-            Str : constant String_Access := Get_String (Node.VP.all);
+            U : constant VString := Node.VP.all;
+            S : String_Access;
+            L : Natural;
 
          begin
+            Get_String (U, S, L);
+
             if Cursor < Length
               and then
-                not Is_In (Subject (Cursor + 1), Str.all)
+                not Is_In (Subject (Cursor + 1), S (1 .. L))
             then
                Cursor := Cursor + 1;
                goto Succeed;
@@ -4355,12 +4439,15 @@ package body GNAT.Spitbol.Patterns is
          --  NSpan (string function case)
 
          when PC_NSpan_VF => declare
-            U   : constant VString       := Node.VF.all;
-            Str : constant String_Access := Get_String (U);
+            U : constant VString := Node.VF.all;
+            S : String_Access;
+            L : Natural;
 
          begin
+            Get_String (U, S, L);
+
             while Cursor < Length
-              and then Is_In (Subject (Cursor + 1), Str.all)
+              and then Is_In (Subject (Cursor + 1), S (1 .. L))
             loop
                Cursor := Cursor + 1;
             end loop;
@@ -4371,11 +4458,15 @@ package body GNAT.Spitbol.Patterns is
          --  NSpan (string pointer case)
 
          when PC_NSpan_VP => declare
-            Str : constant String_Access := Get_String (Node.VP.all);
+            U : constant VString := Node.VP.all;
+            S : String_Access;
+            L : Natural;
 
          begin
+            Get_String (U, S, L);
+
             while Cursor < Length
-              and then Is_In (Subject (Cursor + 1), Str.all)
+              and then Is_In (Subject (Cursor + 1), S (1 .. L))
             loop
                Cursor := Cursor + 1;
             end loop;
@@ -4591,13 +4682,17 @@ package body GNAT.Spitbol.Patterns is
          --  Span (string function case)
 
          when PC_Span_VF => declare
-            U   : constant VString       := Node.VF.all;
-            Str : constant String_Access := Get_String (U);
-            P   : Natural := Cursor;
+            U : constant VString := Node.VF.all;
+            S : String_Access;
+            L : Natural;
+            P : Natural;
 
          begin
+            Get_String (U, S, L);
+
+            P := Cursor;
             while P < Length
-              and then Is_In (Subject (P + 1), Str.all)
+              and then Is_In (Subject (P + 1), S (1 .. L))
             loop
                P := P + 1;
             end loop;
@@ -4613,12 +4708,17 @@ package body GNAT.Spitbol.Patterns is
          --  Span (string pointer case)
 
          when PC_Span_VP => declare
-            Str : constant String_Access := Get_String (Node.VP.all);
-            P   : Natural := Cursor;
+            U : constant VString := Node.VP.all;
+            S : String_Access;
+            L : Natural;
+            P : Natural;
 
          begin
+            Get_String (U, S, L);
+
+            P := Cursor;
             while P < Length
-              and then Is_In (Subject (P + 1), Str.all)
+              and then Is_In (Subject (P + 1), S (1 .. L))
             loop
                P := P + 1;
             end loop;
@@ -4710,15 +4810,17 @@ package body GNAT.Spitbol.Patterns is
          --  String (function case)
 
          when PC_String_VF => declare
-            U   : constant VString       := Node.VF.all;
-            Str : constant String_Access := Get_String (U);
-            Len : constant Natural       := Str'Length;
+            U : constant VString := Node.VF.all;
+            S : String_Access;
+            L : Natural;
 
          begin
-            if (Length - Cursor) >= Len
-              and then Str.all = Subject (Cursor + 1 .. Cursor + Len)
+            Get_String (U, S, L);
+
+            if (Length - Cursor) >= L
+              and then S (1 .. L) = Subject (Cursor + 1 .. Cursor + L)
             then
-               Cursor := Cursor + Len;
+               Cursor := Cursor + L;
                goto Succeed;
             else
                goto Fail;
@@ -4728,14 +4830,17 @@ package body GNAT.Spitbol.Patterns is
          --  String (pointer case)
 
          when PC_String_VP => declare
-            S   : constant String_Access := Get_String (Node.VP.all);
-            Len : constant Natural       := S'Length;
+            U : constant VString := Node.VP.all;
+            S : String_Access;
+            L : Natural;
 
          begin
-            if (Length - Cursor) >= Len
-              and then S.all = Subject (Cursor + 1 .. Cursor + Len)
+            Get_String (U, S, L);
+
+            if (Length - Cursor) >= L
+              and then S (1 .. L) = Subject (Cursor + 1 .. Cursor + L)
             then
-               Cursor := Cursor + Len;
+               Cursor := Cursor + L;
                goto Succeed;
             else
                goto Fail;
@@ -5251,14 +5356,17 @@ package body GNAT.Spitbol.Patterns is
          --  Any (string function case)
 
          when PC_Any_VF => declare
-            U   : constant VString       := Node.VF.all;
-            Str : constant String_Access := Get_String (U);
+            U : constant VString := Node.VF.all;
+            S : String_Access;
+            L : Natural;
 
          begin
-            Dout (Img (Node) & "matching Any", Str.all);
+            Get_String (U, S, L);
+
+            Dout (Img (Node) & "matching Any", S (1 .. L));
 
             if Cursor < Length
-              and then Is_In (Subject (Cursor + 1), Str.all)
+              and then Is_In (Subject (Cursor + 1), S (1 .. L))
             then
                Cursor := Cursor + 1;
                goto Succeed;
@@ -5270,13 +5378,16 @@ package body GNAT.Spitbol.Patterns is
          --  Any (string pointer case)
 
          when PC_Any_VP => declare
-            Str : constant String_Access := Get_String (Node.VP.all);
+            U : constant VString := Node.VP.all;
+            S : String_Access;
+            L : Natural;
 
          begin
-            Dout (Img (Node) & "matching Any", Str.all);
+            Get_String (U, S, L);
+            Dout (Img (Node) & "matching Any", S (1 .. L));
 
             if Cursor < Length
-              and then Is_In (Subject (Cursor + 1), Str.all)
+              and then Is_In (Subject (Cursor + 1), S (1 .. L))
             then
                Cursor := Cursor + 1;
                goto Succeed;
@@ -5454,14 +5565,16 @@ package body GNAT.Spitbol.Patterns is
          --  Break (string function case)
 
          when PC_Break_VF => declare
-            U   : constant VString       := Node.VF.all;
-            Str : constant String_Access := Get_String (U);
+            U : constant VString := Node.VF.all;
+            S : String_Access;
+            L : Natural;
 
          begin
-            Dout (Img (Node) & "matching Break", Str.all);
+            Get_String (U, S, L);
+            Dout (Img (Node) & "matching Break", S (1 .. L));
 
             while Cursor < Length loop
-               if Is_In (Subject (Cursor + 1), Str.all) then
+               if Is_In (Subject (Cursor + 1), S (1 .. L)) then
                   goto Succeed;
                else
                   Cursor := Cursor + 1;
@@ -5474,13 +5587,16 @@ package body GNAT.Spitbol.Patterns is
          --  Break (string pointer case)
 
          when PC_Break_VP => declare
-            Str : constant String_Access := Get_String (Node.VP.all);
+            U : constant VString := Node.VP.all;
+            S : String_Access;
+            L : Natural;
 
          begin
-            Dout (Img (Node) & "matching Break", Str.all);
+            Get_String (U, S, L);
+            Dout (Img (Node) & "matching Break", S (1 .. L));
 
             while Cursor < Length loop
-               if Is_In (Subject (Cursor + 1), Str.all) then
+               if Is_In (Subject (Cursor + 1), S (1 .. L)) then
                   goto Succeed;
                else
                   Cursor := Cursor + 1;
@@ -5523,14 +5639,16 @@ package body GNAT.Spitbol.Patterns is
          --  BreakX (string function case)
 
          when PC_BreakX_VF => declare
-            U   : constant VString       := Node.VF.all;
-            Str : constant String_Access := Get_String (U);
+            U : constant VString := Node.VF.all;
+            S : String_Access;
+            L : Natural;
 
          begin
-            Dout (Img (Node) & "matching BreakX", Str.all);
+            Get_String (U, S, L);
+            Dout (Img (Node) & "matching BreakX", S (1 .. L));
 
             while Cursor < Length loop
-               if Is_In (Subject (Cursor + 1), Str.all) then
+               if Is_In (Subject (Cursor + 1), S (1 .. L)) then
                   goto Succeed;
                else
                   Cursor := Cursor + 1;
@@ -5543,13 +5661,16 @@ package body GNAT.Spitbol.Patterns is
          --  BreakX (string pointer case)
 
          when PC_BreakX_VP => declare
-            Str : constant String_Access := Get_String (Node.VP.all);
+            U : constant VString := Node.VP.all;
+            S : String_Access;
+            L : Natural;
 
          begin
-            Dout (Img (Node) & "matching BreakX", Str.all);
+            Get_String (U, S, L);
+            Dout (Img (Node) & "matching BreakX", S (1 .. L));
 
             while Cursor < Length loop
-               if Is_In (Subject (Cursor + 1), Str.all) then
+               if Is_In (Subject (Cursor + 1), S (1 .. L)) then
                   goto Succeed;
                else
                   Cursor := Cursor + 1;
@@ -5565,7 +5686,6 @@ package body GNAT.Spitbol.Patterns is
 
          when PC_BreakX_X =>
             Dout (Img (Node) & "extending BreakX");
-
             Cursor := Cursor + 1;
             goto Succeed;
 
@@ -5708,15 +5828,17 @@ package body GNAT.Spitbol.Patterns is
          --  NotAny (string function case)
 
          when PC_NotAny_VF => declare
-            U   : constant VString       := Node.VF.all;
-            Str : constant String_Access := Get_String (U);
+            U : constant VString := Node.VF.all;
+            S : String_Access;
+            L : Natural;
 
          begin
-            Dout (Img (Node) & "matching NotAny", Str.all);
+            Get_String (U, S, L);
+            Dout (Img (Node) & "matching NotAny", S (1 .. L));
 
             if Cursor < Length
               and then
-                not Is_In (Subject (Cursor + 1), Str.all)
+                not Is_In (Subject (Cursor + 1), S (1 .. L))
             then
                Cursor := Cursor + 1;
                goto Succeed;
@@ -5728,14 +5850,17 @@ package body GNAT.Spitbol.Patterns is
          --  NotAny (string pointer case)
 
          when PC_NotAny_VP => declare
-            Str : constant String_Access := Get_String (Node.VP.all);
+            U : constant VString := Node.VP.all;
+            S : String_Access;
+            L : Natural;
 
          begin
-            Dout (Img (Node) & "matching NotAny", Str.all);
+            Get_String (U, S, L);
+            Dout (Img (Node) & "matching NotAny", S (1 .. L));
 
             if Cursor < Length
               and then
-                not Is_In (Subject (Cursor + 1), Str.all)
+                not Is_In (Subject (Cursor + 1), S (1 .. L))
             then
                Cursor := Cursor + 1;
                goto Succeed;
@@ -5773,14 +5898,16 @@ package body GNAT.Spitbol.Patterns is
          --  NSpan (string function case)
 
          when PC_NSpan_VF => declare
-            U   : constant VString       := Node.VF.all;
-            Str : constant String_Access := Get_String (U);
+            U : constant VString := Node.VF.all;
+            S : String_Access;
+            L : Natural;
 
          begin
-            Dout (Img (Node) & "matching NSpan", Str.all);
+            Get_String (U, S, L);
+            Dout (Img (Node) & "matching NSpan", S (1 .. L));
 
             while Cursor < Length
-              and then Is_In (Subject (Cursor + 1), Str.all)
+              and then Is_In (Subject (Cursor + 1), S (1 .. L))
             loop
                Cursor := Cursor + 1;
             end loop;
@@ -5791,13 +5918,16 @@ package body GNAT.Spitbol.Patterns is
          --  NSpan (string pointer case)
 
          when PC_NSpan_VP => declare
-            Str : constant String_Access := Get_String (Node.VP.all);
+            U : constant VString := Node.VP.all;
+            S : String_Access;
+            L : Natural;
 
          begin
-            Dout (Img (Node) & "matching NSpan", Str.all);
+            Get_String (U, S, L);
+            Dout (Img (Node) & "matching NSpan", S (1 .. L));
 
             while Cursor < Length
-              and then Is_In (Subject (Cursor + 1), Str.all)
+              and then Is_In (Subject (Cursor + 1), S (1 .. L))
             loop
                Cursor := Cursor + 1;
             end loop;
@@ -6044,15 +6174,18 @@ package body GNAT.Spitbol.Patterns is
          --  Span (string function case)
 
          when PC_Span_VF => declare
-            U   : constant VString       := Node.VF.all;
-            Str : constant String_Access := Get_String (U);
-            P   : Natural := Cursor;
+            U : constant VString := Node.VF.all;
+            S : String_Access;
+            L : Natural;
+            P : Natural;
 
          begin
-            Dout (Img (Node) & "matching Span", Str.all);
+            Get_String (U, S, L);
+            Dout (Img (Node) & "matching Span", S (1 .. L));
 
+            P := Cursor;
             while P < Length
-              and then Is_In (Subject (P + 1), Str.all)
+              and then Is_In (Subject (P + 1), S (1 .. L))
             loop
                P := P + 1;
             end loop;
@@ -6068,14 +6201,18 @@ package body GNAT.Spitbol.Patterns is
          --  Span (string pointer case)
 
          when PC_Span_VP => declare
-            Str : constant String_Access := Get_String (Node.VP.all);
-            P   : Natural := Cursor;
+            U : constant VString := Node.VP.all;
+            S : String_Access;
+            L : Natural;
+            P : Natural;
 
          begin
-            Dout (Img (Node) & "matching Span", Str.all);
+            Get_String (U, S, L);
+            Dout (Img (Node) & "matching Span", S (1 .. L));
 
+            P := Cursor;
             while P < Length
-              and then Is_In (Subject (P + 1), Str.all)
+              and then Is_In (Subject (P + 1), S (1 .. L))
             loop
                P := P + 1;
             end loop;
@@ -6179,17 +6316,18 @@ package body GNAT.Spitbol.Patterns is
          --  String (function case)
 
          when PC_String_VF => declare
-            U   : constant VString       := Node.VF.all;
-            Str : constant String_Access := Get_String (U);
-            Len : constant Natural       := Str'Length;
+            U : constant VString := Node.VF.all;
+            S : String_Access;
+            L : Natural;
 
          begin
-            Dout (Img (Node) & "matching " & Image (Str.all));
+            Get_String (U, S, L);
+            Dout (Img (Node) & "matching " & Image (S (1 .. L)));
 
-            if (Length - Cursor) >= Len
-              and then Str.all = Subject (Cursor + 1 .. Cursor + Len)
+            if (Length - Cursor) >= L
+              and then S (1 .. L) = Subject (Cursor + 1 .. Cursor + L)
             then
-               Cursor := Cursor + Len;
+               Cursor := Cursor + L;
                goto Succeed;
             else
                goto Fail;
@@ -6199,18 +6337,18 @@ package body GNAT.Spitbol.Patterns is
          --  String (vstring pointer case)
 
          when PC_String_VP => declare
-            S   : constant String_Access := Get_String (Node.VP.all);
-            Len : constant Natural :=
-                    Ada.Strings.Unbounded.Length (Node.VP.all);
+            U : constant VString := Node.VP.all;
+            S : String_Access;
+            L : Natural;
 
          begin
-            Dout
-              (Img (Node) & "matching " & Image (S.all));
+            Get_String (U, S, L);
+            Dout (Img (Node) & "matching " & Image (S (1 .. L)));
 
-            if (Length - Cursor) >= Len
-              and then S.all = Subject (Cursor + 1 .. Cursor + Len)
+            if (Length - Cursor) >= L
+              and then S (1 .. L) = Subject (Cursor + 1 .. Cursor + L)
             then
-               Cursor := Cursor + Len;
+               Cursor := Cursor + L;
                goto Succeed;
             else
                goto Fail;

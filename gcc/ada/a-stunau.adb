@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -37,31 +37,14 @@ package body Ada.Strings.Unbounded.Aux is
    -- Get_String --
    ----------------
 
-   function Get_String (U : Unbounded_String) return String_Access is
+   procedure Get_String
+     (U : Unbounded_String;
+      S : out String_Access;
+      L : out Natural)
+   is
    begin
-      if U.Last = U.Reference'Length then
-         return U.Reference;
-
-      else
-         declare
-            type Unbounded_String_Access is access all Unbounded_String;
-
-            U_Ptr : constant Unbounded_String_Access := U'Unrestricted_Access;
-            --  Unbounded_String is a controlled type which is always passed
-            --  by reference.  It is always safe to take the pointer to such
-            --  object here.  This pointer is used to set the U.Reference
-            --  value which would not be possible otherwise as U is read-only.
-
-            Old : String_Access := U.Reference;
-            Ret : String_Access;
-
-         begin
-            Ret := new String'(U.Reference (1 .. U.Last));
-            U_Ptr.Reference := Ret;
-            Free (Old);
-            return Ret;
-         end;
-      end if;
+      S := U.Reference;
+      L := U.Last;
    end Get_String;
 
    ----------------
@@ -70,21 +53,13 @@ package body Ada.Strings.Unbounded.Aux is
 
    procedure Set_String (UP : in out Unbounded_String; S : String) is
    begin
-      if UP.Last = S'Length then
-         UP.Reference.all := S;
-
-      else
-         declare
-            subtype String_1 is String (1 .. S'Length);
-            Tmp : String_Access;
-
-         begin
-            Tmp := new String'(String_1 (S));
-            Finalize (UP);
-            UP.Reference := Tmp;
-            UP.Last := UP.Reference'Length;
-         end;
+      if S'Length > UP.Last then
+         Finalize (UP);
+         UP.Reference := new String (1 .. S'Length);
       end if;
+
+      UP.Reference (1 .. S'Length) := S;
+      UP.Last := S'Length;
    end Set_String;
 
    procedure Set_String (UP : in out Unbounded_String; S : String_Access) is
