@@ -100,7 +100,6 @@ extern enum attr_cpu m88k_cpu;
 extern int null_epilogue ();
 extern int integer_ok_for_set ();
 extern int m88k_debugger_offset ();
-extern void m88k_handle_pragma_token ();
 
 extern void emit_bcnd ();
 extern void expand_block_move ();
@@ -1429,34 +1428,8 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 /* Allow and ignore #sccs directives */
 #define SCCS_DIRECTIVE
 
-/* Code to handle #pragma directives.  The interface is a bit messy,
-   but there's no simpler way to do this while still using yylex.  */
-#define HANDLE_PRAGMA(FILE)					\
-  do {								\
-    while (c == ' ' || c == '\t')				\
-      c = getc (FILE);						\
-    if (c == '\n' || c == EOF)					\
-      {								\
-	m88k_handle_pragma_token (0, 0);			\
-	return c;						\
-      }								\
-    ungetc (c, FILE);						\
-    switch (yylex ())						\
-      {								\
-      case IDENTIFIER:						\
-      case TYPENAME:						\
-      case STRING:						\
-      case CONSTANT:						\
-	m88k_handle_pragma_token (token_buffer, yylval.ttype);	\
-	break;							\
-      default:							\
-	m88k_handle_pragma_token (token_buffer, 0);		\
-      }								\
-    if (nextchar >= 0)						\
-      c = nextchar, nextchar = -1;				\
-    else							\
-      c = getc (FILE);						\
-  } while (1)
+/* Handle #pragma pack and sometimes #pragma weak.  */
+#define HANDLE_SYSV_PRAGMA
 
 /* Tell when to handle #pragma weak.  This is only done for V.4.  */
 #define HANDLE_PRAGMA_WEAK TARGET_SVR4
