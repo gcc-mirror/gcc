@@ -4088,6 +4088,10 @@ extern void record_last_problematic_instantiation (void);
 extern tree current_instantiation               (void);
 extern tree maybe_get_template_decl_from_type_decl (tree);
 extern int processing_template_parmlist;
+extern bool dependent_type_p                    (tree);
+extern bool dependent_template_arg_p            (tree);
+extern bool dependent_template_p                (tree);
+extern bool type_dependent_expression_p         (tree);
 
 /* in repo.c */
 extern void repo_template_used (tree);

@@ -6001,6 +6001,10 @@ currently_open_derived_class (t)
 {
   int i;
 
+  /* The bases of a dependent type are unknown. */
+  if (dependent_type_p (t))
+    return NULL_TREE;
+
   if (DERIVED_FROM_P (t, current_class_type))
     return current_class_type;
 

@@ -1780,18 +1780,6 @@ static bool cp_parser_is_string_literal
   PARAMS ((cp_token *));
 static bool cp_parser_is_keyword 
   PARAMS ((cp_token *, enum rid));
-static bool cp_parser_dependent_type_p
-  (tree);
-static bool cp_parser_value_dependent_expression_p
-  (tree);
-static bool cp_parser_type_dependent_expression_p
-  (tree);
-static bool cp_parser_dependent_template_arg_p
-  (tree);
-static bool cp_parser_dependent_template_id_p
-  (tree, tree);
-static bool cp_parser_dependent_template_p
-  (tree);
 static tree cp_parser_scope_through_which_access_occurs
   (tree, tree, tree);
 
@@ -1821,283 +1809,6 @@ cp_parser_is_keyword (token, keyword)
      enum rid keyword;
 {
   return token->keyword == keyword;
-}
-
-/* Returns TRUE if TYPE is dependent, in the sense of
-   [temp.dep.type].  */
-
-static bool
-cp_parser_dependent_type_p (type)
-     tree type;
-{
-  tree scope;
-
-  if (!processing_template_decl)
-    return false;
-
-  /* If the type is NULL, we have not computed a type for the entity
-     in question; in that case, the type is dependent.  */
-  if (!type)
-    return true;
-
-  /* Erroneous types can be considered non-dependent.  */
-  if (type == error_mark_node)
-    return false;
-
-  /* [temp.dep.type]
-
-     A type is dependent if it is:
-
-     -- a template parameter.  */
-  if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
-    return true;
-  /* -- a qualified-id with a nested-name-specifier which contains a
-        class-name that names a dependent type or whose unqualified-id
-	names a dependent type.  */
-  if (TREE_CODE (type) == TYPENAME_TYPE)
-    return true;
-  /* -- a cv-qualified type where the cv-unqualified type is
-        dependent.  */
-  type = TYPE_MAIN_VARIANT (type);
-  /* -- a compound type constructed from any dependent type.  */
-  if (TYPE_PTRMEM_P (type) || TYPE_PTRMEMFUNC_P (type))
-    return (cp_parser_dependent_type_p (TYPE_PTRMEM_CLASS_TYPE (type))
-	    || cp_parser_dependent_type_p (TYPE_PTRMEM_POINTED_TO_TYPE 
-					   (type)));
-  else if (TREE_CODE (type) == POINTER_TYPE
-	   || TREE_CODE (type) == REFERENCE_TYPE)
-    return cp_parser_dependent_type_p (TREE_TYPE (type));
-  else if (TREE_CODE (type) == FUNCTION_TYPE
-	   || TREE_CODE (type) == METHOD_TYPE)
-    {
-      tree arg_type;
-
-      if (cp_parser_dependent_type_p (TREE_TYPE (type)))
-	return true;
-      for (arg_type = TYPE_ARG_TYPES (type); 
-	   arg_type; 
-	   arg_type = TREE_CHAIN (arg_type))
-	if (cp_parser_dependent_type_p (TREE_VALUE (arg_type)))
-	  return true;
-      return false;
-    }
-  /* -- an array type constructed from any dependent type or whose
-        size is specified by a constant expression that is
-	value-dependent.  */
-  if (TREE_CODE (type) == ARRAY_TYPE)
-    {
-      if (TYPE_DOMAIN (type)
-	  && ((cp_parser_value_dependent_expression_p 
-	       (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
-	      || (cp_parser_type_dependent_expression_p
-		  (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))))
-	return true;
-      return cp_parser_dependent_type_p (TREE_TYPE (type));
-    }
-  /* -- a template-id in which either the template name is a template
-        parameter or any of the template arguments is a dependent type or
-	an expression that is type-dependent or value-dependent.  
-
-     This language seems somewhat confused; for example, it does not
-     discuss template template arguments.  Therefore, we use the
-     definition for dependent template arguments in [temp.dep.temp].  */
-  if (CLASS_TYPE_P (type) && CLASSTYPE_TEMPLATE_INFO (type)
-      && (cp_parser_dependent_template_id_p
-	  (CLASSTYPE_TI_TEMPLATE (type),
-	   CLASSTYPE_TI_ARGS (type))))
-    return true;
-  else if (TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
-    return true;
-  /* All TYPEOF_TYPEs are dependent; if the argument of the `typeof'
-     expression is not type-dependent, then it should already been
-     have resolved.  */
-  if (TREE_CODE (type) == TYPEOF_TYPE)
-    return true;
-  /* The standard does not specifically mention types that are local
-     to template functions or local classes, but they should be
-     considered dependent too.  For example:
-
-       template <int I> void f() { 
-         enum E { a = I }; 
-	 S<sizeof (E)> s;
-       }
-
-     The size of `E' cannot be known until the value of `I' has been
-     determined.  Therefore, `E' must be considered dependent.  */
-  scope = TYPE_CONTEXT (type);
-  if (scope && TYPE_P (scope))
-    return cp_parser_dependent_type_p (scope);
-  else if (scope && TREE_CODE (scope) == FUNCTION_DECL)
-    return cp_parser_type_dependent_expression_p (scope);
-
-  /* Other types are non-dependent.  */
-  return false;
-}
-
-/* Returns TRUE if the EXPRESSION is value-dependent.  */
-
-static bool
-cp_parser_value_dependent_expression_p (tree expression)
-{
-  if (!processing_template_decl)
-    return false;
-
-  /* A name declared with a dependent type.  */
-  if (DECL_P (expression)
-      && cp_parser_dependent_type_p (TREE_TYPE (expression)))
-    return true;
-  /* A non-type template parameter.  */
-  if ((TREE_CODE (expression) == CONST_DECL
-       && DECL_TEMPLATE_PARM_P (expression))
-      || TREE_CODE (expression) == TEMPLATE_PARM_INDEX)
-    return true;
-  /* A constant with integral or enumeration type and is initialized 
-     with an expression that is value-dependent.  */
-  if (TREE_CODE (expression) == VAR_DECL
-      && DECL_INITIAL (expression)
-      && (CP_INTEGRAL_TYPE_P (TREE_TYPE (expression))
-	  || TREE_CODE (TREE_TYPE (expression)) == ENUMERAL_TYPE)
-      && cp_parser_value_dependent_expression_p (DECL_INITIAL (expression)))
-    return true;
-  /* These expressions are value-dependent if the type to which the
-     cast occurs is dependent.  */
-  if ((TREE_CODE (expression) == DYNAMIC_CAST_EXPR
-       || TREE_CODE (expression) == STATIC_CAST_EXPR
-       || TREE_CODE (expression) == CONST_CAST_EXPR
-       || TREE_CODE (expression) == REINTERPRET_CAST_EXPR
-       || TREE_CODE (expression) == CAST_EXPR)
-      && cp_parser_dependent_type_p (TREE_TYPE (expression)))
-    return true;
-  /* A `sizeof' expression where the sizeof operand is a type is
-     value-dependent if the type is dependent.  If the type was not
-     dependent, we would no longer have a SIZEOF_EXPR, so any
-     SIZEOF_EXPR is dependent.  */
-  if (TREE_CODE (expression) == SIZEOF_EXPR)
-    return true;
-  /* A constant expression is value-dependent if any subexpression is
-     value-dependent.  */
-  if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (expression))))
-    {
-      switch (TREE_CODE_CLASS (TREE_CODE (expression)))
-	{
-	case '1':
-	  return (cp_parser_value_dependent_expression_p 
-		  (TREE_OPERAND (expression, 0)));
-	case '<':
-	case '2':
-	  return ((cp_parser_value_dependent_expression_p 
-		   (TREE_OPERAND (expression, 0)))
-		  || (cp_parser_value_dependent_expression_p 
-		      (TREE_OPERAND (expression, 1))));
-	case 'e':
-	  {
-	    int i;
-	    for (i = 0; 
-		 i < TREE_CODE_LENGTH (TREE_CODE (expression));
-		 ++i)
-	      if (cp_parser_value_dependent_expression_p
-		  (TREE_OPERAND (expression, i)))
-		return true;
-	    return false;
-	  }
-	}
-    }
-
-  /* The expression is not value-dependent.  */
-  return false;
-}
-
-/* Returns TRUE if the EXPRESSION is type-dependent, in the sense of
-   [temp.dep.expr].  */
-
-static bool
-cp_parser_type_dependent_expression_p (expression)
-     tree expression;
-{
-  if (!processing_template_decl)
-    return false;
-
-  /* Some expression forms are never type-dependent.  */
-  if (TREE_CODE (expression) == PSEUDO_DTOR_EXPR
-      || TREE_CODE (expression) == SIZEOF_EXPR
-      || TREE_CODE (expression) == ALIGNOF_EXPR
-      || TREE_CODE (expression) == TYPEID_EXPR
-      || TREE_CODE (expression) == DELETE_EXPR
-      || TREE_CODE (expression) == VEC_DELETE_EXPR
-      || TREE_CODE (expression) == THROW_EXPR)
-    return false;
-
-  /* The types of these expressions depends only on the type to which
-     the cast occurs.  */
-  if (TREE_CODE (expression) == DYNAMIC_CAST_EXPR
-      || TREE_CODE (expression) == STATIC_CAST_EXPR
-      || TREE_CODE (expression) == CONST_CAST_EXPR
-      || TREE_CODE (expression) == REINTERPRET_CAST_EXPR
-      || TREE_CODE (expression) == CAST_EXPR)
-    return cp_parser_dependent_type_p (TREE_TYPE (expression));
-  /* The types of these expressions depends only on the type created
-     by the expression.  */
-  else if (TREE_CODE (expression) == NEW_EXPR
-	   || TREE_CODE (expression) == VEC_NEW_EXPR)
-    return cp_parser_dependent_type_p (TREE_OPERAND (expression, 1));
-
-  if (TREE_CODE (expression) == FUNCTION_DECL
-      && DECL_LANG_SPECIFIC (expression)
-      && DECL_TEMPLATE_INFO (expression)
-      && (cp_parser_dependent_template_id_p
-	  (DECL_TI_TEMPLATE (expression),
-	   INNERMOST_TEMPLATE_ARGS (DECL_TI_ARGS (expression)))))
-    return true;
-
-  return (cp_parser_dependent_type_p (TREE_TYPE (expression)));
-}
-
-/* Returns TRUE if the ARG (a template argument) is dependent.  */
-
-static bool
-cp_parser_dependent_template_arg_p (tree arg)
-{
-  if (!processing_template_decl)
-    return false;
-
-  if (TREE_CODE (arg) == TEMPLATE_DECL
-      || TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
-    return cp_parser_dependent_template_p (arg);
-  else if (TYPE_P (arg))
-    return cp_parser_dependent_type_p (arg);
-  else
-    return (cp_parser_type_dependent_expression_p (arg)
-	    || cp_parser_value_dependent_expression_p (arg));
-}
-
-/* Returns TRUE if the specialization TMPL<ARGS> is dependent.  */
-
-static bool
-cp_parser_dependent_template_id_p (tree tmpl, tree args)
-{
-  int i;
-
-  if (cp_parser_dependent_template_p (tmpl))
-    return true;
-  for (i = 0; i < TREE_VEC_LENGTH (args); ++i)
-    if (cp_parser_dependent_template_arg_p (TREE_VEC_ELT (args, i)))
-      return true;
-  return false;
-}
-
-/* Returns TRUE if the template TMPL is dependent.  */
-
-static bool
-cp_parser_dependent_template_p (tree tmpl)
-{
-  /* Template template parameters are dependent.  */
-  if (DECL_TEMPLATE_TEMPLATE_PARM_P (tmpl)
-      || TREE_CODE (tmpl) == TEMPLATE_TEMPLATE_PARM)
-    return true;
-  /* So are member templates of dependent classes.  */
-  if (TYPE_P (CP_DECL_CONTEXT (tmpl)))
-    return cp_parser_dependent_type_p (DECL_CONTEXT (tmpl));
-  return false;
 }
 
 /* Returns the scope through which DECL is being accessed, or
@@ -2244,7 +1955,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser)
 	    {
 	      tree base_type = BINFO_TYPE (b);
 	      if (CLASS_TYPE_P (base_type) 
-		  && cp_parser_dependent_type_p (base_type))
+		  && dependent_type_p (base_type))
 		{
 		  tree field;
 		  /* Go from a particular instantiation of the
@@ -2941,7 +2652,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	       its type.  */
 	    else if (!is_overloaded_fn (decl))
 	      dependent_p 
-		= cp_parser_dependent_type_p (TREE_TYPE (decl));
+		= dependent_type_p (TREE_TYPE (decl));
 	    /* For a set of overloaded functions, check each of the
 	       functions.  */
 	    else
@@ -2961,8 +2672,7 @@ cp_parser_primary_expression (cp_parser *parser,
 		      {
 			while (args)
 			  {
-			    if (cp_parser_dependent_template_arg_p
-				(TREE_VALUE (args)))
+			    if (dependent_template_arg_p (TREE_VALUE (args)))
 			      {
 				dependent_p = true;
 				break;
@@ -2974,8 +2684,7 @@ cp_parser_primary_expression (cp_parser *parser,
 		      {
 			int i; 
 			for (i = 0; i < TREE_VEC_LENGTH (args); ++i)
-			  if (cp_parser_dependent_template_arg_p
-			      (TREE_VEC_ELT (args, i)))
+			  if (dependent_template_arg_p (TREE_VEC_ELT (args, i)))
 			    {
 			      dependent_p = true;
 			      break;
@@ -2996,10 +2705,10 @@ cp_parser_primary_expression (cp_parser *parser,
 		    /* Member functions of dependent classes are
 		       dependent.  */
 		    if (TREE_CODE (fn) == FUNCTION_DECL
-			&& cp_parser_type_dependent_expression_p (fn))
+			&& type_dependent_expression_p (fn))
 		      dependent_p = true;
 		    else if (TREE_CODE (fn) == TEMPLATE_DECL
-			     && cp_parser_dependent_template_p (fn))
+			     && dependent_template_p (fn))
 		      dependent_p = true;
 		    
 		    fns = OVL_NEXT (fns);
@@ -3611,7 +3320,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 	     avoid doing it if the type is already complete.  */
 	  && !COMPLETE_TYPE_P (parser->scope)
 	  /* Do not try to complete dependent types.  */
-	  && !cp_parser_dependent_type_p (parser->scope))
+	  && !dependent_type_p (parser->scope))
 	complete_type (parser->scope);
     }
 
@@ -4160,7 +3869,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		   Do Koenig lookup -- unless any of the arguments are
 		   type-dependent.  */
 		for (arg = args; arg; arg = TREE_CHAIN (arg))
-		  if (cp_parser_type_dependent_expression_p (TREE_VALUE (arg)))
+		  if (type_dependent_expression_p (TREE_VALUE (arg)))
 		      break;
 		if (!arg)
 		  {
@@ -4244,8 +3953,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	      postfix_expression = build_x_arrow (postfix_expression);
 	    /* Check to see whether or not the expression is
 	       type-dependent.  */
-	    dependent_p = (cp_parser_type_dependent_expression_p 
-			   (postfix_expression));
+	    dependent_p = (type_dependent_expression_p (postfix_expression));
 	    /* The identifier following the `->' or `.' is not
 	       qualified.  */
 	    parser->scope = NULL_TREE;
@@ -4554,8 +4262,8 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p)
 	    /* If the type of the operand cannot be determined build a
 	       SIZEOF_EXPR.  */
 	    if (TYPE_P (operand)
-		? cp_parser_dependent_type_p (operand)
-		: cp_parser_type_dependent_expression_p (operand))
+		? dependent_type_p (operand)
+		: type_dependent_expression_p (operand))
 	      return build_min (SIZEOF_EXPR, size_type_node, operand);
 	    /* Otherwise, compute the constant value.  */
 	    else
@@ -6776,6 +6484,15 @@ cp_parser_simple_declaration (parser, function_definition_allowed_p)
 				 function_definition_allowed_p,
 				 /*member_p=*/false,
 				 &function_definition_p);
+      /* If an error occurred while parsing tentatively, exit quickly.
+	 (That usually happens when in the body of a function; each
+	 statement is treated as a declaration-statement until proven
+	 otherwise.)  */
+      if (cp_parser_error_occurred (parser))
+	{
+	  pop_deferring_access_checks ();
+	  return;
+	}
       /* Handle function definitions specially.  */
       if (function_definition_p)
 	{
@@ -8344,7 +8061,7 @@ cp_parser_template_name (parser, template_keyword_p, check_dependency_p)
   if (DECL_FUNCTION_TEMPLATE_P (decl) || !DECL_P (decl))
     {
       tree scope = CP_DECL_CONTEXT (get_first_fn (decl));
-      if (TYPE_P (scope) && cp_parser_dependent_type_p (scope))
+      if (TYPE_P (scope) && dependent_type_p (scope))
 	return identifier;
     }
 
@@ -11507,7 +11224,7 @@ cp_parser_class_name (cp_parser *parser,
   /* Any name names a type if we're following the `typename' keyword
      in a qualified name where the enclosing scope is type-dependent.  */
   typename_p = (typename_keyword_p && scope && TYPE_P (scope)
-		&& cp_parser_dependent_type_p (scope));
+		&& dependent_type_p (scope));
   /* Handle the common case (an identifier, but not a template-id)
      efficiently.  */
   if (token->type == CPP_NAME 
@@ -13456,7 +13173,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name, bool check_access,
   /* Perform the lookup.  */
   if (parser->scope)
     { 
-      bool dependent_type_p;
+      bool dependent_p;
 
       if (parser->scope == error_mark_node)
 	return error_mark_node;
@@ -13466,12 +13183,12 @@ cp_parser_lookup_name (cp_parser *parser, tree name, bool check_access,
 	 looking up names in uninstantiated templates.  Even then, we
 	 cannot look up the name if the scope is not a class type; it
 	 might, for example, be a template type parameter.  */
-      dependent_type_p = (TYPE_P (parser->scope)
-			  && !(parser->in_declarator_p
-			       && currently_open_class (parser->scope))
-			  && cp_parser_dependent_type_p (parser->scope));
+      dependent_p = (TYPE_P (parser->scope)
+		     && !(parser->in_declarator_p
+			  && currently_open_class (parser->scope))
+		     && dependent_type_p (parser->scope));
       if ((check_dependency || !CLASS_TYPE_P (parser->scope))
-	   && dependent_type_p)
+	   && dependent_p)
 	{
 	  if (!is_type)
 	    decl = build_nt (SCOPE_REF, parser->scope, name);
@@ -13490,7 +13207,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name, bool check_access,
 	     otherwise, we would have processed this lookup above.  So
 	     that PARSER->SCOPE is not considered a dependent base by
 	     lookup_member, we must enter the scope here.  */
-	  if (dependent_type_p)
+	  if (dependent_p)
 	    push_scope (parser->scope);
 	  /* If the PARSER->SCOPE is a a template specialization, it
 	     may be instantiated during name lookup.  In that case,
@@ -13498,7 +13215,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name, bool check_access,
 	     tentative parse, those errors are valid.  */
 	  decl = lookup_qualified_name (parser->scope, name, is_type,
 					/*flags=*/0);
-	  if (dependent_type_p)
+	  if (dependent_p)
 	    pop_scope (parser->scope);
 	}
       parser->qualifying_scope = parser->scope;
