@@ -1,6 +1,5 @@
 /* Test for X/Open format extensions, as found in the
-   Single Unix Specification and in Austin Group draft 4, subject to some
-   Aardvark problem reports approved as changes.
+   Single Unix Specification and in Austin Group draft 7.
 */
 /* Origin: Joseph Myers <jsm28@cam.ac.uk> */
 /* { dg-do compile } */
@@ -88,10 +87,6 @@ foo (int i, unsigned int u, wint_t lc, wchar_t *ls, int *ip, double d,
   printf ("%'p", p); /* { dg-warning "flag" "bad use of ' flag" } */
   printf ("%'n", n); /* { dg-warning "flag" "bad use of ' flag" } */
   /* The use of operand number $ formats is an X/Open extension.  */
-  /* Banning gaps in the arguments used with scanf was covered in Aardvark
-     report XSHd4 ERN 164, which was rejected, but implementation without
-     such a ban still isn't possible within ISO C.
-  */
   scanf ("%1$d", ip);
   printf ("%1$d", i);
   printf ("%1$d", l); /* { dg-warning "arg 2" "mismatched args with $ format" } */
@@ -110,6 +105,20 @@ foo (int i, unsigned int u, wint_t lc, wchar_t *ls, int *ip, double d,
   printf ("%3$d%1$d", i, i, i); /* { dg-warning "before used" "unused $ operand" } */
   printf ("%2$d%1$d", i, i, i); /* { dg-warning "unused" "unused $ operand" } */
   vprintf ("%3$d%1$d", va); /* { dg-warning "before used" "unused $ operand" } */
+  /* With scanf formats, gaps in the used arguments are allowed only if the
+     arguments are all pointers.  In such a case, should only give the lesser
+     warning about unused arguments rather than the more serious one about
+     argument gaps.  */
+  scanf ("%3$d%1$d", ip, ip, ip); /* { dg-bogus "before used" "unused $ scanf pointer operand" } */
+  /* { dg-warning "unused" "unused $ scanf pointer operand" { target *-*-* } 112 } */
+  /* If there are non-pointer arguments unused at the end, this is also OK.  */
+  scanf ("%3$d%1$d", ip, ip, ip, i); /* { dg-bogus "before used" "unused $ scanf pointer operand" } */
+  /* { dg-warning "unused" "unused $ scanf pointer operand" { target *-*-* } 115 } */
+  scanf ("%3$d%1$d", ip, i, ip); /* { dg-warning "before used" "unused $ scanf non-pointer operand" } */
+  /* Can't check the arguments in the vscanf case, so should suppose the
+     lesser problem.  */
+  vscanf ("%3$d%1$d", va); /* { dg-bogus "before used" "unused $ scanf pointer operand" } */
+  /* { dg-warning "unused" "unused $ scanf pointer operand" { target *-*-* } 120 } */
   scanf ("%2$*d%1$d", ip, ip); /* { dg-warning "operand" "operand number with suppression" } */
   printf ("%1$d%1$d", i);
   scanf ("%1$d%1$d", ip); /* { dg-warning "more than once" "multiple use of scanf argument" } */

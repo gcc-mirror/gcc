@@ -1,3 +1,11 @@
+2001-11-25  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/format/strfmon-1.c: Update comments.  Adjust examples
+	from Austin Group draft 7.
+	* gcc.dg/format/xopen-1.c: Update comments.  Add tests for gaps in
+	scanf format arguments.
+	* gcc.dg/format/no-exargs-2.c: New test.
+
 2001-11-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/abi/vbase8-4.C: New test.

@@ -1,3 +1,20 @@
+2001-11-25  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-format.c (FMT_FLAG_DOLLAR_GAP_POINTER_OK): New.
+	(format_types): Use it for scanf.
+	(dollar_arguments_pointer_p): New.
+	(init_dollar_format_checking): Store details of which arguments
+	are pointers.
+	(maybe_read_dollar_number): Reallocate dollar_arguments_pointer_p.
+	(finish_dollar_format_checking): Take extra parameter
+	pointer_gap_ok.  Treat unused arguments differently if
+	pointer_gap_ok and the unused arguments are pointers.
+	(check_format_info_main): Pass extra argument to
+	finish_dollar_format_checking.
+	* doc/invoke.texi (-Wno-format-extra-args): Document behavior when
+	unused arguments are present between used arguments with operand
+	numbers.
+
 2001-11-25  Daniel Berlin  <dan@cgsoftware.com>
 
 	* df.c: Add prototypes for hybrid_search_bitmap and

@@ -1849,6 +1849,14 @@ If @option{-Wformat} is specified, do not warn about excess arguments to a
 @code{printf} or @code{scanf} format function.  The C standard specifies
 that such arguments are ignored.
 
+Where the unused arguments lie between used arguments that are
+specified with @samp{$} operand number specifications, normally
+warnings are still given, since the implementation could not know what
+type to pass to @code{va_arg} to skip the unused arguments.  However,
+in the case of @code{scanf} formats, this option will suppress the
+warning if the unused arguments are all pointers, since the Single
+Unix Specification says that such unused arguments are allowed.
+
 @item -Wformat-nonliteral
 @opindex Wformat-nonliteral
 If @option{-Wformat} is specified, also warn if the format string is not a
