@@ -1,3 +1,16 @@
+2005-03-31  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.def (bfd, opcodes, libstdc++-v3, libmudflap): Set lib_path.
+	* Makefile.tpl (SET_LIB_PATH, REALLY_SET_LIB_PATH): Remove.
+	(HOST_EXPORTS, STAGE_HOST_EXPORTS, TARGET_EXPORTS): Set $(RPATH_ENVVAR).
+	(HOST_LIB_PATH): Generate from Makefile.def.
+	(TARGET_LIB_PATH): Likewise.
+	(Old bootstrap targets): Include TARGET_LIB_PATH into RPATH_ENVVAR.
+	* Makefile.in: Regenerate.
+	* configure.in (set_lib_path, SET_LIB_PATH, SET_GCC_LIB_PATH): Remove.
+	(RPATH_ENVVAR): Include Darwin case.
+	* configure: Regenerate.
+
 2005-03-29  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* MAINTAINERS (Various Maintainers): Remove self.
