@@ -1,3 +1,14 @@
+2001-03-03  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cpp.texi: Update.
+        * cppexp.c (parse_number): Update. 
+        * cpplex.c (parse_string): Pedwarn if multiline string does not
+        result from a system header's macro.
+        * cpplib.h (sys_objmacro_p): Rename sys_macro_p.
+        * cppmacro.c (sys_objmacro_p): Rename sys_macro_p.  Return true
+        for function-like macros too.
+	* c-lex.c (lex_number): Update.
+
 2001-03-03  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (output_call_frame_info): Fix augmentation length.
