@@ -2521,9 +2521,10 @@ build_user_type_conversion_1 (totype, expr, flags)
      (DECL_CONSTRUCTOR_P (cand->fn)
       ? totype : non_reference (TREE_TYPE (TREE_TYPE (cand->fn)))),
      expr, build_ptr_wrapper (cand));
-  ICS_USER_FLAG (cand->second_conv) = 1;
+  
+  ICS_USER_FLAG (cand->second_conv) = ICS_USER_FLAG (*p) = 1;
   if (cand->viable == -1)
-    ICS_BAD_FLAG (cand->second_conv) = 1;
+    ICS_BAD_FLAG (cand->second_conv) = ICS_BAD_FLAG (*p) = 1;
 
   return cand;
 }
@@ -4799,6 +4800,7 @@ compare_ics (ics1, ics2)
   tree deref_from_type2 = NULL_TREE;
   tree deref_to_type1 = NULL_TREE;
   tree deref_to_type2 = NULL_TREE;
+  int rank1, rank2;
 
   /* REF_BINDING is non-zero if the result of the conversion sequence
      is a reference type.   In that case TARGET_TYPE is the
@@ -4828,13 +4830,17 @@ compare_ics (ics1, ics2)
      --a user-defined conversion sequence (_over.ics.user_) is a
        better conversion sequence than an ellipsis conversion sequence
        (_over.ics.ellipsis_).  */
-  if (ICS_RANK (ics1) > ICS_RANK (ics2))
+  rank1 = ICS_RANK (ics1);
+  rank2 = ICS_RANK (ics2);
+  
+  if (rank1 > rank2)
     return -1;
-  else if (ICS_RANK (ics1) < ICS_RANK (ics2))
+  else if (rank1 < rank2)
     return 1;
 
-  if (ICS_RANK (ics1) == BAD_RANK)
+  if (rank1 == BAD_RANK)
     {
+      /* XXX Isn't this an extension? */
       /* Both ICS are bad.  We try to make a decision based on what
 	 would have happenned if they'd been good.  */
       if (ICS_USER_FLAG (ics1) > ICS_USER_FLAG (ics2)
