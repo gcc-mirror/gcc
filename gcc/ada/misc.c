@@ -122,8 +122,6 @@ static tree gnat_type_max_size		(tree);
 #define LANG_HOOKS_POST_OPTIONS		gnat_post_options
 #undef  LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE		gnat_parse_file
-#undef  LANG_HOOKS_HONOR_READONLY
-#define LANG_HOOKS_HONOR_READONLY	true
 #undef  LANG_HOOKS_HASH_TYPES
 #define LANG_HOOKS_HASH_TYPES		false
 #undef  LANG_HOOKS_GETDECLS

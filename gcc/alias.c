@@ -304,28 +304,6 @@ alias_sets_might_conflict_p (HOST_WIDE_INT set1, HOST_WIDE_INT set2)
 }
 
 
-/* Return 1 if TYPE is a RECORD_TYPE, UNION_TYPE, or QUAL_UNION_TYPE and has
-   has any readonly fields.  If any of the fields have types that
-   contain readonly fields, return true as well.  */
-
-int
-readonly_fields_p (tree type)
-{
-  tree field;
-
-  if (TREE_CODE (type) != RECORD_TYPE && TREE_CODE (type) != UNION_TYPE
-      && TREE_CODE (type) != QUAL_UNION_TYPE)
-    return 0;
-
-  for (field = TYPE_FIELDS (type); field != 0; field = TREE_CHAIN (field))
-    if (TREE_CODE (field) == FIELD_DECL
-	&& (TREE_READONLY (field)
-	    || readonly_fields_p (TREE_TYPE (field))))
-      return 1;
-
-  return 0;
-}
-
 /* Return 1 if any MEM object of type T1 will always conflict (using the
    dependency routines in this file) with any MEM object of type T2.
    This is used when allocating temporary storage.  If T1 and/or T2 are
@@ -340,14 +318,6 @@ objects_must_conflict_p (tree t1, tree t2)
      because we may be using them to store objects of various types, for
      example the argument and local variables areas of inlined functions.  */
   if (t1 == 0 && t2 == 0)
-    return 0;
-
-  /* If one or the other has readonly fields or is readonly,
-     then they may not conflict.  */
-  if ((t1 != 0 && readonly_fields_p (t1))
-      || (t2 != 0 && readonly_fields_p (t2))
-      || (t1 != 0 && lang_hooks.honor_readonly && TYPE_READONLY (t1))
-      || (t2 != 0 && lang_hooks.honor_readonly && TYPE_READONLY (t2)))
     return 0;
 
   /* If they are the same type, they must conflict.  */
