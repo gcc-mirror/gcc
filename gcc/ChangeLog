@@ -1,3 +1,11 @@
+2000-11-30  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/elf.h (ASM_OUTPUT_SECTION_NAME): Copy elfos.h defn.
+	(DO_SELECT_SECTION): New.
+	(SELECT_SECTION): Use it.
+	(UNIQUE_SECTION_P): New.
+	(UNIQUE_SECTION): New.
+
 2000-11-30  Alexandre Oliva  <aoliva@redhat.com>
 
 	* c-common.c (status_warning) [! ANSI_PROTOTYPES]: Load status
