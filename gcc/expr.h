@@ -29,11 +29,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define BRANCH_COST 1
 #endif
 
-/* The default is that we do not promote the mode of an object.  */
-#ifndef PROMOTE_MODE
-#define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)
-#endif
-
 /* Macros to access the slots of a QUEUED rtx.
    Here rather than in rtl.h because only the expansion pass
    should ever encounter a QUEUED.  */
@@ -776,6 +771,12 @@ extern rtx force_reg PROTO((enum machine_mode, rtx));
 
 /* Return given rtx, copied into a new temp reg if it was in memory.  */
 extern rtx force_not_mem PROTO((rtx));
+
+#ifdef TREE_CODE
+/* Return mode and signedness to use when object is promoted.  */
+extern enum machine_mode promote_mode PROTO((tree, enum machine_mode,
+					     int *, int));
+#endif
 
 /* Remove some bytes from the stack.  An rtx says how many.  */
 extern void adjust_stack PROTO((rtx));
