@@ -1,3 +1,12 @@
+2003-01-05  Paolo Carlini <pcarlini@unitus.it>
+
+	PR libstdc++/9168
+	* src/codecvt.cc
+	(codecvt<char, char, mbstate_t>::do_in, do_out):
+	Implement the resolution of DR19 (TC).
+	* testsuite/22_locale/codecvt_members_char_char.cc
+	(test01): Tweak.
+
 2003-01-02  Jason Merrill  <jason@redhat.com>
 
 	* config/cpu/i486/atomicity.h (__exchange_and_add, __atomic_add):
