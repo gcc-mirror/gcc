@@ -8534,6 +8534,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   tree raises = NULL_TREE;
   int template_count = 0;
   tree in_namespace = NULL_TREE;
+  tree inner_attrs;
+  int ignore_attrs;
 
   RIDBIT_RESET_ALL (specbits);
   if (decl_context == FUNCDEF)
@@ -9389,6 +9391,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
      Descend through it, creating more complex types, until we reach
      the declared identifier (or NULL_TREE, in an absolute declarator).  */
 
+  inner_attrs = NULL_TREE;
+  ignore_attrs = 0;  
+
   while (declarator && TREE_CODE (declarator) != IDENTIFIER_NODE
 	 && TREE_CODE (declarator) != TEMPLATE_ID_EXPR)
     {
@@ -9435,15 +9440,29 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      quals = NULL_TREE;
 	    }
 	}
+
+      /* See the comment for the TREE_LIST case, below.  */
+      if (ignore_attrs)
+	ignore_attrs = 0;
+      else if (inner_attrs)
+	{
+	  decl_attributes (type, inner_attrs, NULL_TREE);
+	  inner_attrs = NULL_TREE;
+	}
+
       switch (TREE_CODE (declarator))
 	{
 	case TREE_LIST:
 	  {
 	    /* We encode a declarator with embedded attributes using
-	       a TREE_LIST.  */
-	    tree attrs = TREE_PURPOSE (declarator);
+	       a TREE_LIST.  The attributes apply to the declarator
+	       directly inside them, so we have to skip an iteration
+	       before applying them to the type.  If the declarator just
+	       inside is the declarator-id, we apply the attrs to the
+	       decl itself.  */
+	    inner_attrs = TREE_PURPOSE (declarator);
+	    ignore_attrs = 1;
 	    declarator = TREE_VALUE (declarator);
-	    decl_attributes (type, attrs, NULL_TREE);
 	  }
 	  break;
 
@@ -10085,6 +10104,17 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	default:
 	  my_friendly_abort (158);
 	}
+    }
+
+  /* See the comment for the TREE_LIST case, above.  */
+  if (inner_attrs)
+    {
+      if (! ignore_attrs)
+	decl_attributes (type, inner_attrs, NULL_TREE);
+      else if (attrlist)
+	TREE_VALUE (attrlist) = chainon (inner_attrs, TREE_VALUE (attrlist));
+      else
+	attrlist = build_decl_list (NULL_TREE, inner_attrs);
     }
 
   if (explicitp == 1)

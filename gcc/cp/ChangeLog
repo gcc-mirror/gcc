@@ -1,5 +1,8 @@
 1998-10-18  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c (grokdeclarator): Embedded attrs bind to the right,
+	not the left.
+
 	* parse.y (fn.def2): Fix 'attrs' format.
 
 1998-10-18  Alastair J. Houghton <ajh8@doc.ic.ac.uk>
