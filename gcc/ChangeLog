@@ -1,3 +1,9 @@
+2003-10-01  Alexandre Oliva  <aoliva@redhat.com>
+
+	* output.h (compute_reloc_for_constant): Declare.
+	* varasm.c (compute_reloc_for_constant): Extract from...
+	(output_addressed_constants): ... here.  Adjust all callers.
+
 2003-10-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* aclocal.m4: Add hpux10* and hpux11.00 to /dev/zero blacklist.
@@ -10,7 +16,7 @@
 
 2003-09-30  Alexandre Oliva  <aoliva@redhat.com>
 
-	config/frv/frv.h (PREDICATE_CODES): Added
+	* config/frv/frv.h (PREDICATE_CODES): Added
 	condexec_si_media_operator, condexec_sf_add_operator and
 	condexec_sf_conv_operator.  Removed condexec_sf_binary_operator
 	and condexec_sf_unary_operator.

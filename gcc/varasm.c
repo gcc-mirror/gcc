@@ -154,7 +154,7 @@ static struct pool_constant *find_pool_constant (struct function *, rtx);
 static void mark_constant_pool (void);
 static void mark_constants (rtx);
 static int mark_constant (rtx *current_rtx, void *data);
-static int output_addressed_constants (tree);
+static void output_addressed_constants (tree);
 static unsigned HOST_WIDE_INT array_size_for_constructor (tree);
 static unsigned min_align (unsigned, unsigned);
 static void output_constructor (tree, unsigned HOST_WIDE_INT, unsigned int);
@@ -1459,7 +1459,10 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   if (DECL_INITIAL (decl) == error_mark_node)
     reloc = contains_pointers_p (TREE_TYPE (decl)) ? 3 : 0;
   else if (DECL_INITIAL (decl))
-    reloc = output_addressed_constants (DECL_INITIAL (decl));
+    {
+      reloc = compute_reloc_for_constant (DECL_INITIAL (decl));
+      output_addressed_constants (DECL_INITIAL (decl));
+    }
   resolve_unique_section (decl, reloc, flag_data_sections);
 
   /* Handle uninitialized definitions.  */
@@ -2501,13 +2504,15 @@ output_constant_def_contents (rtx symbol)
 
   /* Make sure any other constants whose addresses appear in EXP
      are assigned label numbers.  */
-  int reloc = output_addressed_constants (exp);
+  int reloc = compute_reloc_for_constant (exp);
 
   /* Align the location counter as required by EXP's data type.  */
   int align = TYPE_ALIGN (TREE_TYPE (exp));
 #ifdef CONSTANT_ALIGNMENT
   align = CONSTANT_ALIGNMENT (exp, align);
 #endif
+
+  output_addressed_constants (exp);
 
   /* We are no longer deferring this constant.  */
   TREE_ASM_WRITTEN (exp) = 1;
@@ -3329,14 +3334,76 @@ mark_constant (rtx *current_rtx, void *data ATTRIBUTE_UNUSED)
   return 0;
 }
 
+/* Determine what kind of relocations EXP may need.  */
+
+int
+compute_reloc_for_constant (tree exp)
+{
+  int reloc = 0, reloc2;
+  tree tem;
+
+  /* Give the front-end a chance to convert VALUE to something that
+     looks more like a constant to the back-end.  */
+  exp = (*lang_hooks.expand_constant) (exp);
+
+  switch (TREE_CODE (exp))
+    {
+    case ADDR_EXPR:
+    case FDESC_EXPR:
+      /* Go inside any operations that get_inner_reference can handle and see
+	 if what's inside is a constant: no need to do anything here for
+	 addresses of variables or functions.  */
+      for (tem = TREE_OPERAND (exp, 0); handled_component_p (tem);
+	   tem = TREE_OPERAND (tem, 0))
+	;
+
+      if (TREE_PUBLIC (tem))
+	reloc |= 2;
+      else
+	reloc |= 1;
+      break;
+
+    case PLUS_EXPR:
+      reloc = compute_reloc_for_constant (TREE_OPERAND (exp, 0));
+      reloc |= compute_reloc_for_constant (TREE_OPERAND (exp, 1));
+      break;
+
+    case MINUS_EXPR:
+      reloc = compute_reloc_for_constant (TREE_OPERAND (exp, 0));
+      reloc2 = compute_reloc_for_constant (TREE_OPERAND (exp, 1));
+      /* The difference of two local labels is computable at link time.  */
+      if (reloc == 1 && reloc2 == 1)
+	reloc = 0;
+      else
+	reloc |= reloc2;
+      break;
+
+    case NOP_EXPR:
+    case CONVERT_EXPR:
+    case NON_LVALUE_EXPR:
+      reloc = compute_reloc_for_constant (TREE_OPERAND (exp, 0));
+      break;
+
+    case CONSTRUCTOR:
+      for (tem = CONSTRUCTOR_ELTS (exp); tem; tem = TREE_CHAIN (tem))
+	if (TREE_VALUE (tem) != 0)
+	  reloc |= compute_reloc_for_constant (TREE_VALUE (tem));
+
+      break;
+
+    default:
+      break;
+    }
+  return reloc;
+}
+
 /* Find all the constants whose addresses are referenced inside of EXP,
    and make sure assembler code with a label has been output for each one.
    Indicate whether an ADDR_EXPR has been encountered.  */
 
-static int
+static void
 output_addressed_constants (tree exp)
 {
-  int reloc = 0, reloc2;
   tree tem;
 
   /* Give the front-end a chance to convert VALUE to something that
@@ -3357,45 +3424,29 @@ output_addressed_constants (tree exp)
       if (TREE_CODE_CLASS (TREE_CODE (tem)) == 'c'
 	  || TREE_CODE (tem) == CONSTRUCTOR)
 	output_constant_def (tem, 0);
-
-      if (TREE_PUBLIC (tem))
-	reloc |= 2;
-      else
-	reloc |= 1;
       break;
 
     case PLUS_EXPR:
-      reloc = output_addressed_constants (TREE_OPERAND (exp, 0));
-      reloc |= output_addressed_constants (TREE_OPERAND (exp, 1));
-      break;
-
     case MINUS_EXPR:
-      reloc = output_addressed_constants (TREE_OPERAND (exp, 0));
-      reloc2 = output_addressed_constants (TREE_OPERAND (exp, 1));
-      /* The difference of two local labels is computable at link time.  */
-      if (reloc == 1 && reloc2 == 1)
-	reloc = 0;
-      else
-	reloc |= reloc2;
-      break;
+      output_addressed_constants (TREE_OPERAND (exp, 1));
+      /* Fall through.  */
 
     case NOP_EXPR:
     case CONVERT_EXPR:
     case NON_LVALUE_EXPR:
-      reloc = output_addressed_constants (TREE_OPERAND (exp, 0));
+      output_addressed_constants (TREE_OPERAND (exp, 0));
       break;
 
     case CONSTRUCTOR:
       for (tem = CONSTRUCTOR_ELTS (exp); tem; tem = TREE_CHAIN (tem))
 	if (TREE_VALUE (tem) != 0)
-	  reloc |= output_addressed_constants (TREE_VALUE (tem));
+	  output_addressed_constants (TREE_VALUE (tem));
 
       break;
 
     default:
       break;
     }
-  return reloc;
 }
 
 /* Return nonzero if VALUE is a valid constant-valued expression
