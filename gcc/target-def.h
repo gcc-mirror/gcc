@@ -325,7 +325,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_GET_PCH_VALIDITY default_get_pch_validity
 #define TARGET_PCH_VALID_P default_pch_valid_p
 
-#define TARGET_PROMOTE_FUNCTION_ARGS default_promote_function_args
+#define TARGET_PROMOTE_FUNCTION_ARGS hook_bool_tree_false
 #define TARGET_PROMOTE_FUNCTION_RETURN default_promote_function_return
 #define TARGET_PROMOTE_PROTOTYPES default_promote_prototypes
 
