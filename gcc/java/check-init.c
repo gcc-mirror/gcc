@@ -145,12 +145,12 @@ check_cond_init (test_exp, then_exp, else_exp,
 }
 
 /* Check a boolean binary form CODE (EXP0, EXP1),
-   where CODE is one of EQ_EXPR, BIT_AND_EXPR, or BIT_OR_EXPR.
+   where CODE is one of EQ_EXPR, BIT_AND_EXPR, or BIT_IOR_EXPR.
    BEFORE, WHEN_FALSE, and WHEN_TRUE are as in check_bool_init. */
 
 static void
 check_bool2_init (code, exp0, exp1, before, when_false, when_true)
-     enumtree_code code;  tree exp0, exp1;
+     enum tree_code code;  tree exp0, exp1;
      words before, when_false, when_true;
 {
   word buf[4];
@@ -192,13 +192,13 @@ check_bool2_init (code, exp0, exp1, before, when_false, when_true)
     {
       UNION (when_true, when_true_0, when_true_1);
       INTERSECT (when_false, when_false_0, when_false_1);
-      UNION (when_false, before);
+      UNION (when_false, when_false, before);
     }
-  else /* if (code == BIT_OR_EXPR) */
+  else /* if (code == BIT_IOR_EXPR) */
     {
       UNION (when_false, when_false_0, when_false_1);
       INTERSECT (when_true, when_true_0, when_true_1);
-      UNION (when_true, before);
+      UNION (when_true, when_true, before);
     }
 
   if (tmp != buf)
@@ -215,7 +215,6 @@ check_bool2_init (code, exp0, exp1, before, when_false, when_true)
    (WHEN_FALSE and WHEN_TRUE are overwriten with initial values ignored.)
    (None of BEFORE, WHEN_FALSE, or WHEN_TRUE can overlap, as they may
    be used as temporary working areas. */
-*/
 
 static void
 check_bool_init (exp, before, when_false, when_true)
@@ -263,7 +262,7 @@ check_bool_init (exp, before, when_false, when_true)
       goto do_default;
 
     case BIT_AND_EXPR:
-    case BIT_OR_EXPR:
+    case BIT_IOR_EXPR:
     case EQ_EXPR:
       check_bool2_init (TREE_CODE (exp),
 			TREE_OPERAND (exp, 0), TREE_OPERAND (exp, 1),
