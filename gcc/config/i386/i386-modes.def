@@ -29,6 +29,8 @@ FLOAT_MODE (TF, 16, ieee_quad_format);
    In LP64 mode, XFmode has size and alignment 16.  */
 ADJUST_FLOAT_FORMAT (XF, (TARGET_128BIT_LONG_DOUBLE
 			  ? &ieee_extended_intel_128_format
+			  : TARGET_96_ROUND_53_LONG_DOUBLE
+			  ? &ieee_extended_intel_96_round_53_format
 			  : &ieee_extended_intel_96_format));
 ADJUST_BYTESIZE  (XF, TARGET_128BIT_LONG_DOUBLE ? 16 : 12);
 ADJUST_ALIGNMENT (XF, TARGET_128BIT_LONG_DOUBLE ? 16 : 4);

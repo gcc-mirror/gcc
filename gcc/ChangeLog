@@ -1,3 +1,11 @@
+2004-11-12  Richard Henderson  <rth@redhat.com>
+
+	PR 17778
+	* config/i386/i386.h (TARGET_96_ROUND_53_LONG_DOUBLE): New.
+	* config/i386/freebsd.h (SUBTARGET_OVERRIDE_OPTIONS): Remove.
+	(TARGET_96_ROUND_53_LONG_DOUBLE): New.
+	* config/i386/i386-modes.def (XF): Use it.
+
 2004-11-11  Geoffrey Keating  <geoffk@apple.com>
 
 	* Makefile.in (macro_list): Use move-if-change to avoid spurious
