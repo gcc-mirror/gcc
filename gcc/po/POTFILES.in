@@ -389,7 +389,6 @@ config/psos.h
 config/ptx4.h
 config/romp/romp.c
 config/romp/romp.h
-config/romp/xm-romp.h
 config/rs6000/aix.h
 config/rs6000/aix31.h
 config/rs6000/aix3newas.h
