@@ -1,3 +1,12 @@
+2004-02-16  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	* g++.dg/tc1/dr101.C, g++.dg/tc1/dr135.C, g++.dg/tc1/dr142.C,
+	g++.dg/tc1/dr152.C, g++.dg/tc1/dr159.C, g++.dg/tc1/dr161.C,
+	g++.dg/tc1/dr166.C, g++.dg/tc1/dr176.C, g++.dg/tc1/dr188.C,
+	g++.dg/tc1/dr193.C, g++.dg/tc1/dr194.C, g++.dg/tc1/dr217.C,
+	g++.dg/tc1/dr48.C, g++.dg/tc1/dr56.C, g++.dg/tc1/dr68.C,
+	g++.dg/tc1/dr76.C, g++.dg/tc1/dr80.C, g++.dg/tc1/dr94.C: New tests.
+
 2004-02-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/execute/20020720-1.x: XFAIL on SPARC with -fPIC.
