@@ -1919,6 +1919,10 @@ case " $target_configdirs " in
   ;;
 esac
 
+# Allow the user to override the flags for
+# our build compiler if desired.
+CFLAGS_FOR_BUILD=${CFLAGS_FOR_BUILD-${CFLAGS}}
+
 # On Canadian crosses, we'll be searching the right directories for
 # the previously-installed cross compiler, so don't bother to add
 # flags for directories within the install tree of the compiler
@@ -2060,6 +2064,7 @@ NCN_STRICT_CHECK_TOOL(OBJDUMP, objdump)
 AC_SUBST(CC)
 AC_SUBST(CXX)
 AC_SUBST(CFLAGS)
+AC_SUBST(CFLAGS_FOR_BUILD)
 AC_SUBST(CXXFLAGS)
 AC_SUBST(DEFAULT_YACC)
 AC_SUBST(DEFAULT_LEX)

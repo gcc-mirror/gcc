@@ -142,7 +142,7 @@ PWD_COMMAND = $${PWDCMD-pwd}
 # compilers to use to create programs which must be run in the build
 # environment.
 CC_FOR_BUILD = @CC_FOR_BUILD@
-CFLAGS_FOR_BUILD = $(CFLAGS)
+CFLAGS_FOR_BUILD = @CFLAGS_FOR_BUILD@
 
 CXX_FOR_BUILD = $(CXX)
 
