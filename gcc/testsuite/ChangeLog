@@ -1,5 +1,10 @@
 2001-04-25  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-format.c (check_format_info_recurse): Handle
+	PLUS_EXPR for format string.
+
+2001-04-25  Jakub Jelinek  <jakub@redhat.com>
+
 	* gcc.dg/20010423-1.c: New test.
 
 2001-04-25  Jakub Jelinek  <jakub@redhat.com>
