@@ -5605,12 +5605,8 @@ int
 sparc_absnegfloat_split_legitimate (x, y)
      rtx x, y;
 {
-  if (GET_CODE (x) == SUBREG)
-    x = alter_subreg (x);
   if (GET_CODE (x) != REG)
     return 0;
-  if (GET_CODE (y) == SUBREG)
-    y = alter_subreg (y);
   if (GET_CODE (y) != REG)
     return 0;
   if (REGNO (x) == REGNO (y))

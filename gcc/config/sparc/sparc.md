@@ -2798,11 +2798,6 @@
   rtx dest1, dest2;
   rtx src1, src2;
 
-  if (GET_CODE (set_dest) == SUBREG)
-    set_dest = alter_subreg (set_dest);
-  if (GET_CODE (set_src) == SUBREG)
-    set_src = alter_subreg (set_src);
-
   dest1 = gen_highpart (SImode, set_dest);
   dest2 = gen_lowpart (SImode, set_dest);
   src1 = gen_highpart (SImode, set_src);
@@ -3366,8 +3361,6 @@
 
   REAL_VALUE_FROM_CONST_DOUBLE (r, operands[1]);
   REAL_VALUE_TO_TARGET_DOUBLE (r, l);
-  if (GET_CODE (operands[0]) == SUBREG)
-    operands[0] = alter_subreg (operands[0]);
   operands[0] = gen_rtx_raw_REG (DImode, REGNO (operands[0]));
 
   if (TARGET_ARCH64)
@@ -3430,11 +3423,6 @@
   rtx dest1, dest2;
   rtx src1, src2;
 
-  if (GET_CODE (set_dest) == SUBREG)
-    set_dest = alter_subreg (set_dest);
-  if (GET_CODE (set_src) == SUBREG)
-    set_src = alter_subreg (set_src);
-
   dest1 = gen_highpart (SFmode, set_dest);
   dest2 = gen_lowpart (SFmode, set_dest);
   src1 = gen_highpart (SFmode, set_src);
@@ -3469,9 +3457,6 @@
   rtx word0 = adjust_address (operands[1], SFmode, 0);
   rtx word1 = adjust_address (operands[1], SFmode, 4);
 
-  if (GET_CODE (operands[0]) == SUBREG)
-    operands[0] = alter_subreg (operands[0]);
-
   if (reg_overlap_mentioned_p (gen_highpart (SFmode, operands[0]), word1))
     {
       emit_insn (gen_movsf (gen_lowpart (SFmode, operands[0]),
@@ -3503,8 +3488,6 @@
   rtx word0 = adjust_address (operands[0], SFmode, 0);
   rtx word1 = adjust_address (operands[0], SFmode, 4);
 
-  if (GET_CODE (operands[1]) == SUBREG)
-    operands[1] = alter_subreg (operands[1]);
   emit_insn (gen_movsf (word0,
 			gen_highpart (SFmode, operands[1])));
   emit_insn (gen_movsf (word1,
@@ -3549,8 +3532,6 @@
   rtx set_dest = operands[0];
   rtx dest1, dest2;
 
-  if (GET_CODE (set_dest) == SUBREG)
-    set_dest = alter_subreg (set_dest);
   dest1 = gen_highpart (SFmode, set_dest);
   dest2 = gen_lowpart (SFmode, set_dest);
   emit_insn (gen_movsf (dest1, CONST0_RTX (SFmode)));
@@ -3754,11 +3735,6 @@
   rtx dest1, dest2;
   rtx src1, src2;
 
-  if (GET_CODE (set_dest) == SUBREG)
-    set_dest = alter_subreg (set_dest);
-  if (GET_CODE (set_src) == SUBREG)
-    set_src = alter_subreg (set_src);
-
   dest1 = gen_df_reg (set_dest, 0);
   dest2 = gen_df_reg (set_dest, 1);
   src1 = gen_df_reg (set_src, 0);
@@ -3791,9 +3767,6 @@
 
   switch (GET_CODE (set_dest))
     {
-    case SUBREG:
-      set_dest = alter_subreg (set_dest);
-      /* FALLTHROUGH */
     case REG:
       dest1 = gen_df_reg (set_dest, 0);
       dest2 = gen_df_reg (set_dest, 1);
@@ -3824,8 +3797,6 @@
   rtx set_dest, dest1, dest2;
 
   set_dest = operands[0];
-  if (GET_CODE (set_dest) == SUBREG)
-    set_dest = alter_subreg (set_dest);
 
   dest1 = gen_df_reg (set_dest, 0);
   dest2 = gen_df_reg (set_dest, 1);
@@ -3855,8 +3826,6 @@
   "
 {
   rtx set_src = operands[1];
-  if (GET_CODE (set_src) == SUBREG)
-    set_src = alter_subreg (set_src);
 
   emit_insn (gen_movdf (adjust_address (operands[0], DFmode, 0),
 			gen_df_reg (set_src, 0)));
@@ -4214,13 +4183,6 @@
   rtx dest1, dest2;
   rtx srca1, srca2, srcb1, srcb2;
 
-  if (GET_CODE (set_dest) == SUBREG)
-    set_dest = alter_subreg (set_dest);
-  if (GET_CODE (set_srca) == SUBREG)
-    set_srca = alter_subreg (set_srca);
-  if (GET_CODE (set_srcb) == SUBREG)
-    set_srcb = alter_subreg (set_srcb);
-
   dest1 = gen_df_reg (set_dest, 0);
   dest2 = gen_df_reg (set_dest, 1);
   srca1 = gen_df_reg (set_srca, 0);
@@ -4378,13 +4340,6 @@
   int third = rtx_equal_p (set_dest, set_srca);
   rtx dest1, dest2;
   rtx srca1, srca2, srcb1, srcb2;
-
-  if (GET_CODE (set_dest) == SUBREG)
-    set_dest = alter_subreg (set_dest);
-  if (GET_CODE (set_srca) == SUBREG)
-    set_srca = alter_subreg (set_srca);
-  if (GET_CODE (set_srcb) == SUBREG)
-    set_srcb = alter_subreg (set_srcb);
 
   dest1 = gen_df_reg (set_dest, 0);
   dest2 = gen_df_reg (set_dest, 1);
@@ -4557,9 +4512,6 @@
   "
 {
   rtx dest1, dest2;
-
-  if (GET_CODE (operands[0]) == SUBREG)
-    operands[0] = alter_subreg (operands[0]);
 
   dest1 = gen_highpart (SImode, operands[0]);
   dest2 = gen_lowpart (SImode, operands[0]);
@@ -6617,8 +6569,6 @@
    (set (match_dup 5) (match_op_dup:SI 1 [(match_dup 7) (match_dup 9)]))]
   "
 {
-  if (GET_CODE (operands[0]) == SUBREG)
-    operands[0] = alter_subreg (operands[0]);
   operands[4] = gen_highpart (SImode, operands[0]);
   operands[5] = gen_lowpart (SImode, operands[0]);
   operands[6] = gen_highpart (SImode, operands[2]);
@@ -6662,9 +6612,7 @@
            && REGNO (SUBREG_REG (operands[0])) < 32))"
   [(set (match_dup 3) (and:SI (not:SI (match_dup 4)) (match_dup 5)))
    (set (match_dup 6) (and:SI (not:SI (match_dup 7)) (match_dup 8)))]
-  "if (GET_CODE (operands[0]) == SUBREG)
-     operands[0] = alter_subreg (operands[0]);
-   operands[3] = gen_highpart (SImode, operands[0]);
+  "operands[3] = gen_highpart (SImode, operands[0]);
    operands[4] = gen_highpart (SImode, operands[1]);
    operands[5] = gen_highpart (SImode, operands[2]);
    operands[6] = gen_lowpart (SImode, operands[0]);
@@ -6772,9 +6720,7 @@
            && REGNO (SUBREG_REG (operands[0])) < 32))"
   [(set (match_dup 3) (ior:SI (not:SI (match_dup 4)) (match_dup 5)))
    (set (match_dup 6) (ior:SI (not:SI (match_dup 7)) (match_dup 8)))]
-  "if (GET_CODE (operands[0]) == SUBREG)
-     operands[0] = alter_subreg (operands[0]);
-   operands[3] = gen_highpart (SImode, operands[0]);
+  "operands[3] = gen_highpart (SImode, operands[0]);
    operands[4] = gen_highpart (SImode, operands[1]);
    operands[5] = gen_highpart (SImode, operands[2]);
    operands[6] = gen_lowpart (SImode, operands[0]);
@@ -6907,9 +6853,7 @@
            && REGNO (SUBREG_REG (operands[0])) < 32))"
   [(set (match_dup 3) (not:SI (xor:SI (match_dup 4) (match_dup 5))))
    (set (match_dup 6) (not:SI (xor:SI (match_dup 7) (match_dup 8))))]
-  "if (GET_CODE (operands[0]) == SUBREG)
-     operands[0] = alter_subreg (operands[0]);
-   operands[3] = gen_highpart (SImode, operands[0]);
+  "operands[3] = gen_highpart (SImode, operands[0]);
    operands[4] = gen_highpart (SImode, operands[1]);
    operands[5] = gen_highpart (SImode, operands[2]);
    operands[6] = gen_lowpart (SImode, operands[0]);
@@ -7209,9 +7153,7 @@
            && REGNO (SUBREG_REG (operands[0])) < 32))"
   [(set (match_dup 2) (not:SI (xor:SI (match_dup 3) (const_int 0))))
    (set (match_dup 4) (not:SI (xor:SI (match_dup 5) (const_int 0))))]
-  "if (GET_CODE (operands[0]) == SUBREG)
-     operands[0] = alter_subreg (operands[0]);
-   operands[2] = gen_highpart (SImode, operands[0]);
+  "operands[2] = gen_highpart (SImode, operands[0]);
    operands[3] = gen_highpart (SImode, operands[1]);
    operands[4] = gen_lowpart (SImode, operands[0]);
    operands[5] = gen_lowpart (SImode, operands[1]);")
@@ -7587,11 +7529,7 @@
   [(set (match_dup 2) (neg:SF (match_dup 3)))
    (set (match_dup 4) (match_dup 5))
    (set (match_dup 6) (match_dup 7))]
-  "if (GET_CODE (operands[0]) == SUBREG)
-     operands[0] = alter_subreg (operands[0]);
-   if (GET_CODE (operands[1]) == SUBREG)
-     operands[1] = alter_subreg (operands[1]);
-   operands[2] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]));
+  "operands[2] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]));
    operands[3] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]));
    operands[4] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]) + 1);
    operands[5] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 1);
@@ -7619,11 +7557,7 @@
    && sparc_absnegfloat_split_legitimate (operands[0], operands[1])"
   [(set (match_dup 2) (neg:DF (match_dup 3)))
    (set (match_dup 4) (match_dup 5))]
-  "if (GET_CODE (operands[0]) == SUBREG)
-     operands[0] = alter_subreg (operands[0]);
-   if (GET_CODE (operands[1]) == SUBREG)
-     operands[1] = alter_subreg (operands[1]);
-   operands[2] = gen_rtx_raw_REG (DFmode, REGNO (operands[0]));
+  "operands[2] = gen_rtx_raw_REG (DFmode, REGNO (operands[0]));
    operands[3] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]));
    operands[4] = gen_rtx_raw_REG (DFmode, REGNO (operands[0]) + 2);
    operands[5] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]) + 2);")
@@ -7653,11 +7587,7 @@
    && sparc_absnegfloat_split_legitimate (operands[0], operands[1])"
   [(set (match_dup 2) (neg:SF (match_dup 3)))
    (set (match_dup 4) (match_dup 5))]
-  "if (GET_CODE (operands[0]) == SUBREG)
-     operands[0] = alter_subreg (operands[0]);
-   if (GET_CODE (operands[1]) == SUBREG)
-     operands[1] = alter_subreg (operands[1]);
-   operands[2] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]));
+  "operands[2] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]));
    operands[3] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]));
    operands[4] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]) + 1);
    operands[5] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 1);")
@@ -7704,11 +7634,7 @@
   [(set (match_dup 2) (abs:SF (match_dup 3)))
    (set (match_dup 4) (match_dup 5))
    (set (match_dup 6) (match_dup 7))]
-  "if (GET_CODE (operands[0]) == SUBREG)
-     operands[0] = alter_subreg (operands[0]);
-   if (GET_CODE (operands[1]) == SUBREG)
-     operands[1] = alter_subreg (operands[1]);
-   operands[2] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]));
+  "operands[2] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]));
    operands[3] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]));
    operands[4] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]) + 1);
    operands[5] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 1);
@@ -7745,11 +7671,7 @@
    && sparc_absnegfloat_split_legitimate (operands[0], operands[1])"
   [(set (match_dup 2) (abs:DF (match_dup 3)))
    (set (match_dup 4) (match_dup 5))]
-  "if (GET_CODE (operands[0]) == SUBREG)
-     operands[0] = alter_subreg (operands[0]);
-   if (GET_CODE (operands[1]) == SUBREG)
-     operands[1] = alter_subreg (operands[1]);
-   operands[2] = gen_rtx_raw_REG (DFmode, REGNO (operands[0]));
+  "operands[2] = gen_rtx_raw_REG (DFmode, REGNO (operands[0]));
    operands[3] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]));
    operands[4] = gen_rtx_raw_REG (DFmode, REGNO (operands[0]) + 2);
    operands[5] = gen_rtx_raw_REG (DFmode, REGNO (operands[1]) + 2);")
@@ -7779,11 +7701,7 @@
    && sparc_absnegfloat_split_legitimate (operands[0], operands[1])"
   [(set (match_dup 2) (abs:SF (match_dup 3)))
    (set (match_dup 4) (match_dup 5))]
-  "if (GET_CODE (operands[0]) == SUBREG)
-     operands[0] = alter_subreg (operands[0]);
-   if (GET_CODE (operands[1]) == SUBREG)
-     operands[1] = alter_subreg (operands[1]);
-   operands[2] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]));
+  "operands[2] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]));
    operands[3] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]));
    operands[4] = gen_rtx_raw_REG (SFmode, REGNO (operands[0]) + 1);
    operands[5] = gen_rtx_raw_REG (SFmode, REGNO (operands[1]) + 1);")

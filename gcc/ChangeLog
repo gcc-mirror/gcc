@@ -1,3 +1,10 @@
+Mon Nov 26 11:36:20 CET 2001 Jan Hubicka  <jh@suse.cz>
+
+	* sparc.c (sparc_absnegfloat_split_legitimate): Do not call
+	alter_subreg.
+	* sparc.md (post-reload splitters): Do not call alter_subreg.
+	* cfgrtl.c (purge_dead_edges): Fix typo in previous fix.
+
 2001-11-25  Aldy Hernandez  <aldyh@redhat.com>
 
 	* regclass.c (choose_hard_reg_mode): Handle vector arguments.
