@@ -321,6 +321,7 @@ ggc_mark_tree (t)
   switch (TREE_CODE_CLASS (TREE_CODE (t)))
     {
     case 'd': /* A decl node.  */
+      ggc_mark_string (DECL_SOURCE_FILE (t));
       ggc_mark_tree (DECL_SIZE (t));
       ggc_mark_tree (DECL_NAME (t));
       ggc_mark_tree (DECL_CONTEXT (t));
@@ -332,6 +333,7 @@ ggc_mark_tree (t)
       ggc_mark_tree (DECL_SECTION_NAME (t));
       ggc_mark_tree (DECL_MACHINE_ATTRIBUTES (t));
       ggc_mark_rtx (DECL_RTL (t));
+      ggc_mark_rtx (DECL_LIVE_RANGE_RTL (t));
       ggc_mark_tree (DECL_VINDEX (t));
       lang_mark_tree (t);
       break;
