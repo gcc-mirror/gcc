@@ -1,3 +1,20 @@
+2004-02-14  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/13858
+	* include/bits/fstream.tcc (basic_filebuf<>::_M_convert_to_external):
+	In case of conversion errors, throw ios_failure; simplify.
+	* testsuite/27_io/basic_filebuf/overflow/char/13858.cc: New.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/13858.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/overflow/char/9182-2.cc: Tweak,
+	previously we didn't throw in case of conversion errors, instead
+	just returned eof().
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/3.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/1.cc: Ditto.
+	* testsuite/27_io/basic_filebuf/sync/char/9182-1.cc: Ditto.
+
+	* include/bits/fstream.tcc (basic_filebuf<>::overflow):
+	Trivial simplification of a conditional.
+
 2004-02-12  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/13731 (final part: writev)
