@@ -1,5 +1,9 @@
 2004-08-29  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (cmp[sd]f): Redefine using :SCALARF.
+
+2004-08-29  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (divide_condition): New mode attribute.
 	(div[sd]f3, *div[sd]f3): Use it.  Redefine using :SCALARF.
 	(sqrt[sd]f3): Redefine using SCALARF.
