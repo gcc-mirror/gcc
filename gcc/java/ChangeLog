@@ -1,3 +1,11 @@
+Thu Oct 22 23:01:54 1998  Per Bothner  <bothner@cygnus.com>
+
+	* jvspecs.c:  Add (but don't enable) support for combining multiple
+	.class and .java input filenames to a single jc1 invocation.
+	Add support for -C flag (copile to .class files).
+	Translate -classpath and -CLASSPATH arguments.
+	* lang-specs.h:  Don't set %2 spec.
+
 1998-10-22  Tom Tromey  <tromey@cygnus.com>
 
 	* jcf-path.c (add_entry): Don't add trailing separator if entry is
