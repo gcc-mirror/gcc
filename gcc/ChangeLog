@@ -1,3 +1,10 @@
+2004-12-22  Richard Henderson  <rth@redhat.com>
+
+	PR target/19102
+	* config/i386/i386.c (x86_inter_unit_moves): Disable.
+	(ix86_hard_regno_mode_ok): Disallow SSE2 and MMX scalar modes
+	in SSE registers when only SSE1 enabled.
+
 2004-12-21  David O'Brien  <obrien@FreeBSD.org>
 
 	Backport from mainline:

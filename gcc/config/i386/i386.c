@@ -522,7 +522,14 @@ const int x86_sse_typeless_stores = m_ATHLON_K8;
 const int x86_sse_load0_by_pxor = m_PPRO | m_PENT4;
 const int x86_use_ffreep = m_ATHLON_K8;
 const int x86_rep_movl_optimal = m_386 | m_PENT | m_PPRO | m_K6;
-const int x86_inter_unit_moves = ~(m_ATHLON_K8);
+
+/* ??? HACK!  The following is a lie.  SSE can hold e.g. SImode, and
+   indeed *must* be able to hold SImode so that SSE2 shifts are able
+   to work right.  But this can result in some mighty surprising 
+   register allocation when building kernels.  Turning this off should
+   make us less likely to all-of-the-sudden select an SSE register.  */
+const int x86_inter_unit_moves = 0;  /* ~(m_ATHLON_K8) */
+
 const int x86_ext_80387_constants = m_K6 | m_ATHLON | m_PENT4 | m_PPRO;
 
 /* In case the average insn count for single function invocation is
@@ -14927,6 +14934,12 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
     return VALID_FP_MODE_P (mode);
   if (SSE_REGNO_P (regno))
     {
+      /* HACK!  We didn't change all of the constraints for SSE1 for the
+	 scalar modes on the branch.  Fortunately, they're not required
+	 for ABI compatibility.  */
+      if (!TARGET_SSE2 && !VECTOR_MODE_P (mode))
+	return VALID_SSE_REG_MODE (mode);
+
       /* We implement the move patterns for all vector modes into and
          out of SSE registers, even when no operation instructions
          are available.  */
