@@ -1,3 +1,9 @@
+1999-07-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* configure.in: Use t-iris6, even with GNU LD.
+	* config/mips/iris6gld.h: Fix typo in linker spec.
+	* config/mips/t-iris6gld: Remove.
+
 Thu Jul 15 15:15:43 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (insv, extzv): Remove SImode dependence in named

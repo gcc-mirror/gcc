@@ -2242,11 +2242,10 @@ changequote([,])dnl
 		if test "x$gnu_ld" = xyes
 		then
 			tm_file="mips/iris6.h mips/iris6gld.h"
-			tmake_file=mips/t-iris6gld
 		else
 			tm_file=mips/iris6.h
-			tmake_file=mips/t-iris6
 		fi
+		tmake_file=mips/t-iris6
 		xm_file=mips/xm-iris6.h
 		xmake_file=mips/x-iris6
 # 		if test x$enable_threads = xyes; then
