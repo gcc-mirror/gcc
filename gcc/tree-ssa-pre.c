@@ -1286,7 +1286,8 @@ compute_antic (void)
   FOR_ALL_BB (bb)
     {
       ANTIC_IN (bb) = set_new (true);
-      bb->flags &= ~BB_VISITED;
+      if (bb->flags & BB_VISITED)
+	abort ();
     }
 
   while (changed)
@@ -1294,6 +1295,10 @@ compute_antic (void)
       num_iterations++;
       changed = false;
       changed = compute_antic_aux (EXIT_BLOCK_PTR);
+    }
+  FOR_ALL_BB (bb)
+    {
+      bb->flags &= ~BB_VISITED;
     }
   if (num_iterations > 2 && dump_file && (dump_flags & TDF_STATS))
     fprintf (dump_file, "compute_antic required %d iterations\n", num_iterations);
