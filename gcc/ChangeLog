@@ -1,3 +1,8 @@
+Sun Jul 22 17:55:11 2001  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/i386/freebsd-aout.h (ASM_PREFERRED_EH_DATA_FORMAT): Use
+	the definition in defaults.h.
+
 Sun Jul 22 21:31:04 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* jump.c: Update comments.
