@@ -10995,8 +10995,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  }
 		else if (TREE_CODE (type) == FUNCTION_TYPE)
 		  {
-		    if (current_class_type == NULL_TREE
-			|| friendp)
+		    if (current_class_type == NULL_TREE || friendp)
 		      type = build_cplus_method_type (ctype, TREE_TYPE (type),
 						      TYPE_ARG_TYPES (type));
 		    else
@@ -11022,18 +11021,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		      }
 		    type = build_offset_type (ctype, type);
 		  }
-		else if (uses_template_parms (ctype))
-		  {
-                    if (TREE_CODE (type) == FUNCTION_TYPE)
-		      type
-			= build_cplus_method_type (ctype, TREE_TYPE (type),
-						   TYPE_ARG_TYPES (type));
-  		  }
 		else
-		  {
-		    cp_error ("structure `%T' not yet defined", ctype);
-		    return error_mark_node;
-		  }
+	          {
+	            incomplete_type_error (NULL_TREE, ctype);
+	            return error_mark_node;
+  		  }
 
 		declarator = sname;
 	      }

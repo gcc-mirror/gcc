@@ -1,5 +1,9 @@
 2000-11-28  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* decl.c (grokdeclarator): Diagnose undefined template contexts.
+
+2000-11-28  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* decl.c (grokdeclarator): Do type access control on friend
 	class.
 
