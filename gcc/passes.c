@@ -1306,7 +1306,11 @@ rest_of_handle_flow2 (void)
     split_all_insns (0);
 
   if (flag_branch_target_load_optimize)
-    rest_of_handle_branch_target_load_optimize ();
+    {
+      close_dump_file (DFI_flow2, print_rtl_with_bb, get_insns ());
+      rest_of_handle_branch_target_load_optimize ();
+      open_dump_file (DFI_flow2, current_function_decl);
+    }
 
   if (optimize)
     cleanup_cfg (CLEANUP_EXPENSIVE);
