@@ -747,9 +747,8 @@ extern int sparc_mode_class[];
 #define ARG_POINTER_REGNUM FRAME_POINTER_REGNUM
 
 /* Register in which static-chain is passed to a function.  This must
-   not be a register used by the prologue.
-   ??? v9: Since %g2 is reserved but %g5 is available, perhaps use %g5.  */
-#define STATIC_CHAIN_REGNUM 2
+   not be a register used by the prologue.  */
+#define STATIC_CHAIN_REGNUM (TARGET_V9 ? 5 : 2)
 
 /* Register which holds offset table for position-independent
    data references.  */
@@ -1617,24 +1616,50 @@ extern union tree_node *current_function_decl;
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.  */
 
-/* On the sparc, the trampoline contains five instructions:
+/* On 32 bit sparcs, the trampoline contains five instructions:
      sethi #TOP_OF_FUNCTION,%g1
      or #BOTTOM_OF_FUNCTION,%g1,%g1
      sethi #TOP_OF_STATIC,%g2
      jmp g1
-     or #BOTTOM_OF_STATIC,%g2,%g2  */
-#define TRAMPOLINE_TEMPLATE(FILE)					\
-{									\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x81C04000));	\
-  ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
-}
+     or #BOTTOM_OF_STATIC,%g2,%g2
+
+  On 64 bit sparcs, the trampoline contains 4 insns and two pseudo-immediate
+  constants (plus some padding):
+     rd %pc,%g1
+     ldx[%g1+20],%g5
+     ldx[%g1+28],%g1
+     jmp %g1
+     nop
+     nop
+     .xword context
+     .xword function  */
+
+#define TRAMPOLINE_TEMPLATE(FILE) \
+do {									\
+  if (TARGET_V9)							\
+    {									\
+      fprintf (FILE, "\trd %%pc,%%g1\n");				\
+      fprintf (FILE, "\tldx [%%g1+24],%%g5\n");				\
+      fprintf (FILE, "\tldx [%%g1+32],%%g1\n");				\
+      fprintf (FILE, "\tjmp %%g1\n");					\
+      fprintf (FILE, "\tnop\n");					\
+      fprintf (FILE, "\tnop\n");					\
+      /* -mmedlow shouldn't generate .xwords, so don't use them at all */ \
+      fprintf (FILE, "\t.word 0,0,0,0\n");				\
+    }									\
+  else									\
+    {									\
+      ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
+      ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
+      ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
+      ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x81C04000));	\
+      ASM_OUTPUT_INT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x00000000));	\
+    }									\
+} while (0)
 
 /* Length in units of the trampoline for entering a nested function.  */
 
-#define TRAMPOLINE_SIZE 20
+#define TRAMPOLINE_SIZE (TARGET_V9 ? 40 : 20)
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
