@@ -228,3 +228,7 @@ do \
   } \
 while (0)
 #endif
+
+/* Binutils does not handle weak symbols from dlls correctly.  For now,
+   do not use them unnecessarily in gthr-posix.h.  */
+#define GTHREAD_USE_WEAK 0
