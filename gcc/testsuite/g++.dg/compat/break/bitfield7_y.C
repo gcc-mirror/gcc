@@ -1,3 +1,5 @@
+// { dg-options "-w" }
+
 extern "C" void abort (void);
 
 #include "bitfield7.h"

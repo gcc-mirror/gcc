@@ -1,3 +1,5 @@
+// { dg-options -w }
+
 #include "vbase8-21.h"
 
 extern void check_C0 (C0&, int);
