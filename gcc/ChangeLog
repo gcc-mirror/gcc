@@ -1,3 +1,18 @@
+ Fri May  5 07:43:50 2000  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.c (out_shift_with_cnt): Genetare a more optimal
+	shift cycle for unknown shift count. Also generates dec + brpl.
+	(ashlqi3_out): Don't generate dec + brpl which now generates by
+	`out_shift_with_cnt'.
+	(ashlhi3_out): Likewise.
+	(ashlsi3_out): Likewise.
+	(ashrqi3_out): Likewise.
+	(ashrhi3_out): Likewise.
+	(ashrsi3_out): Likewise.
+	(lshrqi3_out): Likewise.
+	(lshrhi3_out): Likewise.
+	(lshrsi3_out): Likewise.
+
 2000-05-04 Mark Elbrecht <snowball3@bigfoot.com>
 
 	* gcc.c (free_split_directories): Correct typo in explanation
