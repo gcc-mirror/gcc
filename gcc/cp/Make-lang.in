@@ -103,7 +103,7 @@ g++-cross$(exeext): g++$(exeext)
 	-rm -f g++-cross$(exeext)
 	cp g++$(exeext) g++-cross$(exeext)
 
-cxxmain.o: $(srcdir)/../libiberty/cplus-dem.c demangle.h
+cxxmain.o: $(srcdir)/../libiberty/cplus-dem.c $(DEMANGLE_H)
 	rm -f cxxmain.c
 	$(LN_S) $(srcdir)/../libiberty/cplus-dem.c cxxmain.c
 	$(CC) -c -DMAIN $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
