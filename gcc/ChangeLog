@@ -18,6 +18,8 @@ Wed May  6 15:51:39 1998  Jim Wilson  <wilson@cygnus.com>
 
 Wed May  6 16:46:01 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* haifa-sched.c (print_value, case SUBREG): Fix typo.
+
 	* i386.c (output_387_binary_op): Add some braces to avoid warnings.
 	* i386.h (REG_CLASS_CONTENTS): Similarly.
 
