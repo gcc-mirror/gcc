@@ -1,5 +1,8 @@
 Thu Sep  2 00:06:43 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* varasm.c (mark_constant_pool): When marking indirect references,
+	only look at SYMBOL_REFs.
+
 	* except.c (expand_fixup_region_end): Do not peek at
 	INSN_UID (node->entry->outer_context) for flag_new_exceptions.
 

@@ -3758,8 +3758,8 @@ mark_constant_pool ()
       if (!pool->mark)
 	  continue;
 
-      /* skip CONST_DOUBLEs too - correct?  */
-      if (GET_CODE (pool->constant) == CONST_DOUBLE)
+      /* Skip everything except SYMBOL_REFs.  */
+      if (GET_CODE (pool->constant) != SYMBOL_REF)
 	continue;
       label = XSTR (pool->constant, 0);
 
