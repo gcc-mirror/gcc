@@ -1,3 +1,13 @@
+2003-06-17  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* config/rs6000/linux.h (MD_FALLBACK_FRAME_STATE_FOR): Partly revert
+	2003-01-23 patch. Corrected to handle kernels with changed ucontext.
+
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Error on invalid
+	-msdata=eabi usages.
+
+	* gcc/config/rs6000/sysv4.h (USE_LIBC_1): Delete all uses.
+
 2003-06-17  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alloc-pool.c: Don't check HAVE_LONG_DOUBLE.

@@ -93,7 +93,18 @@
 
 #ifdef IN_LIBGCC2
 #include <signal.h>
-#include <sys/ucontext.h>
+
+/* During the 2.5 kernel series the kernel ucontext was changed, but
+   the new layout is compatible with the old one, so we just define
+   and use the old one here for simplicity and compatibility.  */
+
+struct kernel_old_ucontext {
+  unsigned long     uc_flags;
+  struct ucontext  *uc_link;
+  stack_t           uc_stack;
+  struct sigcontext_struct uc_mcontext;
+  sigset_t          uc_sigmask;
+};
 
 enum { SIGNAL_FRAMESIZE = 64 };
 #endif
@@ -129,7 +140,7 @@ enum { SIGNAL_FRAMESIZE = 64 };
 	  struct siginfo *pinfo;					\
 	  void *puc;							\
 	  struct siginfo info;						\
-	  struct ucontext uc;						\
+	  struct kernel_old_ucontext uc;				\
 	} *rt_ = (CONTEXT)->cfa;					\
 	sc_ = &rt_->uc.uc_mcontext;					\
       }									\
@@ -153,15 +164,9 @@ enum { SIGNAL_FRAMESIZE = 64 };
     (FS)->regs.reg[LINK_REGISTER_REGNUM].loc.offset 			\
       = (long)&(sc_->regs->link) - new_cfa_;				\
 									\
-    /* The unwinder expects the IP to point to the following insn,	\
-       whereas the kernel returns the address of the actual		\
-       faulting insn. We store NIP+4 in an unused register slot to	\
-       get the same result for multiple evaluation of the same signal	\
-       frame.  */							\
-    sc_->regs->gpr[47] = sc_->regs->nip + 4;  				\
     (FS)->regs.reg[CR0_REGNO].how = REG_SAVED_OFFSET;			\
     (FS)->regs.reg[CR0_REGNO].loc.offset 				\
-      = (long)&(sc_->regs->gpr[47]) - new_cfa_;				\
+      = (long)&(sc_->regs->nip) - new_cfa_;				\
     (FS)->retaddr_column = CR0_REGNO;					\
     goto SUCCESS;							\
   } while (0)

@@ -256,7 +256,8 @@ do {									\
 	     rs6000_sdata_name);					\
     }									\
 									\
-  if (rs6000_sdata != SDATA_NONE && DEFAULT_ABI != ABI_V4)		\
+  if ((rs6000_sdata != SDATA_NONE && DEFAULT_ABI != ABI_V4)		\
+      || (rs6000_sdata == SDATA_EABI && !TARGET_EABI))			\
     {									\
       rs6000_sdata = SDATA_NONE;					\
       error ("-msdata=%s and -mcall-%s are incompatible",		\
@@ -1073,21 +1074,11 @@ extern int fixuplabelno;
     %{symbolic:-Bsymbolic}"
 
 /* GNU/Linux support.  */
-#ifdef USE_GNULIBC_1
-#define LIB_LINUX_SPEC "%{mnewlib: --start-group -llinux -lc --end-group } \
-%{!mnewlib: -lc }"
-#else
 #define LIB_LINUX_SPEC "%{mnewlib: --start-group -llinux -lc --end-group } \
 %{!mnewlib: %{shared:-lc} %{!shared: %{pthread:-lpthread } \
 %{profile:-lc_p} %{!profile:-lc}}}"
-#endif
 
-#ifdef USE_GNULIBC_1
-#define	STARTFILE_LINUX_SPEC "\
-%{!shared: %{pg:gcrt1.o%s} %{!pg:%{p:gcrt1.o%s} %{!p:crt1.o%s}}} \
-%{mnewlib: ecrti.o%s} %{!mnewlib: crti.o%s} \
-%{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
-#elif defined HAVE_LD_PIE
+#ifdef HAVE_LD_PIE
 #define	STARTFILE_LINUX_SPEC "\
 %{!shared: %{pg|p:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}} \
 %{mnewlib:ecrti.o%s;:crti.o%s} \
@@ -1108,25 +1099,16 @@ extern int fixuplabelno;
   %{rdynamic:-export-dynamic} \
   %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}}}"
 
-#if !defined(USE_GNULIBC_1) && defined(HAVE_LD_EH_FRAME_HDR)
+#if defined(HAVE_LD_EH_FRAME_HDR)
 # define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
 #endif
 
-#ifdef USE_GNULIBC_1
-#define CPP_OS_LINUX_SPEC "-D__unix__ -D__gnu_linux__ -D__linux__ \
-%{!undef:							  \
-  %{!ansi:							  \
-    %{!std=*:-Dunix -D__unix -Dlinux -D__linux}	                  \
-    %{std=gnu*:-Dunix -D__unix -Dlinux -D__linux}}}		  \
--Asystem=unix -Asystem=posix"
-#else
 #define CPP_OS_LINUX_SPEC "-D__unix__ -D__gnu_linux__ -D__linux__ \
 %{!undef:							  \
   %{!ansi:							  \
     %{!std=*:-Dunix -D__unix -Dlinux -D__linux}			  \
     %{std=gnu*:-Dunix -D__unix -Dlinux -D__linux}}}		  \
 -Asystem=unix -Asystem=posix %{pthread:-D_REENTRANT}"
-#endif
 
 /* GNU/Hurd support.  */
 #define LIB_GNU_SPEC "%{mnewlib: --start-group -lgnu -lc --end-group } \
