@@ -1,3 +1,8 @@
+Mon Feb 28 11:34:43 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (reg_in_basic_block_p): Don't abort when falling through
+	to the end of the function.
+
 2000-02-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* emit-rtl.c (remove_unncessary_notes): Remove notes for empty
