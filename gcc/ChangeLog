@@ -1,3 +1,13 @@
+2001-01-29  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+	    Jeff Law <law@redhat.com>
+
+	* pa.md (return): Revise comment for trivial return.
+	(return_internal): Non-trivial return pattern for non-PIC code.
+	(return_internal_pic): Non-trivial return pattern for PIC code.
+	It uses the PIC register to ensure it is restored after
+	function calls.
+	(epilogue): Generate appropriate return for PIC and non-PIC code.
+
 Mon Jan 29 23:53:14 2001  Christopher Faylor <cgf@cygnus.com>
 
 	* config/i386/cygwin.h: Fix -mno-cygwin search path for link.
