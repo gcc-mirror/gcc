@@ -579,14 +579,14 @@ using namespace abi;
 // initial part of a vtable, this structure is used with offsetof, so we don't
 // have to keep alignments consistent manually.
 struct vtable_prefix {
-  ptrdiff_t whole_object;           // offset to most derived object
+  __PTRDIFF_TYPE__ whole_object;           // offset to most derived object
   const __class_type_info *whole_type;  // pointer to most derived type_info
   const void *origin;               // what a class's vptr points to
 };
 
 template <typename T>
 inline const T *
-adjust_pointer (const void *base, ptrdiff_t offset)
+adjust_pointer (const void *base, __PTRDIFF_TYPE__ offset)
 {
   return reinterpret_cast <const T *>
     (reinterpret_cast <const char *> (base) + offset);
@@ -595,13 +595,13 @@ adjust_pointer (const void *base, ptrdiff_t offset)
 // ADDR is a pointer to an object.  Convert it to a pointer to a base,
 // using OFFSET. IS_VIRTUAL is true, if we are getting a virtual base.
 inline void const *
-convert_to_base (void const *addr, bool is_virtual, ptrdiff_t offset)
+convert_to_base (void const *addr, bool is_virtual, __PTRDIFF_TYPE__ offset)
 {
   if (is_virtual)
     {
       const void *vtable = *static_cast <const void *const *> (addr);
       
-      offset = *adjust_pointer<ptrdiff_t> (vtable, offset);
+      offset = *adjust_pointer<__PTRDIFF_TYPE__> (vtable, offset);
     }
 
   return adjust_pointer<void> (addr, offset);
@@ -716,7 +716,7 @@ __do_upcast (const __class_type_info *dst_type,
 }
 
 inline __class_type_info::__sub_kind __class_type_info::
-__find_public_src (ptrdiff_t src2dst,
+__find_public_src (__PTRDIFF_TYPE__ src2dst,
                    const void *obj_ptr,
                    const __class_type_info *src_type,
                    const void *src_ptr) const
@@ -730,7 +730,7 @@ __find_public_src (ptrdiff_t src2dst,
 }
 
 __class_type_info::__sub_kind __class_type_info::
-__do_find_public_src (ptrdiff_t,
+__do_find_public_src (__PTRDIFF_TYPE__,
                       const void *obj_ptr,
                       const __class_type_info *,
                       const void *src_ptr) const
@@ -742,7 +742,7 @@ __do_find_public_src (ptrdiff_t,
 }
 
 __class_type_info::__sub_kind __si_class_type_info::
-__do_find_public_src (ptrdiff_t src2dst,
+__do_find_public_src (__PTRDIFF_TYPE__ src2dst,
                       const void *obj_ptr,
                       const __class_type_info *src_type,
                       const void *src_ptr) const
@@ -753,7 +753,7 @@ __do_find_public_src (ptrdiff_t src2dst,
 }
 
 __class_type_info::__sub_kind __vmi_class_type_info::
-__do_find_public_src (ptrdiff_t src2dst,
+__do_find_public_src (__PTRDIFF_TYPE__ src2dst,
                       const void *obj_ptr,
                       const __class_type_info *src_type,
                       const void *src_ptr) const
@@ -761,13 +761,13 @@ __do_find_public_src (ptrdiff_t src2dst,
   if (obj_ptr == src_ptr && *this == *src_type)
     return __contained_public;
   
-  for (size_t i = vmi_base_count; i--;)
+  for (__SIZE_TYPE__ i = vmi_base_count; i--;)
     {
       if (!vmi_bases[i].__is_public_p ())
         continue; // Not public, can't be here.
       
       const void *base = obj_ptr;
-      ptrdiff_t offset = vmi_bases[i].__offset ();
+      __PTRDIFF_TYPE__ offset = vmi_bases[i].__offset ();
       bool is_virtual = vmi_bases[i].__is_virtual_p ();
       
       if (is_virtual)
@@ -791,7 +791,7 @@ __do_find_public_src (ptrdiff_t src2dst,
 }
 
 bool __class_type_info::
-__do_dyncast (ptrdiff_t,
+__do_dyncast (__PTRDIFF_TYPE__,
               __sub_kind access_path,
               const __class_type_info *dst_type,
               const void *obj_ptr,
@@ -817,7 +817,7 @@ __do_dyncast (ptrdiff_t,
 }
 
 bool __si_class_type_info::
-__do_dyncast (ptrdiff_t src2dst,
+__do_dyncast (__PTRDIFF_TYPE__ src2dst,
               __sub_kind access_path,
               const __class_type_info *dst_type,
               const void *obj_ptr,
@@ -857,7 +857,7 @@ __do_dyncast (ptrdiff_t src2dst,
 // work by filling in things lazily (when we know we need the information),
 // and opportunisticly take early success or failure results.
 bool __vmi_class_type_info::
-__do_dyncast (ptrdiff_t src2dst,
+__do_dyncast (__PTRDIFF_TYPE__ src2dst,
               __sub_kind access_path,
               const __class_type_info *dst_type,
               const void *obj_ptr,
@@ -884,12 +884,12 @@ __do_dyncast (ptrdiff_t src2dst,
       return false;
     }
   bool result_ambig = false;
-  for (size_t i = vmi_base_count; i--;)
+  for (__SIZE_TYPE__ i = vmi_base_count; i--;)
     {
       __dyncast_result result2;
       void const *base = obj_ptr;
       __sub_kind base_access = access_path;
-      ptrdiff_t offset = vmi_bases[i].__offset ();
+      __PTRDIFF_TYPE__ offset = vmi_bases[i].__offset ();
       bool is_virtual = vmi_bases[i].__is_virtual_p ();
       
       if (is_virtual)
@@ -1071,12 +1071,12 @@ __do_upcast (__sub_kind access_path,
   if (src_details & __flags_unknown_mask)
     src_details = vmi_flags;
   
-  for (size_t i = vmi_base_count; i--;)
+  for (__SIZE_TYPE__ i = vmi_base_count; i--;)
     {
       __upcast_result result2 (src_details);
       const void *base = obj_ptr;
       __sub_kind sub_access = access_path;
-      ptrdiff_t offset = vmi_bases[i].__offset ();
+      __PTRDIFF_TYPE__ offset = vmi_bases[i].__offset ();
       bool is_virtual = vmi_bases[i].__is_virtual_p ();
       
       if (!vmi_bases[i].__is_public_p ())
@@ -1141,12 +1141,12 @@ extern "C++" void *
 __dynamic_cast (const void *src_ptr,    // object started from
                 const __class_type_info *src_type, // type of the starting object
                 const __class_type_info *dst_type, // desired target type
-                ptrdiff_t src2dst) // how src and dst are related
+                __PTRDIFF_TYPE__ src2dst) // how src and dst are related
 {
   const void *vtable = *static_cast <const void *const *> (src_ptr);
   const vtable_prefix *prefix =
-      adjust_pointer <vtable_prefix> (vtable, 
-				      -offsetof (vtable_prefix, origin));
+      adjust_pointer <vtable_prefix>
+        (vtable, -__PTRDIFF_TYPE__(static_cast <vtable_prefix *> (NULL)->origin));
   const void *whole_ptr =
       adjust_pointer <void> (src_ptr, prefix->whole_object);
   const __class_type_info *whole_type = prefix->whole_type;

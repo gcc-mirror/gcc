@@ -41,19 +41,19 @@ namespace __cxxabiv1
 
 /* allocate and construct array */
 extern "C++" void *
-__cxa_vec_new (size_t element_count,
-               size_t element_size,
-               size_t padding_size,
+__cxa_vec_new (__SIZE_TYPE__ element_count,
+               __SIZE_TYPE__ element_size,
+               __SIZE_TYPE__ padding_size,
                void (*constructor) (void *),
                void (*destructor) (void *))
 {
-  size_t size = element_count * element_size + padding_size;
+  __SIZE_TYPE__ size = element_count * element_size + padding_size;
   char *base = static_cast <char *> (operator new[] (size));
   
   if (padding_size)
     {
       base += padding_size;
-      reinterpret_cast <size_t *> (base)[-1] = element_count;
+      reinterpret_cast <__SIZE_TYPE__ *> (base)[-1] = element_count;
     }
   try
     {
@@ -72,12 +72,12 @@ __cxa_vec_new (size_t element_count,
 /* construct array */
 extern "C++" void
 __cxa_vec_ctor (void *array_address,
-                size_t element_count,
-                size_t element_size,
+                __SIZE_TYPE__ element_count,
+                __SIZE_TYPE__ element_size,
                 void (*constructor) (void *),
                 void (*destructor) (void *))
 {
-  size_t ix = 0;
+  __SIZE_TYPE__ ix = 0;
   char *ptr = static_cast <char *> (array_address);
   
   try
@@ -97,14 +97,14 @@ __cxa_vec_ctor (void *array_address,
 /* destruct array */
 extern "C++" void
 __cxa_vec_dtor (void *array_address,
-                size_t element_count,
-                size_t element_size,
+                __SIZE_TYPE__ element_count,
+                __SIZE_TYPE__ element_size,
                 void (*destructor) (void *))
 {
   if (destructor)
     {
       char *ptr = static_cast <char *> (array_address);
-      size_t ix = element_count;
+      __SIZE_TYPE__ ix = element_count;
       bool unwinding = std::uncaught_exception ();
       
       ptr += element_count * element_size;
@@ -133,15 +133,15 @@ __cxa_vec_dtor (void *array_address,
 /* destruct and release array */
 extern "C++" void
 __cxa_vec_delete (void *array_address,
-                  size_t element_size,
-                  size_t padding_size,
+                  __SIZE_TYPE__ element_size,
+                  __SIZE_TYPE__ padding_size,
                   void (*destructor) (void *))
 {
   char *base = static_cast <char *> (array_address);
   
   if (padding_size)
     {
-      size_t element_count = reinterpret_cast <size_t *> (base)[-1];
+      __SIZE_TYPE__ element_count = reinterpret_cast <__SIZE_TYPE__ *> (base)[-1];
       base -= padding_size;
       try
         {
