@@ -1699,10 +1699,10 @@ set_mem_attributes (ref, t, objectp)
   if ((objectp || DECL_P (t)) && ! AGGREGATE_TYPE_P (type))
     MEM_SCALAR_P (ref) = 1;
 
-  /* We can set the alignment from the type if we are makign an object or
-     if this is an INDIRECT_REF.  */
-  if (objectp || TREE_CODE (t) == INDIRECT_REF)
-    align = TYPE_ALIGN (type);
+  /* We can set the alignment from the type if we are making an object,
+     this is an INDIRECT_REF, or if TYPE_ALIGN_OK.  */
+  if (objectp || TREE_CODE (t) == INDIRECT_REF || TYPE_ALIGN_OK (type))
+    align = MAX (align, TYPE_ALIGN (type));
 
   /* If the size is known, we can set that.  */
   if (TYPE_SIZE_UNIT (type) && host_integerp (TYPE_SIZE_UNIT (type), 1))
