@@ -1,4 +1,4 @@
-/* SocketChannel.java -- 
+/* SocketChannel.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -37,38 +37,39 @@ exception statement from your version. */
 
 package java.nio.channels;
 
-import java.nio.channels.spi.AbstractSelectableChannel;
-import java.nio.channels.spi.SelectorProvider;
-import java.nio.ByteBuffer;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.spi.AbstractSelectableChannel;
+import java.nio.channels.spi.SelectorProvider;
+
 
 /**
  * @author Michael Koch
  * @since 1.4
  */
-abstract public class SocketChannel extends AbstractSelectableChannel
+public abstract class SocketChannel extends AbstractSelectableChannel
   implements ByteChannel, ScatteringByteChannel, GatheringByteChannel
 {
   /**
    * Initializes this socket.
    */
-  protected SocketChannel (SelectorProvider provider)
+  protected SocketChannel(SelectorProvider provider)
   {
-    super (provider);
+    super(provider);
   }
- 
+
   /**
    * Opens a socket channel.
    *
    * @exception IOException If an error occurs
    */
-  public static SocketChannel open () throws IOException
+  public static SocketChannel open() throws IOException
   {
-    return SelectorProvider.provider ().openSocketChannel ();
+    return SelectorProvider.provider().openSocketChannel();
   }
-  
+
   /**
    * Opens a channel and connects it to a remote address.
    *
@@ -84,55 +85,53 @@ abstract public class SocketChannel extends AbstractSelectableChannel
    * @exception UnsupportedAddressTypeException If the type of the given remote
    * address is not supported.
    */
-  public static SocketChannel open (SocketAddress remote) throws IOException
+  public static SocketChannel open(SocketAddress remote)
+    throws IOException
   {
-    SocketChannel ch = open ();
+    SocketChannel ch = open();
     ch.connect(remote);
     return ch;
   }
-    
+
   /**
    * Reads data from the channel.
    *
    * @exception IOException If an error occurs
    * @exception NotYetConnectedException If this channel is not yet connected.
    */
-  public final long read (ByteBuffer[] dsts) throws IOException
+  public final long read(ByteBuffer[] dsts) throws IOException
   {
     long b = 0;
-    
+
     for (int i = 0; i < dsts.length; i++)
-      {
-        b += read (dsts [i]);
-      }
-    
+      b += read(dsts[i]);
+
     return b;
   }
-    
+
   /**
    * Writes data to the channel.
    *
    * @exception IOException If an error occurs
    * @exception NotYetConnectedException If this channel is not yet connected.
    */
-  public final long write (ByteBuffer[] dsts) throws IOException
+  public final long write(ByteBuffer[] dsts) throws IOException
   {
     long b = 0;
 
-    for (int  i= 0; i < dsts.length; i++)
-      {
-        b += write (dsts [i]);
-      }
-    
+    for (int i = 0; i < dsts.length; i++)
+      b += write(dsts[i]);
+
     return b;
-  }    
-   
+  }
+
   /**
    * Retrieves the valid operations for this channel.
    */
-  public final int validOps ()
+  public final int validOps()
   {
-    return SelectionKey.OP_CONNECT | SelectionKey.OP_READ | SelectionKey.OP_WRITE;
+    return SelectionKey.OP_CONNECT | SelectionKey.OP_READ
+           | SelectionKey.OP_WRITE;
   }
 
   /**
@@ -141,7 +140,7 @@ abstract public class SocketChannel extends AbstractSelectableChannel
    * @exception IOException If an error occurs
    * @exception NotYetConnectedException If this channel is not yet connected.
    */
-  public abstract int read (ByteBuffer dst) throws IOException;
+  public abstract int read(ByteBuffer dst) throws IOException;
 
   /**
    * Connects the channel's socket to the remote address.
@@ -162,8 +161,9 @@ abstract public class SocketChannel extends AbstractSelectableChannel
    * @exception UnsupportedAddressTypeException If the type of the given remote
    * address is not supported.
    */
-  public abstract boolean connect (SocketAddress remote) throws IOException;
-  
+  public abstract boolean connect(SocketAddress remote)
+    throws IOException;
+
   /**
    * Finishes the process of connecting a socket channel.
    *
@@ -176,46 +176,46 @@ abstract public class SocketChannel extends AbstractSelectableChannel
    * @exception NoConnectionPendingException If this channel is not connected
    * and a connection operation has not been initiated.
    */
-  public abstract boolean finishConnect () throws IOException;
- 
+  public abstract boolean finishConnect() throws IOException;
+
   /**
    * Tells whether or not the channel's socket is connected.
    */
-  public abstract boolean isConnected ();
-  
+  public abstract boolean isConnected();
+
   /**
    * Tells whether or not a connection operation is in progress on this channel.
    */
-  public abstract boolean isConnectionPending ();
-  
+  public abstract boolean isConnectionPending();
+
   /**
    * Reads data from the channel.
    *
    * @exception IOException If an error occurs
    * @exception NotYetConnectedException If this channel is not yet connected.
    */
-  public abstract long read (ByteBuffer[] dsts, int offset, int length)
+  public abstract long read(ByteBuffer[] dsts, int offset, int length)
     throws IOException;
- 
+
   /**
    * Retrieves the channel's socket.
    */
-  public abstract Socket socket ();
-  
+  public abstract Socket socket();
+
   /**
    * Writes data to the channel.
    *
    * @exception IOException If an error occurs
    * @exception NotYetConnectedException If this channel is not yet connected.
    */
-  public abstract int write (ByteBuffer src) throws IOException;
-  
+  public abstract int write(ByteBuffer src) throws IOException;
+
   /**
    * Writes data to the channel.
    *
    * @exception IOException If an error occurs
    * @exception NotYetConnectedException If this channel is not yet connected.
    */
-  public abstract long write (ByteBuffer[] srcs, int offset, int length)
+  public abstract long write(ByteBuffer[] srcs, int offset, int length)
     throws IOException;
 }

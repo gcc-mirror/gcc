@@ -1,4 +1,4 @@
-/* FileChannel.java -- 
+/* FileChannel.java --
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -42,6 +42,7 @@ import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.spi.AbstractInterruptibleChannel;
 
+
 /**
  * @author Michael Koch
  * @since 1.4
@@ -52,10 +53,9 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
   public static class MapMode
   {
     int m;
-
-    public static final MapMode READ_ONLY  = new MapMode(0);
+    public static final MapMode READ_ONLY = new MapMode(0);
     public static final MapMode READ_WRITE = new MapMode(1);
-    public static final MapMode PRIVATE    = new MapMode(2);
+    public static final MapMode PRIVATE = new MapMode(2);
 
     /**
      * Initializes the MapMode.
@@ -68,12 +68,12 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
     /**
      * Returns a string representation of the <code>MapMode</code> object.
      */
-    public String toString() 
+    public String toString()
     {
       if (this == READ_ONLY)
-        return "READ_ONLY";
+	return "READ_ONLY";
       else if (this == READ_WRITE)
-        return "READ_WRITE";
+	return "READ_WRITE";
 
       return "PRIVATE";
     }
@@ -82,7 +82,7 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
   /**
    * Initializes the channel.
    */
-  protected FileChannel ()
+  protected FileChannel()
   {
   }
 
@@ -102,34 +102,32 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
 
   /**
    * Return the size of the file thus far
-   * 
+   *
    * @exception ClosedChannelException If this channel is closed.
    */
   public abstract long size() throws IOException;
-  
+
   /**
    * Writes data to the channel.
    *
    * @exception IOException If an I/O error occurs.
    */
-  public final long write (ByteBuffer[] srcs) throws IOException
+  public final long write(ByteBuffer[] srcs) throws IOException
   {
     long result = 0;
-    
+
     for (int i = 0; i < srcs.length; i++)
-      {
-        result += write (srcs[i]);
-      }
-    
+      result += write(srcs[i]);
+
     return result;
   }
-  
+
   /**
    * Writes data to the channel.
    *
    * @exception IOException If an I/O error occurs.
    */
-  public abstract int write (ByteBuffer src) throws IOException;
+  public abstract int write(ByteBuffer src) throws IOException;
 
   /**
    * Writes data to the channel.
@@ -145,7 +143,8 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
    * @exception NonWritableChannelException If this channel was not opened for
    * writing.
    */
-  public abstract int write (ByteBuffer srcs, long position) throws IOException;
+  public abstract int write(ByteBuffer srcs, long position)
+    throws IOException;
 
   /**
    * Writes data to the channel.
@@ -154,13 +153,13 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
    */
   public abstract long write(ByteBuffer[] srcs, int offset, int length)
     throws IOException;
-  
+
   /**
    * Reads data from the channel.
    *
    * @exception IOException If an I/O error occurs.
    */
-  public abstract long read (ByteBuffer[] dsts, int offset, int length)
+  public abstract long read(ByteBuffer[] dsts, int offset, int length)
     throws IOException;
 
   /**
@@ -168,14 +167,12 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
    *
    * @exception IOException If an I/O error occurs.
    */
-  public final long read (ByteBuffer[] dsts) throws IOException
+  public final long read(ByteBuffer[] dsts) throws IOException
   {
     long result = 0;
-    
+
     for (int i = 0; i < dsts.length; i++)
-      {
-        read (dsts [i]);
-      }
+      read(dsts[i]);
 
     return result;
   }
@@ -186,7 +183,7 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
    * @exception IOException If an I/O error occurs.
    */
   public abstract int read(ByteBuffer dst) throws IOException;
-  
+
   /**
    * Reads data from the channel.
    *
@@ -201,8 +198,9 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
    * @exception NonReadableChannelException If this channel was not opened for
    * reading.
    */
-  public abstract int read(ByteBuffer dst, long position) throws IOException;
-  
+  public abstract int read(ByteBuffer dst, long position)
+    throws IOException;
+
   /**
    * Closes the channel.
    *
@@ -238,9 +236,9 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
    * another thread is already blocked in this method and is attempting to lock
    * an overlapping region.
    */
-  public final FileLock lock () throws IOException
+  public final FileLock lock() throws IOException
   {
-    return lock (0, Long.MAX_VALUE, false);
+    return lock(0, Long.MAX_VALUE, false);
   }
 
   /**
@@ -263,7 +261,7 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
    * @exception NonWritableChannelException If shared is false and this channel
    * was not opened for writing.
    */
-  public abstract FileLock lock (long position, long size, boolean shared)
+  public abstract FileLock lock(long position, long size, boolean shared)
     throws IOException;
 
   /**
@@ -276,9 +274,9 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
    * another thread is already blocked in this method and is attempting to lock
    * an overlapping region.
    */
-  public final FileLock tryLock () throws IOException
+  public final FileLock tryLock() throws IOException
   {
-    return tryLock (0, Long.MAX_VALUE, false);
+    return tryLock(0, Long.MAX_VALUE, false);
   }
 
   /**
@@ -293,7 +291,7 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
    * another thread is already blocked in this method and is attempting to lock
    * an overlapping region.
    */
-  public abstract FileLock tryLock (long position, long size, boolean shared)
+  public abstract FileLock tryLock(long position, long size, boolean shared)
     throws IOException;
 
   /**
@@ -302,7 +300,7 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
    * @exception ClosedChannelException If this channel is closed.
    * @exception IOException If an I/O error occurs.
    */
-  public abstract long position () throws IOException;
+  public abstract long position() throws IOException;
 
   /**
    * Sets the position of the channel on the assoziated file.
@@ -311,7 +309,8 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
    * @exception IllegalArgumentException If newPosition is negative.
    * @exception IOException If an I/O error occurs.
    */
-  public abstract FileChannel position (long newPosition) throws IOException;
+  public abstract FileChannel position(long newPosition)
+    throws IOException;
 
   /**
    * Transfers bytes from this channel's file to the given writable byte
@@ -331,8 +330,8 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
    * @exception NonWritableChannelException If the target channel was not
    * opened for writing.
    */
-  public abstract long transferTo (long position, long count,
-                                   WritableByteChannel target)
+  public abstract long transferTo(long position, long count,
+                                  WritableByteChannel target)
     throws IOException;
 
   /**
@@ -352,8 +351,8 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
    * @exception NonWritableChannelException If this channel was not opened for
    * writing.
    */
-  public abstract long transferFrom (ReadableByteChannel src, long position,
-                                     long count) throws IOException;
+  public abstract long transferFrom(ReadableByteChannel src, long position,
+                                    long count) throws IOException;
 
   /**
    * Truncates the channel's file at <code>size</code>.
@@ -364,5 +363,5 @@ public abstract class FileChannel extends AbstractInterruptibleChannel
    * @exception NonWritableChannelException If this channel was not opened for
    * writing.
    */
-  public abstract FileChannel truncate (long size) throws IOException;
+  public abstract FileChannel truncate(long size) throws IOException;
 }

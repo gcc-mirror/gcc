@@ -44,6 +44,7 @@ import java.nio.channels.Pipe;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
+
 /**
  * @author Michael Koch
  * @since 1.4
@@ -51,76 +52,99 @@ import java.nio.channels.SocketChannel;
 public abstract class SelectorProvider
 {
   private static SelectorProvider systemDefaultProvider;
-    
+
   /**
    * Initializes the selector provider.
    *
    * @exception SecurityException If a security manager has been installed and
    * it denies @see RuntimePermission ("selectorProvider").
    */
-  protected SelectorProvider ()
+  protected SelectorProvider()
   {
-    SecurityManager sm = System.getSecurityManager ();
+    SecurityManager sm = System.getSecurityManager();
     if (sm != null)
-      sm.checkPermission (new RuntimePermission ("selectorProvider"));
+      sm.checkPermission(new RuntimePermission("selectorProvider"));
   }
-  
+
   /**
    * Opens a datagram channel.
+   *
+   * @return a new datagram channel object
+   * 
+   * @exception IOException if an error occurs
    */
-  public abstract DatagramChannel openDatagramChannel () throws IOException;
-  
+  public abstract DatagramChannel openDatagramChannel()
+    throws IOException;
+
   /**
    * Opens a pipe.
+   *
+   * @return a new pipe object
+   * 
+   * @exception IOException if an error occurs
    */
-  public abstract Pipe openPipe () throws IOException;
-  
+  public abstract Pipe openPipe() throws IOException;
+
   /**
    * Opens a selector.
+   *
+   * @return a new selector object
+   * 
+   * @exception IOException if an error occurs
    */
-  public abstract AbstractSelector openSelector () throws IOException;
-  
+  public abstract AbstractSelector openSelector() throws IOException;
+
   /**
    * Opens a server socket channel.
+   *
+   * @return a new server socket channel object
+   * 
+   * @exception IOException if an error occurs
    */
-  public abstract ServerSocketChannel openServerSocketChannel ()
+  public abstract ServerSocketChannel openServerSocketChannel()
     throws IOException;
-  
+
   /**
    * Opens a socket channel.
+   *
+   * @return a new socket channel object
+   * 
+   * @exception IOException if an error occurs
    */
-  public abstract SocketChannel openSocketChannel () throws IOException;
-    
+  public abstract SocketChannel openSocketChannel() throws IOException;
+
   /**
    * Returns the system-wide default selector provider for this invocation
    * of the Java virtual machine.
+   *
+   * @return the default seletor provider
    */
-  public static synchronized SelectorProvider provider ()
+  public static synchronized SelectorProvider provider()
   {
     if (systemDefaultProvider == null)
       {
-        String propertyValue =
-          System.getProperty ("java.nio.channels.spi.SelectorProvider");
+	String propertyValue =
+	  System.getProperty("java.nio.channels.spi.SelectorProvider");
 
-        if (propertyValue == null
-            || propertyValue.equals (""))
-          systemDefaultProvider = new SelectorProviderImpl();
-        else
-          {
-            try
-              {
-                systemDefaultProvider = (SelectorProvider) Class.forName
-                  (propertyValue).newInstance();
-              }
-            catch (Exception e)
-              {
-                System.err.println ("Could not instantiate class: "
-                                    + propertyValue);
-                systemDefaultProvider = new SelectorProviderImpl();
-              }
-          }
+	if (propertyValue == null || propertyValue.equals(""))
+	  systemDefaultProvider = new SelectorProviderImpl();
+	else
+	  {
+	    try
+	      {
+		systemDefaultProvider =
+		  (SelectorProvider) Class.forName(propertyValue)
+		                          .newInstance();
+	      }
+	    catch (Exception e)
+	      {
+		System.err.println("Could not instantiate class: "
+		                   + propertyValue);
+		systemDefaultProvider = new SelectorProviderImpl();
+	      }
+	  }
       }
-    
+
     return systemDefaultProvider;
   }
 }
