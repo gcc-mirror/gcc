@@ -1,3 +1,8 @@
+2003-06-03  Andrew Haley  <aph@redhat.com>
+
+        * include/x86_64-signal.h (MAKE_THROW_FRAME): Mark sigcontext on
+        stack volatile to prevent optimization from removing it.
+
 2003-05-27  Michael Koch  <konqueror@gmx.de>
 
 	* java/util/zip/Deflater.java
