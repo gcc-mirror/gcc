@@ -2389,6 +2389,7 @@ uninstall: lang.uninstall
 	-rm -rf $(bindir)/$(GCC_CROSS_NAME)$(exeext)
 	-rm -rf $(bindir)/protoize$(exeext)
 	-rm -rf $(bindir)/unprotoize$(exeext)
+	-rm -rf $(bindir)/gcov$(exeext)
 	-rm -rf $(mandir)/$(GCC_INSTALL_NAME)$(manext)
 	-rm -rf $(mandir)/$(GCC_CROSS_NAME)$(manext)
 	-rm -rf $(mandir)/cccp$(manext)
