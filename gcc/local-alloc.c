@@ -1131,8 +1131,8 @@ update_equiv_regs ()
 		  NOTE_LINE_NUMBER (equiv_insn) = NOTE_INSN_DELETED;
 		  NOTE_SOURCE_FILE (equiv_insn) = 0;
 		  
-		  reg_equiv[regno].init_insns = 
-		    XEXP (reg_equiv[regno].init_insns, 1);
+		  reg_equiv[regno].init_insns
+		    = XEXP (reg_equiv[regno].init_insns, 1);
 		}
 	      /* Move the initialization of the register to just before
 		 INSN.  Update the flow information.  */
@@ -1140,8 +1140,7 @@ update_equiv_regs ()
 		{
 		  rtx new_insn;
 
-		  new_insn = emit_insn_before (copy_rtx (PATTERN (equiv_insn)),
-					       insn);
+		  new_insn = emit_insn_before (PATTERN (equiv_insn), insn);
 		  REG_NOTES (PREV_INSN (insn)) = REG_NOTES (equiv_insn);
 		  REG_NOTES (equiv_insn) = 0;
 
