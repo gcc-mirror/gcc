@@ -93,14 +93,14 @@ gnu_ld_flag=no)
 # With pre-defined ld
 AC_ARG_WITH(ld,
 [  --with-ld               arrange to use the specified ld (full pathname).],
-LD="$with_ld")
-if test x"${LD+set}" = x"set"; then
-  if test ! -x "$LD"; then
-    AC_MSG_WARN([cannot execute: $LD: check --with-ld or env. var. LD])
-  elif test "GNU" = `$LD -v </dev/null 2>&1 | sed '1s/^GNU.*/GNU/;q'`; then
+DEFAULT_LINKER="$with_ld")
+if test x"${DEFAULT_LINKER+set}" = x"set"; then
+  if test ! -x "$DEFAULT_LINKER"; then
+    AC_MSG_WARN([cannot execute: $DEFAULT_LINKER: check --with-ld or env. var. DEFAULT_LINKER])
+  elif test "GNU" = `$DEFAULT_LINKER -v </dev/null 2>&1 | sed '1s/^GNU.*/GNU/;q'`; then
     gnu_ld_flag=yes
   fi
-  AC_DEFINE_UNQUOTED(DEFAULT_LINKER,"$LD")
+  AC_DEFINE_UNQUOTED(DEFAULT_LINKER,"$DEFAULT_LINKER")
 fi
 
 # With GNU as
@@ -111,18 +111,15 @@ gas_flag=no)
 
 AC_ARG_WITH(as,
 [  --with-as               arrange to use the specified as (full pathname).],
-AS="$with_as")
-# Ignore any non-absolute value which comes from ${GCC_FLAGS_TO_PASS}.
-case $AS in
-/*)
-  if test ! -x "$AS"; then
-    AC_MSG_WARN([cannot execute: $AS: check --with-as or env. var. AS])
-  elif test "GNU" = `$AS -v </dev/null 2>&1 | sed '1s/^GNU.*/GNU/;q'`; then
+DEFAULT_ASSEMBLER="$with_as")
+if test x"${DEFAULT_ASSEMBLER+set}" = x"set"; then
+  if test ! -x "$DEFAULT_ASSEMBLER"; then
+    AC_MSG_WARN([cannot execute: $DEFAULT_ASSEMBLER: check --with-as or env. var. DEFAULT_ASSEMBLER])
+  elif test "GNU" = `$DEFAULT_ASSEMBLER -v </dev/null 2>&1 | sed '1s/^GNU.*/GNU/;q'`; then
     gas_flag=yes
   fi
-  AC_DEFINE_UNQUOTED(DEFAULT_ASSEMBLER,"$AS")
-  ;;
-esac
+  AC_DEFINE_UNQUOTED(DEFAULT_ASSEMBLER,"$DEFAULT_ASSEMBLER")
+fi
 
 # With stabs
 AC_ARG_WITH(stabs,
@@ -292,22 +289,22 @@ AC_SUBST(stage1_warn_cflags)
 AC_PROG_MAKE_SET
 
 AC_MSG_CHECKING([whether a default assembler was specified])
-if test x"${AS+set}" = x"set"; then
+if test x"${DEFAULT_ASSEMBLER+set}" = x"set"; then
     if test x"$with_gas" = x"no"; then
-    	AC_MSG_RESULT([yes ($AS)])
+    	AC_MSG_RESULT([yes ($DEFAULT_ASSEMBLER)])
     else
-	AC_MSG_RESULT([yes ($AS - GNU as)])
+	AC_MSG_RESULT([yes ($DEFAULT_ASSEMBLER - GNU as)])
     fi
 else
     AC_MSG_RESULT(no)
 fi
 
 AC_MSG_CHECKING([whether a default linker was specified])
-if test x"${LD+set}" = x"set"; then
+if test x"${DEFAULT_LINKER+set}" = x"set"; then
     if test x"$with_gnu_ld" = x"no"; then
-	AC_MSG_RESULT([yes ($LD)])
+	AC_MSG_RESULT([yes ($DEFAULT_LINKER)])
     else
-	AC_MSG_RESULT([yes ($LD - GNU ld)])
+	AC_MSG_RESULT([yes ($DEFAULT_LINKER - GNU ld)])
     fi
 else
     AC_MSG_RESULT(no)
@@ -3717,8 +3714,10 @@ AC_MSG_CHECKING(assembler alignment features)
 gcc_cv_as=
 gcc_cv_as_alignment_features=
 gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/gas
-if test -x "$AS"; then
-	gcc_cv_as=$AS
+if test -x "$DEFAULT_ASSEMBLER"; then
+	gcc_cv_as="$DEFAULT_ASSEMBLER"
+elif test -x "$AS"; then
+	gcc_cv_as="$AS"
 elif test -x as$host_exeext; then
 	# Build using assembler in the current directory.
 	gcc_cv_as=./as$host_exeext
