@@ -1,3 +1,9 @@
+2003-10-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/builtins-18.c: Wrap C99 tests with HAVE_C99_RUNTIME.
+	Define HAVE_C99_RUNTIME except on Solaris.
+	* gcc.dg/builtins-20.c: Likewise.
+
 2003-10-19  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* gcc.dg/old-style-asm-1.c: Use scan-assembler-times.
