@@ -1,3 +1,8 @@
+Sun Apr 12 20:54:59 1998  Richard Earnshaw (rearnsha@arm.com)
+
+	* configure.in (sparc-*-solaris2*): Add xm-siglist.h to xm_file.
+	Add USG and POSIX to xm_defines.
+
 Sun Apr 12 20:47:37 1998  Pat Rankin  <rankin@eql.caltech.edu>
 
 	* cccp.c (eprint_string): New function.
