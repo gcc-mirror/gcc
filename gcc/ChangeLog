@@ -1,3 +1,8 @@
+2003-04-15  James A. Morrison  <ja2morri@uwaterloo.ca>
+
+	* invoke.texi (Spec Files): Wrap if-exists-else example.
+	(MCore): Remove duplicate @itemx entries and @opindex entries.
+
 2003-04-15  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* unwind.inc (_Unwind_Backtrace): New function.
