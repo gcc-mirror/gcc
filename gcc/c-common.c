@@ -291,7 +291,7 @@ int warn_write_strings;
 
 int warn_redundant_decls;
 
-/* Warn about testing equality of floating point numbers. */
+/* Warn about testing equality of floating point numbers.  */
 
 int warn_float_equal;
 
@@ -1121,7 +1121,7 @@ fname_decl (rid, id)
 	 the current statement.  Later this tree will be moved to the
 	 beginning of the function and this line number will be wrong.
 	 To avoid this problem set the lineno to 0 here; that prevents
-	 it from appearing in the RTL. */
+	 it from appearing in the RTL.  */
       int saved_lineno = lineno;
       lineno = 0;
       

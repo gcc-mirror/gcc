@@ -1737,7 +1737,7 @@ remap_save_expr (tp, st_, fn, walk_subtrees)
 
 #ifdef INLINER_FOR_JAVA
 /* Add STMT to EXISTING if possible, otherwise create a new
-   COMPOUND_EXPR and add STMT to it. */
+   COMPOUND_EXPR and add STMT to it.  */
 
 static tree
 add_stmt_to_compound (existing, type, stmt)

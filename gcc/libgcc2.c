@@ -1271,7 +1271,7 @@ struct bb
 #include <errno.h>
 #endif
 
-/* Chain of per-object file bb structures. */
+/* Chain of per-object file bb structures.  */
 static struct bb *bb_head;
 
 /* Dump the coverage counts. We merge with existing counts when
@@ -1295,7 +1295,7 @@ __bb_exit_func (void)
   s_flock.l_type = F_WRLCK;
   s_flock.l_whence = SEEK_SET;
   s_flock.l_start = 0;
-  s_flock.l_len = 0; /* Until EOF. */
+  s_flock.l_len = 0; /* Until EOF.  */
   s_flock.l_pid = getpid ();
 #endif
 
@@ -1432,7 +1432,7 @@ __bb_exit_func (void)
 	merged_max = object_max;
       merged_arcs += ptr->ncounts;
       
-      /* Write out the data. */
+      /* Write out the data.  */
       if (/* magic */
 	  __write_long (-123, da_file, 4)
 	  /* number of functions in object file.  */

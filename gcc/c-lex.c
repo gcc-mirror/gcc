@@ -1016,7 +1016,7 @@ lex_string (str, len, wide)
 #ifdef MULTIBYTE_CHARS
       else if (char_len > 1)
 	{
-	  /* We're dealing with a multibyte character. */
+	  /* We're dealing with a multibyte character.  */
 	  for ( ; char_len >0; --char_len)
 	    {
 	      *q++ = *(p - char_len);

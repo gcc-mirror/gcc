@@ -91,18 +91,18 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 struct edge_info {
   unsigned int count_valid : 1;
   
-  /* Is on the spanning tree. */
+  /* Is on the spanning tree.  */
   unsigned int on_tree : 1;
   
   /* Pretend this edge does not exist (it is abnormal and we've
-     inserted a fake to compensate). */
+     inserted a fake to compensate).  */
   unsigned int ignore : 1;
 };
 
 struct bb_info {
   unsigned int count_valid : 1;
 
-  /* Number of successor and predecessor edges. */
+  /* Number of successor and predecessor edges.  */
   gcov_type succ_count;
   gcov_type pred_count;
 };

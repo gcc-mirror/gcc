@@ -1087,7 +1087,7 @@ emit_stack_restore (save_level, sa, after)
       sa = validize_mem (sa);
       /* These clobbers prevent the scheduler from moving
 	 references to variable arrays below the code
-	 that deletes (pops) the arrays. */
+	 that deletes (pops) the arrays.  */
       emit_insn (gen_rtx_CLOBBER (VOIDmode,
 		    gen_rtx_MEM (BLKmode, 
 			gen_rtx_SCRATCH (VOIDmode))));

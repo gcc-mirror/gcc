@@ -463,7 +463,7 @@ pp_c_integer_literal (ppi, i)
     }
 }
 
-/* Print out a REAL value. */
+/* Print out a REAL value.  */
 static inline void
 pp_c_real_literal (ppi, r)
      c_pretty_printer ppi;
@@ -556,7 +556,7 @@ pp_c_primary_expression (ppi, e)
       break;
 
     default:
-      /*  Make sure this call won't cause any infinite loop. */
+      /*  Make sure this call won't cause any infinite loop.  */
       pp_c_left_paren (ppi);
       pp_c_expression (ppi, e);
       pp_c_right_paren (ppi);

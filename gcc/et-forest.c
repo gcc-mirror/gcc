@@ -664,7 +664,7 @@ et_forest_enumerate_sons (forest, node, array)
 
   /* Parent is the rightmost node of the left successor.
      Look for all occurences having no right succesor
-     and lookup the sons. */
+     and lookup the sons.  */
   while (occ != stop)
     {
       splay (occ);

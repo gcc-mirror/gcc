@@ -6246,7 +6246,7 @@ from the machine description file `md'.  */\n\n");
       /* Write out information about function units.  */
       write_function_unit_info ();
       /* Output code for pipeline hazards recognition based on DFA
-	 (deterministic finite state automata. */
+	 (deterministic finite state automata.  */
       write_automata ();
     }
 
