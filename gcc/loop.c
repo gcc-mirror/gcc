@@ -22,8 +22,16 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* This is the loop optimization pass of the compiler.
    It finds invariant computations within loops and moves them
    to the beginning of the loop.  Then it identifies basic and
-   general induction variables.  Strength reduction is applied to the general
-   induction variables, and induction variable elimination is applied to
+   general induction variables.
+
+   Basic induction variables (BIVs) are a pseudo registers which are set within
+   a loop only by incrementing or decrementing its value.  General induction
+   variables (GIVs) are pseudo registers with a value which is a linear function
+   of a basic induction variable.  BIVs are recognized by `basic_induction_var';
+   GIVs by `general_induction_var'.
+
+   Once induction variables are identified, strength reduction is applied to the
+   general induction variables, and induction variable elimination is applied to
    the basic induction variables.
 
    It also finds cases where
@@ -4223,14 +4231,6 @@ emit_prefetch_instructions (struct loop *loop)
   return;
 }
 
-/* A "basic induction variable" or biv is a pseudo reg that is set
-   (within this loop) only by incrementing or decrementing it.  */
-/* A "general induction variable" or giv is a pseudo reg whose
-   value is a linear function of a biv.  */
-
-/* Bivs are recognized by `basic_induction_var';
-   Givs by `general_induction_var'.  */
-
 /* Communication with routines called via `note_stores'.  */
 
 static rtx note_insn;
