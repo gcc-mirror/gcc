@@ -1,3 +1,10 @@
+2004-10-30  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/16666
+	* c-decl.c (start_function): Don't check for DECL_BUILT_IN when
+	determining whether to copy parameter types from a previous
+	prototype declaration.
+
 2004-10-29  Roger Sayle  <roger@eyesopen.com>
 
 	PR rtl-optimization/17581
