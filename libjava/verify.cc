@@ -168,6 +168,53 @@ private:
     return get_type_val_for_signature ((jchar) k->method_count);
   }
 
+  // This is like _Jv_IsAssignableFrom, but it works even if SOURCE or
+  // TARGET haven't been prepared.
+  static bool is_assignable_from_slow (jclass target, jclass source)
+  {
+    // This will terminate when SOURCE==Object.
+    while (true)
+      {
+	if (source == target)
+	  return true;
+
+	if (target->isPrimitive () || source->isPrimitive ())
+	  return false;
+
+	// _Jv_IsAssignableFrom can handle a target which is an
+	// interface even if it hasn't been prepared.
+	if ((target->state > JV_STATE_LINKED || target->isInterface ())
+	    && source->state > JV_STATE_LINKED)
+	  return _Jv_IsAssignableFrom (target, source);
+
+	if (target->isArray ())
+	  {
+	    if (! source->isArray ())
+	      return false;
+	    target = target->getComponentType ();
+	    source = source->getComponentType ();
+	  }
+	else if (target->isInterface ())
+	  {
+	    for (int i = 0; i < source->interface_count; ++i)
+	      {
+		// We use a recursive call because we also need to
+		// check superinterfaces.
+		if (is_assignable_from_slow (target, source->interfaces[i]))
+		    return true;
+	      }
+	    return false;
+	  }
+	else if (target == &java::lang::Object::class$)
+	  return true;
+	else if (source->isInterface ()
+		 || source == &java::lang::Object::class$)
+	  return false;
+	else
+	  source = source->getSuperclass ();
+      }
+  }
+
   // This is used to keep track of which `jsr's correspond to a given
   // jsr target.
   struct subr_info
@@ -274,11 +321,12 @@ private:
     }
 
     // Promote a numeric type.
-    void promote ()
+    type &promote ()
     {
       if (key == boolean_type || key == char_type
 	  || key == byte_type || key == short_type)
 	key = int_type;
+      return *this;
     }
 
     // If *THIS is an unresolved reference type, resolve it.
@@ -373,9 +421,7 @@ private:
       // We must resolve both types and check assignability.
       resolve ();
       k.resolve ();
-      // Use _Jv_IsAssignableFrom to avoid premature class
-      // initialization.
-      return _Jv_IsAssignableFrom (data.klass, k.data.klass);
+      return is_assignable_from_slow (data.klass, k.data.klass);
     }
 
     bool isvoid () const
@@ -539,9 +585,7 @@ private:
 		  // This loop will end when we hit Object.
 		  while (true)
 		    {
-		      // Use _Jv_IsAssignableFrom to avoid premature
-		      // class initialization.
-		      if (_Jv_IsAssignableFrom (k, oldk))
+		      if (is_assignable_from_slow (k, oldk))
 			break;
 		      k = k->getSuperclass ();
 		      changed = true;
@@ -1543,7 +1587,11 @@ private:
     type_val rt = get_type_val_for_signature (jchar (v));
 
     if (arraycount == 0)
-      return type (rt);
+      {
+	// Callers of this function eventually push their arguments on
+	// the stack.  So, promote them here.
+	return type (rt).promote ();
+      }
 
     jclass k = construct_primitive_array_type (rt);
     while (--arraycount > 0)
