@@ -52,7 +52,7 @@ int main (void)
   
   printf ("%d %d\n", ts3_result->si, -(compare_value*2));
   
-  CHECK(ts3_result->si == -(ts3_arg.si*2));
+  CHECK(ts3_result->si == -(compare_value*2));
  
   free (ts3_result);
   exit(0);
