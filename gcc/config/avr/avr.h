@@ -58,6 +58,7 @@ extern int target_flags;
 #define MASK_NO_INTERRUPTS	0x00020000
 #define MASK_CALL_PROLOGUES	0x00040000
 #define MASK_TINY_STACK		0x00080000
+#define MASK_SHORT_CALLS	0x00100000
 
 #define TARGET_ORDER_1		(target_flags & MASK_ORDER_1)
 #define TARGET_ORDER_2		(target_flags & MASK_ORDER_2)
@@ -67,6 +68,7 @@ extern int target_flags;
 #define TARGET_CALL_PROLOGUES	(target_flags & MASK_CALL_PROLOGUES)
 #define TARGET_TINY_STACK	(target_flags & MASK_TINY_STACK)
 #define TARGET_NO_TABLEJUMP	(target_flags & MASK_NO_TABLEJUMP)
+#define TARGET_SHORT_CALLS	(target_flags & MASK_SHORT_CALLS)
 
 /* Dump each assembler insn's rtl into the output file.
    This is for debugging the compiler itself.  */
@@ -86,6 +88,8 @@ extern int target_flags;
     N_("Change only the low 8 bits of the stack pointer") },		\
   { "no-tablejump", MASK_NO_TABLEJUMP,					\
     N_("Do not generate tablejump insns") },				\
+  { "short-calls", MASK_SHORT_CALLS,					\
+    N_("Use rjmp/rcall (limited range) on >8K devices") },		\
   { "rtl", MASK_RTL_DUMP, NULL },					\
   { "size", MASK_INSN_SIZE_DUMP,					\
     N_("Output instruction sizes to the asm file") },			\
@@ -101,7 +105,7 @@ extern int avr_mega_p;
 extern int avr_enhanced_p;
 extern int avr_asm_only_p;
 
-#define AVR_MEGA (avr_mega_p)
+#define AVR_MEGA (avr_mega_p && !TARGET_SHORT_CALLS)
 #define AVR_ENHANCED (avr_enhanced_p)
 
 #define TARGET_OPTIONS {						      \
@@ -2585,11 +2589,11 @@ extern int avr_case_values_threshold;
 
 #define LINK_SPEC " %{!mmcu*:-m avr2}\
 %{mmcu=at90s1200|mmcu=attiny1*|mmcu=attiny28:-m avr1} \
-%{mmcu=attiny22|mmcu=attiny26|mmcu=at90s2*|mmcu=at90s4*|mmcu=at90s8*|mmcu=at90c8*:-m avr2}\
+%{mmcu=attiny22|mmcu=attiny26|mmcu=at90s2*|mmcu=at90s4*|mmcu=at90s8*|mmcu=at90c8*|mmcu=at86rf401:-m avr2}\
 %{mmcu=atmega103|mmcu=atmega603|mmcu=at43*|mmcu=at76*:-m avr3}\
 %{mmcu=atmega8*:-m avr4}\
 %{mmcu=atmega16*|mmcu=atmega32*|mmcu=atmega64|mmcu=atmega128|mmcu=at94k:-m avr5}\
-%{mmcu=atmega64|mmcu=atmega128|mmcu=atmega162: -Tdata 0x800100} "
+%{mmcu=atmega64|mmcu=atmega128|mmcu=atmega162|mmcu=atmega169: -Tdata 0x800100} "
 
 /* A C string constant that tells the GNU CC driver program options to
    pass to the linker.  It can also specify how to translate options
@@ -2653,6 +2657,7 @@ extern int avr_case_values_threshold;
 %{mmcu=at90s4434:crts4434.o%s} \
 %{mmcu=at90c8534:crtc8534.o%s} \
 %{mmcu=at90s8535:crts8535.o%s} \
+%{mmcu=at86rf401:crt86401.o%s} \
 %{mmcu=atmega103|mmcu=avr3:crtm103.o%s} \
 %{mmcu=atmega603:crtm603.o%s} \
 %{mmcu=at43usb320:crt43320.o%s} \
@@ -2660,10 +2665,12 @@ extern int avr_case_values_threshold;
 %{mmcu=at76c711:crt76711.o%s} \
 %{mmcu=atmega8|mmcu=avr4:crtm8.o%s} \
 %{mmcu=atmega8515:crtm8515.o%s} \
+%{mmcu=atmega8535:crtm8535.o%s} \
 %{mmcu=atmega16:crtm16.o%s} \
 %{mmcu=atmega161|mmcu=avr5:crtm161.o%s} \
 %{mmcu=atmega162:crtm162.o%s} \
 %{mmcu=atmega163:crtm163.o%s} \
+%{mmcu=atmega169:crtm169.o%s} \
 %{mmcu=atmega32:crtm32.o%s} \
 %{mmcu=atmega323:crtm323.o%s} \
 %{mmcu=atmega64:crtm64.o%s} \
