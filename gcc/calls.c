@@ -948,13 +948,13 @@ expand_call (exp, target, ignore)
 #if !defined(SETUP_INCOMING_VARARGS) || defined(STRICT_ARGUMENT_NAMING)
   if (TYPE_ARG_TYPES (funtype) != 0)
     n_named_args
-      = list_length (TYPE_ARG_TYPES (funtype))
+      = (list_length (TYPE_ARG_TYPES (funtype))
 #ifndef STRICT_ARGUMENT_NAMING
-	/* Don't include the last named arg.  */
-	- 1
+	 /* Don't include the last named arg.  */
+	 - 1
 #endif
-	/* Count the struct value address, if it is passed as a parm.  */
-	+ structure_value_addr_parm);
+	 /* Count the struct value address, if it is passed as a parm.  */
+	 + structure_value_addr_parm);
   else
 #endif
     /* If we know nothing, treat all args as named.  */
@@ -968,7 +968,7 @@ expand_call (exp, target, ignore)
   args_size.var = 0;
 
   /* In this loop, we consider args in the order they are written.
-     We fill up ARGS from the front of from the back if necessary
+     We fill up ARGS from the front or from the back if necessary
      so that in any case the first arg to be pushed ends up at the front.  */
 
 #ifdef PUSH_ARGS_REVERSED
