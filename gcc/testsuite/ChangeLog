@@ -1,3 +1,11 @@
+2005-01-19  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* gcc.dg/vect/vect-85.c: Add comment.
+	* gcc.dg/vect/vect-86.c: Add xfail for now.
+	* gcc.dg/vect/vect-87.c: Add xfail for now.
+	* gcc.dg/vect/vect-88.c: Add xfail for now.
+	* gcc.dg/vect/vect.exp: Remove -fno-tree-pre.
+
 2005-01-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/vect/vect-66.c: Slightly tweak 3rd loop.
