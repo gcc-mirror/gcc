@@ -2246,7 +2246,7 @@ namespace std
 
       // NB: This size is arbitrary. Should this be a data member,
       // initialized at construction?
-      const size_t __maxlen = 64;
+      const size_t __maxlen = 128;
       char_type* __res = 
        static_cast<char_type*>(__builtin_alloca(sizeof(char_type) * __maxlen));
 

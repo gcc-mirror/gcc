@@ -2834,6 +2834,8 @@ namespace std
       explicit
       __timepunct(__c_locale __cloc, const char* __s, size_t __refs = 0);
 
+      // FIXME: for error checking purposes _M_put should return the return
+      // value of strftime/wcsftime.
       void
       _M_put(_CharT* __s, size_t __maxlen, const _CharT* __format,
 	     const tm* __tm) const;

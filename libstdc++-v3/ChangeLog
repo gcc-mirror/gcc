@@ -1,3 +1,16 @@
+2004-08-25  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/17038 (partial)
+	* include/bits/locale_facets.tcc (time_put<>::do_put): Increase
+	__maxlen to 128.
+	* include/bits/locale_facets.h (class __timepunct): Add FIXME
+	comment about _M_put.
+	* config/locale/generic/time_members.cc (_M_put): Always null
+	terminate __s.
+	* config/locale/gnu/time_members.cc (_M_put): Likewise.
+	* testsuite/22_locale/time_put/put/char/17038.cc: New.
+	* testsuite/22_locale/time_put/put/wchar_t/17038.cc: New.
+
 2004-08-24  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/27_io/basic_istringstream/rdbuf/wchar_t/2832.cc: New.
