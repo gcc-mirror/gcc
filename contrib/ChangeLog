@@ -1,3 +1,7 @@
+1999-07-17  Alexandre Oliva  <oliva@dcc.unicamp.br>
+	
+	* test_summary: Replace egcs with gcc.  Update e-mail address.
+
 1999-06-12  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* test_summary: Set default mail-address and version for egcs
