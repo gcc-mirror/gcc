@@ -112,6 +112,10 @@ public class SecureRandom extends Random
                         provider = p[i];
                         return;
                       }
+                    catch (ThreadDeath death)
+                      {
+                        throw death;
+                      }
                     catch (Throwable t)
 		      {
 			// Ignore.

@@ -1,3 +1,12 @@
+2005-02-22  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/lang/reflect/Proxy.java,
+	java/net/URL.java,
+	java/security/SecureRandom.java,
+	java/util/Timer.java,
+	java/util/prefs/AbstractPreferences.java:
+	Don't catch java.lang.ThreadDeath.
+
 2005-02-22  David Gilbert  <david.gilbert@object-refinery.com>
 
 	* java/awt/font/TransformAttribute.java,

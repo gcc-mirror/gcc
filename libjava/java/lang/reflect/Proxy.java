@@ -1347,7 +1347,7 @@ public class Proxy implements Serializable
 
           return clazz;
         }
-      catch (Throwable e)
+      catch (Exception e)
         {
           // assert false;
           throw (Error) new InternalError("Unexpected: " + e).initCause(e);
