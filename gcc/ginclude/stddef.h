@@ -22,7 +22,7 @@
 
 /* On 4.3bsd-net2, make sure ansi.h is included, so we have
    one less case to deal with in the following.  */
-#if defined (__BSD_NET2__) || defined (____386BSD____)
+#if defined (__BSD_NET2__) || defined (____386BSD____) || defined (__FreeBSD__)
 #include <machine/ansi.h>
 #endif
 
