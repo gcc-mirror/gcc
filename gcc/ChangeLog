@@ -1,5 +1,11 @@
 2001-06-07  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* gthr-posix.h (__gthread_objc_thread_detach): Simply cast
+	pthread_t to objc_thread_t.
+	(__gthread_objc_thread_id): Likewise.
+
+2001-06-07  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* alpha/osf5.h (CPP_XFLOAT_SPEC): Override default definition.
 	(ASM_OLDAS_SPEC): Likewise.
 
