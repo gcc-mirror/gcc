@@ -93,53 +93,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define FFECOM_GCC_INCLUDE 1	/* Enable -I. */
 
-/* BEGIN stuff from gcc/cccp.c.  */
-
-/* The following symbols should be autoconfigured:
-	HAVE_FCNTL_H
-	HAVE_STDLIB_H
-	HAVE_SYS_TIME_H
-	HAVE_UNISTD_H
-	TIME_WITH_SYS_TIME
-   In the mean time, we'll get by with approximations based
-   on existing GCC configuration symbols.  */
-
-#ifdef POSIX
-# ifndef HAVE_STDLIB_H
-# define HAVE_STDLIB_H 1
-# endif
-# ifndef HAVE_UNISTD_H
-# define HAVE_UNISTD_H 1
-# endif
-#endif /* defined (POSIX) */
-
-#if defined (POSIX) || (defined (USG) && !defined (VMS))
-# ifndef HAVE_FCNTL_H
-# define HAVE_FCNTL_H 1
-# endif
-#endif
-
-#ifdef RLIMIT_STACK
-# include <sys/resource.h>
-#endif
-
-#if HAVE_FCNTL_H
-# include <fcntl.h>
-#endif
-
-/* This defines "errno" properly for VMS, and gives us EACCES. */
-#include <errno.h>
-
-#if HAVE_STDLIB_H
-# include <stdlib.h>
-#else
-char *getenv ();
-#endif
-
-#if HAVE_UNISTD_H
-# include <unistd.h>
-#endif
-
 /* VMS-specific definitions */
 #ifdef VMS
 #include <descrip.h>
@@ -164,12 +117,6 @@ typedef struct { unsigned :16, :16, :16; } vms_ino_t;
 #define ino_t vms_ino_t
 #define INCLUDE_LEN_FUDGE 10	/* leave room for VMS syntax conversion */
 #endif /* VMS */
-
-#ifndef O_RDONLY
-#define O_RDONLY 0
-#endif
-
-/* END stuff from gcc/cccp.c.  */
 
 #define FFECOM_DETERMINE_TYPES 1 /* for com.h */
 #include "com.h"

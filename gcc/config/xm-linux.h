@@ -19,9 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#undef  POSIX
-#define POSIX
-
 /* We do have one, but I'd like to use the one come with gcc since
    we have been doing that for a long time with USG defined.  H.J. */
 #undef HAVE_STAB_H

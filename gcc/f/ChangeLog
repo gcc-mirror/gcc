@@ -1,3 +1,7 @@
+Thu Mar  8 13:27:47 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c: Don't rely on the POSIX macro to define autoconf stuff.
+
 2001-03-07  Brad Lucier  <lucier@math.purdue.edu>
 
 	* g77.texi: Document new options -funsafe-math-optimizations
