@@ -3082,7 +3082,7 @@ const cpp_token *
 _cpp_get_token (pfile)
      cpp_reader *pfile;
 {
-  const cpp_token *token;
+  const cpp_token *token, *old_token;
   cpp_hashnode *node;
 
   /* Loop until we hit a non-macro token.  */
@@ -3111,6 +3111,8 @@ _cpp_get_token (pfile)
 	 be taken as a control macro.  */
       pfile->potential_control_macro = 0;
 
+      old_token = token;
+
       /* See if there's a token to paste with this one.  */
       if (!pfile->paste_level)
 	token = maybe_paste_with_next (pfile, token);
@@ -3120,10 +3122,17 @@ _cpp_get_token (pfile)
 	return token;
 
       /* Is macro expansion disabled in general, or are we in the
-	 middle of a token paste?  */
-      if (pfile->no_expand_level == pfile->cur_context || pfile->paste_level)
+	 middle of a token paste, or was this token just pasted?
+	 (Note we don't check token->flags & PASTED, because that
+	 counts tokens that were pasted at some point in the past,
+	 we're only interested in tokens that were pasted by this call
+	 to maybe_paste_with_next.)  */
+      if (pfile->no_expand_level == pfile->cur_context
+	  || pfile->paste_level
+	  || (token != old_token
+	      && pfile->no_expand_level + 1 == pfile->cur_context))
 	return token;
- 
+
       node = token->val.node;
       if (node->type != T_MACRO)
 	return special_symbol (pfile, node, token);
@@ -3336,6 +3345,13 @@ _cpp_get_line (pfile, pcol)
     index = pfile->token_list.tokens_used;
   else
     index = pfile->contexts[0].posn;
+
+  if (index == 0)
+    {
+      if (pcol)
+	*pcol = 0;
+      return 0;
+    }
 
   cur_token = &pfile->token_list.tokens[index - 1];
   if (pcol)

@@ -72,7 +72,7 @@ find_param (first, token)
   unsigned int param = 0;
 
   for (; first < token && first->type != CPP_CLOSE_PAREN; first++)
-    if (first->type == CPP_NAME)
+    if (first->type == CPP_NAME || first->type == CPP_DEFINED)
       {
 	param++;
 	if (first->val.node == token->val.node)
@@ -139,6 +139,8 @@ count_params (pfile, info)
 	case CPP_COMMENT:
 	  continue;		/* Ignore -C comments.  */
 
+	case CPP_DEFINED:	/* 'defined' may be used as a macro
+				   parameter name.  */
 	case CPP_NAME:
 	  if (prev_ident)
 	    {
@@ -429,7 +431,7 @@ save_expansion (pfile, info)
      dumping macro definitions.  They must go first.  */
   if (list->params_len)
     for (token = info->first_param; token < info->first; token++)
-      if (token->type == CPP_NAME)
+      if (token->type == CPP_NAME || token->type == CPP_DEFINED)
 	{
 	  /* Copy null too.  */
 	  memcpy (buf, token->val.node->name, token->val.node->length + 1);
@@ -443,6 +445,7 @@ save_expansion (pfile, info)
 
       switch (token->type)
 	{
+	case CPP_DEFINED:
 	case CPP_NAME:
 	  if (list->paramc == -1)
 	    break;

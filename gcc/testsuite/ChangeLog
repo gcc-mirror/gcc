@@ -1,5 +1,6 @@
 2000-07-31  Jakub Jelinek  <jakub@redhat.com>
 
+	* testsuite/gcc.dg/cpp/paste7.c: New test.
 	* gcc.dg/cpp/20000725-1.c: New test.
 
 2000-07-31  Zack Weinberg  <zack@wolery.cumb.org>
