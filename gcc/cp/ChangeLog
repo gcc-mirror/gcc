@@ -1,3 +1,10 @@
+Wed Dec  9 15:33:01 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* lex.c (lang_init_options): Initialize cpplib.
+	* decl2.c (parse_options,cpp_initialized): Removed.
+	(lang_decode_option): Move initialization of cpplib to
+	lang_init_options.
+
 1998-12-09  Mark Mitchell  <mark@markmitchell.com>
 
 	* decl.c (grokdeclarator): Update the name of the TEMPLATE_DECL, as
