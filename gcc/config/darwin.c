@@ -754,7 +754,8 @@ machopic_legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 	  else
 #endif  /*  HAVE_lo_sum  */
 	    {
-	      if (GET_CODE (orig) == REG)
+	      if (REG_P (orig)
+	          || GET_CODE (orig) == SUBREG)
 		{
 		  return orig;
 		}
