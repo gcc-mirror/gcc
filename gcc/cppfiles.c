@@ -364,7 +364,7 @@ purge_cache (inc)
   if (inc->buffer)
     {
       if (inc->mapped)
-	munmap ((caddr_t) inc->buffer, inc->st.st_size);
+	munmap ((PTR) inc->buffer, inc->st.st_size);
       else
 	free ((PTR) inc->buffer);
       inc->buffer = NULL;
