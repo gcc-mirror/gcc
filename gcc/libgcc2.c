@@ -1671,10 +1671,12 @@ set_new_handler (vfp handler)
 void
 __default_new_handler ()
 {
+#ifndef inhibit_libc
   /* don't use fprintf (stderr, ...) because it may need to call malloc.  */
   /* This should really print the name of the program, but that is hard to
      do.  We need a standard, clean way to get at the name.  */
   write (2, MESSAGE, sizeof (MESSAGE));
+#endif
   /* don't call exit () because that may call global destructors which
      may cause a loop.  */
   _exit (-1);
@@ -2276,11 +2278,26 @@ __unwind_function(void *ptr)
 #endif /* L_eh */
 
 #ifdef L_pure
+#ifndef inhibit_libc
+/* This gets us __GNU_LIBRARY__.  */
+#undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
+#include <stdio.h>
+
+#ifdef __GNU_LIBRARY__
+  /* Avoid forcing the library's meaning of `write' on the user program
+     by using the "internal" name (for use within the library)  */
+#define write(fd, buf, n)	__write((fd), (buf), (n))
+#endif
+#endif /* inhibit_libc */
+
 #define MESSAGE "pure virtual method called\n"
+
 void
 __pure_virtual ()
 {
+#ifndef inhibit_libc
   write (2, MESSAGE, sizeof (MESSAGE) - 1);
+#endif
   _exit (-1);
 }
 #endif
