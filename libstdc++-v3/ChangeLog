@@ -1,5 +1,11 @@
 2001-02-11  Gabriel Dos Reis  <gdr@codesourcery.com>
 
+	* src/valarray-inst.cc (gslice::_Indexer::_Indexer): Don't flip 
+	lengths and strides.
+	(__gslice_to_index): Document.
+
+2001-02-11  Gabriel Dos Reis  <gdr@codesourcery.com>
+
 	* include/bits/char_traits.h char_traits<char>::int_type: Change
 	to `int' to match 21.1.3.1/2.
 
