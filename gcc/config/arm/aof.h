@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for Advanced RISC Machines
    ARM compilation, AOF Assembler.
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rearnsha@armltd.co.uk)
 
 This file is part of GNU CC.
@@ -51,23 +51,19 @@ Boston, MA 02111-1307, USA.  */
    to that.  Unfortunately, there is nothing we can do here to guarantee that
    two areas with the same attributes will be linked adjacently in the
    resulting executable, so we have to be careful not to do pc-relative 
-   addressing across such boundaries.  This isn't a major problem for thumb,
-   since the range of such addressing modes is so limited that it would
-   rarely be useful anyway. */
+   addressing across such boundaries.  */
 char *aof_text_section ();
-#define TEXT_SECTION_ASM_OP \
-  aof_text_section (in_section == in_readonly_data)
+#define TEXT_SECTION_ASM_OP aof_text_section ()
 
 #define SELECT_RTX_SECTION(MODE,RTX) text_section ();
 
 char *aof_data_section ();
 #define DATA_SECTION_ASM_OP aof_data_section ()
 
-#define EXTRA_SECTIONS in_zero_init, in_readonly_data, in_ctor, in_dtor
+#define EXTRA_SECTIONS in_zero_init, in_ctor, in_dtor
 
 #define EXTRA_SECTION_FUNCTIONS	\
 ZERO_INIT_SECTION		\
-READONLYDATA_SECTION		\
 CTOR_SECTION			\
 DTOR_SECTION
 
@@ -82,32 +78,6 @@ zero_init_section ()						\
 	       zero_init_count++);				\
       in_section = in_zero_init;				\
     }								\
-}
-
-#define READONLYDATA_SECTION						\
-void									\
-readonly_data ()							\
-{									\
-  extern int arm_text_section_count;					\
-  if (in_section != in_readonly_data)					\
-    {									\
-      if (in_section != in_text)					\
-	{								\
-	  fprintf (asm_out_file,					\
-		   "\tAREA |C$$code%d|, CODE, READONLY",		\
-		   arm_text_section_count++);				\
-	  if (flag_pic)							\
-	    fputs (", PIC, REENTRANT", asm_out_file);			\
-	  fputc ('\n', asm_out_file);		 			\
-	}	 							\
-      in_section = in_readonly_data;					\
-    }									\
-}									\
-									\
-int									\
-in_readonly_data_section ()						\
-{									\
-  return in_section == in_readonly_data;				\
 }
 
 #define CTOR_SECTION							\
@@ -179,7 +149,6 @@ do {					\
   while (*ptr)				\
     (*ptr++) ();			\
 } while (0)
-#define READONLY_DATA_SECTION readonly_data
 
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
