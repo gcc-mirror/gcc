@@ -1,26 +1,26 @@
 /* Definitions of target machine for GNU compiler,
    for PowerPC NetBSD systems.
-   Copyright 2002 Free Software Foundation, Inc.
+   Copyright 2002, 2003 Free Software Foundation, Inc.
    Contributed by Wasabi Systems, Inc.
 
-This file is part of GNU CC.
+   This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation; either version 2, or (at your
+   option) any later version.
 
-GNU CC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
 
-You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.  */
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING.  If not, write to the
+   Free Software Foundation, 59 Temple Place - Suite 330, Boston,
+   MA 02111-1307, USA.  */
 
-#undef TARGET_OS_CPP_BUILTINS	/* FIXME: sysv4.h should not define this! */
+#undef  TARGET_OS_CPP_BUILTINS	/* FIXME: sysv4.h should not define this! */
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
@@ -34,7 +34,7 @@ Boston, MA 02111-1307, USA.  */
 /* Override the default from rs6000.h to avoid conflicts with macros
    defined in NetBSD header files.  */
 
-#undef RS6000_CPU_CPP_ENDIAN_BUILTINS
+#undef  RS6000_CPU_CPP_ENDIAN_BUILTINS
 #define RS6000_CPU_CPP_ENDIAN_BUILTINS()	\
   do						\
     {						\
@@ -53,41 +53,41 @@ Boston, MA 02111-1307, USA.  */
 
 /* Make GCC agree with <machine/ansi.h>.  */
 
-#undef SIZE_TYPE
+#undef  SIZE_TYPE
 #define SIZE_TYPE "unsigned int"
 
-#undef PTRDIFF_TYPE
+#undef  PTRDIFF_TYPE
 #define PTRDIFF_TYPE "int"
 
 /* Undo the spec mess from sysv4.h, and just define the specs
    the way NetBSD systems actually expect.  */
 
-#undef CPP_SPEC
+#undef  CPP_SPEC
 #define CPP_SPEC NETBSD_CPP_SPEC
 
-#undef LINK_SPEC
+#undef  LINK_SPEC
 #define LINK_SPEC \
   "%{!msdata=none:%{G*}} %{msdata=none:-G0} \
    %(netbsd_link_spec)"
 
 #define NETBSD_ENTRY_POINT "_start"
 
-#undef STARTFILE_SPEC
+#undef  STARTFILE_SPEC
 #define STARTFILE_SPEC NETBSD_STARTFILE_SPEC
 
-#undef ENDFILE_SPEC
+#undef  ENDFILE_SPEC
 #define ENDFILE_SPEC \
   "crtsavres%O%s %(netbsd_endfile_spec)"
 
-#undef LIB_SPEC
+#undef  LIB_SPEC
 #define LIB_SPEC NETBSD_LIB_SPEC
 
-#undef SUBTARGET_EXTRA_SPECS
+#undef  SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS					\
   { "netbsd_link_spec",		NETBSD_LINK_SPEC_ELF },		\
   { "netbsd_entry_point",	NETBSD_ENTRY_POINT },		\
   { "netbsd_endfile_spec",	NETBSD_ENDFILE_SPEC },
 
 
-#undef TARGET_VERSION
+#undef  TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (NetBSD/powerpc ELF)");

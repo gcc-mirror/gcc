@@ -1,24 +1,24 @@
 /* Definitions of target machine for GNU compiler.  Vxworks PowerPC version.
-   Copyright (C) 1996, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1996, 2000, 2002, 2003 Free Software Foundation, Inc.
 
-This file is part of GNU CC.
+   This file is part of GCC.
 
-GNU CC is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published
+   by the Free Software Foundation; either version 2, or (at your
+   option) any later version.
 
-GNU CC is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   GCC is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+   or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+   License for more details.
 
-You should have received a copy of the GNU General Public License
-along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.  */
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING.  If not, write to the
+   Free Software Foundation, 59 Temple Place - Suite 330, Boston,
+   MA 02111-1307, USA.  */
 
-#undef TARGET_OS_CPP_BUILTINS
+#undef  TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
@@ -72,7 +72,7 @@ Boston, MA 02111-1307, USA.  */
 %{v:-V} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
 %{mrelocatable} %{mrelocatable-lib} %{fpic:-K PIC} %{fPIC:-K PIC} -mbig"
 
-#undef MULTILIB_DEFAULTS
+#undef  MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS { "t604" }
 
 /* We can't use .ctors/.dtors sections.  */
@@ -80,5 +80,5 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_ASM_OUTPUT_DESTRUCTOR
 
 /* Nor sdata.  */
-#undef SDATA_DEFAULT_SIZE
+#undef  SDATA_DEFAULT_SIZE
 #define SDATA_DEFAULT_SIZE 0
