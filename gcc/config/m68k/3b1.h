@@ -509,3 +509,10 @@ do { fprintf (asm_out_file, "\ttag\t");	\
 #define UMODSI3_LIBCALL "*ulrem"
 #define MULSI3_LIBCALL "*lmul"
 #define UMULSI3_LIBCALL "*ulmul"
+
+/* Definitions for collect2.  */
+
+#define OBJECT_FORMAT_COFF
+#define NO_SYS_SIGLIST
+#define MY_ISCOFF(magic) \
+ ((magic) == MC68KWRMAGIC || (magic) == MC68KROMAGIC || (magic) == MC68KPGMAGIC)
