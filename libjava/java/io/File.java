@@ -1,6 +1,6 @@
 // File.java - File name
 
-/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2003  Free Software Foundation, Inc.
 
    This file is part of libgcj.
 
@@ -153,12 +153,20 @@ public class File implements Serializable, Comparable
     this (dir == null ? null : dir.path, name);
   }
 
-  // FIXME  ???
   public String getAbsolutePath ()
   {
     if (isAbsolute ())
       return path;
-    return System.getProperty("user.dir") + separatorChar + path;
+    else if (separatorChar == '\\' 
+             && path.length () > 0 && path.charAt (0) == '\\')
+      {
+        // On Windows, even if the path starts with a '\\' it is not
+        // really absolute until we prefix the drive specifier from
+        // the current working directory to it.
+        return System.getProperty ("user.dir").substring (0, 2) + path;
+      }
+    else
+      return System.getProperty ("user.dir") + separatorChar + path;
   }
 
   /** @since 1.2 */
@@ -289,8 +297,14 @@ public class File implements Serializable, Comparable
 
   public URL toURL () throws MalformedURLException
   {
-    return new URL ("file://" + getAbsolutePath ()
-		    + (isDirectory() ? "/" : ""));
+    // On Win32, Sun's JDK returns URLs of the form "file:/c:/foo/bar.txt",
+    // while on UNIX, it returns URLs of the form "file:/foo/bar.txt". 
+    if (separatorChar == '\\')
+      return new URL ("file:/" + getAbsolutePath ().replace ('\\', '/')
+		      + (isDirectory() ? "/" : ""));
+    else
+      return new URL ("file:" + getAbsolutePath ()
+		      + (isDirectory() ? "/" : ""));
   }
 
   private final native boolean performMkdir ();
