@@ -4198,7 +4198,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	  for (vp = &bl->biv, next = *vp; v = next, next = v->next_iv;)
 	    {
 	      HOST_WIDE_INT offset;
-	      rtx set, add_val, old_reg, dest_reg, last_use_insn;
+	      rtx set, add_val, old_reg, dest_reg, last_use_insn, note;
 	      int old_regno, new_regno;
 
 	      if (! v->always_executed
@@ -4304,7 +4304,13 @@ strength_reduce (scan_start, end, loop_top, insn_count,
     
 	      REG_IV_TYPE (new_regno) = GENERAL_INDUCT;
 	      REG_IV_INFO (new_regno) = v;
-    
+
+	      /* If next_insn has a REG_EQUAL note that mentiones OLD_REG,
+		 it must be replaced.  */
+	      note = find_reg_note (next->insn, REG_EQUAL, NULL_RTX);
+	      if (note && reg_mentioned_p (old_reg, XEXP (note, 0)))
+		XEXP (note, 0) = copy_rtx (SET_SRC (single_set (next->insn)));
+
 	      /* Remove the increment from the list of biv increments,
 		 and record it as a giv.  */
 	      *vp = next;
