@@ -1,3 +1,17 @@
+1998-12-11  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* cpplib.h (HOST_WIDE_INT): Get definition from "machmode.h"
+	and don't try to define it here.
+	* Makefile.in (cppmain.o): Depend on machmode.h.
+	(cpplib.o): Likewise.
+	(cpperror.o): Likewise.
+	(cppexp.o): Likewise.
+	(cppfiles.o): Likewise.
+	(cpphash.o): Likewise.
+	(cppalloc.o): Likewise.
+	(fix-header.o): Likewise.
+	(scan-decls.o): Likewise.
+
 Fri Dec 11 12:56:07 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload1.c (reload_combine): Use BASIC_BLOCK_LIVE_AT_START
