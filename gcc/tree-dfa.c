@@ -901,7 +901,14 @@ add_referenced_var (tree var, struct walk_state *walk_state)
       /* Scan DECL_INITIAL for pointer variables as they may contain
 	 address arithmetic referencing the address of other
 	 variables.  */
-      if (DECL_INITIAL (var))
+      if (DECL_INITIAL (var)
+	  /* Initializers of external variables are not useful to the
+	     optimizers.  */
+          && !DECL_EXTERNAL (var)
+	  /* It's not necessary to walk the initial value of non-constant
+	     public variables because it cannot be propagated by the
+	     optimizers. */
+	  && (!TREE_PUBLIC (var) || !TREE_CONSTANT (var)))
       	walk_tree (&DECL_INITIAL (var), find_vars_r, walk_state, 0);
     }
 }
