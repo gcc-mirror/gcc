@@ -1,3 +1,9 @@
+2004-07-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* genautomata.c (add_vect): Speedup by using integers as
+	bit-vectors for walking through the comb_vect and finding
+	a match.
+
 2004-07-16  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_zero_if_equal): Only use XORs if the second

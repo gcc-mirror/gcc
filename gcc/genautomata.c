@@ -7578,6 +7578,7 @@ add_vect (state_ainsn_table_t tab, int vect_num, vect_el_t *vect,
   int no_state_value;
   vect_el_t vect_el;
   int i;
+  unsigned long vect_mask, comb_vect_mask;
 
   if (vect_length == 0)
     abort ();
@@ -7599,23 +7600,77 @@ add_vect (state_ainsn_table_t tab, int vect_num, vect_el_t *vect,
        first_unempty_vect_index++)
     if (vect [first_unempty_vect_index] != undefined_vect_el_value)
       break;
+
   /* Search for the place in comb vect for the inserted vect.  */
-  for (comb_vect_index = 0;
-       comb_vect_index < comb_vect_els_num;
-       comb_vect_index++)
+
+  /* Slow case.  */
+  if (vect_length - first_unempty_vect_index >= SIZEOF_LONG * CHAR_BIT)
     {
-      for (vect_index = first_unempty_vect_index;
-           vect_index < vect_length
-             && vect_index + comb_vect_index < comb_vect_els_num;
-           vect_index++)
-        if (vect [vect_index] != undefined_vect_el_value
-            && (comb_vect_start [vect_index + comb_vect_index]
-		!= undefined_vect_el_value))
-          break;
-      if (vect_index >= vect_length
-          || vect_index + comb_vect_index >= comb_vect_els_num)
-        break;
+      for (comb_vect_index = 0;
+           comb_vect_index < comb_vect_els_num;
+           comb_vect_index++)
+        {
+          for (vect_index = first_unempty_vect_index;
+               vect_index < vect_length
+               && vect_index + comb_vect_index < comb_vect_els_num;
+               vect_index++)
+            if (vect [vect_index] != undefined_vect_el_value
+                && (comb_vect_start [vect_index + comb_vect_index]
+		    != undefined_vect_el_value))
+              break;
+          if (vect_index >= vect_length
+              || vect_index + comb_vect_index >= comb_vect_els_num)
+            break;
+        }
+      goto found;
     }
+
+  /* Fast case.  */
+  vect_mask = 0;
+  for (vect_index = first_unempty_vect_index;
+       vect_index < vect_length;
+       vect_index++)
+    {
+      vect_mask = vect_mask << 1;
+      if (vect [vect_index] != undefined_vect_el_value)
+	vect_mask |= 1;
+    }
+
+  /* Search for the place in comb vect for the inserted vect.  */
+  comb_vect_index = 0;
+  if (comb_vect_els_num == 0)
+    goto found;
+
+  comb_vect_mask = 0;
+  for (vect_index = first_unempty_vect_index;
+       vect_index < vect_length && vect_index < comb_vect_els_num;
+       vect_index++)
+    {
+      comb_vect_mask <<= 1;
+      if (vect_index + comb_vect_index < comb_vect_els_num
+	  && comb_vect_start [vect_index + comb_vect_index]
+	     != undefined_vect_el_value)
+	comb_vect_mask |= 1;
+    }
+  if ((vect_mask & comb_vect_mask) == 0)
+    goto found;
+
+  for (comb_vect_index = 1, i = vect_length; i < comb_vect_els_num;
+       comb_vect_index++, i++)
+    {
+      comb_vect_mask = (comb_vect_mask << 1) | 1;
+      comb_vect_mask ^= comb_vect_start [i] == undefined_vect_el_value;
+      if ((vect_mask & comb_vect_mask) == 0)
+	goto found;
+    }
+  for ( ; comb_vect_index < comb_vect_els_num; comb_vect_index++)
+    {
+      comb_vect_mask <<= 1;
+      if ((vect_mask & comb_vect_mask) == 0)
+	goto found;
+    }
+
+found:
   /* Slot was found.  */
   additional_els_num = comb_vect_index + real_vect_length - comb_vect_els_num;
   if (additional_els_num < 0)
