@@ -56,6 +56,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
      call_used_regs[MACL_REG] = 0;				\
   }
 
+/* ??? Need to write documentation for all SH options and add it to the
+   invoke.texi file.  */
+
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
 extern int target_flags;
@@ -206,6 +209,9 @@ do {								\
 /* Allocation boundary (in *bits*) for the code of a function.
    32 bit alignment is faster, because instructions are always fetched as a
    pair from a longword boundary.  */
+/* ??? Perhaps also define ASM_OUTPUT_ALIGN_CODE and/or ASM_OUTPUT_LOOP_ALIGN
+   so as to align jump targets and/or loops to 4 byte boundaries when not
+   optimizing for space?  */
 #define FUNCTION_BOUNDARY  (TARGET_SMALLCODE ? 16 : 32)
 
 /* Alignment of field after `int : 0' in a structure.  */
@@ -972,6 +978,13 @@ extern int current_function_anonymous_args;
    that the native compiler puts too large (> 32) immediate shift counts
    into a register and shifts by the register, letting the SH decide what
    to do instead of doing that itself.  */
+/* ??? This is defined, but the library routines in lib1funcs.asm do not
+   truncate the shift count.  This may result in incorrect results for
+   unusual cases.  Truncating the shift counts in the library routines would
+   make them faster.  However, the SH3 has hardware shifts that do not
+   truncate, so it appears that we need to leave this undefined for correct
+   SH3 code.  We can still using truncation in the library routines though to
+   make them faster.  */
 #define SHIFT_COUNT_TRUNCATED 1
 
 /* All integers have the same format so truncation is easy.  */
@@ -1065,6 +1078,10 @@ extern int current_function_anonymous_args;
 
 #define REGISTER_MOVE_COST(SRCCLASS, DSTCLASS) \
 	(((DSTCLASS == T_REGS) || (DSTCLASS == PR_REG)) ? 10 : 1)
+
+/* ??? Perhaps make MEMORY_MOVE_COST depend on compiler option?  This
+   would be so that people would slow memory systems could generate
+   different code that does fewer memory accesses.  */
 
 /* Assembler output control.  */
 
