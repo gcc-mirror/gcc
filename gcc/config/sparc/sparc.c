@@ -3454,6 +3454,20 @@ sparc_builtin_saveregs (arglist)
 		    gen_rtx (REG, DFmode,
 			     BASE_INCOMING_ARG_REG (DFmode) + regno));
 
+  if (flag_check_memory_usage)
+    {
+      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3, regbuf,
+		 ptr_mode, GEN_INT (n_intregs * UNITS_PER_WORD),
+			 TYPE_MODE (sizetype), GEN_INT (MEMORY_USE_RW), QImode);
+
+      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+			 fpregs, ptr_mode,
+			 GEN_INT (UNITS_PER_WORD 
+			 	  * GET_MODE_SIZE (SFmode)
+				  * (NPARM_REGS (SFmode) - first_floatreg)),
+			 TYPE_MODE (sizetype), GEN_INT (MEMORY_USE_RW), QImode);
+    }
+
   /* Return the address of the regbuf.  */
 
   return XEXP (regbuf, 0);
@@ -3492,6 +3506,13 @@ sparc_builtin_saveregs (arglist)
 		     frame_pointer_rtx,
 		     GEN_INT (STACK_POINTER_OFFSET
 			      + UNITS_PER_WORD * first_reg));
+
+  if (flag_check_memory_usage)
+    emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+		       address, ptr_mode,
+		       GEN_INT (UNITS_PER_WORD 
+			 	* (NPARM_REGS (SImode) - first_reg)),
+		       TYPE_MODE (sizetype), GEN_INT (MEMORY_USE_RW), QImode);
 
   return address;
 }
