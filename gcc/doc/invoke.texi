@@ -157,7 +157,7 @@ in the following sections.
 @xref{Overall Options,,Options Controlling the Kind of Output}.
 @gccoptlist{
 -c  -S  -E  -o @var{file}  -pipe  -pass-exit-codes  -x @var{language} @gol
--v  --target-help  --help}
+-v  -###  --target-help  --help}
 
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
@@ -891,6 +891,12 @@ all preprocessed C source on standard output.
 Print (on standard error output) the commands executed to run the stages
 of compilation.  Also print the version number of the compiler driver
 program and of the preprocessor and the compiler proper.
+
+@item -###
+@opindex ###
+Like @option{-v} except the commands are not executed and all command
+arguments are quoted.  This is useful for shell scripts to capture the
+driver-generated command lines.
 
 @item -pipe
 @opindex pipe
