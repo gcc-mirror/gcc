@@ -3025,6 +3025,9 @@ output_inline_function (fndecl)
 
   set_decl_origin_self (fndecl);
 
+  /* We're not deferring this any longer.  */
+  DECL_DEFER_OUTPUT (fndecl) = 0;
+
   /* Compile this function all the way down to assembly code.  */
   rest_of_compilation (fndecl);
 
