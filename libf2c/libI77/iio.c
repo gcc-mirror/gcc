@@ -79,7 +79,7 @@ integer
 s_rsfi (icilist * a)
 {
   int n;
-  if (n = c_si (a))
+  if ((n = c_si (a)))
     return (n);
   f__reading = 1;
   f__doed = rd_ed;
@@ -112,7 +112,7 @@ integer
 s_wsfi (icilist * a)
 {
   int n;
-  if (n = c_si (a))
+  if ((n = c_si (a)))
     return (n);
   f__reading = 0;
   f__doed = w_ed;

@@ -1,3 +1,23 @@
+Sun Jun  2 10:32:35 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libI77/dfe.c (s_rdfe, s_wdfe): Wrap parentheses around
+	assignment used as truth value.
+	* libI77/due.c (s_rdue, s_wdue): Likewise.
+	* libI77/endfile.c (f_end): Likewise.
+	* libI77/iio.c (s_rsfi, s_wsfi): Likewise.
+	* libI77/lread.c (ERR, l_C, nmL_getc, s_rsle): Likewise.
+	* libI77/lwrite.c (l_g, l_put): Likewise.
+	* libI77/open.c (f_open): Likewise.
+	* libI77/rdfmt.c (rd_Z): Likewise.
+	* libI77/rsfe.c (s_rsfe): Likewise.
+	* libI77/rsne.c (hash, mk_hashtab, nl_init, getname, getdimen,
+	x_rsne, s_rsne): Likewise.
+	* libI77/sue.c (s_rsue, s_wsue): Likewise.
+	* libI77/wref.c (wrt_E, wrt_F): Likewise.
+	* libI77/wsfe.c (s_wsfe): Likewise.
+	* libI77/wsle.c (s_wsle): Likewise.
+	* libI77/wsne.c (s_wsne): Likewise.
+
 Sun Jun  2 08:59:50 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libF77/main.c (main): Avoid implicit int.

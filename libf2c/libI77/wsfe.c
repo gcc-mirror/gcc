@@ -53,7 +53,7 @@ s_wsfe (cilist * a)		/*start */
   f__sequential = 1;
   f__formatted = 1;
   f__external = 1;
-  if (n = c_sfe (a))
+  if ((n = c_sfe (a)))
     return (n);
   f__elist = a;
   f__hiwater = f__cursor = f__recpos = 0;

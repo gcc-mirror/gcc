@@ -28,7 +28,7 @@ f_end (alist * a)
     {
       char nbuf[10];
       sprintf (nbuf, "fort.%ld", (long) a->aunit);
-      if (tf = fopen (nbuf, f__w_mode[0]))
+      if ((tf = fopen (nbuf, f__w_mode[0])))
 	fclose (tf);
       return (0);
     }
