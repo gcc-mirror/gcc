@@ -1,5 +1,10 @@
 2003-05-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* doc/install.texi (mips-sgi-irix5): Add missing
+	HTML <hr> marker.
+
+2003-05-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* doc/md.texi (Machine Constraints): Document
 	missing SPARC constraints.
 
