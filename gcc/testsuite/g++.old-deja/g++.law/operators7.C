@@ -38,7 +38,7 @@ int main() {
   test.c.k = 60;
   if (test2->c.k == 35
       && test.c.k == 60)
-    printf ("PASS\n");
+    exit (0);
   else
-    printf ("FAIL\n");
+    exit (1);
 }

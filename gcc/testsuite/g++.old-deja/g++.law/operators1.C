@@ -1,5 +1,6 @@
 // GROUPS passed operators
 // opr-conv file
+// excess errors test - XFAIL *-*-*
 // Message-Id: <199301040217.AA04377@cypress.ucsc.edu>
 // From: "Dean R. E. Long" <dlong@cse.ucsc.edu>
 // Subject: conversion operator bug?
@@ -23,5 +24,5 @@ int main()
     B *bp = (B *)a;
     B &br = a.operator B&();
 // What's the right test?
-    printf ("FAIL\n");
+    exit (1);
 }
