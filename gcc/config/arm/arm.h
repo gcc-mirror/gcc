@@ -921,7 +921,11 @@ enum reg_class
 {									\
   if (TREE_CONSTANT (decl)						\
       && (!flag_writable_strings || TREE_CODE (decl) != STRING_CST))	\
-    SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (decl), 0)) = 1;		\
+    {                                                                   \
+      rtx rtl = (TREE_CODE_CLASS (TREE_CODE (decl)) != 'd'              \
+                   ? TREE_CST_RTL (decl) : DECL_RTL (decl));            \
+      SYMBOL_REF_FLAG (XEXP (rtl, 0)) = 1;                              \
+    }                                                                   \
 }
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
