@@ -478,6 +478,12 @@ extern char *rs6000_cpu_string;
   ((CLASS1) == FLOAT_REGS && (CLASS2) == FLOAT_REGS ? 2		\
    : (CLASS1) == FLOAT_REGS && (CLASS2) != FLOAT_REGS ? 10	\
    : (CLASS1) != FLOAT_REGS && (CLASS2) == FLOAT_REGS ? 10	\
+   : (((CLASS1) == SPECIAL_REGS					\
+       || (CLASS1) == MQ_REGS || (CLASS1) == LINK_REGS		\
+       || (CLASS1) == CTR_REGS || (CLASS1) == BASE_REGS)	\
+      && ((CLASS2) == SPECIAL_REGS				\
+	  || (CLASS2) == MQ_REGS || (CLASS2) == LINK_REGS	\
+	  || (CLASS2) == CTR_REGS || (CLASS2) == BASE_REGS)) ? 10 \
    : 2)
 
 /* A C expressions returning the cost of moving data of MODE from a register to
