@@ -1,3 +1,8 @@
+2004-10-17  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/17743
+	* g++.dg/ext/attrib17.C: New test.
+
 2004-10-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/bf-spl1.c: Use 'float' as the base type for FP types.
