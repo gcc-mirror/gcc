@@ -1227,6 +1227,7 @@ ia64*-*-hpux*)
 	use_collect2=no
 	c_target_objs="ia64-c.o"
 	cxx_target_objs="ia64-c.o"
+	extra_options="${extra_options} ia64/ilp32.opt"
 	# If we decide to run fixproto we should define FIXPROTO_DEFINES
 	# in ia64/t-hpux, and also fix the definition of putenv in
 	# sys-protos.h (const char not char).

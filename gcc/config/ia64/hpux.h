@@ -91,11 +91,6 @@ do {							\
 	  %{mlp64:-L/usr/lib/hpux64/libp} -lgprof} \
      %{!symbolic:-lc}}"
 
-#undef SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES \
-  { "ilp32",    MASK_ILP32,     "Generate ILP32 code" }, \
-  { "lp64",    -MASK_ILP32,     "Generate LP64 code" },
-
 #define MULTILIB_DEFAULTS { "milp32" }
 
 /* A C expression whose value is zero if pointers that need to be extended
@@ -109,7 +104,7 @@ do {							\
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
-  (MASK_DWARF2_ASM | MASK_BIG_ENDIAN | MASK_ILP32 | MASK_INLINE_FLOAT_DIV_THR)
+  (MASK_DWARF2_ASM | MASK_BIG_ENDIAN | MASK_ILP32)
 
 /* This needs to be set to force structure arguments with a single
    integer field to be treated as structures and not as the type of

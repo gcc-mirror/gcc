@@ -98,21 +98,12 @@ static const char * const ia64_local_reg_names[80] =
 static const char * const ia64_output_reg_names[8] =
 { "out0", "out1", "out2", "out3", "out4", "out5", "out6", "out7" };
 
-/* String used with the -mfixed-range= option.  */
-const char *ia64_fixed_range_string;
-
 /* Determines whether we use adds, addl, or movl to generate our
    TLS immediate offsets.  */
 int ia64_tls_size = 22;
 
-/* String used with the -mtls-size= option.  */
-const char *ia64_tls_size_string;
-
 /* Which cpu are we scheduling for.  */
-enum processor_type ia64_tune;
-
-/* String used with the -tune= option.  */
-const char *ia64_tune_string;
+enum processor_type ia64_tune = PROCESSOR_ITANIUM2;
 
 /* Determines whether we run our final scheduling pass or not.  We always
    avoid the normal second scheduling pass.  */
@@ -197,6 +188,7 @@ static bool ia64_function_ok_for_sibcall (tree, tree);
 static bool ia64_return_in_memory (tree, tree);
 static bool ia64_rtx_costs (rtx, int, int, int *);
 static void fix_range (const char *);
+static bool ia64_handle_option (size_t, const char *, int);
 static struct machine_function * ia64_init_machine_status (void);
 static void emit_insn_group_barriers (FILE *);
 static void emit_all_insn_group_barriers (FILE *);
@@ -432,6 +424,11 @@ static const struct attribute_spec ia64_attribute_table[] =
    in an order different from the specified program order.  */
 #undef TARGET_RELAXED_ORDERING
 #define TARGET_RELAXED_ORDERING true
+
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS (TARGET_DEFAULT | TARGET_CPU_DEFAULT)
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION ia64_handle_option
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4599,10 +4596,60 @@ fix_range (const char *const_str)
     }
 }
 
-static struct machine_function *
-ia64_init_machine_status (void)
+/* Implement TARGET_HANDLE_OPTION.  */
+
+static bool
+ia64_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
 {
-  return ggc_alloc_cleared (sizeof (struct machine_function));
+  switch (code)
+    {
+    case OPT_mfixed_range_:
+      fix_range (arg);
+      return true;
+
+    case OPT_mtls_size_:
+      {
+	char *end;
+	unsigned long tmp = strtoul (arg, &end, 10);
+	if (*end || (tmp != 14 && tmp != 22 && tmp != 64))
+	  error ("bad value %<%s%> for -mtls-size= switch", arg);
+	else
+	  ia64_tls_size = tmp;
+	return true;
+      }
+
+    case OPT_mtune_:
+      {
+	static struct pta
+	  {
+	    const char *name;		/* processor name or nickname.  */
+	    enum processor_type processor;
+	  }
+	const processor_alias_table[] =
+	  {
+	    {"itanium", PROCESSOR_ITANIUM},
+	    {"itanium1", PROCESSOR_ITANIUM},
+	    {"merced", PROCESSOR_ITANIUM},
+	    {"itanium2", PROCESSOR_ITANIUM2},
+	    {"mckinley", PROCESSOR_ITANIUM2},
+	  };
+	int const pta_size = ARRAY_SIZE (processor_alias_table);
+	int i;
+
+	for (i = 0; i < pta_size; i++)
+	  if (!strcmp (arg, processor_alias_table[i].name))
+	    {
+	      ia64_tune = processor_alias_table[i].processor;
+	      break;
+	    }
+	if (i == pta_size)
+	  error ("bad value %<%s%> for -mtune= switch", arg);
+	return true;
+      }
+
+    default:
+      return true;
+    }
 }
 
 /* Handle TARGET_OPTIONS switches.  */
@@ -4610,108 +4657,14 @@ ia64_init_machine_status (void)
 void
 ia64_override_options (void)
 {
-  static struct pta
-    {
-      const char *const name;		/* processor name or nickname.  */
-      const enum processor_type processor;
-    }
-  const processor_alias_table[] =
-    {
-      {"itanium", PROCESSOR_ITANIUM},
-      {"itanium1", PROCESSOR_ITANIUM},
-      {"merced", PROCESSOR_ITANIUM},
-      {"itanium2", PROCESSOR_ITANIUM2},
-      {"mckinley", PROCESSOR_ITANIUM2},
-    };
-
-  int const pta_size = ARRAY_SIZE (processor_alias_table);
-  int i;
-
   if (TARGET_AUTO_PIC)
     target_flags |= MASK_CONST_GP;
 
-  if (TARGET_INLINE_FLOAT_DIV_LAT && TARGET_INLINE_FLOAT_DIV_THR)
-    {
-      if ((target_flags_explicit & MASK_INLINE_FLOAT_DIV_LAT)
-	   && (target_flags_explicit & MASK_INLINE_FLOAT_DIV_THR))
-	{
-	  warning ("cannot optimize floating point division for both latency and throughput");
-	  target_flags &= ~MASK_INLINE_FLOAT_DIV_THR;
-	}
-      else 
-	{
-	  if (target_flags_explicit & MASK_INLINE_FLOAT_DIV_THR)
-	    target_flags &= ~MASK_INLINE_FLOAT_DIV_LAT;
-	  else
-	    target_flags &= ~MASK_INLINE_FLOAT_DIV_THR;
-	}
-    }
-
-  if (TARGET_INLINE_INT_DIV_LAT && TARGET_INLINE_INT_DIV_THR)
-    {
-      if ((target_flags_explicit & MASK_INLINE_INT_DIV_LAT)
-	   && (target_flags_explicit & MASK_INLINE_INT_DIV_THR))
-	{
-	  warning ("cannot optimize integer division for both latency and throughput");
-	  target_flags &= ~MASK_INLINE_INT_DIV_THR;
-	}
-      else 
-	{
-	  if (target_flags_explicit & MASK_INLINE_INT_DIV_THR)
-	    target_flags &= ~MASK_INLINE_INT_DIV_LAT;
-	  else
-	    target_flags &= ~MASK_INLINE_INT_DIV_THR;
-	}
-    }
-
-  if (TARGET_INLINE_SQRT_LAT && TARGET_INLINE_SQRT_THR)
-    {
-      if ((target_flags_explicit & MASK_INLINE_SQRT_LAT)
-	   && (target_flags_explicit & MASK_INLINE_SQRT_THR))
-	{
-	  warning ("cannot optimize square root for both latency and throughput");
-	  target_flags &= ~MASK_INLINE_SQRT_THR;
-	}
-      else 
-	{
-	  if (target_flags_explicit & MASK_INLINE_SQRT_THR)
-	    target_flags &= ~MASK_INLINE_SQRT_LAT;
-	  else
-	    target_flags &= ~MASK_INLINE_SQRT_THR;
-	}
-    }
-
-  if (TARGET_INLINE_SQRT_LAT)
+  if (TARGET_INLINE_SQRT == INL_MIN_LAT)
     {
       warning ("not yet implemented: latency-optimized inline square root");
-      target_flags &= ~MASK_INLINE_SQRT_LAT;
+      TARGET_INLINE_SQRT = INL_MAX_THR;
     }
-
-  if (ia64_fixed_range_string)
-    fix_range (ia64_fixed_range_string);
-
-  if (ia64_tls_size_string)
-    {
-      char *end;
-      unsigned long tmp = strtoul (ia64_tls_size_string, &end, 10);
-      if (*end || (tmp != 14 && tmp != 22 && tmp != 64))
-	error ("bad value (%s) for -mtls-size= switch", ia64_tls_size_string);
-      else
-	ia64_tls_size = tmp;
-    }
-
-  if (!ia64_tune_string)
-    ia64_tune_string = "itanium2";
-
-  for (i = 0; i < pta_size; i++)
-    if (! strcmp (ia64_tune_string, processor_alias_table[i].name))
-      {
-	ia64_tune = processor_alias_table[i].processor;
-	break;
-      }
-
-  if (i == pta_size)
-    error ("bad value (%s) for -tune= switch", ia64_tune_string);
 
   ia64_flag_schedule_insns2 = flag_schedule_insns_after_reload;
   flag_schedule_insns_after_reload = 0;
@@ -4724,6 +4677,12 @@ ia64_override_options (void)
   ia64_section_threshold = g_switch_set ? g_switch_value : IA64_DEFAULT_GVALUE;
 
   init_machine_status = ia64_init_machine_status;
+}
+
+static struct machine_function *
+ia64_init_machine_status (void)
+{
+  return ggc_alloc_cleared (sizeof (struct machine_function));
 }
 
 static enum attr_itanium_class ia64_safe_itanium_class (rtx);
