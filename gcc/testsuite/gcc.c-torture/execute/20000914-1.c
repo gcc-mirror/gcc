@@ -1,3 +1,5 @@
+extern void *malloc(__SIZE_TYPE__);
+
 enum tree_code {
 ERROR_MARK,
 IDENTIFIER_NODE,

@@ -1,3 +1,7 @@
+2000-09-24  Richard Henderson  <rth@cygnus.com>
+
+	* gcc.c-torture/execute/20000914-1.c: Declare malloc.
+
 2000-09-24  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/c90-printf-1.c: Add test for wide string format.
