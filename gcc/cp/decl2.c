@@ -38,7 +38,6 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "cp-tree.h"
 #include "decl.h"
-#include "lex.h"
 #include "output.h"
 #include "except.h"
 #include "toplev.h"
@@ -155,27 +154,6 @@ grok_method_quals (tree ctype, tree function, tree quals)
 
   TREE_TYPE (function) = fntype;
   return this_quals;
-}
-
-/* A subroutine of the parser, to handle a component list.  */
-
-void
-grok_x_components (tree specs)
-{
-  tree t;
-
-  specs = strip_attrs (specs);
-
-  check_tag_decl (specs);
-  t = groktypename (specs, /*declarator=*/NULL);
-
-  /* The only case where we need to do anything additional here is an
-     anonymous union field, e.g.: `struct S { union { int i; }; };'.  */
-  if (t == NULL_TREE || !ANON_AGGR_TYPE_P (t))
-    return;
-
-  fixup_anonymous_aggr (t);
-  finish_member_declaration (build_decl (FIELD_DECL, NULL_TREE, t)); 
 }
 
 /* Build a PARM_DECL with NAME and TYPE, and set DECL_ARG_TYPE
@@ -840,7 +818,8 @@ finish_static_data_member_decl (tree decl, tree init, tree asmspec_tree,
    CHANGES TO CODE IN `start_method'.  */
 
 tree
-grokfield (const cp_declarator *declarator, tree declspecs, 
+grokfield (const cp_declarator *declarator, 
+	   cp_decl_specifier_seq *declspecs, 
 	   tree init, tree asmspec_tree,
            tree attrlist)
 {
@@ -848,7 +827,7 @@ grokfield (const cp_declarator *declarator, tree declspecs,
   const char *asmspec = 0;
   int flags = LOOKUP_ONLYCONVERTING;
 
-  if (declspecs == NULL_TREE
+  if (!declspecs->any_specifiers_p
       && declarator->kind == cdk_id
       && TREE_CODE (declarator->u.id.name) == SCOPE_REF
       && (TREE_CODE (TREE_OPERAND (declarator->u.id.name, 1)) 
@@ -1023,7 +1002,8 @@ grokfield (const cp_declarator *declarator, tree declspecs,
    WIDTH is non-NULL for bit fields only, and is an INTEGER_CST node.  */
 
 tree
-grokbitfield (const cp_declarator *declarator, tree declspecs, tree width)
+grokbitfield (const cp_declarator *declarator, 
+	      cp_decl_specifier_seq *declspecs, tree width)
 {
   tree value = grokdeclarator (declarator, declspecs, BITFIELD, 0, NULL);
 

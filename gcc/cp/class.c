@@ -33,7 +33,6 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "output.h"
 #include "toplev.h"
-#include "lex.h"
 #include "target.h"
 #include "convert.h"
 
@@ -2624,8 +2623,6 @@ add_implicitly_declared_members (tree t,
   tree virtual_dtor = NULL_TREE;
   tree *f;
 
-  ++adding_implicit_members;
-
   /* Destructor.  */
   if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) && !TYPE_HAS_DESTRUCTOR (t))
     {
@@ -2700,8 +2697,6 @@ add_implicitly_declared_members (tree t,
       *f = TYPE_METHODS (t);
       TYPE_METHODS (t) = implicit_fns;
     }
-
-  --adding_implicit_members;
 }
 
 /* Subroutine of finish_struct_1.  Recursively count the number of fields
@@ -4206,8 +4201,7 @@ check_bases_and_members (tree t)
   TYPE_HAS_COMPLEX_ASSIGN_REF (t)
     |= TYPE_HAS_ASSIGN_REF (t) || TYPE_CONTAINS_VPTR_P (t);
 
-  /* Synthesize any needed methods.  Note that methods will be synthesized
-     for anonymous unions; grok_x_components undoes that.  */
+  /* Synthesize any needed methods.   */
   add_implicitly_declared_members (t, cant_have_default_ctor,
 				   cant_have_const_ctor,
 				   no_const_asn_ref);

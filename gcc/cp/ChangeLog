@@ -1,3 +1,80 @@
+2004-06-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (cp/lex.o): Do not depend on cp/lex.h.
+	(cp/decl.o): Likewise.
+	(cp/decl2.o): Likewise.
+	(cp/pt.o): Likewise.
+	(cp/semantics.o): Likewise.
+	* config-lang.in (gtfiles): Do not reference cp/lex.h.
+	* class.c: Do not include lex.h.
+	(add_implicitly_declared_members): Do not use
+	adding_implicit_members.
+	(check_bases_and_members): Do not talk about grok_x_components.
+	* cp/cp-tree.h (adding_implicit_members): Remove.
+	(cp_storage_class): New type.
+	(cp_decl_spec): Likewise.
+	(cp_decl_specifier_seq): Likewise.
+	(cp_parameter_declarator): Use it for the decl_specifiers field.
+	(check_tag_decl): Adjust prototype.
+	(shadow_tag): Likewise.
+	(groktypename): Likewise.
+	(start_decl): Likewise.
+	(start_function): Likewise.
+	(start_method): Likewise.
+	(grok_x_components): Remove.
+	(grokfield): Adjust prototype.
+	(grokbitfield): Likewise.
+	(finish_member_class_template): Remove.
+	* decl.c: Do not include lex.h.
+	(adding_implicit_members): Do not define.
+	(check_tag_decl): Do not use trees to represent decl-specifiers.
+	(shadow_tag): Likewise.
+	(groktypename): Likewise.
+	(start_decl): Likewise.
+	(grokvardecl): Likewise.
+	(grokdeclarator): Likewise.
+	(grokparms): Likewise.
+	(start_function): Likewise.
+	(start_method): Likewise.
+	* decl.h (grokdeclarator): Adjust prototype.
+	* decl2.c: Do not include lex.h.
+	(grok_x_components): Remove.
+	(grokfield): Do not use trees to represent decl-specifiers.
+	(grokbitfield): Likewise.
+	* lex.c: Do not include lex.h.
+	* lex.h: Remove.
+	* parser.c: Include target.h.
+	(clear_decl_specs): New function.
+	(cp_parser_translation_unit): Do not use trees to represent
+	decl-specifiers.
+	(cp_parser_postfix_expression): Likewise.
+	(cp_parser_new_type_id): Likewise.
+	(cp_parser_condition): Likewise.
+	(cp_parser_simple_declaration): Likewise.
+	(cp_parser_decl_specifier_seq): Likewise.
+	(cp_parser_function_specifier_opt): Likewise.
+	(cp_parser_conversion_type_id): Likewise.
+	(cp_parser_template_parameter): Likewise.
+	(cp_parser_explicit_instantiation): Likewise.
+	(cp_parser_type_specifier): Likewise.
+	(cp_parser_simple_type_specifier): Likewise.
+	(cp_parser_init_declarator): Likewise.
+	(cp_parser_type_id): Likewise.
+	(cp_parser_type_specifier_seq): Likewise.
+	(cp_parser_parameter_declaration): Likewise.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_exception_declaration): Likewise.
+	(cp_parser_function_definition_from_specifiers_and_declarator):
+	Likewise.
+	(cp_parser_single_declaration): Likewise.
+	(cp_parser_save_member_function_body): Likewise.
+	(cp_parser_friend_p): Likewise.
+	(cp_parser_set_storage_class): New function.
+	(cp_parser_set_decl_spec_type): Likewise.
+	* pt.c: Do not include lex.h.
+	* semantics.c: Likewise.
+	(finish_member_class_template): Remove.	
+	
 2004-06-23  Roger Sayle  <roger@eyesopen.com>
 
 	* call.c (build_cxx_call): Don't call expand_tree_builtin.  No
