@@ -4988,7 +4988,15 @@ asctoeg (ss, y, oprec)
 
   /* Exponent interpretation */
  expnt:
+  /* 0.0eXXX is zero, regardless of XXX.  Check for the 0.0. */
+  for (k = 0; k < NI; k++)
+    {
+      if (yy[k] != 0)
+	goto read_expnt;
+    }
+  goto aexit;
 
+read_expnt:
   esign = 1;
   exp = 0;
   ++s;
