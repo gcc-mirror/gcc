@@ -1,3 +1,14 @@
+2000-04-17  Richard Henderson  <rth@cygnus.com>
+
+	* loop.c (canonicalize_condition): Add WANT_REG argument.
+	Stop the search if we match it.
+	* expr.h (canonicalize_condition): Update decl.
+	* predict.c (expected_value_to_br_prob): Use it.  Track last
+	expected value note.
+	(find_expected_value): Remove.
+
+	* reorg.c (mostly_true_jump): Always use BR_PROB if present.
+
 2000-04-17  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* aclocal.m4 (AM_GNU_GETTEXT): Don't AC_REQUIRE([AC_FUNC_MMAP]).
