@@ -110,7 +110,6 @@ case $build in
     ;;
   i386-*-vsta) 
     # Intel 80386's running VSTa kernel
-    build_xm_file="i386/xm-vsta.h"
     ;;
   m68000-hp-hpux* | m68k-hp-hpux*) 
     # HP 9000 series 300
