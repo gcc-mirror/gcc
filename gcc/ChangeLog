@@ -1,3 +1,8 @@
+Sat Sep 26 10:57:09 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* function.c (optimize_bit_field): Don't remove SUBREG from dest
+	if SUBREG_REG is multi-word.
+
 Wed Sep 23 05:43:23 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* reload.c (find_reloads_address): Deal with address which is
