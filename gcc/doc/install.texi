@@ -105,13 +105,11 @@ as detailing some target specific installation instructions.
 
 GCC includes several components that previously were separate distributions
 with their own installation instructions.  This document supersedes all
-package specific installation instructions.  We provide the component
-specific installation information in the source distribution for historical
-reference purposes only.
+package specific installation instructions.
 
 @emph{Before} starting the build/install procedure please check the
 @ifnothtml
-@xref{Specific, host/target specific installation notes}.
+@ref{Specific, host/target specific installation notes}.
 @end ifnothtml
 @ifnotinfo
 @uref{specific.html,,host/target specific installation notes}.
@@ -149,7 +147,8 @@ Please note that GCC does not support @samp{make uninstall} and probably
 won't do so in the near future as this would open a can of worms.  Instead,
 we suggest that you install GCC into a directory of its own and simply
 remove that directory when you do not need that specific version of GCC
-any longer.
+any longer, and, if shared libraries are installed there as well, no
+more binaries exist that use them.
 
 @html
 <hr>
@@ -175,7 +174,8 @@ any longer.
 @cindex Downloading GCC
 @cindex Downloading the Source
 
-GCC is distributed via CVS and FTP tarballs compressed with @command{gzip} or
+GCC is distributed via @uref{http://gcc.gnu.org/cvs.html,,CVS} and FTP
+tarballs compressed with @command{gzip} or
 @command{bzip2}.  It is possible to download a full distribution or specific
 components.
 
@@ -183,14 +183,13 @@ Please refer to our @uref{http://gcc.gnu.org/releases.html,,releases web page}
 for information on how to obtain GCC@.
 
 The full distribution includes the C, C++, Objective-C, Fortran, Java,
-and Chill compilers.  The full distribution also includes runtime libraries
-for C++, Objective-C, Fortran, Java and Chill.  (GCC 3.0 does not
-include Chill.  Releases before 3.0 do not include the Java runtime
-library.)  In GCC 3.0 and later versions, GNU compiler testsuites
+and CHILL compilers.  The full distribution also includes runtime libraries
+for C++, Objective-C, Fortran, Java and CHILL.  (GCC 3.0 does not
+include CHILL.)  In GCC 3.0 and later versions, GNU compiler testsuites
 are also included in the full distribution.
 
 If you choose to download specific components, you must download the core
-gcc distribution plus any language specific distributions you wish to
+GCC distribution plus any language specific distributions you wish to
 use.  The core distribution includes the C language front end as well as the
 shared components.  Each language has a tarball which includes the language
 front end as well as the language runtime (when appropriate).
@@ -248,7 +247,7 @@ where @var{srcdir} == @var{objdir} should still work, but doesn't
 get extensive testing; building where @var{objdir} is a subdirectory
 of @var{srcdir} is unsupported.
 
-If you have built GCC previously in the same directory for a
+If you have previously built GCC in the same directory for a
 different target machine, do @samp{make distclean} to delete all files
 that might be invalid.  One of the files this deletes is
 @file{Makefile}; if @samp{make distclean} complains that @file{Makefile}
@@ -262,12 +261,18 @@ Second, when configuring a native system, either @command{cc} or
 your environment before running configure.  Otherwise the configuration
 scripts may fail.
 
+Note that the bootstrap compiler and the resulting GCC must be link
+compatible, else the bootstrap will fail with linker errors about
+incompatible object file formats.  Several multilibed targets are
+affected by this requirement, see @ref{Specific, host/target specific
+installation notes} for details.
+
 To configure GCC:
 
 @example
    % mkdir @var{objdir}
    % cd @var{objdir}
-   % @var{srcdir}/configure [@var{target}] [@var{options}]
+   % @var{srcdir}/configure [@var{options}] [@var{target}]
 @end example
 
 
@@ -339,7 +344,7 @@ manual.)
 
 @item --with-gxx-include-dir=@var{dirname}
 Specify
-the installation directory for g++ header files.  The default is
+the installation directory for G++ header files.  The default is
 @file{@var{prefix}/include/g++-v3}.
 
 @end table
@@ -382,7 +387,9 @@ installing GCC creates the directory.
 @item --enable-shared[=@var{package}[,@dots{}]]
 Build shared versions of libraries, if shared libraries are supported on
 the target platform.  Unlike GCC 2.95.x and earlier, shared libraries
-are enabled by default on all platforms that support shared libraries.
+are enabled by default on all platforms that support shared libraries,
+except for @samp{libobjc} which is built as a static library only by
+default.
 
 If a list of packages is given as an argument, build shared libraries
 only for the listed packages.  For other packages, only static libraries
@@ -391,7 +398,7 @@ will be built.  Package names currently recognized in the GCC tree are
 @samp{libstdc++-v3}), @samp{libffi}, @samp{zlib}, @samp{boehm-gc} and
 @samp{libjava}.  Note that @samp{libobjc} does not recognize itself by
 any name, so, if you list package names in @option{--enable-shared},
-you'll only get static Objective-C libraries.  @samp{libf2c} and
+you will only get static Objective-C libraries.  @samp{libf2c} and
 @samp{libiberty} do not support shared libraries at all.
 
 Use @option{--disable-shared} to build only static libraries.  Note that
@@ -406,7 +413,7 @@ assembler is not actually the GNU assembler.  (Confusion will also
 result if the compiler finds the GNU assembler but has not been
 configured with @option{--with-gnu-as}.)  If you have more than one
 assembler installed on your system, you may want to use this option in
-connection with @option{--with-as=@file{/path/to/gas}}.
+connection with @option{--with-as=@var{pathname}}.
 
 The systems where it makes a difference whether you use the GNU assembler are
 @samp{hppa1.0-@var{any}-@var{any}}, @samp{hppa1.1-@var{any}-@var{any}},
@@ -422,7 +429,7 @@ On the systems listed above (except for the HP-PA, for ISC on the
 386, and for @samp{mips-sgi-irix5.*}), if you use the GNU assembler,
 you should also use the GNU linker (and specify @option{--with-gnu-ld}).
 
-@item --with-as=@file{/path/to/as}
+@item --with-as=@var{pathname}
 Specify that the
 compiler should use the assembler pointed to by @var{pathname}, rather
 than the one found by the standard rules to find an assembler, which
@@ -433,9 +440,9 @@ Check the
 @file{@var{exec_prefix}/lib/gcc-lib/@var{target}/@var{version}}
 directory, where @var{exec_prefix} defaults to @var{prefix} which
 defaults to @file{/usr/local} unless overridden by the
-@option{--prefix=/pathname} switch described above.  @var{target} is the
+@option{--prefix=@var{pathname}} switch described above. @var{target} is the
 target system triple, such as @var{sparc-sun-solaris2.7}, and
-@var{version} denotes the GCC version, such as 2.95.2.
+@var{version} denotes the GCC version, such as 3.0.
 @item
 Check operating system specific directories (e.g.@: @file{/usr/ccs/bin} on
 Sun Solaris).
@@ -450,7 +457,7 @@ Same as @uref{#with-gnu-as,,@option{--with-gnu-as}}
 but for linker.
 
 
-@item --with-ld=@file{/path/to/ld}
+@item --with-ld=@var{pathname}
 Same as
 @option{--with-as}, but for the linker.
 
@@ -484,10 +491,11 @@ information normally used on 386 SVR4 platforms; stabs provide a
 workable alternative.  This requires gas and gdb, as the normal SVR4
 tools can not generate or interpret stabs.
 
-@item --enable-multilib
+@item --disable-multilib
 Specify that multiple target
-libraries should be built to support different target variants, calling
-conventions, etc.  This is the default.
+libraries to support different target variants, calling
+conventions, etc should not be built.  The default is to build a
+predefined set of them.
 
 @item --enable-threads
 Specify that the target
@@ -517,7 +525,7 @@ AIX thread support.
 @item dce
 DCE thread support.
 @item mach
-Generic MACH thread support, known to work on NEXTSTEP@.  (Please note
+Generic MACH thread support, known to work on NeXTSTEP@.  (Please note
 that the file needed to support this configuration, @file{gthr-mach.h}, is
 missing and thus this setting will cause a known bootstrap failure.)
 @item no
@@ -533,7 +541,7 @@ RTEMS thread support.
 @item single
 Disable thread support, should work for all platforms.
 @item solaris
-SUN Solaris thread support.
+Sun Solaris 2 thread support.
 @item vxworks
 VxWorks thread support.
 @item win32
@@ -573,24 +581,26 @@ to do so.
 Specify
 that runtime libraries should be installed in the compiler specific
 subdirectory (@file{@var{libsubdir}}) rather than the usual places.  In
-addition, libstdc++'s include files will be installed in
+addition, @samp{libstdc++}'s include files will be installed in
 @file{@var{libsubdir}/include/g++} unless you overruled it by using
 @option{--with-gxx-include-dir=@var{dirname}}.  Using this option is
 particularly useful if you intend to use several versions of GCC in
-parallel.  This is currently supported by @samp{libf2c} and
-@samp{libstdc++}.
+parallel. This is currently supported by @samp{libf2c} and
+@samp{libstdc++}, and is the default for @samp{libobjc} which cannot be
+changed in this case.
 
 @item --enable-languages=@var{lang1},@var{lang2},@dots{}
 Specify that only a particular subset of compilers and
 their runtime libraries should be built.  For a list of valid values for
 @var{langN} you can issue the following command in the
-@file{gcc} directory of your GCC source tree:@* @samp{grep language=
-*/config-lang.in}@* Currently, you can use any of the following:
+@file{gcc} directory of your GCC source tree:@*
+@example
+grep language= */config-lang.in
+@end example
+Currently, you can use any of the following:
 @code{c}, @code{c++}, @code{f77}, @code{java} and @code{objc}.
 @code{CHILL} is not currently maintained, and will almost
-certainly fail to compile.  Note that this switch does not work with
-EGCS 1.1.2 or older versions of egcs.  It is supported in GCC 2.95
-and newer versions.@*
+certainly fail to compile.@*
 If you do not pass this flag, all languages available in the @file{gcc}
 sub-tree will be configured.  Re-defining @code{LANGUAGES} when calling
 @samp{make bootstrap} @strong{does not} work anymore, as those
@@ -603,27 +613,27 @@ to use GCJ with some other run-time, or you're going to install it
 separately, or it just happens not to build on your particular
 machine.  In general, if the Java front end is enabled, the GCJ
 libraries will be enabled too, unless they're known to not work on
-the target platform.  If GCJ is enabled but libgcj isn't built, you
+the target platform.  If GCJ is enabled but @samp{libgcj} isn't built, you
 may need to port it; in this case, before modifying the top-level
-@file{configure.in} so that libgcj is enabled by default on this platform,
+@file{configure.in} so that @samp{libgcj} is enabled by default on this platform,
 you may use @option{--enable-libgcj} to override the default.
 
 @item --with-dwarf2
 Specify that the compiler should
-use DWARF2 debugging information as the default.
+use DWARF 2 debugging information as the default.
 
 @item --enable-win32-registry
-@itemx --enable-win32-registry=@var{KEY}
+@itemx --enable-win32-registry=@var{key}
 @itemx --disable-win32-registry
 The @option{--enable-win32-registry} option enables Windows-hosted GCC
 to look up installations paths in the registry using the following key:
 
 @smallexample
-@code{HKEY_LOCAL_MACHINE\SOFTWARE\Free Software Foundation\@var{KEY}}
+@code{HKEY_LOCAL_MACHINE\SOFTWARE\Free Software Foundation\@var{key}}
 @end smallexample
 
-@var{KEY} defaults to GCC version number, and can be overridden by the
-@option{--enable-win32-registry=@var{KEY}} option.  Vendors and distributors
+@var{key} defaults to GCC version number, and can be overridden by the
+@option{--enable-win32-registry=@var{key}} option. Vendors and distributors
 who use custom installers are encouraged to provide a different key,
 perhaps one comprised of vendor name and GCC version number, to
 avoid conflict with existing installations.  This feature is enabled
@@ -677,16 +687,16 @@ which has target include files.
 compiler, if @file{@var{prefix}/@var{target}/sys-include} doesn't pre-exist.
 These include files will be copied into the @file{gcc} install directory.
 Fixincludes will be run on these files to make them compatible with
-@command{gcc}.
+GCC.
 @item --with-libs=``@var{dir1} @var{dir2} @dots{} @var{dirN}''
 Specifies a list of directories which contain the target runtime
 libraries.  These libraries will be copied into the @file{gcc} install
 directory.
 @item --with-newlib
-Specifies that ``newlib'' is
+Specifies that @samp{newlib} is
 being used as the target C library.  This causes @code{__eprintf} to be
-omitted from libgcc.a on the assumption that it will be provided by
-newlib.
+omitted from @file{libgcc.a} on the assumption that it will be provided by
+@samp{newlib}.
 @end table
 
 Note that each @option{--enable} option has a corresponding
@@ -776,8 +786,8 @@ gperf.
 
 @item
 Build target tools for use by the compiler such as binutils (bfd,
-binutils, gas, gprof, ld, and opcodes)@*
-if they have been individually linked
+binutils, gas, gprof, ld, and opcodes)
+if they have been individually linked 
 or moved into the top level GCC source tree before configuring.
 
 @item
@@ -805,8 +815,8 @@ without debugging information with @samp{make CFLAGS='-O' LIBCFLAGS='-g
 roughly 40% of disk space both for the bootstrap and the final installation.
 (Libraries will still contain debugging information.)
 
-If you wish to use non-default flags when compiling the stage2 and
-stage3 compile, set @code{BOOT_CFLAGS} on the command line when doing
+If you wish to use non-default GCC flags when compiling the stage2 and
+stage3 compilers, set @code{BOOT_CFLAGS} on the command line when doing
 @samp{make bootstrap}.  Non-default optimization flags are less well
 tested here than the default of @samp{-g -O2}, but should still work.
 In a few cases, you may find that you need to specify special flags such
@@ -820,11 +830,11 @@ If you used the flag @option{--enable-languages=@dots{}} to restrict
 the compilers to be built, only those you've actually enabled will be
 built.  This will of course only build those runtime libraries, for
 which the particular compiler has been built.  Please note,
-that re-defining LANGUAGES when calling @samp{make bootstrap}
+that re-defining @env{LANGUAGES} when calling @samp{make bootstrap}
 @strong{does not} work anymore!
 
 If the comparison of stage2 and stage3 fails, this normally indicates
-that the stage 2 compiler has compiled GCC incorrectly, and is therefore
+that the stage2 compiler has compiled GCC incorrectly, and is therefore
 a potentially serious bug which you should investigate and report.  (On
 a few systems, meaningful comparison of object files is impossible; they
 always appear ``different''.  If you encounter this problem, you will
@@ -902,10 +912,6 @@ the number of processors in your machine.
 @cindex Installing GCC: Testing
 @cindex Testsuite
 
-@strong{Please note that this is only applicable
-to current development versions of GCC and GCC 3.0 or later.
-GCC 2.95.x does not come with a testsuite.}
-
 Before you install GCC, you might wish to run the testsuite.  This
 step is optional and may require you to download additional software.
 
@@ -919,11 +925,6 @@ dejagnu 1.3 is not sufficient.
 Now you may need specific preparations:
 
 @itemize @bullet
-@item
-In order to run the libio tests in GCC 2.95 and earlier versions of GCC
-on targets which do not fully
-support Unix/POSIX commands (e.g.@: Cygwin), the references to the @file{dbz}
-directory have to be deleted from @file{libio/configure.in}.
 
 @item
 The following environment variables may need to be set appropriately, as in
@@ -958,20 +959,20 @@ compilers as well as the C++ and Java runtime libraries.
 
 As a first possibility to cut down the number of tests that are run it is
 possible to use @samp{make check-gcc} or @samp{make check-g++}
-in the gcc subdirectory of the object directory.  To further cut down the
+in the @file{gcc} subdirectory of the object directory.  To further cut down the
 tests the following is possible:
 
 @example
     make check-gcc RUNTESTFLAGS="execute.exp @var{other-options}"
 @end example
 
-This will run all gcc execute tests in the testsuite.
+This will run all @command{gcc} execute tests in the testsuite.
 
 @example
     make check-g++ RUNTESTFLAGS="old-deja.exp=9805* @var{other-options}"
 @end example
 
-This will run the g++ ``old-deja'' tests in the testsuite where the filename
+This will run the @command{g++} ``old-deja'' tests in the testsuite where the filename
 matches @samp{9805*}.
 
 The @file{*.exp} files are located in the testsuite directories of the GCC
@@ -1049,8 +1050,10 @@ should look here first if you think your results are unreasonable.
 @chapter Installing GCC: Final installation
 @end ifnothtml
 
-Now that GCC has been built and tested, you can install it with
-@samp{cd @var{objdir}; make install}.
+Now that GCC has been built (and optionally tested), you can install it with
+@example
+cd @var{objdir}; make install
+@end example
 
 That step completes the installation of GCC; user level binaries can
 be found in @file{@var{prefix}/bin} where @var{prefix} is the value you
@@ -1066,11 +1069,11 @@ info format in @file{@var{infodir}} (normally @file{@var{prefix}/info}).
 If you don't mind, please quickly review the
 @uref{http://gcc.gnu.org/gcc-3.0/buildstat.html,,build status page}.
 If your system is not listed, send a note to
-@uref{mailto:gcc@@gcc.gnu.org,,gcc@@gcc.gnu.org} indicating
-that you successfully built and installed GCC@.
+@email{gcc@@gcc.gnu.org} indicating
+that you successfully built and installed GCC.
 
 Include the output from running @file{@var{srcdir}/config.guess}.  (Do
-not send us the config.guess file itself, just the one-line output from
+not send us the @file{config.guess} file itself, just the one-line output from
 running it!)
 
 If you find a bug, please report it following our
@@ -1515,13 +1518,13 @@ we need to use the old assembler, invoked via the barely documented
 Compaq C Compiler:
 
 @example
-   % CC=cc @var{srcdir}/configure [@var{target}] [@var{options}]
+   % CC=cc @var{srcdir}/configure [@var{options}] [@var{target}]
 @end example
 
 or you can use a copy of GCC 2.95.3 or higher built on Tru64 UNIX V4.0:
 
 @example
-   % CC=gcc -Wa,-oldas @var{srcdir}/configure [@var{target}] [@var{options}]
+   % CC=gcc -Wa,-oldas @var{srcdir}/configure [@var{options}] [@var{target}]
 @end example
 
 GCC writes a @samp{.verstamp} directive to the assembler output file
@@ -2446,7 +2449,7 @@ does not happen on 3.1.
 You absolutely @strong{must} use GNU sed and GNU make on this platform.
 
 
-On NEXTSTEP 3.x where x < 3 the build of GCC will abort during
+On NeXTSTEP 3.x where x < 3 the build of GCC will abort during  
 stage1 with an error message like this:
 
 @example
