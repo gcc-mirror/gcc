@@ -436,22 +436,11 @@ ffewhere_track (ffewhereLine *wl, ffewhereColumn *wc, ffewhereTrack wt,
   else
     {
       wt[i * 2 - 2] = lo;
-      if (cn > FFEWHERE_indexUNKNOWN)
-	{
-	  wt[i * 2 - 1] = FFEWHERE_indexUNKNOWN;
-	  ffewhere_line_kill (*wl);
-	  ffewhere_column_kill (*wc);
-	  *wl = ffewhere_line_unknown ();
-	  *wc = ffewhere_column_unknown ();
-	}
-      else
-	{
-	  wt[i * 2 - 1] = cn - 1;
-	  ffewhere_line_kill (*wl);
-	  ffewhere_column_kill (*wc);
-	  *wl = ffewhere_line_use (ffewhere_line_new (ln));
-	  *wc = ffewhere_column_use (ffewhere_column_new (cn));
-	}
+      wt[i * 2 - 1] = cn - 1;
+      ffewhere_line_kill (*wl);
+      ffewhere_column_kill (*wc);
+      *wl = ffewhere_line_use (ffewhere_line_new (ln));
+      *wc = ffewhere_column_use (ffewhere_column_new (cn));
     }
 }
 
