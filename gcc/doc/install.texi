@@ -293,15 +293,24 @@ systems' @command{tar} programs will also work, only try GNU
 Necessary when modifying @file{configure.in}, @file{aclocal.m4}, etc.@:
 to regenerate @file{configure} and @file{config.in} files.  Most
 directories require autoconf 2.13 (exactly), but @file{libiberty},
-@file{fastjar}, @file{libstdc++-v3}, and @file{gcc} require
-autoconf 2.57 (exactly).
+@file{fastjar}, @file{libstdc++-v3}, @file{libjava/libltdl}, and @file{gcc}
+require autoconf 2.57 (exactly).
 
-@item automake versions 1.4-p? and 1.7.?
+@item automake versions 1.4-gcj and 1.7.9
 
 Necessary when modifying a @file{Makefile.am} file to regenerate its
-associated @file{Makefile.in}.  Most directories require a 1.4 series
-automake; @file{libstdc++-v3} and @file{fastjar} requires a 1.7 series
-automake.
+associated @file{Makefile.in}.
+
+Much of GCC does not use automake, so directly edit the @file{Makefile.in}
+file.  Specifically this applies to the @file{gcc}, @file{intl},
+@file{libf2c}, @file{libiberty}, @file{libobjc} directories as well as any
+of their subdirectories.
+
+The @file{libstdc++-v3}, @file{libjava/libltdl}, and @file{fastjar}
+directories require automake 1.7.9.  However, the Java directories, which
+include @file{boehm-gc}, @file{libffi}, @file{libjava}, and @file{zlib},
+require a modified version of automake 1.4 downloadable from
+@uref{ftp://gcc.gnu.org/pub/java/automake-gcj-1.4.tar.gz}.
 
 @item gettext version 0.12 (or later)
 
@@ -327,7 +336,7 @@ Necessary to regenerate @file{fixinc/fixincl.x} from
 
 Necessary to run the @file{fixinc} @command{make check}.
 
-Necessary to regenerate the top level @file{Makefile.am} files from
+Necessary to regenerate the top level @file{Makefile.in} file from
 @file{Makefile.tpl} and @file{Makefile.def}.
 
 @item GNU Bison version 1.28 (or later)
