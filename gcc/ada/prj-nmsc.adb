@@ -606,9 +606,9 @@ package body Prj.Nmsc is
       Naming  : Naming_Data)
    is
    begin
-      --  Only check if we are not using the standard naming scheme
+      --  Only check if we are not using the Default naming scheme
 
-      if Naming /= Standard_Naming_Data then
+      if Naming /= In_Tree.Private_Part.Default_Naming then
          declare
             Dot_Replacement       : constant String :=
                                      Get_Name_String

@@ -2202,7 +2202,6 @@ package body Prj.Proc is
             Processed_Data.Directory := Name_Find;
 
             Processed_Data.Extended_By := Extended_By;
-            Processed_Data.Naming      := Standard_Naming_Data;
 
             Add_Attributes
               (Project, In_Tree, Processed_Data.Decl, Attribute_First);

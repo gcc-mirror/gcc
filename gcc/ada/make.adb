@@ -6127,6 +6127,13 @@ package body Make is
 
             Osint.Add_File (Get_Name_String (Sfile));
             Put_In_Q := True;
+
+            --  As we may look into the Q later, ensure the Q has been
+            --  initialized to avoid errors.
+
+            if First_Q_Initialization then
+               Init_Q;
+            end if;
          end if;
       end loop;
    end Insert_Project_Sources;
