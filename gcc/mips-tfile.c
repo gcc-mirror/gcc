@@ -678,8 +678,6 @@ main ()
 #include <stab.h>  /* On BSD, use the system's stab.h.  */
 #endif /* not USG */
 
-#include "machmode.h"
-
 #ifdef __GNU_STAB__
 #define STAB_CODE_TYPE enum __stab_debug_code
 #else

@@ -739,14 +739,15 @@ DPBIT_FUNCS = _pack_df _unpack_df _addsub_df _mul_df _div_df \
 # If it is, rm *.o is an easy way to do it.
 # CONFIG_H = $(host_xm_file) $(tm_file)
 CONFIG_H =
-RTL_BASE_H = rtl.h rtl.def machmode.h machmode.def
+MACHMODE_H = machmode.h machmode.def
+RTL_BASE_H = rtl.h rtl.def $(MACHMODE_H)
 RTL_H = $(RTL_BASE_H) genrtl.h
-TREE_H = tree.h real.h tree.def machmode.h machmode.def tree-check.h
+TREE_H = tree.h real.h tree.def $(MACHMODE_H) tree-check.h
 BASIC_BLOCK_H = basic-block.h bitmap.h sbitmap.h
 DEMANGLE_H = $(srcdir)/../include/demangle.h
 RECOG_H = recog.h
 EXPR_H = expr.h insn-codes.h
-REGS_H = regs.h varray.h machmode.h machmode.def
+REGS_H = regs.h varray.h $(MACHMODE_H)
 #
 # Language makefile fragments.
 
@@ -1041,7 +1042,7 @@ libgcc2.ready: $(GCC_PASSES) $(LIBGCC2_DEPS) stmp-int-hdrs $(STMP_FIXPROTO)
 
 LIB2ADD = $(srcdir)/frame.c $(LIB2FUNCS_EXTRA) $(LANG_LIB2FUNCS)
 libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(FPBIT) $(DPBIT) $(LIB2ADD) \
-   machmode.h longlong.h frame.h gbl-ctors.h config.status
+   $(MACHMODE_H) longlong.h frame.h gbl-ctors.h config.status
 # Actually build it in tmplibgcc2.a, then rename at end,
 # so that libgcc2.a itself remains nonexistent if compilation is aborted.
 	-rm -f tmplibgcc2.a
@@ -1174,7 +1175,7 @@ s-mlib: $(srcdir)/genmultilib Makefile
 # Build multiple copies of libgcc.a, one for each target switch.
 stmp-multilib: $(LIBGCC1) libgcc2.c libgcc2.ready $(CONFIG_H) \
    frame.h \
-   $(LIB2ADD) machmode.h longlong.h gbl-ctors.h config.status
+   $(LIB2ADD) $(MACHMODE_H) longlong.h gbl-ctors.h config.status
 	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
 	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
 	  flags=`echo $$i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
@@ -1605,7 +1606,7 @@ $(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) ggc.h \
 mips-tfile: mips-tfile.o version.o $(LIBDEPS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ mips-tfile.o version.o $(LIBS)
 
-mips-tfile.o : mips-tfile.c $(CONFIG_H) $(RTL_H) system.h machmode.h
+mips-tfile.o : mips-tfile.c $(CONFIG_H) $(RTL_H) system.h
 
 mips-tdump: mips-tdump.o version.o $(LIBDEPS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ mips-tdump.o version.o $(LIBS)
