@@ -990,7 +990,12 @@ for machine in $build $host $target; do
 		tmake_file=i386/t-sol2
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 		xmake_file=x-svr4
-		fixincludes=fixinc.math
+		case $machine in
+		*-*-solaris2.[[0-4]])
+			fixincludes=fixinc.svr4;;
+		*)
+			fixincludes=fixinc.math;;
+		esac
 		broken_install=yes
  		if [[ x$enable_threads = xyes ]]; then
 			thread_file='solaris'
@@ -2313,7 +2318,12 @@ for machine in $build $host $target; do
 			tmake_file="rs6000/t-ppc rs6000/t-ppccomm"
 		fi
 		xmake_file=rs6000/x-sysv4
-		fixincludes=fixinc.math
+		case $machine in
+		*-*-solaris2.[[0-4]])
+			fixincludes=fixinc.svr4;;
+		*)
+			fixincludes=fixinc.math;;
+		esac
 		extra_headers=ppc-asm.h
 		;;
 	rs6000-ibm-aix3.[[01]]*)
@@ -2460,7 +2470,12 @@ for machine in $build $host $target; do
 		tmake_file=sparc/t-sol2
 		xmake_file=sparc/x-sysv4
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
-		fixincludes=fixinc.math
+		case $machine in
+		*-*-solaris2.[[0-4]])
+			fixincludes=fixinc.svr4;;
+		*)
+			fixincludes=fixinc.math;;
+		esac
 		float_format=i128
 		broken_install=yes
  		if [[ x$enable_threads = xyes ]]; then
