@@ -1409,7 +1409,22 @@ dump_expr (t, nop)
       break;
 
     case AGGR_INIT_EXPR:
-      OB_PUTID (TYPE_IDENTIFIER (TREE_TYPE (t)));
+      {
+	tree fn = NULL_TREE;
+	
+	if (TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR)
+	  fn = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
+
+	if (fn && TREE_CODE (fn) == FUNCTION_DECL)
+	  {
+	    if (DECL_CONSTRUCTOR_P (fn))
+	      OB_PUTID (TYPE_IDENTIFIER (TREE_TYPE (t)));
+	    else
+	      dump_decl (fn, 0);
+	  }
+	else
+	  dump_expr (TREE_OPERAND (t, 0), 0);
+      }
       OB_PUTC ('(');
       if (TREE_OPERAND (t, 1))
 	dump_expr_list (TREE_CHAIN (TREE_OPERAND (t, 1)));

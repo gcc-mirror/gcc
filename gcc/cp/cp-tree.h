@@ -34,6 +34,7 @@ Boston, MA 02111-1307, USA.  */
       TREE_INDIRECT_USING (in NAMESPACE_DECL).
       IDENTIFIER_MARKED (used by search routines).
       LOCAL_BINDING_P (in CPLUS_BINDING)
+      ICS_USER_FLAG (in _CONV)
    1: IDENTIFIER_VIRTUAL_P.
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -43,17 +44,21 @@ Boston, MA 02111-1307, USA.  */
       C_DECLARED_LABEL_FLAG.
       INHERITED_VALUE_BINDING_P (in CPLUS_BINDING)
       BASELINK_P (in TREE_LIST)
+      ICS_ELLIPSIS_FLAG (in _CONV)
    2: IDENTIFIER_OPNAME_P.
       BINFO_VBASE_MARKED.
       BINFO_FIELDS_MARKED.
       TYPE_VIRTUAL_P.
+      ICS_THIS_FLAG (in _CONV)
    3: TYPE_USES_VIRTUAL_BASECLASSES (in a class TYPE).
       BINFO_VTABLE_PATH_MARKED.
       BINFO_PUSHDECLS_MARKED.
       (TREE_REFERENCE_EXPR) (in NON_LVALUE_EXPR) (commented-out).
+      ICS_BAD_FLAG (in _CONV)
    4: BINFO_NEW_VTABLE_MARKED.
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
           or FIELD_DECL).
+      NEED_TEMPORARY_P (in REF_BIND, BASE_CONV)
    5: Not used.
    6: Not used.
 
@@ -2140,6 +2145,14 @@ extern int flag_new_for_scope;
 enum tag_types { record_type, class_type, union_type, enum_type,
 		   signature_type };
 
+/* The various kinds of lvalues we distinguish.  */
+typedef enum cp_lvalue_kind {
+  clk_none = 0,     /* Things that are not an lvalue.  */
+  clk_ordinary = 1, /* An ordinary lvalue.  */
+  clk_class = 2,    /* An rvalue of class-type.  */
+  clk_bitfield = 4, /* An lvalue for a bit-field.  */
+} cp_lvalue_kind;
+
 /* Zero means prototype weakly, as in ANSI C (no args means nothing).
    Each language context defines how this variable should be set.  */
 extern int strict_prototype;
@@ -2753,6 +2766,7 @@ extern int enforce_access                       PROTO((tree, tree));
 extern tree convert_default_arg                 PROTO((tree, tree, tree));
 extern tree convert_arg_to_ellipsis             PROTO((tree));
 extern int is_properly_derived_from             PROTO((tree, tree));
+extern tree initialize_reference                PROTO((tree, tree));
 
 /* in class.c */
 extern tree build_vbase_path			PROTO((enum tree_code, tree, tree, tree, int));
@@ -3363,7 +3377,7 @@ extern tree arbitrate_lookup			PROTO((tree, tree, tree));
 extern int pod_type_p				PROTO((tree));
 extern void unshare_base_binfos			PROTO((tree));
 extern int member_p				PROTO((tree));
-extern int real_lvalue_p			PROTO((tree));
+extern cp_lvalue_kind real_lvalue_p		PROTO((tree));
 extern tree build_min				PVPROTO((enum tree_code, tree, ...));
 extern tree build_min_nt			PVPROTO((enum tree_code, ...));
 extern tree min_tree_cons			PROTO((tree, tree, tree));

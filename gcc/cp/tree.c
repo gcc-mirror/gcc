@@ -36,27 +36,30 @@ static int list_hash PROTO((tree, tree, tree));
 static tree list_hash_lookup PROTO((int, tree, tree, tree));
 static void propagate_binfo_offsets PROTO((tree, tree));
 static int avoid_overlap PROTO((tree, tree));
-static int lvalue_p_1 PROTO((tree, int));
+static cp_lvalue_kind lvalue_p_1 PROTO((tree, int));
 static int equal_functions PROTO((tree, tree));
 static tree no_linkage_helper PROTO((tree));
 static tree build_srcloc PROTO((char *, int));
 
 #define CEIL(x,y) (((x) + (y) - 1) / (y))
 
-/* Returns non-zero if REF is an lvalue.  If
-   TREAT_CLASS_RVALUES_AS_LVALUES is non-zero, rvalues of class type
-   are considered lvalues.  */
+/* If REF is an lvalue, returns the kind of lvalue that REF is.
+   Otherwise, returns clk_none.  If TREAT_CLASS_RVALUES_AS_LVALUES is
+   non-zero, rvalues of class type are considered lvalues.  */
 
-static int
+static cp_lvalue_kind
 lvalue_p_1 (ref, treat_class_rvalues_as_lvalues)
      tree ref;
      int treat_class_rvalues_as_lvalues;
 {
+  cp_lvalue_kind op1_lvalue_kind = clk_none;
+  cp_lvalue_kind op2_lvalue_kind = clk_none;
+
   if (TREE_CODE (TREE_TYPE (ref)) == REFERENCE_TYPE)
-    return 1;
+    return clk_ordinary;
 
   if (ref == current_class_ptr && flag_this_is_variable <= 0)
-    return 0;
+    return clk_none;
 
   switch (TREE_CODE (ref))
     {
@@ -64,7 +67,6 @@ lvalue_p_1 (ref, treat_class_rvalues_as_lvalues)
 	 what they refer to are valid lvals.  */
     case PREINCREMENT_EXPR:
     case PREDECREMENT_EXPR:
-    case COMPONENT_REF:
     case SAVE_EXPR:
     case UNSAVE_EXPR:
     case TRY_CATCH_EXPR:
@@ -75,20 +77,37 @@ lvalue_p_1 (ref, treat_class_rvalues_as_lvalues)
       return lvalue_p_1 (TREE_OPERAND (ref, 0),
 			 treat_class_rvalues_as_lvalues);
 
+    case COMPONENT_REF:
+      op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 0),
+				    treat_class_rvalues_as_lvalues);
+      if (op1_lvalue_kind 
+	  /* The "field" can be a FUNCTION_DECL or an OVERLOAD in some
+	     situations.  */
+	  && TREE_CODE (TREE_OPERAND (ref, 1)) == FIELD_DECL
+	  && DECL_BIT_FIELD (TREE_OPERAND (ref, 1)))
+	{
+	  /* Clear the ordinary bit.  If this object was a class
+	     rvalue we want to preserve that information.  */
+	  op1_lvalue_kind &= ~clk_ordinary;
+	  /* The lvalue is for a btifield.  */
+	  op1_lvalue_kind |= clk_bitfield;
+	}
+      return op1_lvalue_kind;
+
     case STRING_CST:
-      return 1;
+      return clk_ordinary;
 
     case VAR_DECL:
       if (TREE_READONLY (ref) && ! TREE_STATIC (ref)
 	  && DECL_LANG_SPECIFIC (ref)
 	  && DECL_IN_AGGR_P (ref))
-	return 0;
+	return clk_none;
     case INDIRECT_REF:
     case ARRAY_REF:
     case PARM_DECL:
     case RESULT_DECL:
       if (TREE_CODE (TREE_TYPE (ref)) != METHOD_TYPE)
-	return 1;
+	return clk_ordinary;
       break;
 
       /* A currently unresolved scope ref.  */
@@ -96,72 +115,84 @@ lvalue_p_1 (ref, treat_class_rvalues_as_lvalues)
       my_friendly_abort (103);
     case OFFSET_REF:
       if (TREE_CODE (TREE_OPERAND (ref, 1)) == FUNCTION_DECL)
-	return 1;
-      return (lvalue_p_1 (TREE_OPERAND (ref, 0),
-			  treat_class_rvalues_as_lvalues)
-	      && lvalue_p_1 (TREE_OPERAND (ref, 1),
-			     treat_class_rvalues_as_lvalues));
+	return clk_ordinary;
+      /* Fall through.  */
+    case MAX_EXPR:
+    case MIN_EXPR:
+      op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 0),
+				    treat_class_rvalues_as_lvalues);
+      op2_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 1),
+				    treat_class_rvalues_as_lvalues);
       break;
 
     case COND_EXPR:
-      return (lvalue_p_1 (TREE_OPERAND (ref, 1),
-			  treat_class_rvalues_as_lvalues)
-	      && lvalue_p_1 (TREE_OPERAND (ref, 2),
-			     treat_class_rvalues_as_lvalues));
+      op1_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 1),
+				    treat_class_rvalues_as_lvalues);
+      op2_lvalue_kind = lvalue_p_1 (TREE_OPERAND (ref, 2),
+				    treat_class_rvalues_as_lvalues);
+      break;
 
     case MODIFY_EXPR:
-      return 1;
+      return clk_ordinary;
 
     case COMPOUND_EXPR:
       return lvalue_p_1 (TREE_OPERAND (ref, 1),
-			    treat_class_rvalues_as_lvalues);
-
-    case MAX_EXPR:
-    case MIN_EXPR:
-      return (lvalue_p_1 (TREE_OPERAND (ref, 0),
-			  treat_class_rvalues_as_lvalues)
-	      && lvalue_p_1 (TREE_OPERAND (ref, 1),
-			     treat_class_rvalues_as_lvalues));
+			 treat_class_rvalues_as_lvalues);
 
     case TARGET_EXPR:
-      return treat_class_rvalues_as_lvalues;
+      return treat_class_rvalues_as_lvalues ? clk_class : clk_none;
 
     case CALL_EXPR:
-      return (treat_class_rvalues_as_lvalues
-	      && IS_AGGR_TYPE (TREE_TYPE (ref)));
+      return ((treat_class_rvalues_as_lvalues
+	       && IS_AGGR_TYPE (TREE_TYPE (ref)))
+	      ? clk_class : clk_none);
 
     case FUNCTION_DECL:
       /* All functions (except non-static-member functions) are
 	 lvalues.  */
-      return !DECL_NONSTATIC_MEMBER_FUNCTION_P (ref);
+      return (DECL_NONSTATIC_MEMBER_FUNCTION_P (ref) 
+	      ? clk_none : clk_ordinary);
 
     default:
       break;
     }
 
-  return 0;
+  /* If one operand is not an lvalue at all, then this expression is
+     not an lvalue.  */
+  if (!op1_lvalue_kind || !op2_lvalue_kind)
+    return clk_none;
+
+  /* Otherwise, it's an lvalue, and it has all the odd properties
+     contributed by either operand.  */
+  op1_lvalue_kind = op1_lvalue_kind | op2_lvalue_kind;
+  /* It's not an ordinary lvalue if it involves either a bit-field or
+     a class rvalue.  */
+  if ((op1_lvalue_kind & ~clk_ordinary) != clk_none)
+    op1_lvalue_kind &= ~clk_ordinary;
+  return op1_lvalue_kind;
 }
 
-/* Return nonzero if REF is an lvalue valid for this language.
-   Lvalues can be assigned, unless they have TREE_READONLY, or unless
-   they are FUNCTION_DECLs.  Lvalues can have their address taken,
-   unless they have DECL_REGISTER.  */
+/* If REF is an lvalue, returns the kind of lvalue that REF is.
+   Otherwise, returns clk_none.  Lvalues can be assigned, unless they
+   have TREE_READONLY, or unless they are FUNCTION_DECLs.  Lvalues can
+   have their address taken, unless they have DECL_REGISTER.  */
 
-int
+cp_lvalue_kind
 real_lvalue_p (ref)
      tree ref;
 {
   return lvalue_p_1 (ref, /*treat_class_rvalues_as_lvalues=*/0);
 }
 
-/* This differs from real_lvalue_p in that class rvalues are considered
-   lvalues.  */
+/* This differs from real_lvalue_p in that class rvalues are
+   considered lvalues.  */
 
 int
 lvalue_p (ref)
      tree ref;
 {
-  return lvalue_p_1 (ref, /*treat_class_rvalues_as_lvalues=*/1);
+  return 
+    (lvalue_p_1 (ref, /*treat_class_rvalues_as_lvalues=*/1) != clk_none);
 }
 
 /* Return nonzero if REF is an lvalue valid for this language;
@@ -192,6 +223,11 @@ build_cplus_new (type, init)
 {
   tree slot;
   tree rval;
+
+  /* Make sure that we're not trying to create an instance of an
+     abstract class.  */
+  if (CLASSTYPE_ABSTRACT_VIRTUALS (type))
+    abstract_virtuals_error (NULL_TREE, type);
 
   if (TREE_CODE (init) != CALL_EXPR && TREE_CODE (init) != AGGR_INIT_EXPR)
     return convert (type, init);

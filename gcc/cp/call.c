@@ -92,6 +92,10 @@ static struct z_candidate * add_candidate PROTO((struct z_candidate *,
 						 tree, tree, int));
 static tree source_type PROTO((tree));
 static void add_warning PROTO((struct z_candidate *, struct z_candidate *));
+static int reference_related_p PROTO ((tree, tree));
+static int reference_compatible_p PROTO ((tree, tree));
+static tree convert_class_to_reference PROTO ((tree, tree, tree));
+static tree direct_reference_binding PROTO ((tree, tree));
 
 tree
 build_vfield_ref (datum, type)
@@ -534,6 +538,10 @@ struct z_candidate {
 #define ICS_THIS_FLAG(NODE) TREE_LANG_FLAG_2 (NODE)
 #define ICS_BAD_FLAG(NODE) TREE_LANG_FLAG_3 (NODE)
 
+/* In a REF_BIND or a BASE_CONV, this indicates that a temporary
+   should be created to hold the result of the conversion.  */
+#define NEED_TEMPORARY_P(NODE) (TREE_LANG_FLAG_4 ((NODE)))
+
 #define USER_CONV_CAND(NODE) \
   ((struct z_candidate *)WRAPPER_PTR (TREE_OPERAND (NODE, 1)))
 #define USER_CONV_FN(NODE) (USER_CONV_CAND (NODE)->fn)
@@ -767,11 +775,207 @@ standard_conversion (to, from, expr)
       if (TREE_CODE (conv) == RVALUE_CONV)
 	conv = TREE_OPERAND (conv, 0);
       conv = build_conv (BASE_CONV, to, conv);
+      /* The derived-to-base conversion indicates the initialization
+	 of a parameter with base type from an object of a derived
+	 type.  A temporary object is created to hold the result of
+	 the conversion.  */
+      NEED_TEMPORARY_P (conv) = 1;
     }
   else
     return 0;
 
   return conv;
+}
+
+/* Returns non-zero if T1 is reference-related to T2.  */
+
+static int
+reference_related_p (t1, t2)
+     tree t1;
+     tree t2;
+{
+  t1 = TYPE_MAIN_VARIANT (t1);
+  t2 = TYPE_MAIN_VARIANT (t2);
+
+  /* [dcl.init.ref]
+
+     Given types "cv1 T1" and "cv2 T2," "cv1 T1" is reference-related
+     to "cv2 T2" if T1 is the same type as T2, or T1 is a base class
+     of T2.  */
+  return (same_type_p (t1, t2)
+	  || (CLASS_TYPE_P (t1) && CLASS_TYPE_P (t2)
+	      && DERIVED_FROM_P (t1, t2)));
+}
+
+/* Returns non-zero if T1 is reference-compatible with T2.  */
+
+static int
+reference_compatible_p (t1, t2)
+     tree t1;
+     tree t2;
+{
+  /* [dcl.init.ref]
+
+     "cv1 T1" is reference compatible with "cv2 T2" if T1 is
+     reference-related to T2 and cv1 is the same cv-qualification as,
+     or greater cv-qualification than, cv2.  */
+  return (reference_related_p (t1, t2)
+	  && at_least_as_qualified_p (t1, t2));
+}
+
+/* Determine whether or not the EXPR (of class type S) can be
+   converted to T as in [over.match.ref].  */
+
+static tree
+convert_class_to_reference (t, s, expr)
+     tree t;
+     tree s;
+     tree expr;
+{
+  tree conversions;
+  tree arglist;
+  tree conv;
+  struct z_candidate *candidates;
+  struct z_candidate *cand;
+
+  /* [over.match.ref]
+
+     Assuming that "cv1 T" is the underlying type of the reference
+     being initialized, and "cv S" is the type of the initializer
+     expression, with S a class type, the candidate functions are
+     selected as follows:
+
+     --The conversion functions of S and its base classes are
+       considered.  Those that are not hidden within S and yield type
+       "reference to cv2 T2", where "cv1 T" is reference-compatible
+       (_dcl.init.ref_) with "cv2 T2", are candidate functions.
+
+     The argument list has one argument, which is the initializer
+     expression.  */
+
+  candidates = 0;
+
+  /* Conceptually, we should take the address of EXPR and put it in
+     the argument list.  Unfortunately, however, that can result in
+     error messages, which we should not issue now because we are just
+     trying to find a conversion operator.  Therefore, we use NULL,
+     cast to the appropriate type.  */
+  arglist = build_int_2 (0, 0);
+  TREE_TYPE (arglist) = build_pointer_type (s);
+  arglist = build_scratch_list (NULL_TREE, arglist);
+  
+  for (conversions = lookup_conversions (s);
+       conversions;
+       conversions = TREE_CHAIN (conversions))
+    {
+      tree fns = TREE_VALUE (conversions);
+
+      while (fns)
+	{
+	  tree f = OVL_CURRENT (fns);
+	  tree t2 = TREE_TYPE (TREE_TYPE (f));
+	  struct z_candidate *old_candidates = candidates;
+
+	  /* If this is a template function, try to get an exact
+             match.  */
+	  if (TREE_CODE (f) == TEMPLATE_DECL)
+	    {
+	      candidates 
+		= add_template_candidate (candidates,
+					  f,
+					  NULL_TREE,
+					  arglist,
+					  build_reference_type (t),
+					  LOOKUP_NORMAL,
+					  DEDUCE_CONV);
+	      
+	      if (candidates != old_candidates)
+		{
+		  /* Now, see if the conversion function really returns
+		     an lvalue of the appropriate type.  From the
+		     point of view of unification, simply returning an
+		     rvalue of the right type is good enough.  */
+		  f = candidates->fn;
+		  t2 = TREE_TYPE (TREE_TYPE (f));
+		  if (TREE_CODE (t2) != REFERENCE_TYPE
+		      || !reference_compatible_p (t, TREE_TYPE (t2)))
+		    candidates = candidates->next;
+		}
+	    }
+	  else if (TREE_CODE (t2) == REFERENCE_TYPE
+		   && reference_compatible_p (t, TREE_TYPE (t2)))
+	    candidates 
+	      = add_function_candidate (candidates, f, arglist, 
+					LOOKUP_NORMAL);
+
+	  if (candidates != old_candidates)
+	    candidates->basetype_path = TREE_PURPOSE (conversions);
+
+	  fns = OVL_NEXT (fns);
+	}
+    }
+
+  /* If none of the conversion functions worked out, let our caller
+     know.  */
+  if (!any_viable (candidates))
+    return NULL_TREE;
+  
+  candidates = splice_viable (candidates);
+  cand = tourney (candidates);
+  if (!cand)
+    return NULL_TREE;
+
+  conv = build_conv (IDENTITY_CONV, s, expr);
+  conv = build_conv (USER_CONV,
+		     non_reference (TREE_TYPE (TREE_TYPE (cand->fn))),
+		     expr);
+  TREE_OPERAND (conv, 1) = build_expr_ptr_wrapper (cand);
+  ICS_USER_FLAG (conv) = 1;
+  if (cand->viable == -1)
+    ICS_BAD_FLAG (conv) = 1;
+  cand->second_conv = conv;
+
+  return conv;
+}
+
+/* A reference of the indicated TYPE is being bound directly to the
+   expression represented by the implicit conversion sequence CONV.
+   Return a conversion sequence for this binding.  */
+
+static tree
+direct_reference_binding (type, conv)
+     tree type;
+     tree conv;
+{
+  tree t = TREE_TYPE (type);
+
+  /* [over.ics.rank] 
+     
+     When a parameter of reference type binds directly
+     (_dcl.init.ref_) to an argument expression, the implicit
+     conversion sequence is the identity conversion, unless the
+     argument expression has a type that is a derived class of the
+     parameter type, in which case the implicit conversion sequence is
+     a derived-to-base Conversion.
+	 
+     If the parameter binds directly to the result of applying a
+     conversion function to the argument expression, the implicit
+     conversion sequence is a user-defined conversion sequence
+     (_over.ics.user_), with the second standard conversion sequence
+     either an identity conversion or, if the conversion function
+     returns an entity of a type that is a derived class of the
+     parameter type, a derived-to-base conversion.  */
+  if (!same_type_p (TYPE_MAIN_VARIANT (t),
+		    TYPE_MAIN_VARIANT (TREE_TYPE (conv))))
+    {
+      /* Represent the derived-to-base conversion.  */
+      conv = build_conv (BASE_CONV, t, conv);
+      /* We will actually be binding to the base-class subobject in
+	 the derived class, so we mark this conversion appropriately.
+	 That way, convert_like knows not to generate a temporary.  */
+      NEED_TEMPORARY_P (conv) = 0;
+    }
+  return build_conv (REF_BIND, type, conv);
 }
 
 /* Returns the conversion path from type FROM to reference type TO for
@@ -786,11 +990,12 @@ reference_binding (rto, rfrom, expr, flags)
      tree rto, rfrom, expr;
      int flags;
 {
-  tree conv;
-  int lvalue = 1;
+  tree conv = NULL_TREE;
   tree to = TREE_TYPE (rto);
   tree from = rfrom;
-  int related;
+  int related_p;
+  int compatible_p;
+  cp_lvalue_kind lvalue_p = clk_none;
 
   if (TREE_CODE (to) == FUNCTION_TYPE && expr && type_unknown_p (expr))
     {
@@ -800,53 +1005,122 @@ reference_binding (rto, rfrom, expr, flags)
       from = TREE_TYPE (expr);
     }
 
+  related_p = reference_related_p (to, from);
+  compatible_p = reference_compatible_p (to, from);
+
   if (TREE_CODE (from) == REFERENCE_TYPE)
-    from = TREE_TYPE (from);
-  else if (! expr || ! real_lvalue_p (expr))
-    lvalue = 0;
+    {
+      /* Anything with reference type is an lvalue.  */
+      lvalue_p = clk_ordinary;
+      from = TREE_TYPE (from);
+    }
+  else if (expr)
+    lvalue_p = real_lvalue_p (expr);
 
-  related = (same_type_p (TYPE_MAIN_VARIANT (to),
-			  TYPE_MAIN_VARIANT (from))
-	     || (IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
-		 && DERIVED_FROM_P (to, from)));
+  if (lvalue_p && compatible_p)
+    {
+      /* [dcl.init.ref]
 
-  if (lvalue && related && at_least_as_qualified_p (to, from))
+	 If the intializer expression 
+	 
+	 -- is an lvalue (but not an lvalue for a bit-field), and "cv1 T1"
+	    is reference-compatible with "cv2 T2,"
+	 
+	 the reference is bound directly to the initializer exprssion
+	 lvalue.  */
+      conv = build1 (IDENTITY_CONV, from, expr);
+      conv = direct_reference_binding (rto, conv);
+      if ((lvalue_p & clk_bitfield) != 0 
+	  && CP_TYPE_CONST_NON_VOLATILE_P (to))
+	/* For the purposes of overload resolution, we ignore the fact
+	   this expression is a bitfield. (In particular,
+	   [over.ics.ref] says specifically that a function with a
+	   non-const reference parameter is viable even if the
+	   argument is a bitfield.)
+
+	   However, when we actually call the function we must create
+	   a temporary to which to bind the reference.  If the
+	   reference is volatile, or isn't const, then we cannot make
+	   a temporary, so we just issue an error when the conversion
+	   actually occurs.  */
+	NEED_TEMPORARY_P (conv) = 1;
+      return conv;
+    }
+  else if (CLASS_TYPE_P (from) && !(flags & LOOKUP_NO_CONVERSION))
+    {
+      /* [dcl.init.ref]
+
+	 If the initializer exprsesion
+
+	 -- has a class type (i.e., T2 is a class type) can be
+	    implicitly converted to an lvalue of type "cv3 T3," where
+	    "cv1 T1" is reference-compatible with "cv3 T3".  (this
+	    conversion is selected by enumerating the applicable
+	    conversion functions (_over.match.ref_) and choosing the
+	    best one through overload resolution.  (_over.match_). 
+
+        the reference is bound to the lvalue result of the conversion
+	in the second case.  */
+      conv = convert_class_to_reference (to, from, expr);
+      if (conv)
+	return direct_reference_binding (rto, conv);
+    }
+
+  /* [over.ics.rank]
+     
+     When a parameter of reference type is not bound directly to an
+     argument expression, the conversion sequence is the one required
+     to convert the argument expression to the underlying type of the
+     reference according to _over.best.ics_.  Conceptually, this
+     conversion sequence corresponds to copy-initializing a temporary
+     of the underlying type with the argument expression.  Any
+     difference in top-level cv-qualification is subsumed by the
+     initialization itself and does not constitute a conversion.  */
+
+  /* [dcl.init.ref]
+
+     Otherwise, the reference shall be to a non-volatile const type.  */
+  if (!CP_TYPE_CONST_NON_VOLATILE_P (to))
+    return NULL_TREE;
+
+  /* [dcl.init.ref]
+     
+     If the initializer expression is an rvalue, with T2 a class type,
+     and "cv1 T1" is reference-compatible with "cv2 T2", the reference
+     is bound in one of the following ways:
+     
+     -- The reference is bound to the object represented by the rvalue
+        or to a sub-object within that object.  
+
+     In this case, the implicit conversion sequence is supposed to be
+     same as we would obtain by generating a temporary.  Fortunately,
+     if the types are reference compatible, then this is either an
+     identity conversion or the derived-to-base conversion, just as
+     for direct binding.  */
+  if (CLASS_TYPE_P (from) && compatible_p)
     {
       conv = build1 (IDENTITY_CONV, from, expr);
-
-      if (same_type_p (TYPE_MAIN_VARIANT (to),
-		       TYPE_MAIN_VARIANT (from)))
-	conv = build_conv (REF_BIND, rto, conv);
-      else
-	{
-	  conv = build_conv (REF_BIND, rto, conv);
-	  ICS_STD_RANK (conv) = STD_RANK;
-	}
+      return direct_reference_binding (rto, conv);
     }
-  else
-    conv = NULL_TREE;
 
-  if (! conv)
-    {
-      conv = standard_conversion (to, rfrom, expr);
-      if (conv)
-	{
-	  conv = build_conv (REF_BIND, rto, conv);
+  /* [dcl.init.ref]
 
-	  /* Bind directly to a base subobject of a class rvalue.  Do it
-             after building the conversion for proper handling of ICS_RANK.  */
-	  if (TREE_CODE (TREE_OPERAND (conv, 0)) == BASE_CONV)
-	    TREE_OPERAND (conv, 0) = TREE_OPERAND (TREE_OPERAND (conv, 0), 0);
-	}
-      if (conv
-	  && ((! (CP_TYPE_CONST_NON_VOLATILE_P (to)
-		  && (flags & LOOKUP_NO_TEMP_BIND) == 0))
-	      /* If T1 is reference-related to T2, cv1 must be the same
-		 cv-qualification as, or greater cv-qualification than,
-		 cv2; otherwise, the program is ill-formed.  */
-	      || (related && !at_least_as_qualified_p (to, from))))
-	ICS_BAD_FLAG (conv) = 1;
-    }
+     Otherwise, a temporary of type "cv1 T1" is created and
+     initialized from the initializer expression using the rules for a
+     non-reference copy initialization.  If T1 is reference-related to
+     T2, cv1 must be the same cv-qualification as, or greater
+     cv-qualification than, cv2; otherwise, the program is ill-formed.  */
+  if (related_p && !at_least_as_qualified_p (to, from))
+    return NULL_TREE;
+
+  conv = implicit_conversion (to, from, expr, flags);
+  if (!conv)
+    return NULL_TREE;
+
+  conv = build_conv (REF_BIND, rto, conv);
+  /* This reference binding, unlike those above, requires the
+     creation of a temporary.  */
+  NEED_TEMPORARY_P (conv) = 1;
 
   return conv;
 }
@@ -2885,7 +3159,8 @@ convert_like (convs, expr)
 {
   if (ICS_BAD_FLAG (convs)
       && TREE_CODE (convs) != USER_CONV
-      && TREE_CODE (convs) != AMBIG_CONV)
+      && TREE_CODE (convs) != AMBIG_CONV
+      && TREE_CODE (convs) != REF_BIND)
     {
       tree t = convs; 
       for (; t; t = TREE_OPERAND (t, 0))
@@ -2938,8 +3213,6 @@ convert_like (convs, expr)
     case IDENTITY_CONV:
       if (type_unknown_p (expr))
 	expr = instantiate_type (TREE_TYPE (convs), expr, 1);
-      if (TREE_READONLY_DECL_P (expr))
-	expr = decl_constant_value (expr);
       return expr;
     case AMBIG_CONV:
       /* Call build_user_type_conversion again for the error.  */
@@ -2954,6 +3227,12 @@ convert_like (convs, expr)
   if (expr == error_mark_node)
     return error_mark_node;
 
+  /* Convert a constant variable to its underlying value, unless we
+     are about to bind it to a reference, in which case we need to
+     leave it as an lvalue.  */
+  if (TREE_READONLY_DECL_P (expr) && TREE_CODE (convs) != REF_BIND)
+    expr = decl_constant_value (expr);
+
   switch (TREE_CODE (convs))
     {
     case RVALUE_CONV:
@@ -2961,6 +3240,12 @@ convert_like (convs, expr)
 	return expr;
       /* else fall through */
     case BASE_CONV:
+      if (TREE_CODE (convs) == BASE_CONV
+	  && !NEED_TEMPORARY_P (convs))
+	/* We are going to bind a reference directly to a base-class
+	   subobject of EXPR.  We don't have to generate any code
+	   here.  */
+	return expr;
       {
 	tree cvt_expr = build_user_type_conversion
 	  (TREE_TYPE (convs), expr, LOOKUP_NORMAL);
@@ -2988,10 +3273,37 @@ convert_like (convs, expr)
       }
 
     case REF_BIND:
-      return convert_to_reference
-	(TREE_TYPE (convs), expr,
-	 CONV_IMPLICIT, LOOKUP_NORMAL|LOOKUP_NO_CONVERSION,
-	 error_mark_node);
+      {
+	tree ref_type = TREE_TYPE (convs);
+
+	/* If necessary, create a temporary.  */
+	if (NEED_TEMPORARY_P (convs))
+	  {
+	    tree type = TREE_TYPE (TREE_OPERAND (convs, 0));
+	    tree slot = build_decl (VAR_DECL, NULL_TREE, type);
+	    DECL_ARTIFICIAL (slot) = 1;
+	    expr = build (TARGET_EXPR, type, slot, expr,
+			  NULL_TREE, NULL_TREE);
+	    TREE_SIDE_EFFECTS (expr) = 1;
+	  }
+
+	/* Take the address of the thing to which we will bind the
+	   reference.  */
+	expr = build_unary_op (ADDR_EXPR, expr, 1);
+	if (expr == error_mark_node)
+	  return error_mark_node;
+
+	/* Convert it to a pointer to the type referred to by the
+	   reference.  This will adjust the pointer if a derived to
+	   base conversion is being performed.  */
+	expr = cp_convert (build_pointer_type (TREE_TYPE (ref_type)), 
+			   expr);
+	/* Convert the pointer to the desired reference type.  */
+	expr = build1 (NOP_EXPR, ref_type, expr);
+
+	return expr;
+      }
+
     case LVALUE_CONV:
       return decay_conversion (expr);
 
@@ -3687,43 +3999,8 @@ maybe_handle_ref_bind (ics, target_type)
 {
   if (TREE_CODE (*ics) == REF_BIND)
     {
-      /* [over.ics.rank] 
-	 
-	 When a parameter of reference type binds directly
-	 (_dcl.init.ref_) to an argument expression, the implicit
-	 conversion sequence is the identity conversion, unless the
-	 argument expression has a type that is a derived class of the
-	 parameter type, in which case the implicit conversion
-	 sequence is a derived-to-base Conversion.
-	 
-	 If the parameter binds directly to the result of applying a
-	 conversion function to the argument expression, the implicit
-	 conversion sequence is a user-defined conversion sequence
-	 (_over.ics.user_), with the second standard conversion
-	 sequence either an identity conversion or, if the conversion
-	 function returns an entity of a type that is a derived class
-	 of the parameter type, a derived-to-base Conversion.
-	 
-	 When a parameter of reference type is not bound directly to
-	 an argument expression, the conversion sequence is the one
-	 required to convert the argument expression to the underlying
-	 type of the reference according to _over.best.ics_.
-	 Conceptually, this conversion sequence corresponds to
-	 copy-initializing a temporary of the underlying type with the
-	 argument expression.  Any difference in top-level
-	 cv-qualification is subsumed by the initialization itself and
-	 does not constitute a conversion.  */
-
-      tree old_ics = *ics;
-
       *target_type = TREE_TYPE (TREE_TYPE (*ics));
       *ics = TREE_OPERAND (*ics, 0);
-      if (TREE_CODE (*ics) == IDENTITY_CONV
-	  && is_properly_derived_from (TREE_TYPE (*ics), *target_type))
-	*ics = build_conv (BASE_CONV, *target_type, *ics);
-      ICS_USER_FLAG (*ics) = ICS_USER_FLAG (old_ics);
-      ICS_BAD_FLAG (*ics) = ICS_BAD_FLAG (old_ics);
-      
       return 1;
     }
   
@@ -4385,4 +4662,25 @@ can_convert_arg (to, from, arg)
 {
   tree t = implicit_conversion (to, from, arg, LOOKUP_NORMAL);
   return (t && ! ICS_BAD_FLAG (t));
+}
+
+/* Convert EXPR to the indicated reference TYPE, in a way suitable for
+   initializing a variable of that TYPE.  Return the converted
+   expression.  */
+
+tree
+initialize_reference (type, expr)
+     tree type;
+     tree expr;
+{
+  tree conv;
+
+  conv = reference_binding (type, TREE_TYPE (expr), expr, LOOKUP_NORMAL);
+  if (!conv || ICS_BAD_FLAG (conv))
+    {
+      cp_error ("could not convert `%E' to `%T'", expr, type);
+      return error_mark_node;
+    }
+
+  return convert_like (conv, expr);
 }

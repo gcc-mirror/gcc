@@ -7122,8 +7122,7 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
 
       if (fndecl)
 	savew = warningcount, savee = errorcount;
-      rhs = convert_to_reference (type, rhs, CONV_IMPLICIT, flags,
-				  exp ? exp : error_mark_node);
+      rhs = initialize_reference (type, rhs);
       if (fndecl)
 	{
 	  if (warningcount > savew)
