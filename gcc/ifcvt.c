@@ -197,6 +197,19 @@ cond_exec_process_insns (start, end, test, prob_val, mod_ok)
       if (GET_CODE (insn) != INSN && GET_CODE (insn) != CALL_INSN)
 	abort ();
 
+      /* Remove USE and CLOBBER insns that get in the way.  */
+      if (reload_completed
+	  && (GET_CODE (PATTERN (insn)) == USE
+	      || GET_CODE (PATTERN (insn)) == CLOBBER))
+	{
+	  /* ??? Ug.  Actually unlinking the thing is problematic, 
+	     given what we'd have to coordinate with our callers.  */
+	  PUT_CODE (insn, NOTE);
+	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	  NOTE_SOURCE_FILE (insn) = 0;
+	  goto insn_done;
+	}
+
       /* Last insn wasn't last?  */
       if (must_be_last)
 	return FALSE;
@@ -287,6 +300,10 @@ cond_exec_process_if_block (test_bb, then_bb, else_bb, join_bb)
 
   then_start = then_bb->head;
   then_end = then_bb->end;
+
+  /* Skip a label heading THEN block.  */
+  if (GET_CODE (then_start) == CODE_LABEL)
+    then_start = NEXT_INSN (then_start);
 
   /* Skip a (use (const_int 0)) or branch as the final insn.  */
   if (GET_CODE (then_end) == INSN
