@@ -129,14 +129,14 @@ CFILES = asprintf.c alloca.c argv.c atexit.c basename.c bcmp.c bcopy.c \
 	spaces.c splay-tree.c strcasecmp.c strncasecmp.c strchr.c strdup.c \
 	strerror.c strrchr.c strsignal.c strstr.c strtod.c strtol.c strtoul.c \
 	tmpnam.c vasprintf.c vfork.c vfprintf.c vprintf.c vsprintf.c \
-	waitpid.c xatexit.c xexit.c xmalloc.c xstrdup.c xstrerror.c
+	waitpid.c xatexit.c xexit.c xmalloc.c xmemdup.c xstrdup.c xstrerror.c
 
 # These are always included in the library.
 REQUIRED_OFILES = argv.o choose-temp.o concat.o cplus-dem.o \
   fdmatch.o fnmatch.o getopt.o getopt1.o getpwd.o getruntime.o hex.o \
   floatformat.o objalloc.o obstack.o pexecute.o spaces.o \
   splay-tree.o strerror.o strsignal.o xatexit.o xexit.o xmalloc.o \
-  xstrdup.o xstrerror.o
+  xmemdup.o xstrdup.o xstrerror.o
 
 $(TARGETLIB): $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS) $(ALLOCA)
 	rm -f $(TARGETLIB)
@@ -270,5 +270,6 @@ strsignal.o: config.h $(INCDIR)/libiberty.h
 xatexit.o: $(INCDIR)/libiberty.h
 xexit.o: $(INCDIR)/libiberty.h
 xmalloc.o: $(INCDIR)/libiberty.h
+xmemdup.o: config.h $(INCDIR)/libiberty.h
 xstrdup.o: config.h $(INCDIR)/libiberty.h
 xstrerror.o: config.h $(INCDIR)/libiberty.h
