@@ -1,3 +1,41 @@
+1998-11-26 01:17 -0500  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* cpplib.h (struct cpp_buffer): Replace dir and dlen members
+	with a struct file_name_list pointer.
+	(struct cpp_reader): Add pointer to chain of `actual
+	directory' include searchpath entries.
+	(struct file_name_list): Add *alloc pointer for the sake of
+	the actual-directory chain.
+
+	Move definition of HOST_WIDE_INT here.
+	(cpp_parse_escape): Change prototype to match changes in
+	cppexp.c.
+
+	* cppfiles.c (actual_directory): New function.
+	(finclude): Use it to initialize the buffer's actual_dir
+	entry.
+	(find_include_file): We don't need to fix up max_include_len
+	here.
+
+	* cpplib.c (do_include): Don't allocate a file_name_list on
+	the fly for current directory "" includes, use the one that's
+	been preallocated in pfile->buffer->actual_dir.  Hoist out
+	duplicate code from the search_start selection logic.
+	(cpp_reader_init): Initialize pfile->actual_dirs.
+
+	Remove definition of HOST_WIDE_INT.  Change calls
+	to cpp_parse_escape to match changes in cppexp.c (note
+	hardcoded MASK, which is safe since this is the source
+	character set).
+
+	* cppexp.c: Bring over changes to cpp_parse_escape from cccp.c
+	to handle wide character constants in #if directives.  The
+	function now returns a HOST_WIDE_INT, and takes a third
+	argument which is a binary mask for all legal values (0x00ff
+	for 8-bit `char', 0xffff for 16-bit `wchar_t', etc.)  Define
+	MAX_CHAR_TYPE_MASK and MAX_WCHAR_TYPE_MASK.  Change callers of
+	cpp_parse_escape to match.  [Fixes c-torture/execute/widechar-1.c]
+
 Mon Dec  7 15:38:25 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* gcc.c (default_compilers): Fix typo in USE_CPPLIB spec for cc1.

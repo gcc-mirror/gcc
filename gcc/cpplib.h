@@ -110,8 +110,7 @@ struct cpp_buffer {
   /* Filename specified with #line command.  */
   char *nominal_fname;
   /* Actual directory of this file, used only for "" includes */
-  char *dir;
-  size_t dlen;
+  struct file_name_list *actual_dir;
 
   /* Pointer into the include hash table.  Used for include_next and
      to record control macros.
@@ -181,6 +180,10 @@ struct cpp_reader {
   /* Hash table of other included files.  See cppfiles.c */
 #define ALL_INCLUDE_HASHSIZE 71
   struct include_hash *all_include_files[ALL_INCLUDE_HASHSIZE];
+
+  /* Chain of `actual directory' file_name_list entries,
+     for "" inclusion. */
+  struct file_name_list *actual_dirs;
 
   /* Current maximum length of directory names in the search path
      for include files.  (Altered as we get more of them.)  */
@@ -485,6 +488,8 @@ struct cpp_options {
 struct file_name_list
 {
   struct file_name_list *next;
+  struct file_name_list *alloc; /* for the cache of
+				   current directory entries */
   char *name;
   unsigned int nlen;
   /* We use these to tell if the directory mentioned here is a duplicate
@@ -656,6 +661,28 @@ struct if_stack {
 };
 typedef struct if_stack IF_STACK_FRAME;
 
+/* Find the largest host integer type and set its size and type.
+   Watch out: on some crazy hosts `long' is shorter than `int'.  */
+
+#ifndef HOST_WIDE_INT
+# if HAVE_INTTYPES_H
+#  include <inttypes.h>
+#  define HOST_WIDE_INT intmax_t
+# else
+#  if (HOST_BITS_PER_LONG <= HOST_BITS_PER_INT \
+       && HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_INT)
+#   define HOST_WIDE_INT int
+#  else
+#  if (HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_LONG \
+       || ! (defined LONG_LONG_MAX || defined LLONG_MAX))
+#   define HOST_WIDE_INT long
+#  else
+#   define HOST_WIDE_INT long long
+#  endif
+#  endif
+# endif
+#endif
+
 extern void cpp_buf_line_and_col PARAMS((cpp_buffer *, long *, long *));
 extern cpp_buffer* cpp_file_buffer PARAMS((cpp_reader *));
 extern void cpp_define PARAMS ((cpp_reader*, unsigned char *));
@@ -678,7 +705,7 @@ extern void cpp_perror_with_name PROTO ((cpp_reader *, const char *));
 extern void v_cpp_message PROTO ((cpp_reader *, int, const char *, va_list));
 
 extern void cpp_grow_buffer PARAMS ((cpp_reader *, long));
-extern int cpp_parse_escape PARAMS ((cpp_reader *, char **));
+extern HOST_WIDE_INT cpp_parse_escape PARAMS ((cpp_reader *, char **, HOST_WIDE_INT));
 extern cpp_buffer *cpp_push_buffer PARAMS ((cpp_reader *,
 					    unsigned char *, long));
 extern cpp_buffer *cpp_pop_buffer PARAMS ((cpp_reader *));
