@@ -714,7 +714,7 @@ enum reg_class { NO_REGS, GLOBAL_REGS, LOCAL_REGS, LOCAL_OR_GLOBAL_REGS,
    as seen by the caller.
    On 80960, returns are in g0..g3 */
 
-#define FUNCTION_VALUE_REGNO_P(N) ((N) < 4)
+#define FUNCTION_VALUE_REGNO_P(N) ((N) == 0)
 
 /* 1 if N is a possible register number for function argument passing.
    On 80960, parameters are passed in g0..g11 */
