@@ -1,3 +1,7 @@
+2004-10-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/parse/error18.C: Remove.
+
 2004-10-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17976
