@@ -1,3 +1,8 @@
+2002-07-21  Hartmut Schirmer  <hartmut.schirmer@arcor.de>
+
+	* libgcc2.c (__divdi3, __moddi3): Use unary minus operator
+	instead of __negdi2 directly.
+
 2002-07-21  Neil Booth  <neil@daikokuya.co.uk>
 
 	* gengenrtl.c (gencode): Don't define obstack_alloc_rtx.
