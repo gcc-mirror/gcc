@@ -1,3 +1,7 @@
+2002-01-17  Andreas Tobler  <toa@pop.agri.ch>
+
+	* config/os/solaris/solaris2.6/bits/ctype_noninline.h: Fix.
+
 2002-01-16  David Edelsohn  <dje@watson.ibm.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_LINKER_FEATURES): Do not clear
