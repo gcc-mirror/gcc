@@ -7713,6 +7713,11 @@ unit may not be bound to undefined symbols in another translation unit
 without user intervention.  For instance, under Microsoft Windows
 symbols must be explicitly imported from shared libraries (DLLs).
 
+@findex MD_ASM_CLOBBERS
+@item MD_ASM_CLOBBERS
+A C statement that adds to @var{CLOBBERS} @code{STRING_CST} trees for
+any hard regs the port wishes to automatically clobber for all asms.
+
 @findex ISSUE_RATE
 @item ISSUE_RATE
 A C expression that returns how many instructions can be issued at the
