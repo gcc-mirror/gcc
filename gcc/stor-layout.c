@@ -318,7 +318,7 @@ layout_record (rec)
      and VAR_SIZE is a tree expression.
      If VAR_SIZE is null, the size is just CONST_SIZE.
      Naturally we try to avoid using VAR_SIZE.  */
-  register int const_size = 0;
+ register HOST_WIDE_INT const_size = 0;
   register tree var_size = 0;
   /* Once we start using VAR_SIZE, this is the maximum alignment
      that we know VAR_SIZE has.  */
