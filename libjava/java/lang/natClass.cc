@@ -625,7 +625,7 @@ java::lang::Class::isInstance (jobject obj)
   if (! obj || isPrimitive ())
     return false;
   _Jv_InitClass (this);
-  return isAssignableFrom (obj->getClass());
+  return _Jv_IsAssignableFrom (this, obj->getClass());
 }
 
 inline jboolean
