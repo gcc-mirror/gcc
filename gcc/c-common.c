@@ -3090,7 +3090,7 @@ c_sizeof_or_alignof_type (type, op, complain)
      TYPE_IS_SIZETYPE means that certain things (like overflow) will
      never happen.  However, this node should really have type
      `size_t', which is just a typedef for an ordinary integer type.  */
-  value = fold (build1 (NOP_EXPR, c_size_type_node, value));
+  value = fold (build1 (NOP_EXPR, size_type_node, value));
   my_friendly_assert (!TYPE_IS_SIZETYPE (TREE_TYPE (value)), 20001021);
   
   return value;
@@ -3141,7 +3141,7 @@ c_alignof_expr (expr)
   else
     return c_alignof (TREE_TYPE (expr));
 
-  return fold (build1 (NOP_EXPR, c_size_type_node, t));
+  return fold (build1 (NOP_EXPR, size_type_node, t));
 }
 
 /* Handle C and C++ default attributes.  */
@@ -3284,10 +3284,10 @@ c_common_nodes_and_builtins ()
   /* `unsigned long' is the standard type for sizeof.
      Note that stddef.h uses `unsigned long',
      and this must agree, even if long and int are the same size.  */
-  c_size_type_node =
+  size_type_node =
     TREE_TYPE (identifier_global_value (get_identifier (SIZE_TYPE)));
-  signed_size_type_node = c_common_signed_type (c_size_type_node);
-  set_sizetype (c_size_type_node);
+  signed_size_type_node = c_common_signed_type (size_type_node);
+  set_sizetype (size_type_node);
 
   build_common_tree_nodes_2 (flag_short_double);
 
