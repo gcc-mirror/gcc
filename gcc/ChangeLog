@@ -1,3 +1,8 @@
+2002-12-12  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/ia64.c (ia64_hpux_asm_file_end): Fix typo in last
+	change and some warnings.
+
 2002-12-12  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/md.texi (pushm): Fix a typo.
