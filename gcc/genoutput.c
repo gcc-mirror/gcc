@@ -95,6 +95,10 @@ given in the entry is a constant (it does not start with `*').  */
 #include "rtl.h"
 #include "obstack.h"
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 /* No instruction can have more operands than this.
    Sorry for this arbitrary limit, but what machine will
    have an instruction with this many operands?  */
@@ -180,6 +184,8 @@ output_prologue ()
 from the machine description file `md'.  */\n\n");
 
   printf ("#include \"config.h\"\n");
+  printf ("#include <stdio.h>\n");
+  printf ("#include \"flags.h\"\n");
   printf ("#include \"rtl.h\"\n");
   printf ("#include \"regs.h\"\n");
   printf ("#include \"hard-reg-set.h\"\n");
@@ -191,7 +197,6 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"insn-codes.h\"\n\n");
   printf ("#include \"recog.h\"\n\n");
 
-  printf ("#include <stdio.h>\n");
   printf ("#include \"output.h\"\n");
 }
 
@@ -514,6 +519,9 @@ scan_operands (part, this_address_p, this_strict_low)
     case STRICT_LOW_PART:
       scan_operands (XEXP (part, 0), 0, 1);
       return;
+      
+    default:
+      break;
     }
 
   format_ptr = GET_RTX_FORMAT (GET_CODE (part));
@@ -522,6 +530,7 @@ scan_operands (part, this_address_p, this_strict_low)
     switch (*format_ptr++)
       {
       case 'e':
+      case 'u':
 	scan_operands (XEXP (part, i), 0, 0);
 	break;
       case 'E':

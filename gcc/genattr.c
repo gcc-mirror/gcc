@@ -25,6 +25,10 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "obstack.h"
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
 

@@ -51,6 +51,10 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "obstack.h"
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
 
@@ -191,7 +195,6 @@ static void change_state	PROTO((char *, char *, int));
 static char *copystr		PROTO((char *));
 static void mybzero		PROTO((char *, unsigned));
 static void mybcopy		PROTO((char *, char *, unsigned));
-static char *concat		PROTO((char *, char *));
 static void fatal		PROTO((char *));
 char *xrealloc			PROTO((char *, unsigned));
 char *xmalloc			PROTO((unsigned));
@@ -1644,25 +1647,6 @@ mybcopy (in, out, length)
 {
   while (length-- > 0)
     *out++ = *in++;
-}
-
-static char *
-concat (s1, s2)
-     char *s1, *s2;
-{
-  register char *tem;
-
-  if (s1 == 0)
-    return s2;
-  if (s2 == 0)
-    return s1;
-
-  tem = (char *) xmalloc (strlen (s1) + strlen (s2) + 2);
-  strcpy (tem, s1);
-  strcat (tem, " ");
-  strcat (tem, s2);
-
-  return tem;
 }
 
 char *

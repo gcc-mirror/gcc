@@ -487,8 +487,6 @@ expand_call (exp, target, ignore)
   tree actparms = TREE_OPERAND (exp, 1);
   /* RTX for the function to be called.  */
   rtx funexp;
-  /* Tree node for the function to be called (not the address!).  */
-  tree funtree;
   /* Data type of the function.  */
   tree funtype;
   /* Declaration of the function being called,
@@ -2110,9 +2108,7 @@ expand_call (exp, target, ignore)
 	 Deal with them explicitly by copying from the return registers
 	 into the target MEM locations.  */
       int bytes = int_size_in_bytes (TREE_TYPE (exp));
-      int n_regs = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
       int i;
-      enum machine_mode tmpmode;
       rtx src, dst;
       int bitsize = MIN (TYPE_ALIGN (TREE_TYPE (exp)), BITS_PER_WORD);
       int bitpos, xbitpos, big_endian_correction = 0;

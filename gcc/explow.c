@@ -153,7 +153,6 @@ plus_constant_for_output_wide (x, c)
 {
   register RTX_CODE code = GET_CODE (x);
   register enum machine_mode mode = GET_MODE (x);
-  int all_constant = 0;
 
   if (GET_CODE (x) == LO_SUM)
     return gen_rtx_LO_SUM (mode, XEXP (x, 0),

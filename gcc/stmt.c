@@ -38,6 +38,10 @@ Boston, MA 02111-1307, USA.  */
 #include <stdio.h>
 #include <ctype.h>
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
@@ -1191,7 +1195,6 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
     {
       tree val = TREE_VALUE (tail);
       tree type = TREE_TYPE (val);
-      tree val1;
       int j;
       int found_equal = 0;
       int found_plus = 0;
@@ -2280,7 +2283,6 @@ expand_return (retval)
   register rtx op0;
   tree retval_rhs;
   int cleanups;
-  struct nesting *block;
 
   /* If function wants no value, give it none.  */
   if (TREE_CODE (TREE_TYPE (TREE_TYPE (current_function_decl))) == VOID_TYPE)
@@ -3842,8 +3844,6 @@ pushcase (value, converter, label, duplicate)
      register tree label;
      tree *duplicate;
 {
-  register struct case_node **l;
-  register struct case_node *n;
   tree index_type;
   tree nominal_type;
 
@@ -3925,8 +3925,6 @@ pushcase_range (value1, value2, converter, label, duplicate)
      register tree label;
      tree *duplicate;
 {
-  register struct case_node **l;
-  register struct case_node *n;
   tree index_type;
   tree nominal_type;
 
