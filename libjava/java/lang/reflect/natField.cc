@@ -26,6 +26,9 @@ details.  */
 #include <java/lang/Boolean.h>
 #include <java/lang/Character.h>
 
+#define BooleanClass _CL_Q34java4lang7Boolean
+extern java::lang::Class BooleanClass;
+
 jint
 java::lang::reflect::Field::getModifiers ()
 {
@@ -251,10 +254,13 @@ java::lang::reflect::Field::get (jclass caller, jobject obj)
   if (fld->type == JvPrimClass (char))
     return new java::lang::Character (* (jchar*) addr);
   if (fld->type == JvPrimClass (boolean))
-    if (* (jboolean*) addr)
-      return java::lang::Boolean::TRUE;
-    else
-      return java::lang::Boolean::FALSE;
+    {
+      _Jv_InitClass (&BooleanClass);
+      if (* (jboolean*) addr)
+	return java::lang::Boolean::TRUE;
+      else
+	return java::lang::Boolean::FALSE;
+    }
   JvThrow (new java::lang::IllegalArgumentException());
 }
 

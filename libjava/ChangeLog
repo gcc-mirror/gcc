@@ -1,3 +1,10 @@
+2000-09-13  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/reflect/natArray.cc (BooleanClass): New define.
+	(get): Ensure Boolean class is initialized.
+	* java/lang/reflect/natField.cc (BooleanClass): New define.
+	(get): Ensure Boolean class is initialized.
+
 2000-09-13  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/String.java (CASE_INSENSITIVE_ORDER): New static field.
