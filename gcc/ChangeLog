@@ -1,3 +1,10 @@
+Wed Nov 28 06:52:27 2001  Arnaud Charlet  <charlet@ACT-Europe.FR>
+
+	* Makefile.in (ORDINARY_FLAGS_TO_PASS): Remove STAGE_PREFIX.
+	(FLAGS_TO_PASS): Add STAGE_PREFIX.
+	(SUBDIR_FLAGS_TO_PASS): Apply PREPEND_DOTDOT_TO_RELATIVE_PATH
+	to STAGE_PREFIX.
+
 Wed Nov 28 08:21:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Makefile.in (OBJS): Sort alphabetically.
