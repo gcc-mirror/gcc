@@ -121,7 +121,7 @@ struct mark_def_sites_global_data
      are used in a basic block.  We keep it as a global variable
      solely to avoid the overhead of allocating and deallocating
      the bitmap.  */
-  sbitmap kills;
+  bitmap kills;
 
   /* Bitmap of names to rename.  */
   sbitmap names_to_rename;
@@ -288,9 +288,9 @@ mark_def_sites_initialize_block (struct dom_walk_data *walk_data,
 				 basic_block bb ATTRIBUTE_UNUSED)
 {
   struct mark_def_sites_global_data *gd = walk_data->global_data;
-  sbitmap kills = gd->kills;
+  bitmap kills = gd->kills;
 
-  sbitmap_zero (kills);
+  bitmap_clear (kills);
 }
 
 /* Block initialization routine for mark_def_sites.  Clear the 
@@ -301,11 +301,11 @@ ssa_mark_def_sites_initialize_block (struct dom_walk_data *walk_data,
 				     basic_block bb)
 {
   struct mark_def_sites_global_data *gd = walk_data->global_data;
-  sbitmap kills = gd->kills;
+  bitmap kills = gd->kills;
   tree phi, def;
   unsigned def_uid;
 
-  sbitmap_zero (kills);
+  bitmap_clear (kills);
 
   for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     {
@@ -316,7 +316,7 @@ ssa_mark_def_sites_initialize_block (struct dom_walk_data *walk_data,
 	continue;
 
       set_def_block (def, bb, true, true);
-      SET_BIT (kills, def_uid);
+      bitmap_set_bit (kills, def_uid);
     }
 }
 
@@ -326,7 +326,7 @@ static void
 ssa_mark_phi_uses (struct dom_walk_data *walk_data, basic_block bb)
 {
   struct mark_def_sites_global_data *gd = walk_data->global_data;
-  sbitmap kills = gd->kills;
+  bitmap kills = gd->kills;
   edge e;
   tree phi, use;
   unsigned uid;
@@ -346,7 +346,7 @@ ssa_mark_phi_uses (struct dom_walk_data *walk_data, basic_block bb)
 	  uid = SSA_NAME_VERSION (use);
 
 	  if (TEST_BIT (gd->names_to_rename, uid)
-	      && !TEST_BIT (kills, uid))
+	      && !bitmap_bit_p (kills, uid))
 	    set_livein_block (use, bb);
 	}
     }
@@ -373,7 +373,7 @@ mark_def_sites (struct dom_walk_data *walk_data,
 		block_stmt_iterator bsi)
 {
   struct mark_def_sites_global_data *gd = walk_data->global_data;
-  sbitmap kills = gd->kills;
+  bitmap kills = gd->kills;
   size_t uid;
   tree stmt, def;
   use_operand_p use_p;
@@ -396,7 +396,7 @@ mark_def_sites (struct dom_walk_data *walk_data,
       if (prepare_use_operand_for_rename (use_p, &uid))
 	{
 	  REWRITE_THIS_STMT (stmt) = 1;
-	  if (!TEST_BIT (kills, uid))
+	  if (!bitmap_bit_p (kills, uid))
 	    set_livein_block (USE_FROM_PTR (use_p), bb);
 	}
     }
@@ -427,7 +427,7 @@ mark_def_sites (struct dom_walk_data *walk_data,
       if (prepare_def_operand_for_rename (def, &uid))
 	{
 	  set_def_block (def, bb, false, false);
-	  SET_BIT (kills, uid);
+	  bitmap_set_bit (kills, uid);
 	  REWRITE_THIS_STMT (stmt) = 1;
 	}
     }
@@ -442,7 +442,7 @@ ssa_mark_def_sites (struct dom_walk_data *walk_data,
 		    block_stmt_iterator bsi)
 {
   struct mark_def_sites_global_data *gd = walk_data->global_data;
-  sbitmap kills = gd->kills;
+  bitmap kills = gd->kills;
   size_t uid, def_uid;
   tree stmt, use, def;
   ssa_op_iter iter;
@@ -459,7 +459,7 @@ ssa_mark_def_sites (struct dom_walk_data *walk_data,
       uid = SSA_NAME_VERSION (use);
 
       if (TEST_BIT (gd->names_to_rename, uid)
-	  && !TEST_BIT (kills, uid))
+	  && !bitmap_bit_p (kills, uid))
 	set_livein_block (use, bb);
     }
 	  
@@ -472,7 +472,7 @@ ssa_mark_def_sites (struct dom_walk_data *walk_data,
       if (TEST_BIT (gd->names_to_rename, def_uid))
 	{
 	  set_def_block (def, bb, false, true);
-	  SET_BIT (kills, def_uid);
+	  bitmap_set_bit (kills, def_uid);
 	}
     }
 }
@@ -1521,7 +1521,7 @@ mark_def_site_blocks (void)
   /* Notice that this bitmap is indexed using variable UIDs, so it must be
      large enough to accommodate all the variables referenced in the
      function, not just the ones we are renaming.  */
-  mark_def_sites_global_data.kills = sbitmap_alloc (num_referenced_vars);
+  mark_def_sites_global_data.kills = BITMAP_XMALLOC ();
   walk_data.global_data = &mark_def_sites_global_data;
 
   /* We do not have any local data.  */
@@ -1537,7 +1537,7 @@ mark_def_site_blocks (void)
   fini_walk_dominator_tree (&walk_data);
 
   /* We no longer need this bitmap, clear and free it.  */
-  sbitmap_free (mark_def_sites_global_data.kills);
+  BITMAP_XFREE (mark_def_sites_global_data.kills);
 }
 
 
@@ -1698,7 +1698,7 @@ rewrite_ssa_into_ssa (void)
       set_current_def (ssa_name (i), NULL_TREE);
     }
 
-  mark_def_sites_global_data.kills = sbitmap_alloc (num_ssa_names);
+  mark_def_sites_global_data.kills = BITMAP_XMALLOC ();
   mark_def_sites_global_data.names_to_rename = snames_to_rename;
   walk_data.global_data = &mark_def_sites_global_data;
 
@@ -1717,7 +1717,7 @@ rewrite_ssa_into_ssa (void)
   fini_walk_dominator_tree (&walk_data);
 
   /* We no longer need this bitmap, clear and free it.  */
-  sbitmap_free (mark_def_sites_global_data.kills);
+  BITMAP_XFREE (mark_def_sites_global_data.kills);
 
   /* Insert PHI nodes at dominance frontiers of definition blocks.  */
   insert_phi_nodes (dfs, to_rename);

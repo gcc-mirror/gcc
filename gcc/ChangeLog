@@ -1,5 +1,14 @@
 2005-01-31  Jeff Law  <law@redhat.com>
 
+	* tree-into-ssa.c (mark_def_sites_global_data): Make KILLS
+	bitmap a sparse bitmap instead of a simple bitmap.
+	(mark_def_sites_initialize_block):  Corresponding changes.
+	(ssa_mark_def_sites_initialize_block): Likewise.
+	(ssa_mark_phi_uses): Likewise.
+	(mark_def_site, ssa_mark_def_sites): Likewise.
+	(mark_def_site_blocks): Likewise.
+	(rewrite_ssa_into_ssa): Likewise.
+
 	* tree-ssa-dom.c (record_cond): Pass correct variable type
 	for last argument to htab_find_slot_with_hash.
 
