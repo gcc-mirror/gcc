@@ -7299,8 +7299,12 @@ tree_expr_nonnegative_p (t)
       return rtl_expr_nonnegative_p (RTL_EXPR_RTL (t));
       
     default:
-      /* We don't know sign of `t', so be safe and return false.  */
-      return 0;
+      if (truth_value_p (TREE_CODE (t)))
+	/* Truth values evaluate to 0 or 1, which is nonnegative.  */
+	return 1;
+      else
+	/* We don't know sign of `t', so be conservative and return false.  */
+	return 0;
     }
 }
 

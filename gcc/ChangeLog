@@ -1,3 +1,8 @@
+2000-12-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fold-const.c (tree_expr_nonnegative_p): Treat truth values as
+	non-negative.
+
 Tue Dec 19 00:37:08 2000  J"orn Rennecke <amylaar@redhat.com>
 
 	* reload.c (push_reload): When using a dying register for the reload
