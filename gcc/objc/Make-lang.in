@@ -56,6 +56,9 @@ OBJECTIVE-C objective-c: cc1obj objc-runtime
 # Tell GNU make to ignore these if they exist.
 .PHONY: objective-c objc ObjC
 
+# The Objective C thread file
+OBJC_THREAD_FILE=thr-$(GCC_THREAD_FILE)
+
 # C common object files required by Objective C.
 OBJC_CCOMMON = c-lex.o c-pragma.o c-decl.o c-typeck.o c-convert.o \
   c-aux-info.o c-common.o c-iterate.o
