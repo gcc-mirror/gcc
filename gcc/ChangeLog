@@ -61,6 +61,10 @@
 
 2004-05-13  Jeff Law  <law@redhat.com>
 
+	* tree-ssa-live.c (calculate_live_on_entry): Ignore virtual
+	variables.  Simplify slightly by using USE_OP/DEF_OP instead
+	of USE_OP_PTR/DEF_OP_PTR and dereferencing the result.
+
 	* tree-into-ssa.c (compute_global_livein): Use EXECUTE_IF_SET_IN_BITMAP
 	rather than iterating through the blocks testing each bit in
 	livein to initialize the worklist.
