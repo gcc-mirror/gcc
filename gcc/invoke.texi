@@ -3331,7 +3331,7 @@ With Mach, you can use the utility @code{md} to merge multiple
 dependency files into a single dependency file suitable for using with
 the @samp{make} command.
 
-@item -MMD @var{file}
+@item -MMD
 @findex -MMD
 Like @samp{-MD} except mention only user header files, not system
 -header files.
