@@ -1,3 +1,8 @@
+2003-05-28  DJ Delorie  <dj@redhat.com>
+
+	* Makefile.tpl: Make maybe-check-gcc .PHONY.
+	* Makefile.in: Regenerate.
+
 2003-05-21  Maciej W. Rozycki  <macro@ds2.pg.gda.pl>
 
 	* configure.in: Use curly braces in the definition of tooldir.
