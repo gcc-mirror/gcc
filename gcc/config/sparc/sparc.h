@@ -1419,12 +1419,13 @@ extern struct rtx_def *legitimize_pic_address ();
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  For floating-point,
    CCFP[E]mode is used.  CC_NOOVmode should be used when the first operand is a
-   PLUS, MINUS, or NEG.  CCmode should be used when no special processing is
-   needed.  */
+   PLUS, MINUS, NEG, or ASHIFT.  CCmode should be used when no special
+   processing is needed.  */
 #define SELECT_CC_MODE(OP,X,Y) \
   (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT				\
-   ? ((OP == EQ || OP == NE) ? CCFPmode : CCFPEmode)		\
-   : ((GET_CODE (X) == PLUS || GET_CODE (X) == MINUS || GET_CODE (X) == NEG) \
+   ? ((OP == EQ || OP == NE) ? CCFPmode : CCFPEmode)			\
+   : ((GET_CODE (X) == PLUS || GET_CODE (X) == MINUS			\
+       || GET_CODE (X) == NEG || GET_CODE (X) == ASHIFT)		\
       ? CC_NOOVmode : CCmode))
 
 /* A function address in a call instruction
