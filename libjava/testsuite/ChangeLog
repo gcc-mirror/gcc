@@ -1,3 +1,7 @@
+2000-01-18  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.compile/inner_pub.java: New file.
+
 2000-01-16  Anthony Green  <green@cygnus.com>
 
 	* libjava.lang/pr133.out: New file.
