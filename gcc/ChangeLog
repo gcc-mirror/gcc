@@ -1,3 +1,10 @@
+2004-12-28  Richard Henderson  <rth@redhat.com>
+
+	PR inline-asm/15740
+	* gimplify.c (gimplify_asm_expr): Move resolve asm names ...
+	* c-typeck.c (build_asm_expr): ... here.  Validate input
+	constraints.  Mark memory inputs addressable.
+
 2004-12-28  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR target/18321

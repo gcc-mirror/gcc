@@ -1139,62 +1139,80 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 
   if (!processing_template_decl)
     {
+      int ninputs, noutputs;
+      const char *constraint;
+      const char **oconstraints;
+      bool allows_mem, allows_reg, is_inout;
+      tree operand;
       int i;
-      int ninputs;
-      int noutputs;
 
-      for (t = input_operands; t; t = TREE_CHAIN (t))
+      ninputs = list_length (input_operands);
+      noutputs = list_length (output_operands);
+      oconstraints = (const char **) alloca (noutputs * sizeof (char *));
+
+      string = resolve_asm_operand_names (string, output_operands,
+					  input_operands);
+
+      for (i = 0, t = output_operands; t; t = TREE_CHAIN (t), ++i)
 	{
-	  tree converted_operand 
-	    = decay_conversion (TREE_VALUE (t)); 
-	  
+	  operand = TREE_VALUE (t);
+
+	  /* ??? Really, this should not be here.  Users should be using a
+	     proper lvalue, dammit.  But there's a long history of using
+	     casts in the output operands.  In cases like longlong.h, this
+	     becomes a primitive form of typechecking -- if the cast can be
+	     removed, then the output operand had a type of the proper width;
+	     otherwise we'll get an error.  Gross, but ...  */
+	  STRIP_NOPS (operand);
+
+	  if (!lvalue_or_else (operand, lv_asm))
+	    operand = error_mark_node;
+
+	  constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
+	  oconstraints[i] = constraint;
+
+	  if (parse_output_constraint (&constraint, i, ninputs, noutputs,
+				       &allows_mem, &allows_reg, &is_inout))
+	    {
+	      /* If the operand is going to end up in memory,
+		 mark it addressable.  */
+	      if (!allows_reg && !cxx_mark_addressable (operand))
+		operand = error_mark_node;
+	    }
+	  else
+	    operand = error_mark_node;
+
+	  TREE_VALUE (t) = operand;
+	}
+
+      for (i = 0, t = input_operands; t; ++i, t = TREE_CHAIN (t))
+	{
+	  constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
+	  operand = decay_conversion (TREE_VALUE (t)); 
+
 	  /* If the type of the operand hasn't been determined (e.g.,
 	     because it involves an overloaded function), then issue
 	     an error message.  There's no context available to
 	     resolve the overloading.  */
-	  if (TREE_TYPE (converted_operand) == unknown_type_node)
+	  if (TREE_TYPE (operand) == unknown_type_node)
 	    {
 	      error ("type of asm operand %qE could not be determined", 
                      TREE_VALUE (t));
-	      converted_operand = error_mark_node;
+	      operand = error_mark_node;
 	    }
-	  TREE_VALUE (t) = converted_operand;
-	}
 
-      ninputs = list_length (input_operands);
-      noutputs = list_length (output_operands);
-
-      for (i = 0, t = output_operands; t; t = TREE_CHAIN (t), ++i)
-	{
-	  bool allows_mem;
-	  bool allows_reg;
-	  bool is_inout;
-	  const char *constraint;
-	  tree operand;
-
-	  constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
-	  operand = TREE_VALUE (t);
-
-	  if (!parse_output_constraint (&constraint,
-					i, ninputs, noutputs,
-					&allows_mem,
-					&allows_reg,
-					&is_inout))
+	  if (parse_input_constraint (&constraint, i, ninputs, noutputs, 0,
+				      oconstraints, &allows_mem, &allows_reg))
 	    {
-	      /* By marking this operand as erroneous, we will not try
-		 to process this operand again in expand_asm_operands.  */
-	      TREE_VALUE (t) = error_mark_node;
-	      continue;
+	      /* If the operand is going to end up in memory,
+		 mark it addressable.  */
+	      if (!allows_reg && allows_mem && !cxx_mark_addressable (operand))
+		operand = error_mark_node;
 	    }
+	  else
+	    operand = error_mark_node;
 
-	  /* If the operand is a DECL that is going to end up in
-	     memory, assume it is addressable.  This is a bit more
-	     conservative than it would ideally be; the exact test is
-	     buried deep in expand_asm_operands and depends on the
-	     DECL_RTL for the OPERAND -- which we don't have at this
-	     point.  */
-	  if (!allows_reg && DECL_P (operand))
-	    cxx_mark_addressable (operand);
+	  TREE_VALUE (t) = operand;
 	}
     }
 
