@@ -79,6 +79,7 @@ static void replace_args PARAMS ((cpp_reader *, cpp_macro *, macro_arg *,
 
 /* #define directive parsing and handling.  */
 
+static cpp_token *alloc_expansion_token PARAMS ((cpp_reader *, cpp_macro *));
 static cpp_token *lex_expansion_token PARAMS ((cpp_reader *, cpp_macro *));
 static int warn_of_redefinition PARAMS ((cpp_reader *, const cpp_hashnode *,
 					 const cpp_macro *));
@@ -1089,6 +1090,8 @@ _cpp_free_definition (h)
   h->flags &= ~NODE_BUILTIN;
 }
 
+/* Save parameter NODE to the parameter list of macro MACRO.  Returns
+   zero on success, non-zero if the paramter is a duplicate.  */
 static int
 save_parameter (pfile, macro, node)
      cpp_reader *pfile;
@@ -1119,6 +1122,7 @@ save_parameter (pfile, macro, node)
   return 0;
 }
 
+/* Check the syntax of the paramters in a MACRO definition.  */
 static int
 parse_params (pfile, macro)
      cpp_reader *pfile;
@@ -1195,10 +1199,9 @@ parse_params (pfile, macro)
     }
 }
 
-/* Lex a token from a macro's replacement list.  Translate it to a
-   CPP_MACRO_ARG if appropriate.  */
+/* Allocate room for a token from a macro's replacement list.  */
 static cpp_token *
-lex_expansion_token (pfile, macro)
+alloc_expansion_token (pfile, macro)
      cpp_reader *pfile;
      cpp_macro *macro;
 {
@@ -1213,7 +1216,18 @@ lex_expansion_token (pfile, macro)
     }
 
   macro->count++;
-  *token = *_cpp_lex_token (pfile);
+  return token;
+}
+
+static cpp_token *
+lex_expansion_token (pfile, macro)
+     cpp_reader *pfile;
+     cpp_macro *macro;
+{
+  cpp_token *token;
+
+  pfile->cur_token = alloc_expansion_token (pfile, macro);
+  token = _cpp_lex_direct (pfile);
 
   /* Is this an argument?  */
   if (token->type == CPP_NAME && token->val.node->arg_index)
@@ -1235,7 +1249,8 @@ _cpp_create_definition (pfile, node)
      cpp_hashnode *node;
 {
   cpp_macro *macro;
-  cpp_token *token;
+  cpp_token *token, *saved_cur_token;
+  const cpp_token *ctoken;
   unsigned int i, ok = 1;
 
   macro = (cpp_macro *) _cpp_pool_alloc (&pfile->macro_pool,
@@ -1243,29 +1258,34 @@ _cpp_create_definition (pfile, node)
   macro->line = pfile->directive_line;
   macro->params = 0;
   macro->paramc = 0;
-  macro->fun_like = 0;
   macro->variadic = 0;
   macro->count = 0;
-  macro->expansion = (cpp_token *) POOL_FRONT (&pfile->macro_pool);
+  macro->fun_like = 0;
 
   /* Get the first token of the expansion (or the '(' of a
      function-like macro).  */
-  token = lex_expansion_token (pfile, macro);
-  if (token->type == CPP_OPEN_PAREN && !(token->flags & PREV_WHITE))
+  ctoken = _cpp_lex_token (pfile);
+
+  if (ctoken->type == CPP_OPEN_PAREN && !(ctoken->flags & PREV_WHITE))
     {
       if (!(ok = parse_params (pfile, macro)))
-	goto cleanup;
-      macro->count = 0;
+	goto cleanup2;
       macro->fun_like = 1;
-      /* Some of the pool may have been used for the parameter store.  */
-      macro->expansion = (cpp_token *) POOL_FRONT (&pfile->macro_pool);
-      token = lex_expansion_token (pfile, macro);
     }
-  else if (token->type != CPP_EOF && !(token->flags & PREV_WHITE))
+  else if (ctoken->type != CPP_EOF && !(ctoken->flags & PREV_WHITE))
     cpp_pedwarn (pfile, "ISO C requires whitespace after the macro name");
 
-  /* Setting it here means we don't catch leading comments.  */
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
+  saved_cur_token = pfile->cur_token;
+  macro->expansion = (cpp_token *) POOL_FRONT (&pfile->macro_pool);
+
+  if (macro->fun_like)
+    token = lex_expansion_token (pfile, macro);
+  else
+    {
+      token = alloc_expansion_token (pfile, macro);
+      *token = *ctoken;
+    }
 
   for (;;)
     {
@@ -1286,7 +1306,7 @@ _cpp_create_definition (pfile, node)
 	    {
 	      ok = 0;
 	      cpp_error (pfile, "'#' is not followed by a macro parameter");
-	      goto cleanup;
+	      goto cleanup1;
 	    }
 	}
 
@@ -1306,7 +1326,7 @@ _cpp_create_definition (pfile, node)
 	      ok = 0;
 	      cpp_error (pfile,
 			 "'##' cannot appear at either end of a macro expansion");
-	      goto cleanup;
+	      goto cleanup1;
 	    }
 
 	  token[-1].flags |= PASTE_LEFT;
@@ -1346,7 +1366,7 @@ _cpp_create_definition (pfile, node)
 				 "\"%s\" redefined", NODE_NAME (node));
 
 	  if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
-	    cpp_pedwarn_with_line (pfile, node->value.macro->line, 1,
+	    cpp_pedwarn_with_line (pfile, node->value.macro->line, 0,
 			    "this is the location of the previous definition");
 	}
       _cpp_free_definition (node);
@@ -1358,7 +1378,13 @@ _cpp_create_definition (pfile, node)
   if (! ustrncmp (NODE_NAME (node), DSC ("__STDC_")))
     node->flags |= NODE_WARN;
 
- cleanup:
+ cleanup1:
+
+  /* Set type for SEEN_EOL() in cpplib.c, restore the lexer position.  */
+  saved_cur_token[-1].type = pfile->cur_token[-1].type;
+  pfile->cur_token = saved_cur_token;
+
+ cleanup2:
 
   /* Stop the lexer accepting __VA_ARGS__.  */
   pfile->state.va_args_ok = 0;
