@@ -65,6 +65,7 @@ class PlainDatagramSocketImpl extends DatagramSocketImpl
 	throws SocketException;
   protected native void create() throws SocketException;
   protected native int peek(InetAddress i) throws IOException;
+  protected native int peekData (DatagramPacket dp) throws IOException;
   protected native void setTimeToLive(int ttl) throws IOException;
   protected native int getTimeToLive() throws IOException;
   protected native void send(DatagramPacket p) throws IOException;
