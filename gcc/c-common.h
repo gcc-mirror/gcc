@@ -953,7 +953,7 @@ extern void disable_builtin_function (const char *);
 
 extern tree build_va_arg (tree, tree);
 
-extern int c_common_init_options (void);
+extern unsigned int c_common_init_options (unsigned int, const char **);
 extern bool c_common_post_options (const char **);
 extern bool c_common_init (void);
 extern void c_common_finish (void);

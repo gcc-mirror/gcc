@@ -90,8 +90,8 @@ void write_global_declarations PARAMS ((void));
 #define LANG_HOOKS_FINISH		lhd_do_nothing
 #define LANG_HOOKS_PARSE_FILE		lhd_do_nothing_i
 #define LANG_HOOKS_CLEAR_BINDING_STACK	lhd_clear_binding_stack
-#define LANG_HOOKS_INIT_OPTIONS		hook_int_void_0
-#define LANG_HOOKS_HANDLE_OPTION	hook_int_size_t_constharptr_int_0
+#define LANG_HOOKS_INIT_OPTIONS		hook_uint_uint_constcharptrptr_0
+#define LANG_HOOKS_HANDLE_OPTION	hook_int_size_t_constcharptr_int_0
 #define LANG_HOOKS_POST_OPTIONS		lhd_post_options
 #define LANG_HOOKS_GET_ALIAS_SET	lhd_get_alias_set
 #define LANG_HOOKS_EXPAND_CONSTANT	lhd_return_tree

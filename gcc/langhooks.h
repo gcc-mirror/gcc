@@ -207,7 +207,7 @@ struct lang_hooks
   /* The first callback made to the front end, for simple
      initialization needed before any calls to handle_option.  Return
      the language mask to filter the switch array with.  */
-  int (*init_options) PARAMS ((void));
+  unsigned int (*init_options) (unsigned int argc, const char **argv);
 
   /* Handle the switch CODE, which has real type enum opt_code from
      options.h.  If the switch takes an argument, it is passed in ARG

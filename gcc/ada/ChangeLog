@@ -1,3 +1,9 @@
+2003-07-02  Neil Booth  <neil@daikokuya.co.uk>
+
+	* misc.c (save_argc, save_argv): Make static.
+	(gnat_init_options): New prototype.
+	(gnat_init_options): Update.
+
 2003-07-01  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* gnat_ug.texi: Remove unlikely characters from @vars.

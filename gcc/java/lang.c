@@ -50,7 +50,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 static bool java_init (void);
 static void java_finish (void);
-static int java_init_options (void);
+static unsigned int java_init_options (unsigned int, const char **);
 static bool java_post_options (const char **);
 
 static int java_handle_option (size_t scode, const char *arg, int value);
@@ -664,8 +664,9 @@ void lang_init_source (int level)
   inhibit_error_function_printing = (level == 1);
 }
 
-static int
-java_init_options (void)
+static unsigned int
+java_init_options (unsigned int argc ATTRIBUTE_UNUSED,
+		   const char **argv ATTRIBUTE_UNUSED)
 {
   flag_bounds_check = 1;
   flag_exceptions = 1;

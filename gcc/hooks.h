@@ -44,6 +44,8 @@ int hook_int_void_0 (void);
 int hook_int_size_t_constcharptr_int_0 (size_t, const char *, int);
 int hook_int_void_no_regs (void);
 
+unsigned hook_uint_uint_constcharptrptr_0 (unsigned, const char **);
+
 bool default_can_output_mi_thunk_no_vcall
   PARAMS ((tree, HOST_WIDE_INT, HOST_WIDE_INT, tree));
 

@@ -1,3 +1,27 @@
+2003-07-02  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-common.h (c_common_init_options): New prototype.
+	* c-opts.c (deferred_size): Remove.
+	(defer_opt): Array is now pre-allocated.
+	(c_common_init_options): Pre-allocate deferred_opts.  Make
+	lang_flags unsigned.
+	(push_command_line_options): Free deferred_opts.
+	* hooks.c (hook_uint_uint_constcharptrptr_0): New.
+	* hooks.h (hook_uint_uint_constcharptrptr_0): New.
+	* langhooks-def.h (LANG_HOOKS_INIT_OPTIONS): Update.
+	* langhooks.h (struct lang_hooks): New prototype for init_options.
+	* main.c (main): Cast argv.
+	* opts.c (handle_option, handle_options): Update prototypes.
+	(decode_options): save_argc, save_argv are not global.  Constify.
+	* opts.h (decode_options): New prototype.
+	* toplev.c (general_init): New protoype.
+	(save_argv): Make static.
+	(save_argc): Remove.
+	(print_switch_values, general_init): Constify.
+	(toplev_main): Save argv.
+	* toplev.h (toplev_main): Update prototype.
+	(save_argc, save_argv): Remove.
+
 2003-07-02  David Edelsohn  <edelsohn@gnu.org>
 
 	* dbxout.c (pending_bincls): Guard with DBX_USE_BINCLS.

@@ -1,3 +1,7 @@
+2003-07-02  Neil Booth  <neil@daikokuya.co.uk>
+
+	* lang.c (java_init_options): Update prototype.
+
 2003-07-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* decl.c (poplevel): Adjust define_label call.

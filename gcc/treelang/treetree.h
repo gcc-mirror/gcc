@@ -63,7 +63,7 @@ tree tree_code_get_type (int type_num);
 void treelang_init_decl_processing (void);
 void treelang_finish (void);
 bool treelang_init (void);
-int treelang_init_options (void);
+unsigned int treelang_init_options (unsigned int, const char **);
 int treelang_handle_option (size_t scode, const char *arg, int value);
 void treelang_parse_file (int debug_flag);
 void push_var_level (void);
