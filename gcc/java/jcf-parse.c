@@ -769,9 +769,9 @@ yyparse ()
 
       if (list[0]) 
 	{
-	  char *value, len;
+	  char *value;
 
-	  len = strlen (list);
+	  int len = strlen (list);
 	  /* FIXME: this test is only needed until our .java parser is
 	     fully capable.  */
 	  if (len > 5 && ! strcmp (&list[len - 5], ".java"))
