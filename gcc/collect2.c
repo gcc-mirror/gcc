@@ -264,7 +264,7 @@ static struct path_prefix cmdline_lib_dirs; /* directories specified with -L */
 static struct path_prefix libpath_lib_dirs; /* directories in LIBPATH */
 static struct path_prefix *libpaths[3] = {&cmdline_lib_dirs,
 					  &libpath_lib_dirs, NULL};
-static const char *const libexts[3] = {"a", "so", NULL};  /* possible library extentions */
+static const char *const libexts[3] = {"a", "so", NULL};  /* possible library extensions */
 #endif
 
 static void handler		PARAMS ((int));
@@ -1594,7 +1594,7 @@ collect_execute (prog, argv, redir)
       dup2 (stdout_save, STDOUT_FILENO);
       dup2 (stderr_save, STDERR_FILENO);
 
-      /* Close reponse file.  */
+      /* Close response file.  */
       close (redir_handle);
     }
 

@@ -622,7 +622,7 @@ combine_instructions (f, nregs)
 	      rtx link = XEXP (links, 0);
 
 	      /* If the linked insn has been replaced by a note, then there
-		 is no point in persuing this chain any further.  */
+		 is no point in pursuing this chain any further.  */
 	      if (GET_CODE (link) == NOTE)
 		break;
 
@@ -953,14 +953,14 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
 		 We depend here on combinable_i3_pat to reject them.  */
 	      /* The code below this loop only verifies that the inputs of
 		 the SET in INSN do not change.  We call reg_set_between_p
-		 to verify that the REG in the USE does not change betweeen
+		 to verify that the REG in the USE does not change between
 		 I3 and INSN.
 		 If the USE in INSN was for a pseudo register, the matching
 		 insn pattern will likely match any register; combining this
 		 with any other USE would only be safe if we knew that the
 		 used registers have identical values, or if there was
 		 something to tell them apart, e.g. different modes.  For
-		 now, we forgo such compilcated tests and simply disallow
+		 now, we forgo such complicated tests and simply disallow
 		 combining of USES of pseudo registers with any other USE.  */
 	      if (GET_CODE (XEXP (elt, 0)) == REG
 		  && GET_CODE (PATTERN (i3)) == PARALLEL)
@@ -6143,7 +6143,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
       rtx temp = gen_rtx_ZERO_EXTEND (pos_mode, pos_rtx);
 
       /* If we know that no extraneous bits are set, and that the high
-	 bit is not set, convert extraction to cheaper one - eighter
+	 bit is not set, convert extraction to cheaper one - either
 	 SIGN_EXTENSION or ZERO_EXTENSION, that are equivalent in these
 	 cases.  */
       if (flag_expensive_optimizations
@@ -6463,7 +6463,7 @@ make_compound_operation (x, in_code)
 				     NULL_RTX, 0);
 
 	  /* If we have something other than a SUBREG, we might have
-	     done an expansion, so rerun outselves.  */
+	     done an expansion, so rerun ourselves.  */
 	  if (GET_CODE (newer) != SUBREG)
 	    newer = make_compound_operation (newer, in_code);
 
@@ -7234,7 +7234,7 @@ if_then_else_cond (x, ptrue, pfalse)
 	    }
 	}
 
-      /* Similarly for MULT, AND and UMIN, execpt that for these the result
+      /* Similarly for MULT, AND and UMIN, except that for these the result
 	 is always zero.  */
       if ((STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1)
 	  && (code == MULT || code == AND || code == UMIN)
@@ -8549,7 +8549,7 @@ num_sign_bit_copies (x, mode)
 	return num_sign_bit_copies (XEXP (x, 0), mode);
 
     case UMOD:
-      /* The result must be <= the scond operand.  */
+      /* The result must be <= the second operand.  */
       return num_sign_bit_copies (XEXP (x, 1), mode);
 
     case DIV:
@@ -11375,7 +11375,7 @@ get_last_value (x)
      it's either a hard register, set more than once, or it's a live
      at the beginning of the function, return 0.
 
-     Because if it's not live at the beginnning of the function then the reg
+     Because if it's not live at the beginning of the function then the reg
      is always set before being used (is never used without being set).
      And, if it's set only once, and it's always set before use, then all
      uses must have the same last value, even if it's not from this basic

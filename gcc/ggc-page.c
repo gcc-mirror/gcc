@@ -405,7 +405,7 @@ ggc_allocated_p (p)
   base = &table->table[0];
 #endif
 
-  /* Extract the level 1 and 2 indicies.  */
+  /* Extract the level 1 and 2 indices.  */
   L1 = LOOKUP_L1 (p);
   L2 = LOOKUP_L2 (p);
 
@@ -432,7 +432,7 @@ lookup_page_table_entry(p)
   base = &table->table[0];
 #endif
 
-  /* Extract the level 1 and 2 indicies.  */
+  /* Extract the level 1 and 2 indices.  */
   L1 = LOOKUP_L1 (p);
   L2 = LOOKUP_L2 (p);
 
@@ -467,7 +467,7 @@ found:
   base = &table->table[0];
 #endif
 
-  /* Extract the level 1 and 2 indicies.  */
+  /* Extract the level 1 and 2 indices.  */
   L1 = LOOKUP_L1 (p);
   L2 = LOOKUP_L2 (p);
 

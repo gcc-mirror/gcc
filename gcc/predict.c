@@ -368,7 +368,7 @@ estimate_probability (loops_info)
       rtx cond, earliest;
       edge e;
 
-      /* If block has no sucessor, predict all possible paths to
+      /* If block has no successor, predict all possible paths to
          it as improbable, as the block contains a call to a noreturn
 	 function and thus can be executed only once.  */
       if (bb->succ == NULL && !found_noreturn)
@@ -609,7 +609,7 @@ typedef struct block_info_def
   /* True if block needs to be visited in prop_freqency.  */
   int tovisit:1;
 
-  /* Number of predecesors we need to visit first.  */
+  /* Number of predecessors we need to visit first.  */
   int npredecesors;
 } *block_info;
 
@@ -639,7 +639,7 @@ propagate_freq (head)
   basic_block nextbb;
   int n;
 
-  /* For each basic block we need to visit count number of his predecesors
+  /* For each basic block we need to visit count number of his predecessors
      we need to visit first.  */
   for (n = 0; n < n_basic_blocks; n++)
     {
@@ -800,7 +800,7 @@ expensive_function_p (threshold)
   if (threshold > BB_FREQ_MAX)
     abort ();
 
-  /* Frequencies are out of range.  This eighter means that function contains
+  /* Frequencies are out of range.  This either means that function contains
      internal loop executing more than BB_FREQ_MAX times or profile feedback
      is available and function has not been executed at all.  */
   if (ENTRY_BLOCK_PTR->frequency == 0)

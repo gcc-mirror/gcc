@@ -998,7 +998,7 @@ compute_alignments ()
 
 	 We to catch first case, we align frequently executed blocks.
 	 To catch the second, we align blocks that are executed more frequently
-	 than the predecesor and the predecesor is likely to not be executed
+	 than the predecessor and the predecessor is likely to not be executed
 	 when function is called.  */
 
       if (!has_fallthru

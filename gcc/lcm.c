@@ -1400,7 +1400,7 @@ optimize_mode_switching (file)
 
   /* Ideally we'd figure out what blocks were affected and start from
      there, but this is enormously complicated by commit_edge_insertions,
-     which would screw up any indicies we'd collected, and also need to
+     which would screw up any indices we'd collected, and also need to
      be involved in the update.  Bail and recompute global life info for
      everything.  */
 

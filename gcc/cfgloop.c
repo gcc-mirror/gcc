@@ -559,7 +559,7 @@ flow_loop_level_compute (loop, depth)
 }
 
 /* Compute the loop nesting depth and enclosed loop level for the loop
-   hierarchy tree specfied by LOOPS.  Return the maximum enclosed loop
+   hierarchy tree specified by LOOPS.  Return the maximum enclosed loop
    level.  */
 
 static int

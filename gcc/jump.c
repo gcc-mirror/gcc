@@ -1772,7 +1772,7 @@ delete_related_insns (insn)
 		   || GET_CODE (PATTERN (lab_next)) == ADDR_DIFF_VEC))
 	{
 	  /* If we're deleting the tablejump, delete the dispatch table.
-	     We may not be able to kill the label immediately preceeding
+	     We may not be able to kill the label immediately preceding
 	     just yet, as it might be referenced in code leading up to
 	     the tablejump.  */
 	  delete_related_insns (lab_next);

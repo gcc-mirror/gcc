@@ -137,7 +137,7 @@ struct eh_region
     ERT_FIXUP
   } type;
 
-  /* Holds the action to perform based on the preceeding type.  */
+  /* Holds the action to perform based on the preceding type.  */
   union {
     /* A list of catch blocks, a surrounding try block,
        and the label for continuing after a catch.  */
@@ -2014,7 +2014,7 @@ sjlj_assign_call_site_values (dispatch_label, lp_info)
 
      A region receives a dispatch index if it is directly reachable
      and requires in-function processing.  Regions that share post-landing
-     pads may share dispatch indicies.  */
+     pads may share dispatch indices.  */
   /* ??? Post-landing pad sharing doesn't actually happen at the moment
      (see build_post_landing_pads) so we don't bother checking for it.  */
 
@@ -3041,7 +3041,7 @@ expand_eh_return ()
 }
 
 /* In the following functions, we represent entries in the action table
-   as 1-based indicies.  Special cases are:
+   as 1-based indices.  Special cases are:
 
 	 0:	null action record, non-null landing pad; implies cleanups
 	-1:	null action record, null landing pad; implies no action
@@ -3098,7 +3098,7 @@ add_action_record (ar_hash, filter, next)
       /* The filter value goes in untouched.  The link to the next
 	 record is a "self-relative" byte offset, or zero to indicate
 	 that there is no next record.  So convert the absolute 1 based
-	 indicies we've been carrying around into a displacement.  */
+	 indices we've been carrying around into a displacement.  */
 
       push_sleb128 (&cfun->eh->action_record_data, filter);
       if (next)

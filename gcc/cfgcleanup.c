@@ -24,7 +24,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    - Unreachable blocks removal
    - Edge forwarding (edge to the forwarder block is forwarded to it's
-     succesor.  Simplification of the branch instruction is performed by
+     successor.  Simplification of the branch instruction is performed by
      underlying infrastructure so branch can be converted to simplejump or
      eliminated).
    - Cross jumping (tail merging)
@@ -176,7 +176,7 @@ try_simplify_condjump (cbranch_block)
 }
 
 /* Attempt to forward edges leaving basic block B.
-   Return true if sucessful.  */
+   Return true if successful.  */
 
 static bool
 try_forward_edges (mode, b)
@@ -195,9 +195,9 @@ try_forward_edges (mode, b)
 
       /* Skip complex edges because we don't know how to update them.
 
-         Still handle fallthru edges, as we can suceed to forward fallthru
+         Still handle fallthru edges, as we can succeed to forward fallthru
          edge to the same place as the branch edge of conditional branch
-         and turn conditional branch to an unconditonal branch.  */
+         and turn conditional branch to an unconditional branch.  */
       if (e->flags & EDGE_COMPLEX)
 	continue;
 
@@ -205,7 +205,7 @@ try_forward_edges (mode, b)
       counter = 0;
 
       /* Look for the real destination of the jump.
-         Avoid inifinite loop in the infinite empty loop by counting
+         Avoid infinite loop in the infinite empty loop by counting
          up to n_basic_blocks.  */
       while (FORWARDER_BLOCK_P (target)
 	     && target->succ->dest != EXIT_BLOCK_PTR
@@ -680,7 +680,7 @@ flow_find_cross_jump (mode, bb1, bb2, f1, f2)
     }
 #endif
 
-  /* Include preceeding notes and labels in the cross-jump.  One,
+  /* Include preceding notes and labels in the cross-jump.  One,
      this may bring us to the head of the blocks as requested above.
      Two, it keeps line number notes as matched as may be.  */
   if (ninsns)

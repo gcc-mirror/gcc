@@ -1173,7 +1173,7 @@ lang_independent_options f_options[] =
   {"ssa", &flag_ssa, 1,
    N_("Enable SSA optimizations") },
   {"ssa-ccp", &flag_ssa_ccp, 1,
-   N_("Enable SSA conditonal constant propagation") },
+   N_("Enable SSA conditional constant propagation") },
   {"ssa-dce", &flag_ssa_dce, 1,
    N_("Enable aggressive SSA dead code elimination") },
   {"leading-underscore", &flag_leading_underscore, 1,
@@ -4667,7 +4667,7 @@ toplev_main (argc, argv)
   /* Register the language-independent parameters.  */
   add_params (lang_independent_params, LAST_PARAM);
 
-  /* Perform language-specific options intialization.  */
+  /* Perform language-specific options initialization.  */
   (*lang_hooks.init_options) ();
 
   /* Scan to see what optimization level has been specified.  That will

@@ -10569,7 +10569,7 @@ gen_member_die (type, context_die)
      members of this record or union type, we will also be trying to output
      DIEs to represent the *types* of those members. However the `type'
      function (above) will specifically avoid generating type DIEs for member
-     types *within* the list of member DIEs for this (containing) type execpt
+     types *within* the list of member DIEs for this (containing) type except
      for those types (of members) which are explicitly marked as also being
      members of this (containing) type themselves.  The g++ front- end can
      force any given type to be treated as a member of some other

@@ -210,7 +210,7 @@ need_fake_edge_p (insn)
 
 /* Add fake edges to the function exit for any non constant and non noreturn
    calls, volatile inline assembly in the bitmap of blocks specified by
-   BLOCKS or to the whole CFG if BLOCKS is zero.  Return the nuber of blocks
+   BLOCKS or to the whole CFG if BLOCKS is zero.  Return the number of blocks
    that were split.
 
    The goal is to expose cases in which entering a basic block does not imply
@@ -226,7 +226,7 @@ flow_call_edges_add (blocks)
   basic_block *bbs;
   bool check_last_block = false;
 
-  /* Map bb indicies into basic block pointers since split_block
+  /* Map bb indices into basic block pointers since split_block
      will renumber the basic blocks.  */
 
   bbs = xmalloc (n_basic_blocks * sizeof (*bbs));
@@ -288,7 +288,7 @@ flow_call_edges_add (blocks)
 	    {
 	      edge e;
 
-	      /* The above condition should be enought to verify that there is
+	      /* The above condition should be enough to verify that there is
 		 no edge to the exit block in CFG already.  Calling make_edge in
 		 such case would make us to mark that edge as fake and remove it
 		 later.  */
@@ -338,7 +338,7 @@ find_unreachable_blocks ()
     BASIC_BLOCK (i)->flags &= ~BB_REACHABLE;
 
   /* Add our starting points to the worklist.  Almost always there will
-     be only one.  It isn't inconcievable that we might one day directly
+     be only one.  It isn't inconceivable that we might one day directly
      support Fortran alternate entry points.  */
 
   for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)

@@ -5900,7 +5900,7 @@ choose_reload_regs (chain)
 	     A special case are auto_inc expressions; even if the input is
 	     inherited, we still need the address for the output.  We can
 	     recognize them because they have RELOAD_OUT set to RELOAD_IN.
-	     If we suceeded removing some reload and we are doing a preliminary
+	     If we succeeded removing some reload and we are doing a preliminary
 	     pass just to remove such reloads, make another pass, since the
 	     removal of one reload might allow us to inherit another one.  */
 	  else if (rld[r].in

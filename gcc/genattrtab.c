@@ -3155,7 +3155,7 @@ simplify_or_tree (exp, pterm, insn_code, insn_index)
   return exp;
 }
 /* Compute approximate cost of the expression.  Used to decide whether
-   expression is cheap enought for inline.  */
+   expression is cheap enough for inline.  */
 static int
 attr_rtx_cost (x)
      rtx x;

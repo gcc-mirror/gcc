@@ -482,7 +482,7 @@ conflict_graph_compute (regs, p)
 	    {
 	      /* Determine which regs are set in this insn.  Since
   	         we're in SSA form, if a reg is set here it isn't set
-  	         anywhere elso, so this insn is where the reg is born.  */
+  	         anywhere else, so this insn is where the reg is born.  */
 	      CLEAR_REG_SET (born);
 	      note_stores (PATTERN (insn), mark_reg, born);
 	      AND_REG_SET (born, regs);

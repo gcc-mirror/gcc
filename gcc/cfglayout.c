@@ -85,7 +85,7 @@ typedef struct
 /* Holds the interesting trailing notes for the function.  */
 static rtx function_tail_eff_head;
 
-/* The scope forst of current function.  */
+/* The scope forest of current function.  */
 static scope_forest_info forest;
 
 static rtx skip_insns_after_block	PARAMS ((basic_block));

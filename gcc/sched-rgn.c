@@ -1056,7 +1056,7 @@ compute_dom_prob_ps (bb)
 
   fst_in_edge = nxt_in_edge = IN_EDGES (BB_TO_BLOCK (bb));
 
-  /* Intialize dom[bb] to '111..1'.  */
+  /* Initialize dom[bb] to '111..1'.  */
   sbitmap_ones (dom[bb]);
 
   do

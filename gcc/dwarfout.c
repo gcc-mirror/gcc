@@ -1818,7 +1818,7 @@ output_signed_leb128 (value)
 
 	struct s { my_type f; };
 
-   Since we may be stuck here without enought information to do exactly
+   Since we may be stuck here without enough information to do exactly
    what is called for in the Dwarf draft specification, we do the best
    that we can under the circumstances and always use the "plain" integral
    fundamental type codes for int, short, and long types.  That's probably
@@ -4979,7 +4979,7 @@ output_type (type, containing_scope)
 	   to output DIEs to represent the *types* of those members.
 	   However the `output_type' function (above) will specifically
 	   avoid generating type DIEs for member types *within* the list
-	   of member DIEs for this (containing) type execpt for those
+	   of member DIEs for this (containing) type except for those
 	   types (of members) which are explicitly marked as also being
 	   members of this (containing) type themselves.  The g++ front-
 	   end can force any given type to be treated as a member of some
