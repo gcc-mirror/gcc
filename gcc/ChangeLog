@@ -1,3 +1,10 @@
+2004-03-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/pdp11/pdp11.c (comparison_operator_index): Remove.
+	(comp_operator): Likewise.
+	* config/pdp11/pdp11-protos.h: Remove corresponding
+	prototypes.
+
 2004-03-08  Eric Botcazou  <ebotcazou@act-europe.fr>
 
 	* expr.c (highest_pow2_factor_for_type): Rename into
