@@ -114,11 +114,11 @@ namespace std
       streamsize __ret = 0;
       while (__ret < __n)
 	{
-	  size_t __buf_len = _M_in_end - _M_in_cur;
+	  const size_t __buf_len = _M_in_end - _M_in_cur;
 	  if (__buf_len > 0)
 	    {
-	      size_t __remaining = __n - __ret;
-	      size_t __len = std::min(__buf_len, __remaining);
+	      const size_t __remaining = __n - __ret;
+	      const size_t __len = std::min(__buf_len, __remaining);
 	      traits_type::copy(__s, _M_in_cur, __len);
 	      __ret += __len;
 	      __s += __len;
@@ -127,7 +127,7 @@ namespace std
 	  
 	  if (__ret < __n)
 	    {
-	      int_type __c = this->uflow();  
+	      const int_type __c = this->uflow();  
 	      if (!traits_type::eq_int_type(__c, traits_type::eof()))
 		{
 		  traits_type::assign(*__s++, traits_type::to_char_type(__c));
@@ -148,11 +148,11 @@ namespace std
       streamsize __ret = 0;
       while (__ret < __n)
 	{
-	  off_type __buf_len = _M_out_end - _M_out_cur;
+	  const size_t __buf_len = _M_out_end - _M_out_cur;
 	  if (__buf_len > 0)
 	    {
-	      off_type __remaining = __n - __ret;
-	      off_type __len = std::min(__buf_len, __remaining);
+	      const size_t __remaining = __n - __ret;
+	      const size_t __len = std::min(__buf_len, __remaining);
 	      traits_type::copy(_M_out_cur, __s, __len);
 	      __ret += __len;
 	      __s += __len;
@@ -161,7 +161,7 @@ namespace std
 
 	  if (__ret < __n)
 	    {
-	      int_type __c = this->overflow(traits_type::to_int_type(*__s));
+	      const int_type __c = this->overflow(traits_type::to_int_type(*__s));
 	      if (!traits_type::eq_int_type(__c, traits_type::eof()))
 		{
 		  ++__ret;
@@ -185,7 +185,6 @@ namespace std
 		      basic_streambuf<_CharT, _Traits>* __sbout) 
   {
       typedef typename _Traits::int_type	int_type;
-      typedef typename _Traits::off_type	off_type;
 
       streamsize __ret = 0;
       try 
@@ -193,8 +192,8 @@ namespace std
 	  for (;;)
   	    {
 	      streamsize __xtrct;
-	      const off_type __avail = __sbin->_M_in_end
-		                       - __sbin->_M_in_cur;
+	      const size_t __avail = __sbin->_M_in_end
+		                     - __sbin->_M_in_cur;
  	      if (__avail)
 		{
 		  __xtrct = __sbout->sputn(__sbin->_M_in_cur, __avail);
@@ -206,8 +205,8 @@ namespace std
  	      else 
 		{
 		  streamsize __charsread;
-		  const off_type __size = __sbout->_M_out_end
-		                          - __sbout->_M_out_cur;
+		  const size_t __size = __sbout->_M_out_end
+		                        - __sbout->_M_out_cur;
 		  if (__size)
 		    {
 		      _CharT* __buf =
