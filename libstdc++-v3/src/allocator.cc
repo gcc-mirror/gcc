@@ -44,22 +44,22 @@ namespace __gnu_internal
 namespace __gnu_cxx
 {
   // Definitions for __pool_alloc_base.
-  __pool_base::_Obj* volatile*
-  __pool_base::_M_get_free_list(size_t __bytes)
+  __pool_alloc_base::_Obj* volatile*
+  __pool_alloc_base::_M_get_free_list(size_t __bytes)
   { 
     size_t __i = ((__bytes + (size_t)_S_align - 1) / (size_t)_S_align - 1);
     return _S_free_list + __i;
   }
 
   mutex_type&
-  __pool_base::_M_get_mutex()
+  __pool_alloc_base::_M_get_mutex()
   { return __gnu_internal::palloc_init_mutex; }
 
   // Allocate memory in large chunks in order to avoid fragmenting the
   // heap too much.  Assume that __n is properly aligned.  We hold the
   // allocation lock.
   char*
-  __pool_base::_M_allocate_chunk(size_t __n, int& __nobjs)
+  __pool_alloc_base::_M_allocate_chunk(size_t __n, int& __nobjs)
   {
     char* __result;
     size_t __total_bytes = __n * __nobjs;
@@ -128,7 +128,7 @@ namespace __gnu_cxx
   // __n"'s free list.  We assume that __n is properly aligned.  We
   // hold the allocation lock.
   void*
-  __pool_base::_M_refill(size_t __n)
+  __pool_alloc_base::_M_refill(size_t __n)
   {
     int __nobjs = 20;
     char* __chunk = _M_allocate_chunk(__n, __nobjs);
@@ -159,11 +159,11 @@ namespace __gnu_cxx
     return __result;
   }
 
-  __pool_base::_Obj* volatile __pool_base::_S_free_list[_S_free_list_size];
+  __pool_alloc_base::_Obj* volatile __pool_alloc_base::_S_free_list[_S_free_list_size];
   
-  char* __pool_base::_S_start_free = 0;
+  char* __pool_alloc_base::_S_start_free = 0;
   
-  char* __pool_base::_S_end_free = 0;
+  char* __pool_alloc_base::_S_end_free = 0;
   
-  size_t __pool_base::_S_heap_size = 0;
+  size_t __pool_alloc_base::_S_heap_size = 0;
 } // namespace __gnu_cxx
