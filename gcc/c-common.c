@@ -4212,8 +4212,8 @@ c_add_case_label (cases, cond, low_value, high_value)
   return case_label;
 }
 
-/* Finish an expression taking the address of LABEL.  Returns an
-   expression for the address.  */
+/* Finish an expression taking the address of LABEL (an
+   IDENTIFIER_NODE).  Returns an expression for the address.  */
 
 tree 
 finish_label_address_expr (label)
@@ -4228,6 +4228,9 @@ finish_label_address_expr (label)
       else
 	pedwarn ("ISO C forbids taking the address of a label");
     }
+
+  if (label == error_mark_node)
+    return error_mark_node;
 
   label = lookup_label (label);
   if (label == NULL_TREE)
