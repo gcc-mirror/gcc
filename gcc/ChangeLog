@@ -1,5 +1,10 @@
 2004-03-11  Alan Modra  <amodra@bigpond.net.au>
 
+	* config/rs6000/linux64.h (MD_FALLBACK_FRAME_STATE_FOR): Don't
+	bump retaddr here.
+
+2004-03-11  Alan Modra  <amodra@bigpond.net.au>
+
 	* config/rs6000/t-linux64 (LIB2FUNCS_EXTRA): Add darwin-ldouble.c.
 	(SHLIB_MAPFILES): Add libgcc-ppc64.ver.
 	(SHLIB_MKMAP_OPTS): Delete.
