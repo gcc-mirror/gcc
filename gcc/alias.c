@@ -860,6 +860,45 @@ base_alias_check (x, y, x_mode, y_mode)
   return ! (GET_MODE (x_base) == VOIDmode && GET_MODE (y_base) == VOIDmode);
 }
 
+/*  Return the address of the (N_REFS + 1)th memory reference to ADDR
+    where SIZE is the size in bytes of the memory reference.  If ADDR
+    is not modified by the memory reference then ADDR is returned.  */
+
+rtx
+addr_side_effect_eval (addr, size, n_refs)
+     rtx addr;
+     int size;
+     int n_refs;
+{
+  int offset = 0;
+  
+  switch (GET_CODE (addr))
+    {
+    case PRE_INC:
+      offset = (n_refs + 1) * size;
+      break;
+    case PRE_DEC:
+      offset = -(n_refs + 1) * size;
+      break;
+    case POST_INC:
+      offset = n_refs * size;
+      break;
+    case POST_DEC:
+      offset = -n_refs * size;
+      break;
+
+    default:
+      return addr;
+    }
+  
+  if (offset)
+    addr = gen_rtx_PLUS (GET_MODE (addr), XEXP (addr, 0), GEN_INT (offset));
+  else
+    addr = XEXP (addr, 0);
+
+  return addr;
+}
+
 /* Return nonzero if X and Y (memory addresses) could reference the
    same location in memory.  C is an offset accumulator.  When
    C is nonzero, we are testing aliases between X and Y + C.
@@ -889,13 +928,13 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
   else if (GET_CODE (x) == LO_SUM)
     x = XEXP (x, 1);
   else
-    x = canon_rtx (x);
+    x = canon_rtx (addr_side_effect_eval (x, xsize, 0));
   if (GET_CODE (y) == HIGH)
     y = XEXP (y, 0);
   else if (GET_CODE (y) == LO_SUM)
     y = XEXP (y, 1);
   else
-    y = canon_rtx (y);
+    y = canon_rtx (addr_side_effect_eval (y, ysize, 0));
 
   if (rtx_equal_for_memref_p (x, y))
     {

@@ -1,3 +1,10 @@
+Thu Dec  3 22:30:18 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* alias.c (addr_side_effect_eval): New function.
+	(memrefs_conflict_p): Use it.
+	* rtl.h (addr_side_effect_eval): Prototype it.
+
+
 1998-12-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* pdp11.md (extendsfdf2): Fix mode mismatch in SET.
