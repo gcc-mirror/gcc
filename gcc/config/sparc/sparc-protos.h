@@ -162,6 +162,7 @@ extern int eq_or_neq PARAMS ((rtx, enum machine_mode));
 extern int normal_comp_operator PARAMS ((rtx, enum machine_mode));
 extern int uns_arith_operand PARAMS ((rtx, enum machine_mode));
 extern int clobbered_register PARAMS ((rtx, enum machine_mode));
+extern rtx gen_df_reg PARAMS ((rtx, int));
 #endif /* RTX_CODE */
 
 #endif /* __SPARC_PROTOS_H__ */

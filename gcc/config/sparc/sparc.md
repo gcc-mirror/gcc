@@ -3643,14 +3643,10 @@
   if (GET_CODE (set_src) == SUBREG)
     set_src = alter_subreg (set_src);
 
-  dest1 = gen_rtx_REG (DFmode,
-                       REGNO (set_dest) + (WORDS_BIG_ENDIAN ? 0 : 2));
-  dest2 = gen_rtx_REG (DFmode,
-                       REGNO (set_dest) + (WORDS_BIG_ENDIAN ? 2 : 0));
-  src1 = gen_rtx_REG (DFmode,
-                      REGNO (set_src) + (WORDS_BIG_ENDIAN ? 0 : 2));
-  src2 = gen_rtx_REG (DFmode,
-                      REGNO (set_src) + (WORDS_BIG_ENDIAN ? 2 : 0));
+  dest1 = gen_df_reg (set_dest, 0);
+  dest2 = gen_df_reg (set_dest, 1);
+  src1 = gen_df_reg (set_src, 0);
+  src2 = gen_df_reg (set_src, 1);
 
   /* Now emit using the real source and destination we found, swapping
      the order if we detect overlap.  */
@@ -3684,10 +3680,8 @@
   if (GET_CODE (set_dest) == SUBREG)
     set_dest = alter_subreg (set_dest);
 
-  dest1 = gen_rtx_REG (DFmode,
-                       REGNO (set_dest) + (WORDS_BIG_ENDIAN ? 0 : 2));
-  dest2 = gen_rtx_REG (DFmode,
-                       REGNO (set_dest) + (WORDS_BIG_ENDIAN ? 2 : 0));
+  dest1 = gen_df_reg (set_dest, 0);
+  dest2 = gen_df_reg (set_dest, 1);
 
   /* Now output, ordering such that we don't clobber any registers
      mentioned in the address.  */
@@ -3716,18 +3710,14 @@
   rtx word1 = change_address (operands[0], DFmode, NULL_RTX);
   rtx word2 = change_address (operands[0], DFmode,
 			      plus_constant_for_output (XEXP (word1, 0), 8));
-  rtx set_src, src1, src2;
+  rtx set_src;
 
   set_src = operands[1];
   if (GET_CODE (set_src) == SUBREG)
     set_src = alter_subreg (set_src);
 
-  src1 = gen_rtx_REG (DFmode,
-                      REGNO (set_src) + (WORDS_BIG_ENDIAN ? 0 : 2));
-  src2 = gen_rtx_REG (DFmode,
-                      REGNO (set_src) + (WORDS_BIG_ENDIAN ? 2 : 0));
-  emit_insn (gen_movdf (word1, src1));
-  emit_insn (gen_movdf (word2, src2));
+  emit_insn (gen_movdf (word1, gen_df_reg (set_src, 0)));
+  emit_insn (gen_movdf (word2, gen_df_reg (set_src, 1)));
   DONE;
 }")
 
@@ -4095,18 +4085,12 @@
   if (GET_CODE (set_srcb) == SUBREG)
     set_srcb = alter_subreg (set_srcb);
 
-  dest1 = gen_rtx_REG (DFmode,
-                       REGNO (set_dest) + (WORDS_BIG_ENDIAN ? 0 : 2));
-  dest2 = gen_rtx_REG (DFmode,
-                       REGNO (set_dest) + (WORDS_BIG_ENDIAN ? 2 : 0));
-  srca1 = gen_rtx_REG (DFmode,
-                       REGNO (set_srca) + (WORDS_BIG_ENDIAN ? 0 : 2));
-  srca2 = gen_rtx_REG (DFmode,
-                       REGNO (set_srca) + (WORDS_BIG_ENDIAN ? 2 : 0));
-  srcb1 = gen_rtx_REG (DFmode,
-                       REGNO (set_srcb) + (WORDS_BIG_ENDIAN ? 0 : 2));
-  srcb2 = gen_rtx_REG (DFmode,
-                       REGNO (set_srcb) + (WORDS_BIG_ENDIAN ? 2 : 0));
+  dest1 = gen_df_reg (set_dest, 0);
+  dest2 = gen_df_reg (set_dest, 1);
+  srca1 = gen_df_reg (set_srca, 0);
+  srca2 = gen_df_reg (set_srca, 1);
+  srcb1 = gen_df_reg (set_srcb, 0);
+  srcb2 = gen_df_reg (set_srcb, 1);
 
   /* Now emit using the real source and destination we found, swapping
      the order if we detect overlap.  */
@@ -4274,18 +4258,12 @@
   if (GET_CODE (set_srcb) == SUBREG)
     set_srcb = alter_subreg (set_srcb);
 
-  dest1 = gen_rtx_REG (DFmode,
-                       REGNO (set_dest) + (WORDS_BIG_ENDIAN ? 0 : 2));
-  dest2 = gen_rtx_REG (DFmode,
-                       REGNO (set_dest) + (WORDS_BIG_ENDIAN ? 2 : 0));
-  srca1 = gen_rtx_REG (DFmode,
-                       REGNO (set_srca) + (WORDS_BIG_ENDIAN ? 0 : 2));
-  srca2 = gen_rtx_REG (DFmode,
-                       REGNO (set_srca) + (WORDS_BIG_ENDIAN ? 2 : 0));
-  srcb1 = gen_rtx_REG (DFmode,
-                       REGNO (set_srcb) + (WORDS_BIG_ENDIAN ? 0 : 2));
-  srcb2 = gen_rtx_REG (DFmode,
-                       REGNO (set_srcb) + (WORDS_BIG_ENDIAN ? 2 : 0));
+  dest1 = gen_df_reg (set_dest, 0);
+  dest2 = gen_df_reg (set_dest, 1);
+  srca1 = gen_df_reg (set_srca, 0);
+  srca2 = gen_df_reg (set_srca, 1);
+  srcb1 = gen_df_reg (set_srcb, 0);
+  srcb2 = gen_df_reg (set_srcb, 1);
 
   /* Now emit using the real source and destination we found, swapping
      the order if we detect overlap.  */

@@ -2264,6 +2264,22 @@ emit_v9_brxx_insn (code, op0, label)
 				    gen_rtx_LABEL_REF (VOIDmode, label),
 				    pc_rtx)));
 }
+
+/* Generate a DFmode part of a hard TFmode register.
+   REG is the TFmode hard register, LOW is 1 for the
+   low 64bit of the register and 0 otherwise.
+ */
+rtx
+gen_df_reg (reg, low)
+     rtx reg;
+     int low;
+{
+  int regno = REGNO (reg);
+
+  if ((WORDS_BIG_ENDIAN == 0) ^ (low != 0))
+    regno += (regno < 32) ? 1 : 2;
+  return gen_rtx_REG (DFmode, regno);
+}
 
 /* Return nonzero if a return peephole merging return with
    setting of output register is ok.  */
