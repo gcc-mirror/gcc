@@ -1,5 +1,9 @@
 2004-02-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* doc/invoke.texi (SPARC options): Further improve.
+
+2004-02-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* config/sparc/sparc.c (function_arg_slotno): Align TImode
 	arguments on a 16-byte boundary in the parameter array if ARCH64.
 	Split handling of TFmode.

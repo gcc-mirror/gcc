@@ -6269,18 +6269,6 @@ This option is only available on SunOS and Solaris.
 @opindex mv8
 @opindex msparclite
 These two options select variations on the SPARC architecture.
-
-By default (unless specifically configured for the Fujitsu SPARClite),
-GCC generates code for the V7 variant of the SPARC architecture.
-
-@option{-mv8} will give you SPARC-V8 code.  The only difference from V7
-code is that the compiler emits the integer multiply and integer
-divide instructions which exist in SPARC-V8 but not in SPARC-V7.
-
-@option{-msparclite} will give you SPARClite code.  This adds the integer
-multiply, integer divide step and scan (@code{ffs}) instructions which
-exist in SPARClite but not in SPARC-V7.
-
 These options are deprecated and will be deleted in a future GCC release.
 They have been replaced with @option{-mcpu=xxx}.
 
@@ -6293,23 +6281,6 @@ They have been replaced with @option{-mcpu=xxx}.
 @opindex -mf930
 @opindex -mf934
 These four options select the processor for which the code is optimized.
-
-With @option{-mcypress} (the default), the compiler optimizes code for the
-Cypress CY7C602 chip, as used in the SPARCStation/SPARCServer 3xx series.
-This is also appropriate for the older SPARCStation 1, 2, IPX etc.
-
-With @option{-msupersparc} the compiler optimizes code for the SuperSPARC cpu, as
-used in the SPARCStation 10, 1000 and 2000 series.  This flag also enables use
-of the SPARC-V8 instruction set.
-
-With @option{-mf930} the compiler optimizes code for the Fujitsu MB86930 chip,
-which is the original SPARClite, with no FPU.  This flag also enables use
-of the SPARClite instruction set and disables the FPU support.
-
-With @option{-mf934} the compiler optimizes code for the Fujitsu MB86934 chip,
-which is the more recent SPARClite with FPU.  This flag also enables use
-of the SPARClite instruction set and enables the FPU support.
-
 These options are deprecated and will be deleted in a future GCC release.
 They have been replaced with @option{-mcpu=xxx}.
 
@@ -6337,6 +6308,41 @@ implementations.
     v9:             ultrasparc, ultrasparc3
 @end smallexample
 
+By default (unless configured otherwise), GCC generates code for the V7
+variant of the SPARC architecture.  With @option{-mcpu=cypress}, the compiler
+additionally optimizes it for the Cypress CY7C602 chip, as used in the
+SPARCStation/SPARCServer 3xx series.  This is also appropriate for the older
+SPARCStation 1, 2, IPX etc.
+
+With @option{-mcpu=v8}, GCC generates code for the V8 variant of the SPARC
+architecture.  The only difference from V7 code is that the compiler emits
+the integer multiply and integer divide instructions which exist in SPARC-V8
+but not in SPARC-V7.  With @option{-mcpu=supersparc}, the compiler additionally
+optimizes it for the SuperSPARC chip, as used in the SPARCStation 10, 1000 and
+2000 series.
+
+With @option{-mcpu=sparclite}, GCC generates code for the SPARClite variant of
+the SPARC architecture.  This adds the integer multiply, integer divide step
+and scan (@code{ffs}) instructions which exist in SPARClite but not in SPARC-V7.
+With @option{-mcpu=f930}, the compiler additionally optimizes it for the
+Fujitsu MB86930 chip, which is the original SPARClite, with no FPU.  With
+@option{-mcpu=f934}, the compiler additionally optimizes it for the Fujitsu
+MB86934 chip, which is the more recent SPARClite with FPU.
+
+With @option{-mcpu=sparclet}, GCC generates code for the SPARClet variant of
+the SPARC architecture.  This adds the integer multiply, multiply/accumulate,
+integer divide step and scan (@code{ffs}) instructions which exist in SPARClet
+but not in SPARC-V7.  With @option{-mcpu=tsc701}, the compiler additionally
+optimizes it for the TEMIC SPARClet chip.
+
+With @option{-mcpu=v9}, GCC generates code for the V9 variant of the SPARC
+architecture.  This adds 64-bit integer and floating-point move instructions,
+3 additional floating-point condition code registers and conditional move
+instructions.  With @option{-mcpu=ultrasparc}, the compiler additionally
+optimizes it for the Sun UltraSPARC I/II chips.  With
+@option{-mcpu=ultrasparc3}, the compiler additionally optimizes it for the
+Sun UltraSPARC III chip.
+
 @item -mtune=@var{cpu_type}
 @opindex mtune
 Set the instruction scheduling parameters for machine type
@@ -6354,15 +6360,16 @@ that select a particular cpu implementation.  Those are @samp{cypress},
 @itemx -mno-v8plus
 @opindex -mv8plus
 @opindex -mno-v8plus
-@option{-mv8plus} will give you SPARC-V8+ code.  The difference from V8 is
-that the global and out registers are considered 64-bit wide.  This is the
-default on Solaris in 32-bit mode for all SPARC-V9 processors.
+With @option{-mv8plus}, GCC generates code for the SPARC-V8+ ABI.  The
+difference from the V8 ABI is that the global and out registers are
+considered 64-bit wide.  This is enabled by default on Solaris in 32-bit
+mode for all SPARC-V9 processors.
 
 @item -mvis
 @itemx -mno-vis
 @opindex -mvis
 @opindex -mno-vis
-@option{-mvis} will give you code that takes advantage of the UltraSPARC
+With @option{-mvis}, GCC generates code that takes advantage of the UltraSPARC
 Visual Instruction Set extensions.  The default is @option{-mno-vis}.
 @end table
 
