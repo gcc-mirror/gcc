@@ -1,3 +1,8 @@
+2002-03-04  Adam Megacz <adam@xwt.org>
+
+	* java/net/natInetAddress.cc: Changed USE_WINSOCK to WIN32, added
+	'#undef STRICT'.
+
 2002-03-03  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* Makefile.am: Use -bootclasspath, not -CLASSPATH.
