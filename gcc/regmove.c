@@ -647,7 +647,7 @@ optimize_reg_copy_2 (insn, dest, src)
 }
 /* INSN is a ZERO_EXTEND or SIGN_EXTEND of SRC to DEST.
    Look if SRC dies there, and if it is only set once, by loading
-   it from memory.  If so, try to encorporate the zero/sign extension
+   it from memory.  If so, try to incorporate the zero/sign extension
    into the memory read, change SRC to the mode of DEST, and alter
    the remaining accesses to use the appropriate SUBREG.  This allows
    SRC and DEST to be tied later.  */

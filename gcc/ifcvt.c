@@ -2282,7 +2282,7 @@ find_if_block (ce_info)
       int max_insns = MAX_CONDITIONAL_EXECUTE;
       int n_insns;
 
-      /* Determine if the preceeding block is an && or || block.  */
+      /* Determine if the preceding block is an && or || block.  */
       if ((n_insns = block_jumps_and_fallthru_p (bb, else_bb)) >= 0)
 	{
 	  ce_info->and_and_p = TRUE;
@@ -2877,7 +2877,7 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
   if (HAVE_conditional_execution)
     {
       /* In the conditional execution case, we have things easy.  We know
-	 the condition is reversable.  We don't have to check life info,
+	 the condition is reversible.  We don't have to check life info,
 	 becase we're going to conditionally execute the code anyway.
 	 All that's left is making sure the insns involved can actually
 	 be predicated.  */

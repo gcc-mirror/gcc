@@ -570,7 +570,7 @@ estimate_probability (loops_info)
 	    if (FLOAT_MODE_P (GET_MODE (XEXP (cond, 0))))
 	      ;
 	    /* Comparisons with 0 are often used for booleans and there is
-	       nothing usefull to predict about them.  */
+	       nothing useful to predict about them.  */
 	    else if (XEXP (cond, 1) == const0_rtx
 		     || XEXP (cond, 0) == const0_rtx)
 	      ;
@@ -586,7 +586,7 @@ estimate_probability (loops_info)
 	    if (FLOAT_MODE_P (GET_MODE (XEXP (cond, 0))))
 	      ;
 	    /* Comparisons with 0 are often used for booleans and there is
-	       nothing usefull to predict about them.  */
+	       nothing useful to predict about them.  */
 	    else if (XEXP (cond, 1) == const0_rtx
 		     || XEXP (cond, 0) == const0_rtx)
 	      ;

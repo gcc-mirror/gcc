@@ -681,7 +681,7 @@ reg_alloc ()
   /* Setup debugging levels.  */
   switch (0)
     {
-      /* Some usefull presets of the debug level, I often use.  */
+      /* Some useful presets of the debug level, I often use.  */
       case 0: debug_new_regalloc = DUMP_EVER; break;
       case 1: debug_new_regalloc = DUMP_COSTS; break;
       case 2: debug_new_regalloc = DUMP_IGRAPH_M; break;
@@ -807,7 +807,7 @@ reg_alloc ()
 	  /* Those new pseudos need to have their REFS count set.  */
 	  reg_scan_update (get_insns (), NULL, max_regno);
 	  max_regno = max_reg_num ();
-	  /* And they need usefull classes too.  */
+	  /* And they need useful classes too.  */
 	  regclass (get_insns (), max_reg_num (), rtl_dump_file);
 	  rtl_dump_file = ra_dump_file;
 
