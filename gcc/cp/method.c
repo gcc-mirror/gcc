@@ -1924,6 +1924,8 @@ do_build_copy_constructor (fndecl)
 
 	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
+
+	  init = parm;
 	  if (DECL_NAME (field))
 	    {
 	      if (VFIELD_NAME_P (DECL_NAME (field)))
@@ -1939,11 +1941,21 @@ do_build_copy_constructor (fndecl)
 		   && TREE_CODE (t) == UNION_TYPE
 		   && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t))
 		   && TYPE_FIELDS (t) != NULL_TREE)
-	    field = largest_union_member (t);
+	    {
+	      do
+		{
+		  init = build (COMPONENT_REF, t, init, field);
+		  field = largest_union_member (t);
+		}
+	      while ((t = TREE_TYPE (field)) != NULL_TREE
+		     && TREE_CODE (t) == UNION_TYPE
+		     && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t))
+		     && TYPE_FIELDS (t) != NULL_TREE);
+	    }
 	  else
 	    continue;
 
-	  init = build (COMPONENT_REF, TREE_TYPE (field), parm, field);
+	  init = build (COMPONENT_REF, TREE_TYPE (field), init, field);
 	  init = build_tree_list (NULL_TREE, init);
 
 	  current_member_init_list
@@ -2017,6 +2029,9 @@ do_build_assign_ref (fndecl)
 	      continue;
 	    }
 
+	  comp = current_class_ref;
+	  init = parm;
+
 	  if (DECL_NAME (field))
 	    {
 	      if (VFIELD_NAME_P (DECL_NAME (field)))
@@ -2032,12 +2047,23 @@ do_build_assign_ref (fndecl)
 		   && TREE_CODE (t) == UNION_TYPE
 		   && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t))
 		   && TYPE_FIELDS (t) != NULL_TREE)
-	    field = largest_union_member (t);
+	    {
+	      do
+		{
+		  comp = build (COMPONENT_REF, t, comp, field);
+		  init = build (COMPONENT_REF, t, init, field);
+		  field = largest_union_member (t);
+		}
+	      while ((t = TREE_TYPE (field)) != NULL_TREE
+		     && TREE_CODE (t) == UNION_TYPE
+		     && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t))
+		     && TYPE_FIELDS (t) != NULL_TREE);
+	    }
 	  else
 	    continue;
 
-	  comp = build (COMPONENT_REF, TREE_TYPE (field), current_class_ref, field);
-	  init = build (COMPONENT_REF, TREE_TYPE (field), parm, field);
+	  comp = build (COMPONENT_REF, TREE_TYPE (field), comp, field);
+	  init = build (COMPONENT_REF, TREE_TYPE (field), init, field);
 
 	  expand_expr_stmt (build_modify_expr (comp, NOP_EXPR, init));
 	}

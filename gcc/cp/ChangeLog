@@ -1,3 +1,23 @@
+Fri Aug  1 03:18:15 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y: Break out eat_saved_input, handle errors.
+
+Thu Jul 31 17:14:04 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (build_cplus_new): Don't set TREE_ADDRESSABLE.
+
+Fri Jul  4 01:45:16 1997  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* Make-lang.in (cplib2.txt, cplib2.ready): Instead of checking for
+	existence of cc1plus check whether $(LANGUAGES) contains C++.
+
+Wed Jul 30 13:04:21 1997  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* method.c (do_build_copy_constructor): When copying an anonymous
+	union member loop around to handle nested anonymous unions.  Use
+	the offset of the member relative to the outer structure, not the
+	union.
+
 Tue Jul 29 21:17:29 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (resolve_args): New fn.

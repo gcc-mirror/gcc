@@ -195,7 +195,7 @@ parse.o : $(PARSE_C) $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h lex.h
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(BIG_SWITCHFLAG) \
   `echo $(PARSE_C) | sed 's,^\./,,'`
 
-CONFLICTS = expect 18 shift/reduce conflicts and 39 reduce/reduce conflicts.
+CONFLICTS = expect 20 shift/reduce conflicts and 39 reduce/reduce conflicts.
 $(PARSE_H) : $(PARSE_C)
 $(PARSE_C) : $(srcdir)/parse.y
 	@echo $(CONFLICTS)

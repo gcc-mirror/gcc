@@ -363,7 +363,7 @@ lang_extdef:
 	;
 
 extdef:
-	  fndef
+	  fndef eat_saved_input
 		{ if (pending_inlines) do_pending_inlines (); }
 	| datadef
 		{ if (pending_inlines) do_pending_inlines (); }
@@ -374,7 +374,7 @@ extdef:
 		  assemble_asm ($3); }
 	| extern_lang_string '{' extdefs_opt '}'
 		{ pop_lang_context (); }
-	| extern_lang_string .hush_warning fndef .warning_ok
+	| extern_lang_string .hush_warning fndef .warning_ok eat_saved_input
 		{ if (pending_inlines) do_pending_inlines ();
 		  pop_lang_context (); }
 	| extern_lang_string .hush_warning datadef .warning_ok
@@ -539,8 +539,9 @@ fndef:
 	  fn.def1 maybe_return_init ctor_initializer_opt compstmt_or_error
 		{ finish_function (lineno, (int)$3, 0); }
 	| fn.def1 maybe_return_init function_try_block
-		{ if ($<ttype>$) process_next_inline ($<ttype>$); }
-	  eat_saved_input
+		{ }
+	| fn.def1 maybe_return_init error
+		{ }
 	;
 
 constructor_declarator:
@@ -2109,19 +2110,23 @@ fn.defpen:
 				  NULL_TREE, 1);
 		  reinit_parse_for_function (); }
 
-pending_inlines:
-	  /* empty */
-	| pending_inlines fn.defpen maybe_return_init ctor_initializer_opt
-	  compstmt_or_error
+pending_inline:
+	  fn.defpen maybe_return_init ctor_initializer_opt compstmt_or_error
 		{
 		  int nested = (hack_decl_function_context
 				(current_function_decl) != NULL_TREE);
-		  finish_function (lineno, (int)$4, nested);
-		  process_next_inline ($2);
+		  finish_function (lineno, (int)$3, nested);
+		  process_next_inline ($1);
 		}
-	| pending_inlines fn.defpen maybe_return_init function_try_block
-		{ process_next_inline ($2); }
-	  eat_saved_input
+	| fn.defpen maybe_return_init function_try_block
+		{ process_next_inline ($1); }
+	| fn.defpen maybe_return_init error
+		{ process_next_inline ($1); }
+	;
+
+pending_inlines:
+	/* empty */
+	| pending_inlines pending_inline eat_saved_input
 	;
 
 /* A regurgitated default argument.  The value of DEFARG_MARKER will be
@@ -2129,6 +2134,8 @@ pending_inlines:
 defarg_again:
 	DEFARG_MARKER expr_no_commas END_OF_SAVED_INPUT
 		{ replace_defarg ($1, $2); }
+	| DEFARG_MARKER error END_OF_SAVED_INPUT
+		{ replace_defarg ($1, error_mark_node); }
 
 pending_defargs:
 	  /* empty */ %prec EMPTY
