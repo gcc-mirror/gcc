@@ -1,5 +1,7 @@
+/* Test that the preprocessor is capable of 64-bit arithmetic.
+   (Must turn off -pedantic, since `LL' constants are only in C9x.)  */
 /* { dg-do preprocess } */
-/* { dg-options -pedantic-errors } */
+/* { dg-options "" } */
 
 #define U_MAX 4294967295U
 #define ULL_MAX 18446744073709551615ULL

@@ -1,3 +1,10 @@
+1999-04-03 10:35 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* gcc.dg/cpp-if1.c: Adjust regexps to accommodate cccp.
+	* gcc.dg/cpp-if3.c: Don't use -pedantic.
+	* gcc.misc-tests/m-un-2.c: Adjust regexps for new format of
+	missing initializer warnings.
+
 Sun Mar 28 00:49:41 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/objc-torture.exp: Replace "77" with "Obj-C" in pattern
