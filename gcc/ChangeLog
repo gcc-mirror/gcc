@@ -1,3 +1,13 @@
+2002-09-20  Jim Wilson  <wilson@redhat.com>
+
+	* config/v850/v850.c (current_function_anonymous_args): Delete.
+	(expand_prologue): Use current_function_args_info.anonymous_args.
+	(expand_epilogue): Delete use of current_function_anonymous_args.
+	* config/v850/v850.h (struct cum_arg): Add anonymous_args field.
+	(INIT_CUMULATIVE_ARGS): Clear anonymous_args field.
+	(current_function_anonymous_args): Delete extern declaration.
+	(SETUP_INCOMING_VARARGS): Set anonymous_args field.
+
 2002-09-20  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_prologue): Update for change
