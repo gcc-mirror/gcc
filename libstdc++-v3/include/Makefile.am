@@ -507,7 +507,8 @@ ${host_builddir}/c++config.h: ${top_builddir}/config.h \
 uppercase = [ABCDEFGHIJKLMNOPQRSTUVWXYZ_]
 
 ${host_builddir}/gthr.h: ${toplevel_srcdir}/gcc/gthr.h stamp-${host_alias}
-	sed -e '/^#/s/\(${uppercase}${uppercase}*\)/_GLIBCXX_\1/g' \
+	sed -e '/^#pragma/b' \
+	    -e '/^#/s/\(${uppercase}${uppercase}*\)/_GLIBCXX_\1/g' \
 	    -e 's/_GLIBCXX_SUPPORTS_WEAK/__GXX_WEAK__/g' \
 	    -e 's,^#include "\(.*\)",#include <bits/\1>,g' \
 	    < ${toplevel_srcdir}/gcc/gthr.h > $@
