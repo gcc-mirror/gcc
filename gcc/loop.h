@@ -143,6 +143,43 @@ struct iv_class {
 				   biv controls. */
 };
 
+/* Information required to calculate the number of loop iterations. 
+   This is set by loop_iterations.  */
+
+struct loop_info
+{
+  /* Register or constant initial loop value.  */
+  rtx initial_value;
+  /* Register or constant value used for comparison test.  */
+  rtx comparison_value;
+  /* Register or constant approximate final value.  */
+  rtx final_value;
+  /* Register or constant initial loop value with term common to
+     final_value removed.  */
+  rtx initial_equiv_value;
+  /* Register or constant final loop value with term common to
+     initial_value removed.  */
+  rtx final_equiv_value;
+  /* Register corresponding to iteration variable.  */
+  rtx iteration_var;
+  /* Constant loop increment.  */
+  rtx increment;
+  enum rtx_code comparison_code;
+  /* Holds the number of loop iterations.  It is zero if the number
+     could not be calculated.  Must be unsigned since the number of
+     iterations can be as high as 2^wordsize - 1.  For loops with a
+     wider iterator, this number will be zero if the number of loop
+     iterations is too large for an unsigned integer to hold.  */
+  unsigned HOST_WIDE_INT n_iterations;
+  /* The loop unrolling factor.
+     Potential values:
+     0: unrolled
+     1: not unrolled.
+     -1: completely unrolled
+     >0: holds the unroll exact factor.  */
+  int unroll_number;
+};
+
 /* Definitions used by the basic induction variable discovery code.  */
 enum iv_mode { UNKNOWN_INDUCT, BASIC_INDUCT, NOT_BASIC_INDUCT,
 		 GENERAL_INDUCT };
@@ -155,7 +192,6 @@ extern int *uid_loop_num;
 extern int *loop_outer_loop;
 extern rtx *loop_number_exit_labels;
 extern int *loop_number_exit_count;
-extern unsigned HOST_WIDE_INT loop_n_iterations;
 extern int max_reg_before_loop;
 
 extern FILE *loop_dump_stream;
@@ -175,21 +211,18 @@ void emit_iv_add_mult PROTO((rtx, rtx, rtx, rtx, rtx));
 void find_loop_tree_blocks PROTO((void));
 void unroll_block_trees PROTO((void));
 
-void unroll_loop PROTO((rtx, int, rtx, rtx, int));
+void unroll_loop PROTO((rtx, int, rtx, rtx, struct loop_info *, int));
 rtx biv_total_increment PROTO((struct iv_class *, rtx, rtx));
-unsigned HOST_WIDE_INT loop_iterations PROTO((rtx, rtx));
-rtx final_biv_value PROTO((struct iv_class *, rtx, rtx));
-rtx final_giv_value PROTO((struct induction *, rtx, rtx));
+unsigned HOST_WIDE_INT loop_iterations PROTO((rtx, rtx, struct loop_info *));
+int precondition_loop_p PROTO((rtx, struct loop_info *, 
+			       rtx *, rtx *, rtx *));
+rtx final_biv_value PROTO((struct iv_class *, rtx, rtx,
+			   unsigned HOST_WIDE_INT));
+rtx final_giv_value PROTO((struct induction *, rtx, rtx,
+			   unsigned HOST_WIDE_INT));
 void emit_unrolled_add PROTO((rtx, rtx, rtx));
 int back_branch_in_range_p PROTO((rtx, rtx, rtx));
 
-extern int *loop_unroll_factor;
+extern int *loop_unroll_number;
 
-#ifdef HAVE_decrement_and_branch_on_count
-extern rtx loop_iteration_var;
-extern rtx loop_initial_value;
-extern rtx loop_increment;
-extern rtx loop_final_value;
-extern enum rtx_code loop_comparison_code;
-#endif  /* HAVE_decrement_and_branch_on_count */
 
