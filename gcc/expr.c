@@ -3829,14 +3829,10 @@ expand_expr (exp, target, tmode, modifier)
       if (GET_CODE (DECL_RTL (exp)) == REG
 	  && GET_MODE (DECL_RTL (exp)) != mode)
 	{
-	  enum machine_mode decl_mode = DECL_MODE (exp);
-
 	  /* Get the signedness used for this variable.  Ensure we get the
 	     same mode we got when the variable was declared.  */
-
-	  PROMOTE_MODE (decl_mode, unsignedp, type);
-
-	  if (decl_mode != GET_MODE (DECL_RTL (exp)))
+	  if (GET_MODE (DECL_RTL (exp))
+	      != promote_mode (type, DECL_MODE (exp), &unsignedp, 0))
 	    abort ();
 
 	  temp = gen_rtx (SUBREG, mode, DECL_RTL (exp), 0);
@@ -3924,22 +3920,7 @@ expand_expr (exp, target, tmode, modifier)
 		   || TREE_CODE (type) == ARRAY_TYPE);
 	    }
 	  else
-	    {
-	      enum machine_mode var_mode = mode;
-
-	      if (TREE_CODE (type) == INTEGER_TYPE
-		  || TREE_CODE (type) == ENUMERAL_TYPE
-		  || TREE_CODE (type) == BOOLEAN_TYPE
-		  || TREE_CODE (type) == CHAR_TYPE
-		  || TREE_CODE (type) == REAL_TYPE
-		  || TREE_CODE (type) == POINTER_TYPE
-		  || TREE_CODE (type) == OFFSET_TYPE)
-		{
-		  PROMOTE_MODE (var_mode, unsignedp, type);
-		}
-
-	      temp = gen_reg_rtx (var_mode);
-	    }
+	    temp = gen_reg_rtx (promote_mode (type, mode, &unsignedp, 0));
 
 	  SAVE_EXPR_RTL (exp) = temp;
 	  if (!optimize && GET_CODE (temp) == REG)
@@ -3969,20 +3950,8 @@ expand_expr (exp, target, tmode, modifier)
       if (GET_CODE (SAVE_EXPR_RTL (exp)) == REG
 	  && GET_MODE (SAVE_EXPR_RTL (exp)) != mode)
 	{
-	  enum machine_mode var_mode = mode;
-
-	  if (TREE_CODE (type) == INTEGER_TYPE
-	      || TREE_CODE (type) == ENUMERAL_TYPE
-	      || TREE_CODE (type) == BOOLEAN_TYPE
-	      || TREE_CODE (type) == CHAR_TYPE
-	      || TREE_CODE (type) == REAL_TYPE
-	      || TREE_CODE (type) == POINTER_TYPE
-	      || TREE_CODE (type) == OFFSET_TYPE)
-	    {
-	      PROMOTE_MODE (var_mode, unsignedp, type);
-	    }
-
-	  temp = gen_rtx (SUBREG, mode, SAVE_EXPR_RTL (exp), 0);
+	  temp = gen_rtx (SUBREG, promote_mode (type, mode, &unsignedp, 0),
+			  SAVE_EXPR_RTL (exp), 0);
 	  SUBREG_PROMOTED_VAR_P (temp) = 1;
 	  SUBREG_PROMOTED_UNSIGNED_P (temp) = unsignedp;
 	  return temp;
