@@ -20,6 +20,8 @@
 // 8/3/2000 (nathan): The std allows you to define such an op, but
 // it will never be called. [class.conv.fct]. Make it an unconditional warning.
 
+// { dg-options "-Wconversion" }
+
 struct struct0 {
 
   operator void ();		// { dg-warning "" } operator void

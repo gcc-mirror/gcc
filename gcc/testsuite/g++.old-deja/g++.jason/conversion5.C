@@ -1,4 +1,5 @@
 // { dg-do assemble  }
+// { dg-options "-Wconversion" }
 struct A { };
 struct B: public A {
   A a;
