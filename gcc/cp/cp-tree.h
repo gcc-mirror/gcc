@@ -2955,7 +2955,8 @@ typedef enum cp_lvalue_kind {
   clk_none = 0,     /* Things that are not an lvalue.  */
   clk_ordinary = 1, /* An ordinary lvalue.  */
   clk_class = 2,    /* An rvalue of class-type.  */
-  clk_bitfield = 4  /* An lvalue for a bit-field.  */
+  clk_bitfield = 4, /* An lvalue for a bit-field.  */
+  clk_packed = 8    /* An lvalue for a packed field. */
 } cp_lvalue_kind;
 
 /* The kinds of scopes we recognize.  */

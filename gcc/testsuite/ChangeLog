@@ -1,5 +1,8 @@
 2003-07-22  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.dg/ext/packed3.C: New test.
+	* g++.dg/ext/packed4.C: New test.
+
 	* gcc.dg/pack-test-3.c: New test.
 
 2003-07-21  Janis Johnson  <janis187@us.ibm.com>

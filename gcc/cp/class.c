@@ -2959,7 +2959,15 @@ check_field_decls (tree t, tree *access_decls,
 
       if (TREE_CODE (x) == FIELD_DECL)
 	{
-	  DECL_PACKED (x) |= TYPE_PACKED (t);
+	  if (TYPE_PACKED (t))
+	    {
+	      if (!pod_type_p (TREE_TYPE (x)) && !TYPE_PACKED (TREE_TYPE (x)))
+		cp_warning_at
+		  ("ignoring packed attribute on unpacked non-POD field `%#D'",
+		   x);
+	      else
+		DECL_PACKED (x) = 1;
+	    }
 
 	  if (DECL_C_BIT_FIELD (x) && integer_zerop (DECL_INITIAL (x)))
 	    /* We don't treat zero-width bitfields as making a class
