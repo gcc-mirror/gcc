@@ -1,3 +1,8 @@
+2000-06-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* optimize.c (expand_call_inline): Don't recurse into the code
+	used to initialize the parameters more than once.
+
 2000-06-11  Mark Mitchell <mark@codesourcery.com>
 	
 	* mangle.c (NESTED_TEMPLATE_MATCH): Fix typo in comment.
