@@ -19,6 +19,10 @@ obtain memory.
 #endif
 #ifdef HAVE_STRING_H
 #include <string.h>
+#else
+# ifdef HAVE_STRINGS_H
+#  include <strings.h>
+# endif
 #endif
 #include "ansidecl.h"
 #include "libiberty.h"
@@ -29,6 +33,5 @@ xstrdup (s)
 {
   register size_t len = strlen (s) + 1;
   register char *ret = xmalloc (len);
-  memcpy (ret, s, len);
-  return ret;
+  return (char *) memcpy (ret, s, len);
 }

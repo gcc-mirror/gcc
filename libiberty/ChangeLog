@@ -1,3 +1,7 @@
+2005-03-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* xmemdup.c, xstrdup.c: Expose the tail call.
+
 2005-03-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* configure.ac (funcs): Add gettimeofday.
