@@ -2309,13 +2309,18 @@ block_move_call (dest_reg, src_reg, bytes_rtx)
 		     VOIDmode, 3,
 		     dest_reg, Pmode,
 		     src_reg, Pmode,
-		     bytes_rtx, Pmode);
+		     convert_to_mode (TYPE_MODE (sizetype), bytes_rtx,
+				      TREE_UNSIGNED (sizetype)),
+		     TYPE_MODE (sizetype));
 #else
   emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "bcopy"), 0,
 		     VOIDmode, 3,
 		     src_reg, Pmode,
 		     dest_reg, Pmode,
-		     bytes_rtx, Pmode);
+		     convert_to_modfe (TYPE_MODE (integer_type_node),
+				       bytes_rtx,
+				       TREE_UNSIGNED (integer_type_node)),
+		     TYPE_MODE (integer_type_node));
 #endif
 }
 
