@@ -1,3 +1,8 @@
+2003-06-24  Falk Hueffner  <falk.hueffner@student.uni-tuebingen.de>
+
+        PR target/11260
+        * config/alpha/alpha.md (sqrtdf2): Fix operand substitution.
+
 Tue Jun 24 18:49:33 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (cgraph.o): Depend on output.h, not depend on
