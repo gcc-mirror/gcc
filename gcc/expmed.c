@@ -757,8 +757,19 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
 #endif
 
       /* If OP0 is a register, then handle OFFSET here.
-	 In the register case, UNIT must be a whole word.  */
-      if (GET_CODE (op0) == SUBREG || GET_CODE (op0) == REG)
+
+	 When handling multiword bitfields, extract_bit_field may pass
+	 down a word_mode SUBREG of a larger REG for a bitfield that actually
+	 crosses a word boundary.  Thus, for a SUBREG, we must find
+	 the current word starting from the base register.  */
+      if (GET_CODE (op0) == SUBREG)
+	{
+	  word = operand_subword (SUBREG_REG (op0),
+				  SUBREG_WORD (op0) + offset, 1,
+				  GET_MODE (SUBREG_REG (op0)));
+	  offset = 0;
+	}
+      else if (GET_CODE (op0) == REG)
 	{
 	  word = operand_subword (op0, offset, 1, GET_MODE (op0));
 	  offset = 0;
@@ -917,7 +928,15 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	    emit_move_insn (target_part, result_part);
 	}
 
-      return target;
+      if (unsignedp)
+	return target;
+      /* Signed bit field: sign-extend with two arithmetic shifts.  */
+      target = expand_shift (LSHIFT_EXPR, mode, target,
+			     build_int_2 (GET_MODE_BITSIZE (mode) - bitsize, 0),
+			     NULL_RTX, 0);
+      return expand_shift (RSHIFT_EXPR, mode, target,
+			   build_int_2 (GET_MODE_BITSIZE (mode) - bitsize, 0),
+			   NULL_RTX, 0);
     }
   
   /* From here on we know the desired field is smaller than a word
@@ -1505,8 +1524,19 @@ extract_split_bit_field (op0, bitsize, bitpos, unsignedp, align)
       thissize = MIN (thissize, unit - thispos);
 
       /* If OP0 is a register, then handle OFFSET here.
-	 In the register case, UNIT must be a whole word.  */
-      if (GET_CODE (op0) == SUBREG || GET_CODE (op0) == REG)
+
+	 When handling multiword bitfields, extract_bit_field may pass
+	 down a word_mode SUBREG of a larger REG for a bitfield that actually
+	 crosses a word boundary.  Thus, for a SUBREG, we must find
+	 the current word starting from the base register.  */
+      if (GET_CODE (op0) == SUBREG)
+	{
+	  word = operand_subword_force (SUBREG_REG (op0),
+					SUBREG_WORD (op0) + offset,
+					GET_MODE (SUBREG_REG (op0)));
+	  offset = 0;
+	}
+      else if (GET_CODE (op0) == REG)
 	{
 	  word = operand_subword_force (op0, offset, GET_MODE (op0));
 	  offset = 0;
