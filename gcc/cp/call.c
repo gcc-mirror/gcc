@@ -497,9 +497,8 @@ void
 validate_conversion_obstack (void)
 {
   if (conversion_obstack_initialized)
-    my_friendly_assert ((obstack_next_free (&conversion_obstack) 
-			 == obstack_base (&conversion_obstack)),
-			20040208);
+    gcc_assert ((obstack_next_free (&conversion_obstack) 
+		 == obstack_base (&conversion_obstack)));
 }
 
 #endif /* ENABLE_CHECKING */
@@ -1033,8 +1032,8 @@ direct_reference_binding (tree type, conversion *conv)
 {
   tree t;
 
-  my_friendly_assert (TREE_CODE (type) == REFERENCE_TYPE, 20030306);
-  my_friendly_assert (TREE_CODE (conv->type) != REFERENCE_TYPE, 20030306);
+  gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
+  gcc_assert (TREE_CODE (conv->type) != REFERENCE_TYPE);
 
   t = TREE_TYPE (type);
 
@@ -2464,7 +2463,7 @@ merge_conversion_sequences (conversion *user_seq, conversion *std_seq)
 {
   conversion **t;
 
-  my_friendly_assert (user_seq->kind == ck_user, 20030306);
+  gcc_assert (user_seq->kind == ck_user);
 
   /* Find the end of the second conversion sequence.  */
   t = &(std_seq); 
@@ -2501,8 +2500,8 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
   /* We represent conversion within a hierarchy using RVALUE_CONV and
      BASE_CONV, as specified by [over.best.ics]; these become plain
      constructor calls, as specified in [dcl.init].  */
-  my_friendly_assert (!IS_AGGR_TYPE (fromtype) || !IS_AGGR_TYPE (totype)
-		      || !DERIVED_FROM_P (totype, fromtype), 20011226);
+  gcc_assert (!IS_AGGR_TYPE (fromtype) || !IS_AGGR_TYPE (totype)
+	      || !DERIVED_FROM_P (totype, fromtype));
 
   if (IS_AGGR_TYPE (totype))
     ctors = lookup_fnfields (totype, complete_ctor_identifier, 0);
@@ -2523,9 +2522,8 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags)
       args = build_tree_list (NULL_TREE, expr);
       /* We should never try to call the abstract or base constructor
 	 from here.  */
-      my_friendly_assert (!DECL_HAS_IN_CHARGE_PARM_P (OVL_CURRENT (ctors))
-			  && !DECL_HAS_VTT_PARM_P (OVL_CURRENT (ctors)),
-			  20011226);
+      gcc_assert (!DECL_HAS_IN_CHARGE_PARM_P (OVL_CURRENT (ctors))
+		  && !DECL_HAS_VTT_PARM_P (OVL_CURRENT (ctors)));
       args = tree_cons (NULL_TREE, t, args);
     }
   for (; ctors; ctors = OVL_NEXT (ctors))
@@ -2718,13 +2716,11 @@ perform_overload_resolution (tree fn,
   *any_viable_p = true;
 
   /* Check FN and ARGS.  */
-  my_friendly_assert (TREE_CODE (fn) == FUNCTION_DECL 
-		      || TREE_CODE (fn) == TEMPLATE_DECL
-		      || TREE_CODE (fn) == OVERLOAD
-		      || TREE_CODE (fn) == TEMPLATE_ID_EXPR,
-		      20020712);
-  my_friendly_assert (!args || TREE_CODE (args) == TREE_LIST,
-		      20020712);
+  gcc_assert (TREE_CODE (fn) == FUNCTION_DECL 
+	      || TREE_CODE (fn) == TEMPLATE_DECL
+	      || TREE_CODE (fn) == OVERLOAD
+	      || TREE_CODE (fn) == TEMPLATE_ID_EXPR);
+  gcc_assert (!args || TREE_CODE (args) == TREE_LIST);
 
   if (TREE_CODE (fn) == TEMPLATE_ID_EXPR)
     {
@@ -3960,7 +3956,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
       call_expr = placement;
       /* Extract the function.  */
       alloc_fn = get_callee_fndecl (call_expr);
-      my_friendly_assert (alloc_fn != NULL_TREE, 20020327);
+      gcc_assert (alloc_fn != NULL_TREE);
       /* Then the second parm type.  */
       argtypes = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (alloc_fn)));
       /* Also the second argument.  */
@@ -4068,7 +4064,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 bool
 enforce_access (tree basetype_path, tree decl)
 {
-  my_friendly_assert (TREE_CODE (basetype_path) == TREE_BINFO, 20030624);
+  gcc_assert (TREE_CODE (basetype_path) == TREE_BINFO);
   
   if (!accessible_p (basetype_path, decl))
     {
@@ -4356,7 +4352,7 @@ call_builtin_trap (void)
 {
   tree fn = implicit_built_in_decls[BUILT_IN_TRAP];
 
-  my_friendly_assert (fn != NULL, 20030927);
+  gcc_assert (fn != NULL);
   fn = build_call (fn, NULL_TREE);
   return fn;
 }
@@ -4682,9 +4678,9 @@ build_over_call (struct z_candidate *cand, int flags)
 
          So we can assume that anything passed as 'this' is non-null, and
 	 optimize accordingly.  */
-      my_friendly_assert (TREE_CODE (parmtype) == POINTER_TYPE, 19990811);
+      gcc_assert (TREE_CODE (parmtype) == POINTER_TYPE);
       /* Convert to the base in which the function was declared.  */
-      my_friendly_assert (cand->conversion_path != NULL_TREE, 20020730);
+      gcc_assert (cand->conversion_path != NULL_TREE);
       converted_arg = build_base_path (PLUS_EXPR,
 				       TREE_VALUE (arg),
 				       cand->conversion_path,
@@ -4851,7 +4847,7 @@ build_over_call (struct z_candidate *cand, int flags)
       tree binfo = lookup_base (TREE_TYPE (TREE_TYPE (*p)),
 				DECL_CONTEXT (fn),
 				ba_any, NULL);
-      my_friendly_assert (binfo && binfo != error_mark_node, 20010730);
+      gcc_assert (binfo && binfo != error_mark_node);
       
       *p = build_base_path (PLUS_EXPR, *p, binfo, 1);
       if (TREE_SIDE_EFFECTS (*p))
@@ -5012,13 +5008,12 @@ build_special_member_call (tree instance, tree name, tree args,
   /* The type of the subobject to be constructed or destroyed.  */
   tree class_type;
 
-  my_friendly_assert (name == complete_ctor_identifier
-		      || name == base_ctor_identifier
-		      || name == complete_dtor_identifier
-		      || name == base_dtor_identifier
-		      || name == deleting_dtor_identifier
-		      || name == ansi_assopname (NOP_EXPR),
-		      20020712);
+  gcc_assert (name == complete_ctor_identifier
+	      || name == base_ctor_identifier
+	      || name == complete_dtor_identifier
+	      || name == base_dtor_identifier
+	      || name == deleting_dtor_identifier
+	      || name == ansi_assopname (NOP_EXPR));
   if (TYPE_P (binfo))
     {
       /* Resolve the name.  */
@@ -5028,7 +5023,7 @@ build_special_member_call (tree instance, tree name, tree args,
       binfo = TYPE_BINFO (binfo);
     }
   
-  my_friendly_assert (binfo != NULL_TREE, 20020712);
+  gcc_assert (binfo != NULL_TREE);
 
   class_type = BINFO_TYPE (binfo);
 
@@ -5043,7 +5038,7 @@ build_special_member_call (tree instance, tree name, tree args,
       if (name == complete_dtor_identifier 
 	  || name == base_dtor_identifier
 	  || name == deleting_dtor_identifier)
-	my_friendly_assert (args == NULL_TREE, 20020712);
+	gcc_assert (args == NULL_TREE);
 
       /* Convert to the base class, if necessary.  */
       if (!same_type_ignoring_top_level_qualifiers_p 
@@ -5064,7 +5059,7 @@ build_special_member_call (tree instance, tree name, tree args,
 	}
     }
   
-  my_friendly_assert (instance != NULL_TREE, 20020712);
+  gcc_assert (instance != NULL_TREE);
 
   fns = lookup_fnfields (binfo, name, 1);
     
@@ -5088,7 +5083,7 @@ build_special_member_call (tree instance, tree name, tree args,
 			    current_in_charge_parm, integer_zero_node),
 		    current_vtt_parm,
 		    vtt);
-      my_friendly_assert (BINFO_SUBVTT_INDEX (binfo), 20010110);
+      gcc_assert (BINFO_SUBVTT_INDEX (binfo));
       sub_vtt = build2 (PLUS_EXPR, TREE_TYPE (vtt), vtt,
 			BINFO_SUBVTT_INDEX (binfo));
 
@@ -5169,7 +5164,7 @@ build_new_method_call (tree instance, tree fns, tree args,
   tree orig_args;
   void *p;
 
-  my_friendly_assert (instance != NULL_TREE, 20020729);
+  gcc_assert (instance != NULL_TREE);
 
   if (error_operand_p (instance) 
       || error_operand_p (fns)
@@ -5220,10 +5215,9 @@ build_new_method_call (tree instance, tree fns, tree args,
       template_only = 1;
     }
 
-  my_friendly_assert (TREE_CODE (fns) == FUNCTION_DECL
-		      || TREE_CODE (fns) == TEMPLATE_DECL
-		      || TREE_CODE (fns) == OVERLOAD,
-		      20020712);
+  gcc_assert (TREE_CODE (fns) == FUNCTION_DECL
+	      || TREE_CODE (fns) == TEMPLATE_DECL
+	      || TREE_CODE (fns) == OVERLOAD);
 
   /* XXX this should be handled before we get here.  */
   if (! IS_AGGR_TYPE (basetype))
@@ -5242,9 +5236,9 @@ build_new_method_call (tree instance, tree fns, tree args,
     {
       /* Callers should explicitly indicate whether they want to construct
 	 the complete object or just the part without virtual bases.  */
-      my_friendly_assert (name != ctor_identifier, 20000408);
+      gcc_assert (name != ctor_identifier);
       /* Similarly for destructors.  */
-      my_friendly_assert (name != dtor_identifier, 20000408);
+      gcc_assert (name != dtor_identifier);
     }
 
   /* It's OK to call destructors on cv-qualified objects.  Therefore,
@@ -6147,7 +6141,7 @@ the worst conversion for the second:");
         }
     }
 
-  my_friendly_assert (!winner, 20010121);
+  gcc_assert (!winner);
   return 0;
 }
 
@@ -6443,7 +6437,7 @@ initialize_reference (tree type, tree expr, tree decl, tree *cleanup)
 
     we can extend the lifetime of the return value of the conversion
     operator.  */
-  my_friendly_assert (conv->kind == ck_ref_bind, 20030302);
+  gcc_assert (conv->kind == ck_ref_bind);
   if (decl)
     {
       tree var;

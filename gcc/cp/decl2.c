@@ -338,7 +338,7 @@ grok_array_decl (tree array_expr, tree index_exp)
     }
 
   type = TREE_TYPE (array_expr);
-  my_friendly_assert (type, 20030626);
+  gcc_assert (type);
   type = non_reference (type);
 
   /* If they have an `operator[]', use that.  */
@@ -473,7 +473,7 @@ check_member_template (tree tmpl)
 {
   tree decl;
 
-  my_friendly_assert (TREE_CODE (tmpl) == TEMPLATE_DECL, 0);
+  gcc_assert (TREE_CODE (tmpl) == TEMPLATE_DECL);
   decl = DECL_TEMPLATE_RESULT (tmpl);
 
   if (TREE_CODE (decl) == FUNCTION_DECL
@@ -612,11 +612,9 @@ check_classfn (tree ctype, tree function, tree template_parms)
      either were not passed, or they are the same of DECL_TEMPLATE_PARMS.  */
   if (TREE_CODE (function) == TEMPLATE_DECL)
     {
-      my_friendly_assert (!template_parms 
-			  || comp_template_parms 
-			      (template_parms, 
-			       DECL_TEMPLATE_PARMS (function)),
-			  20040303);
+      gcc_assert (!template_parms 
+		  || comp_template_parms (template_parms, 
+					  DECL_TEMPLATE_PARMS (function)));
       template_parms = DECL_TEMPLATE_PARMS (function);
     }
 
@@ -765,7 +763,7 @@ void
 finish_static_data_member_decl (tree decl, tree init, tree asmspec_tree,
                                 int flags)
 {
-  my_friendly_assert (TREE_PUBLIC (decl), 0);
+  gcc_assert (TREE_PUBLIC (decl));
 
   DECL_CONTEXT (decl) = current_class_type;
 
@@ -1238,7 +1236,7 @@ coerce_new_type (tree type)
   int e = 0;
   tree args = TYPE_ARG_TYPES (type);
 
-  my_friendly_assert (TREE_CODE (type) == FUNCTION_TYPE, 20001107);
+  gcc_assert (TREE_CODE (type) == FUNCTION_TYPE);
   
   if (!same_type_p (TREE_TYPE (type), ptr_type_node))
     e = 1, error ("`operator new' must return type `%T'", ptr_type_node);
@@ -1272,7 +1270,7 @@ coerce_delete_type (tree type)
   int e = 0;
   tree args = TYPE_ARG_TYPES (type);
   
-  my_friendly_assert (TREE_CODE (type) == FUNCTION_TYPE, 20001107);
+  gcc_assert (TREE_CODE (type) == FUNCTION_TYPE);
 
   if (!same_type_p (TREE_TYPE (type), void_type_node))
     e = 1, error ("`operator delete' must return type `%T'", void_type_node);
@@ -1435,7 +1433,7 @@ import_export_class (tree ctype)
      non-abstract virtual member function has been defined in this
      translation unit.  But, we can't possibly know that until we've
      seen the entire translation unit.  */
-  my_friendly_assert (at_eof, 20000226);
+  gcc_assert (at_eof);
 
   if (CLASSTYPE_INTERFACE_KNOWN (ctype))
     return;
@@ -1520,13 +1518,12 @@ mark_needed (tree decl)
 bool
 decl_needed_p (tree decl)
 {
-  my_friendly_assert (TREE_CODE (decl) == VAR_DECL
-		      || TREE_CODE (decl) == FUNCTION_DECL,
-		      20040726);
+  gcc_assert (TREE_CODE (decl) == VAR_DECL
+	      || TREE_CODE (decl) == FUNCTION_DECL);
   /* This function should only be called at the end of the translation
      unit.  We cannot be sure of whether or not something will be
      COMDAT until that point.  */
-  my_friendly_assert (at_eof, 20040726);
+  gcc_assert (at_eof);
 
   /* All entities with external linkage that are not COMDAT should be
      emitted; they may be referred to from other object files.  */
@@ -1622,7 +1619,7 @@ determine_visibility (tree decl)
   /* Cloned constructors and destructors get the same visibility as
      the underlying function.  That should be set up in
      maybe_clone_body.  */
-  my_friendly_assert (!DECL_CLONED_FUNCTION_P (decl), 20040804);
+  gcc_assert (!DECL_CLONED_FUNCTION_P (decl));
 
   /* Give the common code a chance to make a determination.  */
   if (c_determine_visibility (decl))
@@ -1640,8 +1637,8 @@ determine_visibility (tree decl)
     {
       /* Virtual tables have DECL_CONTEXT set to their associated class,
 	 so they are automatically handled above.  */
-      my_friendly_assert (!(TREE_CODE (decl) == VAR_DECL
-			    && DECL_VTABLE_OR_VTT_P (decl)), 20040803);
+      gcc_assert (TREE_CODE (decl) != VAR_DECL
+		  || !DECL_VTABLE_OR_VTT_P (decl));
       /* Entities not associated with any class just get the
 	 visibility specified by their attributes.  */
       return;
@@ -1705,7 +1702,7 @@ import_export_decl (tree decl)
      "-frepo" it would be incorrect to make decisions about what
      entities to emit when building the PCH; those decisions must be
      delayed until the repository information has been processed.  */
-  my_friendly_assert (at_eof, 20040727);
+  gcc_assert (at_eof);
   /* Object file linkage for explicit instantiations is handled in
      mark_decl_instantiated.  For static variables in functions with
      vague linkage, maybe_commonize_var is used.
@@ -1728,25 +1725,22 @@ import_export_decl (tree decl)
      definition available in this translation unit.
 
      The following assertions check these conditions.  */
-  my_friendly_assert (TREE_CODE (decl) == FUNCTION_DECL
-		      || TREE_CODE (decl) == VAR_DECL,
-		      2004725);
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
+	      || TREE_CODE (decl) == VAR_DECL);
   /* Any code that creates entities with TREE_PUBLIC cleared should
      also set DECL_INTERFACE_KNOWN.  */
-  my_friendly_assert (TREE_PUBLIC (decl), 20040725);
+  gcc_assert (TREE_PUBLIC (decl));
   if (TREE_CODE (decl) == FUNCTION_DECL)
-    my_friendly_assert (DECL_IMPLICIT_INSTANTIATION (decl)
-			|| DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (decl)
-			|| DECL_DECLARED_INLINE_P (decl),
-			20040725);
+    gcc_assert (DECL_IMPLICIT_INSTANTIATION (decl)
+		|| DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (decl)
+		|| DECL_DECLARED_INLINE_P (decl));
   else
-    my_friendly_assert (DECL_IMPLICIT_INSTANTIATION (decl)
-			|| DECL_VTABLE_OR_VTT_P (decl)
-			|| DECL_TINFO_P (decl),
-			20040725);
+    gcc_assert (DECL_IMPLICIT_INSTANTIATION (decl)
+		|| DECL_VTABLE_OR_VTT_P (decl)
+		|| DECL_TINFO_P (decl));
   /* Check that a definition of DECL is available in this translation
      unit.  */
-  my_friendly_assert (!DECL_REALLY_EXTERN (decl), 20040725);
+  gcc_assert (!DECL_REALLY_EXTERN (decl));
 
   /* Assume that DECL will not have COMDAT linkage.  */
   comdat_p = false;
@@ -1923,7 +1917,7 @@ build_cleanup (tree decl)
 
   /* This function should only be called for declarations that really
      require cleanups.  */
-  my_friendly_assert (!TYPE_HAS_TRIVIAL_DESTRUCTOR (type), 20030106);
+  gcc_assert (!TYPE_HAS_TRIVIAL_DESTRUCTOR (type));
 
   /* Treat all objects with destructors as used; the destructor may do
      something substantive.  */
@@ -2378,7 +2372,7 @@ start_static_initialization_or_destruction (tree decl, int initp)
 	{
 	  /* When using __cxa_atexit, we never try to destroy
 	     anything from a static destructor.  */
-	  my_friendly_assert (initp, 20000629);
+	  gcc_assert (initp);
 	  guard_cond = get_guard_cond (guard);
 	}
       /* If we don't have __cxa_atexit, then we will be running
@@ -2470,7 +2464,7 @@ do_static_destruction (tree decl)
 
   /* If we're using __cxa_atexit, then destructors are registered
      immediately after objects are initialized.  */
-  my_friendly_assert (!flag_use_cxa_atexit, 20000121);
+  gcc_assert (!flag_use_cxa_atexit);
 
   /* If we don't need a destructor, there's nothing to do.  */
   if (TYPE_HAS_TRIVIAL_DESTRUCTOR (TREE_TYPE (decl)))
@@ -2511,7 +2505,7 @@ prune_vars_needing_no_initialization (tree *vars)
 	}
 
       /* The only things that can be initialized are variables.  */
-      my_friendly_assert (TREE_CODE (decl) == VAR_DECL, 19990420);
+      gcc_assert (TREE_CODE (decl) == VAR_DECL);
 
       /* If this object is not defined, we don't need to do anything
 	 here.  */
@@ -3120,9 +3114,8 @@ build_offset_ref_call_from_tree (tree fn, tree args)
 
   if (processing_template_decl)
     {
-      my_friendly_assert (TREE_CODE (fn) == DOTSTAR_EXPR
-			  || TREE_CODE (fn) == MEMBER_REF,
-			  20030708);
+      gcc_assert (TREE_CODE (fn) == DOTSTAR_EXPR
+		  || TREE_CODE (fn) == MEMBER_REF);
       if (type_dependent_expression_p (fn)
 	  || any_type_dependent_arguments_p (args))
 	return build_min_nt (CALL_EXPR, fn, args, NULL_TREE);

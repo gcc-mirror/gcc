@@ -87,7 +87,7 @@ finish_init_stmts (bool is_global, tree stmt_expr, tree compound_stmt)
   
   stmt_expr = finish_stmt_expr (stmt_expr, true);
 
-  my_friendly_assert (!building_stmt_tree () == is_global, 20030726);
+  gcc_assert (!building_stmt_tree () == is_global);
   
   return stmt_expr;
 }
@@ -171,8 +171,7 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
 
      -- if T is a reference type, no initialization is performed.  */
 
-  my_friendly_assert (nelts == NULL_TREE || TREE_CODE (nelts) == INTEGER_CST,
-		      20030618);
+  gcc_assert (nelts == NULL_TREE || TREE_CODE (nelts) == INTEGER_CST);
 
   if (type == error_mark_node)
     ;
@@ -226,7 +225,7 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
       /* Iterate over the array elements, building initializations.  */
       inits = NULL_TREE;
       max_index = nelts ? nelts : array_type_nelts (type);
-      my_friendly_assert (TREE_CODE (max_index) == INTEGER_CST, 20030618);
+      gcc_assert (TREE_CODE (max_index) == INTEGER_CST);
 
       /* A zero-sized array, which is accepted as an extension, will
 	 have an upper bound of -1.  */
@@ -787,7 +786,7 @@ expand_virtual_init (tree binfo, tree decl)
   /* Compute the location of the vtpr.  */
   vtbl_ptr = build_vfield_ref (build_indirect_ref (decl, NULL),
 			       TREE_TYPE (binfo));
-  my_friendly_assert (vtbl_ptr != error_mark_node, 20010730);
+  gcc_assert (vtbl_ptr != error_mark_node);
 
   /* Assign the vtable to the vptr.  */
   vtbl = convert_force (TREE_TYPE (vtbl_ptr), vtbl, 0);
@@ -1180,7 +1179,7 @@ expand_default_init (tree binfo, tree true_exp, tree exp, tree init, int flags)
       else if (BRACE_ENCLOSED_INITIALIZER_P (init))
 	{
 	  /* A brace-enclosed initializer for an aggregate.  */
-	  my_friendly_assert (CP_AGGREGATE_TYPE_P (type), 20021016);
+	  gcc_assert (CP_AGGREGATE_TYPE_P (type));
 	  init = digest_init (type, init, (tree *)NULL);
 	}
       else
@@ -1248,8 +1247,8 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags)
 {
   tree type = TREE_TYPE (exp);
 
-  my_friendly_assert (init != error_mark_node && type != error_mark_node, 211);
-  my_friendly_assert (building_stmt_tree (), 20021010);
+  gcc_assert (init != error_mark_node && type != error_mark_node);
+  gcc_assert (building_stmt_tree ());
 
   /* Use a function returning the desired type to initialize EXP for us.
      If the function is a constructor, and its first argument is
@@ -1351,7 +1350,7 @@ build_offset_ref (tree type, tree name, bool address_p)
 	    name = DECL_NAME (OVL_CURRENT (name));
 	}
 
-      my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 0);
+      gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
     }
 
   if (type == NULL_TREE)
@@ -1953,7 +1952,7 @@ build_new_1 (tree exp)
   while (TREE_CODE (alloc_call) == COMPOUND_EXPR) 
     alloc_call = TREE_OPERAND (alloc_call, 1);
   alloc_fn = get_callee_fndecl (alloc_call);
-  my_friendly_assert (alloc_fn != NULL_TREE, 20020325);
+  gcc_assert (alloc_fn != NULL_TREE);
 
   /* Now, check to see if this function is actually a placement
      allocation function.  This can happen even when PLACEMENT is NULL
@@ -2769,7 +2768,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
       addr = convert_force (build_pointer_type (type), addr, 0);
     }
 
-  my_friendly_assert (IS_AGGR_TYPE (type), 220);
+  gcc_assert (IS_AGGR_TYPE (type));
 
   if (TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
     {
@@ -2785,7 +2784,7 @@ build_delete (tree type, tree addr, special_function_kind auto_delete,
       tree do_delete = NULL_TREE;
       tree ifexp;
 
-      my_friendly_assert (TYPE_HAS_DESTRUCTOR (type), 20011213);
+      gcc_assert (TYPE_HAS_DESTRUCTOR (type));
 
       /* For `::delete x', we must not use the deleting destructor
 	 since then we would not be sure to get the global `operator
@@ -2935,7 +2934,7 @@ build_vbase_delete (tree type, tree decl)
   VEC (tree) *vbases;
   tree addr = build_unary_op (ADDR_EXPR, decl, 0);
 
-  my_friendly_assert (addr != error_mark_node, 222);
+  gcc_assert (addr != error_mark_node);
 
   result = convert_to_void (integer_zero_node, NULL);
   for (vbases = CLASSTYPE_VBASECLASSES (type), ix = 0;

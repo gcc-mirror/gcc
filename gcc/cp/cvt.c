@@ -366,7 +366,7 @@ build_up_reference (tree type, tree arg, int flags, tree decl)
   tree argtype = TREE_TYPE (arg);
   tree target_type = TREE_TYPE (type);
 
-  my_friendly_assert (TREE_CODE (type) == REFERENCE_TYPE, 187);
+  gcc_assert (TREE_CODE (type) == REFERENCE_TYPE);
 
   if ((flags & DIRECT_BIND) && ! real_lvalue_p (arg))
     {
@@ -470,7 +470,7 @@ convert_to_reference (tree reftype, tree expr, int convtype,
 
   intype = TREE_TYPE (expr);
 
-  my_friendly_assert (TREE_CODE (intype) != REFERENCE_TYPE, 364);
+  gcc_assert (TREE_CODE (intype) != REFERENCE_TYPE);
 
   intype = TYPE_MAIN_VARIANT (intype);
 

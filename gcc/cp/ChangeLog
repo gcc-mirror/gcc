@@ -1,5 +1,98 @@
 2004-08-27  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* call.c (validate_conversion_obstack): Replace
+	my_friendly_assert with gcc_assert or gcc_unreachable.
+	(direct_reference_binding, merge_conversion_sequences,
+	build_user_type_conversion_1, perform_overload_resolution,
+	build_op_delete_call, enforce_access, call_builtin_trap,
+	build_over_call, build_special_member_call, build_new_method_call,
+	initialize_reference): Likewise.
+	* class.c (build_base_path, build_primary_vtable, alter_access,
+	check_bases, update_vtable_entry_for_fn, layout_empty_base,
+	clone_function_decl, adjust_clone_args,
+	type_requires_array_cookie, include_empty_classes,
+	finish_struct_1, resolve_address_of_overloaded_function,
+	instantiate_type, get_vtbl_decl_for_binfo, build_vtt_inits,
+	dfs_build_secondary_vptr_vtt_inits, build_ctor_vtbl_group,
+	accumulate_vtbl_inits, build_vtbl_initializer,
+	build_vbase_offset_vtbl_entries, build_rtti_vtbl_entries): Likewise.
+	* cvt.c (build_up_reference, convert_to_reference): Likewise.
+	* decl.c (poplevel, duplicate_decls, make_typename_type,
+	cxx_init_decl_processing, reshape_init, check_initializer,
+	make_rtl_for_nonlocal_decl, initialize_local_var, cp_finish_decl,
+	expand_static_init, grokfndecl, grokvardecl, build_ptrmem_type,
+	grokdeclarator, copy_fn_p, grok_op_properties, xref_tag,
+	xref_basetypes, start_preparsed_function, save_function_data,
+	finish_function, finish_method, maybe_register_incomplete_var,
+	complete_vars): Likewise.
+	* decl2.c (grok_array_decl, check_member_template,
+	check_classfn, finish_static_data_member_decl, coerce_new_type,
+	coerce_delete_type, import_export_class, decl_needed_p,
+	determine_visibility, import_export_decl, build_cleanup,
+	start_static_initialization_or_destructi, do_static_destruction,
+	prune_vars_needing_no_initialization,
+	build_offset_ref_call_from_tree): Likewise.
+	* error.c (dump_decl, dump_expr): Likewise.
+	* init.c (finish_init_stmts, build_zero_init,
+	expand_virtual_init, expand_default_init, expand_aggr_init_1,
+	build_offset_ref, build_new_1, build_delete, build_vbase_delete):
+	Likewise.
+	* mangle.c (write_method_parms, write_template_args,
+	write_expression, write_template_arg): Likewise.
+	* method.c (make_thunk, finish_thunk, use_thunk): Likewise.
+	* name-lookup.c (pop_binding, begin_scope, leave_scope,
+	resume_scope, push_using_decl, validate_nonmember_using_decl,
+	is_ancestor, poplevel_class, set_inherited_value_binding_p,
+	push_class_level_binding, do_class_using_decl, push_namespace,
+	pop_namespace, add_using_namespace, ambiguous_decl,
+	lookup_namespace_name, lookup_type_current_level,
+	maybe_process_template_type_declaration): Likewise.
+	* parser.c (cp_lexer_peek_nth_token,
+	cp_parser_parse_and_diagnose_invalid_typ,
+	cp_parser_translation_unit, cp_parser_template_id,
+	cp_parser_lookup_name, cp_parser_late_parsing_for_member): Likewise.
+	* pt.c (push_access_scope, finish_member_template_decl,
+	push_inline_template_parms_recursive, add_outermost_template_args,
+	get_innermost_template_args, begin_explicit_instantiation,
+	end_explicit_instantiation, retrieve_specialization,
+	is_specialization_of, is_specialization_of_friend,
+	register_specialization, check_explicit_specialization,
+	comp_template_parms, process_template_parm,
+	process_partial_specialization, convert_nontype_argument,
+	coerce_template_template_parms, coerce_template_parms,
+	mangle_class_name_for_template, lookup_template_function,
+	lookup_template_class, instantiate_class_template, tsubst_decl,
+	tsubst_function_type, tsubst, tsubst_qualified_id, tsubst_copy,
+	instantiate_template, fn_type_unification, type_unification_real,
+	get_template_base, regenerate_decl_from_template,
+	template_for_substitution, instantiate_decl,
+	get_mostly_instantiated_function_type, dependent_scope_ref_p,
+	value_dependent_expression_p, resolve_typename_type): Likewise.
+	* repo.c (repo_emit_p): Likewise.
+	* rtti.c (build_headof, get_tinfo_decl, get_pseudo_ti_init,
+	create_tinfo_types, emit_tinfo_decl): Likewise.
+	* search.c (lookup_base_r, lookup_base, lookup_field_1,
+	dfs_access_in_type, build_baselink, lookup_member,
+	adjust_result_of_qualified_name_lookup, copied_binfo): Likewise.
+	* semantics.c (perform_or_defer_access_check,
+	finish_non_static_data_member, finish_stmt_expr_expr,
+	finish_stmt_expr, finish_call_expr, finish_pseudo_destructor_expr,
+	finish_template_template_parm, finish_member_declaration,
+	emit_associated_thunks): Likewise.
+	* tree.c (build_target_expr_with_type, force_target_expr,
+	copy_binfo, get_first_fn, cp_tree_equal): Likewise.
+	* typeck.c (type_after_usual_arithmetic_conversions, comptypes,
+	cxx_sizeof_or_alignof_type, perform_integral_promotions,
+	build_class_member_access_expr, finish_class_member_access_expr,
+	build_ptrmemfunc_access_expr, build_unary_op,
+	unary_complex_lvalue, cxx_mark_addressable, build_modify_expr,
+	build_ptrmemfunc, expand_ptrmemfunc_cst, check_return_expr
+	* typeck2.c (complete_type_check_abstract,
+	abstract_virtuals_error, process_init_constructor,
+	add_exception_specifier): Likewise.
+
+2004-08-27  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* class.c (build_vtbl_initializer): Use ssize_int.
 	* decl.c (complete_array_type): Likewise.
 	* method.c (finish_thunk): Likewise.

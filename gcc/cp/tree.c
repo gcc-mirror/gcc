@@ -319,7 +319,7 @@ build_target_expr_with_type (tree init, tree type)
 {
   tree slot;
 
-  my_friendly_assert (!VOID_TYPE_P (type), 20040130);
+  gcc_assert (!VOID_TYPE_P (type));
 
   if (TREE_CODE (init) == TARGET_EXPR)
     return init;
@@ -347,7 +347,7 @@ force_target_expr (tree type, tree init)
 {
   tree slot;
 
-  my_friendly_assert (!VOID_TYPE_P (type), 20040130);
+  gcc_assert (!VOID_TYPE_P (type));
 
   slot = build_local_temp (type);
   return build_target_expr (slot, init);
@@ -606,8 +606,8 @@ copy_binfo (tree binfo, tree type, tree t, tree *igo_prev, int virt)
       int ix;
       tree base_binfo;
 
-      my_friendly_assert (!BINFO_DEPENDENT_BASE_P (binfo), 20040712);
-      my_friendly_assert (type == BINFO_TYPE (binfo), 20040714);
+      gcc_assert (!BINFO_DEPENDENT_BASE_P (binfo));
+      gcc_assert (type == BINFO_TYPE (binfo));
 
       BINFO_OFFSET (new_binfo) = BINFO_OFFSET (binfo);
       BINFO_VIRTUALS (new_binfo) = BINFO_VIRTUALS (binfo);
@@ -620,7 +620,7 @@ copy_binfo (tree binfo, tree type, tree t, tree *igo_prev, int virt)
 	{
 	  tree new_base_binfo;
 
-	  my_friendly_assert (!BINFO_DEPENDENT_BASE_P (base_binfo), 20040713);
+	  gcc_assert (!BINFO_DEPENDENT_BASE_P (base_binfo));
 	  new_base_binfo = copy_binfo (base_binfo, BINFO_TYPE (base_binfo),
 				       t, igo_prev,
 				       BINFO_VIRTUAL_P (base_binfo));
@@ -840,7 +840,7 @@ really_overloaded_fn (tree x)
 tree
 get_first_fn (tree from)
 {
-  my_friendly_assert (is_overloaded_fn (from), 9);
+  gcc_assert (is_overloaded_fn (from));
   /* A baselink is also considered an overloaded function.  */
   if (BASELINK_P (from))
     from = BASELINK_FUNCTIONS (from);
@@ -1584,7 +1584,7 @@ cp_tree_equal (tree t1, tree t2)
       return same_type_p (t1, t2);
     }
 
-  my_friendly_assert (0, 20030617);
+  gcc_unreachable ();
   return false;
 }
 

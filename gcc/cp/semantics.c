@@ -307,7 +307,7 @@ perform_or_defer_access_check (tree binfo, tree decl)
   if (deferred_access_no_check)
     return;
   
-  my_friendly_assert (TREE_CODE (binfo) == TREE_BINFO, 20030623);
+  gcc_assert (TREE_CODE (binfo) == TREE_BINFO);
 
   ptr = VEC_last (deferred_access, deferred_access_stack);
   
@@ -1249,7 +1249,7 @@ finish_parenthesized_expr (tree expr)
 tree
 finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 {
-  my_friendly_assert (TREE_CODE (decl) == FIELD_DECL, 20020909);
+  gcc_assert (TREE_CODE (decl) == FIELD_DECL);
 
   if (!object)
     {
@@ -1497,7 +1497,7 @@ finish_stmt_expr_expr (tree expr, tree stmt_expr)
 		 build_tree_list (NULL_TREE, expr),
 		 type, LOOKUP_NORMAL);
 	      expr = build_cplus_new (type, expr);
-	      my_friendly_assert (TREE_CODE (expr) == TARGET_EXPR, 20030729);
+	      gcc_assert (TREE_CODE (expr) == TARGET_EXPR);
 	    }
 	}
 
@@ -1582,7 +1582,7 @@ finish_stmt_expr (tree stmt_expr, bool has_no_scope)
 	 the statement expression itself as the target's init
 	 expr. Finally, return the target expression.  */
       tree init, target_expr = EXPR_STMT_EXPR (result_stmt);
-      my_friendly_assert (TREE_CODE (target_expr) == TARGET_EXPR, 20030729);
+      gcc_assert (TREE_CODE (target_expr) == TARGET_EXPR);
 
       /* The initializer will be void if the initialization is done by
 	 AGGR_INIT_EXPR; propagate that out to the statement-expression as
@@ -1682,8 +1682,7 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual, bool koenig_p)
     return error_mark_node;
 
   /* ARGS should be a list of arguments.  */
-  my_friendly_assert (!args || TREE_CODE (args) == TREE_LIST,
-		      20020712);
+  gcc_assert (!args || TREE_CODE (args) == TREE_LIST);
 
   orig_fn = fn;
   orig_args = args;
@@ -1858,7 +1857,7 @@ finish_pseudo_destructor_expr (tree object, tree scope, tree destructor)
   if (destructor == error_mark_node)
     return error_mark_node;
 
-  my_friendly_assert (TYPE_P (destructor), 20010905);
+  gcc_assert (TYPE_P (destructor));
 
   if (!processing_template_decl)
     {
@@ -1998,7 +1997,7 @@ finish_template_template_parm (tree aggr, tree identifier)
   DECL_ARTIFICIAL (decl) = 1;
   end_template_decl ();
 
-  my_friendly_assert (DECL_TEMPLATE_PARMS (tmpl), 20010110);
+  gcc_assert (DECL_TEMPLATE_PARMS (tmpl));
 
   return finish_template_type_parm (aggr, tmpl);
 }
@@ -2128,7 +2127,7 @@ finish_member_declaration (tree decl)
     return;
 
   /* We should see only one DECL at a time.  */
-  my_friendly_assert (TREE_CHAIN (decl) == NULL_TREE, 0);
+  gcc_assert (TREE_CHAIN (decl) == NULL_TREE);
 
   /* Set up access control for DECL.  */
   TREE_PRIVATE (decl) 
@@ -2856,7 +2855,7 @@ emit_associated_thunks (tree fn)
 		}
 	    }
 	  else
-	    my_friendly_assert (!DECL_THUNKS (thunk), 20031023);
+	    gcc_assert (!DECL_THUNKS (thunk));
 	}
     }
 }

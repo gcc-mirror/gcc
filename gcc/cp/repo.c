@@ -264,11 +264,10 @@ finish_repo (void)
 int
 repo_emit_p (tree decl)
 {
-  my_friendly_assert (TREE_PUBLIC (decl), 20040725);
-  my_friendly_assert (TREE_CODE (decl) == FUNCTION_DECL
-		      || TREE_CODE (decl) == VAR_DECL,
-		      20040725);
-  my_friendly_assert (!DECL_REALLY_EXTERN (decl), 20040725);
+  gcc_assert (TREE_PUBLIC (decl));
+  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
+	      || TREE_CODE (decl) == VAR_DECL);
+  gcc_assert (!DECL_REALLY_EXTERN (decl));
 
   /* When not using the repository, emit everything.  */
   if (!flag_use_repository)

@@ -1853,7 +1853,7 @@ write_method_parms (tree parm_types, const int method_p, const tree decl)
 	     fixed-length.  */
 	  varargs_p = 0;
 	  /* A void type better be the last one.  */
-	  my_friendly_assert (TREE_CHAIN (parm_types) == NULL, 20000523);
+	  gcc_assert (TREE_CHAIN (parm_types) == NULL);
 	}
       else
 	write_type (parm);
@@ -1887,7 +1887,7 @@ write_template_args (tree args)
 
   write_char ('I');
 
-  my_friendly_assert (length > 0, 20000422);
+  gcc_assert (length > 0);
 
   if (TREE_CODE (TREE_VEC_ELT (args, 0)) == TREE_VEC)
     {
@@ -2095,8 +2095,7 @@ write_expression (tree expr)
 	      template_id = TREE_OPERAND (expr, 1);
 	      name = TREE_OPERAND (template_id, 0);
 	      /* FIXME: What about operators?  */
-	      my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE,
-				  20030707);
+	      gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
 	      write_source_name (TREE_OPERAND (template_id, 0));
 	      write_template_args (TREE_OPERAND (template_id, 1));
 	    }
@@ -2201,8 +2200,7 @@ write_template_arg (tree node)
       /* Template parameters can be of reference type. To maintain
 	 internal consistency, such arguments use a conversion from
 	 address of object to reference type.  */
-      my_friendly_assert (TREE_CODE (TREE_OPERAND (node, 0)) == ADDR_EXPR,
-			  20031215);
+      gcc_assert (TREE_CODE (TREE_OPERAND (node, 0)) == ADDR_EXPR);
       if (abi_version_at_least (2))
 	node = TREE_OPERAND (TREE_OPERAND (node, 0), 0);
       else
