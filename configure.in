@@ -119,6 +119,14 @@ appdirs=""
 
 # per-target:
 
+# Define is_cross_compiler to save on calls to 'test'.
+is_cross_compiler=
+if test x"${host}" = x"${target}" ; then
+  is_cross_compiler=no
+else
+  is_cross_compiler=yes
+fi	
+
 # Don't use libstdc++-v3's flags to configure/build itself.
 libstdcxx_flags='`case $$dir in libstdc++-v3 | libjava) ;; *) test ! -f $$r/$(TARGET_SUBDIR)/libstdc++-v3/testsuite_flags || $(SHELL) $$r/$(TARGET_SUBDIR)/libstdc++-v3/testsuite_flags --build-includes;; esac` -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src -L$$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs'
 
@@ -426,19 +434,10 @@ esac
 # toolchains, we add some directories that should only be useful in a
 # cross-compiler.
 
-is_cross_compiler=
-
-if test x"${host}" = x"${target}" ; then
-	# when doing a native toolchain, don't build the targets
-	# that are in the 'cross only' list
-	skipdirs="${skipdirs} ${cross_only}"
-	is_cross_compiler=no
-else
-	# similarly, don't build the targets in the 'native only' 
-	# list when building a cross compiler
-	skipdirs="${skipdirs} ${native_only}"
-	is_cross_compiler=yes
-fi	
+case $is_cross_compiler in
+  no) skipdirs="${skipdirs} ${cross_only}" ;;
+  yes) skipdirs="${skipdirs} ${native_only}" ;;
+esac
 
 # We always want to use the same name for this directory, so that dejagnu
 # can reliably find it.
