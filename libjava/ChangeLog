@@ -1,3 +1,26 @@
+2004-04-20  Ingo Proetel  <proetel@aicas.com>
+
+	* java/awt/FontMetrics.java:
+	(charsWidth): fixed accumulation of total_width
+	(getWidth): simple default implementation
+	* java/awt/Polygon.java (getBoundingBox): Use correct y-coordinate
+	in Rectangle constructor.
+	* java/awt/image/Raster.java (toString): Added method. 
+	* java/awt/image/SampleModel.java (<init>): Added error cause
+	information to thrown exception.
+	* java/awt/image/SinglePixelPackedSampleModel.java (getDataElements):
+	New method.
+	(setDataElements): New method.
+	(setPixels): New method.
+	(toString): New method.
+
+2004-04-20  Sascha Brawer  <brawer@dandelis.ch>
+
+	* java/awt/image/ComponentColorModel.java
+	(createCompatibleSampleModel): Return PixelInterleavedSampleModel
+	for TYPE_BYTE and TYPE_USHORT transferTypes, in order to pass the
+	Mauve tests on this method. Improved documentation.
+
 2004-04-20  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/JLayeredPane.java,

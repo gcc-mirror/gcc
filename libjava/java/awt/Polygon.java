@@ -294,7 +294,7 @@ public class Polygon implements Shape, Serializable
             else if (y > maxy)
               maxy = y;
           }
-        bounds = new Rectangle (minx, maxy, maxx - minx, maxy - miny);
+        bounds = new Rectangle (minx, miny, maxx - minx, maxy - miny);
       }
     return bounds;
   }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* Copyright (C) 2000, 2002, 2004  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -292,18 +292,55 @@ public class ComponentColorModel extends ColorModel
     return Raster.createWritableRaster(sm, origin);
   }
 
+
+  /**
+   * Creates a <code>SampleModel</code> whose arrangement of pixel
+   * data is compatible to this <code>ColorModel</code>.
+   *
+   * @param w the number of pixels in the horizontal direction.
+   * @param h the number of pixels in the vertical direction.
+   */
   public SampleModel createCompatibleSampleModel(int w, int h)
   {
-    int pixelStride = getNumComponents();
-    
-    /* TODO: Maybe we don't need to create a new offset array each
-       time, but rather use the same array every time. */
-    int[] bandOffsets = new int[pixelStride];
-    for (int i=0; i<pixelStride; i++) bandOffsets[i] = i;
-    return new ComponentSampleModel(transferType, w, h,
-				    pixelStride, pixelStride*w,
-				    bandOffsets);
+    int pixelStride, scanlineStride;
+    int[] bandOffsets;
+
+    pixelStride = getNumComponents();
+    scanlineStride = pixelStride * w;
+
+    /* We might be able to re-use the same bandOffsets array among
+     * multiple calls to this method. However, this optimization does
+     * not seem worthwile because setting up descriptive data
+     * structures (such as SampleModels) is neglectible in comparision
+     * to shuffling around masses of pixel data.
+     */
+    bandOffsets = new int[pixelStride];
+    for (int i = 0; i < pixelStride; i++)
+      bandOffsets[i] = i;
+
+    /* FIXME: Think about whether it would make sense to return the
+     * possibly more efficient PixelInterleavedSampleModel for other
+     * transferTypes as well. It seems unlikely that this would break
+     * any user applications, so the Mauve tests on this method
+     * might be too restrictive.
+     */
+    switch (transferType)
+      {
+      case DataBuffer.TYPE_BYTE:
+      case DataBuffer.TYPE_USHORT:
+        return new PixelInterleavedSampleModel(transferType, w, h,
+                                               pixelStride,
+                                               scanlineStride,
+                                               bandOffsets);
+
+      default:
+        return new ComponentSampleModel(transferType, w, h,
+                                        pixelStride,
+                                        scanlineStride,
+                                        bandOffsets);
+      }
   }
+
 
   public boolean isCompatibleSampleModel(SampleModel sm)
   {
