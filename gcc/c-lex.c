@@ -1118,7 +1118,23 @@ yylex ()
 
       break;
 
-    case '0':  case '1':  case '2':  case '3':  case '4':
+    case '0':  case '1':
+      {
+	int next_c;
+	/* Check first for common special case:  single-digit 0 or 1.  */
+
+	next_c = getc (finput);
+	ungetc (next_c, finput);	/* Always undo this lookahead.  */
+	if (!isalnum (next_c) && next_c != '.')
+	  {
+	    token_buffer[0] = (char)c,  token_buffer[1] = '\0';
+	    yylval.ttype = (c == '0') ? integer_zero_node : integer_one_node;
+	    value = CONSTANT;
+	    break;
+	  }
+	/*FALLTHRU*/
+      }
+    case '2':  case '3':  case '4':
     case '5':  case '6':  case '7':  case '8':  case '9':
     case '.':
       {
