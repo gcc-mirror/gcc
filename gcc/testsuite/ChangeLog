@@ -1,5 +1,9 @@
 2003-03-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* gcc.dg/decl-3.c: New test.
+
+2003-03-12  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.dg/i386-loop-2.c: New test.
 
 2003-03-11  Mark Mitchell  <mark@codesourcery.com>
