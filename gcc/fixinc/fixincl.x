@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 140 fixup descriptions.
+ * This file contains 141 fixup descriptions.
  *
  * See README for more information.
  *
@@ -3696,6 +3696,38 @@ static const char* apzSolaris_Stdio_TagPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Solaris_Sys_Varargs_H fix
+ */
+tSCC zSolaris_Sys_Varargs_HName[] =
+     "solaris_sys_varargs_h";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zSolaris_Sys_Varargs_HList[] =
+  "|sys/varargs.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzSolaris_Sys_Varargs_HMachs[] = {
+        "*-*-solaris*",
+        (const char*)NULL };
+#define SOLARIS_SYS_VARARGS_H_TEST_CT  0
+#define aSolaris_Sys_Varargs_HTests   (tTestDesc*)NULL
+
+/*
+ *  Fix Command Arguments for Solaris_Sys_Varargs_H
+ */
+static const char* apzSolaris_Sys_Varargs_HPatch[] = {
+"#ifdef __STDC__\n\
+#include <stdarg.h>\n\
+#else\n\
+#include <varargs.h>\n\
+#endif\n",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of Statsswtch fix
  */
 tSCC zStatsswtchName[] =
@@ -5506,7 +5538,7 @@ static const char* apzX11_SprintfPatch[] = {
  */
 #define REGEX_COUNT          149
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            140
+#define FIX_COUNT            141
 
 /*
  *  Enumerate the fixes
@@ -5605,6 +5637,7 @@ typedef enum {
     SCO_UTIME_FIXIDX,
     SOLARIS_MUTEX_INIT_FIXIDX,
     SOLARIS_STDIO_TAG_FIXIDX,
+    SOLARIS_SYS_VARARGS_H_FIXIDX,
     STATSSWTCH_FIXIDX,
     STDIO_STDARG_H_FIXIDX,
     STDIO_VA_LIST_FIXIDX,
@@ -6119,6 +6152,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzSolaris_Stdio_TagMachs,
      SOLARIS_STDIO_TAG_TEST_CT, FD_MACH_ONLY,
      aSolaris_Stdio_TagTests,   apzSolaris_Stdio_TagPatch, 0 },
+
+  {  zSolaris_Sys_Varargs_HName,    zSolaris_Sys_Varargs_HList,
+     apzSolaris_Sys_Varargs_HMachs,
+     SOLARIS_SYS_VARARGS_H_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
+     aSolaris_Sys_Varargs_HTests,   apzSolaris_Sys_Varargs_HPatch, 0 },
 
   {  zStatsswtchName,    zStatsswtchList,
      apzStatsswtchMachs,
