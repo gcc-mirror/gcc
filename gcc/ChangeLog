@@ -1,3 +1,9 @@
+Sat Aug 15 20:22:33 1998  H.J. Lu  (hjl@gnu.org)
+
+	* config/alpha/alpha.h (ASM_OUTPUT_MI_THUNK): Handle aggregated
+	return type.
+	* config/alpha/win-nt.h (ASM_OUTPUT_MI_THUNK): Likewise.
+
 Sat Aug 15 08:39:49 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.md (movsi_lo_sum_pic_label_reg): Remove
