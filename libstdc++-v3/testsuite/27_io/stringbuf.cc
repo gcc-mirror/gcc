@@ -1,6 +1,6 @@
 // 981208 bkoz test functionality of basic_stringbuf for char_type == char
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -338,7 +338,7 @@ bool test04() {
   //IN|OUT
   //beg
   pt_1 = strb_01.pubseekoff(2, std::ios_base::beg);
-  off_1 = pt_1._M_position();
+  off_1 = pt_1;
   test &= off_1 >= 0;
   c1 = strb_01.snextc(); //current in pointer +1
   test &= c1 == 'o';
@@ -347,12 +347,12 @@ bool test04() {
   test &= strb_01.str() == str_tmp;
   //cur
   pt_1 = strb_01.pubseekoff(2, std::ios_base::cur);
-  off_1 = pt_1._M_position();
+  off_1 = pt_1;
   test &= off_1 == -1; // can't seekoff for in and out + cur in sstreams
   pt_1 = strb_01.pubseekoff(2, std::ios_base::cur, std::ios_base::in);
-  off_1 = pt_1._M_position();
+  off_1 = pt_1;
   pt_2 = strb_01.pubseekoff(2, std::ios_base::cur, std::ios_base::in);
-  off_2 = pt_2._M_position();
+  off_2 = pt_2;
   test &= off_2 == off_1 + 2;
   c1 = strb_01.snextc(); //current in pointer + 1
   test &= c1 == ' ';
@@ -361,7 +361,7 @@ bool test04() {
   test &= strb_01.str() == str_tmp;
   //end
   pt_2 = strb_01.pubseekoff(2, std::ios_base::end);
-  off_1 = pt_2._M_position();
+  off_1 = pt_2;
   test &= off_1 == -1; // not a valid position
   test &= strb_01.str() == str_tmp;
   // end part two (from the filebuf tests)
@@ -393,10 +393,10 @@ bool test04() {
   //IN|OUT
   //beg
   pt_1 = strb_01.pubseekoff(2, std::ios_base::beg);
-  off_1 = pt_1._M_position();
+  off_1 = pt_1;
   test &= off_1 >= 0;
   pt_1 = strb_01.pubseekoff(0, std::ios_base::cur, std::ios_base::out);
-  off_1 = pt_1._M_position();
+  off_1 = pt_1;
   c1 = strb_01.snextc(); //current in pointer +1
   test &= c1 == 'o';
   c2 = strb_01.sputc('x');  //test current out pointer
@@ -404,7 +404,7 @@ bool test04() {
   test &= strb_01.str() == str_tmp;
   strb_01.pubsync(); //resets pointers
   pt_2 = strb_01.pubseekpos(pt_1, std::ios_base::in|std::ios_base::out);
-  off_2 = pt_2._M_position();
+  off_2 = pt_2;
   test &= off_1 == off_2;
   c3 = strb_01.snextc(); //current in pointer +1
   test &= c1 == c3;

@@ -1,6 +1,6 @@
 // 1999-06-08 bkoz
 
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -65,7 +65,7 @@ bool test01(void)
     std::string str03;
     for (int i = 0; i < sz; ++i)
       str03 += (bit03.test(i) ? '1' : '0');
-    reverse(str03.begin(), str03.end());
+    std::reverse(str03.begin(), str03.end());
     test &= str03 == str02;
   }
   catch(std::invalid_argument& fail) {
