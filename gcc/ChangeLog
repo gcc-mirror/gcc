@@ -1,3 +1,28 @@
+2001-11-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in: Update, and add c-objc-common.o dependencies.
+	* c-lang.c: Remove unnecessary includes.
+	(c_init): Move bulk of code to c_objc_common_init, and call it.
+	(c_tree_printer, c_missing_noreturn_ok_p, c_disregard_inline_limits,
+	inline_forbidden_p, c_cannot_inline_tree_fn): Move to
+	c-objc-common.c.
+	* c-objc-common.c: New.  Mostly pulled from c-lang.c.
+	* c-tree.h (c_disregard_inline_limits, c_cannot_inline_fn,
+	c_objc_common_init, c_missing_noreturn_ok_p): New.
+	* toplev.c: Update comment.
+	* doc/passes.texi: Update.
+objc:
+	* ojbc-act.c (LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN,
+	LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS,
+	LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P): Override.
+	(objc_init): Update to use c_objc_common_init.
+
+2001-11-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.c (_cpp_init_hashtable): Update.
+	* cpphash.h (struct spec_nodes): Remove n_L.
+	* cpplex.c (_cpp_lex_direct): Check for prefix L separately.
+
 2001-11-17  Richard Henderson  <rth@redhat.com>
 
 	* unroll.c (loop_iterations): Move last change ...

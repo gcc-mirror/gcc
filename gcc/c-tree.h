@@ -152,6 +152,7 @@ extern int maybe_objc_comptypes                 PARAMS ((tree, tree, int));
 extern tree maybe_building_objc_message_expr    PARAMS ((void));
 extern int recognize_objc_keyword		PARAMS ((void));
 extern tree lookup_objc_ivar			PARAMS ((tree));
+
 /* in c-lang.c and objc/objc-act.c */
 extern int defer_fn				PARAMS ((tree));
 
@@ -168,6 +169,12 @@ extern void c_init_decl_processing		PARAMS ((void));
 extern void c_print_identifier			PARAMS ((FILE *, tree, int));
 extern tree build_array_declarator              PARAMS ((tree, tree, int, int));
 extern tree build_enumerator                    PARAMS ((tree, tree));
+
+/* in c-objc-common.c */
+extern int c_disregard_inline_limits		PARAMS ((tree));
+extern int c_cannot_inline_tree_fn		PARAMS ((tree *));
+extern const char *c_objc_common_init		PARAMS ((const char *));
+extern int c_missing_noreturn_ok_p		PARAMS ((tree));
 
 #define c_build_type_variant(TYPE, CONST_P, VOLATILE_P)		  \
   c_build_qualified_type (TYPE,				  \

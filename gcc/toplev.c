@@ -4988,10 +4988,7 @@ lang_independent_init ()
     = ((lang_hooks.identifier_size - sizeof (struct tree_common))
        / sizeof (tree));
 
-  /* Initialize the garbage-collector, and string pools.  FIXME: We
-     should do this later, in independent_init () when we know we
-     actually want to compile something, but cpplib currently wants to
-     use the hash table immediately in cpp_create_reader.  */
+  /* Initialize the garbage-collector, and string pools.  */
   init_ggc ();
   ggc_add_rtx_root (&stack_limit_rtx, 1);
   ggc_add_tree_root (&current_function_decl, 1);

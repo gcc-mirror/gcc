@@ -83,6 +83,7 @@ The source files to parse C are
 @file{c-decl.c},
 @file{c-errors.c},
 @file{c-lang.c},
+@file{c-objc-common.c},
 @file{c-parse.in},
 @file{c-aux-info.c},
 and

@@ -71,7 +71,6 @@ _cpp_init_hashtable (pfile, table)
   _cpp_init_internal_pragmas (pfile);
 
   s = &pfile->spec_nodes;
-  s->n_L                = cpp_lookup (pfile, DSC("L"));
   s->n_defined		= cpp_lookup (pfile, DSC("defined"));
   s->n_true		= cpp_lookup (pfile, DSC("true"));
   s->n_false		= cpp_lookup (pfile, DSC("false"));

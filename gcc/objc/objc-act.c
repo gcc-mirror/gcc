@@ -468,6 +468,16 @@ static int print_struct_values = 0;
 #define LANG_HOOKS_PRINT_IDENTIFIER c_print_identifier
 #undef LANG_HOOKS_SET_YYDEBUG
 #define LANG_HOOKS_SET_YYDEBUG c_set_yydebug
+/* Inlining hooks same as the C front end.  */
+#undef LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN
+#define LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN \
+  c_cannot_inline_tree_fn
+#undef LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS
+#define LANG_HOOKS_TREE_INLINING_DISREGARD_INLINE_LIMITS \
+  c_disregard_inline_limits
+#undef LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P
+#define LANG_HOOKS_TREE_INLINING_ANON_AGGR_TYPE_P \
+  anon_aggr_type_p
 
 /* Each front end provides its own.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
@@ -554,11 +564,9 @@ static const char *
 objc_init (filename)
      const char *filename;
 {
-  c_init_decl_processing ();
+  filename = c_objc_common_init (filename);
 
-  filename = c_common_init (filename);
-
-  add_c_tree_codes ();
+  decl_printable_name = objc_printable_name;
 
   /* Force the line number back to 0; check_newline will have
      raised it to 1, which will make the builtin functions appear
@@ -8087,14 +8095,6 @@ init_objc ()
   errbuf = (char *)xmalloc (BUFSIZE);
   hash_init ();
   synth_module_prologue ();
-
-  /* Change the default error function */
-  save_lang_status = &push_c_function_context;
-  restore_lang_status = &pop_c_function_context;
-  mark_lang_status = &mark_c_function_context;
-  decl_printable_name = objc_printable_name;
-  lang_expand_expr = c_expand_expr;
-  lang_expand_decl_stmt = c_expand_decl_stmt;
 }
 
 static void
