@@ -1,3 +1,7 @@
+2002-07-19  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/expr.c: New tests.
+
 2002 07-18  David Edelsohn  <edelsohn@gnu.org>
 
 	* g++.dg/opt/pr6713.C: Add template instantiation.
