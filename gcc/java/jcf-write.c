@@ -96,19 +96,35 @@ struct chunk
   int size;
 };
 
+#define PENDING_CLEANUP_PC (-3)
+#define PENDING_EXIT_PC (-2)
+#define UNDEFINED_PC (-1)
+
 /* Each "block" represents a label plus the bytecode instructions following.
    There may be branches out of the block, but no incoming jumps, except
-   to the beginning of the block. */
+   to the beginning of the block.
+
+   If (pc < 0), the jcf_block is not an actual block (i.e. it has no
+   assocated code yet), but it is an undefined label.
+*/
 
 struct jcf_block
 {
   /* For blocks that that are defined, the next block (in pc order).
-     For blocks that are the not-yet-defined end label of a LABELED_BLOCK_EXPR,
-     this is the next (outer) such end label, in a stack heaed by
+     For blocks that are the not-yet-defined end label of a LABELED_BLOCK_EXPR
+     or a cleanup expression (from a WITH_CLEANUP_EXPR),
+     this is the next (outer) such end label, in a stack headed by
      labeled_blocks in jcf_partial. */
   struct jcf_block *next;
 
-  /* Until perform_relocations is finished, this is the maximum possible
+  /* In the not-yet-defined end label for an unfinished EXIT_BLOCK_EXPR.
+     pc is PENDING_EXIT_PC.
+     In the not-yet-defined end label for pending cleanup subroutine,
+     pc is PENDING_CLEANUP_PC.
+     For other not-yet-defined labels, pc is UNDEFINED_PC.
+
+     If the label has been defined:
+     Until perform_relocations is finished, this is the maximum possible
      value of the bytecode offset at the begnning of this block.
      After perform_relocations, it is the actual offset (pc). */
   int pc;
@@ -117,14 +133,21 @@ struct jcf_block
 
   /* After finish_jcf_block is called, The actual instructions contained in this block.
      Before than NULL, and the instructions are in state->bytecode. */
-  struct chunk *chunk;
+  union {
+    struct chunk *chunk;
+
+    /* If pc==PENDING_CLEANUP_PC, start_label is the start of the region
+       coveed by the cleanup. */
+    struct jcf_block *start_label;
+  } v;
 
   union {
     /* Set of relocations (in reverse offset order) for this block. */
     struct jcf_relocation *relocations;
 
     /* If this block is that of the not-yet-defined end label of
-       a LABELED_BLOCK_EXPR, where LABELED_BLOCK is that LABELED_BLOCK_EXPR. */
+       a LABELED_BLOCK_EXPR, where LABELED_BLOCK is that LABELED_BLOCK_EXPR.
+       If pc==PENDING_CLEANUP_PC, the cleanup that needs to be run. */
     tree labeled_block;
   } u;
 };
@@ -240,6 +263,12 @@ struct jcf_partial
   /* Number of exception handlers for the current method. */
   int num_handlers;
 
+  /* Number of finalizers we are currently nested within. */
+  int num_finalizers;
+
+  /* If non-NULL, use this for the return value. */
+  tree return_value_decl;
+
   /* Information about the current switch statemenet. */
   struct jcf_switch_state *sw_state;
 };
@@ -263,7 +292,7 @@ CHECK_PUT(ptr, state, i)
   return 0;
 }
 #else
-#define CHECK_PUT(PTR, STATE, I) 0
+#define CHECK_PUT(PTR, STATE, I) ((void)0)
 #endif
 
 #define PUT1(X)  (CHECK_PUT(ptr, state, 1), *ptr++ = (X))
@@ -308,7 +337,7 @@ CHECK_OP(struct jcf_partial *state)
   return 0;
 }
 #else
-#define CHECK_OP(STATE) 0
+#define CHECK_OP(STATE) ((void)0)
 #endif
 
 unsigned char *
@@ -341,7 +370,7 @@ gen_jcf_label (state)
     obstack_alloc (state->chunk_obstack, sizeof (struct jcf_block));
   block->next =	NULL;
   block->linenumber = -1;
-  block->pc = -1;
+  block->pc = UNDEFINED_PC;
   return block;
 }
 
@@ -355,10 +384,10 @@ finish_jcf_block (state)
   int pc = state->code_length;
   append_chunk_copy (state->bytecode.data, code_length, state);
   BUFFER_RESET (&state->bytecode);
-  block->chunk = state->chunk;
+  block->v.chunk = state->chunk;
 
   /* Calculate code_length to the maximum value it can have. */
-  pc += block->chunk->size;
+  pc += block->v.chunk->size;
   for (reloc = block->u.relocations;  reloc != NULL;  reloc = reloc->next)
     {
       int kind = reloc->kind;
@@ -465,7 +494,7 @@ struct localvar_info
 #define localvar_max \
   ((struct localvar_info**) state->localvars.ptr - localvar_buffer)
 
-int
+void
 localvar_alloc (decl, state)
      tree decl;
      struct jcf_partial *state;
@@ -915,7 +944,6 @@ emit_unop (opcode, type, state)
      tree type;
      struct jcf_partial *state;
 {
-  int size = TYPE_IS_WIDE (type) ? 2 : 1;
   RESERVE(1);
   OP1 (opcode);
 }
@@ -932,7 +960,7 @@ emit_binop (opcode, type, state)
   NOTE_POP (size);
 }
 
-static struct jcf_relocation *
+static void
 emit_reloc (value, kind, target, state)
      HOST_WIDE_INT value;
      int kind;
@@ -1223,6 +1251,23 @@ generate_bytecode_conditional (exp, true_label, false_label,
     }
   if (save_SP != state->code_SP)
     fatal ("internal error - SP mismatch");
+}
+
+/* Call pending cleanups i.e. those for surrounding CLEANUP_POINT_EXPRs
+   but only as far out as LIMIT (since we are about to jump to the
+   emit label that is LIMIT). */
+
+static void
+call_cleanups (limit, state)
+     struct jcf_block *limit;
+     struct jcf_partial *state;
+{
+  struct jcf_block *block = state->labeled_blocks;
+  for (;  block != limit;  block = block->next)
+    {
+      if (block->pc == PENDING_CLEANUP_PC)
+	emit_jsr (block, state);
+    }
 }
 
 /* Generate bytecode for sub-expression EXP of METHOD.
@@ -1593,12 +1638,12 @@ generate_bytecode_insns (exp, target, state)
 	switch_length = state->code_length - switch_instruction->pc;
 	switch_instruction->pc = body_block->pc;
 	instruction_last->next = body_block;
-	instruction_last->chunk->next = body_block->chunk;
+	instruction_last->v.chunk->next = body_block->v.chunk;
 	expression_last->next = switch_instruction;
-	expression_last->chunk->next = switch_instruction->chunk;
+	expression_last->v.chunk->next = switch_instruction->v.chunk;
 	body_last->next = sw_state.default_label;
-	body_last->chunk->next = NULL;
-	state->chunk = body_last->chunk;
+	body_last->v.chunk->next = NULL;
+	state->chunk = body_last->v.chunk;
 	for (;  body_block != sw_state.default_label;  body_block = body_block->next)
 	  body_block->pc += switch_length;
 
@@ -1608,7 +1653,10 @@ generate_bytecode_insns (exp, target, state)
 
     case RETURN_EXPR:
       if (!TREE_OPERAND (exp, 0))
-	op = OPCODE_return;
+	{
+	  op = OPCODE_return;
+	  call_cleanups (NULL_TREE, state);
+	}
       else
 	{
 	  exp = TREE_OPERAND (exp, 0);
@@ -1617,6 +1665,23 @@ generate_bytecode_insns (exp, target, state)
 	  exp = TREE_OPERAND (exp, 1);
 	  op = OPCODE_ireturn + adjust_typed_op (TREE_TYPE (exp), 4);
 	  generate_bytecode_insns (exp, STACK_TARGET, state);
+	  if (state->num_finalizers > 0)
+	    {
+	      if (state->return_value_decl == NULL_TREE)
+		{
+		  state->return_value_decl
+		    = build_decl (VAR_DECL, NULL_TREE, TREE_TYPE (exp));
+		  localvar_alloc (state->return_value_decl, state);
+		}
+	      emit_store (state->return_value_decl, state);
+	      call_cleanups (NULL_TREE, state);
+	      emit_load (state->return_value_decl, state);
+	      /* If we call localvar_free (state->return_value_decl, state),
+		 then we risk the save decl erroneously re-used in the
+		 finalizer.  Instead, we keep the state->return_value_decl
+		 allocated through the rest of the method.  This is not
+		 the greatest solution, but it is at least simple and safe. */
+	    }
 	}
       RESERVE (1);
       OP1 (op);
@@ -1626,6 +1691,7 @@ generate_bytecode_insns (exp, target, state)
 	struct jcf_block *end_label = gen_jcf_label (state);
 	end_label->next = state->labeled_blocks;
 	state->labeled_blocks = end_label;
+	end_label->pc = PENDING_EXIT_PC;
 	end_label->u.labeled_block = exp;
 	if (LABELED_BLOCK_BODY (exp))
 	  generate_bytecode_insns (LABELED_BLOCK_BODY (exp), target, state);
@@ -1681,6 +1747,7 @@ generate_bytecode_insns (exp, target, state)
 	if (TREE_OPERAND (exp, 1) != NULL) goto notimpl;
 	while (label->u.labeled_block != TREE_OPERAND (exp, 0))
 	  label = label->next;
+	call_cleanups (label, state);
 	emit_goto (label, state);
       }
       break;
@@ -1990,6 +2057,79 @@ generate_bytecode_insns (exp, target, state)
 	  }
       }
       break;
+
+    case CLEANUP_POINT_EXPR:
+      {
+	struct jcf_block *save_labeled_blocks = state->labeled_blocks;
+	int can_complete = CAN_COMPLETE_NORMALLY (TREE_OPERAND (exp, 0));
+	generate_bytecode_insns (TREE_OPERAND (exp, 0), IGNORE_TARGET, state);
+	if (target != IGNORE_TARGET)
+	  abort ();
+	while (state->labeled_blocks != save_labeled_blocks)
+	  {
+	    struct jcf_block *finished_label = NULL;
+	    tree return_link;
+	    tree exception_type = build_pointer_type (throwable_type_node);
+	    tree exception_decl = build_decl (VAR_DECL, NULL_TREE,
+					      exception_type);
+	    struct jcf_block *end_label = get_jcf_label_here (state);
+	    struct jcf_block *label = state->labeled_blocks;
+	    struct jcf_handler *handler;
+	    tree cleanup = label->u.labeled_block;
+	    state->labeled_blocks = label->next;
+	    state->num_finalizers--;
+	    if (can_complete)
+	      {
+		finished_label = gen_jcf_label (state);
+		emit_jsr (label, state);
+		emit_goto (finished_label, state);
+		if (! CAN_COMPLETE_NORMALLY (cleanup))
+		  can_complete = 0;
+	      }
+	    handler = alloc_handler (label->v.start_label, end_label, state);
+	    handler->type = NULL_TREE;
+	    localvar_alloc (exception_decl, state);
+	    NOTE_PUSH (1);
+            emit_store (exception_decl, state);
+	    emit_jsr (label, state);
+	    emit_load (exception_decl, state);
+	    RESERVE (1);
+	    OP1 (OPCODE_athrow);
+	    NOTE_POP (1);
+
+	    /* The finally block. */
+	    return_link = build_decl (VAR_DECL, NULL_TREE,
+				      return_address_type_node);
+	    define_jcf_label (label, state);
+	    NOTE_PUSH (1);
+	    localvar_alloc (return_link, state);
+	    emit_store (return_link, state);
+	    generate_bytecode_insns (cleanup, IGNORE_TARGET, state);
+	    maybe_wide (OPCODE_ret, DECL_LOCAL_INDEX (return_link), state);
+	    localvar_free (return_link, state);
+	    localvar_free (exception_decl, state);
+	    if (finished_label != NULL)
+	      define_jcf_label (finished_label, state);
+	  }
+      }
+      break;
+
+    case WITH_CLEANUP_EXPR:
+      {
+	struct jcf_block *label;
+	generate_bytecode_insns (TREE_OPERAND (exp, 0), IGNORE_TARGET, state);
+	label = gen_jcf_label (state);
+	label->pc = PENDING_CLEANUP_PC;
+	label->next = state->labeled_blocks;
+	state->labeled_blocks = label;
+	state->num_finalizers++;
+	label->u.labeled_block = TREE_OPERAND (exp, 2);
+	label->v.start_label = get_jcf_label_here (state);
+	if (target != IGNORE_TARGET)
+	  abort ();
+      }
+      break;
+
     case TRY_EXPR:
       {
 	tree try_clause = TREE_OPERAND (exp, 0);
@@ -2259,7 +2399,7 @@ perform_relocations (state)
   shrink = 0;
   for (block = state->blocks;  block != NULL;  block = block->next)
     {
-      int block_size = block->chunk->size;
+      int block_size = block->v.chunk->size;
 
       block->pc = pc;
 
@@ -2273,7 +2413,7 @@ perform_relocations (state)
 	{
 	  reloc = reloc->next;
 	  block->u.relocations = reloc;
-	  block->chunk->size -= 3;
+	  block->v.chunk->size -= 3;
 	  block_size -= 3;
 	  shrink += 3;
 	}
@@ -2309,15 +2449,13 @@ perform_relocations (state)
 
   for (block = state->blocks;  block != NULL;  block = block->next)
     {
-      struct chunk *chunk = block->chunk;
+      struct chunk *chunk = block->v.chunk;
       int old_size = chunk->size;
       int next_pc = block->next == NULL ? pc : block->next->pc;
       int new_size = next_pc - block->pc;
-      int offset = 0;
       unsigned char *new_ptr;
       unsigned char *old_buffer = chunk->data;
       unsigned char *old_ptr = old_buffer + old_size;
-      int new_end = new_size;
       if (new_size != old_size)
 	{
 	  chunk->data = (unsigned char *)
@@ -2440,6 +2578,8 @@ init_jcf_method (state, method)
   state->handlers = NULL;
   state->last_handler = NULL;
   state->num_handlers = 0;
+  state->num_finalizers = 0;
+  state->return_value_decl = NULL_TREE;
 }
 
 void
@@ -2585,6 +2725,8 @@ generate_classfile (clas, state)
 	    }
 	  for (t = DECL_ARGUMENTS (part);  t != NULL_TREE;  t = TREE_CHAIN (t))
 	    localvar_free (t, state);
+	  if (state->return_value_decl != NULL_TREE)
+	    localvar_free (state->return_value_decl, state);
 	  finish_jcf_block (state);
 	  perform_relocations (state);
 
