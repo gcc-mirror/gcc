@@ -1,4 +1,5 @@
-// { dg-do run }
+// HP-UX libunwind.so doesn't provide _Unwind_ForcedUnwind.
+// { dg-do run { xfail "ia64-hp-hpux11.*" } }
 
 // Test that forced unwinding calls std::unexpected going 
 // throw a nothrow function.
