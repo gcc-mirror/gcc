@@ -1,4 +1,5 @@
-/* { dg-do run } */
+/* HP-UX libunwind.so doesn't provide _UA_END_OF_STACK */
+/* { dg-do run { xfail "ia64-hp-hpux11.*" } } */
 /* { dg-options "-fexceptions" } */
 /* Verify that cleanups work with exception handling.  */
 

@@ -1,3 +1,8 @@
+2005-03-10  Steve Ellcey  <sje@cup.hp.com>
+
+	PR target/20095
+	* gcc.dg/cleanup-5.c: xfail for ia64-hp-hpux11.*
+
 2005-03-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* objc.dg/stabs-1.m (dg-final): Change regexp pattern for hppa SOM.
