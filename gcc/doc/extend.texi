@@ -3724,8 +3724,8 @@ if your instruction does have a side effect on a variable that otherwise
 appears not to change, the old value of the variable may be reused later
 if it happens to be found in a register.
 
-You can prevent an @code{asm} instruction from being deleted, moved
-significantly, or combined, by writing the keyword @code{volatile} after
+You can prevent an @code{asm} instruction from being deleted
+by writing the keyword @code{volatile} after
 the @code{asm}.  For example:
 
 @smallexample
@@ -3737,40 +3737,42 @@ the @code{asm}.  For example:
 @end smallexample
 
 @noindent
-If you write an @code{asm} instruction with no outputs, GCC will know
-the instruction has side-effects and will not delete the instruction or
-move it outside of loops.
-
 The @code{volatile} keyword indicates that the instruction has
 important side-effects.  GCC will not delete a volatile @code{asm} if
 it is reachable.  (The instruction can still be deleted if GCC can
 prove that control-flow will never reach the location of the
-instruction.)  In addition, GCC will not reschedule instructions
-across a volatile @code{asm} instruction.  For example:
+instruction.)  Note that even a volatile @code{asm} instruction 
+can be moved relative to other code, including across jump
+instructions.  For example, on many targets there is a system 
+register which can be set to control the rounding mode of 
+floating point operations.  You might try
+setting it with a volatile @code{asm}, like this PowerPC example:
 
 @smallexample
-*(volatile int *)addr = foo;
-asm volatile ("eieio" : : );
+       asm volatile("mtfsf 255,%0" : : "f" (fpenv));
+       sum = x + y;
 @end smallexample
 
 @noindent
-Assume @code{addr} contains the address of a memory mapped device
-register.  The PowerPC @code{eieio} instruction (Enforce In-order
-Execution of I/O) tells the CPU to make sure that the store to that
-device register happens before it issues any other I/O@.
+This will not work reliably, as the compiler may move the addition back
+before the volatile @code{asm}.  To make it work you need to add an
+artificial dependency to the @code{asm} referencing a variable in the code
+you don't want moved, for example:
 
-Note that even a volatile @code{asm} instruction can be moved in ways
-that appear insignificant to the compiler, such as across jump
-instructions.  You can't expect a sequence of volatile @code{asm}
-instructions to remain perfectly consecutive.  If you want consecutive
-output, use a single @code{asm}.  Also, GCC will perform some
-optimizations across a volatile @code{asm} instruction; GCC does not
-``forget everything'' when it encounters a volatile @code{asm}
-instruction the way some other compilers do.
+@smallexample
+    asm volatile ("mtfsf 255,%1" : "=X"(sum): "f"(fpenv));
+    sum = x + y;
+@end smallexample
 
-An @code{asm} instruction without any operands or clobbers (an ``old
-style'' @code{asm}) will be treated identically to a volatile
-@code{asm} instruction.
+Similarly, you can't expect a
+sequence of volatile @code{asm} instructions to remain perfectly
+consecutive.  If you want consecutive output, use a single @code{asm}.
+Also, GCC will perform some optimizations across a volatile @code{asm}
+instruction; GCC does not ``forget everything'' when it encounters
+a volatile @code{asm} instruction the way some other compilers do.
+
+An @code{asm} instruction without any output operands will be treated
+identically to a volatile @code{asm} instruction.
 
 It is a natural idea to look for a way to give access to the condition
 code left by the assembler instruction.  However, when we attempted to
