@@ -44,12 +44,33 @@ class Sleeper extends Thread
 
 class Looper extends Thread
 {
+  // Return the number of Thread.yield()s we can do in 500ms.
+  static long calibrate ()
+  {
+    long i = 1;
+
+    for (int tries = 0; tries < 40; tries++)
+      {
+	long t = System.currentTimeMillis();
+	for (long n = 0; n < i; n++)
+	  Thread.yield();
+	long t_prime = System.currentTimeMillis();
+	if (t_prime - t > 500)
+	  return i;
+	i *= 2;
+      }
+    // We have no system clock.  Give up.
+    throw new RuntimeException ("We have no system clock.");
+  }
+
+  static long yields = calibrate ();
+
   public void run()
   {
     System.out.println ("Busy waiting");
 
     int count = 0;
-    for (int i=0; i < 1000000; i++)
+    for (long i=0; i < yields; i++)
       {
         Thread.yield();
 	count += 5;
