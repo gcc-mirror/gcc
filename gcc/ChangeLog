@@ -1,3 +1,11 @@
+2004-07-14  Per Bothner  <per@bothner.com>
+
+	* input.h:  If USE_MAPPED_LOCATION, define separate expanded_location
+	structure with extra column field.
+	* tree.c (expand_location):  Also fill in column field.
+	* gengtype-lex.l:  Ignore expanded_location typedef, sinze gengtype
+	gets confused by the two conditionally-compiled definitions.
+
 2004-07-14  Eric Christopher  <echristo@redhat.com>
 
 	* calls.c (expand_call): Fix typo in comment.
