@@ -1,5 +1,5 @@
 /* Definitions for Intel 386 running Linux with ELF format
-   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu.
 
@@ -157,15 +157,19 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_SPEC "%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{m486:-D__i486__} %{posix:-D_POSIX_SOURCE}"
 #endif
 
+/* This is for -profile to use -lc_p instead of -lc. */
+#undef  CC1_SPEC
+#define CC1_SPEC "%{profile:-p}"
+
 #undef	LIB_SPEC
 #if 1
 /* We no longer link with libc_p.a or libg.a by default. If you
  * want to profile or debug the Linux C library, please add
- * -lc_p or -ggdb to LDFLAGS at the link time, respectively.
+ * -profile or -ggdb to LDFLAGS at the link time, respectively.
  */
 #define LIB_SPEC \
-  "%{!shared: %{mieee-fp:-lieee} %{p:-lgmon} %{pg:-lgmon} \
-     %{!ggdb:-lc} %{ggdb:-lg}}"
+  "%{!shared: %{p:-lgmon} %{pg:-lgmon} %{profile:-lgmon -lc_p} \
+     %{!profile:%{!ggdb:-lc} %{ggdb:-lg}}}"
 #else
 #define LIB_SPEC \
   "%{!shared: \
