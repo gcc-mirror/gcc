@@ -1,3 +1,20 @@
+2004-11-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (scan_record_type): Handle vector types.
+	(function_arg_slotno): Handle vector types specially.
+	(function_arg_record_value_1): Split fields with vector type and
+	BLKmode into their subparts.
+	(function_arg_record_value_2): Likewise.  Be prepared to handle
+	more than 2 registers per field.
+	(function_arg_union_value): Increment regno inside the loop.
+	(function_arg_vector_value): New function.
+	(function_arg): Use it to split fields with vector type and
+	BLKmode into their subparts and build a PARALLEL.  Treat
+	other vector types like floats.
+	(function_value): Likewise.
+	(sparc_pass_by_reference): Handle vector types.
+	(sparc_return_in_memory): Likewise.
+
 2004-11-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c (find_taken_edge_cond_expr): Remove an "if"
