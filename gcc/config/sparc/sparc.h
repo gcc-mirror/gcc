@@ -747,8 +747,10 @@ extern int leaf_function;
 /* Sparc ABI says that quad-precision floats and all structures are returned
    in memory.
    For v9, all aggregates are returned in memory.  */
-#define RETURN_IN_MEMORY(TYPE) \
-  (TYPE_MODE (TYPE) == BLKmode || (! TARGET_V9 && TYPE_MODE (TYPE) == TFmode))
+#define RETURN_IN_MEMORY(TYPE)				\
+  (TYPE_MODE (TYPE) == BLKmode				\
+   || (! TARGET_V9 && (TYPE_MODE (TYPE) == TFmode	\
+		       || TYPE_MODE (TYPE) == TCmode)))
 
 /* Functions which return large structures get the address
    to place the wanted value at offset 64 from the frame.
