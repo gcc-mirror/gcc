@@ -1,3 +1,12 @@
+2002-05-24  Andreas Jaeger  <aj@suse.de>
+
+	* ggc-page.c (alloc_page): Cast variables of type size_t to
+	unsigned long, adjust printf format string.
+	(ggc_alloc): Likewise.
+	(ggc_print_statistics): Likewise.
+	(ggc_print_statistics): Correct printf format string for SCALE to
+	use unsigned long.
+
 2002-05-24  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/mingw32.h (CPP_SPEC): Remove -remap.
@@ -8,14 +17,14 @@
 	* config/i386/mingw32.h (OUTPUT_QUOTED_STRING): Properly output
 	quoted strings.
 	* dwarf2out.c (lookup_filename): Properly quote filename in .file
-	directive in assembly file. 
+	directive in assembly file.
 	* config/m68k/dpx2.h (ASM_OUTPUT_SOURCE_FILENAME): Likewise.
 	* config/m88k/m88k.h (ASM_OUTPUT_SOURCE_FILENAME): Likewise.
 	* config/pj/pj.h (ASM_FILE_START): Likewise.
 	* config/rs6000/xcoff.h (ASM_FILE_START): Likewise.
 	* config/avr/avr.c (asm_file_end): Likewise.
 	* toplev.c (output_quoted_string): Handle possibly signed plain
-	char. 
+	char.
 	* toplev.h (output_clean_symbol_name): Declare
 	* toplev.c (output_clean_symbol_name): Define.
 	* config/alpha/alpha.c (unicosmk_output_module_name): Use it.
@@ -289,7 +298,7 @@ Thu May 23 19:43:41 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* config/i386/i386.c, config/i386/i386.h: Tidy comments and whitespace.
 	(ix86_arch): Set type to enum processor_type.
 
-	* config/i386/i386.md (movsi_1, movdi_1_rex64): Use 
+	* config/i386/i386.md (movsi_1, movdi_1_rex64): Use
 	LEGITIMATE_PIC_OPERAND_P not SYMBOLIC_CONST.
 
 2002-05-23  Jakub Jelinek  <jakub@redhat.com>
@@ -500,7 +509,7 @@ objc:
 
 2002-05-21  Jeffrey A Law  <law@redhat.com>
 
- 	* optabs.c (expand_binop): For double-word integer multiplies,
+	* optabs.c (expand_binop): For double-word integer multiplies,
 	do not compute intermediate results into something that is
 	not a register (such as a SUBREG or MEM).
 
