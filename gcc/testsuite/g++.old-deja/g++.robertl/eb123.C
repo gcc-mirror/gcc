@@ -1,4 +1,4 @@
-// Special g++ OPtions: -O2 -W   
+// Special g++ Options: -O2 -W   
 // Build don't link: 
 #include "stdio.h"
 
