@@ -1,3 +1,8 @@
+2004-09-26  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/17112
+	* gcc.dg/pr17112-1.c: New test case.
+
 2004-09-26  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/11459

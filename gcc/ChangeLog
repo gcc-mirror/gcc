@@ -1,4 +1,13 @@
 2004-09-26  Roger Sayle  <roger@eyesopen.com>
+	    Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR middle-end/17112
+	* stor-layout.c (compute_record_mode): For records with a single
+	field, only use the field's mode if its size matches what we'd
+	have choosen for the record ourselves.  This forces the use of
+	BLKmode for packed records that don't completely fill a mode.
+
+2004-09-26  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/17151
 	* combine.c (force_to_mode): Remove dubious early return test that
