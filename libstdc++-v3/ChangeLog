@@ -1,3 +1,25 @@
+2002-06-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/Makefile.am: Add rules.
+	* include/Makefile.in: Regenerate.
+
+	* acinclude.m4: Define GLIBCPP_C_HEADERS_COMPATIBILITY.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* configure.target (c_model, c_compatibility): Add.
+	
+	* libsupc++/Makefile.am (c_sources): New.
+	(libsupc___la_SOURCES): Add c_sources.
+	(LTCOMPILE): Remove INCLUDES.
+	(GCC_INCLUDES): New.
+	(C_COMPILE): New, like COMPILE but without INCLUDES.
+	(cxa_demangle.o): Use C_COMPILE.
+	(dyn-string.o): Use C_COMPILE.	
+	
+	* include/c/std_cstdarg.h: Define __need___va_list.  
+	* include/c/std_cstddef.h: Define need_size_t, need_ptrdiff_t,
+	need_NULL, need_offsetof.
+
 2002-06-19  Steve Ellcey  <sje@cup.hp.com>
 
 	* configure.in (HAVE_FINITE*, HAVE_ISINF*, HAVE_ISNAN*):  Remove

@@ -1703,23 +1703,20 @@ changequote([, ])
   dnl Option parsed, now set things appropriately
   case "$enable_cheaders" in
     c_shadow) 
-        CSHADOW_FLAGS="-fno-builtin"
         C_INCLUDE_DIR='${glibcpp_srcdir}/include/c_shadow'
         ;;
     c_std)   
-        CSHADOW_FLAGS=""
         C_INCLUDE_DIR='${glibcpp_srcdir}/include/c_std'
         ;;
     c)   
-        CSHADOW_FLAGS=""
         C_INCLUDE_DIR='${glibcpp_srcdir}/include/c'
         ;;
   esac
 
-  AC_SUBST(CSHADOW_FLAGS)
   AC_SUBST(C_INCLUDE_DIR)
   AM_CONDITIONAL(GLIBCPP_C_HEADERS_C, test "$enable_cheaders" = c)
   AM_CONDITIONAL(GLIBCPP_C_HEADERS_C_STD, test "$enable_cheaders" = c_std)
+  AM_CONDITIONAL(GLIBCPP_C_HEADERS_COMPATIBILITY, test "$c_compatibility" = yes)
 ])
 
 

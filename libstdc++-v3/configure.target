@@ -26,6 +26,10 @@
 #
 #   os_include_dir         OS-specific directory, defaults to os/generic.
 #
+#   c_model                the model to use for "C" headers, defaults to c_std.
+#
+#   c_compatibility        if "C" compatibility headers are necessary, 
+#                              defaults to no.
 #
 # It possibly modifies the following variables:
 #
@@ -40,6 +44,7 @@
 # *_include_dir variables.
 
 
+# DEFAULTS
 # Try to guess a default cpu_include_dir based on the name of the CPU.  We
 # cannot do this for os_include_dir; there are too many portable operating
 # systems out there.  :-)
@@ -49,10 +54,14 @@ else
     cpu_include_dir="cpu/generic"
 fi
 
+c_model=c_std
+c_compatibility=no
 
+
+# TARGET-SPECIFIC OVERRIDES 
+# Set any CPU-dependent bits.
 # Here we override defaults and catch more general cases due to naming
-# conventions (e.g., chip_name* to catch all variants).  Also set any
-# CPU-dependent compiler flags.
+# conventions (e.g., chip_name* to catch all variants).  
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${target_cpu}" in
   alpha*)
@@ -113,9 +122,11 @@ fi
 unset _cpu_incdir_fullpath
 
 
-# Set the os_include_dir.  If atomic ops and/or numeric limits are OS-specific
-# rather than CPU-specifc, set those here too.  Also set any OS-dependent
-# compiler flags.
+# Set any OS-dependent bits.
+# Set the os_include_dir.  
+# Set c_model, c_compatibility here.
+# If atomic ops and/or numeric limits are OS-specific rather than
+# CPU-specifc, set those here too.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${target_os}" in
   aix4.[3456789]* | aix[56789]*)
@@ -177,6 +188,7 @@ case "${target_os}" in
     ;;
   qnx6.[12]*)
     os_include_dir="os/qnx/qnx6.1"
+    c_model=c
     ;;
   *)
     os_include_dir="os/generic"
@@ -184,7 +196,7 @@ case "${target_os}" in
 esac
 
 
-# Set any flags dependent on the full target triplet.
+# Set any OS-dependent and CPU-dependent bits.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${target}" in
   alpha*-*-*osf5*)
