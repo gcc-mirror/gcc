@@ -1023,43 +1023,9 @@
 	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "d")
 			  (match_operand:SI 2 "register_operand" "d"))
 		 (match_dup 0)))
-   (clobber (match_scratch:SI 3 "+h"))]
+   (clobber (match_scratch:SI 3 "=h"))]
   "TARGET_MAD"
   "mad\\t%1,%2"
-  [(set_attr "type"	"imul")
-   (set_attr "mode"	"SI")
-   (set_attr "length"   "1")])
-
-(define_insn "madsi_highpart"
-  [(set (match_operand:SI 0 "register_operand" "+h")
-	(plus:SI (truncate:SI
-		  (lshiftrt:DI
-		   (mult:DI (sign_extend:DI
-			     (match_operand:SI 1 "register_operand" "d"))
-			    (sign_extend:DI
-			     (match_operand:SI 2 "register_operand" "d")))
-		   (const_int 32)))
-		 (match_dup 0)))
-   (clobber (match_scratch:SI 3 "+l"))]
-  "TARGET_MAD"
-  "mad\\t%1,%2"
-  [(set_attr "type"	"imul")
-   (set_attr "mode"	"SI")
-   (set_attr "length"   "1")])
-
-(define_insn "umadsi_highpart"
-  [(set (match_operand:SI 0 "register_operand" "+h")
-	(plus:SI (truncate:SI
-		  (lshiftrt:DI
-		   (mult:DI (zero_extend:DI
-			     (match_operand:SI 1 "register_operand" "d"))
-			    (zero_extend:DI
-			     (match_operand:SI 2 "register_operand" "d")))
-		   (const_int 32)))
-		 (match_dup 0)))
-   (clobber (match_scratch:SI 3 "+l"))]
-  "TARGET_MAD"
-  "madu\\t%1,%2"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")
    (set_attr "length"   "1")])
