@@ -124,20 +124,61 @@ make_thunk (tree function, bool this_adjusting,
      thunks VIRTUAL_OFFSET will be an INTEGER_CST, for covariant thunks it
      will be a BINFO.  */
   for (thunk = DECL_THUNKS (function); thunk; thunk = TREE_CHAIN (thunk))
-    if (DECL_THIS_THUNK_P (thunk) == this_adjusting
- 	&& THUNK_FIXED_OFFSET (thunk) == d
- 	&& (this_adjusting
- 	    ? (!THUNK_VIRTUAL_OFFSET (thunk) == !virtual_offset
- 	       && (!virtual_offset
- 		   || tree_int_cst_equal (THUNK_VIRTUAL_OFFSET (thunk), 
- 					  virtual_offset)))
- 	    : THUNK_VIRTUAL_OFFSET (thunk) == virtual_offset))
-      return thunk;
+    {
+      if (DECL_THIS_THUNK_P (thunk) != this_adjusting
+	  || THUNK_FIXED_OFFSET (thunk) != d)
+	/*not me*/;
+      else if (this_adjusting)
+	{
+	  if (!virtual_offset)
+	    {
+	      /* We want a non-virtual covariant thunk.  */
+	      if (!THUNK_VIRTUAL_OFFSET (thunk))
+		return thunk;
+	    }
+	  else if (THUNK_VIRTUAL_OFFSET (thunk))
+	    {
+	      if (tree_int_cst_equal (THUNK_VIRTUAL_OFFSET (thunk),
+				      virtual_offset))
+		return thunk;
+	    }
+	}
+      else
+	{
+	  if (!virtual_offset)
+	    {
+	      /* We want a non-virtual covariant thunk.  */
+	      if (!THUNK_VIRTUAL_OFFSET (thunk))
+		return thunk;
+	    }
+	  else if (!THUNK_VIRTUAL_OFFSET (thunk))
+	    /*not me*/;
+	  else if (THUNK_ALIAS_P (thunk))
+	    {
+	      /* We have already determined the thunks for FUNCTION,
+	         and there is a virtual covariant thunk alias.  We
+	         must compare the vbase offsets of the binfo we have
+	         been given, and the binfo of the thunk.  */
+	      tree binfo = THUNK_VIRTUAL_OFFSET (THUNK_ALIAS (thunk));
+	      
+	      if (tree_int_cst_equal (BINFO_VPTR_FIELD (virtual_offset),
+				      BINFO_VPTR_FIELD (binfo)))
+		return THUNK_ALIAS (thunk);
+	    }
+	  else if (THUNK_VIRTUAL_OFFSET (thunk) == virtual_offset)
+	    return thunk;
+	}
+    }
   
   /* All thunks must be created before FUNCTION is actually emitted;
      the ABI requires that all thunks be emitted together with the
      function to which they transfer control.  */
   my_friendly_assert (!TREE_ASM_WRITTEN (function), 20021025);
+  /* Likewise, we can only be adding thunks to a function declared in
+     the class currently being laid out.  */
+  my_friendly_assert (TYPE_SIZE (DECL_CONTEXT (function))
+		      && TYPE_BEING_DEFINED (DECL_CONTEXT (function)),
+		      20031211);
 
   thunk = build_decl (FUNCTION_DECL, NULL_TREE, TREE_TYPE (function));
   DECL_LANG_SPECIFIC (thunk) = DECL_LANG_SPECIFIC (function);
