@@ -26,30 +26,30 @@ struct cfg_hooks
 {
   /* Debugging.  Do not use macros to hook these so they can be called from
      debugger!  */
-  int (*cfgh_verify_flow_info)	        PARAMS ((void));
-  void (*dump_bb)			PARAMS ((basic_block, FILE *));
+  int (*cfgh_verify_flow_info) (void);
+  void (*dump_bb) (basic_block, FILE *);
 
   /* Basic CFG manipulation.  */
 
   /* Redirect edge E to the given basic block B and update underlying program
      representation.  Returns false when edge is not easilly redirectable for
      whatever reason.  */
-  bool (*redirect_edge_and_branch)      PARAMS ((edge e, basic_block b));
+  bool (*redirect_edge_and_branch) (edge e, basic_block b);
 
   /* Same as the above but allows redirecting of fallthru edges.  In that case
      newly created forwarder basic block is returned.  It aborts when called
      on abnormal edge.  */
-  basic_block (*redirect_edge_and_branch_force)PARAMS ((edge, basic_block));
+  basic_block (*redirect_edge_and_branch_force) (edge, basic_block);
 
   /* Remove given basic block and all edges possibly pointing into it.  */
-  void (*delete_block)PARAMS ((basic_block));
+  void (*delete_block) (basic_block);
 
   /* Split basic block B after specified instruction I.  */
-  edge (*split_block)			PARAMS ((basic_block b, void * i));
+  edge (*split_block) (basic_block b, void * i);
 
   /* Higher level functions representable by primitive operations above if
      we didn't have some oddities in RTL and Tree representations.  */
-  basic_block (*cfgh_split_edge)        PARAMS ((edge));
+  basic_block (*cfgh_split_edge) (edge);
 };
 
 #define redirect_edge_and_branch(e,b)        cfg_hooks->redirect_edge_and_branch (e,b)
@@ -65,7 +65,7 @@ extern struct cfg_hooks rtl_cfg_hooks;
 extern struct cfg_hooks *cfg_hooks;
 
 /* Declarations.  */
-extern void rtl_register_cfg_hooks     PARAMS ((void));
-extern void cfg_layout_rtl_register_cfg_hooks PARAMS ((void));
+extern void rtl_register_cfg_hooks (void);
+extern void cfg_layout_rtl_register_cfg_hooks (void);
 
 #endif  /* GCC_CFGHOOKS_H */

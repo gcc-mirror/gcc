@@ -1,5 +1,5 @@
 /* Natural loop analysis code for GNU compiler.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,33 +30,27 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "output.h"
 
 struct unmark_altered_insn_data;
-static void unmark_altered	 PARAMS ((rtx, rtx, regset));
-static void blocks_invariant_registers PARAMS ((basic_block *, int, regset));
-static void unmark_altered_insn	 PARAMS ((rtx, rtx, struct unmark_altered_insn_data *));
-static void blocks_single_set_registers PARAMS ((basic_block *, int, rtx *));
-static int invariant_rtx_wrto_regs_p_helper PARAMS ((rtx *, regset));
-static bool invariant_rtx_wrto_regs_p PARAMS ((rtx, regset));
-static rtx test_for_iteration PARAMS ((struct loop_desc *desc,
-				       unsigned HOST_WIDE_INT));
-static bool constant_iterations PARAMS ((struct loop_desc *,
-					 unsigned HOST_WIDE_INT *,
-					 bool *));
-static bool simple_loop_exit_p PARAMS ((struct loops *, struct loop *,
-					edge, regset, rtx *,
-					struct loop_desc *));
-static rtx variable_initial_value PARAMS ((rtx, regset, rtx, rtx *));
-static rtx variable_initial_values PARAMS ((edge, rtx));
-static bool simple_condition_p PARAMS ((struct loop *, rtx,
-					regset, struct loop_desc *));
-static basic_block simple_increment PARAMS ((struct loops *, struct loop *,
-					     rtx *, struct loop_desc *));
+static void unmark_altered (rtx, rtx, regset);
+static void blocks_invariant_registers (basic_block *, int, regset);
+static void unmark_altered_insn (rtx, rtx, struct unmark_altered_insn_data *);
+static void blocks_single_set_registers (basic_block *, int, rtx *);
+static int invariant_rtx_wrto_regs_p_helper (rtx *, regset);
+static bool invariant_rtx_wrto_regs_p (rtx, regset);
+static rtx test_for_iteration (struct loop_desc *desc, unsigned HOST_WIDE_INT);
+static bool constant_iterations (struct loop_desc *, unsigned HOST_WIDE_INT *,
+				 bool *);
+static bool simple_loop_exit_p (struct loops *, struct loop *, edge, regset,
+				rtx *, struct loop_desc *);
+static rtx variable_initial_value (rtx, regset, rtx, rtx *);
+static rtx variable_initial_values (edge, rtx);
+static bool simple_condition_p (struct loop *, rtx, regset,
+				struct loop_desc *);
+static basic_block simple_increment (struct loops *, struct loop *, rtx *,
+				     struct loop_desc *);
 
 /* Checks whether BB is executed exactly once in each LOOP iteration.  */
 bool
-just_once_each_iteration_p (loops, loop, bb)
-     struct loops *loops;
-     struct loop *loop;
-     basic_block bb;
+just_once_each_iteration_p (struct loops *loops, struct loop *loop, basic_block bb)
 {
   /* It must be executed at least once each iteration.  */
   if (!dominated_by_p (loops->cfg.dom, loop->latch, bb))
@@ -76,10 +70,7 @@ just_once_each_iteration_p (loops, loop, bb)
 
 /* Unmarks modified registers; helper to blocks_invariant_registers.  */
 static void
-unmark_altered (what, by, regs)
-     rtx what;
-     rtx by ATTRIBUTE_UNUSED;
-     regset regs;
+unmark_altered (rtx what, rtx by ATTRIBUTE_UNUSED, regset regs)
 {
   if (GET_CODE (what) == SUBREG)
     what = SUBREG_REG (what);
@@ -90,10 +81,7 @@ unmark_altered (what, by, regs)
 
 /* Marks registers that are invariant inside blocks BBS.  */
 static void
-blocks_invariant_registers (bbs, nbbs, regs)
-     basic_block *bbs;
-     int nbbs;
-     regset regs;
+blocks_invariant_registers (basic_block *bbs, int nbbs, regset regs)
 {
   rtx insn;
   int i;
@@ -118,10 +106,8 @@ struct unmark_altered_insn_data
 };
 
 static void
-unmark_altered_insn (what, by, data)
-     rtx what;
-     rtx by ATTRIBUTE_UNUSED;
-     struct unmark_altered_insn_data *data;
+unmark_altered_insn (rtx what, rtx by ATTRIBUTE_UNUSED,
+		     struct unmark_altered_insn_data *data)
 {
   int rn;
 
@@ -138,10 +124,7 @@ unmark_altered_insn (what, by, data)
 /* Marks registers that have just single simple set in BBS; the relevant
    insn is returned in REGS.  */
 static void
-blocks_single_set_registers (bbs, nbbs, regs)
-     basic_block *bbs;
-     int nbbs;
-     rtx *regs;
+blocks_single_set_registers (basic_block *bbs, int nbbs, rtx *regs)
 {
   rtx insn;
   int i;
@@ -180,9 +163,7 @@ blocks_single_set_registers (bbs, nbbs, regs)
 
 /* Helper for invariant_rtx_wrto_regs_p.  */
 static int
-invariant_rtx_wrto_regs_p_helper (expr, invariant_regs)
-     rtx *expr;
-     regset invariant_regs;
+invariant_rtx_wrto_regs_p_helper (rtx *expr, regset invariant_regs)
 {
   switch (GET_CODE (*expr))
     {
@@ -216,9 +197,7 @@ invariant_rtx_wrto_regs_p_helper (expr, invariant_regs)
 
 /* Checks that EXPR is invariant provided that INVARIANT_REGS are invariant.  */
 static bool
-invariant_rtx_wrto_regs_p (expr, invariant_regs)
-     rtx expr;
-     regset invariant_regs;
+invariant_rtx_wrto_regs_p (rtx expr, regset invariant_regs)
 {
   return !for_each_rtx (&expr, (rtx_function) invariant_rtx_wrto_regs_p_helper,
 			invariant_regs);
@@ -228,11 +207,8 @@ invariant_rtx_wrto_regs_p (expr, invariant_regs)
    is register and the other one is invariant in the LOOP. Fills var, lim
    and cond fields in DESC.  */
 static bool
-simple_condition_p (loop, condition, invariant_regs, desc)
-     struct loop *loop ATTRIBUTE_UNUSED;
-     rtx condition;
-     regset invariant_regs;
-     struct loop_desc *desc;
+simple_condition_p (struct loop *loop ATTRIBUTE_UNUSED, rtx condition,
+		    regset invariant_regs, struct loop_desc *desc)
 {
   rtx op0, op1;
 
@@ -262,7 +238,7 @@ simple_condition_p (loop, condition, invariant_regs, desc)
   /* One of operands must be a simple register.  */
   op0 = XEXP (condition, 0);
   op1 = XEXP (condition, 1);
-  
+
   /* One of operands must be invariant.  */
   if (invariant_rtx_wrto_regs_p (op0, invariant_regs))
     {
@@ -296,11 +272,8 @@ simple_condition_p (loop, condition, invariant_regs, desc)
    iteration.  Fills in DESC->stride and returns block in that DESC->var is
    modified.  */
 static basic_block
-simple_increment (loops, loop, simple_increment_regs, desc)
-     struct loops *loops;
-     struct loop *loop;
-     rtx *simple_increment_regs;
-     struct loop_desc *desc;
+simple_increment (struct loops *loops, struct loop *loop,
+		  rtx *simple_increment_regs, struct loop_desc *desc)
 {
   rtx mod_insn, set, set_src, set_add;
   basic_block mod_bb;
@@ -344,11 +317,7 @@ simple_increment (loops, loop, simple_increment_regs, desc)
    wrto INVARIANT_REGS.  If SET_INSN is not NULL, insn in that var is set is
    placed here.  */
 static rtx
-variable_initial_value (insn, invariant_regs, var, set_insn)
-     rtx insn;
-     regset invariant_regs;
-     rtx var;
-     rtx *set_insn;
+variable_initial_value (rtx insn, regset invariant_regs, rtx var, rtx *set_insn)
 {
   basic_block bb;
   rtx set;
@@ -373,7 +342,7 @@ variable_initial_value (insn, invariant_regs, var, set_insn)
 	  rtx set_dest;
 	  rtx val;
 	  rtx note;
-          
+
 	  set = single_set (insn);
 	  if (!set)
 	    return NULL;
@@ -407,9 +376,7 @@ variable_initial_value (insn, invariant_regs, var, set_insn)
 
 /* Returns list of definitions of initial value of VAR at Edge.  */
 static rtx
-variable_initial_values (e, var)
-     edge e;
-     rtx var;
+variable_initial_values (edge e, rtx var)
 {
   rtx set_insn, list;
   regset invariant_regs;
@@ -437,10 +404,8 @@ variable_initial_values (e, var)
 /* Counts constant number of iterations of the loop described by DESC;
    returns false if impossible.  */
 static bool
-constant_iterations (desc, niter, may_be_zero)
-     struct loop_desc *desc;
-     unsigned HOST_WIDE_INT *niter;
-     bool *may_be_zero;
+constant_iterations (struct loop_desc *desc, unsigned HOST_WIDE_INT *niter,
+		     bool *may_be_zero)
 {
   rtx test, expr;
   rtx ainit, alim;
@@ -485,21 +450,18 @@ constant_iterations (desc, niter, may_be_zero)
 
 /* Return RTX expression representing number of iterations of loop as bounded
    by test described by DESC (in the case loop really has multiple exit
-   edges, fewer iterations may happen in the practice).  
+   edges, fewer iterations may happen in the practice).
 
    Return NULL if it is unknown.  Additionally the value may be invalid for
    paradoxical loop (lets define paradoxical loops as loops whose test is
    failing at -1th iteration, for instance "for (i=5;i<1;i++);").
-   
+
    These cases needs to be either cared by copying the loop test in the front
    of loop or keeping the test in first iteration of loop.
-   
+
    When INIT/LIM are set, they are used instead of var/lim of DESC.  */
 rtx
-count_loop_iterations (desc, init, lim)
-     struct loop_desc *desc;
-     rtx init;
-     rtx lim;
+count_loop_iterations (struct loop_desc *desc, rtx init, rtx lim)
 {
   enum rtx_code cond = desc->cond;
   rtx stride = desc->stride;
@@ -618,9 +580,7 @@ count_loop_iterations (desc, init, lim)
    described of DESC at given iteration of loop.  */
 
 static rtx
-test_for_iteration (desc, iter)
-     struct loop_desc *desc;
-     unsigned HOST_WIDE_INT iter;
+test_for_iteration (struct loop_desc *desc, unsigned HOST_WIDE_INT iter)
 {
   enum rtx_code cond = desc->cond;
   rtx exp = XEXP (desc->var_alts, 0);
@@ -661,13 +621,9 @@ test_for_iteration (desc, iter)
    description joined to it in in DESC.  INVARIANT_REGS and SINGLE_SET_REGS
    are results of blocks_{invariant,single_set}_regs over BODY.  */
 static bool
-simple_loop_exit_p (loops, loop, exit_edge, invariant_regs, single_set_regs, desc)
-     struct loops *loops;
-     struct loop *loop;
-     edge exit_edge;
-     struct loop_desc *desc;
-     regset invariant_regs;
-     rtx *single_set_regs;
+simple_loop_exit_p (struct loops *loops, struct loop *loop, edge exit_edge,
+		    regset invariant_regs, rtx *single_set_regs,
+		    struct loop_desc *desc)
 {
   basic_block mod_bb, exit_bb;
   int fallthru_out;
@@ -729,10 +685,7 @@ simple_loop_exit_p (loops, loop, exit_edge, invariant_regs, single_set_regs, des
 /* Tests whether LOOP is simple for loop.  Returns simple loop description
    in DESC.  */
 bool
-simple_loop_p (loops, loop, desc)
-     struct loops *loops;
-     struct loop *loop;
-     struct loop_desc *desc;
+simple_loop_p (struct loops *loops, struct loop *loop, struct loop_desc *desc)
 {
   unsigned i;
   basic_block *body;
@@ -743,7 +696,7 @@ simple_loop_p (loops, loop, desc)
   regset_head invariant_regs_head;
   rtx *single_set_regs;
   int n_branches;
-  
+
   body = get_loop_body (loop);
 
   invariant_regs = INITIALIZE_REG_SET (invariant_regs_head);
@@ -825,8 +778,7 @@ simple_loop_p (loops, loop, desc)
    each cycle, we want to mark blocks that belong directly to innermost
    loop containing the whole cycle.  */
 void
-mark_irreducible_loops (loops)
-     struct loops *loops;
+mark_irreducible_loops (struct loops *loops)
 {
   int *dfs_in, *closed, *mr, *mri, *n_edges, *stack;
   unsigned i;
@@ -1019,8 +971,7 @@ next:;
 
 /* Counts number of insns inside LOOP.  */
 int
-num_loop_insns (loop)
-     struct loop *loop;
+num_loop_insns (struct loop *loop)
 {
   basic_block *bbs, bb;
   unsigned i, ninsns = 0;
@@ -1036,14 +987,13 @@ num_loop_insns (loop)
 	  ninsns++;
     }
   free(bbs);
-  
+
   return ninsns;
 }
 
 /* Counts number of insns executed on average per iteration LOOP.  */
 int
-average_num_loop_insns (loop)
-     struct loop *loop;
+average_num_loop_insns (struct loop *loop)
 {
   basic_block *bbs, bb;
   unsigned i, binsns, ninsns, ratio;
@@ -1066,7 +1016,7 @@ average_num_loop_insns (loop)
       ninsns += binsns * ratio;
     }
   free(bbs);
- 
+
   ninsns /= BB_FREQ_MAX;
   if (!ninsns)
     ninsns = 1; /* To avoid division by zero.  */
@@ -1078,8 +1028,7 @@ average_num_loop_insns (loop)
    Compute upper bound on number of iterations in case they do not fit integer
    to help loop peeling heuristics.  Use exact counts if at all possible.  */
 unsigned
-expected_loop_iterations (loop)
-     const struct loop *loop;
+expected_loop_iterations (const struct loop *loop)
 {
   edge e;
 

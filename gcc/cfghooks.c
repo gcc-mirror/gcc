@@ -34,15 +34,15 @@ extern struct cfg_hooks cfg_layout_rtl_cfg_hooks;
 struct cfg_hooks *cfg_hooks;
 
 /* Initialization of functions specific to the rtl IR.  */
-void 
-rtl_register_cfg_hooks ()
+void
+rtl_register_cfg_hooks (void)
 {
   cfg_hooks = &rtl_cfg_hooks;
 }
 
 /* Initialization of functions specific to the rtl IR.  */
-void 
-cfg_layout_rtl_register_cfg_hooks ()
+void
+cfg_layout_rtl_register_cfg_hooks (void)
 {
   cfg_hooks = &cfg_layout_rtl_cfg_hooks;
 }

@@ -1,6 +1,6 @@
 /* Control flow optimization code for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -67,36 +67,30 @@ enum bb_flags
 
 #define FORWARDER_BLOCK_P(BB) (BB_FLAGS (BB) & BB_FORWARDER_BLOCK)
 
-static bool try_crossjump_to_edge	PARAMS ((int, edge, edge));
-static bool try_crossjump_bb		PARAMS ((int, basic_block));
-static bool outgoing_edges_match	PARAMS ((int,
-						 basic_block, basic_block));
-static int flow_find_cross_jump		PARAMS ((int, basic_block, basic_block,
-						 rtx *, rtx *));
-static bool insns_match_p		PARAMS ((int, rtx, rtx));
+static bool try_crossjump_to_edge (int, edge, edge);
+static bool try_crossjump_bb (int, basic_block);
+static bool outgoing_edges_match (int, basic_block, basic_block);
+static int flow_find_cross_jump (int, basic_block, basic_block, rtx *, rtx *);
+static bool insns_match_p (int, rtx, rtx);
 
-static bool label_is_jump_target_p	PARAMS ((rtx, rtx));
-static bool tail_recursion_label_p	PARAMS ((rtx));
-static void merge_blocks_move_predecessor_nojumps PARAMS ((basic_block,
-							  basic_block));
-static void merge_blocks_move_successor_nojumps PARAMS ((basic_block,
-							basic_block));
-static basic_block merge_blocks		PARAMS ((edge,basic_block,basic_block,
-						 int));
-static bool try_optimize_cfg		PARAMS ((int));
-static bool try_simplify_condjump	PARAMS ((basic_block));
-static bool try_forward_edges		PARAMS ((int, basic_block));
-static edge thread_jump			PARAMS ((int, edge, basic_block));
-static bool mark_effect			PARAMS ((rtx, bitmap));
-static void notice_new_block		PARAMS ((basic_block));
-static void update_forwarder_flag	PARAMS ((basic_block));
-static int mentions_nonequal_regs	PARAMS ((rtx *, void *));
+static bool label_is_jump_target_p (rtx, rtx);
+static bool tail_recursion_label_p (rtx);
+static void merge_blocks_move_predecessor_nojumps (basic_block, basic_block);
+static void merge_blocks_move_successor_nojumps (basic_block, basic_block);
+static basic_block merge_blocks (edge,basic_block,basic_block, int);
+static bool try_optimize_cfg (int);
+static bool try_simplify_condjump (basic_block);
+static bool try_forward_edges (int, basic_block);
+static edge thread_jump (int, edge, basic_block);
+static bool mark_effect (rtx, bitmap);
+static void notice_new_block (basic_block);
+static void update_forwarder_flag (basic_block);
+static int mentions_nonequal_regs (rtx *, void *);
 
 /* Set flags for newly created block.  */
 
 static void
-notice_new_block (bb)
-     basic_block bb;
+notice_new_block (basic_block bb)
 {
   if (!bb)
     return;
@@ -108,8 +102,7 @@ notice_new_block (bb)
 /* Recompute forwarder flag after block has been modified.  */
 
 static void
-update_forwarder_flag (bb)
-     basic_block bb;
+update_forwarder_flag (basic_block bb)
 {
   if (forwarder_block_p (bb))
     BB_SET_FLAG (bb, BB_FORWARDER_BLOCK);
@@ -121,8 +114,7 @@ update_forwarder_flag (bb)
    Return true if something changed.  */
 
 static bool
-try_simplify_condjump (cbranch_block)
-     basic_block cbranch_block;
+try_simplify_condjump (basic_block cbranch_block)
 {
   basic_block jump_block, jump_dest_block, cbranch_dest_block;
   edge cbranch_jump_edge, cbranch_fallthru_edge;
@@ -190,9 +182,7 @@ try_simplify_condjump (cbranch_block)
    on register.  Used by jump threading.  */
 
 static bool
-mark_effect (exp, nonequal)
-     rtx exp;
-     regset nonequal;
+mark_effect (rtx exp, regset nonequal)
 {
   int regno;
   rtx dest;
@@ -241,9 +231,7 @@ mark_effect (exp, nonequal)
 /* Return nonzero if X is an register set in regset DATA.
    Called via for_each_rtx.  */
 static int
-mentions_nonequal_regs (x, data)
-     rtx *x;
-     void *data;
+mentions_nonequal_regs (rtx *x, void *data)
 {
   regset nonequal = (regset) data;
   if (REG_P (*x))
@@ -268,10 +256,7 @@ mentions_nonequal_regs (x, data)
    if exist, NULL otherwise.  */
 
 static edge
-thread_jump (mode, e, b)
-     int mode;
-     edge e;
-     basic_block b;
+thread_jump (int mode, edge e, basic_block b)
 {
   rtx set1, set2, cond1, cond2, insn;
   enum rtx_code code1, code2, reversed_code2;
@@ -413,9 +398,7 @@ failed_exit:
    Return true if successful.  */
 
 static bool
-try_forward_edges (mode, b)
-     basic_block b;
-     int mode;
+try_forward_edges (int mode, basic_block b)
 {
   bool changed = false;
   edge e, next, *threaded_edges = NULL;
@@ -648,8 +631,7 @@ try_forward_edges (mode, b)
    not apply to the fallthru case of a conditional jump.  */
 
 static bool
-label_is_jump_target_p (label, jump_insn)
-     rtx label, jump_insn;
+label_is_jump_target_p (rtx label, rtx jump_insn)
 {
   rtx tmp = JUMP_LABEL (jump_insn);
 
@@ -672,8 +654,7 @@ label_is_jump_target_p (label, jump_insn)
 /* Return true if LABEL is used for tail recursion.  */
 
 static bool
-tail_recursion_label_p (label)
-     rtx label;
+tail_recursion_label_p (rtx label)
 {
   rtx x;
 
@@ -689,8 +670,7 @@ tail_recursion_label_p (label)
    any jumps (aside from the jump from A to B).  */
 
 static void
-merge_blocks_move_predecessor_nojumps (a, b)
-     basic_block a, b;
+merge_blocks_move_predecessor_nojumps (basic_block a, basic_block b)
 {
   rtx barrier;
 
@@ -732,8 +712,7 @@ merge_blocks_move_predecessor_nojumps (a, b)
    any jumps (aside from the jump from A to B).  */
 
 static void
-merge_blocks_move_successor_nojumps (a, b)
-     basic_block a, b;
+merge_blocks_move_successor_nojumps (basic_block a, basic_block b)
 {
   rtx barrier, real_b_end;
 
@@ -795,10 +774,7 @@ merge_blocks_move_successor_nojumps (a, b)
    relative ordering of these two.  Hopefully it is not too common.  */
 
 static basic_block
-merge_blocks (e, b, c, mode)
-     edge e;
-     basic_block b, c;
-     int mode;
+merge_blocks (edge e, basic_block b, basic_block c, int mode)
 {
   basic_block next;
   /* If C has a tail recursion label, do not merge.  There is no
@@ -895,9 +871,7 @@ merge_blocks (e, b, c, mode)
 /* Return true if I1 and I2 are equivalent and thus can be crossjumped.  */
 
 static bool
-insns_match_p (mode, i1, i2)
-     int mode ATTRIBUTE_UNUSED;
-     rtx i1, i2;
+insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
 {
   rtx p1, p2;
 
@@ -1010,10 +984,8 @@ insns_match_p (mode, i1, i2)
    store the head of the blocks in *F1 and *F2.  */
 
 static int
-flow_find_cross_jump (mode, bb1, bb2, f1, f2)
-     int mode ATTRIBUTE_UNUSED;
-     basic_block bb1, bb2;
-     rtx *f1, *f2;
+flow_find_cross_jump (int mode ATTRIBUTE_UNUSED, basic_block bb1,
+		      basic_block bb2, rtx *f1, rtx *f2)
 {
   rtx i1, i2, last1, last2, afterlast1, afterlast2;
   int ninsns = 0;
@@ -1122,10 +1094,7 @@ flow_find_cross_jump (mode, bb1, bb2, f1, f2)
    We may assume that there exists one edge with a common destination.  */
 
 static bool
-outgoing_edges_match (mode, bb1, bb2)
-     int mode;
-     basic_block bb1;
-     basic_block bb2;
+outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 {
   int nehedges1 = 0, nehedges2 = 0;
   edge fallthru1 = 0, fallthru2 = 0;
@@ -1394,9 +1363,7 @@ outgoing_edges_match (mode, bb1, bb2)
    (maybe the middle of) E1->SRC to (maybe the middle of) E2->SRC.  */
 
 static bool
-try_crossjump_to_edge (mode, e1, e2)
-     int mode;
-     edge e1, e2;
+try_crossjump_to_edge (int mode, edge e1, edge e2)
 {
   int nmatch;
   basic_block src1 = e1->src, src2 = e2->src;
@@ -1580,9 +1547,7 @@ try_crossjump_to_edge (mode, e1, e2)
    any changes made.  */
 
 static bool
-try_crossjump_bb (mode, bb)
-     int mode;
-     basic_block bb;
+try_crossjump_bb (int mode, basic_block bb)
 {
   edge e, e2, nexte2, nexte, fallthru;
   bool changed;
@@ -1675,8 +1640,7 @@ try_crossjump_bb (mode, bb)
    instructions etc.  Return nonzero if changes were made.  */
 
 static bool
-try_optimize_cfg (mode)
-     int mode;
+try_optimize_cfg (int mode)
 {
   bool changed_overall = false;
   bool changed;
@@ -1856,7 +1820,7 @@ try_optimize_cfg (mode)
 /* Delete all unreachable basic blocks.  */
 
 bool
-delete_unreachable_blocks ()
+delete_unreachable_blocks (void)
 {
   bool changed = false;
   basic_block b, next_bb;
@@ -1884,8 +1848,7 @@ delete_unreachable_blocks ()
 /* Tidy the CFG by deleting unreachable code and whatnot.  */
 
 bool
-cleanup_cfg (mode)
-     int mode;
+cleanup_cfg (int mode)
 {
   bool changed = false;
 
