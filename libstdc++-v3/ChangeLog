@@ -1,3 +1,14 @@
+2002-08-23  Phil Edwards  <pme@gcc.gnu.org>
+
+	* config/linker-map.gnu:  Verbose comments, clean up spacing.
+	* include/bits/stl_alloc.h:  Fix indentation of 'if' bodies, return
+	statements.
+	__allocator:  Change class declaration to struct.
+	* docs/html/17_intro/C++STYLE:  Fix typo.
+	* include/bits/stl_deque.h, include/bits/stl_list.h,
+	include/bits/stl_map.h, include/bits/stl_multimap.h,
+	include/bits/stl_vector.h:  Fix fallout from typo.
+
 2002-08-22  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCPP_CONFIGURE_TESTSUITE): Set

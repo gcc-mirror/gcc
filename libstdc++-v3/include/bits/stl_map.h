@@ -109,7 +109,7 @@ namespace std
         value_compare(_Compare __c) : comp(__c) {}
       public:
         bool operator()(const value_type& __x, const value_type& __y) const
-          { return comp(__x.first, __y.first); }
+        { return comp(__x.first, __y.first); }
       };
   
   private:
@@ -337,7 +337,7 @@ namespace std
     */
     pair<iterator,bool>
     insert(const value_type& __x)
-      { return _M_t.insert_unique(__x); }
+    { return _M_t.insert_unique(__x); }
   
     /**
      *  @brief Attempts to insert a std::pair into the %map.
@@ -361,7 +361,7 @@ namespace std
     */
     iterator
     insert(iterator position, const value_type& __x)
-      { return _M_t.insert_unique(position, __x); }
+    { return _M_t.insert_unique(position, __x); }
   
     /**
      *  @brief A template function that attemps to insert a range of elements.
@@ -374,7 +374,7 @@ namespace std
     template <typename _InputIterator>
       void
       insert(_InputIterator __first, _InputIterator __last)
-        { _M_t.insert_unique(__first, __last); }
+      { _M_t.insert_unique(__first, __last); }
   
     /**
      *  @brief Erases an element from a %map.
@@ -491,7 +491,7 @@ namespace std
     */
     size_type
     count(const key_type& __x) const
-      { return _M_t.find(__x) == _M_t.end() ? 0 : 1; }
+    { return _M_t.find(__x) == _M_t.end() ? 0 : 1; }
   
     /**
      *  @brief Finds the beginning of a subsequence matching given key.
@@ -541,7 +541,7 @@ namespace std
     */
     const_iterator
     upper_bound(const key_type& __x) const
-      { return _M_t.upper_bound(__x); }
+    { return _M_t.upper_bound(__x); }
   
     /**
      *  @brief Finds a subsequence matching given key.
@@ -560,7 +560,7 @@ namespace std
     */
     pair<iterator,iterator>
     equal_range(const key_type& __x)
-      { return _M_t.equal_range(__x); }
+    { return _M_t.equal_range(__x); }
   
     /**
      *  @brief Finds a subsequence matching given key.
@@ -579,7 +579,7 @@ namespace std
     */
     pair<const_iterator,const_iterator>
     equal_range(const key_type& __x) const
-      { return _M_t.equal_range(__x); }
+    { return _M_t.equal_range(__x); }
   
     template <typename _K1, typename _T1, typename _C1, typename _A1>
     friend bool operator== (const map<_K1,_T1,_C1,_A1>&,

@@ -81,7 +81,7 @@ namespace std
   */
   inline size_t 
   __deque_buf_size(size_t __size) 
-    { return __size < 512 ? size_t(512 / __size) : size_t(1); }
+  { return __size < 512 ? size_t(512 / __size) : size_t(1); }
   
   
   /**
@@ -1160,7 +1160,7 @@ namespace std
     */
     iterator
     insert(iterator __position)
-      { return insert(__position, value_type()); }
+    { return insert(__position, value_type()); }
   #endif
   
     /**
@@ -1174,7 +1174,7 @@ namespace std
     */
     void
     insert(iterator __position, size_type __n, const value_type& __x)
-      { _M_fill_insert(__position, __n, __x); }
+    { _M_fill_insert(__position, __n, __x); }
   
     /**
      *  @brief  Inserts a range into the %deque.

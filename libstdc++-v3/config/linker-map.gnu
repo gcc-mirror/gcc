@@ -42,6 +42,8 @@ GLIBCPP_3.2 {
     };
 
     # Names not in an 'extern' block are mangled names.
+
+    # std::has_facet*
     _ZSt9has_facet*;
 
     # operator new(unsigned)
@@ -72,8 +74,8 @@ GLIBCPP_3.2 {
     # operator delete[](void*, std::nothrow_t const&)
     _ZdaPvRKSt9nothrow_t;
 
-    # vtable	
-    _ZTV*;  
+    # vtable
+    _ZTV*;
     _ZTT*;
 
     # typeinfo
