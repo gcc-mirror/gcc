@@ -682,6 +682,7 @@ LANG_STAGESTUFF = @all_stagestuff@
 # subdirectories.
 # ??? The choices here will need some experimenting with.
 ORDINARY_FLAGS_TO_PASS = \
+	"AR=$(AR)" \
 	"AR_FLAGS_FOR_TARGET=$(AR_FLAGS_FOR_TARGET)" \
 	"AR_CREATE_FOR_TARGET=$(AR_CREATE_FOR_TARGET)" \
 	"AR_EXTRACT_FOR_TARGET=$(AR_EXTRACT_FOR_TARGET)" \
