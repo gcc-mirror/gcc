@@ -1,3 +1,10 @@
+2002-03-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.c (cris_target_asm_function_prologue): Revert
+	2002-03-12 internal visibility change. 
+	(cris_encode_section_info): Consider MODULE_LOCAL_P when encoding
+	visibility into SYMBOL_REF_FLAG.
+
 2002-03-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* expr.c (expand_expr, case NE_EXPR): Do not call copy_to_reg with
