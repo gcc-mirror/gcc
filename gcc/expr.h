@@ -786,3 +786,5 @@ extern void do_jump_by_parts_greater_rtx	PARAMS ((enum machine_mode,
 extern void mark_seen_cases			PARAMS ((tree, unsigned char *,
 							 HOST_WIDE_INT, int));
 #endif
+
+extern int vector_mode_valid_p		PARAMS ((enum machine_mode));

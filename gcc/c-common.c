@@ -1602,38 +1602,33 @@ c_common_type_for_mode (mode, unsignedp)
   if (mode == TYPE_MODE (build_pointer_type (integer_type_node)))
     return build_pointer_type (integer_type_node);
 
-#ifdef VECTOR_MODE_SUPPORTED_P
-  if (VECTOR_MODE_SUPPORTED_P (mode))
+  switch (mode)
     {
-      switch (mode)
-	{
-	case V16QImode:
-	  return unsignedp ? unsigned_V16QI_type_node : V16QI_type_node;
-	case V8HImode:
-	  return unsignedp ? unsigned_V8HI_type_node : V8HI_type_node;
-	case V4SImode:
-	  return unsignedp ? unsigned_V4SI_type_node : V4SI_type_node;
-	case V2DImode:
-	  return unsignedp ? unsigned_V2DI_type_node : V2DI_type_node;
-	case V2SImode:
-	  return unsignedp ? unsigned_V2SI_type_node : V2SI_type_node;
-	case V4HImode:
-	  return unsignedp ? unsigned_V4HI_type_node : V4HI_type_node;
-	case V8QImode:
-	  return unsignedp ? unsigned_V8QI_type_node : V8QI_type_node;
-	case V16SFmode:
-	  return V16SF_type_node;
-	case V4SFmode:
-	  return V4SF_type_node;
-	case V2SFmode:
-	  return V2SF_type_node;
-	case V2DFmode:
-	  return V2DF_type_node;
-	default:
-	  break;
-	}
+    case V16QImode:
+      return unsignedp ? unsigned_V16QI_type_node : V16QI_type_node;
+    case V8HImode:
+      return unsignedp ? unsigned_V8HI_type_node : V8HI_type_node;
+    case V4SImode:
+      return unsignedp ? unsigned_V4SI_type_node : V4SI_type_node;
+    case V2DImode:
+      return unsignedp ? unsigned_V2DI_type_node : V2DI_type_node;
+    case V2SImode:
+      return unsignedp ? unsigned_V2SI_type_node : V2SI_type_node;
+    case V4HImode:
+      return unsignedp ? unsigned_V4HI_type_node : V4HI_type_node;
+    case V8QImode:
+      return unsignedp ? unsigned_V8QI_type_node : V8QI_type_node;
+    case V16SFmode:
+      return V16SF_type_node;
+    case V4SFmode:
+      return V4SF_type_node;
+    case V2SFmode:
+      return V2SF_type_node;
+    case V2DFmode:
+      return V2DF_type_node;
+    default:
+      break;
     }
-#endif
 
   return 0;
 }
@@ -5058,8 +5053,20 @@ handle_mode_attribute (node, name, args, flags, no_add_attrs)
 		     (mode, TREE_UNSIGNED (type))))
 	error ("no data type for mode `%s'", p);
       else
-	*node = typefm;
-        /* No need to layout the type here.  The caller should do this.  */
+	{
+	  /* If this is a vector, make sure we either have hardware
+	     support, or we can emulate it.  */
+	  if ((GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+	       || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+	      && !vector_mode_valid_p (mode))
+	    {
+	      error ("unable to emulate '%s'", GET_MODE_NAME (mode));
+	      return NULL_TREE;
+	    }
+
+	  *node = typefm;
+	  /* No need to layout the type here.  The caller should do this.  */
+	}
     }
 
   return NULL_TREE;
@@ -5603,6 +5610,16 @@ handle_vector_size_attribute (node, name, args, flags, no_add_attrs)
 	}
 
       new_type = build_type_copy (new_type);
+
+      /* If this is a vector, make sure we either have hardware
+         support, or we can emulate it.  */
+      if ((GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+	   || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+	  && !vector_mode_valid_p (mode))
+	{
+	  error ("unable to emulate '%s'", GET_MODE_NAME (mode));
+	  return NULL_TREE;
+	}
 
       /* Set the debug information here, because this is the only
 	 place where we know the underlying type for a vector made

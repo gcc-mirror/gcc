@@ -421,7 +421,10 @@ immed_double_const (i0, i1, mode)
     {
       int width;
       if (GET_MODE_CLASS (mode) != MODE_INT
-	  && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
+	  && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT
+	  /* We can get a 0 for an error mark.  */
+	  && GET_MODE_CLASS (mode) != MODE_VECTOR_INT
+	  && GET_MODE_CLASS (mode) != MODE_VECTOR_FLOAT)
 	abort ();
 
       /* We clear out all bits that don't belong in MODE, unless they and
