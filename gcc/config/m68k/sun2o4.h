@@ -121,7 +121,7 @@ Boston, MA 02111-1307, USA.  */
         }							\
       else							\
         { char dstr[30];					\
-          REAL_VALUE_TO_DECIMAL ((VALUE), "%.9g", dstr);	\
+          REAL_VALUE_TO_DECIMAL ((VALUE), dstr, 9);		\
           fprintf (FILE, "#0r%s", dstr);			\
         }							\
     } while (0)
@@ -141,7 +141,7 @@ Boston, MA 02111-1307, USA.  */
         }								\
       else								\
         { char dstr[30];						\
-          REAL_VALUE_TO_DECIMAL ((VALUE), "%.20g", dstr);		\
+          REAL_VALUE_TO_DECIMAL ((VALUE), dstr, -1);			\
           fprintf (FILE, "#0r%s", dstr);				\
         }								\
     } while (0)

@@ -566,7 +566,7 @@ print_value (buf, x, verbose)
 	  REAL_VALUE_TYPE r;
 
 	  REAL_VALUE_FROM_CONST_DOUBLE (r, x);
-	  REAL_VALUE_TO_DECIMAL(r, "%.6e", t);
+	  REAL_VALUE_TO_DECIMAL(r, t, 6);
 	}
       else
 	sprintf (t, "<0x%lx,0x%lx>", (long) XWINT (x, 2), (long) XWINT (x, 3));

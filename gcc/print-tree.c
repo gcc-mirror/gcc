@@ -133,7 +133,7 @@ print_node_brief (file, prefix, node, indent)
 	{
 	  char string[100];
 
-	  REAL_VALUE_TO_DECIMAL (d, "%e", string);
+	  REAL_VALUE_TO_DECIMAL (d, string, -1);
 	  fprintf (file, " %s", string);
 	}
     }
@@ -683,7 +683,7 @@ print_node (file, prefix, node, indent)
 	      {
 		char string[100];
 
-		REAL_VALUE_TO_DECIMAL (d, "%e", string);
+		REAL_VALUE_TO_DECIMAL (d, string, -1);
 		fprintf (file, " %s", string);
 	      }
 	  }

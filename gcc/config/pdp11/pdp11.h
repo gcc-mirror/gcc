@@ -1128,7 +1128,7 @@ fprintf (FILE, "$help$: . = .+8 ; space for tmp moves!\n")	\
     { REAL_VALUE_TYPE r;						\
       char buf[30];							\
       REAL_VALUE_FROM_CONST_DOUBLE (r, X);				\
-      REAL_VALUE_TO_DECIMAL (r, "%.20e", buf);				\
+      REAL_VALUE_TO_DECIMAL (r, buf, -1);				\
       fprintf (FILE, "#%s", buf); }					\
   else { putc ('$', FILE); output_addr_const_pdp11 (FILE, X); }}
 

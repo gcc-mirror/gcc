@@ -1134,7 +1134,7 @@ print_operand (file, x, code)
 		   CONST_DOUBLE_HIGH (x), CONST_DOUBLE_LOW (x));
 #else
 	  char s[30];
-	  REAL_VALUE_TO_DECIMAL (r, "%.20e", s);
+	  REAL_VALUE_TO_DECIMAL (r, s, -1);
 #ifdef ENCORE_ASM
 	  fprintf (file, "0f%s", s);
 #else
@@ -1150,7 +1150,7 @@ print_operand (file, x, code)
 	  fprintf (file, "0Fx%08lx", l);
 #else
 	  char s[30];
-	  REAL_VALUE_TO_DECIMAL (r, "%.20e", s);
+	  REAL_VALUE_TO_DECIMAL (r, s, -1);
 	  fprintf (file, "0f%s", s);
 #endif
 	}

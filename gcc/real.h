@@ -154,7 +154,7 @@ extern void etartdouble		PARAMS ((REAL_VALUE_TYPE, long *));
 extern void etarldouble		PARAMS ((REAL_VALUE_TYPE, long *));
 extern void etardouble		PARAMS ((REAL_VALUE_TYPE, long *));
 extern long etarsingle		PARAMS ((REAL_VALUE_TYPE));
-extern void ereal_to_decimal	PARAMS ((REAL_VALUE_TYPE, char *));
+extern void ereal_to_decimal	PARAMS ((REAL_VALUE_TYPE, char *, int));
 extern int ereal_cmp		PARAMS ((REAL_VALUE_TYPE, REAL_VALUE_TYPE));
 extern int ereal_isneg		PARAMS ((REAL_VALUE_TYPE));
 extern REAL_VALUE_TYPE ereal_unto_float PARAMS ((long));
@@ -253,7 +253,7 @@ extern bool exact_real_truncate PARAMS ((enum machine_mode,
 #define REAL_VALUE_FROM_TARGET_SINGLE(f)  (ereal_from_float (f))
 
 /* Conversions to decimal ASCII string.  */
-#define REAL_VALUE_TO_DECIMAL(r, fmt, s) (ereal_to_decimal (r, s))
+#define REAL_VALUE_TO_DECIMAL(r, s, dig) (ereal_to_decimal (r, s, dig))
 
 /* **** End of software floating point emulator interface macros **** */
 

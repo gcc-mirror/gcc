@@ -1958,7 +1958,7 @@ c4x_print_operand (file, op, letter)
 	REAL_VALUE_TYPE r;
 	
 	REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-	REAL_VALUE_TO_DECIMAL (r, "%20f", str);
+	REAL_VALUE_TO_DECIMAL (r, str, -1);
 	fprintf (file, "%s", str);
       }
       break;

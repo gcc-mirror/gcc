@@ -1748,7 +1748,7 @@ arc_print_operand (file, x, code)
 	    || GET_MODE_CLASS (GET_MODE (x)) != MODE_FLOAT)
 	  abort ();
 	REAL_VALUE_FROM_CONST_DOUBLE (d, x);
-	REAL_VALUE_TO_DECIMAL (d, "%.20e", str);
+	REAL_VALUE_TO_DECIMAL (d, str, -1);
 	fprintf (file, "%s", str);
 	return;
       }
