@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler.  Gmicro (TRON) version.
-   Copyright (C) 1987, 88, 89, 95-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1995, 1996, 1997, 1998, 1999, 2000
+   Free Software Foundation, Inc.
    Contributed by Masanobu Yuhara, Fujitsu Laboratories LTD.
    (yuhara@flab.fujitsu.co.jp)
 
