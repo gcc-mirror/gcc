@@ -826,37 +826,44 @@ __transfer_from_trampoline ()		\
        && REG_OK_FOR_BASE_P (XEXP (X, 0))				\
        && CONSTANT_ADDRESS_P (XEXP (X, 1))))
 
+/* Check for frame pointer or stack pointer.  */
 #define MEM_REG(X) \
-  ((GET_CODE (X) == REG && (REGNO (X) ^ 16) < 2)			\
-   || (TARGET_SB && CONSTANT_ADDRESS_P (X)))
+  (GET_CODE (X) == REG && (REGNO (X) ^ 16) < 2)
 
+/* A memory ref whose address is the FP or SP, with optional integer offset,
+   or (on certain machines) a constant address.  */
 #define INDIRECTABLE_2_ADDRESS_P(X)  \
   (GET_CODE (X) == MEM							\
    && (((xfoo0 = XEXP (X, 0), MEM_REG (xfoo0))				\
        || (GET_CODE (xfoo0) == PLUS					\
-	   && GET_CODE (XEXP (xfoo0, 0)) == REG				\
 	   && MEM_REG (XEXP (xfoo0, 0))					\
 	   && CONSTANT_ADDRESS_NO_LABEL_P (XEXP (xfoo0, 1))))		\
        || (TARGET_SB && CONSTANT_ADDRESS_P (xfoo0))))
-
-#define INDIRECTABLE_ADDRESS_P(X)  \
-  (INDIRECTABLE_1_ADDRESS_P(X)						\
-   || INDIRECTABLE_2_ADDRESS_P (X)					\
-   || (GET_CODE (X) == PLUS						\
-       && CONSTANT_ADDRESS_NO_LABEL_P (XEXP (X, 1))			\
-       && INDIRECTABLE_2_ADDRESS_P (XEXP (X, 0))))
 
 /* Go to ADDR if X is a valid address not using indexing.
    (This much is the easy part.)  */
 #define GO_IF_NONINDEXED_ADDRESS(X, ADDR)  \
 { register rtx xfoob = (X);						\
-  if (GET_CODE (xfoob) == REG && REG_OK_FOR_BASE_P (xfoob)) goto ADDR;	\
-  if (INDIRECTABLE_1_ADDRESS_P(X)) goto ADDR;				\
+  if (INDIRECTABLE_1_ADDRESS_P (X)) goto ADDR;				\
   if (INDIRECTABLE_2_ADDRESS_P (X)) goto ADDR;				\
   if (GET_CODE (X) == PLUS)						\
     if (CONSTANT_ADDRESS_NO_LABEL_P (XEXP (X, 1)))			\
       if (INDIRECTABLE_2_ADDRESS_P (XEXP (X, 0)))			\
 	goto ADDR;							\
+}
+
+/* Go to ADDR if X is a valid address not using indexing.
+   (This much is the easy part.)  */
+#define GO_IF_INDEXING(X, ADDR)  \
+{ register rtx xfoob = (X);						\
+  if (GET_CODE (xfoob) == PLUS && INDEX_TERM_P (XEXP (xfoob, 0)))	\
+    GO_IF_INDEXABLE_ADDRESS (XEXP (xfoob, 1), ADDR);			\
+  if (GET_CODE (xfoob) == PLUS && INDEX_TERM_P (XEXP (xfoob, 1)))	\
+    GO_IF_INDEXABLE_ADDRESS (XEXP (xfoob, 0), ADDR); }			\
+
+#define GO_IF_INDEXABLE_ADDRESS(X, ADDR) \
+{ if (GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X)) goto ADDR;		\
+  if (INDIRECTABLE_2_ADDRESS_P (X)) goto ADDR;				\
 }
 
 /* 1 if PROD is either a reg times size of mode MODE
@@ -879,8 +886,9 @@ __transfer_from_trampoline ()		\
   ((xfoo2 = (unsigned)(X)-1),						\
    ((xfoo2 < 4 && xfoo2 != 2) || xfoo2 == 7))
 
+/* Note that xfoo0, xfoo1, xfoo2 are used in some of the submacros above.  */
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)  \
-{ register rtx xfooy, xfooz, xfoo0, xfoo1;				\
+{ register rtx xfooy, xfoo0, xfoo1;					\
   unsigned xfoo2;							\
   xfooy = X;								\
   GO_IF_NONINDEXED_ADDRESS (xfooy, ADDR);				\
@@ -892,12 +900,7 @@ __transfer_from_trampoline ()		\
       else if (CONSTANT_ADDRESS_NO_LABEL_P (XEXP (xfooy, 0))		\
 	  && GET_CODE (XEXP (xfooy, 1)) == PLUS)			\
 	xfooy = XEXP (xfooy, 1);					\
-      xfooz = XEXP (xfooy, 1);						\
-      if (INDEX_TERM_P (xfooz, MODE))					\
-	{ rtx t = XEXP (xfooy, 0); GO_IF_NONINDEXED_ADDRESS (t, ADDR); }\
-      xfooz = XEXP (xfooy, 0);						\
-      if (INDEX_TERM_P (xfooz, MODE))					\
-	{ rtx t = XEXP (xfooy, 1); GO_IF_NONINDEXED_ADDRESS (t, ADDR); }\
+      GO_IF_INDEXING (xfooy, ADDR);					\
     }									\
   else if (INDEX_TERM_P (xfooy, MODE))					\
     goto ADDR;								\
