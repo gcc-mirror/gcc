@@ -654,6 +654,9 @@ extern char * reg_names[];
 /* INSN_CLOBBERS_REGNO_P(INSN, REGNO) 0 */
 /* PRESERVE_DEATH_INFO_REGNO_P(REGNO) 0 */
 
+/* True if register is an extended register.  */
+#define XRF_REGNO_P(N) ((N) < FIRST_PSEUDO_REGISTER && (N) >= FIRST_EXTENDED_REGISTER)
+ 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
    This is ordinarily the length in words of a value of mode MODE
@@ -1361,10 +1364,11 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  Not the argument pointer.  */
-#define REG_OK_FOR_INDEX_P(X) (X)
+#define REG_OK_FOR_INDEX_P(X)                                         \
+  (!XRF_REGNO_P(REGNO (X)))
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
-#define REG_OK_FOR_BASE_P(X) (1)
+#define REG_OK_FOR_BASE_P(X) (REG_OK_FOR_INDEX_P (X))
 
 #else
 
