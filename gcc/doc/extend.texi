@@ -8476,7 +8476,7 @@ int vec_any_out (vector float, vector float);
 @subsection SPARC VIS Built-in Functions
 
 GCC supports SIMD operations on the SPARC using both the generic vector
-extentions (@pxref{Vector Extensions}) as well as built-in functions for
+extensions (@pxref{Vector Extensions}) as well as built-in functions for
 the SPARC Visual Instruction Set (VIS).  When you use the @option{-mvis}
 switch, the VIS extension is exposed as the following built-in functions:
 
