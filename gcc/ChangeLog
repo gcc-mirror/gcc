@@ -1,3 +1,37 @@
+Wed Oct 13 20:35:16 1999  Richard Henderson  <rth@cygnus.com>
+
+	* rtl.c (dump_and_abort): Remove.
+	(fatal_with_file_and_line): New.
+	(fatal_expected_char): New.
+	(read_rtx_lineno, read_rtx_filename): New.
+	(read_skip_spaces): Track line number.
+	(read_name): Use fatal_with_file_and_line.
+	(read_rtx): Use fatal_expected_char.  Track line number.
+	* rtl.h (read_rtx_filename, read_rtx_lineno): Declare.
+
+	* print-rtl.c (print_rtx): Don't special case LABEL_REF argument
+	if it isn't a CODE_LABEL.
+
+	* genattr.c (main): Set read_rtx_filename.
+	* genattrtab.c (main): Likewise.
+	* gencodes.c (main): Likewise.
+	* genconfig.c (main): Likewise.
+	* genemit.c (main): Likewise.
+	* genextract.c (main): Likewise.
+	* genflags.c (main): Likewise.
+	* genopinit.c (main): Likewise.
+	* genoutput.c (main): Likewise.
+	* genpeep.c (main): Likewise.
+
+	* genrecog.c (decision_test.u.insn): Add `lineno'.
+	(pattern_lineno, error_count): New variables.
+	(message_with_line): New.
+	(add_to_sequence): Break out checking code to ...
+	(validate_pattern): ... here.  Detect SET_DEST matching CONST_INT.
+	(merge_insn): Use message_with_line.
+	(make_insn_sequence): Use validate_pattern.  Record insn lineno.
+	(main): Set read_rtx_filename, pattern_lineno.  Exit early on error.
+
 Wed Oct 13 22:01:35 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* expr.c (store_constructor): Clear union if constructor is empty.

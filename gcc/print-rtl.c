@@ -200,6 +200,7 @@ print_rtx (in_rtx)
 	break;
 
       case 'e':
+      do_e:
 	indent += 2;
 	if (!sawclose)
 	  fprintf (outfile, " ");
@@ -298,6 +299,9 @@ print_rtx (in_rtx)
       case 'u':
 	if (XEXP (in_rtx, i) != NULL)
 	  {
+	    if (GET_CODE (XEXP (in_rtx, i)) != CODE_LABEL)
+	      goto do_e;
+
 	    if (flag_dump_unnumbered)
 	      fputc ('#', outfile);
 	    else

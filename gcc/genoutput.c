@@ -907,6 +907,7 @@ main (argc, argv)
       perror (argv[1]);
       return (FATAL_EXIT_CODE);
     }
+  read_rtx_filename = argv[1];
 
   output_prologue ();
   next_code_number = 0;

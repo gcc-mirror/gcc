@@ -400,6 +400,7 @@ main (argc, argv)
       perror (argv[1]);
       return (FATAL_EXIT_CODE);
     }
+  read_rtx_filename = argv[1];
 
   /* Assign sequential codes to all entries in the machine description
      in parallel with the tables in insn-output.c.  */

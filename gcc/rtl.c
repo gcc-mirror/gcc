@@ -259,7 +259,9 @@ const char * const reg_note_name[] = { "", "REG_DEAD", "REG_INC", "REG_EQUIV", "
 			  "REG_FRAME_RELATED_EXPR", "REG_EH_REGION",
 			  "REG_EH_RETHROW", "REG_SAVE_NOTE" };
 
-static void dump_and_abort	PROTO((int, int, FILE *)) ATTRIBUTE_NORETURN;
+static void fatal_with_file_and_line PVPROTO((FILE *, const char *, ...))
+  ATTRIBUTE_NORETURN;
+static void fatal_expected_char PROTO((FILE *, int, int)) ATTRIBUTE_NORETURN;
 static void read_name		PROTO((char *, FILE *));
 static const char *trim_filename PROTO((const char *));
 
@@ -582,30 +584,64 @@ shallow_copy_rtx (orig)
 
 /* Subroutines of read_rtx.  */
 
+/* The current line number for the file.  */
+int read_rtx_lineno = 1;
+
+/* The filename for aborting with file and line.  */
+const char *read_rtx_filename = "<unknown>";
+
+static void
+fatal_with_file_and_line VPROTO((FILE *infile, const char *msg, ...))
+{
+#ifndef ANSI_PROTOTYPES
+  FILE *infile;
+  const char *msg;
+#endif
+  va_list ap;
+  char context[64];
+  size_t i;
+  int c;
+
+  VA_START (ap, msg);
+
+#ifndef ANSI_PROTOTYPES
+  infile = va_arg (ap, FILE *);
+  msg = va_arg (ap, const char *);
+#endif
+
+  fprintf (stderr, "%s:%d: ", read_rtx_filename, read_rtx_lineno);
+  vfprintf (stderr, msg, ap);
+  putc ('\n', stderr);
+
+  /* Gather some following context.  */
+  for (i = 0; i < sizeof(context)-1; ++i)
+    {
+      c = getc (infile);
+      if (c == EOF)
+	break;
+      if (c == '\r' || c == '\n')
+	break;
+      context[i] = c;
+    }
+  context[i] = '\0';
+
+  fprintf (stderr, "%s:%d: following context is `%s'\n",
+	   read_rtx_filename, read_rtx_lineno, context);
+
+  va_end (ap);
+  exit (1);
+}
+
 /* Dump code after printing a message.  Used when read_rtx finds
    invalid data.  */
 
 static void
-dump_and_abort (expected_c, actual_c, infile)
-     int expected_c, actual_c;
+fatal_expected_char (infile, expected_c, actual_c)
      FILE *infile;
+     int expected_c, actual_c;
 {
-  int c, i;
-
-  if (expected_c >= 0)
-    fprintf (stderr,
-	     "Expected character %c.  Found character %c.",
-	     expected_c, actual_c);
-  fprintf (stderr, "  At file position: %ld\n", ftell (infile));
-  fprintf (stderr, "Following characters are:\n\t");
-  for (i = 0; i < 200; i++)
-    {
-      c = getc (infile);
-      if (EOF == c) break;
-      putc (c, stderr);
-    }
-  fprintf (stderr, "Aborting.\n");
-  abort ();
+  fatal_with_file_and_line (infile, "expected character `%c', found `%c'",
+			    expected_c, actual_c);
 }
 
 /* Read chars from INFILE until a non-whitespace char
@@ -618,33 +654,48 @@ read_skip_spaces (infile)
      FILE *infile;
 {
   register int c;
-  while ((c = getc (infile)))
+  while (1)
     {
-      if (c == ' ' || c == '\n' || c == '\t' || c == '\f')
-	;
-      else if (c == ';')
+      c = getc (infile);
+      switch (c)
 	{
-	  while ((c = getc (infile)) && c != '\n' && c != EOF)
-	    ;
-	}
-      else if (c == '/')
-	{
-	  register int prevc;
-	  c = getc (infile);
-	  if (c != '*')
-	    dump_and_abort ('*', c, infile);
+	case '\n':
+	  read_rtx_lineno++;
+	  break;
+
+	case ' ': case '\t': case '\f': case '\r':
+	  break;
+
+	case ';':
+	  do 
+	    c = getc (infile);
+	  while (c != '\n' && c != EOF);
+	  read_rtx_lineno++;
+	  break;
+
+	case '/':
+	  {
+	    register int prevc;
+	    c = getc (infile);
+	    if (c != '*')
+	      fatal_expected_char (infile, '*', c);
 	  
-	  prevc = 0;
-	  while ((c = getc (infile)) && c != EOF)
-	    {
-	      if (prevc == '*' && c == '/')
-		break;
-	      prevc = c;
-	    }
+	    prevc = 0;
+	    while ((c = getc (infile)) && c != EOF)
+	      {
+		if (c == '\n')
+		   read_rtx_lineno++;
+	        else if (prevc == '*' && c == '/')
+		  break;
+	        prevc = c;
+	      }
+	  }
+	  break;
+
+	default:
+	  return c;
 	}
-      else break;
     }
-  return c;
 }
 
 /* Read an rtx code name into the buffer STR[].
@@ -675,10 +726,9 @@ read_name (str, infile)
       c = getc (infile);
     }
   if (p == str)
-    {
-      fprintf (stderr, "missing name or number");
-      dump_and_abort (-1, -1, infile);
-    }
+    fatal_with_file_and_line (infile, "missing name or number");
+  if (c == '\n')
+    read_rtx_lineno++;
 
   *p = 0;
 }
@@ -745,12 +795,12 @@ read_rtx (infile)
   struct rtx_list
     {
       struct rtx_list *next;
-      rtx value;		/* Value of this node...		*/
+      rtx value;		/* Value of this node.  */
     };
 
   c = read_skip_spaces (infile); /* Should be open paren.  */
   if (c != '(')
-    dump_and_abort ('(', c, infile);
+    fatal_expected_char (infile, '(', c);
 
   read_name (tmp_char, infile);
 
@@ -831,7 +881,7 @@ read_rtx (infile)
 
 	  c = read_skip_spaces (infile);
 	  if (c != '[')
-	    dump_and_abort ('[', c, infile);
+	    fatal_expected_char (infile, '[', c);
 
 	  /* add expressions to a list, while keeping a count */
 	  next_rtx = NULL;
@@ -887,11 +937,13 @@ read_rtx (infile)
 	      c = read_skip_spaces (infile);
 	    }
 	  if (c != '"')
-	    dump_and_abort ('"', c, infile);
+	    fatal_expected_char (infile, '"', c);
 
 	  while (1)
 	    {
 	      c = getc (infile); /* Read the string  */
+	      if (c == '\n')
+		read_rtx_lineno++;
 	      if (c == '\\')
 		{
 		  c = getc (infile);	/* Read the string  */
@@ -916,7 +968,7 @@ read_rtx (infile)
 	    {
 	      c = read_skip_spaces (infile);
 	      if (c != ')')
-		dump_and_abort (')', c, infile);
+		fatal_expected_char (infile, ')', c);
 	    }
 	  XSTR (return_rtx, i) = stringbuf;
 	}
@@ -959,7 +1011,7 @@ read_rtx (infile)
 
   c = read_skip_spaces (infile);
   if (c != ')')
-    dump_and_abort (')', c, infile);
+    fatal_expected_char (infile, ')', c);
 
   return return_rtx;
 }
