@@ -2509,13 +2509,13 @@
   "srl %1,%2,%0")
 
 ;; Unconditional and other jump instructions
-;; Note that for the Sparc, by setting the annul bit on an unconditional
-;; branch, the following insn is never executed.  This saves us a nop,
-;; but requires a debugger which can handle annulled branches.
+;; On the Sparc, by setting the annul bit on an unconditional branch, the
+;; following insn is never executed.  This saves us a nop.  Dbx does not
+;; handle such branches though, so we only use them when optimizing.
 (define_insn "jump"
   [(set (pc) (label_ref (match_operand 0 "" "")))]
   ""
-  "b%* %l0"
+  "b%* %l0%("
   [(set_attr "type" "branch")])
 
 (define_expand "tablejump"
