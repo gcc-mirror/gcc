@@ -1,3 +1,7 @@
+2001-04-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* sparc-protos.h: Delete redundant prototypes.
+
 2001-04-11  Vladimir Makarov  <vmakarov@toke.toronto.redhat.com>
 
 	* reload.c (push_reload): Add condition missed in SUBREG byte
