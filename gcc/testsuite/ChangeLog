@@ -1,3 +1,7 @@
+2002-12-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/compile/20021204-1.c: New test.
+
 2002-12-03  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8688
@@ -87,7 +91,7 @@ Wed Nov 27 14:37:34 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/abi/empty10.C: New test.
 
-2002-11-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
+2002-11-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20021124-1.c: New test.
 
@@ -95,11 +99,11 @@ Wed Nov 27 14:37:34 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/abi/rtti2.C: New test.
 
-2002-11-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+2002-11-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/i386-unroll-1.c: New test.
 
-2002-11-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
+2002-11-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20021120-1.c: New test.
 	* gcc.c-torture/compile/20021120-2.c: New test.
@@ -124,7 +128,7 @@ Wed Nov 27 14:37:34 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.c-torture/execute/20021118-3.c: New test.
 
-2002-11-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
+2002-11-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20021119-1.c: New test.
 
