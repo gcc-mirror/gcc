@@ -1526,8 +1526,8 @@ print_help (void)
 static void
 wrap_help (const char *help, const char *item, size_t item_width)
 {
-  const size_t columns = 80, col_width = 27;
-  size_t remaining, room, len;
+  const unsigned int columns = 80, col_width = 27;
+  unsigned int remaining, room, len;
 
   remaining = strlen (help);
 
@@ -1538,7 +1538,7 @@ wrap_help (const char *help, const char *item, size_t item_width)
 
       if (room < len)
 	{
-	  size_t i;
+	  unsigned int i;
 
 	  for (i = 0; help[i]; i++)
 	    {
