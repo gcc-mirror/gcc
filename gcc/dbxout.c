@@ -1445,6 +1445,7 @@ dbxout_symbol (decl, local)
 
       {
 	int tag_needed = 1;
+	int did_output = 0;
 
 	if (DECL_NAME (decl))
 	  {
@@ -1504,6 +1505,7 @@ dbxout_symbol (decl, local)
 
 	    dbxout_type (type, 1, 0);
 	    dbxout_finish_symbol (decl);
+	    did_output = 1;
 	  }
 
 	if (tag_needed && TYPE_NAME (type) != 0
@@ -1525,6 +1527,22 @@ dbxout_symbol (decl, local)
 
 	    fprintf (asmfile, "%s \"%s:T", ASM_STABS_OP,
 		     IDENTIFIER_POINTER (name));
+	    dbxout_type (type, 1, 0);
+	    dbxout_finish_symbol (NULL_TREE);
+	    did_output = 1;
+	  }
+
+	/* If an enum type has no name, it cannot be referred to,
+	   but we must output it anyway, since the enumeration constants
+	   can be referred to.  */
+	if (!did_output && TREE_CODE (type) == ENUMERAL_TYPE)
+	  {
+	    current_sym_code = DBX_TYPE_DECL_STABS_CODE;
+	    current_sym_value = 0;
+	    current_sym_addr = 0;
+	    current_sym_nchars = 2;
+
+	    fprintf (asmfile, "%s \":T", ASM_STABS_OP);
 	    dbxout_type (type, 1, 0);
 	    dbxout_finish_symbol (NULL_TREE);
 	  }
