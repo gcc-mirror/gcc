@@ -1,3 +1,8 @@
+2001-02-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (push_template_decl_real): Don't remangle the name of a
+	class template.
+
 2001-02-15  Jim Meyering  <meyering@lucent.com>
 
 	* Make-lang.in (c++.install-common): Depend on installdirs.
