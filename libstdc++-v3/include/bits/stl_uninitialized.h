@@ -1,6 +1,6 @@
 // Raw memory manipulators -*- C++ -*-
 
-// Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -108,7 +108,7 @@ namespace std
 		       _ForwardIterator __result)
     {
       typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
-      typedef typename __type_traits<_ValueType>::is_POD_type _Is_POD;
+      typedef typename std::__is_scalar<_ValueType>::__type _Is_POD;
       return std::__uninitialized_copy_aux(__first, __last, __result,
 					   _Is_POD());
     }
@@ -170,7 +170,7 @@ namespace std
 		       const _Tp& __x)
     {
       typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
-      typedef typename __type_traits<_ValueType>::is_POD_type _Is_POD;
+      typedef typename std::__is_scalar<_ValueType>::__type _Is_POD;
       std::__uninitialized_fill_aux(__first, __last, __x, _Is_POD());
     }
 
@@ -214,7 +214,7 @@ namespace std
     uninitialized_fill_n(_ForwardIterator __first, _Size __n, const _Tp& __x)
     {
       typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
-      typedef typename __type_traits<_ValueType>::is_POD_type _Is_POD;
+      typedef typename std::__is_scalar<_ValueType>::__type _Is_POD;
       std::__uninitialized_fill_n_aux(__first, __n, __x, _Is_POD());
     }
 
