@@ -1,5 +1,5 @@
 /* Definitions of Tensilica's Xtensa target machine for GNU compiler.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright 2001,2002 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -570,6 +570,7 @@ enum reg_class
   FP_REGS,			/* floating point registers */
   ACC_REG,			/* MAC16 accumulator */
   SP_REG,			/* sp register (aka a1) */
+  RL_REGS,			/* preferred reload regs (not sp or fp) */
   GR_REGS,			/* integer registers except sp */
   AR_REGS,			/* all integer registers */
   ALL_REGS,			/* all registers */
@@ -590,6 +591,7 @@ enum reg_class
   "FP_REGS",								\
   "ACC_REG",								\
   "SP_REG",								\
+  "RL_REGS",								\
   "GR_REGS",								\
   "AR_REGS",								\
   "ALL_REGS"								\
@@ -605,6 +607,7 @@ enum reg_class
   { 0xfff80000, 0x00000007 }, /* floating-point registers */ \
   { 0x00000000, 0x00000008 }, /* MAC16 accumulator */ \
   { 0x00000002, 0x00000000 }, /* stack pointer register */ \
+  { 0x0000ff7d, 0x00000000 }, /* preferred reload registers */ \
   { 0x0000fffd, 0x00000000 }, /* general-purpose registers */ \
   { 0x0003ffff, 0x00000000 }, /* integer registers */ \
   { 0xffffffff, 0x0000000f }  /* all registers */ \
@@ -720,10 +723,10 @@ extern enum reg_class xtensa_char_to_class[256];
    : FALSE)
 
 #define PREFERRED_RELOAD_CLASS(X, CLASS)				\
-  xtensa_preferred_reload_class (X, CLASS)
+  xtensa_preferred_reload_class (X, CLASS, 0)
 
 #define PREFERRED_OUTPUT_RELOAD_CLASS(X, CLASS)				\
-  (CLASS)
+  xtensa_preferred_reload_class (X, CLASS, 1)
   
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, X)			\
   xtensa_secondary_reload_class (CLASS, MODE, X, 0)

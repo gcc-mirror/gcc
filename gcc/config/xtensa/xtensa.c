@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Tensilica's Xtensa architecture.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright 2001,2002 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -104,10 +104,10 @@ const char xtensa_leaf_regs[FIRST_PSEUDO_REGISTER] =
 /* Map hard register number to register class */
 const enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER] =
 {
-  GR_REGS,	SP_REG,		GR_REGS,	GR_REGS,
-  GR_REGS,	GR_REGS,	GR_REGS,	GR_REGS,
-  GR_REGS,	GR_REGS,	GR_REGS,	GR_REGS,
-  GR_REGS,	GR_REGS,	GR_REGS,	GR_REGS,
+  RL_REGS,	SP_REG,		RL_REGS,	RL_REGS,
+  RL_REGS,	RL_REGS,	RL_REGS,	GR_REGS,
+  RL_REGS,	RL_REGS,	RL_REGS,	RL_REGS,
+  RL_REGS,	RL_REGS,	RL_REGS,	RL_REGS,
   AR_REGS,	AR_REGS,	BR_REGS,
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
   FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
@@ -2625,16 +2625,22 @@ xtensa_va_arg (valist, type)
 
 
 enum reg_class
-xtensa_preferred_reload_class (x, class)
+xtensa_preferred_reload_class (x, class, isoutput)
      rtx x;
      enum reg_class class;
+     int isoutput;
 {
-  if (CONSTANT_P (x) && GET_CODE (x) == CONST_DOUBLE)
+  if (!isoutput && CONSTANT_P (x) && GET_CODE (x) == CONST_DOUBLE)
     return NO_REGS;
 
-  /* Don't use sp for reloads! */
-  if (class == AR_REGS)
-    return GR_REGS;
+  /* Don't use the stack pointer or hard frame pointer for reloads!
+     The hard frame pointer would normally be OK except that it may
+     briefly hold an incoming argument in the prologue, and reload
+     won't know that it is live because the hard frame pointer is
+     treated specially.  */
+
+  if (class == AR_REGS || class == GR_REGS)
+    return RL_REGS;
 
   return class;
 }
@@ -2656,13 +2662,13 @@ xtensa_secondary_reload_class (class, mode, x, isoutput)
   if (!isoutput)
     {
       if (class == FP_REGS && constantpool_mem_p (x))
-	return GR_REGS;
+	return RL_REGS;
     }
 
   if (ACC_REG_P (regno))
-    return (class == GR_REGS ? NO_REGS : GR_REGS);
+    return ((class == GR_REGS || class == RL_REGS) ? NO_REGS : RL_REGS);
   if (class == ACC_REG)
-    return (GP_REG_P (regno) ? NO_REGS : GR_REGS);
+    return (GP_REG_P (regno) ? NO_REGS : RL_REGS);
 
   return NO_REGS;
 }
