@@ -61,6 +61,9 @@ extern int frame_pointer_needed;
 %{msoft-float:-D__SOFTFP__} \
 %{mhard-float:-U__SOFTFP__} \
 %{!mhard-float: %{!msoft-float:-U__SOFTFP__}} \
+%{mbig-endian:-D__ARMEB__ %{mwords-little-endian:-D__ARMWEL__}} \
+%{mbe:-D__ARMEB__ %{mwords-little-endian:-D__ARMWEL__}} \
+%{!mbe: %{!mbig-endian:-D__ARMEL__}} \
 "
 #endif
 
@@ -131,6 +134,10 @@ extern char *target_fpe_name;
 /* Nonzero if we should compile for Thumb interworking.  */
 #define ARM_FLAG_THUMB                (0x1000)
 
+/* Nonzero if we should have little-endian words even when compiling for
+   big-endian (for backwards compatibility with older versions of GCC).  */
+#define ARM_FLAG_LITTLE_WORDS	(0x2000)
+
 #define TARGET_APCS			(target_flags & ARM_FLAG_APCS_FRAME)
 #define TARGET_POKE_FUNCTION_NAME	(target_flags & ARM_FLAG_POKE)
 #define TARGET_FPE			(target_flags & ARM_FLAG_FPE)
@@ -145,6 +152,7 @@ extern char *target_fpe_name;
 #define TARGET_HARD_FLOAT		(! TARGET_SOFT_FLOAT)
 #define TARGET_BIG_END			(target_flags & ARM_FLAG_BIG_END)
 #define TARGET_THUMB_INTERWORK		(target_flags & ARM_FLAG_THUMB)
+#define TARGET_LITTLE_WORDS		(target_flags & ARM_FLAG_LITTLE_WORDS)
 
 /* SUBTARGET_SWITCHES is used to add flags on a per-config basis.
    Bit 31 is reserved.  See riscix.h.  */
@@ -182,6 +190,7 @@ extern char *target_fpe_name;
   {"le",		       -ARM_FLAG_BIG_END},	\
   {"thumb-interwork",		ARM_FLAG_THUMB},	\
   {"no-thumb-interwork",       -ARM_FLAG_THUMB},	\
+  {"words-little-endian",       ARM_FLAG_LITTLE_WORDS},	\
   SUBTARGET_SWITCHES					\
   {"",				TARGET_DEFAULT }	\
 }
@@ -318,7 +327,15 @@ extern int arm_arch4;
 /* Define this if most significant word of a multiword number is the lowest
    numbered.
    This is always false, even when in big-endian mode.  */
-#define WORDS_BIG_ENDIAN  0
+#define WORDS_BIG_ENDIAN  (BYTES_BIG_ENDIAN && ! TARGET_LITTLE_WORDS)
+
+/* LIBGCC2_WORDS_BIG_ENDIAN has to be a constant, so we define this based
+   on processor pre-defineds when compiling libgcc2.c.  */
+#if defined(__ARMEB__) && !defined(__ARMWEL__)
+#define LIBGCC2_WORDS_BIG_ENDIAN 1
+#else
+#define LIBGCC2_WORDS_BIG_ENDIAN 0
+#endif
 
 /* Define this if most significant word of doubles is the lowest numbered.
    This is always true, even when in little-endian mode.  */
