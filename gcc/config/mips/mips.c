@@ -1951,6 +1951,7 @@ output_block_move (insn, operands, num_regs)
   int align		= INTVAL (operands[3]);
   int num		= 0;
   int offset		= 0;
+  int use_lwl_lwr	= FALSE;
   int i;
   rtx xoperands[10];
 
@@ -2013,6 +2014,23 @@ output_block_move (insn, operands, num_regs)
 	  bytes -= UNITS_PER_WORD;
 	}
 
+      else if (bytes >= UNITS_PER_WORD && TARGET_GAS)
+	{
+#if BYTES_BIG_ENDIAN
+	  load_store[num].load     = "lwl\t%0,%1\n\tlwr\t%0,%2";
+	  load_store[num].load_nop = "lwl\t%0,%1\n\tlwr\t%0,%2%#";
+	  load_store[num].store    = "swl\t%0,%1\n\tswr\t%0,%2";
+#else
+	  load_store[num].load     = "lwl\t%0,%2\n\tlwr\t%0,%1";
+	  load_store[num].load_nop = "lwl\t%0,%2\n\tlwr\t%0,%1%#";
+	  load_store[num].store    = "swl\t%0,%2\n\tswr\t%0,%1";
+#endif
+	  load_store[num].mode = SImode;
+	  offset += UNITS_PER_WORD;
+	  bytes -= UNITS_PER_WORD;
+	  use_lwl_lwr = TRUE;
+	}
+
       else if (bytes >= UNITS_PER_WORD)
 	{
 	  load_store[num].load     = "ulw\t%0,%1";
@@ -2067,27 +2085,43 @@ output_block_move (insn, operands, num_regs)
 
 	  for (i = 0; i < num; i++)
 	    {
+	      int offset;
+
 	      if (!operands[i+4])
 		abort ();
 
 	      if (GET_MODE (operands[i+4]) != load_store[i].mode)
 		operands[i+4] = gen_rtx (REG, load_store[i].mode, REGNO (operands[i+4]));
 
+	      offset = load_store[i].offset;
 	      xoperands[0] = operands[i+4];
 	      xoperands[1] = gen_rtx (MEM, load_store[i].mode,
-				      plus_constant (src_reg, load_store[i].offset));
+				      plus_constant (src_reg, offset));
+
+	      if (use_lwl_lwr)
+		xoperands[2] = gen_rtx (MEM, load_store[i].mode,
+					plus_constant (src_reg, UNITS_PER_WORD-1+offset));
+
 	      output_asm_insn (load_store[i].load, xoperands);
 	    }
 
 	  for (i = 0; i < num; i++)
 	    {
+	      int offset = load_store[i].offset;
 	      xoperands[0] = operands[i+4];
 	      xoperands[1] = gen_rtx (MEM, load_store[i].mode,
-				      plus_constant (dest_reg, load_store[i].offset));
+				      plus_constant (dest_reg, offset));
+
+
+	      if (use_lwl_lwr)
+		xoperands[2] = gen_rtx (MEM, load_store[i].mode,
+					plus_constant (dest_reg, UNITS_PER_WORD-1+offset));
+
 	      output_asm_insn (load_store[i].store, xoperands);
 	    }
 
 	  num = 0;		/* reset load_store */
+	  use_lwl_lwr = FALSE;	/* reset whether or not we used lwl/lwr */
 	}
     }
 
