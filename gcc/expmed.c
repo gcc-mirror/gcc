@@ -291,16 +291,18 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
   if (flag_force_mem)
     value = force_not_mem (value);
 
-  /* Note that the adjustment of BITPOS above has no effect on whether
-     BITPOS is 0 in a REG bigger than a word.  */
-  if (GET_MODE_SIZE (fieldmode) >= UNITS_PER_WORD
+  if ((GET_MODE_SIZE (fieldmode) >= UNITS_PER_WORD
+       || (GET_MODE_SIZE (GET_MODE (op0)) == GET_MODE_SIZE (fieldmode)
+	   && GET_MODE_SIZE (fieldmode) != 0))
       && (GET_CODE (op0) != MEM
 	  || ! SLOW_UNALIGNED_ACCESS (fieldmode, align)
 	  || (offset * BITS_PER_UNIT % bitsize == 0
 	      && align % GET_MODE_SIZE (fieldmode) == 0))
-      && bitpos == 0 && bitsize == GET_MODE_BITSIZE (fieldmode))
+      && (BYTES_BIG_ENDIAN ? bitpos + bitsize == unit : bitpos == 0)
+      && bitsize == GET_MODE_BITSIZE (fieldmode))
     {
       /* Storing in a full-word or multi-word field in a register
+	 can be done with just SUBREG.  Also, storing in the entire object
 	 can be done with just SUBREG.  */
       if (GET_MODE (op0) != fieldmode)
 	{
@@ -332,10 +334,11 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
   if (GET_CODE (op0) != MEM
       && (BYTES_BIG_ENDIAN ? bitpos + bitsize == unit : bitpos == 0)
       && bitsize == GET_MODE_BITSIZE (fieldmode)
-      && (GET_MODE (op0) == fieldmode
-	  || (movstrict_optab->handlers[(int) fieldmode].insn_code
-	      != CODE_FOR_nothing)))
+      && (movstrict_optab->handlers[(int) fieldmode].insn_code
+	  != CODE_FOR_nothing))
     {
+      int icode = movstrict_optab->handlers[(int) fieldmode].insn_code;
+
       /* Get appropriate low part of the value being stored.  */
       if (GET_CODE (value) == CONST_INT || GET_CODE (value) == REG)
 	value = gen_lowpart (fieldmode, value);
@@ -344,30 +347,25 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 		 || GET_CODE (value) == CONST))
 	value = convert_to_mode (fieldmode, value, 0);
 
-      if (GET_MODE (op0) == fieldmode)
-	emit_move_insn (op0, value);
-      else
+      if (! (*insn_data[icode].operand[1].predicate) (value, fieldmode))
+	value = copy_to_mode_reg (fieldmode, value);
+
+      if (GET_CODE (op0) == SUBREG)
 	{
-	  int icode = movstrict_optab->handlers[(int) fieldmode].insn_code;
-	  if (! (*insn_data[icode].operand[1].predicate) (value, fieldmode))
-	    value = copy_to_mode_reg (fieldmode, value);
-
-	  if (GET_CODE (op0) == SUBREG)
-	    {
-	      if (GET_MODE (SUBREG_REG (op0)) == fieldmode
-		  || GET_MODE_CLASS (fieldmode) == MODE_INT
-		  || GET_MODE_CLASS (fieldmode) == MODE_PARTIAL_INT)
-		op0 = SUBREG_REG (op0);
-	      else
-		/* Else we've got some float mode source being extracted into
-		   a different float mode destination -- this combination of
-		   subregs results in Severe Tire Damage.  */
-		abort ();
-	    }
-
-	  emit_insn (GEN_FCN (icode)
-		     (gen_rtx_SUBREG (fieldmode, op0, offset), value));
+	  if (GET_MODE (SUBREG_REG (op0)) == fieldmode
+	      || GET_MODE_CLASS (fieldmode) == MODE_INT
+	      || GET_MODE_CLASS (fieldmode) == MODE_PARTIAL_INT)
+	    op0 = SUBREG_REG (op0);
+	  else
+	    /* Else we've got some float mode source being extracted into
+	       a different float mode destination -- this combination of
+	       subregs results in Severe Tire Damage.  */
+	    abort ();
 	}
+
+      emit_insn (GEN_FCN (icode)
+		 (gen_rtx_SUBREG (fieldmode, op0, offset), value));
+
       return value;
     }
 
