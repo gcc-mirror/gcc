@@ -1,5 +1,5 @@
 /* Tree-dumping functionality for intermediate representation.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Written by Mark Mitchell <mark@codesourcery.com>
 
 This file is part of GNU CC.
@@ -24,6 +24,25 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "cp-tree.h"
 #include "c-dump.h"
+
+static void dump_access
+  PARAMS ((dump_info_p, tree));
+
+/* Dump a representation of the accessibility information associated
+   with T.  */
+
+static void
+dump_access (di, t)
+     dump_info_p di;
+     tree t;
+{
+  if (TREE_PROTECTED(t))
+    dump_string (di, "protected");
+  else if (TREE_PRIVATE(t))
+    dump_string (di, "private");
+  else
+    dump_string (di, "public");
+}
 
 int
 cp_dump_tree (di, t)
@@ -82,13 +101,33 @@ cp_dump_tree (di, t)
 	}
 
       dump_child ("vfld", TYPE_VFIELD (t));
+	
+      {
+	int i;
+
+	for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); ++i)
+	  {
+	    tree base_binfo = BINFO_BASETYPE (TYPE_BINFO (t), i);
+	    dump_child ("base", BINFO_TYPE (base_binfo));
+	    if (TREE_VIA_VIRTUAL (base_binfo)) 
+	      dump_string (di, "virtual");
+	    dump_access (di, base_binfo);
+	  }
+      }
+      break;
+
+    case FIELD_DECL:
+      dump_access (di, t);
       break;
 
     case FUNCTION_DECL:
       if (!DECL_THUNK_P (t))
 	{
-	  if (DECL_FUNCTION_MEMBER_P (t))
-	    dump_string (di, "member");
+	  if (DECL_FUNCTION_MEMBER_P (t)) 
+	    {
+	      dump_string (di, "member");
+	      dump_access (di, t);
+	    }
 	  if (DECL_CONSTRUCTOR_P (t))
 	    dump_string (di, "constructor");
 	  if (DECL_DESTRUCTOR_P (t))
@@ -132,6 +171,7 @@ cp_dump_tree (di, t)
       dump_child ("rslt", DECL_TEMPLATE_RESULT (t));
       dump_child ("inst", DECL_TEMPLATE_INSTANTIATIONS (t));
       dump_child ("spcs", DECL_TEMPLATE_SPECIALIZATIONS (t));
+      dump_child ("prms", DECL_TEMPLATE_PARMS (t));
       break;
 
     case OVERLOAD:
