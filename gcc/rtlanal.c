@@ -2015,3 +2015,76 @@ computed_jump_p (insn)
     }
   return 0;
 }
+
+/* Traverse X via depth-first search, calling F for each
+   sub-expression (including X itself).  F is also passed the DATA.
+   If F returns -1, do not traverse sub-expressions, but continue
+   traversing the rest of the tree.  If F ever returns any other
+   non-zero value, stop the traversal, and return the value returned
+   by F.  Otherwise, return 0.  This function does not traverse inside
+   tree structure that contains RTX_EXPRs, or into sub-expressions
+   whose format code is `0' since it is not known whether or not those
+   codes are actually RTL.
+
+   This routine is very general, and could (should?) be used to
+   implement many of the other routines in this file.  */
+
+int for_each_rtx (x, f, data)
+     rtx* x;
+     rtx_function f;
+     void* data;
+{
+  int result;
+  int length;
+  char* format;
+  int i;
+
+  /* Call F on X.  */
+  result = (*f)(x, data);
+  if (result == -1)
+    /* Do not traverse sub-expressions.  */
+    return 0;
+  else if (result != 0)
+    /* Stop the traversal.  */
+    return result;
+
+  if (*x == NULL_RTX)
+    /* There are no sub-expressions.  */
+    return 0;
+
+  length = GET_RTX_LENGTH (GET_CODE (*x));
+  format = GET_RTX_FORMAT (GET_CODE (*x));
+
+  for (i = 0; i < length; ++i) 
+    {
+      switch (format[i]) 
+	{
+	case 'e':
+	  result = for_each_rtx (&XEXP (*x, i), f, data);
+	  if (result != 0)
+	    return result;
+	  break;
+
+	case 'V':
+	case 'E':
+	  if (XVEC (*x, i) != 0) 
+	    {
+	      int j;
+	      for (j = 0; j < XVECLEN (*x, i); ++j)
+		{
+		  result = for_each_rtx (&XVECEXP (*x, i, j), f, data);
+		  if (result != 0)
+		    return result;
+		}
+	    }
+	  break; 
+
+	default:
+	  /* Nothing to do.  */
+	  break;
+	}
+
+    }
+
+  return 0;
+}
