@@ -1927,6 +1927,7 @@ java/nio/channels/DatagramChannel.java \
 java/nio/channels/IllegalBlockingModeException.java \
 java/nio/channels/ServerSocketChannel.java \
 java/nio/channels/SocketChannel.java \
+java/nio/channels/spi/AbstractSelectableChannel.java \
 java/security/AccessControlContext.java \
 java/security/AccessControlException.java \
 java/security/AccessController.java \
