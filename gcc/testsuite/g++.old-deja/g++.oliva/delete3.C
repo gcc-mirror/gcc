@@ -5,8 +5,6 @@
 // Test whether dtors of vbases are called on throw within new[].
 // Variant of delete2.C.
 
-// execution test - XFAIL *-*-*
-
 extern "C" void abort();
 extern "C" void exit(int);
 
