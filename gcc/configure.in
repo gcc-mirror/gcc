@@ -1429,15 +1429,28 @@ for machine in $build $host $target; do
 		extra_headers=math-68881.h
 		gnu_ld=yes
 		;;
+	m68k-*-linux-gnulibc1)		# Motorola m68k's running Linux
+		xm_file=m68k/xm-linux.h	# with ELF format using the
+		xmake_file=x-linux	# Linux C library 5
+		tm_file=m68k/linux.h
+		tmake_file="t-linux t-linux-gnulibc1 m68k/t-linux"
+		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
+		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		extra_headers=math-68881.h
+		gnu_ld=yes
+		;;
 	m68k-*-linux-gnu*)			# Motorola m68k's running Linux
-		xm_file=m68k/xm-linux.h	# with ELF format
-		xmake_file=x-linux
+		xm_file=m68k/xm-linux.h	# with ELF format using glibc 2
+		xmake_file=x-linux	# aka the Linux C library 6.
 		tm_file=m68k/linux.h
 		tmake_file="t-linux m68k/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		extra_headers=math-68881.h
 		gnu_ld=yes
+		if [[ x$thread_file = x ]]; then
+			thread_file='posix'
+		fi
 		;;
 	m68k-*-psos*)
 		tmake_file=m68k/t-m68kbare
