@@ -2940,41 +2940,6 @@
   DONE;
 }")
 
-;; The '&' for operand 2 is not really true, but push_secondary_reload
-;; insists on it.
-;; Operand 1 must accept FPUL_REGS in case fpul is reloaded to memory,
-;; to avoid a bogus tertiary reload.
-;; We need a tertiary reload when a floating point register is reloaded
-;; to memory, so the predicate for operand 0 must accept this, while the 
-;; constraint of operand 1 must reject the secondary reload register.
-;; Thus, the secondary reload register for this case has to be GENERAL_REGS,
-;; too.
-;; By having the predicate for operand 0 reject any register, we make
-;; sure that the ordinary moves that just need an intermediate register
-;; won't get a bogus tertiary reload.
-;; We use tertiary_reload_operand instead of memory_operand here because
-;; memory_operand rejects operands that are not directly addressible, e.g.:
-;; (mem:SF (plus:SI (reg:SI FP_REG)
-;;         (const_int 132)))
-
-(define_expand "reload_outsf"
-  [(parallel [(set (match_operand:SF 2 "register_operand" "=&r")
-		   (match_operand:SF 1 "register_operand" "y"))
-	      (clobber (scratch:SI))])
-   (parallel [(set (match_operand:SF 0 "tertiary_reload_operand" "=m")
-		   (match_dup 2))
-	      (clobber (scratch:SI))])]
-  ""
-  "
-{
-  if (TARGET_SH3E)
-    {
-      emit_insn (gen_movsf_ie (operands[2], operands[1], get_fpscr_rtx ()));
-      emit_insn (gen_movsf_ie (operands[0], operands[2], get_fpscr_rtx ()));
-      DONE;
-    }
-}")
-
 ;; If the output is a register and the input is memory or a register, we have
 ;; to be careful and see which word needs to be loaded first.  
 
@@ -3119,15 +3084,22 @@
 ;; when the destination changes mode.
 (define_insn "movsf_ie"
   [(set (match_operand:SF 0 "general_movdst_operand"
-	 "=f,r,f,f,fy,f,m,r,r,m,f,y,y,rf,r,y,y")
+	 "=f,r,f,f,fy,f,m,r,r,m,f,y,y,rf,r<,y,y")
 	(match_operand:SF 1 "general_movsrc_operand"
-	  "f,r,G,H,FQ,mf,f,FQ,mr,r,y,f,>,fr,y,r,y"))
+	  "f,r,G,H,FQ,mf,f,FQ,mr,r,y,f,>,fr,y,r>,y"))
    (use (match_operand:PSI 2 "fpscr_operand" "c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c"))
    (clobber (match_scratch:SI 3 "=X,X,X,X,&z,X,X,X,X,X,X,X,X,y,X,X,X"))]
 
   "TARGET_SH3E
    && (arith_reg_operand (operands[0], SFmode)
-       || arith_reg_operand (operands[1], SFmode))"
+       || arith_reg_operand (operands[1], SFmode)
+       || arith_reg_operand (operands[3], SImode)
+       || (fpul_operand (operands[0], SFmode)
+	   && memory_operand (operands[1], SFmode)
+	   && GET_CODE (XEXP (operands[1], 0)) == POST_INC)
+       || (fpul_operand (operands[1], SFmode)
+	   && memory_operand (operands[0], SFmode)
+	   && GET_CODE (XEXP (operands[0], 0)) == PRE_DEC))"
   "@
 	fmov	%1,%0
 	mov	%1,%0
@@ -3188,7 +3160,7 @@
    (set_attr "type" "nil")])
 
 (define_expand "reload_insf"
-  [(parallel [(set (match_operand:SF 0 "register_operand" "=f")
+  [(parallel [(set (match_operand:SF 0 "register_operand" "=a")
 		   (match_operand:SF 1 "immediate_operand" "FQ"))
 	      (use (reg:PSI FPSCR_REG))
 	      (clobber (match_operand:SI 2 "register_operand" "=&z"))])]
