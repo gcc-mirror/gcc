@@ -1,3 +1,10 @@
+2002-03-08  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-lang.c (LANG_HOOKS_UNSAVE): Redefine.
+	* cp-tree.h (cxx_unsave): New.
+	* tree.c (cp_unsave): Rename cxx_unsave, update prototype.
+	(init_tree): Update.
+
 2002-03-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl.c (cxx_init_decl_processing): Use ARRAY_SIZE in lieu of

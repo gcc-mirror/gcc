@@ -52,8 +52,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* obstack.[ch] explicitly declined to prototype this.  */
 extern int _obstack_allocated_p PARAMS ((struct obstack *h, PTR obj));
 
-static void unsave_expr_now_r PARAMS ((tree));
-
 /* Objects allocated on this obstack last forever.  */
 
 struct obstack permanent_obstack;
@@ -166,14 +164,6 @@ static tree make_vector PARAMS ((enum machine_mode, tree, int));
 static int type_hash_marked_p PARAMS ((const void *));
 static void type_hash_mark PARAMS ((const void *));
 static int mark_tree_hashtable_entry PARAMS((void **, void *));
-
-/* If non-null, these are language-specific helper functions for
-   unsave_expr_now.  If present, LANG_UNSAVE is called before its
-   argument (an UNSAVE_EXPR) is to be unsaved, and all other
-   processing in unsave_expr_now is aborted.  LANG_UNSAVE_EXPR_NOW is
-   called from unsave_expr_1 for language-specific tree codes.  */
-void (*lang_unsave) PARAMS ((tree *));
-void (*lang_unsave_expr_now) PARAMS ((tree));
 
 /* If non-null, these are language-specific helper functions for
    unsafe_for_reeval.  Return negative to not handle some tree.  */
@@ -1670,23 +1660,21 @@ unsave_expr_1 (expr)
       break;
 
     default:
-      if (lang_unsave_expr_now != 0)
-	(*lang_unsave_expr_now) (expr);
       break;
     }
 }
 
-/* Helper function for unsave_expr_now.  */
+/* Default lang hook for "unsave_expr_now".  */
 
-static void
-unsave_expr_now_r (expr)
+tree
+lhd_unsave_expr_now (expr)
      tree expr;
 {
   enum tree_code code;
 
   /* There's nothing to do for NULL_TREE.  */
   if (expr == 0)
-    return;
+    return expr;
 
   unsave_expr_1 (expr);
 
@@ -1702,8 +1690,8 @@ unsave_expr_now_r (expr)
     case 'x':  /* miscellaneous: e.g., identifier, TREE_LIST or ERROR_MARK.  */
       if (code == TREE_LIST)
 	{
-	  unsave_expr_now_r (TREE_VALUE (expr));
-	  unsave_expr_now_r (TREE_CHAIN (expr));
+	  lhd_unsave_expr_now (TREE_VALUE (expr));
+	  lhd_unsave_expr_now (TREE_CHAIN (expr));
 	}
       break;
 
@@ -1717,26 +1705,13 @@ unsave_expr_now_r (expr)
 	int i;
 
 	for (i = first_rtl_op (code) - 1; i >= 0; i--)
-	  unsave_expr_now_r (TREE_OPERAND (expr, i));
+	  lhd_unsave_expr_now (TREE_OPERAND (expr, i));
       }
       break;
 
     default:
       abort ();
     }
-}
-
-/* Modify a tree in place so that all the evaluate only once things
-   are cleared out.  Return the EXPR given.  */
-
-tree
-unsave_expr_now (expr)
-     tree expr;
-{
-  if (lang_unsave!= 0)
-    (*lang_unsave) (&expr);
-  else
-    unsave_expr_now_r (expr);
 
   return expr;
 }
