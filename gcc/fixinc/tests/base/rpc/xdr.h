@@ -9,6 +9,16 @@
 
 
 
+#if defined( RPC_XDR_LVALUE_CAST_A_CHECK )
+#define IXDR_GET_LONG(buf) ((long)IXDR_GET_U_INT32(buf))
+#endif  /* RPC_XDR_LVALUE_CAST_A_CHECK */
+
+
+#if defined( RPC_XDR_LVALUE_CAST_B_CHECK )
+#define IXDR_PUT_LONG(buf, v) ((long)IXDR_PUT_INT32(buf, (long)(v)))
+#endif  /* RPC_XDR_LVALUE_CAST_B_CHECK */
+
+
 #if defined( STRUCT_FILE_CHECK )
 struct __file_s;
 extern void xdrstdio_create( struct __file_s* );
