@@ -1,3 +1,11 @@
+Sat Jan 12 08:54:51 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* diagnostic.c (warn_deprecated_use): Rework to lower indentation.
+	* expr.c (emit_move_insn_1): Remove warning, use HOST_WIDE_INT for
+	offsets, and change line folding.
+	* optabs.c (expand_binop): Remove warnings.
+	* sdbout.c (sdbout_record_type_name): Constify NAME to avoid warning.
+	
 2002-01-12  Graham Stott <grahams@redhat.com>
 
 	* attribs.c (handle_deprecated_attribute): constify WHAT.

@@ -2791,7 +2791,6 @@ emit_move_insn_1 (x, y)
   enum machine_mode mode = GET_MODE (x);
   enum machine_mode submode;
   enum mode_class class = GET_MODE_CLASS (mode);
-  unsigned int i;
 
   if ((unsigned int) mode >= (unsigned int) MAX_MACHINE_MODE)
     abort ();
@@ -2817,10 +2816,11 @@ emit_move_insn_1 (x, y)
       /* In case we output to the stack, but the size is smaller machine can
 	 push exactly, we need to use move instructions.  */
       if (stack
-	  && PUSH_ROUNDING (GET_MODE_SIZE (submode)) != GET_MODE_SIZE (submode))
+	  && (PUSH_ROUNDING (GET_MODE_SIZE (submode))
+	      != GET_MODE_SIZE (submode)))
 	{
 	  rtx temp;
-	  int offset1, offset2;
+	  HOST_WIDE_INT offset1, offset2;
 
 	  /* Do not use anti_adjust_stack, since we don't want to update
 	     stack_pointer_delta.  */
@@ -2832,12 +2832,13 @@ emit_move_insn_1 (x, y)
 #endif
 			       stack_pointer_rtx,
 			       GEN_INT
-				 (PUSH_ROUNDING (GET_MODE_SIZE (GET_MODE (x)))),
-			       stack_pointer_rtx,
-			       0,
-			       OPTAB_LIB_WIDEN);
+				 (PUSH_ROUNDING
+				  (GET_MODE_SIZE (GET_MODE (x)))),
+			       stack_pointer_rtx, 0, OPTAB_LIB_WIDEN);
+
 	  if (temp != stack_pointer_rtx)
 	    emit_move_insn (stack_pointer_rtx, temp);
+
 #ifdef STACK_GROWS_DOWNWARD
 	  offset1 = 0;
 	  offset2 = GET_MODE_SIZE (submode);
@@ -2846,6 +2847,7 @@ emit_move_insn_1 (x, y)
 	  offset2 = (-PUSH_ROUNDING (GET_MODE_SIZE (GET_MODE (x)))
 		     + GET_MODE_SIZE (submode));
 #endif
+
 	  emit_move_insn (change_address (x, submode,
 					  gen_rtx_PLUS (Pmode,
 						        stack_pointer_rtx,
@@ -2901,8 +2903,10 @@ emit_move_insn_1 (x, y)
 	  if (GET_MODE_BITSIZE (mode) < 2 * BITS_PER_WORD
 	      && (reload_in_progress | reload_completed) == 0)
 	    {
-	      int packed_dest_p = (REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER);
-	      int packed_src_p  = (REG_P (y) && REGNO (y) < FIRST_PSEUDO_REGISTER);
+	      int packed_dest_p
+		= (REG_P (x) && REGNO (x) < FIRST_PSEUDO_REGISTER);
+	      int packed_src_p
+		= (REG_P (y) && REGNO (y) < FIRST_PSEUDO_REGISTER);
 
 	      if (packed_dest_p || packed_src_p)
 		{
@@ -2924,12 +2928,14 @@ emit_move_insn_1 (x, y)
 		      if (packed_dest_p)
 			{
 			  rtx sreg = gen_rtx_SUBREG (reg_mode, x, 0);
+
 			  emit_move_insn_1 (cmem, y);
 			  return emit_move_insn_1 (sreg, mem);
 			}
 		      else
 			{
 			  rtx sreg = gen_rtx_SUBREG (reg_mode, y, 0);
+
 			  emit_move_insn_1 (mem, sreg);
 			  return emit_move_insn_1 (x, cmem);
 			}
@@ -2950,9 +2956,7 @@ emit_move_insn_1 (x, y)
 	      && ! (reload_in_progress || reload_completed)
 	      && (GET_CODE (realpart_x) == SUBREG
 		  || GET_CODE (imagpart_x) == SUBREG))
-	    {
-	      emit_insn (gen_rtx_CLOBBER (VOIDmode, x));
-	    }
+	    emit_insn (gen_rtx_CLOBBER (VOIDmode, x));
 
 	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
 		     (realpart_x, realpart_y));
@@ -2971,6 +2975,7 @@ emit_move_insn_1 (x, y)
       rtx last_insn = 0;
       rtx seq, inner;
       int need_clobber;
+      int i;
 
 #ifdef PUSH_ROUNDING
 
@@ -2991,19 +2996,20 @@ emit_move_insn_1 (x, y)
 #endif
 			       stack_pointer_rtx,
 			       GEN_INT
-				 (PUSH_ROUNDING (GET_MODE_SIZE (GET_MODE (x)))),
-			       stack_pointer_rtx,
-			       0,
-			       OPTAB_LIB_WIDEN);
+				 (PUSH_ROUNDING
+				  (GET_MODE_SIZE (GET_MODE (x)))),
+			       stack_pointer_rtx, 0,& OPTAB_LIB_WIDEN);
+
           if (temp != stack_pointer_rtx)
             emit_move_insn (stack_pointer_rtx, temp);
 
 	  code = GET_CODE (XEXP (x, 0));
+
 	  /* Just hope that small offsets off SP are OK.  */
 	  if (code == POST_INC)
 	    temp = gen_rtx_PLUS (Pmode, stack_pointer_rtx, 
-				GEN_INT (-(HOST_WIDE_INT)
-					   GET_MODE_SIZE (GET_MODE (x))));
+				GEN_INT (-((HOST_WIDE_INT)
+					   GET_MODE_SIZE (GET_MODE (x)))));
 	  else if (code == POST_DEC)
 	    temp = gen_rtx_PLUS (Pmode, stack_pointer_rtx, 
 				GEN_INT (GET_MODE_SIZE (GET_MODE (x))));
@@ -3062,9 +3068,7 @@ emit_move_insn_1 (x, y)
       if (x != y
 	  && ! (reload_in_progress || reload_completed)
 	  && need_clobber != 0)
-	{
-	  emit_insn (gen_rtx_CLOBBER (VOIDmode, x));
-	}
+	emit_insn (gen_rtx_CLOBBER (VOIDmode, x));
 
       emit_insn (seq);
 
