@@ -1,3 +1,8 @@
+2003-09-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12053
+	* class.c (include_empty_classes): Correct logic for ABI version 1.
+
 2003-09-03  Richard Henderson  <rth@redhat.com>
 
 	* optimize.c (optimize_function): Push/pop ggc context around
