@@ -174,7 +174,7 @@ in the following sections.
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions
 -fmove-all-movables  -fno-default-inline  -fno-defer-pop
 -fno-function-cse  -fno-inline  -fno-peephole -ftrapv
--fomit-frame-pointer  -foptimize-register-moves -foptimize-sibling-calls
+-fomit-frame-pointer  -foptimize-register-move -foptimize-sibling-calls
 -fregmove  -frename-registers  -frerun-cse-after-loop  -frerun-loop-opt
 -freduce-all-givs  -fschedule-insns  -fschedule-insns2  -fssa
 -fstrength-reduce  -fstrict-aliasing  -fthread-jumps  -funroll-all-loops
@@ -2788,7 +2788,7 @@ which depend on that behavior.
 @item -fexpensive-optimizations
 Perform a number of minor optimizations that are relatively expensive.
 
-@item -foptimize-register-moves
+@item -foptimize-register-move
 @itemx -fregmove
 Attempt to reassign register numbers in move instructions and as
 operands of other simple instructions in order to maximize the amount of
@@ -2796,7 +2796,7 @@ register tying.  This is especially helpful on machines with two-operand
 instructions.  GCC enables this optimization by default with @samp{-O2}
 or higher.
 
-Note @code{-fregmove} and @code{-foptimize-register-moves} are the same
+Note @code{-fregmove} and @code{-foptimize-register-move} are the same
 optimization.
 
 @item -fdelayed-branch
