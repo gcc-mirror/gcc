@@ -177,17 +177,20 @@ simplify_gen_ternary (code, mode, op0_mode, op0, op1, op2)
   return gen_rtx_fmt_eee (code, mode, op0, op1, op2);
 }
 
-/* Likewise, for relational operations.  */
+/* Likewise, for relational operations.
+   CMP_MODE specifies mode comparison is done in.
+  */
 
 rtx
-simplify_gen_relational (code, mode, op0, op1)
+simplify_gen_relational (code, mode, cmp_mode, op0, op1)
      enum rtx_code code;
      enum machine_mode mode;
+     enum machine_mode cmp_mode;
      rtx op0, op1;
 {
   rtx tem;
 
-  if ((tem = simplify_relational_operation (code, mode, op0, op1)) != 0)
+  if ((tem = simplify_relational_operation (code, cmp_mode, op0, op1)) != 0)
     return tem;
 
   /* Put complex operands first and constants second.  */
@@ -238,6 +241,14 @@ simplify_replace_rtx (x, old, new)
 	simplify_gen_binary (code, mode,
 			     simplify_replace_rtx (XEXP (x, 0), old, new),
 			     simplify_replace_rtx (XEXP (x, 1), old, new));
+    case '<':
+      return
+	simplify_gen_relational (code, mode,
+				 (GET_MODE (XEXP (x, 0)) != VOIDmode
+				  ? GET_MODE (XEXP (x, 0))
+				  : GET_MODE (XEXP (x, 1))),
+				 simplify_replace_rtx (XEXP (x, 0), old, new),
+				 simplify_replace_rtx (XEXP (x, 1), old, new));
 
     case '3':
     case 'b':
@@ -258,8 +269,27 @@ simplify_replace_rtx (x, old, new)
       return x;
 
     default:
+      if (GET_CODE (x) == MEM)
+	{
+	  /* We can't use change_address here, since it verifies memory address
+	     for corectness.  We don't want such check, since we may handle
+	     addresses previously incorect (such as ones in push instructions)
+	     and it is caller's work to verify whether resulting insn match.  */
+	  rtx addr = simplify_replace_rtx (XEXP (x, 0), old, new);
+	  rtx mem;
+	  if (XEXP (x, 0) != addr)
+	    {
+	      mem = gen_rtx_MEM (GET_MODE (x), addr);
+	      MEM_COPY_ATTRIBUTES (mem, x);
+	    }
+	  else
+	    mem = x;
+	  return mem;
+	}
+
       return x;
     }
+  return x;
 }
 
 /* Try to simplify a unary operation CODE whose output mode is to be
