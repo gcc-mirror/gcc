@@ -1,3 +1,7 @@
+Mon Mar 23 23:49:47 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* stmt.c (unroll_block_trees): Free block_vector if needed.
+
 Mon Mar 23 23:26:42 1998  Philippe De Muyter  <phdm@macqel.be>
 
 	* m68k/m68k.md (zero_extendqidi2, zero_extendhidi2): New patterns.
