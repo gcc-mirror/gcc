@@ -636,6 +636,22 @@ name_is_method_p (const unsigned char *name, int length)
   return 0;
 }
 
+/* Free the method name list.  */
+static void
+free_method_name_list ()
+{
+  struct method_name *p = method_name_list;
+  while (p != NULL)
+    {
+      struct method_name *next = p->next;
+      free (p->name);
+      free (p->signature);
+      free (p);
+      p = next;
+    }
+  method_name_list = NULL;
+}
+
 /* If there is already a native method named NAME, whose signature is not
    SIGNATURE, then return true.  Otherwise return false.  */
 static int
@@ -2530,6 +2546,7 @@ main (int argc, char** argv)
 		}
 	    }
 	}
+      free_method_name_list ();
       process_file (&jcf, out);
       JCF_FINISH (&jcf);
       if (current_output_file != output_file)

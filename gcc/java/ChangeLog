@@ -1,3 +1,9 @@
+2004-09-21  Tom Tromey  <tromey@redhat.com>
+
+	PR java/17575:
+	* gjavah.c (free_method_name_list): New method.
+	(main): Call it.
+
 2004-09-17  Jeffrey D. Oldham  <oldham@codesourcery.com>
 	    Zack Weinberg  <zack@codesourcery.com>
 
