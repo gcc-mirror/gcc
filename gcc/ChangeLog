@@ -1,5 +1,8 @@
 Thu Apr  1 03:48:34 1999  H.J. Lu  (hjl@gnu.org)
 
+	* i386.c (output_int_conditional_move): Use "enum rtx_code" for code
+	type.
+
 	* i386.c (notice_update_cc): No need to check the INT mode for
 	conditional moves since FLOAT conditional moves don't affect cc0.
 
