@@ -1,5 +1,10 @@
 2003-06-19  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/10939
+	* pt.c (tsubst_decl): Do not try to substitute into non-dependent
+	functions.
+	(value_dependent_expression_p): Correct logic for FUNCTION_DECLs.
+
 	PR c++/9649
 	* cp-tree.h (pushdecl_class_level): Change prototype.
 	(push_class_level_binding): Likewise.

@@ -5909,6 +5909,17 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 	if (TREE_CODE (DECL_TI_TEMPLATE (t)) == TEMPLATE_DECL)
 	  {
 	    tree spec;
+	    bool dependent_p;
+
+	    /* If T is not dependent, just return it.  We have to
+	       increment PROCESSING_TEMPLATE_DECL because
+	       value_dependent_expression_p assumes that nothing is
+	       dependent when PROCESSING_TEMPLATE_DECL is zero.  */
+	    ++processing_template_decl;
+	    dependent_p = value_dependent_expression_p (t);
+	    --processing_template_decl;
+	    if (!dependent_p)
+	      return t;
 
 	    /* Calculate the most general template of which R is a
 	       specialization, and the complete set of arguments used to
@@ -11368,8 +11379,8 @@ value_dependent_expression_p (tree expression)
 
   /* A name declared with a dependent type.  */
   if (TREE_CODE (expression) == LOOKUP_EXPR
-      || (DECL_P (expression)
-	  && dependent_type_p (TREE_TYPE (expression))))
+      || (DECL_P (expression) 
+	  && type_dependent_expression_p (expression)))
     return true;
   /* A non-type template parameter.  */
   if ((TREE_CODE (expression) == CONST_DECL
