@@ -2339,6 +2339,12 @@ reg_unused_after (reg, insn)
 
 	      if (GET_CODE (this_insn) == CALL_INSN)
 		code = CALL_INSN;
+	      else if (GET_CODE (this_insn) == JUMP_INSN)
+		{
+		  if (INSN_ANNULLED_BRANCH_P (this_insn))
+		    return 0;
+		  code = JUMP_INSN;
+		}
 
 	      if (set && reg_overlap_mentioned_p (reg, SET_SRC (set)))
 		return 0;
@@ -2355,6 +2361,8 @@ reg_unused_after (reg, insn)
 	    }
 	  if (retval == 1)
 	    return 1;
+	  else if (code == JUMP_INSN)
+	    return 0;
 	}
       else if (GET_RTX_CLASS (code) == 'i')
 	{
