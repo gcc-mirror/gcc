@@ -1,3 +1,10 @@
+Wed Feb 16 21:07:53 2000  Denis Chertykov  <denisc@overta.ru>
+
+	* invoke.texi: Add AVR invocation docs.
+	* install.texi: Add information about AVR.
+	* md.texi: Add AVR constraint letters description.
+	* extend.texi: Add description for AVR specific attributes.
+
 2000-02-16  Jason Merrill  <jason@casey.cygnus.com>
 
 	* fixinc/fixinc.svr4: Wrap byteorder.h with extern "C".

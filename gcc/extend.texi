@@ -1682,6 +1682,25 @@ function is an interrupt handler.  The compiler will generate function
 entry and exit sequences suitable for use in an interrupt handler when this
 attribute is present.
 
+Interrupt handler functions on the AVR processors
+Use this option on the AVR to indicate that the specified
+function is an interrupt handler.  The compiler will generate function
+entry and exit sequences suitable for use in an interrupt handler when this
+attribute is present. Interrupts will be enabled inside function.
+
+@item signal
+@cindex signal handler functions on the AVR processors
+Use this option on the AVR to indicate that the specified
+function is an signal handler.  The compiler will generate function
+entry and exit sequences suitable for use in an signal handler when this
+attribute is present. Interrupts will be disabled inside function.
+
+@item naked
+@cindex function without a prologue/epilogue code on the AVR processors
+Use this option on the AVR to indicate that the specified
+function don't have a prologue/epilogue.  The compiler don't generate
+function entry and exit sequences.
+
 @item model (@var{model-name})
 @cindex function addressability on the M32R/D
 Use this attribute on the M32R/D to set the addressability of an object,

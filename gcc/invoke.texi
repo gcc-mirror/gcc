@@ -428,6 +428,10 @@ in the following sections.
 -msoft-float -mrtd -mnortd -mregparam -mnoregparam -msb -mnosb
 -mbitfield -mnobitfield -mhimem -mnohimem
 
+@emph{AVR Options}
+-mmcu=@var{mcu} -msize -minit-stack=@var{n} -mno-interrupts
+-mcall-prologues
+
 @emph{MCore Options}
 -mhardlit, -mno-hardlit -mdiv -mno-div -mrelax-immediates 
 -mno-relax-immediates -mwide-bitfields -mno-wide-bitfields
@@ -3765,8 +3769,9 @@ that macro, which enables you to change the defaults.
 * TMS320C3x/C4x Options::
 * V850 Options::
 * ARC Options::
-* MCore Options::
 * NS32K Options::
+* AVR Options::
+* MCore Options::
 @end menu
 
 @node M680x0 Options
@@ -6839,6 +6844,32 @@ Assume code will be loaded in the first 512MB of virtual address space.
 This is the default for all platforms.
 
 
+@end table
+
+@node AVR Options
+@subsection AVR Options
+@cindex AVR Options
+
+These options are defined for AVR implementations:
+
+@table @code
+@item -mmcu=@var{mcu}
+Specify ATMEL AVR mcu (at90s23xx,attiny22,at90s44xx,at90s85xx,atmega603,
+atmega103).
+
+@item -msize
+Output instruction size's to the asm file
+
+@item -minit-stack=@var{N}
+Specify the initial stack address
+
+@item -mno-interrupts
+Generated code is not compatible with hardware interrupts.
+Code size will be smaller.
+
+@item -mcall-prologues
+Functions prologues/epilogues expanded as call to appropriate
+subroutines. Code size will be smaller.
 @end table
 
 @node MCore Options

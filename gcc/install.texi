@@ -1,4 +1,4 @@
-@c Copyright (C) 1988, 89, 92-98, 1999 Free Software Foundation, Inc.
+@c Copyright (C) 1988, 89, 92-99, 2000 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -745,7 +745,7 @@ Here are the possible CPU types:
 
 @quotation
 @c gmicro, fx80, spur and tahoe omitted since they don't work.
-1750a, a29k, alpha, arm, c@var{n}, clipper, dsp16xx, elxsi, fr30, h8300,
+1750a, a29k, alpha, arm, avr, c@var{n}, clipper, dsp16xx, elxsi, fr30, h8300,
 hppa1.0, hppa1.1, i370, i386, i486, i586, i686, i786, i860, i960, m32r,
 m68000, m68k, m88k, mcore, mips, mipsel, mips64, mips64el, mn10200, mn10300,
 ns32k, pdp11, powerpc, powerpcle, romp, rs6000, sh, sparc, sparclite,
@@ -976,6 +976,17 @@ particular configuration.
 
 @item a29k-*-bsd
 AMD Am29050 used in a system running a variant of BSD Unix.
+
+@item avr
+ATMEL AVR-family micro controllers.  These are used in embedded
+applications.  There are no standard Unix configurations.
+Supports following MCU's:
+ - AT90S23xx
+ - ATtiny22
+ - AT90S44xx
+ - AT90S85xx
+ - ATmega603/603L
+ - ATmega103/103L
 
 @item decstation-*
 MIPS-based DECstations can support three different personalities:
