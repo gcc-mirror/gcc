@@ -1,3 +1,9 @@
+Fri Dec 11 12:56:07 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (reload_combine): Use BASIC_BLOCK_LIVE_AT_START
+	to determine if a register is live at a jump destination.
+	Everything is dead at a BARRIER.
+
 Thu Dec 10 16:02:06 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* cse.c (simplify_unary_operation): Sign-extend constants when

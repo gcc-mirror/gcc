@@ -9375,6 +9375,9 @@ static struct
    and the store_ruid / use_ruid fields in reg_state.  */
 static int reload_combine_ruid;
 
+#define LABEL_LIVE(LABEL) \
+  (label_live[CODE_LABEL_NUMBER (LABEL) - min_labelno])
+
 static void
 reload_combine ()
 {
@@ -9382,6 +9385,8 @@ reload_combine ()
   int first_index_reg = 1, last_index_reg = 0;
   int i;
   int last_label_ruid;
+  int min_labelno, n_labels;
+  HARD_REG_SET ever_live_at_start, *label_live;
 
   /* If reg+reg can be used in offsetable memory adresses, the main chunk of
      reload has already used it where appropriate, so there is no use in
@@ -9404,6 +9409,28 @@ reload_combine ()
   if (first_index_reg > last_index_reg)
     return;
 
+  /* Set up LABEL_LIVE and EVER_LIVE_AT_START.  The register lifetime
+     information is a bit fuzzy immediately after reload, but it's
+     still good enough to determine which registers are live at a jump
+     destination.  */
+  min_labelno = get_first_label_num ();
+  n_labels = max_label_num () - min_labelno;
+  label_live = (HARD_REG_SET *) xmalloc (n_labels * sizeof (HARD_REG_SET));
+  CLEAR_HARD_REG_SET (ever_live_at_start);
+  for (i = n_basic_blocks - 1; i >= 0; i--)
+    {
+      insn = basic_block_head[i];
+      if (GET_CODE (insn) == CODE_LABEL)
+	{
+	  HARD_REG_SET live;
+
+	  REG_SET_TO_HARD_REG_SET (live, basic_block_live_at_start[i]);
+	  compute_use_by_pseudos (&live, basic_block_live_at_start[i]);
+	  COPY_HARD_REG_SET (LABEL_LIVE (insn), live);
+	  IOR_HARD_REG_SET (ever_live_at_start, live);
+	}
+    }
+
   /* Initialize last_label_ruid, reload_combine_ruid and reg_state.  */
   last_label_ruid = reload_combine_ruid = 0;
   for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; --i)
@@ -9424,6 +9451,11 @@ reload_combine ()
          is and then later disable any optimization that would cross it.  */
       if (GET_CODE (insn) == CODE_LABEL)
 	last_label_ruid = reload_combine_ruid;
+      if (GET_CODE (insn) == BARRIER)
+	{
+	  for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; --i)
+	    reg_state[i].use_index = RELOAD_COMBINE_MAX_USES;
+	}
       if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
 	continue;
       reload_combine_ruid++;
@@ -9578,13 +9610,19 @@ reload_combine ()
 		reg_state[regno].use_index = -1;
 	    }
 	}
-      if (GET_CODE (insn) == JUMP_INSN)
+      if (GET_CODE (insn) == JUMP_INSN && GET_CODE (PATTERN (insn)) != RETURN)
 	{
 	  /* Non-spill registers might be used at the call destination in
 	     some unknown fashion, so we have to mark the unknown use.  */
+	  HARD_REG_SET *live;
+	  if ((condjump_p (insn) || condjump_in_parallel_p (insn))
+	      && JUMP_LABEL (insn))
+	    live = &LABEL_LIVE (JUMP_LABEL (insn));
+	  else
+	    live = &ever_live_at_start;
 	  for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; --i)
 	    {
-	      if (1)
+	      if (TEST_HARD_REG_BIT (*live, i))
 		reg_state[i].use_index = -1;
 	    }
 	}
@@ -9601,6 +9639,7 @@ reload_combine ()
 	    }
 	}
     }
+  free (label_live);
 }
 
 /* Check if DST is a register or a subreg of a register; if it is,
