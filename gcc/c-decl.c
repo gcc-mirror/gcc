@@ -411,16 +411,20 @@ tree static_ctors, static_dtors;
 
 /* Forward declarations.  */
 
-static tree grokparms (), grokdeclarator ();
-tree pushdecl ();
-tree builtin_function ();
-void shadow_tag_warned ();
-
-static tree lookup_tag ();
-static tree lookup_tag_reverse ();
-tree lookup_name_current_level ();
-static char *redeclaration_error_message ();
-static void layout_array_type ();
+static struct binding_level * make_binding_level	PROTO((void));
+static void clear_limbo_values		PROTO((tree));
+static int duplicate_decls		PROTO((tree, tree, int));
+static char *redeclaration_error_message PROTO((tree, tree));
+static void storedecls			PROTO((tree));
+static void storetags			PROTO((tree));
+static tree lookup_tag			PROTO((enum tree_code, tree,
+					       struct binding_level *, int));
+static tree lookup_tag_reverse		PROTO((tree));
+static tree grokdeclarator		PROTO((tree, tree, enum decl_context,
+					       int));
+static tree grokparms			PROTO((tree, int));
+static int field_decl_cmp		PROTO((tree *, tree *));
+static void layout_array_type		PROTO((tree));
 
 /* C-specific option variables.  */
 
@@ -6790,7 +6794,9 @@ combine_parm_decls (specparms, parmlist, void_at_end)
   
   if (void_at_end)
     return saveable_tree_cons (parmdecls, nonparms,
-			       nreverse (saveable_tree_cons (NULL_TREE, void_type_node, types)));
+			       nreverse (saveable_tree_cons (NULL_TREE,
+							     void_type_node,
+							     types)));
 
   return saveable_tree_cons (parmdecls, nonparms, nreverse (types));
 }
