@@ -1,5 +1,5 @@
 /* System.java -- useful methods to interface with the system
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -104,8 +104,10 @@ public final class System
    * {@link #setProperties(Properties)}, but will never be null, because
    * setProperties(null) sucks in the default properties.
    */
+  // Note that we use clone here and not new.  Some programs assume
+  // that the system properties do not have a parent.
   private static Properties properties
-    = new Properties(Runtime.defaultProperties);
+    = (Properties) Runtime.defaultProperties.clone();
 
   /**
    * The standard InputStream. This is assigned at startup and starts its
@@ -369,7 +371,11 @@ public final class System
     if (sm != null)
       sm.checkPropertiesAccess();
     if (properties == null)
-      properties = new Properties(Runtime.defaultProperties);
+      {
+	// Note that we use clone here and not new.  Some programs
+	// assume that the system properties do not have a parent.
+	properties = (Properties) Runtime.defaultProperties.clone();
+      }
     System.properties = properties;
   }
 
