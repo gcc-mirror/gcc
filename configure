@@ -1723,7 +1723,7 @@ case "${host}" in
     tentative_cc="/usr/cygnus/progressive/bin/gcc"
     host_makefile_frag="config/mh-lynxrs6k"
     ;;
-    powerpc-*-darwin*)
+  powerpc-*-darwin*)
     host_makefile_frag="config/mh-ppc-darwin"
     ;;
   *-*-lynxos*)

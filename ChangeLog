@@ -1,10 +1,29 @@
+2004-09-01  Paolo Bonzini  <bonzini@gnu.org>
+
+	* Makefile.tpl (sorry): Remove.
+	(clean-stage[+id+], clean-stage[+id+]-module): New targets.
+	(cleanstrap targets): Depend on distclean, not distclean-stage1.
+	(do-clean): Clean per-stage directories too.
+	(do-distclean): Run distclean-stage1 too.
+	(.NOTPARALLEL): Enable during toplevel bootstrap.
+	(stage[+id+]-bubble): Enable parallel execution during
+	the recursive invocation.
+	* Makefile.in: Regenerate.
+
+	Fix previous checkin:
+
+	* Makefile.tpl: Move BOOT_CFLAGS above host makefile fragment
+	include.
+	* configure.in: Fix indentation.
+	* configure: Regenerate.
+
 2004-08-31  Robert Bowdidge <bowdidge@apple.com>
 
-       * Makefile.in: Move BOOT_CFLAGS above host makefile fragment include.
-       * configure.in: add test for powerpc-*-darwin* to specify makefile frag
-       * configure: regenerate
-       * config/mh-ppc-darwin: create file, override BOOT_CFLAGS for 
-         -mdynamic-no-pic
+	* Makefile.in: Move BOOT_CFLAGS above host makefile fragment include.
+	* configure.in: add test for powerpc-*-darwin* to specify makefile frag
+	* configure: regenerate
+	* config/mh-ppc-darwin: create file, override BOOT_CFLAGS for 
+        -mdynamic-no-pic
 
 
 2004-08-31  Paolo Bonzini  <bonzini@gnu.org>
