@@ -728,31 +728,20 @@ add_partial_entry (handler)
    This routine is here to facilitate the porting of this code to
    systems with threads.  One can either replace the routine we emit a
    call for here in libgcc2.c, or one can modify this routine to work
-   with their thread system.  */
+   with their thread system.
+
+   Ideally, we really only want one per real function, not one
+   per inlined function.  */
 
 rtx
 get_dynamic_handler_chain ()
 {
-#if 0
-  /* Do this once we figure out how to get this to the front of the
-     function, and we really only want one per real function, not one
-     per inlined function.  */
-  if (current_function_dhc == 0)
-    {
-      rtx dhc, insns;
-      start_sequence ();
-
-      /* ... */
-      insns = get_insns ();
-      end_sequence ();
-      emit_insns_before (insns, get_first_nonparm_insn ());
-    }
-  /* We don't want a copy of the dhc, but rather, the single dhc.  */
-  return gen_rtx (MEM, Pmode, current_function_dhc);
-#endif
-
   static tree fn;
   tree expr;
+  rtx insns;
+
+  if (current_function_dhc)
+    return current_function_dhc;
 
   if (fn == NULL_TREE)
     {
@@ -779,7 +768,13 @@ get_dynamic_handler_chain ()
   TREE_SIDE_EFFECTS (expr) = 1;
   expr = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (expr)), expr);
 
-  return expand_expr (expr, NULL_RTX, VOIDmode, 0);
+  start_sequence ();
+  current_function_dhc = expand_expr (expr, NULL_RTX, VOIDmode, 0);
+  insns = get_insns ();
+  end_sequence ();
+  emit_insns_before (insns, get_first_nonparm_insn ());
+
+  return current_function_dhc;
 }
 
 /* Get a reference to the dynamic cleanup chain.  It points to the

@@ -1,5 +1,8 @@
 Thu Dec  4 11:51:00 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* except.c (get_dynamic_handler_chain): Only make the call once per
+ 	function.
+
 	* except.c (expand_end_all_catch): Fix for sjlj exceptions.
 
 Thu Dec  4 12:30:40 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
