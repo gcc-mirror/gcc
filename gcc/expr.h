@@ -627,14 +627,26 @@ extern rtx change_address PARAMS ((rtx, enum machine_mode, rtx));
 /* Return a memory reference like MEMREF, but with its mode changed
    to MODE and its address offset by OFFSET bytes.  */
 #define adjust_address(MEMREF, MODE, OFFSET) \
-  adjust_address_1 (MEMREF, MODE, OFFSET, 1)
+  adjust_address_1 (MEMREF, MODE, OFFSET, 1, 1)
 
 /* Likewise, but the reference is not required to be valid.  */
 #define adjust_address_nv(MEMREF, MODE, OFFSET) \
-  adjust_address_1 (MEMREF, MODE, OFFSET, 0)
+  adjust_address_1 (MEMREF, MODE, OFFSET, 0, 1)
+
+/* Return a memory reference like MEMREF, but with its mode changed
+   to MODE and its address changed to ADDR, which is assumed to be
+   increased by OFFSET bytes from MEMREF.  */
+#define adjust_automodify_address(MEMREF, MODE, ADDR, OFFSET) \
+  adjust_automodify_address_1 (MEMREF, MODE, ADDR, OFFSET, 1)
+
+/* Likewise, but the reference is not required to be valid.  */
+#define adjust_automodify_address_nv(MEMREF, MODE, ADDR, OFFSET) \
+  adjust_automodify_address_1 (MEMREF, MODE, ADDR, OFFSET, 0)
 
 extern rtx adjust_address_1 PARAMS ((rtx, enum machine_mode, HOST_WIDE_INT,
-				     int));
+				     int, int));
+extern rtx adjust_automodify_address_1 PARAMS ((rtx, enum machine_mode,
+						rtx, HOST_WIDE_INT, int));
 
 /* Return a memory reference like MEMREF, but whose address is changed by
    adding OFFSET, an RTX, to it.  POW2 is the highest power of two factor
