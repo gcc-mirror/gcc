@@ -1,5 +1,12 @@
 2004-11-17  Michael Koch  <konqueror@gmx.de>
 
+	* java/beans/Beans.java,
+	java/beans/PropertyChangeEvent.java,
+	java/beans/PropertyEditorSupport.java:
+	Fixed javadocs.
+
+2004-11-17  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/Timer.java (DEFAULT_SIZE): Made static.
 
 2004-11-17  Michael Koch  <konqueror@gmx.de>

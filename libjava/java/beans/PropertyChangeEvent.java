@@ -105,8 +105,8 @@ public class PropertyChangeEvent extends EventObject
    *
    * @param source the Bean containing the property
    * @param propertyName the property's name
-   * @param oldValue the old value of the property
-   * @param newValue the new value of the property
+   * @param oldVal the old value of the property
+   * @param newVal the new value of the property
    * @throws IllegalArgumentException if source is null
    */
   public PropertyChangeEvent(Object source, String propertyName,

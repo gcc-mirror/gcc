@@ -68,7 +68,7 @@ public class PropertyEditorSupport implements PropertyEditor
    * instance itself.
    *
    * @since 1.5
-   * @status this was <code>protected</code> prior to 1.5
+   * @specnote this was <code>protected</code> prior to 1.5
    */
   public PropertyEditorSupport()
   {
@@ -85,7 +85,7 @@ public class PropertyEditorSupport implements PropertyEditor
    * @param source The source to use when firing
    * property change events.
    * @since 1.5
-   * @status this was <code>protected</code> prior to 1.5
+   * @specnote this was <code>protected</code> prior to 1.5
    */
   public PropertyEditorSupport(Object source)
   {
