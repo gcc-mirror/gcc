@@ -2251,6 +2251,50 @@ int_size_in_bytes (type)
 
   return TREE_INT_CST_LOW (t);
 }
+
+/* Return the strictest alignment, in bits, that  T is known to have.  */
+
+unsigned int
+expr_align (t)
+     tree t;
+{
+  unsigned int align0, align1;
+
+  switch (TREE_CODE (t))
+    {
+    case NOP_EXPR:  case CONVERT_EXPR:  case NON_LVALUE_EXPR:
+      /* If we have conversions, we know that the alignment of the
+	 object must meet each of the alignments of the types.  */
+      align0 = expr_align (TREE_OPERAND (t, 0));
+      align1 = TYPE_ALIGN (TREE_TYPE (t));
+      return MAX (align0, align1);
+
+    case SAVE_EXPR:         case COMPOUND_EXPR:       case MODIFY_EXPR:
+    case INIT_EXPR:         case TARGET_EXPR:         case WITH_CLEANUP_EXPR:
+    case WITH_RECORD_EXPR:  case CLEANUP_POINT_EXPR:  case UNSAVE_EXPR:
+      /* These don't change the alignment of an object.  */
+      return expr_align (TREE_OPERAND (t, 0));
+
+    case COND_EXPR:
+      /* The best we can do is say that the alignment is the least aligned
+	 of the two arms.  */
+      align0 = expr_align (TREE_OPERAND (t, 1));
+      align1 = expr_align (TREE_OPERAND (t, 2));
+      return MIN (align0, align1);
+
+    case FUNCTION_DECL:  case LABEL_DECL:  case CONST_DECL:
+    case VAR_DECL:       case PARM_DECL:   case RESULT_DECL:
+      if (DECL_ALIGN (t) != 0)
+	return DECL_ALIGN (t);
+      break;
+
+    default:
+      break;
+    }
+
+  /* Otherwise take the alignment from that of the type.  */
+  return TYPE_ALIGN (TREE_TYPE (t));
+}
 
 /* Return, as a tree node, the number of elements for TYPE (which is an
    ARRAY_TYPE) minus one. This counts only elements of the top array.  */

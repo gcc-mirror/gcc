@@ -1766,6 +1766,7 @@ extern tree non_lvalue			PARAMS ((tree));
 extern tree pedantic_non_lvalue		PARAMS ((tree));
 
 extern tree convert			PARAMS ((tree, tree));
+extern unsigned int expr_align		PARAMS ((tree));
 extern tree size_in_bytes		PARAMS ((tree));
 extern HOST_WIDE_INT int_size_in_bytes	PARAMS ((tree));
 extern tree size_binop			PARAMS ((enum tree_code, tree, tree));
@@ -1806,10 +1807,10 @@ extern struct sizetype_tab sizetype_tab;
 #define ubitsizetype sizetype_tab.xubitsizetype
 
 /* If nonzero, an upper limit on alignment of structure fields, in bits. */
-extern int maximum_field_alignment;
+extern unsigned int maximum_field_alignment;
 
 /* If non-zero, the alignment of a bitstring or (power-)set value, in bits. */
-extern int set_alignment;
+extern unsigned int set_alignment;
 
 /* Concatenate two lists (chains of TREE_LIST nodes) X and Y
    by making the last node in X point to Y.
@@ -1995,7 +1996,7 @@ extern tree maybe_build_cleanup		PARAMS ((tree));
 
 extern tree get_inner_reference		PARAMS ((tree, int *, int *, tree *,
 					       enum machine_mode *, int *,
-					       int *, int *));
+					       int *, unsigned int *));
 
 /* Given a DECL or TYPE, return the scope in which it was declared, or
    NUL_TREE if there is no containing scope.  */

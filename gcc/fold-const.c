@@ -251,7 +251,7 @@ add_double (l1, h1, l2, h2, lv, hv)
   HOST_WIDE_INT l, h;
 
   l = l1 + l2;
-  h = h1 + h2 + ((unsigned HOST_WIDE_INT) l < l1);
+  h = h1 + h2 + ((unsigned HOST_WIDE_INT) l < (unsigned HOST_WIDE_INT) l1);
 
   *lv = l;
   *hv = h;

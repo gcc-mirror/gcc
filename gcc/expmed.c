@@ -34,15 +34,19 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "recog.h"
 
-static void store_fixed_bit_field	PARAMS ((rtx, int, int, int, rtx, int));
-static void store_split_bit_field	PARAMS ((rtx, int, int, rtx, int));
+static void store_fixed_bit_field	PARAMS ((rtx, int, int, int, rtx,
+						 unsigned int));
+static void store_split_bit_field	PARAMS ((rtx, int, int, rtx,
+						 unsigned int));
 static rtx extract_fixed_bit_field	PARAMS ((enum machine_mode, rtx, int,
-						 int, int, rtx, int, int));
+						 int, int, rtx, int,
+						 unsigned int));
 static rtx mask_rtx			PARAMS ((enum machine_mode, int,
 						 int, int));
 static rtx lshift_value			PARAMS ((enum machine_mode, rtx,
 						 int, int));
-static rtx extract_split_bit_field	PARAMS ((rtx, int, int, int, int));
+static rtx extract_split_bit_field	PARAMS ((rtx, int, int, int,
+						 unsigned int));
 static void do_cmp_and_jump		PARAMS ((rtx, rtx, enum rtx_code,
 						 enum machine_mode, rtx));
 
@@ -224,7 +228,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
      int bitnum;
      enum machine_mode fieldmode;
      rtx value;
-     int align;
+     unsigned int align;
      int total_size;
 {
   int unit = (GET_CODE (str_rtx) == MEM) ? BITS_PER_UNIT : BITS_PER_WORD;
@@ -508,7 +512,7 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
 
 	  if (bestmode == VOIDmode
 	      || (SLOW_UNALIGNED_ACCESS (bestmode, align)
-		  && GET_MODE_SIZE (bestmode) > align))
+		  && GET_MODE_SIZE (bestmode) > (int) align))
 	    goto insv_loses;
 
 	  /* Adjust address to point to the containing unit of that mode.  */
@@ -623,7 +627,7 @@ store_fixed_bit_field (op0, offset, bitsize, bitpos, value, struct_align)
      register rtx op0;
      register int offset, bitsize, bitpos;
      register rtx value;
-     int struct_align;
+     unsigned int struct_align;
 {
   register enum machine_mode mode;
   int total_bits = BITS_PER_WORD;
@@ -794,7 +798,7 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
      rtx op0;
      int bitsize, bitpos;
      rtx value;
-     int align;
+     unsigned int align;
 {
   int unit;
   int bitsdone = 0;
@@ -951,7 +955,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
      int unsignedp;
      rtx target;
      enum machine_mode mode, tmode;
-     int align;
+     unsigned int align;
      int total_size;
 {
   int unit = (GET_CODE (str_rtx) == MEM) ? BITS_PER_UNIT : BITS_PER_WORD;
@@ -1391,7 +1395,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 
 		  if (bestmode == VOIDmode
 		      || (SLOW_UNALIGNED_ACCESS (bestmode, align)
-			  && GET_MODE_SIZE (bestmode) > align))
+			  && GET_MODE_SIZE (bestmode) > (int) align))
 		    goto extv_loses;
 
 		  /* Compute offset as multiple of this unit,
@@ -1530,7 +1534,7 @@ extract_fixed_bit_field (tmode, op0, offset, bitsize, bitpos,
      register rtx op0, target;
      register int offset, bitsize, bitpos;
      int unsignedp;
-     int align;
+     unsigned int align;
 {
   int total_bits = BITS_PER_WORD;
   enum machine_mode mode;
@@ -1748,7 +1752,8 @@ lshift_value (mode, value, bitpos, bitsize)
 static rtx
 extract_split_bit_field (op0, bitsize, bitpos, unsignedp, align)
      rtx op0;
-     int bitsize, bitpos, unsignedp, align;
+     int bitsize, bitpos, unsignedp;
+     unsigned int align;
 {
   int unit;
   int bitsdone = 0;

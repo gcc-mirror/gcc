@@ -1524,7 +1524,7 @@ extern int preserve_subexpressions_p	PARAMS ((void));
 
 /* In expr.c */
 extern void init_expr_once		PARAMS ((void));
-extern void move_by_pieces		PARAMS ((rtx, rtx, int, int));
+extern void move_by_pieces		PARAMS ((rtx, rtx, int, unsigned int));
 
 
 /* In stupid.c */

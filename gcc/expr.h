@@ -942,10 +942,11 @@ extern void convert_move PARAMS ((rtx, rtx, int));
 extern rtx convert_to_mode PARAMS ((enum machine_mode, rtx, int));
 
 /* Convert an rtx to MODE from OLDMODE and return the result.  */
-extern rtx convert_modes PARAMS ((enum machine_mode, enum machine_mode, rtx, int));
+extern rtx convert_modes PARAMS ((enum machine_mode, enum machine_mode,
+				  rtx, int));
 
 /* Emit code to move a block Y to a block X.  */
-extern rtx emit_block_move PARAMS ((rtx, rtx, rtx, int));
+extern rtx emit_block_move PARAMS ((rtx, rtx, rtx, unsigned int));
 
 /* Copy all or part of a value X into registers starting at REGNO.
    The number of registers to be filled is NREGS.  */
@@ -957,10 +958,11 @@ extern void move_block_from_reg PARAMS ((int, rtx, int, int));
 
 /* Load a BLKmode value into non-consecutive registers represented by a
    PARALLEL.  */
-extern void emit_group_load PARAMS ((rtx, rtx, int, int));
+extern void emit_group_load PARAMS ((rtx, rtx, int, unsigned int));
+
 /* Store a BLKmode value from non-consecutive registers represented by a
    PARALLEL.  */
-extern void emit_group_store PARAMS ((rtx, rtx, int, int));
+extern void emit_group_store PARAMS ((rtx, rtx, int, unsigned int));
 
 #ifdef TREE_CODE
 /* Copy BLKmode object from a set of registers. */
@@ -969,16 +971,18 @@ extern rtx copy_blkmode_from_reg PARAMS ((rtx,rtx,tree));
 
 /* Mark REG as holding a parameter for the next CALL_INSN.  */
 extern void use_reg PARAMS ((rtx *, rtx));
+
 /* Mark NREGS consecutive regs, starting at REGNO, as holding parameters
    for the next CALL_INSN.  */
 extern void use_regs PARAMS ((rtx *, int, int));
+
 /* Mark a PARALLEL as holding a parameter for the next CALL_INSN.  */
 extern void use_group_regs PARAMS ((rtx *, rtx));
 
 /* Write zeros through the storage of OBJECT.
    If OBJECT has BLKmode, SIZE is its length in bytes and ALIGN is its
    alignment.  */
-extern rtx clear_storage PARAMS ((rtx, rtx, int));
+extern rtx clear_storage PARAMS ((rtx, rtx, unsigned int));
 
 /* Emit insns to set X from Y.  */
 extern rtx emit_move_insn PARAMS ((rtx, rtx));
@@ -995,8 +999,9 @@ extern rtx gen_push_operand PARAMS ((void));
 
 #ifdef TREE_CODE
 /* Generate code to push something onto the stack, given its mode and type.  */
-extern void emit_push_insn PARAMS ((rtx, enum machine_mode, tree, rtx, int,
-				    int, rtx, int, rtx, rtx, int, rtx));
+extern void emit_push_insn PARAMS ((rtx, enum machine_mode, tree, rtx,
+				    unsigned int, int, rtx, int, rtx, rtx,
+				    int, rtx));
 
 /* Emit library call.  */
 extern void emit_library_call PARAMS ((rtx orgfun, int no_queue,
@@ -1056,10 +1061,10 @@ extern void do_jump PARAMS ((tree, rtx, rtx));
 
 /* Generate rtl to compare two rtx's, will call emit_cmp_insn.  */
 extern rtx compare_from_rtx PARAMS ((rtx, rtx, enum rtx_code, int,
-				     enum machine_mode, rtx, int));
+				     enum machine_mode, rtx, unsigned int));
 extern void do_compare_rtx_and_jump PARAMS ((rtx, rtx, enum rtx_code, int,
-					     enum machine_mode, rtx, int,
-					     rtx, rtx));
+					     enum machine_mode, rtx,
+					     unsigned int, rtx, rtx));
 
 /* Generate a tablejump instruction (used for switch statements).  */
 extern void do_tablejump PARAMS ((rtx, enum machine_mode, rtx, rtx, rtx));
@@ -1193,8 +1198,11 @@ extern rtx hard_libcall_value PARAMS ((enum machine_mode));
    of STACK_BOUNDARY / BITS_PER_UNIT.  */
 extern rtx round_push PARAMS ((rtx));
 
-extern rtx store_bit_field PARAMS ((rtx, int, int, enum machine_mode, rtx, int, int));
-extern rtx extract_bit_field PARAMS ((rtx, int, int, int, rtx, enum machine_mode, enum machine_mode, int, int));
+extern rtx store_bit_field PARAMS ((rtx, int, int, enum machine_mode, rtx,
+				    unsigned int, int));
+extern rtx extract_bit_field PARAMS ((rtx, int, int, int, rtx,
+				      enum machine_mode, enum machine_mode,
+				      unsigned int, int));
 extern rtx expand_mult PARAMS ((enum machine_mode, rtx, rtx, rtx, int));
 extern rtx expand_mult_add PARAMS ((rtx, rtx, rtx, rtx,enum machine_mode, int));
 extern rtx expand_mult_highpart_adjust PARAMS ((enum machine_mode, rtx, rtx, rtx, rtx, int));

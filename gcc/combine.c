@@ -5891,7 +5891,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	new = force_to_mode (inner, tmode,
 			     len >= HOST_BITS_PER_WIDE_INT
 			     ? GET_MODE_MASK (tmode)
-			     : ((HOST_WIDE_INT) 1 << len) - 1,
+			     : ((unsigned HOST_WIDE_INT) 1 << len) - 1,
 			     NULL_RTX, 0);
 
       /* If this extraction is going into the destination of a SET, 
@@ -6112,7 +6112,8 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 			     pos_rtx
 			     || len + orig_pos >= HOST_BITS_PER_WIDE_INT
 			     ? GET_MODE_MASK (wanted_inner_mode)
-			     : (((HOST_WIDE_INT) 1 << len) - 1) << orig_pos,
+			     : ((((unsigned HOST_WIDE_INT) 1 << len) - 1)
+				<< orig_pos),
 			     NULL_RTX, 0);
     }
 
@@ -6583,7 +6584,8 @@ force_to_mode (x, mode, mask, reg, just_select)
   if (op_mode)
     fuller_mask = (GET_MODE_BITSIZE (op_mode) >= HOST_BITS_PER_WIDE_INT
 		   ? GET_MODE_MASK (op_mode)
-		   : ((HOST_WIDE_INT) 1 << (floor_log2 (mask) + 1)) - 1);
+		   : (((unsigned HOST_WIDE_INT) 1 << (floor_log2 (mask) + 1))
+		      - 1));
   else
     fuller_mask = ~ (HOST_WIDE_INT) 0;
 
@@ -7525,7 +7527,7 @@ make_field_assignment (x)
 		       mode,
 		       GET_MODE_BITSIZE (mode) >= HOST_BITS_PER_WIDE_INT
 		       ? GET_MODE_MASK (mode)
-		       : ((HOST_WIDE_INT) 1 << len) - 1,
+		       : ((unsigned HOST_WIDE_INT) 1 << len) - 1,
 		       dest, 0);
 
   return gen_rtx_combine (SET, VOIDmode, assign, src);
@@ -8110,8 +8112,10 @@ nonzero_bits (x, mode)
 	  /* If this is a typical RISC machine, we only have to worry
 	     about the way loads are extended.  */
 	  if (LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (x))) == SIGN_EXTEND
-	      ? (nonzero
-		 & (1L << (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x))) - 1)))
+	      ? (((nonzero
+		   & (((unsigned HOST_WIDE_INT) 1
+		       << (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (x))) - 1))))
+		  != 0))
 	      : LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (x))) != ZERO_EXTEND)
 #endif
 	    {
