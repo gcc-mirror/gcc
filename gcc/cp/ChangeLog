@@ -1,3 +1,8 @@
+2000-09-17  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* decl2.c (handle_class_head): Always push some scope even
+	in the error case.
+
 2000-09-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (struct cp_language_function): Remove
