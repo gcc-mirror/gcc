@@ -1,3 +1,8 @@
+2000-06-25 Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
+
+	* mklibgcc.in: Prefer LIB1ASMFUNCS over LIB2FUNCS when generating
+	libgcc.a.
+
 2000-06-24  Marc Espie <espie@cvs.openbsd.org>
 
 	* collect2.c (resolve_lib_name): Move '/' check to more rational place.
