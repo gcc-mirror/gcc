@@ -3102,13 +3102,13 @@ alpha_need_linkage (name, is_local)
       {
 	if (is_local)
 	  {
-	    /* defined here but external assumed.  */
+	    /* Defined here but external assumed.  */
 	    if (lptr->kind == KIND_EXTERN)
 	      lptr->kind = KIND_LOCAL;
 	  }
 	else
 	  {
-	    /* used here but unused assumed.  */
+	    /* Used here but unused assumed.  */
 	    if (lptr->kind == KIND_UNUSED)
 	      lptr->kind = KIND_LOCAL;
 	  }
@@ -3121,6 +3121,9 @@ alpha_need_linkage (name, is_local)
 
   /* Assume external if no definition.  */
   nptr->kind = (is_local ? KIND_UNUSED : KIND_EXTERN);
+
+  /* Ensure we have an IDENTIFIER so assemble_name can mark is used.  */
+  get_identifier (name);
 
   alpha_links_base = nptr;
 
