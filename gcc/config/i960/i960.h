@@ -53,12 +53,14 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define SIGNED_CHAR_SPEC "%{!fsigned-char:%{!mic*:-D__CHAR_UNSIGNED__}}"
 #endif
 
-/* Specs for the compiler, to handle processor variations.  */
+/* Specs for the compiler, to handle processor variations. 
+   If the user gives an explicit -gstabs or -gcoff option, then do not
+   try to add an implicit one, as this will fail.  */
 #define CC1_SPEC \
 	"%{!mka:%{!mkb:%{!msa:%{!msb:%{!mmc:%{!mca:%{!mcc:%{!mcf:-mkb}}}}}}}}\
-	%{mbout:%{g*:-gstabs}}\
-	%{mcoff:%{g*:-gcoff}}\
-	%{!mbout:%{!mcoff:%{g*:-gstabs}}}"
+	 %{!gs*:%{!gc*:%{mbout:%{g*:-gstabs}}\
+		       %{mcoff:%{g*:-gcoff}}\
+		       %{!mbout:%{!mcoff:%{g*:-gstabs}}}}}"
 
 /* Specs for the assembler, to handle processor variations.
    For compatibility with Intel's gnu960 tool chain, pass -A options to
