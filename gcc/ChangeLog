@@ -1,3 +1,7 @@
+Fri May 15 12:44:57 1998  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
+
+	* stor-layout.c (set_sizetype): Set TYPE_NAME on bitsizetype.
+
 Fri May 15 07:20:03 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* fold-const.c (constant_boolean_node): New function.
