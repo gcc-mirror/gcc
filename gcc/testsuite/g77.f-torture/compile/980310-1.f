@@ -8,9 +8,6 @@ C
 C The following Fortran test case aborts the compiler because
 C tree_int_cst_lt dereferences a null tree; this is a regression from
 C gcc 2.7.
-C 
-C The patch is against egcs sources.  I don't know if it's still
-C relevant to mainline gcc, which I no longer follow.
 
       INTEGER N
       READ(*,*) N
