@@ -1,3 +1,12 @@
+2000-09-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (resolve_address_of_overloaded_function): Add
+	explanation message.
+	* decl.c (define_case_label): Reformat explanation.
+	* decl2.c (finish_static_data_member_decl): Likewise.
+	(grokfield): Likewise.
+	* friend.c (do_friend): Likewise.
+
 2000-09-05  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* tree.c (walk_tree): Expose tail recursion.

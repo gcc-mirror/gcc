@@ -5965,13 +5965,20 @@ resolve_address_of_overloaded_function (target_type,
   /* Good, exactly one match.  Now, convert it to the correct type.  */
   fn = TREE_PURPOSE (matches);
 
-  if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE
+  if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn)
       && !ptrmem && !flag_ms_extensions)
     {
+      static int explained;
+      
       if (!complain)
         return error_mark_node;
 
       cp_pedwarn ("assuming pointer to member `%D'", fn);
+      if (!explained)
+        {
+          cp_pedwarn ("(a pointer to member can only be formed with `&%E')", fn);
+          explained = 1;
+        }
     }
   mark_used (fn);
 

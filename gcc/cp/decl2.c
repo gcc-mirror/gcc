@@ -1597,12 +1597,15 @@ finish_static_data_member_decl (decl, init, asmspec_tree, flags)
   /* Static consts need not be initialized in the class definition.  */
   if (init != NULL_TREE && TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
     {
-      static int explanation = 0;
+      static int explained = 0;
 	  
       error ("initializer invalid for static member with constructor");
-      if (explanation++ == 0)
-	error ("(you really want to initialize it separately)");
-      init = 0;
+      if (!explained)
+        {
+	  error ("(an out of class initialization is required)");
+	  explained = 1;
+	}
+      init = NULL_TREE;
     }
   /* Force the compiler to know when an uninitialized static const
      member is being used.  */
@@ -1656,13 +1659,13 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	    };
 	    
 	 Explain that to the user.  */
-      static int explained_p;
+      static int explained;
 
       cp_error ("invalid data member initiailization");
-      if (!explained_p)
+      if (!explained)
 	{
-	  cp_error ("use `=' to initialize static data members");
-	  explained_p = 1;
+	  cp_error ("(use `=' to initialize static data members)");
+	  explained = 1;
 	}
 
       declarator = TREE_OPERAND (declarator, 0);
