@@ -418,15 +418,15 @@ struct directive {
   char *name;			/* Name of directive */
   enum node_type type;		/* Code which describes which directive.  */
   char command_reads_line;      /* One if rest of line is read by func.  */
-  char traditional_comments;	/* Nonzero: keep comments if -traditional.  */
-  char pass_thru;		/* Copy preprocessed directive to output file.*/
 };
+
+#define IS_INCLUDE_DIRECTIVE_TYPE(t) (T_INCLUDE <= (t) && (t) <= T_IMPORT)
 
 /* Here is the actual list of #-directives, most-often-used first.
    The initialize_builtins function assumes #define is the very first.  */
 
 static struct directive directive_table[] = {
-  {  6, do_define, "define", T_DEFINE, 0, 1},
+  {  6, do_define, "define", T_DEFINE},
   {  5, do_xifdef, "ifdef", T_IFDEF, 1},
   {  6, do_xifdef, "ifndef", T_IFNDEF, 1},
   {  7, do_include, "include", T_INCLUDE, 1},
@@ -439,9 +439,9 @@ static struct directive directive_table[] = {
   {  5, do_undef, "undef", T_UNDEF},
   {  5, do_error, "error", T_ERROR},
   {  7, do_warning, "warning", T_WARNING},
-  {  6, do_pragma, "pragma", T_PRAGMA, 0, 0, 1},
+  {  6, do_pragma, "pragma", T_PRAGMA},
   {  4, do_line, "line", T_LINE, 1},
-  {  5, do_ident, "ident", T_IDENT, 1, 0, 1},
+  {  5, do_ident, "ident", T_IDENT, 1},
 #ifdef SCCS_DIRECTIVE
   {  4, do_sccs, "sccs", T_SCCS},
 #endif
@@ -1102,7 +1102,7 @@ handle_directive (pfile)
     {
       /* Nonzero means do not delete comments within the directive.
          #define needs this when -traditional.  */
-	int comments = CPP_TRADITIONAL (pfile) && kt->traditional_comments; 
+	int comments = CPP_TRADITIONAL (pfile) && kt->type == T_DEFINE;
 	int save_put_out_comments = CPP_OPTIONS (pfile)->put_out_comments;
 	CPP_OPTIONS (pfile)->put_out_comments = comments;
 	after_ident = CPP_WRITTEN (pfile);
@@ -1110,37 +1110,39 @@ handle_directive (pfile)
 	CPP_OPTIONS (pfile)->put_out_comments = save_put_out_comments;
     }
 
-  /* For #pragma and #define, we may want to pass through the directive.
+  /* We may want to pass through #define, #pragma, and #include.
      Other directives may create output, but we don't want the directive
-     itself out, so we pop it now.  For example #include may write a #line
-     command (see comment in do_include), and conditionals may emit
+     itself out, so we pop it now.  For example conditionals may emit
      #failed ... #endfailed stuff.  But note that popping the buffer
      means the parameters to kt->func may point after pfile->limit
      so these parameters are invalid as soon as something gets appended
      to the token_buffer.  */
 
   line_end = CPP_PWRITTEN (pfile);
-  if (!kt->pass_thru && kt->type != T_DEFINE)
+  if (! (kt->type == T_DEFINE
+	 || kt->type == T_PRAGMA
+	 || (IS_INCLUDE_DIRECTIVE_TYPE (kt->type)
+	     && CPP_OPTIONS (pfile)->dump_includes)))
     CPP_SET_WRITTEN (pfile, old_written);
 
   (*kt->func) (pfile, kt, pfile->token_buffer + after_ident, line_end);
-  if (kt->pass_thru
-      || (kt->type == T_DEFINE
-	  && CPP_OPTIONS (pfile)->dump_macros == dump_definitions))
+
+  if (kt->type == T_DEFINE)
     {
-      /* Just leave the entire #define in the output stack.  */
+      if (CPP_OPTIONS (pfile)->dump_macros == dump_names)
+	{
+	  /* Skip "#define". */
+	  U_CHAR *p = pfile->token_buffer + old_written + 7;
+
+	  SKIP_WHITE_SPACE (p);
+	  while (is_idchar[*p]) p++;
+	  pfile->limit = p;
+	  CPP_PUTC (pfile, '\n');
+	}
+      else if (CPP_OPTIONS (pfile)->dump_macros != dump_definitions)
+	CPP_SET_WRITTEN (pfile, old_written);
     }
-  else if (kt->type == T_DEFINE
-	   && CPP_OPTIONS (pfile)->dump_macros == dump_names)
-    {
-      U_CHAR *p = pfile->token_buffer + old_written + 7;  /* Skip "#define". */
-      SKIP_WHITE_SPACE (p);
-      while (is_idchar[*p]) p++;
-      pfile->limit = p;
-      CPP_PUTC (pfile, '\n');
-    }
-  else if (kt->type == T_DEFINE)
-    CPP_SET_WRITTEN (pfile, old_written);
+
  done_a_directive:
   return 1;
 
@@ -3959,7 +3961,7 @@ do_once (pfile)
   return 0;
 }
 
-/* #ident has already been copied to the output file, so just ignore it.  */
+/* Report program identification.  */
 
 static int
 do_ident (pfile, keyword, buf, limit)
@@ -6583,6 +6585,9 @@ cpp_handle_options (pfile, argc, argv)
 	      break;
 	    case 'D':
 	      opts->dump_macros = dump_definitions;
+	      break;
+	    case 'I':
+	      opts->dump_includes = 1;
 	      break;
 	    }
 	  }
