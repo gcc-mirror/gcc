@@ -1,3 +1,12 @@
+2000-12-07  Neil Booth  <neilb@earthling.net>
+
+        * gcc.dg/wtr-aggr-init-1.c, wtr-escape-1.c, wtr-int-type-1.c,
+        wtr-label-1.c, wtr-static-1.c, wtr-strcat-1.c, wtr-suffix-1.c,
+        wtr-switch-1.c, wtr-unary-plus-1.c, wtr-union-init-1.c
+        wtr-union-init-2.c, wtr-union-init-3.c: Update.
+        * gcc.dg/cpp/extratokens.c, tr-warn4.c, tr-warn5.c, tr-warn6.c:
+        Update.
+
 2000-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/format-nonlit-1.c, gcc.dg/format-nonlit-2.c: Use

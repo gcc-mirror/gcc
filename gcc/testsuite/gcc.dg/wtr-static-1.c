@@ -7,7 +7,7 @@
 static void testfunc1(void);
 void testfunc1(void) {} /* { dg-warning "non-static.*follows static" "non-static follows static" } */
 
-#line 11 "sys-header.h" 3
+# 11 "sys-header.h" 3
 /* We are in system headers now, no -Wtraditional warnings should issue.  */
 
 static void testfunc2(void);

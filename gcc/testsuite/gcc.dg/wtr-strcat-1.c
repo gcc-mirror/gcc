@@ -11,7 +11,7 @@ testfunc (void)
   
   foo = "hello" "hello"; /* { dg-warning "string concatenation" "string concatenation" } */
 
-#line 15 "sys-header.h" 3
+# 15 "sys-header.h" 3
 /* We are in system headers now, no -Wtraditional warnings should issue.  */
 
   foo = "hello" "hello";

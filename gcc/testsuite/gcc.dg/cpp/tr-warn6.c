@@ -15,7 +15,7 @@
 /* Catch the second warning from the above line.  */
 /* { dg-warning "macro argument \"world\" would be stringified" "traditional stringification" { target *-*-* } 13 } */
 
-#line 19 "sys-header.h" 3
+# 19 "sys-header.h" 3
 /* We are in system headers now, no -Wtraditional warnings should issue.  */
 
 #define bar1(h) sdf "h3" fds "h"

@@ -13,7 +13,7 @@ testfunc (void)
   c = '\x2'; /* { dg-warning "the meaning of" "escaped character warning " } */
   c = '\n';
 
-#line 17 "sys-header.h" 3
+# 17 "sys-header.h" 3
 /* We are in system headers now, no -Wtraditional warnings should issue.  */
 
   c = '\a';

@@ -7,7 +7,7 @@
 #if +1 /* { dg-warning "unary plus operator" "unary plus operator" } */
 #endif
   
-#line 11 "sys-header.h" 3
+# 11 "sys-header.h" 3
 /* We are in system headers now, no -Wtraditional warnings should issue.  */
 
 #if +1

@@ -31,7 +31,7 @@
 
 #ident "something" bar /* { dg-error "extra tokens" "tokens after #ident" } */
 
-#line 36 "file.c" 3
+# 36 "file.c" 3
 
 /* ... but in a system header, it's acceptable.  */
 #ifdef KERNEL
