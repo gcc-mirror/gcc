@@ -37,6 +37,7 @@ gfor_helper_src= \
 intrinsics/associated.c \
 intrinsics/abort.c \
 intrinsics/args.c \
+intrinsics/c99_functions.c \
 intrinsics/cpu_time.c \
 intrinsics/cshift0.c \
 intrinsics/date_and_time.c \

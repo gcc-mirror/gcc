@@ -1,3 +1,14 @@
+2004-6-12  Bud Davis  <bdavis9659@comcast.net>
+      Steve Kargl  <sgk@troutmask.apl.washington.edu>
+
+	PR gfortran/15292
+	* intrinsics/c99_functions.c: New file.
+	* Makefile.am: Add new file.
+	* configure.ac: Added test for round/roundf.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.h.in: Regenerate.
+
 2004-06-12  Steven G. Kargl  <kargls@comcast.net>
 
 	* Makefile.am: Add rand.c and etime.c

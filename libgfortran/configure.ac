@@ -166,6 +166,10 @@ AC_CHECK_LIB([mx],[csin],[need_math="no"],[need_math="yes"])
 # Check for library functions.
 AC_CHECK_FUNCS(getrusage times)
 
+# Check for some C99 functions
+AC_CHECK_LIB([m],[round],[AC_DEFINE([HAVE_ROUND],[1],["c99 function"])])
+AC_CHECK_LIB([m],[roundf],[AC_DEFINE([HAVE_ROUNDF],[1],["c99 function"])])
+
 # Let the user override this
 AC_ARG_ENABLE(cmath,
 	AC_HELP_STRING([--enable-cmath],[Include complex math functions]),
