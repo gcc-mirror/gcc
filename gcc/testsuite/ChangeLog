@@ -1,5 +1,9 @@
 2005-03-24  Alexandre Oliva  <aoliva@redhat.com>
 
+	* gcc.target/i386/badshift.c: Renamed to...
+	* gcc.dg/badshift.c: ... this.  Fix typo.  Use -march=i386 on i?86
+	only.
+
 	PR rtl-optimization/20532
 	* gcc.target/i386/badshift.c: New.
 
