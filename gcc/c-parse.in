@@ -2613,12 +2613,21 @@ myparms:
    as found in a parmlist. DOES NOT ALLOW AN INITIALIZER OR ASMSPEC */
 
 myparm:
-	  parm_declarator
-		{ $$ = build_tree_list (current_declspecs, $1)	; }
-	| notype_declarator
-		{ $$ = build_tree_list (current_declspecs, $1)	; }
-	| absdcl
-		{ $$ = build_tree_list (current_declspecs, $1)	; }
+	  parm_declarator maybe_attribute
+		{ $$ = build_tree_list (build_tree_list (current_declspecs,
+							 $1),
+					build_tree_list (prefix_attributes,
+							 $2)); }
+	| notype_declarator maybe_attribute
+		{ $$ = build_tree_list (build_tree_list (current_declspecs,
+							 $1),
+					build_tree_list (prefix_attributes,
+							 $2)); }
+	| absdcl maybe_attribute
+		{ $$ = build_tree_list (build_tree_list (current_declspecs,
+							 $1),
+					build_tree_list (prefix_attributes,
+							 $2)); }
 	;
 
 optparmlist:
