@@ -1,3 +1,9 @@
+1998-09-09  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* configure.in (INSTALLDIR): Fix comment about changing INSTALLDIR's
+	value; don't change its value if --enable-version-specific-runtime-libs
+	has been specified.
+
 Wed Sep  2 21:05:39 1998  H.J. Lu  (hjl@gnu.org)
 
 	* configure.in: Fix INSTALLDIR replacement for cross-compile.
