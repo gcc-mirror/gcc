@@ -161,7 +161,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL, PREFIX, NUM)		\
   do								\
     {								\
-      sprintf (LABEL, "*.%s%d", PREFIX, (unsigned) (NUM));	\
+      sprintf (LABEL, "*.%s%u", PREFIX, (unsigned) (NUM));	\
     }								\
   while (0)
 

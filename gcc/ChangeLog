@@ -1,3 +1,8 @@
+2000-06-14  David O'Brien  <obrien@FreeBSD.org>
+
+	* config/elfos.h (ASM_GENERATE_INTERNAL_LABEL): Make printf
+	specification match cast.
+
 Wed Jun 14 09:25:57 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in: Revert AC_TYPE_GETGROUPS patch from June 13.
