@@ -1,3 +1,8 @@
+2002-09-19  Stephen Clarke <stephen.clarke@superh.com>
+
+	* config/sh/sh.h (UNSPEC_GOTOFF_P): Define.
+	(GOTOFF_P): Extend to allow gotoff plus constant.
+
 2002-09-18  Richard Henderson  <rth@redhat.com>
 
 	* ifcvt.c (noce_process_if_block): Correctly detect X modified
