@@ -1,3 +1,8 @@
+2002-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/avr/avr.md (length): Fix length computation for
+	conditional branches.
+
 2002-03-21  Richard Henderson  <rth@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_select_rtx_section): Put symbolic
