@@ -1064,6 +1064,10 @@ pre_event_handler (GtkWidget *widget, GdkEvent *event, jobject peer)
               {
                 obj_window = gtk_widget_get_parent (window->focus_widget)->window;
               }
+            else if (GTK_IS_BUTTON (window->focus_widget))
+	      /* GtkButton events go to the "event_window" and this is what
+	         we registered when the button was created. */
+              obj_window = GTK_BUTTON (window->focus_widget)->event_window;
             else
               obj_window = window->focus_widget->window;
 
@@ -1164,7 +1168,7 @@ connect_awt_hook (JNIEnv *env, jobject peer_obj, int nwindows, ...)
 {
   va_list ap;
   jobject *obj;
-void *ptr = NSA_GET_PTR (env, peer_obj);
+  //void *ptr = NSA_GET_PTR (env, peer_obj);
 
   obj = NSA_GET_GLOBAL_REF (env, peer_obj);
   //g_print("Connection obj %s\n", gtk_widget_get_name (GTK_WIDGET (ptr)));
