@@ -540,7 +540,7 @@ while getopts "d:fr:u:t:p:s:l" ARG; do
 	  SCP=cp
 	  PATH=~:/usr/local/bin:$PATH;;
     p)    OLD_TARS="${OLD_TARS} ${OPTARG}"
-          if [ -d ${OPTARG} ]; then
+          if [ ! -f ${OPTARG} ]; then
 	    error "-p argument must name a tarball"
 	  fi;;
     \?)   usage;;
@@ -615,9 +615,10 @@ else
     TAG=gcc-ss-`echo ${RELEASE} | tr '.' '_'`
   fi
 
-  # Building locally on gcc.gnu.org, we know what the last snapshot date
-  # was.
-  if [ $MODE_DIFFS -ne 0 ] && [ $LOCAL -ne 0 ]; then
+  # If diffs are requested when building locally on gcc.gnu.org, we (usually)
+  # know what the last snapshot date was and take the corresponding tarballs,
+  # unless the user specified tarballs explictly.
+  if [ $MODE_DIFFS -ne 0 ] && [ $LOCAL -ne 0 ] && [ -z "${OLD_TARS}" ]; then
     LAST_DATE=`cat ~/.snapshot_date-${BRANCH}`
     OLD_TARS=${SNAPSHOTS_DIR}/${BRANCH}-${LAST_DATE}/gcc-${BRANCH}-${LAST_DATE}.tar.bz2
   fi
