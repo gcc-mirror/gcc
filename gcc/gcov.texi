@@ -81,7 +81,7 @@ compatible with any other profiling or test coverage mechanism.
 @section Invoking gcov
 
 @smallexample
-gcov [-b] [-v] [-n] [-l] [-f] [-o directory] @var{sourcefile}
+gcov [-b] [-c] [-v] [-n] [-l] [-f] [-o directory] @var{sourcefile}
 @end smallexample
 
 @table @code
@@ -89,6 +89,10 @@ gcov [-b] [-v] [-n] [-l] [-f] [-o directory] @var{sourcefile}
 Write branch frequencies to the output file, and write branch summary
 info to the standard output.  This option allows you to see how often
 each branch in your program was taken.
+
+@item -c
+Write branch frequencies as the number of branches taken, rather than 
+the percentage of branches taken.
 
 @item -v
 Display the @code{gcov} version number (on the standard error stream).

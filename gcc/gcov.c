@@ -138,7 +138,8 @@ struct bb_info {
 
 struct arcdata
 {
-  int prob;
+  int hits;
+  int total;
   int call_insn;
   struct arcdata *next;
 };
@@ -212,6 +213,11 @@ static int output_function_summary = 0;
    files are looked for, if non-zero.  */
 
 static char *object_directory = 0;
+
+/* Output the number of times a branch was taken as opposed to the percentage
+   of times it was taken.  Turned on by the -c option */
+   
+static int output_branch_counts = 0;
 
 /* Forward declarations.  */
 static void process_args PROTO ((int, char **));
@@ -314,6 +320,8 @@ process_args (argc, argv)
 	{
 	  if (argv[i][1] == 'b')
 	    output_branch_probs = 1;
+	  else if (argv[i][1] == 'c')
+	    output_branch_counts = 1;
 	  else if (argv[i][1] == 'v')
 	    fputs (gcov_version_string, stderr);
 	  else if (argv[i][1] == 'n')
@@ -878,10 +886,11 @@ calculate_branch_probs (current_graph, block_num, branch_probs, last_line_num)
 	continue;
 		      
       a_ptr = (struct arcdata *) xmalloc (sizeof (struct arcdata));
+      a_ptr->total = total;
       if (total == 0)
-	a_ptr->prob = -1;
+          a_ptr->hits = 0;
       else
-	a_ptr->prob = ((arcptr->arc_count * 100) + (total >> 1)) / total;
+          a_ptr->hits = arcptr->arc_count;
       a_ptr->call_insn = arcptr->fake;
 
       if (output_function_summary)
@@ -889,15 +898,15 @@ calculate_branch_probs (current_graph, block_num, branch_probs, last_line_num)
 	  if (a_ptr->call_insn)
 	    {
 	      function_calls++;
-	      if (a_ptr->prob != -1)
+	      if (a_ptr->total != 0)
 		function_calls_executed++;
 	    }
 	  else
 	    {
 	      function_branches++;
-	      if (a_ptr->prob != -1)
+	      if (a_ptr->total != 0)
 		function_branches_executed++;
-	      if (a_ptr->prob > 0)
+	      if (a_ptr->hits > 0)
 		function_branches_taken++;
 	    }
 	}
@@ -1180,15 +1189,15 @@ output_data ()
 		  if (a_ptr->call_insn)
 		    {
 		      total_calls++;
-		      if (a_ptr->prob != -1)
+		      if (a_ptr->total != 0)
 			total_calls_executed++;
 		    }
 		  else
 		    {
 		      total_branches++;
-		      if (a_ptr->prob != -1)
+		      if (a_ptr->total != 0)
 			total_branches_executed++;
-		      if (a_ptr->prob > 0)
+		      if (a_ptr->hits > 0)
 			total_branches_taken++;
 		    }
 		}
@@ -1336,24 +1345,43 @@ output_data ()
 		    {
 		      if (a_ptr->call_insn)
 			{
-			  if (a_ptr->prob == -1)
+			  if (a_ptr->total == 0)
 			    fnotice (gcov_file, "call %d never executed\n", i);
-			  else
-			    fnotice (gcov_file,
-				     "call %d returns = %d%%\n",
-				     i, 100 - a_ptr->prob);
+		            else
+			      {
+				if (output_branch_counts)
+				  fnotice (gcov_file,
+				           "call %d returns = %d\n",
+				           i, a_ptr->total - a_ptr->hits);
+			        else
+                                  fnotice (gcov_file,
+				           "call %d returns = %d%%\n",
+				            i, 100 - ((a_ptr->hits * 100) +
+                                           (a_ptr->total >> 1))/a_ptr->total);
+			      }
 			}
 		      else
 			{
-			  if (a_ptr->prob == -1)
+			  if (a_ptr->total == 0)
 			    fnotice (gcov_file, "branch %d never executed\n",
 				     i);
 			  else
-			    fnotice (gcov_file, "branch %d taken = %d%%\n", i,
-				     a_ptr->prob);
+			    {
+			      if (output_branch_counts)
+			        fnotice (gcov_file,
+				         "branch %d taken = %d\n",
+                                         i, a_ptr->hits);
+			      else
+                                fnotice (gcov_file,
+                                         "branch %d taken = %d%%\n", i,
+                                         ((a_ptr->hits * 100) +
+                                          (a_ptr->total >> 1))/
+                                          a_ptr->total);
+
+			    }
 			}
-		    }
-		}
+		   }
+	      }
 
 	      /* Gracefully handle errors while reading the source file.  */
 	      if (retval == NULL)
