@@ -2263,14 +2263,16 @@ iteration_info (iteration_var, initial_value, increment, loop_start, loop_end)
 		 "Loop unrolling: No reg_iv_type entry for iteration var.\n");
       return;
     }
-  /* Reject iteration variables larger than the host long size, since they
+
+  /* Reject iteration variables larger than the host wide int size, since they
      could result in a number of iterations greater than the range of our
-     `unsigned long' variable loop_n_iterations.  */
-  else if (GET_MODE_BITSIZE (GET_MODE (iteration_var)) > HOST_BITS_PER_LONG)
+     `unsigned HOST_WIDE_INT' variable loop_n_iterations.  */
+  else if ((GET_MODE_BITSIZE (GET_MODE (iteration_var))
+	    > HOST_BITS_PER_WIDE_INT))
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
-		 "Loop unrolling: Iteration var rejected because mode larger than host long.\n");
+		 "Loop unrolling: Iteration var rejected because mode too large.\n");
       return;
     }
   else if (GET_MODE_CLASS (GET_MODE (iteration_var)) != MODE_INT)
