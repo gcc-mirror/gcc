@@ -265,11 +265,11 @@ extern const int x86_promote_hi_regs;
     "Do not inline all known string operations" },			      \
   { "push-args",		-MASK_NO_PUSH_ARGS,			      \
     "Use push instructions to save outgoing arguments" },		      \
-  { "no-push-args",		MASK_NO_PUSH_ARGS, ""			      \
-    "UDo not use push instructions to save outgoing arguments" },	      \
+  { "no-push-args",		MASK_NO_PUSH_ARGS,			      \
+    "Do not use push instructions to save outgoing arguments" },	      \
   { "accumulate-outgoing-args",	MASK_ACCUMULATE_OUTGOING_ARGS,		      \
     "Use push instructions to save outgoing arguments" },		      \
-  { "no-accumulate-outgoing-args",-MASK_ACCUMULATE_OUTGOING_ARGS, ""	      \
+  { "no-accumulate-outgoing-args",-MASK_ACCUMULATE_OUTGOING_ARGS,	      \
     "Do not use push instructions to save outgoing arguments" },	      \
   SUBTARGET_SWITCHES							      \
   { "", TARGET_DEFAULT, 0 }}

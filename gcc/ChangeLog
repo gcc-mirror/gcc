@@ -1,3 +1,7 @@
+2000-04-03  Philipp Thomas  <pthomas@suse.de>
+
+	* i386.h (TARGET_SWITCHES): Remove bogus empty strings, fix typo.
+
 Mon Apr  3 00:02:59 2000  Brad Lucier <lucier@math.purdue.edu>
 
 	* Makefile.in (alias.o): Depend on $(TREE_H).
