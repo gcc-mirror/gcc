@@ -66,7 +66,7 @@ extern struct jumplabel_array jmplbl[];
 extern int datalbl_ndx, jmplbl_ndx, label_pending, program_counter;
 extern enum section current_section;
 extern char *sectname[4];
-extern char *strdup(), *float_label();
+extern char *xstrdup(), *float_label();
 #endif
 /*--------------------------------------------------------------------*/
 
@@ -638,7 +638,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
    ADDR should be a variable name. */
 
 #define FIX_FRAME_POINTER_ADDRESS(ADDR,DEPTH)  \
-   fprintf(stderr,"FIX_FRAME_POINTER_ADDRESS called, DEPTH=%d\n"), \
+   fprintf(stderr,"FIX_FRAME_POINTER_ADDRESS called, depth=%d\n"), \
            DEPTH), abort()
 
 /* Store in the variable DEPTH the initial difference between the
@@ -1070,7 +1070,7 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 	   check_section(Konst);				\
 	   fprintf(FILE,"K%s\n",NAME);				\
 	   fflush(FILE);					\
-	   datalbl[++datalbl_ndx].name = (char *)strdup (NAME);	\
+	   datalbl[++datalbl_ndx].name = (char *)xstrdup (NAME);\
 	   datalbl[datalbl_ndx].size = 0;			\
 	   label_pending = 1;					\
 	}							\
