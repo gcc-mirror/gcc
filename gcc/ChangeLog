@@ -1,3 +1,8 @@
+2005-02-20  Hans-Peter Nilsson  <hp@axis.com>
+
+	* doc/extend.texi (Function Attributes) <Attribute const>: The
+	attribute "pure" is below this text, not above.
+
 2005-02-20  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.c (pa_assemble_integer, get_plabel): Small cleanups.

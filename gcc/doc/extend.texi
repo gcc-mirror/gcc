@@ -1549,7 +1549,7 @@ useful to override the effects of the @option{-mrtd} switch.
 @cindex @code{const} function attribute
 Many functions do not examine any values except their arguments, and
 have no effects except the return value.  Basically this is just slightly
-more strict class than the @code{pure} attribute above, since function is not
+more strict class than the @code{pure} attribute below, since function is not
 allowed to read global memory.
 
 @cindex pointer arguments
