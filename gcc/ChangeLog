@@ -1,3 +1,9 @@
+2004-06-15  Eric Botcazou  <ebotcazou@act-europe.fr>
+            Olivier Hainque  <hainque@act-europe.fr>
+
+	* function.c (fixup_var_refs): Also adjust the start of sequence
+	after fixing up the insns.
+
 2004-06-15  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* gccbug.in: Update optimization -> tree-optimization/rtl-optimization.
