@@ -39,10 +39,12 @@ test01()
   }
   catch (const std::tr1::bad_weak_ptr&)
   {
+    // Expected.
     __throw_exception_again;
   }
   catch (...)
   {
+    // Failed.
   }
 
   return 0;

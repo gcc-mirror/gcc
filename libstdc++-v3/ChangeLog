@@ -1,3 +1,26 @@
+2005-04-05  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* include/tr1/memory, include/tr1/boost_shared_ptr.h: Use mutex
+	to make _Sp_counted_base::add_ref_lock() thread-safe. Check whether
+	to destroy resources by testing for equality, not inequality. Add
+	empty critical sections to solve memory visibility issues.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/cons/auto_ptr_neg.cc: Use dg-excess-errors instead of
+	explicitly listing line numbers which need to be kept in sync.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/assign/auto_ptr_neg.cc: Same.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/assign/auto_ptr_rvalue_neg.cc: Same.
+	* testsuite/tr1/2_general_utilities/memory/
+	shared_ptr/cons/weak_ptr_expired.cc: Make XFAIL for consistency when
+	-fno-exceptions.
+	* testsuite/tr1/2_general_utilities/memory/
+	enable_shared_from_this/not_shared.cc: Add explanatory comments.
+	* testsuite/tr1/2_general_utilities/memory/
+	enable_shared_from_this/not_shared2.cc: Same.
+	* testsuite/tr1/2_general_utilities/memory/
+	enable_shared_from_this/not_shared3.cc: Same.
+
 2005-04-05  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* acconfig.h: Delete macros already ACDEFINED.

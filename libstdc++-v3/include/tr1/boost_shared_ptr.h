@@ -131,19 +131,22 @@ public:
   void
   add_ref_lock()
   {
-    if (_M_use_count <= 0) // TODO not yet MT safe XXX
+    __gnu_cxx::lock lock(_M_mutex);
+    if (__gnu_cxx::__exchange_and_add(&_M_use_count, 1) == 0)
     {
+      _M_use_count = 0;
       __throw_bad_weak_ptr();
     }
-    __gnu_cxx::__atomic_add(&_M_use_count, 1);
   }
 
   void
   release() // nothrow
   {
-    if (__gnu_cxx::__exchange_and_add(&_M_use_count, -1) <= 1)
+    if (__gnu_cxx::__exchange_and_add(&_M_use_count, -1) == 1)
     {
       dispose();
+      __glibcxx_mutex_lock(_M_mutex);
+      __glibcxx_mutex_unlock(_M_mutex);
       weak_release();
     }
   }
@@ -157,8 +160,10 @@ public:
   void
   weak_release() // nothrow
   {
-    if (__gnu_cxx::__exchange_and_add(&_M_weak_count, -1) <= 1)
+    if (__gnu_cxx::__exchange_and_add(&_M_weak_count, -1) == 1)
     {
+      __glibcxx_mutex_lock(_M_mutex);
+      __glibcxx_mutex_unlock(_M_mutex);
       destroy();
     }
   }
@@ -176,6 +181,7 @@ private:
 
   _Atomic_word _M_use_count;        // #shared
   _Atomic_word _M_weak_count;       // #weak + (#shared != 0)
+  __gnu_cxx::mutex_type _M_mutex;
 };
 
 template <typename _Ptr, typename _Deleter>
