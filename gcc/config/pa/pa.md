@@ -1355,9 +1355,9 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand"
-			  "=fx,*r,Q,?Q,fx,*&r")
+			  "=fx,*r,Q,?o,?Q,fx,*&r,*&r")
 	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
-			  "fxG,*rG,fx,*r,Q,Q"))]
+			  "fxG,*rG,fx,*r,*r,Q,o,Q"))]
   "register_operand (operands[0], DFmode)
    || reg_or_0_operand (operands[1], DFmode)"
   "*
@@ -1367,8 +1367,8 @@
     return output_fp_move_double (operands);
   return output_move_double (operands);
 }"
-  [(set_attr "type" "fpalu,move,fpstore,store,fpload,load")
-   (set_attr "length" "4,8,4,8,4,8")])
+  [(set_attr "type" "fpalu,move,fpstore,store,store,fpload,load,load")
+   (set_attr "length" "4,8,4,8,16,4,8,16")])
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=fx")
@@ -1472,9 +1472,9 @@
 
 (define_insn ""
   [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand"
-			  "=r,Q,&r,&r,x,x,*T")
+			  "=r,o,Q,&r,&r,&r,x,x,*T")
 	(match_operand:DI 1 "general_operand"
-			  "rM,r,Q,i,xM,*T,x"))]
+			  "rM,r,r,o,Q,i,xM,*T,x"))]
   "register_operand (operands[0], DImode)
    || reg_or_0_operand (operands[1], DImode)"
   "*
@@ -1484,8 +1484,8 @@
     return output_fp_move_double (operands);
   return output_move_double (operands);
 }"
-  [(set_attr "type" "move,store,load,misc,fpalu,fpload,fpstore")
-   (set_attr "length" "8,12,12,12,4,4,4")])
+  [(set_attr "type" "move,store,store,load,load,misc,fpalu,fpload,fpstore")
+   (set_attr "length" "8,8,16,8,16,16,4,4,4")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r")
