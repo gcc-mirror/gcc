@@ -138,6 +138,7 @@ decode_pdp11_d (const struct real_format *fmt ATTRIBUTE_UNUSED,
 /* This is where the condition code register lives.  */
 /* rtx cc0_reg_rtx; - no longer needed? */
 
+static bool pdp11_handle_option (size_t, const char *, int);
 static rtx find_addr_reg (rtx); 
 static const char *singlemove_string (rtx *);
 static bool pdp11_assemble_integer (rtx, unsigned int, int);
@@ -166,6 +167,12 @@ static bool pdp11_return_in_memory (tree, tree);
 #undef TARGET_ASM_CLOSE_PAREN
 #define TARGET_ASM_CLOSE_PAREN "]"
 
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS \
+  (MASK_FPU | MASK_45 | MASK_ABSHI_BUILTIN | TARGET_UNIX_ASM_DEFAULT)
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION pdp11_handle_option
+
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS pdp11_rtx_costs
 
@@ -174,6 +181,23 @@ static bool pdp11_return_in_memory (tree, tree);
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+/* Implement TARGET_HANDLE_OPTION.  */
+
+static bool
+pdp11_handle_option (size_t code, const char *arg ATTRIBUTE_UNUSED,
+		     int value ATTRIBUTE_UNUSED)
+{
+  switch (code)
+    {
+    case OPT_m10:
+      target_flags &= ~(MASK_40 | MASK_45);
+      return true;
+
+    default:
+      return true;
+    }
+}
+
 /* Nonzero if OP is a valid second operand for an arithmetic insn.  */
 
 int

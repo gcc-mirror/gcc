@@ -1,3 +1,17 @@
+2005-04-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/pdp11/pdp11.h (target_flags, TARGET_SWITCHES, TARGET_DEFAULT)
+	(TARGET_FPU, TARGET_SOFT_FLOAT, TARGET_AC0, TARGET_NO_AC0, TARGET_45)
+	(TARGET_BCOPY_BUILTIN, TARGET_INT16, TARGET_INT32, TARGET_FLOAT32)
+	(TARGET_FLOAT64, TARGET_ABSHI_BUILTIN, TARGET_BRANCH_EXPENSIVE)
+	(TARGET_BRANCH_CHEAP, TARGET_SPLIT, TARGET_NOSPLIT)
+	(TARGET_UNIX_ASM): Delete.
+	(TARGET_40_PLUS): Redefine in terms of TARGET_40 and TARGET_45.
+	* config/pdp11/2bsd.h (TARGET_UNIX_ASM_DEFAULT): Use MASK_UNIX_ASM.
+	* config/pdp11/pdp11.c (pdp11_handle_option): New function.
+	(TARGET_DEFAULT_TARGET_FLAGS, TARGET_HANDLE_OPTION): Override defaults.
+	* config/pdp11/pdp11.opt: New file.
+
 2005-04-03  Roger Sayle  <roger@eyesopen.com>
 	    Alexandre Oliva  <aoliva@redhat.com>
 
