@@ -1,5 +1,11 @@
 2001-07-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
+	* prims.cc (_JNI_OnLoad): New function.
+	(JNI_OnLoad): Use it.
+	(_Jv_CreateJavaVM): Check for _JNI_OnLoad, not NULL.
+
+2001-07-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
 	* Makefile.am (AM_MAKEFLAGS): Pass RUNTESTFLAGS.
 	Makefile.in: Regenerate.
 
