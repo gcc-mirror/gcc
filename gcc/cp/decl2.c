@@ -865,8 +865,7 @@ grok_x_components (specs, components)
 	{
 	case VAR_DECL:
 	  /* Static anonymous unions come out as VAR_DECLs.  */
-	  if (TREE_CODE (TREE_TYPE (t)) == UNION_TYPE
-	      && ANON_AGGRNAME_P (TYPE_IDENTIFIER (TREE_TYPE (t))))
+	  if (ANON_UNION_TYPE_P (TREE_TYPE (t)))
 	    return t;
 
 	  /* We return SPECS here, because in the parser it was ending
@@ -904,8 +903,7 @@ grok_x_components (specs, components)
 	    tcode = enum_type_node;
 
 	  t = xref_tag (tcode, TYPE_IDENTIFIER (t), NULL_TREE, 0);
-	  if (TREE_CODE (t) == UNION_TYPE
-	      && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
+	  if (ANON_UNION_TYPE_P (t))
 	    {
 	      /* See also shadow_tag.  */
 
@@ -2176,7 +2174,11 @@ build_anon_union_vars (anon_decl, elems, static_p, external_p)
 
       if (DECL_NAME (field) == NULL_TREE
 	  && TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
-	decl = build_anon_union_vars (field, elems, static_p, external_p);
+	{
+	  decl = build_anon_union_vars (field, elems, static_p, external_p);
+	  if (!decl)
+	    continue;
+	}
       else
 	{
 	  decl = build_decl (VAR_DECL, DECL_NAME (field), TREE_TYPE (field));

@@ -866,7 +866,7 @@ initializing_context (field)
 
   /* Anonymous union members can be initialized in the first enclosing
      non-anonymous union context.  */
-  while (t && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
+  while (t && ANON_UNION_TYPE_P (t))
     t = TYPE_CONTEXT (t);
   return t;
 }

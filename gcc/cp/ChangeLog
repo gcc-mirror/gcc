@@ -1,3 +1,42 @@
+1998-05-25  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl2.c (build_anon_union_vars): Don't crash on empty sub-unions.
+
+	* cp-tree.h (processing_template_parmlist): Declare.
+	* decl.c (pushtag): Don't call push_template_decl when we
+	shouldn't. 
+	* pt.c (processing_template_parmlist): New variable.
+	(TMPL_ARGS_HAVE_MULTIPLE_LEVELS): New macro.
+	(complete_template_args): Use it.
+	(add_to_template_args): Likewise.
+	(innermost_args): Likewise.
+	(tsubst): Likewise.
+	(begin_template_parm_list): Use processing_template_parmlist.
+	(end_template_parm_list): Likewise.
+
+	* cp-tree.h (ANON_UNION_TYPE_P): New macro.
+	* decl.c (grokdeclarator): Use it.
+	* decl2.c (grok_x_components): Likewise.
+	* init.c (initializing_context): Likewise.
+	* method.c (do_build_copy_constructor): Likewise.
+	(do_build_assign_ref): Likewise.
+	* search.c (compute_access): Likewise.
+	* typeck.c (build_component_ref): Likewise.
+
+	* decl.c (grokdeclarator): Don't give a cv-qualified version of an
+	unnamed type a typedef name "for linkage purposes".
+
+	* pt.c (lookup_template_class): Don't look at
+	IDENTIFIER_CLASS_VALUE when there's no current_class_type.
+
+	* method.c (build_overload_int): Handle error cases gracefully.
+
+	* pt.c (instantiate_decl): Handle static member variables
+	correctly.
+
+	* pt.c (tsubst): Use the tsubst'd type when producing new
+	TEMPLATE_PARM_INDEX nodes.
+
 1998-05-24  Mark Mitchell  <mark@markmitchell.com>
 
 	* tree.c (cp_tree_equal): Handle pointers to member functions.
