@@ -431,17 +431,14 @@ string its argument points to.
 @cindex @code{sscanf}, and constant strings
 @cindex @code{fscanf}, and constant strings
 @cindex @code{scanf}, and constant strings
-Another consequence is that @code{sscanf} does not work on some systems
-when passed a string constant as its format control string or input.
-This is because @code{sscanf} incorrectly tries to write into the string
-constant.  Likewise @code{fscanf} and @code{scanf}.
+Another consequence is that @code{sscanf} does not work on some very
+old systems when passed a string constant as its format control string
+or input.  This is because @code{sscanf} incorrectly tries to write
+into the string constant.  Likewise @code{fscanf} and @code{scanf}.
 
-@opindex fwritable-strings
-The best solution to these problems is to change the program to use
+The solution to these problems is to change the program to use
 @code{char}-array variables with initialization strings for these
-purposes instead of string constants.  But if this is not possible,
-you can use the @option{-fwritable-strings} flag, which directs GCC
-to handle string constants the same way most C compilers do.
+purposes instead of string constants.
 
 @item
 @code{-2147483648} is positive.

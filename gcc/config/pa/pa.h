@@ -1666,8 +1666,7 @@ do { 									\
        && TREE_READONLY (DECL) && ! TREE_SIDE_EFFECTS (DECL)		\
        && (! DECL_INITIAL (DECL) || ! reloc_needed (DECL_INITIAL (DECL))) \
        && !flag_pic)							\
-   || (TREE_CODE_CLASS (TREE_CODE (DECL)) == 'c'			\
-       && !(TREE_CODE (DECL) == STRING_CST && flag_writable_strings)))
+   || (TREE_CODE_CLASS (TREE_CODE (DECL)) == 'c'))
 
 #define FUNCTION_NAME_P(NAME)  (*(NAME) == '@')
 

@@ -166,8 +166,7 @@ in the following sections.
 -trigraphs  -no-integrated-cpp  -traditional  -traditional-cpp @gol
 -fallow-single-precision  -fcond-mismatch @gol
 -fsigned-bitfields  -fsigned-char @gol
--funsigned-bitfields  -funsigned-char @gol
--fwritable-strings}
+-funsigned-bitfields  -funsigned-char}
 
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
@@ -1210,17 +1209,6 @@ These options control whether a bit-field is signed or unsigned, when the
 declaration does not use either @code{signed} or @code{unsigned}.  By
 default, such a bit-field is signed, because this is consistent: the
 basic integer types such as @code{int} are signed types.
-
-@item -fwritable-strings
-@opindex fwritable-strings
-Store string constants in the writable data segment and don't uniquize
-them.  This is for compatibility with old programs which assume they can
-write into string constants.
-
-Writing into string constants is a very bad idea; ``constants'' should
-be constant.
-
-This option is deprecated.
 @end table
 
 @node C++ Dialect Options
@@ -1292,8 +1280,7 @@ been added for putting variables into BSS without making them common.
 Give string constants type @code{char *} instead of type @code{const
 char *}.  By default, G++ uses type @code{const char *} as required by
 the standard.  Even if you use @option{-fno-const-strings}, you cannot
-actually modify the value of a string constant, unless you also use
-@option{-fwritable-strings}.
+actually modify the value of a string constant.
 
 This option might be removed in a future release of G++.  For maximum
 portability, you should structure your code so that it works with

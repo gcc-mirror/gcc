@@ -9076,7 +9076,6 @@ pa_select_section (tree exp, int reloc,
       && !reloc)
     readonly_data_section ();
   else if (TREE_CODE_CLASS (TREE_CODE (exp)) == 'c'
-	   && !(TREE_CODE (exp) == STRING_CST && flag_writable_strings)
 	   && !reloc)
     readonly_data_section ();
   else
