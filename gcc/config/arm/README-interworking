@@ -235,7 +235,7 @@ processing is enabled.
 When the -mthumb-interwork command line switch is specified, gcc
 arranges for all functions to return to their caller by using the BX
 instruction.  Thus provided that the return address has the bottom bit
-correctly initialised to indicate the instruction set of the caller,
+correctly initialized to indicate the instruction set of the caller,
 correct operation will ensue.
 
 When a function is called explicitly (rather than via a function

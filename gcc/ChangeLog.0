@@ -2670,7 +2670,7 @@ Thu Jun  4 01:26:57 1998  Craig Burley  <burley@gnu.org>
 
 Thu Jun  4 00:54:21 1998  Graham  <grahams@rcp.co.uk>
 
-	* loop.c (check_dbra_loop): Initialise final_value before
+	* loop.c (check_dbra_loop): Initialize final_value before
 	normalizing the loop.
 
 Wed Jun  3 20:00:04 1998  J"orn Rennecke  <amylaar@cygnus.co.uk>

@@ -515,7 +515,7 @@ cpp_create_reader (lang)
 {
   cpp_reader *pfile;
 
-  /* Initialise this instance of the library if it hasn't been already.  */
+  /* Initialize this instance of the library if it hasn't been already.  */
   init_library ();
 
   pfile = (cpp_reader *) xcalloc (1, sizeof (cpp_reader));
@@ -543,7 +543,7 @@ cpp_create_reader (lang)
   CPP_OPTION (pfile, unsigned_char) = 0;
   CPP_OPTION (pfile, unsigned_wchar) = 1;
 
-  /* Initialise the line map.  Start at logical line 1, so we can use
+  /* Initialize the line map.  Start at logical line 1, so we can use
      a line number of zero for special states.  */
   init_line_maps (&pfile->line_maps);
   pfile->line = 1;
@@ -562,7 +562,7 @@ cpp_create_reader (lang)
   pfile->cur_run = &pfile->base_run;
   pfile->cur_token = pfile->base_run.base;
 
-  /* Initialise the base context.  */
+  /* Initialize the base context.  */
   pfile->context = &pfile->base_context;
   pfile->base_context.macro = 0;
   pfile->base_context.prev = pfile->base_context.next = 0;
@@ -574,7 +574,7 @@ cpp_create_reader (lang)
   /* The expression parser stack.  */
   _cpp_expand_op_stack (pfile);
 
-  /* Initialise the buffer obstack.  */
+  /* Initialize the buffer obstack.  */
   gcc_obstack_init (&pfile->buffer_ob);
 
   _cpp_init_includes (pfile);

@@ -300,7 +300,7 @@
 	scavenging it.
 
 	* dwarf2out_frame_debug_expr: Allow the (scratch) frame
-	pointer to be initialised from the stack pointer plus a
+	pointer to be initialized from the stack pointer plus a
 	constant.
 
 2000-12-22  Bernd Schmidt  <bernds@redhat.com>
@@ -355,7 +355,7 @@
 
 	* reload.c (update_auto_inc_notes): New, broken out from ...
 	(find_reloads_address_1): ... use here, also correct possible
-	use of uninitialised reloadnum.
+	use of uninitialized reloadnum.
 
 2000-12-21  David O'Brien  <obrien@FreeBSD.org>
 
@@ -1235,7 +1235,7 @@ Mon Dec 11 13:51:09 2000  Jeffrey A Law  (law@cygnus.com)
 	arm_compute_save_reg_mask.
 	(arm_expand_prologue): Use arm_current_func_type and
 	arm_compute_save_reg_mask.
-	(arm_init_machine_status): Initialise func_type field, if
+	(arm_init_machine_status): Initialize func_type field, if
 	necessary.
 	(thumb_expand_prologue): Use arm_current_func_type.
 	(output_thumb_prologue): Use arm_current_func_type.
@@ -2923,9 +2923,9 @@ Sun Nov 26 10:02:37 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(cxx_target_objs): Substitute in the makefile.
 	* configure: Regenerate.
 
-	* Makefile.in (C_TARGET_OBJS): Define and initialise from
+	* Makefile.in (C_TARGET_OBJS): Define and initialize from
 	c_target_objs.
-	(CXX_TARGET_OBJS): Define and initialise from
+	(CXX_TARGET_OBJS): Define and initialize from
 	cxx_target_objs.
 	(C_AND_OBJC_OBJS): Include C_TARGET_OBJS.
 
@@ -3046,7 +3046,7 @@ Fri Nov 24 19:48:09 2000  J"orn Rennecke <amylaar@redhat.com>
 
 2000-11-23  Graham Stott  <grahams@redhat.com>
 
-	* cse.c (cse_insn): Initialise all regcost variables.
+	* cse.c (cse_insn): Initialize all regcost variables.
 	Fix a typo add missing '='.
 	Only compare costs if there is a replacement insn.
 
@@ -5216,13 +5216,13 @@ Tue Oct 31 15:33:27 2000  J"orn Rennecke <amylaar@redhat.com>
 	hash table.
 
 	* cppinit.c (cpp_reader_init): Move cpp_init_completed test to top.
-	Initialise various members of cpp_reader, memory pools, and the
+	Initialize various members of cpp_reader, memory pools, and the
 	special nodes.
 	(cpp_printer_init): Delete.
 	(cpp_cleanup): Update.
 	(struct builtin, builtin_array, initialize_builtins): Update for new
 	hashnode definition and builtin handling.
-	(cpp_start_read, cpp_finish): Don't take or initialise a
+	(cpp_start_read, cpp_finish): Don't take or initialize a
 	printer.  Update.
 
 	* cpplib.h (cpp_printer, cpp_toklist, CPP_DEFINED, BOL,
@@ -7147,7 +7147,7 @@ Fri Sep 29 13:20:42 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	error" tests.
 	* cppinit.c (cpp_handle_option): Remove surplus \n.
 	* cpplex.c (ON_REST_ARG): Delete.
-	(skip_block_comment): Initialise prevc.
+	(skip_block_comment): Initialize prevc.
 	(parse_args): Improve error messages.
 	(maybe_paste_with_next): Use CONTEXT_VARARGS rather
 	than ON_REST_ARG.
@@ -8018,7 +8018,7 @@ Mon 18-Sep-2000 19:21:35 BST  Neil Booth  <NeilB@earthling.net>
 	* cpplib.c (_cpp_check_directive, _cpp_check_linemarker):
 	 New implementations.
 	(do_assert): Don't bother setting the answer's list's line.
-	(cpp_push_buffer): Initialise new pfile and read_ahead members
+	(cpp_push_buffer): Initialize new pfile and read_ahead members
 	of struct cpp_buffer.
 
 	* cpplib.h (cppchar_t): New typedef.

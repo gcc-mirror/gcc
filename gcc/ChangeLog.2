@@ -1531,7 +1531,7 @@ Thu Dec  2 18:59:48 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 1999-12-02  Nick Clifton  <nickc@cygnus.com>
 
-	* config/fp-bit.c: Initialise all fields of the NAN
+	* config/fp-bit.c: Initialize all fields of the NAN
 	constants.
 
 	* c-lex.c (check_newline): Pass pragma_getc and pragma_ungetc
@@ -4002,7 +4002,7 @@ Mon Oct 18 21:16:06 1999  Fred Fish  <fnf@be.com>
 
 Thu Oct 28 10:00:48 1999  Nick Clifton  <nickc@cygnus.com>
 
-	* config/arm/arm.c: Initialise arm_structure_size_boundary to
+	* config/arm/arm.c: Initialize arm_structure_size_boundary to
 	DEFAULT_STRUCTURE_SIZE_BOUNDARY.
 	* config/arm/arm.h (DEFAULT_STRUCTURE_SIZE_BOUNDARY): Define
 	to the value 32 if it has not already been defined.
@@ -6509,15 +6509,15 @@ Sat Sep 25 09:03:17 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 Sat Sep 25 13:42:15 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* varasm.c (asm_emit_uninitialised): New function: Generate
-	the assembler statements necessary to declare an uninitialised
+	the assembler statements necessary to declare an uninitialized
 	variable.
-	(ASM_EMIT_LOCAL): New macro: Emit a local, uninitialised
+	(ASM_EMIT_LOCAL): New macro: Emit a local, uninitialized
 	variable.
 	(ASM_EMIT_BSS): New macro: Emit an entry in the bss section.
 	(ASM_EMIT_COMMON): New macro: Emit an entry in the common
 	section.
 	(assemble_variable): Use asm_emit_uninitialised to emit an
-	uninitialised variable.
+	uninitialized variable.
 
 Fri Sep 24 17:10:56 1999  Nick Clifton  <nickc@cygnus.com>
 
@@ -9759,7 +9759,7 @@ Sun Aug 29 04:30:52 1999  John Wehle  (john@feith.com)
 	All uses updated.
 	(prescan_loop, strength_reduce): New argument loop_info.  All callers
 	updated.
-	(scan_loop): New variable loop_info, initialise to address of
+	(scan_loop): New variable loop_info, initialize to address of
 	this_loop_info.
 	(prescan_loop): Set loop_info->vtop if find NOTE_INSN_LOOP_VTOP.
 	Delete variable loop_has_multiple_exit targets and replace with

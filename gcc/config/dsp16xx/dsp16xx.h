@@ -1619,7 +1619,7 @@ extern struct dsp16xx_frame_info current_frame_info;
 	      fprintf (asm_out_file, "%d", c);			              \
 	      /* After an octal-escape, if a digit follows,		      \
 		 terminate one string constant and start another.	      \
-		 The Vax assembler fails to stop reading the escape	      \
+		 The VAX assembler fails to stop reading the escape	      \
 		 after three digits, so this is the only way we		      \
 		 can get it to parse the data properly.  		      \
 	      if (i < thissize - 1 && ISDIGIT (p[i + 1]))		      \

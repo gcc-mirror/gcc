@@ -65,7 +65,7 @@ struct ht
 
 extern void gcc_obstack_init PARAMS ((struct obstack *));
 
-/* Initialise the hashtable with 2 ^ order entries.  */
+/* Initialize the hashtable with 2 ^ order entries.  */
 extern hash_table *ht_create PARAMS ((unsigned int order));
 
 /* Frees all memory associated with a hash table.  */

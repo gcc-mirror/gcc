@@ -23,7 +23,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    toplev.c according to command line options.  */
 struct gcc_debug_hooks
 {
-  /* Initialise debug output.  MAIN_FILENAME is the name of the main
+  /* Initialize debug output.  MAIN_FILENAME is the name of the main
      input file.  */
   void (* init) PARAMS ((const char *main_filename));
 

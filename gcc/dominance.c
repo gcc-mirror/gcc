@@ -145,7 +145,7 @@ void debug_dominance_info		PARAMS ((dominance_info));
   while (0)
 
 /* Allocate all needed memory in a pessimistic fashion (so we round up).
-   This initialises the contents of DI, which already must be allocated.  */
+   This initializes the contents of DI, which already must be allocated.  */
 
 static void
 init_dom_info (di)

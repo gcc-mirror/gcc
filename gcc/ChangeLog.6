@@ -1020,10 +1020,10 @@ Mon Dec 17 17:57:05 CET 2001  Jan Hubicka  <jh@suse.cz>
 	* target.h (asm_out.byte_op, asm_out.aligned_op, asm_out.unaligned_op,
 	asm_out.integer): New fields.
 	* target-def.h (TARGET_ASM_BYTE_OP, TARGET_ASM_ALIGNED_[HSDT]I_OP,
-	TARGET_ASM_UNALIGNED_[HSDT]I_OP, TARGET_ASM_INTEGER): New initialisers.
+	TARGET_ASM_UNALIGNED_[HSDT]I_OP, TARGET_ASM_INTEGER): New initializers.
 	(TARGET_ASM_ALIGNED_INT_OP, TARGET_ASM_UNALIGNED_INT_OP): Collect
-	the individual initialisers together.
-	(TARGET_ASM_OUT): Add the new initialisers.
+	the individual initializers together.
+	(TARGET_ASM_OUT): Add the new initializers.
 	* output.h (assemble_integer): Return bool.
 	(integer_asm_op): Declare.
 	(default_assemble_integer): Declare.
@@ -10036,7 +10036,7 @@ Tue Sep 25 17:13:56 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(builtin_decsription): Add new field mask which is used to determine
 	when to define the builtin via the macro def_builtin.
 
-	(bdesc_comi): Initialise new mask fields.
+	(bdesc_comi): Initialize new mask fields.
 	(bdesc_2srg): Likewise.
 	(bdesc_1arg): Likewise.
 
@@ -16689,7 +16689,7 @@ Sun Jul 22 21:31:04 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(xcoff_debug_hooks, dbx_debug_hooks): Use it.
 	* sdbout.c (sdbout_finish): New.
 	(sdbout_debug_hooks): Use it, add comments.
-	(sdbout_global_decl): Defer initialised public vars to
+	(sdbout_global_decl): Defer initialized public vars to
 	sdbout_finish.
 	* varasm.c (assemble_variable): Don't output debug information
 	for file-scope variables.
@@ -16721,7 +16721,7 @@ Sun Jul 22 21:31:04 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(xcoff_debug_hooks, dbx_debug_hooks): Use it.
 	* sdbout.c (sdbout_finish): New.
 	(sdbout_debug_hooks): Use it, add comments.
-	(sdbout_global_decl): Defer initialised public vars to
+	(sdbout_global_decl): Defer initialized public vars to
 	sdbout_finish.
 	* varasm.c (assemble_variable): Don't output debug information
 	for file-scope variables.

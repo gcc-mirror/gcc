@@ -2036,7 +2036,7 @@ Sun May 28 18:37:07 2000  Clinton Popetz  <cpopetz@cygnus.com>
 
 Sun May 28 23:26:59 2000  Philippe De Muyter <phdm@macqel.be>
 
-	* mklibgcc.in (all): Variable initialised to `libgcc'.
+	* mklibgcc.in (all): Variable initialized to `libgcc'.
 
 2000-05-28  Gabriel Dos Reis  <gdr@codesourcery.com>
 
@@ -2088,10 +2088,10 @@ Sun May 28 23:26:59 2000  Philippe De Muyter <phdm@macqel.be>
 	* regclass.c [CLASS_CANNOT_CHANGE_SIZE]
 	(class_can_change_size): New variable.
 	(reg_changes_size): New variable.
-	(init_reg_sets_1): Initialise class_can_change_size.
+	(init_reg_sets_1): Initialize class_can_change_size.
 	(record_operand_costs): Remove subreg_changes_size.
 	Don't pass it around.  Instead update reg_changes_size.
-	(regclass): Initialise and free reg_changes_size.  If a register
+	(regclass): Initialize and free reg_changes_size.  If a register
 	changes size, don't preference it to a class that contains
 	registers that can't change size.
 	(record_reg_classes): Don't look at subreg_changes_size.
@@ -2174,7 +2174,7 @@ Sun May 28 23:26:59 2000  Philippe De Muyter <phdm@macqel.be>
 
 2000-05-28  Neil Booth  <NeilB@earthling.net>
 
-	* cpplex.c (_cpp_init_toklist): No comment space to initialise.
+	* cpplex.c (_cpp_init_toklist): No comment space to initialize.
 	(_cpp_free_toklist): No comment space to free.
 	(expand_comment_space): Remove.
 	(save_comment_space): Place the comment in the current token and
@@ -3133,7 +3133,7 @@ Fri May 19 06:49:35 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2000-05-18  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/unknown-elf.h (UNIQUE_SECTION): Place constant,
-	uninitialised data in .rodata not .bss, and do not interpret an
+	uninitialized data in .rodata not .bss, and do not interpret an
 	error in the initialisation value as meaning that the variable
 	should be placed in the .bss section.
 
@@ -3225,7 +3225,7 @@ Thu May 18 12:10:18 2000  Philippe De Muyter  <phdm@macqel.be>
 
 2000-05-18  Neil Booth  <NeilB@earthling.net>
 
-	* cppinit.c (cpp_reader_init): Initialise col_adjust and
+	* cppinit.c (cpp_reader_init): Initialize col_adjust and
 	default tab stop size.
 	(no_num, OPT_ftabstop): New.
 	(handle_option): Handle "ftabstop=" command-line option.
@@ -10256,7 +10256,7 @@ Thu Mar 16 02:14:16 2000  Hans-Peter Nilsson  <hp@bitrange.com>
 	2000-02-03  Geoff Keating  <geoffk@cygnus.com>
 
 	* rs6000.c (rs6000_sr_alias_set): New variable.
-	(rs6000_override_options): Initialise rs6000_sr_alias_set.
+	(rs6000_override_options): Initialize rs6000_sr_alias_set.
 	(rs6000_emit_stack_tie): New function.
 	(rs6000_emit_allocate_stack): Specify RTX_FRAME_RELATED_P
 	in a way that dwarf2out can understand.
@@ -10804,7 +10804,7 @@ Wed Feb 23 13:00:06 CET 2000  Jan Hubicka  <jh@suse.cz>
 2000-03-14  Nick Clifton  <nickc@cygnus.com>
 
 	* gcc.c (do_spec_1): Catch the case where %* is used in a
-	substitution pattern, but it has not been initialised.
+	substitution pattern, but it has not been initialized.
 	Issue a meaningful error message if an unrecognised operator
 	is encountered in a spec string.
 
@@ -15005,7 +15005,7 @@ Mon Jan 24 16:50:08 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* basic-block.h (struct loops): New field `levels'.
 	* flow.c (flow_loops_level_compute): Traverse all outer loops.
-	(flow_loop_level_compute): Initialise level to 1.
+	(flow_loop_level_compute): Initialize level to 1.
 	(flow_loops_find): Set loops->levels.
 	(flow_loops_dump): Print loops->levels.
 
@@ -15047,7 +15047,7 @@ Mon Jan 24 16:50:08 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 2000-01-22  Alan Modra <alan@SPRI.Levels.UniSA.Edu.Au>
 
-	* config/elfos.h (UNIQUE_SECTION): Restore uninitialised data
+	* config/elfos.h (UNIQUE_SECTION): Restore uninitialized data
 	section naming to that prior to 2000-01-07 patch.
 	* config/mips/elf.h (UNIQUE_SECTION): Ditto.
 	* config/mips/elf64.h (UNIQUE_SECTION): Ditto.
@@ -15242,7 +15242,7 @@ Wed Jan 19 19:12:36 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 	* loop.c (current_loop_info): Renamed from loop_info_data
 	and changed to a pointer.
 	(loop_optimize): Allocate loop_info structure for each loop
-	and initialise to zero.
+	and initialize to zero.
 	(scan_loop): Set current_loop_info.
 
 	* unroll.c (loop_iterations): Don't abort if REG_USERVAR_P set
@@ -16500,25 +16500,25 @@ Thu Jan  6 13:44:59 CET 2000  Jan Hubicka  <jh@suse.cz>
 	uninitialized data decls.
 
 	* config/i386/winnt.c (i386_pe_unique_section): Cope with
-	being called for uninitialised data.
+	being called for uninitialized data.
 
 	* config/i386/interix.c (i386_pe_unique_section): Cope with
-	being called for uninitialised data.
+	being called for uninitialized data.
 
 	* config/mips/elf.h (UNIQUE_SECTION): Cope with being called
-	for uninitialised data.
+	for uninitialized data.
 
 	* config/mips/elf64.h (UNIQUE_SECTION): Cope with being called
-	for uninitialised data.
+	for uninitialized data.
 
 	* config/mips/iri6gld.h (UNIQUE_SECTION): Cope with being called
-	for uninitialised data.
+	for uninitialized data.
 
 	* config/arm/unknown-elf.h (IN_NAMED_SECTION): Define.
 	(UNIQUE_SECTION_P): Always generate a unique section if
 	flag_data_sections is true.
 	(UNIQUE_SECTION): Also generate unique sections for
-	uninitialised data.
+	uninitialized data.
 	(ASM_OUTPUT_ALIGNED_BSS): Redefine to use named_section().
 	(ASM_OUTPUT_ALIGNED_DECL_LOCAL): Redefine to use
 	named_section().

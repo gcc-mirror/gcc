@@ -143,7 +143,7 @@ override_options ()
 	}
     }
 
-  /* Make sure that the US_BIT_SET mask has been correctly initialised.  */
+  /* Make sure that the US_BIT_SET mask has been correctly initialized.  */
   if ((target_flags & MASK_US_MASK_SET) == 0)
     {
       target_flags |= MASK_US_MASK_SET;
@@ -2861,7 +2861,7 @@ v850_insert_attributes (decl, attr_ptr)
       && v850_get_data_area (decl) == DATA_AREA_NORMAL)
     v850_set_data_area (decl, data_area_stack->data_area);
 
-  /* Initialise the default names of the v850 specific sections,
+  /* Initialize the default names of the v850 specific sections,
      if this has not been done before.  */
   
   if (GHS_default_section_names [(int) GHS_SECTION_KIND_SDATA] == NULL)

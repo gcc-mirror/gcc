@@ -717,7 +717,7 @@ extern int arm_is_6_or_7;
 #define STRUCTURE_SIZE_BOUNDARY arm_structure_size_boundary
 extern int arm_structure_size_boundary;
 
-/* This is the value used to initialise arm_structure_size_boundary.  If a
+/* This is the value used to initialize arm_structure_size_boundary.  If a
    particular arm target wants to change the default value it should change
    the definition of this macro, not STRUCTRUE_SIZE_BOUNDARY.  See netbsd.h
    for an example of this.  */
@@ -1398,7 +1398,7 @@ enum reg_class
    Note value 7 is currently unassigned.  Also note that the interrupt
    function types all have bit 2 set, so that they can be tested for easily.
    Note that 0 is deliberately chosen for ARM_FT_UNKNOWN so that when the
-   machine_function structure is initialised (to zero) func_type will
+   machine_function structure is initialized (to zero) func_type will
    default to unknown.  This will force the first use of arm_current_func_type
    to call arm_compute_func_type.  */
 #define ARM_FT_UNKNOWN		 0 /* Type has not yet been determined.  */

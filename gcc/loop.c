@@ -4450,7 +4450,7 @@ loop_bivs_find (loop)
 }
 
 
-/* Determine how BIVS are initialised by looking through pre-header
+/* Determine how BIVS are initialized by looking through pre-header
    extended basic block.  */
 static void
 loop_bivs_init_find (loop)
@@ -5089,7 +5089,7 @@ strength_reduce (loop, flags)
       return;
     }
 
-  /* Determine how BIVS are initialised by looking through pre-header
+  /* Determine how BIVS are initialized by looking through pre-header
      extended basic block.  */
   loop_bivs_init_find (loop);
 

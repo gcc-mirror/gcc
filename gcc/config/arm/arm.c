@@ -672,7 +672,7 @@ arm_override_options ()
   if (TARGET_APCS_FLOAT)
     warning ("passing floating point arguments in fp regs not yet supported");
   
-  /* Initialise boolean versions of the flags, for use in the arm.md file.  */
+  /* Initialize boolean versions of the flags, for use in the arm.md file.  */
   arm_fast_multiply = (insn_flags & FL_FAST_MULT) != 0;
   arm_arch4         = (insn_flags & FL_ARCH4) != 0;
   arm_arch5         = (insn_flags & FL_ARCH5) != 0;
@@ -9295,7 +9295,7 @@ arm_debugger_arg_offset (value, addr)
      held in the register into an offset from the frame pointer.
      We do this by searching through the insns for the function
      looking to see where this register gets its value.  If the
-     register is initialised from the frame pointer plus an offset
+     register is initialized from the frame pointer plus an offset
      then we are in luck and we can continue, otherwise we give up.
      
      This code is exercised by producing debugging information

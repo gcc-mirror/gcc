@@ -507,7 +507,7 @@ df_bitmaps_free (df, flags)
 }
 
 
-/* Allocate and initialise dataflow memory.  */
+/* Allocate and initialize dataflow memory.  */
 static void
 df_alloc (df, n_regs)
      struct df *df;
@@ -2169,7 +2169,7 @@ df_analyse_1 (df, blocks, flags, update)
 }
 
 
-/* Initialise dataflow analysis.  */
+/* Initialize dataflow analysis.  */
 struct df *
 df_init ()
 {
@@ -2340,7 +2340,7 @@ df_analyse (df, blocks, flags)
 	      /* Recompute everything from scratch.  */
 	      df_free (df);
 	    }
-	  /* Allocate and initialise data structures.  */
+	  /* Allocate and initialize data structures.  */
 	  df_alloc (df, max_reg_num ());
 	  df_analyse_1 (df, 0, flags, 0);
 	  update = 1;
