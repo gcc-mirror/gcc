@@ -1067,7 +1067,7 @@ output_move_double (operands)
   if (optype0 == PUSHOP
       && REGNO (XEXP (XEXP (operands[0], 0), 0)) == STACK_POINTER_REGNUM
       && reg_overlap_mentioned_p (stack_pointer_rtx, operands[1]))
-    operands[1] = latehalf[1];
+    operands[1] = middlehalf[1] = latehalf[1];
 
   /* For (set (reg:DI N) (mem:DI ... (reg:SI N) ...)),
      if the upper part of reg N does not appear in the MEM, arrange to
