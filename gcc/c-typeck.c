@@ -38,7 +38,7 @@ static tree convert_for_assignment ();
 static void warn_for_assignment ();
 static int function_types_compatible_p ();
 static int type_lists_compatible_p ();
-static int self_promoting_args_p ();
+int self_promoting_args_p ();
 static int self_promoting_type_p ();
 static int comp_target_types ();
 static tree pointer_int_sum ();
@@ -588,7 +588,7 @@ type_lists_compatible_p (args1, args2)
 /* Return 1 if PARMS specifies a fixed number of parameters
    and none of their types is affected by default promotions.  */
 
-static int
+int
 self_promoting_args_p (parms)
      tree parms;
 {
@@ -3663,11 +3663,23 @@ build_c_cast (type, expr)
 
       if (field)
 	{
-	  tree nvalue = build1 (CONVERT_EXPR, type, value);
-	  TREE_CONSTANT (nvalue) = TREE_CONSTANT (value);
+	  char *name;
+	  tree nvalue;
+
 	  if (pedantic)
 	    pedwarn ("ANSI C forbids casts to union type");
-	  return nvalue;
+	  if (TYPE_NAME (type) != 0)
+	    {
+	      if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
+		name = IDENTIFIER_POINTER (TYPE_NAME (type));
+	      else
+		name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
+	    }
+	  else
+	    name = "";
+	  return digest_init (type, build_nt (CONSTRUCTOR, NULL_TREE,
+					      build_tree_list (field, value)),
+			      0, 0, 0, name);
 	}
       error ("cast to union type from type not present in union");
       return error_mark_node;
@@ -4136,6 +4148,9 @@ initializer_constant_valid_p (value)
 	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (value, 0))) == POINTER_TYPE
 	  && tree_int_cst_equal (TYPE_SIZE (TREE_TYPE (value)),
 				 TYPE_SIZE (TREE_TYPE (TREE_OPERAND (value, 0)))))
+	return initializer_constant_valid_p (TREE_OPERAND (value, 0));
+      /* Allow conversions to union types if the value inside is okay.  */
+      if (TREE_CODE (TREE_TYPE (value)) == UNION_TYPE)
 	return initializer_constant_valid_p (TREE_OPERAND (value, 0));
       return 0;
 
@@ -4654,26 +4669,19 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 	  return error_mark_node;
 	}
 
-      SAVE_SPELLING_DEPTH
-	({
-	  if (ofwhat)
-	    push_string (ofwhat);
-	  push_member_name (IDENTIFIER_POINTER (DECL_NAME (field)));
-
-	  if (raw_constructor)
-	    result = process_init_constructor (type, inside_init, 0,
-					       require_constant,
-					       constructor_constant, 0);
-	  else if (tail != 0)
-	    {
-	      *tail = old_tail_contents;
-	      result = process_init_constructor (type, 0, tail,
-						 require_constant,
-						 constructor_constant, 0);
-	    }
-	  else
-	    result = 0;
-	});
+      if (raw_constructor)
+	result = process_init_constructor (type, inside_init, 0,
+					   require_constant,
+					   constructor_constant, ofwhat);
+      else if (tail != 0)
+	{
+	  *tail = old_tail_contents;
+	  result = process_init_constructor (type, 0, tail,
+					     require_constant,
+					     constructor_constant, ofwhat);
+	}
+      else
+	result = 0;
 
       if (result)
 	return result;
@@ -4986,7 +4994,8 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 		  if (temp)
 		    field = temp, i = j, win = 1;
 		  else
-		    error_with_decl (temp, "no field `%s' in structure being initialized");
+		    error ("no field `%s' in structure being initialized",
+			   IDENTIFIER_POINTER (TREE_PURPOSE (tail))); 
 		}
 	      if (!win)
 		TREE_VALUE (tail) = error_mark_node;
@@ -5064,7 +5073,10 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 	{
 	  int win = 0;
 
-	  if (TREE_CODE (TREE_PURPOSE (tail)) != IDENTIFIER_NODE)
+	  if (TREE_CODE (TREE_PURPOSE (tail)) == FIELD_DECL)
+	    /* Handle the case of a call by build_c_cast.  */
+	    field = TREE_PURPOSE (tail), win = 1;
+	  else if (TREE_CODE (TREE_PURPOSE (tail)) != IDENTIFIER_NODE)
 	    error ("index value instead of field name in union initializer");
 	  else
 	    {
@@ -5077,7 +5089,8 @@ process_init_constructor (type, init, elts, constant_value, constant_element,
 	      if (temp)
 		field = temp, win = 1;
 	      else
-		error_with_decl (temp, "no field `%s' in union being initialized");
+		error ("no field `%s' in union being initialized",
+		       IDENTIFIER_POINTER (TREE_PURPOSE (tail)));
 	    }
 	  if (!win)
 	    TREE_VALUE (tail) = error_mark_node;
