@@ -1,3 +1,8 @@
+2004-08-10  Andrew Haley  <aph@redhat.com>
+
+	* testsuite/libjava.lang/err14.java: New file.
+	* testsuite/libjava.lang/err14.out: New file.
+
 2004-08-05  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* Makefile.am: Fix missing rename from x_nat_headers to 
