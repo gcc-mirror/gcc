@@ -1,3 +1,9 @@
+2000-10-12  Tom Tromey  <tromey@cygnus.com>
+
+	Fix for PR gcj/356:
+	* gjavah.c (add_class_decl): Don't special-case inner classes.
+	(add_namelet): Likewise.
+
 2000-10-10  Tom Tromey  <tromey@cygnus.com>
 
 	* lex.c (java_new_lexer): Initialize out_first and out_last
