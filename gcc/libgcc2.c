@@ -3886,9 +3886,9 @@ next_stack_level (void *pc, frame_state *udata, frame_state *caller_udata,
     return 0;
 
   /* Now go back to our caller's stack frame.  If our caller's CFA was
-     saved in a register in this stack frame or a previous one,
-     restore it; otherwise, assume CFA register was saved in SP and
-     restore it to our CFA value.  */
+     saved in a register in this stack frame or a previous one, restore it;
+     otherwise, assume CFA register is SP and restore it to our CFA value
+     (which is defined to be the value of SP in the caller's frame).  */
 
   p = saved_regs->reg[caller_udata->cfa_reg];
   if (p)
@@ -4107,7 +4107,12 @@ label:
      On the SPARC, this means flushing the register windows.  */
   __builtin_unwind_init ();
 
-  /* Now reset pc to the right throw point.  */
+  /* Now reset pc to the right throw point.  The return address points to
+     the instruction after the call to __throw; we subtract 1 so that pc
+     points into the call insn itself.  Since we work with PC ranges (as
+     opposed to specific call sites), it isn't important for it to point to
+     the very beginning of the call insn, and making it do so would be
+     hard on targets with variable length call insns.  */
   pc = __builtin_extract_return_addr (__builtin_return_address (0)) - 1;
 
   handler = throw_helper (eh, pc, my_udata, &offset);
@@ -4157,7 +4162,12 @@ label:
      On the SPARC, this means flushing the register windows.  */
   __builtin_unwind_init ();
 
-  /* Now reset pc to the right throw point.  */
+  /* Now reset pc to the right throw point.  The return address points to
+     the instruction after the call to __throw; we subtract 1 so that pc
+     points into the call insn itself.  Since we work with PC ranges (as
+     opposed to specific call sites), it isn't important for it to point to
+     the very beginning of the call insn, and making it do so would be
+     hard on targets with variable length call insns.  */
   pc = __builtin_extract_return_addr (__builtin_return_address (0)) - 1;
 
   handler = throw_helper (eh, pc, my_udata, &offset);
