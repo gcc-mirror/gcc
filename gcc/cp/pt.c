@@ -411,10 +411,9 @@ complete_template_args (tmpl, extra_args, unbound_only)
 
       new_args = make_tree_vec (depth + 1);
 
-      if (! is_member_template (tmpl))
-	/* If this isn't a member template, extra_args is for the innermost
-	   template class, so skip over it.  */
-	skip = 1;
+      /* If this isn't a member template, extra_args is for the innermost
+	 template class, so skip over it.  */
+      skip = (! is_member_template (tmpl));
 
       type = DECL_REAL_CONTEXT (tmpl);
       for (i = depth; i; type = TYPE_CONTEXT (type))
