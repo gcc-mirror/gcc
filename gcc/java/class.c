@@ -632,14 +632,14 @@ build_class_ref (type)
       else
 	{
 	  char *name;
-	  char buffer[20];
+	  char buffer[25];
 	  decl_name = TYPE_NAME (type);
 	  if (TREE_CODE (decl_name) == TYPE_DECL)
 	    decl_name = DECL_NAME (decl_name);
 	  name = IDENTIFIER_POINTER (decl_name);
 	  if (strncmp (name, "promoted_", 9) == 0)
 	    name += 9;
-	  sprintf (buffer, "%sClass", name);
+	  sprintf (buffer, "_Jv_%sClass", name);
 	  decl_name = get_identifier (buffer);
 	  decl = IDENTIFIER_GLOBAL_VALUE (decl_name);
 	  if (decl == NULL_TREE)
