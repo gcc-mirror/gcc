@@ -1,3 +1,11 @@
+Noteworthy changes in GCC after EGCS 1.1.
+-----------------------------------------
+
+Target specific NEWS
+
+    RS6000/PowerPC: -mcpu=401 was added as an alias for -mcpu=403.  -mcpu=e603e
+		    was added to do -mcpu=603e and -msoft-float.
+
 Noteworthy changes in GCC for EGCS 1.1.
 ---------------------------------------
 

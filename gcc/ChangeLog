@@ -1,3 +1,7 @@
+Thu Sep  3 18:16:16 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* rs6000.c (rs6000_override_options): Add -mcpu={401,e603e}.
+
 Thu Sep  3 18:05:16 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.md (movsf): Disable explicit secondary-reload-like
