@@ -46,7 +46,7 @@ typedef struct cpp_hashnode cpp_hashnode;
    the same order as their counterparts without the '=', like ">>".  */
 
 /* Positions in the table.  */
-#define CPP_LAST_EQ CPP_LSHIFT
+#define CPP_LAST_EQ CPP_MAX
 #define CPP_FIRST_DIGRAPH CPP_HASH
 
 #define TTYPE_TABLE				\
@@ -154,7 +154,8 @@ struct cpp_string
 #define STRINGIFY_ARG	(1 << 3) /* If macro argument to be stringified.  */
 #define PASTE_LEFT	(1 << 4) /* If on LHS of a ## operator.  */
 #define PASTED		(1 << 5) /* The result of a ## operator.  */
-#define NAMED_OP	(1 << 6) /* C++ named operators, also defined */
+#define NAMED_OP	(1 << 6) /* C++ named operators, also "defined".  */
+#define VOID_REST	(1 << 7) /* When a rest arg gets zero actual args.  */
 
 /* A preprocessing token.  This has been carefully packed and should
    occupy 16 bytes on 32-bit hosts and 24 bytes on 64-bit hosts.  */
@@ -178,8 +179,7 @@ struct cpp_token
 /* cpp_toklist flags.  */
 #define LIST_OFFSET     (1 << 0)
 #define VAR_ARGS	(1 << 1)
-#define GNU_REST_ARGS	(1 << 2) /* Set in addition to VAR_ARGS.  */
-#define BEG_OF_FILE	(1 << 3)
+#define BEG_OF_FILE	(1 << 2)
 
 struct directive;		/* These are deliberately incomplete.  */
 struct answer;

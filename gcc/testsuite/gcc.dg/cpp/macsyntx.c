@@ -51,16 +51,15 @@ one(ichi\
 two(ichi)			/* { dg-error "not enough" } */
 var0()				/* OK.  */
 var0(ichi)			/* OK.  */
-var1()				/* { dg-error "not enough" } */
-var1(ichi)			/* { dg-error "not enough" } */
+var1()				/* { dg-warning "rest arguments to be used" } */
+var1(ichi)			/* { dg-warning "rest arguments to be used" } */
 var1(ichi, ni)			/* OK.  */
 
-/* This tests two deprecated oddities of GNU rest args - omitting a
-   comma is OK, and backtracking a token on pasting an empty rest
-   args.  */
+/* This tests two oddities of GNU rest args - omitting a comma is OK,
+   and backtracking a token on pasting an empty rest args.  */
 #define rest(x, y...) x ## y	/* { dg-warning "ISO C" } */
-rest(ichi,)			/* { dg-warning "deprecated" } */
-rest(ichi)			/* { dg-warning "deprecated" } */
+rest(ichi,)			/* OK.  */
+rest(ichi)			/* { dg-warning "rest arguments to be used" } */
 #if 23 != rest(2, 3)		/* OK, no warning.  */
 #error 23 != 23 !!
 #endif

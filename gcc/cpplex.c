@@ -2399,13 +2399,19 @@ parse_args (pfile, hp, args)
 	 debug("string");
 	 This is exactly the same as if the rest argument had received no
 	 tokens - debug("string",);  This extension is deprecated.  */
-	
-      if (argc + 1 == macro->paramc && (macro->flags & GNU_REST_ARGS))
+
+      if (argc + 1 == macro->paramc && (macro->flags & VAR_ARGS))
 	{
 	  /* Duplicate the placemarker.  Then we can set its flags and
              position and safely be using more than one.  */
-	  save_token (args, duplicate_token (pfile, &placemarker_token));
+	  cpp_token *pm = duplicate_token (pfile, &placemarker_token);
+	  pm->flags = VOID_REST;
+	  save_token (args, pm);
 	  args->ends[argc] = total + 1;
+
+	  if (CPP_OPTION (pfile, c99) && CPP_PEDANTIC (pfile))
+	    cpp_pedwarn (pfile, "ISO C99 requires rest arguments to be used");
+
 	  return 0;
 	}
       else
@@ -2710,17 +2716,11 @@ maybe_paste_with_next (pfile, token)
 	pasted = duplicate_token (pfile, second);
       else if (second->type == CPP_PLACEMARKER)
 	{
-	  cpp_context *mac_context = CURRENT_CONTEXT (pfile) - 1;
 	  /* GCC has special extended semantics for a ## b where b is
-	     a varargs parameter: a disappears if b consists of no
-	     tokens.  This extension is deprecated.  */
-	  if ((mac_context->u.list->flags & GNU_REST_ARGS)
-	      && (mac_context->u.list->tokens[mac_context->posn-1].val.aux + 1
-		  == (unsigned) mac_context->u.list->paramc))
-	    {
-	      cpp_warning (pfile, "deprecated GNU ## extension used");
-	      pasted = duplicate_token (pfile, second);
-	    }
+	     a varargs parameter: a disappears if b was given no actual
+	     arguments (not merely if b is an empty argument).  */
+	  if (second->flags & VOID_REST)
+	    pasted = duplicate_token (pfile, second);
 	  else
 	    pasted = duplicate_token (pfile, token);
 	}
@@ -3161,6 +3161,7 @@ get_raw_token (pfile)
 	{
 	  result = context->pushed_token;
 	  context->pushed_token = 0;
+	  return result;	/* Cannot be a CPP_MACRO_ARG */
 	}
       else if (context->posn == context->count)
 	{
@@ -3168,20 +3169,18 @@ get_raw_token (pfile)
 	    return &eof_token;
 	  continue;
 	}
-      else
+      else if (IS_ARG_CONTEXT (context))
 	{
-	  if (IS_ARG_CONTEXT (context))
+	  result = context->u.arg[context->posn++];
+	  if (result == 0)
 	    {
+	      context->flags ^= CONTEXT_RAW;
 	      result = context->u.arg[context->posn++];
-	      if (result == 0)
-		{
-		  context->flags ^= CONTEXT_RAW;
-		  result = context->u.arg[context->posn++];
-		}
-	      return result;	/* Cannot be a CPP_MACRO_ARG */
 	    }
-	  result = &context->u.list->tokens[context->posn++];
+	  return result;	/* Cannot be a CPP_MACRO_ARG */
 	}
+
+      result = &context->u.list->tokens[context->posn++];
 
       if (result->type != CPP_MACRO_ARG)
 	return result;
@@ -3225,7 +3224,6 @@ lex_next (pfile, clear)
       if (pfile->temp_used)
 	release_temp_tokens (pfile);
     }
-     
   lex_line (pfile, list);
   pfile->contexts[0].count = list->tokens_used;
 

@@ -1,3 +1,28 @@
+2000-07-20  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppmacro.c (CAN_PASTE_AFTER): New macro.
+	(count_params): Don't set GNU_REST_ARGS on anything.
+	(save_expansion): Set PASTE_LEFT only on tokens for which
+	CAN_PASTE_AFTER is true, or which are named operators.
+
+	* cpplex.c (parse_args): Distinguish between a rest argument
+	given one empty argument, and a rest argument given zero arguments.
+	(maybe_paste_with_next): Look for VOID_REST tag, and trigger
+	deletion of previous token based on that.
+	(get_raw_token): Flatten some control structure.
+
+	* cpplib.h (CPP_LAST_EQ): Correct.
+	(VOID_REST): New token flag.
+	(GNU_REST_ARGS): Delete.
+
+	* tradcpp.c (main): Don't munge -D options.
+	(make_definition): Bring -D handling in line with cpplib.
+	(do_define): Strip all leading whitespace from macro definitions.
+
+2000-07-20  David Billinghurst <David.Billinghurst@riotinto.com.au>
+
+	* Makefile.in (tradcpp): Depend on intl.o and version.o.
+
 2000-07-20  Bruce Korb  <bkorb@gnu.org>
 
 	* fixincl/check.tpl: strip the platform specific types before testing

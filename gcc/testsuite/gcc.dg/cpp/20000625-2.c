@@ -2,7 +2,7 @@
 /* { dg-do run } */
 
 #define symbol_version(name, version) name##@##version
-
+/* { dg-warning "nothing can be pasted" "" { target *-*-* } 4 } */
 #define str(x) xstr(x)
 #define xstr(x) #x
 
