@@ -1,3 +1,8 @@
+Tue Aug 22 02:31:26 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* stmt.c (expand_goto_internal, fixup_gotos): Only check
+	TYPE_RETURNS_STACK_DEPRESSED for FUNCTION_TYPE.
+
 2000-08-21  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (calculate_global_regs_live): Mark frame pointer live

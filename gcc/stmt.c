@@ -907,8 +907,10 @@ expand_goto_internal (body, label, last_insn)
 	  /* Don't do this adjust if it's to the end label and this function
 	     is to return with a depressed stack pointer.  */
 	  if (label == return_label
-	      && (TYPE_RETURNS_STACK_DEPRESSED
-		  (TREE_TYPE (current_function_decl))))
+	      && (((TREE_CODE (TREE_TYPE (current_function_decl))
+		   == FUNCTION_TYPE)
+		   && (TYPE_RETURNS_STACK_DEPRESSED
+		       (TREE_TYPE (current_function_decl))))))
 	    ;
 	  else
 	    emit_stack_restore (SAVE_BLOCK, stack_level, NULL_RTX);
@@ -1192,8 +1194,10 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	     jump jumps out of.  */
 	  if (f->stack_level
 	      && ! (f->target_rtl == return_label
-		    && (TYPE_RETURNS_STACK_DEPRESSED 
-			(TREE_TYPE (current_function_decl)))))
+		    && ((TREE_CODE (TREE_TYPE (current_function_decl))
+			 == FUNCTION_TYPE)
+			&& (TYPE_RETURNS_STACK_DEPRESSED 
+			    (TREE_TYPE (current_function_decl))))))
 	    emit_stack_restore (SAVE_BLOCK, f->stack_level, f->before_jump);
 
 	  /* Finish up the sequence containing the insns which implement the
