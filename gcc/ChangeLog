@@ -1,3 +1,8 @@
+Sat Dec 12 16:49:24 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_expand_block_move): mode_for_size expects
+	bits, not bytes.  Infer extra alignment from addressof.
+
 1998-12-11  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000/sysv4.h (ASM_OUTPUT_ALIGNED_LOCAL): Put small data in the

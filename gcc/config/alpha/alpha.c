@@ -1836,7 +1836,8 @@ alpha_expand_block_move (operands)
 {
   rtx bytes_rtx	= operands[2];
   rtx align_rtx = operands[3];
-  HOST_WIDE_INT bytes = INTVAL (bytes_rtx);
+  HOST_WIDE_INT orig_bytes = INTVAL (bytes_rtx);
+  HOST_WIDE_INT bytes = orig_bytes;
   HOST_WIDE_INT src_align = INTVAL (align_rtx);
   HOST_WIDE_INT dst_align = src_align;
   rtx orig_src	= operands[1];
@@ -1909,7 +1910,7 @@ alpha_expand_block_move (operands)
       enum machine_mode mode;
       tmp = XEXP (XEXP (orig_src, 0), 0);
 
-      mode = mode_for_size (bytes, MODE_INT, 1);
+      mode = mode_for_size (bytes * BITS_PER_UNIT, MODE_INT, 1);
       if (mode != BLKmode
 	  && GET_MODE_SIZE (GET_MODE (tmp)) <= bytes)
 	{
@@ -2039,7 +2040,7 @@ alpha_expand_block_move (operands)
       enum machine_mode mode;
       tmp = XEXP (XEXP (orig_dst, 0), 0);
 
-      mode = mode_for_size (bytes, MODE_INT, 1);
+      mode = mode_for_size (orig_bytes * BITS_PER_UNIT, MODE_INT, 1);
       if (GET_MODE (tmp) == mode && nregs == 1)
 	{
 	  emit_move_insn (tmp, data_regs[0]);
@@ -2049,9 +2050,12 @@ alpha_expand_block_move (operands)
 
       /* ??? If nregs > 1, consider reconstructing the word in regs.  */
       /* ??? Optimize mode < dst_mode with strict_low_part.  */
-      /* No appropriate mode; fall back on memory.  */
+
+      /* No appropriate mode; fall back on memory.  We can speed things
+	 up by recognizing extra alignment information.  */
       orig_dst = change_address (orig_dst, GET_MODE (orig_dst),
 				 copy_addr_to_reg (XEXP (orig_dst, 0)));
+      dst_align = GET_MODE_SIZE (GET_MODE (tmp));
     }
 
   /* Write out the data in whatever chunks reading the source allowed.  */
