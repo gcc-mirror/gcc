@@ -1,3 +1,7 @@
+Thu Jun 18 15:12:30 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* execute/980618-{1,2}.c: New tests that showed up m32r bugs.
+
 Fri Jun  5 21:54:26 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* execute/980605-1.c: New test.
