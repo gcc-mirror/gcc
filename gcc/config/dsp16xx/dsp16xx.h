@@ -1,7 +1,7 @@
 /* Definitions of target machine for GNU compiler.  AT&T DSP1600.
    Copyright (C) 1994, 1995, 1996, 1997, 1998, 2000, 2001
    Free Software Foundation, Inc.
-   Contributed by Michael Collison (collison@world.std.com).
+   Contributed by Michael Collison (collison@isisinc.net).
 
 This file is part of GNU CC.
 
@@ -74,7 +74,9 @@ extern struct rtx_def *dsp16xx_lshrhi3_libcall;
 #ifdef  CC1_SPEC
 #undef  CC1_SPEC
 #endif
-#define CC1_SPEC       ""
+#define CC1_SPEC       "%{!O*:-O}"
+
+#define CPP_SPEC       "%{!O*:-D__OPTIMIZE__}"
 
 /* Define this as a spec to call the AT&T assembler */
 
@@ -111,22 +113,29 @@ extern struct rtx_def *dsp16xx_lshrhi3_libcall;
 
 
 /* Tell gcc where to look for the startfile */
-#define STANDARD_STARTFILE_PREFIX   "/d1600/lib"
+/*#define STANDARD_STARTFILE_PREFIX   "/d1600/lib"*/
 
-/* Tell gcc where to look for its executables */
-#define STANDARD_EXEC_PREFIX  "/d1600/bin"
+/* Tell gcc where to look for it's executables */
+/*#define STANDARD_EXEC_PREFIX  "/d1600/bin"*/
 
 /* Command line options to the AT&T assembler */
-#define ASM_SPEC  "%{v:-V} %{g*:-g}"
+#define ASM_SPEC  "%{V} %{v:%{!V:-V}} %{g*:-g}"
 
 /* Command line options for the AT&T linker */
-#define LINK_SPEC "%{v:-V} %{minit:-i}  \
-%{!ifile*:%{mmap1:-ifile m1_deflt.if%s}         \
-          %{mmap2:-ifile m2_deflt.if%s}         \
-          %{mmap3:-ifile m3_deflt.if%s}         \
-          %{mmap4:-ifile m4_deflt.if%s}         \
-          %{!mmap*:-ifile m4_deflt.if%s}}       \
-%{ifile*} %{!r:-a}"
+
+#define LINK_SPEC "%{V} %{v:%{!V:-V}} %{minit:-i}  \
+%{!ifile*:%{mmap1:m1_deflt.if%s}         \
+          %{mmap2:m2_deflt.if%s}         \
+          %{mmap3:m3_deflt.if%s}         \
+          %{mmap4:m4_deflt.if%s}         \
+          %{!mmap*:m4_deflt.if%s}}       \
+%{ifile*:%*} %{r}"
+
+/* Include path is determined from the environment variable */
+#define INCLUDE_DEFAULTS     \
+{                            \
+  { 0, 0, 0 }                \
+}
 
 /* Names to predefine in the preprocessor for this target machine.  */
 #ifdef __MSDOS__
@@ -145,8 +154,6 @@ extern int target_flags;
 #define MASK_NEAR_CALL       0x00000002    /* The call is on the same 4k page */
 #define MASK_NEAR_JUMP       0x00000004    /* The jump is on the same 4k page */
 #define MASK_BMU             0x00000008    /* Use the 'bmu' shift instructions */
-#define MASK_OPTIMIZE_MEMORY 0x00000010    /* Optimize to conserve memory */
-#define MASK_OPTIMIZE_SPEED  0x00000020    /* Optimize for speed */
 #define MASK_MAP1            0x00000040    /* Link with map1 */
 #define MASK_MAP2            0x00000080    /* Link with map2 */
 #define MASK_MAP3            0x00000100    /* Link with map3 */
@@ -154,8 +161,9 @@ extern int target_flags;
 #define MASK_YBASE_HIGH      0x00000400    /* The ybase register window starts high */
 #define MASK_INIT	     0x00000800    /* Have the linker generate tables to
 					      initialize data at startup */
-#define MASK_INLINE_MULT     0x00001000    /* Inline 32 bit multiplies */
 #define MASK_RESERVE_YBASE   0x00002000    /* Reserved the ybase registers */
+#define MASK_DEBUG           0x00004000	   /* Debugging turned on*/
+#define MASK_SAVE_TEMPS      0x00008000    /* Save temps. option seen */
 
 /* Compile passing first two args in regs 0 and 1.
    This exists only to test compiler features that will
@@ -177,12 +185,6 @@ extern int target_flags;
    Unit. */
 #define TARGET_BMU (target_flags & MASK_BMU)
 
-/* Optimize to conserve memory */
-#define TARGET_OPTIMIZE_MEMORY (target_flags & MASK_OPTIMIZE_MEMORY)
-
-/* Optimize for maximum speed */
-#define TARGET_OPTIMIZE_SPEED   (target_flags & MASK_OPTIMIZE_SPEED)
-
 #define TARGET_YBASE_HIGH (target_flags & MASK_YBASE_HIGH)
 
 /* Direct the linker to output extra info for initialized data */
@@ -193,6 +195,13 @@ extern int target_flags;
 /* Reserve the ybase registers *(0) - *(31) */
 #define TARGET_RESERVE_YBASE (target_flags & MASK_RESERVE_YBASE)
 
+/* We turn this option on internally after seeing "-g" */
+#define TARGET_DEBUG            (target_flags & MASK_DEBUG)
+
+/* We turn this option on internally after seeing "-save-temps */
+#define TARGET_SAVE_TEMPS       (target_flags & MASK_SAVE_TEMPS)
+
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -200,31 +209,46 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 
-#define TARGET_SWITCHES                        \
-  {				               \
-    { "regparm",       MASK_REGPARM},	       \
-    { "no-regparm",   -MASK_REGPARM},	       \
-    { "no-near-call", -MASK_NEAR_CALL},        \
-    { "near-jump",     MASK_NEAR_JUMP},        \
-    { "no-near-jump", -MASK_NEAR_JUMP},        \
-    { "bmu",           MASK_BMU},              \
-    { "no-bmu",       -MASK_BMU},              \
-    { "Om",            MASK_OPTIMIZE_MEMORY},  \
-    { "Os",            MASK_OPTIMIZE_SPEED},   \
-    { "map1",          MASK_MAP1},             \
-    { "map2",          MASK_MAP2},             \
-    { "map3",          MASK_MAP3},             \
-    { "map4",          MASK_MAP4},             \
-    { "ybase-high",    MASK_YBASE_HIGH},       \
-    { "init",          MASK_INIT},             \
-    { "inline-mult",   MASK_INLINE_MULT},      \
-    { "reserve-ybase", MASK_RESERVE_YBASE},    \
-    { "",              TARGET_DEFAULT}         \
+#define TARGET_SWITCHES                                           \
+  {				                                  \
+    { "regparm",       MASK_REGPARM,                              \
+      N_("Pass parameters in registers (default)") },             \
+    { "no-regparm",   -MASK_REGPARM,	                          \
+      N_("Don't pass parameters in registers") },                 \
+    { "near-call",     MASK_NEAR_JUMP,                            \
+      N_("Generate code for near calls") },                       \
+    { "no-near-call", -MASK_NEAR_CALL,                            \
+      N_("Don't generate code for near calls") },                 \
+    { "near-jump",     MASK_NEAR_JUMP,                            \
+      N_("Generate code for near jumps") },                       \
+    { "no-near-jump", -MASK_NEAR_JUMP,                            \
+      N_("Don't generate code for near jumps") },                 \
+    { "bmu",           MASK_BMU,                                  \
+      N_("Generate code for a bit-manipulation unit") },          \
+    { "no-bmu",       -MASK_BMU,                                  \
+      N_("Don't generate code for a bit-manipulation unit") },    \
+    { "map1",          MASK_MAP1,                                 \
+      N_("Generate code for memory map1") },                      \
+    { "map2",          MASK_MAP2,                                 \
+      N_("Generate code for memory map2") },                      \
+    { "map3",          MASK_MAP3,                                 \
+      N_("Generate code for memory map3") },                      \
+    { "map4",          MASK_MAP4,                                 \
+      N_("Generate code for memory map4") },                      \
+    { "init",          MASK_INIT,                                 \
+      N_("Ouput extra code for initialized data") },              \
+    { "reserve-ybase", MASK_RESERVE_YBASE,                        \
+      N_("Don't let reg. allocator use ybase registers") },       \
+    { "debug",         MASK_DEBUG,                                \
+      N_("Output extra debug info in Luxworks environment") },    \
+    { "save-temporaries",    MASK_SAVE_TEMPS,                     \
+      N_("Save temp. files in Luxworks environment") },           \
+    { "",              TARGET_DEFAULT, ""}                        \
   }
 
 /* Default target_flags if no switches are specified */
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT  MASK_OPTIMIZE_MEMORY|MASK_REGPARM|MASK_YBASE_HIGH
+#define TARGET_DEFAULT  MASK_REGPARM|MASK_YBASE_HIGH
 #endif
 
 /* This macro is similar to `TARGET_SWITCHES' but defines names of
@@ -246,11 +270,16 @@ extern int target_flags;
 
 #define TARGET_OPTIONS						\
 {								\
-  { "text=",	&text_seg_name	},				\
-  { "data=",	&data_seg_name	},				\
-  { "bss=",	&bss_seg_name	},				\
-  { "const=",   &const_seg_name },                              \
-  { "chip=",    &chip_name      }                               \
+  { "text=",	&text_seg_name,				        \
+    N_("Specify alternate name for text section") },            \
+  { "data=",	&data_seg_name,				        \
+    N_("Specify alternate name for data section") },            \
+  { "bss=",	&bss_seg_name,				        \
+    N_("Specify alternate name for bss section") },             \
+  { "const=",   &const_seg_name,                                \
+    N_("Specify alternate name for constant section") },        \
+  { "chip=",    &chip_name,                                     \
+    N_("Specify alternate name for dsp16xx chip") },            \
 }
 
 /* Sometimes certain combinations of command options do not make sense
@@ -264,18 +293,21 @@ extern int target_flags;
 
 #define OVERRIDE_OPTIONS override_options ()
 
-#define OPTIMIZATION_OPTIONS(LEVEL,SIZE)		\
-do							\
-  {							\
-    flag_gnu_linker             = FALSE;		\
-							\
-    if (SIZE)						\
-      {							\
-	flag_strength_reduce    = FALSE;		\
-	flag_inline_functions   = FALSE;		\
-      }							\
-  }							\
-while (0)
+#define OPTIMIZATION_OPTIONS(LEVEL,SIZE)              \
+{                                                     \
+    flag_gnu_linker             = FALSE;              \
+                                                      \
+    if (LEVEL >= 2)                                   \
+    {                                                 \
+        /* The dsp16xx family has so few registers    \
+         * that running the first instruction         \
+         * scheduling is bad for reg. allocation      \
+         * since it increases lifetimes of pseudos.   \
+         * So turn of first scheduling pass.          \
+         */                                           \
+        flag_schedule_insns          = FALSE;         \
+    }                                                 \
+}
 
 /* STORAGE LAYOUT */
 
@@ -287,7 +319,7 @@ while (0)
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.
  */
-#define BITS_BIG_ENDIAN  1
+#define BITS_BIG_ENDIAN  0
 
 /* Define this if most significant byte of a word is the lowest numbered.
    We define big-endian, but since the 1600 series cannot address bytes
@@ -377,12 +409,13 @@ while (0)
 /* A C expression for a string describing the name of the data type to use for
    size values. */
 
-#define SIZE_TYPE    "long unsigned int"
+#define SIZE_TYPE    "unsigned int"
 
-/* A C expression for a string describing the name of the datat type to use for the
+/* A C expression for a string describing the name of the data type to use for the
    result of subtracting two pointers */
 
-#define PTRDIFF_TYPE "long int"
+#define PTRDIFF_TYPE "int"
+
 
 /* REGISTER USAGE.  */
 
@@ -475,6 +508,10 @@ while (0)
 /* Do we have a virtual ybase register */
 #define IS_YBASE_REGISTER_WINDOW(REGNO) ((REGNO) >= REG_YBASE0 && (REGNO) <= REG_YBASE31)
 
+#define IS_YBASE_ELIGIBLE_REG(REGNO) (IS_ACCUM_REG (REGNO) || IS_ADDRESS_REGISTER(REGNO) \
+                                      || REGNO == REG_X || REGNO == REG_Y || REGNO == REG_YL \
+                                      || REGNO == REG_PROD || REGNO == REG_PRODL)
+
 #define IS_ADDRESS_REGISTER(REGNO) ((REGNO) >= REG_R0 && (REGNO) <= REG_R3)
 
 #define FIXED_REGISTERS     \
@@ -483,7 +520,7 @@ while (0)
  1,                         \
  0, 0, 0, 0,                \
  1, 1, 1,                   \
- 0, 0,                      \
+ 1, 0,                      \
  0, 0, 0, 0, 0, 0, 0, 0,    \
  0, 0, 0, 0, 0, 0, 0, 0,    \
  0, 0, 0, 0, 0, 0, 0, 0,    \
@@ -501,17 +538,17 @@ while (0)
    bit manipulation registers.  */
 
 
-#define CALL_USED_REGISTERS   \
-{1, 1, 1, 1, 0, 1, 1, 1, 1,   \
- 1, 0, 0, 1, 1, 1, 1,         \
- 1,                           \
- 0, 0, 1, 1,                  \
- 1, 1, 1,                     \
- 0, 1,                        \
- 0, 0, 0, 0, 0, 0, 0, 0,      \
- 0, 0, 0, 0, 0, 0, 0, 0,      \
- 0, 0, 0, 0, 0, 0, 0, 0,      \
- 0, 0, 0, 0, 0, 0, 0, 0}
+#define CALL_USED_REGISTERS			\
+{1, 1, 1, 1, 0, 1, 1, 1, 1,	/* 0-8 */	\
+ 1, 0, 0, 1, 1, 1, 1,		/* 9-15 */	\
+ 1,                             /* 16 */	\
+ 0, 0, 1, 1,			/* 17-20 */	\
+ 1, 1, 1,			/* 21-23 */	\
+ 1, 1,				/* 24-25 */	\
+ 0, 0, 0, 0, 0, 0, 0, 0,	/* 26-33 */	\
+ 0, 0, 0, 0, 0, 0, 0, 0,	/* 34-41 */	\
+ 0, 0, 0, 0, 0, 0, 0, 0,	/* 42-49 */	\
+ 0, 0, 0, 0, 0, 0, 0, 0}	/* 50-57 */
 
 /* List the order in which to allocate registers.  Each register must be
    listed once, even those in FIXED_REGISTERS.
@@ -519,6 +556,7 @@ while (0)
    We allocate in the following order:
  */
 
+#if 0
 #define REG_ALLOC_ORDER					\
 { REG_R0, REG_R1, REG_R2, REG_PROD, REG_Y, REG_X,       \
   REG_PRODL, REG_YL, REG_AR0, REG_AR1,                  \
@@ -534,7 +572,24 @@ while (0)
   REG_YBASE20, REG_YBASE21, REG_YBASE22, REG_YBASE23,   \
   REG_YBASE24, REG_YBASE25, REG_YBASE26, REG_YBASE27,   \
   REG_YBASE28, REG_YBASE29, REG_YBASE30, REG_YBASE31 }
-
+#else
+#define REG_ALLOC_ORDER                                 \
+{                                                       \
+  REG_A0, REG_A0L, REG_A1, REG_A1L, REG_Y, REG_YL,      \
+  REG_PROD,                                             \
+  REG_PRODL, REG_R0, REG_J, REG_K, REG_AR2, REG_AR3,    \
+  REG_X, REG_R1, REG_R2, REG_RB, REG_AR0, REG_AR1,      \
+  REG_YBASE0, REG_YBASE1, REG_YBASE2, REG_YBASE3,       \
+  REG_YBASE4, REG_YBASE5, REG_YBASE6, REG_YBASE7,       \
+  REG_YBASE8, REG_YBASE9, REG_YBASE10, REG_YBASE11,     \
+  REG_YBASE12, REG_YBASE13, REG_YBASE14, REG_YBASE15,   \
+  REG_YBASE16, REG_YBASE17, REG_YBASE18, REG_YBASE19,   \
+  REG_YBASE20, REG_YBASE21, REG_YBASE22, REG_YBASE23,   \
+  REG_YBASE24, REG_YBASE25, REG_YBASE26, REG_YBASE27,   \
+  REG_YBASE28, REG_YBASE29, REG_YBASE30, REG_YBASE31,   \
+  REG_R3, REG_YBASE, REG_PT, REG_C0, REG_C1, REG_C2,    \
+  REG_PR }
+#endif
 /* Zero or more C statements that may conditionally modify two
    variables `fixed_regs' and `call_used_regs' (both of type `char
    []') after they have been initialized from the two preceding
@@ -978,23 +1033,32 @@ enum reg_class
    'I' requires a non-negative 16-bit value.
    'J' requires a non-negative 9-bit value
    'K' requires a constant 0 operand.
-   'L' requires 16-bit value
+   'L' constant for use in add or sub from low 16-bits
    'M' 32-bit value -- low 16-bits zero
+   'N' constant for use incrementing or decrementing a address register
+   'O' constant for use with and'ing only high 16-bit
+   'P' constant for use with and'ing only low 16-bit
  */
 
 #define SMALL_INT(X) (SMALL_INTVAL (INTVAL (X)))
 #define SMALL_INTVAL(I) ((unsigned) (I) < 0x10000)
 #define SHORT_IMMEDIATE(X)  (SHORT_INTVAL (INTVAL(X)))
 #define SHORT_INTVAL(I)     ((unsigned) (I) < 0x100)
+#define ADD_LOW_16(I)       ((I) >= 0 && (I) <= 32767)
+#define ADD_HIGH_16(I)      (((I) & 0x0000ffff) == 0)
+#define AND_LOW_16(I)       ((I) >= 0 && (I) <= 32767)
+#define AND_HIGH_16(I)      (((I) & 0x0000ffff) == 0)
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)                           \
    ((C) == 'I' ? (SMALL_INTVAL(VALUE))                            \
     : (C) == 'J' ? (SHORT_INTVAL(VALUE))                          \
     : (C) == 'K' ? ((VALUE) == 0)                                 \
-    : (C) == 'L' ? ! ((VALUE) & ~0x0000ffff)	                  \
-    : (C) == 'M' ? ! ((VALUE) & ~0xffff0000)	                  \
-    : (C) == 'N' ? ((VALUE) == -1 || (VALUE) == 1 ||              \
-                    (VALUE) == -2 || (VALUE) == 2)                \
+    : (C) == 'L' ? ((VALUE) >= 0 && (VALUE) <= 32767)             \
+    : (C) == 'M' ? (((VALUE) & 0x0000ffff) == 0)                  \
+    : (C) == 'N' ? ((VALUE) == -1 || (VALUE) == 1                 \
+                    || (VALUE) == -2 || (VALUE) == 2)             \
+    : (C) == 'O' ? (((VALUE) & 0xffff0000) == 0xffff0000)         \
+    : (C) == 'P' ? (((VALUE) & 0x0000ffff) == 0xffff)             \
     : 0)
 
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)   1
@@ -1043,12 +1107,15 @@ struct dsp16xx_frame_info
   unsigned int  reg_size;	/* # bytes needed to store regs */
   long		fp_save_offset;	/* offset from vfp to store registers */
   unsigned long sp_save_offset;	/* offset from new sp to store registers */
+  int		pr_save_offset;	/* offset to saved PR */
   int		initialized;	/* != 0 if frame size already calculated */
   int		num_regs;	/* number of registers saved */
   int           function_makes_calls;  /* Does the function make calls */
 };
 
 extern struct dsp16xx_frame_info current_frame_info;
+
+#define RETURN_ADDR_OFF current_frame_info.pr_save_offset
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by. */
@@ -1402,7 +1469,7 @@ extern struct dsp16xx_frame_info current_frame_info;
    return it with a return statement. */
 #define CONST_COSTS(RTX,CODE,OUTER_CODE)                                \
   case CONST_INT:						        \
-    return 0;                                                           \
+    return (unsigned) INTVAL (RTX) < 65536 ? 0 : 2;                     \
   case LABEL_REF:						        \
   case SYMBOL_REF:						        \
   case CONST:								\
@@ -1427,45 +1494,21 @@ extern struct dsp16xx_frame_info current_frame_info;
     else                                                        \
         return COSTS_N_INSNS (38);                              \
   case PLUS:                                                    \
-    if (GET_MODE_CLASS (GET_MODE (X)) == MODE_INT)              \
-    {                                                           \
-        if (GET_CODE (XEXP (X,1)) == CONST_INT)                 \
-        {                                                       \
-            int number = INTVAL(XEXP (X,1));                    \
-            if (number == 1)                                    \
-               return COSTS_N_INSNS (1);                        \
-            if (INT_FITS_16_BITS(number))                       \
-                return COSTS_N_INSNS (2);                       \
-            else                                                \
-                return COSTS_N_INSNS (4);                       \
-        }                                                       \
-        return COSTS_N_INSNS (1);                               \
-    }                                                           \
-    else                                                        \
-        return COSTS_N_INSNS (38);                              \
   case MINUS:                                                   \
     if (GET_MODE_CLASS (GET_MODE (X)) == MODE_INT)              \
-    {                                                           \
-        if (GET_CODE (XEXP (X,1)) == CONST_INT)                 \
         {                                                       \
-            if (INT_FITS_16_BITS(INTVAL(XEXP(X,1))))            \
-                return COSTS_N_INSNS (2);                       \
-            else                                                \
-                return COSTS_N_INSNS (4);                       \
+          return (1 +                                           \
+                  rtx_cost (XEXP (X, 0), CODE) +                \
+                  rtx_cost (XEXP (X, 1), CODE));                \
         }                                                       \
-        return COSTS_N_INSNS (1);                               \
-    }                                                           \
     else                                                        \
         return COSTS_N_INSNS (38);                              \
+                                                                \
   case AND: case IOR: case XOR:                                 \
-    if (GET_CODE (XEXP (X,1)) == CONST_INT)                     \
-      {                                                         \
-        if (INT_FITS_16_BITS(INTVAL(XEXP(X,1))))                \
-            return COSTS_N_INSNS (2);                           \
-        else                                                    \
-            return COSTS_N_INSNS (4);                           \
-      }                                                         \
-    return COSTS_N_INSNS (1);                                   \
+        return (1 +                                             \
+                rtx_cost (XEXP (X, 0), CODE) +                  \
+                rtx_cost (XEXP (X, 1), CODE));                  \
+                                                                \
   case NEG: case NOT:                                           \
     return COSTS_N_INSNS (1);                                   \
   case ASHIFT:                                                  \
@@ -1478,9 +1521,17 @@ extern struct dsp16xx_frame_info current_frame_info;
             number == 16)                                       \
             return COSTS_N_INSNS (1);                           \
         else                                                    \
+	{                                                       \
+          if (TARGET_BMU)                                       \
             return COSTS_N_INSNS (2);                           \
+          else                                                  \
+            return COSTS_N_INSNS (num_1600_core_shifts(number)); \
+	}                                                       \
       }                                                         \
-    return COSTS_N_INSNS (1);
+    if (TARGET_BMU)                                             \
+      return COSTS_N_INSNS (1);                                 \
+    else                                                        \
+      return COSTS_N_INSNS (15);
 
 /* An expression giving the cost of an addressing mode that contains
    address. */
@@ -1500,7 +1551,7 @@ extern struct dsp16xx_frame_info current_frame_info;
 
 /* A C expression for the cost of a branch instruction. A value of
    1 is the default; */
-#define BRANCH_COST 2
+#define BRANCH_COST 1
 
 
 /* Define this because otherwise gcc will try to put the function address
@@ -1566,11 +1617,15 @@ const_section ()                                                   \
 /* THE OVERALL FRAMEWORK OF AN ASSEMBLER FILE */
 
 /* Output at beginning of assembler file.  */
-#define ASM_FILE_START(FILE) dsp16xx_file_start () 
+#define ASM_FILE_START(FILE) coff_dsp16xx_file_start (FILE) 
+
+/* Prevent output of .gcc_compiled */
+#define ASM_IDENTIFY_GCC(FILE)   
 
 /* A C string constant describing how to begin a comment in the target
    assembler language. */
-/* define ASM_COMMENT_START */
+#define ASM_COMMENT_START ""
+#define ASM_COMMENT_END ""
 
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
@@ -1605,9 +1660,7 @@ const_section ()                                                   \
 #define ASM_OUTPUT_INT(FILE, EXP)    asm_output_long(FILE,INTVAL(EXP))
 
 /* This is how to output an assembler line for a numeric constant byte.  */
-#define ASM_OUTPUT_BYTE(FILE,VALUE) \
-  fprintf ((FILE), "\tint %ld\n", (long)(VALUE))
-
+#define ASM_OUTPUT_BYTE(FILE,VALUE)    ASM_OUTPUT_CHAR(FILE,GEN_INT(VALUE))
 
 /* This is how we output a 'c' character string. For the 16xx
    assembler we have to do it one letter at a time */
@@ -1643,7 +1696,7 @@ const_section ()                                                   \
 	      fprintf (asm_out_file, "%d", c);			              \
 	      /* After an octal-escape, if a digit follows,		      \
 		 terminate one string constant and start another.	      \
-		 The VAX assembler fails to stop reading the escape	      \
+		 The Vax assembler fails to stop reading the escape	      \
 		 after three digits, so this is the only way we		      \
 		 can get it to parse the data properly.  		      \
 	      if (i < thissize - 1					      \
@@ -1683,6 +1736,10 @@ const_section ()                                                   \
     (OUTPUT) = (char *) alloca (strlen (NAME) + 11);			\
     ASM_GENERATE_INTERNAL_LABEL (OUTPUT, temp, LABELNO);		\
   } while (0)
+
+#define ASM_OPEN_PAREN "("
+#define ASM_CLOSE_PAREN ")"
+
 
 /* OUTPUT OF UNINITIALIZED VARIABLES */
 
@@ -1837,17 +1894,19 @@ const_section ()                                                   \
 
 /* CONTROLLING DEBUGGING INFORMATION FORMAT */
 
-/* Define this macro if GCC should produce COFF-style debugging output
-   for SDB in response to the '-g' option */
-#define SDB_DEBUGGING_INFO
-
-/* Support generating stabs for the listing file generator */
-#define DBX_DEBUGGING_INFO
-
-/* The default format when -g is given is still COFF debug info */
-#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 #define DBX_REGISTER_NUMBER(REGNO)   (REGNO)
+
+#define ASM_OUTPUT_DEF(asm_out_file, LABEL1, LABEL2) \
+         do {						\
+	 fprintf (asm_out_file, ".alias " ); \
+         ASM_OUTPUT_LABELREF(asm_out_file, LABEL1);  \
+	 fprintf (asm_out_file, "=" ); \
+         ASM_OUTPUT_LABELREF(asm_out_file, LABEL2); \
+	 fprintf (asm_out_file, "\n" );			\
+	 } while (0)
+
 
 /* MISCELLANEOUS PARAMETERS */
 
@@ -1899,16 +1958,11 @@ const_section ()                                                   \
 #define TARGET_VERSION fprintf (stderr, " (%s, %s)", VERSION_INFO1, __DATE__)
 #endif
 
-#define VERSION_INFO1 "AT&T DSP16xx C Cross Compiler, version 1.2.0"
+#define VERSION_INFO1 "Lucent DSP16xx C Cross Compiler, version 1.3.0b"
 
 
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 1
-
-/* If this macro is defined, GNU CC gathers statistics about the number and
-   kind of tree node it allocates during each run. The option '-fstats' will
-   tell the compiler to print these statistics about the sizes of it obstacks. */
-#define GATHER_STATISTICS
 
 /* Define this so gcc does not output a call to __main, since we
    are not currently supporting c++. */
