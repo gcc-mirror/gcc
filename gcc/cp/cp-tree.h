@@ -678,6 +678,8 @@ struct language_function
 
   struct named_label_list *x_named_label_uses;
   struct binding_level *bindings;
+
+  const char *cannot_inline;
 };
 
 /* The current C++-specific per-function global variables.  */
