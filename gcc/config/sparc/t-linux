@@ -1,0 +1,2 @@
+# Compile libgcc2.a with pic and IEEE quad long double.
+TARGET_LIBGCC2_CFLAGS = -fPIC -mlong-double-128
