@@ -50,9 +50,15 @@
 // 4)  gnu_copy_tracker, from Stephen M. Webb <stephen@bregmasoft.com>.
 //   A class with nontrivial ctor/dtor that provides the ability to track the
 //   number of copy ctors and dtors, and will throw on demand during copy.
+//
+// 5) gnu_char, gnu_char_traits, abstract character classes and
+// char_traits specializations for testing instantiations.
 
 #ifndef _GLIBCPP_TESTSUITE_HOOKS_H
 #define _GLIBCPP_TESTSUITE_HOOKS_H
+
+#include <bits/c++config.h>
+#include <cstddef>
 
 #ifdef DEBUG_ASSERT
 # include <cassert>
@@ -60,8 +66,6 @@
 #else
 # define VERIFY(fn) test &= (fn)
 #endif
-
-#include <bits/c++config.h>
 
 // Defined in GLIBCPP_CONFIGURE_TESTSUITE.
 #ifndef _GLIBCPP_MEM_LIMITS
@@ -146,6 +150,80 @@ class gnu_copy_tracker
     static int itsDtorCount;
 };
 
+struct gnu_char
+{
+  unsigned long c;
+};
+
+struct gnu_int
+{
+  unsigned long i;
+};
+
+struct gnu_state
+{
+  unsigned long l;
+  unsigned long l2;
+};
+
+// char_traits specialization
+namespace std
+{
+  template<class _CharT>
+    struct char_traits;
+
+  template<>
+    struct char_traits<gnu_char>
+    {
+      typedef gnu_char 		char_type;
+      typedef gnu_int  		int_type;
+      typedef long 		pos_type;
+      typedef unsigned long 	off_type;
+      typedef gnu_state 	state_type;
+      
+      static void 
+      assign(char_type& __c1, const char_type& __c2);
+
+      static bool 
+      eq(const char_type& __c1, const char_type& __c2);
+
+      static bool 
+      lt(const char_type& __c1, const char_type& __c2);
+
+      static int 
+      compare(const char_type* __s1, const char_type* __s2, size_t __n);
+
+      static size_t
+      length(const char_type* __s);
+
+      static const char_type* 
+      find(const char_type* __s, size_t __n, const char_type& __a);
+
+      static char_type* 
+      move(char_type* __s1, const char_type* __s2, size_t __n);
+
+      static char_type* 
+      copy(char_type* __s1, const char_type* __s2, size_t __n);
+
+      static char_type* 
+      assign(char_type* __s, size_t __n, char_type __a);
+
+      static char_type 
+      to_char_type(const int_type& __c);
+
+      static int_type 
+      to_int_type(const char_type& __c);
+
+      static bool 
+      eq_int_type(const int_type& __c1, const int_type& __c2);
+
+      static int_type 
+      eof();
+
+      static int_type 
+      not_eof(const int_type& __c);
+    };
+} // namespace std
 
 #endif // _GLIBCPP_TESTSUITE_HOOKS_H
 

@@ -112,7 +112,8 @@ namespace std
 	{
 	  const int_type __eof = traits_type::eof();
 	  bool __testput = _M_out_cur && _M_out_beg < _M_out_end;
-	  if (__testput && _M_really_overflow(__eof) == __eof)
+	  if (__testput 
+	      && traits_type::eq_int_type(_M_really_overflow(__eof), __eof))
 	    return __ret;
 
 	  // NB: Do this here so that re-opened filebufs will be cool...
@@ -151,96 +152,6 @@ namespace std
 	    __ret = _M_in_end - _M_in_cur;
 	  else
 	    __ret = 0;
-	}
-      _M_last_overflowed = false;	
-      return __ret;
-    }
-
-  template<typename _CharT, typename _Traits>
-    typename basic_filebuf<_CharT, _Traits>::int_type 
-    basic_filebuf<_CharT, _Traits>::
-    _M_underflow_common(bool __bump)
-    {
-      int_type __ret = traits_type::eof();
-      bool __testin = _M_mode & ios_base::in;
-      bool __testout = _M_mode & ios_base::out;
-
-      if (__testin)
-	{
-	  // Check for pback madness, and if so swich back to the
-	  // normal buffers and jet outta here before expensive
-	  // fileops happen...
-	  if (_M_pback_init)
-	    {
-	      _M_pback_destroy();
-	      if (_M_in_cur < _M_in_end)
-		return traits_type::to_int_type(*_M_in_cur);
-	    }
-
-	  // Sync internal and external buffers.
-	  // NB: __testget -> __testput as _M_buf_unified here.
-	  bool __testget = _M_in_cur && _M_in_beg < _M_in_cur;
-	  bool __testinit = _M_is_indeterminate();
-	  if (__testget)
-	    {
-	      if (__testout)
-		_M_really_overflow();
-	      else if (_M_in_cur != _M_filepos)
-		_M_file.seekoff(_M_in_cur - _M_filepos,
-				ios_base::cur, ios_base::in);
-	    }
-
-	  if (__testinit || __testget)
-	    {
-	      const locale __loc = this->getloc();
-	      const __codecvt_type& __cvt = use_facet<__codecvt_type>(__loc); 
-
-	      streamsize __elen = 0;
-	      streamsize __ilen = 0;
-	      if (__cvt.always_noconv())
-		{
-		  __elen = _M_file.xsgetn(reinterpret_cast<char*>(_M_in_beg), 
-					  _M_buf_size);
-		  __ilen = __elen;
-		}
-	      else
-		{
-		  char* __buf = static_cast<char*>(__builtin_alloca(_M_buf_size));
-		  __elen = _M_file.xsgetn(__buf, _M_buf_size);
-
-		  const char* __eend;
-		  char_type* __iend;
-		  __res_type __r = __cvt.in(_M_state_cur, __buf, 
-					    __buf + __elen, __eend, _M_in_beg, 
-					    _M_in_beg + _M_buf_size, __iend);
-		  if (__r == codecvt_base::ok)
-		    __ilen = __iend - _M_in_beg;
-		  else 
-		    {
-		      // Unwind.
-		      __ilen = 0;
-		      _M_file.seekoff(-__elen, ios_base::cur, ios_base::in);
-		    }
-		}
-
-	      if (0 < __ilen)
-		{
-		  _M_set_determinate(__ilen);
-		  if (__testout)
-		    _M_out_cur = _M_in_cur;
-		  __ret = traits_type::to_int_type(*_M_in_cur);
-		  if (__bump)
-		    _M_in_cur_move(1);
-		  else if (_M_buf_size == 1)
-		    {
-		      // If we are synced with stdio, we have to unget the
-		      // character we just read so that the file pointer
-		      // doesn't move.
-		      _M_file.sys_ungetc(*_M_in_cur);
-		      _M_set_indeterminate();
-		    }
-		}	   
-	    }
 	}
       _M_last_overflowed = false;	
       return __ret;

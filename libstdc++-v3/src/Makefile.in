@@ -175,6 +175,7 @@ sources = \
 	concept-inst.cc \
 	ctype.cc \
 	ext-inst.cc \
+	fstream.cc \
 	fstream-inst.cc \
 	functexcept.cc \
 	globals.cc \
@@ -279,7 +280,7 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libstdc___la_OBJECTS =  basic_file.lo bitset.lo c++locale.lo codecvt.lo \
 collate.lo complex_io.lo concept-inst.lo ctype.lo ext-inst.lo \
-fstream-inst.lo functexcept.lo globals.lo io-inst.lo ios.lo \
+fstream.lo fstream-inst.lo functexcept.lo globals.lo io-inst.lo ios.lo \
 istream-inst.lo limits.lo locale-inst.lo locale.lo localename.lo \
 messages.lo misc-inst.lo monetary.lo numeric.lo ostream-inst.lo \
 sstream-inst.lo stdexcept.lo stl-inst.lo streambuf-inst.lo \

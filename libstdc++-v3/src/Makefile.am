@@ -70,6 +70,7 @@ sources = \
 	concept-inst.cc \
 	ctype.cc \
 	ext-inst.cc \
+	fstream.cc \
 	fstream-inst.cc \
 	functexcept.cc \
 	globals.cc \

@@ -474,7 +474,8 @@ namespace std
 	      streamsize __len = 1;
 	      if (__w > __len)
 		{
-		  __pad(__out, __out.fill(), __pads, &__c, __w, __len, false);
+		  __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __pads, 
+						 &__c, __w, __len, false);
 		  __len = __w;
 		}
 	      __out.write(__pads, __len);
@@ -509,7 +510,8 @@ namespace std
 	      streamsize __len = 1;
 	      if (__w > __len)
 		{
-		  __pad(__out, __out.fill(), __pads, &__c, __w, __len, false);
+		  __pad<char, _Traits>::_S_pad(__out, __out.fill(), __pads, 
+					       &__c, __w, __len, false);
 		  __len = __w;
 		}
 	      __out.write(__pads, __len);
@@ -542,7 +544,8 @@ namespace std
 	      streamsize __len = static_cast<streamsize>(_Traits::length(__s));
 	      if (__w > __len)
 		{
-		  __pad(__out, __out.fill(), __pads, __s, __w, __len, false);
+		  __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __pads, 
+						 __s, __w, __len, false);
 		  __s = __pads;
 		  __len = __w;
 		}
@@ -590,7 +593,8 @@ namespace std
 	      
 	      if (__w > __len)
 		{
-		  __pad(__out, __out.fill(), __pads, __ws, __w, __len, false);
+		  __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __pads, 
+						 __ws, __w, __len, false);
 		  __str = __pads;
 		  __len = __w;
 		}
@@ -628,7 +632,8 @@ namespace std
 
 	      if (__w > __len)
 		{
-		  __pad(__out, __out.fill(), __pads, __s, __w, __len, false);
+		  __pad<char, _Traits>::_S_pad(__out, __out.fill(), __pads, 
+						 __s, __w, __len, false);
 		  __s = __pads;
 		  __len = __w;
 		}
@@ -668,7 +673,8 @@ namespace std
 #endif
 	  if (__w > __len)
 	    {
-	      __pad(__out, __out.fill(), __pads, __s, __w, __len, false);
+	      __pad<_CharT, _Traits>::_S_pad(__out, __out.fill(), __pads, __s, 
+					     __w, __len, false);
 	      __s = __pads;
 	      __len = __w;
 	    }
