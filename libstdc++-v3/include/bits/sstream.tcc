@@ -88,10 +88,12 @@ namespace std
       if (__builtin_expect(__testeof, false))
 	return traits_type::not_eof(__c);
 
-      // In virtue of DR 169 (TC) we are allowed to grow more than
-      // one char the first time and also...
-      __size_type __len = std::max(__size_type(_M_string.capacity() + 1), 
-				   this->_M_buf_size_opt);
+      // NB: Start ostringstream buffers at 512 chars. This is an
+      // experimental value (pronounced "arbitrary" in some of the
+      // hipper english-speaking countries), and can be changed to
+      // suit particular needs.
+      __size_type __len = std::max(__size_type(_M_string.capacity() + 1),
+				   __size_type(512));
       bool __testput = this->_M_out_cur < this->_M_out_end;
       if (__builtin_expect(!__testput && __len > _M_string.max_size(), false))
 	return traits_type::eof();
@@ -102,8 +104,9 @@ namespace std
 	{
 	  // Force-allocate, re-sync.
 	  _M_string = this->str();
-	  // ... the next time. That's easy to implement thanks to the
-	  // exponential growth policy builtin into basic_string.
+	  // In virtue of DR 169 (TC) we are allowed to grow more than
+	  // one char. That's easy to implement thanks to the exponential
+	  // growth policy builtin into basic_string.
 	  _M_string.reserve(__len);
 	  _M_really_sync(const_cast<char_type*>(_M_string.data()),
 			 this->_M_in_cur - this->_M_in_beg, 

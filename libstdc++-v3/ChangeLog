@@ -1,3 +1,29 @@
+2003-04-12  Paolo Carlini  <pcarlini@unitus.it>
+
+	Remove _M_buf_size_opt, use directly _M_buf_size instead.
+	* include/bits/fstream.tcc
+	(basic_filebuf::_M_allocate_internal_buffer, setbuf): Remove
+	references to _M_buf_size_opt. 
+	* include/bits/sstream.tcc (basic_stringbuf::overflow): Likewise.
+	* include/bits/streambuf.tcc (__copy_streambufs): Likewise, rename
+	__bufsize to __in_avail and __size_opt to __buf_size.
+	* include/ext/stdio_filebuf.h (stdio_filebuf::stdio_filebuf): Likewise.
+	* include/std/std_sstream.h (_M_stringbuf_init, setbuf): Likewise.
+	* include/std/std_streambuf.h (~basic_streambuf(),
+	basic_streambuf()): Likewise, remove _M_buf_size_opt member.
+	* testsuite/27_io/basic_filebuf/close/char/3.cc: Set _M_buf_size.
+	* testsuite/27_io/basic_filebuf/in_avail/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sbumpc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sgetn/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/snextc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputbackc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputc/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sputn/char/1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/sungetc/char/1.cc: Likewise.
+
 2003-04-12  Paolo Carlini  <pcarlini at unitus dot it>
 
 	* include/ext/stdio_filebuf.h

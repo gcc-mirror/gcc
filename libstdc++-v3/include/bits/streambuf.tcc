@@ -192,29 +192,29 @@ namespace std
       typedef typename _Traits::off_type	off_type;
 
       streamsize __ret = 0;
-      streamsize __bufsize = __sbin->in_avail();
+      streamsize __in_avail = __sbin->in_avail();
       streamsize __xtrct;
-      const off_type __size_opt =
-	__sbin->_M_buf_size_opt > 0 ? __sbin->_M_buf_size_opt : 1;
+      const off_type __buf_size =
+	__sbin->_M_buf_size > 0 ? __sbin->_M_buf_size : 1;
 
       try 
 	{
-	  while (__bufsize != -1)
+	  while (__in_avail != -1)
   	    {
- 	      if (__bufsize != 0 && __sbin->gptr() != NULL
-		  && __sbin->gptr() + __bufsize <= __sbin->egptr()) 
+ 	      if (__in_avail != 0 && __sbin->gptr()
+		  && __sbin->gptr() + __in_avail <= __sbin->egptr()) 
 		{
-		  __xtrct = __sbout->sputn(__sbin->gptr(), __bufsize);
+		  __xtrct = __sbout->sputn(__sbin->gptr(), __in_avail);
 		  __ret += __xtrct;
 		  __sbin->_M_in_cur_move(__xtrct);
-		  if (__xtrct != __bufsize)
+		  if (__xtrct != __in_avail)
 		    break;
 		}
  	      else 
 		{
 		  streamsize __charsread;
 		  const streamsize __size =
-		    std::min(__size_opt, off_type(__sbout->_M_out_end -
+		    std::min(__buf_size, off_type(__sbout->_M_out_end -
 						  __sbout->_M_out_cur));
 		  if (__size > 1)
 		    {
@@ -246,7 +246,7 @@ namespace std
 		}
  	      if (_Traits::eq_int_type(__sbin->sgetc(), _Traits::eof()))
   		break;
- 	      __bufsize = __sbin->in_avail();
+ 	      __in_avail = __sbin->in_avail();
   	    }
 	}
       catch(exception& __fail) 

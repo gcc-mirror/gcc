@@ -129,11 +129,10 @@ namespace __gnu_cxx
 	      // Specify not to use an allocated buffer.
 	      this->_M_buf = _M_unbuf;
 	      this->_M_buf_size = __size;
-	      this->_M_buf_size_opt = 0;
 	    }
 	  else
 	    {
-	      this->_M_buf_size_opt = __size;
+	      this->_M_buf_size = __size;
 	      _M_allocate_internal_buffer();
 	    }
 	  _M_set_indeterminate();
@@ -154,11 +153,10 @@ namespace __gnu_cxx
 	      // Specify not to use an allocated buffer.
 	      this->_M_buf = _M_unbuf;
 	      this->_M_buf_size = __size;
-	      this->_M_buf_size_opt = 0;
 	    }
 	  else
 	    {
-	      this->_M_buf_size_opt = __size;
+	      this->_M_buf_size = __size;
 	      _M_allocate_internal_buffer();
 	    }
 	  _M_set_indeterminate();

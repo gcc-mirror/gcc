@@ -44,10 +44,8 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     _M_allocate_internal_buffer()
     {
-      if (!this->_M_buf && this->_M_buf_size_opt)
+      if (!this->_M_buf && this->_M_buf_size)
 	{
-	  this->_M_buf_size = this->_M_buf_size_opt;
-
 	  // Allocate internal buffer.
 	  this->_M_buf = new char_type[this->_M_buf_size];
 	  _M_buf_allocated = true;
@@ -416,7 +414,7 @@ namespace std
     setbuf(char_type* __s, streamsize __n)
     {
       if (!this->is_open() && __s == 0 && __n == 0)
-	this->_M_buf_size_opt = 0;
+	this->_M_buf_size = 0;
       else if (__s && __n)
 	{
 	  // This is implementation-defined behavior, and assumes
@@ -429,7 +427,7 @@ namespace std
 	  
 	  // Step 2: Use the external array.
 	  this->_M_buf = __s;
-	  this->_M_buf_size_opt = this->_M_buf_size = __n;
+	  this->_M_buf_size = __n;
 	  // Consistently set the end of buffer pointer.
 	  this->_M_out_end = this->_M_buf + this->_M_buf_size;
 	  _M_set_indeterminate();
