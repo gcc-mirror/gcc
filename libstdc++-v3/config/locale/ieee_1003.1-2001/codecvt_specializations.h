@@ -285,9 +285,9 @@
 	{
 	  typedef state_type::__desc_type	__desc_type;
 	  const __desc_type* __desc = __state._M_get_out_descriptor();
-	  const size_t __fmultiple = sizeof(intern_type) / sizeof(char);
+	  const size_t __fmultiple = sizeof(intern_type);
 	  size_t __fbytes = __fmultiple * (__from_end - __from);
-	  const size_t __tmultiple = sizeof(extern_type) / sizeof(char);
+	  const size_t __tmultiple = sizeof(extern_type);
 	  size_t __tbytes = __tmultiple * (__to_end - __to); 
 	  
 	  // Argument list for iconv specifies a byte sequence. Thus,
@@ -352,7 +352,7 @@
 	{
 	  typedef state_type::__desc_type	__desc_type;
 	  const __desc_type* __desc = __state._M_get_in_descriptor();
-	  const size_t __tmultiple = sizeof(intern_type) / sizeof(char);
+	  const size_t __tmultiple = sizeof(intern_type);
 	  size_t __tlen = __tmultiple * (__to_end - __to); 
 	  
 	  // Argument list for iconv specifies a byte sequence. Thus,
@@ -390,9 +390,9 @@
 	{
 	  typedef state_type::__desc_type	__desc_type;
 	  const __desc_type* __desc = __state._M_get_in_descriptor();
-	  const size_t __fmultiple = sizeof(extern_type) / sizeof(char);
+	  const size_t __fmultiple = sizeof(extern_type);
 	  size_t __flen = __fmultiple * (__from_end - __from);
-	  const size_t __tmultiple = sizeof(intern_type) / sizeof(char);
+	  const size_t __tmultiple = sizeof(intern_type);
 	  size_t __tlen = __tmultiple * (__to_end - __to); 
 	  
 	  // Argument list for iconv specifies a byte sequence. Thus,

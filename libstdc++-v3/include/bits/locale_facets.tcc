@@ -938,7 +938,7 @@ namespace std
       __beg = this->do_get(__beg, __end, __intl, __io, __err, __str); 
 
       const int __n = numeric_limits<long double>::digits10;
-      char* __cs = static_cast<char*>(__builtin_alloca(sizeof(char) * __n));
+      char* __cs = static_cast<char*>(__builtin_alloca(__n));
       const locale __loc = __io.getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc); 
       const _CharT* __wcs = __str.c_str();
@@ -1152,20 +1152,20 @@ namespace std
 #ifdef _GLIBCPP_USE_C99
       // First try a buffer perhaps big enough.
       int __cs_size = 64;
-      char* __cs = static_cast<char*>(__builtin_alloca(sizeof(char) * __cs_size));
+      char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
       int __len = __convert_from_v(__cs, __cs_size, "%.01Lf", __units, _S_c_locale);
       // If the buffer was not large enough, try again with the correct size.
       if (__len >= __cs_size)
 	{
 	  __cs_size = __len + 1;
-	  __cs = static_cast<char*>(__builtin_alloca(sizeof(char) * __cs_size));
+	  __cs = static_cast<char*>(__builtin_alloca(__cs_size));
 	  __len = __convert_from_v(__cs, __cs_size, "%.01Lf", __units, _S_c_locale);
 	}
 #else
       // max_exponent10 + 1 for the integer part, + 4 for sign, decimal point,
       // decimal digit, '\0'. 
       const int __cs_size = numeric_limits<long double>::max_exponent10 + 5;
-      char* __cs = static_cast<char*>(__builtin_alloca(sizeof(char) * __cs_size));
+      char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
       int __len = __convert_from_v(__cs, 0, "%.01Lf", __units, _S_c_locale);
 #endif
       _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT) * __cs_size));
