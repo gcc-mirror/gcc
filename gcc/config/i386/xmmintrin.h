@@ -34,11 +34,11 @@
 #include <mmintrin.h>
 
 /* The data type indended for user use.  */
-typedef int __m128 __attribute__ ((mode (TI)));
+typedef int __m128 __attribute__ ((__mode__(__V4SF__)));
 
 /* Internal data types for implementing the instrinsics.  */
-typedef int __v4sf __attribute__ ((mode (V4SF)));
-typedef int __v4si __attribute__ ((mode (V4SI)));
+typedef int __v4sf __attribute__ ((__mode__(__V4SF__)));
+typedef int __v4si __attribute__ ((__mode__(__V4SI__)));
 
 /* Create a selector for use with the SHUFPS instruction.  */
 #define _MM_SHUFFLE(fp3,fp2,fp1,fp0) \
@@ -680,7 +680,7 @@ _mm_movemask_ps (__m128 __A)
 static __inline unsigned int
 _mm_getcsr (void)
 {
-  return __builtin_ia32_getmxcsr ();
+  return __builtin_ia32_stmxcsr ();
 }
 
 /* Read exception bits from the control register.  */
@@ -712,7 +712,7 @@ _MM_GET_FLUSH_ZERO_MODE (void)
 static __inline void
 _mm_setcsr (unsigned int __I)
 {
-  __builtin_ia32_setmxcsr (__I);
+  __builtin_ia32_ldmxcsr (__I);
 }
 
 /* Set exception bits in the control register.  */
