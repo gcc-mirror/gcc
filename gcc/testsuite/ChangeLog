@@ -1,3 +1,11 @@
+2000-08-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/cpp/tr-warn4.c, gcc.dg/cpp/tr-warn5.c,
+	gcc.dg/wtr-aggr-init-1.c, gcc.dg/wtr-escape-1.c,
+	gcc.dg/wtr-int-type-1.c, gcc.dg/wtr-static-1.c,
+	gcc.dg/wtr-strcat-1.c, gcc.dg/wtr-switch-1.c,
+	gcc.dg/wtr-unary-plus-1.c, gcc.dg/wtr-union-init-1.c: New tests.
+
 2000-08-22  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/c90-strftime-2.c, gcc.dg/c99-strftime-1.c,
