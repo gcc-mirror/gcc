@@ -5399,8 +5399,20 @@ ix86_expand_int_movcc (operands)
 	  HOST_WIDE_INT tmp;
 	  tmp = ct, ct = cf, cf = tmp;
 	  diff = -diff;
-	  compare_code = reverse_condition (compare_code);
-	  code = reverse_condition (code);
+	  if (FLOAT_MODE_P (GET_MODE (ix86_compare_op0)))
+	    {
+	      /* We may be reversing unordered compare to normal compare, that
+		 is not valid in general (we may convert non-trapping condition
+		 to trapping one), however on i386 we currently emit all
+		 comparisons unordered.  */
+	      compare_code = reverse_condition_maybe_unordered (compare_code);
+	      code = reverse_condition_maybe_unordered (code);
+	    }
+	  else
+	    {
+	      compare_code = reverse_condition (compare_code);
+	      code = reverse_condition (code);
+	    }
 	}
       if (diff == 1 || diff == 2 || diff == 4 || diff == 8
 	  || diff == 3 || diff == 5 || diff == 9)
@@ -5489,8 +5501,20 @@ ix86_expand_int_movcc (operands)
 	    {
 	      ct = cf;
 	      cf = 0;
-	      compare_code = reverse_condition (compare_code);
-	      code = reverse_condition (code);
+	      if (FLOAT_MODE_P (GET_MODE (ix86_compare_op0)))
+		{
+		  /* We may be reversing unordered compare to normal compare,
+		     that is not valid in general (we may convert non-trapping
+		     condition to trapping one), however on i386 we currently
+		     emit all comparisons unordered.  */
+		  compare_code = reverse_condition_maybe_unordered (compare_code);
+		  code = reverse_condition_maybe_unordered (code);
+		}
+	      else
+		{
+		  compare_code = reverse_condition (compare_code);
+		  code = reverse_condition (code);
+		}
 	    }
 
 	  out = emit_store_flag (out, code, ix86_compare_op0,
