@@ -2914,13 +2914,13 @@ gnucompare gnucompare3 gnucompare4 gnucompare-lean gnucompare3-lean gnucompare4-
 # Copy the object files from a particular stage into a subdirectory.
 stage1-start:
 	-if [ -d stage1 ] ; then true ; else mkdir stage1 ; fi
-	-for dir in intl libgcc $(SUBDIRS) ; \
+	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stage1
+	-for dir in intl $(SUBDIRS) ; \
 	 do \
 	   if [ -d stage1/$$dir ] ; then true ; else mkdir stage1/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage1
 	-mv intl/*$(objext) stage1/intl
-	-mv libgcc/*$(objext) stage1/libgcc
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then $(LN_S) ../as$(exeext) stage1 ; else true ; fi
@@ -2939,13 +2939,13 @@ stage1: force stage1-start lang.stage1
 
 stage2-start:
 	-if [ -d stage2 ] ; then true ; else mkdir stage2 ; fi
-	-for dir in intl libgcc $(SUBDIRS) ; \
+	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stage2
+	-for dir in intl $(SUBDIRS) ; \
 	 do \
 	   if [ -d stage2/$$dir ] ; then true ; else mkdir stage2/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage2
 	-mv intl/*$(objext) stage2/intl
-	-mv libgcc/*$(objext) stage2/libgcc
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then $(LN_S) ../as$(exeext) stage2 ; else true ; fi
@@ -2964,13 +2964,13 @@ stage2: force stage2-start lang.stage2
 
 stage3-start:
 	-if [ -d stage3 ] ; then true ; else mkdir stage3 ; fi
-	-for dir in intl libgcc $(SUBDIRS) ; \
+	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stage3
+	-for dir in intl $(SUBDIRS) ; \
 	 do \
 	   if [ -d stage3/$$dir ] ; then true ; else mkdir stage3/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage3
 	-mv intl/*$(objext) stage3/intl
-	-mv libgcc/*$(objext) stage3/libgcc
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then $(LN_S) ../as$(exeext) stage3 ; else true ; fi
@@ -2989,13 +2989,13 @@ stage3: force stage3-start lang.stage3
 
 stage4-start:
 	-if [ -d stage4 ] ; then true ; else mkdir stage4 ; fi
-	-for dir in intl libgcc $(SUBDIRS) ; \
+	$(MAKE) -f libgcc.mk libgcc-stage-start stage=stage4
+	-for dir in intl $(SUBDIRS) ; \
 	 do \
 	   if [ -d stage4/$$dir ] ; then true ; else mkdir stage4/$$dir ; fi ; \
 	 done
 	-mv $(STAGESTUFF) stage4
 	-mv intl/*$(objext) stage4/intl
-	-mv libgcc/*$(objext) stage4/libgcc
 # Copy as/ld if they exist to stage dir, so that running xgcc from the stage
 # dir will work properly.
 	-if [ -f as$(exeext) ] ; then $(LN_S) ../as$(exeext) stage4 ; else true ; fi

@@ -280,6 +280,22 @@ for ml in $MULTILIBS; do
   echo '	else true; fi;'
 done
 
+dirs=libgcc
+for ml in $MULTILIBS; do
+  dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
+  if [ $dir != . ]; then
+    dirs="$dirs libgcc/${dir}"
+  fi
+done
+echo ''
+echo 'libgcc-stage-start:'
+echo '	for dir in '"${dirs}"'; do \'
+echo '	  if [ -d $(stage)/$$dir ]; then true; else mkdir $(stage)/$$dir; fi; \'
+echo '	done'
+echo '	-for dir in '"${dirs}"'; do \'
+echo '	  mv $$dir/*'"${objext}"' $(stage)/$$dir; \'
+echo '	done'
+
 echo ""
 all=stmp-dirs
 dirs=libgcc
