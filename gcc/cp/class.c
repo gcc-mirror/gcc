@@ -4499,8 +4499,7 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 
   TYPE_BEING_DEFINED (t) = 0;
 
-  /* Now, figure out what any member template specializations were
-     specializing.  */
+  /* Now, figure out which member templates we're specializing.  */
   for (x = specializations; x != NULL_TREE; x = TREE_CHAIN (x))
     {
       tree spec_args;

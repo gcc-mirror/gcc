@@ -250,11 +250,13 @@ dump_type (t, v)
 		arg = TREE_VALUE (arg);
 		if (TREE_CODE (arg) == TYPE_DECL)
 		  {
-		    OB_PUTS ("class ");
 		    if (DECL_NAME (arg))
-		      OB_PUTID (DECL_NAME (arg));
+		      {
+			OB_PUTS ("class ");
+			OB_PUTID (DECL_NAME (arg));
+		      }
 		    else
-		      OB_PUTS ("{anon}");
+		      OB_PUTS ("class");
 		  }
 		else
 		  dump_decl (arg, 1);
@@ -821,11 +823,13 @@ dump_decl (t, v)
 		arg = TREE_VALUE (arg);
 		if (TREE_CODE (arg) == TYPE_DECL)
 		  {
-		    OB_PUTS ("class ");
 		    if (DECL_NAME (arg))
-		      OB_PUTID (DECL_NAME (arg));
+		      {
+			OB_PUTS ("class ");
+			OB_PUTID (DECL_NAME (arg));
+		      }
 		    else
-		      OB_PUTS ("{anon}");
+		      OB_PUTS ("class");
 		  }
 		else
 		  dump_decl (arg, 1);
