@@ -710,7 +710,8 @@ print_operand (file, x, code)
   switch (code)
     {
     case 'h':
-      /* If constant, output low-order six bits.  Otherwise, write normally. */
+      /* If constant, output low-order five bits.  Otherwise,
+	 write normally. */
       if (INT_P (x))
 	fprintf (file, "%d", INT_LOWPART (x) & 31);
       else
@@ -718,7 +719,7 @@ print_operand (file, x, code)
       return;
 
     case 'H':
-      /* X must be a constant.  Output the low order 6 bits plus 24.  */
+      /* X must be a constant.  Output the low order 5 bits plus 24.  */
       if (! INT_P (x))
 	output_operand_lossage ("invalid %%H value");
 
@@ -737,7 +738,8 @@ print_operand (file, x, code)
       /* If constant, low-order 16 bits of constant, signed.  Otherwise, write
 	 normally.  */
       if (INT_P (x))
-	fprintf (file, "%d", (INT_LOWPART (x) << 16) >> 16);
+	fprintf (file, "%d",
+		 (INT_LOWPART (x) & 0xffff) - 2 * (INT_LOWPART (x) & 0x8000));
       else
 	print_operand (file, x, 0);
       return;
