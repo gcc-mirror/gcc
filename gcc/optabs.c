@@ -481,7 +481,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
     {
       temp = expand_binop (GET_MODE_WIDER_MODE (mode),
 			   unsignedp ? umul_widen_optab : smul_widen_optab,
-			   op0, op1, 0, unsignedp, OPTAB_DIRECT);
+			   op0, op1, NULL_RTX, unsignedp, OPTAB_DIRECT);
 
       if (GET_MODE_CLASS (mode) == MODE_INT)
 	return gen_lowpart (mode, temp);
@@ -758,7 +758,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
 	  into_temp1 = expand_binop (word_mode, unsigned_shift,
 				     outof_input, first_shift_count,
-				     0, unsignedp, methods);
+				     NULL_RTX, unsignedp, methods);
 	  into_temp2 = expand_binop (word_mode, reverse_unsigned_shift,
 				     into_input, second_shift_count,
 				     into_target, unsignedp, methods);
@@ -769,7 +769,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
 	  outof_temp1 = expand_binop (word_mode, unsigned_shift,
 				      into_input, first_shift_count,
-				      0, unsignedp, methods);
+				      NULL_RTX, unsignedp, methods);
 	  outof_temp2 = expand_binop (word_mode, reverse_unsigned_shift,
 				      outof_input, second_shift_count,
 				      outof_target, unsignedp, methods);
@@ -1180,9 +1180,11 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 
 	      res = expand_binop (submode, sub_optab,
 				  expand_binop (submode, binoptab, real0,
-						real1, 0, unsignedp, methods),
+						real1, NULL_RTX, unsignedp,
+						methods),
 				  expand_binop (submode, binoptab, imag0,
-						imag1, 0, unsignedp, methods),
+						imag1, NULL_RTX, unsignedp,
+						methods),
 				  realr, unsignedp, methods);
 
 	      if (res != realr)
@@ -1191,10 +1193,10 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	      res = expand_binop (submode, add_optab,
 				  expand_binop (submode, binoptab,
 						real0, imag1,
-						0, unsignedp, methods),
+						NULL_RTX, unsignedp, methods),
 				  expand_binop (submode, binoptab,
 						real1, imag0,
-						0, unsignedp, methods),
+						NULL_RTX, unsignedp, methods),
 				  imagr, unsignedp, methods);
 	      if (res != imagr)
 		emit_move_insn (imagr, res);
@@ -1269,45 +1271,46 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	      /* Divisor: c*c + d*d */
 	      divisor = expand_binop (submode, add_optab,
 				      expand_binop (submode, smul_optab,
-						    real1, real1,
-						    0, unsignedp, methods),
+						    real1, real1, NULL_RTX,
+						    unsignedp, methods),
 				      expand_binop (submode, smul_optab,
-						    imag1, imag1,
-						    0, unsignedp, methods),
-				      0, unsignedp, methods);
+						    imag1, imag1, NULL_RTX,
+						    unsignedp, methods),
+				      NULL_RTX, unsignedp, methods);
 
 	      if (! imag0)	/* ((a)(c-id))/divisor */
 		{	/* (a+i0) / (c+id) = (ac/(cc+dd)) + i(-ad/(cc+dd)) */
 		  /* Calculate the dividend */
 		  real_t = expand_binop (submode, smul_optab, real0, real1,
-					 0, unsignedp, methods);
+					 NULL_RTX, unsignedp, methods);
 		  
 		  imag_t
 		    = expand_unop (submode, neg_optab,
 				   expand_binop (submode, smul_optab, real0,
-						 imag1, 0, unsignedp, methods),
-				   0, unsignedp);
+						 imag1, NULL_RTX, unsignedp,
+						 methods),
+				   NULL_RTX, unsignedp);
 		}
 	      else		/* ((a+ib)(c-id))/divider */
 		{
 		  /* Calculate the dividend */
 		  real_t = expand_binop (submode, add_optab,
 					 expand_binop (submode, smul_optab,
-						       real0, real1,
-						       0, unsignedp, methods),
+						       real0, real1, NULL_RTX,
+						       unsignedp, methods),
 					 expand_binop (submode, smul_optab,
-						       imag0, imag1,
-						       0, unsignedp, methods),
-					 0, unsignedp, methods);
+						       imag0, imag1, NULL_RTX,
+						       unsignedp, methods),
+					 NULL_RTX, unsignedp, methods);
 		  
 		  imag_t = expand_binop (submode, sub_optab,
 					 expand_binop (submode, smul_optab,
-						       imag0, real1,
-						       0, unsignedp, methods),
+						       imag0, real1, NULL_RTX,
+						       unsignedp, methods),
 					 expand_binop (submode, smul_optab,
-						       real0, imag1,
-						       0, unsignedp, methods),
-					 0, unsignedp, methods);
+						       real0, imag1, NULL_RTX,
+						       unsignedp, methods),
+					 NULL_RTX, unsignedp, methods);
 
 		}
 
@@ -2043,7 +2046,7 @@ expand_complex_abs (mode, op0, target, unsignedp)
       imag = expand_mult (submode, imag, imag, NULL_RTX, 0);
 
       /* Sum the parts.  */
-      total = expand_binop (submode, add_optab, real, imag, 0,
+      total = expand_binop (submode, add_optab, real, imag, NULL_RTX,
 			    0, OPTAB_LIB_WIDEN);
 
       /* Get sqrt in TARGET.  Set TARGET to where the result is.  */
@@ -3107,15 +3110,15 @@ expand_float (to, from, unsignedp)
 
 	      emit_label (neglabel);
 	      temp = expand_binop (imode, and_optab, from, const1_rtx,
-				   0, 1, 0);
-	      temp1 = expand_binop (imode, lshr_optab, from, const1_rtx,
-				    0, 1, 0);
+				   NULL_RTX, 1, 0);
+	      temp1 = expand_shift (RSHIFT_EXPR, imode, from, integer_one_node,
+				    NULL_RTX, 1);
 	      temp = expand_binop (imode, ior_optab, temp, temp1, temp, 1, 0);
 	      expand_float (target, temp, 0);
 
 	      /* Multiply by 2 to undo the shift above.  */
 	      target = expand_binop (fmode, add_optab, target, target,
-				   target, 0, 0);
+				     target, 0, 0);
 	      do_pending_stack_adjust ();
 	      emit_label (label);
 	      goto done;
