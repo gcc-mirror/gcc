@@ -327,7 +327,9 @@ extern unsigned int _image_base__;
 #define VALID_STACK_FRAME(ptr) 1
 #endif
 
+#ifndef MAX
 #define MAX(x,y) ((x) > (y) ? (x) : (y))
+#endif
 
 /* Define a dummy function to call if FORCE_CALL is defined.  Don't
    define it otherwise, as this could lead to "defined but not used"

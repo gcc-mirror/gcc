@@ -1,3 +1,15 @@
+2003-10-22  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* tracebak.c (MAX): Avoid redefinition warning.
+
+	* init.c [sgi] (__gnat_error_handler): Remove i, unused.
+	Change msg to const char *.
+	(__gnat_install_handler): Remove ss, unused.
+	[sun && __SVR4 && !__vxworks] (__gnat_error_handler): Change msg
+	to const char *.
+	* cstreams.c (__gnat_full_name): Declare p only when used.
+	(__gnat_full_name) [sgi] Return buffer.
+
 2003-10-22  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* mingw32.h: New file.
