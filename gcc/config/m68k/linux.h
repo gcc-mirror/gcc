@@ -112,21 +112,6 @@ Boston, MA 02111-1307, USA.  */
   "%{fPIC:-D__PIC__ -D__pic__} %{fpic:-D__PIC__ -D__pic__} %{m68881:-D__HAVE_68881__} %{posix:-D_POSIX_SOURCE}"
 #endif
 
-#undef	LIB_SPEC
-#if 1
-/* We no longer link with libc_p.a or libg.a by default.  If you want
-   to profile or debug the Linux C library, please add -lc_p or -ggdb
-   to LDFLAGS at the link time, respectively.  */
-#define LIB_SPEC \
-  "%{!shared:%{!symbolic: %{mieee-fp:-lieee} %{p:-lgmon} %{pg:-lgmon} \
-     %{!ggdb:-lc} %{ggdb:-lg}}}"
-#else
-#define LIB_SPEC \
-  "%{!shared:%{!symbolic: \
-     %{mieee-fp:-lieee} %{p:-lgmon -lc_p} %{pg:-lgmon -lc_p} \
-     %{!p:%{!pg:%{!g*:-lc} %{g*:-lg}}}}}"
-#endif
-
 /* Provide a LINK_SPEC appropriate for Linux.  Here we provide support
    for the special GCC options -static and -shared, which allow us to
    link things in one of these three modes by applying the appropriate
@@ -182,6 +167,20 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_ALIGN(FILE,LOG)				\
   if ((LOG) > 0)						\
     fprintf ((FILE), "\t%s \t%u\n", ALIGN_ASM_OP, 1 << (LOG));
+
+/* If defined, a C expression whose value is a string containing the
+   assembler operation to identify the following data as uninitialized global
+   data.  */
+
+#define BSS_SECTION_ASM_OP ".section\t.bss"
+
+/* A C statement (sans semicolon) to output to the stdio stream
+   FILE the assembler definition of an uninitialized global label named
+   NAME whose size is SIZE bytes and alignment is ALIGN bytes.
+   Try to use asm_output_aligned_bss to implement this macro.  */
+
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, NAME, SIZE, ALIGN) \
+  asm_output_aligned_bss (FILE, NAME, SIZE, ALIGN)
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
