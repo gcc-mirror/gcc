@@ -1,3 +1,26 @@
+2003-08-23  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_output_pool_entry): Declare.
+	* config/s390/s390.c (gen_consttable): Remove.
+	(s390_dump_pool): Use UNSPECV_POOL_ENTRY for pool entry insns.
+	(s390_output_pool_entry): New function.
+	* config/s390/s390.md (UNSPECV_POOL_QI, UNSPECV_POOL_HI, 
+	UNSPECV_POOL_SI, UNSPECV_POOL_DI, UNSPECV_POOL_TI, 
+	UNSPECV_POOL_SF, UNSPECV_POOL_DF): Remove, replace by ...
+	(UNSPECV_POOL_ENTRY): ... this new constant.
+	("consttable_qi", "consttable_hi", "consttable_si", "consttable_di",
+	"consttable_ti", "consttable_sf", "consttable_df"): Remove ...
+	("*pool_entry"): ... and replace by this new insn.
+	("literal_pool_31"): Do not emit anchor label if pool empty.
+
+	* config/s390/s390.c (struct machine_function): Add save_return_addr_p.
+	(s390_optimize_prolog): Save RETURN_REGNUM if save_return_addr_p.
+	(s390_fixup_clobbered_return_reg): Remove.
+	(s390_reorg): Don't call s390_fixup_clobbered_return_reg.
+	(s390_return_addr_rtx): Always retrieve return address from save area
+	slot.  Use save_return_addr_p to force slot to be filled.
+	(s390_emit_prologue): Remove has_hard_reg_initial_val test.
+
 2003-08-22  Chris Demetriou  <cgd@broadcom.com>
 
 	* config/mips/mips.h (MASK_FIX_SB1, TARGET_FIX_SB1): New defines.

@@ -189,6 +189,10 @@ struct machine_function GTY(())
   /* Set, if some of the fprs 8-15 need to be saved (64 bit abi).  */
   int save_fprs_p;
 
+  /* Set if return address needs to be saved because the current
+     function uses __builtin_return_addr (0).  */
+  bool save_return_addr_p;
+
   /* Number of first and last gpr to be saved, restored.  */
   int first_save_gpr;
   int first_restore_gpr;
@@ -220,7 +224,6 @@ static void replace_constant_pool_ref (rtx *, rtx, rtx);
 static rtx find_ltrel_base (rtx);
 static void replace_ltrel_base (rtx *, rtx);
 static void s390_optimize_prolog (int);
-static bool s390_fixup_clobbered_return_reg (rtx);
 static int find_unused_clobbered_reg (void);
 static void s390_frame_info (void);
 static rtx save_fpr (rtx, int, int);
@@ -4049,11 +4052,6 @@ enum machine_mode constant_modes[NR_C_MODES] =
   QImode
 };
 
-rtx (*gen_consttable[NR_C_MODES])(rtx) =
-{
-  gen_consttable_ti, gen_consttable_df, gen_consttable_di, gen_consttable_sf, gen_consttable_si, gen_consttable_hi, gen_consttable_qi
-};
-
 struct constant
 {
   struct constant *next;
@@ -4249,7 +4247,11 @@ s390_dump_pool (struct constant_pool *pool)
 
 	insn = emit_label_after (c->label, insn);
 	INSN_ADDRESSES_NEW (insn, -1);
-	insn = emit_insn_after (gen_consttable[i] (value), insn);
+
+	value = gen_rtx_UNSPEC_VOLATILE (constant_modes[i], 
+					 gen_rtvec (1, value),
+					 UNSPECV_POOL_ENTRY);
+	insn = emit_insn_after (value, insn);
 	INSN_ADDRESSES_NEW (insn, -1);
       }
 
@@ -4717,6 +4719,46 @@ s390_output_constant_pool (rtx start_label, rtx end_label)
     }
 }
 
+/* Output to FILE the constant pool entry EXP in mode MODE
+   with alignment ALIGN.  */
+
+void
+s390_output_pool_entry (FILE *file, rtx exp, enum machine_mode mode, 
+			unsigned int align)
+{
+  REAL_VALUE_TYPE r;
+
+  switch (GET_MODE_CLASS (mode))
+    {
+    case MODE_FLOAT:
+      if (GET_CODE (exp) != CONST_DOUBLE)
+	abort ();
+
+      REAL_VALUE_FROM_CONST_DOUBLE (r, exp);
+      assemble_real (r, mode, align);
+      break;
+
+    case MODE_INT:
+      if (GET_CODE (exp) == CONST
+	  || GET_CODE (exp) == SYMBOL_REF
+	  || GET_CODE (exp) == LABEL_REF)
+	{
+	  fputs (integer_asm_op (GET_MODE_SIZE (mode), TRUE), file);
+	  s390_output_symbolic_const (file, exp);
+	  fputc ('\n', file);
+	}
+      else
+	{
+	  assemble_integer (exp, GET_MODE_SIZE (mode), align, 1);
+	}
+      break;
+
+    default:
+      abort ();
+    }
+}
+
+
 /* Rework the prolog/epilog to avoid saving/restoring
    registers unnecessarily.  If TEMP_REGNO is nonnegative,
    it specifies the number of a caller-saved register used
@@ -4742,8 +4784,11 @@ s390_optimize_prolog (int temp_regno)
     regs_ever_live[BASE_REGISTER] = 1;
 
   /* In non-leaf functions, the prolog/epilog code relies
-     on RETURN_REGNUM being saved in any case.  */
-  if (!current_function_is_leaf)
+     on RETURN_REGNUM being saved in any case.  We also need
+     to save the return register if __builtin_return_address (0)
+     was used in the current function.  */
+  if (!current_function_is_leaf 
+      || cfun->machine->save_return_addr_p)
     regs_ever_live[RETURN_REGNUM] = 1;
 
   /* We need to save/restore the temporary register.  */
@@ -4868,68 +4913,11 @@ s390_optimize_prolog (int temp_regno)
     }
 }
 
-/* Check whether any insn in the function makes use of the original
-   value of RETURN_REG (e.g. for __builtin_return_address).
-   If so, insert an insn reloading that value.
-
-   Return true if any such insn was found.  */
-
-static bool
-s390_fixup_clobbered_return_reg (rtx return_reg)
-{
-  bool replacement_done = 0;
-  rtx insn;
-
-  /* If we never called __builtin_return_address, register 14
-     might have been used as temp during the prolog; we do
-     not want to touch those uses.  */
-  if (!has_hard_reg_initial_val (Pmode, REGNO (return_reg)))
-    return false;
-
-  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    {
-      rtx reg, off, new_insn;
-
-      if (GET_CODE (insn) != INSN)
-	continue;
-      if (!reg_referenced_p (return_reg, PATTERN (insn)))
-	continue;
-      if (GET_CODE (PATTERN (insn)) == PARALLEL
-	  && store_multiple_operation (PATTERN (insn), VOIDmode))
-	continue;
-
-      if (frame_pointer_needed)
-	reg = hard_frame_pointer_rtx;
-      else
-	reg = stack_pointer_rtx;
-
-      off = GEN_INT (cfun->machine->frame_size + REGNO (return_reg) * UNITS_PER_WORD);
-      if (!DISP_IN_RANGE (INTVAL (off)))
-	{
-	  off = force_const_mem (Pmode, off);
-	  new_insn = gen_rtx_SET (Pmode, return_reg, off);
-	  new_insn = emit_insn_before (new_insn, insn);
-	  INSN_ADDRESSES_NEW (new_insn, -1);
-	  off = return_reg;
-	}
-
-      new_insn = gen_rtx_MEM (Pmode, gen_rtx_PLUS (Pmode, reg, off));
-      new_insn = gen_rtx_SET (Pmode, return_reg, new_insn);
-      new_insn = emit_insn_before (new_insn, insn);
-      INSN_ADDRESSES_NEW (new_insn, -1);
-
-      replacement_done = 1;
-    }
-
-  return replacement_done;
-}
-
 /* Perform machine-dependent processing.  */
 
 static void
 s390_reorg (void)
 {
-  bool fixed_up_clobbered_return_reg = 0;
   rtx temp_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
   bool temp_used = 0;
 
@@ -4985,21 +4973,6 @@ s390_reorg (void)
           continue;
         }
 
-      /* Check whether we have clobbered a use of the return
-	 register (e.g. for __builtin_return_address).  If so,
-	 add insns reloading the register where necessary.  */
-      if (temp_used && !fixed_up_clobbered_return_reg
-	  && s390_fixup_clobbered_return_reg (temp_reg))
-	{
-	  fixed_up_clobbered_return_reg = 1;
-
-	  /* The fixup insns might have caused a jump to overflow.  */
-	  if (pool_list)
-	    s390_chunkify_cancel (pool_list);
-
-	  continue;
-	}
-
       /* If we made it up to here, both conditions are satisfied.
 	 Finish up pool chunkification if required.  */
       if (pool_list)
@@ -5021,13 +4994,13 @@ s390_return_addr_rtx (int count, rtx frame)
 {
   rtx addr;
 
-  /* For the current frame, we use the initial value of RETURN_REGNUM.
-     This works both in leaf and non-leaf functions.  */
+  /* For the current frame, we need to make sure the initial
+     value of RETURN_REGNUM is actually saved.  */
 
   if (count == 0)
-    return get_hard_reg_initial_val (Pmode, RETURN_REGNUM);
+    cfun->machine->save_return_addr_p = true;
 
-  /* For frames farther back, we read the stack slot where the
+  /* To retrieve the return address we read the stack slot where the
      corresponding RETURN_REGNUM value was saved.  */
 
   addr = plus_constant (frame, RETURN_REGNUM * UNITS_PER_WORD);
@@ -5343,7 +5316,6 @@ s390_emit_prologue (void)
      See below for why TPF must use the register 1.  */
 
   if (!current_function_is_leaf
-      && !has_hard_reg_initial_val (Pmode, RETURN_REGNUM)
       && get_pool_size () < S390_POOL_CHUNK_MAX / 2
       && !TARGET_TPF)
     temp_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
