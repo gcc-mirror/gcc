@@ -599,6 +599,9 @@ gcc_AC_PROG_LN_S
 AC_PROG_RANLIB
 gcc_AC_PROG_INSTALL
 
+# See if cmp has --ignore-initial.
+gcc_AC_PROG_CMP_IGNORE_INITIAL
+
 # See if we have the mktemp command.
 AC_CHECK_PROG(have_mktemp_command, mktemp, yes, no)
 
@@ -633,27 +636,6 @@ else
   AC_MSG_RESULT(no)
   GENERATED_MANPAGES=
 fi
-
-# 'make compare' can be significantly faster, if cmp itself can
-# skip bytes instead of using tail.  The test being performed is
-# "if cmp --ignore-initial=2 t1 t2 && ! cmp --ignore-initial=1 t1 t2"
-# but we need to sink errors and handle broken shells.
-AC_CACHE_CHECK([for cmp's capabilities], gcc_cv_prog_cmp_skip,
-[ echo abfoo >t1
-  echo cdfoo >t2
-  if cmp --ignore-initial=2 t1 t2 > /dev/null 2>&1; then
-    if cmp --ignore-initial=1 t1 t2 > /dev/null 2>&1; then
-      gcc_cv_prog_cmp_skip=slowcompare
-    else
-      gcc_cv_prog_cmp_skip=gnucompare
-    fi
-  else
-    gcc_cv_prog_cmp_skip=slowcompare
-  fi
-  rm t1 t2
-])
-make_compare_target=$gcc_cv_prog_cmp_skip
-AC_SUBST(make_compare_target)
 
 # How about lex?
 dnl Don't use AC_PROG_LEX; we insist on flex.
