@@ -965,8 +965,7 @@ life_analysis (f, nregs, file)
      int nregs;
      FILE *file;
 {
-  register rtx insn;
-  register int i;
+  register size_t i;
 
 #ifdef ELIMINABLE_REGS
   static struct {int from, to; } eliminables[] = ELIMINABLE_REGS;

@@ -1,3 +1,53 @@
+Thu Mar 12 08:37:02 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* c-decl (finish_struct): Change type of min_align to unsigned.
+
+	* cplus-dem.c (demangle_function_name): Change type of variable i to size_t;
+	remove unused variable len.
+
+	* dwarf2out.c (reg_save): Add explicit cast of -1 to unsigned and a
+	comment indicating this is proper behaviour.
+	(reg_loc_descriptor): Remove redundant comparison of unsigned variable
+	reg >= 0.
+	(based_loc_descr): Likewise.
+
+	* enquire.c (bitpattern): Change type of variable i to unsigned.
+
+	* final.c (output_asm_insn): Don't cast insn_noperands to unsigned.
+
+	* flow.c (life_analysis): Change type of variable i to size_t;
+	remove unused variable insn.
+
+	* gcc.c (translate_options): Change type of variables optlen, arglen and
+	complen to size_t.
+	(input_filename_length): Change type to size_t.
+	(do_spec_1): Change type of variable bufsize to size_t.
+	(main): Change type of variables i and j to size_t;
+ 	remove subblock local definition of variable i.
+	(lookup_compiler): Change type of second argument to size_t;
+	change type of variable i to size_t.
+
+	* genemit.c (output_init_mov_optab): Change type of variable i to size_t.
+	
+	* genopinit.c (get_insn): Change type of variable pindex to size_t.
+
+	* genrecog.c (add_to_sequence): Change type of variable i to size_t.
+
+	* global.c (global_alloc): Change type of variable i to size_t.
+
+	* regclass.c (init_reg_sets): Change type of variables i and j to unsigned.
+
+	* stmt.c (expand_end_bindings): Change type of variable i to size_t.
+	(expand_end_case): Change type of variable count to size_t.
+
+	* toplev.c (main): Change type of variable j to size_t.
+	(set_target_switch): Change type of variable j to size_t.
+	(print_switch_values): Change type of variable j to size_t;
+	remove unused variable flags.
+
+	* varasm.c (assemble_variable): Change type of variable align to size_t.
+	(const_hash_rtx): Change type of variable i to size_t.
+
 1998-03-11  Mark Mitchell  <mmitchell@usa.net>
 
 	* dbxout.c (dbxout_type_methods): Only treat TYPE_METHODS as a

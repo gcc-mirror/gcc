@@ -2916,7 +2916,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 	     This is the case on all known machines; if we don't make this
 	     assumption, we do unnecessary saving on many machines.  */
 	  static struct elims {int from, to;} elim_regs[] = ELIMINABLE_REGS;
-	  int i;
+	  size_t i;
 
 	  for (i = 0; i < sizeof elim_regs / sizeof elim_regs[0]; i++)
 	    if (elim_regs[i].from == ARG_POINTER_REGNUM
@@ -4594,7 +4594,7 @@ expand_end_case (orig_index)
   tree minval, maxval, range, orig_minval;
   rtx default_label = 0;
   register struct case_node *n;
-  int count;
+  unsigned int count;
   rtx index;
   rtx table_label;
   int ncases;

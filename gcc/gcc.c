@@ -217,7 +217,7 @@ struct path_prefix;
 static void init_spec		PROTO((void));
 static void read_specs		PROTO((char *, int));
 static void set_spec		PROTO((char *, char *));
-static struct compiler *lookup_compiler PROTO((char *, int, char *));
+static struct compiler *lookup_compiler PROTO((char *, size_t, char *));
 static char *build_search_list	PROTO((struct path_prefix *, char *, int));
 static void putenv_from_prefixes PROTO((struct path_prefix *, char *));
 static char *find_a_file	PROTO((struct path_prefix *, char *, int));
@@ -861,9 +861,9 @@ translate_options (argcp, argvp)
 	  /* Find a mapping that applies to this option.  */
 	  for (j = 0; j < sizeof (option_map) / sizeof (option_map[0]); j++)
 	    {
-	      int optlen = strlen (option_map[j].name);
-	      int arglen = strlen (argv[i]);
-	      int complen = arglen > optlen ? optlen : arglen;
+	      size_t optlen = strlen (option_map[j].name);
+	      size_t arglen = strlen (argv[i]);
+	      size_t complen = arglen > optlen ? optlen : arglen;
 	      char *arginfo = option_map[j].arg_info;
 
 	      if (arginfo == 0)
@@ -3014,7 +3014,7 @@ process_command (argc, argv)
 
 static char *input_filename;
 static int input_file_number;
-static int input_filename_length;
+static size_t input_filename_length;
 static int basename_length;
 static char *input_basename;
 static char *input_suffix;
@@ -3210,7 +3210,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	  case 'D':
 	    {
 	      struct prefix_list *pl = startfile_prefixes.plist;
-	      int bufsize = 100;
+	      size_t bufsize = 100;
 	      char *buffer = (char *) xmalloc (bufsize);
 	      int idx;
 
@@ -4299,8 +4299,8 @@ main (argc, argv)
      int argc;
      char **argv;
 {
-  register int i;
-  int j;
+  register size_t i;
+  size_t j;
   int value;
   int linker_was_run = 0;
   char *explicit_link_files;
@@ -4392,7 +4392,6 @@ main (argc, argv)
   process_command (argc, argv);
 
   {
-    int i;
     int first_time;
 
     /* Build COLLECT_GCC_OPTIONS to have all of the options specified to
@@ -4778,7 +4777,7 @@ main (argc, argv)
 static struct compiler *
 lookup_compiler (name, length, language)
      char *name;
-     int length;
+     size_t length;
      char *language;
 {
   struct compiler *cp;
@@ -5045,7 +5044,7 @@ validate_all_switches ()
 
   for (comp = compilers; comp->spec[0]; comp++)
     {
-      int i;
+      size_t i;
       for (i = 0; i < sizeof comp->spec / sizeof comp->spec[0] && comp->spec[i]; i++)
 	{
 	  p = comp->spec[i];

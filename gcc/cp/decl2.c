@@ -510,7 +510,8 @@ lang_decode_option (p)
       /* Some kind of -f option.
 	 P's value is the option sans `-f'.
 	 Search for it in the table of options.  */
-      int found = 0, j;
+      int found = 0;
+      size_t j;
 
       p += 2;
       /* Try special -f options.  */

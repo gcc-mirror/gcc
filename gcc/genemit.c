@@ -650,7 +650,7 @@ output_init_mov_optab ()
 #ifdef EXTRA_CC_NAMES
   static char *cc_names[] = { EXTRA_CC_NAMES };
   char *p;
-  int i;
+  size_t i;
 
   printf ("\nvoid\ninit_mov_optab ()\n{\n");
 

@@ -917,7 +917,9 @@ reg_save (label, reg, sreg, offset)
 
   cfi->dw_cfi_oprnd1.dw_cfi_reg_num = reg;
 
-  if (sreg == -1)
+  /* The following comparison is correct. -1 is used to indicate that
+     the value isn't a register number.  */
+  if (sreg == (unsigned int) -1)
     {
       if (reg & ~0x3f)
 	/* The register number won't fit in 6 bits, so we have to use
@@ -6378,7 +6380,7 @@ reg_loc_descriptor (rtl)
   register dw_loc_descr_ref loc_result = NULL;
   register unsigned reg = reg_number (rtl);
 
-  if (reg >= 0 && reg <= 31)
+  if (reg <= 31)
     loc_result = new_loc_descr (DW_OP_reg0 + reg, 0, 0);
   else
     loc_result = new_loc_descr (DW_OP_regx, reg, 0);
@@ -6403,7 +6405,7 @@ based_loc_descr (reg, offset)
 
   if (reg == fp_reg)
     loc_result = new_loc_descr (DW_OP_fbreg, offset, 0);
-  else if (reg >= 0 && reg <= 31)
+  else if (reg <= 31)
     loc_result = new_loc_descr (DW_OP_breg0 + reg, offset, 0);
   else
     loc_result = new_loc_descr (DW_OP_bregx, reg, offset);
