@@ -1,3 +1,8 @@
+2004-09-03  Ziemowit Laski  <zlaski@apple.com>
+
+	* config-lang.in: Update copyright notice.
+	(lang_requires): Indicate that ObjC requires C to be built first.
+
 2004-09-01  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc-act.c (objc_check_decl): Use OBJC_TYPE_NAME macro instead of
