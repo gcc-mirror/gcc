@@ -1,3 +1,22 @@
+2003-09-04  Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/9028
+	* include/bits/fstream.tcc
+	(basic_filebuf::_M_destroy_internal_buffer): Destroy _M_ext_buf.
+	(basic_filebuf::basic_filebuf): Initialize _M_ext_buf,
+	_M_ext_buf_size, _M_ext_next and _M_ext_end.
+	(basic_filebuf::underflow): Handle variable-width stateless
+	encodings (codecvt::encoding() == 0), including UTF-8.
+	* include/std/std_fstream.h (basic_filebuf):
+	Declare _M_ext_buf, _M_ext_buf_size, _M_ext_next, _M_ext_end.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/1.cc: New test.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/2.cc: New test.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/3.cc: New test.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/4.cc: New test.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/5.cc: New test.
+	* testsuite/27_io/objects/wchar_t/12.cc: New test.
+	* testsuite/27_io/objects/wchar_t/13.cc: New test.
+
 2003-09-04  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/html/faq/index.html: Note that a namespace alias can't be

@@ -179,6 +179,32 @@ namespace std
 
       /**
        *  @if maint
+       *  Buffer for external characters. Used for input when
+       *  codecvt::always_noconv() == false. When valid, this corresponds
+       *  to eback().
+       *  @endif
+      */ 
+      char*			_M_ext_buf;
+
+      /**
+       *  @if maint
+       *  Size of buffer held by _M_ext_buf.
+       *  @endif
+      */ 
+      streamsize		_M_ext_buf_size;
+
+      /**
+       *  @if maint
+       *  Pointers into the buffer held by _M_ext_buf that delimit a
+       *  subsequence of bytes that have been read but not yet converted.
+       *  When valid, _M_ext_next corresponds to egptr().
+       *  @endif
+      */ 
+      const char*		_M_ext_next;
+      char*			_M_ext_end;
+
+      /**
+       *  @if maint
        *  Initializes pback buffers, and moves normal buffers to safety.
        *  Assumptions:
        *  _M_in_cur has already been moved back
