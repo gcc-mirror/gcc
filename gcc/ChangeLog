@@ -1,3 +1,10 @@
+2003-06-12  Richard Henderson  <rth@redhat.com>
+
+	PR target/11089
+	* config/i386/i386.md (sse_movaps): Use an expander to force
+	one operand to be a register.
+	(sse_movups): Likewise.
+
 2003-06-13  Doug Evans  <dje@sebabeach.org>
 
 	Remove some build warnings.
