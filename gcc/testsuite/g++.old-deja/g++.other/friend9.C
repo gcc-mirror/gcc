@@ -5,14 +5,16 @@
 
 // Bug 853: We reported the wrong line no for a friend access violation
 
+// Since DR 209, friend declaration access is not checked.
+
 class F
 {
-  class Internal;   // ERROR - is private
+  class Internal;
 };
 
 class C
 {
-  friend class F::Internal; // ERROR - in this context
+  friend class F::Internal;
   public:
   typedef enum { A, B } e;
 

@@ -2548,11 +2548,13 @@ component_decl_list:
 		{ 
 		  finish_member_declaration ($1);
 		  current_aggr = NULL_TREE;
+		  reset_type_access_control ();
 		}
 	| component_decl_list component_decl
 		{ 
 		  finish_member_declaration ($2);
 		  current_aggr = NULL_TREE;
+		  reset_type_access_control ();
 		}
 	;
 
