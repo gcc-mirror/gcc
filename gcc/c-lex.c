@@ -85,7 +85,7 @@ extern int yy_get_token ();
 #define UNGETC(c) put_back (c)
 
 struct putback_buffer {
-  char *buffer;
+  unsigned char *buffer;
   int   buffer_size;
   int   index;
 };
