@@ -1,5 +1,8 @@
 Sun May 17 12:32:08 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* pt.c (tsubst): Make sure that BINFO_TYPE of new binfos is the
+	canonical type.
+
 	* call.c (build_over_call): Don't use IS_SIGNATURE on a namespace.
 
 Fri May 15 20:28:00 1998  Jason Merrill  <jason@yorick.cygnus.com>
