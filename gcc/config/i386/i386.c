@@ -7072,12 +7072,17 @@ print_reg (rtx x, int code, FILE *file)
       /* FALLTHRU */
     case 16:
     case 2:
+    normal:
       fputs (hi_reg_name[REGNO (x)], file);
       break;
     case 1:
+      if (REGNO (x) >= ARRAY_SIZE (qi_reg_name))
+	goto normal;
       fputs (qi_reg_name[REGNO (x)], file);
       break;
     case 0:
+      if (REGNO (x) >= ARRAY_SIZE (qi_high_reg_name))
+	goto normal;
       fputs (qi_high_reg_name[REGNO (x)], file);
       break;
     default:
