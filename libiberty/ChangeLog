@@ -1,3 +1,7 @@
+2001-07-25  Daniel Jacobowitz  <drow@mvista.com>
+
+	* Makefile.in (regex.o): Add dependency on config.h.
+
 2001-07-18  Andreas Schwab  <schwab@suse.de>
 
 	* regex.c (WORDCHAR_P) [WCHAR]: Also return true for the

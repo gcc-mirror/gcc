@@ -282,7 +282,7 @@ objalloc.o: config.h $(INCDIR)/objalloc.h
 obstack.o: config.h $(INCDIR)/obstack.h
 partition.o: config.h $(INCDIR)/partition.h
 pexecute.o: config.h $(INCDIR)/libiberty.h
-regex.o: $(INCDIR)/xregex.h $(INCDIR)/xregex2.h
+regex.o: config.h $(INCDIR)/xregex.h $(INCDIR)/xregex2.h
 rename.o: config.h
 setenv.o: config.h
 sort.o: config.h $(INCDIR)/sort.h $(INCDIR)/ansidecl.h
