@@ -901,6 +901,9 @@ gen_shifty_op (code, operands)
   int value = INTVAL (operands[2]);
   int max, i;
 
+  /* Truncate the shift count in case it is out of bounds.  */
+  value = value & 0x1f;
+ 
   if (value == 31)
     {
       if (code == LSHIFTRT)
