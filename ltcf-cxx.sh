@@ -167,10 +167,14 @@ case "$host_os" in
         ;;
     esac
     ;;
-  freebsd*)
-    # FreeBSD uses GNU C++ and GNU ld
-    # FIXME: insert proper C++ library support
+  freebsd[12]*)
+    # C++ shared libraries reported to be fairly broken before switch to ELF
     ld_shlibs=no
+    ;;
+  freebsd*)
+    # FreeBSD 3 and later use GNU C++ and GNU ld with standard ELF
+    # conventions
+    ld_shlibs=yes
     ;;
   hpux*)
     case "$cc_basename" in
