@@ -1,3 +1,10 @@
+2004-09-17  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/17319
+	* tree-ssa-alias.c (compute_points_to_and_addr_escape): Also
+	examine pointers on the LHS of an assignment.
+	(collect_points_to_info_r): Handle RETURN_EXPR.
+
 2004-09-17 Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (const_and_copies_stack): New.

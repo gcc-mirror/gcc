@@ -694,6 +694,9 @@ compute_points_to_and_addr_escape (struct alias_info *ai)
 	      bitmap_set_bit (ai->written_vars, ann->uid);
 	      if (may_be_aliased (var))
 		(VARRAY_UINT (ai->num_references, ann->uid))++;
+
+	      if (POINTER_TYPE_P (TREE_TYPE (op)))
+		collect_points_to_info_for (ai, op);
 	    }
 
 	  /* Mark variables in V_MAY_DEF operands as being written to.  */
@@ -1831,6 +1834,12 @@ collect_points_to_info_r (tree var, tree stmt, void *data)
 
   switch (TREE_CODE (stmt))
     {
+    case RETURN_EXPR:
+      if (TREE_CODE (TREE_OPERAND (stmt, 0)) != MODIFY_EXPR)
+	abort ();
+      stmt = TREE_OPERAND (stmt, 0);
+      /* FALLTHRU  */
+
     case MODIFY_EXPR:
       {
 	tree rhs = TREE_OPERAND (stmt, 1);
