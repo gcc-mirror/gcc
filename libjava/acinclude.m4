@@ -31,8 +31,10 @@ AC_SUBST(libgcj_basedir)
 
 AC_CANONICAL_HOST
 
+dnl version is pulled out to make it a bit easier to change using sed.
+version=0.0.7
 dnl Still use "libjava" here to placate dejagnu.
-AM_INIT_AUTOMAKE(libjava, 0.0.7)
+AM_INIT_AUTOMAKE(libjava, $version)
 
 # FIXME: We temporarily define our own version of AC_PROG_CC.  This is
 # copied from autoconf 2.12, but does not call AC_PROG_CC_WORKS.  We

@@ -1,5 +1,8 @@
 1999-05-19  Tom Tromey  <tromey@cygnus.com>
 
+	* aclocal.m4, configure: Rebuilt.
+	* acinclude.m4 (version): New variable; pass to AM_INIT_AUTOMAKE.
+
 	* java/util/zip/GZIPOutputStream.java (write(byte[])): New
 	method.
 
