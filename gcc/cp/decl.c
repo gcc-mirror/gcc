@@ -8705,11 +8705,11 @@ member_function_or_else (ctype, cur_type, flags)
   if (ctype && ctype != cur_type)
     {
       if (flags == DTOR_FLAG)
-	error ("destructor for alien class `%s' cannot be a member",
-	       TYPE_NAME_STRING (ctype));
+	cp_error ("destructor for alien class `%T' cannot be a member",
+	          ctype);
       else
-	error ("constructor for alien class `%s' cannot be a member",
-	       TYPE_NAME_STRING (ctype));
+	cp_error ("constructor for alien class `%T' cannot be a member",
+	          ctype);
       return 0;
     }
   return 1;
@@ -11235,8 +11235,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      if (current_class_type)
 		make_friend_class (current_class_type, TYPE_MAIN_VARIANT (type));
 	      else
-		error ("trying to make class `%s' a friend of global scope",
-		       TYPE_NAME_STRING (type));
+		cp_error ("trying to make class `%T' a friend of global scope",
+		          type);
 	      type = void_type_node;
 	    }
 	}
@@ -14597,8 +14597,8 @@ start_method (declspecs, declarator, attrlist)
 	{
 	  if (DECL_CONTEXT (fndecl)
 	      && TREE_CODE( DECL_CONTEXT (fndecl)) != NAMESPACE_DECL)
-	    cp_error ("`%D' is already defined in class %s", fndecl,
-			     TYPE_NAME_STRING (DECL_CONTEXT (fndecl)));
+	    cp_error ("`%D' is already defined in class `%T'", fndecl,
+	              DECL_CONTEXT (fndecl));
 	}
       return void_type_node;
     }
