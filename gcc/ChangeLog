@@ -1,3 +1,8 @@
+Tue Aug 18 12:40:27 1998  Richard Henderson  <rth@cygnus.com>
+
+	* c-common.c (decl_attributes): Issue an error if the argument
+	to alias is not a string.
+
 Tue Aug 18 10:33:30 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (cplus-dem.o): Provide explicit rules for building
