@@ -448,11 +448,6 @@ or with constant text in a single argument.
 	except that %g, %u, and %U do not currently support additional
 	SUFFIX characters following %O as they would following, for
 	example, `.o'.
- %p	substitutes the standard macro predefinitions for the
-	current target machine.  Use this when running cpp.
- %P	like %p, but puts `__' before and after the name of each macro.
-	(Except macros that already have __.)
-	This is for ANSI C.
  %I	Substitute any of -iprefix (made from GCC_EXEC_PREFIX), -isysroot
 	(made from TARGET_SYSTEM_ROOT), and -isystem (made from COMPILER_PATH
 	and -B options) as necessary.
@@ -701,7 +696,6 @@ proper position among the other output files.  */
 
 static const char *asm_debug;
 static const char *cpp_spec = CPP_SPEC;
-static const char *cpp_predefines = CPP_PREDEFINES;
 static const char *cc1_spec = CC1_SPEC;
 static const char *cc1plus_spec = CC1PLUS_SPEC;
 static const char *link_gcc_c_sequence_spec = LINK_GCC_C_SEQUENCE_SPEC;
@@ -740,8 +734,7 @@ static const char *cpp_unique_options =
  %{MMD:-MMD %{!o:%b.d}%{o*:%.d%*}}\
  %{M} %{MM} %{MF*} %{MG} %{MP} %{MQ*} %{MT*}\
  %{!E:%{!M:%{!MM:%{MD|MMD:%{o*:-MQ %*}}}}}\
- %{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
- %{remap} %{g3:-dD} %{H} %C %{D*&U*&A*} %{i*} %Z %i\
+ %{trigraphs} %{remap} %{g3:-dD} %{H} %C %{D*&U*&A*} %{i*} %Z %i\
  %{E|M|MM:%W{o*}}";
 
 /* This contains cpp options which are common with cc1_options and are passed
@@ -1467,7 +1460,6 @@ static struct spec_list static_specs[] =
   INIT_STATIC_SPEC ("libgcc",			&libgcc_spec),
   INIT_STATIC_SPEC ("startfile",		&startfile_spec),
   INIT_STATIC_SPEC ("switches_need_spaces",	&switches_need_spaces),
-  INIT_STATIC_SPEC ("predefines",		&cpp_predefines),
   INIT_STATIC_SPEC ("cross_compile",		&cross_compile),
   INIT_STATIC_SPEC ("version",			&compiler_version),
   INIT_STATIC_SPEC ("multilib",			&multilib_select),
@@ -4966,167 +4958,6 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		for (q = multilib_dir; *q ; ++q, ++p)
 		  *p = (IS_DIR_SEPARATOR (*q) ? '_' : *q);
 	      }
-	    break;
-
-	  case 'p':
-	    {
-	      char *x = (char *) alloca (strlen (cpp_predefines) + 1);
-	      char *buf = x;
-	      const char *y;
-
-	      /* Copy all of the -D options in CPP_PREDEFINES into BUF.  */
-	      y = cpp_predefines;
-	      while (*y != 0)
-		{
-		  if (! strncmp (y, "-D", 2))
-		    /* Copy the whole option.  */
-		    while (*y && *y != ' ' && *y != '\t')
-		      *x++ = *y++;
-		  else if (*y == ' ' || *y == '\t')
-		    /* Copy whitespace to the result.  */
-		    *x++ = *y++;
-		  /* Don't copy other options.  */
-		  else
-		    y++;
-		}
-
-	      *x = 0;
-
-	      value = do_spec_1 (buf, 0, NULL);
-	      if (value != 0)
-		return value;
-	    }
-	    break;
-
-	  case 'P':
-	    {
-	      char *x = (char *) alloca (strlen (cpp_predefines) * 4 + 1);
-	      char *buf = x;
-	      const char *y;
-
-	      /* Copy all of CPP_PREDEFINES into BUF,
-		 but force them all into the reserved name space if they
-		 aren't already there.  The reserved name space is all
-		 identifiers beginning with two underscores or with one
-		 underscore and a capital letter.  We do the forcing by
-		 adding up to two underscores to the beginning and end
-		 of each symbol. e.g. mips, _mips, mips_, and _mips_ all
-		 become __mips__.  */
-	      y = cpp_predefines;
-	      while (*y != 0)
-		{
-		  if (! strncmp (y, "-D", 2))
-		    {
-		      int flag = 0;
-
-		      *x++ = *y++;
-		      *x++ = *y++;
-
-		      if (*y != '_'
-			  || (*(y + 1) != '_'
-			      && ! ISUPPER ((unsigned char) *(y + 1))))
-			{
-			  /* Stick __ at front of macro name.  */
-			  if (*y != '_')
-			    *x++ = '_';
-			  *x++ = '_';
-			  /* Arrange to stick __ at the end as well.  */
-			  flag = 1;
-			}
-
-		      /* Copy the macro name.  */
-		      while (*y && *y != '=' && *y != ' ' && *y != '\t')
-			*x++ = *y++;
-
-		      if (flag)
-			{
-			  if (x[-1] != '_')
-			    {
-			      if (x[-2] != '_')
-				*x++ = '_';
-			      *x++ = '_';
-			    }
-			}
-
-		      /* Copy the value given, if any.  */
-		      while (*y && *y != ' ' && *y != '\t')
-			*x++ = *y++;
-		    }
-		  else if (*y == ' ' || *y == '\t')
-		    /* Copy whitespace to the result.  */
-		    *x++ = *y++;
-		  /* Don't copy -A options  */
-		  else
-		    y++;
-		}
-	      *x++ = ' ';
-
-	      /* Copy all of CPP_PREDEFINES into BUF,
-		 but put __ after every -D.  */
-	      y = cpp_predefines;
-	      while (*y != 0)
-		{
-		  if (! strncmp (y, "-D", 2))
-		    {
-		      y += 2;
-
-		      if (*y != '_'
-			  || (*(y + 1) != '_'
-			      && ! ISUPPER ((unsigned char) *(y + 1))))
-			{
-			  /* Stick -D__ at front of macro name.  */
-			  *x++ = '-';
-			  *x++ = 'D';
-			  if (*y != '_')
-			    *x++ = '_';
-			  *x++ = '_';
-
-			  /* Copy the macro name.  */
-			  while (*y && *y != '=' && *y != ' ' && *y != '\t')
-			    *x++ = *y++;
-
-			  /* Copy the value given, if any.  */
-			  while (*y && *y != ' ' && *y != '\t')
-			    *x++ = *y++;
-			}
-		      else
-			{
-			  /* Do not copy this macro - we have just done it before */
-			  while (*y && *y != ' ' && *y != '\t')
-			    y++;
-			}
-		    }
-		  else if (*y == ' ' || *y == '\t')
-		    /* Copy whitespace to the result.  */
-		    *x++ = *y++;
-		  /* Don't copy -A options.  */
-		  else
-		    y++;
-		}
-	      *x++ = ' ';
-
-	      /* Copy all of the -A options in CPP_PREDEFINES into BUF.  */
-	      y = cpp_predefines;
-	      while (*y != 0)
-		{
-		  if (! strncmp (y, "-A", 2))
-		    /* Copy the whole option.  */
-		    while (*y && *y != ' ' && *y != '\t')
-		      *x++ = *y++;
-		  else if (*y == ' ' || *y == '\t')
-		    /* Copy whitespace to the result.  */
-		    *x++ = *y++;
-		  /* Don't copy other options.  */
-		  else
-		    y++;
-		}
-
-	      *x = 0;
-
-	      value = do_spec_1 (buf, 0, NULL);
-	      if (value != 0)
-		return value;
-	    }
 	    break;
 
 	  case 'R':

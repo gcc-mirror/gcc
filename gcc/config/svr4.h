@@ -28,11 +28,7 @@ Boston, MA 02111-1307, USA.
    where MACHINE is replaced by the name of the basic hardware that you
    are targeting for.  Then, in the file MACHINE/svr4.h, put any really
    system-specific defines (or overrides of defines) which you find that
-   you need.  For example, CPP_PREDEFINES is defined here with only the
-   defined -Dunix and -DSVR4.  You should probably override that in your
-   target-specific MACHINE/svr4.h file with a set of defines that
-   includes these, but also contains an appropriate define for the type
-   of hardware that you are targeting.
+   you need.
 */
 
 /* Define a symbol indicating that we are using svr4.h.  */
@@ -58,12 +54,6 @@ Boston, MA 02111-1307, USA.
  (DEFAULT_WORD_SWITCH_TAKES_ARG (STR)			\
   && strcmp (STR, "Tdata") && strcmp (STR, "Ttext")	\
   && strcmp (STR, "Tbss"))
-
-/* You should redefine CPP_PREDEFINES in any file which includes this one.
-   The definition should be appropriate for the type of target system
-   involved, and it should include any -A (assertion) options which are
-   appropriate for the given target system.  */
-#undef CPP_PREDEFINES
 
 /* Provide an ASM_SPEC appropriate for svr4.  Here we try to support as
    many of the specialized svr4 assembler options as seems reasonable,
