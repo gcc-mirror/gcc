@@ -88,9 +88,7 @@ extern enum cmodel sparc_cmodel;
 #define TARGET_CM_MEDANY    (sparc_cmodel == CM_MEDANY)
 #define TARGET_CM_EMBMEDANY (sparc_cmodel == CM_EMBMEDANY)
 
-#ifndef SPARC_DEFAULT_CMODEL
 #define SPARC_DEFAULT_CMODEL CM_MEDLOW
-#endif
 
 /* This is call-clobbered in the normal ABI, but is reserved in the
    home grown (aka upward compatible) embedded ABI.  */
