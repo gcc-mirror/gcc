@@ -105,7 +105,7 @@ AC_PROVIDE([AC_PROG_CXX])
 # from those used for all other target libraries.  If CXX is set in
 # the environment, respect that here.
 CXX_libstdcxx=$CXX
-AC_CHECK_PROGS(CXX_libstdcxx, "$CXX" "$CCC" c++ g++ gcc CC cxx cc++, gcc)
+AC_CHECK_PROGS(CXX_libstdcxx, $CCC c++ g++ gcc CC cxx cc++, gcc)
 CXX=$CXX_libstdcxx
 AC_SUBST(CXX)
 test -z "$CXX" && AC_MSG_ERROR([no acceptable c++ found in \$PATH])
