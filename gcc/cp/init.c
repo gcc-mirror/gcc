@@ -144,6 +144,9 @@ perform_member_init (member, name, init, explicit)
 
   decl = build_component_ref (current_class_ref, name, NULL_TREE, explicit);
 
+  if (decl == error_mark_node)
+    return;
+
   /* Deal with this here, as we will get confused if we try to call the
      assignment op for an anonymous union.  This can happen in a
      synthesized copy constructor.  */

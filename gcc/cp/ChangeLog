@@ -1,3 +1,7 @@
+1999-12-02  Mike Stump  <mrs@wrs.com>
+
+	* init.c (perform_member_init): Handle parse errors better.
+
 1999-12-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (min_tree_cons): Remove.
