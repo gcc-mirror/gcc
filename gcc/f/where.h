@@ -61,7 +61,6 @@ typedef unsigned int ffewhereUses_;
 
 /* Include files needed by this one. */
 
-#include "glimits.h"
 #include "top.h"
 
 /* Structure definitions. */

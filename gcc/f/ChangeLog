@@ -1,3 +1,9 @@
+2002-06-17  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* bit.c: Don't include glimits.h.
+	* target.c: Likewise.   
+	* where.h: Likewise.
+
 2002-06-12  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* bad.c (ffebad_start_): Adjust calls to diagnostic_count_error.
