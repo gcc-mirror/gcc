@@ -1,3 +1,8 @@
+2003-03-17  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9629
+	* g++.dg/init/ctor2.C: New test.
+
 2003-03-16  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8805

@@ -10537,9 +10537,12 @@ tsubst_initializer_list (t, argvec)
 
       decl = tsubst_copy (TREE_PURPOSE (t), argvec, tf_error | tf_warning,
 			  NULL_TREE);
+      decl = expand_member_init (decl);
+      if (decl && !DECL_P (decl))
+	in_base_initializer = 1;
+      
       init = tsubst_expr (TREE_VALUE (t), argvec, tf_error | tf_warning,
 			  NULL_TREE);
-
       if (!init)
 	;
       else if (TREE_CODE (init) == TREE_LIST)
@@ -10548,9 +10551,11 @@ tsubst_initializer_list (t, argvec)
       else if (init != void_type_node)
 	init = convert_from_reference (init);
 
-      init = expand_member_init (decl, init);
-      if (init)
+      in_base_initializer = 0;
+
+      if (decl)
 	{
+	  init = build_tree_list (decl, init);
 	  TREE_CHAIN (init) = inits;
 	  inits = init;
 	}

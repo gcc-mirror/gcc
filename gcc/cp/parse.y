@@ -441,7 +441,7 @@ check_class_key (key, aggr)
 %type <itype> new delete
 /* %type <ttype> primary_no_id */
 %type <ttype> maybe_parmlist
-%type <ttype> member_init
+%type <ttype> begin_member_init member_init
 %type <ftype> member_init_list
 %type <ttype> template_parm_header template_spec_header template_header
 %type <ttype> template_parm_list template_parm
@@ -976,34 +976,35 @@ member_init_list:
 	| member_init_list error
 	;
 
+begin_member_init:
+	  /* empty */
+		{
+ 		  if (current_class_name)
+		    pedwarn ("anachronistic old style base class initializer");
+		  $$ = expand_member_init (NULL_TREE);
+		  in_base_initializer = $$ && !DECL_P ($$);
+		}
+	| notype_identifier
+		{ $$ = expand_member_init ($1);
+		  in_base_initializer = $$ && !DECL_P ($$); }
+	| nonnested_type
+		{ $$ = expand_member_init ($1);
+		  in_base_initializer = $$ && !DECL_P ($$); }
+	| typename_sub
+		{ $$ = expand_member_init ($1);
+		  in_base_initializer = $$ && !DECL_P ($$); }
+	;
+
 member_init:
-	  '(' nonnull_exprlist ')'
-		{
-		  if (current_class_name)
-		    pedwarn ("anachronistic old style base class initializer");
-		  $$ = expand_member_init (NULL_TREE, $2);
-		}
-	| LEFT_RIGHT
-		{
-		  if (current_class_name)
-		    pedwarn ("anachronistic old style base class initializer");
-		  $$ = expand_member_init (NULL_TREE,
-					   void_type_node);
-		}
-	| notype_identifier '(' nonnull_exprlist ')'
-		{ $$ = expand_member_init ($1, $3); }
-	| notype_identifier LEFT_RIGHT
-		{ $$ = expand_member_init ($1, void_type_node); }
-	| nonnested_type '(' nonnull_exprlist ')'
-		{ $$ = expand_member_init ($1, $3); }
-	| nonnested_type LEFT_RIGHT
-		{ $$ = expand_member_init ($1, void_type_node); }
-	| typename_sub '(' nonnull_exprlist ')'
-		{ $$ = expand_member_init ($1, $3); }
-	| typename_sub LEFT_RIGHT
-		{ $$ = expand_member_init ($1, void_type_node); }
+	  begin_member_init '(' nonnull_exprlist ')'
+		{ in_base_initializer = 0;
+		  $$ = $1 ? build_tree_list ($1, $3) : NULL_TREE; }
+	| begin_member_init LEFT_RIGHT
+		{ in_base_initializer = 0;
+		  $$ = $1 ? build_tree_list ($1, void_type_node) : NULL_TREE; }
         | error
-                { $$ = NULL_TREE; }
+                { in_base_initializer = 0;
+		  $$ = NULL_TREE; }
 	;
 
 identifier:
