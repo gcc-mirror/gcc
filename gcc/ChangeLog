@@ -1,3 +1,13 @@
+2000-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c (cpp_options): Pass -fno-operator-names.
+	* cpplib.h (struct cpp_options): Add operator_names.
+	* cppinit.c (cpp_create_reader): Initialize it.
+	(initialize_builtins): If -fno-operator-names, don't add
+	C++ alternate operator names.
+	(COMMAND_LINE_OPTIONS): Add -fno-operator-names.
+	(cpp_handle_option): Clear operator_names.
+
 2000-12-15  Jason Merrill  <jason@redhat.com>
 
 	* jump.c (jump_optimize_1): Don't delete the line note after the
