@@ -3,7 +3,7 @@
    of some notes inserted between jump table's CODE_LABEL and the jump table
    it ended up in the .text section and thus shorten_branches couldn't
    figure out branch to lab is too far.  */
-/* { dg-do link } */
+/* { dg-do link { target fpic } } */
 /* { dg-options "-g1 -fpic" } */
 
 #define A(n) \
