@@ -1,3 +1,8 @@
+2001-06-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* config.gcc: For $target_alias of athlon-*, set
+	target_cpu_default2=5.
+
 Thu Jun  7 16:17:40 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* global.c (build_insn_chain): Allow ADDR_VEC or ADDR_DIF_VEC after
