@@ -1,4 +1,8 @@
-2001-09-13   Benjamin Kosnik  <bkoz@redhat.com>
+2001-09-14  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/locale_facets.tcc: Conditionalize use of strtold.
+
+2001-09-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Implement std::money_get.
 	* include/bits/locale_facets.tcc (money_get::do_get): Implement.

@@ -244,12 +244,21 @@ namespace std
       const _CharT* __wcs = __str.c_str();
       __ctype.narrow(__wcs, __wcs + __str.size() + 1, char(), __cs);      
 
+#if defined(_GLIBCPP_USE_C99) && !defined(__hpux)
       char* __sanity;
       errno = 0;
       long double __ld = strtold(__cs, &__sanity);
       if (!(__err & ios_base::failbit)
           && __sanity != __cs && *__sanity == '\0' && errno == 0)
         __units = __ld;
+#else
+      typedef typename char_traits<_CharT>::int_type int_type;
+      long double __ld;
+      int __p = sscanf(__cs, "%Lf", &__ld);
+      if (!(__err & ios_base::failbit)
+	  && __p && static_cast<int_type>(__p) != char_traits<_CharT>::eof())
+        __units = __ld;
+#endif
       return __s;
     }
 
@@ -998,7 +1007,6 @@ namespace std
       return __beg;
     }
 
-#if defined(_GLIBCPP_USE_C99) && !defined(__hpux)
   template<typename _CharT, typename _InIter>
     _InIter
     num_get<_CharT, _InIter>::
@@ -1012,6 +1020,7 @@ namespace std
       int __base;
       _M_extract(__beg, __end, __io, __err, __xtrc, __base, true);
 
+#if defined(_GLIBCPP_USE_C99) && !defined(__hpux)
       // Stage 2: convert and store results.
       char* __sanity;
       errno = 0;
@@ -1019,23 +1028,7 @@ namespace std
       if (!(__err & ios_base::failbit)
           && __sanity != __xtrc && *__sanity == '\0' && errno == 0)
         __v = __ld;
-      else
-        __err |= ios_base::failbit;
-
-      return __beg;
-    }
 #else
-  template<typename _CharT, typename _InIter>
-    _InIter
-    num_get<_CharT, _InIter>::
-    do_get(iter_type __beg, iter_type __end, ios_base& __io,
-           ios_base::iostate& __err, long double& __v) const
-    {
-      // Stage 1: extract
-      char __xtrc[32]= {'\0'};
-      int __base;
-      _M_extract(__beg, __end, __io, __err, __xtrc, __base, true);
-
       // Stage 2: determine a conversion specifier.
       ios_base::fmtflags __basefield = __io.flags() & ios_base::basefield;
       const char* __conv;
@@ -1046,21 +1039,21 @@ namespace std
       else if (__basefield == 0)
         __conv = "%Li";
       else
-        __conv = "%Lg";
+        __conv = "%Lf";
 
       // Stage 3: store results.
+      typedef typename __traits_type::int_type int_type;
       long double __ld;
       int __p = sscanf(__xtrc, __conv, &__ld);
-      if (__p
-          && static_cast<typename __traits_type::int_type>(__p)
-        != __traits_type::eof())
+      if (!(__err & ios_base::failbit) && __p 
+	  && static_cast<int_type>(__p) != __traits_type::eof())
         __v = __ld;
+#endif
       else
         __err |= ios_base::failbit;
 
       return __beg;
     }
-#endif
 
   template<typename _CharT, typename _InIter>
     _InIter
