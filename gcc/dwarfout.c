@@ -319,7 +319,9 @@ static void output_unsigned_leb128	PROTO((unsigned long));
 static void output_signed_leb128	PROTO((long));
 static inline int is_body_block		PROTO((tree));
 static int fundamental_type_code	PROTO((tree));
+static tree root_type_1			PROTO((tree, int));
 static tree root_type			PROTO((tree));
+static void write_modifier_bytes_1	PROTO((tree, int, int, int));
 static void write_modifier_bytes	PROTO((tree, int, int));
 static inline int type_is_fundamental	PROTO((tree));
 static void equate_decl_number_to_die_number PROTO((tree));
@@ -1447,10 +1449,14 @@ fundamental_type_code (type)
    qualifiers.  */
 
 static tree
-root_type (type)
+root_type_1 (type, count)
      register tree type;
+     register int count;
 {
-  if (TREE_CODE (type) == ERROR_MARK)
+  /* Give up after searching 1000 levels, in case this is a recursive
+     pointer type.  Such types are possible in Ada, but it is not possible
+     to represent them in DWARF1 debug info.  */
+  if (count > 1000)
     return error_mark_node;
 
   switch (TREE_CODE (type))
@@ -1460,23 +1466,40 @@ root_type (type)
 
       case POINTER_TYPE:
       case REFERENCE_TYPE:
-	return type_main_variant (root_type (TREE_TYPE (type)));
+	return root_type_1 (TREE_TYPE (type), count+1);
 
       default:
-	return type_main_variant (type);
+	return type;
     }
+}
+
+static tree
+root_type (type)
+     register tree type;
+{
+  type = root_type_1 (type, 0);
+  if (type != error_mark_node)
+    type = type_main_variant (type);
+  return type;
 }
 
 /* Given a pointer to an arbitrary ..._TYPE tree node, write out a sequence
    of zero or more Dwarf "type-modifier" bytes applicable to the type.	*/
 
 static void
-write_modifier_bytes (type, decl_const, decl_volatile)
+write_modifier_bytes_1 (type, decl_const, decl_volatile, count)
      register tree type;
      register int decl_const;
      register int decl_volatile;
+     register int count;
 {
   if (TREE_CODE (type) == ERROR_MARK)
+    return;
+
+  /* Give up after searching 1000 levels, in case this is a recursive
+     pointer type.  Such types are possible in Ada, but it is not possible
+     to represent them in DWARF1 debug info.  */
+  if (count > 1000)
     return;
 
   if (TYPE_READONLY (type) || decl_const)
@@ -1487,18 +1510,27 @@ write_modifier_bytes (type, decl_const, decl_volatile)
     {
       case POINTER_TYPE:
 	ASM_OUTPUT_DWARF_TYPE_MODIFIER (asm_out_file, MOD_pointer_to);
-	write_modifier_bytes (TREE_TYPE (type), 0, 0);
+	write_modifier_bytes_1 (TREE_TYPE (type), 0, 0, count+1);
 	return;
 
       case REFERENCE_TYPE:
 	ASM_OUTPUT_DWARF_TYPE_MODIFIER (asm_out_file, MOD_reference_to);
-	write_modifier_bytes (TREE_TYPE (type), 0, 0);
+	write_modifier_bytes_1 (TREE_TYPE (type), 0, 0, count+1);
 	return;
 
       case ERROR_MARK:
       default:
 	return;
     }
+}
+
+static void
+write_modifier_bytes (type, decl_const, decl_volatile)
+     register tree type;
+     register int decl_const;
+     register int decl_volatile;
+{
+  write_modifier_bytes_1 (type, decl_const, decl_volatile, 0);
 }
 
 /* Given a pointer to an arbitrary ..._TYPE tree node, return non-zero if the
@@ -4152,6 +4184,9 @@ output_type (type, containing_scope)
 
       case POINTER_TYPE:
       case REFERENCE_TYPE:
+	/* Prevent infinite recursion in cases where this is a recursive
+	   type.  Recursive types are possible in Ada.  */
+	TREE_ASM_WRITTEN (type) = 1;
 	/* For these types, all that is required is that we output a DIE
 	   (or a set of DIEs) to represent the "basis" type.  */
 	output_type (TREE_TYPE (type), containing_scope);
