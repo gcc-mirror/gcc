@@ -1,3 +1,12 @@
+2002-11-08  H.J. Lu <hjl@gnu.org>
+
+	Fix c/5351 and optimization/7591.
+
+	* calls.c (store_one_arg): Remove ATTRIBUTE_UNUSED on
+	variable_size. Mark any slots used for the argument as in-use
+	only if we can't pass all arguments to a library call in
+	registers.
+
 2002-11-07  H.J. Lu <hjl@gnu.org>
 
 	Fix bootstrap/8146 and

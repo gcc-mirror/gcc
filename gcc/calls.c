@@ -4284,7 +4284,7 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
      struct arg_data *arg;
      rtx argblock;
      int flags;
-     int variable_size ATTRIBUTE_UNUSED;
+     int variable_size;
      int reg_parm_stack_space;
 {
   tree pval = arg->tree_value;
@@ -4359,14 +4359,22 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 		  emit_move_insn (arg->save_area, stack_area);
 		}
 	    }
+
+	  /* Now that we have saved any slots that will be overwritten
+	     by this store, mark all slots this store will use.  We
+	     must do this before we actually expand the argument since
+	     the expansion itself may trigger library calls which might
+	     need to use the same stack slot. We only do it if we can't
+	     pass all arguments to a library call in registers.  */
+	  if (arg->partial)
+	    {
+	      for (i = lower_bound; i < upper_bound; i++)
+		stack_usage_map[i] = 1;
+
+	      /* Set it so that we don't do it again.  */
+	      variable_size = 1;
+	    }
 	}
-      /* Now that we have saved any slots that will be overwritten by this
-	 store, mark all slots this store will use.  We must do this before
-	 we actually expand the argument since the expansion itself may
-	 trigger library calls which might need to use the same stack slot.  */
-      if (argblock && ! variable_size && arg->stack)
-	for (i = lower_bound; i < upper_bound; i++)
-	  stack_usage_map[i] = 1;
     }
 
   /* If this isn't going to be placed on both the stack and in registers,
@@ -4593,6 +4601,11 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
       if (partial == 0)
 	arg->value = arg->stack_slot;
     }
+
+  if (ACCUMULATE_OUTGOING_ARGS && !(flags & ECF_SIBCALL)
+      && argblock && ! variable_size && arg->stack)
+    for (i = lower_bound; i < upper_bound; i++)
+      stack_usage_map[i] = 1;
 
   /* Once we have pushed something, pops can't safely
      be deferred during the rest of the arguments.  */
