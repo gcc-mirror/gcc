@@ -52,9 +52,6 @@ struct cgraph_global_info GTY(())
   /* Estimated size of the function after inlining.  */
   int insns;
 
-  /* Number of direct calls not inlined into the function body.  */
-  int calls;
-
   /* Number of times given function will be cloned during output.  */
   int cloned_times;
 
