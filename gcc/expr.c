@@ -4111,7 +4111,7 @@ store_constructor (exp, target, align, cleared, size)
   if (GET_CODE (target) == REG && REGNO (target) < FIRST_PSEUDO_REGISTER)
     {
       rtx temp = gen_reg_rtx (GET_MODE (target));
-      store_constructor (exp, temp, 0, size);
+      store_constructor (exp, temp, align, cleared, size);
       emit_move_insn (target, temp);
       return;
     }
