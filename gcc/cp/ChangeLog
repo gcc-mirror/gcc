@@ -1,3 +1,17 @@
+2004-01-27  Devang Patel  <dpatel@apple.com>
+
+	* name-lookup.c: Include "debug.h"
+	(do_namespace_alias): Invoke debug_hooks to emit debug info
+	for namespace alias.
+	(do_local_using_decl): Invoke debug_hooks to emit debug info 
+	for using decl.
+	(do_class_using_decl): Same.
+	(do_toplevel_using_decl): Same.
+	(do_using_directive): Same.
+	(cp_emit_debug_info_for_using): New function.
+	* Make-lang.in (cp/parser.o): Depend on debug.h
+	(cp/name-lookup.o): Same.
+
 2004-01-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-tree.h (language_function, lang_type_header): Use

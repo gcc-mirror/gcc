@@ -382,23 +382,25 @@ const struct gcc_debug_hooks dbx_debug_hooks =
   dbxout_end_source_file,
   dbxout_begin_block,
   dbxout_end_block,
-  debug_true_tree,		/* ignore_block */
-  dbxout_source_line,		/* source_line */
-  dbxout_source_line,		/* begin_prologue: just output line info */
-  debug_nothing_int_charstar,	/* end_prologue */
-  debug_nothing_int_charstar,	/* end_epilogue */
+  debug_true_tree,		         /* ignore_block */
+  dbxout_source_line,		         /* source_line */
+  dbxout_source_line,		         /* begin_prologue: just output 
+					    line info */
+  debug_nothing_int_charstar,	         /* end_prologue */
+  debug_nothing_int_charstar,	         /* end_epilogue */
 #ifdef DBX_FUNCTION_FIRST
   dbxout_begin_function,
 #else
-  debug_nothing_tree,		/* begin_function */
+  debug_nothing_tree,		         /* begin_function */
 #endif
-  debug_nothing_int,		/* end_function */
+  debug_nothing_int,		         /* end_function */
   dbxout_function_decl,
-  dbxout_global_decl,		/* global_decl */
-  debug_nothing_tree,		/* deferred_inline_function */
-  debug_nothing_tree,		/* outlining_inline_function */
-  debug_nothing_rtx,		/* label */
-  dbxout_handle_pch		/* handle_pch */
+  dbxout_global_decl,		         /* global_decl */
+  debug_nothing_tree_tree,               /* imported_module_or_decl */
+  debug_nothing_tree,		         /* deferred_inline_function */
+  debug_nothing_tree,		         /* outlining_inline_function */
+  debug_nothing_rtx,		         /* label */
+  dbxout_handle_pch		         /* handle_pch */
 };
 #endif /* DBX_DEBUGGING_INFO  */
 
@@ -413,19 +415,20 @@ const struct gcc_debug_hooks xcoff_debug_hooks =
   dbxout_end_source_file,
   xcoffout_begin_block,
   xcoffout_end_block,
-  debug_true_tree,		/* ignore_block */
+  debug_true_tree,		         /* ignore_block */
   xcoffout_source_line,
-  xcoffout_begin_prologue,	/* begin_prologue */
-  debug_nothing_int_charstar,	/* end_prologue */
+  xcoffout_begin_prologue,	         /* begin_prologue */
+  debug_nothing_int_charstar,	         /* end_prologue */
   xcoffout_end_epilogue,
-  debug_nothing_tree,		/* begin_function */
+  debug_nothing_tree,		         /* begin_function */
   xcoffout_end_function,
-  debug_nothing_tree,		/* function_decl */
-  dbxout_global_decl,		/* global_decl */
-  debug_nothing_tree,		/* deferred_inline_function */
-  debug_nothing_tree,		/* outlining_inline_function */
-  debug_nothing_rtx,		/* label */
-  dbxout_handle_pch		/* handle_pch */
+  debug_nothing_tree,		         /* function_decl */
+  dbxout_global_decl,		         /* global_decl */
+  debug_nothing_tree_tree,               /* imported_module_or_decl */
+  debug_nothing_tree,		         /* deferred_inline_function */
+  debug_nothing_tree,		         /* outlining_inline_function */
+  debug_nothing_rtx,		         /* label */
+  dbxout_handle_pch		         /* handle_pch */
 };
 #endif /* XCOFF_DEBUGGING_INFO  */
 

@@ -1,3 +1,31 @@
+2004-01-27  Devang Patel <dpatel@apple.com>
+	
+	* Makefile.in (dwarf2out.o): Depend on input.h
+	* dbxout.c (dbx_debug_hooks): Add new empty hook for 
+	imported_module_or_decl.
+	(xcoff_debug_hooks): Same.
+	* sdbout.c (sdb_debug_hooks): Same.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Same.
+	* debug.c (do_nothing_debug_hooks): Same.
+	(debug_nothing_tree_tree): New function.
+	* debug.h (gcc_debug_hooks): New hook, imported_module_or_decl.
+	* dwarf2out.c: Include input.h.
+	(dwarf2_debug_hooks): Add new hook for imported_module_or_decl.
+	(remove_child_TAG): New function.
+	(dwarf_tag_name): Handle DW_TAG_imported_module.
+	(gen_subprogram_die): Equate decl number to declaration die. Do not
+	remove all children dies while reusing declaration die for definition.
+	Instead, selectively remove only formal parameters.
+	(gen_variable_die): Equate variable decl to declaration die.
+	(gen_field_die): Equate field decl to line number.
+	(force_namespace_die): Replace it with ...
+	(force_decl_die): ... this.
+	(force_type_die): New function.
+	(setup_namespace_context): Replace use of force_namespace_die() with
+	force_decl_die().
+	(gen_namespace_die): Same.
+	(dwarf2out_imported_module_or_decl): New function.
+
 2004-01-27  Bob Wilson  <bob.wilson@acm.org>
 	
 	* config/xtensa/xtensa.c (xtensa_copy_incoming_a7): Remove SUBREG
