@@ -1,5 +1,9 @@
 2003-01-20  Richard Henderson  <rth@redhat.com>
 
+	* expr.h (default_must_pass_in_stack): Move decl outside ifdef.
+
+2003-01-20  Richard Henderson  <rth@redhat.com>
+
 	PR opt/7507
 	* stmt.c (expand_asm_operands): Validize memory operands.
 

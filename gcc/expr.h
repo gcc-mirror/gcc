@@ -154,8 +154,8 @@ enum direction {none, upward, downward};  /* Value has this type.  */
 #endif
 
 /* Nonzero if we do not know how to pass TYPE solely in registers.  */
-#ifndef MUST_PASS_IN_STACK
 extern bool default_must_pass_in_stack PARAMS((enum machine_mode, tree));
+#ifndef MUST_PASS_IN_STACK
 #define MUST_PASS_IN_STACK(MODE,TYPE) default_must_pass_in_stack(MODE, TYPE)
 #endif
 
