@@ -6098,7 +6098,7 @@ if test "x$gcc_cv_as" = x -a x$host = x$target; then
 	# If the loop below does not find an assembler, then use whatever
 	# one we can find in the users's path.
 	# user's path.
-	as=as$host_exeext
+	gcc_cv_as=as$host_exeext
 
 	test_dirs="$test_prefix/lib/gcc-lib/$target/$gcc_version \
 		   $test_prefix/lib/gcc-lib/$target \
