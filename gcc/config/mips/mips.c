@@ -4451,8 +4451,9 @@ override_options ()
 	}
     }
 
-  /* Save GPR registers in word_mode sized hunks.  */
-  gpr_mode = word_mode;
+  /* Save GPR registers in word_mode sized hunks.  word_mode hasn't been
+     initialized yet, so we can't use that here.  */
+  gpr_mode = TARGET_64BIT ? DImode : SImode;
 }
 
 /* On the mips16, we want to allocate $24 (T_REG) before other
