@@ -1,3 +1,8 @@
+2004-03-24  Andreas Schwab  <schwab@suse.de>
+
+	* testsuite/lib/prune.exp (prune_g++_output): Ignore errata
+	warning from IA64 assembler.
+
 2004-03-24  Dhruv Matani  <dhruvbird@gmx.net>
 	
 	* include/ext/bitmap_allocator.h: (_Bit_scan_forward) -> Made this
