@@ -435,7 +435,17 @@ layout_record (rec)
 	DECL_FIELD_BITPOS (field) = size_int (const_size);
 
       /* If this field is an anonymous union,
-	 give each union-member the same position as the union has.  */
+	 give each union-member the same position as the union has.
+
+	 ??? This is a real kludge because it makes the structure
+	 of the types look strange.  This feature is only used by
+	 C++, which should have build_component_ref build two
+	 COMPONENT_REF operations, one for the union and one for
+	 the inner field.  We set the offset of this field to zero
+	 so that either the old or the correct method will work.
+	 Setting DECL_FIELD_CONTEXT is wrong unless the inner fields are
+	 moved into the type of this field, but nothing seems to break
+	 by doing this.  This kludge should be removed after 2.4.  */
 
       if (DECL_NAME (field) == 0
 	  && TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
@@ -446,6 +456,8 @@ layout_record (rec)
 	      DECL_FIELD_CONTEXT (uelt) = DECL_FIELD_CONTEXT (field);
 	      DECL_FIELD_BITPOS (uelt) = DECL_FIELD_BITPOS (field);
 	    }
+
+	  DECL_FIELD_BITPOS (field) = integer_zero_node;
 	}
 
       /* Now add size of this field to the size of the record.  */
