@@ -2552,14 +2552,7 @@ linenum:
       body_time = this_time;
     }
 
-  if (! ggc_p && !TREE_PERMANENT (yylval.ttype))
-    {
-      input_filename
-	= (char *) permalloc (TREE_STRING_LENGTH (yylval.ttype) + 1);
-      strcpy (input_filename, TREE_STRING_POINTER (yylval.ttype));
-    }
-  else
-    input_filename = TREE_STRING_POINTER (yylval.ttype);
+  input_filename = TREE_STRING_POINTER (yylval.ttype);
 
   GNU_xref_file (input_filename);
       

@@ -269,19 +269,7 @@ yylex ()
 
   /* if we've got tokens, send them */
   else if (num_tokens ())
-    {
-      tmp_token= *nth_token (0);
-
-      /* TMP_TOKEN.YYLVAL.TTYPE may have been allocated on the wrong obstack.
-	 If we don't find it in CURRENT_OBSTACK's current or immediately
-	 previous chunk, assume it was and copy it to the current obstack.  */
-      if ((tmp_token.yychar == CONSTANT
-	   || tmp_token.yychar == STRING)
-	  && ! TREE_PERMANENT (tmp_token.yylval.ttype)
-	  && ! probe_obstack (current_obstack, tmp_token.yylval.ttype, 2)
-	  && ! probe_obstack (saveable_obstack, tmp_token.yylval.ttype, 2))
-	tmp_token.yylval.ttype = copy_node (tmp_token.yylval.ttype);
-    }
+    tmp_token= *nth_token (0);
   else
     {
       /* if not, grab the next one and think about it */

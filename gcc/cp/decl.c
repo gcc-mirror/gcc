@@ -969,12 +969,6 @@ add_decl_to_level (decl, b)
      tree decl;
      struct binding_level *b;
 {
-  /* Only things that will live forever should go in the global
-     binding level.  */
-  my_friendly_assert (!(b == global_binding_level 
-			&& !TREE_PERMANENT (decl)),
-		      19990817);
-
   /* We build up the list in reverse order, and reverse it later if
      necessary.  */
   TREE_CHAIN (decl) = b->names;
@@ -6039,7 +6033,6 @@ init_decl_processing ()
 
   build_common_tree_nodes (flag_signed_char);
 
-  TREE_PERMANENT (error_mark_node) = 1;
   error_mark_list = build_tree_list (error_mark_node, error_mark_node);
   TREE_TYPE (error_mark_list) = error_mark_node;
 
@@ -6693,26 +6686,6 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 
   if (type == error_mark_node)
     return NULL_TREE;
-
-  /* Don't lose if destructors must be executed at file-level.  */
-  if (! processing_template_decl && TREE_STATIC (decl)
-      && TYPE_NEEDS_DESTRUCTOR (complete_type (type))
-      && !TREE_PERMANENT (decl))
-    {
-      push_obstacks (&permanent_obstack, &permanent_obstack);
-      decl = copy_node (decl);
-      if (TREE_CODE (type) == ARRAY_TYPE)
-	{
-	  tree itype = TYPE_DOMAIN (type);
-	  if (itype && ! TREE_PERMANENT (itype))
-	    {
-	      itype = build_index_type (TYPE_MAX_VALUE (itype));
-	      type = build_cplus_array_type (TREE_TYPE (type), itype);
-	      TREE_TYPE (decl) = type;
-	    }
-	}
-      pop_obstacks ();
-    }
 
   context
     = (TREE_CODE (decl) == FUNCTION_DECL && DECL_VIRTUAL_P (decl))
@@ -9959,19 +9932,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		    TREE_OVERFLOW (itype) = 0;
 		  }
 
-		/* If we're a parm, we need to have a permanent type so
-                   mangling checks for re-use will work right.  If both the
-                   element and index types are permanent, the array type
-                   will be, too.  */
-		if (decl_context == PARM
-		    && allocation_temporary_p () && TREE_PERMANENT (type))
-		  {
-		    push_obstacks (&permanent_obstack, &permanent_obstack);
-		    itype = build_index_type (itype);
-		    pop_obstacks ();
-		  }
-		else
-		  itype = build_index_type (itype);
+		itype = build_index_type (itype);
 
 	      dont_grok_size:
 		resume_momentary (yes);
@@ -11486,14 +11447,7 @@ grokparms (first_parm, funcdef_flag)
 		  TREE_CHAIN (last_decl) = decl;
 		  last_decl = decl;
 		}
-	      if (! current_function_decl && TREE_PERMANENT (list_node))
-		{
-		  TREE_PURPOSE (list_node) = init;
-		  TREE_VALUE (list_node) = type;
-		  TREE_CHAIN (list_node) = NULL_TREE;
-		}
-	      else
-		list_node = tree_cons (init, type, NULL_TREE);
+	      list_node = tree_cons (init, type, NULL_TREE);
 	      if (result == NULL_TREE)
 		{
 		  result = list_node;
