@@ -646,7 +646,7 @@ magnitude truncated and its sign preserved, converted
 to type @code{INTEGER(KIND=6)}.
 
 If @var{@1@} is type @code{COMPLEX}, its real part
-is truncated and converted, and its imaginary part is disgregarded.
+is truncated and converted, and its imaginary part is disregarded.
 
 @xref{Int Intrinsic}.
 
@@ -661,7 +661,7 @@ magnitude truncated and its sign preserved, converted
 to type @code{INTEGER(KIND=6)}.
 
 If @var{@1@} is type @code{COMPLEX}, its real part
-is truncated and converted, and its imaginary part is disgregarded.
+is truncated and converted, and its imaginary part is disregarded.
 
 @xref{Int Intrinsic}.
 
@@ -676,7 +676,7 @@ magnitude truncated and its sign preserved, converted
 to type @code{INTEGER(KIND=2)}.
 
 If @var{@1@} is type @code{COMPLEX}, its real part
-is truncated and converted, and its imaginary part is disgregarded.
+is truncated and converted, and its imaginary part is disregarded.
 
 @xref{Int Intrinsic}.
 
