@@ -664,20 +664,24 @@ objc-runtime: libobjc.a
 # Build the Objective C runtime library.  Build the Objc compiler first!
 libobjc.a: cc1obj libgcc2.ready
 	thisdir1=`pwd`; \
-	cd $(srcdir); srcdir1=`pwd`; \
+	srcdir1=`cd $(srcdir); pwd`; \
 	cd objc; \
-	$(MAKE) $(MAKEFLAGS) -f $(srcdir)/objc/Makefile libobjc.a \
-	  srcdir=$$srcdir1 tooldir=$(tooldir) AR=$(AR) AR_FLAGS=$(AR_FLAGS) \
-	  GCC_FOR_TARGET=$$thisdir1/$(GCC_FOR_TARGET) \
+	$(MAKE) $(MAKEFLAGS) -f $$srcdir1/objc/Makefile libobjc.a \
+	  srcdir=$$srcdir1 tooldir=$(tooldir) AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
+	  GCC_FOR_TARGET="$$thisdir1/xgcc -B$$thisdir1/" \
 	  GCC_CFLAGS="$(GCC_CFLAGS)"
 	ln objc/libobjc.a .
 	-if $(RANLIB_TEST) ; then $(RANLIB) libobjc.a; else true; fi
 
 # This is used by objc/Makefile if the user runs that directly.
 sublibobjc.a: cc1obj libgcc2.ready
-	cd objc; make $(MAKEFLAGS) -f $(srcdir)/objc/Makefile libobjc.a \
-	  srcdir=$(srcdir) tooldir=$(tooldir) AR=$(AR) AR_FLAGS=$(AR_FLAGS) \
-	  GCC_FOR_TARGET=$(GCC_FOR_TARGET) GCC_CFLAGS=$(GCC_CFLAGS)
+	thisdir1=`pwd`; \
+	srcdir1=`cd $(srcdir); pwd`; \
+	cd objc; \
+	$(MAKE) $(MAKEFLAGS) -f $$srcdir1/objc/Makefile libobjc.a \
+	  srcdir=$$srcdir1 tooldir=$(tooldir) AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
+	  GCC_FOR_TARGET="$$thisdir1/xgcc -B$$thisdir1/" \
+	  GCC_CFLAGS="$(GCC_CFLAGS)"
 
 # Compile two additional files that are linked with every program
 # linked using GCC on system V, for the sake of C++ constructors.
@@ -1256,7 +1260,8 @@ $(srcdir)/INSTALL: install1.texi install.texi
 mostlyclean:
 	-rm -f $(STAGESTUFF)
 # Clean the objc subdir.
-	cd objc; make $(MAKEFLAGS) -f $(srcdir)/objc/Makefile mostlyclean
+	srcdir1=`cd $(srcdir); pwd`; \
+	cd objc; $(MAKE) $(MAKEFLAGS) -f $$srcdir1/objc/Makefile mostlyclean
 # Delete the temporary source copies for cross compilation.
 	-rm -f $(HOST_PREFIX_1)rtl.c $(HOST_PREFIX_1)rtlanal.c
 	-rm -f $(HOST_PREFIX_1)alloca.c $(HOST_PREFIX_1)malloc.c
