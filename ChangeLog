@@ -1,3 +1,9 @@
+Mon Feb 22 23:25:59 1999  Jeffrey A Law  (law@cygnus.com)
+
+	Wed Feb 17 01:38:59 1999  H.J. Lu  (hjl@gnu.org)
+	* Makefile.in (REALLY_SET_LIB_PATH): Append $$$(RPATH_ENVVAR)
+	only if it is not empty.
+
 Sat Feb 13 12:03:28 1999  Jeffrey A Law  (law@cygnus.com)
 
 	Sat Jan 30 06:09:00 1999  Robert Lipe  (robertlipe@usa.net)
