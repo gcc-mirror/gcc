@@ -1,6 +1,6 @@
 // SGI's rope class -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -152,7 +152,7 @@ class sequence_buffer : public iterator<std::output_iterator_tag,void,void,void,
         sequence_buffer(const sequence_buffer& __x) {
             _M_prefix = __x._M_prefix;
             _M_buf_count = __x._M_buf_count;
-            copy(__x._M_buffer, __x._M_buffer + __x._M_buf_count, _M_buffer);
+            std::copy(__x._M_buffer, __x._M_buffer + __x._M_buf_count, _M_buffer);
         }
         sequence_buffer(sequence_buffer& __x) {
             __x.flush();
@@ -169,7 +169,7 @@ class sequence_buffer : public iterator<std::output_iterator_tag,void,void,void,
         sequence_buffer& operator= (const sequence_buffer& __x) {
             _M_prefix = __x._M_prefix;
             _M_buf_count = __x._M_buf_count;
-            copy(__x._M_buffer, __x._M_buffer + __x._M_buf_count, _M_buffer);
+            std::copy(__x._M_buffer, __x._M_buffer + __x._M_buf_count, _M_buffer);
             return *this;
         }
         void push_back(value_type __x)
