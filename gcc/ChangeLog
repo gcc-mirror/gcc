@@ -1,3 +1,8 @@
+2004-09-07  Caroline Tice  <ctice@apple.com>
+
+	* cfgrtl.c (rtl_verify_flow_info_1):  Add new edge flag,
+	EDGE_CROSSING, to flags test case.
+	
 2004-09-07  Jan Hubicka  <jh@suse.cz>
 
 	* tree-ssa-loop-ivopts.c (contains_abnormal_ssa_name_p): Deal with '<'

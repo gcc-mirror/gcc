@@ -1995,7 +1995,8 @@ rtl_verify_flow_info_1 (void)
 	  if ((e->flags & ~(EDGE_DFS_BACK
 			    | EDGE_CAN_FALLTHRU
 			    | EDGE_IRREDUCIBLE_LOOP
-			    | EDGE_LOOP_EXIT)) == 0)
+			    | EDGE_LOOP_EXIT
+			    | EDGE_CROSSING)) == 0)
 	    n_branch++;
 
 	  if (e->flags & EDGE_ABNORMAL_CALL)
