@@ -194,7 +194,7 @@ EOF
     ${SOURCE_DIRECTORY}/gcc/doc/install.texi2html
 
     # Regenerate the NEWS file.
-    contrib/gennews > gcc/NEWS || \
+    contrib/gennews > NEWS || \
       error "Could not regenerate NEWS files"
 
     # Now, we must build the compiler in order to create any generated
