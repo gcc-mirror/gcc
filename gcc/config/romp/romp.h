@@ -70,23 +70,17 @@ extern int target_flags;
 
 #define TARGET_DEFAULT 3
 
-/* Define this to change the optimizations peformed by default.  */
+/* Define this to change the optimizations peformed by default.
 
-#define OPTIMIZATION_OPTIONS(LEVEL) 
+   This used to depend on the value of write_symbols,
+   but that is contrary to the general plan for GCC options.  */
 
-/* Define this to modify the options specified by the user.
-
-   On the ROMP, we turn on various flags if optimization is selected.
-   More get turned on if debugging is off.  */
-
-#define OVERRIDE_OPTIONS		\
+#define OPTIMIZATION_OPTIONS(LEVEL)	\
 {					\
-  if (optimize)				\
+  if ((LEVEL) > 0)			\
     {					\
       flag_force_addr = 1;		\
       flag_force_mem = 1;		\
-      if (write_symbols == NO_DEBUG)	\
-	flag_omit_frame_pointer = 1;	\
     }					\
 }
 
@@ -986,14 +980,14 @@ struct rt_cargs {int gregs, fregs; };
   ((LEGITIMATE_ADDRESS_CONSTANT_P (X)		\
     || GET_CODE (X) == CONST_INT		\
     || GET_CODE (X) == CONST_DOUBLE)		\
-   && ! (GET_CODE (X) == SYMBOL_REF && (X)->integrated))
+   && ! (GET_CODE (X) == SYMBOL_REF && SYMBOL_REF_FLAG (X)))
 
 /* For no good reason, we do the same as the other RT compilers and load
    the addresses of data areas for a function from our data area.  That means
    that we need to mark such SYMBOL_REFs.  We do so here.  */
-#define ENCODE_SEGMENT_INFO(DECL)			\
+#define ENCODE_SECTION_INFO(DECL)			\
   if (TREE_CODE (TREE_TYPE (DECL)) == FUNCTION_TYPE)	\
-    XEXP (DECL_RTL (DECL), 0)->integrated = 1;
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
