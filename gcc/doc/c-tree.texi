@@ -788,7 +788,7 @@ This predicate holds whenever its argument represents a class-type with
 default constructor.
 
 @item CLASSTYPE_HAS_MUTABLE
-@item TYPE_HAS_MUTABLE_P
+@itemx TYPE_HAS_MUTABLE_P
 These predicates hold for a class-type having a mutable data member.
 
 @item CLASSTYPE_NON_POD_P
@@ -1991,7 +1991,7 @@ real part and the second operand is the imaginary part.
 These nodes represent the conjugate of their operand.
 
 @item REALPART_EXPR
-@item IMAGPART_EXPR
+@itemx IMAGPART_EXPR
 These nodes represent respectively the real and the imaginary parts
 of complex numbers (their sole argument).
 
