@@ -1,3 +1,8 @@
+2005-01-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* testsuite/libjava.lang/Process_4.java (Process_4): Expect only
+	a non-zero exit status from 'false'.
+
 2005-01-01  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* include/boehm-gc.h: Include gc_ext_config.h, not gc_config.h.
