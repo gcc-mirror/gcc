@@ -1,3 +1,17 @@
+2003-04-23  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/ext/howto.html ('LWG Issues'):  Add issue 60, partial
+	implementation only.
+	* include/bits/istream.tcc (putback, unget, sync, tellg, seekg):
+	Comment and change to comply with DR 60 and the effect on gcount().
+	* include/std/std_istream.h:  Update comments.
+	* testsuite/27_io/basic_istream/putback/char/1.cc (test01):  Add
+	comments about reasons for tests.  Test sync() against gcount().
+	* testsuite/27_io/basic_istream/seekg/char/2.cc:  New file, test
+	for effect on gcount().
+	* testsuite/27_io/basic_istream/tellg/char/2.cc:  New file, test
+	for effect on gcount().
+
 2003-04-22  Loren J. Rittle  <ljrittle@acm.org>
 
 	* testsuite/27_io/basic_filebuf/close/char/9964.cc (test_07):
