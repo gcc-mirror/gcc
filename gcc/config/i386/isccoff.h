@@ -4,7 +4,7 @@
 
 /* Mostly it's like AT&T Unix System V. */
 
-#include "i386/svr3.h"
+#include "i386/sysv3.h"
 
 /* But with a few changes.  */
 #include "i386/isc.h"
