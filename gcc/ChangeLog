@@ -1,5 +1,17 @@
 Sat Feb 28 08:13:43 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* i860/fx2800.h (DATA_ALIGNMENT): Use POINTER_TYPE_P.
+	* m68k/a-ux.h (FUNCTION_VALUE): Likewise.
+	* expr.c (get_pointer_alignment, compare, do_store_flag): Likewise.
+ 	(expand_builtin): Likewise.
+	* fold-const.c (force_fit_type, fold_convert, fold): Likewise.
+	* function.c (assign_parms): Likewise.
+	* integrate.c (expand_inline_function): Likewise.
+	* sdbout.c (sdbout_field_types): Likewise.
+	* tree.c (integer_pow2p, tree_log2, valid_machine_attribute): Likewise.
+	* stmt.c (expand_decl): Likewise.
+	({,bc_}expand_decl_init): Also test for REFERENCE_TYPE.
+
 	* configure.in (version_dep): New variable; if srcdir is CVS working
 	directory, set to ChangeLog.
 	(version): Supply default if no version.c.
