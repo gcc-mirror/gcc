@@ -1,3 +1,21 @@
+Sun Jun 28 20:58:51 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* choose-temp.c (choose_temp_base): Restore original variant of
+	this function for compatibility.
+	(make_temp_file): This is the new, preferred interface to create
+	temporary files.
+	* collect2.c (choose_temp_base): Delete declaration.
+	(make_temp_file): Declare.
+	(temp_filename_length, temp_filename): Delete.
+	(main): Use make_temp_file to get temporary files.  Use --lang-c
+	to force the resulting ctort/dtor file to be compiled with the C
+	compiler.  Make sure to remove temporary files on all exit paths.
+	* gcc.c (make_temp_file): Provide prototype if MKTEMP_EACH_FILE is
+	defined.
+	(choose_temp_base): Only provide prototype if MKTEMP_EACH_FILE is
+	not defined.
+	(do_spec): Use make_temp_file if MKTEMP_EACH_FILE is defined.
+
 Sun Jun 28 08:57:09 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (GCC_NEED_DECLARATIONS): Add strerror, getcwd and
