@@ -1,3 +1,14 @@
+2004-12-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-common.c (verify_tree): Don't check code length if we know
+	we are handling tcc_unary.
+	* print_tree.c (print_node): Remove code to handle RTL
+	appearing as a part of a tree node.
+	* tree-gimple.c (recalculate_side_effects): Rename fro as len.
+	* tree.c (build1_stat): Don't check TREE_CODE_LENGTH.
+	(PROCESS_ARG): Don't refer to fro.
+	(build2_stat, build3_stat, build4_stat): Don't compute fro.
+
 2004-12-07  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/18293

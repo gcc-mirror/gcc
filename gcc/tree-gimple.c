@@ -443,7 +443,7 @@ void
 recalculate_side_effects (tree t)
 {
   enum tree_code code = TREE_CODE (t);
-  int fro = TREE_CODE_LENGTH (code);
+  int len = TREE_CODE_LENGTH (code);
   int i;
 
   switch (TREE_CODE_CLASS (code))
@@ -472,7 +472,7 @@ recalculate_side_effects (tree t)
     case tcc_binary:      /* a binary arithmetic expression */
     case tcc_reference:   /* a reference */
       TREE_SIDE_EFFECTS (t) = TREE_THIS_VOLATILE (t);
-      for (i = 0; i < fro; ++i)
+      for (i = 0; i < len; ++i)
 	{
 	  tree op = TREE_OPERAND (t, i);
 	  if (op && TREE_SIDE_EFFECTS (op))

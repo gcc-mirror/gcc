@@ -2495,7 +2495,7 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
   TREE_COMPLEXITY (t) = 0;
   TREE_OPERAND (t, 0) = node;
   TREE_BLOCK (t) = NULL_TREE;
-  if (node && !TYPE_P (node) && TREE_CODE_LENGTH (code) != 0)
+  if (node && !TYPE_P (node))
     {
       TREE_SIDE_EFFECTS (t) = TREE_SIDE_EFFECTS (node);
       TREE_READONLY (t) = TREE_READONLY (node);
@@ -2551,7 +2551,7 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
 #define PROCESS_ARG(N)			\
   do {					\
     TREE_OPERAND (t, N) = arg##N;	\
-    if (arg##N &&!TYPE_P (arg##N) && fro > N) \
+    if (arg##N &&!TYPE_P (arg##N))	\
       {					\
         if (TREE_SIDE_EFFECTS (arg##N))	\
 	  side_effects = 1;		\
@@ -2569,7 +2569,6 @@ build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
 {
   bool constant, read_only, side_effects, invariant;
   tree t;
-  int fro;
 
   gcc_assert (TREE_CODE_LENGTH (code) == 2);
 
@@ -2580,7 +2579,6 @@ build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
      result based on those same flags for the arguments.  But if the
      arguments aren't really even `tree' expressions, we shouldn't be trying
      to do this.  */
-  fro = TREE_CODE_LENGTH (code);
 
   /* Expressions without side effects may be constant if their
      arguments are as well.  */
@@ -2610,14 +2608,11 @@ build3_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
 {
   bool constant, read_only, side_effects, invariant;
   tree t;
-  int fro;
 
   gcc_assert (TREE_CODE_LENGTH (code) == 3);
 
   t = make_node_stat (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
-
-  fro = TREE_CODE_LENGTH (code);
 
   side_effects = TREE_SIDE_EFFECTS (t);
 
@@ -2659,14 +2654,11 @@ build4_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
 {
   bool constant, read_only, side_effects, invariant;
   tree t;
-  int fro;
 
   gcc_assert (TREE_CODE_LENGTH (code) == 4);
 
   t = make_node_stat (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
-
-  fro = TREE_CODE_LENGTH (code);
 
   side_effects = TREE_SIDE_EFFECTS (t);
 
