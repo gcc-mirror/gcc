@@ -1,3 +1,15 @@
+2002-03-26  Andrew Cagney  <ac131313@redhat.com>
+
+	* doc/invoke.texi (Option Summary): Mention -Wswitch-enum.
+	(Warning Options): Document -Wswitch-enum.
+	* toplev.c (W_options): Add -Wswitch-enum.  Update comment on
+	-Wswitch.
+	(warn_switch_enum): Define variables.
+	* flags.h (warn_switch_enum): Declare variables.
+	* stmt.c (expand_end_case_type): When warn_switch_enum /
+	-Wswitch-enum, perform switch checks.
+	Fix PR c/5044.
+	
 2002-03-26  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (reload_mulsi3, reload_mulsi_compare0, reload_muladdsi)

@@ -228,8 +228,8 @@ in the following sections.
 -Wno-import  -Wpacked  -Wpadded @gol
 -Wparentheses  -Wpointer-arith  -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
--Wsign-compare  -Wswitch  -Wswitch-default  -Wsystem-headers @gol
--Wtrigraphs  -Wundef  -Wuninitialized @gol
+-Wsign-compare  -Wswitch  -Wswitch-default -Wswitch-enum @gol
+-Wsystem-headers -Wtrigraphs  -Wundef  -Wuninitialized @gol
 -Wunknown-pragmas  -Wunreachable-code @gol
 -Wunused  -Wunused-function  -Wunused-label  -Wunused-parameter @gol
 -Wunused-value  -Wunused-variable  -Wwrite-strings}
@@ -2038,6 +2038,13 @@ provoke warnings when this option is used.
 @opindex Wswitch-switch
 Warn whenever a @code{switch} statement does not have a @code{default}
 case.
+
+@item -Wswitch-enum
+@opindex Wswitch-enum
+Warn whenever a @code{switch} statement has an index of enumeral type
+and lacks a @code{case} for one or more of the named codes of that
+enumeration.  @code{case} labels outside the enumeration range also
+provoke warnings when this option is used.
 
 @item -Wtrigraphs
 @opindex Wtrigraphs

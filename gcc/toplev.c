@@ -1401,6 +1401,11 @@ int warn_switch;
 
 int warn_switch_default;
 
+/* Warn if a switch on an enum fails to have a case for every enum
+   value (regardless of the presence or otherwise of a default case).  */
+
+int warn_switch_enum;
+
 /* Nonzero means warn about function definitions that default the return type
    or that use a null return and have a return-type other than void.  */
 
@@ -1473,6 +1478,8 @@ static const lang_independent_options W_options[] =
    N_("Warn about enumerated switches, with no default, missing a case") },
   {"switch-default", &warn_switch_default, 1,
    N_("Warn about enumerated switches missing a default case") },
+  {"switch-enum", &warn_switch_enum, 1,
+   N_("Warn about all enumerated switches missing a specific case") },
   {"aggregate-return", &warn_aggregate_return, 1,
    N_("Warn about returning structures, unions or arrays") },
   {"cast-align", &warn_cast_align, 1,
