@@ -1,3 +1,16 @@
+2001-08-12  David Edelsohn  <edelsohn@gnu.org>
+
+	Revert:
+	2001-08-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+	* jvspec.c (jvgenmain_spec): Cannot use %umain, breaks
+	ASM_FINAL_SPEC.
+	(lang_specific_pre_link): Use set_input to set input_filename.
+	Append `main' here.
+	* jvgenmain.c (usage): Append literal `main' to CLASSNAME.
+	(main): Fix definition.
+	Strip `main' from classname.
+	Fixes PR java/227.
+
 2001-08-11  Zack Weinberg  <zackw@panix.com>
 
 	* lex.h: Don't include setjmp.h.  Don't define

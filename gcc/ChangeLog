@@ -1,3 +1,17 @@
+2001-08-12  David Edelsohn  <edelsohn@gnu.org>
+
+	Revert:
+	2001-08-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+	* gcc.c (set_collect_gcc_options): New function, split out from
+	main.
+	Ignore elided switches.
+	(do_spec_1): Invoke before executing command.
+	(set_input): Export.
+	Move declaration ...
+	* gcc.h (set_input): ... here.
+	* config/alpha/osf.h (ASM_FINAL_SPEC): Use %U.s to refer to input
+	file.
+
 2001-08-12  Richard Henderson  <rth@redhat.com>
 
 	* config/rs6000/rs6000.c (rs6000_elf_section_type_flags): Fix
