@@ -9,7 +9,7 @@
 	* i386.c (construct_container): Do not produce BLKmode registers.
 	(classify_argument): Properly compute alignment of complex types.
 
-2004-04-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
+2004-05-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/11841
 	* loop.h (REGNO_LAST_NOTE_LUID): New macro.
@@ -112,21 +112,21 @@
 2004-04-24  Richard Henderson  <rth@redhat.com>
 
 	PR bootstrap/14671
-        * alias.c (alias_invariant, alias_invariant_size): Mark GTY.
-        (reg_known_value, reg_known_value_size): Likewise; make static.
-        (reg_known_equiv_p): Make static.
-        (clear_reg_alias_info): Update for new indexing.
-        (get_reg_known_value, set_reg_known_value): New.
-        (get_reg_known_equiv_p, set_reg_known_equiv_p): New.
-        (canon_rtx): Use them. 
-        (init_alias_analysis): Likewise.  Allocate reg_known_value with gc.
-        Don't play queer offsetting games with reg_known_value and
-        reg_known_equiv_p.
-        (end_alias_analysis): Don't free reg_known_value.
-        * rtl.h (get_reg_known_value, get_reg_known_equiv_p): Declare.
-        * sched-deps.c (reg_known_equiv_p, reg_known_value): Remove.
-        (deps_may_trap_p, sched_analyze_1, sched_analyze_2): Use the new
-        functions instead.
+	* alias.c (alias_invariant, alias_invariant_size): Mark GTY.
+	(reg_known_value, reg_known_value_size): Likewise; make static.
+	(reg_known_equiv_p): Make static.
+	(clear_reg_alias_info): Update for new indexing.
+	(get_reg_known_value, set_reg_known_value): New.
+	(get_reg_known_equiv_p, set_reg_known_equiv_p): New.
+	(canon_rtx): Use them. 
+	(init_alias_analysis): Likewise.  Allocate reg_known_value with gc.
+	Don't play queer offsetting games with reg_known_value and
+	reg_known_equiv_p.
+	(end_alias_analysis): Don't free reg_known_value.
+	* rtl.h (get_reg_known_value, get_reg_known_equiv_p): Declare.
+	* sched-deps.c (reg_known_equiv_p, reg_known_value): Remove.
+	(deps_may_trap_p, sched_analyze_1, sched_analyze_2): Use the new
+	functions instead.
 
 2004-04-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
