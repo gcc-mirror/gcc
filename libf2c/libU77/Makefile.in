@@ -80,10 +80,10 @@ SRCS =  Version.c gerror_.c perror_.c ierrno_.c itime_.c time_.c \
 	umask_.c sys_clock_.c date_.c second_.c flush1_.c mclock_.c \
 	alarm_.c datetime_.c
 
-all: ../stamp-libu77
+all: ../s-libu77
 
-../stamp-libu77: $(OBJS)
-	echo timestamp > ../stamp-libu77
+../s-libu77: $(OBJS)
+	echo timestamp > ../s-libu77
 
 archive:
 	$(AR) $(ARFLAGS) $(LIBG2C) $(OBJS)
@@ -184,7 +184,7 @@ clean: mostlyclean
 
 distclean: clean
 	rm -f config.cache config.status Makefile config.h stamp.h \
-	  ../stamp-libu77 configure
+	  ../s-libu77 configure
 
 maintainer-clean:
 

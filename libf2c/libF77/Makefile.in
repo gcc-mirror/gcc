@@ -80,10 +80,10 @@ F90BIT = lbitbits.o lbitshft.o qbitbits.o qbitshft.o
 OBJS = $(MISC) $(POW) $(CX) $(DCX) $(REAL) $(DBL) $(INT) \
 	 $(HALF) $(CMP) $(EFL) $(CHAR) $(F90BIT)
 
-all: ../stamp-libf77
+all: ../s-libf77
 
-../stamp-libf77: $(OBJS)
-	echo timestamp > ../stamp-libf77
+../s-libf77: $(OBJS)
+	echo timestamp > ../s-libf77
 
 archive:
 	$(AR) $(ARFLAGS) $(LIBG2C) $(OBJS)
@@ -116,7 +116,7 @@ clean: mostlyclean
 	rm -f config.log
 
 distclean: clean
-	rm -f config.cache config.status Makefile ../stamp-libf77 configure
+	rm -f config.cache config.status Makefile ../s-libf77 configure
 
 maintainer-clean:
 

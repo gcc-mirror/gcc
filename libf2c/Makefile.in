@@ -82,7 +82,7 @@ all: i77 f77 u77 e77
 
 i77 f77 u77: g2c.h
 
-$(LIBG2C): stamp-libi77 stamp-libf77 stamp-libu77 stamp-libe77
+$(LIBG2C): s-libi77 s-libf77 s-libu77 s-libe77
 	rm -f $(LIBG2C)
 	set -e; \
 	for i in $(SUBDIRS); \
@@ -101,7 +101,7 @@ f77:
 u77:
 	cd libU77; $(MAKE) $(FLAGS_TO_PASS) all
 
-stamp-libe77: $(srcdir)/f2cext.c
+s-libe77: $(srcdir)/f2cext.c
 	if [ -d libE77 ]; then rm -f libE77/*.o; else mkdir libE77; fi
 	for name in $(F2CEXT); \
 	do \
@@ -111,7 +111,7 @@ stamp-libe77: $(srcdir)/f2cext.c
 	    -o libE77/L$${name}.o; \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	done
-	echo timestamp >stamp-libe77
+	echo timestamp >s-libe77
 
 ${srcdir}/configure: ${srcdir}/configure.in
 	rm -f config.cache
@@ -173,7 +173,7 @@ clean: mostlyclean
 	for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean); done
 
 distclean: clean
-	rm -f Makefile config.cache config.status g2c.h stamp-libe77
+	rm -f Makefile config.cache config.status g2c.h s-libe77
 	for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean); done
 
 maintainer-clean:
