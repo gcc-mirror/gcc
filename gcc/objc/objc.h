@@ -30,7 +30,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 extern "C" {
 #endif
 
-#include <stddef.h>
+#include "gstddef.h"
 
 /*
 ** Definition of the boolean type.  

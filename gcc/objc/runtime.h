@@ -31,7 +31,7 @@ You should have received a copy of the GNU General Public License along with
 #include <ctype.h>
 
 #include "stdarg.h"		/* for varargs and va_list's */
-#include "stddef.h"		/* so noone else will get system versions */
+#include "gstddef.h"		/* so noone else will get system versions */
 #include "assert.h"
 
 #include "objc/objc.h"		/* core data types */

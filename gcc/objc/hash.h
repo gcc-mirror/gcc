@@ -27,7 +27,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef __hash_INCLUDE_GNU
 #define __hash_INCLUDE_GNU
 
-#include <stddef.h>
+#include "gstddef.h"
 
 /*
  * This data structure is used to hold items
