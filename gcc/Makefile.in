@@ -1813,6 +1813,7 @@ GTFILES = $(GCONFIG_H) \
   $(srcdir)/tree.h $(srcdir)/libfuncs.h $(srcdir)/hashtable.h $(srcdir)/real.h \
   $(srcdir)/varray.h $(srcdir)/ssa.h $(srcdir)/insn-addr.h $(srcdir)/cselib.h \
   $(srcdir)/c-common.h $(srcdir)/c-tree.h \
+  $(srcdir)/basic-block.h \
   $(srcdir)/alias.c $(srcdir)/bitmap.c $(srcdir)/cselib.c \
   $(srcdir)/dependence.c $(srcdir)/dwarf2out.c $(srcdir)/emit-rtl.c \
   $(srcdir)/except.c $(srcdir)/explow.c $(srcdir)/expr.c \

@@ -267,7 +267,8 @@ extern regset regs_live_at_setjmp;
 
 /* Special labels found during CFG build.  */
 
-extern rtx label_value_list, tail_recursion_label_list;
+extern GTY(()) rtx label_value_list;
+extern GTY(()) rtx tail_recursion_label_list;
 
 extern struct obstack flow_obstack;
 
