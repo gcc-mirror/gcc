@@ -1,3 +1,9 @@
+1999-12-14  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* strstream.h (strstreambuf::streambuf): Rename parameters to
+	avoid shadow warning.
+	* stream.h (WS): Likewise.
+
 Sun Oct 24 23:54:10 PDT 1999 Jeff Law  (law@cygnus.com)
 
 	* gcc-2.95.2 Released.
