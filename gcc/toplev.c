@@ -2538,7 +2538,7 @@ compile_file (name)
 
 	if (write_symbols == DWARF2_DEBUG
 	    && (TREE_CODE (decl) != FUNCTION_DECL || !DECL_INITIAL (decl)))
-	  TIMEVAR (symout_time, dwarf2out_file_scope_decl (decl, 1));
+	  TIMEVAR (symout_time, dwarf2out_decl (decl));
 #endif
       }
   }
@@ -2782,9 +2782,8 @@ rest_of_type_compilation (type, toplev)
     TIMEVAR (symout_time, dwarfout_file_scope_decl (TYPE_STUB_DECL (type), 0));
 #endif
 #ifdef DWARF2_DEBUGGING_INFO
-  /* Don't write out function-scope types here.  */
-  if (write_symbols == DWARF2_DEBUG && toplev)
-    TIMEVAR (symout_time, dwarf2out_file_scope_decl (TYPE_STUB_DECL (type), 0));
+  if (write_symbols == DWARF2_DEBUG)
+    TIMEVAR (symout_time, dwarf2out_decl (TYPE_STUB_DECL (type)));
 #endif
 }
 
@@ -2900,7 +2899,7 @@ rest_of_compilation (decl)
 	      if (write_symbols == DWARF2_DEBUG)
 		{
 		  set_decl_abstract_flags (decl, 1);
-		  TIMEVAR (symout_time, dwarf2out_file_scope_decl (decl, 0));
+		  TIMEVAR (symout_time, dwarf2out_decl (decl));
 		  set_decl_abstract_flags (decl, 0);
 		}
 #endif
@@ -2934,7 +2933,7 @@ rest_of_compilation (decl)
 	  if (write_symbols == DWARF2_DEBUG)
 	    {
 	      set_decl_abstract_flags (decl, 1);
-	      TIMEVAR (symout_time, dwarf2out_file_scope_decl (decl, 0));
+	      TIMEVAR (symout_time, dwarf2out_decl (decl));
 	      set_decl_abstract_flags (decl, 0);
 	    }
 #endif
@@ -3431,7 +3430,7 @@ rest_of_compilation (decl)
 
 #ifdef DWARF2_DEBUGGING_INFO
   if (write_symbols == DWARF2_DEBUG)
-    TIMEVAR (symout_time, dwarf2out_file_scope_decl (decl, 0));
+    TIMEVAR (symout_time, dwarf2out_decl (decl));
 #endif
 
  exit_rest_of_compilation:
