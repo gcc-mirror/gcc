@@ -1,3 +1,8 @@
+2005-02-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19811
+	* g++.dg/init/delete1.C: New test.
+
 2005-02-09  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c++/18470
