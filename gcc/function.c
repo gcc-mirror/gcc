@@ -1621,8 +1621,8 @@ fixup_var_refs (rtx var, enum machine_mode promoted_mode, int unsignedp,
       push_to_full_sequence (stack->first, stack->last);
       fixup_var_refs_insns (stack->first, var, promoted_mode, unsignedp,
 			    stack->next != 0, may_share);
-      /* Update remembered end of sequence
-	 in case we added an insn at the end.  */
+      /* Update bounds of sequence in case we added insns.  */
+      stack->first = get_insns ();
       stack->last = get_last_insn ();
       end_sequence ();
     }
