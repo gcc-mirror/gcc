@@ -599,29 +599,6 @@ build_method_call (instance, name, parms, basetype_path, flags)
       return build_min_nt (METHOD_CALL_EXPR, name, instance, parms, NULL_TREE);
     }
 
-  /* This is the logic that magically deletes the second argument to
-     operator delete, if it is not needed.  */
-  if (name == ansi_opname[(int) DELETE_EXPR] && list_length (parms)==2)
-    {
-      tree save_last = TREE_CHAIN (parms);
-
-      /* get rid of unneeded argument */
-      TREE_CHAIN (parms) = NULL_TREE;
-      if (build_method_call (instance, name, parms, basetype_path,
-			     (LOOKUP_SPECULATIVELY|flags) & ~LOOKUP_COMPLAIN))
-	{
-	  /* If it finds a match, return it.  */
-	  return build_method_call (instance, name, parms, basetype_path, flags);
-	}
-      /* If it doesn't work, two argument delete must work */
-      TREE_CHAIN (parms) = save_last;
-    }
-  /* We already know whether it's needed or not for vec delete.  */
-  else if (name == ansi_opname[(int) VEC_DELETE_EXPR]
-	   && TYPE_LANG_SPECIFIC (TREE_TYPE (instance))
-	   && ! TYPE_VEC_DELETE_TAKES_SIZE (TREE_TYPE (instance)))
-    TREE_CHAIN (parms) = NULL_TREE;
-
   if (TREE_CODE (name) == BIT_NOT_EXPR)
     {
       if (parms)

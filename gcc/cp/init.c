@@ -2192,21 +2192,21 @@ build_new_1 (exp)
       signature_error (NULL_TREE, true_type);
       return error_mark_node;
     }
+  
+  /* When we allocate an array, and the corresponding deallocation
+     function takes a second argument of type size_t, and that's the
+     "usual deallocation function", we allocate some extra space at
+     the beginning of the array to store the size of the array.
 
-#if 1
-  /* Get a little extra space to store a couple of things before the new'ed
-     array, if this isn't the default placement new.  */
+     Well, that's what we should do.  For backwards compatibility, we
+     have to do this whenever there's a two-argument array-delete
+     operator. 
 
+     FIXME: For -fnew-abi, we don't have to maintain backwards
+     compatibility and we should fix this.  */
   use_cookie = (has_array && TYPE_VEC_NEW_USES_COOKIE (true_type)
 		&& ! (placement && ! TREE_CHAIN (placement)
 		      && TREE_TYPE (TREE_VALUE (placement)) == ptr_type_node));
-#else
-  /* Get a little extra space to store a couple of things before the new'ed
-     array, if this is either non-placement new or new (nothrow).  */
-  
-  use_cookie = (has_array && TYPE_VEC_NEW_USES_COOKIE (true_type)
-		&& (! placement || nothrow));
-#endif
 
   if (use_cookie)
     {

@@ -1,5 +1,9 @@
 1999-06-16  Mark Mitchell  <mark@codesourcery.com>
 
+	* call.c (build_method_call): Remove bogus code for two-argument
+	delete.
+	* init.c (build_new_1): Expand on comment, and remove dead code.
+
 	* init.c (expand_cleanup_for_base): New function, split out
 	from ...
 	(emit_base_init): Here.
