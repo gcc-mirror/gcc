@@ -4879,8 +4879,19 @@ cp_finish_decl (tree decl, tree init, tree asmspec_tree, int flags)
 	  || TREE_CODE (type) == METHOD_TYPE)
 	abstract_virtuals_error (decl,
 				 strip_array_types (TREE_TYPE (type)));
+      else if (POINTER_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
+      {
+	/* If it's either a pointer or an array type, strip through all
+	   of them but the last one. If the last is an array type, issue 
+	   an error if the element type is abstract.  */
+	while (POINTER_TYPE_P (TREE_TYPE (type)) 
+	       || TREE_CODE (TREE_TYPE (type)) == ARRAY_TYPE)
+	  type = TREE_TYPE (type);
+	if (TREE_CODE (type) == ARRAY_TYPE)
+	  abstract_virtuals_error (decl, TREE_TYPE (type));
+      }
       else
-	abstract_virtuals_error (decl, strip_array_types (type));
+	abstract_virtuals_error (decl, type);
 
       if (TREE_CODE (decl) == FUNCTION_DECL 
 	  || TREE_TYPE (decl) == error_mark_node)
