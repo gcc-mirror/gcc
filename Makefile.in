@@ -154,7 +154,7 @@ OTHERS =
 
 # This is set by the configure script to the list of directories which
 # should be built using the target tools.
-TARGET_CONFIGDIRS = libiberty libgloss newlib libio librx libstdc++ libg++ libf2c libchill winsup
+TARGET_CONFIGDIRS = libiberty libgloss newlib libio librx libstdc++ libg++ libf2c libchill libobjc winsup
 
 # Target libraries are put under this directory:
 # Changed by configure to $(target_alias) if cross.
@@ -678,6 +678,7 @@ ALL_TARGET_MODULES = \
 	all-target-newlib \
 	all-target-libf2c \
 	all-target-libchill \
+	all-target-libobjc \
 	all-target-winsup \
 	all-target-libgloss \
 	all-target-libiberty \
@@ -694,6 +695,7 @@ CONFIGURE_TARGET_MODULES = \
 	configure-target-newlib \
 	configure-target-libf2c \
 	configure-target-libchill \
+	configure-target-libobjc \
 	configure-target-winsup \
 	configure-target-libgloss \
 	configure-target-libiberty \
@@ -709,6 +711,7 @@ CHECK_TARGET_MODULES = \
 	check-target-newlib \
 	check-target-libf2c \
 	check-target-libchill \
+	check-target-libobjc \
 	check-target-winsup \
 	check-target-libiberty \
 	check-target-gperf
@@ -722,6 +725,7 @@ INSTALL_TARGET_MODULES = \
 	install-target-newlib \
 	install-target-libf2c \
 	install-target-libchill \
+	install-target-libobjc \
 	install-target-winsup \
 	install-target-libgloss \
 	install-target-libiberty \
@@ -795,6 +799,7 @@ CLEAN_TARGET_MODULES = \
 	clean-target-newlib \
 	clean-target-libf2c \
 	clean-target-libchill \
+	clean-target-libobjc \
 	clean-target-winsup \
 	clean-target-libgloss \
 	clean-target-libiberty \
@@ -1479,6 +1484,7 @@ configure-target-libstdc++: $(ALL_GCC)
 all-target-libstdc++: configure-target-libstdc++ all-gas all-ld all-gcc all-target-libiberty all-target-newlib all-target-libio
 all-target-libf2c: configure-target-libf2c all-gas all-ld all-gcc all-target-libiberty all-target-newlib
 all-target-libchill: configure-target-libchill all-gas all-ld all-gcc all-target-libiberty all-target-newlib
+all-target-libobjc: configure-target-libobjc all-gas all-ld all-gcc all-target-libiberty all-target-newlib
 all-m4: all-libiberty
 all-make: all-libiberty
 all-mmalloc:

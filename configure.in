@@ -55,7 +55,7 @@ host_tools="texinfo byacc flex bison binutils ld gas gcc sim gdb make patch prms
 # these libraries are built for the target environment, and are built after
 # the host libraries and the host tools (which may be a cross compiler)
 #
-target_libs="target-libiberty target-libgloss target-newlib target-libio target-librx target-libstdc++ target-libg++ target-libf2c target-libchill"
+target_libs="target-libiberty target-libgloss target-newlib target-libio target-librx target-libstdc++ target-libg++ target-libf2c target-libchill target-libobjc"
 
 
 # these tools are built using the target libs, and are intended to run only

@@ -1,3 +1,12 @@
+Wed Sep 30 03:00:05 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (TARGET_CONFIGDIRS): Add libobjc.
+	(ALL_TARGET_MODULES): Add all-target-libobjc.
+	(CONFIGURE_TARGET_MODULES, CHECK_TARGET_MODULES): Similarly.
+	(INSTALL_TARGET_MODULES, CLEAN_TARGET_MODULES): Similarly.
+	(all-target-libchill): Add dependencies.
+	* configure.in (target_libs): Add libchill.
+	
 1998-09-30  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure.in (target_subdir): Remove duplicate line.
