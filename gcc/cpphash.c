@@ -123,18 +123,21 @@ delete_macro (hp)
   if (hp == *hp->bucket_hdr)
     *hp->bucket_hdr = hp->next;
 
-#if 0
-  if (hp->type == T_MACRO) {
-    DEFINITION *d = hp->value.defn;
-    struct reflist *ap, *nextap;
+  if (hp->type == T_MACRO)
+    {
+      DEFINITION *d = hp->value.defn;
+      struct reflist *ap, *nextap;
 
-    for (ap = d->pattern; ap != NULL; ap = nextap) {
-      nextap = ap->next;
-      free (ap);
+      for (ap = d->pattern; ap != NULL; ap = nextap)
+	{
+	  nextap = ap->next;
+	  free (ap);
+	}
+      if (d->nargs >= 0)
+	free (d->args.argnames);
+      free (d);
     }
-    free (d);
-  }
-#endif
+
   free (hp);
 }
 /*
@@ -196,4 +199,16 @@ install (name, len, type, ivalue, value, hash)
     *p++ = *q++;
   hp->name[len] = 0;
   return hp;
+}
+
+void
+cpp_hash_cleanup (pfile)
+     cpp_reader *pfile;
+{
+  register int i;
+  for (i = HASHSIZE; --i >= 0; )
+    {
+      while (hashtab[i])
+	delete_macro (hashtab[i]);
+    }
 }
