@@ -3597,10 +3597,10 @@ default_exception_section ()
 {
   if (targetm.have_named_sections)
     {
-      int tt_format = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/1);
       int flags;
-
 #ifdef HAVE_LD_RO_RW_SECTION_MIXING
+      int tt_format = ASM_PREFERRED_EH_DATA_FORMAT (/*code=*/0, /*global=*/1);
+
       flags = (! flag_pic
 	       || ((tt_format & 0x70) != DW_EH_PE_absptr
 		   && (tt_format & 0x70) != DW_EH_PE_aligned))

@@ -1,3 +1,8 @@
+2002-11-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* except.c (default_exception_section): Move variable into the
+	scope where it is used.
+
 2002-11-27  Krister Walfridsson  <cato@df.lth.se>
 
 	* config.gcc (*-*-netbsd[2-9]*, *-*-netbsdelf[2-9]*): Test for
