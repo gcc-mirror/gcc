@@ -1,8 +1,8 @@
 2001-12-02  Tang Ching-Hui  <nicholas@cs.nthu.edu.tw>
 	    Alexandre Petit-Bianco  <apbianco@redhat.com>
 
-	* expr.c: call save_expr on array for correct evaluation order, 
-	modified comment, fixed indentation.
+	* expr.c (build_java_arrayaccess): Call save_expr on array for 
+	correct evaluation order, modified comment, fixed indentation.
 	* parse.y: (patch_assignment): Correctly extract the array base
 	from the tree generate by build_java_arrayaccess, added comments.
 	(patch_array_ref): Remove SAVE_EXPR on ARRAY_REF.
