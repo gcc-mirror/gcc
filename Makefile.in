@@ -1287,7 +1287,7 @@ $(CONFIGURE_TARGET_MODULES):
 	    RANLIB="$(RANLIB_FOR_TARGET)"; export RANLIB; \
 	    WINDRES="$(WINDRES_FOR_TARGET)"; export WINDRES; \
 	    echo Configuring in $(TARGET_SUBDIR)/$${dir}; \
-	    cd $(TARGET_SUBDIR)/$${dir}; \
+	    cd "$(TARGET_SUBDIR)/$${dir}" || exit 1; \
 	    case $(srcdir) in \
 	    /* | [A-Za-z]:[\\/]*) \
 	      topdir=$(srcdir) ;; \
@@ -1331,7 +1331,7 @@ $(CONFIGURE_TARGET_MODULES):
 	      CONFIG_SITE=no-such-file $(SHELL) $$s/configure \
 		$(CONFIG_ARGUMENTS) $${srcdiroption} \
 		--with-target-subdir="$(TARGET_SUBDIR)"; \
-	    fi; \
+	    fi || exit 1; \
 	    if [ -f skip-this-dir ] ; then \
 	      sh skip-this-dir; \
 	      rm -f skip-this-dir; \
