@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "toplev.h"
 #include "basic-block.h"
+#include "defaults.h"
 #include "ggc.h"
 
 #ifndef CHECK_STACK_LIMIT
@@ -1703,7 +1704,10 @@ ix86_asm_file_end (file)
   if (! TARGET_DEEP_BRANCH_PREDICTION || pic_label_name[0] == 0)
     return;
 
-#ifdef ASM_OUTPUT_SECTION_NAME
+  /* ??? Binutils 2.10 and earlier has a linkonce elimination bug related
+     to updating relocations to a section being discarded such that this
+     doesn't work.  Ought to detect this at configure time.  */
+#if 0 && defined (ASM_OUTPUT_SECTION_NAME)
   /* The trick here is to create a linkonce section containing the
      pic label thunk, but to refer to it with an internal label.
      Because the label is internal, we don't have inter-dso name
