@@ -2120,7 +2120,7 @@ count_possible_groups (group_size, group_mode, max_groups, class)
 	      max_groups[(int) *p++]--;
 
 	    /* Don't count these registers again.  */
-	    for (j = 0; j < group_size[j]; j++)
+	    for (j = 0; j < group_size[class]; j++)
 	      SET_HARD_REG_BIT (counted_for_groups, i + j);
 	  }
 
