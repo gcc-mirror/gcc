@@ -1,3 +1,8 @@
+2004-12-08  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/mips.c (mips_scalar_mode_supported_p): Rewrite
+	to avoid call to default function.
+
 2004-12-08  Zack Weinberg  <zack@codesourcery.com>
 
 	PR 17982
