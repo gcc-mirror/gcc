@@ -5573,7 +5573,7 @@ finish_struct (t, fieldlist, attributes)
       tree decl;
       for (decl = current_binding_level->names; decl; decl = TREE_CHAIN (decl))
 	{
-	  if (TREE_TYPE (decl) == t
+	  if (TYPE_MAIN_VARIANT (TREE_TYPE (decl)) == TYPE_MAIN_VARIANT (t)
 	      && TREE_CODE (decl) != TYPE_DECL)
 	    {
 	      layout_decl (decl, 0);
