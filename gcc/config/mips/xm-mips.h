@@ -1,5 +1,6 @@
 /* Configuration for GNU C-compiler for MIPS Rx000 family
-   Copyright (C) 1989, 1990, 1991, 1993, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1990, 1991, 1993, 1997, 2001
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -34,11 +35,6 @@ Boston, MA 02111-1307, USA.  */
 #define HOST_WORDS_BIG_ENDIAN
 #endif
 
-/* Enable host-conditionals for MIPS machines.  */
-#ifndef MIPS
-#define MIPS 1
-#endif
-
 /* A code distinguishing the floating point format of the host
    machine.  There are three defined values: IEEE_FLOAT_FORMAT,
    VAX_FLOAT_FORMAT, and UNKNOWN_FLOAT_FORMAT.  */
@@ -70,7 +66,5 @@ extern void * alloca ();
 extern char * alloca ();
 #endif
 
-/* for the emacs version of alloca */
-#define STACK_DIRECTION	-1
 #endif
 #endif /* not MIPS_OVERRIDE_ALLOCA */

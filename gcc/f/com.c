@@ -100,7 +100,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	HAVE_STDLIB_H
 	HAVE_SYS_TIME_H
 	HAVE_UNISTD_H
-	STDC_HEADERS
 	TIME_WITH_SYS_TIME
    In the mean time, we'll get by with approximations based
    on existing GCC configuration symbols.  */
@@ -111,9 +110,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 # endif
 # ifndef HAVE_UNISTD_H
 # define HAVE_UNISTD_H 1
-# endif
-# ifndef STDC_HEADERS
-# define STDC_HEADERS 1
 # endif
 #endif /* defined (POSIX) */
 

@@ -1,3 +1,7 @@
+2001-02-24  Zack Weinberg  <zackw@stanford.edu>
+
+	* com.c: Don't define STDC_HEADERS, autoconf handles it.
+
 Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* com.c (set_block): Set NAMES and BLOCKS from BLOCK.

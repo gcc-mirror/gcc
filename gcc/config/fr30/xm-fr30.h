@@ -1,5 +1,5 @@
 /* Definitions of FR30 target.
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
    Contributed by Cygnus Solutions.
 
 This file is part of GNU CC.
@@ -30,15 +30,6 @@ Boston, MA 02111-1307, USA.  */
 /* A C expression for the status code to be returned when the compiler exits
    without serious errors.  */
 #define SUCCESS_EXIT_CODE 0
-
-/* Defined if the host machine stores words of multi-word values in big-endian
-   order.  (GNU CC does not depend on the host byte ordering within a word.)  */
-/* #define HOST_WORDS_BIG_ENDIAN 1 */
-
-/* In addition, configuration files for system V define `bcopy', `bzero' and
-   `bcmp' as aliases.  Some files define `alloca' as a macro when compiled with
-   GNU CC, in order to take advantage of the benefit of GNU CC's built-in
-   `alloca'.  */
 
 /* target machine dependencies.
    tm.h is a symbolic link to the actual target specific file.   */

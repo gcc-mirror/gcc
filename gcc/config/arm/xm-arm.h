@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Acorn RISC Machine.
-   Copyright (C) 1991, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 2001 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
               and Martin Simmons (@harleqn.co.uk).
    More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
@@ -44,11 +44,6 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __GNUC__
 #define USE_C_ALLOCA
 #endif
-
-/* Define this to be 1 if you know the host compiler supports prototypes, even
-   if it doesn't define __STDC__, or define it to be 0 if you do not want any
-   prototypes when compiling GNU CC. */
-#define USE_PROTOTYPES 1
 
 /* target machine dependencies.
    tm.h is a symbolic link to the actual target specific file.  */

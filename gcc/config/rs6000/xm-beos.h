@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for BeOS host.
-   Copyright (C) 1997, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1999, 2001 Free Software Foundation, Inc.
    Contributed by Fred Fish (fnf@cygnus.com), based on xm-rs6000.h
    by Richard Kenner (kenner@vlsi1.ultra.nyu.edu).
 
@@ -73,8 +73,6 @@ extern void *alloca ();
 #ifndef HAVE_RENAME
 #define HAVE_RENAME
 #endif
-
-#define STDC_HEADERS 1
 
 /* STANDARD_INCLUDE_DIR is the equivalent of "/usr/include" on UNIX. */
 

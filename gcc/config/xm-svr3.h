@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for hosts running System V Release 3
-   Copyright (C) 1991, 1993, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1996, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -19,7 +19,3 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #define USG
-
-#ifndef SVR3
-#define SVR3
-#endif

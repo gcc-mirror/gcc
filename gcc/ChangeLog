@@ -1,3 +1,36 @@
+2001-02-24  Zack Weinberg  <zackw@stanford.edu>
+
+	* xm-interix.h, xm-lynx.h, alpha/xm-vms.h, convex/xm-convex.h,
+	i370/xm-i370.h, i370/xm-linux.h, i370/xm-mvs.h, i370/xm-oe.h,
+	i386/xm-beos.h, i386/xm-dos.h, i386/xm-mingw32.h,
+	i860/xm-i860.h, m68k/xm-3b1.h, m68k/xm-amix.h, m68k/xm-aux.h,
+	m68k/xm-crds.h, m68k/xm-mot3300.h, m88k/xm-sysv3.h,
+	mips/xm-mips.h, rs6000/xm-beos.h, vax/xm-vms.h:
+	Don't define any of:
+	USE_PROTOTYPES, vfork, mktemp, SVR3, NO_SYS_PARAMS_H,
+	P_tmpdir, MVS, NO_DBX_FORMAT, USE_STDARGS, STDC_HEADERS,
+	NO_PRECOMPILES, i860, __PTR_TO_INT, __INT_TO_PTR, rindex,
+	index, FULL_PROTOTYPES, AUX, R_OK, W_OK, X_OK, F_OK,
+	STACK_DIRECTION, MIPS, MAX_READ_LEN, MAX_WRITE_LEN.
+
+	* alpha/xm-alpha.h, clipper/xm-clix.h, d30v/xm-d30v.h,
+	fr30/xm-fr30.h, i370/xm-linux.h: Remove commented-out macro
+	definitions.
+
+	* m68k/xm-3b1.h, m68k/xm-crds.h, m88k/xm-sysv3.h:
+	Delete now-empty file.
+
+	* alpha/vms.h: Define NEED_ATEXIT here...
+	* alpha/xm-vms.h: ...not here.
+
+	* i386/cygwin.h: Don't define PARAMS.
+	* mips/mips.c: Don't prototype mktemp.  Don't define
+	P_tmpdir.  Use make_temp_file to create temporary files.
+	Don't be clever and delete temporary files early.
+	* config.gcc: Drop references to deleted files.  Don't define
+	FULL_PROTOTYPES.
+	* gcc.texi: Don't mention USE_PROTOTYPES.
+
 Sat Feb 24 20:25:29 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/i386/i386.c (ix86_set_move_mem_attrs): New function.

@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Convex.
-   Copyright (C) 1989, 1993, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1997, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -36,11 +36,6 @@ Boston, MA 02111-1307, USA.  */
 /* Arguments to use with `exit'.  */
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33
-
-/* Convex ships /tmp as a separate file system - thus it
-   usually has more free space than /usr/tmp */
-
-#define P_tmpdir	"/tmp/"
 
 /* Convex uses Vax or IEEE floats.
    Both formats have Vax semantics. */

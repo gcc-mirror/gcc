@@ -4194,15 +4194,6 @@ characters.
 @item POSIX
 Define this if your system is POSIX.1 compliant.
 
-@findex USE_PROTOTYPES
-@item USE_PROTOTYPES
-Define this to be 1 if you know that the host compiler supports
-prototypes, even if it doesn't define __STDC__, or define
-it to be 0 if you do not want any prototypes used in compiling
-GCC.  If @samp{USE_PROTOTYPES} is not defined, it will be
-determined automatically whether your compiler supports
-prototypes by checking if @samp{__STDC__} is defined.
-
 @findex PATH_SEPARATOR
 @item PATH_SEPARATOR
 Define this macro to be a C character constant representing the

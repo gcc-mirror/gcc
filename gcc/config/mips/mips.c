@@ -64,7 +64,6 @@ Boston, MA 02111-1307, USA.  */
 #define STAB_CODE_TYPE int
 #endif
 
-extern char  *mktemp PARAMS ((char *));
 extern tree   lookup_name PARAMS ((tree));
 
 /* Enumeration for all of the relational tests, so that we can build
@@ -5785,54 +5784,16 @@ mips_output_external_libcall (file, name)
 
 /* Compute a string to use as a temporary file name.  */
 
-/* On MSDOS, write temp files in current dir
-   because there's no place else we can expect to use.  */
-#if __MSDOS__
-#ifndef P_tmpdir
-#define P_tmpdir "./"
-#endif
-#endif
-
 static FILE *
 mips_make_temp_file ()
 {
   FILE *stream;
-  const char *base = getenv ("TMPDIR");
-  int len;
+  char *filename = make_temp_file (0);
 
-  if (base == 0)
-    {
-#ifdef P_tmpdir
-      if (access (P_tmpdir, R_OK | W_OK) == 0)
-	base = P_tmpdir;
-      else
-#endif
-	if (access ("/usr/tmp", R_OK | W_OK) == 0)
-	  base = "/usr/tmp/";
-	else
-	  base = "/tmp/";
-    }
-
-  len = strlen (base);
-  /* temp_filename is global, so we must use malloc, not alloca.  */
-  temp_filename = (char *) xmalloc (len + sizeof("/ctXXXXXX"));
-  strcpy (temp_filename, base);
-  if (len > 0 && temp_filename[len-1] != '/')
-    temp_filename[len++] = '/';
-
-  strcpy (temp_filename + len, "ctXXXXXX");
-  mktemp (temp_filename);
-
-  stream = fopen (temp_filename, "w+");
+  stream = fopen (filename, "w+");
   if (!stream)
-    fatal_io_error ("can't open %s", temp_filename);
-
-#ifndef __MSDOS__
-  /* In MSDOS, we cannot unlink the temporary file until we are finished using
-     it.  Otherwise, we delete it now, so that it will be gone even if the
-     compiler happens to crash.  */
-  unlink (temp_filename);
-#endif
+    fatal_io_error ("can't open %s", filename);
+  free (filename);
   return stream;
 }
 
@@ -6087,9 +6048,7 @@ mips_asm_file_end (file)
       if (fclose (asm_out_text_file) != 0)
 	fatal_io_error ("can't close %s", temp_filename);
 
-#ifdef __MSDOS__
       unlink (temp_filename);
-#endif
     }
 }
 
