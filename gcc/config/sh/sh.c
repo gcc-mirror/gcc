@@ -771,7 +771,7 @@ expand_block_move (rtx *operands)
 	  rtx r4 = gen_rtx_REG (SImode, 4);
 	  rtx r5 = gen_rtx_REG (SImode, 5);
 
-	  entry_name = get_identifier ("__movstrSI12_i4");
+	  entry_name = get_identifier ("__movmemSI12_i4");
 
 	  sym = function_symbol (IDENTIFIER_POINTER (entry_name));
 	  func_addr_rtx = copy_to_mode_reg (Pmode, sym);
@@ -791,8 +791,8 @@ expand_block_move (rtx *operands)
 	  rtx r6 = gen_rtx_REG (SImode, 6);
 
 	  entry_name = get_identifier (bytes & 4
-				       ? "__movstr_i4_odd"
-				       : "__movstr_i4_even");
+				       ? "__movmem_i4_odd"
+				       : "__movmem_i4_even");
 	  sym = function_symbol (IDENTIFIER_POINTER (entry_name));
 	  func_addr_rtx = copy_to_mode_reg (Pmode, sym);
 	  force_into (XEXP (operands[0], 0), r4);
@@ -815,7 +815,7 @@ expand_block_move (rtx *operands)
       rtx r4 = gen_rtx_REG (SImode, 4);
       rtx r5 = gen_rtx_REG (SImode, 5);
 
-      sprintf (entry, "__movstrSI%d", bytes);
+      sprintf (entry, "__movmemSI%d", bytes);
       entry_name = get_identifier (entry);
       sym = function_symbol (IDENTIFIER_POINTER (entry_name));
       func_addr_rtx = copy_to_mode_reg (Pmode, sym);
@@ -837,7 +837,7 @@ expand_block_move (rtx *operands)
       rtx r5 = gen_rtx_REG (SImode, 5);
       rtx r6 = gen_rtx_REG (SImode, 6);
 
-      entry_name = get_identifier ("__movstr");
+      entry_name = get_identifier ("__movmem");
       sym = function_symbol (IDENTIFIER_POINTER (entry_name));
       func_addr_rtx = copy_to_mode_reg (Pmode, sym);
       force_into (XEXP (operands[0], 0), r4);

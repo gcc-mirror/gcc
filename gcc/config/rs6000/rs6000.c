@@ -8216,7 +8216,7 @@ expand_block_move (rtx operands[])
   for (offset = 0; bytes > 0; offset += move_bytes, bytes -= move_bytes)
     {
       union {
-	rtx (*movstrsi) (rtx, rtx, rtx, rtx);
+	rtx (*movmemsi) (rtx, rtx, rtx, rtx);
 	rtx (*mov) (rtx, rtx);
       } gen_func;
       enum machine_mode mode = BLKmode;
@@ -8234,7 +8234,7 @@ expand_block_move (rtx operands[])
 	  && ! fixed_regs[12])
 	{
 	  move_bytes = (bytes > 32) ? 32 : bytes;
-	  gen_func.movstrsi = gen_movstrsi_8reg;
+	  gen_func.movmemsi = gen_movmemsi_8reg;
 	}
       else if (TARGET_STRING
 	       && bytes > 16	/* move up to 24 bytes at a time */
@@ -8246,7 +8246,7 @@ expand_block_move (rtx operands[])
 	       && ! fixed_regs[10])
 	{
 	  move_bytes = (bytes > 24) ? 24 : bytes;
-	  gen_func.movstrsi = gen_movstrsi_6reg;
+	  gen_func.movmemsi = gen_movmemsi_6reg;
 	}
       else if (TARGET_STRING
 	       && bytes > 8	/* move up to 16 bytes at a time */
@@ -8256,7 +8256,7 @@ expand_block_move (rtx operands[])
 	       && ! fixed_regs[8])
 	{
 	  move_bytes = (bytes > 16) ? 16 : bytes;
-	  gen_func.movstrsi = gen_movstrsi_4reg;
+	  gen_func.movmemsi = gen_movmemsi_4reg;
 	}
       else if (bytes >= 8 && TARGET_POWERPC64
 	       /* 64-bit loads and stores require word-aligned
@@ -8270,7 +8270,7 @@ expand_block_move (rtx operands[])
       else if (TARGET_STRING && bytes > 4 && !TARGET_POWERPC64)
 	{			/* move up to 8 bytes at a time */
 	  move_bytes = (bytes > 8) ? 8 : bytes;
-	  gen_func.movstrsi = gen_movstrsi_2reg;
+	  gen_func.movmemsi = gen_movmemsi_2reg;
 	}
       else if (bytes >= 4 && (align >= 4 || ! STRICT_ALIGNMENT))
 	{			/* move 4 bytes */
@@ -8287,7 +8287,7 @@ expand_block_move (rtx operands[])
       else if (TARGET_STRING && bytes > 1)
 	{			/* move up to 4 bytes at a time */
 	  move_bytes = (bytes > 4) ? 4 : bytes;
-	  gen_func.movstrsi = gen_movstrsi_1reg;
+	  gen_func.movmemsi = gen_movmemsi_1reg;
 	}
       else /* move 1 byte at a time */
 	{
@@ -8317,7 +8317,7 @@ expand_block_move (rtx operands[])
 
       if (mode == BLKmode)
 	{
-	  /* Move the address into scratch registers.  The movstrsi
+	  /* Move the address into scratch registers.  The movmemsi
 	     patterns require zero offset.  */
 	  if (!REG_P (XEXP (src, 0)))
 	    {
@@ -8333,7 +8333,7 @@ expand_block_move (rtx operands[])
 	    }
 	  set_mem_size (dest, GEN_INT (move_bytes));
 	  
-	  emit_insn ((*gen_func.movstrsi) (dest, src,
+	  emit_insn ((*gen_func.movmemsi) (dest, src,
 					   GEN_INT (move_bytes & 31),
 					   align_rtx));
 	}

@@ -391,10 +391,10 @@ extern enum insn_code movcc_gen_code[NUM_MACHINE_MODES];
 #endif
 
 /* This array records the insn_code of insns to perform block moves.  */
-extern enum insn_code movstr_optab[NUM_MACHINE_MODES];
+extern enum insn_code movmem_optab[NUM_MACHINE_MODES];
 
 /* This array records the insn_code of insns to perform block clears.  */
-extern enum insn_code clrstr_optab[NUM_MACHINE_MODES];
+extern enum insn_code clrmem_optab[NUM_MACHINE_MODES];
 
 /* These arrays record the insn_code of two different kinds of insns
    to perform block compares.  */

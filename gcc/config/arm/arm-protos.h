@@ -118,7 +118,7 @@ extern int store_multiple_sequence (rtx *, int, int *, int *, HOST_WIDE_INT *);
 extern const char * emit_stm_seq (rtx *, int);
 extern rtx arm_gen_load_multiple (int, int, rtx, int, int, int, int, int);
 extern rtx arm_gen_store_multiple (int, int, rtx, int, int, int, int, int);
-extern int arm_gen_movstrqi (rtx *);
+extern int arm_gen_movmemqi (rtx *);
 extern rtx arm_gen_rotated_half_load (rtx);
 extern enum machine_mode arm_select_cc_mode (RTX_CODE, rtx, rtx);
 extern enum machine_mode arm_select_dominance_cc_mode (rtx, rtx,
@@ -189,7 +189,7 @@ extern int thumb_shiftable_const (unsigned HOST_WIDE_INT);
 extern void thumb_final_prescan_insn (rtx);
 extern const char *thumb_load_double_from_address (rtx *);
 extern const char *thumb_output_move_mem_multiple (int, rtx *);
-extern void thumb_expand_movstrqi (rtx *);
+extern void thumb_expand_movmemqi (rtx *);
 extern int thumb_cmp_operand (rtx, enum machine_mode);
 extern int thumb_cbrch_target_operand (rtx, enum machine_mode);
 extern rtx *thumb_legitimize_pic_address (rtx, enum machine_mode, rtx);

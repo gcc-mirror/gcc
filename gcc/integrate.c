@@ -367,7 +367,7 @@ copy_rtx_and_substitute (rtx orig, struct inline_remap *map, int for_lhs)
     case CLOBBER:
       /* USE and CLOBBER are ordinary, but we convert (use (subreg foo))
 	 to (use foo) if the original insn didn't have a subreg.
-	 Removing the subreg distorts the VAX movstrhi pattern
+	 Removing the subreg distorts the VAX movmemhi pattern
 	 by changing the mode of an operand.  */
       copy = copy_rtx_and_substitute (XEXP (orig, 0), map, code == CLOBBER);
       if (GET_CODE (copy) == SUBREG && GET_CODE (XEXP (orig, 0)) != SUBREG)

@@ -5924,7 +5924,7 @@ arm_gen_store_multiple (int base_regno, int count, rtx to, int up,
 }
 
 int
-arm_gen_movstrqi (rtx *operands)
+arm_gen_movmemqi (rtx *operands)
 {
   HOST_WIDE_INT in_words_to_go, out_words_to_go, last_bytes;
   int i;
@@ -13811,7 +13811,7 @@ thumb_output_move_mem_multiple (int n, rtx *operands)
 
 /* Routines for generating rtl.  */
 void
-thumb_expand_movstrqi (rtx *operands)
+thumb_expand_movmemqi (rtx *operands)
 {
   rtx out = copy_to_mode_reg (SImode, XEXP (operands[0], 0));
   rtx in  = copy_to_mode_reg (SImode, XEXP (operands[1], 0));

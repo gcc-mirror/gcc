@@ -864,7 +864,7 @@
 ;; Copy a block of bytes (memcpy()).  We expand the definition to convert
 ;; our memory operand into a register pointer operand instead.
 ;;
-(define_expand "movstrhi"
+(define_expand "movmemhi"
   [(use (match_operand:BLK 0 "memory_operand" ""))
    (use (match_operand:BLK 1 "memory_operand" ""))
    (use (match_operand:HI 2 "general_operand" ""))
@@ -881,7 +881,7 @@
     else
       count = operands[2];
 
-    emit_insn (gen_movstrhi_expanded (addr0, count, addr1));
+    emit_insn (gen_movmemhi_expanded (addr0, count, addr1));
     DONE;
   }")
 
@@ -892,7 +892,7 @@
 ;; the general case where we have either a variable block size or one that is
 ;; greater than 255 bytes.
 ;;
-(define_insn "movstrhi_expanded"
+(define_insn "movmemhi_expanded"
   [(set
     (mem:BLK
      (match_operand:HI 0 "nonimmediate_operand" "rS,ro,rS, rS, ro, rS"))
@@ -902,12 +902,12 @@
     (match_operand:HI 1 "general_operand"	 "P, P, P,rSi,rSi,roi"))]
   ""
   "@
-   push\\t%L1%<\;push\\t%L2%<\;push\\t%H2%<\;push\\t%L0%<\;push\\t%H0%>%>%>%>\;page\\t__movstrhi_countqi\;call\\t__movstrhi_countqi
-   push\\t%L1%<\;push\\t%L2%<\;push\\t%H2%<\;push\\t%L0%<\;push\\t%H0%>%>%>%>\;page\\t__movstrhi_countqi\;call\\t__movstrhi_countqi
-   push\\t%L1%<\;push\\t%L2%<\;push\\t%H2%<\;push\\t%L0%<\;push\\t%H0%>%>%>%>\;page\\t__movstrhi_countqi\;call\\t__movstrhi_countqi
-   push\\t%L1%<\;push\\t%H1%<\;push\\t%L2%<\;push\\t%H2%<\;push\\t%L0%<\;push\\t%H0%>%>%>%>%>\;page\\t__movstrhi_counthi\;call\\t__movstrhi_counthi
-   push\\t%L1%<\;push\\t%H1%<\;push\\t%L2%<\;push\\t%H2%<\;push\\t%L0%<\;push\\t%H0%>%>%>%>%>\;page\\t__movstrhi_counthi\;call\\t__movstrhi_counthi
-   push\\t%L1%<\;push\\t%H1%<\;push\\t%L2%<\;push\\t%H2%<\;push\\t%L0%<\;push\\t%H0%>%>%>%>%>\;page\\t__movstrhi_counthi\;call\\t__movstrhi_counthi")
+   push\\t%L1%<\;push\\t%L2%<\;push\\t%H2%<\;push\\t%L0%<\;push\\t%H0%>%>%>%>\;page\\t__movmemhi_countqi\;call\\t__movmemhi_countqi
+   push\\t%L1%<\;push\\t%L2%<\;push\\t%H2%<\;push\\t%L0%<\;push\\t%H0%>%>%>%>\;page\\t__movmemhi_countqi\;call\\t__movmemhi_countqi
+   push\\t%L1%<\;push\\t%L2%<\;push\\t%H2%<\;push\\t%L0%<\;push\\t%H0%>%>%>%>\;page\\t__movmemhi_countqi\;call\\t__movmemhi_countqi
+   push\\t%L1%<\;push\\t%H1%<\;push\\t%L2%<\;push\\t%H2%<\;push\\t%L0%<\;push\\t%H0%>%>%>%>%>\;page\\t__movmemhi_counthi\;call\\t__movmemhi_counthi
+   push\\t%L1%<\;push\\t%H1%<\;push\\t%L2%<\;push\\t%H2%<\;push\\t%L0%<\;push\\t%H0%>%>%>%>%>\;page\\t__movmemhi_counthi\;call\\t__movmemhi_counthi
+   push\\t%L1%<\;push\\t%H1%<\;push\\t%L2%<\;push\\t%H2%<\;push\\t%L0%<\;push\\t%H0%>%>%>%>%>\;page\\t__movmemhi_counthi\;call\\t__movmemhi_counthi")
 
 
 ;; Bit insert

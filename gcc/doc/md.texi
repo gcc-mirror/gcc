@@ -2776,8 +2776,8 @@ not use @code{(cc0)}.  Doing so would confuse the optimizer since it
 would no longer be clear which @code{set} operations were comparisons.
 The @samp{cmp@var{m}} patterns should be used instead.
 
-@cindex @code{movstr@var{m}} instruction pattern
-@item @samp{movstr@var{m}}
+@cindex @code{movmem@var{m}} instruction pattern
+@item @samp{movmem@var{m}}
 Block move instruction.  The addresses of the destination and source
 strings are the first two operands, and both are in mode @code{Pmode}.
 
@@ -2794,20 +2794,20 @@ destination, in the form of a @code{const_int} rtx.  Thus, if the
 compiler knows that both source and destination are word-aligned,
 it may provide the value 4 for this operand.
 
-Descriptions of multiple @code{movstr@var{m}} patterns can only be
+Descriptions of multiple @code{movmem@var{m}} patterns can only be
 beneficial if the patterns for smaller modes have fewer restrictions
 on their first, second and fourth operands.  Note that the mode @var{m}
-in @code{movstr@var{m}} does not impose any restriction on the mode of
+in @code{movmem@var{m}} does not impose any restriction on the mode of
 individually moved data units in the block.
 
 These patterns need not give special consideration to the possibility
 that the source and destination strings might overlap.
 
-@cindex @code{clrstr@var{m}} instruction pattern
-@item @samp{clrstr@var{m}}
+@cindex @code{clrmem@var{m}} instruction pattern
+@item @samp{clrmem@var{m}}
 Block clear instruction.  The addresses of the destination string is the
 first operand, in mode @code{Pmode}.  The number of bytes to clear is
-the second operand, in mode @var{m}.  See @samp{movstr@var{m}} for
+the second operand, in mode @var{m}.  See @samp{movmem@var{m}} for
 a discussion of the choice of mode.
 
 The third operand is the known alignment of the destination, in the form
@@ -2815,13 +2815,13 @@ of a @code{const_int} rtx.  Thus, if the compiler knows that the
 destination is word-aligned, it may provide the value 4 for this
 operand.
 
-The use for multiple @code{clrstr@var{m}} is as for @code{movstr@var{m}}.
+The use for multiple @code{clrmem@var{m}} is as for @code{movmem@var{m}}.
 
 @cindex @code{cmpstr@var{m}} instruction pattern
 @item @samp{cmpstr@var{m}}
 String compare instruction, with five operands.  Operand 0 is the output;
 it has mode @var{m}.  The remaining four operands are like the operands
-of @samp{movstr@var{m}}.  The two memory blocks specified are compared
+of @samp{movmem@var{m}}.  The two memory blocks specified are compared
 byte by byte in lexicographic order starting at the beginning of each
 string.  The instruction is not allowed to prefetch more than one byte
 at a time since either string may end in the first byte and reading past

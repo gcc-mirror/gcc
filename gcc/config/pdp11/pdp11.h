@@ -71,7 +71,7 @@ extern int target_flags;
     { "no-45", -8, "" },						\
 /* is 11/10 */								\
     { "10", -12, N_("Generate code for an 11/10") },			\
-/* use movstrhi for bcopy */						\
+/* use movmemhi for bcopy */						\
     { "bcopy", 16, NULL },						\
     { "bcopy-builtin", -16, NULL },					\
 /* use 32 bit for int */						\

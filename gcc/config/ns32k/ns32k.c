@@ -887,7 +887,7 @@ expand_block_move (rtx operands[])
 	      dest = copy_addr_to_reg (XEXP (operands[0], 0));
 	      src = copy_addr_to_reg (XEXP (operands[1], 0));
 	    
-	      emit_insn (gen_movstrsi2(dest, src, GEN_INT (words)));
+	      emit_insn (gen_movmemsi2(dest, src, GEN_INT (words)));
 	    }
 	}
       move_tail (operands, bytes & 3, bytes & ~3);
@@ -914,7 +914,7 @@ expand_block_move (rtx operands[])
       if (bytes >> 2)
 	{
 	  emit_move_insn (count_reg, GEN_INT (bytes >> 2));
-	  emit_insn (gen_movstrsi1 (GEN_INT (4)));
+	  emit_insn (gen_movmemsi1 (GEN_INT (4)));
 	}
       /* insns to copy rest */
       move_tail (operands, bytes & 3, 0);
@@ -923,7 +923,7 @@ expand_block_move (rtx operands[])
     {
       /* insns to copy by words */
       emit_insn (gen_lshrsi3 (count_reg, bytes_rtx, const2_rtx));
-      emit_insn (gen_movstrsi1 (GEN_INT (4)));
+      emit_insn (gen_movmemsi1 (GEN_INT (4)));
       if (constp)
 	{
 	  move_tail (operands, bytes & 3, 0);
@@ -932,7 +932,7 @@ expand_block_move (rtx operands[])
 	{
 	  /* insns to copy rest */
 	  emit_insn (gen_andsi3 (count_reg, bytes_rtx, GEN_INT (3)));
-	  emit_insn (gen_movstrsi1 (const1_rtx));
+	  emit_insn (gen_movmemsi1 (const1_rtx));
 	}
     }
   else
@@ -958,17 +958,17 @@ expand_block_move (rtx operands[])
       emit_insn (gen_negsi2 (count_reg, src_reg));
       emit_insn (gen_andsi3 (count_reg, count_reg, GEN_INT (3)));
       emit_insn (gen_subsi3 (bytes_reg, bytes_reg, count_reg));
-      emit_insn (gen_movstrsi1 (const1_rtx));
+      emit_insn (gen_movmemsi1 (const1_rtx));
       if (!constp)
 	emit_label (aligned_label);
 
       /* insns to copy by words */
       emit_insn (gen_lshrsi3 (count_reg, bytes_reg, const2_rtx));
-      emit_insn (gen_movstrsi1 (GEN_INT (4)));
+      emit_insn (gen_movmemsi1 (GEN_INT (4)));
 
       /* insns to copy rest */
       emit_insn (gen_andsi3 (count_reg, bytes_reg, GEN_INT (3)));
-      emit_insn (gen_movstrsi1 (const1_rtx));
+      emit_insn (gen_movmemsi1 (const1_rtx));
     }
 }
 

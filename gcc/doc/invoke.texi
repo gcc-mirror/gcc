@@ -9603,12 +9603,12 @@ Generate code for a PDP-11/10.
 
 @item -mbcopy-builtin
 @opindex bcopy-builtin
-Use inline @code{movstrhi} patterns for copying memory.  This is the
+Use inline @code{movmemhi} patterns for copying memory.  This is the
 default.
 
 @item -mbcopy
 @opindex mbcopy
-Do not use inline @code{movstrhi} patterns for copying memory.
+Do not use inline @code{movmemhi} patterns for copying memory.
 
 @item -mint16
 @itemx -mno-int32

@@ -1057,7 +1057,7 @@
 
 ;; Block moves
 
-(define_expand "movstrsi"
+(define_expand "movmemsi"
   [(parallel [(set (match_operand:BLK 0 "" "")
 		   (match_operand:BLK 1 "" ""))
 	      (use (match_operand:SI 2 "arith_operand" ""))
@@ -1069,7 +1069,7 @@
   DONE;
 })
 
-(define_insn "movstrsi_internal"
+(define_insn "movmemsi_internal"
   [(set (match_operand:BLK 0 "memory_operand" "=U")
 	(match_operand:BLK 1 "memory_operand" "U"))
    (use (match_operand:SI 2 "arith_operand" ""))

@@ -19,8 +19,8 @@ LIB1ASMFUNCS = \
 	_fp_pop_args_ret \
 	_pop2_args_ret \
 	_leaf_fp_pop_args_ret \
-	_movstrhi_countqi \
-	_movstrhi_counthi \
+	_movmemhi_countqi \
+	_movmemhi_counthi \
 	abort \
 	_exit
 
