@@ -1,5 +1,10 @@
 1998-11-29  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* test_summary (EOF): remove double backslash
+	Reported by Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+
+1998-11-29  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
 	* test_summary: updated to version in development branch
 
 1998-08-14  Alexandre Oliva  <oliva@dcc.unicamp.br>
