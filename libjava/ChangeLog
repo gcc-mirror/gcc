@@ -1,3 +1,9 @@
+2000-11-17  Mark Wielaar <mark@klomp.org>
+
+	Merge with Classpath (changes by Bryce McKinlay)
+	* java/util/jar/*.java: Reformat all to unofficial standard coding
+	style. No changes of substance.
+
 2000-11-17  Mark Wielaard  <mark@klomp.org>
 
 	* java/util/zip/*.java: Javadoc updates.

@@ -39,27 +39,29 @@ import java.util.zip.ZipException;
  * @since 1.2
  * @author Mark Wielaard (mark@klomp.org)
  */
- 
-public class JarException extends ZipException {
 
-    // Constructors
+public class JarException extends ZipException
+{
+  // Constructors
 
-    /**
-     * Create a new JarException without a descriptive error message.
-     */
-    public JarException() {
-        super();
-    }
+  /**
+   * Create a new JarException without a descriptive error message.
+   */
+  public JarException()
+  {
+    super();
+  }
 
-    /**
-     * Create a new JarException with a descriptive error message indicating
-     * what went wrong. This message can later be retrieved by calling the
-     * <code>getMessage()</code> method.
-     * @see java.lang.Throwable@getMessage()
-     *
-     * @param message The descriptive error message
-     */
-    public JarException(String message) {
-        super(message);
-    }
+  /**
+   * Create a new JarException with a descriptive error message indicating
+   * what went wrong. This message can later be retrieved by calling the
+   * <code>getMessage()</code> method.
+   * @see java.lang.Throwable@getMessage()
+   *
+   * @param message The descriptive error message
+   */
+  public JarException(String message)
+  {
+    super(message);
+  }
 }

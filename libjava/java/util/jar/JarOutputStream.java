@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -38,61 +38,65 @@ import java.util.zip.ZipOutputStream;
  *
  * @author Mark Wielaard (mark@klomp.org)
  */
- 
-public class JarOutputStream extends ZipOutputStream {
 
-    // Constructors
+public class JarOutputStream extends ZipOutputStream
+{
+  // Constructors
 
-    /**
-     * Creates a new JarOutputStream without a manifest entry.
-     *
-     * @param out the stream to create the new jar on
-     * @exception IOException if something unexpected happend
-     */
-    public JarOutputStream(OutputStream out) throws IOException {
-        this(out, null);
-    }
+  /**
+   * Creates a new JarOutputStream without a manifest entry.
+   *
+   * @param out the stream to create the new jar on
+   * @exception IOException if something unexpected happend
+   */
+  public JarOutputStream(OutputStream out) throws IOException
+  {
+    this(out, null);
+  }
 
-    /**
-     * Creates a new JarOutputStream with a manifest entry.
-     * The manifest will be the first entry in the jar.
-     *
-     * @param out the stream to create the new jar on
-     * @param man the manifest that should be put in the jar file or null
-     * for no manifest entry
-     * @exception IOException if something unexpected happend
-     */
-    public JarOutputStream(OutputStream out, Manifest man) throws IOException {
-        super(out);
-        if (man != null)
-            writeManifest(man);
-    }
+  /**
+   * Creates a new JarOutputStream with a manifest entry.
+   * The manifest will be the first entry in the jar.
+   *
+   * @param out the stream to create the new jar on
+   * @param man the manifest that should be put in the jar file or null
+   * for no manifest entry
+   * @exception IOException if something unexpected happend
+   */
+  public JarOutputStream(OutputStream out, Manifest man) throws IOException
+  {
+    super(out);
+    if (man != null)
+      writeManifest(man);
+  }
 
-    // Methods
+  // Methods
 
-    /**
-     * Writes the manifest to a new JarEntry in this JarOutputStream with as
-     * name JarFile.MANIFEST_NAME.
-     *
-     * @param manifest the non null manifest to be written
-     * @exception IOException if something unexpected happend
-     */
-    private void writeManifest(Manifest manifest) throws IOException {
-        // Create a new Jar Entry for the Manifest
-        JarEntry entry = new JarEntry(JarFile.MANIFEST_NAME);
-        putNextEntry(entry);
-        manifest.write(this);
-        closeEntry();
-    }
+  /**
+   * Writes the manifest to a new JarEntry in this JarOutputStream with as
+   * name JarFile.MANIFEST_NAME.
+   *
+   * @param manifest the non null manifest to be written
+   * @exception IOException if something unexpected happend
+   */
+  private void writeManifest(Manifest manifest) throws IOException
+  {
+    // Create a new Jar Entry for the Manifest
+    JarEntry entry = new JarEntry(JarFile.MANIFEST_NAME);
+    putNextEntry(entry);
+    manifest.write(this);
+    closeEntry();
+  }
 
-    /**
-     * Prepares the JarOutputStream for writing the next entry. 
-     * This implementation just calls <code>super.putNextEntre()</code>.
-     *
-     * @param entry The information for the next entry
-     * @exception IOException when some unexpected I/O exception occured
-     */
-    public void putNextEntry(ZipEntry entry) throws IOException {
-        super.putNextEntry(entry); // XXX
-    }
+  /**
+   * Prepares the JarOutputStream for writing the next entry. 
+   * This implementation just calls <code>super.putNextEntre()</code>.
+   *
+   * @param entry The information for the next entry
+   * @exception IOException when some unexpected I/O exception occured
+   */
+  public void putNextEntry(ZipEntry entry) throws IOException
+  {
+    super.putNextEntry(entry);	// XXX
+  }
 }
