@@ -1,3 +1,8 @@
+2002-05-27  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* gcc.dg/cpp/arith-2.c, gcc.dg/cpp/arith-3.c: New tests.
+	* gcc.dg/cpp/if-3.c: Remove.
+
 2002-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/opt/cse2.C: New test.

@@ -29,6 +29,7 @@ struct directive;		/* Deliberately incomplete.  */
 struct pending_option;
 struct op;
 
+typedef unsigned HOST_WIDE_INT cpp_num_part;
 typedef unsigned char uchar;
 #define U (const uchar *)  /* Intended use: U"string" */
 

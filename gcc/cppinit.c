@@ -496,8 +496,7 @@ cpp_create_reader (lang)
 
   /* Default CPP arithmetic to something sensible for the host for the
      benefit of dumb users like fix-header.  */
-#define BITS_PER_HOST_WIDEST_INT (CHAR_BIT * sizeof (HOST_WIDEST_INT))
-  CPP_OPTION (pfile, precision) = BITS_PER_HOST_WIDEST_INT;
+  CPP_OPTION (pfile, precision) = CHAR_BIT * sizeof (long);
   CPP_OPTION (pfile, char_precision) = CHAR_BIT;
   CPP_OPTION (pfile, wchar_precision) = CHAR_BIT * sizeof (int);
   CPP_OPTION (pfile, int_precision) = CHAR_BIT * sizeof (int);
@@ -848,6 +847,7 @@ static void sanity_checks (pfile)
      cpp_reader *pfile;
 {
   cppchar_t test = 0;
+  size_t max_precision = 2 * CHAR_BIT * sizeof (cpp_num_part);
 
   /* Sanity checks for assumptions about CPP arithmetic and target
      type precisions made by cpplib.  */
@@ -855,11 +855,11 @@ static void sanity_checks (pfile)
   if (test < 1)
     cpp_error (pfile, DL_ICE, "cppchar_t must be an unsigned type");
 
-  if (CPP_OPTION (pfile, precision) > BITS_PER_HOST_WIDEST_INT)
+  if (CPP_OPTION (pfile, precision) > max_precision)
     cpp_error (pfile, DL_ICE,
 	       "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits",
-	       (unsigned long)BITS_PER_HOST_WIDEST_INT,
-	       (unsigned long)CPP_OPTION (pfile, precision));
+	       (unsigned long) max_precision,
+	       (unsigned long) CPP_OPTION (pfile, precision));
 
   if (CPP_OPTION (pfile, precision) < CPP_OPTION (pfile, int_precision))
     cpp_error (pfile, DL_ICE,
@@ -876,11 +876,15 @@ static void sanity_checks (pfile)
     cpp_error (pfile, DL_ICE,
 	       "target int is narrower than target char");
 
+  /* This is assumed in eval_token() and could be fixed if necessary.  */
+  if (sizeof (cppchar_t) > sizeof (cpp_num_part))
+    cpp_error (pfile, DL_ICE, "CPP half-integer narrower than CPP character");
+
   if (CPP_OPTION (pfile, wchar_precision) > BITS_PER_CPPCHAR_T)
     cpp_error (pfile, DL_ICE,
 	       "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits",
-	       (unsigned long)BITS_PER_CPPCHAR_T,
-	       (unsigned long)CPP_OPTION (pfile, wchar_precision));
+	       (unsigned long) BITS_PER_CPPCHAR_T,
+	       (unsigned long) CPP_OPTION (pfile, wchar_precision));
 }
 #else
 # define sanity_checks(PFILE)

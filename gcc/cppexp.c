@@ -23,7 +23,6 @@ Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "cpphash.h"
 
-typedef unsigned long cpp_num_part;
 typedef struct cpp_num cpp_num;
 
 #define PART_PRECISION (sizeof (cpp_num_part) * CHAR_BIT)
