@@ -1,3 +1,10 @@
+2004-06-04  Eric Christopher  <echristo@redhat.com>
+
+	Backport from mainline:
+	2004-06-02  Eric Christopher  <echristo@redhat.com>
+
+        * gcc.c-torture/compile/20040602-1.c: New.
+
 2004-06-01  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14932
@@ -21326,4 +21333,3 @@ rlsruhe.de>
 	correspond to c-torture	1.11.
 
 	* New file.
-

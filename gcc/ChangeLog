@@ -1,3 +1,11 @@
+2004-06-04  Eric Christopher  <echristo@redhat.com>
+
+	Backport from mainline:
+	2004-06-02  Eric Christopher  <echristo@redhat.com>
+
+        * c-typeck.c (common_type): Don't lose type qualifiers
+        when creating new variants.
+
 2004-06-03  Bernardo Innocenti  <bernie@develer.com>
 
 	PR target/15782
