@@ -1,3 +1,8 @@
+2002-11-03  Tom Tromey  <tromey@redhat.com>
+
+	* java/nio/channels/AlreadyConnectedException.java: Extend
+	IllegalStateException, per spec.
+
 2002-10-31  Stephen Crawley  <crawley@dstc.edu.au>
 
 	* java/lang/Double.java (valueOf): Return new Double(parseDouble(s)).
