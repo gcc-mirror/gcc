@@ -61,6 +61,150 @@
 
 namespace __gnu_cxx
 {
+  using std::ptrdiff_t;
+  using std::min;
+  using std::pair;
+  using std::input_iterator_tag;
+  using std::random_access_iterator_tag;
+  using std::iterator_traits;
+
+  //--------------------------------------------------
+  // copy_n (not part of the C++ standard)
+
+  template<typename _InputIter, typename _Size, typename _OutputIter>
+    pair<_InputIter, _OutputIter>
+    __copy_n(_InputIter __first, _Size __count,
+	     _OutputIter __result,
+	     input_iterator_tag)
+    {
+      for ( ; __count > 0; --__count) {
+	*__result = *__first;
+	++__first;
+	++__result;
+      }
+      return pair<_InputIter, _OutputIter>(__first, __result);
+    }
+
+  template<typename _RAIter, typename _Size, typename _OutputIter>
+    inline pair<_RAIter, _OutputIter>
+    __copy_n(_RAIter __first, _Size __count,
+	     _OutputIter __result,
+	     random_access_iterator_tag)
+    {
+      _RAIter __last = __first + __count;
+      return pair<_RAIter, _OutputIter>(__last,
+					std::copy(__first, __last, __result));
+    }
+
+  /**
+   *  @brief Copies the range [first,first+count) into [result,result+count).
+   *  @param  first  An input iterator.
+   *  @param  count  The number of elements to copy.
+   *  @param  result An output iterator.
+   *  @return   A std::pair composed of first+count and result+count.
+   *
+   *  This is an SGI extension.
+   *  This inline function will boil down to a call to @c memmove whenever
+   *  possible.  Failing that, if random access iterators are passed, then the
+   *  loop count will be known (and therefore a candidate for compiler
+   *  optimizations such as unrolling).
+   *  @ingroup SGIextensions
+  */
+  template<typename _InputIter, typename _Size, typename _OutputIter>
+    inline pair<_InputIter, _OutputIter>
+    copy_n(_InputIter __first, _Size __count, _OutputIter __result)
+    {
+      // concept requirements
+      __glibcpp_function_requires(_InputIteratorConcept<_InputIter>)
+      __glibcpp_function_requires(_OutputIteratorConcept<_OutputIter,
+	    typename iterator_traits<_InputIter>::value_type>)
+
+      return __copy_n(__first, __count, __result,
+		      std::__iterator_category(__first));
+    }
+
+  template<typename _InputIter1, typename _InputIter2>
+    int
+    __lexicographical_compare_3way(_InputIter1 __first1, _InputIter1 __last1,
+				   _InputIter2 __first2, _InputIter2 __last2)
+    {
+      while (__first1 != __last1 && __first2 != __last2) {
+	if (*__first1 < *__first2)
+	  return -1;
+	if (*__first2 < *__first1)
+	  return 1;
+	++__first1;
+	++__first2;
+      }
+      if (__first2 == __last2) {
+	return !(__first1 == __last1);
+      }
+      else {
+	return -1;
+      }
+    }
+
+  inline int
+  __lexicographical_compare_3way(const unsigned char* __first1,
+				 const unsigned char* __last1,
+				 const unsigned char* __first2,
+				 const unsigned char* __last2)
+  {
+    const ptrdiff_t __len1 = __last1 - __first1;
+    const ptrdiff_t __len2 = __last2 - __first2;
+    const int __result = std::memcmp(__first1, __first2, min(__len1, __len2));
+    return __result != 0 ? __result 
+			 : (__len1 == __len2 ? 0 : (__len1 < __len2 ? -1 : 1));
+  }
+
+  inline int 
+  __lexicographical_compare_3way(const char* __first1, const char* __last1,
+				 const char* __first2, const char* __last2)
+  {
+#if CHAR_MAX == SCHAR_MAX
+    return __lexicographical_compare_3way(
+				  (const signed char*) __first1,
+				  (const signed char*) __last1,
+				  (const signed char*) __first2,
+				  (const signed char*) __last2);
+#else
+    return __lexicographical_compare_3way((const unsigned char*) __first1,
+					  (const unsigned char*) __last1,
+					  (const unsigned char*) __first2,
+					  (const unsigned char*) __last2);
+#endif
+  }
+
+  /**
+   *  @brief @c memcmp on steroids.
+   *  @param  first1  An input iterator.
+   *  @param  last1   An input iterator.
+   *  @param  first2  An input iterator.
+   *  @param  last2   An input iterator.
+   *  @return   An int, as with @c memcmp.
+   *
+   *  The return value will be less than zero if the first range is
+   *  "lexigraphically less than" the second, greater than zero if the second
+   *  range is "lexigraphically less than" the first, and zero otherwise.
+   *  This is an SGI extension.
+   *  @ingroup SGIextensions
+  */
+  template<typename _InputIter1, typename _InputIter2>
+    int
+    lexicographical_compare_3way(_InputIter1 __first1, _InputIter1 __last1,
+				 _InputIter2 __first2, _InputIter2 __last2)
+    {
+      // concept requirements
+      __glibcpp_function_requires(_InputIteratorConcept<_InputIter1>)
+      __glibcpp_function_requires(_InputIteratorConcept<_InputIter2>)
+      __glibcpp_function_requires(_LessThanComparableConcept<
+	    typename iterator_traits<_InputIter1>::value_type>)
+      __glibcpp_function_requires(_LessThanComparableConcept<
+	    typename iterator_traits<_InputIter2>::value_type>)
+
+      return __lexicographical_compare_3way(__first1, __last1, __first2, __last2);
+    }
+
   // count and count_if: this version, whose return type is void, was present
   // in the HP STL, and is retained as an extension for backward compatibility.
 
@@ -73,7 +217,7 @@ namespace __gnu_cxx
       // concept requirements
       __glibcpp_function_requires(_InputIteratorConcept<_InputIter>)
       __glibcpp_function_requires(_EqualityComparableConcept<
-	    typename std::iterator_traits<_InputIter>::value_type >)
+	    typename iterator_traits<_InputIter>::value_type >)
       __glibcpp_function_requires(_EqualityComparableConcept<_Tp>)
       for ( ; __first != __last; ++__first)
 	if (*__first == __value)
@@ -89,7 +233,7 @@ namespace __gnu_cxx
       // concept requirements
       __glibcpp_function_requires(_InputIteratorConcept<_InputIter>)
       __glibcpp_function_requires(_UnaryPredicateConcept<_Predicate,
-	    typename std::iterator_traits<_InputIter>::value_type>)
+	    typename iterator_traits<_InputIter>::value_type>)
       for ( ; __first != __last; ++__first)
 	if (__pred(*__first))
 	  ++__n;
@@ -105,10 +249,10 @@ namespace __gnu_cxx
       // concept requirements
       __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIter>)
       __glibcpp_function_requires(_OutputIteratorConcept<_OutputIter,
-		typename std::iterator_traits<_ForwardIter>::value_type>)
+		typename iterator_traits<_ForwardIter>::value_type>)
 
       _Distance __remaining = std::distance(__first, __last);
-      _Distance __m = std::min(__n, __remaining);
+      _Distance __m = min(__n, __remaining);
 
       while (__m > 0) {
 	if (std::__random_number(__remaining) < __m) {
@@ -133,12 +277,12 @@ namespace __gnu_cxx
       // concept requirements
       __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIter>)
       __glibcpp_function_requires(_OutputIteratorConcept<_OutputIter,
-		typename std::iterator_traits<_ForwardIter>::value_type>)
+		typename iterator_traits<_ForwardIter>::value_type>)
       __glibcpp_function_requires(_UnaryFunctionConcept<
 		_RandomNumberGenerator, _Distance, _Distance>)
 
       _Distance __remaining = std::distance(__first, __last);
-      _Distance __m = std::min(__n, __remaining);
+      _Distance __m = min(__n, __remaining);
 
       while (__m > 0) {
 	if (__rand(__remaining) < __m) {
@@ -275,7 +419,7 @@ namespace __gnu_cxx
       // concept requirements
       __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIter>)
       __glibcpp_function_requires(_LessThanComparableConcept<
-	    typename std::iterator_traits<_RandomAccessIter>::value_type>)
+	    typename iterator_traits<_RandomAccessIter>::value_type>)
 
       return __is_heap(__first, __last - __first);
     }
@@ -288,8 +432,8 @@ namespace __gnu_cxx
       // concept requirements
       __glibcpp_function_requires(_RandomAccessIteratorConcept<_RandomAccessIter>)
       __glibcpp_function_requires(_BinaryPredicateConcept<_StrictWeakOrdering,
-	    typename std::iterator_traits<_RandomAccessIter>::value_type, 
-	    typename std::iterator_traits<_RandomAccessIter>::value_type>)
+	    typename iterator_traits<_RandomAccessIter>::value_type, 
+	    typename iterator_traits<_RandomAccessIter>::value_type>)
 
       return __is_heap(__first, __comp, __last - __first);
     }
@@ -305,7 +449,7 @@ namespace __gnu_cxx
       // concept requirements
       __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIter>)
       __glibcpp_function_requires(_LessThanComparableConcept<
-	    typename std::iterator_traits<_ForwardIter>::value_type>)
+	    typename iterator_traits<_ForwardIter>::value_type>)
 
       if (__first == __last)
 	return true;
@@ -326,8 +470,8 @@ namespace __gnu_cxx
       // concept requirements
       __glibcpp_function_requires(_ForwardIteratorConcept<_ForwardIter>)
       __glibcpp_function_requires(_BinaryPredicateConcept<_StrictWeakOrdering,
-	    typename std::iterator_traits<_ForwardIter>::value_type, 
-	    typename std::iterator_traits<_ForwardIter>::value_type>)
+	    typename iterator_traits<_ForwardIter>::value_type, 
+	    typename iterator_traits<_ForwardIter>::value_type>)
 
       if (__first == __last)
 	return true;

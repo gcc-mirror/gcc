@@ -176,6 +176,7 @@ ext_headers = \
 	${ext_srcdir}/hash_map \
 	${ext_srcdir}/hash_set \
 	${ext_srcdir}/iterator \
+	${ext_srcdir}/memory \
 	${ext_srcdir}/rope \
 	${ext_srcdir}/ropeimpl.h \
 	${ext_srcdir}/slist \

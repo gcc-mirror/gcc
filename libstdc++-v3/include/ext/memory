@@ -1,6 +1,6 @@
-// Backward-compat support -*- C++ -*-
+// Memory extensions -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,7 +40,8 @@
  * representations about the suitability of this software for any
  * purpose.  It is provided "as is" without express or implied warranty.
  *
- * Copyright (c) 1996,1997
+ *
+ * Copyright (c) 1996
  * Silicon Graphics Computer Systems, Inc.
  *
  * Permission to use, copy, modify, distribute and sell this software
@@ -52,44 +53,76 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-#ifndef _CPP_BACKWARD_ALGOBASE_H
-#define _CPP_BACKWARD_ALGOBASE_H 1
+#ifndef _EXT_MEMORY
+#define _EXT_MEMORY
 
-#include "backward_warning.h"
-#include "pair.h"
-#include "iterator.h"
-#include <bits/stl_algobase.h>
-#include <bits/stl_uninitialized.h>
-#include <ext/algorithm>
-#include <ext/memory>
+#pragma GCC system_header
+#include <bits/std_memory.h>
 
-// Names from stl_algobase.h
-using std::iter_swap; 
-using std::swap; 
-using std::min; 
-using std::max; 
-using std::copy; 
-using std::copy_backward; 
-using std::fill; 
-using std::fill_n; 
-using std::mismatch; 
-using std::equal; 
-using std::lexicographical_compare; 
+namespace __gnu_cxx
+{
+  using std::pair;
+  using std::__iterator_category;
+  
+  // uninitialized_copy_n (not part of the C++ standard)
 
-// Names from stl_uninitialized.h
-using std::uninitialized_copy;
-using std::uninitialized_fill;
-using std::uninitialized_fill_n;
+  template<typename _InputIter, typename _Size, typename _ForwardIter>
+    pair<_InputIter, _ForwardIter>
+    __uninitialized_copy_n(_InputIter __first, _Size __count,
+			   _ForwardIter __result,
+			   std::input_iterator_tag)
+    {
+      _ForwardIter __cur = __result;
+      try {
+	for ( ; __count > 0 ; --__count, ++__first, ++__cur) 
+	  std::_Construct(&*__cur, *__first);
+	return pair<_InputIter, _ForwardIter>(__first, __cur);
+      }
+      catch(...)
+	{
+	  std::_Destroy(__result, __cur);
+	  __throw_exception_again; 
+	}
+    }
 
-// Names from ext/algorithm
-using __gnu_cxx::copy_n; 
-using __gnu_cxx::lexicographical_compare_3way; 
+  template<typename _RandomAccessIter, typename _Size, typename _ForwardIter>
+    inline pair<_RandomAccessIter, _ForwardIter>
+    __uninitialized_copy_n(_RandomAccessIter __first, _Size __count,
+			   _ForwardIter __result,
+			   std::random_access_iterator_tag)
+    {
+      _RandomAccessIter __last = __first + __count;
+      return pair<_RandomAccessIter, _ForwardIter>(
+		     __last,
+		     std::uninitialized_copy(__first, __last, __result));
+    }
 
-// Names from ext/memory
-using __gnu_cxx::uninitialized_copy_n;
+  template<typename _InputIter, typename _Size, typename _ForwardIter>
+    inline pair<_InputIter, _ForwardIter>
+    __uninitialized_copy_n(_InputIter __first, _Size __count,
+			 _ForwardIter __result) {
+      return __uninitialized_copy_n(__first, __count, __result,
+				    __iterator_category(__first));
+    }
 
-#endif /* _CPP_BACKWARD_ALGOBASE_H */
+  /**
+   *  @brief Copies the range [first,last) into result.
+   *  @param  first  An input iterator.
+   *  @param  last   An input iterator.
+   *  @param  result An output iterator.
+   *  @return   result + (first - last)
+   *
+   *  Like copy(), but does not require an initialized output range.
+  */
+  template<typename _InputIter, typename _Size, typename _ForwardIter>
+    inline pair<_InputIter, _ForwardIter>
+    uninitialized_copy_n(_InputIter __first, _Size __count,
+			 _ForwardIter __result) {
+      return __uninitialized_copy_n(__first, __count, __result,
+				    __iterator_category(__first));
+    }
 
-// Local Variables:
-// mode:C++
-// End:
+} // namespace __gnu_cxx
+
+#endif /* _EXT_MEMORY */
+

@@ -1,3 +1,19 @@
+2002-01-02  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/stl_algobase.h (copy_n + helpers,
+	lexicographical_compare_3way + helpers):  Move to...
+	* include/ext/algorithm:  ...here.
+        * include/bits/stl_uninitialized.h (uninitialized_copy_n +
+        helpers):  Move to...
+        * include/ext/memory:  ...here, new file.
+        * include/Makefile.am (ext_headers):  Add new file.
+        * include/Makefile.in:  Regenerate.
+        * testsuite/ext/headers.cc:  Include <ext/memory>.
+	* include/backward/algobase.h:  Include <ext/memory> and
+	<ext/algorithm>, tweak.
+        * include/ext/ropeimpl.h:  Include <ext/memory>, tweak.
+	* include/ext/stl_rope.h:  Include <ext/memory>, tweak.
+
 2002-01-01  Roger Sayle <roger@eyesopen.com>
 
 	* libmath/stubs.c (sinf,cosf): Implement stubs to enable the

@@ -61,6 +61,8 @@
 #   define __GC_CONST   // constant except for deallocation
 # endif
 
+#include <ext/memory> // For uninitialized_copy_n
+
 namespace __gnu_cxx
 {
 using std::size_t;
@@ -71,7 +73,6 @@ using std::reverse_iterator;
 using std::_Alloc_traits;
 using std::_Destroy;
 using std::_Refcount_Base;
-using std::uninitialized_copy_n;
 
 // The _S_eos function is used for those functions that
 // convert to/from C-like strings to detect the end of the string.
