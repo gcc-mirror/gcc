@@ -1868,7 +1868,7 @@ reg_unused_after (reg, insn)
      rtx reg;
      rtx insn;
 {
-  enum rtx_code code, prev_code = UNKNOWN;
+  enum rtx_code code;
   rtx set;
 
   /* If the reg is set by this instruction, then it is safe for our
@@ -1881,20 +1881,45 @@ reg_unused_after (reg, insn)
 
   while (insn = NEXT_INSN (insn))
     {
-      if (prev_code == CALL_INSN && call_used_regs[REGNO (reg)])
-	return 1;
-
       code = GET_CODE (insn);
-      if (GET_CODE (insn) == CODE_LABEL)
+
+      if (code == CODE_LABEL)
 	return 1;
 
-      if (code == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
+      /* If this is a sequence, we must handle them all at once.
+	 We could have for instance a call that sets the target register,
+	 and a insn in a delay slot that uses the register.  In this case,
+	 we must return 0.  */
+      else if (code == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
 	{
-	  insn = XVECEXP (PATTERN (insn), 0, 0);
-	  code = GET_CODE (insn);
-	}
+	  int i;
+	  int retval = 0;
 
-      if (GET_RTX_CLASS (code) == 'i')
+	  for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
+	    {
+	      rtx this_insn = XVECEXP (PATTERN (insn), 0, i);
+	      rtx set = single_set (this_insn);
+
+	      if (GET_CODE (this_insn) == CALL_INSN)
+		code = CALL_INSN;
+
+	      if (set && reg_overlap_mentioned_p (reg, SET_SRC (set)))
+		return 0;
+	      if (set && reg_overlap_mentioned_p (reg, SET_DEST (set)))
+		{
+		  if (GET_CODE (SET_DEST (set)) != MEM)
+		    retval = 1;
+		  else
+		    return 0;
+		}
+	      if (set == 0
+		  && reg_overlap_mentioned_p (reg, PATTERN (this_insn)))
+		return 0;
+	    }
+	  if (retval == 1)
+	    return 1;
+	}
+      else if (GET_RTX_CLASS (code) == 'i')
 	{
 	  rtx set = single_set (insn);
 
@@ -1905,7 +1930,9 @@ reg_unused_after (reg, insn)
 	  if (set == 0 && reg_overlap_mentioned_p (reg, PATTERN (insn)))
 	    return 0;
 	}
-      prev_code = code;
+
+      if (code == CALL_INSN && call_used_regs[REGNO (reg)])
+	return 1;
     }
   return 1;
 }
