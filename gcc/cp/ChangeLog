@@ -1,3 +1,10 @@
+2004-08-25  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/16693
+	PR tree-optimization/16372
+	* decl.c (finish_enum): Make the precision of the enumerated type
+	the same width as the underlying integer type.
+
 2004-08-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/17155
