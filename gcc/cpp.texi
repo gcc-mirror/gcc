@@ -2687,7 +2687,7 @@ Only the directories you have specified with @samp{-I} options
 @findex -nostdinc++
 Do not search for header files in the C++-specific standard directories,
 but do still search the other standard directories.
-(This option is used when building libg++.)
+(This option is used when building the C++ library.)
 
 @item -remap
 @findex -remap
