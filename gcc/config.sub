@@ -129,9 +129,6 @@ case $basic_machine in
 	      | pn-* | np1-* | xps100-* | clipper-* | orion-* | sparclite-* \
 	      | sh-* | powerpc-* | sparc64-*)
 		;;
-	# Recognize names of some NetBSD ports.
-	hp300-* | amiga-* | sun3-* | da30-* | pmax-*)
-		;;
 	# Recognize the various machine names and aliases which stand
 	# for a CPU type and a company and sometimes even an OS.
 	3b1 | 7300 | 7300-att | att-7300 | pc7300 | safari | unixpc)
@@ -154,7 +151,7 @@ case $basic_machine in
 		basic_machine=580-amdahl
 		os=-sysv
 		;;
-	amiga)
+	amiga | amiga-*)
 		basic_machine=m68k-cbm
 		;;
 	amigados)
@@ -204,7 +201,10 @@ case $basic_machine in
 	crds | unos)
 		basic_machine=m68k-crds
 		;;
-	decstation | decstation-3100 | pmax | pmin | dec3100 | decstatn)
+	da30 | da30-*)
+		basic_machine=m68k-da30
+		;;
+	decstation | decstation-3100 | pmax | pmax-* | pmin | dec3100 | decstatn)
 		basic_machine=mips-dec
 		;;
 	delta | 3300 | motorola-3300 | motorola-delta \
@@ -255,6 +255,9 @@ case $basic_machine in
 	harris)
 		basic_machine=m88k-harris
 		os=-sysv3
+		;;
+	hp300-*)
+		basic_machine=m68k-hp
 		;;
 	hp300bsd)
 		basic_machine=m68k-hp
@@ -442,7 +445,7 @@ case $basic_machine in
 		basic_machine=sparc-sun
 		os=-sunos4
 		;;
-	sun3)
+	sun3 | sun3-*)
 		basic_machine=m68k-sun
 		;;
 	sun4)
