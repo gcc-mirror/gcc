@@ -35,40 +35,41 @@
 (define_cpu_unit "du1_power4,du2_power4,du3_power4,du4_power4,du5_power4"
 		 "power4disp")
 
-(define_reservation "q1_power4" "du1_power4|du4_power4")
-(define_reservation "q2_power4" "du2_power4|du3_power4")
-(define_reservation "q4_power4" "du1_power4|du2_power4|du3_power4|du4_power4")
-
-(define_reservation "lsq_power4" "(q1_power4,lsu1_power4)\
-				 |(q2_power4,lsu2_power4)\
-				 |(du3_power4,nothing,lsu2_power4)\
-				 |(du4_power4,nothing,lsu1_power4)")
+(define_reservation "lsq_power4"
+		    "(du1_power4,lsu1_power4)\
+		    |(du2_power4,lsu2_power4)\
+		    |(du3_power4,nothing,lsu2_power4)\
+		    |(du4_power4,nothing,lsu1_power4)")
 
 (define_reservation "lsuq_power4"
 		    "((du1_power4+du2_power4),lsu1_power4+iu2_power4)\
 		    |((du2_power4+du3_power4),lsu2_power4+iu2_power4)\
 		    |((du3_power4+du4_power4),lsu2_power4+iu1_power4)")
-;;;		    |((du2_power4+du3_power4),lsu2_power4,iu2_power4)
+;		    |((du2_power4+du3_power4),nothing,lsu2_power4,iu2_power4)
 
-(define_reservation "lsuxq_power4"
-		    "(du1_power4+du2_power4+du3_power4+du4_power4),\
-		     iu1_power4,(lsu2_power4+iu2_power4)")
+(define_reservation "iq_power4"
+		    "(du1_power4,iu1_power4)\
+		    |(du2_power4,iu2_power4)\
+		    |(du3_power4,nothing,iu2_power4)\
+		    |(du4_power4,nothing,iu1_power4)")
 
-(define_reservation "iq_power4" "(q1_power4,iu1_power4)\
-				|(q2_power4,iu2_power4)\
-				|(du3_power4,nothing,iu2_power4)\
-				|(du4_power4,nothing,iu1_power4)")
-
-(define_reservation "fpq_power4" "(q1_power4,fpu1_power4)\
-				 |(q2_power4,fpu2_power4)\
-				 |(du3_power4,nothing,fpu2_power4)\
-				 |(du4_power4,nothing,fpu1_power4)")
+(define_reservation "fpq_power4"
+		    "(du1_power4,fpu1_power4)\
+		    |(du2_power4,fpu2_power4)\
+		    |(du3_power4,nothing,fpu2_power4)\
+		    |(du4_power4,nothing,fpu1_power4)")
 
 (define_reservation "vq_power4"
-		    "(q4_power4,vec_power4)|(q4_power4,nothing,vec_power4)")
+		    "(du1_power4,vec_power4)\
+		    |(du2_power4,vec_power4)\
+		    |(du3_power4,nothing,vec_power4)\
+		    |(du4_power4,nothing,vec_power4)")
+
 (define_reservation "vpq_power4"
-		    "(q4_power4,vecperm_power4)\
-		    |(q4_power4,nothing,vecperm_power4)")
+		    "(du1_power4,vecperm_power4)\
+		    |(du2_power4,vecperm_power4)\
+		    |(du3_power4,nothing,vecperm_power4)\
+		    |(du4_power4,nothing,vecperm_power4)")
 
 
 ; Dispatch slots are allocated in order conforming to program order.
@@ -79,7 +80,7 @@
 
 
 ; Load/store
-(define_insn_reservation "power4-load" 3
+(define_insn_reservation "power4-load" 4 ; 3
   (and (eq_attr "type" "load")
        (eq_attr "cpu" "power4"))
   "lsq_power4")
@@ -87,9 +88,9 @@
 (define_insn_reservation "power4-load-ext" 5
   (and (eq_attr "type" "load_ext")
        (eq_attr "cpu" "power4"))
-  "((du1_power4+du2_power4),lsu1_power4,nothing,nothing,iu2_power4)\
-  |((du2_power4+du3_power4),lsu2_power4,nothing,nothing,iu2_power4)\
-  |((du3_power4+du4_power4),lsu2_power4,nothing,nothing,iu1_power4)")
+  "(du1_power4+du2_power4,lsu1_power4,nothing,nothing,iu2_power4)\
+  |(du2_power4+du3_power4,lsu2_power4,nothing,nothing,iu2_power4)\
+  |(du3_power4+du4_power4,lsu2_power4,nothing,nothing,iu1_power4)")
 
 (define_insn_reservation "power4-load-ext-update" 5
   (and (eq_attr "type" "load_ext_u")
@@ -101,34 +102,30 @@
   (and (eq_attr "type" "load_ext_ux")
        (eq_attr "cpu" "power4"))
   "(du1_power4+du2_power4+du3_power4+du4_power4),\
-   iu1_power4,(lsu2_power4+iu1_power4),nothing,nothing,iu2_power4")
+   iu1_power4,lsu2_power4+iu1_power4,nothing,nothing,iu2_power4")
 
-(define_insn_reservation "power4-load-update-indexed" 3
+(define_insn_reservation "power4-load-update-indexed" 4 ; 3
   (and (eq_attr "type" "load_ux")
        (eq_attr "cpu" "power4"))
-  "lsuxq_power4")
+   "du1_power4+du2_power4+du3_power4+du4_power4,\
+   iu1_power4,lsu2_power4+iu2_power4")
 
-(define_insn_reservation "power4-load-update" 3
+(define_insn_reservation "power4-load-update" 4 ; 3
   (and (eq_attr "type" "load_u")
        (eq_attr "cpu" "power4"))
   "lsuq_power4")
 
-(define_insn_reservation "power4-fpload" 5
+(define_insn_reservation "power4-fpload" 6 ; 5
   (and (eq_attr "type" "fpload")
        (eq_attr "cpu" "power4"))
   "lsq_power4")
 
-(define_insn_reservation "power4-fpload-update" 5
-  (and (eq_attr "type" "fpload_u")
+(define_insn_reservation "power4-fpload-update" 6 ; 5
+  (and (eq_attr "type" "fpload_u,fpload_ux")
        (eq_attr "cpu" "power4"))
   "lsuq_power4")
 
-(define_insn_reservation "power4-fpload-update-indexed" 5
-  (and (eq_attr "type" "fpload_ux")
-       (eq_attr "cpu" "power4"))
-  "lsuxq_power4")
-
-(define_insn_reservation "power4-vecload" 5
+(define_insn_reservation "power4-vecload" 6 ; 5
   (and (eq_attr "type" "vecload")
        (eq_attr "cpu" "power4"))
   "lsq_power4")
@@ -136,44 +133,48 @@
 (define_insn_reservation "power4-store" 1
   (and (eq_attr "type" "store")
        (eq_attr "cpu" "power4"))
-  "(q1_power4,lsu1_power4,iu1_power4)\
-  |(q2_power4,lsu2_power4,iu2_power4)")
+  "(du1_power4,lsu1_power4,iu1_power4)\
+  |(du2_power4,lsu2_power4,iu2_power4)\
+  |(du3_power4,lsu2_power4,nothing,iu2_power4)\
+  |(du4_power4,lsu1_power4,nothing,iu1_power4)")
 
 (define_insn_reservation "power4-store-update" 1
   (and (eq_attr "type" "store_u")
        (eq_attr "cpu" "power4"))
-  "lsuq_power4")
+  "(du1_power4+du2_power4,lsu1_power4+iu2_power4,iu1_power4)\
+  |(du2_power4+du3_power4,lsu2_power4+iu2_power4,iu2_power4)\
+  |(du3_power4+du4_power4,lsu2_power4+iu1_power4,iu2_power4)\
+  |(du3_power4+du4_power4,lsu2_power4,iu1_power4,iu2_power4)")
 
 (define_insn_reservation "power4-store-update-indexed" 1
   (and (eq_attr "type" "store_ux")
        (eq_attr "cpu" "power4"))
-  "lsuxq_power4")
+   "du1_power4+du2_power4+du3_power4+du4_power4,\
+    iu1_power4,lsu2_power4+iu2_power4,iu2_power4")
 
 (define_insn_reservation "power4-fpstore" 1
   (and (eq_attr "type" "fpstore")
        (eq_attr "cpu" "power4"))
-  "(q1_power4,lsu1_power4,fpu1_power4)\
-  |(q2_power4,lsu2_power4,fpu2_power4)")
+  "(du1_power4,lsu1_power4,fpu1_power4)\
+  |(du2_power4,lsu2_power4,fpu2_power4)\
+  |(du3_power4,lsu2_power4,nothing,fpu2_power4)\
+  |(du4_power4,lsu1_power4,nothing,fpu1_power4)")
 
 (define_insn_reservation "power4-fpstore-update" 1
-  (and (eq_attr "type" "fpstore_u")
+  (and (eq_attr "type" "fpstore_u,fpstore_ux")
        (eq_attr "cpu" "power4"))
-  "((du1_power4+du2_power4),(fpu1_power4+iu2_power4),lsu1_power4)\
-  |((du2_power4+du3_power4),(fpu2_power4+iu2_power4),lsu2_power4)\
-  |((du3_power4+du4_power4),(fpu2_power4+iu1_power4),lsu2_power4)")
-;;;((du2_power4+du3_power4),fpu2_power4,(iu2_power4+lsu2_power4))
-
-(define_insn_reservation "power4-fpstore-update-indexed" 1
-  (and (eq_attr "type" "fpstore_ux")
-       (eq_attr "cpu" "power4"))
-  "(du1_power4+du2_power4+du3_power4+du4_power4),
-   iu1_power4,fpu2_power4,(iu2_power4+lsu2_power4)")
+  "(du1_power4+du2_power4,lsu1_power4+iu2_power4,fpu1_power4)\
+  |(du2_power4+du3_power4,lsu2_power4+iu2_power4,fpu2_power4)\
+  |(du3_power4+du4_power4,lsu2_power4+iu1_power4,fpu2_power4)")
+;  |(du3_power4+du4_power4,nothing,lsu2_power4+iu1_power4,fpu2_power4)")
 
 (define_insn_reservation "power4-vecstore" 1
   (and (eq_attr "type" "vecstore")
        (eq_attr "cpu" "power4"))
-  "(q1_power4,lsu1_power4,vec_power4)\
-  |(q2_power4,lsu2_power4,vec_power4)")
+  "(du1_power4,lsu1_power4,vec_power4)\
+  |(du2_power4,lsu2_power4,vec_power4)\
+  |(du3_power4,lsu2_power4,nothing,vec_power4)\
+  |(du4_power4,lsu1_power4,nothing,vec_power4)")
 
 
 ; Integer latency is 2 cycles
@@ -187,29 +188,65 @@
        (eq_attr "cpu" "power4"))
   "iq_power4")
 
-(define_insn_reservation "power4-compare" 4
+(define_insn_reservation "power4-compare" 2
   (and (eq_attr "type" "compare,delayed_compare")
        (eq_attr "cpu" "power4"))
-  "((du1_power4+du2_power4),iu1_power4,iu2_power4)\
-  |((du2_power4+du3_power4),iu2_power4,iu2_power4)\
-  |((du3_power4+du4_power4),iu2_power4,iu1_power4)")
+  "(du1_power4+du2_power4,iu1_power4,iu2_power4)\
+  |(du2_power4+du3_power4,iu2_power4,iu2_power4)\
+  |(du3_power4+du4_power4,nothing,iu2_power4,iu1_power4)")
 
-(define_bypass 2 "power4-compare" "power4-integer")
+(define_bypass 4 "power4-compare" "power4-branch,power4-crlogical,power4-delayedcr,power4-mfcr")
 
-(define_insn_reservation "power4-imul" 7
-  (and (eq_attr "type" "imul,lmul,mult_compare")
+(define_insn_reservation "power4-lmul-cmp" 8 ; 7
+  (and (eq_attr "type" "lmul_compare")
        (eq_attr "cpu" "power4"))
-  "(q1_power4,iu1_power4*6)|(q2_power4,iu2_power4*6)")
+  "(du1_power4+du2_power4,iu1_power4*6,iu2_power4)\
+  |(du2_power4+du3_power4,iu2_power4*6,iu2_power4)\
+  |(du3_power4+du4_power4,iu2_power4*6,iu1_power4)")
+;  |(du3_power4+du4_power4,nothing,iu2_power4*6,iu1_power4)")
 
-(define_insn_reservation "power4-imul2" 5
-  (and (eq_attr "type" "imul2")
-       (eq_attr "cpu" "power4"))
-  "(q1_power4,iu1_power4*4)|(q2_power4,iu2_power4*4)")
+(define_bypass 10 "power4-lmul-cmp" "power4-branch,power4-crlogical,power4-delayedcr,power4-mfcr")
 
-(define_insn_reservation "power4-imul3" 4
-  (and (eq_attr "type" "imul3")
+(define_insn_reservation "power4-imul-cmp" 6 ; 5
+  (and (eq_attr "type" "imul_compare")
        (eq_attr "cpu" "power4"))
-  "(q1_power4,iu1_power4*3)|(q2_power4,iu2_power4*3)")
+  "(du1_power4+du2_power4,iu1_power4*4,iu2_power4)\
+  |(du2_power4+du3_power4,iu2_power4*4,iu2_power4)\
+  |(du3_power4+du4_power4,iu2_power4*4,iu1_power4)")
+;  |(du3_power4+du4_power4,nothing,iu2_power4*4,iu1_power4)")
+
+(define_bypass 8 "power4-imul-cmp" "power4-branch,power4-crlogical,power4-delayedcr,power4-mfcr")
+
+(define_insn_reservation "power4-lmul" 8 ; 7
+  (and (eq_attr "type" "lmul")
+       (eq_attr "cpu" "power4"))
+  "(du1_power4,iu1_power4*6)\
+  |(du2_power4,iu2_power4*6)\
+  |(du3_power4,iu2_power4*6)\
+  |(du4_power4,iu2_power4*6)")
+;  |(du3_power4,nothing,iu2_power4*6)\
+;  |(du4_power4,nothing,iu2_power4*6)")
+
+(define_insn_reservation "power4-imul" 6 ; 5
+  (and (eq_attr "type" "imul")
+       (eq_attr "cpu" "power4"))
+  "(du1_power4,iu1_power4*4)\
+  |(du2_power4,iu2_power4*4)\
+  |(du3_power4,iu2_power4*4)\
+  |(du4_power4,iu1_power4*4)")
+;  |(du3_power4,nothing,iu2_power4*4)\
+;  |(du4_power4,nothing,iu1_power4*4)")
+
+(define_insn_reservation "power4-imul3" 5 ; 4
+  (and (eq_attr "type" "imul2,imul3")
+       (eq_attr "cpu" "power4"))
+  "(du1_power4,iu1_power4*3)\
+  |(du2_power4,iu2_power4*3)\
+  |(du3_power4,iu2_power4*3)\
+  |(du4_power4,iu1_power4*3)")
+;  |(du3_power4,nothing,iu2_power4*3)\
+;  |(du4_power4,nothing,iu1_power4*3)")
+
 
 ; SPR move only executes in first IU.
 ; Integer division only executes in second IU.
@@ -268,7 +305,7 @@
   "du1_power4,iu1_power4")
 
 ; Basic FP latency is 6 cycles
-(define_insn_reservation "power4-fp" 6
+(define_insn_reservation "power4-fp" 7 ; 6
   (and (eq_attr "type" "fp,dmul")
        (eq_attr "cpu" "power4"))
   "fpq_power4")
@@ -281,12 +318,22 @@
 (define_insn_reservation "power4-sdiv" 33
   (and (eq_attr "type" "sdiv,ddiv")
        (eq_attr "cpu" "power4"))
-  "(q1_power4,fpu1_power4*28)|(q2_power4,fpu2_power4*28)")
+  "(du1_power4,fpu1_power4*28)\
+  |(du2_power4,fpu2_power4*28)\
+  |(du3_power4,fpu2_power4*28)\
+  |(du4_power4,fpu1_power4*28)")
+;  |(du3_power4,nothing,fpu2_power4*28)\
+;  |(du4_power4,nothing,fpu1_power4*28)")
 
 (define_insn_reservation "power4-sqrt" 40
   (and (eq_attr "type" "ssqrt,dsqrt")
        (eq_attr "cpu" "power4"))
-  "(q1_power4,fpu1_power4*35)|(q2_power4,fpu2_power4*35)")
+  "(du1_power4,fpu1_power4*35)\
+  |(du2_power4,fpu2_power4*35)\
+  |(du3_power4,fpu2_power4*35)\
+  |(du4_power4,fpu2_power4*35)")
+;  |(du3_power4,nothing,fpu2_power4*35)\
+;  |(du4_power4,nothing,fpu2_power4*35)")
 
 
 ; VMX
