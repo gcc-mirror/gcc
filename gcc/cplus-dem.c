@@ -1,5 +1,5 @@
 /* Demangler for GNU C++ 
-   Copyright 1989, 1991, 1994, 1995 Free Software Foundation, Inc.
+   Copyright 1989, 1991, 1994, 1995, 1996 Free Software Foundation, Inc.
    Written by James Clark (jjc@jclark.uucp)
    Rewritten by Fred Fish (fnf@cygnus.com) for ARM and Lucid demangling
    
@@ -323,7 +323,7 @@ consume_count (type)
 
 int
 cplus_demangle_opname (opname, result, options)
-     char *opname;
+     const char *opname;
      char *result;
      int options;
 {
@@ -450,9 +450,9 @@ cplus_demangle_opname (opname, result, options)
    If OPTIONS & DMGL_ANSI == 1, return the ANSI name;
    if OPTIONS & DMGL_ANSI == 0, return the old GNU name.  */
 
-char *
+const char *
 cplus_mangle_opname (opname, options)
-     char *opname;
+     const char *opname;
      int options;
 {
   int i;
@@ -464,7 +464,7 @@ cplus_mangle_opname (opname, options)
       if (strlen (optable[i].out) == len
 	  && (options & DMGL_ANSI) == (optable[i].flags & DMGL_ANSI)
 	  && memcmp (optable[i].out, opname, len) == 0)
-	return ((char *)optable[i].in);
+	return optable[i].in;
     }
   return (0);
 }
