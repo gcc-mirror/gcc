@@ -1,3 +1,8 @@
+2003-06-03  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* gcc.dg/torture/builtin-noret-1.c (_exit, _Exit): Make weak.
+	* gcc.dg/torture/builtin-noret-2.c (_exit, _Exit): Likewise.
+
 2003-06-03  Aldy Hernandez  <aldyh@redhat.com>
 
         * gcc.c-torture/compile/simd-5.x: Remove xfail for PPC64.
