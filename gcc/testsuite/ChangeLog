@@ -1,3 +1,8 @@
+2004-08-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/16889
+	* g++.dg/lookup/ambig[12].C: New.
+
 2004-08-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/16706
