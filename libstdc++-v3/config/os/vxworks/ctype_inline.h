@@ -1,6 +1,6 @@
-// Specific definitions for generic platforms  -*- C++ -*-
+// Locale support -*- C++ -*-
 
-// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,12 +27,45 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+//
+// ISO C++ 14882: 22.1  Locales
+//
+  
+// Information as gleaned from target/h/ctype.h
 
-#ifndef _GLIBCXX_OS_DEFINES
-#define _GLIBCXX_OS_DEFINES 1
+// ctype bits to be inlined go here. Non-inlinable (ie virtual do_*)
+// functions go in ctype.cc
 
-// System-specific #define, typedefs, corrections, etc, go here.  This
-// file will come before all others.
-#define __C9X__ 1 // for sinf etc
+  bool
+  ctype<char>::
+  is(mask __m, char __c) const
+  { return __ctype[static_cast<unsigned char>(__c)] & __m; }
 
-#endif
+  const char*
+  ctype<char>::
+  is(const char* __low, const char* __high, mask* __vec) const
+  {
+    while (__low < __high)
+      *__vec++ = __ctype[static_cast<unsigned char>(*__low++)];
+    return __high;
+  }
+
+  const char*
+  ctype<char>::
+  scan_is(mask __m, const char* __low, const char* __high) const
+  {
+    while (__low < __high 
+	   && !(__ctype[static_cast<unsigned char>(*__low)] & __m))
+      ++__low;
+    return __low;
+  }
+
+  const char*
+  ctype<char>::
+  scan_not(mask __m, const char* __low, const char* __high) const
+  {
+    while (__low < __high
+	   && (__ctype[static_cast<unsigned char>(*__low)] & __m))
+      ++__low;
+    return __low;
+  }
