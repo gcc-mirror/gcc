@@ -170,8 +170,9 @@ typedef __WCHAR_TYPE__ wchar_t;
     header files do that.  */
 #ifdef _ANSI_H_
 #undef _PTRDIFF_T_
-#ifndef _STDDEF_H /* This is a kludge.  The case where this happens
-		     is when obstack.h wants just ptrdiff_t.  */
+#ifdef _STDDEF_H /* This is a kludge.
+		    _STDDEF_H is defined when we are using the whole file,
+		    undefined when obstack.h wants just ptrdiff_t.  */
 #undef _SIZE_T_
 #undef _WCHAR_T_
 #endif
