@@ -859,7 +859,8 @@ primary:
 string:
 	  STRING
 	| string STRING
-		{ $$ = chainon ($1, $2); }
+		{ $$ = chainon ($1, $2);
+		}
 	;
 
 /* Produces an OBJC_STRING_CST with perhaps more OBJC_STRING_CSTs chained

@@ -746,7 +746,10 @@ primary:
 string:
 	  STRING
 	| string STRING
-		{ $$ = chainon ($1, $2); }
+		{ $$ = chainon ($1, $2);
+		  if (warn_traditional)
+		    warning ("Use of ANSI string concatenation");
+		}
 	;
 
 
