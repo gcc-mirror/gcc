@@ -1,3 +1,12 @@
+2002-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/5309:
+        * config/sparc/sparc.c (ultrasparc_adjust_cost): Handle TYPE_IDIV the
+	same way as TYPE_IMUL.
+	(ultrasparc_sched_reorder): Likewise.
+	* config/sparc/sparc.md (type): Add comment to update
+	ultrasparc_sched_reorder when making changes.
+
 2002-01-16  Kazu Hirata  <kazu@hxi.com>
 
 	* doc/invoke.texi: Change the dump file name of block
