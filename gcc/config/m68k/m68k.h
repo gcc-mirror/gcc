@@ -1,5 +1,6 @@
 /* Definitions of target machine for GNU compiler.  Sun 68000/68020 version.
-   Copyright (C) 1987, 1988, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1993, 1994 Free Software Foundation, Inc.
+
 
 This file is part of GNU CC.
 
@@ -1355,10 +1356,10 @@ __transfer_from_trampoline ()					\
     if (RTX == const0_rtx) return 0;				\
     /* Constants between -128 and 127 are cheap due to moveq */ \
     if (INTVAL (RTX) >= -128 && INTVAL (RTX) <= 127) return 1;	\
-    /* Constants between -136 and 254 are easily generated */	\
-    /* by intelligent uses of moveq, add[q], and subq 	   */   \
-    if ((OUTER_CODE) == SET && INTVAL (RTX) >= -136		\
-	&& INTVAL (RTX) <= 254) return 2;			\
+    /* Constants between -256 and 255 are easily generated */	\
+    /* by use of moveq and not.b 	   		   */   \
+    if ((OUTER_CODE) == SET && INTVAL (RTX) >= -256		\
+	&& INTVAL (RTX) < 256) return 2;			\
   case CONST:							\
   case LABEL_REF:						\
   case SYMBOL_REF:						\
