@@ -350,6 +350,7 @@ copy_body_r (tp, walk_subtrees, data)
       /* Build the GOTO_STMT.  */
       goto_stmt = build_stmt (GOTO_STMT, id->ret_label);
       TREE_CHAIN (goto_stmt) = TREE_CHAIN (return_stmt);
+      GOTO_FAKE_P (goto_stmt) = 1;
 
       /* If we're returning something, just turn that into an
 	 assignment into the equivalent of the original

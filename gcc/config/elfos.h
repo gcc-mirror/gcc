@@ -352,7 +352,23 @@ const_section ()						\
 /* A C statement or statements to switch to the appropriate
    section for output of DECL.  DECL is either a `VAR_DECL' node
    or a constant of some sort.  RELOC indicates whether forming
-   the initial value of DECL requires link-time relocations.  */
+   the initial value of DECL requires link-time relocations.  
+ 
+   To optimize loading of shared programs, define following subsections
+   of data section by attaching:
+
+   .rel
+     Section with this string in name contains data that do have
+     relocations, so they get grouped together and dynamic linker
+     will visit fewer pages in memory.
+   .ro
+     Marks data read only otherwise.  This is usefull with prelinking
+     as most of relocations won't be dynamically linked and thus
+     stay read only.
+   .local
+     Marks data containing relocations only to local objects.  These
+     relocation will get fully resolved by prelinking.
+ */
 
 #undef SELECT_SECTION
 #define SELECT_SECTION(DECL, RELOC, ALIGN)			\
@@ -366,12 +382,22 @@ const_section ()						\
     }								\
   else if (TREE_CODE (DECL) == VAR_DECL)			\
     {								\
-      if ((flag_pic && RELOC)					\
-	  || !TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)	\
+      if (!TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)	\
 	  || !DECL_INITIAL (DECL)				\
 	  || (DECL_INITIAL (DECL) != error_mark_node		\
 	      && !TREE_CONSTANT (DECL_INITIAL (DECL))))		\
-	data_section ();					\
+	{							\
+	  if (flag_pic && ((RELOC) & 2))			\
+	    named_section (NULL_TREE, ".data.rel", RELOC);	\
+	  else if (flag_pic && (RELOC))				\
+	    named_section (NULL_TREE, ".data.rel.local", RELOC);\
+	  else							\
+	    data_section ();					\
+	}							\
+      else if (flag_pic && ((RELOC) & 2))			\
+	named_section (NULL_TREE, ".data.rel.ro", RELOC);	\
+      else if (flag_pic && (RELOC))				\
+	named_section (NULL_TREE, ".data.rel.ro.local", RELOC);	\
       else if (flag_merge_constants < 2)			\
 	/* C and C++ don't allow different variables to share	\
 	   the same location.  -fmerge-all-constants allows	\

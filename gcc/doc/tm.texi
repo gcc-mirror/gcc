@@ -5661,7 +5661,9 @@ A C statement or statements to switch to the appropriate section for
 output of @var{exp}.  You can assume that @var{exp} is either a
 @code{VAR_DECL} node or a constant of some sort.  @var{reloc}
 indicates whether the initial value of @var{exp} requires link-time
-relocations.  Select the section by calling @code{text_section} or one
+relocations.  Bit 1 is set when variable contains local relocations
+only, while bit 2 is set for global relocations.
+Select the section by calling @code{text_section} or one
 of the alternatives for other sections.  @var{align} is the constant
 alignment in bits.
 

@@ -1679,7 +1679,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   /* Output any data that we will need to use the address of.  */
   if (DECL_INITIAL (decl) == error_mark_node)
-    reloc = contains_pointers_p (TREE_TYPE (decl));
+    reloc = contains_pointers_p (TREE_TYPE (decl)) ? 3 : 0;
   else if (DECL_INITIAL (decl))
     reloc = output_addressed_constants (DECL_INITIAL (decl));
 

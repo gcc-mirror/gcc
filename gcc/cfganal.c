@@ -980,6 +980,7 @@ flow_dfs_compute_reverse_add_bb (data, bb)
      basic_block bb;
 {
   data->stack[data->sp++] = bb;
+  SET_BIT (data->visited_blocks, bb->index - (INVALID_BLOCK + 1));
   return;
 }
 
@@ -999,16 +1000,11 @@ flow_dfs_compute_reverse_execute (data)
   while (data->sp > 0)
     {
       bb = data->stack[--data->sp];
-
-      /* Mark that we have visited this node.  */
-      if (!TEST_BIT (data->visited_blocks, bb->index - (INVALID_BLOCK + 1)))
-	{
-	  SET_BIT (data->visited_blocks, bb->index - (INVALID_BLOCK + 1));
-
-	  /* Perform depth-first search on adjacent vertices.  */
-	  for (e = bb->pred; e; e = e->pred_next)
-	    flow_dfs_compute_reverse_add_bb (data, e->src);
-	}
+      /* Perform depth-first search on adjacent vertices.  */
+      for (e = bb->pred; e; e = e->pred_next)
+	if (!TEST_BIT (data->visited_blocks,
+		       e->src->index - (INVALID_BLOCK + 1)))
+	  flow_dfs_compute_reverse_add_bb (data, e->src);
     }
 
   /* Determine if there are unvisited basic blocks.  */

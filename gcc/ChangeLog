@@ -1,3 +1,21 @@
+Wed Nov 28 10:42:19 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* cse.c (true_dependence_in_rtx): New function.
+	(invalidate): Use it.
+
+	* c-common.h (GOTO_FAKE_P): New macro.
+	* tree-inline.c (GOTO_FAKE_P): Set.
+	* c-tree.texi (GOTO_FAKE_P): Document.
+
+	* varasm.c (assemble_variable): Set reloc to 3 for error_mark
+	containing pointers.
+	(output_addressed_constants): Check for local/external relocations.
+	* elfos.h (SELECT_SECTION): Classify data section.
+	* tm.texi (SELECT_SECTION): Update documentation.
+
+	* cfganal.c (flow_dfs_compute_reverse_add_bb): set visited bit.
+	(flow_dfs_compute_reverse_execute): Add only unvisited blocks.
+
 2001-11-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* defaults.h (UNALIGNED_SHORT_ASM_OP, UNALIGNED_INT_ASM_OP,
