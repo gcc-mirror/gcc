@@ -1,3 +1,7 @@
+Tue Jul  7 00:44:35 1998  Franz Sirl <Franz.Sirl-kernel@lauterbach.com>
+
+	* m68k.md (zero_extend QI to HI): Correctly handle TARGET_5200.
+
 Tue Jul  7 00:36:41 1998  Ulrich Drepper <drepper@cygnus.com>
 
 	* i386.c: Remove random whitespace at end of lines.
