@@ -151,8 +151,8 @@ extern int target_flags;
 
 #define SIZE_TYPE "unsigned int"
 #define PTRDIFF_TYPE "int"
-#define WCHAR_TYPE "short unsigned int"
-#define WCHAR_TYPE_SIZE 16
+#define WCHAR_TYPE "unsigned int"
+#define WCHAR_TYPE_SIZE 32
 
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro
