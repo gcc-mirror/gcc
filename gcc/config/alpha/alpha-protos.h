@@ -73,6 +73,7 @@ extern int addition_operation PARAMS ((rtx, enum machine_mode));
 extern rtx alpha_tablejump_addr_vec PARAMS ((rtx));
 extern rtx alpha_tablejump_best_label PARAMS ((rtx));
 
+extern bool alpha_legitimate_address_p PARAMS ((enum machine_mode, rtx, int));
 extern rtx alpha_legitimize_address PARAMS ((rtx, rtx, enum machine_mode));
 extern rtx alpha_legitimize_reload_address PARAMS ((rtx, enum machine_mode,
 						    int, int, int));

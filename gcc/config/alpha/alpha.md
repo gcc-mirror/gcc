@@ -663,7 +663,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (plus:DI (match_operand:DI 1 "reg_no_subreg_operand" "r")
 		 (match_operand:DI 2 "const_int_operand" "n")))]
-  "REG_OK_FP_BASE_P (operands[1])
+  "NONSTRICT_REG_OK_FP_BASE_P (operands[1])
    && INTVAL (operands[2]) >= 0
    /* This is the largest constant an lda+ldah pair can add, minus
       an upper bound on the displacement between SP and AP during

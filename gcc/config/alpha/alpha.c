@@ -1154,6 +1154,77 @@ alpha_tablejump_best_label (insn)
   return best_label ? best_label : const0_rtx;
 }
 
+/* legitimate_address_p recognizes an RTL expression that is a valid
+   memory address for an instruction.  The MODE argument is the
+   machine mode for the MEM expression that wants to use this address.
+
+   For Alpha, we have either a constant address or the sum of a
+   register and a constant address, or just a register.  For DImode,
+   any of those forms can be surrounded with an AND that clear the
+   low-order three bits; this is an "unaligned" access.  */
+
+bool
+alpha_legitimate_address_p (mode, x, strict)
+     enum machine_mode mode;
+     rtx x;
+     int strict;
+{
+  /* If this is an ldq_u type address, discard the outer AND.  */
+  if (mode == DImode
+      && GET_CODE (x) == AND
+      && GET_CODE (XEXP (x, 1)) == CONST_INT
+      && INTVAL (XEXP (x, 1)) == -8)
+    x = XEXP (x, 0);
+
+  /* Discard non-paradoxical subregs.  */
+  if (GET_CODE (x) == SUBREG
+      && (GET_MODE_SIZE (GET_MODE (x))
+	  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
+    x = SUBREG_REG (x);
+
+  /* Unadorned general registers are valid.  */
+  if (REG_P (x)
+      && (strict
+	  ? STRICT_REG_OK_FOR_BASE_P (x)
+	  : NONSTRICT_REG_OK_FOR_BASE_P (x)))
+    return true;
+
+  /* Constant addresses (i.e. +/- 32k) are valid.  */
+  if (CONSTANT_ADDRESS_P (x))
+    return true;
+
+  /* Register plus a small constant offset is valid.  */
+  if (GET_CODE (x) == PLUS)
+    {
+      rtx ofs = XEXP (x, 1);
+      x = XEXP (x, 0);
+
+      /* Discard non-paradoxical subregs.  */
+      if (GET_CODE (x) == SUBREG
+          && (GET_MODE_SIZE (GET_MODE (x))
+	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))))
+	x = SUBREG_REG (x);
+
+      if (REG_P (x))
+	{
+	  if (! strict
+	      && NONSTRICT_REG_OK_FP_BASE_P (x)
+	      && GET_CODE (ofs) == CONST_INT)
+	    return true;
+	  if ((strict
+	       ? STRICT_REG_OK_FOR_BASE_P (x)
+	       : NONSTRICT_REG_OK_FOR_BASE_P (x))
+	      && CONSTANT_ADDRESS_P (ofs))
+	    return true;
+	}
+      else if (GET_CODE (x) == ADDRESSOF
+	       && GET_CODE (ofs) == CONST_INT)
+	return true;
+    }
+
+  return false;
+}
+
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.  */
 
