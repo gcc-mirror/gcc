@@ -1,3 +1,9 @@
+Wed Dec  5 17:59:19 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* config/alpha/vms.h (SIZE_TYPE, PTRDIFF_TYPE): Remove, were disabled.
+	(DOLLARS_IN_IDENTIFIERS, LINK_SPEC): Remove duplicate.
+	(LIB_SPEC): Remove.
+	
 Wed Dec  5 16:03:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* doc/c-tree.texi (RECORD_TYPE, UNION_TYPE): Expand on definition.

@@ -40,28 +40,6 @@ Boston, MA 02111-1307, USA.  */
 %{mfloat-vax:-D__G_FLOAT} \
 %{!mfloat-vax:-D__IEEE_FLOAT}"
 
-/* Under OSF4, -p and -pg require -lprof1, and -lprof1 requires -lpdf.  */
-
-#define LIB_SPEC "%{p:-lprof1 -lpdf} %{pg:-lprof1 -lpdf} %{a:-lprof2} -lc"
-
-/* Pass "-G 8" to ld because Alpha's CC does.  Pass -O3 if we are
-   optimizing, -O1 if we are not.  Pass -shared, -non_shared or
-   -call_shared as appropriate.  Also pass -pg.  */
-#define LINK_SPEC  \
-  "-G 8 %{O*:-O3} %{!O*:-O1} %{static:-non_shared} \
-   %{!static:%{shared:-shared} %{!shared:-call_shared}} %{pg} %{taso} \
-   %{rpath*}"
-
-/* We allow $'s in identifiers unless -ansi is used ..  */
-
-#define DOLLARS_IN_IDENTIFIERS 2
-
-/* These match the definitions used in DECCRTL, the VMS C run-time library
-
-#define SIZE_TYPE	"unsigned int"
-#define PTRDIFF_TYPE	"int"
-*/
-
 /* By default, allow $ to be part of an identifier.  */
 #define DOLLARS_IN_IDENTIFIERS 2
 
