@@ -1,10 +1,10 @@
 #
-# makefile for egcs
+# makefile for GCC
 #
 # Created by Klaus K"ampf, kkaempf@progis.de
 #
 
-# choose egcs or dec c
+# choose gcc or dec c
 #CC = gcc
 CC = cc
 
