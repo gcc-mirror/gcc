@@ -639,7 +639,22 @@ collect_funlike_expansion (pfile, list, arglist, replacement)
 	default:
 	norm:
 	  if (last_token == STRIZE)
-	    cpp_error (pfile, "# is not followed by a macro argument name");
+	    {
+	      /* This is a mandatory diagnostic (6.10.3.2 para 1), but
+		 in assembly language # may have some other
+		 significance we don't know about, so suppress the
+		 warning. */
+	      if (! CPP_OPTION (pfile, lang_asm))
+		cpp_pedwarn (pfile,
+			     "# is not followed by a macro argument name");
+	      if (TOK_PREV_WHITE (list, i))
+		CPP_ADJUST_WRITTEN (pfile, -1);
+	      if (TOK_PREV_WHITE (list, i-1))
+		CPP_PUTC (pfile, ' ');
+	      CPP_PUTC (pfile, '#');
+	      if (TOK_PREV_WHITE (list, i))
+		CPP_PUTC (pfile, ' ');
+	    }
 	  CPP_PUTS (pfile, tok, len);
 	  last_token = NORM;
 	}
