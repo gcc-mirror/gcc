@@ -1213,7 +1213,17 @@ mcore_output_move (insn, operands, mode)
 	  if (GET_CODE (XEXP (src, 0)) == LABEL_REF) 
             return "lrw\t%0,[%1]";              /* a-R */
 	  else
-            return "ldw\t%0,%1";                 /* r-m */
+	    switch (GET_MODE (src))		/* r-m */
+	      {
+	      case SImode:
+		return "ldw\t%0,%1";
+	      case HImode:
+		return "ld.h\t%0,%1";
+	      case QImode:
+		return "ld.b\t%0,%1";
+	      default:
+		abort ();
+	      }
 	}
       else if (GET_CODE (src) == CONST_INT)
 	{
@@ -1234,98 +1244,19 @@ mcore_output_move (insn, operands, mode)
 	return "lrw\t%0, %1";                /* Into the literal pool.  */
     }
   else if (GET_CODE (dst) == MEM)               /* m-r */
-    return "stw\t%1,%0";
+    switch (GET_MODE (dst))
+      {
+      case SImode:
+	return "stw\t%1,%0";
+      case HImode:
+	return "st.h\t%1,%0";
+      case QImode:
+	return "st.b\t%1,%0";
+      default:
+	abort ();
+      }
 
   abort ();
-}
-
-/* Outputs a constant inline -- regardless of the cost.
-   Useful for things where we've gotten into trouble and think we'd
-   be doing an lrw into r15 (forbidden). This lets us get out of
-   that pickle even after register allocation.  */
-
-const char *
-mcore_output_inline_const_forced (insn, operands, mode)
-     rtx insn ATTRIBUTE_UNUSED;
-     rtx operands[];
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-{
-  unsigned long value = INTVAL (operands[1]);
-  unsigned long ovalue = value;
-  struct piece
-  {
-    int low;
-    int shift;
-  }
-  part[6];
-  int i;
-
-  if (mcore_const_ok_for_inline (value))
-    return output_inline_const (SImode, operands);
-
-  for (i = 0; (unsigned) i < ARRAY_SIZE (part); i++)
-    {
-      part[i].shift = 0;
-      part[i].low = (value & 0x1F);
-      value -= part[i].low;
-      
-      if (mcore_const_ok_for_inline (value))
-	break;
-      else
-	{
-	  value >>= 5;
-	  part[i].shift = 5;
-	  
-	  while ((value & 1) == 0)
-	    {
-	      part[i].shift++;
-	      value >>= 1;
-	    }
-	  
-	  if (mcore_const_ok_for_inline (value))
-	    break;
-	}
-    }
-  
-  /* 5 bits per iteration, a maximum of 5 times == 25 bits and leaves
-     7 bits left in the constant -- which we know we can cover with
-     a movi.  The final value can't be zero otherwise we'd have stopped
-     in the previous iteration.   */
-  if (value == 0 || ! mcore_const_ok_for_inline (value))
-    abort ();
-
-  /* Now, work our way backwards emitting the constant.  */
-
-  /* Emit the value that remains -- it will be nonzero.  */
-  operands[1] = GEN_INT (value);
-  output_asm_insn (output_inline_const (SImode, operands), operands);
- 
-  while (i >= 0)
-    {
-      /* Shift anything we've already loaded.  */
-      if (part[i].shift)
-        {
-	  operands[2] = GEN_INT (part[i].shift);
-	  output_asm_insn ("lsli       %0,%2", operands);
-	  value <<= part[i].shift;
-        }
-      
-      /* Add anything we need into the low 5 bits.  */
-      if (part[i].low != 0)
-        {
-	  operands[2] = GEN_INT (part[i].low);
-	  output_asm_insn ("addi      %0,%2", operands);
-	  value += part[i].low;
-        }
-      
-      i--;
-    }
-  
-  if (value != ovalue)          /* sanity */
-    abort ();
- 
-  /* We've output all the instructions.  */
-  return "";
 }
 
 /* Return a sequence of instructions to perform DI or DF move.
@@ -3009,36 +2940,53 @@ mcore_dependent_reorg (first)
 }
 
 
+/* Return true if X is something that can be moved directly into r15.  */
+
+bool
+mcore_r15_operand_p (x)
+     rtx x;
+{
+  switch (GET_CODE (x))
+    {
+    case CONST_INT:
+      return mcore_const_ok_for_inline (INTVAL (x));
+
+    case REG:
+    case SUBREG:
+    case MEM:
+      return 1;
+
+    default:
+      return 0;
+    }
+}
+
+/* Implement SECONDARY_RELOAD_CLASS.  If CLASS contains r15, and we can't
+   directly move X into it, use r1-r14 as a temporary.  */
+enum reg_class
+mcore_secondary_reload_class (class, mode, x)
+     enum reg_class class;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     rtx x;
+{
+  if (TEST_HARD_REG_BIT (reg_class_contents[class], 15)
+      && !mcore_r15_operand_p (x))
+    return LRW_REGS;
+  return NO_REGS;
+}
+
 /* Return the reg_class to use when reloading the rtx X into the class
-   CLASS.  */
-
-/* If the input is (PLUS REG CONSTANT) representing a stack slot address,
-   then we want to restrict the class to LRW_REGS since that ensures that
-   will be able to safely load the constant.
-
-   If the input is a constant that should be loaded with mvir1, then use
-   ONLYR1_REGS.
-
-   ??? We don't handle the case where we have (PLUS REG CONSTANT) and
-   the constant should be loaded with mvir1, because that can lead to cases
-   where an instruction needs two ONLYR1_REGS reloads.  */
+   CLASS.  If X is too complex to move directly into r15, prefer to
+   use LRW_REGS instead.  */
 enum reg_class
 mcore_reload_class (x, class)
      rtx x;
      enum reg_class class;
 {
-  enum reg_class new_class;
+  if (reg_class_subset_p (LRW_REGS, class) && !mcore_r15_operand_p (x))
+    return LRW_REGS;
 
-  if (class == GENERAL_REGS && CONSTANT_P (x)
-      && (GET_CODE (x) != CONST_INT
-	  || (   ! CONST_OK_FOR_I (INTVAL (x))
-	      && ! CONST_OK_FOR_M (INTVAL (x))
-	      && ! CONST_OK_FOR_N (INTVAL (x)))))
-    new_class = LRW_REGS;
-  else
-    new_class = class;
-
-  return new_class;
+  return class;
 }
 
 /* Tell me if a pair of reg/subreg rtx's actually refer to the same

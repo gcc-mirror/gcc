@@ -69,6 +69,8 @@ extern void         mcore_print_operand_address  	PARAMS ((FILE *, rtx));
 extern void         mcore_print_operand          	PARAMS ((FILE *, rtx, int));
 extern rtx          mcore_gen_compare_reg        	PARAMS ((RTX_CODE));
 extern int          mcore_symbolic_address_p     	PARAMS ((rtx));
+extern bool         mcore_r15_operand_p			PARAMS ((rtx));
+extern enum reg_class mcore_secondary_reload_class	PARAMS ((enum reg_class, enum machine_mode, rtx));
 extern enum reg_class mcore_reload_class 		PARAMS ((rtx, enum reg_class));
 extern int          mcore_is_same_reg            	PARAMS ((rtx, rtx));
 extern int          mcore_arith_S_operand         	PARAMS ((rtx));
@@ -76,7 +78,6 @@ extern int          mcore_arith_S_operand         	PARAMS ((rtx));
 #ifdef HAVE_MACHINE_MODES
 extern const char * mcore_output_move          		PARAMS ((rtx, rtx *, enum machine_mode));
 extern const char * mcore_output_movedouble    		PARAMS ((rtx *, enum machine_mode));
-extern const char * mcore_output_inline_const_forced	PARAMS ((rtx, rtx *, enum machine_mode));
 extern int          mcore_arith_reg_operand       	PARAMS ((rtx, enum machine_mode));
 extern int          mcore_general_movsrc_operand  	PARAMS ((rtx, enum machine_mode));
 extern int          mcore_general_movdst_operand  	PARAMS ((rtx, enum machine_mode));
