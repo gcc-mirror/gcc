@@ -2663,8 +2663,8 @@ build_index_type (maxval)
   TYPE_ALIGN (itype) = TYPE_ALIGN (sizetype);
   if (TREE_CODE (maxval) == INTEGER_CST)
     {
-      HOST_WIDE_INT maxint = TREE_INT_CST_LOW (maxval);
-      return type_hash_canon (maxint > 0 ? maxint : - maxint, itype);
+      int maxint = (int) TREE_INT_CST_LOW (maxval);
+      return type_hash_canon (maxint < 0 ? ~maxint : maxint, itype);
     }
   else
     return itype;
@@ -2689,8 +2689,8 @@ build_index_2_type (lowval,highval)
     {
       HOST_WIDE_INT highint = TREE_INT_CST_LOW (highval);
       HOST_WIDE_INT lowint = TREE_INT_CST_LOW (lowval);
-      HOST_WIDE_INT maxint = highint - lowint;
-      return type_hash_canon (maxint > 0 ? maxint : - maxint, itype);
+      int maxint = (int) (highint - lowint);
+      return type_hash_canon (maxint < 0 ? ~maxint : maxint, itype);
     }
   else
     return itype;
