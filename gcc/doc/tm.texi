@@ -4765,14 +4765,6 @@ comparison operators, so the default returns false always.  Most ports
 don't need to define this macro.
 @end defmac
 
-@defmac TARGET_LIBGCC_FUNCS
-This macro should evaluate to @code{true} if the standard GCC library
-names (like @code{__modsi3}) should be used for functions provided in
-@file{libgcc.a}.  If this macro evaluates to @code{false}, then the
-target must explictily set the names of all desired library functions
-itself using the @code{TARGET_INIT_LIBFUNCS} hook.
-@end defmac
-
 @defmac TARGET_LIB_INT_CMP_BIASED
 This macro should evaluate to @code{true} if the integer comparison
 functions (like @code{__cmpdi2}) return 0 to indicate that the first

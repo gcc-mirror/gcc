@@ -5483,79 +5483,76 @@ init_optabs (void)
   init_all_optabs ();
 
   /* Initialize the optabs with the names of the library functions.  */
-  if (TARGET_LIBGCC_LIBFUNCS)
-    {
-      init_integral_libfuncs (add_optab, "add", '3');
-      init_floating_libfuncs (add_optab, "add", '3');
-      init_integral_libfuncs (addv_optab, "addv", '3');
-      init_floating_libfuncs (addv_optab, "add", '3');
-      init_integral_libfuncs (sub_optab, "sub", '3');
-      init_floating_libfuncs (sub_optab, "sub", '3');
-      init_integral_libfuncs (subv_optab, "subv", '3');
-      init_floating_libfuncs (subv_optab, "sub", '3');
-      init_integral_libfuncs (smul_optab, "mul", '3');
-      init_floating_libfuncs (smul_optab, "mul", '3');
-      init_integral_libfuncs (smulv_optab, "mulv", '3');
-      init_floating_libfuncs (smulv_optab, "mul", '3');
-      init_integral_libfuncs (sdiv_optab, "div", '3');
-      init_floating_libfuncs (sdiv_optab, "div", '3');
-      init_integral_libfuncs (sdivv_optab, "divv", '3');
-      init_integral_libfuncs (udiv_optab, "udiv", '3');
-      init_integral_libfuncs (sdivmod_optab, "divmod", '4');
-      init_integral_libfuncs (udivmod_optab, "udivmod", '4');
-      init_integral_libfuncs (smod_optab, "mod", '3');
-      init_integral_libfuncs (umod_optab, "umod", '3');
-      init_floating_libfuncs (ftrunc_optab, "ftrunc", '2');
-      init_integral_libfuncs (and_optab, "and", '3');
-      init_integral_libfuncs (ior_optab, "ior", '3');
-      init_integral_libfuncs (xor_optab, "xor", '3');
-      init_integral_libfuncs (ashl_optab, "ashl", '3');
-      init_integral_libfuncs (ashr_optab, "ashr", '3');
-      init_integral_libfuncs (lshr_optab, "lshr", '3');
-      init_integral_libfuncs (smin_optab, "min", '3');
-      init_floating_libfuncs (smin_optab, "min", '3');
-      init_integral_libfuncs (smax_optab, "max", '3');
-      init_floating_libfuncs (smax_optab, "max", '3');
-      init_integral_libfuncs (umin_optab, "umin", '3');
-      init_integral_libfuncs (umax_optab, "umax", '3');
-      init_integral_libfuncs (neg_optab, "neg", '2');
-      init_floating_libfuncs (neg_optab, "neg", '2');
-      init_integral_libfuncs (negv_optab, "negv", '2');
-      init_floating_libfuncs (negv_optab, "neg", '2');
-      init_integral_libfuncs (one_cmpl_optab, "one_cmpl", '2');
-      init_integral_libfuncs (ffs_optab, "ffs", '2');
-      init_integral_libfuncs (clz_optab, "clz", '2');
-      init_integral_libfuncs (ctz_optab, "ctz", '2');
-      init_integral_libfuncs (popcount_optab, "popcount", '2');
-      init_integral_libfuncs (parity_optab, "parity", '2');
+  init_integral_libfuncs (add_optab, "add", '3');
+  init_floating_libfuncs (add_optab, "add", '3');
+  init_integral_libfuncs (addv_optab, "addv", '3');
+  init_floating_libfuncs (addv_optab, "add", '3');
+  init_integral_libfuncs (sub_optab, "sub", '3');
+  init_floating_libfuncs (sub_optab, "sub", '3');
+  init_integral_libfuncs (subv_optab, "subv", '3');
+  init_floating_libfuncs (subv_optab, "sub", '3');
+  init_integral_libfuncs (smul_optab, "mul", '3');
+  init_floating_libfuncs (smul_optab, "mul", '3');
+  init_integral_libfuncs (smulv_optab, "mulv", '3');
+  init_floating_libfuncs (smulv_optab, "mul", '3');
+  init_integral_libfuncs (sdiv_optab, "div", '3');
+  init_floating_libfuncs (sdiv_optab, "div", '3');
+  init_integral_libfuncs (sdivv_optab, "divv", '3');
+  init_integral_libfuncs (udiv_optab, "udiv", '3');
+  init_integral_libfuncs (sdivmod_optab, "divmod", '4');
+  init_integral_libfuncs (udivmod_optab, "udivmod", '4');
+  init_integral_libfuncs (smod_optab, "mod", '3');
+  init_integral_libfuncs (umod_optab, "umod", '3');
+  init_floating_libfuncs (ftrunc_optab, "ftrunc", '2');
+  init_integral_libfuncs (and_optab, "and", '3');
+  init_integral_libfuncs (ior_optab, "ior", '3');
+  init_integral_libfuncs (xor_optab, "xor", '3');
+  init_integral_libfuncs (ashl_optab, "ashl", '3');
+  init_integral_libfuncs (ashr_optab, "ashr", '3');
+  init_integral_libfuncs (lshr_optab, "lshr", '3');
+  init_integral_libfuncs (smin_optab, "min", '3');
+  init_floating_libfuncs (smin_optab, "min", '3');
+  init_integral_libfuncs (smax_optab, "max", '3');
+  init_floating_libfuncs (smax_optab, "max", '3');
+  init_integral_libfuncs (umin_optab, "umin", '3');
+  init_integral_libfuncs (umax_optab, "umax", '3');
+  init_integral_libfuncs (neg_optab, "neg", '2');
+  init_floating_libfuncs (neg_optab, "neg", '2');
+  init_integral_libfuncs (negv_optab, "negv", '2');
+  init_floating_libfuncs (negv_optab, "neg", '2');
+  init_integral_libfuncs (one_cmpl_optab, "one_cmpl", '2');
+  init_integral_libfuncs (ffs_optab, "ffs", '2');
+  init_integral_libfuncs (clz_optab, "clz", '2');
+  init_integral_libfuncs (ctz_optab, "ctz", '2');
+  init_integral_libfuncs (popcount_optab, "popcount", '2');
+  init_integral_libfuncs (parity_optab, "parity", '2');
 
-      /* Comparison libcalls for integers MUST come in pairs,
-	 signed/unsigned.  */
-      init_integral_libfuncs (cmp_optab, "cmp", '2');
-      init_integral_libfuncs (ucmp_optab, "ucmp", '2');
-      init_floating_libfuncs (cmp_optab, "cmp", '2');
+  /* Comparison libcalls for integers MUST come in pairs,
+     signed/unsigned.  */
+  init_integral_libfuncs (cmp_optab, "cmp", '2');
+  init_integral_libfuncs (ucmp_optab, "ucmp", '2');
+  init_floating_libfuncs (cmp_optab, "cmp", '2');
 
-      /* EQ etc are floating point only.  */
-      init_floating_libfuncs (eq_optab, "eq", '2');
-      init_floating_libfuncs (ne_optab, "ne", '2');
-      init_floating_libfuncs (gt_optab, "gt", '2');
-      init_floating_libfuncs (ge_optab, "ge", '2');
-      init_floating_libfuncs (lt_optab, "lt", '2');
-      init_floating_libfuncs (le_optab, "le", '2');
-      init_floating_libfuncs (unord_optab, "unord", '2');
+  /* EQ etc are floating point only.  */
+  init_floating_libfuncs (eq_optab, "eq", '2');
+  init_floating_libfuncs (ne_optab, "ne", '2');
+  init_floating_libfuncs (gt_optab, "gt", '2');
+  init_floating_libfuncs (ge_optab, "ge", '2');
+  init_floating_libfuncs (lt_optab, "lt", '2');
+  init_floating_libfuncs (le_optab, "le", '2');
+  init_floating_libfuncs (unord_optab, "unord", '2');
 
-      /* Conversions.  */
-      init_interclass_conv_libfuncs (sfloat_optab, "float", 
-				     MODE_INT, MODE_FLOAT);
-      init_interclass_conv_libfuncs (sfix_optab, "fix",     
-				     MODE_FLOAT, MODE_INT);
-      init_interclass_conv_libfuncs (ufix_optab, "fixuns",  
-				     MODE_FLOAT, MODE_INT);
+  /* Conversions.  */
+  init_interclass_conv_libfuncs (sfloat_optab, "float", 
+				 MODE_INT, MODE_FLOAT);
+  init_interclass_conv_libfuncs (sfix_optab, "fix",     
+				 MODE_FLOAT, MODE_INT);
+  init_interclass_conv_libfuncs (ufix_optab, "fixuns",  
+				 MODE_FLOAT, MODE_INT);
 
-      /* sext_optab is also used for FLOAT_EXTEND.  */
-      init_intraclass_conv_libfuncs (sext_optab, "extend", MODE_FLOAT, true);
-      init_intraclass_conv_libfuncs (trunc_optab, "trunc", MODE_FLOAT, false);
-    }
+  /* sext_optab is also used for FLOAT_EXTEND.  */
+  init_intraclass_conv_libfuncs (sext_optab, "extend", MODE_FLOAT, true);
+  init_intraclass_conv_libfuncs (trunc_optab, "trunc", MODE_FLOAT, false);
 
   /* Use cabs for double complex abs, since systems generally have cabs.
      Don't define any libcall for float complex, so that cabs will be used.  */
