@@ -65,6 +65,8 @@ public class InflaterInputStream extends FilterInputStream
       return -1;
     if (inf.needsInput())
       fill ();
+    if (this.len == -1)
+      return -1; // Couldn't get any more data to feed to the Inflater
     if (inf.needsDictionary())
       return -1;
     try
