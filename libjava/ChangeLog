@@ -1,3 +1,8 @@
+2002-04-04  Loren J. Rittle  <ljrittle@acm.org>
+
+        * configure.host: Add case statement to support generic port
+        properties.  Add *-*-freebsd* section.
+
 2002-04-04  Mark Wielaard  <mark@klomp.org>
 
 	* mauve-libgcj: Add JLS1.0 and JLS1.1 tags, ignore Character.unicode

@@ -60,6 +60,7 @@ DIVIDESPEC=-fuse-divide-subroutine
 EXCEPTIONSPEC=-fnon-call-exceptions
 CHECKREFSPEC=
 
+# This case statement supports per-CPU defaults.
 case "${host}" in
   mips-tx39-*|mipstx39-unknown-*)
 	libgcj_flags="${libgcj_flags} -G 0"
@@ -87,15 +88,11 @@ case "${host}" in
 	libgcj_interpreter=yes
 	enable_hash_synchronization_default=yes
 	;;
-  powerpc*-linux*)
+  powerpc*-*)
 	sysdeps_dir=powerpc
 	libgcj_interpreter=yes
 	enable_hash_synchronization_default=yes
 	slow_pthread_self=yes
-	;;
-  powerpc*-darwin*)
-	sysdeps_dir=powerpc
-        libgcj_interpreter=yes
 	;;
   sparc-*)
         ;;
@@ -114,6 +111,23 @@ case "${host}" in
 	enable_java_net_default=no
 	enable_getenv_properties_default=no
 	enable_main_args_default=no
+	;;
+esac
+
+# This case statement supports generic port properties and may refine
+# the above per-CPU defaults.  Note: If your OS does not implement
+# MD_FALLBACK_FRAME_STATE_FOR, then you may want to set CHECKREFSPEC,
+# DIVIDESPEC (to fix >20 test cases) and EXCEPTIONSPEC (to reduce EH
+# bloat only) here.
+case "${host}" in
+  *-*-darwin*)
+	enable_hash_synchronization_default=no
+	slow_pthread_self=
+	;;
+  *-*-freebsd*)
+	DIVIDESPEC=-fuse-divide-subroutine
+	CHECKREFSPEC=-fcheck-references
+	slow_pthread_self=
 	;;
 esac
 
