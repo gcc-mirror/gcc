@@ -1,3 +1,16 @@
+Fri Mar 27 16:04:49 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* gcc.c (set_std_prefix): Add declaration.
+	(process_command): If GCC_EXEC_PREFIX is set, remove /lib/gcc-lib/
+	suffix, and update the standard prefix prefix.c uses.
+
+	* prefix.c (std_prefix): New global to hold default prefix value.
+	(get_key_value): Change to use std_prefix instead of PREFIX.
+	(translate_name): Ditto.
+	(update_path): Ditto.
+	(get_key_value): Release allocated scratch storage.
+	(set_std_prefix): New function to reset the standard prefix.
+
 Fri Mar 27 18:08:21 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.c (find_barrier): Fix calculations for alignment increase.
