@@ -1,3 +1,7 @@
+2001-10-04  Mark Wielaard  <mark@klomp.org>
+
+	* java/lang/reflect/Modifier.java: Merge with Classpath
+
 2001-10-03  Mark Wielaard  <mark@klomp.org>
 
 	* java/io/SequenceInputStream.java: Merge with Classpath
