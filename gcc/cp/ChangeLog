@@ -1,3 +1,8 @@
+2002-03-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/5118
+	* class.c (get_vfield_name): Use the constructor_name.
+
 2002-03-18  Eric Botcazou  <ebotcazou@multimania.com>
 
 	PR c++/3882
