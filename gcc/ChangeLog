@@ -1,3 +1,11 @@
+Sun Aug 17 15:42:17 1997  Dave Love  (d.love@dl.ac.uk)
+
+	* configure.in: Expurgate `broken_install' (install is
+ 	autoconfed).
+
+	* configure.lang: Substitute autoconfed ${INSTALL} (not currently
+	relevant).
+
 Sun Aug 17 15:15:53 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c (default_compilers): Add __EGCS__ and __EGCS_MINOR__
