@@ -1,3 +1,14 @@
+2004-05-15  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* Make-lang.in (f95.generated-manpages): Remove.
+	(f95.srcextra): New.
+	(f95.info, fortran/gfortran.info, fortran/gfortran.dvi,
+	f95.maintainer-clean): Generate info and dvi files in objdir/doc.
+	(f95.dvi): Remove.
+	(dvi): New.
+	(f95.install-info): Remove.
+	(install-info): New.
+
 2004-05-15  Victor Leikehman  <lei@haifasphere.co.il>
 
 	* decl.c (add_init_expr_to_sym): Check for variable size arrays.
