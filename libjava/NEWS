@@ -1,4 +1,92 @@
-New in libgcj X.XX:
+*** Changes in GCC 3.4:
+
+* Compiling a .jar file will now cause non-.class entries to be automatically 
+  compiled as resources.
+
+* libgcj has been ported to Darwin.
+
+* Jeff Sturm has adapted Jan Hubicka's call graph optimization code to gcj.
+
+* libgcj has a new gcjlib URL type; this lets URLClassLoader load code from 
+  shared libraries.
+
+* libgcj has been much more completely merged with GNU Classpath.
+
+* Class loading is now much more correct; in particular the caller's class 
+  loader is now used when that is required.
+
+* Eclipse 2.x will run out of the box using gij.
+
+* Parts of java.nio have been implemented. Direct and indirect buffers work, 
+  as do fundamental file and socket operations.
+
+* java.awt has been improved, though it is still not ready for general use.
+
+* The HTTP protocol handler now uses HTTP/1.1 and can handle the POST method.
+
+* The MinGW port has matured. Enhancements include socket timeout support, 
+  thread interruption, improved Runtime.exec() handling and support for 
+  accented characters in filenames.
+
+*** Changes in GCC 3.3:
+
+* The java.sql and javax.sql packages now implement the JDBC 3.0 (JDK 1.4) 
+  API.
+
+* The JDK 1.4 assert facility has been implemented.
+
+* The bytecode interpreter is now direct threaded and thus faster.
+
+
+*** Changes in GCC 3.1:
+
+* libgcj now includes RMI, java.lang.ref.*, javax.naming, and 
+  javax.transaction.
+
+* Property files and other system resources can be compiled into executables 
+  which use libgcj using the new gcj --resource feature.
+
+* libgcj has been ported to more platforms. In particular there is now a 
+  mostly-functional mingw32 (Windows) target port.
+
+* JNI and CNI invocation interfaces were implemented, so gcj-compiled Java 
+  code can now be called from a C/C++ application.
+
+* gcj can now use builtin functions for certain known methods, for instance 
+  Math.cos.
+
+* gcj can now automatically remove redundant array-store checks in some common 
+  cases.
+
+* The --no-store-checks optimization option was added. This can be used to 
+  omit runtime store checks for code which is known not to throw 
+  ArrayStoreException
+
+* The following third party interface standards were added to libgcj: 
+  org.w3c.dom and org.xml.sax.
+
+* java.security has been merged with GNU Classpath. The new package is now 
+  JDK 1.2 compliant, and much more complete.
+
+* A bytecode verifier was added to the libgcj interpreter.
+
+* java.lang.Character was rewritten to comply with the Unicode 3.0 standard, 
+  and improve performance.
+
+* Partial support for many more locales was added to libgcj.
+
+* Socket timeouts have been implemented.
+
+* libgcj has been merged into a single shared library. There are no longer 
+  separate shared libraries for the garbage collector and zlib.
+
+* Several performance improvements were made to gcj and libgcj:
+      o Hash synchronization (thin locks)
+      o A special allocation path for finalizer-free objects
+      o Thread-local allocation
+      o Parallel GC, and other GC tweaks
+
+*** Changes in GCC 3.0:
 
 * libgcj now includes a bytecode interpreter. If a compiled version of a class 
 is not found in the application binary or linked shared libraries, the
