@@ -1,5 +1,6 @@
 /* DateFormat.java -- Class for formatting/parsing date/times
-   Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2003, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -591,6 +592,7 @@ public abstract class DateFormat extends Format implements Cloneable
   /**
    * This method parses the specified date/time string.
    *
+   * @param source The string to parse.
    * @return The resultant date.
    *
    * @exception ParseException If the specified string cannot be parsed.
@@ -604,7 +606,8 @@ public abstract class DateFormat extends Format implements Cloneable
 	int index = pos.getErrorIndex();
 	if (index < 0)
 	  index = pos.getIndex();
-	throw new ParseException("invalid Date syntax", index);
+	throw new ParseException("invalid Date syntax in \""
+				 + source + '\"', index);
       }
     return result;
   }
