@@ -348,7 +348,10 @@ dump_type (tree t, int flags)
     }
     case TYPENAME_TYPE:
       pp_cxx_cv_qualifier_seq (cxx_pp, t);
-      pp_cxx_identifier (cxx_pp, "typename");
+      pp_cxx_identifier (cxx_pp, 
+			 TYPENAME_IS_ENUM_P (t) ? "enum" 
+			 : TYPENAME_IS_CLASS_P (t) ? "class"
+			 : "typename");
       dump_typename (t, flags);
       break;
 

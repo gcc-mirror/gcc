@@ -300,7 +300,7 @@ make_friend_class (tree type, tree friend_type, bool complain)
 						 tf_error);
 	      else
 		friend_type
-		  = make_typename_type (ctype, name, tf_error);
+		  = make_typename_type (ctype, name, class_type, tf_error);
 	    }
 	  else
 	    {

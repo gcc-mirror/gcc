@@ -1,3 +1,64 @@
+2004-11-27  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18368
+	* parser.c (cp_parser_check_for_definition_in_return_type): Take
+	the defined type as a parameter, and inform the user about the
+	possibility of a missing semicolon.
+	(cp_parser_explicit_instantiation): Adjust call to
+	cp_parser_check_for_definition_in_return_type.
+	(cp_parser_init_declarator): Likewise.
+	(cp_parser_member_declaration): Likewise.
+
+	PR c++/18674
+	* cp-tree.def (TYPENAME_TYPE): Remove discussion of implicit
+	typename from comments.
+	* cp-tree.h (TYPENAME_IS_ENUM_P): New macro.
+	(TYPENAME_IS_CLASS_P): Likewise.
+	(make_typename_type): Change prototype.
+	* decl.c (struct_typename_info): New type.
+	(typename_compare): Expect the second argument to be a
+	typename_info, not a tree.
+	(build_typename_type): Add tag_type parameter.  Do not create a
+	new type until necessary.
+	(make_typename_type): Add tag_type parameter.
+	* error.c (TYPENAME_TYPE): Print tags other than "typename" if
+	appropriate.
+	* friend.c (make_friend_class): Adjust call to make_typename_type.
+	* parser.c (cp_parser_make_typename_type): Likewise.
+	(cp_parser_primary_expression): Adjust call to
+	cp_parser_lookup_name.
+	(cp_parser_unqualified_id): Adjust calls to cp_parser_class_name.
+	(cp_parser_class_or_namespace_name): Likewise.
+	(cp_parser_postfix_expression): Adjust calls to
+	make_typename_type.
+	(cp_parser_mem_initializer_id): Adjust calls to
+	cp_parser_class_name.
+	(cp_parser_type_parameter): Adjust calls to cp_parser_lookup_name.
+	(cp_parser_template_name): Likewise.
+	(cp_parser_template_argument): Likewise.
+	(cp_parser_type_name): Adjust call to cp_parser_class_name.
+	(cp_parser_elaborated_type_specifier): Adjust calls to
+	make_typename_type and cp_parser_lookup_name.
+	(cp_parser_namespace_name): Likewise.
+	(cp_parser_class_name): Replace type_p parameter with tag_type.
+	Adjust calls to make_typename_type and cp_parser_lookup_name.
+	(cp_parser_class_head): Adjust calls to cp_parser_class_name.
+	(cp_parser_base_specifier): Likewise.
+	(cp_parser_lookup_name): Replace is_type parameter with tag_type.
+	Adjust calls to make_typename_type and lookup_qualified_name.
+	(cp_parser_lookup_name_simple): Adjust call to
+	cp_parser_lookup_name.
+	(cp_parser_constructor_declarator_p): Adjust call to
+	cp_parser_class_name.
+	* pt.c (convert_template_argument): Adjust all to
+	make_typename_type.
+	(tsubst_decl): Do not pre-substitute the type of the declaration.
+	(tsubst): Hand off declarations more quickly.  Adjust call to
+	make_typename_type. 
+
+	PR c++/18512
+	* parser.c (cp_parser_postfix_dot_deref_expression): Robustify.
+
 2004-11-29  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	PR c/7544

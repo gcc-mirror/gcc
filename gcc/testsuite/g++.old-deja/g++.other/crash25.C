@@ -7,7 +7,7 @@ public:
   virtual ~X();
 }
 
-X::x()	// { dg-error "return type|member function" }
+X::x()	// { dg-error "return type|member function|semicolon" }
 {
 }
 

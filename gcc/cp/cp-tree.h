@@ -47,6 +47,7 @@ struct diagnostic_context;
       STATEMENT_LIST_NO_SCOPE (in STATEMENT_LIST).
       EXPR_STMT_STMT_EXPR_RESULT (in EXPR_STMT)
       BIND_EXPR_TRY_BLOCK (in BIND_EXPR)
+      TYPENAME_IS_ENUM_P (in TYPENAME_TYPE)
    1: IDENTIFIER_VIRTUAL_P (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -54,6 +55,7 @@ struct diagnostic_context;
       (TREE_CALLS_NEW) (in _EXPR or _REF) (commented-out).
       ICS_ELLIPSIS_FLAG (in _CONV)
       DECL_INITIALIZED_P (in VAR_DECL)
+      TYPENAME_IS_CLASS_P (in TYPENAME_TYPE)
    2: IDENTIFIER_OPNAME_P (in IDENTIFIER_NODE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
@@ -2254,6 +2256,15 @@ struct lang_decl GTY(())
    TEMPLATE_ID_EXPR if we had something like `typename X::Y<T>'.  */
 #define TYPENAME_TYPE_FULLNAME(NODE) (TYPENAME_TYPE_CHECK (NODE))->type.values
 
+/* True if a TYPENAME_TYPE was declared as an "enum".  */
+#define TYPENAME_IS_ENUM_P(NODE) \
+  (TREE_LANG_FLAG_0 (TYPENAME_TYPE_CHECK (NODE)))
+
+/* True if a TYPENAME_TYPE was declared as a "class", "struct", or
+   "union".  */
+#define TYPENAME_IS_CLASS_P(NODE) \
+  (TREE_LANG_FLAG_1 (TYPENAME_TYPE_CHECK (NODE)))
+
 /* Nonzero in INTEGER_CST means that this int is negative by dint of
    using a twos-complement negated operand.  */
 #define TREE_NEGATED_INT(NODE) TREE_LANG_FLAG_0 (INTEGER_CST_CHECK (NODE))
@@ -3718,7 +3729,7 @@ extern tree declare_local_label                 (tree);
 extern tree define_label			(location_t, tree);
 extern void check_goto				(tree);
 extern void define_case_label			(void);
-extern tree make_typename_type			(tree, tree, tsubst_flags_t);
+extern tree make_typename_type			(tree, tree, enum tag_types, tsubst_flags_t);
 extern tree make_unbound_class_template		(tree, tree, tree, tsubst_flags_t);
 extern tree check_for_out_of_scope_variable     (tree);
 extern tree build_library_fn			(tree, tree);

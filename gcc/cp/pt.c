@@ -140,7 +140,6 @@ static tree most_specialized (tree, tree, tree);
 static tree most_specialized_class (tree, tree);
 static int template_class_depth_real (tree, int);
 static tree tsubst_aggr_type (tree, tree, tsubst_flags_t, tree, int);
-static tree tsubst_decl (tree, tree, tree, tsubst_flags_t);
 static tree tsubst_arg_types (tree, tree, tsubst_flags_t, tree);
 static tree tsubst_function_type (tree, tree, tsubst_flags_t, tree);
 static void check_specialization_scope (void);
@@ -3833,6 +3832,7 @@ convert_template_argument (tree parm,
       
       arg = make_typename_type (TREE_OPERAND (arg, 0),
 				TREE_OPERAND (arg, 1),
+				typename_type,
 				complain & tf_error);
       is_type = 1;
     }
@@ -6140,13 +6140,12 @@ tsubst_default_arguments (tree fn)
 						    TREE_PURPOSE (arg));
 }
 
-/* Substitute the ARGS into the T, which is a _DECL.  TYPE is the
-   (already computed) substitution of ARGS into TREE_TYPE (T), if
-   appropriate.  Return the result of the substitution.  Issue error
-   and warning messages under control of COMPLAIN.  */
+/* Substitute the ARGS into the T, which is a _DECL.  Return the
+   result of the substitution.  Issue error and warning messages under
+   control of COMPLAIN.  */
 
 static tree
-tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
+tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 {
   location_t saved_loc;
   tree r = NULL_TREE;
@@ -6267,6 +6266,7 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 	tree argvec = NULL_TREE;
 	tree *friends;
 	tree gen_tmpl;
+	tree type;
 	int member;
 	int args_depth;
 	int parms_depth;
@@ -6376,7 +6376,7 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 	    member = 0;
 	    ctx = DECL_CONTEXT (t);
 	  }
-	type = tsubst (type, args, complain, in_decl);
+	type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	if (type == error_mark_node)
 	  return error_mark_node;
 
@@ -6485,10 +6485,13 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 
     case PARM_DECL:
       {
+	tree type;
+
 	r = copy_node (t);
 	if (DECL_TEMPLATE_PARM_P (t))
 	  SET_DECL_TEMPLATE_PARM_P (r);
 
+	type = tsubst (TREE_TYPE (t), args, complain, in_decl);
 	TREE_TYPE (r) = type;
 	c_apply_type_quals_to_decl (cp_type_quals (type), r);
 
@@ -6513,7 +6516,12 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 
     case FIELD_DECL:
       {
+	tree type;
+
 	r = copy_decl (t);
+	type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	if (type == error_mark_node)
+	  return error_mark_node;
 	TREE_TYPE (r) = type;
 	c_apply_type_quals_to_decl (cp_type_quals (type), r);
 
@@ -6541,19 +6549,6 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
       break;
 
     case TYPE_DECL:
-      if (TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM
-	  || t == TYPE_MAIN_DECL (TREE_TYPE (t)))
-	{
-	  /* If this is the canonical decl, we don't have to mess with
-             instantiations, and often we can't (for typename, template
-	     type parms and such).  Note that TYPE_NAME is not correct for
-	     the above test if we've copied the type for a typedef.  */
-	  r = TYPE_NAME (type);
-	  break;
-	}
-
-      /* Fall through.  */
-
     case VAR_DECL:
       {
 	tree argvec = NULL_TREE;
@@ -6561,8 +6556,25 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 	tree spec;
 	tree tmpl = NULL_TREE;
 	tree ctx;
+	tree type = NULL_TREE;
 	int local_p;
 
+	if (TREE_CODE (t) == TYPE_DECL)
+	  {
+	    type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	    if (TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM
+		|| t == TYPE_MAIN_DECL (TREE_TYPE (t)))
+	      {
+		/* If this is the canonical decl, we don't have to
+		   mess with instantiations, and often we can't (for
+		   typename, template type parms and such).  Note that
+		   TYPE_NAME is not correct for the above test if
+		   we've copied the type for a typedef.  */
+		r = TYPE_NAME (type);
+		break;
+	      }
+	  }
+	
 	/* Assume this is a non-local variable.  */
 	local_p = 0;
 
@@ -6600,6 +6612,9 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 	r = copy_decl (t);
 	if (TREE_CODE (r) == VAR_DECL)
 	  {
+	    type = tsubst (TREE_TYPE (t), args, complain, in_decl);
+	    if (type == error_mark_node)
+	      return error_mark_node;
 	    type = complete_type (type);
 	    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (r)
 	      = DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (t);
@@ -6885,6 +6900,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       || TREE_CODE (t) == NAMESPACE_DECL)
     return t;
 
+  if (DECL_P (t))
+    return tsubst_decl (t, args, complain);
+
   if (TREE_CODE (t) == IDENTIFIER_NODE)
     type = IDENTIFIER_TYPE_VALUE (t);
   else
@@ -6892,18 +6910,14 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
   gcc_assert (type != unknown_type_node);
 
-  if (type && TREE_CODE (t) != FUNCTION_DECL
+  if (type
       && TREE_CODE (t) != TYPENAME_TYPE
-      && TREE_CODE (t) != TEMPLATE_DECL
       && TREE_CODE (t) != IDENTIFIER_NODE
       && TREE_CODE (t) != FUNCTION_TYPE
       && TREE_CODE (t) != METHOD_TYPE)
     type = tsubst (type, args, complain, in_decl);
   if (type == error_mark_node)
     return error_mark_node;
-
-  if (DECL_P (t))
-    return tsubst_decl (t, args, type, complain);
 
   switch (TREE_CODE (t))
     {
@@ -7364,7 +7378,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      }
 	  }
 
-	f = make_typename_type (ctx, f,
+	f = make_typename_type (ctx, f, typename_type,
 				(complain & tf_error) | tf_keep_type_decl);
 	if (f == error_mark_node)
 	  return f;
@@ -7374,6 +7388,16 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
  	    f = TREE_TYPE (f);
  	  }
  	
+	if (TREE_CODE (f) != TYPENAME_TYPE)
+	  {
+	    if (TYPENAME_IS_ENUM_P (t) && TREE_CODE (f) != ENUMERAL_TYPE)
+	      error ("%qT resolves to %qT, which is not an enumeration type", 
+		     t, f);
+	    else if (TYPENAME_IS_CLASS_P (t) && !CLASS_TYPE_P (f))
+	      error ("%qT resolves to %qT, which is is not a class type", 
+		     t, f);
+	  }
+
  	return cp_build_qualified_type_real
  	  (f, cp_type_quals (f) | cp_type_quals (t), complain);
       }

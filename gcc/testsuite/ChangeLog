@@ -1,3 +1,16 @@
+2004-11-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18674
+	* g++.old-deja/g++.brendan/crash16.C: Adjust error messages.
+	* g++.old-deja/g++.law/ctors5.C: Likewise.
+	* g++.old-deja/g++.other/crash25.C: Likewise.
+
+	PR c++/18674
+	* g++.dg/template/error16.C: New test.
+	
+	PR c++/18512
+	* g++.dg/template/crash29.C: New test.
+
 2004-11-29  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/18712
