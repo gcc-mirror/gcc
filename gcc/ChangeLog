@@ -1,3 +1,8 @@
+2001-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* reg-stack.c (stack_result): Re-add 2001-03-14 changes which were
+	lost during the 2001-03-14 lazy DECL_RTL commit.
+
 2001-03-21  Jason Merrill  <jason@redhat.com>
 
 	* collect2.c (is_ctor_dtor): Always use '_' in the file fn names,

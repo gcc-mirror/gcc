@@ -787,21 +787,15 @@ stack_result (decl)
   result = DECL_RTL_IF_SET (DECL_RESULT (decl));
   if (result != 0)
     {
-      rtx result = DECL_RTL (DECL_RESULT (decl));
-      if (! (GET_CODE (result) == REG
-	     && REGNO (result) < FIRST_PSEUDO_REGISTER))
-	{
 #ifdef FUNCTION_OUTGOING_VALUE
-	  result
-	    = FUNCTION_OUTGOING_VALUE (TREE_TYPE (DECL_RESULT (decl)), decl);
+      result
+        = FUNCTION_OUTGOING_VALUE (TREE_TYPE (DECL_RESULT (decl)), decl);
 #else
-	  result = FUNCTION_VALUE (TREE_TYPE (DECL_RESULT (decl)), decl);
+      result = FUNCTION_VALUE (TREE_TYPE (DECL_RESULT (decl)), decl);
 #endif
-	}
-      return STACK_REG_P (result) ? result : NULL_RTX;
     }
-  else
-    return NULL_RTX;
+
+  return result != 0 && STACK_REG_P (result) ? result : 0;
 }
 
 
