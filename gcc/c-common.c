@@ -408,7 +408,8 @@ decl_attributes (node, attributes, prefix_attributes)
 	  if (is_type
 	      && TREE_CODE (type) == UNION_TYPE
 	      && (decl == 0
-		  || TYPE_MODE (type) == DECL_MODE (TYPE_FIELDS (type))))
+		  || (TYPE_FIELDS (type) != 0
+		      && TYPE_MODE (type) == DECL_MODE (TYPE_FIELDS (type)))))
 	    TYPE_TRANSPARENT_UNION (type) = 1;
 	  else if (decl != 0 && TREE_CODE (decl) == PARM_DECL
 		   && TREE_CODE (type) == UNION_TYPE
