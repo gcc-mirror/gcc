@@ -1,3 +1,8 @@
+2004-11-15  Dale Johannesen  <dalej@apple.com>
+
+	* profile.c (compute_branch_probabilities):  Prevent
+	crash with EH in RTL-based profiling.
+
 2004-11-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c (verify_expr): Replace TREE_OPERAND with
