@@ -651,7 +651,7 @@ gen_lowpart_common (mode, x)
 	     && HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
 	    || flag_pretend_float)
 	   && (GET_MODE_CLASS (mode) == MODE_INT
-	       && GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
+	       || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
 	   && GET_CODE (x) == CONST_DOUBLE
 	   && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
 	   && GET_MODE_BITSIZE (mode) == 2 * BITS_PER_WORD)
