@@ -2839,7 +2839,8 @@ emit_libcall_block (insns, target, result, equiv)
       remove_note (last, find_reg_note (last, REG_EQUAL, NULL_RTX));
     }
 
-  emit_move_insn (final_dest, target);
+  if (final_dest != target)
+    emit_move_insn (final_dest, target);
 
   if (prev == 0)
     first = get_insns ();
