@@ -2677,9 +2677,6 @@ extern tree maybe_get_identifier (const char *);
 
 /* Construct various types of nodes.  */
 
-#define build_int_2(LO, HI)  \
-  build_int_2_wide ((unsigned HOST_WIDE_INT) (LO), (HOST_WIDE_INT) (HI))
-
 extern tree build (enum tree_code, tree, ...);
 extern tree build_nt (enum tree_code, ...);
 
@@ -2707,7 +2704,7 @@ extern tree build4_stat (enum tree_code, tree, tree, tree, tree,
 			 tree MEM_STAT_DECL);
 #define build4(c,t1,t2,t3,t4,t5) build4_stat (c,t1,t2,t3,t4,t5 MEM_STAT_INFO)
 
-extern tree build_int_2_wide (unsigned HOST_WIDE_INT, HOST_WIDE_INT);
+extern tree build_int_2 (unsigned HOST_WIDE_INT, HOST_WIDE_INT);
 extern tree build_vector (tree, tree);
 extern tree build_constructor (tree, tree);
 extern tree build_real_from_int_cst (tree, tree);
@@ -3049,14 +3046,13 @@ extern GTY(()) tree sizetype_tab[(int) TYPE_KIND_LAST];
 
 extern tree size_binop (enum tree_code, tree, tree);
 extern tree size_diffop (tree, tree);
-extern tree size_int_wide (HOST_WIDE_INT, enum size_type_kind);
-extern tree size_int_type_wide (HOST_WIDE_INT, tree);
+extern tree size_int_kind (HOST_WIDE_INT, enum size_type_kind);
+extern tree size_int_type (HOST_WIDE_INT, tree);
 
-#define size_int_type(L, T) size_int_type_wide ((HOST_WIDE_INT) (L), T)
-#define size_int(L) size_int_wide ((HOST_WIDE_INT) (L), SIZETYPE)
-#define ssize_int(L) size_int_wide ((HOST_WIDE_INT) (L), SSIZETYPE)
-#define bitsize_int(L) size_int_wide ((HOST_WIDE_INT) (L), BITSIZETYPE)
-#define sbitsize_int(L) size_int_wide ((HOST_WIDE_INT) (L), SBITSIZETYPE)
+#define size_int(L) size_int_kind (L, SIZETYPE)
+#define ssize_int(L) size_int_kind (L, SSIZETYPE)
+#define bitsize_int(L) size_int_kind (L, BITSIZETYPE)
+#define sbitsize_int(L) size_int_kind (L, SBITSIZETYPE)
 
 extern tree round_up (tree, int);
 extern tree round_down (tree, int);

@@ -71,12 +71,10 @@ trunc_int_for_mode (HOST_WIDE_INT c, enum machine_mode mode)
   return c;
 }
 
-/* Return an rtx for the sum of X and the integer C.
-
-   This function should be used via the `plus_constant' macro.  */
+/* Return an rtx for the sum of X and the integer C.  */
 
 rtx
-plus_constant_wide (rtx x, HOST_WIDE_INT c)
+plus_constant (rtx x, HOST_WIDE_INT c)
 {
   RTX_CODE code;
   rtx y;

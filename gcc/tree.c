@@ -422,12 +422,10 @@ copy_list (tree list)
 
 /* Return a newly constructed INTEGER_CST node whose constant value
    is specified by the two ints LOW and HI.
-   The TREE_TYPE is set to `int'.
-
-   This function should be used via the `build_int_2' macro.  */
+   The TREE_TYPE is set to `int'.  */
 
 tree
-build_int_2_wide (unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
+build_int_2 (unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
 {
   tree t = make_node (INTEGER_CST);
 

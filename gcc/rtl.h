@@ -1564,8 +1564,6 @@ extern int generating_concat_p;
 /* In expmed.c */
 extern int ceil_log2 (unsigned HOST_WIDE_INT);
 
-#define plus_constant(X, C) plus_constant_wide ((X), (HOST_WIDE_INT) (C))
-
 /* In builtins.c */
 extern rtx expand_builtin_expect_jump (tree, rtx, rtx);
 extern void purge_builtin_constant_p (void);
@@ -1573,8 +1571,7 @@ extern void purge_builtin_constant_p (void);
 /* In explow.c */
 extern void set_stack_check_libfunc (rtx);
 extern HOST_WIDE_INT trunc_int_for_mode	(HOST_WIDE_INT, enum machine_mode);
-extern rtx plus_constant_wide (rtx, HOST_WIDE_INT);
-extern rtx plus_constant_for_output_wide (rtx, HOST_WIDE_INT);
+extern rtx plus_constant (rtx, HOST_WIDE_INT);
 extern void optimize_save_area_alloca (void);
 
 /* In emit-rtl.c */
@@ -2019,9 +2016,7 @@ extern rtx gen_rtx_REG (enum machine_mode, unsigned);
 extern rtx gen_rtx_SUBREG (enum machine_mode, rtx, int);
 extern rtx gen_rtx_MEM (enum machine_mode, rtx);
 
-/* We need the cast here to ensure that we get the same result both with
-   and without prototypes.  */
-#define GEN_INT(N)  gen_rtx_CONST_INT (VOIDmode, (HOST_WIDE_INT) (N))
+#define GEN_INT(N)  gen_rtx_CONST_INT (VOIDmode, (N))
 
 /* Virtual registers are used during RTL generation to refer to locations into
    the stack frame when the actual location isn't known until RTL generation
