@@ -193,13 +193,6 @@ extern char double_reg_address_ok;
 
 extern int num_not_at_initial_offset;
 
-struct needs
-{
-  /* [0] is normal, [1] is nongroup.  */
-  short regs[2][N_REG_CLASSES];
-  short groups[N_REG_CLASSES];
-};
-
 #if defined SET_HARD_REG_BIT && defined CLEAR_REG_SET
 /* This structure describes instructions which are relevant for reload.
    Apart from all regular insns, this also includes CODE_LABELs, since they
@@ -228,9 +221,6 @@ struct insn_chain
 
   /* Indicates which registers have already been used for spills.  */
   HARD_REG_SET used_spill_regs;
-
-  /* Describe the needs for reload registers of this insn.  */
-  struct needs need;
 
   /* Nonzero if find_reloads said the insn requires reloading.  */
   unsigned int need_reload:1;
