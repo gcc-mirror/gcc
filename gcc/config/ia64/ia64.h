@@ -2590,6 +2590,25 @@ do {									\
 #define REAL_ARITHMETIC
 
 
+/* Register Renaming Parameters.  */
+
+/* A C expression that is nonzero if hard register number REGNO2 can be
+   considered for use as a rename register for REGNO1 */
+
+#define HARD_REGNO_RENAME_OK(REGNO1,REGNO2) \
+  ((! PR_REGNO_P (REGNO1) && ! PR_REGNO_P (REGNO2)) 			\
+    ? (!call_fixed_regs [REGNO1] && !call_fixed_regs [REGNO2])		\
+      ? 1 : 0    							\
+    : ((REGNO2) > 256 && ((REGNO2 & 1) == 0))				\
+      ? 1 : 0)
+
+/* Define this macro if the compiler should use extended basic blocks
+   when renaming registers.  Define this macro if the target has predicate
+   registers.  */
+
+#define RENAME_EXTENDED_BLOCKS
+
+
 /* Miscellaneous Parameters.  */
 
 /* Define this if you have defined special-purpose predicates in the file

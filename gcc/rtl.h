@@ -1798,4 +1798,8 @@ extern void convert_from_ssa		PARAMS ((void));
 
 extern rtx stack_limit_rtx;
 
+/* In regrename.c */
+
+extern void regrename_optimize		PARAMS ((void));
+
 #endif /* _RTL_H */

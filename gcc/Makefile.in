@@ -675,7 +675,7 @@ OBJS = diagnostic.o \
  dbxout.o sdbout.o dwarfout.o dwarf2out.o xcoffout.o bitmap.o alias.o gcse.o \
  integrate.o jump.o cse.o loop.o unroll.o flow.o combine.o varray.o \
  regclass.o regmove.o local-alloc.o global.o reload.o reload1.o caller-save.o \
- insn-peep.o reorg.o haifa-sched.o final.o recog.o reg-stack.o \
+ insn-peep.o reorg.o haifa-sched.o final.o recog.o reg-stack.o regrename.o \
  insn-opinit.o insn-recog.o insn-extract.o insn-output.o insn-emit.o lcm.o \
  profile.o insn-attrtab.o $(out_object_file) $(EXTRA_OBJS) convert.o \
  mbchar.o dyn-string.o splay-tree.o graph.o sbitmap.o resource.o hash.o \
@@ -1652,6 +1652,10 @@ lists.o: lists.c $(CONFIG_H) system.h toplev.h $(RTL_H) ggc.h
 bb-reorder.o : bb-reorder.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h \
    $(RECOG_H) insn-flags.h function.h except.h $(EXPR_H)
+
+regrename.o : regrename.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
+   insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h \
+   $(RECOG_H) function.h resource.h
 
 $(out_object_file): $(out_file) $(CONFIG_H) $(TREE_H) ggc.h \
    $(RTL_H) $(REGS_H) hard-reg-set.h real.h insn-config.h conditions.h \
