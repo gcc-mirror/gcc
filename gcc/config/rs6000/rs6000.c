@@ -2317,6 +2317,28 @@ input_operand (rtx op, enum machine_mode mode)
   return 0;
 }
 
+
+/* Darwin, AIX increases natural record alignment to doubleword if the first
+   field is an FP double while the FP fields remain word aligned.  */
+
+int
+rs6000_special_round_type_align (tree type, int computed, int specified)
+{
+  tree field = TYPE_FIELDS (type);
+  if (!field)
+    return MAX (computed, specified);
+
+  /* Skip all the static variables only if ABI is greater than
+     1 or equal to 0.   */
+  while (TREE_CODE (field) == VAR_DECL)
+    field = TREE_CHAIN (field);
+
+  if (field == type || DECL_MODE (field) != DFmode)
+    return MAX (computed, specified);
+
+  return MAX (MAX (computed, specified), 64);
+}
+
 /* Return 1 for an operand in small memory on V.4/eabi.  */
 
 int
