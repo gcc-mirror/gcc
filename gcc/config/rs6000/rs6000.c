@@ -8319,11 +8319,12 @@ expand_block_clear (rtx operands[])
   rtx orig_dest = operands[0];
   rtx bytes_rtx	= operands[1];
   rtx align_rtx = operands[2];
-  int constp	= (GET_CODE (bytes_rtx) == CONST_INT);
-  int align;
-  int bytes;
+  bool constp	= (GET_CODE (bytes_rtx) == CONST_INT);
+  HOST_WIDE_INT align;
+  HOST_WIDE_INT bytes;
   int offset;
   int clear_bytes;
+  int clear_step;
 
   /* If this is not a fixed size move, just call memcpy */
   if (! constp)
@@ -8339,49 +8340,59 @@ expand_block_clear (rtx operands[])
   if (bytes <= 0)
     return 1;
 
-  if (bytes > (TARGET_POWERPC64 && align >= 32 ? 64 : 32))
-    return 0;
+  /* Use the builtin memset after a point, to avoid huge code bloat.
+     When optimize_size, avoid any significant code bloat; calling
+     memset is about 4 instructions, so allow for one instruction to
+     load zero and three to do clearing.  */
+  if (TARGET_ALTIVEC && align >= 128)
+    clear_step = 16;
+  else if (TARGET_POWERPC64 && align >= 32)
+    clear_step = 8;
+  else
+    clear_step = 4;
 
-  if (optimize_size && bytes > 16)
+  if (optimize_size && bytes > 3 * clear_step)
+    return 0;
+  if (! optimize_size && bytes > 8 * clear_step)
     return 0;
 
   for (offset = 0; bytes > 0; offset += clear_bytes, bytes -= clear_bytes)
     {
-      rtx (*mov) (rtx, rtx);
       enum machine_mode mode = BLKmode;
       rtx dest;
 
-      if (bytes >= 8 && TARGET_POWERPC64
-	       /* 64-bit loads and stores require word-aligned
-		  displacements.  */
-	       && (align >= 64 || (!STRICT_ALIGNMENT && align >= 32)))
+      if (bytes >= 16 && TARGET_ALTIVEC && align >= 128)
+	{
+	  clear_bytes = 16;
+	  mode = V4SImode;
+	}
+      else if (bytes >= 8 && TARGET_POWERPC64
+	  /* 64-bit loads and stores require word-aligned
+	     displacements.  */
+	  && (align >= 64 || (!STRICT_ALIGNMENT && align >= 32)))
 	{
 	  clear_bytes = 8;
 	  mode = DImode;
-	  mov = gen_movdi;
 	}
-      else if (bytes >= 4 && !STRICT_ALIGNMENT)
+      else if (bytes >= 4 && (align >= 32 || !STRICT_ALIGNMENT))
 	{			/* move 4 bytes */
 	  clear_bytes = 4;
 	  mode = SImode;
-	  mov = gen_movsi;
 	}
-      else if (bytes == 2 && !STRICT_ALIGNMENT)
+      else if (bytes == 2 && (align >= 16 || !STRICT_ALIGNMENT))
 	{			/* move 2 bytes */
 	  clear_bytes = 2;
 	  mode = HImode;
-	  mov = gen_movhi;
 	}
       else /* move 1 byte at a time */
 	{
 	  clear_bytes = 1;
 	  mode = QImode;
-	  mov = gen_movqi;
 	}
 
       dest = adjust_address (orig_dest, mode, offset);
 
-      emit_insn ((*mov) (dest, const0_rtx));
+      emit_move_insn (dest, CONST0_RTX (mode));
     }
 
   return 1;
@@ -8441,7 +8452,15 @@ expand_block_move (rtx operands[])
       enum machine_mode mode = BLKmode;
       rtx src, dest;
 
-      if (TARGET_STRING
+      /* Altivec first, since it will be faster than a string move
+	 when it applies, and usually not significantly larger.  */
+      if (TARGET_ALTIVEC && bytes >= 16 && align >= 128)
+	{
+	  move_bytes = 16;
+	  mode = V4SImode;
+	  gen_func.mov = gen_movv4si;
+	}
+      else if (TARGET_STRING
 	  && bytes > 24		/* move up to 32 bytes at a time */
 	  && ! fixed_regs[5]
 	  && ! fixed_regs[6]
