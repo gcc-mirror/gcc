@@ -864,7 +864,7 @@ CUMULATIVE_ARGS;
 #define FUNCTION_PROFILER(FILE, LABELNO) 			\
 	s390_function_profiler ((FILE), ((LABELNO)))
 
-/* #define PROFILE_BEFORE_PROLOGUE */
+#define PROFILE_BEFORE_PROLOGUE 1
 
 /* Define EXIT_IGNORE_STACK if, when returning from a function, the stack
    pointer does not matter (provided there is a frame pointer).  */
