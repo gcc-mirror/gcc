@@ -36,7 +36,8 @@ static struct include_hash *redundant_include_p
 					PROTO ((cpp_reader *,
 						struct include_hash *,
 						struct file_name_list *));
-static struct file_name_map *read_name_map	PROTO ((cpp_reader *, char *));
+static struct file_name_map *read_name_map	PROTO ((cpp_reader *,
+							const char *));
 static char *read_filename_string	PROTO ((int, FILE *));
 static char *remap_filename 		PROTO ((cpp_reader *, char *,
 						struct file_name_list *));
@@ -67,35 +68,35 @@ void
 append_include_chain (pfile, list, dir, sysp)
      cpp_reader *pfile;
      struct file_name_list **list;
-     char *dir;
+     const char *dir;
      int sysp;
 {
   struct file_name_list *new;
   struct stat st;
   unsigned int len;
+  char * newdir = xstrdup (dir);
 
-  dir = xstrdup (dir);
-  simplify_pathname (dir);
-  if (stat (dir, &st))
+  simplify_pathname (newdir);
+  if (stat (newdir, &st))
     {
       /* Dirs that don't exist are silently ignored. */
       if (errno != ENOENT)
-	cpp_perror_with_name (pfile, dir);
+	cpp_perror_with_name (pfile, newdir);
       return;
     }
 
   if (!S_ISDIR (st.st_mode))
     {
-      cpp_message (pfile, 1, "%s: %s: Not a directory", progname, dir);
+      cpp_message (pfile, 1, "%s: %s: Not a directory", progname, newdir);
       return;
     }
 
-  len = strlen(dir);
+  len = strlen(newdir);
   if (len > pfile->max_include_len)
     pfile->max_include_len = len;
   
   new = (struct file_name_list *)xmalloc (sizeof (struct file_name_list));
-  new->name = dir;
+  new->name = newdir;
   new->nlen = len;
   new->next = *list;
   new->ino  = st.st_ino;
@@ -526,7 +527,7 @@ struct file_name_map_list
 static struct file_name_map *
 read_name_map (pfile, dirname)
      cpp_reader *pfile;
-     char *dirname;
+     const char *dirname;
 {
   register struct file_name_map_list *map_list_ptr;
   char *name;
@@ -607,8 +608,7 @@ remap_filename (pfile, name, loc)
      struct file_name_list *loc;
 {
   struct file_name_map *map;
-  char *from;
-  char *p, *dir;
+  const char *from, *p, *dir;
 
   if (! loc->name_map)
     loc->name_map = read_name_map (pfile,
@@ -644,9 +644,10 @@ remap_filename (pfile, name, loc)
     }
   else
     {
-      dir = (char *) alloca (p - name + 1);
-      bcopy (name, dir, p - name);
-      dir[p - name] = '\0';
+      char * newdir = (char *) alloca (p - name + 1);
+      bcopy (name, newdir, p - name);
+      newdir[p - name] = '\0';
+      dir = newdir;
       from = p + 1;
     }
   

@@ -68,12 +68,13 @@ Boston, MA 02111-1307, USA.  */
 #ifdef _WIN32
 #include <windows.h>
 #endif
+#include "prefix.h"
 
-static char *std_prefix = PREFIX;
+static const char *std_prefix = PREFIX;
 
-static char *get_key_value	PROTO((char *));
-static char *translate_name	PROTO((char *));
-static char *save_string	PROTO((char *, int));
+static const char *get_key_value	PROTO((char *));
+static const char *translate_name	PROTO((const char *));
+static char *save_string		PROTO((const char *, int));
 
 #ifdef _WIN32
 static char *lookup_key		PROTO((char *));
@@ -82,11 +83,11 @@ static HKEY reg_key = (HKEY) INVALID_HANDLE_VALUE;
 
 /* Given KEY, as above, return its value.  */
 
-static char *
+static const char *
 get_key_value (key)
      char *key;
 {
-  char *prefix = 0;
+  const char *prefix = 0;
   char *temp = 0;
 
 #ifdef _WIN32
@@ -165,10 +166,10 @@ concat VPROTO((const char *first, ...))
 
 static char *
 save_string (s, len)
-     char *s;
-     int len;
+  const char *s;
+  int len;
 {
-  register char *result = (char *) malloc (len + 1);
+  register char *result = xmalloc (len + 1);
 
   bcopy (s, result, len);
   result[len] = 0;
@@ -227,12 +228,13 @@ lookup_key (key)
 /* If NAME starts with a '@' or '$', apply the translation rules above
    and return a new name.  Otherwise, return the given name.  */
 
-static char *
+static const char *
 translate_name (name)
-     char *name;
+  const char *name;
 {
   char code = name[0];
-  char *key, *prefix = 0;
+  char *key;
+  const char *prefix = 0;
   int keylen;
 
   if (code != '@' && code != '$')
@@ -272,8 +274,9 @@ translate_name (name)
 #endif
       )
     {
-      prefix = save_string (prefix, strlen (prefix));
-      prefix[strlen (prefix) - 1] = 0;
+      char * temp = save_string (prefix, strlen (prefix));
+      temp[strlen (temp) - 1] = 0;
+      prefix = temp;
     }
 
   return concat (prefix, name, NULL_PTR);
@@ -281,10 +284,10 @@ translate_name (name)
 
 /* Update PATH using KEY if PATH starts with PREFIX.  */
 
-char *
+const char *
 update_path (path, key)
-     char *path;
-     char *key;
+  const char *path;
+  const char *key;
 {
   if (! strncmp (path, std_prefix, strlen (std_prefix)) && key != 0)
     {
@@ -316,8 +319,8 @@ update_path (path, key)
 /* Reset the standard prefix */
 void
 set_std_prefix (prefix, len)
-     char *prefix;
-     int len;
+  const char *prefix;
+  int len;
 {
   std_prefix = save_string (prefix, len);
 }

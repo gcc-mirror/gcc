@@ -37,6 +37,7 @@ Boston, MA 02111-1307, USA. */
 typedef unsigned char U_CHAR;
 
 #include "pcp.h"
+#include "prefix.h"
 
 #ifdef MULTIBYTE_CHARS
 #include "mbchar.h"
@@ -122,7 +123,6 @@ static int hack_vms_include_specification ();
 /* External declarations.  */
 
 extern char *version_string;
-extern char *update_path PROTO((char *, char *));
 HOST_WIDE_INT parse_escape PROTO((char **, HOST_WIDE_INT));
 HOST_WIDE_INT parse_c_expression PROTO((char *, int));
 
@@ -1029,7 +1029,7 @@ static void make_undef PROTO((char *, FILE_BUF *));
 
 static void make_assertion PROTO((char *, char *));
 
-static struct file_name_list *new_include_prefix PROTO((struct file_name_list *, char *, char *, char *));
+static struct file_name_list *new_include_prefix PROTO((struct file_name_list *, const char *, const char *, const char *));
 static void append_include_chain PROTO((struct file_name_list *, struct file_name_list *));
 
 static int quote_string_for_make PROTO((char *, char *));
@@ -10436,9 +10436,9 @@ make_assertion (option, str)
 static struct file_name_list *
 new_include_prefix (prev_file_name, component, prefix, name)
      struct file_name_list *prev_file_name;
-     char *component;
-     char *prefix;
-     char *name;
+     const char *component;
+     const char *prefix;
+     const char *name;
 {
   if (name == 0)
     fatal ("Directory name missing after command line option");

@@ -714,7 +714,7 @@ extern void cpp_print_containing_files PROTO ((cpp_reader *));
 /* In cppfiles.c */
 extern void append_include_chain	PROTO ((cpp_reader *,
 						struct file_name_list **,
-						char *, int));
+						const char *, int));
 extern void merge_include_chains	PROTO ((struct cpp_options *));
 extern int find_include_file		PROTO ((cpp_reader *, char *,
 						struct file_name_list *,
