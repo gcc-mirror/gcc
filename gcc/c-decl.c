@@ -381,7 +381,6 @@ static struct binding_level *label_level_chain;
 static tree grokparms (), grokdeclarator ();
 tree pushdecl ();
 tree builtin_function ();
-static void declare_function_name ();
 
 static tree lookup_tag ();
 static tree lookup_tag_reverse ();
@@ -1790,7 +1789,10 @@ pushdecl (x)
 		   /* No shadow warnings for internally generated vars.  */
 		   && !DECL_IGNORED_P (x)
 		   /* No shadow warnings for vars made for inlining.  */
-		   && ! DECL_FROM_INLINE (x))
+		   && ! DECL_FROM_INLINE (x)
+		   /* No shadow warnings for user-invisible decls.  */
+		   && ! (TREE_CODE (x) == VAR_DECL
+			 && DECL_IGNORED_P (x) && TREE_READONLY (x)))
 	    {
 	      char *warnstring = 0;
 
@@ -2598,44 +2600,11 @@ init_decl_processing ()
 #endif
 
   /* Create the global bindings of __NAME__ and __PRINTABLE_NAME__.  */
-  declare_function_name ("", "top level");
+  declare_function_name ();
 
   start_identifier_warnings ();
 
   init_format_info_table ();
-}
-
-/* Make bindings for __NAME__ and __PRINTABLE_NAME__.  */
-
-static void
-declare_function_name (name, printable_name)
-     char *name, *printable_name;
-{
-  tree decl, init;
-
-  push_obstacks_nochange ();
-  decl = pushdecl (build_decl (VAR_DECL,
-			       get_identifier ("__NAME__"),
-			       char_array_type_node));
-  TREE_STATIC (decl) = 1;
-  TREE_READONLY (decl) = 1;
-  DECL_IGNORED_P (decl) = 1;
-  init = build_string (strlen (name) + 1, name);
-  TREE_TYPE (init) = char_array_type_node;
-  DECL_INITIAL (decl) = init;
-  finish_decl (decl, init, NULL_TREE);
-
-  push_obstacks_nochange ();
-  decl = pushdecl (build_decl (VAR_DECL,
-			       get_identifier ("__PRINTABLE_NAME__"),
-			       char_array_type_node));
-  TREE_STATIC (decl) = 1;
-  TREE_READONLY (decl) = 1;
-  DECL_IGNORED_P (decl) = 1;
-  init = build_string (strlen (printable_name) + 1, printable_name);
-  TREE_TYPE (init) = char_array_type_node;
-  DECL_INITIAL (decl) = init;
-  finish_decl (decl, init, NULL_TREE);
 }
 
 /* Return a definition for a builtin function named NAME and whose data type
@@ -5488,16 +5457,8 @@ store_parm_decls ()
     mark_varargs ();
 
   /* Declare __NAME__ and __PRINTABLE_NAME__ for this function.  */
-  {
-    char *kind = "function";
-    char *name;
-    if (current_function_decl != 0
-	&& TREE_CODE (TREE_TYPE (current_function_decl)) == METHOD_TYPE)
-      kind = "method";
-    name = (*decl_printable_name) (current_function_decl, &kind);
-    declare_function_name (name,
-			   IDENTIFIER_POINTER (DECL_NAME (current_function_decl)));
-  }
+
+  declare_function_name ();
 
   /* Set up parameters and prepare for return, for the function.  */
 
