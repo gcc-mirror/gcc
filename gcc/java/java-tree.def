@@ -35,10 +35,10 @@ DEFTREECODE (THIS_EXPR, "this", '1', 0)
 
 /* Case statement expression.
    Operand 1 is the case value.  */
-DEFTREECODE (CASE_EXPR, "case", '1', 1)
+DEFTREECODE (CASE_EXPR, "case", 'x', 1)
 
 /* Default statement expression. */
-DEFTREECODE (DEFAULT_EXPR, "default", '1', 0)
+DEFTREECODE (DEFAULT_EXPR, "default", 'x', 0)
 
 /* Try expression
    Operand 0 is the tried block,
