@@ -1,3 +1,10 @@
+2004-11-27  Roger Sayle  <roger@eyesopen.com>
+	    Zack Weinberg  <zack@codesourcery.com>
+
+	* internal.h: Replace all uses of uchar with unsigned char.
+	* include/cpp-id-data.h: Likewise.  Guard typedef of uchar
+	with !IN_GCC, so uchar is only defined whilst building libcpp.
+
 2004-11-24  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* aclocal.m4: Regenerate.
