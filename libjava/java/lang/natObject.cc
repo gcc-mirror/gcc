@@ -436,8 +436,12 @@ typedef size_t obj_addr_t;	/* Integer type big enough for object	*/
 static bool
 is_mp()
 {
+#ifdef _SC_NPROCESSORS_ONLN
   long nprocs = sysconf(_SC_NPROCESSORS_ONLN);
   return (nprocs > 1);
+#else
+  return false;
+#endif
 }
 
 // A call to keep_live(p) forces p to be accessible to the GC
