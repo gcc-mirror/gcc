@@ -1,3 +1,8 @@
+2002-10-19  Brad Lucier  <lucier@math.purdue.edu>
+
+	* real.c (do_add): Fix 0+0 sign corner case.
+	(do_divide): Fix Inf/0 corner case.
+
 Sun Oct 20 00:31:31 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (classify_argument): Pass MMX arguments in memory
