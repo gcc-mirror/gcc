@@ -90,6 +90,13 @@ __gthread_active_p (void)
 
 #ifdef _LIBOBJC
 
+/* This is the config.h file in libobjc/ */
+#include <config.h>
+
+#ifdef HAVE_SCHED_H
+# include <sched.h>
+#endif
+
 /* Key structure for maintaining thread specific storage */
 static pthread_key_t _objc_thread_storage;
 static pthread_attr_t _objc_thread_attribs;
