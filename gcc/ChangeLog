@@ -1,3 +1,12 @@
+Sun Feb  8 12:04:24 1998  Jim Wilson  (wilson@cygnus.com)
+			  Jeff Law (law@cygnus.com)
+
+	* regmove.c: Fix various minor formatting problems.
+	(optimize_reg_copy_1): Stop search at CALL_INSNs if flag_exceptions
+	is true.  Make end of basic block tests consistent through regmove.c.
+	(optimize_reg_copy_2, optimize_reg_copy_3): Likewise.
+	(fixup_match_2, fixup_match_1, regmove_optimize): Likewise.
+
 Sun Feb  8 01:49:18 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gansidecl.h: Check for a conflicting macro definition before
