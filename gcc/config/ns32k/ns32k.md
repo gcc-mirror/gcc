@@ -2904,7 +2904,7 @@
 ;; ffs instructions
 
 (define_insn ""
-  [(set (match_operand:SI 0 "general_operand" "ro")
+  [(set (match_operand:SI 0 "general_operand" "=ro")
 	(minus:SI 
 		(plus:SI (ffs:SI (zero_extract:SI 
 				(match_operand:SI 1 "general_operand" "g") 

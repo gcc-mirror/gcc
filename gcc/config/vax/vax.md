@@ -1825,7 +1825,7 @@
 (define_insn ""
   [(set (pc)
 	(if_then_else
-	 (ne (match_operand:SI 0 "general_operand" "g")
+	 (ne (match_operand:SI 0 "general_operand" "+g")
 	     (const_int 0))
 	 (label_ref (match_operand 1 "" ""))
 	 (pc)))

@@ -157,7 +157,6 @@ extern int target_flags;			/* -m compiler switches */
 extern int frame_pointer_needed;		/* current function has a FP */
 extern int flag_delayed_branch;			/* -fdelayed-branch */
 extern int flag_pic;				/* -fpic */
-extern char * reg_names[];
 
 /* Specify the default monitors.  The meaning of these values can
    be obtained by doing "grep MONITOR_GCC *m88k*".  Generally, the
@@ -1495,6 +1494,13 @@ extern struct rtx_def *m88k_va_arg ();
   {"relop_no_unsigned", {EQ, NE, LT, LE, GE, GT}},			\
   {"equality_op", {EQ, NE}},						\
   {"pc_or_label_ref", {PC, LABEL_REF}},
+
+/* A list of predicates that do special things with modes, and so
+   should not elicit warnings for VOIDmode match_operand.  */
+
+#define SPECIAL_MODE_PREDICATES		\
+  "partial_ccmode_register_operand",	\
+  "pc_or_label_ref",
 
 /* The case table contains either words or branch instructions.  This says
    which.  We always claim that the vector is PC-relative.  It is position

@@ -1981,7 +1981,8 @@ enum m32r_function_type
 { "call_address_operand",	{ SYMBOL_REF, LABEL_REF, CONST }},	\
 { "small_insn_p",		{ INSN, CALL_INSN, JUMP_INSN }},	\
 { "m32r_block_immediate_operand",{ CONST_INT }},			\
-{ "large_insn_p",		{ INSN, CALL_INSN, JUMP_INSN }},
+{ "large_insn_p",		{ INSN, CALL_INSN, JUMP_INSN }},	\
+{ "seth_add3_operand",		{ SYMBOL_REF, LABEL_REF, CONST }},
 
 /* Functions declared in m32r.c */
 #define XPROTO(ARGS) ()

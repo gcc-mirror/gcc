@@ -1,3 +1,34 @@
+Thu Oct 14 23:19:34 1999  Richard Henderson  <rth@cygnus.com>
+
+	* 1750a.md (movstrqi): Add missing output reload constraint.
+	(call_value): Likewise.
+	* a29k.md (cpxxx patterns): Add missing match_operator mode.
+	(jmpfdec): Add missing inout reload constraint.
+	* elxsi.md (addsi patterns): Add missing output reload constraint.
+	(move from sp): Use @ alternates.
+	(call_value): No constraint on output.
+	* fr30.md (movsi_pop): Add missing output reload constraint.
+	(movsf_constant_store): Likewise.
+	(splits): Remove constraints.
+	(subsi3): Add missing mode.
+	* i370.md (cmpstrsi+1): Add missing output reload constraint.
+	(call_value): Likewise.
+	* i960.md (cmpinc/cmpdec patterns): Add inout reload constraints.
+	* m32r.h (PREDICATE_CODES): Add seth_add3_operand.
+	* m32r.md (movsicc_internal): Add output reload constraint.
+	(movstrsi_internal): Add inout reload constraints.
+	* m88k.h (reg_names): Don't declare.
+	(SPECIAL_MODE_PREDICATES): New.
+	* m88k.md (*): Use register_operand not reg_or_0_operand
+	on destinations.
+	* mn10200.h (PREDICATE_CODES): New.
+	* ns32k.md (ffs pattern): Add output reload constraint.
+	* pdp11.md (sob pattern): Add inout reload constraint.
+	* sh.md (splits): Remove constraints.
+	(indirect_jump_scratch, fpu_switch): Add output reload constraint.
+	* v850.md (pattern_is_ok_for_epilogue): Likewise.
+	* vax.md (jgequ pattern): Add inout reload constraint.
+
 Fri Oct 15 00:05:00 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (djgpp): Revert previous patch.
