@@ -1186,11 +1186,15 @@ lookup_field (xbasetype, name, protect, want_type)
        template <class T> void S<T>::I::f() {}
 
      will come through here to handle `S<T>::I'.  */
-  if (rval && TREE_CODE (rval) == TYPE_DECL
-      && processing_template_decl
+  if (rval && processing_template_decl
       && ! currently_open_class (BINFO_TYPE (rval_binfo))
       && uses_template_parms (type))
     {
+      /* Don't return a non-type.  Actually, we ought to return something
+	 so lookup_name_real can give a warning.  */
+      if (TREE_CODE (rval) != TYPE_DECL)
+	return NULL_TREE;
+
       binfo = rval_binfo;
       for (; ; binfo = BINFO_INHERITANCE_CHAIN (binfo))
 	if (BINFO_INHERITANCE_CHAIN (binfo) == NULL_TREE

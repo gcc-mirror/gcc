@@ -6658,6 +6658,8 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 
   if (context && TYPE_SIZE (complete_type (context)) != NULL_TREE)
     {
+      pushclass (context, 2);
+
       if (TREE_CODE (decl) == VAR_DECL)
 	{
 	  tree field = lookup_field (context, DECL_NAME (decl), 0, 0);
@@ -6699,8 +6701,6 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
       if (DECL_EXTERNAL (decl) && ! DECL_TEMPLATE_SPECIALIZATION (decl))
 	cp_pedwarn ("declaration of `%#D' outside of class is not definition",
 		    decl);
-
-      pushclass (context, 2);
     }
 
 #ifdef SET_DEFAULT_DECL_ATTRIBUTES
@@ -9604,6 +9604,17 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		   constant, but we don't know what the value is yet.  */
 		if (processing_template_decl)
 		  {
+		    /* Resolve a qualified reference to an enumerator or
+		       static const data member of ours.  */
+		    if (TREE_CODE (size) == SCOPE_REF
+			&& TREE_OPERAND (size, 0) == current_class_type)
+		      {
+			tree t = lookup_field (current_class_type,
+					       TREE_OPERAND (size, 1), 0, 0);
+			if (t)
+			  size = t;
+		      }
+
 		    itype = make_node (INTEGER_TYPE);
 		    TYPE_MIN_VALUE (itype) = size_zero_node;
 		    TYPE_MAX_VALUE (itype) = build_min

@@ -80,7 +80,7 @@ static int unify PROTO((tree, tree, tree, tree, int, int*));
 static int resolve_overloaded_unification PROTO((tree, tree, tree, tree,
 						 unification_kind_t, int,
 						 int*));
-static int try_one_overload PROTO((tree, tree, tree, tree,
+static int try_one_overload PROTO((tree, tree, tree, tree, tree,
 				   unification_kind_t, int, int*));
 static int unify PROTO((tree, tree, tree, tree, int, int*));
 static void add_pending_template PROTO((tree));
@@ -7031,7 +7031,7 @@ resolve_overloaded_unification (tparms, targs, parm, arg, strict,
 	  if (subargs)
 	    {
 	      elem = tsubst (TREE_TYPE (fn), subargs, NULL_TREE);
-	      good += try_one_overload (tparms, tempargs, parm, elem,
+	      good += try_one_overload (tparms, targs, tempargs, parm, elem,
 					strict, sub_strict, explicit_mask);
 	    }
 	}
@@ -7039,7 +7039,7 @@ resolve_overloaded_unification (tparms, targs, parm, arg, strict,
   else if (TREE_CODE (arg) == OVERLOAD)
     {
       for (; arg; arg = OVL_NEXT (arg))
-	good += try_one_overload (tparms, tempargs, parm,
+	good += try_one_overload (tparms, targs, tempargs, parm,
 				  TREE_TYPE (OVL_CURRENT (arg)),
 				  strict, sub_strict, explicit_mask);
     }
@@ -7073,9 +7073,9 @@ resolve_overloaded_unification (tparms, targs, parm, arg, strict,
    Returns 1 on success.  */
 
 static int
-try_one_overload (tparms, targs, parm, arg, strict,
+try_one_overload (tparms, orig_targs, targs, parm, arg, strict,
 		  sub_strict, explicit_mask)
-     tree tparms, targs, parm, arg;
+     tree tparms, orig_targs, targs, parm, arg;
      unification_kind_t strict;
      int sub_strict;
      int* explicit_mask;
@@ -7107,11 +7107,11 @@ try_one_overload (tparms, targs, parm, arg, strict,
     return 0;
 
   /* First make sure we didn't deduce anything that conflicts with
-     previously deduced/specified args.  */
+     explicitly specified args.  */
   for (i = nargs; i--; )
     {
       tree elt = TREE_VEC_ELT (tempargs, i);
-      tree oldelt = TREE_VEC_ELT (targs, i);
+      tree oldelt = TREE_VEC_ELT (orig_targs, i);
 
       if (elt == NULL_TREE)
 	continue;
