@@ -1,3 +1,30 @@
+2002-03-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/4361
+	* cp-tree.h (CLASSTYPE_METHOD_VEC): Document where templated
+	conversion operators go.
+	(struct lang_decl_flags): Add template_conv_p and unused
+	bitfields.
+	(DECL_TEMPLATE_CONV_FN_P): New macro.
+	* call.c (build_user_type_conversion_1): Don't check second type
+	conversion of overload set first.
+	* class.c (add_method): Make sure templated conversion operators
+	all end up on slot 2.
+	* lex.c (do_identifier): A conversion operator token might be
+	satisfied by a templated conversion operator.
+	* mangle.c (struct globals) Add internal_mangling_p member.
+	(write_template_param): Do internal mangling, if needed.
+	(mangle_conv_op_name_for_type): Request internal mangling.
+	* pt.c (check_explicit_specialization): Use
+	CLASSTYPE_FIRST_CONVERSION_SLOT.
+	(template_parm_this_level_p): New function.
+	(push_template_decl_real): Determine DECL_TEMPLATE_CONV_FN_P.
+	* search.c (lookup_fn_fields_1): Template conversions will be on
+	the first slot.
+	* typeck.c (build_component_ref): Preserve the type of an
+	conversion operator name on the overload type.
+	(build_x_function_call): Retrieve the conversion operator name.
+
 2002-03-15  Richard Henderson  <rth@redhat.com>
 
 	* init.c (build_new_1): Use size_binop instead of cp_build_binary_op.

@@ -1199,6 +1199,9 @@ do_identifier (token, parsing, args)
     {
       if (current_template_parms)
 	return build_min_nt (LOOKUP_EXPR, token);
+      else if (IDENTIFIER_TYPENAME_P (token))
+	/* A templated conversion operator might exist.  */
+	return token;
       else if (IDENTIFIER_OPNAME_P (token))
 	{
 	  if (token != ansi_opname (ERROR_MARK))

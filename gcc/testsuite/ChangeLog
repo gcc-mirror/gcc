@@ -1,3 +1,10 @@
+2002-03-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.dg/template/conv1.C: New test.
+	* g++.dg/template/conv2.C: New test.
+	* g++.dg/template/conv3.C: New test.
+	* g++.dg/template/conv4.C: New test.
+
 2002-03-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/template/qualttp20.C: Remove unnecessary error tags.

@@ -1358,8 +1358,14 @@ struct lang_type
    either a FUNCTION_DECL, a TEMPLATE_DECL, or an OVERLOAD.  All
    functions with the same name end up in the same slot.  The first
    two elements are for constructors, and destructors, respectively.
-   Any conversion operators are next, followed by ordinary member
-   functions.  There may be empty entries at the end of the vector.  */
+   All template conversion operators to innermost template dependent
+   types are overloaded on the next slot, if they exist.  Note, the
+   names for these functions will not all be the same.  The
+   non-template conversion operators & templated conversions to
+   non-innermost template types are next, followed by ordinary member
+   functions.  There may be empty entries at the end of the vector.
+   The conversion operators are unsorted. The ordinary member
+   functions are sorted, once the class is complete.  */
 #define CLASSTYPE_METHOD_VEC(NODE) (TYPE_LANG_SPECIFIC (NODE)->methods)
 
 /* The slot in the CLASSTYPE_METHOD_VEC where constructors go.  */
@@ -1761,7 +1767,9 @@ struct lang_decl_flags
   unsigned global_dtor_p : 1;
   unsigned assignment_operator_p : 1;
   unsigned anticipated_p : 1;
-  /* Four unused bits.  */
+  unsigned template_conv_p : 1;
+  
+  unsigned unused : 3; /* Three unused bits.  */
 
   union {
     /* In a FUNCTION_DECL, VAR_DECL, TYPE_DECL, or TEMPLATE_DECL, this
@@ -1948,6 +1956,12 @@ struct lang_decl
 /* Non-zero if NODE is a user-defined conversion operator.  */
 #define DECL_CONV_FN_P(NODE) \
   (IDENTIFIER_TYPENAME_P (DECL_NAME (NODE)))
+
+/* Non-zero if NODE, which is a TEMPLATE_DECL, is a template
+   conversion operator to a type dependent on the innermost template
+   args.  */
+#define DECL_TEMPLATE_CONV_FN_P(NODE) \
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.template_conv_p)
 
 /* Set the overloaded operator code for NODE to CODE.  */
 #define SET_OVERLOADED_OPERATOR_CODE(NODE, CODE) \
