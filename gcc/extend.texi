@@ -2734,7 +2734,7 @@ leaves the compiler too few available registers to compile certain
 functions.
 
 This option does not guarantee that GNU CC will generate code that has
-variable in the register you specify at all times.  You may not
+this variable in the register you specify at all times.  You may not
 code an explicit reference to this register in an @code{asm} statement
 and assume it will always refer to this variable.
 

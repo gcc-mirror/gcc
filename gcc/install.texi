@@ -494,7 +494,7 @@ This copies the files @file{cc1}, @file{cpp} and @file{libgcc.a} to
 files @file{cc1}, @file{cpp} and @file{libgcc.a} in the directory
 @file{/usr/local/lib/gcc-lib/@var{target}/@var{version}}, which is where
 the compiler driver program looks for them.  Here @var{target} is the
-cannonicalized form of target machine type specified when you ran
+canonicalized form of target machine type specified when you ran
 @file{configure}, and @var{version} is the version number of GNU CC.
 This naming scheme permits various versions and/or cross-compilers to
 coexist.  It also copies the executables for compilers for other
@@ -967,7 +967,7 @@ Use this for the SCO OpenServer Release family including 5.0.0, 5.0.2,
 5.0.4, Internet FastStart 1.0, and Internet FastStart 1.1.
 
 GNU CC can generate either ELF or COFF binaries.   ELF is the default.
-To get COFF output, you must specify @samp{-mcoff}) on the command line.
+To get COFF output, you must specify @samp{-mcoff} on the command line.
   
 For 5.0.0 and 5.0.2, you must install TLS597 from ftp.sco.com/TLS.
 5.0.4 and later do not require this patch.
