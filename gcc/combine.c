@@ -4632,8 +4632,8 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	   a SUBREG and it would sometimes return a new hard register.  */
 	new = gen_rtx (SUBREG, tmode, inner,
 		       (WORDS_BIG_ENDIAN
-			&& GET_MODE_SIZE (is_mode) > UNITS_PER_WORD
-			? ((GET_MODE_SIZE (is_mode) - GET_MODE_SIZE (tmode))
+			&& GET_MODE_SIZE (inner_mode) > UNITS_PER_WORD
+			? ((GET_MODE_SIZE (inner_mode) - GET_MODE_SIZE (tmode))
 			   / UNITS_PER_WORD)
 			: 0));
       else
@@ -6345,7 +6345,12 @@ num_sign_bit_copies (x, mode)
 	 be such a carry.  Furthermore, if the positive number is known to
 	 be 0 or 1, we know the result is either -1 or 0.  */
 
-      if (code == PLUS && XEXP (x, 1) == constm1_rtx)
+      if (code == PLUS && XEXP (x, 1) == constm1_rtx
+	  /* Don't do this if XEXP (x, 0) is a paradoxical subreg
+	     because in principle we don't know what the high bits are.  */
+	  && !(GET_CODE (XEXP (x, 0)) == SUBREG
+	       && (GET_MODE_SIZE (GET_MODE (XEXP (XEXP (x, 0), 0)))
+		   < GET_MODE_SIZE (GET_MODE (XEXP (x, 0))))))
 	{
 	  sig = significant_bits (XEXP (x, 0), mode);
 	  if ((((HOST_WIDE_INT) 1 << (bitwidth - 1)) & sig) == 0)
