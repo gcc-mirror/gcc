@@ -1,3 +1,8 @@
+2001-06-15  Andreas Jaeger  <aj@suse.de>
+
+	* doc/install.texi (Specific): Mention that glibc cannot be
+	compiled with GCC 3.0.
+
 2001-06-15  Zack Weinberg  <zackw@stanford.edu>
 
 	* doc/cpp.texi: Formatting corrections.
@@ -160,7 +165,7 @@
 	Revert this patch:
 	* toplev.c (rest_of_compilation): Remove dead code before
 	purge_addressof.
-	
+
 2001-06-12  Jim Wilson  <wilson@redhat.com>
 
 	* loop.c (strength_reduce): Move bl->all_reduced set before
@@ -248,8 +253,8 @@
 
 2001-06-11  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
-	* config/m68hc11/m68hc11.md ("*lshrdi3_const32"): Mark the clobber 
-	as an early clobber to make sure it is not used by reload in 
+	* config/m68hc11/m68hc11.md ("*lshrdi3_const32"): Mark the clobber
+	as an early clobber to make sure it is not used by reload in
 	one of the operands.
 
 2001-06-11  Mark Mitchell  <mark@codesourcery.com>
@@ -263,7 +268,7 @@
 
 	* config/mips/abi64.h (RETURN_IN_MEMORY): Fix handling of
 	variable-sized types.
-	
+
 2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/md.texi: Use TeX dashes and quotes.
@@ -320,9 +325,9 @@
 	* configure.in: Align --help messages.
 	Remove trailing full stops.
 	Consistently use lower case.
-	Fix DWARF 2 spelling.	
+	Fix DWARF 2 spelling.
 	* configure: Rebuilt.
-	
+
 2001-06-11  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-decl.c (store_parm_decls): When comparing types in an
@@ -399,12 +404,12 @@
 
 2001-06-10  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
-	* config/m68hc11/m68hc11-protos.h (m68hc11_initialize_trampoline): 
+	* config/m68hc11/m68hc11-protos.h (m68hc11_initialize_trampoline):
 	Move definition in the RTX_CODE section.
 
 2001-06-10  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
-	* config/m68hc11/m68hc11.h (RETURN_ADDR_RTX): Define the return 
+	* config/m68hc11/m68hc11.h (RETURN_ADDR_RTX): Define the return
 	address as relative to the argument pointer.
 
 2001-06-09  Alexandre Oliva  <aoliva@redhat.com>
@@ -431,7 +436,7 @@
 
 	* toplev.c (rest_of_compilation): Remove dead code before
 	purge_addressof.
-	
+
 2001-06-09  Richard Henderson  <rth@redhat.com>
 
 	* defaults.h (ACCUMULATE_OUTGOING_ARGS, PUSH_ARGS): Move from ...
@@ -460,7 +465,7 @@
 
 	* unwind-pe.h: Conditionally qualify references to abort with
 	std::.
-	
+
 2001-06-09  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* vax.h (NOTICE_UPDATE_CC): Set CC_NO_OVERFLOW in cc_status.flags
@@ -623,7 +628,7 @@
 	hbox.
 
 2001-06-07  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
-  
+
 	* pself.c, pself1.c, pself2.c, pself3.c, pself4.c, pself5.c:
 	Remove.
 
@@ -676,7 +681,7 @@
 	indent.
 	* toplev.c (main): Disable sibling-call optimization if we are
 	handling exceptions.
-	
+
 2001-06-05  Bernd Schmidt  <bernds@redhat.com>
 
 	* reload1.c (reload): Delete all USEs generated during reload.
@@ -735,11 +740,11 @@ Tue Jun  5 21:08:39 2001  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 	functions.
 	(c_expand_body): Expand them.
 	(lang_mark_tree): Mark lang_decl:pending_sizes.
-	* function.c (expand_pending_sizes): New function, broken out 
+	* function.c (expand_pending_sizes): New function, broken out
 	from ...
 	(expand_function_start): ... here.
 	* tree.h (expand_pending_sizes): Declare it.
-	
+
 2001-06-04  Loren J. Rittle  <ljrittle@acm.org>
 
 	* doc/install.texi: Update FreeBSD information.  Generalize
@@ -990,15 +995,15 @@ Thu May 31 19:17:01 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* c-common.c (c_common_nodes_and_builtins): Change __builtin_fsqrt
 	to __builtin_sqrt.
 	* extend.texi (Other Builtins): Update documentation about
-	__builtin_sqrt. 
+	__builtin_sqrt.
 
 2001-05-28  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/install.texi (Specific): http://reality.sgi.com/ariel/freeware/
 	became http://freeware.sgi.com/.
-	
+
 2001-05-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
- 
+
 	* fixinc/fixtests.c: Declare entries in ENV_TABLE.
 
 2001-05-27  Neil Booth  <neil@daikokuya.demon.co.uk>
@@ -1117,12 +1122,12 @@ Thu May 31 19:17:01 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 2001-05-25  Mark Mitchell  <mark@codesourcery.com>
 
-	* config/i386/i386.md: Make sure cmpstr peepholes do not 
+	* config/i386/i386.md: Make sure cmpstr peepholes do not
 	affect liveness information.
 
 2001-05-24  Mark Mitchell  <mark@codesourcery.com>
 
-	* c-typeck.c (digest_init): Issue error messages about 
+	* c-typeck.c (digest_init): Issue error messages about
 	invalid constants, not warnings.
 
 	* invoke.texi (-fno-builtin): Document that this is always on
