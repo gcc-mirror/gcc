@@ -507,7 +507,7 @@ get_alias_set (tree t)
 
 		  if (pointed_to_alias_set == 0)
 		    /* It's not legal to make a subset of alias set zero.  */
-		    ;
+		    DECL_POINTER_ALIAS_SET (decl) = 0;
 		  else
 		    {
 		      DECL_POINTER_ALIAS_SET (decl) = new_alias_set ();
