@@ -8590,32 +8590,58 @@ simplify_comparison (code, pop0, pop1)
 	 and the operand's possibly nonzero bits are 0xffffff01; in that case
 	 if we only care about QImode, we don't need the AND).  This case
 	 occurs if the output mode of an scc insn is not SImode and
-	 STORE_FLAG_VALUE == 1 (e.g., the 386).  */
+	 STORE_FLAG_VALUE == 1 (e.g., the 386).
+
+	 Similarly, check for a case where the AND's are ZERO_EXTEND
+	 operations from some narrower mode even though a SUBREG is not
+	 present.  */
 
       else if  (GET_CODE (op0) == AND && GET_CODE (op1) == AND
 		&& GET_CODE (XEXP (op0, 1)) == CONST_INT
-		&& GET_CODE (XEXP (op1, 1)) == CONST_INT
-		&& GET_CODE (XEXP (op0, 0)) == SUBREG
-		&& GET_CODE (XEXP (op1, 0)) == SUBREG
-		&& (GET_MODE_SIZE (GET_MODE (XEXP (op0, 0)))
-		    > GET_MODE_SIZE (GET_MODE (SUBREG_REG (XEXP (op0, 0)))))
-		&& (GET_MODE (SUBREG_REG (XEXP (op0, 0)))
-		    == GET_MODE (SUBREG_REG (XEXP (op1, 0))))
-		&& (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (XEXP (op0, 0))))
-		    <= HOST_BITS_PER_WIDE_INT)
-		&& (nonzero_bits (SUBREG_REG (XEXP (op0, 0)),
-				      GET_MODE (SUBREG_REG (XEXP (op0, 0))))
-		    & ~ INTVAL (XEXP (op0, 1))) == 0
-		&& (nonzero_bits (SUBREG_REG (XEXP (op1, 0)),
-				      GET_MODE (SUBREG_REG (XEXP (op1, 0))))
-		    & ~ INTVAL (XEXP (op1, 1))) == 0)
+		&& GET_CODE (XEXP (op1, 1)) == CONST_INT)
 	{
-	  op0 = SUBREG_REG (XEXP (op0, 0));
-	  op1 = SUBREG_REG (XEXP (op1, 0));
+	  rtx inner_op0 = XEXP (op0, 0);
+	  rtx inner_op1 = XEXP (op1, 0);
+	  HOST_WIDE_INT c0 = INTVAL (XEXP (op0, 1));
+	  HOST_WIDE_INT c1 = INTVAL (XEXP (op1, 1));
+	  int changed = 0;
+		
+	  if (GET_CODE (inner_op0) == SUBREG && GET_CODE (inner_op1) == SUBREG
+	      && (GET_MODE_SIZE (GET_MODE (inner_op0))
+		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (inner_op0))))
+	      && (GET_MODE (SUBREG_REG (inner_op0))
+		  == GET_MODE (SUBREG_REG (inner_op1)))
+	      && (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0)))
+		  <= HOST_BITS_PER_WIDE_INT)
+	      && (0 == (~c0) & nonzero_bits (SUBREG_REG (inner_op0),
+					     GET_MODE (SUBREG_REG (op0))))
+	      && (0 == (~c1) & nonzero_bits (SUBREG_REG (inner_op1),
+					     GET_MODE (SUBREG_REG (inner_op1)))))
+	    {
+	      op0 = SUBREG_REG (inner_op0);
+	      op1 = SUBREG_REG (inner_op1);
 
-	  /* the resulting comparison is always unsigned since we masked off
-	     the original sign bit. */
-	  code = unsigned_condition (code);
+	      /* The resulting comparison is always unsigned since we masked
+		 off the original sign bit. */
+	      code = unsigned_condition (code);
+
+	      changed = 1;
+	    }
+
+	  else if (c0 == c1)
+	    for (tmode = GET_CLASS_NARROWEST_MODE
+		 (GET_MODE_CLASS (GET_MODE (op0)));
+		 tmode != GET_MODE (op0); tmode = GET_MODE_WIDER_MODE (tmode))
+	      if (c0 == GET_MODE_MASK (tmode))
+		{
+		  op0 = gen_lowpart_for_combine (tmode, inner_op0);
+		  op1 = gen_lowpart_for_combine (tmode, inner_op1);
+		  changed = 1;
+		  break;
+		}
+
+	  if (! changed)
+	    break;
 	}
 
       /* If both operands are NOT, we can strip off the outer operation
@@ -9417,15 +9443,13 @@ simplify_comparison (code, pop0, pop1)
 	  /* If the only nonzero bits in OP0 and OP1 are those in the
 	     narrower mode and this is an equality or unsigned comparison,
 	     we can use the wider mode.  Similarly for sign-extended
-	     values and equality or signed comparisons.  */
+	     values, in which case it is true for all comparisons.  */
 	  if (((code == EQ || code == NE
 		|| code == GEU || code == GTU || code == LEU || code == LTU)
 	       && (nonzero_bits (op0, tmode) & ~ GET_MODE_MASK (mode)) == 0
 	       && (nonzero_bits (op1, tmode) & ~ GET_MODE_MASK (mode)) == 0)
-	      || ((code == EQ || code == NE
-		   || code == GE || code == GT || code == LE || code == LT)
-		  && (num_sign_bit_copies (op0, tmode)
-		      > GET_MODE_BITSIZE (tmode) - GET_MODE_BITSIZE (mode))
+	      || ((num_sign_bit_copies (op0, tmode)
+		   > GET_MODE_BITSIZE (tmode) - GET_MODE_BITSIZE (mode))
 		  && (num_sign_bit_copies (op1, tmode)
 		      > GET_MODE_BITSIZE (tmode) - GET_MODE_BITSIZE (mode))))
 	    {
