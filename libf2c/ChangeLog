@@ -1,3 +1,14 @@
+2001-05-16  Andreas Jaeger  <aj@suse.de>
+
+	* libI77/Makefile.in (endfile.o): Add dependency on config.h.
+
+	* libI77/endfile.c: Include config.h and sys/types for off_t.
+
+	* libI77/config.h.in: New file.
+
+	* libI77/configure.in: Add test for off_t, create config.h file.
+	* libI77/configure: Regenerated.
+
 2001-05-15  Loren J. Rittle  <ljrittle@acm.org>
 
 	* libI77/endfile.c (t_runc): Add cast to help case where
@@ -139,7 +150,7 @@ Wed Feb 16 11:10:05 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 Tue Nov 16 20:39:42 1999  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* libU77/u77-test.f (wd): Allow for longer working directory
- 	pathnames.
+	pathnames.
 
 1999-10-14 Theo Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
 
@@ -213,7 +224,7 @@ Wed May 26 14:26:35 1999  Craig Burley  <craig@jcb-sc.com>
 
 Thu May 20 03:20:59 1999  Jeffrey A Law  (law@cygnus.com)
 
-	* configure.in (AC_EXEEXT): Remove call.  
+	* configure.in (AC_EXEEXT): Remove call.
 	(compiler_name): Explicitly check with no extension and .exe
 	extension.
 	* configure: Regenerate.
@@ -309,7 +320,7 @@ Sat Apr 17 17:33:30 1999  Craig Burley  <craig@jcb-sc.com>
 	(s-libu77): Depend on u77.
 
 Mon Apr 12 21:38:14 1999  Mumit Khan  <khan@xraylith.wisc.edu>
-	
+
 	* libF77/getenv_.c: Include stdlib.h.
 
 Sun Apr 11 23:30:42 1999  Mumit Khan  <khan@xraylith.wisc.edu>
@@ -327,10 +338,10 @@ Sun Apr 11 23:30:42 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 Wed Mar 31 13:50:24 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in (extra_includes): Don't attempt to calculate the
- 	location of the gcc src or obj directories.  Instead rely on
- 	precomputed variables, $topsrcdir and $r, to obtain these values.
+	location of the gcc src or obj directories.  Instead rely on
+	precomputed variables, $topsrcdir and $r, to obtain these values.
 	Set -I flags appropriately.
-	
+
 1999-03-28  Dave Love  <fx@gnu.org>
 
 	* configure: Rebuilt.
@@ -364,7 +375,7 @@ Wed Mar 24 22:41:28 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 	on respective .c file.
 	* libF77/Makefile.in (all .o except VersionF.o): Similarly.
 	* libU77/Makefile.in (date_.o): Added dependence on date_.c
-	
+
 1999-03-06  Craig Burley  <craig@jcb-sc.com>
 
 	Rename non-Y2K-compliant intrinsics:
@@ -468,11 +479,11 @@ Mon Oct  5 01:16:10 1998  H.J. Lu  (hjl@gnu.org)
 
 	* Makefile.in (f2cext.c): Depend on g2c.h.
 
-1998-09-30  Robert Lipe  <robertl@dgii.com> 
+1998-09-30  Robert Lipe  <robertl@dgii.com>
 
-	* Makefile.in (all): Correct dependencies so --disable-multilibs 
+	* Makefile.in (all): Correct dependencies so --disable-multilibs
 	works again.
-  	(distclean): Correct typo.
+	(distclean): Correct typo.
 
 1998-09-28  Dave Love  <d.love@dl.ac.uk>
 
@@ -486,11 +497,11 @@ Mon Oct  5 01:16:10 1998  H.J. Lu  (hjl@gnu.org)
 
 Mon Sep 21 12:27:27 1998  Robert Lipe  <robertl@dgii.com>
 
-	* Makefile.in (distclean, clean, uninstall, install, all): Add 
+	* Makefile.in (distclean, clean, uninstall, install, all): Add
 	multilib support.
 	* configure.in: Likewise.
 	* configure: Regenerate.
-	* libF77/Makefile.in, libU77/Makefile.in, libI77/Makefile.in (clean): 
+	* libF77/Makefile.in, libU77/Makefile.in, libI77/Makefile.in (clean):
 	Explictly remove stamp in parent's directory.
 
 1998-09-20  Dave Love  <d.love@dl.ac.uk>
@@ -845,9 +856,9 @@ Sun Feb  1 02:36:33 1998  Richard Henderson  <rth@cygnus.com>
 	* Previous contents of gcc/f/runtime moved into toplevel
 	"libf2c" directory.
 
-Sun Feb  1 01:42:47 1998  Mumit Khan <khan@xraylith.wisc.edu> 
+Sun Feb  1 01:42:47 1998  Mumit Khan <khan@xraylith.wisc.edu>
 
-	* libU77/configure.in (getlogin,getgid,getuid, kill,link,ttyname): 
+	* libU77/configure.in (getlogin,getgid,getuid, kill,link,ttyname):
 	Check.
 	* libU77/config.h.in (HAVE_GETLOGIN, HAVE_GETGID, HAVE_GETUID,
 	HAVE_KILL, HAVE_LINK, HAVE_TTYNAME): New defs.
@@ -875,7 +886,7 @@ Sat Jan 17 22:40:31 1998  Mumit Khan <khan@xraylith.wisc.edu>
 	* libU77/dtime_.c: Likewise.
 	* libU77/etime_.c: Likewise.
 	* libU77/sys_clock_.c: Likewise.
-       
+
 	* configure.in (NON_UNIX_STDIO): Define if MINGW32.
 	(NON_ANSI_RW_MODE): Do not define for CYGWIN32 or MINGW32.
 
@@ -982,7 +993,7 @@ Mon Sep 29 16:30:31 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 1997-09-19  Dave Love  <d.love@dl.ac.uk>
 
 	* libU77/dtime_.c (G77_dtime_0): Fix types in HAVE_GETRUSAGE case
- 	so as not to truncate results to integer values.
+	so as not to truncate results to integer values.
 	* libU77/Version.c: Bump.
 
 Thu Sep 18 16:58:46 1997  Jeffrey A Law  (law@cygnus.com)
@@ -1128,8 +1139,8 @@ Tue Jun 24 18:50:06 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 1997-06-20  Dave Love  <d.love@dl.ac.uk>
 
 	* runtime/configure.in: Check for cygwin32 after Mumit Khan (but
- 	differently); if cygwin32 define NON_UNIX_STDIO and don't define
- 	NON_ANSI_RW_MODES.
+	differently); if cygwin32 define NON_UNIX_STDIO and don't define
+	NON_ANSI_RW_MODES.
 
 Tue Jun 01 06:26:29 1997  Craig Burley  <burley@gnu.ai.mit.edu>
 
@@ -1496,7 +1507,7 @@ Thu Oct 31 22:27:45 1996  Craig Burley  <burley@gnu.ai.mit.edu>
 1996-10-19  Dave Love  <d.love@dl.ac.uk>
 
 	Update to Netlib version of 1996-09-26.
-	
+
 	* libI77/Version.c: Use <stdio.h>, not "stdio.h".
 	* libF77/Version.c: Likewise.
 
@@ -1528,25 +1539,25 @@ Sat Aug 17 13:00:47 1996  Dave Love  <d.love@dl.ac.uk>
 Sun Jul  7 18:06:33 1996  Dave Love  <d.love@dl.ac.uk>
 
 	* libF77/z_sqrt.c, libF77/z_sin.c, libF77/z_exp.c, libF77/z_log.c,
- 	libF77/system_.c, libF77/z_cos.c, libF77/signal_.c,
- 	libF77/s_stop.c, libF77/sig_die.c, libF77/s_paus.c,
- 	libF77/s_rnge.c, libF77/s_cat.c, libF77/r_tan.c, libF77/r_tanh.c,
- 	libF77/r_sinh.c, libF77/r_sqrt.c, libF77/r_sin.c, libF77/r_mod.c,
- 	libF77/r_nint.c, libF77/r_lg10.c, libF77/r_log.c, libF77/r_exp.c,
- 	libF77/r_int.c, libF77/r_cosh.c, libF77/r_atn2.c, libF77/r_cos.c,
- 	libF77/r_asin.c, libF77/r_atan.c, libF77/r_acos.c,
- 	libF77/pow_dd.c, libF77/pow_zz.c, libF77/main.c, libF77/i_dnnt.c,
- 	libF77/i_nint.c, libF77/h_dnnt.c, libF77/h_nint.c, libF77/exit.c,
- 	libF77/d_tan.c, libF77/d_tanh.c, libF77/d_sqrt.c, libF77/d_sin.c,
- 	libF77/d_sinh.c, libF77/d_mod.c, libF77/d_nint.c, libF77/d_log.c,
- 	libF77/d_int.c, libF77/d_lg10.c, libF77/d_cosh.c, libF77/d_exp.c,
- 	libF77/d_atn2.c, libF77/d_cos.c, libF77/d_atan.c, libF77/d_acos.c,
- 	libF77/d_asin.c, libF77/c_sqrt.c, libF77/cabs.c, libF77/c_sin.c,
- 	libF77/c_exp.c, libF77/c_log.c, libF77/c_cos.c, libF77/F77_aloc.c,
- 	libF77/abort_.c, libI77/xwsne.c, libI77/wref.c, libI77/util.c,
- 	libI77/uio.c, libI77/rsne.c, libI77/rdfmt.c, libI77/rawio.h,
- 	libI77/open.c, libI77/lread.c, libI77/inquire.c, libI77/fio.h,
- 	libI77/err.c, libI77/endfile.c, libI77/close.c:
+	libF77/system_.c, libF77/z_cos.c, libF77/signal_.c,
+	libF77/s_stop.c, libF77/sig_die.c, libF77/s_paus.c,
+	libF77/s_rnge.c, libF77/s_cat.c, libF77/r_tan.c, libF77/r_tanh.c,
+	libF77/r_sinh.c, libF77/r_sqrt.c, libF77/r_sin.c, libF77/r_mod.c,
+	libF77/r_nint.c, libF77/r_lg10.c, libF77/r_log.c, libF77/r_exp.c,
+	libF77/r_int.c, libF77/r_cosh.c, libF77/r_atn2.c, libF77/r_cos.c,
+	libF77/r_asin.c, libF77/r_atan.c, libF77/r_acos.c,
+	libF77/pow_dd.c, libF77/pow_zz.c, libF77/main.c, libF77/i_dnnt.c,
+	libF77/i_nint.c, libF77/h_dnnt.c, libF77/h_nint.c, libF77/exit.c,
+	libF77/d_tan.c, libF77/d_tanh.c, libF77/d_sqrt.c, libF77/d_sin.c,
+	libF77/d_sinh.c, libF77/d_mod.c, libF77/d_nint.c, libF77/d_log.c,
+	libF77/d_int.c, libF77/d_lg10.c, libF77/d_cosh.c, libF77/d_exp.c,
+	libF77/d_atn2.c, libF77/d_cos.c, libF77/d_atan.c, libF77/d_acos.c,
+	libF77/d_asin.c, libF77/c_sqrt.c, libF77/cabs.c, libF77/c_sin.c,
+	libF77/c_exp.c, libF77/c_log.c, libF77/c_cos.c, libF77/F77_aloc.c,
+	libF77/abort_.c, libI77/xwsne.c, libI77/wref.c, libI77/util.c,
+	libI77/uio.c, libI77/rsne.c, libI77/rdfmt.c, libI77/rawio.h,
+	libI77/open.c, libI77/lread.c, libI77/inquire.c, libI77/fio.h,
+	libI77/err.c, libI77/endfile.c, libI77/close.c:
 	Use #include <...>, not #include "..." for mkdeps
 
 Sat Jul  6 21:39:21 1996  Dave Love  <d.love@dl.ac.uk>
@@ -1556,7 +1567,7 @@ Sat Jul  6 21:39:21 1996  Dave Love  <d.love@dl.ac.uk>
 Sat Mar 30 20:57:24 1996  Dave Love  <d.love@dl.ac.uk>
 
 	* configure.in: Eliminate explicit use of
- 	{RANLIB,AR}_FOR_TARGET.
+	{RANLIB,AR}_FOR_TARGET.
 	* Makefile.in: Likewise.
 	* libF77/Makefile.in: Likewise.
 	* libI77/Makefile.in: Likewise.
@@ -1565,12 +1576,12 @@ Sat Mar 30 20:57:24 1996  Dave Love  <d.love@dl.ac.uk>
 Sat Mar 30 21:02:03 1996  Dave Love  <d.love@dl.ac.uk>
 
 	* Makefile.in: Eliminate explicit use of
- 	{RANLIB,AR}_FOR_TARGET.
+	{RANLIB,AR}_FOR_TARGET.
 
 Tue Mar 26 23:39:59 1996  Dave Love  <d.love@dl.ac.uk>
 
 	* Makefile.in: Remove hardwired RANLIB and RANLIB_TEST (unnoted
- 	change).
+	change).
 
 Mon Mar 25 21:04:56 1996  Craig Burley  <burley@gnu.ai.mit.edu>
 
