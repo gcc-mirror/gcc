@@ -9064,7 +9064,10 @@ xref_basetypes (tree ref, tree base_list)
   /* The binfo slot should be empty, unless this is an (ill-formed)
      redefinition.  */
   my_friendly_assert (!TYPE_BINFO (ref) || TYPE_SIZE (ref), 20040706);
-  TYPE_BINFO (ref) = make_binfo (size_zero_node, ref, NULL_TREE, NULL_TREE);
+  my_friendly_assert (TYPE_MAIN_VARIANT (ref) == ref, 20040712);
+  TYPE_BINFO (ref) = make_tree_binfo (BINFO_LANG_SLOTS);
+  BINFO_OFFSET (TYPE_BINFO (ref)) = size_zero_node;
+  BINFO_TYPE (TYPE_BINFO (ref)) = ref;
   
   if (i)
     {
@@ -9115,23 +9118,17 @@ xref_basetypes (tree ref, tree base_list)
 	      && (current_lang_depth () == 0))
 	    TYPE_FOR_JAVA (ref) = 1;
 	  
-	  if (CLASS_TYPE_P (basetype))
+	  if (CLASS_TYPE_P (basetype) && !dependent_type_p (basetype))
 	    {
 	      base_binfo = TYPE_BINFO (basetype);
 
-	      if (dependent_type_p (basetype))
-		{
-		  base_binfo = make_binfo (size_zero_node, basetype,
-					   NULL_TREE, NULL_TREE);
-		  BINFO_DEPENDENT_BASE_P (base_binfo) = 1;
-		}
-	      else
-		my_friendly_assert (base_binfo, 20040706);
+	      my_friendly_assert (base_binfo, 20040706);
 	    }
 	  else
 	    {
-	      base_binfo = make_binfo (size_zero_node, basetype,
-				       NULL_TREE, NULL_TREE);
+	      base_binfo = make_tree_binfo (BINFO_LANG_SLOTS);
+	      
+	      BINFO_TYPE (base_binfo) = basetype;
 	      BINFO_DEPENDENT_BASE_P (base_binfo) = 1;
 	    }
 	  

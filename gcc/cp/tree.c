@@ -617,9 +617,19 @@ copy_base_binfos (tree binfo, tree t, tree prev)
       
       if (!new_binfo)
 	{
-	  new_binfo = make_binfo (BINFO_OFFSET (base_binfo),
-				  base_binfo, NULL_TREE,
-				  BINFO_VIRTUALS (base_binfo));
+	  new_binfo = make_tree_binfo (BINFO_LANG_SLOTS);
+
+	  BINFO_TYPE (new_binfo) = BINFO_TYPE (base_binfo);
+	  BINFO_OFFSET (new_binfo) = BINFO_OFFSET (base_binfo);
+	  BINFO_VIRTUALS (new_binfo) = BINFO_VIRTUALS (base_binfo);
+
+	  if (BINFO_BASE_BINFOS (base_binfo))
+	    /* Duplicate the binfo's base vector, so we can recurse.  */
+	    BINFO_BASE_BINFOS (new_binfo)
+	      = copy_node (BINFO_BASE_BINFOS (base_binfo));
+	  /* We do not need to copy the accesses, as they are read only.  */
+	  BINFO_BASE_ACCESSES (new_binfo) = BINFO_BASE_ACCESSES (base_binfo);
+	  
 	  prev = copy_base_binfos (new_binfo, t, prev);
 	  if (BINFO_VIRTUAL_P (base_binfo))
 	    {
@@ -753,52 +763,6 @@ hash_chainon (tree list1, tree list2)
 			  hash_chainon (TREE_CHAIN (list1), list2));
 }
 
-/* Build an association between TYPE and some parameters:
-
-   OFFSET is the offset added to `this' to convert it to a pointer
-   of type `TYPE *'
-
-   BINFO is the base binfo to use, if we are deriving from one.  This
-   is necessary, as we want specialized parent binfos from base
-   classes, so that the VTABLE_NAMEs of bases are for the most derived
-   type, instead of the simple type.
-
-   VTABLE is the virtual function table with which to initialize
-   sub-objects of type TYPE.
-
-   VIRTUALS are the virtual functions sitting in VTABLE.  */
-
-tree
-make_binfo (tree offset, tree binfo, tree vtable, tree virtuals)
-{
-  tree new_binfo = make_tree_binfo (BINFO_LANG_SLOTS);
-  tree type;
-
-  if (TREE_CODE (binfo) == TREE_BINFO)
-    {
-      type = BINFO_TYPE (binfo);
-      my_friendly_assert (!BINFO_DEPENDENT_BASE_P (binfo), 20040706);
-    }
-  else
-    {
-      type = binfo;
-      binfo = NULL_TREE;
-    }
-
-  TREE_TYPE (new_binfo) = TYPE_MAIN_VARIANT (type);
-  BINFO_OFFSET (new_binfo) = offset;
-  BINFO_VTABLE (new_binfo) = vtable;
-  BINFO_VIRTUALS (new_binfo) = virtuals;
-
-  if (binfo && BINFO_BASE_BINFOS (binfo))
-    {
-      BINFO_BASE_BINFOS (new_binfo) = copy_node (BINFO_BASE_BINFOS (binfo));
-      /* We do not need to copy the accesses, as they are read only.  */
-      BINFO_BASE_ACCESSES (new_binfo) = BINFO_BASE_ACCESSES (binfo);
-    }
-  return new_binfo;
-}
-
 void
 debug_binfo (tree elem)
 {
