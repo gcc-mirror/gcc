@@ -36,8 +36,6 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-extern struct obstack permanent_obstack;
-
 /* This is how we tell when two virtual member functions are really the
    same.  */
 #define SAME_FN(FN1DECL, FN2DECL) (DECL_ASSEMBLER_NAME (FN1DECL) == DECL_ASSEMBLER_NAME (FN2DECL))
@@ -90,7 +88,7 @@ tree previous_class_values;	/* TREE_LIST: copy of the class_shadowed list
 static struct obstack class_cache_obstack;
 /* The first object allocated on that obstack.  We can use
    obstack_free with tis value to free the entire obstack.  */
-static char *class_cache_firstobj;
+char *class_cache_firstobj;
 
 struct base_info;
 
@@ -1136,7 +1134,8 @@ void
 add_method (type, fields, method)
      tree type, *fields, method;
 {
-  push_obstacks (&permanent_obstack, &permanent_obstack);
+  push_obstacks_nochange ();
+  end_temporary_allocation ();
 
   /* Setting the DECL_CONTEXT and DECL_CLASS_CONTEXT here is probably
      redundant.  */
@@ -4474,7 +4473,8 @@ pushclass (type, modify)
       invalidate_class_lookup_cache ();
 
       /* Now, free the obstack on which we cached all the values.  */
-      obstack_free (&class_cache_obstack, class_cache_firstobj);
+      if (class_cache_firstobj)
+	obstack_free (&class_cache_obstack, class_cache_firstobj);
       class_cache_firstobj 
 	= (char*) obstack_finish (&class_cache_obstack);
     }
@@ -5231,7 +5231,7 @@ print_class_statistics ()
    effect is undone by pop_obstacks.  */
 
 void
-maybe_push_cache_obstack ()
+push_cache_obstack ()
 {
   static int cache_obstack_initialized;
 

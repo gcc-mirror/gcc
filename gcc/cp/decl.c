@@ -63,8 +63,6 @@ extern tree global_namespace;
 extern void (*print_error_function) PROTO((char *));
 extern int (*valid_lang_attribute) PROTO ((tree, tree, tree, tree));
 
-/* Stack of places to restore the search obstack back to.  */
-   
 /* Obstack used for remembering local class declarations (like
    enums and static (const) members.  */
 #include "stack.h"
@@ -2420,6 +2418,7 @@ struct saved_scope {
   tree previous_class_type, previous_class_values;
   int processing_specialization;
   int processing_explicit_instantiation;
+  char *class_cache_firstobj;
 };
 static struct saved_scope *current_saved_scope;
 
@@ -2537,6 +2536,7 @@ maybe_push_to_top_level (pseudo)
   s->processing_template_decl = processing_template_decl;
   s->previous_class_type = previous_class_type;
   s->previous_class_values = previous_class_values;
+  s->class_cache_firstobj = class_cache_firstobj;
   s->processing_specialization = processing_specialization;
   s->processing_explicit_instantiation = processing_explicit_instantiation;
 
@@ -2552,6 +2552,7 @@ maybe_push_to_top_level (pseudo)
   shadowed_labels = NULL_TREE;
   minimal_parse_mode = 0;
   previous_class_type = previous_class_values = NULL_TREE;
+  class_cache_firstobj = 0;
   processing_specialization = 0;
   processing_explicit_instantiation = 0;
   current_template_parms = NULL_TREE;
@@ -2623,6 +2624,7 @@ pop_from_top_level ()
   previous_class_values = s->previous_class_values;
   processing_specialization = s->processing_specialization;
   processing_explicit_instantiation = s->processing_explicit_instantiation;
+  class_cache_firstobj = s->class_cache_firstobj;
 
   free (s);
 
@@ -4443,7 +4445,7 @@ push_class_level_binding (name, x)
      IDENTIFIER_CLASS_VALUE.  */
   if (push_class_binding (name, x))
     {
-      maybe_push_cache_obstack ();
+      push_cache_obstack ();
       class_binding_level->class_shadowed
 	= tree_cons (name, IDENTIFIER_CLASS_VALUE (name),
 		     class_binding_level->class_shadowed);

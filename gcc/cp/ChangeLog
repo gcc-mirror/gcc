@@ -1,3 +1,21 @@
+1999-06-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (class_cache_firstobj): Declare.
+	(maybe_push_cache_obstack): Rename to push_cache_obstack.
+	* class.c (permanent_obstack): Remove declaration.
+	(class_cache_firstobj): Make it global.
+	(add_method): Don't use permanent_obstack directly.
+	(pushclass): Only free the class_cache_obstack if we know how far
+	back to free it.
+	(maybe_push_cache_obstack): Rename to push_cache_obstack.
+	* decl.c: Remove dead comment.
+	(saved_scope): Add class_cache_firstobj.
+	(push_to_top_level): Save it.
+	(pop_from_top_level): Restore it.
+	(push_class_level_binding): Use push_cache_obstack, not
+	maybe_push_cache_obstack.
+	* search.c (push_class_decls): Likewise.
+
 1999-06-14  Nathan Sidwell  <nathan@acm.org>
 
 	* call.c (build_new_op): Remove REF_BIND from all operands.
