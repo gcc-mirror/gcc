@@ -1311,29 +1311,33 @@ typedef struct xtensa_args {
 
 #define FUNCTION_EPILOGUE(FILE, SIZE) xtensa_function_epilogue (FILE, SIZE)
 
-/* Output assembler code to FILE to increment profiler label LABELNO
-   for profiling a function entry.
-
-   The mcount code in glibc doesn't seem to use this LABELNO stuff.
-   Some ports (e.g., MIPS) don't even bother to pass the label
-   address, and even those that do (e.g., i386) don't seem to use it.
-   The information needed by mcount() is the current PC and the
-   current return address, so that mcount can identify an arc in the
-   call graph.  For Xtensa, we pass the current return address as
-   the first argument to mcount, and the current PC is available as
-   a0 in mcount's register window.  Both of these values contain
-   window size information in the two most significant bits; we assume
-   that the mcount code will mask off those bits.  The call to mcount
-   uses a window size of 8 to make sure that mcount doesn't clobber
+/* Profiling Xtensa code is typically done with the built-in profiling
+   feature of Tensilica's instruction set simulator, which does not
+   require any compiler support.  Profiling code on a real (i.e.,
+   non-simulated) Xtensa processor is currently only supported by
+   GNU/Linux with glibc.  The glibc version of _mcount doesn't require
+   counter variables.  The _mcount function needs the current PC and
+   the current return address to identify an arc in the call graph.
+   Pass the current return address as the first argument; the current
+   PC is available as a0 in _mcount's register window.  Both of these
+   values contain window size information in the two most significant
+   bits; we assume that _mcount will mask off those bits.  The call to
+   _mcount uses a window size of 8 to make sure that it doesn't clobber
    any incoming argument values. */
 
-#define FUNCTION_PROFILER(FILE, LABELNO)				\
+#define NO_PROFILE_COUNTERS
+
+#define FUNCTION_PROFILER(FILE, LABELNO) \
   do {									\
-    fprintf (FILE, "\taddi\t%s, %s, 0\t# save current return address\n", \
-	     xtensa_reg_names[GP_REG_FIRST+10],				\
-	     xtensa_reg_names[GP_REG_FIRST+0]);				\
-    fprintf (FILE, "\tcall8\t_mcount\n");				\
-  } while (0);
+    fprintf (FILE, "\t%s\ta10, a0\n", TARGET_DENSITY ? "mov.n" : "mov"); \
+    if (flag_pic)							\
+      {									\
+	fprintf (FILE, "\tmovi\ta8, _mcount@PLT\n");			\
+	fprintf (FILE, "\tcallx8\ta8\n");				\
+      }									\
+    else								\
+      fprintf (FILE, "\tcall8\t_mcount\n");				\
+  } while (0)
 
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,

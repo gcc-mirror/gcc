@@ -1,3 +1,9 @@
+2002-06-28  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.h (FUNCTION_PROFILER): Respect flag_pic
+	when generating the call to _mcount.
+	(NO_PROFILE_COUNTERS): Define.
+
 2002-05-21  NIIBE Yutaka  <gniibe@m17n.org>
 
 	* reload1.c (do_output_reload): Run delete_output_reload
