@@ -1,3 +1,11 @@
+2002-11-20  Benjamin Kosnik  <bkoz@redhat.com>
+            Jonathan Lennox  <lennox@cs.columbia.edu>
+
+	* include/bits/streambuf.tcc (__copy_streambufs):
+	Revert previous fix for the interactive half of
+	libstdc++/6745, use _M_buf_size_opt to set dynamically
+	the correct buffer size.
+
 2002-11-20  Jonathan Wakely  <redi@gcc.gnu.org>
 
 	* docs/html/21_strings/howto.html: Fix example code, cite Gaby's
