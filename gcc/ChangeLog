@@ -1,3 +1,9 @@
+2003-06-12  Richard Henderson  <rth@redhat.com>
+
+        PR target/7594
+        * config/m68k/m68k.md (zero_extendhisi2): Use gen_lowpart_SUBREG.
+        (zero_extendqihi2, zero_extendqisi2): Likewise.
+
 2003-06-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.c (function_arg): Always split vectors for
