@@ -278,8 +278,7 @@ public abstract class ByteBuffer extends Buffer
    */
   public boolean equals (Object obj)
   {
-    if (obj != null &&
-        obj instanceof ByteBuffer)
+    if (obj instanceof ByteBuffer)
       {
         return compareTo (obj) == 0;
       }
