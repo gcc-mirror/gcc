@@ -31,6 +31,11 @@ Boston, MA 02111-1307, USA.  */
    do not apply.  */
 
 #include "tconfig.h"
+
+/* fixproto guarantees these system headers exist. */
+#include <stdlib.h>
+#include <unistd.h>
+
 #include "machmode.h"
 #include "defaults.h" 
 #ifndef L_trampoline
@@ -391,7 +396,10 @@ __udiv_w_sdiv (USItype *rp, USItype a1, USItype a0, USItype d)
 #else
 /* If sdiv_qrnnd doesn't exist, define dummy __udiv_w_sdiv.  */
 USItype
-__udiv_w_sdiv (USItype *rp, USItype a1, USItype a0, USItype d)
+__udiv_w_sdiv (USItype *rp __attribute__ ((__unused__)),
+	       USItype a1 __attribute__ ((__unused__)),
+	       USItype a0 __attribute__ ((__unused__)),
+	       USItype d __attribute__ ((__unused__)))
 {
   return 0;
 }

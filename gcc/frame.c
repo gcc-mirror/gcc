@@ -32,6 +32,11 @@ Boston, MA 02111-1307, USA.  */
    do not apply.  */
 
 #include "tconfig.h"
+
+/* fixproto guarantees these system headers exist. */
+#include <stdlib.h>
+#include <unistd.h>
+
 #include "defaults.h"
 
 #ifdef DWARF2_UNWIND_INFO

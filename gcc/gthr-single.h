@@ -42,19 +42,19 @@ __gthread_active_p ()
 }
 
 static inline int
-__gthread_mutex_lock (__gthread_mutex_t *mutex)
+__gthread_mutex_lock (__gthread_mutex_t *mutex __attribute__ ((__unused__)))
 {
   return 0;
 }
 
 static inline int
-__gthread_mutex_trylock (__gthread_mutex_t *mutex)
+__gthread_mutex_trylock (__gthread_mutex_t *mutex __attribute__ ((__unused__)))
 {
   return 0;
 }
 
 static inline int
-__gthread_mutex_unlock (__gthread_mutex_t *mutex)
+__gthread_mutex_unlock (__gthread_mutex_t *mutex __attribute__ ((__unused__)))
 {
   return 0;
 }
