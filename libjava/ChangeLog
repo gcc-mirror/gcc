@@ -1,3 +1,12 @@
+2001-12-16  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (ordinary_java_source_files): Removed old file;
+	added new file.
+	* gnu/java/math/MPN.java: New file.
+	* gnu/gcj/math/MPN.java: Removed.
+	* java/math/BigInteger.java: Merged with Classpath.
+
 2001-12-16  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/io/DataOutputStream (write (byte[], int, int)): Update 
