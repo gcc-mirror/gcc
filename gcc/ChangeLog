@@ -1,3 +1,8 @@
+2002-06-17  Richard Henderson  <rth@redhat.com>
+
+	PR target/6922
+	* expmed.c (make_tree): Handle SIGN_EXTEND/ZERO_EXTEND.
+
 2002-06-17  Tom Tromey  <tromey@redhat.com>
 
 	* dwarfout.c: Include function.h.
