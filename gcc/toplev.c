@@ -3155,6 +3155,18 @@ rest_of_compilation (decl)
 	       fflush (cse_dump_file);
 	     });
 
+  purge_addressof (insns);
+  reg_scan (insns, max_reg_num (), 1);
+
+  if (addressof_dump)
+    TIMEVAR (dump_time,
+	     {
+	       fprintf (addressof_dump_file, "\n;; Function %s\n\n",
+			(*decl_printable_name) (decl, 2));
+	       print_rtl (addressof_dump_file, insns);
+	       fflush (addressof_dump_file);
+	     });
+
   if (loop_dump)
     TIMEVAR (dump_time,
 	     {
@@ -3173,18 +3185,6 @@ rest_of_compilation (decl)
     }
 
   /* Dump rtl code after loop opt, if we are doing that.  */
-
-  purge_addressof (insns);
-  reg_scan (insns, max_reg_num (), 1);
-
-  if (addressof_dump)
-    TIMEVAR (dump_time,
-	     {
-	       fprintf (addressof_dump_file, "\n;; Function %s\n\n",
-			(*decl_printable_name) (decl, 2));
-	       print_rtl (addressof_dump_file, insns);
-	       fflush (addressof_dump_file);
-	     });
 
   if (loop_dump)
     TIMEVAR (dump_time,
