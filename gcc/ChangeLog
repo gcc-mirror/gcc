@@ -1,3 +1,23 @@
+2004-08-29  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (mips_builtins, mips_cmp_choice): Delete.
+	(mips_function_type): Move to mips.c.
+	* config/mips/mips.c (mips_builtin_type): New enum.
+	(builtin_description): Replace code and ftype with builtin_type
+	and function_type.
+	(DIRECT_BUILTIN, CMP_SCALAR_BUILTINS, CMP_PS_BUILTINS, CMP_4S_BUILTINS)
+	(MOVTF_BUILTINS, CMP_BUILTINS): New macros.
+	(CODE_FOR_mips_abs_ps): Define.
+	(mips_bdesc): Use new macros.
+	(mips_expand_builtin): Use builtin_type.  Update calls to subroutines.
+	(mips_init_builtins): Use the mips_bdesc[] index as the function code.
+	(mips_expand_builtin_direct): New function.
+	(mips_expand_builtin_movtf): Renamed from mips_expand_ps_cond_move_
+	builtin.  Replace boolean parameter with builtin_type.
+	(mips_expand_compare_builtin, mips_expand_scalar_compare_builtin)
+	(mips_expand_4s_compare_builtin): Delete, replacing with...
+	(mips_expand_builtin_compare): ...this new function.
+
 2004-08-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR rtl-optimization/16590
