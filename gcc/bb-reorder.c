@@ -122,9 +122,9 @@ make_reorder_chain ()
 	    next = bb;
 	    break;
 	  }
-      
+
       if (next)
-        prev = make_reorder_chain_1 (next, prev);
+	prev = make_reorder_chain_1 (next, prev);
     }
   while (next);
   RBI (prev)->next = NULL;

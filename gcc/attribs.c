@@ -323,7 +323,7 @@ split_specs_attrs (specs_attrs, declspecs, prefix_attributes)
   tree t, s, a, next, specs, attrs;
 
   /* This can happen after an __extension__ in pedantic mode.  */
-  if (specs_attrs != NULL_TREE 
+  if (specs_attrs != NULL_TREE
       && TREE_CODE (specs_attrs) == INTEGER_CST)
     {
       *declspecs = NULL_TREE;
