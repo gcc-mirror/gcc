@@ -1,6 +1,13 @@
+2003-11-24  Arnaud Charlet <charlet@act-europe.fr>
+
+	PR ada/13142
+	* utils.c (init_gigi_decls): Change name of built-in setjmp to
+	__builtin_setjmp, since this is apparently needed by recent
+	non Ada changes.
+
 2003-11-24  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
-	* adadecode.c: Only include ctype.h if IN_GCC.
+	* adadecode.c: Only include ctype.h if not IN_GCC.
 	(__gnat_decode): Use ISDIGIT from safe-ctype.h.
 
 2003-11-24  Jose Ruiz  <ruiz@act-europe.fr>
