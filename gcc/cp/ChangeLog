@@ -1,3 +1,12 @@
+2001-01-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Make-lang.in (c++.info, c++.install-info): Build and install g++
+	internals info.
+	(c++.uninstall, c++.maintainer-clean): Remove g++ internals info.
+	($(srcdir)/cp/g++int.info): New target.
+	* gxxint.texi: Add info directory entry.  Use @@ in email address.
+	* .cvsignore: Update.
+
 2001-01-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* typeck.c (build_c_cast): Do template processing earlier.

@@ -1,3 +1,15 @@
+2001-01-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* Makefile.in (info, maintainer-clean, install-info, uninstall):
+	Also build and remove and install and uninstall c-tree.info and
+	cppinternals.info.
+	($(srcdir)/gcc.info): Add dependency on contrib.texi.
+	($(srcdir)/cppinternals.info): New target.
+	* c-tree.texi: Change file name used when makeinfo used without -o
+	from ir.info to c-tree.info.  Add info directory entry.
+	* cppinternals.texi: Add info directory entry.
+	* .cvsignore: Update.
+
 2001-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-typeck.c (store_init_value): Don't require constant initializer

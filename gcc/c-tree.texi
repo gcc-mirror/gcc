@@ -23,15 +23,19 @@
 @c Prologue
 @c ---------------------------------------------------------------------
 
-@setfilename ir.info
+@setfilename c-tree.info
 @settitle C/C++ Internal Representation
 @setchapternewpage on
 
 @ifinfo
+@dircategory Programming
+@direntry
+* c-tree: (c-tree).            C/C++ Internal Representation
+@end direntry
 This manual documents the internal representation used by GCC to represent
 C and C++ source programs.
 
-Copyright (c) 1999, 2000 Free Software Foundation, Inc.
+Copyright (c) 1999, 2000, 2001 Free Software Foundation, Inc.
 @end ifinfo
 
 @c ---------------------------------------------------------------------
@@ -43,7 +47,7 @@ Copyright (c) 1999, 2000 Free Software Foundation, Inc.
 @author CodeSourcery, LLC <info@@codesourcery.com>
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1999, 2000 Free Software Foundation, Inc.
+Copyright @copyright{} 1999, 2000, 2001 Free Software Foundation, Inc.
 @end titlepage
 
 @c ---------------------------------------------------------------------

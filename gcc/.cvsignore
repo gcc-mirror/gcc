@@ -8,3 +8,4 @@ tradcif.c
 gcc.info*
 cpp.info*
 c-tree.info*
+cppinternals.info*
