@@ -108,7 +108,7 @@ gt-java-builtins.h gtype-java.h gt-java-resource.h : s-gtype ; @true
 JAVA_OBJS = java/parse.o java/class.o java/decl.o java/expr.o \
   java/constants.o java/lang.o java/typeck.o java/except.o java/verify.o \
   java/zextract.o java/jcf-io.o java/jcf-parse.o java/mangle.o \
-  java/mangle_name.o java/builtins.o java/resource.o \
+  java/mangle_name.o java/builtins.o java/resource.o java/j-options.o \
   java/jcf-write.o java/buffer.o java/check-init.o java/jcf-depend.o \
   java/jcf-path.o java/xref.o java/boehm.o java/java-tree-inline.o mkdeps.o
 
@@ -326,7 +326,7 @@ java/jvgenmain.o: java/jvgenmain.c $(CONFIG_H) $(JAVA_TREE_H) $(SYSTEM_H) \
   coretypes.h $(TM_H)
 java/lang.o: java/lang.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h input.h \
   toplev.h $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(EXPR_H) diagnostic.h \
-  langhooks.h $(LANGHOOKS_DEF_H) gt-java-lang.h opts.h
+  langhooks.h $(LANGHOOKS_DEF_H) gt-java-lang.h opts.h java/j-options.h
 java/mangle.o: java/mangle.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) toplev.h $(GGC_H) gt-java-mangle.h
 java/mangle_name.o: java/mangle_name.c $(CONFIG_H) java/jcf.h $(JAVA_TREE_H) \
@@ -346,6 +346,12 @@ java/xref.o: java/xref.c java/xref.h $(CONFIG_H) $(JAVA_TREE_H) toplev.h \
   $(SYSTEM_H) coretypes.h $(TM_H)
 java/zextract.o: java/zextract.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   java/zipfile.h
+
+java/j-options.c: java/lang.opt opts.sh java/j-options.h
+
+java/j-options.h: java/lang.opt opts.sh
+	AWK=$(AWK) $(SHELL) $(srcdir)/opts.sh java/j-options.c \
+		java/j-options.h $(srcdir)/java/lang.opt
 
 # jcf-io.o needs $(ZLIBINC) added to cflags.
 java/jcf-io.o: java/jcf-io.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \

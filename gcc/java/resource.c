@@ -56,7 +56,7 @@ static GTY(()) rtx registerResource_libfunc;
 static int Jr_count = 0;
 
 void
-compile_resource_data (char *name, const char *buffer, int length)
+compile_resource_data (const char *name, const char *buffer, int length)
 {
   tree rtype, field = NULL_TREE, data_type, rinit, data, decl;
   char buf[60];
@@ -157,7 +157,7 @@ write_resource_constructor (void)
    compiled Java resource, which is accessed by the runtime using
    NAME.  */
 void
-compile_resource_file (char *name, const char *filename)
+compile_resource_file (const char *name, const char *filename)
 {
   struct stat stat_buf;
   int fd;
