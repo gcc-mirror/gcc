@@ -1,3 +1,8 @@
+2005-01-13  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/26_numerics/cmath/c99_classification_macros_c++.cc:
+	Re-enable commented-out test for double type.
+
 2005-01-11  Paolo Carlini  <pcarlini@suse.de>
 	    Benjamin Kosnik  <bkoz@redhat.com>
 
