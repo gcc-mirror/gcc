@@ -7797,8 +7797,8 @@ check_dbra_loop (loop, insn_count)
 
   {
     /* If more than one condition is present to control the loop, then
-       do not procceed as this function does not know how to rewrite loop 
-       tests with more than one condition.  */
+       do not proceed, as this function does not know how to rewrite
+       loop tests with more than one condition.  */
 
     rtx jump1;
     if ((jump1 = prev_nonnote_insn (jump)) != loop->cont)
