@@ -1,9 +1,5 @@
 2002-02-01  Jason Merrill  <jason@redhat.com>
 
-	PR c++/4872
-	* decl.c (finish_function): Warn about a non-void function with 
-	no return statement.
-
 	* error.c (dump_scope): Don't add TFF_DECL_SPECIFIERS.
 	(dump_function_decl): Always dump parms.
 
