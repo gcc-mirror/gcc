@@ -4053,7 +4053,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	      /* The register from BL2 must be set before the register from
 		 BL is set, or we must be able to move the latter set after
 		 the former set.  Currently there can't be any labels
-	         in-between when biv_toal_increment returns nonzero both times
+	         in-between when biv_total_increment returns nonzero both times
 		 but we test it here in case some day some real cfg analysis
 		 gets used to set always_computable.  */
 	      && ((loop_insn_first_p (bl2->biv->insn, bl->biv->insn)
