@@ -1,3 +1,8 @@
+2002-06-27  Phil Edwards  <pme@gcc.gnu.org>
+
+	* include/bits/stl_alloc.h:  Deprecate all 'reallocate' memfns.
+	* docs/html/ext/howto.html:  Update allocator notes.
+
 2002-06-26  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.in (INTERFACE): Remove.
