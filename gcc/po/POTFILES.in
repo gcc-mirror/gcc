@@ -590,11 +590,14 @@ cp/xref.c
 cppalloc.c
 cpperror.c
 cppexp.c
+cppfiles.c
 cpphash.c
 cpphash.h
+cppinit.c
 cpplib.c
 cpplib.h
 cppmain.c
+cppspec.c
 #crtstuff.c is part of the GCC library
 cse.c
 dbxout.c
