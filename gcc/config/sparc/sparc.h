@@ -1302,16 +1302,16 @@ extern struct rtx_def *legitimize_pic_address ();
 { rtx sparc_x = (X);						\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == MULT)	\
     (X) = gen_rtx (PLUS, Pmode, XEXP (X, 1),			\
-		   force_operand (XEXP (X, 0), 0));		\
+		   force_operand (XEXP (X, 0), NULL_RTX));	\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == MULT)	\
     (X) = gen_rtx (PLUS, Pmode, XEXP (X, 0),			\
-		   force_operand (XEXP (X, 1), 0));		\
+		   force_operand (XEXP (X, 1), NULL_RTX));	\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == PLUS)	\
-    (X) = gen_rtx (PLUS, Pmode, force_operand (XEXP (X, 0), 0),\
+    (X) = gen_rtx (PLUS, Pmode, force_operand (XEXP (X, 0), NULL_RTX),\
 		   XEXP (X, 1));				\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == PLUS)	\
     (X) = gen_rtx (PLUS, Pmode, XEXP (X, 0),			\
-		   force_operand (XEXP (X, 1), 0));		\
+		   force_operand (XEXP (X, 1), NULL_RTX));	\
   if (sparc_x != (X) && memory_address_p (MODE, X))		\
     goto WIN;							\
   if (flag_pic) (X) = legitimize_pic_address (X, MODE, 0, 0);	\
