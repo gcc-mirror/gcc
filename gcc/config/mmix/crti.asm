@@ -1,4 +1,4 @@
-/* Copyright (C) 2001 Free Software Foundation, Inc.
+/* Copyright (C) 2001, 2002 Free Software Foundation, Inc.
    Contributed by Hans-Peter Nilsson <hp@bitrange.com>
 
 This file is free software; you can redistribute it and/or modify it
@@ -102,6 +102,14 @@ _init:
 	SETL	$255,255
 	TRAP	0,0,0
 0H	IS	@
+
+% Register _fini to be executed as the last atexit function.
+#ifdef __MMIX_ABI_GNU__
+	GETA	$231,_fini
+#else
+	GETA	$1,_fini
+#endif
+	PUSHJ	$0,atexit
 
 	.section .fini,"ax",@progbits
 	.global	_fini
