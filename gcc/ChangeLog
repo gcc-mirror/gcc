@@ -5,7 +5,7 @@
 
 2004-12-01  Jeff Law  <law@redhat.com>
 
-        * tree.h (save_eptr, save_filt): Now file scoped statics.
+        * tree-eh.c (save_eptr, save_filt): Now file scoped statics.
         (honor_protect_cleanup_actions): Only create save_eptr and
         save_filt if they do not already exist.
         (lower_eh_constructs): Wipe all knowledge of save_eptr and
