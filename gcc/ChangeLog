@@ -1,5 +1,9 @@
 2003-03-22  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/m68hc11.md ("call_value"): Fix trap check.
+
+2003-03-22  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* config/m68hc11/m68hc11.h (ASM_DECLARE_FUNCTION_NAME): Fix typo in
 	writing .interrupt command.
 	* config/m68hc11/m68hc11.md ("call"): Look at the symbol to see
