@@ -1,4 +1,18 @@
-Sun Feb 22 16:23:46 1998  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
+Sun Mar  1 18:25:49 1998  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
+
+	* reorg.c (fill_slots_from_thread): Don't steal delay list from target
+	if condition code of jump conflicts with opposite_needed. 
+
+	* reorg.c (fill_slots_from_thread): Mark resources referenced in
+	opposite_needed thread.  Return delay_list even when cannot get
+	any more delay insns from end of subroutine.
+
+Sun Mar  1 18:26:21 1998  Ken Rose (rose@acm.org)
+
+	* reorg.c (fill_slots_from_thread): New parameter, delay_list.
+	All callers changed.
+
+Sun Mar  1 18:25:37 1998  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
 
 	* frame.c (start_fde_sort, fde_split, heapsort, fde_merge,
 	end_fde_sort): New functions for fast sorting of an FDE array.
