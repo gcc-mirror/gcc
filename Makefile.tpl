@@ -72,7 +72,9 @@ SHELL = @config_shell@
 # the environment to account for automounters.  The make variable must not
 # be called PWDCMD, otherwise the value set here is passed to make
 # subprocesses and overrides the setting from the user's environment.
-PWD = $${PWDCMD-pwd}
+# Don't use PWD since it is a common shell environment variable and we
+# don't want to corrupt it.
+PWD_COMMAND = $${PWDCMD-pwd}
 
 # INSTALL_PROGRAM_ARGS is changed by configure.in to use -x for a
 # cygwin host.
@@ -680,8 +682,8 @@ DO_X = \
 .PHONY: $(DO_X)
 $(DO_X):
 	@target=`echo $@ | sed -e 's/^do-//'`; \
-	r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	for i in $(SUBDIRS) -dummy-; do \
 	  if [ -f ./$$i/Makefile ]; then \
@@ -707,8 +709,8 @@ $(DO_X):
 	  else true; fi; \
 	done
 	@target=`echo $@ | sed -e 's/^do-//'`; \
-	r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	for i in $(TARGET_CONFIGDIRS) -dummy-; do \
 	  if [ -f $(TARGET_SUBDIR)/$$i/Makefile ]; then \
@@ -738,7 +740,7 @@ dvi: do-dvi
 do-info: all-texinfo
 
 install-info: do-install-info dir.info
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	if [ -f dir.info ] ; then \
 	  $(INSTALL_DATA) dir.info $(DESTDIR)$(infodir)/dir.info ; \
 	else true ; fi
@@ -773,8 +775,8 @@ realclean: maintainer-clean
 $(CLEAN_MODULES) $(CLEAN_X11_MODULES) clean-gcc:
 	@dir=`echo $@ | sed -e 's/clean-//'`; \
 	if [ -f ./$${dir}/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd $${dir}; $(MAKE) $(FLAGS_TO_PASS) clean); \
 	else \
@@ -786,8 +788,8 @@ $(CLEAN_TARGET_MODULES):
 	@dir=`echo $@ | sed -e 's/clean-target-//'`; \
 	rm -f $(TARGET_SUBDIR)/$${dir}/multilib.out $(TARGET_SUBDIR)/$${dir}/tmpmulti.out; \
 	if [ -f $(TARGET_SUBDIR)/$${dir}/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd $(TARGET_SUBDIR)/$${dir}; $(MAKE) $(TARGET_FLAGS_TO_PASS) clean); \
 	else \
@@ -860,7 +862,7 @@ vault-install:
 .PHONY: install.all
 install.all: install-no-fixedincludes
 	@if [ -f ./gcc/Makefile ] ; then \
-		r=`${PWD}` ; export r ; \
+		r=`${PWD_COMMAND}` ; export r ; \
 		$(SET_LIB_PATH) \
 		(cd ./gcc; \
 		$(MAKE) $(FLAGS_TO_PASS) install-headers) ; \
@@ -890,8 +892,8 @@ gcc-no-fixedincludes:
 	  cp $(srcdir)/gcc/gsyslimits.h gcc/include/syslimits.h; \
 	  touch gcc/stmp-fixinc gcc/include/fixed; \
 	  rm -f gcc/stmp-headers gcc/stmp-int-hdrs; \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}` ; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd ./gcc; \
 	   $(MAKE) $(GCC_FLAGS_TO_PASS) install); \
@@ -905,8 +907,8 @@ gcc-no-fixedincludes:
 $(ALL_BUILD_MODULES):
 	dir=`echo $@ | sed -e 's/all-build-//'`; \
 	if [ -f ./$${dir}/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  (cd $(BUILD_SUBDIR)/$${dir} && $(MAKE) all); \
 	else \
 	  true; \
@@ -924,8 +926,8 @@ $(CONFIGURE_BUILD_MODULES):
 	elif echo " $(BUILD_CONFIGDIRS) " | grep " $${dir} " >/dev/null 2>&1; then \
 	  if [ -d $(srcdir)/$${dir} ]; then \
 	    [ -d $(BUILD_SUBDIR)/$${dir} ] || mkdir $(BUILD_SUBDIR)/$${dir};\
-	    r=`${PWD}`; export r; \
-	    s=`cd $(srcdir); ${PWD}`; export s; \
+	    r=`${PWD_COMMAND}`; export r; \
+	    s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	    AR="$(AR_FOR_BUILD)"; export AR; \
 	    AS="$(AS_FOR_BUILD)"; export AS; \
 	    CC="$(CC_FOR_BUILD)"; export CC; \
@@ -1005,8 +1007,8 @@ $(CONFIGURE_BUILD_MODULES):
 $(ALL_MODULES):
 	@dir=`echo $@ | sed -e 's/all-//'`; \
 	if [ -f ./$${dir}/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd $${dir}; $(MAKE) $(FLAGS_TO_PASS) all); \
 	else \
@@ -1022,8 +1024,8 @@ $(NATIVE_CHECK_MODULES):
 	@if [ '$(host_canonical)' = '$(target_canonical)' ] ; then \
 	  dir=`echo $@ | sed -e 's/check-//'`; \
 	  if [ -f ./$${dir}/Makefile ] ; then \
-	    r=`${PWD}`; export r; \
-	    s=`cd $(srcdir); ${PWD}`; export s; \
+	    r=`${PWD_COMMAND}`; export r; \
+	    s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	    $(SET_LIB_PATH) \
 	    (cd $${dir}; $(MAKE) $(FLAGS_TO_PASS) check); \
 	  else \
@@ -1034,8 +1036,8 @@ $(NATIVE_CHECK_MODULES):
 $(CROSS_CHECK_MODULES):
 	@dir=`echo $@ | sed -e 's/check-//'`; \
 	if [ -f ./$${dir}/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd $${dir}; $(MAKE) $(FLAGS_TO_PASS) check); \
 	else \
@@ -1048,8 +1050,8 @@ $(CROSS_CHECK_MODULES):
 $(INSTALL_MODULES): installdirs
 	@dir=`echo $@ | sed -e 's/install-//'`; \
 	if [ -f ./$${dir}/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd $${dir}; $(MAKE) $(FLAGS_TO_PASS) install); \
 	else \
@@ -1062,7 +1064,7 @@ $(INSTALL_MODULES): installdirs
 $(CONFIGURE_TARGET_MODULES):
 	@dir=`echo $@ | sed -e 's/configure-target-//'`; \
 	if [ -d $(TARGET_SUBDIR)/$${dir} ]; then \
-	  r=`${PWD}`; export r; \
+	  r=`${PWD_COMMAND}`; export r; \
 	  $(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/$${dir}/tmpmulti.out 2> /dev/null; \
 	  if [ -s $(TARGET_SUBDIR)/$${dir}/tmpmulti.out ]; then \
 	    if [ -f $(TARGET_SUBDIR)/$${dir}/multilib.out ]; then \
@@ -1086,8 +1088,8 @@ $(CONFIGURE_TARGET_MODULES):
 	elif echo " $(TARGET_CONFIGDIRS) " | grep " $${dir} " >/dev/null 2>&1; then \
 	  if [ -d $(srcdir)/$${dir} ]; then \
 	    [ -d $(TARGET_SUBDIR)/$${dir} ] || mkdir $(TARGET_SUBDIR)/$${dir};\
-	    r=`${PWD}`; export r; \
-	    s=`cd $(srcdir); ${PWD}`; export s; \
+	    r=`${PWD_COMMAND}`; export r; \
+	    s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	    $(SET_LIB_PATH) \
 	    AR="$(AR_FOR_TARGET)"; export AR; \
 	    AS="$(AS_FOR_TARGET)"; export AS; \
@@ -1168,8 +1170,8 @@ $(CONFIGURE_TARGET_MODULES):
 $(ALL_TARGET_MODULES):
 	@dir=`echo $@ | sed -e 's/all-target-//'`; \
 	if [ -f $(TARGET_SUBDIR)/$${dir}/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd $(TARGET_SUBDIR)/$${dir}; \
 	    $(MAKE) $(TARGET_FLAGS_TO_PASS) all); \
@@ -1183,8 +1185,8 @@ $(ALL_TARGET_MODULES):
 $(CHECK_TARGET_MODULES):
 	@dir=`echo $@ | sed -e 's/check-target-//'`; \
 	if [ -f $(TARGET_SUBDIR)/$${dir}/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd $(TARGET_SUBDIR)/$${dir}; \
 	    $(MAKE) $(TARGET_FLAGS_TO_PASS) check);\
@@ -1199,8 +1201,8 @@ $(CHECK_TARGET_MODULES):
 $(INSTALL_TARGET_MODULES): installdirs
 	@dir=`echo $@ | sed -e 's/install-target-//'`; \
 	if [ -f $(TARGET_SUBDIR)/$${dir}/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd $(TARGET_SUBDIR)/$${dir}; \
 	    $(MAKE) $(TARGET_FLAGS_TO_PASS) install); \
@@ -1214,8 +1216,8 @@ $(INSTALL_TARGET_MODULES): installdirs
 $(ALL_X11_MODULES):
 	@dir=`echo $@ | sed -e 's/all-//'`; \
 	if [ -f ./$${dir}/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd $${dir}; \
 	   $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) all); \
@@ -1229,8 +1231,8 @@ $(ALL_X11_MODULES):
 $(CHECK_X11_MODULES):
 	@dir=`echo $@ | sed -e 's/check-//'`; \
 	if [ -f ./$${dir}/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd $${dir}; \
 	   $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) check); \
@@ -1244,8 +1246,8 @@ $(CHECK_X11_MODULES):
 $(INSTALL_X11_MODULES): installdirs
 	@dir=`echo $@ | sed -e 's/install-//'`; \
 	if [ -f ./$${dir}/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd $${dir}; \
 	   $(MAKE) $(FLAGS_TO_PASS) $(X11_FLAGS_TO_PASS) install); \
@@ -1257,8 +1259,8 @@ $(INSTALL_X11_MODULES): installdirs
 .PHONY: all-gcc
 all-gcc:
 	@if [ -f ./gcc/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) all); \
 	else \
@@ -1277,13 +1279,13 @@ all-gcc:
 #
 .PHONY: bootstrap bootstrap-lean bootstrap2 bootstrap2-lean bootstrap3 bootstrap3-lean bootstrap4 bootstrap4-lean bubblestrap quickstrap cleanstrap restrap
 bootstrap bootstrap-lean bootstrap2 bootstrap2-lean bootstrap3 bootstrap3-lean bootstrap4 bootstrap4-lean bubblestrap quickstrap cleanstrap restrap: all-bootstrap
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	echo "Bootstrapping the compiler"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) $@
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	case "$@" in \
 	  *bootstrap4-lean ) \
 			msg="Comparing stage3 and stage4 of the compiler"; \
@@ -1298,21 +1300,21 @@ bootstrap bootstrap-lean bootstrap2 bootstrap2-lean bootstrap3 bootstrap3-lean b
 	$(SET_LIB_PATH) \
 	echo "$$msg"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) $$compare
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}` ; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
 	$(SET_LIB_PATH) \
 	echo "Building runtime libraries"; \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) all
 
 .PHONY: cross
 cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}`; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	$(SET_LIB_PATH) \
 	echo "Building the C and C++ compiler"; \
 	cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) LANGUAGES="c c++"
-	@r=`${PWD}`; export r; \
-	s=`cd $(srcdir); ${PWD}` ; export s; \
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}` ; export s; \
 	$(SET_LIB_PATH) \
 	echo "Building runtime libraries"; \
 	$(MAKE) $(BASE_FLAGS_TO_PASS) $(RECURSE_FLAGS) \
@@ -1321,8 +1323,8 @@ cross: all-texinfo all-bison all-byacc all-binutils all-gas all-ld
 .PHONY: check-gcc
 check-gcc:
 	@if [ -f ./gcc/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) check); \
 	else \
@@ -1332,8 +1334,8 @@ check-gcc:
 .PHONY: check-gcc-c++
 check-gcc-c++:
 	@if [ -f ./gcc/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) check-c++); \
 	else \
@@ -1347,8 +1349,8 @@ check-c++:
 .PHONY: install-gcc
 install-gcc:
 	@if [ -f ./gcc/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) install); \
 	else \
@@ -1358,8 +1360,8 @@ install-gcc:
 .PHONY: install-gcc-cross
 install-gcc-cross:
 	@if [ -f ./gcc/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd gcc; $(MAKE) $(GCC_FLAGS_TO_PASS) LANGUAGES="c c++" install); \
 	else \
@@ -1372,8 +1374,8 @@ install-gcc-cross:
 install-dosrel: installdirs info
 	@dir=`echo $@ | sed -e 's/install-//'`; \
 	if [ -f ./$${dir}/Makefile ] ; then \
-	  r=`${PWD}`; export r; \
-	  s=`cd $(srcdir); ${PWD}`; export s; \
+	  r=`${PWD_COMMAND}`; export r; \
+	  s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	  $(SET_LIB_PATH) \
 	  (cd $${dir}; $(MAKE) $(FLAGS_TO_PASS) install); \
 	else \

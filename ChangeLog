@@ -1,3 +1,9 @@
+2003-07-04  H.J. Lu <hongjiu.lu@intel.com>
+
+	* config-ml.in: Replace PWD with PWD_COMMAND.
+	* Makefile.tpl: Likewise.
+	* Makefile.in: Regenerated.
+
 2003-06-27  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* configure.in: Don't pass --with-stabs for mips*-sgi-irix6*o32.

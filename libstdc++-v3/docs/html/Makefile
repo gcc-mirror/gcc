@@ -1,5 +1,5 @@
 
-PWD=$${PWDCMD-pwd}
+PWD_COMMAND=$${PWDCMD-pwd}
 MAKEINFO=makeinfo
 INC=../../../gcc/doc/include
 
@@ -25,7 +25,7 @@ documentation.html: $(wildcard */howto.html)
 	rm tmp.top tmp.middle tmp.bottom
 
 faq/index.txt: faq/index.html
-	lynx -dump $< | sed "s%file://localhost`${PWD}`%..%" > $@
+	lynx -dump $< | sed "s%file://localhost`${PWD_COMMAND}`%..%" > $@
 
 17_intro/porting.html: 17_intro/porting.texi
 	${MAKEINFO} -I ${INC} --html --no-split $< -o $@

@@ -1,3 +1,9 @@
+2003-07-04  H.J. Lu <hongjiu.lu@intel.com>
+
+	* Makefile.am: Replace PWD with PWD_COMMAND.
+	* Makefile.in: Regenerated.
+	* docs/html/Makefile: Likewise.
+
 2003-07-01  Roger Sayle  <roger@eyesopen.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_STDLIB_SUPPORT): Fix typo in CXXFLAGS.
