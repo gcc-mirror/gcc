@@ -2027,24 +2027,26 @@ optimize_bit_field_compare (code, compare_type, lhs, rhs)
   int lvolatilep = 0, rvolatilep = 0;
   tree linner, rinner;
   tree mask;
+  tree offset;
 
   /* Get all the information about the extractions being done.  If the bit size
      if the same as the size of the underlying object, we aren't doing an
      extraction at all and so can do nothing.  */
-  linner = get_inner_reference (lhs, &lbitsize, &lbitpos, &lmode,
+  linner = get_inner_reference (lhs, &lbitsize, &lbitpos, &offset, &lmode,
 				&lunsignedp, &lvolatilep);
-  if (lbitsize == GET_MODE_BITSIZE (lmode) || lbitsize < 0)
+  if (lbitsize == GET_MODE_BITSIZE (lmode) || lbitsize < 0
+      || offset != 0)
     return 0;
 
  if (!const_p)
    {
      /* If this is not a constant, we can only do something if bit positions,
 	sizes, and signedness are the same.   */
-     rinner = get_inner_reference (rhs, &rbitsize, &rbitpos,
+     rinner = get_inner_reference (rhs, &rbitsize, &rbitpos, &offset,
 				   &rmode, &runsignedp, &rvolatilep);
 
      if (lbitpos != rbitpos || lbitsize != rbitsize
-	 || lunsignedp != runsignedp)
+	 || lunsignedp != runsignedp || offset != 0)
        return 0;
    }
 
@@ -2204,6 +2206,7 @@ decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
 {
   tree mask = 0;
   tree inner;
+  tree offset;
 
   STRIP_NOPS (exp);
 
@@ -2220,9 +2223,9 @@ decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
       && TREE_CODE (exp) != BIT_FIELD_REF)
     return 0;
 
-  inner = get_inner_reference (exp, pbitsize, pbitpos, pmode,
+  inner = get_inner_reference (exp, pbitsize, pbitpos, &offset, pmode,
 			       punsignedp, pvolatilep);
-  if (*pbitsize < 0)
+  if (*pbitsize < 0 || offset != 0)
     return 0;
   
   if (mask == 0)
