@@ -1,3 +1,7 @@
+2004-12-28  Andreas Jaeger  <aj@suse.de>
+
+	* genrecog.c (compute_predicate_codes): Avoid warning.
+
 2004-12-27 John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* vax.c (vax_address_cost, vax_rtx_cost): Correct casts.
@@ -62,7 +66,7 @@
 
 	* simplify-rtx.c (simplify_relational_operation_1): Don't simplify
 	plus/minus across EQ for floating-point.
-	
+
 2004-12-26  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/17643
@@ -109,7 +113,7 @@
 	(fix_trunc{d,s}fdi2): Reorder tests.
 
 2004-12-24  Daniel Berlin  <dberlin@dberlin.org>
-	
+
 	Fix PR debug/14638
 
 	* tree.h (DECL_DEBUG_ALIAS_OF): New macro.
@@ -117,7 +121,7 @@
 	that are aliases of variables we want to track, unless the
 	original variable is also ignored for debugging purposes.
 	(VARIABLE_HASH_VAL): Use DECL_UID, so that this is deterministic.
- 	* tree-outof-ssa.c (create_temp): Note who we are a debug alias of.
+	* tree-outof-ssa.c (create_temp): Note who we are a debug alias of.
 	* dwarf2out.c (dwarf2out_var_location): Add us to the location of
 	the decl we are an alias of.
 
@@ -1690,7 +1694,7 @@
 	Change eflags_p parameter in call to output_fp_compare.
 	(*cmpfp_2_sf, *cmpfp_2_df, *cmpfp_2_xf): Remove.
 	(*cmpfp_2_sf_1, *cmpfp_2_df_1, *cmpfp_2_xf_1): Rename to
-	*cmpfp_2_sf, *cmpfp_2_df, *cmpfp_2_xf. 	Change eflags_p
+	*cmpfp_2_sf, *cmpfp_2_df, *cmpfp_2_xf.	Change eflags_p
 	parameter in call to output_fp_compare.
 	(*cmpfp_2_u): Remove.
 	(*cmpfp_2_u_1): Rename to *cmpfp_2_u. Change eflags_p parameter
