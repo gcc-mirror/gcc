@@ -1,4 +1,4 @@
-2001-02-15  Zack Weinberg  <zack@wolery.stanford.edu>
+2001-02-15  Zack Weinberg  <zackw@stanford.edu>
 
 	* include/i386-signal.h: Adjust comment to match previous change.
 
