@@ -249,6 +249,9 @@ cp_convert_to_pointer (type, expr)
       return convert_to_pointer (type, expr);
     }
 
+  if (type_unknown_p (expr))
+    return instantiate_type (type, expr, 1);
+
   cp_error ("cannot convert `%E' from type `%T' to type `%T'",
 	    expr, intype, type);
   return error_mark_node;
@@ -406,6 +409,12 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
   tree rval = NULL_TREE;
   tree rval_as_conversion = NULL_TREE;
   int i;
+
+  if (TREE_CODE (type) == FUNCTION_TYPE && intype == unknown_type_node)
+    {
+      expr = instantiate_type (type, expr, 0);
+      intype = TREE_TYPE (expr);
+    }
 
   if (TREE_CODE (intype) == REFERENCE_TYPE)
     my_friendly_abort (364);

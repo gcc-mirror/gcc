@@ -4968,8 +4968,8 @@ validate_lhs (lhstype, complain)
    try many possible instantiations, in hopes that at least one will
    work.
 
-   This function is used in build_modify_expr, convert_arguments,
-   build_c_cast, and compute_conversion_costs.  */
+   For non-recursive calls, LHSTYPE should be a function, pointer to
+   function, or a pointer to member function.  */
 
 tree
 instantiate_type (lhstype, rhs, complain)
@@ -5132,8 +5132,8 @@ instantiate_type (lhstype, rhs, complain)
 	  {
 	    if (complain)
 	      cp_error("cannot resolve overloaded function `%D' " 
-		       "based on non-function type", 
-		       DECL_NAME (OVL_FUNCTION (rhs)));
+		       "based on non-function type `%T'", 
+		       DECL_NAME (OVL_FUNCTION (rhs)), lhstype);
 	    return error_mark_node;
 	  }
 	

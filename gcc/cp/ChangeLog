@@ -1,3 +1,32 @@
+1998-10-27  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (standard_conversion): instantiate_type here.
+	(reference_binding): And here.
+	(implicit_conversion): Not here.
+	(build_op_delete_call): No need to cons up an OVERLOAD.
+	* cvt.c (cp_convert_to_pointer): instantiate_type here.
+	(convert_to_reference): And here.
+	* decl.c (grok_reference_init): Not here.
+	(grokparms): Or here.
+	* typeck2.c (digest_init): Or here.
+	* typeck.c (decay_conversion): Take the address of overloaded
+	functions, too.
+	(require_instantiated_type): Lose.
+	(convert_arguments): Don't handle unknown types here.
+	(build_c_cast): Likewise.
+	(build_binary_op): Gut.
+	(build_conditional_expr): Don't require_instantiated_type.
+	(build_modify_expr): Likewise.
+	(build_static_cast): Don't instantiate_type.
+	(build_reinterpret_cast): Likewise.
+	(build_const_cast): Likewise.
+	(convert_for_initialization): Likewise.
+	(build_ptrmemfunc): Use type_unknown_p.
+	(convert_for_assignment): Also do default_conversion on overloaded
+	functions.  Hand them off to ocp_convert.
+	* pt.c (convert_nontype_argument): Tell instantiate_type to complain.
+	Do complain about overload resolution producing a non-public fn.
+
 1998-10-26  Mark Mitchell  <mark@markmitchell.com>
 
 	* error.c (dump_decl): Deal with TEMPLATE_DECLs that are

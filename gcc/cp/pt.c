@@ -2510,7 +2510,7 @@ convert_nontype_argument (type, expr)
 	    else
 	      fns = expr;
 
-	    fn = instantiate_type (type_pointed_to, fns, 0);
+	    fn = instantiate_type (type_pointed_to, fns, 1);
 
 	    if (fn == error_mark_node)
 	      return error_mark_node;
@@ -2567,21 +2567,23 @@ convert_nontype_argument (type, expr)
 	    tree fns = expr;
 	    tree fn;
 
-	    fn = instantiate_type (type_referred_to, fns, 0);
+	    fn = instantiate_type (type_referred_to, fns, 1);
+
+	    if (fn == error_mark_node)
+	      return error_mark_node;
 
 	    if (!TREE_PUBLIC (fn))
 	      {
+#if 0
 		if (really_overloaded_fn (fns))
 		  /* Don't issue an error here; we might get a different
 		     function if the overloading had worked out
 		     differently.  */
 		  return error_mark_node;
 		else
+#endif
 		  goto bad_argument;
 	      }
-
-	    if (fn == error_mark_node)
-	      return error_mark_node;
 
 	    my_friendly_assert (comptypes (type_referred_to, TREE_TYPE (fn), 1),
 				0);
@@ -2646,7 +2648,7 @@ convert_nontype_argument (type, expr)
 	fns = TREE_OPERAND (expr, 0);
 	
 	fn = instantiate_type (TREE_TYPE (TREE_TYPE (type)), 
-			       fns, 0);
+			       fns, 1);
 	
 	if (fn == error_mark_node)
 	  return error_mark_node;

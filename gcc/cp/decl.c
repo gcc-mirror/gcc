@@ -6921,10 +6921,6 @@ grok_reference_init (decl, type, init)
       return;
     }
 
-  if (TREE_TYPE (init) && TREE_CODE (TREE_TYPE (init)) == UNKNOWN_TYPE)
-    /* decay_conversion is probably wrong for references to functions.  */
-    init = decay_conversion (instantiate_type (TREE_TYPE (type), init, 1));
-
   if (TREE_CODE (init) == TREE_LIST)
     init = build_compound_expr (init);
 
@@ -11146,8 +11142,12 @@ grokparms (first_parm, funcdef_flag)
 			  else if (TREE_READONLY_DECL_P (init))
 			    init = decl_constant_value (init);
 			}
-		      else
-			init = require_instantiated_type (type, init, integer_zero_node);
+		      else if (TREE_TYPE (init) == NULL_TREE)
+			{
+			  error ("argument list may not have an initializer list");
+			  init = error_mark_node;
+			}
+
 		      if (! processing_template_decl
 			  && init != error_mark_node
 			  && TREE_CODE (init) != DEFAULT_ARG

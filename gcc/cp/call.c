@@ -803,6 +803,15 @@ standard_conversion (to, from, expr)
   to = strip_top_quals (to);
   from = strip_top_quals (from);
 
+  if ((TYPE_PTRFN_P (to) || TYPE_PTRMEMFUNC_P (to))
+      && expr && type_unknown_p (expr))
+    {
+      expr = instantiate_type (to, expr, 0);
+      if (expr == error_mark_node)
+	return NULL_TREE;
+      from = TREE_TYPE (expr);
+    }
+
   fcode = TREE_CODE (from);
   tcode = TREE_CODE (to);
 
@@ -968,6 +977,14 @@ reference_binding (rto, rfrom, expr, flags)
   tree from = rfrom;
   int related;
 
+  if (TREE_CODE (to) == FUNCTION_TYPE && expr && type_unknown_p (expr))
+    {
+      expr = instantiate_type (to, expr, 0);
+      if (expr == error_mark_node)
+	return NULL_TREE;
+      from = TREE_TYPE (expr);
+    }
+
   if (TREE_CODE (from) == REFERENCE_TYPE)
     from = TREE_TYPE (from);
   else if (! expr || ! real_lvalue_p (expr))
@@ -1032,14 +1049,6 @@ implicit_conversion (to, from, expr, flags)
   tree conv;
   struct z_candidate *cand;
 
-  if (expr && type_unknown_p (expr))
-    {
-      expr = instantiate_type (to, expr, 0);
-      if (expr == error_mark_node)
-	return 0;
-      from = TREE_TYPE (expr);
-    }
-
   if (TREE_CODE (to) == REFERENCE_TYPE)
     conv = reference_binding (to, from, expr, flags);
   else
@@ -1049,7 +1058,7 @@ implicit_conversion (to, from, expr, flags)
     ;
   else if (expr != NULL_TREE
 	   && (IS_AGGR_TYPE (non_reference (from))
-	    || IS_AGGR_TYPE (non_reference (to)))
+	       || IS_AGGR_TYPE (non_reference (to)))
 	   && (flags & LOOKUP_NO_CONVERSION) == 0)
     {
       cand = build_user_type_conversion_1
@@ -2906,11 +2915,6 @@ build_op_delete_call (code, addr, size, flags, placement)
   /* Strip const and volatile from addr.  */
   if (type != TYPE_MAIN_VARIANT (type))
     addr = cp_convert (build_pointer_type (TYPE_MAIN_VARIANT (type)), addr);
-
-  /* instantiate_type will always return a plain function; pretend it's
-     overloaded.  */
-  if (TREE_CODE (fns) == FUNCTION_DECL)
-    fns = scratch_ovl_cons (fns, NULL_TREE);
 
   fn = instantiate_type (fntype, fns, 0);
 

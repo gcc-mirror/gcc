@@ -206,32 +206,6 @@ fntype_p (t)
 		  || TREE_CODE (TREE_TYPE (t)) == METHOD_TYPE)));
 }
 
-/* Do `exp = require_instantiated_type (type, exp);' to make sure EXP
-   does not have an uninstantiated type.
-   TYPE is type to instantiate with, if uninstantiated.  */
-
-tree
-require_instantiated_type (type, exp, errval)
-     tree type, exp, errval;
-{
-  if (TREE_TYPE (exp) == NULL_TREE)
-    {
-      error ("argument list may not have an initializer list");
-      return errval;
-    }
-
-  if (TREE_CODE (exp) == OVERLOAD
-      || TREE_TYPE (exp) == unknown_type_node
-      || (TREE_CODE (TREE_TYPE (exp)) == OFFSET_TYPE
-	  && TREE_TYPE (TREE_TYPE (exp)) == unknown_type_node))
-    {
-      exp = instantiate_type (type, exp, 1);
-      if (TREE_TYPE (exp) == error_mark_node)
-	return errval;
-    }
-  return exp;
-}
-
 /* Return a variant of TYPE which has all the type qualifiers of LIKE
    as well as those of TYPE.  */
 
@@ -1690,13 +1664,13 @@ decay_conversion (exp)
       error ("void value not ignored as it ought to be");
       return error_mark_node;
     }
-  if (code == FUNCTION_TYPE)
-    {
-      return build_unary_op (ADDR_EXPR, exp, 0);
-    }
   if (code == METHOD_TYPE)
     {
       cp_pedwarn ("assuming & on `%E'", exp);
+      return build_unary_op (ADDR_EXPR, exp, 0);
+    }
+  if (code == FUNCTION_TYPE || is_overloaded_fn (exp))
+    {
       return build_unary_op (ADDR_EXPR, exp, 0);
     }
   if (code == ARRAY_TYPE)
@@ -3045,25 +3019,7 @@ convert_arguments (typelist, values, fndecl, flags)
 	  break;
 	}
 
-      /* The tree type of the parameter being passed may not yet be
-	 known.  In this case, its type is TYPE_UNKNOWN, and will
-	 be instantiated by the type given by TYPE.  If TYPE
-	 is also NULL, the tree type of VAL is ERROR_MARK_NODE.  */
-      if (type && type_unknown_p (val))
-	val = require_instantiated_type (type, val, integer_zero_node);
-      else if (type_unknown_p (val))
-	{
-	  /* Strip the `&' from an overloaded FUNCTION_DECL.  */
-	  if (TREE_CODE (val) == ADDR_EXPR)
-	    val = TREE_OPERAND (val, 0);
-	  if (really_overloaded_fn (val))
-	    cp_error ("insufficient type information to resolve address of overloaded function `%D'",
-		      DECL_NAME (get_first_fn (val)));
-	  else
-	    error ("insufficient type information in parameter list");
-	  val = integer_zero_node;
-	}
-      else if (TREE_CODE (val) == OFFSET_REF)
+      if (TREE_CODE (val) == OFFSET_REF)
 	val = resolve_offset_ref (val);
 
       /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
@@ -3188,39 +3144,7 @@ build_binary_op (code, arg1, arg2, convert_p)
      tree arg1, arg2;
      int convert_p;
 {
-  tree args[2];
-
-  args[0] = arg1;
-  args[1] = arg2;
-
-  if (convert_p)
-    {
-      tree type0, type1;
-      args[0] = decay_conversion (args[0]);
-      args[1] = decay_conversion (args[1]);
-
-      if (args[0] == error_mark_node || args[1] == error_mark_node)
-	return error_mark_node;
-
-      type0 = TREE_TYPE (args[0]);
-      type1 = TREE_TYPE (args[1]);
-
-      if (type_unknown_p (args[0]))
-	{
-	  args[0] = instantiate_type (type1, args[0], 1);
-	  args[0] = decay_conversion (args[0]);
-	}
-      else if (type_unknown_p (args[1]))
-	{
-	  args[1] = require_instantiated_type (type0, args[1],
-					       error_mark_node);
-	  args[1] = decay_conversion (args[1]);
-	}
-
-      if (IS_AGGR_TYPE (type0) || IS_AGGR_TYPE (type1))
-	my_friendly_abort (754867);
-    }
-  return build_binary_op_nodefault (code, args[0], args[1], code);
+  return build_binary_op_nodefault (code, arg1, arg2, code);
 }
 
 /* Build a binary-operation expression without default conversions.
@@ -5026,13 +4950,6 @@ build_conditional_expr (ifexp, op1, op2)
   if (TREE_CODE (ifexp) == ERROR_MARK)
     return error_mark_node;
 
-  op1 = require_instantiated_type (TREE_TYPE (op2), op1, error_mark_node);
-  if (op1 == error_mark_node)
-    return error_mark_node;
-  op2 = require_instantiated_type (TREE_TYPE (op1), op2, error_mark_node);
-  if (op2 == error_mark_node)
-    return error_mark_node;
-
   /* C++: REFERENCE_TYPES must be dereferenced.  */
   type1 = TREE_TYPE (op1);
   code1 = TREE_CODE (type1);
@@ -5229,6 +5146,10 @@ build_conditional_expr (ifexp, op1, op2)
       pedwarn ("pointer/integer type mismatch in conditional expression");
       result_type = type2;
     }
+  if (type2 == unknown_type_node)
+    result_type = type1;
+  else if (type1 == unknown_type_node)
+    result_type = type2;
 
   if (!result_type)
     {
@@ -5431,13 +5352,6 @@ build_static_cast (type, expr)
   if (TREE_CODE (type) == VOID_TYPE)
     return build1 (CONVERT_EXPR, type, expr);
 
-  if (type_unknown_p (expr))
-    {
-      expr = instantiate_type (type, expr, 1);
-      if (expr == error_mark_node)
-	return error_mark_node;
-    }
-
   if (TREE_CODE (type) == REFERENCE_TYPE)
     return (convert_from_reference
 	    (convert_to_reference (type, expr, CONV_STATIC|CONV_IMPLICIT,
@@ -5519,13 +5433,6 @@ build_reinterpret_cast (type, expr)
       if (TREE_CODE (expr) == NOP_EXPR
 	  && TREE_TYPE (expr) == TREE_TYPE (TREE_OPERAND (expr, 0)))
 	expr = TREE_OPERAND (expr, 0);
-    }
-
-  if (type_unknown_p (expr))
-    {
-      expr = instantiate_type (type, expr, 1);
-      if (expr == error_mark_node)
-	return error_mark_node;
     }
 
   intype = TREE_TYPE (expr);
@@ -5622,13 +5529,6 @@ build_const_cast (type, expr)
 	expr = TREE_OPERAND (expr, 0);
     }
 
-  if (type_unknown_p (expr))
-    {
-      expr = instantiate_type (type, expr, 1);
-      if (expr == error_mark_node)
-	return error_mark_node;
-    }
-
   intype = TREE_TYPE (expr);
 
   if (comptypes (TYPE_MAIN_VARIANT (intype), TYPE_MAIN_VARIANT (type), 1))
@@ -5667,6 +5567,7 @@ build_c_cast (type, expr)
      tree type, expr;
 {
   register tree value = expr;
+  tree otype;
 
   if (type == error_mark_node || expr == error_mark_node)
     return error_mark_node;
@@ -5721,109 +5622,94 @@ build_c_cast (type, expr)
       return t;
     }
 
-  if (TREE_CODE (type) == VOID_TYPE)
-    value = build1 (CONVERT_EXPR, type, value);
-  else if (TREE_TYPE (value) == NULL_TREE
-	   || type_unknown_p (value))
+  /* Convert functions and arrays to pointers and
+     convert references to their expanded types,
+     but don't convert any other types.  If, however, we are
+     casting to a class type, there's no reason to do this: the
+     cast will only succeed if there is a converting constructor,
+     and the default conversions will be done at that point.  In
+     fact, doing the default conversion here is actually harmful
+     in cases like this:
+
+     typedef int A[2];
+     struct S { S(const A&); };
+
+     since we don't want the array-to-pointer conversion done.  */
+  if (!IS_AGGR_TYPE (type))
     {
-      value = instantiate_type (type, value, 1);
-      /* Did we lose?  */
-      if (value == error_mark_node)
-	return error_mark_node;
+      if (TREE_CODE (TREE_TYPE (value)) == FUNCTION_TYPE
+	  || (TREE_CODE (TREE_TYPE (value)) == METHOD_TYPE
+	      /* Don't do the default conversion if we want a
+		 pointer to a function.  */
+	      && ! (TREE_CODE (type) == POINTER_TYPE
+		    && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE))
+	  || TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
+	  || TREE_CODE (TREE_TYPE (value)) == REFERENCE_TYPE)
+	value = default_conversion (value);
     }
-  else
-    {
-      tree otype;
-
-      /* Convert functions and arrays to pointers and
-	 convert references to their expanded types,
-	 but don't convert any other types.  If, however, we are
-	 casting to a class type, there's no reason to do this: the
-	 cast will only succeed if there is a converting constructor,
-	 and the default conversions will be done at that point.  In
-	 fact, doing the default conversion here is actually harmful
-	 in cases like this:
-
-	     typedef int A[2];
-             struct S { S(const A&); };
-
-         since we don't want the array-to-pointer conversion done.  */
-      if (!IS_AGGR_TYPE (type))
-	{
-	  if (TREE_CODE (TREE_TYPE (value)) == FUNCTION_TYPE
-	      || (TREE_CODE (TREE_TYPE (value)) == METHOD_TYPE
-		  /* Don't do the default conversion if we want a
-		     pointer to a function.  */
-		  && ! (TREE_CODE (type) == POINTER_TYPE
-			&& TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE))
-	      || TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
-	      || TREE_CODE (TREE_TYPE (value)) == REFERENCE_TYPE)
-	  value = default_conversion (value);
-	}
-      else if (TREE_CODE (TREE_TYPE (value)) == REFERENCE_TYPE)
-	/* However, even for class types, we still need to strip away
-	   the reference type, since the call to convert_force below
-	   does not expect the input expression to be of reference
-	   type.  */
-	value = convert_from_reference (value);
+  else if (TREE_CODE (TREE_TYPE (value)) == REFERENCE_TYPE)
+    /* However, even for class types, we still need to strip away
+       the reference type, since the call to convert_force below
+       does not expect the input expression to be of reference
+       type.  */
+    value = convert_from_reference (value);
 	
-      otype = TREE_TYPE (value);
+  otype = TREE_TYPE (value);
 
-      /* Optionally warn about potentially worrisome casts.  */
+  /* Optionally warn about potentially worrisome casts.  */
 
-      if (warn_cast_qual
-	  && TREE_CODE (type) == POINTER_TYPE
-	  && TREE_CODE (otype) == POINTER_TYPE
-	  && !at_least_as_qualified_p (TREE_TYPE (type),
-				       TREE_TYPE (otype)))
-	cp_warning ("cast discards qualifiers from pointer target type");
+  if (warn_cast_qual
+      && TREE_CODE (type) == POINTER_TYPE
+      && TREE_CODE (otype) == POINTER_TYPE
+      && !at_least_as_qualified_p (TREE_TYPE (type),
+				   TREE_TYPE (otype)))
+    cp_warning ("cast discards qualifiers from pointer target type");
 
-      /* Warn about possible alignment problems.  */
-      if (STRICT_ALIGNMENT && warn_cast_align
-	  && TREE_CODE (type) == POINTER_TYPE
-	  && TREE_CODE (otype) == POINTER_TYPE
-	  && TREE_CODE (TREE_TYPE (otype)) != VOID_TYPE
-	  && TREE_CODE (TREE_TYPE (otype)) != FUNCTION_TYPE
-	  && TYPE_ALIGN (TREE_TYPE (type)) > TYPE_ALIGN (TREE_TYPE (otype)))
-	warning ("cast increases required alignment of target type");
+  /* Warn about possible alignment problems.  */
+  if (STRICT_ALIGNMENT && warn_cast_align
+      && TREE_CODE (type) == POINTER_TYPE
+      && TREE_CODE (otype) == POINTER_TYPE
+      && TREE_CODE (TREE_TYPE (otype)) != VOID_TYPE
+      && TREE_CODE (TREE_TYPE (otype)) != FUNCTION_TYPE
+      && TYPE_ALIGN (TREE_TYPE (type)) > TYPE_ALIGN (TREE_TYPE (otype)))
+    warning ("cast increases required alignment of target type");
 
 #if 0
-      /* We should see about re-enabling these, they seem useful to
-         me.  */
-      if (TREE_CODE (type) == INTEGER_TYPE
-	  && TREE_CODE (otype) == POINTER_TYPE
-	  && TYPE_PRECISION (type) != TYPE_PRECISION (otype))
-	warning ("cast from pointer to integer of different size");
+  /* We should see about re-enabling these, they seem useful to
+     me.  */
+  if (TREE_CODE (type) == INTEGER_TYPE
+      && TREE_CODE (otype) == POINTER_TYPE
+      && TYPE_PRECISION (type) != TYPE_PRECISION (otype))
+    warning ("cast from pointer to integer of different size");
 
-      if (TREE_CODE (type) == POINTER_TYPE
-	  && TREE_CODE (otype) == INTEGER_TYPE
-	  && TYPE_PRECISION (type) != TYPE_PRECISION (otype)
-	  /* Don't warn about converting 0 to pointer,
-	     provided the 0 was explicit--not cast or made by folding.  */
-	  && !(TREE_CODE (value) == INTEGER_CST && integer_zerop (value)))
-	warning ("cast to pointer from integer of different size");
+  if (TREE_CODE (type) == POINTER_TYPE
+      && TREE_CODE (otype) == INTEGER_TYPE
+      && TYPE_PRECISION (type) != TYPE_PRECISION (otype)
+      /* Don't warn about converting 0 to pointer,
+	 provided the 0 was explicit--not cast or made by folding.  */
+      && !(TREE_CODE (value) == INTEGER_CST && integer_zerop (value)))
+    warning ("cast to pointer from integer of different size");
 #endif
 
-      if (TREE_CODE (type) == REFERENCE_TYPE)
-	value = (convert_from_reference
-		 (convert_to_reference (type, value, CONV_C_CAST,
-					LOOKUP_COMPLAIN, NULL_TREE)));
-      else
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    value = (convert_from_reference
+	     (convert_to_reference (type, value, CONV_C_CAST,
+				    LOOKUP_COMPLAIN, NULL_TREE)));
+  else
+    {
+      tree ovalue;
+
+      if (TREE_READONLY_DECL_P (value))
+	value = decl_constant_value (value);
+
+      ovalue = value;
+      value = convert_force (type, value, CONV_C_CAST);
+
+      /* Ignore any integer overflow caused by the cast.  */
+      if (TREE_CODE (value) == INTEGER_CST)
 	{
-	  tree ovalue;
-
-	  if (TREE_READONLY_DECL_P (value))
-	    value = decl_constant_value (value);
-
-	  ovalue = value;
-	  value = convert_force (type, value, CONV_C_CAST);
-
-	  /* Ignore any integer overflow caused by the cast.  */
-	  if (TREE_CODE (value) == INTEGER_CST)
-	    {
-	      TREE_OVERFLOW (value) = TREE_OVERFLOW (ovalue);
-	      TREE_CONSTANT_OVERFLOW (value) = TREE_CONSTANT_OVERFLOW (ovalue);
-	    }
+	  TREE_OVERFLOW (value) = TREE_OVERFLOW (ovalue);
+	  TREE_CONSTANT_OVERFLOW (value) = TREE_CONSTANT_OVERFLOW (ovalue);
 	}
     }
 
@@ -6106,14 +5992,6 @@ build_modify_expr (lhs, modifycode, rhs)
 	warning ("assignment to `this' not in constructor or destructor");
       current_function_just_assigned_this = 1;
     }
-
-  /* The TREE_TYPE of RHS may be TYPE_UNKNOWN.  This can happen
-     when the type of RHS is not yet known, i.e. its type
-     is inherited from LHS.  */
-  rhs = require_instantiated_type (lhstype, newrhs, error_mark_node);
-  if (rhs == error_mark_node)
-    return error_mark_node;
-  newrhs = rhs;
 
   if (modifycode != INIT_EXPR)
     {
@@ -6529,9 +6407,7 @@ build_ptrmemfunc (type, pfn, force)
 				pfn, NULL_TREE);
     }
 
-  if (TREE_CODE (pfn) == TREE_LIST
-      || (TREE_CODE (pfn) == ADDR_EXPR
-	  && TREE_CODE (TREE_OPERAND (pfn, 0)) == TREE_LIST))
+  if (type_unknown_p (pfn))
     return instantiate_type (type, pfn, 1);
 
   if (!force 
@@ -6608,9 +6484,6 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
   if (ARITHMETIC_TYPE_P (type) && rhs == null_node)
     cp_warning ("converting NULL to non-pointer type");
 
-  if (coder == UNKNOWN_TYPE)
-    rhs = instantiate_type (type, rhs, 1);
-
   if (coder == ERROR_MARK)
     return error_mark_node;
 
@@ -6640,11 +6513,16 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
     }
 
   if (TREE_CODE (TREE_TYPE (rhs)) == ARRAY_TYPE
-      || TREE_CODE (TREE_TYPE (rhs)) == FUNCTION_TYPE
-      || TREE_CODE (TREE_TYPE (rhs)) == METHOD_TYPE)
+      || is_overloaded_fn (rhs))
     rhs = default_conversion (rhs);
   else if (TREE_CODE (TREE_TYPE (rhs)) == REFERENCE_TYPE)
     rhs = convert_from_reference (rhs);
+
+  /* If rhs is some sort of overloaded function, ocp_convert will either
+     do the right thing or complain; we don't need to check anything else.
+     So just hand off.  */
+  if (type_unknown_p (rhs))
+    return ocp_convert (type, rhs, CONV_IMPLICIT, LOOKUP_NORMAL);
 
   rhstype = TREE_TYPE (rhs);
   coder = TREE_CODE (rhstype);
@@ -7066,13 +6944,6 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
 
   rhstype = TREE_TYPE (rhs);
   coder = TREE_CODE (rhstype);
-
-  if (coder == UNKNOWN_TYPE)
-    {
-      rhs = instantiate_type (type, rhs, 1);
-      rhstype = TREE_TYPE (rhs);
-      coder = TREE_CODE (rhstype);
-    }
 
   if (coder == ERROR_MARK)
     return error_mark_node;
