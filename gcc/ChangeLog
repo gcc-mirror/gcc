@@ -1,5 +1,9 @@
 Wed Jul  8 02:43:34 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* rtlanal.c (reg_overlap_mentioned_p): Handle STRICT_LOW_PART.  If
+	either argument is CONSTANT_P, then return zero.
+	* reload.c (reg_overlap_mentioned_for_reload_p): Similarly.
+
 	* configure.in: Also look at $srcdir/gas/configure to find a 
 	gas version #.
 
