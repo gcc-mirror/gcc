@@ -1,3 +1,12 @@
+2002-06-05  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_build_va_list): Use
+	lang_hooks.types.make_type instead of make_node; set up
+	__va_list_tag type decl.
+	(xtensa_builtin_saveregs): Remove broken use of
+	RTX_UNCHANGING_P and unnecessary use of MEM_IN_STRUCT_P
+	for saved registers; add varargs alias set.
+
 2002-06-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 config:
