@@ -8,7 +8,9 @@ struct tree
 {
     struct tree *car, *cdr, *wfl;
     int code;
-    struct { int renp:1; int rtnp:1; int rpnp:1; } flags;
+    struct { unsigned int renp:1;
+      unsigned int rtnp:1;
+      unsigned int rpnp:1; } flags;
 };
 typedef struct tree *tree;
 #define NULL_TREE ((tree)0)

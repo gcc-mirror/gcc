@@ -1,3 +1,22 @@
+2002-01-29  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	PR c/3325, c/3326, c/2511, c/3347
+	* c-decl.c (enum_decl_context): Remove BITFIELD.
+	(grokdeclarator): Take bitfield width as an input.
+	Ensure bitfields are given the correct type.  Perform
+	bitfield width validation with build_bitfield_integer_type
+	rather than waiting for finish_struct.
+	(grok_typename, grok_typename_in_parm_context, start_decl,
+	push_parmdecl, grokfield, start_function): Update calls to
+	grokdeclarator.
+	(build_bitfield_integer_type): New function.
+	(finish_struct): Move bitfield validation to grokdeclarator
+	and build_bitfield_integer_type. 
+	* tree.c (build_nonstandard_integer_type): New function.
+	* tree.h (build_nonstandard_integer_type): New prototype.
+objc:
+	* objc-act.c (objc_copy_list): Remove DECL_INITIAL kludge.
+
 2002-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/1502:
