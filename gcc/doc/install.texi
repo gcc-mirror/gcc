@@ -2176,6 +2176,8 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#avr,,avr}
 @item
+@uref{#bfin,,Blackfin}
+@item
 @uref{#c4x,,c4x}
 @item
 @uref{#dos,,DOS}
@@ -2486,6 +2488,23 @@ The following error:
 @end smallexample
 
 indicates that you should upgrade to a newer version of the binutils.
+
+@html
+<hr />
+@end html
+@heading @anchor{bfin}Blackfin
+
+The Blackfin processor, an Analog Devices DSP.
+@ifnothtml
+@xref{Blackfin Options,, Blackfin Options, gcc, Using and Porting the GNU
+Compiler Collection (GCC)},
+@end ifnothtml
+@ifhtml
+See ``Blackfin Options'' in the main manual
+@end ifhtml
+
+More information, and a version of binutils with support for this processor,
+is available at @uref{http://blackfin.uclinux.org}
 
 @html
 <hr />
