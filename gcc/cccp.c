@@ -266,6 +266,9 @@ static void print_containing_files ();
 static int lookup_import ();
 static int redundant_include_p ();
 static is_system_include ();
+static struct file_name_map *read_name_map ();
+static char *read_filename_string ();
+static int open_include_file ();
 static int check_preconditions ();
 static void pcfinclude ();
 static void pcstring_used ();
@@ -547,6 +550,10 @@ struct file_name_list
     /* If the following is nonzero, it is a C-language system include
        directory.  */
     int c_system_include_path;
+    /* Mapping of file names for this directory.  */
+    struct file_name_map *name_map;
+    /* Non-zero if name_map is valid.  */
+    int got_name_map;
   };
 
 /* #include "file" looks in source file dir, then stack. */
@@ -1190,6 +1197,7 @@ main (argc, argv)
 					    + strlen (prefix) + 1);
 	  strcpy (dirtmp->fname, prefix);
 	  strcat (dirtmp->fname, argv[++i]);
+	  dirtmp->got_name_map = 0;
 
 	  if (after_include == 0)
 	    after_include = dirtmp;
@@ -1224,6 +1232,7 @@ main (argc, argv)
 					    + strlen (prefix) + 1);
 	  strcpy (dirtmp->fname, prefix);
 	  strcat (dirtmp->fname, argv[++i]);
+	  dirtmp->got_name_map = 0;
 
 	  append_include_chain (dirtmp, dirtmp);
 	}
@@ -1240,6 +1249,7 @@ main (argc, argv)
 	    fatal ("Directory name missing after `-idirafter' option");
 	  else
 	    dirtmp->fname = argv[++i];
+	  dirtmp->got_name_map = 0;
 
 	  if (after_include == 0)
 	    after_include = dirtmp;
@@ -1494,6 +1504,7 @@ main (argc, argv)
 	      fatal ("Directory name missing after -I option");
 	    else
 	      dirtmp->fname = argv[++i];
+	    dirtmp->got_name_map = 0;
 	    append_include_chain (dirtmp, dirtmp);
 	  }
 	}
@@ -1752,6 +1763,7 @@ main (argc, argv)
 	    new->fname = str;
 	    new->control_macro = 0;
 	    new->c_system_include_path = !p->cplusplus;
+	    new->got_name_map = 0;
 	    append_include_chain (new, new);
 	    if (first_system_include == 0)
 	      first_system_include = new;
@@ -1767,6 +1779,7 @@ main (argc, argv)
 	new->control_macro = 0;
 	new->c_system_include_path = !p->cplusplus;
 	new->fname = p->fname;
+	new->got_name_map = 0;
 	append_include_chain (new, new);
 	if (first_system_include == 0)
 	  first_system_include = new;
@@ -2091,6 +2104,7 @@ path_include (path)
       dirtmp->control_macro = 0;
       dirtmp->c_system_include_path = 0;
       dirtmp->fname = name;
+      dirtmp->got_name_map = 0;
       append_include_chain (dirtmp, dirtmp);
 
       /* Advance past this name.  */
@@ -4003,6 +4017,7 @@ get_filename:
 	    } else {
 	      dsp[0].fname = 0; /* Current directory */
 	    }
+	    dsp[0].got_name_map = 0;
 	    break;
 	  }
 	}
@@ -4072,9 +4087,9 @@ get_filename:
     if (redundant_include_p (fname))
       return 0;
     if (importing)
-      f = lookup_import (fname);
+      f = lookup_import (fname, NULL_PTR);
     else
-      f = open (fname, O_RDONLY, 0666);
+      f = open_include_file (fname, NULL_PTR);
     if (f == -2)
       return 0;		/* Already included this file */
   } else {
@@ -4108,9 +4123,9 @@ get_filename:
       }
 #endif /* VMS */
       if (importing)
-	f = lookup_import (fname);
+	f = lookup_import (fname, searchptr);
       else
-	f = open (fname, O_RDONLY, 0666);
+	f = open_include_file (fname, searchptr);
       if (f == -2)
 	return 0;			/* Already included this file */
 #ifdef EACCES
@@ -4173,6 +4188,7 @@ get_filename:
       ptr->next = all_include_files;
       all_include_files = ptr;
       ptr->fname = savestring (fname);
+      ptr->got_name_map = 0;
 
       /* For -M, add this file to the dependencies.  */
       if (print_deps > (angle_brackets || (system_include_depth > 0)))
@@ -4287,6 +4303,213 @@ is_system_include (filename)
 	}
     }
   return 0;
+}
+
+/* The file_name_map structure holds a mapping of file names for a
+   particular directory.  This mapping is read from the file named
+   FILE_NAME_MAP_FILE in that directory.  Such a file can be used to
+   map filenames on a file system with severe filename restrictions,
+   such as DOS.  The format of the file name map file is just a series
+   of lines with two tokens on each line.  The first token is the name
+   to map, and the second token is the actual name to use.  */
+
+struct file_name_map
+{
+  struct file_name_map *map_next;
+  char *map_from;
+  char *map_to;
+};
+
+#define FILE_NAME_MAP_FILE "header.gcc"
+
+/* Read a space delimited string of unlimited length from a stdio
+   file.  */
+
+static char *
+read_filename_string (ch, f)
+     int ch;
+     FILE *f;
+{
+  char *alloc, *set;
+  int len;
+
+  len = 20;
+  set = alloc = xmalloc (len + 1);
+  if (! is_space[ch])
+    {
+      *set++ = ch;
+      while ((ch = getc (f)) != EOF && ! is_space[ch])
+	{
+	  if (set - alloc == len)
+	    {
+	      len *= 2;
+	      alloc = xrealloc (alloc, len + 1);
+	      set = alloc + len / 2;
+	    }
+	  *set++ = ch;
+	}
+    }
+  *set = '\0';
+  ungetc (ch, f);
+  return alloc;
+}
+
+/* Read the file name map file for DIRNAME.  */
+
+static struct file_name_map *
+read_name_map (dirname)
+     char *dirname;
+{
+  /* This structure holds a linked list of file name maps, one per
+     directory.  */
+  struct file_name_map_list
+    {
+      struct file_name_map_list *map_list_next;
+      char *map_list_name;
+      struct file_name_map *map_list_map;
+    };
+  static struct file_name_map_list *map_list;
+  register struct file_name_map_list *map_list_ptr;
+  char *name;
+  FILE *f;
+
+  for (map_list_ptr = map_list; map_list_ptr;
+       map_list_ptr = map_list_ptr->map_list_next)
+    if (! strcmp (map_list_ptr->map_list_name, dirname))
+      return map_list_ptr->map_list_map;
+
+  map_list_ptr = ((struct file_name_map_list *)
+		  xmalloc (sizeof (struct file_name_map_list)));
+  map_list_ptr->map_list_name = savestring (dirname);
+  map_list_ptr->map_list_map = NULL;
+
+  name = (char *) alloca (strlen (dirname) + strlen (FILE_NAME_MAP_FILE) + 2);
+  strcpy (name, dirname);
+  if (*dirname)
+    strcat (name, "/");
+  strcat (name, FILE_NAME_MAP_FILE);
+  f = fopen (name, "r");
+  if (!f)
+    map_list_ptr->map_list_map = NULL;
+  else
+    {
+      int ch;
+      int dirlen = strlen (dirname);
+
+      while ((ch = getc (f)) != EOF)
+	{
+	  char *from, *to;
+	  struct file_name_map *ptr;
+
+	  if (is_space[ch])
+	    continue;
+	  from = read_filename_string (ch, f);
+	  while ((ch = getc (f)) != EOF && is_hor_space[ch])
+	    ;
+	  to = read_filename_string (ch, f);
+
+	  ptr = ((struct file_name_map *)
+		 xmalloc (sizeof (struct file_name_map)));
+	  ptr->map_from = from;
+
+	  /* Make the real filename absolute.  */
+	  if (*to == '/')
+	    ptr->map_to = to;
+	  else
+	    {
+	      ptr->map_to = xmalloc (dirlen + strlen (to) + 2);
+	      strcpy (ptr->map_to, dirname);
+	      ptr->map_to[dirlen] = '/';
+	      strcpy (ptr->map_to + dirlen + 1, to);
+	      free (to);
+	    }	      
+
+	  ptr->map_next = map_list_ptr->map_list_map;
+	  map_list_ptr->map_list_map = ptr;
+
+	  while ((ch = getc (f)) != '\n')
+	    if (ch == EOF)
+	      break;
+	}
+      fclose (f);
+    }
+  
+  map_list_ptr->map_list_next = map_list;
+  map_list = map_list_ptr;
+
+  return map_list_ptr->map_list_map;
+}  
+
+/* Try to open include file FILENAME.  SEARCHPTR is the directory
+   being tried from the include file search path.  This function maps
+   filenames on file systems based on information read by
+   read_name_map.  */
+
+static int
+open_include_file (filename, searchptr)
+     char *filename;
+     struct file_name_list *searchptr;
+{
+  register struct file_name_map *map;
+  register char *from;
+  char *p, *dir;
+
+  if (searchptr && ! searchptr->got_name_map)
+    {
+      searchptr->name_map = read_name_map (searchptr->fname
+					   ? searchptr->fname : ".");
+      searchptr->got_name_map = 1;
+    }
+
+  /* First check the mapping for the directory we are using.  */
+  if (searchptr && searchptr->name_map)
+    {
+      from = filename;
+      if (searchptr->fname)
+	from += strlen (searchptr->fname) + 1;
+      for (map = searchptr->name_map; map; map = map->map_next)
+	{
+	  if (! strcmp (map->map_from, from))
+	    {
+	      /* Found a match.  */
+	      return open (map->map_to, O_RDONLY, 0666);
+	    }
+	}
+    }
+
+  /* Try to find a mapping file for the particular directory we are
+     looking in.  Thus #include <sys/types.h> will look up sys/types.h
+     in /usr/include/header.gcc and look up types.h in
+     /usr/include/sys/header.gcc.  */
+  p = rindex (filename, '/');
+  if (! p)
+    p = filename;
+  if (searchptr
+      && searchptr->fname
+      && strlen (searchptr->fname) == p - filename
+      && ! strncmp (searchptr->fname, filename, p - filename))
+    {
+      /* FILENAME is in SEARCHPTR, which we've already checked.  */
+      return open (filename, O_RDONLY, 0666);
+    }
+
+  if (p == filename)
+    {
+      dir = ".";
+      from = filename;
+    }
+  else
+    {
+      dir = (char *) alloca (p - filename + 1);
+      bcopy (filename, dir, p - filename);
+      dir[p - filename] = '\0';
+      from = p + 1;
+    }
+  for (map = read_name_map (dir); map; map = map->map_next)
+    if (! strcmp (map->map_from, from))
+      return open (map->map_to, O_RDONLY, 0666);
+
+  return open (filename, O_RDONLY, 0666);
 }
 
 /* Process the contents of include file FNAME, already open on descriptor F,
@@ -4480,8 +4703,9 @@ import_hash (f)
    or -1 if unsuccessful.  */
 
 static int
-lookup_import (filename)
+lookup_import (filename, searchptr)
      char *filename;
+     struct file_name_list *searchptr;
 {
   struct import_file *i;
   int h;
@@ -4500,7 +4724,7 @@ lookup_import (filename)
     i = i->next;
   }
   /* Open it and try a match on inode/dev */
-  fd = open (filename, O_RDONLY, 0666);
+  fd = open_include_file (filename, searchptr);
   if (fd < 0)
     return fd;
   fstat (fd, &sb);
@@ -6185,6 +6409,7 @@ do_once ()
     dont_repeat_files = new;
     new->fname = savestring (ip->fname);
     new->control_macro = 0;
+    new->got_name_map = 0;
     new->c_system_include_path = 0;
   }
   return 0;
