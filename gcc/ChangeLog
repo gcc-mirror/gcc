@@ -1,3 +1,7 @@
+Sat Mar  2 06:30:14 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* emit-rtl.c (offset_address): Call update_temp_slot_address.
+
 2002-03-01  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (CRTSTUFF_CFLAGS): Add -fno-zero-initialized-in-bss.

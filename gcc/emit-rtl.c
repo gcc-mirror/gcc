@@ -2066,6 +2066,7 @@ offset_address (memref, offset, pow2)
       new = simplify_gen_binary (PLUS, Pmode, addr, offset);
     }
 
+  update_temp_slot_address (XEXP (memref, 0), new);
   new = change_address_1 (memref, VOIDmode, new, 1);
 
   /* Update the alignment to reflect the offset.  Reset the offset, which
