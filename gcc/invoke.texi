@@ -745,8 +745,7 @@ instead.  @samp{-ansi} implies @samp{-fno-asm}.
 
 In C++, this switch only affects the @code{typeof} keyword, since
 @code{asm} and @code{inline} are standard keywords.  You may want to
-use the @samp{-fno-gnu-keywords} flag instead, as it also disables the
-other, C++-specific, extension keywords such as @code{headof}.
+use the @samp{-fno-gnu-keywords} flag instead, which has the same effect.
 
 @item -fno-builtin
 @cindex builtin functions
@@ -1099,9 +1098,9 @@ but to allow and give a warning for old-style code that would
 otherwise be invalid, or have different behavior.
 
 @item -fno-gnu-keywords
-Do not recognize @code{typeof} as a keyword, so that code can use these
-words as identifiers. You can use the keywords @code{__typeof__}
-instead.  @samp{-ansi} implies @samp{-fno-gnu-keywords}.
+Do not recognize @code{typeof} as a keyword, so that code can use this
+word as an identifier. You can use the keyword @code{__typeof__} instead.  
+@samp{-ansi} implies @samp{-fno-gnu-keywords}.
 
 @item -fguiding-decls
 Treat a function declaration with the same type as a potential function
