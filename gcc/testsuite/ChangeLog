@@ -1,3 +1,8 @@
+2000-10-11  Geoff Keating  <geoffk@cygnus.com>
+
+	* gcc.c-torture/execute/20001011-1.c: New testcase.
+	Testcase provided by Zack Weinberg <zackw@stanford.edu>.
+
 2000-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/991209-1.c (stack_ptr): Use __asm, not asm, so that -ansi
