@@ -208,7 +208,7 @@ objc_compare_strings (const void *k1, const void *k2)
 }
 
 #ifndef OBJC_IGNORE_DEPRECATED_API
-/* Deprecated as of 4.1 */
+/* Deprecated as of 4.0 */
 
 static inline cache_ptr
 hash_new (unsigned int size,
@@ -305,7 +305,7 @@ compare_strings (const void *k1, const void *k2)
 {
   return objc_compare_strings (k1, k2);
 }
-#endif /* IGNORE_DEPRECATED_API */
+#endif /* OBJC_IGNORE_DEPRECATED_API */
 
 
 #ifdef __cplusplus
