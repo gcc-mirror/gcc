@@ -1012,6 +1012,8 @@ extern rtx get_last_insn_anywhere	PARAMS ((void));
 extern void start_sequence		PARAMS ((void));
 extern void push_to_sequence		PARAMS ((rtx));
 extern void end_sequence		PARAMS ((void));
+extern void push_to_full_sequence	PARAMS ((rtx, rtx));
+extern void end_full_sequence		PARAMS ((rtx*, rtx*));
 extern rtx gen_sequence			PARAMS ((void));
 extern rtx immed_double_const		PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT, enum machine_mode));
 extern rtx force_const_mem		PARAMS ((enum machine_mode, rtx));

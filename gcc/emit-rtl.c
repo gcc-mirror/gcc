@@ -3422,6 +3422,20 @@ push_to_sequence (first)
   last_insn = last;
 }
 
+/* Set up the insn chain from a chain stort in FIRST to LAST.  */
+
+void
+push_to_full_sequence (first, last)
+     rtx first, last;
+{
+  start_sequence ();
+  first_insn = first;
+  last_insn = last;
+  /* We really should have the end of the insn chain here.  */
+  if (last && NEXT_INSN (last))
+    abort ();
+}
+
 /* Set up the outer-level insn chain
    as the current sequence, saving the previously current one.  */
 
@@ -3482,6 +3496,18 @@ end_sequence ()
   seq_stack = tem->next;
 
   free (tem);
+}
+
+/* This works like end_sequence, but records the old sequence in FIRST
+   and LAST.  */
+
+void
+end_full_sequence (first, last)
+     rtx *first, *last;
+{
+  *first = first_insn;
+  *last = last_insn;
+  end_sequence();
 }
 
 /* Return 1 if currently emitting into a sequence.  */

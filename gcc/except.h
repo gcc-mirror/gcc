@@ -120,6 +120,8 @@ struct eh_status
   /* Insns for all of the exception handlers for the current function.
      They are currently emitted by the frontend code.  */
   rtx x_catch_clauses;
+  /* End of exception handler insn sequence.  */
+  rtx x_catch_clauses_last;
   /* A random data area for the front end's own use.  */
   struct label_node *x_false_label_stack;
   /* Keeps track of the label to resume to should one want to resume
@@ -142,6 +144,7 @@ struct eh_status
 #define catchstack (cfun->eh->x_catchstack)
 #define ehqueue (cfun->eh->x_ehqueue)
 #define catch_clauses (cfun->eh->x_catch_clauses)
+#define catch_clauses_last (cfun->eh->x_catch_clauses_last)
 #define false_label_stack (cfun->eh->x_false_label_stack)
 #define caught_return_label_stack (cfun->eh->x_caught_return_label_stack)
 #define protect_list (cfun->eh->x_protect_list)

@@ -1548,10 +1548,10 @@ fixup_var_refs (var, promoted_mode, unsignedp, ht)
     }
 
   /* Scan the catch clauses for exception handling too.  */
-  push_to_sequence (catch_clauses);
+  push_to_full_sequence (catch_clauses, catch_clauses_last);
   fixup_var_refs_insns (var, promoted_mode, unsignedp, catch_clauses,
 			0, 0);
-  end_sequence ();
+  end_full_sequence (&catch_clauses, &catch_clauses_last);
 
   /* Scan sequences saved in CALL_PLACEHOLDERS too.  */
   for (insn = first_insn; insn; insn = NEXT_INSN (insn))
@@ -6549,7 +6549,7 @@ expand_function_end (filename, line, end_bindings)
 
     /* If there are any catch_clauses remaining, output them now.  */
     emit_insns (catch_clauses);
-    catch_clauses = NULL_RTX;
+    catch_clauses = catch_clauses_last = NULL_RTX;
     /* If the above emitted any code, may sure we jump around it.  */
     if (last != get_last_insn ())
       {
