@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  MIPS version with
    GOFAST floating point library.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -19,6 +19,10 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* US Software GOFAST library support.  */
+#include "gofast.h"
+#define INIT_SUBTARGET_OPTABS INIT_GOFAST_OPTABS
+
 #include "mips/mips.h"
 
 #undef CPP_PREDEFINES
@@ -26,10 +30,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Use memcpy, et. al., rather than bcopy.  */
 #define TARGET_MEM_FUNCTIONS
-
-/* US Software GOFAST library support.  */
-#include "gofast.h"
-#define INIT_TARGET_OPTABS INIT_GOFAST_OPTABS
 
 /* Don't assume anything about startfiles.  The linker script will load the
    appropriate startfiles.  */

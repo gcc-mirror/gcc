@@ -1,3 +1,12 @@
+Thu Dec 18 19:19:57 1997  Ian Lance Taylor  <ian@cygnus.com>
+
+	* mips/mips.h (INIT_SUBTARGET_OPTABS): Define if not defined.
+	(INIT_TARGET_OPTABS): Define.
+	* mips/ecoff.h: Include gofast.h before mips.h.
+	(INIT_SUBTARGET_OPTABS): Define instead of INIT_TARGET_OPTABS.
+	* mips/elf64.h: Likewise.
+	* mips/elf.h (ASM_OUTPUT_SECTION_NAME): Define.
+
 Thu Dec 18 14:51:12 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* except.c: Remove register_exception_table{,_p}.
