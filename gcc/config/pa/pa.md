@@ -5629,7 +5629,9 @@
   [(return)
    (clobber (reg:SI 1))
    (use (reg:SI 2))]
-  "!TARGET_NO_SPACE_REGS && flag_pic && current_function_calls_eh_return"
+  "!TARGET_NO_SPACE_REGS
+   && !TARGET_PA_20
+   && flag_pic && current_function_calls_eh_return"
   "ldsid (%%sr0,%%r2),%%r1\;mtsp %%r1,%%sr0\;be%* 0(%%sr0,%%r2)"
   [(set_attr "type" "branch")
    (set_attr "length" "12")])
@@ -5668,6 +5670,7 @@
 	 This is only a problem for returns from shared code on ports
 	 using space registers.  */
       if (!TARGET_NO_SPACE_REGS
+	  && !TARGET_PA_20
 	  && flag_pic && current_function_calls_eh_return)
 	x = gen_return_external_pic ();
       else
