@@ -4509,11 +4509,28 @@ group_barrier_needed_p (insn)
       flags.is_branch = 1;
       flags.is_sibcall = SIBLING_CALL_P (insn);
       memset (rws_insn, 0, sizeof (rws_insn));
+
+      /* Don't bundle a call following another call.  */
+      if ((pat = prev_active_insn (insn))
+	  && GET_CODE (pat) == CALL_INSN)
+	{
+	  need_barrier = 1;
+	  break;
+	}
+
       need_barrier = rtx_needs_barrier (PATTERN (insn), flags, 0);
       break;
 
     case JUMP_INSN:
       flags.is_branch = 1;
+
+      /* Don't bundle a jump following a call.  */
+      if ((pat = prev_active_insn (insn))
+	  && GET_CODE (pat) == CALL_INSN)
+	{
+	  need_barrier = 1;
+	  break;
+	}
       /* FALLTHRU */
 
     case INSN:
@@ -6410,6 +6427,33 @@ ia64_reorg (insns)
     }
   else
     emit_all_insn_group_barriers (rtl_dump_file, insns);
+
+  /* A call must not be the last instruction in a function, so that the
+     return address is still within the function, so that unwinding works
+     properly.  Note that IA-64 differs from dwarf2 on this point.  */
+  if (flag_unwind_tables || (flag_exceptions && !USING_SJLJ_EXCEPTIONS))
+    {
+      rtx insn;
+      int saw_stop = 0;
+
+      insn = get_last_insn ();
+      if (! INSN_P (insn))
+        insn = prev_active_insn (insn);
+      if (GET_CODE (insn) == INSN
+	  && GET_CODE (PATTERN (insn)) == UNSPEC_VOLATILE
+	  && XINT (PATTERN (insn), 1) == 2)
+	{
+	  saw_stop = 1;
+	  insn = prev_active_insn (insn);
+	}
+      if (GET_CODE (insn) == CALL_INSN)
+	{
+	  if (! saw_stop)
+	    emit_insn (gen_insn_group_barrier (GEN_INT (3)));
+	  emit_insn (gen_break_f ());
+	  emit_insn (gen_insn_group_barrier (GEN_INT (3)));
+	}
+    }
 
   fixup_errata ();
   emit_predicate_relation_info ();
