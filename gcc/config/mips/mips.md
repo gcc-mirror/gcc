@@ -3333,7 +3333,10 @@ move\\t%0,%z4\\n\\
   "
 {
   if (TARGET_MIPS16)
-    operands[2] = force_reg (SImode, operands[2]);
+    {
+      operands[1] = force_reg (SImode, operands[1]);
+      operands[2] = force_reg (SImode, operands[2]);
+    }
 }")
 
 (define_insn ""
@@ -3364,7 +3367,10 @@ move\\t%0,%z4\\n\\
   "
 {
   if (TARGET_MIPS16)
-    operands[2] = force_reg (DImode, operands[2]);
+    {
+      operands[1] = force_reg (DImode, operands[1]);
+      operands[2] = force_reg (DImode, operands[2]);
+    }
 }")
 
 (define_insn ""
@@ -3436,7 +3442,10 @@ move\\t%0,%z4\\n\\
   "
 {
   if (TARGET_MIPS16)
-    operands[2] = force_reg (SImode, operands[2]);
+    {
+      operands[1] = force_reg (SImode, operands[1]);
+      operands[2] = force_reg (SImode, operands[2]);
+    }
 }")
 
 (define_insn ""
