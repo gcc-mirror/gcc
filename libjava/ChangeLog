@@ -1,3 +1,21 @@
+2002-11-07  Mark Wielaard  <mark@klomp.org>
+
+	* java/lang/reflect/natField.cc (getBoolean): Use getType().
+	(getByte): Likewise.
+	(getShort): Likewise.
+	(getInt): Likewise.
+	(getLong): Likewise.
+	(getFloat): Likewise.
+	(getDouble): Likewise.
+	(get): Likewise.
+	(setChar): Likewise.
+	(setByte): Likewise.
+	(setShort): Likewise.
+	(setInt): Likewise.
+	(setLong): Likewise.
+	(setFloat): Likewise.
+	(setDouble): Likewise.
+
 2002-11-07  Michael Koch <konqueror@gmx.de>
 
 	* java/awt/Choice.java,

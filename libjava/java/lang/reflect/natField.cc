@@ -168,81 +168,73 @@ getDouble (jclass cls, void* addr)
 jboolean
 java::lang::reflect::Field::getBoolean (jclass caller, jobject obj)
 {
-  jfieldID fld = _Jv_FromReflectedField (this);
-  return ::getBoolean (fld->type, getAddr (this, caller, obj));
+  return ::getBoolean (this->getType(), getAddr (this, caller, obj));
 }
 
 jchar
 java::lang::reflect::Field::getChar (jclass caller, jobject obj)
 {
-  jfieldID fld = _Jv_FromReflectedField (this);
-  return ::getChar (fld->type, getAddr (this, caller, obj));
+  return ::getChar (this->getType(), getAddr (this, caller, obj));
 }
 
 jbyte
 java::lang::reflect::Field::getByte (jclass caller, jobject obj)
 {
-  jfieldID fld = _Jv_FromReflectedField (this);
-  return ::getByte (fld->type, getAddr (this, caller, obj));
+  return ::getByte (this->getType(), getAddr (this, caller, obj));
 }
 
 jshort
 java::lang::reflect::Field::getShort (jclass caller, jobject obj)
 {
-  jfieldID fld = _Jv_FromReflectedField (this);
-  return ::getShort (fld->type, getAddr (this, caller, obj));
+  return ::getShort (this->getType(), getAddr (this, caller, obj));
 }
 
 jint
 java::lang::reflect::Field::getInt (jclass caller, jobject obj)
 {
-  jfieldID fld = _Jv_FromReflectedField (this);
-  return ::getInt (fld->type, getAddr (this, caller, obj));
+  return ::getInt (this->getType(), getAddr (this, caller, obj));
 }
 
 jlong
 java::lang::reflect::Field::getLong (jclass caller, jobject obj)
 {
-  jfieldID fld = _Jv_FromReflectedField (this);
-  return ::getLong (fld->type, getAddr (this, caller, obj));
+  return ::getLong (this->getType(), getAddr (this, caller, obj));
 }
 
 jfloat
 java::lang::reflect::Field::getFloat (jclass caller, jobject obj)
 {
-  jfieldID fld = _Jv_FromReflectedField (this);
-  return ::getFloat (fld->type, getAddr (this, caller, obj));
+  return ::getFloat (this->getType(), getAddr (this, caller, obj));
 }
 
 jdouble
 java::lang::reflect::Field::getDouble (jclass caller, jobject obj)
 {
-  jfieldID fld = _Jv_FromReflectedField (this);
-  return ::getDouble (fld->type, getAddr (this, caller, obj));
+  return ::getDouble (this->getType(), getAddr (this, caller, obj));
 }
 
 jobject
 java::lang::reflect::Field::get (jclass caller, jobject obj)
 {
-  jfieldID fld = _Jv_FromReflectedField (this);
+  jclass type = this->getType();
   void* addr = getAddr (this, caller, obj);
-  if (! fld->type->isPrimitive ())
+  if (! type->isPrimitive ())
     return * (jobject*) addr;
-  if (fld->type == JvPrimClass (double))
+  if (type == JvPrimClass (double))
     return new java::lang::Double (* (jdouble*) addr);
-  if (fld->type == JvPrimClass (float))
+  if (type == JvPrimClass (float))
     return new java::lang::Float (* (jfloat*) addr);
-  if (fld->type == JvPrimClass (long))
+  if (type == JvPrimClass (long))
     return new java::lang::Long (* (jlong*) addr);
-  if (fld->type == JvPrimClass (int))
+  if (type == JvPrimClass (int))
     return new java::lang::Integer (* (jint*) addr);
-  if (fld->type == JvPrimClass (short))
+  if (type == JvPrimClass (short))
     return new java::lang::Short (* (jshort*) addr);
-  if (fld->type == JvPrimClass (byte))
+  if (type == JvPrimClass (byte))
     return new java::lang::Byte (* (jbyte*) addr);
-  if (fld->type == JvPrimClass (char))
+  if (type == JvPrimClass (char))
     return new java::lang::Character (* (jchar*) addr);
-  if (fld->type == JvPrimClass (boolean))
+  if (type == JvPrimClass (boolean))
     {
       _Jv_InitClass (&java::lang::Boolean::class$);
       if (* (jboolean*) addr)
@@ -376,56 +368,48 @@ setDouble (jclass type, void *addr, jdouble value)
 void
 java::lang::reflect::Field::setBoolean (jclass caller, jobject obj, jboolean b)
 {
-  jfieldID fld = _Jv_FromReflectedField (this);
-  ::setBoolean (fld->type, setAddr (this, caller, obj), b);
+  ::setBoolean (this->getType(), setAddr (this, caller, obj), b);
 }
 
 void
 java::lang::reflect::Field::setChar (jclass caller, jobject obj, jchar c)
 {
-  jfieldID fld = _Jv_FromReflectedField (this);
-  ::setChar (fld->type, setAddr (this, caller, obj), c);
+  ::setChar (this->getType(), setAddr (this, caller, obj), c);
 }
 
 void
 java::lang::reflect::Field::setByte (jclass caller, jobject obj, jbyte b)
 {
-  jfieldID fld = _Jv_FromReflectedField (this);
-  ::setByte (fld->type, setAddr (this, caller, obj), b);
+  ::setByte (this->getType(), setAddr (this, caller, obj), b);
 }
 
 void
 java::lang::reflect::Field::setShort (jclass caller, jobject obj, jshort s)
 {
-  jfieldID fld = _Jv_FromReflectedField (this);
-  ::setShort (fld->type, setAddr (this, caller, obj), s);
+  ::setShort (this->getType(), setAddr (this, caller, obj), s);
 }
 
 void
 java::lang::reflect::Field::setInt (jclass caller, jobject obj, jint i)
 {
-  jfieldID fld = _Jv_FromReflectedField (this);
-  ::setInt (fld->type, setAddr (this, caller, obj), i);
+  ::setInt (this->getType(), setAddr (this, caller, obj), i);
 }
 
 void
 java::lang::reflect::Field::setLong (jclass caller, jobject obj, jlong l)
 {
-  jfieldID fld = _Jv_FromReflectedField (this);
-  ::setLong (fld->type, setAddr (this, caller, obj), l);
+  ::setLong (this->getType(), setAddr (this, caller, obj), l);
 }
 void
 java::lang::reflect::Field::setFloat (jclass caller, jobject obj, jfloat f)
 {
-  jfieldID fld = _Jv_FromReflectedField (this);
-  ::setFloat (fld->type, setAddr (this, caller, obj), f);
+  ::setFloat (this->getType(), setAddr (this, caller, obj), f);
 }
 
 void
 java::lang::reflect::Field::setDouble (jclass caller, jobject obj, jdouble d)
 {
-  jfieldID fld = _Jv_FromReflectedField (this);
-  ::setDouble (fld->type, setAddr (this, caller, obj), d);
+  ::setDouble (this->getType(), setAddr (this, caller, obj), d);
 }
 
 void
