@@ -597,8 +597,7 @@ xmalloc (byte_count)
   rv = malloc (byte_count);
   if (rv == NULL)
     {
-      fprintf (stderr, "\n%s: fatal error: can't allocate %u more bytes of memory\n",
-	       pname, byte_count);
+      fprintf (stderr, "\n%s: virtual memory exceeded\n", pname);
       exit (1);
       return 0;		/* avoid warnings */
     }
@@ -618,8 +617,7 @@ xrealloc (old_space, byte_count)
   rv = realloc (old_space, byte_count);
   if (rv == NULL)
     {
-      fprintf (stderr, "\n%s: fatal error: can't allocate %u more bytes of memory\n",
-	       pname, byte_count);
+      fprintf (stderr, "\n%s: virtual memory exceeded\n", pname);
       exit (1);
       return 0;		/* avoid warnings */
     }
@@ -1406,7 +1404,7 @@ find_file (filename, do_not_stat)
         {
           if (my_stat (filename, &stat_buf) == -1)
             {
-              fprintf (stderr, "%s: error: can't get status of `%s': %s\n",
+              fprintf (stderr, "%s: %s: can't get status: %s\n",
 		       pname, shortpath (NULL, filename), sys_errlist[errno]);
               stat_buf.st_mtime = (time_t) -1;
             }
@@ -1743,11 +1741,10 @@ save_def_or_dec (l, is_syscalls)
           {
             if (strcmp (def_dec_p->ansi_decl, other->ansi_decl))
               {
-                fprintf (stderr, "%s: error: declaration of function `%s' at %s(%d) takes different forms\n",
-			 pname,
-			 def_dec_p->hash_entry->symbol,
+                fprintf (stderr, "%s:%d: declaration of function `%s' takes different forms\n",
 			 def_dec_p->file->hash_entry->symbol,
-			 def_dec_p->line);
+			 def_dec_p->line,
+			 def_dec_p->hash_entry->symbol);
                 exit (1);
               }
             free_def_dec (def_dec_p);
@@ -2001,7 +1998,7 @@ gen_aux_info_file (base_filename)
     {
       if (child_pid == -1)
         {
-          fprintf (stderr, "%s: error: could not fork process: %s\n",
+          fprintf (stderr, "%s: could not fork process: %s\n",
 		   pname, sys_errlist[errno]);
           return 0;
         }
@@ -2113,7 +2110,7 @@ start_over: ;
 	}
       else
 	{
-	  fprintf (stderr, "%s: error: can't read aux info file `%s': %s\n",
+	  fprintf (stderr, "%s: can't read aux info file `%s': %s\n",
 		   pname, shortpath (NULL, aux_info_filename),
 		   sys_errlist[errno]);
 	  errors++;
@@ -2141,7 +2138,7 @@ start_over: ;
 	}
       if (my_access (aux_info_filename, R_OK) == -1)
 	{
-	  fprintf (stderr, "%s: error: can't read aux info file `%s': %s\n",
+	  fprintf (stderr, "%s: can't read aux info file `%s': %s\n",
 		   pname, shortpath (NULL, aux_info_filename),
 		   sys_errlist[errno]);
 	  errors++;
@@ -2156,7 +2153,7 @@ start_over: ;
   
     if (my_stat (aux_info_filename, &stat_buf) == -1)
       {
-        fprintf (stderr, "%s: error: can't get status of aux info file `%s': %s\n",
+        fprintf (stderr, "%s: can't get status of aux info file `%s': %s\n",
 		 pname, shortpath (NULL, aux_info_filename),
 		 sys_errlist[errno]);
         errors++;
@@ -2174,6 +2171,21 @@ start_over: ;
        contains information about are at least this old or older.  */
   
     aux_info_mtime = stat_buf.st_mtime;
+
+    /* Compare mod time with the .c file; update .X file if obsolete.
+       The code later on can fail to check the .c file
+       if it did not directly define any functions.  */
+  
+    if (my_stat (base_source_filename, &stat_buf) == -1)
+      {
+        fprintf (stderr, "%s: can't get status of aux info file `%s': %s\n",
+		 pname, shortpath (NULL, base_source_filename),
+		 sys_errlist[errno]);
+        errors++;
+        return;
+      }
+    if (stat_buf.st_mtime > aux_info_mtime)
+      goto start_over;
   }
 
   {
@@ -2183,7 +2195,7 @@ start_over: ;
   
     if ((aux_info_file = my_open (aux_info_filename, O_RDONLY, 0444 )) == -1)
       {
-        fprintf (stderr, "%s: error: can't open aux info file `%s' for reading: %s\n",
+        fprintf (stderr, "%s: can't open aux info file `%s' for reading: %s\n",
 		 pname, shortpath (NULL, aux_info_filename),
 		 sys_errlist[errno]);
         return;
@@ -2199,7 +2211,7 @@ start_over: ;
   
     if (read (aux_info_file, aux_info_base, aux_info_size) != aux_info_size)
       {
-        fprintf (stderr, "%s: error: while reading aux info file `%s': %s\n",
+        fprintf (stderr, "%s: error reading aux info file `%s': %s\n",
 		 pname, shortpath (NULL, aux_info_filename),
 		 sys_errlist[errno]);
         free (aux_info_base);
@@ -2211,7 +2223,7 @@ start_over: ;
   
     if (close (aux_info_file))
       {
-        fprintf (stderr, "%s: error: while closing aux info file `%s': %s\n",
+        fprintf (stderr, "%s: error closing aux info file `%s': %s\n",
 		 pname, shortpath (NULL, aux_info_filename),
 		 sys_errlist[errno]);
         free (aux_info_base);
@@ -2223,9 +2235,9 @@ start_over: ;
   /* Delete the aux_info file (unless requested not to).  If the deletion
      fails for some reason, don't even worry about it.  */
 
-  if (!keep_it)
+  if (must_create && !keep_it)
     if (my_unlink (aux_info_filename) == -1)
-      fprintf (stderr, "%s: error: can't delete aux info file `%s': %s\n",
+      fprintf (stderr, "%s: can't delete aux info file `%s': %s\n",
 	       pname, shortpath (NULL, aux_info_filename),
 	       sys_errlist[errno]);
 
@@ -2291,7 +2303,7 @@ start_over: ;
 		xfree (aux_info_relocated_name);
                 if (keep_it && my_unlink (aux_info_filename) == -1)
                   {
-                    fprintf (stderr, "%s: error: can't delete file `%s': %s\n",
+                    fprintf (stderr, "%s: can't delete file `%s': %s\n",
 			     pname, shortpath (NULL, aux_info_filename),
 			     sys_errlist[errno]);
                     return;
@@ -2499,7 +2511,7 @@ find_extern_def (head, user)
             if (!conflict_noted)	/* first time we noticed? */
               {
                 conflict_noted = 1;
-                fprintf (stderr, "%s: error: conflicting extern definitions of '%s'\n",
+                fprintf (stderr, "%s: conflicting extern definitions of '%s'\n",
 			 pname, head->hash_entry->symbol);
                 if (!quiet_flag)
                   {
@@ -2621,7 +2633,7 @@ find_static_definition (user)
     }
   else if (num_static_defs > 1)
     {
-      fprintf (stderr, "%s: error: multiple static defs of `%s' in file `%s'\n",
+      fprintf (stderr, "%s: multiple static defs of `%s' in file `%s'\n",
 	       pname, head->hash_entry->symbol,
 	       shortpath (NULL, user->file->hash_entry->symbol));
       return NULL;
@@ -4071,7 +4083,7 @@ edit_file (hp)
   /* The cast avoids an erroneous warning on AIX.  */
   if (my_stat ((char *)convert_filename, &stat_buf) == -1)
     {
-      fprintf (stderr, "%s: error: can't get status for file `%s': %s\n",
+      fprintf (stderr, "%s: can't get status for file `%s': %s\n",
 	       pname, shortpath (NULL, convert_filename), sys_errlist[errno]);
       return;
     }
@@ -4105,7 +4117,7 @@ edit_file (hp)
 
     if ((input_file = my_open (convert_filename, O_RDONLY, 0444)) == -1)
       {
-        fprintf (stderr, "%s: error: can't open file `%s' for reading: %s\n",
+        fprintf (stderr, "%s: can't open file `%s' for reading: %s\n",
 		 pname, shortpath (NULL, convert_filename),
 		 sys_errlist[errno]);
         return;
@@ -4118,7 +4130,7 @@ edit_file (hp)
     if (read (input_file, new_orig_text_base, orig_size) != orig_size)
       {
         close (input_file);
-        fprintf (stderr, "\n%s: error: while reading input file `%s': %s\n",
+        fprintf (stderr, "\n%s: error reading input file `%s': %s\n",
 		 pname, shortpath (NULL, convert_filename),
 		 sys_errlist[errno]);
         return;
@@ -4151,7 +4163,7 @@ edit_file (hp)
     strcat (clean_filename, ".clean");
     if ((clean_file = creat (clean_filename, 0666)) == -1)
       {
-        fprintf (stderr, "%s: error: can't create/open clean file `%s': %s\n",
+        fprintf (stderr, "%s: can't create/open clean file `%s': %s\n",
 		 pname, shortpath (NULL, clean_filename),
 		 sys_errlist[errno]);
         return;
@@ -4160,7 +4172,7 @@ edit_file (hp)
     /* Write the clean file.  */
   
     if (write (clean_file, new_clean_text_base, clean_size) != clean_size)
-      fprintf (stderr, "%s: error: while writing file `%s': %s\n",
+      fprintf (stderr, "%s: error writing file `%s': %s\n",
 	       pname, shortpath (NULL, clean_filename), sys_errlist[errno]);
   
     close (clean_file);
@@ -4260,7 +4272,7 @@ edit_file (hp)
             }
           else
             {
-              fprintf (stderr, "%s: error: can't link file `%s' to `%s': %s\n",
+              fprintf (stderr, "%s: can't link file `%s' to `%s': %s\n",
 		       pname,
 		       shortpath (NULL, convert_filename),
 		       shortpath (NULL, new_filename),
@@ -4272,7 +4284,7 @@ edit_file (hp)
 
   if (my_unlink (convert_filename) == -1)
     {
-      fprintf (stderr, "%s: error: can't delete file `%s': %s\n",
+      fprintf (stderr, "%s: can't delete file `%s': %s\n",
 	       pname, shortpath (NULL, convert_filename), sys_errlist[errno]);
       return;
     }
@@ -4284,7 +4296,7 @@ edit_file (hp)
   
     if ((output_file = creat (convert_filename, 0666)) == -1)
       {
-        fprintf (stderr, "%s: error: can't create/open output file `%s': %s\n",
+        fprintf (stderr, "%s: can't create/open output file `%s': %s\n",
 		 pname, shortpath (NULL, convert_filename),
 		 sys_errlist[errno]);
         return;
@@ -4296,7 +4308,7 @@ edit_file (hp)
       unsigned int out_size = (repl_write_ptr + 1) - repl_text_base;
   
       if (write (output_file, repl_text_base, out_size) != out_size)
-        fprintf (stderr, "%s: error: while writing file `%s': %s\n",
+        fprintf (stderr, "%s: error writing file `%s': %s\n",
 		 pname, shortpath (NULL, convert_filename),
 		 sys_errlist[errno]);
     }
@@ -4314,7 +4326,7 @@ edit_file (hp)
 
   /* The cast avoids an erroneous warning on AIX.  */
   if (my_chmod ((char *)convert_filename, stat_buf.st_mode) == -1)
-    fprintf (stderr, "%s: error: can't change mode of file `%s': %s\n",
+    fprintf (stderr, "%s: can't change mode of file `%s': %s\n",
 	     pname, shortpath (NULL, convert_filename), sys_errlist[errno]);
 
   /* Note:  We would try to change the owner and group of the output file
