@@ -1,3 +1,8 @@
+2000-11-21  Zack Weinberg  <zack@wolery.stanford.edu>
+
+	* stringpool.c (stringpool_statistics): Also report number and
+	percentage of entries which are identifiers.
+
 2000-11-21  Diego Novillo  <dnovillo@redhat.com>
 
 	* gcse.c (hoist_expr_reaches_here_p): Do not mark expr_bb as
