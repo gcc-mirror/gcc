@@ -756,7 +756,7 @@ RECOG_H = recog.h
 EXPR_H = expr.h insn-codes.h
 REGS_H = regs.h varray.h $(MACHMODE_H)
 INTEGRATE_H = integrate.h varray.h
-LOOP_H = loop.h varray.h
+LOOP_H = loop.h varray.h basic-block.h
 #
 # Language makefile fragments.
 

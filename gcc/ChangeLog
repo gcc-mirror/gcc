@@ -1,3 +1,44 @@
+2000-01-15  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* loop.c (this_loop_info): Delete.
+	(uid_loop): Add in place of uid_loop_num.  All uses updated.
+ 	(loop_number_exit_count): Delete and replace with entry in loop
+	structure.  All uses updated.
+	(loop_number_loop_starts, loop_number_loop_ends): Likewise.
+	(loop_number_loop_cont, loop_number_cont_dominator): Likewise.
+	(loop_outer_loop): Likewise.
+	(loop_invalid, loop_number_exit_labels): Likewise.
+	(loop_used_count_register): Delete and replace with entry in 
+	loop_info structure.
+	(find_and_verify_loops): Add loops argument.
+	(verify_dominator, mark_loop_jump, prescan_loop): Replace loop_start,
+	loop_end, etc. arguments with loop structure pointer.  All callers
+	changed.
+	(loop_reg_used_before_p, scan_loop, strength_reduce): Likewise.
+	(check_dbra_loop, next_insn_in_loop, try_copy_prop): Likewise.
+	(load_mems_and_recount_loop_regs_set, load_mems): Likewise.
+	(insert_bct): Likewise.
+	(basic_induction_var): New argument level.
+	* loop.h (struct loop_info): Delete fields num, loops_enclosed,
+	vtop, and cont.  Add used_count_register.
+	(uid_loop): Delete declaration.
+ 	(loop_number_exit_count): Likewise.
+	(loop_number_loop_starts, loop_number_loop_ends): Likewise.
+	(loop_number_loop_cont, loop_number_cont_dominator): Likewise.
+	(loop_outer_loop, loop_used_count_register): Likewise.
+	(loop_invalid, loop_number_exit_labels): Likewise.
+	(unroll_loop): Replace loop_start and loop_end arguments
+ 	with loop structure pointer.
+	(loop_precondition_p, loop_iterations): Likewise.
+	Include basic-block.h.
+	* unroll.c: (unroll_loop): Replace loop_start and loop_end arguments
+ 	with loop structure pointer.
+	(loop_precondition_p, loop_iterations): Likewise.
+	* basic-block.h (struct loop): New entries vtop, cont,
+ 	cont_dominator, start, end, top, scan_start, exit_labels,
+	exit_count.  
+	* Makefile.in (LOOP_H): Add basic-block.h to dependencies.
+
 2000-01-15  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* defaults.h (ASM_OUTPUT_ASCII): Use ISDIGIT.

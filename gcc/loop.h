@@ -19,6 +19,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "varray.h"
+#include "basic-block.h"
 
 /* Get the luid of an insn.  Catch the error of trying to reference the LUID
    of an insn added during loop, since these don't have LUIDs.  */
@@ -159,10 +160,6 @@ struct iv_class {
 
 struct loop_info
 {
-  /* Loop number.  */
-  int num;
-  /* Loops enclosed by this loop including itself.  */
-  int loops_enclosed;
   /* Nonzero if there is a subroutine call in the current loop.  */
   int has_call;
   /* Nonzero if there is a volatile memory reference in the current
@@ -200,11 +197,7 @@ struct loop_info
   unsigned HOST_WIDE_INT n_iterations;
   /* The number of times the loop body was unrolled.  */
   unsigned int unroll_number;
-  /* Non-zero if the loop has a NOTE_INSN_LOOP_VTOP.  */
-  rtx vtop;
-  /* Non-zero if the loop has a NOTE_INSN_LOOP_CONT.
-     A continue statement will generate a branch to NEXT_INSN (cont).  */
-  rtx cont;
+  int used_count_register;
 };
 
 /* Definitions used by the basic induction variable discovery code.  */
@@ -215,12 +208,8 @@ enum iv_mode { UNKNOWN_INDUCT, BASIC_INDUCT, NOT_BASIC_INDUCT,
 
 extern int *uid_luid;
 extern int max_uid_for_loop;
-extern int *uid_loop_num;
-extern int *loop_outer_loop;
-extern rtx *loop_number_exit_labels;
-extern int *loop_number_exit_count;
 extern int max_reg_before_loop;
-
+extern struct loop **uid_loop;
 extern FILE *loop_dump_stream;
 
 extern varray_type reg_iv_type;
@@ -243,9 +232,9 @@ rtx get_condition_for_loop PROTO((rtx));
 void emit_iv_add_mult PROTO((rtx, rtx, rtx, rtx, rtx));
 rtx express_from PROTO((struct induction *, struct induction *));
 
-void unroll_loop PROTO((rtx, int, rtx, rtx, struct loop_info *, int));
+void unroll_loop PROTO((struct loop *, int, rtx, int));
 rtx biv_total_increment PROTO((struct iv_class *, rtx, rtx));
-unsigned HOST_WIDE_INT loop_iterations PROTO((rtx, rtx, struct loop_info *));
+unsigned HOST_WIDE_INT loop_iterations PROTO((struct loop *));
 int precondition_loop_p PROTO((rtx, struct loop_info *, 
 			       rtx *, rtx *, rtx *, 
 			       enum machine_mode *mode));
@@ -261,4 +250,3 @@ int loop_insn_first_p PROTO((rtx, rtx));
 /* Forward declarations for non-static functions declared in stmt.c.  */
 void find_loop_tree_blocks PROTO((void));
 void unroll_block_trees PROTO((void));
-
