@@ -2426,16 +2426,16 @@ emit_library_call_value (va_alist)
 	addr = force_operand (addr, NULL_RTX);
 
       argvec[count].value = addr;
-      argvec[count].mode = outmode;
+      argvec[count].mode = Pmode;
       argvec[count].partial = 0;
 
-      argvec[count].reg = FUNCTION_ARG (args_so_far, outmode, NULL_TREE, 1);
+      argvec[count].reg = FUNCTION_ARG (args_so_far, Pmode, NULL_TREE, 1);
 #ifdef FUNCTION_ARG_PARTIAL_NREGS
-      if (FUNCTION_ARG_PARTIAL_NREGS (args_so_far, outmode, NULL_TREE, 1))
+      if (FUNCTION_ARG_PARTIAL_NREGS (args_so_far, Pmode, NULL_TREE, 1))
 	abort ();
 #endif
 
-      locate_and_pad_parm (outmode, NULL_TREE,
+      locate_and_pad_parm (Pmode, NULL_TREE,
 			   argvec[count].reg && argvec[count].partial == 0,
 			   NULL_TREE, &args_size, &argvec[count].offset,
 			   &argvec[count].size);
@@ -2448,7 +2448,7 @@ emit_library_call_value (va_alist)
 	  )
 	args_size.constant += argvec[count].size.constant;
 
-      FUNCTION_ARG_ADVANCE (args_so_far, outmode, (tree)0, 1);
+      FUNCTION_ARG_ADVANCE (args_so_far, Pmode, (tree)0, 1);
 
       count++;
     }
