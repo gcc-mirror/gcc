@@ -50,40 +50,10 @@ public:
 private:
   long double re, im;
 
-  friend complex& __doapl (complex *, const complex&);
-  friend complex& __doami (complex *, const complex&);
-  friend complex& __doaml (complex *, const complex&);
-  friend complex& __doadv (complex *, const complex&);
-
-  // These functions are specified as friends for purposes of name injection;
-  // they do not actually reference private members.
-  friend long double real (const complex& x) { return x.real (); }
-  friend long double imag (const complex& x) { return x.imag (); }
-  friend complex operator + (const complex&, const complex&) __attribute__ ((const));
-  friend complex operator + (const complex&, long double) __attribute__ ((const));
-  friend complex operator + (long double, const complex&) __attribute__ ((const));
-  friend complex operator - (const complex&, const complex&) __attribute__ ((const));
-  friend complex operator - (const complex&, long double) __attribute__ ((const));
-  friend complex operator - (long double, const complex&) __attribute__ ((const));
-  friend complex operator * (const complex&, const complex&) __attribute__ ((const));
-  friend complex operator * (const complex&, long double) __attribute__ ((const));
-  friend complex operator * (long double, const complex&) __attribute__ ((const));
-  friend complex operator / (const complex&, const complex&) __attribute__ ((const));
-  friend complex operator / (const complex&, long double) __attribute__ ((const));
-  friend complex operator / (long double, const complex&) __attribute__ ((const));
-  friend bool operator == (const complex&, const complex&) __attribute__ ((const));
-  friend bool operator == (const complex&, long double) __attribute__ ((const));
-  friend bool operator == (long double, const complex&) __attribute__ ((const));
-  friend bool operator != (const complex&, const complex&) __attribute__ ((const));
-  friend bool operator != (const complex&, long double) __attribute__ ((const));
-  friend bool operator != (long double, const complex&) __attribute__ ((const));
-  friend complex polar (long double, long double) __attribute__ ((const));
-  friend complex pow (const complex&, const complex&) __attribute__ ((const));
-  friend complex pow (const complex&, long double) __attribute__ ((const));
-  friend complex pow (const complex&, int) __attribute__ ((const));
-  friend complex pow (long double, const complex&) __attribute__ ((const));
-  friend istream& operator>> (istream&, complex&);
-  friend ostream& operator<< (ostream&, const complex&);
+  friend complex& __doapl<> (complex *, const complex&);
+  friend complex& __doami<> (complex *, const complex&);
+  friend complex& __doaml<> (complex *, const complex&);
+  friend complex& __doadv<> (complex *, const complex&);
 };
 
 inline complex<float>::complex (const complex<long double>& r)
