@@ -1,3 +1,10 @@
+Tue Sep 23 01:15:50 1997  David S. Miller  <davem@tanya.rutgers.edu>
+
+	* reorg.c (dbr_schedule): At end of this pass, add REG_BR_PRED
+	note holding get_jump_flags() calculation to all JUMP_INSNs.
+	* rtl.h (enum reg_note): New note types REG_BR_PRED and REG_SAVE_AREA.
+	* rtl.c (reg_note_name): Add new note types.
+
 Tue Sep 23 00:59:54 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* rtlanal.c (computed_jump_p): Fix typo in last change.

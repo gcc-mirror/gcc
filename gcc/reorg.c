@@ -4617,5 +4617,22 @@ dbr_schedule (first, file)
 	    }
 	}
     }
+
+  /* For all JUMP insns, fill in branch prediction notes, so that during
+     assembler output a target can set branch prediction bits in the code.
+     We have to do this now, as up until this point the destinations of
+     JUMPS can be moved around and changed, but past right here that cannot
+     happen.  */
+  for (insn = first; insn; insn = NEXT_INSN (insn))
+    {
+      int pred_flags;
+
+      if (GET_CODE (insn) != JUMP_INSN)
+	continue;
+
+      pred_flags = get_jump_flags (insn, JUMP_LABEL (insn));
+      REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_BR_PRED,
+				  GEN_INT (pred_flags), REG_NOTES (insn));
+    }
 }
 #endif /* DELAY_SLOTS */
