@@ -1,3 +1,11 @@
+2001-03-26  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* configure.in: Make target subdirectory in build dir.
+	* Makefile.am: Override suffix based rules to specify correct output
+	subdirectory.
+	* Makefile.in: Rebuilt.
+	* configure: Rebuilt.
+
 2001-03-23  Kevin B Hendricks  <khendricks@ivey.uwo.ca>
 
 	* src/powerpc/ppc_closure.S: New file.
