@@ -174,7 +174,7 @@ char *language_string = "GNU C";
 %type <ttype> init maybeasm
 %type <ttype> asm_operands nonnull_asm_operands asm_operand asm_clobbers
 %type <ttype> maybe_attribute attributes attribute attribute_list attrib
-%type <ttype> any_word
+%type <ttype> any_word extension
 
 %type <ttype> compstmt
 
@@ -222,6 +222,17 @@ static tree declspec_stack;
 /* 1 if we explained undeclared var errors.  */
 static int undeclared_variable_notice;
 
+/* For __extension__, save/restore the warning flags which are
+   controlled by __extension__.  */
+#define SAVE_WARN_FLAGS()	\
+	build_int_2 (pedantic | (warn_pointer_arith << 1), 0)
+#define RESTORE_WARN_FLAGS(tval) \
+  do {                                     \
+    int val = TREE_INT_CST_LOW (tval);     \
+    pedantic = val & 1;                    \
+    warn_pointer_arith = (val >> 1) & 1;   \
+  } while (0)
+
 
 /* Tell yyparse how to print a token's value, if yydebug is set.  */
 
@@ -266,7 +277,7 @@ extdef:
 		  else
 		    error ("argument of `asm' is not a constant string"); }
 	| extension extdef
-		{ pedantic = $<itype>1; }
+		{ RESTORE_WARN_FLAGS ($1); }
 	;
 
 datadef:
@@ -403,7 +414,7 @@ unary_expr:
 	/* __extension__ turns off -pedantic for following primary.  */
 	| extension cast_expr	  %prec UNARY
 		{ $$ = $2;
-		  pedantic = $<itype>1; }
+		  RESTORE_WARN_FLAGS ($1); }
 	| unop cast_expr  %prec UNARY
 		{ $$ = build_unary_op ($1, $2, 0);
 		  overflow_warning ($$); }
@@ -860,7 +871,7 @@ decl:
 	| declmods ';'
 		{ pedwarn ("empty declaration"); }
 	| extension decl
-		{ pedantic = $<itype>1; }
+		{ RESTORE_WARN_FLAGS ($1); }
 	;
 
 /* Declspecs which contain at least one type specifier or typedef name.
@@ -1423,7 +1434,7 @@ component_decl:
 		{ $$ = NULL_TREE; }
 	| extension component_decl
 		{ $$ = $2;
-		  pedantic = $<itype>1; }
+		  RESTORE_WARN_FLAGS ($1); }
 	;
 
 components:
@@ -2231,8 +2242,9 @@ identifiers_or_typenames:
 
 extension:
 	EXTENSION
-		{ $<itype>$ = pedantic;
-		  pedantic = 0; }
+		{ $$ = SAVE_WARN_FLAGS();
+		  pedantic = 0;
+		  warn_pointer_arith = 0; }
 	;
 
 %%

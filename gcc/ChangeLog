@@ -1,5 +1,20 @@
 2001-03-19  Bernd Schmidt  <bernds@redhat.com>
 
+	2000-01-18  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+	* c-parse.in (SAVE_WARN_FLAGS): Create an INTEGER_CST.
+	(RESTORE_WARN_FLAGS): Unpack it.
+	Change semantic type of extension to ttype.
+	* c-common.c (split_specs_attrs): Expect an INTEGER_CST.
+	* c-parse.y, c-parse.c, objc/objc-parse.y,
+	objc/objc-parse.c: Regenerate.
+
+	Wed Sep  1 09:12:02 1999  Jim Kingdon  <http://developer.redhat.com>
+	* c-parse.in: save and restore warn_pointer_arith on __extension__
+	along with pedantic.
+	(SAVE_WARN_FLAGS, RESTORE_WARN_FLAGS): Added.
+	Set the type of extension to itype rather than $<itype>1 kludge.
+	* extend.texi (Alternate Keywords): Adjust documentation.
+
 	Bring back the sjlj eh fixes.
 	* expr.c (expand_builtin_setjmp_setup): New.
 	(expand_builtin_setjmp_receiver): New.
