@@ -47,6 +47,10 @@ static int h8300_interrupt_function_p PARAMS ((tree));
 static int h8300_monitor_function_p PARAMS ((tree));
 static int h8300_os_task_function_p PARAMS ((tree));
 static void dosize PARAMS ((FILE *, const char *, unsigned int));
+static int round_frame_size PARAMS ((int));
+static unsigned int compute_saved_regs PARAMS ((void));
+static void push PARAMS ((FILE *, int));
+static void pop PARAMS ((FILE *, int));
 static const char *cond_string PARAMS ((enum rtx_code));
 
 /* CPU_TYPE, says what cpu we're compiling for.  */
@@ -100,7 +104,7 @@ h8300_init_once ()
     }
   else
     {
-      /* For this we treat the H8/300 and H8/S the same.  */
+      /* For this we treat the H8/300H and H8/S the same.  */
       cpu_type = (int) CPU_H8300H;
       h8_reg_names = names_extended;
     }
@@ -184,11 +188,57 @@ dosize (file, op, size)
     }
 }
 
-/* Output assembly language code for the function prologue.  */
-static int push_order[FIRST_PSEUDO_REGISTER] =
-{ 0, 1, 2, 3, 4, 5, 6, -1, -1, -1 };
-static int pop_order[FIRST_PSEUDO_REGISTER] =
-{ 6, 5, 4, 3, 2, 1, 0, -1, -1, -1 };
+/* Round up frame size SIZE.  */
+
+static int
+round_frame_size (size)
+     int size;
+{
+  return (size + STACK_BOUNDARY / 8 - 1) & -STACK_BOUNDARY / 8;
+}
+
+/* Compute which registers to push/pop.
+   Return a bit vector of registers.  */
+
+static unsigned int
+compute_saved_regs ()
+{
+  unsigned int saved_regs = 0;
+  int regno;
+
+  /* Construct a bit vector of registers to be pushed/popped.  */
+  for (regno = 0; regno <= 6; regno++)
+    {
+      if (WORD_REG_USED (regno))
+	saved_regs |= 1 << regno;
+    }
+
+  /* Don't push/pop the frame pointer as it is treated separately.  */
+  if (frame_pointer_needed)
+    saved_regs &= ~(1 << FRAME_POINTER_REGNUM);
+
+  return saved_regs;
+}
+
+/* Output assembly language code to push register RN.  */
+
+static void
+push (file, rn)
+     FILE *file;
+     int rn;
+{
+  fprintf (file, "\t%s\t%s\n", h8_push_op, h8_reg_names[rn]);
+}
+
+/* Output assembly language code to pop register RN.  */
+
+static void
+pop (file, rn)
+     FILE *file;
+     int rn;
+{
+  fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[rn]);
+}
 
 /* This is what the stack looks like after the prolog of 
    a function with a frame has been set up:
@@ -208,14 +258,16 @@ static int pop_order[FIRST_PSEUDO_REGISTER] =
    <saved registers>   	<- sp
 */
 
+/* Output assembly language code for the function prologue.  */
+
 void
 function_prologue (file, size)
      FILE *file;
      int size;
 {
-  int fsize = (size + STACK_BOUNDARY / 8 - 1) & -STACK_BOUNDARY / 8;
+  int fsize = round_frame_size (size);
   int idx;
-  int push_regs[FIRST_PSEUDO_REGISTER];
+  int saved_regs;
   int n_regs;
 
   /* Note a function with the interrupt attribute and set interrupt_handler
@@ -243,14 +295,14 @@ function_prologue (file, size)
       if (TARGET_H8300)
 	{
 	  fprintf (file, "\tsubs\t#2,sp\n");
-	  fprintf (file, "\tpush\tr0\n");
+	  push (file, 0);
 	  fprintf (file, "\tstc\tccr,r0l\n");
 	  fprintf (file, "\torc\t#128,ccr\n");
 	  fprintf (file, "\tmov.b\tr0l,@(4,sp)\n");
 	}
       else
 	{
-	  fprintf (file, "\tpush\ter0\n");
+	  push (file, 0);
 	  fprintf (file, "\tstc\tccr,r0l\n");
 	  fprintf (file, "\torc\t#128,ccr\n");
 	  fprintf (file, "\tmov.b\tr0l,@(4,sp)\n");
@@ -260,8 +312,7 @@ function_prologue (file, size)
   if (frame_pointer_needed)
     {
       /* Push fp.  */
-      fprintf (file, "\t%s\t%s\n", h8_push_op,
-	       h8_reg_names[FRAME_POINTER_REGNUM]);
+      push (file, FRAME_POINTER_REGNUM);
       fprintf (file, "\t%s\t%s,%s\n", h8_mov_op,
 	       h8_reg_names[STACK_POINTER_REGNUM],
 	       h8_reg_names[FRAME_POINTER_REGNUM]);
@@ -270,48 +321,33 @@ function_prologue (file, size)
   /* Leave room for locals.  */
   dosize (file, "sub", fsize);
 
-  /* Compute which registers to push.  */
-  for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx++)
-    {
-      int regno = push_order[idx];
-
-      if (regno >= 0
-	  && WORD_REG_USED (regno)
-	  && (!frame_pointer_needed || regno != FRAME_POINTER_REGNUM))
-	push_regs[idx] = regno;
-      else
-	push_regs[idx] = -1;
-    }
-
-  /* Push the rest of the registers.  */
+  /* Push the rest of the registers in ascending order.  */
+  saved_regs = compute_saved_regs ();
   for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx += n_regs)
     {
-      int regno = push_regs[idx];
+      int regno = idx;
 
       n_regs = 1;
-      if (regno >= 0)
+      if (saved_regs & (1 << regno))
 	{
 	  if (TARGET_H8300S)
 	    {
 	      /* See how many registers we can push at the same time.  */
 	      if ((regno == 0 || regno == 4)
-		  && push_regs[idx + 1] >= 0
-		  && push_regs[idx + 2] >= 0
-		  && push_regs[idx + 3] >= 0)
+		  && ((saved_regs >> regno) & 0x0f) == 0x0f)
 		n_regs = 4;
 
 	      else if ((regno == 0 || regno == 4)
-		       && push_regs[idx + 1] >= 0
-		       && push_regs[idx + 2] >= 0)
+		       && ((saved_regs >> regno) & 0x07) == 0x07)
 		n_regs = 3;
 
 	      else if ((regno == 0 || regno == 2 || regno == 4 || regno == 6)
-		       && push_regs[idx + 1] >= 0)
+		       && ((saved_regs >> regno) & 0x03) == 0x03)
 		n_regs = 2;
 	    }
 
 	  if (n_regs == 1)
-	    fprintf (file, "\t%s\t%s\n", h8_push_op, h8_reg_names[regno]);
+	    push (file, regno);
 	  else
 	    fprintf (file, "\tstm.l\t%s-%s,@-sp\n",
 		     h8_reg_names[regno],
@@ -327,10 +363,10 @@ function_epilogue (file, size)
      FILE *file;
      int size;
 {
-  int fsize = (size + STACK_BOUNDARY / 8 - 1) & -STACK_BOUNDARY / 8;
+  int fsize = round_frame_size (size);
   int idx;
   rtx insn = get_last_insn ();
-  int pop_regs[FIRST_PSEUDO_REGISTER];
+  int saved_regs;
   int n_regs;
 
   if (os_task)
@@ -353,48 +389,33 @@ function_epilogue (file, size)
   if (insn && GET_CODE (insn) == BARRIER)
     goto out;
 
-  /* Compute which registers to pop.  */
-  for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx++)
-    {
-      int regno = pop_order[idx];
-
-      if (regno >= 0
-	  && WORD_REG_USED (regno)
-	  && (!frame_pointer_needed || regno != FRAME_POINTER_REGNUM))
-	pop_regs[idx] = regno;
-      else
-	pop_regs[idx] = -1;
-    }
-
-  /* Pop the saved registers.  */
+  /* Pop the saved registers in descending order.  */
+  saved_regs = compute_saved_regs ();
   for (idx = 0; idx < FIRST_PSEUDO_REGISTER; idx += n_regs)
     {
-      int regno = pop_regs[idx];
+      int regno = (FIRST_PSEUDO_REGISTER - 1) - idx;
 
       n_regs = 1;
-      if (regno >= 0)
+      if (saved_regs & (1 << regno))
 	{
 	  if (TARGET_H8300S)
 	    {
 	      /* See how many registers we can pop at the same time.  */
 	      if ((regno == 7 || regno == 3)
-		  && pop_regs[idx + 1] >= 0
-		  && pop_regs[idx + 2] >= 0
-		  && pop_regs[idx + 3] >= 0)
+		  && ((saved_regs >> (regno - 3)) & 0x0f) == 0x0f)
 		n_regs = 4;
 
 	      else if ((regno == 6 || regno == 2)
-		       && pop_regs[idx + 1] >= 0
-		       && pop_regs[idx + 2] >= 0)
+		       && ((saved_regs >> (regno - 2)) & 0x07) == 0x07)
 		n_regs = 3;
 
 	      else if ((regno == 7 || regno == 5 || regno == 3 || regno == 1)
-		       && pop_regs[idx + 1] >= 0)
+		       && ((saved_regs >> (regno - 1)) & 0x03) == 0x03)
 		n_regs = 2;
 	    }
 
 	  if (n_regs == 1)
-	    fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[regno]);
+	    pop (file, regno);
 	  else
 	    fprintf (file, "\tldm.l\t@sp+,%s-%s\n",
 		     h8_reg_names[regno - (n_regs - 1)],
@@ -407,13 +428,12 @@ function_epilogue (file, size)
 
   /* Pop frame pointer if we had one.  */
   if (frame_pointer_needed)
-    fprintf (file, "\t%s\t%s\n",
-	     h8_pop_op, h8_reg_names[FRAME_POINTER_REGNUM]);
+    pop (file, FRAME_POINTER_REGNUM);
 
   /* If this is a monitor function, there is one register still left on
      the stack.  */
   if (monitor)
-    fprintf (file, "\t%s\t%s\n", h8_pop_op, h8_reg_names[0]);
+    pop (file, 0);
 
   if (interrupt_handler)
     fprintf (file, "\trte\n");

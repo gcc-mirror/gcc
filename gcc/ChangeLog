@@ -28,6 +28,16 @@
 
 2000-10-18  Kazu Hirata  <kazu@hxi.com>
 
+	* h8300.c: Fix a comment typo.
+	(round_frame_size): New.
+	(compute_saved_regs): Likewise.
+	(push): Likewise.
+	(pop): Likewise.
+	(push_order): Remove.
+	(pop_order): Likewise.
+	(function_prologue): Rearrange code for readability.
+	(function_epilogue): Likewise.
+
 	* config/h8300/h8300.md: Remove an unnecessary sign_extend
 	expander that is used when not optimizing.  Output a tab after
 	each assembly insns.
