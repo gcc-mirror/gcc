@@ -1,5 +1,11 @@
 2004-09-11  Mohan Embar  <gnustuff@thisiscool.com>
 
+	* Make-lang.in (java/win32-host.o): Add dependency on
+	coretypes.h.
+	* win32-host.c: Add includes for coretypes.h, jcf.h
+
+2004-09-11  Mohan Embar  <gnustuff@thisiscool.com>
+
 	* Make-lang.in (GCJH_OBJS): Change dependency from
 	ggc-none.o to java/ggc-none.o
 	(JCFDUMP_OBJS): Likewise.
