@@ -1558,8 +1558,9 @@ ffeintrin_init_0 ()
 	    break;
 	  if ((ISDIGIT (*p1) || (*p1 == '_')) && (*p1 == *p2) && (*p1 == *p3))
 	    continue;
-	  if (! ISUPPER (*p1) || ! ISLOWER (*p2)
-	      || (*p1 != toupper (*p2)) || ((*p3 != *p1) && (*p3 != *p2)))
+	  if (! ISUPPER ((unsigned char)*p1) || ! ISLOWER ((unsigned char)*p2)
+	      || (*p1 != toupper ((unsigned char)*p2))
+	      || ((*p3 != *p1) && (*p3 != *p2)))
 	    break;
 	}
       assert ((*p1 == *p2) && (*p1 == *p3) && (*p1 == '\0'));

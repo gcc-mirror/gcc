@@ -302,6 +302,8 @@ ffecomSymbol ffecom_symbol_null_
   NULL_TREE,
   NULL_TREE,
   NULL_TREE,
+  NULL_TREE,
+  false
 };
 ffeinfoKindtype ffecom_pointer_kind_ = FFEINFO_basictypeNONE;
 ffeinfoKindtype ffecom_label_kind_ = FFEINFO_basictypeNONE;

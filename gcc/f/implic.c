@@ -73,7 +73,7 @@ static struct _ffeimplic_ ffeimplic_table_['z' - 'A' + 1];
 
 /* Static functions (internal). */
 
-static ffeimplic_ ffeimplic_lookup_ (char c);
+static ffeimplic_ ffeimplic_lookup_ (unsigned char c);
 
 /* Internal macros. */
 
@@ -89,7 +89,7 @@ static ffeimplic_ ffeimplic_lookup_ (char c);
    data type.  */
 
 static ffeimplic_
-ffeimplic_lookup_ (char c)
+ffeimplic_lookup_ (unsigned char c)
 {
   /* NOTE: This is definitely ASCII-specific!!  */
   if (ISALPHA (c) || (c == '_'))

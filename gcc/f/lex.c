@@ -4347,7 +4347,7 @@ ffelexHandler
 ffelex_splice_tokens (ffelexHandler first, ffelexToken master,
 		      ffeTokenLength start)
 {
-  char *p;
+  unsigned char *p;
   ffeTokenLength i;
   ffelexToken t;
 
@@ -4490,7 +4490,7 @@ ffelex_token_name_from_names (ffelexToken t, ffeTokenLength start,
       assert (len > 0);
       assert ((start + len) <= t->length);
     }
-  assert (ffelex_is_firstnamechar (t->text[start]));
+  assert (ffelex_is_firstnamechar ((unsigned char)(t->text[start])));
 
   nt = ffelex_token_new_ ();
   nt->type = FFELEX_typeNAME;
@@ -4525,7 +4525,7 @@ ffelex_token_names_from_names (ffelexToken t, ffeTokenLength start,
       assert (len > 0);
       assert ((start + len) <= t->length);
     }
-  assert (ffelex_is_firstnamechar (t->text[start]));
+  assert (ffelex_is_firstnamechar ((unsigned char)(t->text[start])));
 
   nt = ffelex_token_new_ ();
   nt->type = FFELEX_typeNAMES;
@@ -4585,7 +4585,7 @@ ffelex_token_new_name (char *s, ffewhereLine l, ffewhereColumn c)
 {
   ffelexToken t;
 
-  assert (ffelex_is_firstnamechar (*s));
+  assert (ffelex_is_firstnamechar ((unsigned char)*s));
 
   t = ffelex_token_new_ ();
   t->type = FFELEX_typeNAME;
@@ -4606,7 +4606,7 @@ ffelex_token_new_names (char *s, ffewhereLine l, ffewhereColumn c)
 {
   ffelexToken t;
 
-  assert (ffelex_is_firstnamechar (*s));
+  assert (ffelex_is_firstnamechar ((unsigned char)*s));
 
   t = ffelex_token_new_ ();
   t->type = FFELEX_typeNAMES;

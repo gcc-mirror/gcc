@@ -1859,7 +1859,7 @@ ffelexHandler
 ffestb_do (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
   ffelexHandler next;
   ffelexToken nt;
   ffestrSecond kw;
@@ -2507,7 +2507,7 @@ ffelexHandler
 ffestb_else (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
 
   switch (ffelex_token_type (ffesta_tokens[0]))
     {
@@ -2787,7 +2787,7 @@ static ffelexHandler
 ffestb_else3_ (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
 
   ffelex_set_names (FALSE);
 
@@ -3013,7 +3013,7 @@ ffelexHandler
 ffestb_endxyz (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
 
   switch (ffelex_token_type (ffesta_tokens[0]))
     {
@@ -3319,7 +3319,7 @@ ffelexHandler
 ffestb_goto (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
   ffelexHandler next;
   ffelexToken nt;
 
@@ -4152,7 +4152,7 @@ ffestb_let (ffelexToken t)
   ffelexHandler next;
   bool vxtparam;		/* TRUE if it might really be a VXT PARAMETER
 				   stmt. */
-  char *p;
+  unsigned char *p;
 
   switch (ffelex_token_type (ffesta_tokens[0]))
     {
@@ -4537,7 +4537,7 @@ ffelexHandler
 ffestb_varlist (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
   ffelexToken nt;
   ffelexHandler next;
 
@@ -5284,7 +5284,7 @@ ffelexHandler
 ffestb_R522 (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
   ffelexToken nt;
   ffelexHandler next;
 
@@ -5528,7 +5528,7 @@ ffestb_R5224_ (ffelexToken t)
 ffelexHandler
 ffestb_R528 (ffelexToken t)
 {
-  char *p;
+  unsigned char *p;
   ffeTokenLength i;
   ffelexToken nt;
   ffelexHandler next;
@@ -6419,7 +6419,7 @@ ffelexHandler
 ffestb_R834 (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
 
   switch (ffelex_token_type (ffesta_tokens[0]))
     {
@@ -6534,7 +6534,7 @@ ffelexHandler
 ffestb_R835 (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
 
   switch (ffelex_token_type (ffesta_tokens[0]))
     {
@@ -6648,7 +6648,7 @@ ffestb_R8351_ (ffelexToken t)
 ffelexHandler
 ffestb_R838 (ffelexToken t)
 {
-  char *p;
+  unsigned char *p;
   ffeTokenLength i;
   ffelexHandler next;
   ffelexToken et;		/* First token in target. */
@@ -7141,7 +7141,7 @@ ffelexHandler
 ffestb_R1102 (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
 
   switch (ffelex_token_type (ffesta_tokens[0]))
     {
@@ -7293,7 +7293,7 @@ ffelexHandler
 ffestb_blockdata (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
 
   switch (ffelex_token_type (ffesta_tokens[0]))
     {
@@ -7436,7 +7436,7 @@ ffelexHandler
 ffestb_R1212 (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
   ffelexHandler next;
   ffelexToken nt;
 
@@ -8630,7 +8630,7 @@ ffelexHandler
 ffestb_R810 (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
 
   switch (ffelex_token_type (ffesta_tokens[0]))
     {
@@ -9709,7 +9709,8 @@ ffestb_R10014_ (ffelexToken t)
       i += ffelex_token_length (ffestb_local_.format.post.t);
       if (*p == '\0')
 	return (ffelexHandler) ffestb_R10016_;
-      if ((kw != FFESTR_formatP) || !ffelex_is_firstnamechar (*p))
+      if ((kw != FFESTR_formatP) ||
+	  !ffelex_is_firstnamechar ((unsigned char)*p))
 	{
 	  if (ffestb_local_.format.current != FFESTP_formattypeH)
 	    ffesta_ffebad_1p (FFEBAD_FORMAT_TEXT_IN_NUMBER, t, i, NULL);
@@ -12165,7 +12166,7 @@ ffelexHandler
 ffestb_V014 (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
   ffelexToken nt;
   ffelexHandler next;
 
@@ -19399,7 +19400,7 @@ ffelexHandler
 ffestb_dummy (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
 
   switch (ffelex_token_type (ffesta_tokens[0]))
     {
@@ -19618,7 +19619,7 @@ ffelexHandler
 ffestb_R524 (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
   ffelexToken nt;
   ffelexHandler next;
 
@@ -19847,7 +19848,7 @@ ffelexHandler
 ffestb_R547 (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
   ffelexToken nt;
   ffelexHandler next;
 
@@ -20485,7 +20486,7 @@ ffelexHandler
 ffestb_decl_chartype (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
 
   ffestb_local_.decl.type = FFESTP_typeCHARACTER;
   ffestb_local_.decl.recursive = NULL;
@@ -20672,7 +20673,7 @@ ffelexHandler
 ffestb_decl_dbltype (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
 
   ffestb_local_.decl.type = ffestb_args.decl.type;
   ffestb_local_.decl.recursive = NULL;
@@ -20863,7 +20864,7 @@ ffelexHandler
 ffestb_decl_gentype (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
 
   ffestb_local_.decl.type = ffestb_args.decl.type;
   ffestb_local_.decl.recursive = NULL;
@@ -22667,7 +22668,7 @@ ffestb_decl_entsp_2_ (ffelexToken t)
 {
   ffelexToken nt;
   bool asterisk_ok;
-  char *p;
+  unsigned char *p;
   ffeTokenLength i;
 
   switch (ffelex_token_type (t))
@@ -24156,7 +24157,7 @@ ffestb_V0166_ (ffelexToken t)
 ffelexHandler
 ffestb_V027 (ffelexToken t)
 {
-  char *p;
+  unsigned char *p;
   ffeTokenLength i;
 
   switch (ffelex_token_type (ffesta_tokens[0]))
@@ -24336,7 +24337,7 @@ ffelexHandler
 ffestb_decl_R539 (ffelexToken t)
 {
   ffeTokenLength i;
-  char *p;
+  unsigned char *p;
   ffelexToken nt;
   ffestrSecond kw;
 
