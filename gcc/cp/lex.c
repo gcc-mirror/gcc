@@ -1930,7 +1930,11 @@ do_pending_defargs ()
 	  }
 
       if (TREE_CODE (defarg_fn) == FUNCTION_DECL)
-	maybe_end_member_template_processing (defarg_fn);
+	{
+	  maybe_end_member_template_processing (defarg_fn);
+	  check_default_args (defarg_fn);
+	}
+
       poplevel (0, 0, 0);
       pop_nested_class (1);
     }

@@ -389,13 +389,15 @@ build_scoped_method_call (exp, basetype, name, parms)
      and template parms.  */
   if (TREE_CODE (name) == BIT_NOT_EXPR && ! IS_AGGR_TYPE (basetype))
     {
+      tree tmp;
       if (TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (basetype))
 	cp_error ("type of `%E' does not match destructor type `%T' (type was `%T')",
 		  exp, basetype, type);
       name = TREE_OPERAND (name, 0);
-      if (TYPE_MAIN_VARIANT (basetype) != name 
-	  && (TYPE_MAIN_VARIANT (basetype)
-	      != TYPE_MAIN_VARIANT (get_type_value (name))))
+      if (! (name == TYPE_MAIN_VARIANT (basetype) 
+	     || ((tmp = get_type_value (name))
+		 && (TYPE_MAIN_VARIANT (basetype)
+		     == TYPE_MAIN_VARIANT (tmp)))))
 	cp_error ("qualified type `%T' does not match destructor name `~%T'",
 		  basetype, name);
       return cp_convert (void_type_node, exp);

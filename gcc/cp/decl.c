@@ -6219,9 +6219,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 	  || CLASSTYPE_USE_TEMPLATE (context))
 	SET_DECL_TEMPLATE_SPECIALIZATION (decl);
 
-      /* Stupid stupid stupid stupid  (jason 7/21/95) */
-      if (pedantic && DECL_EXTERNAL (decl)
-	  && ! DECL_TEMPLATE_SPECIALIZATION (decl))
+      if (DECL_EXTERNAL (decl) && ! DECL_TEMPLATE_SPECIALIZATION (decl))
 	cp_pedwarn ("declaration of `%#D' outside of class is not definition",
 		    decl);
 
@@ -11815,9 +11813,13 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 	  && ! DECL_FUNCTION_MEMBER_P (decl1))
 	decl1 = pushdecl (decl1);
       else
-	/* We need to set the DECL_CONTEXT. */
-	if (!DECL_CONTEXT (decl1) && DECL_TEMPLATE_INFO (decl1))
-	  DECL_CONTEXT (decl1) = DECL_CONTEXT (DECL_TI_TEMPLATE (decl1));
+	{
+	  /* We need to set the DECL_CONTEXT. */
+	  if (!DECL_CONTEXT (decl1) && DECL_TEMPLATE_INFO (decl1))
+	    DECL_CONTEXT (decl1) = DECL_CONTEXT (DECL_TI_TEMPLATE (decl1));
+	  /* And make sure we have enough default args.  */
+	  check_default_args (decl1);
+	}
       DECL_MAIN_VARIANT (decl1) = decl1;
       fntype = TREE_TYPE (decl1);
     }
