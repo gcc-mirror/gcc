@@ -320,7 +320,6 @@ static int general_induction_var PROTO((rtx, rtx *, rtx *, rtx *, int, int *));
 static int consec_sets_giv PROTO((int, rtx, rtx, rtx, rtx *, rtx *, rtx *));
 static int check_dbra_loop PROTO((rtx, int, rtx, struct loop_info *));
 static rtx express_from_1 PROTO((rtx, rtx, rtx));
-static rtx express_from PROTO((struct induction *, struct induction *));
 static rtx combine_givs_p PROTO((struct induction *, struct induction *));
 static void combine_givs PROTO((struct iv_class *));
 struct recombine_givs_stats;
@@ -4180,7 +4179,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	      v->auto_inc_opt = 0;
 	      v->unrolled = 0;
 	      v->shared = 0;
-	      v->derived = 0;
+	      v->derived_from = 0;
 	      v->always_computable = 1;
 	      v->always_executed = 1;
 	      v->replaceable = 1;
@@ -4622,7 +4621,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 
 	      v->new_reg = gen_reg_rtx (v->mode);
 
-	      if (v->derived)
+	      if (v->derived_from)
 		{
 		  PATTERN (v->insn)
 		    = replace_rtx (PATTERN (v->insn), v->dest_reg, v->new_reg);
@@ -5273,7 +5272,7 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
   v->auto_inc_opt = 0;
   v->unrolled = 0;
   v->shared = 0;
-  v->derived = 0;
+  v->derived_from = 0;
   v->last_use = 0;
 
   /* The v->always_computable field is used in update_giv_derive, to
@@ -6632,7 +6631,7 @@ express_from_1 (a, b, mult)
   return NULL_RTX;
 }
 
-static rtx
+rtx
 express_from (g1, g2)
      struct induction *g1, *g2;
 {
@@ -7290,7 +7289,7 @@ recombine_givs (bl, loop_start, loop_end, unroll_p)
 	  rtx sum;
 
 	  v = giv_array[stats[i].giv_number];
-	  if (v->giv_type != DEST_REG || v->derived || v->same)
+	  if (v->giv_type != DEST_REG || v->derived_from || v->same)
 	    continue;
 	  if (! last_giv)
 	    {
@@ -7347,7 +7346,7 @@ recombine_givs (bl, loop_start, loop_end, unroll_p)
 				  gen_rtx_SET (GET_MODE (v->dest_reg),
 					       v->dest_reg, sum), 0))
 	    {
-	      v->derived = 1;
+	      v->derived_from = last_giv;
 	      v->new_reg = v->dest_reg;
 	      life_end = stats[i].end_luid;
 

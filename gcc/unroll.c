@@ -1794,6 +1794,10 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	      giv_dest_reg = SET_DEST (set);
 	      if (derived_regs[regno])
 		{
+		  /* ??? This relies on SET_SRC (SET) to be of
+		     the form (plus (reg) (const_int)), and thus
+		     forces recombine_givs to restrict the kind
+		     of giv derivations it does before unrolling.  */
 		  giv_src_reg = XEXP (SET_SRC (set), 0);
 		  giv_inc = XEXP (SET_SRC (set), 1);
 		}
@@ -2830,7 +2834,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		}
 		
 	      splittable_regs[REGNO (v->new_reg)] = value;
-	      derived_regs[REGNO (v->new_reg)] = v->derived;
+	      derived_regs[REGNO (v->new_reg)] = v->derived_from != 0;
 	    }
 	  else
 	    {
@@ -2886,17 +2890,36 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		     Emit insn to initialize its value before loop start.  */
 
 		  rtx tem = gen_reg_rtx (v->mode);
+		  struct induction *same = v->same;
+		  rtx new_reg = v->new_reg;
 		  record_base_value (REGNO (tem), v->add_val, 0);
+
+		  if (same && same->derived_from)
+		    {
+		      /* calculate_giv_inc doesn't work for derived givs.
+			 copy_loop_body works around the problem for the
+			 DEST_REG givs themselves, but it can't handle
+			 DEST_ADDR givs that have been combined with
+			 derived a derived DEST_REG giv.
+			 So Handle V as if the giv from which V->SAME has
+			 been derived has been combined with V.
+			 recombine_givs only derives givs from givs that
+			 are reduced the ordinary, so we need not worry
+			 about same->derived_from being in turn derived.  */
+
+		      same = same->derived_from;
+		      new_reg = express_from (same, v);
+		    }
 
 		  /* If the address giv has a constant in its new_reg value,
 		     then this constant can be pulled out and put in value,
 		     instead of being part of the initialization code.  */
 		  
-		  if (GET_CODE (v->new_reg) == PLUS
-		      && GET_CODE (XEXP (v->new_reg, 1)) == CONST_INT)
+		  if (GET_CODE (new_reg) == PLUS
+		      && GET_CODE (XEXP (new_reg, 1)) == CONST_INT)
 		    {
 		      v->dest_reg
-			= plus_constant (tem, INTVAL (XEXP (v->new_reg,1)));
+			= plus_constant (tem, INTVAL (XEXP (new_reg, 1)));
 
 		      /* Only succeed if this will give valid addresses.
 			 Try to validate both the first and the last
@@ -2907,9 +2930,9 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 			  /* Save the negative of the eliminated const, so
 			     that we can calculate the dest_reg's increment
 			     value later.  */
-			  v->const_adjust = - INTVAL (XEXP (v->new_reg, 1));
+			  v->const_adjust = - INTVAL (XEXP (new_reg, 1));
 
-			  v->new_reg = XEXP (v->new_reg, 0);
+			  new_reg = XEXP (new_reg, 0);
 			  if (loop_dump_stream)
 			    fprintf (loop_dump_stream,
 				     "Eliminating constant from giv %d\n",
@@ -2938,6 +2961,9 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 				 INSN_UID (v->insn));
 		      continue;
 		    }
+
+		  v->new_reg = new_reg;
+		  v->same = same;
 		  
 		  /* We set this after the address check, to guarantee that
 		     the register will be initialized.  */
@@ -2992,6 +3018,15 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 				 INSN_UID (v->insn));
 		      continue;
 		    }
+		  if (v->same && v->same->derived_from)
+		    {
+		      /* Handle V as if the giv from which V->SAME has
+			 been derived has been combined with V.  */
+
+		      v->same = v->same->derived_from;
+		      v->new_reg = express_from (v->same, v);
+		    }
+
 		}
 	      
 	      /* Store the value of dest_reg into the insn.  This sharing
@@ -3014,7 +3049,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		     Make sure that it's giv is marked as splittable here.  */
 		  
 		  splittable_regs[REGNO (v->new_reg)] = value;
-		  derived_regs[REGNO (v->new_reg)] = v->derived;
+		  derived_regs[REGNO (v->new_reg)] = v->derived_from != 0;
 		  
 		  /* Make it appear to depend upon itself, so that the
 		     giv will be properly split in the main loop above.  */
@@ -3057,6 +3092,11 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 	  int count = 1;
 	  if (! v->ignore)
 	    count = reg_biv_class[REGNO (v->src_reg)]->biv_count;
+
+	  if (count > 1 && v->derived_from)
+	     /* In this case, there is one set where the giv insn was and one
+		set each after each biv increment.  (Most are likely dead.)  */
+	    count++;
 
 	  splittable_regs_updates[REGNO (v->new_reg)] = count;
 	}

@@ -1,3 +1,15 @@
+Wed Feb  3 20:44:59 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.h (express_from): Declare.
+	(struct induction): Replace derived flag with derived_from pointer.
+	* loop.c (strength_reduce, record_giv, recombine_givs): Likewise.
+	(express_from): No longer static.
+	* unroll.c (find_splittable_givs): Replace derived with derived_from.
+	When processing an address giv with which another giv has been
+	combined that has also been derived from a third giv, handle like
+	having combined with the third giv.
+	Set splittable_regs_updates appropriately for derived givs.
+
 Wed Feb  3 15:26:58 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* config/mips/mips.md (div_trap_mips16): Remove nop's after branches.
