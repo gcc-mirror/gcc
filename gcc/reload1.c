@@ -802,6 +802,7 @@ reload (first, global, dumpfile)
       rtx max_nongroups_insn[N_REG_CLASSES];
       rtx x;
       int starting_frame_size = get_frame_size ();
+      static char *reg_class_names[] = REG_CLASS_NAMES;
 
       something_changed = 0;
       bzero (max_needs, sizeof max_needs);
@@ -1323,6 +1324,27 @@ reload (first, global, dumpfile)
       if (starting_frame_size != get_frame_size ())
 	something_changed = 1;
 
+      if (dumpfile)
+	for (i = 0; i < N_REG_CLASSES; i++)
+	  {
+	    if (max_needs[i] > 0)
+	      fprintf (dumpfile,
+			 ";; Need %d reg%s of class %s (for insn %d).\n",
+		       max_needs[i], max_needs[i] == 1 ? "" : "s",
+		       reg_class_names[i], INSN_UID (max_needs_insn[i]));
+	    if (max_nongroups[i] > 0)
+	      fprintf (dumpfile,
+		       ";; Need %d nongroup reg%s of class %s (for insn %d).\n",
+		       max_nongroups[i], max_nongroups[i] == 1 ? "" : "s",
+		       reg_class_names[i], INSN_UID (max_nongroups_insn[i]));
+	    if (max_groups[i] > 0)
+	      fprintf (dumpfile,
+		       ";; Need %d group%s (%smode) of class %s (for insn %d).\n",
+		       max_groups[i], max_groups[i] == 1 ? "" : "s",
+		       mode_name[(int) group_mode[i]],
+		       reg_class_names[i], INSN_UID (max_groups_insn[i]));
+	  }
+			 
       /* If we have caller-saves, set up the save areas and see if caller-save
 	 will need a spill register.  */
 
@@ -1702,6 +1724,23 @@ reload (first, global, dumpfile)
 		    && (max_nongroups[class] == 0
 			|| possible_group_p (potential_reload_regs[i], max_groups)))
 		  break;
+
+	      /* If we couldn't get a register, try to get one even if we
+		 might foreclose possible groups.  This may cause problems
+		 later, but that's better than aborting now, since it is
+		 possible that we will, in fact, be able to form the needed
+		 group even with this allocation.  */
+
+	      if (i >= FIRST_PSEUDO_REGISTER
+		  && (asm_noperands (max_needs[class] > 0
+				     ? max_needs_insn[class]
+				     : max_nongroups_insn[class])
+		      < 0))
+		for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+		  if (potential_reload_regs[i] >= 0
+		      && TEST_HARD_REG_BIT (reg_class_contents[class],
+					    potential_reload_regs[i]))
+		    break;
 
 	      /* I should be the index in potential_reload_regs
 		 of the new reload reg we have found.  */
