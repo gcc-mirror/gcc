@@ -1,3 +1,8 @@
+2001-03-12  Aldy Hernandez  <aldyh@redhat.com>
+
+        * reload1.c (reload_cse_simplify): Call reload_cse_simplify_set
+        before reload_cse_noop_set_p.
+
 2001-03-11  Zack Weinberg  <zackw@stanford.edu>
 
 	* config.gcc: Where xm-host.h used to include another
