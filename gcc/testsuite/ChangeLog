@@ -1,3 +1,7 @@
+2001-12-31  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/asm-5.c: New.
+
 2001-12-31  Paolo Carlini  <pcarlini@unitus.it>
 
 	* g++.old-deja/g++.robertl/eb130.C: hash_set is now
