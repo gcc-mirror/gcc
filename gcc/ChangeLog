@@ -1,5 +1,6 @@
 2003-01-27  Gabriel Dos_Reis  <gdosreis@sophia.inria.fr>
-
+	
+	PR objc/9267
 	* c-parse.in: Remove '%expect 31' directive in objc mode.
 
 2003-01-27  Richard Earnshaw <rearnsha@arm.com>
