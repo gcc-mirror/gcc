@@ -4662,9 +4662,9 @@
 
 (define_expand "floatunsdisf2"
   [(use (match_operand:SF 0 "register_operand" ""))
-   (use (match_operand:DI 1 "register_operand" ""))]
+   (use (match_operand:DI 1 "general_operand" ""))]
   "TARGET_ARCH64 && TARGET_FPU"
-  "sparc_emit_floatunsdi (operands); DONE;")
+  "sparc_emit_floatunsdi (operands, SFmode); DONE;")
 
 (define_insn "floatdidf2"
   [(set (match_operand:DF 0 "register_operand" "=e")
@@ -4676,9 +4676,9 @@
 
 (define_expand "floatunsdidf2"
   [(use (match_operand:DF 0 "register_operand" ""))
-   (use (match_operand:DI 1 "register_operand" ""))]
+   (use (match_operand:DI 1 "general_operand" ""))]
   "TARGET_ARCH64 && TARGET_FPU"
-  "sparc_emit_floatunsdi (operands); DONE;")
+  "sparc_emit_floatunsdi (operands, DFmode); DONE;")
 
 (define_expand "floatditf2"
   [(set (match_operand:TF 0 "nonimmediate_operand" "")
@@ -4747,6 +4747,12 @@
   [(set_attr "type" "fp")
    (set_attr "fptype" "double")])
 
+(define_expand "fixuns_truncsfdi2"
+  [(use (match_operand:DI 0 "register_operand" ""))
+   (use (match_operand:SF 1 "general_operand" ""))]
+  "TARGET_ARCH64 && TARGET_FPU"
+  "sparc_emit_fixunsdi (operands, SFmode); DONE;")
+
 (define_insn "fix_truncdfdi2"
   [(set (match_operand:DI 0 "register_operand" "=e")
 	(fix:DI (fix:DF (match_operand:DF 1 "register_operand" "e"))))]
@@ -4754,6 +4760,12 @@
   "fdtox\t%1, %0"
   [(set_attr "type" "fp")
    (set_attr "fptype" "double")])
+
+(define_expand "fixuns_truncdfdi2"
+  [(use (match_operand:DI 0 "register_operand" ""))
+   (use (match_operand:DF 1 "general_operand" ""))]
+  "TARGET_ARCH64 && TARGET_FPU"
+  "sparc_emit_fixunsdi (operands, DFmode); DONE;")
 
 (define_expand "fix_trunctfdi2"
   [(set (match_operand:DI 0 "register_operand" "")

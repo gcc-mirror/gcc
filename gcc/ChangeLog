@@ -1,3 +1,16 @@
+2004-02-26  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	* config/sparc/sparc-protos.h (sparc_emit_floatunsdi): Add 'mode'.
+	(sparc_emit_fixunsdi): New prototype.
+	* config/sparc/sparc.c (sparc_emit_floatunsdi): Use 'mode' argument.
+	(sparc_emit_fixunsdi): New function.
+	* config/sparc/sparc.md (floatunsdisf2): Use 'general_operand' for
+	operand 1.  Pass SFmode to sparc_emit_floatunsdi.
+	(floatunsdidf2): Use 'general_operand' for operand 1.  Pass DFmode
+	to sparc_emit_floatunsdi.
+	(fixuns_truncsfdi2): New expander.
+	(fixuns_truncdfdi2): Likewise.
+
 2004-02-26  Alan Modra  <amodra@bigpond.net.au>
 
 	* gcse.c (delete_null_pointer_checks_1): Do not delete CC setter
