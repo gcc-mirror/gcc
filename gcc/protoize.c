@@ -60,7 +60,7 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "intl.h"
 
-#if ! defined (_WIN32) || defined (__CYGWIN__)
+#if ! defined (_WIN32) || defined (__CYGWIN__) || defined (_UWIN)
 #if defined(POSIX) || defined(CONCURRENT)
 #include <dirent.h>
 #else
@@ -145,7 +145,9 @@ extern int puts ();
 #ifndef fputs	/* This may have been #defined by "system.h".  */
 extern int fputs ();
 #endif
+#ifndef fputc   /* some systems define this as a macro. */
 extern int fputc ();
+#endif
 extern int unlink ();
 extern int access ();
 

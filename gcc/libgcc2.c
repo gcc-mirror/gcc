@@ -2576,7 +2576,7 @@ __clear_cache (char *beg, char *end)
 
 /* Jump to a trampoline, loading the static chain address.  */
 
-#if defined(WINNT) && ! defined(__CYGWIN__)
+#if defined(WINNT) && ! defined(__CYGWIN__) && ! defined (_UWIN)
 
 long getpagesize()
 {
@@ -2615,7 +2615,7 @@ mprotect (char *addr, int len, int prot)
     return -1;
 }
 
-#endif
+#endif /* WINNT && ! __CYGWIN__ && ! _UWIN */
 
 #ifdef TRANSFER_FROM_TRAMPOLINE 
 TRANSFER_FROM_TRAMPOLINE 

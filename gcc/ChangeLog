@@ -1,3 +1,26 @@
+Thu Mar 11 01:38:02 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* cppfiles.c (INO_T_EQ): Handle UWIN.
+
+	* c-common.c (decl_attributes): Flag unrecognized attribute
+	functions as warnings instead of as errors.
+
+	Support for i386-pc-uwin.
+	* i386/uwin.h: New file.
+	* i386/xm-uwin.h: New file.
+	* i386/t-uwin: New file.
+	* i386/uwin.asm: New file.
+	* configure.in (i[3456]86-*-uwin*): Define.
+	Add Workaround for vfork bug when hosted on uwin.
+	* configure: Regenerate.
+
+	* cccp.c (INO_T_EQ): Undefine. UWIN has inodes.
+	(absolute_filename): UWIN uses POSIX pathnames only.
+	* libgcc2.c (getpagesize): Do not define for UWIN.
+	(mprotect): Likewise.
+	* protoize.c (dirent.h): Conditionally include.
+	(fputc): Prototype only if it's not a macro.
+
 Wed Mar 10 02:49:04 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* configure.in: Remove init_priority stuff.
