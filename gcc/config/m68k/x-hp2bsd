@@ -1,0 +1,4 @@
+# Make assignments for compilation for hp200 running 4.3bsd
+CC=gcc
+OLDCC=oldcc
+# You must have a previous version of gcc for bootstrapping
