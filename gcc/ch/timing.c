@@ -56,7 +56,7 @@ static tree rtstime_type_node = NULL_TREE;
 */
 tree after_stack = NULL_TREE;
 
-/* in pass 1 we need a seperate list for the labels */
+/* in pass 1 we need a separate list for the labels */
 static tree after_stack_pass_1 = NULL_TREE;
 static tree after_help;
 
