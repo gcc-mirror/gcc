@@ -1,3 +1,11 @@
+Thu Apr 29 22:13:46 1999  Robert Lipe  <robertlipe@usa.net>
+
+	* configure.in (i?86-UnixWare7*-sysv): Set thread_file to 'posix'
+	--enable-threads[={yes,pthreads,posix}] is passed as a command
+	line parameter to configure.
+	* config/i386/sysv5.h (LIB_SPEC): Add support for '-pthread'.
+	(CPP_SPEC): Likewise.
+
 Thu Apr 29 17:23:59 1999  Richard Henderson  <rth@cygnus.com>
 
 	* emit-rtl.c (operand_subword): Religiously mask and sign-extend
