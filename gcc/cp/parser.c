@@ -14464,8 +14464,8 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
 	  cp_lexer_consume_token (parser->lexer);
 	}
     }
-  else
-    cp_parser_require (parser, CPP_GREATER, "`>'");
+  else if (!cp_parser_require (parser, CPP_GREATER, "`>'"))
+    error ("missing `>' to terminate the template argument list");
   /* The `>' token might be a greater-than operator again now.  */
   parser->greater_than_is_operator_p 
     = saved_greater_than_is_operator_p;
