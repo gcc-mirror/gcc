@@ -112,7 +112,7 @@ higher_prime_number (n)
     (unsigned long) 1073741789,
     (unsigned long) 2147483647,
 					/* 4294967291L */
-    ((unsigned long) 2147483647) + ((unsigned long) 2147483642),
+    ((unsigned long) 2147483647) + ((unsigned long) 2147483644),
   };
 
   unsigned long* low = &primes[0];
