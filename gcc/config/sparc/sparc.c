@@ -620,7 +620,7 @@ legitimize_pic_address (orig, mode, reg, scratch)
 
       if (reg == 0)
 	{
-	  if (reload_in_progress)
+	  if (reload_in_progress || reload_completed)
 	    abort ();
 	  else
 	    reg = gen_reg_rtx (Pmode);
@@ -631,7 +631,8 @@ legitimize_pic_address (orig, mode, reg, scratch)
 	  /* If not during reload, allocate another temp reg here for loading
 	     in the address, so that these instructions can be optimized
 	     properly.  */
-	  rtx temp_reg = (reload_in_progress ? reg : gen_reg_rtx (Pmode));
+	  rtx temp_reg = ((reload_in_progress || reload_completed)
+			  ? reg : gen_reg_rtx (Pmode));
 
 	  emit_insn (gen_rtx (SET, VOIDmode, temp_reg,
 			      gen_rtx (HIGH, Pmode, orig)));
@@ -664,7 +665,7 @@ legitimize_pic_address (orig, mode, reg, scratch)
 
       if (reg == 0)
 	{
-	  if (reload_in_progress)
+	  if (reload_in_progress || reload_completed)
 	    abort ();
 	  else
 	    reg = gen_reg_rtx (Pmode);
@@ -684,7 +685,7 @@ legitimize_pic_address (orig, mode, reg, scratch)
 	{
 	  if (SMALL_INT (offset))
 	    return plus_constant_for_output (base, INTVAL (offset));
-	  else if (! reload_in_progress)
+	  else if (! reload_in_progress && ! reload_completed)
 	    offset = force_reg (Pmode, offset);
 	  /* We can't create any new registers during reload, so use the
 	     SCRATCH reg provided by the reload_insi pattern.  */
