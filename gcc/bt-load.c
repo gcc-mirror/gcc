@@ -1176,7 +1176,7 @@ migrate_btr_def (btr_def def, int min_cost)
   int give_up = 0;
   int def_moved = 0;
   btr_user user;
-  int def_latency;
+  int def_latency = 1;
 
   if (rtl_dump_file)
     fprintf (rtl_dump_file,
@@ -1205,10 +1205,13 @@ migrate_btr_def (btr_def def, int min_cost)
   live_range = BITMAP_XMALLOC ();
   bitmap_copy (live_range, def->live_range);
 
+#ifdef INSN_SCHEDULING
   if ((*targetm.sched.use_dfa_pipeline_interface) ())
     def_latency = insn_default_latency (def->insn);
   else
     def_latency = result_ready_cost (def->insn);
+#endif
+
   def_latency *= issue_rate;
 
   for (user = def->uses; user != NULL; user = user->next)
