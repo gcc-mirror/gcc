@@ -1751,14 +1751,16 @@ extern struct mips_frame_info current_frame_info;
 {  compute_frame_size (get_frame_size ());				 \
   if ((FROM) == FRAME_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)	 \
     (OFFSET) = 0;							 \
-  else if ((FROM) == ARG_POINTER_REGNUM && (TO) == FRAME_POINTER_REGNUM) \
-    (OFFSET) = current_frame_info.total_size;				 \
-  else if ((FROM) == ARG_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM) \
-    (OFFSET) = current_frame_info.total_size;				 \
+  else if ((FROM) == ARG_POINTER_REGNUM					 \
+	    && ((TO) == FRAME_POINTER_REGNUM				 \
+		|| (TO) == STACK_POINTER_REGNUM))			 \
+    (OFFSET) = (current_frame_info.total_size				 \
+		- (ABI_64BIT && mips_isa >= 3				 \
+		   ? current_function_pretend_args_size			 \
+		   : 0));						 \
   else									 \
     abort ();								 \
 }
-
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
