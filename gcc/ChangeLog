@@ -1,3 +1,16 @@
+Thu Feb 19 01:41:47 1998  Robin Kirkham <rjk@mlb.dmt.csiro.au>
+
+	* m68k.h (TARGET_SWITCHES): -mcpu32 now clears MASK_68881.
+	(MACHINE_STATE_m68010_up): Replaced __mc68332__ with __mcpu32__.
+	* m68k/m68k-none.h(CPP_FPU_SPEC): Update relative to TARGET_SWITCHES.
+	(CPP_SPEC, ASM_SPEC, CC1_SPEC): Likewise.
+	(CPP_SPEC): -m68332 defines both __mc68332 and __mcpu32__.
+	* m68k/t-m68kbare (MULTILIB_OPTIONS): Add mcpu32.
+	(MULTILIB_MATCHES): -m68332 now uses mcpu32 libraries, not m68000.
+	(MULTILIB_EXCEPTIONS): Don't build 68881 libraries for m68000,
+	mcpu32 or m5200.
+	* longlong.h: Replace __mc68332__ with __mcpu32__.
+
 Thu Feb 19 01:32:37 1998  Jeffrey A Law  (law@cygnus.com)
 			  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
