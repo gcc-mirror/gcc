@@ -85,6 +85,11 @@
 	* doc/bugreport.texi: Remove most of the bug reporting
 	instructions and merge them into bugs.html.
 
+2003-05-14  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* config/rs6000/sysv4.h (ASM_OUTPUT_ALIGNED_LOCAL): Cast
+	g_switch_value to unsigned HOST_WIDE_INT.
+
 2003-05-14  Eric Christopher  <echristo@redhat.com>
 
 	* combine.c: Fix header comments.
