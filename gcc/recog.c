@@ -3329,9 +3329,10 @@ store_data_bypass_p (out_insn, in_insn)
   return true;
 }
 
-/* True if the dependency between OUT_INSN and IN_INSN is in the 
-   IF_THEN_ELSE condition, and not the THEN or ELSE branch.
-   Both OUT_INSN and IN_INSN must be single_set.  */
+/* True if the dependency between OUT_INSN and IN_INSN is in the IF_THEN_ELSE
+   condition, and not the THEN or ELSE branch.  OUT_INSN may be either a single
+   or multiple set; IN_INSN should be single_set for truth, but for convenience
+   of insn categorization may be any JUMP or CALL insn.  */
 
 int
 if_test_bypass_p (out_insn, in_insn)
@@ -3339,20 +3340,49 @@ if_test_bypass_p (out_insn, in_insn)
 {
   rtx out_set, in_set;
 
-  out_set = single_set (out_insn);
-  if (! out_set)
-    abort ();
-
   in_set = single_set (in_insn);
   if (! in_set)
-    abort ();
+    {
+      if (GET_CODE (in_insn) == JUMP_INSN || GET_CODE (in_insn) == CALL_INSN)
+	return false;
+      abort ();
+    }
 
   if (GET_CODE (SET_SRC (in_set)) != IF_THEN_ELSE)
     return false;
+  in_set = SET_SRC (in_set);
 
-  if (reg_mentioned_p (SET_DEST (out_set), XEXP (in_set, 1))
-      || reg_mentioned_p (SET_DEST (out_set), XEXP (in_set, 2)))
-    return false;
+  out_set = single_set (out_insn);
+  if (out_set)
+    {
+      if (reg_mentioned_p (SET_DEST (out_set), XEXP (in_set, 1))
+	  || reg_mentioned_p (SET_DEST (out_set), XEXP (in_set, 2)))
+        return false;
+    }
+  else
+    {
+      rtx out_pat;
+      int i;
+
+      out_pat = PATTERN (out_insn);
+      if (GET_CODE (out_pat) != PARALLEL)
+	abort ();
+
+      for (i = 0; i < XVECLEN (out_pat, 0); i++)
+	{
+	  rtx exp = XVECEXP (out_pat, 0, i);
+
+	  if (GET_CODE (exp) == CLOBBER)
+	    continue;
+
+	  if (GET_CODE (exp) != SET)
+	    abort ();
+
+	  if (reg_mentioned_p (SET_DEST (out_set), XEXP (in_set, 1))
+	      || reg_mentioned_p (SET_DEST (out_set), XEXP (in_set, 2)))
+	    return false;
+	}
+    }
 
   return true;
 }
