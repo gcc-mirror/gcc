@@ -324,8 +324,6 @@ process_rtx (desc, lineno)
      rtx desc;
      int lineno;
 {
-  const char *filename = XSTR (desc, 0);
-
   switch (GET_CODE (desc))
     {
     case DEFINE_INSN:
@@ -342,7 +340,11 @@ process_rtx (desc, lineno)
 
     case INCLUDE:
       if (process_include (desc, lineno) == FATAL_EXIT_CODE)
-        message_with_line (lineno, "include file at  %s not found\n", filename);
+	{
+	  const char *filename = XSTR (desc, 0);
+	  message_with_line (lineno, "include file at  %s not found\n",
+			     filename);
+	}
       break;
 
     case DEFINE_INSN_AND_SPLIT:
