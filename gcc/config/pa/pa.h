@@ -212,6 +212,9 @@ extern int target_flags;
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 64
 
+/* The .align directive in the HP assembler allows up to a 32 alignment.  */
+#define MAX_OFILE_ALIGNMENT 32768
+
 /* Get around hp-ux assembler bug, and make strcpy of constants fast. */
 #define CONSTANT_ALIGNMENT(CODE, TYPEALIGN) \
   ((TYPEALIGN) < 32 ? 32 : (TYPEALIGN))
