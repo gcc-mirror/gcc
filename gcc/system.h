@@ -584,7 +584,7 @@ typedef char _Bool;
 #undef strdup
  #pragma GCC poison calloc strdup
 
-#if defined(FLEX_SCANNER) || defined (YYBISON)
+#if defined(FLEX_SCANNER) || defined (YYBISON) || defined(YYBYACC)
 /* Flex and bison use malloc and realloc.  Yuk.  */
 #define malloc xmalloc
 #define realloc xrealloc

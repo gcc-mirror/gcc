@@ -1,3 +1,7 @@
+2004-01-12  Marc Espie <espie@openbsd.org>
+
+	* system.h: handle YYBYACC like YYBISON.
+
 2004-01-12  Matthias Klose  <doko@debian.org>
 
         Backport from mainline
