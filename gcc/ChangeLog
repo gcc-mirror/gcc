@@ -1,3 +1,67 @@
+2005-02-17  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* Makefile.in (tree-vect-analyze.o, tree-vect-transform.o): New.
+	(tree-vectorizer.o): Added missing dependencies.
+
+	* tree-vectorizer.h (vect_dump, vect_verbosity_level): Added extern
+	decleration.
+	(slpeel_tree_peel_loop_to_edge): Function externalized (had a static
+	declaration in tree-vectorizer.c, now has an extern declaration in
+	tree-vectorizer.h).
+	(slpeel_make_loop_iterate_ntimes, slpeel_can_duplicate_loop_p,
+	slpeel_verify_cfg_after_peeling, vect_strip_conversion, 
+	get_vectype_for_scalar_type, vect_is_simple_use, 
+	vect_is_simple_iv_evolution, vect_can_force_dr_alignment_p,
+	vect_supportable_dr_alignment, new_loop_vec_info, destroy_loop_vec_info,
+	new_stmt_vec_info, vect_analyze_loop, vectorizable_load, 
+	vectorizable_store, vectorizable_operation, vectorizable_assignment,
+	vect_transform_loop, vect_print_dump_info, vect_set_verbosity_level,
+	find_loop_location): Likewise.
+
+	* tree-vectorizer.c (langhooks.h): #include removed.
+	(slpeel_tree_peel_loop_to_edge): Function externalized. Declaration
+	moved to tree-vectorized.h.
+	(slpeel_make_loop_iterate_ntimes, slpeel_can_duplicate_loop_p,
+	slpeel_verify_cfg_after_peeling, vect_strip_conversion,
+	get_vectype_for_scalar_type, vect_is_simple_use,
+	vect_is_simple_iv_evolution, vect_can_force_dr_alignment_p,
+	vect_supportable_dr_alignment, new_loop_vec_info,
+	destroy_loop_vec_info, new_stmt_vec_info, vect_print_dump_info,
+	vect_set_verbosity_level, find_loop_location): Likewise.
+
+	(vect_analyze_loop): Function externalized. Declaration moved to 
+	tree-vectorized.h. Function definition moved to tree-vect-analyze.c.
+	(vect_analyze_loop_form): Moved to tree-vect-analyze.c.
+	(vect_mark_stmts_to_be_vectorized, vect_analyze_scalar_cycles,
+	vect_analyze_data_ref_accesses, vect_analyze_data_ref_dependences,
+	vect_analyze_data_refs_alignment, vect_compute_data_refs_alignment,
+	vect_enhance_data_refs_alignment, vect_analyze_operations,
+	exist_non_indexing_operands_for_use_p, vect_mark_relevant,
+	vect_stmt_relevant_p, vect_get_loop_niters,
+	vect_analyze_data_ref_dependence, vect_compute_data_ref_alignment,
+	vect_analyze_data_ref_access, vect_analyze_pointer_ref_access,
+	vect_can_advance_ivs_p, vect_get_ptr_offset, vect_analyze_offset_expr,
+	vect_base_addr_differ_p, vect_object_analysis, vect_address_analysis,
+	vect_get_memtag): Likewise.
+
+	(vectorizable_load): Function externalized. Declaration moved to 
+	tree-vectorized.h. Function definition moved to tree-vect-transform.c.
+	(vectorizable_store, vectorizable_operation, vectorizable_assignment,
+	vect_transform_loop): Likewise.
+	(vect_transform_stmt): Moved to tree-vect-transform.c.
+	(vect_align_data_ref, vect_create_destination_var, 
+	vect_create_data_ref_ptr, vect_create_index_for_vector_ref,
+	vect_create_addr_base_for_vector_ref, vect_get_new_vect_var,
+	vect_get_vec_def_for_operand, vect_init_vector,
+	vect_finish_stmt_generation, vect_generate_tmps_on_preheader,
+	vect_build_loop_niters, vect_update_ivs_after_vectorizer,
+	vect_gen_niters_for_prolog_loop, vect_update_inits_of_dr,
+	vect_update_inits_of_drs, vect_do_peeling_for_alignment,
+	vect_do_peeling_for_loop_bound): Likewise.
+	
+	* tree-vect-analyze.c: New file.
+	* tree-vect-transform.c: New file.
+
 2005-02-17  Jason Merrill  <jason@redhat.com>
 
 	PR mudflap/19319, c++/19317
