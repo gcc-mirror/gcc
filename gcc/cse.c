@@ -5809,7 +5809,8 @@ fold_rtx (x, insn)
 		 But The Sun V5.0 compilers mis-compiled that test.  So
 		 instead we test for the problematic value in a more direct
 		 manner and hope the Sun compilers get it correct.  */
-	      && INTVAL (const_arg1) != (1 << (HOST_BITS_PER_WIDE_INT - 1))
+	      && INTVAL (const_arg1) !=
+	        ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1))
 	      && GET_CODE (folded_arg1) == REG)
 	    {
 	      rtx new_const = GEN_INT (- INTVAL (const_arg1));
