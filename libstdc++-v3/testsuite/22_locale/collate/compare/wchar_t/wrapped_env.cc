@@ -21,7 +21,7 @@
 // 22.2.4.1.1 collate members
 
 // { dg-do run }
-// { dg-options "-finput-charset=iso-8859-1" }
+// { dg-options "-finput-charset=ISO8859-1" }
 
 #include <testsuite_hooks.h>
 
