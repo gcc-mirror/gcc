@@ -1,3 +1,8 @@
+2004-12-15  Richard Henderson  <rth@redhat.com>
+
+	* gcc.target/i386/i386.exp: New harness.
+	* gcc.target/i386/vect-args.c: New.
+
 2004-12-15  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.dg/20040813-1.c: Skip for *-*-aix*.
