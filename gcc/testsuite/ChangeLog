@@ -1,3 +1,7 @@
+Fri Aug 18 16:57:35 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* gcc.c-torture/compile/20000818-1.c: New test.
+
 2000-08-18  Manfred Hollstein  <manfredh@redhat.com>
 
 	* gcc.c-torture/execute/20000818-1.c: New test.
