@@ -1432,9 +1432,8 @@ typedef struct rs6000_args
 /* Define intermediate macro to compute the size (in registers) of an argument
    for the RS/6000.  */
 
-#define RS6000_ARG_SIZE(MODE, TYPE, NAMED)				\
-(! (NAMED) ? 0								\
- : (MODE) != BLKmode							\
+#define RS6000_ARG_SIZE(MODE, TYPE)					\
+((MODE) != BLKmode							\
  ? (GET_MODE_SIZE (MODE) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD	\
  : ((unsigned HOST_WIDE_INT) int_size_in_bytes (TYPE) 			\
     + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
@@ -1549,6 +1548,10 @@ typedef struct rs6000_args
 /* Implement `va_arg'.  */
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \
   rs6000_va_arg (valist, type)
+
+/* Define this macro to be a nonzero value if the location where a function
+   argument is passed depends on whether or not it is a named argument.  */
+#define STRICT_ARGUMENT_NAMING 1
 
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.

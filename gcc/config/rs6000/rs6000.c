@@ -1721,8 +1721,6 @@ rs6000_emit_move (dest, source, mode)
 	       && ! LEGITIMATE_CONSTANT_POOL_ADDRESS_P (operands[1])
 	       && ! TOC_RELATIVE_EXPR_P (operands[1]))
 	{
-	  int special_constant_p = 0;
-
 	  /* Emit a USE operation so that the constant isn't deleted if
 	     expensive optimizations are turned on because nobody
 	     references it.  This should only be done for operands that
@@ -1773,18 +1771,10 @@ rs6000_emit_move (dest, source, mode)
 	  operands[1] = force_const_mem (mode, operands[1]);
 
 	  if (TARGET_TOC 
-	      && CONSTANT_POOL_EXPR_P (XEXP (operands[1], 0)))
-	    {
-	      rtx constant;
-	      enum machine_mode cmode;
-
-	      constant = get_pool_constant (XEXP (operands[1], 0));
-	      cmode = get_pool_mode (XEXP (operands[1], 0));
-	      special_constant_p = 
-		ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (constant, cmode);
-	    }
-
-	  if (special_constant_p)
+	      && CONSTANT_POOL_EXPR_P (XEXP (operands[1], 0))
+	      && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (
+			get_pool_constant (XEXP (operands[1], 0)),
+			get_pool_mode (XEXP (operands[1], 0))))
 	    {
 	      operands[1] = gen_rtx_MEM (mode,
 					 create_TOC_reference (XEXP (operands[1], 0)));
@@ -1952,7 +1942,7 @@ function_arg_advance (cum, mode, type, named)
 	    {
 	      if (mode == DFmode)
 	        cum->words += cum->words & 1;
-	      cum->words += RS6000_ARG_SIZE (mode, type, 1);
+	      cum->words += RS6000_ARG_SIZE (mode, type);
 	    }
 	}
       else
@@ -1965,7 +1955,7 @@ function_arg_advance (cum, mode, type, named)
 	      || mode == TFmode)
 	    n_words = 1;
 	  else 
-	    n_words = RS6000_ARG_SIZE (mode, type, 1);
+	    n_words = RS6000_ARG_SIZE (mode, type);
 
 	  /* Long long is put in odd registers.  */
 	  if (n_words == 2 && (gregno & 1) == 0)
@@ -2000,14 +1990,10 @@ function_arg_advance (cum, mode, type, named)
     {
       int align = (TARGET_32BIT && (cum->words & 1) != 0
 		   && function_arg_boundary (mode, type) == 64) ? 1 : 0;
-      cum->words += align;
+      cum->words += align + RS6000_ARG_SIZE (mode, type);
 
-      if (named)
-	{
-	  cum->words += RS6000_ARG_SIZE (mode, type, named);
-	  if (GET_MODE_CLASS (mode) == MODE_FLOAT && TARGET_HARD_FLOAT)
-	    cum->fregno++;
-	}
+      if (GET_MODE_CLASS (mode) == MODE_FLOAT && TARGET_HARD_FLOAT)
+	cum->fregno++;
 
       if (TARGET_DEBUG_ARG)
 	{
@@ -2048,7 +2034,7 @@ function_arg (cum, mode, type, named)
      CUMULATIVE_ARGS *cum;
      enum machine_mode mode;
      tree type;
-     int named;
+     int named ATTRIBUTE_UNUSED;
 {
   enum rs6000_abi abi = DEFAULT_ABI;
 
@@ -2092,7 +2078,7 @@ function_arg (cum, mode, type, named)
 	      || mode == TFmode)
 	    n_words = 1;
 	  else 
-	    n_words = RS6000_ARG_SIZE (mode, type, 1);
+	    n_words = RS6000_ARG_SIZE (mode, type);
 
 	  /* Long long is put in odd registers.  */
 	  if (n_words == 2 && (gregno & 1) == 0)
@@ -2110,9 +2096,6 @@ function_arg (cum, mode, type, named)
       int align = (TARGET_32BIT && (cum->words & 1) != 0
 	           && function_arg_boundary (mode, type) == 64) ? 1 : 0;
       int align_words = cum->words + align;
-
-      if (! named)
-	return NULL_RTX;
 
       if (type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
         return NULL_RTX;
@@ -2135,7 +2118,7 @@ function_arg (cum, mode, type, named)
 				((align_words >= GP_ARG_NUM_REG)
 				 ? NULL_RTX
 				 : (align_words
-				    + RS6000_ARG_SIZE (mode, type, named)
+				    + RS6000_ARG_SIZE (mode, type)
 				    > GP_ARG_NUM_REG
 				    /* If this is partially on the stack, then
 				       we only include the portion actually
@@ -2165,11 +2148,8 @@ function_arg_partial_nregs (cum, mode, type, named)
      CUMULATIVE_ARGS *cum;
      enum machine_mode mode;
      tree type;
-     int named;
+     int named ATTRIBUTE_UNUSED;
 {
-  if (! named)
-    return 0;
-
   if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
     return 0;
 
@@ -2180,7 +2160,7 @@ function_arg_partial_nregs (cum, mode, type, named)
     }
 
   if (cum->words < GP_ARG_NUM_REG
-      && GP_ARG_NUM_REG < (cum->words + RS6000_ARG_SIZE (mode, type, named)))
+      && GP_ARG_NUM_REG < (cum->words + RS6000_ARG_SIZE (mode, type)))
     {
       int ret = GP_ARG_NUM_REG - cum->words;
       if (ret && TARGET_DEBUG_ARG)
@@ -2247,23 +2227,22 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
   int reg_size = TARGET_32BIT ? 4 : 8;
   rtx save_area = NULL_RTX, mem;
   int first_reg_offset, set;
+  tree fntype;
+  int stdarg_p;
+
+  fntype = TREE_TYPE (current_function_decl);
+  stdarg_p = (TYPE_ARG_TYPES (fntype) != 0
+	      && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
+		  != void_type_node));
+
+  /* For varargs, we do not want to skip the dummy va_dcl argument.
+     For stdargs, we do want to skip the last named argument.  */
+  next_cum = *cum;
+  if (stdarg_p)
+    function_arg_advance (&next_cum, mode, type, 1);
 
   if (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
     {
-      tree fntype;
-      int stdarg_p;
-
-      fntype = TREE_TYPE (current_function_decl);
-      stdarg_p = (TYPE_ARG_TYPES (fntype) != 0
-		  && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
-		      != void_type_node));
-
-      /* For varargs, we do not want to skip the dummy va_dcl argument.
-         For stdargs, we do want to skip the last named argument.  */
-      next_cum = *cum;
-      if (stdarg_p)
-	function_arg_advance (&next_cum, mode, type, 1);
-
       /* Indicate to allocate space on the stack for varargs save area.  */
       /* ??? Does this really have to be located at a magic spot on the
 	 stack, or can we allocate this with assign_stack_local instead.  */
@@ -2276,12 +2255,12 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
     }
   else
     {
+      first_reg_offset = next_cum.words;
       save_area = virtual_incoming_args_rtx;
       cfun->machine->sysv_varargs_p = 0;
 
-      first_reg_offset = cum->words;
       if (MUST_PASS_IN_STACK (mode, type))
-	first_reg_offset += RS6000_ARG_SIZE (TYPE_MODE (type), type, 1);
+	first_reg_offset += RS6000_ARG_SIZE (TYPE_MODE (type), type);
     }
 
   set = get_varargs_alias_set ();
