@@ -428,7 +428,7 @@ cpp_lex (pfile, skip_evaluation)
 	  {
 	    int num_bits = num_chars * width;
 
-	    if (cpp_lookup (pfile, "__CHAR_UNSIGNED__",
+	    if (cpp_lookup (pfile, (U_CHAR *)"__CHAR_UNSIGNED__",
 			    sizeof ("__CHAR_UNSIGNED__")-1, -1)
 		|| ((result >> (num_bits - 1)) & 1) == 0)
 		op.value
