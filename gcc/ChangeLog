@@ -1,5 +1,10 @@
 2003-05-17  Neil Booth  <neil@daikokuya.co.uk>
 
+	* i960/i960.h, i960/rtems.h: Use TARGET_OS_CPP_BUILTINS and
+	TARGET_CPU_CPP_BUILTINS in preference to CPP_PREDEFINES.
+
+2003-05-17  Neil Booth  <neil@daikokuya.co.uk>
+
 	* config.gcc (sparc-*-sysv4*): Add sparc/sysv4-only.h.
 	* sparc/aout.h, sparc/elf.h, sparc/freebsd.h, sparc/linux.h,
 	sparc/linux64.h, sparc/lite.h, sparc/litecoff.h, sparc/liteelf.h,
