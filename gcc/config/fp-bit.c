@@ -518,10 +518,9 @@ pack_d ( fp_number_type *  src)
 	      fraction += GARDROUND;
 	    }
 	  /* Perhaps the rounding means we now need to change the
-             exponent.  */
-	  if (fraction >= IMPLICIT_2)
+             exponent, because the fraction is no longer denormal.  */
+	  if (fraction >= IMPLICIT_1)
 	    {
-	      fraction >>= 1;
 	      exp += 1;
 	    }
 	  fraction >>= NGARDS;
