@@ -1,3 +1,7 @@
+2004-05-13  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc_release (DIFF): Remove -3 option.
+
 2003-07-26  Paul Brook  <paul@nowt.org>
 
 	* gcc_release: Add gcc-fortran.
