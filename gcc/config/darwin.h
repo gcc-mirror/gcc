@@ -585,9 +585,11 @@ extern const char *darwin_fix_and_continue_switch;
 #undef	ASM_OUTPUT_ALIGNED_DECL_LOCAL					
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(FILE, DECL, NAME, SIZE, ALIGN)	\
   do {									\
+    unsigned HOST_WIDE_INT _new_size = SIZE;				\
     fputs (".lcomm ", (FILE));						\
     assemble_name ((FILE), (NAME));					\
-    fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n", (SIZE),	\
+    if (_new_size == 0) _new_size = 1;					\
+    fprintf ((FILE), ","HOST_WIDE_INT_PRINT_UNSIGNED",%u\n", _new_size,	\
 	     floor_log2 ((ALIGN) / BITS_PER_UNIT));			\
     if ((DECL) && ((TREE_STATIC (DECL)					\
 	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))		\
