@@ -6,6 +6,12 @@ time as we can formally start documenting the interface this file will
 serve as a repository for information on these interface and any incompatable
 changes we've made.
 
+2001-02-26:
+  A DECL_INITIAL of NULL_TREE or error_mark_node in a VAR_DECL is no longer
+  taken to signify a tentative definition which should not be emitted until
+  end-of-file.  Frontends which want that behavior should set
+  DECL_DEFER_OUTPUT before calling rest_of_decl_compilation.
+
 Aug 31, 1998:
   The interface to HANDLE_PRAGMA has changed.  It now takes three arguments.
   The first two are pointers to functions that should be used to read characters
@@ -80,7 +86,7 @@ Feb 1, 1998:
 
   In an effort to decrease cache thrashing and useless loads we've changed the
   third argument to the DEFTREECODE macro to be a single char.  This will
-  effect languages that defined their own tree codes (usually in a .def file).
+  affect languages that defined their own tree codes (usually in a .def file).
 
   Old way:
 
