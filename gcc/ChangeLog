@@ -1,3 +1,11 @@
+2001-06-10  Alexandre Oliva  <aoliva@redhat.com>
+
+	* doc/invoke.texi (MN10300 Options): Document -mno-crt0.
+	(SH Options): Document -mieee.
+	* doc/install.texi (Final install): Remove obsolete information
+	about installing cross compilers.
+	* doc/gcc.1: Rebuilt.
+
 2001-06-10  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (override_options): Set align_loops,
@@ -84,8 +92,6 @@ Sun Jun 10 10:00:17 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(Debugging Options): Document -print-multi-directory and
 	-print-multi-lib.
 	* doc/gcc.1: Rebuilt.
-
-2001-06-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* toplev.c (independent_decode_option): Require `=' between
 	`-aux-info' and filename in the same argument.
