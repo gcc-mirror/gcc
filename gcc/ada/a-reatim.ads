@@ -88,11 +88,12 @@ package Ada.Real_Time is
    function Microseconds (US : Integer) return Time_Span;
    function Milliseconds (MS : Integer) return Time_Span;
 
-   --  With duration represented as a 64-bit number with a delta of
-   --  10 ** (-9), the number of seconds in Duration'Last does not fit
-   --  in 32 bits.
+   --  Seconds_Count needs 64 bits, since Time has the full range of
+   --  Duration. The delta of Duration is 10 ** (-9), so the maximum
+   --  number of seconds is 2**63/10**9 = 8*10**9 which does not quite
+   --  fit in 32 bits.
 
-   type Seconds_Count is  range -2 ** 63 .. 2 ** 63 - 1;
+   type Seconds_Count is range -2 ** 63 .. 2 ** 63 - 1;
 
    procedure Split (T : Time; SC : out Seconds_Count; TS : out Time_Span);
    function Time_Of (SC : Seconds_Count; TS : Time_Span) return Time;

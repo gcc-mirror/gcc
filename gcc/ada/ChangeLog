@@ -1,5 +1,9 @@
 2001-10-30  Robert Dewar <dewar@gnat.com>
 
+	* a-reatim.ads: Minor reformatting
+
+2001-10-30  Robert Dewar <dewar@gnat.com>
+
 	* gnatdll.adb: Minor reformatting throughout. Many ??? added for 
 	undocumented declarations.
 
