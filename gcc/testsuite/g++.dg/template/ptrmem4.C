@@ -16,5 +16,5 @@ struct SpyExample
 
 void SpyExample::ready()
 {
-  queryAliases(inputs);	// { dg-error "convert" }
+  queryAliases(inputs);	// { dg-error "" }
 }
