@@ -24,8 +24,8 @@ Boston, MA 02111-1307, USA.  */
 
   {".m", "@objective-c", 0, 0, 0},
   {"@objective-c",
-     "%{E|M|MM:%(trad_capable_cpp)\
-          -lang-objc %(cpp_options) %(cpp_debug_options)}\
+     "%{E|M|MM:cc1obj -E %{traditional|ftraditional|traditional-cpp:-traditional-cpp}\
+          %(cpp_options) %(cpp_debug_options)}\
       %{!E:%{!M:%{!MM:\
 	%{traditional|ftraditional|traditional-cpp:\
 %eGNU Objective C no longer supports traditional compilation}\

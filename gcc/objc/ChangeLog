@@ -1,3 +1,8 @@
+2005-01-14  Mike Stump  <mrs@apple.com>
+
+	* lang-specs.h ("@objective-c"): Use cc1obj when -E is used so
+	that -fobjc-exceptions is accepted.
+
 2004-12-30  Ziemowit Laski  <zlaski@apple.com>
 
 	PR objc/18971
