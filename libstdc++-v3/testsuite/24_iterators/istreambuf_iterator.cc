@@ -24,7 +24,33 @@
 #include <iterator>
 #include <debug_assert.h>
 
-bool test01(void)
+void test01()
+{
+  using namespace std;
+
+  // Check for required base class.
+  typedef istreambuf_iterator<char> test_iterator;
+  typedef char_traits<char>::off_type off_type;
+  typedef iterator<input_iterator_tag, char, off_type, char*, char&> base_iterator;
+
+  istringstream isstream("this tag");
+  test_iterator  r_it(isstream);
+  base_iterator* base = &r_it;
+
+  // Check for required typedefs
+  typedef test_iterator::value_type value_type;
+  typedef test_iterator::difference_type difference_type;
+  typedef test_iterator::pointer pointer;
+  typedef test_iterator::reference reference;
+  typedef test_iterator::iterator_category iteratory_category;
+
+  typedef test_iterator::char_type char_type;
+  typedef test_iterator::traits_type traits_type;
+  typedef test_iterator::istream_type istream_type;
+  typedef test_iterator::streambuf_type streambuf_type;
+}
+
+bool test02(void)
 {
 
   typedef std::istreambuf_iterator<char> cistreambuf_iter;
@@ -116,7 +142,7 @@ bool test01(void)
 }
 
 // libstdc++/2627
-void test02()
+void test03()
 {
   bool test = true;
   const std::string s("free the vieques");
@@ -155,6 +181,6 @@ int main()
 {
   test01();
   test02();
-
+  test03();
   return 0;
 }

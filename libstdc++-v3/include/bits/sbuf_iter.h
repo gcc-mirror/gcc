@@ -103,8 +103,6 @@ namespace std
       typedef typename _Traits::int_type     		int_type;
       typedef basic_streambuf<_CharT, _Traits> 		streambuf_type;
       typedef basic_istream<_CharT, _Traits>         	istream_type;
-      // Non-standard Types:
-      typedef istreambuf_iterator<_CharT, _Traits>	__istreambufiter_type;
 
     private:
       // 24.5.3 istreambuf_iterator 
@@ -144,7 +142,7 @@ namespace std
 	return __ret;
       }
 	
-      __istreambufiter_type& 
+      istreambuf_iterator& 
       operator++()
       { 
 	if (_M_sbuf)
@@ -153,10 +151,10 @@ namespace std
 	return *this; 
       }
 
-      __istreambufiter_type
+      istreambuf_iterator
       operator++(int)
       {
-	__istreambufiter_type __old = *this;
+	istreambuf_iterator __old = *this;
 	if (_M_sbuf)
 	  __old._M_c = _M_sbuf->sbumpc();
 	_M_c = -2;
@@ -164,7 +162,7 @@ namespace std
       }
 
       bool 
-      equal(const __istreambufiter_type& __b)
+      equal(const istreambuf_iterator& __b)
       { 
 	int_type __eof = traits_type::eof();
 	bool __thiseof = !_M_sbuf || _M_sbuf->sgetc() == __eof;
@@ -177,7 +175,7 @@ namespace std
       // 110 istreambuf_iterator::equal not const
       // NB: there is also number 111 pending on this function.
       bool 
-      equal(const __istreambufiter_type& __b) const
+      equal(const istreambuf_iterator& __b) const
       {
 	int_type __eof = traits_type::eof();
 	bool __thiseof = !_M_sbuf || _M_sbuf->sgetc() == __eof;
