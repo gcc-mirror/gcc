@@ -1,3 +1,9 @@
+2002-10-04  Steve Ellcey  <sje@cup.hp.com>
+
+	* fixinc/inclhack.def (hpux11_abs):  New.
+	(stdio_va_list): change __va_list__ to __gnuc_va_list.
+	* fixinc/fixincl.x: Rebuild.
+
 2002-10-04  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.h (processor_costs): Add new fields fadd,
