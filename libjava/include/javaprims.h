@@ -170,7 +170,6 @@ extern "Java"
       class VerifyError;
       class VirtualMachineError;
       class Void;
-      class VMClassLoader;
       namespace reflect
       {
         class AccessibleObject;
@@ -216,6 +215,13 @@ extern "Java"
       class TooManyListenersException;
       class Vector;
       class VectorEnumeration;
+      namespace jar
+      {
+        class JarEntry;
+        class JarFile;
+        class JarInputStream;
+      };
+
       namespace zip
       {
         class Adler32;
