@@ -1,5 +1,5 @@
 ;;- Machine description for GNU compiler, ns32000 Version
-;;  Copyright (C) 1988, 1994, 1996, 1998, 1999, 2000, 2001, 2002
+;;  Copyright (C) 1988, 1994, 1996, 1998, 1999, 2000, 2001, 2002, 2004
 ;;  Free Software Foundation, Inc.
 ;;  Contributed by Michael Tiemann (tiemann@cygnus.com)
 

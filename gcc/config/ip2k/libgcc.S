@@ -1,5 +1,5 @@
 ;
-; Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+; Copyright (C) 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
 ; Contributed by Red Hat, Inc and Ubicom, Inc.
 ;
 ; This file is part of GCC.
