@@ -1,3 +1,7 @@
+2004-02-10  Matt Kraai  <kraai@alumni.cmu.edu>
+
+        * doc/install.texi: Remove extra cd.
+
 2004-02-10  Ziemowit Laski  <zlaski@apple.com>
 
 	* c-common.c (vector_size_helper): Remove; call

@@ -1459,7 +1459,6 @@ following commands (assuming @command{make} is GNU make):
 @smallexample
     cd @var{objdir}
     @var{srcdir}/configure --enable-languages=c,ada
-    cd @var{objdir}
     make bootstrap
 @end smallexample
 
