@@ -1,3 +1,7 @@
+2003-11-18  Marc Espie  <espie@openbsd.org>
+
+	* config/rs6000/sysv4.h: OpenBSD hooks.
+
 2003-11-18  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (expand_expr): Don't look through constant arrays if
@@ -29,7 +33,7 @@
 	Remove prototype.
 	* config/stormy16/stormy16.c (xstormy16_build_va_list): Rename
 	to xstormy16_build_builtin_va_list and make static.
-        (TARGET_BUILD_BUILTIN_VA_LIST): Define.
+	(TARGET_BUILD_BUILTIN_VA_LIST): Define.
 
 2003-11-16  Kazu Hirata  <kazu@cs.umass.edu>
 

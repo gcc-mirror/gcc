@@ -199,6 +199,8 @@ do {									\
     rs6000_current_abi = ABI_V4;					\
   else if (!strcmp (rs6000_abi_name, "netbsd"))				\
     rs6000_current_abi = ABI_V4;					\
+  else if (!strcmp (rs6000_abi_name, "openbsd"))			\
+    rs6000_current_abi = ABI_V4;					\
   else if (!strcmp (rs6000_abi_name, "i960-old"))			\
     {									\
       rs6000_current_abi = ABI_V4;					\
@@ -808,6 +810,7 @@ extern int fixuplabelno;
   mcall-aixdesc |		   \
   mcall-freebsd |		   \
   mcall-netbsd  |		   \
+  mcall-openbsd |		   \
   mcall-linux   |		   \
   mcall-gnu             :-mbig;    \
   mcall-i960-old        :-mlittle}"
@@ -830,6 +833,7 @@ extern int fixuplabelno;
   mcall-aixdesc |					  \
   mcall-freebsd |					  \
   mcall-netbsd  |					  \
+  mcall-openbsd |					  \
   mcall-linux   |					  \
   mcall-gnu             : -mbig %(cc1_endian_big);        \
   mcall-i960-old        : -mlittle %(cc1_endian_little);  \
@@ -842,7 +846,8 @@ extern int fixuplabelno;
     %{mcall-i960-old: -meabi } \
     %{mcall-linux: -mno-eabi } \
     %{mcall-gnu: -mno-eabi } \
-    %{mcall-netbsd: -mno-eabi }}} \
+    %{mcall-netbsd: -mno-eabi } \
+    %{mcall-openbsd: -mno-eabi }}} \
 %{msdata: -msdata=default} \
 %{mno-sdata: -msdata=none} \
 %{profile: -p}"
@@ -875,6 +880,7 @@ extern int fixuplabelno;
   mcall-linux  : %(link_start_linux)       ; \
   mcall-gnu    : %(link_start_gnu)         ; \
   mcall-netbsd : %(link_start_netbsd)      ; \
+  mcall-openbsd: %(link_start_openbsd)     ; \
                : %(link_start_default)     }"
 
 #define LINK_START_DEFAULT_SPEC ""
@@ -932,6 +938,7 @@ extern int fixuplabelno;
   mcall-linux  : %(link_os_linux)       ; \
   mcall-gnu    : %(link_os_gnu)         ; \
   mcall-netbsd : %(link_os_netbsd)      ; \
+  mcall-openbsd: %(link_os_openbsd)     ; \
                : %(link_os_default)     }"
 
 #define LINK_OS_DEFAULT_SPEC ""
@@ -948,6 +955,7 @@ extern int fixuplabelno;
   mcall-linux  : %(cpp_os_linux)       ; \
   mcall-gnu    : %(cpp_os_gnu)         ; \
   mcall-netbsd : %(cpp_os_netbsd)      ; \
+  mcall-openbsd: %(cpp_os_openbsd)     ; \
                : %(cpp_os_default)     }"
 
 #define	CPP_OS_DEFAULT_SPEC ""
@@ -964,6 +972,7 @@ extern int fixuplabelno;
   mcall-linux  : %(startfile_linux)       ; \
   mcall-gnu    : %(startfile_gnu)         ; \
   mcall-netbsd : %(startfile_netbsd)      ; \
+  mcall-openbsd: %(startfile_openbsd)     ; \
                : %(startfile_default)     }"
 
 #define	STARTFILE_DEFAULT_SPEC ""
@@ -980,6 +989,7 @@ extern int fixuplabelno;
   mcall-linux  : %(lib_linux)       ; \
   mcall-gnu    : %(lib_gnu)         ; \
   mcall-netbsd : %(lib_netbsd)      ; \
+  mcall-openbsd: %(lib_openbsd)     ; \
                : %(lib_default)     }"
 
 #define LIB_DEFAULT_SPEC ""
@@ -996,6 +1006,7 @@ extern int fixuplabelno;
   mcall-linux  : crtsavres.o%s        %(endfile_linux)       ; \
   mcall-gnu    : crtsavres.o%s        %(endfile_gnu)         ; \
   mcall-netbsd : crtsavres.o%s        %(endfile_netbsd)      ; \
+  mcall-openbsd: crtsavres.o%s        %(endfile_openbsd)     ; \
                : %(crtsavres_default) %(endfile_default)     }"
 
 #define CRTSAVRES_DEFAULT_SPEC "crtsavres.o%s"
@@ -1163,6 +1174,34 @@ ncrtn.o%s"
 #define CPP_OS_NETBSD_SPEC "\
 -D__powerpc__ -D__NetBSD__ -D__KPRINTF_ATTRIBUTE__"
 
+/* OpenBSD support.  */
+#ifndef	LIB_OPENBSD_SPEC
+#define LIB_OPENBSD_SPEC "%{!shared:%{pthread:-lpthread%{p:_p}%{!p:%{pg:_p}}}} %{!shared:-lc%{p:_p}%{!p:%{pg:_p}}}"
+#endif
+
+#ifndef	STARTFILE_OPENBSD_SPEC
+#define	STARTFILE_OPENBSD_SPEC "\
+%{!shared: %{pg:gcrt0.o%s} %{!pg:%{p:gcrt0.o%s} %{!p:crt0.o%s}}} \
+%{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
+#endif
+
+#ifndef	ENDFILE_OPENBSD_SPEC
+#define	ENDFILE_OPENBSD_SPEC "\
+%{!shared:crtend.o%s} %{shared:crtendS.o%s}"
+#endif
+
+#ifndef LINK_START_OPENBSD_SPEC
+#define LINK_START_OPENBSD_SPEC "-Ttext 0x400074"
+#endif
+
+#ifndef LINK_OS_OPENBSD_SPEC
+#define LINK_OS_OPENBSD_SPEC ""
+#endif
+
+#ifndef CPP_OS_OPENBSD_SPEC
+#define CPP_OS_OPENBSD_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_POSIX_THREADS}"
+#endif
+
 /* WindISS support.  */
 
 #define LIB_WINDISS_SPEC "--start-group -li -lcfp -lwindiss -lram -limpl -limpfp --end-group"
@@ -1195,6 +1234,7 @@ ncrtn.o%s"
   { "lib_gnu",			LIB_GNU_SPEC },				\
   { "lib_linux",		LIB_LINUX_SPEC },			\
   { "lib_netbsd",		LIB_NETBSD_SPEC },			\
+  { "lib_openbsd",		LIB_OPENBSD_SPEC },			\
   { "lib_windiss",              LIB_WINDISS_SPEC },                     \
   { "lib_default",		LIB_DEFAULT_SPEC },			\
   { "startfile_ads",		STARTFILE_ADS_SPEC },			\
@@ -1205,6 +1245,7 @@ ncrtn.o%s"
   { "startfile_gnu",		STARTFILE_GNU_SPEC },			\
   { "startfile_linux",		STARTFILE_LINUX_SPEC },			\
   { "startfile_netbsd",		STARTFILE_NETBSD_SPEC },		\
+  { "startfile_openbsd",	STARTFILE_OPENBSD_SPEC },		\
   { "startfile_windiss",        STARTFILE_WINDISS_SPEC },               \
   { "startfile_default",	STARTFILE_DEFAULT_SPEC },		\
   { "endfile_ads",		ENDFILE_ADS_SPEC },			\
@@ -1215,6 +1256,7 @@ ncrtn.o%s"
   { "endfile_gnu",		ENDFILE_GNU_SPEC },			\
   { "endfile_linux",		ENDFILE_LINUX_SPEC },			\
   { "endfile_netbsd",		ENDFILE_NETBSD_SPEC },			\
+  { "endfile_openbsd",		ENDFILE_OPENBSD_SPEC },			\
   { "endfile_windiss",          ENDFILE_WINDISS_SPEC },                 \
   { "endfile_default",		ENDFILE_DEFAULT_SPEC },			\
   { "link_path",		LINK_PATH_SPEC },			\
@@ -1229,6 +1271,7 @@ ncrtn.o%s"
   { "link_start_gnu",		LINK_START_GNU_SPEC },			\
   { "link_start_linux",		LINK_START_LINUX_SPEC },		\
   { "link_start_netbsd",	LINK_START_NETBSD_SPEC },		\
+  { "link_start_openbsd",	LINK_START_OPENBSD_SPEC },		\
   { "link_start_windiss",	LINK_START_WINDISS_SPEC },		\
   { "link_start_default",	LINK_START_DEFAULT_SPEC },		\
   { "link_os",			LINK_OS_SPEC },				\
@@ -1240,6 +1283,7 @@ ncrtn.o%s"
   { "link_os_linux",		LINK_OS_LINUX_SPEC },			\
   { "link_os_gnu",		LINK_OS_GNU_SPEC },			\
   { "link_os_netbsd",		LINK_OS_NETBSD_SPEC },			\
+  { "link_os_openbsd",		LINK_OS_OPENBSD_SPEC },			\
   { "link_os_windiss",		LINK_OS_WINDISS_SPEC },			\
   { "link_os_default",		LINK_OS_DEFAULT_SPEC },			\
   { "cc1_endian_big",		CC1_ENDIAN_BIG_SPEC },			\
@@ -1253,6 +1297,7 @@ ncrtn.o%s"
   { "cpp_os_gnu",		CPP_OS_GNU_SPEC },			\
   { "cpp_os_linux",		CPP_OS_LINUX_SPEC },			\
   { "cpp_os_netbsd",		CPP_OS_NETBSD_SPEC },			\
+  { "cpp_os_openbsd",		CPP_OS_OPENBSD_SPEC },			\
   { "cpp_os_windiss",           CPP_OS_WINDISS_SPEC },                  \
   { "cpp_os_default",		CPP_OS_DEFAULT_SPEC },			\
   SUBSUBTARGET_EXTRA_SPECS
