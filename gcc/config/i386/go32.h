@@ -88,3 +88,12 @@ dtor_section ()							\
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG) \
   if ((LOG) != 0) fprintf ((FILE), "\t.p2align %d\n", LOG)
+
+/* djgpp has atexit ().  */
+#undef HAVE_ATEXIT
+#define HAVE_ATEXIT
+
+/* djgpp automatically calls it's own version of __main, so don't define one
+   in libgcc, nor call one in main().  */
+#define HAS_INIT_SECTION
+
