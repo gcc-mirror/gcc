@@ -1,3 +1,13 @@
+Tue Apr 23 14:24:25 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_output_addr_diff_elt): Avoid x86_64 binutils bug
+	workaround.
+	(ix86_expand_int_movcc): Avoid x86_64 compilation chrash.
+	(ix86_expand_clrstr): Fix typo.
+	* loop.c (gen_load_of_final_value): New.
+	(loop_givs_rescan, strength_reduce, check_dbra_loop):
+	Use it.
+
 2002-04-23  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (builtin_memset_gen_str): New function.
