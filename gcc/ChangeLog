@@ -1,3 +1,9 @@
+Thu Oct 10 19:37:54 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	PR target/5610
+	* invoke.texi (-msse-math): Kill
+	(-msse): Add note to mfpmath=sse.
+
 Thu Oct 10 17:08:30 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	PR target/7723
