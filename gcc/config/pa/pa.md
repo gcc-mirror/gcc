@@ -1034,10 +1034,15 @@
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+    (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
+	       (const_int 8184))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
+	       (const_int 262100))
+	   (const_int 8)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 ;; Match the negated branch.
 
@@ -1057,10 +1062,15 @@
 }"
 [(set_attr "type" "cbranch")
  (set (attr "length")
-    (if_then_else (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8)))])
+    (cond [(lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
+	       (const_int 8184))
+	   (const_int 4)
+	   (lt (abs (minus (match_dup 0) (plus (pc) (const_int 8))))
+	       (const_int 262100))
+	   (const_int 8)
+	   (eq (symbol_ref "flag_pic") (const_int 0))
+	   (const_int 20)]
+	  (const_int 28)))])
 
 ;; Branch on Bit patterns.
 (define_insn ""
