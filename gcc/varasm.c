@@ -3998,7 +3998,11 @@ output_constructor (exp, size)
      FIELD goes through the structure fields, if the constant is a structure.
      if the constant is a union, then we override this,
      by getting the field from the TREE_LIST element.
-     But the constant could also be an array.  Then FIELD is zero.  */
+     But the constant could also be an array.  Then FIELD is zero.
+
+     There is always a maximum of one element in the chain LINK for unions
+     (even if the initializer in a source program incorrectly contains
+     more one). */
   for (link = CONSTRUCTOR_ELTS (exp);
        link;
        link = TREE_CHAIN (link),
