@@ -1316,6 +1316,8 @@ rs6000_override_options (const char *default_cpu)
 #if TARGET_MACHO
       darwin_one_byte_bool = "";
 #endif
+      /* Default to natural alignment, for better performance.  */
+      rs6000_alignment_flags = MASK_ALIGN_NATURAL;
     }
 
   /* Handle -mabi= options.  */
@@ -1684,7 +1686,16 @@ rs6000_parse_alignment_option (void)
   if (rs6000_alignment_string == 0)
     return;
   else if (! strcmp (rs6000_alignment_string, "power"))
-    rs6000_alignment_flags = MASK_ALIGN_POWER;
+    {
+      /* On 64-bit Darwin, power alignment is ABI-incompatible with
+	 some C library functions, so warn about it. The flag may be
+	 useful for performance studies from time to time though, so
+	 don't disable it entirely.  */
+      if (DEFAULT_ABI == ABI_DARWIN && TARGET_64BIT)
+	warning ("-malign-power is not supported for 64-bit Darwin;"
+		 " it is incompatible with the installed C and C++ libraries");
+      rs6000_alignment_flags = MASK_ALIGN_POWER;
+    }
   else if (! strcmp (rs6000_alignment_string, "natural"))
     rs6000_alignment_flags = MASK_ALIGN_NATURAL;
   else
