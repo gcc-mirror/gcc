@@ -422,7 +422,8 @@ end_final (filename)
 	  else
 #endif
 #ifdef ASM_OUTPUT_ALIGNED_LOCAL
-	    ASM_OUTPUT_ALIGNED_LOCAL (asm_out_file, name, size, align);
+	    ASM_OUTPUT_ALIGNED_LOCAL (asm_out_file, name, size,
+				      BIGGEST_ALIGNMENT);
 #else
 	    ASM_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
 #endif
