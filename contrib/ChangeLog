@@ -1,3 +1,7 @@
+2004-11-14  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* gcc_update (touch_files): Explicitly pass --no-print-directory.
+
 2004-11-04  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc_update (boehm-gc/aclocal.m4): Remove boehm-gc/acinclude.m4.
