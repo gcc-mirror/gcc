@@ -1,5 +1,5 @@
 /* SecureRandom.java --- Secure Random class implmentation
-   Copyright (C) 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -36,6 +36,7 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package java.security;
+
 import java.io.Serializable;
 import java.util.Random;
 import java.util.Enumeration;
@@ -358,9 +359,10 @@ public class SecureRandom extends Random
     int ret = 0;
 
     for (int i = 0; i < tmp.length; i++)
-      ret |= tmp[i] << (8 * i);
+      ret |= (tmp[i] & 0xFF) << (8 * i);
 
-    return ret;
+    long mask = (1L << numBits) - 1;
+    return (int) (ret & mask);
   }
 
   /**

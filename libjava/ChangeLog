@@ -1,3 +1,8 @@
+2003-02-13  Casey Marshall  <rsdio@metastatic.org>
+
+	PR libgcj/9271:
+	* java/security/SecureRandom.java (next): Avoid bias in results.
+
 2003-02-13  Michael  <konqueror@gmx.de>
 
 	* gnu/java/nio/FileChannelImpl.java
