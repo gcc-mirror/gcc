@@ -1,3 +1,59 @@
+2003-10-02  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/linker-map.gnu: Export _S_get_c_locale instead of
+	_S_c_locale object.
+
+2003-10-02  Petur Runolfsson  <peturr02@ru.is>
+
+	* config/locale/generic/c_locale.cc
+	(category_names, locale::_S_categories): Const qualify.
+	* config/locale/gnu/c_locale.cc: Same.
+	* config/locale/generic/time_members.h (__timepunct::__timepunct):
+	Copy string contents before assigning to _M_name_timepunct,
+	qualify strcpy and strlen with std::.
+	* config/locale/gnu/time_members.h: Same.
+	* config/locale/gnu/messages_members.h (messages::messages):
+	Copy string contents before assigning to _M_name_messages,
+	qualify strcpy and strlen with std::.
+	* config/os/gnu-linux/ctype_noninline.h
+	(ctype<char>::classic_table()): Don't call locale::classic().
+	* include/bits/locale_classes.h
+	(locale::_S_categories): Const qualify.	
+	(locale::_S_once, locale::_S_initialize_once,
+	locale::facet::_S_once, locale::facet::_S_initialize_once,
+	locale::facet::_S_get_c_locale): Declare.
+	(locale::_S_initialize): Don't define.
+	(locale::facet::_S_c_locale): Make private.
+	(locale::facet::_S_c_name): Same, const qualify.
+	(locale::_Impl::_Impl(facet**, size_t, bool)): Drop unused
+	parameters, add throw() specifier.
+	* include/bits/locale_facets.h (__timepunct::_M_name_timepunct,
+	messages::_M_name_messages): Const qualify.
+	* src/locale.cc
+	(locale::_S_once, locale::facet::_S_once): Define.
+	(locale::classic): Move initialization code...
+	(locale::_S_initialize_once): ...here.	
+	(locale::_S_initialize): Call _S_initialize_once through
+	__gthread_once.
+	(locale::facet::_S_initialize_once): Initialize _S_c_locale.
+	(locale::facet::_S_get_c_locale): Call _S_initialize_once through
+	__gthread_once before returning _S_c_locale.
+	* src/localename.cc (locale::_Impl::_Impl(facet**, size_t, bool)):
+	Drop unused parameters, add throw() specifier, don't initialize
+	locale::facet::_S_c_locale and _S_c_name.
+	
+	* config/locale/generic/messages_members.h:
+	Replace _S_c_locale with _S_get_c_locale().
+	* config/locale/gnu/c_locale.cc: Same.
+	* config/locale/gnu/messages_members.h: Same.
+	* config/locale/gnu/numeric_members.cc: Same.
+	* config/locale/gnu/time_members.cc: Same.
+	* config/os/gnu-linux/ctype_noninline.h: Same.
+	* include/bits/locale_facets.h: Same.
+	* include/bits/locale_facets.tcc: Same.
+	* src/codecvt.cc: Same.
+	* src/ctype.cc: Same.
+
 2003-10-02  Carlo Wood  <carlo@alinoe.com>
 
 	* include/bits/demangle.h (demangle<Allocator>::symbol(char const*)):

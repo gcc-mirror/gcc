@@ -103,7 +103,7 @@ namespace std
 	  _M_data->_M_thousands_sep = L',';
 
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-	  __c_locale __old = __uselocale(_S_c_locale);
+	  __c_locale __old = __uselocale(_S_get_c_locale());
 #endif
 	  // Use ctype::widen code without the facet...
 	  unsigned char uc;

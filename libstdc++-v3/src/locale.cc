@@ -60,9 +60,13 @@ namespace std
   // static data members of locale.
 
   // These are no longer exported.
-  locale::_Impl* 		locale::_S_classic;
+  locale::_Impl*                locale::_S_classic;
   locale::_Impl* 		locale::_S_global; 
   const size_t 			locale::_S_categories_size;
+
+#ifdef __GTHREADS
+  __gthread_once_t 		locale::_S_once = __GTHREAD_ONCE_INIT;
+#endif
 
   // Definitions for static const data members of locale::id
   _Atomic_word locale::id::_S_highwater;  // init'd to 0 by linker
@@ -320,8 +324,9 @@ namespace std
   locale
   locale::global(const locale& __other)
   {
-    // XXX MT
     _S_initialize();
+
+    // XXX MT
     _Impl* __old = _S_global;
     __other._M_impl->_M_add_reference();
     _S_global = __other._M_impl; 
@@ -362,28 +367,29 @@ namespace std
   const locale&
   locale::classic()
   {
-    // Locking protocol: singleton-called-before-threading-starts
-    if (!_S_classic)
-      {
-	try 
-	  {
-	    // 26 Standard facets, 2 references.
-	    // One reference for _S_classic, one for _S_global
-	    _S_classic = new (&c_locale_impl) _Impl(0, 2, true);
-	    _S_global = _S_classic; 	    
-	    new (&c_locale) locale(_S_classic);
-	  }
-	catch(...) 
-	  {
-	    // Just call destructor, so that locale_impl_c's memory is
-	    // not deallocated via a call to delete.
-	    if (_S_classic)
-	      _S_classic->~_Impl();
-	    _S_classic = _S_global = 0;
-	    __throw_exception_again;
-	  }
-      }
+    _S_initialize();
     return c_locale;
+  }
+
+  void
+  locale::_S_initialize_once()
+  {
+    // 2 references.
+    // One reference for _S_classic, one for _S_global
+    _S_classic = new (&c_locale_impl) _Impl(2);
+    _S_global = _S_classic; 	    
+    new (&c_locale) locale(_S_classic);
+  }
+
+  void  
+  locale::_S_initialize()
+  {
+#ifdef __GTHREADS
+    __gthread_once(&_S_once, _S_initialize_once);
+#else
+    if (!_S_classic)
+      _S_initialize_once();
+#endif
   }
 
   void
@@ -444,13 +450,35 @@ namespace std
     return __ret;
   }
 
-  __c_locale
-  locale::facet::_S_c_locale;
-  
-  char locale::facet::_S_c_name[2];
+  __c_locale locale::facet::_S_c_locale;
+
+  const char locale::facet::_S_c_name[2] = "C";
+
+#ifdef __GTHREADS
+  __gthread_once_t locale::facet::_S_once = __GTHREAD_ONCE_INIT;
+#endif
 
   locale::facet::
   ~facet() { }
+
+  void
+  locale::facet::_S_initialize_once()
+  {
+    // Initialize the underlying locale model.
+    _S_create_c_locale(_S_c_locale, _S_c_name);
+  }
+
+  __c_locale
+  locale::facet::_S_get_c_locale()
+  {
+#ifdef __GHTREADS
+    __gthread_once(&_S_once, _S_initialize_once);
+#else
+    if (!_S_c_locale)
+      _S_initialize_once();
+#endif
+    return _S_c_locale;
+  }
 
   // Definitions for static const data members of time_base.
   template<> 

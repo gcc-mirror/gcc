@@ -37,12 +37,12 @@
   template<typename _CharT>
      messages<_CharT>::messages(size_t __refs)
      : facet(__refs)
-     { _M_c_locale_messages = _S_c_locale; }
+     { _M_c_locale_messages = _S_get_c_locale(); }
 
   template<typename _CharT>
      messages<_CharT>::messages(__c_locale, const char*, size_t __refs) 
      : facet(__refs)
-     { _M_c_locale_messages = _S_c_locale; }
+     { _M_c_locale_messages = _S_get_c_locale(); }
 
   template<typename _CharT>
     typename messages<_CharT>::catalog 

@@ -1046,7 +1046,7 @@ namespace std
       explicit 
       collate(size_t __refs = 0)
       : facet(__refs)
-      { _M_c_locale_collate = _S_c_locale; }
+      { _M_c_locale_collate = _S_get_c_locale(); }
 
       explicit 
       collate(__c_locale __cloc, size_t __refs = 0) 
@@ -1261,7 +1261,7 @@ namespace std
     protected:
       __cache_type*			_M_data;
       __c_locale			_M_c_locale_timepunct;
-      char*				_M_name_timepunct;
+      const char*			_M_name_timepunct;
 
     public:
       static locale::id 		id;
@@ -1898,7 +1898,7 @@ namespace std
       // Underlying "C" library locale information saved from
       // initialization, needed by messages_byname as well.
       __c_locale			_M_c_locale_messages;
-      char*				_M_name_messages;
+      const char*			_M_name_messages;
 
     public:
       static locale::id 		id;

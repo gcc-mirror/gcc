@@ -55,8 +55,9 @@
 				     size_t __refs) 
     : facet(__refs), _M_data(NULL)
     { 
-      _M_name_timepunct = new char[strlen(__s) + 1];
-      strcpy(_M_name_timepunct, __s);
+      char* __tmp = new char[std::strlen(__s) + 1];
+      std::strcpy(__tmp, __s);
+      _M_name_timepunct = __tmp;
       _M_initialize_timepunct(__cloc); 
     }
 
