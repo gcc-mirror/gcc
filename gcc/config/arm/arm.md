@@ -8883,6 +8883,16 @@
   [(set_attr "type" "store4")]
 )
 
+(define_insn "stack_tie"
+  [(set (mem:BLK (scratch))
+	(unspec:BLK [(match_operand:SI 0 "s_register_operand" "r")
+		     (match_operand:SI 1 "s_register_operand" "r")]
+		    UNSPEC_PRLG_STK))]
+  ""
+  ""
+  [(set_attr "length" "0")]
+)
+
 ;; Similarly for the floating point registers
 (define_insn "*push_fp_multi"
   [(match_parallel 2 "multi_register_push"
