@@ -1032,7 +1032,7 @@ small_data_operand (op, mode)
    For a library call, FNTYPE is 0.
 
    For incoming args we set the number of arguments in the prototype large
-   so we never return an EXPR_LIST.  */
+   so we never return a PARALLEL.  */
 
 void
 init_cumulative_args (cum, fntype, libname, incoming)
@@ -1052,7 +1052,7 @@ init_cumulative_args (cum, fntype, libname, incoming)
 
   if (incoming)
     {
-      cum->nargs_prototype = 1000;		/* don't return an EXPR_LIST */
+      cum->nargs_prototype = 1000;		/* don't return a PARALLEL */
       if (abi == ABI_V4 || abi == ABI_SOLARIS)
 	cum->varargs_offset = RS6000_VARARGS_OFFSET;
     }
@@ -1201,7 +1201,7 @@ function_arg_advance (cum, mode, type, named)
    both an FP and integer register (or possibly FP reg and stack).  Library
    functions (when TYPE is zero) always have the proper types for args,
    so we can pass the FP value just in one register.  emit_library_function
-   doesn't support EXPR_LIST anyway.  */
+   doesn't support PARALLEL anyway.  */
 
 struct rtx_def *
 function_arg (cum, mode, type, named)
@@ -1256,11 +1256,26 @@ function_arg (cum, mode, type, named)
 	  || !type)
 	return gen_rtx (REG, mode, cum->fregno);
 
-      return gen_rtx (EXPR_LIST, VOIDmode,
-		      ((align_words < GP_ARG_NUM_REG)
-		       ? gen_rtx (REG, mode, GP_ARG_MIN_REG + align_words)
-		       : NULL_RTX),
-		      gen_rtx (REG, mode, cum->fregno));
+      return gen_rtx (PARALLEL, mode,
+		      gen_rtvec
+		      (2,
+		       gen_rtx (EXPR_LIST, VOIDmode,
+				((align_words >= GP_ARG_NUM_REG)
+				 ? NULL_RTX
+				 : (align_words
+				    + RS6000_ARG_SIZE (mode, type, named)
+				    > GP_ARG_NUM_REG
+				    /* If this is partially on the stack, then
+				       we only include the portion actually
+				       in registers here.  */
+				    ? gen_rtx (REG, SImode,
+					       GP_ARG_MIN_REG + align_words)
+				    : gen_rtx (REG, mode,
+					       GP_ARG_MIN_REG + align_words))),
+				const0_rtx),
+		       gen_rtx (EXPR_LIST, VOIDmode,
+				gen_rtx (REG, mode, cum->fregno),
+				const0_rtx)));
     }
 
   /* Long longs won't be split between register and stack */
