@@ -1679,7 +1679,7 @@ get_objc_string_decl (ident, section)
   else
     abort ();
 
-  for (; chain != 0; chain = TREE_VALUE (chain))
+  for (; chain != 0; chain = TREE_CHAIN (chain))
     if (TREE_VALUE (chain) == ident)
       return (TREE_PURPOSE (chain));
 
@@ -2867,6 +2867,43 @@ generate_protocol_references (plist)
     }
 }
 
+/* For each protocol which was referenced either from a @protocol()
+   expression, or because a class/category implements it (then a
+   pointer to the protocol is stored in the struct describing the
+   class/category), we create a statically allocated instance of the
+   Protocol class.  The code is written in such a way as to generate
+   as few Protocol objects as possible; we generate a unique Protocol
+   instance for each protocol, and we don't generate a Protocol
+   instance if the protocol is never referenced (either from a
+   @protocol() or from a class/category implementation).  These
+   statically allocated objects can be referred to via the static
+   (that is, private to this module) symbols _OBJC_PROTOCOL_n.
+   
+   The statically allocated Protocol objects that we generate here
+   need to be fixed up at runtime in order to be used: the 'isa'
+  pointer of the objects need to be set up to point to the 'Protocol'
+   class, as known at runtime.
+
+   The NeXT runtime fixes up all protocols at program startup time,
+   before main() is entered.  It uses a low-level trick to look up all
+   those symbols, then loops on them and fixes them up.
+
+   The GNU runtime as well fixes up all protocols before user code
+   from the module is executed; it requires pointers to those symbols
+   to be put in the objc_symtab (which is then passed as argument to
+   the function __objc_exec_class() which the compiler sets up to be
+   executed automatically when the module is loaded); setup of those
+   Protocol objects happen in two ways in the GNU runtime: all
+   Protocol objects referred to by a class or category implementation
+   are fixed up when the class/category is loaded; all Protocol
+   objects referred to by a @protocol() expression are added by the
+   compiler to the list of statically allocated instances to fixup
+   (the same list holding the statically allocated constant string
+   objects).  Because, as explained above, the compiler generates as
+   few Protocol objects as possible, some Protocol object might end up
+   being referenced multiple times when compiled with the GNU runtime,
+   and end up being fixed up multiple times at runtime inizialization.
+   But that doesn't hurt, it's just a little inefficient.  */
 static void
 generate_protocols ()
 {
@@ -5081,6 +5118,8 @@ build_protocol_reference (p)
   PROTOCOL_FORWARD_DECL (p) = decl;
 }
 
+/* This function is called by the parser when (and only when) a
+   @protocol() expression is found, in order to compile it.  */
 tree
 build_protocol_expr (protoname)
      tree protoname;
@@ -5101,6 +5140,50 @@ build_protocol_expr (protoname)
   expr = build_unary_op (ADDR_EXPR, PROTOCOL_FORWARD_DECL (p), 0);
 
   TREE_TYPE (expr) = protocol_type;
+
+  /* The @protocol() expression is being compiled into a pointer to a
+     statically allocated instance of the Protocol class.  To become
+     usable at runtime, the 'isa' pointer of the instance need to be
+     fixed up at runtime by the runtime library, to point to the
+     actual 'Protocol' class.  */
+
+  /* For the GNU runtime, put the static Protocol instance in the list
+     of statically allocated instances, so that we make sure that its
+     'isa' pointer is fixed up at runtime by the GNU runtime library
+     to point to the Protocol class (at runtime, when loading the
+     module, the GNU runtime library loops on the statically allocated
+     instances (as found in the defs field in objc_symtab) and fixups
+     all the 'isa' pointers of those objects).  */
+  if (! flag_next_runtime)
+    {
+      /* This type is a struct containing the fields of a Protocol
+        object.  (Cfr. protocol_type instead is the type of a pointer
+        to such a struct).  */
+      tree protocol_struct_type = xref_tag 
+       (RECORD_TYPE, get_identifier (PROTOCOL_OBJECT_CLASS_NAME));
+      tree *chain;
+      
+      /* Look for the list of Protocol statically allocated instances
+        to fixup at runtime.  Create a new list to hold Protocol
+        statically allocated instances, if the list is not found.  At
+        present there is only another list, holding NSConstantString
+        static instances to be fixed up at runtime.  */
+      for (chain = &objc_static_instances;
+	   *chain && TREE_VALUE (*chain) != protocol_struct_type;
+	   chain = &TREE_CHAIN (*chain));
+      if (!*chain)
+	{
+         *chain = tree_cons (NULL_TREE, protocol_struct_type, NULL_TREE);
+         add_objc_string (TYPE_NAME (protocol_struct_type),
+                          class_names);
+       }
+      
+      /* Add this statically allocated instance to the Protocol list.  */
+      TREE_PURPOSE (*chain) = tree_cons (NULL_TREE, 
+					 PROTOCOL_FORWARD_DECL (p),
+					 TREE_PURPOSE (*chain));
+    }
+  
 
   return expr;
 }

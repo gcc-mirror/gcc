@@ -1,3 +1,14 @@
+Fri Sep  6 16:35:32 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	Fix PR/1727 and long-standing failing testcase
+	objc/formal-protocol-6.m.
+	* objc-act.c (build_protocol_expr): If compiling for the GNU
+	runtime, create a list of Protocol statically allocated instances
+	if it doesn't exist, then add the Protocol object to this same
+	list.
+	(get_objc_string_decl): Fixed typo/bug - TREE_VALUE had been used
+	instead of TREE_CHAIN.
+
 Fri Sep  6 16:17:33 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc/objc-act.c (dump_interface): Enlarged the char * buffer to
