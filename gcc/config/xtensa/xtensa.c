@@ -1753,12 +1753,12 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
   result_mode = (mode == BLKmode ? TYPE_MODE (type) : mode);
 
   /* We need to make sure that references to a7 are represented with
-     rtx that is not equal to hard_frame_pointer_rtx.  For BLKmode and
-     modes bigger than 2 words (because we only have patterns for
-     modes of 2 words or smaller), we can't control the expansion
-     unless we explicitly list the individual registers in a PARALLEL.  */
+     rtx that is not equal to hard_frame_pointer_rtx.  For multi-word
+     modes for which we don't define move patterns, we can't control
+     the expansion unless we explicitly list the individual registers
+     in a PARALLEL.  */
 
-  if ((mode == BLKmode || words > 2)
+  if (mode != DImode && mode != DFmode
       && regno < A7_REG
       && regno + words > A7_REG)
     {
