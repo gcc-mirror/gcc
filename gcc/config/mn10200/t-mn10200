@@ -26,7 +26,9 @@ LIB1ASMFUNCS    = _divhi3 \
 		  _prologue \
 		  _epilogue_a0 \
 		  _epilogue_d0 \
-		  _epilogue_noreturn
+		  _epilogue_noreturn \
+		  _floatdisf \
+		  _fixsfdi
 
 
 # We do not have DF or DI types, so fake out the libgcc2 compilation.
