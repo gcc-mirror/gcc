@@ -18,5 +18,5 @@ void func(A<T>::B* )	// { dg-error "variable|template|expression" }
 
 int main() 
 {
-  func<void>(0);	// { dg-error "undeclared|expression|;" }
+  func<void>(0);	// { dg-error "not declared|expression|;" }
 }

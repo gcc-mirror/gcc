@@ -1,3 +1,44 @@
+2004-03-08  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14401
+	* class.c (check_field_decls): Complain about non-static data
+	members of reference type in unions.  Propagate
+	CLASSTYPE_REF_FIELDS_NEED_INIT and
+	CLASSTYPE_READONLY_FIELDS_NEED_INIT from the types of non-static
+	data members.
+	* init.c (perform_member_init): Complain about mbmers with const
+	type that are not explicitly initialized.
+
+2004-03-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (check_methods): Don't use IDENTIFIER_ERROR_LOCUS.
+	* cp-tree.h (DECL_INVALID_OVERRIDER_P): New macro.
+	(lang_identifier): Remove implicit_decl and error_locus.
+	(IDENTIFIER_IMPLICIT_DECL): Remove.
+	(SET_IDENTIFIER_IMPLICTI_DECL): Likewise.
+	(IDENTIFIER_ERROR_LOCUS): Likewise.
+	(SET_IDENTIFIER_ERROR_LOCUS): Likewise.
+	(TYPE_ASSEMBLER_NAME_STRING): Likewise.
+	(TYPE_ASSEMBLER_NAME_LENGTH): Likewise.
+	(implicitly_declare): Remove.
+	* decl.c (warn_extern_redeclared_static): Remove check of
+	IDENTIFIER_IMPLICIT_DECL.
+	(duplicate_decls): Don't check IDENTIFIER_ERROR_LOCUS.
+	(implicitly_declare): Remove.
+	(grok_ctor_properties): Don't set IDENTIFIER_ERROR_LOCUS.
+	(start_function): Don't check IDENTIFIER_IMPLICIT_DECL.
+	(start_method): Don't check IDENTIFIER_ERROR_LOCUS.
+	* lex.c (unqualified_name_lookup_error): Create a dummy VAR_DECL
+	in the innermost scope, rather than at namespace scope.
+	* name-lookup.c (push_local_binding): Give it external linkage.
+	(pushdecl): Remove dead code.
+	* name-lookup.h (push_local_binding): Declare it.
+	* ptree.c (cxx_print_identifier): Don't print
+	IDENTIFIER_IMPLICIT_DECL or IDENTIFIER_ERROR_LOCUS.
+	* search.c (check_final_overrider): Use DECL_INVALID_OVERRIDER_P,
+	not IDENTIFIER_ERROR_LOCUS.
+	* typeck.c (build_function_call): Remove dead code.
+
 2004-03-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/13170

@@ -36,7 +36,6 @@ static cxx_scope *innermost_nonclass_level (void);
 static tree select_decl (cxx_binding *, int);
 static cxx_binding *binding_for_name (cxx_scope *, tree);
 static tree lookup_name_current_level (tree);
-static void push_local_binding (tree, tree, int);
 static tree push_overloaded_decl (tree, int);
 static bool lookup_using_namespace (tree, cxx_binding *, tree,
                                     tree, int);
@@ -647,13 +646,7 @@ pushdecl (tree x)
 	    t = NULL_TREE;
 	}
 
-      if (t == error_mark_node)
-	{
-	  /* error_mark_node is 0 for a while during initialization!  */
-	  t = NULL_TREE;
-	  cp_error_at ("`%#D' used prior to declaration", x);
-	}
-      else if (t != NULL_TREE)
+      if (t && t != error_mark_node)
 	{
 	  if (different_binding_level)
 	    {
@@ -829,24 +822,6 @@ pushdecl (tree x)
  		  || TREE_CODE (x) == CONST_DECL
  		  || TREE_CODE (x) == TEMPLATE_DECL))
  	    SET_IDENTIFIER_NAMESPACE_VALUE (name, x);
-
-	  /* Don't forget if the function was used via an implicit decl.  */
-	  if (IDENTIFIER_IMPLICIT_DECL (name)
-	      && TREE_USED (IDENTIFIER_IMPLICIT_DECL (name)))
-	    TREE_USED (x) = 1;
-
-	  /* Don't forget if its address was taken in that way.  */
-	  if (IDENTIFIER_IMPLICIT_DECL (name)
-	      && TREE_ADDRESSABLE (IDENTIFIER_IMPLICIT_DECL (name)))
-	    TREE_ADDRESSABLE (x) = 1;
-
-	  /* Warn about mismatches against previous implicit decl.  */
-	  if (IDENTIFIER_IMPLICIT_DECL (name) != NULL_TREE
-	      /* If this real decl matches the implicit, don't complain.  */
-	      && ! (TREE_CODE (x) == FUNCTION_DECL
-		    && TREE_TYPE (TREE_TYPE (x)) == integer_type_node))
-	    warning
-	      ("`%D' was previously implicitly declared to return `int'", x);
 
 	  /* If new decl is `static' and an `extern' was seen previously,
 	     warn about it.  */
@@ -1035,7 +1010,7 @@ maybe_push_decl (tree decl)
    doesn't really belong to this binding level, that it got here
    through a using-declaration.  */
 
-static void
+void
 push_local_binding (tree id, tree decl, int flags)
 {
   struct cp_binding_level *b;

@@ -100,6 +100,7 @@ struct diagnostic_context;
    4: DECL_C_BIT_FIELD (in a FIELD_DECL)
       DECL_VAR_MARKED_P (in a VAR_DECL)
       DECL_SELF_REFERENCE_P (in a TYPE_DECL)
+      DECL_INVALID_OVERRIRDER_P (in a FUNCTION_DECL)
    5: DECL_INTERFACE_KNOWN.
    6: DECL_THIS_STATIC (in VAR_DECL or FUNCTION_DECL).
    7: DECL_DEAD_FOR_LOCAL (in VAR_DECL).
@@ -224,8 +225,6 @@ struct lang_identifier GTY(())
   tree class_value;
   tree class_template_info;
   tree label_value;
-  tree implicit_decl;
-  tree error_locus;
 };
 
 /* In an IDENTIFIER_NODE, nonzero if this identifier is actually a
@@ -398,16 +397,6 @@ typedef enum cp_id_kind
   (LANG_IDENTIFIER_CAST (NODE)->label_value)
 #define SET_IDENTIFIER_LABEL_VALUE(NODE, VALUE)   \
   IDENTIFIER_LABEL_VALUE (NODE) = (VALUE)
-
-#define IDENTIFIER_IMPLICIT_DECL(NODE) \
-  (LANG_IDENTIFIER_CAST (NODE)->implicit_decl)
-#define SET_IDENTIFIER_IMPLICIT_DECL(NODE, VALUE) \
-  IDENTIFIER_IMPLICIT_DECL (NODE) = (VALUE)
-
-#define IDENTIFIER_ERROR_LOCUS(NODE) \
-  (LANG_IDENTIFIER_CAST (NODE)->error_locus)
-#define SET_IDENTIFIER_ERROR_LOCUS(NODE, VALUE)	\
-  IDENTIFIER_ERROR_LOCUS (NODE) = (VALUE)
 
 /* Nonzero if this identifier is used as a virtual function name somewhere
    (optimizes searches).  */
@@ -887,11 +876,6 @@ enum languages { lang_c, lang_cplusplus, lang_java };
   (TYPE_IDENTIFIER (TYPE_MAIN_VARIANT (NODE)))
 #define TYPE_NAME_STRING(NODE) (IDENTIFIER_POINTER (TYPE_IDENTIFIER (NODE)))
 #define TYPE_NAME_LENGTH(NODE) (IDENTIFIER_LENGTH (TYPE_IDENTIFIER (NODE)))
-
-#define TYPE_ASSEMBLER_NAME_STRING(NODE) \
-  (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (TYPE_NAME  (NODE))))
-#define TYPE_ASSEMBLER_NAME_LENGTH(NODE) \
-  (IDENTIFIER_LENGTH (DECL_ASSEMBLER_NAME (TYPE_NAME (NODE))))
 
 /* Nonzero if NODE has no name for linkage purposes.  */
 #define TYPE_ANONYMOUS_P(NODE) \
@@ -1950,6 +1934,13 @@ struct lang_decl GTY(())
    must be overridden by derived classes.  */
 #define DECL_NEEDS_FINAL_OVERRIDER_P(NODE) \
   (DECL_LANG_SPECIFIC (NODE)->decl_flags.needs_final_overrider)
+
+/* True (in a FUNCTION_DECL) if NODE is a virtual function that is an
+   invalid overrider for a function from a base class.  Once we have
+   complained about an invalid overrider we avoid complaining about it
+   again.  */
+#define DECL_INVALID_OVERRIDER_P(NODE) \
+  (DECL_LANG_FLAG_4 (NODE))
 
 /* The thunks associated with NODE, a FUNCTION_DECL.  */
 #define DECL_THUNKS(NODE) \
@@ -3614,7 +3605,6 @@ extern tree duplicate_decls			(tree, tree);
 extern tree pushdecl_top_level			(tree);
 extern tree pushdecl_top_level_and_finish       (tree, tree);
 extern tree push_using_decl                     (tree, tree);
-extern tree implicitly_declare			(tree);
 extern tree declare_local_label                 (tree);
 extern tree define_label			(location_t, tree);
 extern void check_goto				(tree);

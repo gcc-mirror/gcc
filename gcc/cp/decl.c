@@ -1097,11 +1097,6 @@ decls_match (tree newdecl, tree olddecl)
 void
 warn_extern_redeclared_static (tree newdecl, tree olddecl)
 {
-  static const char *const explicit_extern_static_warning
-    = "`%D' was declared `extern' and later `static'";
-  static const char *const implicit_extern_static_warning
-    = "`%D' was declared implicitly `extern' and later `static'";
-
   tree name;
 
   if (TREE_CODE (newdecl) == TYPE_DECL
@@ -1127,9 +1122,7 @@ warn_extern_redeclared_static (tree newdecl, tree olddecl)
     return;
 
   name = DECL_ASSEMBLER_NAME (newdecl);
-  pedwarn (IDENTIFIER_IMPLICIT_DECL (name)
-	      ? implicit_extern_static_warning
-	      : explicit_extern_static_warning, newdecl);
+  pedwarn ("`%D' was declared `extern' and later `static'", newdecl);
   cp_pedwarn_at ("previous declaration of `%D'", olddecl);
 }
 
@@ -1373,10 +1366,7 @@ duplicate_decls (tree newdecl, tree olddecl)
 	  else
 	    return NULL_TREE;
 	}
-
-      /* Already complained about this, so don't do so again.  */
-      else if (current_class_type == NULL_TREE
-	  || IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (newdecl)) != current_class_type)
+      else
 	{
 	  error ("conflicting declaration '%#D'", newdecl);
 	  cp_error_at ("'%D' has a previous declaration as `%#D'",
@@ -1943,39 +1933,6 @@ duplicate_decls (tree newdecl, tree olddecl)
   return olddecl;
 }
 
-/* Generate an implicit declaration for identifier FUNCTIONID
-   as a function of type int ().  Print a warning if appropriate.  */
-
-tree
-implicitly_declare (tree functionid)
-{
-  tree decl;
-
-  /* We used to reuse an old implicit decl here,
-     but this loses with inline functions because it can clobber
-     the saved decl chains.  */
-  decl = build_lang_decl (FUNCTION_DECL, functionid, default_function_type);
-
-  DECL_EXTERNAL (decl) = 1;
-  TREE_PUBLIC (decl) = 1;
-
-  /* ISO standard says implicit declarations are in the innermost block.
-     So we record the decl in the standard fashion.  */
-  pushdecl (decl);
-  rest_of_decl_compilation (decl, NULL, 0, 0);
-
-  if (warn_implicit
-      /* Only one warning per identifier.  */
-      && IDENTIFIER_IMPLICIT_DECL (functionid) == NULL_TREE)
-    {
-      pedwarn ("implicit declaration of function `%#D'", decl);
-    }
-
-  SET_IDENTIFIER_IMPLICIT_DECL (functionid, decl);
-
-  return decl;
-}
-
 /* Return zero if the declaration NEWDECL is valid
    when the declaration OLDDECL (assumed to be for the same name)
    has already been seen.
@@ -8844,7 +8801,6 @@ grok_ctor_properties (tree ctype, tree decl)
      	 instantiated, but that's hard to forestall.  */
       error ("invalid constructor; you probably meant `%T (const %T&)'",
 		ctype, ctype);
-      SET_IDENTIFIER_ERROR_LOCUS (DECL_NAME (decl), ctype);
       return 0;
     }
   
@@ -10154,12 +10110,6 @@ start_function (tree declspecs, tree declarator, tree attrs, int flags)
       ctype = NULL_TREE;
     }
 
-  /* Warn if function was previously implicitly declared
-     (but not if we warned then).  */
-  if (! warn_implicit
-      && IDENTIFIER_IMPLICIT_DECL (DECL_NAME (decl1)) != NULL_TREE)
-    cp_warning_at ("`%D' implicitly declared before its definition", IDENTIFIER_IMPLICIT_DECL (DECL_NAME (decl1)));
-
   /* Set up current_class_type, and enter the scope of the class, if
      appropriate.  */
   if (ctype)
@@ -10929,13 +10879,10 @@ start_method (tree declspecs, tree declarator, tree attrlist)
 
   if (DECL_IN_AGGR_P (fndecl))
     {
-      if (IDENTIFIER_ERROR_LOCUS (DECL_ASSEMBLER_NAME (fndecl)) != current_class_type)
-	{
-	  if (DECL_CONTEXT (fndecl)
-	      && TREE_CODE( DECL_CONTEXT (fndecl)) != NAMESPACE_DECL)
-	    error ("`%D' is already defined in class `%T'", fndecl,
-	              DECL_CONTEXT (fndecl));
-	}
+      if (DECL_CONTEXT (fndecl)
+	  && TREE_CODE( DECL_CONTEXT (fndecl)) != NAMESPACE_DECL)
+	error ("`%D' is already defined in class `%T'", fndecl,
+	       DECL_CONTEXT (fndecl));
       return void_type_node;
     }
 
