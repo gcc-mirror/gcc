@@ -1194,8 +1194,8 @@ between stages.
 @item mips-mips-bsd
 MIPS machines running the MIPS operating system in BSD mode.  It's
 possible that some old versions of the system lack the functions
-@code{memcpy}, @code{memcmp}, and @code{memset}.  If your system lacks
-these, you must remove or undo the definition of
+@code{memcpy}, @code{memmove}, @code{memcmp}, and @code{memset}.  If your
+system lacks these, you must remove or undo the definition of
 @code{TARGET_MEM_FUNCTIONS} in @file{mips-bsd.h}.
 
 The MIPS C compiler needs to be told to increase its table size
