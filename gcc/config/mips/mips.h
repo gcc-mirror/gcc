@@ -115,7 +115,6 @@ extern int set_noat;			/* # of nested .set noat's  */
 extern int set_volatile;		/* # of nested .set volatile's  */
 extern int mips_branch_likely;		/* emit 'l' after br (branch likely) */
 extern int mips_dbx_regno[];		/* Map register # to debug register # */
-extern char mips_rtx_classify[];	/* classify an RTX code */
 extern struct rtx_def *branch_cmp[2];	/* operands for compare */
 extern enum cmp_type branch_type;	/* what type of branch to use */
 extern enum processor_type mips_cpu;	/* which cpu are we scheduling for */
@@ -140,14 +139,11 @@ extern void		abort_with_insn ();
 extern int		arith32_operand ();
 extern int		arith_operand ();
 extern int		cmp_op ();
-extern int		cmp2_op ();
 extern long		compute_frame_size ();
 extern int		epilogue_reg_mentioned_p ();
 extern void		expand_block_move ();
 extern int		equality_op ();
-extern int		fcmp_op ();
 extern void		final_prescan_insn ();
-extern int		fpsw_register_operand ();
 extern struct rtx_def *	function_arg ();
 extern void		function_arg_advance ();
 extern int		function_arg_partial_nregs ();
@@ -157,7 +153,6 @@ extern void		gen_conditional_branch ();
 extern struct rtx_def * gen_int_relational ();
 extern void		init_cumulative_args ();
 extern int		large_int ();
-extern int		md_register_operand ();
 extern int		mips_address_cost ();
 extern void		mips_asm_file_end ();
 extern void		mips_asm_file_start ();
@@ -188,7 +183,6 @@ extern int		simple_memory_operand ();
 extern int		small_int ();
 extern void		trace();
 extern int		uns_arith_operand ();
-extern int		uns_cmp_op ();
 
 /* Recognition functions that return if a condition is true.  */
 extern int		address_operand ();
@@ -2632,7 +2626,14 @@ while (0)
     {									\
       enum machine_mode xmode = GET_MODE (X);				\
       if (xmode == SFmode || xmode == DFmode)				\
-	return COSTS_N_INSNS (2);					\
+	{								\
+	  if (mips_cpu == PROCESSOR_R3000)				\
+	    return COSTS_N_INSNS (2);					\
+	  else if (mips_cpu == PROCESSOR_R6000)				\
+	    return COSTS_N_INSNS (3);					\
+	  else								\
+	    return COSTS_N_INSNS (6);					\
+	}								\
 									\
       if (xmode == DImode && !TARGET_64BIT)				\
 	return COSTS_N_INSNS (4);					\
@@ -2647,12 +2648,31 @@ while (0)
     {									\
       enum machine_mode xmode = GET_MODE (X);				\
       if (xmode == SFmode)						\
-	return COSTS_N_INSNS (4);					\
+	{								\
+	  if (mips_cpu == PROCESSOR_R3000)				\
+	    return COSTS_N_INSNS (4);					\
+	  else if (mips_cpu == PROCESSOR_R6000)				\
+	    return COSTS_N_INSNS (5);					\
+	  else								\
+	    return COSTS_N_INSNS (7);					\
+	}								\
 									\
       if (xmode == DFmode)						\
-	return COSTS_N_INSNS (5);					\
+	{								\
+	  if (mips_cpu == PROCESSOR_R3000)				\
+	    return COSTS_N_INSNS (5);					\
+	  else if (mips_cpu == PROCESSOR_R6000)				\
+	    return COSTS_N_INSNS (6);					\
+	  else								\
+	    return COSTS_N_INSNS (8);					\
+	}								\
 									\
-      return COSTS_N_INSNS (12);					\
+      if (mips_cpu == PROCESSOR_R3000)					\
+	return COSTS_N_INSNS (12);					\
+      else if (mips_cpu == PROCESSOR_R6000)				\
+	return COSTS_N_INSNS (17);					\
+      else								\
+	return COSTS_N_INSNS (10);					\
     }									\
 									\
   case DIV:								\
@@ -2660,16 +2680,35 @@ while (0)
     {									\
       enum machine_mode xmode = GET_MODE (X);				\
       if (xmode == SFmode)						\
-	return COSTS_N_INSNS (12);					\
+	{								\
+	  if (mips_cpu == PROCESSOR_R3000)				\
+	    return COSTS_N_INSNS (12);					\
+	  else if (mips_cpu == PROCESSOR_R6000)				\
+	    return COSTS_N_INSNS (15);					\
+	  else								\
+	    return COSTS_N_INSNS (23);					\
+	}								\
 									\
       if (xmode == DFmode)						\
-	return COSTS_N_INSNS (19);					\
+	{								\
+	  if (mips_cpu == PROCESSOR_R3000)				\
+	    return COSTS_N_INSNS (19);					\
+	  else if (mips_cpu == PROCESSOR_R6000)				\
+	    return COSTS_N_INSNS (16);					\
+	  else								\
+	    return COSTS_N_INSNS (36);					\
+	}								\
     }									\
     /* fall through */							\
 									\
   case UDIV:								\
   case UMOD:								\
-    return COSTS_N_INSNS (35);
+    if (mips_cpu == PROCESSOR_R3000)					\
+      return COSTS_N_INSNS (35);					\
+    else if (mips_cpu == PROCESSOR_R6000)				\
+      return COSTS_N_INSNS (38);					\
+    else								\
+      return COSTS_N_INSNS (69);
 
 /* An expression giving the cost of an addressing mode that
    contains ADDRESS.  If not defined, the cost is computed from the
@@ -2732,7 +2771,12 @@ while (0)
    met.  You should do this if the `movM' pattern's constraints do
    not allow such copying.  */
 
-#define REGISTER_MOVE_COST(FROM, TO) 4	/* force reload to use constraints */
+#define REGISTER_MOVE_COST(FROM, TO)	\
+  ((FROM) == GR_REGS && (TO) == GR_REGS ? 2				\
+   : (FROM) == FP_REGS && (TO) == FP_REGS ? 2				\
+   : (FROM) == GR_REGS && (TO) == FP_REGS ? 4				\
+   : (FROM) == FP_REGS && (TO) == GR_REGS ? 4				\
+   : 6)
 
 #define MEMORY_MOVE_COST(MODE) \
   ((mips_cpu == PROCESSOR_R4000 || mips_cpu == PROCESSOR_R6000) ? 6 : 4)
@@ -2743,22 +2787,15 @@ while (0)
 #define BRANCH_COST \
   ((mips_cpu == PROCESSOR_R4000 || mips_cpu == PROCESSOR_R6000) ? 2 : 1)
 
-
-/* Used in by the peephole code.  */
-#define classify_op(op,mode)	(mips_rtx_classify[ (int)GET_CODE (op) ])
-#define additive_op(op,mode)	((classify_op (op,mode) & CLASS_ADD_OP)      != 0)
-#define divmod_op(op,mode)	((classify_op (op,mode) & CLASS_DIVMOD_OP)   != 0)
-#define unsigned_op(op,mode)	((classify_op (op,mode) & CLASS_UNSIGNED_OP) != 0)
+/* A C statement (sans semicolon) to update the integer variable COST
+   based on the relationship between INSN that is dependent on
+   DEP_INSN through the dependence LINK.  The default is to make no
+   adjustment to COST.  On the MIPS, ignore the cost of anti- and
+   output-dependencies.  */
 
-#define CLASS_ADD_OP		0x01	/* operator is PLUS/MINUS */
-#define CLASS_DIVMOD_OP		0x02	/* operator is {,U}{DIV,MOD} */
-#define CLASS_UNSIGNED_OP	0x04	/* operator is U{DIV,MOD} */
-#define CLASS_CMP_OP		0x08	/* operator is comparison */
-#define CLASS_EQUALITY_OP	0x10	/* operator is == or != */
-#define CLASS_FCMP_OP		0x08	/* operator is fp. compare */
-
-#define CLASS_UNS_CMP_OP	(CLASS_UNSIGNED_OP | CLASS_CMP_OP)
-
+#define ADJUST_COST(INSN,LINK,DEP_INSN,COST)				\
+  if (REG_NOTE_KIND (LINK) != 0)					\
+    (COST) = 0; /* Anti or output dependence.  */
 
 /* Optionally define this if you have added predicates to
    `MACHINE.c'.  This macro is called within an initializer of an
@@ -2788,18 +2825,13 @@ while (0)
   {"reg_or_0_operand",		{ REG, CONST_INT, SUBREG }},		\
   {"small_int",			{ CONST_INT }},				\
   {"large_int",			{ CONST_INT }},				\
-  {"md_register_operand",	{ REG }},				\
   {"mips_const_double_ok",	{ CONST_DOUBLE }},			\
   {"simple_memory_operand",	{ MEM, SUBREG }},			\
   {"equality_op",		{ EQ, NE }},				\
   {"cmp_op",			{ EQ, NE, GT, GE, GTU, GEU, LT, LE,	\
 				  LTU, LEU }},				\
-  {"cmp2_op",			{ EQ, NE, GT, GE, GTU, GEU, LT, LE,	\
-				  LTU, LEU }},				\
-  {"fcmp_op",			{ EQ, NE, GT, GE, LT, LE }},		\
   {"pc_or_label_operand",	{ PC, LABEL_REF }},			\
   {"call_insn_operand",		{ MEM }},				\
-  {"uns_cmp_op",		{ GTU, GEU, LTU, LEU }},
 
 
 /* If defined, a C statement to be executed just prior to the
@@ -2824,23 +2856,6 @@ while (0)
 /* Tell final.c how to eliminate redundant test instructions.
    Here we define machine-dependent flags and fields in cc_status
    (see `conditions.h').  */
-
-/* A C compound statement to set the components of `cc_status'
-   appropriately for an insn INSN whose body is EXP.  It is this
-   macro's responsibility to recognize insns that set the condition
-   code as a byproduct of other activity as well as those that
-   explicitly set `(cc0)'.
-
-   This macro is not used on machines that do not use `cc0'.  */
-
-#define NOTICE_UPDATE_CC(EXP, INSN)					\
-do									\
-  {									\
-    enum attr_type type = get_attr_type (INSN);				\
-    if (type == TYPE_ICMP || type == TYPE_FCMP)				\
-      CC_STATUS_INIT;							\
-  }									\
-while (0)
 
 /* A list of names to be used for additional modes for condition code
    values in registers.  These names are added to `enum machine_mode'
