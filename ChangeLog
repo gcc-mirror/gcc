@@ -1,3 +1,7 @@
+2003-02-08  Laurynas Biveinis  <laurynas.biveinis@mif.vu.lt>
+
+	* MAINTAINERS: Update my email.
+	
 2003-02-06  Keith R Seitz  <keiths@redhat.com>
 
 	* Makefile.def: Remove "snavigator", "grep", and "db" modules.
