@@ -348,13 +348,22 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
   ""
   "NEGU %0,0,%1")
 
-;; FIXME: GCC should be able to synthesize this by itself as "0.0 - x".
 (define_expand "negdf2"
-  [(set (match_operand:DF 0 "register_operand" "=r")
-	(minus:DF (match_dup 2)
-		(match_operand:DF 1 "register_operand" "r")))]
+  [(parallel [(set (match_operand:DF 0 "register_operand" "=r")
+                   (neg:DF (match_operand:DF 1 "register_operand" "r")))
+              (use (match_dup 2))])]
   ""
-  "operands[2] = force_reg (DFmode, CONST0_RTX (DFmode));")
+{
+  /* Emit bit-flipping sequence to be IEEE-safe wrt. -+0.  */
+  operands[2] = force_reg (DImode, GEN_INT ((HOST_WIDE_INT) 1 << 63));
+})
+
+(define_insn "*expanded_negdf2"
+  [(set (match_operand:DF 0 "register_operand" "=r")
+        (neg:DF (match_operand:DF 1 "register_operand" "r")))
+   (use (match_operand:DI 2 "register_operand" "r"))]
+  ""
+  "XOR %0,%1,%2")
 
 ;; FIXME: define_expand for absdi2?
 
