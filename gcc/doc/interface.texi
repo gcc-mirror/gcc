@@ -83,20 +83,3 @@ go in a register:
   @dots{}
 @}
 @end example
-
-@cindex arithmetic libraries
-@cindex math libraries
-@opindex msoft-float
-Code compiled with GCC may call certain library routines.  Most of
-them handle arithmetic for which there are no instructions.  This
-includes multiply and divide on some machines, and floating point
-operations on any machine for which floating point support is disabled
-with @option{-msoft-float}.  Some standard parts of the C library, such as
-@code{bcopy} or @code{memcpy}, are also called automatically.  The usual
-function call interface is used for calling the library routines.
-
-Some of these routines can be defined in mostly machine-independent C;
-they appear in @file{libgcc2.c}.  Others must be hand-written in
-assembly language for each processor.  Wherever they are defined, they
-are compiled into the support library, @file{libgcc.a}, which is
-automatically searched when you link programs with GCC@.

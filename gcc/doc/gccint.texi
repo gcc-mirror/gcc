@@ -140,6 +140,7 @@ Additional tutorial information is linked to from
 * Contributing::    How to contribute to testing and developing GCC.
 * Portability::     Goals of GCC's portability features.
 * Interface::       Function-call interface of GCC output.
+* Libgcc::          Low-level runtime library used by GCC.
 * Languages::       Languages for which GCC front ends are written.
 * Source Tree::     GCC source tree structure and build system.
 * Passes::          Order of passes, what they do, and what each file is for.
@@ -168,6 +169,7 @@ Additional tutorial information is linked to from
 @include contribute.texi
 @include portability.texi
 @include interface.texi
+@include libgcc.texi
 @include languages.texi
 @include sourcebuild.texi
 @include passes.texi
