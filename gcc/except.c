@@ -1544,8 +1544,11 @@ expand_fixup_region_end (cleanup)
      and we could get an infinte loop when it tried to rethrow, or just
      generally incorrect execution following a throw. */
 
-  dont_issue = ((INSN_UID (node->entry->outer_context) == 0) 
-            && (ehstack.top->entry != node->entry));
+  if (flag_new_exceptions)
+    dont_issue = 0;
+  else
+    dont_issue = ((INSN_UID (node->entry->outer_context) == 0) 
+		  && (ehstack.top->entry != node->entry));
 
   ehstack.top->entry->outer_context = node->entry->outer_context;
 

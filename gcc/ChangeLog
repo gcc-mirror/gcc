@@ -1,3 +1,8 @@
+Thu Sep  2 00:06:43 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* except.c (expand_fixup_region_end): Do not peek at
+	INSN_UID (node->entry->outer_context) for flag_new_exceptions.
+
 Thu Sep  2 13:52:53 1999  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* flags.h: New variables align_loops, align_loops_log,
