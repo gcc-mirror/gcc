@@ -51,9 +51,6 @@ Boston, MA 02111-1307, USA.  */
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "long int"
 
-#undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
-
 /* This is the char to use for continuation (in case we need to turn
    continuation back on).  */
 #undef DBX_CONTIN_CHAR
