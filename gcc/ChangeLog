@@ -10,6 +10,8 @@ Thu Aug  3 15:53:03 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 2000-08-03  Kazu Hirata  <kazu@hxi.com>
 
+	* jump.c: Fix formatting.
+
 	* toplev.c: Fix formatting.
 
 Thu Aug  3 01:05:32 2000  Jeffrey A Law  (law@cygnus.com)
