@@ -52,6 +52,7 @@ Boston, MA 02111-1307, USA.  */
    compiled for the target, and hence definitions concerning only the host
    do not apply.  */
 
+#include "auto-host.h"
 #include "tm.h"
 #include "tsystem.h"
 
@@ -132,7 +133,17 @@ typedef void (*func_ptr) (void);
 #ifdef OBJECT_FORMAT_ELF
 
 /* Declare the __dso_handle variable.  It should have a unique value
-   in every shared-object; in a main program its value is zero.  */
+   in every shared-object; in a main program its value is zero.  The
+   object should in any case be protected.  This means the instance
+   in one DSO or the main program is not used in another object.  The
+   dynamic linker takes care of this.  */
+
+/* XXX Ideally the following should be implemented using
+       __attribute__ ((__visibility__ ("hidden")))
+   but the __attribute__ support is not yet there.  */
+#ifdef HAVE_GAS_HIDDEN
+asm (".hidden\t__dso_handle");
+#endif
 
 #ifdef CRTSTUFFS_O
 void *__dso_handle = &__dso_handle;
