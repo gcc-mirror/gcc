@@ -54,14 +54,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
 #define CONDITIONAL_REGISTER_USAGE				\
-  /* Experimental calling convention with fewer saved registers */	\
-  if (TARGET_NOSAVE)						\
-    {								\
-      call_used_regs[8] = 1;					\
-      call_used_regs[9] = 1;					\
-      call_used_regs[10] = 1;					\
-      call_used_regs[11] = 1;					\
-    }    							\
   /* Hitachi saves and restores mac registers on call */        \
   if (TARGET_HITACHI)						\
    {								\
@@ -75,7 +67,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 extern int target_flags;
 #define ISIZE_BIT      	(1<<1)
 #define FAST_BIT       	(1<<2)
-#define MAC_BIT        	(1<<3)
 #define RTL_BIT        	(1<<4)
 #define DT_BIT         	(1<<5)
 #define DALIGN_BIT     	(1<<6)
@@ -87,17 +78,10 @@ extern int target_flags;
 #define R_BIT     	(1<<12)
 #define SPACE_BIT 	(1<<13)
 #define BIGTABLE_BIT  	(1<<14)
-#define TRYR0_BIT  	(1<<15)
-#define NOSAVE_BIT  	(1<<16)
-#define SMALLCALL_BIT  	(1<<17)
 #define CONSTLEN_2_BIT  (1<<20)
 #define CONSTLEN_3_BIT  (1<<21)
 #define HITACHI_BIT     (1<<22)
-#define PARANOID_BIT    (1<<23)
-#define RETR2_BIT       (1<<24)
 #define CONSTLEN_0_BIT  (1<<25)
-#define BSR_BIT   	(1<<26)
-#define SHORTADDR_BIT   (1<<27)
 #define PACKSTRUCT_BIT  (1<<28)
 #define LITTLE_ENDIAN_BIT (1<<29)
 
@@ -116,14 +100,11 @@ extern int target_flags;
 /* Nonzero if we should generate faster code rather than smaller code */
 #define TARGET_FASTCODE   (target_flags & FAST_BIT)
 
-/* Nonzero if we should generate faster code rather than smaller code */
+/* Nonzero if we should generate smaller code rather than faster code */
 #define TARGET_SMALLCODE   (target_flags & SPACE_BIT)
 
 /* Nonzero if we should dump out instruction size info */
 #define TARGET_DUMPISIZE  (target_flags & ISIZE_BIT)
-
-/* Nonzero if we should try to generate mac instructions */
-#define TARGET_MAC        (target_flags & MAC_BIT)
 
 /* Nonzero if we should dump the rtl in the assembly file. */
 #define TARGET_DUMP_RTL	  (target_flags & RTL_BIT)
@@ -140,16 +121,6 @@ extern int target_flags;
 /* Nonzero if combine dumping wanted */
 #define TARGET_CDUMP (target_flags & C_BIT)
 
-/* Nonzero if trying to use reg+disp for QIs and HIs.  This
-   doesn't work yet.*/
-#define TARGET_TRYR0 (target_flags & TRYR0_BIT)
-
-/* Nonzero if using no save calling convention */
-#define TARGET_NOSAVE (target_flags & NOSAVE_BIT)
-
-/* Nonzero if using no save calling convention */
-#define TARGET_SMALLCALL (target_flags & SMALLCALL_BIT)
-
 /* Select max size of computed constant code sequences to be 3 insns */
 #define TARGET_CLEN3 (target_flags & CONSTLEN_3_BIT)
 
@@ -158,11 +129,6 @@ extern int target_flags;
 
 /* Nonzero if using Hitachi's calling convention */
 #define TARGET_HITACHI 		(target_flags & HITACHI_BIT)
-
-#define TARGET_PARANOID 	(target_flags & PARANOID_BIT)
-#define TARGET_RETR2 		(target_flags & RETR2_BIT)
-#define TARGET_SHORTADDR	(target_flags & SHORTADDR_BIT)
-#define TARGET_BSR		(target_flags & BSR_BIT)
 
 /* Nonzero if packing structures as small as they'll go (incompatible with Hitachi's compiler) */
 #define TARGET_PACKSTRUCT       (target_flags & PACKSTRUCT_BIT)
@@ -177,10 +143,8 @@ extern int target_flags;
   {"3",	        (SH3_BIT) },			\
   {"3l",        (SH3_BIT|LITTLE_ENDIAN_BIT)},	\
   {"R",  	(R_BIT) },			\
-  {"ac",  	(MAC_BIT) },			\
   {"b",		(-LITTLE_ENDIAN_BIT) },  	\
   {"bigtable", 	(BIGTABLE_BIT)},		\
-  {"bsr",       (BSR_BIT) },    		\
   {"c",  	(C_BIT) },			\
   {"clen0",     (CONSTLEN_0_BIT) },    		\
   {"clen3",     (CONSTLEN_3_BIT) },    		\
@@ -188,15 +152,9 @@ extern int target_flags;
   {"hitachi",	(HITACHI_BIT) },		\
   {"isize", 	(ISIZE_BIT) },			\
   {"l",		(LITTLE_ENDIAN_BIT) },  	\
-  {"nosave",  	(NOSAVE_BIT) },			\
   {"packstruct",(PACKSTRUCT_BIT) },    		\
-  {"paranoid",	(PARANOID_BIT) },		\
   {"r",  	(RTL_BIT) },			\
-  {"r2",	(RETR2_BIT) },			\
-  {"shortaddr", (SHORTADDR_BIT) },	     	\
-  {"smallcall",	(SMALLCALL_BIT) },		\
   {"space", 	(SPACE_BIT) },			\
-  {"try-r0", 	(TRYR0_BIT)},			\
   {"",   	TARGET_DEFAULT} 		\
 }
 
@@ -237,8 +195,6 @@ do {								\
     max_count_hi = atoi (max_hi);				\
   else      							\
     max_count_hi = 500;				                \
-  if (TARGET_BSR)                                               \
-     flag_no_function_cse = 1;                                  \
 } while (0)
 
 
@@ -293,8 +249,10 @@ do {								\
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
 #define STACK_BOUNDARY  32
 
-/* Allocation boundary (in *bits*) for the code of a function.  */
-#define FUNCTION_BOUNDARY  16
+/* Allocation boundary (in *bits*) for the code of a function.
+   32 bit alignment is faster, because instructions are always fetched as a
+   pair from a longword boundary.  */
+#define FUNCTION_BOUNDARY  (TARGET_SMALLCODE ? 16 : 32)
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY  32
@@ -362,7 +320,8 @@ do {								\
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator. 
 
-   mach register is fixed 'cause it's only 10 bits wide */
+   Mach register is fixed 'cause it's only 10 bits wide for SH1.
+   It is 32 bits wide for SH2.  */
 
  /*  r0  r1  r2  r3 
      r4  r5  r6  r7
@@ -447,15 +406,10 @@ extern int hard_regno_mode_ok[];
 
 /* Definitions for register eliminations.
 
-   We have two registers that can be eliminated on the m88k.  First, the
+   We have two registers that can be eliminated on the SH.  First, the
    frame pointer register can often be eliminated in favor of the stack
    pointer register.  Secondly, the argument pointer register can always be
    eliminated; it is replaced with either the stack or frame pointer.  */
-
-/* This is an array of structures.  Each structure initializes one pair
-   of eliminable registers.  The "from" register number is given first,
-   followed by "to".  Eliminations of the same "from" register are listed
-   in order of preference.  */
 
 /* This is an array of structures.  Each structure initializes one pair
    of eliminable registers.  The "from" register number is given first,
@@ -659,7 +613,7 @@ extern enum reg_class reg_class_from_letter[];
    These two macros are used only in other macro definitions below.  */
 #define NPARM_REGS 4
 #define FIRST_PARM_REG 4
-#define FIRST_RET_REG  (TARGET_RETR2 ? 2 : 0)
+#define FIRST_RET_REG  0
 
 /* Define this if pushing a word on the stack
    makes the stack pointer a smaller address.  */
@@ -920,8 +874,9 @@ extern int current_function_anonymous_args;
 
 #define MODE_DISP_OK_4(X,MODE) ((GET_MODE_SIZE(MODE)==4) && ((unsigned)INTVAL(X)<64) && (!(INTVAL(X) &3)))
 #define MODE_DISP_OK_8(X,MODE) ((GET_MODE_SIZE(MODE)==8) && ((unsigned)INTVAL(X)<60) && (!(INTVAL(X) &3)))
-#define MODE_DISP_OK_2(X,MODE) ((GET_MODE_SIZE(MODE)==2) && ((unsigned)INTVAL(X)<32) && TARGET_TRYR0 && (!INTVAL(X) &1))
-#define MODE_DISP_OK_1(X,MODE) ((GET_MODE_SIZE(MODE)==1) && ((unsigned)INTVAL(X)<16) && TARGET_TRYR0)
+/* ??? These two work only if the target is R0, so we do not support them.  */
+#define MODE_DISP_OK_2(X,MODE) (0)
+#define MODE_DISP_OK_1(X,MODE) (0)
 
 #ifndef REG_OK_STRICT
 
@@ -961,10 +916,6 @@ extern int current_function_anonymous_args;
 	&& GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 0)) == LABEL_REF	\
 	&& GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 1)) == CONST_INT)))
 
-/* The U is a label ref */
-#define EXTRA_CONSTRAINT_U(OP)    \
-   (GET_CODE (OP) == LABEL_REF)
-
 #define IS_INDEX(OP) 									\
   ((GET_CODE (OP) == PLUS && 								\
     (INDEX_REGISTER_RTX_P (XEXP (OP, 0)) && BASE_REGISTER_RTX_P (XEXP (OP, 1))) ||	\
@@ -974,7 +925,6 @@ extern int current_function_anonymous_args;
 
 #define EXTRA_CONSTRAINT(OP, C)   \
      ((C) == 'Q' ? EXTRA_CONSTRAINT_Q (OP)   \
-    : (C) == 'U' ? EXTRA_CONSTRAINT_U (OP)   \
     : 0)
 
 
@@ -1132,9 +1082,9 @@ extern int current_function_anonymous_args;
 #define STORE_FLAG_VALUE 1
 
 /* Immediate shift counts are truncated by the output routines (or was it
-   the assembler?).  Shift counts in a register are truncated by ARM.  Note
+   the assembler?).  Shift counts in a register are truncated by SH.  Note
    that the native compiler puts too large (> 32) immediate shift counts
-   into a register and shifts by the register, letting the ARM decide what
+   into a register and shifts by the register, letting the SH decide what
    to do instead of doing that itself.  */
 #define SHIFT_COUNT_TRUNCATED 1
 
@@ -1159,8 +1109,12 @@ extern int current_function_anonymous_args;
 
 #define CONST_COSTS(RTX, CODE, OUTER_CODE)      \
   case CONST_INT:				\
-  if (INTVAL(RTX)==0) return 0; \
-    if (CONST_OK_FOR_I (INTVAL(RTX)))           \
+    if (INTVAL (RTX) == 0)			\
+      return 0;					\
+    else if (CONST_OK_FOR_I (INTVAL (RTX)))	\
+      return 1;					\
+    else if ((OUTER_CODE == AND || OUTER_CODE == IOR || OUTER_CODE == XOR) \
+	     && CONST_OK_FOR_L (INTVAL (RTX)))	\
       return 1;					\
     else					\
       return 8;					\
@@ -1189,8 +1143,9 @@ extern int current_function_anonymous_args;
     return 100;
 
 
-/* The multiply and divide insns on the SH are actually function calls
-   with some special constraints on arguments and register usage.
+/* The multiply insn on the SH1 and the divide insns on the SH1 and SH2
+   are actually function calls with some special constraints on arguments
+   and register usage.
 
    These macros tell reorg that the references to arguments and 
    register clobbers for insns of type sfunc do not appear to happen 
@@ -1485,7 +1440,7 @@ do { char dstr[30];					\
 #define PRINT_OPERAND_ADDRESS(STREAM,X)  print_operand_address (STREAM, X)
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CHAR) \
-  ((CHAR)=='.' || (CHAR) == '#' || (CHAR) == '*' || (CHAR) == '^' || (CHAR)=='!' || (CHAR)=='@')
+  ((CHAR)=='.' || (CHAR) == '#' || (CHAR)=='@')
 
 
 extern struct rtx_def *sh_compare_op0;
@@ -1528,6 +1483,8 @@ extern int max_count_hi;
 
 /* Instructions with unfilled delay slots take up an extra two bytes for
    the nop in the delay slot.  */
+
+/* ??? Does this catch conditional branches when -m2?  */
 
 #define ADJUST_INSN_LENGTH(X, LENGTH)				\
   if (((GET_CODE (X) == INSN					\
