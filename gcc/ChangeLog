@@ -1,3 +1,14 @@
+Fri Dec 13 16:02:27 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (sh_register_operand): New function.
+	(prepare_move_operands): Use it.
+	* sh.h (PREDICATE_CODES): Add entry for sh_register_operand.
+	* sh.md (movsi_media, movsi_media_nofpu): Allow stores of 0.
+	(movqi_media, movhi_media, movdi_media, movdi_media_nofpu): Likewise.
+	(movdf_media, movdf_media_nofpu, movv4sf_i, movsf_media): Likewise.
+	(movsf_media_nofpu, movv2hi_i, movv4hi_i, movv8qi_i): Likewise.
+	(movv2si_i): Likewise.
+
 2002-12-13  Jim Wilson  <wilson@redhat.com>
 
 	* doc/extend.texi (Complex Numbers): Update info on debug info.
