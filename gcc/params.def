@@ -68,6 +68,16 @@ DEFPARAM(PARAM_MAX_DELAY_SLOT_LIVE_SEARCH,
 	 "The maximum number of instructions to consider to find accurate live register information",
 	 333)
 
+/* This parameter limits the number of branch elements that the 
+   scheduler will track anti-dependancies through without resetting
+   the tracking mechanism.  Large functions with few calls or barriers 
+   can generate lists containing many 1000's of dependancies.  Generally 
+   the compiler either uses all available memory, or runs for far too long.  */
+DEFPARAM(PARAM_MAX_PENDING_LIST_LENGTH,
+	 "max-pending-list-length",
+	 "The maximum length of scheduling's pending operations list",
+	 32)
+
 /* The GCSE optimization will be disabled if it would require
    significantly more memory than this value.  */
 DEFPARAM(PARAM_MAX_GCSE_MEMORY,
