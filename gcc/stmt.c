@@ -625,8 +625,11 @@ expand_goto (label)
   if (context != 0 && context != current_function_decl)
     {
       struct function *p = find_function_data (context);
+      rtx label_ref = gen_rtx (LABEL_REF, Pmode, label_rtx (label));
       rtx temp;
+
       p->has_nonlocal_label = 1;
+      LABEL_REF_NONLOCAL_P (label_ref) = 1;
 
       /* Copy the rtl for the slots so that they won't be shared in
 	 case the virtual stack vars register gets instantiated differently
@@ -637,8 +640,7 @@ expand_goto (label)
 	emit_insn (gen_nonlocal_goto (lookup_static_chain (label),
 				      copy_rtx (p->nonlocal_goto_handler_slot),
 				      copy_rtx (p->nonlocal_goto_stack_level),
-				      gen_rtx (LABEL_REF, Pmode,
-					       label_rtx (label))));
+				      label_ref));
       else
 #endif
 	{
@@ -671,8 +673,7 @@ expand_goto (label)
 	  emit_stack_restore (SAVE_NONLOCAL, addr, NULL_RTX);
 
 	  /* Put in the static chain register the nonlocal label address.  */
-	  emit_move_insn (static_chain_rtx,
-			  gen_rtx (LABEL_REF, Pmode, label_rtx (label)));
+	  emit_move_insn (static_chain_rtx, label_ref);
 	  /* USE of frame_pointer_rtx added for consistency; not clear if
 	     really needed.  */
 	  emit_insn (gen_rtx (USE, VOIDmode, frame_pointer_rtx));
