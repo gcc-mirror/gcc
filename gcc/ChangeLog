@@ -1,5 +1,15 @@
 2003-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config/i386/netbsd-elf.h, config/i386/netbsd64.h,
+	config/i386/netware.h, config/i386/nto.h, config/i386/openbsd.h,
+	config/i386/pentium.md, config/i386/pmmintrin.h, config/i386/ppro.md,
+	config/i386/ptx4-i.h, config/i386/rtemself.h, config/i386/sco5.h,
+	config/i386/sol2.h, config/i386/svr3gas.h, config/i386/sysv3.h,
+	config/i386/sysv4-cpp.h, config/i386/sysv4.h, config/i386/sysv5.h,
+	config/i386/unix.h, config/i386/uwin.h, config/i386/vsta.h,
+	config/i386/xm-cygwin.h, config/i386/xm-djgpp.h,
+	config/i386/xm-mingw32.h, config/i386/xmmintrin.h: Replace
+	"GNU CC", "GNU compiler", and "GNU C-compiler" with "GCC".
 	* config/i386/i386-aout.h, config/i386/i386-coff.h, 
 	config/i386/i386-interix.h, config/i386/i386-interix3.h, 
 	config/i386/i386-modes.def, config/i386/i386-protos.h,
