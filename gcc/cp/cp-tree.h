@@ -4184,6 +4184,7 @@ extern tree canonical_type_variant              PARAMS ((tree));
 extern void unshare_base_binfos			PARAMS ((tree));
 extern int member_p				PARAMS ((tree));
 extern cp_lvalue_kind real_lvalue_p		PARAMS ((tree));
+extern int non_cast_lvalue_or_else		PARAMS ((tree, const char *));
 extern tree build_min				PARAMS ((enum tree_code, tree,
 							 ...));
 extern tree build_min_nt			PARAMS ((enum tree_code, ...));
