@@ -1,3 +1,9 @@
+2003-06-06  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Make $(target_subdir) correspond with top level usage.
+	* Makefile.in: Likewise.
+	* configure: Regenerate.
+
 2003-06-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* pa.h (ASM_OUTPUT_SKIP, ASM_OUTPUT_ALIGNED_COMMON,

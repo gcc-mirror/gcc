@@ -3230,7 +3230,7 @@ uninstall: intl.uninstall lang.uninstall
 # These targets are for the dejagnu testsuites. The file site.exp
 # contains global variables that all the testsuites will use.
 
-# Set to $(target_alias)/ for cross.
+# Set to $(target_alias).
 target_subdir = @target_subdir@
 
 site.exp: ./config.status Makefile
@@ -3261,9 +3261,10 @@ site.exp: ./config.status Makefile
 # ??? Another way to solve this might be to rely on linker scripts.  Then
 # theoretically the -B won't be needed.
 # We also need to pass -L ../ld so that the linker can find ldscripts.
-	@if [ -d $(objdir)/../$(target_subdir)newlib ] ; then \
-	  echo "set newlib_cflags \"-I$(objdir)/../$(target_subdir)newlib/targ-include -I\$$srcdir/../newlib/libc/include\"" >> ./tmp0; \
-	  echo "set newlib_ldflags \"-B$(objdir)/../$(target_subdir)newlib/\"" >> ./tmp0; \
+	@if [ -d $(objdir)/../$(target_subdir)/newlib ] \
+	    && [ "${host_canonical}" != "${target}" ]; then \
+	  echo "set newlib_cflags \"-I$(objdir)/../$(target_subdir)/newlib/targ-include -I\$$srcdir/../newlib/libc/include\"" >> ./tmp0; \
+	  echo "set newlib_ldflags \"-B$(objdir)/../$(target_subdir)/newlib/\"" >> ./tmp0; \
 	  echo "append CFLAGS \" \$$newlib_cflags\"" >> ./tmp0; \
 	  echo "append CXXFLAGS \" \$$newlib_cflags\"" >> ./tmp0; \
 	  echo "append LDFLAGS \" \$$newlib_ldflags\"" >> ./tmp0; \
