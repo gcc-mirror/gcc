@@ -1,3 +1,14 @@
+1997-09-29  Paul Eggert  <eggert@twinsun.com>
+
+	* lex.c (real_yylex): Treat `$' just like `_', except issue a
+	diagnostic if !dollars_in_ident or if pedantic.
+
+	* lang-specs.h (@c++): -ansi no longer implies -$.
+
+	* decl2.c (lang_decode_option):
+	-traditional and -ansi now do not mess with
+	dollars_in_ident.
+
 Mon Sep 29 19:57:51 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* Makefile.in (parse.o, decl.o): Also depend on

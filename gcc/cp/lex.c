@@ -3095,13 +3095,12 @@ real_yylex ()
       break;
 
     case '$':
-      if (dollars_in_ident)
-	{
-	  dollar_seen = 1;
-	  goto letter;
-	}
-      value = '$';
-      goto done;
+      if (! dollars_in_ident)
+	error ("`$' in identifier");
+      else if (pedantic)
+	pedwarn ("`$' in identifier");
+      dollar_seen = 1;
+      goto letter;
 
     case 'L':
       /* Capital L may start a wide-string or wide-character constant.  */
@@ -3152,8 +3151,14 @@ real_yylex ()
 	       input sources.  */
 	    while (isalnum (c) || (c == '_') || c == '$')
 	      {
-		if (c == '$' && ! dollars_in_ident)
-		  break;
+		if (c == '$')
+		  {
+		    if (! dollars_in_ident)
+		      error ("`$' in identifier");
+		    else if (pedantic)
+		      pedwarn ("`$' in identifier");
+		  }
+
 		if (p >= token_buffer + maxtoken)
 		  p = extend_token_buffer (p);
 
@@ -3176,8 +3181,14 @@ real_yylex ()
 
 	    while (isalnum (c) || (c == '_') || c == '$')
 	      {
-		if (c == '$' && ! dollars_in_ident)
-		  break;
+		if (c == '$')
+		  {
+		    if (! dollars_in_ident)
+		      error ("`$' in identifier");
+		    else if (pedantic)
+		      pedwarn ("`$' in identifier");
+		  }
+
 		if (p >= token_buffer + maxtoken)
 		  p = extend_token_buffer (p);
 
