@@ -1,3 +1,10 @@
+Sat Feb 12 01:44:26 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_emit_restore_regs_using_mov): Break out from ...
+	(ix86_expand_epilogue): ... here. Use mov instead of add to restore
+	stack pointer in functions w/o saved registers, output LEAVE more often
+	on TARGET_USE_LEAVE machines.
+
 2000-02-07  Dmitri Makarov  <dim@wrs.com> & Bernd Schmidt <bernds@redhat.com>
 
 	* config/arm/arm.c (arm_init_cumulative_args); New function:
