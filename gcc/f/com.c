@@ -3113,6 +3113,7 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest,
 
 	      if (ffesymbol_hook (s).assign_tree == NULL_TREE)
 		{
+		  /* xgettext:no-c-format */
 		  ffebad_start_msg ("ASSIGN'ed label cannot fit into `%A' at %0 -- using wider sibling",
 				    FFEBAD_severityWARNING);
 		  ffebad_string (ffesymbol_text (s));
@@ -15372,6 +15373,7 @@ print_containing_files (ffebadSeverity sev)
 	else
 	  str2 = "";
 
+	/* xgettext:no-c-format */
 	ffebad_start_msg ("%A from %B at %0%C", sev);
 	ffebad_here (0, ip->line, ip->column);
 	ffebad_string (str1);
@@ -15691,6 +15693,7 @@ ffecom_open_include_ (char *name, ffewhereLine l, ffewhereColumn c)
 	  if (f == NULL && errno == EACCES)
 	    {
 	      print_containing_files (FFEBAD_severityWARNING);
+	      /* xgettext:no-c-format */
 	      ffebad_start_msg ("At %0, INCLUDE file %A exists, but is not readable",
 				FFEBAD_severityWARNING);
 	      ffebad_string (fname);
@@ -15725,6 +15728,7 @@ ffecom_open_include_ (char *name, ffewhereLine l, ffewhereColumn c)
   if (indepth >= (INPUT_STACK_MAX - 1))
     {
       print_containing_files (FFEBAD_severityFATAL);
+      /* xgettext:no-c-format */
       ffebad_start_msg ("At %0, INCLUDE nesting too deep",
 			FFEBAD_severityFATAL);
       ffebad_string (fname);

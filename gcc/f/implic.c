@@ -199,6 +199,7 @@ ffeimplic_establish_symbol (ffesymbol s)
 
   if (ffe_is_warn_implicit ())
     {
+      /* xgettext:no-c-format */
       ffebad_start_msg ("Implicit declaration of `%A' at %0",
 			FFEBAD_severityWARNING);
       ffebad_here (0, ffesymbol_where_line (s),

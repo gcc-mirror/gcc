@@ -301,6 +301,7 @@ ffestu_sym_end_transition (ffesymbol s)
       if (sa & FFESYMBOL_attrsADJUSTABLE)
 	{			/* Not actually in any dummy list! */
 	  if (ffe_is_pedantic ()
+	      /* xgettext:no-c-format */
 	      && ffebad_start_msg ("Local adjustable symbol `%A' at %0",
 				   FFEBAD_severityPEDANTIC))
 	    {
