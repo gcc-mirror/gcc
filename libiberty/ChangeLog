@@ -1,3 +1,8 @@
+2001-06-11  Loren J. Rittle  <ljrittle@acm.org>
+
+	* strerror.c (sys_nerr): Hide the OS header version.
+	* strsignal.c (sys_nsig): Likewise.
+
 2001-05-07  Zack Weinberg  <zackw@stanford.edu>
 
 	* cp-demangle.c (demangle_v3_with_details,

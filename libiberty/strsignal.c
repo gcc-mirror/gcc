@@ -17,6 +17,7 @@
    ignore any declaration in the system header files, and always
    declare it ourselves.  With luck, this will always work.  */
 #define sys_siglist no_such_symbol
+#define sys_nsig sys_nsig__no_such_symbol
 
 #include <stdio.h>
 #include <signal.h>
@@ -38,6 +39,7 @@ extern PTR memset ();
 /* Undefine the macro we used to hide the definition of sys_siglist
    found in the system header files.  */
 #undef sys_siglist
+#undef sys_nsig
 
 #ifndef NULL
 #  ifdef __STDC__
