@@ -1,3 +1,7 @@
+2002-01-23  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/20020122-3.c: New.
+
 2002-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/other/gc1.C: New test.
