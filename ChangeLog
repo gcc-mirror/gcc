@@ -1,3 +1,9 @@
+Sun Mar 15 23:32:17 1998 Manfred Hollstein  <manfred@s-direktnet.de>
+			 Pieter Nagel <pnagel@epiuse.co.za>
+
+	* Makefile.in (BASE_FLAGS_TO_PASS): Pass gxx_include_dir down
+	to sub-makes.
+
 Sun Feb 22 15:23:27 1998  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* configure.in (alpha*-*-linux*): Treat alpha*-*-linux* as

@@ -349,7 +349,8 @@ BASE_FLAGS_TO_PASS = \
 	"YACC=$(YACC)" \
 	"exec_prefix=$(exec_prefix)" \
 	"prefix=$(prefix)" \
-	"tooldir=$(tooldir)" 
+	"tooldir=$(tooldir)" \
+	"gxx_include_dir=$(gxx_include_dir)"
 
 # Flags to pass down to most sub-makes, in which we're building with
 # the host environment.
