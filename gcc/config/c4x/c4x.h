@@ -2458,11 +2458,6 @@ if (final_sequence != NULL_RTX)		\
 
 #define NO_FUNCTION_CSE
 
-/* Repeat block stuff (hook into strength_reduce() in loop.c).  */
-
-extern void c4x_rptb_process ();
-#define REPEAT_BLOCK_PROCESS(START, END) c4x_rptb_process(START, END)
-
 /* We don't want a leading tab.  */
 
 #define ASM_OUTPUT_ASM(FILE, STRING) fprintf (FILE, "%s\n", STRING)
@@ -2580,6 +2575,8 @@ extern int index_reg_operand ();
 extern int dp_reg_operand ();
 
 extern int sp_reg_operand ();
+
+extern int rc_reg_operand ();
 
 extern int st_reg_operand ();
 

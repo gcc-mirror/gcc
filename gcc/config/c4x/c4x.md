@@ -1134,8 +1134,7 @@
 
    if (!TARGET_C3X && which_alternative == 3)
      {
-       operands[1] = gen_rtx_CONST_INT (VOIDmode, 
-                                        (INTVAL (operands[1]) >> 16) & 0xffff);
+       operands[1] = GEN_INT ((INTVAL (operands[1]) >> 16) & 0xffff);
        return \"ldhi\\t%1,%0\";
      }
 
@@ -2639,10 +2638,10 @@
   "*
    if (INTVAL (operands[2]) == 8)
      {
-       operands[3] = gen_rtx_CONST_INT (VOIDmode, INTVAL (operands[3]) / 8);
+       operands[3] = GEN_INT (INTVAL (operands[3]) / 8);
        return \"lb%3\\t%1,%0\";
      }
-   operands[3] = gen_rtx_CONST_INT (VOIDmode, INTVAL (operands[3]) / 16);
+   operands[3] = GEN_INT (INTVAL (operands[3]) / 16);
    return \"lh%3\\t%1,%0\";
   "
   [(set_attr "type" "binarycc,binary")
@@ -2661,10 +2660,10 @@
   "*
    if (INTVAL (operands[2]) == 8)
      {
-       operands[3] = gen_rtx_CONST_INT (VOIDmode, INTVAL (operands[3]) / 8);
+       operands[3] = GEN_INT (INTVAL (operands[3]) / 8);
        return \"lb%3\\t%1,%0\";
      }
-   operands[3] = gen_rtx_CONST_INT (VOIDmode, INTVAL (operands[3]) / 16);
+   operands[3] = GEN_INT (INTVAL (operands[3]) / 16);
    return \"lh%3\\t%1,%0\";
   "
   [(set_attr "type" "binarycc")
@@ -2686,10 +2685,10 @@
   "*
    if (INTVAL (operands[2]) == 8)
      {
-       operands[3] = gen_rtx_CONST_INT (VOIDmode, INTVAL (operands[3]) / 8);
+       operands[3] = GEN_INT (INTVAL (operands[3]) / 8);
        return \"lb%3\\t%1,%0\";
      }
-   operands[3] = gen_rtx_CONST_INT (VOIDmode, INTVAL (operands[3]) / 16);
+   operands[3] = GEN_INT (INTVAL (operands[3]) / 16);
    return \"lh%3\\t%1,%0\";
   "
   [(set_attr "type" "binarycc")
@@ -2722,10 +2721,10 @@
   "*
    if (INTVAL (operands[2]) == 8)
      {
-       operands[3] = gen_rtx_CONST_INT (VOIDmode, INTVAL (operands[3]) / 8);
+       operands[3] = GEN_INT (INTVAL (operands[3]) / 8);
        return \"lbu%3\\t%1,%0\";
      }
-   operands[3] = gen_rtx_CONST_INT (VOIDmode, INTVAL (operands[3]) / 16);
+   operands[3] = GEN_INT (INTVAL (operands[3]) / 16);
    return \"lhu%3\\t%1,%0\";
   "
   [(set_attr "type" "binarycc,binary")
@@ -2744,10 +2743,10 @@
   "*
    if (INTVAL (operands[2]) == 8)
      {
-       operands[3] = gen_rtx_CONST_INT (VOIDmode, INTVAL (operands[3]) / 8);
+       operands[3] = GEN_INT (INTVAL (operands[3]) / 8);
        return \"lbu%3\\t%1,%0\";
      }
-   operands[3] = gen_rtx_CONST_INT (VOIDmode, INTVAL (operands[3]) / 16);
+   operands[3] = GEN_INT (INTVAL (operands[3]) / 16);
    return \"lhu%3\\t%1,%0\";
   "
   [(set_attr "type" "binarycc")
@@ -2769,10 +2768,10 @@
   "*
    if (INTVAL (operands[2]) == 8)
      {
-       operands[3] = gen_rtx_CONST_INT (VOIDmode, INTVAL (operands[3]) / 8);
+       operands[3] = GEN_INT (INTVAL (operands[3]) / 8);
        return \"lbu%3\\t%1,%0\";
      }
-   operands[3] = gen_rtx_CONST_INT (VOIDmode, INTVAL (operands[3]) / 16);
+   operands[3] = GEN_INT (INTVAL (operands[3]) / 16);
    return \"lhu%3\\t%1,%0\";
   "
   [(set_attr "type" "binarycc")
@@ -2807,12 +2806,12 @@
   "*
    if (INTVAL (operands[1]) == 8)
      {
-       operands[2] = gen_rtx_CONST_INT (VOIDmode, INTVAL (operands[2]) / 8);
+       operands[2] = GEN_INT (INTVAL (operands[2]) / 8);
        return \"mb%2\\t%3,%0\";
      }
    else if (INTVAL (operands[1]) == 16)
      {
-       operands[2] = gen_rtx_CONST_INT (VOIDmode, INTVAL (operands[2]) / 16);
+       operands[2] = GEN_INT (INTVAL (operands[2]) / 16);
        return \"mh%2\\t%3,%0\";
      }
    return \"lwl1\\t%3,%0\";
@@ -2834,10 +2833,10 @@
   "*
    if (INTVAL (operands[1]) == 8)
      {
-       operands[2] = gen_rtx_CONST_INT (VOIDmode, INTVAL (operands[2]) / 8);
+       operands[2] = GEN_INT (INTVAL (operands[2]) / 8);
        return \"mb%2\\t%3,%0\";
      }
-   operands[2] = gen_rtx_CONST_INT (VOIDmode, INTVAL (operands[2]) / 16);
+   operands[2] = GEN_INT (INTVAL (operands[2]) / 16);
    return \"mh%2\\t%3,%0\";
   "
   [(set_attr "type" "binarycc")
@@ -4564,15 +4563,15 @@
 
 (define_insn "rptb_end"
   [(set (pc)
-        (if_then_else (ne (match_operand:QI 0 "rc_reg_operand" "v")
+        (if_then_else (ge (match_operand:QI 0 "rc_reg_operand" "v")
                           (const_int 0))
                       (label_ref (match_operand 1 "" ""))
                       (pc)))
-   (use (reg:QI 25))
-   (use (reg:QI 26))
    (set (match_dup 0)
         (plus:QI (match_dup 0)
-                 (const_int -1)))]
+                 (const_int -1)))
+   (clobber (reg:QI 25))
+   (clobber (reg:QI 26))]
   ""
   "*
    return c4x_rptb_nop_p(insn) ? \"nop\" : \"\";"
@@ -4581,13 +4580,13 @@
 
 (define_expand "decrement_and_branch_on_count"
   [(parallel [(set (pc)
-                   (if_then_else (ne (match_operand:QI 0 "rc_reg_operand" "v")
+                   (if_then_else (ge (match_operand:QI 0 "rc_reg_operand" "v")
                                      (const_int 0))
                                  (label_ref (match_operand 1 "" ""))
                                  (pc)))
-              (use (reg:QI 25))
-              (use (reg:QI 26))
-              (set (match_dup 0) (plus:QI (match_dup 0) (const_int -1)))])]
+              (set (match_dup 0) (plus:QI (match_dup 0) (const_int -1)))
+              (clobber (reg:QI 25))
+              (clobber (reg:QI 26))])]
   ""
   "")
 
@@ -5731,7 +5730,7 @@
        rtx op0hi = operand_subword (operands[0], 1, 0, HImode);
        rtx op0lo = operand_subword (operands[0], 0, 0, HImode);
        rtx op1lo = operand_subword (operands[1], 0, 0, HImode);
-       rtx count = gen_rtx_CONST_INT (VOIDmode, (INTVAL (operands[2]) - 32));
+       rtx count = GEN_INT ((INTVAL (operands[2]) - 32));
 
        if (INTVAL (count))
          emit_insn (gen_ashlqi3 (op0hi, op1lo, count));
@@ -5793,7 +5792,7 @@
        rtx op0hi = operand_subword (operands[0], 1, 0, HImode);
        rtx op0lo = operand_subword (operands[0], 0, 0, HImode);
        rtx op1hi = operand_subword (operands[1], 1, 0, HImode);
-       rtx count = gen_rtx_CONST_INT (VOIDmode, (INTVAL (operands[2]) - 32));
+       rtx count = GEN_INT ((INTVAL (operands[2]) - 32));
 
        if (INTVAL (count))
          emit_insn (gen_lshrqi3 (op0lo, op1hi, count));
@@ -5861,14 +5860,13 @@
        rtx op0hi = operand_subword (operands[0], 1, 0, HImode);
        rtx op0lo = operand_subword (operands[0], 0, 0, HImode);
        rtx op1hi = operand_subword (operands[1], 1, 0, HImode);
-       rtx count = gen_rtx_CONST_INT (VOIDmode, (INTVAL (operands[2]) - 32));
+       rtx count = GEN_INT ((INTVAL (operands[2]) - 32));
 
        if (INTVAL (count))
          emit_insn (gen_ashrqi3 (op0lo, op1hi, count));
        else
          emit_insn (gen_movqi (op0lo, op1hi));
-       emit_insn (gen_ashrqi3 (op0hi, op1hi, 
-                               gen_rtx_CONST_INT (VOIDmode, 31)));
+       emit_insn (gen_ashrqi3 (op0hi, op1hi, GEN_INT (31)));
        DONE;
     }
     emit_insn (gen_ashrhi3_reg (operands[0], operands[1], operands[2]));

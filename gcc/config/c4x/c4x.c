@@ -1120,7 +1120,7 @@ c4x_emit_libcall_mulhi (name, code, mode, operands)
                             gen_rtx_MULT (HImode,
                                      gen_rtx (code, HImode, operands[1]),
                                      gen_rtx (code, HImode, operands[2])),
-                                     gen_rtx_CONST_INT (VOIDmode, 32)));
+                                     GEN_INT (32)));
   insns = get_insns ();
   end_sequence ();
   emit_libcall_block (insns, operands[0], ret, equiv);
@@ -1910,9 +1910,9 @@ c4x_scan_for_ldp (newop, insn, operand0)
 	      addr = XEXP (addr, 0);
 	      if (GET_CODE (addr) == CONST_INT)
 		{
-		  op1 = gen_rtx_CONST_INT (VOIDmode, INTVAL (addr) & ~0xffff);
+		  op1 = GEN_INT (INTVAL (addr) & ~0xffff);
 		  emit_insn_before (gen_movqi (operand0, op1), insn);
-		  op1 = gen_rtx_CONST_INT (VOIDmode, INTVAL (addr) & 0xffff);
+		  op1 = GEN_INT (INTVAL (addr) & 0xffff);
 		  emit_insn_before (gen_iorqi3_noclobber (operand0,
 						      operand0, op1), insn);
 		  delete_insn (insn);
@@ -4598,13 +4598,17 @@ c4x_parallel_process (loop_start, loop_end)
   rtx insn;
   rtx insn2;
   rtx pack;
-  rtx hoist;
-  rtx sink;
+  rtx hoist_pos;
+  rtx sink_pos;
   rtx loop_count;
   rtx loop_count_set;
+  rtx loop_count_reg;
+  rtx jump_insn;
   rtx end_label;
   int num_packs;
   int bb;
+
+  jump_insn = PREV_INSN (loop_end);
 
   /* The loop must have a calculable number of iterations
      since we need to reduce the loop count by one.  
@@ -4614,77 +4618,34 @@ c4x_parallel_process (loop_start, loop_end)
 
      The loop count must be at least 2?  */
 
-  loop_count = NEXT_INSN (loop_start);
-
-  /* Skip past CLOBBER and USE and deleted insn. This is from flow. */
-  for (;;)
-    {
-      if (GET_CODE (loop_count) == INSN)
-	{
-          rtx x = PATTERN (loop_count);
-          if (GET_CODE (x) != USE && GET_CODE (x) != CLOBBER)
-	    break;
-	}
-      else if (GET_CODE (loop_count) == NOTE)
-	{
-	  if (! INSN_DELETED_P (loop_count))
-	    break;
-	}
-      else
-	break;
-      loop_count = NEXT_INSN (loop_count);
-    }
+  loop_count = PREV_INSN (loop_start);
   
   if (!(loop_count_set = single_set (loop_count)))
     return 0;
-  
-  if (!REG_P (SET_DEST (loop_count_set)) 
-      || REGNO (SET_DEST (loop_count_set)) != RC_REGNO)
+
+  if (!find_reg_note (loop_count, REG_LOOP_COUNT, NULL_RTX))
     return 0;
 
-  /* Determine places to hoist and sink insns out of the loop.  We
-     won't have to update basic_block_head if we move things after
-     loop_count. */
+  loop_count_reg = SET_DEST (loop_count_set);
+		  
+  /* Determine places to hoist and sink insns out of the loop. 
+     We need to hoist insns before the label at the top of the loop. 
+     We'll have to update basic_block_head.  */
   
-  hoist = loop_count;
-  end_label = PREV_INSN (loop_end);
+  /* Place in the rtx where we hoist insns after.  */
+  hoist_pos = loop_count;
 
-  /* Skip past filler insn if present.  */
-  if (GET_CODE (end_label) != CODE_LABEL)
-    end_label = PREV_INSN (end_label);
-
-  /* Skip past CLOBBER, USE, and deleted insns inserted by the flow pass. */
-  for (;;)
-    {
-      if (GET_CODE (end_label) == INSN)
-	{
-          rtx x = PATTERN (end_label);
-          if (GET_CODE (x) != USE && GET_CODE (x) != CLOBBER)
-	    break;
-	}
-      else if (GET_CODE (end_label) == NOTE)
-	{
-	  if (! INSN_DELETED_P (end_label))
-	    break;
-	}
-      else
-	break;
-      end_label = PREV_INSN (end_label);
-    }
-
-  if (GET_CODE (end_label) != CODE_LABEL)
-    return 0;
-
-  sink = end_label;
+  /* Place in the rtx where we sink insns after.  */
+  sink_pos = loop_end;
 
   /* There must be an easier way to work out which basic block we are
      in.  */
   for (bb = 0; bb < n_basic_blocks; bb++)
-    if (basic_block_head[bb] == sink)
+    if (basic_block_head[bb] == NEXT_INSN (loop_end))
       break;
 
   if (bb >= n_basic_blocks)
-    fatal_insn("Cannot find basic block for insn", sink);
+    fatal_insn("Cannot find basic block for insn", NEXT_INSN (loop_end));
 
   /* Skip to label at top of loop.  */
   for (; GET_CODE (loop_start) != CODE_LABEL;
@@ -4750,12 +4711,13 @@ c4x_parallel_process (loop_start, loop_end)
 
 	      /* We need to hoist all the insns from the loop top
 		 to and including insn.  */
-	      c4x_copy_insns_after(NEXT_INSN (loop_start), insn, &hoist, bb);
+	      c4x_copy_insns_after (NEXT_INSN (loop_start), insn,
+				    &hoist_pos, bb);
 
 	      /* We need to sink all the insns after insn to 
 		 loop_end.  */
-	      c4x_copy_insns_after (NEXT_INSN (insn), PREV_INSN(end_label),
-				    &sink, bb + 1);
+	      c4x_copy_insns_after (NEXT_INSN (insn), PREV_INSN (jump_insn),
+				    &sink_pos, bb + 1);
 
 	      /* Change insn to the new parallel insn, retaining the notes
 		 of the old insn.  */
@@ -4776,34 +4738,30 @@ c4x_parallel_process (loop_start, loop_end)
 	      if (note)
 		remove_note (insn, note);
 
-	      /* Do we have to modify the LOG_LINKS?  */
+	      /* ??? Do we have to modify the LOG_LINKS?  */
 
 	      /* We need to decrement the loop count.  We probably
-		 should test if RC is negative and branch to end label
-		 if so.  */
+		 should test if the loop count is negative and branch
+		 to end label if so.  */
 	      if (GET_CODE (SET_SRC (loop_count_set)) == CONST_INT)
 		{
 		  /* The loop count must be more than 1 surely?  */
 		  SET_SRC (loop_count_set) 
-		    = gen_rtx_CONST_INT (VOIDmode,
-					 INTVAL (SET_SRC (loop_count_set)) -1);
+		    = GEN_INT (INTVAL (SET_SRC (loop_count_set)) - 1);
 		}
 	      else if (GET_CODE (SET_SRC (loop_count_set)) == PLUS
 		       && GET_CODE (XEXP (SET_SRC (loop_count_set), 1))
 		       == CONST_INT)
 		{
 		  XEXP (SET_SRC (loop_count_set), 1)
-		    = gen_rtx_CONST_INT (VOIDmode,
-				    INTVAL (XEXP (SET_SRC (loop_count_set), 1))
-					 - 1);
+		    = GEN_INT (INTVAL (XEXP (SET_SRC (loop_count_set), 1))
+			       - 1);
 		}
 	      else
 		{
 		  start_sequence ();
-		  expand_binop (QImode, sub_optab,
-				gen_rtx_REG (QImode, RC_REGNO),
-				gen_rtx_CONST_INT (VOIDmode, 1),
-				gen_rtx_REG (QImode, RC_REGNO),
+		  expand_binop (QImode, sub_optab, loop_count_reg,
+				GEN_INT (1), loop_count_reg,		
 				1, OPTAB_DIRECT);
 		  seq_start = get_insns ();
 		  end_sequence ();
@@ -4813,23 +4771,30 @@ c4x_parallel_process (loop_start, loop_end)
 		     Can we emit more than one insn? */
 		  REG_NOTES (seq_start)
 		    = gen_rtx_EXPR_LIST (REG_UNUSED,
-			       gen_rtx_REG (QImode, RC_REGNO),
+			       loop_count_reg,
 			       REG_NOTES (seq_start));
 		}
 
-	      start_sequence ();
-	      emit_cmp_insn (gen_rtx_REG (QImode, RC_REGNO),
-			     const0_rtx, LT, NULL_RTX, QImode, 0, 0);
-	      emit_jump_insn (gen_blt (end_label));
-	      seq_start = get_insns ();
-	      end_sequence ();
-	      emit_insns_after (seq_start, hoist);
-	      
-	      /* This is a bit of a hack... */
-	      REG_NOTES (NEXT_INSN (seq_start))
-		= gen_rtx_EXPR_LIST (REG_DEAD,
-			   gen_rtx_REG (QImode, RC_REGNO),
-			   REG_NOTES (NEXT_INSN (seq_start)));
+	      if (GET_CODE (SET_SRC (loop_count_set)) != CONST_INT)
+		{
+		  end_label = gen_label_rtx();
+		  start_sequence ();
+		  emit_cmp_insn (loop_count_reg,
+				 const0_rtx, LT, NULL_RTX, word_mode, 0, 0);
+		  emit_jump_insn (gen_blt (end_label));
+		  seq_start = get_insns ();
+		  end_sequence ();
+		  emit_insns_after (seq_start, hoist_pos);
+		  emit_label_after (end_label, sink_pos);
+		 
+#if 0 
+		  /* This is a bit of a hack...but why was it necessary?  */
+		  REG_NOTES (NEXT_INSN (seq_start))
+		    = gen_rtx_EXPR_LIST (REG_DEAD,
+					 loop_count_reg,
+					 REG_NOTES (NEXT_INSN (seq_start)));
+#endif
+		}
 
 	      if (TARGET_DEVEL)
 		debug_rtx(insn);
@@ -5258,7 +5223,7 @@ c4x_rptb_emit_init (loop_info)
 
   /* If have a known constant loop count, things are easy...  */
   if (loop_info->loop_count > 0)
-    return gen_rtx_CONST_INT (VOIDmode, loop_info->loop_count - 1);
+    return GEN_INT (loop_info->loop_count - 1);
 
   if (loop_info->shift < 0)
     abort ();
@@ -5288,14 +5253,13 @@ c4x_rptb_emit_init (loop_info)
       /* (end_value - start_value + adjust) >> shift */
       result = expand_binop (QImode, loop_info->unsigned_p ?
 			     lshr_optab : ashr_optab, result,
-			     gen_rtx_CONST_INT (VOIDmode,
-				      loop_info->shift),
+			     GEN_INT (loop_info->shift),
 			     0, loop_info->unsigned_p, OPTAB_DIRECT);
     }
 
   /* ((end_value - start_value + adjust) >> shift) - 1 */
   result = expand_binop (QImode, sub_optab,
-			 result, gen_rtx_CONST_INT (VOIDmode, 1),
+			 result, GEN_INT (1),
 			 0, loop_info->unsigned_p, OPTAB_DIRECT);
 
   seq_start = get_insns ();
