@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "xcoffout.h"
 
-#if defined (USG) || defined (NO_STAB_H)
+#if defined (USG) || !defined (HAVE_STAB_H)
 #include "gstab.h"
 #else
 #include <stab.h>

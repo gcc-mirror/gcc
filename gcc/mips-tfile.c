@@ -707,7 +707,7 @@ main ()
 #include "mips/a.out.h"
 #endif /* CROSS_COMPILE */
 
-#if defined (USG) || defined (NO_STAB_H)
+#if defined (USG) || !defined (HAVE_STAB_H)
 #include "gstab.h"  /* If doing DBX on sysV, use our own stab.h.  */
 #else
 #include <stab.h>  /* On BSD, use the system's stab.h.  */
