@@ -1,3 +1,46 @@
+2002-01-03  William Cohen  <wcohen@redhat.com>
+
+	* function.h (struct function): Add profile.
+	(current_function_profile): New.
+	doc/extend.texi: Update documentation.
+	* final.c (final_start_function): Use current_function_profile
+	instead of profile_flag.
+	(profile_after_prologue): Likewise.
+	* function.c (expand_function_start): Likewise.
+	(expand_function_start): Likewise.
+	* config/alpha/alpha.c (direct_call_operand): 
+	(alpha_does_function_need_gp): Likewise.
+	(alpha_expand_prologue): Likewise.
+	* config/arm/arm.c (arm_expand_prologue): Likewise.
+	thumb_expand_prologue: Likewise.
+	* config/d30v/d30v.c (d30v_stack_info): Likewise.
+	* config/fr30/fr30.c (MUST_SAVE_RETURN_POINTER): Likewise.
+	(fr30_expand_prologue): Likewise.
+	* config/i386/cygwin.h (SUBTARGET_PROLOGUE): Likewise.
+	* config/i386/i386.c (ix86_osf_output_function_prologue): Likewise.
+	* config/i386/i386.h (FINALIZE_PIC): Likewise.
+	* config/i386/win32.h (SUBTARGET_PROLOGUE): Likewise.
+	* config/i960/i960.c (i960_output_function_prologue): Likewise.
+	* config/ia64/ia64.c (ia64_compute_frame_size): Likewise.
+	* config/m32r/m32r.c (MUST_SAVE_RETURN_ADDR): Likewise.
+	(m32r_expand_prologue): Likewise.
+	* config/m88k/m88k.c (m88k_layout_frame): Likewise.
+	(m88k_expand_prologue): Likewise.
+	* config/m88k/m88k.h (ADJUST_INSN_LENGTH): Likewise.
+	* config/mips/mips.c (compute_frame_size): Likewise.
+	(mips_expand_prologue): Likewise.
+	(mips_can_use_return_insn): Likewise.
+	* config/pa/elf.h (ASM_FILE_START): Likewise.
+	* config/pa/pa-linux.h (ASM_FILE_START): Likewise.
+	* config/pa/pa64-hpux.h (ASM_FILE_START): Likewise.
+	* config/pa/som.h (ASM_FILE_START): Likewise.
+	* config/romp/romp.c (romp_using_r14): Likewise.
+	* config/rs6000/rs6000.c (first_reg_to_save): Likewise.
+	(rs6000_stack_info): Likewise.
+	* config/rs6000/sysv4.h (ASM_DECLARE_FUNCTION_NAME): Likewise.
+	* config/rs6000/xcoff.h (toc_section): Likewise.
+	* config/v850/v850.c (compute_register_save_size): Likewise.
+
 2002-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* simplify-rtx.c (simplify_binary_operation) [DIV]: If

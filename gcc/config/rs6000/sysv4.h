@@ -625,7 +625,8 @@ extern int rs6000_pic_labelno;
   do {									\
     const char *const init_ptr = (TARGET_64BIT) ? ".quad" : ".long";	\
 									\
-    if (TARGET_RELOCATABLE && (get_pool_size () != 0 || profile_flag)	\
+    if (TARGET_RELOCATABLE 						\
+	&& (get_pool_size () != 0 || current_function_profile)		\
 	&& uses_TOC())							\
       {									\
 	char buf[256];							\

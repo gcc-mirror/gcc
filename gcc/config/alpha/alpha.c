@@ -891,7 +891,7 @@ direct_call_operand (op, mode)
      but is approximately correct for the OSF ABIs.  Don't know
      what to do for VMS, NT, or UMK.  */
   if (! TARGET_PROFILING_NEEDS_GP
-      && ! profile_flag)
+      && ! current_function_profile)
     return 0;
 
   return 1;
@@ -5850,7 +5850,7 @@ alpha_does_function_need_gp ()
   if (! TARGET_ABI_OSF)
     return 0;
 
-  if (TARGET_PROFILING_NEEDS_GP && profile_flag)
+  if (TARGET_PROFILING_NEEDS_GP && current_function_profile)
     return 1;
 
 #ifdef ASM_OUTPUT_MI_THUNK
@@ -5995,7 +5995,7 @@ alpha_expand_prologue ()
      the call to mcount ourselves, rather than having the linker do it
      magically in response to -pg.  Since _mcount has special linkage,
      don't represent the call as a call.  */
-  if (TARGET_PROFILING_NEEDS_GP && profile_flag)
+  if (TARGET_PROFILING_NEEDS_GP && current_function_profile)
     emit_insn (gen_prologue_mcount ());
 
   if (TARGET_ABI_UNICOSMK)

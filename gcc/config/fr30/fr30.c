@@ -134,7 +134,7 @@ static rtx fr30_pass_by_value PARAMS ((tree, tree));
    && ! call_used_regs [regno]         )
 
 #define MUST_SAVE_FRAME_POINTER	 (regs_ever_live [FRAME_POINTER_REGNUM]  || frame_pointer_needed)
-#define MUST_SAVE_RETURN_POINTER (regs_ever_live [RETURN_POINTER_REGNUM] || profile_flag)
+#define MUST_SAVE_RETURN_POINTER (regs_ever_live [RETURN_POINTER_REGNUM] || current_function_profile)
 
 #if UNITS_PER_WORD == 4
 #define WORD_ALIGN(SIZE) (((SIZE) + 3) & ~3)
@@ -334,7 +334,7 @@ fr30_expand_prologue ()
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
-  if (profile_flag)
+  if (current_function_profile)
     emit_insn (gen_blockage ());
 }
 

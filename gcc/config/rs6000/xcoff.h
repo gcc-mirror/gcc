@@ -307,7 +307,7 @@ toc_section ()						\
   if (write_symbols != NO_DEBUG)				\
     private_data_section ();					\
   text_section ();						\
-  if (profile_flag)						\
+  if (current_function_profile)					\
     fprintf (FILE, "\t.extern %s\n", RS6000_MCOUNT);		\
   rs6000_file_start (FILE, TARGET_CPU_DEFAULT);			\
 }

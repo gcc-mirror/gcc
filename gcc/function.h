@@ -434,6 +434,9 @@ struct function
      generated.  */
   unsigned int instrument_entry_exit : 1;
 
+  /* Nonzero if profiling code should be generated.  */
+  unsigned int profile : 1;
+
   /* Nonzero if stack limit checking should be enabled in the current
      function.  */
   unsigned int limit_stack : 1;
@@ -504,6 +507,7 @@ extern int virtuals_instantiated;
 #define current_function_internal_arg_pointer (cfun->internal_arg_pointer)
 #define current_function_return_rtx (cfun->return_rtx)
 #define current_function_instrument_entry_exit (cfun->instrument_entry_exit)
+#define current_function_profile (cfun->profile)
 #define current_function_limit_stack (cfun->limit_stack)
 #define current_function_uses_pic_offset_table (cfun->uses_pic_offset_table)
 #define current_function_uses_const_pool (cfun->uses_const_pool)

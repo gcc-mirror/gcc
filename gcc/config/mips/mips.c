@@ -6465,7 +6465,7 @@ compute_frame_size (size)
      call to mcount.  */
   if (total_size == extra_size
       && (mips_abi == ABI_32 || mips_abi == ABI_O64 || mips_abi == ABI_EABI)
-      && ! profile_flag)
+      && ! current_function_profile)
     total_size = extra_size = 0;
   else if (TARGET_ABICALLS)
     {
@@ -7505,7 +7505,7 @@ mips_expand_prologue ()
   /* If we are profiling, make sure no instructions are scheduled before
      the call to mcount.  */
 
-  if (profile_flag)
+  if (current_function_profile)
     emit_insn (gen_blockage ());
 }
 
@@ -7739,7 +7739,7 @@ mips_can_use_return_insn ()
   if (! reload_completed)
     return 0;
 
-  if (regs_ever_live[31] || profile_flag)
+  if (regs_ever_live[31] || current_function_profile)
     return 0;
 
   /* In mips16 mode, a function which returns a floating point value

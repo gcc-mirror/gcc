@@ -1714,7 +1714,7 @@ d30v_stack_info ()
   /* Zero all fields */
   info = zero_info;
 
-  if (profile_flag)
+  if (current_function_profile)
     regs_ever_live[GPR_LINK] = 1;
 
   /* Determine if this is a stdarg function */

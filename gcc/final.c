@@ -1527,7 +1527,7 @@ final_start_function (first, file, optimize)
   /* The Sun386i and perhaps other machines don't work right
      if the profiling code comes after the prologue.  */
 #ifdef PROFILE_BEFORE_PROLOGUE
-  if (profile_flag)
+  if (current_function_profile)
     profile_function (file);
 #endif /* PROFILE_BEFORE_PROLOGUE */
 
@@ -1573,7 +1573,7 @@ profile_after_prologue (file)
      FILE *file ATTRIBUTE_UNUSED;
 {
 #ifndef PROFILE_BEFORE_PROLOGUE
-  if (profile_flag)
+  if (current_function_profile)
     profile_function (file);
 #endif /* not PROFILE_BEFORE_PROLOGUE */
 }
@@ -3820,7 +3820,7 @@ leaf_function_p ()
   rtx insn;
   rtx link;
 
-  if (profile_flag || profile_arc_flag)
+  if (current_function_profile || profile_arc_flag)
     return 0;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))

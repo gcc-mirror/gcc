@@ -1392,7 +1392,7 @@ compute_register_save_size (p_reg_saved)
   long reg_saved = 0;
 
   /* Count the return pointer if we need to save it.  */
-  if (profile_flag && !call_p)
+  if (current_function_profile && !call_p)
     regs_ever_live [LINK_POINTER_REGNUM] = call_p = 1;
  
   /* Count space for the register saves.  */

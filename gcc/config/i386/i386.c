@@ -1329,7 +1329,7 @@ ix86_osf_output_function_prologue (file, size)
   if (TARGET_UNDERSCORES)
     prefix = "_";
 
-  if (profile_flag && OSF_PROFILE_BEFORE_PROLOGUE)
+  if (current_function_profile && OSF_PROFILE_BEFORE_PROLOGUE)
     {
       if (!flag_pic && !HALF_PIC_P ())
 	{
@@ -1369,7 +1369,7 @@ ix86_osf_output_function_prologue (file, size)
 
 #else  /* !OSF_OS */
 
-  if (profile_flag && OSF_PROFILE_BEFORE_PROLOGUE)
+  if (current_function_profile && OSF_PROFILE_BEFORE_PROLOGUE)
     {
       if (!flag_pic)
 	{
@@ -4156,7 +4156,7 @@ ix86_expand_prologue ()
   /* If we are profiling, make sure no instructions are scheduled before
      the call to mcount.  However, if -fpic, the above call will have
      done that.  */
-  if (profile_flag && ! pic_reg_used)
+  if (current_function_profile && ! pic_reg_used)
     emit_insn (gen_blockage ());
 }
 

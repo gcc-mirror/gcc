@@ -1828,7 +1828,7 @@ m88k_layout_frame ()
   frame_size = get_frame_size ();
 
   /* Since profiling requires a call, make sure r1 is saved.  */
-  if (profile_flag)
+  if (current_function_profile)
     save_regs[1] = 1;
 
   /* If we are producing debug information, store r1 and r30 where the
@@ -2039,7 +2039,7 @@ m88k_expand_prologue ()
       if (! save_regs[1])
 	emit_move_insn (return_reg, temp_reg);
     }
-  if (profile_flag)
+  if (current_function_profile)
     emit_insn (gen_blockage ());
 }
 

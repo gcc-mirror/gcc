@@ -205,7 +205,7 @@ extern void i386_pe_unique_section ();
 #define NO_IMPLICIT_EXTERN_C
 
 #define SUBTARGET_PROLOGUE						\
-  if (profile_flag 							\
+  if (current_function_profile						\
       && MAIN_NAME_P (DECL_NAME (current_function_decl))		\
      {									\
       rtx xops[1];							\

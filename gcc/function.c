@@ -6386,6 +6386,10 @@ expand_function_start (subr, parms_have_cleanups)
     = (flag_instrument_function_entry_exit
        && ! DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (subr));
 
+  current_function_profile
+    = (profile_flag
+       && ! DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (subr));
+
   current_function_limit_stack
     = (stack_limit_rtx != NULL_RTX && ! DECL_NO_LIMIT_STACK (subr));
 
@@ -6564,7 +6568,7 @@ expand_function_start (subr, parms_have_cleanups)
     }
 
 #ifdef PROFILE_HOOK
-  if (profile_flag)
+  if (current_function_profile)
     PROFILE_HOOK (profile_label_no);
 #endif
 

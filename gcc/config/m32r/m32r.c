@@ -1864,7 +1864,7 @@ static struct m32r_frame_info zero_frame_info;
  && (regs_ever_live[regno] && (!call_used_regs[regno] || interrupt_p)))
 
 #define MUST_SAVE_FRAME_POINTER (regs_ever_live[FRAME_POINTER_REGNUM])
-#define MUST_SAVE_RETURN_ADDR (regs_ever_live[RETURN_ADDR_REGNUM] || profile_flag)
+#define MUST_SAVE_RETURN_ADDR (regs_ever_live[RETURN_ADDR_REGNUM] || current_function_profile)
 
 #define SHORT_INSN_SIZE 2	/* size of small instructions */
 #define LONG_INSN_SIZE 4	/* size of long instructions */
@@ -2018,7 +2018,7 @@ m32r_expand_prologue ()
   if (frame_pointer_needed)
     emit_insn (gen_movsi (frame_pointer_rtx, stack_pointer_rtx));
 
-  if (profile_flag)
+  if (current_function_profile)
     emit_insn (gen_blockage ());
 }
 
