@@ -18,6 +18,35 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+/* The migration of target macros to target hooks works as follows:
+
+   1. Create a target hook that uses the existing target macros to
+      implement the same functionality.
+
+   2. Convert all the MI files to use the hook instead of the macro.
+
+   3. Repeat for a majority of the remaining target macros.  This will
+      take some time.
+
+   4. Tell target maintainers to start migrating.
+
+   5. Eventually convert the backends to override the hook instead of
+      defining the macros.  This will take some time too.
+
+   6. TBD when, poison the macros.  Unmigrated targets will break at
+      this point.
+
+   Note that we expect steps 1-3 to be done by the people that
+   understand what the MI does with each macro, and step 5 to be done
+   by the target maintainers for their respective targets.
+
+   Note that steps 1 and 2 don't have to be done together, but no
+   target can override the new hook until step 2 is complete for it.
+
+   Once the macros are poisoned, we will revert to the old migration
+   rules - migrate the macro, callers, and targets all at once.  This
+   comment can thus be removed at that point.  */
+
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

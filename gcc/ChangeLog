@@ -1,3 +1,7 @@
+2003-09-04  DJ Delorie  <dj@redhat.com>
+
+	* targhooks.c: Add comment explaining the migration process.
+
 2003-09-04  Eric Christopher  <echristo@redhat.com>
 
 	* config/frv/t-frv: Fix path for frv-abi.h.
