@@ -505,11 +505,8 @@ err:
 static void
 verify_alias_info (void)
 {
-  if (aliases_computed_p)
-    {
-      verify_flow_sensitive_alias_info ();
-      verify_flow_insensitive_alias_info ();
-    }
+  verify_flow_sensitive_alias_info ();
+  verify_flow_insensitive_alias_info ();
 }
 
 
@@ -677,7 +674,6 @@ init_tree_ssa (void)
   init_ssanames ();
   init_phinodes ();
   global_var = NULL_TREE;
-  aliases_computed_p = false;
 }
 
 
@@ -710,7 +706,6 @@ delete_tree_ssa (void)
   global_var = NULL_TREE;
   BITMAP_XFREE (call_clobbered_vars);
   call_clobbered_vars = NULL;
-  aliases_computed_p = false;
   BITMAP_XFREE (addressable_vars);
   addressable_vars = NULL;
 }
@@ -1211,7 +1206,7 @@ struct tree_opt_pass pass_redundant_phi =
   NULL,					/* next */
   0,					/* static_pass_number */
   0,					/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
+  PROP_cfg | PROP_ssa | PROP_alias,	/* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */

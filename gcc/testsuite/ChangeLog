@@ -1,3 +1,12 @@
+2004-07-28  Diego Novillo  <dnovillo@redhat.com>
+
+	* gcc.dg/tree-ssa/20030714-2.c: Adjust number of expected
+	conditionals.
+	* gcc.dg/tree-ssa/20031022-1.c: Adjust number of expected
+	loads.
+	* gcc.dg/tree-ssa/ssa-dom-cse-1.c: Expect optimization in
+	DOM1.
+
 2004-07-27  Andrew Pinski  <apinski@apple.com>
 
 	* g++.dg/rtti/tinfo1.C: Correct the xfail.

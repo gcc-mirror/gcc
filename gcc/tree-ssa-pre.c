@@ -2076,7 +2076,8 @@ struct tree_opt_pass pass_pre =
   NULL,					/* next */
   0,					/* static_pass_number */
   TV_TREE_PRE,				/* tv_id */
-  PROP_no_crit_edges | PROP_cfg | PROP_ssa,/* properties_required */
+  PROP_no_crit_edges | PROP_cfg
+    | PROP_ssa | PROP_alias,		/* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
@@ -2107,7 +2108,7 @@ struct tree_opt_pass pass_fre =
   NULL,					/* next */
   0,					/* static_pass_number */
   TV_TREE_FRE,				/* tv_id */
-  PROP_no_crit_edges | PROP_cfg | PROP_ssa,/* properties_required */
+  PROP_cfg | PROP_ssa | PROP_alias,	/* properties_required */
   0,					/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */

@@ -76,6 +76,7 @@ struct tree_opt_pass
 #define PROP_ssa		(1 << 6)
 #define PROP_no_crit_edges      (1 << 7)
 #define PROP_rtl		(1 << 8)
+#define PROP_alias		(1 << 9)
 
 #define PROP_trees \
   (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh)

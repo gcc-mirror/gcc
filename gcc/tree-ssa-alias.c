@@ -175,13 +175,6 @@ bitmap call_clobbered_vars;
    variable).  */
 bitmap addressable_vars;
 
-/* 'true' after aliases have been computed (see compute_may_aliases).  This
-   is used by get_stmt_operands and its helpers to determine what to do
-   when scanning an operand for a variable that may be aliased.  If
-   may-alias information is still not available, the statement is marked as
-   having volatile operands.  */
-bool aliases_computed_p;
-
 /* When the program has too many call-clobbered variables and call-sites,
    this variable is used to represent the clobbering effects of function
    calls.  In these cases, all the call clobbered variables in the program
@@ -350,9 +343,6 @@ compute_may_aliases (void)
 
   /* Deallocate memory used by aliasing data structures.  */
   delete_alias_info (ai);
-
-  /* Indicate that may-alias information is now available.  */
-  aliases_computed_p = true;
 }
 
 struct tree_opt_pass pass_may_alias = 
@@ -365,7 +355,7 @@ struct tree_opt_pass pass_may_alias =
   0,					/* static_pass_number */
   TV_TREE_MAY_ALIAS,			/* tv_id */
   PROP_cfg | PROP_ssa | PROP_pta,	/* properties_required */
-  0,					/* properties_provided */
+  PROP_alias,				/* properties_provided */
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_rename_vars
@@ -379,6 +369,7 @@ static struct alias_info *
 init_alias_info (void)
 {
   struct alias_info *ai;
+  static bool aliases_computed_p = false;
 
   ai = xcalloc (1, sizeof (struct alias_info));
   ai->ssa_names_visited = BITMAP_XMALLOC ();
@@ -417,14 +408,8 @@ init_alias_info (void)
       for (i = 0; i < num_referenced_vars; i++)
 	{
 	  var_ann_t ann = var_ann (referenced_var (i));
-
 	  ann->is_alias_tag = 0;
-	  if (ann->type_mem_tag)
-	    {
-	      var_ann_t tag_ann = var_ann (ann->type_mem_tag);
-	      tag_ann->may_aliases = NULL;
-	      bitmap_set_bit (vars_to_rename, tag_ann->uid);
-	    }
+	  ann->may_aliases = NULL;
 	}
 
       /* Clear flow-sensitive points-to information from each SSA name.  */
@@ -450,11 +435,12 @@ init_alias_info (void)
 	      pi->is_dereferenced = 0;
 	      if (pi->pt_vars)
 		bitmap_clear (pi->pt_vars);
-	      if (pi->name_mem_tag)
-		var_ann (pi->name_mem_tag)->may_aliases = NULL;
 	    }
 	}
     }
+
+  /* Next time, we will need to reset alias information.  */
+  aliases_computed_p = true;
 
   return ai;
 }
@@ -1375,47 +1361,64 @@ setup_pointers_and_addressables (struct alias_info *ai)
 
       /* Add pointer variables that have been dereferenced to the POINTERS
          array and create a type memory tag for them.  */
-      if (POINTER_TYPE_P (TREE_TYPE (var))
-	  && (bitmap_bit_p (ai->dereferenced_ptrs_store, v_ann->uid)
-	      || bitmap_bit_p (ai->dereferenced_ptrs_load, v_ann->uid)))
+      if (POINTER_TYPE_P (TREE_TYPE (var)))
 	{
-	  tree tag;
-	  var_ann_t t_ann;
+	  if ((bitmap_bit_p (ai->dereferenced_ptrs_store, v_ann->uid)
+		|| bitmap_bit_p (ai->dereferenced_ptrs_load, v_ann->uid)))
+	    {
+	      tree tag;
+	      var_ann_t t_ann;
 
-	  /* If pointer VAR still doesn't have a memory tag associated
-	     with it, create it now or re-use an existing one.  */
-	  tag = get_tmt_for (var, ai);
-	  t_ann = var_ann (tag);
+	      /* If pointer VAR still doesn't have a memory tag
+		 associated with it, create it now or re-use an
+		 existing one.  */
+	      tag = get_tmt_for (var, ai);
+	      t_ann = var_ann (tag);
 
-	  /* The type tag will need to be renamed into SSA afterwards.
-	     Note that we cannot do this inside get_tmt_for because
-	     aliasing may run multiple times and we only create type
-	     tags the first time.  */
-	  bitmap_set_bit (vars_to_rename, t_ann->uid);
+	      /* The type tag will need to be renamed into SSA
+		 afterwards. Note that we cannot do this inside
+		 get_tmt_for because aliasing may run multiple times
+		 and we only create type tags the first time.  */
+	      bitmap_set_bit (vars_to_rename, t_ann->uid);
 
-	  /* Associate the tag with pointer VAR.  */
-	  v_ann->type_mem_tag = tag;
+	      /* Associate the tag with pointer VAR.  */
+	      v_ann->type_mem_tag = tag;
 
-	  /* If pointer VAR has been used in a store operation, then its
-	     memory tag must be marked as written-to.  */
-	  if (bitmap_bit_p (ai->dereferenced_ptrs_store, v_ann->uid))
-	    bitmap_set_bit (ai->written_vars, t_ann->uid);
+	      /* If pointer VAR has been used in a store operation,
+		 then its memory tag must be marked as written-to.  */
+	      if (bitmap_bit_p (ai->dereferenced_ptrs_store, v_ann->uid))
+		bitmap_set_bit (ai->written_vars, t_ann->uid);
 
-	  /* If pointer VAR is a global variable or a PARM_DECL, then its
-	     memory tag should be considered a global variable.  */
-	  if (TREE_CODE (var) == PARM_DECL || needs_to_live_in_memory (var))
-	    mark_call_clobbered (tag);
+	      /* If pointer VAR is a global variable or a PARM_DECL,
+		 then its memory tag should be considered a global
+		 variable.  */
+	      if (TREE_CODE (var) == PARM_DECL || needs_to_live_in_memory (var))
+		mark_call_clobbered (tag);
 
-	  /* All the dereferences of pointer VAR count as references of
-	     TAG.  Since TAG can be associated with several pointers, add
-	     the dereferences of VAR to the TAG.  We may need to grow
-	     AI->NUM_REFERENCES because we have been adding name and
-	     type tags.  */
-	  if (t_ann->uid >= VARRAY_SIZE (ai->num_references))
-	    VARRAY_GROW (ai->num_references, t_ann->uid + 10);
+	      /* All the dereferences of pointer VAR count as
+		 references of TAG.  Since TAG can be associated with
+		 several pointers, add the dereferences of VAR to the
+		 TAG.  We may need to grow AI->NUM_REFERENCES because
+		 we have been adding name and type tags.  */
+	      if (t_ann->uid >= VARRAY_SIZE (ai->num_references))
+		VARRAY_GROW (ai->num_references, t_ann->uid + 10);
 
-	  VARRAY_UINT (ai->num_references, t_ann->uid)
-	      += VARRAY_UINT (ai->num_references, v_ann->uid);
+	      VARRAY_UINT (ai->num_references, t_ann->uid)
+		+= VARRAY_UINT (ai->num_references, v_ann->uid);
+	    }
+	  else
+	    {
+	      /* The pointer has not been dereferenced.  If it had a
+		 type memory tag, remove it and mark the old tag for
+		 renaming to remove it out of the IL.  */
+	      var_ann_t ann = var_ann (var);
+	      tree tag = ann->type_mem_tag;
+	      if (tag)
+		{
+		  bitmap_set_bit (vars_to_rename, var_ann (tag)->uid);
+		  ann->type_mem_tag = NULL_TREE;
+		}
+	    }
 	}
     }
 
