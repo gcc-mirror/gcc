@@ -1935,10 +1935,11 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
     }
 
   /* Move the insns out of MERGE_BB to before the branch.  */
-  if (end == merge_bb->end)
-    merge_bb->end = merge_bb->head;
   if (head != NULL)
     {
+      if (end == merge_bb->end)
+	merge_bb->end = PREV_INSN (head);
+
       head = squeeze_notes (head, end);
       if (GET_CODE (end) == NOTE
 	  && (NOTE_LINE_NUMBER (end) == NOTE_INSN_BLOCK_END
