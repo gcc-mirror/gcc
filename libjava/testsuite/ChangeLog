@@ -1,3 +1,8 @@
+2002-04-14  Mark Wielaard  <mark@klomp.org>
+
+	* libjava.mauve/xfails: Expect failures for PR libgcj/6293,
+	libgcj/6295, libgcj/6296 and libgcj/6297.
+
 2002-04-12  Anthony Green  <green@redhat.com>
 
 	* lib/libjava.exp: Use libgcj-VERSION.jar, not libgcj.jar.
