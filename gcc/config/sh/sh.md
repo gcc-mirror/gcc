@@ -1064,17 +1064,24 @@
 
 ;; If the output is a register and the input is memory, we have to be careful
 ;; and see which word needs to be loaded first.
-;;
+
+;; ??? Why are Q constraint addresses rejected here but not in the DFmode
+;; split pattern?
+
 (define_split
   [(set (match_operand:DI 0 "general_movdst_operand" "")
 	(match_operand:DI 1 "general_movsrc_operand" ""))]
- "!  (GET_CODE (operands[0]) == REG
-	         && REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER)
+ "! (GET_CODE (operands[0]) == REG
+     && REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER)
    && ! (GET_CODE (operands[1]) == REG
          && REGNO (operands[1]) >= FIRST_PSEUDO_REGISTER)
    && ! (GET_CODE (operands[0]) == REG && GET_CODE (operands[1]) == REG
-   && ! reload_completed
-   && reg_overlap_mentioned_p (operands[0], operands[1]))
+	 && ! reload_completed
+	 && reg_overlap_mentioned_p (operands[0], operands[1]))
+   && ! (GET_CODE (operands[0]) == MEM
+	 && GET_CODE (XEXP (operands[0], 0)) == PRE_DEC)
+   && ! (GET_CODE (operands[1]) == MEM
+	 && GET_CODE (XEXP (operands[1], 0)) == POST_INC)
    && ! EXTRA_CONSTRAINT_Q (operands[1])"
   [(set (match_dup 2) (match_dup 3))
    (set (match_dup 4) (match_dup 5))]
@@ -1123,13 +1130,17 @@
 (define_split
   [(set (match_operand:DF 0 "general_movdst_operand" "")
 	(match_operand:DF 1 "general_movsrc_operand" ""))]
- "!  (GET_CODE (operands[0]) == REG
-	         && REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER)
+ "! (GET_CODE (operands[0]) == REG
+     && REGNO (operands[0]) >= FIRST_PSEUDO_REGISTER)
    && ! (GET_CODE (operands[1]) == REG
          && REGNO (operands[1]) >= FIRST_PSEUDO_REGISTER)
    && ! (GET_CODE (operands[0]) == REG && GET_CODE (operands[1]) == REG
-   && ! reload_completed
-   && reg_overlap_mentioned_p (operands[0], operands[1]))"
+	 && ! reload_completed
+	 && reg_overlap_mentioned_p (operands[0], operands[1]))
+   && ! (GET_CODE (operands[0]) == MEM
+	 && GET_CODE (XEXP (operands[0], 0)) == PRE_DEC)
+   && ! (GET_CODE (operands[1]) == MEM
+	 && GET_CODE (XEXP (operands[1], 0)) == POST_INC)"
   [(set (match_dup 2) (match_dup 3))
    (set (match_dup 4) (match_dup 5))]
   "
@@ -1154,7 +1165,6 @@
       || operands[4] == 0 || operands[5] == 0)
     FAIL;
 }")
-
 
 (define_expand "movdf"
   [(set (match_operand:DF 0 "general_movdst_operand" "")
