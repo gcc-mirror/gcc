@@ -33,6 +33,7 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_free free
 
 extern void free ();
+extern rtx read_rtx ();
 
 char *xmalloc ();
 static void fatal ();
@@ -99,7 +100,6 @@ main (argc, argv)
 {
   rtx desc;
   FILE *infile;
-  extern rtx read_rtx ();
   register int c;
 
   obstack_init (rtl_obstack);
