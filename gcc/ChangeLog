@@ -1,5 +1,11 @@
 2001-06-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/gcc.texi, doc/install-old.texi: Remove old system-specific
+	installation documentation.
+	* doc/install.texi: Move it to here.
+
+2001-06-02  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* doc/install.texi: Clean up Texinfo markup.
 
 2001-06-02  Joseph S. Myers  <jsm28@cam.ac.uk>
