@@ -1,3 +1,8 @@
+2005-01-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* iresolve.c, trans-common.c, trans-types.c: Fix comment
+	typos.
+
 2005-01-09  Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/17675
