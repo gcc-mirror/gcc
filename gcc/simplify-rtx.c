@@ -773,7 +773,16 @@ simplify_unary_operation (enum rtx_code code, enum machine_mode mode,
 	case FIX:
 	  real_arithmetic (&d, FIX_TRUNC_EXPR, &d, NULL);
 	  break;
+	case NOT:
+	  {
+	    long tmp[4];
+	    int i;
 
+	    real_to_target (tmp, &d, GET_MODE (trueop));
+	    for (i = 0; i < 4; i++)
+	      tmp[i] = ~tmp[i];
+	    real_from_target (&d, tmp, mode);
+	  }
 	default:
 	  abort ();
 	}
@@ -1220,60 +1229,91 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
       && GET_CODE (trueop1) == CONST_DOUBLE
       && mode == GET_MODE (op0) && mode == GET_MODE (op1))
     {
-      REAL_VALUE_TYPE f0, f1, value;
-
-      REAL_VALUE_FROM_CONST_DOUBLE (f0, trueop0);
-      REAL_VALUE_FROM_CONST_DOUBLE (f1, trueop1);
-      f0 = real_value_truncate (mode, f0);
-      f1 = real_value_truncate (mode, f1);
-
-      if (HONOR_SNANS (mode)
-	  && (REAL_VALUE_ISNAN (f0) || REAL_VALUE_ISNAN (f1)))
-	return 0;
-
-      if (code == DIV
-	  && REAL_VALUES_EQUAL (f1, dconst0)
-	  && (flag_trapping_math || ! MODE_HAS_INFINITIES (mode)))
-	return 0;
-
-      if (MODE_HAS_INFINITIES (mode) && HONOR_NANS (mode)
-	  && flag_trapping_math
-	  && REAL_VALUE_ISINF (f0) && REAL_VALUE_ISINF (f1))
+      if (code == AND
+	  || code == IOR
+	  || code == XOR)
 	{
-	  int s0 = REAL_VALUE_NEGATIVE (f0);
-	  int s1 = REAL_VALUE_NEGATIVE (f1);
+	  long tmp0[4];
+	  long tmp1[4];
+	  REAL_VALUE_TYPE r;
+	  int i;
 
-	  switch (code)
+	  real_to_target (tmp0, CONST_DOUBLE_REAL_VALUE (op0),
+			  GET_MODE (op0));
+	  real_to_target (tmp1, CONST_DOUBLE_REAL_VALUE (op1),
+			  GET_MODE (op1));
+	  for (i = 0; i < 4; i++)
 	    {
-	    case PLUS:
-	      /* Inf + -Inf = NaN plus exception.  */
-	      if (s0 != s1)
-	        return 0;
-	      break;
-	    case MINUS:
-	      /* Inf - Inf = NaN plus exception.  */
-	      if (s0 == s1)
-	        return 0;
-	      break;
-	    case DIV:
-	      /* Inf / Inf = NaN plus exception.  */
-	      return 0;
-	    default:
-	      break;
+	      if (code == AND)
+		tmp0[i] &= tmp1[i];
+	      else if (code == IOR)
+		tmp0[i] |= tmp1[i];
+	      else if (code == XOR)
+		tmp0[i] ^= tmp1[i];
+	      else
+		abort ();
 	    }
+	   real_from_target (&r, tmp0, mode);
+	   return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
 	}
+      else
+	{
+	  REAL_VALUE_TYPE f0, f1, value;
 
-      if (code == MULT && MODE_HAS_INFINITIES (mode) && HONOR_NANS (mode)
-	  && flag_trapping_math
-	  && ((REAL_VALUE_ISINF (f0) && REAL_VALUES_EQUAL (f1, dconst0))
-	      || (REAL_VALUE_ISINF (f1) && REAL_VALUES_EQUAL (f0, dconst0))))
-	/* Inf * 0 = NaN plus exception.  */
-	return 0;
+	  REAL_VALUE_FROM_CONST_DOUBLE (f0, trueop0);
+	  REAL_VALUE_FROM_CONST_DOUBLE (f1, trueop1);
+	  f0 = real_value_truncate (mode, f0);
+	  f1 = real_value_truncate (mode, f1);
 
-      REAL_ARITHMETIC (value, rtx_to_tree_code (code), f0, f1);
+	  if (HONOR_SNANS (mode)
+	      && (REAL_VALUE_ISNAN (f0) || REAL_VALUE_ISNAN (f1)))
+	    return 0;
 
-      value = real_value_truncate (mode, value);
-      return CONST_DOUBLE_FROM_REAL_VALUE (value, mode);
+	  if (code == DIV
+	      && REAL_VALUES_EQUAL (f1, dconst0)
+	      && (flag_trapping_math || ! MODE_HAS_INFINITIES (mode)))
+	    return 0;
+
+	  if (MODE_HAS_INFINITIES (mode) && HONOR_NANS (mode)
+	      && flag_trapping_math
+	      && REAL_VALUE_ISINF (f0) && REAL_VALUE_ISINF (f1))
+	    {
+	      int s0 = REAL_VALUE_NEGATIVE (f0);
+	      int s1 = REAL_VALUE_NEGATIVE (f1);
+
+	      switch (code)
+		{
+		case PLUS:
+		  /* Inf + -Inf = NaN plus exception.  */
+		  if (s0 != s1)
+		    return 0;
+		  break;
+		case MINUS:
+		  /* Inf - Inf = NaN plus exception.  */
+		  if (s0 == s1)
+		    return 0;
+		  break;
+		case DIV:
+		  /* Inf / Inf = NaN plus exception.  */
+		  return 0;
+		default:
+		  break;
+		}
+	    }
+
+	  if (code == MULT && MODE_HAS_INFINITIES (mode) && HONOR_NANS (mode)
+	      && flag_trapping_math
+	      && ((REAL_VALUE_ISINF (f0) && REAL_VALUES_EQUAL (f1, dconst0))
+		  || (REAL_VALUE_ISINF (f1)
+		      && REAL_VALUES_EQUAL (f0, dconst0))))
+	    /* Inf * 0 = NaN plus exception.  */
+	    return 0;
+
+	  REAL_ARITHMETIC (value, rtx_to_tree_code (code), f0, f1);
+
+	  value = real_value_truncate (mode, value);
+	  return CONST_DOUBLE_FROM_REAL_VALUE (value, mode);
+	}
     }
 
   /* We can fold some multi-word operations.  */

@@ -1,3 +1,8 @@
+2005-03-22  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/14981
+	* gcc.dg/pr14981-1.c: New test.
+
 2005-03-21  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/20147	

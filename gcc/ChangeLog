@@ -1,3 +1,19 @@
+2005-03-22  Uros Bizjak  <uros@kss-loka.si>
+
+	PR target/14981
+	Backport from mainline
+	2004-02-18  Jan Hubicka  <jh@suse.cz>
+	* simplify-rtx.c (simplify_unary_operation): Deal with logicals on
+	floats.
+	(simplify_binary_operation): Deal with logicals on floats.
+	* i386.md (SSE fabs splitters): Emit new patterns.
+	(SSE cmov splitters): Likewise.
+	(sse_andv4sf3, sse_nandv4sf3, sse_iorv4sf3, sse_xorv4sf3
+	(sse_andv2df3, sse_nandv2df3, sse_iorv2df3, sse_xorv2df3): Do not use
+	subregs.
+	(sse_andsf3, sse_nandsf3, sse_xorsf3): Kill.
+	(sse_anddf3, sse_nanddf3, sse_xordf3): Kill.
+
 2005-03-20  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	PR target/18551
