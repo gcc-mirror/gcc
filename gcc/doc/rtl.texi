@@ -2769,7 +2769,7 @@ Here is an example of its use:
 This says to modify pseudo register 42 by adding the contents of pseudo
 register 48 to it, after the use of what ever 42 points to.
 
-@findex post_modify
+@findex pre_modify
 @item (pre_modify:@var{m} @var{x} @var{expr})
 Similar except side effects happen before the use.
 @end table
