@@ -1584,7 +1584,7 @@ gfc_arith_power (gfc_expr * op1, gfc_expr * op2, gfc_expr ** resultp)
 	  else
 	    {
 	      mpf_set_ui (result->value.complex.r, 1);
-	      mpf_set_ui (result->value.complex.r, 0);
+	      mpf_set_ui (result->value.complex.i, 0);
 	    }
 
 	  break;
