@@ -37,7 +37,7 @@ exception statement from your version. */
 
 package java.nio.charset.spi;
 
-//import java.nio.charset.Charset;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 
 /**
@@ -84,5 +84,5 @@ public abstract class CharsetProvider
    *
    * @return the charset, or null if not supported
    */
-  //public abstract Charset charsetForName(String name);
+  public abstract Charset charsetForName(String name);
 } // class CharsetProvider

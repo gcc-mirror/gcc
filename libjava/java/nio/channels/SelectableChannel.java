@@ -1,4 +1,4 @@
-/* DatagramChannel.java -- 
+/* SelectableChannel.java -- 
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -37,14 +37,53 @@ exception statement from your version. */
 
 package java.nio.channels;
 
-import java.nio.channels.spi.AbstractSelectableChannel;
+import java.nio.channels.spi.AbstractInterruptibleChannel;
 import java.nio.channels.spi.SelectorProvider;
 
-public abstract class DatagramChannel
-  extends AbstractSelectableChannel
+public abstract class SelectableChannel
+  extends AbstractInterruptibleChannel
 {
-  public DatagramChannel (SelectorProvider provider)
+  protected SelectableChannel()
   {
-    super (provider);
   }
+  
+  public abstract  Object blockingLock();
+
+  /**
+   * @exception ClosedChannelException FIXME
+   * @exception IllegalBlockingModeException FIXME
+   * @exception IOException FIXME
+   */
+  public abstract  SelectableChannel configureBlocking(boolean block);
+  
+  public abstract  boolean isBlocking();
+  
+  public abstract  boolean isRegistered();
+  
+  public abstract  SelectionKey keyFor(Selector sel);
+  
+  public abstract  SelectorProvider provider();
+  
+  /**
+   * @exception CancelledKeyException FIXME
+   * @exception ClosedChannelException FIXME
+   * @exception IllegalArgumentException FIXME
+   * @exception IllegalBlockingModeException FIXME
+   * @exception IllegalSelectorException FIXME
+   */
+  public final SelectionKey register(Selector sel, int ops) throws java.nio.channels.ClosedChannelException
+  {
+    return register(sel, ops, null);
+  }
+  
+  /**
+   * @exception CancelledKeyException FIXME
+   * @exception ClosedChannelException FIXME
+   * @exception IllegalArgumentException FIXME
+   * @exception IllegalBlockingModeException FIXME
+   * @exception IllegalSelectorException FIXME
+   */
+  public abstract  SelectionKey register(Selector sel, int ops, Object att) throws java.nio.channels.ClosedChannelException;
+  
+  public abstract  int validOps();  
 }

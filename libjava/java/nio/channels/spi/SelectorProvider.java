@@ -1,4 +1,4 @@
-/* DatagramChannel.java -- 
+/* SelectorProvider.java -- 
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,16 +35,48 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-package java.nio.channels;
+package java.nio.channels.spi;
 
-import java.nio.channels.spi.AbstractSelectableChannel;
-import java.nio.channels.spi.SelectorProvider;
+import java.nio.channels.DatagramChannel;
+import java.nio.channels.Pipe;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 
-public abstract class DatagramChannel
-  extends AbstractSelectableChannel
+/**
+ * @since 1.4
+ */
+public abstract class SelectorProvider
 {
-  public DatagramChannel (SelectorProvider provider)
+  static SelectorProvider pr;
+    
+  /**
+   * Creates the <code>SelectorProvider<code> object
+   *
+   * @exception SecurityException If a security manager has been installed and
+   * it denies RuntimePermission("selectorProvider")
+   */
+  protected SelectorProvider()
   {
-    super (provider);
+    SecurityManager sm = System.getSecurityManager ();
+    if (sm != null)
+      sm.checkPermission (new RuntimePermission ("selectorProvider"));
+  }
+    
+  public abstract  DatagramChannel openDatagramChannel();
+
+  public abstract  Pipe openPipe();
+  
+  public abstract  AbstractSelector openSelector();
+  
+  public abstract  ServerSocketChannel openServerSocketChannel();
+  
+  public abstract  SocketChannel openSocketChannel();
+   
+  /**
+   * Returns the global <code>SelectorProvider</code> object
+   */
+  public static SelectorProvider provider()
+  {
+    return pr;
   }
 }

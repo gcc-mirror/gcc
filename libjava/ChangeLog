@@ -1,5 +1,35 @@
 2002-11-01  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/ByteOrder.java: New file.
+	* java/nio/channels/DatagramChannel.java:
+	(DatagramChannel): New constructor.
+	* java/nio/channels/Pipe.java: New file.
+	* java/nio/channels/SelectableChannel.java: New file.
+	* java/nio/channels/SelectionKey.java: New file.
+	* java/nio/channels/Selector.java: New file.
+	* java/nio/channels/ServerSocketChannel.java
+	(ServerSocketChannel): New constructor.
+	* java/nio/channels/SocketChannel.java
+	(SocketChannel): New constructor.
+	* java/nio/channels/Pipe.java: New file.
+	* java/nio/channels/spi/AbstractChannel.java: New file.
+	* java/nio/channels/spi/AbstractInterruptibleChannel.java: New file.
+	* java/nio/channels/spi/AbstractSelectableChannel.java:
+	License added
+	(AbstractSelectableChannel): New stubbed method.
+	* java/nio/channels/spi/AbstractSelectionKey.java: New file.
+	* java/nio/channels/spi/AbstractSelector.java: New file.
+	* java/nio/channels/spi/SelectorProvider.java: New file.
+	* java/nio/charset/Charset.java: New file.
+	* java/nio/charset/CoderMalfunctionError.java: New file.
+	* java/nio/charset/CodingErrorAction.java: New file.
+	* java/nio/charset/spi/CharsetProvider.java
+	(charsetForName): Uncommented.
+	* Makefile.am (java_native_source_files): Added new files.
+	* Makefile.in: Regenerated.
+
+2002-11-01  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/InetAddress.java:
 	(isAnyLocalAddress): Implemented.
 	(isLoopbackAddress): Implemented, comment added.

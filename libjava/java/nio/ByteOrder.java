@@ -1,4 +1,4 @@
-/* DatagramChannel.java -- 
+/* ByteOrder.java -- 
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,16 +35,26 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-package java.nio.channels;
+package java.nio;
 
-import java.nio.channels.spi.AbstractSelectableChannel;
-import java.nio.channels.spi.SelectorProvider;
 
-public abstract class DatagramChannel
-  extends AbstractSelectableChannel
+public final class ByteOrder
 {
-  public DatagramChannel (SelectorProvider provider)
+  public static final ByteOrder BIG_ENDIAN     = new ByteOrder();
+  public static final ByteOrder LITTLE_ENDIAN  = new ByteOrder();
+
+  public static ByteOrder nativeOrder()
   {
-    super (provider);
+    return BIG_ENDIAN;
+  }
+
+  public String toString()
+  {
+    return this == BIG_ENDIAN ? "BIG_ENDIAN" : "LITTLE_ENDIAN";
+  }
+
+  // This class can only be instantiated here.
+  private ByteOrder ()
+  {
   }
 }

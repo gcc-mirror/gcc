@@ -1,4 +1,4 @@
-/* DatagramChannel.java -- 
+/* Selector.java -- 
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -37,14 +37,60 @@ exception statement from your version. */
 
 package java.nio.channels;
 
-import java.nio.channels.spi.AbstractSelectableChannel;
+import java.util.Set;
 import java.nio.channels.spi.SelectorProvider;
 
-public abstract class DatagramChannel
-  extends AbstractSelectableChannel
+public abstract class Selector
 {
-  public DatagramChannel (SelectorProvider provider)
+  protected Selector()
   {
-    super (provider);
   }
+ 
+  /**
+   * @exception IOException If an error occurs
+   */
+  public static Selector open()
+  {
+	return SelectorProvider.provider().openSelector();
+  }
+
+  /**
+   * @exception IOException If an error occurs
+   */
+  public abstract void close();
+  
+  public abstract boolean isOpen();
+  
+  /**
+   * @exception ClosedSelectorException FIXME
+   */
+  public abstract Set keys();
+  
+  public abstract SelectorProvider provider();
+  
+  /**
+   * @exception ClosedSelectorException FIXME
+   * @exception IOException If an error occurs
+   */
+  public abstract int select();
+  
+  /**
+   * @exception ClosedSelectorException FIXME
+   * @exception IllegalArgumentException FIXME
+   * @exception IOException If an error occurs
+   */
+  public abstract int select(long timeout);
+  
+  /**
+   * @exception ClosedSelectorException FIXME
+   */
+  public abstract Set selectedKeys();
+  
+  /**
+   * @exception ClosedSelectorException FIXME
+   * @exception IOException If an error occurs
+   */
+  public abstract int selectNow();
+  
+  public abstract Selector wakeup();
 }

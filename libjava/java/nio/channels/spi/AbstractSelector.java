@@ -1,4 +1,4 @@
-/* DatagramChannel.java -- 
+/* AbstractSelector.java -- 
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -35,16 +35,66 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
-package java.nio.channels;
+package java.nio.channels.spi;
 
-import java.nio.channels.spi.AbstractSelectableChannel;
-import java.nio.channels.spi.SelectorProvider;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.util.List;
+import java.util.Set;
 
-public abstract class DatagramChannel
-  extends AbstractSelectableChannel
+public abstract class AbstractSelector extends Selector
 {
-  public DatagramChannel (SelectorProvider provider)
+  boolean closed = true;
+  SelectorProvider provider;
+
+  protected AbstractSelector(SelectorProvider provider)
   {
-    super (provider);
+    this.provider = provider;
   }
+ 
+  protected final void begin()
+  {
+  }
+
+  /**
+   * @exception IOException If an error occurs
+   */
+  public final void close()
+  {
+    if (closed)
+      return;
+    closed = true;
+    implCloseSelector();
+  }
+
+  protected final void deregister(AbstractSelectionKey key)
+  {
+    cancelledKeys().remove(key);
+  }
+    
+  protected final void end()
+  {
+  }
+    
+  public final boolean isOpen()
+  {
+    return ! closed;
+  }
+    
+  public final SelectorProvider provider()
+  {
+    return provider;
+  }
+    
+  protected final Set cancelledKeys()
+  {
+    return null;
+  }
+  
+  /**
+   * @exception IOException If an error occurs
+   */
+  protected abstract void implCloseSelector();	
+  
+  protected abstract SelectionKey register(AbstractSelectableChannel ch, int ops, Object att);   
 }
