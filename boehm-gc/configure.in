@@ -137,7 +137,6 @@ case "$host" in
  alpha*-*-*)
     machdep="alpha_mach_dep.lo"
     ;;
-    ;;
  mipstx39-*-elf*)
     machdep="mips_ultrix_mach_dep.lo"
     AC_DEFINE(STACKBASE, __stackbase)
