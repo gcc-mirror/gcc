@@ -59,6 +59,13 @@ xref_set_data (flag, data)
   xref_table [flag-1].data = data;
 }
 
+void *
+xref_get_data (flag)
+     int flag;
+{
+  return xref_table [flag-1].data;
+}
+
 /* Branch to the right xref "back-end".  */
 
 void

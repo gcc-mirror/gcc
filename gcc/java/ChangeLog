@@ -1,3 +1,29 @@
+Thu May 13 13:23:38 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* check-init.c (check_init): Removed code accepting to see things
+	falling through default:, when doing xrefs.
+	* java-tree.h (do_not_fold): New global variable, declared.
+	* parse.y (do_not_fold): New global variable, defined.
+	(java_complete_expand_method): Set `do_not_fold' to the value of
+ 	`flag_emit_xref'. When doing xrefs: copy the thrown exceptions,
+ 	and reinstall them after them have been purged; do not check for
+ 	initializations; do not issue missing return errors.
+	(java_complete_lhs): Do not attempt to patch INSTANCEOF_EXPR nodes
+ 	when doing xrefs.
+	(patch_binop): Skip the fold part when doing xrefs.
+	(build_string_concatenation): Skip the concatenation part when
+ 	doing xrefs.
+	(patch_synchronized_statement): Do not generate a try-finally when
+ 	doing xrefs.
+	(patch_throw_statement): When doing xrefs, do not call BUILD_THROW
+ 	and keep the location where the throw was seen.
+	* typeck.c (convert): When `do_not_fold' is set, do not attempt
+ 	any treatment on the converted node an simply return a NOP_EXPR of
+ 	the targeted type.
+	* xref.c (xref_get_data): New function, defined.
+	* xref.h (xref_get_data): New function, declared.
+	(XREF_GET_DATA): Use xref_get_data.
+	
 1999-05-13  Kaveh R. Ghazi  <ghazi@snafu.rutgers.edu>
 
         * gjavah.c (print_include): Cast the result of `strlen' to int
@@ -123,7 +149,7 @@ Fri Apr 30 17:54:40 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(resolve_qualified_expression_name): Check for illegal use of
  	static fields in a non static context. Call static_ref_err to
  	report error in various places.
-	(java_complete_tree): To not fold initialized static fields when
+	(java_complete_tree): Do not fold initialized static fields when
  	doing xrefs.
 	(java_complete_lhs): Likewise.
 
