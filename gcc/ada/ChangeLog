@@ -1,5 +1,17 @@
 2004-10-04  Vincent Celier  <celier@gnat.com>
 
+	* prj-part.adb (Parse_Single_Project): Call Is_Extending_All
+	(Extended_Project) only if Extended_Project is defined, to avoid
+	assertion error.
+	(Post_Parse_Context_Clause): Always call Set_Path_Name_Of with a
+	resolved path.
+	(Parse_Single_Project): Ditto.
+
+	* prj-env.adb (Set_Ada_Paths.Add.Recursive_Add): Do not call
+	Add_To_Project_Path for virtual projects.
+
+2004-10-04  Vincent Celier  <celier@gnat.com>
+
 	* mlib-tgt-tru64.adb, mlib-tgt-aix.adb, mlib-tgt-irix.adb, 
 	mlib-tgt-hpux.adb, mlib-tgt-linux.adb, mlib-tgt-solaris.adb, 
 	mlib-tgt-vms-alpha.adb, mlib-tgt-vms-ia64.adb, mlib-tgt-mingw.adb, 
