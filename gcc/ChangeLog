@@ -1,5 +1,12 @@
 2001-06-08  Mark Mitchell  <mark@codesourcery.com>
 
+	* c-decl.c (grokdeclarator): Make the TREE_TYPE for declarations
+	accurately reflect its cv-qualification.
+	* c-typeck.c (type_lists_compatible_p): Ignore the top-levl
+	cv-qualifiers on function types.
+
+2001-06-08  Mark Mitchell  <mark@codesourcery.com>
+
 	* basic-block.h: Improve comments.
 	* except.c (expand_eh_region_end_allowed): Remove redundant call
 	to do_pending_stack_adjust.

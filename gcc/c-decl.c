@@ -4719,7 +4719,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
     if (decl_context == PARM)
       {
-	tree type_as_written = type;
+	tree type_as_written;
 	tree promoted_type;
 
 	/* A parameter declared as an array of T is really a pointer to T.
@@ -4782,6 +4782,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	    type = build_pointer_type (type);
 	    type_quals = TYPE_UNQUALIFIED;
 	  }
+	else if (type_quals)
+	  type = c_build_qualified_type (type, type_quals);
+	  
+	type_as_written = type;
 
 	decl = build_decl (PARM_DECL, declarator, type);
 	if (size_varies)
@@ -4908,7 +4912,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	    type_quals = TYPE_UNQUALIFIED;
 #endif
 	  }
-
+	else if (type_quals)
+	  type = c_build_qualified_type (type, type_quals);
+	  
 	decl = build_decl (VAR_DECL, declarator, type);
 	if (size_varies)
 	  C_DECL_VARIABLE_SIZE (decl) = 1;
