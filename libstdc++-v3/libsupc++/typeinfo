@@ -46,12 +46,14 @@ namespace __cxxabiv1
   class __class_type_info;
 } // namespace __cxxabiv1
 
-#if !__GXX_WEAK__
-  // If weak symbols are not supported, typeinfo names are not merged.
-  #define __GXX_MERGED_TYPEINFO_NAMES 0
-#else
-  // On platforms that support weak symbols, typeinfo names are merged.
-  #define __GXX_MERGED_TYPEINFO_NAMES 1
+#ifndef __GXX_MERGED_TYPEINFO_NAMES
+  #if !__GXX_WEAK__
+    // If weak symbols are not supported, typeinfo names are not merged.
+    #define __GXX_MERGED_TYPEINFO_NAMES 0
+  #else
+    // On platforms that support weak symbols, typeinfo names are merged.
+    #define __GXX_MERGED_TYPEINFO_NAMES 1
+  #endif
 #endif
 
 namespace std 

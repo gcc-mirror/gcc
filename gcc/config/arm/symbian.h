@@ -75,9 +75,12 @@
 #define RENAME_LIBRARY(GCC_NAME, AEABI_NAME) /* empty */
 
 /* Define the __symbian__ macro.  */
+#undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()		\
-  do 						\
+  do						\
     {						\
+      /* Include the default BPABI stuff.  */	\
+      TARGET_BPABI_CPP_BUILTINS ();		\
       builtin_define ("__symbian__");		\
-    } 						\
+    }						\
   while (false)
