@@ -1,3 +1,8 @@
+Sat Oct  3 14:42:19 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* varasm.c (assemble_start_function, assemble_variable, weak_finish,
+	assemble_alias): Do ASM_GLOBALIZE_LABEL for weak symbols, too.
+
 Sat Oct  3 16:14:44 1998  John Carr  <jfc@mit.edu>
 
 	* dwarf2out.c (expand_builtin_dwarf_reg_size):  Initialize
