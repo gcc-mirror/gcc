@@ -706,6 +706,7 @@ emit_iinc (var, value, state)
 static void
 emit_load_or_store (var, opcode, state)
      tree var;
+     int opcode;
      struct jcf_partial *state;
 {
   tree type = TREE_TYPE (var);
