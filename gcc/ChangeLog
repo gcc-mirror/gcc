@@ -1,3 +1,15 @@
+2005-02-10  David Daney  <ddaney@avtrex.com>
+
+	* config/alpha/linux-unwind.h: Add exception clause to copyright.
+	* config/i386/linux-unwind.h: Likewise.
+	* config/ia64/linux-unwind.h: Likewise.
+	* config/mips/linux-unwind.h: Likewise.
+	* config/pa/linux-unwind.h: Likewise.
+	* config/rs6000/linux-unwind.h: Likewise.
+	* config/s390/linux-unwind.h: Likewise.
+	* config/sh/linux-unwind.h: Likewise.
+	* config/sparc/linux-unwind.h: Likewise.
+
 2005-02-10  Steven Bosscher  <stevenb@suse.de>
 
 	PR tree-optimization/17549

@@ -1,5 +1,5 @@
 /* DWARF2 EH unwinding support for IA64 Linux.
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -7,6 +7,14 @@
    under the terms of the GNU General Public License as published
    by the Free Software Foundation; either version 2, or (at your
    option) any later version.
+
+   In addition to the permissions in the GNU General Public License,
+   the Free Software Foundation gives you unlimited permission to link
+   the compiled version of this file with other programs, and to
+   distribute those programs without any restriction coming from the
+   use of this file.  (The General Public License restrictions do
+   apply in other respects; for example, they cover modification of
+   the file, and distribution when not linked into another program.)
 
    GCC is distributed in the hope that it will be useful, but WITHOUT
    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
