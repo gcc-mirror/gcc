@@ -179,6 +179,7 @@ static int valid_method_invocation_conversion_p PARAMS ((tree, tree));
 static tree try_builtin_assignconv PARAMS ((tree, tree, tree));
 static tree try_reference_assignconv PARAMS ((tree, tree));
 static tree build_unresolved_array_type PARAMS ((tree));
+static int build_type_name_from_array_name PARAMS ((tree, tree *));
 static tree build_array_from_name PARAMS ((tree, tree, tree, tree *));
 static tree build_array_ref PARAMS ((int, tree, tree));
 static tree patch_array_ref PARAMS ((tree));
@@ -2121,7 +2122,8 @@ array_creation_expression:
 		  char *sig;
 		  int osb = pop_current_osb (ctxp);
 		  while (osb--)
-		    obstack_1grow (&temporary_obstack, '[');
+		    obstack_grow (&temporary_obstack, "[]", 2);
+		  obstack_1grow (&temporary_obstack, '\0');
 		  sig = obstack_finish (&temporary_obstack);
 		  $$ = build (NEW_ANONYMOUS_ARRAY_EXPR, NULL_TREE,
 			      $2, get_identifier (sig), $4);
@@ -2366,11 +2368,12 @@ cast_expression:		/* Error handling here is potentially weak */
 		{ 
 		  const char *ptr;
 		  int osb = pop_current_osb (ctxp); 
+		  obstack_grow (&temporary_obstack, 
+				IDENTIFIER_POINTER (EXPR_WFL_NODE ($2)),
+				IDENTIFIER_LENGTH (EXPR_WFL_NODE ($2)));
 		  while (osb--)
-		    obstack_1grow (&temporary_obstack, '[');
-		  obstack_grow0 (&temporary_obstack, 
-				 IDENTIFIER_POINTER (EXPR_WFL_NODE ($2)),
-				 IDENTIFIER_LENGTH (EXPR_WFL_NODE ($2)));
+		    obstack_grow (&temporary_obstack, "[]", 2);
+		  obstack_1grow (&temporary_obstack, '\0');
 		  ptr = obstack_finish (&temporary_obstack);
 		  EXPR_WFL_NODE ($2) = get_identifier (ptr);
 		  $$ = build_cast ($1.location, $2, $5);
@@ -3254,24 +3257,41 @@ variable_redefinition_error (context, name, type, line)
 		       type_name, IDENTIFIER_POINTER (name), line);
 }
 
+/* If ANAME is terminated with `[]', it indicates an array. This
+   function returns the number of `[]' found and if this number is
+   greater than zero, it extracts the array type name and places it in
+   the node pointed to by TRIMMED unless TRIMMED is null.  */
+
+static int
+build_type_name_from_array_name (aname, trimmed)
+     tree aname;
+     tree *trimmed;
+{
+  const char *name = IDENTIFIER_POINTER (aname);
+  int len = IDENTIFIER_LENGTH (aname);
+  int array_dims;
+
+  STRING_STRIP_BRACKETS (name, len, array_dims);
+
+  if (array_dims && trimmed)
+    *trimmed = get_identifier_with_length (name, len);
+
+  return array_dims;
+}
+
 static tree
 build_array_from_name (type, type_wfl, name, ret_name)
      tree type, type_wfl, name, *ret_name;
 {
   int more_dims = 0;
-  const char *string;
 
   /* Eventually get more dims */
-  string = IDENTIFIER_POINTER (name);
-  while (string [more_dims] == '[')
-    more_dims++;
+  more_dims = build_type_name_from_array_name (name, &name);
   
   /* If we have, then craft a new type for this variable */
   if (more_dims)
     {
       tree save = type;
-
-      name = get_identifier (&string [more_dims]);
 
       /* If we have a pointer, use its type */
       if (TREE_CODE (type) == POINTER_TYPE)
@@ -3289,12 +3309,9 @@ build_array_from_name (type, type_wfl, name, ret_name)
          on adding dimensions) */
       else if (type_wfl)
 	{
-	  int i = 0;
 	  type = type_wfl;
-	  string = IDENTIFIER_POINTER (TYPE_NAME (save));
-	  while (string[i]  == '[')
-	    ++i;
-	  more_dims += i;
+	  more_dims += build_type_name_from_array_name (TYPE_NAME (save),
+							NULL);
 	}
 
       /* Add all the dimensions */
@@ -3327,10 +3344,10 @@ build_unresolved_array_type (type_or_wfl)
   if (TREE_CODE (type_or_wfl) == RECORD_TYPE)
     return build_java_array_type (type_or_wfl, -1);
 
-  obstack_1grow (&temporary_obstack, '[');
-  obstack_grow0 (&temporary_obstack,
+  obstack_grow (&temporary_obstack,
 		 IDENTIFIER_POINTER (EXPR_WFL_NODE (type_or_wfl)),
 		 IDENTIFIER_LENGTH (EXPR_WFL_NODE (type_or_wfl)));
+  obstack_grow0 (&temporary_obstack, "[]", 2);
   ptr = obstack_finish (&temporary_obstack);
   wfl = build_expr_wfl (get_identifier (ptr),
 			EXPR_WFL_FILENAME (type_or_wfl),
@@ -4391,7 +4408,7 @@ register_fields (flags, type, variable_list)
 /* Generate finit$, using the list of initialized fields to populate
    its body. finit$'s parameter(s) list is adjusted to include the
    one(s) used to initialized the field(s) caching outer context
-   local(s). */
+   local(s).  */
 
 static tree
 generate_finit (class_type)
@@ -5680,9 +5697,9 @@ static tree
 resolve_class (enclosing, class_type, decl, cl)
      tree enclosing, class_type, decl, cl;
 {
-  const char *name = IDENTIFIER_POINTER (TYPE_NAME (class_type));
-  const char *base = name;
+  tree tname = TYPE_NAME (class_type);
   tree resolved_type = TREE_TYPE (class_type);
+  int array_dims = 0;
   tree resolved_type_decl;
   
   if (resolved_type != NULL_TREE)
@@ -5700,13 +5717,9 @@ resolve_class (enclosing, class_type, decl, cl)
 
   /* 1- Check to see if we have an array. If true, find what we really
      want to resolve  */
-  while (name[0] == '[')
-    name++;
-  if (base != name)
-    {
-      TYPE_NAME (class_type) = get_identifier (name);
-      WFL_STRIP_BRACKET (cl, cl);
-    }
+  if ((array_dims = build_type_name_from_array_name (tname,
+						     &TYPE_NAME (class_type))))
+    WFL_STRIP_BRACKET (cl, cl);
 
   /* 2- Resolve the bare type */
   if (!(resolved_type_decl = do_resolve_class (enclosing, class_type, 
@@ -5715,15 +5728,10 @@ resolve_class (enclosing, class_type, decl, cl)
   resolved_type = TREE_TYPE (resolved_type_decl);
 
   /* 3- If we have and array, reconstruct the array down to its nesting */
-  if (base != name)
+  if (array_dims)
     {
-      while (base != name)
-	{
-	  resolved_type = build_java_array_type (resolved_type, -1);
-	  name--;
-	}
-      /* A TYPE_NAME that is a TYPE_DECL was set in
-         build_java_array_type, return it. */
+      for (; array_dims; array_dims--)
+	resolved_type = build_java_array_type (resolved_type, -1);
       resolved_type_decl = TYPE_NAME (resolved_type);
     }
   TREE_TYPE (class_type) = resolved_type;
@@ -5943,15 +5951,24 @@ resolve_no_layout (name, cl)
   return decl;
 }
 
-/* Called when reporting errors. Skip leader '[' in a complex array
-   type description that failed to be resolved.  */
+/* Called when reporting errors. Skip the '[]'s in a complex array
+   type description that failed to be resolved. purify_type_name can't
+   use an identifier tree.  */
 
 static const char *
 purify_type_name (name)
      const char *name;
 {
-  while (*name && *name == '[')
-    name++;
+  int len = strlen (name);
+  int bracket_found;
+
+  STRING_STRIP_BRACKETS (name, len, bracket_found);
+  if (bracket_found)
+    {
+      char *stripped_name = xmemdup (name, len, len+1);
+      stripped_name [len] = '\0';
+      return stripped_name;
+    }
   return name;
 }
 

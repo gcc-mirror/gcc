@@ -1,3 +1,22 @@
+2001-09-19  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.h: (WFL_STRIP_BRACKET): Re-written using
+	build_type_name_from_array_name.
+	(STRING_STRIP_BRACKETS): New macro.
+	* parse.y (build_type_name_from_array_name): New function.
+	(array_creation_expression:): Accumulate []s instead of [s.
+	(cast_expression:): Accumulate []s instead of [s after cast type
+	name.
+	(build_array_from_name): Local string deleted, use
+	build_type_name_from_array_name.
+	(build_unresolved_array_type): Accumulate []s instead of [s after
+	type name.
+	(register_fields): Fixed comment.
+	(resolve_class): Local name, base deleted, new locals tname and
+	array_dims. Use build_type_name_from_array_name. Use array_dims to
+	build array type.
+	(purify_type_name): Use STRING_STRIP_BRACKETS.
+
 2001-09-18  Andreas Jaeger  <aj@suse.de>
 
 	* parse.y: Use VA_OPEN/VA_CLOSE/VA_FIXEDARG throughout.

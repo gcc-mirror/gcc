@@ -562,24 +562,34 @@ typedef struct _jdeplist {
       }									\
   }
 
-#define WFL_STRIP_BRACKET(TARGET, TYPE)					\
-{									\
-  tree __type = (TYPE);							\
-  if (TYPE && TREE_CODE (TYPE) == EXPR_WITH_FILE_LOCATION)		\
-    {									\
-      tree _node = EXPR_WFL_NODE (TYPE);				\
-      const char *_ptr = IDENTIFIER_POINTER (_node);			\
-      const char *_ref = _ptr;						\
-      while (_ptr[0] == '[')						\
-	  _ptr++;							\
-      if (_ref != _ptr)							\
-	{								\
-	  tree _new = copy_node (TYPE);					\
-	  EXPR_WFL_NODE (_new) = get_identifier (_ptr);			\
-	  __type = _new;						\
-	}								\
-    }									\
-  (TARGET) = __type;							\
+#define WFL_STRIP_BRACKET(TARGET, TYPE)					  \
+{									  \
+  tree __type = (TYPE);							  \
+  if (TYPE && TREE_CODE (TYPE) == EXPR_WITH_FILE_LOCATION)		  \
+    {									  \
+      tree _node;							  \
+      if (build_type_name_from_array_name (EXPR_WFL_NODE (TYPE), &_node)) \
+        {								  \
+          tree _new = copy_node (TYPE);					  \
+          EXPR_WFL_NODE (_new) = _node;				  	  \
+          __type = _new;						  \
+        }								  \
+    }									  \
+  (TARGET) = __type;							  \
+}
+
+/* If NAME contains one or more trailing []s, NAMELEN will be the
+   adjusted to be the index of the last non bracket character in
+   NAME. ARRAY_DIMS will contain the number of []s found.  */
+
+#define STRING_STRIP_BRACKETS(NAME, NAMELEN, ARRAY_DIMS)                  \
+{									  \
+  ARRAY_DIMS = 0;							  \
+  while (NAMELEN >= 2 && (NAME)[NAMELEN - 1] == ']')			  \
+    {									  \
+      NAMELEN -= 2;							  \
+      (ARRAY_DIMS)++;							  \
+    }									  \
 }
 
 /* Promote a type if it won't be registered as a patch */
