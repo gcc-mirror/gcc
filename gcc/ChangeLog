@@ -1,3 +1,7 @@
+2001-06-18  Ben Elliston  <bje@redhat.com>
+
+	* except.c (resolve_fixup_regions): Initialise "cleanup".
+
 2001-06-17  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* tm.texi: Document STDC_0_IN_SYSTEM_HEADERS.
