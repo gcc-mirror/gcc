@@ -1157,6 +1157,7 @@ copy_node (node)
     ((char *) t)[i] = ((char *) node)[i];
 
   TREE_CHAIN (t) = 0;
+  TREE_ASM_WRITTEN (t) = 0;
 
   if (TREE_CODE_CLASS (code) == 'd')
     DECL_UID (t) = next_decl_uid++;
