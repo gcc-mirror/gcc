@@ -286,7 +286,7 @@ extern rtx cleanup_label, return_label;
 rtx original_result_rtx;
 
 /* Sequence of insns which represents base initialization.  */
-rtx base_init_insns;
+tree base_init_expr;
 
 /* C++: Keep these around to reduce calls to `get_identifier'.
    Identifiers for `this' in member functions and the auto-delete
@@ -578,7 +578,10 @@ struct binding_level
        unfortunately.)  */
     unsigned pseudo_global : 1;
 
-    /* Two bits left for this word.  */
+    /* This is set for a namespace binding level.  */
+    unsigned namespace_p : 1;
+
+    /* One bit left for this word.  */
 
 #if defined(DEBUG_CP_BINDING_LEVELS)
     /* Binding depth at which this level began.  */
@@ -713,6 +716,90 @@ pop_binding_level ()
       current_binding_level = current_binding_level->level_chain;
   }
 }
+
+static void
+suspend_binding_level ()
+{
+  if (class_binding_level)
+    current_binding_level = class_binding_level;
+
+  if (global_binding_level)
+    {
+      /* cannot suspend a level, if there are none left to suspend. */
+      if (current_binding_level == global_binding_level)
+	my_friendly_abort (123);
+    }
+  /* Suspend the current level.  */
+#if defined(DEBUG_CP_BINDING_LEVELS)
+  binding_depth--;
+  indent ();
+  fprintf (stderr, "suspend  %s level 0x%08x line %d\n",
+	  (is_class_level) ? "class" : "block",
+	  current_binding_level, lineno);
+  if (is_class_level != (current_binding_level == class_binding_level))
+#if 0 /* XXX Don't abort when we're watching how things are being managed.  */
+    abort ();
+#else
+  {
+    indent ();
+    fprintf (stderr, "XXX is_class_level != (current_binding_level == class_binding_level)\n");
+  }
+#endif
+  is_class_level = 0;
+#endif /* defined(DEBUG_CP_BINDING_LEVELS) */
+  {
+    register struct binding_level *level = current_binding_level;
+    current_binding_level = current_binding_level->level_chain;
+#if 0 /* defined(DEBUG_CP_BINDING_LEVELS) */
+    if (level->binding_depth != binding_depth)
+      abort ();
+#endif /* defined(DEBUG_CP_BINDING_LEVELS) */
+
+    class_binding_level = current_binding_level;
+    if (class_binding_level->parm_flag != 2)
+      class_binding_level = 0;
+    while (current_binding_level->parm_flag == 2)
+      current_binding_level = current_binding_level->level_chain;
+  }
+}
+
+void
+resume_binding_level (b)
+     struct binding_level *b;
+{
+  if (class_binding_level)
+    {
+#if 1
+      /* These are here because we cannot deal with shadows yet. */
+      sorry ("cannot resume a namespace inside class");
+      return;
+#else
+      b->level_chain = class_binding_level;
+      class_binding_level = (struct binding_level *)0;
+#endif
+    }
+  else
+    {
+#if 1
+      /* These are here because we cannot deal with shadows yet. */
+      if (b->level_chain != current_binding_level)
+	{
+	  sorry ("cannot resume a namespace inside a different namespace");
+	  return;
+	}
+#endif
+      b->level_chain = current_binding_level;
+    }
+  current_binding_level = b;
+#if defined(DEBUG_CP_BINDING_LEVELS)
+  b->binding_depth = binding_depth;
+  indent ();
+  fprintf (stderr, "resume %s level 0x%08x line %d\n",
+	   (is_class_level) ? "class" : "block", b, lineno);
+  is_class_level = 0;
+  binding_depth++;
+#endif /* defined(DEBUG_CP_BINDING_LEVELS) */
+}
 
 /* Nonzero if we are currently in the global binding level.  */
 
@@ -720,6 +807,33 @@ int
 global_bindings_p ()
 {
   return current_binding_level == global_binding_level;
+}
+
+/* Nonzero if we are currently in a toplevel binding level.  This
+   means either the global binding level or a namespace in a toplevel
+   binding level.  */
+
+int
+toplevel_bindings_p ()
+{
+  struct binding_level *b = current_binding_level;
+
+  while (1)
+    {
+      if (b == global_binding_level)
+	return 1;
+      if (! b->namespace_p)
+	return 0;
+      b=b->level_chain;
+    }
+}
+
+/* Nonzero if this is a namespace scope.  */
+
+int
+namespace_bindings_p ()
+{
+  return current_binding_level->namespace_p;
 }
 
 void
@@ -764,6 +878,12 @@ void
 declare_pseudo_global_level ()
 {
   current_binding_level->pseudo_global = 1;
+}
+
+void
+declare_namespace_level ()
+{
+  current_binding_level->namespace_p = 1;
 }
 
 int
@@ -1110,6 +1230,31 @@ poplevel (keep, reverse, functionbody)
   return block;
 }
 
+/* Resume a binding level for a namespace.  */
+void
+resume_level (b)
+     struct binding_level *b;
+{
+  tree decls, link;
+
+  resume_binding_level (b);
+
+  /* Resume the variable caches.  */
+  decls = current_binding_level->names;
+
+  /* Restore the meanings of the local variables of this level.  */
+
+  for (link = decls; link; link = TREE_CHAIN (link))
+    {
+      if (DECL_NAME (link) != NULL_TREE)
+	IDENTIFIER_LOCAL_VALUE (DECL_NAME (link)) = link;
+
+      /* If this is a TYPE_DECL, push it into the type value slot.  */
+      if (TREE_CODE (link) == TYPE_DECL)
+	SET_IDENTIFIER_TYPE_VALUE (DECL_NAME (link), TREE_TYPE (link));
+    }
+}
+
 /* Delete the node BLOCK from the current binding level.
    This is used for the block inside a stmt expr ({...})
    so that the block can be reinserted where appropriate.  */
@@ -1428,6 +1573,95 @@ print_binding_stack ()
   fprintf (stderr, "global:\n");
   print_binding_level (global_binding_level);
 }
+
+/* Push into the scope of the NAME namespace.  */
+void
+push_namespace (name)
+     tree name;
+{
+  extern tree current_namespace;
+  tree old_id = get_namespace_id ();
+  char *buf;
+  tree d = make_node (NAMESPACE_DECL);
+
+  DECL_NAME (d) = name;
+  DECL_ASSEMBLER_NAME (d) = name;
+  /* pushdecl wants to check the size of it to see if it is incomplete... */
+  TREE_TYPE (d) = void_type_node;
+  /* Mark them as external, so redeclaration_error_message doesn't think
+     they are duplicates. */
+  DECL_EXTERNAL (d) = 1;
+  d = pushdecl (d);
+
+  if (NAMESPACE_LEVEL (d) == 0)
+    {
+      /* This is new for this compilation unit.  */
+      pushlevel (0);
+      declare_namespace_level ();
+      NAMESPACE_LEVEL (d) = (tree)current_binding_level;
+    }
+  else
+    {
+      resume_level ((struct binding_level*)NAMESPACE_LEVEL (d));
+    }
+
+  /* This code is just is bit old now... */ 
+  current_namespace = tree_cons (NULL_TREE, name, current_namespace);
+  buf = (char *) alloca (4 + (old_id ? IDENTIFIER_LENGTH (old_id) : 0)
+			 + IDENTIFIER_LENGTH (name));
+  sprintf (buf, "%s%s", old_id ? IDENTIFIER_POINTER (old_id) : "",
+	   IDENTIFIER_POINTER (name));
+  TREE_PURPOSE (current_namespace) = get_identifier (buf);
+}
+
+/* Pop from the scope of the current namespace.  */
+void
+pop_namespace ()
+{
+  extern tree current_namespace;
+  tree decls, link;
+  current_namespace = TREE_CHAIN (current_namespace);
+
+  /* Just in case we get out of sync. */
+  if (! namespace_bindings_p ())
+    poplevel (0, 0, 0);
+
+  decls = current_binding_level->names;
+
+  /* Clear out the meanings of the local variables of this level.  */
+
+  for (link = decls; link; link = TREE_CHAIN (link))
+    {
+      if (DECL_NAME (link) != NULL_TREE)
+	{
+	  /* If the ident. was used or addressed via a local extern decl,
+	     don't forget that fact.  */
+	  if (DECL_EXTERNAL (link))
+	    {
+	      if (TREE_USED (link))
+		TREE_USED (DECL_ASSEMBLER_NAME (link)) = 1;
+	      if (TREE_ADDRESSABLE (link))
+		TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (link)) = 1;
+	    }
+	  IDENTIFIER_LOCAL_VALUE (DECL_NAME (link)) = NULL_TREE;
+	}
+    }
+
+  /* Restore all name-meanings of the outer levels
+     that were shadowed by this level.  */
+
+  for (link = current_binding_level->shadowed; link; link = TREE_CHAIN (link))
+    IDENTIFIER_LOCAL_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
+  for (link = current_binding_level->class_shadowed;
+       link; link = TREE_CHAIN (link))
+    IDENTIFIER_CLASS_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
+  for (link = current_binding_level->type_shadowed;
+       link; link = TREE_CHAIN (link))
+    IDENTIFIER_TYPE_VALUE (TREE_PURPOSE (link)) = TREE_VALUE (link);
+
+  /* suspend a level.  */
+  suspend_binding_level ();
+}
 
 /* Subroutines for reverting temporarily to top-level for instantiation
    of templates and such.  We actually need to clear out the class- and
@@ -1677,15 +1911,16 @@ set_nested_typename (decl, classname, name, type)
   }
 }
 
-/* Pop off extraneous binding levels left over due to syntax errors.  */
+/* Pop off extraneous binding levels left over due to syntax errors.
+
+   We don't pop past namespaces, as they might be valid.  */
 void
 pop_everything ()
 {
 #ifdef DEBUG_CP_BINDING_LEVELS
   fprintf (stderr, "XXX entering pop_everything ()\n");
 #endif
-  while (current_binding_level != global_binding_level
-	 && ! current_binding_level->pseudo_global)
+  while (! toplevel_bindings_p () && ! pseudo_global_level_p ())
     {
       if (class_binding_level)
 	pop_nested_class (1);
@@ -1747,7 +1982,7 @@ pushtag (name, type, globalize)
 	 || (globalize && b->parm_flag == 2))
     b = b->level_chain;
 
-  if (b == global_binding_level)
+  if (toplevel_bindings_p ())
     b->tags = perm_tree_cons (name, type, b->tags);
   else
     b->tags = saveable_tree_cons (name, type, b->tags);
@@ -2092,11 +2327,11 @@ warn_extern_redeclared_static (newdecl, olddecl)
 	     && (DECL_BUILT_IN (olddecl)
 		 || DECL_BUILT_IN_NONANSI (olddecl))))
 	{
-	  cp_warning (IDENTIFIER_IMPLICIT_DECL (name)
+	  cp_pedwarn (IDENTIFIER_IMPLICIT_DECL (name)
 		      ? implicit_extern_static_warning
 		      : explicit_extern_static_warning, newdecl);
 	  if (olddecl != NULL_TREE)
-	    cp_warning_at ("previous declaration of `%D'", olddecl);
+	    cp_pedwarn_at ("previous declaration of `%D'", olddecl);
 	}
     }
 }
@@ -2507,35 +2742,17 @@ duplicate_decls (newdecl, olddecl)
     }
 
   /* Merge the storage class information.  */
-  if (DECL_EXTERNAL (newdecl) && ! DECL_INTERFACE_KNOWN (newdecl)
-      && ! (DECL_LANG_SPECIFIC (newdecl) && DECL_NOT_REALLY_EXTERN (newdecl)))
-    {
-      TREE_STATIC (newdecl) = TREE_STATIC (olddecl);
-      DECL_EXTERNAL (newdecl) = DECL_EXTERNAL (olddecl);
-      TREE_PUBLIC (newdecl) = TREE_PUBLIC (olddecl);
+  DECL_WEAK (newdecl) |= DECL_WEAK (olddecl);
+  TREE_PUBLIC (newdecl) = TREE_PUBLIC (olddecl);
+  TREE_STATIC (olddecl) = TREE_STATIC (newdecl) |= TREE_STATIC (olddecl);
+  if (! DECL_EXTERNAL (olddecl))
+    DECL_EXTERNAL (newdecl) = 0;
 
-      if (TREE_CODE (newdecl) == FUNCTION_DECL)
-	{
-	  DECL_C_STATIC (newdecl) = DECL_C_STATIC (olddecl);
-	  DECL_INTERFACE_KNOWN (newdecl) = DECL_INTERFACE_KNOWN (olddecl);
-	  DECL_NOT_REALLY_EXTERN (newdecl) = DECL_NOT_REALLY_EXTERN (olddecl);
-	}
-    }
-  else
+  if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
-      TREE_STATIC (olddecl) = TREE_STATIC (newdecl);
-      /* A `const' which was not declared `extern' gets internal linkage.  */
-      if (TREE_CODE (newdecl) == VAR_DECL
-	  && TREE_READONLY (newdecl) && ! DECL_THIS_EXTERN (newdecl))
-	TREE_PUBLIC (newdecl) = 0;
-      else
-	{
-	  TREE_PUBLIC (olddecl) = TREE_PUBLIC (newdecl);
-
-	  /* If this clears PUBLIC, clear it in the identifier too.  */
-	  if (TREE_CODE (newdecl) == FUNCTION_DECL && ! TREE_PUBLIC (olddecl))
-	    TREE_PUBLIC (DECL_ASSEMBLER_NAME (olddecl)) = 0;
-	}
+      DECL_C_STATIC (newdecl) = DECL_C_STATIC (olddecl);
+      DECL_INTERFACE_KNOWN (newdecl) |= DECL_INTERFACE_KNOWN (olddecl);
+      DECL_NOT_REALLY_EXTERN (newdecl) |= DECL_NOT_REALLY_EXTERN (olddecl);
     }
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
@@ -2586,6 +2803,11 @@ duplicate_decls (newdecl, olddecl)
 	}
       if (DECL_LANG_SPECIFIC (olddecl))
 	DECL_MAIN_VARIANT (newdecl) = DECL_MAIN_VARIANT (olddecl);
+    }
+
+  if (TREE_CODE (newdecl) == NAMESPACE_DECL)
+    {
+      NAMESPACE_LEVEL (newdecl) = NAMESPACE_LEVEL (olddecl);
     }
 
   if (TREE_CODE (newdecl) == TEMPLATE_DECL)
@@ -2722,7 +2944,8 @@ pushdecl (x)
 #else
   /* Type are looked up using the DECL_NAME, as that is what the rest of the
      compiler wants to use. */
-  if (TREE_CODE (x) == TYPE_DECL || TREE_CODE (x) == VAR_DECL)
+  if (TREE_CODE (x) == TYPE_DECL || TREE_CODE (x) == VAR_DECL
+      || TREE_CODE (x) == NAMESPACE_DECL)
     name = DECL_NAME (x);
 #endif
 
@@ -2907,12 +3130,6 @@ pushdecl (x)
 	{
 	  /* Install a global value.  */
 
-	  /* Rule for VAR_DECLs, but not for other kinds of _DECLs:
-	     A `const' which was not declared `extern' is invisible.  */
-	  if (TREE_CODE (x) == VAR_DECL
-	      && TREE_READONLY (x) && ! DECL_THIS_EXTERN (x))
-	    TREE_PUBLIC (x) = 0;
-
 	  /* If the first global decl has external linkage,
 	     warn if we later see static one.  */
 	  if (IDENTIFIER_GLOBAL_VALUE (name) == NULL_TREE && DECL_PUBLIC (x))
@@ -2967,6 +3184,12 @@ pushdecl (x)
 	  /* If this is a TYPE_DECL, push it into the type value slot.  */
 	  if (TREE_CODE (x) == TYPE_DECL)
 	    set_identifier_type_value_with_scope (name, TREE_TYPE (x), b);
+
+	  /* Clear out any TYPE_DECL shadowed by a namespace so that
+	     we won't think this is a type.  The C struct hack doesn't
+	     go through namespaces.  */
+	  if (TREE_CODE (x) == NAMESPACE_DECL)
+	    set_identifier_type_value_with_scope (name, NULL_TREE, b);
 
 	  /* If this is an extern function declaration, see if we
 	     have a global definition or declaration for the function.  */
@@ -3352,7 +3575,7 @@ push_overloaded_decl (decl, forgettable)
 	{
 	  cp_error_at ("previous non-function declaration `%#D'", old);
 	  cp_error ("conflicts with function declaration `%#D'", decl);
-	  return error_mark_node;
+	  return decl;
 	}
     }
 
@@ -3392,8 +3615,7 @@ implicitly_declare (functionid)
   /* Save the decl permanently so we can warn if definition follows.
      In ANSI C, warn_implicit is usually false, so the saves little space.
      But in C++, it's usually true, hence the extra code.  */
-  if (temp && (flag_traditional || !warn_implicit
-	       || current_binding_level == global_binding_level))
+  if (temp && (flag_traditional || !warn_implicit || toplevel_bindings_p ()))
     end_temporary_allocation ();
 
   /* We used to reuse an old implicit decl here,
@@ -3475,9 +3697,6 @@ redeclaration_error_message (newdecl, olddecl)
   else if (current_binding_level == global_binding_level)
     {
       /* Objects declared at top level:  */
-      /* Insist that the linkage match.  */
-      if (! TREE_PUBLIC (newdecl) && TREE_PUBLIC (olddecl))
-	return "conflicting declarations of `%#D'";
       /* If at least one is a reference, it's ok.  */
       if (DECL_EXTERNAL (newdecl) || DECL_EXTERNAL (olddecl))
 	return 0;
@@ -3998,6 +4217,25 @@ lookup_nested_type (type, context)
   return NULL_TREE;
 }
 
+/* Look up NAME in the NAMESPACE.  */
+tree
+lookup_namespace_name (namespace, name)
+     tree namespace, name;
+{
+  struct binding_level *b = (struct binding_level *)NAMESPACE_LEVEL (namespace);
+  tree x;
+
+  for (x = NULL_TREE; b && !x; b = b->level_chain)
+    {
+      for (x = b->names; x; x = TREE_CHAIN (x))
+	if (DECL_NAME (x) == name || DECL_ASSEMBLER_NAME (x) == name)
+	  break;
+      /* Must find directly in the namespace.  */
+      break;
+    }
+  return x;
+}
+
 /* Look up NAME in the current binding level and its superiors in the
    namespace of variables, functions and typedefs.  Return a ..._DECL
    node of some kind representing its definition if there is only one
@@ -4044,6 +4282,10 @@ lookup_name_real (name, prefer_type, nonclass)
 		val = create_nested_upt (type, name);
 	      else
 		val = NULL_TREE;
+	    }
+	  else if (TREE_CODE (type) == NAMESPACE_DECL)
+	    {
+	      val = lookup_namespace_name (type, name);
 	    }
 	  else if (! IS_AGGR_TYPE (type))
 	    /* Someone else will give an error about this if needed. */
@@ -5579,12 +5821,12 @@ start_decl (declarator, declspecs, initialized, raises)
 
   if (initialized)
     {
-      if (current_binding_level != global_binding_level
+      if (! toplevel_bindings_p ()
 	  && DECL_EXTERNAL (decl))
 	cp_warning ("declaration of `%#D' has `extern' and is initialized",
 		    decl);
       DECL_EXTERNAL (decl) = 0;
-      if (current_binding_level == global_binding_level)
+      if ( toplevel_bindings_p ())
 	TREE_STATIC (decl) = 1;
 
       /* Tell `pushdecl' this is an initialized decl
@@ -5636,7 +5878,7 @@ start_decl (declarator, declspecs, initialized, raises)
 #if 0
   /* We don't do this yet for GNU C++.  */
   /* For a local variable, define the RTL now.  */
-  if (current_binding_level != global_binding_level
+  if (! toplevel_bindings_p ()
       /* But not if this is a duplicate decl
 	 and we preserved the rtl from the previous one
 	 (which may or may not happen).  */
@@ -5713,7 +5955,7 @@ start_decl (declarator, declspecs, initialized, raises)
     {
       /* When parsing and digesting the initializer,
 	 use temporary storage.  Do this even if we will ignore the value.  */
-      if (current_binding_level == global_binding_level && debug_temp_inits)
+      if (toplevel_bindings_p () && debug_temp_inits)
 	{
 	  if (TYPE_NEEDS_CONSTRUCTING (type)
 	      || TREE_CODE (type) == REFERENCE_TYPE)
@@ -5751,8 +5993,7 @@ make_temporary_for_reference (decl, ctor_call, init, cleanupp)
     }
   else
     {
-      tmp = get_temp_name (target_type,
-			   current_binding_level == global_binding_level);
+      tmp = get_temp_name (target_type, toplevel_bindings_p ());
       tmp_addr = build_unary_op (ADDR_EXPR, tmp, 0);
     }
 
@@ -5761,7 +6002,7 @@ make_temporary_for_reference (decl, ctor_call, init, cleanupp)
   TREE_TYPE (DECL_INITIAL (decl)) = type;
   if (TYPE_NEEDS_CONSTRUCTING (target_type))
     {
-      if (current_binding_level == global_binding_level)
+      if (toplevel_bindings_p ())
 	{
 	  /* lay this variable out now.  Otherwise `output_addressed_constants'
 	     gets confused by its initializer.  */
@@ -5784,7 +6025,7 @@ make_temporary_for_reference (decl, ctor_call, init, cleanupp)
   else
     {
       DECL_INITIAL (tmp) = init;
-      TREE_STATIC (tmp) = current_binding_level == global_binding_level;
+      TREE_STATIC (tmp) = toplevel_bindings_p ();
       finish_decl (tmp, init, NULL_TREE, 0, LOOKUP_ONLYCONVERTING);
     }
   if (TREE_STATIC (tmp))
@@ -5920,8 +6161,7 @@ obscure_complex_init (decl, init)
 	return NULL_TREE;
     }
 
-  if (current_binding_level == global_binding_level
-      && ! DECL_COMMON (decl))
+  if (toplevel_bindings_p () && ! DECL_COMMON (decl))
     DECL_INITIAL (decl) = build (CONSTRUCTOR, TREE_TYPE (decl), NULL_TREE,
 				 NULL_TREE);
   else
@@ -5988,7 +6228,7 @@ finish_decl (decl, init, asmspec_tree, need_pop, flags)
 
   if (type == error_mark_node)
     {
-      if (current_binding_level == global_binding_level && temporary)
+      if (toplevel_bindings_p () && temporary)
 	end_temporary_allocation ();
 
       return;
@@ -6081,7 +6321,7 @@ finish_decl (decl, init, asmspec_tree, need_pop, flags)
     {
       if (TREE_STATIC (decl))
 	make_decl_rtl (decl, NULL_PTR,
-		       current_binding_level == global_binding_level
+		       toplevel_bindings_p ()
 		       || pseudo_global_level_p ());
       grok_reference_init (decl, type, init, &cleanup);
       init = NULL_TREE;
@@ -6220,7 +6460,7 @@ finish_decl (decl, init, asmspec_tree, need_pop, flags)
      must go in the permanent obstack; but don't discard the
      temporary data yet.  */
 
-  if (current_binding_level == global_binding_level && temporary)
+  if (toplevel_bindings_p () && temporary)
     end_temporary_allocation ();
 
   /* Deduce size of array from initialization, if not already known.  */
@@ -6339,8 +6579,7 @@ finish_decl (decl, init, asmspec_tree, need_pop, flags)
       || TREE_CODE (decl) == RESULT_DECL)
     {
       /* ??? FIXME: What about nested classes?  */
-      int toplev = (current_binding_level == global_binding_level
-		    || pseudo_global_level_p ());
+      int toplev = toplevel_bindings_p () || pseudo_global_level_p ();
       int was_temp
 	= ((flag_traditional
 	    || (TREE_STATIC (decl) && TYPE_NEEDS_DESTRUCTOR (type)))
@@ -6350,7 +6589,7 @@ finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	end_temporary_allocation ();
 
       if (TREE_CODE (decl) == VAR_DECL
-	  && current_binding_level != global_binding_level
+	  && ! toplevel_bindings_p ()
 	  && ! TREE_STATIC (decl)
 	  && type_needs_gc_entry (type))
 	DECL_GC_OFFSET (decl) = size_int (++current_function_obstack_index);
@@ -6606,8 +6845,7 @@ expand_static_init (decl, init)
       if (TREE_PURPOSE (oldstatic) && init != NULL_TREE)
 	cp_error ("multiple initializations given for `%D'", decl);
     }
-  else if (current_binding_level != global_binding_level
-	   && current_binding_level->pseudo_global == 0)
+  else if (! toplevel_bindings_p () && ! pseudo_global_level_p ())
     {
       /* Emit code to perform this initialization but once.  */
       tree temp;
@@ -7005,11 +7243,12 @@ grokfndecl (ctype, type, declarator, virtualp, flags, quals,
 }
 
 static tree
-grokvardecl (type, declarator, specbits, initialized)
+grokvardecl (type, declarator, specbits, initialized, constp)
      tree type;
      tree declarator;
      RID_BIT_TYPE specbits;
      int initialized;
+     int constp;
 {
   tree decl;
 
@@ -7046,9 +7285,10 @@ grokvardecl (type, declarator, specbits, initialized)
     }
   /* At top level, either `static' or no s.c. makes a definition
      (perhaps tentative), and absence of `static' makes it public.  */
-  else if (current_binding_level == global_binding_level)
+  else if (toplevel_bindings_p ())
     {
-      TREE_PUBLIC (decl) = RIDBIT_NOTSETP (RID_STATIC, specbits);
+      TREE_PUBLIC (decl) = (RIDBIT_NOTSETP (RID_STATIC, specbits)
+			    && (DECL_EXTERNAL (decl) || ! constp));
       TREE_STATIC (decl) = ! DECL_EXTERNAL (decl);
     }
   /* Not at top level, only `static' makes a static definition.  */
@@ -7471,11 +7711,18 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 
      Since we now wait to push a class scope until we are sure that
      we are in a legitimate method context, we must set oldcname
-     explicitly (since current_class_name is not yet alive).  */
+     explicitly (since current_class_name is not yet alive).
 
-  if (decl_context == NORMAL
-      && current_binding_level->level_chain == global_binding_level)
-    decl_context = PARM;
+     We also want to avoid calling this a PARM if it is in a namespace.  */
+
+  if (decl_context == NORMAL && ! namespace_bindings_p ())
+    {
+      struct binding_level *b = current_binding_level;
+      current_binding_level = b->level_chain;
+      if (current_binding_level != 0 && toplevel_bindings_p ())
+	decl_context = PARM;
+      current_binding_level = b;
+    }
 
   /* Look through the decl specs and record which ones appear.
      Some typespecs are defined as built-in typenames.
@@ -8048,7 +8295,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
     }
   else if (RIDBIT_SETP (RID_EXTERN, specbits) && initialized && !funcdef_flag)
     {
-      if (current_binding_level == global_binding_level)
+      if (toplevel_bindings_p ())
 	{
 	  /* It's common practice (and completely valid) to have a const
 	     be initialized and declared extern.  */
@@ -8059,9 +8306,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	error ("`%s' has both `extern' and initializer", name);
     }
   else if (RIDBIT_SETP (RID_EXTERN, specbits) && funcdef_flag
-	   && current_binding_level != global_binding_level)
+	   && ! toplevel_bindings_p ())
     error ("nested function `%s' declared `extern'", name);
-  else if (current_binding_level == global_binding_level)
+  else if (toplevel_bindings_p ())
     {
       if (RIDBIT_SETP (RID_AUTO, specbits))
 	error ("top-level declaration of `%s' specifies `auto'", name);
@@ -9240,7 +9487,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	/* Function declaration not at top level.
 	   Storage classes other than `extern' are not allowed
 	   and `extern' makes no difference.  */
-	if (current_binding_level != global_binding_level
+	if (! toplevel_bindings_p ()
 	    && ! processing_template_decl
 	    && (RIDBIT_SETP (RID_STATIC, specbits)
 		|| RIDBIT_SETP (RID_INLINE, specbits))
@@ -9277,6 +9524,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 
 	/* Record presence of `static'.  In C++, `inline' implies `static'.  */
 	publicp = (ctype != NULL_TREE
+		   || RIDBIT_SETP (RID_EXTERN, specbits)
 		   || (!RIDBIT_SETP (RID_STATIC, specbits)
 		       && !RIDBIT_SETP (RID_INLINE, specbits)));
 
@@ -9346,7 +9594,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	  }
 
 	/* An uninitialized decl with `extern' is a reference.  */
-	decl = grokvardecl (type, declarator, specbits, initialized);
+	decl = grokvardecl (type, declarator, specbits, initialized, constp);
 	bad_specifiers (decl, "variable", virtualp, quals != NULL_TREE,
 			inlinep, friendp, raises != NULL_TREE);
 
@@ -9416,7 +9664,7 @@ parmlist_is_exprlist (exprs)
   if (exprs == NULL_TREE || TREE_PARMLIST (exprs))
     return 0;
 
-  if (current_binding_level == global_binding_level)
+  if (toplevel_bindings_p ())
     {
       /* At the global level, if these are all identifiers,
 	 then it is a parmlist.  */
@@ -10724,7 +10972,7 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
   original_result_rtx = NULL_RTX;
   current_function_obstack_index = 0;
   current_function_obstack_usage = 0;
-  base_init_insns = NULL_RTX;
+  base_init_expr = NULL_TREE;
   protect_list = NULL_TREE;
   current_base_init_list = NULL_TREE;
   current_member_init_list = NULL_TREE;
@@ -10905,14 +11153,8 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 	 So clear DECL_EXTERNAL.  */
       DECL_EXTERNAL (decl1) = 0;
 
-      if (DECL_THIS_INLINE (decl1) && ! DECL_C_STATIC (decl1))
-	DECL_DEFER_OUTPUT (decl1) = 1;
-      else
-	{
-	  DECL_INTERFACE_KNOWN (decl1) = 1;
-	  if (DECL_C_STATIC (decl1))
-	    TREE_PUBLIC (decl1) = 0;
-	}
+      if (DECL_C_STATIC (decl1))
+	TREE_PUBLIC (decl1) = 0;
     }
 
   /* Record the decl so that the function name is defined.
@@ -10927,6 +11169,11 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
     }
   else
     current_function_decl = decl1;
+
+  if (DECL_THIS_INLINE (decl1) && ! DECL_INTERFACE_KNOWN (decl1))
+    DECL_DEFER_OUTPUT (decl1) = 1;
+  else
+    DECL_INTERFACE_KNOWN (decl1) = 1;
 
   if (ctype != NULL_TREE && DECL_STATIC_FUNCTION_P (decl1))
     {
@@ -11065,7 +11312,7 @@ store_parm_decls ()
      then CONST_DECLs for foo and bar are put here.  */
   tree nonparms = NULL_TREE;
 
-  if (current_binding_level == global_binding_level)
+  if (toplevel_bindings_p ())
     fatal ("parse errors have confused me too much");
 
   /* Initialize RTL machinery.  */
@@ -11512,7 +11759,7 @@ finish_function (lineno, call_poplevel, nested)
 
       current_function_assigns_this = 0;
       current_function_just_assigned_this = 0;
-      base_init_insns = NULL_RTX;
+      base_init_expr = NULL_TREE;
     }
   else if (DECL_CONSTRUCTOR_P (fndecl))
     {
@@ -11556,8 +11803,11 @@ finish_function (lineno, call_poplevel, nested)
 
       /* Emit insns from `emit_base_init' which sets up virtual
 	 function table pointer(s).  */
-      emit_insns (base_init_insns);
-      base_init_insns = NULL_RTX;
+      if (base_init_expr)
+	{
+	  expand_expr_stmt (base_init_expr);
+	  base_init_expr = NULL_TREE;
+	}
 
       /* This is where the body of the constructor begins.
 	 If there were no insns in this function body, then the
@@ -12006,7 +12256,7 @@ hack_incomplete_structures (type)
 	  layout_type (TREE_TYPE (decl));
 	else
 	  {
-	    int toplevel = global_binding_level == current_binding_level;
+	    int toplevel = toplevel_bindings_p ();
 	    if (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
 		&& TREE_TYPE (TREE_TYPE (decl)) == type)
 	      layout_type (TREE_TYPE (decl));
@@ -12154,7 +12404,7 @@ finish_stmt ()
 	 zones before calling base constructors.  */
       if (cond_stack || loop_stack || case_stack)
 	return;
-      emit_insns (base_init_insns);
+      expand_expr_stmt (base_init_expr);
       check_base_init (current_class_type);
     }
   current_function_assigns_this = 1;
@@ -12215,8 +12465,8 @@ struct cp_function
   tree protect_list;
   tree base_init_list;
   tree member_init_list;
+  tree base_init_expr;
   rtx result_rtx;
-  rtx base_init_insns;
   struct cp_function *next;
   struct binding_level *binding_level;
 };
@@ -12252,7 +12502,7 @@ push_cp_function_context (context)
   p->just_assigned_this = current_function_just_assigned_this;
   p->parms_stored = current_function_parms_stored;
   p->result_rtx = original_result_rtx;
-  p->base_init_insns = base_init_insns;
+  p->base_init_expr = base_init_expr;
   p->protect_list = protect_list;
   p->temp_name_counter = temp_name_counter;
   p->base_init_list = current_base_init_list;
@@ -12302,7 +12552,7 @@ pop_cp_function_context (context)
   current_function_just_assigned_this = p->just_assigned_this;
   current_function_parms_stored = p->parms_stored;
   original_result_rtx = p->result_rtx;
-  base_init_insns = p->base_init_insns;
+  base_init_expr = p->base_init_expr;
   temp_name_counter = p->temp_name_counter;
   current_base_init_list = p->base_init_list;
   current_member_init_list = p->member_init_list;

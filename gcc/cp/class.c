@@ -237,7 +237,9 @@ build_vbase_path (code, type, expr, path, alias_this)
 		    }
 		  ind = build_indirect_ref (nonnull_expr, NULL_PTR);
 		  nonnull_expr = build_vbase_pointer (ind, last_virtual);
-		  if (nonnull == 0 && !flag_assume_nonnull_objects
+		  if (nonnull == 0
+		      && (TREE_CODE (type) == POINTER_TYPE
+			  || !flag_assume_nonnull_objects)
 		      && null_expr == NULL_TREE)
 		    {
 		      null_expr = build1 (NOP_EXPR, TYPE_POINTER_TO (last_virtual), integer_zero_node);
@@ -4106,7 +4108,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
     }
 
   /* Finish debugging output for this type.  */
-  rest_of_type_compilation (t, global_bindings_p ());
+  rest_of_type_compilation (t, toplevel_bindings_p ());
 
   return t;
 }

@@ -928,6 +928,9 @@ struct lang_type
 /* For FUNCTION_TYPE or METHOD_TYPE, a list of the exceptions that
    this type can raise.  */
 #define TYPE_RAISES_EXCEPTIONS(NODE) TYPE_NONCOPIED_PARTS (NODE)
+
+/* The binding level associated with the namespace. */
+#define NAMESPACE_LEVEL(NODE) ((NODE)->decl.arguments)
 
 struct lang_decl_flags
 {
@@ -1956,6 +1959,7 @@ extern tree type_promotes_to			PROTO((tree));
 
 /* decl.c */
 extern int global_bindings_p			PROTO((void));
+extern int toplevel_bindings_p			PROTO((void));
 extern void keep_next_level			PROTO((void));
 extern int kept_level_p				PROTO((void));
 extern void declare_parm_level			PROTO((void));
@@ -2002,6 +2006,7 @@ extern tree gettags				PROTO((void));
 extern void set_current_level_tags_transparency	PROTO((int));
 extern tree typedecl_for_tag			PROTO((tree));
 extern tree lookup_name				PROTO((tree, int));
+extern tree lookup_namespace_name		PROTO((tree, tree));
 extern tree lookup_name_current_level		PROTO((tree));
 extern void init_decl_processing		PROTO((void));
 /* skipped define_function */
@@ -2072,7 +2077,8 @@ extern tree reparse_decl_as_expr		PROTO((tree, tree));
 extern tree finish_decl_parsing			PROTO((tree));
 extern tree lookup_name_nonclass		PROTO((tree));
 extern tree check_cp_case_value			PROTO((tree));
-extern tree do_using_decl			PROTO((tree));
+extern tree do_toplevel_using_decl		PROTO((tree));
+extern tree do_class_using_decl			PROTO((tree));
 extern tree current_namespace_id		PROTO((tree));
 extern tree get_namespace_id			PROTO((void));
 

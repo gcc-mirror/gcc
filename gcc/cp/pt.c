@@ -39,6 +39,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "parse.h"
 #include "lex.h"
 #include "output.h"
+#include "defaults.h"
 
 extern struct obstack permanent_obstack;
 extern tree grokdeclarator ();
@@ -2395,7 +2396,12 @@ do_pending_expansions ()
 
       if (i->interface == 1)
 	/* OK, it was an implicit instantiation.  */
-	TREE_PUBLIC (t) = 0;
+	{
+	  if (SUPPORTS_WEAK)
+	    DECL_WEAK (t) = 1;
+	  else
+	    TREE_PUBLIC (t) = 0;
+	}
 
       /* If it's a method, let the class type decide it.
 	 @@ What if the method template is in a separate file?

@@ -2806,6 +2806,8 @@ identifier_type (decl)
   if (TREE_CODE (decl) == TEMPLATE_DECL
       && DECL_TEMPLATE_IS_CLASS (decl))
     return PTYPENAME;
+  if (TREE_CODE (decl) == NAMESPACE_DECL)
+    return NSNAME;
   if (TREE_CODE (decl) != TYPE_DECL)
     return IDENTIFIER;
   return TYPENAME;
@@ -4606,13 +4608,26 @@ handle_sysv_pragma ()
 	case TYPENAME:
 	case STRING:
 	case CONSTANT:
-	  handle_pragma_token (token_buffer, yylval.ttype);
+	  handle_pragma_token ("ignored", yylval.ttype);
+	  break;
+	case '(':
+	  handle_pragma_token ("(", NULL_TREE);
+	  break;
+	case ')':
+	  handle_pragma_token (")", NULL_TREE);
+	  break;
+	case '=':
+	  handle_pragma_token ("=", NULL_TREE);
+	  break;
+	case LEFT_RIGHT:
+	  handle_pragma_token ("(", NULL_TREE);
+	  handle_pragma_token (")", NULL_TREE);
 	  break;
 	case END_OF_LINE:
 	  handle_pragma_token (NULL_PTR, NULL_TREE);
 	  return;
 	default:
-	  handle_pragma_token (token_buffer, NULL_TREE);
+	  abort ();
 	}
     }
 }

@@ -616,6 +616,10 @@ dump_decl (t, v)
 	dump_type_suffix (TREE_TYPE (t), v);
       break;
 
+    case NAMESPACE_DECL:
+      OB_PUTID (DECL_NAME (t));
+      break;
+
     case ARRAY_REF:
       dump_decl (TREE_OPERAND (t, 0), v);
       OB_PUTC ('[');

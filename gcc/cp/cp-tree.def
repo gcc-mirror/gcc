@@ -101,3 +101,6 @@ DEFTREECODE (UNINSTANTIATED_P_TYPE, "uninstantiated_p_type", "t", 0)
 
    Other kinds of thunks may be defined later. */
 DEFTREECODE (THUNK_DECL, "thunk_decl", "d", 0)
+
+/* A namespace declaration.  */
+DEFTREECODE (NAMESPACE_DECL, "namespace_decl", "d", 0)
