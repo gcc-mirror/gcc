@@ -1,3 +1,7 @@
+2001-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* unwind-dw2.c (execute_cfa_program): Fix DW_CFA_restore handling.
+
 2001-12-10  Roger Sayle <roger@eyesopen.com>
 
 	* builtins.c (expand_builtin): Use a switch statement to list
