@@ -17,14 +17,6 @@
 	* config/rs6000/rs6000.c (spe_init_builtins): Fix typo in creation
 	of int_ftype_void.
 
-2003-05-09  Olivier Hainque <hainque@act-europe.fr>
-
-	* config/arm/vxxscale.h, config/arm/vxxscale-coff.h: New files.
-	* config/arm/vxxscale-elf.h, config/arm/t-vxxscale-elf: Likewise.
-	* config.gcc (xscale-coff-vxworks, xscale-wrs-vxworks): New new cases.
-	* fixinc/fixinc.copy: New file.
-	* fixinc/mkfixinc.sh (*-vxworks*): New case, using above.
-
 2003-05-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* reload1.c (reload_cse_move2add): Don't turn an implicit

@@ -2622,19 +2622,6 @@ xscale-*-coff)
 	md_file=arm/arm.md
 	extra_modes=arm/arm-modes.def
 	;;
-xscale-coff-vxworks)
-	tm_file="arm/semi.h arm/aout.h arm/coff.h arm/arm.h"
-	tm_file="${tm_file} arm/vxxscale.h arm/vxxscale-coff.h"
-	tmake_file=arm/t-xscale-coff
-	thread_file='vxworks'
-	use_collect2=no
-	;;
-xscale-wrs-vxworks)
-	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/aout.h"
-	tm_file="${tm_file} arm/arm.h arm/vxxscale.h arm/vxxscale-elf.h"
-	tmake_file=arm/t-vxxscale-elf
-	thread_file='vxworks'	
-	;;
 xstormy16-*-elf)
 	# For historical reasons, the target files omit the 'x'.
 	tm_file="dbxelf.h elfos.h svr4.h stormy16/stormy16.h"
