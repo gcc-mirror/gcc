@@ -1,3 +1,7 @@
+2004-03-20  Matthias Klose  <doko@debian.org>
+
+	* src/pa/linux.S: Fix typo.
+
 2004-03-19  Matthias Klose  <doko@debian.org>
 
 	* Makefile.am: Update 
