@@ -4350,12 +4350,13 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 		: normalizep == -1 ? constm1_rtx
 		: const_true_rtx);
 
-      /* If the code of COMPARISON doesn't match CODE, something is
-	 wrong; we can no longer be sure that we have the operation.  
-	 We could handle this case, but it should not happen.  */
+      /* The code of COMPARISON may not match CODE if compare_from_rtx
+	 decided to swap its operands and reverse the original code.
 
-      if (GET_CODE (comparison) != code)
-	abort ();
+	 We know that compare_from_rtx returns either a CONST_INT or
+	 a new comparison code, so it is safe to just extract the
+	 code from COMPARISON.  */
+      code = GET_CODE (comparison);
 
       /* Get a reference to the target in the proper mode for this insn.  */
       compare_mode = insn_data[(int) icode].operand[0].mode;

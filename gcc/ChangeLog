@@ -1,3 +1,9 @@
+Mon Dec 17 14:21:21 2001  Jeffrey A Law  (law@redhat.com)
+
+	* expmed.c (emit_store_flag): Extract updated comparison code
+	from the return value of compare_from_rtx.
+	* expr.c (do_store_flag): Similarly.
+
 2001-12-17  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* caller-save.c (init_caller_save): Use MODE_BASE_REG_CLASS in

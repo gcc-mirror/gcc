@@ -10235,6 +10235,14 @@ do_store_flag (exp, target, mode, only_cheap)
 	     || (result != const0_rtx && invert))
 	    ? const0_rtx : const1_rtx);
 
+  /* The code of RESULT may not match CODE if compare_from_rtx
+     decided to swap its operands and reverse the original code.
+
+     We know that compare_from_rtx returns either a CONST_INT or
+     a new comparison code, so it is safe to just extract the
+     code from RESULT.  */
+  code = GET_CODE (result);
+
   label = gen_label_rtx ();
   if (bcc_gen_fctn[(int) code] == 0)
     abort ();
