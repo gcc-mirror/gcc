@@ -1193,6 +1193,28 @@ fix = {
 
 
 /*
+ *  Fix hpux 10.X missing stdio declarations
+ */
+fix = {
+    hackname = hpux10_stdio_declarations;
+    files    = stdio.h;
+    select   = "^#[ \t]*define _iob[ \t]*__iob";
+    bypass   = "^[ \t]*extern[ \t]*int[ \t]*vsnprintf[ \t]*\\(";
+    c_fix     = format;
+    c_fix_arg = "%0\n\n"
+	"#  if defined(__STDC__) || defined(__cplusplus)\n"
+	"     extern int snprintf(char *, size_t, const char *, ...);\n"
+	"     extern int vsnprintf(char *, size_t, const char *, __va_list);\n"
+	"#  else /* not __STDC__) || __cplusplus */\n"
+	"     extern int snprintf();\n"
+	"     extern int vsnprintf();\n"
+	"#  endif /* __STDC__) || __cplusplus */\n";
+
+    test_text = "#  define _iob __iob\n";
+};
+
+
+/*
  *  Make sure hpux defines abs in header.
  */
 fix = {
@@ -3387,6 +3409,24 @@ fix = {
 
 
 /*
+ *  parameters not const on Ultrix V4.3.
+ */
+fix = {
+    hackname  = ultrix_const3;
+    files     = stdio.h;
+    select    = 'fdopen\( .*, char \*';
+
+    c_fix     = format;
+    c_fix_arg = "%1 const %3 *__";
+    c_fix_arg = "([ \t*](fdopen)\\(.*)"
+                "[ \t]+(char|void) \\*__";
+
+    test_text =
+    "extern FILE *	fdopen( int __filedes, char *__type );\n";
+};
+
+
+/*
  * Ultrix V4.[35] puts the declaration of uname before the definition
  * of struct utsname, so the prototype (added by fixproto) causes havoc.
  */
@@ -3417,6 +3457,19 @@ fix = {
 
     test_text =
     "#ifdef KERNEL\t&& defined( mumbojumbo )\nint oops;\n#endif";
+};
+
+
+/*
+ *  Add once-only latch to Ultrix V4.3 locale.h.
+ */
+fix = {
+    hackname = ultrix_locale;
+    files  = locale.h;
+    select = "@\\(#\\)locale\\.h.*6\\.1.*\\(ULTRIX\\)";
+    c_fix  = wrap;
+    test_text =
+    "@(#)locale.h   6.1     (ULTRIX)\n";
 };
 
 
@@ -3500,6 +3553,31 @@ fix = {
 
 
 /*
+ *  Add missing declarations to Ultrix V4.3 stdlib.h.
+ */
+fix = {
+    hackname = ultrix_stdlib;
+    files  = stdlib.h;
+    select = "@\\(#\\)stdlib\\.h.*6\\.1.*\\(ULTRIX\\)";
+
+    sed    = "/^char.*getenv( const char .* );.*$/a\\\n"
+    "int\t\tsetenv( const char *__name, const char *__val, int __ovrwrt );\\\n"
+    "void\t\tunsetenv( const char *__name );\\\n"
+    "int\t\tputenv( char *__s );\n";
+
+    sed    = "/^char.*getenv();.*$/a\\\n"
+    "int\tsetenv();\\\n"
+    "void\tunsetenv();\\\n"
+    "int\tputenv();\n";
+
+    test_text =
+    "@(#)stdlib.h      6.1     (ULTRIX)\n"
+    "char *		getenv( const char *__name );\n"
+    "char	*getenv();\n";
+};
+
+
+/*
  *  Add once-only latch to Ultrix V4.3 strings.h.
  */
 fix = {
@@ -3509,6 +3587,91 @@ fix = {
     c_fix  = wrap;
     test_text =
     "@(#)strings.h   6.1     (ULTRIX)\n";
+};
+
+
+/*
+ *  Add missing declarations to Ultrix V4.3 strings.h.
+ */
+fix = {
+    hackname = ultrix_strings2;
+    files  = strings.h;
+    select = "@\\(#\\)strings\\.h.*6\\.1.*\\(ULTRIX\\)";
+
+    sed    = "/^.*strncmp( const .* );.*/a\\\n"
+    "\\\n"
+    "extern int\\\n"
+    "\tstrcasecmp( const char *__s1, const char *__s2),\\\n"
+    "\tstrncasecmp( const char *__s1, const char *__s2, size_t __n );\n";
+
+    sed    = "/^.*strncmp();.*/a\\\n"
+    "extern int\\\n"
+    "\tstrcasecmp(),\\\n"
+    "\tstrncasecmp();\n";
+
+    test_text =
+    "@(#)strings.h      6.1     (ULTRIX)\n"
+    "\tstrncmp( const char *__s1, const char *__s2, size_t __n );\n"
+    "\tstrncmp();\n";
+};
+
+
+/*
+ *  Add missing declarations to Ultrix V4.3 sys/time.h.
+ */
+fix = {
+    hackname = ultrix_sys_time;
+    files  = sys/time.h;
+    select = "@\\(#\\)time\\.h.*6\\.1.*\\(ULTRIX\\)";
+
+    sed    = "/^extern.*time_t.*time( time_t .* );.*$/a\\\n"
+    "\\\n"
+    "extern int adjtime(struct timeval *, struct timeval *);\\\n"
+    "extern int getitimer(int, struct itimerval *);\\\n"
+    "extern int setitimer(int, struct itimerval *, struct itimerval *);\\\n"
+    "extern int gettimeofday(struct timeval *, struct timezone *);\\\n"
+    "extern int settimeofday(struct timeval *, struct timezone *);\\\n"
+    "extern void profil(const void *, size_t, size_t, unsigned int);\\\n"
+    "extern int stime(const time_t *);\\\n"
+    "extern int utimes(const char *, const struct timeval[2]);\\\n"
+    "extern int select(int, fd_set *, fd_set *, fd_set *, struct timeval *);\n";
+
+    sed    = "/^extern.*double.*difftime();.*$/a\\\n"
+    "extern\tint adjtime();\\\n"
+    "extern\tint getitimer();\\\n"
+    "extern\tint setitimer();\\\n"
+    "extern\tint gettimeofday();\\\n"
+    "extern\tint settimeofday();\\\n"
+    "extern\tvoid profil();\\\n"
+    "extern\tint stime();\\\n"
+    "extern\tint utimes();\\\n"
+    "extern\tint select();\n";
+
+    test_text =
+    "@(#)time.h      6.1     (ULTRIX)\n"
+    "extern time_t		time( time_t *__tloc );\n"
+    "extern double difftime();\n";
+};
+
+
+/*
+ *  Add missing declarations to Ultrix V4.3 unistd.h.
+ */
+fix = {
+    hackname = ultrix_unistd;
+    files  = unistd.h;
+    select = "@\\(#\\)unistd\\.h.*6\\.1.*\\(ULTRIX\\)";
+
+    sed    = "/^[ \t]*getgroups(),.*$/a\\\n"
+    "\tgetpagesize(),\n";
+
+    sed    = "/^[ \t]*fork(),.*$/a\\\n"
+    "\tvfork(),\n";
+
+    test_text =
+    "@(#)unistd.h      6.1     (ULTRIX)\n"
+    "\tgetgroups(),\n"
+    "\tfork(),\n";
 };
 
 

@@ -1,3 +1,17 @@
+2004-01-21  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* fixinc/inclhack.def (hpux10_stdio_declarations, ultrix_const3,
+	ultrix_locale, ultrix_stdlib, ultrix_strings, ultrix_sys_time,
+	ultrix_unistd): New hacks.
+	* fixinc/tests/base/stdio.h (HPUX10_STDIO_DECLARATIONS_CHECK,
+	ULTRIX_CONST2_CHECK): Add checks.
+	* fixinc/tests/base/stdlib.h (ULTRIX_STDLIB_CHECK): Likewise.
+	* fixinc/tests/base/strings.h (ULTRIX_STRINGS2_CHECK): Likewise.
+	* fixinc/tests/base/unistd.h (ULTRIX_UNISTD_CHECK): Likewise.
+	* fixinc/tests/base/sys/time.h (ULTRIX_SYS_TIME_CHECK): Likewise.
+	* fixinc/tests/base/locale.h: New file.
+	* fixincl.x: Rebuilt.
+
 2004-01-21  Andreas Jaeger  <aj@suse.de>
 	    Michael Matz  <matz@suse.de>
 
