@@ -1,3 +1,8 @@
+Tue Feb 16 01:37:33 1999  Charles G Waldman  <cgw@alum.mit.edu>
+
+	* c-common.c (shorten_compare): Get the min/max value from the
+	underlying type of an enumeration, not the enumerated type itself.
+
 Mon Feb 15 11:33:51 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* jump.c: Include insn-attr.h.
