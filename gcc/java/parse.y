@@ -234,7 +234,6 @@ static tree find_expr_with_wfl PROTO ((tree));
 static void missing_return_error PROTO ((tree));
 static tree build_new_array_init PROTO ((int, tree));
 static tree patch_new_array_init PROTO ((tree, tree));
-static tree patch_array_constructor PROTO ((tree, tree));
 static tree maybe_build_array_element_wfl PROTO ((tree));
 static int array_constructor_check_entry PROTO ((tree, tree));
 static char *purify_type_name PROTO ((char *));
@@ -7733,7 +7732,7 @@ java_complete_tree (node)
       /* If we're about to patch a NEW_ARRAY_INIT, we call a special
 	 function to complete this RHS */
       if (TREE_CODE (wfl_op2) == NEW_ARRAY_INIT)
-	nn = patch_new_array_init (GET_SKIP_TYPE (TREE_OPERAND (node, 0)),
+	nn = patch_new_array_init (TREE_TYPE (TREE_OPERAND (node, 0)),
 				   TREE_OPERAND (node, 1));
       else
 	nn = java_complete_tree (TREE_OPERAND (node, 1));
@@ -9679,33 +9678,7 @@ patch_newarray (node)
      of dimension is equal to 1, then the nature of the base type
      (primitive or not) matters. */
   if (ndims == 1)
-    {
-      if (JPRIMITIVE_TYPE_P (type))
-	{
-	  int type_code;
-	  if (type == boolean_type_node)
-	    type_code = 4;
-	  else if (type == char_type_node)
-	    type_code = 5;
-	  else if (type == float_type_node)
-	    type_code = 6;
-	  else if (type == double_type_node)
-	    type_code = 7;
-	  else if (type == byte_type_node)
-	    type_code = 8;
-	  else if (type == short_type_node)
-	    type_code = 9;
-	  else if (type == int_type_node)
-	    type_code = 10;
-	  else if (type == long_type_node)
-	    type_code = 11;
-	  else
-	    fatal ("Can't compute type code - patch_newarray");
-	  return build_newarray (type_code, TREE_VALUE (dims));
-	}
-      else
-	return build_anewarray (TREE_TYPE (type), TREE_VALUE (dims));
-    }
+    return build_new_array (type, TREE_VALUE (dims));
   
   /* Can't reuse what's already written in expr.c because it uses the
      JVM stack representation. Provide a build_multianewarray. FIXME */
@@ -9756,58 +9729,42 @@ static tree
 patch_new_array_init (type, node)
      tree type, node;
 {
-  TREE_OPERAND (node, 0) =
-    patch_array_constructor (type, TREE_OPERAND (node, 0));
-
-  if (TREE_OPERAND (node, 0) == error_mark_node)
-    return error_mark_node;
-
-  TREE_TYPE (node) = TREE_TYPE (TREE_OPERAND (node, 0));
-  return node;
-}
-
-/* Choose to walk further NEW_ARRAY_INIT or check array assignment
-   when reaching the leaves of the initializing expression. Report
-   error_mark_node if errors were encountered, otherwise return NODE
-   after having set it type.  */
-
-static tree
-patch_array_constructor (type, node)
-     tree type, node;
-{
   int error_seen = 0;
-  tree current, lhs_type;
+  tree current, element_type;
   HOST_WIDE_INT length;
+  int all_constant = 1;
+  tree init = TREE_OPERAND (node, 0);
 
-  CONSTRUCTOR_ELTS (node) = nreverse (CONSTRUCTOR_ELTS (node));
-  lhs_type = GET_SKIP_TYPE (type);
-
-  if (TYPE_ARRAY_P (lhs_type))
+  if (TREE_CODE (type) != POINTER_TYPE || ! TYPE_ARRAY_P (TREE_TYPE (type)))
     {
-      /* Verify that we have what we expect here. This points a
-	 discrepancy between the annouced type and the specified
-	 one. */
-      for (length = 0, current = CONSTRUCTOR_ELTS (node);
-	   current; length++, current = TREE_CHAIN (current))
-	{
-	  tree elt = TREE_VALUE (current);
-	  if (elt && TREE_CODE (elt) == NEW_ARRAY_INIT)
-	    TREE_VALUE (current) = patch_new_array_init (lhs_type, elt);
-	  /* We're under dimensioned: we want to have elements
-             examined. */
-	  else
-	    error_seen |= array_constructor_check_entry (lhs_type, current);
-	  if ((elt && TREE_VALUE (elt) == error_mark_node) || error_seen)
-	    error_seen = 1;
-	}
+      parse_error_context (node,
+			   "Invalid array initializer for non-array type `%s'",
+			   lang_printable_name (type, 1));
+      return error_mark_node;
     }
-  else
+  type = TREE_TYPE (type);
+  element_type = TYPE_ARRAY_ELEMENT (type);
+
+  CONSTRUCTOR_ELTS (init) = nreverse (CONSTRUCTOR_ELTS (init));
+
+  for (length = 0, current = CONSTRUCTOR_ELTS (init);
+       current;  length++, current = TREE_CHAIN (current))
     {
-      /* This is the list of the values that need to be affected. We
-	 browse the list and check for a valid assignment */
-      for (length = 0, current = CONSTRUCTOR_ELTS (node);
-	   current; length++, current = TREE_CHAIN (current))
-	error_seen |= array_constructor_check_entry (lhs_type, current);
+      tree elt = TREE_VALUE (current);
+      if (elt == NULL_TREE || TREE_CODE (elt) != NEW_ARRAY_INIT)
+	{
+	  error_seen |= array_constructor_check_entry (element_type, current);
+	  if (! TREE_CONSTANT (TREE_VALUE (current)))
+	    all_constant = 0;
+	}
+      else
+	{
+	  TREE_VALUE (current) = patch_new_array_init (element_type, elt);
+	  TREE_PURPOSE (current) = NULL_TREE;
+	  all_constant = 0;
+	}
+      if (elt && TREE_VALUE (elt) == error_mark_node)
+	error_seen = 1;
     }
 
   if (error_seen)
@@ -9816,7 +9773,10 @@ patch_array_constructor (type, node)
   /* Create a new type. We can't reuse the one we have here by
      patching its dimension because it originally is of dimension -1
      hence reused by gcc. This would prevent triangular arrays. */
-  TREE_TYPE (node) = promote_type (build_java_array_type (lhs_type, length));
+  type = build_java_array_type (element_type, length);
+  TREE_TYPE (init) = TREE_TYPE (TREE_CHAIN (TREE_CHAIN (TYPE_FIELDS (type))));
+  TREE_TYPE (node) = promote_type (type);
+  TREE_CONSTANT (init) = all_constant;
   return node;
 }
 
@@ -9835,17 +9795,6 @@ array_constructor_check_entry (type, entry)
   new_value = NULL_TREE;
   wfl_value = TREE_VALUE (entry);
 
-  /* If we have a TREE_LIST here, it means that we're specifying more
-     dimensions that we should. Report errors within the list. */
-  if (TREE_CODE (wfl_value) == NEW_ARRAY_INIT)
-    {
-      if (TREE_CODE (wfl_value) == NEW_ARRAY_INIT)
-	EXPR_WFL_LINECOL (wfl_operator) = EXPR_WFL_LINECOL (wfl_value);
-      parse_error_context (wfl_operator, "Invalid initializer for type `%s'",
-			   lang_printable_name (type, 1));
-      return 1;
-    }
-  
   value = java_complete_tree (TREE_VALUE (entry));
   /* patch_string return error_mark_node if arg is error_mark_node */
   if ((patched = patch_string (value)))
