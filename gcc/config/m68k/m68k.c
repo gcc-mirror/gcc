@@ -358,7 +358,7 @@ output_function_prologue (stream, size)
     }
   if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
     {
-      mask |= 1 << PIC_OFFSET_TABLE_REGNUM;
+      mask |= 1 << (15 - PIC_OFFSET_TABLE_REGNUM);
       num_saved_regs++;
     }
 

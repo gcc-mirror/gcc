@@ -1,3 +1,8 @@
+Fri Jul 16 01:39:57 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* m68k.c (output_function_prologue): Fix computation of save mask
+	when generating PIC code.
+
 1999-07-12  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* invoke.texi: Typo fixes.
