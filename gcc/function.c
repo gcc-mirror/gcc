@@ -3045,7 +3045,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 	   && instantiate_virtual_regs_1 (&XEXP (XEXP (x, 0), 0), XEXP (x, 0),
 					  0))
 	  || (GET_CODE (XEXP (x, 0)) == REG
-	      && instantiate_virtual_regs_1 (&XEXP (x, 0), 0, 0)))
+	      && instantiate_virtual_regs_1 (&XEXP (x, 0), object, 0)))
 	return 1;
 
       XEXP (x, 0) = copy_rtx (XEXP (x, 0));
