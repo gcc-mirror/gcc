@@ -1,3 +1,8 @@
+2004-08-05  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++spec.c (lang_specific_driver): An -Xlinker or -Wl, option
+	means that libstdc++ is needed.
+
 2004-08-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cvt.c (cp_convert_to_pointer): Adjust force_fit_type call.
