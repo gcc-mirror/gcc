@@ -1,3 +1,7 @@
+2004-10-02  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-typeck.c (warn_for_assignment): Don't permit argnum == 0.
+
 2004-10-01  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (s390_comparison): Add prototype.
