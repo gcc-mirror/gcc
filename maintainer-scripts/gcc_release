@@ -160,7 +160,10 @@ EOF
   EXPORTDATE=""
   if [ -n "${TAG}" ]; then
     inform "Tagging sources as ${TAG}"
-    ${CVS} rtag -r ${CVSBRANCH} -F ${TAG} gcc || \
+    # The -F option to CVS is intentionally not used below.  If you
+    # need to retry a release, you will have to manually remove any
+    # existing tag.
+    ${CVS} rtag -r ${CVSBRANCH} ${TAG} gcc || \
       error "Could not tag sources"
     EXPORTTAG="-r${TAG}"
   else
