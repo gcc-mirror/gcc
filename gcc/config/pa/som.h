@@ -332,8 +332,8 @@ readonly_data (void)							\
 
 #define DO_GLOBAL_DTORS_BODY			\
 do {						\
-  extern void __gcc_plt_call ();		\
-  void (*reference)() = &__gcc_plt_call;	\
+  extern void __gcc_plt_call (void);		\
+  void (*reference)(void) = &__gcc_plt_call;	\
   func_ptr *p;					\
   __asm__ ("" : : "r" (reference));		\
   for (p = __DTOR_LIST__ + 1; *p; )		\

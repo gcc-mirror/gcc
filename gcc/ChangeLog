@@ -10,6 +10,8 @@
 
 2003-11-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* som.h (DO_GLOBAL_DTORS_BODY): Change to C90 declaration.
+
 	* libgcc2.c (SYMBOL__MAIN): Provide C90 declaration.
 
 	* collect2.c (scan_libraries): Fix typos.
