@@ -7772,6 +7772,12 @@ check_initializer (tree decl, tree init, int flags)
 	     scalar, so just don't call it.  */
 	  if (CP_AGGREGATE_TYPE_P (type))
 	    init = reshape_init (type, &init);
+
+	  if ((*targetm.vector_opaque_p) (type))
+	    {
+	      error ("opaque vector types cannot be initialized");
+	      init = error_mark_node;
+	    }
 	}
 
       /* If DECL has an array type without a specific bound, deduce the
