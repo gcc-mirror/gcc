@@ -1,3 +1,9 @@
+2004-01-31  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.h (_Rep::operator[]): Remove, unused.
+
+	* include/bits/basic_string.h: Fix two comments.
+
 2004-01-31  Per Bothner  <per@bothner.com>
 
 	* include/ext/mt_allocator.h
@@ -154,7 +160,7 @@
 	
 2004-01-28  Stefan Olsson  <stefan@snon.net>
 
- 	* include/ext/mt_allocator.h: Replaced all malloc() calls with
+	* include/ext/mt_allocator.h: Replaced all malloc() calls with
 	operator new(). Added support for the env variable
 	GLIBCXX_FORCE_NEW (this required the _S_init call to be the first
 	one in allocate() as well). Fix typos.
