@@ -5198,14 +5198,14 @@
 }")
 
 (define_insn "builtin_setjmp_receiver"
-  [(unspec_volatile [(match_operand 0 "" "")] 2)]
+  [(unspec_volatile [(label_ref (match_operand 0 "" ""))] 2)]
   "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT && TARGET_AS_CAN_SUBTRACT_LABELS"
   "\\n$LSJ%=:\;ldgp $29,$LSJ%=-%l0($27)"
   [(set_attr "length" "8")
    (set_attr "type" "multi")])
 
 (define_insn ""
-  [(unspec_volatile [(match_operand 0 "" "")] 2)]
+  [(unspec_volatile [(label_ref (match_operand 0 "" ""))] 2)]
   "! TARGET_OPEN_VMS && ! TARGET_WINDOWS_NT"
   "br $29,$LSJ%=\\n$LSJ%=:\;ldgp $29,0($29)"
   [(set_attr "length" "12")
