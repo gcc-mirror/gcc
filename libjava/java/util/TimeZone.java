@@ -68,21 +68,57 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
 
   public abstract boolean inDaylightTime (Date date);
 
-  public static TimeZone getTimeZone (String ID)
+  public static synchronized TimeZone getTimeZone (String ID)
   {
-    return zoneGMT;  // FIXME
+    int i;
+    for (i = 0; i < tzIDs.length; ++i)
+      {
+	if (ID.equals(tzIDs[i]))
+	  break;
+      }
+    if (i == tzIDs.length)
+      return null;
+
+    if (timeZones[i] == null)
+      {
+	if (ID.equals("GMT"))
+	  timeZones[i] = zoneGMT;
+	else
+	  timeZones[i] = new SimpleTimeZone (rawOffsets[i], tzIDs[i]);
+      }
+
+    return timeZones[i];
   }
 
   public static String[] getAvailableIDs()
-  { // FIXME - only knows about GMT
-    String[] zones = new String[1];
-    zones[0] = "GMT";
-    return zones;
+  {
+    return (String[]) tzIDs.clone();
   }
 
   public static String[] getAvailableIDs(int rawOffset)
   {
-    return rawOffset == 0 ? getAvailableIDs() : new String[0];  // FIXME
+    int first, last;
+
+    for (first = 0; first < rawOffsets.length; ++first)
+      {
+	if (rawOffset == rawOffsets[first])
+	  break;
+      }
+    if (first == rawOffsets.length)
+      return new String[0];
+    for (last = first + 1; last < rawOffsets.length; ++last)
+      {
+	if (rawOffset != rawOffsets[last])
+	  break;
+      }
+
+    String[] r = new String[last - first];
+    for (int i = first; i < last; ++i)
+      {
+	r[i - first] = tzIDs[i];
+      }
+
+    return r;
   }
 
   private static synchronized TimeZone setDefault()
@@ -117,4 +153,31 @@ public abstract class TimeZone implements java.io.Serializable, Cloneable
   }
 
   // public Object clone ();
+
+  // Names of timezones.  This array is kept in parallel with
+  // rawOffsets.  This list comes from the JCL 1.1 book.
+  private static final String[] tzIDs =
+  {
+    "MIT", "HST", "AST", "PST", "PNT",
+    "MST", "CST", "EST", "IET", "PRT",
+    "CNT", "AGT", "BET", "CAT", "GMT",
+    "ECT", "EET", "ART", "EAT", "MET",
+    "NET", "PLT", "IST", "BST", "VST",
+    "CTT", "JST", "ACT", "AET", "SST",
+    "NST"
+  };
+  // This holds raw offsets in milliseconds.
+  // 3600000 == 60 * 60 * 1000
+  private static final int[] rawOffsets =
+  {
+    -11 * 3600000, -10 * 3600000, -9 * 3600000, -8 * 3600000, -7 * 3600000,
+    -7 * 3600000, -6 * 3600000, -5 * 3600000, -5 * 3600000, -4 * 3600000,
+    -35 * 360000, -3 * 3600000, -3 * 3600000, -1 * 3600000, 0,
+    1 * 3600000, 1 * 3600000, 2 * 3600000, 3 * 3600000, 35 * 360000,
+    4 * 3600000, 5 * 3600000, 55 * 360000, 6 * 3600000, 7 * 3600000,
+    8 * 3600000, 9 * 3600000, 95 * 360000, 10 * 3600000, 11 * 3600000,
+    12 * 3600000
+  };
+  // This caches all the corresponding zone objects.
+  private static TimeZone[] timeZones = new TimeZone[tzIDs.length];
 }

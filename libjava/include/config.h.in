@@ -61,9 +61,6 @@
 /* Define if using POSIX threads on Linux.  */
 #undef LINUX_THREADS
 
-/* Define if you have the `ctime_r' function.  */
-#undef HAVE_CTIME_R
-
 /* Define if you have the `gmtime_r' function.  */
 #undef HAVE_GMTIME_R
 
@@ -130,12 +127,6 @@
 
 /* Define if you have the access function.  */
 #undef HAVE_ACCESS
-
-/* Define if you have the ctime function.  */
-#undef HAVE_CTIME
-
-/* Define if you have the ctime_r function.  */
-#undef HAVE_CTIME_R
 
 /* Define if you have the fstat function.  */
 #undef HAVE_FSTAT

@@ -46,9 +46,6 @@
 /* Define if using POSIX threads on Linux.  */
 #undef LINUX_THREADS
 
-/* Define if you have the `ctime_r' function.  */
-#undef HAVE_CTIME_R
-
 /* Define if you have the `gmtime_r' function.  */
 #undef HAVE_GMTIME_R
 

@@ -282,7 +282,6 @@ if test -n "${with_cross_host}"; then
    AC_DEFINE(HAVE_MEMMOVE)
    AC_DEFINE(HAVE_MEMCPY)
    AC_DEFINE(HAVE_STRERROR)
-   AC_DEFINE(HAVE_CTIME_R)
    AC_DEFINE(HAVE_GMTIME_R)
    AC_DEFINE(HAVE_LOCALTIME_R)
    dnl This is only for POSIX threads.
@@ -303,7 +302,6 @@ if test -n "${with_cross_host}"; then
    fi
 else
    AC_CHECK_FUNCS(strerror ioctl select fstat open fsync sleep)
-   AC_CHECK_FUNCS(ctime_r ctime, break)
    AC_CHECK_FUNCS(gmtime_r localtime_r readdir_r getpwuid_r)
    AC_CHECK_FUNCS(access stat mkdir rename rmdir unlink realpath)
    AC_CHECK_FUNCS(inet_aton inet_addr, break)
