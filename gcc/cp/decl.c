@@ -5158,12 +5158,12 @@ pop_switch ()
 /* Note that we've seen a definition of a case label, and complain if this
    is a bad place for one.  */
 
-void
+tree
 finish_case_label (low_value, high_value)
      tree low_value;
      tree high_value;
 {
-  tree cond;
+  tree cond, r;
   register struct binding_level *p;
 
   if (! switch_stack)
@@ -5175,7 +5175,7 @@ finish_case_label (low_value, high_value)
 		  low_value);
       else
 	error ("`default' label not within a switch statement");
-      return;
+      return NULL_TREE;
     }
 
   if (processing_template_decl)
@@ -5185,8 +5185,7 @@ finish_case_label (low_value, high_value)
       /* For templates, just add the case label; we'll do semantic
 	 analysis at instantiation-time.  */
       label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-      add_stmt (build_case_label (low_value, high_value, label));
-      return;
+      return add_stmt (build_case_label (low_value, high_value, label));
     }
 
   /* Find the condition on which this switch statement depends.  */
@@ -5194,7 +5193,9 @@ finish_case_label (low_value, high_value)
   if (cond && TREE_CODE (cond) == TREE_LIST)
     cond = TREE_VALUE (cond);
 
-  c_add_case_label (switch_stack->cases, cond, low_value, high_value);
+  r = c_add_case_label (switch_stack->cases, cond, low_value, high_value);
+  if (r == error_mark_node)
+    r = NULL_TREE;
 
   check_switch_goto (switch_stack->level);
 
@@ -5203,6 +5204,8 @@ finish_case_label (low_value, high_value)
   for (p = current_binding_level; !(p->parm_flag); p = p->level_chain)
     p->more_cleanups_ok = 0;
   current_function_return_value = NULL_TREE;
+
+  return r;
 }
 
 /* Return the list of declarations of the current level.

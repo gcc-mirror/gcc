@@ -3200,7 +3200,6 @@ extern void check_function_format		PARAMS ((int *, tree, tree, tree));
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
 extern void binary_op_error                     PARAMS ((enum tree_code));
 extern tree canonical_type_variant              PARAMS ((tree));
-extern void c_expand_expr_stmt                  PARAMS ((tree));
 /* Validate the expression after `case' and apply default promotions.  */
 extern tree check_case_value                    PARAMS ((tree));
 /* Concatenate a list of STRING_CST nodes into one STRING_CST.  */
@@ -4291,7 +4290,7 @@ extern void fixup_all_virtual_upcast_offsets    PARAMS ((tree));
 
 /* in semantics.c */
 extern void init_cp_semantics                   PARAMS ((void));
-extern void finish_expr_stmt                    PARAMS ((tree));
+extern tree finish_expr_stmt                    PARAMS ((tree));
 extern tree begin_if_stmt                       PARAMS ((void));
 extern void finish_if_stmt_cond                 PARAMS ((tree, tree));
 extern tree finish_then_clause                  PARAMS ((tree));
@@ -4304,19 +4303,19 @@ extern void finish_while_stmt                   PARAMS ((tree));
 extern tree begin_do_stmt                       PARAMS ((void));
 extern void finish_do_body                      PARAMS ((tree));
 extern void finish_do_stmt                      PARAMS ((tree, tree));
-extern void finish_return_stmt                  PARAMS ((tree));
+extern tree finish_return_stmt                  PARAMS ((tree));
 extern tree begin_for_stmt                      PARAMS ((void));
 extern void finish_for_init_stmt                PARAMS ((tree));
 extern void finish_for_cond                     PARAMS ((tree, tree));
 extern void finish_for_expr                     PARAMS ((tree, tree));
 extern void finish_for_stmt                     PARAMS ((tree));
-extern void finish_break_stmt                   PARAMS ((void));
-extern void finish_continue_stmt                PARAMS ((void));
+extern tree finish_break_stmt                   PARAMS ((void));
+extern tree finish_continue_stmt                PARAMS ((void));
 extern tree begin_switch_stmt                   PARAMS ((void));
 extern void finish_switch_cond                  PARAMS ((tree, tree));
 extern void finish_switch_stmt                  PARAMS ((tree));
-extern void finish_case_label                   PARAMS ((tree, tree));
-extern void finish_goto_stmt                    PARAMS ((tree));
+extern tree finish_case_label                   PARAMS ((tree, tree));
+extern tree finish_goto_stmt                    PARAMS ((tree));
 extern tree begin_try_block                     PARAMS ((void));
 extern void finish_try_block                    PARAMS ((tree));
 extern void finish_handler_sequence             PARAMS ((tree));
@@ -4331,7 +4330,7 @@ extern void finish_handler                      PARAMS ((tree, tree));
 extern void finish_cleanup                      PARAMS ((tree, tree));
 extern tree begin_compound_stmt                 PARAMS ((int));
 extern tree finish_compound_stmt                PARAMS ((int, tree));
-extern void finish_asm_stmt                     PARAMS ((tree, tree, tree, tree, tree));
+extern tree finish_asm_stmt                     PARAMS ((tree, tree, tree, tree, tree));
 extern void finish_label_stmt                   PARAMS ((tree));
 extern void finish_label_decl                   PARAMS ((tree));
 extern void finish_subobject                    PARAMS ((tree));

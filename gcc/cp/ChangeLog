@@ -1,3 +1,16 @@
+2000-12-20  Richard Henderson  <rth@redhat.com>
+
+	* cp-tree.h: Update declarations.
+	* decl.c (finish_case_label): Return the new stmt node.
+	* semantics.c (finish_goto_stmt): Likewise.
+	(finish_expr_stmt, finish_return_stmt): Likewise.
+	(finish_break_stmt, finish_continue_stmt): Likewise.
+	(finish_asm_stmt): Likewise.
+	* parse.y (already_scoped_stmt): Set STMT_LINENO.
+	(compstmt, implicitly_scoped_stmt, stmt): Likewise.
+	(simple_if, simple_stmt): Return the new stmt node.
+	(save_lineno): New.
+
 2000-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* cp-tree.h: Don't declare warn_long_long.

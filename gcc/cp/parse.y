@@ -338,7 +338,8 @@ cp_parse_init ()
 %type <ttype> maybe_attribute attributes attribute attribute_list attrib
 %type <ttype> any_word
 
-%type <ttype> compstmt implicitly_scoped_stmt
+%type <itype> save_lineno
+%type <ttype> simple_stmt simple_if
 
 %type <ttype> declarator notype_declarator after_type_declarator
 %type <ttype> notype_declarator_intern absdcl_intern
@@ -1151,13 +1152,14 @@ compstmtend:
 	;
 
 already_scoped_stmt:
-	  '{'
-                { $<ttype>$ = begin_compound_stmt (1); }
+	  save_lineno '{'
+		{ $<ttype>$ =  begin_compound_stmt (1); }
 	  compstmtend
-                { finish_compound_stmt (1, $<ttype>2); }
-	| simple_stmt
+		{ STMT_LINENO ($<ttype>3) = $1;
+		  finish_compound_stmt (1, $<ttype>3); }
+	| save_lineno simple_stmt
+		{ if ($2) STMT_LINENO ($2) = $1; }
 	;
-
 
 nontrivial_exprlist:
 	  expr_no_commas ',' expr_no_commas
@@ -3277,56 +3279,61 @@ label_decl:
    It causes syntax errors to ignore to the next openbrace.  */
 compstmt_or_error:
 	  compstmt
-		{}
 	| error compstmt
 	;
 
 compstmt:
-	  '{'
+	  save_lineno '{'
                 { $<ttype>$ = begin_compound_stmt (0); }
 	  compstmtend 
-                { $$ = finish_compound_stmt (0, $<ttype>2); }
+                { STMT_LINENO ($<ttype>3) = $1;
+		  finish_compound_stmt (0, $<ttype>3); }
 	;
 
 simple_if:
 	  IF
-		{
-		  $<ttype>$ = begin_if_stmt ();
-		  cond_stmt_keyword = "if";
-		}
+		{ $<ttype>$ = begin_if_stmt ();
+		  cond_stmt_keyword = "if"; }
             paren_cond_or_null
                 { finish_if_stmt_cond ($3, $<ttype>2); }
 	    implicitly_scoped_stmt
-                { $<ttype>$ = finish_then_clause ($<ttype>2); }
+                { $$ = $<ttype>2;
+		  finish_then_clause ($<ttype>2); }
 	;
 
 implicitly_scoped_stmt:
 	  compstmt
-	|       { $<ttype>$ = begin_compound_stmt (0); }
-	  simple_stmt 
-                { $$ = finish_compound_stmt (0, $<ttype>1); }
+	| 
+		{ $<ttype>$ = begin_compound_stmt (0); }
+	  save_lineno simple_stmt 
+		{ STMT_LINENO ($<ttype>1) = $2;
+		  if ($3) STMT_LINENO ($3) = $2;
+		  finish_compound_stmt (0, $<ttype>1); }
 	;
 
 stmt:
 	  compstmt
-                {}
-	| simple_stmt
+	| save_lineno simple_stmt
+		{ if ($2) STMT_LINENO ($2) = $1; }
 	;
 
 simple_stmt:
 	  decl
-		{ finish_stmt (); }
+		{ finish_stmt ();
+		  $$ = NULL_TREE; }
 	| expr ';'
-                { finish_expr_stmt ($1); }
+                { $$ = finish_expr_stmt ($1); }
 	| simple_if ELSE
                 { begin_else_clause (); }
 	  implicitly_scoped_stmt
                 { 
-		  finish_else_clause ($<ttype>1); 
+		  $$ = $1;
+		  finish_else_clause ($1); 
 		  finish_if_stmt ();
 		}
 	| simple_if  %prec IF
-                { finish_if_stmt (); }
+                { $$ = $1;
+		  finish_if_stmt (); }
 	| WHILE
 		{
 		  $<ttype>$ = begin_while_stmt ();
@@ -3335,7 +3342,8 @@ simple_stmt:
 	  paren_cond_or_null
                 { finish_while_stmt_cond ($3, $<ttype>2); }
 	  already_scoped_stmt
-                { finish_while_stmt ($<ttype>2); }
+                { $$ = $<ttype>2;
+		  finish_while_stmt ($<ttype>2); }
 	| DO
                 { $<ttype>$ = begin_do_stmt (); }
 	  implicitly_scoped_stmt WHILE
@@ -3344,7 +3352,8 @@ simple_stmt:
 		  cond_stmt_keyword = "do";
 		}
 	  paren_expr_or_null ';'
-                { finish_do_stmt ($6, $<ttype>2); }
+                { $$ = $<ttype>2;
+		  finish_do_stmt ($6, $<ttype>2); }
 	| FOR
                 { $<ttype>$ = begin_for_stmt (); }
 	  '(' for.init.statement
@@ -3354,75 +3363,83 @@ simple_stmt:
 	  xexpr ')'
                 { finish_for_expr ($9, $<ttype>2); }
 	  already_scoped_stmt
-                { finish_for_stmt ($<ttype>2); }
+                { $$ = $<ttype>2;
+		  finish_for_stmt ($<ttype>2); }
 	| SWITCH 
                 { $<ttype>$ = begin_switch_stmt (); }
 	    '(' condition ')'
                 { finish_switch_cond ($4, $<ttype>2); }
 	  implicitly_scoped_stmt
-                { finish_switch_stmt ($<ttype>2); }
+                { $$ = $<ttype>2;
+		  finish_switch_stmt ($<ttype>2); }
 	| CASE expr_no_commas ':'
-                { finish_case_label ($2, NULL_TREE); }
+                { $<ttype>$ = finish_case_label ($2, NULL_TREE); }
 	  stmt
+		{ $$ = $<ttype>4; }
 	| CASE expr_no_commas ELLIPSIS expr_no_commas ':'
-                { finish_case_label ($2, $4); }
+                { $<ttype>$ = finish_case_label ($2, $4); }
 	  stmt
+		{ $$ = $<ttype>6; }
 	| DEFAULT ':'
-		{ finish_case_label (NULL_TREE, NULL_TREE); }
+		{ $<ttype>$ = finish_case_label (NULL_TREE, NULL_TREE); }
 	  stmt
+		{ $$ = $<ttype>3; }
 	| BREAK ';'
-                { finish_break_stmt (); }
+                { $$ = finish_break_stmt (); }
 	| CONTINUE ';'
-                { finish_continue_stmt (); }
+                { $$ = finish_continue_stmt (); }
 	| RETURN_KEYWORD ';'
-                { finish_return_stmt (NULL_TREE); }
+                { $$ = finish_return_stmt (NULL_TREE); }
 	| RETURN_KEYWORD expr ';'
-                { finish_return_stmt ($2); }
+                { $$ = finish_return_stmt ($2); }
 	| asm_keyword maybe_cv_qualifier '(' string ')' ';'
-		{ 
-		  finish_asm_stmt ($2, $4, NULL_TREE, NULL_TREE,
-				   NULL_TREE); 
-		}
+		{ $$ = finish_asm_stmt ($2, $4, NULL_TREE, NULL_TREE,
+					NULL_TREE); }
 	/* This is the case with just output operands.  */
 	| asm_keyword maybe_cv_qualifier '(' string ':' asm_operands ')' ';'
-		{ 
-		  finish_asm_stmt ($2, $4, $6, NULL_TREE,
-				   NULL_TREE); 
-		}
+		{ $$ = finish_asm_stmt ($2, $4, $6, NULL_TREE, NULL_TREE); }
 	/* This is the case with input operands as well.  */
-	| asm_keyword maybe_cv_qualifier '(' string ':' asm_operands ':' asm_operands ')' ';'
-		{ finish_asm_stmt ($2, $4, $6, $8, NULL_TREE); }
+	| asm_keyword maybe_cv_qualifier '(' string ':' asm_operands ':'
+	  asm_operands ')' ';'
+		{ $$ = finish_asm_stmt ($2, $4, $6, $8, NULL_TREE); }
 	| asm_keyword maybe_cv_qualifier '(' string SCOPE asm_operands ')' ';'
-		{ finish_asm_stmt ($2, $4, NULL_TREE, $6, NULL_TREE); }
+		{ $$ = finish_asm_stmt ($2, $4, NULL_TREE, $6, NULL_TREE); }
 	/* This is the case with clobbered registers as well.  */
 	| asm_keyword maybe_cv_qualifier '(' string ':' asm_operands ':'
 	  asm_operands ':' asm_clobbers ')' ';'
-		{ finish_asm_stmt ($2, $4, $6, $8, $10); }
+		{ $$ = finish_asm_stmt ($2, $4, $6, $8, $10); }
 	| asm_keyword maybe_cv_qualifier '(' string SCOPE asm_operands ':'
 	  asm_clobbers ')' ';'
-		{ finish_asm_stmt ($2, $4, NULL_TREE, $6, $8); }
+		{ $$ = finish_asm_stmt ($2, $4, NULL_TREE, $6, $8); }
 	| asm_keyword maybe_cv_qualifier '(' string ':' asm_operands SCOPE
 	  asm_clobbers ')' ';'
-		{ finish_asm_stmt ($2, $4, $6, NULL_TREE, $8); }
+		{ $$ = finish_asm_stmt ($2, $4, $6, NULL_TREE, $8); }
 	| GOTO '*' expr ';'
                 { 
 		  if (pedantic)
 		    pedwarn ("ISO C++ forbids computed gotos");
-		  finish_goto_stmt ($3);
+		  $$ = finish_goto_stmt ($3);
 		}
 	| GOTO identifier ';'
-                { finish_goto_stmt ($2); }
+                { $$ = finish_goto_stmt ($2); }
 	| label_colon stmt
+		{ $$ = NULL_TREE; }
 	| label_colon '}'
 		{ error ("label must be followed by statement");
-		  yyungetc ('}', 0); }
+		  yyungetc ('}', 0);
+		  $$ = NULL_TREE; }
 	| ';'
-		{ finish_stmt (); }
+		{ finish_stmt ();
+		  $$ = NULL_TREE; }
 	| try_block
+		{ $$ = NULL_TREE; }
 	| using_directive
+		{ $$ = NULL_TREE; }
 	| namespace_using_decl
-	        { do_local_using_decl ($1); }
+	        { do_local_using_decl ($1);
+		  $$ = NULL_TREE; }
 	| namespace_alias
+		{ $$ = NULL_TREE; }
 	;
 
 function_try_block:
@@ -3842,6 +3859,14 @@ operator_name:
 		{ $$ = frob_opname (ansi_opname (ERROR_MARK)); }
 	;
 
+/* The forced readahead in here is because we might be at the end of a
+   line, and lineno won't be bumped until yylex absorbs the first token
+   on the next line.  */
+save_lineno:
+		{ if (yychar == YYEMPTY)
+		    yychar = YYLEX;
+		  $$ = lineno; }
+	;
 %%
 
 #ifdef SPEW_DEBUG
