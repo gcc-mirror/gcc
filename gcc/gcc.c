@@ -937,6 +937,12 @@ static char *standard_startfile_prefix = STANDARD_STARTFILE_PREFIX;
 static char *standard_startfile_prefix_1 = "/lib/";
 static char *standard_startfile_prefix_2 = "/usr/lib/";
 
+#ifndef TOOLDIR_PREFIX
+#define TOOLDIR_PREFIX "/usr/local/"
+#endif
+static char *tooldir_base_prefix = TOOLDIR_PREFIX;
+static char *tooldir_prefix;
+
 /* Clear out the vector of arguments (after a command is executed).  */
 
 static void
@@ -2129,6 +2135,24 @@ process_command (argc, argv)
 	n_infiles++;
     }
 
+  tooldir_prefix = concat (tooldir_base_prefix, spec_machine, "/");
+
+  /* If tooldir is relative, base it on exec_prefix.  A relative
+     tooldir lets us move the installed tree as a unit.  */
+
+  if (*tooldir_prefix != '/')
+    {
+      if (gcc_exec_prefix)
+	tooldir_prefix = concat (concat (gcc_exec_prefix, spec_machine, "/"),
+				 concat (spec_version, "/", tooldir_prefix),
+				 "");
+      else
+	tooldir_prefix = concat (concat (standard_exec_prefix, spec_machine, "/"),
+				 concat (spec_version, "/", tooldir_prefix),
+				 "");
+    }
+
+
   /* Set up the search paths before we go looking for config files.  */
 
   /* These come before the md prefixes so that we will find gcc's subcommands
@@ -2140,6 +2164,11 @@ process_command (argc, argv)
 
   add_prefix (&startfile_prefix, standard_exec_prefix, 0, 1, NULL_PTR);
   add_prefix (&startfile_prefix, standard_exec_prefix_1, 0, 1, NULL_PTR);
+
+  add_prefix (&exec_prefix, concat (tooldir_prefix, "bin", "/"),
+	      0, 0, NULL_PTR);
+  add_prefix (&startfile_prefix, concat (tooldir_prefix, "lib", "/"),
+	      0, 0, NULL_PTR);
 
   /* More prefixes are enabled in main, after we read the specs file
      and determine whether this is cross-compilation or not.  */
