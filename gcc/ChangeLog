@@ -1,3 +1,8 @@
+2003-10-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/extend.texi: Fix typos.
+	* doc/invoke.texi: Likewise.
+
 2003-10-18  Nicolas Pitre <nico@cam.org>
 
 	* config/arm/arm.c (arm_override_options): Use arm_tune_xscale for

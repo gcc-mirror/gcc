@@ -2628,7 +2628,7 @@ Currently, the attribute is ignored for inlined functions. If the
 attribute is applied to a symbol @emph{definition}, an error is reported.
 If a symbol previously declared @code{dllimport} is later defined, the
 attribute is ignored in subsequent references, and a warning is emitted.
-The attribute is also overriden by a subsequent declaration as
+The attribute is also overridden by a subsequent declaration as
 @code{dllexport}. 
 
 When applied to C++ classes, the attribute marks non-inlined
@@ -3809,7 +3809,7 @@ the single copy in the library.
 
 Since GCC eventually will implement ISO C99 semantics for
 inline functions, it is best to use @code{static inline} only
-to guarentee compatibility.  (The
+to guarantee compatibility.  (The
 existing semantics will remain available when @option{-std=gnu89} is
 specified, but eventually the default will be @option{-std=gnu99} and
 that will implement the C99 semantics, though it does not do so yet.)
