@@ -725,8 +725,8 @@ CXX_TARGET_OBJS=@cxx_target_objs@
 
 # Language-specific object files for C and Objective C.
 C_AND_OBJC_OBJS = c-errors.o c-lex.o c-pragma.o c-decl.o c-typeck.o \
-  c-convert.o c-aux-info.o c-common.o c-semantics.o c-dump.o libcpp.a \
-  $(C_TARGET_OBJS)
+  c-convert.o c-aux-info.o c-common.o c-format.o c-semantics.o c-dump.o \
+  libcpp.a $(C_TARGET_OBJS)
 
 # Language-specific object files for C.
 C_OBJS = c-parse.o c-lang.o $(C_AND_OBJC_OBJS)
@@ -1230,7 +1230,10 @@ s-under: $(GCC_PASSES)
 
 c-common.o : c-common.c $(CONFIG_H) system.h $(TREE_H) $(OBSTACK_H) \
 	$(C_COMMON_H) flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
-	$(EXPR_H) diagnostic.h
+	$(EXPR_H)
+
+c-format.o : c-format.c $(CONFIG_H) system.h $(TREE_H) \
+	$(C_COMMON_H) flags.h toplev.h intl.h diagnostic.h
 
 c-semantics.o : c-semantics.c $(CONFIG_H) system.h $(TREE_H) $(C_TREE_H) \
 	c-lex.h flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \

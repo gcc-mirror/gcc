@@ -1,3 +1,16 @@
+2001-01-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c: Move format checking code to ...
+	* c-format.c: ... here.  New file.  Reorder some functions and
+	declarations.
+	(decl_handle_format_attribute, decl_handle_format_arg_attribute):
+	New functions.
+	* c-common.h (decl_handle_format_attribute,
+	decl_handle_format_arg_attribute): Declare.
+	* Makefile.in (C_AND_OBJC_OBJS): Add c-format.o.
+	(c-common.o): Adjust dependencies.
+	(c-format.o): New list of dependencies.
+
 2001-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* unroll.c (loop_iterations): If we cannot prove iteration variable

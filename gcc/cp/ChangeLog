@@ -1,5 +1,9 @@
 2001-01-13  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* Make-lang.in (CXX_C_OBJS): Add c-format.o.
+
+2001-01-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* g++.1: Change to be ".so man1/gcc.1".
 
 2001-01-13  Joseph S. Myers  <jsm28@cam.ac.uk>

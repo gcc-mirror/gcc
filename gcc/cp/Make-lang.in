@@ -90,7 +90,7 @@ $(DEMANGLER_PROG): cxxmain.o underscore.o $(LIBDEPS)
 
 # The compiler itself.
 # Shared with C front end:
-CXX_C_OBJS = c-common.o c-pragma.o c-semantics.o c-lex.o c-dump.o $(CXX_TARGET_OBJS)
+CXX_C_OBJS = c-common.o c-format.o c-pragma.o c-semantics.o c-lex.o c-dump.o $(CXX_TARGET_OBJS)
 
 # Language-specific object files.
 CXX_OBJS = cp/call.o cp/decl.o cp/errfn.o cp/expr.o cp/pt.o cp/typeck2.o \
