@@ -1,3 +1,8 @@
+2002-02-27  Andrew MacLeod  <amacleod@redhat.com>
+
+	* dwarf2out.c (stack_adjust_offset): Add support for POST_INC, 
+	POST_DEC, and POST_MODIFY.
+
 2002-02-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-typeck.c (digest_init): Remove unused parameter; all
