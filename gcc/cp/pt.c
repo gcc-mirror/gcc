@@ -3991,7 +3991,8 @@ lookup_template_function (fns, arglist)
   if (fns == error_mark_node || arglist == error_mark_node)
     return error_mark_node;
 
-  if (fns == NULL_TREE)
+  if (fns == NULL_TREE
+      || TREE_CODE (fns) == FUNCTION_DECL)
     {
       error ("non-template used as template");
       return error_mark_node;
