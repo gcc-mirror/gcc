@@ -1,3 +1,11 @@
+2005-02-01  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/16201
+	* arm.c (arm_eliminable_register): New function.
+	(adjacent_mem_locations): Don't allow eliminable registers.  Use
+	HOST_WIDE_INT for address offsets.
+	* arm-protos.h (arm_eliminable_register): Add prototype.
+
 2005-01-31  Daniel Jacobowitz  <dan@codesourcery.com>
 
 	2004-09-22  Mark Mitchell  <mark@codesourcery.com>
