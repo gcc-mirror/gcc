@@ -498,7 +498,7 @@ check_function_format (name, assembler_name, params)
   /* See if this function is a format function.  */
   for (info = function_format_list; info; info = info->next)
     {
-      if ((info->assembler_name || assembler_name)
+      if (info->assembler_name
 	  ? (info->assembler_name == assembler_name)
 	  : (info->name == name))
 	{
