@@ -1,3 +1,8 @@
+2000-11-09  Geoffrey Keating  <geoffk@redhat.com>
+
+	* c-decl.c (finish_struct): When a structure is completed,
+	check all its variant types for completeness.
+
 2000-11-09  Neil Booth  <neilb@earthling.net>
 
 	* cpphash.c: Move cpp_defined here from cpplib.c.
