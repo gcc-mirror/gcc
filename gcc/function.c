@@ -1330,7 +1330,7 @@ put_var_into_stack (decl)
 
   /* If this variable comes from an outer function,
      find that function's saved context.  */
-  if (context != current_function_decl)
+  if (context != current_function_decl && context != inline_function_decl)
     for (function = outer_function_chain; function; function = function->next)
       if (function->decl == context)
 	break;
@@ -4632,7 +4632,8 @@ trampoline_address (function)
   /* Find the `struct function' for the function containing FUNCTION.  */
   fp = 0;
   fn_context = decl_function_context (function);
-  if (fn_context != current_function_decl)
+  if (fn_context != current_function_decl
+      && fn_context != inline_function_decl)
     for (fp = outer_function_chain; fp; fp = fp->next)
       if (fp->decl == fn_context)
 	break;
