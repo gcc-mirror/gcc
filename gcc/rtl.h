@@ -595,56 +595,83 @@ extern const char * const reg_note_name[];
    should add a new value here, don't forget to change the
    note_insn_name array in rtl.c.  */
 
-/* This note is used to get rid of an insn
-   when it isn't safe to patch the insn out of the chain.  */
-#define NOTE_INSN_DELETED -1
-#define NOTE_INSN_BLOCK_BEG -2
-#define NOTE_INSN_BLOCK_END -3
-#define NOTE_INSN_LOOP_BEG -4
-#define NOTE_INSN_LOOP_END -5
-/* This kind of note is generated at the end of the function body,
-   just before the return insn or return label.
-   In an optimizing compilation it is deleted by the first jump optimization,
-   after enabling that optimizer to determine whether control can fall
-   off the end of the function body without a return statement.  */
-#define NOTE_INSN_FUNCTION_END -6
-/* This kind of note is generated just after each call to `setjmp', et al.  */
-#define NOTE_INSN_SETJMP -7
-/* Generated at the place in a loop that `continue' jumps to.  */
-#define NOTE_INSN_LOOP_CONT -8
-/* Generated at the start of a duplicated exit test.  */
-#define NOTE_INSN_LOOP_VTOP -9
-/* This marks the point immediately after the last prologue insn.  */
-#define NOTE_INSN_PROLOGUE_END -10
-/* This marks the point immediately prior to the first epilogue insn.  */
-#define NOTE_INSN_EPILOGUE_BEG -11
-/* Generated in place of user-declared labels when they are deleted.  */
-#define NOTE_INSN_DELETED_LABEL -12
-/* This note indicates the start of the real body of the function,
-   i.e. the point just after all of the parms have been moved into
-   their homes, etc.  */
-#define NOTE_INSN_FUNCTION_BEG -13
-/* These note where exception handling regions begin and end.  */
-#define NOTE_INSN_EH_REGION_BEG -14
-#define NOTE_INSN_EH_REGION_END -15
-/* Generated whenever a duplicate line number note is output.  For example,
-   one is output after the end of an inline function, in order to prevent
-   the line containing the inline call from being counted twice in gcov. */
-#define NOTE_REPEATED_LINE_NUMBER -16
+enum insn_note
+{
+  /* Keep all of these numbers negative.  Adjust as needed.  */
+  NOTE_INSN_BIAS = -100,
 
-/* Start/end of a live range region, where pseudos allocated on the stack can
-   be allocated to temporary registers.  */
-#define NOTE_INSN_RANGE_START -17
-#define NOTE_INSN_RANGE_END -18
-/* Record which registers are currently live.  */
-#define NOTE_INSN_LIVE -19
-/* Record the struct for the following basic block.  */
-#define NOTE_INSN_BASIC_BLOCK -20
+  /* This note is used to get rid of an insn
+     when it isn't safe to patch the insn out of the chain.  */
+  NOTE_INSN_DELETED,
+
+  /* These are used to mark the beginning and end of a lexical block.
+     See NOTE_BLOCK, identify_blocks and reorder_blocks.  */
+  NOTE_INSN_BLOCK_BEG,
+  NOTE_INSN_BLOCK_END,
+
+  /* These mark the extremes of a loop.  */
+  NOTE_INSN_LOOP_BEG,
+  NOTE_INSN_LOOP_END,
+
+  /* Generated at the place in a loop that `continue' jumps to.  */
+  NOTE_INSN_LOOP_CONT,
+  /* Generated at the start of a duplicated exit test.  */
+  NOTE_INSN_LOOP_VTOP,
+
+  /* This kind of note is generated at the end of the function body,
+     just before the return insn or return label.  In an optimizing
+     compilation it is deleted by the first jump optimization, after
+     enabling that optimizer to determine whether control can fall
+     off the end of the function body without a return statement.  */
+  NOTE_INSN_FUNCTION_END,
+
+  /* This kind of note is generated just after each call to `setjmp',
+     and similar functions that can return twice.  */
+  NOTE_INSN_SETJMP,
+
+  /* This marks the point immediately after the last prologue insn.  */
+  NOTE_INSN_PROLOGUE_END,
+
+  /* This marks the point immediately prior to the first epilogue insn.  */
+  NOTE_INSN_EPILOGUE_BEG,
+
+  /* Generated in place of user-declared labels when they are deleted.  */
+  NOTE_INSN_DELETED_LABEL,
+
+  /* This note indicates the start of the real body of the function,
+     i.e. the point just after all of the parms have been moved into
+     their homes, etc.  */
+  NOTE_INSN_FUNCTION_BEG,
+
+  /* These note where exception handling regions begin and end. 
+     Uses NOTE_EH_HANDLER to identify the region in question.  */
+  NOTE_INSN_EH_REGION_BEG,
+  NOTE_INSN_EH_REGION_END,
+
+  /* Generated whenever a duplicate line number note is output.  For example,
+     one is output after the end of an inline function, in order to prevent
+     the line containing the inline call from being counted twice in gcov. */
+  NOTE_REPEATED_LINE_NUMBER,
+
+  /* Start/end of a live range region, where pseudos allocated on the stack
+     can be allocated to temporary registers.  Uses NOTE_RANGE_INFO.  */
+  NOTE_INSN_RANGE_START,
+  NOTE_INSN_RANGE_END,
+
+  /* Record which registers are currently live.  Uses NOTE_LIVE_INFO.  */
+  NOTE_INSN_LIVE,
+
+  /* Record the struct for the following basic block.  Uses NOTE_BASIC_BLOCK. */
+  NOTE_INSN_BASIC_BLOCK,
+
+  NOTE_INSN_MAX
+};
 
 /* Names for NOTE insn's other than line numbers.  */
 
-extern const char * const note_insn_name[];
-#define GET_NOTE_INSN_NAME(NOTE_CODE) (note_insn_name[-(NOTE_CODE)])
+extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
+#define GET_NOTE_INSN_NAME(NOTE_CODE) \
+  (note_insn_name[(NOTE_CODE) - NOTE_INSN_BIAS])
 
 /* The name of a label, in case it corresponds to an explicit label
    in the input source code.  */
