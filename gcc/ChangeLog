@@ -1,3 +1,8 @@
+2000-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* calls.c (expand_call): Move expand_start_target_temps call after
+	start_sequence().
+
 2000-05-15  Neil Booth  <NeilB@earthling.net>
 
 	* cpphash.c (trad_stringify, warn_trad_stringify,
