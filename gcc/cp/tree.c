@@ -692,14 +692,14 @@ list_hash_pieces (tree purpose, tree value, tree chain)
   hashval_t hashcode = 0;
   
   if (chain)
-    hashcode += TYPE_HASH (chain);
+    hashcode += TREE_HASH (chain);
   
   if (value)
-    hashcode += TYPE_HASH (value);
+    hashcode += TREE_HASH (value);
   else
     hashcode += 1007;
   if (purpose)
-    hashcode += TYPE_HASH (purpose);
+    hashcode += TREE_HASH (purpose);
   else
     hashcode += 1009;
   return hashcode;

@@ -1,3 +1,14 @@
+2004-03-05  Jason Merrill  <jason@redhat.com>
+
+	* tree.h (TYPE_HASH): Use TYPE_UID.
+	(TREE_HASH): New macro with old definition of TYPE_HASH.
+	* tree.c (build_type_attribute_variant): Use iterative_hash_object.
+	(build_array_type, build_function_type): Likewise.
+	(build_method_type_directly): Likewise.
+	(build_offset_type, build_complex_type): Likewise.
+	(type_hash_list, attribute_hash_list): Likewise. Now static.
+	* except.c: s/TYPE_HASH/TREE_HASH/.
+
 2004-03-05  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (function_arg): Handle 16-byte aligned args.
