@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.197 1997/04/26 23:22:03 karl Exp $
+%% $Id: texinfo.tex,v 2.197 1997/04/27 19:40:44 karl Exp karl $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 96, 97 Free Software Foundation, Inc.
@@ -147,11 +147,7 @@
 % \onepageout takes a vbox as an argument.  Note that \pagecontents
 % does insertions, but you have to call it yourself.
 \def\onepageout#1{%
-  \ifcropmarks
-    \hoffset = 0pt
-  \else
-    \hoffset = \normaloffset
-  \fi
+  \ifcropmarks \hoffset=0pt \else \hoffset=\normaloffset \fi
   %
   \ifodd\pageno  \advance\hoffset by \bindingoffset
   \else \advance\hoffset by -\bindingoffset\fi
@@ -171,17 +167,20 @@
     \normalturnoffactive  % \ in index entries must not stay \, e.g., if
                    % the page break happens to be in the middle of an example.
     \shipout\vbox{%
-      \ifcropmarks
-        \vbox to \outervsize\bgroup
-          \hsize = \outerhsize
-          \vbox{\line{\ewtop\hfill\ewtop}}%
-          \nointerlineskip
-          \line{%
-            \vbox{\moveleft\cornerthick\nstop}%
-            \hfill
-            \vbox{\moveright\cornerthick\nstop}%
-          }%
-          \vskip\topandbottommargin
+      \ifcropmarks \vbox to \outervsize\bgroup
+        \hsize = \outerhsize
+        \line{\ewtop\hfil\ewtop}%
+        \nointerlineskip
+        \line{%
+          \vbox{\moveleft\cornerthick\nstop}%
+          \hfill
+          \vbox{\moveright\cornerthick\nstop}%
+        }%
+        \vskip\topandbottommargin
+        \line\bgroup
+          \hfil % center the page within the outer (page) hsize.
+          \ifodd\pageno\hskip\bindingoffset\fi
+          \vbox\bgroup
       \fi
       %
       \unvbox\headlinebox
@@ -189,19 +188,21 @@
       \unvbox\footlinebox
       %
       \ifcropmarks
-          \vskip\topandbottommargin plus1fill minus1fill
-          \boxmaxdepth = \cornerthick
-          \line{%
-            \vbox{\moveleft\cornerthick\nsbot}%
-            \hfill
-            \vbox{\moveright\cornerthick\nsbot}%
-          }%
-          \nointerlineskip
-          \vbox{\line{\ewbot\hfill\ewbot}}%
-        \egroup % \vbox from first cropmarks clause
+          \egroup % end of \vbox\bgroup
+        \hfil\egroup % end of (centering) \line\bgroup
+        \vskip\topandbottommargin plus1fill minus1fill
+        \boxmaxdepth = \cornerthick
+        \line{%
+          \vbox{\moveleft\cornerthick\nsbot}%
+          \hfill
+          \vbox{\moveright\cornerthick\nsbot}%
+        }%
+        \nointerlineskip
+        \line{\ewbot\hfil\ewbot}%
+      \egroup % \vbox from first cropmarks clause
       \fi
-    }%
-    }%
+    }% end of \shipout\vbox
+  }% end of group with \turnoffactive
   \advancepageno
   \ifnum\outputpenalty>-20000 \else\dosupereject\fi
 }
@@ -219,7 +220,6 @@
 \ifr@ggedbottom \kern-\dimen@ \vfil \fi}
 }
 
-%
 % Here are the rules for the cropmarks.  Note that they are
 % offset so that the space between them is truly \outerhsize or \outervsize
 % (P. A. MacKay, 12 November, 1986)
@@ -2408,27 +2408,16 @@ width0pt\relax} \fi
 
 % Define the macros used in formatting output of the sorted index material.
 
-% This is what you call to cause a particular index to get printed.
-% Write
-% @unnumbered Function Index
-% @printindex fn
-
+% @printindex causes a particular index (the ??s file) to get printed.
+% It does not print any chapter heading (usually an @unnumbered).
+%
 \def\printindex{\parsearg\doprintindex}
-
 \def\doprintindex#1{\begingroup
   \dobreak \chapheadingskip{10000}%
   %
   \indexfonts \rm
   \tolerance = 9500
   \indexbreaks
-  \def\indexbackslash{\rawbackslashxx}%
-  % Index files are almost Texinfo source, but we use \ as the escape
-  % character.  It would be better to use @, but that's too big a change
-  % to make right now.
-  \catcode`\\ = 0
-  \catcode`\@ = 11
-  \escapechar = `\\
-  \begindoublecolumns
   %
   % See if the index file exists and is nonempty.
   \openin 1 \jobname.#1s
@@ -2447,11 +2436,19 @@ width0pt\relax} \fi
     \ifeof 1
       (Index is empty)
     \else
+      % Index files are almost Texinfo source, but we use \ as the escape
+      % character.  It would be better to use @, but that's too big a change
+      % to make right now.
+      \def\indexbackslash{\rawbackslashxx}%
+      \catcode`\\ = 0
+      \catcode`\@ = 11
+      \escapechar = `\\
+      \begindoublecolumns
       \input \jobname.#1s
+      \enddoublecolumns
     \fi
   \fi
   \closein 1
-  \enddoublecolumns
 \endgroup}
 
 % These macros are used by the sorted index file itself.
@@ -2553,24 +2550,39 @@ width0pt\relax} \fi
 
 \def\begindoublecolumns{\begingroup % ended by \enddoublecolumns
   % Grab any single-column material above us.
-  \output = {\global\setbox\partialpage
-    =\vbox{\unvbox255\kern -\topskip \kern \baselineskip}}%
+  \output = {\global\setbox\partialpage = \vbox{%
+    % 
+    % Here is a possibility not foreseen in manmac: if we accumulate a
+    % whole lot of material, we might end up calling this \output
+    % routine twice in a row (see the doublecol-lose test, which is
+    % essentially a couple of indexes with @setchapternewpage off).  In
+    % that case, we must prevent the second \partialpage from
+    % simply overwriting the first, causing us to lose the page.
+    % This will preserve it until a real output routine can ship it
+    % out.  Generally, \partialpage will be empty when this runs and
+    % this will be a no-op.
+    \unvbox\partialpage
+    %
+    % Unvbox the main output page.
+    \unvbox255
+    \kern-\topskip \kern\baselineskip
+  }}%
   \eject
   %
-  % Now switch to the double-column output routine.
-  \output={\doublecolumnout}%
+  % Use the double-column output routine for subsequent pages.
+  \output = {\doublecolumnout}%
   %
   % Change the page size parameters.  We could do this once outside this
   % routine, in each of @smallbook, @afourpaper, and the default 8.5x11
   % format, but then we repeat the same computation.  Repeating a couple
   % of assignments once per index is clearly meaningless for the
-  % execution time, so we may as well do it once.
+  % execution time, so we may as well do it in one place.
   %
   % First we halve the line length, less a little for the gutter between
   % the columns.  We compute the gutter based on the line length, so it
   % changes automatically with the paper format.  The magic constant
-  % below is chosen so that the gutter has the same value (well, +- <
-  % 1pt) as it did when we hard-coded it.
+  % below is chosen so that the gutter has the same value (well, +-<1pt)
+  % as it did when we hard-coded it.
   %
   % We put the result in a separate register, \doublecolumhsize, so we
   % can restore it in \pagesofar, after \hsize itself has (potentially)
@@ -2591,100 +2603,103 @@ width0pt\relax} \fi
   % (undoubled) page height minus any material left over from the
   % previous page.
   \dimen@=\pageheight \advance\dimen@ by-\ht\partialpage
-  % box0 will be the left-hand column, box1 the right.
+  % box0 will be the left-hand column, box2 the right.
   \setbox0=\vsplit255 to\dimen@ \setbox2=\vsplit255 to\dimen@
   \onepageout\pagesofar
-  \unvbox255 \penalty\outputpenalty
+  \unvbox255
+  \penalty\outputpenalty
 }
 \def\pagesofar{%
-  % The contents of the output page -- any previous material,
+  % Re-output the contents of the output page -- any previous material,
   % followed by the two boxes we just split.
   \unvbox\partialpage
   \hsize = \doublecolumnhsize
   \wd0=\hsize \wd2=\hsize \hbox to\pagewidth{\box0\hfil\box2}%
 }
 \def\enddoublecolumns{%
-  \output={\balancecolumns}\eject % split what we have
-  \endgroup
+  \output = {\balancecolumns}\eject % split what we have
+  \endgroup % started in \begindoublecolumns
+  %
   % Back to normal single-column typesetting, but take account of the
   % fact that we just accumulated some stuff on the output page.
-  \pagegoal=\vsize
+  \pagegoal = \vsize
 }
 \def\balancecolumns{%
-  % Called on the last page of the double column material.
-  \setbox0=\vbox{\unvbox255}%
+  % Called at the end of the double column material.
+  \setbox0 = \vbox{\unvbox255}%
   \dimen@ = \ht0
   \advance\dimen@ by \topskip
   \advance\dimen@ by-\baselineskip
   \divide\dimen@ by 2
   \splittopskip = \topskip
   % Loop until we get a decent breakpoint.
-  {\vbadness=10000 \loop \global\setbox3=\copy0
+  {\vbadness=10000 \loop
+    \global\setbox3=\copy0
     \global\setbox1=\vsplit3 to\dimen@
-    \ifdim\ht3>\dimen@ \global\advance\dimen@ by1pt \repeat}%
+    \ifdim\ht3>\dimen@ \global\advance\dimen@ by1pt
+   \repeat}%
   \setbox0=\vbox to\dimen@{\unvbox1}%
   \setbox2=\vbox to\dimen@{\unvbox3}%
   \pagesofar
 }
-\catcode `\@=\other
+\catcode`\@ = \other
 
 
 \message{sectioning,}
 % Define chapters, sections, etc.
 
-\newcount \chapno
-\newcount \secno        \secno=0
-\newcount \subsecno     \subsecno=0
-\newcount \subsubsecno  \subsubsecno=0
+\newcount\chapno
+\newcount\secno        \secno=0
+\newcount\subsecno     \subsecno=0
+\newcount\subsubsecno  \subsubsecno=0
 
 % This counter is funny since it counts through charcodes of letters A, B, ...
-\newcount \appendixno  \appendixno = `\@
+\newcount\appendixno  \appendixno = `\@
 \def\appendixletter{\char\the\appendixno}
 
-\newwrite \contentsfile
+\newwrite\contentsfile
 % This is called from \setfilename.
-\def\opencontents{\openout \contentsfile = \jobname.toc}
+\def\opencontents{\openout\contentsfile = \jobname.toc }
 
 % Each @chapter defines this as the name of the chapter.
 % page headings and footings can use it.  @section does likewise
 
 \def\thischapter{} \def\thissection{}
-\def\seccheck#1{\if \pageno<0 %
-\errmessage{@#1 not allowed after generating table of contents}\fi
-%
-}
+\def\seccheck#1{\ifnum \pageno<0
+  \errmessage{@#1 not allowed after generating table of contents}%
+\fi}
 
 \def\chapternofonts{%
-\let\rawbackslash=\relax%
-\let\frenchspacing=\relax%
-\def\result{\realbackslash result}
-\def\equiv{\realbackslash equiv}
-\def\expansion{\realbackslash expansion}
-\def\print{\realbackslash print}
-\def\TeX{\realbackslash TeX}
-\def\dots{\realbackslash dots}
-\def\copyright{\realbackslash copyright}
-\def\tt{\realbackslash tt}
-\def\bf{\realbackslash bf }
-\def\w{\realbackslash w}
-\def\less{\realbackslash less}
-\def\gtr{\realbackslash gtr}
-\def\hat{\realbackslash hat}
-\def\char{\realbackslash char}
-\def\tclose##1{\realbackslash tclose {##1}}
-\def\code##1{\realbackslash code {##1}}
-\def\samp##1{\realbackslash samp {##1}}
-\def\r##1{\realbackslash r {##1}}
-\def\b##1{\realbackslash b {##1}}
-\def\key##1{\realbackslash key {##1}}
-\def\file##1{\realbackslash file {##1}}
-\def\kbd##1{\realbackslash kbd {##1}}
-% These are redefined because @smartitalic wouldn't work inside xdef.
-\def\i##1{\realbackslash i {##1}}
-\def\cite##1{\realbackslash cite {##1}}
-\def\var##1{\realbackslash var {##1}}
-\def\emph##1{\realbackslash emph {##1}}
-\def\dfn##1{\realbackslash dfn {##1}}
+  \let\rawbackslash=\relax
+  \let\frenchspacing=\relax
+  \def\result{\realbackslash result}%
+  \def\equiv{\realbackslash equiv}%
+  \def\expansion{\realbackslash expansion}%
+  \def\print{\realbackslash print}%
+  \def\TeX{\realbackslash TeX}%
+  \def\dots{\realbackslash dots}%
+  \def\copyright{\realbackslash copyright}%
+  \def\tt{\realbackslash tt}%
+  \def\bf{\realbackslash bf}%
+  \def\w{\realbackslash w}%
+  \def\less{\realbackslash less}%
+  \def\gtr{\realbackslash gtr}%
+  \def\hat{\realbackslash hat}%
+  \def\char{\realbackslash char}%
+  \def\tclose##1{\realbackslash tclose{##1}}%
+  \def\code##1{\realbackslash code{##1}}%
+  \def\samp##1{\realbackslash samp{##1}}%
+  \def\r##1{\realbackslash r{##1}}%
+  \def\b##1{\realbackslash b{##1}}%
+  \def\key##1{\realbackslash key{##1}}%
+  \def\file##1{\realbackslash file{##1}}%
+  \def\kbd##1{\realbackslash kbd{##1}}%
+  % These are redefined because @smartitalic wouldn't work inside xdef.
+  \def\i##1{\realbackslash i{##1}}%
+  \def\cite##1{\realbackslash cite{##1}}%
+  \def\var##1{\realbackslash var{##1}}%
+  \def\emph##1{\realbackslash emph{##1}}%
+  \def\dfn##1{\realbackslash dfn{##1}}%
 }
 
 \newcount\absseclevel % used to calculate proper heading level
