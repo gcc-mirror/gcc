@@ -1,3 +1,7 @@
+2002-05-01  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* error.c (dump_type): Be careful about implicit typenames.
+
 2002-04-30  Mark Mitchell  <mark@codesourcery.com>
 
 	ABI change, returning simple classes from functions.
