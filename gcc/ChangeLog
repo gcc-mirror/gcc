@@ -1,3 +1,7 @@
+1999-03-11  Colin Smith <colin@wrs.com>
+
+	* sdbout.c (plain_type_1): Make boolean types work better with sdb.
+
 Thu Mar 11 00:20:52 1999  Alexandre Oliva <oliva@dcc.unicamp.br>
 
 	* gcc.texi: Update bug reporting instructions to match

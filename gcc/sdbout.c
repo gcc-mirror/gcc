@@ -527,6 +527,7 @@ plain_type_1 (type, level)
     {
     case VOID_TYPE:
       return T_VOID;
+    case BOOLEAN_TYPE:
     case INTEGER_TYPE:
       {
 	int size = int_size_in_bytes (type) * BITS_PER_UNIT;
