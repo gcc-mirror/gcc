@@ -2478,7 +2478,7 @@ alpha_expand_mov (mode, operands)
     operands[1] = force_reg (mode, operands[1]);
 
   /* Allow legitimize_address to perform some simplifications.  */
-  if (symbolic_operand (operands[1], mode))
+  if (mode == Pmode && symbolic_operand (operands[1], mode))
     {
       rtx tmp = alpha_legitimize_address (operands[1], operands[0], mode);
       if (tmp)
