@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "obstack.h"
 #include "tree.h"
+#include "function.h"
 
 #ifndef TARGET_NO_PROTOTYPE
 #define TARGET_NO_PROTOTYPE 0
@@ -2084,6 +2085,66 @@ rs6000_finalize_pic ()
 }
 
 
+/* Define the structure for the machine field in struct function.  */
+struct machine_function
+{
+  int sysv_varargs_p;
+  int save_toc_p;
+  int fpmem_size;
+  int fpmem_offset;
+};
+
+/* Functions to save and restore rs6000_fpmem_size.
+   These will be called, via pointer variables,
+   from push_function_context and pop_function_context.  */
+
+void
+rs6000_save_machine_status (p)
+     struct function *p;
+{
+  struct machine_function *machine =
+    (struct machine_function *) xmalloc (sizeof (struct machine_function));
+
+  p->machine = machine;
+  machine->sysv_varargs_p = rs6000_sysv_varargs_p;
+  machine->save_toc_p     = rs6000_save_toc_p;
+  machine->fpmem_size     = rs6000_fpmem_size;
+  machine->fpmem_offset   = rs6000_fpmem_offset;
+}
+
+void
+rs6000_restore_machine_status (p)
+     struct function *p;
+{
+  struct machine_function *machine = p->machine;
+
+  rs6000_sysv_varargs_p = machine->sysv_varargs_p;
+  rs6000_save_toc_p     = machine->save_toc_p;
+  rs6000_fpmem_size     = machine->fpmem_size;
+  rs6000_fpmem_offset   = machine->fpmem_offset;
+
+  free (machine);
+  p->machine = (struct machine_function *)0;
+}
+
+/* Do anything needed before RTL is emitted for each function.  */
+
+void
+rs6000_init_expanders ()
+{
+  /* Reset varargs and save TOC indicator */
+  rs6000_sysv_varargs_p = 0;
+  rs6000_save_toc_p = 0;
+  rs6000_fpmem_size = 0;
+  rs6000_fpmem_offset = 0;
+  pic_offset_table_rtx = (rtx)0;
+
+  /* Arrange to save and restore machine status around nested functions.  */
+  save_machine_status = rs6000_save_machine_status;
+  restore_machine_status = rs6000_restore_machine_status;
+}
+
+
 /* Print an operand.  Recognize special options, documented below.  */
 
 #ifdef TARGET_SDATA
@@ -2720,15 +2781,15 @@ rs6000_makes_calls ()
 		+---------------------------------------+
 		| Parameter save area (P)		| 24
 		+---------------------------------------+
-		| Float/int conversion temporary (X)	| 24+P
+		| Alloca space (A)			| 24+P
 		+---------------------------------------+
-		| Alloca space (A)			| 24+P+X
+		| Local variable space (L)		| 24+P+A
 		+---------------------------------------+
-		| Local variable space (L)		| 24+P+X+A
+		| Float/int conversion temporary (X)	| 24+P+A+L
 		+---------------------------------------+
-		| Save area for GP registers (G)	| 24+P+X+A+L
+		| Save area for GP registers (G)	| 24+P+A+X+L
 		+---------------------------------------+
-		| Save area for FP registers (F)	| 24+P+X+A+L+G
+		| Save area for FP registers (F)	| 24+P+A+X+L+G
 		+---------------------------------------+
 	old SP->| back chain to caller's caller		|
 		+---------------------------------------+
@@ -2742,19 +2803,19 @@ rs6000_makes_calls ()
 		+---------------------------------------+
 		| Parameter save area (P)		| 8
 		+---------------------------------------+
-		| Float/int conversion temporary (X)	| 8+P
+		| Alloca space (A)			| 8+P
+		+---------------------------------------+    
+		| Varargs save area (V)			| 8+P+A
+		+---------------------------------------+    
+		| Local variable space (L)		| 8+P+A+V
+		+---------------------------------------+    
+		| Float/int conversion temporary (X)	| 8+P+A+V+L
 		+---------------------------------------+
-		| Alloca space (A)			| 8+P+X
-		+---------------------------------------+
-		| Varargs save area (V)			| 8+P+X+A
-		+---------------------------------------+
-		| Local variable space (L)		| 8+P+X+A+V
-		+---------------------------------------+
-		| saved CR (C)				| 8+P+X+A+V+L
-		+---------------------------------------+
-		| Save area for GP registers (G)	| 8+P+X+A+V+L+C
-		+---------------------------------------+
-		| Save area for FP registers (F)	| 8+P+X+A+V+L+C+G
+		| saved CR (C)				| 8+P+A+V+L+X
+		+---------------------------------------+    
+		| Save area for GP registers (G)	| 8+P+A+V+L+X+C
+		+---------------------------------------+    
+		| Save area for FP registers (F)	| 8+P+A+V+L+X+C+G
 		+---------------------------------------+
 	old SP->| back chain to caller's caller		|
 		+---------------------------------------+
@@ -2777,23 +2838,23 @@ rs6000_makes_calls ()
 		+---------------------------------------+
 		| Parameter save area (P)		| 24
 		+---------------------------------------+
-		| Float/int conversion temporary (X)	| 24+P
+		| Alloca space (A)			| 24+P
+		+---------------------------------------+     
+		| Local variable space (L)		| 24+P+A
+		+---------------------------------------+     
+		| Float/int conversion temporary (X)	| 24+P+A+L
 		+---------------------------------------+
-		| Alloca space (A)			| 24+P+X
-		+---------------------------------------+
-		| Local variable space (L)		| 24+P+X+A
-		+---------------------------------------+
-		| Save area for FP registers (F)	| 24+P+X+A+L
-		+---------------------------------------+
-		| Possible alignment area (X)		| 24+P+X+A+L+F
-		+---------------------------------------+
-		| Save area for GP registers (G)	| 24+P+X+A+L+F+X
-		+---------------------------------------+
-		| Save area for CR (C)			| 24+P+X+A+L+F+X+G
-		+---------------------------------------+
-		| Save area for TOC (T)			| 24+P+X+A+L+F+X+G+C
-		+---------------------------------------+
-		| Save area for LR (R)			| 24+P+X+A+L+F+X+G+C+T
+		| Save area for FP registers (F)	| 24+P+A+L+X
+		+---------------------------------------+     
+		| Possible alignment area (Y)		| 24+P+A+L+X+F
+		+---------------------------------------+     
+		| Save area for GP registers (G)	| 24+P+A+L+X+F+Y
+		+---------------------------------------+     
+		| Save area for CR (C)			| 24+P+A+L+X+F+Y+G
+		+---------------------------------------+     
+		| Save area for TOC (T)			| 24+P+A+L+X+F+Y+G+C
+		+---------------------------------------+     
+		| Save area for LR (R)			| 24+P+A+L+X+F+Y+G+C+T
 		+---------------------------------------+
 	old SP->| back chain to caller's caller		|
 		+---------------------------------------+
@@ -2941,7 +3002,6 @@ rs6000_stack_info ()
 			|| info_ptr->total_size > 220);
 
   /* Calculate the offsets */
-  info_ptr->fpmem_offset = info_ptr->total_size - info_ptr->parm_size;
   switch (abi)
     {
     case ABI_NONE:
@@ -2961,9 +3021,9 @@ rs6000_stack_info ()
     case ABI_SOLARIS:
       info_ptr->fp_save_offset   = - info_ptr->fp_size;
       info_ptr->gp_save_offset   = info_ptr->fp_save_offset - info_ptr->gp_size;
-      info_ptr->cr_save_offset   = info_ptr->gp_save_offset - reg_size;
-      info_ptr->toc_save_offset  = info_ptr->cr_save_offset - info_ptr->cr_size;
-      info_ptr->main_save_offset = info_ptr->toc_save_offset - info_ptr->toc_size;
+      info_ptr->cr_save_offset   = info_ptr->gp_save_offset - info_ptr->cr_size;
+      info_ptr->toc_save_offset  = info_ptr->cr_save_offset - info_ptr->toc_size;
+      info_ptr->main_save_offset = info_ptr->toc_save_offset - info_ptr->main_size;
       info_ptr->lr_save_offset   = reg_size;
       break;
 
@@ -2979,6 +3039,9 @@ rs6000_stack_info ()
       info_ptr->main_save_offset = info_ptr->fp_save_offset - info_ptr->main_size;
       break;
     }
+
+  if (info_ptr->fpmem_p)
+    info_ptr->fpmem_offset = STARTING_FRAME_OFFSET - info_ptr->total_size + info_ptr->vars_size;
 
   /* Zero offsets if we're not saving those registers */
   if (!info_ptr->fp_size)
@@ -3004,9 +3067,7 @@ rs6000_stack_info ()
   else
     {
       rs6000_fpmem_size   = info_ptr->fpmem_size;
-      rs6000_fpmem_offset = STACK_DYNAMIC_OFFSET (current_function_decl) - info_ptr->fpmem_size;
-      if (rs6000_fpmem_offset > 32767)
-	abort ();
+      rs6000_fpmem_offset = info_ptr->total_size + info_ptr->fpmem_offset;
     }
 
   return info_ptr;
@@ -3791,13 +3852,6 @@ output_epilog (file, size)
       if (frame_pointer_needed)
 	fputs ("\t.byte 31\n", file);
     }
-
-  /* Reset varargs and save TOC indicator */
-  rs6000_sysv_varargs_p = 0;
-  rs6000_save_toc_p = 0;
-  rs6000_fpmem_size = 0;
-  rs6000_fpmem_offset = 0;
-  pic_offset_table_rtx = (rtx)0;
 
   if (DEFAULT_ABI == ABI_NT)
     {
