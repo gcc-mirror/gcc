@@ -687,7 +687,7 @@ block_label (basic_block block)
    apply only if all edges now point to the same block.  The parameters and
    return values are equivalent to redirect_edge_and_branch.  */
 
-static bool
+bool
 try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
 {
   basic_block src = e->src;
@@ -703,7 +703,7 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
 
   if (tmp || !onlyjump_p (insn))
     return false;
-  if ((!optimize || flow2_completed) && tablejump_p (insn, NULL, NULL))
+  if ((!optimize || reload_completed) && tablejump_p (insn, NULL, NULL))
     return false;
 
   /* Avoid removing branch with side effects.  */
@@ -793,7 +793,7 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
       /* Recognize a tablejump that we are converting to a
 	 simple jump and remove its associated CODE_LABEL
 	 and ADDR_VEC or ADDR_DIFF_VEC.  */
-      if (! reload_completed && tablejump_p (insn, &label, &table))
+      if (tablejump_p (insn, &label, &table))
 	delete_insn_chain (label, table);
 
       barrier = next_nonnote_insn (BB_END (src));
@@ -971,15 +971,13 @@ rtl_redirect_edge_and_branch (edge e, basic_block target)
   if (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
     return false;
 
+  if (e->dest == target)
+    return true;
+
   if (try_redirect_by_replacing_jump (e, target, false))
     return true;
 
-  /* Do this fast path late, as we want above code to simplify for cases
-     where called on single edge leaving basic block containing nontrivial
-     jump insn.  */
-  else if (e->dest == target)
-    return false;
-  else if (!redirect_branch_edge (e, target))
+  if (!redirect_branch_edge (e, target))
     return false;
 
   return true;
@@ -2437,11 +2435,11 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
   if (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
     return false;
 
-  if (e->src != ENTRY_BLOCK_PTR
-      && try_redirect_by_replacing_jump (e, dest, true))
+  if (e->dest == dest)
     return true;
 
-  if (e->dest == dest)
+  if (e->src != ENTRY_BLOCK_PTR
+      && try_redirect_by_replacing_jump (e, dest, true))
     return true;
 
   if (e->src == ENTRY_BLOCK_PTR
@@ -2627,7 +2625,7 @@ cfg_layout_merge_blocks (basic_block a, basic_block b)
   /* We should have fallthru edge in a, or we can do dummy redirection to get
      it cleaned up.  */
   if (GET_CODE (BB_END (a)) == JUMP_INSN)
-    redirect_edge_and_branch (a->succ, b);
+    try_redirect_by_replacing_jump (a->succ, b, true);
   if (GET_CODE (BB_END (a)) == JUMP_INSN)
     abort ();
 

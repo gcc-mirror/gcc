@@ -1785,13 +1785,13 @@ try_optimize_cfg (int mode)
 	      /* If B has a single outgoing edge, but uses a
 		 non-trivial jump instruction without side-effects, we
 		 can either delete the jump entirely, or replace it
-		 with a simple unconditional jump.  Use
-		 redirect_edge_and_branch to do the dirty work.  */
+		 with a simple unconditional jump.  */
 	      if (b->succ
 		  && ! b->succ->succ_next
 		  && b->succ->dest != EXIT_BLOCK_PTR
 		  && onlyjump_p (BB_END (b))
-		  && redirect_edge_and_branch (b->succ, b->succ->dest))
+		  && try_redirect_by_replacing_jump (b->succ, b->succ->dest,
+						     (mode & CLEANUP_CFGLAYOUT)))
 		{
 		  update_forwarder_flag (b);
 		  changed_here = true;
