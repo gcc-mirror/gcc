@@ -1,6 +1,9 @@
 2001-12-06  Nick Clifton  <nickc@cambridge.redhat.com>
 
-	* config/arm/arm.c (load_multiple_sequence): 
+	* config/arm/arm.c (load_multiple_sequence): Pass pointer to
+        RTX when calling alter_subreg().
+	(store_multiple_sequence): Pass pointer to RTX when calling
+        alter_subreg().
 
 Thu Dec  6 06:55:13 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
