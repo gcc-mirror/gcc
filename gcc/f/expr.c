@@ -516,14 +516,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  break;
 #endif
 
-#if FFETARGET_okREAL4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_integer1_real4
-		    (ffebld_cu_ptr_integer1 (u),
-		     ffebld_constant_real4 (ffebld_conter (l)));
-		  break;
-#endif
-
 		default:
 		  assert ("INTEGER1/REAL bad source kind type" == NULL);
 		  break;
@@ -554,14 +546,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  error = ffetarget_convert_integer1_complex3
 		    (ffebld_cu_ptr_integer1 (u),
 		     ffebld_constant_complex3 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okCOMPLEX4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_integer1_complex4
-		    (ffebld_cu_ptr_integer1 (u),
-		     ffebld_constant_complex4 (ffebld_conter (l)));
 		  break;
 #endif
 
@@ -709,14 +693,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  break;
 #endif
 
-#if FFETARGET_okREAL4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_integer2_real4
-		    (ffebld_cu_ptr_integer2 (u),
-		     ffebld_constant_real4 (ffebld_conter (l)));
-		  break;
-#endif
-
 		default:
 		  assert ("INTEGER2/REAL bad source kind type" == NULL);
 		  break;
@@ -747,14 +723,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  error = ffetarget_convert_integer2_complex3
 		    (ffebld_cu_ptr_integer2 (u),
 		     ffebld_constant_complex3 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okCOMPLEX4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_integer2_complex4
-		    (ffebld_cu_ptr_integer2 (u),
-		     ffebld_constant_complex4 (ffebld_conter (l)));
 		  break;
 #endif
 
@@ -902,14 +870,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  break;
 #endif
 
-#if FFETARGET_okREAL4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_integer3_real4
-		    (ffebld_cu_ptr_integer3 (u),
-		     ffebld_constant_real4 (ffebld_conter (l)));
-		  break;
-#endif
-
 		default:
 		  assert ("INTEGER3/REAL bad source kind type" == NULL);
 		  break;
@@ -940,14 +900,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  error = ffetarget_convert_integer3_complex3
 		    (ffebld_cu_ptr_integer3 (u),
 		     ffebld_constant_complex3 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okCOMPLEX4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_integer3_complex4
-		    (ffebld_cu_ptr_integer3 (u),
-		     ffebld_constant_complex4 (ffebld_conter (l)));
 		  break;
 #endif
 
@@ -1095,14 +1047,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  break;
 #endif
 
-#if FFETARGET_okREAL4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_integer4_real4
-		    (ffebld_cu_ptr_integer4 (u),
-		     ffebld_constant_real4 (ffebld_conter (l)));
-		  break;
-#endif
-
 		default:
 		  assert ("INTEGER4/REAL bad source kind type" == NULL);
 		  break;
@@ -1133,14 +1077,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  error = ffetarget_convert_integer4_complex3
 		    (ffebld_cu_ptr_integer4 (u),
 		     ffebld_constant_complex3 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okCOMPLEX4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_integer4_complex4
-		    (ffebld_cu_ptr_integer4 (u),
-		     ffebld_constant_complex4 (ffebld_conter (l)));
 		  break;
 #endif
 
@@ -1752,14 +1688,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  break;
 #endif
 
-#if FFETARGET_okREAL4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_real1_real4
-		    (ffebld_cu_ptr_real1 (u),
-		     ffebld_constant_real4 (ffebld_conter (l)));
-		  break;
-#endif
-
 		default:
 		  assert ("REAL1/REAL bad source kind type" == NULL);
 		  break;
@@ -1790,14 +1718,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  error = ffetarget_convert_real1_complex3
 		    (ffebld_cu_ptr_real1 (u),
 		     ffebld_constant_complex3 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okCOMPLEX4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_real1_complex4
-		    (ffebld_cu_ptr_real1 (u),
-		     ffebld_constant_complex4 (ffebld_conter (l)));
 		  break;
 #endif
 
@@ -1904,14 +1824,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  break;
 #endif
 
-#if FFETARGET_okREAL4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_real2_real4
-		    (ffebld_cu_ptr_real2 (u),
-		     ffebld_constant_real4 (ffebld_conter (l)));
-		  break;
-#endif
-
 		default:
 		  assert ("REAL2/REAL bad source kind type" == NULL);
 		  break;
@@ -1942,14 +1854,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  error = ffetarget_convert_real2_complex3
 		    (ffebld_cu_ptr_real2 (u),
 		     ffebld_constant_complex3 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okCOMPLEX4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_real2_complex4
-		    (ffebld_cu_ptr_real2 (u),
-		     ffebld_constant_complex4 (ffebld_conter (l)));
 		  break;
 #endif
 
@@ -2056,14 +1960,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  break;
 #endif
 
-#if FFETARGET_okREAL4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_real3_real4
-		    (ffebld_cu_ptr_real3 (u),
-		     ffebld_constant_real4 (ffebld_conter (l)));
-		  break;
-#endif
-
 		default:
 		  assert ("REAL3/REAL bad source kind type" == NULL);
 		  break;
@@ -2094,14 +1990,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  error = ffetarget_convert_real3_complex3
 		    (ffebld_cu_ptr_real3 (u),
 		     ffebld_constant_complex3 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okCOMPLEX4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_real3_complex4
-		    (ffebld_cu_ptr_real3 (u),
-		     ffebld_constant_complex4 (ffebld_conter (l)));
 		  break;
 #endif
 
@@ -2141,158 +2029,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_real3_val
 	     (ffebld_cu_val_real3 (u)), expr);
-	  break;
-#endif
-
-#if FFETARGET_okREAL4
-	case FFEINFO_kindtypeREAL4:
-	  switch (ffeinfo_basictype (ffebld_info (l)))
-	    {
-	    case FFEINFO_basictypeINTEGER:
-	      switch (ffeinfo_kindtype (ffebld_info (l)))
-		{
-#if FFETARGET_okINTEGER1
-		case FFEINFO_kindtypeINTEGER1:
-		  error = ffetarget_convert_real4_integer1
-		    (ffebld_cu_ptr_real4 (u),
-		     ffebld_constant_integer1 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okINTEGER2
-		case FFEINFO_kindtypeINTEGER2:
-		  error = ffetarget_convert_real4_integer2
-		    (ffebld_cu_ptr_real4 (u),
-		     ffebld_constant_integer2 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okINTEGER3
-		case FFEINFO_kindtypeINTEGER3:
-		  error = ffetarget_convert_real4_integer3
-		    (ffebld_cu_ptr_real4 (u),
-		     ffebld_constant_integer3 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okINTEGER4
-		case FFEINFO_kindtypeINTEGER4:
-		  error = ffetarget_convert_real4_integer4
-		    (ffebld_cu_ptr_real4 (u),
-		     ffebld_constant_integer4 (ffebld_conter (l)));
-		  break;
-#endif
-
-		default:
-		  assert ("REAL4/INTEGER bad source kind type" == NULL);
-		  break;
-		}
-	      break;
-
-	    case FFEINFO_basictypeREAL:
-	      switch (ffeinfo_kindtype (ffebld_info (l)))
-		{
-#if FFETARGET_okREAL1
-		case FFEINFO_kindtypeREAL1:
-		  error = ffetarget_convert_real4_real1
-		    (ffebld_cu_ptr_real4 (u),
-		     ffebld_constant_real1 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okREAL2
-		case FFEINFO_kindtypeREAL2:
-		  error = ffetarget_convert_real4_real2
-		    (ffebld_cu_ptr_real4 (u),
-		     ffebld_constant_real2 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okREAL3
-		case FFEINFO_kindtypeREAL3:
-		  error = ffetarget_convert_real4_real3
-		    (ffebld_cu_ptr_real4 (u),
-		     ffebld_constant_real3 (ffebld_conter (l)));
-		  break;
-#endif
-
-		default:
-		  assert ("REAL4/REAL bad source kind type" == NULL);
-		  break;
-		}
-	      break;
-
-	    case FFEINFO_basictypeCOMPLEX:
-	      switch (ffeinfo_kindtype (ffebld_info (l)))
-		{
-#if FFETARGET_okCOMPLEX1
-		case FFEINFO_kindtypeREAL1:
-		  error = ffetarget_convert_real4_complex1
-		    (ffebld_cu_ptr_real4 (u),
-		     ffebld_constant_complex1 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okCOMPLEX2
-		case FFEINFO_kindtypeREAL2:
-		  error = ffetarget_convert_real4_complex2
-		    (ffebld_cu_ptr_real4 (u),
-		     ffebld_constant_complex2 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okCOMPLEX3
-		case FFEINFO_kindtypeREAL3:
-		  error = ffetarget_convert_real4_complex3
-		    (ffebld_cu_ptr_real4 (u),
-		     ffebld_constant_complex3 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okCOMPLEX4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_real4_complex4
-		    (ffebld_cu_ptr_real4 (u),
-		     ffebld_constant_complex4 (ffebld_conter (l)));
-		  break;
-#endif
-
-		default:
-		  assert ("REAL4/COMPLEX bad source kind type" == NULL);
-		  break;
-		}
-	      break;
-
-	    case FFEINFO_basictypeCHARACTER:
-	      error = ffetarget_convert_real4_character1
-		(ffebld_cu_ptr_real4 (u),
-		 ffebld_constant_character1 (ffebld_conter (l)));
-	      break;
-
-	    case FFEINFO_basictypeHOLLERITH:
-	      error = ffetarget_convert_real4_hollerith
-		(ffebld_cu_ptr_real4 (u),
-		 ffebld_constant_hollerith (ffebld_conter (l)));
-	      break;
-
-	    case FFEINFO_basictypeTYPELESS:
-	      error = ffetarget_convert_real4_typeless
-		(ffebld_cu_ptr_real4 (u),
-		 ffebld_constant_typeless (ffebld_conter (l)));
-	      break;
-
-	    default:
-	      assert ("REAL4 bad type" == NULL);
-	      break;
-	    }
-
-	  /* If conversion operation is not implemented, return original expr.  */
-	  if (error == FFEBAD_NOCANDO)
-	    return expr;
-
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_real4_val
-	     (ffebld_cu_val_real4 (u)), expr);
 	  break;
 #endif
 
@@ -2378,14 +2114,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  break;
 #endif
 
-#if FFETARGET_okREAL4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_complex1_real4
-		    (ffebld_cu_ptr_complex1 (u),
-		     ffebld_constant_real4 (ffebld_conter (l)));
-		  break;
-#endif
-
 		default:
 		  assert ("COMPLEX1/REAL bad source kind type" == NULL);
 		  break;
@@ -2408,14 +2136,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  error = ffetarget_convert_complex1_complex3
 		    (ffebld_cu_ptr_complex1 (u),
 		     ffebld_constant_complex3 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okCOMPLEX4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_complex1_complex4
-		    (ffebld_cu_ptr_complex1 (u),
-		     ffebld_constant_complex4 (ffebld_conter (l)));
 		  break;
 #endif
 
@@ -2530,14 +2250,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  break;
 #endif
 
-#if FFETARGET_okREAL4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_complex2_real4
-		    (ffebld_cu_ptr_complex2 (u),
-		     ffebld_constant_real4 (ffebld_conter (l)));
-		  break;
-#endif
-
 		default:
 		  assert ("COMPLEX2/REAL bad source kind type" == NULL);
 		  break;
@@ -2560,14 +2272,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  error = ffetarget_convert_complex2_complex3
 		    (ffebld_cu_ptr_complex2 (u),
 		     ffebld_constant_complex3 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okCOMPLEX4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_complex2_complex4
-		    (ffebld_cu_ptr_complex2 (u),
-		     ffebld_constant_complex4 (ffebld_conter (l)));
 		  break;
 #endif
 
@@ -2682,14 +2386,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  break;
 #endif
 
-#if FFETARGET_okREAL4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_complex3_real4
-		    (ffebld_cu_ptr_complex3 (u),
-		     ffebld_constant_real4 (ffebld_conter (l)));
-		  break;
-#endif
-
 		default:
 		  assert ("COMPLEX3/REAL bad source kind type" == NULL);
 		  break;
@@ -2712,14 +2408,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 		  error = ffetarget_convert_complex3_complex2
 		    (ffebld_cu_ptr_complex3 (u),
 		     ffebld_constant_complex2 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okCOMPLEX4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_complex3_complex4
-		    (ffebld_cu_ptr_complex3 (u),
-		     ffebld_constant_complex4 (ffebld_conter (l)));
 		  break;
 #endif
 
@@ -2759,158 +2447,6 @@ ffeexpr_collapse_convert (ffebld expr, ffelexToken t)
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_complex3_val
 	     (ffebld_cu_val_complex3 (u)), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX4
-	case FFEINFO_kindtypeREAL4:
-	  switch (ffeinfo_basictype (ffebld_info (l)))
-	    {
-	    case FFEINFO_basictypeINTEGER:
-	      switch (ffeinfo_kindtype (ffebld_info (l)))
-		{
-#if FFETARGET_okINTEGER1
-		case FFEINFO_kindtypeINTEGER1:
-		  error = ffetarget_convert_complex4_integer1
-		    (ffebld_cu_ptr_complex4 (u),
-		     ffebld_constant_integer1 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okINTEGER2
-		case FFEINFO_kindtypeINTEGER2:
-		  error = ffetarget_convert_complex4_integer2
-		    (ffebld_cu_ptr_complex4 (u),
-		     ffebld_constant_integer2 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okINTEGER3
-		case FFEINFO_kindtypeINTEGER3:
-		  error = ffetarget_convert_complex4_integer3
-		    (ffebld_cu_ptr_complex4 (u),
-		     ffebld_constant_integer3 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okINTEGER4
-		case FFEINFO_kindtypeINTEGER4:
-		  error = ffetarget_convert_complex4_integer4
-		    (ffebld_cu_ptr_complex4 (u),
-		     ffebld_constant_integer4 (ffebld_conter (l)));
-		  break;
-#endif
-
-		default:
-		  assert ("COMPLEX4/INTEGER bad source kind type" == NULL);
-		  break;
-		}
-	      break;
-
-	    case FFEINFO_basictypeREAL:
-	      switch (ffeinfo_kindtype (ffebld_info (l)))
-		{
-#if FFETARGET_okREAL1
-		case FFEINFO_kindtypeREAL1:
-		  error = ffetarget_convert_complex4_real1
-		    (ffebld_cu_ptr_complex4 (u),
-		     ffebld_constant_real1 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okREAL2
-		case FFEINFO_kindtypeREAL2:
-		  error = ffetarget_convert_complex4_real2
-		    (ffebld_cu_ptr_complex4 (u),
-		     ffebld_constant_real2 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okREAL3
-		case FFEINFO_kindtypeREAL3:
-		  error = ffetarget_convert_complex4_real3
-		    (ffebld_cu_ptr_complex4 (u),
-		     ffebld_constant_real3 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okREAL4
-		case FFEINFO_kindtypeREAL4:
-		  error = ffetarget_convert_complex4_real4
-		    (ffebld_cu_ptr_complex4 (u),
-		     ffebld_constant_real4 (ffebld_conter (l)));
-		  break;
-#endif
-
-		default:
-		  assert ("COMPLEX4/REAL bad source kind type" == NULL);
-		  break;
-		}
-	      break;
-
-	    case FFEINFO_basictypeCOMPLEX:
-	      switch (ffeinfo_kindtype (ffebld_info (l)))
-		{
-#if FFETARGET_okCOMPLEX1
-		case FFEINFO_kindtypeREAL1:
-		  error = ffetarget_convert_complex4_complex1
-		    (ffebld_cu_ptr_complex4 (u),
-		     ffebld_constant_complex1 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okCOMPLEX2
-		case FFEINFO_kindtypeREAL2:
-		  error = ffetarget_convert_complex4_complex2
-		    (ffebld_cu_ptr_complex4 (u),
-		     ffebld_constant_complex2 (ffebld_conter (l)));
-		  break;
-#endif
-
-#if FFETARGET_okCOMPLEX3
-		case FFEINFO_kindtypeREAL3:
-		  error = ffetarget_convert_complex4_complex3
-		    (ffebld_cu_ptr_complex4 (u),
-		     ffebld_constant_complex3 (ffebld_conter (l)));
-		  break;
-#endif
-
-		default:
-		  assert ("COMPLEX4/COMPLEX bad source kind type" == NULL);
-		  break;
-		}
-	      break;
-
-	    case FFEINFO_basictypeCHARACTER:
-	      error = ffetarget_convert_complex4_character1
-		(ffebld_cu_ptr_complex4 (u),
-		 ffebld_constant_character1 (ffebld_conter (l)));
-	      break;
-
-	    case FFEINFO_basictypeHOLLERITH:
-	      error = ffetarget_convert_complex4_hollerith
-		(ffebld_cu_ptr_complex4 (u),
-		 ffebld_constant_hollerith (ffebld_conter (l)));
-	      break;
-
-	    case FFEINFO_basictypeTYPELESS:
-	      error = ffetarget_convert_complex4_typeless
-		(ffebld_cu_ptr_complex4 (u),
-		 ffebld_constant_typeless (ffebld_conter (l)));
-	      break;
-
-	    default:
-	      assert ("COMPLEX4 bad type" == NULL);
-	      break;
-	    }
-
-	  /* If conversion operation is not implemented, return original expr.  */
-	  if (error == FFEBAD_NOCANDO)
-	    return expr;
-
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_complex4_val
-	     (ffebld_cu_val_complex4 (u)), expr);
 	  break;
 #endif
 
@@ -3302,15 +2838,6 @@ ffeexpr_collapse_uminus (ffebld expr, ffelexToken t)
 	  break;
 #endif
 
-#if FFETARGET_okREAL4
-	case FFEINFO_kindtypeREAL4:
-	  error = ffetarget_uminus_real4 (ffebld_cu_ptr_real4 (u),
-				 ffebld_constant_real4 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_real4_val
-					   (ffebld_cu_val_real4 (u)), expr);
-	  break;
-#endif
-
 	default:
 	  assert ("bad real kind type" == NULL);
 	  break;
@@ -3344,15 +2871,6 @@ ffeexpr_collapse_uminus (ffebld expr, ffelexToken t)
 			      ffebld_constant_complex3 (ffebld_conter (r)));
 	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_complex3_val
 					(ffebld_cu_val_complex3 (u)), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX4
-	case FFEINFO_kindtypeREAL4:
-	  error = ffetarget_uminus_complex4 (ffebld_cu_ptr_complex4 (u),
-			      ffebld_constant_complex4 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_complex4_val
-					(ffebld_cu_val_complex4 (u)), expr);
 	  break;
 #endif
 
@@ -3646,16 +3164,6 @@ ffeexpr_collapse_add (ffebld expr, ffelexToken t)
 	  break;
 #endif
 
-#if FFETARGET_okREAL4
-	case FFEINFO_kindtypeREAL4:
-	  error = ffetarget_add_real4 (ffebld_cu_ptr_real4 (u),
-				  ffebld_constant_real4 (ffebld_conter (l)),
-				 ffebld_constant_real4 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_real4_val
-					   (ffebld_cu_val_real4 (u)), expr);
-	  break;
-#endif
-
 	default:
 	  assert ("bad real kind type" == NULL);
 	  break;
@@ -3692,16 +3200,6 @@ ffeexpr_collapse_add (ffebld expr, ffelexToken t)
 			      ffebld_constant_complex3 (ffebld_conter (r)));
 	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_complex3_val
 					(ffebld_cu_val_complex3 (u)), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX4
-	case FFEINFO_kindtypeREAL4:
-	  error = ffetarget_add_complex4 (ffebld_cu_ptr_complex4 (u),
-			       ffebld_constant_complex4 (ffebld_conter (l)),
-			      ffebld_constant_complex4 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_complex4_val
-					(ffebld_cu_val_complex4 (u)), expr);
 	  break;
 #endif
 
@@ -3851,16 +3349,6 @@ ffeexpr_collapse_subtract (ffebld expr, ffelexToken t)
 	  break;
 #endif
 
-#if FFETARGET_okREAL4
-	case FFEINFO_kindtypeREAL4:
-	  error = ffetarget_subtract_real4 (ffebld_cu_ptr_real4 (u),
-				  ffebld_constant_real4 (ffebld_conter (l)),
-				 ffebld_constant_real4 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_real4_val
-					   (ffebld_cu_val_real4 (u)), expr);
-	  break;
-#endif
-
 	default:
 	  assert ("bad real kind type" == NULL);
 	  break;
@@ -3897,16 +3385,6 @@ ffeexpr_collapse_subtract (ffebld expr, ffelexToken t)
 			      ffebld_constant_complex3 (ffebld_conter (r)));
 	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_complex3_val
 					(ffebld_cu_val_complex3 (u)), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX4
-	case FFEINFO_kindtypeREAL4:
-	  error = ffetarget_subtract_complex4 (ffebld_cu_ptr_complex4 (u),
-			       ffebld_constant_complex4 (ffebld_conter (l)),
-			      ffebld_constant_complex4 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_complex4_val
-					(ffebld_cu_val_complex4 (u)), expr);
 	  break;
 #endif
 
@@ -4056,16 +3534,6 @@ ffeexpr_collapse_multiply (ffebld expr, ffelexToken t)
 	  break;
 #endif
 
-#if FFETARGET_okREAL4
-	case FFEINFO_kindtypeREAL4:
-	  error = ffetarget_multiply_real4 (ffebld_cu_ptr_real4 (u),
-				  ffebld_constant_real4 (ffebld_conter (l)),
-				 ffebld_constant_real4 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_real4_val
-					   (ffebld_cu_val_real4 (u)), expr);
-	  break;
-#endif
-
 	default:
 	  assert ("bad real kind type" == NULL);
 	  break;
@@ -4102,16 +3570,6 @@ ffeexpr_collapse_multiply (ffebld expr, ffelexToken t)
 			      ffebld_constant_complex3 (ffebld_conter (r)));
 	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_complex3_val
 					(ffebld_cu_val_complex3 (u)), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX4
-	case FFEINFO_kindtypeREAL4:
-	  error = ffetarget_multiply_complex4 (ffebld_cu_ptr_complex4 (u),
-			       ffebld_constant_complex4 (ffebld_conter (l)),
-			      ffebld_constant_complex4 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_complex4_val
-					(ffebld_cu_val_complex4 (u)), expr);
 	  break;
 #endif
 
@@ -4261,16 +3719,6 @@ ffeexpr_collapse_divide (ffebld expr, ffelexToken t)
 	  break;
 #endif
 
-#if FFETARGET_okREAL4
-	case FFEINFO_kindtypeREAL4:
-	  error = ffetarget_divide_real4 (ffebld_cu_ptr_real4 (u),
-				  ffebld_constant_real4 (ffebld_conter (l)),
-				 ffebld_constant_real4 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_real4_val
-					   (ffebld_cu_val_real4 (u)), expr);
-	  break;
-#endif
-
 	default:
 	  assert ("bad real kind type" == NULL);
 	  break;
@@ -4307,16 +3755,6 @@ ffeexpr_collapse_divide (ffebld expr, ffelexToken t)
 			      ffebld_constant_complex3 (ffebld_conter (r)));
 	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_complex3_val
 					(ffebld_cu_val_complex3 (u)), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCOMPLEX4
-	case FFEINFO_kindtypeREAL4:
-	  error = ffetarget_divide_complex4 (ffebld_cu_ptr_complex4 (u),
-			       ffebld_constant_complex4 (ffebld_conter (l)),
-			      ffebld_constant_complex4 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_complex4_val
-					(ffebld_cu_val_complex4 (u)), expr);
 	  break;
 #endif
 
@@ -4563,39 +4001,6 @@ ffeexpr_collapse_concatenate (ffebld expr, ffelexToken t)
 	  break;
 #endif
 
-#if FFETARGET_okCHARACTER2
-	case FFEINFO_kindtypeCHARACTER2:
-	  error = ffetarget_concatenate_character2 (ffebld_cu_ptr_character2 (u),
-			     ffebld_constant_character2 (ffebld_conter (l)),
-			     ffebld_constant_character2 (ffebld_conter (r)),
-				   ffebld_constant_pool (), &len);
-	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_character2_val
-				      (ffebld_cu_val_character2 (u)), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER3
-	case FFEINFO_kindtypeCHARACTER3:
-	  error = ffetarget_concatenate_character3 (ffebld_cu_ptr_character3 (u),
-			     ffebld_constant_character3 (ffebld_conter (l)),
-			     ffebld_constant_character3 (ffebld_conter (r)),
-				   ffebld_constant_pool (), &len);
-	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_character3_val
-				      (ffebld_cu_val_character3 (u)), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER4
-	case FFEINFO_kindtypeCHARACTER4:
-	  error = ffetarget_concatenate_character4 (ffebld_cu_ptr_character4 (u),
-			     ffebld_constant_character4 (ffebld_conter (l)),
-			     ffebld_constant_character4 (ffebld_conter (r)),
-				   ffebld_constant_pool (), &len);
-	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_character4_val
-				      (ffebld_cu_val_character4 (u)), expr);
-	  break;
-#endif
-
 	default:
 	  assert ("bad character kind type" == NULL);
 	  break;
@@ -4740,16 +4145,6 @@ ffeexpr_collapse_eq (ffebld expr, ffelexToken t)
 	  break;
 #endif
 
-#if FFETARGET_okREAL4
-	case FFEINFO_kindtypeREAL4:
-	  error = ffetarget_eq_real4 (&val,
-				  ffebld_constant_real4 (ffebld_conter (l)),
-				 ffebld_constant_real4 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
 	default:
 	  assert ("bad real kind type" == NULL);
 	  break;
@@ -4789,16 +4184,6 @@ ffeexpr_collapse_eq (ffebld expr, ffelexToken t)
 	  break;
 #endif
 
-#if FFETARGET_okCOMPLEX4
-	case FFEINFO_kindtypeREAL4:
-	  error = ffetarget_eq_complex4 (&val,
-			       ffebld_constant_complex4 (ffebld_conter (l)),
-			      ffebld_constant_complex4 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
 	default:
 	  assert ("bad complex kind type" == NULL);
 	  break;
@@ -4813,36 +4198,6 @@ ffeexpr_collapse_eq (ffebld expr, ffelexToken t)
 	  error = ffetarget_eq_character1 (&val,
 			     ffebld_constant_character1 (ffebld_conter (l)),
 			    ffebld_constant_character1 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER2
-	case FFEINFO_kindtypeCHARACTER2:
-	  error = ffetarget_eq_character2 (&val,
-			     ffebld_constant_character2 (ffebld_conter (l)),
-			    ffebld_constant_character2 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER3
-	case FFEINFO_kindtypeCHARACTER3:
-	  error = ffetarget_eq_character3 (&val,
-			     ffebld_constant_character3 (ffebld_conter (l)),
-			    ffebld_constant_character3 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER4
-	case FFEINFO_kindtypeCHARACTER4:
-	  error = ffetarget_eq_character4 (&val,
-			     ffebld_constant_character4 (ffebld_conter (l)),
-			    ffebld_constant_character4 (ffebld_conter (r)));
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_logicaldefault (val), expr);
 	  break;
@@ -4992,16 +4347,6 @@ ffeexpr_collapse_ne (ffebld expr, ffelexToken t)
 	  break;
 #endif
 
-#if FFETARGET_okREAL4
-	case FFEINFO_kindtypeREAL4:
-	  error = ffetarget_ne_real4 (&val,
-				  ffebld_constant_real4 (ffebld_conter (l)),
-				 ffebld_constant_real4 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
 	default:
 	  assert ("bad real kind type" == NULL);
 	  break;
@@ -5041,16 +4386,6 @@ ffeexpr_collapse_ne (ffebld expr, ffelexToken t)
 	  break;
 #endif
 
-#if FFETARGET_okCOMPLEX4
-	case FFEINFO_kindtypeREAL4:
-	  error = ffetarget_ne_complex4 (&val,
-			       ffebld_constant_complex4 (ffebld_conter (l)),
-			      ffebld_constant_complex4 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
 	default:
 	  assert ("bad complex kind type" == NULL);
 	  break;
@@ -5065,36 +4400,6 @@ ffeexpr_collapse_ne (ffebld expr, ffelexToken t)
 	  error = ffetarget_ne_character1 (&val,
 			     ffebld_constant_character1 (ffebld_conter (l)),
 			    ffebld_constant_character1 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER2
-	case FFEINFO_kindtypeCHARACTER2:
-	  error = ffetarget_ne_character2 (&val,
-			     ffebld_constant_character2 (ffebld_conter (l)),
-			    ffebld_constant_character2 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER3
-	case FFEINFO_kindtypeCHARACTER3:
-	  error = ffetarget_ne_character3 (&val,
-			     ffebld_constant_character3 (ffebld_conter (l)),
-			    ffebld_constant_character3 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER4
-	case FFEINFO_kindtypeCHARACTER4:
-	  error = ffetarget_ne_character4 (&val,
-			     ffebld_constant_character4 (ffebld_conter (l)),
-			    ffebld_constant_character4 (ffebld_conter (r)));
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_logicaldefault (val), expr);
 	  break;
@@ -5244,16 +4549,6 @@ ffeexpr_collapse_ge (ffebld expr, ffelexToken t)
 	  break;
 #endif
 
-#if FFETARGET_okREAL4
-	case FFEINFO_kindtypeREAL4:
-	  error = ffetarget_ge_real4 (&val,
-				  ffebld_constant_real4 (ffebld_conter (l)),
-				 ffebld_constant_real4 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
 	default:
 	  assert ("bad real kind type" == NULL);
 	  break;
@@ -5268,36 +4563,6 @@ ffeexpr_collapse_ge (ffebld expr, ffelexToken t)
 	  error = ffetarget_ge_character1 (&val,
 			     ffebld_constant_character1 (ffebld_conter (l)),
 			    ffebld_constant_character1 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER2
-	case FFEINFO_kindtypeCHARACTER2:
-	  error = ffetarget_ge_character2 (&val,
-			     ffebld_constant_character2 (ffebld_conter (l)),
-			    ffebld_constant_character2 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER3
-	case FFEINFO_kindtypeCHARACTER3:
-	  error = ffetarget_ge_character3 (&val,
-			     ffebld_constant_character3 (ffebld_conter (l)),
-			    ffebld_constant_character3 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER4
-	case FFEINFO_kindtypeCHARACTER4:
-	  error = ffetarget_ge_character4 (&val,
-			     ffebld_constant_character4 (ffebld_conter (l)),
-			    ffebld_constant_character4 (ffebld_conter (r)));
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_logicaldefault (val), expr);
 	  break;
@@ -5447,16 +4712,6 @@ ffeexpr_collapse_gt (ffebld expr, ffelexToken t)
 	  break;
 #endif
 
-#if FFETARGET_okREAL4
-	case FFEINFO_kindtypeREAL4:
-	  error = ffetarget_gt_real4 (&val,
-				  ffebld_constant_real4 (ffebld_conter (l)),
-				 ffebld_constant_real4 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
 	default:
 	  assert ("bad real kind type" == NULL);
 	  break;
@@ -5471,36 +4726,6 @@ ffeexpr_collapse_gt (ffebld expr, ffelexToken t)
 	  error = ffetarget_gt_character1 (&val,
 			     ffebld_constant_character1 (ffebld_conter (l)),
 			    ffebld_constant_character1 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER2
-	case FFEINFO_kindtypeCHARACTER2:
-	  error = ffetarget_gt_character2 (&val,
-			     ffebld_constant_character2 (ffebld_conter (l)),
-			    ffebld_constant_character2 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER3
-	case FFEINFO_kindtypeCHARACTER3:
-	  error = ffetarget_gt_character3 (&val,
-			     ffebld_constant_character3 (ffebld_conter (l)),
-			    ffebld_constant_character3 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER4
-	case FFEINFO_kindtypeCHARACTER4:
-	  error = ffetarget_gt_character4 (&val,
-			     ffebld_constant_character4 (ffebld_conter (l)),
-			    ffebld_constant_character4 (ffebld_conter (r)));
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_logicaldefault (val), expr);
 	  break;
@@ -5650,16 +4875,6 @@ ffeexpr_collapse_le (ffebld expr, ffelexToken t)
 	  break;
 #endif
 
-#if FFETARGET_okREAL4
-	case FFEINFO_kindtypeREAL4:
-	  error = ffetarget_le_real4 (&val,
-				  ffebld_constant_real4 (ffebld_conter (l)),
-				 ffebld_constant_real4 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
 	default:
 	  assert ("bad real kind type" == NULL);
 	  break;
@@ -5674,36 +4889,6 @@ ffeexpr_collapse_le (ffebld expr, ffelexToken t)
 	  error = ffetarget_le_character1 (&val,
 			     ffebld_constant_character1 (ffebld_conter (l)),
 			    ffebld_constant_character1 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER2
-	case FFEINFO_kindtypeCHARACTER2:
-	  error = ffetarget_le_character2 (&val,
-			     ffebld_constant_character2 (ffebld_conter (l)),
-			    ffebld_constant_character2 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER3
-	case FFEINFO_kindtypeCHARACTER3:
-	  error = ffetarget_le_character3 (&val,
-			     ffebld_constant_character3 (ffebld_conter (l)),
-			    ffebld_constant_character3 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER4
-	case FFEINFO_kindtypeCHARACTER4:
-	  error = ffetarget_le_character4 (&val,
-			     ffebld_constant_character4 (ffebld_conter (l)),
-			    ffebld_constant_character4 (ffebld_conter (r)));
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_logicaldefault (val), expr);
 	  break;
@@ -5853,16 +5038,6 @@ ffeexpr_collapse_lt (ffebld expr, ffelexToken t)
 	  break;
 #endif
 
-#if FFETARGET_okREAL4
-	case FFEINFO_kindtypeREAL4:
-	  error = ffetarget_lt_real4 (&val,
-				  ffebld_constant_real4 (ffebld_conter (l)),
-				 ffebld_constant_real4 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
 	default:
 	  assert ("bad real kind type" == NULL);
 	  break;
@@ -5877,36 +5052,6 @@ ffeexpr_collapse_lt (ffebld expr, ffelexToken t)
 	  error = ffetarget_lt_character1 (&val,
 			     ffebld_constant_character1 (ffebld_conter (l)),
 			    ffebld_constant_character1 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER2
-	case FFEINFO_kindtypeCHARACTER2:
-	  error = ffetarget_lt_character2 (&val,
-			     ffebld_constant_character2 (ffebld_conter (l)),
-			    ffebld_constant_character2 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER3
-	case FFEINFO_kindtypeCHARACTER3:
-	  error = ffetarget_lt_character3 (&val,
-			     ffebld_constant_character3 (ffebld_conter (l)),
-			    ffebld_constant_character3 (ffebld_conter (r)));
-	  expr = ffebld_new_conter_with_orig
-	    (ffebld_constant_new_logicaldefault (val), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER4
-	case FFEINFO_kindtypeCHARACTER4:
-	  error = ffetarget_lt_character4 (&val,
-			     ffebld_constant_character4 (ffebld_conter (l)),
-			    ffebld_constant_character4 (ffebld_conter (r)));
 	  expr = ffebld_new_conter_with_orig
 	    (ffebld_constant_new_logicaldefault (val), expr);
 	  break;
@@ -6906,36 +6051,6 @@ ffeexpr_collapse_substr (ffebld expr, ffelexToken t)
 	  break;
 #endif
 
-#if FFETARGET_okCHARACTER2
-	case FFEINFO_kindtypeCHARACTER2:
-	  error = ffetarget_substr_character2 (ffebld_cu_ptr_character2 (u),
-		ffebld_constant_character2 (ffebld_conter (l)), first, last,
-				   ffebld_constant_pool (), &len);
-	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_character2_val
-				      (ffebld_cu_val_character2 (u)), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER3
-	case FFEINFO_kindtypeCHARACTER3:
-	  error = ffetarget_substr_character3 (ffebld_cu_ptr_character3 (u),
-		ffebld_constant_character3 (ffebld_conter (l)), first, last,
-				   ffebld_constant_pool (), &len);
-	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_character3_val
-				      (ffebld_cu_val_character3 (u)), expr);
-	  break;
-#endif
-
-#if FFETARGET_okCHARACTER4
-	case FFEINFO_kindtypeCHARACTER4:
-	  error = ffetarget_substr_character4 (ffebld_cu_ptr_character4 (u),
-		ffebld_constant_character4 (ffebld_conter (l)), first, last,
-				   ffebld_constant_pool (), &len);
-	  expr = ffebld_new_conter_with_orig (ffebld_constant_new_character4_val
-				      (ffebld_cu_val_character4 (u)), expr);
-	  break;
-#endif
-
 	default:
 	  assert ("bad character kind type" == NULL);
 	  break;
@@ -7658,17 +6773,6 @@ ffeexpr_cb_comma_c_ (ffelexToken ft, ffebld expr, ffelexToken t)
 #if FFETARGET_okCOMPLEX3
     case FFEINFO_kindtypeREAL3:
       e->u.operand = ffebld_new_conter (ffebld_constant_new_complex3
-	      (ffebld_conter (ffeexpr_stack_->expr), ffebld_conter (expr)));
-      ffebld_set_info (e->u.operand,
-		       ffeinfo_new (FFEINFO_basictypeCOMPLEX, nkt, 0,
-				  FFEINFO_kindENTITY, FFEINFO_whereCONSTANT,
-				    FFETARGET_charactersizeNONE));
-      break;
-#endif
-
-#if FFETARGET_okCOMPLEX4
-    case FFEINFO_kindtypeREAL4:
-      e->u.operand = ffebld_new_conter (ffebld_constant_new_complex4
 	      (ffebld_conter (ffeexpr_stack_->expr), ffebld_conter (expr)));
       ffebld_set_info (e->u.operand,
 		       ffeinfo_new (FFEINFO_basictypeCOMPLEX, nkt, 0,
@@ -8662,9 +7766,6 @@ ffeexpr_type_combine (ffeinfoBasictype *xnbt, ffeinfoKindtype *xnkt,
 #endif
 #if FFETARGET_okCOMPLEX3
 	case FFEINFO_kindtypeREAL3:
-#endif
-#if FFETARGET_okCOMPLEX4
-	case FFEINFO_kindtypeREAL4:
 #endif
 	  break;		/* Fine and dandy. */
 
