@@ -90,7 +90,7 @@ Java_gnu_java_awt_peer_gtk_GtkLabelPeer_setText
 }
 
 JNIEXPORT void JNICALL
-Java_gnu_java_awt_peer_gtk_GtkLabelPeer_setAlignment
+Java_gnu_java_awt_peer_gtk_GtkLabelPeer_nativeSetAlignment
   (JNIEnv *env, jobject obj, jfloat xalign)
 {
   void *ptr;
