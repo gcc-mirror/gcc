@@ -2891,9 +2891,20 @@ alter_subreg (x)
 
   if (GET_CODE (y) == REG)
     {
-      /* If the containing reg really gets a hard reg, so do we.  */
+      /* If the word size is larger than the size of this register,
+	 adjust the register number to compensate.  */
+      /* ??? Note that this just catches stragglers created by/for
+	 integrate.  It would be better if we either caught these
+	 earlier, or kept _all_ subregs until now and eliminate
+	 gen_lowpart and friends.  */
+
       PUT_CODE (x, REG);
+#ifdef ALTER_HARD_SUBREG
+      REGNO (x) = ALTER_HARD_SUBREG(GET_MODE (x), SUBREG_WORD (x),
+				    GET_MODE (y), REGNO (y));
+#else
       REGNO (x) = REGNO (y) + SUBREG_WORD (x);
+#endif
     }
   else if (GET_CODE (y) == MEM)
     {
