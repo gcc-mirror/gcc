@@ -1428,7 +1428,7 @@ enable_libstdcxx_pch=GLIBCPP_ENABLE_PCH_DEFAULT)dnl
   AC_MSG_RESULT([$enable_libstdcxx_pch])
 
   AM_CONDITIONAL(GLIBCPP_BUILD_PCH, test "$enable_libstdcxx_pch" = yes)
-  if test "$enable_pch" = yes; then
+  if test "$enable_libstdcxx_pch" = yes; then
 	glibcpp_PCHFLAGS="-include bits/stdc++.h"
   else
 	glibcpp_PCHFLAGS=""
