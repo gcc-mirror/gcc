@@ -170,7 +170,7 @@ ___ashiftrt_r4_0:
 !
 ! Destroys:
 !
-! r1
+! (none)
 !
 
 	.global	___ashrsi3
@@ -179,47 +179,45 @@ ___ashrsi3:
 	mov	#31,r0
 	cmp/hi	r0,r5
 	bt	L_ashrsi3_31
-	mov	r5,r1			! Remove later
 	mova	L_ashrsi3_table,r0
-	shll	r1			! Remove later
-	mov.w	@(r0,r1),r1		! Change to mov.b @(r0,r5),r1
-	add	r1,r0
+	mov.b	@(r0,r5),r5
+	add	r5,r0		! Change to braf when gas is fixed
 	jmp	@r0
 	mov	r4,r0
 
 L_ashrsi3_table:
-	.word		L_ashrsi3_0-L_ashrsi3_table	! Change to .bytes
-	.word		L_ashrsi3_1-L_ashrsi3_table
-	.word		L_ashrsi3_2-L_ashrsi3_table
-	.word		L_ashrsi3_3-L_ashrsi3_table
-	.word		L_ashrsi3_4-L_ashrsi3_table
-	.word		L_ashrsi3_5-L_ashrsi3_table
-	.word		L_ashrsi3_6-L_ashrsi3_table
-	.word		L_ashrsi3_7-L_ashrsi3_table
-	.word		L_ashrsi3_8-L_ashrsi3_table
-	.word		L_ashrsi3_9-L_ashrsi3_table
-	.word		L_ashrsi3_10-L_ashrsi3_table
-	.word		L_ashrsi3_11-L_ashrsi3_table
-	.word		L_ashrsi3_12-L_ashrsi3_table
-	.word		L_ashrsi3_13-L_ashrsi3_table
-	.word		L_ashrsi3_14-L_ashrsi3_table
-	.word		L_ashrsi3_15-L_ashrsi3_table
-	.word		L_ashrsi3_16-L_ashrsi3_table
-	.word		L_ashrsi3_17-L_ashrsi3_table
-	.word		L_ashrsi3_18-L_ashrsi3_table
-	.word		L_ashrsi3_19-L_ashrsi3_table
-	.word		L_ashrsi3_20-L_ashrsi3_table
-	.word		L_ashrsi3_21-L_ashrsi3_table
-	.word		L_ashrsi3_22-L_ashrsi3_table
-	.word		L_ashrsi3_23-L_ashrsi3_table
-	.word		L_ashrsi3_24-L_ashrsi3_table
-	.word		L_ashrsi3_25-L_ashrsi3_table
-	.word		L_ashrsi3_26-L_ashrsi3_table
-	.word		L_ashrsi3_27-L_ashrsi3_table
-	.word		L_ashrsi3_28-L_ashrsi3_table
-	.word		L_ashrsi3_29-L_ashrsi3_table
-	.word		L_ashrsi3_30-L_ashrsi3_table
-	.word		L_ashrsi3_31-L_ashrsi3_table
+	.byte		L_ashrsi3_0-L_ashrsi3_table
+	.byte		L_ashrsi3_1-L_ashrsi3_table
+	.byte		L_ashrsi3_2-L_ashrsi3_table
+	.byte		L_ashrsi3_3-L_ashrsi3_table
+	.byte		L_ashrsi3_4-L_ashrsi3_table
+	.byte		L_ashrsi3_5-L_ashrsi3_table
+	.byte		L_ashrsi3_6-L_ashrsi3_table
+	.byte		L_ashrsi3_7-L_ashrsi3_table
+	.byte		L_ashrsi3_8-L_ashrsi3_table
+	.byte		L_ashrsi3_9-L_ashrsi3_table
+	.byte		L_ashrsi3_10-L_ashrsi3_table
+	.byte		L_ashrsi3_11-L_ashrsi3_table
+	.byte		L_ashrsi3_12-L_ashrsi3_table
+	.byte		L_ashrsi3_13-L_ashrsi3_table
+	.byte		L_ashrsi3_14-L_ashrsi3_table
+	.byte		L_ashrsi3_15-L_ashrsi3_table
+	.byte		L_ashrsi3_16-L_ashrsi3_table
+	.byte		L_ashrsi3_17-L_ashrsi3_table
+	.byte		L_ashrsi3_18-L_ashrsi3_table
+	.byte		L_ashrsi3_19-L_ashrsi3_table
+	.byte		L_ashrsi3_20-L_ashrsi3_table
+	.byte		L_ashrsi3_21-L_ashrsi3_table
+	.byte		L_ashrsi3_22-L_ashrsi3_table
+	.byte		L_ashrsi3_23-L_ashrsi3_table
+	.byte		L_ashrsi3_24-L_ashrsi3_table
+	.byte		L_ashrsi3_25-L_ashrsi3_table
+	.byte		L_ashrsi3_26-L_ashrsi3_table
+	.byte		L_ashrsi3_27-L_ashrsi3_table
+	.byte		L_ashrsi3_28-L_ashrsi3_table
+	.byte		L_ashrsi3_29-L_ashrsi3_table
+	.byte		L_ashrsi3_30-L_ashrsi3_table
+	.byte		L_ashrsi3_31-L_ashrsi3_table
 
 L_ashrsi3_31:
 	rotcl	r0
@@ -317,7 +315,7 @@ L_ashrsi3_0:
 !
 ! Destroys:
 !
-! r1
+! (none)
 !
 	.global	___ashlsi3
 	.align	2
@@ -325,47 +323,45 @@ ___ashlsi3:
 	mov	#31,r0
 	cmp/hi	r0,r5
 	bt	L_ashlsi3_32
-	mov	r5,r1			! Remove later
 	mova	L_ashlsi3_table,r0
-	shll	r1			! Remove later
-	mov.w	@(r0,r1),r1		! Change to mov.b @(r0,r5),r1
-	add	r1,r0
+	mov.b	@(r0,r5),r5
+	add	r5,r0		! Change to braf when gas is fixed
 	jmp	@r0
 	mov	r4,r0
 
 L_ashlsi3_table:
-	.word		L_ashlsi3_0-L_ashlsi3_table	! Change to .bytes
-	.word		L_ashlsi3_1-L_ashlsi3_table
-	.word		L_ashlsi3_2-L_ashlsi3_table
-	.word		L_ashlsi3_3-L_ashlsi3_table
-	.word		L_ashlsi3_4-L_ashlsi3_table
-	.word		L_ashlsi3_5-L_ashlsi3_table
-	.word		L_ashlsi3_6-L_ashlsi3_table
-	.word		L_ashlsi3_7-L_ashlsi3_table
-	.word		L_ashlsi3_8-L_ashlsi3_table
-	.word		L_ashlsi3_9-L_ashlsi3_table
-	.word		L_ashlsi3_10-L_ashlsi3_table
-	.word		L_ashlsi3_11-L_ashlsi3_table
-	.word		L_ashlsi3_12-L_ashlsi3_table
-	.word		L_ashlsi3_13-L_ashlsi3_table
-	.word		L_ashlsi3_14-L_ashlsi3_table
-	.word		L_ashlsi3_15-L_ashlsi3_table
-	.word		L_ashlsi3_16-L_ashlsi3_table
-	.word		L_ashlsi3_17-L_ashlsi3_table
-	.word		L_ashlsi3_18-L_ashlsi3_table
-	.word		L_ashlsi3_19-L_ashlsi3_table
-	.word		L_ashlsi3_20-L_ashlsi3_table
-	.word		L_ashlsi3_21-L_ashlsi3_table
-	.word		L_ashlsi3_22-L_ashlsi3_table
-	.word		L_ashlsi3_23-L_ashlsi3_table
-	.word		L_ashlsi3_24-L_ashlsi3_table
-	.word		L_ashlsi3_25-L_ashlsi3_table
-	.word		L_ashlsi3_26-L_ashlsi3_table
-	.word		L_ashlsi3_27-L_ashlsi3_table
-	.word		L_ashlsi3_28-L_ashlsi3_table
-	.word		L_ashlsi3_29-L_ashlsi3_table
-	.word		L_ashlsi3_30-L_ashlsi3_table
-	.word		L_ashlsi3_31-L_ashlsi3_table
+	.byte		L_ashlsi3_0-L_ashlsi3_table
+	.byte		L_ashlsi3_1-L_ashlsi3_table
+	.byte		L_ashlsi3_2-L_ashlsi3_table
+	.byte		L_ashlsi3_3-L_ashlsi3_table
+	.byte		L_ashlsi3_4-L_ashlsi3_table
+	.byte		L_ashlsi3_5-L_ashlsi3_table
+	.byte		L_ashlsi3_6-L_ashlsi3_table
+	.byte		L_ashlsi3_7-L_ashlsi3_table
+	.byte		L_ashlsi3_8-L_ashlsi3_table
+	.byte		L_ashlsi3_9-L_ashlsi3_table
+	.byte		L_ashlsi3_10-L_ashlsi3_table
+	.byte		L_ashlsi3_11-L_ashlsi3_table
+	.byte		L_ashlsi3_12-L_ashlsi3_table
+	.byte		L_ashlsi3_13-L_ashlsi3_table
+	.byte		L_ashlsi3_14-L_ashlsi3_table
+	.byte		L_ashlsi3_15-L_ashlsi3_table
+	.byte		L_ashlsi3_16-L_ashlsi3_table
+	.byte		L_ashlsi3_17-L_ashlsi3_table
+	.byte		L_ashlsi3_18-L_ashlsi3_table
+	.byte		L_ashlsi3_19-L_ashlsi3_table
+	.byte		L_ashlsi3_20-L_ashlsi3_table
+	.byte		L_ashlsi3_21-L_ashlsi3_table
+	.byte		L_ashlsi3_22-L_ashlsi3_table
+	.byte		L_ashlsi3_23-L_ashlsi3_table
+	.byte		L_ashlsi3_24-L_ashlsi3_table
+	.byte		L_ashlsi3_25-L_ashlsi3_table
+	.byte		L_ashlsi3_26-L_ashlsi3_table
+	.byte		L_ashlsi3_27-L_ashlsi3_table
+	.byte		L_ashlsi3_28-L_ashlsi3_table
+	.byte		L_ashlsi3_29-L_ashlsi3_table
+	.byte		L_ashlsi3_30-L_ashlsi3_table
+	.byte		L_ashlsi3_31-L_ashlsi3_table
 
 L_ashlsi3_6:
 	shll2	r0
@@ -476,7 +472,7 @@ L_ashlsi3_0:
 !
 ! Destroys:
 !
-! r1
+! (none)
 !
 	.global	___lshrsi3
 	.align	2
@@ -484,47 +480,45 @@ ___lshrsi3:
 	mov	#31,r0
 	cmp/hi	r0,r5
 	bt	L_lshrsi3_32
-	mov	r5,r1			! Remove later
 	mova	L_lshrsi3_table,r0
-	shll	r1			! Remove later
-	mov.w	@(r0,r1),r1		! Change to mov.b @(r0,r5),r1
-	add	r1,r0
+	mov.b	@(r0,r5),r5
+	add	r5,r0		! Change to braf when gas is fixed
 	jmp	@r0
 	mov	r4,r0
 
 L_lshrsi3_table:
-	.word		L_lshrsi3_0-L_lshrsi3_table	! Change to .bytes
-	.word		L_lshrsi3_1-L_lshrsi3_table
-	.word		L_lshrsi3_2-L_lshrsi3_table
-	.word		L_lshrsi3_3-L_lshrsi3_table
-	.word		L_lshrsi3_4-L_lshrsi3_table
-	.word		L_lshrsi3_5-L_lshrsi3_table
-	.word		L_lshrsi3_6-L_lshrsi3_table
-	.word		L_lshrsi3_7-L_lshrsi3_table
-	.word		L_lshrsi3_8-L_lshrsi3_table
-	.word		L_lshrsi3_9-L_lshrsi3_table
-	.word		L_lshrsi3_10-L_lshrsi3_table
-	.word		L_lshrsi3_11-L_lshrsi3_table
-	.word		L_lshrsi3_12-L_lshrsi3_table
-	.word		L_lshrsi3_13-L_lshrsi3_table
-	.word		L_lshrsi3_14-L_lshrsi3_table
-	.word		L_lshrsi3_15-L_lshrsi3_table
-	.word		L_lshrsi3_16-L_lshrsi3_table
-	.word		L_lshrsi3_17-L_lshrsi3_table
-	.word		L_lshrsi3_18-L_lshrsi3_table
-	.word		L_lshrsi3_19-L_lshrsi3_table
-	.word		L_lshrsi3_20-L_lshrsi3_table
-	.word		L_lshrsi3_21-L_lshrsi3_table
-	.word		L_lshrsi3_22-L_lshrsi3_table
-	.word		L_lshrsi3_23-L_lshrsi3_table
-	.word		L_lshrsi3_24-L_lshrsi3_table
-	.word		L_lshrsi3_25-L_lshrsi3_table
-	.word		L_lshrsi3_26-L_lshrsi3_table
-	.word		L_lshrsi3_27-L_lshrsi3_table
-	.word		L_lshrsi3_28-L_lshrsi3_table
-	.word		L_lshrsi3_29-L_lshrsi3_table
-	.word		L_lshrsi3_30-L_lshrsi3_table
-	.word		L_lshrsi3_31-L_lshrsi3_table
+	.byte		L_lshrsi3_0-L_lshrsi3_table
+	.byte		L_lshrsi3_1-L_lshrsi3_table
+	.byte		L_lshrsi3_2-L_lshrsi3_table
+	.byte		L_lshrsi3_3-L_lshrsi3_table
+	.byte		L_lshrsi3_4-L_lshrsi3_table
+	.byte		L_lshrsi3_5-L_lshrsi3_table
+	.byte		L_lshrsi3_6-L_lshrsi3_table
+	.byte		L_lshrsi3_7-L_lshrsi3_table
+	.byte		L_lshrsi3_8-L_lshrsi3_table
+	.byte		L_lshrsi3_9-L_lshrsi3_table
+	.byte		L_lshrsi3_10-L_lshrsi3_table
+	.byte		L_lshrsi3_11-L_lshrsi3_table
+	.byte		L_lshrsi3_12-L_lshrsi3_table
+	.byte		L_lshrsi3_13-L_lshrsi3_table
+	.byte		L_lshrsi3_14-L_lshrsi3_table
+	.byte		L_lshrsi3_15-L_lshrsi3_table
+	.byte		L_lshrsi3_16-L_lshrsi3_table
+	.byte		L_lshrsi3_17-L_lshrsi3_table
+	.byte		L_lshrsi3_18-L_lshrsi3_table
+	.byte		L_lshrsi3_19-L_lshrsi3_table
+	.byte		L_lshrsi3_20-L_lshrsi3_table
+	.byte		L_lshrsi3_21-L_lshrsi3_table
+	.byte		L_lshrsi3_22-L_lshrsi3_table
+	.byte		L_lshrsi3_23-L_lshrsi3_table
+	.byte		L_lshrsi3_24-L_lshrsi3_table
+	.byte		L_lshrsi3_25-L_lshrsi3_table
+	.byte		L_lshrsi3_26-L_lshrsi3_table
+	.byte		L_lshrsi3_27-L_lshrsi3_table
+	.byte		L_lshrsi3_28-L_lshrsi3_table
+	.byte		L_lshrsi3_29-L_lshrsi3_table
+	.byte		L_lshrsi3_30-L_lshrsi3_table
+	.byte		L_lshrsi3_31-L_lshrsi3_table
 
 L_lshrsi3_6:
 	shlr2	r0
