@@ -37,7 +37,7 @@
 
 (define_insn_reservation "us3_single" 1
   (and (eq_attr "cpu" "ultrasparc3")
-    (eq_attr "type" "multi,flushw,iflush,trap"))
+    (eq_attr "type" "multi,savew,flushw,iflush,trap"))
   "us3_single_issue")
 
 (define_insn_reservation "us3_integer" 1

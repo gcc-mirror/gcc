@@ -1727,15 +1727,18 @@ rest_of_compilation (void)
 	ggc_collect ();
       }
 
-  if (optimize)
-    cleanup_cfg (CLEANUP_EXPENSIVE);
+  if (! targetm.late_rtl_prologue_epilogue)
+    {
+      if (optimize)
+	cleanup_cfg (CLEANUP_EXPENSIVE);
 
-  /* On some machines, the prologue and epilogue code, or parts thereof,
-     can be represented as RTL.  Doing so lets us schedule get_insns () between
-     it and the rest of the code and also allows delayed branch
-     scheduling to operate in the epilogue.  */
-  thread_prologue_and_epilogue_insns (get_insns ());
-  epilogue_completed = 1;
+      /* On some machines, the prologue and epilogue code, or parts thereof,
+	 can be represented as RTL.  Doing so lets us schedule insns between
+	 it and the rest of the code and also allows delayed branch
+	 scheduling to operate in the epilogue.  */
+      thread_prologue_and_epilogue_insns (get_insns ());
+      epilogue_completed = 1;
+    }
 
   if (optimize)
     {
@@ -1816,14 +1819,26 @@ rest_of_compilation (void)
       ggc_collect ();
     }
 
-#ifdef INSN_SCHEDULING
-  if (optimize > 0 && flag_schedule_insns_after_reload)
-    rest_of_handle_sched2 ();
-#endif
-
 #ifdef LEAF_REGISTERS
   current_function_uses_only_leaf_regs
     = optimize > 0 && only_leaf_regs_used () && leaf_function_p ();
+#endif
+
+  if (targetm.late_rtl_prologue_epilogue)
+    {
+      /* On some machines, the prologue and epilogue code, or parts thereof,
+	 can be represented as RTL.  Doing so lets us schedule insns between
+	 it and the rest of the code and also allows delayed branch
+	 scheduling to operate in the epilogue.  */
+      thread_prologue_and_epilogue_insns (get_insns ());
+      epilogue_completed = 1;
+      if (optimize)
+	life_analysis (dump_file, PROP_POSTRELOAD);
+    }
+
+#ifdef INSN_SCHEDULING
+  if (optimize > 0 && flag_schedule_insns_after_reload)
+    rest_of_handle_sched2 ();
 #endif
 
 #ifdef STACK_REGS

@@ -2218,8 +2218,9 @@ set prior to local register allocation and is valid for the remaining
 compiler passes.  They can also test the C variable
 @code{current_function_uses_only_leaf_regs} which is nonzero for leaf
 functions which only use leaf registers.
-@code{current_function_uses_only_leaf_regs} is valid after reload and is
-only useful if @code{LEAF_REGISTERS} is defined.
+@code{current_function_uses_only_leaf_regs} is valid after all passes
+that modify the instructions have been run and is only useful if
+@code{LEAF_REGISTERS} is defined.
 @c changed this to fix overfull.  ALSO:  why the "it" at the beginning
 @c of the next paragraph?!  --mew 2feb93
 
@@ -4211,6 +4212,16 @@ arguments that a function should pop.  @xref{Scalar Return}.
 @c tell?  --mew 5feb93
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_LATE_RTL_PROLOGUE_EPILOGUE
+If set to @code{true}, it instructs the compiler to emit the RTL prologue
+and epilogue later in the game than usual, namely after all passes that
+modify the instructions (and not merely reorder them) have been run.  In
+particular, the C variable @code{current_function_uses_only_leaf_regs} is
+valid at that point.  This can be used on machines that have "register
+windows" to optimize away the regular "push" on the register stack.
+@xref{Leaf Functions}.
+@end deftypefn
+
 @itemize @bullet
 @item
 @findex current_function_pretend_args_size
@@ -4244,12 +4255,6 @@ Optionally, when @code{ACCUMULATE_OUTGOING_ARGS} is defined, a region of
 @code{current_function_outgoing_args_size} bytes to be used for outgoing
 argument lists of the function.  @xref{Stack Arguments}.
 @end itemize
-
-Normally, it is necessary for the macros
-@code{TARGET_ASM_FUNCTION_PROLOGUE} and
-@code{TARGET_ASM_FUNCTION_EPILOGUE} to treat leaf functions specially.
-The C variable @code{current_function_is_leaf} is nonzero for such a
-function.
 
 @defmac EXIT_IGNORE_STACK
 Define this macro as a C expression that is nonzero if the return

@@ -317,6 +317,20 @@ insn_sets_resource_p (rtx insn, struct resources *res,
   mark_set_resources (insn, &insn_sets, 0, include_delayed_effects);
   return resource_conflicts_p (&insn_sets, res);
 }
+
+/* Return TRUE if INSN is a return, possibly with a filled delay slot.  */
+
+static bool
+return_insn_p (rtx insn)
+{
+  if (GET_CODE (insn) == JUMP_INSN && GET_CODE (PATTERN (insn)) == RETURN)
+    return true;
+
+  if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == SEQUENCE)
+    return return_insn_p (XVECEXP (PATTERN (insn), 0, 0));
+
+  return false;
+}
 
 /* Find a label at the end of the function or before a RETURN.  If there is
    none, make one.  */
@@ -344,15 +358,13 @@ find_end_label (void)
   /* When a target threads its epilogue we might already have a
      suitable return insn.  If so put a label before it for the
      end_of_function_label.  */
-  if (GET_CODE (insn) == BARRIER
-      && GET_CODE (PREV_INSN (insn)) == JUMP_INSN
-      && GET_CODE (PATTERN (PREV_INSN (insn))) == RETURN)
+  if (GET_CODE (insn) == BARRIER && return_insn_p (PREV_INSN (insn)))
     {
       rtx temp = PREV_INSN (PREV_INSN (insn));
       end_of_function_label = gen_label_rtx ();
       LABEL_NUSES (end_of_function_label) = 0;
 
-      /* Put the label before an USE insns that may proceed the RETURN insn.  */
+      /* Put the label before an USE insn that may precede the RETURN insn.  */
       while (GET_CODE (temp) == USE)
 	temp = PREV_INSN (temp);
 
@@ -368,8 +380,7 @@ find_end_label (void)
       /* If the basic block reorder pass moves the return insn to
 	 some other place try to locate it again and put our
 	 end_of_function_label there.  */
-      while (insn && ! (GET_CODE (insn) == JUMP_INSN
-		        && (GET_CODE (PATTERN (insn)) == RETURN)))
+      while (insn && ! return_insn_p (insn))
 	insn = PREV_INSN (insn);
       if (insn)
 	{
@@ -3275,10 +3286,18 @@ relax_delay_slots (rtx first)
 	    {
 	      target_label = JUMP_LABEL (XVECEXP (PATTERN (trial), 0, 0));
 	      if (target_label == 0)
-		target_label = find_end_label ();
+		{
+		  target_label = find_end_label ();
+		  /* The following condition may be true if TRIAL contains
+		     the unique RETURN.  In this case, threading would be
+		     a nop and we would enter an infinite loop if we did it.  */
+		  if (next_active_insn (target_label) == trial)
+		    target_label = 0;
+		}
 
-	      if (redirect_with_delay_slots_safe_p (delay_insn, target_label,
-						    insn))
+	      if (target_label
+		  && redirect_with_delay_slots_safe_p (delay_insn, target_label,
+						       insn))
 		{
 		  reorg_redirect_jump (delay_insn, target_label);
 		  next = insn;

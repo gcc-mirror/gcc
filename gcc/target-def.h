@@ -366,6 +366,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_GIMPLIFY_VA_ARG_EXPR std_gimplify_va_arg_expr
 #endif
 
+#define TARGET_LATE_RTL_PROLOGUE_EPILOGUE false
+
 #define TARGET_CALLS {						\
    TARGET_PROMOTE_FUNCTION_ARGS,				\
    TARGET_PROMOTE_FUNCTION_RETURN,				\
@@ -471,6 +473,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_ASM_FILE_START_FILE_DIRECTIVE,		\
   TARGET_HANDLE_PRAGMA_REDEFINE_EXTNAME,	\
   TARGET_HANDLE_PRAGMA_EXTERN_PREFIX,		\
+  TARGET_LATE_RTL_PROLOGUE_EPILOGUE,		\
 }
 
 #include "hooks.h"
