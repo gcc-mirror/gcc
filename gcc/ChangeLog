@@ -1,3 +1,7 @@
+Sun Apr 12 21:42:23 1998  D. Karthikeyan  <karthik@cdotd.ernet.in>
+
+	* m68k.h (TARGET_SWITCHES): Add missing comma.
+
 Sun Apr 12 21:33:33 1998  Eric Valette  <valette@crf.canon.fr>
 
 	* configure.in (i[34567]86-*-rtemself*): New configuration.
