@@ -771,7 +771,7 @@ struct tree_type
    Need not be constant.  */
 #define DECL_SIZE(NODE) ((NODE)->decl.size)
 /* Holds the alignment required for the datum.  */
-#define DECL_ALIGN(NODE) ((NODE)->decl.frame_size)
+#define DECL_ALIGN(NODE) ((NODE)->decl.frame_size.u)
 /* Holds the machine mode corresponding to the declaration of a variable or
    field.  Always equal to TYPE_MODE (TREE_TYPE (decl)) except for a
    FIELD_DECL.  */
@@ -789,13 +789,11 @@ struct tree_type
 #define DECL_SAVED_INSNS(NODE) ((NODE)->decl.saved_insns.r)
 /* For FUNCTION_DECL, if it is inline,
    holds the size of the stack frame, as an integer.  */
-#define DECL_FRAME_SIZE(NODE) ((NODE)->decl.frame_size)
+#define DECL_FRAME_SIZE(NODE) ((NODE)->decl.frame_size.i)
 /* For FUNCTION_DECL, if it is built-in,
    this identifies which built-in operation it is.  */
-#define DECL_FUNCTION_CODE(NODE) \
- ((enum built_in_function) (NODE)->decl.frame_size)
-#define DECL_SET_FUNCTION_CODE(NODE,VAL) \
- ((NODE)->decl.frame_size = (int) (VAL))
+#define DECL_FUNCTION_CODE(NODE) ((NODE)->decl.frame_size.f)
+#define DECL_SET_FUNCTION_CODE(NODE,VAL) ((NODE)->decl.frame_size.f = (VAL))
 /* For a FIELD_DECL, holds the size of the member as an integer.  */
 #define DECL_FIELD_SIZE(NODE) ((NODE)->decl.saved_insns.i)
 
@@ -955,7 +953,11 @@ struct tree_decl
   /* For a FUNCTION_DECL, if inline, this is the size of frame needed.
      If built-in, this is the code for which built-in function.
      For other kinds of decls, this is DECL_ALIGN.  */
-  int frame_size;
+  union {
+    int i;
+    unsigned int u;
+    enum built_in_function f;
+  } frame_size;
   /* For FUNCTION_DECLs: points to insn that constitutes its definition
      on the permanent obstack.  For any other kind of decl, this is the
      alignment.  */
