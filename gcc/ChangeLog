@@ -1,3 +1,12 @@
+Mon May 31 11:40:20 EDT 1999  John Wehle  (john@feith.com)
+
+	* flow.c (mark_regs_live_at_end, insn_dead_p,
+	mark_set_1, mark_used_regs): Only give FRAME_POINTER_REGNUM
+	and HARD_FRAME_POINTER_REGNUM special treatment if reload
+	hasn't run or the frame pointer is needed.
+	* haifa-sched.c (attach_deaths): Likewise.
+	* sched.c (attach_deaths): Likewise.
+
 Mon May 31 00:46:17 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (native gas tests): Search for an assembler in the

@@ -2272,11 +2272,14 @@ mark_regs_live_at_end (set)
      we end up eliminating it, it will be removed from the live list
      of each basic block by reload.  */
 
-  SET_REGNO_REG_SET (set, FRAME_POINTER_REGNUM);
+  if (! reload_completed || frame_pointer_needed)
+    {
+      SET_REGNO_REG_SET (set, FRAME_POINTER_REGNUM);
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-  /* If they are different, also mark the hard frame pointer as live */
-  SET_REGNO_REG_SET (set, HARD_FRAME_POINTER_REGNUM);
+      /* If they are different, also mark the hard frame pointer as live */
+      SET_REGNO_REG_SET (set, HARD_FRAME_POINTER_REGNUM);
 #endif      
+    }
 
   /* Mark all global registers, and all registers used by the epilogue
      as being live at the end of the function since they may be
@@ -2957,9 +2960,11 @@ insn_dead_p (x, needed, call_ok, notes)
 	  /* Don't delete insns to set global regs.  */
 	  if ((regno < FIRST_PSEUDO_REGISTER && global_regs[regno])
 	      /* Make sure insns to set frame pointer aren't deleted.  */
-	      || regno == FRAME_POINTER_REGNUM
+	      || (regno == FRAME_POINTER_REGNUM
+		  && (! reload_completed || frame_pointer_needed))
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-	      || regno == HARD_FRAME_POINTER_REGNUM
+	      || (regno == HARD_FRAME_POINTER_REGNUM
+		  && (! reload_completed || frame_pointer_needed))
 #endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 	      /* Make sure insns to set arg pointer are never deleted
@@ -3268,9 +3273,11 @@ mark_set_1 (needed, dead, x, insn, significant)
     mem_set_list = gen_rtx_EXPR_LIST (VOIDmode, reg, mem_set_list);
 
   if (GET_CODE (reg) == REG
-      && (regno = REGNO (reg), regno != FRAME_POINTER_REGNUM)
+      && (regno = REGNO (reg), ! (regno == FRAME_POINTER_REGNUM
+				  && (! reload_completed || frame_pointer_needed)))
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-      && regno != HARD_FRAME_POINTER_REGNUM
+      && ! (regno == HARD_FRAME_POINTER_REGNUM
+	    && (! reload_completed || frame_pointer_needed))
 #endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
       && ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
@@ -3728,12 +3735,14 @@ mark_used_regs (needed, live, x, final, insn)
 	       nothing below can be necessary, so waste no more time.  */
 	    if (regno == STACK_POINTER_REGNUM
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-		|| regno == HARD_FRAME_POINTER_REGNUM
+		|| (regno == HARD_FRAME_POINTER_REGNUM
+		    && (! reload_completed || frame_pointer_needed))
 #endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 		|| (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
 #endif
-		|| regno == FRAME_POINTER_REGNUM)
+		|| (regno == FRAME_POINTER_REGNUM
+		    && (! reload_completed || frame_pointer_needed)))
 	      {
 		/* If this is a register we are going to try to eliminate,
 		   don't mark it live here.  If we are successful in
@@ -3909,9 +3918,11 @@ mark_used_regs (needed, live, x, final, insn)
 	if ((GET_CODE (testreg) == PARALLEL
 	     && GET_MODE (testreg) == BLKmode)
 	    || (GET_CODE (testreg) == REG
-		&& (regno = REGNO (testreg), regno != FRAME_POINTER_REGNUM)
+		&& (regno = REGNO (testreg), ! (regno == FRAME_POINTER_REGNUM
+						&& (! reload_completed || frame_pointer_needed)))
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-		&& regno != HARD_FRAME_POINTER_REGNUM
+		&& ! (regno == HARD_FRAME_POINTER_REGNUM
+		      && (! reload_completed || frame_pointer_needed))
 #endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 		&& ! (regno == ARG_POINTER_REGNUM && fixed_regs[regno])
