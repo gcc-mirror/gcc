@@ -26,7 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef __object_INCLUDE_GNU
 #define __object_INCLUDE_GNU
 
-#include <objc/objc.h>
+#include "objc/objc.h"
 
 /*
  * All classes are derived from Object.  As such,

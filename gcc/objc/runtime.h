@@ -27,17 +27,17 @@ You should have received a copy of the GNU General Public License along with
 #ifndef __objc_runtime_INCLUDE_GNU
 #define __objc_runtime_INCLUDE_GNU
 
-#include <objc/objc.h>		/* core data types */
-#include <objc/objc-api.h>	/* runtime api functions */
+#include "gstdarg.h"		/* for varargs and va_list's */
+#include "gstddef.h"		/* so noone else will get system versions */
+#include "assert.h"
 
-#include <objc/hash.h>		/* hash structures */
-#include <objc/list.h>		/* linear lists */
+#include "objc/objc.h"		/* core data types */
+#include "objc/objc-api.h"	/* runtime api functions */
+
+#include "objc/hash.h"		/* hash structures */
+#include "objc/list.h"		/* linear lists */
 
 #include <stdio.h>		/* argh! I hate this */
-#include <stdarg.h>		/* for varargs and va_list's */
-#include <stdlib.h>
-
-#include <assert.h>
 
 extern void __objc_add_class_to_hash(Class_t); /* (objc-class.c) */
 extern void __objc_init_selector_tables();     /* (objc-sel.c) */
@@ -61,11 +61,6 @@ extern int __objc_selector_max_index;
 #endif 
 
 BOOL __objc_responds_to (id object, SEL sel); /* for internal use only! */
-
-/* standard functions */
-int bcopy(void*, void*, size_t);
-int vprintf(const char*, va_list);
-
 
 #endif /* not __objc_runtime_INCLUDE_GNU */
 

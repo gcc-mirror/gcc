@@ -42,7 +42,6 @@ extern const char* __objc_hash_lookup_id;
 #endif
 
 
-#include <stddef.h>
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -415,8 +414,6 @@ typedef struct objc_category {
 */
 
 typedef struct objc_typed_stream TypedStream;
-#include <objc/objc-archive.h>
-
 
 /*
 ** Structure used when a message is send to a class's super class.  The

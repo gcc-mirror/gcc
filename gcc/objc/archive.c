@@ -30,7 +30,6 @@ You should have received a copy of the GNU General Public License along with
 */
 
 #include "runtime.h"
-#include <objc/objc-archive.h>
 
 #define __objc_fatal(format, args...) \
  { fprintf(stderr, "archining: "); \
