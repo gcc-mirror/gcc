@@ -668,16 +668,12 @@ enter_macro_context (pfile, node)
       list.limit = macro->expansion + macro->count;
     }
 
-  /* Only push a macro context for non-empty replacement lists.  */
-  if (list.first != list.limit)
-    {
-      context = next_context (pfile);
-      context->list = list;
-      context->macro = macro;
+  context = next_context (pfile);
+  context->list = list;
+  context->macro = macro;
       
-      /* Disable the macro within its expansion.  */
-      macro->disabled = 1;
-    }
+  /* Disable the macro within its expansion.  */
+  macro->disabled = 1;
 
   return 1;
 }

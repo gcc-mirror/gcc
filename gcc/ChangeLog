@@ -1,3 +1,8 @@
+2001-08-23  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppmacro.c (enter_macro_context): Push macro expansions even
+	if empty.
+
 2001-08-23  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md (zero_extendqihi2): Correct the insn
