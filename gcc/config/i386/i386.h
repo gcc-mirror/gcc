@@ -1,6 +1,6 @@
 /* Definitions of target machine for GCC for IA-32.
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
-   2001, 2002, 2003 Free Software Foundation, Inc.
+   2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1206,15 +1206,6 @@ do {									\
    : REAL_PIC_OFFSET_TABLE_REGNUM)
 
 #define GOT_SYMBOL_NAME "_GLOBAL_OFFSET_TABLE_"
-
-/* Register in which address to store a structure value
-   arrives in the function.  On the 386, the prologue
-   copies this from the stack to register %eax.  */
-#define STRUCT_VALUE_INCOMING 0
-
-/* Place in which caller passes the structure value address.
-   0 means push the value on the stack like an argument.  */
-#define STRUCT_VALUE 0
 
 /* A C expression which can inhibit the returning of certain function
    values in registers, based on the type of value.  A nonzero value
@@ -2588,11 +2579,6 @@ enum ix86_builtins
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
-/* When a prototype says `char' or `short', really pass an `int'.
-   (The 386 can't easily push less than an int.)  */
-
-#define PROMOTE_PROTOTYPES 1
 
 /* A macro to update M and UNSIGNEDP when an object whose type is
    TYPE and which has the specified mode and signedness is to be

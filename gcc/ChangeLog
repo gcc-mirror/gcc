@@ -1,3 +1,11 @@
+2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/i386/i386.c (TARGET_PROMOTE_PROTOTYPES): New.
+	(TARGET_STRUCT_VALUE_RTX): Likewise.
+	* config/i386/i386.h (STRUCT_VALUE_INCOMING): Remove.
+	(STRUCT_VALUE): Likewise.
+	(PROMOTE_PROTOTYPES): Likewise.
+
 2004-01-27  Roger Sayle  <roger@eyesopen.com>
 
 	* config/pa/pa.c (emit_move_sequence): Check that operand1 is a

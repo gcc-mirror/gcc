@@ -1024,6 +1024,12 @@ static void init_ext_80387_constants (void);
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST ix86_build_builtin_va_list
 
+#undef TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX hook_rtx_tree_int_null
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* The svr4 ABI for the i386 says that records and unions are returned
