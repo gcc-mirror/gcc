@@ -7463,7 +7463,7 @@ ix86_adjust_counter (countreg, value)
 }
 
 /* Zero extend possibly SImode EXP to Pmode register.  */
-static rtx
+rtx
 ix86_zero_extend_to_Pmode (exp)
    rtx exp;
 {

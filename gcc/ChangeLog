@@ -1,3 +1,9 @@
+Fri Jul 20 14:12:57 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386-protos.h (ix86_zero_extend_to_Pmode): Declare.
+	* i386.c (ix86_zero_extend_to_Pmode): Make global.
+	* i386.md (strclrsi expander): Use it.
+
 Fri Jul 20 13:24:16 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* integrate.c (copy_insn_list): handle
