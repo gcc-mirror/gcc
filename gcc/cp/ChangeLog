@@ -1,3 +1,13 @@
+1999-11-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (compute_array_index_type): New function, split out from
+	grokdeclarator.
+	(create_array_type_for_decl): Likewise.
+	(grokdeclarator): Use them.
+
+	* semantics.c (expand_stmt): Don't suspend_momentary or
+	resume_momentary.
+
 Thu Nov 11 12:42:11 MST 1999	Diego Novillo <dnovillo@cygnus.com>
 
 	* init.c (init_init_processing): Header information for
