@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987, 88, 91, 92-5, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 92-6, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -6213,7 +6213,9 @@ process_init_element (value)
 	  && constructor_fields == 0)
 	process_init_element (pop_init_level (1));
       else if (TREE_CODE (constructor_type) == ARRAY_TYPE
-	       && tree_int_cst_lt (constructor_max_index, constructor_index))
+	       && (constructor_max_index == 0
+		   || tree_int_cst_lt (constructor_max_index,
+				       constructor_index)))
 	process_init_element (pop_init_level (1));
       else
 	break;
