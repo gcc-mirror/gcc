@@ -1,3 +1,29 @@
+Sun Oct 25 15:49:57 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (recog.o): Depend on toplev.h.
+	(insn-emit.o): Depend on recog.h.
+	(insn-peep.o): Depend on recog.h and insn-config.h.
+
+	* combine.c (simplify_set): Remove unused variable `scratches'.
+
+	* final.c (final_scan_insn): Wrap declaration of variables `vlen'
+ 	and `idx' in macro conditional controlling their use.
+
+	* genemit.c (main): Make the generated output file include
+ 	recog.h.  Don't have it declare `insn_operand_constraint', since
+ 	we get it from recog.h.
+
+	* genpeep.c (main): Make the generated output file include
+	insn-config.h and recog.h.
+
+	* recog.c: Include toplev.h.
+	(extract_insn): Remove unused variable `p'.
+
+	* regclass.c (fix_register): Add missing braces around initializer
+	for `what_option'.
+	(allocate_reg_info): Move variable `i' into the scope where it is
+	used.  Change its type to `size_t'.
+
 Sun Oct 25 13:10:15 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
 	* reload.c (push_reload): When merging reloads, make sure

@@ -2425,7 +2425,9 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 
 	if (GET_CODE (body) == ADDR_VEC || GET_CODE (body) == ADDR_DIFF_VEC)
 	  {
+#if !(defined(ASM_OUTPUT_ADDR_VEC) || defined(ASM_OUTPUT_ADDR_DIFF_VEC))
 	    register int vlen, idx;
+#endif
 
 	    if (prescan > 0)
 	      break;

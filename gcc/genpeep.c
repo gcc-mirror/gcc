@@ -467,10 +467,12 @@ from the machine description file `md'.  */\n\n");
 
   printf ("#include \"config.h\"\n");
   printf ("#include \"system.h\"\n");
+  printf ("#include \"insn-config.h\"\n");
   printf ("#include \"rtl.h\"\n");
   printf ("#include \"regs.h\"\n");
   printf ("#include \"output.h\"\n");
   printf ("#include \"real.h\"\n");
+  printf ("#include \"recog.h\"\n");
   printf ("#include \"except.h\"\n\n");
 
   printf ("extern rtx peep_operand[];\n\n");

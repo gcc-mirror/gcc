@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "hard-reg-set.h"
 #include "flags.h"
 #include "real.h"
+#include "toplev.h"
 
 #ifndef STACK_PUSH_CODE
 #ifdef STACK_GROWS_DOWNWARD
@@ -1758,7 +1759,6 @@ extract_insn (insn)
       recog_n_operands = noperands = asm_noperands (body);
       if (noperands >= 0)
 	{
-	  char *p;
 	  /* This insn is an `asm' with operands.  */
 
 	  /* expand_asm_operands makes sure there aren't too many operands.  */
