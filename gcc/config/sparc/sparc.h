@@ -358,7 +358,7 @@ extern int hard_regno_mode_ok[FIRST_PSEUDO_REGISTER];
    may be accessed via the stack pointer) in functions that seem suitable.
    This is computed in `reload', in reload1.c.
 
-   Used in flow.c, global-alloc.c, and reload1.c.  */
+   Used in flow.c, global.c, and reload1.c.  */
 extern int leaf_function;
 
 #define FRAME_POINTER_REQUIRED \
