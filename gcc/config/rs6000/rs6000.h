@@ -961,6 +961,12 @@ extern int rs6000_default_long_calls;
    ? ALTIVEC_VECTOR_MODE (MODE1)		\
    : 1)
 
+/* Post-reload, we can't use any new AltiVec registers, as we already
+   emitted the vrsave mask.  */
+
+#define HARD_REGNO_RENAME_OK(SRC, DST) \
+  (! ALTIVEC_REGNO_P (DST) || regs_ever_live[DST])
+
 /* A C expression returning the cost of moving data from a register of class
    CLASS1 to one of CLASS2.  */
 

@@ -9021,19 +9021,6 @@ compute_vrsave_mask ()
   if (mask == 0)
     return mask;
 
-  /* Next, add all registers that are call-clobbered.  We do this
-     because post-reload register optimizers such as regrename_optimize
-     may choose to use them.  They never change the register class
-     chosen by reload, so cannot create new uses of altivec registers
-     if there were none before, so the early exit above is safe.  */
-  /* ??? Alternately, we could define HARD_REGNO_RENAME_OK to disallow
-     altivec registers not saved in the mask, which might well make the
-     adjustments below more effective in eliding the save/restore of
-     VRSAVE in small functions.  */
-  for (i = FIRST_ALTIVEC_REGNO; i <= LAST_ALTIVEC_REGNO; ++i)
-    if (call_used_regs[i])
-      mask |= ALTIVEC_REG_BIT (i);
-
   /* Next, remove the argument registers from the set.  These must
      be in the VRSAVE mask set by the caller, so we don't need to add
      them in again.  More importantly, the mask we compute here is
