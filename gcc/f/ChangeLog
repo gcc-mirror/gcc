@@ -1,3 +1,8 @@
+Wed May 26 14:43:27 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Document Tue May 18 03:52:04 1999 patch.
+	Fix a grammo.
+
 Wed May 26 14:25:07 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.texi, news.texi, root.texi, version.c: Start renaming
