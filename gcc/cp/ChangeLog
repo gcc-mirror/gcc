@@ -1,3 +1,13 @@
+1999-04-28  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (build_component_addr): Remove prototype.
+	* typeck.c (build_component_addr): Make static. Remove MSG
+	argument.
+	(build_component_addr): Remove MSG parameter, clean up
+	comment.
+	(build_x_function_call): Use cp_error.
+	(build_unary_op): Adjust call of build_component_addr.
+	
 Wed Apr 28 11:42:22 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 
 	* search.c (binfo_for_vtable): Initialize bfvi.var.
