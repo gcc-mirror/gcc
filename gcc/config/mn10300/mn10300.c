@@ -442,6 +442,13 @@ notice_update_cc (body, insn)
       cc_status.value1 = SET_SRC (body);
       break;
 
+    case CC_INVERT:
+      /* The insn is a compare instruction.  */
+      CC_STATUS_INIT;
+      cc_status.value1 = SET_SRC (body);
+      cc_status.flags |= CC_INVERTED;
+      break;
+
     case CC_CLOBBER:
       /* Insn doesn't leave CC in a usable state.  */
       CC_STATUS_INIT;
