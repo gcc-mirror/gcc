@@ -62,6 +62,98 @@ static void pedantic_whitespace	PARAMS ((cpp_reader *, U_CHAR *,
 #define auto_expand_name_space(list) \
     expand_name_space ((list), (list)->name_cap / 2)
 
+#ifdef NEW_LEXER
+
+static void expand_comment_space PARAMS ((cpp_toklist *));
+void init_trigraph_map PARAMS ((void));
+static unsigned char* trigraph_replace PARAMS ((cpp_reader *, unsigned char *,
+						unsigned char *));
+static const unsigned char *backslash_start PARAMS ((cpp_reader *,
+						     const unsigned char *));
+static int skip_block_comment2 PARAMS ((cpp_reader *));
+static int skip_line_comment2 PARAMS ((cpp_reader *));
+static void skip_whitespace PARAMS ((cpp_reader *, int));
+static void parse_name PARAMS ((cpp_reader *, cpp_toklist *, cpp_name *));
+static void parse_number PARAMS ((cpp_reader *, cpp_toklist *, cpp_name *));
+static void parse_string2 PARAMS ((cpp_reader *, cpp_toklist *, cpp_name *,
+				  unsigned int));
+static int trigraph_ok PARAMS ((cpp_reader *, const unsigned char *));
+static void save_comment PARAMS ((cpp_toklist *, const unsigned char *,
+				  unsigned int, unsigned int, unsigned int));
+void _cpp_lex_line PARAMS ((cpp_reader *, cpp_toklist *));
+
+static void _cpp_output_list PARAMS ((cpp_reader *, cpp_toklist *));
+
+unsigned int spell_string PARAMS ((unsigned char *, cpp_toklist *,
+				   cpp_token *token));
+unsigned int spell_comment PARAMS ((unsigned char *, cpp_toklist *,
+				    cpp_token *token));
+unsigned int spell_name PARAMS ((unsigned char *, cpp_toklist *,
+				 cpp_token *token));
+
+typedef unsigned int (* speller) PARAMS ((unsigned char *, cpp_toklist *,
+					  cpp_token *));
+
+/* Macros on a cpp_name.  */
+#define INIT_NAME(list, name) \
+  do {(name).len = 0; (name).offset = (list)->name_used;} while (0)
+
+#define IS_DIRECTIVE(list) (TOK_TYPE (list, 0) == CPP_HASH)
+#define COLUMN(cur) ((cur) - buffer->line_base)
+
+/* Maybe put these in the ISTABLE eventually.  */
+#define IS_HSPACE(c) ((c) == ' ' || (c) == '\t')
+#define IS_NEWLINE(c) ((c) == '\n' || (c) == '\r')
+
+/* Handle LF, CR, CR-LF and LF-CR style newlines.  Assumes next
+   character, if any, is in buffer.  */
+#define handle_newline(cur, limit, c) \
+  do {\
+  if ((cur) < (limit) && *(cur) == '\r' + '\n' - c) \
+    (cur)++; \
+  CPP_BUMP_LINE_CUR (pfile, (cur)); \
+  } while (0)
+
+#define IMMED_TOKEN() (!(cur_token->flags & PREV_WHITESPACE))
+#define PREV_TOKEN_TYPE (cur_token[-1].type)
+
+#define SPELL_TEXT     0
+#define SPELL_HANDLER  1
+#define SPELL_CHAR     2
+#define SPELL_NONE     3
+#define SPELL_EOL      4
+
+#define T(e, s) {SPELL_TEXT, s},
+#define H(e, s) {SPELL_HANDLER, (PTR) s},
+#define C(e, s) {SPELL_CHAR, s},
+#define N(e, s) {SPELL_NONE, s},
+#define E(e, s) {SPELL_EOL, s},
+
+static const struct token_spelling
+{
+  unsigned char type;
+  PTR  speller;
+} token_spellings [N_TTYPES + 1] = {TTYPE_TABLE {0, 0} };
+
+#undef T
+#undef H
+#undef C
+#undef N
+#undef E
+
+#define PUSH_TOKEN(ttype) cur_token++->type = ttype
+#define REVISE_TOKEN(ttype) cur_token[-1].type = ttype
+#define BACKUP_TOKEN(ttype) (--cur_token)->type = ttype
+#define BACKUP_DIGRAPH(ttype) do { \
+  BACKUP_TOKEN(ttype); cur_token->flags |= DIGRAPH;} while (0)
+
+/* If there is this many bytes in a buffer, you have enough room to
+   spell the token, not including preceding whitespace.  */
+#define TOKEN_LEN(token) (4 + (token_spellings[token->type].type == \
+			       SPELL_HANDLER ? token->val.name.len: 0))
+
+#endif
+
 /* Re-allocates PFILE->token_buffer so it will hold at least N more chars.  */
 
 void
@@ -2070,7 +2162,7 @@ cpp_idcmp (token, len, string)
     return 1;
 }
 
-#if 0
+#ifdef NEW_LEXER
 
 /* Lexing algorithm.
 
@@ -2163,85 +2255,9 @@ cpp_idcmp (token, len, string)
 
 */
 
-static void expand_comment_space PARAMS ((cpp_toklist *));
-void init_trigraph_map PARAMS ((void));
-static unsigned char* trigraph_replace PARAMS ((cpp_reader *, unsigned char *,
-						unsigned char *));
-static const unsigned char *backslash_start PARAMS ((cpp_reader *,
-						     const unsigned char *));
-static int skip_block_comment PARAMS ((cpp_reader *));
-static int skip_line_comment PARAMS ((cpp_reader *));
-static void skip_whitespace PARAMS ((cpp_reader *, int));
-static void parse_name PARAMS ((cpp_reader *, cpp_toklist *, cpp_name *));
-static void parse_number PARAMS ((cpp_reader *, cpp_toklist *, cpp_name *));
-static void parse_string PARAMS ((cpp_reader *, cpp_toklist *, cpp_name *,
-				  unsigned int));
-static int trigraph_ok PARAMS ((cpp_reader *, const unsigned char *));
-static void copy_comment PARAMS ((cpp_toklist *, const unsigned char *,
-				  unsigned int, unsigned int, unsigned int));
-void _cpp_lex_line PARAMS ((cpp_reader *, cpp_toklist *));
-
-static void _cpp_output_list PARAMS ((cpp_reader *, cpp_toklist *));
-
-unsigned int spell_string PARAMS ((unsigned char *, cpp_toklist *,
-				   cpp_token *token));
-unsigned int spell_comment PARAMS ((unsigned char *, cpp_toklist *,
-				    cpp_token *token));
-unsigned int spell_name PARAMS ((unsigned char *, cpp_toklist *,
-				 cpp_token *token));
-
-typedef unsigned int (* speller) PARAMS ((unsigned char *, cpp_toklist *,
-					  cpp_token *));
-
-/* Macros on a cpp_name.  */
-#define INIT_NAME(list, name) \
-  do {(name).len = 0; (name).offset = (list)->name_used;} while (0)
-
-#define IS_DIRECTIVE(list) (TOK_TYPE (list, 0) == CPP_HASH)
-#define COLUMN(cur) ((cur) - buffer->line_base)
-
-/* Maybe put these in the ISTABLE eventually.  */
-#define IS_HSPACE(c) ((c) == ' ' || (c) == '\t')
-#define IS_NEWLINE(c) ((c) == '\n' || (c) == '\r')
-
-/* Handle LF, CR, CR-LF and LF-CR style newlines.  Assumes next
-   character, if any, is in buffer.  */
-#define handle_newline(cur, limit, c) \
-  do {\
-  if ((cur) < (limit) && *(cur) == '\r' + '\n' - c) \
-    (cur)++; \
-  CPP_BUMP_LINE_CUR (pfile, (cur)); \
-  } while (0)
-
-#define IMMED_TOKEN() (!(cur_token->flags & PREV_WHITESPACE))
-#define PREV_TOKEN_TYPE (cur_token[-1].type)
-
-#define SPELL_TEXT     0
-#define SPELL_HANDLER  1
-#define SPELL_CHAR     2
-#define SPELL_NONE     3
-#define SPELL_EOL      4
-
-#define T(e, s) {SPELL_TEXT, s},
-#define H(e, s) {SPELL_HANDLER, s},
-#define C(e, s) {SPELL_CHAR, s},
-#define N(e, s) {SPELL_NONE, s},
-#define E(e, s) {SPELL_EOL, s},
-
-static const struct token_spelling
-{
-  unsigned char type;
-  PTR  speller;
-} token_spellings [N_TTYPES + 1] = {TTYPE_TABLE {0, 0} };
-
-#undef T
-#undef H
-#undef C
-#undef N
-#undef E
-
-static const unsigned char *digraph_spellings [] = {"%:", "%:%:", "<:",
-						    ":>", "<%", "%>"};
+static const unsigned char *digraph_spellings [] = {U"%:", U"%:%:", U"<:",
+						    U":>", U"<%", U"%>"};
+static unsigned char trigraph_map[256];
 
 static void
 expand_comment_space (list)
@@ -2271,8 +2287,6 @@ cpp_free_token_list (list)
   free (list->namebuf);
   free (list);
 }
-
-static unsigned char trigraph_map[256];
 
 void
 init_trigraph_map ()
@@ -2390,7 +2404,7 @@ backslash_start (pfile, cur)
    previous asterisk may be separated by one or more escaped newlines.
    Returns non-zero if comment terminated by EOF, zero otherwise.  */
 static int
-skip_block_comment (pfile)
+skip_block_comment2 (pfile)
      cpp_reader *pfile;
 {
   cpp_buffer *buffer = pfile->buffer;
@@ -2448,7 +2462,7 @@ skip_block_comment (pfile)
 /* Skip a C++ or Chill line comment.  Handles escaped newlines.
    Returns non-zero if a multiline comment.  */
 static int
-skip_line_comment (pfile)
+skip_line_comment2 (pfile)
      cpp_reader *pfile;
 {
   cpp_buffer *buffer = pfile->buffer;
@@ -2613,7 +2627,7 @@ parse_number (pfile, list, name)
    constants ('"'), angled headers ('>') and assertions (')').  */
 
 static void
-parse_string (pfile, list, name, terminator)
+parse_string2 (pfile, list, name, terminator)
      cpp_reader *pfile;
      cpp_toklist *list;
      cpp_name *name;
@@ -2750,7 +2764,7 @@ parse_string (pfile, list, name, terminator)
    '-' = Chill-style and '/' = C++ style.  For code simplicity, the
    stored comment includes any C-style comment terminator.  */
 static void
-copy_comment (list, from, len, tok_no, type)
+save_comment (list, from, len, tok_no, type)
      cpp_toklist *list;
      const unsigned char *from;
      unsigned int len;
@@ -2788,12 +2802,6 @@ copy_comment (list, from, len, tok_no, type)
  *  Trigraph overhead is negligible if they are disabled, and low
  *  even when enabled.
  */
-
-#define PUSH_TOKEN(ttype) cur_token++->type = ttype
-#define REVISE_TOKEN(ttype) cur_token[-1].type = ttype
-#define BACKUP_TOKEN(ttype) (--cur_token)->type = ttype
-#define BACKUP_DIGRAPH(ttype) do { \
-  BACKUP_TOKEN(ttype); cur_token->flags |= DIGRAPH;} while (0)
 
 void
 _cpp_lex_line (pfile, list)
@@ -2908,7 +2916,7 @@ _cpp_lex_line (pfile, list)
 	  /* Here c is one of ' " > or ).  */
 	  INIT_NAME (list, cur_token->val.name);
 	  buffer->cur = cur;
-	  parse_string (pfile, list, &cur_token->val.name, c);
+	  parse_string2 (pfile, list, &cur_token->val.name, c);
 	  cur = buffer->cur;
 	  cur_token++;
 	  break;
@@ -2942,12 +2950,12 @@ _cpp_lex_line (pfile, list)
 		      if (cur[-2] != c)
 			cpp_warning (pfile,
 				     "comment start split across lines");
-		      if (skip_line_comment (pfile))
+		      if (skip_line_comment2 (pfile))
 			cpp_error_with_line (pfile, list->line,
 					     cur_token[-1].col,
 					     "multi-line comment");
 		      if (!CPP_OPTION (pfile, discard_comments))
-			copy_comment (list, cur, buffer->cur - cur,
+			save_comment (list, cur, buffer->cur - cur,
 				      cur_token - 1 - list->tokens, c == '/'
 				      ? CPP_CPP_COMMENT: CPP_CHILL_COMMENT);
 		      cur = buffer->cur;
@@ -2972,14 +2980,14 @@ _cpp_lex_line (pfile, list)
 		  if (cur[-2] != '/')
 		    cpp_warning (pfile,
 				 "comment start '/*' split across lines");
-		  if (skip_block_comment (pfile))
+		  if (skip_block_comment2 (pfile))
 		    cpp_error_with_line (pfile, list->line, cur_token[-1].col,
 					 "unterminated comment");
 		  else if (buffer->cur[-2] != '*')
 		    cpp_warning (pfile,
 				 "comment end '*/' split across lines");
 		  if (!CPP_OPTION (pfile, discard_comments))
-		    copy_comment (list, cur, buffer->cur - cur,
+		    save_comment (list, cur, buffer->cur - cur,
 				 cur_token - 1 - list->tokens, CPP_C_COMMENT);
 		  cur = buffer->cur;
 
@@ -3374,11 +3382,7 @@ _cpp_lex_file (pfile)
     }
 }
 
-/* This could be useful to other routines.  If you allocate this many
-   bytes, you have enough room to spell the token.  */
-#define TOKEN_LEN(token) (4 + (token_spellings[token->type].type == \
-			       SPELL_HANDLER ? token->val.name.len: 0))
-
+/* Temporary function for illustrative purposes.  */
 static void
 _cpp_output_list (pfile, list)
      cpp_reader *pfile;

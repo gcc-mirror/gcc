@@ -1,3 +1,10 @@
+Sun  7 May 08:43:53 2000  Neil Booth  <NeilB@earthling.net>
+
+	* cpplex.c: Move new lexer definitions and prototypes
+	to top.  Conditional include these and the code if
+	NEW_LEXER is defined.  Rename functions whose names
+	clash if this code included.
+
 Sun May  7 00:54:57 EDT 2000  John Wehle  (john@feith.com)
 
 	* rtl.def (COND_EXEC): Clarify.
