@@ -23,10 +23,6 @@ in
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #
 
-# Don't pass command-line variables to submakes.
-.NOEXPORT:
-MAKEOVERRIDES=
-
 # -------------------------------
 # Standard Autoconf-set variables
 # -------------------------------
@@ -1454,10 +1450,18 @@ AUTOCONF = autoconf
 $(srcdir)/configure: @MAINT@ $(srcdir)/configure.in $(srcdir)/config/acx.m4
 	cd $(srcdir) && $(AUTOCONF)
 
+# ------------------------------
+# Special directives to GNU Make
+# ------------------------------
+
 # Tell GNU make 3.79 not to run the top level in parallel.  This 
 # prevents contention for $builddir/$target/config.cache, as well
 # as minimizing scatter in file system caches.
 NOTPARALLEL = .NOTPARALLEL
 $(NOTPARALLEL):
+
+# Don't pass command-line variables to submakes.
+.NOEXPORT:
+MAKEOVERRIDES=
 
 # end of Makefile.in
