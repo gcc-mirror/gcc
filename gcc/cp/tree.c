@@ -407,6 +407,9 @@ build_cplus_array_type_1 (elt_type, index_type)
   register struct obstack *ambient_saveable_obstack = saveable_obstack;
   tree t;
 
+  if (elt_type == error_mark_node || index_type == error_mark_node)
+    return error_mark_node;
+
   /* We need a new one.  If both ELT_TYPE and INDEX_TYPE are permanent,
      make this permanent too.  */
   if (TREE_PERMANENT (elt_type)
@@ -454,13 +457,18 @@ build_cplus_array_type (elt_type, index_type)
   return t;
 }
 
-/* Make a variant type in the proper way for C/C++, propagating qualifiers
-   down to the element type of an array.  */
+/* Make a variant of TYPE, qualified with the TYPE_QUALS.  Handles
+   arrays correctly.  In particular, if TYPE is an array of T's, and
+   TYPE_QUALS is non-empty, returns an array of qualified T's.  If
+   at attempt is made to qualify a type illegally, and COMPLAIN is
+   non-zero, an error is issued.  If COMPLAIN is zero, error_mark_node
+   is returned.  */
 
 tree
-cp_build_qualified_type (type, type_quals)
+cp_build_qualified_type_real (type, type_quals, complain)
      tree type;
      int type_quals;
+     int complain;
 {
   if (type == error_mark_node)
     return type;
@@ -468,29 +476,40 @@ cp_build_qualified_type (type, type_quals)
   /* A restrict-qualified pointer type must be a pointer (or reference)
      to object or incomplete type.  */
   if ((type_quals & TYPE_QUAL_RESTRICT)
+      && TREE_CODE (type) != TEMPLATE_TYPE_PARM
       && (!POINTER_TYPE_P (type)
 	  || TYPE_PTRMEM_P (type)
 	  || TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE))
     {
-      cp_error ("`%T' cannot be `restrict'-qualified", type);
+      if (complain)
+	cp_error ("`%T' cannot be `restrict'-qualified", type);
+      else
+	return error_mark_node;
+
       type_quals &= ~TYPE_QUAL_RESTRICT;
     }
 
   if (type_quals != TYPE_UNQUALIFIED
       && TREE_CODE (type) == FUNCTION_TYPE)
     {
-      cp_error ("`%T' cannot be `const'-, `volatile'-, or `restrict'-qualified", type);
+      if (complain)
+	cp_error ("`%T' cannot be `const'-, `volatile'-, or `restrict'-qualified", type);
+      else
+	return error_mark_node;
       type_quals = TYPE_UNQUALIFIED;
     }
   else if (TREE_CODE (type) == ARRAY_TYPE)
     {
       tree real_main_variant = TYPE_MAIN_VARIANT (type);
-
+      tree element_type = cp_build_qualified_type_real (TREE_TYPE (type),
+							type_quals,
+							complain);
       push_obstacks (TYPE_OBSTACK (real_main_variant),
 		     TYPE_OBSTACK (real_main_variant));
-      type = build_cplus_array_type_1 (cp_build_qualified_type 
-				       (TREE_TYPE (type), type_quals),
+      type = build_cplus_array_type_1 (element_type,
 				       TYPE_DOMAIN (type));
+      if (type == error_mark_node)
+	return error_mark_node;
 
       /* TYPE must be on same obstack as REAL_MAIN_VARIANT.  If not,
 	 make a copy.  (TYPE might have come from the hash table and

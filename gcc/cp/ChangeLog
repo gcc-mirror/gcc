@@ -1,5 +1,28 @@
 1999-05-21  Mark Mitchell  <mark@codesourcery.com>
-
+            Nathan Sidwell  <nathan@acm.org>
+	
+	* Make-lang.in (cc1plus): Make it depend on gxx.gperf.
+	* cp-tree.h: Fix typo in documentation on pointers-to-members.
+	(cp_build_qualified_type): Make it a macro.
+	(cp_build_qualified_type_real): Declare.
+	* decl.c (grokdeclarator): Remove misleading comment.  Avoid
+	problem with template parameters and restrict-qualification.
+	* gxx.gperf: Replace NORID with RID_UNUSED throughout.
+	* hash.h: Regenerated.
+	* lex.h (rid): Move RID_FIRST_MODIFIER and RID_LAST_MODIFIER into
+	the enumeration.
+	(NORID): Remove definition.
+	* pt.c (tsubst_aggr_type): Use cp_build_qualified_type_real.
+	(tsubst): Likewise.  Remove special handling for FUNCTION_TYPEs.
+	(fn_type_unification): Check that the function type resulting from
+	the deduction is legal.
+	(check_cv_quals_for_unify): Don't handle FUNCTION_TYPEs specially.
+	(unify): Use cp_build_qualified_type_real.
+	* tree.c (build_cplus_array_type_1): Handle error_marks as inputs.
+	(cp_build_qualified_type): Rename to ...
+	(cp_build_qualified_type_real): Add additional COMPLAIN parameter
+	and modify appropriately.
+	
 	* typeck.c (build_ptrmemfunc): Handle PTRMEM_CSTs carefully to
 	reveal optimization opportunities.
 

@@ -11650,9 +11650,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
     if (RIDBIT_SETP (RID_STATIC, specbits))
       DECL_THIS_STATIC (decl) = 1;
 
-    /* Record constancy and volatility.  */
-    /* FIXME: Disallow `restrict' pointer-to-member declarations.  */
-    c_apply_type_quals_to_decl (type_quals, decl);
+    /* Record constancy and volatility.  There's no need to do this
+       when processing a template; we'll do this for the instantiated
+       declaration based on the type of DECL.  */
+    if (!processing_template_decl)
+      c_apply_type_quals_to_decl (type_quals, decl);
 
     return decl;
   }
