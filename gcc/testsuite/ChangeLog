@@ -1,3 +1,11 @@
+2004-02-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.dg/sibcall-3.c (recurser_void1): Make it an extern
+	function with __attribute__((noinline)).
+	(recurser_void2): Likewise.
+	* gcc.dg/sibcall-4.c (recurser_void1): Likewise.
+	(recurser_void2): Likewise.
+
 2004-02-29  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/14203
