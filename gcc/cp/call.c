@@ -3824,10 +3824,6 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 
       /* Find the allocation function that is being called.  */
       call_expr = placement;
-      /* Sometimes we have a COMPOUND_EXPR, rather than a simple
-	 CALL_EXPR.  */
-      while (TREE_CODE (call_expr) == COMPOUND_EXPR)
-	call_expr = TREE_OPERAND (call_expr, 1);
       /* Extract the function.  */
       alloc_fn = get_callee_fndecl (call_expr);
       my_friendly_assert (alloc_fn != NULL_TREE, 20020327);
@@ -3910,7 +3906,15 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	args = tree_cons (NULL_TREE, addr, 
 			  build_tree_list (NULL_TREE, size));
 
-      return build_function_call (fn, args);
+      if (placement)
+	{
+	  /* The placement args might not be suitable for overload
+	     resolution at this point, so build the call directly.  */
+	  mark_used (fn);
+	  return build_cxx_call (fn, args, args);
+	}
+      else
+	return build_function_call (fn, args);
     }
 
   /* If we are doing placement delete we do nothing if we don't find a
