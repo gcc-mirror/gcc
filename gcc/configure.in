@@ -787,12 +787,6 @@ do
 	then
 		echo "#define TARGET_CPU_DEFAULT ($target_cpu_default)" >>$link
 	fi
-	if test $link = tm.h
-	then
-		echo "#ifndef GENERATOR_FILE" >>$link
-		echo "#include \"insn-codes.h\"" >>$link
-		echo "#endif" >>$link
-	fi
 
 	for file in `eval echo '$'$var`; do
 		case $file in
@@ -817,6 +811,15 @@ do
 		echo "#define $def" >>$link
 		echo "#endif" >>$link
 	done
+
+	if test $link = tm.h
+	then
+		# Include insn-codes.h last, because it includes machmode.h,
+		# and we want EXTRA_CC_MODES to be taken into account.
+		echo "#ifndef GENERATOR_FILE" >>$link
+		echo "#include \"insn-codes.h\"" >>$link
+		echo "#endif" >>$link
+	fi
 done
 
 # Truncate the target if necessary
