@@ -255,7 +255,6 @@ static char *temp_filename;		/* Base of temp filenames */
 static char *c_file;			/* <xxx>.c for constructor/destructor list. */
 static char *o_file;			/* <xxx>.o for constructor/destructor list. */
 static char *export_file;	        /* <xxx>.x for AIX export list. */
-static int  auto_export = 1;	        /* true if exporting everything. */
 char *ldout;				/* File for ld errors.  */
 static char *output_file;		/* Output file for ld.  */
 static char *nm_file_name;		/* pathname of nm */
@@ -1242,15 +1241,6 @@ main (argc, argv)
 		  ld2--;
 		}
 	      break;
-
-#ifdef COLLECT_EXPORT_LIST
-	    case 'b':
-	      if ((!strncmp (arg, "-bE:", 4)
-		   || !strncmp (arg, "-bexport:", 9))
-		  && strcmp (arg, "-bexport:/usr/lib/libg.exp"))
-		auto_export = 0;
-	      break;
-#endif
 
 	    case 'l':
 	      if (first_file)
@@ -2554,8 +2544,6 @@ scan_prog_file (prog_name, which_pass)
 		  break;
 
 		default:		/* not a constructor or destructor */
-		  if (which_pass == PASS_OBJ && auto_export)
-		    add_to_list (&exports, name);
 		  continue;
 		}
 
