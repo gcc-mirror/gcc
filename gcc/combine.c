@@ -4957,7 +4957,7 @@ expand_field_assignment (x)
 	{
 	  inner = SUBREG_REG (XEXP (SET_DEST (x), 0));
 	  len = GET_MODE_BITSIZE (GET_MODE (XEXP (SET_DEST (x), 0)));
-	  pos = const0_rtx;
+	  pos = GEN_INT (BITS_PER_WORD * SUBREG_WORD (XEXP (SET_DEST (x), 0)));
 	}
       else if (GET_CODE (SET_DEST (x)) == ZERO_EXTRACT
 	       && GET_CODE (XEXP (SET_DEST (x), 1)) == CONST_INT)
@@ -5133,7 +5133,8 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 
   if (tmode != BLKmode
       && ! (spans_byte && inner_mode != tmode)
-      && ((pos_rtx == 0 && pos == 0 && GET_CODE (inner) != MEM
+      && ((pos_rtx == 0 && (pos % BITS_PER_WORD) == 0
+	   && GET_CODE (inner) != MEM
 	   && (! in_dest
 	       || (GET_CODE (inner) == REG
 		   && (movstrict_optab->handlers[(int) tmode].insn_code
@@ -5153,8 +5154,8 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	 field.  If the original and current mode are the same, we need not
 	 adjust the offset.  Otherwise, we do if bytes big endian.  
 
-	 If INNER is not a MEM, get a piece consisting of the just the field
-	 of interest (in this case POS must be 0).  */
+	 If INNER is not a MEM, get a piece consisting of just the field
+	 of interest (in this case POS % BITS_PER_WORD must be 0).  */
 
       if (GET_CODE (inner) == MEM)
 	{
@@ -5178,10 +5179,11 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	    new = gen_rtx (SUBREG, tmode, inner,
 			   (WORDS_BIG_ENDIAN
 			    && GET_MODE_SIZE (inner_mode) > UNITS_PER_WORD
-			    ? ((GET_MODE_SIZE (inner_mode)
-				- GET_MODE_SIZE (tmode))
-			       / UNITS_PER_WORD)
-			    : 0));
+			    ? (((GET_MODE_SIZE (inner_mode)
+				 - GET_MODE_SIZE (tmode))
+				/ UNITS_PER_WORD)
+			       - pos / BITS_PER_WORD)
+			    : pos / BITS_PER_WORD));
 	  else
 	    new = inner;
 	}
