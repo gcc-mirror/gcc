@@ -41,8 +41,8 @@
  *  contained in the namespace @c std.
  */
 
-#ifndef _CSIGNAL
-#define _CSIGNAL 1
+#ifndef _CPP_CSIGNAL
+#define _CPP_CSIGNAL 1
 
 #pragma GCC system_header
 

@@ -31,8 +31,8 @@
 // ISO C++ 14882: 18.2.2  Implementation properties: C library
 //
 
-#ifndef _CFLOAT
-#define _CFLOAT 1
+#ifndef _CPP_CFLOAT
+#define _CPP_CFLOAT 1
 
 #pragma GCC system_header
 

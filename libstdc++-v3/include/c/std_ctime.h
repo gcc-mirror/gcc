@@ -31,8 +31,8 @@
 // ISO C++ 14882: 20.5  Date and time
 //
 
-#ifndef _CTIME
-#define _CTIME 1
+#ifndef _CPP_CTIME
+#define _CPP_CTIME 1
 
 #pragma GCC system_header
 

@@ -31,8 +31,8 @@
 // ISO C++ 14882: 20.4.6  C library
 //
 
-#ifndef _CSETJMP
-#define _CSETJMP 1
+#ifndef _CPP_CSETJMP
+#define _CPP_CSETJMP 1
 
 #pragma GCC system_header
 

@@ -31,8 +31,8 @@
 // ISO C++ 14882: 20.4.6  C library
 //
 
-#ifndef _CSIGNAL
-#define _CSIGNAL 1
+#ifndef _CPP_CSIGNAL
+#define _CPP_CSIGNAL 1
 
 #pragma GCC system_header
 

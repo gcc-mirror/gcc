@@ -31,8 +31,8 @@
 // ISO C++ 14882: 21.4
 //
 
-#ifndef _CWCHAR
-#define _CWCHAR 1
+#ifndef _CPP_CWCHAR
+#define _CPP_CWCHAR 1
 
 #pragma GCC system_header
 

@@ -31,8 +31,8 @@
 // ISO C++ 14882: 20.4.6  C library
 //
 
-#ifndef _CSTDLIB
-#define _CSTDLIB 1
+#ifndef _CPP_CSTDLIB
+#define _CPP_CSTDLIB 1
 
 #pragma GCC system_header
 

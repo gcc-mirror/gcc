@@ -40,8 +40,8 @@
  *  contained in the namespace @c std.
  */
 
-#ifndef _CSTDDEF
-#define _CSTDDEF 1
+#ifndef _CPP_CSTDDEF
+#define _CPP_CSTDDEF 1
 
 #pragma GCC system_header
 
