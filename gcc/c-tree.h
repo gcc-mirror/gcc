@@ -373,10 +373,6 @@ extern int warn_float_equal;
 
 extern int warn_multichar;
 
-/* Warn about long long.  */
-
-extern int warn_long_long;
-
 /* Nonzero means we are reading code that came from a system header file.  */
 
 extern int system_header_p;

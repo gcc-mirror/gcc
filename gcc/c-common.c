@@ -1316,6 +1316,7 @@ enum format_std_version
 {
   STD_C89,
   STD_C94,
+  STD_C9L, /* C99, but treat as C89 if -Wno-long-long.  */
   STD_C99,
   STD_EXT
 };
@@ -1337,6 +1338,11 @@ enum format_std_version
 				 : ((FEATURE_VER) == STD_EXT	\
 				    ? "ISO C"			\
 				    : "ISO C89"))
+/* Adjust a C standard version, which may be STD_C9L, to account for
+   -Wno-long-long.  Returns other standard versions unchanged.  */
+#define ADJ_STD(VER)		((int)((VER) == STD_C9L			      \
+				       ? (warn_long_long ? STD_C99 : STD_C89) \
+				       : (VER)))
 
 /* Flags that may apply to a particular kind of format checked by GCC.  */
 enum
@@ -1548,7 +1554,7 @@ typedef struct format_wanted_type
 static const format_length_info printf_length_specs[] =
 {
   { "h", FMT_LEN_h, STD_C89, "hh", FMT_LEN_hh, STD_C99 },
-  { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C99 },
+  { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C9L },
   { "q", FMT_LEN_ll, STD_EXT, NULL, 0, 0 },
   { "L", FMT_LEN_L, STD_C89, NULL, 0, 0 },
   { "z", FMT_LEN_z, STD_C99, NULL, 0, 0 },
@@ -1563,7 +1569,7 @@ static const format_length_info printf_length_specs[] =
 static const format_length_info scanf_length_specs[] =
 {
   { "h", FMT_LEN_h, STD_C89, "hh", FMT_LEN_hh, STD_C99 },
-  { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C99 },
+  { "l", FMT_LEN_l, STD_C89, "ll", FMT_LEN_ll, STD_C9L },
   { "q", FMT_LEN_ll, STD_EXT, NULL, 0, 0 },
   { "L", FMT_LEN_L, STD_C89, NULL, 0, 0 },
   { "z", FMT_LEN_z, STD_C99, NULL, 0, 0 },
@@ -1649,7 +1655,7 @@ static const format_flag_pair strftime_flag_pairs[] =
 #define T_L	&long_integer_type_node
 #define T89_L	{ STD_C89, NULL, T_L }
 #define T_LL	&long_long_integer_type_node
-#define T99_LL	{ STD_C99, NULL, T_LL }
+#define T9L_LL	{ STD_C9L, NULL, T_LL }
 #define TEX_LL	{ STD_EXT, NULL, T_LL }
 #define T_S	&short_integer_type_node
 #define T89_S	{ STD_C89, NULL, T_S }
@@ -1659,7 +1665,7 @@ static const format_flag_pair strftime_flag_pairs[] =
 #define T_UL	&long_unsigned_type_node
 #define T89_UL	{ STD_C89, NULL, T_UL }
 #define T_ULL	&long_long_unsigned_type_node
-#define T99_ULL	{ STD_C99, NULL, T_ULL }
+#define T9L_ULL	{ STD_C9L, NULL, T_ULL }
 #define TEX_ULL	{ STD_EXT, NULL, T_ULL }
 #define T_US	&short_unsigned_type_node
 #define T89_US	{ STD_C89, NULL, T_US }
@@ -1702,15 +1708,15 @@ static const format_flag_pair strftime_flag_pairs[] =
 static const format_char_info print_char_table[] =
 {
   /* C89 conversion specifiers.  */
-  { "di",  0, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM  }, "-wp0 +'I", "i"  },
-  { "oxX", 0, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0#",    "i"  },
-  { "u",   0, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0'I",   "i"  },
+  { "di",  0, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T9L_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM  }, "-wp0 +'I", "i"  },
+  { "oxX", 0, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T9L_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0#",    "i"  },
+  { "u",   0, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T9L_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "-wp0'I",   "i"  },
   { "fgG", 0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#'", ""   },
   { "eE",  0, STD_C89, { T89_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#",  ""   },
   { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T94_WI,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w",       ""   },
   { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-wp",      "cR" },
   { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "-w",       "c"  },
-  { "n",   1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM  }, "",         "W"  },
+  { "n",   1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T9L_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM  }, "",         "W"  },
   /* C99 conversion specifiers.  */
   { "F",   0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#'", ""   },
   { "aA",  0, STD_C99, { T99_D,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "-wp0 +#",  ""   },
@@ -1725,15 +1731,15 @@ static const format_char_info print_char_table[] =
 static const format_char_info scan_char_table[] =
 {
   /* C89 conversion specifiers.  */
-  { "di",    1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM  }, "*w'I", "W"   },
-  { "u",     1, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "*w'I", "W"   },
-  { "oxX",   1, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T99_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "*w",   "W"   },
+  { "di",    1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T9L_LL,  TEX_LL,  T99_SST, T99_PD,  T99_IM  }, "*w'I", "W"   },
+  { "u",     1, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T9L_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "*w'I", "W"   },
+  { "oxX",   1, STD_C89, { T89_UI,  T99_UC,  T89_US,  T89_UL,  T9L_ULL, TEX_ULL, T99_ST,  T99_UPD, T99_UIM }, "*w",   "W"   },
   { "efgEG", 1, STD_C89, { T89_F,   BADLEN,  BADLEN,  T89_D,   BADLEN,  T89_LD,  BADLEN,  BADLEN,  BADLEN  }, "*w'",  "W"   },
   { "c",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*w",   "cW"  },
   { "s",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*aw",  "cW"  },
   { "[",     1, STD_C89, { T89_C,   BADLEN,  BADLEN,  T94_W,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*aw",  "cW[" },
   { "p",     2, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "*w",   "W"   },
-  { "n",     1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T99_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM  }, "",     "W"   },
+  { "n",     1, STD_C89, { T89_I,   T99_SC,  T89_S,   T89_L,   T9L_LL,  BADLEN,  T99_SST, T99_PD,  T99_IM  }, "",     "W"   },
   /* C99 conversion specifiers.  */
   { "FaA",   1, STD_C99, { T99_F,   BADLEN,  BADLEN,  T99_D,   BADLEN,  T99_LD,  BADLEN,  BADLEN,  BADLEN  }, "*w'",  "W"   },
   /* X/Open conversion specifiers.  */
@@ -2901,7 +2907,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	  if (pedantic)
 	    {
 	      /* Warn if the length modifier is non-standard.  */
-	      if (length_chars_std > C_STD_VER)
+	      if (ADJ_STD (length_chars_std) > C_STD_VER)
 		status_warning (status, "%s does not support the `%s' %s length modifier",
 				C_STD_NAME (length_chars_std), length_chars,
 				fki->name);
@@ -2971,7 +2977,7 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	}
       if (pedantic)
 	{
-	  if (fci->std > C_STD_VER)
+	  if (ADJ_STD (fci->std) > C_STD_VER)
 	    status_warning (status, "%s does not support the `%%%c' %s format",
 			    C_STD_NAME (fci->std), format_char, fki->name);
 	}
@@ -2996,16 +3002,16 @@ check_format_info_main (status, res, info, format_chars, format_length,
 	    if (pedantic)
 	      {
 		const format_flag_spec *t;
-		if (s->std > C_STD_VER)
+		if (ADJ_STD (s->std) > C_STD_VER)
 		  status_warning (status, "%s does not support %s",
 				  C_STD_NAME (s->std), _(s->long_name));
 		t = get_flag_spec (flag_specs, flag_chars[i], fci->flags2);
-		if (t != NULL && t->std > s->std)
+		if (t != NULL && ADJ_STD (t->std) > ADJ_STD (s->std))
 		  {
 		    const char *long_name = (t->long_name != NULL
 					     ? t->long_name
 					     : s->long_name);
-		    if (t->std > C_STD_VER)
+		    if (ADJ_STD (t->std) > C_STD_VER)
 		      status_warning (status, "%s does not support %s with the `%%%c' %s format",
 				      C_STD_NAME (t->std), _(long_name),
 				      format_char, fki->name);
@@ -3121,10 +3127,10 @@ check_format_info_main (status, res, info, format_chars, format_length,
 		   /* Warn if non-standard, provided it is more non-standard
 		      than the length and type characters that may already
 		      have been warned for.  */
-		   && wanted_type_std > length_chars_std
-		   && wanted_type_std > fci->std)
+		   && ADJ_STD (wanted_type_std) > ADJ_STD (length_chars_std)
+		   && ADJ_STD (wanted_type_std) > ADJ_STD (fci->std))
 	    {
-	      if (wanted_type_std > C_STD_VER)
+	      if (ADJ_STD (wanted_type_std) > C_STD_VER)
 		status_warning (status, "%s does not support the `%%%s%c' %s format",
 				C_STD_NAME (wanted_type_std), length_chars,
 				format_char, fki->name);

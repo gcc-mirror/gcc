@@ -416,6 +416,11 @@ extern int warn_parentheses;
 
 extern int warn_conversion;
 
+/* Nonzero means warn about usage of long long,
+   when `-pedantic' and not C99.  */
+
+extern int warn_long_long;
+
 /* C types are partitioned into three subsets: object, function, and
    incomplete types.  */
 #define C_TYPE_OBJECT_P(type) \
