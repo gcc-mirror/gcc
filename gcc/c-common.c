@@ -3409,7 +3409,7 @@ c_expand_expr (exp, target, tmode, modifier)
 	   out-of-scope after the first EXPR_STMT from within the
 	   STMT_EXPR.  */
 	push_temp_slots ();
-	rtl_expr = expand_start_stmt_expr (target != const0_rtx);
+	rtl_expr = expand_start_stmt_expr ();
 	expand_stmt (STMT_EXPR_STMT (exp));
 	expand_end_stmt_expr (rtl_expr);
 	result = expand_expr (rtl_expr, target, tmode, modifier);

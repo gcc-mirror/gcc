@@ -1,8 +1,3 @@
-Tue Dec  4 08:28:42 2001  Alexandre Oliva  <aoliva@redhat.com>
-
-	* com.c (ffecom_expr_power_integer_): Adjust
-	expand_start_stmt_expr() invocation.
-
 Mon Dec  3 18:56:04 2001  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* com.c: Remove leading capital from diagnostic messages, as

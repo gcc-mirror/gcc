@@ -5584,7 +5584,7 @@ ffecom_expr_power_integer_ (ffebld expr)
     basetypeof_l_is_int
       = build_int_2 ((TREE_CODE (ltype) == INTEGER_TYPE), 0);
 
-    se = expand_start_stmt_expr (1);
+    se = expand_start_stmt_expr ();
 
     ffecom_start_compstmt ();
 
