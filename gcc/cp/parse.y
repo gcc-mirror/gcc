@@ -1159,7 +1159,7 @@ template_arg:
 		      $$ = error_mark_node;
 		    }
 		  else
-		    $$ = make_unbound_class_template ($1, $3, 1);
+		    $$ = make_unbound_class_template ($1, $3, tf_error | tf_parsing);
 		}
 	;
 
@@ -3071,14 +3071,14 @@ nested_name_specifier:
 		{ $$ = $2; }
 	| nested_name_specifier TEMPLATE explicit_template_type SCOPE
                 { got_scope = $$
-		    = make_typename_type ($1, $3, tf_error); }
+		    = make_typename_type ($1, $3, tf_error | tf_parsing); }
 	/* Error handling per Core 125.  */
 	| nested_name_specifier IDENTIFIER SCOPE
                 { got_scope = $$
-		    = make_typename_type ($1, $2, tf_error); }
+		    = make_typename_type ($1, $2, tf_error | tf_parsing); }
 	| nested_name_specifier PTYPENAME SCOPE
                 { got_scope = $$
-		    = make_typename_type ($1, $2, tf_error); }
+		    = make_typename_type ($1, $2, tf_error | tf_parsing); }
 	;
 
 /* Why the @#$%^& do type_name and notype_identifier need to be expanded
@@ -3120,7 +3120,7 @@ typename_sub0:
 	  typename_sub1 identifier %prec EMPTY
 		{
 		  if (TYPE_P ($1))
-		    $$ = make_typename_type ($1, $2, tf_error);
+		    $$ = make_typename_type ($1, $2, tf_error | tf_parsing);
 		  else if (TREE_CODE ($2) == IDENTIFIER_NODE)
 		    error ("`%T' is not a class or namespace", $2);
 		  else
@@ -3133,9 +3133,9 @@ typename_sub0:
 	| typename_sub1 template_type %prec EMPTY
 		{ $$ = TREE_TYPE ($2); }
 	| typename_sub1 explicit_template_type %prec EMPTY
-                { $$ = make_typename_type ($1, $2, tf_error); }
+                { $$ = make_typename_type ($1, $2, tf_error | tf_parsing); }
 	| typename_sub1 TEMPLATE explicit_template_type %prec EMPTY
-                { $$ = make_typename_type ($1, $3, tf_error); }
+                { $$ = make_typename_type ($1, $3, tf_error | tf_parsing); }
 	;
 
 typename_sub1:
@@ -3149,7 +3149,7 @@ typename_sub1:
 	| typename_sub1 typename_sub2
 		{
 		  if (TYPE_P ($1))
-		    $$ = make_typename_type ($1, $2, tf_error);
+		    $$ = make_typename_type ($1, $2, tf_error | tf_parsing);
 		  else if (TREE_CODE ($2) == IDENTIFIER_NODE)
 		    error ("`%T' is not a class or namespace", $2);
 		  else
@@ -3161,10 +3161,10 @@ typename_sub1:
 		}
 	| typename_sub1 explicit_template_type SCOPE
                 { got_scope = $$
-		    = make_typename_type ($1, $2, tf_error); }
+		    = make_typename_type ($1, $2, tf_error | tf_parsing); }
 	| typename_sub1 TEMPLATE explicit_template_type SCOPE
                 { got_scope = $$
-		    = make_typename_type ($1, $3, tf_error); }
+		    = make_typename_type ($1, $3, tf_error | tf_parsing); }
 	;
 
 /* This needs to return a TYPE_DECL for simple names so that we don't

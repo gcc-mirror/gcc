@@ -5,11 +5,11 @@
 
 class Q {
 	template<class T>
-	class X {
+	class X {		// ERROR - Q::X private
 	};
 };
 template<template<class> class XX>
 class Y {
-	XX<int> x_;		// ERROR - Q::X inaccessible XFAIL *-*-*
+	XX<int> x_;
 };
-Y<Q::X> y;			// ERROR - instantiated from here XFAIL *-*-*
+Y<Q::X> y;			// ERROR - instantiated from here

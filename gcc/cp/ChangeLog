@@ -1,3 +1,24 @@
+2002-07-22  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/7347, c++/7348
+	* cp-tree.h (tsubst_flags_t): Add tf_parsing.
+	* decl.c (make_typename_type): Use it.
+	(make_unbound_class_template): Likewise.
+	(lookup_name_real): Don't call type_access_control if scope is
+	template parameter dependent.
+	* parse.y (template_arg): Call make_unbound_class_template with
+	tf_parsing set.
+	(nest_name_specifier): Call make_typename_type with tf_parsing set.
+	(typename_sub0): Likewise.
+	(typename_sub1): Likewise.
+	(instantiate_decl): Push class scope.
+	* pt.c (regenerate_decl_from_template): Call pushclass and popclass
+	for both static variable and member function template.
+	(instantiate_decl) Call pushclass and popclass when tsubst'ing type
+	and arguments.
+	* search.c (type_access_control): Do type access for TEMPLATE_DECL
+	too.
+
 2002-07-20  Roger Sayle  <roger@eyesopen.com>
 
 	* decl2.c (cxx_decode_option): Simplify -fhandle-exceptions

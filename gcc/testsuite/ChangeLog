@@ -1,3 +1,13 @@
+2002-07-22  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/7347, c++/7348
+	* g++.dg/template/access4.C: New test.
+	* g++.dg/template/access5.C: New test.
+	* g++.old-deja/g++.pt/memtemp85.C: Fix access problem.
+	* g++.old-deja/g++.pt/memtemp86.C: Likewise.
+	* g++.old-deja/g++.pt/ttp58.C: Likewise.
+	* g++.old-deja/g++.pt/memtemp89.C: Remove XFAIL.
+
 2002-07-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/gnu89-init-2.c: New test.
