@@ -1,3 +1,7 @@
+2004-04-06  Paul Brook  <paul@codesourcery.com>
+
+	* doc/sourcebuild.texi: Remove obsolete contraint on testcases.
+
 2004-04-05  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (prepare_move_operands): Use emit_call_insn
@@ -12,7 +16,7 @@
 
 2004-04-05  Caroline Tice  <ctice@apple.com>
 
-        * gcc.c (combine_flag): New global variable, for new driver option.
+	* gcc.c (combine_flag): New global variable, for new driver option.
 	(struct compiler): Add two new fields, to be used when
 	combining multiple input files in a single pass (IMA).
 	(default_compilers):  Add values for the new fields to all 
