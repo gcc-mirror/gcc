@@ -2121,7 +2121,7 @@ find_free_reg (class, mode, qty, accept_call_clobbered, just_try_suggested,
 
 #ifdef CLASS_CANNOT_CHANGE_SIZE
   if (qty_changes_size[qty])
-    IOR_HARD_REG_SET (first_used,
+    IOR_HARD_REG_SET (used,
 		      reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE]);
 #endif
 
