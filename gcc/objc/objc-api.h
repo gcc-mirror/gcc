@@ -134,6 +134,16 @@ objc_error_handler objc_set_error_handler(objc_error_handler func);
 extern BOOL objc_trace;
 
 
+/* For every class which happens to have statically allocated instances in
+   this module, one OBJC_STATIC_INSTANCES is allocated by the compiler.
+   INSTANCES is NULL terminated and points to all statically allocated
+   instances of this class.  */
+struct objc_static_instances
+{
+  char *class_name;
+  id instances[0];
+};
+
 /*
 ** Whereas a Module (defined further down) is the root (typically) of a file,
 ** a Symtab is the root of the class and category definitions within the
@@ -150,22 +160,15 @@ typedef struct objc_symtab {
   unsigned short cat_def_cnt;                   /* Number of categories 
                                                   compiled (defined) in the 
                                                   module. */
+
   void      *defs[1];                           /* Variable array of pointers.
                                                   cls_def_cnt of type Class 
                                                   followed by cat_def_cnt of
-                                                  type Category_t. */
+                                                  type Category_t, followed
+						  by a NULL terminated array
+						  of objc_static_instances. */
 } Symtab,   *Symtab_t;
 
-
-/* For every class which happens to have statically allocated instances in
-   this module, one OBJC_STATIC_INSTANCES is allocated by the compiler.
-   INSTANCES is NULL terminated and points to all statically allocated
-   instances of this class.  */
-struct objc_static_instances
-{
-  char *class_name;
-  id instances[0];
-};
 
 /*
 ** The compiler generates one of these structures for each module that
@@ -182,9 +185,6 @@ typedef struct objc_module {
   const char* name;                             /* Name of the file where the 
                                                   module was generated.   The 
                                                   name includes the path. */
-
-  /* Pointer to a NULL terminated array of objc_static_instances.  */
-  struct objc_static_instances **statics;
 
   Symtab_t    symtab;                           /* Pointer to the Symtab of
                                                   the module.  The Symtab
@@ -442,6 +442,12 @@ SEL sel_register_typed_name(const char *name, const char*type);
 BOOL sel_is_mapped (SEL aSel);
 
 extern id class_create_instance(Class class);
+
+/* You should call this function immediately after a bundle has loaded the
+   code. This function sends the +load message to all classes/categories
+   just loaded and then calls the _objc_load_callback function for each
+   class/category. */
+extern void objc_send_load (void);
 
 static inline const char *
 class_get_class_name(Class class)
