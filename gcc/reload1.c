@@ -2078,13 +2078,20 @@ reload (first, global, dumpfile)
     {
       rtx addr = 0;
       int in_struct = 0;
-      if (reg_equiv_mem[i])
+      int is_readonly = 0;
+
+      if (reg_equiv_memory_loc[i])
 	{
-	  addr = XEXP (reg_equiv_mem[i], 0);
-	  in_struct = MEM_IN_STRUCT_P (reg_equiv_mem[i]);
+	  in_struct = MEM_IN_STRUCT_P (reg_equiv_memory_loc[i]);
+	  is_readonly = RTX_UNCHANGING_P (reg_equiv_memory_loc[i]);
 	}
+
+      if (reg_equiv_mem[i])
+	addr = XEXP (reg_equiv_mem[i], 0);
+
       if (reg_equiv_address[i])
 	addr = reg_equiv_address[i];
+
       if (addr)
 	{
 	  if (reg_renumber[i] < 0)
@@ -2092,6 +2099,7 @@ reload (first, global, dumpfile)
 	      rtx reg = regno_reg_rtx[i];
 	      XEXP (reg, 0) = addr;
 	      REG_USERVAR_P (reg) = 0;
+	      RTX_UNCHANGING_P (reg) = is_readonly;
 	      MEM_IN_STRUCT_P (reg) = in_struct;
 	      PUT_CODE (reg, MEM);
 	    }
@@ -2545,7 +2553,14 @@ alter_reg (i, from_reg)
 	{
 	  x = gen_rtx (MEM, GET_MODE (regno_reg_rtx[i]),
 		       plus_constant (XEXP (x, 0), adjust));
-	  RTX_UNCHANGING_P (x) = RTX_UNCHANGING_P (regno_reg_rtx[i]);
+
+	  /* If this was shared among registers, must ensure we never
+	     set it readonly since that can cause scheduling
+	     problems.  Note we would only have in this adjustment
+	     case in any event, since the code above doesn't set it.  */
+
+	  if (from_reg == -1)
+	    RTX_UNCHANGING_P (x) = RTX_UNCHANGING_P (regno_reg_rtx[i]);
 	}
 
       /* Save the stack slot for later.   */
