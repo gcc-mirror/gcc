@@ -2577,9 +2577,9 @@
 (define_insn "*movdi_insn_sp64_novis"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,m,?e,?e,?m")
         (match_operand:DI 1 "input_operand"   "rI,K,J,m,rJ,e,m,e"))]
-  "TARGET_ARCH64 && ! TARGET_VIS &&
-   (register_operand (operands[0], DImode)
-    || reg_or_0_operand (operands[1], DImode))"
+  "TARGET_ARCH64 && ! TARGET_VIS
+   && (register_operand (operands[0], DImode)
+       || reg_or_0_operand (operands[1], DImode))"
   "@
    mov\\t%1, %0
    sethi\\t%%hi(%a1), %0
@@ -8471,14 +8471,14 @@
 (define_insn "*tablejump_sp32"
   [(set (pc) (match_operand:SI 0 "address_operand" "p"))
    (use (label_ref (match_operand 1 "" "")))]
-  "! TARGET_PTR64"
+  "! TARGET_ARCH64"
   "jmp\\t%a0%#"
   [(set_attr "type" "uncond_branch")])
 
 (define_insn "*tablejump_sp64"
   [(set (pc) (match_operand:DI 0 "address_operand" "p"))
    (use (label_ref (match_operand 1 "" "")))]
-  "TARGET_PTR64"
+  "TARGET_ARCH64"
   "jmp\\t%a0%#"
   [(set_attr "type" "uncond_branch")])
 
@@ -8584,7 +8584,7 @@
 	 (match_operand 1 "" ""))
    (clobber (reg:SI 15))]
   ;;- Do not use operand 1 for most machines.
-  "! TARGET_PTR64"
+  "! TARGET_ARCH64"
   "call\\t%a0, %1%#"
   [(set_attr "type" "call")])
 
@@ -8593,7 +8593,7 @@
 	 (match_operand 1 "" ""))
    (clobber (reg:SI 15))]
   ;;- Do not use operand 1 for most machines.
-  "! TARGET_PTR64"
+  "! TARGET_ARCH64"
   "call\\t%a0, %1%#"
   [(set_attr "type" "call")])
 
@@ -8602,7 +8602,7 @@
 	 (match_operand 1 "" ""))
    (clobber (reg:DI 15))]
   ;;- Do not use operand 1 for most machines.
-  "TARGET_PTR64"
+  "TARGET_ARCH64"
   "call\\t%a0, %1%#"
   [(set_attr "type" "call")])
 
@@ -8611,7 +8611,7 @@
 	 (match_operand 1 "" ""))
    (clobber (reg:DI 15))]
   ;;- Do not use operand 1 for most machines.
-  "TARGET_PTR64"
+  "TARGET_ARCH64"
   "call\\t%a0, %1%#"
   [(set_attr "type" "call")])
 
@@ -8706,7 +8706,7 @@
 	      (match_operand 2 "" "")))
    (clobber (reg:SI 15))]
   ;;- Do not use operand 2 for most machines.
-  "! TARGET_PTR64"
+  "! TARGET_ARCH64"
   "call\\t%a1, %2%#"
   [(set_attr "type" "call")])
 
@@ -8716,7 +8716,7 @@
 	      (match_operand 2 "" "")))
    (clobber (reg:SI 15))]
   ;;- Do not use operand 2 for most machines.
-  "! TARGET_PTR64"
+  "! TARGET_ARCH64"
   "call\\t%a1, %2%#"
   [(set_attr "type" "call")])
 
@@ -8726,7 +8726,7 @@
 	      (match_operand 2 "" "")))
    (clobber (reg:DI 15))]
   ;;- Do not use operand 2 for most machines.
-  "TARGET_PTR64"
+  "TARGET_ARCH64"
   "call\\t%a1, %2%#"
   [(set_attr "type" "call")])
 
@@ -8736,7 +8736,7 @@
 	      (match_operand 2 "" "")))
    (clobber (reg:DI 15))]
   ;;- Do not use operand 2 for most machines.
-  "TARGET_PTR64"
+  "TARGET_ARCH64"
   "call\\t%a1, %2%#"
   [(set_attr "type" "call")])
 
@@ -8780,7 +8780,7 @@
   [(call (mem:SI (match_operand:SI 0 "symbolic_operand" "s"))
 	 (match_operand 1 "" ""))
    (return)]
-  "! TARGET_PTR64"
+  "! TARGET_ARCH64"
   "* return output_sibcall(insn, operands[0]);"
   [(set_attr "type" "sibcall")])
 
@@ -8788,7 +8788,7 @@
   [(call (mem:SI (match_operand:DI 0 "symbolic_operand" "s"))
 	 (match_operand 1 "" ""))
    (return)]
-  "TARGET_PTR64"
+  "TARGET_ARCH64"
   "* return output_sibcall(insn, operands[0]);"
   [(set_attr "type" "sibcall")])
 
@@ -8804,7 +8804,7 @@
 	(call (mem:SI (match_operand:SI 1 "symbolic_operand" "s"))
 	      (match_operand 2 "" "")))
    (return)]
-  "! TARGET_PTR64"
+  "! TARGET_ARCH64"
   "* return output_sibcall(insn, operands[1]);"
   [(set_attr "type" "sibcall")])
 
@@ -8813,7 +8813,7 @@
 	(call (mem:SI (match_operand:DI 1 "symbolic_operand" "s"))
 	      (match_operand 2 "" "")))
    (return)]
-  "TARGET_PTR64"
+  "TARGET_ARCH64"
   "* return output_sibcall(insn, operands[1]);"
   [(set_attr "type" "sibcall")])
 
@@ -8913,13 +8913,13 @@
 
 (define_insn "*branch_sp32"
   [(set (pc) (match_operand:SI 0 "address_operand" "p"))]
-  "! TARGET_PTR64"
+  "! TARGET_ARCH64"
  "jmp\\t%a0%#"
  [(set_attr "type" "uncond_branch")])
  
 (define_insn "*branch_sp64"
   [(set (pc) (match_operand:DI 0 "address_operand" "p"))]
-  "TARGET_PTR64"
+  "TARGET_ARCH64"
   "jmp\\t%a0%#"
   [(set_attr "type" "uncond_branch")])
 
