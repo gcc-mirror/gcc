@@ -131,6 +131,7 @@ extern "Java"
       class ArithmeticException;
       class ArrayIndexOutOfBoundsException;
       class ArrayStoreException;
+      class AssertionError;
       class Boolean;
       class Byte;
       class CPlusPlusDemangler;
@@ -204,7 +205,6 @@ extern "Java"
       class ThreadDeath;
       class ThreadGroup;
       class ThreadLocal;
-      class ThreadLocal$Value;
       class Throwable;
       class UnknownError;
       class UnsatisfiedLinkError;
@@ -248,7 +248,6 @@ extern "Java"
       class ArrayList;
       class Arrays;
       class Arrays$ArrayList;
-      class Arrays$ListImpl;
       class BasicMapEntry;
       class BitSet;
       class Calendar;
@@ -380,14 +379,15 @@ extern "Java"
         class InflaterInputStream;
         class ZipConstants;
         class ZipEntry;
-        class ZipEnumeration;
         class ZipException;
         class ZipFile;
+        class ZipFile$PartialInputStream;
+        class ZipFile$ZipEntryEnumeration;
         class ZipInputStream;
         class ZipOutputStream;
       };
     };
-  };  
+  };
 };
   
 typedef struct java::lang::Object* jobject;
