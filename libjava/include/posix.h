@@ -60,6 +60,12 @@ _Jv_platform_close_on_exec (jint fd)
   ::fcntl (fd, F_SETFD, FD_CLOEXEC);
 }
 
+inline void
+_Jv_platform_usleep (unsigned long usecs)
+{
+  usleep (usecs);
+}
+
 #ifndef DISABLE_JAVA_NET
 
 #ifndef HAVE_SOCKLEN_T
