@@ -63,6 +63,10 @@ struct code_ptr
 
 static struct extraction *extractions;
 
+/* Holds an array of names indexed by insn_code_number.  */
+static char **insn_name_ptr = 0;
+static int insn_name_ptr_size = 0;
+
 /* Number instruction patterns handled, starting at 0 for first one.  */
 
 static int insn_code_number;
@@ -96,6 +100,7 @@ static struct code_ptr *peepholes;
 static void gen_insn PROTO ((rtx));
 static void walk_rtx PROTO ((rtx, const char *));
 static void print_path PROTO ((const char *));
+static void record_insn_name PROTO((int, const char *));
 
 static void
 gen_insn (insn)
@@ -384,9 +389,10 @@ main (argc, argv)
 {
   rtx desc;
   FILE *infile;
-  register int c, i;
+  int c, i;
   struct extraction *p;
   struct code_ptr *link;
+  const char *name;
 
   progname = "genextract";
   obstack_init (rtl_obstack);
@@ -447,6 +453,7 @@ from the machine description file `md'.  */\n\n");
       desc = read_rtx (infile);
       if (GET_CODE (desc) == DEFINE_INSN)
 	{
+	  record_insn_name (insn_code_number, XSTR (desc, 0));
 	  gen_insn (desc);
 	  ++insn_code_number;
 	}
@@ -487,8 +494,15 @@ from the machine description file `md'.  */\n\n");
   for (p = extractions; p; p = p->next)
     {
       for (link = p->insns; link; link = link->next)
-	printf ("    case %d:\n", link->insn_code);
-
+	{
+	  i = link->insn_code;
+	  name = get_insn_name (i);
+	  if (name)
+	    printf ("    case %d:  /* %s */\n", i, name);
+	  else
+	    printf ("    case %d:\n", i);
+	}
+      
       for (i = 0; i < p->op_count; i++)
 	{
 	  if (p->oplocs[i] == 0)
@@ -531,5 +545,42 @@ const char *
 get_insn_name (code)
      int code ATTRIBUTE_UNUSED;
 {
-  return NULL;
+  if (code < insn_name_ptr_size)
+    return insn_name_ptr[code];
+  else
+    return NULL;
 }
+
+static void
+record_insn_name (code, name)
+     int code;
+     const char *name;
+{
+  static const char *last_real_name = "insn";
+  static int last_real_code = 0;
+  char *new;
+
+  if (insn_name_ptr_size <= code)
+    {
+      int new_size;
+      new_size = (insn_name_ptr_size ? insn_name_ptr_size * 2 : 512);
+      insn_name_ptr =
+	(char **) xrealloc (insn_name_ptr, sizeof(char *) * new_size);
+      memset (insn_name_ptr + insn_name_ptr_size, 0, 
+	      sizeof(char *) * (new_size - insn_name_ptr_size));
+      insn_name_ptr_size = new_size;
+    }
+
+  if (!name || name[0] == '\0')
+    {
+      new = xmalloc (strlen (last_real_name) + 10);
+      sprintf (new, "%s+%d", last_real_name, code - last_real_code);
+    }
+  else
+    {
+      last_real_name = new = xstrdup (name);
+      last_real_code = code;
+    }
+  
+  insn_name_ptr[code] = new;
+}  
