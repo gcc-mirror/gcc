@@ -3635,7 +3635,7 @@ finish_decl (decl, init, asmspec_tree)
       if (failure == 1)
 	error_with_decl (decl, "initializer fails to determine size of `%s'");
 
-      if (failure == 2)
+      else if (failure == 2)
 	{
 	  if (do_default)
 	    error_with_decl (decl, "array size missing in `%s'");
@@ -3652,8 +3652,8 @@ finish_decl (decl, init, asmspec_tree)
       /* TYPE_MAX_VALUE is always one less than the number of elements
 	 in the array, because we start counting at zero.  Therefore,
 	 warn only if the value is less than zero.  */
-      if (pedantic && TYPE_DOMAIN (type) != 0
-	  && tree_int_cst_sgn (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) < 0)
+      else if (pedantic && TYPE_DOMAIN (type) != 0
+	      && tree_int_cst_sgn (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) < 0)
 	error_with_decl (decl, "zero or negative size array `%s'");
 
       layout_decl (decl, 0);
