@@ -1,3 +1,8 @@
+2005-01-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.md (save_register_windowdi): Add missing mode.
+	(save_register_windowsi): Likewise.
+
 2005-01-04  Richard Henderson  <rth@redhat.com>
 
 	* tree-mudflap.c (mf_varname_tree): Fix thinko setting declname.

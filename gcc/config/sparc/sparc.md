@@ -7723,9 +7723,9 @@
 
 (define_insn "save_register_windowdi"
   [(set (reg:DI 30) (reg:DI 14))
-   (set (reg:DI 14) (unspec_volatile [(reg:DI 14)
-				      (match_operand:DI 0 "arith_operand" "rI")]
-				     UNSPECV_SAVEW))
+   (set (reg:DI 14) (unspec_volatile:DI [(reg:DI 14)
+					 (match_operand:DI 0 "arith_operand" "rI")]
+				        UNSPECV_SAVEW))
    (set (reg:DI 31) (reg:DI 15))]
   "TARGET_ARCH64"
   "save\t%%sp, %0, %%sp"
@@ -7733,9 +7733,9 @@
 
 (define_insn "save_register_windowsi"
   [(set (reg:SI 30) (reg:SI 14))
-   (set (reg:SI 14) (unspec_volatile [(reg:SI 14)
-				      (match_operand:SI 0 "arith_operand" "rI")]
-				     UNSPECV_SAVEW))
+   (set (reg:SI 14) (unspec_volatile:SI [(reg:SI 14)
+					 (match_operand:SI 0 "arith_operand" "rI")]
+				        UNSPECV_SAVEW))
    (set (reg:SI 31) (reg:SI 15))]
   "!TARGET_ARCH64"
   "save\t%%sp, %0, %%sp"
