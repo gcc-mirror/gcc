@@ -4217,12 +4217,12 @@ void
 assemble_alias (decl, target)
      tree decl, target;
 {
-#ifdef ASM_OUTPUT_DEF
   char *name;
 
   make_decl_rtl (decl, (char *) 0, 1);
   name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
 
+#ifdef ASM_OUTPUT_DEF
   /* Make name accessible from other files, if appropriate.  */
 
   if (TREE_PUBLIC (decl))
@@ -4241,7 +4241,15 @@ assemble_alias (decl, target)
   ASM_OUTPUT_DEF (asm_out_file, name, IDENTIFIER_POINTER (target));
   TREE_ASM_WRITTEN (decl) = 1;
 #else
-  warning ("alias definitions not supported in this configuration");
+#ifdef ASM_OUTPUT_WEAK_ALIAS
+  if (! DECL_WEAK (decl))
+    warning ("only weak aliases are supported in this configuration");
+
+  ASM_OUTPUT_WEAK_ALIAS (asm_out_file, name, IDENTIFIER_POINTER (target));
+  TREE_ASM_WRITTEN (decl) = 1;
+#else
+  warning ("alias definitions not supported in this configuration; ignored");
+#endif
 #endif
 }
 
