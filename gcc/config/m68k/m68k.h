@@ -406,7 +406,7 @@ extern int target_flags;
 #endif
 
 /* This defines the register which is used to hold the offset table for PIC.  */
-#define PIC_OFFSET_TABLE_REGNUM 13
+#define PIC_OFFSET_TABLE_REGNUM (flag_pic ? 13 : INVALID_REGNUM)
 
 #ifndef SUPPORT_SUN_FPA
 
@@ -488,43 +488,43 @@ extern int target_flags;
 
 #ifdef SUPPORT_SUN_FPA
 
-#define CONDITIONAL_REGISTER_USAGE \
-{ 						\
-  int i; 					\
-  HARD_REG_SET x; 				\
-  if (! TARGET_FPA)				\
-    { 						\
-      COPY_HARD_REG_SET (x, reg_class_contents[(int)FPA_REGS]); \
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ ) \
-       if (TEST_HARD_REG_BIT (x, i)) 		\
-	fixed_regs[i] = call_used_regs[i] = 1; 	\
-    } 						\
-  if (! TARGET_68881)				\
-    { 						\
-      COPY_HARD_REG_SET (x, reg_class_contents[(int)FP_REGS]); \
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ ) \
-       if (TEST_HARD_REG_BIT (x, i)) 		\
-	fixed_regs[i] = call_used_regs[i] = 1; 	\
-    } 						\
-  if (flag_pic)					\
-    fixed_regs[PIC_OFFSET_TABLE_REGNUM]		\
-      = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;\
+#define CONDITIONAL_REGISTER_USAGE				\
+{ 								\
+  int i; 							\
+  HARD_REG_SET x; 						\
+  if (! TARGET_FPA)						\
+    { 								\
+      COPY_HARD_REG_SET (x, reg_class_contents[(int)FPA_REGS]);	\
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ )		\
+       if (TEST_HARD_REG_BIT (x, i)) 				\
+	fixed_regs[i] = call_used_regs[i] = 1; 			\
+    } 								\
+  if (! TARGET_68881)						\
+    { 								\
+      COPY_HARD_REG_SET (x, reg_class_contents[(int)FP_REGS]);	\
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ )		\
+       if (TEST_HARD_REG_BIT (x, i)) 				\
+	fixed_regs[i] = call_used_regs[i] = 1; 			\
+    } 								\
+  if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)		\
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM]				\
+      = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
 }
 #else
-#define CONDITIONAL_REGISTER_USAGE \
-{ 						\
-  int i; 					\
-  HARD_REG_SET x; 				\
-  if (! TARGET_68881)				\
-    { 						\
-      COPY_HARD_REG_SET (x, reg_class_contents[(int)FP_REGS]); \
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ ) \
-       if (TEST_HARD_REG_BIT (x, i)) 		\
-	fixed_regs[i] = call_used_regs[i] = 1; 	\
-    } 						\
-  if (flag_pic)					\
-    fixed_regs[PIC_OFFSET_TABLE_REGNUM]		\
-      = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;\
+#define CONDITIONAL_REGISTER_USAGE				\
+{ 								\
+  int i; 							\
+  HARD_REG_SET x; 						\
+  if (! TARGET_68881)						\
+    { 								\
+      COPY_HARD_REG_SET (x, reg_class_contents[(int)FP_REGS]);	\
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++ )		\
+       if (TEST_HARD_REG_BIT (x, i)) 				\
+	fixed_regs[i] = call_used_regs[i] = 1; 			\
+    } 								\
+  if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)		\
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM]				\
+      = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
 }
 
 #endif /* defined SUPPORT_SUN_FPA */

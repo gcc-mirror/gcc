@@ -853,7 +853,7 @@ extern const char * structure_size_string;
 	   regno <= LAST_ARM_FP_REGNUM; ++regno)		\
 	fixed_regs[regno] = call_used_regs[regno] = 1;		\
     }								\
-  if (flag_pic)							\
+  if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)		\
     {								\
       fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;			\
       call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
