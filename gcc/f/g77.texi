@@ -2,7 +2,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-update 2001-11-14
+@set last-update 2001-11-20
 @set copyrights-g77 1995,1996,1997,1998,1999,2000,2001
 
 @include root.texi
@@ -380,7 +380,7 @@ So far, this has resulted in the three, somewhat
 experimental, options added by @command{g77} to the @command{gcc}
 compiler and its back end.
 
-(These, in turn, had made their way into the @command{egcs}
+(These, in turn, had made their way into the @code{egcs}
 version of the compiler, and do not exist in @command{gcc}
 version 2.8 or versions of @command{g77} based on that version
 of @command{gcc}.)
@@ -409,7 +409,7 @@ The default is that people wish to remain anonymous.
 @cindex improvements, funding
 
 James Craig Burley (@email{@value{email-burley}}), the original author
-of g77, stopped working on it in September 1999
+of @command{g77}, stopped working on it in September 1999
 (He has a web page at @uref{@value{www-burley}}.)
 
 GNU Fortran is currently maintained by Toon Moene
@@ -626,7 +626,7 @@ the program (whether to diagnose questionable usage
 of the language), how much time to spend making
 the generated machine code run faster, and so on.
 
-@cindex components of g77
+@cindex components of @command{g77}
 @cindex @command{g77}, components of
 @command{g77} consists of several components:
 
@@ -5686,13 +5686,13 @@ runtime---specifically the I/O system---is initialized.
 However, to use the @command{g77} intrinsics @code{GETARG} and @code{IARGC},
 either the @code{main} routine from the @file{libg2c} library must be used,
 or the @code{f_setarg} routine
-(new as of @command{egcs} version 1.1 and @command{g77} version 0.5.23)
+(new as of @code{egcs} version 1.1 and @command{g77} version 0.5.23)
 must be called with the appropriate @code{argc} and @code{argv} arguments
 prior to the program calling @code{GETARG} or @code{IARGC}.
 
 To provide more flexibility for mixed-language programming
 involving @command{g77} while allowing for shared libraries,
-as of @command{egcs} version 1.1 and @command{g77} version 0.5.23,
+as of @code{egcs} version 1.1 and @command{g77} version 0.5.23,
 @command{g77}'s @code{main} routine in @code{libg2c}
 does the following, in order:
 

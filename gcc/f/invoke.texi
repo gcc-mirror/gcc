@@ -382,7 +382,7 @@ by the @command{g77} and @command{gcc} commands in a GNU Fortran installation:
 @item -fversion
 Ensure that the @command{g77} version of the compiler phase is reported,
 if run,
-and, starting in @command{egcs} version 1.1,
+and, starting in @code{egcs} version 1.1,
 that internal consistency checks in the @file{f771} program are run.
 
 This option is supplied automatically when @option{-v} or @option{--verbose}
@@ -396,7 +396,7 @@ for @samp{.c} files.
 @cindex options, -fset-g77-defaults
 @item -fset-g77-defaults
 @emph{Version info:}
-This option was obsolete as of @command{egcs}
+This option was obsolete as of @code{egcs}
 version 1.1.
 The effect is instead achieved
 by the @code{lang_init_options} routine
@@ -415,8 +415,8 @@ The description of this option is provided so that users seeing
 it in the output of, say, @samp{g77 -v} understand why it is
 there.
 
-@cindex modifying g77
-@cindex code, modifying
+@cindex modifying @command{g77}
+@cindex @command{g77}, modifying
 Also, developers who run @code{f771} directly might want to specify it
 by hand to get the same defaults as they would running @code{f771}
 via @command{g77} or @command{gcc}
@@ -1947,7 +1947,7 @@ the @command{gcc} back end that provide direct support of
 
 (@command{gcc} had some bugs in its back-end support
 for @code{complex} arithmetic, due primarily to the support not being
-completed as of version 2.8.1 and @command{egcs} 1.1.2.)
+completed as of version 2.8.1 and @code{egcs} 1.1.2.)
 
 Use @option{-femulate-complex} if you suspect code-generation bugs,
 or experience compiler crashes,
