@@ -1,3 +1,7 @@
+2002-03-12  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/20020312-1.c: New test case.
+
 2002-03-11  Aldy Hernandez  <aldyh@redhat.com>
 
         * gcc.dg/altivec-1.c: Cleanup and use altivec.h.
@@ -111,7 +115,7 @@ Thu Mar  7 10:05:31 2002  Jeffrey A Law  (law@redhat.com)
 	* g++.old-deja/g++.pt/friend23.C: Likewise.
 	* g++.old-deja/g++.pt/infinite1.C: Likewise.
 	* g++.old-deja/g++.robertl/eb128.C: Likewise.
-	
+
 2002-02-27  Geoffrey Keating  <geoffk@redhat.com>
 
 	* gcc.c-torture/execute/20020225-2.c: New test.
@@ -270,7 +274,7 @@ Thu Mar  7 10:05:31 2002  Jeffrey A Law  (law@redhat.com)
 
 2002-02-12  David Billinghurst <David.Billinghurst@riotinto.com>
 
-	* gcc.dg/c99-flex-array-2.c: Add -std=iso9899:1999 
+	* gcc.dg/c99-flex-array-2.c: Add -std=iso9899:1999
 
 2002-02-10  Kazu Hirata  <kazu@hxi.com>
 
@@ -315,7 +319,7 @@ Thu Mar  7 10:05:31 2002  Jeffrey A Law  (law@redhat.com)
 2002-02-07  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	PR fortran/5473
-	* g77.dg/pr5473.f: Now dg-error.  Add additional cases.  
+	* g77.dg/pr5473.f: Now dg-error.  Add additional cases.
 
 2002-02-07  Richard Henderson  <rth@redhat.com>
 
@@ -512,7 +516,7 @@ Thu Mar  7 10:05:31 2002  Jeffrey A Law  (law@redhat.com)
 	* gcc.c-torture/execute/20020127-1.c: New test.
 
 2002-01-27  David Billinghurst  <David.Billinghurst@riotinto.com>
- 
+
 	* g77.dg/f77-edit-i-in.f: New test
 	* g77.dg/f77-edit-i-out.f: New test
 
