@@ -339,12 +339,12 @@ output_move_double (operands)
 	  && reg_mentioned_p (latehalf[0], XEXP (operands[1], 0)))
 	{
 	  /* If both halves of dest are used in the src memory address,
-	     add the two regs and put them in the low reg (operands[0]).
+	     load the destination address into the low reg (operands[0]).
 	     Then it works to load latehalf first.  */
 	  rtx xops[2];
-	  xops[0] = latehalf[0];
+	  xops[0] = XEXP (operands[1], 0);
 	  xops[1] = operands[0];
-	  output_asm_insn ("addd %0,%1", xops);
+	  output_asm_insn ("addr %a0,%1", xops);
 	  operands[1] = gen_rtx (MEM, DImode, operands[0]);
 	  latehalf[1] = adj_offsettable_operand (operands[1], 4);
 	  /* The first half has the overlap, Do the late half first.  */
