@@ -1,3 +1,8 @@
+2000-08-14  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* configure.in: Accept *-*-linux* not just *-*-linux-gnu*.
+	Honor --disable-threads.
+
 2000-08-11  Jason Merrill  <jason@redhat.com>
 
 	* std/straits.h (is_del): Boolify with !!.

@@ -579,7 +579,7 @@ irix5* | irix6*)
   ;;
 
 # This must be Linux ELF.
-linux-gnu*)
+linux*)
   case "$host_cpu" in
   alpha* | i*86 | powerpc* | sparc* | ia64* )
     lt_cv_deplibs_check_method=pass_all ;;

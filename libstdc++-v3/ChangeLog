@@ -1,3 +1,7 @@
+2000-08-14  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* configure: Regenerate after change to ../libtool.m4.
+
 2000-08-10  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* bits/locale_facets.tcc: Formatting tweaks.

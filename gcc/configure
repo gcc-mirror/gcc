@@ -1484,7 +1484,7 @@ for ac_kw in inline __inline__ __inline; do
 #include "confdefs.h"
 
 int main() {
-} $ac_kw foo() {
+} int $ac_kw foo() {
 ; return 0; }
 EOF
 if { (eval echo configure:1491: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
@@ -1514,7 +1514,7 @@ esac
 
 
 # Find some useful tools
-for ac_prog in gawk mawk nawk awk
+for ac_prog in mawk gawk nawk awk
 do
 # Extract the first word of "$ac_prog", so it can be a program name with args.
 set dummy $ac_prog; ac_word=$2
@@ -3754,9 +3754,9 @@ for machine in $build $host $target; do
 		;;
 	esac	
 
-	# Common parts for linux-gnu and openbsd systems
+	# Common parts for linux and openbsd systems
 	case $machine in
-	*-*-linux-gnu*)
+	*-*-linux*)
 		xm_defines="HAVE_ATEXIT POSIX BSTRING"
 		;;
 	*-*-openbsd*)
@@ -3831,7 +3831,7 @@ for machine in $build $host $target; do
 		#prefix='$$INTERIX_ROOT'/usr/contrib
 		#local_prefix='$$INTERIX_ROOT'/usr/contrib
 		;;
-	alpha*-*-linux-gnuecoff*)
+	alpha*-*-linux*ecoff*)
 		tm_file="${tm_file} alpha/linux-ecoff.h alpha/linux.h"
 		target_cpu_default="MASK_GAS"
 		tmake_file="alpha/t-alpha alpha/t-ieee"
@@ -3839,7 +3839,7 @@ for machine in $build $host $target; do
 		xmake_file=none
 		gas=yes gnu_ld=yes
 		;;
-	alpha*-*-linux-gnulibc1*)
+	alpha*-*-linux*libc1*)
 		tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h"
 		target_cpu_default="MASK_GAS"
 		tmake_file="t-linux t-linux-gnulibc1 alpha/t-alpha alpha/t-crtbe alpha/t-ieee"
@@ -3850,7 +3850,7 @@ for machine in $build $host $target; do
  			thread_file='posix'
  		fi
 		;;
-	alpha*-*-linux-gnu*)
+	alpha*-*-linux*)
 		tm_file="${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h"
 		target_cpu_default="MASK_GAS"
 		tmake_file="t-linux alpha/t-crtbe alpha/t-alpha alpha/t-ieee"
@@ -3980,14 +3980,14 @@ for machine in $build $host $target; do
 		tmake_file="t-netbsd arm/t-netbsd"
 		use_collect2=yes
 		;;
-	arm*-*-linux-gnuaout*)		# ARM GNU/Linux with a.out
+	arm*-*-linux*aout*)		# ARM GNU/Linux with a.out
 		cpu_type=arm
 		xmake_file=x-linux
 		tm_file=arm/linux-aout.h
 		tmake_file=arm/t-linux
 		gnu_ld=yes
 		;;
-	arm*-*-linux-gnuoldld*)		# ARM GNU/Linux with old ELF linker
+	arm*-*-linux*oldld*)		# ARM GNU/Linux with old ELF linker
 		xm_file=arm/xm-linux.h
 		xmake_file=x-linux
 		tm_file="arm/linux-oldld.h arm/linux-elf.h"
@@ -4005,7 +4005,7 @@ for machine in $build $host $target; do
 			;;
 		esac
 		;;
-	arm*-*-linux-gnu*)		# ARM GNU/Linux with ELF
+	arm*-*-linux*)		# ARM GNU/Linux with ELF
 		xm_file=arm/xm-linux.h
 		xmake_file=x-linux
 		tm_file="arm/linux-elf.h"
@@ -4567,7 +4567,7 @@ for machine in $build $host $target; do
 		tmake_file="$tmake_file i386/t-i386bare"
 		install_headers_dir=install-headers-cpio
 		;;
-	i[34567]86-*-linux-gnuoldld*)	# Intel 80386's running GNU/Linux
+	i[34567]86-*-linux*oldld*)	# Intel 80386's running GNU/Linux
 					# pre BFD linkers
 		xmake_file=x-linux-aout
 		tmake_file="t-linux-aout i386/t-crtstuff"
@@ -4575,14 +4575,14 @@ for machine in $build $host $target; do
 		gnu_ld=yes
 		float_format=i386
 		;;
-	i[34567]86-*-linux-gnuaout*)	# Intel 80386's running GNU/Linux
+	i[34567]86-*-linux*aout*)	# Intel 80386's running GNU/Linux
 		xmake_file=x-linux-aout
 		tmake_file="t-linux-aout i386/t-crtstuff"
 		tm_file=i386/linux-aout.h
 		gnu_ld=yes
 		float_format=i386
 		;;
-	i[34567]86-*-linux-gnulibc1)	# Intel 80386's running GNU/Linux
+	i[34567]86-*-linux*libc1)	# Intel 80386's running GNU/Linux
 					# GNU/Linux C library 5
 		xmake_file=x-linux	
 		tm_file=i386/linux.h	
@@ -4594,7 +4594,7 @@ for machine in $build $host $target; do
  			thread_file='single'
  		fi
 		;;
-	i[34567]86-*-linux-gnu*)	# Intel 80386's running GNU/Linux
+	i[34567]86-*-linux*)	# Intel 80386's running GNU/Linux
 					# aka GNU/Linux C library 6
 		xmake_file=x-linux
 		tm_file=i386/linux.h
@@ -5405,7 +5405,7 @@ for machine in $build $host $target; do
 		extra_headers=math-68881.h
 		float_format=m68k
 		;;
-	m68k-*-linux-gnuaout*)		# Motorola m68k's running GNU/Linux
+	m68k-*-linux*aout*)		# Motorola m68k's running GNU/Linux
 					# with a.out format
 		xmake_file=x-linux
 		tm_file=m68k/linux-aout.h
@@ -5414,7 +5414,7 @@ for machine in $build $host $target; do
 		float_format=m68k
 		gnu_ld=yes
 		;;
-	m68k-*-linux-gnulibc1)		# Motorola m68k's running GNU/Linux
+	m68k-*-linux*libc1)		# Motorola m68k's running GNU/Linux
 					# with ELF format using the
 					# GNU/Linux C library 5
 		xmake_file=x-linux
@@ -5425,7 +5425,7 @@ for machine in $build $host $target; do
 		float_format=m68k
 		gnu_ld=yes
 		;;
-	m68k-*-linux-gnu*)		# Motorola m68k's running GNU/Linux
+	m68k-*-linux*)		# Motorola m68k's running GNU/Linux
 					# with ELF format using glibc 2
 					# aka the GNU/Linux C library 6.
 		xmake_file=x-linux
@@ -6150,7 +6150,7 @@ for machine in $build $host $target; do
 		tmake_file="rs6000/t-ppcgas t-rtems rs6000/t-ppccomm"
 		extra_headers=ppc-asm.h
 		;;
-	powerpc-*-linux-gnulibc1)
+	powerpc-*-linux*libc1)
 		tm_file="rs6000/sysv4.h rs6000/linux.h"
 		xm_file=rs6000/xm-sysv4.h
 		out_file=rs6000/rs6000.c
@@ -6161,7 +6161,7 @@ for machine in $build $host $target; do
 			thread_file='posix'
 		fi
 		;;
-	powerpc-*-linux-gnu*)
+	powerpc-*-linux*)
 		tm_file="rs6000/sysv4.h rs6000/linux.h"
 		xm_file="rs6000/xm-sysv4.h"
 		xm_defines="USG ${xm_defines}"
@@ -6343,13 +6343,13 @@ for machine in $build $host $target; do
 		#float_format=i128
 		float_format=i64
 		;;
-	sparc-*-linux-gnuaout*)		# Sparc's running GNU/Linux, a.out
+	sparc-*-linux*aout*)		# Sparc's running GNU/Linux, a.out
 		xm_file="${xm_file} sparc/xm-linux.h"
 		tm_file=sparc/linux-aout.h
 		xmake_file=x-linux
 		gnu_ld=yes
 		;;
-	sparc-*-linux-gnulibc1*)	# Sparc's running GNU/Linux, libc5
+	sparc-*-linux*libc1*)	# Sparc's running GNU/Linux, libc5
 		xm_file="${xm_file} sparc/xm-linux.h"
 		xmake_file=x-linux
 		tm_file=sparc/linux.h
@@ -6358,7 +6358,7 @@ for machine in $build $host $target; do
 		gnu_ld=yes
 		float_format=sparc
 		;;
-	sparc-*-linux-gnu*)		# Sparc's running GNU/Linux, libc6
+	sparc-*-linux*)		# Sparc's running GNU/Linux, libc6
 		xm_file="${xm_file} sparc/xm-linux.h"
 		xmake_file=x-linux
 		tm_file=sparc/linux.h
@@ -6648,7 +6648,7 @@ for machine in $build $host $target; do
 	esac
 
 	case $machine in
-	*-*-linux-gnu*)
+	*-*-linux*)
 	        ;; # Existing GNU/Linux systems do not use the GNU setup.
 	*-*-gnu*)
 		# On the GNU system, the setup is just about the same on
@@ -7157,7 +7157,7 @@ else
 int main() {
 
 /* Ultrix mips cc rejects this.  */
-typedef int charset[2]; const charset x;
+typedef int charset[2]; const charset x = {0,0};
 /* SunOS 4.1.1 cc rejects this.  */
 char const *const *ccp;
 char **p;
@@ -7298,7 +7298,7 @@ else
 #include "confdefs.h"
 #include <alloca.h>
 int main() {
-char *p = alloca(2 * sizeof(int));
+void *p = alloca(2 * sizeof(int));
 ; return 0; }
 EOF
 if { (eval echo configure:7305: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
