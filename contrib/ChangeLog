@@ -1,3 +1,8 @@
+1999-08-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc_update: New file.
+	* egcs_update: Renamed to gcc_update.
+
 1999-08-09  Robert Lipe  <robertlipe@usa.net>
 
 	* test_summary: Quote curly braces in 1999-07-03 change.
