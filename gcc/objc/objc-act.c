@@ -581,6 +581,11 @@ generate_struct_by_value_array ()
 }
 
 void
+lang_init_options ()
+{
+}
+
+void
 lang_init ()
 {
 #if !USE_CPPLIB
