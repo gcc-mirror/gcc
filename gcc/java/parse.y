@@ -10600,9 +10600,9 @@ find_most_specific_methods_list (list)
       TREE_CHAIN (new_list) = NULL_TREE;
     }
 
-  /* We have several, we couldn't find a most specific, all but one are
-     abstract, we pick the only non abstract one. */
-  if (candidates > 0 && !max && (candidates == abstract+1))
+  /* We have several (we couldn't find a most specific), all but one
+     are abstract, we pick the only non abstract one. */
+  if (candidates > 0 && (candidates == abstract+1))
     {
       for (current = new_list; current; current = TREE_CHAIN (current))
 	if (!METHOD_ABSTRACT (TREE_VALUE (current)))
