@@ -27,6 +27,9 @@ Boston, MA 02111-1307, USA.  */
 #else
 #include <varargs.h>
 #endif
+#if !defined (va_copy) && defined (__va_copy)
+# define va_copy(d,s)  __va_copy((d),(s))
+#endif
 #include <stdio.h>
 #ifdef HAVE_STRING_H
 #include <string.h>
