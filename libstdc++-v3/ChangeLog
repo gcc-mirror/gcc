@@ -1,5 +1,11 @@
 2004-02-16  Paolo Carlini  <pcarlini@suse.de>
 
+	* testsuite/ext/enc_filebuf/char/13189.cc: Don't check
+	for now that the catch block is not reached.
+	* testsuite/ext/enc_filebuf/wchar_t/13189.cc: Likewise.
+
+2004-02-16  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc (money_get::do_get(string_type&)):
 	Fix parsing of the remaining sign characters.
 	* 22_locale/money_get/get/char/2.cc: Tweak: now, correctly,
