@@ -4581,7 +4581,33 @@ mark_used (tree decl)
       && DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl)
       && (!DECL_EXPLICIT_INSTANTIATION (decl)
 	  || (TREE_CODE (decl) == FUNCTION_DECL && DECL_INLINE (decl))))
-    instantiate_decl (decl, /*defer_ok=*/1);
+    {
+      bool defer;
+
+      /* Normally, we put off instantiating functions in order to
+	 improve compile times.  Maintaining a stack of active
+	 functions is expensive, and the inliner knows to
+	 instantiate any functions it might need.
+
+	 However, if instantiating this function might help us mark
+	 the current function TREE_NOTHROW, we go ahead and
+	 instantiate it now.  */
+      defer = (!flag_exceptions
+	       || TREE_CODE (decl) != FUNCTION_DECL
+	       /* If the called function can't throw, we don't need to
+		  generate its body to find that out.  */
+	       || TREE_NOTHROW (decl)
+	       || !cfun
+	       /* If we already know the current function can't throw,
+		  then we don't need to work hard to prove it.  */
+	       || TREE_NOTHROW (current_function_decl)
+	       /* If we already know that the current function *can*
+		  throw, there's no point in gathering more
+		  information.  */
+	       || cp_function_chain->can_throw);
+
+      instantiate_decl (decl, defer);
+    }
 }
 
 /* Called when a class-head is encountered.  TAG_KIND is the class-key

@@ -10948,13 +10948,8 @@ instantiate_decl (d, defer_ok)
       SET_DECL_RTL (d, NULL_RTX);
 
       DECL_IN_AGGR_P (d) = 0;
-      if (DECL_INTERFACE_KNOWN (d))
-	DECL_EXTERNAL (d) = ! DECL_NOT_REALLY_EXTERN (d);
-      else
-	{
-	  DECL_EXTERNAL (d) = 1;
-	  DECL_NOT_REALLY_EXTERN (d) = 1;
-	}
+      import_export_decl (d);
+      DECL_EXTERNAL (d) = ! DECL_NOT_REALLY_EXTERN (d);
       cp_finish_decl (d, 
 		      (!DECL_INITIALIZED_IN_CLASS_P (d) 
 		       ? DECL_INITIAL (d) : NULL_TREE),
@@ -11007,7 +11002,9 @@ instantiate_decl (d, defer_ok)
       local_specializations = saved_local_specializations;
 
       /* Finish the function.  */
-      expand_body (finish_function (0));
+      d = finish_function (0);
+      import_export_decl (d);
+      expand_body (d);
     }
 
   /* We're not deferring instantiation any more.  */

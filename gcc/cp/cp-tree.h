@@ -794,6 +794,9 @@ struct language_function GTY(())
   int in_base_initializer;
   int x_expanding_p;
 
+  /* True if this function can throw an exception.  */
+  bool can_throw : 1;
+
   struct named_label_use_list *x_named_label_uses;
   struct named_label_list *x_named_labels;
   struct cp_binding_level *bindings;
@@ -3522,6 +3525,7 @@ extern tree make_temporary_var_for_ref_to_temp (tree, tree);
 extern tree strip_top_quals (tree);
 extern tree perform_implicit_conversion (tree, tree);
 extern tree in_charge_arg_for_name (tree);
+extern tree build_cxx_call (tree, tree, tree);
 
 /* in class.c */
 extern tree build_base_path			(enum tree_code, tree, tree, int);

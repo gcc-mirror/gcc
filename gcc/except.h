@@ -78,6 +78,10 @@ extern void expand_eh_region_end_throw		PARAMS ((tree));
    destroying an object twice.  */
 extern void expand_eh_region_end_fixup		PARAMS ((tree));
 
+/* Note that the current EH region (if any) may contain a throw, or a
+   call to a function which itself may contain a throw.  */
+extern void note_eh_region_may_contain_throw    PARAMS ((void));
+
 /* Invokes CALLBACK for every exception handler label.  Only used by old
    loop hackery; should not be used by new code.  */
 extern void for_each_eh_label			PARAMS ((void (*) (rtx)));
