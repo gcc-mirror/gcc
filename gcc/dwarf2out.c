@@ -4118,6 +4118,8 @@ static inline dw_die_ref
 lookup_type_die (type)
      register tree type;
 {
+  if (TREE_CODE (type) == VECTOR_TYPE)
+    type = TYPE_DEBUG_REPRESENTATION_TYPE (type);
   return (dw_die_ref) TYPE_SYMTAB_POINTER (type);
 }
 
@@ -9063,6 +9065,10 @@ gen_type_die (type, context_die)
 	}
       else
 	gen_array_type_die (type, context_die);
+      break;
+
+    case VECTOR_TYPE:
+      gen_type_die (TYPE_DEBUG_REPRESENTATION_TYPE (type), context_die);
       break;
 
     case ENUMERAL_TYPE:

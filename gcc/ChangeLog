@@ -1,3 +1,22 @@
+2000-06-24  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* tree.h (enum tree_index): Add vector type nodes.
+	Add accessor macros for them.
+	(TYPE_REPRESENATION_TYPE): New macro.
+	* tree.c (build_common_tree_nodes_2): Build these nodes.
+	(finish_vector_type): New function.
+	* c-common.c (type_for_mode): Handle vector modes.
+	* tm.texi (VECTOR_MODE_SUPPORTED_P): Document.
+
+	* dbxout.c (dbxout_type): Handle VECTOR_TYPEs.
+	* dwarf.h (enum dwarf_fundamental_type): Add 128 bit integers.
+	* dwarf2out.c (lookup_type_die): Handle VECTOR_TYPEs.
+	(gen_type_die): Likewise.
+	* dwarfout.c (dwarf_fund_type_name): Handle 128 bit integers.
+	(fundamental_type_code): Likewise.
+	(type_is_fundamental): VECTOR_TYPEs aren't.
+	(output_type): Handle VECTOR_TYPEs.
+
 2000-06-25  Kazu Hirata  <kazu@hxi.com>
 
 	* config/arm.c: Fix a comment typo.

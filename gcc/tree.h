@@ -887,6 +887,11 @@ struct tree_block
 #define TYPE_OBSTACK(NODE) (TYPE_CHECK (NODE)->type.obstack)
 #define TYPE_LANG_SPECIFIC(NODE) (TYPE_CHECK (NODE)->type.lang_specific)
 
+/* For a VECTOR_TYPE node, this describes a different type which is emitted
+   in the debugging output.  We use this to describe a vector as a
+   structure containing an array.  */
+#define TYPE_DEBUG_REPRESENTATION_TYPE(NODE) (TYPE_CHECK (NODE)->type.values)
+
 /* Indirect types present difficulties because they may be represented
    as either POINTER_TYPE/REFERENCE_TYPE nodes (unbounded) or as
    RECORD_TYPE nodes (bounded).  Bounded and unbounded pointers might
@@ -1722,6 +1727,12 @@ enum tree_index
   TI_PTRDIFF_TYPE,
   TI_VA_LIST_TYPE,
 
+  TI_V4SF_TYPE,
+  TI_V4SI_TYPE,
+  TI_V8QI_TYPE,
+  TI_V4HI_TYPE,
+  TI_V2SI_TYPE,
+
   TI_MAX
 };
 
@@ -1767,6 +1778,12 @@ extern tree global_trees[TI_MAX];
 #define const_ptr_type_node		global_trees[TI_CONST_PTR_TYPE]
 #define ptrdiff_type_node		global_trees[TI_PTRDIFF_TYPE]
 #define va_list_type_node		global_trees[TI_VA_LIST_TYPE]
+
+#define V4SF_type_node			global_trees[TI_V4SF_TYPE]
+#define V4SI_type_node			global_trees[TI_V4SI_TYPE]
+#define V8QI_type_node			global_trees[TI_V8QI_TYPE]
+#define V4HI_type_node			global_trees[TI_V4HI_TYPE]
+#define V2SI_type_node			global_trees[TI_V2SI_TYPE]
 
 /* An enumeration of the standard C integer types.  These must be
    ordered so that shorter types appear before longer ones.  */

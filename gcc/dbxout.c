@@ -1003,6 +1003,9 @@ dbxout_type (type, full, show_arg_types)
   register tree tem;
   static int anonymous_type_number = 0;
 
+  if (TREE_CODE (type) == VECTOR_TYPE)
+    type = TYPE_DEBUG_REPRESENTATION_TYPE (type);
+
   /* If there was an input error and we don't really have a type,
      avoid crashing and write something that is at least valid
      by assuming `int'.  */

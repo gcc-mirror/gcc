@@ -1135,6 +1135,9 @@ dwarf_fund_type_name (ft)
     case FT_int64:		return "FT_int64";
     case FT_signed_int64:	return "FT_signed_int64";
     case FT_unsigned_int64:	return "FT_unsigned_int64";
+    case FT_int128:		return "FT_int128";
+    case FT_signed_int128:	return "FT_signed_int128";
+    case FT_unsigned_int128:	return "FT_unsigned_int128";
 
     case FT_real32:		return "FT_real32";
     case FT_real64:		return "FT_real64";
@@ -1366,6 +1369,9 @@ fundamental_type_code (type)
 	if (TYPE_PRECISION (type) == CHAR_TYPE_SIZE)
 	  return (TREE_UNSIGNED (type) ? FT_unsigned_char : FT_char);
 
+	if (TYPE_MODE (type) == TImode)
+	  return (TREE_UNSIGNED (type) ? FT_unsigned_int128 : FT_int128);
+
 	/* In C++, __java_boolean is an INTEGER_TYPE with precision == 1 */
 	if (TYPE_PRECISION (type) == 1)
 	  return FT_boolean;
@@ -1554,6 +1560,7 @@ type_is_fundamental (type)
       case FILE_TYPE:
       case OFFSET_TYPE:
       case LANG_TYPE:
+      case VECTOR_TYPE:
 	return 0;
 
       default:
@@ -4300,6 +4307,10 @@ output_type (type, containing_scope)
   switch (TREE_CODE (type))
     {
       case ERROR_MARK:
+	break;
+
+      case VECTOR_TYPE:
+	output_type (TYPE_DEBUG_REPRESENTATION_TYPE (type), containing_scope);
 	break;
 
       case POINTER_TYPE:

@@ -2296,6 +2296,19 @@ type_for_mode (mode, unsignedp)
   if (mode == TYPE_MODE (build_pointer_type (integer_type_node)))
     return build_pointer_type (integer_type_node);
 
+#ifdef VECTOR_MODE_SUPPORTED_P
+  if (mode == TYPE_MODE (V4SF_type_node) && VECTOR_MODE_SUPPORTED_P (mode))
+    return V4SF_type_node;
+  if (mode == TYPE_MODE (V4SI_type_node) && VECTOR_MODE_SUPPORTED_P (mode))
+    return V4SI_type_node;
+  if (mode == TYPE_MODE (V2SI_type_node) && VECTOR_MODE_SUPPORTED_P (mode))
+    return V2SI_type_node;
+  if (mode == TYPE_MODE (V4HI_type_node) && VECTOR_MODE_SUPPORTED_P (mode))
+    return V4HI_type_node;
+  if (mode == TYPE_MODE (V8QI_type_node) && VECTOR_MODE_SUPPORTED_P (mode))
+    return V8QI_type_node;
+#endif
+
   return 0;
 }
 
