@@ -249,4 +249,22 @@ void abort ();
 #endif /* USE_SYSTEM_ABORT */
 #endif /* !abort */
 
+
+/* Define a STRINGIFY macro that's right for ANSI or traditional C.
+   HAVE_CPP_STRINGIFY only refers to the stage1 compiler.  Assume that
+   (non-traditional) gcc used in stage2 or later has this feature.
+
+   Note: if the argument passed to STRINGIFY is itself a macro, eg
+   #define foo bar, STRINGIFY(foo) will produce "foo", not "bar".
+   Although the __STDC__ case could be made to expand this via a layer
+   of indirection, the traditional C case can not do so.  Therefore
+   this behavior is not supported. */
+#ifndef STRINGIFY
+# if defined(HAVE_CPP_STRINGIFY) || (defined(__GNUC__) && defined(__STDC__))
+#  define STRINGIFY(STRING) #STRING
+# else
+#  define STRINGIFY(STRING) "STRING"
+# endif
+#endif /* ! STRINGIFY */
+
 #endif /* __GCC_SYSTEM_H__ */
