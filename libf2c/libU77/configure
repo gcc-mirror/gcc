@@ -1448,16 +1448,15 @@ fi
 
 
 for ac_func in symlink getcwd getwd lstat gethostname strerror clock \
-  getrusage times alarm getlogin getgid getuid kill link ttyname \
-  gettimeofday
+  getrusage times alarm getlogin getgid getuid kill link ttyname
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:1456: checking for $ac_func" >&5
+echo "configure:1455: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1461 "configure"
+#line 1460 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -1480,7 +1479,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:1484: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1483: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -1504,46 +1503,188 @@ else
 fi
 done
 
-test $ac_cv_func_symlink = yes && MAYBES="$MAYBES symlnk_.o"
-test $ac_cv_func_lstat = yes && MAYBES="$MAYBES lstat_.o"
-test $ac_cv_func_gethostname = yes && MAYBES="$MAYBES hostnm_.o"
-test $ac_cv_func_clock = yes && MAYBES="$MAYBES mclock_.o"
 
 
-echo $ac_n "checking whether struct timezone exists""... $ac_c" 1>&6
-echo "configure:1515: checking whether struct timezone exists" >&5
-if eval "test \"`echo '$''{'libu77_cv_have_struct_timezone'+set}'`\" = set"; then
+  for ac_func in gettimeofday
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:1512: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1520 "configure"
+#line 1517 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:1540: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+fi
+done
+
+  if test "$ac_cv_func_gettimeofday" = yes; then
+    echo $ac_n "checking for struct timezone""... $ac_c" 1>&6
+echo "configure:1566: checking for struct timezone" >&5
+if eval "test \"`echo '$''{'g77_cv_struct_timezone'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1571 "configure"
 #include "confdefs.h"
 #include <sys/time.h>
 int main() {
 struct timezone tz;
 ; return 0; }
 EOF
-if { (eval echo configure:1527: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1578: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
-  libu77_ac_have_struct_timezone=yes
+  g77_cv_struct_timezone=yes
 else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
   rm -rf conftest*
-  libu77_ac_have_struct_timezone=no
+  g77_cv_struct_timezone=no
 fi
 rm -f conftest*
 fi
 
-if test $libu77_ac_have_struct_timezone = yes; then
-  echo "$ac_t""yes" 1>&6
-  cat >> confdefs.h <<EOF
-#define HAVE_STRUCT_TIMEZONE 1
+echo "$ac_t""$g77_cv_struct_timezone" 1>&6
+    if test $g77_cv_struct_timezone = yes; then
+                  if test "$cross_compiling" = yes; then
+  cat >> confdefs.h <<\EOF
+#define HAVE_TIMEZONE 1
 EOF
 
 else
-  echo "$ac_t""no" 1>&6
+  cat > conftest.$ac_ext <<EOF
+#line 1599 "configure"
+#include "confdefs.h"
+
+#ifdef TIME_WITH_SYS_TIME
+#include <sys/time.h>
+#include <time.h>
+#else
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#else
+#include <time.h>
+#endif
+#endif
+main ()
+{
+  struct timeval time;
+  struct timezone dummy;
+  if (gettimeofday (&time, &dummy))
+    exit (1);
+  else
+    exit (0);
+}
+EOF
+if { (eval echo configure:1622: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext} && (./conftest; exit) 2>/dev/null
+then
+  cat >> confdefs.h <<\EOF
+#define HAVE_TIMEZONE 1
+EOF
+
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
 fi
+rm -fr conftest*
+fi
+
+    fi
+    
+    echo $ac_n "checking whether gettimeofday can accept two arguments""... $ac_c" 1>&6
+echo "configure:1638: checking whether gettimeofday can accept two arguments" >&5
+if eval "test \"`echo '$''{'emacs_cv_gettimeofday_two_arguments'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1643 "configure"
+#include "confdefs.h"
+
+#ifdef TIME_WITH_SYS_TIME
+#include <sys/time.h>
+#include <time.h>
+#else
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#else
+#include <time.h>
+#endif
+#endif
+      
+int main() {
+
+      struct timeval time;
+      struct timezone dummy;
+      gettimeofday (&time, &dummy);
+; return 0; }
+EOF
+if { (eval echo configure:1664: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  emacs_cv_gettimeofday_two_arguments=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  emacs_cv_gettimeofday_two_arguments=no
+fi
+rm -f conftest*
+fi
+
+echo "$ac_t""$emacs_cv_gettimeofday_two_arguments" 1>&6
+    if test $emacs_cv_gettimeofday_two_arguments = no; then
+      cat >> confdefs.h <<\EOF
+#define GETTIMEOFDAY_ONE_ARGUMENT 1
+EOF
+
+    fi
+  fi
+
+test $ac_cv_func_symlink = yes && MAYBES="$MAYBES symlnk_.o"
+test $ac_cv_func_lstat = yes && MAYBES="$MAYBES lstat_.o"
+test $ac_cv_func_gethostname = yes && MAYBES="$MAYBES hostnm_.o"
+test $ac_cv_func_clock = yes && MAYBES="$MAYBES mclock_.o"
 
 
 

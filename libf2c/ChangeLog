@@ -1,3 +1,15 @@
+1999-10-22  Dave Love  <fx@gnu.org>
+
+	* libU77/aclocal.m4: Re-write, defining LIBU77_GETTIMEOFDAY, not
+	LIBU77_HAVE_STRUCT_TIMEZONE.
+
+	* libU77/configure.in: Use LIBU77_GETTIMEOFDAY, not
+	LIBU77_HAVE_STRUCT_TIMEZONE.  Don't check for gettimeofday
+	separately.
+
+	* libU77/datetime_.c (G77_date_and_time_0): Use
+	GETTIMEOFDAY_ONE_ARGUMENT.
+
 Tue Sep 14 01:44:01 1999  Marc Espie <espie@cvs.openbsd.org>
 
 	* Makefile.in:  Prepend $(SHELL) to move-if-change calls.

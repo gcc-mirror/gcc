@@ -57,24 +57,30 @@ int G77_date_and_time_0 (char *date, char *fftime, char *zone,
   vals[4] = ltime.tm_hour;
   vals[5] = ltime.tm_min;
   vals[6] = ltime.tm_sec;
-  vals[7] = 0;                  /* no STDC way to get this */
+  vals[7] = 0;                  /* no STDC/POSIX way to get this */
   /* GNUish way; maybe use `ftime' on other systems. */
 #if HAVE_GETTIMEOFDAY
   {
     struct timeval tp;
-#if HAVE_STRUCT_TIMEZONE
+#  if GETTIMEOFDAY_ONE_ARGUMENT
+    if (! gettimeofday (&tp))
+#  else
+#    if HAVE_STRUCT_TIMEZONE
     struct timezone tzp;
-    /* This is still not strictly correct on some systems such as HPUX, 
-       which does have struct timezone, but gettimeofday takes void* as 
-       the 2nd arg.  However, the effect of passing anything other than a null 
-       pointer is unspecified on HPUX. */
+    /* Some systems such as HPUX, do have struct timezone, but
+       gettimeofday takes void* as the 2nd arg.  However, the effect
+       of passing anything other than a null pointer is unspecified on
+       HPUX.  Configure checks if gettimeofday actually fails with a
+       non-NULL arg and pretends that struct timezone is missing if it
+       does fail.  */
     if (! gettimeofday (&tp, &tzp))
-#else
+#    else
     if (! gettimeofday (&tp, (void *) 0))
-#endif
+#    endif /* HAVE_STRUCT_TIMEZONE */
+#  endif /* GETTIMEOFDAY_ONE_ARGUMENT */
       vals[7] = tp.tv_usec/1000;
   }
-#endif
+#endif /* HAVE_GETTIMEOFDAY */
   if (values)			/* null pointer for missing optional */
     for (i=0; i<=7; i++)
       values[i] = vals[i];
