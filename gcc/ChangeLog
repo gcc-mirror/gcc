@@ -1,5 +1,11 @@
 2000-02-27  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
+	* cpplib.h (enum file_change_code): Added rename_file.
+	* cpplib.c (do_line): If a filename is given, set file_change to
+	rename_file.
+	(output_line_command): If file_change is rename_file, always
+	output a # directive with the file name.
+
 	* cpplib.c (do_pragma): Accept #pragma without consecutive token.
 
 2000-02-26  Mark Mitchell  <mark@codesourcery.com>
