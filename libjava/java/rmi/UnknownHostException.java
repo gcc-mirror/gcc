@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* UnknownHostException.java -- wraps java.net.UnknownHostException in RMI
+   Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -37,15 +37,39 @@ exception statement from your version. */
 
 package java.rmi;
 
-public class UnknownHostException
-	extends RemoteException {
+/**
+ * Thrown if a java.net.UnknownHostException occurs during a remote
+ * procedure call.
+ *
+ * @author unknown
+ * @since 1.1
+ * @status updated to 1.4
+ */
+public class UnknownHostException extends RemoteException 
+{
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = -8152710247442114228L;
 
-public UnknownHostException(String s) {
-	super(s);
-}
+  /**
+   * Create an exception with a message.
+   *
+   * @param s the message
+   */
+  public UnknownHostException(String s)
+  {
+    super(s);
+  }
 
-public UnknownHostException(String s, Exception e) {
-	super(s, e);
-}
-
+  /**
+   * Create an exception with a message and a cause.
+   *
+   * @param s the message
+   * @param e the cause
+   */
+  public UnknownHostException(String s, Exception e)
+  {
+    super(s, e);
+  }
 }

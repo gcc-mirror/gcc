@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* MarshalException.java -- wraps error while marshalling parameters
+   Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -37,16 +37,40 @@ exception statement from your version. */
 
 package java.rmi;
 
-public class MarshalException 
-	extends RemoteException {
+/**
+ * Thrown if an exception occurs while marshalling data to send in a remote
+ * call. The call may not be retransmitted, if the "at most once" semantics
+ * are to be preserved.
+ *
+ * @author unknown
+ * @since 1.1
+ * @status updated to 1.4
+ */
+public class MarshalException extends RemoteException
+{
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 6223554758134037936L;
 
+  /**
+   * Create an exception with a message.
+   *
+   * @param s the message
+   */
+  public MarshalException(String s)
+  {
+    super(s);
+  }
 
-public MarshalException(String s) {
-	super(s);
-}
-
-public MarshalException(String s, Exception e) {
-	super (s, e);
-}
-
+  /**
+   * Create an exception with a message and a cause.
+   *
+   * @param s the message
+   * @param e the cause
+   */
+  public MarshalException(String s, Exception e)
+  {
+    super(s, e);
+  }
 }

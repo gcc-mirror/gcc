@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* UnmarshalException.java -- wraps error while unmarshalling parameters
+   Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -37,17 +37,52 @@ exception statement from your version. */
 
 package java.rmi;
 
-public class UnmarshalException
-	extends RemoteException {
+/**
+ * Thrown if an exception occurs while unmarshalling parameters or results
+ * of a remote method call. This includes:<br><ul>
+ * <li>if an exception occurs while unmarshalling the call header</li>
+ * <li>if the protocol for the return value is invalid</li>
+ * <li>if a java.io.IOException occurs unmarshalling parameters (on the
+ *   server side) or the return value (on the client side).</li>
+ * <li>if a java.lang.ClassNotFoundException occurs during unmarshalling
+ *   parameters or return values</li>
+ * <li>if no skeleton can be loaded on the server-side; note that skeletons
+ *   are required in the 1.1 stub protocol, but not in the 1.2 stub
+ *   protocol.</li>
+ * <li>if the method hash is invalid (i.e., missing method).</li>
+ * <li>if there is a failure to create a remote reference object for a remote
+ *   object's stub when it is unmarshalled.</li>
+ * </ul>
+ *
+ * @author unknown
+ * @since 1.1
+ * @status updated to 1.4
+ */
+public class UnmarshalException extends RemoteException
+{
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 594380845140740218l;
 
-public static final long serialVersionUID = 594380845140740218l;
+  /**
+   * Create an exception with a message.
+   *
+   * @param s the message
+   */
+  public UnmarshalException(String s)
+  {
+    super(s);
+  }
 
-public UnmarshalException(String s) {
-	super(s);
-}
-
-public UnmarshalException(String s, Exception e) {
-	super(s, e);
-}
-
+  /**
+   * Create an exception with a message and a cause.
+   *
+   * @param s the message
+   * @param e the cause
+   */
+  public UnmarshalException(String s, Exception e)
+  {
+    super(s, e);
+  }
 }

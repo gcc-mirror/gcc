@@ -1,5 +1,5 @@
-/*
-  Copyright (c) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+/* AlreadyBoundException.java -- thrown if a binding is already bound
+   Copyright (c) 1996, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -37,15 +37,37 @@ exception statement from your version. */
 
 package java.rmi;
 
-public class AlreadyBoundException 
-	extends Exception {
+/**
+ * Thrown on an attempt to bind an object in the registry that is already
+ * bound.
+ *
+ * @author unknown
+ * @see Naming#bind(String, Remote)
+ * @see Registry#bind(String, Remote)
+ * @since 1.1
+ * @status updated to 1.4
+ */
+public class AlreadyBoundException extends Exception
+{
+  /**
+   * Compatible with JDK 1.1+.
+   */
+  private static final long serialVersionUID = 9218657361741657110L;
 
-public AlreadyBoundException() {
-	super();
-}
+  /**
+   * Create an exception with no message.
+   */
+  public AlreadyBoundException()
+  {
+  }
 
-public AlreadyBoundException(String s) {
-	super (s);
-}
-
+  /**
+   * Create an exception with a message.
+   *
+   * @param s the message
+   */
+  public AlreadyBoundException(String s)
+  {
+    super(s);
+  }
 }

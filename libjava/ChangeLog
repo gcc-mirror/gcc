@@ -1,3 +1,22 @@
+2002-06-16  Nathanael Nerode  <neroden@twcny.rr.com>
+
+	* java/rmi/AccessException.java: Remerge from Classpath.
+	* java/rmi/AlreadyBoundException.java: Ditto.
+	* java/rmi/ConnectException.java: Ditto.
+	* java/rmi/ConnectIOException.java: Ditto.
+	* java/rmi/MarshalException.java: Ditto.
+	* java/rmi/NoSuchObjectException.java: Ditto.
+	* java/rmi/NotBoundException.java: Ditto.
+	* java/rmi/RemoteException.java: Ditto.
+	* java/rmi/RMISecurityException.java: Ditto.
+	* java/rmi/ServerError.java: Ditto.
+	* java/rmi/ServerException.java: Ditto.
+	* java/rmi/ServerRuntimeException.java: Ditto.
+	* java/rmi/StubNotFoundException.java: Ditto.
+	* java/rmi/UnexpectedExcpetion.java: Ditto.
+	* java/rmi/UnknownHostException.java: Ditto.
+	* java/rmi/UnmarshalException.java: Ditto.
+
 2002-06-15  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/AbstractMethodError.java: Re-merged with Classpath.
