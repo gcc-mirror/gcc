@@ -505,7 +505,8 @@ poplevel (int keep, int dummy ATTRIBUTE_UNUSED, int functionbody)
   tree decl;
   tree p;
 
-  scope->function_body |= functionbody;
+  /* The following line does not use |= due to a bug in HP's C compiler */
+  scope->function_body = scope->function_body | functionbody;
 
   if (keep == KEEP_MAYBE)
     keep = (scope->names || scope->tags);

@@ -1,3 +1,7 @@
+2003-09-10  Joe Buck  <jbuck@welsh-buck.org>
+
+	* c-decl.c (poplevel): Eliminate use of |= in function_body assignment.
+
 2003-09-10  Jerry Quinn  <jlquinn@optonline.net>
 
 	* real.c: Update URL to VAX floating point docs.
