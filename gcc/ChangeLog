@@ -1,3 +1,9 @@
+2000-09-01  Richard Henderson  <rth@cygnus.com>
+
+	* config/ia64/ia64.md (mulsi3): Use grfr_register_operand.
+	(madddi3): Likewise.
+	(maddsi3): New.
+
 Fri Sep  1 10:59:47 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (clear_storage): Don't use emit_move_insn unless
