@@ -1739,7 +1739,7 @@ install-cross-rest: install-float-h-cross
 
 # Install float.h for cross compiler.
 # Run this on the target machine!
-install-float-h-cross:
+install-float-h-cross: install-dir
 #	if [ -f enquire ] ; then true; else false; fi
 # Note: don't use -.  We should fail right away if enquire was not made.
 	./enquire -f > $(tmpdir)/float.h
@@ -1834,7 +1834,7 @@ install-common: native install-dir xgcc g++ $(EXTRA_PARTS)
 	$(INSTALL_PROGRAM) cpp $(libsubdir)/cpp
 
 # Install the info files.
-install-info: doc
+install-info: doc install-dir
 	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
 	cd $(srcdir); for f in cpp.info* gcc.info*; \
 	do $(INSTALL_DATA) $$f $(infodir)/$$f; done
@@ -1929,7 +1929,7 @@ install-assert-h: assert.h install-dir
 	fi
 
 # Use this target to install the program `collect2' under the name `ld'.
-install-collect2: collect2
+install-collect2: collect2 install-dir
 	$(INSTALL_PROGRAM) collect2 $(libsubdir)/ld
 # Install the driver program as $(libsubdir)/gcc for collect2.
 	$(INSTALL_PROGRAM) xgcc $(libsubdir)/gcc
