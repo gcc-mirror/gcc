@@ -1,3 +1,8 @@
+2003-11-30  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_elf_section_type_flags): Don't
+	set SECTION_WRITE on TARGET_RELOCATABLE.
+
 2003-11-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.h (LIBCALL_VALUE): Use R0_REG.
