@@ -1,3 +1,8 @@
+2001-09-14  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
+
+	* config/alpha/alpha.md (unaligned_extendhidi_be): Fix.
+	* config/alpha/unicosmk.h (INIT_TARGET_OPTABS): New.
+
 2001-09-14  Nick Clifton  <nickc@cambridge.redhat.com>
 
 	* rtlanal.c (subreg_regno_offset): Add semicolon to end of

@@ -1848,8 +1848,10 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi"
    (set (match_dup 6)
 	(ashift:DI (match_dup 4)
 		   (ashift:DI
-		     (and:DI (match_dup 5) (const_int 7))
-		     (const_int 8))))
+		     (and:DI
+		       (plus:DI (match_dup 5) (const_int 1))
+		       (const_int 7))
+		     (const_int 3))))
    (set (subreg:DI (match_operand:QI 0 "register_operand" "") 0)
 	(ashiftrt:DI (match_dup 6) (const_int 48)))]
   "WORDS_BIG_ENDIAN"
