@@ -132,6 +132,8 @@ extern int size_directive_output;
 extern tree last_assemble_variable_decl;
 
 extern void init_lex ();
+extern void init_parse PVPROTO((char *));
+extern void finish_parse ();
 extern void init_decl_processing ();
 extern void init_obstacks ();
 extern void init_tree_codes ();
@@ -199,11 +201,6 @@ char *input_filename;
    If there isn't any there, then this is the cc1 input file name.  */
 
 char *main_input_filename;
-
-#if !USE_CPPLIB
-/* Stream for reading from the input file.  */
-FILE *finput;
-#endif
 
 /* Current line number in real source file.  */
 
@@ -2273,33 +2270,11 @@ compile_file (name)
   symout_time = 0;
   dump_time = 0;
 
-#if !USE_CPPLIB
-  /* Open input file.  */
-
-  if (name == 0 || !strcmp (name, "-"))
-    {
-      finput = stdin;
-      name = "stdin";
-    }
-  else
-    finput = fopen (name, "r");
-  if (finput == 0)
-    pfatal_with_name (name);
-
-#ifdef IO_BUFFER_SIZE
-  setvbuf (finput, (char *) xmalloc (IO_BUFFER_SIZE), _IOFBF, IO_BUFFER_SIZE);
-#endif
-#endif /* !USE_CPPLIB */
-
   /* Initialize data in various passes.  */
 
   init_obstacks ();
   init_tree_codes ();
-#if USE_CPPLIB
   init_parse (name);
-#else
-  init_lex ();
-#endif
   init_rtl ();
   init_emit_once (debug_info_level == DINFO_LEVEL_NORMAL
 		  || debug_info_level == DINFO_LEVEL_VERBOSE
@@ -2827,11 +2802,8 @@ compile_file (name)
      whether fclose returns an error, since the pages might still be on the
      buffer chain while the file is open.  */
 
-#if USE_CPPLIB
   finish_parse ();
-#else
-  fclose (finput);
-#endif
+
   if (ferror (asm_out_file) != 0 || fclose (asm_out_file) != 0)
     fatal_io_error (asm_file_name);
 
