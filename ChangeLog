@@ -1,3 +1,7 @@
+2004-11-29  Matt Kraai  <kraai@ftbfs.org>
+
+	* MAINTAINERS (Write After Approval): Update my e-mail address.
+
 2004-11-29  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* libtool.m4 (AC_DEPLIBS_CHECK_METHOD): Re-import linux-gnu case
