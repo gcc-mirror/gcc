@@ -108,9 +108,7 @@ LN_S=@LN_S@
 # These permit overriding just for certain files.
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
-MAKEINFO = `if [ -f $(objdir)/../texinfo/makeinfo/Makefile ] ; \
-	then echo $(objdir)/../texinfo/makeinfo/makeinfo ; \
-	else echo makeinfo ; fi`
+MAKEINFO = @MAKEINFO@
 MAKEINFOFLAGS =
 TEXI2DVI = texi2dvi
 # For GNUmake: let us decide what gets passed to recursive makes.
@@ -424,6 +422,10 @@ LIBCONVERT =
 
 # Control whether header files are installed.
 INSTALL_HEADERS=install-headers
+
+# Control whether Info documentation is built and installed.
+BUILD_INFO = @BUILD_INFO@
+INSTALL_INFO = @INSTALL_INFO@
 
 # Additional directories of header files to run fixincludes on.
 # These should be directories searched automatically by default
@@ -2313,7 +2315,7 @@ stmp-fixproto: fixhdr.ready fixproto stmp-int-hdrs
 #
 # Remake the info files.
 
-doc: info gccbug
+doc: $(BUILD_INFO) gccbug
 info: cpp.info gcc.info lang.info
 
 cpp.info: $(srcdir)/cpp.texi
@@ -2473,8 +2475,8 @@ install: $(INSTALL_TARGET) ; @true
 # Install the driver last so that the window when things are
 # broken is small.
 install-normal: install-common $(INSTALL_HEADERS) $(INSTALL_LIBGCC) \
-    $(INSTALL_CPP) install-man install-info intl.install lang.install-normal \
-    install-driver
+    $(INSTALL_CPP) install-man $(INSTALL_INFO) intl.install \
+    lang.install-normal install-driver
 
 # Do nothing while making gcc with a cross-compiler. The person who
 # makes gcc for the target machine has to know how to put a complete
