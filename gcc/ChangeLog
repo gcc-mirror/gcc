@@ -1,3 +1,7 @@
+2001-05-06  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mips/mips.md: Sign extend CONST_INTs.
+
 2001-05-06  Andreas Jaeger  <aj@suse.de>
 
 	* invoke.texi (Option Summary): Add -momit-leaf-frame-pointer

@@ -2277,7 +2277,10 @@
 			       copy_to_mode_reg (SImode, GEN_INT (-1)),
 			       GEN_INT (0x6)));
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (SImode, GEN_INT (BITMASK_HIGH)),
+			       copy_to_mode_reg (SImode,
+						 GEN_INT
+						 (trunc_int_for_mode
+						  (BITMASK_HIGH, SImode))),
 			       GEN_INT (0x6)));
     }
   
@@ -2324,7 +2327,8 @@
 			       copy_to_mode_reg (DImode, GEN_INT (-1)),
 			       GEN_INT (0x6)));
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (DImode, GEN_INT (BITMASK_HIGH)),
+			       copy_to_mode_reg (DImode,
+						 GEN_INT (BITMASK_HIGH)),
 			       GEN_INT (0x6)));
     }
   
@@ -2535,7 +2539,10 @@
 			       copy_to_mode_reg (SImode, GEN_INT (-1)),
 			       GEN_INT (0x6)));
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (SImode, GEN_INT (BITMASK_HIGH)),
+			       copy_to_mode_reg (SImode,
+						 GEN_INT
+						 (trunc_int_for_mode
+						  (BITMASK_HIGH, SImode))),
 			       GEN_INT (0x6)));
     }
   
@@ -2575,7 +2582,8 @@
 			       copy_to_mode_reg (DImode, GEN_INT (-1)),
 			       GEN_INT (0x6)));
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (DImode, GEN_INT (BITMASK_HIGH)),
+			       copy_to_mode_reg (DImode,
+						 GEN_INT (BITMASK_HIGH)),
 			       GEN_INT (0x6)));
     }
   
@@ -2615,7 +2623,10 @@
 			       copy_to_mode_reg (SImode, GEN_INT (-1)),
 			       GEN_INT (0x6)));
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (SImode, GEN_INT (BITMASK_HIGH)),
+			       copy_to_mode_reg (SImode,
+						 GEN_INT
+						 (trunc_int_for_mode
+						  (BITMASK_HIGH, SImode))),
 			       GEN_INT (0x6)));
     }
   
@@ -2655,7 +2666,8 @@
 			       copy_to_mode_reg (DImode, GEN_INT (-1)),
 			       GEN_INT (0x6)));
       emit_insn (gen_div_trap (operands[2],
-			       copy_to_mode_reg (DImode, GEN_INT (BITMASK_HIGH)),
+			       copy_to_mode_reg (DImode,
+						 GEN_INT (BITMASK_HIGH)),
 			       GEN_INT (0x6)));
     }
   
@@ -4319,7 +4331,8 @@ move\\t%0,%z4\\n\\
 
       emit_label (label1);
       emit_move_insn (reg2, gen_rtx_MINUS (DFmode, operands[1], reg1));
-      emit_move_insn (reg3, GEN_INT (BITMASK_HIGH));
+      emit_move_insn (reg3, GEN_INT (trunc_int_for_mode
+				     (BITMASK_HIGH, SImode)));
 
       emit_insn (gen_fix_truncdfsi2 (operands[0], reg2));
       emit_insn (gen_iorsi3 (operands[0], operands[0], reg3));
@@ -4406,7 +4419,8 @@ move\\t%0,%z4\\n\\
 
       emit_label (label1);
       emit_move_insn (reg2, gen_rtx_MINUS (SFmode, operands[1], reg1));
-      emit_move_insn (reg3, GEN_INT (BITMASK_HIGH));
+      emit_move_insn (reg3, GEN_INT (trunc_int_for_mode (BITMASK_HIGH,
+							 SImode)));
 
       emit_insn (gen_fix_truncsfsi2 (operands[0], reg2));
       emit_insn (gen_iorsi3 (operands[0], operands[0], reg3));
@@ -5179,7 +5193,9 @@ move\\t%0,%z4\\n\\
 		(match_dup 3)))]
   "
 {
-  operands[2] = GEN_INT (INTVAL (operands[1]) & BITMASK_UPPER16);
+  operands[2] = GEN_INT (trunc_int_for_mode (INTVAL (operands[1])
+					     & BITMASK_UPPER16,
+					     SImode));
   operands[3] = GEN_INT (INTVAL (operands[1]) & BITMASK_LOWER16);
 }")
 
