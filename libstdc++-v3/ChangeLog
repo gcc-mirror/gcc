@@ -1,3 +1,10 @@
+2002-03-25  Paolo Carlini <pcarlini@unitus.it>
+            Richard Henderson  <rth@redhat.com>
+
+	* testsuite/22_locale/codecvt_members_unicode_char.cc
+	(test01, test02): make sure that the i_lit_base array
+	is sufficiently aligned.
+
 2002-03-25  Benjamin Kosnik  <bkoz@redhat.com>
 
         * config/os/newlib/bits/ctype_noninline.h (ctype::classic): Set to
