@@ -1,5 +1,11 @@
 2003-05-10  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/9252
+	* g++.dg/template/access8.C: New test.
+	* g++.dg/template/access9.C: New test.
+
+2003-05-10  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/9554
 	* g++.dg/parse/access1.C: New test.
 

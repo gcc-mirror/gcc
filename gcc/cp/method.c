@@ -179,7 +179,7 @@ hack_identifier (tree value, tree name)
 	{
 	  tree path;
 	  path = currently_open_derived_class (DECL_CONTEXT (value));
-	  enforce_access (path, value);
+	  perform_or_defer_access_check (path, value);
 	}
     }
   else if (TREE_CODE (value) == TREE_LIST 
@@ -452,7 +452,6 @@ use_thunk (tree thunk_fndecl, bool emit_p)
 	 doesn't work for varargs.  */
 
       tree a, t;
-      int saved_check_access;
 
       if (varargs_function_p (function))
 	error ("generic thunk code fails for method `%#D' which uses `...'",
@@ -475,8 +474,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
       /* We don't bother with a body block for thunks.  */
 
       /* There's no need to check accessibility inside the thunk body.  */
-      saved_check_access = scope_chain->check_access;
-      scope_chain->check_access = 0;
+      push_deferring_access_checks (dk_no_check);
 
       t = a;
       if (this_adjusting)
@@ -506,7 +504,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
       DECL_IGNORED_P (thunk_fndecl) = 1;
 
       /* Re-enable access control.  */
-      scope_chain->check_access = saved_check_access;
+      pop_deferring_access_checks ();
 
       expand_body (finish_function (0));
     }

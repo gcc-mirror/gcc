@@ -792,7 +792,7 @@ do_identifier (token, args)
     {
       /* Check access.  */
       if (IDENTIFIER_CLASS_VALUE (token) == id)
-	enforce_access (CP_DECL_CONTEXT(id), id);
+	perform_or_defer_access_check (CP_DECL_CONTEXT(id), id);
       if (!processing_template_decl || DECL_TEMPLATE_PARM_P (id))
 	id = DECL_INITIAL (id);
     }

@@ -8244,7 +8244,7 @@ cp_parser_template_argument (cp_parser* parser)
       if (template_p)
 	argument = make_unbound_class_template (TREE_OPERAND (argument, 0),
 						TREE_OPERAND (argument, 1),
-						tf_error | tf_parsing);
+						tf_error);
       else if (TREE_CODE (argument) != TEMPLATE_DECL)
 	cp_parser_error (parser, "expected template-name");
     }
@@ -8301,7 +8301,7 @@ cp_parser_explicit_instantiation (cp_parser* parser)
   begin_explicit_instantiation ();
   /* [temp.explicit] says that we are supposed to ignore access
      control while processing explicit instantiation directives.  */
-  scope_chain->check_access = 0;
+  push_deferring_access_checks (dk_no_check);
   /* Parse a decl-specifier-seq.  */
   decl_specifiers 
     = cp_parser_decl_specifier_seq (parser,
@@ -8336,7 +8336,7 @@ cp_parser_explicit_instantiation (cp_parser* parser)
   /* We're done with the instantiation.  */
   end_explicit_instantiation ();
   /* Turn access control back on.  */
-  scope_chain->check_access = flag_access_control;
+  pop_deferring_access_checks ();
 
   cp_parser_consume_semicolon_at_end_of_statement (parser);
 }
@@ -11390,8 +11390,7 @@ cp_parser_class_name (cp_parser *parser,
        standard does not seem to be definitive, but there is no other
        valid interpretation of the following `::'.  Therefore, those
        names are considered class-names.  */
-    decl = TYPE_NAME (make_typename_type (scope, decl, 
-					  tf_error | tf_parsing));
+    decl = TYPE_NAME (make_typename_type (scope, decl, tf_error));
   else if (decl == error_mark_node
 	   || TREE_CODE (decl) != TYPE_DECL
 	   || !IS_AGGR_TYPE (TREE_TYPE (decl)))
@@ -11450,6 +11449,7 @@ cp_parser_class_specifier (cp_parser* parser)
   saved_num_template_parameter_lists 
     = parser->num_template_parameter_lists; 
   parser->num_template_parameter_lists = 0;
+
   /* Start the class.  */
   type = begin_class_definition (type);
   if (type == error_mark_node)
@@ -13646,8 +13646,6 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
   /* Assume that we are looking at a constructor declarator.  */
   constructor_p = true;
 
-  push_deferring_access_checks (dk_no_check);
-
   /* Look for the optional `::' operator.  */
   cp_parser_global_scope_opt (parser,
 			      /*current_scope_valid_p=*/false);
@@ -13688,8 +13686,6 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
       /* If there was no class-name, then this is not a constructor.  */
       constructor_p = !cp_parser_error_occurred (parser);
     }
-
-  pop_deferring_access_checks ();
 
   /* If we're still considering a constructor, we have to see a `(',
      to begin the parameter-declaration-clause, followed by either a
@@ -14664,7 +14660,8 @@ yyparse (void)
   bool error_occurred;
 
   the_parser = cp_parser_new ();
-  push_deferring_access_checks (dk_no_deferred);
+  push_deferring_access_checks (flag_access_control
+				? dk_no_deferred : dk_no_check);
   error_occurred = cp_parser_translation_unit (the_parser);
   the_parser = NULL;
   

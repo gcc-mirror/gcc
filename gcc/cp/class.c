@@ -1086,7 +1086,7 @@ alter_access (tree t, tree fdecl, tree access)
     }
   else
     {
-      enforce_access (t, fdecl);
+      perform_or_defer_access_check (t, fdecl);
       DECL_ACCESS (fdecl) = tree_cons (t, access, DECL_ACCESS (fdecl));
       return 1;
     }

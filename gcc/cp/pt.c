@@ -5259,6 +5259,10 @@ instantiate_class_template (type)
      the process of being defined.  */
   TYPE_BEING_DEFINED (type) = 1;
 
+  /* We may be in the middle of deferred access check.  Disable
+     it now.  */
+  push_deferring_access_checks (dk_no_deferred);
+
   maybe_push_to_top_level (uses_template_parms (type));
 
   if (t)
@@ -5568,6 +5572,7 @@ instantiate_class_template (type)
 
   popclass ();
   pop_from_top_level ();
+  pop_deferring_access_checks ();
   pop_tinst_level ();
 
   if (TYPE_CONTAINS_VPTR_P (type))
