@@ -1,3 +1,27 @@
+2004-11-26  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* target.h (struct gcc_target): New field 'dwarf_handle_frame_unspec'.
+	* target_def.h (TARGET_DWARF_HANDLE_FRAME_UNSPEC): Define to 0.
+	(TARGET_INITIALIZER): Add TARGET_DWARF_HANDLE_FRAME_UNSPEC.
+	* dwarf2out.c (dwarf2out_frame_debug_expr): Allow REG->REG move
+	to a fixed reg if the source is the Return Address register.
+	Implement new Rule 15.
+	* doc/tm.texi (Frame Layout): Document TARGET_DWARF_HANDLE_FRAME_UNSPEC.
+	* config/sparc/sparc.c (TARGET_DWARF_HANDLE_FRAME_UNSPEC): Define to
+	sparc_dwarf_handle_frame_unspec.
+	(gen_save_register_window): New function.
+	(emit_stack_pointer_increment): Rename into gen_stack_pointer_inc.
+	(emit_stack_pointer_decrement): Rename into gen_stack_pointer_dec.
+	(expand_prologue): Adjust calls to emit_stack_pointer_{in,de}crement.
+	Set RTX_FRAME_RELATED_P on the appropriate insns and members of insns.
+	(sparc_asm_function_prologue): Do not emit call frame debugging info.
+	(emit_and_preserve): Adjust calls to emit_stack_pointer_{in,de}crement.
+	(sparc_expand_epilogue): Likewise.
+	(sparc_dwarf_handle_frame_unspec): New function.
+	* config/sparc/sparc.md (save_register_window): Remove.
+	(save_register_windowdi): Rewrite modelled on the callframe debug info.
+	(save_register_windowsi): Likewise.
+
 2004-11-26  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/frv/frv-protos.h: Guard ifcvt functions declarations with

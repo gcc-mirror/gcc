@@ -356,6 +356,7 @@ static tree sparc_gimplify_va_arg (tree, tree, tree *, tree *);
 static bool sparc_vector_mode_supported_p (enum machine_mode);
 static bool sparc_pass_by_reference (CUMULATIVE_ARGS *,
 				     enum machine_mode, tree, bool);
+static void sparc_dwarf_handle_frame_unspec (const char *, rtx, int);
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 const struct attribute_spec sparc_attribute_table[];
 #endif
@@ -479,6 +480,9 @@ enum processor_type sparc_cpu;
 
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P sparc_vector_mode_supported_p
+
+#undef TARGET_DWARF_HANDLE_FRAME_UNSPEC
+#define TARGET_DWARF_HANDLE_FRAME_UNSPEC sparc_dwarf_handle_frame_unspec
 
 #ifdef SUBTARGET_INSERT_ATTRIBUTES
 #undef TARGET_INSERT_ATTRIBUTES
@@ -4478,26 +4482,37 @@ emit_restore_regs (void)
   save_or_restore_regs (32, TARGET_V9 ? 96 : 64, base, offset, SORR_RESTORE);
 }
 
-/* Emit an increment for the stack pointer.  */
+/* Generate a save_register_window insn.  */
 
-static void
-emit_stack_pointer_increment (rtx increment)
+static rtx
+gen_save_register_window (rtx increment)
 {
   if (TARGET_ARCH64)
-    emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx, increment));
+    return gen_save_register_windowdi (increment);
   else
-    emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, increment));
+    return gen_save_register_windowsi (increment);
 }
 
-/* Emit a decrement for the stack pointer.  */
+/* Generate an increment for the stack pointer.  */
 
-static void
-emit_stack_pointer_decrement (rtx decrement)
+static rtx
+gen_stack_pointer_inc (rtx increment)
 {
   if (TARGET_ARCH64)
-    emit_insn (gen_subdi3 (stack_pointer_rtx, stack_pointer_rtx, decrement));
+    return gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx, increment);
   else
-    emit_insn (gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx, decrement));
+    return gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx, increment);
+}
+
+/* Generate a decrement for the stack pointer.  */
+
+static rtx
+gen_stack_pointer_dec (rtx decrement)
+{
+  if (TARGET_ARCH64)
+    return gen_subdi3 (stack_pointer_rtx, stack_pointer_rtx, decrement);
+  else
+    return gen_subsi3 (stack_pointer_rtx, stack_pointer_rtx, decrement);
 }
 
 /* Expand the function prologue.  The prologue is responsible for reserving
@@ -4507,6 +4522,9 @@ emit_stack_pointer_decrement (rtx decrement)
 void
 sparc_expand_prologue (void)
 {
+  rtx insn;
+  int i;
+
   /* Compute a snapshot of current_function_uses_only_leaf_regs.  Relying
      on the final value of the flag means deferring the prologue/epilogue
      expansion until just before the second scheduling pass, which is too
@@ -4556,34 +4574,48 @@ sparc_expand_prologue (void)
   else if (sparc_leaf_function_p)
     {
       if (actual_fsize <= 4096)
-	emit_stack_pointer_increment (GEN_INT (- actual_fsize));
+	insn = emit_insn (gen_stack_pointer_inc (GEN_INT (-actual_fsize)));
       else if (actual_fsize <= 8192)
 	{
-	  emit_stack_pointer_increment (GEN_INT (-4096));
-	  emit_stack_pointer_increment (GEN_INT (4096 - actual_fsize));
+	  insn = emit_insn (gen_stack_pointer_inc (GEN_INT (-4096)));
+	  /* %sp is still the CFA register.  */
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  insn
+	    = emit_insn (gen_stack_pointer_inc (GEN_INT (4096-actual_fsize)));
 	}
       else
 	{
 	  rtx reg = gen_rtx_REG (Pmode, 1);
 	  emit_move_insn (reg, GEN_INT (-actual_fsize));
-	  emit_stack_pointer_increment (reg);
+	  insn = emit_insn (gen_stack_pointer_inc (reg));
+	  REG_NOTES (insn) =
+	    gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+			       PATTERN (gen_stack_pointer_inc (GEN_INT (-actual_fsize))),
+			       REG_NOTES (insn));
 	}
+
+      RTX_FRAME_RELATED_P (insn) = 1;
     }
   else
     {
       if (actual_fsize <= 4096)
-        emit_insn (gen_save_register_window (GEN_INT (-actual_fsize)));
+	insn = emit_insn (gen_save_register_window (GEN_INT (-actual_fsize)));
       else if (actual_fsize <= 8192)
 	{
-	  emit_insn (gen_save_register_window (GEN_INT (-4096)));
-	  emit_stack_pointer_increment (GEN_INT (4096 - actual_fsize));
+	  insn = emit_insn (gen_save_register_window (GEN_INT (-4096)));
+	  /* %sp is not the CFA register anymore.  */
+	  emit_insn (gen_stack_pointer_inc (GEN_INT (4096-actual_fsize)));
 	}
       else
 	{
 	  rtx reg = gen_rtx_REG (Pmode, 1);
 	  emit_move_insn (reg, GEN_INT (-actual_fsize));
-	  emit_insn (gen_save_register_window (reg));
+	  insn = emit_insn (gen_save_register_window (reg));
 	}
+
+      RTX_FRAME_RELATED_P (insn) = 1;
+      for (i=0; i < XVECLEN (PATTERN (insn), 0); i++)
+        RTX_FRAME_RELATED_P (XVECEXP (PATTERN (insn), 0, i)) = 1;
     }
 
   /* Call-saved registers are saved just above the outgoing argument area.  */
@@ -4596,8 +4628,7 @@ sparc_expand_prologue (void)
 }
  
 /* This function generates the assembly code for function entry, which boils
-   down to emitting the necessary .register directives.  It also informs the
-   DWARF-2 back-end on the layout of the frame.
+   down to emitting the necessary .register directives.
 
    ??? Historical cruft: "On SPARC, move-double insns between fpu and cpu need
    an 8-byte block of memory.  If any fpu reg is used in the function, we
@@ -4612,29 +4643,6 @@ sparc_asm_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
     abort();
 
   sparc_output_scratch_registers (file);
-
-  if (dwarf2out_do_frame () && actual_fsize)
-    {
-      char *label = dwarf2out_cfi_label ();
-
-      /* The canonical frame address refers to the top of the frame.  */
-      dwarf2out_def_cfa (label,
-			 sparc_leaf_function_p
-			 ? STACK_POINTER_REGNUM
-			 : HARD_FRAME_POINTER_REGNUM,
-			 frame_base_offset);
-
-      if (! sparc_leaf_function_p)
-	{
-	  /* Note the register window save.  This tells the unwinder that
-	     it needs to restore the window registers from the previous
-	     frame's window save area at 0(cfa).  */
-	  dwarf2out_window_save (label);
-
-	  /* The return address (-8) is now in %i7.  */
-	  dwarf2out_return_reg (label, 31);
-	}
-    }
 }
 
 /* Expand the function epilogue, either normal or part of a sibcall.
@@ -4651,17 +4659,17 @@ sparc_expand_epilogue (void)
   else if (sparc_leaf_function_p)
     {
       if (actual_fsize <= 4096)
-	emit_stack_pointer_decrement (GEN_INT (- actual_fsize));
+	emit_insn (gen_stack_pointer_dec (GEN_INT (- actual_fsize)));
       else if (actual_fsize <= 8192)
 	{
-	  emit_stack_pointer_decrement (GEN_INT (-4096));
-	  emit_stack_pointer_decrement (GEN_INT (4096 - actual_fsize));
+	  emit_insn (gen_stack_pointer_dec (GEN_INT (-4096)));
+	  emit_insn (gen_stack_pointer_dec (GEN_INT (4096 - actual_fsize)));
 	}
       else
 	{
 	  rtx reg = gen_rtx_REG (Pmode, 1);
 	  emit_move_insn (reg, GEN_INT (-actual_fsize));
-	  emit_stack_pointer_decrement (reg);
+	  emit_insn (gen_stack_pointer_dec (reg));
 	}
     }
 }
@@ -8886,11 +8894,11 @@ emit_and_preserve (rtx seq, rtx reg)
   rtx slot = gen_rtx_MEM (word_mode,
 			  plus_constant (stack_pointer_rtx, SPARC_STACK_BIAS));
 
-  emit_stack_pointer_decrement (GEN_INT (STACK_BOUNDARY/BITS_PER_UNIT));
+  emit_insn (gen_stack_pointer_dec (GEN_INT (STACK_BOUNDARY/BITS_PER_UNIT)));
   emit_insn (gen_rtx_SET (VOIDmode, slot, reg));
   emit_insn (seq);
   emit_insn (gen_rtx_SET (VOIDmode, reg, slot));
-  emit_stack_pointer_increment (GEN_INT (STACK_BOUNDARY/BITS_PER_UNIT));
+  emit_insn (gen_stack_pointer_inc (GEN_INT (STACK_BOUNDARY/BITS_PER_UNIT)));
 }
 
 /* Output the assembler code for a thunk function.  THUNK_DECL is the
@@ -9151,6 +9159,18 @@ get_some_local_dynamic_name_1 (rtx *px, void *data ATTRIBUTE_UNUSED)
     }
 
   return 0;
+}
+
+/* Handle the TARGET_DWARF_HANDLE_FRAME_UNSPEC hook.
+   This is called from dwarf2out.c to emit call frame instructions
+   for frame-related insns containing UNSPECs and UNSPEC_VOLATILEs. */
+static void
+sparc_dwarf_handle_frame_unspec (const char *label,
+				 rtx pattern ATTRIBUTE_UNUSED,
+				 int index ATTRIBUTE_UNUSED)
+{
+  gcc_assert (index == UNSPECV_SAVEW);
+  dwarf2out_window_save (label);
 }
 
 /* This is called from dwarf2out.c via ASM_OUTPUT_DWARF_DTPREL.

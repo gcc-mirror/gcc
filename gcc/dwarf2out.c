@@ -1441,7 +1441,11 @@ static dw_cfa_location cfa_temp;
   (set (mem (postinc <reg1>:cfa_temp <const_int>)) <reg2>)
   effects: cfa.reg = <reg1>
 	   cfa.base_offset = -cfa_temp.offset
-	   cfa_temp.offset -= mode_size(mem)  */
+	   cfa_temp.offset -= mode_size(mem)
+
+  Rule 15:
+  (set <reg> {unspec, unspec_volatile})
+  effects: target-dependent  */
 
 static void
 dwarf2out_frame_debug_expr (rtx expr, const char *label)
@@ -1505,7 +1509,10 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	    {
 	      /* Saving a register in a register.  */
 	      gcc_assert (call_used_regs [REGNO (dest)]
-			  && !fixed_regs [REGNO (dest)]);
+			  && (!fixed_regs [REGNO (dest)]
+			      /* For the SPARC and its register window.  */
+			      || DWARF_FRAME_REGNUM (REGNO (src))
+				   == DWARF_FRAME_RETURN_COLUMN));
 	      queue_reg_save (label, src, dest, 0);
 	    }
 	  break;
@@ -1630,6 +1637,13 @@ dwarf2out_frame_debug_expr (rtx expr, const char *label)
 	     which will fill in all of the bits.  */
 	  /* Rule 8 */
 	case HIGH:
+	  break;
+
+	  /* Rule 15 */
+	case UNSPEC:
+	case UNSPEC_VOLATILE:
+	  gcc_assert (targetm.dwarf_handle_frame_unspec);
+	  targetm.dwarf_handle_frame_unspec (label, expr, XINT (src, 1));
 	  break;
 
 	default:
