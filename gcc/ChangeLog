@@ -1,3 +1,10 @@
+2002-08-23  David Edelsohn  <edelsohn@gnu.org>
+
+        * config/rs6000/rs6000.c (rs6000_select_section): Treat
+        DEFAULT_ABI == ABI_AIX like PIC.  Test PIC & reloc for readonly
+        default.
+        (rs6000_unique_section): Likewise.
+
 2002-08-22  Jason Merrill  <jason@redhat.com>
 
 	* langhooks-def.h (LANG_HOOKS_EXPR_SIZE): New macro.
