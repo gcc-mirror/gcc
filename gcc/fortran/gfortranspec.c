@@ -1,6 +1,6 @@
 /* Specific flags and argument handling of the Fortran front-end.
-   Copyright (C) 1997, 1999, 2000, 2001, 2002, 2003, 2004 Free Software
-   Foundation, Inc.
+   Copyright (C) 1997, 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free
+   Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -347,7 +347,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
 	case OPTION_version:
 	  printf ("\
 GNU Fortran 95 (GCC %s)\n\
-Copyright (C) 2004 Free Software Foundation, Inc.\n\
+Copyright (C) 2005 Free Software Foundation, Inc.\n\
 \n\
 GNU Fortran comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute copies of GNU Fortran\n\
