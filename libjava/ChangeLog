@@ -1,3 +1,16 @@
+1999-04-23  Warren Levy  <warrenl@cygnus.com>
+
+	* Makefile.am: Added URLDecoder and URLEncoder.
+	* Makefile.in: Rebuilt.
+
+	* java/net/ServerSocket.java (setSocketFactory): Renamed from
+	setSocketImplFactory to match spec.
+	* java/net/Socket.java (getSoLinger): Changed return type to
+	match spec.
+
+	* java/net/URLDecoder.java: New file.
+	* java/net/URLEncoder.java: New file.
+
 1999-04-21  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/natString.cc (getBytes): Reverted earlier change and

@@ -96,7 +96,7 @@ public class ServerSocket
     return impl.toString();
   }
 
-  public static void setSocketImplFactory (SocketImplFactory fac)
+  public static void setSocketFactory (SocketImplFactory fac)
     throws IOException
   {
     factory = fac;
