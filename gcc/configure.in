@@ -969,7 +969,7 @@ for machine in $build $host $target; do
 			tm_file=i386/sol2.h
 		fi
 		tmake_file=i386/t-sol2
-		extra_parts="crt1.o crti.o crtn.o crtbegin.o crtend.o"
+		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 		xmake_file=x-svr4
 		fixincludes=fixinc.math
 		broken_install=yes
