@@ -39,7 +39,7 @@ proc g++-dg-test { prog do_what extra_tool_flags } {
 	}
 	"precompile" {
 	    set compile_type "precompiled_header"
-	    set output_file "[file tail $prog].pch"
+	    set output_file "[file tail $prog].gch"
 	}
 	"link" {
 	    set compile_type "executable"

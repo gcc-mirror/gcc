@@ -1,3 +1,8 @@
+2003-03-01  Geoffrey Keating  <geoffk@apple.com>
+
+	* lib/gcc-dg.exp (gcc-dg-test): Change .pch to .gch.
+	* lib/g++-dg.exp (g++-dg-test): Likewise.
+
 2003-03-01  Roger Sayle  <roger@eyesopen.com>
 
 	* g++.old-deja/g++.other/builtins10.C: New test for PR 9367.
