@@ -445,13 +445,11 @@ translate_error (int code)
 void
 generate_error (int family, const char *message)
 {
-
+  /* Set the error status.  */
   if (ioparm.iostat != NULL)
-    {
-      *ioparm.iostat = family;
-      return;
-    }
+    *ioparm.iostat = family;
 
+  /* Report status back to the compiler.  */
   switch (family)
     {
     case ERROR_EOR:
@@ -468,10 +466,13 @@ generate_error (int family, const char *message)
 
     default:
       ioparm.library_return = LIBRARY_ERROR;
+      if (ioparm.err != 0)
+	return;
       break;
     }
 
-  if (ioparm.err != 0)
+  /* Return if the user supplied an iostat variable.  */
+  if (ioparm.iostat != NULL)
     return;
 
   /* Terminate the program */

@@ -1,3 +1,7 @@
+2004-09-01  Paul Brook  <paul@codesourcery.com>
+
+	* gfortran.dg/eof_2.f90: New test.
+
 2004-08-31  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/16579

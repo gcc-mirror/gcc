@@ -1,3 +1,8 @@
+2004-09-01  Paul Brook  <paul@codesourcery.com>
+
+	* runtime/error.c (generate_error): Set both iostat and
+	library_return.
+
 2004-08-31  Paul Brook  <paul@codesourcery.com>
 
 	PR libfortran/16805
