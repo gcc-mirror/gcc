@@ -6528,11 +6528,12 @@ cp_parser_simple_declaration (cp_parser* parser,
    friendship is granted might not be a class.  
 
    *DECLARES_CLASS_OR_ENUM is set to the bitwise or of the following
-   *flags:
+   flags:
 
      1: one of the decl-specifiers is an elaborated-type-specifier
+        (i.e., a type declaration)
      2: one of the decl-specifiers is an enum-specifier or a
-        class-specifier
+        class-specifier (i.e., a type definition)
 
    */
 
@@ -8514,7 +8515,7 @@ cp_parser_type_specifier (cp_parser* parser,
 
   /* Assume this type-specifier does not declare a new type.  */
   if (declares_class_or_enum)
-    *declares_class_or_enum = false;
+    *declares_class_or_enum = 0;
   /* And that it does not specify a cv-qualifier.  */
   if (is_cv_qualifier)
     *is_cv_qualifier = false;
