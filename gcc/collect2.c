@@ -1783,7 +1783,7 @@ write_c_file_stat (stream, name)
       fprintf (stream, "  void *pc_end;\n");
       fprintf (stream, "  void *fde_begin;\n");
       fprintf (stream, "  void *fde_array;\n");
-      fprintf (stream, "  size_t count;\n");
+      fprintf (stream, "  __SIZE_TYPE__ count;\n");
       fprintf (stream, "  struct object *next;\n");
       fprintf (stream, "};\n");
 
