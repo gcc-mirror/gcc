@@ -1,5 +1,13 @@
 2003-08-10  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips_no_mips16_string): Remove.
+	(override_options): Don't handle -mips16 as part of -mipsN.
+	* config/mips/mips.h (mips_no_mips16_string): Remove declaration.
+	(TARGET_SWITCHES): Add -mips16 and -mno-mips16 entries.
+	(TARGET_OPTIONS): Remove -mno-mips16.
+
+2003-08-10  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips-protos.h (coprocessor_operand): Remove declaration.
 	(coprocessor2_operand): Likewise.
 	* config/mips/mips.c (STAB_CODE_TYPE): Remove.

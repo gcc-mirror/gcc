@@ -503,11 +503,6 @@ const char *mips_tune_string;   /* for -mtune=<xxx> */
 const char *mips_isa_string;	/* for -mips{1,2,3,4} */
 const char *mips_abi_string;	/* for -mabi={32,n32,64,eabi} */
 
-/* This variable is set by -mno-mips16.  We only care whether
-   -mno-mips16 appears or not, and using a string in this fashion is
-   just a way to avoid using up another bit in target_flags.  */
-const char *mips_no_mips16_string;
-
 /* Whether we are generating mips16 hard float code.  In mips16 mode
    we always set TARGET_SOFT_FLOAT; this variable is nonzero if
    -msoft-float was not specified by the user, which means that we
@@ -4701,32 +4696,22 @@ override_options ()
   if (mips_isa_string != 0)
     {
       /* Handle -mipsN.  */
+      char *whole_isa_str = concat ("mips", mips_isa_string, NULL);
+      const struct mips_cpu_info *isa_info;
 
-      if (strcmp (mips_isa_string, "16") == 0)
-	{
-	  /* -mips16 specifies an ASE rather than a processor, so don't
-	     change mips_arch here.  -mno-mips16 overrides -mips16.  */
-	  if (mips_no_mips16_string == NULL)
-	    target_flags |= MASK_MIPS16;
-	}
-      else
-	{
-	  char *whole_isa_str = concat ("mips", mips_isa_string, NULL);
-	  const struct mips_cpu_info *isa_info;
+      isa_info = mips_parse_cpu ("-mips option", whole_isa_str);
+      free (whole_isa_str);
 
-	  isa_info = mips_parse_cpu ("-mips option", whole_isa_str);
-	  free (whole_isa_str);
+      /* -march takes precedence over -mipsN, since it is more descriptive.
+	 There's no harm in specifying both as long as the ISA levels
+	 are the same.  */
+      if (mips_arch_info != 0 && mips_isa != isa_info->isa)
+	error ("-mips%s conflicts with the other architecture options, "
+	       "which specify a MIPS%d processor",
+	       mips_isa_string, mips_isa);
 
-	  /* -march takes precedence over -mipsN, since it is more descriptive.
-	     There's no harm in specifying both as long as the ISA levels
-	     are the same.  */
-	  if (mips_arch_info != 0 && mips_isa != isa_info->isa)
-	    error ("-mips%s conflicts with the other architecture options, which specify a MIPS%d processor",
-		   mips_isa_string, mips_isa);
-
-	  /* Set architecture based on the given option.  */
-	  mips_set_architecture (isa_info);
-	}
+      /* Set architecture based on the given option.  */
+      mips_set_architecture (isa_info);
     }
 
   if (mips_arch_info == 0)
