@@ -1,3 +1,7 @@
+2002-02-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* unwind-dw2-fde-glibc.c: Define _GNU_SOURCE if not defined.
+
 2002-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/4475, c++/3780:

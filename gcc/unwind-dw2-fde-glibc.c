@@ -29,6 +29,10 @@
    segment and dl_iterate_phdr to avoid register/deregister calls at
    DSO load/unload.  */
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE 1
+#endif
+
 #include "auto-host.h" /* For HAVE_LD_EH_FRAME_HDR.  */
 #include "tconfig.h"
 #ifndef inhibit_libc
