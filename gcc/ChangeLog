@@ -1,3 +1,10 @@
+2003-01-24  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.md (call_internal_reg, call_value_internal_reg): If TARGET_GAS and
+	not TARGET_SOM, use $PIC_pcrel$0 rather than symbol difference for long
+	PIC calls to $$dyncall.
+	* pa.c (output_call): Likewise.
+
 2003-01-23  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	PR java/6748

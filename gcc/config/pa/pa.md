@@ -5909,12 +5909,21 @@
 
   /* If we're generating PIC code.  */
   xoperands[0] = operands[0];
-  xoperands[1] = gen_label_rtx ();
   output_asm_insn (\"{bl|b,l} .+8,%%r1\", xoperands);
-  output_asm_insn (\"addil L%%$$dyncall-%1,%%r1\", xoperands);
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
-			     CODE_LABEL_NUMBER (xoperands[1]));
-  output_asm_insn (\"ldo R%%$$dyncall-%1(%%r1),%%r1\", xoperands);
+  if (TARGET_SOM || !TARGET_GAS)
+    {
+      xoperands[1] = gen_label_rtx ();
+      output_asm_insn (\"addil L%%$$dyncall-%1,%%r1\", xoperands);
+      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+				 CODE_LABEL_NUMBER (xoperands[1]));
+      output_asm_insn (\"ldo R%%$$dyncall-%1(%%r1),%%r1\", xoperands);
+    }
+  else
+    {
+      output_asm_insn (\"addil L%%$$dyncall-$PIC_pcrel$0+4,%%r1\", xoperands);
+      output_asm_insn (\"ldo R%%$$dyncall-$PIC_pcrel$0+8(%%r1),%%r1\",
+		       xoperands);
+    }
   output_asm_insn (\"blr %%r0,%%r2\", xoperands);
   output_asm_insn (\"bv,n %%r0(%%r1)\\n\\tnop\", xoperands);
   return \"\";
@@ -6084,12 +6093,21 @@
 
   /* If we're generating PIC code.  */
   xoperands[0] = operands[1];
-  xoperands[1] = gen_label_rtx ();
   output_asm_insn (\"{bl|b,l} .+8,%%r1\", xoperands);
-  output_asm_insn (\"addil L%%$$dyncall-%1,%%r1\", xoperands);
-  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
-			     CODE_LABEL_NUMBER (xoperands[1]));
-  output_asm_insn (\"ldo R%%$$dyncall-%1(%%r1),%%r1\", xoperands);
+  if (TARGET_SOM || !TARGET_GAS)
+    {
+      xoperands[1] = gen_label_rtx ();
+      output_asm_insn (\"addil L%%$$dyncall-%1,%%r1\", xoperands);
+      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, \"L\",
+				 CODE_LABEL_NUMBER (xoperands[1]));
+      output_asm_insn (\"ldo R%%$$dyncall-%1(%%r1),%%r1\", xoperands);
+    }
+  else
+    {
+      output_asm_insn (\"addil L%%$$dyncall-$PIC_pcrel$0+4,%%r1\", xoperands);
+      output_asm_insn (\"ldo R%%$$dyncall-$PIC_pcrel$0+8(%%r1),%%r1\",
+		       xoperands);
+    }
   output_asm_insn (\"blr %%r0,%%r2\", xoperands);
   output_asm_insn (\"bv,n %%r0(%%r1)\\n\\tnop\", xoperands);
   return \"\";
