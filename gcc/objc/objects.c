@@ -66,19 +66,19 @@ object_dispose(id object)
       if (_objc_object_dispose)
         (*_objc_object_dispose)(object);
       else
-        free(object);
+        objc_free(object);
     }
   return nil;
 }
 
 id __objc_object_alloc(Class class)
 {
-  return (id)__objc_xmalloc(class->instance_size);
+  return (id)objc_malloc(class->instance_size);
 }
 
 id __objc_object_dispose(id object) 
 {
-  free(object);
+  objc_free(object);
   return 0;
 }
 
