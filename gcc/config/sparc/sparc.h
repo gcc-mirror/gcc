@@ -1,6 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Sun SPARC.
-   Copyright (C) 1987, 88, 89, 92, 94, 95, 96, 1997 Free Software Foundation,
-   Inc.
+   Copyright (C) 1987, 88, 89, 92, 94-6, 1997 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
    64 bit SPARC V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -174,9 +173,9 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{mf930:-Asparclite} %{mf934:-Asparclite} \
 %{mcpu=sparclite:-Asparclite} \
 %{mcpu=f930:-Asparclite} %{mcpu=f934:-Asparclite} \
-%{mcpu=v8plus:-Av9} \
+%{mcpu=v8plus:-Av9a} \
 %{mcpu=v9:-Av9} \
-%{mcpu=ultrasparc:-Av9} \
+%{mcpu=ultrasparc:-Av9a} \
 %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:%(asm_default)}}}}}}} \
 "
 
@@ -515,10 +514,13 @@ extern enum processor_type sparc_cpu;
 	#define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }  */
 
 #define TARGET_OPTIONS \
-{					\
-  {"cpu=",  &sparc_select[1].string},	\
-  {"tune=", &sparc_select[2].string},	\
-  SUBTARGET_OPTIONS \
+{							\
+  {"cpu=",  &sparc_select[1].string},			\
+  {"tune=", &sparc_select[2].string},			\
+  {"align-loops=",	&sparc_align_loops_string },	\
+  {"align-jumps=",	&sparc_align_jumps_string },	\
+  {"align-functions=",	&sparc_align_funcs_string },	\
+  SUBTARGET_OPTIONS 					\
 }
 
 /* This is meant to be redefined in target specific files.  */
@@ -534,6 +536,18 @@ struct sparc_cpu_select
 };
 
 extern struct sparc_cpu_select sparc_select[];
+
+/* Variables to record values the user passes.  */
+extern char *sparc_align_loops_string;
+extern char *sparc_align_jumps_string;
+extern char *sparc_align_funcs_string;
+/* Parsed values as a power of two.  */
+extern int sparc_align_loops;
+extern int sparc_align_jumps;
+extern int sparc_align_funcs;
+
+#define DEFAULT_SPARC_ALIGN_FUNCS \
+(sparc_cpu == PROCESSOR_ULTRASPARC ? 5 : 2)
 
 /* target machine storage layout */
 
@@ -610,7 +624,7 @@ extern struct sparc_cpu_select sparc_select[];
   (TARGET_ARCH64 ? (((LOC)+15) & ~15) : (((LOC)+7) & ~7))
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
-#define FUNCTION_BOUNDARY 32
+#define FUNCTION_BOUNDARY (1 << (sparc_align_funcs + 3))
 
 /* Alignment of field after `int : 0' in a structure.  */
 /* ??? Should this be based on TARGET_INT64?  */
@@ -912,6 +926,9 @@ extern int sparc_mode_class[];
 /* The stack bias (amount by which the hardware register is offset by).  */
 #define SPARC_STACK_BIAS (TARGET_STACK_BIAS ? 2047 : 0)
 
+/* Is stack biased? */
+#define STACK_BIAS SPARC_STACK_BIAS
+
 /* Base register for access to local variables of the function.  */
 #define FRAME_POINTER_REGNUM 30
 
@@ -1178,17 +1195,19 @@ extern char leaf_reg_remap[];
    `L' is used for the range of constants supported by the movcc insns.
    `M' is used for the range of constants supported by the movrcc insns.  */
 
-#define SPARC_SIMM10_P(X) ((unsigned HOST_WIDE_INT) ((X) + 0x200) < 0x400)
-#define SPARC_SIMM11_P(X) ((unsigned HOST_WIDE_INT) ((X) + 0x400) < 0x800)
-#define SPARC_SIMM13_P(X) ((unsigned HOST_WIDE_INT) ((X) + 0x1000) < 0x2000)
+#define SPARC_SIMM10_P(X) ((unsigned HOST_WIDE_INT) (X) + 0x200 < 0x400)
+#define SPARC_SIMM11_P(X) ((unsigned HOST_WIDE_INT) (X) + 0x400 < 0x800)
+#define SPARC_SIMM13_P(X) ((unsigned HOST_WIDE_INT) (X) + 0x1000 < 0x2000)
 /* 10 and 11 bit immediates are only used for a few specific insns.
    SMALL_INT is used throughout the port so we continue to use it.  */
 #define SMALL_INT(X) (SPARC_SIMM13_P (INTVAL (X)))
+#define SPARC_SETHI_P(X) \
+(((unsigned HOST_WIDE_INT) (X) & ~(unsigned HOST_WIDE_INT) 0xfffffc00) == 0)
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)  \
   ((C) == 'I' ? SPARC_SIMM13_P (VALUE)			\
    : (C) == 'J' ? (VALUE) == 0				\
-   : (C) == 'K' ? ((VALUE) & 0x3ff) == 0		\
+   : (C) == 'K' ? SPARC_SETHI_P (VALUE)			\
    : (C) == 'L' ? SPARC_SIMM11_P (VALUE)		\
    : (C) == 'M' ? SPARC_SIMM10_P (VALUE)		\
    : 0)
@@ -2737,6 +2756,12 @@ extern struct rtx_def *legitimize_pic_address ();
 
 #define ASM_FILE_START(file)
 
+/* A C string constant describing how to begin a comment in the target
+   assembler language.  The compiler assumes that the comment will end at
+   the end of the line.  */
+
+#define ASM_COMMENT_START "!"
+
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
 
@@ -2843,34 +2868,51 @@ extern struct rtx_def *legitimize_pic_address ();
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*%s%d", PREFIX, NUM)
 
-/* This is how to output an assembler line defining a `double' constant.  */
+/* This is how to output an assembler line defining a `float' constant.
+   We always have to use a .long pseudo-op to do this because the native
+   SVR4 ELF assembler is buggy and it generates incorrect values when we
+   try to use the .float pseudo-op instead.  */
 
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
-  {									\
-    long t[2];								\
-    REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);				\
-    fprintf (FILE, "\t%s\t0x%lx\n\t%s\t0x%lx\n",			\
-	     ASM_LONG, t[0], ASM_LONG, t[1]);				\
+#define ASM_OUTPUT_FLOAT(FILE,VALUE) \
+  {								\
+    long t;							\
+    char str[30];						\
+    REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);			\
+    REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);		\
+    fprintf (FILE, "\t%s\t0x%lx %s ~%s\n", ASM_LONG, t,		\
+	     ASM_COMMENT_START, str);				\
+  }								\
+
+/* This is how to output an assembler line defining a `double' constant.
+   We always have to use a .long pseudo-op to do this because the native
+   SVR4 ELF assembler is buggy and it generates incorrect values when we
+   try to use the .float pseudo-op instead.  */
+
+#define ASM_OUTPUT_DOUBLE(FILE,VALUE) \
+  {								\
+    long t[2];							\
+    char str[30];						\
+    REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);			\
+    REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);		\
+    fprintf (FILE, "\t%s\t0x%lx %s ~%s\n", ASM_LONG, t[0],	\
+	     ASM_COMMENT_START, str);				\
+    fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t[1]);		\
   }
-
-/* This is how to output an assembler line defining a `float' constant.  */
-
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
-  {									\
-    long t;								\
-    REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);				\
-    fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t);			\
-  }									\
 
 /* This is how to output an assembler line defining a `long double'
    constant.  */
 
-#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)				\
-  {									\
-    long t[4];								\
-    REAL_VALUE_TO_TARGET_LONG_DOUBLE ((VALUE), t);			\
-    fprintf (FILE, "\t%s\t0x%lx\n\t%s\t0x%lx\n\t%s\t0x%lx\n\t%s\t0x%lx\n", \
-      ASM_LONG, t[0], ASM_LONG, t[1], ASM_LONG, t[2], ASM_LONG, t[3]);	\
+#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE) \
+  {								\
+    long t[4];							\
+    char str[30];						\
+    REAL_VALUE_TO_TARGET_LONG_DOUBLE ((VALUE), t);		\
+    REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", str);		\
+    fprintf (FILE, "\t%s\t0x%lx %s ~%s\n", ASM_LONG, t[0],	\
+	     ASM_COMMENT_START, str);				\
+    fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t[1]);		\
+    fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t[2]);		\
+    fprintf (FILE, "\t%s\t0x%lx\n", ASM_LONG, t[3]);		\
   }
 
 /* This is how to output an assembler line defining an `int' constant.  */
@@ -2941,6 +2983,12 @@ do {									\
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
   if ((LOG) != 0)			\
     fprintf (FILE, "\t.align %d\n", (1<<(LOG)))
+
+#define ASM_OUTPUT_ALIGN_CODE(FILE) \
+  ASM_OUTPUT_ALIGN (FILE, sparc_align_jumps)
+
+#define ASM_OUTPUT_LOOP_ALIGN(FILE) \
+  ASM_OUTPUT_ALIGN (FILE, sparc_align_loops)
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.skip %u\n", (SIZE))
