@@ -399,8 +399,8 @@ GFC_INTEGER_4 compare_string (GFC_INTEGER_4, const char *,
 /* random.c */
 
 #define random_seed prefix(random_seed)
-void random_seed (GFC_INTEGER_4 * size, const gfc_array_i4 * put,
-             const gfc_array_i4 * get);
+void random_seed (GFC_INTEGER_4 * size, gfc_array_i4 * put,
+		  gfc_array_i4 * get);
 
 #endif
 

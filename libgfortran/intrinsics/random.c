@@ -1,18 +1,7 @@
 /* Implementation of the RANDOM intrinsics
    Copyright 2002, 2004 Free Software Foundation, Inc.
    Contributed by Lars Segerlund <seger@linuxmail.org>
-
-  The algorithm was taken from the paper :
-
-	Mersenne Twister:	623-dimensionally equidistributed
-				uniform pseudorandom generator.
-
-	by:	Makoto Matsumoto
-		Takuji Nishimura
-
-	Which appeared in the: ACM Transactions on Modelling and Computer
-	Simulations: Special Issue on Uniform Random Number
-	Generation. ( Early in 1998 ).
+   and Steve Kargl.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
@@ -30,6 +19,31 @@ You should have received a copy of the GNU Lesser General Public
 License along with libgfor; see the file COPYING.LIB.  If not,
 write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
+
+#if 0
+
+/*  The Mersenne Twister code is currently commented out due to
+
+    (1) Simple user specified seeds lead to really bad sequences for
+        nearly 100000 random numbers.
+    (2) open(), read(), and close() are not properly declared via header
+        files.
+    (3) The global index i is abused and causes unexpected behavior with
+        GET and PUT.
+    (4) See PR 15619.
+
+  The algorithm was taken from the paper :
+
+	Mersenne Twister:	623-dimensionally equidistributed
+				uniform pseudorandom generator.
+
+	by:	Makoto Matsumoto
+		Takuji Nishimura
+
+	Which appeared in the: ACM Transactions on Modelling and Computer
+	Simulations: Special Issue on Uniform Random Number
+	Generation. ( Early in 1998 ).  */
+
 
 #include "config.h"
 #include <stdio.h>
@@ -362,4 +376,306 @@ arandom_r8 (gfc_array_r8 * harv)
 	}
     }
 }
+#endif /* Mersenne Twister code */
+
+
+/* George Marsaglia's KISS (Keep It Simple Stupid) random number generator.
+
+   This PRNG combines:
+
+   (1) The congruential generator x(n)=69069*x(n-1)+1327217885 with a period
+       of 2^32,
+   (2) A 3-shift shift-register generator with a period of 2^32-1,
+   (3) Two 16-bit multiply-with-carry generators with a period of
+       597273182964842497 > 2^59.
+
+   The overall period exceeds 2^123.
+
+   http://www.ciphersbyritter.com/NEWS4/RANDC.HTM#369F6FCA.74C7C041@stat.fsu.edu
+
+   The above web site has an archive of a newsgroup posting from George
+   Marsaglia with the statement:
+
+   Subject: Random numbers for C: Improvements.
+   Date: Fri, 15 Jan 1999 11:41:47 -0500
+   From: George Marsaglia <geo@stat.fsu.edu>
+   Message-ID: <369F6FCA.74C7C041@stat.fsu.edu>
+   References: <369B5E30.65A55FD1@stat.fsu.edu>
+   Newsgroups: sci.stat.math,sci.math,sci.math.numer-analysis
+   Lines: 93
+
+   As I hoped, several suggestions have led to
+   improvements in the code for RNG's I proposed for
+   use in C. (See the thread "Random numbers for C: Some
+   suggestions" in previous postings.) The improved code
+   is listed below.
+
+   A question of copyright has also been raised.  Unlike
+   DIEHARD, there is no copyright on the code below. You
+   are free to use it in any way you want, but you may
+   wish to acknowledge the source, as a courtesy.
+
+"There is no copyright on the code below." included the original
+KISS algorithm. */
+
+#include "config.h"
+#include "libgfortran.h"
+
+#define GFC_SL(k, n)	((k)^((k)<<(n)))
+#define GFC_SR(k, n)	((k)^((k)>>(n)))
+
+static const GFC_INTEGER_4 kiss_size = 4;
+#define KISS_DEFAULT_SEED {123456789, 362436069, 521288629, 916191069};
+static const GFC_UINTEGER_4 kiss_default_seed[4] = KISS_DEFAULT_SEED;
+static GFC_UINTEGER_4 kiss_seed[4] = KISS_DEFAULT_SEED;
+
+/* kiss_random_kernel() returns an integer value in the range of
+   (0, GFC_UINTEGER_4_HUGE].  The distribution of pseudorandom numbers
+   should be uniform.  */
+
+static GFC_UINTEGER_4
+kiss_random_kernel(void)
+{
+
+  GFC_UINTEGER_4 kiss;
+
+  kiss_seed[0] = 69069 * kiss_seed[0] + 1327217885;
+  kiss_seed[1] = GFC_SL(GFC_SR(GFC_SL(kiss_seed[1],13),17),5);
+  kiss_seed[2] = 18000 * (kiss_seed[2] & 65535) + (kiss_seed[2] >> 16);
+  kiss_seed[3] = 30903 * (kiss_seed[3] & 65535) + (kiss_seed[3] >> 16);
+  kiss = kiss_seed[0] + kiss_seed[1] + (kiss_seed[2] << 16) + kiss_seed[3];
+
+  return kiss;
+
+}
+
+/*  This function produces a REAL(4) value in the uniform distribution
+    with range [0,1).  */
+
+void
+prefix(random_r4) (GFC_REAL_4 *x)
+{
+
+  GFC_UINTEGER_4 kiss;
+
+  do
+    {
+      kiss = kiss_random_kernel ();
+      *x = (GFC_REAL_4)kiss / (GFC_REAL_4)(~(GFC_UINTEGER_4) 0);
+    }
+  while (*x == 1.0);
+
+}
+
+/*  This function produces a REAL(8) value from the uniform distribution
+    with range [0,1).  */
+
+void
+prefix(random_r8) (GFC_REAL_8 *x)
+{
+
+  GFC_UINTEGER_8 kiss;
+
+  do
+    {
+      kiss = (((GFC_UINTEGER_8)kiss_random_kernel ()) << 32)
+	     + kiss_random_kernel ();
+      *x = (GFC_REAL_8)kiss / (GFC_REAL_8)(~(GFC_UINTEGER_8) 0);
+    }
+  while (*x != 0);
+
+}
+
+/*  This function fills a REAL(4) array with values from the uniform
+    distribution with range [0,1).  */
+
+void
+prefix(arandom_r4) (gfc_array_r4 *x)
+{
+
+  index_type count[GFC_MAX_DIMENSIONS - 1];
+  index_type extent[GFC_MAX_DIMENSIONS - 1];
+  index_type stride[GFC_MAX_DIMENSIONS - 1];
+  index_type stride0;
+  index_type dim;
+  GFC_REAL_4 *dest;
+  int n;
+
+  dest = x->data;
+
+  if (x->dim[0].stride == 0)
+    x->dim[0].stride = 1;
+
+  dim = GFC_DESCRIPTOR_RANK (x);
+
+  for (n = 0; n < dim; n++)
+    {
+      count[n] = 0;
+      stride[n] = x->dim[n].stride;
+      extent[n] = x->dim[n].ubound + 1 - x->dim[n].lbound;
+      if (extent[n] <= 0)
+        return;
+    }
+
+  stride0 = stride[0];
+
+  while (dest)
+    {
+      prefix(random_r4) (dest);
+
+      /* Advance to the next element.  */
+      dest += stride0;
+      count[0]++;
+      /* Advance to the next source element.  */
+      n = 0;
+      while (count[n] == extent[n])
+        {
+          /* When we get to the end of a dimension, reset it and increment
+             the next dimension.  */
+          count[n] = 0;
+          /* We could precalculate these products, but this is a less
+             frequently used path so probably not worth it.  */
+          dest -= stride[n] * extent[n];
+          n++;
+          if (n == dim)
+            {
+              dest = NULL;
+              break;
+            }
+          else
+            {
+              count[n]++;
+              dest += stride[n];
+            }
+        }
+    }
+}
+
+/*  This function fills a REAL(8) array with valuse from the uniform
+    distribution with range [0,1).  */
+
+void
+prefix(arandom_r8) (gfc_array_r8 *x)
+{
+
+  index_type count[GFC_MAX_DIMENSIONS - 1];
+  index_type extent[GFC_MAX_DIMENSIONS - 1];
+  index_type stride[GFC_MAX_DIMENSIONS - 1];
+  index_type stride0;
+  index_type dim;
+  GFC_REAL_8 *dest;
+  int n;
+
+  dest = x->data;
+
+  if (x->dim[0].stride == 0)
+    x->dim[0].stride = 1;
+
+  dim = GFC_DESCRIPTOR_RANK (x);
+
+  for (n = 0; n < dim; n++)
+    {
+      count[n] = 0;
+      stride[n] = x->dim[n].stride;
+      extent[n] = x->dim[n].ubound + 1 - x->dim[n].lbound;
+      if (extent[n] <= 0)
+        return;
+    }
+
+  stride0 = stride[0];
+
+  while (dest)
+    {
+      prefix(random_r8) (dest);
+
+      /* Advance to the next element.  */
+      dest += stride0;
+      count[0]++;
+      /* Advance to the next source element.  */
+      n = 0;
+      while (count[n] == extent[n])
+        {
+          /* When we get to the end of a dimension, reset it and increment
+             the next dimension.  */
+          count[n] = 0;
+          /* We could precalculate these products, but this is a less
+             frequently used path so probably not worth it.  */
+          dest -= stride[n] * extent[n];
+          n++;
+          if (n == dim)
+            {
+              dest = NULL;
+              break;
+            }
+          else
+            {
+              count[n]++;
+              dest += stride[n];
+            }
+        }
+    }
+}
+
+/* prefix(random_seed) is used to seed the PRNG with either a default
+   set of seeds or user specified set of seed.  prefix(random_seed) 
+   must be called with no argument or exactly one argument.  */
+
+void
+random_seed (GFC_INTEGER_4 *size, gfc_array_i4 * put, 
+		     gfc_array_i4 * get)
+{
+
+  int i;
+
+  if (size == NULL && put == NULL && get == NULL)
+    {
+      /* From the standard: "If no argument is present, the processor assigns
+         a processor-dependent value to the seed." */
+      kiss_seed[0] = kiss_default_seed[0];
+      kiss_seed[1] = kiss_default_seed[1];
+      kiss_seed[2] = kiss_default_seed[2];
+      kiss_seed[3] = kiss_default_seed[3];
+    }
+
+  if (size != NULL)
+    *size = kiss_size;
+
+  if (put != NULL)
+    {
+      /* If the rank of the array is not 1, abort */
+      if (GFC_DESCRIPTOR_RANK (put) != 1)
+        runtime_error ("Array rank of PUT is not 1.");
+
+      /* If the array is too small, abort */
+      if (((put->dim[0].ubound + 1 - put->dim[0].lbound)) < kiss_size)
+        runtime_error ("Array size of PUT is too small.");
+
+      if (put->dim[0].stride == 0)
+	put->dim[0].stride = 1;
+
+      /*  This code now should do correct strides. */
+      for (i = 0; i < kiss_size; i++)
+        kiss_seed[i] =(GFC_UINTEGER_4) put->data[i * put->dim[0].stride];
+    }
+
+  /* Return the seed to GET data */
+  if (get != NULL)
+    {
+      /* If the rank of the array is not 1, abort. */
+      if (GFC_DESCRIPTOR_RANK (get) != 1)
+	runtime_error ("Array rank of GET is not 1.");
+
+      /* If the array is too small, abort. */
+      if (((get->dim[0].ubound + 1 - get->dim[0].lbound)) < kiss_size)
+	runtime_error ("Array size of GET is too small.");
+
+      if (get->dim[0].stride == 0)
+	get->dim[0].stride = 1;
+
+      /*  This code now should do correct strides. */
+      for (i = 0; i < kiss_size; i++)
+        get->data[i * get->dim[0].stride] = (GFC_INTEGER_4) kiss_seed[i];
+    }
+}
+
 

@@ -1363,11 +1363,14 @@ gfc_resolve_random_number (gfc_code * c ATTRIBUTE_UNUSED)
   int kind;
 
   kind = c->ext.actual->expr->ts.kind;
-  name = gfc_get_string ((c->ext.actual->expr->rank == 0) ?
-			   PREFIX("random_r%d") : PREFIX("arandom_r%d"),
-			 kind);
+  if (c->ext.actual->expr->rank == 0)
+    name = gfc_get_string (PREFIX("random_r%d"), kind);
+  else
+    name = gfc_get_string (PREFIX("arandom_r%d"), kind);
+  
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
+
 
 /* Determine if the arguments to SYSTEM_CLOCK are INTEGER(4) or INTEGER(8) */
 
