@@ -109,16 +109,10 @@ T_CPPFLAGS =
 
 AWK = @AWK@
 CC = @CC@
-# srcdir might be a relative pathname which won't be valid in a subdirectory,
-# so we must use objdir/srcdir instead to make it safe.  objdir is always
-# a full pathname.
-BISON = `if [ -f $(objdir)/../bison/bison ] ; then case $(srcdir) in \
-	/*) echo $(objdir)/../bison/bison -L $(srcdir)/../bison/ ;; \
-	*) echo $(objdir)/../bison/bison -L $(objdir)/$(srcdir)/../bison/ ;; \
-	esac; else echo bison ; fi`
+BISON = @BISON@
 BISONFLAGS =
-LEX = `if [ -f $(objdir)/../flex/flex ] ; then echo $(objdir)/../flex/flex ; else echo flex ; fi`
-LEXFLAGS =
+FLEX = @FLEX@
+FLEXFLAGS =
 AR = ar
 AR_FLAGS = rc
 DLLTOOL = dlltool
@@ -686,8 +680,8 @@ ORDINARY_FLAGS_TO_PASS = \
 	"CLIB=$(CLIB)" \
 	"GCC_FOR_TARGET=$(GCC_FOR_TARGET)" \
 	"LDFLAGS=$(LDFLAGS)" \
-	"LEX=$(LEX)" \
-	"LEXFLAGS=$(LEXFLAGS)" \
+	"FLEX=$(FLEX)" \
+	"FLEXFLAGS=$(FLEXFLAGS)" \
 	"LN=$(LN)" \
 	"LN_S=$(LN_S)" \
 	"MAKEINFO=$(MAKEINFO)" \
@@ -1181,7 +1175,7 @@ collect2.o : collect2.c $(CONFIG_H) system.h gstab.h intl.h \
 	$(OBSTACK_H) $(DEMANGLE_H) collect2.h version.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES)  \
 	-DTARGET_MACHINE=\"$(target_alias)\" $(MAYBE_USE_COLLECT2) \
-	-c `echo $(srcdir)/collect2.c | sed 's,^\./,,'`
+	-c $(srcdir)/collect2.c
 
 tlink.o: tlink.c $(DEMANGLE_H) hash.h $(CONFIG_H) system.h collect2.h intl.h
 hash.o: hash.c hash.h system.h toplev.h
@@ -1241,7 +1235,7 @@ gcc.o: gcc.c $(CONFIG_H) system.h intl.h multilib.h \
     Makefile $(lang_specs_files) prefix.h $(GCC_H)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
   $(DRIVER_DEFINES) \
-  -c `echo $(srcdir)/gcc.c | sed 's,^\./,,'`
+  -c $(srcdir)/gcc.c
 
 gccspec.o: gccspec.c $(CONFIG_H) system.h $(GCC_H)
 cppspec.o: cppspec.c $(CONFIG_H) system.h $(GCC_H)
@@ -1285,7 +1279,7 @@ obstack.o: $(srcdir)/../libiberty/obstack.c $(CONFIG_H)
 prefix.o: prefix.c $(CONFIG_H) system.h Makefile prefix.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	-DPREFIX=\"$(prefix)\" \
-	  -c `echo $(srcdir)/prefix.c | sed 's,^\./,,'`
+	  -c $(srcdir)/prefix.c
 
 convert.o: convert.c $(CONFIG_H) system.h $(TREE_H) flags.h convert.h toplev.h
 
@@ -1306,7 +1300,7 @@ toplev.o : toplev.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) function.h \
    graph.h $(LOOP_H) except.h $(REGS_H) $(TIMEVAR_H) $(lang_options_files) ssa.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(MAYBE_USE_COLLECT2) \
 	  -DTARGET_NAME=\"$(target_alias)\" \
-	  -c `echo $(srcdir)/toplev.c | sed 's,^\./,,'`
+	  -c $(srcdir)/toplev.c
 
 rtl.o : rtl.c $(CONFIG_H) system.h $(RTL_H) bitmap.h $(GGC_H) toplev.h
 
@@ -1499,7 +1493,7 @@ alloca.o:	$(srcdir)/../libiberty/alloca.c
 	rm -f alloca.c
 	$(LN_S) $(srcdir)/../libiberty/alloca.c alloca.c
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(ALLOCA_FLAGS) \
-	  -c `echo alloca.c | sed 's,^\./,,'`
+	  -c alloca.c
 	$(ALLOCA_FINISH)
 #
 # Generate header and source files from the machine description,
@@ -1819,7 +1813,7 @@ $(HOST_PREFIX_1)ggc-none.o: ggc-none.c
 intl.o: intl.c intl.h gansidecl.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DLOCALEDIR=\"$(localedir)\" \
-	  -c `echo $(srcdir)/intl.c | sed 's,^\./,,'`
+	  -c $(srcdir)/intl.c
 
 $(top_builddir)/intl/libintl.a: intl.all
 
@@ -1877,7 +1871,7 @@ cppinit.o:  cppinit.c  $(CONFIG_H) $(LIBCPP_DEPS) cppdefault.h \
 cppdefault.o: cppdefault.c $(CONFIG_H) system.h cppdefault.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  $(PREPROCESSOR_DEFINES) \
-	  -c `echo $(srcdir)/cppdefault.c | sed 's,^\./,,'`
+	  -c $(srcdir)/cppdefault.c
 
 mkdeps.o: mkdeps.c $(CONFIG_H) system.h mkdeps.h
 

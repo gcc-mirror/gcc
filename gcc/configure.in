@@ -422,12 +422,10 @@ AC_C_INLINE
 
 # Find some useful tools
 AC_PROG_AWK
-AC_PROG_LEX
 gcc_AC_PROG_LN
 gcc_AC_PROG_LN_S
 gcc_AC_C_VOLATILE
 AC_PROG_RANLIB
-AC_PROG_YACC
 gcc_AC_PROG_INSTALL
 
 AC_HEADER_STDC
@@ -468,6 +466,23 @@ if test $gcc_cv_prog_makeinfo_modern = no; then
 else
   BUILD_INFO=info		AC_SUBST(BUILD_INFO)
   INSTALL_INFO=install-info	AC_SUBST(INSTALL_INFO)
+fi
+
+# How about lex?
+dnl Don't use AC_PROG_LEX; we insist on flex.
+dnl LEXLIB is not useful in gcc.
+if test -f $srcdir/../flex/skel.c; then
+  FLEX='$(objdir)/../flex/flex'
+else
+  AC_CHECK_PROG(FLEX, flex, flex, false)
+fi
+
+# Bison?
+# The -L switch is so bison can find its skeleton file.
+if test -f $srcdir/../bison/bison.simple; then
+  BISON='$(objdir)/../bison/bison -L $(srcdir)/../bison/'
+else
+  AC_CHECK_PROG(BISON, bison, bison, false)
 fi
 
 # See if the stage1 system preprocessor understands the ANSI C

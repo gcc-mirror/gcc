@@ -141,14 +141,14 @@ f/fini: f/fini.o f/proj-h.o
 		f/fini.o f/proj-h.o
 
 f/fini.o:
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
-	      `echo $(srcdir)/f/fini.c | sed 's,^\./,,'` -o $@
+	$(HOST_CC) $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
+	      -c $(srcdir)/f/fini.c $(OUTPUT_OPTION)
 
 # Like proj.o, but depends on hconfig.h instead of config.h.
 f/proj-h.o: f/proj.c f/proj.h $(HCONFIG_H) $(SYSTEM_H) $(ASSERT_H) $(GLIMITS_H)
-	$(HOST_CC) -c -DUSE_HCONFIG \
+	$(HOST_CC) -DUSE_HCONFIG \
 		$(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
-		`echo $(srcdir)/f/proj.c | sed 's,^\./,,'` -o $@
+		-c $(srcdir)/f/proj.c $(OUTPUT_OPTION)
 
 #
 # Build hooks:
@@ -213,21 +213,21 @@ f/g77.dvi: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 # itself, which uses f/intrin.def; in fact, many bugs in f/intrin.def have
 # been found only upon reading the documentation that was automatically
 # produced from it.
-$(srcdir)/f/intdoc.texi: f/intdoc.c f/intdoc.in f/ansify.c \
-		f/intrin.def f/intrin.h
-	case "$(LANGUAGES)" in \
-	  *[fF]77*) touch lang-f77;; \
-	  *) rm -f lang-f77;; \
-	esac
-	if [ -f lang-f77 ]; then \
+
+$(srcdir)/f/intdoc.texi: f/intdoc$(build_exeext)
+	f/intdoc$(build_exeext) > $(srcdir)/f/intdoc.texi
+
+f/intdoc: f/intdoc.c f/intdoc.h0 f/intrin.h f/intrin.def hconfig.h system.h
 	  $(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) $(INCLUDES) \
-	   `echo $(srcdir)/f/ansify.c | sed 's,^\./,,'` -o f/ansify; \
-	  f/ansify <$(srcdir)/f/intdoc.in >f/intdoc.h0 $(srcdir)/f/intdoc.in; \
-	  $(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) $(INCLUDES) -I./f \
-	   `echo $(srcdir)/f/intdoc.c | sed 's,^\./,,'` -o f/intdoc; \
-	  f/intdoc > $(srcdir)/f/intdoc.texi; \
-	  rm f/intdoc$(build_exeext) f/ansify$(build_exeext) f/intdoc.h0; \
-	else true; fi
+		  $(srcdir)/f/intdoc.c -o f/intdoc
+
+f/intdoc.h0: f/intdoc.in f/ansify$(build_exeext)
+	f/ansify$(build_exeext) $(srcdir)/f/intdoc.in \
+		< $(srcdir)/f/intdoc.in > f/intdoc.h0
+
+f/ansify$(build_exeext): f/ansify.c hconfig.h system.h
+	  $(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) $(INCLUDES) \
+	  	$(srcdir)/f/ansify.c -o f/ansify$(build_exeext)
 
 $(srcdir)/f/BUGS: f/bugs0.texi f/bugs.texi f/root.texi
 	cd $(srcdir)/f; $(MAKEINFO) -D BUGSONLY --no-header --no-split \
@@ -388,7 +388,6 @@ f77.stage4: stage4-start
 #
 # .o: .h dependencies.
 
-f/ansify.o: f/ansify.c hconfig.h system.h
 f/bad.o: f/bad.c f/proj.h $(CONFIG_H) system.h f/bad.h f/bad.def f/where.h \
  glimits.h f/top.h f/malloc.h flags.h f/com.h f/com-rt.def $(TREE_H) f/bld.h \
  f/bld-op.def f/bit.h f/info.h f/info-b.def f/info-k.def f/info-w.def \
@@ -437,8 +436,6 @@ f/implic.o: f/implic.c f/proj.h $(CONFIG_H) system.h f/implic.h f/info.h \
 f/info.o: f/info.c f/proj.h $(CONFIG_H) system.h f/info.h f/info-b.def \
  f/info-k.def f/info-w.def f/target.h $(TREE_H) f/bad.h f/bad.def f/where.h \
  glimits.h f/top.h f/malloc.h f/lex.h f/type.h
-f/intdoc.o: f/intdoc.c hconfig.h system.h f/intrin.h f/intrin.def \
- f/intdoc.h0 f/intdoc.h0
 f/intrin.o: f/intrin.c f/proj.h $(CONFIG_H) system.h f/intrin.h \
  f/intrin.def f/bld.h f/bld-op.def f/bit.h f/malloc.h f/com.h f/com-rt.def \
  $(TREE_H) f/info.h f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h \
