@@ -1,3 +1,8 @@
+2003-10-01  Nathan Myers  <ncm@cantrip.org>
+
+	* include/bits/locale_facets.tcc (time_put::put): Avoid
+	expensive *__s++, in favor of *__s, ++__s.
+
 2003-10-01  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/locale_facets.tcc (time_put::put): Minor
