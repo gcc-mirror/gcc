@@ -1,5 +1,10 @@
 2004-07-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	* gfortran.dg/dg.exp: Don't use wildcard for suffixes, also check
+	testcases with capital suffix.
+
+2004-07-09  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	PR fortran/15481
  	PR fortran/13372
  	PR fortran/13575
