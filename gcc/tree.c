@@ -1415,7 +1415,8 @@ make_tree_vec (len)
   return t;
 }
 
-/* Return 1 if EXPR is the integer constant zero.  */
+/* Return 1 if EXPR is the integer constant zero or a complex constant
+   of zero.  */
 
 int
 integer_zerop (expr)
@@ -1423,12 +1424,16 @@ integer_zerop (expr)
 {
   STRIP_NOPS (expr);
 
-  return (TREE_CODE (expr) == INTEGER_CST
-	  && TREE_INT_CST_LOW (expr) == 0
-	  && TREE_INT_CST_HIGH (expr) == 0);
+  return ((TREE_CODE (expr) == INTEGER_CST
+	   && TREE_INT_CST_LOW (expr) == 0
+	   && TREE_INT_CST_HIGH (expr) == 0)
+	  || (TREE_CODE (expr) == COMPLEX_CST
+	      && integer_zerop (TREE_REALPART (expr))
+	      && integer_zerop (TREE_IMAGPART (expr))));
 }
 
-/* Return 1 if EXPR is the integer constant one.  */
+/* Return 1 if EXPR is the integer constant one or the corresponding
+   complex constant.  */
 
 int
 integer_onep (expr)
@@ -1436,13 +1441,16 @@ integer_onep (expr)
 {
   STRIP_NOPS (expr);
 
-  return (TREE_CODE (expr) == INTEGER_CST
-	  && TREE_INT_CST_LOW (expr) == 1
-	  && TREE_INT_CST_HIGH (expr) == 0);
+  return ((TREE_CODE (expr) == INTEGER_CST
+	   && TREE_INT_CST_LOW (expr) == 1
+	   && TREE_INT_CST_HIGH (expr) == 0)
+	  || (TREE_CODE (expr) == COMPLEX_CST
+	      && integer_onep (TREE_REALPART (expr))
+	      && integer_zerop (TREE_IMAGPART (expr))));
 }
 
-/* Return 1 if EXPR is an integer containing all 1's
-   in as much precision as it contains.  */
+/* Return 1 if EXPR is an integer containing all 1's in as much precision as
+   it contains.  Likewise for the corresponding complex constant.  */
 
 int
 integer_all_onesp (expr)
@@ -1453,7 +1461,12 @@ integer_all_onesp (expr)
 
   STRIP_NOPS (expr);
 
-  if (TREE_CODE (expr) != INTEGER_CST)
+  if (TREE_CODE (expr) == COMPLEX_CST
+      && integer_all_onesp (TREE_REALPART (expr))
+      && integer_zerop (TREE_IMAGPART (expr)))
+    return 1;
+
+  else if (TREE_CODE (expr) != INTEGER_CST)
     return 0;
 
   uns = TREE_UNSIGNED (TREE_TYPE (expr));
@@ -1495,6 +1508,11 @@ integer_pow2p (expr)
 
   STRIP_NOPS (expr);
 
+  if (TREE_CODE (expr) == COMPLEX_CST
+      && integer_pow2p (TREE_REALPART (expr))
+      && integer_zerop (TREE_IMAGPART (expr)))
+    return 1;
+
   if (TREE_CODE (expr) != INTEGER_CST)
     return 0;
 
@@ -1516,11 +1534,14 @@ real_zerop (expr)
 {
   STRIP_NOPS (expr);
 
-  return (TREE_CODE (expr) == REAL_CST
-	  && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst0));
+  return ((TREE_CODE (expr) == REAL_CST
+	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst0))
+	  || (TREE_CODE (expr) == COMPLEX_CST
+	      && real_zerop (TREE_REALPART (expr))
+	      && real_zerop (TREE_IMAGPART (expr))));
 }
 
-/* Return 1 if EXPR is the real constant one.  */
+/* Return 1 if EXPR is the real constant one in real or complex form.  */
 
 int
 real_onep (expr)
@@ -1528,8 +1549,11 @@ real_onep (expr)
 {
   STRIP_NOPS (expr);
 
-  return (TREE_CODE (expr) == REAL_CST
-	  && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst1));
+  return ((TREE_CODE (expr) == REAL_CST
+	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst1))
+	  || (TREE_CODE (expr) == COMPLEX_CST
+	      && real_onep (TREE_REALPART (expr))
+	      && real_zerop (TREE_IMAGPART (expr))));
 }
 
 /* Return 1 if EXPR is the real constant two.  */
@@ -1540,8 +1564,11 @@ real_twop (expr)
 {
   STRIP_NOPS (expr);
 
-  return (TREE_CODE (expr) == REAL_CST
-	  && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst2));
+  return ((TREE_CODE (expr) == REAL_CST
+	   && REAL_VALUES_EQUAL (TREE_REAL_CST (expr), dconst2))
+	  || (TREE_CODE (expr) == COMPLEX_CST
+	      && real_twop (TREE_REALPART (expr))
+	      && real_zerop (TREE_IMAGPART (expr))));
 }
 
 /* Nonzero if EXP is a constant or a cast of a constant.  */
