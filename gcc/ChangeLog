@@ -1,3 +1,8 @@
+2004-09-17  Jones Desougi  <jones@ingate.com>
+
+	* configure.ac: Replace AC_COMPILE_CHECK_SIZEOF with AC_CHECK_SIZEOF.
+	* configure, config.in: Regenerate.
+
 2004-09-17  Zack Weinberg  <zack@codesourcery.com>
 
 	* tree.c, tree.h (tree_class_strings): Make array const.
