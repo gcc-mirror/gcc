@@ -1,5 +1,5 @@
 /* Procedure integration for GNU CC.
-   Copyright (C) 1988, 91, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 91, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -842,8 +842,8 @@ save_for_inline_nocopy (fndecl)
    pool.  Replace each with a CONST that has the mode of the original
    constant, contains the constant, and has RTX_INTEGRATED_P set.
    Similarly, constant pool addresses not enclosed in a MEM are replaced
-   with an ADDRESS rtx which also gives the constant, mode, and has
-   RTX_INTEGRATED_P set.  */
+   with an ADDRESS and CONST rtx which also gives the constant, its
+   mode, the mode of the address, and has RTX_INTEGRATED_P set.  */
 
 static void
 save_constants (px)
@@ -882,7 +882,9 @@ save_constants (px)
   else if (GET_CODE (x) == SYMBOL_REF
 	   && CONSTANT_POOL_ADDRESS_P (x))
     {
-      *px = gen_rtx (ADDRESS, get_pool_mode (x), get_pool_constant (x));
+      *px = gen_rtx (ADDRESS, GET_MODE (x),
+		     gen_rtx (CONST, get_pool_mode (x),
+			      get_pool_constant (x)));
       save_constants (&XEXP (*px, 0));
       RTX_INTEGRATED_P (*px) = 1;
     }
@@ -949,6 +951,7 @@ copy_for_inline (orig)
      rtx orig;
 {
   register rtx x = orig;
+  register rtx new;
   register int i;
   register enum rtx_code code;
   register char *format_ptr;
@@ -994,9 +997,8 @@ copy_for_inline (orig)
       /* Get constant pool entry, but access in different mode.  */
       if (RTX_INTEGRATED_P (x))
 	{
-	  rtx new
-	    = force_const_mem (GET_MODE (SUBREG_REG (x)),
-			       copy_for_inline (XEXP (SUBREG_REG (x), 0)));
+	  new = force_const_mem (GET_MODE (SUBREG_REG (x)),
+				 copy_for_inline (XEXP (SUBREG_REG (x), 0)));
 
 	  PUT_MODE (new, GET_MODE (x));
 	  return validize_mem (new);
@@ -1009,8 +1011,16 @@ copy_for_inline (orig)
       if (! RTX_INTEGRATED_P (x))
 	abort ();
 
-      return XEXP (force_const_mem (GET_MODE (x),
-				    copy_for_inline (XEXP (x, 0))), 0);
+      new = force_const_mem (GET_MODE (XEXP (x, 0)),
+			     copy_for_inline (XEXP (XEXP (x, 0), 0)));
+      new = XEXP (new, 0);
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+      if (GET_MODE (new) != GET_MODE (x))
+	new = convert_memory_address (GET_MODE (x), new);
+#endif
+
+      return new;
 
     case ASM_OPERANDS:
       /* If a single asm insn contains multiple output operands
@@ -2335,7 +2345,7 @@ copy_rtx_and_substitute (orig, map)
 	{
 	  rtx constant = get_pool_constant (orig);
 	  if (GET_CODE (constant) == LABEL_REF)
-	    return XEXP (force_const_mem (Pmode, 
+	    return XEXP (force_const_mem (GET_MODE (orig),
 					  copy_rtx_and_substitute (constant,
 								   map)),
 			 0);
@@ -2382,8 +2392,10 @@ copy_rtx_and_substitute (orig, map)
       if (! RTX_INTEGRATED_P (orig))
 	abort ();
 
-      temp = force_const_mem (GET_MODE (orig),
-			      copy_rtx_and_substitute (XEXP (orig, 0), map));
+      temp
+	= force_const_mem (GET_MODE (XEXP (orig, 0)),
+			   copy_rtx_and_substitute (XEXP (XEXP (orig, 0), 0),
+						    map));
 
 #if 0
       /* Legitimizing the address here is incorrect.
@@ -2408,7 +2420,14 @@ copy_rtx_and_substitute (orig, map)
 	temp = change_address (temp, GET_MODE (temp), XEXP (temp, 0));
 #endif
 
-      return XEXP (temp, 0);
+      temp = XEXP (temp, 0);
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+      if (GET_MODE (temp) != GET_MODE (orig))
+	temp = convert_memory_address (GET_MODE (orig), temp);
+#endif
+
+      return temp;
 
     case ASM_OPERANDS:
       /* If a single asm insn contains multiple output operands
@@ -2946,8 +2965,16 @@ restore_constants (px)
     }
   else if (RTX_INTEGRATED_P (x) && GET_CODE (x) == ADDRESS)
     {
-      restore_constants (&XEXP (x, 0));
-      *px = XEXP (force_const_mem (GET_MODE (x), XEXP (x, 0)), 0);
+      rtx new = XEXP (force_const_mem (GET_MODE (XEXP (x, 0)),
+				       XEXP (XEXP (x, 0), 0)),
+		      0);
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+      if (GET_MODE (new) != GET_MODE (x))
+	new = convert_memory_address (GET_MODE (x), new);
+#endif
+
+      *px = new;
     }
   else
     {
