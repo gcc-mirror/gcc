@@ -1,5 +1,13 @@
 2001-04-01  Per Bothner  <per@bothner.com>
 
+	* java/lang/natString.cc (intern):  If string's data does not point to
+	this String, make a fresh String that does.
+
+	* java/lang/natString.cc (unintern):  Replace by static function.
+	* java/lang/String.java (unintern):  Remove method.
+
+2001-04-01  Per Bothner  <per@bothner.com>
+
 	* DeflaterOutputStream.java (deflate):  Loop while def.needsInput.
 	(finish):  def.deflate needs to be called in a loop.
 	(inbuf, inbufLength):  New private fields.
