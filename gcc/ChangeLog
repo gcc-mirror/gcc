@@ -1,3 +1,7 @@
+2003-06-09  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* fold-const.c (fold): Fix a comment typo.
+
 2003-06-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* tree-inline.c (expand_call_inline): DECL_SOURCE_LINE_FIRST is
