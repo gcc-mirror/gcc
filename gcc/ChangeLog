@@ -1,3 +1,8 @@
+2004-07-28  Zack Weinberg  <zack@codesourcery.com>
+
+	* tree.h (enum tls_model): Move ...
+	* coretypes.h: ... here.
+
 2004-07-28  Richard Sandiford <rsandifo@redhat.com>
 
 	* config/frv/frv.h (EPILOGUE_USES): New.  Use LR.
@@ -22,7 +27,7 @@
 	* config/rs6000/rs6000.md ("move_from_CR_gt_bit"): Rename to
 	move_from_CR_eq_bit.
 	Rename UNSPEC_MV_CR_GT to UNSPEC_MV_CR_EQ.
-	
+
 
 	* config/rs6000/spe.md ("e500_flip_gt_bit"): Rename to
 	e500_flip_eq_bit.
