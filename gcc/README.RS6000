@@ -6,7 +6,7 @@ the -g debugging option (including during bootstrapping), incorrect object
 files will be produced and the AIX linker will fail with a severe error.
 A fix for APAR IX74254 (64BIT DISASSEMBLED OUPUT FROM COMPILER FAILS TO
 ASSEMBLE/BIND) is available from IBM Customer Support and IBM's
-service.boulder.ibm.com website.
+service.boulder.ibm.com website as PTF U453956.
 
 
 			      AIX 4.1 binder
@@ -105,7 +105,7 @@ assembler.
 Any customer can order and get the replacement assembler, and install it on
 one or more machines.  It is available on diskette from IBM Customer Support
 and from the IBM Internet fix anonymous ftp server (FixDist) at
-aix.boulder.ibm.com (198.17.57.66).
+service.boulder.ibm.com (198.17.57.66).
 
 If you contact IBM Customer Support, they may also ask you for your customer
 number.  If you do not know it, you will still be able to get the fix, but
