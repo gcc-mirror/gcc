@@ -465,7 +465,7 @@ rest_of_handle_final (tree decl, rtx insns)
       fflush (asm_out_file);
 
     /* Release all memory allocated by flow.  */
-    free_basic_block_vars (0);
+    free_basic_block_vars ();
 
     /* Release all memory held by regsets now.  */
     regset_release_memory ();
@@ -2095,7 +2095,7 @@ rest_of_compilation (tree decl)
   /* Show no temporary slots allocated.  */
   init_temp_slots ();
 
-  free_basic_block_vars (0);
+  free_basic_block_vars ();
   free_bb_for_insn ();
 
   timevar_pop (TV_FINAL);

@@ -1,3 +1,18 @@
+2004-05-05  Steven Bosscher  <stevenb@suse.de>
+
+	* basic-block.h (free_basic_block_vars): Update prototype.
+	* flow.c (free_basic_block_vars): Remove the keep_head_end_p
+	argument.
+	(life_analysis): Update call.
+	* ifcvt.c (if_convert): Likewise.
+	* sibcall.c (optimize_sibling_and_tail_recursive_call): Likewise.
+	* passes.c (rest_of_handle_final): Likewise.
+	(rest_of_compilation): Likewise.
+	* config/sh/sh.c (sh_output_mi_thunk): Likewise.
+
+	* emit-rtl.c (next_real_insn): Use INSN_P.
+	(prev_real_insn): Likewise.
+
 2004-05-05  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.md: Update the madd define_split for new mflo/mfhi
@@ -133,8 +148,8 @@
 	* dwarf2out.c (dwarf2out_imported_module_or_decl): Use
 	force_type_die for CONST_DECL.
 
-2004-05-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+2004-05-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+	    Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config.gcc (sparc64-*-solaris2*, sparcv9-*-solaris2*): Add
 	tm-dwarf2.h to tm_file.
@@ -300,20 +315,20 @@
 	* config/alpha/osf.h (SWITCHES_NEED_SPACES): Define.
 
 2004-04-30  Brian Ford  <ford@vss.fsi.com>
-            DJ Delorie  <dj@redhat.com>
+	    DJ Delorie  <dj@redhat.com>
 
-        * config/i386/cygming.h [HAVE_GAS_PE_SECREL32_RELOC]
-        (DWARF2_DEBUGGING_INFO): Define to enable.
-        (DBX_REGISTER_NUMBER): Define to use the svr4 register map for
-        DWARF2.
-        * configure.ac (Target-specific assembler checks)
-        <i[34567]86-*-[cygwin*|pe|mingw32*]>: New test for .secrel32
-        relocs.
-        * configure: Regenerate.
-        * config.in: Likewise.
+	* config/i386/cygming.h [HAVE_GAS_PE_SECREL32_RELOC]
+	(DWARF2_DEBUGGING_INFO): Define to enable.
+	(DBX_REGISTER_NUMBER): Define to use the svr4 register map for
+	DWARF2.
+	* configure.ac (Target-specific assembler checks)
+	<i[34567]86-*-[cygwin*|pe|mingw32*]>: New test for .secrel32
+	relocs.
+	* configure: Regenerate.
+	* config.in: Likewise.
 
-        * config/i386/cygming.h [HAVE_GAS_PE_SECREL32_RELOC]
-        (ASM_OUPUT_DWARF_OFFSET): Define.
+	* config/i386/cygming.h [HAVE_GAS_PE_SECREL32_RELOC]
+	(ASM_OUPUT_DWARF_OFFSET): Define.
 
 2004-04-29  Andreas Krebbel  <krebbel1@de.ibm.com>
 

@@ -2960,8 +2960,7 @@ next_real_insn (rtx insn)
   while (insn)
     {
       insn = NEXT_INSN (insn);
-      if (insn == 0 || GET_CODE (insn) == INSN
-	  || GET_CODE (insn) == CALL_INSN || GET_CODE (insn) == JUMP_INSN)
+      if (insn == 0 || INSN_P (insn))
 	break;
     }
 
@@ -2978,8 +2977,7 @@ prev_real_insn (rtx insn)
   while (insn)
     {
       insn = PREV_INSN (insn);
-      if (insn == 0 || GET_CODE (insn) == INSN || GET_CODE (insn) == CALL_INSN
-	  || GET_CODE (insn) == JUMP_INSN)
+      if (insn == 0 || INSN_P (insn))
 	break;
     }
 

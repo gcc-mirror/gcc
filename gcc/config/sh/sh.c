@@ -9482,7 +9482,7 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
   if (optimize > 0 && flag_schedule_insns_after_reload)
     {
       /* Release all memory allocated by flow.  */
-      free_basic_block_vars (0);
+      free_basic_block_vars ();
 
       /* Release all memory held by regsets now.  */
       regset_release_memory ();

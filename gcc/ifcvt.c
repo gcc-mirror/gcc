@@ -3291,10 +3291,6 @@ if_convert (int x_life_data_ok)
       && (!flag_reorder_blocks_and_partition || !no_new_pseudos))
     mark_loop_exit_edges ();
 
-  /* Free up basic_block_for_insn so that we don't have to keep it
-     up to date, either here or in merge_blocks.  */
-  free_basic_block_vars (1);
-
   /* Compute postdominators if we think we'll use them.  */
   if (HAVE_conditional_execution || life_data_ok)
     calculate_dominance_info (CDI_POST_DOMINATORS);

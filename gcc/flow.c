@@ -488,8 +488,6 @@ life_analysis (rtx f, FILE *file, int flags)
   if (file)
     dump_flow_info (file);
 
-  free_basic_block_vars (1);
-
   /* Removing dead insns should have made jumptables really dead.  */
   delete_dead_jumptables ();
 }
@@ -809,28 +807,23 @@ update_life_info_in_dirty_blocks (enum update_life_extent extent, int prop_flags
   return retval;
 }
 
-/* Free the variables allocated by find_basic_blocks.
-
-   KEEP_HEAD_END_P is nonzero if basic_block_info is not to be freed.  */
+/* Free the variables allocated by find_basic_blocks.  */
 
 void
-free_basic_block_vars (int keep_head_end_p)
+free_basic_block_vars (void)
 {
-  if (! keep_head_end_p)
+  if (basic_block_info)
     {
-      if (basic_block_info)
-	{
-	  clear_edges ();
-	  VARRAY_FREE (basic_block_info);
-	}
-      n_basic_blocks = 0;
-      last_basic_block = 0;
-
-      ENTRY_BLOCK_PTR->aux = NULL;
-      ENTRY_BLOCK_PTR->global_live_at_end = NULL;
-      EXIT_BLOCK_PTR->aux = NULL;
-      EXIT_BLOCK_PTR->global_live_at_start = NULL;
+      clear_edges ();
+      VARRAY_FREE (basic_block_info);
     }
+  n_basic_blocks = 0;
+  last_basic_block = 0;
+
+  ENTRY_BLOCK_PTR->aux = NULL;
+  ENTRY_BLOCK_PTR->global_live_at_end = NULL;
+  EXIT_BLOCK_PTR->aux = NULL;
+  EXIT_BLOCK_PTR->global_live_at_start = NULL;
 }
 
 /* Delete any insns that copy a register to itself.  */
