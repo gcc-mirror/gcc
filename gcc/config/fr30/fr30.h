@@ -718,7 +718,7 @@ enum reg_class
 /* On the FR30 this value is an accumulating count of the number of argument
    registers that have been filled with argument values, as opposed to say,
    the number of bytes of argument accumulated so far.  */
-typedef int CUMULATIVE_ARGS;
+#define CUMULATIVE_ARGS int
 
 /* A C expression for the number of words, at the beginning of an argument,
    must be put in registers.  The value must be zero for arguments that are
