@@ -1,3 +1,8 @@
+Fri Mar 13 11:30:12 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* config/m68k/m68k.h (CONST_OK_FOR_LETTER_P): Fix logic in range
+	check for 'M' constraint.
+
 Thu Mar 12 14:47:14 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* cccp.c (create_definition): If pedantic, call pedwarn for macro
