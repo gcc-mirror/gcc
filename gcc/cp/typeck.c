@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "output.h"
 #include "toplev.h"
+#include "diagnostic.h"
 
 static tree convert_for_assignment PARAMS ((tree, tree, const char *, tree,
 					  int));
@@ -6431,7 +6432,6 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
   if (codel == REFERENCE_TYPE)
     {
       /* This should eventually happen in convert_arguments.  */
-      extern int warningcount, errorcount;
       int savew = 0, savee = 0;
 
       if (fndecl)

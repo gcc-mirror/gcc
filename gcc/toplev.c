@@ -379,12 +379,6 @@ int optimize = 0;
 
 int optimize_size = 0;
 
-/* Number of error messages and warning messages so far.  */
-
-int errorcount = 0;
-int warningcount = 0;
-int sorrycount = 0;
-
 /* Nonzero if we should exit after parsing options.  */
 static int exit_after_options = 0;
 

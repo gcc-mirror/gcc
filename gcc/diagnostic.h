@@ -55,9 +55,11 @@ typedef struct
 {
   /* The prefix for each new line.   */
   const char *prefix;
+
   /* The real upper bound of number of characters per line, taking into
      account the case of a very very looong prefix.  */  
   int maximum_length;
+
   /* The ideal upper bound of number of characters per line, as suggested
      by front-end. */  
   int ideal_maximum_length;
@@ -77,11 +79,16 @@ typedef struct
      o DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE: emit current PREFIX each time
        a physical line is started.  */
   int prefixing_rule;
+
   /* The current char to output.  Updated by front-end (*format_map) when
      it is called to report front-end printer for a specified format.  */  
   const char *cursor;
+
   /* A pointer to the variable argument-list for formatting.  */  
   va_list *format_args;
+
+  /* The number of times we have issued diagnostics.  */
+  int diagnostic_count[DK_LAST_DIAGNOSTIC_KIND];
 } output_state;
 
 /* The output buffer datatype.  This is best seen as an abstract datatype.  */
@@ -90,16 +97,20 @@ struct output_buffer
   /* Internal data.  These fields should not be accessed directly by
      front-ends.  */
 
-  /* Where to output formatted text.  */
-  FILE* stream;
-  /* The obstack where the text is built up.  */  
-  struct obstack obstack;
-  /* The amount of characters output so far.  */  
-  int line_length;
   /* The current state of the buffer.  */
   output_state state;
+
+  /* Where to output formatted text.  */
+  FILE* stream;
+
+  /* The obstack where the text is built up.  */  
+  struct obstack obstack;
+
+  /* The amount of characters output so far.  */  
+  int line_length;
 };
 
+#define output_buffer_state(BUFFER) (BUFFER)->state
 #define output_buffer_attached_stream(BUFFER) (BUFFER)->stream
 #define output_buffer_text_cursor(BUFFER) (BUFFER)->state.cursor
 #define output_buffer_format_args(BUFFER) *((BUFFER)->state.format_args)
@@ -177,6 +188,23 @@ extern int diagnostic_message_length_per_line;
    avoided.  This global buffer will go away, once all such usage
    has been removed.  */
 extern output_buffer *diagnostic_buffer;
+
+#define diagnostic_kind_count(BUFFER, DK) \
+   (BUFFER)->state.diagnostic_count[(int) DK]
+
+/* The number of errors that have been issued so far.  Ideally, these
+   would take an output_buffer as an argument.  */
+#define errorcount diagnostic_kind_count (diagnostic_buffer, DK_ERROR)
+/* Similarly, but for warnings.  */
+#define warningcount diagnostic_kind_count (diagnostic_buffer, DK_WARNING)
+/* Similarly, but for sorrys.  */
+#define sorrycount diagnostic_kind_count (diagnostic_buffer, DK_SORRY)
+
+/* Returns non-zero if warnings should be emitted.  */
+#define diagnostic_report_warnings_p()			\
+  (!inhibit_warnings					\
+   && !(in_system_header && !warn_system_headers))
+
 
 /* Prototypes */
 extern void set_diagnostic_context	PARAMS ((diagnostic_context *,

@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "assert.h"
 #include "toplev.h"
+#include "diagnostic.h"
 
 static int id_cmp PARAMS ((tree *, tree *));
 static void warn_unhandled PARAMS ((const char *));

@@ -1,3 +1,29 @@
+2001-06-10  Mark Mitchell <mark@codesourcery.com>
+	    Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* Makefile.in (c-parse.o): Depend on diagnostic.h
+	(dwarf2out.o): Likewise.
+
+	* dwarf2out.c: #include diagnostic.h
+
+	* toplev.h (warningcount, errorcount, sorrycount): Remove
+	declarations. 
+
+	* toplev.c (warningcount, errorcount, sorrycount): Remove
+	definitions. 
+
+	* diagnostic.h (struct output_buffer): Reorder fields.
+	(diagnostic_kind_count): New macro.	
+	(errorcount, warningcount, sorrycount): Define as macros.
+	(diagnostic_report_warnings_p): New macro.
+	(output_state): Add diagnostic_count field.
+
+	* diagnostic.c (warningcount, errorcount, inhibit_warnings):
+	Remove tentative declaration.
+	(count_error): Use diagnostic_report_warnings_p.
+
+	* c-parse.in: #include diagnostic.h
+
 2001-06-10  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md ("extendhisi2"): Fix constraints to

@@ -245,10 +245,13 @@ cp/decl.o: cp/decl.c $(CXX_TREE_H) flags.h cp/lex.h cp/decl.h stack.h \
   cp/operators.def $(TM_P_H)
 cp/decl2.o: cp/decl2.c $(CXX_TREE_H) flags.h cp/lex.h cp/decl.h $(EXPR_H) \
   output.h except.h toplev.h dwarf2out.h dwarfout.h $(GGC_H) $(RTL_H)
-cp/typeck2.o: cp/typeck2.c $(CXX_TREE_H) flags.h toplev.h output.h $(TM_P_H)
-cp/typeck.o: cp/typeck.c $(CXX_TREE_H) flags.h $(RTL_H) $(EXPR_H) toplev.h 
+cp/typeck2.o: cp/typeck2.c $(CXX_TREE_H) flags.h toplev.h output.h $(TM_P_H) \
+   diagnostic.h
+cp/typeck.o: cp/typeck.c $(CXX_TREE_H) flags.h $(RTL_H) $(EXPR_H) toplev.h \
+   diagnostic.h
 cp/class.o: cp/class.c $(CXX_TREE_H) flags.h toplev.h $(RTL_H)
-cp/call.o: cp/call.c $(CXX_TREE_H) flags.h toplev.h $(RTL_H) $(EXPR_H) $(GGC_H)
+cp/call.o: cp/call.c $(CXX_TREE_H) flags.h toplev.h $(RTL_H) $(EXPR_H) \
+     $(GGC_H) diagnostic.h
 cp/friend.o: cp/friend.c $(CXX_TREE_H) flags.h $(RTL_H) toplev.h $(EXPR_H)
 cp/init.o: cp/init.c $(CXX_TREE_H) flags.h $(RTL_H) $(EXPR_H) toplev.h \
   $(GGC_H) except.h
@@ -269,7 +272,7 @@ cp/pt.o: cp/pt.c $(CXX_TREE_H) cp/decl.h cp/parse.h cp/lex.h toplev.h \
   $(GGC_H) $(RTL_H) except.h
 cp/error.o: cp/error.c $(CXX_TREE_H) toplev.h diagnostic.h
 cp/errfn.o: cp/errfn.c $(CXX_TREE_H) toplev.h
-cp/repo.o: cp/repo.c $(CXX_TREE_H) toplev.h $(GGC_H)
+cp/repo.o: cp/repo.c $(CXX_TREE_H) toplev.h $(GGC_H) diagnostic.h
 cp/semantics.o: cp/semantics.c $(CXX_TREE_H) cp/lex.h except.h toplev.h \
   flags.h $(GGC_H) output.h $(RTL_H) $(TIMEVAR_H) $(EXPR_H)
 cp/dump.o: cp/dump.c $(CXX_TREE_H) c-dump.h

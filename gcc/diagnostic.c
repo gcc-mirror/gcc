@@ -103,10 +103,7 @@ static void default_diagnostic_finalizer PARAMS ((output_buffer *,
 static void error_recursion PARAMS ((void)) ATTRIBUTE_NORETURN;
 
 extern int rtl_dump_and_exit;
-extern int inhibit_warnings;
 extern int warnings_are_errors;
-extern int warningcount;
-extern int errorcount;
 
 /* Front-end specific tree formatter, if non-NULL.  */
 printer_fn lang_printer = NULL;
@@ -1049,9 +1046,7 @@ int
 count_error (warningp)
      int warningp;
 {
-  if (warningp
-      && (inhibit_warnings
-          || (in_system_header && !warn_system_headers)))
+  if (warningp && !diagnostic_report_warnings_p ())
     return 0;
 
   if (warningp && !warnings_are_errors)

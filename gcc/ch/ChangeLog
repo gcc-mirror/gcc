@@ -1,3 +1,10 @@
+2001-06-10  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* decl.c: #include diagnostic.h
+	* actions.c: #include diagnostic.h
+	* Makefile.in (actions.o): Depend on diagnostic.h
+	(decl.o): Depend on diagnostic.h
+
 2001-06-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* chill.texi: Move contents to just after title page.

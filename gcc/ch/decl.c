@@ -191,6 +191,7 @@ Boston, MA 02111-1307, USA.  */
 #include "input.h"
 #include "rtl.h"
 #include "toplev.h"
+#include "diagnostic.h"
 
 #define IS_UNKNOWN_TYPE(type) (TYPE_SIZE(type)==0)
 #define BUILTIN_NESTING_LEVEL (-1)

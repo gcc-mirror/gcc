@@ -132,9 +132,6 @@ extern void note_deferral_of_defined_inline_function
 					PARAMS ((union tree_node *));
 extern void note_outlining_of_inline_function
 					PARAMS ((union tree_node *));
-extern int errorcount;
-extern int warningcount;
-extern int sorrycount;
 
 extern const char *progname;
 extern const char *dump_base_name;
