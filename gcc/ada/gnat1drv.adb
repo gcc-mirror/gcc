@@ -78,7 +78,7 @@ procedure Gnat1drv is
    --  Compilation unit node for main unit
 
    Main_Kind : Node_Kind;
-   --  Kind of main compilation unit node.
+   --  Kind of main compilation unit node
 
    Back_End_Mode : Back_End.Back_End_Mode_Type;
    --  Record back end mode
@@ -140,7 +140,7 @@ begin
               ("cannot locate file system.ads");
             raise Unrecoverable_Error;
 
-         --  Here if system.ads successfully read. Remember its source index.
+         --  Remember source index of system.ads (which was read successfully)
 
          else
             System_Source_File_Index := S;
@@ -160,6 +160,14 @@ begin
 
       if Targparm.Configurable_Run_Time_On_Target or Debug_Flag_YY then
          Configurable_Run_Time_Mode := True;
+      end if;
+
+      --  Set -gnatR3m mode if debug flag A set
+
+      if Debug_Flag_AA then
+         Back_Annotate_Rep_Info := True;
+         List_Representation_Info := 1;
+         List_Representation_Info_Mechanisms := True;
       end if;
 
       --  Output copyright notice if full list mode
@@ -581,10 +589,10 @@ begin
       --  the Java VM, since representations are largely symbolic there.
 
       if Back_End_Mode = Declarations_Only
-        and then (not (Back_Annotate_Rep_Info or Debug_Flag_AA)
-                   or else Main_Kind = N_Subunit
-                   or else Targparm.Frontend_Layout_On_Target
-                   or else Hostparm.Java_VM)
+        and then (not Back_Annotate_Rep_Info
+                    or else Main_Kind = N_Subunit
+                    or else Targparm.Frontend_Layout_On_Target
+                    or else Hostparm.Java_VM)
       then
          Sem_Ch13.Validate_Unchecked_Conversions;
          Errout.Finalize;
