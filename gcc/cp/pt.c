@@ -1808,8 +1808,18 @@ push_template_decl_real (decl, is_friend)
       if (CLASSTYPE_TEMPLATE_INSTANTIATION (ctx))
 	cp_error ("must specialize `%#T' before defining member `%#D'",
 		  ctx, decl);
-      if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
-	tmpl = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (decl));
+      if (TREE_CODE (decl) == TYPE_DECL)
+	{
+	  if (IS_AGGR_TYPE_CODE (TREE_CODE (TREE_TYPE (decl)))
+	      && CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (decl))
+	      && CLASSTYPE_TI_TEMPLATE (TREE_TYPE (decl)))
+	    tmpl = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (decl));
+	  else
+	    {
+	      cp_error ("`%D' does not declare a template type", decl);
+	      return decl;
+	    }
+	}
       else if (! DECL_TEMPLATE_INFO (decl))
 	{
 	  cp_error ("template definition of non-template `%#D'", decl);

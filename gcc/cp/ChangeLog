@@ -1,3 +1,8 @@
+1998-07-11  Mark Mitchell  <mark@markmitchell.com>
+
+	* pt.c (push_template_decl_real): Don't look at DECL_TEMPLATE_INFO
+	for TYPE_DECLs.
+
 1998-07-08  Vladimir N. Makarov  <vmakarov@cygnus.com>
 
 	* cp-tree.h (warn_long_long): Define.
