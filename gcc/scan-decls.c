@@ -185,7 +185,7 @@ scan_decls (fp)
 	  else if (nextc == ';' && saw_extern)
 	    {
 	      recognized_extern (buf.base, rtype.base);
-	      goto handle_statement;
+	      goto new_statement;
 	    }
 	  else
 	    ungetc (nextc, fp);
