@@ -1363,7 +1363,7 @@ hash_expr_1 (x, mode, do_not_record_p)
       if (GET_MODE (x) != VOIDmode)
 	for (i = 2; i < GET_RTX_LENGTH (CONST_DOUBLE); i++)
 	  {
-	    unsigned tem = XINT (x, i);
+	    unsigned tem = XWINT (x, i);
 	    hash += tem;
 	  }
       else

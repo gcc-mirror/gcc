@@ -3355,7 +3355,10 @@ eliminate_regs_in_insn (insn, replace)
 	       If REPLACE isn't set, we can't delete this insn, but needn't
 	       process it since it won't be used unless something changes.  */
 	    if (replace)
-	      delete_dead_insn (insn);
+	      {
+	        delete_dead_insn (insn);
+		return 1;
+	      }
 	    val = 1;
 	    goto done;
 	  }
