@@ -1,5 +1,12 @@
 2002-02-04  Adam Megacz <adam@xwt.org>
 
+	* win32.cc: Created it.
+	  configure.in: Added PLATFORM_SPECIFIC_SOURCES,
+	  which is set to posix.cc or win32.cc.
+          Makefile.am: Updated it to use $(PLATFORM_SPECIFIC_SOURCES).
+	
+2002-02-04  Adam Megacz <adam@xwt.org>
+
        * configure.in: Corrected mingw case branches; added * before
          and after.
 

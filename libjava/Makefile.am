@@ -123,7 +123,7 @@ javao_files = $(java_source_files:.java=.lo) \
 	$(built_java_source_files:.java=.lo)
 x_javao_files = $(x_java_source_files:.java=.lo)
 
-libgcj_la_SOURCES = prims.cc posix.cc jni.cc exception.cc \
+libgcj_la_SOURCES = prims.cc $(PLATFORM_SPECIFIC_SOURCES) jni.cc exception.cc \
 	resolve.cc defineclass.cc interpret.cc name-finder.cc verify.cc \
 	$(nat_source_files)
 EXTRA_libgcj_la_SOURCES = boehm.cc nogc.cc posix-threads.cc no-threads.cc \
