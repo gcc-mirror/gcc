@@ -613,6 +613,9 @@ EOF
     mc68*:A/UX:*:*)
 	echo m68k-apple-aux${UNAME_RELEASE}
 	exit 0 ;;
+    news*:NEWS-OS:*:6*)
+	echo mips-sony-newsos6
+	exit 0 ;;
     R3000:*System_V*:*:* | R4000:UNIX_SYSV:*:*)
 	if [ -d /usr/nec ]; then
 	        echo mips-nec-sysv${UNAME_RELEASE}
