@@ -99,7 +99,7 @@ config.status: configure
 ${srcdir}/configure: configure.in
 	cd ${srcdir} && autoconf
 
-${srcdir}/config.h.in: stamp-h.in
+${srcdir}/config.hin: stamp-h.in
 ${srcdir}/stamp-h.in: configure.in acconfig.h
 	cd ${srcdir} && autoheader
 	echo timestamp > ${srcdir}/stamp-h.in
