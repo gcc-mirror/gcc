@@ -2670,6 +2670,7 @@ do {									\
    mechanism.  */
 
 #define INCOMING_RETURN_ADDR_RTX   gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM)
+#define DWARF_FRAME_RETURN_COLUMN  DWARF_FRAME_REGNUM (LINK_REGISTER_REGNUM)
 
 /* Define results of standard character escape sequences.  */
 #define TARGET_BELL 007

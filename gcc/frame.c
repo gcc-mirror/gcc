@@ -694,11 +694,16 @@ execute_cfa_insn (void *p, struct frame_state_internal *state,
     {
       reg = (insn & 0x3f);
       p = decode_uleb128 (p, &offset);
-      offset *= info->data_align;
-      state->s.saved[reg] = REG_SAVED_OFFSET;
-      state->s.reg_or_offset[reg] = offset;
       if (reg == state->s.cfa_reg)
-	state->s.cfa_saved = 1;
+	/* Don't record anything about this register; it's only used to
+	   reload SP in the epilogue.  We don't want to copy in SP
+	   values for outer frames; we handle restoring SP specially.  */;
+      else
+	{
+	  offset *= info->data_align;
+	  state->s.saved[reg] = REG_SAVED_OFFSET;
+	  state->s.reg_or_offset[reg] = offset;
+	}
     }
   else if (insn & DW_CFA_restore)
     {
@@ -727,11 +732,14 @@ execute_cfa_insn (void *p, struct frame_state_internal *state,
     case DW_CFA_offset_extended:
       p = decode_uleb128 (p, &reg);
       p = decode_uleb128 (p, &offset);
-      offset *= info->data_align;
-      state->s.saved[reg] = REG_SAVED_OFFSET;
-      state->s.reg_or_offset[reg] = offset;
       if (reg == state->s.cfa_reg)
-	state->s.cfa_saved = 1;
+	/* Don't record anything; see above.  */;
+      else
+	{
+	  offset *= info->data_align;
+	  state->s.saved[reg] = REG_SAVED_OFFSET;
+	  state->s.reg_or_offset[reg] = offset;
+	}
       break;
     case DW_CFA_restore_extended:
       p = decode_uleb128 (p, &reg);

@@ -2184,6 +2184,7 @@ LFLGRET"ID":\n\
    is something you can return to.  */
 #define INCOMING_RETURN_ADDR_RTX \
   plus_constant (gen_rtx_REG (word_mode, 15), 8)
+#define DWARF_FRAME_RETURN_COLUMN	DWARF_FRAME_REGNUM (15)
 
 /* The offset from the incoming value of %sp to the top of the stack frame
    for the current function.  On sparc64, we have to account for the stack
