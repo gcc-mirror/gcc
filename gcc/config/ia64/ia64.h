@@ -1098,11 +1098,15 @@ enum reg_class
   (GET_CODE (VALUE) == MEM					\
    && GET_RTX_CLASS (GET_CODE (XEXP ((VALUE), 0))) != 'a'	\
    && (reload_in_progress || memory_operand ((VALUE), VOIDmode)))
+/* Symbol ref to small-address-area: */
+#define CONSTRAINT_OK_FOR_T(VALUE)						\
+	(GET_CODE (VALUE) == SYMBOL_REF && SYMBOL_REF_SMALL_ADDR_P (VALUE))
 
 #define EXTRA_CONSTRAINT(VALUE, C) \
   ((C) == 'Q' ? CONSTRAINT_OK_FOR_Q (VALUE)	\
    : (C) == 'R' ? CONSTRAINT_OK_FOR_R (VALUE)	\
    : (C) == 'S' ? CONSTRAINT_OK_FOR_S (VALUE)	\
+   : (C) == 'T' ? CONSTRAINT_OK_FOR_T (VALUE)	\
    : 0)
 
 /* Basic Stack Layout */
@@ -2172,6 +2176,12 @@ do {									\
 
 /* Miscellaneous Parameters.  */
 
+/* Flag to mark data that is in the small address area (addressable
+   via "addl", that is, within a 2MByte offset of 0.  */
+#define SYMBOL_FLAG_SMALL_ADDR		(SYMBOL_FLAG_MACH_DEP << 0)
+#define SYMBOL_REF_SMALL_ADDR_P(X)	\
+	((SYMBOL_REF_FLAGS (X) & SYMBOL_FLAG_SMALL_ADDR) != 0)
+
 /* Define this if you have defined special-purpose predicates in the file
    `MACHINE.c'.  For each predicate, list all rtl codes that can be in
    expressions matched by the predicate.  */
@@ -2180,6 +2190,7 @@ do {									\
 { "call_operand", {SUBREG, REG, SYMBOL_REF}},				\
 { "got_symbolic_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
 { "sdata_symbolic_operand", {SYMBOL_REF, CONST}},			\
+{ "small_addr_symbolic_operand", {SYMBOL_REF}},				\
 { "symbolic_operand", {SYMBOL_REF, CONST, LABEL_REF}},			\
 { "function_operand", {SYMBOL_REF}},					\
 { "setjmp_operand", {SYMBOL_REF}},					\

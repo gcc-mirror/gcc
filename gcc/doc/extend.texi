@@ -2540,10 +2540,12 @@ the compiler.  It is up to the programmer to provide these sequences.
 
 @item model (@var{model-name})
 @cindex function addressability on the M32R/D
-Use this attribute on the M32R/D to set the addressability of an object,
-and of the code generated for a function.
-The identifier @var{model-name} is one of @code{small}, @code{medium},
-or @code{large}, representing each of the code models.
+@cindex variable addressability on the IA-64
+
+On the M32R/D, use this attribute to set the addressability of an
+object, and of the code generated for a function.  The identifier
+@var{model-name} is one of @code{small}, @code{medium}, or
+@code{large}, representing each of the code models.
 
 Small model objects live in the lower 16MB of memory (so that their
 addresses can be loaded with the @code{ld24} instruction), and are
@@ -2557,6 +2559,14 @@ Large model objects may live anywhere in the 32-bit address space (the
 compiler will generate @code{seth/add3} instructions to load their addresses),
 and may not be reachable with the @code{bl} instruction (the compiler will
 generate the much slower @code{seth/add3/jl} instruction sequence).
+
+On IA-64, use this attribute to set the addressability of an object.
+At present, the only supported identifier for @var{model-name} is
+@code{small}, indicating addressability via ``small'' (22-bit)
+addresses (so that their addresses can be loaded with the @code{addl}
+instruction).  Caveat: such addressing is by definition not position
+independent and hence this attribute must not be used for objects
+defined by shared libraries.
 
 @item far
 @cindex functions which handle memory bank switching
