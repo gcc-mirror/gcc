@@ -1,3 +1,14 @@
+2003-11-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR middle-end/8028
+	PR middle-end/9890
+	PR middle-end/11151
+	PR middle-end/12210
+	PR middle-end/12503
+	PR middle-end/12692
+	* builtins.c (expand_builtin_apply): Use virtual_outgoing_args_rtx
+	as the base address to copy the memory arguments to.
+
 2003-11-26  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/i386/cygming.h (ASM_OUTPUT_DEF_FROM_DECLS): Declare
