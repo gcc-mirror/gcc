@@ -5504,6 +5504,46 @@ CC.  @xref{Driver}.
 @end ifset
 
 @table @code
+@item LANG
+@itemx LC_CTYPE
+@c @itemx LC_COLLATE
+@itemx LC_MESSAGES
+@c @itemx LC_MONETARY
+@c @itemx LC_NUMERIC
+@c @itemx LC_TIME
+@itemx LC_ALL
+@findex LANG
+@findex LC_CTYPE
+@c @findex LC_COLLATE
+@findex LC_MESSAGES
+@c @findex LC_MONETARY
+@c @findex LC_NUMERIC
+@c @findex LC_TIME
+@findex LC_ALL
+@cindex locale
+These environment variables control the way that GNU CC uses
+localization information that allow GNU CC to work with different
+national conventions.  GNU CC inspects the locale categories
+@code{LC_CTYPE} and @code{LC_MESSAGES} if it has been configured to do
+so.  These locale categories can be set to any value supported by your
+installation.  A typical value is @samp{en_UK} for English in the United
+Kingdom.
+
+The @code{LC_CTYPE} environment variable specifies character
+classification.  GNU CC uses it to determine the character boundaries in
+a string; this is needed for some multibyte encodings that contain quote
+and escape characters that would otherwise be interpreted as a string
+end or escape.
+
+The @code{LC_MESSAGES} environment variable specifies the language to
+use in diagnostic messages.
+
+If the @code{LC_ALL} environment variable is set, it overrides the value
+of @code{LC_CTYPE} and @code{LC_MESSAGES}; otherwise, @code{LC_CTYPE}
+and @code{LC_MESSAGES} default to the value of the @code{LANG}
+environment variable.  If none of these variables are set, GNU CC
+defaults to traditional C English behavior.
+
 @item TMPDIR
 @findex TMPDIR
 If @code{TMPDIR} is set, it specifies the directory to use for temporary
