@@ -2896,6 +2896,18 @@ const_int_1_operand (op, mode)
   return (GET_CODE (op) == CONST_INT && INTVAL (op) == 1);
 }
 
+/* Return nonzero if OP is CONST_INT >= 1 and <= 31 (a valid operand
+   for shift & compare patterns, as shifting by 0 does not change flags),
+   else return zero.  */
+
+int
+const_int_1_31_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (GET_CODE (op) == CONST_INT && INTVAL (op) >= 1 && INTVAL (op) <= 31);
+}
+
 /* Returns 1 if OP is either a symbol reference or a sum of a symbol
    reference and a constant.  */
 

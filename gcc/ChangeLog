@@ -1,3 +1,12 @@
+2002-07-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/7245
+	* config/i386/i386.c (const_int_1_31_operand): New.
+	* config/i386/i386.h (PREDICATE_CODES): Add it.
+	* config/i386/i386.md (ashlsi3_cmp, ashlsi3_cmp_zext, ashlhi3_cmp,
+	ashlqi3_cmp, ashrsi3_cmp, ashrsi3_cmp_zext, ashrhi3_cmp, ashrqi3_cmp,
+	lshrsi3_cmp, lshrsi3_cmp_zext, lshrhi3_cmp, lshrqi3_cmp): Use it.
+
 2002-06-11  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.h (PREDICATE_CODES): Define.
