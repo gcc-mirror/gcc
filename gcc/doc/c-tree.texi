@@ -32,7 +32,7 @@ of the representation used in the C front end.  There is only one
 construct used in C that does not appear in the C++ front end and that
 is the GNU ``nested function'' extension.  Many of the macros documented
 here do not apply in C because the corresponding language constructs do
-not appear in C.
+not appear in C@.
 
 If you are developing a ``back end'', be it is a code-generator or some
 other tool, that uses this representation, you may occasionally find
@@ -44,7 +44,7 @@ the GCC maintainers (via mail to @email{gcc@@gcc.gnu.org}) about
 documenting the functionality you require.  Similarly, if you find
 yourself writing functions that do not deal directly with your back end,
 but instead might be useful to other people using the GCC front end, you
-should submit your patches for inclusion in GCC.
+should submit your patches for inclusion in GCC@.
 
 @menu
 * Deficiencies::        Topics net yet covered in this document.
@@ -499,7 +499,7 @@ arguments.
 
 Note that in C (but not in C++) a function declared like @code{void f()}
 is an unprototyped function taking a variable number of arguments; the
-@code{TYPE_ARG_TYPES} of such a function will be NULL.
+@code{TYPE_ARG_TYPES} of such a function will be NULL@.
 
 @item METHOD_TYPE
 Used to represent the type of a non-static member function.  Like a
@@ -1641,7 +1641,7 @@ And, if an exception is thrown while the expression is executing,
 
 @item USING_STMT
 Used to represent a @code{using} directive.  The namespace is given by
-@code{USING_STMT_NAMESPACE}, which will be a NAMESPACE_DECL.  This node
+@code{USING_STMT_NAMESPACE}, which will be a NAMESPACE_DECL@.  This node
 is needed inside template functions, to implement using directives
 during instantiation.
 

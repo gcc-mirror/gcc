@@ -82,7 +82,7 @@ ignored.  So you might as well specify the version if you know it.
 
 See @ref{Configurations}, for a list of supported configuration names and
 notes on many of the configurations.  You should check the notes in that
-section before proceeding any further with the installation of GNU CC.
+section before proceeding any further with the installation of GNU CC@.
 
 @end enumerate
 
@@ -185,7 +185,7 @@ operating system from the CPU and company.
 
 You can add a version number to the system type; this may or may not
 make a difference.  For example, you can write @samp{bsd4.3} or
-@samp{bsd4.4} to distinguish versions of BSD.  In practice, the version
+@samp{bsd4.4} to distinguish versions of BSD@.  In practice, the version
 number is most needed for @samp{sysv3} and @samp{sysv4}, which are often
 treated differently.
 
@@ -242,7 +242,7 @@ things you must know:
 
 @table @samp
 @item vax-dec-vms
-See @ref{VMS Install}, for details on how to install GNU CC on VMS.
+See @ref{VMS Install}, for details on how to install GNU CC on VMS@.
 @end table
 
 @node Cross-Compiler
@@ -311,7 +311,7 @@ startup files (typically @file{crt@dots{}.o}) for the target machine.
 @end itemize
 
 It is most convenient to do all of these steps on the same host machine,
-since then you can do it all with a single invocation of GNU CC.  This
+since then you can do it all with a single invocation of GNU CC@.  This
 requires a suitable cross-assembler and cross-linker.  For some targets,
 the GNU assembler and linker are available.
 
@@ -358,7 +358,7 @@ and copy or link them to the proper place to for the cross-compiler to
 find them when run later.
 
 The easiest way to provide these files is to build the Binutils package
-and GAS.  Configure them with the same @option{--host} and @option{--target}
+and GAS@.  Configure them with the same @option{--host} and @option{--target}
 options that you use for configuring GNU CC, then build and install
 them.  They install their executables automatically into the proper
 directory.  Alas, they do not support all the targets that GNU CC
@@ -439,7 +439,7 @@ them.
 Provide the header files before you build the cross-compiler, because
 the build stage actually runs the cross-compiler to produce parts of
 @file{libgcc.a}.  (These are the parts that @emph{can} be compiled with
-GNU CC.)  Some of them need suitable header files.
+GNU CC@.)  Some of them need suitable header files.
 
 Here's an example showing how to copy the header files from a target
 machine.  On the target machine, do this:
@@ -748,7 +748,7 @@ compiles it, and links the program a second time including that file.
 The actual calls to the constructors are carried out by a subroutine
 called @code{__main}, which is called (automatically) at the beginning
 of the body of @code{main} (provided @code{main} was compiled with GNU
-CC).  Calling @code{__main} is necessary, even when compiling C code, to
+CC)@.  Calling @code{__main} is necessary, even when compiling C code, to
 allow linking C and C++ object code together.  (If you use
 @option{-nostdlib}, you get an unresolved reference to @code{__main},
 since it's defined in the standard GCC library.  Include @option{-lgcc} at

@@ -1,3 +1,11 @@
+2001-06-27  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* doc/c-tree.texi, doc/contrib.texi, doc/cpp.texi,
+	doc/cppinternals.texi, doc/extend.texi, doc/gcc.texi,
+	doc/gcov.texi, doc/install-old.texi, doc/install.texi,
+	doc/invoke.texi, doc/md.texi, doc/rtl.texi, doc/tm.texi: Replace
+	. at end of sentences preceded by a capital letter with @..
+
 2001-06-18  Jason Merrill  <jason_merrill@redhat.com>
 
 	* expr.c (clear_storage): Set TREE_NOTHROW on the decl for memset.

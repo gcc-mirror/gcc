@@ -104,7 +104,7 @@ Ulrich Drepper for his work on the C++ runtime libraries, glibc,
  testing of GCC using glibc, ISO C99 support, CFG dumping support, etc.
 
 @item
-Richard Earnshaw for his ongoing work with the ARM.
+Richard Earnshaw for his ongoing work with the ARM@.
 
 @item
 David Edelsohn for his direction via the steering committee,
@@ -112,7 +112,7 @@ ongoing work with the RS6000/PowerPC port, and help cleaning up Haifa
 loop changes.
 
 @item
-Paul Eggert for random hacking all over GCC.
+Paul Eggert for random hacking all over GCC@.
 
 @item
 Mark Elbrecht for various DJGPP improvements.
@@ -218,7 +218,7 @@ J. Kean Johnston for OpenServer support.
 Klaus Kaempf for his ongoing work to make alpha-vms a viable target.
 
 @item
-David Kashtan of SRI adapted GCC to VMS.
+David Kashtan of SRI adapted GCC to VMS@.
 
 @item
 Geoffrey Keating for his ongoing work to make the PPC work for Linux.
@@ -228,7 +228,7 @@ Brendan Kehoe for his ongoing work with g++.
 
 @item
 Oliver M. Kellogg of Deutsche Aerospace contributed the port to the
-MIL-STD-1750A.
+MIL-STD-1750A@.
 
 @item
 Richard Kenner of the New York University Ultracomputer Research

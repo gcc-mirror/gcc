@@ -8,13 +8,13 @@
 @cindex C language extensions
 
 @opindex pedantic
-GNU C provides several language features not found in ISO standard C.
+GNU C provides several language features not found in ISO standard C@.
 (The @option{-pedantic} option directs GCC to print a warning message if
 any of these features is used.)  To test for the availability of these
 features in conditional compilation, check for a predefined macro
-@code{__GNUC__}, which is always defined under GCC.
+@code{__GNUC__}, which is always defined under GCC@.
 
-These extensions are available in C and Objective C.  Most of them are
+These extensions are available in C and Objective C@.  Most of them are
 also available in C++.  @xref{C++ Extensions,,Extensions to the
 C++ Language}, for extensions that apply @emph{only} to C++.
 
@@ -139,7 +139,7 @@ extensions, accepted by GCC in C89 mode and in C++.
 @c changed it from "within" to "in". --mew 4feb93
 
 A compound statement enclosed in parentheses may appear as an expression
-in GNU C.  This allows you to use loops, switches, and local variables
+in GNU C@.  This allows you to use loops, switches, and local variables
 within an expression.
 
 Recall that a compound statement is a sequence of statements surrounded
@@ -803,7 +803,7 @@ are open-coded on all types of machines.  Multiplication is open-coded
 if the machine supports fullword-to-doubleword a widening multiply
 instruction.  Division and shifts are open-coded only on machines that
 provide special support.  The operations that are not open-coded use
-special library routines that come with GCC.
+special library routines that come with GCC@.
 
 There may be pitfalls when you use @code{long long} types for function
 arguments, unless you declare function prototypes.  If a function
@@ -850,14 +850,14 @@ extract the imaginary part.  This is a GNU extension; for values of
 floating type, you should use the ISO C99 functions @code{crealf},
 @code{creal}, @code{creall}, @code{cimagf}, @code{cimag} and
 @code{cimagl}, declared in @code{<complex.h>} and also provided as
-built-in functions by GCC.
+built-in functions by GCC@.
 
 @cindex complex conjugation
 The operator @samp{~} performs complex conjugation when used on a value
 with a complex type.  This is a GNU extension; for values of
 floating type, you should use the ISO C99 functions @code{conjf},
 @code{conj} and @code{conjl}, declared in @code{<complex.h>} and also
-provided as built-in functions by GCC.
+provided as built-in functions by GCC@.
 
 GCC can allocate complex automatic variables in a noncontiguous
 fashion; it's even possible for the real part to be in a register while
@@ -900,7 +900,7 @@ extension for floating-point constants of type @code{float}.
 @cindex length-zero arrays
 @cindex flexible array members
 
-Zero-length arrays are allowed in GNU C.  They are very useful as the
+Zero-length arrays are allowed in GNU C@.  They are very useful as the
 last element of a structure which is really a header for a variable-length
 object:
 
@@ -1170,7 +1170,7 @@ removed.
 Subscripting is allowed on arrays that are not lvalues, even though the
 unary @samp{&} operator is not.  (In ISO C99, both are allowed (though
 the array may not be used after the next sequence point), but this ISO
-C99 feature is not yet fully supported in GCC.)  For example,
+C99 feature is not yet fully supported in GCC@.)  For example,
 this is valid in GNU C though not valid in C89:
 
 @example
@@ -1210,7 +1210,7 @@ are used.
 @cindex non-constant initializers
 
 As in standard C++ and ISO C99, the elements of an aggregate initializer for an
-automatic variable are not required to be constant expressions in GNU C.
+automatic variable are not required to be constant expressions in GNU C@.
 Here is an example of an initializer with run-time varying elements:
 
 @example
@@ -1797,7 +1797,7 @@ been called.  Functions with these attributes are useful for
 initializing data that will be used implicitly during the execution of
 the program.
 
-These attributes are not currently implemented for Objective C.
+These attributes are not currently implemented for Objective C@.
 
 @item unused
 This attribute, attached to a function, means that the function is meant
@@ -1891,7 +1891,7 @@ current location can be called.
 @item long_call/short_call
 @cindex indirect calls on ARM
 This attribute allows to specify how to call a particular function on
-ARM.  Both attributes override the @option{-mlong-calls} (@pxref{ARM Options})
+ARM@.  Both attributes override the @option{-mlong-calls} (@pxref{ARM Options})
 command line switch and @code{#pragma long_calls} settings.  The
 @code{long_call} attribute causes the compiler to always call the
 function by first loading its address into a register and then using the
@@ -1954,7 +1954,7 @@ adding an optional parameter to the interrupt attribute like this:
 void f () __attribute__ ((interrupt ("IRQ")));
 @end smallexample
 
-Permissible values for this parameter are: IRQ, FIQ, SWI, ABORT and UNDEF.
+Permissible values for this parameter are: IRQ, FIQ, SWI, ABORT and UNDEF@.
 
 @item interrupt_handler
 @cindex interrupt handler functions on the H8/300 and SH processors
@@ -2072,7 +2072,7 @@ Preprocessing Directives, cpp, The C Preprocessor}.
 
 This section describes the syntax with which @code{__attribute__} may be
 used, and the constructs to which attribute specifiers bind, for the C
-language.  Some details may vary for C++ and Objective C.  Because of
+language.  Some details may vary for C++ and Objective C@.  Because of
 infelicities in the grammar for attributes, some forms described here
 may not be successfully parsed in all cases.
 
@@ -2554,7 +2554,7 @@ section, consider using the facilities of the linker instead.
 @cindex @code{shared} variable attribute
 On Windows NT, in addition to putting variable definitions in a named
 section, the section can also be shared among all running copies of an
-executable or DLL.  For example, this small program defines shared data
+executable or DLL@.  For example, this small program defines shared data
 by putting it in a named section @code{shared} and marking the section
 shareable:
 
@@ -2575,7 +2575,7 @@ You may only use the @code{shared} attribute along with @code{section}
 attribute with a fully initialized global definition because of the way
 linkers work.  See @code{section} attribute for more information.
 
-The @code{shared} attribute is only available on Windows NT.
+The @code{shared} attribute is only available on Windows NT@.
 
 @item transparent_union
 This attribute, attached to a function parameter which is a union, means
@@ -3173,7 +3173,7 @@ asm volatile ("eieio" : : );
 Assume @code{addr} contains the address of a memory mapped device
 register.  The PowerPC @code{eieio} instruction (Enforce In-order
 Execution of I/O) tells the cpu to make sure that the store to that
-device register happens before it issues any other I/O.
+device register happens before it issues any other I/O@.
 
 Note that even a volatile @code{asm} instruction can be moved in ways
 that appear insignificant to the compiler, such as across jump
@@ -4497,7 +4497,7 @@ the inner loop, to save a bit of time.
 
 Note that you will still be paying the penalty for the call through a
 function pointer; on most modern architectures, such a call defeats the
-branch prediction features of the CPU.  This is also true of normal
+branch prediction features of the CPU@.  This is also true of normal
 virtual function calls.
 
 The syntax for this extension is

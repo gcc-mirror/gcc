@@ -193,7 +193,7 @@ we don't allow the terminators of header names to be escaped; the first
 Interpretation of some character sequences depends upon whether we are
 lexing C, C++ or Objective C, and on the revision of the standard in
 force.  For example, @samp{::} is a single token in C++, but two
-separate @samp{:} tokens, and almost certainly a syntax error, in C.
+separate @samp{:} tokens, and almost certainly a syntax error, in C@.
 Such cases are handled in the main function @samp{_cpp_lex_token}, based
 upon the flags set in the @samp{cpp_options} structure.
 

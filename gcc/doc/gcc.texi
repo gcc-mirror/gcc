@@ -320,7 +320,7 @@ compiler.  For example, we refer to the optimization options as
 affecting the behavior of ``GCC'' or sometimes just ``the compiler''.
 
 Front ends for other languages, such as Ada 95 and Pascal exist but
-have not yet been integrated into GCC.  These front ends, like that for C++,
+have not yet been integrated into GCC@.  These front ends, like that for C++,
 are built in subdirectories of GCC and link to it.  The result is an
 integrated compiler that can compile programs written in C, C++,
 Objective C, or any of the languages for which you have installed front
@@ -498,7 +498,7 @@ information concerning the history of C that is available online, see
 
 @c FIXME: details of C++ standard.
 
-There is no formal written standard for Objective-C.  The most
+There is no formal written standard for Objective-C@.  The most
 authoritative manual is ``Object-Oriented Programming and the
 Objective-C Language'', available at a number of web sites;
 @uref{http://developer.apple.com/techpubs/macosx/Cocoa/ObjectiveC/} has a
@@ -507,7 +507,7 @@ is an older example.  @uref{http://www.gnustep.org} includes useful
 information as well.
 
 @xref{Language,,The GNU Fortran Language, g77, Using and Porting GNU
-Fortran}, for details of the Fortran language supported by GCC.
+Fortran}, for details of the Fortran language supported by GCC@.
 
 @xref{Compatibility,,Compatibility with the Java Platform, gcj, GNU gcj},
 for details of compatibility between @code{gcj} and the Java Platform.
@@ -528,7 +528,7 @@ for details of compatibility between @code{gcj} and the Java Platform.
 @cindex installation trouble
 @cindex known causes of trouble
 
-This section describes known problems that affect users of GCC.  Most
+This section describes known problems that affect users of GCC@.  Most
 of these are not GCC bugs per se---if they were, we would fix them.
 But the result for a user may be like the result of a bug.
 
@@ -652,12 +652,12 @@ Older GDB versions sometimes fail to read the output of GCC version
 @item
 @cindex DBX
 DBX rejects some files produced by GCC, though it accepts similar
-constructs in output from PCC.  Until someone can supply a coherent
+constructs in output from PCC@.  Until someone can supply a coherent
 description of what is valid DBX input and what is not, there is
 nothing I can do about these problems.  You are on your own.
 
 @item
-The GNU assembler (GAS) does not support PIC.  To generate PIC code, you
+The GNU assembler (GAS) does not support PIC@.  To generate PIC code, you
 must use some other assembler, such as @file{/bin/as}.
 
 @item
@@ -711,7 +711,7 @@ using @option{-O} for those source files.
 @item
 On some SGI systems, when you use @option{-lgl_s} as an option,
 it gets translated magically to @samp{-lgl_s -lX11_s -lc_s}.
-Naturally, this does not happen when you use GCC.
+Naturally, this does not happen when you use GCC@.
 You must specify all three options explicitly.
 
 @item
@@ -725,7 +725,7 @@ argument of type @code{double} and passes this pointer of type
 @code{double *} to a function compiled with GCC, dereferencing the
 pointer may cause a fatal signal.
 
-One way to solve this problem is to compile your entire program with GCC.
+One way to solve this problem is to compile your entire program with GCC@.
 Another solution is to modify the function that is compiled with
 Sun CC to copy the argument into a local variable; local variables
 are always properly aligned.  A third solution is to modify the function
@@ -790,7 +790,7 @@ compile itself properly on 9.01.
 
 @item
 On the HP PA machine, ADB sometimes fails to work on functions compiled
-with GCC.  Specifically, it fails to work on functions that use
+with GCC@.  Specifically, it fails to work on functions that use
 @code{alloca} or variable-size arrays.  This is because GCC doesn't
 generate HP-UX unwind descriptors for such functions.  It may even be
 impossible to generate them.
@@ -866,7 +866,7 @@ static int foo;
 will cause the linker to report an undefined symbol @code{foo}.
 Although this behavior differs from most other systems, it is not a
 bug because redefining an @code{extern} variable as @code{static}
-is undefined in ISO C.
+is undefined in ISO C@.
 
 @item
 AIX on the RS/6000 provides support (NLS) for environments outside of
@@ -888,7 +888,7 @@ identifiers.
 @item
 On the RS/6000, XLC version 1.3.0.0 will miscompile @file{jump.c}.  XLC
 version 1.3.0.1 or later fixes this problem.  You can obtain XLC-1.3.0.2
-by requesting PTF 421749 from IBM.
+by requesting PTF 421749 from IBM@.
 
 @item
 @opindex mno-serialize-volatile
@@ -1038,7 +1038,7 @@ MALLOC=gmalloc.o
 @opindex traditional
 
 There are several noteworthy incompatibilities between GNU C and K&R
-(non-ISO) versions of C.  The @option{-traditional} option
+(non-ISO) versions of C@.  The @option{-traditional} option
 eliminates many of these incompatibilities, @emph{but not all}, by
 telling GCC to behave like a K&R C compiler.
 
@@ -1134,7 +1134,7 @@ traditional C compilers.
 
 @item
 Programs that use preprocessing directives in the middle of macro
-arguments do not work with GCC.  For example, a program like this
+arguments do not work with GCC@.  For example, a program like this
 will not work:
 
 @example
@@ -1285,7 +1285,7 @@ union returning with the option @option{-fpcc-struct-return}.
 GCC complains about program fragments such as @samp{0x74ae-0x4000}
 which appear to be two hexadecimal constants separated by the minus
 operator.  Actually, this string is a single @dfn{preprocessing token}.
-Each such token must correspond to one token in C.  Since this does not,
+Each such token must correspond to one token in C@.  Since this does not,
 GCC prints an error message.  Although it may appear obvious that what
 is meant is an operator and two values, the ISO C standard specifically
 requires that this be treated as erroneous.
@@ -1320,7 +1320,7 @@ doesn't do the right thing automatically.
 @item
 If you update the system's header files, such as by installing a new
 system version, the fixed header files of GCC are not automatically
-updated.  The easiest way to update them is to reinstall GCC.  (If
+updated.  The easiest way to update them is to reinstall GCC@.  (If
 you want to be clever, look in the makefile and you can find a
 shortcut.)
 
@@ -1789,7 +1789,7 @@ ABI standard'' says to do so.
 
 The ISO C standard leaves it up to the implementation whether a bit-field
 declared plain @code{int} is signed or not.  This in effect creates two
-alternative dialects of C.
+alternative dialects of C@.
 
 @opindex fsigned-bitfields
 @opindex funsigned-bitfields
@@ -1805,8 +1805,8 @@ as well.
 
 Some computer manufacturers have published Application Binary Interface
 standards which specify that plain bit-fields should be unsigned.  It is
-a mistake, however, to say anything about this issue in an ABI.  This is
-because the handling of plain bit-fields distinguishes two dialects of C.
+a mistake, however, to say anything about this issue in an ABI@.  This is
+because the handling of plain bit-fields distinguishes two dialects of C@.
 Both dialects are meaningful on every type of machine.  Whether a
 particular object file was compiled using signed bit-fields or unsigned
 is of no concern to other object files, even if they access the same
@@ -1875,7 +1875,7 @@ for pragmatic reasons, not as a requirement.
 
 GCC normally defines @code{__STDC__} to be 1, and in addition
 defines @code{__STRICT_ANSI__} if you specify the @option{-ansi} option,
-or a @option{-std} option for strict conformance to some version of ISO C.
+or a @option{-std} option for strict conformance to some version of ISO C@.
 On some hosts, system include files use a different convention, where
 @code{__STDC__} is normally 0, but is 1 if the user specifies strict
 conformance to the C Standard.  GCC follows the host convention when
@@ -1896,7 +1896,7 @@ These programs work properly with GNU C++ if @code{__STDC__} is defined.
 They would not work otherwise.
 
 In addition, many header files are written to provide prototypes in ISO
-C but not in traditional C.  Many of these header files can work without
+C but not in traditional C@.  Many of these header files can work without
 change in C++ provided @code{__STDC__} is defined.  If @code{__STDC__}
 is not defined, they will all fail, and will all need to be changed to
 test explicitly for C++ as well.
@@ -2023,7 +2023,7 @@ Reporting a bug may help you by bringing a solution to your problem, or
 it may not.  (If it does not, look in the service directory; see
 @ref{Service}.)  In any case, the principal function of a bug report is
 to help the entire community by making the next version of GCC work
-better.  Bug reports are your contribution to the maintenance of GCC.
+better.  Bug reports are your contribution to the maintenance of GCC@.
 
 Since the maintainers are very overloaded, we cannot respond to every
 bug report.  However, if the bug has not been fixed, we are likely to
@@ -2163,11 +2163,11 @@ things:
 
 @itemize @bullet
 @item
-The version of GCC.  You can get this by running it with the
+The version of GCC@.  You can get this by running it with the
 @option{-v} option.
 
 Without this, we won't know whether there is any point in looking for
-the bug in the current version of GCC.
+the bug in the current version of GCC@.
 
 @item
 A complete input file that will reproduce the bug.  If the bug is in the
@@ -2227,7 +2227,7 @@ don't support) is a modification of the compiler source.
 
 @item
 Details of any other deviations from the standard procedure for installing
-GCC.
+GCC@.
 
 @item
 A description of what behavior you observe that you believe is
@@ -2558,7 +2558,7 @@ projects are listed at @uref{http://gcc.gnu.org/projects/}.
 @chapter Using GCC on VMS
 
 @c prevent bad page break with this line
-Here is how to use GCC on VMS.
+Here is how to use GCC on VMS@.
 
 @menu
 * Include Files and VMS::  Where the preprocessor looks for the include files.
@@ -2621,7 +2621,7 @@ Include directives of the form:
 @end example
 
 @noindent
-are a common source of incompatibility between VAX-C and GCC.  VAX-C
+are a common source of incompatibility between VAX-C and GCC@.  VAX-C
 treats this much like a standard @code{#include <foobar.h>} directive.
 That is incompatible with the ISO C behavior implemented by GCC: to
 expand the name @code{foobar} as a macro.  Macro expansion should
@@ -2680,7 +2680,7 @@ whether explicitly, or implicitly via a logical name.
 @findex GLOBALVALUEDEF
 @findex GLOBALVALUEREF
 GCC does not provide the @code{globalref}, @code{globaldef} and
-@code{globalvalue} keywords of VAX-C.  You can get the same effect with
+@code{globalvalue} keywords of VAX-C@.  You can get the same effect with
 an obscure feature of GAS, the GNU assembler.  (This requires GAS
 version 1.39 or later.)  The following macros allow you to use this
 feature in a fairly natural way:
@@ -2803,10 +2803,10 @@ you fail to specify an explicit return value.  This will be interpreted
 by VMS as a status code indicating a normal successful completion.
 Version 1 of GCC did not provide this default.
 
-GCC on VMS works only with the GNU assembler, GAS.  You need version
+GCC on VMS works only with the GNU assembler, GAS@.  You need version
 1.37 or later of GAS in order to produce value debugging information for
 the VMS debugger.  Use the ordinary VMS linker with the object files
-produced by GAS.
+produced by GAS@.
 
 @cindex shared VMS run time system
 @cindex @file{VAXCRTL}
@@ -2841,7 +2841,7 @@ Name augmentation yields bad results for programs that use precompiled
 libraries (such as Xlib) which were generated by another compiler.  You
 can use the compiler option @samp{/NOCASE_HACK} to inhibit augmentation;
 it makes external C functions and variables case-independent as is usual
-on VMS.  Alternatively, you could write all references to the functions
+on VMS@.  Alternatively, you could write all references to the functions
 and variables in such libraries using lower case; this will work on VMS,
 but is not portable to other systems.  The compiler option @samp{/NAMES}
 also provides control over global name handling.
@@ -3071,7 +3071,7 @@ incompatibility with code that follows the standard convention.  So this
 change is practical only if you are switching to GCC as the sole C
 compiler for the system.  We may implement register argument passing on
 certain machines once we have a complete GNU system so that we can
-compile the libraries with GCC.
+compile the libraries with GCC@.
 
 On some machines (particularly the Sparc), certain types of arguments
 are passed ``by invisible reference''.  This means that the value is
@@ -3321,7 +3321,7 @@ function must meet certain criteria, currently related to the size of
 the function and the types and number of parameters it has.  Note that
 this function may contain loops, recursive calls to itself
 (tail-recursive functions can be inlined!), gotos, in short, all
-constructs supported by GCC.  The file @file{integrate.c} contains
+constructs supported by GCC@.  The file @file{integrate.c} contains
 the code to save a function's rtl for later inlining and to inline that
 rtl when the function is called.  The header file @file{integrate.h}
 is also used for this purpose.
@@ -3692,7 +3692,7 @@ Final.  This pass outputs the assembler code for the function.  It is
 also responsible for identifying spurious test and compare
 instructions.  Machine-specific peephole optimizations are performed
 at the same time.  The function entry and exit sequences are generated
-directly as assembler code in this pass; they never exist as RTL.
+directly as assembler code in this pass; they never exist as RTL@.
 
 The source files are @file{final.c} plus @file{insn-output.c}; the
 latter is generated automatically from the machine description by the
@@ -3724,7 +3724,7 @@ representation of floating point constants and how to operate on them.
 All the passes that work with RTL use the header files @file{rtl.h}
 and @file{rtl.def}, and subroutines in file @file{rtl.c}.  The tools
 @code{gen*} also use these files to read and work with the machine
-description RTL.
+description RTL@.
 
 @findex genconfig
 @item
@@ -3787,11 +3787,11 @@ are identical.  But there are some macros that vary:
 @table @code
 @findex USG
 @item USG
-Define this macro if the host system is System V.
+Define this macro if the host system is System V@.
 
 @findex VMS
 @item VMS
-Define this macro if the host system is VMS.
+Define this macro if the host system is VMS@.
 
 @findex FATAL_EXIT_CODE
 @item FATAL_EXIT_CODE
@@ -3874,7 +3874,7 @@ If you don't define this, @code{free} is used.
 @findex USE_C_ALLOCA
 @item USE_C_ALLOCA
 Define this macro to indicate that the compiler is running with the
-@code{alloca} implemented in C.  This version of @code{alloca} can be
+@code{alloca} implemented in C@.  This version of @code{alloca} can be
 found in the file @file{alloca.c}; to use it, you must also alter the
 @file{Makefile} variable @code{ALLOCA}.  (This is done automatically
 for the systems on which we know it is needed.)
@@ -3902,7 +3902,7 @@ used in an expression.
 @findex MULTIBYTE_CHARS
 @item MULTIBYTE_CHARS
 Define this macro to enable support for multibyte characters in the
-input to GCC.  This requires that the host system support the ISO C
+input to GCC@.  This requires that the host system support the ISO C
 library functions for converting multibyte characters to wide
 characters.
 
@@ -4263,7 +4263,7 @@ What they found was no accident---it was the GNU system.  The available
 free software added up to a complete system because the GNU Project
 had been working since 1984 to make one.  The GNU Manifesto
 had set forth the goal of developing a free Unix-like system, called
-GNU.  By the time Linux was written, the system was almost finished.
+GNU@.  By the time Linux was written, the system was almost finished.
 
 Most free software projects have the goal of developing a particular
 program for a particular job.  For example, Linus Torvalds set out to
@@ -4279,7 +4279,7 @@ distribution'', GNU software was the largest single contingent, around
 major components without which there could be no system.  Linux itself
 was about 3%.  So if you were going to pick a name for the system
 based on who wrote the programs in the system, the most appropriate
-single choice would be ``GNU''.
+single choice would be ``GNU''@.
 
 But we don't think that is the right way to consider the question.
 The GNU Project was not, is not, a project to develop specific
