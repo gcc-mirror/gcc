@@ -61,23 +61,27 @@ ALLOCA_FINISH = true
 
 # Various ways of specifying flags for compilations:
 # CFLAGS is for the user to override to, e.g., do a bootstrap with -O2.
-# BOOT_CFLAGS is the value of CFLAGS to pass
-# to the stage2 and stage3 compilations
-# WARN_CFLAGS are the warning flags to pass to stage2 and stage3.
-# (And for stage 1 if the native compiler is GCC.)  It is
-# separate from BOOT_CFLAGS because people tend to override optimization
-# flags and we'd like them to still have warnings turned on.  They are free
-# to explicitly turn warnings off if they wish.
+# BOOT_CFLAGS is the value of CFLAGS to pass to the stage2 and stage3
+# compilations.
+# WARN1_CFLAGS are the warning flags to use for most compilations in stage1.
+# WARN2_CFLAGS are the warning flags to pass to stage2, stage3, etc.
+# The warning flags are separate from BOOT_CFLAGS because people tend to
+# override optimization flags and we'd like them to still have warnings
+# turned on.  These flags are also used to pass other stage dependent
+# flags from configure.  The user is free to explicitly turn these flags
+# off if they wish.
 # LOOSE_CFLAGS are the CFLAGS to use when compiling something which is only
 # compiled with gcc, such as libgcc and the frontends other than C.
 # XCFLAGS is used for most compilations but not when using the GCC just built.
 # TCFLAGS is used for compilations with the GCC just built.
 XCFLAGS =
 TCFLAGS =
-CFLAGS = -g @stage1_warn_cflags@
+CFLAGS = -g
 BOOT_CFLAGS = -O2 $(CFLAGS)
-WARN_CFLAGS = @stage2_warn_cflags@
-LOOSE_CFLAGS = `echo $(CFLAGS)|sed -e 's/-pedantic//g' -e 's/-Wtraditional//g'`
+WARN1_CFLAGS = @stage1_warn_cflags@
+WARN2_CFLAGS = @stage2_warn_cflags@
+WARN_CFLAGS = $(WARN1_CFLAGS)
+LOOSE_CFLAGS = `echo $(CFLAGS) $(WARN2_CFLAGS)|sed -e 's/-pedantic//g' -e 's/-Wtraditional//g'`
 # These exists to be overridden by the x-* and t-* files, respectively.
 X_CFLAGS =
 T_CFLAGS =
@@ -558,8 +562,7 @@ INTERNAL_CFLAGS = $(CROSS) -DIN_GCC @extra_c_flags@
 # This is the variable actually used when we compile.
 # If you change this line, you probably also need to change the definition
 # of HOST_CFLAGS in build-make to match.
-ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS) \
-	@DEFS@
+ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(WARN_CFLAGS) $(XCFLAGS) @DEFS@
 
 # Likewise.
 ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
@@ -633,7 +636,7 @@ ORDINARY_FLAGS_TO_PASS = \
 	"AR_FOR_TARGET=$(AR_FOR_TARGET)" \
 	"BISON=$(BISON)" \
 	"BISONFLAGS=$(BISONFLAGS)" \
-	"CFLAGS=$(CFLAGS)" \
+	"CFLAGS=$(CFLAGS) $(WARN_CFLAGS)" \
 	"CLIB=$(CLIB)" \
 	"GCC_FOR_TARGET=$(GCC_FOR_TARGET)" \
 	"LDFLAGS=$(LDFLAGS)" \
@@ -979,7 +982,8 @@ libgcc.a: $(LIBGCC_DEPS)
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
 	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
 	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
-	  OLDCC="$(OLDCC)" CCLIBFLAGS="$(CCLIBFLAGS)" CFLAGS="$(CFLAGS)" \
+	  OLDCC="$(OLDCC)" CCLIBFLAGS="$(CCLIBFLAGS)" \
+	  CFLAGS="$(CFLAGS) $(WARN_CFLAGS)" \
 	  RANLIB_FOR_TARGET="$(RANLIB_FOR_TARGET)" \
 	  RANLIB_TEST_FOR_TARGET="$(RANLIB_TEST_FOR_TARGET)" \
 	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" \
@@ -1010,7 +1014,8 @@ stmp-multilib: $(LIBGCC_DEPS)
 	  AR_FOR_TARGET="$(AR_FOR_TARGET)" \
 	  AR_CREATE_FOR_TARGET="$(AR_CREATE_FOR_TARGET)" \
 	  AR_FLAGS_FOR_TARGET="$(AR_FLAGS_FOR_TARGET)" \
-	  OLDCC="$(OLDCC)" CCLIBFLAGS="$(CCLIBFLAGS)" CFLAGS="$(CFLAGS)" \
+	  OLDCC="$(OLDCC)" CCLIBFLAGS="$(CCLIBFLAGS)" \
+	  CFLAGS="$(CFLAGS) $(WARN_CFLAGS)" \
 	  RANLIB_FOR_TARGET="$(RANLIB_FOR_TARGET)" \
 	  RANLIB_TEST_FOR_TARGET="$(RANLIB_TEST_FOR_TARGET)" \
 	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" \
@@ -2771,22 +2776,22 @@ bootstrap bootstrap-lean: force
 # To prevent `make install' from compiling alloca.o and then relinking cc1
 # because alloca.o is newer, we permit these recursive makes to compile
 # alloca.o.  Then cc1 is newer, so it won't have to be relinked.
-	$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" CFLAGS="$(BOOT_CFLAGS)" WARN_CFLAGS="$(WARN2_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
 	$(MAKE) stage2
 	-if test $@ = bootstrap-lean; then rm -rf stage1; cd stage2 ; rm -f $(VOL_FILES); else true; fi
-	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" CFLAGS="$(BOOT_CFLAGS)" WARN_CFLAGS="$(WARN2_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
 
 bootstrap2 bootstrap2-lean: force
-	$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage1/xgcc$(exeext) -Bstage1/ -B$(build_tooldir)/bin/" CFLAGS="$(BOOT_CFLAGS)" WARN_CFLAGS="$(WARN2_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
 	$(MAKE) stage2
 	-if test $@ = bootstrap2-lean; then rm -rf stage1; cd stage2 ; rm -f $(VOL_FILES); else true; fi
-	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" CFLAGS="$(BOOT_CFLAGS)" WARN_CFLAGS="$(WARN2_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
 
 bootstrap3 bootstrap3-lean: force
-	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage2/xgcc$(exeext) -Bstage2/ -B$(build_tooldir)/bin/" CFLAGS="$(BOOT_CFLAGS)" WARN_CFLAGS="$(WARN2_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
 
 bootstrap4 bootstrap4-lean: force
-	$(MAKE) CC="stage3/xgcc$(exeext) -Bstage3/ -B$(build_tooldir)/bin/" CFLAGS="$(WARN_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage3/ LANGUAGES="$(LANGUAGES)"
+	$(MAKE) CC="stage3/xgcc$(exeext) -Bstage3/ -B$(build_tooldir)/bin/" CFLAGS="$(WARN2_CFLAGS) $(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage3/ LANGUAGES="$(LANGUAGES)"
 
 # Compare the object files in the current directory with those in the
 # stage2 directory.

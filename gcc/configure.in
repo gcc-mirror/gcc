@@ -355,6 +355,19 @@ if test "x$GCC" = "xyes"; then
 else
   stage1_warn_cflags=""
 fi
+
+# Stage specific cflags for build.
+case $build in
+vax-*-*)
+  if test x$GCC = xyes
+  then
+    stage1_warn_cflags="$stage1_warn_cflags -Wa,-J"
+  else
+    stage1_warn_cflags="$stage1_warn_cflags -J"
+  fi
+  ;;
+esac
+
 AC_SUBST(stage1_warn_cflags)
 AC_SUBST(stage2_warn_cflags)
 
@@ -3670,11 +3683,6 @@ changequote([,])dnl
 		;;
 	vax-*-ultrix*)			# vaxen running ultrix
 		tm_file="${tm_file} vax/ultrix.h"
-		if test x$GCC = xyes
-		then
-			xmake_file=vax/x-vax-gcc
-		fi
-		use_collect2=yes
 		float_format=vax
 		;;
 	vax-*-vms*)			# vaxen running VMS
