@@ -1,3 +1,7 @@
+2004-07-09 Jan Beulich <jbeulich@novell.com>
+
+	* config/i386/i386.md (sse2_clflush): Use correct operand for clflush.
+
 2004-07-09  Andrew Pinski  <apinski@apple.com>
 
 	* objc/objc-act.c (build_module_descriptor): Mark UOBJC_MODULES_decl as
