@@ -1781,7 +1781,7 @@ add_functions (void)
   make_generic ("second", GFC_ISYM_SECOND, GFC_STD_GNU);
 
   add_sym_1 ("selected_int_kind", 0, 1, BT_INTEGER, di,  GFC_STD_F95,
-	     NULL, gfc_simplify_selected_int_kind, NULL,
+	     gfc_check_selected_int_kind, gfc_simplify_selected_int_kind, NULL,
 	     r, BT_INTEGER, di, REQUIRED);
 
   make_generic ("selected_int_kind", GFC_ISYM_SI_KIND, GFC_STD_F95);

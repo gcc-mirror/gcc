@@ -1,5 +1,13 @@
 2005-02-19  Steven G. Kargl  <kargls@comcast.net>
   
+	* check.c (gfc_check_selected_int_kind): New function.
+	* intrinsic.h: Prototype it.
+	* intrinsic.c (add_function): Use it.
+	* simplify (gfc_simplify_ceiling,gfc_simplify_floor): Change
+	  BT_REAL to BT_INTEGER and use gfc_default_integer_kind.
+
+2005-02-19  Steven G. Kargl  <kargls@comcast.net>
+  
 	* check.c (gfc_check_int): improve checking of optional kind
 	* simplify.c (gfc_simplify_int): Change BT_REAL to BT_INTEGER
 
