@@ -2798,11 +2798,17 @@ The value in @var{op} dies in this insn; that is to say, altering the
 value immediately after this insn would not affect the future behavior
 of the program.
 
-This does not necessarily mean that the register @var{op} has no useful
-value after this insn since it may also be an output of the insn.  In
-such a case, however, a @code{REG_DEAD} note would be redundant and is
-usually not present until after the reload pass, but no code relies on
-this fact.
+It does not follow that the register @var{op} has no useful value after
+this insn since @var{op} is not necessarily modified by this insn.
+Rather, no subsequent instruction uses the contents of @var{op}.
+
+@findex REG_UNUSED
+@item REG_UNUSED
+The register @var{op} being set by this insn will not be used in a
+subsequent insn.  This differs from a @code{REG_DEAD} note, which
+indicates that the value in an input will not be used subsequently.
+These two notes are independent; both may be present for the same
+register.
 
 @findex REG_INC
 @item REG_INC
@@ -2916,14 +2922,6 @@ destination register.
 Thus, compiler passes prior to register allocation need only check for
 @code{REG_EQUAL} notes and passes subsequent to register allocation
 need only check for @code{REG_EQUIV} notes.
-
-@findex REG_UNUSED
-@item REG_UNUSED
-The register @var{op} being set by this insn will not be used in a
-subsequent insn.  This differs from a @code{REG_DEAD} note, which
-indicates that the value in an input will not be used subsequently.
-These two notes are independent; both may be present for the same
-register.
 
 @findex REG_WAS_0
 @item REG_WAS_0
