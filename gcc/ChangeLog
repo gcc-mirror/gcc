@@ -1,3 +1,10 @@
+2004-11-26  Jeff Law  <law@redhat.com>
+
+	* tree-ssa.c (verify_flow_sensitive_alias_info): Don't
+	retrieve annotations or pointer info before it's necessary.
+	Reorder tests for early continue of the loop.  Manually CSE
+	SSA_NAME_VAR.
+
 2004-11-26  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* target.h (struct gcc_target): New field 'dwarf_handle_frame_unspec'.
