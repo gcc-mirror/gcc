@@ -87,6 +87,7 @@ the other C-like languages: @file{c-common.c},
 @file{c-cppbuiltin.c},
 @file{c-common.h},
 @file{c-dump.h},
+@file{c.opt},
 @file{c-incpath.h}
 and
 @file{c-pragma.h},
