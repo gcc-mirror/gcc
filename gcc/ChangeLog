@@ -128,7 +128,7 @@ Sat Sep 20 16:22:06 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* frame.c (__deregister_frame): Check properly for initialized object.
 
-Fri Sep 19 20:51:03 199  H.J. Lu  (hjl@gnu.ai.mit.edu)
+Fri Sep 19 20:51:03 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* alpha/linux.h (HANDLE_SYSV_PRAGMA): Defined.
 
