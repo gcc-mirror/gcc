@@ -1087,8 +1087,8 @@ namespace std
       if (__first == begin() && __last == end())
 	clear();
       else
-	for (; __first != __last; ++__first)
-	  erase(__first);
+	while (__first != __last)
+	  erase(__first++);
     }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
