@@ -200,7 +200,6 @@ static rtx gen_int_relational (enum rtx_code, rtx, rtx, int *);
 static rtx gen_float_relational (enum rtx_code, rtx, rtx);
 static rtx gen_conditional_move (rtx);
 static rtx fixup_subreg_mem (rtx);
-static enum machine_mode xtensa_find_mode_for_size (unsigned);
 static struct machine_function * xtensa_init_machine_status (void);
 static bool xtensa_return_in_msb (tree);
 static void printx (FILE *, signed int);
@@ -1439,19 +1438,35 @@ xtensa_copy_incoming_a7 (rtx opnd)
 int
 xtensa_expand_block_move (rtx *operands)
 {
-  rtx dest = operands[0];
-  rtx src = operands[1];
-  int bytes = INTVAL (operands[2]);
-  int align = XINT (operands[3], 0);
+  static const enum machine_mode mode_from_align[] =
+  {
+    VOIDmode, QImode, HImode, VOIDmode, SImode,
+  };
+
+  rtx dst_mem = operands[0];
+  rtx src_mem = operands[1];
+  HOST_WIDE_INT bytes, align;
   int num_pieces, move_ratio;
+  rtx temp[2];
+  enum machine_mode mode[2];
+  int amount[2];
+  bool active[2];
+  int phase = 0;
+  int next;
+  int offset_ld = 0;
+  int offset_st = 0;
+  rtx x;
 
   /* If this is not a fixed size move, just call memcpy.  */
   if (!optimize || (GET_CODE (operands[2]) != CONST_INT))
     return 0;
 
+  bytes = INTVAL (operands[2]);
+  align = INTVAL (operands[3]);
+
   /* Anything to move?  */
   if (bytes <= 0)
-    return 1;
+    return 0;
 
   if (align > MOVE_MAX)
     align = MOVE_MAX;
@@ -1461,147 +1476,62 @@ xtensa_expand_block_move (rtx *operands)
   if (optimize > 2)
     move_ratio = LARGEST_MOVE_RATIO;
   num_pieces = (bytes / align) + (bytes % align); /* Close enough anyway.  */
-  if (num_pieces >= move_ratio)
+  if (num_pieces > move_ratio)
     return 0;
 
-  /* Make sure the memory addresses are valid.  */
-  operands[0] = validize_mem (dest);
-  operands[1] = validize_mem (src);
-
-  emit_insn (gen_movmemsi_internal (operands[0], operands[1],
-				    operands[2], operands[3]));
-  return 1;
-}
-
-
-/* Emit a sequence of instructions to implement a block move, trying
-   to hide load delay slots as much as possible.  Load N values into
-   temporary registers, store those N values, and repeat until the
-   complete block has been moved.  N=delay_slots+1.  */
-
-struct meminsnbuf
-{
-  char template[30];
-  rtx operands[2];
-};
-
-void
-xtensa_emit_block_move (rtx *operands, rtx *tmpregs, int delay_slots)
-{
-  rtx dest = operands[0];
-  rtx src = operands[1];
-  int bytes = INTVAL (operands[2]);
-  int align = XINT (operands[3], 0);
-  rtx from_addr = XEXP (src, 0);
-  rtx to_addr = XEXP (dest, 0);
-  int from_struct = MEM_IN_STRUCT_P (src);
-  int to_struct = MEM_IN_STRUCT_P (dest);
-  int offset = 0;
-  int chunk_size, item_size;
-  struct meminsnbuf *ldinsns, *stinsns;
-  const char *ldname, *stname;
-  enum machine_mode mode;
-
-  if (align > MOVE_MAX)
-    align = MOVE_MAX;
-  item_size = align;
-  chunk_size = delay_slots + 1;
-
-  ldinsns = (struct meminsnbuf *)
-    alloca (chunk_size * sizeof (struct meminsnbuf));
-  stinsns = (struct meminsnbuf *)
-    alloca (chunk_size * sizeof (struct meminsnbuf));
-
-  mode = xtensa_find_mode_for_size (item_size);
-  item_size = GET_MODE_SIZE (mode);
-  ldname = xtensa_ld_opcodes[(int) mode];
-  stname = xtensa_st_opcodes[(int) mode];
-
-  while (bytes > 0)
+  x = XEXP (dst_mem, 0);
+  if (!REG_P (x))
     {
-      int n;
+      x = force_reg (Pmode, x);
+      dst_mem = replace_equiv_address (dst_mem, x);
+    }
 
-      for (n = 0; n < chunk_size; n++)
+  x = XEXP (src_mem, 0);
+  if (!REG_P (x))
+    {
+      x = force_reg (Pmode, x);
+      src_mem = replace_equiv_address (src_mem, x);
+    }
+
+  active[0] = active[1] = false;
+
+  do
+    {
+      next = phase;
+      phase ^= 1;
+
+      if (bytes > 0)
 	{
-	  rtx addr, mem;
+	  int next_amount;
 
-	  if (bytes == 0)
-	    {
-	      chunk_size = n;
-	      break;
-	    }
+	  next_amount = (bytes >= 4 ? 4 : (bytes >= 2 ? 2 : 1));
+	  next_amount = MIN (next_amount, align);
 
-	  if (bytes < item_size)
-	    {
-	      /* Find a smaller item_size which we can load & store.  */
-	      item_size = bytes;
-	      mode = xtensa_find_mode_for_size (item_size);
-	      item_size = GET_MODE_SIZE (mode);
-	      ldname = xtensa_ld_opcodes[(int) mode];
-	      stname = xtensa_st_opcodes[(int) mode];
-	    }
+	  amount[next] = next_amount;
+	  mode[next] = mode_from_align[next_amount];
+	  temp[next] = gen_reg_rtx (mode[next]);
 
-	  /* Record the load instruction opcode and operands.  */
-	  addr = plus_constant (from_addr, offset);
-	  mem = gen_rtx_MEM (mode, addr);
-	  if (! memory_address_p (mode, addr))
-	    abort ();
-	  MEM_IN_STRUCT_P (mem) = from_struct;
-	  ldinsns[n].operands[0] = tmpregs[n];
-	  ldinsns[n].operands[1] = mem;
-	  sprintf (ldinsns[n].template, "%s\t%%0, %%1", ldname);
+	  x = adjust_address (src_mem, mode[next], offset_ld);
+	  emit_insn (gen_rtx_SET (VOIDmode, temp[next], x));
 
-	  /* Record the store instruction opcode and operands.  */
-	  addr = plus_constant (to_addr, offset);
-	  mem = gen_rtx_MEM (mode, addr);
-	  if (! memory_address_p (mode, addr))
-	    abort ();
-	  MEM_IN_STRUCT_P (mem) = to_struct;
-	  stinsns[n].operands[0] = tmpregs[n];
-	  stinsns[n].operands[1] = mem;
-	  sprintf (stinsns[n].template, "%s\t%%0, %%1", stname);
-
-	  offset += item_size;
-	  bytes -= item_size;
+	  offset_ld += next_amount;
+	  bytes -= next_amount;
+	  active[next] = true;
 	}
 
-      /* Now output the loads followed by the stores.  */
-      for (n = 0; n < chunk_size; n++)
-	output_asm_insn (ldinsns[n].template, ldinsns[n].operands);
-      for (n = 0; n < chunk_size; n++)
-	output_asm_insn (stinsns[n].template, stinsns[n].operands);
+      if (active[phase])
+	{
+	  active[phase] = false;
+	  
+	  x = adjust_address (dst_mem, mode[phase], offset_st);
+	  emit_insn (gen_rtx_SET (VOIDmode, x, temp[phase]));
+
+	  offset_st += amount[phase];
+	}
     }
-}
+  while (active[next]);
 
-
-static enum machine_mode
-xtensa_find_mode_for_size (unsigned item_size)
-{
-  enum machine_mode mode, tmode;
-
-  while (1)
-    {
-      mode = VOIDmode;
-
-      /* Find mode closest to but not bigger than item_size.  */
-      for (tmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-	   tmode != VOIDmode; tmode = GET_MODE_WIDER_MODE (tmode))
-	if (GET_MODE_SIZE (tmode) <= item_size)
-	  mode = tmode;
-      if (mode == VOIDmode)
-	abort ();
-
-      item_size = GET_MODE_SIZE (mode);
-
-      if (xtensa_ld_opcodes[(int) mode]
-	  && xtensa_st_opcodes[(int) mode])
-	break;
-
-      /* Cannot load & store this mode; try something smaller.  */
-      item_size -= 1;
-    }
-
-  return mode;
+  return 1;
 }
 
 

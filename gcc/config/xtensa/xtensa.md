@@ -1069,25 +1069,6 @@
   DONE;
 })
 
-(define_insn "movmemsi_internal"
-  [(set (match_operand:BLK 0 "memory_operand" "=U")
-	(match_operand:BLK 1 "memory_operand" "U"))
-   (use (match_operand:SI 2 "arith_operand" ""))
-   (use (match_operand:SI 3 "const_int_operand" ""))
-   (clobber (match_scratch:SI 4 "=&r"))
-   (clobber (match_scratch:SI 5 "=&r"))]
-  ""
-{
-  rtx tmpregs[2];
-  tmpregs[0] = operands[4];
-  tmpregs[1] = operands[5];
-  xtensa_emit_block_move (operands, tmpregs, 1);
-  return "";
-}
-  [(set_attr "type"	"multi")
-   (set_attr "mode"	"none")
-   (set_attr "length"	"300")])
-
 
 ;; Shift instructions.
 
