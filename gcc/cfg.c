@@ -27,7 +27,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
      - Initialization/deallocation
 	 init_flow, clear_edges
      - CFG aware instruction chain manipulation
-	 flow_delete_insn, flow_delete_insn_chain
+	 delete_insn, delete_insn_chain
      - Basic block manipulation
 	 create_basic_block, flow_delete_block, split_block, merge_blocks_nomove
      - Infrastructure to determine quickly basic block for instruction.
@@ -242,26 +242,35 @@ can_delete_label_p (label)
 /* Delete INSN by patching it out.  Return the next insn.  */
 
 rtx
-flow_delete_insn (insn)
+delete_insn (insn)
      rtx insn;
 {
-  rtx prev = PREV_INSN (insn);
   rtx next = NEXT_INSN (insn);
   rtx note;
-
-  PREV_INSN (insn) = NULL_RTX;
-  NEXT_INSN (insn) = NULL_RTX;
-  INSN_DELETED_P (insn) = 1;
-
-  if (prev)
-    NEXT_INSN (prev) = next;
-  if (next)
-    PREV_INSN (next) = prev;
-  else
-    set_last_insn (prev);
+  bool really_delete = true;
 
   if (GET_CODE (insn) == CODE_LABEL)
-    remove_node_from_expr_list (insn, &nonlocal_goto_handler_labels);
+    {
+      /* Some labels can't be directly removed from the INSN chain, as they
+         might be references via variables, constant pool etc. 
+         Convert them to the special NOTE_INSN_DELETED_LABEL note.  */
+      if (! can_delete_label_p (insn))
+	{
+	  const char *name = LABEL_NAME (insn);
+
+	  really_delete = false;
+	  PUT_CODE (insn, NOTE);
+	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED_LABEL;
+	  NOTE_SOURCE_FILE (insn) = name;
+	}
+      remove_node_from_expr_list (insn, &nonlocal_goto_handler_labels);
+    }
+
+  if (really_delete)
+    {
+      remove_insn (insn);
+      INSN_DELETED_P (insn) = 1;
+    }
 
   /* If deleting a jump, decrement the use count of the label.  Deleting
      the label itself should happen in the normal course of block merging.  */
@@ -295,7 +304,7 @@ flow_delete_insn (insn)
    that must be paired.  */
 
 void
-flow_delete_insn_chain (start, finish)
+delete_insn_chain (start, finish)
      rtx start, finish;
 {
   /* Unchain the insns one by one.  It would be quicker to delete all
@@ -309,16 +318,8 @@ flow_delete_insn_chain (start, finish)
       next = NEXT_INSN (start);
       if (GET_CODE (start) == NOTE && !can_delete_note_p (start))
 	;
-      else if (GET_CODE (start) == CODE_LABEL
-	       && ! can_delete_label_p (start))
-	{
-	  const char *name = LABEL_NAME (start);
-	  PUT_CODE (start, NOTE);
-	  NOTE_LINE_NUMBER (start) = NOTE_INSN_DELETED_LABEL;
-	  NOTE_SOURCE_FILE (start) = name;
-	}
       else
-	next = flow_delete_insn (start);
+	next = delete_insn (start);
 
       if (start == finish)
 	break;
@@ -510,19 +511,18 @@ flow_delete_block (b)
     end = tmp;
 
   /* Selectively delete the entire chain.  */
-  flow_delete_insn_chain (insn, end);
+  b->head = NULL;
+  delete_insn_chain (insn, end);
 
   /* Remove the edges into and out of this block.  Note that there may
      indeed be edges in, if we are removing an unreachable loop.  */
-  {
-    while (b->pred != NULL)
-      remove_edge (b->pred);
-    while (b->succ != NULL)
-      remove_edge (b->succ);
+  while (b->pred != NULL)
+    remove_edge (b->pred);
+  while (b->succ != NULL)
+    remove_edge (b->succ);
 
-    b->pred = NULL;
-    b->succ = NULL;
-  }
+  b->pred = NULL;
+  b->succ = NULL;
 
   /* Remove the basic block from the array, and compact behind it.  */
   expunge_block (b);
@@ -958,10 +958,6 @@ merge_blocks_nomove (a, b)
   else if (GET_CODE (NEXT_INSN (a_end)) == BARRIER)
     del_first = NEXT_INSN (a_end);
 
-  /* Delete everything marked above as well as crap that might be
-     hanging out between the two blocks.  */
-  flow_delete_insn_chain (del_first, del_last);
-
   /* Normally there should only be one successor of A and that is B, but
      partway though the merge of blocks for conditional_execution we'll
      be merging a TEST block with THEN and ELSE successors.  Free the
@@ -976,6 +972,12 @@ merge_blocks_nomove (a, b)
 
   /* B hasn't quite yet ceased to exist.  Attempt to prevent mishap.  */
   b->pred = b->succ = NULL;
+
+  expunge_block (b);
+
+  /* Delete everything marked above as well as crap that might be
+     hanging out between the two blocks.  */
+  delete_insn_chain (del_first, del_last);
 
   /* Reassociate the insns of B with A.  */
   if (!b_empty)
@@ -993,8 +995,6 @@ merge_blocks_nomove (a, b)
       a_end = b_end;
     }
   a->end = a_end;
-
-  expunge_block (b);
 }
 
 /* Return label in the head of basic block.  Create one if it doesn't exist.  */
@@ -1055,13 +1055,12 @@ try_redirect_by_replacing_jump (e, target)
   /* See if we can create the fallthru edge.  */
   if (can_fallthru (src, target))
     {
-      src->end = PREV_INSN (kill_from);
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, "Removing jump %i.\n", INSN_UID (insn));
       fallthru = 1;
 
       /* Selectivly unlink whole insn chain.  */
-      flow_delete_insn_chain (kill_from, PREV_INSN (target->head));
+      delete_insn_chain (kill_from, PREV_INSN (target->head));
     }
   /* If this already is simplejump, redirect it.  */
   else if (simplejump_p (insn))
@@ -1079,14 +1078,14 @@ try_redirect_by_replacing_jump (e, target)
       rtx target_label = block_label (target);
       rtx barrier;
 
-      src->end = emit_jump_insn_before (gen_jump (target_label), kill_from);
+      emit_jump_insn_after (gen_jump (target_label), kill_from);
       JUMP_LABEL (src->end) = target_label;
       LABEL_NUSES (target_label)++;
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, "Replacing insn %i by jump %i\n",
 		 INSN_UID (insn), INSN_UID (src->end));
 
-      flow_delete_insn_chain (kill_from, insn);
+      delete_insn_chain (kill_from, insn);
 
       barrier = next_nonnote_insn (src->end);
       if (!barrier || GET_CODE (barrier) != BARRIER)
@@ -1108,11 +1107,7 @@ try_redirect_by_replacing_jump (e, target)
      the potential of changing the code between -g and not -g.  */
   while (GET_CODE (e->src->end) == NOTE
 	 && NOTE_LINE_NUMBER (e->src->end) >= 0)
-    {
-      rtx prev = PREV_INSN (e->src->end);
-      flow_delete_insn (e->src->end);
-      e->src->end = prev;
-    }
+    delete_insn (e->src->end);
 
   if (e->dest != target)
     redirect_edge_succ (e, target);
@@ -1387,28 +1382,17 @@ tidy_fallthru_edge (e, b, c)
 	q = PREV_INSN (q);
 #endif
 
-      if (b->head == q)
-	{
-	  PUT_CODE (q, NOTE);
-	  NOTE_LINE_NUMBER (q) = NOTE_INSN_DELETED;
-	  NOTE_SOURCE_FILE (q) = 0;
-	}
-      else
-	{
-	  q = PREV_INSN (q);
+      q = PREV_INSN (q);
 
-	  /* We don't want a block to end on a line-number note since that has
-	     the potential of changing the code between -g and not -g.  */
-	  while (GET_CODE (q) == NOTE && NOTE_LINE_NUMBER (q) >= 0)
-	    q = PREV_INSN (q);
-	}
-
-      b->end = q;
+      /* We don't want a block to end on a line-number note since that has
+	 the potential of changing the code between -g and not -g.  */
+      while (GET_CODE (q) == NOTE && NOTE_LINE_NUMBER (q) >= 0)
+	q = PREV_INSN (q);
     }
 
   /* Selectively unlink the sequence.  */
   if (q != PREV_INSN (c->head))
-    flow_delete_insn_chain (NEXT_INSN (q), PREV_INSN (c->head));
+    delete_insn_chain (NEXT_INSN (q), PREV_INSN (c->head));
 
   e->flags |= EDGE_FALLTHRU;
 }
@@ -1692,7 +1676,7 @@ commit_one_edge_insertion (e)
       emit_barrier_after (last);
 
       if (before)
-	flow_delete_insn (before);
+	delete_insn (before);
     }
   else if (GET_CODE (last) == JUMP_INSN)
     abort ();

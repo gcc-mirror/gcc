@@ -7744,8 +7744,8 @@ delete_address_reloads (dead_insn, current_insn)
       || (INTVAL (XEXP (SET_SRC (set), 1))
 	  != -INTVAL (XEXP (SET_SRC (set2), 1))))
     return;
-  delete_insn (prev);
-  delete_insn (next);
+  delete_related_insns (prev);
+  delete_related_insns (next);
 }
 
 /* Subfunction of delete_address_reloads: process registers found in X.  */
@@ -9519,7 +9519,7 @@ fixup_abnormal_edges ()
 	      if (INSN_P (insn))
 		{
 	          insert_insn_on_edge (PATTERN (insn), e);
-	          flow_delete_insn (insn);
+	          delete_insn (insn);
 		}
 	      insn = next;
 	    }

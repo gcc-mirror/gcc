@@ -455,7 +455,7 @@ emit_delay_sequence (insn, list, length)
      We will put the BARRIER back in later.  */
   if (NEXT_INSN (insn) && GET_CODE (NEXT_INSN (insn)) == BARRIER)
     {
-      delete_insn (NEXT_INSN (insn));
+      delete_related_insns (NEXT_INSN (insn));
       last = get_last_insn ();
       had_barrier = 1;
     }
@@ -590,7 +590,7 @@ delete_from_delay_slot (insn)
      list, and rebuild the delay list if non-empty.  */
   prev = PREV_INSN (seq_insn);
   trial = XVECEXP (seq, 0, 0);
-  delete_insn (seq_insn);
+  delete_related_insns (seq_insn);
   add_insn_after (trial, prev);
 
   if (GET_CODE (trial) == JUMP_INSN
@@ -651,14 +651,14 @@ delete_scheduled_jump (insn)
 	      || FIND_REG_INC_NOTE (trial, 0))
 	    return;
 	  if (PREV_INSN (NEXT_INSN (trial)) == trial)
-	    delete_insn (trial);
+	    delete_related_insns (trial);
 	  else
 	    delete_from_delay_slot (trial);
 	}
     }
 #endif
 
-  delete_insn (insn);
+  delete_related_insns (insn);
 }
 
 /* Counters for delay-slot filling.  */
@@ -762,7 +762,7 @@ optimize_skip (insn)
       delay_list = add_to_delay_list (trial, NULL_RTX);
       next_trial = next_active_insn (trial);
       update_block (trial, trial);
-      delete_insn (trial);
+      delete_related_insns (trial);
 
       /* Also, if we are targeting an unconditional
 	 branch, thread our jump to the target of that branch.  Don't
@@ -1510,7 +1510,7 @@ try_merge_delay_insns (insn, thread)
 	      if (trial == thread)
 		thread = next_active_insn (thread);
 
-	      delete_insn (trial);
+	      delete_related_insns (trial);
 	      INSN_FROM_TARGET_P (next_to_match) = 0;
 	    }
 	  else
@@ -1603,7 +1603,7 @@ try_merge_delay_insns (insn, thread)
 	  else
 	    {
 	      update_block (XEXP (merged_insns, 0), thread);
-	      delete_insn (XEXP (merged_insns, 0));
+	      delete_related_insns (XEXP (merged_insns, 0));
 	    }
 	}
 
@@ -2191,7 +2191,7 @@ fill_simple_delay_slots (non_jumps_p)
 		      delay_list = gen_rtx_INSN_LIST (VOIDmode,
 						      trial, delay_list);
 		      update_block (trial, trial);
-		      delete_insn (trial);
+		      delete_related_insns (trial);
 		      if (slots_to_fill == ++slots_filled)
 			break;
 		      continue;
@@ -2329,7 +2329,7 @@ fill_simple_delay_slots (non_jumps_p)
 		      link_cc0_insns (trial);
 #endif
 
-		    delete_insn (trial);
+		    delete_related_insns (trial);
 		    if (slots_to_fill == ++slots_filled)
 		      break;
 		    continue;
@@ -2488,7 +2488,7 @@ fill_simple_delay_slots (non_jumps_p)
 				     current_function_epilogue_delay_list);
 	      mark_end_of_function_resources (trial, 1);
 	      update_block (trial, trial);
-	      delete_insn (trial);
+	      delete_related_insns (trial);
 
 	      /* Clear deleted bit so final.c will output the insn.  */
 	      INSN_DELETED_P (trial) = 0;
@@ -2636,7 +2636,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 			new_thread = thread;
 		    }
 
-		  delete_insn (trial);
+		  delete_related_insns (trial);
 		}
 	      else
 		{
@@ -2710,7 +2710,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 			  if (new_thread == trial)
 			    new_thread = thread;
 			}
-		      delete_insn (trial);
+		      delete_related_insns (trial);
 		    }
 		  else
 		    new_thread = next_active_insn (trial);
@@ -2869,7 +2869,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 	  if (recog_memoized (ninsn) < 0
 	      || (extract_insn (ninsn), ! constrain_operands (1)))
 	    {
-	      delete_insn (ninsn);
+	      delete_related_insns (ninsn);
 	      return 0;
 	    }
 
@@ -2882,7 +2882,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
 		  if (new_thread == trial)
 		    new_thread = thread;
 		}
-	      delete_insn (trial);
+	      delete_related_insns (trial);
 	    }
 	  else
 	    new_thread = next_active_insn (trial);
@@ -3128,7 +3128,7 @@ relax_delay_slots (first)
 
 	      if (invert_jump (insn, label, 1))
 		{
-		  delete_insn (next);
+		  delete_related_insns (next);
 		  next = insn;
 		}
 
@@ -3136,7 +3136,7 @@ relax_delay_slots (first)
 		--LABEL_NUSES (label);
 
 	      if (--LABEL_NUSES (target_label) == 0)
-		delete_insn (target_label);
+		delete_related_insns (target_label);
 
 	      continue;
 	    }
@@ -3212,7 +3212,7 @@ relax_delay_slots (first)
 	    INSN_FROM_TARGET_P (XVECEXP (pat, 0, i)) = 0;
 
 	  trial = PREV_INSN (insn);
-	  delete_insn (insn);
+	  delete_related_insns (insn);
 	  emit_insn_after (pat, trial);
 	  delete_scheduled_jump (delay_insn);
 	  continue;
@@ -3325,7 +3325,7 @@ relax_delay_slots (first)
 	    INSN_FROM_TARGET_P (XVECEXP (pat, 0, i)) = 0;
 
 	  trial = PREV_INSN (insn);
-	  delete_insn (insn);
+	  delete_related_insns (insn);
 	  emit_insn_after (pat, trial);
 	  delete_scheduled_jump (delay_insn);
 	  continue;
@@ -3340,7 +3340,7 @@ relax_delay_slots (first)
 	  && XVECLEN (pat, 0) == 2
 	  && rtx_equal_p (PATTERN (next), PATTERN (XVECEXP (pat, 0, 1))))
 	{
-	  delete_insn (insn);
+	  delete_related_insns (insn);
 	  continue;
 	}
 
@@ -3384,12 +3384,12 @@ relax_delay_slots (first)
 		      INSN_FROM_TARGET_P (slot) = ! INSN_FROM_TARGET_P (slot);
 		    }
 
-		  delete_insn (next);
+		  delete_related_insns (next);
 		  next = insn;
 		}
 
 	      if (old_label && --LABEL_NUSES (old_label) == 0)
-		delete_insn (old_label);
+		delete_related_insns (old_label);
 	      continue;
 	    }
 	}
@@ -3508,7 +3508,7 @@ make_return_insns (first)
 	{
 	  rtx prev = PREV_INSN (insn);
 
-	  delete_insn (insn);
+	  delete_related_insns (insn);
 	  for (i = 1; i < XVECLEN (pat, 0); i++)
 	    prev = emit_insn_after (PATTERN (XVECEXP (pat, 0, i)), prev);
 
@@ -3527,7 +3527,7 @@ make_return_insns (first)
   /* Now delete REAL_RETURN_LABEL if we never used it.  Then try to fill any
      new delay slots we have created.  */
   if (--LABEL_NUSES (real_return_label) == 0)
-    delete_insn (real_return_label);
+    delete_related_insns (real_return_label);
 
   fill_simple_delay_slots (1);
   fill_simple_delay_slots (0);
@@ -3637,14 +3637,14 @@ dbr_schedule (first, file)
 
       if (GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == USE
 	  && INSN_P (XEXP (PATTERN (insn), 0)))
-	next = delete_insn (insn);
+	next = delete_related_insns (insn);
     }
 
   /* If we made an end of function label, indicate that it is now
      safe to delete it by undoing our prior adjustment to LABEL_NUSES.
      If it is now unused, delete it.  */
   if (end_of_function_label && --LABEL_NUSES (end_of_function_label) == 0)
-    delete_insn (end_of_function_label);
+    delete_related_insns (end_of_function_label);
 
 #ifdef HAVE_return
   if (HAVE_return && end_of_function_label != 0)

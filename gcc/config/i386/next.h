@@ -42,11 +42,6 @@ Boston, MA 02111-1307, USA.  */
   ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode	\
    ? FIRST_FLOAT_REG : 0)
 
-/* 1 if N is a possible register number for a function value. */
-
-#undef	FUNCTION_VALUE_REGNO_P
-#define FUNCTION_VALUE_REGNO_P(N) ((N) == 0 || (N)== FIRST_FLOAT_REG)
-
 #ifdef REAL_VALUE_TO_TARGET_LONG_DOUBLE
 #undef	ASM_OUTPUT_LONG_DOUBLE
 #define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)				\

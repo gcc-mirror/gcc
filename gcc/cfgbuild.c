@@ -442,7 +442,7 @@ find_basic_blocks_1 (f)
 		if (bb_note == NULL_RTX)
 		  bb_note = insn;
 		else
-		  next = flow_delete_insn (insn);
+		  next = delete_insn (insn);
 	      }
 	    break;
 	  }
@@ -581,7 +581,7 @@ find_basic_blocks_1 (f)
   if (head != NULL_RTX)
     create_basic_block_structure (i++, head, end, bb_note);
   else if (bb_note)
-    flow_delete_insn (bb_note);
+    delete_insn (bb_note);
 
   if (i != n_basic_blocks)
     abort ();

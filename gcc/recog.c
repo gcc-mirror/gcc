@@ -3128,7 +3128,7 @@ peephole2_optimize (dump_file)
 
 		  /* Replace the old sequence with the new.  */
 		  try = emit_insn_after (try, peep2_insn_data[i].insn);
-		  flow_delete_insn_chain (insn, peep2_insn_data[i].insn);
+		  delete_insn_chain (insn, peep2_insn_data[i].insn);
 
 #ifdef HAVE_conditional_execution
 		  /* With conditional execution, we cannot back up the

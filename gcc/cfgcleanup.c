@@ -277,7 +277,7 @@ merge_blocks_move_predecessor_nojumps (a, b)
   barrier = next_nonnote_insn (a->end);
   if (GET_CODE (barrier) != BARRIER)
     abort ();
-  flow_delete_insn (barrier);
+  delete_insn (barrier);
 
   /* Move block and loop notes out of the chain so that we do not
      disturb their order.
@@ -337,7 +337,7 @@ merge_blocks_move_successor_nojumps (a, b)
 
   /* There had better have been a barrier there.  Delete it.  */
   if (barrier && GET_CODE (barrier) == BARRIER)
-    flow_delete_insn (barrier);
+    delete_insn (barrier);
 
   /* Move block and loop notes out of the chain so that we do not
      disturb their order.
@@ -901,12 +901,12 @@ try_crossjump_to_edge (mode, e1, e2)
 
   /* Emit the jump insn.   */
   label = block_label (redirect_to);
-  src1->end = emit_jump_insn_before (gen_jump (label), newpos1);
+  emit_jump_insn_after (gen_jump (label), src1->end);
   JUMP_LABEL (src1->end) = label;
   LABEL_NUSES (label)++;
 
   /* Delete the now unreachable instructions.  */
-  flow_delete_insn_chain (newpos1, last);
+  delete_insn_chain (newpos1, last);
 
   /* Make sure there is a barrier after the new jump.  */
   last = next_nonnote_insn (src1->end);
@@ -1078,7 +1078,7 @@ try_optimize_cfg (mode)
 	    {
 	      rtx label = b->head;
 	      b->head = NEXT_INSN (b->head);
-	      flow_delete_insn_chain (label, label);
+	      delete_insn_chain (label, label);
 	      if (rtl_dump_file)
 		fprintf (rtl_dump_file, "Deleted label in block %i.\n",
 			 b->index);

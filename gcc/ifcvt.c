@@ -1765,9 +1765,7 @@ noce_process_if_block (test_bb, then_bb, else_bb, join_bb)
 
  success:
   /* The original sets may now be killed.  */
-  if (insn_a == then_bb->end)
-    then_bb->end = PREV_INSN (insn_a);
-  flow_delete_insn (insn_a);
+  delete_insn (insn_a);
 
   /* Several special cases here: First, we may have reused insn_b above,
      in which case insn_b is now NULL.  Second, we want to delete insn_b
@@ -1776,17 +1774,12 @@ noce_process_if_block (test_bb, then_bb, else_bb, join_bb)
      the TEST block, it may in fact be loading data needed for the comparison.
      We'll let life_analysis remove the insn if it's really dead.  */
   if (insn_b && else_bb)
-    {
-      if (insn_b == else_bb->end)
-	else_bb->end = PREV_INSN (insn_b);
-      flow_delete_insn (insn_b);
-    }
+    delete_insn (insn_b);
 
   /* The new insns will have been inserted before cond_earliest.  We should
      be able to remove the jump with impunity, but the condition itself may
      have been modified by gcse to be shared across basic blocks.  */
-  test_bb->end = PREV_INSN (jump);
-  flow_delete_insn (jump);
+  delete_insn (jump);
 
   /* If we used a temporary, fix it up now.  */
   if (orig_x != x)
@@ -2189,11 +2182,9 @@ find_cond_trap (test_bb, then_edge, else_edge)
 
   emit_insn_before (seq, cond_earliest);
 
-  test_bb->end = PREV_INSN (jump);
-  flow_delete_insn (jump);
+  delete_insn (jump);
 
-  trap_bb->end = PREV_INSN (trap);
-  flow_delete_insn (trap);
+  delete_insn (trap);
 
   /* Merge the blocks!  */
   if (trap_bb != then_bb && ! else_bb)

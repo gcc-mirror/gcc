@@ -404,6 +404,12 @@ int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended SSE registers */
 };
 
+static int x86_64_int_parameter_registers[6] = {5 /*RDI*/, 4 /*RSI*/,
+					        1 /*RDX*/, 2 /*RCX*/,
+					        FIRST_REX_INT_REG /*R8 */,
+					        FIRST_REX_INT_REG + 1 /*R9 */};
+static int x86_64_int_return_registers[4] = {0 /*RAX*/, 1 /*RDI*/, 5, 4};
+
 /* The "default" register map used in 64bit mode.  */
 int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
 {
@@ -668,6 +674,40 @@ static void ix86_svr3_asm_out_constructor PARAMS ((rtx, int));
 static void sco_asm_named_section PARAMS ((const char *, unsigned int));
 static void sco_asm_out_constructor PARAMS ((rtx, int));
 #endif
+/* Register class used for passing given 64bit part of the argument.
+   These represent classes as documented by the PS ABI, with the exception
+   of SSESF, SSEDF classes, that are basically SSE class, just gcc will
+   use SF or DFmode move instead of DImode to avoid reformating penalties.
+
+   Similary we play games with INTEGERSI_CLASS to use cheaper SImode moves
+   whenever possible (upper half does contain padding).
+ */
+enum x86_64_reg_class
+  {
+    X86_64_NO_CLASS,
+    X86_64_INTEGER_CLASS,
+    X86_64_INTEGERSI_CLASS,
+    X86_64_SSE_CLASS,
+    X86_64_SSESF_CLASS,
+    X86_64_SSEDF_CLASS,
+    X86_64_SSEUP_CLASS,
+    X86_64_X87_CLASS,
+    X86_64_X87UP_CLASS,
+    X86_64_MEMORY_CLASS
+  };
+const char * const x86_64_reg_class_name[] =
+   {"no", "integer", "integerSI", "sse", "sseSF", "sseDF", "sseup", "x87", "x87up", "no"};
+
+#define MAX_CLASSES 4
+static int classify_argument PARAMS ((enum machine_mode, tree,
+				      enum x86_64_reg_class [MAX_CLASSES],
+				      int));
+static int examine_argument PARAMS ((enum machine_mode, tree, int, int *,
+				     int *));
+static rtx construct_container PARAMS ((enum machine_mode, tree, int, int, int,
+					int *, int));
+static enum x86_64_reg_class merge_classes PARAMS ((enum x86_64_reg_class,
+						    enum x86_64_reg_class));
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
@@ -974,6 +1014,10 @@ optimization_options (level, size)
   if (level > 1)
     flag_schedule_insns = 0;
 #endif
+  if (TARGET_64BIT && optimize >= 1)
+    flag_omit_frame_pointer = 1;
+  if (TARGET_64BIT)
+    flag_pcc_struct_return = 0;
 }
 
 /* Table of valid machine attributes.  */
@@ -1236,6 +1280,25 @@ ix86_return_pops_args (fundecl, funtype, size)
 
 /* Argument support functions.  */
 
+/* Return true when register may be used to pass function parameters.  */
+bool
+ix86_function_arg_regno_p (regno)
+     int regno;
+{
+  int i;
+  if (!TARGET_64BIT)
+    return regno < REGPARM_MAX || (TARGET_SSE && SSE_REGNO_P (regno));
+  if (SSE_REGNO_P (regno) && TARGET_SSE)
+    return true;
+  /* RAX is used as hidden argument to va_arg functions.  */
+  if (!regno)
+    return true;
+  for (i = 0; i < REGPARM_MAX; i++)
+    if (regno == x86_64_int_parameter_registers[i])
+      return true;
+  return false;
+}
+
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.  */
@@ -1267,13 +1330,15 @@ init_cumulative_args (cum, fntype, libname)
 
   /* Set up the number of registers to use for passing arguments.  */
   cum->nregs = ix86_regparm;
-  if (fntype)
+  cum->sse_nregs = SSE_REGPARM_MAX;
+  if (fntype && !TARGET_64BIT)
     {
       tree attr = lookup_attribute ("regparm", TYPE_ATTRIBUTES (fntype));
 
       if (attr)
 	cum->nregs = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr)));
     }
+  cum->maybe_vaarg = false;
 
   /* Determine if this function has variable arguments.  This is
      indicated by the last argument being 'void_type_mode' if there
@@ -1287,14 +1352,459 @@ init_cumulative_args (cum, fntype, libname)
 	{
 	  next_param = TREE_CHAIN (param);
 	  if (next_param == 0 && TREE_VALUE (param) != void_type_node)
-	    cum->nregs = 0;
+	    {
+	      if (!TARGET_64BIT)
+		cum->nregs = 0;
+	      cum->maybe_vaarg = true;
+	    }
 	}
     }
+  if ((!fntype && !libname)
+      || (fntype && !TYPE_ARG_TYPES (fntype)))
+    cum->maybe_vaarg = 1;
 
   if (TARGET_DEBUG_ARG)
     fprintf (stderr, ", nregs=%d )\n", cum->nregs);
 
   return;
+}
+
+/* x86-64 register passing impleemntation.  See x86-64 ABI for details.  Goal
+   of this code is to classify each 8bytes of incomming argument by the register
+   class and assign registers accordingly.  */
+
+/* Return the union class of CLASS1 and CLASS2.
+   See the x86-64 PS ABI for details.  */
+
+static enum x86_64_reg_class
+merge_classes (class1, class2)
+     enum x86_64_reg_class class1, class2;
+{
+  /* Rule #1: If both classes are equal, this is the resulting class.  */
+  if (class1 == class2)
+    return class1;
+
+  /* Rule #2: If one of the classes is NO_CLASS, the resulting class is
+     the other class.  */
+  if (class1 == X86_64_NO_CLASS)
+    return class2;
+  if (class2 == X86_64_NO_CLASS)
+    return class1;
+
+  /* Rule #3: If one of the classes is MEMORY, the result is MEMORY.  */
+  if (class1 == X86_64_MEMORY_CLASS || class2 == X86_64_MEMORY_CLASS)
+    return X86_64_MEMORY_CLASS;
+
+  /* Rule #4: If one of the classes is INTEGER, the result is INTEGER.  */
+  if ((class1 == X86_64_INTEGERSI_CLASS && class2 == X86_64_SSESF_CLASS)
+      || (class2 == X86_64_INTEGERSI_CLASS && class1 == X86_64_SSESF_CLASS))
+    return X86_64_INTEGERSI_CLASS;
+  if (class1 == X86_64_INTEGER_CLASS || class1 == X86_64_INTEGERSI_CLASS
+      || class2 == X86_64_INTEGER_CLASS || class2 == X86_64_INTEGERSI_CLASS)
+    return X86_64_INTEGER_CLASS;
+
+  /* Rule #5: If one of the classes is X87 or X87UP class, MEMORY is used.  */
+  if (class1 == X86_64_X87_CLASS || class1 == X86_64_X87UP_CLASS
+      || class2 == X86_64_X87_CLASS || class2 == X86_64_X87UP_CLASS)
+    return X86_64_MEMORY_CLASS;
+
+  /* Rule #6: Otherwise class SSE is used.  */
+  return X86_64_SSE_CLASS;
+}
+
+/* Classify the argument of type TYPE and mode MODE.
+   CLASSES will be filled by the register class used to pass each word
+   of the operand.  The number of words is returned.  In case the parameter
+   should be passed in memory, 0 is returned. As a special case for zero
+   sized containers, classes[0] will be NO_CLASS and 1 is returned.
+
+   BIT_OFFSET is used internally for handling records and specifies offset
+   of the offset in bits modulo 256 to avoid overflow cases.
+
+   See the x86-64 PS ABI for details.
+*/
+
+static int
+classify_argument (mode, type, classes, bit_offset)
+     enum machine_mode mode;
+     tree type;
+     enum x86_64_reg_class classes[MAX_CLASSES];
+     int bit_offset;
+{
+  int bytes =
+    (mode == BLKmode) ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
+  int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+
+  if (type && AGGREGATE_TYPE_P (type))
+    {
+      int i;
+      tree field;
+      enum x86_64_reg_class subclasses[MAX_CLASSES];
+
+      /* On x86-64 we pass structures larger than 16 bytes on the stack.  */
+      if (bytes > 16)
+	return 0;
+
+      for (i = 0; i < words; i++)
+	classes[i] = X86_64_NO_CLASS;
+
+      /* Zero sized arrays or structures are NO_CLASS.  We return 0 to
+	 signalize memory class, so handle it as special case.  */
+      if (!words)
+	{
+	  classes[0] = X86_64_NO_CLASS;
+	  return 1;
+	}
+
+      /* Classify each field of record and merge classes.  */
+      if (TREE_CODE (type) == RECORD_TYPE)
+	{
+	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	    {
+	      if (TREE_CODE (field) == FIELD_DECL)
+		{
+		  int num;
+
+		  /* Bitfields are always classified as integer.  Handle them
+		     early, since later code would consider them to be
+		     misaligned integers.  */
+		  if (DECL_BIT_FIELD (field))
+		    {
+		      for (i = int_bit_position (field) / 8 / 8;
+			   i < (int_bit_position (field)
+			        + tree_low_cst (DECL_SIZE (field), 0)
+			       	+ 63) / 8 / 8; i++)
+			classes[i] =
+			  merge_classes (X86_64_INTEGER_CLASS,
+					 classes[i]);
+		    }
+		  else
+		    {
+		      num = classify_argument (TYPE_MODE (TREE_TYPE (field)),
+					       TREE_TYPE (field), subclasses,
+					       (int_bit_position (field)
+						+ bit_offset) % 256);
+		      if (!num)
+			return 0;
+		      for (i = 0; i < num; i++)
+			{
+			  int pos =
+			    (int_bit_position (field) + bit_offset) / 8 / 8;
+			  classes[i + pos] =
+			    merge_classes (subclasses[i], classes[i + pos]);
+			}
+		    }
+		}
+	    }
+	}
+      /* Arrays are handled as small records.  */
+      else if (TREE_CODE (type) == ARRAY_TYPE)
+	{
+	  int num;
+	  num = classify_argument (TYPE_MODE (TREE_TYPE (type)),
+				   TREE_TYPE (type), subclasses, bit_offset);
+	  if (!num)
+	    return 0;
+
+	  /* The partial classes are now full classes.  */
+	  if (subclasses[0] == X86_64_SSESF_CLASS && bytes != 4)
+	    subclasses[0] = X86_64_SSE_CLASS;
+	  if (subclasses[0] == X86_64_INTEGERSI_CLASS && bytes != 4)
+	    subclasses[0] = X86_64_INTEGER_CLASS;
+
+	  for (i = 0; i < words; i++)
+	    classes[i] = subclasses[i % num];
+	}
+      /* Unions are similar to RECORD_TYPE but offset is always 0.  */
+      else if (TREE_CODE (type) == UNION_TYPE)
+	{
+	  for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
+	    {
+	      if (TREE_CODE (field) == FIELD_DECL)
+		{
+		  int num;
+		  num = classify_argument (TYPE_MODE (TREE_TYPE (field)),
+					   TREE_TYPE (field), subclasses,
+					   bit_offset);
+		  if (!num)
+		    return 0;
+		  for (i = 0; i < num; i++)
+		    classes[i] = merge_classes (subclasses[i], classes[i]);
+		}
+	    }
+	}
+      else
+	abort ();
+
+      /* Final merger cleanup.  */
+      for (i = 0; i < words; i++)
+	{
+	  /* If one class is MEMORY, everything should be passed in
+	     memory.  */
+	  if (classes[i] == X86_64_MEMORY_CLASS)
+	    return 0;
+
+	  /* The X86_64_SSEUP_CLASS should be always preceeded by
+	     X86_64_SSE_CLASS.  */
+	  if (classes[i] == X86_64_SSEUP_CLASS
+	      && (i == 0 || classes[i - 1] != X86_64_SSE_CLASS))
+	    classes[i] = X86_64_SSE_CLASS;
+
+	  /*  X86_64_X87UP_CLASS should be preceeded by X86_64_X87_CLASS.  */
+	  if (classes[i] == X86_64_X87UP_CLASS
+	      && (i == 0 || classes[i - 1] != X86_64_X87_CLASS))
+	    classes[i] = X86_64_SSE_CLASS;
+	}
+      return words;
+    }
+
+  /* Compute alignment needed.  We align all types to natural boundaries with
+     exception of XFmode that is aligned to 64bits.  */
+  if (mode != VOIDmode && mode != BLKmode)
+    {
+      int mode_alignment = GET_MODE_BITSIZE (mode);
+
+      if (mode == XFmode)
+	mode_alignment = 128;
+      else if (mode == XCmode)
+	mode_alignment = 256;
+      /* Missalignmed fields are always returned in memory.  */
+      if (bit_offset % mode_alignment)
+	return 0;
+    }
+
+  /* Classification of atomic types.  */
+  switch (mode)
+    {
+    case DImode:
+    case SImode:
+    case HImode:
+    case QImode:
+    case CSImode:
+    case CHImode:
+    case CQImode:
+      if (bit_offset + GET_MODE_BITSIZE (mode) <= 32)
+	classes[0] = X86_64_INTEGERSI_CLASS;
+      else
+	classes[0] = X86_64_INTEGER_CLASS;
+      return 1;
+    case CDImode:
+    case TImode:
+      classes[0] = classes[1] = X86_64_INTEGER_CLASS;
+      return 2;
+    case CTImode:
+      classes[0] = classes[1] = X86_64_INTEGER_CLASS;
+      classes[2] = classes[3] = X86_64_INTEGER_CLASS;
+      return 4;
+    case SFmode:
+      if (!(bit_offset % 64))
+	classes[0] = X86_64_SSESF_CLASS;
+      else
+	classes[0] = X86_64_SSE_CLASS;
+      return 1;
+    case DFmode:
+      classes[0] = X86_64_SSEDF_CLASS;
+      return 1;
+    case TFmode:
+      classes[0] = X86_64_X87_CLASS;
+      classes[1] = X86_64_X87UP_CLASS;
+      return 2;
+    case TCmode:
+      classes[0] = X86_64_X87_CLASS;
+      classes[1] = X86_64_X87UP_CLASS;
+      classes[2] = X86_64_X87_CLASS;
+      classes[3] = X86_64_X87UP_CLASS;
+      return 4;
+    case DCmode:
+      classes[0] = X86_64_SSEDF_CLASS;
+      classes[1] = X86_64_SSEDF_CLASS;
+      return 2;
+    case SCmode:
+      classes[0] = X86_64_SSE_CLASS;
+      return 1;
+    case BLKmode:
+      return 0;
+    default:
+      abort ();
+    }
+}
+
+/* Examine the argument and return set number of register required in each
+   class.  Return 0 ifif parameter should be passed in memory.  */
+static int
+examine_argument (mode, type, in_return, int_nregs, sse_nregs)
+     enum machine_mode mode;
+     tree type;
+     int *int_nregs, *sse_nregs;
+     int in_return;
+{
+  enum x86_64_reg_class class[MAX_CLASSES];
+  int n = classify_argument (mode, type, class, 0);
+
+  *int_nregs = 0;
+  *sse_nregs = 0;
+  if (!n)
+    return 0;
+  for (n--; n >= 0; n--)
+    switch (class[n])
+      {
+      case X86_64_INTEGER_CLASS:
+      case X86_64_INTEGERSI_CLASS:
+	(*int_nregs)++;
+	break;
+      case X86_64_SSE_CLASS:
+      case X86_64_SSESF_CLASS:
+      case X86_64_SSEDF_CLASS:
+	(*sse_nregs)++;
+	break;
+      case X86_64_NO_CLASS:
+      case X86_64_SSEUP_CLASS:
+	break;
+      case X86_64_X87_CLASS:
+      case X86_64_X87UP_CLASS:
+	if (!in_return)
+	  return 0;
+	break;
+      case X86_64_MEMORY_CLASS:
+	abort ();
+      }
+  return 1;
+}
+/* Construct container for the argument used by GCC interface.  See
+   FUNCTION_ARG for the detailed description.  */
+static rtx
+construct_container (mode, type, in_return, nintregs, nsseregs, intreg, sse_regno)
+     enum machine_mode mode;
+     tree type;
+     int in_return;
+     int nintregs, nsseregs;
+     int *intreg, sse_regno;
+{
+  enum machine_mode tmpmode;
+  int bytes =
+    (mode == BLKmode) ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
+  enum x86_64_reg_class class[MAX_CLASSES];
+  int n;
+  int i;
+  int nexps = 0;
+  int needed_sseregs, needed_intregs;
+  rtx exp[MAX_CLASSES];
+  rtx ret;
+
+  n = classify_argument (mode, type, class, 0);
+  if (TARGET_DEBUG_ARG)
+    {
+      if (!n)
+	fprintf (stderr, "Memory class\n");
+      else
+	{
+	  fprintf (stderr, "Classes:");
+	  for (i = 0; i < n; i++)
+	    {
+	      fprintf (stderr, " %s", x86_64_reg_class_name[class[i]]);
+	    }
+	   fprintf (stderr, "\n");
+	}
+    }
+  if (!n)
+    return NULL;
+  if (!examine_argument (mode, type, in_return, &needed_intregs, &needed_sseregs))
+    return NULL;
+  if (needed_intregs > nintregs || needed_sseregs > nsseregs)
+    return NULL;
+
+  /* First construct simple cases.  Avoid SCmode, since we want to use
+     single register to pass this type.  */
+  if (n == 1 && mode != SCmode)
+    switch (class[0])
+      {
+      case X86_64_INTEGER_CLASS:
+      case X86_64_INTEGERSI_CLASS:
+	return gen_rtx_REG (mode, intreg[0]);
+      case X86_64_SSE_CLASS:
+      case X86_64_SSESF_CLASS:
+      case X86_64_SSEDF_CLASS:
+	return gen_rtx_REG (mode, SSE_REGNO (sse_regno));
+      case X86_64_X87_CLASS:
+	return gen_rtx_REG (mode, FIRST_STACK_REG);
+      case X86_64_NO_CLASS:
+	/* Zero sized array, struct or class.  */
+	return NULL;
+      default:
+	abort ();
+      }
+  if (n == 2 && class[0] == X86_64_SSE_CLASS && class[1] == X86_64_SSEUP_CLASS)
+    return gen_rtx_REG (TImode, SSE_REGNO (sse_regno));
+  if (n == 2
+      && class[0] == X86_64_X87_CLASS && class[1] == X86_64_X87UP_CLASS)
+    return gen_rtx_REG (TFmode, FIRST_STACK_REG);
+  if (n == 2 && class[0] == X86_64_INTEGER_CLASS
+      && class[1] == X86_64_INTEGER_CLASS
+      && (mode == CDImode || mode == TImode)
+      && intreg[0] + 1 == intreg[1])
+    return gen_rtx_REG (mode, intreg[0]);
+  if (n == 4
+      && class[0] == X86_64_X87_CLASS && class[1] == X86_64_X87UP_CLASS
+      && class[2] == X86_64_X87_CLASS && class[3] == X86_64_X87UP_CLASS)
+    return gen_rtx_REG (TCmode, FIRST_STACK_REG);
+
+  /* Otherwise figure out the entries of the PARALLEL.  */
+  for (i = 0; i < n; i++)
+    {
+      switch (class[i])
+        {
+	  case X86_64_NO_CLASS:
+	    break;
+	  case X86_64_INTEGER_CLASS:
+	  case X86_64_INTEGERSI_CLASS:
+	    /* Merge TImodes on aligned occassions here too.  */
+	    if (i * 8 + 8 > bytes)
+	      tmpmode = mode_for_size ((bytes - i * 8) * BITS_PER_UNIT, MODE_INT, 0);
+	    else if (class[i] == X86_64_INTEGERSI_CLASS)
+	      tmpmode = SImode;
+	    else
+	      tmpmode = DImode;
+	    /* We've requested 24 bytes we don't have mode for.  Use DImode.  */
+	    if (tmpmode == BLKmode)
+	      tmpmode = DImode;
+	    exp [nexps++] = gen_rtx_EXPR_LIST (VOIDmode,
+					       gen_rtx_REG (tmpmode, *intreg),
+					       GEN_INT (i*8));
+	    intreg++;
+	    break;
+	  case X86_64_SSESF_CLASS:
+	    exp [nexps++] = gen_rtx_EXPR_LIST (VOIDmode,
+					       gen_rtx_REG (SFmode,
+							    SSE_REGNO (sse_regno)),
+					       GEN_INT (i*8));
+	    sse_regno++;
+	    break;
+	  case X86_64_SSEDF_CLASS:
+	    exp [nexps++] = gen_rtx_EXPR_LIST (VOIDmode,
+					       gen_rtx_REG (DFmode,
+							    SSE_REGNO (sse_regno)),
+					       GEN_INT (i*8));
+	    sse_regno++;
+	    break;
+	  case X86_64_SSE_CLASS:
+	    if (i < n && class[i + 1] == X86_64_SSEUP_CLASS)
+	      tmpmode = TImode, i++;
+	    else
+	      tmpmode = DImode;
+	    exp [nexps++] = gen_rtx_EXPR_LIST (VOIDmode,
+					       gen_rtx_REG (tmpmode,
+							    SSE_REGNO (sse_regno)),
+					       GEN_INT (i*8));
+	    sse_regno++;
+	    break;
+	  default:
+	    abort ();
+	}
+    }
+  ret =  gen_rtx_PARALLEL (mode, rtvec_alloc (nexps));
+  for (i = 0; i < nexps; i++)
+    XVECEXP (ret, 0, i) = exp [i];
+  return ret;
 }
 
 /* Update the data in CUM to advance over an argument
@@ -1316,27 +1826,45 @@ function_arg_advance (cum, mode, type, named)
     fprintf (stderr,
 	     "function_adv (sz=%d, wds=%2d, nregs=%d, mode=%s, named=%d)\n\n",
 	     words, cum->words, cum->nregs, GET_MODE_NAME (mode), named);
-  if (TARGET_SSE && mode == TImode)
+  if (TARGET_64BIT)
     {
-      cum->sse_words += words;
-      cum->sse_nregs -= 1;
-      cum->sse_regno += 1;
-      if (cum->sse_nregs <= 0)
+      int int_nregs, sse_nregs;
+      if (!examine_argument (mode, type, 0, &int_nregs, &sse_nregs))
+	cum->words += words;
+      else if (sse_nregs <= cum->sse_nregs && int_nregs <= cum->nregs)
 	{
-	  cum->sse_nregs = 0;
-	  cum->sse_regno = 0;
+	  cum->nregs -= int_nregs;
+	  cum->sse_nregs -= sse_nregs;
+	  cum->regno += int_nregs;
+	  cum->sse_regno += sse_nregs;
 	}
+      else
+	cum->words += words;
     }
   else
     {
-      cum->words += words;
-      cum->nregs -= words;
-      cum->regno += words;
-
-      if (cum->nregs <= 0)
+      if (TARGET_SSE && mode == TImode)
 	{
-	  cum->nregs = 0;
-	  cum->regno = 0;
+	  cum->sse_words += words;
+	  cum->sse_nregs -= 1;
+	  cum->sse_regno += 1;
+	  if (cum->sse_nregs <= 0)
+	    {
+	      cum->sse_nregs = 0;
+	      cum->sse_regno = 0;
+	    }
+	}
+      else
+	{
+	  cum->words += words;
+	  cum->nregs -= words;
+	  cum->regno += words;
+
+	  if (cum->nregs <= 0)
+	    {
+	      cum->nregs = 0;
+	      cum->regno = 0;
+	    }
 	}
     }
   return;
@@ -1367,28 +1895,44 @@ function_arg (cum, mode, type, named)
     (mode == BLKmode) ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
   int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
+  /* Handle an hidden AL argument containing number of registers for varargs
+     x86-64 functions.  For i386 ABI just return constm1_rtx to avoid
+     any AL settings.  */
   if (mode == VOIDmode)
-    return constm1_rtx;
-
-  switch (mode)
     {
-      /* For now, pass fp/complex values on the stack.  */
-    default:
-      break;
-
-    case BLKmode:
-    case DImode:
-    case SImode:
-    case HImode:
-    case QImode:
-      if (words <= cum->nregs)
-	ret = gen_rtx_REG (mode, cum->regno);
-      break;
-    case TImode:
-      if (cum->sse_nregs)
-        ret = gen_rtx_REG (mode, cum->sse_regno);
-      break;
+      if (TARGET_64BIT)
+	return GEN_INT (cum->maybe_vaarg
+			? (cum->sse_nregs < 0
+			   ? SSE_REGPARM_MAX
+			   : cum->sse_regno)
+			: -1);
+      else
+	return constm1_rtx;
     }
+  if (TARGET_64BIT)
+    ret = construct_container (mode, type, 0, cum->nregs, cum->sse_nregs,
+			       &x86_64_int_parameter_registers [cum->regno],
+			       cum->sse_regno);
+  else
+    switch (mode)
+      {
+	/* For now, pass fp/complex values on the stack.  */
+      default:
+	break;
+
+      case BLKmode:
+      case DImode:
+      case SImode:
+      case HImode:
+      case QImode:
+	if (words <= cum->nregs)
+	  ret = gen_rtx_REG (mode, cum->regno);
+	break;
+      case TImode:
+	if (cum->sse_nregs)
+	  ret = gen_rtx_REG (mode, cum->sse_regno);
+	break;
+      }
 
   if (TARGET_DEBUG_ARG)
     {
@@ -1406,6 +1950,119 @@ function_arg (cum, mode, type, named)
 
   return ret;
 }
+
+/* Gives the alignment boundary, in bits, of an argument with the specified mode
+   and type.   */
+
+int
+ix86_function_arg_boundary (mode, type)
+     enum machine_mode mode;
+     tree type;
+{
+  int align;
+  if (!TARGET_64BIT)
+    return PARM_BOUNDARY;
+  if (type)
+    align = TYPE_ALIGN (type);
+  else
+    align = GET_MODE_ALIGNMENT (mode);
+  if (align < PARM_BOUNDARY)
+    align = PARM_BOUNDARY;
+  if (align > 128)
+    align = 128;
+  return align;
+}
+
+/* Return true if N is a possible register number of function value.  */
+bool
+ix86_function_value_regno_p (regno)
+     int regno;
+{
+  if (!TARGET_64BIT)
+    {
+      return ((regno) == 0
+	      || ((regno) == FIRST_FLOAT_REG && TARGET_FLOAT_RETURNS_IN_80387)
+	      || ((regno) == FIRST_SSE_REG && TARGET_SSE));
+    }
+  return ((regno) == 0 || (regno) == FIRST_FLOAT_REG
+	  || ((regno) == FIRST_SSE_REG && TARGET_SSE)
+	  || ((regno) == FIRST_FLOAT_REG && TARGET_FLOAT_RETURNS_IN_80387));
+}
+
+/* Define how to find the value returned by a function.
+   VALTYPE is the data type of the value (as a tree).
+   If the precise function being called is known, FUNC is its FUNCTION_DECL;
+   otherwise, FUNC is 0.  */
+rtx
+ix86_function_value (valtype)
+     tree valtype;
+{
+  if (TARGET_64BIT)
+    {
+      rtx ret = construct_container (TYPE_MODE (valtype), valtype, 1,
+				     REGPARM_MAX, SSE_REGPARM_MAX,
+				     x86_64_int_return_registers, 0);
+      /* For zero sized structures, construct_continer return NULL, but we need
+         to keep rest of compiler happy by returning meaningfull value.  */
+      if (!ret)
+	ret = gen_rtx_REG (TYPE_MODE (valtype), 0);
+      return ret;
+    }
+  else
+    return gen_rtx_REG (TYPE_MODE (valtype), VALUE_REGNO (TYPE_MODE (valtype)));
+}
+
+/* Return false ifif type is returned in memory.  */
+int
+ix86_return_in_memory (type)
+     tree type;
+{
+  int needed_intregs, needed_sseregs;
+  if (TARGET_64BIT)
+    {
+      return !examine_argument (TYPE_MODE (type), type, 1,
+				&needed_intregs, &needed_sseregs);
+    }
+  else
+    {
+      if (TYPE_MODE (type) == BLKmode
+	  || (VECTOR_MODE_P (TYPE_MODE (type))
+	      && int_size_in_bytes (type) == 8)
+	  || (int_size_in_bytes (type) > 12 && TYPE_MODE (type) != TImode
+	      && TYPE_MODE (type) != TFmode
+	      && !VECTOR_MODE_P (TYPE_MODE (type))))
+	return 1;
+      return 0;
+    }
+}
+
+/* Define how to find the value returned by a library function
+   assuming the value has mode MODE.  */
+rtx
+ix86_libcall_value (mode)
+   enum machine_mode mode;
+{
+  if (TARGET_64BIT)
+    {
+      switch (mode)
+	{
+	  case SFmode:
+	  case SCmode:
+	  case DFmode:
+	  case DCmode:
+	    return gen_rtx_REG (mode, FIRST_SSE_REG);
+	  case TFmode:
+	  case TCmode:
+	    return gen_rtx_REG (mode, FIRST_FLOAT_REG);
+	  default:
+	    return gen_rtx_REG (mode, 0);
+	}
+    }
+  else
+   return gen_rtx_REG (mode, VALUE_REGNO (mode));
+}
+
+
 
 
 /* Return nonzero if OP is general operand representable on x86_64.  */

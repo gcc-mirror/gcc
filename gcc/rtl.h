@@ -1288,7 +1288,7 @@ extern void cleanup_barriers		PARAMS ((void));
 
 /* In jump.c */
 extern void squeeze_notes		PARAMS ((rtx *, rtx *));
-extern rtx delete_insn			PARAMS ((rtx));
+extern rtx delete_related_insns			PARAMS ((rtx));
 extern void delete_jump			PARAMS ((rtx));
 extern void delete_barrier		PARAMS ((rtx));
 extern rtx get_label_before		PARAMS ((rtx));
@@ -1775,6 +1775,8 @@ int force_line_numbers PARAMS ((void));
 void restore_line_number_status PARAMS ((int old_value));
 extern void renumber_insns                      PARAMS ((FILE *));
 extern void remove_unnecessary_notes             PARAMS ((void));
+extern rtx delete_insn			PARAMS ((rtx));
+extern void delete_insn_chain		PARAMS ((rtx, rtx));
 
 /* In combine.c */
 extern int combine_instructions		PARAMS ((rtx, unsigned int));

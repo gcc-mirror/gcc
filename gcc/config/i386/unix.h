@@ -77,11 +77,6 @@ Boston, MA 02111-1307, USA.  */
    : (MODE) == TImode || VECTOR_MODE_P (MODE) ? FIRST_SSE_REG	\
    : 0)
 
-/* 1 if N is a possible register number for a function value. */
-
-#define FUNCTION_VALUE_REGNO_P(N) \
-  ((N) == 0 || ((N)== FIRST_FLOAT_REG && TARGET_FLOAT_RETURNS_IN_80387))
-
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
 #define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	    \

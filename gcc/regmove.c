@@ -2408,7 +2408,7 @@ combine_stack_adjustments_for_block (bb)
 						  -last_sp_adjust))
 		    {
 		      /* It worked!  */
-		      flow_delete_insn (last_sp_set);
+		      delete_insn (last_sp_set);
 		      last_sp_set = insn;
 		      last_sp_adjust += this_adjust;
 		      free_csa_memlist (memlist);
@@ -2450,7 +2450,7 @@ combine_stack_adjustments_for_block (bb)
 	    {
 	      if (last_sp_set == bb->head)
 		bb->head = NEXT_INSN (last_sp_set);
-	      flow_delete_insn (last_sp_set);
+	      delete_insn (last_sp_set);
 
 	      free_csa_memlist (memlist);
 	      memlist = NULL;
@@ -2487,12 +2487,9 @@ combine_stack_adjustments_for_block (bb)
 	break;
 
       if (pending_delete)
-	flow_delete_insn (pending_delete);
+	delete_insn (pending_delete);
     }
 
   if (pending_delete)
-    {
-      bb->end = PREV_INSN (pending_delete);
-      flow_delete_insn (pending_delete);
-    }
+    delete_insn (pending_delete);
 }

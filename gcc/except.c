@@ -1850,7 +1850,7 @@ connect_post_landing_pads ()
       seq = get_insns ();
       end_sequence ();
       emit_insns_before (seq, region->resume);
-      flow_delete_insn (region->resume);
+      delete_insn (region->resume);
     }
 }
 

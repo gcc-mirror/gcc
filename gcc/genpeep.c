@@ -119,7 +119,7 @@ gen_peephole (peep)
   printf ("  if (want_jump && GET_CODE (ins1) != JUMP_INSN)\n");
   printf ("    {\n");
   printf ("      rtx insn2 = emit_jump_insn_before (PATTERN (ins1), ins1);\n");
-  printf ("      delete_insn (ins1);\n");
+  printf ("      delete_related_insns (ins1);\n");
   printf ("      ins1 = ins2;\n");
   printf ("    }\n");
 #endif

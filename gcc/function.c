@@ -4140,7 +4140,7 @@ delete_handlers ()
 	      || (nonlocal_goto_stack_level != 0
 		  && reg_mentioned_p (nonlocal_goto_stack_level,
 				      PATTERN (insn))))
-	    delete_insn (insn);
+	    delete_related_insns (insn);
 	}
     }
 }
@@ -7300,7 +7300,7 @@ thread_prologue_and_epilogue_insns (f)
 	      if (simplejump_p (jump))
 		{
 		  emit_return_into_block (bb, epilogue_line_note);
-		  flow_delete_insn (jump);
+		  delete_insn (jump);
 		}
 
 	      /* If we have a conditional jump, we can try to replace
