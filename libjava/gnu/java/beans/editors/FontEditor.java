@@ -38,8 +38,8 @@ exception statement from your version. */
 
 package gnu.java.beans.editors;
 
-import java.beans.*;
 import java.awt.Font;
+import java.beans.PropertyEditorSupport;
 
 /**
  ** FontEditor is a property editor for java.awt.Font.

@@ -38,8 +38,8 @@ exception statement from your version. */
 
 package gnu.java.beans.editors;
 
-import java.beans.*;
 import java.awt.Color;
+import java.beans.PropertyEditorSupport;
 
 /**
  ** NativeByteEditor is a property editor for the

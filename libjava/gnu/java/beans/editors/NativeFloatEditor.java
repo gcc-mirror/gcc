@@ -38,7 +38,7 @@ exception statement from your version. */
 
 package gnu.java.beans.editors;
 
-import java.beans.*;
+import java.beans.PropertyEditorSupport;
 
 /**
  ** NativeFloatEditor is a property editor for the

@@ -38,8 +38,8 @@ exception statement from your version. */
 
 package gnu.java.locale;
 
-import java.util.ListResourceBundle;
 import java.util.Calendar;
+import java.util.ListResourceBundle;
 
 /**
  * This class contains locale data for java.util.Calendar specific for 

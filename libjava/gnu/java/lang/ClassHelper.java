@@ -38,8 +38,14 @@ exception statement from your version. */
 
 package gnu.java.lang;
 
-import java.util.*;
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * ClassHelper has various methods that ought to have been in Class.

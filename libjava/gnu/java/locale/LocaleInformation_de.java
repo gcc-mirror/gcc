@@ -39,7 +39,6 @@ exception statement from your version. */
 package gnu.java.locale;
 
 import java.util.ListResourceBundle;
-import java.util.Calendar;
 
 /**
   * This class contains locale data for the German locale
