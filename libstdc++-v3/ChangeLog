@@ -1,3 +1,7 @@
+2002-01-14  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	* docs/html/17_intro/porting-howto.xml: Update filebuf section.
+
 2002-01-14  Paolo Carlini  <pcarlini@unitus.it>
 	    Nathan Myers  <ncm@cantrip.org>
 
