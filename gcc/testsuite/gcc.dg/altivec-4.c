@@ -5,7 +5,7 @@
 
 static int __attribute__((mode(V4SI))) x, y;
 
-static vector signed int i,j,k;
+static vector signed int i,j;
 static vector signed short s,t;
 static vector signed char c,d;
 static vector float f,g;
@@ -23,19 +23,19 @@ b()
 
   /* Make sure the predicates accept correct argument types.  */
   
-  k = __builtin_altivec_vcmpbfp_p (f, g);
-  k = __builtin_altivec_vcmpeqfp_p (f, g);
-  k = __builtin_altivec_vcmpequb_p (c, d);
-  k = __builtin_altivec_vcmpequh_p (s, t);
-  k = __builtin_altivec_vcmpequw_p (i, j);
-  k = __builtin_altivec_vcmpgefp_p (f, g);
-  k = __builtin_altivec_vcmpgtfp_p (f, g);
-  k = __builtin_altivec_vcmpgtsb_p (c, d);
-  k = __builtin_altivec_vcmpgtsh_p (s, t);
-  k = __builtin_altivec_vcmpgtsw_p (i, j);
-  k = __builtin_altivec_vcmpgtub_p (c, d);
-  k = __builtin_altivec_vcmpgtuh_p (s, t);
-  k = __builtin_altivec_vcmpgtuw_p (i, j);
+  int1 = __builtin_altivec_vcmpbfp_p (0, f, g);
+  int1 = __builtin_altivec_vcmpeqfp_p (0, f, g);
+  int1 = __builtin_altivec_vcmpequb_p (0, c, d);
+  int1 = __builtin_altivec_vcmpequh_p (0, s, t);
+  int1 = __builtin_altivec_vcmpequw_p (0, i, j);
+  int1 = __builtin_altivec_vcmpgefp_p (0, f, g);
+  int1 = __builtin_altivec_vcmpgtfp_p (0, f, g);
+  int1 = __builtin_altivec_vcmpgtsb_p (0, c, d);
+  int1 = __builtin_altivec_vcmpgtsh_p (0, s, t);
+  int1 = __builtin_altivec_vcmpgtsw_p (0, i, j);
+  int1 = __builtin_altivec_vcmpgtub_p (0, c, d);
+  int1 = __builtin_altivec_vcmpgtuh_p (0, s, t);
+  int1 = __builtin_altivec_vcmpgtuw_p (0, i, j);
 
   __builtin_altivec_mtvscr (i);
   __builtin_altivec_dssall ();
