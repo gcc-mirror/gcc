@@ -35,6 +35,9 @@ Boston, MA 02111-1307, USA.  */
 #include <unistd.h>
 #endif
 #define ISSPACE (x) isspace(x)
+#ifdef HAVE_SYS_WAIT_H
+#include <sys/wait.h>
+#endif
 #endif
 
 #ifdef vfork /* Autoconf may define this to fork for us. */
