@@ -227,7 +227,7 @@ typedef unsigned int UHItype __attribute__ ((mode (HI)));
 # define MINDECEXP -4956
 #endif
 
-/* Fail compilation if 2*NE is not the appropriate size. 
+/* Fail compilation if 2*NE is not the appropriate size.
    If HOST_BITS_PER_WIDE_INT is 64, we're going to have padding
    at the end of the array, because neither 96 nor 160 is
    evenly divisible by 64.  */
@@ -1601,7 +1601,7 @@ eisnan (x)
   for (i = 0; i < NE - 1; i++)
     {
       if (*x++ != 0)
-        return (1);
+	return (1);
     }
 #endif
 
@@ -4321,13 +4321,13 @@ eifrac (x, i, frac)
 	*i = -(*i);
     }
   else
-      {
-        /* shift not more than 16 bits */
-          eshift (xi, k);
-        *i = (HOST_WIDE_INT) xi[M] & 0xffff;
-        if (xi[0])
-	  *i = -(*i);
-      }
+    {
+      /* shift not more than 16 bits */
+      eshift (xi, k);
+      *i = (HOST_WIDE_INT) xi[M] & 0xffff;
+      if (xi[0])
+	*i = -(*i);
+    }
   xi[0] = 0;
   xi[E] = EXONE - 1;
   xi[M] = 0;
@@ -6021,11 +6021,11 @@ c4xtoe (d, e, mode)
 
       y[M+1] = dn[1];
       if (mode != QFmode)	/* There are only 2 words in QFmode.  */
-        {
+	{
 	  y[M+2] = dn[2];	/* Fill in the rest of our mantissa.  */
 	  y[M+3] = dn[3];
 	  size = 4;
-        }
+	}
       else
 	size = 2;
       eshift (y, -8);
@@ -6034,7 +6034,7 @@ c4xtoe (d, e, mode)
 
       carry = 1;	/* Initially add 1 for the two's complement.  */
       for (i=size + M; i > M; i--)
-        {
+	{
 	  if (carry && (y[i] == 0x0000))
 	    /* We overflowed into the next word, carry is the same.  */
 	    y[i] = carry ? 0x0000 : 0xffff;
@@ -6044,14 +6044,14 @@ c4xtoe (d, e, mode)
 	      y[i] = ((~y[i]) + carry) & 0xffff;
 	      carry = 0;
 	    }
-        }
+	}
 
       if (carry)
-        {
+	{
 	  eshift (y, -1);
 	  y[M+1] |= 0x8000;
 	  r++;
-         }
+	}
        y[1] = r + EXONE;
     }
   else
@@ -6123,10 +6123,10 @@ toc4x (x, y, mode)
       *y++ = 0x8000;
       *y++ = 0x0000;
       if (mode != QFmode)
-        {
-          *y++ = 0x0000;
-          *y++ = 0x0000;
-        }
+	{
+	  *y++ = 0x0000;
+	  *y++ = 0x0000;
+	}
       return;
     }
 
@@ -6644,7 +6644,7 @@ etoudi (x, i)
     }
   else
     {
-        /* shift not more than 16 bits */
+      /* shift not more than 16 bits */
       eshift (xi, k);
 
 noshift:
@@ -6726,7 +6726,7 @@ etodi (x, i)
     }
   else
     {
-        /* shift not more than 16 bits */
+      /* shift not more than 16 bits */
       eshift (xi, k);
 
       if (WORDS_BIG_ENDIAN)

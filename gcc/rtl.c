@@ -417,7 +417,7 @@ get_mode_alignment (mode)
     alignment = GET_MODE_UNIT_SIZE (mode);
   else
     alignment = GET_MODE_SIZE (mode);
-  
+
   /* Extract the LSB of the size.  */
   alignment = alignment & -alignment;
   alignment *= BITS_PER_UNIT;

@@ -5746,8 +5746,8 @@ choose_reload_regs (chain)
 
 	      /* If we found an equivalent reg, say no code need be generated
 		 to load it, and use it as our reload reg.  */
-	      if (equiv != 0 
-		  && (regno != HARD_FRAME_POINTER_REGNUM 
+	      if (equiv != 0
+		  && (regno != HARD_FRAME_POINTER_REGNUM
 		      || !frame_pointer_needed))
 		{
 		  int nr = HARD_REGNO_NREGS (regno, rld[r].mode);
@@ -6611,7 +6611,7 @@ emit_input_reload_insns (chain, rl, old, j)
   /* End this sequence.  */
   *where = get_insns ();
   end_sequence ();
-				 
+
   /* Update reload_override_in so that delete_address_reloads_1
      can see the actual register usage.  */
   if (oldequiv_reg)
@@ -8223,7 +8223,7 @@ reload_cse_simplify_set (set, insn)
 #ifdef LOAD_EXTEND_OP
   /* When replacing a memory with a register, we need to honor assumptions
      that combine made wrt the contents of sign bits.  We'll do this by
-     generating an extend instruction instead of a reg->reg copy.  Thus 
+     generating an extend instruction instead of a reg->reg copy.  Thus
      the destination must be a register that we can widen.  */
   if (GET_CODE (src) == MEM
       && GET_MODE_BITSIZE (GET_MODE (src)) < BITS_PER_WORD
@@ -9388,7 +9388,7 @@ move2add_note_store (dst, set, data)
 	  reg_set_luid[regno] = move2add_last_label_luid + 1;
 	  reg_mode[regno] = mode;
 	  return;
-	  
+
 	default:
 	invalidate:
 	  /* Invalidate the contents of the register.  */
@@ -9474,7 +9474,7 @@ copy_eh_notes (insn, x)
       for (; x != 0; x = NEXT_INSN (x))
 	{
 	  if (may_trap_p (PATTERN (x)))
-	    REG_NOTES (x) 
+	    REG_NOTES (x)
 	      = gen_rtx_EXPR_LIST (REG_EH_REGION, XEXP (eh_note, 0),
 				   REG_NOTES (x));
 	}
@@ -9485,7 +9485,7 @@ copy_eh_notes (insn, x)
    abnormal calls moving basic block end, but in fact it wants to emit
    them on the edge.  Looks for abnormal call edges, find backward the
    proper call and fix the damage.
- 
+
    Similar handle instructions throwing exceptions internally.  */
 void
 fixup_abnormal_edges ()

@@ -1,3 +1,18 @@
+2002-05-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* read-rtl.c: Fix formatting.
+	* real.c: Likewise.
+	* recog.c: Likewise.
+	* regclass.c: Likewise.
+	* regmove.c: Likewise.
+	* reg-stack.c: Likewise.
+	* reload1.c: Likewise.
+	* reload.c: Likewise.
+	* resource.c: Likewise.
+	* rtlanal.c: Likewise.
+	* rtl.c: Likewise.
+	* rtl-error.c: Likewise.
+
 2002-05-08  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa/pa-64.h (MAX_WCHAR_TYPE_SIZE): Delete.
