@@ -1,3 +1,14 @@
+2003-09-25  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/InetAddress.java:
+	Reorder imports, remove implementation comment.
+	(isMulticastAddress): Merged documentation from classpath.
+	* java/net/URLConnection.java
+	(setRequestProperty): Check key for null, fix documentation.
+	(adREquestProperty): Check key for null, remove wrong implementation
+	and replace it with comment to overwrite this method in subclasses,
+	fix documentation.
+
 2003-09-25  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/reflect/Proxy.java (generate): Uncomment protection

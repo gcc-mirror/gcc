@@ -698,12 +698,11 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the default value used to determine whether or not caching
-   * of documents will be done when possible.
+   * Sets the value of the named request property
    *
-   * @param key Key of the property to set
-   * @param value Value of the Property to set
-   *
+   * @param key The name of the property
+   * @param value The value of the property
+   * 
    * @exception IllegalStateException If already connected
    * @exception NullPointerException If key is null
    *
@@ -717,12 +716,16 @@ public abstract class URLConnection
     if (connected)
       throw new IllegalStateException ("Already connected");
 
+    if (key == null)
+      throw new NullPointerException ("key is null");
+    
     // Do nothing unless overridden by subclasses that support setting
     // header fields in the request.
   }
 
   /**
-   * Sets the value of the named request property
+   * Adds a new request property by a key/value pair.
+   * This method does not overwrite* existing properties with the same key.
    *
    * @param key Key of the property to add
    * @param value Value of the Property to add
@@ -740,10 +743,11 @@ public abstract class URLConnection
     if (connected)
       throw new IllegalStateException ("Already connected");
 
-    if (getRequestProperty (key) == null)
-      {
-        setRequestProperty (key, value);
-      }
+    if (key == null)
+      throw new NullPointerException ("key is null");
+    
+    // Do nothing unless overridden by subclasses that support adding
+    // header fields in the request.
   }
 
   /**

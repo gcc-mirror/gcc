@@ -38,18 +38,11 @@ exception statement from your version. */
 
 package java.net;
 
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
 import java.io.ObjectStreamException;
-
-/*
- * Written using on-line Java Platform 1.2 API Specification, as well
- * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998).
- * (The latter turns out to have some errors ...)
- * Status:  Believed complete and correct.
- */
+import java.io.Serializable;
 
 /**
  * This class models an Internet address.  It does not have a public
@@ -137,7 +130,11 @@ public class InetAddress implements Serializable
   }
 
   /**
-   * Utility routine to check if the InetAddress is an IP multicast address
+   * Returns true if this address is a multicast address, false otherwise.
+   * An address is multicast if the high four bits are "1110".  These are
+   * also known as "Class D" addresses.
+   *
+   * @return true if mulitcast, false if not
    *
    * @since 1.1
    */
