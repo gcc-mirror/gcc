@@ -425,8 +425,10 @@ static void e64toe	PARAMS ((UEMUSHORT *, UEMUSHORT *));
 static void e113toe	PARAMS ((UEMUSHORT *, UEMUSHORT *));
 #endif
 static void e24toe	PARAMS ((UEMUSHORT *, UEMUSHORT *));
+#if (INTEL_EXTENDED_IEEE_FORMAT == 0)
 static void etoe113	PARAMS ((UEMUSHORT *, UEMUSHORT *));
 static void toe113	PARAMS ((UEMUSHORT *, UEMUSHORT *));
+#endif
 static void etoe64	PARAMS ((UEMUSHORT *, UEMUSHORT *));
 static void toe64	PARAMS ((UEMUSHORT *, UEMUSHORT *));
 static void etoe53	PARAMS ((UEMUSHORT *, UEMUSHORT *));
@@ -524,7 +526,10 @@ endian (e, x, mode)
 	  t = (unsigned long) e[7] & 0xffff;
 	  t |= th << 16;
 	  x[3] = (long) t;
+#else
+	  x[3] = 0;
 #endif
+	  /* FALLTHRU */
 
 	case XFmode:
 	  /* Swap halfwords in the third long.  */
@@ -532,7 +537,7 @@ endian (e, x, mode)
 	  t = (unsigned long) e[5] & 0xffff;
 	  t |= th << 16;
 	  x[2] = (long) t;
-	  /* fall into the double case */
+	  /* FALLTHRU */
 
 	case DFmode:
 	  /* Swap halfwords in the second word.  */
@@ -540,7 +545,7 @@ endian (e, x, mode)
 	  t = (unsigned long) e[3] & 0xffff;
 	  t |= th << 16;
 	  x[1] = (long) t;
-	  /* fall into the float case */
+	  /* FALLTHRU */
 
 	case SFmode:
 	case HFmode:
@@ -568,7 +573,10 @@ endian (e, x, mode)
 	  t = (unsigned long) e[6] & 0xffff;
 	  t |= th << 16;
 	  x[3] = (long) t;
+#else
+	  x[3] = 0;
 #endif
+	  /* FALLTHRU */
 
 	case XFmode:
 	  /* Pack the third long.
@@ -578,7 +586,7 @@ endian (e, x, mode)
 	  t = (unsigned long) e[4] & 0xffff;
 	  t |= th << 16;
 	  x[2] = (long) t;
-	  /* fall into the double case */
+	  /* FALLTHRU */
 
 	case DFmode:
 	  /* Pack the second long */
@@ -586,7 +594,7 @@ endian (e, x, mode)
 	  t = (unsigned long) e[2] & 0xffff;
 	  t |= th << 16;
 	  x[1] = (long) t;
-	  /* fall into the float case */
+	  /* FALLTHRU */
 
 	case SFmode:
 	case HFmode:
@@ -1256,7 +1264,11 @@ etartdouble (r, l)
   UEMUSHORT e[NE];
 
   GET_REAL (&r, e);
+#if INTEL_EXTENDED_IEEE_FORMAT == 0
   etoe113 (e, e);
+#else
+  etoe64 (e, e);
+#endif
   endian (e, l, TFmode);
 }
 
@@ -3535,6 +3547,7 @@ e24toe (pe, y)
 #endif /* not IBM */
 }
 
+#if (INTEL_EXTENDED_IEEE_FORMAT == 0)
 /* Convert e-type X to IEEE 128-bit long double format E.  */
 
 static void
@@ -3627,6 +3640,7 @@ toe113 (a, b)
 	*q-- = *p++;
     }
 }
+#endif
 
 /* Convert e-type X to IEEE double extended format E.  */
 
@@ -5515,9 +5529,11 @@ read_expnt:
     case 64:
       toe64 (yy, y);
       break;
+#if (INTEL_EXTENDED_IEEE_FORMAT == 0)
     case 113:
       toe113 (yy, y);
       break;
+#endif
     case NBITS:
       emovo (yy, y);
       break;
