@@ -4118,10 +4118,24 @@ free_pre_mem ()
 static void
 compute_pre_data ()
 {
+  int i;
+
   compute_local_properties (transp, comp, antloc, 0);
   compute_transpout ();
   sbitmap_vector_zero (ae_kill, n_basic_blocks);
-  compute_ae_kill (comp, ae_kill);
+
+  /* Compute ae_kill for each basic block using:
+
+     ~(TRANSP | COMP)
+
+     This is significantly after than compute_ae_kill.  */
+
+  for (i = 0; i < n_basic_blocks; i++)
+    {
+      sbitmap_a_or_b (ae_kill[i], transp[i], comp[i]);
+      sbitmap_not (ae_kill[i], ae_kill[i]);
+    }
+
   edge_list = pre_edge_lcm (gcse_file, n_exprs, transp, comp, antloc,
 			    ae_kill, &pre_insert_map, &pre_delete_map);
 }

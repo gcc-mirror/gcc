@@ -1,5 +1,8 @@
 Mon Jul  3 00:32:47 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* gcse.c (compute_pre_data): Compute ae_kill using other local
+	properties instead of calling compute_ae_kill.
+
 	* alias.c (init_alias_analysis): Do not call
 	prologue_epilogue_contains until after reload has completed.
 
