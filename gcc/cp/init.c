@@ -221,7 +221,11 @@ build_zero_init (tree type, tree nelts, bool static_storage_p)
       init = build_constructor (type, NULL_TREE);
       /* Iterate over the array elements, building initializations.  */
       inits = NULL_TREE;
-      max_index = nelts ? nelts : array_type_nelts (type);
+      if (nelts)
+	max_index = fold (build2 (MINUS_EXPR, TREE_TYPE (nelts),
+				  nelts, integer_one_node));
+      else
+	max_index = array_type_nelts (type);
       gcc_assert (TREE_CODE (max_index) == INTEGER_CST);
 
       /* A zero-sized array, which is accepted as an extension, will
