@@ -131,6 +131,9 @@ extern int target_flags;
 /* Width of a word, in units (bytes).  */
 #define UNITS_PER_WORD 4
 
+/* Type used for ptrdiff_t, as a string used in a declaration.  */
+#define PTRDIFF_TYPE "int"
+
 /* Type used for wchar_t, as a string used in a declaration.  */
 #define WCHAR_TYPE "short unsigned int"
 

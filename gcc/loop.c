@@ -2294,7 +2294,7 @@ find_and_verify_loops (f)
 
 		       /* Include the BARRIER after INSN and copy the
 			  block after LOC.  */
-		       squeeze_notes (new_label, NEXT_INSN (insn));
+		       new_label = squeeze_notes (new_label, NEXT_INSN (insn));
 		       reorder_insns (new_label, NEXT_INSN (insn), loc);
 
 		       /* All those insns are now in TARGET_LOOP_NUM.  */
