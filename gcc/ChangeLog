@@ -1,3 +1,24 @@
+Sun Mar 25 15:01:40 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (ashldi3, ashrdi3, lshrdi3): Change predicates to
+	shiftdi_operand;
+	use ix86_expand_binary_operator
+	(?sh??i_?): Disable for 64bit.
+	* i386.h (PREDICATE_CODES): Add shiftdi_operand.
+	* i386.c (shiftdi_operand): New predicate.
+
+	* (ashldi3_1_rex64, ashldi3_cmp_rex64, ashlsi3_1_zext, ashlsi3_cmp_zext,
+	ashrdi3_63_rex64, ashrdi3_1_one_bit_rex64, ashrdi3_1_rex64,
+	ashrdi3_one_bit_cmp_rex64, ashrdi3_cmp_rex64, ashrsi3_31_zext,
+	ashrsi3_1_one_bit_zext, ashrsi3_1_zext, ashrsi3_one_bit_cmp_zext,
+	ashrsi3_cmp_zext, lshrdi3_1_one_bit_rex64, lshrdi3_1_rex64,
+	lshrdi3_cmp_one_bit_rex64, lshrdi3_cmp_rex64, lshrsi3_1_one_bit_zext,
+	lshrsi3_1_zext, lshrsi3_cmp_one_bit_zext, lshrsi3_cmp_zext,
+	rotlsi3_1_one_bit_rex64, rotldi3_1_rex64,
+	rotlsi3_1_one_bit_zext, rotlsi3_1_zext, rotrdi3_1_one_bit_rex64,
+	rotrdi3_1_rex64, rotrsi3_1_one_bit_zext, rotrsi3_1_zext): New patterns.
+	(rotldi3, rotrdi3): New expanders.
+
 Sun Mar 25 14:25:33 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (movstrsi): Move offline.
