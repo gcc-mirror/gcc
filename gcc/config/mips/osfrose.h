@@ -107,7 +107,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Turn on -mpic-extern by default.  */
 #define CC1_SPEC "\
-%{O*: %{!mno-gpOPT:%{!mno-gpopt: -mgpopt}}} \
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
 %{G*} \
 %{pic-none:   -mno-half-pic} \
@@ -168,5 +167,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    put it out.  */
 
 #define ASM_IDENTIFY_GCC(STREAM)
+
+/* Identify the front-end which produced this file.  To keep symbol
+   space down, and not confuse kdb, only do this if the language is
+   not C.  */
+
+#define ASM_IDENTIFY_LANGUAGE(STREAM)					\
+{									\
+  if (strcmp (lang_identify (), "c") != 0)				\
+    output_lang_identify (STREAM);					\
+}
 
 #include "mips/mips.h"
