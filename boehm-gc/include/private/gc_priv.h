@@ -1629,7 +1629,6 @@ GC_bool GC_collect_or_expand GC_PROTO(( \
   				/* blocks available.  Should be called	*/
   				/* until the blocks are available or	*/
   				/* until it fails by returning FALSE.	*/
-GC_API void GC_init GC_PROTO((void)); /* Initialize collector.		*/
 
 #if defined(MSWIN32) || defined(MSWINCE)
   void GC_deinit GC_PROTO((void));
