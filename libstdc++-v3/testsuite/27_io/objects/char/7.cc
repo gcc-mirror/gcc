@@ -50,7 +50,8 @@ void test07()
     {
       filebuf fbout;
       sleep(1);
-      fbout.open(name, ios_base::out);
+      fbout.open(name, ios_base::in|ios_base::out);
+      VERIFY ( fbout.is_open() );
       cout.rdbuf(&fbout);
       fbout.sputc('a');
       sleep(2);

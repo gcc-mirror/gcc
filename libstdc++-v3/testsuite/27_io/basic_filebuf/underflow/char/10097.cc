@@ -67,7 +67,8 @@ void test16()
   else if (fval == 0)
     {
       filebuf fbout;
-      fbout.open(name, ios_base::out);
+      fbout.open(name, ios_base::in|ios_base::out);
+      VERIFY ( fbout.is_open() );
       fbout.sputn("0123456789", 10);
       fbout.pubsync();
       sleep(2);
