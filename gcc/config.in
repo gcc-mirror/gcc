@@ -80,6 +80,9 @@
 /* Define if you have the index function.  */
 #undef HAVE_INDEX
 
+/* Define if you have the isascii function.  */
+#undef HAVE_ISASCII
+
 /* Define if you have the kill function.  */
 #undef HAVE_KILL
 
