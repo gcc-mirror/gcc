@@ -1,5 +1,7 @@
 2003-04-29  Geoffrey Keating  <geoffk@apple.com>
 
+	* doc/invoke.texi (Overall Options): Mention -x objective-c-header.
+
 	* dwarf2out.c (output_call_frame_info): No need to output EH
 	unwind information if all_throwers_are_sibcalls.
 

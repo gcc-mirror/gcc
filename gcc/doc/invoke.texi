@@ -813,7 +813,7 @@ the next @option{-x} option.  Possible values for @var{language} are:
 @example
 c  c-header  cpp-output
 c++  c++-header  c++-cpp-output
-objective-c  objc-cpp-output
+objective-c  objective-c-header  objc-cpp-output
 assembler  assembler-with-cpp
 ada
 f77  f77-cpp-input  ratfor
