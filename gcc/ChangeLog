@@ -1,3 +1,10 @@
+2004-12-12  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/18040
+	* expr.c (get_inner_reference): Remove NON_LVALUE_EXPR, NOP_EXPR,
+	CONVERT_EXPR cases.
+	(handled_component_p): Likewise.
+
 2004-12-12  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* reg-stack.c (convert_regs_2): Free stack.

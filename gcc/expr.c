@@ -5293,16 +5293,6 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	   conversions that don't change the mode, and all view conversions
 	   except those that need to "step up" the alignment.  */
 
-	case NON_LVALUE_EXPR:
-	  break;
-
-	case NOP_EXPR:
-	case CONVERT_EXPR:
-	  if (TYPE_MODE (TREE_TYPE (exp))
-	      != TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0))))
-	    goto done;
-	  break;
-
 	case VIEW_CONVERT_EXPR:
 	  if ((TYPE_ALIGN (TREE_TYPE (exp))
 	       > TYPE_ALIGN (TREE_TYPE (TREE_OPERAND (exp, 0))))
@@ -5445,19 +5435,10 @@ handled_component_p (tree t)
     case COMPONENT_REF:
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
-    case NON_LVALUE_EXPR:
     case VIEW_CONVERT_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
       return 1;
-
-    /* ??? Sure they are handled, but get_inner_reference may return
-       a different PBITSIZE, depending upon whether the expression is
-       wrapped up in a NOP_EXPR or not, e.g. for bitfields.  */
-    case NOP_EXPR:
-    case CONVERT_EXPR:
-      return (TYPE_MODE (TREE_TYPE (t))
-	      == TYPE_MODE (TREE_TYPE (TREE_OPERAND (t, 0))));
 
     default:
       return 0;
