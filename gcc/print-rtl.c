@@ -379,7 +379,7 @@ print_rtx (in_rtx)
 	break;
 
       case 'i':
-	if (i == 4 && GET_RTX_CLASS (GET_CODE (in_rtx)) == 'i')
+	if (i == 4 && INSN_P (in_rtx))
 	  {
 #ifndef GENERATOR_FILE
 	    /*  Pretty-print insn locators.  Ignore scoping as it is mostly

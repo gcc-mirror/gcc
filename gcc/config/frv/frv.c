@@ -2326,7 +2326,7 @@ frv_final_prescan_insn (insn, opvec, noperands)
   if (! PACKING_FLAG_USED_P())
     return;
 
-  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+  if (!INSN_P (insn))
     return;
 
   frv_insn_operands = opvec;

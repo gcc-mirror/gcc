@@ -6834,7 +6834,7 @@ compute_ld_motion_mems ()
 	   insn && insn != NEXT_INSN (bb->end);
 	   insn = NEXT_INSN (insn))
 	{
-	  if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
+	  if (INSN_P (insn))
 	    {
 	      if (GET_CODE (PATTERN (insn)) == SET)
 		{
@@ -7448,7 +7448,7 @@ store_killed_in_insn (x, x_regs, insn)
 {
   rtx reg, base;
 
-  if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+  if (!INSN_P (insn))
     return false;
 
   if (GET_CODE (insn) == CALL_INSN)
