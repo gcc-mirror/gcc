@@ -1,5 +1,8 @@
 2001-04-26  Mark Mitchell  <mark@codesourcery.com>
 
+	* method.c (use_thunk): Make sure that thunks really are emitted
+	when requested.
+
 	Remove support for -Wextern-inline, -flabels-ok, -fvtable-gc, -fxref
 	* cp-tree.h (warn_extern_inline): Remove.
 	(flag_labels_ok): Likewise.
