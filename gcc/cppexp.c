@@ -79,6 +79,10 @@ Written by Per Bothner 1994.  */
 static void integer_overflow PARAMS ((cpp_reader *));
 static HOST_WIDEST_INT left_shift PARAMS ((cpp_reader *, HOST_WIDEST_INT, int, unsigned HOST_WIDEST_INT));
 static HOST_WIDEST_INT right_shift PARAMS ((cpp_reader *, HOST_WIDEST_INT, int, unsigned HOST_WIDEST_INT));
+static struct operation parse_number PARAMS ((cpp_reader *, U_CHAR *, U_CHAR *));
+static struct operation parse_charconst PARAMS ((cpp_reader *, U_CHAR *, U_CHAR *));
+static struct operation cpp_lex PARAMS ((cpp_reader *, int));
+extern HOST_WIDEST_INT cpp_parse_expr PARAMS ((cpp_reader *));
 
 #define ERROR 299
 #define OROR 300
@@ -325,7 +329,7 @@ parse_charconst (pfile, start, end)
   /* If char type is signed, sign-extend the constant.  */
   num_bits = num_chars * width;
       
-  if (cpp_lookup (pfile, (U_CHAR *)"__CHAR_UNSIGNED__",
+  if (cpp_lookup (pfile, (const U_CHAR *)"__CHAR_UNSIGNED__",
 		  sizeof ("__CHAR_UNSIGNED__")-1, -1)
       || ((result >> (num_bits - 1)) & 1) == 0)
     op.value = result & ((unsigned HOST_WIDEST_INT) ~0
@@ -346,7 +350,7 @@ parse_charconst (pfile, start, end)
 
 
 struct token {
-  char *operator;
+  const char *operator;
   int token;
 };
 

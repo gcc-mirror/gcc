@@ -81,7 +81,7 @@ cpp_print_containing_files (pfile)
 void
 cpp_file_line_for_message (pfile, filename, line, column)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
-     char *filename;
+     const char *filename;
      int line, column;
 {
   if (column > 0)

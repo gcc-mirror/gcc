@@ -85,7 +85,7 @@ extern char *version_string;
 #endif
 
 /* Suffix for object files, and known input-file extensions. */
-static char *known_suffixes[] =
+static const char * const known_suffixes[] =
 {
   ".c",  ".C",   ".s",   ".S",   ".m",
   ".cc", ".cxx", ".cpp", ".cp",  ".c++",
@@ -113,8 +113,8 @@ static char *known_suffixes[] =
 
 static struct default_include
 {
-  char *fname;			/* The name of the directory.  */
-  char *component;		/* The component containing the directory
+  const char *fname;		/* The name of the directory.  */
+  const char *component;	/* The component containing the directory
 				   (see update_path in prefix.c) */
   int cplusplus;		/* Only look here if we're compiling C++.  */
   int cxx_aware;		/* Includes in this directory don't need to
@@ -203,6 +203,9 @@ static void initialize_builtins		PARAMS ((cpp_reader *));
 static void append_include_chain	PARAMS ((cpp_reader *,
 						 struct cpp_pending *,
 						 char *, int));
+static char *base_name			PARAMS ((const char *));
+static void dump_special_to_buffer	PARAMS ((cpp_reader *, const char *));
+static void initialize_dependency_output PARAMS ((cpp_reader *));
 
 /* Last argument to append_include_chain: chain to use */
 enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
@@ -501,7 +504,7 @@ append_include_chain (pfile, pend, dir, path)
 static void
 dump_special_to_buffer (pfile, macro_name)
      cpp_reader *pfile;
-     char *macro_name;
+     const char *macro_name;
 {
   static char define_directive[] = "#define ";
   int macro_name_length = strlen (macro_name);
@@ -614,7 +617,7 @@ static void
 initialize_builtins (pfile)
      cpp_reader *pfile;
 {
-#define NAME(str) (U_CHAR *)str, sizeof str - 1
+#define NAME(str) (const U_CHAR *)str, sizeof str - 1
   cpp_install (pfile, NAME("__TIME__"),		  T_TIME,	0, -1);
   cpp_install (pfile, NAME("__DATE__"),		  T_DATE,	0, -1);
   cpp_install (pfile, NAME("__FILE__"),		  T_FILE,	0, -1);
@@ -938,8 +941,8 @@ cpp_start_read (pfile, fname)
 	      || (opts->cplusplus
 		  && !opts->no_standard_cplusplus_includes))
 	    {
-	      char *str = (char *) update_path (p->fname, p->component);
-	      str = xstrdup (str);  /* XXX Potential memory leak! */
+	      /* XXX Potential memory leak! */
+	      char *str = xstrdup (update_path (p->fname, p->component));
 	      append_include_chain (pfile, opts->pending, str, SYSTEM);
 	    }
 	}
@@ -1112,7 +1115,7 @@ cpp_finish (pfile)
       /* Don't actually write the deps file if compilation has failed.  */
       if (pfile->errors == 0)
 	{
-	  char *deps_mode = opts->print_deps_append ? "a" : "w";
+	  const char *deps_mode = opts->print_deps_append ? "a" : "w";
 	  if (opts->deps_file == 0)
 	    deps_stream = stdout;
 	  else if ((deps_stream = fopen (opts->deps_file, deps_mode)) == 0)

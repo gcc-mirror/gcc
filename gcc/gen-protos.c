@@ -23,7 +23,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #undef abort
 
 int verbose = 0;
-char *progname;
+const char *progname;
 
 #define HASH_SIZE 2503 /* a prime */
 int hash_tab[HASH_SIZE];

@@ -43,10 +43,14 @@ static char *remap_filename 		PROTO ((cpp_reader *, char *,
 						struct file_name_list *));
 static long read_and_prescan		PROTO ((cpp_reader *, cpp_buffer *,
 						int, size_t));
-static struct file_name_list *actual_directory PROTO ((cpp_reader *, char *));
-
+static struct file_name_list *actual_directory PROTO ((cpp_reader *,
+						       const char *));
 static void initialize_input_buffer	PROTO ((cpp_reader *, int,
 						struct stat *));
+static int file_cleanup			PROTO ((cpp_buffer *, cpp_reader *));
+static void find_position		PROTO ((U_CHAR *, U_CHAR *,
+						unsigned long *,
+						unsigned long *));
 
 #if 0
 static void hack_vms_include_specification PROTO ((char *));
@@ -199,12 +203,12 @@ merge_include_chains (opts)
 struct include_hash *
 include_hash (pfile, fname, add)
      cpp_reader *pfile;
-     char *fname;
+     const char *fname;
      int add;
 {
   unsigned int hash = 0;
   struct include_hash *l, *m;
-  char *f = fname;
+  const char *f = fname;
 
   while (*f)
     hash += *f++;
@@ -306,7 +310,7 @@ file_cleanup (pbuf, pfile)
 int
 find_include_file (pfile, fname, search_start, ihash, before)
      cpp_reader *pfile;
-     char *fname;
+     const char *fname;
      struct file_name_list *search_start;
      struct include_hash **ihash;
      int *before;
@@ -715,7 +719,7 @@ finclude (pfile, fd, ihash)
 static struct file_name_list *
 actual_directory (pfile, fname)
      cpp_reader *pfile;
-     char *fname;
+     const char *fname;
 {
   char *last_slash, *dir;
   size_t dlen;
@@ -1151,7 +1155,7 @@ initialize_input_buffer (pfile, fd, st)
 void
 deps_output (pfile, string, spacer)
      cpp_reader *pfile;
-     char *string;
+     const char *string;
      int spacer;
 {
   int size;
