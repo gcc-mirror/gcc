@@ -1,3 +1,24 @@
+Tue Feb 17 21:52:44 1998  H.J. Lu  (hjl@gnu.org)
+
+	* filebuf.cc (filebuf::open): Call _IO_file_open if
+	_G_HAVE_IO_FILE_OPEN is 1.
+
+	* libio.h (_IO_fpos64_t, _IO_off64_t): Defined if
+	_G_IO_IO_FILE_VERSION == 0x20001.
+
+	* libioP.h (_IO_file_open): New declaration.
+
+	* libio.h (_IO_FILE, _IO_stdin_, _IO_stdout_, _IO_stderr_,
+	_IO_seekoff, _IO_seekpos): Add support for libio in egcs 2.1.
+	* libioP.h (_IO_seekoff_t, _IO_seekpos_t, _IO_seek_t,
+	_IO_seekoff, _IO_seekpos, _IO_default_seekoff,
+	_IO_default_seekpos, _IO_default_seek, _IO_file_seekoff,
+	_IO_file_seek, _IO_str_seekoff, _IO_pos_BAD, _IO_pos_as_off,
+	_IO_pos_0): Ditto.
+	* streambuf.h (streamoff, streampos): Ditto.
+
+	* gen-params (__extension__): Use only if gcc version >= 2.8.
+
 Sun Feb 15 21:11:25 1998  Krister Walfridsson (cato@df.lth.se)
 
 	* fileops.c: #include <unistd.h>.

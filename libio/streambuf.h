@@ -66,8 +66,13 @@ class ostream; class streambuf;
 #undef open
 #undef close
 
+#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+typedef _IO_off64_t streamoff;
+typedef _IO_fpos64_t streampos;
+#else
 typedef _IO_off_t streamoff;
 typedef _IO_fpos_t streampos;
+#endif
 typedef _IO_ssize_t streamsize;
 
 typedef unsigned long __fmtflags;

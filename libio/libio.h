@@ -39,6 +39,10 @@
 #define _IO_HAVE_ST_BLKSIZE _G_HAVE_ST_BLKSIZE
 #define _IO_BUFSIZ _G_BUFSIZ
 #define _IO_va_list _G_va_list
+#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+#define _IO_fpos64_t _G_fpos64_t
+#define _IO_off64_t _G_off64_t
+#endif
 
 #ifdef _G_NEED_STDARG_H
 /* This define avoids name pollution if we're using GNU stdarg.h */
@@ -220,7 +224,11 @@ struct _IO_FILE {
 
   int _fileno;
   int _blksize;
+#ifdef _G_IO_IO_FILE_VERSION
+  _IO_off_t _old_offset;
+#else
   _IO_off_t _offset;
+#endif
 
 #define __HAVE_COLUMN /* temporary */
   /* 1+column number of pbase(); 0 is unknown. */
@@ -233,10 +241,20 @@ struct _IO_FILE {
 #ifdef _IO_LOCK_T
   _IO_LOCK_T _lock;
 #endif
+#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+  _IO_off64_t _offset;
+  int _unused2[16];	/* Make sure we don't get into trouble again.  */
+#endif
 };
 
 #ifndef __cplusplus
 typedef struct _IO_FILE _IO_FILE;
+#endif
+
+#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+#define _IO_stdin_ _IO_2_1_stdin_
+#define _IO_stdout_ _IO_2_1_stdout_
+#define _IO_stderr_ _IO_2_1_stderr_
 #endif
 
 struct _IO_FILE_plus;
@@ -321,8 +339,13 @@ extern int _IO_vfprintf __P ((_IO_FILE *, const char *, _IO_va_list));
 extern _IO_ssize_t _IO_padn __P ((_IO_FILE *, int, _IO_ssize_t));
 extern _IO_size_t _IO_sgetn __P ((_IO_FILE *, void *, _IO_size_t));
 
+#if defined(_G_IO_IO_FILE_VERSION) && _G_IO_IO_FILE_VERSION == 0x20001
+extern _IO_fpos64_t _IO_seekoff __P ((_IO_FILE *, _IO_off64_t, int, int));      
+extern _IO_fpos64_t _IO_seekpos __P ((_IO_FILE *, _IO_fpos64_t, int));
+#else
 extern _IO_fpos_t _IO_seekoff __P ((_IO_FILE *, _IO_off_t, int, int));
 extern _IO_fpos_t _IO_seekpos __P ((_IO_FILE *, _IO_fpos_t, int));
+#endif
 
 extern void _IO_free_backup_area __P ((_IO_FILE *));
 

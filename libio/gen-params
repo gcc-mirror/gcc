@@ -382,8 +382,10 @@ typedef          int  ${macro_prefix}int32_t __attribute__((__mode__(__SI__)));
 typedef unsigned int ${macro_prefix}uint32_t __attribute__((__mode__(__SI__)));
 typedef          int  ${macro_prefix}int64_t __attribute__((__mode__(__DI__)));
 typedef unsigned int ${macro_prefix}uint64_t __attribute__((__mode__(__DI__)));
+#if __GNUC__ > 2 || __GNUC_MINOR__ >= 8
 __extension__ typedef long long ${macro_prefix}llong;
 __extension__ typedef unsigned long long ${macro_prefix}ullong;
+#endif
 #else
 typedef  $int16_t  ${macro_prefix}int16_t;
 typedef $uint16_t ${macro_prefix}uint16_t;
