@@ -33,12 +33,12 @@ typedef const void *CPTR_T;
 #define __proto(x) x
 #else
 
-#ifdef _STDIO_H_		/* Ultrix 4.0 */
+#if defined(_STDIO_H_) || defined(__STDIO_H__)		/* Ultrix 4.0, SGI */
 typedef void *PTR_T;
 typedef void *CPTR_T;
 
 #else
-typedef char *PTR_T;		/* Ultrix 3.1 */
+typedef char *PTR_T;					/* Ultrix 3.1 */
 typedef char *CPTR_T;
 #endif
 
