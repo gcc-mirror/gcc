@@ -1,5 +1,15 @@
 2003-04-29  Phil Edwards  <pme@gcc.gnu.org>
 
+	* docs/doxygen/mainpage.html:  Bring up to date.
+	* docs/doxygen/run_doxygen:  Cosmetic tweaks.  Work around a bug
+	in Doxygen.
+	* docs/doxygen/user.cfg.in:  Scanning the precompiled headers
+	breaks everything.  Don't scan them.
+	* docs/html/documentation.html:  Point to "Write after approval"
+	notes.
+
+2003-04-29  Phil Edwards  <pme@gcc.gnu.org>
+
 	* acinclude.m4 (GLIBCPP_ENABLE_CLOCALE):  Search for gettext outside
 	of libc if message translations are being used.  Fix info text in
 	xieee_1003.1-2001 case.
