@@ -54,9 +54,20 @@ using std::random_access_iterator;
 
 using std::iterator_traits;
 
-using std::iterator_category;
-using std::distance_type;
-using std::value_type;
+template <class _Iter>
+  inline typename iterator_traits<_Iter>::iterator_category
+  iterator_category(const _Iter& __i)
+  { return __iterator_category(__i); }
+
+template <class _Iter>
+  inline typename iterator_traits<_Iter>::difference_type*
+  distance_type(const _Iter&)
+  { return static_cast<typename iterator_traits<_Iter>::difference_type*>(0); }
+
+template<class _Iter>
+  inline typename iterator_traits<_Iter>::value_type*
+  value_type(const _Iter& __i)
+  { return static_cast<typename iterator_traits<_Iter>::value_type*>(0); }
 
 using std::distance; 
 using std::advance; 

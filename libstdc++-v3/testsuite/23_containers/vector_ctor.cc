@@ -1,7 +1,6 @@
-// 1999-06-29
-// bkoz 
+// 1999-06-29 bkoz
 
-// Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1999-2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -57,10 +56,36 @@ void test02()
   std::vector<int> v2 (v1);
 }
 
+// test range constructors and range-fill constructor
+void
+test03()
+{
+    const int A[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
+    const int B[] = {7, 7, 7, 7, 7};
+    const int N = sizeof(A) / sizeof(int);
+    const int M = sizeof(B) / sizeof(int);
+    bool test = true;
+
+    std::vector<int> v3(A, A + N);
+    VERIFY(std::equal(v3.begin(), v3.end(), A));
+
+    std::vector<int> v4(v3.begin(), v3.end());
+    VERIFY(std::equal(v4.begin(), v4.end(), A));
+
+    std::vector<int> v5(M, 7);
+    VERIFY(std::equal(v5.begin(), v5.end(), B));
+    VERIFY(std::equal(B, B + M, v5.begin()));
+
+#ifdef DEBUG_ASSERT
+  assert(test);
+#endif
+}
 
 int main()
 {
   test01();
   test02(); 
+  test03();
+
   return 0;
 }

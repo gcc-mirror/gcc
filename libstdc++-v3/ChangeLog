@@ -1,4 +1,56 @@
-2001-07-17  Benjamin Kosnik  <bkoz@redhat.com>
+2001-07-17  Stephen M. Webb   <stephen@bregmasoft.com>r
+
+	All occurrences of the __value_type() and __distance_type()
+	functions, which were required to support the HP STL, have been
+	removed along with all the auxiliary forwarding functions that
+	were required to support their use.
+
+	The __iterator_category() function was pretty much left alone
+	because there was no benefit to removing it and its use made code
+	just a little more readable.
+
+	Incidences of distance() with nonstandard argument list were
+	replaced by calls to the standard function (only in the files
+	affected by the removal of the other HP functions).
+
+	The signature of the rotate() algorithm was changed to match the
+	standard.
+
+	Headers were reformatted under C++STYLE guidelines (indentation,
+	linebreaks, typename keyword).
+
+	* include/bits/stl_algo.h: replaced __value_type() and
+	__distance_type() with iterator_traits, eliminated auxiliary
+	support functions required to support said function usage.
+	Changed nonstandard distance() call to standard call.
+
+	* include/bits/stl_algobase.h: Same.
+	* include/bits/stl_heap.h: Same.
+	* include/bits/stl_numeric.h: Same.
+	* include/bits/stl_uninitialized.h: Same.
+	* include/bits/stl_iterator_base_types.h (__value_type()):
+	Removed.
+	(__distance_type()): Removed.
+	(value_type()): Gone.
+	(distance_type()): Done in.
+	(iterator_category()): Hasta la vista, baby.
+
+	* include/bits/stl_iterator_base_funcs.h (iterator_category()):
+	Replaced with __iterator_category().
+	* include/backward/iterator.h: moved definition of value_type(),
+	distance_type(), and iterator_category() out of std:: and into
+	here.
+	* testsuite/23_containers/vector_ctor.cc (test03): New testcases.
+	* testsuite/23_containers/vector_modifiers.cc (test03): New testcases.
+	* testsuite/25_algorithms/rotate.cc: New testcase.
+	* testsuite/25_algorithms/copy.cc: New testcase.
+	* testsuite/25_algorithms/sort.cc: Same.
+	* testsuite/25_algorithms/heap.cc: Same.
+	* testsuite/25_algorithms/partition.cc: Same.
+	* testsuite/25_algorithms/binary_search.cc: Same.
+	* testsuite/26_numerics/sum_diff.cc: Ditto.
+
+001-07-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/README: Add notes on naming test cases.
 	* testsuite/22_locale/members.cc: Mark as xfail.
