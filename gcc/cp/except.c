@@ -86,7 +86,7 @@ init_exception_processing ()
 }
 
 /* Returns an expression to be executed if an unhandled exception is
-   propogated out of a cleanup region.  */
+   propagated out of a cleanup region.  */
 
 static tree
 cp_protect_cleanup_actions ()

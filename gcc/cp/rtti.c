@@ -860,7 +860,7 @@ dfs_class_hint_unmark (binfo, data)
   return NULL_TREE;
 }
 
-/* Determine the hint flags describing the features of a class's heirarchy.  */
+/* Determine the hint flags describing the features of a class's hierarchy.  */
 
 static int
 class_hint_flags (type)
@@ -1315,7 +1315,7 @@ create_tinfo_types ()
     TYPE_HAS_CONSTRUCTOR (base_desc_type_node) = 1;
   }
   
-  /* General heirarchy is created as necessary in this vector. */
+  /* General hierarchy is created as necessary in this vector. */
   vmi_class_desc_type_node = make_tree_vec (10);
   
   /* Pointer type_info. Adds two fields, qualification mask

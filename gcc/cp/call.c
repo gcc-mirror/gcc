@@ -1125,7 +1125,7 @@ reference_binding (rto, rfrom, expr, flags)
     {
       /* [dcl.init.ref]
 
-	 If the intializer expression 
+	 If the initializer expression 
 	 
 	 -- is an lvalue (but not an lvalue for a bit-field), and "cv1 T1"
 	    is reference-compatible with "cv2 T2,"

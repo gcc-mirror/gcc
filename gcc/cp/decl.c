@@ -7834,7 +7834,7 @@ make_rtl_for_nonlocal_decl (decl, init, asmspec)
   defer_p = DECL_FUNCTION_SCOPE_P (decl) || DECL_VIRTUAL_P (decl);
 
   /* We try to defer namespace-scope static constants so that they are
-     not emitted into the object file unncessarily.  */
+     not emitted into the object file unnecessarily.  */
   if (!DECL_VIRTUAL_P (decl)
       && TREE_READONLY (decl)
       && DECL_INITIAL (decl) != NULL_TREE
@@ -8401,7 +8401,7 @@ start_cleanup_fn ()
   DECL_ARTIFICIAL (fndecl) = 1;
   /* Make the function `inline' so that it is only emitted if it is
      actually needed.  It is unlikely that it will be inlined, since
-     it is only called via a function pointer, but we avoid unncessary
+     it is only called via a function pointer, but we avoid unnecessary
      emissions this way.  */
   DECL_INLINE (fndecl) = 1;
   /* Build the parameter.  */
@@ -11042,7 +11042,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       && TREE_OVERFLOW (TYPE_SIZE (type)))
     {
       error ("size of array `%s' is too large", name);
-      /* If we proceed with the array type as it is, we'll eventully
+      /* If we proceed with the array type as it is, we'll eventually
 	 crash in tree_low_cst().  */
       type = error_mark_node;
     }

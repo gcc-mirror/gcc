@@ -1609,7 +1609,7 @@ struct lang_type
 
 /* Nonzero if this binfo has lost its primary base binfo (because that
    is a nearly-empty virtual base that has been taken by some other
-   base in the complete heirarchy.  */
+   base in the complete hierarchy.  */
 #define BINFO_LOST_PRIMARY_P(NODE) TREE_LANG_FLAG_2 (NODE)
 
 /* Nonzero if this binfo is an indirect primary base, i.e. a virtual
@@ -3018,7 +3018,7 @@ typedef enum instantiate_type_flags {
   itf_ptrmem_ok = 1 << 2,     /* pointers to member ok (internal use) */
 } instantiate_type_flags;
 
-/* The kind of checking we can do looking in a class heirarchy. */
+/* The kind of checking we can do looking in a class hierarchy. */
 typedef enum base_access {
   ba_any = 0,      /* Do not check access, allow an ambiguous base,
 		      prefer a non-virtual base */
@@ -3029,7 +3029,7 @@ typedef enum base_access {
   ba_quiet = 4,    /* Do not issue error messages (bit mask).  */
 } base_access;
 
-/* The kind of base we can find, looking in a class heirarchy.
+/* The kind of base we can find, looking in a class hierarchy.
    Values <0 indicate we failed. */
 typedef enum base_kind {
   bk_inaccessible = -3,   /* The base is inaccessible */
@@ -3090,7 +3090,7 @@ typedef enum unification_kind_t {
   DEDUCE_ORDER
 } unification_kind_t;
 
-/* Macros for operating on a template instantation level node, represented
+/* Macros for operating on a template instantiation level node, represented
    by an EXPR_WITH_FILE_LOCATION.  */
 
 #define TINST_DECL(NODE) EXPR_WFL_NODE (NODE)

@@ -1380,9 +1380,9 @@ check_bases (t, cant_have_default_ctor_p, cant_have_const_ctor_p,
     }
 }
 
-/* Binfo FROM is within a virtual heirarchy which is being reseated to
+/* Binfo FROM is within a virtual hierarchy which is being reseated to
    TO. Move primary information from FROM to TO, and recursively traverse
-   into FROM's bases. The heirarchy is dominated by TYPE.  MAPPINGS is an
+   into FROM's bases. The hierarchy is dominated by TYPE.  MAPPINGS is an
    assoc list of binfos that have already been reseated.  */
 
 static void
@@ -1448,7 +1448,7 @@ force_canonical_binfo_r (to, from, type, mappings)
 }
 
 /* FROM is the canonical binfo for a virtual base. It is being reseated to
-   make TO the canonical binfo, within the heirarchy dominated by TYPE.
+   make TO the canonical binfo, within the hierarchy dominated by TYPE.
    MAPPINGS is an assoc list of binfos that have already been reseated.
    Adjust any non-virtual bases within FROM, and also move any virtual bases
    which are canonical.  This complication arises because selecting primary
@@ -6907,7 +6907,7 @@ build_vtt (t)
 }
 
 /* The type corresponding to BASE_BINFO is a base of the type of BINFO, but
-   from within some heirarchy which is inherited from the type of BINFO.
+   from within some hierarchy which is inherited from the type of BINFO.
    Return BASE_BINFO's equivalent binfo from the hierarchy dominated by
    BINFO.  */
 

@@ -1116,7 +1116,7 @@ finish_mem_initializers (init_list)
 	  /* We're running through the initializers from right to left
 	     as we process them here.  So, if we see a data member
 	     initializer after we see a base initializer, that
-	     actually means that the base initializer preceeded the
+	     actually means that the base initializer preceded the
 	     data member initializer.  */
 	  if (warn_reorder && last_base_warned_about != base_init_list)
 	    {
@@ -2109,7 +2109,7 @@ enter_scope_of (sr)
 /* Finish processing a BASE_CLASS with the indicated ACCESS_SPECIFIER.
    Return a TREE_LIST containing the ACCESS_SPECIFIER and the
    BASE_CLASS, or NULL_TREE if an error occurred.  The
-   ACCESSS_SPECIFIER is one of
+   ACCESS_SPECIFIER is one of
    access_{default,public,protected_private}[_virtual]_node.*/
 
 tree 
@@ -2455,7 +2455,7 @@ expand_body (fn)
       /* Remember this function.  In finish_file we'll decide if
 	 we actually need to write this function out.  */
       defer_fn (fn);
-      /* Let the back-end know that this funtion exists.  */
+      /* Let the back-end know that this function exists.  */
       (*debug_hooks->deferred_inline_function) (fn);
       return;
     }

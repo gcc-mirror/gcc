@@ -33,7 +33,7 @@
       void operator delete[] (void *);
     };
 
-  does not cause unncessary storage to be allocated when an array of
+  does not cause unnecessary storage to be allocated when an array of
   `A' objects is allocated.
 
   This change will only affect code that declares both of these

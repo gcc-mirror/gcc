@@ -9622,7 +9622,7 @@ do_type_instantiation (t, storage, complain)
 
          If CLASSTYPE_INTERFACE_ONLY, then the first explicit instantiation
 	 was `extern'.  If EXTERN_P then the second is.  If -frepo, chances
-	 are we already got marked as an explicit instantion because of the
+	 are we already got marked as an explicit instantiation because of the
 	 repo file.  All these cases are OK.  */
       if (!CLASSTYPE_INTERFACE_ONLY (t) && !extern_p && !flag_use_repository
 	  && complain)
