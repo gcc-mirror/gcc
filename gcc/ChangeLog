@@ -1,5 +1,11 @@
 2002-07-25  Neil Booth  <neil@daikokuya.co.uk>
 
+	* dwarfout.c (VERSION_ASM_OP, DERIV_BEGIN_LABEL_FMT,
+	DERIV_END_LABEL_FMT): Remove.
+	(SL_BEGIN_LABEL_FMT, SL_END_LABEL_FMT): Move.
+
+2002-07-25  Neil Booth  <neil@daikokuya.co.uk>
+
 	* objc/objc-act.c (UTAG_STATICS, UTAG_PROTOCOL_LIST, USERTYPE):
 	Remove.
 
