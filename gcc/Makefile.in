@@ -685,8 +685,9 @@ stamp-objlist: Makefile $(OBJS) $(BC_OBJS)
 # We call this executable `xgcc' rather than `gcc'
 # to avoid confusion if the current directory is in the path
 # and CC is `gcc'.  It is renamed to `gcc' when it is installed.
-xgcc: gcc.o version.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
+xgcc: gcc.o version.o choose-temp.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o version.o choose-temp.o \
+	  $(EXTRA_GCC_OBJS) $(LIBS)
 
 # Dump a specs file to make -B./ read these specs over installed ones.
 specs: xgcc
@@ -1109,11 +1110,12 @@ ld: collect2
 	ln collect2$(exeext) ld$(exeext) > /dev/null 2>&1 \
 	   || cp collect2$(exeext) ld$(exeext)
 
-collect2 : collect2.o cplus-dem.o underscore.o version.o $(LIBDEPS)
+collect2 : collect2.o cplus-dem.o underscore.o version.o \
+	choose-temp.o $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
 	-rm -f collect2$(exeext)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ collect2.o \
-	  cplus-dem.o underscore.o version.o $(LIBS)
+	  cplus-dem.o underscore.o version.o choose-temp.o $(LIBS)
 
 collect2.o : collect2.c $(CONFIG_H) gstab.h obstack.h demangle.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES)  \
@@ -1174,6 +1176,7 @@ dumpvers: dumpvers.c
 
 version.o: version.c
 obstack.o: obstack.c
+choose-temp.o: choose-temp.c
 
 convert.o: convert.c $(CONFIG_H) $(TREE_H) flags.h convert.h
 
