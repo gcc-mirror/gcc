@@ -2018,6 +2018,7 @@ compare_for_stack_reg (insn, regstack, pat)
   rtx *src1, *src2;
   rtx src1_note, src2_note;
   rtx cc0_user;
+  int have_cmove; 
 
   src1 = get_true_reg (&XEXP (SET_SRC (pat), 0));
   src2 = get_true_reg (&XEXP (SET_SRC (pat), 1));
@@ -2032,11 +2033,16 @@ compare_for_stack_reg (insn, regstack, pat)
       rtx *dest, src_note;
       
       dest = get_true_reg (&SET_DEST (PATTERN (cc0_user)));
-      if (REGNO (*dest) != regstack->reg[regstack->top])
+
+      have_cmove = 1;
+      if (get_hard_regnum (regstack, *dest) >= FIRST_STACK_REG
+	  && REGNO (*dest) != regstack->reg[regstack->top])
 	{
 	  emit_swap_insn (insn, regstack, *dest);	
 	}
     }
+  else
+    have_cmove = 0;
 
   /* ??? If fxch turns out to be cheaper than fstp, give priority to
      registers that die in this insn - move those to stack top first.  */
@@ -2071,7 +2077,8 @@ compare_for_stack_reg (insn, regstack, pat)
   else
     src2_note = NULL_RTX;
 
-  emit_swap_insn (insn, regstack, *src1);
+  if (! have_cmove)
+     emit_swap_insn (insn, regstack, *src1);
 
   replace_reg (src1, FIRST_STACK_REG);
 
@@ -2378,8 +2385,6 @@ subst_stack_regs_pat (insn, regstack, pat)
 	  for (i = 1; i <= 2; i++)
 	    if (src_note [i])
 	      {
-		int regno = get_hard_regnum (regstack, XEXP (src_note [i], 0));
-
 		/* If the register that dies is not at the top of stack, then
 		   move the top of stack to the dead reg */
 		if (REGNO (XEXP (src_note[i], 0))
@@ -2397,12 +2402,14 @@ subst_stack_regs_pat (insn, regstack, pat)
 		    replace_reg (&XEXP (src_note[i], 0), FIRST_STACK_REG);
 		    regstack->top--;
 		  }
-		
 	      }
-
-	  SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
-	  replace_reg (dest, FIRST_STACK_REG);
 	}
+
+	/* Make dest the top of stack.  Add dest to regstack if not present. */
+	if (get_hard_regnum (regstack, *dest) < FIRST_STACK_REG)
+	  regstack->reg[++regstack->top] = REGNO (*dest);	
+	SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
+	replace_reg (dest, FIRST_STACK_REG);
 
 	break;
 
