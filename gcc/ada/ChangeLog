@@ -1,5 +1,13 @@
 2001-12-04  Robert Dewar <dewar@gnat.com>
 
+	* errout.adb (Error_Msg): Ignore attempt to put error msg at junk 
+	location if we already have errors. Stops some cases of cascaded 
+	errors.
+	
+	* errout.adb: Improve comment.
+
+2001-12-04  Robert Dewar <dewar@gnat.com>
+
 	* sem_ch12.adb:
 	(Analyze_Formal_Type_Definition): Defend against Error.
 	(Analyze_Formal_Subprogram): Defend against Error.

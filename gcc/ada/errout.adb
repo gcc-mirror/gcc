@@ -665,15 +665,26 @@ package body Errout is
    --  additional messages referencing the generic declaration.
 
    procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr) is
-
-      Sindex : constant Source_File_Index :=
-                 Get_Source_File_Index (Flag_Location);
+      Sindex : Source_File_Index;
+      --  Source index for flag location
 
       Orig_Loc : Source_Ptr;
       --  Original location of Flag_Location (i.e. location in original
       --  template in instantiation case, otherwise unchanged).
 
    begin
+      --  If we already have messages, and we are trying to place a message
+      --  at No_Location or in package Standard, then just ignore the attempt
+      --  since we assume that what is happening is some cascaded junk. Note
+      --  that this is safe in the sense that proceeding will surely bomb.
+
+      if Flag_Location < First_Source_Ptr
+        and then Errors_Detected > 0
+      then
+         return;
+      end if;
+
+      Sindex := Get_Source_File_Index (Flag_Location);
       Test_Warning_Msg (Msg);
 
       --  It is a fatal error to issue an error message when scanning from
@@ -3069,11 +3080,10 @@ package body Errout is
             Ent := Etype (Ent);
          end if;
 
-         --  If we are stuck in a loop, get out and settle for the
-         --  internal name after all. In this case we set to kill the
-         --  message if it is not the first error message (we really try
-         --  hard not to show the dirty laundry of the implementation to
-         --  the poor user!)
+         --  If we are stuck in a loop, get out and settle for the internal
+         --  name after all. In this case we set to kill the message if it
+         --  is not the first error message (we really try hard not to show
+         --  the dirty laundry of the implementation to the poor user!)
 
          if Ent = Old_Ent then
             Kill_Message := True;
