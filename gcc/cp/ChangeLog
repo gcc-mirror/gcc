@@ -1,3 +1,31 @@
+2000-06-09  Chip Salzenberg  <chip@valinux.com>
+	    Mark Mitchell <mark@codesourcery.com>
+
+	* mangle.c (write_number): Take an unsigned HOST_WIDE_INT as an
+	argument.
+	(write_signed_number): New macro.
+	(write_unsigned_number): Likewise.
+	(write_source_name): Use them.
+	(write_number): Handle signed and unsigned values.
+	(write_integer_cst): Use tree_int_cst_sgn, and use
+	write_unsigned_number or write_signed_number as appropriate.
+	(write_discriminator): Use write_unsigned_number or
+	write_signed_number as appropriate.
+	(write_template_arg_literal): Likewise.
+	(write_array_type): Use tree_low_cst.
+	(write_template_parm):  Use write_unsigned_number or
+	write_signed_number as appropriate.
+	(write_substitution): Adjust call to write_number.
+	(write_type): Get the TYPE_MAIN_VARIANT before mangling it.
+	(write_expression): Handle non-type template arguments of
+	reference type correctly.
+	(mangle_thunk): Use write_signed_number.
+
+2000-06-09  Chip Salzenberg  <chip@valinux.com>
+
+	* mangle.c (find_substition): Don't mangle objects with typename
+	substitutions (e.g. "cin" as "Si").
+
 2000-06-09  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* call.c (add_candidate): Use ggc_alloc_cleared.
