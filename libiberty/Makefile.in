@@ -244,9 +244,10 @@ all-subdir check-subdir installcheck-subdir info-subdir	\
 install-info-subdir clean-info-subdir dvi-subdir install-subdir	\
 etags-subdir mostlyclean-subdir clean-subdir distclean-subdir \
 maintainer-clean-subdir:
-	@target=`echo $@ | sed -e 's/-subdir//'`; \
-	for dir in . $(SUBDIRS) ; do \
-	  test $$dir = . || (cd $$dir && $(MAKE) $$target) || exit 1; \
+	@if test "x$(SUBDIRS)" = x; then exit 0; fi; \
+	target=`echo $@ | sed -e 's/-subdir//'`; \
+	for dir in $(SUBDIRS) ; do \
+	  cd $$dir && $(MAKE) $$target; \
 	done
 
 $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS) $(ALLOCA): stamp-picdir

@@ -1,3 +1,8 @@
+2000-04-21  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
+
+	* Makefile.in (*-subdir): Revamp slightly to avoid losing on
+	4.3BSD systems.
+
 Tue Apr 18 16:23:31 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* hashtab.c: Various minor cleanups.
