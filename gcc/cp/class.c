@@ -1848,6 +1848,7 @@ finish_struct_bits (t, max_has_virtual)
       TYPE_MAX_VALUE (variants) = TYPE_MAX_VALUE (t);
       TYPE_FIELDS (variants) = TYPE_FIELDS (t);
       TYPE_SIZE (variants) = TYPE_SIZE (t);
+      TYPE_SIZE_UNIT (variants) = TYPE_SIZE_UNIT (t);
       variants = TYPE_NEXT_VARIANT (variants);
     }
 

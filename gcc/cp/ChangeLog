@@ -3,6 +3,7 @@
 	* gxxint.texi: Remove obsolete documentation of overloading code.
 
 	* decl.c (finish_enum): Also set TYPE_SIZE_UNIT.
+	* class.c (finish_struct_bits): Likewise.
 
 	* tree.c (lvalue_type): Fix for arrays.
 	* typeck.c (build_unary_op): Use lvalue_type.
