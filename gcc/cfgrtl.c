@@ -687,8 +687,17 @@ try_redirect_by_replacing_jump (e, target)
       if (rtl_dump_file)
 	fprintf (rtl_dump_file, "Redirecting jump %i from %i to %i.\n",
 		 INSN_UID (insn), e->dest->index, target->index);
-      redirect_jump (insn, block_label (target), 0);
+      if (!redirect_jump (insn, block_label (target), 0))
+	{
+	  if (target == EXIT_BLOCK_PTR)
+	    return false;
+	  abort ();
+	}
     }
+
+  /* Cannot do anything for target exit block.  */
+  else if (target == EXIT_BLOCK_PTR)
+    return false;
 
   /* Or replace possibly complicated jump insn by simple jump insn.  */
   else
@@ -806,6 +815,8 @@ redirect_edge_and_branch (e, target)
       int j;
       rtx new_label = block_label (target);
 
+      if (target == EXIT_BLOCK_PTR)
+	return false;
       if (GET_CODE (PATTERN (tmp)) == ADDR_VEC)
 	vec = XVEC (PATTERN (tmp), 0);
       else
@@ -843,11 +854,18 @@ redirect_edge_and_branch (e, target)
 	return false;
 
       /* If the insn doesn't go where we think, we're confused.  */
-      if (JUMP_LABEL (insn) != old_label
-	  /* If the substitution doesn't succeed, die.  This can happen
-	     if the back end emitted unrecognizable instructions.  */
-	  || !redirect_jump (insn, block_label (target), 0))
+      if (JUMP_LABEL (insn) != old_label)
 	abort ();
+
+      /* If the substitution doesn't succeed, die.  This can happen
+	 if the back end emitted unrecognizable instructions or if
+	 target is exit block on some arches.  */
+      if (!redirect_jump (insn, block_label (target), 0))
+	{
+	  if (target == EXIT_BLOCK_PTR)
+	    return false;
+	  abort ();
+	}
     }
 
   if (rtl_dump_file)

@@ -1,3 +1,11 @@
+2001-12-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgrtl.c (try_redirect_by_replacing_jump): Allow redirect_jump
+	to fail if target is EXIT_BLOCK_PTR, die otherwise.
+	(redirect_edge_and_branch): Likewise.
+	* cfgcleanup.c (try_forward_edge): Don't force jump redirecting
+	if target is EXIT_BLOCK_PTR.
+
 2001-12-29  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.c (init_gcc_spec): Do not link with static libgcc.a if
