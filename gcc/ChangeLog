@@ -1,3 +1,9 @@
+Thu Dec 13 07:47:24 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* loop.c (remove_constant_addition): Fix prototype and whitespace.
+	(emit_prefetch_instructions): Remove warnings and whitespace
+	changes.
+
 Thu Dec 13 06:48:38 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* config/alpha/vms-cc.c (preprocess_args): Fix forward
