@@ -91,6 +91,8 @@ int current_lang_stacksize;
 tree lang_name_c, lang_name_cplusplus;
 tree current_lang_name;
 
+char *dont_allow_type_definitions;
+
 /* When layout out an aggregate type, the size of the
    basetypes (virtual and non-virtual) is passed to layout_record
    via this node.  */
@@ -466,8 +468,6 @@ build_vfn_ref (ptr_to_instptr, instance, idx)
 	}
 
       if (IS_AGGR_TYPE (TREE_TYPE (instance))
-	  && !IS_SIGNATURE_POINTER (TREE_TYPE (instance))
-	  && !IS_SIGNATURE_REFERENCE (TREE_TYPE (instance))
 	  && (TREE_CODE (instance) == RESULT_DECL
 	      || TREE_CODE (instance) == PARM_DECL
 	      || TREE_CODE (instance) == VAR_DECL))
@@ -2783,6 +2783,12 @@ finish_struct (t, list_of_fieldlists, warn_anon)
       return t;
     }
 
+  if (dont_allow_type_definitions)
+    {
+      pedwarn ("types cannot be defined %s",
+	       dont_allow_type_definitions);
+    }
+
   /* Append the fields we need for constructing signature tables.  */
   if (IS_SIGNATURE (t))
     append_signature_fields (list_of_fieldlists);
@@ -3038,8 +3044,10 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	      TREE_TYPE (x) = build_pointer_type (TREE_TYPE (x));
 	    }
 
+#if 0
 	  if (DECL_NAME (x) == constructor_name (t))
 	    cant_have_default_ctor = cant_synth_copy_ctor = 1;
+#endif
 
 	  if (TREE_TYPE (x) == error_mark_node)
 	    continue;
