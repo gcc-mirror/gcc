@@ -757,9 +757,11 @@ package body Sem_Ch12 is
       F_Copy  : List_Id)
       return    List_Id
    is
-      Actual_Types    : constant Elist_Id := New_Elmt_List;
-      Assoc           : constant List_Id  := New_List;
-      Defaults        : constant Elist_Id := New_Elmt_List;
+      Actual_Types    : constant Elist_Id  := New_Elmt_List;
+      Assoc           : constant List_Id   := New_List;
+      Defaults        : constant Elist_Id  := New_Elmt_List;
+      Gen_Unit        : constant Entity_Id := Defining_Entity
+                                                (Parent (F_Copy));
       Actuals         : List_Id;
       Actual          : Node_Id;
       Formal          : Node_Id;
@@ -985,8 +987,11 @@ package body Sem_Ch12 is
                       Defining_Identifier (Analyzed_Formal));
 
                   if No (Match) then
-                     Error_Msg_NE ("missing actual for instantiation of &",
-                        Instantiation_Node, Defining_Identifier (Formal));
+                     Error_Msg_NE
+                       ("missing actual&",
+                         Instantiation_Node, Defining_Identifier (Formal));
+                     Error_Msg_NE ("\in instantiation of & declared#",
+                         Instantiation_Node, Gen_Unit);
                      Abandon_Instantiation (Instantiation_Node);
 
                   else
@@ -1071,9 +1076,10 @@ package body Sem_Ch12 is
 
                   if No (Match) then
                      Error_Msg_NE
-                       ("missing actual for instantiation of&",
-                        Instantiation_Node,
-                        Defining_Identifier (Formal));
+                       ("missing actual&",
+                         Instantiation_Node, Defining_Identifier (Formal));
+                     Error_Msg_NE ("\in instantiation of & declared#",
+                         Instantiation_Node, Gen_Unit);
 
                      Abandon_Instantiation (Instantiation_Node);
 
@@ -1105,8 +1111,17 @@ package body Sem_Ch12 is
          end loop;
 
          if Num_Actuals > Num_Matched then
-            Error_Msg_N
-              ("unmatched actuals in instantiation", Instantiation_Node);
+            if Present (Selector_Name (Actual)) then
+               Error_Msg_NE
+                 ("unmatched actual&",
+                    Actual, Selector_Name (Actual));
+               Error_Msg_NE ("\in instantiation of& declared#",
+                    Actual, Gen_Unit);
+            else
+               Error_Msg_NE
+                 ("unmatched actual in instantiation of& declared#",
+                   Actual, Gen_Unit);
+            end if;
          end if;
 
       elsif Present (Actuals) then
@@ -4641,19 +4656,37 @@ package body Sem_Ch12 is
          else
             --  If the associated node is still defined, the entity in
             --  it is global, and must be copied to the instance.
+            --  If this copy is being made for a body to inline, it is
+            --  applied to an instantiated tree, and the entity is already
+            --  present and must be also preserved.
 
-            if Present (Get_Associated_Node (N)) then
-               if Nkind (Get_Associated_Node (N)) = Nkind (N) then
-                  Set_Entity (New_N, Entity (Get_Associated_Node (N)));
-                  Check_Private_View (N);
+            declare
+               Assoc : constant Node_Id := Get_Associated_Node (N);
+            begin
+               if Present (Assoc) then
+                  if Nkind (Assoc) = Nkind (N) then
+                     Set_Entity (New_N, Entity (Assoc));
+                     Check_Private_View (N);
 
-               elsif Nkind (Get_Associated_Node (N)) = N_Function_Call then
-                  Set_Entity (New_N, Entity (Name (Get_Associated_Node (N))));
+                  elsif Nkind (Assoc) = N_Function_Call then
+                     Set_Entity (New_N, Entity (Name (Assoc)));
 
-               else
-                  Set_Entity (New_N, Empty);
+                  elsif (Nkind (Assoc) = N_Defining_Identifier
+                          or else Nkind (Assoc) = N_Defining_Character_Literal
+                          or else Nkind (Assoc) = N_Defining_Operator_Symbol)
+                    and then Expander_Active
+                  then
+                     --  Inlining case: we are copying a tree that contains
+                     --  global entities, which are preserved in the copy
+                     --  to be used for subsequent inlining.
+
+                     null;
+
+                  else
+                     Set_Entity (New_N, Empty);
+                  end if;
                end if;
-            end if;
+            end;
          end if;
 
          --  For expanded name, we must copy the Prefix and Selector_Name
@@ -5618,6 +5651,8 @@ package body Sem_Ch12 is
       Generic_Flags.Init;
       Generic_Renamings_HTable.Reset;
       Circularity_Detected := False;
+      Exchanged_Views      := No_Elist;
+      Hidden_Entities      := No_Elist;
    end Initialize;
 
    ----------------------------
@@ -6586,8 +6621,10 @@ package body Sem_Ch12 is
 
       else
          Error_Msg_NE
-           ("missing actual for instantiation of &",
-                                 Instantiation_Node, Formal_Sub);
+           ("missing actual&", Instantiation_Node, Formal_Sub);
+         Error_Msg_NE
+           ("\in instantiation of & declared#",
+              Instantiation_Node, Scope (Analyzed_S));
          Abandon_Instantiation (Instantiation_Node);
       end if;
 
@@ -6729,8 +6766,12 @@ package body Sem_Ch12 is
 
          if No (Actual) then
             Error_Msg_NE
-              ("missing actual for instantiation of &",
+              ("missing actual&",
                Instantiation_Node, Formal_Id);
+            Error_Msg_NE
+              ("\in instantiation of & declared#",
+                 Instantiation_Node,
+                   Scope (Defining_Identifier (Analyzed_Formal)));
             Abandon_Instantiation (Instantiation_Node);
          end if;
 
@@ -6893,8 +6934,11 @@ package body Sem_Ch12 is
 
          else
             Error_Msg_NE
-              ("missing actual for instantiation of &",
-               Instantiation_Node, Formal_Id);
+              ("missing actual&",
+                Instantiation_Node, Formal_Id);
+            Error_Msg_NE ("\in instantiation of & declared#",
+              Instantiation_Node,
+                Scope (Defining_Identifier (Analyzed_Formal)));
 
             if Is_Scalar_Type
                  (Etype (Defining_Identifier (Analyzed_Formal)))

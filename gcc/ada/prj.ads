@@ -77,6 +77,10 @@ package Prj is
 
    function Empty_String return Name_Id;
 
+   type Project_Id is new Nat;
+   No_Project : constant Project_Id := 0;
+   --  Id of a Project File
+
    type String_List_Id is new Nat;
    Nil_String : constant String_List_Id := 0;
    type String_Element is record
@@ -107,6 +111,7 @@ package Prj is
    --  while processing the project tree (unknown package name).
 
    type Variable_Value (Kind : Variable_Kind := Undefined) is record
+      Project  : Project_Id := No_Project;
       Location : Source_Ptr := No_Location;
       Default  : Boolean    := False;
       case Kind is
@@ -122,7 +127,8 @@ package Prj is
    --  Default is True if the current value is the default one for the variable
 
    Nil_Variable_Value : constant Variable_Value :=
-     (Kind     => Undefined,
+     (Project  => No_Project,
+      Kind     => Undefined,
       Location => No_Location,
       Default  => False);
    --  Value of a non existing variable or array element
@@ -302,10 +308,6 @@ package Prj is
       return        Boolean;
    --  Returns True if Left and Right are the same naming scheme
    --  not considering Specs and Bodies.
-
-   type Project_Id is new Nat;
-   No_Project : constant Project_Id := 0;
-   --  Id of a Project File
 
    type Project_List is new Nat;
    Empty_Project_List : constant Project_List := 0;

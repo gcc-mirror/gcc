@@ -3001,7 +3001,8 @@ package body Make is
          if Global_Attribute_Present then
             declare
                Path : constant String :=
-                        Absolute_Path (Global_Attribute.Value, Main_Project);
+                        Absolute_Path
+                          (Global_Attribute.Value, Global_Attribute.Project);
             begin
                if not Is_Regular_File (Path) then
                   Make_Failed
@@ -3033,7 +3034,8 @@ package body Make is
          if Local_Attribute_Present then
             declare
                Path : constant String :=
-                 Absolute_Path (Local_Attribute.Value, For_Project);
+                        Absolute_Path
+                          (Local_Attribute.Value, Local_Attribute.Project);
             begin
                if not Is_Regular_File (Path) then
                   Make_Failed
@@ -3725,6 +3727,16 @@ package body Make is
                         And_Save => False);
          end if;
 
+      else
+         --  If we use a project file, we have already checked that a main
+         --  specified on the command line with directory information has the
+         --  path name corresponding to a correct source in the project tree.
+         --  So, we don't need the directory information to be taken into
+         --  account by Find_File, and in fact it may lead to take the wrong
+         --  sources for other compilation units, when there are extending
+         --  projects.
+
+         Opt.Look_In_Primary_Dir := False;
       end if;
 
       --  If the user wants a program without a main subprogram, add the

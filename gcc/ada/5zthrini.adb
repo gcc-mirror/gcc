@@ -115,7 +115,6 @@ package body System.Threads.Initialization is
 
 begin
    Initialize_Task_Hooks;
-   Init_RTS;
 
    --  Register the environment task
    declare

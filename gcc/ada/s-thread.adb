@@ -33,6 +33,11 @@
 
 --  This is the VxWorks version of this package
 
+pragma Restrictions (No_Tasking);
+--  The VxWorks version of this package is intended only for programs
+--  which do not use Ada tasking. This restriction ensures that this
+--  will be checked by the binder.
+
 with System.Secondary_Stack;
 
 with Unchecked_Conversion;

@@ -991,8 +991,8 @@ package body Prj.Nmsc is
                The_Unit_Data := Units.Table (The_Unit_Id);
 
                if Specs then
-                  if The_Unit_Data.File_Names (Specification).Project /=
-                    Project
+                  if not Check_Project
+                    (The_Unit_Data.File_Names (Specification).Project)
                   then
                      Error_Msg
                        (Project,
@@ -1001,8 +1001,8 @@ package body Prj.Nmsc is
                   end if;
 
                else
-                  if The_Unit_Data.File_Names (Com.Body_Part).Project /=
-                    Project
+                  if not Check_Project
+                    (The_Unit_Data.File_Names (Com.Body_Part).Project)
                   then
                      Error_Msg
                        (Project,

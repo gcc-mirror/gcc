@@ -1881,7 +1881,7 @@ package body Sem_Ch13 is
       Biased  : Boolean;
 
       Max_Bit_So_Far : Uint;
-      --  Records the maximum bit position so far. If all field positoins
+      --  Records the maximum bit position so far. If all field positions
       --  are monotonically increasing, then we can skip the circuit for
       --  checking for overlap, since no overlap is possible.
 
@@ -2153,10 +2153,9 @@ package body Sem_Ch13 is
                               CC, Rectype);
                         end if;
 
-                        --  This information is also set in the
-                        --  corresponding component of the base type,
-                        --  found by accessing the Original_Record_Component
-                        --  link if it is present.
+                        --  This information is also set in the corresponding
+                        --  component of the base type, found by accessing the
+                        --  Original_Record_Component link if it is present.
 
                         Ocomp := Original_Record_Component (Comp);
 
@@ -2848,21 +2847,68 @@ package body Sem_Ch13 is
    begin
       Biased := False;
 
-      --  Immediate return if size is same as standard size or if composite
-      --  item, or generic type, or type with previous errors.
+      --  Dismiss cases for generic types or types with previous errors
 
       if No (UT)
         or else UT = Any_Type
         or else Is_Generic_Type (UT)
         or else Is_Generic_Type (Root_Type (UT))
-        or else Is_Composite_Type (UT)
-        or else (Known_Esize (UT) and then Siz = Esize (UT))
       then
          return;
 
+      --  Check case of bit packed array
+
+      elsif Is_Array_Type (UT)
+        and then Known_Static_Component_Size (UT)
+        and then Is_Bit_Packed_Array (UT)
+      then
+         declare
+            Asiz : Uint;
+            Indx : Node_Id;
+            Ityp : Entity_Id;
+
+         begin
+            Asiz := Component_Size (UT);
+            Indx := First_Index (UT);
+            loop
+               Ityp := Etype (Indx);
+
+               --  If non-static bound, then we are not in the business of
+               --  trying to check the length, and indeed an error will be
+               --  issued elsewhere, since sizes of non-static array types
+               --  cannot be set implicitly or explicitly.
+
+               if not Is_Static_Subtype (Ityp) then
+                  return;
+               end if;
+
+               --  Otherwise accumulate next dimension
+
+               Asiz := Asiz * (Expr_Value (Type_High_Bound (Ityp)) -
+                               Expr_Value (Type_Low_Bound  (Ityp)) +
+                               Uint_1);
+
+               Next_Index (Indx);
+               exit when No (Indx);
+            end loop;
+
+            if Asiz <= Siz then
+               return;
+            else
+               Error_Msg_Uint_1 := Asiz;
+               Error_Msg_NE
+                 ("size for& too small, minimum allowed is ^", N, T);
+            end if;
+         end;
+
+      --  All other composite types are ignored
+
+      elsif Is_Composite_Type (UT) then
+         return;
+
       --  For fixed-point types, don't check minimum if type is not frozen,
-      --  since type is not known till then
-      --  at freeze time.
+      --  since we don't know all the characteristics of the type that can
+      --  affect the size (e.g. a specified small) till freeze time.
 
       elsif Is_Fixed_Point_Type (UT)
         and then not Is_Frozen (UT)
@@ -2872,6 +2918,14 @@ package body Sem_Ch13 is
       --  Cases for which a minimum check is required
 
       else
+         --  Ignore if specified size is correct for the type
+
+         if Known_Esize (UT) and then Siz = Esize (UT) then
+            return;
+         end if;
+
+         --  Otherwise get minimum size
+
          M := UI_From_Int (Minimum_Size (UT));
 
          if Siz < M then

@@ -207,7 +207,7 @@ procedure Gnatchop is
    -- Local subprograms --
    -----------------------
 
-   procedure Error_Msg (Message : String);
+   procedure Error_Msg (Message : String; Warning : Boolean := False);
    --  Produce an error message on standard error output
 
    procedure File_Time_Stamp (Name : C_File_Name; Time : OS_Time);
@@ -337,10 +337,13 @@ procedure Gnatchop is
    -- Error_Msg --
    ---------------
 
-   procedure Error_Msg (Message : String) is
+   procedure Error_Msg (Message : String; Warning : Boolean := False) is
    begin
       Put_Line (Standard_Error, Message);
-      Set_Exit_Status (Failure);
+
+      if not Warning then
+         Set_Exit_Status (Failure);
+      end if;
 
       if Exit_On_Error then
          raise Terminate_Program;
@@ -1687,7 +1690,7 @@ begin
 
    if Unit.Last = 0 then
       if not Write_gnat_adc then
-         Error_Msg ("no compilation units found");
+         Error_Msg ("no compilation units found", Warning => True);
       end if;
 
       goto No_Files_Written;
@@ -1739,7 +1742,7 @@ begin
    --  been written.
 
    if not Write_gnat_adc then
-      Error_Msg ("no source files written");
+      Error_Msg ("no source files written", Warning => True);
    end if;
 
    return;

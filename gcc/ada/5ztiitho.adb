@@ -46,7 +46,4 @@ procedure Initialize_Task_Hooks is
    Result : OSI.STATUS;
 begin
    taskCreateHookAdd (Register'Access);
-   --  Register the environment task
-   Result := Register (OSI.taskIdSelf);
-   pragma Assert (Result /= -1);
 end Initialize_Task_Hooks;

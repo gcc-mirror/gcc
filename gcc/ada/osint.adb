@@ -50,6 +50,11 @@ package body Osint is
    --  Standard prefix, computed dynamically the first time Relocate_Path
    --  is called, and cached for subsequent calls.
 
+   Empty  : aliased String := "";
+   No_Dir : constant String_Ptr := Empty'Access;
+   --  Used in Locate_File as a fake directory when Name is already an
+   --  absolute path.
+
    -------------------------------------
    -- Use of Name_Find and Name_Enter --
    -------------------------------------
@@ -1430,7 +1435,12 @@ package body Osint is
       Dir_Name : String_Ptr;
 
    begin
-      if T = Library then
+      --  If Name is already an absolute path, do not look for a directory
+
+      if Is_Absolute_Path (Name) then
+         Dir_Name := No_Dir;
+
+      elsif T = Library then
          Dir_Name := Lib_Search_Directories.Table (Dir);
 
       else pragma Assert (T /= Config);

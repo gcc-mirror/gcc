@@ -338,13 +338,18 @@ package body Sem_Ch4 is
             Check_Restriction (No_Protected_Type_Allocators, N);
          end if;
 
-         if Nkind (Expression (E)) /= N_Aggregate
-           and then Is_Limited_Type (Type_Id)
+         if Is_Limited_Type (Type_Id)
            and then Comes_From_Source (N)
            and then not In_Instance_Body
          then
-            Error_Msg_N ("initialization not allowed for limited types", N);
-            Explain_Limited_Type (Type_Id, N);
+            if Extensions_Allowed
+              and then Nkind (Expression (E)) = N_Aggregate
+            then
+               null;
+            else
+               Error_Msg_N ("initialization not allowed for limited types", N);
+               Explain_Limited_Type (Type_Id, N);
+            end if;
          end if;
 
          Analyze_And_Resolve (Expression (E), Type_Id);

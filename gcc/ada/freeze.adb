@@ -1817,16 +1817,19 @@ package body Freeze is
          --  fields with component clauses, where we must check the size.
          --  This is not done till the freeze point, since for fixed-point
          --  types, we do not know the size until the type is frozen.
+         --  Similar processing applies to bit packed arrays.
 
          if Is_First_Subtype (Rec) then
             Comp := First_Component (Rec);
 
             while Present (Comp) loop
                if Present (Component_Clause (Comp))
-                 and then Is_Fixed_Point_Type (Etype (Comp))
+                 and then (Is_Fixed_Point_Type (Etype (Comp))
+                             or else
+                           Is_Bit_Packed_Array (Etype (Comp)))
                then
                   Check_Size
-                    (Component_Clause (Comp),
+                    (Component_Name (Component_Clause (Comp)),
                      Etype (Comp),
                      Esize (Comp),
                      Junk);
@@ -2380,6 +2383,29 @@ package body Freeze is
                   if Unknown_Alignment (E) then
                      Set_Alignment (E, Alignment (Base_Type (E)));
                   end if;
+               end if;
+
+               --  For bit-packed arrays, check the size
+
+               if Is_Bit_Packed_Array (E)
+                 and then Known_Esize (E)
+               then
+                  declare
+                     Discard : Boolean;
+                     SizC    : constant Node_Id := Size_Clause (E);
+
+                  begin
+                     --  It is not clear if it is possible to have no size
+                     --  clause at this stage, but this is not worth worrying
+                     --  about. Post the error on the entity name in the size
+                     --  clause if present, else on the type entity itself.
+
+                     if Present (SizC) then
+                        Check_Size (Name (SizC), E, Esize (E), Discard);
+                     else
+                        Check_Size (E, E, Esize (E), Discard);
+                     end if;
+                  end;
                end if;
 
                --  Check one common case of a size given where the array
