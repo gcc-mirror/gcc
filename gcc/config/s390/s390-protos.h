@@ -89,7 +89,6 @@ extern void s390_expand_logical_operator (enum rtx_code,
 					  enum machine_mode, rtx *);
 extern bool s390_logical_operator_ok_p (rtx *);
 extern void s390_narrow_logical_operator (enum rtx_code, rtx *, rtx *);
-extern bool s390_pool_operand (rtx);
 extern void s390_split_access_reg (rtx, rtx *, rtx *);
 
 extern bool s390_output_addr_const_extra (FILE*, rtx);

@@ -1508,41 +1508,6 @@ s_operand (rtx op, enum machine_mode mode)
   return 1;
 }
 
-/* Return true if OP is a memory operand pointing to the
-   literal pool, or an immediate operand.  */
-
-bool
-s390_pool_operand (rtx op)
-{
-  struct s390_address addr;
-
-  /* Just like memory_operand, allow (subreg (mem ...))
-     after reload.  */
-  if (reload_completed
-      && GET_CODE (op) == SUBREG
-      && GET_CODE (SUBREG_REG (op)) == MEM)
-    op = SUBREG_REG (op);
-
-  switch (GET_CODE (op))
-    {
-    case CONST_INT:
-    case CONST_DOUBLE:
-      return true;
-
-    case MEM:
-      if (!s390_decompose_address (XEXP (op, 0), &addr))
-	return false;
-      if (addr.base && REG_P (addr.base) && REGNO (addr.base) == BASE_REGNUM)
-	return true;
-      if (addr.indx && REG_P (addr.indx) && REGNO (addr.indx) == BASE_REGNUM)
-	return true;
-      return false;
-
-    default:
-      return false;
-    }
-}
-
 /* Return true if OP a valid shift count operand.
    OP is the current operation.
    MODE is the current operation mode.  */
@@ -1629,6 +1594,21 @@ s390_extra_constraint_str (rtx op, int c, const char * str)
       if ((reload_completed || reload_in_progress)
 	  ? !offsettable_memref_p (op)
 	  : !offsettable_nonstrict_memref_p (op))
+	return 0;
+
+      c = str[1];
+    }
+
+  /* Check for non-literal-pool variants of memory constraints.  */
+  else if (c == 'B')
+    {
+      if (GET_CODE (op) != MEM)
+	return 0;
+      if (!s390_decompose_address (XEXP (op, 0), &addr))
+	return 0;
+      if (addr.base && REG_P (addr.base) && REGNO (addr.base) == BASE_REGNUM)
+	return 0;
+      if (addr.indx && REG_P (addr.indx) && REGNO (addr.indx) == BASE_REGNUM)
 	return 0;
 
       c = str[1];

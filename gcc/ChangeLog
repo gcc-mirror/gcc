@@ -1,3 +1,16 @@
+2004-11-09  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_pool_operand): Remove.
+	* config/s390/s390.c (s390_pool_operand): Likewise.
+	(s390_extra_constraint_str): Handle 'B' constraints.
+	* config/s390/s390.h (CONSTRAINT_LEN): Handle 'B' constraints.
+	* config/s390/s390.md: Document 'B' constraints.
+	("*cmpdi_cct", "*cmpsi_cct"): Use 'B' constraint instead of
+	s390_pool_operand to prevent insns with two literal pool
+	references.  Make pattern commutative.
+	("*cmpdi_ccu", "*cmpsi_ccu", "*cmphi_ccu", "*cmpqi_ccu"): Use
+	'B' constraint instead of s390_pool_operand.
+
 2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c (create_bb): Remove unnecessary memset.
