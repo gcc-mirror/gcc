@@ -1,3 +1,9 @@
+Wed Jul 22 19:10:00 1998  Catherine Moore  <clm@cygnus.com>
+
+        * dwarf2out.c (output_aranges):  Call stripattributes
+        for TEXT_SECTION references.
+        (output_line_info): Likewise.
+
 Wed Jul 22 14:08:54 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* profile.c (branch_prob): Call allocate_reg_info after outputting
