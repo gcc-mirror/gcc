@@ -1,3 +1,8 @@
+2002-10-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* loop.c: Revert 2002-08-15 change.
+	(LOOP_REGNO_NREGS): Ensure type is int.
+
 2002-10-09  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.md (extenddftf2): Change to define_insn
