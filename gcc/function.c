@@ -6315,7 +6315,8 @@ expand_function_start (subr, parms_have_cleanups)
 	  /* Chain thru stack frames, assuming pointer to next lexical frame
 	     is found at the place we always store it.  */
 #ifdef FRAME_GROWS_DOWNWARD
-	  last_ptr = plus_constant (last_ptr, -GET_MODE_SIZE (Pmode));
+	  last_ptr = plus_constant (last_ptr,
+				    -(HOST_WIDE_INT) GET_MODE_SIZE (Pmode));
 #endif
 	  last_ptr = gen_rtx_MEM (Pmode, memory_address (Pmode, last_ptr));
 	  MEM_ALIAS_SET (last_ptr) = get_frame_alias_set ();
