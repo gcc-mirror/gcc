@@ -109,7 +109,8 @@ const char *gnat_tree_code_name[] = {
 
 /* Structure giving our language-specific hooks.  */
 struct lang_hooks lang_hooks = {gnat_init, 0, gnat_init_options,
-				gnat_decode_option, 0};
+				gnat_decode_option, 0,
+			        {0, 0, 0, 0, 0, 0, 0, 0}};
 
 /* gnat standard argc argv */
 
