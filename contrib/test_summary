@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# (C) 1998-1999 Free Software Foundation
+# (C) 1998, 1999, 2000 Free Software Foundation
 # Originally by Alexandre Oliva <oliva@dcc.unicamp.br>
 
 # This script is Free Software, and it can be copied, distributed and
@@ -87,10 +87,14 @@ BEGIN {
   lang="";
   address="gcc-testresults@gcc.gnu.org";
   version="gcc";
-  print "cat <<\EOF |";
+  print "cat <<'"'"'EOF'"'"' |";
 '${prepend_logs+"  system(\"cat $prepend_logs\"); "}'
 }
-$1 ~ /\/configure$/ { $1 = "configure flags:"; configflags = $0 }
+$1 ~ /\/configure$/ {
+    $1 = "configure flags:"; configflags = $0;
+    gsub(/--with-gcc-version-trigger=[^ ]* /, "", configflags);
+    gsub(/ --norecursion/, "", configflags)
+}
 /^Running target / { print ""; print; }
 /^Target / { if (host != "") next; else host = $3; }
 /^Host / && host ~ /^unix\{.*\}$/ { host = $3 " " substr(host, 5); }
@@ -98,8 +102,6 @@ $1 ~ /\/configure$/ { $1 = "configure flags:"; configflags = $0 }
 /^[ 	]*=== [^ 	]+ tests ===/ {
   if (lang == "") lang = " "$2" "; else lang = " ";
 }
-/--disable-haifa/ { prefix="haifa-disabled "; }
-/--enable-haifa/ { prefix="haifa-enabled "; }
 $2 == "version" { save = $0; $1 = ""; $2 = ""; version = $0; gsub(/^ */, "", version); gsub(/\r$/, "", version); $0 = save; }
 /\===.*Summary/ { print ""; print; blanks=1; }
 /tests ===/ || /^(Target|Host|Native)/ || $2 == "version" { print; blanks=1; }
