@@ -214,12 +214,6 @@ struct eh_status
   /* This is the region for which we are processing catch blocks.  */
   struct eh_region *try_region;
 
-  /* A stack (TREE_LIST) of lists of handlers.  The TREE_VALUE of each
-     node is itself a TREE_CHAINed list of handlers for regions that
-     are not yet closed. The TREE_VALUE of each entry contains the
-     handler for the corresponding entry on the ehstack.  */
-  tree protect_list;
-
   rtx filter;
   rtx exc_ptr;
 
@@ -560,7 +554,6 @@ mark_eh_status (eh)
     tree_done:;
     }
 
-  ggc_mark_tree (eh->protect_list);
   ggc_mark_rtx (eh->filter);
   ggc_mark_rtx (eh->exc_ptr);
   ggc_mark_tree_varray (eh->ttype_data);
@@ -1011,55 +1004,6 @@ get_exception_filter (fun)
     }
   return filter;
 }
-
-/* Begin a region that will contain entries created with
-   add_partial_entry.  */
-
-void
-begin_protect_partials ()
-{
-  /* Push room for a new list.  */
-  cfun->eh->protect_list
-    = tree_cons (NULL_TREE, NULL_TREE, cfun->eh->protect_list);
-}
-
-/* Start a new exception region for a region of code that has a
-   cleanup action and push the HANDLER for the region onto
-   protect_list. All of the regions created with add_partial_entry
-   will be ended when end_protect_partials is invoked.
-
-   ??? The only difference between this purpose and that of
-   expand_decl_cleanup is that in this case, we only want the cleanup to
-   run if an exception is thrown.  This should also be handled using
-   binding levels.  */
-
-void
-add_partial_entry (handler)
-     tree handler;
-{
-  expand_eh_region_start ();
-
-  /* Add this entry to the front of the list.  */
-  TREE_VALUE (cfun->eh->protect_list)
-    = tree_cons (NULL_TREE, handler, TREE_VALUE (cfun->eh->protect_list));
-}
-
-/* End all the pending exception regions on protect_list.  */
-
-void
-end_protect_partials ()
-{
-  tree t;
-
-  /* Pop the topmost entry.  */
-  t = TREE_VALUE (cfun->eh->protect_list);
-  cfun->eh->protect_list = TREE_CHAIN (cfun->eh->protect_list);
-
-  /* End all the exception regions.  */
-  for (; t; t = TREE_CHAIN (t))
-    expand_eh_region_end_cleanup (TREE_VALUE (t));
-}
-
 
 /* This section is for the exception handling specific optimization pass.  */
 

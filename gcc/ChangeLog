@@ -1,3 +1,22 @@
+2002-04-03  Jason Merrill  <jason@redhat.com>
+
+	* except.c (struct eh_status): Remove protect_list.
+	(begin_protect_partials, end_protect_partials): Remove.
+	(add_partial_entry): Remove.
+	* except.h: Remove prototypes.
+
+	* expr.c (expand_expr) [WITH_CLEANUP_EXPR, TARGET_EXPR]: Use
+	expand_decl_cleanup_eh.
+
+	PR c++/5636
+	* tree.h (CLEANUP_EH_ONLY): New macro.
+	* stmt.c (expand_decl_cleanup_eh): New fn.
+	(expand_cleanups): Check CLEANUP_EH_ONLY.
+	* c-semantics.c (genrtl_decl_cleanup): Just take the CLEANUP_STMT.
+	Use expand_decl_cleanup_eh.
+	(expand_stmt): Adjust.
+	* c-common.h: Adjust prototype.
+
 2002-04-04  Hans-Peter Nilsson  <hp@axis.com>
 
 	* config/cris/cris.c (cris_target_asm_function_prologue): Cast
@@ -1497,7 +1516,7 @@ Fri Mar 22 12:08:36 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* flags.h (flag_really_no_inline): New.
 
-	* c-common.c (c_common_post_options): Initialzie
+	* c-common.c (c_common_post_options): Initialize
 	flag_really_no_inline.
 
 	* toplev.c (flag_really_no_inline): New.

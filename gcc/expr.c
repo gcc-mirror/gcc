@@ -7209,7 +7209,8 @@ expand_expr (exp, target, tmode, modifier)
 	{
 	  WITH_CLEANUP_EXPR_RTL (exp)
 	    = expand_expr (TREE_OPERAND (exp, 0), target, tmode, modifier);
-	  expand_decl_cleanup (NULL_TREE, TREE_OPERAND (exp, 1));
+	  expand_decl_cleanup_eh (NULL_TREE, TREE_OPERAND (exp, 1),
+				  CLEANUP_EH_ONLY (exp));
 
 	  /* That's it for this cleanup.  */
 	  TREE_OPERAND (exp, 1) = 0;
@@ -8422,7 +8423,7 @@ expand_expr (exp, target, tmode, modifier)
 
 	store_expr (exp1, target, 0);
 
-	expand_decl_cleanup (NULL_TREE, cleanups);
+	expand_decl_cleanup_eh (NULL_TREE, cleanups, CLEANUP_EH_ONLY (exp));
 
 	return target;
       }

@@ -296,7 +296,7 @@ perform_member_init (member, init, explicit)
 			   LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR, 0);
 
       if (expr != error_mark_node)
-	finish_subobject (expr);
+	finish_eh_cleanup (expr);
     }
 }
 
@@ -844,7 +844,7 @@ expand_cleanup_for_base (binfo, flag)
 			truthvalue_conversion (flag),
 			expr, integer_zero_node));
 
-  finish_subobject (expr);
+  finish_eh_cleanup (expr);
 }
 
 /* Subroutine of `expand_aggr_vbase_init'.
@@ -2498,9 +2498,11 @@ build_new_1 (exp)
 	      tree end, sentry, begin;
 
 	      begin = get_target_expr (boolean_true_node);
-	      sentry = TREE_OPERAND (begin, 0);
+	      CLEANUP_EH_ONLY (begin) = 1;
 
-	      TREE_OPERAND (begin, 2)
+	      sentry = TARGET_EXPR_SLOT (begin);
+
+	      TARGET_EXPR_CLEANUP (begin)
 		= build (COND_EXPR, void_type_node, sentry,
 			 cleanup, void_zero_node);
 

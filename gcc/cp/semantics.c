@@ -56,8 +56,6 @@ static void emit_associated_thunks PARAMS ((tree));
 static void genrtl_try_block PARAMS ((tree));
 static void genrtl_eh_spec_block PARAMS ((tree));
 static void genrtl_handler PARAMS ((tree));
-static void genrtl_ctor_stmt PARAMS ((tree));
-static void genrtl_subobject PARAMS ((tree));
 static void genrtl_named_return_value PARAMS ((void));
 static void cp_expand_stmt PARAMS ((tree));
 static void genrtl_start_function PARAMS ((tree));
@@ -777,21 +775,6 @@ finish_handler (handler)
   RECHAIN_STMTS (handler, HANDLER_BODY (handler));
 }
 
-/* Generate the RTL for T, which is a CTOR_STMT. */
-
-static void
-genrtl_ctor_stmt (t)
-     tree t;
-{
-  if (CTOR_BEGIN_P (t))
-    begin_protect_partials ();
-  else
-    /* After this point, any exceptions will cause the
-       destructor to be executed, so we no longer need to worry
-       about destroying the various subobjects ourselves.  */
-    end_protect_partials ();
-}
-
 /* Begin a compound-statement.  If HAS_NO_SCOPE is non-zero, the
    compound-statement does not define a scope.  Returns a new
    COMPOUND_STMT if appropriate.  */
@@ -976,27 +959,6 @@ finish_label_decl (name)
   add_decl_stmt (decl);
 }
 
-/* Generate the RTL for a SUBOBJECT. */
-
-static void 
-genrtl_subobject (cleanup)
-     tree cleanup;
-{
-  add_partial_entry (cleanup);
-}
-
-/* We're in a constructor, and have just constructed a a subobject of
-   *THIS.  CLEANUP is code to run if an exception is thrown before the
-   end of the current function is reached.   */
-
-void 
-finish_subobject (cleanup)
-     tree cleanup;
-{
-  tree r = build_stmt (SUBOBJECT, cleanup);
-  add_stmt (r);
-}
-
 /* When DECL goes out of scope, make sure that CLEANUP is executed.  */
 
 void 
@@ -1005,6 +967,17 @@ finish_decl_cleanup (decl, cleanup)
      tree cleanup;
 {
   add_stmt (build_stmt (CLEANUP_STMT, decl, cleanup));
+}
+
+/* If the current scope exits with an exception, run CLEANUP.  */
+
+void
+finish_eh_cleanup (cleanup)
+     tree cleanup;
+{
+  tree r = build_stmt (CLEANUP_STMT, NULL_TREE, cleanup);
+  CLEANUP_EH_ONLY (r) = 1;
+  add_stmt (r);
 }
 
 /* Generate the RTL for a RETURN_INIT. */
@@ -2130,10 +2103,6 @@ cp_expand_stmt (t)
 {
   switch (TREE_CODE (t))
     {
-    case CTOR_STMT:
-      genrtl_ctor_stmt (t);
-      break;
-
     case TRY_BLOCK:
       genrtl_try_block (t);
       break;
@@ -2144,10 +2113,6 @@ cp_expand_stmt (t)
 
     case HANDLER:
       genrtl_handler (t);
-      break;
-
-    case SUBOBJECT:
-      genrtl_subobject (SUBOBJECT_CLEANUP (t));
       break;
 
     case RETURN_INIT:
@@ -2458,7 +2423,7 @@ nullify_returns_r (tp, walk_subtrees, data)
     RETURN_EXPR (*tp) = NULL_TREE;
   else if (TREE_CODE (*tp) == CLEANUP_STMT
 	   && CLEANUP_DECL (*tp) == nrv)
-    CLEANUP_EXPR (*tp) = NULL_TREE;
+    CLEANUP_EH_ONLY (*tp) = 1;
 
   /* Keep iterating.  */
   return NULL_TREE;

@@ -737,12 +737,12 @@ genrtl_asm_stmt (cv_qualifier, string, output_operands,
 /* Generate the RTL for a DECL_CLEANUP.  */
 
 void 
-genrtl_decl_cleanup (decl, cleanup)
-     tree decl;
-     tree cleanup;
+genrtl_decl_cleanup (t)
+     tree t;
 {
+  tree decl = CLEANUP_DECL (t);
   if (!decl || (DECL_SIZE (decl) && TREE_TYPE (decl) != error_mark_node))
-    expand_decl_cleanup (decl, cleanup);
+    expand_decl_cleanup_eh (decl, CLEANUP_EXPR (t), CLEANUP_EH_ONLY (t));
 }
 
 /* We're about to expand T, a statement.  Set up appropriate context
@@ -848,7 +848,7 @@ expand_stmt (t)
 	  break;
 
 	case CLEANUP_STMT:
-	  genrtl_decl_cleanup (CLEANUP_DECL (t), CLEANUP_EXPR (t));
+	  genrtl_decl_cleanup (t);
 	  break;
 
 	default:

@@ -220,16 +220,6 @@ DEFTREECODE (DOTSTAR_EXPR, "dotstar_expr", 'e', 2)
 DEFTREECODE (TYPEID_EXPR, "typeid_expr", 'e', 1)
 DEFTREECODE (PSEUDO_DTOR_EXPR, "pseudo_dtor_expr", 'e', 3)
 
-/* A SUBOBJECT statement marks the point at which a sub-object is
-   fully constructed.  After this point, the SUBOBJECT_CLEANUP must be
-   run if an exception is thrown before the end of the enclosing
-   function.  */
-DEFTREECODE (SUBOBJECT, "subobject", 'e', 1)
-/* An CTOR_STMT marks the beginning (if CTOR_BEGIN_P holds) or end of
-   a constructor (if CTOR_END_P) holds.  At the end of a constructor,
-   the cleanups associated with any SUBOBJECT_CLEANUPS need no longer
-   be run.  */
-DEFTREECODE (CTOR_STMT, "ctor_stmt", 'e', 0)
 /* CTOR_INITIALIZER is a placeholder in template code for a call to
    setup_vtbl_pointer (and appears in all functions, not just ctors).  */
 DEFTREECODE (CTOR_INITIALIZER, "ctor_initializer", 'e', 2)

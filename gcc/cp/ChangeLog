@@ -1,5 +1,24 @@
 2002-04-04  Jason Merrill  <jason@redhat.com>
 
+	* semantics.c (finish_eh_cleanup): New fn.
+	* cp-tree.h: Add prototype.
+	* init.c (perform_member_init, expand_cleanup_for_base): Use 
+	finish_eh_cleanup.
+	* cp-tree.def (SUBOBJECT, CTOR_STMT): Remove.
+	* cp-tree.h: Remove references.
+	* decl.c (begin_constructor_body, end_constructor_body): Likewise.
+	* dump.c (cp_dump_tree): Likewise.
+	* pt.c (tsubst_expr): Likewise.
+	* semantics.c (genrtl_ctor_stmt, genrtl_subobject): Remove.
+	(cp_expand_stmt): Remove handling of CTOR_STMT and SUBOBJECT.
+	* tree.c (cp_statement_code_p): Likewise.
+
+	* init.c (build_new_1): Set CLEANUP_EH_ONLY on deleting cleanup.
+
+	PR c++/5636
+	* semantics.c (nullify_returns_r): Just set CLEANUP_EH_ONLY on
+	cleanup for nrv.
+
 	PR c++/5104
 	* typeck.c (comptypes) [FUNCTION_TYPE]: Don't compare exception
 	specifiers.
