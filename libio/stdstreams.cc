@@ -36,7 +36,7 @@ the executable file might be covered by the GNU General Public License. */
 // then we don't need to, since in that case stdin/stdout/stderr
 // are identical to _IO_stdin/_IO_stdout/_IO_stderr.
 
-#include "libio.h"
+#include <libio.h>
 
 #ifdef _STDIO_USES_IOSTREAM
 #define CIN_SBUF _IO_stdin_
