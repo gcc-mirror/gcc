@@ -1,3 +1,9 @@
+2001-12-06  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.c-torture/execute/memcheck: Delete entire directory.
+	(files: blkarg.c blkarg.x driver.c driver.h t1.c t2.c t3.c
+	t4.c t5.c t6.c t7.c t8.c t9.c template memcheck.exp)
+
 2001-12-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/Wshadow-1.c: New test.
