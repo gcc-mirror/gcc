@@ -1,3 +1,7 @@
+Wed Sep  9 21:58:41 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+	* print-rtl.c (print_rtx): For MEMs, print MEM_ALIAS_SET.
+
 Wed Sep  9 13:14:41 1998  Richard Henderson  <rth@cygnus.com>
 
 	* loop.c (load_mems): Copy rtx for output mem.
