@@ -165,7 +165,7 @@ abstract_virtuals_error (decl, type)
 
       error ("  since the following virtual functions are abstract:");
       for (tu = u; tu; tu = TREE_CHAIN (tu))
-	cp_error ("\t%#D", TREE_VALUE (tu));
+	cp_error_at ("\t%#D", TREE_VALUE (tu));
     }
   else
     cp_error ("  since type `%T' has abstract virtual functions", type);

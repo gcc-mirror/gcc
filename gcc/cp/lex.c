@@ -2295,7 +2295,7 @@ check_newline ()
      it and ignore it; otherwise, ignore the line, with an error
      if the word isn't `pragma'.  */
 
-  if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+  if (ISALPHA (c))
     {
       if (c == 'p')
 	{
@@ -2780,7 +2780,7 @@ readescape (ignore_ptr)
 	pedwarn ("unknown escape sequence `\\%c'", c);
       return c;
     }
-  if (c >= 040 && c < 0177)
+  if (ISGRAPH (c))
     pedwarn ("unknown escape sequence `\\%c'", c);
   else
     pedwarn ("unknown escape sequence: `\\' followed by char code 0x%x", c);
@@ -4776,7 +4776,7 @@ yyerror (string)
     strcat (buf, " before string constant");
   else if (token_buffer[0] == '\'')
     strcat (buf, " before character constant");
-  else if (token_buffer[0] < 040 || (unsigned char) token_buffer[0] >= 0177)
+  else if (!ISGRAPH (token_buffer[0]))
     sprintf (buf + strlen (buf), " before character 0%o",
 	     (unsigned char) token_buffer[0]);
   else
@@ -4999,29 +4999,21 @@ handle_generic_pragma (token)
 	{
 	case IDENTIFIER:
 	case TYPENAME:
-	case STRING:
-	case CONSTANT:
-	  handle_pragma_token (IDENTIFIER_POINTER(yylval.ttype), yylval.ttype);
+        case STRING:
+        case CONSTANT:
+	  handle_pragma_token (token_buffer, yylval.ttype);
 	  break;
-	case '(':
-	  handle_pragma_token ("(", NULL_TREE);
-	  break;
-	case ')':
-	  handle_pragma_token (")", NULL_TREE);
-	  break;
-	case ',':
-	  handle_pragma_token (",", NULL_TREE);
-	  break;
-	case '=':
-	  handle_pragma_token ("=", NULL_TREE);
-	  break;
+
 	case LEFT_RIGHT:
 	  handle_pragma_token ("(", NULL_TREE);
 	  handle_pragma_token (")", NULL_TREE);
 	  break;
+
 	case END_OF_LINE:
-	default:
 	  return handle_pragma_token (NULL_PTR, NULL_TREE);
+
+	default:
+	  handle_pragma_token (token_buffer, NULL);
 	}
       
       token = real_yylex ();

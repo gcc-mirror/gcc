@@ -1,3 +1,28 @@
+1998-11-24  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* lex.c (handle_generic_pragma): Use token_buffer.
+
+	* decl.c (check_tag_decl): Don't complain about null friend decl.
+
+1998-11-24  Dave Pitts  <dpitts@cozx.com>
+
+	* Make-lang.in (DEMANGLER_PROG): Move the output argumnts to the 
+	first position.
+	* lex.c (check_newline): Use ISALPHA.
+	(readescape): Use ISGRAPH.
+	(yyerror): Use ISGRAPH.
+
+1998-11-24  Nathan Sidwell  <nathan@acm.org>
+
+	* search.c (get_abstract_virtuals): Do not use initial
+	CLASSTYPE_ABSTRACT_VIRTUALS.
+	* typeck2.c (abstract_virtuals_error): Show location of abstract
+	declaration.
+	* call.c (build_new_method_call): Use
+	CLASSTYPE_ABSTRACT_VIRTUAL, rather than recalculate.
+	* class.c (finish_struct_bits): Don't bother working out whether
+	get_abstract_virtuals will do anything, just do it.
+
 1998-11-24  Graham <grahams@rcp.co.uk>
 
 	* typeck.c (build_component_ref): Remove unused statement.
