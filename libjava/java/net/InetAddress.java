@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package java.net;
 
+import gnu.classpath.Configuration;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -63,16 +64,26 @@ public class InetAddress implements Serializable
 {
   private static final long serialVersionUID = 3286316764910316507L;
   
-  static final byte[] zeros = { 0, 0, 0, 0 };
-  
   /**
    * Dummy InetAddress, used to bind socket to any (all) network interfaces.
    */
-  static final InetAddress ANY_IF = new InetAddress (zeros, null);
+  static InetAddress ANY_IF;
     
   private static final byte[] localhostAddress = { 127, 0, 0, 1 };
 
   private static InetAddress localhost = null;
+
+  static
+  {
+    // load the shared library needed for name resolution
+    if (Configuration.INIT_LOAD_LIBRARY)
+      {
+        System.loadLibrary ("javanet");
+      }
+    
+    byte[] zeros = { 0, 0, 0, 0 };
+    ANY_IF = new InetAddress (zeros, null);
+  }
 
   /**
    * The Serialized Form specifies that an int 'address' is saved/restored.
@@ -160,7 +171,7 @@ public class InetAddress implements Serializable
   {
     // This is the IPv4 implementation.
     // Any class derived from InetAddress should override this.
-    return addr == zeros;
+    return equals (ANY_IF);
   }
 
   /**
@@ -475,14 +486,13 @@ public class InetAddress implements Serializable
     // different host names."  This violates the description in the
     // JDK 1.2 API documentation.  A little experimentation
     // shows that the latter is correct.
-    byte[] addr1 = addr;
     byte[] addr2 = ((InetAddress) obj).addr;
     
-    if (addr1.length != addr2.length)
+    if (addr.length != addr2.length)
       return false;
     
-    for (int i = addr1.length;  --i >= 0;  )
-      if (addr1[i] != addr2[i])
+    for (int i = 0; i < addr.length; i++)
+      if (addr [i] != addr2 [i])
 	return false;
     
     return true;
@@ -497,15 +507,15 @@ public class InetAddress implements Serializable
    */
   public String toString()
   {
-    String result;
+    String host;
     String address = getHostAddress();
     
     if (hostName != null)
-      result = hostName + "/" + address;
+      host = hostName;
     else
-      result = address;
+      host = address;
     
-    return result;
+    return host + "/" + address;
   }
 
   /**
@@ -656,7 +666,10 @@ public class InetAddress implements Serializable
   private static native String getLocalHostname();
 
   /**
-   * Returns the local host address.
+   * Returns an InetAddress object representing the address of the current
+   * host.
+   *
+   * @return The local host's address
    *
    * @exception UnknownHostException If no IP address for the host could
    * be found

@@ -1,5 +1,5 @@
 /* URLConnection.java -- Abstract superclass for reading from URL's
-   Copyright (C) 1998, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,9 +45,10 @@ import java.security.Permission;
 import java.security.AllPermission;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
-import java.util.Locale;
 import java.util.Hashtable;
+import java.util.Locale;
 import java.util.Map;
 import java.util.StringTokenizer;
 import gnu.gcj.io.MimeTypes;
@@ -783,9 +784,12 @@ public abstract class URLConnection
    */
   public Map getRequestProperties()
   {
+    if (connected)
+      throw new IllegalStateException ("Already connected");
+
     // Overridden by subclasses that support reading header fields from the
     // request.
-    return null;
+    return Collections.EMPTY_MAP;
   }
 
   /**

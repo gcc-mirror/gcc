@@ -74,6 +74,17 @@ public class ServerSocket
   private SocketImpl impl;
 
   private boolean closed = false;
+
+  /*
+   * This is only used by java.nio.
+   */
+  // FIXME: Workaround a bug in gcj.
+  //ServerSocket (PlainSocketImpl impl) throws IOException
+  ServerSocket (SocketImpl impl) throws IOException
+  {
+    this.impl = impl;
+    this.impl.create (true);
+  }
   
   /**
    * Constructor that simply sets the implementation.
@@ -318,8 +329,7 @@ public class ServerSocket
    */
   public void close () throws IOException
   {
-    if (impl != null)
-      impl.close ();
+    impl.close ();
 
     if (getChannel() != null)
       getChannel().close ();
