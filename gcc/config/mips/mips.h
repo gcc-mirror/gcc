@@ -389,6 +389,12 @@ while (0)
 	%{bestGnum}}"
 #endif				/* LINK_SPEC defined */
 
+/* Define this macro meaning that `gcc' should find the library
+   `libgcc.a' by hand, rather than passing the argument `-lgcc' to
+   tell the linker to do the search. */
+
+#define LINK_LIBGCC_SPECIAL 1
+
 /* Specs for the compiler proper */
 
 #ifndef CC1_SPEC
