@@ -10662,6 +10662,8 @@ patch_invoke (patch, method, args)
     {
       tree class = DECL_CONTEXT (method);
       tree c1, saved_new, size, new;
+      tree alloc_node;
+
       if (flag_emit_class_files || flag_emit_xref)
 	{
 	  TREE_TYPE (patch) = build_pointer_type (class);
@@ -10670,8 +10672,11 @@ patch_invoke (patch, method, args)
       if (!TYPE_SIZE (class))
 	safe_layout_class (class);
       size = size_in_bytes (class);
+      alloc_node =
+	(class_has_finalize_method (class) ? alloc_object_node
+		  			   : alloc_no_finalizer_node);
       new = build (CALL_EXPR, promote_type (class),
-		   build_address_of (alloc_object_node),
+		   build_address_of (alloc_node),
 		   tree_cons (NULL_TREE, build_class_ref (class),
 			      build_tree_list (NULL_TREE, 
 					       size_in_bytes (class))),

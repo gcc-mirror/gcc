@@ -586,6 +586,7 @@ java_init_decl_processing ()
   instinit_identifier_node = get_identifier ("instinit$");
   void_signature_node = get_identifier ("()V");
   length_identifier_node = get_identifier ("length");
+  finalize_identifier_node = get_identifier ("finalize");
   this_identifier_node = get_identifier ("this");
   super_identifier_node = get_identifier ("super");
   continue_identifier_node = get_identifier ("continue");
@@ -729,6 +730,11 @@ java_init_decl_processing ()
 					build_function_type (ptr_type_node, t),
 					0, NOT_BUILT_IN, NULL);
   DECL_IS_MALLOC (alloc_object_node) = 1;
+  alloc_no_finalizer_node = 
+    builtin_function ("_Jv_AllocObjectNoFinalizer",
+		      build_function_type (ptr_type_node, t),
+		      0, NOT_BUILT_IN, NULL);
+  DECL_IS_MALLOC (alloc_no_finalizer_node) = 1;
 
   t = tree_cons (NULL_TREE, ptr_type_node, endlink);
   soft_initclass_node = builtin_function ("_Jv_InitClass",

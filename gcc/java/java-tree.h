@@ -60,6 +60,7 @@ struct JCF;
       RESOLVE_PACKAGE_NAME_P (in EXPR_WITH_FILE_LOCATION)
       SWITCH_HAS_DEFAULT (in SWITCH_EXPR)
       ZIP_FILE_P (in TREE_LIST in current_file_list)
+      HAS_FINALIZER (in RECORD_TYPE)
    4: IS_A_COMMAND_LINE_FILENAME_P (in IDENTIFIER_NODE)
       RESOLVE_TYPE_NAME_P (in EXPR_WITH_FILE_LOCATION)
       CALL_USING_SUPER (in CALL_EXPR)
@@ -290,6 +291,7 @@ enum java_tree_index
   JTI_FINIT_LEG_IDENTIFIER_NODE,  
   JTI_VOID_SIGNATURE_NODE,       
   JTI_LENGTH_IDENTIFIER_NODE,  
+  JTI_FINALIZE_IDENTIFIER_NODE,
   JTI_THIS_IDENTIFIER_NODE,  
   JTI_SUPER_IDENTIFIER_NODE,  
   JTI_CONTINUE_IDENTIFIER_NODE,  
@@ -334,6 +336,7 @@ enum java_tree_index
 
   JTI_THROW_NODE,
   JTI_ALLOC_OBJECT_NODE,
+  JTI_ALLOC_NO_FINALIZER_NODE,
   JTI_SOFT_INSTANCEOF_NODE,
   JTI_SOFT_CHECKCAST_NODE,
   JTI_SOFT_INITCLASS_NODE,
@@ -485,6 +488,8 @@ extern tree java_global_trees[JTI_MAX];
   java_global_trees[JTI_VOID_SIGNATURE_NODE]       /* "()V" */
 #define length_identifier_node \
   java_global_trees[JTI_LENGTH_IDENTIFIER_NODE]  /* "length" */
+#define finalize_identifier_node \
+  java_global_trees[JTI_FINALIZE_IDENTIFIER_NODE]  /* "finalize" */
 #define this_identifier_node \
   java_global_trees[JTI_THIS_IDENTIFIER_NODE]  /* "this" */
 #define super_identifier_node \
@@ -569,6 +574,8 @@ extern tree java_global_trees[JTI_MAX];
   java_global_trees[JTI_THROW_NODE]
 #define alloc_object_node \
   java_global_trees[JTI_ALLOC_OBJECT_NODE]
+#define alloc_no_finalizer_node \
+  java_global_trees[JTI_ALLOC_NO_FINALIZER_NODE]
 #define soft_instanceof_node \
   java_global_trees[JTI_SOFT_INSTANCEOF_NODE]
 #define soft_checkcast_node \
@@ -1163,6 +1170,7 @@ extern void java_debug_context PARAMS ((void));
 extern void safe_layout_class PARAMS ((tree));
 
 extern tree get_boehm_type_descriptor PARAMS ((tree));
+extern bool class_has_finalize_method PARAMS ((tree));
 extern unsigned long java_hash_hash_tree_node PARAMS ((hash_table_key));
 extern bool java_hash_compare_tree_node PARAMS ((hash_table_key, 
 						    hash_table_key));
@@ -1420,6 +1428,10 @@ extern tree *type_map;
 /* True if EXPR (a TREE_TYPE denoting a class type) has its methods
    already checked (for redifitions, etc, see java_check_regular_methods.) */
 #define CLASS_METHOD_CHECKED_P(EXPR) TREE_LANG_FLAG_2 (EXPR)
+
+/* True if TYPE (a TREE_TYPE denoting a class type) was found to
+   feature a finalizer method. */
+#define HAS_FINALIZER_P(EXPR) TREE_LANG_FLAG_3 (EXPR)
 
 /* True if EXPR (a WFL in that case) resolves into an expression name */
 #define RESOLVE_EXPRESSION_NAME_P(WFL) TREE_LANG_FLAG_0 (WFL)

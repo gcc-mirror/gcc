@@ -1,3 +1,21 @@
+2001-12-14  Hans Boehm  <Hans_Boehm@hp.com>
+
+	* class.c (get_dispatch_table): Fix java vtable layout
+	for TARGET_VTABLE_USES_DESCRIPTORS.
+	* decl.c (java_init_decl_processing): Initialize
+	alloc_no_finalizer_node, finalize_identifier_node.
+	* expr.c (class_has_finalize_method): New function.
+	(expand_java_NEW): Generate calls for finalizer-free allocation.
+	(build_invokevirtual): Fix java vtable layout for
+	TARGET_VTABLE_USES_DESCRIPTORS.
+	* java-tree.h (enum java_tree_index): New entries: 
+	JTI_ALLOC_NO_FINALIZER_NODE, JTI_FINALIZE_IDENTIFIER_NODE.
+	(alloc_no_finalizer_node, finalize_deintifier_node): New macros.
+	(class_has_finalize_method): declare.
+	(HAS_FINALIZER_P): New macro.
+	* parse.y (patch_invoke): Generate calls for finalizer-free
+	allocation.
+
 2001-12-12  Matthias Klose  <doko@debian.org>
 
 	* Make-lang.in: JAVA_INSTALL_NAME, JAVA_CROSS_NAME: Remove
