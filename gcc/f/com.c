@@ -168,7 +168,7 @@ tree ffecom_tree_type[FFEINFO_basictype][FFEINFO_kindtype];
    appropriate _tree_type array element.  */
 
 static GTY(()) tree ffecom_tree_fun_type[FFEINFO_basictype][FFEINFO_kindtype];
-static GTY(()) tree 
+static GTY(()) tree
   ffecom_tree_ptr_to_fun_type[FFEINFO_basictype][FFEINFO_kindtype];
 static GTY(()) tree ffecom_tree_subr_type;
 static GTY(()) tree ffecom_tree_ptr_to_subr_type;
@@ -604,18 +604,18 @@ struct lang_identifier GTY(())
   (((struct lang_identifier *)(NODE))->invented)
 
 /* The resulting tree type.  */
-union lang_tree_node 
+union lang_tree_node
   GTY((desc ("TREE_CODE (&%h.generic) == IDENTIFIER_NODE"),
        chain_next ("(union lang_tree_node *)TREE_CHAIN (&%h.generic)")))
 {
-  union tree_node GTY ((tag ("0"), 
-			desc ("tree_node_structure (&%h)"))) 
+  union tree_node GTY ((tag ("0"),
+			desc ("tree_node_structure (&%h)")))
     generic;
   struct lang_identifier GTY ((tag ("1"))) identifier;
 };
 
 /* Fortran doesn't use either of these.  */
-struct lang_decl GTY(()) 
+struct lang_decl GTY(())
 {
 };
 struct lang_type GTY(())
@@ -2918,7 +2918,7 @@ ffecom_do_entry_ (ffesymbol fn, int entrynum)
   finish_function (0);
 
   input_location = old_loc;
-  
+
   ffecom_doing_entry_ = FALSE;
 }
 
@@ -7294,7 +7294,7 @@ ffecom_sym_transform_ (ffesymbol s)
   ffeinfoKindtype kt;
   ffeglobal g;
   location_t old_loc = input_location;
-  
+
   /* Must ensure special ASSIGN variables are declared at top of outermost
      block, else they'll end up in the innermost block when their first
      ASSIGN is seen, which leaves them out of scope when they're the
@@ -10111,9 +10111,6 @@ ffecom_arg_ptr_to_expr (ffebld expr, tree *length)
     case FFEBLD_opPERCENT_DESCR:
       switch (ffeinfo_basictype (ffebld_info (expr)))
 	{
-#ifdef PASS_HOLLERITH_BY_DESCRIPTOR
-	case FFEINFO_basictypeHOLLERITH:
-#endif
 	case FFEINFO_basictypeCHARACTER:
 	  break;		/* Passed by descriptor anyway. */
 
@@ -10128,21 +10125,6 @@ ffecom_arg_ptr_to_expr (ffebld expr, tree *length)
     default:
       break;
     }
-
-#ifdef PASS_HOLLERITH_BY_DESCRIPTOR
-  if ((ffeinfo_basictype (ffebld_info (expr)) == FFEINFO_basictypeHOLLERITH)
-      && (length != NULL))
-    {				/* Pass Hollerith by descriptor. */
-      ffetargetHollerith h;
-
-      assert (ffebld_op (expr) == FFEBLD_opCONTER);
-      h = ffebld_cu_val_hollerith (ffebld_constant_union
-				   (ffebld_conter (expr)));
-      *length
-	= build_int_2 (h.length, 0);
-      TREE_TYPE (*length) = ffecom_f2c_ftnlen_type_node;
-    }
-#endif
 
   if (ffeinfo_basictype (ffebld_info (expr)) != FFEINFO_basictypeCHARACTER)
     return ffecom_ptr_to_expr (expr);
@@ -10608,7 +10590,7 @@ ffecom_constantunion_with_type (ffebldConstantUnion *cu,
   {
 #if FFETARGET_okINTEGER1
 	  case  FFEBLD_constINTEGER1:
-         	  val = ffebld_cu_val_integer1 (*cu);
+	  val = ffebld_cu_val_integer1 (*cu);
 		  item = build_int_2 (val, (val < 0) ? -1 : 0);
 		  break;
 #endif
@@ -10695,10 +10677,6 @@ ffecom_const_expr (ffebld expr)
 
   if (ffebld_arity (expr) == 0
       && (ffebld_op (expr) != FFEBLD_opSYMTER
-#if NEWCOMMON
-	  /* ~~Enable once common/equivalence is handled properly?  */
-	  || ffebld_where (expr) == FFEINFO_whereCOMMON
-#endif
 	  || ffebld_where (expr) == FFEINFO_whereGLOBAL
 	  || ffebld_where (expr) == FFEINFO_whereINTRINSIC))
     {
@@ -10930,16 +10908,6 @@ ffecom_expand_let_stmt (ffebld dest, ffebld source)
 	expr_tree = source_tree;
       else if (assign_temp)
 	{
-#ifdef MOVE_EXPR
-	  /* The back end understands a conceptual move (evaluate source;
-	     store into dest), so use that, in case it can determine
-	     that it is going to use, say, two registers as temporaries
-	     anyway.  So don't use the temp (and someday avoid generating
-	     it, once this code starts triggering regularly).  */
-	  expr_tree = ffecom_2s (MOVE_EXPR, void_type_node,
-				 dest_tree,
-				 source_tree);
-#else
 	  expr_tree = ffecom_2s (MODIFY_EXPR, void_type_node,
 				 assign_temp,
 				 source_tree);
@@ -10947,7 +10915,6 @@ ffecom_expand_let_stmt (ffebld dest, ffebld source)
 	  expr_tree = ffecom_2s (MODIFY_EXPR, void_type_node,
 				 dest_tree,
 				 assign_temp);
-#endif
 	}
       else
 	expr_tree = ffecom_2s (MODIFY_EXPR, void_type_node,

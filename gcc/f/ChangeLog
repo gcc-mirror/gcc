@@ -1,3 +1,16 @@
+2003-06-01  Andreas Jaeger  <aj@suse.de>
+
+	* lex.c (ffelex_file_fixed): Remove usage of
+	REDUCE_CARD_SIZE_AFTER_BIGGY.
+
+	* expr.c (ffeexpr_exprstack_push_operand_): Remove code depenend
+	on WEIRD_NONFORTRAN_RULES.
+
+	* com.c (ffecom_arg_ptr_to_expr): Remove
+	PASS_HOLLERITH_BY_DESCRIPTOR dependend code.
+	(ffecom_const_expr): Remove usage of NEWCOMMON.
+	(ffecom_expand_let_stmt): Remove MOVE_EXPR.
+
 2003-05-31  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/10843
