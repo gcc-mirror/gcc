@@ -18,8 +18,9 @@ Program test_sr_kind
   res = selected_real_kind (r = i8)
   if (res .ne. 8) call abort
 
-  res = selected_real_kind (r = (i8 + 1))
-  if (res .ne. -2) call abort
+! We can in fact have kinds wider than r8.  How do we want to check?
+! res = selected_real_kind (r = (i8 + 1))
+! if (res .ne. -2) call abort
 
   res = selected_real_kind (p = precision (r4))
   if (res .ne. 4) call abort
@@ -30,8 +31,8 @@ Program test_sr_kind
   res = selected_real_kind (p = precision (r4), r = i8)
   if (res .ne. 8) call abort
 
-  res = selected_real_kind (p = precision (r4), r = i8 + 1)
-  if (res .ne. -2) call abort
+! res = selected_real_kind (p = precision (r4), r = i8 + 1)
+! if (res .ne. -2) call abort
 
   res = selected_real_kind (p = precision (r8))
   if (res .ne. 8) call abort
@@ -42,20 +43,20 @@ Program test_sr_kind
   res = selected_real_kind (p = precision (r8), r = i8)
   if (res .ne. 8) call abort
 
-  res = selected_real_kind (p = precision (r8), r = i8 + 1)
-  if (res .ne. -2) call abort
+! res = selected_real_kind (p = precision (r8), r = i8 + 1)
+! if (res .ne. -2) call abort
 
-  res = selected_real_kind (p = (precision (r8) + 1))
-  if (res .ne. -1) call abort
+! res = selected_real_kind (p = (precision (r8) + 1))
+! if (res .ne. -1) call abort
 
-  res = selected_real_kind (p = (precision (r8) + 1), r = i4)
-  if (res .ne. -1) call abort
+! res = selected_real_kind (p = (precision (r8) + 1), r = i4)
+! if (res .ne. -1) call abort
 
-  res = selected_real_kind (p = (precision (r8) + 1), r = i8)
-  if (res .ne. -1) call abort
+! res = selected_real_kind (p = (precision (r8) + 1), r = i8)
+! if (res .ne. -1) call abort
 
-  res = selected_real_kind (p = (precision (r8) + 1), r = i8 + 1)
-  if (res .ne. -3) call abort
+! res = selected_real_kind (p = (precision (r8) + 1), r = i8 + 1)
+! if (res .ne. -3) call abort
 
 end
 
