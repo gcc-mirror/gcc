@@ -11271,23 +11271,22 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 	fprintf (file, "\taddi %s,%s,%d\n", this_reg, this_reg, delta);
     }
 
+  /* 64-bit constants.  If "int" is 32 bits, we'll never hit this abort.  */
+  else if (TARGET_64BIT && (delta < -2147483647 - 1 || delta > 2147483647))
+    abort ();
+
   /* Large constants that can be done by one addis instruction.  */
-  else if ((delta & 0xffff) == 0 && num_insns_constant_wide (delta) == 1)
+  else if ((delta & 0xffff) == 0)
     asm_fprintf (file, "\t{cau|addis} %s,%s,%d\n", this_reg, this_reg,
 		 delta >> 16);
 
   /* 32-bit constants that can be done by an add and addis instruction.  */
-  else if (TARGET_32BIT || num_insns_constant_wide (delta) == 1)
+  else
     {
       /* Break into two pieces, propagating the sign bit from the low
 	 word to the upper word.  */
-      int delta_high = delta >> 16;
-      int delta_low  = delta & 0xffff;
-      if ((delta_low & 0x8000) != 0)
-	{
-	  delta_high++;
-	  delta_low = (delta_low ^ 0x8000) - 0x8000;	/* sign extend */
-	}
+      int delta_low  = ((delta & 0xffff) ^ 0x8000) - 0x8000;
+      int delta_high = (delta - delta_low) >> 16;
 
       asm_fprintf (file, "\t{cau|addis} %s,%s,%d\n", this_reg, this_reg,
 		   delta_high);
@@ -11297,10 +11296,6 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
       else
 	fprintf (file, "\taddi %s,%s,%d\n", this_reg, this_reg, delta_low);
     }
-
-  /* 64-bit constants, fixme */
-  else
-    abort ();
 
   /* Get the prefix in front of the names.  */
   switch (DEFAULT_ABI)
