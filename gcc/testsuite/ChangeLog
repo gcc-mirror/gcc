@@ -1,5 +1,8 @@
 2004-11-28  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	PR target/18348
+	* gcc.dg/uninit-H.c (ASM): For unknown targets, define to "= 0".
+
 	PR target/18345
 	* gcc.dg/intmax_t-1.c: Add mmix-*-* to dg-error.
 

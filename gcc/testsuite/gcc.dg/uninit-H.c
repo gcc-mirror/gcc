@@ -21,7 +21,9 @@
 #elif defined __xtensa__
 # define ASM __asm__("sp")
 #else
-# define ASM
+/* The register name should be target-dependent so for other targets,
+   we just silence the test.  */
+# define ASM = 0
 #endif
 
 void *load_PCB (void)
