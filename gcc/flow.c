@@ -147,7 +147,7 @@ static int max_uid_for_flow;
    This is set up by find_basic_blocks and used there and in life_analysis,
    and then freed.  */
 
-static int *uid_block_number;
+int *uid_block_number;
 
 /* INSN_VOLATILE (insn) is 1 if the insn refers to anything volatile.  */
 
@@ -248,9 +248,9 @@ static rtx last_mem_set;
 static HARD_REG_SET elim_reg_set;
 
 /* Forward declarations */
-static void find_basic_blocks		PROTO((rtx, rtx));
+static void find_basic_blocks_1		PROTO((rtx, rtx, int));
 static void mark_label_ref		PROTO((rtx, rtx, int));
-static void life_analysis		PROTO((rtx, int));
+static void life_analysis_1		PROTO((rtx, int));
 void allocate_for_life_analysis		PROTO((void));
 void init_regset_vector			PROTO((regset *, int, struct obstack *));
 void free_regset_vector			PROTO((regset *, int));
@@ -270,37 +270,30 @@ static int try_pre_increment		PROTO((rtx, rtx, HOST_WIDE_INT));
 #endif
 static void mark_used_regs		PROTO((regset, regset, rtx, int, rtx));
 void dump_flow_info			PROTO((FILE *));
+static void add_pred_succ		PROTO ((int, int, int_list_ptr *,
+						int_list_ptr *, int *, int *));
+static int_list_ptr alloc_int_list_node PROTO ((int_list_block **));
+static int_list_ptr add_int_list_node   PROTO ((int_list_block **,
+						int_list **, int));
 
-/* Find basic blocks of the current function and perform data flow analysis.
+/* Find basic blocks of the current function.
    F is the first insn of the function and NREGS the number of register numbers
-   in use.  */
+   in use.
+   LIVE_REACHABLE_P is non-zero if the caller needs all live blocks to
+   be reachable.  This turns on a kludge that causes the control flow
+   information to be inaccurate and not suitable for passes like GCSE.  */
 
 void
-flow_analysis (f, nregs, file)
+find_basic_blocks (f, nregs, file, live_reachable_p)
      rtx f;
      int nregs;
      FILE *file;
+     int live_reachable_p;
 {
   register rtx insn;
   register int i;
   rtx nonlocal_label_list = nonlocal_label_rtx_list ();
   int in_libcall_block = 0;
-
-#ifdef ELIMINABLE_REGS
-  static struct {int from, to; } eliminables[] = ELIMINABLE_REGS;
-#endif
-
-  /* Record which registers will be eliminated.  We use this in
-     mark_used_regs.  */
-
-  CLEAR_HARD_REG_SET (elim_reg_set);
-
-#ifdef ELIMINABLE_REGS
-  for (i = 0; i < sizeof eliminables / sizeof eliminables[0]; i++)
-    SET_HARD_REG_BIT (elim_reg_set, eliminables[i].from);
-#else
-  SET_HARD_REG_BIT (elim_reg_set, FRAME_POINTER_REGNUM);
-#endif
 
   /* Count the basic blocks.  Also find maximum insn uid value used.  */
 
@@ -347,45 +340,45 @@ flow_analysis (f, nregs, file)
       }
   }
 
+  n_basic_blocks = i;
+
 #ifdef AUTO_INC_DEC
-  /* Leave space for insns we make in some cases for auto-inc.  These cases
-     are rare, so we don't need too much space.  */
+  /* Leave space for insns life_analysis makes in some cases for auto-inc.
+     These cases are rare, so we don't need too much space.  */
   max_uid_for_flow += max_uid_for_flow / 10;
 #endif
 
   /* Allocate some tables that last till end of compiling this function
      and some needed only in find_basic_blocks and life_analysis.  */
 
-  n_basic_blocks = i;
-  basic_block_head = (rtx *) oballoc (n_basic_blocks * sizeof (rtx));
-  basic_block_end = (rtx *) oballoc (n_basic_blocks * sizeof (rtx));
-  basic_block_drops_in = (char *) alloca (n_basic_blocks);
-  basic_block_loop_depth = (short *) alloca (n_basic_blocks * sizeof (short));
+  basic_block_head = (rtx *) xmalloc (n_basic_blocks * sizeof (rtx));
+  basic_block_end = (rtx *) xmalloc (n_basic_blocks * sizeof (rtx));
+  basic_block_drops_in = (char *) xmalloc (n_basic_blocks);
+  basic_block_loop_depth = (short *) xmalloc (n_basic_blocks * sizeof (short));
   uid_block_number
-    = (int *) alloca ((max_uid_for_flow + 1) * sizeof (int));
-  uid_volatile = (char *) alloca (max_uid_for_flow + 1);
+    = (int *) xmalloc ((max_uid_for_flow + 1) * sizeof (int));
+  uid_volatile = (char *) xmalloc (max_uid_for_flow + 1);
   bzero (uid_volatile, max_uid_for_flow + 1);
 
-  find_basic_blocks (f, nonlocal_label_list);
-  life_analysis (f, nregs);
-  if (file)
-    dump_flow_info (file);
-
-  basic_block_drops_in = 0;
-  uid_block_number = 0;
-  basic_block_loop_depth = 0;
+  find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p);
 }
-
+
 /* Find all basic blocks of the function whose first insn is F.
    Store the correct data in the tables that describe the basic blocks,
    set up the chains of references for each CODE_LABEL, and
    delete any entire basic blocks that cannot be reached.
 
-   NONLOCAL_LABEL_LIST is the same local variable from flow_analysis.  */
+   NONLOCAL_LABEL_LIST is a list of non-local labels in the function.
+   Blocks that are otherwise unreachable may be reachable with a non-local
+   goto.
+   LIVE_REACHABLE_P is non-zero if the caller needs all live blocks to
+   be reachable.  This turns on a kludge that causes the control flow
+   information to be inaccurate and not suitable for passes like GCSE.  */
 
 static void
-find_basic_blocks (f, nonlocal_label_list)
+find_basic_blocks_1 (f, nonlocal_label_list, live_reachable_p)
      rtx f, nonlocal_label_list;
+     int live_reachable_p;
 {
   register rtx insn;
   register int i;
@@ -685,6 +678,10 @@ find_basic_blocks (f, nonlocal_label_list)
 
       /* Now delete the code for any basic blocks that can't be reached.
 	 They can occur because jump_optimize does not recognize
+
+
+      /* Now delete the code for any basic blocks that can't be reached.
+	 They can occur because jump_optimize does not recognize
 	 unreachable loops as unreachable.  */
 
       deleted = 0;
@@ -854,6 +851,24 @@ find_basic_blocks (f, nonlocal_label_list)
 	}
     }
 }
+
+/* Record INSN's block number as BB.  */
+
+void
+set_block_num (insn, bb)
+     rtx insn;
+     int bb;
+{
+  if (INSN_UID (insn) >= max_uid_for_flow)
+    {
+      /* Add one-eighth the size so we don't keep calling xrealloc.  */
+      max_uid_for_flow = INSN_UID (insn) + (INSN_UID (insn) + 7) / 8;
+      uid_block_number = (int *)
+	xrealloc (uid_block_number, (max_uid_for_flow + 1) * sizeof (int));
+    }
+  BLOCK_NUM (insn) = bb;
+}
+
 
 /* Subroutines of find_basic_blocks.  */
 
@@ -932,6 +947,82 @@ flow_delete_insn (insn)
   return NEXT_INSN (insn);
 }
 
+/* Perform data flow analysis.
+   F is the first insn of the function and NREGS the number of register numbers
+   in use.  */
+
+void
+life_analysis (f, nregs, file)
+     rtx f;
+     int nregs;
+     FILE *file;
+{
+  register rtx insn;
+  register int i;
+
+#ifdef ELIMINABLE_REGS
+  static struct {int from, to; } eliminables[] = ELIMINABLE_REGS;
+#endif
+
+  /* Record which registers will be eliminated.  We use this in
+     mark_used_regs.  */
+
+  CLEAR_HARD_REG_SET (elim_reg_set);
+
+#ifdef ELIMINABLE_REGS
+  for (i = 0; i < sizeof eliminables / sizeof eliminables[0]; i++)
+    SET_HARD_REG_BIT (elim_reg_set, eliminables[i].from);
+#else
+  SET_HARD_REG_BIT (elim_reg_set, FRAME_POINTER_REGNUM);
+#endif
+
+  life_analysis_1 (f, nregs);
+  if (file)
+    dump_flow_info (file);
+
+  free_basic_block_vars (1);
+}
+
+/* Free the variables allocated by find_basic_blocks.
+
+   KEEP_HEAD_END_P is non-zero if basic_block_head and basic_block_end
+   are not to be freed.  */
+
+void
+free_basic_block_vars (keep_head_end_p)
+     int keep_head_end_p;
+{
+  if (basic_block_drops_in)
+    {
+      free (basic_block_drops_in);
+      /* Tell dump_flow_info this isn't available anymore.  */
+      basic_block_drops_in = 0;
+    }
+  if (basic_block_loop_depth)
+    {
+      free (basic_block_loop_depth);
+      basic_block_loop_depth = 0;
+    }
+  if (uid_block_number)
+    {
+      free (uid_block_number);
+      uid_block_number = 0;
+    }
+  if (uid_volatile)
+    {
+      free (uid_volatile);
+      uid_volatile = 0;
+    }
+
+  if (! keep_head_end_p && basic_block_head)
+    {
+      free (basic_block_head);
+      basic_block_head = 0;
+      free (basic_block_end);
+      basic_block_end = 0;
+    }
+}
+
 /* Determine which registers are live at the start of each
    basic block of the function whose first insn is F.
    NREGS is the number of registers used in F.
@@ -940,7 +1031,7 @@ flow_delete_insn (insn)
    regset_size and regset_bytes are also set here.  */
 
 static void
-life_analysis (f, nregs)
+life_analysis_1 (f, nregs)
      rtx f;
      int nregs;
 {
@@ -3055,4 +3146,719 @@ print_rtl_with_bb (outf, rtx_first)
 	  putc ('\n', outf);
 	}
     }
+}
+
+
+/* Integer list support.  */
+
+/* Allocate a node from list *HEAD_PTR.  */
+
+static int_list_ptr
+alloc_int_list_node (head_ptr)
+     int_list_block **head_ptr;
+{
+  struct int_list_block *first_blk = *head_ptr;
+
+  if (first_blk == NULL || first_blk->nodes_left <= 0)
+    {
+      first_blk = (struct int_list_block *) xmalloc (sizeof (struct int_list_block));
+      first_blk->nodes_left = INT_LIST_NODES_IN_BLK;
+      first_blk->next = *head_ptr;
+      *head_ptr = first_blk;
+    }
+
+  first_blk->nodes_left--;
+  return &first_blk->nodes[first_blk->nodes_left];
+}
+
+/* Pointer to head of predecessor/successor block list.  */
+static int_list_block *pred_int_list_blocks;
+
+/* Add a new node to integer list LIST with value VAL.
+   LIST is a pointer to a list object to allow for different implementations.
+   If *LIST is initially NULL, the list is empty.
+   The caller must not care whether the element is added to the front or
+   to the end of the list (to allow for different implementations).  */
+
+static int_list_ptr
+add_int_list_node (blk_list, list, val)
+     int_list_block **blk_list;
+     int_list **list;
+     int val;
+{
+  int_list_ptr p = alloc_int_list_node (blk_list);
+
+  p->val = val;
+  p->next = *list;
+  *list = p;
+  return p;
+}
+
+/* Free the blocks of lists at BLK_LIST.  */
+
+void
+free_int_list (blk_list)
+     int_list_block **blk_list;
+{
+  int_list_block *p, *next;
+
+  for (p = *blk_list; p != NULL; p = next)
+    {
+      next = p->next;
+      free (p);
+    }
+
+  /* Mark list as empty for the next function we compile.  */
+  *blk_list = NULL;
+}
+
+/* Predecessor/successor computation.  */
+
+/* Mark PRED_BB a precessor of SUCC_BB,
+   and conversely SUCC_BB a successor of PRED_BB.  */
+
+static void
+add_pred_succ (pred_bb, succ_bb, s_preds, s_succs, num_preds, num_succs)
+     int pred_bb;
+     int succ_bb;
+     int_list_ptr *s_preds;
+     int_list_ptr *s_succs;
+     int *num_preds;
+     int *num_succs;
+{
+  if (succ_bb != EXIT_BLOCK)
+    {
+      add_int_list_node (&pred_int_list_blocks, &s_preds[succ_bb], pred_bb);
+      num_preds[succ_bb]++;
+    }
+  if (pred_bb != ENTRY_BLOCK)
+    {
+      add_int_list_node (&pred_int_list_blocks, &s_succs[pred_bb], succ_bb);
+      num_succs[pred_bb]++;
+    }
+}
+
+/* Compute the predecessors and successors for each block.  */
+int
+compute_preds_succs (s_preds, s_succs, num_preds, num_succs)
+     int_list_ptr *s_preds;
+     int_list_ptr *s_succs;
+     int *num_preds;
+     int *num_succs;
+{
+  int bb, clear_local_bb_vars = 0;
+
+  bzero ((char *) s_preds, n_basic_blocks * sizeof (int_list_ptr));
+  bzero ((char *) s_succs, n_basic_blocks * sizeof (int_list_ptr));
+  bzero ((char *) num_preds, n_basic_blocks * sizeof (int));
+  bzero ((char *) num_succs, n_basic_blocks * sizeof (int));
+
+  /* This routine can be called after life analysis; in that case
+     basic_block_drops_in and uid_block_number will not be available
+     and we must recompute their values.  */
+  if (basic_block_drops_in == NULL || uid_block_number == NULL)
+    {
+      clear_local_bb_vars = 1;
+      basic_block_drops_in = (char *) alloca (n_basic_blocks);
+      uid_block_number = (int *) alloca ((get_max_uid () + 1) * sizeof (int));
+
+      bzero ((char *) basic_block_drops_in, n_basic_blocks * sizeof (char));
+      bzero ((char *) uid_block_number, n_basic_blocks * sizeof (int));
+
+      /* Scan each basic block setting basic_block_drops_in and
+	 uid_block_number as needed.  */
+      for (bb = 0; bb < n_basic_blocks; bb++)
+	{
+	  rtx insn;
+
+	  for (insn = PREV_INSN (basic_block_head[bb]);
+	       insn && GET_CODE (insn) == NOTE; insn = PREV_INSN (insn))
+	    ;
+
+	  basic_block_drops_in[bb] = insn && GET_CODE (insn) != BARRIER;
+
+	  insn = basic_block_head[bb];
+	  while (insn)
+	    {
+	      BLOCK_NUM (insn) = bb;
+	      if (insn == basic_block_end[bb])
+		break;
+	      insn = NEXT_INSN (insn);
+	    }
+	}
+      
+      
+    }
+  for (bb = 0; bb < n_basic_blocks; bb++)
+    {
+      rtx head;
+      rtx jump;
+
+      head = BLOCK_HEAD (bb);
+
+      if (GET_CODE (head) == CODE_LABEL)
+	for (jump = LABEL_REFS (head);
+	     jump != head;
+	     jump = LABEL_NEXTREF (jump))
+	  add_pred_succ (BLOCK_NUM (CONTAINING_INSN (jump)), bb,
+			 s_preds, s_succs, num_preds, num_succs);
+
+      jump = BLOCK_END (bb);
+      /* If this is a RETURN insn or a conditional jump in the last
+	 basic block, or a non-jump insn in the last basic block, then
+	 this block reaches the exit block.  */
+      if ((GET_CODE (jump) == JUMP_INSN && GET_CODE (PATTERN (jump)) == RETURN)
+	  || (((GET_CODE (jump) == JUMP_INSN
+	        && condjump_p (jump) && !simplejump_p (jump))
+	       || GET_CODE (jump) != JUMP_INSN)
+ 	      && (bb == n_basic_blocks - 1)))
+	add_pred_succ (bb, EXIT_BLOCK, s_preds, s_succs, num_preds, num_succs);
+
+      if (basic_block_drops_in[bb])
+	add_pred_succ (bb - 1, bb, s_preds, s_succs, num_preds, num_succs);
+    }
+
+  add_pred_succ (ENTRY_BLOCK, 0, s_preds, s_succs, num_preds, num_succs);
+
+
+  /* If we allocated any variables in temporary storage, clear out the
+     pointer to the local storage to avoid dangling pointers.  */
+  if (clear_local_bb_vars)
+    {
+      basic_block_drops_in = NULL;
+      uid_block_number = NULL;
+    
+    }
+}
+
+void
+dump_bb_data (file, preds, succs)
+     FILE *file;
+     int_list_ptr *preds;
+     int_list_ptr *succs;
+{
+  int bb;
+  int_list_ptr p;
+
+  fprintf (file, "BB data\n\n");
+  for (bb = 0; bb < n_basic_blocks; bb++)
+    {
+      fprintf (file, "BB %d, start %d, end %d\n", bb,
+	       INSN_UID (BLOCK_HEAD (bb)), INSN_UID (BLOCK_END (bb)));
+      fprintf (file, "  preds:");
+      for (p = preds[bb]; p != NULL; p = p->next)
+	{
+	  int pred_bb = INT_LIST_VAL (p);
+	  if (pred_bb == ENTRY_BLOCK)
+	    fprintf (file, " entry");
+	  else
+	    fprintf (file, " %d", pred_bb);
+	}
+      fprintf (file, "\n");
+      fprintf (file, "  succs:");
+      for (p = succs[bb]; p != NULL; p = p->next)
+	{
+	  int succ_bb = INT_LIST_VAL (p);
+	  if (succ_bb == EXIT_BLOCK)
+	    fprintf (file, " exit");
+	  else
+	    fprintf (file, " %d", succ_bb);
+	}
+      fprintf (file, "\n");
+    }
+  fprintf (file, "\n");
+}
+
+/* Free basic block data storage.  */
+
+void
+free_bb_mem ()
+{
+  free_int_list (&pred_int_list_blocks);
+}
+
+/* Bitmap manipulation routines.  */
+
+/* Allocate a simple bitmap of N_ELMS bits.  */
+
+sbitmap
+sbitmap_alloc (n_elms)
+     int n_elms;
+{
+  int bytes, size, amt;
+  sbitmap bmap;
+
+  size = SBITMAP_SET_SIZE (n_elms);
+  bytes = size * sizeof (SBITMAP_ELT_TYPE);
+  amt = (sizeof (struct simple_bitmap_def)
+	 + bytes - sizeof (SBITMAP_ELT_TYPE));
+  bmap = (sbitmap) xmalloc (amt);
+  bmap->n_bits = n_elms;
+  bmap->size = size;
+  bmap->bytes = bytes;
+  return bmap;
+}
+
+/* Allocate a vector of N_VECS bitmaps of N_ELMS bits.  */
+
+sbitmap *
+sbitmap_vector_alloc (n_vecs, n_elms)
+     int n_vecs, n_elms;
+{
+  int i, bytes, offset, elm_bytes, size, amt;
+  sbitmap *bitmap_vector;
+
+  size = SBITMAP_SET_SIZE (n_elms);
+  bytes = size * sizeof (SBITMAP_ELT_TYPE);
+  elm_bytes = (sizeof (struct simple_bitmap_def)
+	       + bytes - sizeof (SBITMAP_ELT_TYPE));
+  amt = (n_vecs * sizeof (sbitmap *)) + (n_vecs * elm_bytes);
+  bitmap_vector = (sbitmap *) xmalloc (amt);
+
+  /* ??? There may be alignment problems, `offset' should be rounded up
+     each time to account for alignment.  Later [if ever].  */
+
+  for (i = 0, offset = n_vecs * sizeof (sbitmap *);
+       i < n_vecs;
+       i++, offset += elm_bytes)
+    {
+      sbitmap b = (sbitmap) ((char *) bitmap_vector + offset);
+      bitmap_vector[i] = b;
+      b->n_bits = n_elms;
+      b->size = size;
+      b->bytes = bytes;
+    }
+
+  return bitmap_vector;
+}
+
+/* Copy sbitmap SRC to DST.  */
+
+void
+sbitmap_copy (dst, src)
+     sbitmap dst, src;
+{
+  int i;
+  sbitmap_ptr d,s;
+
+  s = src->elms;
+  d = dst->elms;
+  for (i = 0; i < dst->size; i++)
+    *d++ = *s++;
+}
+
+/* Zero all elements in a bitmap.  */
+
+void
+sbitmap_zero (bmap)
+     sbitmap bmap;
+{
+  bzero ((char *) bmap->elms, bmap->bytes);
+}
+
+/* Set to ones all elements in a bitmap.  */
+
+void
+sbitmap_ones (bmap)
+     sbitmap bmap;
+{
+  memset (bmap->elms, -1, bmap->bytes);
+}
+
+/* Zero a vector of N_VECS bitmaps.  */
+
+void
+sbitmap_vector_zero (bmap, n_vecs)
+     sbitmap *bmap;
+     int n_vecs;
+{
+  int i;
+
+  for (i = 0; i < n_vecs; i++)
+    sbitmap_zero (bmap[i]);
+}
+
+/* Set to ones a vector of N_VECS bitmaps.  */
+
+void
+sbitmap_vector_ones (bmap, n_vecs)
+     sbitmap *bmap;
+     int n_vecs;
+{
+  int i;
+
+  for (i = 0; i < n_vecs; i++)
+    sbitmap_ones (bmap[i]);
+}
+
+/* Set DST to be A union (B - C).
+   DST = A | (B & ~C).
+   Return non-zero if any change is made.  */
+
+int
+sbitmap_union_of_diff (dst, a, b, c)
+     sbitmap dst, a, b, c;
+{
+  int i,changed;
+  sbitmap_ptr dstp, ap, bp, cp;
+
+  changed = 0;
+  dstp = dst->elms;
+  ap = a->elms;
+  bp = b->elms;
+  cp = c->elms;
+  for (i = 0; i < dst->size; i++)
+    {
+      SBITMAP_ELT_TYPE tmp = *ap | (*bp & ~*cp);
+      if (*dstp != tmp)
+	changed = 1;
+      *dstp = tmp;
+      dstp++; ap++; bp++; cp++;
+    }
+  return changed;
+}
+
+/* Set bitmap DST to the bitwise negation of the bitmap SRC.  */
+
+void
+sbitmap_not (dst, src)
+     sbitmap dst, src;
+{
+  int i;
+  sbitmap_ptr dstp, ap;
+
+  dstp = dst->elms;
+  ap = src->elms;
+  for (i = 0; i < dst->size; i++)
+    {
+      SBITMAP_ELT_TYPE tmp = ~(*ap);
+      *dstp = tmp;
+      dstp++; ap++;
+    }
+}
+
+/* Set the bits in DST to be the difference between the bits
+   in A and the bits in B. i.e. dst = a - b.
+   The - operator is implemented as a & (~b).  */
+
+void
+sbitmap_difference (dst, a, b)
+     sbitmap dst, a, b;
+{
+  int i;
+  sbitmap_ptr dstp, ap, bp;
+
+  dstp = dst->elms;
+  ap = a->elms;
+  bp = b->elms;
+  for (i = 0; i < dst->size; i++)
+    *dstp++ = *ap++ & (~*bp++);
+}
+
+/* Set DST to be (A and B)).
+   Return non-zero if any change is made.  */
+
+int
+sbitmap_a_and_b (dst, a, b)
+     sbitmap dst, a, b;
+{
+  int i,changed;
+  sbitmap_ptr dstp, ap, bp;
+
+  changed = 0;
+  dstp = dst->elms;
+  ap = a->elms;
+  bp = b->elms;
+  for (i = 0; i < dst->size; i++)
+    {
+      SBITMAP_ELT_TYPE tmp = *ap & *bp;
+      if (*dstp != tmp)
+	changed = 1;
+      *dstp = tmp;
+      dstp++; ap++; bp++;
+    }
+  return changed;
+}
+/* Set DST to be (A or B)).
+   Return non-zero if any change is made.  */
+
+int
+sbitmap_a_or_b (dst, a, b)
+     sbitmap dst, a, b;
+{
+  int i,changed;
+  sbitmap_ptr dstp, ap, bp;
+
+  changed = 0;
+  dstp = dst->elms;
+  ap = a->elms;
+  bp = b->elms;
+  for (i = 0; i < dst->size; i++)
+    {
+      SBITMAP_ELT_TYPE tmp = *ap | *bp;
+      if (*dstp != tmp)
+	changed = 1;
+      *dstp = tmp;
+      dstp++; ap++; bp++;
+    }
+  return changed;
+}
+
+/* Set DST to be (A or (B and C)).
+   Return non-zero if any change is made.  */
+
+int
+sbitmap_a_or_b_and_c (dst, a, b, c)
+     sbitmap dst, a, b, c;
+{
+  int i,changed;
+  sbitmap_ptr dstp, ap, bp, cp;
+
+  changed = 0;
+  dstp = dst->elms;
+  ap = a->elms;
+  bp = b->elms;
+  cp = c->elms;
+  for (i = 0; i < dst->size; i++)
+    {
+      SBITMAP_ELT_TYPE tmp = *ap | (*bp & *cp);
+      if (*dstp != tmp)
+	changed = 1;
+      *dstp = tmp;
+      dstp++; ap++; bp++; cp++;
+    }
+  return changed;
+}
+
+/* Set DST to be (A ann (B or C)).
+   Return non-zero if any change is made.  */
+
+int
+sbitmap_a_and_b_or_c (dst, a, b, c)
+     sbitmap dst, a, b, c;
+{
+  int i,changed;
+  sbitmap_ptr dstp, ap, bp, cp;
+
+  changed = 0;
+  dstp = dst->elms;
+  ap = a->elms;
+  bp = b->elms;
+  cp = c->elms;
+  for (i = 0; i < dst->size; i++)
+    {
+      SBITMAP_ELT_TYPE tmp = *ap & (*bp | *cp);
+      if (*dstp != tmp)
+	changed = 1;
+      *dstp = tmp;
+      dstp++; ap++; bp++; cp++;
+    }
+  return changed;
+}
+
+/* Set the bitmap DST to the intersection of SRC of all predecessors or
+   successors of block number BB (PRED_SUCC says which).  */
+
+void
+sbitmap_intersect_of_predsucc (dst, src, bb, pred_succ)
+     sbitmap dst;
+     sbitmap *src;
+     int bb;
+     int_list_ptr *pred_succ;
+{
+  int_list_ptr ps;
+  int ps_bb;
+  int set_size = dst->size;
+
+  ps = pred_succ[bb];
+
+  /* It is possible that there are no predecessors(/successors).
+     This can happen for example in unreachable code.  */
+
+  if (ps == NULL)
+    {
+      /* In APL-speak this is the `and' reduction of the empty set and thus
+	 the result is the identity for `and'.  */
+      sbitmap_ones (dst);
+      return;
+    }
+
+  /* Set result to first predecessor/successor.  */
+
+  for ( ; ps != NULL; ps = ps->next)
+    {
+      ps_bb = INT_LIST_VAL (ps);
+      if (ps_bb == ENTRY_BLOCK || ps_bb == EXIT_BLOCK)
+	continue;
+      sbitmap_copy (dst, src[ps_bb]);
+      /* Break out since we're only doing first predecessor.  */
+      break;
+    }
+  if (ps == NULL)
+    return;
+
+  /* Now do the remaining predecessors/successors.  */
+
+  for (ps = ps->next; ps != NULL; ps = ps->next)
+    {
+      int i;
+      sbitmap_ptr p,r;
+
+      ps_bb = INT_LIST_VAL (ps);
+      if (ps_bb == ENTRY_BLOCK || ps_bb == EXIT_BLOCK)
+	continue;
+
+      p = src[ps_bb]->elms;
+      r = dst->elms;
+
+      for (i = 0; i < set_size; i++)
+	*r++ &= *p++;
+    }
+}
+
+/* Set the bitmap DST to the intersection of SRC of all predecessors
+   of block number BB.  */
+
+void
+sbitmap_intersect_of_predecessors (dst, src, bb, s_preds)
+     sbitmap dst;
+     sbitmap *src;
+     int bb;
+     int_list_ptr *s_preds;
+{
+  sbitmap_intersect_of_predsucc (dst, src, bb, s_preds);
+}
+
+/* Set the bitmap DST to the intersection of SRC of all successors
+   of block number BB.  */
+
+void
+sbitmap_intersect_of_successors (dst, src, bb, s_succs)
+     sbitmap dst;
+     sbitmap *src;
+     int bb;
+     int_list_ptr *s_succs;
+{
+  sbitmap_intersect_of_predsucc (dst, src, bb, s_succs);
+}
+
+/* Set the bitmap DST to the union of SRC of all predecessors/successors of
+   block number BB.  */
+
+void
+sbitmap_union_of_predsucc (dst, src, bb, pred_succ)
+     sbitmap dst;
+     sbitmap *src;
+     int bb;
+     int_list_ptr *pred_succ;
+{
+  int_list_ptr ps;
+  int ps_bb;
+  int set_size = dst->size;
+
+  ps = pred_succ[bb];
+
+  /* It is possible that there are no predecessors(/successors).
+     This can happen for example in unreachable code.  */
+
+  if (ps == NULL)
+    {
+      /* In APL-speak this is the `or' reduction of the empty set and thus
+	 the result is the identity for `or'.  */
+      sbitmap_zero (dst);
+      return;
+    }
+
+  /* Set result to first predecessor/successor.  */
+
+  for ( ; ps != NULL; ps = ps->next)
+    {
+      ps_bb = INT_LIST_VAL (ps);
+      if (ps_bb == ENTRY_BLOCK || ps_bb == EXIT_BLOCK)
+	continue;
+      sbitmap_copy (dst, src[ps_bb]);
+      /* Break out since we're only doing first predecessor.  */
+      break;
+    }
+  if (ps == NULL)
+    return;
+
+  /* Now do the remaining predecessors/successors.  */
+
+  for (ps = ps->next; ps != NULL; ps = ps->next)
+    {
+      int i;
+      sbitmap_ptr p,r;
+
+      ps_bb = INT_LIST_VAL (ps);
+      if (ps_bb == ENTRY_BLOCK || ps_bb == EXIT_BLOCK)
+	continue;
+
+      p = src[ps_bb]->elms;
+      r = dst->elms;
+
+      for (i = 0; i < set_size; i++)
+	*r++ |= *p++;
+    }
+}
+
+/* Set the bitmap DST to the union of SRC of all predecessors of
+   block number BB.  */
+
+void
+sbitmap_union_of_predecessors (dst, src, bb, s_preds)
+     sbitmap dst;
+     sbitmap *src;
+     int bb;
+     int_list_ptr *s_preds;
+{
+  sbitmap_union_of_predsucc (dst, src, bb, s_preds);
+}
+
+/* Compute dominator relationships.  */
+void
+compute_dominators (dominators, post_dominators, s_preds, s_succs)
+     sbitmap *dominators;
+     sbitmap *post_dominators;
+     int_list_ptr *s_preds;
+     int_list_ptr *s_succs;
+{
+  int bb, changed, passes;
+  sbitmap *temp_bitmap;
+
+  temp_bitmap = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
+  sbitmap_vector_ones (dominators, n_basic_blocks);
+  sbitmap_vector_ones (post_dominators, n_basic_blocks);
+  sbitmap_vector_zero (temp_bitmap, n_basic_blocks);
+
+  sbitmap_zero (dominators[0]);
+  SET_BIT (dominators[0], 0);
+
+  sbitmap_zero (post_dominators[n_basic_blocks-1]);
+  SET_BIT (post_dominators[n_basic_blocks-1], 0);
+
+  passes = 0;
+  changed = 1;
+  while (changed)
+    {
+      changed = 0;
+      for (bb = 1; bb < n_basic_blocks; bb++)
+	{
+	  sbitmap_intersect_of_predecessors (temp_bitmap[bb], dominators,
+					     bb, s_preds);
+	  SET_BIT (temp_bitmap[bb], bb);
+	  changed |= sbitmap_a_and_b (dominators[bb],
+				      dominators[bb],
+				      temp_bitmap[bb]);
+	  sbitmap_intersect_of_successors (temp_bitmap[bb], post_dominators,
+					   bb, s_succs);
+	  SET_BIT (temp_bitmap[bb], bb);
+	  changed |= sbitmap_a_and_b (post_dominators[bb],
+				      post_dominators[bb],
+				      temp_bitmap[bb]);
+	}
+      passes++;
+    }
+
+  free (temp_bitmap);
 }

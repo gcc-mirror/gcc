@@ -128,3 +128,124 @@ extern regset regs_live_at_setjmp;
 #define REG_BLOCK_GLOBAL -2
 
 #define REG_BASIC_BLOCK(N) (reg_n_info[(N)].basic_block)
+
+/* List of integers.
+   These are used for storing things like predecessors, etc.
+
+   This scheme isn't very space efficient, especially on 64 bit machines.
+   The interface is designed so that the implementation can be replaced with
+   something more efficient if desirable.  */
+
+typedef struct int_list {
+  struct int_list *next;
+  int val;
+} int_list;
+
+typedef int_list *int_list_ptr;
+
+/* Integer list elements are allocated in blocks to reduce the frequency
+   of calls to malloc and to reduce the associated space overhead.  */
+
+typedef struct int_list_block {
+  struct int_list_block *next;
+  int nodes_left;
+#define INT_LIST_NODES_IN_BLK 500
+  struct int_list nodes[INT_LIST_NODES_IN_BLK];
+} int_list_block;
+
+/* Given a pointer to the list, return pointer to first element.  */
+#define INT_LIST_FIRST(il) (il)
+
+/* Given a pointer to a list element, return pointer to next element.  */
+#define INT_LIST_NEXT(p) ((p)->next)
+
+/* Return non-zero if P points to the end of the list.  */
+#define INT_LIST_END(p) ((p) == NULL)
+
+/* Return element pointed to by P.  */
+#define INT_LIST_VAL(p) ((p)->val)
+
+#define INT_LIST_SET_VAL(p, new_val) ((p)->val = (new_val))
+
+extern void free_int_list               PROTO ((int_list_block **));
+
+/* Stuff for recording basic block info.  */
+
+#define BLOCK_HEAD(B)      basic_block_head[(B)]
+#define BLOCK_END(B)       basic_block_end[(B)]
+
+/* Special block numbers [markers] for entry and exit.  */
+#define ENTRY_BLOCK (-1)
+#define EXIT_BLOCK (-2)
+
+/* from flow.c */
+extern int *uid_block_number;
+#define BLOCK_NUM(INSN)    uid_block_number[INSN_UID (INSN)]
+
+extern int compute_preds_succs PROTO ((int_list_ptr *, int_list_ptr *,
+				       int *, int *));
+extern void dump_bb_data       PROTO ((FILE *, int_list_ptr *, int_list_ptr *));
+extern void free_bb_mem        PROTO ((void));
+
+/* Simple bitmaps.
+   It's not clear yet whether using bitmap.[ch] will be a win.
+   It should be straightforward to convert so for now we keep things simple
+   while more important issues are dealt with.  */
+
+#define SBITMAP_ELT_BITS HOST_BITS_PER_WIDE_INT
+#define SBITMAP_ELT_TYPE unsigned HOST_WIDE_INT
+
+typedef struct simple_bitmap_def {
+  /* Number of bits.  */
+  int n_bits;
+  /* Size in elements.  */
+  int size;
+  /* Size in bytes.  */
+  int bytes;
+  /* The elements.  */
+  SBITMAP_ELT_TYPE elms[1];
+} *sbitmap;
+
+typedef SBITMAP_ELT_TYPE *sbitmap_ptr;
+
+/* Return the set size needed for N elements.  */
+#define SBITMAP_SET_SIZE(n) (((n) + SBITMAP_ELT_BITS - 1) / SBITMAP_ELT_BITS)
+
+/* set bit number bitno in the bitmap */
+#define SET_BIT(bitmap, bitno) \
+do { \
+  (bitmap)->elms [(bitno) / SBITMAP_ELT_BITS] |= (SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS; \
+} while (0)
+
+/* test if bit number bitno in the bitmap is set */
+#define TEST_BIT(bitmap, bitno) \
+((bitmap)->elms [(bitno) / SBITMAP_ELT_BITS] & ((SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS))
+
+/* reset bit number bitno in the bitmap  */
+#define RESET_BIT(bitmap, bitno) \
+do { \
+  (bitmap)->elms [(bitno) / SBITMAP_ELT_BITS] &= ~((SBITMAP_ELT_TYPE) 1 << (bitno) % SBITMAP_ELT_BITS); \
+} while (0)
+
+extern sbitmap sbitmap_alloc PROTO ((int));
+extern sbitmap *sbitmap_vector_alloc PROTO ((int, int));
+extern void sbitmap_copy PROTO ((sbitmap, sbitmap));
+extern void sbitmap_zero PROTO ((sbitmap));
+extern void sbitmap_ones PROTO ((sbitmap));
+extern void sbitmap_vector_zero PROTO ((sbitmap *, int));
+extern void sbitmap_vector_ones PROTO ((sbitmap *, int));
+extern int sbitmap_union_of_diff PROTO ((sbitmap, sbitmap, sbitmap, sbitmap));
+extern void sbitmap_difference PROTO ((sbitmap, sbitmap, sbitmap));
+extern void sbitmap_not PROTO ((sbitmap, sbitmap));
+extern int sbitmap_a_or_b_and_c PROTO ((sbitmap, sbitmap, sbitmap, sbitmap));
+extern int sbitmap_a_and_b_or_c PROTO ((sbitmap, sbitmap, sbitmap, sbitmap));
+extern int sbitmap_a_and_b PROTO ((sbitmap, sbitmap, sbitmap));
+extern int sbitmap_a_or_b PROTO ((sbitmap, sbitmap, sbitmap));
+extern void sbitmap_intersect_of_predsucc PROTO ((sbitmap, sbitmap *,
+						  int, int_list_ptr *));
+extern void sbitmap_intersect_of_predecessors PROTO ((sbitmap, sbitmap *, int,
+						      int_list_ptr *));
+extern void sbitmap_intersect_of_successors PROTO ((sbitmap, sbitmap *, int,
+						    int_list_ptr *));
+extern void sbitmap_union_of_predecessors PROTO ((sbitmap, sbitmap *, int,
+						  int_list_ptr *));
