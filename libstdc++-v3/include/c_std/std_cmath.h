@@ -646,10 +646,9 @@ namespace __gnu_cxx
      int 
      __capture_isunordered(_Tp __f1, _Tp __f2) 
      { return isunordered(__f1, __f2); }
-} 
-#endif /* _GLIBCPP_USE_C99_FP_MACROS_DYNAMIC */
-#endif
+}
 
+// Only undefine the C99 FP macros, if actually captured for namespace movement
 #undef fpclassify
 #undef isfinite
 #undef isinf
@@ -662,6 +661,8 @@ namespace __gnu_cxx
 #undef islessequal
 #undef islessgreater
 #undef isunordered
+#endif /* _GLIBCPP_USE_C99_FP_MACROS_DYNAMIC */
+#endif
 
 #if _GLIBCPP_USE_C99
 #if !_GLIBCPP_USE_C99_FP_MACROS_DYNAMIC
