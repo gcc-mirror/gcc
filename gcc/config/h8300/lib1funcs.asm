@@ -767,7 +767,7 @@ _done:
 #ifdef L_fixunssfsi_asm
 /* For the h8300 we use asm to save some bytes, to
    allow more programs to fit into the tiny address
-   space.  For h8300h / h8s, the C version is good enough.  */
+   space.  For the H8/300H and H8S, the C version is good enough.  */
 #ifdef __H8300__
 /* We still treat NANs different than libgcc2.c, but then, the
    behaviour is undefined anyways.  */

@@ -243,7 +243,7 @@ extern int target_flags;
 #define PCC_BITFIELD_TYPE_MATTERS  0
 
 /* No data type wants to be aligned rounder than this.
-   32 bit values are aligned as such on the 300h for speed.  */
+   32 bit values are aligned as such on the H8/300H and H8/S for speed.  */
 #define BIGGEST_ALIGNMENT \
 (((TARGET_H8300H || TARGET_H8300S) && ! TARGET_ALIGN_300) ? 32 : 16)
 
