@@ -2994,7 +2994,7 @@ tTestDesc aOsf_Namespace_ATests[] = {
 const char* apzOsf_Namespace_APatch[] = {
     "format",
     "__%0",
-    "reg(ex|off|match)_t[^;]",
+    "reg(ex|off|match)_t",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
