@@ -1,5 +1,6 @@
 /* expr.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995, 1996, 1997, 1998, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 1998, 2001, 2002
+   Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -16489,10 +16490,8 @@ ffeexpr_sym_impdoitem_ (ffesymbol sp, ffelexToken t)
 				   FFETARGET_charactersizeNONE));
   ffesymbol_signal_unreported (s);
 
-  if (((ffesymbol_basictype (sp) != FFEINFO_basictypeINTEGER)
+  if ((ffesymbol_basictype (sp) != FFEINFO_basictypeINTEGER)
        && (ffesymbol_basictype (sp) != FFEINFO_basictypeANY))
-      || ((ffesymbol_kindtype (sp) != FFEINFO_kindtypeINTEGERDEFAULT)
-	  && (ffesymbol_kindtype (sp) != FFEINFO_kindtypeANY)))
     ffesymbol_error (s, t);
 
   return s;
