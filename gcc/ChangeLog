@@ -1,5 +1,26 @@
 Thu May  7 18:14:31  Paul Eggert  <eggert@twinsun.com>
 
+	* dwarf2out.c: Don't assume that `.section ".text"' causes the
+	assembler to treat .text as a label for the start of that section,
+	as this assumption is false for Solaris 2.x `as'.  Instead, output
+	`.section ".text"; .LLtext0:' and use .LLtext0 in label contexts.
+
+	(ABBREV_LABEL, DEBUG_INFO_LABEL, DEBUG_LINE_LABEL, TEXT_LABEL):
+	New macros.
+	(abbrev_label, debug_info_label, debug_line_label, text_label):
+	New vars.
+	(dwarf2out_init): Initialize the vars.  Output defn for text_label.
+	(dwarf2out_finish): Output defns for the other 3 vars.
+
+	(dw_val_node): Rename val_section to val_section_label, as it's
+	now a label, not a section.
+	(add_AT_section_offset): Arg is now a label, not a section.
+	(print_die, output_die, output_compilation_unit_header,
+	output_pubnames, output_aranges, output_line_info,
+	dwarf2out_finish): In label contexts, output the section label,
+	not the section.
+
+
 	* fixinc.wrap: Renamed from fixinc.math.  Put wrapper around
 	curses.h if it contains `typedef char bool;', as suggested by
 	Manfred Hollstein <manfred@s-direktnet.de>.
