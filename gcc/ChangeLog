@@ -1,3 +1,8 @@
+2002-10-16  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.c (function_arg): Set inner mode of V1DI to
+	SI.
+
 2002-10-16  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/linux.h (ASM_DOUBLE, _ASM_OUTPUT_LONG): Remove.
