@@ -1,3 +1,14 @@
+2001-04-04  Andreas Jaeger  <aj@suse.de>
+
+	* gcj/Makefile.am (AUTOMAKE_OPTIONS): Remove no-installinfo.
+	* gcj/Makefile.in: Rebuilt.
+	* Makefile.am (AUTOMAKE_OPTIONS): Remove no-installinfo.
+	* Makefile.in: Rebuilt.
+	* testsuite/Makefile.am (AUTOMAKE_OPTIONS): Remove no-installinfo.
+	* testsuite/Makefile.in: Rebuild.
+	* include/Makefile.am (AUTOMAKE_OPTIONS): Remove no-installinfo.
+	* include/Makefile.in: Rebuild.
+
 2001-04-02 Zack Weinberg <zackw@stanford.edu>
 
 	* testsuite/lib/libjava.exp: Correct typo: 'output from source
