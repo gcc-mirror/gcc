@@ -2207,28 +2207,28 @@ fi
 set dummy gnatbind; ac_word=$2
 echo $ac_n "checking for $ac_word""... $ac_c" 1>&6
 echo "configure:2210: checking for $ac_word" >&5
-if eval "test \"`echo '$''{'ac_cv_prog_gnat'+set}'`\" = set"; then
+if eval "test \"`echo '$''{'ac_cv_prog_have_gnat'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
-  if test -n "$gnat"; then
-  ac_cv_prog_gnat="$gnat" # Let the user override the test.
+  if test -n "$have_gnat"; then
+  ac_cv_prog_have_gnat="$have_gnat" # Let the user override the test.
 else
   IFS="${IFS= 	}"; ac_save_ifs="$IFS"; IFS=":"
   ac_dummy="$PATH"
   for ac_dir in $ac_dummy; do
     test -z "$ac_dir" && ac_dir=.
     if test -f $ac_dir/$ac_word; then
-      ac_cv_prog_gnat="yes"
+      ac_cv_prog_have_gnat="yes"
       break
     fi
   done
   IFS="$ac_save_ifs"
-  test -z "$ac_cv_prog_gnat" && ac_cv_prog_gnat="no"
+  test -z "$ac_cv_prog_have_gnat" && ac_cv_prog_have_gnat="no"
 fi
 fi
-gnat="$ac_cv_prog_gnat"
-if test -n "$gnat"; then
-  echo "$ac_t""$gnat" 1>&6
+have_gnat="$ac_cv_prog_have_gnat"
+if test -n "$have_gnat"; then
+  echo "$ac_t""$have_gnat" 1>&6
 else
   echo "$ac_t""no" 1>&6
 fi
@@ -6475,7 +6475,7 @@ do
 	  if test x"${add_this_lang}" = xyes; then
 		case $lang in
 		    ${srcdir}/ada/config-lang.in)
-			if test x$gnat = xyes ; then
+			if test x$have_gnat = xyes ; then
 				subdirs="$subdirs `echo $lang | sed -e 's,^.*/\([^/]*\)/config-lang.in$,\1,'`"
 			fi
 			;;
@@ -7021,7 +7021,7 @@ s%@INSTALL@%$INSTALL%g
 s%@INSTALL_PROGRAM@%$INSTALL_PROGRAM%g
 s%@INSTALL_DATA@%$INSTALL_DATA%g
 s%@CPP@%$CPP%g
-s%@gnat@%$gnat%g
+s%@have_gnat@%$have_gnat%g
 s%@have_mktemp_command@%$have_mktemp_command%g
 s%@MAKEINFO@%$MAKEINFO%g
 s%@BUILD_INFO@%$BUILD_INFO%g

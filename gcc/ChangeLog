@@ -1,5 +1,8 @@
 Tue Feb 13 07:52:04 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* configure.in: Use "have_gnat" variable, not "gnat".
+	* configure: Regenerated.
+
 	* config/sparc/sparc.c (function_value): Treat all non-record
 	aggregate types like used to treat UNION_TYPE.
 
