@@ -1,10 +1,14 @@
-2004-02-22  Paul Thomas <paulthomas2@wannado.fr>
+2005-02-27  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* io/write.c (output_float): Fix typo in condition.
+
+2005-02-22  Paul Thomas <paulthomas2@wannado.fr>
 	    Bud Davis  <bdavis@gfortran.org>
 
 	* io/list_read.c (read_real): Handle separators properly
 	in list directed read.
 
-2004-02-21  Bud Davis  <bdavis@gfortran.org>
+2005-02-21  Bud Davis  <bdavis@gfortran.org>
 
 	PR fortran/20086
 	* io/transfer.c (write_constant_string): accept an 'h' as
