@@ -50,38 +50,44 @@ extern int MAIN__(void);
 #define Int int
 #endif
 
-static VOID sigfdie(Int n)
+static VOID sigfdie(Sigarg)
 {
+Use_Sigarg;
 sig_die("Floating Exception", 1);
 }
 
 
-static VOID sigidie(Int n)
+static VOID sigidie(Sigarg)
 {
+Use_Sigarg;
 sig_die("IOT Trap", 1);
 }
 
 #ifdef SIGQUIT
-static VOID sigqdie(Int n)
+static VOID sigqdie(Sigarg)
 {
+Use_Sigarg;
 sig_die("Quit signal", 1);
 }
 #endif
 
 
-static VOID sigindie(Int n)
+static VOID sigindie(Sigarg)
 {
+Use_Sigarg;
 sig_die("Interrupt", 0);
 }
 
-static VOID sigtdie(Int n)
+static VOID sigtdie(Sigarg)
 {
+Use_Sigarg;
 sig_die("Killed", 0);
 }
 
 #ifdef SIGTRAP
-static VOID sigtrdie(Int n)
+static VOID sigtrdie(Sigarg)
 {
+Use_Sigarg;
 sig_die("Trace trap", 1);
 }
 #endif

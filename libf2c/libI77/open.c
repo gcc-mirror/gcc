@@ -1,14 +1,19 @@
-#ifndef NON_UNIX_STDIO
-#include <sys/types.h>
-#include <sys/stat.h>
-#endif
 #include "f2c.h"
 #include "fio.h"
 #include <string.h>
-#include "rawio.h"
+#ifndef NON_POSIX_STDIO
+#ifdef MSDOS
+#include "io.h"
+#else
+#include "unistd.h"	/* for access */
+#endif
+#endif
 
 #ifdef KR_headers
-extern char *malloc(), *mktemp();
+extern char *malloc();
+#ifdef NON_ANSI_STDIO
+extern char *mktemp();
+#endif
 extern integer f_clos();
 #else
 #undef abs
@@ -27,44 +32,97 @@ char *f__r_mode[2] = {"rb", "r"};
 char *f__w_mode[4] = {"wb", "w", "r+b", "r+"};
 #endif
 
+ static char f__buf0[400], *f__buf = f__buf0;
+ int f__buflen = (int)sizeof(f__buf0);
+
+ static void
 #ifdef KR_headers
-f__isdev(s) char *s;
+f__bufadj(n, c) int n, c;
 #else
-f__isdev(char *s)
+f__bufadj(int n, int c)
 #endif
 {
-#ifdef NON_UNIX_STDIO
-	int i, j;
+	unsigned int len;
+	char *nbuf, *s, *t, *te;
 
-	i = open(s,O_RDONLY);
-	if (i == -1)
-		return 0;
-	j = isatty(i);
-	close(i);
-	return j;
+	if (f__buf == f__buf0)
+		f__buflen = 1024;
+	while(f__buflen <= n)
+		f__buflen <<= 1;
+	len = (unsigned int)f__buflen;
+	if (len != f__buflen || !(nbuf = (char*)malloc(len)))
+		f__fatal(113, "malloc failure");
+	s = nbuf;
+	t = f__buf;
+	te = t + c;
+	while(t < te)
+		*s++ = *t++;
+	if (f__buf != f__buf0)
+		free(f__buf);
+	f__buf = nbuf;
+	}
+
+ int
+#ifdef KR_headers
+f__putbuf(c) int c;
 #else
-	struct stat x;
+f__putbuf(int c)
+#endif
+{
+	char *s, *se;
+	int n;
 
-	if(stat(s, &x) == -1) return(0);
-#ifdef S_IFMT
-	switch(x.st_mode&S_IFMT) {
-		case S_IFREG:
-		case S_IFDIR:
-			return(0);
+	if (f__hiwater > f__recpos)
+		f__recpos = f__hiwater;
+	n = f__recpos + 1;
+	if (n >= f__buflen)
+		f__bufadj(n, f__recpos);
+	s = f__buf;
+	se = s + f__recpos;
+	if (c)
+		*se++ = c;
+	*se = 0;
+	for(;;) {
+		fputs(s, f__cf);
+		s += strlen(s);
+		if (s >= se)
+			break;	/* normally happens the first time */
+		putc(*s++, f__cf);
 		}
+	return 0;
+	}
+
+ void
+#ifdef KR_headers
+x_putc(c)
 #else
-#ifdef S_ISREG
-	/* POSIX version */
-	if(S_ISREG(x.st_mode) || S_ISDIR(x.st_mode))
-		return(0);
-	else
+x_putc(int c)
+#endif
+{
+	if (f__recpos >= f__buflen)
+		f__bufadj(f__recpos, f__buflen);
+	f__buf[f__recpos++] = c;
+	}
+
+#define opnerr(f,m,s) \
+  do {if(f) {f__init &= ~2; errno= m;} else opn_err(m,s,a); return(m);} while(0)
+
+ static void
+#ifdef KR_headers
+opn_err(m, s, a) int m; char *s; olist *a;
 #else
-	Help! How does stat work on this system?
+opn_err(int m, char *s, olist *a)
 #endif
-#endif
-		return(1);
-#endif
-}
+{
+	if (a->ofnm) {
+		/* supply file name to error message */
+		if (a->ofnmlen >= f__buflen)
+			f__bufadj((int)a->ofnmlen, 0);
+		g_char(a->ofnm, a->ofnmlen, f__curunit->ufnm = f__buf);
+		}
+	f__fatal(m, s);
+	}
+
 #ifdef KR_headers
 integer f_open(a) olist *a;
 #else
@@ -75,11 +133,9 @@ integer f_open(olist *a)
 	char buf[256], *s;
 	cllist x;
 	int ufmt;
-#ifdef NON_UNIX_STDIO
 	FILE *tf;
-#else
+#ifndef NON_UNIX_STDIO
 	int n;
-	struct stat stb;
 #endif
 	if(f__init != 1) f_init();
 	if(a->ounit>=MXUNIT || a->ounit<0)
@@ -95,7 +151,7 @@ integer f_open(olist *a)
 #ifdef NON_UNIX_STDIO
 		if (b->ufnm
 		 && strlen(b->ufnm) == a->ofnmlen
-		 && !strncmp(b->ufnm, b->ufnm, (unsigned)a->ofnmlen))
+		 && !strncmp(b->ufnm, a->ofnm, (unsigned)a->ofnmlen))
 			goto same;
 #else
 		g_char(a->ofnm,a->ofnmlen,buf);
@@ -124,25 +180,32 @@ integer f_open(olist *a)
 	if (a->ofnm) {
 		g_char(a->ofnm,a->ofnmlen,buf);
 		if (!buf[0])
-			err(a->oerr,107,"open");
+			opnerr(a->oerr,107,"open");
 		}
 	else
 		sprintf(buf, "fort.%ld", a->ounit);
 	b->uscrtch = 0;
+	b->uend=0;
+	b->uwrt = 0;
+	b->ufd = 0;
+	b->urw = 3;
 	switch(a->osta ? *a->osta : 'u')
 	{
 	case 'o':
 	case 'O':
-#ifdef NON_UNIX_STDIO
-		if(access(buf,0))
+#ifdef NON_POSIX_STDIO
+		if (!(tf = fopen(buf,"r")))
+			opnerr(a->oerr,errno,"open");
+		fclose(tf);
 #else
-		if(stat(buf,&stb))
+		if (access(buf,0))
+			opnerr(a->oerr,errno,"open");
 #endif
-			err(a->oerr,errno,"open");
 		break;
 	 case 's':
 	 case 'S':
 		b->uscrtch=1;
+#ifdef NON_ANSI_STDIO
 #ifdef HAVE_TEMPNAM		/* Allow use of TMPDIR preferentially. */
 		s = tempnam (0, buf);
 		if (strlen (s) >= sizeof (buf))
@@ -158,71 +221,64 @@ integer f_open(olist *a)
 #endif
 #endif /* ! defined (HAVE_TEMPNAM) */
 		goto replace;
+#else
+		if (!(b->ufd = tmpfile()))
+			opnerr(a->oerr,errno,"open");
+		b->ufnm = 0;
+#ifndef NON_UNIX_STDIO
+		b->uinode = b->udev = -1;
+#endif
+		b->useek = 1;
+		return 0;
+#endif
+
 	case 'n':
 	case 'N':
-#ifdef NON_UNIX_STDIO
-		if(!access(buf,0))
+#ifdef NON_POSIX_STDIO
+		if ((tf = fopen(buf,"r")) || (tf = fopen(buf,"a"))) {
+			fclose(tf);
+			opnerr(a->oerr,128,"open");
+			}
 #else
-		if(!stat(buf,&stb))
+		if (!access(buf,0))
+			opnerr(a->oerr,128,"open");
 #endif
-			err(a->oerr,128,"open");
 		/* no break */
 	case 'r':	/* Fortran 90 replace option */
 	case 'R':
+#ifdef NON_ANSI_STDIO
  replace:
-#ifdef NON_UNIX_STDIO
+#endif
 		if (tf = fopen(buf,f__w_mode[0]))
 			fclose(tf);
-#else
-		(void) close(creat(buf, 0666));
-#endif
 	}
 
 	b->ufnm=(char *) malloc((unsigned int)(strlen(buf)+1));
-	if(b->ufnm==NULL) err(a->oerr,113,"no space");
+	if(b->ufnm==NULL) opnerr(a->oerr,113,"no space");
 	(void) strcpy(b->ufnm,buf);
-	b->uend=0;
-	b->uwrt = 0;
-#ifdef NON_UNIX_STDIO
-	if ((s = a->oacc) && (*s == 'd' || *s == 'D'))
+	if ((s = a->oacc) && b->url)
 		ufmt = 0;
-#endif
-	if(f__isdev(buf))
-	{	b->ufd = fopen(buf,f__r_mode[ufmt]);
-		if(b->ufd==NULL) err(a->oerr,errno,buf);
-	}
-	else {
-		if(!(b->ufd = fopen(buf, f__r_mode[ufmt]))) {
-#ifdef NON_UNIX_STDIO
-			if (b->ufd = fopen(buf, f__w_mode[ufmt|2]))
-				b->uwrt = 2;
-			else if (b->ufd = fopen(buf, f__w_mode[ufmt]))
-				b->uwrt = 1;
-			else
-#else
-			if ((n = open(buf,O_WRONLY)) >= 0)
-				b->uwrt = 2;
-			else {
-				n = creat(buf, 0666);
-				b->uwrt = 1;
-				}
-			if (n < 0
-			|| (b->ufd = fdopen(n, f__w_mode[ufmt])) == NULL)
-#endif
-				err(a->oerr, errno, "open");
+	if(!(tf = fopen(buf, f__w_mode[ufmt|2]))) {
+		if (tf = fopen(buf, f__r_mode[ufmt]))
+			b->urw = 1;
+		else if (tf = fopen(buf, f__w_mode[ufmt])) {
+			b->uwrt = 1;
+			b->urw = 2;
 			}
-	}
-	b->useek=f__canseek(b->ufd);
+		else
+			err(a->oerr, errno, "open");
+		}
+	b->useek = f__canseek(b->ufd = tf);
 #ifndef NON_UNIX_STDIO
-	if((b->uinode=f__inode(buf,&b->udev))==-1)
-		err(a->oerr,108,"open");
+	if((b->uinode = f__inode(buf,&b->udev)) == -1)
+		opnerr(a->oerr,108,"open");
 #endif
 	if(b->useek)
 		if (a->orl)
 			rewind(b->ufd);
 		else if ((s = a->oacc) && (*s == 'a' || *s == 'A')
 			&& fseek(b->ufd, 0L, SEEK_END))
-				err(a->oerr,129,"open");
+				opnerr(a->oerr,129,"open");
 	return(0);
 }
 #ifdef KR_headers

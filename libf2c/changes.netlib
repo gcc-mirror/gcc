@@ -2848,3 +2848,57 @@ invisible on other machines.
 
 Sun Sep 21 22:05:19 EDT 1997
   libf77: [de]time_.c (Unix systems only): change return type to double.
+
+Thu Dec  4 22:10:09 EST 1997
+  Fix bug with handling large blocks of comments (over 4k); parts of the
+second and subsequent blocks were likely to be lost (not copied into
+comments in the resulting C).  Allow comment lines to be longer before
+breaking them.
+
+Mon Jan 19 17:19:27 EST 1998
+  makefile: change the rule for making gram.c to one for making gram1.c;
+henceforth, asking netlib to "send all from f2c/src" will bring you a
+working gram.c.  Nowadays there are simply too many broken versions of
+yacc floating around.
+  libi77: backspace.c: for b->ufmt==0, change sizeof(int) to
+sizeof(uiolen).  On machines where this would make a difference, it is
+best for portability to compile libI77 with -DUIOLEN_int, which will
+render the change invisible.
+
+Tue Feb 24 08:35:33 EST 1998
+  makefile: remove gram.c from the "make clean" rule.
+
+Wed Feb 25 08:29:39 EST 1998
+  makefile: change CFLAGS assignment to -O; add "veryclean" rule.
+
+Wed Mar  4 13:13:21 EST 1998
+  libi77: open.c: fix glitch in comparing file names under
+-DNON_UNIX_STDIO.
+
+Mon Mar  9 23:56:56 EST 1998
+  putpcc.c: omit an unnecessary temporary variable in computing
+(expr)**3.
+  libf77, libi77: minor tweaks to make some C++ compilers happy;
+Version.c not changed.
+
+Wed Mar 18 18:08:47 EST 1998
+  libf77: minor tweaks to [ed]time_.c; Version.c not changed.
+  libi77: endfile.c, open.c: acquire temporary files from tmpfile(),
+unless compiled with -DNON_ANSI_STDIO, which uses mktemp().
+New buffering scheme independent of NON_UNIX_STDIO for handling T
+format items.  Now -DNON_UNIX_STDIO is no longer be necessary for
+Linux, and libf2c no longer causes stderr to be buffered -- the former
+setbuf or setvbuf call for stderr was to make T format items work.
+open.c: use the Posix access() function to check existence or
+nonexistence of files, except under -DNON_POSIX_STDIO, where trial
+fopen calls are used.  In open.c, fix botch in changes of 19980304.
+  libf2c.zip: the PC makefiles are now set for NT/W95, with comments
+about changes for DOS.
+
+Fri Apr  3 17:22:12 EST 1998
+  Adjust fix of 19960913 to again permit substring notation on
+character variables in data statements.
+
+Sun Apr  5 19:26:50 EDT 1998
+  libi77: wsfe.c: make $ format item work: this was lost in the changes
+of 17 March 1998.

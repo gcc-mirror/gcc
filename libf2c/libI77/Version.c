@@ -1,9 +1,9 @@
-static char junk[] = "\n@(#) LIBI77 VERSION pjw,dmg-mods 19970916\n";
+static char junk[] = "\n@(#) LIBI77 VERSION pjw,dmg-mods 19980405\n";
 
 /*
 */
 
-char __G77_LIBI77_VERSION__[] = "0.5.22";
+char __G77_LIBI77_VERSION__[] = "0.5.23-19980502";
 
 /*
 2.01	$ format added
@@ -267,6 +267,24 @@ wrtfmt.c:
 /* 16 Sept. 1997:fmt.[ch] rdfmt.c wrtfmt.c: tweak struct syl for machines
 		 with 64-bit pointers and 32-bit ints that did not 64-bit
 		 align struct syl (e.g., Linux on the DEC Alpha). */
+/* 19 Jan. 1998: backspace.c: for b->ufmt==0, change sizeof(int) to
+		 sizeof(uiolen).  On machines where this would make a
+		 difference, it is best for portability to compile libI77 with
+		 -DUIOLEN_int (which will render the change invisible). */
+/* 4 March 1998: open.c: fix glitch in comparing file names under
+		-DNON_UNIX_STDIO */
+/* 17 March 1998: endfile.c, open.c: acquire temporary files from tmpfile(),
+		 unless compiled with -DNON_ANSI_STDIO, which uses mktemp().
+		 New buffering scheme independent of NON_UNIX_STDIO for
+		 handling T format items.  Now -DNON_UNIX_STDIO is no
+		 longer be necessary for Linux, and libf2c no longer
+		 causes stderr to be buffered -- the former setbuf or
+		 setvbuf call for stderr was to make T format items work.
+		 open.c: use the Posix access() function to check existence
+		 or nonexistence of files, except under -DNON_POSIX_STDIO,
+		 where trial fopen calls are used. */
+/* 5 April 1998: wsfe.c: make $ format item work: this was lost in the
+		 changes of 17 March 1998. */
 
 
 

@@ -12,7 +12,11 @@
 #ifdef KR_headers
 #define Sigarg_t
 #else
+#ifdef __cplusplus
+#define Sigarg_t ...
+#else
 #define Sigarg_t int
+#endif
 #endif
 #endif /*Sigarg_t*/
 
@@ -23,3 +27,11 @@ typedef Sigret_t (*sig_pf)(Sigarg_t);
 #endif
 
 #define signal1(a,b) signal(a,(sig_pf)b)
+
+#ifdef __cplusplus
+#define Sigarg ...
+#define Use_Sigarg
+#else
+#define Sigarg Int n
+#define Use_Sigarg n = n	/* shut up compiler warning */
+#endif

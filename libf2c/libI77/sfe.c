@@ -8,10 +8,6 @@ integer e_rsfe(Void)
 {	int n;
 	f__init = 1;
 	n=en_fio();
-	if (f__cf == stdout)
-		fflush(stdout);
-	else if (f__cf == stderr)
-		fflush(stderr);
 	f__fmtbuf=NULL;
 	return(n);
 }
@@ -30,15 +26,14 @@ c_sfe(cilist *a) /* check */
 }
 integer e_wsfe(Void)
 {
-#ifdef ALWAYS_FLUSH
 	int n;
 	f__init = 1;
 	n = en_fio();
 	f__fmtbuf=NULL;
-	if (!n && fflush(f__cf))
-		err(f__elist->cierr, errno, "write end");
 	return n;
-#else
-	return(e_rsfe());
-#endif
+}
+
+integer e_wdfe(Void)
+{
+	return en_fio();
 }

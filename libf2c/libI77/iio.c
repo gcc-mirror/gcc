@@ -14,17 +14,16 @@ z_getc(Void)
 		}
 	return '\n';
 }
+
+ void
 #ifdef KR_headers
 z_putc(c)
 #else
 z_putc(int c)
 #endif
 {
-	if(f__icptr >= f__icend) err(f__svic->icierr,110,"inwrite");
-	if(f__recpos++ < f__svic->icirlen)
+	if (f__icptr < f__icend && f__recpos++ < f__svic->icirlen)
 		*f__icptr++ = c;
-	else	err(f__svic->icierr,110,"recend");
-	return 0;
 }
 z_rnew(Void)
 {
@@ -139,10 +138,17 @@ integer e_wsfi(Void)
 	f__init &= ~2;
 	n = en_fio();
 	f__fmtbuf = NULL;
-	if(f__icnum >= f__svic->icirnum
-	|| !f__recpos && f__icnum)
-		return(n);
+	if(f__svic->icirnum != 1
+	 && (f__icnum >  f__svic->icirnum
+	 || (f__icnum == f__svic->icirnum && (f__recpos | f__hiwater))))
+		err(f__svic->icierr,110,"inwrite");
+	if (f__recpos < f__hiwater)
+		f__recpos = f__hiwater;
+	if (f__recpos >= f__svic->icirlen)
+		err(f__svic->icierr,110,"recend");
+	if (!f__recpos && f__icnum)
+		return n;
 	while(f__recpos++ < f__svic->icirlen)
 		*f__icptr++ = ' ';
-	return(n);
+	return n;
 }

@@ -77,18 +77,17 @@ f2c/src	Source for the converter itself, including a file of checksums
 		mailsize 200k
 		send exec.c expr.c format.c format_data.c from f2c/src
 
-	If you have trouble generating gram.c, you can ask netlib to
-		send gram.c from f2c/src
-	Then `xsum gram.c` should report
-		gram.c	5529f4f	58745
-	Alternatively, if you have bison, you might get a working
-	gram.c by saying
-		make gram.c YACC=bison YFLAGS=-y
-	(but please do not complain if this gives a bad gram.c).
+	The makefile used to generate gram.c; now we distribute a
+	working gram.c, and you must say
+		make gram1.c
+		mv gram1.c gram.c
+	if you want to generate your own gram.c -- there are just too
+	many broken variants of yacc floating around nowadays for
+	generation of gram.c to be the default.
 
-NOTE:	For now, you may exercise f2c by sending netlib a message whose
-	first line is "execute f2c" and whose remaining lines are
-	the Fortran 77 source that you wish to have converted.
+NOTE:	You may exercise f2c by sending netlib@netlib.bell-labs.com
+	a message whose first line is "execute f2c" and whose remaining
+	lines are the Fortran 77 source that you wish to have converted.
 	Return mail brings you the resulting C, with f2c's error
 	messages between #ifdef uNdEfInEd and #endif at the end.
 	(To understand line numbers in the error messages, regard
@@ -168,15 +167,22 @@ FTP:	All the material described above is now available by anonymous
 		cd /netlib/f2c/src
 		binary
 		prompt
-		mget *.Z
+		mget *.gz
 
-	to get all the .Z files in src.  You must uncompress the .Z
+	to get all the .gz files in src.  You must uncompress the .gz
 	files once you have a copy of them, e.g., by
 
-		uncompress *.Z
+		gzip -dN *.gz
+
+	You can also get the entire f2c tree as a tar file:
+
+		ftp://netlib.bell-labs.com/netlib/f2c.tar
+
+	(which is a synthetic file -- created on the fly and not visible
+	to ftp's "ls" or "dir" commands).
 
 	Subdirectory msdos contains two PC versions of f2c,
-	f2c.exe.Z and f2cx.exe.Z; the latter uses extended memory.
+	f2c.exe.gz and f2cx.exe.gz; the latter uses extended memory.
 	The README in that directory provides more details.
 
 	Changes appear first in the f2c files available by E-mail
@@ -534,41 +540,96 @@ invisible on other machines.
 Sun Sep 21 22:05:19 EDT 1997
   libf77: [de]time_.c (Unix systems only): change return type to double.
 
+Thu Dec  4 22:10:09 EST 1997
+  Fix bug with handling large blocks of comments (over 4k); parts of the
+second and subsequent blocks were likely to be lost (not copied into
+comments in the resulting C).  Allow comment lines to be longer before
+breaking them.
+
+Mon Jan 19 17:19:27 EST 1998
+  makefile: change the rule for making gram.c to one for making gram1.c;
+henceforth, asking netlib to "send all from f2c/src" will bring you a
+working gram.c.  Nowadays there are simply too many broken versions of
+yacc floating around.
+  libi77: backspace.c: for b->ufmt==0, change sizeof(int) to
+sizeof(uiolen).  On machines where this would make a difference, it is
+best for portability to compile libI77 with -DUIOLEN_int, which will
+render the change invisible.
+
+Tue Feb 24 08:35:33 EST 1998
+  makefile: remove gram.c from the "make clean" rule.
+
+Wed Feb 25 08:29:39 EST 1998
+  makefile: change CFLAGS assignment to -O; add "veryclean" rule.
+
+Wed Mar  4 13:13:21 EST 1998
+  libi77: open.c: fix glitch in comparing file names under
+-DNON_UNIX_STDIO.
+
+Mon Mar  9 23:56:56 EST 1998
+  putpcc.c: omit an unnecessary temporary variable in computing
+(expr)**3.
+  libf77, libi77: minor tweaks to make some C++ compilers happy;
+Version.c not changed.
+
+Wed Mar 18 18:08:47 EST 1998
+  libf77: minor tweaks to [ed]time_.c; Version.c not changed.
+  libi77: endfile.c, open.c: acquire temporary files from tmpfile(),
+unless compiled with -DNON_ANSI_STDIO, which uses mktemp().
+New buffering scheme independent of NON_UNIX_STDIO for handling T
+format items.  Now -DNON_UNIX_STDIO is no longer be necessary for
+Linux, and libf2c no longer causes stderr to be buffered -- the former
+setbuf or setvbuf call for stderr was to make T format items work.
+open.c: use the Posix access() function to check existence or
+nonexistence of files, except under -DNON_POSIX_STDIO, where trial
+fopen calls are used.  In open.c, fix botch in changes of 19980304.
+  libf2c.zip: the PC makefiles are now set for NT/W95, with comments
+about changes for DOS.
+
+Fri Apr  3 17:22:12 EST 1998
+  Adjust fix of 19960913 to again permit substring notation on
+character variables in data statements.
+
+Sun Apr  5 19:26:50 EDT 1998
+  libi77: wsfe.c: make $ format item work: this was lost in the changes
+of 17 March 1998.
+
 Current timestamps of files in "all from f2c/src", sorted by time,
 appear below (mm/dd/year hh:mm:ss).  To bring your source up to date,
 obtain source files with a timestamp later than the time shown in your
 version.c.  Note that the time shown in the current version.c is the
 timestamp of the source module that immediately follows version.c below:
 
- 8/05/1997  14:51:56  xsum0.out
- 8/05/1997  14:42:48  version.c
+ 4/03/1998  17:20:55  xsum0.out
+ 4/03/1998  17:15:05  gram.c
+ 4/03/1998  17:15:05  version.c
+ 4/03/1998  17:14:59  gram.dcl
+ 3/09/1998   0:30:23  putpcc.c
+ 2/25/1998   8:18:04  makefile
+12/04/1997  17:44:11  format.c
+12/04/1997  17:44:11  niceprintf.c
+12/04/1997  17:14:05  lex.c
  8/05/1997  10:31:26  malloc.c
  7/24/1997  17:10:55  README
- 7/24/1997  17:00:57  makefile
  7/24/1997  16:06:19  Notice
  7/21/1997  12:58:44  proc.c
- 2/19/1997  13:34:09  lex.c
  2/11/1997  23:39:14  vax.c
 12/22/1996  11:51:22  output.c
 12/04/1996  13:07:53  gram.exec
-10/17/1996  13:10:40  putpcc.c
-10/01/1996  14:36:18  gram.dcl
-10/01/1996  14:36:18  init.c
 10/01/1996  14:36:18  defs.h
+10/01/1996  14:36:18  init.c
 10/01/1996  14:36:17  data.c
  9/17/1996  17:29:44  expr.c
  9/12/1996  12:12:46  equiv.c
  8/27/1996   8:30:32  intr.c
  8/26/1996   9:41:13  sysdep.c
- 7/09/1996  10:41:13  format.c
  7/09/1996  10:40:45  names.c
  7/04/1996   9:58:31  formatdata.c
  7/04/1996   9:55:45  sysdep.h
  7/04/1996   9:55:43  put.c
  7/04/1996   9:55:41  pread.c
- 7/04/1996   9:55:40  parse_args.c
  7/04/1996   9:55:40  p1output.c
- 7/04/1996   9:55:38  niceprintf.c
+ 7/04/1996   9:55:40  parse_args.c
  7/04/1996   9:55:37  misc.c
  7/04/1996   9:55:36  memset.c
  7/04/1996   9:55:36  mem.c

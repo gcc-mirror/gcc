@@ -622,7 +622,7 @@ l_read(ftnint *number, char *ptr, ftnlen len, ftnint type)
 			break;
 		case TYLOGICAL:
 		case TYLONG:
-			Ptr->flint=f__lx;
+			Ptr->flint = (ftnint)f__lx;
 			break;
 #ifdef Allow_TYQUAD
 		case TYQUAD:
