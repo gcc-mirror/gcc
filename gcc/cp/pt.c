@@ -1023,6 +1023,9 @@ determine_specialization (template_id, decl, targs_out,
 	/* This is just an ordinary non-member function.  Nothing can
 	   be a specialization of that.  */
 	continue;
+      else if (DECL_ARTIFICIAL (fn))
+	/* Cannot specialize functions that are created implicitly.  */
+	continue;
       else
 	{
 	  tree decl_arg_types;
