@@ -1196,10 +1196,10 @@ cpp_handle_option (pfile, argc, argv)
       
       case 'p':
 	if (!strcmp (argv[i], "-pedantic"))
-	  SET_CPP_PEDANTIC (pfile);
+	  opts->pedantic = 1;
 	else if (!strcmp (argv[i], "-pedantic-errors"))
 	  {
-	    SET_CPP_PEDANTIC (pfile);
+	    opts->pedantic = 1;
 	    opts->pedantic_errors = 1;
 	  }
 	break;
