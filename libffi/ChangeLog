@@ -1,3 +1,8 @@
+2004-11-23  Richard Sandiford  <rsandifo@redhat.com>
+
+	* src/mips/o32.S (ffi_call_O32, ffi_closure_O32): Use jalr instead
+	of jal.  Use an absolute encoding for the frame information.
+
 2004-11-23  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Makefile.am: Remove no-dependencies.  Add ACLOCAL_AMFLAGS.
