@@ -5272,7 +5272,7 @@ m68hc11_reorg (void)
             }
         }
 
-      life_analysis (first, 0, PROP_REG_INFO | PROP_DEATH_NOTES);
+      life_analysis (0, PROP_REG_INFO | PROP_DEATH_NOTES);
     }
 
   z_replacement_completed = 2;

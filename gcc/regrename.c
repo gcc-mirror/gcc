@@ -1763,7 +1763,7 @@ copyprop_hardreg_forward (void)
       /* ??? Irritatingly, delete_noop_moves does not take a set of blocks
 	 to scan, so we have to do a life update with no initial set of
 	 blocks Just In Case.  */
-      delete_noop_moves (get_insns ());
+      delete_noop_moves ();
       update_life_info (NULL, UPDATE_LIFE_GLOBAL_RM_NOTES,
 			PROP_DEATH_NOTES
 			| PROP_SCAN_DEAD_CODE

@@ -1,3 +1,33 @@
+2004-05-15  Steven Bosscher  <stevenb@suse.de>
+
+	* basic-block.h (life_analysis, delete_noop_moves):
+	Update prototypes.
+	* bt-load.c (branch_target_load_optimize): Don't take the
+	insns stream as an argument.  Update the life_analysis calls.
+	* combine.c (combine_instructions): Update delete_noop_moves
+	calls.
+	* flow.c (notice_stack_pointer_modification): Don't take the
+	insns stream as an argument.  Work on the flow graph.
+	(life_analysis): Likewise.
+	(delete_noop_moves): Likewise.
+	* passes.c (rest_of_handle_stack_regs): Update reg_to_stack call.
+	(rest_of_handle_life): Update life_analysis call.
+	(rest_of_compilation): Likewise, and also update
+	branch_target_load_optimize call.
+	* ra.c (reg_alloc): Update life_analysis call.
+	* reg-stack.c (reg_to_stack): Likewise.  Also, don't take
+	the insns stream as an argument.
+	* regrename.c (copyprop_hardreg_forward): Update delete_noop_moves
+	call.
+	* rtl.c (branch_target_load_optimize, reg_to_stack): Update
+	prototypes.
+	* value-profile.c (branch_prob): Update life_analysis call.
+	* web.c (web_main): Work on the CFG, not on the insns stream.
+
+	* config/ip2k/ip2k.c (ip2k_reorg): Update life_analysis calls.
+	* config/m68hc11/m68hc11.c (m68hc11_reorg): Likewise.
+	* config/sh/sh.c (sh_output_mi_thunk): Likewise.
+
 2004-05-15  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/15444
@@ -21,7 +51,7 @@
 
 	* tree-ssa-dom.c (redirect_edges_and_update_ssa_graph): Don't even
 	bother marking bypassed virtuals for out-of-ssa.  Instead merge
-        bypassed virtuals into vars_to_rename just before into-ssa pass.
+	bypassed virtuals into vars_to_rename just before into-ssa pass.
 
 	* tree-ssa-dom.c (simplify_rhs_and_lookup_avail_expr): Reorganize
 	so that it picks up more opportunities to eliminate ABS expressions
@@ -4398,7 +4428,7 @@
 
 2004-03-24  David Edelsohn  <edelsohn@gnu.org>
 
-	* doc/invoke.texi (-frename-registers: Add enabled at -O3.
+	* doc/invoke.texi (-frename-registers): Add enabled at -O3.
 	(-fprofile-values): Add enabled with profile-{generate,use}.
 	(-fvpt): Same.
 	(-ftracer): Add enabled with profile-use.

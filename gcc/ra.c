@@ -856,7 +856,7 @@ reg_alloc (void)
   /* Cleanup the flow graph.  */
   if ((debug_new_regalloc & DUMP_LAST_FLOW) == 0)
     dump_file = NULL;
-  life_analysis (get_insns (), dump_file,
+  life_analysis (dump_file,
 		 PROP_DEATH_NOTES | PROP_LOG_LINKS  | PROP_REG_INFO);
   cleanup_cfg (CLEANUP_EXPENSIVE);
   recompute_reg_usage (get_insns (), TRUE);
