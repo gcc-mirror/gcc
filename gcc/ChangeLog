@@ -1,3 +1,9 @@
+2003-10-05  Andrew Pinski <apinski@apple.com>
+
+	* config/darwin.c (machopic_non_lazy_ptr_name): 
+	Change strcat to memcpy and add length together.
+	(machopic_stub_name): Likewise.
+
 2003-10-05  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/linux.h (MD_FALLBACK_FRAME_STATE_FOR): Handle new
