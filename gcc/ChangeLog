@@ -1,3 +1,8 @@
+2003-01-25  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* final.c (shorten_branches): Align the address of code label
+        when computing initial lengths and addresses.
+
 2003-01-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/m68hc11/m68hc11.md: Fix a comment typo.
