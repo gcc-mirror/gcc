@@ -61,7 +61,7 @@
 #ifndef _CPP_BITS_STL_HASH_FUN_H
 #define _CPP_BITS_STL_HASH_FUN_H 1
 
-#include <bits/std_cstddef.h>
+#include <cstddef>
 
 namespace __gnu_cxx
 {

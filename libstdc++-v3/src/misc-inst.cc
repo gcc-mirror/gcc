@@ -31,20 +31,18 @@
 // ISO C++ 14882:
 //
 
-#include <bits/std_string.h>
-#include <bits/std_algorithm.h>
-#include <bits/std_locale.h>
-#include <bits/std_vector.h>
-#include <bits/std_iterator.h>
-#include <bits/std_streambuf.h>
-#include <bits/std_sstream.h>
-#include <bits/std_fstream.h>
-#include <bits/std_ios.h>
-#include <bits/basic_ios.tcc>
-#include <bits/std_istream.h>
-#include <bits/std_ostream.h>
-#include <bits/std_string.h>
-#include <bits/std_iomanip.h>
+#include <string>
+#include <algorithm>
+#include <locale>
+#include <vector>
+#include <iterator>
+#include <streambuf>
+#include <sstream>
+#include <fstream>
+#include <ios>
+#include <istream>
+#include <ostream>
+#include <iomanip>
 
 // NB: unnecessary if the .h headers include these
 #ifndef  _GLIBCPP_FULLY_COMPLIANT_HEADERS

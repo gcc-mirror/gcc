@@ -34,7 +34,7 @@
 // 18.2.1
 //
 
-#include <bits/std_limits.h>
+#include <limits>
 
 namespace std 
 {

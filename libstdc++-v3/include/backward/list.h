@@ -59,7 +59,7 @@
 #include "backward_warning.h"
 #include "algobase.h"
 #include "alloc.h"
-#include <bits/std_list.h>
+#include <list>
 
 using std::list;
 

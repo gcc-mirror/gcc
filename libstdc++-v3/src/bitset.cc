@@ -41,7 +41,7 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */ 
 
-#include <bits/std_bitset.h>
+#include <bitset>
 
 //
 // Definitions of non-inline functions from the single-word version of

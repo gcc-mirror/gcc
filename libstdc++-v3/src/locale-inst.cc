@@ -31,17 +31,16 @@
 // ISO C++ 14882: 22.1  Locales
 //
 
-#include <bits/std_cstdlib.h>
-#include <bits/std_clocale.h>
-#include <bits/std_cstring.h>
-#include <bits/std_cassert.h>
-#include <bits/std_limits.h>
+#include <cstdlib>
+#include <clocale>
+#include <cstring>
+#include <cassert>
+#include <limits>
 #include <exception>
-#include <bits/std_stdexcept.h>
-#include <bits/std_locale.h>
-#include <bits/locale_facets.tcc>
-#include <bits/std_istream.h>
-#include <bits/std_ostream.h>
+#include <stdexcept>
+#include <locale>
+#include <istream>
+#include <ostream>
 
 namespace std
 {

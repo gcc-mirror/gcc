@@ -41,7 +41,7 @@
 
 #pragma GCC system_header
 
-#include <bits/std_cstring.h> 	// For memmove, memset, memchr
+#include <cstring> 	// For memmove, memset, memchr
 #include <bits/fpos.h> 		// For streampos
 
 namespace std 

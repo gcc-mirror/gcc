@@ -27,7 +27,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <bits/std_complex.h>
+#include <complex>
 
 namespace std
 {
@@ -91,6 +91,3 @@ namespace std
                const complex<long double>&);
 #endif //_GLIBCPP_USE_WCHAR_T
 } // namespace std
-
-
-

@@ -17,7 +17,7 @@
 #define _GLIBCPP_BOOST_CONCEPT_CHECK 1
 
 #pragma GCC system_header
-#include <bits/std_cstddef.h>                // for ptrdiff_t, used next
+#include <cstddef>                // for ptrdiff_t, used next
 #include <bits/stl_iterator_base_types.h>    // for traits and tags
 #include <utility>                           // for pair<>
 

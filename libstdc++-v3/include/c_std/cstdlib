@@ -35,7 +35,7 @@
 #define _CPP_CSTDLIB 1
 
 #include <bits/c++config.h>
-#include <bits/std_cstddef.h>
+#include <cstddef>
 
 #pragma GCC system_header
 #include <stdlib.h>

@@ -42,7 +42,7 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
-#include <bits/std_ios.h>
+#include <ios>
 
 namespace std 
 {

@@ -32,7 +32,7 @@
 // helper functions used in the math routines of libstdc++.
 
 
-#include <bits/std_cmath.h>
+#include <cmath>
 
 namespace std
 {
@@ -45,4 +45,3 @@ namespace std
       __cmath_power<long double>(long double, unsigned int);
   
 } // namespace std
-

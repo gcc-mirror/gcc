@@ -29,7 +29,7 @@
 #define _CPP_BACKWARD_IOSTREAM_H 1
 
 #include "backward_warning.h"
-#include <bits/std_iostream.h>
+#include <iostream>
 
 using std::iostream;
 using std::ostream;

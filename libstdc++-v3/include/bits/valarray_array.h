@@ -41,8 +41,8 @@
 
 #include <bits/c++config.h>
 #include <bits/cpp_type_traits.h>
-#include <bits/std_cstdlib.h>
-#include <bits/std_cstring.h>
+#include <cstdlib>
+#include <cstring>
 #include <new>
 
 namespace std

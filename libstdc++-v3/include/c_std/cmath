@@ -647,7 +647,7 @@ namespace std
   
 #ifdef _GLIBCPP_NO_TEMPLATE_EXPORT
 #  define export
-#  include <bits/cmath.tcc>
+#  include <cmath.tcc>
 #endif
 
 #endif

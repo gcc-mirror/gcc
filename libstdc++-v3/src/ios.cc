@@ -31,10 +31,10 @@
 // ISO C++ 14882: 27.4  Iostreams base classes
 //
 
-#include <bits/std_ios.h>
-#include <bits/std_ostream.h>
-#include <bits/std_istream.h>
-#include <bits/std_fstream.h>
+#include <ios>
+#include <ostream>
+#include <istream>
+#include <fstream>
 
 namespace std 
 {

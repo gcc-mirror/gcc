@@ -1,3 +1,134 @@
+2002-01-04  Benjamin  Kosnik  <bkoz@redhat.com>
+
+	* include/Makefile.am (std_headers): Remove cXXX from list.
+	(c_base_srcdir): No bits subdirectory.
+	(c_base_builddir): Same.
+	(c_base_headers): Adjust names, add ciso646.
+	(bits_headers): Remove std_xxx.h headers.
+	* include/Makefile.in: Regenerate.
+	
+	* include/ext/iterator: Adjust includes.
+	* include/ext/ropeimpl.h: Same.
+	* include/ext/stl_hash_fun.h: Same.
+	* include/ext/algorithm: Same.
+	
+	* include/backward/bvector.h: Adjust includes.
+	* include/backward/vector.h: Same.
+	* include/backward/strstream: Same.
+	* include/backward/streambuf.h: Same.
+	* include/backward/stack.h: Same.
+	* include/backward/set.h: Same.
+	* include/backward/queue.h: Same.
+	* include/backward/multiset.h: Same.
+	* include/backward/multimap.h: Same.
+	* include/backward/map.h: Same.
+	* include/backward/list.h: Same.
+	* include/backward/iterator.h: Same.
+	* include/backward/iostream.h: Same.
+	* include/backward/iomanip.h: Same.
+	* include/backward/fstream.h: Same.
+	* include/backward/deque.h: Same.
+	* include/backward/complex.h: Same.
+
+	* include/bits/std_algorithm.h: Move to...
+	* include/std/algorithm: ...here.
+	* include/bits/std_iosfwd.h, std_locale.h, std_stack.h,
+	std_bitset.h, std_ios.h, std_map.h, std_stdexcept.h,
+	std_complex.h, std_iostream.h, std_memory.h, std_streambuf.h,
+	std_deque.h, std_istream.h, std_numeric.h, std_string.h,
+	std_fstream.h, std_ostream.h, std_utility.h, std_iterator.h,
+	std_queue.h, std_valarray.h, std_functional.h, std_limits.h,
+	std_set.h, std_vector.h, std_iomanip.h, std_list.h, std_sstream.h:
+	Same.
+	
+	* include/c_std/bits/std_cassert.h: Move to...
+	* include/c_std/cassert: Here.
+	* include/c_std/std_cctype.h, std_cerrno.h, std_cfloat.h,
+	std_climits.h, std_clocale.h, std_cmath.h, std_csetjmp.h,
+	std_csignal.h, std_cstdarg.h, std_cstddef.h, std_cstdio.h,
+	std_cstdlib.h, std_cstring.h, std_ctime.h, std_cwchar.h,
+	std_cwctype.h: Same.
+	* include/c_std/cmath: Adjust cmath.tcc include.
+	* include/c_std/cstdlib: Adjust includes.
+	* include/c_std/cwchar: Same.
+	* include/c_std/ctime: Same.
+	* include/c_std/cstring: Same.
+	* include/c_std/cstdio: Same.
+	* include/c_std/bits: Remove directory.
+	
+	* include/c/bits/std_cassert.h: Move to...
+	* include/c/cassert: Here.
+	* include/c/std_cctype.h, std_cerrno.h, std_cfloat.h,
+	std_climits.h, std_clocale.h, std_cmath.h, std_csetjmp.h,
+	std_csignal.h, std_cstdarg.h, std_cstddef.h, std_cstdio.h,
+	std_cstdlib.h, std_cstring.h, std_ctime.h, std_cwchar.h,
+	std_cwctype.h: Same.
+	* include/c/bits: Remove directory.
+	
+	* include/std/cwctype: Remove.
+	* include/std/cwchar: Remove.
+	* include/std/ctime: Remove.
+	* include/std/cstring: Remove.
+	* include/std/cstdlib: Remove.
+	* include/std/cstdio: Remove.
+	* include/std/cstddef: Remove.
+	* include/std/cstdarg: Remove.
+	* include/std/csignal: Remove.
+	* include/std/csetjmp: Remove.
+	* include/std/cmath: Remove.
+	* include/std/clocale: Remove.
+	* include/std/climits: Remove.
+	* include/std/ciso646: Remove.
+	* include/std/cfloat: Remove.
+	* include/std/cerrno: Remove.
+	* include/std/cctype: Remove.
+	* include/std/cassert: Remove.
+
+	* include/bits/fpos.h: Adjust includes, removing <bits/std_xxx.h>
+	files and subsituting <.xxx>
+	* include/bits/valarray_array.h: Same.
+	* include/bits/stl_uninitialized.h: Same.
+	* include/bits/stl_alloc.h: Same.
+	* include/bits/stl_algobase.h: Same.
+	* include/bits/sstream.tcc: Same.
+	* include/bits/pthread_allocimpl.h: Same.
+	* include/bits/ostream.tcc: Same.
+	* include/bits/localefwd.h: Same.
+	* include/bits/locale_facets.tcc: Same.
+	* include/bits/locale_facets.h: Same.
+	* include/bits/istream.tcc: Same.
+	* include/bits/char_traits.h: Same.
+	* include/bits/boost_concept_check.h: Same.
+	* include/bits/basic_file.h: Same.
+	* include/std/bitset: Same.
+	* include/std/complex: Same.
+	* include/std/fstream: Same.
+	* include/std/functional: Same.
+	* include/std/ios: Same.
+	* include/std/iostream: Same.
+	* include/std/ostream: Same.
+	* include/std/sstream: Same.
+	* include/std/streambuf: Same.
+	* include/std/string: Same.
+	* include/std/iterator: Same.
+	* include/std/valarray: Same.
+
+	* src/ios.cc: Adjust includes.
+	* src/valarray-inst.cc: Same.
+	* src/string-inst.cc: Same.
+	* src/stl-inst.cc: Same.
+	* src/stdexcept.cc: Same.
+	* src/misc-inst.cc: Same.
+	* src/localename.cc: Same.
+	* src/locale-inst.cc: Same.
+	* src/locale.cc: Same.
+	* src/limits.cc: Same.
+	* src/concept-inst.cc: Same.
+	* src/complex_io.cc: Same.
+	* src/codecvt.cc: Same.
+	* src/bitset.cc: Same.
+	* src/cmath.cc: Same.
+
 2002-01-04  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/stl_tree.h (rb_tree):  Move to...
@@ -30,7 +161,7 @@
 	* include/backward/function.h:  Include <ext/functional>, tweak.
         * include/ext/ropeimpl.h:  Include <ext/numeric>.
 
-Thu Jan  3 11:05:41 2002  Jeffrey A Law  (law@redhat.com)
+2002-01-03  Jeffrey A Law  <law@redhat.com>
 
         * config/os/hpux/bits/os_defines.h: Prefix __strtoll and
         __strtoull declarations with __extension__.

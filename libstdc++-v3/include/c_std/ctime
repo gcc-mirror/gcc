@@ -1,6 +1,6 @@
-// -*- C++ -*- std header.
+// -*- C++ -*- forwarding header.
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,15 +27,44 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file cerrno
- *  This is a Standard C++ Library file.  You should @c #include this file
- *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
- *
- *  This is the C++ version of the Standard C Library header @c errno.h,
- *  and its contents are (mostly) the same as that header, but are all
- *  contained in the namespace @c std.
- */
+//
+// ISO C++ 14882: 20.5  Date and time
+//
 
-#ifndef _CPP_CERRNO
-#include <bits/std_cerrno.h>
+#ifndef _CPP_CTIME
+#define _CPP_CTIME 1
+
+#include <cstddef>
+
+#pragma GCC system_header
+#include <time.h>
+
+// Get rid of those macros defined in <time.h> in lieu of real functions.
+#undef clock
+#undef difftime
+#undef mktime
+#undef time
+#undef asctime
+#undef ctime
+#undef gmtime
+#undef localtime
+#undef strftime
+
+namespace std
+{
+  using ::clock_t;
+  using ::time_t;
+  using ::tm;
+
+  using ::clock;
+  using ::difftime;
+  using ::mktime;
+  using ::time;
+  using ::asctime;
+  using ::ctime;
+  using ::gmtime;
+  using ::localtime;
+  using ::strftime;
+}
+
 #endif

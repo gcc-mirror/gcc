@@ -1,4 +1,4 @@
-// -*- C++ -*- std header.
+// <functional> -*- C++ -*-
 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 //
@@ -27,11 +27,36 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-/** @file functional
- *  This is a Standard C++ Library file.  You should @c #include this file
- *  in your programs, rather than any of the "st[dl]_*.h" implementation files.
+/*
+ * Copyright (c) 1997
+ * Silicon Graphics Computer Systems, Inc.
+ *
+ * Permission to use, copy, modify, distribute and sell this software
+ * and its documentation for any purpose is hereby granted without fee,
+ * provided that the above copyright notice appear in all copies and
+ * that both that copyright notice and this permission notice appear
+ * in supporting documentation.  Silicon Graphics makes no
+ * representations about the suitability of this software for any
+ * purpose.  It is provided "as is" without express or implied warranty.
+ *
+ */
+
+/** @file std_functional.h
+ *  This is an internal header file, included by other library headers.
+ *  You should not attempt to use it directly.
  */
 
 #ifndef _CPP_FUNCTIONAL
-#include <bits/std_functional.h>
-#endif
+#define _CPP_FUNCTIONAL 1
+
+#pragma GCC system_header
+#include <bits/c++config.h>
+#include <cstddef>
+#include <bits/stl_function.h>
+
+#endif /* _CPP_FUNCTIONAL */
+
+// Local Variables:
+// mode:C++
+// End:
+

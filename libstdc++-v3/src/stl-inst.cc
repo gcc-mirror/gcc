@@ -32,13 +32,12 @@
 //
 
 #include <bits/c++config.h>
-#include <bits/stl_alloc.h>
-#include <bits/std_vector.h>
-#include <bits/std_ostream.h>
+#include <memory>
+#include <vector>
+#include <ostream>
 
 namespace std
 {
-
   template class __malloc_alloc_template<0>;
 
 #ifndef __USE_MALLOC
@@ -51,4 +50,3 @@ namespace std
     _M_insert_aux(vector<unsigned int>::iterator, unsigned int const &);
 
 } // namespace std
-

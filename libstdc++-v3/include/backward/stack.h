@@ -61,7 +61,7 @@
 #include "deque.h"
 #include "heap.h"
 #include "queue.h"
-#include <bits/std_stack.h>
+#include <stack>
 
 using std::stack;
 

@@ -58,7 +58,7 @@
 
 #pragma GCC system_header
 #include <bits/concept_check.h>
-#include <bits/std_numeric.h>
+#include <numeric>
 
 #include <ext/functional> // For identity_element
 
