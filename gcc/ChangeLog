@@ -1,3 +1,8 @@
+2001-05-30  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpplex.c (_cpp_lex_token): Revert patch of 16 May 2001
+	so that we do accept comments in preprocessed input.
+
 2000-05-30  Kelley Cook  <kelley.cook@home.com>
 
 	* config/i386/i386.h (TARGET_SWITCHES): Remove -mmmx and -msse options.

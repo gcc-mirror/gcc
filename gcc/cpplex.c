@@ -993,8 +993,6 @@ _cpp_lex_token (pfile, result)
 	ACCEPT_CHAR (CPP_DIV_EQ);
       if (c != '/' && c != '*')
 	break;
-      if (buffer->from_stage3)
-	break;
       
       if (c == '*')
 	{
