@@ -1,3 +1,7 @@
+2001-01-23  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * c-lex.c (lex_charconst): Fix typo: s/p/str.
+
 2001-01-23  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* rs6000.h (rs6000_return_addr): Move prototype from here...
