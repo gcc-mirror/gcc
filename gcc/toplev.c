@@ -170,6 +170,7 @@ static void output_lang_identify PARAMS ((FILE *)) ATTRIBUTE_UNUSED;
 #endif
 static void compile_file PARAMS ((const char *));
 static void display_help PARAMS ((void));
+static void display_target_options PARAMS ((void));
 static void mark_file_stack PARAMS ((void *));
 
 static void decode_d_option PARAMS ((const char *));
@@ -3886,6 +3887,15 @@ display_help ()
     printf (_("\nThere are undocumented %s specific options as well.\n"),
 	    lang);
 
+  display_target_options ();
+}
+
+void
+display_target_options ()
+{
+  int undoc,i;
+  unsigned long;
+
   if (ARRAY_SIZE (target_switches) > 1
 #ifdef TARGET_OPTIONS
       || ARRAY_SIZE (target_options) > 1
@@ -3910,10 +3920,10 @@ display_help ()
 	      undoc = 1;
 
 	      if (extra_warnings)
-		printf (_("  -m%-21.21s [undocumented]\n"), option);
+		printf (_("  -m%-23.23s [undocumented]\n"), option);
 	    }
 	  else if (* description != 0)
-	    doc += printf ("  -m%-21.21s %s\n", option, description);
+	    doc += printf ("  -m%-23.23s %s\n", option, description);
 	}
 
 #ifdef TARGET_OPTIONS
@@ -3929,10 +3939,10 @@ display_help ()
 	      undoc = 1;
 
 	      if (extra_warnings)
-		printf (_("  -m%-21.21s [undocumented]\n"), option);
+		printf (_("  -m%-23.23s [undocumented]\n"), option);
 	    }
 	  else if (* description != 0)
-	    doc += printf ("  -m%-21.21s %s\n", option, description);
+	    doc += printf ("  -m%-23.23s %s\n", option, description);
 	}
 #endif
       if (undoc)
@@ -4304,6 +4314,12 @@ independent_decode_option (argc, argv)
   if (!strcmp (arg, "-help"))
     {
       display_help ();
+      exit (0);
+    }
+
+  if (!strcmp (arg, "-target-help"))
+    {
+      display_target_options ();
       exit (0);
     }
 

@@ -1,3 +1,13 @@
+2000-10-17  Chandrakala Chavva  <cchavva@redhat.com>
+
+	* gcc.c: New options --target-help.
+	(process_command): Added code to parse this new option.
+	* toplev.c (display_target_options): New function to support the
+	above new option.
+	* cppinit.c (new_pending_directive) : New option OPT_target__help.
+	(cpp_handle_option): Support this new option.
+	* invoke.texi: Added notes about --target-help option.
+	
 2000-10-17  Graham Stott  <grahams@redhat.com>
  
 	* config/i386/i386.md (testqi_1): Add missing operand prefix
