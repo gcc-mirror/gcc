@@ -51,6 +51,36 @@ void
 
   assert (GFC_DESCRIPTOR_RANK (a) == 2
           || GFC_DESCRIPTOR_RANK (b) == 2);
+
+  if (retarray->data == NULL)
+    {
+      if (GFC_DESCRIPTOR_RANK (a) == 1)
+        {
+          retarray->dim[0].lbound = 0;
+          retarray->dim[0].ubound = b->dim[1].ubound - b->dim[1].lbound;
+          retarray->dim[0].stride = 1;
+        }
+      else if (GFC_DESCRIPTOR_RANK (b) == 1)
+        {
+          retarray->dim[0].lbound = 0;
+          retarray->dim[0].ubound = a->dim[0].ubound - a->dim[0].lbound;
+          retarray->dim[0].stride = 1;
+        }
+      else
+        {
+          retarray->dim[0].lbound = 0;
+          retarray->dim[0].ubound = a->dim[0].ubound - a->dim[0].lbound;
+          retarray->dim[0].stride = 1;
+          
+          retarray->dim[1].lbound = 0;
+          retarray->dim[1].ubound = b->dim[1].ubound - b->dim[1].lbound;
+          retarray->dim[1].stride = retarray->dim[0].ubound+1;
+        }
+          
+      retarray->data = internal_malloc (sizeof (rtype_name) * size0 (retarray));
+      retarray->base = 0;
+    }
+
   abase = a->data;
   if (GFC_DESCRIPTOR_SIZE (a) != 4)
     {

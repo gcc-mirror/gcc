@@ -2,7 +2,7 @@
    Copyright 2002 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
 
-This file is part of the GNU Fortran 95 runtime library (libgfor).
+This file is part of the GNU Fortran 95 runtime library (libgfortran).
 
 Libgfortran is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -51,6 +51,36 @@ __matmul_i4 (gfc_array_i4 * retarray, gfc_array_i4 * a, gfc_array_i4 * b)
 
   assert (GFC_DESCRIPTOR_RANK (a) == 2
           || GFC_DESCRIPTOR_RANK (b) == 2);
+
+  if (retarray->data == NULL)
+    {
+      if (GFC_DESCRIPTOR_RANK (a) == 1)
+        {
+          retarray->dim[0].lbound = 0;
+          retarray->dim[0].ubound = b->dim[1].ubound - b->dim[1].lbound;
+          retarray->dim[0].stride = 1;
+        }
+      else if (GFC_DESCRIPTOR_RANK (b) == 1)
+        {
+          retarray->dim[0].lbound = 0;
+          retarray->dim[0].ubound = a->dim[0].ubound - a->dim[0].lbound;
+          retarray->dim[0].stride = 1;
+        }
+      else
+        {
+          retarray->dim[0].lbound = 0;
+          retarray->dim[0].ubound = a->dim[0].ubound - a->dim[0].lbound;
+          retarray->dim[0].stride = 1;
+          
+          retarray->dim[1].lbound = 0;
+          retarray->dim[1].ubound = b->dim[1].ubound - b->dim[1].lbound;
+          retarray->dim[1].stride = retarray->dim[0].ubound+1;
+        }
+          
+      retarray->data = internal_malloc (sizeof (GFC_INTEGER_4) * size0 (retarray));
+      retarray->base = 0;
+    }
+
   abase = a->data;
   bbase = b->data;
   dest = retarray->data;

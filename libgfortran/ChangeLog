@@ -1,3 +1,10 @@
+2004-09-09  Victor Leikehman  <lei@il.ibm.com>
+
+	* m4/matmul.m4, m4/matmull.m4, intrinsics/eoshift0.c,
+	intrinsics/eoshift2.c, intrinsics/transpose_generic.c:
+	Allocate space if return value has NULL in its data field.
+	* generated/*.c: Regenerate.
+
 2004-08-06  Janne Blomqvist  <jblomqvi@cc.hut.fi>
 
 	* intrinsics/env.c: New file.
