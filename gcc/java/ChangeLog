@@ -1,3 +1,9 @@
+2004-07-15  Frank Ch. Eigler  <fche@redhat.com>
+
+	g++/15861
+	* jcf-parse.c (java_emit_static_constructor): Specify default
+	priority.
+
 2004-07-13  Per Bothner  <per@bothner.com>
 
 	* java-tree.h (all_class_filename):  Remove useless macro.

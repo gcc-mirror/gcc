@@ -268,6 +268,9 @@ static GTY (()) tree mf_register_fndecl;
 /* extern void __mf_unregister (void *ptr, size_t sz, int type); */
 static GTY (()) tree mf_unregister_fndecl;
 
+/* extern void __mf_init (); */
+static GTY (()) tree mf_init_fndecl;
+
 /* Helper for mudflap_init: construct a decl with the given category,
    name, and type, mark it an external reference, and pushdecl it.  */
 static inline tree
@@ -303,13 +306,15 @@ mf_make_mf_cache_struct_type (tree field_type)
   return struct_type;
 }
 
-#define build_function_type_3(rtype, arg1, arg2, arg3) \
- build_function_type (rtype, tree_cons (0, arg1, tree_cons (0, arg2, \
-                             tree_cons (0, arg3, void_list_node))))
-#define build_function_type_4(rtype, arg1, arg2, arg3, arg4) \
- build_function_type (rtype, tree_cons (0, arg1, tree_cons (0, arg2, \
-                             tree_cons (0, arg3, tree_cons (0, arg4, \
-                             void_list_node)))))
+#define build_function_type_0(rtype)            \
+  build_function_type (rtype, void_list_node)
+#define build_function_type_3(rtype, arg1, arg2, arg3)                  \
+  build_function_type (rtype, tree_cons (0, arg1, tree_cons (0, arg2,   \
+                                                             tree_cons (0, arg3, void_list_node))))
+#define build_function_type_4(rtype, arg1, arg2, arg3, arg4)            \
+  build_function_type (rtype, tree_cons (0, arg1, tree_cons (0, arg2,   \
+                                                             tree_cons (0, arg3, tree_cons (0, arg4, \
+                                                                                            void_list_node)))))
 
 /* Initialize the global tree nodes that correspond to mf-runtime.h
    declarations.  */
@@ -321,42 +326,48 @@ mudflap_init (void)
   tree mf_cache_array_type;
   tree mf_check_register_fntype;
   tree mf_unregister_fntype;
+  tree mf_init_fntype;
 
   if (done)
     return;
   done = true;
 
   mf_uintptr_type = lang_hooks.types.type_for_mode (ptr_mode,
-						    /*unsignedp=*/true);
+                                                    /*unsignedp=*/true);
   mf_const_string_type
     = build_pointer_type (build_qualified_type
-			  (char_type_node, TYPE_QUAL_CONST));
+                          (char_type_node, TYPE_QUAL_CONST));
 
   mf_cache_struct_type = mf_make_mf_cache_struct_type (mf_uintptr_type);
   mf_cache_structptr_type = build_pointer_type (mf_cache_struct_type);
   mf_cache_array_type = build_array_type (mf_cache_struct_type, 0);
   mf_check_register_fntype =
     build_function_type_4 (void_type_node, ptr_type_node, size_type_node,
-			   integer_type_node, mf_const_string_type);
+                           integer_type_node, mf_const_string_type);
   mf_unregister_fntype =
     build_function_type_3 (void_type_node, ptr_type_node, size_type_node,
-			   integer_type_node);
+                           integer_type_node);
+  mf_init_fntype =
+    build_function_type_0 (void_type_node);
 
   mf_cache_array_decl = mf_make_builtin (VAR_DECL, "__mf_lookup_cache",
-					 mf_cache_array_type);
+                                         mf_cache_array_type);
   mf_cache_shift_decl = mf_make_builtin (VAR_DECL, "__mf_lc_shift",
-					 unsigned_char_type_node);
+                                         unsigned_char_type_node);
   mf_cache_mask_decl = mf_make_builtin (VAR_DECL, "__mf_lc_mask",
-					mf_uintptr_type);
+                                        mf_uintptr_type);
   mf_check_fndecl = mf_make_builtin (FUNCTION_DECL, "__mf_check",
-				     mf_check_register_fntype);
+                                     mf_check_register_fntype);
   mf_register_fndecl = mf_make_builtin (FUNCTION_DECL, "__mf_register",
-					mf_check_register_fntype);
+                                        mf_check_register_fntype);
   mf_unregister_fndecl = mf_make_builtin (FUNCTION_DECL, "__mf_unregister",
-					  mf_unregister_fntype);
+                                          mf_unregister_fntype);
+  mf_init_fndecl = mf_make_builtin (FUNCTION_DECL, "__mf_init",
+                                    mf_init_fntype);
 }
 #undef build_function_type_4
 #undef build_function_type_3
+#undef build_function_type_0
 
 
 /* ------------------------------------------------------------------------ */
@@ -446,7 +457,7 @@ mf_decl_clear_locals (void)
 
 static void
 mf_build_check_statement_for (tree addr, tree size,
-			      block_stmt_iterator *instr_bsi,
+                              block_stmt_iterator *instr_bsi,
                               location_t *locus, tree dirflag)
 {
   tree_stmt_iterator head, tsi;
@@ -536,13 +547,13 @@ mf_build_check_statement_for (tree addr, tree size,
   /* Quick validity check.
 
      if (__mf_elem->low > __mf_base
-	 || (__mf_elem_high < __mf_base + sizeof(T) - 1))
-	{
-	  __mf_check ();
-	  ... and only if single-threaded:
-	  __mf_lookup_shift_1 = f...;
-	  __mf_lookup_mask_l = ...;
-	}
+         || (__mf_elem_high < __mf_base + sizeof(T) - 1))
+        {
+          __mf_check ();
+          ... and only if single-threaded:
+          __mf_lookup_shift_1 = f...;
+          __mf_lookup_mask_l = ...;
+        }
 
      It is expected that this body of code is rarely executed so we mark
      the edge to the THEN clause of the conditional jump as unlikely.  */
@@ -556,8 +567,8 @@ mf_build_check_statement_for (tree addr, tree size,
   /* Construct '__mf_elem->high < __mf_base + sizeof(T) - 1'.
 
      First build:
-	1) u <--  '__mf_elem->high'
-	2) v <--  '__mf_base + sizeof (T) - 1'.
+        1) u <--  '__mf_elem->high'
+        2) v <--  '__mf_base + sizeof (T) - 1'.
 
      Then build 'u <-- (u < v).  */
 
@@ -567,7 +578,7 @@ mf_build_check_statement_for (tree addr, tree size,
              TREE_CHAIN (TYPE_FIELDS (mf_cache_struct_type)), NULL_TREE);
 
   v = convert (mf_uintptr_type,
-	       size_binop (MINUS_EXPR, size, size_one_node));
+               size_binop (MINUS_EXPR, size, size_one_node));
   v = fold (build (PLUS_EXPR, mf_uintptr_type, mf_base, v));
 
   u = build (LT_EXPR, boolean_type_node, u, v);
@@ -584,8 +595,8 @@ mf_build_check_statement_for (tree addr, tree size,
   /* Build the conditional jump.  'cond' is just a temporary so we can
      simply build a void COND_EXPR.  We do need labels in both arms though.  */
   t = build (COND_EXPR, void_type_node, cond,
-	     build (GOTO_EXPR, void_type_node, tree_block_label (then_bb)),
-	     build (GOTO_EXPR, void_type_node, tree_block_label (join_bb)));
+             build (GOTO_EXPR, void_type_node, tree_block_label (then_bb)),
+             build (GOTO_EXPR, void_type_node, tree_block_label (join_bb)));
   SET_EXPR_LOCUS (t, locus);
   tsi_link_after (&tsi, t, TSI_CONTINUE_LINKING);
 
@@ -593,7 +604,7 @@ mf_build_check_statement_for (tree addr, tree size,
      the conditional jump,
 
      if (__mf_elem->low > __mf_base
-	 || (__mf_elem_high < __mf_base + sizeof(T) - 1))
+         || (__mf_elem_high < __mf_base + sizeof(T) - 1))
 
      The lowered GIMPLE tree representing this code is in the statement
      list starting at 'head'.
@@ -612,9 +623,9 @@ mf_build_check_statement_for (tree addr, tree size,
      This is the body of the conditional.  */
   
   u = tree_cons (NULL_TREE,
-		 mf_file_function_line_tree (locus == NULL ? UNKNOWN_LOCATION
-					     : *locus),
-		 NULL_TREE);
+                 mf_file_function_line_tree (locus == NULL ? UNKNOWN_LOCATION
+                                             : *locus),
+                 NULL_TREE);
   u = tree_cons (NULL_TREE, dirflag, u);
   u = tree_cons (NULL_TREE, size, u);
   u = tree_cons (NULL_TREE, mf_value, u);
@@ -672,14 +683,14 @@ mf_xform_derefs_1 (block_stmt_iterator *iter, tree *tp,
           {
             tree dom = TYPE_DOMAIN (TREE_TYPE (op0));
 
-	    /* Test for index in range.  Break if not.  */
-	    if (!dom
-		|| (! TYPE_MIN_VALUE (dom)
-		    || ! really_constant_p (TYPE_MIN_VALUE (dom)))
-		|| (! TYPE_MAX_VALUE (dom)
-		    || ! really_constant_p (TYPE_MAX_VALUE (dom)))
-		|| (tree_int_cst_lt (op1, TYPE_MIN_VALUE (dom))
-		    || tree_int_cst_lt (TYPE_MAX_VALUE (dom), op1)))
+            /* Test for index in range.  Break if not.  */
+            if (!dom
+                || (! TYPE_MIN_VALUE (dom)
+                    || ! really_constant_p (TYPE_MIN_VALUE (dom)))
+                || (! TYPE_MAX_VALUE (dom)
+                    || ! really_constant_p (TYPE_MAX_VALUE (dom)))
+                || (tree_int_cst_lt (op1, TYPE_MIN_VALUE (dom))
+                    || tree_int_cst_lt (TYPE_MAX_VALUE (dom), op1)))
               break;
 
             /* If we're looking at a non-external VAR_DECL, then the 
@@ -726,14 +737,14 @@ mf_xform_derefs_1 (block_stmt_iterator *iter, tree *tp,
            things the hard way with PLUS.  */
         if (DECL_BIT_FIELD_TYPE (field))
           {
-	    if (TREE_CODE (DECL_SIZE_UNIT (field)) == INTEGER_CST)
-	      size = DECL_SIZE_UNIT (field);
+            if (TREE_CODE (DECL_SIZE_UNIT (field)) == INTEGER_CST)
+              size = DECL_SIZE_UNIT (field);
 
             addr = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
             addr = fold_convert (ptr_type_node, addr);
             addr = fold (build (PLUS_EXPR, ptr_type_node,
                                 addr, fold_convert (ptr_type_node,
-						    byte_position (field))));
+                                                    byte_position (field))));
           }
         else
           {
@@ -787,35 +798,35 @@ mf_xform_derefs (void)
     {
       next = bb->next_bb;
       for (i = bsi_start (bb); !bsi_end_p (i); bsi_next (&i))
-	{
-	  tree s = bsi_stmt (i);
+        {
+          tree s = bsi_stmt (i);
 
-	  /* Only a few GIMPLE statements can reference memory.  */
-	  switch (TREE_CODE (s))
-	    {
-	    case MODIFY_EXPR:
-	      mf_xform_derefs_1 (&i, &TREE_OPERAND (s, 0), EXPR_LOCUS (s),
-				 integer_one_node);
-	      mf_xform_derefs_1 (&i, &TREE_OPERAND (s, 1), EXPR_LOCUS (s),
-				 integer_zero_node);
-	      break;
+          /* Only a few GIMPLE statements can reference memory.  */
+          switch (TREE_CODE (s))
+            {
+            case MODIFY_EXPR:
+              mf_xform_derefs_1 (&i, &TREE_OPERAND (s, 0), EXPR_LOCUS (s),
+                                 integer_one_node);
+              mf_xform_derefs_1 (&i, &TREE_OPERAND (s, 1), EXPR_LOCUS (s),
+                                 integer_zero_node);
+              break;
 
-	    case RETURN_EXPR:
-	      if (TREE_OPERAND (s, 0) != NULL_TREE)
-		{
-		  if (TREE_CODE (TREE_OPERAND (s, 0)) == MODIFY_EXPR)
-		    mf_xform_derefs_1 (&i, &TREE_OPERAND (TREE_OPERAND (s, 0), 1),
-				       EXPR_LOCUS (s), integer_zero_node);
-		  else
-		    mf_xform_derefs_1 (&i, &TREE_OPERAND (s, 0), EXPR_LOCUS (s),
-				       integer_zero_node);
-		}
-	      break;
+            case RETURN_EXPR:
+              if (TREE_OPERAND (s, 0) != NULL_TREE)
+                {
+                  if (TREE_CODE (TREE_OPERAND (s, 0)) == MODIFY_EXPR)
+                    mf_xform_derefs_1 (&i, &TREE_OPERAND (TREE_OPERAND (s, 0), 1),
+                                       EXPR_LOCUS (s), integer_zero_node);
+                  else
+                    mf_xform_derefs_1 (&i, &TREE_OPERAND (s, 0), EXPR_LOCUS (s),
+                                       integer_zero_node);
+                }
+              break;
 
-	    default:
-	      ;
-	    }
-	}
+            default:
+              ;
+            }
+        }
       bb = next;
     }
   while (bb && bb->index <= saved_last_basic_block);
@@ -866,15 +877,15 @@ mx_register_decls (tree decl, tree *stmt_list)
     {
       /* Eligible decl?  */
       if ((TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == PARM_DECL)
-	  /* It must be a non-external, automatic variable.  */
-	  && ! DECL_EXTERNAL (decl)
-	  && ! TREE_STATIC (decl)
-	  /* The decl must have its address taken.  */
-	  && TREE_ADDRESSABLE (decl)
-	  /* The type of the variable must be complete.  */
-	  && COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (decl))
-	  /* Don't process the same decl twice.  */
-	  && ! mf_marked_p (decl))
+          /* It must be a non-external, automatic variable.  */
+          && ! DECL_EXTERNAL (decl)
+          && ! TREE_STATIC (decl)
+          /* The decl must have its address taken.  */
+          && TREE_ADDRESSABLE (decl)
+          /* The type of the variable must be complete.  */
+          && COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (decl))
+          /* Don't process the same decl twice.  */
+          && ! mf_marked_p (decl))
         {
           tree size = NULL_TREE, variable_name;
           tree unregister_fncall, unregister_fncall_params;
@@ -904,9 +915,9 @@ mx_register_decls (tree decl, tree *stmt_list)
                   else if (TREE_CODE (t) == TRY_FINALLY_EXPR)
                     {
                       /* We hope that this is the try/finally block sometimes
-		         constructed by gimplify_bind_expr() for a BIND_EXPR
-			 that contains VLAs.  This very naive recursion
-			 appears to be sufficient.  */
+                         constructed by gimplify_bind_expr() for a BIND_EXPR
+                         that contains VLAs.  This very naive recursion
+                         appears to be sufficient.  */
                       initially_stmts = tsi_start (TREE_OPERAND (t, 0));
                     }
 
@@ -914,7 +925,7 @@ mx_register_decls (tree decl, tree *stmt_list)
                     {
                       if (TREE_CODE (TREE_OPERAND(call, 0)) == ADDR_EXPR &&
                           TREE_OPERAND (TREE_OPERAND (call, 0), 0) ==
-			  	implicit_built_in_decls [BUILT_IN_STACK_ALLOC])
+                                implicit_built_in_decls [BUILT_IN_STACK_ALLOC])
                         {
                           tree stack_alloc_args = TREE_OPERAND (call, 1);
                           tree stack_alloc_op1 = TREE_VALUE (stack_alloc_args);
@@ -1130,6 +1141,13 @@ mudflap_register_call (tree obj, tree object_size, tree varname)
 
   call_stmt = build_function_call_expr (mf_register_fndecl, args);
 
+  /* Add an initial __mf_init() call to the list of registration calls.  */ 
+  if (enqueued_call_stmt_chain == NULL_TREE)
+    {
+      tree call2_stmt = build_function_call_expr (mf_init_fndecl, NULL_TREE);
+      append_to_statement_list (call2_stmt, &enqueued_call_stmt_chain);      
+    }
+
   append_to_statement_list (call_stmt, &enqueued_call_stmt_chain);
 }
 
@@ -1246,7 +1264,8 @@ mudflap_finish_file (void)
 
   if (enqueued_call_stmt_chain)
     {
-      cgraph_build_static_cdtor ('I', enqueued_call_stmt_chain);
+      cgraph_build_static_cdtor ('I', enqueued_call_stmt_chain, 
+                                 MAX_RESERVED_INIT_PRIORITY-1);
       enqueued_call_stmt_chain = 0;
     }
 }

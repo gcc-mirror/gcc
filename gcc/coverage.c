@@ -939,7 +939,7 @@ create_coverage (void)
   append_to_statement_list (t, &body);
 
   /* Generate a constructor to run it.  */
-  cgraph_build_static_cdtor ('I', body);
+  cgraph_build_static_cdtor ('I', body, DEFAULT_INIT_PRIORITY);
 }
 
 /* Perform file-level initialization. Read in data file, generate name

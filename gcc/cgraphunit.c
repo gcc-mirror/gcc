@@ -1792,7 +1792,7 @@ cgraph_optimize (void)
    GENERIC statements.  */
 
 void
-cgraph_build_static_cdtor (char which, tree body)
+cgraph_build_static_cdtor (char which, tree body, int priority)
 {
   static int counter = 0;
   char which_buf[16];
@@ -1846,6 +1846,6 @@ cgraph_build_static_cdtor (char which, tree body)
 	fn = targetm.asm_out.constructor;
       else
 	fn = targetm.asm_out.destructor;
-      fn (XEXP (DECL_RTL (decl), 0), DEFAULT_INIT_PRIORITY);
+      fn (XEXP (DECL_RTL (decl), 0), priority);
     }
 }

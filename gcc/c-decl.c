@@ -6616,7 +6616,7 @@ build_cdtor (int method_type, tree cdtors)
     append_to_statement_list (build_function_call (TREE_VALUE (cdtors), 0),
 			      &body);
 
-  cgraph_build_static_cdtor (method_type, body);
+  cgraph_build_static_cdtor (method_type, body, DEFAULT_INIT_PRIORITY);
 }
 
 /* Perform final processing on one file scope's declarations (or the
