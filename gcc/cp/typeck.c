@@ -1,6 +1,6 @@
 /* Build expressions with type checking for C++ compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -3075,8 +3075,9 @@ build_function_call_real (function, params, require_complete, flags)
 	return result;
     }
 
-  /* C++ */
-  result = build_call (function, coerced_params);
+  /* Some built-in function calls will be evaluated at
+     compile-time in fold ().  */
+  result = fold (build_call (function, coerced_params));
   value_type = TREE_TYPE (result);
 
   if (require_complete)

@@ -1,6 +1,6 @@
 /* Functions related to invoking methods and overloaded functions.
    Copyright (C) 1987, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) and
    modified by Brendan Kehoe (brendan@cygnus.com).
 
@@ -4261,6 +4261,8 @@ build_over_call (cand, args, flags)
 	return exp;
     }
 
+  /* Some built-in function calls will be evaluated at
+     compile-time in fold ().  */
   fn = fold (build_call (fn, converted_args));
   if (VOID_TYPE_P (TREE_TYPE (fn)))
     return fn;
