@@ -980,6 +980,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 				DECL_SOURCE_LINE (decl),
 				"storage size of `%s' isn't known",
 				IDENTIFIER_POINTER (DECL_NAME (decl)));
+      TREE_ASM_WRITTEN (decl) = 1;
       return;
     }
 
