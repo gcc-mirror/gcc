@@ -1,3 +1,10 @@
+2000-03-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (grokdeclarator): Count partial specializations when
+	keeping track of how many template classes have been seen.
+
+	* dump.c (dequeue_and_dump): Dump DECL_TEMPLATE_RESULT.
+	
 Sat Mar 25 09:12:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* class.c (build_vbase_pointer_fields): layout_field now place_field.
