@@ -1,3 +1,8 @@
+2004-07-26    <hp@bitrange.com>
+
+	* parse.y (build_super_invocation): Adjust declaration order to
+	avoid declaration after statement.
+
 2004-07-25  Bernardo Innocenti  <bernie@develer.com>
 
 	* decl.c: Rename all identifiers named `class' to `cl'.
