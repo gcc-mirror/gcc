@@ -7184,6 +7184,7 @@ expand_builtin_return_addr (fndecl_code, count, tem)
 			plus_constant (tem, GET_MODE_SIZE (Pmode)));
   tem = gen_rtx (MEM, Pmode, tem);
 #endif
+  return tem;
 }
 
 /* Expand an expression EXP that calls a built-in function,
