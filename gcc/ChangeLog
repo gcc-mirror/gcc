@@ -1,3 +1,8 @@
+Tue May 23 13:58:52 2000  Philippe De Muyter  <phdm@macqel.be>
+
+	* configure.in (NO_MINUS_C_MINUS_O): Fix thinko in previous fix.
+	* configure: Regenerated.
+
 2000-05-23  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* simplify-rtx.c (SIGN_EXTEND): New macro.
