@@ -240,7 +240,7 @@ namespace std
     inline _Tp*
     __copy_trivial(const _Tp* __first, const _Tp* __last, _Tp* __result)
     {
-      memmove(__result, __first, sizeof(_Tp) * (__last - __first));
+      std::memmove(__result, __first, sizeof(_Tp) * (__last - __first));
       return __result + (__last - __first);
     }
 
@@ -248,24 +248,24 @@ namespace std
     inline _OutputIterator
     __copy_aux2(_InputIterator __first, _InputIterator __last,
 		_OutputIterator __result, __false_type)
-    { return __copy(__first, __last, __result, __iterator_category(__first)); }
+    { return std::__copy(__first, __last, __result, __iterator_category(__first)); }
 
   template<typename _InputIterator, typename _OutputIterator>
     inline _OutputIterator
     __copy_aux2(_InputIterator __first, _InputIterator __last,
 		_OutputIterator __result, __true_type)
-    { return __copy(__first, __last, __result, __iterator_category(__first)); }
+    { return std::__copy(__first, __last, __result, __iterator_category(__first)); }
 
   template<typename _Tp>
     inline _Tp*
     __copy_aux2(_Tp* __first, _Tp* __last, _Tp* __result, __true_type)
-    { return __copy_trivial(__first, __last, __result); }
+    { return std::__copy_trivial(__first, __last, __result); }
 
   template<typename _Tp>
     inline _Tp*
     __copy_aux2(const _Tp* __first, const _Tp* __last, _Tp* __result, 
 		__true_type)
-    { return __copy_trivial(__first, __last, __result); }
+    { return std::__copy_trivial(__first, __last, __result); }
 
   template<typename _InputIterator, typename _OutputIterator>
     inline _OutputIterator
@@ -276,8 +276,8 @@ namespace std
 	  _ValueType;
       typedef typename __type_traits<_ValueType>::has_trivial_assignment_operator
 	  _Trivial;
-      return _OutputIterator(__copy_aux2(__first, __last, __result.base(),
-					 _Trivial()));
+      return _OutputIterator(std::__copy_aux2(__first, __last, __result.base(),
+					      _Trivial()));
     }
 
   template<typename _InputIterator, typename _OutputIterator>
@@ -288,7 +288,7 @@ namespace std
       typedef typename iterator_traits<_InputIterator>::value_type _ValueType;
       typedef typename __type_traits<_ValueType>::has_trivial_assignment_operator
           _Trivial;
-      return __copy_aux2(__first, __last, __result, _Trivial());
+      return std::__copy_aux2(__first, __last, __result, _Trivial());
     }
 
   template<typename _InputIterator, typename _OutputIterator>
@@ -297,7 +297,7 @@ namespace std
 	       _OutputIterator __result, __true_type)
     {
       typedef typename _Is_normal_iterator<_OutputIterator>::_Normal __Normal;
-      return __copy_ni2(__first.base(), __last.base(), __result, __Normal());
+      return std::__copy_ni2(__first.base(), __last.base(), __result, __Normal());
     }
 
   template<typename _InputIterator, typename _OutputIterator>
@@ -306,7 +306,7 @@ namespace std
 	       _OutputIterator __result, __false_type)
     {
       typedef typename _Is_normal_iterator<_OutputIterator>::_Normal __Normal;
-      return __copy_ni2(__first, __last, __result, __Normal());
+      return std::__copy_ni2(__first, __last, __result, __Normal());
     }
 
   /**
@@ -332,7 +332,7 @@ namespace std
 	    typename iterator_traits<_InputIterator>::value_type>)
 
        typedef typename _Is_normal_iterator<_InputIterator>::_Normal __Normal;
-       return __copy_ni1(__first, __last, __result, __Normal());
+       return std::__copy_ni1(__first, __last, __result, __Normal());
     }
 
   template<typename _BidirectionalIterator1, typename _BidirectionalIterator2>
@@ -369,8 +369,8 @@ namespace std
       copy(_BidirectionalIterator1 __first, _BidirectionalIterator1 __last, 
 	   _BidirectionalIterator2 __result)
       {
-        return __copy_backward(__first, __last, __result, 
-			       __iterator_category(__first));
+        return std::__copy_backward(__first, __last, __result, 
+				    __iterator_category(__first));
       }
     };
 
@@ -381,7 +381,7 @@ namespace std
       copy(const _Tp* __first, const _Tp* __last, _Tp* __result)
       {
 	const ptrdiff_t _Num = __last - __first;
-	memmove(__result - _Num, __first, sizeof(_Tp) * _Num);
+	std::memmove(__result - _Num, __first, sizeof(_Tp) * _Num);
 	return __result - _Num;
       }
     };
@@ -392,7 +392,7 @@ namespace std
       static _Tp*
       copy(const _Tp* __first, const _Tp* __last, _Tp* __result)
       {
-	return  __copy_backward_dispatch<_Tp*, _Tp*, __true_type>
+	return  std::__copy_backward_dispatch<_Tp*, _Tp*, __true_type>
 	  ::copy(__first, __last, __result);
       }
     };
@@ -403,22 +403,22 @@ namespace std
     {
       typedef typename __type_traits<typename iterator_traits<_BI2>::value_type>
 			    ::has_trivial_assignment_operator _Trivial;
-      return __copy_backward_dispatch<_BI1, _BI2, _Trivial>::copy(__first, 
-								  __last, 
-								  __result);
+      return std::__copy_backward_dispatch<_BI1, _BI2, _Trivial>::copy(__first, 
+								       __last, 
+								       __result);
     }
 
   template <typename _BI1, typename _BI2>
     inline _BI2
     __copy_backward_output_normal_iterator(_BI1 __first, _BI1 __last,
 					   _BI2 __result, __true_type)
-    { return _BI2(__copy_backward_aux(__first, __last, __result.base())); }
+    { return _BI2(std::__copy_backward_aux(__first, __last, __result.base())); }
 
   template <typename _BI1, typename _BI2>
     inline _BI2
     __copy_backward_output_normal_iterator(_BI1 __first, _BI1 __last,
 					   _BI2 __result, __false_type)
-    { return __copy_backward_aux(__first, __last, __result); }
+    { return std::__copy_backward_aux(__first, __last, __result); }
 
   template <typename _BI1, typename _BI2>
     inline _BI2
@@ -426,9 +426,9 @@ namespace std
 					  _BI2 __result, __true_type)
     {
       typedef typename _Is_normal_iterator<_BI2>::_Normal __Normal;
-      return __copy_backward_output_normal_iterator(__first.base(),
-						    __last.base(), __result, 
-						    __Normal());
+      return std::__copy_backward_output_normal_iterator(__first.base(),
+							 __last.base(), __result, 
+							 __Normal());
     }
 
   template <typename _BI1, typename _BI2>
@@ -437,8 +437,8 @@ namespace std
 					  _BI2 __result, __false_type)
     {
       typedef typename _Is_normal_iterator<_BI2>::_Normal __Normal;
-      return __copy_backward_output_normal_iterator(__first, __last, __result,
-						    __Normal());
+      return std::__copy_backward_output_normal_iterator(__first, __last, __result,
+							 __Normal());
     }
 
   /**
@@ -467,8 +467,8 @@ namespace std
 	    typename iterator_traits<_BI2>::value_type>)
 
       typedef typename _Is_normal_iterator<_BI1>::_Normal __Normal;
-      return __copy_backward_input_normal_iterator(__first, __last, __result,
-						   __Normal());
+      return std::__copy_backward_input_normal_iterator(__first, __last, __result,
+							__Normal());
     }
 
 
@@ -522,28 +522,28 @@ namespace std
   fill(unsigned char* __first, unsigned char* __last, const unsigned char& __c)
   {
     unsigned char __tmp = __c;
-    memset(__first, __tmp, __last - __first);
+    std::memset(__first, __tmp, __last - __first);
   }
 
   inline void
   fill(signed char* __first, signed char* __last, const signed char& __c)
   {
     signed char __tmp = __c;
-    memset(__first, static_cast<unsigned char>(__tmp), __last - __first);
+    std::memset(__first, static_cast<unsigned char>(__tmp), __last - __first);
   }
 
   inline void
   fill(char* __first, char* __last, const char& __c)
   {
     char __tmp = __c;
-    memset(__first, static_cast<unsigned char>(__tmp), __last - __first);
+    std::memset(__first, static_cast<unsigned char>(__tmp), __last - __first);
   }
 
   template<typename _Size>
     inline unsigned char*
     fill_n(unsigned char* __first, _Size __n, const unsigned char& __c)
     {
-      fill(__first, __first + __n, __c);
+      std::fill(__first, __first + __n, __c);
       return __first + __n;
     }
 
@@ -551,7 +551,7 @@ namespace std
     inline signed char*
     fill_n(char* __first, _Size __n, const signed char& __c)
     {
-      fill(__first, __first + __n, __c);
+      std::fill(__first, __first + __n, __c);
       return __first + __n;
     }
 
@@ -559,7 +559,7 @@ namespace std
     inline char*
     fill_n(char* __first, _Size __n, const char& __c)
     {
-      fill(__first, __first + __n, __c);
+      std::fill(__first, __first + __n, __c);
       return __first + __n;
     }
 
@@ -594,7 +594,7 @@ namespace std
 	  ++__first1;
 	  ++__first2;
         }
-      return pair<_InputIterator1, _InputIterator2>(__first1, __first2);
+      return std::pair<_InputIterator1, _InputIterator2>(__first1, __first2);
     }
 
   /**
@@ -625,7 +625,7 @@ namespace std
 	  ++__first1;
 	  ++__first2;
         }
-      return pair<_InputIterator1, _InputIterator2>(__first1, __first2);
+      return std::pair<_InputIterator1, _InputIterator2>(__first1, __first2);
     }
 
   /**
@@ -763,7 +763,7 @@ namespace std
   {
     const size_t __len1 = __last1 - __first1;
     const size_t __len2 = __last2 - __first2;
-    const int __result = memcmp(__first1, __first2, std::min(__len1, __len2));
+    const int __result = std::memcmp(__first1, __first2, std::min(__len1, __len2));
     return __result != 0 ? __result < 0 : __len1 < __len2;
   }
 
@@ -772,15 +772,15 @@ namespace std
 			  const char* __first2, const char* __last2)
   {
 #if CHAR_MAX == SCHAR_MAX
-    return lexicographical_compare((const signed char*) __first1,
-				   (const signed char*) __last1,
-				   (const signed char*) __first2,
-				   (const signed char*) __last2);
+    return std::lexicographical_compare((const signed char*) __first1,
+					(const signed char*) __last1,
+					(const signed char*) __first2,
+					(const signed char*) __last2);
 #else /* CHAR_MAX == SCHAR_MAX */
-    return lexicographical_compare((const unsigned char*) __first1,
-				   (const unsigned char*) __last1,
-				   (const unsigned char*) __first2,
-				   (const unsigned char*) __last2);
+    return std::lexicographical_compare((const unsigned char*) __first1,
+					(const unsigned char*) __last1,
+					(const unsigned char*) __first2,
+					(const unsigned char*) __last2);
 #endif /* CHAR_MAX == SCHAR_MAX */
   }
 
