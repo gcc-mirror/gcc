@@ -1,3 +1,8 @@
+2003-07-03 Uwe Stieber <uwe@kaos-group.de>
+
+	* config/kaos.h (CPP_PREDEFINES): Delete.
+	(TARGET_OS_CPP_BUILTINS): New.
+
 2003-07-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-aux-info.c: Include toplev.h after c-tree.h.
