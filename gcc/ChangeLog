@@ -1,3 +1,7 @@
+2002-04-02  David O'Brien  <obrien@FreeBSD.org>
+
+	* protoize.c: Match include directory usage with cppdefault.c.
+
 2002-04-03  Jeffrey A Law  (law@redhat.com)
             Hans-Peter Nilsson  <hp@bitrange.com>
 
