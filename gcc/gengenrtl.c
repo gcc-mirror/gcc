@@ -165,9 +165,9 @@ excluded_rtx (int idx)
 static void
 find_formats (void)
 {
-  int i;
+  unsigned int i;
 
-  for (i = 0; i < (int)NUM_RTX_CODE; i++)
+  for (i = 0; i < NUM_RTX_CODE; i++)
     {
       const char **f;
 
@@ -296,7 +296,7 @@ genlegend (void)
 static void
 genheader (void)
 {
-  int i;
+  unsigned int i;
   const char **fmt;
 
   puts ("#ifndef GCC_GENRTL_H");
@@ -307,7 +307,7 @@ genheader (void)
 
   putchar ('\n');
 
-  for (i = 0; i < (int) NUM_RTX_CODE; i++)
+  for (i = 0; i < NUM_RTX_CODE; i++)
     if (! special_format (defs[i].format))
       genmacro (i);
 
