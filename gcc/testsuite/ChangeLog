@@ -1,3 +1,7 @@
+2001-01-18  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * gcc.dg/cpp/assembl2.S: New test case.
+
 2001-01-17  Jeffrey Oldham  <oldham@codesourcery.com>
 
 	* gcc.dg/special/ecos.exp (wkali-2.c): Xfail if only weak aliases
