@@ -1,3 +1,8 @@
+2004-01-23  Andrew Pinski  <apinski@apple.com>
+
+	* gcc.dg/20030121-1.c: Move to ..
+	* gcc.dg/20040121-1.c: here.
+
 2004-01-23  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-29.c: New test case.
