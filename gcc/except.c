@@ -482,9 +482,21 @@ struct label_node *outer_context_label_stack = NULL;
 
 struct label_node *false_label_stack = NULL;
 
-rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
+static void push_eh_entry	PROTO((struct eh_stack *));
+static struct eh_entry * pop_eh_entry		PROTO((struct eh_stack *));
+static void enqueue_eh_entry	PROTO((struct eh_queue *, struct eh_entry *));
+static struct eh_entry * dequeue_eh_entry	PROTO((struct eh_queue *));
+static rtx call_get_eh_context	PROTO((void));
+static void start_dynamic_cleanup		PROTO((tree, tree));
+static void start_dynamic_handler		PROTO((void));
 static void expand_rethrow	PROTO((rtx));
+static void output_exception_table_entry	PROTO((FILE *, int));
+static int can_throw		PROTO((rtx));
+static rtx scan_region		PROTO((rtx, int, int *));
+static void eh_regs		PROTO((rtx *, rtx *, int));
+static void set_insn_eh_region	PROTO((rtx *, int));
 
+rtx expand_builtin_return_addr	PROTO((enum built_in_function, int, rtx));
 
 /* Various support routines to manipulate the various data structures
    used by the exception handling code.  */
@@ -2170,7 +2182,8 @@ expand_builtin_set_eh_regs (handler, offset)
 static int *insn_eh_region = (int *)0;
 static int maximum_uid;
 
-static void set_insn_eh_region (first, region_num)
+static void
+set_insn_eh_region (first, region_num)
      rtx *first;
      int region_num;
 {
