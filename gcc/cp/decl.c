@@ -4442,10 +4442,15 @@ reshape_init (tree type, tree *initp)
 	new_init = build_tree_list (TREE_PURPOSE (old_init), new_init);
     }
 
-  /* If this was a brace-enclosed initializer and all of the
-     initializers were not used up, there is a problem.  */
-  if (brace_enclosed_p && *initp)
-    error ("too many initializers for `%T'", type);
+  /* If there are more initializers than necessary, issue a
+     diagnostic.  */  
+  if (*initp)
+    {
+      if (brace_enclosed_p)
+	error ("too many initializers for %qT", type);
+      else if (warn_missing_braces)
+	warning ("missing braces around initializer");
+    }
 
   return new_init;
 }

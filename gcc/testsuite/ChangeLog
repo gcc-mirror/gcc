@@ -1,3 +1,8 @@
+2005-02-10  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/19755
+	* decl.c (reshape_init): Issue warnings about missing braces.
+
 2005-02-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/19579
