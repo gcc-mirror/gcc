@@ -205,11 +205,8 @@ reg_or_cint_move_operand (op, mode)
     return 1;
 
   if (GET_CODE (op) == CONST_INT)
-    {
-      /* OK if ldo, ldil, or zdepi, can be used.  */
-      return (INT_14_BITS (op) || (INTVAL (op) & 0x7ff) == 0
-	      || zdepi_cint_p (INTVAL (op)));
-    }
+    return cint_ok_for_move (INTVAL (op));
+
   return 0;
 }
 
