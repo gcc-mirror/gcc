@@ -29,6 +29,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "tree.h"
 #include "real.h"
 #include "rtl.h"
+#include "flags.h"
 #include "expr.h"
 #include "java-tree.h"
 #include "javaop.h"
@@ -2469,4 +2470,50 @@ process_jvm_instruction (PC, byte_ops, length)
     fprintf (stderr, "%3d: unknown(%3d)\n", oldpc, byte_ops[PC]);
   }
   return PC;
+}
+
+/* Force the (direct) sub-operands of NODE to be evaluated in left-to-right
+   order, as specified by Java Language Specification.
+
+   The problem is that while expand_expr will evaluate its sub-operands in
+   left-to-right order, for variables it will just return an rtx (i.e.
+   an lvalue) for the variable (rather than an rvalue).  So it is possible
+   that a later sub-operand will change the register, and when the
+   actual operation is done, it will use the new value, when it should
+   have used the original value.
+
+   We fix this by using save_expr.  This forces the sub-operand to be
+   copied into a fresh virtual register,
+*/
+
+tree
+force_evaluation_order (node)
+     tree  node;
+{
+  if (flag_syntax_only)
+    return node;
+  if (TREE_CODE_CLASS (TREE_CODE (node)) == '2'
+      && TREE_CODE (node) == ARRAY_REF)
+    {
+      if (TREE_SIDE_EFFECTS (TREE_OPERAND (node, 1)))
+	TREE_OPERAND (node, 0) = save_expr (TREE_OPERAND (node, 0));
+    }
+  else if (TREE_CODE (node) == CALL_EXPR || TREE_CODE (node) == NEW_CLASS_EXPR)
+    {
+      tree last_side_effecting_arg = NULL_TREE;
+      tree arg = TREE_OPERAND (node, 1);
+      for (; arg != NULL_TREE; arg = TREE_CHAIN (arg))
+	{
+	  if (TREE_SIDE_EFFECTS (TREE_VALUE (arg)))
+	    last_side_effecting_arg = arg;
+	}
+      arg = TREE_OPERAND (node, 1);
+      for (; arg != NULL_TREE;  arg = TREE_CHAIN (arg))
+	{
+	  if (arg == last_side_effecting_arg)
+	    break;
+	  TREE_VALUE (arg) = save_expr (TREE_VALUE (arg)); 
+	}
+    }
+  return node;
 }
