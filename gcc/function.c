@@ -2929,6 +2929,7 @@ purge_addressof_1 (rtx *loc, rtx insn, int force, int store, int may_postpone,
   int i, j;
   const char *fmt;
   bool result = true;
+  bool libcall = false;
 
   /* Re-start here to avoid recursion in common cases.  */
  restart:
@@ -2936,6 +2937,10 @@ purge_addressof_1 (rtx *loc, rtx insn, int force, int store, int may_postpone,
   x = *loc;
   if (x == 0)
     return true;
+
+  /* Is this a libcall?  */
+  if (!insn)
+    libcall = REG_NOTE_KIND (*loc) == REG_RETVAL;
 
   code = GET_CODE (x);
 
@@ -3070,31 +3075,27 @@ purge_addressof_1 (rtx *loc, rtx insn, int force, int store, int may_postpone,
 		 which can be succinctly described with a simple SUBREG.
 		 Note that removing the REG_EQUAL note is not an option
 		 on the last insn of a libcall, so we must do a replacement.  */
-	      if (! purge_addressof_replacements
-		  && ! purge_bitfield_addressof_replacements)
-		{
-		  /* In compile/990107-1.c:7 compiled at -O1 -m1 for sh-elf,
-		     we got
-		     (mem:DI (addressof:SI (reg/v:DF 160) 159 0x401c8510)
-		      [0 S8 A32]), which can be expressed with a simple
-		     same-size subreg  */
-		  if ((GET_MODE_SIZE (GET_MODE (x))
-		       == GET_MODE_SIZE (GET_MODE (sub)))
-		      /* Again, invalid pointer casts (as in
-			 compile/990203-1.c) can require paradoxical
-			 subregs.  */
-		      || (GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD
-			  && (GET_MODE_SIZE (GET_MODE (x))
-			      > GET_MODE_SIZE (GET_MODE (sub))))
-		      || (GET_MODE_SIZE (GET_MODE (x))
-			  < GET_MODE_SIZE (GET_MODE (sub))))
 
-		    {
-		      *loc = gen_rtx_SUBREG (GET_MODE (x), sub, 0);
-		      return true;
-		    }
-		  /* ??? Are there other cases we should handle?  */
+	      /* In compile/990107-1.c:7 compiled at -O1 -m1 for sh-elf,
+		 we got
+		 (mem:DI (addressof:SI (reg/v:DF 160) 159 0x401c8510)
+		 [0 S8 A32]), which can be expressed with a simple
+		 same-size subreg  */
+	      if ((GET_MODE_SIZE (GET_MODE (x))
+		   <= GET_MODE_SIZE (GET_MODE (sub)))
+		  /* Again, invalid pointer casts (as in
+		     compile/990203-1.c) can require paradoxical
+		     subregs.  */
+		  || (GET_MODE_SIZE (GET_MODE (x)) > UNITS_PER_WORD
+		      && (GET_MODE_SIZE (GET_MODE (x))
+			  > GET_MODE_SIZE (GET_MODE (sub)))
+		      && libcall))
+		{
+		  *loc = gen_rtx_SUBREG (GET_MODE (x), sub, 0);
+		  return true;
 		}
+	      /* ??? Are there other cases we should handle?  */
+
 	      /* Sometimes we may not be able to find the replacement.  For
 		 example when the original insn was a MEM in a wider mode,
 		 and the note is part of a sign extension of a narrowed
