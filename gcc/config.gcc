@@ -110,6 +110,8 @@
 #  cxx_target_objs	List of extra target-dependent objects that be
 #			linked into the C++ compiler only.
 #
+#  target_gtfiles       List of extra source files with type information.
+#
 #  build_xm_defines	List of macros to define when compiling for the
 #			build machine.
 #
@@ -1989,7 +1991,7 @@ powerpc-*-darwin*)
 	tm_p_file="${tm_p_file} darwin-protos.h"
 	tmake_file=rs6000/t-darwin
 	extra_objs="darwin.o"
-	config_gtfiles="${config_gtfiles} \$(srcdir)/config/darwin.c"
+	target_gtfiles="\$(srcdir)/config/darwin.c"
 	c_target_objs="darwin-c.o"
 	cxx_target_objs="darwin-c.o"
 	# Darwin linker does collect2 functionality

@@ -234,7 +234,7 @@ machinery scans.  There are three cases:
 @enumerate a
 @item
 For a back-end file, this is usually done
-automatically; if not, you should add it to @code{config_gtfiles} in
+automatically; if not, you should add it to @code{target_gtfiles} in
 the appropriate port's entries in @file{config.gcc}. 
 
 @item
