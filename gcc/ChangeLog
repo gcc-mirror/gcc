@@ -1,3 +1,8 @@
+2004-09-17  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in (c-parse.o): Depend on $(C_PRAGMA_H).
+	* objc/Make-lang.in (objc/objc-parse.o): Likewise.
+
 2004-09-17  Jones Desougi  <jones@ingate.com>
 
 	* configure.ac: Replace AC_COMPILE_CHECK_SIZEOF with AC_CHECK_SIZEOF.
