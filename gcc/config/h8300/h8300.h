@@ -1202,7 +1202,10 @@ readonly_data() 						\
 #define USER_LABEL_PREFIX "_"
 
 /* This is how to output an internal numbered label where
-   PREFIX is the class of label and NUM is the number within the class.  */
+   PREFIX is the class of label and NUM is the number within the class.
+
+   N.B.: The h8300.md branch_true and branch_false patterns also know
+   how to generate internal labels.  */
 
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE, PREFIX, NUM)	\
   fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
