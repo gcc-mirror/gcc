@@ -7446,6 +7446,8 @@ function_arg (cum, mode, type, named, incoming)
      int incoming;
 {
   int max_arg_words = (TARGET_64BIT ? 8 : 4);
+  int arg_size = FUNCTION_ARG_SIZE (mode, type);
+  int alignment = 0;
   int fpr_reg_base;
   int gpr_reg_base;
   rtx retval;
@@ -7456,16 +7458,15 @@ function_arg (cum, mode, type, named, incoming)
          this routine should return zero.  FUNCTION_ARG_PARTIAL_NREGS will
          handle arguments which are split between regs and stack slots if
          the ABI mandates split arguments.  */
-      if (cum->words + FUNCTION_ARG_SIZE (mode, type) > max_arg_words
+      if (cum->words + arg_size > max_arg_words
           || mode == VOIDmode)
 	return NULL_RTX;
     }
   else
     {
-      int offset = 0;
-      if (FUNCTION_ARG_SIZE (mode, type) > 1 && (cum->words & 1))
-	offset = 1;
-      if (cum->words + offset >= max_arg_words
+      if (arg_size > 1)
+	alignment = cum->words & 1;
+      if (cum->words + alignment >= max_arg_words
 	  || mode == VOIDmode)
 	return NULL_RTX;
     }
@@ -7474,70 +7475,54 @@ function_arg (cum, mode, type, named, incoming)
      particularly in their handling of FP registers.  We might
      be able to cleverly share code between them, but I'm not
      going to bother in the hope that splitting them up results
-     in code that is more easily understood.
+     in code that is more easily understood.  */
 
-     The 64bit code probably is very wrong for structure passing.  */
   if (TARGET_64BIT)
     {
       /* Advance the base registers to their current locations.
 
          Remember, gprs grow towards smaller register numbers while
-	 fprs grow to higher register numbers.  Also remember FP regs
-	 are always 4 bytes wide, while the size of an integer register
-	 varies based on the size of the target word.  */
+	 fprs grow to higher register numbers.  Also remember that
+	 although FP regs are 32-bit addressable, we pretend that
+	 the registers are 64-bits wide.  */
       gpr_reg_base = 26 - cum->words;
       fpr_reg_base = 32 + cum->words;
 
-      /* If the argument is more than a word long, then we need to align
-	 the base registers.  Same caveats as above.  */
-      if (FUNCTION_ARG_SIZE (mode, type) > 1)
+      /* Arguments wider than one word need special treatment.  */
+      if (arg_size > 1)
 	{
-	  if (mode != BLKmode)
-	    {
-	      /* First deal with alignment of the doubleword.  */
-	      gpr_reg_base -= (cum->words & 1);
+	  /* Double-extended precision (80-bit), quad-precision (128-bit)
+	     and aggregates including complex numbers are aligned on
+	     128-bit boundaries.  The first eight 64-bit argument slots
+	     are associated one-to-one, with general registers r26
+	     through r19, and also with floating-point registers fr4
+	     through fr11.  Arguments larger than one word are always
+	     passed in general registers.  */
 
-	      /* This seems backwards, but it is what HP specifies.  We need
-	         gpr_reg_base to point to the smaller numbered register of
-	         the integer register pair.  So if we have an even register
-	          number, then decrement the gpr base.  */
-	      gpr_reg_base -= ((gpr_reg_base % 2) == 0);
+	  rtx loc[8];
+	  int i, offset = 0, ub = arg_size;
 
-	      /* FP values behave sanely, except that each FP reg is only
-	         half of word.  */
-	      fpr_reg_base += ((fpr_reg_base % 2) == 0);
-            }
-	  else
+	  /* Align the base register.  */
+	  gpr_reg_base -= alignment;
+
+	  ub = MIN (ub, max_arg_words - cum->words - alignment);
+	  for (i = 0; i < ub; i++)
 	    {
-	      rtx loc[8];
-	      int i, offset = 0, ub;
-              ub = FUNCTION_ARG_SIZE (mode, type);
-	      ub = MIN (ub,
-			MAX (0, max_arg_words - cum->words - (cum->words & 1)));
-	      gpr_reg_base -= (cum->words & 1);
-	      for (i = 0; i < ub; i++)
-		{
-		  loc[i] = gen_rtx_EXPR_LIST (VOIDmode,
-					      gen_rtx_REG (DImode,
-							   gpr_reg_base),
-					      GEN_INT (offset));
-		  gpr_reg_base -= 1;
-		  offset += 8;
-		}
-	      if (ub == 0)
-		return NULL_RTX;
-	      else if (ub == 1)
-		return XEXP (loc[0], 0);
-	      else
-		return gen_rtx_PARALLEL (mode, gen_rtvec_v (ub, loc));
+	      loc[i] = gen_rtx_EXPR_LIST (VOIDmode,
+					  gen_rtx_REG (DImode, gpr_reg_base),
+					  GEN_INT (offset));
+	      gpr_reg_base -= 1;
+	      offset += 8;
 	    }
+
+	  return gen_rtx_PARALLEL (mode, gen_rtvec_v (ub, loc));
 	}
     }
   else
     {
       /* If the argument is larger than a word, then we know precisely
 	 which registers we must use.  */
-      if (FUNCTION_ARG_SIZE (mode, type) > 1)
+      if (arg_size > 1)
 	{
 	  if (cum->words)
 	    {
@@ -7559,19 +7544,6 @@ function_arg (cum, mode, type, named, incoming)
 	}
     }
 
-  if (TARGET_64BIT && mode == TFmode)
-    {
-      return
-	gen_rtx_PARALLEL
-	  (mode,
-	   gen_rtvec (2,
-		      gen_rtx_EXPR_LIST (VOIDmode,
-					 gen_rtx_REG (DImode, gpr_reg_base + 1),
-					 const0_rtx),
-		      gen_rtx_EXPR_LIST (VOIDmode,
-					 gen_rtx_REG (DImode, gpr_reg_base),
-					 GEN_INT (8))));
-    }
   /* Determine if the argument needs to be passed in both general and
      floating point registers.  */
   if (((TARGET_PORTABLE_RUNTIME || TARGET_64BIT || TARGET_ELF32)

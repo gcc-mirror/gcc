@@ -2265,21 +2265,26 @@ emit_group_load (dst, orig_src, ssize)
 	}
       else if (GET_CODE (src) == CONCAT)
 	{
-	  if ((bytepos == 0
-	       && bytelen == GET_MODE_SIZE (GET_MODE (XEXP (src, 0))))
-	      || (bytepos == (HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (XEXP (src, 0)))
-		  && bytelen == GET_MODE_SIZE (GET_MODE (XEXP (src, 1)))))
+	  unsigned int slen = GET_MODE_SIZE (GET_MODE (src));
+	  unsigned int slen0 = GET_MODE_SIZE (GET_MODE (XEXP (src, 0)));
+
+	  if ((bytepos == 0 && bytelen == slen0)
+	      || (bytepos != 0 && bytepos + bytelen <= slen))
 	    {
-	      tmps[i] = XEXP (src, bytepos != 0);
+	      /* The following assumes that the concatenated objects all
+		 have the same size.  In this case, a simple calculation
+		 can be used to determine the object and the bit field
+		 to be extracted.  */
+	      tmps[i] = XEXP (src, bytepos / slen0);
 	      if (! CONSTANT_P (tmps[i])
 		  && (GET_CODE (tmps[i]) != REG || GET_MODE (tmps[i]) != mode))
 		tmps[i] = extract_bit_field (tmps[i], bytelen * BITS_PER_UNIT,
-					     0, 1, NULL_RTX, mode, mode, ssize);
+					     (bytepos % slen0) * BITS_PER_UNIT,
+					     1, NULL_RTX, mode, mode, ssize);
 	    }
 	  else if (bytepos == 0)
 	    {
-	      rtx mem = assign_stack_temp (GET_MODE (src),
-					   GET_MODE_SIZE (GET_MODE (src)), 0);
+	      rtx mem = assign_stack_temp (GET_MODE (src), slen, 0);
 	      emit_move_insn (mem, src);
 	      tmps[i] = adjust_address (mem, mode, 0);
 	    }
