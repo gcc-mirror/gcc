@@ -3918,9 +3918,6 @@ load_pic_register ()
 
   emit_insn (gen_prologue_get_pc (pic_offset_table_rtx, pclab));
 
-  if (! TARGET_DEEP_BRANCH_PREDICTION)
-    emit_insn (gen_popsi1 (pic_offset_table_rtx));
-
   emit_insn (gen_prologue_set_got (pic_offset_table_rtx, gotsym, pclab));
 }
 
