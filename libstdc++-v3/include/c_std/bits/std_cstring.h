@@ -79,38 +79,51 @@ namespace std
   extern "C" int strcoll(const char*, const char*); 
   extern "C" int strncmp(const char*, const char*, size_t); 
   extern "C" size_t strxfrm(char*, const char*, size_t); 
-  extern "C" const void* memchr(const void*, int, size_t); 
+
+  inline const void*
+  memchr(const void* __p, int __c, size_t __n)
+  { return const_cast<const void*>(::memchr(__p, __c, __n)); }
+
   inline void*
   memchr(void* __p, int __c, size_t __n)
-  {
-    return const_cast<void*>(memchr(const_cast<const void*>(__p), __c, __n));
-  }
-  extern "C" const char* strchr(const char*, int); 
+  { return ::memchr(const_cast<const void*>(__p), __c, __n); }
+
+  inline const char*
+  strchr(const char* __s1, int __n)
+  { return const_cast<const char*>(::strchr(__s1, __n)); }
+
   inline char*
   strchr(char* __s1, int __n)
-  {
-    return const_cast<char*>(strchr(const_cast<const char*>(__s1), __n));
-  }
+  { return ::strchr(const_cast<const char*>(__s1), __n); }
+
   extern "C" size_t strcspn(const char*, const char*); 
-  extern "C" const char* strpbrk(const char*, const char*); 
+
+  inline const char*
+  strpbrk(const char* __s1, const char* __s2)
+  { return const_cast<char*>(::strpbrk(__s1, __s2)); }
+
   inline char*
   strpbrk(char* __s1, const char* __s2)
-  {
-    return const_cast<char*>(strpbrk(const_cast<const char*>(__s1), __s2));
-  }
-  extern "C" const char* strrchr(const char*, int); 
+  { return ::strpbrk(const_cast<const char*>(__s1), __s2); }
+
+  inline const char*
+  strrchr(const char* __s1, int __n)
+  { return const_cast<char*>(::strrchr(__s1, __n)); }
+
   inline char*
   strrchr(char* __s1, int __n)
-  {
-    return const_cast<char*>(strrchr(const_cast<const char*>(__s1), __n));
-  }
+  { return ::strrchr(const_cast<const char*>(__s1), __n); }
+
   extern "C" size_t strspn(const char*, const char*); 
-  extern "C" const char* strstr(const char*, const char*); 
+
+  inline const char*
+  strstr(const char* __s1, const char* __s2)
+  { return const_cast<char*>(::strstr(__s1, __s2)); }
+
   inline char*
   strstr(char* __s1, const char* __s2)
-  {
-    return const_cast<char*>(strstr(const_cast<const char*>(__s1), __s2));
-  }
+  { return ::strstr(const_cast<const char*>(__s1), __s2); }
+
   extern "C" char* strtok(char*, const char*); 
   extern "C" void* memset(void*, int, size_t); 
   extern "C" char* strerror(int); 

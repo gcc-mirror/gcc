@@ -24,7 +24,7 @@
 #include <cstring>
 #include <cwchar>
 
-int main()
+void test01()
 {
   bool test = true;
   char c = 'a';
@@ -62,6 +62,34 @@ int main()
   // void* memchr(      void* s, int c, size_t n);
   cv = std::memchr(cv, 'a', 3);
   v = std::memchr(v, 'a', 3);
+}
+
+void test02()
+{
+  using namespace std;
+
+  const char* ccarray1 = "san francisco roof garden inspectors";
+  const char* ccarray2 = "san francisco sunny-day park inspectors";
+  char carray[30];
+  strcpy(carray, ccarray1);
+  void* v;
+  const void* cv;
+ 
+  memchr(cv, '/', 3);
+  strchr(ccarray1, '/');
+  strpbrk(ccarray1, ccarray2);
+  strrchr(ccarray1, 'c');
+  strstr(carray, carray);
+}
+
+int main()
+{
+  test01();
+  test02();
 
   return 0;
 }
+
+
+
+
