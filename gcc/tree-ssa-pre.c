@@ -1905,7 +1905,6 @@ eliminate (void)
 static void
 init_pre (void)
 {
-  size_t tsize;
   basic_block bb;
 
   connect_infinite_loops_to_exit ();
@@ -1937,13 +1936,12 @@ init_pre (void)
 				           sizeof (struct value_set_node), 30);
   calculate_dominance_info (CDI_POST_DOMINATORS);
   calculate_dominance_info (CDI_DOMINATORS);
-  tsize = tree_size (build (PLUS_EXPR, void_type_node, NULL_TREE, NULL_TREE));
-  binary_node_pool = create_alloc_pool ("Binary tree nodes", tsize, 30);
-  tsize = tree_size (build1 (NEGATE_EXPR, void_type_node, NULL_TREE));
-  unary_node_pool = create_alloc_pool ("Unary tree nodes", tsize, 30);
-  tsize = tree_size (build (COMPONENT_REF, void_type_node, NULL_TREE,
-			    NULL_TREE, NULL_TREE));
-  reference_node_pool = create_alloc_pool ("Reference tree nodes", tsize, 30);
+  binary_node_pool = create_alloc_pool ("Binary tree nodes",
+				        tree_code_size (PLUS_EXPR), 30);
+  unary_node_pool = create_alloc_pool ("Unary tree nodes",
+				       tree_code_size (NEGATE_EXPR), 30);
+  reference_node_pool = create_alloc_pool ("Reference tree nodes",
+					   tree_code_size (COMPONENT_REF), 30);
   FOR_ALL_BB (bb)
     {
       EXP_GEN (bb) = set_new (true);

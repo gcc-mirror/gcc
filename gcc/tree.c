@@ -142,12 +142,16 @@ decl_assembler_name (tree decl)
   return DECL_CHECK (decl)->decl.assembler_name;
 }
 
-/* Compute the number of bytes occupied by 'node'.  This routine only
-   looks at TREE_CODE and, if the code is TREE_VEC, TREE_VEC_LENGTH.  */
+/* Compute the number of bytes occupied by a tree with code CODE.  This
+   function cannot be used for TREE_VEC or PHI_NODE codes, which are of
+   variable length.  */
 size_t
-tree_size (tree node)
+tree_code_size (enum tree_code code)
 {
-  enum tree_code code = TREE_CODE (node);
+  /* We can't state the size of a TREE_VEC or PHI_NODE
+     without knowing how many elements it will have.  */
+  gcc_assert (code != TREE_VEC);
+  gcc_assert (code != PHI_NODE);
 
   switch (TREE_CODE_CLASS (code))
     {
@@ -164,7 +168,7 @@ tree_size (tree node)
     case '1':  /* a unary arithmetic expression */
     case '2':  /* a binary arithmetic expression */
       return (sizeof (struct tree_exp)
-	      + TREE_CODE_LENGTH (code) * sizeof (char *) - sizeof (char *));
+	      + (TREE_CODE_LENGTH (code) - 1) * sizeof (char *));
 
     case 'c':  /* a constant */
       switch (code)
@@ -183,16 +187,11 @@ tree_size (tree node)
 	{
 	case IDENTIFIER_NODE:	return lang_hooks.identifier_size;
 	case TREE_LIST:		return sizeof (struct tree_list);
-	case TREE_VEC:		return (sizeof (struct tree_vec)
-					+ TREE_VEC_LENGTH(node) * sizeof(char *)
-					- sizeof (char *));
 
 	case ERROR_MARK:
 	case PLACEHOLDER_EXPR:	return sizeof (struct tree_common);
 
-	case PHI_NODE:		return (sizeof (struct tree_phi_node)
-					+ (PHI_ARG_CAPACITY (node) - 1) *
-					sizeof (struct phi_arg_d));
+	case PHI_NODE:		
 
 	case SSA_NAME:		return sizeof (struct tree_ssa_name);
 
@@ -209,9 +208,31 @@ tree_size (tree node)
     }
 }
 
-/* Return a newly allocated node of code CODE.
-   For decl and type nodes, some other fields are initialized.
-   The rest of the node is initialized to zero.
+/* Compute the number of bytes occupied by NODE.  This routine only
+   looks at TREE_CODE, except for PHI_NODE and TREE_VEC nodes.  */
+size_t
+tree_size (tree node)
+{
+  enum tree_code code = TREE_CODE (node);
+  switch (code)
+    {
+    case PHI_NODE:
+      return (sizeof (struct tree_phi_node)
+	      + (PHI_ARG_CAPACITY (node) - 1) * sizeof (struct phi_arg_d));
+
+    case TREE_VEC:
+      return (sizeof (struct tree_vec)
+	      + (TREE_VEC_LENGTH (node) - 1) * sizeof(char *));
+
+    default:
+      return tree_code_size (code);
+    }
+}
+
+/* Return a newly allocated node of code CODE.  For decl and type
+   nodes, some other fields are initialized.  The rest of the node is
+   initialized to zero.  This function cannot be used for PHI_NODE or
+   TREE_VEC nodes, which is enforced by asserts in tree_code_size.
 
    Achoo!  I got a code in the node.  */
 
@@ -220,21 +241,10 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 {
   tree t;
   int type = TREE_CODE_CLASS (code);
-  size_t length;
+  size_t length = tree_code_size (code);
 #ifdef GATHER_STATISTICS
   tree_node_kind kind;
-#endif
-  struct tree_common ttmp;
 
-  /* We can't allocate a TREE_VEC, PHI_NODE, or STRING_CST
-     without knowing how many elements it will have.  */
-  gcc_assert (code != TREE_VEC);
-  gcc_assert (code != PHI_NODE);
-
-  TREE_SET_CODE ((tree)&ttmp, code);
-  length = tree_size ((tree)&ttmp);
-
-#ifdef GATHER_STATISTICS
   switch (type)
     {
     case 'd':  /* A decl node */
