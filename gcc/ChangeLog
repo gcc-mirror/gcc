@@ -1,5 +1,12 @@
 2001-11-19  Loren J. Rittle  <ljrittle@acm.org>
 
+	bootstrap/4422
+	* configure.in: Setup ability to run ./stage[1234]/xgcc in
+	fixinc *as if* it were a proper lang subdirectory.
+	* configure: Rebuilt.
+
+2001-11-19  Loren J. Rittle  <ljrittle@acm.org>
+
 	* config/freebsd.h: Remove DEFAULT_VTABLE_THUNKS (again).
 
 2001-11-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
