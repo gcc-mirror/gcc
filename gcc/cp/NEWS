@@ -9,6 +9,11 @@
 
 * Member function templates are now supported.
 
+* __FUNCTION__ and __PRETTY_FUNCTION__ are now treated as variables by the
+  parser; previously they were treated as string constants.  So code like
+  `printf (__FUNCTION__ ": foo")' must be rewritten to 
+  `printf ("%s: foo", __FUNCTION__)'.  This is necessary for templates.
+
 * New flags -Wsign-promo (warn about potentially confusing promotions in
   overload resolution), -Wno-pmf-conversion (don't warn about converting
   from a bound member function pointer to function pointer).
@@ -108,7 +113,7 @@
 
   Still not supported:
 
-     + Member templates.
+     + Member class templates.
      + Template template parameters.
 
 * Synthesized methods are now emitted in any translation units that need
