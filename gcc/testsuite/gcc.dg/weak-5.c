@@ -44,7 +44,7 @@ void * foo1c (void)
 {
   return (void *)&vfoo1c;
 }
-extern int vfoo1c __attribute__((weak));
+extern int vfoo1c __attribute__((weak)); /* { dg-warning "unspecified behavior" } */
 
 
 extern int vfoo1d __attribute__((weak));
@@ -68,7 +68,7 @@ void * foo1f (void)
 {
   return (void *)&vfoo1f;
 }
-extern int vfoo1f __attribute__((weak)); /* { dg-warning "weak declaration" "weak declaration" } */
+extern int vfoo1f __attribute__((weak)); /* { dg-warning "unspecified behavior" } */
 
 
 extern int vfoo1g;
@@ -76,7 +76,7 @@ void * foo1g (void)
 {
   return (void *)&vfoo1g;
 }
-int vfoo1g __attribute__((weak));
+int vfoo1g __attribute__((weak)); /* { dg-warning "unspecified behavior" } */
 
 
 extern int vfoo1h __attribute__((weak));
