@@ -1141,15 +1141,14 @@
       /* This was developed for a linuxce style platform.  Probably	*/
       /* needs to be tweaked for workstation class machines.		*/
 #     define OS_TYPE "LINUX"
+#     define DYNAMIC_LOADING
+      extern int _end[];
+#     define DATAEND (_end)
       extern int __data_start[];
 #     define DATASTART ((ptr_t)(__data_start))
 #     define ALIGNMENT 4
 #     define USE_GENERIC_PUSH_REGS
-#     define STACKBOTTOM ((ptr_t)0x7fff8000)
-        /* Older toolchains may need 0x80000000.	*/
-	/* In many cases, this should probably use LINUX_STACKBOTTOM 	*/
-	/* instead. But some kernel versions seem to give the wrong	*/
-	/* value from /proc.						*/
+#     define LINUX_STACKBOTTOM
 #   endif /* Linux */
 #   ifdef EWS4800
 #      define HEURISTIC2

@@ -219,7 +219,11 @@
 #    define GC_TEST_AND_SET_DEFINED
 #  endif
 #  ifdef MIPS
-#    if __mips < 3 || !(defined (_ABIN32) || defined(_ABI64)) \
+#    ifdef LINUX
+#      include <sys/tas.h>
+#      define GC_test_and_set(addr) _test_and_set((int *) addr,1)
+#      define GC_TEST_AND_SET_DEFINED
+#    elif __mips < 3 || !(defined (_ABIN32) || defined(_ABI64)) \
 	|| !defined(_COMPILER_VERSION) || _COMPILER_VERSION < 700
 #        define GC_test_and_set(addr) test_and_set(addr, 1)
 #    else
