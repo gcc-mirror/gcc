@@ -1959,9 +1959,9 @@ namespace std
 	      __news[1] = __olds[1];
 	      __mod += 2;
 	      __news += 2;
-	      __beg = const_cast<char_type*>(__olds + __mod);
-	      __beglen = __oldlen - __mod;
-	      __end = __pads;
+	      __beg = __pads;
+	      __beglen = __plen;
+	      __end = const_cast<char_type*>(__olds + __mod);
 	    }
 	  else if (__testsign)
 	    {
