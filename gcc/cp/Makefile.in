@@ -36,7 +36,7 @@
 # Variables that exist for you to override.
 # See below for how to change them for certain systems.
 
-INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config
+ALLOCA =
 
 # Various ways of specifying flags for compilations:  
 # CFLAGS is for the user to override to, e.g., do a bootstrap with -O2.
@@ -59,7 +59,6 @@ BISONFLAGS =
 LEX = flex
 LEXFLAGS =
 AR = ar
-OLDAR_FLAGS = qc
 AR_FLAGS = rc
 SHELL = /bin/sh
 MAKEINFO = makeinfo
@@ -69,6 +68,10 @@ TEXI2DVI = texi2dvi
 # Note that this has some bugs, and it seems currently necessary 
 # to compile all the gen* files first by hand to avoid erroneous results.
 P =
+
+# This is used in the definition of SUBDIR_USE_ALLOCA.
+# ??? Perhaps it would be better if it just looked for *gcc*.
+OLDCC = cc
 
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
 # It omits XCFLAGS, and specifies -B./.
@@ -87,6 +90,9 @@ tmake_file= ... `configure' substitutes actual t- file name here.
 
 # Directory where sources are, from where we are.
 srcdir = .
+
+# Additional system libraries to link with.
+CLIB=
 
 # Change this to a null string if obstacks are installed in the
 # system library.
@@ -123,13 +129,21 @@ ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS)
 # Likewise.
 ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
 
+# Even if ALLOCA is set, don't use it if compiling with GCC.
+
 SUBDIR_OBSTACK = `if [ x$(OBSTACK) != x ]; then echo ../$(OBSTACK); else true; fi`
-SUBDIR_USE_ALLOCA = `if [ x$(USE_ALLOCA) != x ]; then echo ../$(USE_ALLOCA); else true; fi`
+SUBDIR_USE_ALLOCA = `case "${CC}" in "${OLDCC}") if [ x$(ALLOCA) != x ]; then echo ../$(ALLOCA); else true; fi ;; esac`
 SUBDIR_MALLOC = `if [ x$(MALLOC) != x ]; then echo ../$(MALLOC); else true; fi`
 
 # How to link with both our special library facilities
 # and the system's installed libraries.
 LIBS = $(SUBDIR_OBSTACK) $(SUBDIR_USE_ALLOCA) $(SUBDIR_MALLOC) $(CLIB)
+
+# Specify the directories to be searched for header files.
+# Both . and srcdir are used, in that order,
+# so that tm.h and config.h will be found in the compilation
+# subdirectory rather than in the source directory.
+INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config
 
 # Always use -I$(srcdir)/config when compiling.
 .c.o:
