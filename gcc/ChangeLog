@@ -1,3 +1,8 @@
+Thu Nov 15 08:36:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* final.c (alter_subreg): If simplify_subreg can't do anything,
+	handle REG ourselves and abort for others.
+
 2001-11-15  Richard Hodson  <hodsonr@dionecorp.com>
 
 	* config/h8300/h8300.c (dosize): Avoid corrupting R3 in interrupt

@@ -3038,7 +3038,26 @@ alter_subreg (xp)
   if (GET_CODE (y) == MEM)
     *xp = adjust_address (y, GET_MODE (x), SUBREG_BYTE (x));
   else
-    *xp = simplify_subreg (GET_MODE (x), y, GET_MODE (y), SUBREG_BYTE (x));
+    {
+      rtx new = simplify_subreg (GET_MODE (x), y, GET_MODE (y),
+				 SUBREG_BYTE (x));
+
+      if (new != 0)
+	*xp = new;
+      /* Simplify_subreg can't handle some REG cases, but we have to.  */
+      else if (GET_CODE (y) == REG)
+	{
+	  REGNO (x) = subreg_hard_regno (x, 1);
+	  PUT_CODE (x, REG);
+	  ORIGINAL_REGNO (x) = ORIGINAL_REGNO (y);
+	  /* This field has a different meaning for REGs and SUBREGs.  Make
+	     sure to clear it!  */
+	  x->used = 0;
+	}
+      else
+	abort ();
+    }
+
   return *xp;
 }
 
