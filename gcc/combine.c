@@ -95,20 +95,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    Use gen_lowpart_for_combine instead.  See comments there.  */
 #define gen_lowpart dont_use_gen_lowpart_you_dummy
 
-/* If byte loads either zero- or sign- extend, define BYTE_LOADS_EXTEND
-   for cases when we don't care which is true.  Define LOAD_EXTEND to
-   be ZERO_EXTEND or SIGN_EXTEND, depending on which was defined.  */
-
-#ifdef BYTE_LOADS_ZERO_EXTEND
-#define BYTE_LOADS_EXTEND
-#define LOAD_EXTEND ZERO_EXTEND
-#endif
-
-#ifdef BYTE_LOADS_SIGN_EXTEND
-#define BYTE_LOADS_EXTEND
-#define LOAD_EXTEND SIGN_EXTEND
-#endif
-
 /* Number of attempts to combine instructions in this function.  */
 
 static int combine_attempts;
@@ -4190,12 +4176,11 @@ subst (x, from, to, in_dest, unique_copy)
 	 We can always do this if M1 is narrower than M2 because that
 	 means that we only care about the low bits of the result.
 
-	 However, on most machines (those with neither BYTE_LOADS_ZERO_EXTEND
-	 nor BYTE_LOADS_SIGN_EXTEND defined), we cannot perform a
-	 narrower operation that requested since the high-order bits will
-	 be undefined.  On machine where BYTE_LOADS_*_EXTEND is defined,
-	 however, this transformation is safe as long as M1 and M2 have
-	 the same number of words.  */
+	 However, on machines without WORD_REGISTER_OPERATIONS defined,
+	 we cannot perform a narrower operation that requested since the
+	 high-order bits will be undefined.  On machine where it is defined,
+	 this transformation is safe as long as M1 and M2 have the same
+	 number of words.  */
  
       if (GET_CODE (SET_SRC (x)) == SUBREG
 	  && subreg_lowpart_p (SET_SRC (x))
@@ -4204,7 +4189,7 @@ subst (x, from, to, in_dest, unique_copy)
 	       / UNITS_PER_WORD)
 	      == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_SRC (x))))
 		   + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))
-#ifndef BYTE_LOADS_EXTEND
+#ifndef WORD_REGISTER_OPERATIONS
 	  && (GET_MODE_SIZE (GET_MODE (SET_SRC (x)))
 	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_SRC (x)))))
 #endif
@@ -4218,21 +4203,24 @@ subst (x, from, to, in_dest, unique_copy)
 	  SUBST (SET_SRC (x), SUBREG_REG (SET_SRC (x)));
 	}
 
-#ifdef BYTE_LOADS_EXTEND
+#ifdef LOAD_EXTEND_OP
       /* If we have (set FOO (subreg:M (mem:N BAR) 0)) with
 	 M wider than N, this would require a paradoxical subreg.
 	 Replace the subreg with a zero_extend to avoid the reload that
 	 would otherwise be required. */
 
       if (GET_CODE (SET_SRC (x)) == SUBREG
+	  && LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (SET_SRC (x)))) != NIL
 	  && subreg_lowpart_p (SET_SRC (x))
 	  && SUBREG_WORD (SET_SRC (x)) == 0
 	  && (GET_MODE_SIZE (GET_MODE (SET_SRC (x)))
 	      > GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_SRC (x)))))
 	  && GET_CODE (SUBREG_REG (SET_SRC (x))) == MEM)
-	SUBST (SET_SRC (x), gen_rtx_combine (LOAD_EXTEND,
-					     GET_MODE (SET_SRC (x)),
-					     XEXP (SET_SRC (x), 0)));
+	SUBST (SET_SRC (x),
+	       gen_rtx_combine (LOAD_EXTEND_OP (GET_MODE
+						(SUBREG_REG (SET_SRC (x)))),
+				GET_MODE (SET_SRC (x)),
+				XEXP (SET_SRC (x), 0)));
 #endif
 
 #ifndef HAVE_conditional_move
@@ -5647,11 +5635,12 @@ force_to_mode (x, mode, mask, reg)
     case SUBREG:
       if (subreg_lowpart_p (x)
 	  /* We can ignore the effect this SUBREG if it narrows the mode or,
-	     on machines where byte operations extend, if the constant masks
-	     to zero all the bits the mode doesn't have.  */
+	     on machines where register operations are performed on the full
+	     word, if the constant masks to zero all the bits the mode
+	     doesn't have.  */
 	  && ((GET_MODE_SIZE (GET_MODE (x))
 	       < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
-#ifdef BYTE_LOADS_EXTEND
+#ifdef WORD_REGISTER_OPERATIONS
 	      || (0 == (mask
 			& GET_MODE_MASK (GET_MODE (x))
 			& ~ GET_MODE_MASK (GET_MODE (SUBREG_REG (x)))))
@@ -6416,7 +6405,7 @@ nonzero_bits (x, mode)
        just return the mode mask.  Those tests will then be false.  */
     return nonzero;
 
-#ifndef BYTE_LOADS_EXTEND
+#ifndef WORD_REGISTER_OPERATIONS
   /* If MODE is wider than X, but both are a single word for both the host
      and target machines, we can compute this from which bits of the 
      object might be nonzero in its own mode, taking into account the fact
@@ -6512,14 +6501,15 @@ nonzero_bits (x, mode)
 
       return INTVAL (x);
 
-#ifdef BYTE_LOADS_ZERO_EXTEND
     case MEM:
+#ifdef LOAD_EXTEND_OP
       /* In many, if not most, RISC machines, reading a byte from memory
 	 zeros the rest of the register.  Noticing that fact saves a lot
 	 of extra zero-extends.  */
-      nonzero &= GET_MODE_MASK (GET_MODE (x));
-      break;
+      if (LOAD_EXTEND_OP (GET_MODE (x)) == ZERO_EXTEND)
+	nonzero &= GET_MODE_MASK (GET_MODE (x));
 #endif
+      break;
 
     case EQ:  case NE:
     case GT:  case GTU:
@@ -6672,7 +6662,8 @@ nonzero_bits (x, mode)
 	      <= HOST_BITS_PER_WIDE_INT))
 	{
 	  nonzero &= nonzero_bits (SUBREG_REG (x), mode);
-#ifndef BYTE_LOADS_EXTEND
+
+#ifndef WORD_REGISTER_OPERATIONS
 	  /* On many CISC machines, accessing an object in a wider mode
 	     causes the high-order bits to become undefined.  So they are
 	     not known to be zero.  */
@@ -6797,11 +6788,13 @@ num_sign_bit_copies (x, mode)
 	return reg_sign_bit_copies[REGNO (x)];
       break;
 
-#ifdef BYTE_LOADS_SIGN_EXTEND
     case MEM:
+#ifdef LOAD_EXTEND_OP
       /* Some RISC machines sign-extend all loads of smaller than a word.  */
-      return MAX (1, bitwidth - GET_MODE_BITSIZE (GET_MODE (x)) + 1);
+      if (LOAD_EXTEND_OP (GET_MODE (x)) == SIGN_EXTEND)
+	return MAX (1, bitwidth - GET_MODE_BITSIZE (GET_MODE (x)) + 1);
 #endif
+      break;
 
     case CONST_INT:
       /* If the constant is negative, take its 1's complement and remask.
@@ -6831,18 +6824,16 @@ num_sign_bit_copies (x, mode)
 			     - bitwidth)));
 	}
 
-#ifdef BYTE_LOADS_EXTEND
-      /* For paradoxical SUBREGs, just look inside since, on machines with
-	 one of these defined, we assume that operations are actually 
-	 performed on the full register.  Note that we are passing MODE
-	 to the recursive call, so the number of sign bit copies will
-	 remain relative to that mode, not the inner mode.  */
+#ifdef WORD_REGISTER_OPERATIONS
+      /* For paradoxical SUBREGs on machines where all register operations
+	 affect the entire register, just look inside.  Note that we are
+	 passing MODE to the recursive call, so the number of sign bit copies
+	 will remain relative to that mode, not the inner mode.  */
 
       if (GET_MODE_SIZE (GET_MODE (x))
 	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
 	return num_sign_bit_copies (SUBREG_REG (x), mode);
 #endif
-
       break;
 
     case SIGN_EXTRACT:
