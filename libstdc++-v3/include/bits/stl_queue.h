@@ -1,6 +1,6 @@
 // Queue implementation -*- C++ -*-
 
-// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -332,7 +332,7 @@ namespace std
     priority_queue(const _Compare& __x = _Compare(),
                    const _Sequence& __s = _Sequence()) 
     : c(__s), comp(__x) 
-    { make_heap(c.begin(), c.end(), comp); }
+    { std::make_heap(c.begin(), c.end(), comp); }
   
     /**
      *  @brief  Builds a %queue from a range.
@@ -355,7 +355,7 @@ namespace std
       : c(__s), comp(__x)
       { 
         c.insert(c.end(), __first, __last);
-        make_heap(c.begin(), c.end(), comp);
+        std::make_heap(c.begin(), c.end(), comp);
       }
   
     /**
@@ -389,7 +389,7 @@ namespace std
       try 
         {
           c.push_back(__x); 
-          push_heap(c.begin(), c.end(), comp);
+          std::push_heap(c.begin(), c.end(), comp);
         }
       catch(...)
         {
@@ -413,7 +413,7 @@ namespace std
     {
       try 
         {
-          pop_heap(c.begin(), c.end(), comp);
+          std::pop_heap(c.begin(), c.end(), comp);
           c.pop_back();
         }
       catch(...)

@@ -73,7 +73,7 @@ namespace std
     __uninitialized_copy_aux(_InputIterator __first, _InputIterator __last,
 			     _ForwardIterator __result,
 			     __true_type)
-    { return copy(__first, __last, __result); }
+    { return std::copy(__first, __last, __result); }
 
   template<typename _InputIterator, typename _ForwardIterator>
     _ForwardIterator 
@@ -84,12 +84,12 @@ namespace std
       _ForwardIterator __cur = __result;
       try {
 	for ( ; __first != __last; ++__first, ++__cur)
-	  _Construct(&*__cur, *__first);
+	  std::_Construct(&*__cur, *__first);
 	return __cur;
       }
       catch(...)
 	{
-	  _Destroy(__result, __cur);
+	  std::_Destroy(__result, __cur);
 	  __throw_exception_again; 
 	}
     }
@@ -109,13 +109,13 @@ namespace std
     {
       typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
       typedef typename __type_traits<_ValueType>::is_POD_type _Is_POD;
-      return __uninitialized_copy_aux(__first, __last, __result, _Is_POD());
+      return std::__uninitialized_copy_aux(__first, __last, __result, _Is_POD());
     }
 
   inline char*
   uninitialized_copy(const char* __first, const char* __last, char* __result)
   {
-    memmove(__result, __first, __last - __first);
+    std::memmove(__result, __first, __last - __first);
     return __result + (__last - __first);
   }
 
@@ -123,7 +123,7 @@ namespace std
   uninitialized_copy(const wchar_t* __first, const wchar_t* __last,
 		     wchar_t* __result)
   {
-    memmove(__result, __first, sizeof(wchar_t) * (__last - __first));
+    std::memmove(__result, __first, sizeof(wchar_t) * (__last - __first));
     return __result + (__last - __first);
   }
 
@@ -133,7 +133,7 @@ namespace std
     inline void
     __uninitialized_fill_aux(_ForwardIterator __first, _ForwardIterator __last, 
 			     const _Tp& __x, __true_type)
-    { fill(__first, __last, __x); }
+    { std::fill(__first, __last, __x); }
 
   template<typename _ForwardIterator, typename _Tp>
     void
@@ -143,11 +143,11 @@ namespace std
       _ForwardIterator __cur = __first;
       try {
 	for ( ; __cur != __last; ++__cur)
-	  _Construct(&*__cur, __x);
+	  std::_Construct(&*__cur, __x);
       }
       catch(...)
 	{
-	  _Destroy(__first, __cur);
+	  std::_Destroy(__first, __cur);
 	  __throw_exception_again; 
 	}
     }
@@ -167,7 +167,7 @@ namespace std
     {
       typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
       typedef typename __type_traits<_ValueType>::is_POD_type _Is_POD;
-      __uninitialized_fill_aux(__first, __last, __x, _Is_POD());
+      std::__uninitialized_fill_aux(__first, __last, __x, _Is_POD());
     }
 
   // Valid if copy construction is equivalent to assignment, and if the
@@ -177,7 +177,7 @@ namespace std
     __uninitialized_fill_n_aux(_ForwardIterator __first, _Size __n,
 			       const _Tp& __x, __true_type)
     {
-      return fill_n(__first, __n, __x);
+      return std::fill_n(__first, __n, __x);
     }
 
   template<typename _ForwardIterator, typename _Size, typename _Tp>
@@ -188,12 +188,12 @@ namespace std
       _ForwardIterator __cur = __first;
       try {
 	for ( ; __n > 0; --__n, ++__cur)
-	  _Construct(&*__cur, __x);
+	  std::_Construct(&*__cur, __x);
 	return __cur;
       }
       catch(...)
 	{ 
-	  _Destroy(__first, __cur);
+	  std::_Destroy(__first, __cur);
 	  __throw_exception_again; 
 	}
     }
@@ -213,7 +213,7 @@ namespace std
     {
       typedef typename iterator_traits<_ForwardIterator>::value_type _ValueType;
       typedef typename __type_traits<_ValueType>::is_POD_type _Is_POD;
-      return __uninitialized_fill_n_aux(__first, __n, __x, _Is_POD());
+      return std::__uninitialized_fill_n_aux(__first, __n, __x, _Is_POD());
     }
 
   // Extensions: __uninitialized_copy_copy, __uninitialized_copy_fill, 
@@ -230,13 +230,13 @@ namespace std
 			      _InputIterator2 __first2, _InputIterator2 __last2,
 			      _ForwardIterator __result)
     {
-      _ForwardIterator __mid = uninitialized_copy(__first1, __last1, __result);
+      _ForwardIterator __mid = std::uninitialized_copy(__first1, __last1, __result);
       try {
-	return uninitialized_copy(__first2, __last2, __mid);
+	return std::uninitialized_copy(__first2, __last2, __mid);
       }
       catch(...)
 	{ 
-	  _Destroy(__result, __mid);
+	  std::_Destroy(__result, __mid);
 	  __throw_exception_again; 
 	}
     }
@@ -250,13 +250,13 @@ namespace std
 			      const _Tp& __x,
 			      _InputIterator __first, _InputIterator __last)
     {
-      uninitialized_fill(__result, __mid, __x);
+      std::uninitialized_fill(__result, __mid, __x);
       try {
-	return uninitialized_copy(__first, __last, __mid);
+	return std::uninitialized_copy(__first, __last, __mid);
       }
       catch(...)
 	{
-	  _Destroy(__result, __mid);
+	  std::_Destroy(__result, __mid);
 	  __throw_exception_again; 
 	}
     }
@@ -270,13 +270,13 @@ namespace std
 			      _ForwardIterator __first2, _ForwardIterator __last2,
 			      const _Tp& __x)
     {
-      _ForwardIterator __mid2 = uninitialized_copy(__first1, __last1, __first2);
+      _ForwardIterator __mid2 = std::uninitialized_copy(__first1, __last1, __first2);
       try {
-	uninitialized_fill(__mid2, __last2, __x);
+	std::uninitialized_fill(__mid2, __last2, __x);
       }
       catch(...)
 	{
-	  _Destroy(__first2, __mid2);
+	  std::_Destroy(__first2, __mid2);
 	  __throw_exception_again; 
 	}
     }

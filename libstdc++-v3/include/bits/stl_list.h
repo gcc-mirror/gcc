@@ -410,7 +410,7 @@ namespace std
     {
       _Node* __p = _M_get_node();
       try {
-        _Construct(&__p->_M_data, __x);
+        std::_Construct(&__p->_M_data, __x);
       }
       catch(...)
       {
@@ -431,7 +431,7 @@ namespace std
     {
       _Node* __p = _M_get_node();
       try {
-        _Construct(&__p->_M_data);
+        std::_Construct(&__p->_M_data);
       }
       catch(...)
       {
@@ -1073,8 +1073,8 @@ namespace std
     inline bool
     operator<(const list<_Tp,_Alloc>& __x, const list<_Tp,_Alloc>& __y)
     {
-      return lexicographical_compare(__x.begin(), __x.end(),
-                                     __y.begin(), __y.end());
+      return std::lexicographical_compare(__x.begin(), __x.end(),
+					  __y.begin(), __y.end());
     }
   
   /// Based on operator==
