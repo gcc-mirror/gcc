@@ -1,3 +1,29 @@
+2004-11-22  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/i386.h (TARGET_USE_FANCY_MATH_387): New macro.
+	* config/i386/i386.c (override_options):  Set MASK_NO_FANCY_MATH_387
+	automatically for targets without TARGET_80387.
+	* config/i386/i386.md (sqrtsf2, sqrtsf2_1, sqrtsf2_i387, sqrtdf2,
+	sqrtdf2_1, sqrtdf2_i387, *sqrtextendsfdf2, sqrtxf2,
+	*sqrtextenddfxf2, *sqrtextendsfxf2, fpremxf4, fmodsf3, fmoddf3,
+	fmodxf3, fprem1xf4, dremsf3, dremdf3, dremxf3, *sindf2, *sinsf2,
+	*sinextendsfdf2, *sinxf2, *cosdf2, *cossf2, *cosextendsfdf2,
+	*cosxf2, sincosdf3, sincossf3, *sincosextendsfdf3, sincosxf3,
+	*tandf3_1, tandf2, *tansf3_1, tansf2, *tanxf3_1, tanxf2,
+	atan2df3_1, atan2df3, atandf2, atan2sf3_1, atan2sf3, atansf2,
+	atan2xf3_1, atan2xf3, atanxf2, asindf2, asinsf2, asinxf2,
+	acosdf2, acossf2, acosxf2, fyl2x_xf3, logsf2, logdf2, logxf2,
+	log10sf2, log10df2, log10xf2, log2sf2, log2df2, log2xf2,
+	fyl2xp1_xf3, log1psf2, log1pdf2, log1pxf2, *fxtractxf3, logbsf2,
+	logbdf2, logbxf2, ilogbsi2, *f2xm1xf2, *fscalexf4, expsf2,
+	expdf2, expxf2, exp10sf2, exp10df2, exp10xf2, exp2sf2, exp2df2,
+	exp2xf2, expm1df2, expm1sf2, expm1xf2, frndintxf2, rintdf2,
+	rintsf2, rintxf2, frndintxf2_floor, floordf2, floorsf2, 
+	floorxf2, frndintxf2_ceil, ceildf2, ceilsf2, ceilxf2,
+	frndintxf2_trunc, btruncdf2, btruncsf2, btruncxf2,
+	frndintxf2_mask_pm, nearbyintdf2, nearbyintsf2, nearbyintxf2):
+	Simplify conditionals using TARGET_USE_FANCY_MATH_387.
+
 2004-11-22  Dale Johannesen  <dalej@apple.com>
 
 	* config/darwin.h (JUMP_TABLES_IN_TEXT_SECTION):  Conditionalize

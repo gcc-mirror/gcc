@@ -1482,6 +1482,11 @@ override_options (void)
   if (x86_arch_always_fancy_math_387 & (1 << ix86_arch))
     target_flags &= ~MASK_NO_FANCY_MATH_387;
 
+  /* Likewise, if the target doesn't have a 387, or we've specified
+     software floating point, don't use 387 inline instrinsics.  */
+  if (!TARGET_80387)
+    target_flags |= MASK_NO_FANCY_MATH_387;
+
   /* Turn on SSE2 builtins for -msse3.  */
   if (TARGET_SSE3)
     target_flags |= MASK_SSE2;

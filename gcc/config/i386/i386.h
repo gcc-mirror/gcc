@@ -177,6 +177,9 @@ extern int target_flags;
    This is because FreeBSD lacks these in the math-emulator-code */
 #define TARGET_NO_FANCY_MATH_387 (target_flags & MASK_NO_FANCY_MATH_387)
 
+/* Generate 387 floating point intrinsics for the current target.  */
+#define TARGET_USE_FANCY_MATH_387 (! TARGET_NO_FANCY_MATH_387)
+
 /* Don't create frame pointers for leaf functions */
 #define TARGET_OMIT_LEAF_FRAME_POINTER \
   (target_flags & MASK_OMIT_LEAF_FRAME_POINTER)
