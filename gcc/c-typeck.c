@@ -1444,7 +1444,8 @@ build_array_ref (array, index)
     if (ar == error_mark_node)
       return ar;
 
-    if (TREE_CODE (TREE_TYPE (ar)) != POINTER_TYPE)
+    if (TREE_CODE (TREE_TYPE (ar)) != POINTER_TYPE
+	|| TREE_CODE (TREE_TYPE (TREE_TYPE (ar))) == FUNCTION_TYPE)
       {
 	error ("subscripted value is neither array nor pointer");
 	return error_mark_node;
