@@ -1,3 +1,10 @@
+2000-06-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (BINFO_OVERRIDE_ALONG_VIRTUAL_PATH): New macro.
+	* class.c (dfs_find_final_overrider): Set it appropriately.
+	(dfs_built_vtt_inits): Check BINFO_OVERRIDE_ALONG_VIRTUAL_PATH to
+	avoid unneeded secondary vptrs.
+
 2000-06-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* class.c (build_secondary_vtable): Set DECL_USER_ALIGN.

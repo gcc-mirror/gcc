@@ -55,11 +55,13 @@ Boston, MA 02111-1307, USA.  */
       BASELINK_P (in TREE_LIST)
       ICS_ELLIPSIS_FLAG (in _CONV)
       STMT_IS_FULL_EXPR_P (in _STMT)
+      BINFO_ACCESS (in BINFO)
    2: IDENTIFIER_OPNAME_P.
       TYPE_POLYMORHPIC_P (in _TYPE)
       ICS_THIS_FLAG (in _CONV)
       STMT_LINENO_FOR_FN_P (in _STMT)
       BINDING_HAS_LEVEL_P (in CPLUS_BINDING)
+      BINFO_OVERRIDE_ALONG_VIRTUAL_PATH_P (in BINFO)
    3: TYPE_USES_VIRTUAL_BASECLASSES (in a class TYPE).
       BINFO_VTABLE_PATH_MARKED.
       BINFO_PUSHDECLS_MARKED.
@@ -76,6 +78,7 @@ Boston, MA 02111-1307, USA.  */
       IDENTIFIER_TYPENAME_P (in IDENTIFIER_NODE)
    5: BINFO_PRIMARY_MARKED_P (in BINFO)
    6: BINFO_VBASE_PRIMARY_P (in BINFO)
+      BINFO_ACCESS (in BINFO)
 
    Usage of TYPE_LANG_FLAG_?:
    0: C_TYPE_FIELDS_READONLY (in RECORD_TYPE or UNION_TYPE).
@@ -1783,6 +1786,10 @@ struct lang_type
 /* The index in the VTT where the vptr for this subobject can be
    found.  NULL_TREE if there is no secondary vptr in the VTT.  */
 #define BINFO_VPTR_INDEX(NODE) TREE_VEC_ELT ((NODE), 9)
+
+/* Nonzero if this binfo declares a virtual function which is
+   overridden along a virtual path.  */
+#define BINFO_OVERRIDE_ALONG_VIRTUAL_PATH_P(NODE) TREE_LANG_FLAG_2 (NODE)
 
 /* Used by various search routines.  */
 #define IDENTIFIER_MARKED(NODE) TREE_LANG_FLAG_0 (NODE)

@@ -2453,9 +2453,11 @@ dfs_find_final_overrider (binfo, data)
       tree path;
       tree method;
 
+      /* We haven't found an overrider yet.  */
+      method = NULL_TREE;
       /* We've found a path to the declaring base.  Walk down the path
 	 looking for an overrider for FN.  */
-      for (path = reverse_path (binfo); 
+      for (path = reverse_path (binfo);
 	   path; 
 	   path = TREE_CHAIN (path))
 	{
@@ -2474,6 +2476,24 @@ dfs_find_final_overrider (binfo, data)
 	 the base from which it came.  */
       if (path)
 	{
+	  tree base;
+
+	  /* Assume the path is non-virtual.  See if there are any base from
+	     (but not including) the overrider up to and including the
+	     base where the function is defined. */
+	  for (base = TREE_CHAIN (path); base; base = TREE_CHAIN (base))
+	    if (TREE_VIA_VIRTUAL (TREE_VALUE (base)))
+	      {
+		base = ffod->declaring_base;
+		while (BINFO_PRIMARY_MARKED_P (base))
+		  {
+		    BINFO_OVERRIDE_ALONG_VIRTUAL_PATH_P (base) = 1;
+		    base = BINFO_INHERITANCE_CHAIN (base);
+		  }
+		BINFO_OVERRIDE_ALONG_VIRTUAL_PATH_P (base) = 1;
+		break;
+	      }
+
 	  if (ffod->overriding_fn && ffod->overriding_fn != method)
 	    {
 	      /* We've found a different overrider along a different
@@ -6729,10 +6749,19 @@ dfs_build_vtt_inits (binfo, data)
 
   /* If BINFO doesn't have virtual bases, then we have to look to see
      whether or not any virtual functions were overidden along a
-     virtual path between the declaration and T.  */
-  if (!TYPE_USES_VIRTUAL_BASECLASSES (BINFO_TYPE (binfo)))
-    /* FIXME: Implement this.  */
-    ;
+     virtual path.  The point is that given:
+
+       struct V { virtual void f(); int i; };
+       struct C : public V { void f (); };
+
+     when we constrct C we need a secondary vptr for V-in-C because we
+     don't know what the vcall offset for `f' should be.  If `V' ends
+     up in a different place in the complete object, then we'll need a
+     different vcall offset than that present in the normal V-in-C
+     vtable.  */
+  if (!TYPE_USES_VIRTUAL_BASECLASSES (BINFO_TYPE (binfo))
+      && !BINFO_OVERRIDE_ALONG_VIRTUAL_PATH_P (binfo))
+    return NULL_TREE;
 
   /* Record the index where this secondary vptr can be found.  */
   index = TREE_TYPE (l);
