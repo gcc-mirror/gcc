@@ -593,7 +593,7 @@ extern enum reg_class m32r_regno_reg_class[];
 #define INT16_P(X) ((unsigned) ((X) + 0x8000) < 0x10000)
 #define CMP_INT16_P(X) ((unsigned) ((X) - 1 + 0x8000) < 0x10000)
 #define UINT16_P(X) ((unsigned) (X) < 0x10000)
-#define UPPER16_P(X) (((X) & 0xffff0000) == 0)
+#define UPPER16_P(X) (((X) & ~0xffff0000) == 0)
 #define UINT24_P(X) ((unsigned) (X) < 0x1000000)
 #define INT32_P(X) ((X) >= (-(HOST_WIDE_INT) 0x7fffffff - 1) \
 		    && (X) <= (unsigned HOST_WIDE_INT) 0xffffffff)
