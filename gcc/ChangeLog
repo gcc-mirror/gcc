@@ -1,6 +1,6 @@
 2004-10-17  Joseph S. Myers  <jsm@polyomino.org.uk>
 
-	* c-common.c (enum rid): Remove RID_PTRBASE, RID_PTREXTENT and
+	* c-common.h (enum rid): Remove RID_PTRBASE, RID_PTREXTENT and
 	RID_PTRVALUE.
 	* c-parse.in (PTR_VALUE, PTR_BASE, PTR_EXTENT): Remove %token
 	declarations.
