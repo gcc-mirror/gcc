@@ -1652,6 +1652,7 @@ c4x_address_cost (addr)
 	  }
       }
     default:
+      break;
     }
   
   return 4;
@@ -2133,6 +2134,16 @@ c4x_rptb_nop_p (insn)
 }
 
 
+/* The C4x looping instruction needs to be emitted at the top of the
+  loop.  Emitting the true RTL for a looping instruction at the top of
+  the loop can cause problems with flow analysis.  So instead, a dummy
+  doloop insn is emitted at the end of the loop.  This routine checks
+  for the presence of this doloop insn and then searches back to the
+  top of the loop, where it inserts the true looping insn (provided
+  there are no instructions in the loop which would cause problems).
+  Any additional labels can be emitted at this point.  In addition, if
+  the desired loop count register was not allocated, this routine does
+  nothing.  */
 void
 c4x_rptb_insert (insn)
      rtx insn;
@@ -2436,6 +2447,7 @@ c4x_R_constraint (op)
 	return IS_UINT5_CONST (INTVAL (op1));
       }
       break;
+
     default:
       break;
     }
@@ -2540,6 +2552,7 @@ c4x_S_constraint (op)
 	return IS_DISP1_CONST (INTVAL (op1));
       }
       break;
+
     default:
       break;
     }
@@ -2854,6 +2867,7 @@ not_modify_reg (op, mode)
     case SYMBOL_REF:
     case LABEL_REF:
       return 1;
+
     default:
       break;
     }
@@ -3923,6 +3937,7 @@ c4x_arn_mem_operand (op, mode, regno)
 	      return 1;
 	  }
 	  break;
+
 	default:
 	  break;
 	}
