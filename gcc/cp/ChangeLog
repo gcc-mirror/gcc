@@ -1,3 +1,20 @@
+2003-07-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9447
+	* decl.c (add_binding): Add bval local variable.
+	(push_class_level_binding): Likewise. Allow a USING_DECL to be
+	pushed.
+	* decl2.c (do_class_using_decl):  The type of a using decl is
+	unknown.
+	* parser.c (cp_parser_postfix_expression): Refactor unqualified-id
+	function call lookup code.
+	* pt.c (tsubst): A USING_DECL will have unknown type.
+	(tsubst_copy_and_build): Allow a using decl.
+	(type_dependent_expression_p): A USING_DECL will make it
+	dependent.
+	* semantics.c (finish_member_declaration): Push a dependent using
+	declaration.
+
 2003-07-28  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11530

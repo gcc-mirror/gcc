@@ -1,3 +1,11 @@
+2003-07-29  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/9447
+	* g++.dg/template/using1.C: New test.
+	* g++.dg/template/using2.C: New test.
+	* g++.dg/template/using3.C: New test.
+	* g++.dg/template/using4.C: New test.
+
 2003-07-29  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.c-torture/execute/string-opt-9.c: strcmp returns int.

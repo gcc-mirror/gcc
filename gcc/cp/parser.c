@@ -3483,18 +3483,19 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 		parser->non_constant_expression_p = true;
 	      }
 
-	    if (idk == CP_ID_KIND_UNQUALIFIED
-		&& (is_overloaded_fn (postfix_expression)
-		    || DECL_P (postfix_expression)
-		    || TREE_CODE (postfix_expression) == IDENTIFIER_NODE)
-		&& args)
-	      postfix_expression 
-		= perform_koenig_lookup (postfix_expression, args);
-	    else if (idk == CP_ID_KIND_UNQUALIFIED 
-		     && TREE_CODE (postfix_expression) == IDENTIFIER_NODE)
-	      postfix_expression
-		= unqualified_fn_lookup_error (postfix_expression);
-
+	    if (idk == CP_ID_KIND_UNQUALIFIED)
+	      {
+		if (args
+		    && (is_overloaded_fn (postfix_expression)
+			|| DECL_P (postfix_expression)
+			|| TREE_CODE (postfix_expression) == IDENTIFIER_NODE))
+		  postfix_expression 
+		    = perform_koenig_lookup (postfix_expression, args);
+		else if (TREE_CODE (postfix_expression) == IDENTIFIER_NODE)
+		  postfix_expression
+		    = unqualified_fn_lookup_error (postfix_expression);
+	      }
+	  
 	    if (TREE_CODE (postfix_expression) == COMPONENT_REF)
 	      {
 		tree instance = TREE_OPERAND (postfix_expression, 0);

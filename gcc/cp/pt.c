@@ -6430,14 +6430,16 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     type = IDENTIFIER_TYPE_VALUE (t);
   else
     type = TREE_TYPE (t);
-  if (type == unknown_type_node)
-    abort ();
+
+  my_friendly_assert (type != unknown_type_node
+		      || TREE_CODE (t) == USING_DECL, 20030716);
 
   if (type && TREE_CODE (t) != FUNCTION_DECL
       && TREE_CODE (t) != TYPENAME_TYPE
       && TREE_CODE (t) != TEMPLATE_DECL
       && TREE_CODE (t) != IDENTIFIER_NODE
       && TREE_CODE (t) != FUNCTION_TYPE
+      && TREE_CODE (t) != USING_DECL
       && TREE_CODE (t) != METHOD_TYPE)
     type = tsubst (type, args, complain, in_decl);
   if (type == error_mark_node)
@@ -7907,6 +7909,9 @@ tsubst_copy_and_build (tree t,
 
   switch (TREE_CODE (t))
     {
+    case USING_DECL:
+      t = DECL_NAME (t);
+      /* Fallthrough. */
     case IDENTIFIER_NODE:
       {
 	tree decl;
@@ -11618,6 +11623,8 @@ type_dependent_expression_p (tree expression)
 
   if (TREE_TYPE (expression) == unknown_type_node)
     {
+      if (TREE_CODE (expression) == USING_DECL)
+	return true;
       if (TREE_CODE (expression) == ADDR_EXPR)
 	return type_dependent_expression_p (TREE_OPERAND (expression, 0));
       if (TREE_CODE (expression) == BASELINK)
