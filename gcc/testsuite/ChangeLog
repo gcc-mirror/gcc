@@ -1,3 +1,9 @@
+1999-08-25  Paul Burchard  <burchard@pobox.com>
+
+	* g++.old-deja/g++.pt/lss-001.C, lss-002.C, lss-003.C, lss-004.C,
+	lss-005.C, lss-006.C, lss-007.C, lss-008.C, lss-009.C, lss-010.C,
+	lss-011.C: New tests.
+
 1999-08-25  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.other/decl5.C: New test.
