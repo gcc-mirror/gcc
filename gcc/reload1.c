@@ -7532,10 +7532,12 @@ gen_reload (out, in, opnum, type)
 
 #ifdef SECONDARY_MEMORY_NEEDED
   /* If we need a memory location to do the move, do it that way.  */
-  else if (GET_CODE (in) == REG && REGNO (in) < FIRST_PSEUDO_REGISTER
-	   && GET_CODE (out) == REG && REGNO (out) < FIRST_PSEUDO_REGISTER
-	   && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (REGNO (in)),
-				       REGNO_REG_CLASS (REGNO (out)),
+  else if ((GET_CODE (in) == REG || GET_CODE (in) == SUBREG)
+	   && reg_or_subregno (in) < FIRST_PSEUDO_REGISTER
+	   && (GET_CODE (out) == REG || GET_CODE (out) == SUBREG)
+	   && reg_or_subregno (out) < FIRST_PSEUDO_REGISTER
+	   && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (reg_or_subregno (in)),
+				       REGNO_REG_CLASS (reg_or_subregno (out)),
 				       GET_MODE (out)))
     {
       /* Get the memory to use and rewrite both registers to its mode.  */

@@ -1,3 +1,12 @@
+Mon Sep 30 21:33:23 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* reload.c (push_reload): Handle subregs and secondary memory.
+	* reload1.c (gen_reload): Likewise.
+
+	* jump.c (reg_or_subregno): New function.
+	* rtl.h (reg_or_subregno): Declare
+	* unroll.c (find_splittable_givs): Handle subregs.
+
 2002-09-30  Mark Mitchell  <mark@codesourcery.com>
 
 	* store-layout.c (finish_record_layout): Add free_p parameter.
