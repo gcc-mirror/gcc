@@ -1,13 +1,42 @@
+Sun Aug 20 21:02:48 2000  Anthony Green  <green@redhat.com>
+
+	* java/lang/natSystem.cc (init_properties): Change sourceware
+	reference to sources.redhat.com.
+
+	* include/java-props.h: Add _Jv_Jar_Class_Path.
+	* prims.cc: Ditto.  Set it from	`gij -jar file' option.
+
+	* java/lang/natSystem.cc (init_properties): Set java.class.path
+	from
+	{gij -jar file}:{CLASSPATH variable}:{-Djava.class.path= or .}
+
+	* java/util/PropertyPermission.java: Import from GNU Classpath.
+	* Makefile.in: Rebuilt.
+	* Makefile.am: Add java/util/PropertyPermission.java.
+	* java/lang/System.java: Add setProperty method.
+
+	* gij.cc (main): Add -jar option to execute jar files.
+	(help): Describe -jar option.
+	* prims.cc (_Jv_RunMain): Add support for jar execution mode.
+	* gnu/gcj/tools/Gij.java: New file.
+	* include/jvm.h: Add is_jar argument to _Jv_RunMain.
+	* gnu/gcj/runtime/FirstThread.java (main): New method.
+
+	* java/util/jar/Attributes.java: Correct comment spelling.
+
 2000-08-20  Mark Wielaard  <mark@klomp.org>
 
 	* java/util/zip/Adler32.java: Make private variables really private
 	* java/util/zip/CRC32.java: Make private variables really private
-	* java/util/zip/CheckedInputStream.java: skip() could skip to much bytes
-	* java/util/zip/InflaterInputStream.java: skip() could skip to much bytes
+	* java/util/zip/CheckedInputStream.java: skip() could skip to much
+	bytes
+	* java/util/zip/InflaterInputStream.java: skip() could skip to
+	much bytes
 	* java/util/zip/ZipEntry.java: setCompressedSize() didn't check input
 	* java/util/zip/ZipFile.java: size() new 1.2 method
-	* java/util/zip/ZipInputStream.java: Use createZipEntry not new ZipEntry.
-    since 1.2 available() always returns just 1 or 0 when closed
+	* java/util/zip/ZipInputStream.java: Use createZipEntry not new
+	ZipEntry.  since 1.2 available() always returns just 1 or 0 when
+	closed
 
 Sun Aug 20 12:33:43 2000  Anthony Green  <green@redhat.com>
 

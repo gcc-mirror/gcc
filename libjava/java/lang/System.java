@@ -19,6 +19,7 @@ import java.io.PrintStream;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.util.Properties;
+import java.util.PropertyPermission;
 
 /**
  * @author Tom Tromey <tromey@cygnus.com>
@@ -132,8 +133,12 @@ public final class System
     properties = props;
   }
 
-  // TODO 1.2.
-  // public static String setProperty (String key, String value);
+  public static String setProperty (String key, String value)
+  {
+    if (secman != null)
+      secman.checkPermission (new PropertyPermission (key, "write"));
+    return (String) properties.setProperty (key, value);
+  }
 
   // TODO 1.2.
   // public static String mapLibraryName (String libname);
