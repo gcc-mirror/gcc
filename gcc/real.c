@@ -3297,10 +3297,18 @@ ltoe (lp, y)
       ll = (unsigned long) (*lp);
     }
   /* move the long integer to yi significand area */
+#if HOST_BITS_PER_LONG == 64
+  yi[M] = (unsigned EMUSHORT) (ll >> 48);
+  yi[M + 1] = (unsigned EMUSHORT) (ll >> 32);
+  yi[M + 2] = (unsigned EMUSHORT) (ll >> 16);
+  yi[M + 3] = (unsigned EMUSHORT) ll;
+  yi[E] = EXONE + 47;		/* exponent if normalize shift count were 0 */
+#else
   yi[M] = (unsigned EMUSHORT) (ll >> 16);
   yi[M + 1] = (unsigned EMUSHORT) ll;
-
   yi[E] = EXONE + 15;		/* exponent if normalize shift count were 0 */
+#endif
+
   if ((k = enormlz (yi)) > NBITS)/* normalize the significand */
     ecleaz (yi);		/* it was zero */
   else
@@ -3329,10 +3337,18 @@ ultoe (lp, y)
   ll = *lp;
 
   /* move the long integer to ayi significand area */
+#if HOST_BITS_PER_LONG == 64
+  yi[M] = (unsigned EMUSHORT) (ll >> 48);
+  yi[M + 1] = (unsigned EMUSHORT) (ll >> 32);
+  yi[M + 2] = (unsigned EMUSHORT) (ll >> 16);
+  yi[M + 3] = (unsigned EMUSHORT) ll;
+  yi[E] = EXONE + 47;		/* exponent if normalize shift count were 0 */
+#else
   yi[M] = (unsigned EMUSHORT) (ll >> 16);
   yi[M + 1] = (unsigned EMUSHORT) ll;
-
   yi[E] = EXONE + 15;		/* exponent if normalize shift count were 0 */
+#endif
+
   if ((k = enormlz (yi)) > NBITS)/* normalize the significand */
     ecleaz (yi);		/* it was zero */
   else
@@ -3358,7 +3374,8 @@ eifrac (x, i, frac)
      unsigned EMUSHORT *frac;
 {
   unsigned EMUSHORT xi[NI];
-  int k;
+  int j, k;
+  unsigned long ll;
 
   emovi (x, xi);
   k = (int) xi[E] - (EXONE - 1);
@@ -3371,10 +3388,8 @@ eifrac (x, i, frac)
     }
   if (k > (HOST_BITS_PER_LONG - 1))
     {
-      /*
-	 ;	long integer overflow: output large integer
-	 ;	and correct fraction
-	 */
+      /* long integer overflow: output large integer
+	 and correct fraction  */
       if (xi[0])
 	*i = ((unsigned long) 1) << (HOST_BITS_PER_LONG - 1);
       else
@@ -3382,33 +3397,33 @@ eifrac (x, i, frac)
       eshift (xi, k);
       if (extra_warnings)
 	warning ("overflow on truncation to integer");
-      goto lab11;
     }
-
-  if (k > 16)
+  else if (k > 16)
     {
-      /*
-	 ; shift more than 16 bits: shift up k-16, output the integer,
-	 ; then complete the shift to get the fraction.
-	 */
-      k -= 16;
-      eshift (xi, k);
-
-      *i = (long) (((unsigned long) xi[M] << 16) | xi[M + 1]);
-      eshup6 (xi);
-      goto lab10;
+      /* Shift more than 16 bits: first shift up k-16 mod 16,
+	 then shift up by 16's.  */
+      j = k - ((k >> 4) << 4);
+      eshift (xi, j);
+      ll = xi[M];
+      k -= j;
+      do
+	{
+	  eshup6 (xi);
+	  ll = (ll << 16) | xi[M];
+	}
+      while ((k -= 16) > 0);
+      *i = ll;
+      if (xi[0])
+	*i = -(*i);
     }
-
-  /* shift not more than 16 bits */
-  eshift (xi, k);
-  *i = (long) xi[M] & 0xffff;
-
- lab10:
-
-  if (xi[0])
-    *i = -(*i);
- lab11:
-
+  else
+    {
+      /* shift not more than 16 bits */
+      eshift (xi, k);
+      *i = (long) xi[M] & 0xffff;
+      if (xi[0])
+	*i = -(*i);
+    }
   xi[0] = 0;
   xi[E] = EXONE - 1;
   xi[M] = 0;
@@ -3421,24 +3436,19 @@ eifrac (x, i, frac)
 }
 
 
-/*
-;	Find unsigned long integer and fractional parts
+/* Find unsigned long integer and fractional parts.
+   A negative e type input yields integer output = 0
+   but correct fraction.  */
 
-;	unsigned long i;
-;	unsigned EMUSHORT x[NE], frac[NE];
-;	xifrac (x, &i, frac);
-
-  A negative e type input yields integer output = 0
-  but correct fraction.
-*/
 void 
 euifrac (x, i, frac)
      unsigned EMUSHORT *x;
-     long *i;
+     unsigned long *i;
      unsigned EMUSHORT *frac;
 {
+  unsigned long ll;
   unsigned EMUSHORT xi[NI];
-  int k;
+  int j, k;
 
   emovi (x, xi);
   k = (int) xi[E] - (EXONE - 1);
@@ -3449,42 +3459,42 @@ euifrac (x, i, frac)
       emovo (xi, frac);
       return;
     }
-  if (k > 32)
+  if (k > HOST_BITS_PER_LONG)
     {
-      /*
-	 ;	long integer overflow: output large integer
-	 ;	and correct fraction
-	 */
+      /* Long integer overflow: output large integer
+	 and correct fraction.
+	 Note, the BSD microvax compiler says that ~(0UL)
+	 is a syntax error.  */
       *i = ~(0L);
       eshift (xi, k);
       if (extra_warnings)
 	warning ("overflow on truncation to unsigned integer");
-      goto lab10;
     }
-
-  if (k > 16)
+  else if (k > 16)
     {
-      /*
-	 ; shift more than 16 bits: shift up k-16, output the integer,
-	 ; then complete the shift to get the fraction.
-	 */
-      k -= 16;
+      /* Shift more than 16 bits: first shift up k-16 mod 16,
+	 then shift up by 16's.  */
+      j = k - ((k >> 4) << 4);
+      eshift (xi, j);
+      ll = xi[M];
+      k -= j;
+      do
+	{
+	  eshup6 (xi);
+	  ll = (ll << 16) | xi[M];
+	}
+      while ((k -= 16) > 0);
+      *i = ll;
+    }
+  else
+    {
+      /* shift not more than 16 bits */
       eshift (xi, k);
-
-      *i = (long) (((unsigned long) xi[M] << 16) | xi[M + 1]);
-      eshup6 (xi);
-      goto lab10;
+      *i = (long) xi[M] & 0xffff;
     }
 
-  /* shift not more than 16 bits */
-  eshift (xi, k);
-  *i = (long) xi[M] & 0xffff;
-
- lab10:
-
-  if (xi[0])
+  if (xi[0])  /* A negative value yields unsigned integer 0. */
     *i = 0L;
-
   xi[0] = 0;
   xi[E] = EXONE - 1;
   xi[M] = 0;
@@ -4900,7 +4910,9 @@ todec (x, y)
 /* If special NaN bit patterns are required, define them in tm.h
    as arrays of unsigned 16-bit shorts.  Otherwise, use the default
    patterns here. */
-#ifndef TFMODE_NAN
+#ifdef TFMODE_NAN
+TFMODE_NAN;
+#else
 #ifdef MIEEE
 unsigned EMUSHORT TFnan[8] =
  {0x7fff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff};
@@ -4910,7 +4922,9 @@ unsigned EMUSHORT TFnan[8] = {0, 0, 0, 0, 0, 0, 0x8000, 0xffff};
 #endif
 #endif
 
-#ifndef XFMODE_NAN
+#ifdef XFMODE_NAN
+XFMODE_NAN;
+#else
 #ifdef MIEEE
 unsigned EMUSHORT XFnan[6] = {0x7fff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff};
 #endif
@@ -4919,7 +4933,9 @@ unsigned EMUSHORT XFnan[6] = {0, 0, 0, 0xc000, 0xffff, 0};
 #endif
 #endif
 
-#ifndef DFMODE_NAN
+#ifdef DFMODE_NAN
+DFMODE_NAN;
+#else
 #ifdef MIEEE
 unsigned EMUSHORT DFnan[4] = {0x7fff, 0xffff, 0xffff, 0xffff};
 #endif
@@ -4928,7 +4944,9 @@ unsigned EMUSHORT DFnan[4] = {0, 0, 0, 0xfff8};
 #endif
 #endif
 
-#ifndef SFMODE_NAN
+#ifdef SFMODE_NAN
+SFMODE_NAN;
+#else
 #ifdef MIEEE
 unsigned EMUSHORT SFnan[2] = {0x7fff, 0xffff};
 #endif
