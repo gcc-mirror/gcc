@@ -496,24 +496,24 @@ do {									\
 
 /* External function declarations.  */
 
-#ifndef PROTO
+#ifndef PARAMS
 #if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define PROTO(ARGS) ARGS
+#define PARAMS(ARGS) ARGS
 #else
-#define PROTO(ARGS) ()
+#define PARAMS(ARGS) ()
 #endif
 #endif
 
 #ifdef BUFSIZ		/* stdio.h has been included, ok to use FILE * */
-#define STDIO_PROTO(ARGS) PROTO(ARGS)
+#define STDIO_PARAMS(ARGS) PARAMS(ARGS)
 #else
-#define STDIO_PROTO(ARGS) ()
+#define STDIO_PARAMS(ARGS) ()
 #endif
 
-extern void i386_pe_record_external_function PROTO((char *));
-extern void i386_pe_declare_function_type STDIO_PROTO((FILE *, char *, int));
-extern void i386_pe_record_exported_symbol PROTO((char *, int));
-extern void i386_pe_asm_file_end STDIO_PROTO((FILE *));
+extern void i386_pe_record_external_function PARAMS ((char *));
+extern void i386_pe_declare_function_type STDIO_PARAMS ((FILE *, char *, int));
+extern void i386_pe_record_exported_symbol PARAMS ((char *, int));
+extern void i386_pe_asm_file_end STDIO_PARAMS ((FILE *));
 
 /* For Win32 ABI compatibility */
 #undef DEFAULT_PCC_STRUCT_RETURN

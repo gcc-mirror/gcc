@@ -1,3 +1,7 @@
+2000-01-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* i386/cygwin.h: PROTO -> PARAMS.
+
 2000-01-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.c (sparc_emit_float_lib_cmp): Handle
