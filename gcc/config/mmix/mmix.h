@@ -108,10 +108,10 @@ struct machine_function
 /* When both ABI:s work, this is how we tell them apart in code.  The
    GNU abi is implied the default.  Also implied in TARGET_DEFAULT.  */
 #define CPP_SPEC \
- "%{abi=gnu:-D__MMIX_ABI_GNU__\
-    %{abi=mmixware:\
+ "%{mabi=gnu:-D__MMIX_ABI_GNU__\
+    %{mabi=mmixware:\
       %eoptions -mabi=mmixware and -mabi=gnu are mutually exclusive}}\
-  %{!abi=gnu:-D__MMIX_ABI_MMIXWARE__}"
+  %{!mabi=gnu:-D__MMIX_ABI_MMIXWARE__}"
 
 /* User symbols are in the same name-space as built-in symbols, but we
    don't need the built-in symbols, so remove those and instead apply
@@ -945,7 +945,7 @@ const_section ()						\
 
 #define UNIQUE_SECTION(DECL, RELOC) \
   mmix_unique_section (decl, reloc)
-  
+
 /* Node: PIC */
 /* (empty) */
 
