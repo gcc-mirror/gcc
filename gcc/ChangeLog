@@ -1,3 +1,8 @@
+1999-12-14  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* combine.c (combine_simplify_rtx): Don't make shared rtl.
+	(simplify_logical): Likewise.
+
 1999-12-14  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* cccp.c (INO_T_EQ): Disable inode-based optimization for Cygwin.
