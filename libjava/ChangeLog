@@ -1,3 +1,7 @@
+2000-11-17  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/zip/*.java: Javadoc updates.
+
 2000-11-17  Tom Tromey  <tromey@cygnus.com>
 
 	* java/text/CollationKey.java: Implement Comparable.
