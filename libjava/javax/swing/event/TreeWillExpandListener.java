@@ -51,7 +51,7 @@ public interface TreeWillExpandListener extends EventListener
    * 
    * @param event The tree expansion Event
    */
-  public void treeWillCollapse(TreeExpansionEvent event)
+  void treeWillCollapse(TreeExpansionEvent event)
     throws ExpandVetoException;
 
   /**
@@ -59,6 +59,6 @@ public interface TreeWillExpandListener extends EventListener
    * 
    * @param event The tree expansion Event
    */
-  public void treeWillExpand(TreeExpansionEvent event)
+  void treeWillExpand(TreeExpansionEvent event)
     throws ExpandVetoException;
 }  

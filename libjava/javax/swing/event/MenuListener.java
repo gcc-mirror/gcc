@@ -41,7 +41,7 @@ package javax.swing.event;
 import java.util.EventListener;
 
 /**
- * MenuListener interface
+ * MenuListener public interface
  * @author Andrew Selkirk
  */
 public interface MenuListener extends EventListener {
@@ -50,19 +50,19 @@ public interface MenuListener extends EventListener {
 	 * Menu canceled
 	 * @param event Menu Event
 	 */
-	public void menuCanceled(MenuEvent event);
+	void menuCanceled(MenuEvent event);
 
 	/**
 	 * Menu deselected
 	 * @param event Menu Event
 	 */
-	public void menuDeselected(MenuEvent event);
+	void menuDeselected(MenuEvent event);
 
 	/**
 	 * Menu selected
 	 * @param event Menu Event
 	 */
-	public void menuSelected(MenuEvent event);
+	void menuSelected(MenuEvent event);
 
 
 } // MenuListener

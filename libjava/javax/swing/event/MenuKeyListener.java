@@ -41,7 +41,7 @@ package javax.swing.event;
 import java.util.EventListener;
 
 /**
- * MenuKeyListener interface
+ * MenuKeyListener public interface
  * @author Andrew Selkirk
  */
 public interface MenuKeyListener extends EventListener {
@@ -50,19 +50,19 @@ public interface MenuKeyListener extends EventListener {
 	 * Menu key pressed
 	 * @param event Menu Key Event
 	 */
-	public void menuKeyPressed(MenuKeyEvent event);
+	void menuKeyPressed(MenuKeyEvent event);
 
 	/**
 	 * Menu key released
 	 * @param event Menu Key Event
 	 */
-	public void menuKeyReleased(MenuKeyEvent event);
+	void menuKeyReleased(MenuKeyEvent event);
 
 	/**
 	 * Menu key typed
 	 * @param event Menu Key Event
 	 */
-	public void menuKeyTyped(MenuKeyEvent event);
+	void menuKeyTyped(MenuKeyEvent event);
 
 
 } // MenuKeyListener

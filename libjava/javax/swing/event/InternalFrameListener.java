@@ -41,7 +41,7 @@ package javax.swing.event;
 import java.util.EventListener;
 
 /**
- * InternalFrameListener interface
+ * InternalFrameListener public interface
  * @author Andrew Selkirk
  */
 public interface InternalFrameListener extends EventListener {
@@ -50,43 +50,43 @@ public interface InternalFrameListener extends EventListener {
 	 * Internal frame activated
 	 * @param event Internal Frame Event
 	 */
-	public void internalFrameActivated(InternalFrameEvent event);
+	void internalFrameActivated(InternalFrameEvent event);
 
 	/**
 	 * Internal frame closed
 	 * @param event Internal Frame Event
 	 */
-	public void internalFrameClosed(InternalFrameEvent event);
+	void internalFrameClosed(InternalFrameEvent event);
 
 	/**
 	 * Internal frame closing
 	 * @param event Internal Frame Event
 	 */
-	public void internalFrameClosing(InternalFrameEvent event);
+	void internalFrameClosing(InternalFrameEvent event);
 
 	/**
 	 * Internal frame deactivated
 	 * @param event Internal Frame Event
 	 */
-	public void internalFrameDeactivated(InternalFrameEvent event);
+	void internalFrameDeactivated(InternalFrameEvent event);
 
 	/**
 	 * Internal frame deiconified
 	 * @param event Internal Frame Event
 	 */
-	public void internalFrameDeiconified(InternalFrameEvent event);
+	void internalFrameDeiconified(InternalFrameEvent event);
 
 	/**
 	 * Internal frame iconified
 	 * @param event Internal Frame Event
 	 */
-	public void internalFrameIconified(InternalFrameEvent event);
+	void internalFrameIconified(InternalFrameEvent event);
 
 	/**
 	 * Internal frame opened
 	 * @param event Internal Frame Event
 	 */
-	public void internalFrameOpened(InternalFrameEvent event);
+	void internalFrameOpened(InternalFrameEvent event);
 
 
 } // InternalFrameListener

@@ -41,7 +41,7 @@ package javax.swing.event;
 import java.util.EventListener;
 
 /**
- * TableColumnModelListener interface
+ * TableColumnModelListener public interface
  * @author Andrew Selkirk
  */
 public interface TableColumnModelListener extends EventListener {
@@ -50,31 +50,31 @@ public interface TableColumnModelListener extends EventListener {
 	 * Column added
 	 * @param event Table Column Model Event
 	 */
-	public void columnAdded(TableColumnModelEvent event);
+	void columnAdded(TableColumnModelEvent event);
 
 	/**
 	 * Column margin changed
 	 * @param event Change Event
 	 */
-	public void columnMarginChanged(ChangeEvent event);
+	void columnMarginChanged(ChangeEvent event);
 
 	/**
 	 * Column moved
 	 * @param event Table Column Model Event
 	 */
-	public void columnMoved(TableColumnModelEvent event);
+	void columnMoved(TableColumnModelEvent event);
 
 	/**
 	 * Column removed
 	 * @param event Table Column Model Event
 	 */
-	public void columnRemoved(TableColumnModelEvent event);
+	void columnRemoved(TableColumnModelEvent event);
 
 	/**
 	 * Column selection changed
 	 * @param event List Selection Event
 	 */
-	public void columnSelectionChanged(ListSelectionEvent event);
+	void columnSelectionChanged(ListSelectionEvent event);
 
 
 } // TableColumnModelListener

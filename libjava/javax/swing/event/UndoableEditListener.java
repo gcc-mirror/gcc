@@ -41,7 +41,7 @@ package javax.swing.event;
 import java.util.EventListener;
 
 /**
- * UndoableEditListener interface
+ * UndoableEditListener public interface
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
@@ -51,7 +51,7 @@ public interface UndoableEditListener extends EventListener {
 	 * Undoable edit has happened
 	 * @param event Undoable Edit Event
 	 */
-	public void undoableEditHappened(UndoableEditEvent event);
+	void undoableEditHappened(UndoableEditEvent event);
 
 
 } // UndoableEditListener

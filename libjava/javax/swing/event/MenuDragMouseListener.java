@@ -41,7 +41,7 @@ package javax.swing.event;
 import java.util.EventListener;
 
 /**
- * MenuDragMouseListener interface
+ * MenuDragMouseListener public interface
  * @author Andrew Selkirk
  */
 public interface MenuDragMouseListener extends EventListener {
@@ -50,25 +50,25 @@ public interface MenuDragMouseListener extends EventListener {
 	 * Menu drag mouse dragged
 	 * @param event Menu Drag Mouse Event
 	 */
-	public void menuDragMouseDragged(MenuDragMouseEvent event);
+	void menuDragMouseDragged(MenuDragMouseEvent event);
 
 	/**
 	 * Menu drag mouse entered
 	 * @param event Menu Drag Mouse Event
 	 */
-	public void menuDragMouseEntered(MenuDragMouseEvent event);
+	void menuDragMouseEntered(MenuDragMouseEvent event);
 
 	/**
 	 * Menu drag mouse exited
 	 * @param event Menu Drag Mouse Event
 	 */
-	public void menuDragMouseExited(MenuDragMouseEvent event);
+	void menuDragMouseExited(MenuDragMouseEvent event);
 
 	/**
 	 * Menu drag mouse released
 	 * @param event Menu Drag Mouse Event
 	 */
-	public void menuDragMouseReleased(MenuDragMouseEvent event);
+	void menuDragMouseReleased(MenuDragMouseEvent event);
 
 
 } // MenuDragMouseListener

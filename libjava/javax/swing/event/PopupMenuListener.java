@@ -41,7 +41,7 @@ package javax.swing.event;
 import java.util.EventListener;
 
 /**
- * PopupMenuListener interface
+ * PopupMenuListener public interface
  * @author Andrew Selkirk
  */
 public interface PopupMenuListener extends EventListener {
@@ -50,19 +50,19 @@ public interface PopupMenuListener extends EventListener {
 	 * Popup Menu Canceled
 	 * @param event Popup Menu Event
 	 */
-	public void popupMenuCanceled(PopupMenuEvent event);
+	void popupMenuCanceled(PopupMenuEvent event);
 
 	/**
 	 * Popup Menu will become invisible
 	 * @param event Popup Menu Event
 	 */
-	public void popupMenuWillBecomeInvisible(PopupMenuEvent event);
+	void popupMenuWillBecomeInvisible(PopupMenuEvent event);
 
 	/**
 	 * Popup Menu will become visible
 	 * @param event Popup Menu Event
 	 */
-	public void popupMenuWillBecomeVisible(PopupMenuEvent event);
+	void popupMenuWillBecomeVisible(PopupMenuEvent event);
 
 
 } // PopupMenuListener

@@ -41,7 +41,7 @@ package javax.swing.event;
 import java.util.EventListener;
 
 /**
- * ListDataListener interface
+ * ListDataListener public interface
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
@@ -51,19 +51,19 @@ public interface ListDataListener extends EventListener {
 	 * Contents Changed
 	 * @param event ListDataEvent Event
 	 */
-	public void contentsChanged(ListDataEvent event);
+	void contentsChanged(ListDataEvent event);
 
 	/**
 	 * Interval Added
 	 * @param event ListDataEvent Event
 	 */
-	public void intervalAdded(ListDataEvent event);
+	void intervalAdded(ListDataEvent event);
 
 	/**
 	 * Interval Removed
 	 * @param event ListDataEvent Event
 	 */
-	public void intervalRemoved(ListDataEvent event);
+	void intervalRemoved(ListDataEvent event);
 
 
 } // ListDataListener

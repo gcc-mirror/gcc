@@ -40,7 +40,7 @@ package javax.swing.event;
 import java.util.EventListener;
 
 /**
- * DocumentListener interface
+ * DocumentListener public interface
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
@@ -50,19 +50,19 @@ public interface DocumentListener extends EventListener {
 	 * Changed update
 	 * @param event Document Event
 	 */
-	public void changedUpdate(DocumentEvent event);
+	void changedUpdate(DocumentEvent event);
 
 	/**
 	 * Insert update
 	 * @param event Document Event
 	 */
-	public void insertUpdate(DocumentEvent event);
+	void insertUpdate(DocumentEvent event);
 
 	/**
 	 * Remove update
 	 * @param event Document Event
 	 */
-	public void removeUpdate(DocumentEvent event);
+	void removeUpdate(DocumentEvent event);
 
 
 } // DocumentListener

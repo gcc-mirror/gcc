@@ -41,7 +41,7 @@ package javax.swing.event;
 import java.util.EventListener;
 
 /**
- * ListSelectionListener interface
+ * ListSelectionListener public interface
  * @author Andrew Selkirk
  * @author Ronald Veldema
  */
@@ -51,7 +51,7 @@ public interface ListSelectionListener extends EventListener {
 	 * Value changed
 	 * @param event List Selection Event
 	 */
-	public void valueChanged(ListSelectionEvent event);
+	void valueChanged(ListSelectionEvent event);
 
 
 } // ListSelectionListener

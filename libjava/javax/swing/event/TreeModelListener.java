@@ -41,7 +41,7 @@ package javax.swing.event;
 import java.util.EventListener;
 
 /**
- * TreeModelListener interface
+ * TreeModelListener public interface
  * @author Andrew Selkirk
  */
 public interface TreeModelListener extends EventListener {
@@ -50,25 +50,25 @@ public interface TreeModelListener extends EventListener {
 	 * Tree nodes changed
 	 * @param event Tree Model Event
 	 */
-	public void treeNodesChanged(TreeModelEvent event);
+	void treeNodesChanged(TreeModelEvent event);
 
 	/**
 	 * Tree nodes inserted
 	 * @param event Tree Model Event
 	 */
-	public void treeNodesInserted(TreeModelEvent event);
+	void treeNodesInserted(TreeModelEvent event);
 
 	/**
 	 * Tree nodes removed
 	 * @param event Tree Model Event
 	 */
-	public void treeNodesRemoved(TreeModelEvent event);
+	void treeNodesRemoved(TreeModelEvent event);
 
 	/**
 	 * Tree structured changed
 	 * @param event Tree Model Event
 	 */
-	public void treeStructureChanged(TreeModelEvent event);
+	void treeStructureChanged(TreeModelEvent event);
 
 
 } // TreeModelListener

@@ -40,7 +40,7 @@ package javax.swing.event;
 import java.util.EventListener;
 
 /**
- * TableModelListener interface
+ * TableModelListener public interface
  * @author Andrew Selkirk
  */
 public interface TableModelListener extends EventListener {
@@ -49,7 +49,7 @@ public interface TableModelListener extends EventListener {
 	 * Table changed
 	 * @param event Table Model Event
 	 */
-	public void tableChanged(TableModelEvent event);
+	void tableChanged(TableModelEvent event);
 
 
 } // TableModelListener

@@ -39,8 +39,8 @@ exception statement from your version. */
 package javax.swing.plaf;
 
 /**
- * This interface is used to designate which objects were created by
- * <code>ComponentUI</code> delegates.  When uninstalling the user interface
+ * This public interface is used to designate which objects were created by
+ * <code>ComponentUI</code> delegates.  When uninstalling the user public interface
  * renderer with <code>ComponentUI.uninstallUI()</code> the renderer
  * property is set to <code>null</code>.
  * <br>

@@ -41,7 +41,7 @@ package javax.swing.event;
 import java.util.EventListener;
 
 /**
- * CaretListener interface
+ * CaretListener public interface
  * @author Andrew Selkirk
  */
 public interface CaretListener extends EventListener {
@@ -50,7 +50,7 @@ public interface CaretListener extends EventListener {
 	 * Caret position has been updated
 	 * @param event Caret Event
 	 */
-	public void caretUpdate(CaretEvent event);
+	void caretUpdate(CaretEvent event);
 
 
 } // CaretListener
