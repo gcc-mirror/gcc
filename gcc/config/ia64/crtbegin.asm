@@ -48,20 +48,20 @@ __dso_handle:
 	data8	__dso_handle
 #else
 	.section .bss
+	.align 8
 __dso_handle:
-	data8	0
+	.skip	8
 #endif
 	.hidden __dso_handle
 
 
 #ifdef HAVE_INITFINI_ARRAY
 
-.section .fini_array,"a"
+.section .fini_array, "a"
 	data8 @fptr(__do_global_dtors_aux)
 
-.section .init_array,"a"
+.section .init_array, "a"
 	data8 @fptr(__do_jv_register_classes)
-	data8 @fptr(__do_global_ctors_aux)
 
 #else /* !HAVE_INITFINI_ARRAY */
 /*
@@ -88,9 +88,9 @@ __dso_handle:
 	  ;;
 	}
 	{ .mib
+	  nop 0
 	  mov b6 = r2
 	  br.call.sptk.many b0 = b6
-	  ;;
 	}
 
 /* Likewise for _init.  */
@@ -106,9 +106,9 @@ __dso_handle:
 	  ;;
 	}
 	{ .mib
+	  nop 0
 	  mov b6 = r2
 	  br.call.sptk.many b0 = b6
-	  ;;
 	}
 #endif /* !HAVE_INITFINI_ARRAY */
 
@@ -127,8 +127,7 @@ __do_global_dtors_aux:
 
 	mov loc2 = gp
 	nop 0
-	br.sptk.many 1f
-	;;
+	br.sptk.many .entry
 #else
 	/*
 		if (__cxa_finalize)
@@ -164,7 +163,7 @@ __do_global_dtors_aux:
 
 	nop 0
 	nop 0
-	br.sptk.many 1f
+	br.sptk.many .entry
 #endif
 	/*
 		do {
@@ -172,7 +171,7 @@ __do_global_dtors_aux:
 		  (*(dtor_ptr-1)) ();
 		} while (dtor_ptr);
 	*/
-0:
+.loop:
 	st8 [loc0] = r15		// update dtor_ptr (in memory)
 	ld8 r17 = [r16], 8		// r17 <- dtor's entry-point
 	nop 0
@@ -182,7 +181,7 @@ __do_global_dtors_aux:
 	mov b6 = r17
 	br.call.sptk.many rp = b6
 
-1:	ld8 r15 = [loc0]		// r15 <- dtor_ptr (gp-relative)
+.entry:	ld8 r15 = [loc0]		// r15 <- dtor_ptr (gp-relative)
 	;;
 	add r16 = r15, loc2		// r16 <- dtor_ptr (absolute)
 	adds r15 = 8, r15
@@ -194,15 +193,16 @@ __do_global_dtors_aux:
 	;;
 
 	cmp.ne p6, p0 = r0, r16
-(p6)	br.cond.sptk.few 0b
+(p6)	br.cond.sptk.few .loop
 	br.ret.sptk.many rp
 	.endp __do_global_dtors_aux
 
 	.align	32
 	.proc	__do_jv_register_classes
 __do_jv_register_classes:
+	.prologue
 	.save ar.pfs, r33
-	alloc loc1 = ar.pfs, 0, 2, 1, 0
+	alloc loc1 = ar.pfs, 0, 3, 1, 0
 	movl out0 = @gprel(__JCR_LIST__)
 	;;
 
@@ -224,15 +224,15 @@ __do_jv_register_classes:
 
 	ld8 r15 = [r14], 8
 	;;
-	ld8 gp = [r14]
+	nop 0
 	mov b6 = r15
 
-	nop 0
-	nop 0
+	mov loc2 = gp
+	ld8 gp = [r14]
 	br.call.sptk.many rp = b6
 	;;
 
-	nop 0
+	mov gp = loc2
 	mov rp = loc0
 	mov ar.pfs = loc1
 

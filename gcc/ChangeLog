@@ -1,3 +1,23 @@
+2003-05-07  David Mosberger <davidm@hpl.hp.com>
+
+        * config/ia64/crtbegin.asm (__do_jv_register_classes): Don't
+	forget to preserve gp.
+        * config/ia64/crtend.asm (__do_global_ctors_au): Ditto.
+
+        * config/ia64/crtbegin.asm (__do_jv_register_classes): Add missing
+        .prologue directive.
+        Use .skip instead of data8 for .bss section to make Intel
+        Assembler (ias) happy.  Minor whitespace fixups.  Make "nop 0"
+        explicit in the .mib bundles and remove the unnecessary stop
+        bits.  Replace local labels with normal labels, to make ias
+        happy.  Don't register __do_global_ctors_aux here, do it in
+        crtend.asm instead.
+
+        * config/ia64/crtend.asm [HAVE_INIT_FINI_ARRAY]: Register
+        __do_global_ctors_aux in .init_array section instead of
+        declaring it as a hidden global.  Replace local labels with
+        ordinary labels to make ias happy.
+
 2003-05-07  Richard Henderson  <rth@redhat.com>
 
         PR c++/10570

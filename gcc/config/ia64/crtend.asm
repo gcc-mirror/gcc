@@ -33,7 +33,12 @@ __DTOR_END__:
 __JCR_END__:
 	data8	0
 
-#ifndef HAVE_INITFINI_ARRAY
+#ifdef HAVE_INITFINI_ARRAY
+
+.section .init_array, "a"
+	data8 @fptr(__do_global_ctors_aux)
+
+#else /* !HAVE_INITFINI_ARRAY */
 /*
  * Fragment of the ELF _init routine that invokes our dtor cleanup.
  *
@@ -66,12 +71,6 @@ __JCR_END__:
 
 .text
 	.align 32
-#ifdef HAVE_INITFINI_ARRAY
-	/* This is referenced from crtbegin.o.  */
-	.globl __do_global_ctors_aux
-	.type __do_global_ctors_aux,@function
-	.hidden __do_global_ctors_aux
-#endif
 	.proc __do_global_ctors_aux
 __do_global_ctors_aux:
 	.prologue
@@ -80,7 +79,7 @@ __do_global_ctors_aux:
 		  (*p) ();
 	*/
 	.save ar.pfs, r34
-	alloc loc2 = ar.pfs, 0, 4, 0, 0
+	alloc loc2 = ar.pfs, 0, 5, 0, 0
 	movl loc0 = @gprel(__CTOR_END__ - 8)
 	;;
 
@@ -93,10 +92,10 @@ __do_global_ctors_aux:
 	;;
 
 	cmp.eq p6, p0 = -1, loc3
-	nop 0
-(p6)	br.cond.spnt.few 2f
+	mov loc4 = gp
+(p6)	br.cond.spnt.few .exit
 
-0:	ld8 r15 = [loc3], 8
+.loop:	ld8 r15 = [loc3], 8
 	;;
 	ld8 gp = [loc3]
 	mov b6 = r15
@@ -108,9 +107,9 @@ __do_global_ctors_aux:
 
 	cmp.ne p6, p0 = -1, loc3
 	nop 0
-(p6)	br.cond.sptk.few 0b
+(p6)	br.cond.sptk.few .loop
 
-2:	nop.m 0
+.exit:	mov gp = loc3
 	mov rp = loc1
 	mov ar.pfs = loc2
 
