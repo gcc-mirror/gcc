@@ -1,3 +1,19 @@
+Wed Mar  5 23:16:57 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (calls.o, toplev.o alias.o): Depend on cgraph.h
+	* alias.c:  Include cgraph.h
+	(mark_constant_function): Use cgraph_rtl_info.
+	* calls.c:  Include cgraph.h
+	(flags_from_decl_or_type): Use cgraph_rtl_info to find pure and const
+	calls.
+	(expand_call): Use cgraph_rtl_info to set preferred stack boundary.
+	* cgraph.c (cgraph_rtl_info): New function.
+	* cgraph.h (cgraph_rtl_info): Declare
+	(cgraph_rtl_info): Likewise.
+	* function.h (struct function): Add recursive_call_emit.
+	* toplev.c: Include cgraph.h.
+	(rest_of_compilation): Set preferred_incoming_stack_boundary.
+
 2003-03-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (output_simode_bld): Clear the

@@ -42,6 +42,15 @@ struct cgraph_global_info
   int dummy;
 };
 
+/* Information about the function that is propagated by the RTL backend.
+   Available only for functions that has been already assembled.  */
+
+struct cgraph_rtl_info
+{
+   bool const_function, pure_function;
+   int preferred_incoming_stack_boundary;
+};
+
 
 /* The cgraph data strutcture.
    Each function decl has assigned cgraph_node listing calees and callers.  */
@@ -74,6 +83,7 @@ struct cgraph_node
   bool output;
   struct cgraph_local_info local;
   struct cgraph_global_info global;
+  struct cgraph_rtl_info rtl;
 };
 
 struct cgraph_edge
@@ -95,6 +105,7 @@ struct cgraph_node *cgraph_node		PARAMS ((tree decl));
 bool cgraph_calls_p			PARAMS ((tree, tree));
 struct cgraph_local_info *cgraph_local_info PARAMS ((tree));
 struct cgraph_global_info *cgraph_global_info PARAMS ((tree));
+struct cgraph_rtl_info *cgraph_rtl_info PARAMS ((tree));
 
 /* In cgraphunit.c  */
 void cgraph_finalize_function		PARAMS ((tree, tree));

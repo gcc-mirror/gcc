@@ -37,6 +37,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "sbitmap.h"
 #include "langhooks.h"
 #include "target.h"
+#include "cgraph.h"
 
 /* Decide whether a function's arguments should be processed
    from first to last or from last to first.
@@ -798,7 +799,13 @@ flags_from_decl_or_type (exp)
   /* ??? We can't set IS_MALLOC for function types?  */
   if (DECL_P (exp))
     {
+      struct cgraph_rtl_info *i = cgraph_rtl_info (exp);
       type = TREE_TYPE (exp);
+
+      if (i && i->pure_function)
+	flags |= ECF_PURE | ECF_LIBCALL_BLOCK;
+      if (i && i->const_function)
+	flags |= ECF_CONST | ECF_LIBCALL_BLOCK;
 
       /* The function exp may have the `malloc' attribute.  */
       if (DECL_P (exp) && DECL_IS_MALLOC (exp))
@@ -2344,6 +2351,12 @@ expand_call (exp, target, ignore)
 
   /* Figure out the amount to which the stack should be aligned.  */
   preferred_stack_boundary = PREFERRED_STACK_BOUNDARY;
+  if (fndecl)
+    {
+      struct cgraph_rtl_info *i = cgraph_rtl_info (fndecl);
+      if (i && i->preferred_incoming_stack_boundary)
+	preferred_stack_boundary = i->preferred_incoming_stack_boundary;
+    }
 
   /* Operand 0 is a pointer-to-function; get the type of the function.  */
   funtype = TREE_TYPE (addr);
@@ -2630,6 +2643,8 @@ expand_call (exp, target, ignore)
   if (cfun->preferred_stack_boundary < preferred_stack_boundary
       && fndecl != current_function_decl)
     cfun->preferred_stack_boundary = preferred_stack_boundary;
+  if (fndecl == current_function_decl)
+    cfun->recursive_call_emit = true;
 
   preferred_unit_stack_boundary = preferred_stack_boundary / BITS_PER_UNIT;
 

@@ -41,6 +41,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 #include "timevar.h"
 #include "target.h"
+#include "cgraph.h"
 
 /* The alias sets assigned to MEMs assist the back-end in determining
    which MEMs can alias which other MEMs.  In general, two MEMs in
@@ -2668,9 +2669,9 @@ mark_constant_function ()
   if (insn)
     ;
   else if (nonlocal_memory_referenced)
-    DECL_IS_PURE (current_function_decl) = 1;
+    cgraph_rtl_info (current_function_decl)->pure_function = 1;
   else
-    TREE_READONLY (current_function_decl) = 1;
+    cgraph_rtl_info (current_function_decl)->const_function = 1;
 }
 
 
