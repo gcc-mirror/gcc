@@ -17,6 +17,9 @@
 
 #endif
 
+/* This is tested by i386gas.h.  */
+#define YES_UNDERSCORES
+
 #include "i386gas.h"
 
 /* Specify predefined symbols in preprocessor.  */
