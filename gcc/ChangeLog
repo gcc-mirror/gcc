@@ -1,3 +1,8 @@
+2003-03-18  Andreas Schwab  <schwab@suse.de>
+
+	* dwarf2out.c (output_file_names): Cast size_t to unsigned long
+	for format.
+
 2003-03-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/10091
