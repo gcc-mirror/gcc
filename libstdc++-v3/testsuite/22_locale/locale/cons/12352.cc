@@ -92,7 +92,7 @@ void operator delete[](void* p, const std::nothrow_t&) throw()
 void test01(int iters)
 {
   using namespace std;
-  bool test = true;
+  bool test __attribute__((unused)) = true;
 
   for (int j = 0; j < iters; ++j)
     {
