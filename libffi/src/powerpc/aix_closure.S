@@ -1,7 +1,7 @@
 /* -----------------------------------------------------------------------
    aix_closure.S - Copyright (c) 2002 2003 Free Software Foundation, Inc.
    based on darwin_closure.S 
-  
+
    PowerPC Assembly glue.
 
    Permission is hereby granted, free of charge, to any person obtaining
@@ -102,19 +102,19 @@ ffi_closure_ASM:
 
 	mflr r0			/* extract return address */
 	stw r0, 8(r1)		/* save the return address */
-	
+
 	/* 24 Bytes (Linkage Area) */
 	/* 32 Bytes (params) */
 	/* 104 Bytes (13*8 from FPR) */
 	/* 8 Bytes (result) */
 	/* 168 Bytes */
-	
+
 	stwu r1,-176(r1)	/* skip over caller save area
 				keep stack aligned to 16  */
 
 /* we want to build up an area for the parameters passed */
 /* in registers (both floating point and integer) */
-	
+
 	/* we store gpr 3 to gpr 10 (aligned to 4)
 	in the parents outgoing area  */
 	stw   r3, 200(r1)
@@ -199,18 +199,18 @@ L..46:
 L..47:
 	lfs f1,0(r5)
 	b L..44
-	
+
 /* case long long */
 L..48:
 	lwz r3,0(r5)
 	lwz r4,4(r5)
 	b L..44
-	
+
 /* case default / int32 / pointer */
 L..50:
 	lwz r3,0(r5)
 	b L..44
-	
+
 /* case signed int8	 */
 L..55:
 	addi r5,r5,3
@@ -239,10 +239,9 @@ L..58:
 
 /* case void / done	 */
 L..44:
-	
 	addi r1,r1,176		/* restore stack pointer */
 	lwz r0,8(r1)		/* get return address */
 	mtlr r0			/* reset link register */
 	blr
-	
+
 /* END(ffi_closure_ASM) */
