@@ -218,18 +218,15 @@ AC_CHECK_HEADERS(sched.h)
 # Miscellanea
 # -----------
 
-# Determine CFLAGS for gthread.
-AC_CACHE_CHECK([for gthread cflags],objc_cv_gthread_flags,
-[# we know we are compiled as a target library, so the toplevel build directory
-# is ../..
-if test -f ../../$host_subdir/gcc/Makefile
-then
-  objc_cv_gthread_flags=`grep \^GTHREAD_FLAGS ../../$host_subdir/gcc/Makefile | awk -F= '{ print $2 }'`
-else
-  AC_MSG_ERROR([not found])
-fi])
-GTHREAD_FLAGS=$objc_cv_gthread_flags
-AC_SUBST(GTHREAD_FLAGS)
+AC_MSG_CHECKING([for thread model used by GCC])
+target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+AC_MSG_RESULT([$target_thread_file]) 
+
+if test $target_thread_file != single; then
+  AC_DEFINE(HAVE_GTHR_DEFAULT, 1,
+        [Define if the compiler has a thread header that is non single.])
+fi 
+
 
 AC_MSG_CHECKING([for exception model to use])
 AC_LANG_PUSH(C)

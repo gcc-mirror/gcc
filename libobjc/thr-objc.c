@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.  */
    covered by the GNU General Public License.  */
 
 #define _LIBOBJC
+#include "config.h"
 #include "tconfig.h"
 #include "coretypes.h"
 #include "tm.h"

@@ -1,3 +1,15 @@
+2005-02-28  Andrew Pinski <pinskia@physics.uc.edu>
+
+	PR libobjc/20252
+	* Makefile.in (GTHREAD_FLAGS): Remove.
+	(ALL_CFLAGS): Remove usage of GTHREAD_FLAGS.
+	* thr-objc.c: Include config.h.
+	* configure.ac: Instead of looking at GCC's makefile, figure out if
+	GTHREAD_FLAGS should be defined by looking at the `thread model'
+	of the current gcc.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2005-02-28  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/17383

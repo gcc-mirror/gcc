@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os build_subdir host_subdir target_subdir VERSION OBJC_BOEHM_GC toplevel_srcdir host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical glibcpp_srcdir gcc_version_trigger gcc_version_full gcc_version toolexecdir toolexeclibdir includedirname libext CC ac_ct_CC EXEEXT OBJEXT CFLAGS AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LN_S STRIP ac_ct_STRIP LIBTOOL SET_MAKE CPP CPPFLAGS EGREP GTHREAD_FLAGS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os build_subdir host_subdir target_subdir VERSION OBJC_BOEHM_GC toplevel_srcdir host host_cpu host_vendor host_os target target_cpu target_vendor target_os target_noncanonical glibcpp_srcdir gcc_version_trigger gcc_version_full gcc_version toolexecdir toolexeclibdir includedirname libext CC ac_ct_CC EXEEXT OBJEXT CFLAGS AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LN_S STRIP ac_ct_STRIP LIBTOOL SET_MAKE CPP CPPFLAGS EGREP LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -5111,26 +5111,19 @@ done
 # Miscellanea
 # -----------
 
-# Determine CFLAGS for gthread.
-echo "$as_me:$LINENO: checking for gthread cflags" >&5
-echo $ECHO_N "checking for gthread cflags... $ECHO_C" >&6
-if test "${objc_cv_gthread_flags+set}" = set; then
-  echo $ECHO_N "(cached) $ECHO_C" >&6
-else
-  # we know we are compiled as a target library, so the toplevel build directory
-# is ../..
-if test -f ../../$host_subdir/gcc/Makefile
-then
-  objc_cv_gthread_flags=`grep \^GTHREAD_FLAGS ../../$host_subdir/gcc/Makefile | awk -F= '{ print $2 }'`
-else
-  { { echo "$as_me:$LINENO: error: not found" >&5
-echo "$as_me: error: not found" >&2;}
-   { (exit 1); exit 1; }; }
+echo "$as_me:$LINENO: checking for thread model used by GCC" >&5
+echo $ECHO_N "checking for thread model used by GCC... $ECHO_C" >&6
+target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+echo "$as_me:$LINENO: result: $target_thread_file" >&5
+echo "${ECHO_T}$target_thread_file" >&6
+
+if test $target_thread_file != single; then
+
+cat >>confdefs.h <<\_ACEOF
+#define HAVE_GTHR_DEFAULT 1
+_ACEOF
+
 fi
-fi
-echo "$as_me:$LINENO: result: $objc_cv_gthread_flags" >&5
-echo "${ECHO_T}$objc_cv_gthread_flags" >&6
-GTHREAD_FLAGS=$objc_cv_gthread_flags
 
 
 echo "$as_me:$LINENO: checking for exception model to use" >&5
@@ -5147,7 +5140,7 @@ if test "${enable_sjlj_exceptions+set}" = set; then
   :
 else
   cat > conftest.$ac_ext << EOF
-#line 5150 "configure"
+#line 5143 "configure"
 @interface Frob
 @end
 @implementation Frob
@@ -5903,7 +5896,6 @@ s,@SET_MAKE@,$SET_MAKE,;t t
 s,@CPP@,$CPP,;t t
 s,@CPPFLAGS@,$CPPFLAGS,;t t
 s,@EGREP@,$EGREP,;t t
-s,@GTHREAD_FLAGS@,$GTHREAD_FLAGS,;t t
 s,@LIBOBJS@,$LIBOBJS,;t t
 s,@LTLIBOBJS@,$LTLIBOBJS,;t t
 CEOF
