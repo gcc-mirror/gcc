@@ -4535,6 +4535,30 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 	    }
 	}
 
+      /*  If parm is passed both in stack and in register and offset is 
+	  greater than reg_parm_stack_space, split the offset. */
+      if (arg->reg && arg->pass_on_stack)
+	{
+	  if (arg->offset.constant < reg_parm_stack_space && arg->offset.var)
+	    error ("variable offset is passed paritially in stack and in reg");
+	  else if (arg->offset.constant < reg_parm_stack_space && arg->size.var)
+	    error ("variable size is passed partially in stack and in reg");
+	  else if (arg->offset.constant < reg_parm_stack_space 
+	      && ((arg->offset.constant + arg->size.constant) 
+		   > reg_parm_stack_space))
+          {
+	    rtx size_rtx1 = GEN_INT (reg_parm_stack_space - arg->offset.constant);
+	    emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), size_rtx1,
+		            TYPE_ALIGN (TREE_TYPE (pval)) / BITS_PER_UNIT, 
+			    partial, reg, excess, argblock, 
+			    ARGS_SIZE_RTX (arg->offset), reg_parm_stack_space,
+		            ARGS_SIZE_RTX (arg->alignment_pad));
+
+	    size_rtx = GEN_INT (INTVAL(size_rtx) - reg_parm_stack_space);
+	  }
+	}
+	
+
       emit_push_insn (arg->value, arg->mode, TREE_TYPE (pval), size_rtx,
 		      TYPE_ALIGN (TREE_TYPE (pval)), partial, reg, excess,
 		      argblock, ARGS_SIZE_RTX (arg->offset),
