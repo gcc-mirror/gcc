@@ -1,3 +1,10 @@
+2004-05-28  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (thumb_force_lr_save): New function.
+	(arm_get_frame_offsets, thumb_unexpanded_epilogue,
+	thumb_output_function_prologue): Use it.
+	(thumb_expand_prologue): Set lr_save_eliminated.
+
 2004-05-28  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md (extendsidi2): Tie the source and destination

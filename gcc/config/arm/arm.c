@@ -9960,6 +9960,18 @@ emit_sfm (int base_reg, int count)
 }
 
 
+/* Return true if the current function needs to save/restore LR.  */
+
+static bool
+thumb_force_lr_save (void)
+{
+  return !cfun->machine->lr_save_eliminated
+	 && (!leaf_function_p ()
+	     || thumb_far_jump_used_p ()
+	     || regs_ever_live [LR_REGNUM]);
+}
+
+
 /* Compute the distance from register FROM to register TO.
    These can be the arg pointer (26), the soft frame pointer (25),
    the stack pointer (13) or the hard frame pointer (11).
@@ -10095,8 +10107,7 @@ arm_get_frame_offsets (void)
       for (reg = 0; reg <= LAST_LO_REGNUM; reg ++)
 	if (THUMB_REG_PUSHED_P (reg))
 	  count_regs ++;
-      if (count_regs || ! leaf_function_p ()
-	  || thumb_far_jump_used_p ())
+      if (count_regs || thumb_force_lr_save ())
 	saved += 4 * (count_regs + 1);
       if (TARGET_BACKTRACE)
 	{
@@ -12916,7 +12927,6 @@ thumb_unexpanded_epilogue (void)
   int regno;
   int live_regs_mask = 0;
   int high_regs_pushed = 0;
-  int leaf_function = leaf_function_p ();
   int had_to_push_lr;
   rtx eh_ofs = cfun->machine->eh_epilogue_sp_ofs;
 
@@ -13011,8 +13021,7 @@ thumb_unexpanded_epilogue (void)
 	}
     }
 
-  had_to_push_lr = (live_regs_mask || !leaf_function
-		    || thumb_far_jump_used_p ());
+  had_to_push_lr = (live_regs_mask || thumb_force_lr_save ());
   
   if (TARGET_BACKTRACE
       && ((live_regs_mask & 0xFF) == 0)
@@ -13172,6 +13181,7 @@ thumb_expand_prologue (void)
   HOST_WIDE_INT amount;
   arm_stack_offsets *offsets;
   unsigned long func_type;
+  int regno;
 
   func_type = arm_current_func_type ();
   
@@ -13205,7 +13215,6 @@ thumb_expand_prologue (void)
 	}
       else
 	{
-	  int regno;
 	  rtx reg;
 
 	  /* The stack decrement is too big for an immediate value in a single
@@ -13290,6 +13299,21 @@ thumb_expand_prologue (void)
   
   if (current_function_profile || TARGET_NO_SCHED_PRO)
     emit_insn (gen_blockage ());
+
+  cfun->machine->lr_save_eliminated = !thumb_force_lr_save ();
+  for (regno = 0; regno <= LAST_LO_REGNUM; regno++)
+    {
+      if (THUMB_REG_PUSHED_P (regno))
+        {
+          cfun->machine->lr_save_eliminated = 0;
+          break;
+        }
+    }
+
+  /* If the link register is being kept alive, with the return address in it,
+     then make sure that it does not get reused by the ce2 pass.  */
+  if (cfun->machine->lr_save_eliminated)
+    emit_insn (gen_prologue_use (gen_rtx_REG (SImode, LR_REGNUM)));
 }
 
 void
@@ -13424,7 +13448,7 @@ thumb_output_function_prologue (FILE *f, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
     if (THUMB_REG_PUSHED_P (regno))
       live_regs_mask |= 1 << regno;
 
-  if (live_regs_mask || !leaf_function_p () || thumb_far_jump_used_p ())
+  if (live_regs_mask || thumb_force_lr_save ())
     live_regs_mask |= 1 << LR_REGNUM;
 
   if (TARGET_BACKTRACE)
