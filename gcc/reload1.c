@@ -3668,11 +3668,12 @@ order_regs_for_reload ()
 }
 
 /* Used in reload_as_needed to sort the spilled regs.  */
+
 static int
 compare_spill_regs (r1, r2)
      short *r1, *r2;
 {
-  return *r1 < *r2 ? -1: 1;
+  return *r1 - *r2;
 }
 
 /* Reload pseudo-registers into hard regs around each insn as needed.
