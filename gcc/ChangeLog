@@ -1,3 +1,9 @@
+2003-12-11  James E Wilson  <wilson@specifixinc.com>
+
+	PR target/13132
+	* function.c (gen_mem_addressof): When no decl, explicitly clear flag
+	bits.
+
 2003-12-12  Nick Clifton  <nickc@redhat.com>
 
 	* config/m32r/m32r.c: Convert to ISO-C

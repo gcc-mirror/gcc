@@ -2868,7 +2868,17 @@ gen_mem_addressof (rtx reg, tree decl, int rescan)
 	fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type), reg, 0);
     }
   else if (rescan)
-    fixup_var_refs (reg, GET_MODE (reg), 0, reg, 0);
+    {
+      /* This can only happen during reload.  Clear the same flag bits as
+	 reload.  */
+      MEM_VOLATILE_P (reg) = 0;
+      RTX_UNCHANGING_P (reg) = 0;
+      MEM_IN_STRUCT_P (reg) = 0;
+      MEM_SCALAR_P (reg) = 0;
+      MEM_ATTRS (reg) = 0;
+
+      fixup_var_refs (reg, GET_MODE (reg), 0, reg, 0);
+    }
 
   return reg;
 }
