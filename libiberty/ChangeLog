@@ -51,7 +51,7 @@ Thu Nov 15 11:06:25 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* argv.c, asprintf.c, choose-temp.c, concat.c, cplus-dem.c,
 	ffs.c, fnmatch.txh, getruntime.c, make-temp-file.c,
-	mkstemps.c, pexecute.c, random.c, strsitnal.c, vasprintf.c:
+	mkstemps.c, pexecute.c, random.c, strsignal.c, vasprintf.c:
 	Improve manual formatting.
 	* functions.texi: Regenerate.
 
