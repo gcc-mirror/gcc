@@ -1,3 +1,20 @@
+2004-12-15  Vladimir Makarov  <vmakarov@redhat.com>
+            Steven Bosscher  <stevenb@suse.de>
+	PR middle end/17340
+
+	* global.c: Update comments in a few places.
+	(check_earlyclobber): Return true if there are early clobber
+	classes.
+        (calculate_local_reg_bb_info): Do not try to mark earlyclobber
+	regs if there are none.
+	(bb_info, allocate_bb_info, free_bb_info, modify_reg_pav,
+	make_accurate_live_analysis): Rename pavin, pavout to live_pavin,
+	live_pavout.
+	(modify_bb_reg_pav): Remove.
+	(calculate_reg_pav): Use code from modify_bb_reg_pav.
+	(temp_bitmap): New variable.
+	(calculate_reg_pav): Allocate/deallocate temp_bitmap.
+	
 2004-12-15  Richard Henderson  <rth@redhat.com>
 
 	PR target/19010
