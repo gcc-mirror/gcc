@@ -7621,6 +7621,13 @@ new_insn_dead_notes (pat, insn, last, orig_insn)
 
   if (GET_CODE (dest) == REG)
     {
+      /* If the original insn already used this register, we may not add new
+         notes for it.  One example for a split that needs this test is
+	 when a multi-word memory access with register-indirect addressing
+	 is split into multiple memory accesses with auto-increment and
+	 one adjusting add instruction for the address register.  */
+      if (reg_referenced_p (dest, PATTERN (orig_insn)))
+	return;
       for (tem = last; tem != insn; tem = PREV_INSN (tem))
 	{
 	  if (GET_RTX_CLASS (GET_CODE (tem)) == 'i'
