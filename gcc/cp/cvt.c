@@ -1153,8 +1153,8 @@ cp_convert (type, expr, convtype, flags)
   register tree e = expr;
   register enum tree_code code = TREE_CODE (type);
 
-  if (TREE_CODE (e) == ERROR_MARK
-      || TREE_CODE (TREE_TYPE (e)) == ERROR_MARK)
+  if (e == error_mark_node
+      || TREE_TYPE (e) == error_mark_node)
     return error_mark_node;
 
   if (IS_AGGR_TYPE (type) && (convtype & CONV_FORCE_TEMP))

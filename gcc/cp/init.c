@@ -19,7 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
 /* High-level class interface.  */
 
 #include "config.h"
@@ -51,8 +50,6 @@ void expand_aggr_init ();
 static void expand_aggr_init_1 PROTO((tree, tree, tree, tree, int, int));
 static void expand_virtual_init PROTO((tree, tree));
 tree expand_vec_init ();
-
-static void add_friend (), add_friends ();
 
 /* Cache _builtin_new and _builtin_delete exprs.  */
 static tree BIN, BID, BIVN, BIVD;
@@ -491,13 +488,9 @@ static tree
 build_partial_cleanup_for (binfo)
      tree binfo;
 {
-  tree expr = convert_pointer_to_real (binfo,
-				       build_unary_op (ADDR_EXPR, current_class_ref, 0));
-
-  return build_delete (TREE_TYPE (expr),
-		       expr,
-		       integer_zero_node,
-		       LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR, 0);
+  return build_scoped_method_call
+    (current_class_ref, binfo, dtor_identifier,
+     build_tree_list (NULL_TREE, integer_zero_node));
 }
 
 /* Perform whatever initializations have yet to be done on the base
@@ -1452,7 +1445,7 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 
       if (TREE_CODE (init) != TREE_LIST)
 	{
-	  if (TREE_CODE (init_type) == ERROR_MARK)
+	  if (init_type == error_mark_node)
 	    return;
 
 	  /* This happens when we use C++'s functional cast notation.
@@ -2186,7 +2179,7 @@ decl_constant_value (decl)
       && ! pedantic
 #endif /* 0 */
       && DECL_INITIAL (decl) != 0
-      && TREE_CODE (DECL_INITIAL (decl)) != ERROR_MARK
+      && DECL_INITIAL (decl) != error_mark_node
       /* This is invalid if initial value is not constant.
 	 If it has either a function call, a memory reference,
 	 or a variable, then re-evaluating it could give different results.  */
@@ -2204,408 +2197,12 @@ decl_constant_value (decl)
   return decl;
 }
 
-/* Friend handling routines.  */
-/* Friend data structures:
-
-   Lists of friend functions come from TYPE_DECL nodes.  Since all
-   aggregate types are automatically typedef'd, these nodes are guaranteed
-   to exist.
-
-   The TREE_PURPOSE of a friend list is the name of the friend,
-   and its TREE_VALUE is another list.
-
-   For each element of that list, either the TREE_VALUE or the TREE_PURPOSE
-   will be filled in, but not both.  The TREE_VALUE of that list is an
-   individual function which is a friend.  The TREE_PURPOSE of that list
-   indicates a type in which all functions by that name are friends.
-
-   Lists of friend classes come from _TYPE nodes.  Love that consistency
-   thang.  */
-
-int
-is_friend_type (type1, type2)
-     tree type1, type2;
-{
-  return is_friend (type1, type2);
-}
-
-int
-is_friend (type, supplicant)
-     tree type, supplicant;
-{
-  int declp;
-  register tree list;
-
-  if (supplicant == NULL_TREE || type == NULL_TREE)
-    return 0;
-
-  declp = (TREE_CODE_CLASS (TREE_CODE (supplicant)) == 'd');
-
-  if (declp)
-    /* It's a function decl.  */
-    {
-      tree list = DECL_FRIENDLIST (TYPE_MAIN_DECL (type));
-      tree name = DECL_NAME (supplicant);
-      tree ctype;
-
-      if (DECL_FUNCTION_MEMBER_P (supplicant))
-	ctype = DECL_CLASS_CONTEXT (supplicant);
-      else
-	ctype = NULL_TREE;
-
-      for (; list ; list = TREE_CHAIN (list))
-	{
-	  if (name == TREE_PURPOSE (list))
-	    {
-	      tree friends = TREE_VALUE (list);
-	      for (; friends ; friends = TREE_CHAIN (friends))
-		{
-		  if (ctype == TREE_PURPOSE (friends))
-		    return 1;
-		  if (comptypes (TREE_TYPE (supplicant),
-				 TREE_TYPE (TREE_VALUE (friends)), 1))
-		    return 1;
-		}
-	      break;
-	    }
-	}
-    }
-  else
-    /* It's a type.  */
-    {
-      if (type == supplicant)
-	return 1;
-      
-      list = CLASSTYPE_FRIEND_CLASSES (TREE_TYPE (TYPE_MAIN_DECL (type)));
-      for (; list ; list = TREE_CHAIN (list))
-	if (supplicant == TREE_VALUE (list))
-	  return 1;
-    }      
-
-  {
-    tree context;
-
-    if (! declp)
-      {
-	/* Are we a nested or local class?  If so, we aren't friends
-           with the CONTEXT.  */
-	if (IS_AGGR_TYPE (supplicant))
-	  context = NULL_TREE;
-	else
-	  context = DECL_CONTEXT (TYPE_MAIN_DECL (supplicant));
-      }
-    else if (DECL_FUNCTION_MEMBER_P (supplicant))
-      context = DECL_CLASS_CONTEXT (supplicant);
-    else
-      context = NULL_TREE;
-
-    if (context)
-      return is_friend (type, context);
-  }
-
-  return 0;
-}
-
-/* Add a new friend to the friends of the aggregate type TYPE.
-   DECL is the FUNCTION_DECL of the friend being added.  */
-
-static void
-add_friend (type, decl)
-     tree type, decl;
-{
-  tree typedecl = TYPE_MAIN_DECL (type);
-  tree list = DECL_FRIENDLIST (typedecl);
-  tree name = DECL_NAME (decl);
-
-  while (list)
-    {
-      if (name == TREE_PURPOSE (list))
-	{
-	  tree friends = TREE_VALUE (list);
-	  for (; friends ; friends = TREE_CHAIN (friends))
-	    {
-	      if (decl == TREE_VALUE (friends))
-		{
-		  cp_warning ("`%D' is already a friend of class `%T'",
-			      decl, type);
-		  cp_warning_at ("previous friend declaration of `%D'",
-				 TREE_VALUE (friends));
-		  return;
-		}
-	    }
-	  TREE_VALUE (list) = tree_cons (error_mark_node, decl,
-					 TREE_VALUE (list));
-	  return;
-	}
-      list = TREE_CHAIN (list);
-    }
-  DECL_FRIENDLIST (typedecl)
-    = tree_cons (DECL_NAME (decl), build_tree_list (error_mark_node, decl),
-		 DECL_FRIENDLIST (typedecl));
-  if (DECL_NAME (decl) == ansi_opname[(int) MODIFY_EXPR])
-    {
-      tree parmtypes = TYPE_ARG_TYPES (TREE_TYPE (decl));
-      TYPE_HAS_ASSIGNMENT (TREE_TYPE (typedecl)) = 1;
-      if (parmtypes && TREE_CHAIN (parmtypes))
-	{
-	  tree parmtype = TREE_VALUE (TREE_CHAIN (parmtypes));
-	  if (TREE_CODE (parmtype) == REFERENCE_TYPE
-	      && TREE_TYPE (parmtypes) == TREE_TYPE (typedecl))
-	    TYPE_HAS_ASSIGN_REF (TREE_TYPE (typedecl)) = 1;
-	}
-    }
-}
-
-/* Declare that every member function NAME in FRIEND_TYPE
-   (which may be NULL_TREE) is a friend of type TYPE.  */
-
-static void
-add_friends (type, name, friend_type)
-     tree type, name, friend_type;
-{
-  tree typedecl = TYPE_MAIN_DECL (type);
-  tree list = DECL_FRIENDLIST (typedecl);
-
-  while (list)
-    {
-      if (name == TREE_PURPOSE (list))
-	{
-	  tree friends = TREE_VALUE (list);
-	  while (friends && TREE_PURPOSE (friends) != friend_type)
-	    friends = TREE_CHAIN (friends);
-	  if (friends)
-	    if (friend_type)
-	      warning ("method `%s::%s' is already a friend of class",
-		       TYPE_NAME_STRING (friend_type),
-		       IDENTIFIER_POINTER (name));
-	    else
-	      warning ("function `%s' is already a friend of class `%s'",
-		       IDENTIFIER_POINTER (name),
-		       IDENTIFIER_POINTER (DECL_NAME (typedecl)));
-	  else
-	    TREE_VALUE (list) = tree_cons (friend_type, NULL_TREE,
-					   TREE_VALUE (list));
-	  return;
-	}
-      list = TREE_CHAIN (list);
-    }
-  DECL_FRIENDLIST (typedecl) =
-    tree_cons (name,
-	       build_tree_list (friend_type, NULL_TREE),
-	       DECL_FRIENDLIST (typedecl));
-  if (! strncmp (IDENTIFIER_POINTER (name),
-		 IDENTIFIER_POINTER (ansi_opname[(int) MODIFY_EXPR]),
-		 strlen (IDENTIFIER_POINTER (ansi_opname[(int) MODIFY_EXPR]))))
-    {
-      TYPE_HAS_ASSIGNMENT (TREE_TYPE (typedecl)) = 1;
-      sorry ("declaring \"friend operator =\" will not find \"operator = (X&)\" if it exists");
-    }
-}
-
-/* Make FRIEND_TYPE a friend class to TYPE.  If FRIEND_TYPE has already
-   been defined, we make all of its member functions friends of
-   TYPE.  If not, we make it a pending friend, which can later be added
-   when its definition is seen.  If a type is defined, then its TYPE_DECL's
-   DECL_UNDEFINED_FRIENDS contains a (possibly empty) list of friend
-   classes that are not defined.  If a type has not yet been defined,
-   then the DECL_WAITING_FRIENDS contains a list of types
-   waiting to make it their friend.  Note that these two can both
-   be in use at the same time!  */
-
-void
-make_friend_class (type, friend_type)
-     tree type, friend_type;
-{
-  tree classes;
-
-  if (IS_SIGNATURE (type))
-    {
-      error ("`friend' declaration in signature definition");
-      return;
-    }
-  if (IS_SIGNATURE (friend_type))
-    {
-      error ("signature type `%s' declared `friend'",
-	     IDENTIFIER_POINTER (TYPE_IDENTIFIER (friend_type)));
-      return;
-    }
-  if (type == friend_type)
-    {
-      pedwarn ("class `%s' is implicitly friends with itself",
-	       TYPE_NAME_STRING (type));
-      return;
-    }
-
-  GNU_xref_hier (TYPE_NAME_STRING (type),
-		 TYPE_NAME_STRING (friend_type), 0, 0, 1);
-
-  classes = CLASSTYPE_FRIEND_CLASSES (type);
-  while (classes && TREE_VALUE (classes) != friend_type)
-    classes = TREE_CHAIN (classes);
-  if (classes)
-    warning ("class `%s' is already friends with class `%s'",
-	     TYPE_NAME_STRING (TREE_VALUE (classes)), TYPE_NAME_STRING (type));
-  else
-    {
-      CLASSTYPE_FRIEND_CLASSES (type)
-	= tree_cons (NULL_TREE, friend_type, CLASSTYPE_FRIEND_CLASSES (type));
-    }
-}
-
-/* Main friend processor.  This is large, and for modularity purposes,
-   has been removed from grokdeclarator.  It returns `void_type_node'
-   to indicate that something happened, though a FIELD_DECL is
-   not returned.
-
-   CTYPE is the class this friend belongs to.
-
-   DECLARATOR is the name of the friend.
-
-   DECL is the FUNCTION_DECL that the friend is.
-
-   In case we are parsing a friend which is part of an inline
-   definition, we will need to store PARM_DECL chain that comes
-   with it into the DECL_ARGUMENTS slot of the FUNCTION_DECL.
-
-   FLAGS is just used for `grokclassfn'.
-
-   QUALS say what special qualifies should apply to the object
-   pointed to by `this'.  */
-
-tree
-do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
-     tree ctype, declarator, decl, parmdecls;
-     enum overload_flags flags;
-     tree quals;
-     int funcdef_flag;
-{
-  /* Every decl that gets here is a friend of something.  */
-  DECL_FRIEND_P (decl) = 1;
-
-  if (ctype)
-    {
-      tree cname = TYPE_NAME (ctype);
-      if (TREE_CODE (cname) == TYPE_DECL)
-	cname = DECL_NAME (cname);
-
-      /* A method friend.  */
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	{
-	  if (flags == NO_SPECIAL && ctype && declarator == cname)
-	    DECL_CONSTRUCTOR_P (decl) = 1;
-
-	  /* This will set up DECL_ARGUMENTS for us.  */
-	  grokclassfn (ctype, cname, decl, flags, quals);
-	  if (TYPE_SIZE (ctype) != 0)
-	    decl = check_classfn (ctype, decl);
-
-	  if (TREE_TYPE (decl) != error_mark_node)
-	    {
-	      if (TYPE_SIZE (ctype))
-		add_friend (current_class_type, decl);
-	      else
-		{
-		  cp_error ("member `%D' declared as friend before type `%T' defined",
-			    decl, ctype);
-		}
-	    }
-	}
-      else
-	{
-	  /* Possibly a bunch of method friends.  */
-
-	  /* Get the class they belong to.  */
-	  tree ctype = IDENTIFIER_TYPE_VALUE (cname);
-	  tree fields = lookup_fnfields (TYPE_BINFO (ctype), declarator, 0);
-
-	  if (fields)
-	    add_friends (current_class_type, declarator, ctype);
-	  else
-	    error ("method `%s' is not a member of class `%s'",
-		   IDENTIFIER_POINTER (declarator),
-		   IDENTIFIER_POINTER (cname));
-	  decl = void_type_node;
-	}
-    }
-  else if (TREE_CODE (decl) == FUNCTION_DECL
-	   && ((IDENTIFIER_LENGTH (declarator) == 4
-		&& IDENTIFIER_POINTER (declarator)[0] == 'm'
-		&& ! strcmp (IDENTIFIER_POINTER (declarator), "main"))
-	       || (IDENTIFIER_LENGTH (declarator) > 10
-		   && IDENTIFIER_POINTER (declarator)[0] == '_'
-		   && IDENTIFIER_POINTER (declarator)[1] == '_'
-		   && strncmp (IDENTIFIER_POINTER (declarator)+2,
-			       "builtin_", 8) == 0)))
-    {
-      /* raw "main", and builtin functions never gets overloaded,
-	 but they can become friends.  */
-      add_friend (current_class_type, decl);
-      DECL_FRIEND_P (decl) = 1;
-      decl = void_type_node;
-    }
-  /* A global friend.
-     @@ or possibly a friend from a base class ?!?  */
-  else if (TREE_CODE (decl) == FUNCTION_DECL)
-    {
-      /* Friends must all go through the overload machinery,
-	 even though they may not technically be overloaded.
-
-	 Note that because classes all wind up being top-level
-	 in their scope, their friend wind up in top-level scope as well.  */
-      DECL_ASSEMBLER_NAME (decl)
-	= build_decl_overload (declarator, TYPE_ARG_TYPES (TREE_TYPE (decl)),
-			       TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE);
-      DECL_ARGUMENTS (decl) = parmdecls;
-      if (funcdef_flag)
-	DECL_CLASS_CONTEXT (decl) = current_class_type;
-
-      /* We can call pushdecl here, because the TREE_CHAIN of this
-	 FUNCTION_DECL is not needed for other purposes.  */
-      decl = pushdecl (decl);
-
-      make_decl_rtl (decl, NULL_PTR, 1);
-      add_friend (current_class_type, decl);
-
-      DECL_FRIEND_P (decl) = 1;
-    }
-  else
-    {
-      /* @@ Should be able to ingest later definitions of this function
-	 before use.  */
-      tree decl = lookup_name_nonclass (declarator);
-      if (decl == NULL_TREE)
-	{
-	  warning ("implicitly declaring `%s' as struct",
-		   IDENTIFIER_POINTER (declarator));
-	  decl = xref_tag (record_type_node, declarator, NULL_TREE, 1);
-	  decl = TYPE_MAIN_DECL (decl);
-	}
-
-      /* Allow abbreviated declarations of overloaded functions,
-	 but not if those functions are really class names.  */
-      if (TREE_CODE (decl) == TREE_LIST && TREE_TYPE (TREE_PURPOSE (decl)))
-	{
-	  warning ("`friend %s' archaic, use `friend class %s' instead",
-		   IDENTIFIER_POINTER (declarator),
-		   IDENTIFIER_POINTER (declarator));
-	  decl = TREE_TYPE (TREE_PURPOSE (decl));
-	}
-
-      if (TREE_CODE (decl) == TREE_LIST)
-	add_friends (current_class_type, TREE_PURPOSE (decl), NULL_TREE);
-      else
-	make_friend_class (current_class_type, TREE_TYPE (decl));
-      decl = void_type_node;
-    }
-  return decl;
-}
-
 /* Common subroutines of build_new and build_vec_delete.  */
 
 /* Common interface for calling "builtin" functions that are not
    really builtin.  */
 
-tree
+static tree
 build_builtin_call (type, node, arglist)
      tree type;
      tree node;
@@ -3661,11 +3258,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       else
 	addr = convert_force (build_pointer_type (type), addr, 0);
 
-      if (TREE_CODE (addr) == NOP_EXPR
-	  && TREE_OPERAND (addr, 0) == current_class_ptr)
-	ref = current_class_ref;
-      else
-	ref = build_indirect_ref (addr, NULL_PTR);
+      ref = build_indirect_ref (addr, NULL_PTR);
       ptr = 0;
     }
 
@@ -3699,6 +3292,8 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       tree dtor = DECL_MAIN_VARIANT (TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), 1));
       tree passed_auto_delete;
       tree do_delete = NULL_TREE;
+      tree ifexp;
+      int nonnull;
 
       if (use_global_delete)
 	{
@@ -3718,108 +3313,29 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       else
 	passed_auto_delete = auto_delete;
 
-      if (flags & LOOKUP_PROTECT)
-	{
-	  tree access;
-	  tree basetypes = NULL_TREE;
-	  if (current_class_type != NULL_TREE)
-	    basetypes = get_binfo (type, current_class_type, 0);
-	  if (basetypes == NULL_TREE)
-	    basetypes = TYPE_BINFO (type);
-	  access = compute_access (basetypes, dtor);
+      expr = build_method_call
+	(ref, dtor_identifier, build_tree_list (NULL_TREE, passed_auto_delete),
+	 NULL_TREE, flags);
 
-	  if (access == access_private_node)
-	    {
-	      if (flags & LOOKUP_COMPLAIN)
-		cp_error ("destructor for type `%T' is private in this scope", type);
-	      return error_mark_node;
-	    }
-	  else if (access == access_protected_node)
-	    {
-	      if (flags & LOOKUP_COMPLAIN)
-		cp_error ("destructor for type `%T' is protected in this scope", type);
-	      return error_mark_node;
-	    }
-	}
+      if (do_delete)
+	expr = build (COMPOUND_EXPR, void_type_node, expr, do_delete);
 
-      /* Once we are in a destructor, try not going through
-	 the virtual function table to find the next destructor.  */
-      if (DECL_VINDEX (dtor)
-	  && ! (flags & LOOKUP_NONVIRTUAL)
-	  && TREE_CODE (auto_delete) != PARM_DECL
-	  && (ptr == 1 || ! resolves_to_fixed_type_p (ref, 0)))
-	{
-	  tree binfo, basetype;
-	  /* The code below is probably all broken.  See call.c for the
-	     complete right way to do this. this offsets may not be right
-	     in the below.  (mrs) */
-	  /* This destructor must be called via virtual function table.  */
-	  dtor = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (DECL_CONTEXT (dtor)), 1);
-	  basetype = DECL_CLASS_CONTEXT (dtor);
-	  binfo = get_binfo (basetype,
-			     TREE_TYPE (TREE_TYPE (TREE_VALUE (parms))),
-			     0);
-	  expr = convert_pointer_to_real (binfo, TREE_VALUE (parms));
-	  if (expr != TREE_VALUE (parms))
-	    {
-	      expr = fold (expr);
-	      ref = build_indirect_ref (expr, NULL_PTR);
-	      TREE_VALUE (parms) = expr;
-	    }
-	  function = build_vfn_ref (&TREE_VALUE (parms), ref, DECL_VINDEX (dtor));
-	  if (function == error_mark_node)
-	    return error_mark_node;
-	  TREE_TYPE (function) = build_pointer_type (TREE_TYPE (dtor));
-	  TREE_CHAIN (parms) = build_tree_list (NULL_TREE, passed_auto_delete);
-	  expr = build_function_call (function, parms);
-	  if (do_delete)
-	    expr = build (COMPOUND_EXPR, void_type_node, expr, do_delete);
-	  if (ptr && (flags & LOOKUP_DESTRUCTOR) == 0)
-	    {
-	      /* Handle the case where a virtual destructor is
-		 being called on an item that is 0.
-
-		 @@ Does this really need to be done?  */
-	      tree ifexp = build_binary_op(NE_EXPR, addr, integer_zero_node,1);
-
-	      expr = build (COND_EXPR, void_type_node,
-			    ifexp, expr, void_zero_node);
-	    }
-	}
+      if (flags & LOOKUP_DESTRUCTOR)
+	/* Explicit destructor call; don't check for null pointer.  */
+	ifexp = integer_one_node;
       else
-	{
-	  tree ifexp;
+	/* Handle deleting a null pointer.  */
+	ifexp = fold (build_binary_op (NE_EXPR, addr, integer_zero_node, 1));
 
-	  if ((flags & LOOKUP_DESTRUCTOR)
-	      || TREE_CODE (ref) == VAR_DECL
-	      || TREE_CODE (ref) == PARM_DECL
-	      || TREE_CODE (ref) == COMPONENT_REF
-	      || TREE_CODE (ref) == ARRAY_REF)
-	    /* These can't be 0.  */
-	    ifexp = integer_one_node;
-	  else
-	    /* Handle the case where a non-virtual destructor is
-	       being called on an item that is 0.  */
-	    ifexp = build_binary_op (NE_EXPR, addr, integer_zero_node, 1);
+      if (ifexp != integer_one_node)
+	expr = build (COND_EXPR, void_type_node,
+		      ifexp, expr, void_zero_node);
 
-	  /* Used to mean that this destructor was known to be empty,
-	     but that's now obsolete.  */
-	  my_friendly_assert (DECL_INITIAL (dtor) != void_type_node, 221);
-
-	  TREE_CHAIN (parms) = build_tree_list (NULL_TREE, passed_auto_delete);
-	  expr = build_function_call (dtor, parms);
-	  if (do_delete)
-	    expr = build (COMPOUND_EXPR, void_type_node, expr, do_delete);
-
-	  if (ifexp != integer_one_node)
-	    expr = build (COND_EXPR, void_type_node,
-			  ifexp, expr, void_zero_node);
-	}
       return expr;
     }
   else
     {
-      /* This can get visibilities wrong.  */
+      /* We only get here from finish_function for a destructor.  */
       tree binfos = BINFO_BASETYPES (TYPE_BINFO (type));
       int i, n_baseclasses = binfos ? TREE_VEC_LENGTH (binfos) : 0;
       tree base_binfo = n_baseclasses > 0 ? TREE_VEC_ELT (binfos, 0) : NULL_TREE;
@@ -3827,39 +3343,12 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       tree parent_auto_delete = auto_delete;
       tree cond;
 
-      /* If this type does not have a destructor, but does have
-	 operator delete, call the parent parent destructor (if any),
-	 but let this node do the deleting.  Otherwise, it is ok
-	 to let the parent destructor do the deleting.  */
-      if (TYPE_GETS_REG_DELETE (type) && !use_global_delete)
-	{
-	  parent_auto_delete = integer_zero_node;
-	  if (auto_delete == integer_zero_node)
-	    cond = NULL_TREE;
-	  else
-	    {
-	      tree virtual_size;
-
-	        /* This is probably wrong. It should be the size of the
-		   virtual object being deleted.  */
-	      virtual_size = c_sizeof_nowarn (type);
-
-	      expr = build_opfncall (DELETE_EXPR, LOOKUP_NORMAL, addr,
-				     virtual_size, NULL_TREE);
-	      if (expr == error_mark_node)
-		return error_mark_node;
-	      if (auto_delete != integer_one_node)
-		cond = build (COND_EXPR, void_type_node,
-			      build (BIT_AND_EXPR, integer_type_node,
-				     auto_delete, integer_one_node),
-			      expr, void_zero_node);
-	      else
-		cond = expr;
-	    }
-	}
+      /* If we have member delete or vbases, we call delete in
+	 finish_function.  */
+      if (auto_delete == integer_zero_node)
+	cond = NULL_TREE;
       else if (base_binfo == NULL_TREE
-	       || (TREE_VIA_VIRTUAL (base_binfo) == 0
-		   && ! TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (base_binfo))))
+	       || ! TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (base_binfo)))
 	{
 	  cond = build (COND_EXPR, void_type_node,
 			build (BIT_AND_EXPR, integer_type_node, auto_delete, integer_one_node),
@@ -3884,8 +3373,9 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	  else
 	    this_auto_delete = integer_zero_node;
 
-	  expr = build_delete (build_pointer_type (BINFO_TYPE (base_binfo)), addr,
-			       this_auto_delete, flags, 0);
+	  expr = build_scoped_method_call
+	    (ref, base_binfo, dtor_identifier,
+	     build_tree_list (NULL_TREE, this_auto_delete));
 	  exprstmt = tree_cons (NULL_TREE, expr, exprstmt);
 	}
 
@@ -3897,13 +3387,9 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	      || TREE_VIA_VIRTUAL (base_binfo))
 	    continue;
 
-	  /* May be zero offset if other baseclasses are virtual.  */
-	  expr = fold (build (PLUS_EXPR, build_pointer_type (BINFO_TYPE (base_binfo)),
-			      addr, BINFO_OFFSET (base_binfo)));
-
-	  expr = build_delete (build_pointer_type (BINFO_TYPE (base_binfo)), expr,
-			       integer_zero_node,
-			       flags, 0);
+	  expr = build_scoped_method_call
+	    (ref, base_binfo, dtor_identifier,
+	     build_tree_list (NULL_TREE, integer_zero_node));
 
 	  exprstmt = tree_cons (NULL_TREE, expr, exprstmt);
 	}

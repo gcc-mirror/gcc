@@ -271,7 +271,7 @@ char *token_buffer;		/* Pointer to token buffer.
 
 #include "hash.h"
 
-int check_newline ();
+static int check_newline ();
 
 /* Nonzero tells yylex to ignore \ in string constants.  */
 static int ignore_escape_flag = 0;
@@ -392,12 +392,14 @@ init_filename_times ()
    Stuck this hack in to get the files open correctly; this is called
    in place of init_lex if we are an unexec'd binary.    */
 
+#if 0
 void
 reinit_lang_specific ()
 {
   init_filename_times ();
   reinit_search_statistics ();
 }
+#endif
 
 int *init_parse ();
 
@@ -1091,7 +1093,7 @@ interface_strcmp (s)
   return 1;
 }
 
-void
+static void
 set_typedecl_interface_info (prev, vars)
      tree prev, vars;
 {
@@ -1103,7 +1105,7 @@ set_typedecl_interface_info (prev, vars)
     = interface_strcmp (FILE_NAME_NONDIRECTORY (DECL_SOURCE_FILE (vars)));
 }
 
-int
+static int
 set_vardecl_interface_info (prev, vars)
      tree prev, vars;
 {
@@ -1403,7 +1405,7 @@ store_pending_inline (decl, t)
   pending_inlines = t;
 }
 
-void reinit_parse_for_block ();
+static void reinit_parse_for_block PROTO((int, struct obstack *));
 
 void
 reinit_parse_for_method (yychar, decl)
@@ -1455,7 +1457,7 @@ reinit_parse_for_method (yychar, decl)
 /* Consume a block -- actually, a method beginning
    with `:' or `{' -- and save it away on the specified obstack.  */
 
-void
+static void
 reinit_parse_for_block (pyychar, obstackp)
      int pyychar;
      struct obstack *obstackp;
@@ -1900,7 +1902,7 @@ static int handle_sysv_pragma ();
 #endif
 static int handle_cp_pragma ();
 
-int
+static int
 check_newline ()
 {
   register int c;
@@ -2517,7 +2519,12 @@ do_identifier (token, parsing)
      [class.scope0] */
   if (id && current_class_type && parsing
       && TYPE_BEING_DEFINED (current_class_type)
-      && ! IDENTIFIER_CLASS_VALUE (token))
+      && ! IDENTIFIER_CLASS_VALUE (token)
+      /* Avoid breaking if we get called for a default argument that
+	 refers to an overloaded method.  Eventually this will not be
+	 necessary, since default arguments shouldn't be parsed until
+	 after the class is complete.  (jason 3/12/97) */
+      && TREE_CODE (id) != TREE_LIST)
     pushdecl_class_level (id);
     
   if (!id || id == error_mark_node)
@@ -4155,33 +4162,6 @@ make_lang_type (code)
 #endif
 
   return t;
-}
-
-void
-copy_decl_lang_specific (decl)
-     tree decl;
-{
-  extern struct obstack *current_obstack, *saveable_obstack;
-  register int *old = (int *)DECL_LANG_SPECIFIC (decl);
-  struct obstack *obstack = current_obstack;
-  register int i = sizeof (struct lang_decl) / sizeof (int);
-  register int *pi;
-
-  if (! TREE_PERMANENT (decl))
-    obstack = saveable_obstack;
-  else
-    my_friendly_assert (obstack == &permanent_obstack, 237);
-
-  pi = (int *) obstack_alloc (obstack, sizeof (struct lang_decl));
-  while (i-- > 0)
-    pi[i] = old[i];
-
-  DECL_LANG_SPECIFIC (decl) = (struct lang_decl *) pi;
-
-#ifdef GATHER_STATISTICS
-  tree_node_counts[(int)lang_decl] += 1;
-  tree_node_sizes[(int)lang_decl] += sizeof (struct lang_decl);
-#endif
 }
 
 void

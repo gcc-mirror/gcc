@@ -65,11 +65,12 @@ static int unify ();
 
 void pop_template_decls ();
 
-tree classtype_mangled_name ();
+static tree classtype_mangled_name ();
 static char * mangle_class_name_for_template ();
 static tree tsubst_expr_values ();
+static int comp_template_args PROTO((tree, tree));
 tree most_specialized_class PROTO((tree, tree));
-tree get_class_bindings PROTO((tree, tree, tree));
+static tree get_class_bindings PROTO((tree, tree, tree));
 tree make_temp_vec PROTO((int));
 
 /* We've got a template header coming up; push to a new level for storing
@@ -448,6 +449,11 @@ coerce_template_parms (parms, arglist, in_decl)
 	  /* 14.2: Other template-arguments must be constant-expressions,
 	     addresses of objects or functions with external linkage, or of
 	     static class members.  */
+	  else if (IS_AGGR_TYPE (TREE_TYPE (val)))
+	    {
+	      cp_error ("object `%E' cannot be used as template argument", arg);
+	      val = error_mark_node;
+	    }
 	  else if (!TREE_CONSTANT (val))
 	    {
 	      cp_error ("non-const `%E' cannot be used as template argument",
@@ -504,7 +510,7 @@ coerce_template_parms (parms, arglist, in_decl)
   return vec;
 }
 
-int
+static int
 comp_template_args (oldargs, newargs)
      tree oldargs, newargs;
 {
@@ -616,7 +622,7 @@ mangle_class_name_for_template (name, parms, arglist)
   return NULL;
 }
 
-tree
+static tree
 classtype_mangled_name (t)
      tree t;
 {
@@ -968,7 +974,7 @@ extern int max_tinst_depth;
 int depth_reached = 0;
 #endif
 
-int
+static int
 push_tinst_level (d)
      tree d;
 {
@@ -2808,7 +2814,11 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
       return 0;
 
       /* Types INTEGER_CST and MINUS_EXPR can come from array bounds.  */
+      /* Type INTEGER_CST can come from ordinary constant template args.  */
     case INTEGER_CST:
+      while (TREE_CODE (arg) == NOP_EXPR)
+	arg = TREE_OPERAND (arg, 0);
+
       if (TREE_CODE (arg) != INTEGER_CST)
 	return 1;
       return !tree_int_cst_equal (parm, arg);
@@ -2993,7 +3003,7 @@ get_bindings (fn, decl)
   return 0;
 }
 
-tree
+static tree
 get_class_bindings (tparms, parms, args)
      tree tparms, parms, args;
 {

@@ -404,7 +404,7 @@ build_cplus_method_type (basetype, rettype, argtypes)
   return t;
 }
 
-tree
+static tree
 build_cplus_array_type_1 (elt_type, index_type)
      tree elt_type;
      tree index_type;
@@ -1317,41 +1317,6 @@ get_first_fn (from)
   my_friendly_assert (TREE_CODE (from) == TREE_LIST, 9);
   
   return TREE_VALUE (from);
-}
-
-tree
-fnaddr_from_vtable_entry (entry)
-     tree entry;
-{
-  if (flag_vtable_thunks)
-    {
-      tree func = entry;
-      if (TREE_CODE (func) == ADDR_EXPR)
-	func = TREE_OPERAND (func, 0);
-      if (TREE_CODE (func) == THUNK_DECL)
-	return DECL_INITIAL (func);
-      else
-	return entry;
-    }
-  else
-    return TREE_VALUE (TREE_CHAIN (TREE_CHAIN (CONSTRUCTOR_ELTS (entry))));
-}
-
-tree
-function_arg_chain (t)
-     tree t;
-{
-  return TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (t)));
-}
-
-int
-promotes_to_aggr_type (t, code)
-     tree t;
-     enum tree_code code;
-{
-  if (TREE_CODE (t) == code)
-    t = TREE_TYPE (t);
-  return IS_AGGR_TYPE (t);
 }
 
 int

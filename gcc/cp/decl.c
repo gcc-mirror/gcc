@@ -126,6 +126,9 @@ static struct stack_level *decl_stack;
 static tree grokparms				PROTO((tree, int));
 static tree lookup_nested_type			PROTO((tree, tree));
 static char *redeclaration_error_message	PROTO((tree, tree));
+static void revert_static_member_fn		PROTO((tree *, tree *, tree *));
+static tree push_overloaded_decl		PROTO((tree, int));
+static void push_overloaded_decl_top_level	PROTO((tree, int));
 
 tree define_function		
 	PROTO((char *, tree, enum built_in_function, void (*)(), char *));
@@ -185,7 +188,8 @@ tree void_zero_node;
 
 /* Nodes for types `void *' and `const void *'.  */
 
-tree ptr_type_node, const_ptr_type_node;
+tree ptr_type_node;
+static tree const_ptr_type_node;
 
 /* Nodes for types `char *' and `const char *'.  */
 
@@ -215,10 +219,10 @@ tree default_function_type;
 
 /* function types `double (double)' and `double (double, double)', etc.  */
 
-tree double_ftype_double, double_ftype_double_double;
-tree int_ftype_int, long_ftype_long;
-tree float_ftype_float;
-tree ldouble_ftype_ldouble;
+static tree double_ftype_double, double_ftype_double_double;
+static tree int_ftype_int, long_ftype_long;
+static tree float_ftype_float;
+static tree ldouble_ftype_ldouble;
 
 /* Function type `int (const void *, const void *, size_t)' */
 static tree int_ftype_cptr_cptr_sizet;
@@ -264,7 +268,7 @@ tree dtor_label;
 /* In a destructor, the last insn emitted after the start of the
    function and the parms.  */
 
-rtx last_dtor_insn;
+static rtx last_dtor_insn;
 
 /* In a constructor, the point at which we are ready to return
    the pointer to the initialized object.  */
@@ -283,7 +287,7 @@ extern rtx cleanup_label, return_label;
    but due to being an addressable named return value, would up
    on the stack, this variable holds the named return value's
    original location.  */
-rtx original_result_rtx;
+static rtx original_result_rtx;
 
 /* Sequence of insns which represents base initialization.  */
 tree base_init_expr;
@@ -349,14 +353,6 @@ tree null_node;
 /* A node for the integer constants 1, 2, and 3.  */
 
 tree integer_one_node, integer_two_node, integer_three_node;
-
-/* Nonzero if we have seen an invalid cross reference
-   to a struct, union, or enum, but not yet printed the message.  */
-
-tree pending_invalid_xref;
-/* File and line to appear in the eventual error message.  */
-char *pending_invalid_xref_file;
-int pending_invalid_xref_line;
 
 /* While defining an enum type, this is 1 plus the last enumerator
    constant value.  */
@@ -1507,7 +1503,7 @@ print_binding_level (lvl)
 	      i = len;
 	    }
 	  print_node_brief (stderr, "", t, 0);
-	  if (TREE_CODE (t) == ERROR_MARK)
+	  if (t == error_mark_node)
 	    break;
 	}
       if (i)
@@ -2375,10 +2371,8 @@ duplicate_decls (newdecl, olddecl)
      error (earlier) for some bogus type specification, and in that case,
      it is rather pointless to harass the user with yet more error message
      about the same declaration, so well just pretent the types match here.  */
-  if ((TREE_TYPE (newdecl)
-       && TREE_CODE (TREE_TYPE (newdecl)) == ERROR_MARK)
-      || (TREE_TYPE (olddecl)
-	  && TREE_CODE (TREE_TYPE (olddecl)) == ERROR_MARK))
+  if (TREE_TYPE (newdecl) == error_mark_node
+      || TREE_TYPE (olddecl) == error_mark_node)
     types_match = 1;
 
   if (TREE_CODE (olddecl) == FUNCTION_DECL
@@ -2897,7 +2891,7 @@ duplicate_decls (newdecl, olddecl)
 	    }
 	  else
 	    {
-	      /* Storage leak.  */
+	      /* Storage leak.  */;
 	    }
 	}
     }
@@ -3350,7 +3344,7 @@ pushdecl_top_level (x)
 /* Like push_overloaded_decl, only it places X in GLOBAL_BINDING_LEVEL,
    if appropriate.  */
 
-void
+static void
 push_overloaded_decl_top_level (x, forget)
      tree x;
      int forget;
@@ -3403,6 +3397,7 @@ pushdecl_class_level (x)
   return x;
 }
 
+#if 0
 /* This function is used to push the mangled decls for nested types into
    the appropriate scope.  Previously pushdecl_top_level was used, but that
    is incorrect for members of local classes.  */
@@ -3423,6 +3418,7 @@ pushdecl_nonclass_level (x)
 
   pushdecl_with_scope (x, b);
 }
+#endif
 
 /* Make the declaration(s) of X appear in CLASS scope
    under the name NAME.  */
@@ -3477,7 +3473,7 @@ overloaded_globals_p (list)
    about what language DECL should belong to (C or C++).  Otherwise,
    it's always DECL (and never something that's not a _DECL).  */
 
-tree
+static tree
 push_overloaded_decl (decl, forgettable)
      tree decl;
      int forgettable;
@@ -4118,12 +4114,14 @@ lookup_tag (form, name, binding_level, thislevel_only)
   return NULL_TREE;
 }
 
+#if 0
 void
 set_current_level_tags_transparency (tags_transparent)
      int tags_transparent;
 {
   current_binding_level->tag_transparent = tags_transparent;
 }
+#endif
 
 /* Given a type, find the tag that was defined for it and return the tag name.
    Otherwise return 0.  However, the value can never be 0
@@ -5744,20 +5742,24 @@ start_decl (declarator, declspecs, initialized)
       default:
 	if (! processing_template_decl)
 	  {
-	    if (TYPE_SIZE (type) != NULL_TREE
-		&& ! TREE_CONSTANT (TYPE_SIZE (type)))
+	    if (type != error_mark_node)
 	      {
-		cp_error
-		  ("variable-sized object `%D' may not be initialized", decl);
-		initialized = 0;
-	      }
+		if (TYPE_SIZE (type) != NULL_TREE
+		    && ! TREE_CONSTANT (TYPE_SIZE (type)))
+		  {
+		    cp_error
+		      ("variable-sized object `%D' may not be initialized",
+		       decl);
+		    initialized = 0;
+		  }
 
-	    if (TREE_CODE (type) == ARRAY_TYPE
-		&& TYPE_SIZE (complete_type (TREE_TYPE (type))) == NULL_TREE)
-	      {
-		cp_error
-		  ("elements of array `%#D' have incomplete type", decl);
-		initialized = 0;
+		if (TREE_CODE (type) == ARRAY_TYPE
+		    && TYPE_SIZE (complete_type (TREE_TYPE (type))) == NULL_TREE)
+		  {
+		    cp_error
+		      ("elements of array `%#D' have incomplete type", decl);
+		    initialized = 0;
+		  }
 	      }
 	  }
       }
@@ -7799,7 +7801,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      typedef_decl = t;
 	    }
 	}
-      else if (TREE_CODE (id) != ERROR_MARK)
+      else if (id != error_mark_node)
 	/* Can't change CLASS nodes into RECORD nodes here!  */
 	type = id;
 
@@ -8207,7 +8209,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	 array or function or pointer, and DECLARATOR has had its
 	 outermost layer removed.  */
 
-      if (TREE_CODE (type) == ERROR_MARK)
+      if (type == error_mark_node)
 	{
 	  if (TREE_CODE (declarator) == SCOPE_REF)
 	    declarator = TREE_OPERAND (declarator, 1);
@@ -11661,14 +11663,13 @@ finish_function (lineno, call_poplevel, nested)
 		    {
 		      if (TYPE_NEEDS_DESTRUCTOR (BINFO_TYPE (vbases)))
 			{
-			  tree ptr = convert_pointer_to_vbase (BINFO_TYPE (vbases), current_class_ptr);
+			  tree vb = get_vbase
+			    (BINFO_TYPE (vbases),
+			     TYPE_BINFO (current_class_type));
 			  expand_expr_stmt
-			    (build_delete
-			     (build_pointer_type (BINFO_TYPE (vbases)),
-			      ptr, integer_zero_node,
-			      (LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR
-			       |LOOKUP_HAS_IN_CHARGE|LOOKUP_NORMAL),
-			      0));
+			    (build_scoped_method_call
+			     (current_class_ref, vb, dtor_identifier,
+			      build_tree_list (NULL_TREE, integer_zero_node)));
 			}
 		      vbases = TREE_CHAIN (vbases);
 		    }
@@ -12460,7 +12461,7 @@ finish_stmt ()
    (TREE_TYPE (decl)) to ARGTYPES, as doing so will corrupt the types of
    other decls.  Either pass the addresses of local variables or NULL.  */
 
-void
+static void
 revert_static_member_fn (decl, fn, argtypes)
      tree *decl, *fn, *argtypes;
 {
@@ -12520,9 +12521,7 @@ struct cp_function
   struct binding_level *binding_level;
 };
 
-
-
-struct cp_function *cp_function_chain;
+static struct cp_function *cp_function_chain;
 
 extern int temp_name_counter;
 

@@ -37,6 +37,8 @@ extern void sorry ();
 extern void compiler_error ();
 extern void make_decl_rtl			PROTO((tree, char *, int));
 
+static tree build_sptr_ref			PROTO((tree));
+
 /* Used to help generate globally unique names for signature tables.  */
 
 static int global_sigtable_name_counter;
@@ -1047,7 +1049,7 @@ build_optr_ref (instance)
 /* Create a COMPONENT_REF expression for referencing the SPTR field
    of a signature pointer or reference.  */
 
-tree
+static tree
 build_sptr_ref (instance)
      tree instance;
 {

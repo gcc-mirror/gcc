@@ -412,22 +412,16 @@ pop_memoized_context (use_old)
 /* Get a virtual binfo that is found inside BINFO's hierarchy that is
    the same type as the type given in PARENT.  To be optimal, we want
    the first one that is found by going through the least number of
-   virtual bases.  DEPTH should be NULL_PTR.  */
+   virtual bases.  */
 
 static tree
-get_vbase (parent, binfo, depth)
+get_vbase_1 (parent, binfo, depth)
      tree parent, binfo;
      unsigned int *depth;
 {
   tree binfos;
   int i, n_baselinks;
   tree rval = NULL_TREE;
-
-  if (depth == 0)
-    {
-      unsigned int d = (unsigned int)-1;
-      return get_vbase (parent, binfo, &d);
-    }
 
   if (BINFO_TYPE (binfo) == parent && TREE_VIA_VIRTUAL (binfo))
     {
@@ -449,7 +443,7 @@ get_vbase (parent, binfo, depth)
       if (*depth == 0)
 	break;
 
-      nrval = get_vbase (parent, base_binfo, depth);
+      nrval = get_vbase_1 (parent, base_binfo, depth);
       if (nrval)
 	rval = nrval;
     }
@@ -457,16 +451,25 @@ get_vbase (parent, binfo, depth)
   return rval;
 }
 
+tree
+get_vbase (parent, binfo)
+     tree parent;
+     tree binfo;
+{
+  unsigned int d = (unsigned int)-1;
+  return get_vbase_1 (parent, binfo, &d);
+}
+
 /* Convert EXPR to a virtual base class of type TYPE.  We know that
    EXPR is a non-null POINTER_TYPE to RECORD_TYPE.  We also know that
    the type of what expr points to has a virtual base of type TYPE.  */
 
-tree
+static tree
 convert_pointer_to_vbase (type, expr)
      tree type;
      tree expr;
 {
-  tree vb = get_vbase (type, TYPE_BINFO (TREE_TYPE (TREE_TYPE (expr))), NULL_PTR);
+  tree vb = get_vbase (type, TYPE_BINFO (TREE_TYPE (TREE_TYPE (expr))));
   return convert_pointer_to_real (vb, expr);
 }
 
@@ -3158,7 +3161,6 @@ note_debug_info_needed (type)
 /* Subroutines of push_class_decls ().  */
 
 /* Add in a decl to the envelope.  */
-
 static void
 envelope_add_decl (type, decl, values)
      tree type, decl, *values;

@@ -44,17 +44,16 @@ int mark_addressable PROTO((tree));
 static tree convert_for_assignment PROTO((tree, tree, char*, tree, int));
 /* static */ tree convert_for_initialization PROTO((tree, tree, tree, int, char*, tree, int));
 extern tree shorten_compare ();
-extern void binary_op_error ();
 static tree pointer_int_sum PROTO((enum tree_code, register tree, register tree));
 static tree pointer_diff PROTO((register tree, register tree));
+static int comp_target_parms PROTO((tree, tree, int));
+static int comp_ptr_ttypes_const PROTO((tree, tree));
+static int comp_ptr_ttypes_reinterpret PROTO((tree, tree));
 #if 0
 static tree convert_sequence ();
 #endif
 /* static */ tree unary_complex_lvalue PROTO((enum tree_code, tree));
 static tree get_delta_difference PROTO((tree, tree, int));
-
-extern rtx original_result_rtx;
-extern int warn_synth;
 
 /* Return the target type of TYPE, which meas return T for:
    T*, T&, T[], T (...), and otherwise, just T.  */
@@ -942,7 +941,7 @@ comp_target_types (ttl, ttr, nptrs)
    If there is not a unique most-derived base type, this function
    returns ERROR_MARK_NODE.  */
 
-tree
+static tree
 common_base_type (tt1, tt2)
      tree tt1, tt2;
 {
@@ -1049,7 +1048,7 @@ compparms (parms1, parms2, strict)
 /* This really wants return whether or not parameter type lists
    would make their owning functions assignment compatible or not.  */
 
-int
+static int
 comp_target_parms (parms1, parms2, strict)
      tree parms1, parms2;
      int strict;
@@ -2069,16 +2068,6 @@ build_indirect_ref (ptr, errorstring)
    If INDEX is of some user-defined type, it must be converted to
    integer type.  Otherwise, to make a compatible PLUS_EXPR, it
    will inherit the type of the array, which will be some pointer type.  */
-
-tree
-build_x_array_ref (array, idx)
-     tree array, idx;
-{
-  tree rval = build_opfncall (ARRAY_REF, LOOKUP_NORMAL, array, idx, NULL_TREE);
-  if (rval)
-    return rval;
-  return build_array_ref (array, idx);
-}
 
 tree
 build_array_ref (array, idx)
@@ -5365,8 +5354,7 @@ build_const_cast (type, expr)
 
 tree
 build_c_cast (type, expr)
-     register tree type;
-     tree expr;
+     tree type, expr;
 {
   register tree value = expr;
 
@@ -5436,7 +5424,6 @@ build_c_cast (type, expr)
   else
     {
       tree otype;
-      int flag;
 
       /* Convert functions and arrays to pointers and
 	 convert references to their expanded types,
@@ -5506,7 +5493,7 @@ build_c_cast (type, expr)
 	    value = decl_constant_value (value);
 
 	  ovalue = value;
-	  value = convert_force (type, value, flag);
+	  value = convert_force (type, value, CONV_C_CAST);
 
 	  /* Ignore any integer overflow caused by the cast.  */
 	  if (TREE_CODE (value) == INTEGER_CST)
@@ -5580,7 +5567,7 @@ build_modify_expr (lhs, modifycode, rhs)
   tree olhs = lhs;
 
   /* Avoid duplicate error messages from operands that had errors.  */
-  if (TREE_CODE (lhs) == ERROR_MARK || TREE_CODE (rhs) == ERROR_MARK)
+  if (lhs == error_mark_node || rhs == error_mark_node)
     return error_mark_node;
 
   /* Types that aren't fully specified cannot be used in assignments.  */
@@ -5616,14 +5603,14 @@ build_modify_expr (lhs, modifycode, rhs)
     case COMPOUND_EXPR:
       newrhs = build_modify_expr (TREE_OPERAND (lhs, 1),
 				  modifycode, rhs);
-      if (TREE_CODE (newrhs) == ERROR_MARK)
+      if (newrhs == error_mark_node)
 	return error_mark_node;
       return build (COMPOUND_EXPR, lhstype,
 		    TREE_OPERAND (lhs, 0), newrhs);
 
     case MODIFY_EXPR:
       newrhs = build_modify_expr (TREE_OPERAND (lhs, 0), modifycode, rhs);
-      if (TREE_CODE (newrhs) == ERROR_MARK)
+      if (newrhs == error_mark_node)
 	return error_mark_node;
       return build (COMPOUND_EXPR, lhstype, lhs, newrhs);
 
@@ -5640,7 +5627,7 @@ build_modify_expr (lhs, modifycode, rhs)
 						       modifycode, rhs),
 				    build_modify_expr (convert (TREE_TYPE (lhs), TREE_OPERAND (lhs, 2)),
 						       modifycode, rhs));
-	if (TREE_CODE (cond) == ERROR_MARK)
+	if (cond == error_mark_node)
 	  return cond;
 	/* Make sure the code to compute the rhs comes out
 	   before the split.  */
@@ -5796,7 +5783,7 @@ build_modify_expr (lhs, modifycode, rhs)
 	result = build_modify_expr (inner_lhs, NOP_EXPR,
 				    convert (TREE_TYPE (inner_lhs),
 					     convert (lhstype, newrhs)));
-	if (TREE_CODE (result) == ERROR_MARK)
+	if (result == error_mark_node)
 	  return result;
 	return convert (TREE_TYPE (lhs), result);
       }
@@ -5983,7 +5970,7 @@ build_modify_expr (lhs, modifycode, rhs)
 			TREE_OPERAND (newrhs, 0));
     }
 
-  if (TREE_CODE (newrhs) == ERROR_MARK)
+  if (newrhs == error_mark_node)
     return error_mark_node;
 
   if (TREE_CODE (newrhs) == COND_EXPR)
@@ -7321,7 +7308,7 @@ c_expand_start_case (exp)
 /* CONSTP remembers whether or not all the intervening pointers in the `to'
    type have been const.  */
 
-int
+static int
 comp_ptr_ttypes_real (to, from, constp)
      tree to, from;
      int constp;
@@ -7392,7 +7379,7 @@ ptr_reasonably_similar (to, from)
 
 /* Like comp_ptr_ttypes, for const_cast.  */
 
-int
+static int
 comp_ptr_ttypes_const (to, from)
      tree to, from;
 {
@@ -7413,7 +7400,7 @@ comp_ptr_ttypes_const (to, from)
 
 /* Like comp_ptr_ttypes, for reinterpret_cast.  */
 
-int
+static int
 comp_ptr_ttypes_reinterpret (to, from)
      tree to, from;
 {
