@@ -383,14 +383,7 @@ while (0)
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.
-
-   Early documentation says SI and DI are not tieable if some reg can
-   be OK for SI but not for DI. However other ports (mips, i860, mvs
-   and tahoe) don't meet the above criterion. Evidently the real
-   requirement is somewhat laxer. Documentation was changed for gcc
-   2.8 but was not picked up by egcs (at least egcs 1.0). Having all
-   integer modes tieable definitely generates faster code. */
+   for any hard reg, then this must be 0 for correct output. */
 
 #define MODES_TIEABLE_P(MODE1, MODE2)					\
   ((FLOAT_MODE_P(MODE1) && FLOAT_MODE_P(MODE2)				\
