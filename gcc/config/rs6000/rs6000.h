@@ -2285,7 +2285,7 @@ toc_section ()						\
   fputs ("[DS]\n", FILE);					\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
   fputs (":\n", FILE);						\
-  fputs ("\t.long .", FILE);					\
+  fputs ((TARGET_32BIT) ? "\t.long ." : "\t.llong .", FILE);	\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
   fputs (", TOC[tc0], 0\n", FILE);				\
   fputs (".csect .text[PR]\n.", FILE);				\
@@ -2593,6 +2593,23 @@ toc_section ()						\
 
 /* This is how to output an assembler line defining an `int' constant.  */
 
+#define ASM_OUTPUT_DOUBLE_INT(FILE,VALUE)				\
+do {									\
+  if (TARGET_32BIT)							\
+    {									\
+      assemble_integer (operand_subword ((VALUE), 0, 0, DImode),	\
+                        UNITS_PER_WORD, 1);				\
+      assemble_integer (operand_subword ((VALUE), 1, 0, DImode),	\
+                        UNITS_PER_WORD, 1);				\
+    }									\
+  else									\
+    {									\
+      fputs ("\t.llong ", FILE);					\
+      output_addr_const (FILE, (VALUE));				\
+      putc ('\n', FILE);						\
+    }									\
+} while (0)
+
 #define ASM_OUTPUT_INT(FILE,VALUE)  \
 ( fputs ("\t.long ", FILE),			\
   output_addr_const (FILE, (VALUE)),		\
@@ -2647,7 +2664,7 @@ do {									\
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)		\
   do { char buf[100];					\
-       fputs ("\t.long ", FILE);			\
+       fputs ((TARGET_32BIT) ? "\t.long " : "\t.llong ", FILE);	\
        ASM_GENERATE_INTERNAL_LABEL (buf, "L", VALUE);	\
        assemble_name (FILE, buf);			\
        putc ('\n', FILE);				\
@@ -2657,7 +2674,7 @@ do {									\
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)	\
   do { char buf[100];					\
-       fputs ("\t.long ", FILE);			\
+       fputs ((TARGET_32BIT) ? "\t.long " : "\t.llong ", FILE);	\
        ASM_GENERATE_INTERNAL_LABEL (buf, "L", VALUE);	\
        assemble_name (FILE, buf);			\
        putc ('-', FILE);				\
