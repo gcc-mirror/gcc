@@ -1,3 +1,8 @@
+2001-10-25  Robert Dewar <dewar@gnat.com>
+
+	* s-atacco.ads: Add pragma Inline_Always for functions.
+	Fix header format. Add copyright 2001
+
 2001-10-25  Ed Schonberg <schonber@gnat.com>
 
 	* par-ch3.adb (P_Subtype_Mark_Resync): for an anonymous array 
