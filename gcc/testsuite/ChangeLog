@@ -1,3 +1,9 @@
+2000-10-15  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/c90-printf-2.c, gcc.dg/c90-scanf-2.c: Determine the type
+	for intmax_t in the compiler using __typeof__ and the type rules
+	for conditional expressions.
+
 2000-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/20001012-1.c: New test.
