@@ -170,6 +170,8 @@ do {									\
 #undef READONLY_DATA_SECTION
 #undef SELECT_SECTION
 #undef ASM_DECLARE_FUNCTION_NAME
+#undef ASM_OUTPUT_CONSTRUCTOR
+#undef ASM_OUTPUT_DESTRUCTOR
 
 /* Use the regular svr4 definitions.  */
 
