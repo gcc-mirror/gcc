@@ -1,3 +1,14 @@
+2001-05-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* defaults.h (TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER): New
+	macro.
+	* tm.texi (TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER):
+	Document it.
+	* toplev.c (main): If the target does not allow profiling without
+	a frame pointer, issue an error message.
+	* config/i386/linux.h (TARGET_ALLOWS_PROFILING_WITHOUT_FRAME_POINTER): 
+	Define it to false.
+	
 Sat May 19 07:53:42 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* recog.c (general_operand): Modify last change to allow it if reload
@@ -101,6 +112,16 @@ Fri May 18 15:39:16 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	load/store multiple patterns to be a read/write constraint.
 
 2001-05-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* basic-block.h (struct basic_block_def): Add documentation about
+	what a basic block is, and what the various fields are used for.
+	* flow.c (calculate_globlal_regs_live): Add documentation about
+	how the algorithm works, and how we know that it will terminate.
+	Check that the the inductive assumption that guarantees
+	termination actually holds.
+	(mark_used_regs): Treat conditionally set registers as used.
+	(debug_regset): Add comment.
+	* rtl.texi (cond_exec): Add documentation.
 
 	* function.c (expand_function_start): Avoid creating BLKmode
 	pseudos.
