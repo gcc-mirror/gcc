@@ -1,3 +1,14 @@
+2004-10-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* basic-block.h: Remove the prototypes for can_hoist_insn_p,
+	hoist_insn_after, and hoist_insn_to_edge.
+	* rtl.h: Remove the prototypes for reg_referenced_between_p,
+	no_jumps_between_p, and insn_dependent_p.
+	* rtlanal.c (no_jumps_between_p, reg_referenced_between_p,
+	insn_dependent_p, insn_dependent_p_1, hoist_test_store,
+	can_hoist_insn_p, hoist_update_store, hoist_insn_after,
+	hoist_insn_to_edge): Remove.
+
 2004-10-10  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/17881
