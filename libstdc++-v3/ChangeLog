@@ -1,3 +1,10 @@
+2001-01-12  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/basic_string.h (_S_find(const _CharT* __beg, const
+	_CharT* __end, _CharT __c): Remove.
+	* include/bits/basic_string.tcc: Substitute traits::find for _S_find.
+	* include/bits/char_traits.h: Tweak.
+
 2001-01-12  Laurynas Biveinis  <lauras@softhome.net>
 
 	* acinclude.m4 (GLIBCPP_CHECK_CTYPE_SUPPORT): check for DJGPP <ctype.h>

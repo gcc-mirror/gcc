@@ -1,6 +1,6 @@
 // Components for manipulating sequences of characters -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -839,10 +839,6 @@ namespace std {
       int 
       compare(size_type __pos, size_type __n1, const _CharT* __s, 
 	      size_type __n2 = npos) const;
- 
-    private:
-      static const _CharT* 
-      _S_find(const _CharT* __beg, const _CharT* __end, _CharT __c);
   };
 
 

@@ -574,23 +574,15 @@ namespace std
       return __n;
     }
 
-  // String operations
-  template<typename _CharT, typename _Traits, typename _Alloc>
-    const _CharT*
-    basic_string<_CharT, _Traits, _Alloc>::
-    _S_find(const _CharT* __beg, const _CharT* __end, _CharT __c)
-    {
-      return find_if(__beg, __end, _Char_traits_match<_CharT, _Traits>(__c));
-    }
-
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>::size_type
     basic_string<_CharT, _Traits, _Alloc>::
     find(const _CharT* __s, size_type __pos, size_type __n) const
     {
+      size_type __size = this->size();
       size_t __xpos = __pos;
       const _CharT* __data = _M_data();
-      for (; __xpos + __n <= this->size(); ++__xpos)
+      for (; __xpos + __n <= __size; ++__xpos)
 	if (traits_type::compare(__data + __xpos, __s, __n) == 0)
 	  return __xpos;
       return npos;
@@ -606,9 +598,9 @@ namespace std
       if (__pos < __size)
 	{
 	  const _CharT* __data = _M_data();
-	  const _CharT* __end = __data + __size;
-	  const _CharT* __p = _S_find(__data + __pos, __end, __c);
-	  if (__p != __end)
+	  size_type __n = __size - __pos;
+	  const _CharT* __p = traits_type::find(__data + __pos, __n, __c);
+	  if (__p)
 	    __ret = __p - __data;
 	}
       return __ret;
@@ -659,11 +651,10 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     find_first_of(const _CharT* __s, size_type __pos, size_type __n) const
     {
-      const _CharT* __end = __s + __n;
       for (; __n && __pos < this->size(); ++__pos)
 	{
-	  const _CharT* __p = _S_find(__s, __end, _M_data()[__pos]);
-	  if (__p != __end)
+	  const _CharT* __p = traits_type::find(__s, __n, _M_data()[__pos]);
+	  if (__p)
 	    return __pos;
 	}
       return npos;
@@ -681,8 +672,7 @@ namespace std
 	    __size = __pos;
 	  do
 	    {
-	      const _CharT* __p = _S_find(__s, __s + __n, _M_data()[__size]);
-	      if (__p  != __s + __n)
+	      if (traits_type::find(__s, __n, _M_data()[__size]))
 		return __size;
 	    } 
 	  while (__size-- != 0);
@@ -697,7 +687,7 @@ namespace std
     {
       size_t __xpos = __pos;
       for (; __n && __xpos < this->size(); ++__xpos)
-	if (_S_find(__s, __s + __n, _M_data()[__xpos]) == __s + __n)
+	if (!traits_type::find(__s, __n, _M_data()[__xpos]))
 	  return __xpos;
       return npos;
     }
@@ -708,7 +698,7 @@ namespace std
     find_first_not_of(_CharT __c, size_type __pos) const
     {
       size_t __xpos = __pos;
-      for (; __xpos < size(); ++__xpos)
+      for (; __xpos < this->size(); ++__xpos)
 	if (!traits_type::eq(_M_data()[__xpos], __c))
 	  return __xpos;
       return npos;
@@ -726,7 +716,7 @@ namespace std
 	    __size = __pos;
 	  do
 	    {
-	      if (_S_find(__s, __s + __n, _M_data()[__size]) == __s + __n)
+	      if (!traits_type::find(__s, __n, _M_data()[__size]))
 		return __size;
 	    } 
 	  while (__size--);
