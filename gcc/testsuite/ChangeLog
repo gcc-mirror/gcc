@@ -1,5 +1,7 @@
 2003-05-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* g++.dg/other/packed1.C: Mark xfail for sparc*- not sparc-.
+
 	gcc.c-torture/execute/string-opt-19.c: Add general rodata tests.
 	(bcopy): Call memmove.
 
