@@ -1,5 +1,9 @@
 2003-01-16  Richard Henderson  <rth@redhat.com>
 
+	* g++.dg/tls/init-2.C: Fix error matches for real this time.
+
+2003-01-16  Richard Henderson  <rth@redhat.com>
+
 	* g++.dg/pch/pch.exp: Copy test header to the working directory
 	before using it either for precompilation or direct use.
 	* g++.dg/pch/*.Hs: Rename from gcc.dg/pch/*.H.
