@@ -1,3 +1,9 @@
+2004-01-24  Herman A.J. ten Brugge  <hermantenbrugge@home.nl>
+
+	PR target/12978
+	* c4x.md: (movstrqi*) Use match_scratch instead of match_dup.
+	Remove movstrqi_small because it conflicts with movstrqi_large.
+
 2004-01-24  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/cris/cris.c (TARGET_PROMOTE_FUNCTION_ARGS): New.
