@@ -43,7 +43,7 @@ g (void)
   pv[0]; /* { dg-warning "warning: dereferencing 'void \\*' pointer" } */
   0[pv]; /* { dg-warning "warning: dereferencing 'void \\*' pointer" } */
   sip[0]; /* { dg-error "error: invalid use of undefined type 'struct si'" } */
-  /* { dg-error "error: dereferencing pointer to incomplete type" "" { target *-*-* } 45 } */
+  /* { dg-error "error: dereferencing pointer to incomplete type" "incomplete" { target *-*-* } 45 } */
   0[sip]; /* { dg-error "error: invalid use of undefined type 'struct si'" } */
-  /* { dg-error "error: dereferencing pointer to incomplete type" "" { target *-*-* } 47 } */
+  /* { dg-error "error: dereferencing pointer to incomplete type" "incomplete" { target *-*-* } 47 } */
 }
