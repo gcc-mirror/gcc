@@ -1,0 +1,9 @@
+# The pushl in CTOR initialization interferes with frame pointer elimination.
+
+# We need to use -fpic when we are using gcc to compile the routines in
+# crtstuff.c.  This is only really needed when we are going to use gcc/g++
+# to produce a shared library, but since we don't know ahead of time when
+# we will be doing that, we just always use -fpic when compiling the
+# routines in crtstuff.c.
+
+CRTSTUFF_T_CFLAGS = -fpic -fno-omit-frame-pointer
