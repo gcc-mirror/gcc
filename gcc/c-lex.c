@@ -1279,7 +1279,7 @@ yylex ()
 		  }
 		else if (base <= 10)
 		  {
-		    if ((c&~040) == 'E')
+		    if (c == 'e' || c == 'E')
 		      {
 			base = 10;
 			floatflag = AFTER_POINT;
@@ -1411,7 +1411,9 @@ yylex ()
 		break;
 	      }
 	    /* Note: garbage_chars is -1 if first char is *not* garbage.  */
-	    while (isalnum (c))
+	    while (isalnum (c) || c == '.' || c == '_'
+		   || (!flag_traditional && (c == '+' || c == '-')
+		       && (p[-1] == 'e' || p[-1] == 'E')))
 	      {
 		if (p >= token_buffer + maxtoken - 3)
 		  p = extend_token_buffer (p);
@@ -1459,10 +1461,14 @@ yylex ()
 		  }
 		else
 		  {
-		    if (isalnum (c))
+		    if (isalnum (c) || c == '.' || c == '_'
+			|| (!flag_traditional && (c == '+' || c == '-')
+			    && (p[-1] == 'e' || p[-1] == 'E')))
 		      {
 			error ("garbage at end of number");
-			while (isalnum (c))
+			while (isalnum (c) || c == '.' || c == '_'
+			       || (!flag_traditional && (c == '+' || c == '-')
+				   && (p[-1] == 'e' || p[-1] == 'E')))
 			  {
 			    if (p >= token_buffer + maxtoken - 3)
 			      p = extend_token_buffer (p);
@@ -1702,6 +1708,7 @@ yylex ()
 		= build_int_2 (result | ~((unsigned HOST_WIDE_INT) ~0
 					  >> (HOST_BITS_PER_WIDE_INT - num_bits)),
 			       -1);
+	    TREE_TYPE (yylval.ttype) = integer_type_node;
 	  }
 	else
 	  {
@@ -1722,9 +1729,9 @@ yylex ()
 	      }
 #endif
 	    yylval.ttype = build_int_2 (result, 0);
+	    TREE_TYPE (yylval.ttype) = wchar_type_node;
 	  }
 
-	TREE_TYPE (yylval.ttype) = integer_type_node;
 	value = CONSTANT;
 	break;
       }
