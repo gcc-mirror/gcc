@@ -1,3 +1,8 @@
+Fri Jun 19 07:54:40 1998  H.J. Lu  (hjl@gnu.org)
+
+	* g77spec.c (lang_specific_driver): Check n_infiles before
+	appending args.
+
 Sun Jun  7 14:04:34 1998  Richard Henderson  <rth@cygnus.com>
 
 	* com.c (lang_init_options): New function.
