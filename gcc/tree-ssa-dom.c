@@ -1177,23 +1177,18 @@ record_equivalences_from_phis (basic_block bb)
 	{
 	  tree t = PHI_ARG_DEF (phi, i);
 
-	  if (TREE_CODE (t) == SSA_NAME || is_gimple_min_invariant (t))
-	    {
-	      /* Ignore alternatives which are the same as our LHS.  */
-	      if (operand_equal_for_phi_arg_p (lhs, t))
-		continue;
+	  /* Ignore alternatives which are the same as our LHS.  */
+	  if (operand_equal_for_phi_arg_p (lhs, t))
+	    continue;
 
-	      /* If we have not processed an alternative yet, then set
-		 RHS to this alternative.  */
-	      if (rhs == NULL)
-		rhs = t;
-	      /* If we have processed an alternative (stored in RHS), then
-		 see if it is equal to this one.  If it isn't, then stop
-		 the search.  */
-	      else if (! operand_equal_for_phi_arg_p (rhs, t))
-		break;
-	    }
-	  else
+	  /* If we have not processed an alternative yet, then set
+	     RHS to this alternative.  */
+	  if (rhs == NULL)
+	    rhs = t;
+	  /* If we have processed an alternative (stored in RHS), then
+	     see if it is equal to this one.  If it isn't, then stop
+	     the search.  */
+	  else if (! operand_equal_for_phi_arg_p (rhs, t))
 	    break;
 	}
 
