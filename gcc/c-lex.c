@@ -61,16 +61,13 @@ static splay_tree file_info_tree;
 int pending_lang_change; /* If we need to switch languages - C++ only */
 int c_header_level;	 /* depth in C headers - C++ only */
 
-/* Nonzero tells yylex to ignore \ in string constants.  */
-static int ignore_escape_flag;
-
 static tree interpret_integer (const cpp_token *, unsigned int);
 static tree interpret_float (const cpp_token *, unsigned int);
 static enum integer_type_kind
   narrowest_unsigned_type (tree, unsigned int);
 static enum integer_type_kind
   narrowest_signed_type (tree, unsigned int);
-static tree lex_string (const cpp_string *);
+static enum cpp_ttype lex_string (const cpp_token *, tree *, bool);
 static tree lex_charconst (const cpp_token *);
 static void update_header_times (const char *);
 static int dump_one_header (splay_tree_node, void *);
@@ -184,8 +181,12 @@ cb_ident (cpp_reader *pfile ATTRIBUTE_UNUSED,
   if (! flag_no_ident)
     {
       /* Convert escapes in the string.  */
-      tree value ATTRIBUTE_UNUSED = lex_string (str);
-      ASM_OUTPUT_IDENT (asm_out_file, TREE_STRING_POINTER (value));
+      cpp_string cstr = { 0, 0 };
+      if (cpp_interpret_string (pfile, str, 1, &cstr, false))
+	{
+	  ASM_OUTPUT_IDENT (asm_out_file, cstr.text);
+	  free ((void *)cstr.text);
+	}
     }
 #endif
 }
@@ -296,12 +297,10 @@ cb_undef (cpp_reader *pfile ATTRIBUTE_UNUSED, unsigned int line,
 			 (const char *) NODE_NAME (node));
 }
 
-int
-c_lex (tree *value)
+static inline const cpp_token *
+get_nonpadding_token (void)
 {
   const cpp_token *tok;
-
- retry:
   timevar_push (TV_CPP);
   do
     tok = cpp_get_token (parse_in);
@@ -310,10 +309,22 @@ c_lex (tree *value)
 
   /* The C++ front end does horrible things with the current line
      number.  To ensure an accurate line number, we must reset it
-     every time we return a token.  */
+     every time we advance a token.  */
   input_line = src_lineno;
 
-  *value = NULL_TREE;
+  return tok;
+}  
+
+int
+c_lex (tree *value)
+{
+  const cpp_token *tok;
+  location_t atloc;
+
+ retry:
+  tok = get_nonpadding_token ();
+
+ retry_after_at:
   switch (tok->type)
     {
     case CPP_NAME:
@@ -345,6 +356,37 @@ c_lex (tree *value)
       }
       break;
 
+    case CPP_ATSIGN:
+      /* An @ may give the next token special significance in Objective-C.  */
+      atloc = input_location;
+      tok = get_nonpadding_token ();
+      if (c_dialect_objc ())
+	{
+	  tree val;
+	  switch (tok->type)
+	    {
+	    case CPP_NAME:
+	      val = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node));
+	      if (C_IS_RESERVED_WORD (val)
+		  && OBJC_IS_AT_KEYWORD (C_RID_CODE (val)))
+		{
+		  *value = val;
+		  return CPP_AT_NAME;
+		}
+	      break;
+
+	    case CPP_STRING:
+	    case CPP_WSTRING:
+	      return lex_string (tok, value, true);
+
+	    default: break;
+	    }
+	}
+
+      /* ... or not.  */
+      error ("%Hstray '@' in program", &atloc);
+      goto retry_after_at;
+
     case CPP_OTHER:
       {
 	cppchar_t c = tok->val.str.text[0];
@@ -365,7 +407,7 @@ c_lex (tree *value)
 
     case CPP_STRING:
     case CPP_WSTRING:
-      *value = lex_string (&tok->val.str);
+      return lex_string (tok, value, false);
       break;
 
       /* These tokens should not be visible outside cpplib.  */
@@ -374,7 +416,9 @@ c_lex (tree *value)
     case CPP_MACRO_ARG:
       abort ();
 
-    default: break;
+    default:
+      *value = NULL_TREE;
+      break;
     }
 
   return tok->type;
@@ -571,75 +615,100 @@ interpret_float (const cpp_token *token, unsigned int flags)
   return value;
 }
 
-static tree
-lex_string (const cpp_string *str)
+/* Convert a series of STRING and/or WSTRING tokens into a tree,
+   performing string constant concatenation.  TOK is the first of
+   these.  VALP is the location to write the string into.  OBJC_STRING
+   indicates whether an '@' token preceded the incoming token.
+   Returns the CPP token type of the result (CPP_STRING, CPP_WSTRING,
+   or CPP_OBJC_STRING).
+
+   This is unfortunately more work than it should be.  If any of the
+   strings in the series has an L prefix, the result is a wide string
+   (6.4.5p4).  Whether or not the result is a wide string affects the
+   meaning of octal and hexadecimal escapes (6.4.4.4p6,9).  But escape
+   sequences do not continue across the boundary between two strings in
+   a series (6.4.5p7), so we must not lose the boundaries.  Therefore
+   cpp_interpret_string takes a vector of cpp_string structures, which
+   we must arrange to provide.  */
+
+static enum cpp_ttype
+lex_string (const cpp_token *tok, tree *valp, bool objc_string)
 {
-  bool wide;
   tree value;
-  char *buf, *q;
-  cppchar_t c;
-  const unsigned char *p, *limit;
+  bool wide = false;
+  size_t count = 1;
+  struct obstack str_ob;
+  cpp_string istr;
 
-  wide = str->text[0] == 'L';
-  p = str->text + 1 + wide;
-  limit = str->text + str->len - 1;
-  q = buf = alloca ((str->len + 1) * (wide ? WCHAR_BYTES : 1));
+  /* Try to avoid the overhead of creating and destroying an obstack
+     for the common case of just one string.  */
+  cpp_string str = tok->val.str;
+  cpp_string *strs = &str;
 
-  while (p < limit)
+  if (tok->type == CPP_WSTRING)
+    wide = true;
+
+  tok = get_nonpadding_token ();
+  if (c_dialect_objc () && tok->type == CPP_ATSIGN)
     {
-      c = *p++;
+      objc_string = true;
+      tok = get_nonpadding_token ();
+    }
+  if (tok->type == CPP_STRING || tok->type == CPP_WSTRING)
+    {
+      gcc_obstack_init (&str_ob);
+      obstack_grow (&str_ob, &str, sizeof (cpp_string));
 
-      if (c == '\\' && !ignore_escape_flag)
-	c = cpp_parse_escape (parse_in, &p, limit, wide);
-
-      /* Add this single character into the buffer either as a wchar_t,
-	 a multibyte sequence, or as a single byte.  */
-      if (wide)
+      do
 	{
-	  unsigned charwidth = TYPE_PRECISION (char_type_node);
-	  unsigned bytemask = (1 << charwidth) - 1;
-	  int byte;
-
-	  for (byte = 0; byte < WCHAR_BYTES; ++byte)
+	  count++;
+	  if (tok->type == CPP_WSTRING)
+	    wide = true;
+	  obstack_grow (&str_ob, &tok->val.str, sizeof (cpp_string));
+	  
+	  tok = get_nonpadding_token ();
+	  if (c_dialect_objc () && tok->type == CPP_ATSIGN)
 	    {
-	      int n;
-	      if (byte >= (int) sizeof (c))
-		n = 0;
-	      else
-		n = (c >> (byte * charwidth)) & bytemask;
-	      if (BYTES_BIG_ENDIAN)
-		q[WCHAR_BYTES - byte - 1] = n;
-	      else
-		q[byte] = n;
+	      objc_string = true;
+	      tok = get_nonpadding_token ();
 	    }
-	  q += WCHAR_BYTES;
 	}
+      while (tok->type == CPP_STRING || tok->type == CPP_WSTRING);
+      strs = obstack_finish (&str_ob);
+    }
+
+  /* We have read one more token than we want.  */
+  _cpp_backup_tokens (parse_in, 1);
+
+  if (count > 1 && !objc_string && warn_traditional && !in_system_header)
+    warning ("traditional C rejects string constant concatenation");
+
+  if (cpp_interpret_string (parse_in, strs, count, &istr, wide))
+    {
+      value = build_string (istr.len, (char *)istr.text);
+      free ((void *)istr.text);
+    }
+  else
+    {
+      /* Callers cannot generally handle error_mark_node in this context,
+	 so return the empty string instead.  cpp_interpret_string has
+	 issued an error.  */
+      if (wide)
+	value = build_string (TYPE_PRECISION (wchar_type_node)
+			      / TYPE_PRECISION (char_type_node),
+			      "\0\0\0");  /* widest supported wchar_t
+					     is 32 bits */
       else
-	{
-	  *q++ = c;
-	}
+	value = build_string (1, "");
     }
 
-  /* Terminate the string value, either with a single byte zero
-     or with a wide zero.  */
+  TREE_TYPE (value) = wide ? wchar_array_type_node : char_array_type_node;
+  *valp = fix_string_type (value);
 
-  if (wide)
-    {
-      memset (q, 0, WCHAR_BYTES);
-      q += WCHAR_BYTES;
-    }
-  else
-    {
-      *q++ = '\0';
-    }
+  if (strs != &str)
+    obstack_free (&str_ob, 0);
 
-  value = build_string (q - buf, buf);
-
-  if (wide)
-    TREE_TYPE (value) = wchar_array_type_node;
-  else
-    TREE_TYPE (value) = char_array_type_node;
-  return value;
+  return objc_string ? CPP_OBJC_STRING : wide ? CPP_WSTRING : CPP_STRING;
 }
 
 /* Converts a (possibly wide) character constant token into a tree.  */

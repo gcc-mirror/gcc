@@ -10,11 +10,11 @@
 
 #if '\e'		/* { dg-warning "non-ISO" "non-ISO \\e" } */
 #endif
-#if '\u00a0'		/* { dg-bogus "unknown" "\\u is known in C99" } */
+#if L'\u00a0'		/* { dg-bogus "unknown" "\\u is known in C99" } */
 #endif
 
 void foo ()
 {
   int c = '\E';		/* { dg-warning "non-ISO" "non-ISO \\E" } */
-  c = '\u00a0';		/* { dg-bogus "unknown" "\\u is known in C99" } */
+  c = L'\u00a0';	/* { dg-bogus "unknown" "\\u is known in C99" } */
 }

@@ -151,9 +151,7 @@ do {									\
 %token ATTRIBUTE EXTENSION LABEL
 %token REALPART IMAGPART VA_ARG CHOOSE_EXPR TYPES_COMPATIBLE_P
 %token PTR_VALUE PTR_BASE PTR_EXTENT
-
-/* function name can be a string const or a var decl. */
-%token STRING_FUNC_NAME VAR_FUNC_NAME
+%token FUNC_NAME
 
 /* Add precedence rules to solve dangling else s/r conflict */
 %nonassoc IF
@@ -183,6 +181,7 @@ do {									\
    Objective C, so that the token codes are the same in both.  */
 %token INTERFACE IMPLEMENTATION END SELECTOR DEFS ENCODE
 %token CLASSNAME PUBLIC PRIVATE PROTECTED PROTOCOL OBJECTNAME CLASS ALIAS
+%token OBJC_STRING
 
 %type <code> unop
 %type <ttype> ENUM STRUCT UNION IF ELSE WHILE DO FOR SWITCH CASE DEFAULT
@@ -249,9 +248,9 @@ ifobjc
 %type <ttype> keywordexpr keywordarglist keywordarg
 %type <ttype> myparms myparm optparmlist reservedwords objcselectorexpr
 %type <ttype> selectorarg keywordnamelist keywordname objcencodeexpr
-%type <ttype> objc_string non_empty_protocolrefs protocolrefs identifier_list objcprotocolexpr
+%type <ttype> non_empty_protocolrefs protocolrefs identifier_list objcprotocolexpr
 
-%type <ttype> CLASSNAME OBJECTNAME
+%type <ttype> CLASSNAME OBJECTNAME OBJC_STRING
 end ifobjc
 
 %{
@@ -340,7 +339,6 @@ static bool parsing_iso_function_signature;
 static void yyprint	  PARAMS ((FILE *, int, YYSTYPE));
 static void yyerror	  PARAMS ((const char *));
 static int yylexname	  PARAMS ((void));
-static int yylexstring	  PARAMS ((void));
 static inline int _yylex  PARAMS ((void));
 static int  yylex	  PARAMS ((void));
 static void init_reswords PARAMS ((void));
@@ -657,8 +655,7 @@ primary:
 		}
 	| CONSTANT
 	| STRING
-		{ $$ = fix_string_type ($$); }
-	| VAR_FUNC_NAME
+	| FUNC_NAME
 		{ $$ = fname_decl (C_RID_CODE ($$), $$); }
 	| '(' typename ')' '{'
 		{ start_init (NULL_TREE, NULL, 0);
@@ -763,21 +760,10 @@ ifobjc
 		{ $$ = build_protocol_expr ($1); }
 	| objcencodeexpr
 		{ $$ = build_encode_expr ($1); }
-	| objc_string
+	| OBJC_STRING
 		{ $$ = build_objc_string_object ($1); }
 end ifobjc
 	;
-
-ifobjc
-/* Produces an STRING_CST with perhaps more STRING_CSTs chained
-   onto it, which is to be read as an ObjC string object.  */
-objc_string:
-	  '@' STRING
-		{ $$ = $2; }
-	| objc_string '@' STRING
-		{ $$ = chainon ($1, $3); }
-	;
-end ifobjc
 
 old_style_parm_decls:
 	old_style_parm_decls_1
@@ -3494,9 +3480,9 @@ static const short rid_to_yy[RID_MAX] =
   /* RID_CHOOSE_EXPR */			CHOOSE_EXPR,
   /* RID_TYPES_COMPATIBLE_P */		TYPES_COMPATIBLE_P,
 
-  /* RID_FUNCTION_NAME */		STRING_FUNC_NAME,
-  /* RID_PRETTY_FUNCTION_NAME */	STRING_FUNC_NAME,
-  /* RID_C99_FUNCTION_NAME */		VAR_FUNC_NAME,
+  /* RID_FUNCTION_NAME */		FUNC_NAME,
+  /* RID_PRETTY_FUNCTION_NAME */	FUNC_NAME,
+  /* RID_C99_FUNCTION_NAME */		FUNC_NAME,
 
   /* C++ */
   /* RID_BOOL */	TYPESPEC,
@@ -3627,22 +3613,9 @@ ifobjc
 	  && (!OBJC_IS_PQ_KEYWORD (rid_code) || objc_pq_context))
 end ifobjc
       {
-	int yycode = rid_to_yy[(int) rid_code];
-	if (yycode == STRING_FUNC_NAME)
-	  {
-	    /* __FUNCTION__ and __PRETTY_FUNCTION__ get converted
-	       to string constants.  */
-	    const char *name = fname_string (rid_code);
-
-	    yylval.ttype = build_string (strlen (name) + 1, name);
-	    C_ARTIFICIAL_STRING_P (yylval.ttype) = 1;
-	    last_token = CPP_STRING;  /* so yyerror won't choke */
-	    return STRING;
-	  }
-
 	/* Return the canonical spelling for this keyword.  */
 	yylval.ttype = ridpointers[(int) rid_code];
-	return yycode;
+	return rid_to_yy[(int) rid_code];
       }
     }
 
@@ -3669,57 +3642,6 @@ ifobjc
 end ifobjc
 
   return IDENTIFIER;
-}
-
-/* Concatenate strings before returning them to the parser.  This isn't quite
-   as good as having it done in the lexer, but it's better than nothing.  */
-
-static int
-yylexstring ()
-{
-  enum cpp_ttype next_type;
-  tree orig = yylval.ttype;
-
-  next_type = c_lex (&yylval.ttype);
-  if (next_type == CPP_STRING
-      || next_type == CPP_WSTRING
-      || (next_type == CPP_NAME && yylexname () == STRING))
-    {
-      varray_type strings;
-
-ifc
-      static location_t last_location;
-      if (warn_traditional && !in_system_header
-	  && (input_location.line != last_location.line
-	      || !last_location.file ||
-	      strcmp (last_location.file, input_location.file)))
-	{
-	  warning ("traditional C rejects string concatenation");
-	  last_location = input_location;
-	}
-end ifc
-
-      VARRAY_TREE_INIT (strings, 32, "strings");
-      VARRAY_PUSH_TREE (strings, orig);
-
-      do
-	{
-	  VARRAY_PUSH_TREE (strings, yylval.ttype);
-	  next_type = c_lex (&yylval.ttype);
-	}
-      while (next_type == CPP_STRING
-	     || next_type == CPP_WSTRING
-	     || (next_type == CPP_NAME && yylexname () == STRING));
-
-      yylval.ttype = combine_strings (strings);
-    }
-  else
-    yylval.ttype = orig;
-
-  /* We will have always read one token too many.  */
-  _cpp_backup_tokens (parse_in, 1);
-
-  return STRING;
 }
 
 static inline int
@@ -3787,13 +3709,11 @@ _yylex ()
       return 0;
 
     case CPP_NAME:
-      {
-	int ret = yylexname ();
-	if (ret == STRING)
-	  return yylexstring ();
-	else
-	  return ret;
-      }
+      return yylexname ();
+
+    case CPP_AT_NAME:
+      /* This only happens in Objective-C; it must be a keyword.  */
+      return rid_to_yy [(int) C_RID_CODE (yylval.ttype)];
 
     case CPP_NUMBER:
     case CPP_CHAR:
@@ -3802,30 +3722,10 @@ _yylex ()
 
     case CPP_STRING:
     case CPP_WSTRING:
-      return yylexstring ();
-
-      /* This token is Objective-C specific.  It gives the next token
-	 special significance.  */
-    case CPP_ATSIGN:
-ifobjc
-      {
-	tree after_at;
-	enum cpp_ttype after_at_type;
-
-	after_at_type = c_lex (&after_at);
-
-	if (after_at_type == CPP_NAME
-	    && C_IS_RESERVED_WORD (after_at)
-	    && OBJC_IS_AT_KEYWORD (C_RID_CODE (after_at)))
-	  {
-	    yylval.ttype = after_at;
-	    last_token = after_at_type;
-	    return rid_to_yy [(int) C_RID_CODE (after_at)];
-	  }
-	_cpp_backup_tokens (parse_in, 1);
-	return '@';
-      }
-end ifobjc
+      return STRING;
+      
+    case CPP_OBJC_STRING:
+      return OBJC_STRING;
 
       /* These tokens are C++ specific (and will not be generated
          in C mode, but let's be cautious).  */

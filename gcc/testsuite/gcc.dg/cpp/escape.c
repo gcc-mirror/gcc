@@ -13,7 +13,7 @@
 #if '\x1a' != 26	/* { dg-warning "traditional" "traditional hex" } */
  #error bad hex		/* { dg-bogus "bad" "bad hexadecimal evaluation" } */
 #endif
-#if '\u'		/* { dg-warning "unknown" "\u is unknown in C89" } */
+#if L'\u00a1'		/* { dg-warning "only valid" "\u is unknown in C89" } */
 #endif
 
 void foo ()
@@ -21,5 +21,5 @@ void foo ()
   int c = '\a';		/* { dg-warning "traditional" "traditional bell" } */
 
   c = '\xa1';		/* { dg-warning "traditional" "traditional hex" } */
-  c = '\u';		/* { dg-warning "unknown" "\u is unknown in C89" } */
+  c = L'\u00a1';	/* { dg-warning "only valid" "\u is unknown in C89" } */
 }

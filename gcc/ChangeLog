@@ -1,3 +1,88 @@
+2003-07-04  Zack Weinberg  <zack@codesourcery.com>
+
+	* cpplib.h (CPP_AT_NAME, CPP_OBJC_STRING): New token types.
+	(struct cpp_options): Add narrow_charset, wide_charset,
+	bytes_big_endian fields.  Remove EBCDIC field.
+	(cpp_init_iconv, cpp_interpret_string): New external interfaces.
+
+	* cpphash.h: Include <iconv.h> if we have it, otherwise
+	provide a dummy definition of iconv_t.
+	(struct cpp_reader): Add narrow_cset_desc and wide_cset_desc fields.
+	(_cpp_valid_ucn): Update prototype.
+	(_cpp_destroy_iconv): New prototype.
+
+	* doc/cpp.texi: Document character set handling.
+	* doc/cppopts.texi: Document -fexec-charset= and -fexec-wide-charset=.
+	* doc/extend.texi: Delete entire section on multiline strings.
+	Rewrite section on __FUNCTION__ etc now that these are
+	variables in C.
+
+	* cppucnid.tab, cppucnid.pl: New files.
+	* cppucnid.h: New generated file.
+	* cppcharset.c: Include cppucnid.h.  Lots of commentary added.
+	(iconv_open, iconv, iconv_close): Provide dummy definitions
+	if !HAVE_ICONV.
+	(SOURCE_CHARSET, struct strbuf, init_iconv_desc, cpp_init_iconv,
+	_cpp_destroy_iconv, convert_cset, width_to_mask, convert_ucn,
+	emit_numeric_escape, convert_hex, convert_oct, convert_escape,
+	cpp_interpret_string, narrow_str_to_charconst,
+	wide_str_to_charconst): New.
+	(ucn_valid_in_identifier): Use a binary search through the
+	ucnranges table defined in cppucnid.h, not a long chain of if
+	statements.
+	(_cpp_valid_ucn): Add a limit pointer.  Downgrade "universal
+	character names are only valid in C++ and C99" to a warning.
+	Issue the "meaning of \[uU] is different in traditional C"
+	warning here.  Take care not to let iconv see an invalid UCS
+	value if we get a malformed UCN.  Issue an error if we don't
+	have iconv.
+	(cpp_interpret_charconst): Moved here from cpplex.c.  Use
+	cpp_interpret_string to do the heavy lifting.
+
+	* cppinit.c (cpp_create_reader): Initialize bytes_big_endian,
+	narrow_charset, wide_charset fields of options structure.
+	(cpp_destroy): Call _cpp_destroy_iconv.
+	* cpplex.c (forms_identifier_p): Adjust call to _cpp_valid_ucn.
+	(maybe_read_ucn, hex_digit_value, cpp_parse_escape): Delete.
+	(cpp_interpret_charconst): Moved to cppcharset.c.
+	* cpplib.c (dequote_string): Delete.
+	(interpret_string_notranslate): New.
+	(do_line, do_linemarker): Use interpret_string_notranslate.
+
+	* Makefile.in (cppcharset.o): Depend on cppucnid.h.
+
+	* c-common.c (fname_string, combine_strings): Delete.
+	* c-common.h (fname_string, combine_strings): Delete prototypes.
+	* c-lex.c (ignore_escape_flag): Delete.
+	(cb_ident): Use cpp_interpret_string, not lex_string.
+	(get_nonpadding_token): New function.
+	(c_lex): Handle Objective-C @-prefixed identifiers and strings here.
+	Adjust calls to lex_string.  Don't write *value twice.
+	(lex_string): Now handles string constant concatenation.
+	Most of the work handed off to cpp_interpret_string.
+	Call fix_string_type here.
+	* c-parse.in (STRING_FUNC_NAME, VAR_FUNC_NAME): Replace with
+	FUNC_NAME, throughout.
+	(OBJC_STRING): New token type.
+	(primary:STRING): No need to call fix_string_type here.
+	(primary:objc_string): Make that OBJC_STRING.
+	(objc_string nonterminal): Delete.
+	(yylexname): Delete code to handle fake string constants.
+	(yylexstring): Delete entirely.
+	(_yylex): Handle CPP_AT_NAME and CPP_OBJC_STRING.  No need
+	to handle CPP_ATSIGN.
+
+	* c.opt (-fexec-charset=, -fwide-exec-charset=): New options.
+	* c-opts.c (missing_arg, c_common_handle_option): Handle
+	OPT_fexec_charset_ and OPT_fwide_exec_charset_.
+	(c_common_init): Set cpp_opts->bytes_big_endian, not
+	cpp_opts->EBCDIC.  Call cpp_init_iconv.
+	(print_help): Document -fexec-charset= and -fexec-wide-charset=.
+	(TARGET_EBCDIC): Delete default definition.
+
+	* objc/objc-act.c (build_objc_string_object): No need to
+	handle string constant concatenation.
+
 2003-07-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/install.texi: Fix typos.

@@ -2,15 +2,15 @@
 
 /* { dg-do compile } */
 
-/* Test we output a warning for concatenation of artificial strings.
+/* Test we output an error for concatenation of artificial strings.
 
    Neil Booth, 10 Dec 2001.  */
 
 void foo ()
 {
-  char str1[] = __FUNCTION__ ".";	/* { dg-warning "deprecated" } */
-  char str2[] = __PRETTY_FUNCTION__ ".";/* { dg-warning "deprecated" } */
-  char str3[] = "." __FUNCTION__;	/* { dg-warning "deprecated" } */
-  char str4[] = "." __PRETTY_FUNCTION__;/* { dg-warning "deprecated" } */
-  char str5[] = "." ".";	/* No warning.  */
+  char s1[] = __FUNCTION__".";	     /* { dg-error "(parse|syntax|invalid)" } */
+  char s2[] = __PRETTY_FUNCTION__".";/* { dg-error "(parse|syntax|invalid)" } */
+  char s3[] = "."__FUNCTION__;	     /* { dg-error "(parse|syntax|invalid)" } */
+  char s4[] = "."__PRETTY_FUNCTION__;/* { dg-error "(parse|syntax|invalid)" } */
+  char s5[] = "."".";                /* No error.  */
 }

@@ -479,66 +479,22 @@ cp_lexer_read_token (cp_lexer* lexer)
   /* Increment LAST_TOKEN.  */
   lexer->last_token = cp_lexer_next_token (lexer, token);
 
-  /* The preprocessor does not yet do translation phase six, i.e., the
-     combination of adjacent string literals.  Therefore, we do it
-     here.  */
-  if (token->type == CPP_STRING || token->type == CPP_WSTRING)
+  /* Strings should have type `const char []'.  Right now, we will
+     have an ARRAY_TYPE that is constant rather than an array of
+     constant elements.
+     FIXME: Make fix_string_type get this right in the first place.  */
+  if ((token->type == CPP_STRING || token->type == CPP_WSTRING)
+      && flag_const_strings)
     {
-      ptrdiff_t delta;
-      int i;
+      tree type;
 
-      /* When we grow the buffer, we may invalidate TOKEN.  So, save
-	 the distance from the beginning of the BUFFER so that we can
-	 recaulate it.  */
-      delta = cp_lexer_token_difference (lexer, lexer->buffer, token);
-      /* Make sure there is room in the buffer for another token.  */
-      cp_lexer_maybe_grow_buffer (lexer);
-      /* Restore TOKEN.  */
-      token = lexer->buffer;
-      for (i = 0; i < delta; ++i)
-	token = cp_lexer_next_token (lexer, token);
-
-      VARRAY_PUSH_TREE (lexer->string_tokens, token->value);
-      while (true)
-	{
-	  /* Read the token after TOKEN.  */
-	  cp_lexer_get_preprocessor_token (lexer, lexer->last_token);
-	  /* See whether it's another string constant.  */
-	  if (lexer->last_token->type != token->type)
-	    {
-	      /* If not, then it will be the next real token.  */
-	      lexer->last_token = cp_lexer_next_token (lexer, 
-						       lexer->last_token);
-	      break;
-	    }
-
-	  /* Chain the strings together.  */
-	  VARRAY_PUSH_TREE (lexer->string_tokens, 
-			    lexer->last_token->value);
-	}
-
-      /* Create a single STRING_CST.  Curiously we have to call
-	 combine_strings even if there is only a single string in
-	 order to get the type set correctly.  */
-      token->value = combine_strings (lexer->string_tokens);
-      VARRAY_CLEAR (lexer->string_tokens);
-      token->value = fix_string_type (token->value);
-      /* Strings should have type `const char []'.  Right now, we will
-	 have an ARRAY_TYPE that is constant rather than an array of
-	 constant elements.  */
-      if (flag_const_strings)
-	{
-	  tree type;
-
-	  /* Get the current type.  It will be an ARRAY_TYPE.  */
-	  type = TREE_TYPE (token->value);
-	  /* Use build_cplus_array_type to rebuild the array, thereby
-	     getting the right type.  */
-	  type = build_cplus_array_type (TREE_TYPE (type),
-					 TYPE_DOMAIN (type));
-	  /* Reset the type of the token.  */
-	  TREE_TYPE (token->value) = type;
-	}
+      /* Get the current type.  It will be an ARRAY_TYPE.  */
+      type = TREE_TYPE (token->value);
+      /* Use build_cplus_array_type to rebuild the array, thereby
+	 getting the right type.  */
+      type = build_cplus_array_type (TREE_TYPE (type), TYPE_DOMAIN (type));
+      /* Reset the type of the token.  */
+      TREE_TYPE (token->value) = type;
     }
 
   return token;

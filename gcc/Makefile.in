@@ -2351,7 +2351,7 @@ libcpp.a: $(LIBCPP_OBJS)
 	$(AR) $(AR_FLAGS) libcpp.a $(LIBCPP_OBJS)
 	-$(RANLIB) libcpp.a
 
-cppcharset.o: cppcharset.c $(LIBCPP_DEPS)
+cppcharset.o: cppcharset.c $(LIBCPP_DEPS) cppucnid.h
 cpperror.o: cpperror.c $(LIBCPP_DEPS)
 cppexp.o:   cppexp.c   $(LIBCPP_DEPS)
 cpplex.o:   cpplex.c   $(LIBCPP_DEPS)

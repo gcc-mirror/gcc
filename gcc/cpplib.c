@@ -106,7 +106,6 @@ static char *glue_header_name (cpp_reader *);
 static const char *parse_include (cpp_reader *, int *);
 static void push_conditional (cpp_reader *, int, int, const cpp_hashnode *);
 static unsigned int read_flag (cpp_reader *, unsigned int);
-static uchar *dequote_string (cpp_reader *, const uchar *, unsigned int);
 static int strtoul_for_line (const uchar *, unsigned int, unsigned long *);
 static void do_diagnostic (cpp_reader *, int, int);
 static cpp_hashnode *lex_macro_node (cpp_reader *);
@@ -714,29 +713,6 @@ read_flag (cpp_reader *pfile, unsigned int last)
   return 0;
 }
 
-/* Subroutine of do_line and do_linemarker.  Returns a version of STR
-   which has a NUL terminator and all escape sequences converted to
-   their equivalents.  Temporary, hopefully.  */
-static uchar *
-dequote_string (cpp_reader *pfile, const uchar *str, unsigned int len)
-{
-  uchar *result = _cpp_unaligned_alloc (pfile, len + 1);
-  uchar *dst = result;
-  const uchar *limit = str + len;
-  cppchar_t c;
-
-  while (str < limit)
-    {
-      c = *str++;
-      if (c != '\\')
-	*dst++ = c;
-      else
-	*dst++ = cpp_parse_escape (pfile, &str, limit, 0);
-    }
-  *dst++ = '\0';
-  return result;
-}
-
 /* Subroutine of do_line and do_linemarker.  Convert a number in STR,
    of length LEN, to binary; store it in NUMP, and return 0 if the
    number was well-formed, 1 if not.  Temporary, hopefully.  */
@@ -755,6 +731,21 @@ strtoul_for_line (const uchar *str, unsigned int len, long unsigned int *nump)
     }
   *nump = reg;
   return 0;
+}
+
+/* Subroutine of do_line and do_linemarker.  Convert escape sequences
+   in a string, but do not perform character set conversion.  */
+static bool
+interpret_string_notranslate (cpp_reader *pfile, const cpp_string *in,
+			      cpp_string *out)
+{
+  iconv_t save_narrow_cset_desc = pfile->narrow_cset_desc;
+  bool retval;
+
+  pfile->narrow_cset_desc = (iconv_t) -1;
+  retval = cpp_interpret_string (pfile, in, 1, out, false);
+  pfile->narrow_cset_desc = save_narrow_cset_desc;
+  return retval;
 }
 
 /* Interpret #line command.
@@ -788,8 +779,9 @@ do_line (cpp_reader *pfile)
   token = cpp_get_token (pfile);
   if (token->type == CPP_STRING)
     {
-      new_file = (const char *) dequote_string (pfile, token->val.str.text + 1,
-						token->val.str.len - 2);
+      cpp_string s = { 0, 0 };
+      if (interpret_string_notranslate (pfile, &token->val.str, &s))
+	new_file = (const char *)s.text;
       check_eol (pfile);
     }
   else if (token->type != CPP_EOF)
@@ -836,8 +828,10 @@ do_linemarker (cpp_reader *pfile)
   token = cpp_get_token (pfile);
   if (token->type == CPP_STRING)
     {
-      new_file = (const char *) dequote_string (pfile, token->val.str.text + 1,
-						token->val.str.len - 2);
+      cpp_string s = { 0, 0 };
+      if (interpret_string_notranslate (pfile, &token->val.str, &s))
+	new_file = (const char *)s.text;
+      
       new_sysp = 0;
       flag = read_flag (pfile, 0);
       if (flag == 1)

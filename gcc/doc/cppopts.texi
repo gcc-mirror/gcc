@@ -498,6 +498,21 @@ correct column numbers in warnings or errors, even if tabs appear on the
 line.  If the value is less than 1 or greater than 100, the option is
 ignored.  The default is 8.
 
+@item -fexec-charset=@var{charset}
+@opindex fexec-charset
+Set the execution character set, used for string and character
+constants.  The default is UTF-8.  @var{charset} can be any encoding
+supported by the system's @code{iconv} library routine.
+
+@item -fwide-exec-charset=@var{charset}
+@opindex fwide-exec-charset
+Set the wide execution character set, used for wide string and
+character constants.  The default is UTF-32 or UTF-16, whichever
+corresponds to the width of @code{wchar_t}.  As with
+@option{-ftarget-charset}, @var{charset} can be any encoding supported
+by the system's @code{iconv} library routine; however, you will have
+problems with encodings that do not fit exactly in @code{wchar_t}.
+
 @item -fno-show-column
 @opindex fno-show-column
 Do not print column numbers in diagnostics.  This may be necessary if

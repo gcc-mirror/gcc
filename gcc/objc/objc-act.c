@@ -1274,18 +1274,18 @@ my_build_string (len, str)
   return fix_string_type (build_string (len, str));
 }
 
-/* Given a chain of STRING_CST's, build a static instance of
-   NXConstantString which points at the concatenation of those strings.
+/* Build a static instance of NXConstantString which points at the
+   string constant STRING.
    We place the string object in the __string_objects section of the
    __OBJC segment.  The Objective-C runtime will initialize the isa
    pointers of the string objects to point at the NXConstantString
    class object.  */
 
 tree
-build_objc_string_object (strings)
-     tree strings;
+build_objc_string_object (string)
+     tree string;
 {
-  tree string, initlist, constructor;
+  tree initlist, constructor;
   int length;
 
   if (lookup_interface (constant_string_id) == NULL_TREE)
@@ -1297,22 +1297,6 @@ build_objc_string_object (strings)
 
   add_class_reference (constant_string_id);
 
-  if (TREE_CHAIN (strings))
-    {
-      varray_type vstrings;
-      VARRAY_TREE_INIT (vstrings, 32, "strings");
-
-      for (; strings ; strings = TREE_CHAIN (strings))
-	VARRAY_PUSH_TREE (vstrings, strings);
-
-      string = combine_strings (vstrings);
-    }
-  else
-    string = strings;
-
-  string = fix_string_type (string);
-
-  TREE_SET_CODE (string, STRING_CST);
   length = TREE_STRING_LENGTH (string) - 1;
 
   /* We could not properly create NXConstantString in synth_module_prologue,

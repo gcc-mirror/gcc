@@ -1,3 +1,8 @@
+2003-07-04  Zack Weinberg  <zack@codesourcery.com>
+
+	* parser.c (cp_lexer_read_token): No need to handle string
+	constant concatenation.
+
 2003-07-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-tree.h (GCC_DIAG_STYLE, ATTRIBUTE_GCC_CXXDIAG): Define.
@@ -51,7 +56,7 @@
 	(convert_for_initialization): Likewise.
 	* typeck2.c (build_x_arrow): Likewise.
 	(build_m_component_ref): Simplify.
-	
+
 	* call.c (build_scoped_method_call): Use convert_to_void.
 	(build_method_call): Likewise.
 	* class.c (check_field_decls): Remove dead code.
@@ -63,7 +68,7 @@
 	(build_vec_delete_1): Use convert_to_void.
 	* mangle.c (write_type): Avoid relying on POINTER_TYPE over OFFSET_TYPE
 	as pointer-to-member representation.
-	
+
 2003-07-03  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9162
@@ -145,10 +150,10 @@ Wed Jul  2 00:36:48 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	is a class type.
 
 2003-07-01  Giovanni Bajo  <giovannibajo@libero.it>
-	
-        PR c++/8046
-        * error.c (dump_decl): Handle BIT_NOT_EXPR as
-        pseudo destructor calls.
+
+	PR c++/8046
+	* error.c (dump_decl): Handle BIT_NOT_EXPR as
+	pseudo destructor calls.
 
 2003-07-01  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -176,28 +181,28 @@ Wed Jul  2 00:36:48 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-06-30  Giovanni Bajo  <giovannibajo@libero.it>
 
-        PR c++/4933
-        * error.c (dump_expr): Support correctly the COMPOUND_EXPR
-        tree generated within a template. Use dump_expr to dump an
-        expression sizeof.
+	PR c++/4933
+	* error.c (dump_expr): Support correctly the COMPOUND_EXPR
+	tree generated within a template. Use dump_expr to dump an
+	expression sizeof.
 
 2003-06-30  Giovanni Bajo  <giovannibajo@libero.it>
 
-        * mangle.c (write_expression): Exit gracefully when trying to
-        mangle a CALL_EXPR.
+	* mangle.c (write_expression): Exit gracefully when trying to
+	mangle a CALL_EXPR.
 
 2003-06-30  Giovanni Bajo  <giovannibajo@libero.it>
 
-        PR c++/10750
-        * parser.c (cp_parser_primary_expression): A VAR_DECL with a
-        (value- or type-) dependent expression as DECL_INITIAL is a
-        valid constant-expression (at parser time).
+	PR c++/10750
+	* parser.c (cp_parser_primary_expression): A VAR_DECL with a
+	(value- or type-) dependent expression as DECL_INITIAL is a
+	valid constant-expression (at parser time).
 
 2003-06-30  Giovanni Bajo <giovannibajo@libero.it>
 
-        PR c++/11106
-        * error.c (dump_decl): Call dump_decl to dump the DECL_NAME for a
-        USING_DECL, instead of print_tree_identifier.
+	PR c++/11106
+	* error.c (dump_decl): Call dump_decl to dump the DECL_NAME for a
+	USING_DECL, instead of print_tree_identifier.
 
 2003-06-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
