@@ -1,3 +1,10 @@
+Fri Feb 25 20:02:35 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.c (calc_live_regs): Multiply value assigned to *COUNT_PTR by
+	UNITS_PER_WORD.  Change caller initial_elimination_offset.
+	(rounded_frame_size): Take into account that argument pushed has
+	changed.  Fix TARGET_ALIGN_DOUBLE problem.
+
 2000-02-25  Geoff Keating  <geoffk@cygnus.com>
 
 	* haifa-sched.c (schedule_block): Explain the real reason

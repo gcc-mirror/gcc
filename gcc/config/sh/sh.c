@@ -3788,12 +3788,15 @@ calc_live_regs (count_ptr, live_regs_mask2)
 	}
     }
 
-  *count_ptr = count;
+  *count_ptr = count * UNITS_PER_WORD;
   return live_regs_mask;
 }
 
 /* Code to generate prologue and epilogue sequences */
 
+/* PUSHED is the number of bytes that are bing pushed on the
+   stack for register saves.  Return the frame size, padded
+   appropriately so that the stack stays properly aligned.  */
 static HOST_WIDE_INT
 rounded_frame_size (pushed)
      int pushed;
@@ -3801,9 +3804,7 @@ rounded_frame_size (pushed)
   HOST_WIDE_INT size = get_frame_size ();
   HOST_WIDE_INT align = STACK_BOUNDARY / BITS_PER_UNIT;
 
-  if (TARGET_ALIGN_DOUBLE && pushed & 1)
-    size += 4;
-  return size + align - 1 & -align;
+  return (size + pushed + align - 1 & -align) - pushed;
 }
 
 void
@@ -4311,7 +4312,7 @@ initial_elimination_offset (from, to)
   total_auto_space = rounded_frame_size (regs_saved);
   target_flags = save_flags;
 
-  total_saved_regs_space = (regs_saved) * 4;
+  total_saved_regs_space = regs_saved;
 
   if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
     return total_saved_regs_space + total_auto_space;
