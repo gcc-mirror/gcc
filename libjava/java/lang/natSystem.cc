@@ -249,9 +249,11 @@ java::lang::System::getSystemTimeZone (void)
 
   mktime(tim = localtime(&current_time));
 #ifdef STRUCT_TM_HAS_GMTOFF
-  tzoffset = -(tim->tm_gmtoff);	// tm_gmtoff is secs EAST of UTC.
+  // tm_gmtoff is secs EAST of UTC.
+  tzoffset = -(tim->tm_gmtoff) + tim->tm_isdst * 3600L;
 #elif HAVE_TIMEZONE
-  tzoffset = timezone;		// timezone is secs WEST of UTC.
+  // timezone is secs WEST of UTC.
+  tzoffset = timezone;	
 #else
   // FIXME: there must be another global if neither tm_gmtoff nor timezone
   // is available, esp. if tzname is valid.
