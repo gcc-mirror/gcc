@@ -1,6 +1,7 @@
 2001-02-16  Per Bothner  <per@bothner.com>
 
 	Handle compiling multiple input files at once, and @FILE syntax.
+	* gcj.texi:  Updated documentation to match.
 	* java-tree.h (flag_filelist_file, init_src_parse):  New declarations.
 	* jcf-parse.c (parse_source_file):  Split into ...
 	(parse_source_file_1):  New function - and:
