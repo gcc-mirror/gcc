@@ -1,6 +1,7 @@
 2004-09-09  Mike Stump  <mrs@apple.com>
 
 	* version.c (version_string): Bump to 4.0.0.
+	* doc/include/gcc-common.texi (version-GCC): Likewise.
 
 2004-09-10  Jakub Jelinek  <jakub@redhat.com>
 
