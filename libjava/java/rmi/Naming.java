@@ -44,26 +44,72 @@ import java.rmi.registry.LocateRegistry;
 
 public final class Naming {
 
+/** <pre>
+ * Looks for the remote object that is associated with the named service.
+ * Name and location is given in form of a URL without a scheme:
+ * 
+ *   //host:port/service-name
+ *  
+ * The port is optional.
+ * </pre>
+ * @param name the service name and location
+ * @return Remote-object that implements the named service
+ * @throws NotBoundException if no object implements the service
+ * @throws MalformedURLException 
+ * @throws RemoteException
+ */
 public static Remote lookup(String name) throws NotBoundException, MalformedURLException, RemoteException {
+	// hack to accept "rmi://host:port/service" strings
+	if(name.startsWith("rmi:")){ name = name.substring(4); }
 	URL u = new URL("http:" + name);
 	return (getRegistry(u).lookup(u.getFile().substring(1)));
 }
 
+/**
+ * Try to bind the given object to the given service name. 
+ * @param name
+ * @param obj
+ * @throws AlreadyBoundException
+ * @throws MalformedURLException
+ * @throws RemoteException
+ */
 public static void bind(String name, Remote obj) throws AlreadyBoundException, MalformedURLException, RemoteException {
 	URL u = new URL("http:" + name);
 	getRegistry(u).bind(u.getFile().substring(1), obj);
 }
 
+/**
+ * Remove a binding for a given service name.
+ * @param name
+ * @throws RemoteException
+ * @throws NotBoundException
+ * @throws MalformedURLException
+ */
 public static void unbind(String name) throws RemoteException, NotBoundException, MalformedURLException {
 	URL u = new URL("http:" + name);
 	getRegistry(u).unbind(u.getFile().substring(1));
 }
 
+/**
+ * Forces the binding between the given Remote-object and the given service name, even 
+ * if there was already an object bound to this name. 
+ * @param name
+ * @param obj
+ * @throws RemoteException
+ * @throws MalformedURLException
+ */
 public static void rebind(String name, Remote obj) throws RemoteException, MalformedURLException {
 	URL u = new URL("http:" + name);
 	getRegistry(u).rebind(u.getFile().substring(1), obj);
 }
 
+/**
+ * Lists all services at the named registry.
+ * @param name url that specifies the registry
+ * @return list of services at the name registry
+ * @throws RemoteException
+ * @throws MalformedURLException
+ */
 public static String[] list(String name) throws RemoteException, MalformedURLException {
 	return (getRegistry(new URL("http:" + name)).list());
 }

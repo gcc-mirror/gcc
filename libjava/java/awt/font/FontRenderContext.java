@@ -1,5 +1,5 @@
 /* FontRenderContext.java
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -88,10 +88,21 @@ public class FontRenderContext
             && usesFractionalMetrics == rhs.usesFractionalMetrics ());
   }
 
+
+  /**
+   * Retrieves the affine transform for scaling typographical points
+   * to raster pixels.
+   *
+   * @return a clone of the transform object.
+   */
   public AffineTransform getTransform ()
   {
-    return affineTransform;
+    if (affineTransform == null)
+      return new AffineTransform ();
+    else
+      return new AffineTransform (affineTransform);
   }
+
 
   /**
    * Returns the hash code of the font render context.
