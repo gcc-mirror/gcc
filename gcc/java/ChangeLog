@@ -1,5 +1,10 @@
 2001-01-21  Per Bothner  <per@bothner.com>
 
+	* jcf-parse.c (ggc_mark_jcf):  New function.
+	(init_jcf_parse):  Register current_jcf as ggc root.
+
+2001-01-21  Per Bothner  <per@bothner.com>
+
 	* lang.c (put_decl_node):  Print method's name.
 
 2001-01-21  Per Bothner  <per@bothner.com>

@@ -93,6 +93,29 @@ static int find_in_current_zip PARAMS ((const char *, struct JCF **));
 static void parse_class_file PARAMS ((void));
 static void set_source_filename PARAMS ((JCF *, int));
 static int predefined_filename_p PARAMS ((tree));
+static void ggc_mark_jcf PARAMS ((void**));
+
+/* Mark (for garbage collection) all the tree nodes that are
+   referenced from JCF's constant pool table. */
+
+static void
+ggc_mark_jcf (elt)
+     void **elt;
+{
+  JCF *jcf = *(JCF**) elt;
+  if (jcf != NULL)
+    {
+      CPool *cpool = &jcf->cpool;
+      int size = CPOOL_COUNT(cpool);
+      int index;
+      for (index = 1; index < size;  index++)
+	{
+	  int tag = JPOOL_TAG (jcf, index);
+	  if ((tag & CONSTANT_ResolvedFlag) || tag == CONSTANT_Utf8)
+	    ggc_mark_tree ((tree) cpool->data[index]);
+	}
+    }
+}
 
 /* Handle "SourceFile" attribute. */
 
@@ -1099,4 +1122,6 @@ init_jcf_parse ()
   ggc_add_tree_root (&current_field, 1);
   ggc_add_tree_root (&current_method, 1);
   ggc_add_tree_root (&current_file_list, 1);
+
+  ggc_add_root (&current_jcf, 1, sizeof (JCF), ggc_mark_jcf);
 }
