@@ -1,6 +1,6 @@
 // jvm.h - Header file for private implementation information. -*- c++ -*-
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -219,6 +219,7 @@ extern "C" void _Jv_CheckArrayStore (jobject array, jobject obj);
 extern "C" void _Jv_RegisterClass (jclass klass);
 extern "C" void _Jv_RegisterClasses (jclass *classes);
 extern void _Jv_UnregisterClass (_Jv_Utf8Const*, java::lang::ClassLoader*);
+extern void _Jv_ResolveField (_Jv_Field *, java::lang::ClassLoader*);
 
 extern jclass _Jv_FindClass (_Jv_Utf8Const *name,
 			     java::lang::ClassLoader *loader);
