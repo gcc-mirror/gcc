@@ -73,7 +73,13 @@ Boston, MA 02111-1307, USA.  */
 /* config/m68k.md has an explicit reference to the program counter,
    prefix this by the register prefix.  */
 
-#define ASM_RETURN_CASE_JUMP    return "jmp %%pc@(2,%0:w)"
+#define ASM_RETURN_CASE_JUMP 			\
+  do {						\
+    if (TARGET_5200)				\
+      return "ext%.l %0\n\tjmp %%pc@(2,%0:l)";	\
+    else					\
+      return "jmp %%pc@(2,%0:w)";		\
+  } while (0)
 
 /* How to refer to registers in assembler output.
    This sequence is indexed by compiler's hard-register-number.

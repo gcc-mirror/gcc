@@ -1,3 +1,7 @@
+Thu Feb 18 15:52:49 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* m68kelf.h (ASM_RETURN_CASE_JUMP): Add 5200 support.
+
 1999-02-18 18:32 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* cpplib.c: Kill define of STDC_VALUE.  Don't include output.h
