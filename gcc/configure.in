@@ -243,6 +243,9 @@ host_xmake_file=
 host_truncate_target=
 host_exeext=
 
+# It is relative to $prefix.
+cpp_install_dir=
+
 # Decode the host machine, then the target machine.
 # For the host machine, we save the xm_file variable as host_xm_file;
 # then we decode the target machine and forget everything else
@@ -3116,6 +3119,12 @@ then
   esac
 fi
 
+# Handle cpp installation.
+if [[ x$enable_cpp != x ]]
+then
+  tmake_file="$tmake_file t-install-cpp"
+fi
+
 # Say what files are being used for the output code and MD file.
 echo "Using \`$srcdir/config/$out_file' to output insns."
 echo "Using \`$srcdir/config/$md_file' as machine description file."
@@ -3709,6 +3718,8 @@ AC_SUBST(cc_set_by_configure)
 AC_SUBST(stage_prefix_set_by_configure)
 AC_SUBST(install)
 AC_SUBST(symbolic_link)
+AC_SUBST(cpp_install_dir)
+
 
 AC_SUBST_FILE(target_overrides)
 AC_SUBST_FILE(host_overrides)
@@ -3813,4 +3824,5 @@ host_overrides='${host_overrides}'
 cross_defines='${cross_defines}'
 cross_overrides='${cross_overrides}'
 build_overrides='${build_overrides}'
+cpp_install_dir='${cpp_install_dir}'
 ])

@@ -2222,6 +2222,9 @@ host_xmake_file=
 host_truncate_target=
 host_exeext=
 
+# It is relative to $prefix.
+cpp_install_dir=
+
 # Decode the host machine, then the target machine.
 # For the host machine, we save the xm_file variable as host_xm_file;
 # then we decode the target machine and forget everything else
@@ -5095,6 +5098,24 @@ then
   esac
 fi
 
+# Handle cpp installation.
+if [ x$enable_cpp != x ]
+then
+  if [ x$cpp_install_dir = x ]
+  then
+    case $target in
+    *-*-linux-gnu*)
+      if [ x$prefix = x/usr ]
+      then
+	cpp_install_dir=../lib
+      fi
+      ;;
+    esac
+  fi
+
+  tmake_file="$tmake_file t-install-cpp"
+fi
+
 # Say what files are being used for the output code and MD file.
 echo "Using \`$srcdir/config/$out_file' to output insns."
 echo "Using \`$srcdir/config/$md_file' as machine description file."
@@ -5395,7 +5416,7 @@ fi
 
 # Figure out what assembler alignment features are present.
 echo $ac_n "checking assembler alignment features""... $ac_c" 1>&6
-echo "configure:5399: checking assembler alignment features" >&5
+echo "configure:5420: checking assembler alignment features" >&5
 gcc_cv_as=
 gcc_cv_as_alignment_features=
 gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,gcc$,gas,'`
@@ -5710,6 +5731,8 @@ ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xma
 
 
 
+
+
 # Echo that links are built
 if [ x$host = x$target ]
 then
@@ -5963,6 +5986,7 @@ s%@cc_set_by_configure@%$cc_set_by_configure%g
 s%@stage_prefix_set_by_configure@%$stage_prefix_set_by_configure%g
 s%@install@%$install%g
 s%@symbolic_link@%$symbolic_link%g
+s%@cpp_install_dir@%$cpp_install_dir%g
 /@target_overrides@/r $target_overrides
 s%@target_overrides@%%g
 /@host_overrides@/r $host_overrides
@@ -6211,6 +6235,7 @@ host_overrides='${host_overrides}'
 cross_defines='${cross_defines}'
 cross_overrides='${cross_overrides}'
 build_overrides='${build_overrides}'
+cpp_install_dir='${cpp_install_dir}'
 
 EOF
 cat >> $CONFIG_STATUS <<\EOF

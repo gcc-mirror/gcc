@@ -280,6 +280,8 @@ includedir = $(local_prefix)/include
 assertdir = $(tooldir)/include
 # where the info files go
 infodir = @infodir@
+# Where cpp should go besides $prefix/bin if necessary
+cpp_install_dir = @cpp_install_dir@
 # Extension (if any) to put in installed man-page filename.
 manext = .1
 objext = .o
@@ -382,6 +384,10 @@ LIB1FUNCS_EXTRA =
 # List of extra C and assembler files to add to libgcc2.a.
 # Assembler files should have names ending in `.asm'.
 LIB2FUNCS_EXTRA = 
+
+# Handle cpp installation.
+INSTALL_CPP=
+UNINSTALL_CPP=
 
 # Default float.h source to use for cross-compiler.
 # This is overridden by configure.
@@ -2259,7 +2265,8 @@ install: $(INSTALL_TARGET) ; @true
 # Install the driver last so that the window when things are
 # broken is small.
 install-normal: install-common $(INSTALL_HEADERS) $(INSTALL_LIBGCC) \
-    install-man install-info lang.install-normal install-driver
+    $(INSTALL_CPP) install-man install-info lang.install-normal \
+    install-driver
 
 # Do nothing while making gcc with a cross-compiler. The person who
 # makes gcc for the target machine has to know how to put a complete
@@ -2270,6 +2277,21 @@ install-build: force
 # Run this on the target machine
 # to finish installation of cross compiler.
 install-cross-rest: install-float-h-cross
+
+# Handle cpp installation.
+install-cpp: cpp.sh
+	-rm -f $(bindir)/cpp
+	$(INSTALL_PROGRAM) -m 755 cpp.sh $(bindir)/cpp
+	if [ x$(cpp_install_dir) != x ]; then \
+	  rm -f $(prefix)/$(cpp_install_dir)/cpp; \
+	  $(INSTALL_PROGRAM) -m 755 cpp.sh $(prefix)/$(cpp_install_dir)/cpp; \
+	else true; fi
+
+uninstall-cpp:
+	-rm -f $(bindir)/cpp
+	-if [ x$(cpp_install_dir) != x ]; then \
+	  rm -f $(prefix)/$(cpp_install_dir)/cpp; \
+	else true; fi
 
 # Install float.h for cross compiler.
 # Run this on the target machine!
@@ -2501,7 +2523,7 @@ install-collect2: collect2 installdirs
 	$(INSTALL_PROGRAM) xgcc$(exeext) $(libsubdir)/gcc$(exeext)
 
 # Cancel installation by deleting the installed files.
-uninstall: lang.uninstall
+uninstall: lang.uninstall $(UNINSTALL_CPP)
 	-rm -rf $(libsubdir)
 	-rm -rf $(bindir)/$(GCC_INSTALL_NAME)$(exeext)
 	-rm -rf $(bindir)/$(GCC_CROSS_NAME)$(exeext)
