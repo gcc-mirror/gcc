@@ -2841,7 +2841,7 @@
    (use (match_operand:PSI 2 "fpscr_operand" "c"))
    (clobber (match_scratch:SI 3 "X"))]
   "TARGET_SH4 && ! TARGET_FMOVD && reload_completed
-   && FP_OR_XD_REGISTER_P (operands[0])
+   && FP_OR_XD_REGISTER_P (true_regnum (operands[0]))
    && find_regno_note (insn, REG_DEAD, true_regnum (operands[1]))"
   [(const_int 0)]
   "

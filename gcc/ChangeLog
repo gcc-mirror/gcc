@@ -1,3 +1,8 @@
+2001-02-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.md (movdf load split): Pass register number to
+	FP_OR_XD_REGISTER_P.
+
 2001-02-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* cppinit.c (BC): New macro.
