@@ -1,5 +1,5 @@
 %% TeX macros to handle Texinfo files.
-%% $Id: texinfo.tex,v 2.200 1997/05/21 21:17:50 karl Exp $
+%% $Id: texinfo.tex,v 2.200 1997/05/23 17:02:00 karl Exp karl $
 
 %  Copyright (C) 1985, 86, 88, 90, 91, 92, 93,
 %                94, 95, 96, 97 Free Software Foundation, Inc.
@@ -3985,6 +3985,7 @@ width0pt\relax} \fi
 \def\defmacx #1 {\errmessage{@defmacx in invalid context}}
 \def\defspecx #1 {\errmessage{@defspecx in invalid context}}
 \def\deftypefnx #1 {\errmessage{@deftypefnx in invalid context}}
+\def\deftypemethodx #1 {\errmessage{@deftypemethodx in invalid context}}
 \def\deftypeunx #1 {\errmessage{@deftypeunx in invalid context}}
 
 % @defmethod, and so on
@@ -3998,6 +3999,16 @@ width0pt\relax} \fi
 \dosubind {fn}{\code{#2}}{on #1}% Make entry in function index
 \begingroup\defname {#2}{\defoptype{} on #1}%
 \defunargs {#3}\endgroup %
+}
+
+% @deftypemethod foo-class return-type foo-method args
+%
+\def\deftypemethod{%
+  \defmethparsebody\Edeftypemethod\deftypemethodx\deftypemethodheader}
+%
+% #1 is the class name, #2 the data type, #3 the method name, #4 the args.
+\def\deftypemethodheader#1#2#3#4{%
+  \deftypefnheaderx{Method on #1}{#2}#3 #4\relax
 }
 
 % @defmethod == @defop Method
