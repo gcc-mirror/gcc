@@ -4885,9 +4885,9 @@ expand_function_start (subr, parms_have_cleanups)
 }
 
 /* Generate RTL for the end of the current function.
-   FILENAME and LINE are the current position in the source file.  */
+   FILENAME and LINE are the current position in the source file. 
 
-/* It is up to language-specific callers to do cleanups for parameters--
+   It is up to language-specific callers to do cleanups for parameters--
    or else, supply 1 for END_BINDINGS and we will call expand_end_bindings.  */
 
 void
