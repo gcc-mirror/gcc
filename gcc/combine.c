@@ -536,6 +536,12 @@ combine_instructions (f, nregs)
 	{
 	  note_stores (PATTERN (insn), set_nonzero_bits_and_sign_copies);
 	  record_dead_and_set_regs (insn);
+
+#ifdef AUTO_INC_DEC
+	  for (links = REG_NOTES (insn); links; links = XEXP (links, 1))
+	    if (REG_NOTE_KIND (links) == REG_INC)
+	      set_nonzero_bits_and_sign_copies (XEXP (links, 0), NULL_RTX);
+#endif
 	}
 
       if (GET_CODE (insn) == CODE_LABEL)
@@ -728,7 +734,7 @@ set_nonzero_bits_and_sign_copies (x, set)
 	    & ((REGSET_ELT_TYPE) 1 << (REGNO (x) % REGSET_ELT_BITS)))
       && GET_MODE_BITSIZE (GET_MODE (x)) <= HOST_BITS_PER_WIDE_INT)
     {
-      if (GET_CODE (set) == CLOBBER)
+      if (set == 0 || GET_CODE (set) == CLOBBER)
 	{
 	  reg_nonzero_bits[REGNO (x)] = GET_MODE_MASK (GET_MODE (x));
 	  reg_sign_bit_copies[REGNO (x)] = 0;
