@@ -904,7 +904,7 @@ legitimize_pic_address (rtx orig, enum machine_mode mode, rtx reg)
 		       gen_rtx_LO_SUM (Pmode, tmp_reg,
 				       gen_rtx_UNSPEC (Pmode,
 						       gen_rtvec (1, orig),
-						       0)));
+						       UNSPEC_DLTIND14R)));
 
       current_function_uses_pic_offset_table = 1;
       MEM_NOTRAP_P (pic_ref) = 1;

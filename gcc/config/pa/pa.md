@@ -26,6 +26,25 @@
 
 ;;- See file "rtl.def" for documentation on define_insn, match_*, et. al.
 
+;; Uses of UNSPEC in this file:
+
+(define_constants
+  [(UNSPEC_CFFC		0)	; canonicalize_funcptr_for_compare
+   (UNSPEC_GOTO		1)	; indirect_goto
+   (UNSPEC_DLTIND14R	2)	; 
+  ])
+
+;; UNSPEC_VOLATILE:
+
+(define_constants
+  [(UNSPECV_BLOCKAGE	0)	; blockage
+   (UNSPECV_DCACHE	1)	; dcacheflush
+   (UNSPECV_ICACHE	2)	; icacheflush
+   (UNSPECV_OPC		3)	; outline_prologue_call
+   (UNSPECV_OEC		4)	; outline_epilogue_call
+   (UNSPECV_LONGJMP	5)	; builtin_longjmp
+  ])
+
 ;; Insn type.  Used to default other attribute values.
 
 ;; type "unary" insns have one input operand (1) and one output operand (0)
@@ -2632,6 +2651,7 @@
   /* If we're trying to load the address of a label that happens to be
      close, then we can use a shorter sequence.  */
   if (GET_CODE (operands[1]) == LABEL_REF
+      && !LABEL_REF_NONLOCAL_P (operands[1])
       && INSN_ADDRESSES_SET_P ()
       && abs (INSN_ADDRESSES (INSN_UID (XEXP (operands[1], 0)))
 	        - INSN_ADDRESSES (INSN_UID (insn))) < 8100)
@@ -2666,6 +2686,7 @@
   /* If we're trying to load the address of a label that happens to be
      close, then we can use a shorter sequence.  */
   if (GET_CODE (operands[1]) == LABEL_REF
+      && !LABEL_REF_NONLOCAL_P (operands[1])
       && INSN_ADDRESSES_SET_P ()
       && abs (INSN_ADDRESSES (INSN_UID (XEXP (operands[1], 0)))
 	        - INSN_ADDRESSES (INSN_UID (insn))) < 8100)
@@ -6787,7 +6808,7 @@
    (set_attr "length" "4")])
 
 (define_insn "blockage"
-  [(unspec_volatile [(const_int 2)] 0)]
+  [(unspec_volatile [(const_int 2)] UNSPECV_BLOCKAGE)]
   ""
   ""
   [(set_attr "length" "0")])
@@ -6823,6 +6844,62 @@
 ;;; Hope this is only within a function...
 (define_insn "indirect_jump"
   [(set (pc) (match_operand 0 "register_operand" "r"))]
+  "GET_MODE (operands[0]) == word_mode"
+  "bv%* %%r0(%0)"
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])
+
+;;; An indirect jump can be optimized to a direct jump.  GAS for the
+;;; SOM target doesn't allow branching to a label inside a function.
+;;; We also don't correctly compute branch distances for labels
+;;; outside the current function.  Thus, we use an indirect jump can't
+;;; be optimized to a direct jump for all targets.  We assume that
+;;; the branch target is in the same space (i.e., nested function
+;;; jumping to a label in an outer function in the same translation
+;;; unit).
+(define_expand "nonlocal_goto"
+  [(use (match_operand 0 "general_operand" ""))
+   (use (match_operand 1 "general_operand" ""))
+   (use (match_operand 2 "general_operand" ""))
+   (use (match_operand 3 "general_operand" ""))]
+  ""
+{
+  rtx lab = operands[1];
+  rtx stack = operands[2];
+  rtx fp = operands[3];
+
+  lab = copy_to_reg (lab);
+
+  emit_insn (gen_rtx_CLOBBER (VOIDmode,
+			      gen_rtx_MEM (BLKmode,
+					   gen_rtx_SCRATCH (VOIDmode))));
+  emit_insn (gen_rtx_CLOBBER (VOIDmode,
+			      gen_rtx_MEM (BLKmode,
+					   hard_frame_pointer_rtx)));
+
+  /* Restore the frame pointer.  The virtual_stack_vars_rtx is saved
+     instead of the hard_frame_pointer_rtx in the save area.  As a
+     result, an extra instruction is needed to adjust for the offset
+     of the virtual stack variables and the frame pointer.  */
+  if (GET_CODE (fp) != REG)
+    fp = force_reg (Pmode, fp);
+  emit_move_insn (virtual_stack_vars_rtx, fp);
+
+  emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
+
+  emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
+  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
+
+  /* Nonlocal goto jumps are only used between functions in the same
+     translation unit.  Thus, we can avoid the extra overhead of an
+     interspace jump.  */
+  emit_jump_insn (gen_indirect_goto (lab));
+  emit_barrier ();
+  DONE;
+})
+
+(define_insn "indirect_goto"
+  [(unspec [(match_operand 0 "register_operand" "=r")] UNSPEC_GOTO)]
   "GET_MODE (operands[0]) == word_mode"
   "bv%* %%r0(%0)"
   [(set_attr "type" "branch")
@@ -8248,7 +8325,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (pc) (match_operand 0 "pmode_register_operand" "a"))
   (clobber (reg:SI 2))]
   "!TARGET_64BIT"
-  "ldsid (%%sr0,%0),%%r2\; mtsp %%r2,%%sr0\; be%* 0(%%sr0,%0)"
+  "ldsid (%%sr0,%0),%%r2\;mtsp %%r2,%%sr0\;be%* 0(%%sr0,%0)"
    [(set_attr "type" "branch")
     (set_attr "length" "12")])
 
@@ -8261,7 +8338,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
     (set_attr "length" "4")])
 
 (define_expand "builtin_longjmp"
-  [(unspec_volatile [(match_operand 0 "register_operand" "r")] 3)]
+  [(unspec_volatile [(match_operand 0 "register_operand" "r")] UNSPECV_LONGJMP)]
   ""
   "
 {
@@ -8273,8 +8350,26 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 			   (POINTER_SIZE * 2) / BITS_PER_UNIT));
   rtx pv = gen_rtx_REG (Pmode, 1);
 
+  emit_insn (gen_rtx_CLOBBER (VOIDmode,
+			      gen_rtx_MEM (BLKmode,
+					   gen_rtx_SCRATCH (VOIDmode))));
+  emit_insn (gen_rtx_CLOBBER (VOIDmode,
+			      gen_rtx_MEM (BLKmode,
+					   hard_frame_pointer_rtx)));
+
+  /* Restore the frame pointer.  The virtual_stack_vars_rtx is saved
+     instead of the hard_frame_pointer_rtx in the save area.  We need
+     to adjust for the offset between these two values when we have
+     a nonlocal_goto pattern.  When we don't have a nonlocal_goto
+     pattern, the receiver performs the adjustment.  */
+#ifdef HAVE_nonlocal_goto
+  if (HAVE_nonlocal_goto)
+    emit_move_insn (virtual_stack_vars_rtx, force_reg (Pmode, fp));
+  else
+#endif
+    emit_move_insn (hard_frame_pointer_rtx, fp);
+
   /* This bit is the same as expand_builtin_longjmp.  */
-  emit_move_insn (hard_frame_pointer_rtx, fp);
   emit_stack_restore (SAVE_NONLOCAL, stack, NULL_RTX);
   emit_insn (gen_rtx_USE (VOIDmode, hard_frame_pointer_rtx));
   emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
@@ -8959,7 +9054,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 ;; Operands 3 and 4 (icacheflush) are clobbered scratch registers.
 (define_insn "dcacheflush"
   [(const_int 1)
-   (unspec_volatile [(mem:BLK (scratch))] 0)
+   (unspec_volatile [(mem:BLK (scratch))] UNSPECV_DCACHE)
    (use (match_operand 0 "pmode_register_operand" "r"))
    (use (match_operand 1 "pmode_register_operand" "r"))
    (use (match_operand 2 "pmode_register_operand" "r"))
@@ -8977,7 +9072,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 
 (define_insn "icacheflush"
   [(const_int 2)
-   (unspec_volatile [(mem:BLK (scratch))] 0)
+   (unspec_volatile [(mem:BLK (scratch))] UNSPECV_ICACHE)
    (use (match_operand 0 "pmode_register_operand" "r"))
    (use (match_operand 1 "pmode_register_operand" "r"))
    (use (match_operand 2 "pmode_register_operand" "r"))
@@ -8997,7 +9092,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 
 ;; An out-of-line prologue.
 (define_insn "outline_prologue_call"
-  [(unspec_volatile [(const_int 0)] 0)
+  [(unspec_volatile [(const_int 0)] UNSPECV_OPC)
    (clobber (reg:SI 31))
    (clobber (reg:SI 22))
    (clobber (reg:SI 21))
@@ -9047,7 +9142,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 
 ;; An out-of-line epilogue.
 (define_insn "outline_epilogue_call"
-  [(unspec_volatile [(const_int 1)] 0)
+  [(unspec_volatile [(const_int 1)] UNSPECV_OEC)
    (use (reg:SI 29))
    (use (reg:SI 28))
    (clobber (reg:SI 31))
@@ -9106,7 +9201,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 ;; reliably compared to another function pointer.  */
 (define_expand "canonicalize_funcptr_for_compare"
   [(set (reg:SI 26) (match_operand:SI 1 "register_operand" ""))
-   (parallel [(set (reg:SI 29) (unspec:SI [(reg:SI 26)] 0))
+   (parallel [(set (reg:SI 29) (unspec:SI [(reg:SI 26)] UNSPEC_CFFC))
 	      (clobber (match_dup 2))
 	      (clobber (reg:SI 26))
 	      (clobber (reg:SI 22))
@@ -9136,8 +9231,8 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
     }
 }")
 
-(define_insn ""
-  [(set (reg:SI 29) (unspec:SI [(reg:SI 26)] 0))
+(define_insn "*$$sh_func_adrs"
+  [(set (reg:SI 29) (unspec:SI [(reg:SI 26)] UNSPEC_CFFC))
    (clobber (match_operand:SI 0 "register_operand" "=a"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 22))
