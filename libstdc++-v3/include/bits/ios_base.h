@@ -146,8 +146,6 @@ namespace std
 
   enum _Ios_Seekdir { _S_ios_seekdir_end = 1L << 16 };
 
-  class __locale_cache_base;
-
   // 27.4.2  Class ios_base
   /**
    *  @brief  The very top of the I/O class hierarchy.
@@ -212,47 +210,65 @@ namespace std
      *  - floatfield
     */
     typedef _Ios_Fmtflags fmtflags;
+
     /// Insert/extract @c bool in alphabetic rather than numeric format.
     static const fmtflags boolalpha =   fmtflags(__ios_flags::_S_boolalpha);
+
     /// Converts integer input or generates integer output in decimal base.
     static const fmtflags dec =         fmtflags(__ios_flags::_S_dec);
+
     /// Generate floating-point output in fixed-point notation.
     static const fmtflags fixed =       fmtflags(__ios_flags::_S_fixed);
+
     /// Converts integer input or generates integer output in hexadecimal base.
     static const fmtflags hex =         fmtflags(__ios_flags::_S_hex);
+
     /// Adds fill characters at a designated internal point in certain
     /// generated output, or identical to @c right if no such point is
     /// designated.
     static const fmtflags internal =    fmtflags(__ios_flags::_S_internal);
+
     /// Adds fill characters on the right (final positions) of certain
     /// generated output.  (I.e., the thing you print is flush left.)
     static const fmtflags left =        fmtflags(__ios_flags::_S_left);
+
     /// Converts integer input or generates integer output in octal base.
     static const fmtflags oct =         fmtflags(__ios_flags::_S_oct);
+
     /// Adds fill characters on the left (initial positions) of certain
     /// generated output.  (I.e., the thing you print is flush right.)
     static const fmtflags right =       fmtflags(__ios_flags::_S_right);
+
     /// Generates floating-point output in scientific notation.
     static const fmtflags scientific =  fmtflags(__ios_flags::_S_scientific);
+
     /// Generates a prefix indicating the numeric base of generated integer
     /// output.
     static const fmtflags showbase =    fmtflags(__ios_flags::_S_showbase);
+
     /// Generates a decimal-point character unconditionally in generated
     /// floating-point output.
     static const fmtflags showpoint =   fmtflags(__ios_flags::_S_showpoint);
+
     /// Generates a + sign in non-negative generated numeric output.
     static const fmtflags showpos =     fmtflags(__ios_flags::_S_showpos);
+
     /// Skips leading white space before certain input operations.
     static const fmtflags skipws =      fmtflags(__ios_flags::_S_skipws);
+
     /// Flushes output after each output operation.
     static const fmtflags unitbuf =     fmtflags(__ios_flags::_S_unitbuf);
+
     /// Replaces certain lowercase letters with their uppercase equivalents
     /// in generated output.
     static const fmtflags uppercase =   fmtflags(__ios_flags::_S_uppercase);
+
     /// A mask of left|right|internal.  Useful for the 2-arg form of @c setf.
     static const fmtflags adjustfield = fmtflags(__ios_flags::_S_adjustfield);
+
     /// A mask of dec|oct|hex.  Useful for the 2-arg form of @c setf.
     static const fmtflags basefield =   fmtflags(__ios_flags::_S_basefield);
+
     /// A mask of scientific|fixed.  Useful for the 2-arg form of @c setf.
     static const fmtflags floatfield =  fmtflags(__ios_flags::_S_floatfield);
 
@@ -269,15 +285,19 @@ namespace std
      *  - goodbit
     */
     typedef _Ios_Iostate iostate;
+
     /// Indicates a loss of integrity in an input or output sequence (such
     /// as an irrecoverable read error from a file).
     static const iostate badbit =  	iostate(__ios_flags::_S_badbit);
+
     /// Indicates that an input operation reached the end of an input sequence.
     static const iostate eofbit =  	iostate(__ios_flags::_S_eofbit);
+
     /// Indicates that an input operation failed to read the expected
     /// characters, or that an output operation failed to generate the
     /// desired characters.
     static const iostate failbit = 	iostate(__ios_flags::_S_failbit);
+
     /// Indicates all is well.
     static const iostate goodbit = 	iostate(0);
 
@@ -296,19 +316,25 @@ namespace std
      *  - trunc
     */
     typedef _Ios_Openmode openmode;
+
     /// Seek to end before each write.
     static const openmode app =    	openmode(__ios_flags::_S_app);
+
     /// Open and seek to end immediately after opening.
     static const openmode ate =    	openmode(__ios_flags::_S_ate);
+
     /// Perform input and output in binary mode (as opposed to text mode).
     /// This is probably not what you think it is; see
     /// http://gcc.gnu.org/onlinedocs/libstdc++/27_io/howto.html#3 and
     /// http://gcc.gnu.org/onlinedocs/libstdc++/27_io/howto.html#7 for more.
     static const openmode binary = 	openmode(__ios_flags::_S_bin);
+
     /// Open for input.  Default for @c ifstream and fstream.
     static const openmode in =     	openmode(__ios_flags::_S_in);
+
     /// Open for output.  Default for @c ofstream and fstream.
     static const openmode out =    	openmode(__ios_flags::_S_out);
+
     /// Open for input.  Default for @c ofstream.
     static const openmode trunc =  	openmode(__ios_flags::_S_trunc);
 
@@ -323,10 +349,13 @@ namespace std
      *  - end, equivalent to @c SEEK_END in the C standard library.
     */
     typedef _Ios_Seekdir seekdir;
+
     /// Request a seek relative to the beginning of the stream.
     static const seekdir beg = 		seekdir(0);
+
     /// Request a seek relative to the current position within the sequence.
     static const seekdir cur = 		seekdir(SEEK_CUR);
+
     /// Request a seek relative to the current end of the sequence.
     static const seekdir end = 		seekdir(SEEK_END);
 
@@ -431,10 +460,6 @@ namespace std
 
     // Members for locale and locale caching.
     locale 		_M_ios_locale;
-
-    // Cache of locale and facet data.
-    // Cast this to __locale_cache<_CharT>*
-    auto_ptr<__locale_cache_base>	_M_locale_cache;
 
     void 
     _M_init();
@@ -604,7 +629,7 @@ namespace std
 
     /**
      *  @brief  Locale access
-     *  @return  The locale currently in effect.
+     *  @return  A copy of the current locale.
      *
      *  If @c imbue(loc) has previously been called, then this function
      *  returns @c loc.  Otherwise, it returns a copy of @c std::locale(),
@@ -612,6 +637,16 @@ namespace std
     */
     inline locale 
     getloc() const { return _M_ios_locale; }
+
+    /**
+     *  @brief  Locale access
+     *  @return  A reference to the current locale.
+     *
+     *  Like getloc above, but returns a reference instead of
+     *  generating a copy.
+    */
+    inline const locale& 
+    _M_getloc() const { return _M_ios_locale; }
 
     // [27.4.2.5] ios_base storage functions
     /**
@@ -641,11 +676,6 @@ namespace std
 			? _M_word[__ix] : _M_grow_words(__ix);
       return __word._M_pword;
     }
-
-    // Access to the cache.  Not safe to call until basic_ios::_M_init() has
-    // happened.
-    __locale_cache_base&
-    _M_cache() { return *_M_locale_cache; }
 
     // Destructor
     /**

@@ -71,7 +71,11 @@ namespace std
     template<typename _Facet>
       friend const _Facet& 
       use_facet(const locale&);
-     
+
+    template<typename _Cache>
+      friend const _Cache&
+      __use_cache(const locale& __loc);
+   
     // Category values:
     // NB: Order must match _S_facet_categories definition in locale.cc
     static const category none		= 0;
@@ -141,6 +145,12 @@ namespace std
     // Current global locale
     static _Impl* 	_S_global;  
 
+    // Names of underlying locale categories.  
+    // NB: locale::global() has to know how to modify all the
+    // underlying categories, not just the ones required by the C++
+    // standard.
+    static const char** _S_categories;
+
     // Number of standard categories. For C++, these categories are
     // collate, ctype, monetary, numeric, time, and messages. These
     // directly correspond to ISO C99 macros LC_COLLATE, LC_CTYPE,
@@ -152,12 +162,6 @@ namespace std
     // LC_PAPER, LC_NAME, LC_ADDRESS, LC_TELEPHONE, LC_MEASUREMENT,
     // and LC_IDENTIFICATION.
     static const size_t _S_categories_size = 6 + _GLIBCPP_NUM_CATEGORIES;
-
-    // Names of underlying locale categories.  
-    // NB: locale::global() has to know how to modify all the
-    // underlying categories, not just the ones required by the C++
-    // standard.
-    static const char** _S_categories;
 
     explicit 
     locale(_Impl*) throw();
@@ -177,7 +181,107 @@ namespace std
   };
 
 
-  // Implementation object for locale 
+  // 22.1.1.1.2  Class locale::facet
+  class locale::facet
+  {
+  private:
+    friend class locale;
+    friend class locale::_Impl;
+
+    mutable _Atomic_word		_M_references;
+
+  protected:
+    // Contains data from the underlying "C" library for the classic locale.
+    static __c_locale		     	_S_c_locale;
+
+    // String literal for the name of the classic locale.
+    static char				_S_c_name[2];
+    
+    explicit 
+    facet(size_t __refs = 0) throw() : _M_references(__refs ? 1 : 0)
+    { }
+
+    virtual 
+    ~facet();
+
+    static void
+    _S_create_c_locale(__c_locale& __cloc, const char* __s, 
+		       __c_locale __old = 0);
+
+    static __c_locale
+    _S_clone_c_locale(__c_locale& __cloc);
+
+    static void
+    _S_destroy_c_locale(__c_locale& __cloc);
+
+  private:
+    inline void
+    _M_add_reference() const throw()
+    { __atomic_add(&_M_references, 1); }
+
+    inline void
+    _M_remove_reference() const throw()
+    {
+      if (__exchange_and_add(&_M_references, -1) == 1)
+	{
+	  try 
+	    { delete this; }  
+	  catch (...) 
+	    { }
+	}
+    }
+
+    facet(const facet&);  // Not defined.
+
+    void 
+    operator=(const facet&);  // Not defined.
+  };
+
+
+  // 22.1.1.1.3 Class locale::id
+  class locale::id
+  {
+  private:
+    friend class locale;
+    friend class locale::_Impl;
+
+    template<typename _Facet>
+      friend const _Facet&  
+      use_facet(const locale&);
+
+    template<typename _Facet>
+      friend bool           
+      has_facet(const locale&) throw ();
+
+    // NB: There is no accessor for _M_index because it may be used
+    // before the constructor is run; the effect of calling a member
+    // function (even an inline) would be undefined.
+    mutable size_t 		_M_index;
+
+    // Last id number assigned.
+    static _Atomic_word 	_S_highwater;   
+
+    void 
+    operator=(const id&);  // Not defined.
+
+    id(const id&);  // Not defined.
+
+  public:
+    // NB: This class is always a static data member, and thus can be
+    // counted on to be zero-initialized.
+    id() { }
+
+    inline size_t
+    _M_id() const
+    {
+      if (!_M_index)
+	_M_index = 1 + __exchange_and_add(&_S_highwater, 1);
+      return _M_index - 1;
+    }
+  };
+
+
+  // Implementation object for locale.
   class locale::_Impl
   {
   public:
@@ -186,18 +290,23 @@ namespace std
     friend class locale::facet;
 
     template<typename _Facet>
+      friend bool  
+      has_facet(const locale&) throw();
+
+    template<typename _Facet>
       friend const _Facet&  
       use_facet(const locale&);
 
-    template<typename _Facet>
-      friend bool  
-      has_facet(const locale&) throw();
+    template<typename _Cache>
+      friend const _Cache&
+      __use_cache(const locale& __loc);
 
   private:
     // Data Members.
     _Atomic_word			_M_references;
     const facet**			_M_facets;
     size_t 				_M_facets_size;
+    const facet**			_M_caches;
     char** 				_M_names;
     static const locale::id* const 	_S_id_ctype[];
     static const locale::id* const 	_S_id_numeric[];
@@ -258,7 +367,14 @@ namespace std
     template<typename _Facet>
       inline void 
       _M_init_facet(_Facet* __facet)
-      { _M_install_facet(&_Facet::id, __facet);  }
+      { _M_install_facet(&_Facet::id, __facet); }
+
+    void
+    _M_install_cache(const facet* __cache, size_t __index)
+    { 
+      __cache->_M_add_reference();
+      _M_caches[__index] = __cache; 
+    }      
   };
 
   template<typename _Facet>
@@ -274,93 +390,6 @@ namespace std
 	  _M_impl->_M_names[__i] = __new;
 	}
     }
-
-
-  // 22.1.1.1.2  Class locale::facet
-  class locale::facet
-  {
-  private:
-    friend class locale;
-    friend class locale::_Impl;
-
-    mutable _Atomic_word		_M_references;
-
-  protected:
-    // Contains data from the underlying "C" library for the classic locale.
-    static __c_locale		     	_S_c_locale;
-
-    // String literal for the name of the classic locale.
-    static char				_S_c_name[2];
-    
-    explicit 
-    facet(size_t __refs = 0) throw();
-
-    virtual 
-    ~facet();
-
-    static void
-    _S_create_c_locale(__c_locale& __cloc, const char* __s, 
-		       __c_locale __old = 0);
-
-    static __c_locale
-    _S_clone_c_locale(__c_locale& __cloc);
-
-    static void
-    _S_destroy_c_locale(__c_locale& __cloc);
-
-  private:
-    void 
-    _M_add_reference() const throw();
-
-    void 
-    _M_remove_reference() const throw();
-
-    facet(const facet&);  // Not defined.
-
-    void 
-    operator=(const facet&);  // Not defined.
-  };
-
-
-  // 22.1.1.1.3 Class locale::id
-  class locale::id
-  {
-  private:
-    friend class locale;
-    friend class locale::_Impl;
-    template<typename _Facet>
-      friend const _Facet&  
-      use_facet(const locale&);
-    template<typename _Facet>
-      friend bool           
-      has_facet(const locale&) throw ();
-
-    // NB: There is no accessor for _M_index because it may be used
-    // before the constructor is run; the effect of calling a member
-    // function (even an inline) would be undefined.
-    mutable size_t 		_M_index;
-
-    // Last id number assigned.
-    static _Atomic_word 	_S_highwater;   
-
-    void 
-    operator=(const id&);  // Not defined.
-
-    id(const id&);  // Not defined.
-
-  public:
-    // NB: This class is always a static data member, and thus can be
-    // counted on to be zero-initialized.
-    id();
-
-    inline size_t
-    _M_id() const
-    {
-      if (!_M_index)
-	_M_index = 1 + __exchange_and_add(&_S_highwater, 1);
-      return _M_index - 1;
-    }
-  };
 } // namespace std
 
 #endif
