@@ -108,7 +108,7 @@ extern int target_flags;
 
 #define CONDITIONAL_REGISTER_USAGE	\
   if (! TARGET_FPREGS)			\
-    for (i = 32; i < 64; i++)		\
+    for (i = 32; i < 63; i++)		\
       fixed_regs[i] = call_used_regs[i] = 1;
 
 /* Show we can debug even without a frame pointer.  */
@@ -276,7 +276,11 @@ extern int target_flags;
    Since $31 is always zero, we will use register number 31 as the
    argument pointer.  It will never appear in the generated code
    because we will always be eliminating it in favor of the stack
-   poointer or frame pointer.  */
+   pointer or hardware frame pointer.
+
+   Likewise, we use $f31 for the frame pointer, which will always
+   be eliminated in favor of the hardware frame pointer or the
+   stack pointer.  */
 
 #define FIRST_PSEUDO_REGISTER 64
 
@@ -321,7 +325,7 @@ extern int target_flags;
    $26			(return PC)
    $15			(frame pointer)
    $29			(global pointer)
-   $30, $31, $f31	(stack pointer and always zero/ap)  */
+   $30, $31, $f31	(stack pointer and always zero/ap & fp)  */
 
 #define REG_ALLOC_ORDER		\
   {33,					\
@@ -376,7 +380,7 @@ extern int target_flags;
 #define STACK_POINTER_REGNUM 30
 
 /* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM 15
+#define HARD_FRAME_POINTER_REGNUM 15
 
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms
@@ -386,6 +390,9 @@ extern int target_flags;
 
 /* Base register for access to arguments of the function.  */
 #define ARG_POINTER_REGNUM 31
+
+/* Base register for access to local variables of function.  */
+#define FRAME_POINTER_REGNUM 63
 
 /* Register in which static-chain is passed to a function. 
 
@@ -433,14 +440,15 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    of length N_REG_CLASSES.  */
 
 #define REG_CLASS_CONTENTS	\
-  { {0, 0}, {~0, 0}, {0, ~0}, {~0, ~0} }
+  { {0, 0}, {~0, 0x80000000}, {0, 0x7fffffff}, {~0, ~0} }
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
 
-#define REGNO_REG_CLASS(REGNO) ((REGNO) >= 32 ? FLOAT_REGS : GENERAL_REGS)
+#define REGNO_REG_CLASS(REGNO) \
+ ((REGNO) >= 32 && (REGNO) <= 62 ? FLOAT_REGS : GENERAL_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS NO_REGS
@@ -615,7 +623,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    first local allocated.  Otherwise, it is the offset to the BEGINNING
    of the first local allocated.  */
 
-#define STARTING_FRAME_OFFSET current_function_outgoing_args_size
+#define STARTING_FRAME_OFFSET 0
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
@@ -643,10 +651,11 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    followed by "to".  Eliminations of the same "from" register are listed
    in order of preference.  */
 
-#define ELIMINABLE_REGS				\
-{{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},	\
- { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM},   \
- { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}}
+#define ELIMINABLE_REGS				     \
+{{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},	     \
+ { ARG_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},   \
+ { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},	     \
+ { FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}
 
 /* Given FROM and TO register numbers, say whether this elimination is allowed.
    Frame pointer elimination is automatically handled.
@@ -656,20 +665,19 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
 
 #define CAN_ELIMINATE(FROM, TO) 1
 
+/* Round up to a multiple of 16 bytes.  */
+#define ALPHA_ROUND(X) (((X) + 15) & ~ 15)
+
 /* Define the offset between two registers, one to be eliminated, and the other
    its replacement, at the start of a routine.  */
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
-{ if ((FROM) == FRAME_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)	\
-    (OFFSET) = 0;							\
-  else									\
-    {									\
-      (OFFSET) = ((get_frame_size () + current_function_outgoing_args_size \
-		   + current_function_pretend_args_size			\
-		   + alpha_sa_size () + 15)				\
-		  & ~ 15);						\
-      if ((FROM) == ARG_POINTER_REGNUM)					\
-	(OFFSET) -= current_function_pretend_args_size;			\
-    }									\
+{ if ((FROM) == FRAME_POINTER_REGNUM)					\
+    (OFFSET) = (ALPHA_ROUND (current_function_outgoing_args_size)	\
+		+ alpha_sa_size ());					\
+  else if ((FROM) == ARG_POINTER_REGNUM)				\
+    (OFFSET) = (ALPHA_ROUND (current_function_outgoing_args_size)	\
+		+ alpha_sa_size ()					\
+		+ ALPHA_ROUND (get_frame_size ()));			\
 }
 
 /* Define this if stack space is still allocated for a parameter passed
@@ -1020,7 +1028,8 @@ __enable_execute_stack (addr)						\
 
 #define REGNO_OK_FOR_INDEX_P(REGNO) 0
 #define REGNO_OK_FOR_BASE_P(REGNO) \
-(((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32))
+((REGNO) < 32 || (unsigned) reg_renumber[REGNO] < 32  \
+ || (REGNO) == 63 || reg_renumber[REGNO] == 63)
 
 /* Maximum number of registers that can appear in a valid memory address.  */
 #define MAX_REGS_PER_ADDRESS 1
@@ -1061,7 +1070,7 @@ __enable_execute_stack (addr)						\
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X)  \
-  (REGNO (X) < 32 || REGNO (X) >= FIRST_PSEUDO_REGISTER)
+  (REGNO (X) < 32 || REGNO (X) == 63 || REGNO (X) >= FIRST_PSEUDO_REGISTER)
 
 #else
 
@@ -1467,7 +1476,7 @@ literal_section ()						\
  "$f0", "$f1", "$f2", "$f3", "$f4", "$f5", "$f6", "$f7", "$f8",	\
  "$f9", "$f10", "$f11", "$f12", "$f13", "$f14", "$f15",		\
  "$f16", "$f17", "$f18", "$f19", "$f20", "$f21", "$f22", "$f23",\
- "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "$f31"}
+ "$f24", "$f25", "$f26", "$f27", "$f28", "$f29", "$f30", "FP"}
 
 /* How to renumber registers for dbx and gdb.  */
 
@@ -1629,6 +1638,7 @@ literal_section ()						\
     }									      \
   }									      \
   while (0)
+
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
 
@@ -1787,7 +1797,8 @@ literal_section ()						\
 #define MIPS_DEBUGGING_INFO		/* MIPS specific debugging info */
 
 #ifndef PREFERRED_DEBUGGING_TYPE	/* assume SDB_DEBUGGING_INFO */
-#define PREFERRED_DEBUGGING_TYPE ((len > 1 && !strncmp (str, "ggdb", len)) ? DBX_DEBUG : SDB_DEBUG)
+#define PREFERRED_DEBUGGING_TYPE  \
+ ((len > 1 && !strncmp (str, "ggdb", len)) ? DBX_DEBUG : SDB_DEBUG)
 #endif
 
 
