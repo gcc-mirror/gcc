@@ -541,7 +541,6 @@ public class BigInteger extends Number implements Comparable
     if (y.words == null)
       return BigInteger.add(x, y.ival);
     // Both are big
-    int len;
     if (y.ival > x.ival)
       { // Swap so x is longer then y.
 	BigInteger tmp = x;  x = y;  y = tmp;
