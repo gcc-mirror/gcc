@@ -1,3 +1,9 @@
+2000-09-26  Philipp Thomas  <pthomas@suse.de>
+
+	* Makefile.in.in: Remove stamp-check-pot from list
+	of default targets as checks are only possible in a 
+	complete source tree and all languages configured.
+
 2000-09-13  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* POTFILES.in: Remove objc/objc-parse.c.

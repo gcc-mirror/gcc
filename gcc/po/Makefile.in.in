@@ -79,7 +79,7 @@ INSTOBJEXT = @INSTOBJEXT@
 
 all: all-@USE_NLS@
 
-all-yes: stamp-check-pot $(CATALOGS) @MAINT@ $(srcdir)/cat-id-tbl.c 
+all-yes: $(CATALOGS) @MAINT@ $(srcdir)/cat-id-tbl.c 
 all-no:
 
 stamp-check-pot: $(POTFILES)
