@@ -9339,6 +9339,15 @@ ignored.  This function should return the result of the call to the
 built-in function.
 @end deftypefn
 
+@deftypefn {Target Hook} tree TARGET_FOLD_BUILTIN (tree @var{exp}, bool @var{ignore})
+
+Expand a call to a machine specific built-in function that was set up by
+@samp{TARGET_INIT_BUILTINS}.  @var{exp} is the expression for the
+function call; the result is another tree containing a simplified
+expression for the call's result.  If @var{ignore} is true the
+value will be ignored.
+@end deftypefn
+
 @defmac MD_CAN_REDIRECT_BRANCH (@var{branch1}, @var{branch2})
 
 Take a branch insn in @var{branch1} and another in @var{branch2}.
