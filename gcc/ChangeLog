@@ -3,6 +3,8 @@
 	* flow.c (split_edge): Don't allocate global_live_at_start for
 	the new block unless the old blocks had them as well.
 
+	* flow.c (mark_set_1): Respect not_dead when updating reg_live.
+
 2000-05-06  Zack Weinberg  <zack@wolery.cumb.org>
 
  	* cpphash.h: Remove conditional #define of __extension__.
