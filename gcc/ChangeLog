@@ -1,3 +1,12 @@
+2000-10-18  Hans-Peter Nilsson  <hp@axis.com>
+
+	* tm.texi (Exception Region Output): Document
+	DWARF_CIE_DATA_ALIGNMENT.
+	* dwarf2out.c (DWARF_CIE_DATA_ALIGNMENT): Wrap definition in
+	#ifndef.
+	[ENABLE_CHECKING] (reg_save): Abort if offset is not a multiple of
+	DWARF_CIE_DATA_ALIGNMENT.
+
 2000-10-18  Michael Hayes  <mhayes@cygnus.com>
 
 	* basic-block.h (struct loop): Delete fields pre_header_root

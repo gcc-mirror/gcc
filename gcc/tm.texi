@@ -6682,6 +6682,15 @@ default.
 If this macro is defined to anything, the DWARF 2 unwinder will be used
 instead of inline unwinders and __unwind_function in the non-setjmp case.
 
+@findex DWARF_CIE_DATA_ALIGNMENT
+@item DWARF_CIE_DATA_ALIGNMENT
+This macro need only be defined if the target might save registers in the
+function prologue at an offset to the stack pointer that is not aligned to
+@code{UNITS_PER_WORD}.  The definition should be the negative minimum
+alignment if @code{STACK_GROWS_DOWNWARD} is defined, and the positive
+minimum alignment otherwise.  @xref{SDB and DWARF}.  Only applicable if
+the target supports DWARF 2 frame unwind information.
+
 @end table
 
 @node Alignment Output
