@@ -381,7 +381,7 @@
   "ld __tmp_reg__,%a1+
 	st %a0+,__tmp_reg__
 	dec %2
-	brne _PC_-8"
+	brne .-8"
   [(set_attr "length" "4")
    (set_attr "cc" "clobber")])
 
@@ -399,13 +399,13 @@
        return (AS2 (ld,__tmp_reg__,%a1+) CR_TAB
 	       AS2 (st,%a0+,__tmp_reg__)  CR_TAB
 	       AS2 (sbiw,%A2,1) CR_TAB
-	       AS1 (brne,_PC_-8));
+	       AS1 (brne,.-8));
      else
        return (AS2 (ld,__tmp_reg__,%a1+) CR_TAB
 	       AS2 (st,%a0+,__tmp_reg__)  CR_TAB
 	       AS2 (subi,%A2,1) CR_TAB
 	       AS2 (sbci,%B2,0) CR_TAB
-	       AS1 (brne,_PC_-10));
+	       AS1 (brne,.-10));
 }"
   [(set_attr "length" "4,5")
    (set_attr "cc" "clobber,clobber")])
@@ -448,7 +448,7 @@
   ""
   "st %a0+,__zero_reg__
         dec %1
-	brne _PC_-6"
+	brne .-6"
   [(set_attr "length" "3")
    (set_attr "cc" "clobber")])
 
@@ -464,12 +464,12 @@
      if (which_alternative==0)
        return (AS2 (st,%a0+,__zero_reg__) CR_TAB
 	       AS2 (sbiw,%A1,1) CR_TAB
-	       AS1 (brne,_PC_-6));
+	       AS1 (brne,.-6));
      else
        return (AS2 (st,%a0+,__zero_reg__) CR_TAB
 	       AS2 (subi,%A1,1) CR_TAB
 	       AS2 (sbci,%B1,0) CR_TAB
-	       AS1 (brne,_PC_-8));
+	       AS1 (brne,.-8));
 }"
   [(set_attr "length" "3,4")
    (set_attr "cc" "clobber,clobber")])
@@ -503,7 +503,7 @@
   ""
   "ld __tmp_reg__,%a0+
 	tst __tmp_reg__
-	brne _PC_-6"
+	brne .-6"
   [(set_attr "length" "3")
    (set_attr "cc" "clobber")])
 
@@ -1872,7 +1872,7 @@
          output_asm_insn (AS2 (sbrc,%1,%2), operands);
        if (get_attr_length (insn) != 4)
          return AS1 (rjmp,%3);
-       return (AS1 (rjmp,_PC_+4) CR_TAB
+       return (AS1 (rjmp,.+4) CR_TAB
                AS1 (jmp,%3));
      }"
   [(set (attr "length")
@@ -1909,7 +1909,7 @@
 
        if (get_attr_length (insn) != 4)
          return AS1 (rjmp,%3);
-       return (AS1 (rjmp,_PC_+4) CR_TAB
+       return (AS1 (rjmp,.+4) CR_TAB
                AS1 (jmp,%3));
      }"
   [(set (attr "length")
@@ -1946,7 +1946,7 @@
 
        if (get_attr_length (insn) != 4)
          return AS1 (rjmp,%3);
-       return (AS1 (rjmp,_PC_+4) CR_TAB
+       return (AS1 (rjmp,.+4) CR_TAB
                AS1 (jmp,%3));
      }"
   [(set (attr "length")
@@ -2265,10 +2265,10 @@
     case 1:
       return AS1 (brcc,%2);
     case 2:
-      return (AS1 (brcs,_PC_+2) CR_TAB
+      return (AS1 (brcs,.+2) CR_TAB
               AS1 (rjmp,%2));
   }
-  return (AS1 (brcs,_PC_+4) CR_TAB
+  return (AS1 (brcs,.+4) CR_TAB
           AS1 (jmp,%2));
 }")
 
@@ -2300,10 +2300,10 @@
     case 1:
       return AS1 (brcc,%2);
     case 2:
-      return (AS1 (brcs,_PC_+2) CR_TAB
+      return (AS1 (brcs,.+2) CR_TAB
               AS1 (rjmp,%2));
   }
-  return (AS1 (brcs,_PC_+4) CR_TAB
+  return (AS1 (brcs,.+4) CR_TAB
           AS1 (jmp,%2));
 }")
 
@@ -2330,10 +2330,10 @@
     case 1:
       return AS1 (brcc,%1);
     case 2:
-      return (AS1 (brcs,_PC_+2) CR_TAB
+      return (AS1 (brcs,.+2) CR_TAB
               AS1 (rjmp,%1));
   }
-  return (AS1 (brcs,_PC_+4) CR_TAB
+  return (AS1 (brcs,.+4) CR_TAB
           AS1 (jmp,%1));
 }")
 					

@@ -1,3 +1,9 @@
+2002-11-23  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	2002-09-26  Theodore A. Roth  <troth@verinet.com>
+	* config/avr/avr.c: Eliminate use of _PC_ in pc relative insns.
+	* config/avr/avr.md: Ditto.
+
 2002-11-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c/8588
