@@ -82,8 +82,8 @@ public class Socket
    */
   SocketImpl impl;
 
-  private boolean inputShutdown;
-  private boolean outputShutdown;
+  private boolean inputShutdown = false;
+  private boolean outputShutdown = false;
 
   SocketChannel ch; // this field must have been set if created by SocketChannel
 
@@ -103,9 +103,6 @@ public class Socket
       impl = factory.createSocketImpl();
     else
       impl = new PlainSocketImpl();
-
-    inputShutdown = false;
-    outputShutdown = false;
   }
 
   /**
@@ -115,9 +112,8 @@ public class Socket
    * <p>
    * Additionally, this socket will be created using the supplied
    * implementation class instead the default class or one returned by a
-   * factory.  This value can be <code>null</code>, but if it is, all instance
-   * methods in <code>Socket</code> should be overridden because most of them
-   * rely on this value being populated.
+   * factory.  If this value is <code>null</code>, the default Socket
+   * implementation is used.
    *
    * @param impl The <code>SocketImpl</code> to use for this
    *             <code>Socket</code>
@@ -128,9 +124,10 @@ public class Socket
    */
   protected Socket (SocketImpl impl) throws SocketException
   {
-    this.impl = impl;
-    this.inputShutdown = false;
-    this.outputShutdown = false;
+    if (impl == null)
+      this.impl = new PlainSocketImpl();
+    else
+      this.impl = impl;
   }
 
   /**
@@ -282,12 +279,6 @@ public class Socket
   {
     this();
 
-    if (raddr == null)
-      throw new NullPointerException ();
-    
-    if (impl == null)
-      throw new IOException("Cannot initialize Socket implementation");
-
     SecurityManager sm = System.getSecurityManager();
     if (sm != null)
       sm.checkConnect(raddr.getHostName(), rport);
@@ -351,17 +342,17 @@ public class Socket
       }
     catch (IOException exception)
       {
-        impl.close ();
+        close ();
         throw exception;
       }
     catch (RuntimeException exception)
       {
-        impl.close ();
+        close ();
         throw exception;
       }
     catch (Error error)
       {
-        impl.close ();
+        close ();
         throw error;
       }
   }
@@ -420,17 +411,17 @@ public class Socket
       }
     catch (IOException exception)
       {
-        impl.close ();
+        close ();
         throw exception;
       }
     catch (RuntimeException exception)
       {
-        impl.close ();
+        close ();
         throw exception;
       }
     catch (Error error)
       {
-        impl.close ();
+        close ();
         throw error;
       }
   }
@@ -443,10 +434,7 @@ public class Socket
    */
   public InetAddress getInetAddress ()
   {
-    if (impl != null)
-      return impl.getInetAddress();
-
-    return null;
+    return impl.getInetAddress();
   }
 
   /**
@@ -459,9 +447,6 @@ public class Socket
    */
   public InetAddress getLocalAddress ()
   {
-    if (impl == null)
-      return null;
-
     InetAddress addr = null;
     try
       {
@@ -586,9 +571,6 @@ public class Socket
    */
   public void setTcpNoDelay (boolean on)  throws SocketException
   {
-    if (impl == null)
-      throw new SocketException("Not connected");
-
     impl.setOption(SocketOptions.TCP_NODELAY, new Boolean(on));
   }
 
@@ -606,9 +588,6 @@ public class Socket
    */
   public boolean getTcpNoDelay() throws SocketException
   {
-    if (impl == null)
-      throw new SocketException("Not connected");
-
     Object on = impl.getOption(SocketOptions.TCP_NODELAY);
   
     if (on instanceof Boolean)
@@ -636,9 +615,6 @@ public class Socket
    */
   public void setSoLinger(boolean on, int linger) throws SocketException
   {
-    if (impl == null)
-      throw new SocketException("No socket created");
-
     if (on == true)
       {
         if (linger < 0)
@@ -673,9 +649,6 @@ public class Socket
    */
   public int getSoLinger() throws SocketException
   {
-    if (impl == null)
-      throw new SocketException("Not connected");
-
     Object linger = impl.getOption(SocketOptions.SO_LINGER);
     if (linger instanceof Integer)
       return(((Integer)linger).intValue());
@@ -709,9 +682,6 @@ public class Socket
    */
   public void setOOBInline (boolean on) throws SocketException
   {
-    if (impl == null)
-      throw new SocketException("Not connected");
-
     impl.setOption(SocketOptions.SO_OOBINLINE, new Boolean(on));
   }
 
@@ -724,9 +694,6 @@ public class Socket
    */
   public boolean getOOBInline () throws SocketException
   {
-    if (impl == null)
-      throw new SocketException("Not connected");
-
     Object buf = impl.getOption(SocketOptions.SO_OOBINLINE);
 
     if (buf instanceof Boolean)
@@ -754,9 +721,6 @@ public class Socket
    */
   public synchronized void setSoTimeout (int timeout) throws SocketException
   {
-    if (impl == null)
-      throw new SocketException("Not connected");
-    
     if (timeout < 0)
       throw new IllegalArgumentException("SO_TIMEOUT value must be >= 0");
       
@@ -782,9 +746,6 @@ public class Socket
    */
   public synchronized int getSoTimeout () throws SocketException
   {
-    if (impl == null) 
-      throw new SocketException("Not connected");
-
     Object timeout = impl.getOption(SocketOptions.SO_TIMEOUT);
     if (timeout instanceof Integer)
       return(((Integer)timeout).intValue());
@@ -806,9 +767,6 @@ public class Socket
    */
   public void setSendBufferSize (int size) throws SocketException
   {
-    if (impl == null)
-      throw new SocketException("Not connected");
-    
     if (size <= 0)
       throw new IllegalArgumentException("SO_SNDBUF value must be > 0");
     
@@ -828,9 +786,6 @@ public class Socket
    */
   public int getSendBufferSize () throws SocketException
   {
-    if (impl == null)
-      throw new SocketException("Not connected");
-
     Object buf = impl.getOption(SocketOptions.SO_SNDBUF);
 
     if (buf instanceof Integer)
@@ -853,9 +808,6 @@ public class Socket
    */
   public void setReceiveBufferSize (int size) throws SocketException
   {
-    if (impl == null)
-      throw new SocketException("Not connected");
-
     if (size <= 0)
       throw new IllegalArgumentException("SO_RCVBUF value must be > 0");
       
@@ -875,9 +827,6 @@ public class Socket
    */
   public int getReceiveBufferSize () throws SocketException
   {
-    if (impl == null)
-      throw new SocketException("Not connected");
-
     Object buf = impl.getOption(SocketOptions.SO_RCVBUF);
 
     if (buf instanceof Integer)
@@ -898,9 +847,6 @@ public class Socket
    */
   public void setKeepAlive (boolean on) throws SocketException
   {
-    if (impl == null)
-      throw new SocketException("Not connected");
-
     impl.setOption(SocketOptions.SO_KEEPALIVE, new Boolean(on));
   }
 
@@ -916,9 +862,6 @@ public class Socket
    */
   public boolean getKeepAlive () throws SocketException
   {
-    if (impl == null)
-      throw new SocketException("Not connected");
-
     Object buf = impl.getOption(SocketOptions.SO_KEEPALIVE);
 
     if (buf instanceof Boolean)
@@ -1037,9 +980,6 @@ public class Socket
    */
   public boolean getReuseAddress () throws SocketException
   {
-    if (impl == null)
-      throw new SocketException ("Cannot initialize Socket implementation");
-
     Object reuseaddr = impl.getOption (SocketOptions.SO_REUSEADDR);
 
     if (!(reuseaddr instanceof Boolean))
@@ -1057,9 +997,6 @@ public class Socket
    */
   public void setReuseAddress (boolean on) throws SocketException
   {
-    if (impl == null)
-      throw new SocketException ("Cannot initialize Socket implementation");
-
     impl.setOption (SocketOptions.SO_REUSEADDR, new Boolean (on));
   }
 
@@ -1074,9 +1011,6 @@ public class Socket
    */
   public int getTrafficClass () throws SocketException
   {
-    if (impl == null)
-      throw new SocketException ("Cannot initialize Socket implementation");
-
     Object obj = impl.getOption(SocketOptions.IP_TOS);
 
     if (obj instanceof Integer)
@@ -1099,9 +1033,6 @@ public class Socket
    */
   public void setTrafficClass (int tc) throws SocketException
   {
-    if (impl == null)
-      throw new SocketException ("Cannot initialize Socket implementation");
-
     if (tc < 0 || tc > 255)
       throw new IllegalArgumentException();
 

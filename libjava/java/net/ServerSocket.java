@@ -154,12 +154,6 @@ public class ServerSocket
   {
     this();
 
-    if (impl == null)
-      throw new IOException("Cannot initialize Socket implementation");
-
-    // create socket
-    impl.create(true);
-
     // bind/listen socket
     bind (new InetSocketAddress (bindAddr, port), backlog);
   }
@@ -208,9 +202,6 @@ public class ServerSocket
     if (closed)
       throw new SocketException ("ServerSocket is closed");
     
-    if (impl == null)
-      throw new IOException ("Cannot initialize Socket implementation");
-
     if (! (endpoint instanceof InetSocketAddress))
       throw new IllegalArgumentException ("Address type not supported");
 
@@ -220,45 +211,24 @@ public class ServerSocket
     if (s != null)
       s.checkListen (tmp.getPort ());
 
-    // bind to address/port
     try
       {
-    impl.bind (tmp.getAddress (), tmp.getPort ());
+	impl.bind (tmp.getAddress (), tmp.getPort ());
+	impl.listen(backlog);
       }
     catch (IOException exception)
       {
-        impl.close();
+        close();
         throw exception;
       }
     catch (RuntimeException exception)
       {
-        impl.close();
+        close();
         throw exception;
       }
     catch (Error error)
       {
-        impl.close();
-        throw error;
-      }
-
-    // listen on socket
-    try
-      {
-    impl.listen(backlog);
-  }
-    catch (IOException exception)
-      {
-        impl.close();
-        throw exception;
-      }
-    catch (RuntimeException exception)
-      {
-        impl.close();
-        throw exception;
-      }
-    catch (Error error)
-      {
-        impl.close();
+        close();
         throw error;
       }
   }
@@ -320,9 +290,6 @@ public class ServerSocket
    */
   public Socket accept () throws IOException
   {
-    if (impl == null)
-      throw new IOException ("Cannot initialize Socket implementation");
-
     SecurityManager sm = System.getSecurityManager ();
     if (sm != null)
       sm.checkListen (impl.getLocalPort ());
@@ -466,9 +433,6 @@ public class ServerSocket
   public void setReuseAddress (boolean on)
     throws SocketException
   {
-    if (impl == null)
-      throw new SocketException ("Cannot initialize Socket implementation");
-
     impl.setOption (SocketOptions.SO_REUSEADDR, new Boolean (on));
   }
 
@@ -482,9 +446,6 @@ public class ServerSocket
   public boolean getReuseAddress()
     throws SocketException
   {
-    if (impl == null)
-      throw new SocketException ("Cannot initialize Socket implementation");
-
     Object reuseaddr = impl.getOption (SocketOptions.SO_REUSEADDR);
 
     if (!(reuseaddr instanceof Boolean))
@@ -508,9 +469,6 @@ public class ServerSocket
   public void setReceiveBufferSize (int size)
     throws SocketException
   {
-    if (impl == null)
-      throw new SocketException ("Not connected");
-
     if (size <= 0)
       throw new IllegalArgumentException ("SO_RCVBUF value must be > 0");
 
@@ -531,9 +489,6 @@ public class ServerSocket
   public int getReceiveBufferSize ()
     throws SocketException
   {
-    if (impl == null)
-      throw new SocketException ("Not connected");
-
     Object buf = impl.getOption (SocketOptions.SO_RCVBUF);
 
     if (!(buf instanceof Integer))

@@ -1,3 +1,15 @@
+2003-08-07  Bryce McKinlay  <bryce@mckinlay.net.nz>
+
+	* java/net/Socket.java (Socket (SocketImpl)): Don't allow null
+	SocketImpl. Update Javadoc.
+	(bind): Call close() not impl.close() in event of exception.
+	(connect): Likewise.
+	Remove superfluous null checks throughout.
+	* java/net/ServerSocket.java (ServerSocket (int, int, InetAddress)):
+	Don't create an extra socket. Fix for PR libgcj/10868.
+	(bind): Clean up exception handling.
+	Remove superfluous null checks throughout.
+
 2003-08-07  Jacob Gladish <gladish@spinnakernet.com>
             Bryce McKinlay  <bryce@mckinlay.net.nz>
 
