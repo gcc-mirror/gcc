@@ -5503,7 +5503,7 @@ choose_reload_regs (chain)
 #ifdef CANNOT_CHANGE_MODE_CLASS
 		      (!REG_CANNOT_CHANGE_MODE_P (i, GET_MODE (last_reg),
 						  need_mode)
-		       ||
+		       &&
 #endif
 		      (GET_MODE_SIZE (GET_MODE (last_reg))
 		       >= GET_MODE_SIZE (need_mode))
