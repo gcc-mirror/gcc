@@ -55,7 +55,7 @@ typedef int (*tree_fn_t) PARAMS ((tree, void*));
    (for a function or static data member), or a TYPE (for a class)
    indicating what we are hoping to instantiate.  */
 static GTY(()) tree pending_templates;
-static tree last_pending_template;
+static GTY(()) tree last_pending_template;
 
 int processing_template_parmlist;
 static int template_header_count;
