@@ -65,21 +65,21 @@ class VMClassLoader {
     if ("int".equals (type))
       return int.class;
     else if ("long".equals (type))
-      return int.class;
+      return long.class;
     else if ("boolean".equals (type))
-      return int.class;
+      return boolean.class;
     else if ("short".equals (type))
-      return int.class;
+      return short.class;
     else if ("char".equals (type))
-      return int.class;
+      return char.class;
     else if ("byte".equals (type))
-      return int.class;
+      return byte.class;
     else if ("float".equals (type))
-      return int.class;
+      return float.class;
     else if ("double".equals (type))
-      return int.class;
+      return double.class;
     else if ("void".equals (type))
-      return int.class;
+      return void.class;
     return null;
   }
 }
