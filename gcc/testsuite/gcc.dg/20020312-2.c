@@ -18,22 +18,14 @@
 /* No pic register.  */
 #elif defined(__cris__)
 # define PIC_REG  "0"
-#elif defined(__D30V__)
-/* No pic register.  */
-#elif defined(__dsp1600__)
-/* No pic register.  */
 #elif defined(__fr30__)
 /* No pic register.  */
 #elif defined(__H8300__) || defined(__H8300H__) || defined(__H8300S__)
 /* No pic register.  */
 #elif defined(_IBMR2)
 /* No pic register.  */
-#elif #cpu(i370)
-/* No pic register.  */
 #elif defined(__i386__)
 # define PIC_REG  "ebx"
-#elif defined(__i960__)
-/* No pic register.  */
 #elif defined(__ia64__)
 /* PIC register is r1, but is used even without -fpic.  */
 #elif defined(__M32R__)

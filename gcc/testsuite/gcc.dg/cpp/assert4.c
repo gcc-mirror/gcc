@@ -192,14 +192,6 @@
 # error
 #endif
 
-#if defined __d30v__
-# if !#cpu(d30v) || !#machine(d30v)
-#  error
-# endif
-#elif #cpu(d30v) || #machine(d30v)
-# error
-#endif
-
 #if defined __fr30__
 # if !#cpu(fr30) || !#machine(fr30)
 #  error
@@ -267,14 +259,6 @@
 #  error
 # endif
 #elif #cpu(i860) || #machine(i860)
-# error
-#endif
-
-#if defined __i960__
-# if !#cpu(i960) || !#machine(i960)
-#  error
-# endif
-#elif #cpu(i960) || #machine(i960)
 # error
 #endif
 

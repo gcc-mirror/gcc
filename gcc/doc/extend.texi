@@ -7198,8 +7198,6 @@ declarations.
 
 @c Describe c4x pragmas here.
 @c Describe h8300 pragmas here.
-@c Describe i370 pragmas here.
-@c Describe i960 pragmas here.
 @c Describe sh pragmas here.
 @c Describe v850 pragmas here.
 

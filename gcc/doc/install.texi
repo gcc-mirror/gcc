@@ -530,7 +530,7 @@ provide a configure target when configuring a native compiler.
 @item
 @var{target} must be specified as @option{--target=@var{target}}
 when configuring a cross compiler; examples of valid targets would be
-i960-rtems, m68k-coff, sh-elf, etc.
+m68k-coff, sh-elf, etc.
 
 @item
 Specifying just @var{target} instead of @option{--target=@var{target}}
@@ -2010,8 +2010,6 @@ GNU Compiler Collection on your machine.
 @item
 @uref{#dos,,DOS}
 @item
-@uref{#dsp16xx,,dsp16xx}
-@item
 @uref{#*-*-freebsd*,,*-*-freebsd*}
 @item
 @uref{#h8300-hms,,h8300-hms}
@@ -2021,8 +2019,6 @@ GNU Compiler Collection on your machine.
 @uref{#hppa*-hp-hpux10,,hppa*-hp-hpux10}
 @item
 @uref{#hppa*-hp-hpux11,,hppa*-hp-hpux11}
-@item
-@uref{#i370-*-*,,i370-*-*}
 @item
 @uref{#*-*-linux-gnu,,*-*-linux-gnu}
 @item
@@ -2404,12 +2400,6 @@ and includes all the necessary compilation tools and libraries.
 @html
 <hr />
 @end html
-@heading @anchor{dsp16xx}dsp16xx
-A port to the AT&T DSP1610 family of processors.
-
-@html
-<hr />
-@end html
 @heading @anchor{*-*-freebsd*}*-*-freebsd*
 
 The version of binutils installed in @file{/usr/bin} is known to work unless
@@ -2621,13 +2611,6 @@ The bundled compiler supports only traditional C; you will need
 either HP's unbundled compiler, or a binary distribution of GCC@.
 
 This port still is undergoing significant development.
-
-@html
-<hr />
-@end html
-@heading @anchor{i370-*-*}i370-*-*
-This port is very preliminary and has many known bugs.  We hope to
-have a higher-quality port for this machine soon.
 
 @html
 <hr />

@@ -58,7 +58,7 @@
 #			tm_file="${tm_file} dbxelf.h elfos.h svr4.h ${cpu_type.h}/elf.h"
 #			Note that the preferred order is:
 #			- specific target header "${cpu_type}/${cpu_type.h}"
-#			- generic headers like dbxelf.h elfos.h, netware.h, etc.
+#			- generic headers like dbxelf.h elfos.h, etc.
 #			- specializing target headers like ${cpu_type.h}/elf.h
 #			This helps to keep OS specific stuff out of the CPU
 #			defining header ${cpu_type}/${cpu_type.h}.
@@ -182,23 +182,7 @@ md_file=
 
 # Obsolete configurations.
 case ${target} in
- d30v-* | \
- dsp16xx-* | \
- i370-* | \
- i960-* | \
- i?86-moss-msdos | i?86-*-moss* | \
- i?86-ncr-sysv4* | \
- i?86-*-netware | \
- i?86-*-freebsd2* | i?86-*-freebsd*aout* | \
- i?86-*-linux*aout* | \
- i?86-*-linux*libc1* | \
- i?86-*-interix | \
- i?86-*-mach* | \
- i?86-*-udk* | \
- i?86-*-sysv[123]* | \
- i386-*-vsta | \
- m68k-hp-hpux* | m68000-hp-hpux* | \
- m68k-*-sysv4*)
+ dummy*)
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2
       echo "*** Specify --enable-obsolete to build it anyway." >&2
@@ -726,12 +710,6 @@ cris-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file} linux.h cris/linux.h"
 	tmake_file="cris/t-cris t-slibgcc-elf-ver cris/t-linux"
 	;;
-d30v-*)
-	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
-	;;
-dsp16xx-*)
-	use_fixproto=yes
-	;;
 fr30-*-elf)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
 	tmake_file=fr30/t-fr30
@@ -900,16 +878,6 @@ i[34567]86-*-elf*)
 	tmake_file="i386/t-i386elf t-svr4"
 	use_fixproto=yes
 	;;
-i[34567]86-ncr-sysv4*)		# NCR 3000 - ix86 running system V.4
-	xm_defines="SMALL_ARG_MAX"
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h i386/sysv4.h i386/sysv4-cpp.h"
-	extra_parts="crtbegin.o crtend.o"
-	tmake_file=i386/t-crtpic
-	use_fixproto=yes
-	;;
-i[34567]86-*-netware)		# Intel 80386's running netware
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h i386/sysv4.h netware.h i386/netware.h"
-	;;
 i[34567]86-sequent-ptx4* | i[34567]86-sequent-sysv4*)
 	if test x$gas = xyes
 	then
@@ -929,10 +897,6 @@ i[34567]86-*-beoself* | i[34567]86-*-beos*)
 	tmake_file='i386/t-beos i386/t-crtpic'
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h i386/beos-elf.h"
 	extra_parts='crtbegin.o crtend.o'
-	;;
-i[34567]86-*-freebsd2 | i[34567]86-*-freebsd2.* | i[34567]86-*-freebsd*aout*)
-	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h i386/freebsd-aout.h"
-	tmake_file=t-freebsd
 	;;
 i[34567]86-*-freebsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h ${fbsd_tm_file} i386/freebsd.h"
@@ -963,23 +927,6 @@ i[34567]86-*-coff*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/i386-coff.h"
 	use_fixproto=yes
 	;;
-i[34567]86-*-linux*aout*)	# Intel 80386's running GNU/Linux
-				# with a.out format
-	tmake_file="i386/t-crtstuff"
-	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h linux-aout.h i386/linux-aout.h"
-	gnu_ld=yes
-	;;
-i[34567]86-*-linux*libc1)	# Intel 80386's running GNU/Linux
-				# with ELF format using the
-				# GNU/Linux C library 5
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h"
-	tmake_file="t-slibgcc-elf-ver t-linux t-linux-gnulibc1 i386/t-crtstuff"
-	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-	gnu_ld=yes
-	if test x$enable_threads = xyes; then
-		thread_file='single'
-	fi
-	;;
 i[34567]86-*-linux*)	# Intel 80386's running GNU/Linux
 			# with ELF format using glibc 2
 			# aka GNU/Linux C library 6
@@ -1006,13 +953,6 @@ i[34567]86-pc-msdosdjgpp*)
 	gnu_ld=yes
 	gas=yes
 	;;
-i[34567]86-moss-msdos* | i[34567]86-*-moss*)
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h linux.h i386/linux.h i386/moss.h"
-	tmake_file=t-libc-ok
-	gnu_ld=yes
-	gas=yes
-	use_fixproto=yes
-	;;
 i[34567]86-*-lynxos*)
 	if test x$gas = xyes
 	then
@@ -1020,12 +960,6 @@ i[34567]86-*-lynxos*)
 	else
 		tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h lynx-ng.h i386/lynx-ng.h"
 	fi
-	use_fixproto=yes
-	;;
-i[34567]86-*-mach*)
-	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/gstabs.h i386/mach.h"
-#	tmake_file=t-libc-ok
-	use_collect2=yes
 	use_fixproto=yes
 	;;
 i[34567]86-*-nto-qnx*)
@@ -1097,38 +1031,6 @@ i[34567]86-*-sysv4*)		# Intel 80386's running system V.4
 	extra_parts="crtbegin.o crtend.o"
 	use_fixproto=yes
 	;;
-i[34567]86-*-udk*)      # Intel x86 on SCO UW/OSR5 Dev Kit
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h svr4.h i386/sysv4.h i386/sysv5.h i386/udk.h"
-	tmake_file="i386/t-crtpic i386/t-udk t-svr4"
-	extra_parts="crtbegin.o crtend.o"
-	use_fixproto=yes
-	;;
-i[34567]86-*-sysv*)		# Intel 80386's running system V
-	if test x$gas = xyes
-	then
-		if test x$stabs = xyes
-		then
-			tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/svr3gas.h i386/svr3dbx.h"
-			tmake_file=i386/t-svr3dbx
-			extra_parts="svr3.ifile svr3z.ifile"
-		else
-			tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/svr3gas.h"
-			extra_parts="crtbegin.o crtend.o"
-			tmake_file=i386/t-crtstuff
-		fi
-	else
-		tm_file="${tm_file} svr3.h i386/unix.h i386/att.h i386/sysv3.h"
-		extra_parts="crtbegin.o crtend.o"
-		tmake_file=i386/t-crtstuff
-	fi
-	tmake_file="$tmake_file i386/t-crtpic"
-	use_fixproto=yes
-	;;
-i386-*-vsta)			# Intel 80386's running VSTa kernel
-	xm_file="i386/xm-vsta.h"
-	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/vsta.h"
-	use_fixproto=yes
-	;;
 i[4567]86-wrs-vxworks)
 	tm_file="${tm_file} i386/sysv4.h i386/unix.h i386/vxworks.h"
 	tmake_file="${tmake_file} i386/t-vxworks"
@@ -1180,17 +1082,6 @@ i[34567]86-*-interix3*)
 		tm_file="${tm_file} dbxcoff.h"
 	fi
 	;;
-i[34567]86-*-interix*)
-	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h i386/i386-interix.h interix.h"
-	tmake_file="i386/t-interix"
-	extra_objs=winnt.o
-	if test x$enable_threads = xyes ; then
-		thread_file='posix'
-	fi
-	if test x$stabs = xyes ; then
-		tm_file="${tm_file} dbxcoff.h"
-	fi
-	;;
 i[34567]86-*-kaos*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h i386/i386elf.h kaos.h i386/kaos-i386.h"
 	tmake_file="i386/t-i386elf t-svr4"
@@ -1201,25 +1092,6 @@ i860-*-sysv4*)
         extra_parts="crtbegin.o crtend.o"
 	use_fixproto=yes
         ;;
-i960-*-coff*)
-	tm_file="${tm_file} dbxcoff.h i960/i960-coff.h libgloss.h"
-	tmake_file=i960/t-960bare
-	c_target_objs="i960-c.o"
-	cxx_target_objs="i960-c.o"
-	;;
-i960-*-rtems)
-	tmake_file="i960/t-960bare t-rtems"
-	tm_file="${tm_file} dbxcoff.h i960/i960-coff.h i960/rtems.h rtems.h"
-	c_target_objs="i960-c.o"
-	cxx_target_objs="i960-c.o"
-	;;
-i960-*-*)			# Default i960 environment.
-	use_collect2=yes
-	tmake_file=i960/t-960bare
-	c_target_objs="i960-c.o"
-	cxx_target_objs="i960-c.o"
-	use_fixproto=yes
-	;;
 ia64*-*-elf*)
 	tm_file="${tm_file} dbxelf.h elfos.h ia64/sysv4.h ia64/elf.h"
 	tmake_file="ia64/t-ia64"
@@ -1324,37 +1196,6 @@ m68hc12-*-*|m6812-*-*)
 	tmake_file="m68hc11/t-m68hc11-gas"
 	use_fixproto=yes
         ;;
-m68000-hp-hpux*)		# HP 9000 series 300
-	tm_file="m68k/hp320base.h m68k/m68k.h m68k/hp320.h m68k/hp310.h"
-	tm_defines="TARGET_DEFAULT=0" # 68000, no 68881, no bitfield ops
-	if test x$gas = xyes
-	then
-		tm_defines="${tm_defines} DBX_DEBUGGING_INFO=1 USE_GAS"
-	fi
-	tmake_file=m68k/t-hp320
-	use_collect2=yes
-	use_fixproto=yes
-	;;
-m68k-hp-hpux7*)	# HP 9000 series 300 running HPUX version 7.
-	tm_file="m68k/hp320base.h m68k/m68k.h m68k/hp320.h"
-	if test x$gas = xyes
-	then
-		tm_defines="DBX_DEBUGGING_INFO=1 USE_GAS"
-	else
-		tm_defines="NO_DOT_IN_LABEL NO_BUGS"
-	fi
-	use_collect2=yes
-	use_fixproto=yes
-	;;
-m68k-hp-hpux*)	# HP 9000 series 300
-	tm_file="m68k/hp320base.h m68k/m68k.h m68k/hp320.h"
-	if test x$gas = xyes
-	then
-		tm_defines="DBX_DEBUGGING_INFO=1 USE_GAS"
-	fi
-	use_collect2=yes
-	use_fixproto=yes
-	;;
 m68k-*-aout*)
 	tmake_file=m68k/t-m68kbare
 	tm_file="m68k/m68k.h m68k/m68k-none.h m68k/m68kemb.h m68k/m68k-aout.h libgloss.h"
@@ -1383,34 +1224,6 @@ m68010-*-netbsdelf* | m68k*-*-netbsdelf*)
 		target_cpu_default="MASK_68020|MASK_68881|MASK_BITFIELD"
 		;;
 	esac
-	;;
-m68k*-*-netbsd*)
-    if test "x$enable_obsolete" != xyes; then
-      echo "*** Configuration ${target} is obsolete." >&2
-      echo "*** Specify --enable-obsolete to build it anyway." >&2
-      echo "*** Support will be REMOVED in the next major release of GCC," >&2
-      echo "*** unless a maintainer comes forward." >&2
-      exit 1
-    fi
-	tm_file="m68k/m68k.h netbsd.h netbsd-aout.h m68k/netbsd.h"
-	tmake_file=t-netbsd
-	extra_parts=""
-	use_collect2=yes
-	;;
-m68k*-*-openbsd*)
-	# needed to unconfuse gdb
-	tm_defines="OBSD_OLD_GAS TARGET_DEFAULT=(MASK_68020|MASK_68881|MASK_BITFIELD)"
-	tm_file="m68k/m68k.h openbsd.h m68k/openbsd.h"
-	tmake_file="t-libc-ok t-openbsd m68k/t-openbsd"
-	# we need collect2 until our bug is fixed...
-	use_collect2=yes
-	;;
-m68k-*-sysv4*)			# Motorola m68k's running system V.4
-	tm_file="m68k/m68k.h m68k/sgs.h dbxelf.h elfos.h svr4.h m68k/m68kv4.h"
-	tm_defines="MOTOROLA SGS SGS_CMP_ORDER SGS_SWITCH_TABLES"
-	tmake_file=t-svr4
-	extra_parts="crtbegin.o crtend.o"
-	use_fixproto=yes
 	;;
 m68k-*-uclinux*)		# Motorola m68k/ColdFire running uClinux with uClibc
 	tm_file="m68k/m68k.h m68k/m68k-none.h m68k/m68kelf.h dbxelf.h elfos.h m68k/uclinux.h"
@@ -2212,16 +2025,6 @@ vax-*-openbsd*)
 	;;
 vax-*-ultrix*)			# VAXen running ultrix
 	tm_file="${tm_file} vax/ultrix.h"
-	use_fixproto=yes
-	;;
-vax-*-*)			# VAX default entry
-    if test "x$enable_obsolete" != xyes; then
-      echo "*** Configuration ${target} is obsolete." >&2
-      echo "*** Specify --enable-obsolete to build it anyway." >&2
-      echo "*** Support will be REMOVED in the next major release of GCC," >&2
-      echo "*** unless a maintainer comes forward." >&2
-      exit 1
-    fi
 	use_fixproto=yes
 	;;
 xscale-*-elf)
