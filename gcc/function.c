@@ -3295,9 +3295,11 @@ assign_parms (fndecl, second_time)
 	  if (REGNO (parmreg) >= nparmregs)
 	    {
 	      rtx *new;
+	      int old_nparmregs = nparmregs;
 	      nparmregs = REGNO (parmreg) + 5;
 	      new = (rtx *) oballoc (nparmregs * sizeof (rtx));
-	      bcopy (parm_reg_stack_loc, new, nparmregs * sizeof (rtx));
+	      bcopy (parm_reg_stack_loc, new, old_nparmregs * sizeof (rtx));
+	      bzero (new + old_nparmregs, (nparmregs - old_nparmregs) * sizeof (rtx));
 	      parm_reg_stack_loc = new;
 	    }
 	  parm_reg_stack_loc[REGNO (parmreg)] = stack_parm;
