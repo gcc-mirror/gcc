@@ -1,4 +1,4 @@
-/* Loop optimization definitions for GNU C-Compiler
+/* Loop optimization definitions for GCC
    Copyright (C) 1991, 1995, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
 

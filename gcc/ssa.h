@@ -1,4 +1,4 @@
-/* Static Single Assignment (SSA) definitions for GNU C-Compiler
+/* Static Single Assignment (SSA) definitions for GCC
    Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    Written by Jeffrey D. Oldham <oldham@codesourcery.com>.
 

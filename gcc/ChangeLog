@@ -1,3 +1,11 @@
+2003-06-16  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* convert.c, dwarf2out.c, dwarfout.c, emit-rtl.c, function.c,
+	lists.c, print-rtl.c, print-tree.c, read-rtl.c, rtl-error.c,
+	stmt.c, toplev.c, integrate.h, loop.h, machmode.h, rtl.h,
+	ssa.h, tree.def: Replace overly specific references to "GNU C"
+	and "GNU C Compiler" with references to "GCC".
+
 2003-06-16  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* (REG_CLASS_FROM_CONSTRAINT): Only define if not already defined.

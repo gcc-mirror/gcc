@@ -1,4 +1,4 @@
-/* Output Dwarf format symbol table information from the GNU C compiler.
+/* Output Dwarf format symbol table information from GCC.
    Copyright (C) 1992, 1993, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
    2002, 2003 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com) of Network Computing Devices.
