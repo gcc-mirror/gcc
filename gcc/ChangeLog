@@ -1,3 +1,8 @@
+Fri Nov  6 16:35:10 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.md (floatunssidf2_internal splitter): Use base register
+	operand, not hard-coded SP.
+
 Fri Nov  6 04:07:53 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* jump.c (calculate_can_reach_end): Fix thinko.
