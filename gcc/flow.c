@@ -647,6 +647,9 @@ find_basic_blocks (f, nonlocal_label_list)
 	       looks for loop begin/end notes.  */
 	    if (basic_block_head[i] != basic_block_end[i])
 	      {
+		/* It would be quicker to delete all of these with a single
+		   unchaining, rather than one at a time, but we need to keep
+		   the NOTE's.  */
 		insn = NEXT_INSN (basic_block_head[i]);
 		while (insn != basic_block_end[i])
 		  {
@@ -730,11 +733,13 @@ find_basic_blocks (f, nonlocal_label_list)
 	 another pass for the pathalogical case, we can greatly speed up
 	 their compilation without hurting normal code.  This works because
 	 all the insns in the unreachable blocks have either been deleted or
-	 turned into notes.  */
+	 turned into notes.
+	 Note that we're talking about reducing memory usage by 10's of
+	 megabytes and reducing compilation time by several minutes.  */
       /* ??? The choice of when to make another pass is a bit arbitrary,
 	 and was derived from empirical data.  */
       if (pass == 1
-	  && (deleted > n_basic_blocks / 2 || deleted > 1000))
+	  && deleted > 200)
 	{
 	  pass++;
 	  n_basic_blocks -= deleted;
