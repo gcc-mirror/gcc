@@ -307,6 +307,16 @@ typedef struct {
 
 } ffi_cif;
 
+#if SIZEOF_ARG == 4
+typedef UINT32 ffi_arg;
+#else
+#if SIZEOF_ARG == 8
+typedef UINT64 ffi_arg;
+#else
+-- unsupported configuration
+#endif
+#endif
+
 /* ---- Definitions for the raw API -------------------------------------- */
 
 #if !FFI_NO_RAW_API
