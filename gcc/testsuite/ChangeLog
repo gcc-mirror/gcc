@@ -1,3 +1,8 @@
+2004-07-28  Diego Novillo  <dnovillo@redhat.com>
+
+	* gcc.dg/tree-ssa/20031022-1.c: Adjust number of expected
+	loads.  Not only in the comment, this time.
+
 2004-07-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	2003-07-06  Alexandre Oliva  <aoliva@redhat.com>
