@@ -203,7 +203,7 @@ output_function_prologue (stream, size)
     }
 
 #if NEED_PROBE
-  fprintf (stream, "\ttstl sp@(%d)\n", NEED_PROBE - num_saved_regs * 4);
+  asm_fprintf (stream, "\ttstl %Rsp@(%d)\n", NEED_PROBE - num_saved_regs * 4);
 #endif
 
   if (num_saved_regs <= 2)
