@@ -43,7 +43,11 @@ exception statement from your version. */
 #define __attribute__(x) /* nothing */
 #endif
 
-static char errstr[4098]; // this way the memory is pre-allocated, so that we do not have to worry if we are out of memory.
+/*
+ * This way the memory is pre-allocated, so that we do not have to worry
+ * if we are out of memory.
+ */
+static char errstr[4098];
 
 JNIEXPORT void JNICALL JCL_ThrowException(JNIEnv * env, char * className, char * errMsg) {
 	jclass excClass;

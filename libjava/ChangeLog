@@ -1,3 +1,7 @@
+2004-04-23  Mark Wielaard  <mark@klomp.org>
+
+	* jni/classpath/jcl.c: Changed C++ comments into C comments.
+
 2004-04-23 Dalibor Topic <robilad@kaffe.org>
 
 	* java/sql/DriverManager.java:
