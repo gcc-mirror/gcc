@@ -878,6 +878,17 @@ negate_expr_p (tree t)
       return negate_expr_p (TREE_REALPART (t))
 	     && negate_expr_p (TREE_IMAGPART (t));
 
+    case PLUS_EXPR:
+      if (FLOAT_TYPE_P (type) && !flag_unsafe_math_optimizations)
+	return false;
+      /* -(A + B) -> (-B) - A.  */
+      if (negate_expr_p (TREE_OPERAND (t, 1))
+	  && reorder_operands_p (TREE_OPERAND (t, 0),
+				 TREE_OPERAND (t, 1)))
+	return true;
+      /* -(A + B) -> (-A) - B.  */
+      return negate_expr_p (TREE_OPERAND (t, 0));
+
     case MINUS_EXPR:
       /* We can't turn -(A-B) into B-A when we honor signed zeros.  */
       return (! FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations)
@@ -978,6 +989,26 @@ negate_expr (tree t)
 
     case NEGATE_EXPR:
       return convert (type, TREE_OPERAND (t, 0));
+
+    case PLUS_EXPR:
+      if (! FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations)
+	{
+	  /* -(A + B) -> (-B) - A.  */
+	  if (negate_expr_p (TREE_OPERAND (t, 1))
+	      && reorder_operands_p (TREE_OPERAND (t, 0),
+				     TREE_OPERAND (t, 1)))
+	    return convert (type,
+			    fold (build (MINUS_EXPR, TREE_TYPE (t),
+					 negate_expr (TREE_OPERAND (t, 1)),
+					 TREE_OPERAND (t, 0))));
+	  /* -(A + B) -> (-A) - B.  */
+	  if (negate_expr_p (TREE_OPERAND (t, 0)))
+	    return convert (type,
+			    fold (build (MINUS_EXPR, TREE_TYPE (t),
+					 negate_expr (TREE_OPERAND (t, 0)),
+					 TREE_OPERAND (t, 1))));
+	}
+      break;
 
     case MINUS_EXPR:
       /* - (A - B) -> B - A  */
@@ -6089,19 +6120,6 @@ fold (tree expr)
 	  if (integer_zerop (arg1))
 	    return non_lvalue (convert (type, arg0));
 
-	  /* (A * C) - (B * C) -> (A-B) * C.  Since we are most concerned
-	     about the case where C is a constant, just try one of the
-	     four possibilities.  */
-
-	  if (TREE_CODE (arg0) == MULT_EXPR && TREE_CODE (arg1) == MULT_EXPR
-	      && operand_equal_p (TREE_OPERAND (arg0, 1),
-				  TREE_OPERAND (arg1, 1), 0))
-	    return fold (build (MULT_EXPR, type,
-				fold (build (MINUS_EXPR, type,
-					     TREE_OPERAND (arg0, 0),
-					     TREE_OPERAND (arg1, 0))),
-				TREE_OPERAND (arg0, 1)));
-
 	  /* Fold A - (A & B) into ~B & A.  */
 	  if (!TREE_SIDE_EFFECTS (arg0)
 	      && TREE_CODE (arg1) == BIT_AND_EXPR)
@@ -6157,6 +6175,34 @@ fold (tree expr)
       if ((! FLOAT_TYPE_P (type) || flag_unsafe_math_optimizations)
 	  && operand_equal_p (arg0, arg1, 0))
 	return convert (type, integer_zero_node);
+
+      /* A - B -> A + (-B) if B is easily negatable.  */
+      if (!wins && negate_expr_p (arg1)
+	  && (FLOAT_TYPE_P (type)
+	      || (INTEGRAL_TYPE_P (type) && flag_wrapv && !flag_trapv)))
+	return fold (build (PLUS_EXPR, type, arg0, negate_expr (arg1)));
+
+      if (TREE_CODE (arg0) == MULT_EXPR
+	  && TREE_CODE (arg1) == MULT_EXPR
+	  && (INTEGRAL_TYPE_P (type) || flag_unsafe_math_optimizations))
+	{
+          /* (A * C) - (B * C) -> (A-B) * C.  */
+	  if (operand_equal_p (TREE_OPERAND (arg0, 1),
+			       TREE_OPERAND (arg1, 1), 0))
+	    return fold (build (MULT_EXPR, type,
+				fold (build (MINUS_EXPR, type,
+					     TREE_OPERAND (arg0, 0),
+					     TREE_OPERAND (arg1, 0))),
+				TREE_OPERAND (arg0, 1)));
+          /* (A * C1) - (A * C2) -> A * (C1-C2).  */
+	  if (operand_equal_p (TREE_OPERAND (arg0, 0),
+			       TREE_OPERAND (arg1, 0), 0))
+	    return fold (build (MULT_EXPR, type,
+				TREE_OPERAND (arg0, 0),
+				fold (build (MINUS_EXPR, type,
+					     TREE_OPERAND (arg0, 1),
+					     TREE_OPERAND (arg1, 1)))));
+	}
 
       goto associate;
 
