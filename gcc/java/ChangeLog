@@ -1,3 +1,7 @@
+Tue Aug  3 20:21:20 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* Makefile.in (decl.o): Depends on $(srcdir)/../defaults.h.
+
 1999-08-02  Richard Henderson  <rth@cygnus.com>
 
 	* decl.c: Include defaults.h instead of expr.h.

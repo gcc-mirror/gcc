@@ -1337,7 +1337,7 @@ $(srcdir)/c-gperf.h: c-parse.gperf
 	 $(srcdir)/move-if-change tmp-gperf.h $(srcdir)/c-gperf.h
 
 c-decl.o : c-decl.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h \
-    c-lex.h flags.h output.h toplev.h
+    c-lex.h flags.h output.h toplev.h defaults.h
 c-typeck.o : c-typeck.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h \
     flags.h intl.h output.h $(EXPR_H) $(RTL_H) toplev.h
 c-lang.o : c-lang.c $(CONFIG_H) system.h $(TREE_H) c-tree.h c-common.h \
