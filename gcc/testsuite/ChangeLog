@@ -1,3 +1,7 @@
+2000-09-10  Michael Chamberlain <michael@chamberlain.net.au>
+
+        * gcc.misc-tests/mg.exp (compiler_output): Support tcl 8.3.1.
+
 2001-06-29  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* lib/objc.exp (objc_target_compile): Declare rootme.  Append to
