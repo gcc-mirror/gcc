@@ -5503,13 +5503,12 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
      classes explicitly.  */
   if (!val && !nonclass 
       && current_class_type && TYPE_BEING_DEFINED (current_class_type))
-    {
-      val = qualify_lookup (lookup_field (current_class_type, name, 0, 0),
-			    flags);
-      if (!val)
-	val = qualify_lookup (lookup_nested_field (name, !yylex),
-			      flags);
-    }
+    val = qualify_lookup (lookup_field (current_class_type, name, 0, 0),
+			  flags);
+
+  /* The name might be from an enclosing class of the current scope.  */
+  if (!val && !nonclass && current_class_type)
+    val = qualify_lookup (lookup_nested_field (name, !yylex), flags);
   
   /* If we found a type from a dependent base class (using the
      implicit typename extension) make sure that there's not some
