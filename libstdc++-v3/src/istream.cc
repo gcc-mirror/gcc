@@ -1,0 +1,405 @@
+// Input streams -*- C++ -*-
+
+// Copyright (C) 2004 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+// USA.
+
+// As a special exception, you may use this file as part of a free software
+// library without restriction.  Specifically, if other files instantiate
+// templates or use macros or inline functions from this file, or you compile
+// this file and link it with other files to produce an executable, this
+// file does not by itself cause the resulting executable to be covered by
+// the GNU General Public License.  This exception does not however
+// invalidate any other reasons why the executable file might be covered by
+// the GNU General Public License.
+
+//
+// ISO C++ 14882: 27.6.1  Input streams
+//
+
+#include <istream>
+
+namespace std
+{
+  template<>
+    basic_istream<char>&
+    basic_istream<char>::
+    getline(char_type* __s, streamsize __n, char_type __delim)
+    {
+      _M_gcount = 0;
+      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+      sentry __cerb(*this, true);
+      if (__cerb)
+	{
+          try
+	    {
+	      const int_type __idelim = traits_type::to_int_type(__delim);
+	      const int_type __eof = traits_type::eof();
+	      __streambuf_type* __sb = this->rdbuf();
+	      int_type __c = __sb->sgetc();
+	      
+	      while (_M_gcount + 1 < __n
+		     && !traits_type::eq_int_type(__c, __eof)
+		     && !traits_type::eq_int_type(__c, __idelim))
+		{
+		  streamsize __size = std::min(streamsize(__sb->egptr()
+							  - __sb->gptr()),
+					       streamsize(__n - _M_gcount
+							  - 1));
+		  if (__size > 1)
+		    {
+		      const char_type* __p = traits_type::find(__sb->gptr(),
+							       __size,
+							       __delim);
+		      if (__p)
+			__size = __p - __sb->gptr();
+		      traits_type::copy(__s, __sb->gptr(), __size);
+		      __s += __size;
+		      __sb->gbump(__size);
+		      _M_gcount += __size;
+		      __c = __sb->sgetc();
+		    }
+		  else
+		    {
+		      *__s++ = traits_type::to_char_type(__c);
+		      ++_M_gcount;
+		      __c = __sb->snextc();
+		    }
+		}
+
+	      if (traits_type::eq_int_type(__c, __eof))
+		__err |= ios_base::eofbit;
+	      else if (traits_type::eq_int_type(__c, __idelim))
+		{
+		  ++_M_gcount;		  
+		  __sb->sbumpc();
+		}
+	      else
+		__err |= ios_base::failbit;
+	    }
+	  catch(...)
+	    { this->_M_setstate(ios_base::badbit); }
+	}
+      *__s = char_type();
+      if (!_M_gcount)
+	__err |= ios_base::failbit;
+      if (__err)
+	this->setstate(__err);
+      return *this;
+    }
+
+  template<>
+    basic_istream<char>&
+    basic_istream<char>::
+    ignore(streamsize __n)
+    {
+      if (__n == 1)
+	return ignore();
+      
+      _M_gcount = 0;
+      sentry __cerb(*this, true);
+      if (__cerb && __n > 0)
+	{
+	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	  try
+	    {
+	      const int_type __eof = traits_type::eof();
+	      __streambuf_type* __sb = this->rdbuf();
+	      int_type __c = __sb->sgetc();
+	      
+	      const bool __bound = __n != numeric_limits<streamsize>::max();
+	      if (__bound)
+		--__n;
+	      while (_M_gcount <= __n
+		     && !traits_type::eq_int_type(__c, __eof))
+		{
+		  streamsize __size = __sb->egptr() - __sb->gptr();
+		  if (__bound)
+		    __size = std::min(__size, streamsize(__n - _M_gcount + 1));
+
+		  if (__size > 1)
+		    {
+		      __sb->gbump(__size);
+		      _M_gcount += __size;
+		      __c = __sb->sgetc();
+		    }
+		  else
+		    {
+		      ++_M_gcount;
+		      __c = __sb->snextc();
+		    }		  
+		}
+	      if (traits_type::eq_int_type(__c, __eof))
+		__err |= ios_base::eofbit;
+	    }
+	  catch(...)
+	    { this->_M_setstate(ios_base::badbit); }
+	  if (__err)
+	    this->setstate(__err);
+	}
+      return *this;
+    }
+
+  template<>
+    basic_istream<char>&
+    basic_istream<char>::
+    ignore(streamsize __n, int_type __delim)
+    {
+      if (traits_type::eq_int_type(__delim, traits_type::eof()))
+	return ignore(__n);
+
+      _M_gcount = 0;
+      sentry __cerb(*this, true);
+      if (__cerb && __n > 0)
+	{
+	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	  try
+	    {
+	      const char_type __cdelim = traits_type::to_char_type(__delim);	      
+	      const int_type __eof = traits_type::eof();
+	      __streambuf_type* __sb = this->rdbuf();
+	      int_type __c = __sb->sgetc();
+
+	      const bool __bound = __n != numeric_limits<streamsize>::max();
+	      if (__bound)
+		--__n;
+	      while (_M_gcount <= __n
+		     && !traits_type::eq_int_type(__c, __eof)
+		     && !traits_type::eq_int_type(__c, __delim))
+		{
+		  streamsize __size = __sb->egptr() - __sb->gptr();
+		  if (__bound)
+		    __size = std::min(__size, streamsize(__n - _M_gcount + 1));
+
+		  if (__size > 1)
+		    {
+		      const char_type* __p = traits_type::find(__sb->gptr(),
+							       __size,
+							       __cdelim);
+		      if (__p)
+			__size = __p - __sb->gptr();
+		      __sb->gbump(__size);
+		      _M_gcount += __size;
+		      __c = __sb->sgetc();
+		    }
+		  else
+		    {
+		      ++_M_gcount;
+		      __c = __sb->snextc();
+		    }		  
+		}
+	      if (traits_type::eq_int_type(__c, __eof))
+		__err |= ios_base::eofbit;
+	      else if (traits_type::eq_int_type(__c, __delim))
+		{
+		  ++_M_gcount;
+		  __sb->sbumpc();
+		}
+	    }
+	  catch(...)
+	    { this->_M_setstate(ios_base::badbit); }
+	  if (__err)
+	    this->setstate(__err);
+	}
+      return *this;
+    }
+
+#ifdef _GLIBCXX_USE_WCHAR_T
+  template<>
+    basic_istream<wchar_t>&
+    basic_istream<wchar_t>::
+    getline(char_type* __s, streamsize __n, char_type __delim)
+    {
+      _M_gcount = 0;
+      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+      sentry __cerb(*this, true);
+      if (__cerb)
+	{
+          try
+	    {
+	      const int_type __idelim = traits_type::to_int_type(__delim);
+	      const int_type __eof = traits_type::eof();
+	      __streambuf_type* __sb = this->rdbuf();
+	      int_type __c = __sb->sgetc();
+	      
+	      while (_M_gcount + 1 < __n
+		     && !traits_type::eq_int_type(__c, __eof)
+		     && !traits_type::eq_int_type(__c, __idelim))
+		{
+		  streamsize __size = std::min(streamsize(__sb->egptr()
+							  - __sb->gptr()),
+					       streamsize(__n - _M_gcount
+							  - 1));
+		  if (__size > 1)
+		    {
+		      const char_type* __p = traits_type::find(__sb->gptr(),
+							       __size,
+							       __delim);
+		      if (__p)
+			__size = __p - __sb->gptr();
+		      traits_type::copy(__s, __sb->gptr(), __size);
+		      __s += __size;
+		      __sb->gbump(__size);
+		      _M_gcount += __size;
+		      __c = __sb->sgetc();
+		    }
+		  else
+		    {
+		      *__s++ = traits_type::to_char_type(__c);
+		      ++_M_gcount;
+		      __c = __sb->snextc();
+		    }
+		}
+
+	      if (traits_type::eq_int_type(__c, __eof))
+		__err |= ios_base::eofbit;
+	      else if (traits_type::eq_int_type(__c, __idelim))
+		{
+		  ++_M_gcount;		  
+		  __sb->sbumpc();
+		}
+	      else
+		__err |= ios_base::failbit;
+	    }
+	  catch(...)
+	    { this->_M_setstate(ios_base::badbit); }
+	}
+      *__s = char_type();
+      if (!_M_gcount)
+	__err |= ios_base::failbit;
+      if (__err)
+	this->setstate(__err);
+      return *this;
+    }
+
+  template<>
+    basic_istream<wchar_t>&
+    basic_istream<wchar_t>::
+    ignore(streamsize __n)
+    {
+      if (__n == 1)
+	return ignore();
+      
+      _M_gcount = 0;
+      sentry __cerb(*this, true);
+      if (__cerb && __n > 0)
+	{
+	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	  try
+	    {
+	      const int_type __eof = traits_type::eof();
+	      __streambuf_type* __sb = this->rdbuf();
+	      int_type __c = __sb->sgetc();
+	      
+	      const bool __bound = __n != numeric_limits<streamsize>::max();
+	      if (__bound)
+		--__n;
+	      while (_M_gcount <= __n
+		     && !traits_type::eq_int_type(__c, __eof))
+		{
+		  streamsize __size = __sb->egptr() - __sb->gptr();
+		  if (__bound)
+		    __size = std::min(__size, streamsize(__n - _M_gcount + 1));
+
+		  if (__size > 1)
+		    {
+		      __sb->gbump(__size);
+		      _M_gcount += __size;
+		      __c = __sb->sgetc();
+		    }
+		  else
+		    {
+		      ++_M_gcount;
+		      __c = __sb->snextc();
+		    }		  
+		}
+	      if (traits_type::eq_int_type(__c, __eof))
+		__err |= ios_base::eofbit;
+	    }
+	  catch(...)
+	    { this->_M_setstate(ios_base::badbit); }
+	  if (__err)
+	    this->setstate(__err);
+	}
+      return *this;
+    }
+
+  template<>
+    basic_istream<wchar_t>&
+    basic_istream<wchar_t>::
+    ignore(streamsize __n, int_type __delim)
+    {
+      if (traits_type::eq_int_type(__delim, traits_type::eof()))
+	return ignore(__n);
+
+      _M_gcount = 0;
+      sentry __cerb(*this, true);
+      if (__cerb && __n > 0)
+	{
+	  ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
+	  try
+	    {
+	      const char_type __cdelim = traits_type::to_char_type(__delim);	      
+	      const int_type __eof = traits_type::eof();
+	      __streambuf_type* __sb = this->rdbuf();
+	      int_type __c = __sb->sgetc();
+
+	      const bool __bound = __n != numeric_limits<streamsize>::max();
+	      if (__bound)
+		--__n;
+	      while (_M_gcount <= __n
+		     && !traits_type::eq_int_type(__c, __eof)
+		     && !traits_type::eq_int_type(__c, __delim))
+		{
+		  streamsize __size = __sb->egptr() - __sb->gptr();
+		  if (__bound)
+		    __size = std::min(__size, streamsize(__n - _M_gcount + 1));
+
+		  if (__size > 1)
+		    {
+		      const char_type* __p = traits_type::find(__sb->gptr(),
+							       __size,
+							       __cdelim);
+		      if (__p)
+			__size = __p - __sb->gptr();
+		      __sb->gbump(__size);
+		      _M_gcount += __size;
+		      __c = __sb->sgetc();
+		    }
+		  else
+		    {
+		      ++_M_gcount;
+		      __c = __sb->snextc();
+		    }		  
+		}
+	      if (traits_type::eq_int_type(__c, __eof))
+		__err |= ios_base::eofbit;
+	      else if (traits_type::eq_int_type(__c, __delim))
+		{
+		  ++_M_gcount;
+		  __sb->sbumpc();
+		}
+	    }
+	  catch(...)
+	    { this->_M_setstate(ios_base::badbit); }
+	  if (__err)
+	    this->setstate(__err);
+	}
+      return *this;
+    }
+#endif
+} // namespace std
