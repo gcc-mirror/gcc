@@ -2522,6 +2522,7 @@ do {									\
 #define DEBUG_LOC_SECTION	".debug_loc, \"\", \"progbits\""
 #define DEBUG_PUBNAMES_SECTION	".debug_pubnames, \"\", \"progbits\""
 #define DEBUG_STR_SECTION	".debug_str, \"\", \"progbits\""
+#define DEBUG_RANGES_SECTION	".debug_ranges, \"\", \"progbits\""
 
 /* C string constants giving the pseudo-op to use for a sequence of
    2, 4, and 8 byte unaligned constants.  dwarf2out.c needs these.  */

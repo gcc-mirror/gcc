@@ -228,6 +228,7 @@ Boston, MA 02111-1307, USA.  */
 #define DEBUG_ABBREV_SECTION	".debug_abbrev,0x7000001e,0,0,1"
 #define DEBUG_LOC_SECTION	".debug_loc,0x7000001e,0,0,1"
 #define DEBUG_STR_SECTION	".debug_str,0x7000001e,0,0,1"
+#define DEBUG_RANGES_SECTION	".debug_ranges,0x7000001e,0,0,1"
 
 /* ??? If no mabi=X option give, but a mipsX option is, then should depend
    on the mipsX option.  */
