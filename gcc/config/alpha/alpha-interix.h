@@ -62,12 +62,6 @@ Boston, MA 02111-1307, USA.  */
 #undef PUT_SDB_BLOCK_START
 #undef PUT_SDB_BLOCK_END
 
-/* the following are OSF linker (not gld) specific... we don't want them */
-#undef HAS_INIT_SECTION
-#undef LD_INIT_SWITCH
-#undef LD_FINI_SWITCH
-
-
 /* The following are needed for C++, but also needed for profiling */
 
 /* Support const sections and the ctors and dtors sections for g++.

@@ -2525,11 +2525,6 @@ do {							\
 
 #define ALIGN_SYMTABLE_OFFSET(OFFSET) (((OFFSET) + 7) & ~7)
 
-/* The linker will stick __main into the .init section.  */
-#define HAS_INIT_SECTION
-#define LD_INIT_SWITCH "-init"
-#define LD_FINI_SWITCH "-fini"
-
 /* The system headers under Alpha systems are generally C++-aware.  */
 #define NO_IMPLICIT_EXTERN_C
 

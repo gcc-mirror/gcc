@@ -144,3 +144,8 @@ __enable_execute_stack (addr)						\
 /* Digital UNIX V4.0E (1091)/usr/include/sys/types.h 4.3.49.9 1997/08/14 */
 #define SIZE_TYPE	"long unsigned int"
 #define PTRDIFF_TYPE	"long int"
+
+/* The linker will stick __main into the .init section.  */
+#define HAS_INIT_SECTION
+#define LD_INIT_SWITCH "-init"
+#define LD_FINI_SWITCH "-fini"
