@@ -1,5 +1,8 @@
 2002-08-03  Gabriel Dos Reis  <gdr@nerim.net>
 
+	* testsuite/26_numerics/valarray_name_lookup.cc: Rename from
+	testsuite/26_numerics/valarray_name_lookup.C
+
 	* include/bits/valarray_array.h (_DEFINE_ARRAY_FUNCTION): Use our
 	object function surrogates.
 	* include/bits/valarray_meta.h (__shift_left): Fix typo.
