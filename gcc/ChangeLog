@@ -1,3 +1,9 @@
+2001-07-26  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* toplev.c, varasm.c, final.c: Include xcoffout.h if appropriate.
+	* dbxout.c (dbxout_global_decl): Move outside #ifdef.
+	* Makefile.in (varasm.o, final.o, toplev.o): Update dependencies.
+
 2001-07-26  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* cpphash.h (struct_lexer_state): Delete was_skipping.

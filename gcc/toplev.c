@@ -79,6 +79,11 @@ Boston, MA 02111-1307, USA.  */
 #ifdef SDB_DEBUGGING_INFO
 #include "sdbout.h"
 #endif
+
+#ifdef XCOFF_DEBUGGING_INFO
+#include "xcoffout.h"		/* Needed for external data
+				   declarations for e.g. AIX 4.x.  */
+#endif
 
 #ifdef VMS
 /* The extra parameters substantially improve the I/O performance.  */

@@ -625,18 +625,6 @@ dbxout_end_block (line, n)
   ASM_OUTPUT_INTERNAL_LABEL (asmfile, "LBE", n);
 }
 
-/* Debug information for a global DECL.  Called from toplev.c after
-   compilation proper has finished.  */
-static void
-dbxout_global_decl (decl)
-     tree decl;
-{
-  if (TREE_CODE (decl) == VAR_DECL
-      && ! DECL_EXTERNAL (decl)
-      && DECL_RTL_SET_P (decl))	/* Not necessary?  */
-    dbxout_symbol (decl, 0);
-} 
-
 /* Output dbx data for a function definition.
    This includes a definition of the function name itself (a symbol),
    definitions of the parameters (locating them in the parameter list)
@@ -665,6 +653,18 @@ dbxout_function_decl (decl)
 }
 
 #endif /* DBX_DEBUGGING_INFO  */
+
+/* Debug information for a global DECL.  Called from toplev.c after
+   compilation proper has finished.  */
+static void
+dbxout_global_decl (decl)
+     tree decl;
+{
+  if (TREE_CODE (decl) == VAR_DECL
+      && ! DECL_EXTERNAL (decl)
+      && DECL_RTL_SET_P (decl))	/* Not necessary?  */
+    dbxout_symbol (decl, 0);
+} 
 
 /* At the end of compilation, finish writing the symbol table.
    Unless you define DBX_OUTPUT_MAIN_SOURCE_FILE_END, the default is
