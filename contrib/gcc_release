@@ -157,7 +157,7 @@ build_sources() {
       error "Could not rebuild GCC"
 
     # Regenerate the Fotran NEWS and BUGS files.
-    (cd  ${OBJECT_DIRECTORY}/gcc/f && make f77.rebuilt) || \
+    (cd ${OBJECT_DIRECTORY}/gcc && make f77.rebuilt) || \
       error "Could not regenerate Fortran NEWS and BUGS files"
   fi
 
