@@ -1787,16 +1787,16 @@ write_c_file_stat (stream, name)
       fprintf (stream, "  struct object *next;\n");
       fprintf (stream, "};\n");
 
-      fprintf (stream, "extern void __register_frame_table (void *, struct object *);\n");
-      fprintf (stream, "extern void __deregister_frame (void *);\n");
+      fprintf (stream, "extern void __register_frame_info_table (void *, struct object *);\n");
+      fprintf (stream, "extern void __deregister_frame_info (void *);\n");
 
       fprintf (stream, "static void reg_frame () {\n");
       fprintf (stream, "\tstatic struct object ob;\n");
-      fprintf (stream, "\t__register_frame_table (frame_table, &ob);\n");
+      fprintf (stream, "\t__register_frame_info_table (frame_table, &ob);\n");
       fprintf (stream, "\t}\n");
 
       fprintf (stream, "static void dereg_frame () {\n");
-      fprintf (stream, "\t__deregister_frame (frame_table);\n");
+      fprintf (stream, "\t__deregister_frame_info (frame_table);\n");
       fprintf (stream, "\t}\n");
     }
 
@@ -1873,16 +1873,16 @@ write_c_file_glob (stream, name)
       fprintf (stream, "  struct object *next;\n");
       fprintf (stream, "};\n");
 
-      fprintf (stream, "extern void __register_frame_table (void *, struct object *);\n");
-      fprintf (stream, "extern void __deregister_frame (void *);\n");
+      fprintf (stream, "extern void __register_frame_info_table (void *, struct object *);\n");
+      fprintf (stream, "extern void __deregister_frame_info (void *);\n");
 
       fprintf (stream, "static void reg_frame () {\n");
       fprintf (stream, "\tstatic struct object ob;\n");
-      fprintf (stream, "\t__register_frame_table (frame_table, &ob);\n");
+      fprintf (stream, "\t__register_frame_info_table (frame_table, &ob);\n");
       fprintf (stream, "\t}\n");
 
       fprintf (stream, "static void dereg_frame () {\n");
-      fprintf (stream, "\t__deregister_frame (frame_table);\n");
+      fprintf (stream, "\t__deregister_frame_info (frame_table);\n");
       fprintf (stream, "\t}\n");
     }
 
