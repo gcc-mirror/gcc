@@ -29,6 +29,8 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+#ifndef GCC_UNWIND_DW2_FDE_H
+#define GCC_UNWIND_DW2_FDE_H
 
 struct fde_vector
 {
@@ -174,3 +176,5 @@ last_fde (struct object *obj __attribute__ ((__unused__)), const fde *f)
   return f->length == 0;
 #endif
 }
+
+#endif /* unwind-dw2-fde.h */

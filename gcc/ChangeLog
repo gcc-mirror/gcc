@@ -1,7 +1,12 @@
+2004-01-07  Zack Weinberg  <zack@codesourcery.com>
+
+	* dwarf2.h, unwind-dw2-fde.h, unwind-pe.h, unwind.h:
+	Add multiple-include guard.
+
 2004-01-08  Hartmut Penner  <hpenner@de.ibm.com>
 
-	* gcc/config/rs6000/rs6000.c (easy_vector_constant): Accept 
-	all vector constant loadable by vsplt*.  
+	* gcc/config/rs6000/rs6000.c (easy_vector_constant): Accept
+	all vector constant loadable by vsplt*.
 	(output_vec_const_move): Likewise.
 
 2004-01-07  Joseph S. Myers  <jsm@polyomino.org.uk>

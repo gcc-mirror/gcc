@@ -783,7 +783,7 @@ print_token (FILE * file, unsigned int type ATTRIBUTE_UNUSED, YYSTYPE value)
 }
 
 /* Output a message ERROR_MESSAGE from the parser.  */
-void
+static void
 yyerror (const char *error_message)
 {
   struct prod_token_parm_item *tok;

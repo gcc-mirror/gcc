@@ -1,3 +1,7 @@
+2004-01-07  Zack Weinberg  <zack@codesourcery.com>
+
+	* parse.y (yyerror): Mark the definition static.
+
 2003-12-04  James A. Morrison  <ja2morri@uwaterloo.ca>
 
 	* lex.l: Add \t as a whitespace character.
