@@ -89,7 +89,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.45 $"
+version="$Revision: 1.46 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -1365,21 +1365,21 @@ EOF
                 rm -f ${subdir}/Makefile.tem
                 mv ${subdir}/Makefile.tm2 ${subdir}/Makefile.tem
 	    fi
-	    sed     -e "s|^prefix[ 	]*=.*$|prefix = ${prefix}|" \
-                    -e "s|^exec_prefix[ 	]*=.*$|exec_prefix = ${exec_prefix}|" \
-                    -e "s|^bindir[ 	]*=.*$|bindir = ${bindir}|" \
-                    -e "s|^sbindir[ 	]*=.*$|sbindir = ${sbindir}|" \
-                    -e "s|^libexecdir[ 	]*=.*$|libexecdir = ${libexecdir}|" \
-                    -e "s|^datadir[ 	]*=.*$|datadir = ${datadir}|" \
-                    -e "s|^sysconfdir[ 	]*=.*$|sysconfdir = ${sysconfdir}|" \
-                    -e "s|^sharedstatedir[ 	]*=.*$|sharedstatedir = ${sharedstatedir}|" \
-                    -e "s|^localstatedir[ 	]*=.*$|localstatedir = ${localstatedir}|" \
-                    -e "s|^libdir[ 	]*=.*$|libdir = ${libdir}|" \
-                    -e "s|^includedir[ 	]*=.*$|includedir = ${includedir}|" \
-                    -e "s|^oldincludedir[ 	]*=.*$|oldincludedir = ${oldincludedir}|" \
-                    -e "s|^infodir[ 	]*=.*$|infodir = ${infodir}|" \
-                    -e "s|^mandir[ 	]*=.*$|mandir = ${mandir}|" \
-		    -e "s|^ALL_BUILD_MODULES =.*|ALL_BUILD_MODULES =${all_build_modules}|" \
+	    sed     -e "s|@prefix@|${prefix}|" \
+                    -e "s|@exec_prefix@|${exec_prefix}|" \
+                    -e "s|@bindir@|${bindir}|" \
+                    -e "s|@sbindir@|${sbindir}|" \
+                    -e "s|@libexecdir@|${libexecdir}|" \
+                    -e "s|@datadir@|${datadir}|" \
+                    -e "s|@sysconfdir@|${sysconfdir}|" \
+                    -e "s|@sharedstatedir@|${sharedstatedir}|" \
+                    -e "s|@localstatedir@|${localstatedir}|" \
+                    -e "s|@libdir@|${libdir}|" \
+                    -e "s|@includedir@|${includedir}|" \
+                    -e "s|@oldincludedir@|${oldincludedir}|" \
+                    -e "s|@infodir@|${infodir}|" \
+                    -e "s|@mandir@|${mandir}|" \
+		    -e "s|@all_build_modules@|${all_build_modules}|" \
 		    -e "/^CC[ 	]*=/{
 			:loop1
 			/\\\\$/ N
@@ -1408,20 +1408,18 @@ EOF
 			t loop4
 			s%^CXXFLAGS[ 	]*=.*$%CXXFLAGS = ${CXXFLAGS}%
 			}" \
-		    -e "s|^SHELL[	 ]*=.*$|SHELL = ${config_shell}|" \
-                    -e "s|^srcdir[ 	]*=.*$|srcdir = ${makesrcdir}|" \
+		    -e "s|@config_shell@|${config_shell}|" \
+                    -e "s|@srcdir@|${makesrcdir}|" \
                     -e "s///" \
-                    -e "s:^program_prefix[ 	]*=.*$:program_prefix = ${program_prefix}:" \
-                    -e "s:^program_suffix[ 	]*=.*$:program_suffix = ${program_suffix}:" \
-                    -e "s:^program_transform_name[ 	]*=.*$:program_transform_name = ${program_transform_name}:" \
-                    -e "s|^tooldir[ 	]*=.*$|tooldir = ${tooldir}|" \
-                    -e "s|^build_tooldir[ 	]*=.*$|build_tooldir = ${tooldir}|" \
-		    -e "s:^DEFAULT_YACC[	 ]*=.*$:DEFAULT_YACC = ${DEFAULT_YACC}:" \
-		    -e "s:^DEFAULT_LEX[	 ]*=.*$:DEFAULT_LEX = ${DEFAULT_LEX}:" \
-		    -e "s:^DEFAULT_M4[  ]*=.*$:DEFAULT_M4 = ${DEFAULT_M4}:" \
+                    -e "s:@program_transform_name@:${program_transform_name}:" \
+                    -e "s|@tooldir@|${tooldir}|" \
+                    -e "s|@build_tooldir@|${tooldir}|" \
+		    -e "s:@DEFAULT_YACC@:${DEFAULT_YACC}:" \
+		    -e "s:@DEFAULT_LEX@:${DEFAULT_LEX}:" \
+		    -e "s:@DEFAULT_M4@:${DEFAULT_M4}:" \
                     ${subdir}/Makefile.tem >> ${Makefile}
   
-	    sed -e "s:^GDB_TK[	 ]*=.*$:GDB_TK = ${GDB_TK}:" ${Makefile} >${Makefile}.tem
+	    sed -e "s:@GDB_TK@:${GDB_TK}:" ${Makefile} >${Makefile}.tem
 	    mv -f ${Makefile}.tem ${Makefile}
 
 	    # If this is a Canadian Cross, preset the values of many more
