@@ -1214,30 +1214,42 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	}
     }
 
-  /* Mark the cleanups of exited blocks so that they are executed
-     by the code above.  */
+  /* For any still-undefined labels, do the cleanups for this block now.
+     We must do this now since items in the cleanup list may go out
+     of scope when the block ends. */
   for (prev = 0, f = goto_fixup_chain; f; prev = f, f = f->next)
     if (f->before_jump != 0
 	&& PREV_INSN (f->target_rtl) == 0
 	/* Label has still not appeared.  If we are exiting a block with
 	   a stack level to restore, that started before the fixup,
 	   mark this stack level as needing restoration
-	   when the fixup is later finalized.
-	   Also mark the cleanup_list_list element for F
-	   that corresponds to this block, so that ultimately
-	   this block's cleanups will be executed by the code above.  */
+	   when the fixup is later finalized.   */
 	&& thisblock != 0
-	/* Note: if THISBLOCK == 0 and we have a label that hasn't appeared,
-	   it means the label is undefined.  That's erroneous, but possible.  */
+	/* Note: if THISBLOCK == 0 and we have a label that hasn't appeared, it
+	   means the label is undefined.  That's erroneous, but possible.  */
 	&& (thisblock->data.block.block_start_count
 	    <= f->block_start_count))
       {
 	tree lists = f->cleanup_list_list;
+	rtx cleanup_insns;
+
 	for (; lists; lists = TREE_CHAIN (lists))
 	  /* If the following elt. corresponds to our containing block
 	     then the elt. must be for this block.  */
 	  if (TREE_CHAIN (lists) == thisblock->data.block.outer_cleanups)
-	    TREE_ADDRESSABLE (lists) = 1;
+	    {
+	      start_sequence ();
+	      pushlevel (0);
+	      set_block (f->context);
+	      expand_cleanups (TREE_VALUE (lists), NULL_TREE, 1, 1);
+	      cleanup_insns = get_insns ();
+	      poplevel (1, 0, 0);
+	      end_sequence ();
+	      f->before_jump
+		= emit_insns_after (cleanup_insns, f->before_jump);
+
+	      TREE_VALUE (lists) = 0;
+	    }
 
 	if (stack_level)
 	  f->stack_level = stack_level;
