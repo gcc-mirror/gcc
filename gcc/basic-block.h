@@ -182,8 +182,8 @@ extern void free_int_list               PROTO ((int_list_block **));
 extern int *uid_block_number;
 #define BLOCK_NUM(INSN)    uid_block_number[INSN_UID (INSN)]
 
-extern int compute_preds_succs PROTO ((int_list_ptr *, int_list_ptr *,
-				       int *, int *));
+extern void compute_preds_succs PROTO ((int_list_ptr *, int_list_ptr *,
+				        int *, int *));
 extern void dump_bb_data       PROTO ((FILE *, int_list_ptr *, int_list_ptr *));
 extern void free_bb_mem        PROTO ((void));
 extern void free_basic_block_vars	PROTO ((int));
