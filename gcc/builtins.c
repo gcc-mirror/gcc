@@ -125,8 +125,10 @@ static rtx expand_builtin_strspn	PARAMS ((tree, rtx,
 static rtx expand_builtin_strcspn	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx expand_builtin_memcpy	PARAMS ((tree, rtx,
-						 enum machine_mode));
+						 enum machine_mode, int));
 static rtx expand_builtin_strcpy	PARAMS ((tree, rtx,
+						 enum machine_mode));
+static rtx expand_builtin_stpcpy	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx builtin_strncpy_read_str	PARAMS ((PTR, HOST_WIDE_INT,
 						 enum machine_mode));
@@ -2252,15 +2254,18 @@ builtin_memcpy_read_str (data, offset, mode)
 }
 
 /* Expand a call to the memcpy builtin, with arguments in ARGLIST.
-   Return 0 if we failed, the caller should emit a normal call, otherwise
-   try to get the result in TARGET, if convenient (and in mode MODE if
-   that's convenient).  */
-
+   Return 0 if we failed, the caller should emit a normal call,
+   otherwise try to get the result in TARGET, if convenient (and in
+   mode MODE if that's convenient).  If ENDP is 0 return the
+   destination pointer, if ENDP is 1 return the end pointer ala
+   mempcpy, and if ENDP is 2 return the end pointer minus one ala
+   stpcpy.  */
 static rtx
-expand_builtin_memcpy (arglist, target, mode)
+expand_builtin_memcpy (arglist, target, mode, endp)
      tree arglist;
      rtx target;
      enum machine_mode mode;
+     int endp;
 {
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -2316,7 +2321,15 @@ expand_builtin_memcpy (arglist, target, mode)
 	  if (GET_MODE (dest_mem) != ptr_mode)
 	    dest_mem = convert_memory_address (ptr_mode, dest_mem);
 #endif
-	  return dest_mem;
+	  if (endp)
+	    {
+	      rtx result = gen_rtx_PLUS (GET_MODE(dest_mem), dest_mem, len_rtx);
+	      if (endp == 2)
+		result = simplify_gen_binary (MINUS, GET_MODE(result), result, const1_rtx);
+	      return result;
+	    }
+	  else
+	    return dest_mem;
 	}
 
       src_mem = get_memory_rtx (src);
@@ -2335,7 +2348,15 @@ expand_builtin_memcpy (arglist, target, mode)
 #endif
 	}
 
-      return dest_addr;
+      if (endp)
+        {
+	  rtx result = gen_rtx_PLUS (GET_MODE (dest_addr), dest_addr, len_rtx);
+	  if (endp == 2)
+	    result = simplify_gen_binary (MINUS, GET_MODE(result), result, const1_rtx);
+	  return result;
+	}
+      else
+	return dest_addr;
     }
 }
 
@@ -2368,6 +2389,31 @@ expand_builtin_strcpy (exp, target, mode)
   chainon (arglist, build_tree_list (NULL_TREE, len));
   return expand_expr (build_function_call_expr (fn, arglist),
 		      target, mode, EXPAND_NORMAL);
+}
+
+/* Expand a call to the stpcpy builtin, with arguments in ARGLIST.
+   Return 0 if we failed the caller should emit a normal call,
+   otherwise try to get the result in TARGET, if convenient (and in
+   mode MODE if that's convenient).  */
+
+static rtx
+expand_builtin_stpcpy (arglist, target, mode)
+     tree arglist;
+     rtx target;
+     enum machine_mode mode;
+{
+  if (!validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
+    return 0;
+  else
+    {
+      tree len = c_strlen (TREE_VALUE (TREE_CHAIN (arglist)));
+      if (len == 0)
+	return 0;
+
+      len = fold (size_binop (PLUS_EXPR, len, ssize_int (1)));
+      chainon (arglist, build_tree_list (NULL_TREE, len));
+      return expand_builtin_memcpy (arglist, target, mode, /*endp=*/2);
+    }
 }
 
 /* Callback routine for store_by_pieces.  Read GET_MODE_BITSIZE (MODE)
@@ -4036,10 +4082,12 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       case BUILT_IN_MEMSET:
       case BUILT_IN_MEMCPY:
       case BUILT_IN_MEMCMP:
+      case BUILT_IN_MEMPCPY:
       case BUILT_IN_BCMP:
       case BUILT_IN_BZERO:
       case BUILT_IN_INDEX:
       case BUILT_IN_RINDEX:
+      case BUILT_IN_STPCPY:
       case BUILT_IN_STRCHR:
       case BUILT_IN_STRRCHR:
       case BUILT_IN_STRLEN:
@@ -4303,6 +4351,12 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	return target;
       break;
 
+    case BUILT_IN_STPCPY:
+      target = expand_builtin_stpcpy (arglist, target, mode);
+      if (target)
+	return target;
+      break;
+
     case BUILT_IN_STRCAT:
       target = expand_builtin_strcat (arglist, target, mode);
       if (target)
@@ -4354,7 +4408,13 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       break;
 
     case BUILT_IN_MEMCPY:
-      target = expand_builtin_memcpy (arglist, target, mode);
+      target = expand_builtin_memcpy (arglist, target, mode, /*endp=*/0);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_MEMPCPY:
+      target = expand_builtin_memcpy (arglist, target, mode, /*endp=*/1);
       if (target)
 	return target;
       break;
