@@ -30,8 +30,15 @@
 ;; type "binary" insns have two input operands (1,2) and one output (0)
 
 (define_attr "type"
-  "move,unary,binary,compare,load,store,uncond_branch,branch,cbranch,fbranch,call,dyncall,fpload,fpstore,fpalu,fpcc,fpmul,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,multi,misc,milli"
+  "move,unary,binary,shift,nullshift,compare,load,store,uncond_branch,branch,cbranch,fbranch,call,dyncall,fpload,fpstore,fpalu,fpcc,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl,multi,milli"
   (const_string "binary"))
+
+;; Processor type (for scheduling, not code generation) -- this attribute
+;; must exactly match the processor_type enumeration in pa.h.
+;;
+;; FIXME: Add 800 scheduling for completeness?
+
+(define_attr "cpu" "700,7100,7100LC" (const (symbol_ref "pa_cpu_attr")))
 
 ;; Length (in # of insns).
 (define_attr "length" ""
@@ -43,11 +50,11 @@
 	 (if_then_else (match_operand 0 "symbolic_memory_operand" "")
 		       (const_int 8) (const_int 4))
 
-	 (eq_attr "type" "binary")
+	 (eq_attr "type" "binary,shift,nullshift")
 	 (if_then_else (match_operand 2 "arith_operand" "")
 		       (const_int 4) (const_int 12))
 
-	 (eq_attr "type" "move,unary")
+	 (eq_attr "type" "move,unary,shift,nullshift")
 	 (if_then_else (match_operand 1 "arith_operand" "")
 		       (const_int 4) (const_int 8))]
 
@@ -69,7 +76,7 @@
 ;; Disallow instructions which use the FPU since they will tie up the FPU
 ;; even if the instruction is nullified.
 (define_attr "in_nullified_branch_delay" "false,true"
-  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,fpcc,fpalu,fpmul,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl")
+  (if_then_else (and (eq_attr "type" "!uncond_branch,branch,cbranch,fbranch,call,dyncall,multi,milli,fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpdivdbl,fpsqrtsgl,fpsqrtdbl")
 		     (eq_attr "length" "4"))
 		(const_string "true")
 		(const_string "false")))
@@ -122,8 +129,8 @@
    (and (eq_attr "in_nullified_branch_delay" "true")
 	(attr_flag "backward"))])
 
-;; Function units of the HPPA. The following data is for the "Snake"
-;; (Mustang CPU + Timex FPU) because that's what I have the docs for.
+;; Function units of the HPPA. The following data is for the 700 CPUs
+;; (Mustang CPU + Timex FPU aka PA-89) because that's what I have the docs for.
 ;; Scheduling instructions for PA-83 machines according to the Snake
 ;; constraints shouldn't hurt.
 
@@ -135,19 +142,23 @@
 ;; be specified.)
 
 ;; (define_function_unit "alu" 1 0
-;;  (eq_attr "type" "unary,binary,move,address") 1 0)
+;;  (and (eq_attr "type" "unary,shift,nullshift,binary,move,address")
+;;	 (eq_attr "cpu" "700"))
+;;  1 0)
 
 
 ;; Memory. Disregarding Cache misses, the Mustang memory times are:
-;; load: 2
+;; load: 2, fpload: 3
 ;; store, fpstore: 3, no D-cache operations should be scheduled.
-;; fpload: 3 (really 2 for flops, but I don't think we can specify that).
 
-(define_function_unit "memory" 1 0 (eq_attr "type" "load") 2 0)
-(define_function_unit "memory" 1 0 (eq_attr "type" "store,fpstore") 3 3)
-(define_function_unit "memory" 1 0 (eq_attr "type" "fpload") 2 0)
+(define_function_unit "pa700memory" 1 0
+  (and (eq_attr "type" "load,fpload")
+       (eq_attr "cpu" "700")) 2 0)
+(define_function_unit "pa700memory" 1 0 
+  (and (eq_attr "type" "store,fpstore")
+       (eq_attr "cpu" "700")) 3 3)
 
-;; The Timex has two floating-point units: ALU, and MUL/DIV/SQRT unit.
+;; The Timex (aka 700) has two floating-point units: ALU, and MUL/DIV/SQRT.
 ;; Timings:
 ;; Instruction	Time	Unit	Minimum Distance (unit contention)
 ;; fcpy		3	ALU	2
@@ -166,13 +177,160 @@
 ;; fsqrt,sgl	14	MPY	14
 ;; fsqrt,dbl	18	MPY	18
 
-(define_function_unit "fp_alu" 1 0 (eq_attr "type" "fpcc") 4 2)
-(define_function_unit "fp_alu" 1 0 (eq_attr "type" "fpalu") 3 2)
-(define_function_unit "fp_mpy" 1 0 (eq_attr "type" "fpmul") 3 2)
-(define_function_unit "fp_mpy" 1 0 (eq_attr "type" "fpdivsgl") 10 10)
-(define_function_unit "fp_mpy" 1 0 (eq_attr "type" "fpdivdbl") 12 12)
-(define_function_unit "fp_mpy" 1 0 (eq_attr "type" "fpsqrtsgl") 14 14)
-(define_function_unit "fp_mpy" 1 0 (eq_attr "type" "fpsqrtdbl") 18 18)
+(define_function_unit "pa700fp_alu" 1 0
+  (and (eq_attr "type" "fpcc")
+       (eq_attr "cpu" "700")) 4 2)
+(define_function_unit "pa700fp_alu" 1 0
+  (and (eq_attr "type" "fpalu")
+       (eq_attr "cpu" "700")) 3 2)
+(define_function_unit "pa700fp_mpy" 1 0
+  (and (eq_attr "type" "fpmulsgl,fpmuldbl")
+       (eq_attr "cpu" "700")) 3 2)
+(define_function_unit "pa700fp_mpy" 1 0
+  (and (eq_attr "type" "fpdivsgl")
+       (eq_attr "cpu" "700")) 10 10)
+(define_function_unit "pa700fp_mpy" 1 0
+  (and (eq_attr "type" "fpdivdbl")
+       (eq_attr "cpu" "700")) 12 12)
+(define_function_unit "pa700fp_mpy" 1 0
+  (and (eq_attr "type" "fpsqrtsgl")
+       (eq_attr "cpu" "700")) 14 14)
+(define_function_unit "pa700fp_mpy" 1 0
+  (and (eq_attr "type" "fpsqrtdbl")
+       (eq_attr "cpu" "700")) 18 18)
+
+;; Function units for the 7100 and 7150.  The 7100/7150 can dual-issue
+;; floating point computations with non-floating point computations (fp loads
+;; and stores are not fp computations).
+;;
+;; As with the alpha we multiply the ready delay by two to encourage
+;; schedules which will allow the 7100/7150 to dual issue as many instructions
+;; as possible.
+
+;; Memory. Disregarding Cache misses, memory loads take two cycles; stores also
+;; take two cycles, during which no Dcache operations should be scheduled.
+;; Any special cases are handled in pa_adjust_cost.  The 7100, 7150 and 7100LC
+;; all have the same memory characteristics if one disregards cache misses.
+(define_function_unit "pa7100memory" 1 0
+  (and (eq_attr "type" "load,fpload")
+       (eq_attr "cpu" "7100,7100LC")) 4 0)
+(define_function_unit "pa7100memory" 1 0 
+  (and (eq_attr "type" "store,fpstore")
+       (eq_attr "cpu" "7100,7100LC")) 4 4)
+
+;; The 7100/7150 has three floating-point units: ALU, MUL, and DIV.
+;; Timings:
+;; Instruction	Time	Unit	Minimum Distance (unit contention)
+;; fcpy		2	ALU	1
+;; fabs		2	ALU	1
+;; fadd		2	ALU	1
+;; fsub		2	ALU	1
+;; fcmp		2	ALU	1
+;; fcnv		2	ALU	1
+;; fmpyadd	2	ALU,MPY	1
+;; fmpysub	2	ALU,MPY 1
+;; fmpycfxt	2	ALU,MPY 1
+;; fmpy		2	MPY	1
+;; fmpyi	2	MPY	1
+;; fdiv,sgl	8	DIV	8
+;; fdiv,dbl	15	DIV	15
+;; fsqrt,sgl	8	DIV	8
+;; fsqrt,dbl	15	DIV	15
+
+(define_function_unit "pa7100fp_alu" 1 0
+  (and (eq_attr "type" "fpcc,fpalu")
+       (eq_attr "cpu" "7100")) 4 2)
+(define_function_unit "pa7100fp_mpy" 1 0
+  (and (eq_attr "type" "fpmulsgl,fpmuldbl")
+       (eq_attr "cpu" "7100")) 4 2)
+(define_function_unit "pa7100fp_div" 1 0
+  (and (eq_attr "type" "fpdivsgl,fpsqrtsgl")
+       (eq_attr "cpu" "7100")) 16 16)
+(define_function_unit "pa7100fp_div" 1 0
+  (and (eq_attr "type" "fpdivdbl,fpsqrtdbl")
+       (eq_attr "cpu" "7100")) 30 30)
+
+;; To encourage dual issue we define function units corresponding to
+;; the instructions which can be dual issued.    This is a rather crude
+;; approximation, the "pa7100nonflop" test in particular could be refined.
+(define_function_unit "pa7100flop" 1 1
+  (and
+    (eq_attr "type" "fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl")
+    (eq_attr "cpu" "7100,7100LC")) 2 2)
+
+(define_function_unit "pa7100nonflop" 1 1
+  (and
+    (eq_attr "type" "!fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl")
+    (eq_attr "cpu" "7100")) 2 2)
+
+
+;; Memory subsystem works just like 7100/7150 (except for cache miss times which
+;; we don't model here).  
+
+;; The 7100LC has three floating-point units: ALU, MUL, and DIV.
+;; Note divides and sqrt flops lock the cpu until the flop is
+;; finished.  fmpy and xmpyu (fmpyi) lock the cpu for one cycle.
+;; There's no way to avoid the penalty.
+;; Timings:
+;; Instruction	Time	Unit	Minimum Distance (unit contention)
+;; fcpy		2	ALU	1
+;; fabs		2	ALU	1
+;; fadd		2	ALU	1
+;; fsub		2	ALU	1
+;; fcmp		2	ALU	1
+;; fcnv		2	ALU	1
+;; fmpyadd,sgl	2	ALU,MPY	1
+;; fmpyadd,dbl	3	ALU,MPY	2
+;; fmpysub,sgl	2	ALU,MPY 1
+;; fmpysub,dbl	3	ALU,MPY 2
+;; fmpycfxt,sgl	2	ALU,MPY 1
+;; fmpycfxt,dbl	3	ALU,MPY 2
+;; fmpy,sgl	2	MPY	1
+;; fmpy,dbl	3	MPY	2
+;; fmpyi	3	MPY	2
+;; fdiv,sgl	8	DIV	8
+;; fdiv,dbl	15	DIV	15
+;; fsqrt,sgl	8	DIV	8
+;; fsqrt,dbl	15	DIV	15
+
+(define_function_unit "pa7100LCfp_alu" 1 0
+  (and (eq_attr "type" "fpcc,fpalu")
+       (eq_attr "cpu" "7100LC")) 4 2)
+(define_function_unit "pa7100LCfp_mpy" 1 0
+  (and (eq_attr "type" "fpmulsgl")
+       (eq_attr "cpu" "7100LC")) 4 2)
+(define_function_unit "pa7100LCfp_mpy" 1 0
+  (and (eq_attr "type" "fpmuldbl")
+       (eq_attr "cpu" "7100LC")) 6 4)
+(define_function_unit "pa7100LCfp_div" 1 0
+  (and (eq_attr "type" "fpdivsgl,fpsqrtsgl")
+       (eq_attr "cpu" "7100LC")) 16 16)
+(define_function_unit "pa7100LCfp_div" 1 0
+  (and (eq_attr "type" "fpdivdbl,fpsqrtdbl")
+       (eq_attr "cpu" "7100LC")) 30 30)
+
+;; Define the various functional units for dual-issue.
+;; The 7100LC shares the generic "flop" unit specification with the 7100/7150.
+
+;; The 7100LC has two basic integer which allow dual issue of most integer
+;; instructions.  This needs further refinement to deal with the nullify,
+;; carry/borrow possible the ldw/ldw stw/stw special dual issue cases, and
+;; of course it needs to know about hte 2nd alu.
+(define_function_unit "pa7100LCnonflop" 1 1
+  (and
+    (eq_attr "type" "!fpcc,fpalu,fpmulsgl,fpmuldbl,fpdivsgl,fpsqrtsgl,fpdivdbl,fpsqrtdbl,load,fpload,store,fpstore,shift,nullshift")
+    (eq_attr "cpu" "7100LC")) 2 2)
+
+(define_function_unit "pa7100LCshifter" 1 1
+  (and
+    (eq_attr "type" "shift,nullshift")
+    (eq_attr "cpu" "7100LC")) 2 2)
+
+(define_function_unit "pa7100LCmem" 1 1
+  (and
+    (eq_attr "type" "load,fpload,store,fpstore")
+    (eq_attr "cpu" "7100LC")) 2 2)
+
 
 ;; Compare instructions.
 ;; This controls RTL generation and register allocation.
@@ -228,7 +386,8 @@
 			      (match_operand:SF 1 "reg_or_0_operand" "fG")]))]
   ""
   "fcmp,sgl,%Y2 %r0,%r1"
-  [(set_attr "type" "fpcc")])
+  [(set_attr "length" "4")
+   (set_attr "type" "fpcc")])
 
 (define_insn ""
   [(set (reg:CCFP 0)
@@ -237,7 +396,8 @@
 			      (match_operand:DF 1 "reg_or_0_operand" "fG")]))]
   ""
   "fcmp,dbl,%Y2 %r0,%r1"
-  [(set_attr "type" "fpcc")])
+  [(set_attr "length" "4")
+   (set_attr "type" "fpcc")])
 
 ;; scc insns.
 
@@ -403,7 +563,7 @@
   ""
   "com%I2clr,%S3 %2,%1,0\;com%I5clr,%B6 %5,%4,%0\;ldi 1,%0"
   [(set_attr "type" "binary")
-   (set_attr "length" "8")])
+   (set_attr "length" "12")])
 
 ;; Combiner patterns for common operations performed with the output
 ;; from an scc insn (negscc and incscc).
@@ -619,7 +779,7 @@
    com%I4clr,%B5 %4,%3,%0\;ldi %1,%0
    com%I4clr,%B5 %4,%3,%0\;ldil L'%1,%0
    com%I4clr,%B5 %4,%3,%0\;zdepi %Z1,%0"
-  [(set_attr "type" "multi,multi,multi,multi,multi")
+  [(set_attr "type" "multi,multi,multi,multi,nullshift")
    (set_attr "length" "8,8,8,8,8")])
 
 (define_insn ""
@@ -640,7 +800,7 @@
    com%I4clr,%B5 %4,%3,0\;ldi %1,%0
    com%I4clr,%B5 %4,%3,0\;ldil L'%1,%0
    com%I4clr,%B5 %4,%3,0\;zdepi %Z1,%0"
-  [(set_attr "type" "multi,multi,multi,multi,multi,multi,multi,multi")
+  [(set_attr "type" "multi,multi,multi,nullshift,multi,multi,multi,nullshift")
    (set_attr "length" "8,8,8,8,8,8,8,8")])
 
 ;; Conditional Branches
@@ -1014,7 +1174,7 @@
    fcpy,sgl %r1,%0
    fldws%F1 %1,%0
    fstws%F0 %1,%0"
-  [(set_attr "type" "move,move,move,move,load,store,move,fpalu,fpload,fpstore")
+  [(set_attr "type" "move,move,move,shift,load,store,move,fpalu,fpload,fpstore")
    (set_attr "length" "4,4,4,4,4,4,4,4,4,4")])
 
 ;; Load indexed.  We don't use unscaled modes since they can't be used
@@ -1039,7 +1199,7 @@
 ;; has constraints allowing a register.  I don't know how this works,
 ;; but it somehow makes sure that out-of-range constants are placed
 ;; in a register which somehow magically is a "const_int_operand".
-;; (this was stolen from alpha.md, I'm not going to try and change it.
+;; (this was stolen from alpha.md, I'm not going to try and change it.)
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "&=r")
 	(mem:SI (plus:SI (plus:SI
@@ -1190,7 +1350,9 @@
   if (flag_pic != 2)
     abort ();
   return \"ldw RT'%G2(%1),%0\";
-}")
+}"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
 
 
 ;; Always use addil rather than ldil;add sequences.  This allows the
@@ -1263,7 +1425,8 @@
 		   (match_operand:SI 2 "function_label_operand" "")))]
   "!TARGET_PORTABLE_RUNTIME"
   "ldo RP'%G2(%1),%0"
-  [(set_attr "length" "4")])
+  [(set_attr "type" "move")
+   (set_attr "length" "4")])
 
 ;; This version is used only for the portable runtime conventions model
 ;; (it does not use/support plabels)
@@ -1273,7 +1436,8 @@
 		   (match_operand:SI 2 "function_label_operand" "")))]
   "TARGET_PORTABLE_RUNTIME"
   "ldo R'%G2(%1),%0"
-  [(set_attr "length" "4")])
+  [(set_attr "type" "move")
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -1287,7 +1451,8 @@
   else
     return \"ldo R'%G2(%1),%0\";
 }"
-  [(set_attr "length" "4")])
+  [(set_attr "type" "move")
+   (set_attr "length" "4")])
 
 ;; Now that a symbolic_address plus a constant is broken up early
 ;; in the compilation phase (for better CSE) we need a special
@@ -1327,7 +1492,7 @@
    sth%M0 %r1,%0
    mtsar %r1
    fcpy,sgl %r1,%0"
-  [(set_attr "type" "move,move,move,move,load,store,move,fpalu")
+  [(set_attr "type" "move,move,move,shift,load,store,move,fpalu")
    (set_attr "length" "4,4,4,4,4,4,4,4")])
 
 (define_insn ""
@@ -1402,7 +1567,8 @@
 		   (match_operand 2 "const_int_operand" "")))]
   ""
   "ldo R'%G2(%1),%0"
-  [(set_attr "length" "4")])
+  [(set_attr "type" "move")
+   (set_attr "length" "4")])
 
 (define_expand "movqi"
   [(set (match_operand:QI 0 "general_operand" "")
@@ -1428,7 +1594,7 @@
    stb%M0 %r1,%0
    mtsar %r1
    fcpy,sgl %r1,%0"
-  [(set_attr "type" "move,move,move,move,load,store,move,fpalu")
+  [(set_attr "type" "move,move,move,shift,load,store,move,fpalu")
    (set_attr "length" "4,4,4,4,4,4,4,4")])
 
 (define_insn ""
@@ -1755,7 +1921,7 @@
     return output_fp_move_double (operands);
   return output_move_double (operands);
 }"
-  [(set_attr "type" "move,store,store,load,load,misc,fpalu,fpload,fpstore")
+  [(set_attr "type" "move,store,store,load,load,multi,fpalu,fpload,fpstore")
    (set_attr "length" "8,8,16,8,16,16,4,4,4")])
 
 (define_insn ""
@@ -1773,9 +1939,8 @@
     output_asm_insn (\"copy %1,%0\", operands);
   return \"ldo R'%G2(%R1),%R0\";
 }"
-  ;; Need to set length for this arith insn because operand2
-  ;; is not an "arith_operand".
-  [(set_attr "length" "4,8")])
+  [(set_attr "type" "move,move")
+   (set_attr "length" "4,8")])
 
 ;; This pattern forces (set (reg:SF ...) (const_double ...))
 ;; to be reloaded by putting the constant into memory when
@@ -1944,7 +2109,8 @@
   "@
    extru %1,31,16,%0
    ldh%M1 %1,%0"
-  [(set_attr "type" "unary,load")])
+  [(set_attr "type" "shift,load")
+   (set_attr "length" "4,4")])
 
 (define_insn "zero_extendqihi2"
   [(set (match_operand:HI 0 "register_operand" "=r,r")
@@ -1954,7 +2120,8 @@
   "@
    extru %1,31,8,%0
    ldb%M1 %1,%0"
-  [(set_attr "type" "unary,load")])
+  [(set_attr "type" "shift,load")
+   (set_attr "length" "4,4")])
 
 (define_insn "zero_extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -1964,7 +2131,8 @@
   "@
    extru %1,31,8,%0
    ldb%M1 %1,%0"
-  [(set_attr "type" "unary,load")])
+  [(set_attr "type" "shift,load")
+   (set_attr "length" "4,4")])
 
 ;;- sign extension instructions
 
@@ -1973,21 +2141,24 @@
 	(sign_extend:SI (match_operand:HI 1 "register_operand" "r")))]
   ""
   "extrs %1,31,16,%0"
-  [(set_attr "type" "unary")])
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
 
 (define_insn "extendqihi2"
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(sign_extend:HI (match_operand:QI 1 "register_operand" "r")))]
   ""
   "extrs %1,31,8,%0"
-  [(set_attr "type" "unary")])
+  [(set_attr "type" "shift") 
+  (set_attr "length" "4")])
 
 (define_insn "extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(sign_extend:SI (match_operand:QI 1 "register_operand" "r")))]
   ""
   "extrs %1,31,8,%0"
-  [(set_attr "type" "unary")])
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
 
 ;; Conversions between float and double.
 
@@ -1997,7 +2168,8 @@
 	 (match_operand:SF 1 "register_operand" "f")))]
   ""
   "fcnvff,sgl,dbl %1,%0"
-  [(set_attr "type" "fpalu")])
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
 
 (define_insn "truncdfsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
@@ -2005,7 +2177,8 @@
 	 (match_operand:DF 1 "register_operand" "f")))]
   ""
   "fcnvff,dbl,sgl %1,%0"
-  [(set_attr "type" "fpalu")])
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
 
 ;; Conversion between fixed point and floating point.
 ;; Note that among the fix-to-float insns
@@ -2031,7 +2204,8 @@
 	(float:SF (match_operand:SI 1 "register_operand" "f")))]
   ""
   "fcnvxf,sgl,sgl %1,%0"
-  [(set_attr "type" "fpalu")])
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
 
 ;; This pattern forces (set (reg:DF ...) (float:DF (const_int ...)))
 ;; to be reloaded by putting the constant into memory.
@@ -2049,7 +2223,8 @@
 	(float:DF (match_operand:SI 1 "register_operand" "f")))]
   ""
   "fcnvxf,sgl,dbl %1,%0"
-  [(set_attr "type" "fpalu")])
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
 
 (define_expand "floatunssisf2"
   [(set (subreg:SI (match_dup 2) 1)
@@ -2076,14 +2251,16 @@
 	(float:SF (match_operand:DI 1 "register_operand" "f")))]
   "TARGET_SNAKE"
   "fcnvxf,dbl,sgl %1,%0"
-  [(set_attr "type" "fpalu")])
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
 
 (define_insn "floatdidf2"
   [(set (match_operand:DF 0 "general_operand" "=f")
 	(float:DF (match_operand:DI 1 "register_operand" "f")))]
   "TARGET_SNAKE"
   "fcnvxf,dbl,dbl %1,%0"
-  [(set_attr "type" "fpalu")])
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
 
 ;; Convert a float to an actual integer.
 ;; Truncation is performed as part of the conversion.
@@ -2093,28 +2270,32 @@
 	(fix:SI (fix:SF (match_operand:SF 1 "register_operand" "f"))))]
   ""
   "fcnvfxt,sgl,sgl %1,%0"
-  [(set_attr "type" "fpalu")])
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
 
 (define_insn "fix_truncdfsi2"
   [(set (match_operand:SI 0 "register_operand" "=f")
 	(fix:SI (fix:DF (match_operand:DF 1 "register_operand" "f"))))]
   ""
   "fcnvfxt,dbl,sgl %1,%0"
-  [(set_attr "type" "fpalu")])
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
 
 (define_insn "fix_truncsfdi2"
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(fix:DI (fix:SF (match_operand:SF 1 "register_operand" "f"))))]
   "TARGET_SNAKE"
   "fcnvfxt,sgl,dbl %1,%0"
-  [(set_attr "type" "fpalu")])
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
 
 (define_insn "fix_truncdfdi2"
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(fix:DI (fix:DF (match_operand:DF 1 "register_operand" "f"))))]
   "TARGET_SNAKE"
   "fcnvfxt,dbl,dbl %1,%0"
-  [(set_attr "type" "fpalu")])
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
 
 ;;- arithmetic instructions
 
@@ -2135,14 +2316,17 @@
   else
     return \"add %R2,%R1,%R0\;addc %2,%1,%0\";
 }"
-  [(set_attr "length" "8")])
+  [(set_attr "type" "binary")
+   (set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(plus:SI (not:SI (match_operand:SI 1 "register_operand" "r"))
 		 (match_operand:SI 2 "register_operand" "r")))]
   ""
-  "uaddcm %2,%1,%0")
+  "uaddcm %2,%1,%0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "4")])
 
 ;; define_splits to optimize cases of adding a constant integer
 ;; to a register when the constant does not fit in 14 bits.  */
@@ -2207,7 +2391,9 @@
   ""
   "@
    addl %1,%2,%0
-   ldo %2(%1),%0")
+   ldo %2(%1),%0"
+  [(set_attr "type" "binary,binary")
+   (set_attr "length" "4,4")])
 
 (define_insn "subdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2215,7 +2401,8 @@
 		  (match_operand:DI 2 "register_operand" "r")))]
   ""
   "sub %R1,%R2,%R0\;subb %1,%2,%0"
-  [(set_attr "length" "8")])
+  [(set_attr "type" "binary")
+  (set_attr "length" "8")])
 
 (define_insn "subsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -2224,7 +2411,9 @@
   ""
   "@
    sub %1,%2,%0
-   subi %1,%2,%0")
+   subi %1,%2,%0"
+  [(set_attr "type" "binary,binary")
+   (set_attr "length" "4,4")])
 
 ;; Clobbering a "register_operand" instead of a match_scratch
 ;; in operand3 of millicode calls avoids spilling %r1 and
@@ -2263,7 +2452,8 @@
 		 (zero_extend:DI (match_operand:SI 2 "nonimmediate_operand" "f"))))]
   "TARGET_SNAKE && ! TARGET_DISABLE_FPREGS"
   "xmpyu %1,%2,%0"
-  [(set_attr "type" "fpmul")])
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "nonimmediate_operand" "=f")
@@ -2271,7 +2461,8 @@
 		 (match_operand:DI 2 "uint32_operand" "f")))]
   "TARGET_SNAKE && ! TARGET_DISABLE_FPREGS"
   "xmpyu %1,%R2,%0"
-  [(set_attr "type" "fpmul")])
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (reg:SI 29) (mult:SI (reg:SI 26) (reg:SI 25)))
@@ -2514,7 +2705,8 @@
 		(match_operand:DI 2 "register_operand" "r")))]
   ""
   "and %1,%2,%0\;and %R1,%R2,%R0"
-  [(set_attr "length" "8")])
+  [(set_attr "type" "binary")
+   (set_attr "length" "8")])
 
 ; The ? for op1 makes reload prefer zdepi instead of loading a huge
 ; constant with ldil;ldo.
@@ -2524,8 +2716,8 @@
 		(match_operand:SI 2 "and_operand" "rO,P")))]
   ""
   "* return output_and (operands); "
-  [(set_attr "type" "binary")
-   (set_attr "length" "4")])
+  [(set_attr "type" "binary,shift")
+   (set_attr "length" "4,4")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2533,14 +2725,17 @@
 		(match_operand:DI 2 "register_operand" "r")))]
   ""
   "andcm %2,%1,%0\;andcm %R2,%R1,%R0"
-  [(set_attr "length" "8")])
+  [(set_attr "type" "binary")
+   (set_attr "length" "8")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(and:SI (not:SI (match_operand:SI 1 "register_operand" "r"))
 		(match_operand:SI 2 "register_operand" "r")))]
   ""
-  "andcm %2,%1,%0")
+  "andcm %2,%1,%0"
+  [(set_attr "type" "binary")
+  (set_attr "length" "4")])
 
 (define_expand "iordi3"
   [(set (match_operand:DI 0 "register_operand" "")
@@ -2561,7 +2756,8 @@
 		(match_operand:DI 2 "register_operand" "r")))]
   ""
   "or %1,%2,%0\;or %R1,%R2,%R0"
-  [(set_attr "length" "8")])
+  [(set_attr "type" "binary")
+   (set_attr "length" "8")])
 
 ;; Need a define_expand because we've run out of CONST_OK... characters.
 (define_expand "iorsi3"
@@ -2576,20 +2772,22 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(ior:SI (match_operand:SI 1 "register_operand" "0")
-		(match_operand:SI 2 "ior_operand" "")))]
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(ior:SI (match_operand:SI 1 "register_operand" "0,0")
+		(match_operand:SI 2 "ior_operand" "M,i")))]
   ""
   "* return output_ior (operands); "
-  [(set_attr "type" "binary")
-   (set_attr "length" "4")])
+  [(set_attr "type" "binary,shift")
+   (set_attr "length" "4,4")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(ior:SI (match_operand:SI 1 "register_operand" "%r")
 		(match_operand:SI 2 "register_operand" "r")))]
   ""
-  "or %1,%2,%0")
+  "or %1,%2,%0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "4")])
 
 (define_expand "xordi3"
   [(set (match_operand:DI 0 "register_operand" "")
@@ -2610,14 +2808,17 @@
 		(match_operand:DI 2 "register_operand" "r")))]
   ""
   "xor %1,%2,%0\;xor %R1,%R2,%R0"
-  [(set_attr "length" "8")])
+  [(set_attr "type" "binary")
+   (set_attr "length" "8")])
 
 (define_insn "xorsi3"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(xor:SI (match_operand:SI 1 "register_operand" "%r")
 		(match_operand:SI 2 "register_operand" "r")))]
   ""
-  "xor %1,%2,%0")
+  "xor %1,%2,%0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "4")])
 
 (define_insn "negdi2"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2632,7 +2833,8 @@
 	(neg:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
   "sub 0,%1,%0"
-  [(set_attr "type" "unary")])
+  [(set_attr "type" "unary")
+   (set_attr "length" "4")])
 
 (define_expand "one_cmpldi2"
   [(set (match_operand:DI 0 "register_operand" "")
@@ -2657,7 +2859,8 @@
 	(not:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
   "uaddcm 0,%1,%0"
-  [(set_attr "type" "unary")])
+  [(set_attr "type" "unary")
+   (set_attr "length" "4")])
 
 ;; Floating point arithmetic instructions.
 
@@ -2667,7 +2870,8 @@
 		 (match_operand:DF 2 "register_operand" "f")))]
   ""
   "fadd,dbl %1,%2,%0"
-  [(set_attr "type" "fpalu")])
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
 
 (define_insn "addsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
@@ -2675,7 +2879,8 @@
 		 (match_operand:SF 2 "register_operand" "f")))]
   ""
   "fadd,sgl %1,%2,%0"
-  [(set_attr "type" "fpalu")])
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
 
 (define_insn "subdf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -2683,7 +2888,8 @@
 		  (match_operand:DF 2 "register_operand" "f")))]
   ""
   "fsub,dbl %1,%2,%0"
-  [(set_attr "type" "fpalu")])
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
 
 (define_insn "subsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
@@ -2691,7 +2897,8 @@
 		  (match_operand:SF 2 "register_operand" "f")))]
   ""
   "fsub,sgl %1,%2,%0"
-  [(set_attr "type" "fpalu")])
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
 
 (define_insn "muldf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -2699,7 +2906,8 @@
 		 (match_operand:DF 2 "register_operand" "f")))]
   ""
   "fmpy,dbl %1,%2,%0"
-  [(set_attr "type" "fpmul")])
+  [(set_attr "type" "fpmuldbl")
+   (set_attr "length" "4")])
 
 (define_insn "mulsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
@@ -2707,7 +2915,8 @@
 		 (match_operand:SF 2 "register_operand" "f")))]
   ""
   "fmpy,sgl %1,%2,%0"
-  [(set_attr "type" "fpmul")])
+  [(set_attr "type" "fpmulsgl")
+   (set_attr "length" "4")])
 
 (define_insn "divdf3"
   [(set (match_operand:DF 0 "register_operand" "=f")
@@ -2715,7 +2924,8 @@
 		(match_operand:DF 2 "register_operand" "f")))]
   ""
   "fdiv,dbl %1,%2,%0"
-  [(set_attr "type" "fpdivdbl")])
+  [(set_attr "type" "fpdivdbl")
+   (set_attr "length" "4")])
 
 (define_insn "divsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
@@ -2723,49 +2933,56 @@
 		(match_operand:SF 2 "register_operand" "f")))]
   ""
   "fdiv,sgl %1,%2,%0"
-  [(set_attr "type" "fpdivsgl")])
+  [(set_attr "type" "fpdivsgl")
+   (set_attr "length" "4")])
 
 (define_insn "negdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(neg:DF (match_operand:DF 1 "register_operand" "f")))]
   ""
   "fsub,dbl 0,%1,%0"
-  [(set_attr "type" "fpalu")])
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
 
 (define_insn "negsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(neg:SF (match_operand:SF 1 "register_operand" "f")))]
   ""
   "fsub,sgl 0,%1,%0"
-  [(set_attr "type" "fpalu")])
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
 
 (define_insn "absdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(abs:DF (match_operand:DF 1 "register_operand" "f")))]
   ""
   "fabs,dbl %1,%0"
-  [(set_attr "type" "fpalu")])
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
 
 (define_insn "abssf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(abs:SF (match_operand:SF 1 "register_operand" "f")))]
   ""
   "fabs,sgl %1,%0"
-  [(set_attr "type" "fpalu")])
+  [(set_attr "type" "fpalu")
+   (set_attr "length" "4")])
 
 (define_insn "sqrtdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(sqrt:DF (match_operand:DF 1 "register_operand" "f")))]
   ""
   "fsqrt,dbl %1,%0"
-  [(set_attr "type" "fpsqrtdbl")])
+  [(set_attr "type" "fpsqrtdbl")
+   (set_attr "length" "4")])
 
 (define_insn "sqrtsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(sqrt:SF (match_operand:SF 1 "register_operand" "f")))]
   ""
   "fsqrt,sgl %1,%0"
-  [(set_attr "type" "fpsqrtsgl")])
+  [(set_attr "type" "fpsqrtsgl")
+   (set_attr "length" "4")])
 
 ;;- Shift instructions
 
@@ -2795,7 +3012,9 @@
 			  (match_operand:SI 3 "shadd_operand" ""))
 		 (match_operand:SI 1 "register_operand" "r")))]
   ""
-  "sh%O3addl %2,%1,%0")
+  "sh%O3addl %2,%1,%0"
+  [(set_attr "type" "binary")
+   (set_attr "length" "4")])
 
 ;; This variant of the above insn can occur if the first operand
 ;; is the frame pointer.  This is a kludge, but there doesn't
@@ -2847,7 +3066,7 @@
 		   (match_operand:SI 2 "const_int_operand" "n")))]
   ""
   "zdep %1,%P2,%L2,%0"
-  [(set_attr "type" "binary")
+  [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
 ; Match cases of op1 a CONST_INT here that zvdep_imm doesn't handle.
@@ -2864,7 +3083,9 @@
   ""
   "@
    zvdep %1,32,%0
-   zvdepi %1,32,%0")
+   zvdepi %1,32,%0"
+  [(set_attr "type" "shift,shift")
+   (set_attr "length" "4,4")])
 
 (define_insn "zvdep_imm"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2878,7 +3099,9 @@
   operands[2] = GEN_INT (4 + exact_log2 ((x >> 4) + 1));
   operands[1] = GEN_INT ((x & 0xf) - 0x10);
   return \"zvdepi %1,%2,%0\";
-}")
+}"
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
 
 (define_insn "vdepi_ior"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2893,7 +3116,9 @@
   int x = INTVAL (operands[1]);
   operands[2] = GEN_INT (exact_log2 (x + 1));
   return \"vdepi -1,%2,%0\";
-}")
+}"
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
 
 (define_insn "vdepi_and"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2908,7 +3133,9 @@
   int x = INTVAL (operands[1]);
   operands[2] = GEN_INT (exact_log2 ((~x) + 1));
   return \"vdepi 0,%2,%0\";
-}")
+}"
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
 
 (define_expand "ashrsi3"
   [(set (match_operand:SI 0 "register_operand" "")
@@ -2932,7 +3159,7 @@
 		     (match_operand:SI 2 "const_int_operand" "n")))]
   ""
   "extrs %1,%P2,%L2,%0"
-  [(set_attr "type" "binary")
+  [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
 (define_insn "vextrs32"
@@ -2941,7 +3168,9 @@
 		     (minus:SI (const_int 31)
 			       (match_operand:SI 2 "register_operand" "q"))))]
   ""
-  "vextrs %1,32,%0")
+  "vextrs %1,32,%0"
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
 
 (define_insn "lshrsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -2951,7 +3180,7 @@
   "@
    vshd 0,%1,%0
    extru %1,%P2,%L2,%0"
-  [(set_attr "type" "binary")
+  [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
 (define_insn "rotrsi3"
@@ -2969,7 +3198,7 @@
   else
     return \"vshd %1,%1,%0\";
 }"
-  [(set_attr "type" "binary")
+  [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
 (define_insn "rotlsi3"
@@ -2982,7 +3211,7 @@
   operands[2] = GEN_INT ((32 - INTVAL (operands[2])) & 31);
   return \"shd %1,%1,%2,%0\";
 }"
-  [(set_attr "type" "binary")
+  [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
 (define_insn ""
@@ -2994,7 +3223,7 @@
 			(match_operand:SI 4 "const_int_operand" "n"))]))]
   "INTVAL (operands[3]) + INTVAL (operands[4]) == 32"
   "shd %1,%2,%4,%0"
-  [(set_attr "type" "binary")
+  [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
 (define_insn ""
@@ -3006,7 +3235,7 @@
 		      (match_operand:SI 3 "const_int_operand" "n"))]))]
   "INTVAL (operands[3]) + INTVAL (operands[4]) == 32"
   "shd %1,%2,%4,%0"
-  [(set_attr "type" "binary")
+  [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
 (define_insn ""
@@ -3022,7 +3251,7 @@
   operands[2] = GEN_INT (31 - cnt);
   return \"zdep %1,%2,%3,%0\";
 }"
-  [(set_attr "type" "binary")
+  [(set_attr "type" "shift")
    (set_attr "length" "4")])
 
 ;; Unconditional and other jump instructions.
@@ -3031,7 +3260,8 @@
   [(return)]
   "hppa_can_use_return_insn_p ()"
   "bv%* 0(%%r2)"
-  [(set_attr "type" "branch")])
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])
 
 ;; Use a different pattern for functions which have non-trivial
 ;; epilogues so as not to confuse jump and reorg.
@@ -3040,7 +3270,8 @@
    (return)]
   ""
   "bv%* 0(%%r2)"
-  [(set_attr "type" "branch")])
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])
 
 (define_expand "prologue"
   [(const_int 0)]
@@ -3072,7 +3303,8 @@
    (use (match_operand:SI 0 "const_int_operand" ""))]
   ""
   "bl _mcount,%%r2\;ldo %0(%%r2),%%r25"
-  [(set_attr "length" "8")])
+  [(set_attr "type" "multi")
+   (set_attr "length" "8")])
 
 (define_insn "blockage"
   [(unspec_volatile [(const_int 2)] 0)]
@@ -3156,7 +3388,8 @@
       return \"sub,>> %0,%1,0\;blr,n %0,0\;b,n %l3\";
     }
 }"
-  [(set_attr "length" "12")])
+  [(set_attr "type" "multi")
+   (set_attr "length" "12")])
 
 ;; Need nops for the calls because execution is supposed to continue
 ;; past; we don't want to nullify an instruction that we need.
@@ -3384,14 +3617,17 @@
 (define_insn "nop"
   [(const_int 0)]
   ""
-  "nop")
+  "nop"
+  [(set_attr "type" "move")
+   (set_attr "length" "4")])
 
 ;;; Hope this is only within a function...
 (define_insn "indirect_jump"
   [(set (pc) (match_operand:SI 0 "register_operand" "r"))]
   ""
   "bv%* 0(%0)"
-  [(set_attr "type" "branch")])
+  [(set_attr "type" "branch")
+   (set_attr "length" "4")])
 
 (define_insn "extzv"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -3399,7 +3635,9 @@
 			 (match_operand:SI 2 "uint5_operand" "")
 			 (match_operand:SI 3 "uint5_operand" "")))]
   ""
-  "extru %1,%3+%2-1,%2,%0")
+  "extru %1,%3+%2-1,%2,%0"
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -3407,7 +3645,9 @@
 			 (const_int 1)
 			 (match_operand:SI 3 "register_operand" "q")))]
   ""
-  "vextru %1,1,%0")
+  "vextru %1,1,%0"
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
 
 (define_insn "extv"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -3415,7 +3655,9 @@
 			 (match_operand:SI 2 "uint5_operand" "")
 			 (match_operand:SI 3 "uint5_operand" "")))]
   ""
-  "extrs %1,%3+%2-1,%2,%0")
+  "extrs %1,%3+%2-1,%2,%0"
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -3423,7 +3665,9 @@
 			 (const_int 1)
 			 (match_operand:SI 3 "register_operand" "q")))]
   ""
-  "vextrs %1,1,%0")
+  "vextrs %1,1,%0"
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
 
 (define_insn "insv"
   [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "+r,r")
@@ -3433,7 +3677,9 @@
   ""
   "@
    dep %3,%2+%1-1,%1,%0
-   depi %3,%2+%1-1,%1,%0")
+   depi %3,%2+%1-1,%1,%0"
+  [(set_attr "type" "shift,shift")
+   (set_attr "length" "4,4")])
 
 ;; Optimize insertion of const_int values of type 1...1xxxx.
 (define_insn ""
@@ -3447,7 +3693,9 @@
 {
   operands[3] = GEN_INT ((INTVAL (operands[3]) & 0xf) - 0x10);
   return \"depi %3,%2+%1-1,%1,%0\";
-}")
+}"
+  [(set_attr "type" "shift")
+   (set_attr "length" "4")])
 
 ;; This insn is used for some loop tests, typically loops reversed when
 ;; strength reduction is used.  It is actually created when the instruction
@@ -3759,7 +4007,8 @@
    (use (mem:SI (match_operand:SI 1 "register_operand" "r")))]
   ""
   "fdc 0(0,%0)\;fdc 0(0,%1)\;sync"
-  [(set_attr "length" "12")])
+  [(set_attr "type" "multi")
+   (set_attr "length" "12")])
 
 (define_insn "icacheflush"
   [(unspec_volatile [(const_int 2)] 0)
@@ -3770,4 +4019,5 @@
    (clobber (match_operand:SI 4 "register_operand" "=&r"))]
   ""
   "mfsp %%sr0,%4\;ldsid (0,%2),%3\;mtsp %3,%%sr0\;fic 0(%%sr0,%0)\;fic 0(%%sr0,%1)\;sync\;mtsp %4,%%sr0\;nop\;nop\;nop\;nop\;nop\;nop"
-  [(set_attr "length" "52")])
+  [(set_attr "type" "multi")
+   (set_attr "length" "52")])

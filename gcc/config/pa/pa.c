@@ -41,6 +41,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 rtx hppa_compare_op0, hppa_compare_op1;
 enum cmp_type hppa_branch_type;
 
+/* Which cpu we are scheduling for.  */
+enum processor_type pa_cpu;
+
+/* String to hold which cpu we are scheduling for.  */
+char *pa_cpu_string;
+
 rtx hppa_save_pic_table_rtx;
 
 /* Set by the FUNCTION_PROFILER macro. */
@@ -56,6 +62,34 @@ static rtx find_addr_reg ();
    during this compilation so we'll know when to emit inline long-calls.  */
 
 unsigned int total_code_bytes;
+
+void
+override_options ()
+{
+  /* Default to 700 scheduling which is reasonable for older 800 processors
+     correct for the 700s, and not too bad for the 7100s and 7100LCs.  */
+  if (pa_cpu_string == NULL
+      || ! strcmp (pa_cpu_string, "700"))
+    {
+      pa_cpu_string = "700";
+      pa_cpu = PROCESSOR_700;
+    }
+  else if (! strcmp (pa_cpu_string, "7100"))
+    {
+      pa_cpu_string = "7100";
+      pa_cpu = PROCESSOR_7100;
+    }
+  else if (! strncmp (pa_cpu_string, "7100LC"))
+    {
+      pa_cpu_string = "7100LC";
+      pa_cpu = PROCESSOR_7100LC;
+    }
+  else
+    {
+      warning ("Unknown -mschedule= option (%s).\nValid options are 700, 7100 and 7100LC\n", pa_cpu_string);
+    }
+}
+
 
 /* Return non-zero only if OP is a register of mode MODE,
    or CONST0_RTX.  */
@@ -2498,18 +2532,20 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 	      switch (get_attr_type (dep_insn))
 		{
 		case TYPE_FPLOAD:
-		  /* This cost 3 cycles, not 2 as the md says.  */
-		  return cost + 1;
+		  /* This cost 3 cycles, not 2 as the md says for the
+		     700 and 7100.  Note scaling of cost for 7100.  */
+		  return cost + (pa_cpu_attr == PROCESSOR_700) ? 1 : 2;
 
 		case TYPE_FPALU:
-		case TYPE_FPMUL:
+		case TYPE_FPMULSGL:
+		case TYPE_FPMULDBL:
 		case TYPE_FPDIVSGL:
 		case TYPE_FPDIVDBL:
 		case TYPE_FPSQRTSGL:
 		case TYPE_FPSQRTDBL:
 		  /* In these important cases, we save one cycle compared to
 		     when flop instruction feed each other.  */
-		  return cost - 1;
+		  return cost - (pa_cpu_attr == PROCESSOR_700) ? 1 : 2;
 
 		default:
 		  return cost;
@@ -2547,16 +2583,52 @@ pa_adjust_cost (insn, link, dep_insn, cost)
 	      switch (get_attr_type (dep_insn))
 		{
 		case TYPE_FPALU:
-		case TYPE_FPMUL:
+		case TYPE_FPMULSGL:
+		case TYPE_FPMULDBL:
 		case TYPE_FPDIVSGL:
 		case TYPE_FPDIVDBL:
 		case TYPE_FPSQRTSGL:
 		case TYPE_FPSQRTDBL:
 		  /* A fpload can't be issued until one cycle before a
-		     preceeding arithmetic operation has finished, if
+		     preceeding arithmetic operation has finished if
 		     the target of the fpload is any of the sources
 		     (or destination) of the arithmetic operation.  */
-		  return cost - 1;
+		  return cost - (pa_cpu_attr == PROCESSOR_700) ? 1 : 2;
+
+		default:
+		  return 0;
+		}
+	    }
+	}
+      else if (get_attr_type (insn) == TYPE_FPALU)
+	{
+	  rtx pat = PATTERN (insn);
+	  rtx dep_pat = PATTERN (dep_insn);
+	  if (GET_CODE (pat) == PARALLEL)
+	    {
+	      /* This happens for the fldXs,mb patterns.  */
+	      pat = XVECEXP (pat, 0, 0);
+	    }
+	  if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET)
+	    /* If this happens, we have to extend this to schedule
+	       optimally.  Return 0 for now.  */
+	  return 0;
+
+	  if (reg_mentioned_p (SET_DEST (pat), SET_SRC (dep_pat)))
+	    {
+	      if (! recog_memoized (dep_insn))
+		return 0;
+	      switch (get_attr_type (dep_insn))
+		{
+		case TYPE_FPDIVSGL:
+		case TYPE_FPDIVDBL:
+		case TYPE_FPSQRTSGL:
+		case TYPE_FPSQRTDBL:
+		  /* An ALU flop can't be issued until two cycles before a
+		     preceeding divide or sqrt operation has finished if
+		     the target of the ALU flop is any of the sources
+		     (or destination) of the divide or sqrt operation.  */
+		  return cost - (pa_cpu_attr == PROCESSOR_700) ? 2 : 4;
 
 		default:
 		  return 0;
@@ -2567,9 +2639,89 @@ pa_adjust_cost (insn, link, dep_insn, cost)
       /* For other anti dependencies, the cost is 0.  */
       return 0;
     }
+  else if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT)
+    {
+      /* Output dependency; DEP_INSN writes a register that INSN writes some
+	 cycles later.  */
+      if (get_attr_type (insn) == TYPE_FPLOAD)
+	{
+	  rtx pat = PATTERN (insn);
+	  rtx dep_pat = PATTERN (dep_insn);
+	  if (GET_CODE (pat) == PARALLEL)
+	    {
+	      /* This happens for the fldXs,mb patterns.  */
+	      pat = XVECEXP (pat, 0, 0);
+	    }
+	  if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET)
+	    /* If this happens, we have to extend this to schedule
+	       optimally.  Return 0 for now.  */
+	  return 0;
 
-  /* For output dependencies, the cost is often one too high.  */
-  return cost - 1;
+	  if (reg_mentioned_p (SET_DEST (pat), SET_DEST (dep_pat)))
+	    {
+	      if (! recog_memoized (dep_insn))
+		return 0;
+	      switch (get_attr_type (dep_insn))
+		{
+		case TYPE_FPALU:
+		case TYPE_FPMULSGL:
+		case TYPE_FPMULDBL:
+		case TYPE_FPDIVSGL:
+		case TYPE_FPDIVDBL:
+		case TYPE_FPSQRTSGL:
+		case TYPE_FPSQRTDBL:
+		  /* A fpload can't be issued until one cycle before a
+		     preceeding arithmetic operation has finished if
+		     the target of the fpload is the destination of the
+		     arithmetic operation.  */
+		  return cost - (pa_cpu_attr == PROCESSOR_700) ? 1 : 2;
+
+		default:
+		  return 0;
+		}
+	    }
+	}
+      else if (get_attr_type (insn) == TYPE_FPALU)
+	{
+	  rtx pat = PATTERN (insn);
+	  rtx dep_pat = PATTERN (dep_insn);
+	  if (GET_CODE (pat) == PARALLEL)
+	    {
+	      /* This happens for the fldXs,mb patterns.  */
+	      pat = XVECEXP (pat, 0, 0);
+	    }
+	  if (GET_CODE (pat) != SET || GET_CODE (dep_pat) != SET)
+	    /* If this happens, we have to extend this to schedule
+	       optimally.  Return 0 for now.  */
+	  return 0;
+
+	  if (reg_mentioned_p (SET_DEST (pat), SET_DEST (dep_pat)))
+	    {
+	      if (! recog_memoized (dep_insn))
+		return 0;
+	      switch (get_attr_type (dep_insn))
+		{
+		case TYPE_FPDIVSGL:
+		case TYPE_FPDIVDBL:
+		case TYPE_FPSQRTSGL:
+		case TYPE_FPSQRTDBL:
+		  /* An ALU flop can't be issued until two cycles before a
+		     preceeding divide or sqrt operation has finished if
+		     the target of the ALU flop is also the target of
+		     of the divide or sqrt operation.  */
+		  return cost - (pa_cpu_attr == PROCESSOR_700) ? 2 : 4;
+
+		default:
+		  return 0;
+		}
+	    }
+	}
+
+      /* For other output dependencies, the cost is 0.  */
+      return 0;
+    }
+  else
+    abort ();
 }
 
 /* Return any length adjustment needed by INSN which already has its length
