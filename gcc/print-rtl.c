@@ -154,25 +154,25 @@ print_rtx (in_rtx)
       
       if (! flag_simple)
 	{
-	  if (in_rtx->in_struct)
+	  if (RTX_FLAG (in_rtx, in_struct))
 	    fputs ("/s", outfile);
 
-	  if (in_rtx->volatil)
+	  if (RTX_FLAG (in_rtx, volatil))
 	    fputs ("/v", outfile);
 	  
-	  if (in_rtx->unchanging)
+	  if (RTX_FLAG (in_rtx, unchanging))
 	    fputs ("/u", outfile);
 	  
-	  if (in_rtx->integrated)
+	  if (RTX_FLAG (in_rtx, integrated))
 	    fputs ("/i", outfile);
 	  
-	  if (in_rtx->frame_related)
+	  if (RTX_FLAG (in_rtx, frame_related))
 	    fputs ("/f", outfile);
 	  
-	  if (in_rtx->jump)
+	  if (RTX_FLAG (in_rtx, jump))
 	    fputs ("/j", outfile);
 	  
-	  if (in_rtx->call)
+	  if (RTX_FLAG (in_rtx, call))
 	    fputs ("/c", outfile);
 
 	  if (GET_MODE (in_rtx) != VOIDmode)

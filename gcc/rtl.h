@@ -211,6 +211,7 @@ struct rtx_def
 #define GET_MODE(RTX)	    ((enum machine_mode) (RTX)->mode)
 #define PUT_MODE(RTX, MODE) ((RTX)->mode = (ENUM_BITFIELD(machine_mode)) (MODE))
 
+#define RTX_FLAG(RTX,FLAG) ((RTX)->FLAG)
 #define RTX_INTEGRATED_P(RTX) ((RTX)->integrated)
 #define RTX_UNCHANGING_P(RTX) ((RTX)->unchanging)
 #define RTX_FRAME_RELATED_P(RTX) ((RTX)->frame_related)

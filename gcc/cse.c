@@ -1601,8 +1601,8 @@ insert (x, classp, hash, mode)
   elt->is_const = (CONSTANT_P (x)
 		   /* GNU C++ takes advantage of this for `this'
 		      (and other const values).  */
-		   || (RTX_UNCHANGING_P (x)
-		       && GET_CODE (x) == REG
+		   || (GET_CODE (x) == REG
+		       && RTX_UNCHANGING_P (x)
 		       && REGNO (x) >= FIRST_PSEUDO_REGISTER)
 		   || FIXED_BASE_PLUS_P (x));
 

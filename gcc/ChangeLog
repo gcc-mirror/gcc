@@ -1,3 +1,24 @@
+2002-04-22  Janis Johnson  <janis187@us.ibm.com>
+
+	* rtl.h (RTX_FLAG): New macro.
+	* emit-rtl.c (copy_most_rtx): Use macros to access rtx flags.
+	* final.c (alter_subreg): Use macro to access rtx flag.
+	* integrate.c (copy_rtx_and_substitute): Use new access macro.
+	* print-rtl.c (print_rtx): Use new access macro.
+
+	* cse.c (insert): Check rtx code before accessing flag.
+
+	* genattrtab.c (ATTR_IND_SIMPLIFIED_P, ATTR_CURR_SIMPLIFIED_P,
+	ATTR_PERMANENT_P, ATTR_EQ_ATTR_P): New.
+	(attr_hash_add_string, attr_rtx_1, attr_copy_rtx, check_attr_test,
+	convert_const_symbol_ref, make_canonical, make_alternative_compare,
+	evaluate_eq_attr, attr_rtx_cost, simplify_test_exp_in_temp,
+	simplify_test_exp, optimize_attrs, simplify_by_exploding,
+	find_and_mark_used_attributes, unmark_used_attributes,
+	add_values_to_cover, simplify_with_current_value,
+	simplify_with_current_value_aux, clear_struct_flag, walk_attr_value,
+	copy_rtx_unchanging, main): Use new access macros.
+
 2002-04-22  Tom Rix  <trix@redhat.com>
 
 	* expmed.c (init_expmed): Generate shifted constant once.
