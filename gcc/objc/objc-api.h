@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "objc/objc.h"
 #include "objc/hash.h"
-#include "objc/thread.h"
+#include "objc/thr.h"
 #include <stdio.h>
 
 /* For functions which return Method_t */
