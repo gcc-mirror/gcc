@@ -1,4 +1,14 @@
 2004-05-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/15412
+	* include/bits/stl_threads.h (_GLIBCXX_mutex): Move to namespace
+	__gnu_internal.
+	(_GLIBCXX_mutex_address): Same.
+	(_GLIBCXX_once): Same.	
+	(_GLIBCXX_mutex_init): Same.
+	(_GLIBCXX_mutex_address_init): Same.
+	
+2004-05-13  Benjamin Kosnik  <bkoz@redhat.com>
 	
 	* docs/html/abi.html: New.
 	* docs/html/abi.txt: Remove.

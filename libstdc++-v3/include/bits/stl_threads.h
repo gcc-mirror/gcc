@@ -1,6 +1,6 @@
 // Threading support -*- C++ -*-
 
-// Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -54,7 +54,7 @@
 // layer.
 #include "bits/gthr.h"
 
-namespace __gnu_cxx
+namespace __gnu_internal
 {
 #if !defined(__GTHREAD_MUTEX_INIT) && defined(__GTHREAD_MUTEX_INIT_FUNCTION)
   extern __gthread_mutex_t _GLIBCXX_mutex;
@@ -63,7 +63,10 @@ namespace __gnu_cxx
   extern void _GLIBCXX_mutex_init(void);
   extern void _GLIBCXX_mutex_address_init(void);
 #endif
+} // namespace __gnu_internal
 
+namespace __gnu_cxx
+{
   // Locking class.  Note that this class *does not have a
   // constructor*.  It must be initialized either statically, with
   // __STL_MUTEX_INITIALIZER, or dynamically, by explicitly calling
@@ -92,24 +95,24 @@ namespace __gnu_cxx
       // There should be no code in this path given the usage rules above.
 #elif defined(__GTHREAD_MUTEX_INIT_FUNCTION)
       if (_M_init_flag) return;
-      if (__gthread_once(&__gnu_cxx::_GLIBCXX_once,
-			 __gnu_cxx::_GLIBCXX_mutex_init) != 0
+      if (__gthread_once(&__gnu_internal::_GLIBCXX_once,
+			 __gnu_internal::_GLIBCXX_mutex_init) != 0
 	  && __gthread_active_p())
 	abort ();
-      __gthread_mutex_lock(&__gnu_cxx::_GLIBCXX_mutex);
+      __gthread_mutex_lock(&__gnu_internal::_GLIBCXX_mutex);
       if (!_M_init_flag)
 	{
 	  // Even though we have a global lock, we use __gthread_once to be
 	  // absolutely certain the _M_lock mutex is only initialized once on
 	  // multiprocessor systems.
-	  __gnu_cxx::_GLIBCXX_mutex_address = &_M_lock;
+	  __gnu_internal::_GLIBCXX_mutex_address = &_M_lock;
 	  if (__gthread_once(&_M_once,
-			     __gnu_cxx::_GLIBCXX_mutex_address_init) != 0
+			     __gnu_internal::_GLIBCXX_mutex_address_init) != 0
 	    && __gthread_active_p())
 	    abort();
 	  _M_init_flag = 1;
 	}
-      __gthread_mutex_unlock(&__gnu_cxx::_GLIBCXX_mutex);
+      __gthread_mutex_unlock(&__gnu_internal::_GLIBCXX_mutex);
 #endif
     }
 
