@@ -53,7 +53,7 @@ extern int target_flags;
 
 #define MASK_VOL_ASM_STOP 0x00000010	/* Emit stop bits for vol ext asm.  */
 
-/* 0x00000020 is available.  */
+#define MASK_ILP32      0x00000020      /* Generate ILP32 code. */
 
 #define MASK_B_STEP	0x00000040	/* Emit code for Itanium B step.  */
 
@@ -80,6 +80,8 @@ extern int target_flags;
 #define TARGET_NO_PIC		(target_flags & MASK_NO_PIC)
 
 #define TARGET_VOL_ASM_STOP	(target_flags & MASK_VOL_ASM_STOP)
+
+#define TARGET_ILP32            (target_flags & MASK_ILP32)
 
 #define TARGET_B_STEP		(target_flags & MASK_B_STEP)
 
@@ -144,6 +146,7 @@ extern int target_flags;
       N_("Enable Dwarf 2 line debug info via GNU as")},			\
   { "no-dwarf2-asm", 	-MASK_DWARF2_ASM,				\
       N_("Disable Dwarf 2 line debug info via GNU as")},		\
+  SUBTARGET_SWITCHES							\
   { "",			TARGET_DEFAULT | TARGET_CPU_DEFAULT,		\
       NULL }								\
 }
@@ -156,6 +159,10 @@ extern int target_flags;
 
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT 0
+#endif
+
+#ifndef SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES
 #endif
 
 /* This macro is similar to `TARGET_SWITCHES' but defines names of command
@@ -210,7 +217,7 @@ extern const char *ia64_fixed_range_string;
    This should be defined if `SIZE_TYPE' depends on target dependent flags
    which are not accessible to the preprocessor.  Otherwise, it should not be
    defined.  */
-/* ??? Needs to be defined for P64 code.  */
+/* This is always "long" so it doesn't "change" in ILP32 vs. LP64.  */
 /* #define NO_BUILTIN_SIZE_TYPE */
 
 /* If this macro is defined, the preprocessor will not define the builtin macro
@@ -220,7 +227,7 @@ extern const char *ia64_fixed_range_string;
    This should be defined if `PTRDIFF_TYPE' depends on target dependent flags
    which are not accessible to the preprocessor.  Otherwise, it should not be
    defined.  */
-/* ??? Needs to be defined for P64 code.  */
+/* This is always "long" so it doesn't "change" in ILP32 vs. LP64.  */
 /* #define NO_BUILTIN_PTRDIFF_TYPE */
 
 /* A C string constant that tells the GNU CC driver program options to pass to
@@ -306,16 +313,15 @@ extern const char *ia64_fixed_range_string;
 /* Width of a pointer, in bits.  You must specify a value no wider than the
    width of `Pmode'.  If it is not equal to the width of `Pmode', you must
    define `POINTERS_EXTEND_UNSIGNED'.  */
-/* ??? Implement optional 32 bit pointer size later?  */
-#define POINTER_SIZE 64
+#define POINTER_SIZE (TARGET_ILP32 ? 32 : 64)
 
-/* A C expression whose value is nonzero if pointers that need to be extended
-   from being `POINTER_SIZE' bits wide to `Pmode' are sign-extended and zero if
-   they are zero-extended.
+/* A C expression whose value is zero if pointers that need to be extended
+   from being `POINTER_SIZE' bits wide to `Pmode' are sign-extended and one if
+   they are zero-extended and negative one if there is an ptr_extend operation.
 
    You need not define this macro if the `POINTER_SIZE' is equal to the width
    of `Pmode'.  */
-/* ??? May need this for 32 bit pointers.  */
+/* Need this for 32 bit pointers, see hpux.h for setting it.  */
 /* #define POINTERS_EXTEND_UNSIGNED */
 
 /* A macro to update MODE and UNSIGNEDP when an object whose type is TYPE and
@@ -436,15 +442,13 @@ while (0)
 
 /* A C expression for the size in bits of the type `long' on the target
    machine.  If you don't define this, the default is one word.  */
-/* ??? Should be 32 for ILP32 code.  */
-#define LONG_TYPE_SIZE 64
+#define LONG_TYPE_SIZE (TARGET_ILP32 ? 32 : 64)
 
 /* Maximum number for the size in bits of the type `long' on the target
    machine.  If this is undefined, the default is `LONG_TYPE_SIZE'.  Otherwise,
    it is the constant value that is the largest value that `LONG_TYPE_SIZE' can
    have at run-time.  This is used in `cpp'.  */
-/* ??? Should be 64 for ILP32 code.  */
-/* #define MAX_LONG_TYPE_SIZE */
+#define MAX_LONG_TYPE_SIZE 64
 
 /* A C expression for the size in bits of the type `long long' on the target
    machine.  If you don't define this, the default is two words.  If you want

@@ -4423,6 +4423,10 @@ rtx_needs_barrier (x, flags, pred)
 	case 23: /* cycle display */
           break;
 
+        case 24: /* addp4 */
+	  need_barrier = rtx_needs_barrier (XVECEXP (x, 0, 0), flags, pred);
+	  break;
+
 	case 5: /* recip_approx */
 	  need_barrier = rtx_needs_barrier (XVECEXP (x, 0, 0), flags, pred);
 	  need_barrier |= rtx_needs_barrier (XVECEXP (x, 0, 1), flags, pred);

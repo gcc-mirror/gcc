@@ -1,3 +1,12 @@
+# We need multilib support for HPUX's ILP32 & LP64 modes.
+
+LIBGCC = stmp-multilib
+INSTALL_LIBGCC = install-multilib
+
+MULTILIB_OPTIONS = milp32/mlp64
+MULTILIB_DIRNAMES = hpux32 hpux64
+MULTILIB_MATCHES =
+
 # Support routines for HP-UX 128 bit floats.
 
 LIB2FUNCS_EXTRA=quadlib.c
