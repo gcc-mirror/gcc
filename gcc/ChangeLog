@@ -1,3 +1,8 @@
+2004-08-13  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.md (cbranch define_delay) Use cond_delay_slot for
+	non-anulled condition too.
+
 2004-08-12  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (any_parallel_operand): New predicate.
