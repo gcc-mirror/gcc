@@ -101,8 +101,8 @@ static int n_useless_values;
    which the register was set; if the mode is unknown or the value is
    no longer valid in that mode, ELT will be NULL for the first
    element.  */
-struct elt_list **reg_values;
-unsigned int reg_values_size;
+static struct elt_list **reg_values;
+static unsigned int reg_values_size;
 #define REG_VALUES(i) reg_values[i]
 
 /* The largest number of hard regs used by any entry added to the
