@@ -71,21 +71,38 @@ namespace std
   template 
     S& 
     S::_M_replace(S::iterator, S::iterator, S::iterator, S::iterator, 
-		  forward_iterator_tag);
+		  input_iterator_tag);
 
   template 
     S& 
     S::_M_replace(S::iterator, S::iterator, S::const_iterator, 
-		  S::const_iterator, forward_iterator_tag);
+		  S::const_iterator, input_iterator_tag);
 
   template
     S&
-    S::_M_replace(S::iterator, S::iterator, C*, C*, forward_iterator_tag); 
+    S::_M_replace(S::iterator, S::iterator, C*, C*, input_iterator_tag); 
 
   template
     S&
     S::_M_replace(S::iterator, S::iterator, const C*, const C*, 
-		  forward_iterator_tag);  
+		  input_iterator_tag);  
+
+  template 
+    S& 
+    S::_M_replace_safe(S::iterator, S::iterator, S::iterator, S::iterator);
+
+  template 
+    S& 
+    S::_M_replace_safe(S::iterator, S::iterator, S::const_iterator, 
+		  S::const_iterator);
+
+  template
+    S&
+    S::_M_replace_safe(S::iterator, S::iterator, C*, C*); 
+
+  template
+    S&
+    S::_M_replace_safe(S::iterator, S::iterator, const C*, const C*);  
 
   template 
     C* 
