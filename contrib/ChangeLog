@@ -1,3 +1,7 @@
+1998-11-28  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* test_summary (address): set to egcs-testresults mailing list
+
 1998-11-27  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* test_summary (address): added Marc Lehmann's testsuite-results
