@@ -5485,7 +5485,9 @@ check_init_type_bitfields (type)
       tree tail;
       for (tail = TYPE_FIELDS (type); tail;
 	   tail = TREE_CHAIN (tail))
-	if (DECL_BIT_FIELD (tail))
+	if (DECL_BIT_FIELD (tail)
+	    /* This catches cases like `int foo : 8;'.  */
+	    || DECL_MODE (tail) != TYPE_MODE (TREE_TYPE (tail)))
 	  {
 	    constructor_incremental = 0;
 	    break;
