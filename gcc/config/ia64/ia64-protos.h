@@ -114,6 +114,9 @@ extern int ia64_function_arg_partial_nregs PARAMS((CUMULATIVE_ARGS *,
 extern void ia64_function_arg_advance PARAMS((CUMULATIVE_ARGS *,
 					      enum machine_mode,
 					      tree, int));
+extern int ia64_function_arg_pass_by_reference PARAMS((CUMULATIVE_ARGS *,
+						       enum machine_mode,
+						       tree, int));
 extern int ia64_return_in_memory PARAMS((tree));
 extern void ia64_asm_output_external PARAMS((FILE *, tree, const char *));
 

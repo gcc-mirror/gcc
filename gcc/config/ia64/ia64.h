@@ -1268,7 +1268,8 @@ enum reg_class
    pointer is passed in whatever way is appropriate for passing a pointer to
    that type.  */
 
-#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) 0
+#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) \
+  ia64_function_arg_pass_by_reference (&CUM, MODE, TYPE, NAMED)
 
 /* A C type for declaring a variable that is used as the first argument of
    `FUNCTION_ARG' and other related values.  For some target machines, the type
