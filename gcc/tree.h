@@ -1,5 +1,5 @@
 /* Front-end tree definitions for GNU compiler.
-   Copyright (C) 1989, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -196,7 +196,7 @@ struct tree_common
    static_flag:
 
        TREE_STATIC in
-           VAR_DECL, FUNCTION_DECL, CONSTRUCTOR
+           VAR_DECL, FUNCTION_DECL, CONSTRUCTOR, ADDR_EXPR
        TREE_NO_UNUSED_WARNING in
            CONVERT_EXPR, NOP_EXPR, COMPOUND_EXPR
        TREE_VIA_VIRTUAL in
@@ -245,7 +245,7 @@ struct tree_common
    readonly_flag:
 
        TREE_READONLY in
-           VAR_DECL, PARM_DECL, FIELD_DECL, ..._REF
+           all expressions
        ITERATOR_BOUND_P in
            VAR_DECL if iterator (C)
        TYPE_READONLY in
@@ -1393,7 +1393,7 @@ extern tree pedantic_non_lvalue		PROTO((tree));
 
 extern tree convert			PROTO((tree, tree));
 extern tree size_in_bytes		PROTO((tree));
-extern int int_size_in_bytes		PROTO((tree));
+extern HOST_WIDE_INT int_size_in_bytes	PROTO((tree));
 extern tree size_binop			PROTO((enum tree_code, tree, tree));
 extern tree size_int			PROTO((unsigned HOST_WIDE_INT));
 extern tree round_up			PROTO((tree, int));
