@@ -4511,17 +4511,6 @@ for_each_template_parm_r (tree* tp, int* walk_subtrees, void* d)
   struct pair_fn_data *pfd = (struct pair_fn_data *) d;
   tree_fn_t fn = pfd->fn;
   void *data = pfd->data;
-  void **slot;
-
-  /* If we have already visited this tree, there's no need to walk
-     subtrees.  Otherwise, add it to the visited table.  */
-  slot = htab_find_slot (pfd->visited, *tp, INSERT);
-  if (*slot)
-    {
-      *walk_subtrees = 0;
-      return NULL_TREE;
-    }
-  *slot = *tp;
 
   if (TYPE_P (t)
       && for_each_template_parm (TYPE_CONTEXT (t), fn, data, pfd->visited))
@@ -4714,7 +4703,7 @@ for_each_template_parm (tree t, tree_fn_t fn, void* data, htab_t visited)
   result = walk_tree (&t, 
 		      for_each_template_parm_r, 
 		      &pfd,
-		      NULL) != NULL_TREE;
+		      pfd.visited) != NULL_TREE;
 
   /* Clean up.  */
   if (!visited)
