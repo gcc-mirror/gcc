@@ -1,3 +1,30 @@
+2002-01-31  Loren Rittle <ljrittle@acm.org>
+
+	* testsuite/22_locale/codecvt_members_char_char.cc: Do not
+	allow NULL argument to be passed to setenv().
+	* testsuite/22_locale/codecvt_members_wchar_t_char.cc: Likewise.
+	* testsuite/22_locale/collate_members_char.cc: Likewise.
+	* testsuite/22_locale/collate_members_wchar_t.cc: Likewise.
+	* testsuite/22_locale/ctype_members_char.cc: Likewise.
+	* testsuite/22_locale/ctype_members_wchar_t.cc: Likewise.
+	* testsuite/22_locale/messages_members_char.cc: Likewise.
+	* testsuite/22_locale/money_get_members_char.cc: Likewise.
+	* testsuite/22_locale/money_get_members_wchar_t.cc: Likewise.
+	* testsuite/22_locale/money_put_members_char.cc: Likewise.
+	* testsuite/22_locale/money_put_members_wchar_t.cc: Likewise.
+	* testsuite/22_locale/moneypunct_members_char.cc: Likewise.
+	* testsuite/22_locale/moneypunct_members_wchar_t.cc: Likewise.
+	* testsuite/22_locale/num_get_members_char.cc: Likewise.
+	* testsuite/22_locale/num_get_members_wchar_t.cc: Likewise.
+	* testsuite/22_locale/num_put_members_char.cc: Likewise.
+	* testsuite/22_locale/num_put_members_wchar_t.cc: Likewise.
+	* testsuite/22_locale/numpunct_members_char.cc: Likewise.
+	* testsuite/22_locale/numpunct_members_wchar_t.cc: Likewise.
+	* testsuite/22_locale/time_get_members_char.cc: Likewise.
+	* testsuite/22_locale/time_get_members_wchar_t.cc: Likewise.
+	* testsuite/22_locale/time_put_members_char.cc: Likewise.
+	* testsuite/22_locale/time_put_members_wchar_t.cc: Likewise.
+
 2002-01-30  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/locale/c_locale_gnu.cc: Same errno fixes as generic.
