@@ -581,14 +581,8 @@ dbxout_type_fields (type)
      field.  */
   for (tem = TYPE_FIELDS (type); tem; tem = TREE_CHAIN (tem))
     {
-      /* For nameless subunions and subrecords, treat their fields as ours.  */
-      if (DECL_NAME (tem) == NULL_TREE
-	  && (TREE_CODE (TREE_TYPE (tem)) == UNION_TYPE
-	      || TREE_CODE (TREE_TYPE (tem)) == QUAL_UNION_TYPE
-	      || TREE_CODE (TREE_TYPE (tem)) == RECORD_TYPE))
-	dbxout_type_fields (TREE_TYPE (tem));
       /* Omit here local type decls until we know how to support them.  */
-      else if (TREE_CODE (tem) == TYPE_DECL)
+      if (TREE_CODE (tem) == TYPE_DECL)
 	continue;
       /* Omit fields whose position or size are variable.  */
       else if (TREE_CODE (tem) == FIELD_DECL
@@ -596,7 +590,7 @@ dbxout_type_fields (type)
 		   || TREE_CODE (DECL_SIZE (tem)) != INTEGER_CST))
 	continue;
       /* Omit here the nameless fields that are used to skip bits.  */
-      else if (DECL_NAME (tem) != 0 && TREE_CODE (tem) != CONST_DECL)
+      else if (TREE_CODE (tem) != CONST_DECL)
 	{
 	  /* Continue the line if necessary,
 	     but not before the first field.  */
@@ -620,8 +614,16 @@ dbxout_type_fields (type)
 	      continue;
 	    }
 
-	  fprintf (asmfile, "%s:", IDENTIFIER_POINTER (DECL_NAME (tem)));
-	  CHARS (2 + IDENTIFIER_LENGTH (DECL_NAME (tem)));
+	  if (DECL_NAME (tem))
+	    {
+	      fprintf (asmfile, "%s:", IDENTIFIER_POINTER (DECL_NAME (tem)));
+	      CHARS (2 + IDENTIFIER_LENGTH (DECL_NAME (tem)));
+	    }
+	  else
+	    {
+	      fprintf (asmfile, ":");
+	      CHARS (2);
+	    }
 
 	  if (use_gnu_debug_info_extensions
 	      && (TREE_PRIVATE (tem) || TREE_PROTECTED (tem)
