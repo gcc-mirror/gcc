@@ -1,3 +1,9 @@
+2004-02-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (function_arg_slotno): Align TImode
+	arguments on a 16-byte boundary in the parameter array if ARCH64.
+	Split handling of TFmode.
+
 2004-02-02  Paolo Bonzini  <bonzini@gnu.org>
 
 	* rtlanal.c (reg_overlap_mentioned_p) [!ENABLE_CHECKING]:
