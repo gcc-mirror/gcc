@@ -533,6 +533,10 @@ input_operand (op, mode)
       && GET_CODE (op) == CONST_INT)
     return 1;
 
+  /* A SYMBOL_REF referring to the TOC is valid.  */
+  if (GET_CODE (op) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (op))
+    return 1;
+
   /* Otherwise, we will be doing this SET with an add, so anything valid
      for an add will be valid.  */
   return add_operand (op, mode);
