@@ -37,7 +37,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "debug.h"		/* For debug_hooks.  */
 #include "opts.h"
 #include "options.h"
-#include "langhooks-def.h"
 
 #ifndef DOLLARS_IN_IDENTIFIERS
 # define DOLLARS_IN_IDENTIFIERS true
@@ -54,7 +53,7 @@ static cpp_options *cpp_opts;
 
 /* Input filename.  */
 static const char **in_fnames;
-static unsigned num_in_fnames;
+unsigned num_in_fnames;
 static const char *this_input_filename;
 
 /* Filename and stream for preprocessed output.  */
@@ -1248,22 +1247,6 @@ c_common_finish (void)
 
   if (out_stream && (ferror (out_stream) || fclose (out_stream)))
     fatal_error ("when writing output to %s: %m", out_fname);
-}
-
-/* A wrapper around lhd_set_decl_assembler_name that gives static
-   variables their C names if they are at the top level and only one
-   translation unit is being compiled, for backwards compatibility
-   with certain bizzare assembler hacks (like crtstuff.c).  */
-
-void
-c_static_assembler_name (tree decl)
-{
-  if (num_in_fnames == 1
-      && TREE_STATIC (decl) && !TREE_PUBLIC (decl) && DECL_CONTEXT (decl)
-      && TREE_CODE (DECL_CONTEXT (decl)) == TRANSLATION_UNIT_DECL)
-    SET_DECL_ASSEMBLER_NAME (decl, DECL_NAME (decl));
-  else
-    lhd_set_decl_assembler_name (decl);
 }
 
 /* Either of two environment variables can specify output of

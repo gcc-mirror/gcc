@@ -5,6 +5,17 @@
 
 2003-07-21  Geoffrey Keating  <geoffk@apple.com>
 
+	* c-common.h (num_in_fnames): Declare.
+	(c_static_assembler_name): Move from here...
+	* c-tree.h (c_static_assembler_name): ... to here.
+	* c-opts.c: Don't include langhooks-def.h.
+	(c_static_assembler_name): Move to c-decl.c.
+	(num_in_fnames): Make externally visible.
+	* c-decl.c: Include langhooks-def.h.
+	(c_static_assembler_name): Move from c-opts.c.
+	* Makefile.in (c-decl.o): Add $(LANGHOOKS_DEF_H).
+	(c-opts.o): Remove $(LANGHOOKS_DEF_H).
+
 	* c-pragma.c (maybe_apply_pragma_weak): Don't get DECL_ASSEMBLER_NAME
 	when it's not needed.
 
