@@ -1,5 +1,9 @@
 2003-06-10  Richard Henderson  <rth@redhat.com>
 
+	* optabs.c (gen_cond_trap): Fix prepare_operand typo.
+
+2003-06-10  Richard Henderson  <rth@redhat.com>
+
 	* config/ia64/ia64.md (call_gp): Fix memory mode.
 
 2003-06-10  James E Wilson  <wilson@tuliptree.org>
