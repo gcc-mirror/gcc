@@ -2467,12 +2467,12 @@ expand_call (exp, target, ignore)
 	      || reg_mentioned_p (virtual_outgoing_args_rtx,
 				  structure_value_addr))
 	  && (args_size.var
-	      || (!ACCUMULATE_OUTGOING_ARGS && args_size.constant)
-	      ))
+	      || (!ACCUMULATE_OUTGOING_ARGS && args_size.constant)))
 	structure_value_addr = copy_to_reg (structure_value_addr);
 
       /* Precompute any arguments as needed.  */
-      precompute_arguments (flags, num_actuals, args);
+      if (pass)
+	precompute_arguments (flags, num_actuals, args);
 
       /* Now we are about to start emitting insns that can be deleted
 	 if a libcall is deleted.  */
@@ -2480,11 +2480,14 @@ expand_call (exp, target, ignore)
 	start_sequence ();
 
       old_stack_allocated =  stack_pointer_delta - pending_stack_adjust;
-
+      /* The argument block when performing a sibling call is the
+         incoming argument block.  */
+      if (pass == 0)
+	argblock = virtual_incoming_args_rtx;
       /* If we have no actual push instructions, or shouldn't use them,
 	 make space for all args right now.  */
 
-      if (args_size.var != 0)
+      else if (args_size.var != 0)
 	{
 	  if (old_stack_level == 0)
 	    {
@@ -2519,24 +2522,24 @@ expand_call (exp, target, ignore)
 	    {
 	      if (ACCUMULATE_OUTGOING_ARGS)
 		{
-		  /* Since the stack pointer will never be pushed, it is possible
-		     for the evaluation of a parm to clobber something we have
-		     already written to the stack.  Since most function calls on
-		     RISC machines do not use the stack, this is uncommon, but
-		     must work correctly.
+		  /* Since the stack pointer will never be pushed, it is
+		     possible for the evaluation of a parm to clobber
+		     something we have already written to the stack.
+		     Since most function calls on RISC machines do not use
+		     the stack, this is uncommon, but must work correctly.
 
 		     Therefore, we save any area of the stack that was already
-		     written and that we are using.  Here we set up to do this by
-		     making a new stack usage map from the old one.  The actual
-		     save will be done by store_one_arg. 
+		     written and that we are using.  Here we set up to do this
+		     by making a new stack usage map from the old one.  The
+		     actual save will be done by store_one_arg. 
 
 		     Another approach might be to try to reorder the argument
 		     evaluations to avoid this conflicting stack usage.  */
 
 #ifndef OUTGOING_REG_PARM_STACK_SPACE
-		  /* Since we will be writing into the entire argument area, the
-		     map must be allocated for its entire size, not just the part
-		     that is the responsibility of the caller.  */
+		  /* Since we will be writing into the entire argument area,
+		     the map must be allocated for its entire size, not just
+		     the part that is the responsibility of the caller.  */
 		  needed += reg_parm_stack_space;
 #endif
 
@@ -2547,7 +2550,8 @@ expand_call (exp, target, ignore)
 		  highest_outgoing_arg_in_use = MAX (initial_highest_arg_in_use,
 						     needed);
 #endif
-		  stack_usage_map = (char *) alloca (highest_outgoing_arg_in_use);
+		  stack_usage_map
+		    = (char *) alloca (highest_outgoing_arg_in_use);
 
 		  if (initial_highest_arg_in_use)
 		    bcopy (initial_stack_usage_map, stack_usage_map,
@@ -2559,9 +2563,9 @@ expand_call (exp, target, ignore)
 			    - initial_highest_arg_in_use));
 		  needed = 0;
 
-		  /* The address of the outgoing argument list must not be copied
-		     to a register here, because argblock would be left pointing
-		     to the wrong place after the call to
+		  /* The address of the outgoing argument list must not be
+		     copied to a register here, because argblock would be left
+		     pointing to the wrong place after the call to
 		     allocate_dynamic_stack_space below. */
 
 		  argblock = virtual_outgoing_args_rtx;
@@ -2590,63 +2594,53 @@ expand_call (exp, target, ignore)
 		  else
 		    argblock = push_block (GEN_INT (needed), 0, 0);
 
-		  /* We only really need to call `copy_to_reg' in the case where
-		     push insns are going to be used to pass ARGBLOCK to a function
-		     call in ARGS.  In that case, the stack pointer changes value
-		     from the allocation point to the call point, and hence
-		     the value of VIRTUAL_OUTGOING_ARGS_RTX changes as well.
-		     But might as well always do it.  */
+		  /* We only really need to call `copy_to_reg' in the case
+		     where push insns are going to be used to pass ARGBLOCK
+		     to a function call in ARGS.  In that case, the stack
+		     pointer changes value from the allocation point to the
+		     call point, and hence the value of
+		     VIRTUAL_OUTGOING_ARGS_RTX changes as well.  But might
+		     as well always do it.  */
 		  argblock = copy_to_reg (argblock);
-		}
-	    }
-	}
 
-      /* The argument block when performing a sibling call is the
-	 incoming argument block.  */
-      if (pass == 0)
-	{
-	  rtx temp = plus_constant (arg_pointer_rtx,
-				    FIRST_PARM_OFFSET (current_function_decl));
-	  argblock = force_reg (Pmode, force_operand (temp, NULL_RTX));
-	}
-
-      if (ACCUMULATE_OUTGOING_ARGS)
-	{
-	  /* The save/restore code in store_one_arg handles all cases except one:
-	     a constructor call (including a C function returning a BLKmode struct)
-	     to initialize an argument.  */
-	  if (stack_arg_under_construction)
-	    {
+		  /* The save/restore code in store_one_arg handles all
+		     cases except one:
+		     a constructor call (including a C function returning
+		     a BLKmode struct) to initialize an argument.  */
+		  if (stack_arg_under_construction)
+		    {
 #ifndef OUTGOING_REG_PARM_STACK_SPACE
-	      rtx push_size = GEN_INT (reg_parm_stack_space + args_size.constant);
+		      rtx push_size = GEN_INT (reg_parm_stack_space + args_size.constant);
 #else
-	      rtx push_size = GEN_INT (args_size.constant);
+		      rtx push_size = GEN_INT (args_size.constant);
 #endif
-	      if (old_stack_level == 0)
-		{
-		  emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
-		  old_pending_adj = pending_stack_adjust;
-		  pending_stack_adjust = 0;
-		  /* stack_arg_under_construction says whether a stack arg is
-		     being constructed at the old stack level.  Pushing the stack
-		     gets a clean outgoing argument block.  */
-		  old_stack_arg_under_construction = stack_arg_under_construction;
-		  stack_arg_under_construction = 0;
-		  /* Make a new map for the new argument list.  */
-		  stack_usage_map = (char *)alloca (highest_outgoing_arg_in_use);
-		  bzero (stack_usage_map, highest_outgoing_arg_in_use);
-		  highest_outgoing_arg_in_use = 0;
+		      if (old_stack_level == 0)
+			{
+			  emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
+			  old_pending_adj = pending_stack_adjust;
+			  pending_stack_adjust = 0;
+			  /* stack_arg_under_construction says whether a stack arg is
+			     being constructed at the old stack level.  Pushing the stack
+			     gets a clean outgoing argument block.  */
+			  old_stack_arg_under_construction = stack_arg_under_construction;
+			  stack_arg_under_construction = 0;
+			  /* Make a new map for the new argument list.  */
+			  stack_usage_map = (char *)alloca (highest_outgoing_arg_in_use);
+			  bzero (stack_usage_map, highest_outgoing_arg_in_use);
+			  highest_outgoing_arg_in_use = 0;
+			}
+		      allocate_dynamic_stack_space (push_size, NULL_RTX, BITS_PER_UNIT);
+		    }
+		  /* If argument evaluation might modify the stack pointer, copy the
+		     address of the argument list to a register.  */
+		  for (i = 0; i < num_actuals; i++)
+		    if (args[i].pass_on_stack)
+		      {
+			argblock = copy_addr_to_reg (argblock);
+			break;
+		      }
 		}
-	      allocate_dynamic_stack_space (push_size, NULL_RTX, BITS_PER_UNIT);
 	    }
-	  /* If argument evaluation might modify the stack pointer, copy the
-	     address of the argument list to a register.  */
-	  for (i = 0; i < num_actuals; i++)
-	    if (args[i].pass_on_stack)
-	      {
-		argblock = copy_addr_to_reg (argblock);
-		break;
-	      }
 	}
 
       compute_argument_addresses (args, argblock, num_actuals);
@@ -2709,7 +2703,7 @@ expand_call (exp, target, ignore)
 #ifdef REG_PARM_STACK_SPACE
       /* Save the fixed argument area if it's part of the caller's frame and
 	 is clobbered by argument setup for this call.  */
-      if (ACCUMULATE_OUTGOING_ARGS)
+      if (ACCUMULATE_OUTGOING_ARGS && pass)
 	save_area = save_fixed_argument_area (reg_parm_stack_space, argblock,
 					      &low_to_save, &high_to_save);
 #endif
@@ -2722,7 +2716,7 @@ expand_call (exp, target, ignore)
 
       for (i = 0; i < num_actuals; i++)
 	if (args[i].reg == 0 || args[i].pass_on_stack)
-	  store_one_arg (&args[i], argblock, flags & ECF_MAY_BE_ALLOCA,
+	  store_one_arg (&args[i], argblock, flags,
 			 args_size.var != 0, reg_parm_stack_space);
 
       /* If we have a parm that is passed in registers but not in memory
@@ -2737,7 +2731,7 @@ expand_call (exp, target, ignore)
       if (reg_parm_seen)
 	for (i = 0; i < num_actuals; i++)
 	  if (args[i].partial != 0 && ! args[i].pass_on_stack)
-	    store_one_arg (&args[i], argblock, flags & ECF_MAY_BE_ALLOCA,
+	    store_one_arg (&args[i], argblock, flags,
 			   args_size.var != 0, reg_parm_stack_space);
 
 #ifdef PREFERRED_STACK_BOUNDARY
@@ -3037,14 +3031,13 @@ expand_call (exp, target, ignore)
 	  stack_usage_map = initial_stack_usage_map;
 	  sibcall_failure = 1;
 	}
-      else if (ACCUMULATE_OUTGOING_ARGS)
+      else if (ACCUMULATE_OUTGOING_ARGS && pass)
 	{
 #ifdef REG_PARM_STACK_SPACE
 	  if (save_area)
 	    {
 	      restore_fixed_argument_area (save_area, argblock,
 					   high_to_save, low_to_save);
-	      sibcall_failure = 1;
 	    }
 #endif
 
@@ -3065,7 +3058,6 @@ expand_call (exp, target, ignore)
 				   validize_mem (args[i].save_area),
 				   GEN_INT (args[i].size.constant),
 				   PARM_BOUNDARY);
-		sibcall_failure = 1;
 	      }
 
 	  highest_outgoing_arg_in_use = initial_highest_arg_in_use;
@@ -3595,8 +3587,8 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 	{
 	  if (ACCUMULATE_OUTGOING_ARGS)
 	    {
-	      /* If this is being stored into a pre-allocated, fixed-size, stack
-		 area, save any previous data at that location.  */
+	      /* If this is being stored into a pre-allocated, fixed-size,
+		 stack area, save any previous data at that location.  */
 
 #ifdef ARGS_GROW_DOWNWARD
 	      /* stack_slot is negative, but we want to index stack_usage_map
@@ -3610,16 +3602,18 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
 
 	      for (i = lower_bound; i < upper_bound; i++)
 		if (stack_usage_map[i]
-		    /* Don't store things in the fixed argument area at this point;
-		       it has already been saved.  */
+		    /* Don't store things in the fixed argument area at this
+		       point; it has already been saved.  */
 		    && i > reg_parm_stack_space)
 		  break;
 
 	      if (i != upper_bound)
 		{
-		  /* We need to make a save area.  See what mode we can make it. */
+		  /* We need to make a save area.  See what mode we can make
+		     it. */
 		  enum machine_mode save_mode
-		    = mode_for_size (argvec[argnum].size.constant * BITS_PER_UNIT,
+		    = mode_for_size (argvec[argnum].size.constant
+				     * BITS_PER_UNIT,
 				     MODE_INT, 1);
 		  rtx stack_area
 		    = gen_rtx_MEM
@@ -3975,11 +3969,11 @@ target_for_arg (type, size, args_addr, offset)
    FNDECL is the declaration of the function we are calling.  */
 
 static void
-store_one_arg (arg, argblock, may_be_alloca, variable_size,
+store_one_arg (arg, argblock, flags, variable_size,
 	       reg_parm_stack_space)
      struct arg_data *arg;
      rtx argblock;
-     int may_be_alloca;
+     int flags;
      int variable_size ATTRIBUTE_UNUSED;
      int reg_parm_stack_space;
 {
@@ -3996,7 +3990,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
      this argument.  */
   push_temp_slots ();
 
-  if (ACCUMULATE_OUTGOING_ARGS)
+  if (ACCUMULATE_OUTGOING_ARGS && !(flags & ECF_SIBCALL))
     {
       /* If this is being stored into a pre-allocated, fixed-size, stack area,
 	 save any previous data at that location.  */
@@ -4124,7 +4118,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size,
 
   /* Don't allow anything left on stack from computation
      of argument to alloca.  */
-  if (may_be_alloca)
+  if (flags & ECF_MAY_BE_ALLOCA)
     do_pending_stack_adjust ();
 
   if (arg->value == arg->stack)

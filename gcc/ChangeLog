@@ -1,3 +1,9 @@
+Thu Apr 20 14:19:18 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* calls.c (expand_call): Avoid unnecesary precalculation
+	and outgoing parameters space guarding for sibling calls.
+	(store_one_arg): Likewise.
+
 Thu Apr 20 08:01:07 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* toplev.c (enum dump_file_index, dump_file): Add DFI_sibling.
