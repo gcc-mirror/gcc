@@ -1,5 +1,18 @@
 2003-02-10  Michael Koch  <konqueror@gmx.de>
 
+	* java/nio/charset/IllegalCharsetNameException.java
+	(serialVersionUID): New member variable.
+	(charsetName): New member variable.
+	(IllegalCharsetException): New implementation.
+	(getCharsetName): New implementation.
+	* java/nio/charset/UnsupportedCharsetException.java
+	(serialVersionUID): New member variable.
+	(charsetName): New member variable.
+	(UnsupportedCharsetException): New implementation.
+	(getCharsetName): New implementation.
+
+2003-02-10  Michael Koch  <konqueror@gmx.de>
+
 	* java/nio/channels/DatagramChannel.java
 	(write): Throws IOException.
 	(connect): Throws IOException.
