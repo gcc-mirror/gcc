@@ -1734,15 +1734,15 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 			rtx range1after, range2after;
 			rtx range1before, range2before;
 
-			/* Include in each range any line number before it.  */
+			/* Include in each range any notes before it, to be
+			   sure that we get the line number note if any, even
+			   if there are other notes here.  */
 			while (PREV_INSN (range1beg)
-			       && GET_CODE (PREV_INSN (range1beg)) == NOTE
-			       && NOTE_LINE_NUMBER (PREV_INSN (range1beg)) > 0)
+			       && GET_CODE (PREV_INSN (range1beg)) == NOTE)
 			  range1beg = PREV_INSN (range1beg);
 
 			while (PREV_INSN (range2beg)
-			       && GET_CODE (PREV_INSN (range2beg)) == NOTE
-			       && NOTE_LINE_NUMBER (PREV_INSN (range2beg)) > 0)
+			       && GET_CODE (PREV_INSN (range2beg)) == NOTE)
 			  range2beg = PREV_INSN (range2beg);
 
 			/* Don't move NOTEs for blocks or loops; shift them
