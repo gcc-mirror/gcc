@@ -83,57 +83,86 @@ static int ret_label = 0;
   && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (TREE_TYPE (FNDECL)))) != void_type_node))    \
  || current_function_varargs)
 
-#if 0
 /* Handle pragmas for compatibility with Intel's compilers.  */
 
 /* ??? This is incomplete, since it does not handle all pragmas that the
-   intel compilers understand.  Also, it needs to be rewritten to accept
-   a stream instead of a string for GCC 2.  */
+   intel compilers understand.  */
 
 void
-process_pragma(str)
-     char  *str;
+process_pragma (finput)
+     FILE *finput;
 {
-  int align;
+  int c;
   int i;
 
-  if ((i = sscanf (str, " align %d", &align)) == 1)
-    switch (align)
-      {
-      case 0:			/* Return to last alignment.  */
-        align = i960_last_maxbitalignment / 8;
+  c = getc (finput);
+  while (c == ' ' || c == '\t')
+    c = getc (finput);
 
-      case 16:			/* Byte alignments. */
-      case 8:
-      case 4:
-      case 2:
-      case 1:
-        i960_last_maxbitalignment = i960_maxbitalignment;
-        i960_maxbitalignment = align * 8;
-        break;
+  if (c == 'a'
+      && getc (finput) == 'l'
+      && getc (finput) == 'i'
+      && getc (finput) == 'g'
+      && getc (finput) == 'n'
+      && ((c = getc (finput)) == ' ' || c == '\t' || c == '\n'))
+    {
+      char buf[20];
+      char *s = buf;
+      int align;
 
-      default:			/* Unknown, silently ignore.  */
-        break;
-      }
+      while (c == ' ' || c == '\t')
+	c = getc (finput);
+      if (c == '(')
+	c = getc (finput);
+      while (c >= '0' && c <= '9')
+	{
+	  if (s < buf + sizeof buf - 1)
+	    *s++ = c;
+	  c = getc (finput);
+	}
+      *s = '\0';
 
-  /* NOTE: ic960 R3.0 pragma align definition:
+      align = atoi (buf);
+      switch (align)
+	{
+	case 0:
+	  /* Return to last alignment.  */
+	  align = i960_last_maxbitalignment / 8;
+	  /* Fall through.  */
+	case 16:
+	case 8:
+	case 4:
+	case 2:
+	case 1:
+	  i960_last_maxbitalignment = i960_maxbitalignment;
+	  i960_maxbitalignment = align * 8;
+	  break;
 
-     #pragma align [(size)] | (identifier=size[,...])
-     #pragma noalign [(identifier)[,...]]
+	default:
+	  /* Silently ignore bad values.  */
+	  break;
+	}
 
-     (all parens are optional)
+      /* NOTE: ic960 R3.0 pragma align definition:
 
-     - size is [1,2,4,8,16]
-     - noalign means size==1
-     - applies only to component elements of a struct (and union?)
-     - identifier applies to structure tag (only)
-     - missing identifier means next struct
+	 #pragma align [(size)] | (identifier=size[,...])
+	 #pragma noalign [(identifier)[,...]]
 
-     - alignment rules for bitfields need more investigation  */
+	 (all parens are optional)
+
+	 - size is [1,2,4,8,16]
+	 - noalign means size==1
+	 - applies only to component elements of a struct (and union?)
+	 - identifier applies to structure tag (only)
+	 - missing identifier means next struct
+
+	 - alignment rules for bitfields need more investigation  */
+    }
 
   /* Should be pragma 'far' or equivalent for callx/balx here.  */
+
+  ungetc (c, finput);
 }
-#endif
 
 /* Initialize variables before compiling any files.  */
 
@@ -2133,45 +2162,29 @@ i960_object_bytes_bitalign (n)
   return n;
 }
 
-/* Compute the size of an aggregate type TSIZE.  */
-
-tree
-i960_round_size (tsize)
-     tree tsize;
-{
-  int size, byte_size, align;
-
-  if (TREE_CODE (tsize) != INTEGER_CST)
-    return tsize;
-
-  size = TREE_INT_CST_LOW (tsize);
-  byte_size = (size + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
-  align = i960_object_bytes_bitalign (byte_size);
-
-  /* Handle #pragma align.  */
-  if (align > i960_maxbitalignment)
-    align = i960_maxbitalignment;
-
-  if (size % align)
-    size = ((size / align) + 1) * align;
-
-  return size_int (size);
-}
-
-/* Compute the alignment for an aggregate type TSIZE.  */
+/* Compute the alignment for an aggregate type TSIZE.
+   Alignment is MAX (greatest member alignment,
+                     MIN (pragma align, structure size alignment)).  */
 
 int
 i960_round_align (align, tsize)
      int align;
      tree tsize;
 {
-  int byte_size;
+  int new_align;
 
   if (TREE_CODE (tsize) != INTEGER_CST)
     return align;
 
-  byte_size = (TREE_INT_CST_LOW (tsize) + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
-  align = i960_object_bytes_bitalign (byte_size);
+  new_align = i960_object_bytes_bitalign (TREE_INT_CST_LOW (tsize)
+					  / BITS_PER_UNIT);
+  /* Handle #pragma align.  */
+  if (new_align > i960_maxbitalignment)
+    new_align = i960_maxbitalignment;
+
+  if (align < new_align)
+    align = new_align;
+
   return align;
 }
 

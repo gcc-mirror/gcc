@@ -117,6 +117,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define PUT_SDB_TYPE(A) \
   fprintf (asm_out_file, "\t.type\t0x%x;", (A & 0xf) + 2 * (A & ~0xf))
 
+/* Handle pragmas for compatibility with Intel's compilers.  */
+#define HANDLE_PRAGMA(FILE) process_pragma (FILE)
+
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
 /* 960 architecture with floating-point.  */
@@ -391,13 +394,8 @@ extern int target_flags;
 
 #define ROUND_TYPE_ALIGN(TYPE, COMPUTED, SPECIFIED)		\
   ((!TARGET_OLD_ALIGN && TREE_CODE (TYPE) == RECORD_TYPE)	\
-   ? i960_round_align ((SPECIFIED), TYPE_SIZE (TYPE))		\
+   ? i960_round_align (MAX ((COMPUTED), (SPECIFIED)), TYPE_SIZE (TYPE)) \
    : MAX ((COMPUTED), (SPECIFIED)))
-
-#define ROUND_TYPE_SIZE(TYPE, SIZE, ALIGN)			\
-  ((!TARGET_OLD_ALIGN && TREE_CODE (TYPE) == RECORD_TYPE)	\
-   ? (tree) i960_round_size (SIZE)				\
-   : round_up ((SIZE), (ALIGN)))
 
 /* Standard register usage.  */
 
