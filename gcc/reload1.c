@@ -5638,7 +5638,9 @@ emit_reload_insns (insn)
     {
       register rtx old;
       rtx oldequiv_reg = 0;
-      rtx store_insn = 0;
+
+      if (reload_spill_index[j] >= 0)
+	new_spill_reg_store[reload_spill_index[j]] = 0;
 
       old = reload_in[j];
       if (old != 0 && ! reload_inherited[j]
@@ -6418,17 +6420,14 @@ emit_reload_insns (insn)
 		   reg_has_output_reload will make this do nothing.  */
 		note_stores (PATTERN (p), forget_old_reloads_1);
 
-		if (reg_mentioned_p (reload_reg_rtx[j], PATTERN (p)))
-		  store_insn = p;
+		if (reg_mentioned_p (reload_reg_rtx[j], PATTERN (p))
+		    && reload_spill_index[j] >= 0)
+		  new_spill_reg_store[reload_spill_index[j]] = p;
 	      }
 
 	  output_reload_insns[reload_opnum[j]] = get_insns ();
 	  end_sequence ();
-
 	}
-
-      if (reload_spill_index[j] >= 0)
-	new_spill_reg_store[reload_spill_index[j]] = store_insn;
     }
 
   /* Now write all the insns we made for reloads in the order expected by
