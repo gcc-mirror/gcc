@@ -1,3 +1,11 @@
+Thu Oct  9 12:08:21 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (tsubst): Fix thinko.
+	(instantiate_decl): Really use the original template.
+
+	* call.c (build_new_method_call): Use simple constructor_name for
+	error messages.
+
 Wed Oct  8 22:44:42 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* method.c (build_underscore_int): Don't use ANSI specific
