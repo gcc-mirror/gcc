@@ -1,3 +1,17 @@
+2005-03-18  Jan Hubicka  <jh@suse.cz>
+	    Dale Johannesen  <dalej@apple.com>
+
+	* basic-block.h (scale_bbs_frequencies_int,
+	scale_bbs_frequencies_gcov_type): Declare.
+	* cfg.c (RDIV): New macro.
+	(update_bb_frequency_for_threading): Fix.
+	* basic-block.h (scale_bbs_frequencies_int,
+	scale_bbs_frequencies_gcov_type): New.
+	* cfgloopmanip.c (scale_bbs_frequencies): Kill.
+	(scale_loop_frequencies, duplicate_loop_to_header_edge): Use
+	scale_bbs_frequencies_int.
+	* tree-ssa-loop-ch.c (copy_loop_headers): Fix profiling info.
+
 2005-03-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/m32r/m32r-protos.h: Remove the prototypes for

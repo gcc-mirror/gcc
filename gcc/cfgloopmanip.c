@@ -45,7 +45,6 @@ static bool fix_bb_placement (struct loops *, basic_block);
 static void fix_bb_placements (struct loops *, basic_block);
 static void place_new_loop (struct loops *, struct loop *);
 static void scale_loop_frequencies (struct loop *, int, int);
-static void scale_bbs_frequencies (basic_block *, int, int, int);
 static basic_block create_preheader (struct loop *, int);
 static void fix_irreducible_loops (basic_block);
 static void unloop (struct loops *, struct loop *);
@@ -450,24 +449,6 @@ add_loop (struct loops *loops, struct loop *loop)
   free (bbs);
 }
 
-/* Multiply all frequencies of basic blocks in array BBS of length NBBS
-   by NUM/DEN.  */
-static void
-scale_bbs_frequencies (basic_block *bbs, int nbbs, int num, int den)
-{
-  int i;
-  edge e;
-
-  for (i = 0; i < nbbs; i++)
-    {
-      edge_iterator ei;
-      bbs[i]->frequency = (bbs[i]->frequency * num) / den;
-      bbs[i]->count = RDIV (bbs[i]->count * num, den);
-      FOR_EACH_EDGE (e, ei, bbs[i]->succs)
-	e->count = (e->count * num) /den;
-    }
-}
-
 /* Multiply all frequencies in LOOP by NUM/DEN.  */
 static void
 scale_loop_frequencies (struct loop *loop, int num, int den)
@@ -475,7 +456,7 @@ scale_loop_frequencies (struct loop *loop, int num, int den)
   basic_block *bbs;
 
   bbs = get_loop_body (loop);
-  scale_bbs_frequencies (bbs, loop->num_nodes, num, den);
+  scale_bbs_frequencies_int (bbs, loop->num_nodes, num, den);
   free (bbs);
 }
 
@@ -1059,7 +1040,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
       /* Set counts and frequencies.  */
       if (flags & DLTHE_FLAG_UPDATE_FREQ)
 	{
-	  scale_bbs_frequencies (new_bbs, n, scale_act, REG_BR_PROB_BASE);
+	  scale_bbs_frequencies_int (new_bbs, n, scale_act, REG_BR_PROB_BASE);
 	  scale_act = RDIV (scale_act * scale_step[j], REG_BR_PROB_BASE);
 	}
     }
@@ -1071,7 +1052,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e, struct loops *loops,
     set_immediate_dominator (CDI_DOMINATORS, e->dest, e->src);
   if (flags & DLTHE_FLAG_UPDATE_FREQ)
     {
-      scale_bbs_frequencies (bbs, n, scale_main, REG_BR_PROB_BASE);
+      scale_bbs_frequencies_int (bbs, n, scale_main, REG_BR_PROB_BASE);
       free (scale_step);
     }
 
