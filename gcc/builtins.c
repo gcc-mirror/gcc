@@ -3663,38 +3663,24 @@ expand_builtin_expect_jump (exp, if_false_label, if_true_label)
   if (TREE_CODE (TREE_TYPE (arg1)) == INTEGER_TYPE
       && (integer_zerop (arg1) || integer_onep (arg1)))
     {
-      int num_jumps = 0;
-      rtx insn;
-
-      /* If we fail to locate an appropriate conditional jump, we'll
-	 fall back to normal evaluation.  Ensure that the expression
-	 can be re-evaluated.  */
-      switch (unsafe_for_reeval (arg0))
-	{
-	case 0: /* Safe.  */
-	  break;
-
-	case 1: /* Mildly unsafe.  */
-	  arg0 = unsave_expr (arg0);
-	  break;
-
-	case 2: /* Wildly unsafe.  */
-	  return NULL_RTX;
-	}
+      rtx insn, drop_through_label;
 
       /* Expand the jump insns.  */
       start_sequence ();
       do_jump (arg0, if_false_label, if_true_label);
       ret = get_insns ();
+
+      drop_through_label = get_last_insn ();
+      if (drop_through_label && GET_CODE (drop_through_label) == NOTE)
+	drop_through_label = prev_nonnote_insn (drop_through_label);
+      if (drop_through_label && GET_CODE (drop_through_label) != CODE_LABEL)
+	drop_through_label = NULL_RTX;
       end_sequence ();
 
-      /* For mildly unsafe builtin jump's, if unsave_expr_now
-	 creates a new tree instead of changing the old one
-	 TREE_VALUE (arglist) needs to be updated.  */
-      if (arg0 != TREE_VALUE (arglist)
-	  && TREE_CODE (arg0) == UNSAVE_EXPR
-	  && TREE_OPERAND (arg0, 0) != TREE_VALUE (arglist))
-	TREE_VALUE (arglist) = TREE_OPERAND (arg0, 0);
+      if (! if_true_label)
+	if_true_label = drop_through_label;
+      if (! if_false_label)
+	if_false_label = drop_through_label;
 
       /* Now that the __builtin_expect has been validated, go through and add
 	 the expect's to each of the conditional jumps.  If we run into an
@@ -3757,18 +3743,12 @@ expand_builtin_expect_jump (exp, if_false_label, if_true_label)
 	      else if (label != if_true_label)
 		goto do_next_insn;
 
-	      num_jumps++;
 	      predict_insn_def (insn, PRED_BUILTIN_EXPECT, taken);
 	    }
 
 	do_next_insn:
 	  insn = next;
 	}
-
-      /* If no jumps were modified, fail and do __builtin_expect the normal
-	 way.  */
-      if (num_jumps == 0)
-	ret = NULL_RTX;
     }
 
   return ret;

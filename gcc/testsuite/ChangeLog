@@ -1,3 +1,8 @@
+2004-01-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/13392
+	* g++.dg/opt/expect2.C: New test.
+
 2004-01-02  Matthias Klose  <doko@debian.org>
 
 	Backport from mainline:
