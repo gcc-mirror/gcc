@@ -308,6 +308,6 @@
       double complex expect, got
 
       if (dimag(expect) .ne. dimag(got)) call abort
-      if (dble(expect) .ne. dble(expect)) call abort
+      if (dble(expect) .ne. dble(got)) call abort
 
       end
