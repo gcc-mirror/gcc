@@ -1,3 +1,7 @@
+Tue Oct 13 23:34:12 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* java-tree.def: Add missing newline at EOF.
+
 1998-10-13  Tom Tromey  <tromey@cygnus.com>
 
 	* jcf-dump.c (process_class): Use FATAL_EXIT_CODE, not -1.
