@@ -1,5 +1,5 @@
 /* Output sdb-format symbol table information from GNU compiler.
-   Copyright (C) 1988, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -258,12 +258,12 @@ do { fprintf (asm_out_file, "\t.def\t");		\
 /* Return the sdb tag identifier string for TYPE
    if TYPE has already been defined; otherwise return a null pointer.   */
 
-#define KNOWN_TYPE_TAG(type) (char *)(TYPE_SYMTAB_ADDRESS (type))
+#define KNOWN_TYPE_TAG(type)  TYPE_SYMTAB_POINTER (type)
 
 /* Set the sdb tag identifier string for TYPE to NAME.  */
 
 #define SET_KNOWN_TYPE_TAG(TYPE, NAME) \
-  (TYPE_SYMTAB_ADDRESS (TYPE) = (int)(NAME))
+  TYPE_SYMTAB_POINTER (TYPE) = (NAME)
 
 /* Return the name (a string) of the struct, union or enum tag
    described by the TREE_LIST node LINK.  This is 0 for an anonymous one.  */
@@ -303,11 +303,10 @@ tag_of_ru_type (type,link)
      tree type,link;
 {
   if (TYPE_SYMTAB_ADDRESS (type))
-    return (char *)TYPE_SYMTAB_ADDRESS (type);
+    return TYPE_SYMTAB_ADDRESS (type);
   if (link && TREE_PURPOSE (link)
       && IDENTIFIER_POINTER (TREE_PURPOSE (link)))
-    TYPE_SYMTAB_ADDRESS (type)
-      = (int)IDENTIFIER_POINTER (TREE_PURPOSE (link));
+    TYPE_SYMTAB_ADDRESS (type) = IDENTIFIER_POINTER (TREE_PURPOSE (link));
   else
     return (char *) TYPE_SYMTAB_ADDRESS (type);
 }
