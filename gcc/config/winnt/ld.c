@@ -27,6 +27,9 @@ Boston, MA 02111-1307, USA.  */
 #include <string.h>
 #include <process.h>
 
+static char *concat ();
+static char *concat3 ();
+
 /* These can be set by command line arguments */
 char *linker_path = 0;
 int verbose = 0;
@@ -119,8 +122,8 @@ locate_file (file_name, path_val)
   return 0;
 }
 
-/* Given a library name in NAME, i.e. foo.  Look first for libfoo.a and then
-   foo.lib in the set of directories we are allowed to search in */
+/* Given a library name in NAME, i.e. foo.  Look first for libfoo.lib and then
+   libfoo.a in the set of directories we are allowed to search in */
 
 static char *
 expand_lib (name)
@@ -128,20 +131,22 @@ expand_lib (name)
 {
   char *lib, *lib_path;
 
-  lib = malloc (strlen (name) + 6);
+  lib = malloc (strlen (name) + 8);
   strcpy (lib, "lib");
   strcat (lib, name);
-  strcat (lib, ".a");
+  strcat (lib, ".lib");
   lib_path = locate_file (lib, search_dirs);
   if (!lib_path)
     {
-      strcpy (lib, name);
-      strcat (lib, ".lib");
+      strcpy (lib, "lib");
+      strcat (lib, name);
+      strcat (lib, ".a");
       lib_path = locate_file (lib, search_dirs);
       if (!lib_path)
         {
-          fprintf (stderr, 
-                   "Couldn't locate library: lib%s.a or %s.lib\n", name, name);
+          fprintf
+            (stderr, 
+             "Couldn't locate library: lib%s.a or lib%s.lib\n", name, name);
           exit (1);
         }
     }
@@ -178,10 +183,27 @@ process_args (p_argc, argv)
       /* -v turns on verbose option here and is passed on to gcc */
       if (! strcmp (argv [i], "-v"))
 	verbose = 1;
+      else if (! strncmp (argv [i], "-g", 2))
+      {
+        addarg ("-debugtype:coff -debug:full");
+      }
+      else if (! strncmp (argv [i], "-stack", 6))
+      {
+        i++;
+        addarg (concat ("-stack:",argv[i]));
+      }
       else if (! strncmp (argv [i], "-subsystem", 10))
+      {
 	subsystem = 1;
-      else if (! strncmp (argv [i], "-entry", 6))
+        i++;
+        addarg (concat ("-subsystem:",argv[i]));
+      }
+      else if (! strncmp (argv [i], "-e", 2))
+      {
 	entry = 1;
+        i++;
+        addarg (concat ("-entry:",&argv[i][1]));
+      }
     }
 }
 
@@ -202,8 +224,6 @@ main (argc, argv)
   strcpy (tmppathval, ".;");
   pathval = strcat (tmppathval, pathval);
 
-  process_args (&argc , argv);
-
   linker_path = locate_file ("link32.exe", pathval);
   if (!linker_path)
     {
@@ -216,6 +236,8 @@ main (argc, argv)
     }
 
   addarg (linker_path);
+
+  process_args (&argc , argv);
   if (! subsystem) addarg ("-subsystem:console");
   if (! entry) addarg ("-entry:mainCRTStartup");
 
@@ -262,11 +284,24 @@ main (argc, argv)
 	}
 
       else if (arg_len > 2 && !strncmp (argv [i], "-l", 2))
-	addarg (expand_lib (&argv[i][2]));
-    else if (!strcmp (argv [i], "-v")) 
-      ;
-    else
-      addarg (argv [i]);
+        {
+	  addarg (expand_lib (&argv[i][2]));
+        }
+      else if (!strcmp (argv [i], "-v") 
+            || !strcmp (argv [i], "-noinhibit-exec"))
+        {
+          ;
+        }
+      else if (!strcmp (argv [i], "-stack")
+            || !strcmp (argv [i], "-subsystem")
+            || !strcmp (argv [i], "-e"))
+        {
+          i++;
+        }
+      else
+        {
+          addarg (argv [i]);
+        }
     }
 
   addarg (NULL);
@@ -287,4 +322,26 @@ main (argc, argv)
     }
 
   exit (0);
+}
+
+static char *
+concat (s1, s2)
+     char *s1, *s2;
+{
+  int len1 = strlen (s1);
+  int len2 = strlen (s2);
+  char *result = malloc (len1 + len2 + 1);
+
+  strcpy (result, s1);
+  strcpy (result + len1, s2);
+  *(result + len1 + len2) = 0;
+
+  return result;
+}
+
+static char *
+concat3 (s1, s2, s3)
+     char *s1, *s2, *s3;
+{
+  return concat (concat (s1, s2), s3);
 }
