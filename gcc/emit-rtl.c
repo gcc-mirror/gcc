@@ -5548,6 +5548,11 @@ emit_copy_of_insn_after (rtx insn, rtx after)
 
   INSN_LOCATOR (new) = INSN_LOCATOR (insn);
 
+  /* If the old insn is frame related, then so is the new one.  This is
+     primarily needed for IA-64 unwind info which marks epilogue insns,
+     which may be duplicated by the basic block reordering code.  */
+  RTX_FRAME_RELATED_P (new) = RTX_FRAME_RELATED_P (insn);
+
   /* Copy all REG_NOTES except REG_LABEL since mark_jump_label will
      make them.  */
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))

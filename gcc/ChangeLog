@@ -1,3 +1,8 @@
+2004-10-26  James E Wilson  <wilson@specifixinc.com>
+
+	PR target/18010
+	* emit-rtl.c (emit_copy_of_insn_after): Copy RTX_FRAME_RELATED_P.
+
 2004-10-26  Zack Weinberg  <zack@codesourcery.com>
 
 	* dbxout.c: Include obstack.h.
