@@ -46,5 +46,4 @@ main()
   test01();
   return 0;
 }
-// { dg-error "auto_ptr" "" { target *-*-* } 0 }
-// { dg-error "shared_ptr" "" { target *-*-* } 0 }
+// { dg-excess-errors "candidates are" }
