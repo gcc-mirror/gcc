@@ -25,7 +25,7 @@ testfunc1 (int foo6)
  testfunc1: /* { dg-warning "traditional C lacks" "label conflicts with identifier" } */
  a: /* { dg-warning "traditional C lacks" "label conflicts with identifier" } */
  i:
- j:
+ j: ;
 }
   
 #line 32 "sys-header.h" 3
@@ -46,5 +46,5 @@ testfunc2 (int foo6)
  testfunc2:
  a:
  i:
- j:
+ j: ;
 }

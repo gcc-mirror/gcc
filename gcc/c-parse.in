@@ -1584,8 +1584,7 @@ stmts_and_decls:
 	| lineno_stmt_decl_or_labels_ending_decl
 	| lineno_stmt_decl_or_labels_ending_label
 		{
-		  if (pedantic)
-		    pedwarn ("ISO C forbids label at end of compound statement");
+		  pedwarn ("deprecated use of label at end of compound statement");
 		}
 	| lineno_stmt_decl_or_labels_ending_error
 	;

@@ -1,3 +1,8 @@
+2000-11-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-parse.in (stmts_and_decls): Deprecate use of label at end of
+	compound statement.
+
 2000-11-13  Neil Booth  <neilb@earthling.net>
 
         * cpplex.c (_cpp_lex_token): CPP_COMMENT and true CPP_EOF

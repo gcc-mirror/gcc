@@ -10,6 +10,6 @@ bar (int64_t which)
 		break;
 	case 1 :
 	case 5 :
-	case 2 :
+	case 2 : ;
 	}
 }
