@@ -1,3 +1,8 @@
+2003-04-01  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_fixup_clobbered_return_reg):
+	Do nothing if __builtin_return_address was not used.
+
 Tue Apr  1 18:18:23 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (test patterns):  Allow memory operand in operand1.
