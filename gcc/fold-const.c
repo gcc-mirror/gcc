@@ -58,44 +58,47 @@ static tree const_binop ();
 #define BRANCH_COST 1
 #endif
 
-/* To do constant folding on INTEGER_CST nodes requires 64-bit arithmetic.
-   We do that by representing the 64-bit integer as 8 shorts,
+/* To do constant folding on INTEGER_CST nodes requires two-word arithmetic.
+   We do that by representing the two-word integer as MAX_SHORTS shorts,
    with only 8 bits stored in each short, as a positive number.  */
 
-/* Unpack a 64-bit integer into 8 shorts.
-   LOW and HI are the integer, as two `int' pieces.
+/* Unpack a two-word integer into MAX_SHORTS shorts.
+   LOW and HI are the integer, as two `HOST_WIDE_INT' pieces.
    SHORTS points to the array of shorts.  */
 
 static void
 encode (shorts, low, hi)
      short *shorts;
-     int low, hi;
+     HOST_WIDE_INT low, hi;
 {
-  shorts[0] = low & 0xff;
-  shorts[1] = (low >> 8) & 0xff;
-  shorts[2] = (low >> 16) & 0xff;
-  shorts[3] = (low >> 24) & 0xff;
-  shorts[4] = hi & 0xff;
-  shorts[5] = (hi >> 8) & 0xff;
-  shorts[6] = (hi >> 16) & 0xff;
-  shorts[7] = (hi >> 24) & 0xff;
+  register int i;
+
+  for (i = 0; i < MAX_SHORTS / 2; i++)
+    {
+      shorts[i] = (low >> (i * 8)) & 0xff;
+      shorts[i + MAX_SHORTS / 2] = (hi >> (i * 8) & 0xff);
+    }
 }
 
-/* Pack an array of 8 shorts into a 64-bit integer.
+/* Pack an array of MAX_SHORTS shorts into a two-word integer.
    SHORTS points to the array of shorts.
-   The integer is stored into *LOW and *HI as two `int' pieces.  */
+   The integer is stored into *LOW and *HI as two `HOST_WIDE_INT' pieces.  */
 
 static void
 decode (shorts, low, hi)
      short *shorts;
-     int *low, *hi;
+     HOST_WIDE_INT *low, *hi;
 {
-  /* The casts in the following statement should not be
-     needed, but they get around bugs in some C compilers.  */
-  *low = (((long)shorts[3] << 24) | ((long)shorts[2] << 16)
-	  | ((long)shorts[1] << 8) | (long)shorts[0]);
-  *hi = (((long)shorts[7] << 24) | ((long)shorts[6] << 16)
-	 | ((long)shorts[5] << 8) | (long)shorts[4]);
+  register int i;
+  HOST_WIDE_INT lv = 0, hv = 0;
+
+  for (i = 0; i < MAX_SHORTS / 2; i++)
+    {
+      lv |= (HOST_WIDE_INT) shorts[i] << (i * 8);
+      hv |= (HOST_WIDE_INT) shorts[i + MAX_SHORTS / 2] << (i * 8);
+    }
+
+  *low = lv, *hi = hv;
 }
 
 /* Make the integer constant T valid for its type
@@ -113,66 +116,65 @@ force_fit_type (t)
 
   /* First clear all bits that are beyond the type's precision.  */
 
-  if (prec == 2 * HOST_BITS_PER_INT)
+  if (prec == 2 * HOST_BITS_PER_WIDE_INT)
     ;
-  else if (prec > HOST_BITS_PER_INT)
+  else if (prec > HOST_BITS_PER_WIDE_INT)
     {
       TREE_INT_CST_HIGH (t)
-	&= ~((-1) << (prec - HOST_BITS_PER_INT));
+	&= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
     }
   else
     {
       TREE_INT_CST_HIGH (t) = 0;
-      if (prec < HOST_BITS_PER_INT)
-	TREE_INT_CST_LOW (t)
-	  &= ~((-1) << prec);
+      if (prec < HOST_BITS_PER_WIDE_INT)
+	TREE_INT_CST_LOW (t) &= ~((HOST_WIDE_INT) (-1) << prec);
     }
 
   /* If it's a signed type and value's sign bit is set, extend the sign.  */
 
   if (! TREE_UNSIGNED (TREE_TYPE (t))
-      && prec != 2 * HOST_BITS_PER_INT
-      && (prec > HOST_BITS_PER_INT
-	  ? TREE_INT_CST_HIGH (t) & (1 << (prec - HOST_BITS_PER_INT - 1))
-	  : TREE_INT_CST_LOW (t) & (1 << (prec - 1))))
+      && prec != 2 * HOST_BITS_PER_WIDE_INT
+      && (prec > HOST_BITS_PER_WIDE_INT
+	  ? (TREE_INT_CST_HIGH (t)
+	     & ((HOST_WIDE_INT) 1 << (prec - HOST_BITS_PER_WIDE_INT - 1)))
+	  : TREE_INT_CST_LOW (t) & ((HOST_WIDE_INT) 1 << (prec - 1))))
     {
       /* Value is negative:
 	 set to 1 all the bits that are outside this type's precision.  */
-      if (prec > HOST_BITS_PER_INT)
+      if (prec > HOST_BITS_PER_WIDE_INT)
 	{
 	  TREE_INT_CST_HIGH (t)
-	    |= ((-1) << (prec - HOST_BITS_PER_INT));
+	    |= ((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
 	}
       else
 	{
 	  TREE_INT_CST_HIGH (t) = -1;
-	  if (prec < HOST_BITS_PER_INT)
-	    TREE_INT_CST_LOW (t)
-	      |= ((-1) << prec);
+	  if (prec < HOST_BITS_PER_WIDE_INT)
+	    TREE_INT_CST_LOW (t) |= ((HOST_WIDE_INT) (-1) << prec);
 	}
     }
 }
 
-/* Add two 64-bit integers with 64-bit result.
-   Each argument is given as two `int' pieces.
+/* Add two doubleword integers with doubleword result.
+   Each argument is given as two `HOST_WIDE_INT' pieces.
    One argument is L1 and H1; the other, L2 and H2.
-   The value is stored as two `int' pieces in *LV and *HV.
+   The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.
    We use the 8-shorts representation internally.  */
 
 void
 add_double (l1, h1, l2, h2, lv, hv)
-     int l1, h1, l2, h2;
-     int *lv, *hv;
+     HOST_WIDE_INT l1, h1, l2, h2;
+     HOST_WIDE_INT *lv, *hv;
 {
-  short arg1[8];
-  short arg2[8];
+  short arg1[MAX_SHORTS];
+  short arg2[MAX_SHORTS];
   register int carry = 0;
   register int i;
 
   encode (arg1, l1, h1);
   encode (arg2, l2, h2);
 
-  for (i = 0; i < 8; i++)
+  for (i = 0; i < MAX_SHORTS; i++)
     {
       carry += arg1[i] + arg2[i];
       arg1[i] = carry & 0xff;
@@ -182,15 +184,15 @@ add_double (l1, h1, l2, h2, lv, hv)
   decode (arg1, lv, hv);
 }
 
-/* Negate a 64-bit integers with 64-bit result.
-   The argument is given as two `int' pieces in L1 and H1.
-   The value is stored as two `int' pieces in *LV and *HV.
+/* Negate a doubleword integer with doubleword result.
+   The argument is given as two `HOST_WIDE_INT' pieces in L1 and H1.
+   The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.
    We use the 8-shorts representation internally.  */
 
 void
 neg_double (l1, h1, lv, hv)
-     int l1, h1;
-     int *lv, *hv;
+     HOST_WIDE_INT l1, h1;
+     HOST_WIDE_INT *lv, *hv;
 {
   if (l1 == 0)
     {
@@ -204,20 +206,20 @@ neg_double (l1, h1, lv, hv)
     }
 }
 
-/* Multiply two 64-bit integers with 64-bit result.
-   Each argument is given as two `int' pieces.
+/* Multiply two doubleword integers with doubleword result.
+   Each argument is given as two `HOST_WIDE_INT' pieces.
    One argument is L1 and H1; the other, L2 and H2.
-   The value is stored as two `int' pieces in *LV and *HV.
+   The value is stored as two `HOST_WIDE_INT' pieces in *LV and *HV.
    We use the 8-shorts representation internally.  */
 
 void
 mul_double (l1, h1, l2, h2, lv, hv)
-     int l1, h1, l2, h2;
-     int *lv, *hv;
+     HOST_WIDE_INT l1, h1, l2, h2;
+     HOST_WIDE_INT *lv, *hv;
 {
-  short arg1[8];
-  short arg2[8];
-  short prod[16];
+  short arg1[MAX_SHORTS];
+  short arg2[MAX_SHORTS];
+  short prod[MAX_SHORTS * 2];
   register int carry = 0;
   register int i, j, k;
 
@@ -227,14 +229,14 @@ mul_double (l1, h1, l2, h2, lv, hv)
     {
       if (l2 == 2)
 	{
-	  unsigned temp = l1 + l1;
+	  unsigned HOST_WIDE_INT temp = l1 + l1;
 	  *hv = h1 * 2 + (temp < l1);
 	  *lv = temp;
 	  return;
 	}
       if (l2 == 4)
 	{
-	  unsigned temp = l1 + l1;
+	  unsigned HOST_WIDE_INT temp = l1 + l1;
 	  h1 = h1 * 4 + ((temp < l1) << 1);
 	  l1 = temp;
 	  temp += temp;
@@ -245,7 +247,7 @@ mul_double (l1, h1, l2, h2, lv, hv)
 	}
       if (l2 == 8)
 	{
-	  unsigned temp = l1 + l1;
+	  unsigned HOST_WIDE_INT temp = l1 + l1;
 	  h1 = h1 * 8 + ((temp < l1) << 2);
 	  l1 = temp;
 	  temp += temp;
@@ -264,8 +266,8 @@ mul_double (l1, h1, l2, h2, lv, hv)
 
   bzero (prod, sizeof prod);
 
-  for (i = 0; i < 8; i++)
-    for (j = 0; j < 8; j++)
+  for (i = 0; i < MAX_SHORTS; i++)
+    for (j = 0; j < MAX_SHORTS; j++)
       {
 	k = i + j;
 	carry = arg1[i] * arg2[j];
@@ -278,22 +280,24 @@ mul_double (l1, h1, l2, h2, lv, hv)
 	  }
       }
 
-  decode (prod, lv, hv);	/* @@decode ignores prod[8] -> prod[15] */
+  decode (prod, lv, hv);	/* ?? decode ignores
+				   prod[MAX_SHORTS] -> prod[MAX_SHORTS*2-1] */
 }
 
-/* Shift the 64-bit integer in L1, H1 left by COUNT places
+/* Shift the doubleword integer in L1, H1 left by COUNT places
    keeping only PREC bits of result.
    Shift right if COUNT is negative.
    ARITH nonzero specifies arithmetic shifting; otherwise use logical shift.
-   Store the value as two `int' pieces in *LV and *HV.  */
+   Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 void
 lshift_double (l1, h1, count, prec, lv, hv, arith)
-     int l1, h1, count, prec;
-     int *lv, *hv;
+     HOST_WIDE_INT l1, h1;
+     int count, prec;
+     HOST_WIDE_INT *lv, *hv;
      int arith;
 {
-  short arg1[8];
+  short arg1[MAX_SHORTS];
   register int i;
   register int carry;
 
@@ -311,7 +315,7 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
   while (count > 0)
     {
       carry = 0;
-      for (i = 0; i < 8; i++)
+      for (i = 0; i < MAX_SHORTS; i++)
 	{
 	  carry += arg1[i] << 1;
 	  arg1[i] = carry & 0xff;
@@ -323,18 +327,18 @@ lshift_double (l1, h1, count, prec, lv, hv, arith)
   decode (arg1, lv, hv);
 }
 
-/* Shift the 64-bit integer in L1, H1 right by COUNT places
+/* Shift the doubleword integer in L1, H1 right by COUNT places
    keeping only PREC bits of result.  COUNT must be positive.
    ARITH nonzero specifies arithmetic shifting; otherwise use logical shift.
-   Store the value as two `int' pieces in *LV and *HV.  */
+   Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 void
 rshift_double (l1, h1, count, prec, lv, hv, arith)
-     int l1, h1, count, prec;
-     int *lv, *hv;
+     HOST_WIDE_INT l1, h1, count, prec;
+     HOST_WIDE_INT *lv, *hv;
      int arith;
 {
-  short arg1[8];
+  short arg1[MAX_SHORTS];
   register int i;
   register int carry;
 
@@ -346,7 +350,7 @@ rshift_double (l1, h1, count, prec, lv, hv, arith)
   while (count > 0)
     {
       carry = arith && arg1[7] >> 7; 
-     for (i = 7; i >= 0; i--)
+      for (i = MAX_SHORTS - 1; i >= 0; i--)
 	{
 	  carry <<= 8;
 	  carry += arg1[i];
@@ -358,17 +362,17 @@ rshift_double (l1, h1, count, prec, lv, hv, arith)
   decode (arg1, lv, hv);
 }
 
-/* Rotate the 64-bit integer in L1, H1 left by COUNT places
+/* Rotate the doubldword integer in L1, H1 left by COUNT places
    keeping only PREC bits of result.
    Rotate right if COUNT is negative.
-   Store the value as two `int' pieces in *LV and *HV.  */
+   Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 void
 lrotate_double (l1, h1, count, prec, lv, hv)
-     int l1, h1, count, prec;
-     int *lv, *hv;
+     HOST_WIDE_INT l1, h1, count, prec;
+     HOST_WIDE_INT *lv, *hv;
 {
-  short arg1[8];
+  short arg1[MAX_SHORTS];
   register int i;
   register int carry;
 
@@ -383,10 +387,10 @@ lrotate_double (l1, h1, count, prec, lv, hv)
   if (count > prec)
     count = prec;
 
-  carry = arg1[7] >> 7;
+  carry = arg1[MAX_SHORTS - 1] >> 7;
   while (count > 0)
     {
-      for (i = 0; i < 8; i++)
+      for (i = 0; i < MAX_SHORTS; i++)
 	{
 	  carry += arg1[i] << 1;
 	  arg1[i] = carry & 0xff;
@@ -398,16 +402,16 @@ lrotate_double (l1, h1, count, prec, lv, hv)
   decode (arg1, lv, hv);
 }
 
-/* Rotate the 64-bit integer in L1, H1 left by COUNT places
+/* Rotate the doubleword integer in L1, H1 left by COUNT places
    keeping only PREC bits of result.  COUNT must be positive.
-   Store the value as two `int' pieces in *LV and *HV.  */
+   Store the value as two `HOST_WIDE_INT' pieces in *LV and *HV.  */
 
 void
 rrotate_double (l1, h1, count, prec, lv, hv)
-     int l1, h1, count, prec;
-     int *lv, *hv;
+     HOST_WIDE_INT l1, h1, count, prec;
+     HOST_WIDE_INT *lv, *hv;
 {
-  short arg1[8];
+  short arg1[MAX_SHORTS];
   register int i;
   register int carry;
 
@@ -419,7 +423,7 @@ rrotate_double (l1, h1, count, prec, lv, hv)
   carry = arg1[0] & 1;
   while (count > 0)
     {
-      for (i = 7; i >= 0; i--)
+      for (i = MAX_SHORTS - 1; i >= 0; i--)
 	{
 	  carry <<= 8;
 	  carry += arg1[i];
@@ -431,7 +435,7 @@ rrotate_double (l1, h1, count, prec, lv, hv)
   decode (arg1, lv, hv);
 }
 
-/* Divide 64 bit integer LNUM, HNUM by 64 bit integer LDEN, HDEN
+/* Divide doubleword integer LNUM, HNUM by doubleword integer LDEN, HDEN
    for a quotient (stored in *LQUO, *HQUO) and remainder (in *LREM, *HREM).
    CODE is a tree code for a kind of division, one of
    TRUNC_DIV_EXPR, FLOOR_DIV_EXPR, CEIL_DIV_EXPR, ROUND_DIV_EXPR
@@ -445,12 +449,13 @@ div_and_round_double (code, uns,
 		      lquo, hquo, lrem, hrem)
      enum tree_code code;
      int uns;
-     int lnum_orig, hnum_orig;		/* num == numerator == dividend */
-     int lden_orig, hden_orig;		/* den == denominator == divisor */
-     int *lquo, *hquo, *lrem, *hrem;
+     HOST_WIDE_INT lnum_orig, hnum_orig; /* num == numerator == dividend */
+     HOST_WIDE_INT lden_orig, hden_orig; /* den == denominator == divisor */
+     HOST_WIDE_INT *lquo, *hquo, *lrem, *hrem;
 {
   int quo_neg = 0;
-  short num[9], den[8], quo[8];	/* extra element for scaling.  */
+  short num[MAX_SHORTS + 1];	/* extra element for scaling.  */
+  short den[MAX_SHORTS], quo[MAX_SHORTS];
   register int i, j, work;
   register int carry = 0;
   unsigned int lnum = lnum_orig;
@@ -507,7 +512,7 @@ div_and_round_double (code, uns,
   if (hden == 0 && ((lden << 8) >> 8) == lden)
     {				/* simpler algorithm */
       /* hnum != 0 already checked.  */
-      for (i = 7; i >= 0; i--)
+      for (i = MAX_SHORTS - 1; i >= 0; i--)
 	{
 	  work = num[i] + (carry << 8);
 	  quo[i] = work / lden;
@@ -521,12 +526,12 @@ div_and_round_double (code, uns,
     int quo_est, scale, num_hi_sig, den_hi_sig, quo_hi_sig;
 
     /* Find the highest non-zero divisor digit.  */
-    for (i = 7; ; i--)
+    for (i = MAX_SHORTS - 1; ; i--)
       if (den[i] != 0) {
 	den_hi_sig = i;
 	break;
       }
-    for (i = 7; ; i--)
+    for (i = MAX_SHORTS - 1; ; i--)
       if (num[i] != 0) {
 	num_hi_sig = i;
 	break;
@@ -539,14 +544,14 @@ div_and_round_double (code, uns,
     scale = BASE / (den[den_hi_sig] + 1);
     if (scale > 1) {		/* scale divisor and dividend */
       carry = 0;
-      for (i = 0; i <= 8; i++) {
+      for (i = 0; i <= MAX_SHORTS - 1; i++) {
 	work = (num[i] * scale) + carry;
 	num[i] = work & 0xff;
 	carry = work >> 8;
 	if (num[i] != 0) num_hi_sig = i;
       }
       carry = 0;
-      for (i = 0; i <= 7; i++) {
+      for (i = 0; i <= MAX_SHORTS - 1; i++) {
 	work = (den[i] * scale) + carry;
 	den[i] = work & 0xff;
 	carry = work >> 8;
@@ -652,7 +657,8 @@ div_and_round_double (code, uns,
       if (quo_neg && (*lrem != 0 || *hrem != 0))   /* ratio < 0 && rem != 0 */
 	{
 	  /* quo = quo - 1;  */
-	  add_double (*lquo, *hquo, -1, -1, lquo, hquo);
+	  add_double (*lquo, *hquo, (HOST_WIDE_INT) -1, (HOST_WIDE_INT)  -1,
+		      lquo, hquo);
 	}
       else return;
       break;
@@ -661,7 +667,8 @@ div_and_round_double (code, uns,
     case CEIL_MOD_EXPR:		/* round toward positive infinity */
       if (!quo_neg && (*lrem != 0 || *hrem != 0))  /* ratio > 0 && rem != 0 */
 	{
-	  add_double (*lquo, *hquo, 1, 0, lquo, hquo);
+	  add_double (*lquo, *hquo, (HOST_WIDE_INT) 1, (HOST_WIDE_INT) 0,
+		      lquo, hquo);
 	}
       else return;
       break;
@@ -669,25 +676,31 @@ div_and_round_double (code, uns,
     case ROUND_DIV_EXPR:
     case ROUND_MOD_EXPR:	/* round to closest integer */
       {
-	int labs_rem = *lrem, habs_rem = *hrem;
-	int labs_den = lden, habs_den = hden, ltwice, htwice;
+	HOST_WIDE_INT labs_rem = *lrem, habs_rem = *hrem;
+	HOST_WIDE_INT labs_den = lden, habs_den = hden, ltwice, htwice;
 
 	/* get absolute values */
 	if (*hrem < 0) neg_double (*lrem, *hrem, &labs_rem, &habs_rem);
 	if (hden < 0) neg_double (lden, hden, &labs_den, &habs_den);
 
 	/* if (2 * abs (lrem) >= abs (lden)) */
-	mul_double (2, 0, labs_rem, habs_rem, &ltwice, &htwice);
-	if (((unsigned) habs_den < (unsigned) htwice)
-	    || (((unsigned) habs_den == (unsigned) htwice)
-		&& ((unsigned) labs_den < (unsigned) ltwice)))
+	mul_double ((HOST_WIDE_INT) 2, (HOST_WIDE_INT) 0,
+		    labs_rem, habs_rem, &ltwice, &htwice);
+	if (((unsigned HOST_WIDE_INT) habs_den
+	     < (unsigned HOST_WIDE_INT) htwice)
+	    || (((unsigned HOST_WIDE_INT) habs_den
+		 == (unsigned HOST_WIDE_INT) htwice)
+		&& ((HOST_WIDE_INT unsigned) labs_den
+		    < (unsigned HOST_WIDE_INT) ltwice)))
 	  {
 	    if (*hquo < 0)
 	      /* quo = quo - 1;  */
-	      add_double (*lquo, *hquo, -1, -1, lquo, hquo);
+	      add_double (*lquo, *hquo,
+			  (HOST_WIDE_INT) -1, (HOST_WIDE_INT) -1, lquo, hquo);
 	    else
 	      /* quo = quo + 1; */
-	      add_double (*lquo, *hquo, 1, 0, lquo, hquo);
+	      add_double (*lquo, *hquo, (HOST_WIDE_INT) 1, (HOST_WIDE_INT) 0,
+			  lquo, hquo);
 	  }
 	else return;
       }
@@ -728,7 +741,7 @@ real_value_truncate (mode, arg)
     }
   set_float_handler (handler);
   value = REAL_VALUE_TRUNCATE (mode, arg);
-  set_float_handler (0);
+  set_float_handler (NULL_PTR);
   return value;
 }
 
@@ -981,12 +994,12 @@ const_binop (code, arg1, arg2)
 {
   if (TREE_CODE (arg1) == INTEGER_CST)
     {
-      register int int1l = TREE_INT_CST_LOW (arg1);
-      register int int1h = TREE_INT_CST_HIGH (arg1);
-      int int2l = TREE_INT_CST_LOW (arg2);
-      int int2h = TREE_INT_CST_HIGH (arg2);
-      int low, hi;
-      int garbagel, garbageh;
+      register HOST_WIDE_INT int1l = TREE_INT_CST_LOW (arg1);
+      register HOST_WIDE_INT int1h = TREE_INT_CST_HIGH (arg1);
+      HOST_WIDE_INT int2l = TREE_INT_CST_LOW (arg2);
+      HOST_WIDE_INT int2h = TREE_INT_CST_HIGH (arg2);
+      HOST_WIDE_INT low, hi;
+      HOST_WIDE_INT garbagel, garbageh;
       register tree t;
       int uns = TREE_UNSIGNED (TREE_TYPE (arg1));
 
@@ -1031,7 +1044,7 @@ const_binop (code, arg1, arg2)
 	  if (int1h == 0)
 	    {
 	      int2l += int1l;
-	      if ((unsigned) int2l < int1l)
+	      if ((unsigned HOST_WIDE_INT) int2l < int1l)
 		int2h += 1;
 	      t = build_int_2 (int2l, int2h);
 	      break;
@@ -1039,7 +1052,7 @@ const_binop (code, arg1, arg2)
 	  if (int2h == 0)
 	    {
 	      int1l += int2l;
-	      if ((unsigned) int1l < int2l)
+	      if ((unsigned HOST_WIDE_INT) int1l < int2l)
 		int1h += 1;
 	      t = build_int_2 (int1l, int1h);
 	      break;
@@ -1063,7 +1076,7 @@ const_binop (code, arg1, arg2)
   /* Optimize simple cases.  */
 	  if (int1h == 0)
 	    {
-	      unsigned temp;
+	      unsigned HOST_WIDE_INT temp;
 
 	      switch (int1l)
 		{
@@ -1168,15 +1181,19 @@ const_binop (code, arg1, arg2)
 	case MAX_EXPR:
 	  if (uns)
 	    {
-	      low = (((unsigned) int1h < (unsigned) int2h)
-		     || (((unsigned) int1h == (unsigned) int2h)
-			 && ((unsigned) int1l < (unsigned) int2l)));
+	      low = (((unsigned HOST_WIDE_INT) int1h
+		      < (unsigned HOST_WIDE_INT) int2h)
+		     || (((unsigned HOST_WIDE_INT) int1h
+			  == (unsigned HOST_WIDE_INT) int2h)
+			 && ((unsigned HOST_WIDE_INT) int1l
+			     < (unsigned HOST_WIDE_INT) int2l)));
 	    }
 	  else
 	    {
 	      low = ((int1h < int2h)
 		     || ((int1h == int2h)
-			 && ((unsigned) int1l < (unsigned) int2l)));
+			 && ((unsigned HOST_WIDE_INT) int1l
+			     < (unsigned HOST_WIDE_INT) int2l)));
 	    }
 	  if (low == (code == MIN_EXPR))
 	    t = build_int_2 (int1l, int1h);
@@ -1249,7 +1266,7 @@ const_binop (code, arg1, arg2)
 #endif /* no REAL_ARITHMETIC */
       t = build_real (TREE_TYPE (arg1),
 		      real_value_truncate (TYPE_MODE (TREE_TYPE (arg1)), value));
-      set_float_handler (0);
+      set_float_handler (NULL_PTR);
       return t;
     }
 #endif /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
@@ -1318,11 +1335,12 @@ size_int (number)
 {
   register tree t;
   /* Type-size nodes already made for small sizes.  */
-  static tree size_table[2*HOST_BITS_PER_INT+1];
+  static tree size_table[2*HOST_BITS_PER_WIDE_INT + 1];
 
-  if (number >= 0 && number < 2*HOST_BITS_PER_INT+1 && size_table[number] != 0)
+  if (number >= 0 && number < 2*HOST_BITS_PER_WIDE_INT + 1
+      && size_table[number] != 0)
     return size_table[number];
-  if (number >= 0 && number < 2*HOST_BITS_PER_INT+1)
+  if (number >= 0 && number < 2*HOST_BITS_PER_WIDE_INT + 1)
     {
       push_obstacks_nochange ();
       /* Make this a permanent node.  */
@@ -1423,23 +1441,24 @@ fold_convert (t, arg1)
 #ifndef REAL_ARITHMETIC
 	  {
 	    REAL_VALUE_TYPE d;
-	    int low, high;
-	    int half_word = 1 << (HOST_BITS_PER_INT / 2);
+	    HOST_WIDE_INT low, high;
+	    HOST_WIDE_INT half_word
+	      = (HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2);
 
 	    d = TREE_REAL_CST (arg1);
 	    if (d < 0)
 	      d = -d;
 
-	    high = (int) (d / half_word / half_word);
+	    high = (HOST_WIDE_INT) (d / half_word / half_word);
 	    d -= (REAL_VALUE_TYPE) high * half_word * half_word;
-	    low = (unsigned) d;
+	    low = (unsigned HOST_WIDE_INT) d;
 	    if (TREE_REAL_CST (arg1) < 0)
 	      neg_double (low, high, &low, &high);
 	    t = build_int_2 (low, high);
 	  }
 #else
 	  {
-	    int low, high;
+	    HOST_WIDE_INT low, high;
 	    REAL_VALUE_TO_INT (low, high, TREE_REAL_CST (arg1));
 	    t = build_int_2 (low, high);
 	  }
@@ -1467,7 +1486,7 @@ fold_convert (t, arg1)
 
 	  t = build_real (type, real_value_truncate (TYPE_MODE (type),
 						     TREE_REAL_CST (arg1)));
-	  set_float_handler (0);
+	  set_float_handler (NULL_PTR);
 	  return t;
 	}
     }
@@ -3377,16 +3396,18 @@ fold (expr)
 	  && TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (arg1, 0))))
 	{
 	  int prec = TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg1, 0)));
-	  if (prec < BITS_PER_WORD && prec < HOST_BITS_PER_INT
-	      && (~TREE_INT_CST_LOW (arg0) & ((1 << prec) - 1)) == 0)
+	  if (prec < BITS_PER_WORD && prec < HOST_BITS_PER_WIDE_INT
+	      && (~TREE_INT_CST_LOW (arg0)
+		  & (((HOST_WIDE_INT) 1 << prec) - 1)) == 0)
 	    return build1 (NOP_EXPR, type, TREE_OPERAND (arg1, 0));
 	}
       if (TREE_CODE (arg1) == INTEGER_CST && TREE_CODE (arg0) == NOP_EXPR
 	  && TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (arg0, 0))))
 	{
 	  int prec = TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (arg0, 0)));
-	  if (prec < BITS_PER_WORD && prec < HOST_BITS_PER_INT
-	      && (~TREE_INT_CST_LOW (arg1) & ((1 << prec) - 1)) == 0)
+	  if (prec < BITS_PER_WORD && prec < HOST_BITS_PER_WIDE_INT
+	      && (~TREE_INT_CST_LOW (arg1)
+		  & (((HOST_WIDE_INT) 1 << prec) - 1)) == 0)
 	    return build1 (NOP_EXPR, type, TREE_OPERAND (arg0, 0));
 	}
       goto associate;
@@ -3429,7 +3450,7 @@ fold (expr)
 	{
 	  tree new_op
 	    = build_int_2 (TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1))
-			   / TREE_INT_CST_LOW (arg1));
+			   / TREE_INT_CST_LOW (arg1), 0);
 
 	  TREE_TYPE (new_op) = type;
 	  return build (MULT_EXPR, type, TREE_OPERAND (arg0, 0), new_op);
@@ -3450,7 +3471,7 @@ fold (expr)
 	{
 	  tree new_op
 	    = build_int_2 (TREE_INT_CST_LOW (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1))
-			   / TREE_INT_CST_LOW (arg1));
+			   / TREE_INT_CST_LOW (arg1), 0);
 	  
 	  TREE_TYPE (new_op) = type;
 	  return build (MULT_EXPR, type,

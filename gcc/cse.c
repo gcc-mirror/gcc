@@ -326,7 +326,7 @@ static int cse_basic_block_end;
    The cuids are like uids but increase monotonically always.
    We use them to see whether a reg is used outside a given basic block.  */
 
-static short *uid_cuid;
+static int *uid_cuid;
 
 /* Get the cuid of an insn.  */
 
@@ -863,7 +863,7 @@ mention_regs (x)
     {
       if (GET_CODE (XEXP (x, 0)) == REG
 	  && ! REGNO_QTY_VALID_P (REGNO (XEXP (x, 0))))
-	if (insert_regs (XEXP (x, 0), 0, 0))
+	if (insert_regs (XEXP (x, 0), NULL_PTR, 0))
 	  {
 	    rehash_using_reg (XEXP (x, 0));
 	    changed = 1;
@@ -871,7 +871,7 @@ mention_regs (x)
 
       if (GET_CODE (XEXP (x, 1)) == REG
 	  && ! REGNO_QTY_VALID_P (REGNO (XEXP (x, 1))))
-	if (insert_regs (XEXP (x, 1), 0, 0))
+	if (insert_regs (XEXP (x, 1), NULL_PTR, 0))
 	  {
 	    rehash_using_reg (XEXP (x, 1));
 	    changed = 1;
@@ -939,7 +939,7 @@ insert_regs (x, classp, modified)
   else if (GET_CODE (x) == SUBREG && GET_CODE (SUBREG_REG (x)) == REG
 	   && ! REGNO_QTY_VALID_P (REGNO (SUBREG_REG (x))))
     {
-      insert_regs (SUBREG_REG (x), 0, 0);
+      insert_regs (SUBREG_REG (x), NULL_PTR, 0);
       mention_regs (SUBREG_REG (x));
       return 1;
     }
@@ -1297,7 +1297,7 @@ insert (x, classp, hash, mode)
 	  subhash = safe_hash (subexp, mode) % NBUCKETS;
 	  subelt = lookup (subexp, subhash, mode);
 	  if (subelt == 0)
-	    subelt = insert (subexp, 0, subhash, mode);
+	    subelt = insert (subexp, NULL_PTR, subhash, mode);
 	  /* Initialize SUBELT's circular chain if it has none.  */
 	  if (subelt->related_value == 0)
 	    subelt->related_value = subelt;
@@ -1387,7 +1387,7 @@ invalidate (x)
   register int i;
   register struct table_elt *p;
   register rtx base;
-  register int start, end;
+  register HOST_WIDE_INT start, end;
 
   /* If X is a register, dependencies on its contents
      are recorded through the qty number mechanism.
@@ -1527,7 +1527,7 @@ remove_invalid_refs (regno)
       {
 	next = p->next_same_hash;
 	if (GET_CODE (p->exp) != REG
-	    && refers_to_regno_p (regno, regno + 1, p->exp, 0))
+	    && refers_to_regno_p (regno, regno + 1, p->exp, NULL_PTR))
 	  remove_from_table (p, i);
       }
 }
@@ -1675,7 +1675,7 @@ use_related_value (x, elt)
 {
   register struct table_elt *relt = 0;
   register struct table_elt *p, *q;
-  int offset;
+  HOST_WIDE_INT offset;
 
   /* First, is there anything related known?
      If we have a table element, we can tell from that.
@@ -1952,7 +1952,7 @@ exp_equiv_p (x, y, validate, equal_values)
      int validate;
      int equal_values;
 {
-  register int i;
+  register int i, j;
   register enum rtx_code code;
   register char *fmt;
 
@@ -2052,34 +2052,45 @@ exp_equiv_p (x, y, validate, equal_values)
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
-      if (fmt[i] == 'e')
+      switch (fmt[i])
 	{
+	case 'e':
 	  if (! exp_equiv_p (XEXP (x, i), XEXP (y, i), validate, equal_values))
 	    return 0;
-	}
-      else if (fmt[i] == 'E')
-	{
-	  int j;
+	  break;
+
+	case 'E':
 	  if (XVECLEN (x, i) != XVECLEN (y, i))
 	    return 0;
 	  for (j = 0; j < XVECLEN (x, i); j++)
 	    if (! exp_equiv_p (XVECEXP (x, i, j), XVECEXP (y, i, j),
 			       validate, equal_values))
 	      return 0;
-	}
-      else if (fmt[i] == 's')
-	{
+	  break;
+
+	case 's':
 	  if (strcmp (XSTR (x, i), XSTR (y, i)))
 	    return 0;
-	}
-      else if (fmt[i] == 'i')
-	{
+	  break;
+
+	case 'i':
 	  if (XINT (x, i) != XINT (y, i))
 	    return 0;
+	  break;
+
+	case 'w':
+	  if (XWINT (x, i) != XWINT (y, i))
+	    return 0;
+	break;
+
+	case '0':
+	  break;
+
+	default:
+	  abort ();
 	}
-      else if (fmt[i] != '0')
- 	abort ();
-    }
+      }
+
   return 1;
 }
 
@@ -2152,9 +2163,9 @@ refers_to_p (x, y)
 int
 refers_to_mem_p (x, base, start, end)
      rtx x, base;
-     int start, end;
+     HOST_WIDE_INT start, end;
 {
-  register int i;
+  register HOST_WIDE_INT i;
   register enum rtx_code code;
   register char *fmt;
 
@@ -2221,7 +2232,7 @@ refers_to_mem_p (x, base, start, end)
 	  if (GET_CODE (base) == PLUS
 	      && GET_CODE (XEXP (base, 1)) == CONST_INT)
 	    {
-	      int tem = INTVAL (XEXP (base, 1));
+	      HOST_WIDE_INT tem = INTVAL (XEXP (base, 1));
 	      start += tem;
 	      end += tem;
 	      base = XEXP (base, 0);
@@ -2236,7 +2247,7 @@ refers_to_mem_p (x, base, start, end)
 	  if (GET_CODE (base) == PLUS
 	      && GET_CODE (XEXP (base, 1)) == CONST_INT)
 	    {
-	      int tem = INTVAL (XEXP (base, 1));
+	      HOST_WIDE_INT tem = INTVAL (XEXP (base, 1));
 	      start += tem;
 	      end += tem;
 	      base = XEXP (base, 0);
@@ -2477,7 +2488,7 @@ find_best_addr (insn, loc)
 	    && (GET_CODE (elt->exp) == REG
 		|| exp_equiv_p (elt->exp, elt->exp, 1, 0))
 	    && validate_change (insn, loc,
-				canon_reg (copy_rtx (elt->exp), 0), 0))
+				canon_reg (copy_rtx (elt->exp), NULL_RTX), 0))
 	  return;
     }
 #else
@@ -2516,7 +2527,8 @@ find_best_addr (insn, loc)
 	  if (found_better)
 	    {
 	      if (validate_change (insn, loc,
-				   canon_reg (copy_rtx (best_elt->exp), 0), 0))
+				   canon_reg (copy_rtx (best_elt->exp),
+					      NULL_RTX), 0))
 		return;
 	      else
 		best_elt->flag = 1;
@@ -2593,7 +2605,8 @@ find_best_addr (insn, loc)
 	  if (found_better)
 	    {
 	      if (validate_change (insn, loc,
-				   canon_reg (copy_rtx (best_rtx), 0), 0))
+				   canon_reg (copy_rtx (best_rtx),
+					      NULL_RTX), 0))
 		return;
 	      else
 		best_elt->flag = 1;
@@ -2698,9 +2711,11 @@ find_comparison_args (code, parg1, parg2)
 	      || ((code == NE
 		   || (code == LT
 		       && GET_MODE_CLASS (inner_mode) == MODE_INT
-		       && GET_MODE_BITSIZE (inner_mode) <= HOST_BITS_PER_INT
+		       && (GET_MODE_BITSIZE (inner_mode)
+			   <= HOST_BITS_PER_WIDE_INT)
 		       && (STORE_FLAG_VALUE
-			   & (1 << (GET_MODE_BITSIZE (inner_mode) - 1))))
+			   & ((HOST_WIDE_INT) 1
+			      << (GET_MODE_BITSIZE (inner_mode) - 1))))
 #ifdef FLOAT_STORE_FLAG_VALUE
 		   || (code == LT
 		       && GET_MODE_CLASS (inner_mode) == MODE_FLOAT
@@ -2715,9 +2730,11 @@ find_comparison_args (code, parg1, parg2)
 	  else if ((code == EQ
 		    || (code == GE
 			&& GET_MODE_CLASS (inner_mode) == MODE_INT
-			&& GET_MODE_BITSIZE (inner_mode) <= HOST_BITS_PER_INT
+			&& (GET_MODE_BITSIZE (inner_mode)
+			    <= HOST_BITS_PER_WIDE_INT)
 			&& (STORE_FLAG_VALUE
-			    & (1 << (GET_MODE_BITSIZE (inner_mode) - 1))))
+			    & ((HOST_WIDE_INT) 1
+			       << (GET_MODE_BITSIZE (inner_mode) - 1))))
 #ifdef FLOAT_STORE_FLAG_VALUE
 		    || (code == GE
 			&& GET_MODE_CLASS (inner_mode) == MODE_FLOAT
@@ -2811,17 +2828,17 @@ simplify_unary_operation (code, mode, op, op_mode)
       if (CONST_DOUBLE_HIGH (op) < 0)
 	{
 	  d = (double) (~ CONST_DOUBLE_HIGH (op));
-	  d *= ((double) (1 << (HOST_BITS_PER_INT / 2))
-		* (double) (1 << (HOST_BITS_PER_INT / 2)));
-	  d += (double) (unsigned) (~ CONST_DOUBLE_LOW (op));
+	  d *= ((double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2))
+		* (double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)));
+	  d += (double) (unsigned HOST_WIDE_INT) (~ CONST_DOUBLE_LOW (op));
 	  d = (- d - 1.0);
 	}
       else
 	{
 	  d = (double) CONST_DOUBLE_HIGH (op);
-	  d *= ((double) (1 << (HOST_BITS_PER_INT / 2))
-		* (double) (1 << (HOST_BITS_PER_INT / 2)));
-	  d += (double) (unsigned) CONST_DOUBLE_LOW (op);
+	  d *= ((double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2))
+		* (double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)));
+	  d += (double) (unsigned HOST_WIDE_INT) CONST_DOUBLE_LOW (op);
 	}
 #endif  /* REAL_ARITHMETIC */
       return CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
@@ -2836,19 +2853,19 @@ simplify_unary_operation (code, mode, op, op_mode)
 				    CONST_DOUBLE_HIGH (op));
 #else
       d = (double) CONST_DOUBLE_HIGH (op);
-      d *= ((double) (1 << (HOST_BITS_PER_INT / 2))
-	    * (double) (1 << (HOST_BITS_PER_INT / 2)));
-      d += (double) (unsigned) CONST_DOUBLE_LOW (op);
+      d *= ((double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2))
+	    * (double) ((HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT / 2)));
+      d += (double) (unsigned HOST_WIDE_INT) CONST_DOUBLE_LOW (op);
 #endif  /* REAL_ARITHMETIC */
       return CONST_DOUBLE_FROM_REAL_VALUE (d, mode);
     }
 #endif
 
   else if (GET_CODE (op) == CONST_INT
-	   && width <= HOST_BITS_PER_INT && width > 0)
+	   && width <= HOST_BITS_PER_WIDE_INT && width > 0)
     {
-      register int arg0 = INTVAL (op);
-      register int val;
+      register HOST_WIDE_INT arg0 = INTVAL (op);
+      register HOST_WIDE_INT val;
 
       switch (code)
 	{
@@ -2926,11 +2943,12 @@ simplify_unary_operation (code, mode, op, op_mode)
 	 unless they and our sign bit are all one.
 	 So we get either a reasonable negative value or a reasonable
 	 unsigned value for this mode.  */
-      if (width < HOST_BITS_PER_INT
-	  && ((val & ((-1) << (width - 1))) != ((-1) << (width - 1))))
+      if (width < HOST_BITS_PER_WIDE_INT
+	  && ((val & ((HOST_WIDE_INT) (-1) << (width - 1)))
+	      != ((HOST_WIDE_INT) (-1) << (width - 1))))
 	val &= (1 << width) - 1;
 
-      return gen_rtx (CONST_INT, VOIDmode, val);
+      return GEN_INT (val);
     }
 
   /* We can do some operations on integer CONST_DOUBLEs.  Also allow
@@ -2938,7 +2956,7 @@ simplify_unary_operation (code, mode, op, op_mode)
   else if (GET_MODE (op) == VOIDmode
 	   && (GET_CODE (op) == CONST_DOUBLE || GET_CODE (op) == CONST_INT))
     {
-      int l1, h1, lv, hv;
+      HOST_WIDE_INT l1, h1, lv, hv;
 
       if (GET_CODE (op) == CONST_DOUBLE)
 	l1 = CONST_DOUBLE_LOW (op), h1 = CONST_DOUBLE_HIGH (op);
@@ -2966,21 +2984,21 @@ simplify_unary_operation (code, mode, op, op_mode)
 	case FFS:
 	  hv = 0;
 	  if (l1 == 0)
-	    lv = HOST_BITS_PER_INT + exact_log2 (h1 & (-h1)) + 1;
+	    lv = HOST_BITS_PER_WIDE_INT + exact_log2 (h1 & (-h1)) + 1;
 	  else
 	    lv = exact_log2 (l1 & (-l1)) + 1;
 	  break;
 
 	case TRUNCATE:
-	  if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_INT)
-	    return gen_rtx (CONST_INT, VOIDmode, l1 & GET_MODE_MASK (mode));
+	  if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
+	    return GEN_INT (l1 & GET_MODE_MASK (mode));
 	  else
 	    return 0;
 	  break;
 
 	case ZERO_EXTEND:
 	  if (op_mode == VOIDmode
-	      || GET_MODE_BITSIZE (op_mode) > HOST_BITS_PER_INT)
+	      || GET_MODE_BITSIZE (op_mode) > HOST_BITS_PER_WIDE_INT)
 	    return 0;
 
 	  hv = 0;
@@ -2989,16 +3007,17 @@ simplify_unary_operation (code, mode, op, op_mode)
 
 	case SIGN_EXTEND:
 	  if (op_mode == VOIDmode
-	      || GET_MODE_BITSIZE (op_mode) > HOST_BITS_PER_INT)
+	      || GET_MODE_BITSIZE (op_mode) > HOST_BITS_PER_WIDE_INT)
 	    return 0;
 	  else
 	    {
 	      lv = l1 & GET_MODE_MASK (op_mode);
-	      if (GET_MODE_BITSIZE (op_mode) < HOST_BITS_PER_INT
-		  && (lv & (1 << (GET_MODE_BITSIZE (op_mode) - 1))) != 0)
-		lv -= 1 << GET_MODE_BITSIZE (op_mode);
+	      if (GET_MODE_BITSIZE (op_mode) < HOST_BITS_PER_WIDE_INT
+		  && (lv & ((HOST_WIDE_INT) 1
+			    << (GET_MODE_BITSIZE (op_mode) - 1))) != 0)
+		lv -= (HOST_WIDE_INT) 1 << GET_MODE_BITSIZE (op_mode);
 
-	      hv = (lv < 0) ? ~0 : 0;
+	      hv = (lv < 0) ? ~ (HOST_WIDE_INT) 0 : 0;
 	    }
 	  break;
 
@@ -3065,16 +3084,16 @@ simplify_unary_operation (code, mode, op, op_mode)
 	}
 
       x = immed_real_const_1 (d, mode);
-      set_float_handler (0);
+      set_float_handler (NULL_PTR);
       return x;
     }
   else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE_CLASS (mode) == MODE_INT
-	   && width <= HOST_BITS_PER_INT && width > 0)
+	   && width <= HOST_BITS_PER_WIDE_INT && width > 0)
     {
       REAL_VALUE_TYPE d;
       jmp_buf handler;
       rtx x;
-      int val;
+      HOST_WIDE_INT val;
 
       if (setjmp (handler))
 	return 0;
@@ -3097,17 +3116,18 @@ simplify_unary_operation (code, mode, op, op_mode)
 	  abort ();
 	}
 
-      set_float_handler (0);
+      set_float_handler (NULL_PTR);
 
       /* Clear the bits that don't belong in our mode,
 	 unless they and our sign bit are all one.
 	 So we get either a reasonable negative value or a reasonable
 	 unsigned value for this mode.  */
-      if (width < HOST_BITS_PER_INT
-	  && ((val & ((-1) << (width - 1))) != ((-1) << (width - 1))))
-	val &= (1 << width) - 1;
+      if (width < HOST_BITS_PER_WIDE_INT
+	  && ((val & ((HOST_WIDE_INT) (-1) << (width - 1)))
+	      != ((HOST_WIDE_INT) (-1) << (width - 1))))
+	val &= ((HOST_WIDE_INT) 1 << width) - 1;
 
-      return gen_rtx (CONST_INT, VOIDmode, val);
+      return GEN_INT (val);
     }
 #endif
   /* This was formerly used only for non-IEEE float.
@@ -3155,8 +3175,8 @@ simplify_binary_operation (code, mode, op0, op1)
      enum machine_mode mode;
      rtx op0, op1;
 {
-  register int arg0, arg1, arg0s, arg1s;
-  int val;
+  register HOST_WIDE_INT arg0, arg1, arg0s, arg1s;
+  HOST_WIDE_INT val;
   int width = GET_MODE_BITSIZE (mode);
 
   /* Relational operations don't work here.  We must know the mode
@@ -3217,7 +3237,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	}
 #endif
 
-      set_float_handler (0);
+      set_float_handler (NULL_PTR);
       value = real_value_truncate (mode, value);
       return immed_real_const_1 (value, mode);
     }
@@ -3227,7 +3247,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	   && GET_CODE (op0) == CONST_DOUBLE
 	   && (GET_CODE (op1) == CONST_DOUBLE || GET_CODE (op1) == CONST_INT))
     {
-      int l1, l2, h1, h2, lv, hv;
+      HOST_WIDE_INT l1, l2, h1, h2, lv, hv;
 
       l1 = CONST_DOUBLE_LOW (op0), h1 = CONST_DOUBLE_HIGH (op0);
 
@@ -3271,30 +3291,40 @@ simplify_binary_operation (code, mode, op0, op1)
 	  break;
 
 	case SMIN:
-	  if (h1 < h2 || (h1 == h2 && (unsigned) l1 < (unsigned) l2))
+	  if (h1 < h2
+	      || (h1 == h2
+		  && ((unsigned HOST_WIDE_INT) l1
+		      < (unsigned HOST_WIDE_INT) l2)))
 	    lv = l1, hv = h1;
 	  else
 	    lv = l2, hv = h2;
 	  break;
 
 	case SMAX:
-	  if (h1 > h2 || (h1 == h2 && (unsigned) l1 > (unsigned) l2))
+	  if (h1 > h2
+	      || (h1 == h2
+		  && ((unsigned HOST_WIDE_INT) l1
+		      > (unsigned HOST_WIDE_INT) l2)))
 	    lv = l1, hv = h1;
 	  else
 	    lv = l2, hv = h2;
 	  break;
 
 	case UMIN:
-	  if ((unsigned) h1 < (unsigned) h2
-	      || (h1 == h2 && (unsigned) l1 < (unsigned) l2))
+	  if ((unsigned HOST_WIDE_INT) h1 < (unsigned HOST_WIDE_INT) h2
+	      || (h1 == h2
+		  && ((unsigned HOST_WIDE_INT) l1
+		      < (unsigned HOST_WIDE_INT) l2)))
 	    lv = l1, hv = h1;
 	  else
 	    lv = l2, hv = h2;
 	  break;
 
 	case UMAX:
-	  if ((unsigned) h1 > (unsigned) h2
-	      || (h1 == h2 && (unsigned) l1 > (unsigned) l2))
+	  if ((unsigned HOST_WIDE_INT) h1 > (unsigned HOST_WIDE_INT) h2
+	      || (h1 == h2
+		  && ((unsigned HOST_WIDE_INT) l1
+		      > (unsigned HOST_WIDE_INT) l2)))
 	    lv = l1, hv = h1;
 	  else
 	    lv = l2, hv = h2;
@@ -3331,7 +3361,7 @@ simplify_binary_operation (code, mode, op0, op1)
 #endif  /* not REAL_IS_NOT_DOUBLE, or REAL_ARITHMETIC */
 
   if (GET_CODE (op0) != CONST_INT || GET_CODE (op1) != CONST_INT
-      || width > HOST_BITS_PER_INT || width == 0)
+      || width > HOST_BITS_PER_WIDE_INT || width == 0)
     {
       /* Even if we can't compute a constant result,
 	 there are some cases worth simplifying.  */
@@ -3633,8 +3663,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	  /* Convert multiply by constant power of two into shift.  */
 	  if (GET_CODE (op1) == CONST_INT
 	      && (val = exact_log2 (INTVAL (op1))) >= 0)
-	    return gen_rtx (ASHIFT, mode, op0,
-			    gen_rtx (CONST_INT, VOIDmode, val));
+	    return gen_rtx (ASHIFT, mode, op0, GEN_INT (val));
 
 	  if (GET_CODE (op1) == CONST_DOUBLE
 	      && GET_MODE_CLASS (GET_MODE (op1)) == MODE_FLOAT)
@@ -3698,8 +3727,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	     below).  */
 	  if (GET_CODE (op1) == CONST_INT
 	      && (arg1 = exact_log2 (INTVAL (op1))) > 0)
-	    return gen_rtx (LSHIFTRT, mode, op0,
-			    gen_rtx (CONST_INT, VOIDmode, arg1));
+	    return gen_rtx (LSHIFTRT, mode, op0, GEN_INT (arg1));
 
 	  /* ... fall through ... */
 
@@ -3737,8 +3765,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	  /* Handle modulus by power of two (mod with 1 handled below).  */
 	  if (GET_CODE (op1) == CONST_INT
 	      && exact_log2 (INTVAL (op1)) > 0)
-	    return gen_rtx (AND, mode, op0, 
-			    gen_rtx (CONST_INT, VOIDmode, INTVAL (op1) - 1));
+	    return gen_rtx (AND, mode, op0, GEN_INT (INTVAL (op1) - 1));
 
 	  /* ... fall through ... */
 
@@ -3751,7 +3778,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	case ROTATERT:
 	case ROTATE:
 	  /* Rotating ~0 always results in ~0.  */
-	  if (GET_CODE (op0) == CONST_INT && width <= HOST_BITS_PER_INT
+	  if (GET_CODE (op0) == CONST_INT && width <= HOST_BITS_PER_WIDE_INT
 	      && INTVAL (op0) == GET_MODE_MASK (mode)
 	      && ! side_effects_p (op1))
 	    return op0;
@@ -3769,8 +3796,8 @@ simplify_binary_operation (code, mode, op0, op1)
 	  break;
 
 	case SMIN:
-	  if (width <= HOST_BITS_PER_INT && GET_CODE (op1) == CONST_INT 
-	      && INTVAL (op1) == 1 << (width -1)
+	  if (width <= HOST_BITS_PER_WIDE_INT && GET_CODE (op1) == CONST_INT 
+	      && INTVAL (op1) == (HOST_WIDE_INT) 1 << (width -1)
 	      && ! side_effects_p (op0))
 	    return op1;
 	  else if (rtx_equal_p (op0, op1) && ! side_effects_p (op0))
@@ -3778,7 +3805,7 @@ simplify_binary_operation (code, mode, op0, op1)
 	  break;
 	   
 	case SMAX:
-	  if (width <= HOST_BITS_PER_INT && GET_CODE (op1) == CONST_INT
+	  if (width <= HOST_BITS_PER_WIDE_INT && GET_CODE (op1) == CONST_INT
 	      && INTVAL (op1) == GET_MODE_MASK (mode) >> 1
 	      && ! side_effects_p (op0))
 	    return op1;
@@ -3813,18 +3840,18 @@ simplify_binary_operation (code, mode, op0, op1)
   arg0 = INTVAL (op0);
   arg1 = INTVAL (op1);
 
-  if (width < HOST_BITS_PER_INT)
+  if (width < HOST_BITS_PER_WIDE_INT)
     {
-      arg0 &= (1 << width) - 1;
-      arg1 &= (1 << width) - 1;
+      arg0 &= ((HOST_WIDE_INT) 1 << width) - 1;
+      arg1 &= ((HOST_WIDE_INT) 1 << width) - 1;
 
       arg0s = arg0;
-      if (arg0s & (1 << (width - 1)))
-	arg0s |= ((-1) << width);
+      if (arg0s & ((HOST_WIDE_INT) 1 << (width - 1)))
+	arg0s |= ((HOST_WIDE_INT) (-1) << width);
 
       arg1s = arg1;
-      if (arg1s & (1 << (width - 1)))
-	arg1s |= ((-1) << width);
+      if (arg1s & ((HOST_WIDE_INT) 1 << (width - 1)))
+	arg1s |= ((HOST_WIDE_INT) (-1) << width);
     }
   else
     {
@@ -3863,13 +3890,13 @@ simplify_binary_operation (code, mode, op0, op1)
     case UDIV:
       if (arg1 == 0)
 	return 0;
-      val = (unsigned) arg0 / arg1;
+      val = (unsigned HOST_WIDE_INT) arg0 / arg1;
       break;
 
     case UMOD:
       if (arg1 == 0)
 	return 0;
-      val = (unsigned) arg0 % arg1;
+      val = (unsigned HOST_WIDE_INT) arg0 % arg1;
       break;
 
     case AND:
@@ -3897,7 +3924,7 @@ simplify_binary_operation (code, mode, op0, op1)
       if (arg1 >= width)
 	return 0;
 
-      val = ((unsigned) arg0) >> arg1;
+      val = ((unsigned HOST_WIDE_INT) arg0) >> arg1;
       break;
 
     case ASHIFT:
@@ -3912,7 +3939,7 @@ simplify_binary_operation (code, mode, op0, op1)
       if (arg1 >= width)
 	return 0;
 
-      val = ((unsigned) arg0) << arg1;
+      val = ((unsigned HOST_WIDE_INT) arg0) << arg1;
       break;
 
     case ASHIFTRT:
@@ -3934,8 +3961,8 @@ simplify_binary_operation (code, mode, op0, op1)
 	return 0;
 
       arg1 %= width;
-      val = ((((unsigned) arg0) << (width - arg1))
-	     | (((unsigned) arg0) >> arg1));
+      val = ((((unsigned HOST_WIDE_INT) arg0) << (width - arg1))
+	     | (((unsigned HOST_WIDE_INT) arg0) >> arg1));
       break;
 
     case ROTATE:
@@ -3943,8 +3970,8 @@ simplify_binary_operation (code, mode, op0, op1)
 	return 0;
 
       arg1 %= width;
-      val = ((((unsigned) arg0) << arg1)
-	     | (((unsigned) arg0) >> (width - arg1)));
+      val = ((((unsigned HOST_WIDE_INT) arg0) << arg1)
+	     | (((unsigned HOST_WIDE_INT) arg0) >> (width - arg1)));
       break;
 
     case COMPARE:
@@ -3956,7 +3983,8 @@ simplify_binary_operation (code, mode, op0, op1)
       break;
 
     case UMIN:
-      val = (unsigned int)arg0 <= (unsigned int)arg1 ? arg0 : arg1;
+      val = ((unsigned HOST_WIDE_INT) arg0
+	     <= (unsigned HOST_WIDE_INT) arg1 ? arg0 : arg1);
       break;
 
     case SMAX:
@@ -3964,7 +3992,8 @@ simplify_binary_operation (code, mode, op0, op1)
       break;
 
     case UMAX:
-      val = (unsigned int)arg0 > (unsigned int)arg1 ? arg0 : arg1;
+      val = ((unsigned HOST_WIDE_INT) arg0
+	     > (unsigned HOST_WIDE_INT) arg1 ? arg0 : arg1);
       break;
 
     default:
@@ -3974,11 +4003,12 @@ simplify_binary_operation (code, mode, op0, op1)
   /* Clear the bits that don't belong in our mode, unless they and our sign
      bit are all one.  So we get either a reasonable negative value or a
      reasonable unsigned value for this mode.  */
-  if (width < HOST_BITS_PER_INT
-      && ((val & ((-1) << (width - 1))) != ((-1) << (width - 1))))
-    val &= (1 << width) - 1;
-  
-  return gen_rtx (CONST_INT, VOIDmode, val);
+  if (width < HOST_BITS_PER_WIDE_INT
+      && ((val & ((HOST_WIDE_INT) (-1) << (width - 1)))
+	  != ((HOST_WIDE_INT) (-1) << (width - 1))))
+    val &= ((HOST_WIDE_INT) 1 << width) - 1;
+
+  return GEN_INT (val);
 }
 
 /* Like simplify_binary_operation except used for relational operators.
@@ -3990,8 +4020,8 @@ simplify_relational_operation (code, mode, op0, op1)
      enum machine_mode mode;
      rtx op0, op1;
 {
-  register int arg0, arg1, arg0s, arg1s;
-  int val;
+  register HOST_WIDE_INT arg0, arg1, arg0s, arg1s;
+  HOST_WIDE_INT val;
   int width = GET_MODE_BITSIZE (mode);
 
   /* If op0 is a compare, extract the comparison arguments from it.  */
@@ -3999,7 +4029,7 @@ simplify_relational_operation (code, mode, op0, op1)
     op1 = XEXP (op0, 1), op0 = XEXP (op0, 0);
 
   if (GET_CODE (op0) != CONST_INT || GET_CODE (op1) != CONST_INT
-      || width > HOST_BITS_PER_INT || width == 0)
+      || width > HOST_BITS_PER_WIDE_INT || width == 0)
     {
       /* Even if we can't compute a constant result,
 	 there are some cases worth simplifying.  */
@@ -4016,7 +4046,6 @@ simplify_relational_operation (code, mode, op0, op1)
 	       && GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
 	{
 	  REAL_VALUE_TYPE d0, d1;
-	  int value;
 	  jmp_buf handler;
 	  int op0lt, op1lt, equal;
 
@@ -4029,7 +4058,7 @@ simplify_relational_operation (code, mode, op0, op1)
 	  equal = REAL_VALUES_EQUAL (d0, d1);
 	  op0lt = REAL_VALUES_LESS (d0, d1);
 	  op1lt = REAL_VALUES_LESS (d1, d0);
-	  set_float_handler (0);
+	  set_float_handler (NULL_PTR);
 
 	  switch (code)
 	    {
@@ -4116,18 +4145,18 @@ simplify_relational_operation (code, mode, op0, op1)
   arg0 = INTVAL (op0);
   arg1 = INTVAL (op1);
 
-  if (width < HOST_BITS_PER_INT)
+  if (width < HOST_BITS_PER_WIDE_INT)
     {
-      arg0 &= (1 << width) - 1;
-      arg1 &= (1 << width) - 1;
+      arg0 &= ((HOST_WIDE_INT) 1 << width) - 1;
+      arg1 &= ((HOST_WIDE_INT) 1 << width) - 1;
 
       arg0s = arg0;
-      if (arg0s & (1 << (width - 1)))
-	arg0s |= ((-1) << width);
+      if (arg0s & ((HOST_WIDE_INT) 1 << (width - 1)))
+	arg0s |= ((HOST_WIDE_INT) (-1) << width);
 
       arg1s = arg1;
-      if (arg1s & (1 << (width - 1)))
-	arg1s |= ((-1) << width);
+      if (arg1s & ((HOST_WIDE_INT) 1 << (width - 1)))
+	arg1s |= ((HOST_WIDE_INT) (-1) << width);
     }
   else
     {
@@ -4164,19 +4193,23 @@ simplify_relational_operation (code, mode, op0, op1)
       break;
 
     case LEU:
-      val = ((unsigned) arg0) <= ((unsigned) arg1) ? STORE_FLAG_VALUE : 0;
+      val = (((unsigned HOST_WIDE_INT) arg0)
+	     <= ((unsigned HOST_WIDE_INT) arg1) ? STORE_FLAG_VALUE : 0);
       break;
 
     case LTU:
-      val = ((unsigned) arg0) < ((unsigned) arg1) ? STORE_FLAG_VALUE : 0;
+      val = (((unsigned HOST_WIDE_INT) arg0)
+	     < ((unsigned HOST_WIDE_INT) arg1) ? STORE_FLAG_VALUE : 0);
       break;
 
     case GEU:
-      val = ((unsigned) arg0) >= ((unsigned) arg1) ? STORE_FLAG_VALUE : 0;
+      val = (((unsigned HOST_WIDE_INT) arg0)
+	     >= ((unsigned HOST_WIDE_INT) arg1) ? STORE_FLAG_VALUE : 0);
       break;
 
     case GTU:
-      val = ((unsigned) arg0) > ((unsigned) arg1) ? STORE_FLAG_VALUE : 0;
+      val = (((unsigned HOST_WIDE_INT) arg0)
+	     > ((unsigned HOST_WIDE_INT) arg1) ? STORE_FLAG_VALUE : 0);
       break;
 
     default:
@@ -4186,11 +4219,12 @@ simplify_relational_operation (code, mode, op0, op1)
   /* Clear the bits that don't belong in our mode, unless they and our sign
      bit are all one.  So we get either a reasonable negative value or a
      reasonable unsigned value for this mode.  */
-  if (width < HOST_BITS_PER_INT
-      && ((val & ((-1) << (width - 1))) != ((-1) << (width - 1))))
-    val &= (1 << width) - 1;
+  if (width < HOST_BITS_PER_WIDE_INT
+      && ((val & ((HOST_WIDE_INT) (-1) << (width - 1)))
+	  != ((HOST_WIDE_INT) (-1) << (width - 1))))
+    val &= ((HOST_WIDE_INT) 1 << width) - 1;
   
-  return gen_rtx (CONST_INT, VOIDmode, val);
+  return GEN_INT (val);
 }
 
 /* Simplify CODE, an operation with result mode MODE and three operands,
@@ -4207,7 +4241,7 @@ simplify_ternary_operation (code, mode, op0_mode, op0, op1, op2)
 
   /* VOIDmode means "infinite" precision.  */
   if (width == 0)
-    width = HOST_BITS_PER_INT;
+    width = HOST_BITS_PER_WIDE_INT;
 
   switch (code)
     {
@@ -4217,34 +4251,36 @@ simplify_ternary_operation (code, mode, op0_mode, op0, op1, op2)
 	  && GET_CODE (op1) == CONST_INT
 	  && GET_CODE (op2) == CONST_INT
 	  && INTVAL (op1) + INTVAL (op2) <= GET_MODE_BITSIZE (op0_mode)
-	  && width <= HOST_BITS_PER_INT)
+	  && width <= HOST_BITS_PER_WIDE_INT)
 	{
 	  /* Extracting a bit-field from a constant */
-	  int val = INTVAL (op0);
+	  HOST_WIDE_INT val = INTVAL (op0);
 
 #if BITS_BIG_ENDIAN
 	  val >>= (GET_MODE_BITSIZE (op0_mode) - INTVAL (op2) - INTVAL (op1));
 #else
 	  val >>= INTVAL (op2);
 #endif
-	  if (HOST_BITS_PER_INT != INTVAL (op1))
+	  if (HOST_BITS_PER_WIDE_INT != INTVAL (op1))
 	    {
 	      /* First zero-extend.  */
-	      val &= (1 << INTVAL (op1)) - 1;
+	      val &= ((HOST_WIDE_INT) 1 << INTVAL (op1)) - 1;
 	      /* If desired, propagate sign bit.  */
-	      if (code == SIGN_EXTRACT && (val & (1 << (INTVAL (op1) - 1))))
-		val |= ~ ((1 << INTVAL (op1)) - 1);
+	      if (code == SIGN_EXTRACT
+		  && (val & ((HOST_WIDE_INT) 1 << (INTVAL (op1) - 1))))
+		val |= ~ (((HOST_WIDE_INT) 1 << INTVAL (op1)) - 1);
 	    }
 
 	  /* Clear the bits that don't belong in our mode,
 	     unless they and our sign bit are all one.
 	     So we get either a reasonable negative value or a reasonable
 	     unsigned value for this mode.  */
-	  if (width < HOST_BITS_PER_INT
-	      && ((val & ((-1) << (width - 1))) != ((-1) << (width - 1))))
-	    val &= (1 << width) - 1;
+	  if (width < HOST_BITS_PER_WIDE_INT
+	      && ((val & ((HOST_WIDE_INT) (-1) << (width - 1)))
+		  != ((HOST_WIDE_INT) (-1) << (width - 1))))
+	    val &= ((HOST_WIDE_INT) 1 << width) - 1;
 
-	  return gen_rtx (CONST_INT, VOIDmode, val);
+	  return GEN_INT (val);
 	}
       break;
 
@@ -4281,7 +4317,7 @@ fold_rtx (x, insn)
   register enum rtx_code code;
   register enum machine_mode mode;
   register char *fmt;
-  register int i, val;
+  register int i;
   rtx new = 0;
   int copied = 0;
   int must_swap = 0;
@@ -4367,7 +4403,7 @@ fold_rtx (x, insn)
 		   elt; elt = elt->next_same_value)
 		if (GET_CODE (elt->exp) == SUBREG
 		    && GET_MODE (SUBREG_REG (elt->exp)) == mode
-		    && exp_equiv_p (elt->exp, elt->exp, 1))
+		    && exp_equiv_p (elt->exp, elt->exp, 1, 0))
 		  return copy_rtx (SUBREG_REG (elt->exp));
 	    }
 
@@ -4439,7 +4475,7 @@ fold_rtx (x, insn)
 		  rtx op0 = SUBREG_REG (XEXP (elt->exp, 0));
 
 		  if (GET_CODE (op0) != REG && ! CONSTANT_P (op0))
-		    op0 = fold_rtx (op0, 0);
+		    op0 = fold_rtx (op0, NULL_RTX);
 
 		  op0 = equiv_constant (op0);
 		  if (op0)
@@ -4461,13 +4497,13 @@ fold_rtx (x, insn)
 		  rtx op1 = gen_lowpart_common (mode, XEXP (elt->exp, 1));
 
 		  if (op0 && GET_CODE (op0) != REG && ! CONSTANT_P (op0))
-		    op0 = fold_rtx (op0, 0);
+		    op0 = fold_rtx (op0, NULL_RTX);
 
 		  if (op0)
 		    op0 = equiv_constant (op0);
 
 		  if (op1 && GET_CODE (op1) != REG && ! CONSTANT_P (op1))
-		    op1 = fold_rtx (op1, 0);
+		    op1 = fold_rtx (op1, NULL_RTX);
 
 		  if (op1)
 		    op1 = equiv_constant (op1);
@@ -4481,7 +4517,7 @@ fold_rtx (x, insn)
 		       && GET_MODE (SUBREG_REG (elt->exp)) == mode
 		       && (GET_MODE_SIZE (GET_MODE (folded_arg0))
 			   <= UNITS_PER_WORD)
-		       && exp_equiv_p (elt->exp, elt->exp, 1))
+		       && exp_equiv_p (elt->exp, elt->exp, 1, 0))
 		new = copy_rtx (SUBREG_REG (elt->exp));
 
 	      if (new)
@@ -4510,9 +4546,9 @@ fold_rtx (x, insn)
       {
 	/* Even if we don't fold in the insn itself,
 	   we can safely do so here, in hopes of getting a constant.  */
-	rtx addr = fold_rtx (XEXP (x, 0), 0);
+	rtx addr = fold_rtx (XEXP (x, 0), NULL_RTX);
 	rtx base = 0;
-	int offset = 0;
+	HOST_WIDE_INT offset = 0;
 
 	if (GET_CODE (addr) == REG
 	    && REGNO_QTY_VALID_P (REGNO (addr))
@@ -4912,8 +4948,9 @@ fold_rtx (x, insn)
 	      && INTVAL (inner_const) != 0)
 	    {
 	      int sign_bitnum = GET_MODE_BITSIZE (mode_arg0) - 1;
-	      int has_sign = (HOST_BITS_PER_INT >= sign_bitnum
-			      && (INTVAL (inner_const) & (1 << sign_bitnum)));
+	      int has_sign = (HOST_BITS_PER_WIDE_INT >= sign_bitnum
+			      && (INTVAL (inner_const)
+				  & ((HOST_WIDE_INT) 1 << sign_bitnum)));
 	      rtx true = const_true_rtx, false = const0_rtx;
 
 #ifdef FLOAT_STORE_FLAG_VALUE
@@ -5110,7 +5147,7 @@ equiv_constant (x)
     {
       struct table_elt *elt;
 
-      x = fold_rtx (x, 0);
+      x = fold_rtx (x, NULL_RTX);
       if (CONSTANT_P (x))
 	return x;
 
@@ -5340,13 +5377,13 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
 	 new quantity number.  */
       if (op0_elt == 0)
 	{
-	  if (insert_regs (op0, 0, 0))
+	  if (insert_regs (op0, NULL_PTR, 0))
 	    {
 	      rehash_using_reg (op0);
 	      op0_hash_code = HASH (op0, mode);
 	    }
 
-	  op0_elt = insert (op0, 0, op0_hash_code, mode);
+	  op0_elt = insert (op0, NULL_PTR, op0_hash_code, mode);
 	  op0_elt->in_memory = op0_in_memory;
 	  op0_elt->in_struct = op0_in_struct;
 	}
@@ -5357,13 +5394,13 @@ record_jump_cond (code, mode, op0, op1, reversed_nonequality)
 	  /* Put OP1 in the hash table so it gets a new quantity number.  */
 	  if (op1_elt == 0)
 	    {
-	      if (insert_regs (op1, 0, 0))
+	      if (insert_regs (op1, NULL_PTR, 0))
 		{
 		  rehash_using_reg (op1);
 		  op1_hash_code = HASH (op1, mode);
 		}
 
-	      op1_elt = insert (op1, 0, op1_hash_code, mode);
+	      op1_elt = insert (op1, NULL_PTR, op1_hash_code, mode);
 	      op1_elt->in_memory = op1_in_memory;
 	      op1_elt->in_struct = op1_in_struct;
 	    }
@@ -5580,14 +5617,14 @@ cse_insn (insn, in_libcall_block)
 		 because we have already invalidated the reg.  */
 	      if (GET_CODE (XEXP (y, 0)) == MEM)
 		{
-		  canon_reg (XEXP (y, 0), 0);
+		  canon_reg (XEXP (y, 0), NULL_RTX);
 		  note_mem_written (XEXP (y, 0), &writes_memory);
 		}
 	    }
 	  else if (GET_CODE (y) == USE
 		   && ! (GET_CODE (XEXP (y, 0)) == REG
 			 && REGNO (XEXP (y, 0)) < FIRST_PSEUDO_REGISTER))
-	    canon_reg (y, 0);
+	    canon_reg (y, NULL_RTX);
 	  else if (GET_CODE (y) == CALL)
 	    {
 	      canon_reg (y, insn);
@@ -5600,7 +5637,7 @@ cse_insn (insn, in_libcall_block)
     {
       if (GET_CODE (XEXP (x, 0)) == MEM)
 	{
-	  canon_reg (XEXP (x, 0), 0);
+	  canon_reg (XEXP (x, 0), NULL_RTX);
 	  note_mem_written (XEXP (x, 0), &writes_memory);
 	}
     }
@@ -5609,7 +5646,7 @@ cse_insn (insn, in_libcall_block)
   else if (GET_CODE (x) == USE
 	   && ! (GET_CODE (XEXP (x, 0)) == REG
 		 && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER))
-    canon_reg (XEXP (x, 0), 0);
+    canon_reg (XEXP (x, 0), NULL_RTX);
   else if (GET_CODE (x) == CALL)
     {
       canon_reg (x, insn);
@@ -5620,10 +5657,10 @@ cse_insn (insn, in_libcall_block)
   if (n_sets == 1 && REG_NOTES (insn) != 0)
     {
       /* Store the equivalent value in SRC_EQV, if different.  */
-      rtx tem = find_reg_note (insn, REG_EQUAL, 0);
+      rtx tem = find_reg_note (insn, REG_EQUAL, NULL_RTX);
 
       if (tem && ! rtx_equal_p (XEXP (tem, 0), SET_SRC (sets[0].rtl)))
-        src_eqv = canon_reg (XEXP (tem, 0), 0);
+        src_eqv = canon_reg (XEXP (tem, 0), NULL_RTX);
     }
 
   /* Canonicalize sources and addresses of destinations.
@@ -5750,10 +5787,11 @@ cse_insn (insn, in_libcall_block)
 
 	  if (GET_CODE (src) == CONST_INT
 	      && GET_CODE (width) == CONST_INT
-	      && INTVAL (width) < HOST_BITS_PER_INT
-	      && (INTVAL (src) & ((-1) << INTVAL (width))))
-	    src_folded = gen_rtx (CONST_INT, VOIDmode,
-				  INTVAL (src) & ((1 << INTVAL (width)) - 1));
+	      && INTVAL (width) < HOST_BITS_PER_WIDE_INT
+	      && (INTVAL (src) & ((HOST_WIDE_INT) (-1) << INTVAL (width))))
+	    src_folded
+	      = GEN_INT (INTVAL (src) & (((HOST_WIDE_INT) 1
+					  << INTVAL (width)) - 1));
 	}
 
       /* Compute SRC's hash code, and also notice if it
@@ -5932,7 +5970,7 @@ cse_insn (insn, in_libcall_block)
 	  && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
 	{
 	  enum machine_mode tmode;
-	  rtx new_and = gen_rtx (AND, VOIDmode, 0, XEXP (src, 1));
+	  rtx new_and = gen_rtx (AND, VOIDmode, NULL_RTX, XEXP (src, 1));
 
 	  for (tmode = GET_MODE_WIDER_MODE (mode);
 	       GET_MODE_SIZE (tmode) <= UNITS_PER_WORD;
@@ -6202,7 +6240,7 @@ cse_insn (insn, in_libcall_block)
       if (n_sets == 1 && src_const && GET_CODE (dest) == REG
 	  && GET_CODE (src_const) != REG)
 	{
-	  rtx tem = find_reg_note (insn, REG_EQUAL, 0);
+	  rtx tem = find_reg_note (insn, REG_EQUAL, NULL_RTX);
 	  
 	  /* Record the actual constant value in a REG_EQUAL note, making
 	     a new one if one does not already exist.  */
@@ -6227,7 +6265,7 @@ cse_insn (insn, in_libcall_block)
 	      && qty_const[reg_qty[REGNO (dest)]] == const0_rtx)
 	    {
 	      /* See if we previously had a REG_WAS_0 note.  */
-	      rtx note = find_reg_note (insn, REG_WAS_0, 0);
+	      rtx note = find_reg_note (insn, REG_WAS_0, NULL_RTX);
 	      rtx const_insn = qty_const_insn[reg_qty[REGNO (dest)]];
 
 	      if ((tem = single_set (const_insn)) != 0
@@ -6287,8 +6325,9 @@ cse_insn (insn, in_libcall_block)
 
 	  if (src_const != 0 && GET_CODE (src_const) == CONST_INT
 	      && GET_CODE (width) == CONST_INT
-	      && INTVAL (width) < HOST_BITS_PER_INT
-	      && ! (INTVAL (src_const) & ((-1) << INTVAL (width))))
+	      && INTVAL (width) < HOST_BITS_PER_WIDE_INT
+	      && ! (INTVAL (src_const)
+		    & ((HOST_WIDE_INT) (-1) << INTVAL (width))))
 	    /* Exception: if the value is constant,
 	       and it won't be truncated, record it.  */
 	    ;
@@ -6696,7 +6735,7 @@ cse_insn (insn, in_libcall_block)
 	  && SET_DEST (PATTERN (prev)) == SET_SRC (sets[0].rtl))
 	{
 	  rtx dest = SET_DEST (sets[0].rtl);
-	  rtx note = find_reg_note (prev, REG_EQUIV, 0);
+	  rtx note = find_reg_note (prev, REG_EQUIV, NULL_RTX);
 
 	  validate_change (prev, & SET_DEST (PATTERN (prev)), dest, 1);
 	  validate_change (insn, & SET_DEST (sets[0].rtl),
@@ -6710,11 +6749,11 @@ cse_insn (insn, in_libcall_block)
 
 	  /* If there was a REG_WAS_0 note on PREV, remove it.  Move
 	     any REG_WAS_0 note on INSN to PREV.  */
-	  note = find_reg_note (prev, REG_WAS_0, 0);
+	  note = find_reg_note (prev, REG_WAS_0, NULL_RTX);
 	  if (note)
 	    remove_note (prev, note);
 
-	  note = find_reg_note (insn, REG_WAS_0, 0);
+	  note = find_reg_note (insn, REG_WAS_0, NULL_RTX);
 	  if (note)
 	    {
 	      remove_note (insn, note);
@@ -6889,9 +6928,9 @@ cse_process_notes (x, object)
     case EXPR_LIST:
     case INSN_LIST:
       if (REG_NOTE_KIND (x) == REG_EQUAL)
-	XEXP (x, 0) = cse_process_notes (XEXP (x, 0), 0);
+	XEXP (x, 0) = cse_process_notes (XEXP (x, 0), NULL_RTX);
       if (XEXP (x, 1))
-	XEXP (x, 1) = cse_process_notes (XEXP (x, 1), 0);
+	XEXP (x, 1) = cse_process_notes (XEXP (x, 1), NULL_RTX);
       return x;
 
     case SIGN_EXTEND:
@@ -6920,13 +6959,13 @@ cse_process_notes (x, object)
 	}
 
       /* Otherwise, canonicalize this register.  */
-      return canon_reg (x, 0);
+      return canon_reg (x, NULL_RTX);
     }
 
   for (i = 0; i < GET_RTX_LENGTH (code); i++)
     if (fmt[i] == 'e')
       validate_change (object, &XEXP (x, i),
-		       cse_process_notes (XEXP (x, i), object), 0);
+		       cse_process_notes (XEXP (x, i), object), NULL_RTX);
 
   return x;
 }
@@ -7478,8 +7517,8 @@ cse_main (f, nregs, after_loop, file)
   /* Find the largest uid.  */
 
   i = get_max_uid ();
-  uid_cuid = (short *) alloca ((i + 1) * sizeof (short));
-  bzero (uid_cuid, (i + 1) * sizeof (short));
+  uid_cuid = (int *) alloca ((i + 1) * sizeof (int));
+  bzero (uid_cuid, (i + 1) * sizeof (int));
 
   /* Compute the mapping from uids to cuids.
      CUIDs are numbers assigned to insns, like uids,
@@ -7678,7 +7717,7 @@ cse_basic_block (from, to, next_branch, around_loop)
 	     looking for duplicate operations.  */
 
 	  if (REG_NOTES (insn))
-	    REG_NOTES (insn) = cse_process_notes (REG_NOTES (insn), 0);
+	    REG_NOTES (insn) = cse_process_notes (REG_NOTES (insn), NULL_RTX);
 
 	  /* Track when we are inside in LIBCALL block.  Inside such a block,
 	     we do not want to record destinations.  The last insn of a
@@ -7686,9 +7725,9 @@ cse_basic_block (from, to, next_branch, around_loop)
 	     its destination is the result of the block and hence should be
 	     recorded.  */
 
-	  if (find_reg_note (insn, REG_LIBCALL, 0))
+	  if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
 	    in_libcall_block = 1;
-	  else if (find_reg_note (insn, REG_RETVAL, 0))
+	  else if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
 	    in_libcall_block = 0;
 
 	  cse_insn (insn, in_libcall_block);
@@ -7893,7 +7932,7 @@ delete_dead_from_cse (insns, nreg)
       /* Don't delete any insns that are part of a libcall block.
 	 Flow or loop might get confused if we did that.  Remember
 	 that we are scanning backwards.  */
-      if (find_reg_note (insn, REG_RETVAL, 0))
+      if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
 	in_libcall = 1;
 
       if (in_libcall)
@@ -7958,7 +7997,7 @@ delete_dead_from_cse (insns, nreg)
 	  delete_insn (insn);
 	}
 
-      if (find_reg_note (insn, REG_LIBCALL, 0))
+      if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
 	in_libcall = 0;
     }
 }

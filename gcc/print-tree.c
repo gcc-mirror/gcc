@@ -79,8 +79,8 @@ print_node_brief (file, prefix, node, indent)
      name if any.  */
   if (indent > 0)
     fprintf (file, " ");
-  fprintf (file, "%s <%s %x", prefix,
-	   tree_code_name[(int) TREE_CODE (node)], (int) node);
+  fprintf (file, "%s <%s ", prefix, tree_code_name[(int) TREE_CODE (node)]);
+  fprintf (file, HOST_PTR_PRINTF, node);
 
   if (class == 'd')
     {
@@ -110,9 +110,21 @@ print_node_brief (file, prefix, node, indent)
 	       && TREE_INT_CST_LOW (node) != 0)
 	fprintf (file, " -%1u", -TREE_INT_CST_LOW (node));
       else
-	fprintf (file, " 0x%x%08x",
-		 TREE_INT_CST_HIGH (node),
-		 TREE_INT_CST_LOW (node));
+	fprintf (file,
+#if HOST_BITS_PER_WIDE_INT == 64
+#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
+		 " 0x%lx%016lx",
+#else
+		 " 0x%x%016x",
+#endif
+#else
+#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
+		 " 0x%lx%08lx",
+#else
+		 " 0x%x%08x",
+#endif
+#endif
+		 TREE_INT_CST_HIGH (node), TREE_INT_CST_LOW (node));
     }
   if (TREE_CODE (node) == REAL_CST)
     {
@@ -213,8 +225,8 @@ print_node (file, prefix, node, indent)
   indent_to (file, indent);
 
   /* Print the slot this node is in, and its code, and address.  */
-  fprintf (file, "%s <%s %x", prefix,
-	   tree_code_name[(int) TREE_CODE (node)], (int) node);
+  fprintf (file, "%s <%s ", prefix, tree_code_name[(int) TREE_CODE (node)]);
+  fprintf (file, HOST_PTR_PRINTF, node);
 
   /* Print the name, if any.  */
   if (class == 'd')
@@ -374,7 +386,10 @@ print_node (file, prefix, node, indent)
 	      print_rtl (file, DECL_INCOMING_RTL (node));
 	    }
 	  else if (TREE_CODE (node) == FUNCTION_DECL)
-	    fprintf (file, "saved-insns 0x%x", DECL_SAVED_INSNS (node));
+	    {
+	      fprintf (file, "saved-insns ");
+	      fprintf (file, HOST_PTR_PRINTF, DECL_SAVED_INSNS (node));
+	    }
 	}
 
       /* Print the decl chain only if decl is at second level.  */
@@ -525,9 +540,21 @@ print_node (file, prefix, node, indent)
 		   && TREE_INT_CST_LOW (node) != 0)
 	    fprintf (file, " -%1u", -TREE_INT_CST_LOW (node));
 	  else
-	    fprintf (file, " 0x%x%08x",
-		     TREE_INT_CST_HIGH (node),
-		     TREE_INT_CST_LOW (node));
+	    fprintf (file,
+#if HOST_BITS_PER_WIDE_INT == 64
+#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
+		     " 0x%lx%016lx",
+#else
+		     " 0x%x%016x",
+#endif
+#else
+#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
+		     " 0x%lx%08lx",
+#else
+		     " 0x%x%08x",
+#endif
+#endif
+		     TREE_INT_CST_HIGH (node), TREE_INT_CST_LOW (node));
 	  break;
 
 	case REAL_CST:

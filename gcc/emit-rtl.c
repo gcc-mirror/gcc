@@ -247,7 +247,7 @@ gen_rtx (va_alist)
 
   if (code == CONST_INT)
     {
-      int arg = va_arg (p, int);
+      HOST_WIDE_INT arg = va_arg (p, HOST_WIDE_INT);
 
       if (arg >= - MAX_SAVED_CONST_INT && arg <= MAX_SAVED_CONST_INT)
 	return const_int_rtx[arg + MAX_SAVED_CONST_INT];
@@ -304,6 +304,10 @@ gen_rtx (va_alist)
 
 	    case 'i':		/* An integer?  */
 	      XINT (rt_val, i) = va_arg (p, int);
+	      break;
+
+	    case 'w':		/* A wide integer? */
+	      XWINT (rt_val, i) = va_arg (p, HOST_WIDE_INT);
 	      break;
 
 	    case 's':		/* A string?  */
@@ -538,25 +542,26 @@ gen_lowpart_common (mode, x)
 	 either a reasonable negative value or a reasonable unsigned value
 	 for this mode.  */
 
-      if (GET_MODE_BITSIZE (mode) == 2 * HOST_BITS_PER_INT)
+      if (GET_MODE_BITSIZE (mode) == 2 * HOST_BITS_PER_WIDE_INT)
 	return x;
-      else if (GET_MODE_BITSIZE (mode) > HOST_BITS_PER_INT)
+      else if (GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT)
 	return 0;
-      else if (GET_MODE_BITSIZE (mode) == HOST_BITS_PER_INT)
+      else if (GET_MODE_BITSIZE (mode) == HOST_BITS_PER_WIDE_INT)
 	return (GET_CODE (x) == CONST_INT ? x
-		: gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (x)));
+		: GEN_INT (CONST_DOUBLE_LOW (x)));
       else
 	{
 	  /* MODE must be narrower than HOST_BITS_PER_INT.  */
 	  int width = GET_MODE_BITSIZE (mode);
-	  int val = (GET_CODE (x) == CONST_INT ? INTVAL (x)
-		     : CONST_DOUBLE_LOW (x));
+	  HOST_WIDE_INT val = (GET_CODE (x) == CONST_INT ? INTVAL (x)
+			       : CONST_DOUBLE_LOW (x));
 
-	  if (((val & ((-1) << (width - 1))) != ((-1) << (width - 1))))
-	    val &= (1 << width) - 1;
+	  if (((val & ((HOST_WIDE_INT) (-1) << (width - 1)))
+	       != ((HOST_WIDE_INT) (-1) << (width - 1))))
+	    val &= ((HOST_WIDE_INT) 1 << width) - 1;
 
 	  return (GET_CODE (x) == CONST_INT && INTVAL (x) == val ? x
-		  : gen_rtx (CONST_INT, VOIDmode, val));
+		  : GEN_INT (val));
 	}
     }
 
@@ -567,33 +572,34 @@ gen_lowpart_common (mode, x)
      different.  */
 
   else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-	     && HOST_BITS_PER_INT == BITS_PER_WORD)
+	     && HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
 	    || flag_pretend_float)
 	   && GET_MODE_CLASS (mode) == MODE_FLOAT
 	   && GET_MODE_SIZE (mode) == UNITS_PER_WORD
 	   && GET_CODE (x) == CONST_INT
-	   && sizeof (float) * HOST_BITS_PER_CHAR == HOST_BITS_PER_INT)
+	   && sizeof (float) * HOST_BITS_PER_CHAR == HOST_BITS_PER_WIDE_INT)
     {
-      union {int i; float d; } u;
+      union {HOST_WIDE_INT i; float d; } u;
 
       u.i = INTVAL (x);
       return immed_real_const_1 (u.d, mode);
     }
 
   else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-	     && HOST_BITS_PER_INT == BITS_PER_WORD)
+	     && HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
 	    || flag_pretend_float)
 	   && GET_MODE_CLASS (mode) == MODE_FLOAT
 	   && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
 	   && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
 	   && GET_MODE (x) == VOIDmode
-	   && sizeof (double) * HOST_BITS_PER_CHAR == 2 * HOST_BITS_PER_INT)
+	   && (sizeof (double) * HOST_BITS_PER_CHAR
+	       == 2 * HOST_BITS_PER_WIDE_INT))
     {
-      union {int i[2]; double d; } u;
-      int low, high;
+      union {HOST_WIDE_INT i[2]; double d; } u;
+      HOST_WIDE_INT low, high;
 
       if (GET_CODE (x) == CONST_INT)
-	low = INTVAL (x), high = low >> (HOST_BITS_PER_INT -1);
+	low = INTVAL (x), high = low >> (HOST_BITS_PER_WIDE_INT -1);
       else
 	low = CONST_DOUBLE_LOW (x), high = CONST_DOUBLE_HIGH (x);
 
@@ -611,7 +617,7 @@ gen_lowpart_common (mode, x)
      compatible.  */
 
   else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-	     && HOST_BITS_PER_INT == BITS_PER_WORD)
+	     && HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
 	    || flag_pretend_float)
 	   && GET_MODE_CLASS (mode) == MODE_INT
 	   && GET_CODE (x) == CONST_DOUBLE
@@ -625,7 +631,7 @@ gen_lowpart_common (mode, x)
      compatible.  */
 
   else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-	     && HOST_BITS_PER_INT == BITS_PER_WORD)
+	     && HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
 	    || flag_pretend_float)
 	   && GET_MODE_CLASS (mode) == MODE_INT
 	   && GET_CODE (x) == CONST_DOUBLE
@@ -725,8 +731,8 @@ operand_subword (op, i, validate_address, mode)
      int validate_address;
      enum machine_mode mode;
 {
-  int val;
-  int size_ratio = HOST_BITS_PER_INT / BITS_PER_WORD;
+  HOST_WIDE_INT val;
+  int size_ratio = HOST_BITS_PER_WIDE_INT / BITS_PER_WORD;
 
   if (mode == VOIDmode)
     mode = GET_MODE (op);
@@ -793,13 +799,12 @@ operand_subword (op, i, validate_address, mode)
      target floating formats are the same, handling two-word floating
      constants are easy.  */
   if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-	&& HOST_BITS_PER_INT == BITS_PER_WORD)
+	&& HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
        || flag_pretend_float)
       && GET_MODE_CLASS (mode) == MODE_FLOAT
       && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
       && GET_CODE (op) == CONST_DOUBLE)
-    return gen_rtx (CONST_INT, VOIDmode,
-		    i ^ (WORDS_BIG_ENDIAN !=
+    return GEN_INT (i ^ (WORDS_BIG_ENDIAN !=
 /* The constant is stored in the host's word-ordering,
    but we want to access it in the target's word-ordering.  */
 #ifdef HOST_WORDS_BIG_ENDIAN
@@ -813,19 +818,19 @@ operand_subword (op, i, validate_address, mode)
      values often do not have the same high-order bits.  We have already
      verified that we want the only defined word of the single-word value.  */
   if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-	&& HOST_BITS_PER_INT == BITS_PER_WORD)
+	&& HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
        || flag_pretend_float)
       && GET_MODE_CLASS (mode) == MODE_FLOAT
       && GET_MODE_SIZE (mode) == UNITS_PER_WORD
       && GET_CODE (op) == CONST_DOUBLE)
     {
       double d;
-      union {float f; int i; } u;
+      union {float f; HOST_WIDE_INT i; } u;
 
       REAL_VALUE_FROM_CONST_DOUBLE (d, op);
 
       u.f = d;
-      return gen_rtx (CONST_INT, VOIDmode, u.i);
+      return GEN_INT (u.i);
     }
       
   /* The only remaining cases that we can handle are integers.
@@ -854,11 +859,12 @@ operand_subword (op, i, validate_address, mode)
 	    ? (INTVAL (op) < 0 ? ~0 : 0) : CONST_DOUBLE_HIGH (op)));
 
   /* If BITS_PER_WORD is smaller than an int, get the appropriate bits.  */
-  if (BITS_PER_WORD < HOST_BITS_PER_INT)
+  if (BITS_PER_WORD < HOST_BITS_PER_WIDE_INT)
     val = ((val >> ((i % size_ratio) * BITS_PER_WORD))
-	   & ((1 << (BITS_PER_WORD % HOST_BITS_PER_INT)) - 1));
+	   & (((HOST_WIDE_INT) 1
+	       << (BITS_PER_WORD % HOST_BITS_PER_WIDE_INT)) - 1));
 
-  return gen_rtx (CONST_INT, VOIDmode, val);
+  return GEN_INT (val);
 }
 
 /* Similar to `operand_subword', but never return 0.  If we can't extract
@@ -965,7 +971,8 @@ change_address (memref, mode, addr)
 rtx
 gen_label_rtx ()
 {
-  register rtx label = gen_rtx (CODE_LABEL, VOIDmode, 0, 0, 0, label_num++, 0);
+  register rtx label = gen_rtx (CODE_LABEL, VOIDmode, 0, 0, 0,
+				label_num++, NULL_PTR);
   LABEL_NUSES (label) = 0;
   return label;
 }
@@ -991,7 +998,7 @@ gen_inline_header_rtx (first_insn, first_parm_insn, first_labelno,
      rtx original_decl_initial;
 {
   rtx header = gen_rtx (INLINE_HEADER, VOIDmode,
-			cur_insn_uid++, NULL,
+			cur_insn_uid++, NULL_RTX,
 			first_insn, first_parm_insn,
 			first_labelno, last_labelno,
 			max_parm_regnum, max_regnum, args_size, pops_args,
@@ -1577,7 +1584,7 @@ rtx
 next_cc0_user (insn)
      rtx insn;
 {
-  rtx note = find_reg_note (insn, REG_CC_USER, 0);
+  rtx note = find_reg_note (insn, REG_CC_USER, NULL_RTX);
 
   if (note)
     return XEXP (note, 0);
@@ -1600,7 +1607,7 @@ rtx
 prev_cc0_setter (insn)
      rtx insn;
 {
-  rtx note = find_reg_note (insn, REG_CC_SETTER, 0);
+  rtx note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
   rtx link;
 
   if (note)
@@ -1903,7 +1910,7 @@ emit_insn_before (pattern, before)
     }
   else
     {
-      insn = make_insn_raw (pattern, 0);
+      insn = make_insn_raw (pattern, NULL_RTVEC);
       add_insn_after (insn, PREV_INSN (before));
     }
 
@@ -1923,7 +1930,7 @@ emit_jump_insn_before (pattern, before)
     insn = emit_insn_before (pattern, before);
   else
     {
-      insn = make_jump_insn_raw (pattern, 0);
+      insn = make_jump_insn_raw (pattern, NULL_RTVEC);
       add_insn_after (insn, PREV_INSN (before));
     }
 
@@ -1997,7 +2004,7 @@ emit_insn_after (pattern, after)
     }
   else
     {
-      insn = make_insn_raw (pattern, 0);
+      insn = make_insn_raw (pattern, NULL_RTVEC);
       add_insn_after (insn, after);
     }
 
@@ -2017,7 +2024,7 @@ emit_jump_insn_after (pattern, after)
     insn = emit_insn_after (pattern, after);
   else
     {
-      insn = make_jump_insn_raw (pattern, 0);
+      insn = make_jump_insn_raw (pattern, NULL_RTVEC);
       add_insn_after (insn, after);
     }
 
@@ -2123,7 +2130,7 @@ emit_insn (pattern)
     }
   else
     {
-      insn = make_insn_raw (pattern, NULL);
+      insn = make_insn_raw (pattern, NULL_RTVEC);
       add_insn (insn);
     }
 
@@ -2182,7 +2189,7 @@ emit_jump_insn (pattern)
     return emit_insn (pattern);
   else
     {
-      register rtx insn = make_jump_insn_raw (pattern, NULL);
+      register rtx insn = make_jump_insn_raw (pattern, NULL_RTVEC);
       add_insn (insn);
       return insn;
     }
@@ -2199,7 +2206,7 @@ emit_call_insn (pattern)
     return emit_insn (pattern);
   else
     {
-      register rtx insn = make_insn_raw (pattern, NULL);
+      register rtx insn = make_insn_raw (pattern, NULL_RTVEC);
       add_insn (insn);
       PUT_CODE (insn, CALL_INSN);
       return insn;
@@ -2712,13 +2719,13 @@ init_emit_once (line_numbers)
     }
 
   /* These four calls obtain some of the rtx expressions made above.  */
-  const0_rtx = gen_rtx (CONST_INT, VOIDmode, 0);
-  const1_rtx = gen_rtx (CONST_INT, VOIDmode, 1);
-  const2_rtx = gen_rtx (CONST_INT, VOIDmode, 2);
-  constm1_rtx = gen_rtx (CONST_INT, VOIDmode, -1);
+  const0_rtx = GEN_INT (0);
+  const1_rtx = GEN_INT (1);
+  const2_rtx = GEN_INT (2);
+  constm1_rtx = GEN_INT (-1);
 
   /* This will usually be one of the above constants, but may be a new rtx.  */
-  const_true_rtx = gen_rtx (CONST_INT, VOIDmode, STORE_FLAG_VALUE);
+  const_true_rtx = GEN_INT (STORE_FLAG_VALUE);
 
   dconst0 = REAL_VALUE_ATOF ("0");
   dconst1 = REAL_VALUE_ATOF ("1");
@@ -2743,11 +2750,11 @@ init_emit_once (line_numbers)
 	  const_tiny_rtx[i][(int) mode] = tem;
 	}
 
-      const_tiny_rtx[i][(int) VOIDmode] = gen_rtx (CONST_INT, VOIDmode, i);
+      const_tiny_rtx[i][(int) VOIDmode] = GEN_INT (i);
 
       for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
 	   mode = GET_MODE_WIDER_MODE (mode))
-	const_tiny_rtx[i][(int) mode] = gen_rtx (CONST_INT, VOIDmode, i);
+	const_tiny_rtx[i][(int) mode] = GEN_INT (i);
     }
 
   stack_pointer_rtx = gen_rtx (REG, Pmode, STACK_POINTER_REGNUM);

@@ -283,8 +283,7 @@ end_final (filename)
       assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), UNITS_PER_WORD, 1);
       ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 2);
       assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), UNITS_PER_WORD, 1);
-      assemble_integer (gen_rtx (CONST_INT, VOIDmode, count_basic_blocks),
-			UNITS_PER_WORD, 1);
+      assemble_integer (GEN_INT (count_basic_blocks), UNITS_PER_WORD, 1);
       assemble_integer (const0_rtx, UNITS_PER_WORD, 1);
       ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 3);
       assemble_integer (gen_rtx (SYMBOL_REF, Pmode, name), UNITS_PER_WORD, 1);
@@ -600,7 +599,8 @@ asm_insn_count (body)
   char *template;
   int count = 1;
 
-  for (template = decode_asm_operands (body, 0, 0, 0, 0);
+  for (template = decode_asm_operands (body, NULL_PTR, NULL_PTR,
+				       NULL_PTR, NULL_PTR);
        *template; template++)
     if (*template == ';' || *template == '\n')
       count++;
@@ -1174,7 +1174,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	   of the insn that branched here.  So recover the cc status
 	   from the insn that set it.  */
 
-	note = find_reg_note (insn, REG_CC_SETTER, 0);
+	note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
 	if (note)
 	  {
 	    NOTICE_UPDATE_CC (PATTERN (XEXP (note, 0)), XEXP (note, 0));
@@ -1277,7 +1277,8 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	      }
 
 	    /* Get out the operand values.  */
-	    string = decode_asm_operands (body, ops, 0, 0, 0);
+	    string = decode_asm_operands (body, ops, NULL_PTR,
+					  NULL_PTR, NULL_PTR);
 	    /* Inhibit aborts on what would otherwise be compiler bugs.  */
 	    insn_noperands = noperands;
 	    this_is_asm_operands = insn;
@@ -1982,7 +1983,13 @@ output_asm_insn (template, operands)
 	      else if (letter == 'n')
 		{
 		  if (GET_CODE (operands[c]) == CONST_INT)
-		    fprintf (asm_out_file, "%d", - INTVAL (operands[c]));
+		    fprintf (asm_out_file,
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+			     "%d",
+#else
+			     "%ld",
+#endif
+			     - INTVAL (operands[c]));
 		  else
 		    {
 		      putc ('-', asm_out_file);
@@ -2009,7 +2016,7 @@ output_asm_insn (template, operands)
 	     The PRINT_OPERAND macro decides what is actually done.  */
 #ifdef PRINT_OPERAND_PUNCT_VALID_P
 	  else if (PRINT_OPERAND_PUNCT_VALID_P (*p))
-	    output_operand (0, *p++);
+	    output_operand (NULL_RTX, *p++);
 #endif
 	  else
 	    output_operand_lossage ("invalid %%-code");
@@ -2123,7 +2130,13 @@ output_addr_const (file, x)
       break;
 
     case CONST_INT:
-      fprintf (file, "%d", INTVAL (x));
+      fprintf (file,
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+	       "%d",
+#else
+	       "%ld",
+#endif
+	       INTVAL (x));
       break;
 
     case CONST:
@@ -2135,12 +2148,31 @@ output_addr_const (file, x)
     case CONST_DOUBLE:
       if (GET_MODE (x) == VOIDmode)
 	{
-	  /* We can use %d if the number is <32 bits and positive.  */
+	  /* We can use %d if the number is one word and positive.  */
 	  if (CONST_DOUBLE_HIGH (x) || CONST_DOUBLE_LOW (x) < 0)
-	    fprintf (file, "0x%x%08x",
+	    fprintf (file,
+#if HOST_BITS_PER_WIDE_INT == 64
+#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
+		 " 0x%lx%016lx",
+#else
+		 " 0x%x%016x",
+#endif
+#else
+#if HOST_BITS_PER_WIDE_INT != HOST_BITS_PER_INT
+		 " 0x%lx%08lx",
+#else
+		 " 0x%x%08x",
+#endif
+#endif
 		     CONST_DOUBLE_HIGH (x), CONST_DOUBLE_LOW (x));
 	  else
-	    fprintf (file, "%d", CONST_DOUBLE_LOW (x));
+	    fprintf (file,
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+		     "%d",
+#else
+		     "%ld",
+#endif
+		     CONST_DOUBLE_LOW (x));
 	}
       else
 	/* We can't handle floating point constants;
@@ -2320,27 +2352,27 @@ split_double (value, first, second)
       /* In an integer, the words are defined as most and least significant.
 	 So order them by the target's convention.  */
 #if WORDS_BIG_ENDIAN
-      *first = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_HIGH (value));
-      *second = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (value));
+      *first = GEN_INT (CONST_DOUBLE_HIGH (value));
+      *second = GEN_INT (CONST_DOUBLE_LOW (value));
 #else
-      *first = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (value));
-      *second = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_HIGH (value));
+      *first = GEN_INT (CONST_DOUBLE_LOW (value));
+      *second = GEN_INT (CONST_DOUBLE_HIGH (value));
 #endif
     }
   else
     {
       if ((HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
-	   || HOST_BITS_PER_INT != BITS_PER_WORD)
+	   || HOST_BITS_PER_WIDE_INT != BITS_PER_WORD)
 	  && ! flag_pretend_float)
       abort ();
 
 #if defined (HOST_WORDS_BIG_ENDIAN) == WORDS_BIG_ENDIAN
       /* Host and target agree => no need to swap.  */
-      *first = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (value));
-      *second = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_HIGH (value));
+      *first = GEN_INT (CONST_DOUBLE_LOW (value));
+      *second = GEN_INT (CONST_DOUBLE_HIGH (value));
 #else
-      *second = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_LOW (value));
-      *first = gen_rtx (CONST_INT, VOIDmode, CONST_DOUBLE_HIGH (value));
+      *second = GEN_INT (CONST_DOUBLE_LOW (value));
+      *first = GEN_INT (CONST_DOUBLE_HIGH (value));
 #endif
     }
 }

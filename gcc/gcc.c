@@ -47,6 +47,14 @@ compilation is specified by a string called a "spec".  */
 #define X_OK 1
 #endif
 
+#ifndef NULL
+#define NULL 0
+#endif
+
+#ifndef NULL_PTR
+#define NULL_PTR (char *) NULL
+#endif
+
 #ifdef USG
 #define vfork fork
 #endif /* USG */
@@ -1716,8 +1724,8 @@ process_command (argc, argv)
 
   if (gcc_exec_prefix)
     {
-      add_prefix (&exec_prefix, gcc_exec_prefix, 0, 0, 0);
-      add_prefix (&startfile_prefix, gcc_exec_prefix, 0, 0, 0);
+      add_prefix (&exec_prefix, gcc_exec_prefix, 0, 0, NULL_PTR);
+      add_prefix (&startfile_prefix, gcc_exec_prefix, 0, 0, NULL_PTR);
     }
 
   /* COMPILER_PATH and LIBRARY_PATH have values
@@ -1746,7 +1754,7 @@ process_command (argc, argv)
 		}
 	      else
 		nstore[endp-startp] = 0;
-	      add_prefix (&exec_prefix, nstore, 0, 0, 0);
+	      add_prefix (&exec_prefix, nstore, 0, 0, NULL_PTR);
 	      if (*endp == 0)
 		break;
 	      endp = startp = endp + 1;
@@ -1779,9 +1787,9 @@ process_command (argc, argv)
 		}
 	      else
 		nstore[endp-startp] = 0;
-	      add_prefix (&startfile_prefix, nstore, 0, 0, 0);
+	      add_prefix (&startfile_prefix, nstore, 0, 0, NULL_PTR);
 	      /* Make separate list of dirs that came from LIBRARY_PATH.  */
-	      add_prefix (&library_prefix, nstore, 0, 0, 0);
+	      add_prefix (&library_prefix, nstore, 0, 0, NULL_PTR);
 	      if (*endp == 0)
 		break;
 	      endp = startp = endp + 1;
@@ -1815,9 +1823,9 @@ process_command (argc, argv)
 		}
 	      else
 		nstore[endp-startp] = 0;
-	      add_prefix (&startfile_prefix, nstore, 0, 0, 0);
+	      add_prefix (&startfile_prefix, nstore, 0, 0, NULL_PTR);
 	      /* Make separate list of dirs that came from LIBRARY_PATH.  */
-	      add_prefix (&library_prefix, nstore, 0, 0, 0);
+	      add_prefix (&library_prefix, nstore, 0, 0, NULL_PTR);
 	      if (*endp == 0)
 		break;
 	      endp = startp = endp + 1;
@@ -1947,11 +1955,11 @@ process_command (argc, argv)
 
   /* These come before the md prefixes so that we will find gcc's subcommands
      (such as cpp) rather than those of the host system.  */
-  add_prefix (&exec_prefix, standard_exec_prefix, 0, 1, 0);
-  add_prefix (&exec_prefix, standard_exec_prefix_1, 0, 1, 0);
+  add_prefix (&exec_prefix, standard_exec_prefix, 0, 1, NULL_PTR);
+  add_prefix (&exec_prefix, standard_exec_prefix_1, 0, 1, NULL_PTR);
 
-  add_prefix (&startfile_prefix, standard_exec_prefix, 0, 1, 0);
-  add_prefix (&startfile_prefix, standard_exec_prefix_1, 0, 1, 0);
+  add_prefix (&startfile_prefix, standard_exec_prefix, 0, 1, NULL_PTR);
+  add_prefix (&startfile_prefix, standard_exec_prefix_1, 0, 1, NULL_PTR);
 
   /* More prefixes are enabled in main, after we read the specs file
      and determine whether this is cross-compilation or not.  */
@@ -2115,7 +2123,7 @@ do_spec (spec)
   this_is_output_file = 0;
   this_is_library_file = 0;
 
-  value = do_spec_1 (spec, 0, NULL);
+  value = do_spec_1 (spec, 0, NULL_PTR);
 
   /* Force out any unfinished command.
      If -pipe, this forces out the last command if it ended in `|'.  */
@@ -2287,11 +2295,11 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		      {
 			if (is_linker_dir (pl->prefix, machine_suffix))
 			  {
-			    do_spec_1 ("-L", 0, 0);
+			    do_spec_1 ("-L", 0, NULL_PTR);
 #ifdef SPACE_AFTER_L_OPTION
-			    do_spec_1 (" ", 0, 0);
+			    do_spec_1 (" ", 0, NULL_PTR);
 #endif
-			    do_spec_1 (pl->prefix, 1, 0);
+			    do_spec_1 (pl->prefix, 1, NULL_PTR);
 			    /* Remove slash from machine_suffix.  */
 			    if (strlen (machine_suffix) >= bufsize)
 			      bufsize = strlen (machine_suffix) * 2 + 1;
@@ -2300,18 +2308,18 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			    idx = strlen (buffer);
 			    if (buffer[idx - 1] == '/')
 			      buffer[idx - 1] = 0;
-			    do_spec_1 (buffer, 1, 0);
+			    do_spec_1 (buffer, 1, NULL_PTR);
 			    /* Make this a separate argument.  */
-			    do_spec_1 (" ", 0, 0);
+			    do_spec_1 (" ", 0, NULL_PTR);
 			  }
 		      }
 		    if (!pl->require_machine_suffix)
 		      {
 			if (is_linker_dir (pl->prefix, ""))
 			  {
-			    do_spec_1 ("-L", 0, 0);
+			    do_spec_1 ("-L", 0, NULL_PTR);
 #ifdef SPACE_AFTER_L_OPTION
-			    do_spec_1 (" ", 0, 0);
+			    do_spec_1 (" ", 0, NULL_PTR);
 #endif
 			    /* Remove slash from pl->prefix.  */
 			    if (strlen (pl->prefix) >= bufsize)
@@ -2321,9 +2329,9 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			    idx = strlen (buffer);
 			    if (buffer[idx - 1] == '/')
 			      buffer[idx - 1] = 0;
-			    do_spec_1 (buffer, 1, 0);
+			    do_spec_1 (buffer, 1, NULL_PTR);
 			    /* Make this a separate argument.  */
-			    do_spec_1 (" ", 0, 0);
+			    do_spec_1 (" ", 0, NULL_PTR);
 			  }
 		      }
 		  }
@@ -2444,9 +2452,9 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	  case 'X':
 	    for (i = 0; i < n_linker_options; i++)
 	      {
-		do_spec_1 (linker_options[i], 1, NULL);
+		do_spec_1 (linker_options[i], 1, NULL_PTR);
 		/* Make each accumulated option a separate argument.  */
-		do_spec_1 (" ", 0, NULL);
+		do_spec_1 (" ", 0, NULL_PTR);
 	      }
 	    break;
 
@@ -2454,39 +2462,39 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	       a certain constant string as a spec.  */
 
 	  case '1':
-	    do_spec_1 (cc1_spec, 0, NULL);
+	    do_spec_1 (cc1_spec, 0, NULL_PTR);
 	    break;
 
 	  case '2':
-	    do_spec_1 (cc1plus_spec, 0, NULL);
+	    do_spec_1 (cc1plus_spec, 0, NULL_PTR);
 	    break;
 
 	  case 'a':
-	    do_spec_1 (asm_spec, 0, NULL);
+	    do_spec_1 (asm_spec, 0, NULL_PTR);
 	    break;
 
 	  case 'A':
-	    do_spec_1 (asm_final_spec, 0, NULL);
+	    do_spec_1 (asm_final_spec, 0, NULL_PTR);
 	    break;
 
 	  case 'c':
-	    do_spec_1 (signed_char_spec, 0, NULL);
+	    do_spec_1 (signed_char_spec, 0, NULL_PTR);
 	    break;
 
 	  case 'C':
-	    do_spec_1 (cpp_spec, 0, NULL);
+	    do_spec_1 (cpp_spec, 0, NULL_PTR);
 	    break;
 
 	  case 'E':
-	    do_spec_1 (endfile_spec, 0, NULL);
+	    do_spec_1 (endfile_spec, 0, NULL_PTR);
 	    break;
 
 	  case 'l':
-	    do_spec_1 (link_spec, 0, NULL);
+	    do_spec_1 (link_spec, 0, NULL_PTR);
 	    break;
 
 	  case 'L':
-	    do_spec_1 (lib_spec, 0, NULL);
+	    do_spec_1 (lib_spec, 0, NULL_PTR);
 	    break;
 
 	  case 'p':
@@ -2513,7 +2521,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	      *x = 0;
 
-	      do_spec_1 (buf, 0, NULL);
+	      do_spec_1 (buf, 0, NULL_PTR);
 	    }
 	    break;
 
@@ -2619,12 +2627,12 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	      *x = 0;
 
-	      do_spec_1 (buf, 0, NULL);
+	      do_spec_1 (buf, 0, NULL_PTR);
 	    }
 	    break;
 
 	  case 'S':
-	    do_spec_1 (startfile_spec, 0, NULL);
+	    do_spec_1 (startfile_spec, 0, NULL_PTR);
 	    break;
 
 	    /* Here we define characters other than letters and digits.  */
@@ -2640,8 +2648,8 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	    break;
 
 	  case '*':
-	    do_spec_1 (soft_matched_part, 1, NULL);
-	    do_spec_1 (" ", 0, NULL);
+	    do_spec_1 (soft_matched_part, 1, NULL_PTR);
+	    do_spec_1 (" ", 0, NULL_PTR);
 	    break;
 
 	    /* Process a string found as the value of a spec given by name.
@@ -2672,7 +2680,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      if (sl)
 		{
 		  if (c == '(')
-		    do_spec_1 (name, 0, NULL);
+		    do_spec_1 (name, 0, NULL_PTR);
 		  else
 		    {
 		      char *x = (char *) alloca (strlen (name) * 2 + 1);
@@ -2705,7 +2713,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			}
 		      *x = 0;
 
-		      do_spec_1 (buf, 0, NULL);
+		      do_spec_1 (buf, 0, NULL_PTR);
 		    }
 		}
 
@@ -2797,7 +2805,7 @@ handle_braces (p)
 	abort ();
 
       if (negate != found
-	  && do_spec_1 (save_string (p + 1, q - p - 2), 0, NULL) < 0)
+	  && do_spec_1 (save_string (p + 1, q - p - 2), 0, NULL_PTR) < 0)
 	return 0;
 
       return q;
@@ -2895,7 +2903,7 @@ handle_braces (p)
 	    }
 	  else
 	    {
-	      if (do_spec_1 (save_string (p + 1, q - p - 2), 0, NULL) < 0)
+	      if (do_spec_1 (save_string (p + 1, q - p - 2), 0, NULL_PTR) < 0)
 		return 0;
 	    }
 	}
@@ -2903,7 +2911,7 @@ handle_braces (p)
 	{
 	  /* Here if a %{|...} conditional fails: output a minus sign,
 	     which means "standard output" or "standard input".  */
-	  do_spec_1 ("-", 0, NULL);
+	  do_spec_1 ("-", 0, NULL_PTR);
 	}
     }
 
@@ -2925,17 +2933,17 @@ give_switch (switchnum, omit_first_word)
 {
   if (!omit_first_word)
     {
-      do_spec_1 ("-", 0, NULL);
-      do_spec_1 (switches[switchnum].part1, 1, NULL);
+      do_spec_1 ("-", 0, NULL_PTR);
+      do_spec_1 (switches[switchnum].part1, 1, NULL_PTR);
     }
-  do_spec_1 (" ", 0, NULL);
+  do_spec_1 (" ", 0, NULL_PTR);
   if (switches[switchnum].args != 0)
     {
       char **p;
       for (p = switches[switchnum].args; *p; p++)
 	{
-	  do_spec_1 (*p, 1, NULL);
-	  do_spec_1 (" ", 0, NULL);
+	  do_spec_1 (*p, 1, NULL_PTR);
+	  do_spec_1 (" ", 0, NULL_PTR);
 	}
     }
   switches[switchnum].valid = 1;
@@ -3072,23 +3080,26 @@ main (argc, argv)
   if (!cross_compile)
     {
 #ifdef MD_EXEC_PREFIX
-      add_prefix (&exec_prefix, md_exec_prefix, 0, 0, 0);
-      add_prefix (&startfile_prefix, md_exec_prefix, 0, 0, 0);
+      add_prefix (&exec_prefix, md_exec_prefix, 0, 0, NULL_PTR);
+      add_prefix (&startfile_prefix, md_exec_prefix, 0, 0, NULL_PTR);
 #endif
 
 #ifdef MD_STARTFILE_PREFIX
-      add_prefix (&startfile_prefix, md_startfile_prefix, 0, 0, 0);
+      add_prefix (&startfile_prefix, md_startfile_prefix, 0, 0, NULL_PTR);
 #endif
 
 #ifdef MD_STARTFILE_PREFIX_1
-      add_prefix (&startfile_prefix, md_startfile_prefix_1, 0, 0, 0);
+      add_prefix (&startfile_prefix, md_startfile_prefix_1, 0, 0, NULL_PTR);
 #endif
 
-      add_prefix (&startfile_prefix, standard_startfile_prefix, 0, 0, 0);
-      add_prefix (&startfile_prefix, standard_startfile_prefix_1, 0, 0, 0);
-      add_prefix (&startfile_prefix, standard_startfile_prefix_2, 0, 0, 0);
+      add_prefix (&startfile_prefix, standard_startfile_prefix, 0, 0,
+		  NULL_PTR);
+      add_prefix (&startfile_prefix, standard_startfile_prefix_1, 0, 0,
+		  NULL_PTR);
+      add_prefix (&startfile_prefix, standard_startfile_prefix_2, 0, 0,
+		  NULL_PTR);
 #if 0 /* Can cause surprises, and one can use -B./ instead.  */
-      add_prefix (&startfile_prefix, "./", 0, 1, 0);
+      add_prefix (&startfile_prefix, "./", 0, 1, NULL_PTR);
 #endif
     }
 
@@ -3315,7 +3326,7 @@ lookup_compiler (name, length, language)
 	      language = cp->spec + 1;
 	      new = (struct compiler *) xmalloc (sizeof (struct compiler));
 	      new->suffix = cp->suffix;
-	      new->spec = lookup_compiler (0, 0, language)->spec;
+	      new->spec = lookup_compiler (NULL_PTR, 0, language)->spec;
 	      return new;
 	    }
 	  /* A non-alias entry: return it.  */
