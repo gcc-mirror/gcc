@@ -1,5 +1,9 @@
 2003-01-09  Jakub Jelinek  <jakub@redhat.com>
 
+	* decl.c (start_decl): Only check DECL_THREAD_LOCAL for VAR_DECLs.
+
+2003-01-09  Jakub Jelinek  <jakub@redhat.com>
+
 	* decl.c (start_decl): Don't set DECL_COMMON for __thread variables.
 
 2003-01-07  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
