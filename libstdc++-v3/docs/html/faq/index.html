@@ -94,6 +94,7 @@
                                <em>constraints</em> in the STL...</a> </li>
            <li><a href="#4_4_dlsym">program crashes when using library code
                                in a dynamically-loaded library</a> </li>
+           <li><a href="#4_4_leak">"memory leaks" in containers</a> </li>
          </ul>
          </li>
          <li><a href="#4_5">Aw, that's easy to fix!</a> </li>
@@ -795,6 +796,18 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
     // link the executable
     g++ -fPIC -rdynamic -o foo ... -L. -lfoo -ldl</pre>
+      <p><a name="4_4_leak"><strong>"memory leaks" in containers</strong></a>
+         A few people have reported that the standard containers appear
+         to leak memory when tested with memory checkers such as
+         <a href="http://developer.kde.org/~sewardj/">valgrind</a>.
+         The library's default allocators keep free memory in a pool
+         for later reuse, rather than returning it to the OS.  Although
+         this memory is always reachable by the library and is never
+         lost, memory debugging tools can report it as a leak.  If you
+         want to test the library for memory leaks please read
+         <a href="../debug.html#mem">Tips for memory leak hunting</a>
+         first.
+      </p>
 
 <hr />
    <h2><a name="4_5">4.5 Aw, that's easy to fix!</a></h2>
