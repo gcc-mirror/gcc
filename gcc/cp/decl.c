@@ -3852,7 +3852,7 @@ pushdecl (x)
              nesting.  */
 	  && !(TREE_CODE (x) == FUNCTION_DECL && !DECL_INITIAL (x))
 	  /* A local declaration for an `extern' variable is in the
-	     scoped of the current namespace, not the current
+	     scope of the current namespace, not the current
 	     function.  */
 	  && !(TREE_CODE (x) == VAR_DECL && DECL_EXTERNAL (x))
 	  && !DECL_CONTEXT (x))
@@ -3871,19 +3871,39 @@ pushdecl (x)
   name = DECL_NAME (x);
   if (name)
     {
-#if 0
-      /* Not needed...see below.  */
-      char *file;
-      int line;
-#endif
+      int different_binding_level = 0;
+
       if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
 	name = TREE_OPERAND (name, 0);
 
-      /* Namespace-scoped variables are not found in the current level. */
-      if (TREE_CODE (x) == VAR_DECL && DECL_NAMESPACE_SCOPE_P (x))
+      /* In case this decl was explicitly namespace-qualified, look it
+	 up in its namespace context.  */
+      if (TREE_CODE (x) == VAR_DECL && DECL_NAMESPACE_SCOPE_P (x)
+	  && namespace_bindings_p ())
 	t = namespace_binding (name, DECL_CONTEXT (x));
       else
 	t = lookup_name_current_level (name);
+
+      /* [basic.link] If there is a visible declaration of an entity
+	 with linkage having the same name and type, ignoring entities
+	 declared outside the innermost enclosing namespace scope, the
+	 block scope declaration declares that same entity and
+	 receives the linkage of the previous declaration.  */
+      if (! t && current_function_decl && x != current_function_decl
+	  && (TREE_CODE (x) == FUNCTION_DECL || TREE_CODE (x) == VAR_DECL)
+	  && DECL_EXTERNAL (x))
+	{
+	  /* Look in block scope.  */
+	  t = IDENTIFIER_VALUE (name);
+	  /* Or in the innermost namespace.  */
+	  if (! t)
+	    t = namespace_binding (name, DECL_CONTEXT (x));
+	  /* Does it have linkage?  */
+	  if (t && ! (TREE_STATIC (t) || DECL_EXTERNAL (t)))
+	    t = NULL_TREE;
+	  if (t)
+	    different_binding_level = 1;
+	}
 
       /* If we are declaring a function, and the result of name-lookup
 	 was an OVERLOAD, look for an overloaded instance that is
@@ -3919,7 +3939,16 @@ pushdecl (x)
 	}
       else if (t != NULL_TREE)
 	{
-	  if (TREE_CODE (t) == PARM_DECL)
+	  if (different_binding_level)
+	    {
+	      if (decls_match (x, t))
+		/* The standard only says that the local extern
+		   inherits linkage from the previous decl; in
+		   particular, default args are not shared.  It would
+		   be nice to propagate inlining info, though.  FIXME.  */
+		TREE_PUBLIC (x) = TREE_PUBLIC (t);
+	    }
+	  else if (TREE_CODE (t) == PARM_DECL)
 	    {
 	      if (DECL_CONTEXT (t) == NULL_TREE)
 		fatal ("parse errors have confused me too much");
