@@ -1978,11 +1978,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 	}
     }
 
-  /* Don't remove this seemingly useless if, it is needed to pair with the
-     else in the next two conditionally included code blocks.  */
-  if (0)
-    {;}
-  else if ((HAVE_PRE_INCREMENT || HAVE_PRE_DECREMENT)
+  if ((HAVE_PRE_INCREMENT || HAVE_PRE_DECREMENT)
 	   && (code == PLUS || code == MINUS) && insn_const
 	   && try_auto_increment (p, insn, 0, src, insn_const, 1))
     insn = p;
