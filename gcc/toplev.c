@@ -1663,12 +1663,8 @@ output_file_directive (asm_file, input_name)
   /* NA gets INPUT_NAME sans directory names.  */
   while (na > input_name)
     {
-      if (na[-1] == '/')
-	break;
-#ifdef DIR_SEPARATOR
-      if (na[-1] == DIR_SEPARATOR)
-	break;
-#endif
+      if (IS_DIR_SEPARATOR (na[-1]))
+        break;
       na--;
     }
 
@@ -4342,11 +4338,7 @@ main (argc, argv)
   save_argv = argv;
 
   p = argv[0] + strlen (argv[0]);
-  while (p != argv[0] && p[-1] != '/'
-#ifdef DIR_SEPARATOR
-	 && p[-1] != DIR_SEPARATOR
-#endif
-	 )
+  while (p != argv[0] && !IS_DIR_SEPARATOR (p[-1]))
     --p;
   progname = p;
 
