@@ -1,5 +1,11 @@
 Mon May 17 23:56:39 1999  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* Makefile.in (stmp-fixproto): Pass location of mkinstalldirs to
+	fixproto.
+	* fixproto: Avoid unportable constructs such as `basename' and
+	`mkdir -p'.  Use mkinstalldirs from the environment if `mkdir -p'
+	fails.
+
 	* fixinc/fixincl.c: Remove #error, it is not portable.
 
 Mon May 17 23:50:41 1999  Marc Espie <espie@cvs.openbsd.org>
