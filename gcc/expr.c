@@ -4151,7 +4151,7 @@ store_constructor (exp, target, align, cleared, size)
 	 clear the whole structure first.  */
       else if (size > 0
 	       && ((list_length (CONSTRUCTOR_ELTS (exp))
-		    != list_length (TYPE_FIELDS (type)))
+		    != fields_length (type))
 		   || mostly_zeros_p (exp)))
 	{
 	  if (! cleared)
@@ -4756,6 +4756,15 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
       emit_move_insn (target, object);
 
       return blk_object;
+    }
+
+  if (GET_CODE (target) == CONCAT)
+    {
+      /* We're storing into a struct containing a single __complex.  */
+
+      if (bitpos != 0)
+	abort ();
+      return store_expr (exp, target, 0);
     }
 
   /* If the structure is in a register or if the component

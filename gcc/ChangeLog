@@ -1,3 +1,12 @@
+2000-03-13  Jason Merrill  <jason@casey.cygnus.com>
+
+	* function.c (put_var_into_stack): Use type_for_mode to calculate
+	part_type.  Use MEM_SET_IN_STRUCT_P.
+	* expr.c (store_field): Handle CONCAT.
+	(store_constructor): Use fields_length.
+	* tree.c (fields_length): New fn.
+	* tree.h: Declare it.
+
 2000-03-13  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* Makefile.in (LIBCPP_OBJS): Add cpplex.o.

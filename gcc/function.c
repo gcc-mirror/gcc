@@ -1383,7 +1383,7 @@ put_var_into_stack (decl)
       /* A CONCAT contains two pseudos; put them both in the stack.
 	 We do it so they end up consecutive.  */
       enum machine_mode part_mode = GET_MODE (XEXP (reg, 0));
-      tree part_type = TREE_TYPE (TREE_TYPE (decl));
+      tree part_type = type_for_mode (part_mode, 0);
 #ifdef FRAME_GROWS_DOWNWARD
       /* Since part 0 should have a lower address, do it second.  */
       put_reg_into_stack (function, XEXP (reg, 1), part_type, part_mode,
@@ -1409,6 +1409,7 @@ put_var_into_stack (decl)
       PUT_CODE (reg, MEM);
       MEM_VOLATILE_P (reg) = MEM_VOLATILE_P (XEXP (reg, 0));
       MEM_ALIAS_SET (reg) = get_alias_set (decl);
+      MEM_SET_IN_STRUCT_P (reg, AGGREGATE_TYPE_P (TREE_TYPE (decl)));
 
       /* The two parts are in memory order already.
 	 Use the lower parts address as ours.  */
