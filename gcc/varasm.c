@@ -4528,7 +4528,7 @@ assemble_alias (tree decl, tree target)
   if (TREE_CODE (decl) == FUNCTION_DECL)
     cgraph_node (decl);
   else
-    cgraph_varpool_node (decl);
+    cgraph_varpool_node (decl)->alias = true;
 
   /* If the target has already been emitted, we don't have to queue the
      alias.  This saves a tad o memory.  */

@@ -152,6 +152,8 @@ struct cgraph_varpool_node GTY(())
   bool finalized;
   /* Set when function is scheduled to be assembled.  */
   bool output;
+  /* Set for aliases once they got through assemble_alias.  */
+  bool alias;
 };
 
 extern GTY(()) struct cgraph_node *cgraph_nodes;

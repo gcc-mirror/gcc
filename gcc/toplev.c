@@ -781,6 +781,8 @@ wrapup_global_declarations (tree *vec, int len)
 
 	      if (flag_unit_at_a_time && node->finalized)
 		needed = 0;
+	      else if (node->alias)
+		needed = 0;
 	      else if ((flag_unit_at_a_time && !cgraph_global_info_ready)
 		       && (TREE_USED (decl)
 			   || TREE_USED (DECL_ASSEMBLER_NAME (decl))))
