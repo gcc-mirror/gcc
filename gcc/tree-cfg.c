@@ -2814,8 +2814,8 @@ void
 bsi_insert_before (block_stmt_iterator *i, tree t, enum bsi_iterator_update m)
 {
   set_bb_for_stmt (t, i->bb);
-  modify_stmt (t);
   tsi_link_before (&i->tsi, t, m);
+  modify_stmt (t);
 }
 
 
@@ -2827,8 +2827,8 @@ void
 bsi_insert_after (block_stmt_iterator *i, tree t, enum bsi_iterator_update m)
 {
   set_bb_for_stmt (t, i->bb);
-  modify_stmt (t);
   tsi_link_after (&i->tsi, t, m);
+  modify_stmt (t);
 }
 
 
@@ -2840,7 +2840,6 @@ bsi_remove (block_stmt_iterator *i)
 {
   tree t = bsi_stmt (*i);
   set_bb_for_stmt (t, NULL);
-  modify_stmt (t);
   tsi_delink (&i->tsi);
 }
 

@@ -427,7 +427,6 @@ substitute_and_fold (void)
 	    {
 	      bool changed = fold_stmt (bsi_stmt_ptr (i));
 	      stmt = bsi_stmt(i);
-	      modify_stmt (stmt);
 	      /* If we folded a builtin function, we'll likely
 		 need to rename VDEFs.  */
 	      if (replaced_address || changed)
@@ -436,6 +435,8 @@ substitute_and_fold (void)
 		  if (maybe_clean_eh_stmt (stmt))
 		    tree_purge_dead_eh_edges (bb);
 		}
+	      else
+		modify_stmt (stmt);
 	    }
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))

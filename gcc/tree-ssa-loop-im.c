@@ -1007,8 +1007,7 @@ schedule_sm (struct loop *loop, edge *exits, unsigned n_exits, tree ref,
 
   /* Emit the load & stores.  */
   load = build (MODIFY_EXPR, void_type_node, tmp_var, ref);
-  modify_stmt (load);
-  stmt_ann (load)->common.aux = xcalloc (1, sizeof (struct lim_aux_data));
+  get_stmt_ann (load)->common.aux = xcalloc (1, sizeof (struct lim_aux_data));
   LIM_DATA (load)->max_loop = loop;
   LIM_DATA (load)->tgt_loop = loop;
 

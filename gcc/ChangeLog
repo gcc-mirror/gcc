@@ -1,3 +1,30 @@
+2004-08-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-cfg.c (bsi_insert_before, bsi_insert_after): Call modify_stmt
+	after linking stmt into the program.
+	(bsi_remove): Don't call modify_stmt.
+	* tree-complex.c (update_complex_assignment, 
+	expand_complex_comparison): Call modify_stmt after changing the stmt.
+	* tree-outof-ssa.c (rewrite_trees): Call modify_stmt only if not 
+	removing the stmt.
+	* tree-ssa-ccp.c (substitute_and_fold): Call modify_stmt after changing
+	the stmt, and only if needed.
+	* tree-ssa-dom.c (thread_across_edge): Pass no annotation for a dummy
+	expression.
+	(simplify_rhs_and_lookup_avail_expr): Don't take an annotation param.
+	(simplify_cond_and_lookup_avail_expr): Use modify_stmt.
+	(simplify_switch_and_lookup_avail_expr): Don't take an annotation param.
+	(eliminate_redundant_computations): Don't pass an annotation. Call 
+	modify_stmt rather than setting the annotation directly.
+	(record_equivalences_from_stmt): Remove unused local 'j'.
+	(cprop_operand): Take a stmt rather than an annotation as a parameter.
+	Call modify_stmt.
+	(cprop_into_stmt): Pass stmt rather than annotation.
+	(update_rhs_and_lookup_avail_expr): Call modify_stmt.
+	* tree-ssa-loop-im.c (schedule_sm): Call get_stmt_ann rather than 
+	modify_stmt.
+	* tree-ssa.c (propagate_into_addr): Dont call modify_stmt.
+
 2004-08-10  Jason Merrill  <jason@redhat.com>
 
 	PR middle-end/16948

@@ -78,12 +78,12 @@ update_complex_assignment (block_stmt_iterator *bsi, tree r, tree i)
   tree stmt = bsi_stmt (*bsi);
   tree type;
 
-  modify_stmt (stmt);
   if (TREE_CODE (stmt) == RETURN_EXPR)
     stmt = TREE_OPERAND (stmt, 0);
   
   type = TREE_TYPE (TREE_OPERAND (stmt, 1));
   TREE_OPERAND (stmt, 1) = build (COMPLEX_EXPR, type, r, i);
+  modify_stmt (stmt);
 }
 
 /* Expand complex addition to scalars:
@@ -326,7 +326,7 @@ static void
 expand_complex_comparison (block_stmt_iterator *bsi, tree ar, tree ai,
 			   tree br, tree bi, enum tree_code code)
 {
-  tree cr, ci, cc, stmt, type;
+  tree cr, ci, cc, stmt, expr, type;
 
   cr = gimplify_build2 (bsi, code, boolean_type_node, ar, br);
   ci = gimplify_build2 (bsi, code, boolean_type_node, ai, bi);
@@ -334,17 +334,16 @@ expand_complex_comparison (block_stmt_iterator *bsi, tree ar, tree ai,
 			(code == EQ_EXPR ? TRUTH_AND_EXPR : TRUTH_OR_EXPR),
 			boolean_type_node, cr, ci);
 
-  stmt = bsi_stmt (*bsi);
-  modify_stmt (stmt);
+  stmt = expr = bsi_stmt (*bsi);
 
   switch (TREE_CODE (stmt))
     {
     case RETURN_EXPR:
-      stmt = TREE_OPERAND (stmt, 0);
+      expr = TREE_OPERAND (stmt, 0);
       /* FALLTHRU */
     case MODIFY_EXPR:
-      type = TREE_TYPE (TREE_OPERAND (stmt, 1));
-      TREE_OPERAND (stmt, 1) = fold_convert (type, cc);
+      type = TREE_TYPE (TREE_OPERAND (expr, 1));
+      TREE_OPERAND (expr, 1) = fold_convert (type, cc);
       break;
     case COND_EXPR:
       TREE_OPERAND (stmt, 0) = cc;
@@ -352,6 +351,8 @@ expand_complex_comparison (block_stmt_iterator *bsi, tree ar, tree ai,
     default:
       abort ();
     }
+
+  modify_stmt (stmt);
 }
 
 /* Process one statement.  If we identify a complex operation, expand it.  */
