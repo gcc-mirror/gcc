@@ -1,3 +1,12 @@
+2004-09-07  Frank Ch. Eigler  <fche@redhat.com>
+
+	* builtins.c (std_gimplify_va_arg_expr): Mark INDIRECT_REF nodes
+	generated from standard va_arg expansion.
+	* tree-mudflap.c (mx_xform_derefs_1): Omit instrumentation from
+	marked nodes.
+	(mf_varname_tree, mf_file_function_line_tree): Add some support
+	for column numbers if compiled with USE_MAPPED_LOCATION.
+
 2004-09-07  Ziemowit Laski  <zlaski@apple.com>
 
 	* c-decl.c (groktypename_in_parm_context): Remove function.
