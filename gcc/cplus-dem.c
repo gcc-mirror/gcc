@@ -226,6 +226,10 @@ demangle_method_args PARAMS ((struct work_stuff *work, const char **, string *))
 #endif
 
 static int
+demangle_template_template_parm PARAMS ((struct work_stuff *work, 
+					 const char **, string *));
+
+static int
 demangle_template PARAMS ((struct work_stuff *work, const char **, string *,
 			   string *, int));
 
@@ -926,6 +930,70 @@ demangle_method_args (work, mangled, declp)
 #endif
 
 static int
+demangle_template_template_parm (work, mangled, tname)
+     struct work_stuff *work;
+     const char **mangled;
+     string *tname;
+{
+  int i;
+  int r;
+  int need_comma = 0;
+  int success = 1;
+  string temp;
+
+  string_append (tname, "template <");
+  /* get size of template parameter list */
+  if (get_count (mangled, &r))
+    {
+      for (i = 0; i < r; i++)
+	{
+	  if (need_comma)
+	    {
+	      string_append (tname, ", ");
+	    }
+
+	    /* Z for type parameters */
+	    if (**mangled == 'Z')
+	      {
+		(*mangled)++;
+		string_append (tname, "class");
+	      }
+	      /* z for template parameters */
+	    else if (**mangled == 'z')
+	      {
+		(*mangled)++;
+		success = 
+		  demangle_template_template_parm (work, mangled, tname);
+		if (!success)
+		  {
+		    break;
+		  }
+	      }
+	    else
+	      {
+		/* temp is initialized in do_type */
+		success = do_type (work, mangled, &temp);
+		if (success)
+		  {
+		    string_appends (tname, &temp);
+		  }
+		string_delete(&temp);
+		if (!success)
+		  {
+		    break;
+		  }
+	      }
+	  need_comma = 1;
+	}
+
+    }
+  if (tname->p[-1] == '>')
+    string_append (tname, " ");
+  string_append (tname, "> class");
+  return (success);
+}
+
+static int
 demangle_template (work, mangled, tname, trawname, is_type)
      struct work_stuff *work;
      const char **mangled;
@@ -954,19 +1022,50 @@ demangle_template (work, mangled, tname, trawname, is_type)
     {
       start = *mangled;
       /* get template name */
-      if ((r = consume_count (mangled)) == 0 || strlen (*mangled) < r)
+      if (**mangled == 'z')
 	{
-	  return (0);
+	  int idx;
+	  (*mangled)++;
+	  (*mangled)++;
+
+	  idx = consume_count_with_underscores (mangled);
+	  if (idx == -1 
+	      || (work->tmpl_argvec && idx >= work->ntmpl_args)
+	      || consume_count_with_underscores (mangled) == -1)
+	    {
+	      return (0);
+	    }
+	  if (work->tmpl_argvec)
+	    {
+	      string_append (tname, work->tmpl_argvec[idx]);
+	      if (trawname)
+		string_append (trawname, work->tmpl_argvec[idx]);
+	    }
+	  else
+	    {
+	      char buf[10];
+	      sprintf(buf, "T%d", idx);
+	      string_append (tname, buf);
+	      if (trawname)
+		string_append (trawname, work->tmpl_argvec[idx]);
+	    }
 	}
-      if (trawname)
-	string_appendn (trawname, *mangled, r);
-      is_java_array = (work -> options & DMGL_JAVA)
-	&& strncmp (*mangled, "JArray1Z", 8) == 0;
-      if (! is_java_array)
+      else
 	{
-	  string_appendn (tname, *mangled, r);
+	  if ((r = consume_count (mangled)) == 0 || strlen (*mangled) < r)
+	    {
+	      return (0);
+	    }
+	  if (trawname)
+	    string_appendn (trawname, *mangled, r);
+	  is_java_array = (work -> options & DMGL_JAVA)
+	    && strncmp (*mangled, "JArray1Z", 8) == 0;
+	  if (! is_java_array)
+	    {
+	      string_appendn (tname, *mangled, r);
+	    }
+	  *mangled += r;
 	}
-      *mangled += r;
     }
   if (!is_java_array)
     string_append (tname, "<");
@@ -1009,6 +1108,33 @@ demangle_template (work, mangled, tname, trawname, is_type)
 		}
 	    }
 	  string_delete(&temp);
+	  if (!success)
+	    {
+	      break;
+	    }
+	}
+      /* z for template parameters */
+      else if (**mangled == 'z')
+	{
+	  int r2;
+	  (*mangled)++;
+	  success = demangle_template_template_parm (work, mangled, tname);
+	  
+	  if (success
+	      && (r2 = consume_count (mangled)) > 0 && strlen (*mangled) >= r2)
+	    {
+	      string_append (tname, " ");
+	      string_appendn (tname, *mangled, r2);
+	      if (!is_type)
+		{
+		  /* Save the template argument. */
+		  int len = r2;
+		  work->tmpl_argvec[i] = xmalloc (len + 1);
+		  memcpy (work->tmpl_argvec[i], *mangled, len);
+		  work->tmpl_argvec[i][len] = '\0';
+		}
+	      *mangled += r2;
+	    }
 	  if (!success)
 	    {
 	      break;
