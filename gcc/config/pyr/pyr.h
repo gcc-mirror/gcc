@@ -254,6 +254,22 @@ frame n    |            |            |            |
 #define PYR_LREG(n) (32+(n))
 #define PYR_TREG(n) (48+(n))
 
+/* Define this macro if the target machine has "register windows".  This
+   C expression returns the register number as seen by the called function
+   corresponding to register number OUT as seen by the calling function.
+   Return OUT if register number OUT is not an outbound register.  */
+
+#define INCOMING_REGNO(OUT) \
+ (((OUT) < 48 || (OUT) > 63) ? (OUT) : (OUT) - 32)
+
+/* Define this macro if the target machine has "register windows".  This
+   C expression returns the register number as seen by the calling function
+   corresponding to register number IN as seen by the called function.
+   Return IN if register number IN is not an inbound register.  */
+
+#define OUTGOING_REGNO(IN) \
+ (((IN) < 15 || (IN) > 31) ? (IN) : (IN) + 32)
+
 #define FIRST_PSEUDO_REGISTER 64
 
 /* 1 for registers that have pervasive standard uses

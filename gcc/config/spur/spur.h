@@ -375,6 +375,22 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
    On SPUR, these are the "output" registers.  */
 
 #define FUNCTION_ARG_REGNO_P(N) ((N) < 32 && (N) > 26)
+
+/* Define this macro if the target machine has "register windows".  This
+   C expression returns the register number as seen by the called function
+   corresponding to register number OUT as seen by the calling function.
+   Return OUT if register number OUT is not an outbound register.  */
+
+#define INCOMING_REGNO(OUT) \
+ (((OUT) < 27 || (OUT) > 31) ? (OUT) : (OUT) - 16)
+
+/* Define this macro if the target machine has "register windows".  This
+   C expression returns the register number as seen by the calling function
+   corresponding to register number IN as seen by the called function.
+   Return IN if register number IN is not an inbound register.  */
+
+#define OUTGOING_REGNO(IN) \
+ (((IN) < 11 || (IN) > 15) ? (IN) : (IN) + 16)
 
 /* Define a data type for recording info about an argument list
    during the scan of that argument list.  This data type should
