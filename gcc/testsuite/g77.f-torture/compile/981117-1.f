@@ -11,6 +11,8 @@
 *     (nil))
 * ../../egcs/gcc/toplev.c:1390: Internal compiler error in function fatal_insn
 
+* Fixed sometime before 1998-11-21 -- don't know by which change.
+
       SUBROUTINE SSPTRD
       PARAMETER (HALF = 0.5 )
       DO I = 1, N
