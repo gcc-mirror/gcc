@@ -1,3 +1,11 @@
+Wed Apr 12 15:54:11 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* calls.c (expand_call): Do NO_DEFER_POP unconditionally once
+	stack is propertly aligned; add sanity checking for aligned
+	stack pointer.
+	(expand_library_call_value_1): Add sanity checking for aligned
+	stack pointer.
+
 Wed Apr 12 07:51:54 2000  Catherine Moore  <clm@cygnus.com>
  
         * calls.c (emit_library_call_value_1): Change 3rd arg to

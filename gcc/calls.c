@@ -2671,10 +2671,10 @@ expand_call (exp, target, ignore)
 	  else if (argblock == 0)
 	    anti_adjust_stack (GEN_INT (args_size.constant
 					- unadjusted_args_size));
-	  /* Now that the stack is properly aligned, pops can't safely
-	     be deferred during the evaluation of the arguments.  */
-	  NO_DEFER_POP;
 	}
+      /* Now that the stack is properly aligned, pops can't safely
+	 be deferred during the evaluation of the arguments.  */
+      NO_DEFER_POP;
 #endif
 
       /* Don't try to defer pops if preallocating, not even from the first arg,
@@ -2799,6 +2799,12 @@ expand_call (exp, target, ignore)
 
       /* All arguments and registers used for the call must be set up by
 	 now!  */
+
+#ifdef PREFERRED_STACK_BOUNDARY
+      /* Stack must to be properly aligned now.  */
+      if (stack_pointer_delta & (preferred_stack_boundary / BITS_PER_UNIT - 1))
+	abort();
+#endif
 
       /* Generate the actual call instruction.  */
       emit_call_1 (funexp, fndecl, funtype, unadjusted_args_size,
@@ -3691,6 +3697,12 @@ emit_library_call_value_1 (retval, orgfun, value, no_queue, outmode, nargs, p)
   /* Don't allow popping to be deferred, since then
      cse'ing of library calls could delete a call and leave the pop.  */
   NO_DEFER_POP;
+
+#ifdef PREFERRED_STACK_BOUNDARY
+  /* Stack must to be properly aligned now.  */
+  if (stack_pointer_delta & (PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT - 1))
+    abort();
+#endif
 
   /* We pass the old value of inhibit_defer_pop + 1 to emit_call_1, which
      will set inhibit_defer_pop to that value.  */
