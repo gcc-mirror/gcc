@@ -1013,6 +1013,21 @@ for machine in $build $host $target; do
 		xmake_file=x-svr4
 		extra_parts="crtbegin.o crtend.o"
 		;;
+	i[[34567]]86-*-osf1*)		# Intel 80386's running OSF/1 1.3+
+		cpu_type=i386
+		xm_file="${xm_file} xm-svr4.h i386/xm-sysv4.h i386/xm-osf1elf.h"
+		xm_defines="USE_C_ALLOCA SMALL_ARG_MAX"
+		fixincludes=Makefile.in #Don't do it on OSF/1
+		if [[ x$stabs = xyes ]]
+		then
+			tm_file=i386/osf1elfgdb.h
+		else
+			tm_file=i386/osf1elf.h
+		fi
+		tmake_file=i386/t-osf1elf
+		xmake_file=i386/x-osf1elf
+		extra_parts="crti.o crtn.o crtbegin.o crtend.o"
+		;;
 	i[[34567]]86-*-sysv*)		# Intel 80386's running system V
 		xm_defines="USG SVR3"
 		xmake_file=i386/x-sysv3
