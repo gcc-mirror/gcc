@@ -3154,7 +3154,7 @@ finish_decl (decl, init, asmspec_tree)
 	      :
 		/* An automatic variable with an incomplete type
 		   is an error.  */
-		!TREE_EXTERNAL (decl)))
+		!DECL_EXTERNAL (decl)))
 	{
 	  error_with_decl (decl, "storage size of `%s' isn't known");
 	  TREE_TYPE (decl) = error_mark_node;
