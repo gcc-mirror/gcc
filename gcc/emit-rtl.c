@@ -2614,6 +2614,40 @@ push_to_sequence (first)
   last_insn = last;
 }
 
+/* Set up the outer-level insn chain
+   as the current sequence, saving the previously current one.  */
+
+void
+push_topmost_sequence ()
+{
+  struct sequence_stack *stack, *top;
+
+  start_sequence ();
+
+  for (stack = sequence_stack; stack; stack = stack->next)
+    top = stack;
+
+  first_insn = top->first;
+  last_insn = top->last;
+}
+
+/* After emitting to the outer-level insn chain, update the outer-level
+   insn chain, and restore the previous saved state.  */
+
+void
+pop_topmost_sequence ()
+{
+  struct sequence_stack *stack, *top;
+
+  for (stack = sequence_stack; stack; stack = stack->next)
+    top = stack;
+
+  top->first = first_insn;
+  top->last = last_insn;
+
+  end_sequence ();
+}
+
 /* After emitting to a sequence, restore previous saved state.
 
    To get the contents of the sequence just made,
