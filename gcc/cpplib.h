@@ -334,9 +334,9 @@ struct cpp_options {
 
   char put_out_comments;
 
-  /* Nonzero means don't process the ANSI trigraph sequences.  */
+  /* Nonzero means process the ANSI trigraph sequences.  */
 
-  char no_trigraphs;
+  char trigraphs;
 
   /* Nonzero means print the names of included files rather than
      the preprocessed output.  1 means just the #include "...",
@@ -642,6 +642,7 @@ struct definition {
 extern unsigned char is_idchar[256];
 extern unsigned char is_hor_space[256];
 extern unsigned char is_space[256];
+extern unsigned char trigraph_table[256];
 
 /* Stack of conditionals currently in progress
    (including both successful and failing conditionals).  */
@@ -676,6 +677,8 @@ extern void cpp_warning PVPROTO ((cpp_reader *, const char *, ...))
 extern void cpp_pedwarn PVPROTO ((cpp_reader *, const char *, ...))
   ATTRIBUTE_PRINTF_2;
 extern void cpp_error_with_line PVPROTO ((cpp_reader *, int, int, const char *, ...))
+  ATTRIBUTE_PRINTF_4;
+extern void cpp_warning_with_line PVPROTO ((cpp_reader *, int, int, const char *, ...))
   ATTRIBUTE_PRINTF_4;
 extern void cpp_pedwarn_with_line PVPROTO ((cpp_reader *, int, int, const char *, ...))
   ATTRIBUTE_PRINTF_4;

@@ -130,9 +130,6 @@ static void make_assertion		PROTO ((cpp_reader *, char *, U_CHAR *));
 static void path_include		PROTO ((cpp_reader *, char *));
 static void initialize_builtins		PROTO ((cpp_reader *));
 static void initialize_char_syntax	PROTO ((void));
-#if 0
-static void trigraph_pcp ();
-#endif
 static void validate_else		PROTO ((cpp_reader *, char *));
 static int comp_def_part		PROTO ((int, U_CHAR *, int, U_CHAR *,
 						int, int));
@@ -290,6 +287,18 @@ U_CHAR is_idstart[256] = { 0 };
 U_CHAR is_hor_space[256] = { 0 };
 /* table to tell if c is horizontal or vertical space.  */
 U_CHAR is_space[256] = { 0 };
+/* Table to handle trigraph conversion, which occurs before all other
+   processing, everywhere in the file.  (This is necessary since one
+   of the trigraphs encodes backslash.)  Note it's off by default.
+
+	from	to	from	to	from	to
+	?? =	#	?? )	]	?? !	|
+	?? (	[	?? '	^	?? >	}
+	?? /	\	?? <	{	?? -	~
+
+   There is not a space between the ?? and the third char.  I put spaces
+   there to avoid warnings when compiling this file. */
+U_CHAR trigraph_table[256] = { 0 };
 
 /* Initialize syntactic classifications of characters. */
 static void
@@ -330,8 +339,14 @@ initialize_char_syntax ()
   is_space['\f'] = 1;
   is_space['\n'] = 1;
   is_space['\r'] = 1;
-}
 
+  /* trigraph conversion */
+  trigraph_table['='] = '#';  trigraph_table[')'] = ']';
+  trigraph_table['!'] = '|';  trigraph_table['('] = '[';
+  trigraph_table['\''] = '^'; trigraph_table['>'] = '}';
+  trigraph_table['/'] = '\\'; trigraph_table['<'] = '{';
+  trigraph_table['-'] = '~';
+}
 
 /* Place into PFILE a quoted string representing the string SRC.
    Caller must reserve enough space in pfile->token_buffer.  */
@@ -554,7 +569,7 @@ cpp_options_init (opts)
   initialize_char_syntax ();
 
   opts->no_line_commands = 0;
-  opts->no_trigraphs = 1;
+  opts->trigraphs = 0;
   opts->put_out_comments = 0;
   opts->print_include_names = 0;
   opts->dump_macros = dump_none;
@@ -4953,7 +4968,7 @@ cpp_start_read (pfile, fname)
   if (fname == NULL || *fname == 0) {
     fname = "";
     f = 0;
-  } else if ((f = open (fname, O_RDONLY, 0666)) < 0)
+  } else if ((f = open (fname, O_RDONLY|O_NONBLOCK|O_NOCTTY, 0666)) < 0)
     cpp_pfatal_with_name (pfile, fname);
 
   /* -MG doesn't select the form of output and must be specified with one of
@@ -5075,23 +5090,6 @@ cpp_start_read (pfile, fname)
 	}
     }
 
-#if 0
-  /* Make sure data ends with a newline.  And put a null after it.  */
-
-  if ((fp->length > 0 && fp->buf[fp->length - 1] != '\n')
-      /* Backslash-newline at end is not good enough.  */
-      || (fp->length > 1 && fp->buf[fp->length - 2] == '\\')) {
-    fp->buf[fp->length++] = '\n';
-    missing_newline = 1;
-  }
-  fp->buf[fp->length] = '\0';
-
-  /* Unless inhibited, convert trigraphs in the input.  */
-
-  if (!no_trigraphs)
-    trigraph_pcp (fp);
-#endif
-
   /* Must call finclude() on the main input before processing
      -include switches; otherwise the -included text winds up
      after the main input. */
@@ -5123,7 +5121,7 @@ cpp_start_read (pfile, fname)
         {
 	  if (strcmp (pend->cmd, "-imacros") == 0)
 	    {
-	      int fd = open (pend->arg, O_RDONLY, 0666);
+	      int fd = open (pend->arg, O_RDONLY|O_NONBLOCK|O_NOCTTY, 0666);
 	      if (fd < 0)
 	        {
 	          cpp_perror_with_name (pfile, pend->arg);
@@ -5155,7 +5153,7 @@ cpp_start_read (pfile, fname)
         {
 	  if (strcmp (pend->cmd, "-include") == 0)
 	    {
-	      int fd = open (pend->arg, O_RDONLY, 0666);
+	      int fd = open (pend->arg, O_RDONLY|O_NONBLOCK|O_NOCTTY, 0666);
 	      if (fd < 0)
 	        {
 	          cpp_perror_with_name (pfile, pend->arg);
@@ -5505,7 +5503,7 @@ cpp_handle_option (pfile, argc, argv)
 	opts->cplusplus_comments = 0;
       } else if (!strcmp (argv[i], "-trigraphs")) {
 	if (!opts->chill)
-	  opts->no_trigraphs = 0;
+	  opts->trigraphs = 1;
       }
       break;
       
@@ -5531,7 +5529,7 @@ cpp_handle_option (pfile, argc, argv)
 	opts->for_lint = 1;
       if (! strcmp (argv[i], "-lang-chill"))
 	opts->objc = 0, opts->cplusplus = 0, opts->chill = 1,
-	  opts->traditional = 1, opts->no_trigraphs = 1;
+	  opts->traditional = 1, opts->trigraphs = 0;
       break;
       
     case '+':
@@ -6377,8 +6375,7 @@ v_cpp_warning_with_line (pfile, line, column, msg, ap)
   v_cpp_message (pfile, 0, msg, ap);
 }  
 
-#if 0
-static void
+void
 cpp_warning_with_line VPROTO ((cpp_reader * pfile, int line, int column, const char *msg, ...))
 {
 #ifndef ANSI_PROTOTYPES
@@ -6401,7 +6398,6 @@ cpp_warning_with_line VPROTO ((cpp_reader * pfile, int line, int column, const c
   v_cpp_warning_with_line (pfile, line, column, msg, ap);
   va_end(ap);
 }
-#endif
 
 void
 cpp_pedwarn_with_line VPROTO ((cpp_reader * pfile, int line, int column, const char *msg, ...))
@@ -6535,8 +6531,6 @@ cpp_perror_with_name (pfile, name)
  * Possibly different enum token codes for each C/C++ token.
  *
  * Find and cleanup remaining uses of static variables,
- *
- * Support for trigraphs.
  *
  * Support -dM flag (dump_all_macros).
  *

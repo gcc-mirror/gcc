@@ -41,7 +41,8 @@ static struct file_name_map *read_name_map	PROTO ((cpp_reader *,
 static char *read_filename_string	PROTO ((int, FILE *));
 static char *remap_filename 		PROTO ((cpp_reader *, char *,
 						struct file_name_list *));
-static long safe_read			PROTO ((int, char *, int));
+static long read_and_prescan		PROTO ((cpp_reader *, cpp_buffer *,
+						int, size_t));
 static void simplify_pathname		PROTO ((char *));
 static struct file_name_list *actual_directory PROTO ((cpp_reader *, char *));
 
@@ -435,8 +436,8 @@ find_include_file (pfile, fname, search_start, ihash, before)
       simplify_pathname (name);
       if (CPP_OPTIONS (pfile)->remap)
 	name = remap_filename (pfile, name, l);
-      
-      f = open (name, O_RDONLY, 0666);
+
+      f = open (name, O_RDONLY|O_NONBLOCK|O_NOCTTY, 0666);
 #ifdef EACCES
       if (f == -1 && errno == EACCES)
 	{
@@ -672,15 +673,54 @@ finclude (pfile, fd, ihash)
 {
   struct stat st;
   size_t st_size;
-  long i, length;
+  long length;
   cpp_buffer *fp;
 
   if (fstat (fd, &st) < 0)
     goto perror_fail;
-  
+  if (fcntl (fd, F_SETFL, 0) == -1)  /* turn off nonblocking mode */
+    goto perror_fail;
+
   fp = CPP_BUFFER (pfile);
-  fp->nominal_fname = fp->fname = ihash->name;
+
+  if (S_ISREG (st.st_mode))
+    {
+      /* off_t might have a wider range than size_t - in other words,
+	 the max size of a file might be bigger than the address
+	 space, and we need to detect that now. */
+      st_size = (size_t) st.st_size;
+      if ((unsigned HOST_WIDE_INT) st_size
+	  != (unsigned HOST_WIDE_INT) st.st_size)
+	{
+	  cpp_error (pfile, "file `%s' is too large", ihash->name);
+	  goto fail;
+	}
+    }
+  else if (S_ISFIFO (st.st_mode) || (S_ISCHR (st.st_mode) && isatty (fd)))
+    {
+      /* Cannot get its file size before reading.  4k is a decent
+         first guess. */
+      st_size = 4096;
+    }
+  else
+    {
+      cpp_error (pfile, "`%s' is not a file, pipe, or tty", ihash->name);
+      goto fail;
+    }
+
+  /* Read the file, converting end-of-line characters and trigraphs
+     (if enabled). */
   fp->ihash = ihash;
+  fp->nominal_fname = fp->fname = ihash->name;
+  length = read_and_prescan (pfile, fp, fd, st_size);
+  if (length < 0)
+    goto fail;
+  if (length == 0)
+    ihash->control_macro = "";  /* never re-include */
+
+  close (fd);
+  fp->rlimit = fp->alimit = fp->buf + length;
+  fp->cur = fp->buf;
   fp->system_header_p = (ihash->foundhere != ABSOLUTE_PATH
 			 && ihash->foundhere->sysp);
   fp->lineno = 1;
@@ -691,75 +731,14 @@ finclude (pfile, fd, ihash)
      see do_include */
   if (!CPP_OPTIONS (pfile)->ignore_srcdir)
     fp->actual_dir = actual_directory (pfile, fp->fname);
-	
-  if (S_ISREG (st.st_mode))
-    {
-      st_size = (size_t) st.st_size;
-      if (st_size != st.st_size || st_size + 2 < st_size)
-      {
-        cpp_error (pfile, "file `%s' too large", ihash->name);
-	goto fail;
-      }
-      fp->buf = (U_CHAR *) xmalloc (st_size + 2);
-      fp->alimit = fp->buf + st_size + 2;
-      fp->cur = fp->buf;
-      
-      /* Read the file contents, knowing that st_size is an upper bound
-	 on the number of bytes we can read.  */
-      length = safe_read (fd, fp->buf, st_size);
-      fp->rlimit = fp->buf + length;
-      if (length < 0)
-	  goto perror_fail;
-    }
-  else if (S_ISDIR (st.st_mode))
-    {
-      cpp_pop_buffer (pfile);
-      cpp_error (pfile, "directory `%s' specified in #include", ihash->name);
-      goto fail;
-    }
-  else
-    {
-      /* Cannot count its file size before reading.
-	 First read the entire file into heap and
-	 copy them into buffer on stack.  */
 
-      size_t bsize = 2000;
-
-      st_size = 0;
-      fp->buf = (U_CHAR *) xmalloc (bsize + 2);
-
-      for (;;)
-        {
-	  i = safe_read (fd, fp->buf + st_size, bsize - st_size);
-	  if (i < 0)
-	    goto perror_fail;
-	  st_size += i;
-	  if (st_size != bsize)
-	    break;	/* End of file */
-	  bsize *= 2;
-	  fp->buf = (U_CHAR *) xrealloc (fp->buf, bsize + 2);
-	}
-      fp->cur = fp->buf;
-      length = st_size;
-    }
-
-  /* FIXME: Broken in presence of trigraphs (consider ??/<EOF>)
-     and doesn't warn about a missing newline. */
-  if ((length > 0 && fp->buf[length - 1] != '\n')
-      || (length > 1 && fp->buf[length - 2] == '\\'))
-    fp->buf[length++] = '\n';
-
-  fp->buf[length] = '\0';
-  fp->rlimit = fp->buf + length;
-
-  close (fd);
   pfile->input_stack_listing_current = 0;
   return 1;
 
  perror_fail:
-  cpp_pop_buffer (pfile);
   cpp_error_from_errno (pfile, ihash->name);
  fail:
+  cpp_pop_buffer (pfile);
   close (fd);
   return 0;
 }
@@ -818,42 +797,205 @@ actual_directory (pfile, fname)
   return x;
 }
 
-/* Read LEN bytes at PTR from descriptor DESC, for file FILENAME,
-   retrying if necessary.  If MAX_READ_LEN is defined, read at most
-   that bytes at a time.  Return a negative value if an error occurs,
-   otherwise return the actual number of bytes read,
-   which must be LEN unless end-of-file was reached.  */
+/* Read the entire contents of file DESC into buffer BUF, convert end-of-line
+   markers to canonical form, and convert trigraphs if enabled.  Also, make
+   sure there is a newline at the end of the file.  LEN is how much room we
+   have to start with (this can be expanded if necessary).
+   Returns -1 on failure, or the actual length of the data to be scanned.
+
+   N.B. This function has been rearranged to out-of-line the uncommon cases
+   as much as possible; this is important to prevent it from being a
+   performance bottleneck.  */
 
 static long
-safe_read (desc, ptr, len)
+read_and_prescan (pfile, fp, desc, len)
+     cpp_reader *pfile;
+     cpp_buffer *fp;
      int desc;
-     char *ptr;
-     int len;
+     size_t len;
 {
-  int left, rcount, nchars;
 
-  left = len;
-  while (left > 0) {
-    rcount = left;
-#ifdef MAX_READ_LEN
-    if (rcount > MAX_READ_LEN)
-      rcount = MAX_READ_LEN;
-#endif
-    nchars = read (desc, ptr, rcount);
-    if (nchars < 0)
-      {
-#ifdef EINTR
-	if (errno == EINTR)
-	  continue;
-#endif
-	return nchars;
-      }
-    if (nchars == 0)
-      break;
-    ptr += nchars;
-    left -= nchars;
-  }
-  return len - left;
+  U_CHAR *buf = (U_CHAR *) xmalloc (len);
+  U_CHAR *ip, *op, *line_base;
+  U_CHAR *ibase;
+  unsigned int line;
+  int count, seen_eof;
+  size_t offset;
+  /* 4096 bytes of buffer proper, 2 to detect running off the end without
+     address arithmetic all the time, and 2 for pushback in the case there's
+     a potential trigraph or end-of-line digraph at the end of a block. */
+#define INTERMED_BUFFER_SIZE 4096
+  U_CHAR intermed[INTERMED_BUFFER_SIZE + 2 + 2];
+
+  offset = 0;
+  op = buf;
+  line_base = buf;
+  line = 1;
+  ibase = intermed + 2;
+  seen_eof = 0;
+
+  for (;;)
+    {
+    read_next:
+      count = read (desc, intermed + 2, INTERMED_BUFFER_SIZE);
+      if (count < 0)
+	  goto error;
+      if (count == 0)
+	seen_eof = 1;
+      count += 2 - (ibase - intermed);
+      if (count == 0)
+	break;
+
+      ip = ibase;
+      ip[count] = ip[count+1] = '\0';
+      ibase = intermed + 2;
+      offset += count;
+
+      if (offset > len)
+	{
+	  size_t delta_op = op - buf;
+	  size_t delta_line_base = line_base - buf;
+	  len *= 2;
+	  if (offset > len)
+	      /* len overflowed.
+		 This could happen if the file is larger than half the
+		 maximum address space of the machine. */
+	    goto too_big;
+	  buf = xrealloc (buf, len);
+	  op = buf + delta_op;
+	  line_base = buf + delta_line_base;
+	}
+
+      for (;;)
+	{
+	  U_CHAR c;
+	  c = *ip++;
+	  switch (c)
+	    {
+	      /* The default case is at the top so gcc will realize
+		 it's the common case, and leave c in a register.
+	         Also, cache utilization is a little better this way. */
+	    default:
+	      *op++ = c;
+	      break;
+	      
+	    case '\0':
+	      if (seen_eof)
+		goto eof;
+	      else
+		goto read_next;
+	    case '\r':
+	      if (*ip == '\n') ip++;
+	      else if (*ip == '\0' && !seen_eof)
+		{
+		  *--ibase = '\r';
+		  break;
+		}
+	      *op++ = '\n';
+	      line++;
+	      line_base = op;
+	      break;
+
+	    case '\n':
+	      if (*ip == '\r') ip++;
+	      else if (*ip == '\0' && !seen_eof)
+		{
+		  *--ibase = '\n';
+		  break;
+		}
+	      *op++ = '\n';
+	      line++;
+	      line_base = op;
+	      break;
+
+	    case '?':
+	      if (CPP_OPTIONS (pfile)->trigraphs
+		  || CPP_OPTIONS (pfile)->warn_trigraphs)
+		{
+		  /* If we're at the end of the intermediate buffer,
+		     we have to shift the ?'s down to the start and
+		     come back next pass. */
+		  c = ip[0];
+		  if (c == '\0' && !seen_eof)
+		    {
+		      *--ibase = '?';
+		      break;
+		    }
+		  if (c != '?')
+		    {
+		      *op++ = '?';
+		      break;
+		    }
+		  c = ip[1];
+		  if (c == '\0' && !seen_eof)
+		    {
+		      *--ibase = '?';
+		      *--ibase = '?';
+		      break;
+		    }
+		  if (!trigraph_table[c])
+		    {
+		      *op++ = '?';
+		      break;
+		    }
+
+		  if (CPP_OPTIONS (pfile)->warn_trigraphs)
+		    cpp_warning_with_line (pfile, line, op-line_base,
+					   "trigraph ??%c encountered", c);
+		  if (CPP_OPTIONS (pfile)->trigraphs)
+		    {
+		      *op++ = trigraph_table[c];
+		      ip += 2;
+		      break;
+		    }
+		  else
+		    {
+		      *op++ = '?';
+		      *op++ = '?';
+		      *op++ = c;
+		      ip += 2;
+		    }
+		}
+	      else
+		*op++ = c;
+	    }
+	}
+    }
+ eof:
+
+  if (op == buf)
+    return 0;
+
+  if (op[-1] != '\n' || op[-2] == '\\')
+    {
+      cpp_pedwarn_with_line (pfile, line, op - line_base,
+			     "no newline at end of file");
+      if (offset + 2 > len)
+	{
+	  len += 2;
+	  if (offset + 2 > len)
+	    goto too_big;
+	  buf = xrealloc (buf, len);
+	  op = buf + offset;
+	}
+      if (op[-1] == '\\')
+	*op++ = '\n';
+      *op++ = '\n';
+    }
+
+  buf = xrealloc (buf, op - buf);
+  fp->buf = buf;
+  return op - buf;
+
+ too_big:
+  cpp_error (pfile, "file is too large");
+  free (buf);
+  return -1;
+
+ error:
+  cpp_error_from_errno (pfile, fp->fname);
+  free (buf);
+  return -1;
 }
 
 /* Add output to `deps_buffer' for the -M switch.
