@@ -1,6 +1,6 @@
 			Blanket Write Privs.
 
-Craig Burley					burley@gnu.org
+Craig Burley					craig@jcb-sc.com
 John Carr					jfc@mit.edu
 Richard Henderson                               rth@cygnus.com
 Jeff Law					law@cygnus.com
@@ -34,7 +34,7 @@ sparc port		Richard Henderson	rth@cygnus.com
 sparc port		David S. Miller		davem@dm.cobaltmicro.com
 x86 ports		Stan Cox		scox@cygnus.com
 c4x port		Michael Hayes		m.hayes@elec.canterbury.ac.nz
-*fortran		Craig Burley		burley@gnu.org
+fortran			Craig Burley		craig@jcb-sc.com
 fortran			Richard Henderson	rth@cygnus.com	
 c++			Jason Merrill		jason@cygnus.com
 chill			Dave Brolley		brolley@cygnus.com
