@@ -5214,10 +5214,6 @@ expand_expr (exp, target, tmode, modifier)
 	  rtx op1 = expand_expr (TREE_OPERAND (exp, 1), NULL_RTX,
 				 VOIDmode, modifier);
 
-	  /* If one operand is a CONST_INT, put it last.  */
-	  if (GET_CODE (op0) == CONST_INT)
-	    temp = op0, op0 = op1, op1 = temp;
-
 	  /* If the last operand is a CONST_INT, use plus_constant of
 	     the negated constant.  Else make the MINUS.  */
 	  if (GET_CODE (op1) == CONST_INT)
