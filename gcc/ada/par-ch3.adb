@@ -279,8 +279,29 @@ package body Ch3 is
    begin
       Type_Loc := Token_Ptr;
       Type_Start_Col := Start_Column;
-      T_Type;
-      Ident_Node := P_Defining_Identifier (C_Is);
+
+      --  If we have TYPE, then proceed ahead and scan identifier
+
+      if Token = Tok_Type then
+         Scan; -- past TYPE
+         Ident_Node := P_Defining_Identifier (C_Is);
+
+      --  Otherwise this is an error case, and we may already have converted
+      --  the current token to a defining identifier, so don't do it again!
+
+      else
+         T_Type;
+
+         if Token = Tok_Identifier
+           and then Nkind (Token_Node) = N_Defining_Identifier
+         then
+            Ident_Node := Token_Node;
+            Scan; -- past defining identifier
+         else
+            Ident_Node := P_Defining_Identifier (C_Is);
+         end if;
+      end if;
+
       Discr_Sloc := Token_Ptr;
 
       if P_Unknown_Discriminant_Part_Opt then
@@ -586,7 +607,14 @@ package body Ch3 is
 
                --  Ada 2005 (AI-251): LIMITED INTERFACE
 
-               elsif Token = Tok_Interface then
+               --  If we are compiling in Ada 83 or Ada 95 mode, "interface"
+               --  is not a reserved word but we force its analysis to
+               --  generate the corresponding usage error.
+
+               elsif Token = Tok_Interface
+                 or else (Token = Tok_Identifier
+                           and then Chars (Token_Node) = Name_Interface)
+               then
                   Typedef_Node := P_Interface_Type_Definition
                                     (Is_Synchronized => False);
                   Abstract_Present := True;
