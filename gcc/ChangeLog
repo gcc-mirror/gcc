@@ -1,3 +1,10 @@
+2003-09-09  Richard Henderson  <rth@redhat.com>
+
+	* except.c: Include cgraph.h.
+	(output_function_exception_table): Invoke
+	cgraph_varpool_mark_needed_node.
+	* Makefile.in (except.o): Update.
+
 2003-09-07  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* Makefile.in: Define REMAKEFLAGS for LANGUAGES & BOOT_CFLAGS
