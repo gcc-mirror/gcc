@@ -7475,7 +7475,7 @@ s390_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
   f_ovf = TREE_CHAIN (f_fpr);
   f_sav = TREE_CHAIN (f_ovf);
 
-  valist = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (valist)), valist);
+  valist = build_va_arg_indirect_ref (valist);
   gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
   fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
   ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
@@ -7565,7 +7565,7 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
   f_ovf = TREE_CHAIN (f_fpr);
   f_sav = TREE_CHAIN (f_ovf);
 
-  valist = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (valist)), valist);
+  valist = build_va_arg_indirect_ref (valist);
   gpr = build (COMPONENT_REF, TREE_TYPE (f_gpr), valist, f_gpr, NULL_TREE);
   fpr = build (COMPONENT_REF, TREE_TYPE (f_fpr), valist, f_fpr, NULL_TREE);
   ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
@@ -7700,7 +7700,7 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
     {
       t = build_pointer_type (build_pointer_type (type));
       addr = fold_convert (t, addr);
-      addr = build_fold_indirect_ref (addr);
+      addr = build_va_arg_indirect_ref (addr);
     }
   else
     {
@@ -7708,7 +7708,7 @@ s390_gimplify_va_arg (tree valist, tree type, tree *pre_p,
       addr = fold_convert (t, addr);
     }
 
-  return build_fold_indirect_ref (addr);
+  return build_va_arg_indirect_ref (addr);
 }
 
 
