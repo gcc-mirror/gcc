@@ -211,10 +211,10 @@ negate_rtx (mode, x)
 /* ??? Note that there are two different ideas here for how
    to determine the size to count bits within, for a register.
    One is BITS_PER_WORD, and the other is the size of operand 3
-   of the insv pattern.  (The latter assumes that an n-bit machine
-   will be able to insert bit fields up to n bits wide.)
-   It isn't certain that either of these is right.
-   extract_bit_field has the same quandary.  */
+   of the insv pattern.
+
+   If operand 3 of the insv pattern is VOIDmode, then we will use BITS_PER_WORD
+   else, we use the mode of operand 3.  */
 
 rtx
 store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
@@ -230,6 +230,14 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
   register int offset = bitnum / unit;
   register int bitpos = bitnum % unit;
   register rtx op0 = str_rtx;
+#ifdef HAVE_insv
+  int insv_bitsize;
+
+  if (insn_operand_mode[(int) CODE_FOR_insv][3] == VOIDmode)
+    insv_bitsize = GET_MODE_BITSIZE (word_mode);
+  else
+    insv_bitsize = GET_MODE_BITSIZE (insn_operand_mode[(int) CODE_FOR_insv][3]);
+#endif
 
   if (GET_CODE (str_rtx) == MEM && ! MEM_IN_STRUCT_P (str_rtx))
     abort ();
@@ -400,21 +408,22 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       && GET_MODE (value) != BLKmode
       && !(bitsize == 1 && GET_CODE (value) == CONST_INT)
       /* Ensure insv's size is wide enough for this field.  */
-      && (GET_MODE_BITSIZE (insn_operand_mode[(int) CODE_FOR_insv][3])
-	  >= bitsize)
+      && (insv_bitsize >= bitsize)
       && ! ((GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
-	    && (bitsize + bitpos
-		> GET_MODE_BITSIZE (insn_operand_mode[(int) CODE_FOR_insv][3]))))
+	    && (bitsize + bitpos > insv_bitsize)))
     {
       int xbitpos = bitpos;
       rtx value1;
       rtx xop0 = op0;
       rtx last = get_last_insn ();
       rtx pat;
-      enum machine_mode maxmode
-	= insn_operand_mode[(int) CODE_FOR_insv][3];
-
+      enum machine_mode maxmode;
       int save_volatile_ok = volatile_ok;
+
+      maxmode = insn_operand_mode[(int) CODE_FOR_insv][3];
+      if (maxmode == VOIDmode)
+	maxmode = word_mode;
+
       volatile_ok = 1;
 
       /* If this machine's insv can only insert into a register, copy OP0
@@ -894,6 +903,27 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
   register rtx op0 = str_rtx;
   rtx spec_target = target;
   rtx spec_target_subreg = 0;
+#ifdef HAVE_extv
+  int extv_bitsize;
+#endif
+#ifdef HAVE_extzv
+  int extzv_bitsize;
+#endif
+
+#ifdef HAVE_extv
+  if (insn_operand_mode[(int) CODE_FOR_extv][0] == VOIDmode)
+    extv_bitsize = GET_MODE_BITSIZE (word_mode);
+  else
+    extv_bitsize = GET_MODE_BITSIZE (insn_operand_mode[(int) CODE_FOR_extv][0]);
+#endif
+
+#ifdef HAVE_extzv
+  if (insn_operand_mode[(int) CODE_FOR_extzv][0] == VOIDmode)
+    extzv_bitsize = GET_MODE_BITSIZE (word_mode);
+  else
+    extzv_bitsize
+      = GET_MODE_BITSIZE (insn_operand_mode[(int) CODE_FOR_extzv][0]);
+#endif
 
   /* Discount the part of the structure before the desired byte.
      We need to know how many bytes are safe to reference after it.  */
@@ -1073,11 +1103,9 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
     {
 #ifdef HAVE_extzv
       if (HAVE_extzv
-	  && (GET_MODE_BITSIZE (insn_operand_mode[(int) CODE_FOR_extzv][0])
-	      >= bitsize)
+	  && (extzv_bitsize >= bitsize)
 	  && ! ((GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
-		&& (bitsize + bitpos
-		    > GET_MODE_BITSIZE (insn_operand_mode[(int) CODE_FOR_extzv][0]))))
+		&& (bitsize + bitpos > extzv_bitsize)))
 	{
 	  int xbitpos = bitpos, xoffset = offset;
 	  rtx bitsize_rtx, bitpos_rtx;
@@ -1087,8 +1115,11 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	  rtx xspec_target = spec_target;
 	  rtx xspec_target_subreg = spec_target_subreg;
 	  rtx pat;
-	  enum machine_mode maxmode
-	    = insn_operand_mode[(int) CODE_FOR_extzv][0];
+	  enum machine_mode maxmode;
+
+	  maxmode = insn_operand_mode[(int) CODE_FOR_extzv][0];
+	  if (maxmode == VOIDmode)
+	    maxmode = word_mode;
 
 	  if (GET_CODE (xop0) == MEM)
 	    {
@@ -1213,11 +1244,9 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
     {
 #ifdef HAVE_extv
       if (HAVE_extv
-	  && (GET_MODE_BITSIZE (insn_operand_mode[(int) CODE_FOR_extv][0])
-	      >= bitsize)
+	  && (extv_bitsize >= bitsize)
 	  && ! ((GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
-		&& (bitsize + bitpos
-		    > GET_MODE_BITSIZE (insn_operand_mode[(int) CODE_FOR_extv][0]))))
+		&& (bitsize + bitpos > extv_bitsize)))
 	{
 	  int xbitpos = bitpos, xoffset = offset;
 	  rtx bitsize_rtx, bitpos_rtx;
@@ -1226,8 +1255,11 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	  rtx xspec_target = spec_target;
 	  rtx xspec_target_subreg = spec_target_subreg;
 	  rtx pat;
-	  enum machine_mode maxmode
-	    = insn_operand_mode[(int) CODE_FOR_extv][0];
+	  enum machine_mode maxmode;
+
+	  maxmode = insn_operand_mode[(int) CODE_FOR_extv][0];
+	  if (maxmode == VOIDmode)
+	    maxmode = word_mode;
 
 	  if (GET_CODE (xop0) == MEM)
 	    {

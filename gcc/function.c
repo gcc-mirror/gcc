@@ -1975,11 +1975,19 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 
 #ifdef HAVE_extzv
 	      if (GET_CODE (x) == ZERO_EXTRACT)
-		wanted_mode = insn_operand_mode[(int) CODE_FOR_extzv][1];
+		{
+		  wanted_mode = insn_operand_mode[(int) CODE_FOR_extzv][1];
+		  if (wanted_mode == VOIDmode)
+		    wanted_mode = word_mode;
+		}
 #endif
 #ifdef HAVE_extv
 	      if (GET_CODE (x) == SIGN_EXTRACT)
-		wanted_mode = insn_operand_mode[(int) CODE_FOR_extv][1];
+		{
+		  wanted_mode = insn_operand_mode[(int) CODE_FOR_extv][1];
+		  if (wanted_mode == VOIDmode)
+		    wanted_mode = word_mode;
+		}
 #endif
 	      /* If we have a narrower mode, we can do something.  */
 	      if (wanted_mode != VOIDmode
@@ -2168,10 +2176,13 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 		&& ! mode_dependent_address_p (XEXP (tem, 0))
 		&& ! MEM_VOLATILE_P (tem))
 	      {
-		enum machine_mode wanted_mode
-		  = insn_operand_mode[(int) CODE_FOR_insv][0];
+		enum machine_mode wanted_mode;
 		enum machine_mode is_mode = GET_MODE (tem);
 		HOST_WIDE_INT pos = INTVAL (XEXP (outerdest, 2));
+
+		wanted_mode = insn_operand_mode[(int) CODE_FOR_insv][0];
+		if (wanted_mode == VOIDmode)
+		  wanted_mode = word_mode;
 
 		/* If we have a narrower mode, we can do something.  */
 		if (GET_MODE_SIZE (wanted_mode) < GET_MODE_SIZE (is_mode))

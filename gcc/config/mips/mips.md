@@ -4224,24 +4224,30 @@ move\\t%0,%z4\\n\\
 
 ;; Bit field extract patterns which use lwl/lwr.
 
-;; ??? There should be DImode variants for 64 bit code, but the current
-;; bitfield scheme can't handle that.  We would need to add new optabs
-;; in order to make that work.
-
 ;; ??? There could be HImode variants for the ulh/ulhu/ush macros.
 ;; It isn't clear whether this will give better code.
 
+;; Only specify the mode operand 1, the rest are assumed to be word_mode.
 (define_expand "extv"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(sign_extract:SI (match_operand:QI 1 "memory_operand" "")
-			 (match_operand:SI 2 "immediate_operand" "")
-			 (match_operand:SI 3 "immediate_operand" "")))]
+  [(set (match_operand 0 "register_operand" "")
+	(sign_extract (match_operand:QI 1 "memory_operand" "")
+		      (match_operand 2 "immediate_operand" "")
+		      (match_operand 3 "immediate_operand" "")))]
   "!TARGET_MIPS16"
   "
 {
-  /* If this isn't a 32 bit field, and it doesn't start on a byte boundary
-     then fail.  */
-  if (INTVAL (operands[2]) != 32 || (INTVAL (operands[3]) % 8) != 0)
+  /* If the field does not start on a byte boundary, then fail.  */
+  if (INTVAL (operands[3]) % 8 != 0) 
+    FAIL;
+
+  /* MIPS I and MIPS II can only handle a 32bit field.  */
+  if (!TARGET_64BIT && INTVAL (operands[2]) != 32)
+    FAIL;
+
+  /* MIPS III and MIPS IV can handle both 32bit and 64bit fields.  */
+  if (TARGET_64BIT
+      && INTVAL (operands[2]) != 64
+      && INTVAL (operands[2]) != 32)
     FAIL;
 
   /* This can happen for a 64 bit target, when extracting a value from
@@ -4253,22 +4259,43 @@ move\\t%0,%z4\\n\\
   /* Change the mode to BLKmode for aliasing purposes.  */
   operands[1] = change_address (operands[1], BLKmode, XEXP (operands[1], 0));
 
-  /* Otherwise, emit a lwl/lwr pair to load the value.  */
-  emit_insn (gen_movsi_ulw (operands[0], operands[1]));
+  /* Otherwise, emit a l[wd]l/l[wd]r pair to load the value.  */
+  if (INTVAL (operands[2]) == 64)
+    emit_insn (gen_movdi_uld (operands[0], operands[1]));
+  else
+    {
+      if (TARGET_64BIT)
+	{
+	  operands[0] = gen_lowpart (SImode, operands[0]);
+	  if (operands[0] == NULL_RTX)
+	    FAIL;
+	}
+      emit_insn (gen_movsi_ulw (operands[0], operands[1]));
+    }
   DONE;
 }")
 
+;; Only specify the mode operand 1, the rest are assumed to be word_mode.
 (define_expand "extzv"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(zero_extract:SI (match_operand:QI 1 "memory_operand" "")
-			 (match_operand:SI 2 "immediate_operand" "")
-			 (match_operand:SI 3 "immediate_operand" "")))]
+  [(set (match_operand 0 "register_operand" "")
+	(zero_extract (match_operand:QI 1 "memory_operand" "")
+		      (match_operand 2 "immediate_operand" "")
+		      (match_operand 3 "immediate_operand" "")))]
   "!TARGET_MIPS16"
   "
 {
-  /* If this isn't a 32 bit field, and it doesn't start on a byte boundary
-     then fail.  */
-  if (INTVAL (operands[2]) != 32 || (INTVAL (operands[3]) % 8) != 0)
+  /* If the field does not start on a byte boundary, then fail.  */
+  if (INTVAL (operands[3]) % 8 != 0) 
+    FAIL;
+
+  /* MIPS I and MIPS II can only handle a 32bit field.  */
+  if (!TARGET_64BIT && INTVAL (operands[2]) != 32)
+    FAIL;
+
+  /* MIPS III and MIPS IV can handle both 32bit and 64bit fields.  */
+  if (TARGET_64BIT
+      && INTVAL (operands[2]) != 64
+      && INTVAL (operands[2]) != 32)
     FAIL;
 
   /* This can happen for a 64 bit target, when extracting a value from
@@ -4281,21 +4308,42 @@ move\\t%0,%z4\\n\\
   operands[1] = change_address (operands[1], BLKmode, XEXP (operands[1], 0));
 
   /* Otherwise, emit a lwl/lwr pair to load the value.  */
-  emit_insn (gen_movsi_ulw (operands[0], operands[1]));
+  if (INTVAL (operands[2]) == 64)
+    emit_insn (gen_movdi_uld (operands[0], operands[1]));
+  else
+    {
+      if (TARGET_64BIT)
+	{
+	  operands[0] = gen_lowpart (SImode, operands[0]);
+	  if (operands[0] == NULL_RTX)
+	    FAIL;
+	}
+      emit_insn (gen_movsi_ulw (operands[0], operands[1]));
+    }
   DONE;
 }")
 
+;; Only specify the mode operands 0, the rest are assumed to be word_mode.
 (define_expand "insv"
-  [(set (zero_extract:SI (match_operand:QI 0 "memory_operand" "")
-			 (match_operand:SI 1 "immediate_operand" "")
-			 (match_operand:SI 2 "immediate_operand" ""))
-	(match_operand:SI 3 "register_operand" ""))]
+  [(set (zero_extract (match_operand:QI 0 "memory_operand" "")
+		      (match_operand 1 "immediate_operand" "")
+		      (match_operand 2 "immediate_operand" ""))
+	(match_operand 3 "register_operand" ""))]
   "!TARGET_MIPS16"
   "
 {
-  /* If this isn't a 32 bit field, and it doesn't start on a byte boundary
-     then fail.  */
-  if (INTVAL (operands[1]) != 32 || (INTVAL (operands[2]) % 8) != 0)
+  /* If the field does not start on a byte boundary, then fail.  */
+  if (INTVAL (operands[2]) % 8 != 0) 
+    FAIL;
+
+  /* MIPS I and MIPS II can only handle a 32bit field.  */
+  if (!TARGET_64BIT && INTVAL (operands[1]) != 32)
+    FAIL;
+
+  /* MIPS III and MIPS IV can handle both 32bit and 64bit fields.  */
+  if (TARGET_64BIT
+      && INTVAL (operands[1]) != 64
+      && INTVAL (operands[1]) != 32)
     FAIL;
 
   /* This can happen for a 64 bit target, when storing into a 32 bit union
@@ -4307,8 +4355,19 @@ move\\t%0,%z4\\n\\
   /* Change the mode to BLKmode for aliasing purposes.  */
   operands[0] = change_address (operands[0], BLKmode, XEXP (operands[0], 0));
 
-  /* Otherwise, emit a swl/swr pair to load the value.  */
-  emit_insn (gen_movsi_usw (operands[0], operands[3]));
+  /* Otherwise, emit a s[wd]l/s[wd]r pair to load the value.  */
+  if (INTVAL (operands[1]) == 64)
+    emit_insn (gen_movdi_usd (operands[0], operands[3]));
+  else
+    {
+      if (TARGET_64BIT)
+	{
+	  operands[3] = gen_lowpart (SImode, operands[3]);
+	  if (operands[3] == NULL_RTX)
+	    FAIL;
+	}
+      emit_insn (gen_movsi_usw (operands[0], operands[3]));
+    }
   DONE;
 }")
 
@@ -4364,6 +4423,65 @@ move\\t%0,%z4\\n\\
     return \"sw\\t%1,%0\";
 
   return \"usw\\t%z1,%0\";
+}"
+  [(set_attr "type"	"store")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"2,4")])
+
+;; Bit field extract patterns which use ldl/ldr.
+
+;; unaligned double word moves generated by the bit field patterns
+
+(define_insn "movdi_uld"
+  [(set (match_operand:DI 0 "register_operand" "=&d,&d")
+	(unspec:DI [(match_operand:BLK 1 "general_operand" "R,o")] 0))]
+  ""
+  "*
+{
+  rtx offset = const0_rtx;
+  rtx addr = XEXP (operands[1], 0);
+  rtx mem_addr = eliminate_constant_term (addr, &offset);
+  char *ret;
+
+  if (TARGET_STATS)
+    mips_count_memory_refs (operands[1], 2);
+
+  /* The stack/frame pointers are always aligned, so we can convert
+     to the faster lw if we are referencing an aligned stack location.  */
+
+  if ((INTVAL (offset) & 7) == 0
+      && (mem_addr == stack_pointer_rtx || mem_addr == frame_pointer_rtx))
+    ret = \"ld\\t%0,%1\";
+  else
+    ret = \"uld\\t%0,%1\";
+
+  return mips_fill_delay_slot (ret, DELAY_LOAD, operands, insn);
+}"
+  [(set_attr "type"	"load,load")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"2,4")])
+
+(define_insn "movdi_usd"
+  [(set (match_operand:BLK 0 "memory_operand" "=R,o")
+	(unspec:BLK [(match_operand:DI 1 "reg_or_0_operand" "dJ,dJ")] 1))]
+  ""
+  "*
+{
+  rtx offset = const0_rtx;
+  rtx addr = XEXP (operands[0], 0);
+  rtx mem_addr = eliminate_constant_term (addr, &offset);
+
+  if (TARGET_STATS)
+    mips_count_memory_refs (operands[0], 2);
+
+  /* The stack/frame pointers are always aligned, so we can convert
+     to the faster sw if we are referencing an aligned stack location.  */
+
+  if ((INTVAL (offset) & 7) == 0
+      && (mem_addr == stack_pointer_rtx || mem_addr == frame_pointer_rtx))
+    return \"sd\\t%1,%0\";
+
+  return \"usd\\t%z1,%0\";
 }"
   [(set_attr "type"	"store")
    (set_attr "mode"	"SI")

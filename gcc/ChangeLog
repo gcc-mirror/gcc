@@ -1,5 +1,16 @@
 Tue Sep 15 22:59:52 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* combine.c (make_extraction): If no mode is specified for
+	an operand of insv, extv, or extzv, default it to word_mode.
+	(simplify_comparison): Similarly.
+	* expmed.c (store_bit_field): Similarly.
+	(extract_bit_field): Similarly.
+	* function.c (fixup_var_regs_1): Similarly.
+	* recog.c (validate_replace_rtx_1): Similarly.
+	* mips.md (extv, extzv, insv expanders): Default modes for most
+	operands.  Handle TARGET_64BIT.
+	(movdi_uld, movdi_usd): New patterns.
+
 	* pa.c (emit_move_sequence): Do not replace a pseudo with its
 	equivalent memory location unless we have been provided a scratch
 	register.  Similarly do not call find_replacement unless a
