@@ -83,6 +83,10 @@ of which stage you're on or what invocation that stage needs.
 @item cleanstrap
 Removed everything (@samp{make clean}) and rebuilds (@samp{make bootstrap}).
 
+@item restrap
+Like @code{cleanstrap}, except that the process starts from the first
+stage build, not from scratch.
+
 @item stage@var{N} (@var{N} = 1@dots{}4)
 For each stage, moves the appropriate files to the @file{stage@var{N}}
 subdirectory.
@@ -98,5 +102,12 @@ appropriate flags.
 Compares the results of stages 2 and 3.  This ensures that the compiler
 is running properly, since it should produce the same object files
 regardless of how it itself was compiled.
+
+@item profiledbootstrap
+Builds a compiler with profiling feedback information.  For more
+information, see
+@ref{Building,,Building with profile feedback,gccinstall,Installing GCC}.
+This is actually a target in the top-level directory, which then
+recurses into the @file{gcc} subdirectory multiple times.
 
 @end table

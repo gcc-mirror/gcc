@@ -1,3 +1,7 @@
+2003-07-19  Phil Edwards  <pme@gcc.gnu.org>
+
+	* doc/makefile.texi (restrap, profiledbootstrap):  Document targets.
+
 2003-07-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fixinc/fixfixes.c fixinc/fixincl.c fixinc/fixlib.c
