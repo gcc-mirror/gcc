@@ -607,9 +607,10 @@ deduce_conversion (from, to)
   return result;
 }
 
-#define DEDUCE_CONVERSION(FROM, TO)					      \
-  (conversion_recipe[FROM][TO].opcodes ? 0				      \
-   : (conversion_recipe[FROM][TO] = deduce_conversion (FROM, TO), 0))
+#define DEDUCE_CONVERSION(FROM, TO)				\
+  (conversion_recipe[(int) FROM][(int) TO].opcodes ? 0		\
+   : (conversion_recipe[(int) FROM][(int) TO]			\
+       = deduce_conversion (FROM, TO), 0))
 
 
 /* Emit a conversion between the given scalar types.  */
@@ -620,8 +621,8 @@ emit_typecode_conversion (from, to)
   int i;
 
   DEDUCE_CONVERSION (from, to);
-  for (i = 0; i < conversion_recipe[from][to].nopcodes; ++i)
-    bc_emit_instruction (conversion_recipe[from][to].opcodes[i]);
+  for (i = 0; i < conversion_recipe[(int) from][(int) to].nopcodes; ++i)
+    bc_emit_instruction (conversion_recipe[(int) from][(int) to].opcodes[i]);
 }
 
 
@@ -639,8 +640,8 @@ bc_init_mode_to_code_map ()
     }
 
 #define DEF_MODEMAP(SYM, CODE, UCODE, CONST, LOAD, STORE) \
-  { signed_mode_to_code_map[(enum machine_mode) SYM] = CODE; \
-    unsigned_mode_to_code_map[(enum machine_mode) SYM] = UCODE; }
+  { signed_mode_to_code_map[(int) SYM] = CODE; \
+    unsigned_mode_to_code_map[(int) SYM] = UCODE; }
 #include "modemap.def"
 #undef DEF_MODEMAP
 
@@ -656,7 +657,8 @@ preferred_typecode (mode, unsignedp)
 {
   enum typecode code = (unsignedp
 			? unsigned_mode_to_code_map
-			: signed_mode_to_code_map) [MIN (mode, MAX_MACHINE_MODE)];
+			: signed_mode_to_code_map) [MIN ((int) mode,
+							 (int) MAX_MACHINE_MODE)];
 
   if (code == LAST_AND_UNUSED_TYPECODE)
     abort ();
@@ -709,9 +711,9 @@ bc_expand_binary_operation (optab, resulttype, arg0, arg1)
     {
       cost = 0;
       DEDUCE_CONVERSION (arg0code, optab[i].arg0);
-      cost += conversion_recipe[arg0code][optab[i].arg0].cost;
+      cost += conversion_recipe[(int) arg0code][(int) optab[i].arg0].cost;
       DEDUCE_CONVERSION (arg1code, optab[i].arg1);
-      cost += conversion_recipe[arg1code][optab[i].arg1].cost;
+      cost += conversion_recipe[(int) arg1code][(int) optab[i].arg1].cost;
       if (cost < bestcost)
 	{
 	  besti = i;
@@ -748,7 +750,7 @@ bc_expand_unary_operation (optab, resulttype, arg0)
   for (i = 0; optab[i].opcode != -1; ++i)
     {
       DEDUCE_CONVERSION (arg0code, optab[i].arg0);
-      cost = conversion_recipe[arg0code][optab[i].arg0].cost;
+      cost = conversion_recipe[(int) arg0code][(int) optab[i].arg0].cost;
       if (cost < bestcost)
 	{
 	  besti = i;
@@ -776,7 +778,7 @@ bc_expand_increment (optab, type)
   int i;
 
   code = preferred_typecode (TYPE_MODE (type), TREE_UNSIGNED (type));
-  for (i = 0; optab[i].opcode >= 0; ++i)
+  for (i = 0; (int) optab[i].opcode >= 0; ++i)
     if (code == optab[i].arg)
       {
 	bc_emit_instruction (optab[i].opcode);
