@@ -1,3 +1,8 @@
+2002-03-09  Adam Megacz  <adam@xwt.org>
+
+        * java/lang/Win32Process.java (ConcreteProcess): Now throws an
+        IOException so that Throwable.printStackTrace fails correctly.
+
 2002-03-08  Adam Megacz  <adam@xwt.org>
 
         * java/net/natPlainSocketImpl.cc (read, write, close): Formatting
