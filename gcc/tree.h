@@ -1615,6 +1615,10 @@ struct tree_type
 /* In a FUNCTION_DECL, nonzero if the function cannot be inlined.  */
 #define DECL_UNINLINABLE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.uninlinable)
 
+/* In a VAR_DECL, nonzero if the data should be allocated from 
+   thread-local storage.  */
+#define DECL_THREAD_LOCAL(NODE) (VAR_DECL_CHECK (NODE)->decl.thread_local_flag)
+
 /* In a FUNCTION_DECL, the saved representation of the body of the
    entire function.  Usually a COMPOUND_STMT, but in C++ this may also
    be a RETURN_INIT, CTOR_INITIALIZER, or TRY_BLOCK.  */
@@ -1793,7 +1797,8 @@ struct tree_decl
   unsigned non_addressable : 1;
   unsigned user_align : 1;
   unsigned uninlinable : 1;
-  /* Three unused bits.  */
+  unsigned thread_local_flag : 1;
+  /* Two unused bits.  */
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;

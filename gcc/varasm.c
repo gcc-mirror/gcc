@@ -1586,19 +1586,28 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   /* Handle uninitialized definitions.  */
 
-  if ((DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node
-#if defined ASM_EMIT_BSS
-       || (flag_zero_initialized_in_bss
-	   && initializer_zerop (DECL_INITIAL (decl)))
+  /* If the decl has been given an explicit section name, then it
+     isn't common, and shouldn't be handled as such.  */
+  if (DECL_SECTION_NAME (decl) || dont_output_data)
+    ;
+  /* We don't implement common thread-local data at present.  */
+  else if (DECL_THREAD_LOCAL (decl))
+    {
+      if (DECL_COMMON (decl))
+	sorry ("thread-local COMMON data not implemented");
+    }
+#ifndef ASM_EMIT_BSS
+  /* If the target can't output uninitialized but not common global data
+     in .bss, then we have to use .data.  */
+  /* ??? We should handle .bss via select_section mechanisms rather than
+     via special target hooks.  That would eliminate this special case.  */
+  else if (!DECL_COMMON (decl))
+    ;
 #endif
-       )
-      /* If the target can't output uninitialized but not common global data
-	 in .bss, then we have to use .data.  */
-#if ! defined ASM_EMIT_BSS
-      && DECL_COMMON (decl)
-#endif
-      && DECL_SECTION_NAME (decl) == NULL_TREE
-      && ! dont_output_data)
+  else if (DECL_INITIAL (decl) == 0
+	   || DECL_INITIAL (decl) == error_mark_node
+           || (flag_zero_initialized_in_bss
+	       && initializer_zerop (DECL_INITIAL (decl))))
     {
       unsigned HOST_WIDE_INT size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
       unsigned HOST_WIDE_INT rounded = size;
@@ -5101,8 +5110,13 @@ default_section_type_flags (decl, name, reloc)
       || strncmp (name, ".gnu.linkonce.b.", 16) == 0
       || strcmp (name, ".sbss") == 0
       || strncmp (name, ".sbss.", 6) == 0
-      || strncmp (name, ".gnu.linkonce.sb.", 17) == 0)
+      || strncmp (name, ".gnu.linkonce.sb.", 17) == 0
+      || strcmp (name, ".tbss") == 0)
     flags |= SECTION_BSS;
+
+  if (strcmp (name, ".tdata") == 0
+      || strcmp (name, ".tbss") == 0)
+    flags |= SECTION_TLS;
 
   return flags;
 }
@@ -5146,6 +5160,8 @@ default_elf_asm_named_section (name, flags)
     *f++ = 'M';
   if (flags & SECTION_STRINGS)
     *f++ = 'S';
+  if (flags & SECTION_TLS)
+    *f++ = 'T';
   *f = '\0';
 
   if (flags & SECTION_BSS)
@@ -5353,8 +5369,17 @@ categorize_decl_for_section (decl, reloc)
   else
     ret = SECCAT_RODATA;
 
+  /* There are no read-only thread-local sections.  */
+  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL (decl))
+    {
+      if (ret == SECCAT_BSS)
+	ret = SECCAT_TBSS;
+      else
+	ret = SECCAT_TDATA;
+    }
+
   /* If the target uses small data sections, select it.  */
-  if ((*targetm.in_small_data_p) (decl))
+  else if ((*targetm.in_small_data_p) (decl))
     {
       if (ret == SECCAT_BSS)
 	ret = SECCAT_SBSS;

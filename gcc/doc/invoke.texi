@@ -677,7 +677,7 @@ in the following sections.
 -fverbose-asm  -fpack-struct  -fstack-check @gol
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
 -fargument-alias  -fargument-noalias @gol
--fargument-noalias-global  -fleading-underscore}
+-fargument-noalias-global  -fleading-underscore -ftls-model=@var{model}}
 @end table
 
 @menu
@@ -9915,6 +9915,14 @@ is to help link with legacy assembly code.
 
 Be warned that you should know what you are doing when invoking this
 option, and that not all targets provide complete support for it.
+
+@item -ftls-model=@var{model}
+Alter the thread-local storage model to be used (@pxref{Thread-Local}).
+The @var{model} argument should be one of @code{global-dynamic},
+@code{local-dynamic}, @code{initial-exec} or @code{local-exec}.
+
+The default without @option{-fpic} is @code{initial-exec}; with
+@option{-fpic} the default is @code{global-dynamic}.
 @end table
 
 @c man end
