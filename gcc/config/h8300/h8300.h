@@ -1200,44 +1200,9 @@ extern int h8300_move_ratio;
 #undef  MOVE_RATIO
 #define MOVE_RATIO h8300_move_ratio
 
-/* Define the codes that are matched by predicates in h8300.c.  */
-
-#define PREDICATE_CODES							\
-  {"general_operand_src", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,	\
-			   LABEL_REF, SUBREG, REG, MEM}},		\
-  {"general_operand_dst", {SUBREG, REG, MEM}},				\
-  {"h8300_src_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF,	\
-			 LABEL_REF, SUBREG, REG, MEM}},			\
-  {"h8300_dst_operand", {SUBREG, REG, MEM}},				\
-  {"nibble_operand", {CONST_INT}},					\
-  {"reg_or_nibble_operand", {CONST_INT, SUBREG, REG}},			\
-  {"h8sx_unary_shift_operator", {ASHIFTRT, LSHIFTRT, ASHIFT, ROTATE}},	\
-  {"h8sx_binary_shift_operator", {ASHIFTRT, LSHIFTRT, ASHIFT}},		\
-  {"h8sx_binary_memory_operator", {PLUS, MINUS, AND, IOR, XOR, ASHIFT,	\
-				   ASHIFTRT, LSHIFTRT, ROTATE}},	\
-  {"h8sx_unary_memory_operator", {NEG, NOT}},				\
-  {"h8300_ldm_parallel", {PARALLEL}},					\
-  {"h8300_stm_parallel", {PARALLEL}},					\
-  {"h8300_return_parallel", {PARALLEL}},				\
-  {"single_one_operand", {CONST_INT}},					\
-  {"single_zero_operand", {CONST_INT}},					\
-  {"call_insn_operand", {MEM}},						\
-  {"small_call_insn_operand", {MEM}},					\
-  {"jump_address_operand", {REG, MEM}},					\
-  {"two_insn_adds_subs_operand", {CONST_INT}},				\
-  {"bit_operand", {REG, SUBREG, MEM}},					\
-  {"bit_memory_operand", {MEM}},					\
-  {"stack_pointer_operand", {REG}},					\
-  {"const_int_gt_2_operand", {CONST_INT}},				\
-  {"const_int_ge_8_operand", {CONST_INT}},				\
-  {"const_int_qi_operand", {CONST_INT}},				\
-  {"const_int_hi_operand", {CONST_INT}},				\
-  {"incdec_operand", {CONST_INT}},					\
-  {"bit_operator", {XOR, AND, IOR}},					\
-  {"nshift_operator", {ASHIFTRT, LSHIFTRT, ASHIFT}},			\
-  {"eqne_operator", {EQ, NE}},						\
-  {"gtle_operator", {GT, LE, GTU, LEU}},				\
-  {"gtuleu_operator", {GTU, LEU}},					\
-  {"iorxor_operator", {IOR, XOR}},
+/* Machine-specific symbol_ref flags.  */
+#define SYMBOL_FLAG_FUNCVEC_FUNCTION	(SYMBOL_FLAG_MACH_DEP << 0)
+#define SYMBOL_FLAG_EIGHTBIT_DATA	(SYMBOL_FLAG_MACH_DEP << 1)
+#define SYMBOL_FLAG_TINY_DATA		(SYMBOL_FLAG_MACH_DEP << 2)
 
 #endif /* ! GCC_H8300_H */

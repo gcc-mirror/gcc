@@ -72,26 +72,6 @@ enum h8300_operand_class
   NUM_H8OPS
 };
 
-/* Classifies an h8sx shift operation.
-
-   H8SX_SHIFT_NONE
-	The shift cannot be done in a single instruction.
-
-   H8SX_SHIFT_UNARY
-	The shift is effectively a unary operation.  The instruction will
-	allow any sort of destination operand and have a format similar
-	to neg and not.  This is true of certain power-of-2 shifts.
-
-   H8SX_SHIFT_BINARY
-	The shift is a binary operation.  The destination must be a
-	register and the source can be a register or a constant.  */
-enum h8sx_shift_type
-{
-  H8SX_SHIFT_NONE,
-  H8SX_SHIFT_UNARY,
-  H8SX_SHIFT_BINARY
-};
-
 /* For a general two-operand instruction, element [X][Y] gives
    the length of the opcode fields when the first operand has class
    (X + 1) and the second has class Y.  */
@@ -121,7 +101,6 @@ static int h8300_shift_costs (rtx);
 static void          h8300_push_pop               (int, int, int, int);
 static int           h8300_stack_offset_p         (rtx, int);
 static int           h8300_ldm_stm_regno          (rtx, int, int, int);
-static int           h8300_ldm_stm_parallel       (rtvec, int, int);
 static void          h8300_reorg                  (void);
 static unsigned int  h8300_constant_length        (rtx);
 static unsigned int  h8300_displacement_length    (rtx, int);
@@ -133,7 +112,6 @@ static unsigned int  h8300_bitfield_length        (rtx, rtx);
 static unsigned int  h8300_binary_length          (rtx, const h8300_length_table *);
 static bool          h8300_short_move_mem_p       (rtx, enum rtx_code);
 static unsigned int  h8300_move_length            (rtx *, const h8300_length_table *);
-enum h8sx_shift_type h8sx_classify_shift          (enum machine_mode, enum rtx_code, rtx);
 
 /* CPU_TYPE, says what cpu we're compiling for.  */
 int cpu_type;
@@ -163,11 +141,6 @@ const char *h8_push_op, *h8_pop_op, *h8_mov_op;
 
 /* Value of MOVE_RATIO.  */
 int h8300_move_ratio;
-
-/* Machine-specific symbol_ref flags.  */
-#define SYMBOL_FLAG_FUNCVEC_FUNCTION	(SYMBOL_FLAG_MACH_DEP << 0)
-#define SYMBOL_FLAG_EIGHTBIT_DATA	(SYMBOL_FLAG_MACH_DEP << 1)
-#define SYMBOL_FLAG_TINY_DATA		(SYMBOL_FLAG_MACH_DEP << 2)
 
 /* See below where shifts are handled for explanation of this enum.  */
 
@@ -761,7 +734,7 @@ h8300_ldm_stm_regno (rtx x, int load_p, int index, int nregs)
 /* Return true if the elements of VEC starting at FIRST describe an
    ldm or stm instruction (LOAD_P says which).  */
 
-static int
+int
 h8300_ldm_stm_parallel (rtvec vec, int load_p, int first)
 {
   rtx last;
@@ -803,31 +776,6 @@ h8300_ldm_stm_parallel (rtvec vec, int load_p, int first)
   return (GET_CODE (last) == SET
 	  && SET_DEST (last) == stack_pointer_rtx
 	  && h8300_stack_offset_p (SET_SRC (last), adjust));
-}
-
-/* Return true if X is an ldm.l pattern.  X is known to be parallel.  */
-
-int
-h8300_ldm_parallel (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return h8300_ldm_stm_parallel (XVEC (x, 0), 1, 0);
-}
-
-/* Likewise stm.l.  */
-
-int
-h8300_stm_parallel (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return h8300_ldm_stm_parallel (XVEC (x, 0), 0, 0);
-}
-
-/* Likewise rts/l and rte/l.  Note that the .md pattern will check
-   for the return so there's no need to do that here.  */
-
-int
-h8300_return_parallel (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return h8300_ldm_stm_parallel (XVEC (x, 0), 1, 1);
 }
 
 /* This is what the stack looks like after the prolog of
@@ -1020,169 +968,6 @@ h8300_file_end (void)
   fputs ("\t.end\n", asm_out_file);
 }
 
-/* Return true if OP is a valid source operand for an integer move
-   instruction.  */
-
-int
-general_operand_src (rtx op, enum machine_mode mode)
-{
-  if (GET_MODE (op) == mode
-      && GET_CODE (op) == MEM
-      && GET_CODE (XEXP (op, 0)) == POST_INC)
-    return 1;
-  return general_operand (op, mode);
-}
-
-/* Return true if OP is a valid destination operand for an integer move
-   instruction.  */
-
-int
-general_operand_dst (rtx op, enum machine_mode mode)
-{
-  if (GET_MODE (op) == mode
-      && GET_CODE (op) == MEM
-      && GET_CODE (XEXP (op, 0)) == PRE_DEC)
-    return 1;
-  return general_operand (op, mode);
-}
-
-/* Return true if OP is a suitable first operand for a general arithmetic
-   insn such as "add".  */
-
-int
-h8300_dst_operand (rtx op, enum machine_mode mode)
-{
-  if (TARGET_H8300SX)
-    return nonimmediate_operand (op, mode);
-  return register_operand (op, mode);
-}
-
-/* Likewise the second operand.  */
-
-int
-h8300_src_operand (rtx op, enum machine_mode mode)
-{
-  if (TARGET_H8300SX)
-    return general_operand (op, mode);
-  return nonmemory_operand (op, mode);
-}
-
-/* Check that an operand is either a register or an unsigned 4-bit
-   constant.  */
-
-int
-nibble_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (op) == CONST_INT && TARGET_H8300SX
-	  && INTVAL (op) >= 0 && INTVAL (op) <= 15);
-}
-
-/* Check that an operand is either a register or an unsigned 4-bit
-   constant.  */
-
-int
-reg_or_nibble_operand (rtx op, enum machine_mode mode)
-{
-  return (nibble_operand (op, mode) || register_operand (op, mode));
-}
-
-/* Return true if OP is a constant that contains only one 1 in its
-   binary representation.  */
-
-int
-single_one_operand (rtx operand, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (operand) == CONST_INT)
-    {
-      /* We really need to do this masking because 0x80 in QImode is
-	 represented as -128 for example.  */
-      if (exact_log2 (INTVAL (operand) & GET_MODE_MASK (mode)) >= 0)
-	return 1;
-    }
-
-  return 0;
-}
-
-/* Return true if OP is a constant that contains only one 0 in its
-   binary representation.  */
-
-int
-single_zero_operand (rtx operand, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (operand) == CONST_INT)
-    {
-      /* We really need to do this masking because 0x80 in QImode is
-	 represented as -128 for example.  */
-      if (exact_log2 (~INTVAL (operand) & GET_MODE_MASK (mode)) >= 0)
-	return 1;
-    }
-
-  return 0;
-}
-
-/* Return true if OP is a valid call operand.  */
-
-int
-call_insn_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (op) == MEM)
-    {
-      rtx inside = XEXP (op, 0);
-      if (register_operand (inside, Pmode))
-	return 1;
-      if (CONSTANT_ADDRESS_P (inside))
-	return 1;
-    }
-  return 0;
-}
-
-/* Return 1 if an addition/subtraction of a constant integer can be
-   transformed into two consecutive adds/subs that are faster than the
-   straightforward way.  Otherwise, return 0.  */
-
-int
-two_insn_adds_subs_operand (rtx op, enum machine_mode mode)
-{
-  if (TARGET_H8300SX)
-    return 0;
-
-  if (GET_CODE (op) == CONST_INT)
-    {
-      HOST_WIDE_INT value = INTVAL (op);
-
-      /* Force VALUE to be positive so that we do not have to consider
-         the negative case.  */
-      if (value < 0)
-	value = -value;
-      if (TARGET_H8300H || TARGET_H8300S)
-	{
-	  /* A constant addition/subtraction takes 2 states in QImode,
-	     4 states in HImode, and 6 states in SImode.  Thus, the
-	     only case we can win is when SImode is used, in which
-	     case, two adds/subs are used, taking 4 states.  */
-	  if (mode == SImode
-	      && (value == 2 + 1
-		  || value == 4 + 1
-		  || value == 4 + 2
-		  || value == 4 + 4))
-	    return 1;
-	}
-      else
-	{
-	  /* We do not profit directly by splitting addition or
-	     subtraction of 3 and 4.  However, since these are
-	     implemented as a sequence of adds or subs, they do not
-	     clobber (cc0) unlike a sequence of add.b and add.x.  */
-	  if (mode == HImode
-	      && (value == 2 + 1
-		  || value == 2 + 2))
-	    return 1;
-	}
-    }
-
-  return 0;
-}
-
 /* Split an add of a small constant into two adds/subs insns.
 
    If USE_INCDEC_P is nonzero, we generate the last insn using inc/dec
@@ -1229,85 +1014,6 @@ split_adds_subs (enum machine_mode mode, rtx *operands)
     }
 
   return;
-}
-
-/* Return true if OP is a valid call operand, and OP represents
-   an operand for a small call (4 bytes instead of 6 bytes).  */
-
-int
-small_call_insn_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if (GET_CODE (op) == MEM)
-    {
-      rtx inside = XEXP (op, 0);
-
-      /* Register indirect is a small call.  */
-      if (register_operand (inside, Pmode))
-	return 1;
-
-      /* A call through the function vector is a small call too.  */
-      if (GET_CODE (inside) == SYMBOL_REF
-	  && (SYMBOL_REF_FLAGS (inside) & SYMBOL_FLAG_FUNCVEC_FUNCTION))
-	return 1;
-    }
-  /* Otherwise it's a large call.  */
-  return 0;
-}
-
-/* Return true if OP is a valid jump operand.  */
-
-int
-jump_address_operand (rtx op, enum machine_mode mode)
-{
-  if (GET_CODE (op) == REG)
-    return mode == Pmode;
-
-  if (GET_CODE (op) == MEM)
-    {
-      rtx inside = XEXP (op, 0);
-      if (register_operand (inside, Pmode))
-	return 1;
-      if (CONSTANT_ADDRESS_P (inside))
-	return 1;
-    }
-  return 0;
-}
-
-/* Recognize valid operands for bit-field instructions.  */
-
-int
-bit_operand (rtx op, enum machine_mode mode)
-{
-  /* We can accept any nonimmediate operand, except that MEM operands must
-     be limited to those that use addresses valid for the 'U' constraint.  */
-  if (!nonimmediate_operand (op, mode))
-    return 0;
-
-  /* H8SX accepts pretty much anything here.  */
-  if (TARGET_H8300SX)
-    return 1;
-
-  /* Accept any mem during RTL generation.  Otherwise, the code that does
-     insv and extzv will think that we cannot handle memory.  However,
-     to avoid reload problems, we only accept 'U' MEM operands after RTL
-     generation.  This means that any named pattern which uses this predicate
-     must force its operands to match 'U' before emitting RTL.  */
-
-  if (GET_CODE (op) == REG)
-    return 1;
-  if (GET_CODE (op) == SUBREG)
-    return 1;
-  return (GET_CODE (op) == MEM
-	  && OK_FOR_U (op));
-}
-
-/* Return nonzero if OP is a MEM suitable for bit manipulation insns.  */
-
-int
-bit_memory_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (op) == MEM
-	  && OK_FOR_U (op));
 }
 
 /* Handle machine specific pragmas for compatibility with existing
@@ -2258,114 +1964,6 @@ notice_update_cc (rtx body, rtx insn)
       break;
     }
 }
-
-/* Return nonzero if X is a stack pointer.  */
-
-int
-stack_pointer_operand (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return x == stack_pointer_rtx;
-}
-
-/* Return nonzero if X is a constant whose absolute value is greater
-   than 2.  */
-
-int
-const_int_gt_2_operand (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (x) == CONST_INT
-	  && abs (INTVAL (x)) > 2);
-}
-
-/* Return nonzero if X is a constant whose absolute value is no
-   smaller than 8.  */
-
-int
-const_int_ge_8_operand (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (x) == CONST_INT
-	  && abs (INTVAL (x)) >= 8);
-}
-
-/* Return nonzero if X is a constant expressible in QImode.  */
-
-int
-const_int_qi_operand (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (x) == CONST_INT
-	  && (INTVAL (x) & 0xff) == INTVAL (x));
-}
-
-/* Return nonzero if X is a constant expressible in HImode.  */
-
-int
-const_int_hi_operand (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (x) == CONST_INT
-	  && (INTVAL (x) & 0xffff) == INTVAL (x));
-}
-
-/* Return nonzero if X is a constant suitable for inc/dec.  */
-
-int
-incdec_operand (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (x) == CONST_INT
-	  && (CONST_OK_FOR_M (INTVAL (x))
-	      || CONST_OK_FOR_O (INTVAL (x))));
-}
-
-/* Return nonzero if X is either EQ or NE.  */
-
-int
-eqne_operator (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  enum rtx_code code = GET_CODE (x);
-
-  return (code == EQ || code == NE);
-}
-
-/* Return nonzero if X is either GT or LE.  */
-
-int
-gtle_operator (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  enum rtx_code code = GET_CODE (x);
-
-  return (code == GT || code == LE);
-}
-
-/* Return nonzero if X is either GTU or LEU.  */
-
-int
-gtuleu_operator (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  enum rtx_code code = GET_CODE (x);
-
-  return (code == GTU || code == LEU);
-}
-
-/* Return nonzero if X is either IOR or XOR.  */
-
-int
-iorxor_operator (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  enum rtx_code code = GET_CODE (x);
-
-  return (code == IOR || code == XOR);
-}
-
-/* Recognize valid operators for bit instructions.  */
-
-int
-bit_operator (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  enum rtx_code code = GET_CODE (x);
-
-  return (code == XOR
-	  || code == AND
-	  || code == IOR);
-}
 
 /* Given that X occurs in an address of the form (plus X constant),
    return the part of X that is expected to be a register.  There are
@@ -2895,58 +2493,6 @@ h8300_operands_match_p (rtx *operands)
     return true;
 
   return false;
-}
-
-/* Return true if OP is a binary operator in which it would be safe to
-   replace register operands with memory operands.  */
-
-int
-h8sx_binary_memory_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if (!TARGET_H8300SX)
-    return false;
-
-  if (GET_MODE (op) != QImode
-      && GET_MODE (op) != HImode
-      && GET_MODE (op) != SImode)
-    return false;
-
-  switch (GET_CODE (op))
-    {
-    case PLUS:
-    case MINUS:
-    case AND:
-    case IOR:
-    case XOR:
-      return true;
-
-    default:
-      return h8sx_unary_shift_operator (op, mode);
-    }
-}
-
-/* Like h8sx_binary_memory_operator, but applies to unary operators.  */
-
-int
-h8sx_unary_memory_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if (!TARGET_H8300SX)
-    return false;
-
-  if (GET_MODE (op) != QImode
-      && GET_MODE (op) != HImode
-      && GET_MODE (op) != SImode)
-    return false;
-
-  switch (GET_CODE (op))
-    {
-    case NEG:
-    case NOT:
-      return true;
-
-    default:
-      return false;
-    }
 }
 
 /* Try using movmd to move LENGTH bytes from memory region SRC to memory
@@ -4049,26 +3595,6 @@ h8sx_classify_shift (enum machine_mode mode, enum rtx_code code, rtx op)
     }
 }
 
-/* Return true if X is a shift operation of type H8SX_SHIFT_UNARY.  */
-
-int
-h8sx_unary_shift_operator (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (BINARY_P (x) && NON_COMMUTATIVE_P (x)
-	  && (h8sx_classify_shift (GET_MODE (x), GET_CODE (x), XEXP (x, 1))
-	      == H8SX_SHIFT_UNARY));
-}
-
-/* Likewise H8SX_SHIFT_BINARY.  */
-
-int
-h8sx_binary_shift_operator (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (BINARY_P (x) && NON_COMMUTATIVE_P (x)
-	  && (h8sx_classify_shift (GET_MODE (x), GET_CODE (x), XEXP (x, 1))
-	      == H8SX_SHIFT_BINARY));
-}
-
 /* Return the asm template for a single h8sx shift instruction.
    OPERANDS[0] and OPERANDS[1] are the destination, OPERANDS[2]
    is the source and OPERANDS[3] is the shift.  SUFFIX is the
@@ -4114,20 +3640,6 @@ output_h8sx_shift (rtx *operands, int suffix, int optype)
   else
     sprintf (buffer, "%s.%c\t%%X2,%%%c0", stem, suffix, optype);
   return buffer;
-}
-int
-nshift_operator (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  switch (GET_CODE (x))
-    {
-    case ASHIFTRT:
-    case LSHIFTRT:
-    case ASHIFT:
-      return 1;
-
-    default:
-      return 0;
-    }
 }
 
 /* Emit code to do shifts.  */
