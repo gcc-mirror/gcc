@@ -161,15 +161,15 @@ public class MulticastSocket extends DatagramSocket
     return impl.getTimeToLive();
   }
 
-   /**
-    * Sets the interface to use for sending multicast packets.
-    *
+  /**
+   * Sets the interface to use for sending multicast packets.
+   *
    * @param addr The new interface to use.
-    *
+   *
    * @exception SocketException If an error occurs.
    *
    * @since 1.4
-    */
+   */
   public void setInterface(InetAddress addr) throws SocketException
   {
     impl.setOption(SocketOptions.IP_MULTICAST_IF, addr);

@@ -1,3 +1,8 @@
+2003-01-16  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/MulticastSocket.java
+	(setInterface): Reindented.
+
 2003-01-15  Scott Gilbertson  <scottg@mantatest.com>
 
 	* gnu/gcj/xlib/natGC.cc (fillPolygon): New method.
