@@ -2449,7 +2449,6 @@ backend_init (void)
      provide a dummy function context for them.  */
   init_dummy_function_start ();
   init_expmed ();
-  init_optimization_passes ();
   if (flag_caller_saves)
     init_caller_save ();
   expand_dummy_function_end ();
@@ -2472,6 +2471,7 @@ lang_dependent_init (const char *name)
      front end is initialized.  */
   init_eh ();
   init_optabs ();
+  init_optimization_passes ();
 
   /* The following initialization functions need to generate rtl, so
      provide a dummy function context for them.  */
