@@ -77,6 +77,13 @@ typedef char * __va___list;
 #endif /* _VA_LIST */
 #endif /* !defined (_VA_LIST_) || defined (_ANSI_H) */
 
+/*  In 4.3bsd-net2, it is said we must #undef this.
+    I hope this successfully identifies that system.
+    I don't know why this works--rms.  */
+#ifdef _ANSI_H
+#undef _VA_LIST_
+#endif
+
 #define va_start(AP)  AP=(char *) &__builtin_va_alist
 
 #define va_end(AP)
