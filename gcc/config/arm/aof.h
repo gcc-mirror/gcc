@@ -316,7 +316,7 @@ do {							\
     arm_main_function = 1;				\
 } while (0)
 
-#define ARM_OUTPUT_LABEL(STREAM,NAME)	\
+#define ASM_OUTPUT_LABEL(STREAM,NAME)	\
 do {					\
   assemble_name (STREAM,NAME);		\
   fputs ("\n", STREAM);			\
