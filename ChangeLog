@@ -1,3 +1,8 @@
+2003-09-19  Ziemowit Laski  <zlaski@apple.com>
+
+	* MAINTAINERS: Move myself from 'Write After Approval'
+	to 'Various Maintainers' (objective-c) section.
+
 2003-09-17  Daniel Jacobowitz  <drow@mvista.com>
 
 	* configure.in (TOPLEVEL_CONFIGURE_ARGUMENTS, baseargs): Fix
