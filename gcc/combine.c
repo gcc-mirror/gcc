@@ -962,6 +962,7 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
       for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)
 	{
 	  rtx elt = XVECEXP (PATTERN (insn), 0, i);
+	  rtx note;
 
 	  switch (GET_CODE (elt))
 	    {
@@ -1012,6 +1013,8 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
 	      /* Ignore SETs whose result isn't used but not those that
 		 have side-effects.  */
 	      if (find_reg_note (insn, REG_UNUSED, SET_DEST (elt))
+		  && (!(note = find_reg_note (insn, REG_EH_REGION, NULL_RTX))
+		      || INTVAL (XEXP (note, 0)) <= 0)
 		  && ! side_effects_p (elt))
 		break;
 
