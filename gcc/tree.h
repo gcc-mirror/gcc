@@ -1764,6 +1764,52 @@ extern void rrotate_double	PROTO((HOST_WIDE_INT, HOST_WIDE_INT,
 extern int operand_equal_p	PROTO((tree, tree, int));
 extern tree invert_truthvalue	PROTO((tree));
 
+/* Interface of the DWARF2 unwind info support.  */
+
+/* Decide whether we want to emit frame unwind information for the current
+   translation unit.  */
+
+extern int dwarf2out_do_frame		PROTO((void));
+
+/* Generate a new label for the CFI info to refer to.  */
+
+extern char *dwarf2out_cfi_label	PROTO((void));
+
+/* Entry point to update the canonical frame address (CFA).  */
+
+extern void dwarf2out_def_cfa		PROTO((char *, unsigned, long));
+
+/* Add the CFI for saving a register window.  */
+
+extern void dwarf2out_window_save	PROTO((char *));
+
+/* Add a CFI to update the running total of the size of arguments pushed
+   onto the stack.  */
+
+extern void dwarf2out_args_size		PROTO((char *, long));
+
+/* Entry point for saving a register to the stack.  */
+
+extern void dwarf2out_reg_save		PROTO((char *, unsigned, long));
+
+/* Entry point for saving the return address in the stack.  */
+
+extern void dwarf2out_return_save	PROTO((char *, long));
+
+/* Entry point for saving the return address in a register.  */
+
+extern void dwarf2out_return_reg	PROTO((char *, unsigned));
+
+/* Output a marker (i.e. a label) for the beginning of a function, before
+   the prologue.  */
+
+extern void dwarf2out_begin_prologue	PROTO((void));
+
+/* Output a marker (i.e. a label) for the absolute end of the generated
+   code for a function definition.  */
+
+extern void dwarf2out_end_epilogue	PROTO((void));
+
 /* The language front-end must define these functions.  */
 
 /* Function of no arguments for initializing lexical scanning.  */
