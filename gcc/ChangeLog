@@ -1,3 +1,9 @@
+2003-04-15  Olivier Hainque <hainque@act-europe.fr>
+
+	* except.c (resolve_fixup_regions): Avoid dereferencing null pointer
+	to region, possible after integration of function with unreachable
+	regions that were optimized away.
+
 2003-04-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.h (EPILOGUE_USES): Use register 2,

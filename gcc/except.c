@@ -913,7 +913,7 @@ resolve_fixup_regions ()
       for (j = 1; j <= n; ++j)
 	{
 	  cleanup = cfun->eh->region_array[j];
-	  if (cleanup->type == ERT_CLEANUP
+	  if (cleanup && cleanup->type == ERT_CLEANUP
 	      && cleanup->u.cleanup.exp == fixup->u.fixup.cleanup_exp)
 	    break;
 	}
