@@ -6006,8 +6006,7 @@ output_move_double (operands)
 	      long l[2];
 	      union real_extract u;
 
-	      bcopy ((char *) &CONST_DOUBLE_LOW (operands[1]), (char *) &u,
-		     sizeof (u));
+	      memcpy (&u, &CONST_DOUBLE_LOW (operands[1]), sizeof (u));
 	      REAL_VALUE_TO_TARGET_DOUBLE (u.d, l);
 	      otherops[1] = GEN_INT (l[1]);
 	      operands[1] = GEN_INT (l[0]);

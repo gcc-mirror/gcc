@@ -693,8 +693,8 @@ extern int flag_pic;				/* -fpic */
   static int leaf[] = REG_LEAF_ALLOC_ORDER;			\
   static int nonleaf[] = REG_ALLOC_ORDER;			\
 								\
-  bcopy (regs_ever_live[1] ? nonleaf : leaf, reg_alloc_order,	\
-	 FIRST_PSEUDO_REGISTER * sizeof (int));			\
+  memcpy (reg_alloc_order, regs_ever_live[1] ? nonleaf : leaf,	\
+	  FIRST_PSEUDO_REGISTER * sizeof (int));		\
 }
 
 /*** Register Classes ***/

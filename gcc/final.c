@@ -1904,7 +1904,7 @@ add_bb_string (string, perm_p)
   if (!perm_p)
     {
       char *p = (char *) permalloc (len);
-      bcopy (string, p, len);
+      memcpy (p, string, len);
       string = p;
     }
   else

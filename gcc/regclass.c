@@ -267,8 +267,8 @@ init_reg_sets ()
 	  SET_HARD_REG_BIT (reg_class_contents[i], j);
     }
 
-  bcopy (initial_fixed_regs, fixed_regs, sizeof fixed_regs);
-  bcopy (initial_call_used_regs, call_used_regs, sizeof call_used_regs);
+  memcpy (fixed_regs, initial_fixed_regs, sizeof fixed_regs);
+  memcpy (call_used_regs, initial_call_used_regs, sizeof call_used_regs);
   memset (global_regs, 0, sizeof global_regs);
 
   /* Do any additional initialization regsets may need */
@@ -404,7 +404,7 @@ init_reg_sets_1 ()
   CLEAR_HARD_REG_SET (call_used_reg_set);
   CLEAR_HARD_REG_SET (call_fixed_reg_set);
 
-  bcopy (fixed_regs, call_fixed_regs, sizeof call_fixed_regs);
+  memcpy (call_fixed_regs, fixed_regs, sizeof call_fixed_regs);
 
   n_non_fixed_regs = 0;
 

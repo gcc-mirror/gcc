@@ -10703,7 +10703,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
  		      }
 		    {
 		      RID_BIT_TYPE tmp_bits;
-		      bcopy ((void*)&specbits, (void*)&tmp_bits, sizeof (RID_BIT_TYPE));
+		      memcpy (&tmp_bits, &specbits, sizeof (RID_BIT_TYPE));
 		      RIDBIT_RESET (RID_INLINE, tmp_bits);
 		      RIDBIT_RESET (RID_STATIC, tmp_bits);
 		      if (RIDBIT_ANY_SET (tmp_bits))
@@ -14028,8 +14028,7 @@ save_function_data (decl)
   /* Make a copy.  */
   f = ((struct cp_language_function *)
        xmalloc (sizeof (struct cp_language_function)));
-  bcopy ((char *) cp_function_chain, (char *) f,
-	 sizeof (struct cp_language_function));
+  memcpy (f, cp_function_chain, sizeof (struct cp_language_function));
   DECL_SAVED_FUNCTION_DATA (decl) = f;
 
   /* Clear out the bits we don't need.  */

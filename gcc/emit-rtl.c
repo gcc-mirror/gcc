@@ -1904,7 +1904,7 @@ copy_rtx_if_shared (orig)
       register rtx copy;
 
       copy = rtx_alloc (code);
-      bcopy ((char *) x, (char *) copy,
+      memcpy (copy, x,
 	     (sizeof (*copy) - sizeof (copy->fld)
 	      + sizeof (copy->fld[0]) * GET_RTX_LENGTH (code)));
       x = copy;
@@ -4109,7 +4109,7 @@ init_emit_once (line_numbers)
 	  memset ((char *) &u, 0, sizeof u);  /* Zero any holes in a structure.  */
 	  u.d = i == 0 ? dconst0 : i == 1 ? dconst1 : dconst2;
 
-	  bcopy ((char *) &u, (char *) &CONST_DOUBLE_LOW (tem), sizeof u);
+	  memcpy (&CONST_DOUBLE_LOW (tem), &u, sizeof u);
 	  CONST_DOUBLE_MEM (tem) = cc0_rtx;
 	  CONST_DOUBLE_CHAIN (tem) = NULL_RTX;
 	  PUT_MODE (tem, mode);

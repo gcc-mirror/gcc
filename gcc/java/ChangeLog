@@ -1,3 +1,8 @@
+2000-11-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decl.c (copy_lang_decl): Use memcpy, not bcopy.
+	* jcf-parse.c (jcf_figure_file_type): Likewise.
+
 2000-11-09  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* parse.y (create_new_parser_context): Use memset () instead of

@@ -1588,7 +1588,7 @@ copy_lang_decl (node)
   else
     size = sizeof (struct lang_decl);
   ld = (struct lang_decl *) ggc_alloc (size);
-  bcopy ((char *)DECL_LANG_SPECIFIC (node), (char *)ld, size);
+  memcpy (ld, DECL_LANG_SPECIFIC (node), size);
   DECL_LANG_SPECIFIC (node) = ld;
 }
 

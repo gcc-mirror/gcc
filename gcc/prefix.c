@@ -172,7 +172,7 @@ save_string (s, len)
 {
   register char *result = xmalloc (len + 1);
 
-  bcopy (s, result, len);
+  memcpy (result, s, len);
   result[len] = 0;
   return result;
 }

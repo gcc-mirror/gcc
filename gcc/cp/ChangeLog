@@ -1,3 +1,8 @@
+2000-11-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decl.c (grokdeclarator, save_function_data): Use memcpy, not bcopy.
+	* lex.c (copy_lang_decl): Likewise.
+
 2000-11-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* dump.c (cp_dump_tree): Don't dump function bodies here.

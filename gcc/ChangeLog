@@ -1,3 +1,30 @@
+2000-11-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alpha.c (check_float_value): Use memcpy, not bcopy.
+	* arm.c (output_move_double): Likewise.
+	* arm.md: Likewise.
+	* m88k.c (legitimize_operand): Likewise.
+	* m88k.h (ORDER_REGS_FOR_LOCAL_ALLOC): Likewise.
+	* m88k.md: Likewise.
+	* mips.c (override_options): Likewise.
+	* mips.md: Likewise.
+	* romp.c (output_fpops): Likewise.
+	* rs6000.c (rs6000_override_options): Likewise.
+	* sh.md: Likewise.
+	* vax.c (check_float_value): Likewise.
+
+	* emit-rtl.c (copy_rtx_if_shared, init_emit_once): Likewise.
+	* expmed.c (synth_mult): Likewise.
+	* final.c (add_bb_string): Likewise.
+	* genattr.c (main): Likewise.
+	* genattrtab.c (attr_string, simplify_cond, copy_rtx_unchanging):
+	Likewise.
+	* jump.c (thread_jumps): Likewise.
+	* prefix.c (save_string): Likewise.
+	* real.h (REAL_VALUE_FROM_CONST_DOUBLE): Likewise.
+	* regclass.c (init_reg_sets, init_reg_sets_1): Likewise.
+	* reload1.c (reload, eliminate_regs): Likewise.
+
 2000-11-10  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.texi (Service): Update to reflect current practice and

@@ -1153,7 +1153,7 @@ legitimize_operand (op, mode)
 
   if (GET_CODE (op) == CONST_DOUBLE)
     {
-      bcopy (&CONST_DOUBLE_LOW (op), &u.r, sizeof u);
+      memcpy (&u.r, &CONST_DOUBLE_LOW (op), sizeof u);
       if (u.d.exponent != 0x7ff /* NaN */
 	  && u.d.mantissa2 == 0 /* Mantissa fits */
 	  && (u.s.exponent1 == 0x8 || u.s.exponent1 == 0x7) /* Exponent fits */
