@@ -833,8 +833,12 @@ verify_dominators (enum cdi_direction dir)
       dom_bb = recount_dominator (dir, bb);
       if (dom_bb != get_immediate_dominator (dir, bb))
 	{
-	  error ("dominator of %d should be %d, not %d",
-	   bb->index, dom_bb->index, get_immediate_dominator(dir, bb)->index);
+	  if (dom_bb == NULL)
+	    error ("dominator of %d should be (unknown), not %d",
+		   bb->index, get_immediate_dominator(dir, bb)->index);
+	  else
+	    error ("dominator of %d should be %d, not %d",
+		   bb->index, dom_bb->index, get_immediate_dominator(dir, bb)->index);
 	  err = 1;
 	}
     }
