@@ -3057,11 +3057,14 @@ parse_answer (buf, limit, answerp, type)
     buf++;
 
   /* Parentheses are optional here.  */
-  if (buf == limit && (type == T_IF || type == T_UNASSERT))
+  if (buf == limit && type == T_UNASSERT)
     return 0;
 
   if (buf == limit || *buf++ != '(')
     {
+      if (type == T_IF)
+	return 0;
+
       error ("missing '(' after predicate");
       return 1;
     }
@@ -3118,8 +3121,12 @@ parse_assertion (buf, limit, answerp, type)
   unsigned int len;
 
   bp = symname;
-  while (bp < climit && is_idchar[*bp])
-    bp++;
+  if (bp < climit && is_idstart[*bp])
+    {
+      do
+	bp++;
+      while (bp < climit && is_idchar[*bp]);
+    }
   len = bp - symname;
 
   *answerp = 0;
@@ -3130,6 +3137,8 @@ parse_assertion (buf, limit, answerp, type)
       else
 	error ("predicate must be an identifier");
     }
+  /* Unfortunately, because of the way we handle #if, we don't avoid
+     macro expansion in answers.  This is not easy to fix.  */
   else if (parse_answer (bp, climit, answerp, type) == 0)
     {
       unsigned char *sym = alloca (len + 1);
@@ -3143,6 +3152,40 @@ parse_assertion (buf, limit, answerp, type)
       result = lookup (sym, len + 1, hashcode);
       if (result == 0)
 	result = install (sym, len + 1, T_UNUSED, hashcode);
+    }
+
+  return result;
+}
+
+/* Test an assertion within a preprocessor conditional.  Returns zero
+   on error or failure, one on success.  */
+int
+test_assertion (pbuf)
+     unsigned char **pbuf;	/* NUL-terminated.  */
+{
+  unsigned char *buf = *pbuf;
+  unsigned char *limit = buf + strlen ((char *) buf);
+  struct answer *answer;
+  HASHNODE *node;
+  int result = 0;
+
+  node = parse_assertion (buf, limit, &answer, T_IF);
+  if (node)
+    {
+      result = (node->type == T_ASSERT &&
+		(answer == 0 || *find_answer (node, answer) != 0));
+
+      /* Yuk.  We update pbuf to point after the assertion test.
+	 First, move past the identifier.  */
+      if (is_space[*buf])
+	buf++;
+      while (is_idchar[*buf])
+	buf++;
+      /* If we have an answer, we need to move past the parentheses.  */
+      if (answer)
+	while (*buf++ != ')')
+	  ;
+      *pbuf = buf;
     }
 
   return result;
