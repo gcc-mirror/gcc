@@ -3766,22 +3766,35 @@ for_each_template_parm (t, fn, data)
       return for_each_template_parm (TREE_VALUE
 				     (TYPE_TEMPLATE_INFO (t)),
 				     fn, data);
-    case FUNCTION_TYPE:
-      if (for_each_template_parm (TYPE_ARG_TYPES (t), fn, data))
+    case METHOD_TYPE:
+      if (for_each_template_parm (TYPE_METHOD_BASETYPE (t), fn, data))
 	return 1;
+      /* Fall through.  */
+
+    case FUNCTION_TYPE:
+      /* Check the parameter types.  Since default arguments are not
+	 instantiated until they are needed, the TYPE_ARG_TYPES may
+	 contain expressions that involve template parameters.  But,
+	 no-one should be looking at them yet.  And, once they're
+	 instantiated, they don't contain template parameters, so
+	 there's no point in looking at them then, either.  */
+      {
+	tree parm;
+
+	for (parm = TYPE_ARG_TYPES (t); parm; parm = TREE_CHAIN (parm))
+	  if (for_each_template_parm (TREE_VALUE (parm), fn, data))
+	    return 1;
+      }
+
+      /* Check the return type, too.  */
       return for_each_template_parm (TREE_TYPE (t), fn, data);
+
     case ARRAY_TYPE:
       if (for_each_template_parm (TYPE_DOMAIN (t), fn, data))
 	return 1;
       return for_each_template_parm (TREE_TYPE (t), fn, data);
     case OFFSET_TYPE:
       if (for_each_template_parm (TYPE_OFFSET_BASETYPE (t), fn, data))
-	return 1;
-      return for_each_template_parm (TREE_TYPE (t), fn, data);
-    case METHOD_TYPE:
-      if (for_each_template_parm (TYPE_METHOD_BASETYPE (t), fn, data))
-	return 1;
-      if (for_each_template_parm (TYPE_ARG_TYPES (t), fn, data))
 	return 1;
       return for_each_template_parm (TREE_TYPE (t), fn, data);
 
