@@ -1,5 +1,7 @@
 2002-05-09  Tom Tromey  <tromey@redhat.com>
 
+	* jni.cc (_Jv_JNIFunctions): Fixed typo.
+
 	* java/util/ResourceBundle.java: New version from Classpath.
 	* java/util/Locale.java: Likewise.
 
