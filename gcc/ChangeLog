@@ -1,3 +1,12 @@
+2004-02-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* genattr.c (main): Don't define
+	TRADITIONAL_PIPELINE_INTERFACE or DFA_PIPELINE_INTERFACE.
+	* system.h (TRADITIONAL_PIPELINE_INTERFACE): Poison.
+	(DFA_PIPELINE_INTERFACE): Likewise.
+	* doc/tm.texi (TRADITIONAL_PIPELINE_INTERFACE): Remove.
+	(DFA_PIPELINE_INTERFACE): Likewise.
+
 2004-02-28  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md (tstsi, tstdi): Delete.
