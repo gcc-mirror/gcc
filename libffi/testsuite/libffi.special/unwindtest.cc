@@ -37,9 +37,9 @@ void closure_test_fn1(ffi_cif* cif,void* resp,void** args,
     	   (int)(*(int *)args[10]), (int)(*(float *)args[11]),
     	   (int)*(int *)args[12], (int)(*(int *)args[13]),
     	   (int)(*(int *)args[14]), *(int *)args[15],
-    	   (int)(long)userdata, *(int*)resp);
+    	   (int)(long)userdata, (int)*(ffi_arg*)resp);
     
-    throw *(int*)resp;
+    throw (int)*(ffi_arg*)resp;
 }
 
 typedef int (*closure_test_type1)(float, float, float, float, signed short, 
