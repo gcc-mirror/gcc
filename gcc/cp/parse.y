@@ -1363,9 +1363,9 @@ primary:
         /* Koenig lookup support
            We could store lastiddecl in $1 to avoid another lookup,
            but that would result in many additional reduce/reduce conflicts. */
-        | IDENTIFIER '(' nonnull_exprlist ')'
+        | notype_unqualified_id '(' nonnull_exprlist ')'
                { $$ = finish_call_expr ($1, $3, 1); }
-        | IDENTIFIER LEFT_RIGHT
+        | notype_unqualified_id LEFT_RIGHT
                { $$ = finish_call_expr ($1, NULL_TREE, 1); }
 	| primary '(' nonnull_exprlist ')'
                { $$ = finish_call_expr ($1, $3, 0); }
