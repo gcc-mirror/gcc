@@ -1,4 +1,4 @@
-2003-05-02  Wolfgang Bangerth  <bangerth@dealii.org>
+2003-06-05  Wolfgang Bangerth  <bangerth@dealii.org>
 
 	* MAINTAINERS (Bugzilla only): Add Dara Hazeghi and Andrew
 	Pinski. Remove user names from other bugzilla-only maintainers.
