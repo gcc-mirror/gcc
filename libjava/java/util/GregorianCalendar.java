@@ -114,7 +114,7 @@ public class GregorianCalendar extends Calendar {
 
   public GregorianCalendar (int year, int month, int date)
   {
-    this((TimeZone) null);
+    this();
     setDefaultTime ();
     set (year, month, date);
   }
@@ -122,7 +122,7 @@ public class GregorianCalendar extends Calendar {
   public GregorianCalendar (int year, int month, int date,
 			    int hour, int minute)
   {
-    this((TimeZone) null);
+    this();
     setDefaultTime ();
     set (year, month, date, hour, minute);
   }
@@ -130,7 +130,7 @@ public class GregorianCalendar extends Calendar {
   public GregorianCalendar (int year, int month, int date,
 			    int hour, int minute, int second)
   {
-    this((TimeZone) null);
+    this();
     setDefaultTime ();
     set (year, month, date, hour, minute, second);
   }
