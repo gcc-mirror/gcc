@@ -1,3 +1,10 @@
+Fri Feb 19 22:47:01 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* rtlanal.c (insn_first_p): Fix return value for insn == reference.
+
+	* loop.c (strength_reduce, check_final_value, check_dbra_loop):
+	Use loop_insn_first_p.
+
 Fri Feb 19 15:49:26 1999  Michael Meissner  <meissner@cygnus.com>
 			  David Edelsohn  <edelsohn@mhpcc.edu>
 
