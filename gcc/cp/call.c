@@ -2942,7 +2942,7 @@ build_op_delete_call (code, addr, size, flags, placement)
   if (type != TYPE_MAIN_VARIANT (type))
     addr = cp_convert (build_pointer_type (TYPE_MAIN_VARIANT (type)), addr);
 
-  fn = instantiate_type (fntype, fns, 0);
+  fn = instantiate_type (fntype, fns, 2);
 
   if (fn != error_mark_node)
     {
@@ -2962,11 +2962,11 @@ build_op_delete_call (code, addr, size, flags, placement)
 			tree_cons (NULL_TREE, sizetype, void_list_node));
   fntype = build_function_type (void_type_node, argtypes);
 
-  fn = instantiate_type (fntype, fns, 0);
+  fn = instantiate_type (fntype, fns, 2);
 
   if (fn != error_mark_node)
     {
-      if (TREE_CODE (fns) == TREE_LIST)
+      if (BASELINK_P (fns))
 	/* Member functions.  */
 	enforce_access (TREE_PURPOSE (fns), fn);
       return build_function_call

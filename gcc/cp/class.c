@@ -4919,14 +4919,19 @@ resolve_address_of_overloaded_function (target_type,
    try many possible instantiations, in hopes that at least one will
    work.
 
+   FLAGS is a bitmask, as we see at the top of the function.
+
    For non-recursive calls, LHSTYPE should be a function, pointer to
    function, or a pointer to member function.  */
 
 tree
-instantiate_type (lhstype, rhs, complain)
+instantiate_type (lhstype, rhs, flags)
      tree lhstype, rhs;
-     int complain;
+     int flags;
 {
+  int complain = (flags & 1);
+  int strict = (flags & 2) ? COMPARE_NO_ATTRIBUTES : COMPARE_STRICT;
+
   if (TREE_CODE (lhstype) == UNKNOWN_TYPE)
     {
       if (complain)
@@ -4936,7 +4941,7 @@ instantiate_type (lhstype, rhs, complain)
 
   if (TREE_TYPE (rhs) != NULL_TREE && ! (type_unknown_p (rhs)))
     {
-      if (same_type_p (lhstype, TREE_TYPE (rhs)))
+      if (comptypes (lhstype, TREE_TYPE (rhs), strict))
 	return rhs;
       if (complain)
 	cp_error ("argument of type `%T' does not match `%T'",
@@ -4970,7 +4975,7 @@ instantiate_type (lhstype, rhs, complain)
 	tree new_rhs;
 
 	new_rhs = instantiate_type (build_pointer_type (lhstype),
-				    TREE_OPERAND (rhs, 0), complain);
+				    TREE_OPERAND (rhs, 0), flags);
 	if (new_rhs == error_mark_node)
 	  return error_mark_node;
 
@@ -4982,14 +4987,14 @@ instantiate_type (lhstype, rhs, complain)
     case NOP_EXPR:
       rhs = copy_node (TREE_OPERAND (rhs, 0));
       TREE_TYPE (rhs) = unknown_type_node;
-      return instantiate_type (lhstype, rhs, complain);
+      return instantiate_type (lhstype, rhs, flags);
 
     case COMPONENT_REF:
       {
 	tree field = TREE_OPERAND (rhs, 1);
 	tree r;
 
-	r = instantiate_type (lhstype, field, complain);
+	r = instantiate_type (lhstype, field, flags);
 
 	if (r != error_mark_node && TYPE_PTRMEMFUNC_P (lhstype))
 	  {
@@ -5040,27 +5045,10 @@ instantiate_type (lhstype, rhs, complain)
 						/*explicit_targs=*/NULL_TREE);
 
     case TREE_LIST:
-      {
-	if (TREE_PURPOSE (rhs) == error_mark_node)
-	  {
-	    /* Make sure we don't drop the non-local flag, as the old code
-	       would rely on it. */
-	    int nl = TREE_NONLOCAL_FLAG (rhs);
-	    /* We don't need the type of this node. */
-	    rhs = TREE_VALUE (rhs);
-	    my_friendly_assert (TREE_NONLOCAL_FLAG (rhs) == nl, 980331);
-	  }
+      /* Now we should have a baselink. */
+      my_friendly_assert (BASELINK_P (rhs), 990412);
 
-	/* Now we should have a baselink. */
-	my_friendly_assert (TREE_CODE (TREE_PURPOSE (rhs)) == TREE_VEC,
-			    980331);
-	my_friendly_assert (TREE_CHAIN (rhs) == NULL_TREE, 181);
-	my_friendly_assert (TREE_CODE (TREE_VALUE (rhs)) == FUNCTION_DECL
-			    || TREE_CODE (TREE_VALUE (rhs)) == OVERLOAD,
-			    182);
-
-	return instantiate_type (lhstype, TREE_VALUE (rhs), complain);
-      }
+      return instantiate_type (lhstype, TREE_VALUE (rhs), flags);
 
     case CALL_EXPR:
       /* This is too hard for now.  */
@@ -5071,11 +5059,11 @@ instantiate_type (lhstype, rhs, complain)
     case MINUS_EXPR:
     case COMPOUND_EXPR:
       TREE_OPERAND (rhs, 0)
-	= instantiate_type (lhstype, TREE_OPERAND (rhs, 0), complain);
+	= instantiate_type (lhstype, TREE_OPERAND (rhs, 0), flags);
       if (TREE_OPERAND (rhs, 0) == error_mark_node)
 	return error_mark_node;
       TREE_OPERAND (rhs, 1)
-	= instantiate_type (lhstype, TREE_OPERAND (rhs, 1), complain);
+	= instantiate_type (lhstype, TREE_OPERAND (rhs, 1), flags);
       if (TREE_OPERAND (rhs, 1) == error_mark_node)
 	return error_mark_node;
 
@@ -5143,11 +5131,11 @@ instantiate_type (lhstype, rhs, complain)
 	  return error_mark_node;
 	}
       TREE_OPERAND (rhs, 1)
-	= instantiate_type (lhstype, TREE_OPERAND (rhs, 1), complain);
+	= instantiate_type (lhstype, TREE_OPERAND (rhs, 1), flags);
       if (TREE_OPERAND (rhs, 1) == error_mark_node)
 	return error_mark_node;
       TREE_OPERAND (rhs, 2)
-	= instantiate_type (lhstype, TREE_OPERAND (rhs, 2), complain);
+	= instantiate_type (lhstype, TREE_OPERAND (rhs, 2), flags);
       if (TREE_OPERAND (rhs, 2) == error_mark_node)
 	return error_mark_node;
 
@@ -5156,7 +5144,7 @@ instantiate_type (lhstype, rhs, complain)
 
     case MODIFY_EXPR:
       TREE_OPERAND (rhs, 1)
-	= instantiate_type (lhstype, TREE_OPERAND (rhs, 1), complain);
+	= instantiate_type (lhstype, TREE_OPERAND (rhs, 1), flags);
       if (TREE_OPERAND (rhs, 1) == error_mark_node)
 	return error_mark_node;
 
@@ -5164,7 +5152,7 @@ instantiate_type (lhstype, rhs, complain)
       return rhs;
       
     case ADDR_EXPR:
-      return instantiate_type (lhstype, TREE_OPERAND (rhs, 0), complain);
+      return instantiate_type (lhstype, TREE_OPERAND (rhs, 0), flags);
 
     case ENTRY_VALUE_EXPR:
       my_friendly_abort (184);

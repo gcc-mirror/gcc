@@ -1,5 +1,11 @@
 1999-04-12  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* cp-tree.h (COMPARE_NO_ATTRIBUTES): New macro.
+	* typeck.c (comptypes): If we get it, ignore attributes.
+	* class.c (instantiate_type): Use BASELINK_P.  Change complain
+	parameter to flags; 2 means ignore attributes.  
+	* call.c (build_op_delete_call): Pass it.
+
 	* decl.c (xref_tag): Only complain once about using a typedef-name
 	with 'struct'.  Downgrade to pedwarn.
 
