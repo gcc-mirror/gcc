@@ -1,3 +1,8 @@
+2002-10-24  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* testsuite/testsuite_hooks.cc (__set_testsuite_memlimit): Use
+	__typeof__ (r.rlim_cur), not rlim_t in declaration of limit.
+
 2002-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/22_locale/num_put_members_char.cc (test01): Swap size
