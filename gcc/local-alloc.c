@@ -818,18 +818,24 @@ optimize_reg_copy_1 (insn, dest, src)
 	    {
 	      if (sregno >= FIRST_PSEUDO_REGISTER)
 		{
-		  reg_live_length[sregno] -= length;
-		  /* reg_live_length is only an approximation after combine
-		     if sched is not run, so make sure that we still have
-		     a reasonable value.  */
-		  if (reg_live_length[sregno] < 2)
-		    reg_live_length[sregno] = 2;
+		  if (reg_live_length[sregno] >= 0)
+		    {
+		      reg_live_length[sregno] -= length;
+		      /* reg_live_length is only an approximation after
+			 combine if sched is not run, so make sure that we
+			 still have a reasonable value.  */
+		      if (reg_live_length[sregno] < 2)
+			reg_live_length[sregno] = 2;
+		    }
+
 		  reg_n_calls_crossed[sregno] -= n_calls;
 		}
 
 	      if (dregno >= FIRST_PSEUDO_REGISTER)
 		{
-		  reg_live_length[dregno] += d_length;
+		  if (reg_live_length[dregno] >= 0)
+		    reg_live_length[dregno] += d_length;
+
 		  reg_n_calls_crossed[dregno] += d_n_calls;
 		}
 
