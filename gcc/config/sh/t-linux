@@ -1,3 +1,6 @@
+# Don't run fixproto
+STMP_FIXPROTO =
+
 TARGET_LIBGCC2_CFLAGS = -fpic
 LIB1ASMFUNCS_CACHE = _ic_invalidate
 

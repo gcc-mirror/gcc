@@ -52,6 +52,10 @@ do { \
      %{!rpath:-rpath /lib}} \
    %{static:-static}"
 
+/* The GNU C++ standard library requires that these macros be defined.  */
+#undef CPLUSPLUS_CPP_SPEC
+#define CPLUSPLUS_CPP_SPEC "-D_GNU_SOURCE %(cpp)"
+
 #undef LIB_SPEC
 #define LIB_SPEC \
   "%{shared: -lc} \

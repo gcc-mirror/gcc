@@ -1,3 +1,13 @@
+2003-06-06  Dan Kegel  <dank@kegel.com>
+	    Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR target/10331
+	* config/sh/t-linux (STMP_FIXPROTO): Define.
+
+	PR target/11096
+	* config/sh/linux.h (CPLUSPLUS_CPP_SPEC): Redefine so to include
+	-D_GNU_SOURCE.
+
 2003-06-05  David Miller  <davem@redhat.com>
             Richard Henderson  <rth@redhat.com>
 
