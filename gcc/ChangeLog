@@ -1,3 +1,8 @@
+1998-04-08  Brendan Kehoe  <brendan@cygnus.com>
+
+	* c-lex.h (is_class_name): Fix arg type to be tree, not void.
+	(make_pointer_declarator, reinit_parse_for_function): Fix typo.
+
 Wed Apr  8 06:16:45 1998  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm.h (LEGITIMIZE_RELOAD_ADDRESS): Define.
