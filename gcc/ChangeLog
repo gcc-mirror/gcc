@@ -1,3 +1,11 @@
+2001-01-06  Michael Hayes  <mhayes@redhat.com>
+
+	* rtl.h (print_simple_rtl): New.
+	* print-rtl.c (print_simple_rtl): New.
+	(flag_simple): New.
+	(print_rtx): Disable printing of flags and modes, etc.,
+        if `flag_simple` nonzero.
+
 2001-01-05  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* function.c (fixup_var_refs): Use push_to_full_sequence where
