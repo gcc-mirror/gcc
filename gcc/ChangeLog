@@ -1,3 +1,7 @@
+2003-05-19  Aldy Hernandez  <aldyh@redhat.com>
+
+        * doc/tm.texi (function_arg): Fix typo.
+
 2003-05-19  Matt Austern  <austern@apple.com>
 
 	* c-opts.c (COMMAND_LINE_OPTIONS): Add -Winvalid-offsetof option.
