@@ -1,3 +1,8 @@
+2003-12-30  Roger Sayle  <roger@eyesopen.com>
+
+	* cppfiles.c (pch_open_file): Minor tweak to work-around native
+	HPPA compiler bug.
+
 2003-12-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/rs6000/aix.h: Fix comment formatting.
@@ -47,7 +52,7 @@
 
 2003-12-30  Jan Hubicka  <jh@suse.cz>
 
-	PR ice/11936
+	PR target/11936
 	* i386.h (CLASS_LIKELY_SPILLED_P): Return true for
 	FP_TOP_REG/FP_SECOND_REG.
 
