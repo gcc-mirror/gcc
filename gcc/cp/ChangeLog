@@ -1,3 +1,10 @@
+2000-05-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl2.c (maybe_retrofit_in_chrg): Don't create in-charge
+	parameters for template functions.
+	* pt.c (tsubst_decl): Make sure we call maybe_retrofit_in_chrg for
+	destructors as well as constructors.
+
 2000-05-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* class.c (build_ctor_vtbl_group): Set inits.

@@ -944,6 +944,11 @@ maybe_retrofit_in_chrg (fn)
   if (DECL_HAS_IN_CHARGE_PARM_P (fn))
     return;
 
+  /* When processing templates we can't know, in general, whether or
+     not we're going to have virtual baseclasses.  */
+  if (uses_template_parms (fn))
+    return;
+
   /* We don't need an in-charge parameter for constructors that don't
      have virtual bases.  */
   if (DECL_CONSTRUCTOR_P (fn)

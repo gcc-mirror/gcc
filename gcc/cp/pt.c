@@ -5784,10 +5784,11 @@ tsubst_decl (t, args, type, in_decl)
 					    in_decl);
 	  }
 
-	if (DECL_CONSTRUCTOR_P (r))
+	if (DECL_CONSTRUCTOR_P (r) || DECL_DESTRUCTOR_P (r))
 	  {
 	    maybe_retrofit_in_chrg (r);
-	    grok_ctor_properties (ctx, r);
+	    if (DECL_CONSTRUCTOR_P (r))
+	      grok_ctor_properties (ctx, r);
 	  }
 	else if (DECL_OVERLOADED_OPERATOR_P (r))
 	  grok_op_properties (r, DECL_VIRTUAL_P (r), DECL_FRIEND_P (r));
