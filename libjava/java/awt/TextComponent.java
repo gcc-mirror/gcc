@@ -163,7 +163,7 @@ getSelectedText()
 
 /**
   * Returns the starting position of the selected text region.
-  * // FIXME: What is returned if there is no selected text?
+  * If the text is not selected then caret position is returned. 
   *
   * @return The starting position of the selected text region.
   */
@@ -196,7 +196,7 @@ setSelectionStart(int selectionStart)
 
 /**
   * Returns the ending position of the selected text region.
-  * // FIXME: What is returned if there is no selected text.
+  * If the text is not selected, then caret position is returned 
   *
   * @return The ending position of the selected text region.
   */

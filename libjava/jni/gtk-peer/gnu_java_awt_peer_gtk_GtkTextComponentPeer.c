@@ -194,6 +194,8 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_getSelectionStart
   GtkTextIter start;
   GtkTextIter end;
   int starti, endi;
+  GtkTextMark *mark;
+  GtkTextIter iter;
 
   ptr = NSA_GET_PTR (env, obj);
 
@@ -204,6 +206,8 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_getSelectionStart
       editable = GTK_EDITABLE (ptr);
       if (gtk_editable_get_selection_bounds (editable, &starti, &endi))
 	pos = starti;
+      else
+        pos = gtk_editable_get_position (editable);
     }
   else
     {
@@ -221,6 +225,12 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_getSelectionStart
 	  buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
 	  if (gtk_text_buffer_get_selection_bounds(buf, &start, &end))
 	    pos = gtk_text_iter_get_offset (&start);
+	  else 
+           {
+            mark = gtk_text_buffer_get_insert (buf);
+            gtk_text_buffer_get_iter_at_mark (buf, &iter, mark);
+            pos = gtk_text_iter_get_offset (&iter);
+           }  
 	}
     }
 
@@ -241,6 +251,8 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_getSelectionEnd
   GtkTextIter start;
   GtkTextIter end;
   int starti, endi;
+  GtkTextMark *mark;
+  GtkTextIter iter;
 
   ptr = NSA_GET_PTR (env, obj);
 
@@ -251,6 +263,8 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_getSelectionEnd
       editable = GTK_EDITABLE (ptr);
       if (gtk_editable_get_selection_bounds (editable, &starti, &endi))
 	pos = endi;
+      else
+        pos = gtk_editable_get_position (editable);
     }
   else
     {
@@ -268,6 +282,12 @@ Java_gnu_java_awt_peer_gtk_GtkTextComponentPeer_getSelectionEnd
 	  buf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (text));
 	  if (gtk_text_buffer_get_selection_bounds(buf, &start, &end))
 	    pos = gtk_text_iter_get_offset (&end);
+	  else 
+           {
+            mark = gtk_text_buffer_get_insert (buf);
+            gtk_text_buffer_get_iter_at_mark (buf, &iter, mark);
+            pos = gtk_text_iter_get_offset (&iter);
+           }    
 	}
     }
 

@@ -1,3 +1,13 @@
+2003-12-01  Olga Rodimina <rodimina@redhat.com>
+
+	* java/awt/TextComponent.java:
+	(getSelectionStart): Updated javadocs.
+	(getSelectionEnd): Ditto.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer:
+	(getSelectionStart): Changed to return caret position if no
+	text is selected
+	(getSelectionEnd): Ditto.
+
 2003-12-01  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
 	* gnu/awt/gtk/GtkButtonPeer.java, gnu/awt/gtk/gtkcommon.cc,
