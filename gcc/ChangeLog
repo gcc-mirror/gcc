@@ -1,4 +1,17 @@
-2003-11-03  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+2003-11-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (push): Call push_h8300hs_normal in
+	normal mode.
+	(pop): Call pop_h8300hs_normal in normal mode.
+	* config/h8300/h8300.md: Likewise.
+	(pushqi1_h8300hs_normal): New.
+	(pushqi1): Call pushqi1_h8300hs_normal in normal mode.
+	(pushhi1_h8300hs_normal): New.
+	(pushhi1): Call pushhi1_h8300hs_normal in normal mode.
+	(push_h8300hs_normal): New.
+	(pop_h8300hs_normal): Likewise.
+
+2003-11-23  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* genattrtab.c (count_sub_rtxs): Removed.
 
