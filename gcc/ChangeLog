@@ -1,5 +1,19 @@
 2004-10-15  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* bitmap.c, bitmap.h, builtin-attrs.def, cfglayout.h,
+	collect2.h, conflict.c, coretypes.h, coverage.h, errors.h,
+	gcc.h, gcov-dump.c, gen-protos.c, gencheck.c, gencodes.c,
+	genconstants.c, gengenrtl.c, genmodes.c, genpeep.c,
+	gensupport.h, graph.h, gthr-gnat.c, gthr-gnat.h, gthr-posix.c,
+	gthr-posix.h, hard-reg-set.h, hwint.h, integrate.h, libgcc2.c,
+	lists.c, machmode.def, mips-tdump.c, opts.h, params.c,
+	predict.def, predict.h, protoize.c, reload.h, resource.h,
+	rtl-error.c, sbitmap.c, sbitmap.h, sreal.c, tlink.c,
+	tree-dump.h, tree-inline.h, unwind-dw2-fde.c, unwind-dw2.c,
+	unwind-sjlj.c, value-prof.h: Update copyright.
+
+2004-10-15  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* pointer-set.c, tree-vectorizer.c: Fix comment typos.
 
 2004-10-15  Diego Novillo  <dnovillo@redhat.com>

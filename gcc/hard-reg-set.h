@@ -1,5 +1,6 @@
 /* Sets (bit vectors) of hard registers, and operations on them.
-   Copyright (C) 1987, 1992, 1994, 2000, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1992, 1994, 2000, 2003, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GCC
 
