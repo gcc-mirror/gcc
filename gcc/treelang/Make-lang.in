@@ -64,7 +64,7 @@ TREE_SOURCE = ${srcdir}/treelang/parse.y ${srcdir}/treelang/lex.l ${srcdir}/tree
 TREE_EXES = tree1$(exeext)
 
 #no -Wtraditional warnings, allow long long
-treelang-warn = $(LOOSE_WARN) -pedantic -Wno-long-long -Wmissing-prototypes -Wmissing-declarations
+treelang-warn = $(LOOSE_WARN) -pedantic -Wno-long-long -Wmissing-prototypes -Wmissing-declarations $(WERROR)
 # bison emits some unused static arrays (yytoknum)
 treelang/parse.o-warn = -Wno-error
 

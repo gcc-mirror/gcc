@@ -123,7 +123,7 @@ JCFDUMP_OBJS = java/jcf-dump.o java/jcf-io.o java/jcf-depend.o java/jcf-path.o \
 JVGENMAIN_OBJS = java/jvgenmain.o java/mangle_name.o errors.o
 
 # Use loose warnings for this front end.
-java-warn =
+java-warn = $(WERROR)
 # String length warnings
 jvspec.o-warn = -Wno-error
 

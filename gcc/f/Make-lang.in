@@ -92,7 +92,7 @@ F77_OBJS = f/bad.o f/bit.o f/bld.o f/com.o f/data.o f/equiv.o f/expr.o \
  f/stv.o f/stw.o f/symbol.o f/target.o f/top.o f/type.o f/where.o
 
 # Use loose warnings for this front end.
-f-warn =
+f-warn = $(WERROR)
 # type-punning warning
 f/sta.o-warn = -Wno-error
 
