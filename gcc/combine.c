@@ -10154,6 +10154,16 @@ simplify_comparison (code, pop0, pop1)
 		  || subreg_lowpart_p (XEXP (op0, 0))
 #endif
 		  )
+#ifndef WORD_REGISTER_OPERATIONS
+	      /* It is unsafe to commute the AND into the SUBREG if the SUBREG
+		 is paradoxical and WORD_REGISTER_OPERATIONS is not defined.
+		 As originally written the upper bits have a defined value
+		 due to the AND operation.  However, if we commute the AND
+		 inside the SUBREG then they no longer have defined values
+		 and the meaning of the code has been changed.  */
+	      && (GET_MODE_SIZE (GET_MODE (XEXP (op0, 0)))
+		  <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (XEXP (op0, 0)))))
+#endif
 	      && GET_CODE (XEXP (op0, 1)) == CONST_INT
 	      && mode_width <= HOST_BITS_PER_WIDE_INT
 	      && (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (XEXP (op0, 0))))
