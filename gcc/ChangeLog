@@ -1,3 +1,8 @@
+Wed Mar 25 02:39:01 1998  Paul Eggert  <eggert@twinsun.com>
+
+	* configure.in (i[[34567]]86-*-solaris2*, powerpcle-*-solaris2*,
+	sparc-*-solaris2*): Use fixinc.svr4 if Solaris 2.0 through 2.4.
+
 Mon Mar 23 07:27:19 1998  Philippe De Muyter  <phdm@macqel.be>
 
 	* m68k.md (ashldi_const): Allow shift count in range ]32,63].
