@@ -1,3 +1,10 @@
+2000-11-22  Michael Meissner  <meissner@redhat.com>
+
+	* d30v.h (TARGET_SWITCHES): Add documentation strings.
+	(TARGET_OPTIONS): Ditto.
+	(OPTIMIZATION_OPTIONS): Temporarily turn off -frename-registers if
+	-O3.
+	
 Wed Nov 22 06:40:56 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (hppa_encode_label): Account for addition of encoding

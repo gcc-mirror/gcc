@@ -419,37 +419,60 @@ extern int target_flags;
    `target_flags'.  Its definition is an initializer with a subgrouping for
    each command option.
 
-   Each subgrouping contains a string constant, that defines the option name,
-   and a number, which contains the bits to set in `target_flags'.  A negative
-   number says to clear bits instead; the negative of the number is which bits
-   to clear.  The actual option name is made by appending `-m' to the specified
-   name.
+   Each subgrouping contains a string constant, that defines the option name, a
+   number, which contains the bits to set in `target_flags', and a second
+   string which is the description displayed by `--help'.  If the number is
+   negative then the bits specified by the number are cleared instead of being
+   set.  If the description string is present but empty, then no help
+   information will be displayed for that option, but it will not count as an
+   undocumented option.  The actual option name is made by appending `-m' to
+   the specified name.
 
    One of the subgroupings should have a null string.  The number in this
-   grouping is the default value for `target_flags'.  Any target options act
+   grouping is the default value for target_flags.  Any target options act
    starting with that value.
 
-   Here is an example which defines `-m68000' and `-m68020' with opposite
-   meanings, and picks the latter as the default:
+   Here is an example which defines -m68000 and -m68020 with opposite meanings,
+   and picks the latter as the default:
 
-        #define TARGET_SWITCHES \
-          { { "68020", 1},      \
-            { "68000", -1},     \
-            { "", 1}}  */
+  #define TARGET_SWITCHES \
+    { { "68020", TARGET_MASK_68020, "" },      \
+      { "68000", -TARGET_MASK_68020, "Compile for the 68000" }, \
+      { "", TARGET_MASK_68020, "" }}  */
 
 #define TARGET_SWITCHES							\
 {									\
-  { "cond-move",	-MASK_NO_COND_MOVE },				\
-  { "no-cond-move",	 MASK_NO_COND_MOVE },				\
-  { "debug-arg",	 MASK_DEBUG_ARG },				\
-  { "debug-stack",	 MASK_DEBUG_STACK }, 				\
-  { "debug-addr",	 MASK_DEBUG_ADDR },				\
-  { "asm-optimize",	 0 },						\
-  { "no-asm-optimize",	 0 },						\
-  { "extmem",		 0 },						\
-  { "extmemory",	 0 },						\
-  { "onchip",		 0 },						\
-  { "",			 TARGET_DEFAULT },				\
+  { "cond-move",	-MASK_NO_COND_MOVE,				\
+      N_("Enable use of conditional move instructions") },		\
+									\
+  { "no-cond-move",	MASK_NO_COND_MOVE,				\
+      N_("Disable use of conditional move instructions") },		\
+									\
+  { "debug-arg",	 MASK_DEBUG_ARG,				\
+      N_("Debug argument support in compiler") },			\
+									\
+  { "debug-stack",	 MASK_DEBUG_STACK,				\
+      N_("Debug stack support in compiler") },				\
+									\
+  { "debug-addr",	 MASK_DEBUG_ADDR,				\
+      N_("Debug memory address support in compiler") },			\
+									\
+  { "asm-optimize",	 0,						\
+      N_("Make adjacent short instructions parallel if possible.") },	\
+									\
+  { "no-asm-optimize",	 0,						\
+      N_("Do not make adjacent short instructions parallel.") },	\
+									\
+  { "extmem",		 0,						\
+      N_("Link programs/data to be in external memory by default") },	\
+									\
+  { "extmemory",	 0,						\
+      N_("Link programs/data to be in external memory by default") },	\
+									\
+  { "onchip",		 0,						\
+      N_("Link programs/data to be in onchip memory by default") },	\
+									\
+  { "",			 TARGET_DEFAULT, "" },				\
 }
 
 /* This macro is similar to `TARGET_SWITCHES' but defines names of command
@@ -457,23 +480,27 @@ extern int target_flags;
    subgrouping for each command option.
 
    Each subgrouping contains a string constant, that defines the fixed part of
-   the option name, and the address of a variable.  The variable, type `char
-   *', is set to the variable part of the given option if the fixed part
-   matches.  The actual option name is made by appending `-m' to the specified
-   name.
+   the option name, the address of a variable, and a description string.  The
+   variable, type `char *', is set to the variable part of the given option if
+   the fixed part matches.  The actual option name is made by appending `-m' to
+   the specified name.
 
-   Here is an example which defines `-mshort-data-NUMBER'.  If the given option
-   is `-mshort-data-512', the variable `m88k_short_data' will be set to the
-   string `"512"'.
+   Here is an example which defines `-mshort-data-<number>'.  If the given
+   option is `-mshort-data-512', the variable `m88k_short_data' will be set to
+   the string "512".
 
-        extern char *m88k_short_data;
-        #define TARGET_OPTIONS \
-         { { "short-data-", &m88k_short_data } }  */
+   extern char *m88k_short_data;
+   #define TARGET_OPTIONS \
+     { { "short-data-", &m88k_short_data, \
+	 "Specify the size of the short data section" } } */
 
 #define TARGET_OPTIONS							\
 {									\
-   {"branch-cost=",  &d30v_branch_cost_string},				\
-   {"cond-exec=",    &d30v_cond_exec_string},				\
+  {"branch-cost=",  &d30v_branch_cost_string,				\
+     N_("Change the branch costs within the compiler") },		\
+									\
+  {"cond-exec=",    &d30v_cond_exec_string,				\
+     N_("Change the threshold for conversion to conditional execution") }, \
 }
 
 /* This macro is a C statement to print on `stderr' a string describing the
@@ -517,7 +544,13 @@ extern int target_flags;
 
    *Do not examine `write_symbols' in this macro!* The debugging options are
    *not supposed to alter the generated code.  */
-/* #define OPTIMIZATION_OPTIONS(LEVEL,SIZE) */
+
+/* -frename-registers seems to abort on d30v, turn off until fixed.  */
+#define OPTIMIZATION_OPTIONS(LEVEL,SIZE) 				\
+do {									\
+  if (LEVEL >= 3)							\
+    flag_rename_registers = 0;						\
+} while (0)
 
 /* Define this macro if debugging can be performed even without a frame
    pointer.  If this macro is defined, GNU CC will turn on the
