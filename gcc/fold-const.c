@@ -9051,13 +9051,16 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
       SET_DECL_ASSEMBLER_NAME (expr, NULL);
     }
   else if (TREE_CODE_CLASS (code) == 't'
-	   && (TYPE_POINTER_TO (expr) || TYPE_REFERENCE_TO (expr)))
+	   && (TYPE_POINTER_TO (expr) || TYPE_REFERENCE_TO (expr)
+	       || TYPE_CACHED_VALUES_P (expr)))
     {
-      /* Allow TYPE_POINTER_TO and TYPE_REFERENCE_TO to be modified.  */
+      /* Allow these fields to be modified.  */
       memcpy (buf, expr, tree_size (expr));
       expr = (tree) buf;
       TYPE_POINTER_TO (expr) = NULL;
       TYPE_REFERENCE_TO (expr) = NULL;
+      TYPE_CACHED_VALUES_P (expr) = 0;
+      TYPE_CACHED_VALUES (expr) = NULL;
     }
   md5_process_bytes (expr, tree_size (expr), ctx);
   fold_checksum_tree (TREE_TYPE (expr), ctx, ht);
@@ -9135,7 +9138,10 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
 	  fold_checksum_tree (TYPE_MAX_VALUE (expr), ctx, ht);
 	}
       fold_checksum_tree (TYPE_MAIN_VARIANT (expr), ctx, ht);
-      fold_checksum_tree (TYPE_BINFO (expr), ctx, ht);
+      if (TREE_CODE (expr) == RECORD_TYPE
+	  || TREE_CODE (expr) == UNION_TYPE
+	  || TREE_CODE (expr) == QUAL_UNION_TYPE)
+	fold_checksum_tree (TYPE_BINFO (expr), ctx, ht);
       fold_checksum_tree (TYPE_CONTEXT (expr), ctx, ht);
       break;
     default:
