@@ -369,7 +369,8 @@ try_forward_edges (mode, b)
      int mode;
 {
   bool changed = false;
-  edge e, next, threaded_edge;
+  edge e, next, *threaded_edges = NULL;
+  int nthreaded_edges = 0;
 
   for (e = b->succ; e; e = next)
     {
@@ -406,13 +407,17 @@ try_forward_edges (mode, b)
 
 	  /* Allow to thread only over one edge at time to simplify updating
 	     of probabilities.  */
-	  else if ((mode & CLEANUP_THREADING) && !threaded)
+	  else if (mode & CLEANUP_THREADING)
 	    {
-	      threaded_edge = thread_jump (mode, e, target);
-	      if (threaded_edge)
+	      edge t = thread_jump (mode, e, target);
+	      if (t)
 		{
-		  new_target = threaded_edge->dest;
+		  new_target = t->dest;
 		  new_target_threaded = true;
+		  if (!nthreaded_edges)
+		    threaded_edges = xmalloc (sizeof (*threaded_edges)
+					      * n_basic_blocks);
+		  threaded_edges[nthreaded_edges++] = t;
 		}
 	    }
 
@@ -462,6 +467,7 @@ try_forward_edges (mode, b)
 	  gcov_type edge_count = e->count;
 	  int edge_probability = e->probability;
 	  int edge_frequency;
+	  int n = 0;
 
 	  /* Don't force if target is exit block.  */
 	  if (threaded && target != EXIT_BLOCK_PTR)
@@ -498,7 +504,7 @@ try_forward_edges (mode, b)
 	      first->succ->count -= edge_count;
 	      first->frequency -= edge_frequency;
 	      if (first->succ->succ_next)
-		t = threaded_edge;
+		t = threaded_edges [n++];
 	      else
 		t = first->succ;
 
@@ -510,6 +516,8 @@ try_forward_edges (mode, b)
 	}
     }
 
+  if (threaded_edges)
+    free (threaded_edges);
   return changed;
 }
 

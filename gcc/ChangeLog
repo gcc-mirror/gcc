@@ -1,3 +1,7 @@
+Sat Jan  5 11:52:05 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* cfgcleanup.c (try_forward_edges): Allow multiple jump threading.
+
 2002-01-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* doc/cppinternals.texi: Update.
