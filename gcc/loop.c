@@ -328,10 +328,12 @@ static void update_reg_last_use PARAMS ((rtx, rtx));
 static rtx next_insn_in_loop PARAMS ((const struct loop *, rtx));
 static void loop_regs_scan PARAMS ((const struct loop *, int));
 static int count_insns_in_loop PARAMS ((const struct loop *));
+static int find_mem_in_note_1 PARAMS ((rtx *, void *));
+static rtx find_mem_in_note PARAMS ((rtx));
 static void load_mems PARAMS ((const struct loop *));
 static int insert_loop_mem PARAMS ((rtx *, void *));
 static int replace_loop_mem PARAMS ((rtx *, void *));
-static void replace_loop_mems PARAMS ((rtx, rtx, rtx));
+static void replace_loop_mems PARAMS ((rtx, rtx, rtx, int));
 static int replace_loop_reg PARAMS ((rtx *, void *));
 static void replace_loop_regs PARAMS ((rtx insn, rtx, rtx));
 static void note_reg_stored PARAMS ((rtx, rtx, void *));
@@ -10033,7 +10035,7 @@ load_mems (loop)
 	      else
 	        /* Replace the memory reference with the shadow register.  */
 		replace_loop_mems (p, loop_info->mems[i].mem,
-				   loop_info->mems[i].reg);
+				   loop_info->mems[i].reg, written);
 	    }
 
 	  if (GET_CODE (p) == CODE_LABEL
@@ -10398,6 +10400,29 @@ try_swap_copy_prop (loop, replacement, regno)
     }
 }
 
+static int
+find_mem_in_note_1 (x, data)
+     rtx *x;
+     void *data;
+{
+  if (*x != NULL_RTX && GET_CODE (*x) == MEM)
+    {
+      rtx *res = (rtx *) data;
+      *res = *x;
+      return 1;
+    }
+  return 0;
+}
+
+static rtx
+find_mem_in_note (note)
+     rtx note;
+{
+  if (note && for_each_rtx (&note, find_mem_in_note_1, &note))
+    return note;
+  return NULL_RTX;
+}
+  
 /* Replace MEM with its associated pseudo register.  This function is
    called from load_mems via for_each_rtx.  DATA is actually a pointer
    to a structure describing the instruction currently being scanned
@@ -10440,10 +10465,11 @@ replace_loop_mem (mem, data)
 }
 
 static void
-replace_loop_mems (insn, mem, reg)
+replace_loop_mems (insn, mem, reg, written)
      rtx insn;
      rtx mem;
      rtx reg;
+     int written;
 {
   loop_replace_args args;
 
@@ -10452,6 +10478,26 @@ replace_loop_mems (insn, mem, reg)
   args.replacement = reg;
 
   for_each_rtx (&insn, replace_loop_mem, &args);
+
+  /* If we hoist a mem write out of the loop, then REG_EQUAL
+     notes referring to the mem are no longer valid.  */
+  if (written)
+    {
+      rtx note, sub;
+      rtx *link;
+
+      for (link = &REG_NOTES (insn); (note = *link); link = &XEXP (note, 1))
+	{
+	  if (REG_NOTE_KIND (note) == REG_EQUAL
+	      && (sub = find_mem_in_note (note))
+	      && true_dependence (mem, VOIDmode, sub, rtx_varies_p))
+	    {
+	      /* Remove the note.  */
+	      validate_change (NULL_RTX, link, XEXP (note, 1), 1);
+	      break;
+	    }
+	}
+    }
 }
 
 /* Replace one register with another.  Called through for_each_rtx; PX points
