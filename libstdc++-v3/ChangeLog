@@ -1,3 +1,7 @@
+2003-05-03  Loren J. Rittle  <ljrittle@acm.org>
+
+	* testsuite/thread/pthread1.cc: Remove special case for FreeBSD.
+
 2003-05-02  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/Makefile.am (CLEANFILES): Remove PCH files in target
