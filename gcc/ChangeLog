@@ -1,3 +1,8 @@
+2001-02-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* stmt.c (expand_return): If an attempt is made to return the
+	error_mar_node, treat the return like a return without a value.
+
 2001-02-19  Zack Weinberg  <zackw@stanford.edu>
 
 	* sibcall.c (skip_copy_to_return_value): Call

@@ -2946,7 +2946,12 @@ expand_return (retval)
 #endif
 
   if (retval == error_mark_node)
-    retval_rhs = NULL_TREE;
+    {
+      /* Treat this like a return of no value from a function that
+	 returns a value.  */
+      expand_null_return ();
+      return; 
+    }
   else if (TREE_CODE (retval) == RESULT_DECL)
     retval_rhs = retval;
   else if ((TREE_CODE (retval) == MODIFY_EXPR || TREE_CODE (retval) == INIT_EXPR)
