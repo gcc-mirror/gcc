@@ -364,9 +364,8 @@ get_tinfo_decl (tree type)
       DECL_EXTERNAL (d) = 1;
       SET_DECL_ASSEMBLER_NAME (d, name);
       DECL_COMDAT (d) = 1;
-      cp_finish_decl (d, NULL_TREE, NULL_TREE, 0);
 
-      pushdecl_top_level (d);
+      pushdecl_top_level_and_finish (d, NULL_TREE);
 
       if (CLASS_TYPE_P (type))
 	CLASSTYPE_TYPEINFO_VAR (TYPE_MAIN_VARIANT (type)) = d;
@@ -770,8 +769,7 @@ tinfo_base_init (tree desc, tree target)
     SET_DECL_ASSEMBLER_NAME (name_decl,
 			     mangle_typeinfo_string_for_type (target));
     DECL_INITIAL (name_decl) = name_string;
-    cp_finish_decl (name_decl, name_string, NULL_TREE, 0);
-    pushdecl_top_level (name_decl);
+    pushdecl_top_level_and_finish (name_decl, name_string);
   }
 
   vtable_ptr = TINFO_VTABLE_DECL (desc);

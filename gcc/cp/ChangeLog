@@ -1,3 +1,21 @@
+2003-06-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11041
+	* call.c (initialize_reference): Do not use cp_finish_decl to emit
+	temporary variables.
+	* cp-tree.h (static_aggregates): Declare.
+	(pushdecl_top_level_and_finish): Likewise.
+	* decl.c (pushdecl_top_level_1): New function.
+	(pushdecl_top_level): Use it.
+	(pushdecl_top_level_and_finish): New function.
+	(initialize_local_var): Remove redundant code.
+	(cp_finish_decl): Remove support for RESULT_DECLs.  Don't check
+	building_stmt_tree.
+	* decl.h (static_aggregates): Remove.
+	* decl2.c (get_guard): Use pushdecl_top_level_and_finish.
+	* rtti.c (get_tinfo_decl): Use pushdecl_top_level_and_finish.
+	(tinfo_base_init): Likewise.
+	
 2003-06-19  Matt Austern  <austern@apple.com>
 
 	PR c++/11228

@@ -6144,7 +6144,7 @@ initialize_reference (tree type, tree expr, tree decl)
        T t;
        const S& s = t;
 
-    we can extend the lifetime of the returnn value of the conversion
+    we can extend the lifetime of the return value of the conversion
     operator.  */
   my_friendly_assert (TREE_CODE (conv) == REF_BIND, 20030302);
   if (decl)
@@ -6167,13 +6167,33 @@ initialize_reference (tree type, tree expr, tree decl)
       expr = convert_like (conv, expr);
       if (!real_non_cast_lvalue_p (expr))
 	{
+	  tree init;
+	  tree type;
+
 	  /* Create the temporary variable.  */
-	  var = make_temporary_var_for_ref_to_temp (decl, TREE_TYPE (expr));
-	  DECL_INITIAL (var) = expr;
-	  cp_finish_decl (var, expr, NULL_TREE, 
-		      LOOKUP_ONLYCONVERTING|DIRECT_BIND);
+	  type = TREE_TYPE (expr);
+	  var = make_temporary_var_for_ref_to_temp (decl, type);
+	  layout_decl (var, 0);
+	  if (at_function_scope_p ())
+	    {
+	      tree cleanup;
+
+	      add_decl_stmt (var);
+	      cleanup = cxx_maybe_build_cleanup (var);
+	      if (cleanup)
+		finish_decl_cleanup (var, cleanup);
+	    }
+	  else
+	    {
+	      rest_of_decl_compilation (var, NULL, /*toplev=*/1, at_eof);
+	      if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
+		static_aggregates = tree_cons (NULL_TREE, var,
+					       static_aggregates);
+	    }
+	  init = build (INIT_EXPR, type, var, expr);
 	  /* Use its address to initialize the reference variable.  */
 	  expr = build_address (var);
+	  expr = build (COMPOUND_EXPR, TREE_TYPE (expr), init, expr);
 	}
       else
 	/* Take the address of EXPR.  */
