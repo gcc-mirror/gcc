@@ -1,5 +1,5 @@
 /* proj.h file for Gnu Fortran
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 2000 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -57,8 +57,6 @@ typedef enum
 #endif
     Doggone_Trailing_Comma_Dont_Work = 1
   } bool;
-
-#define ARRAY_SIZE(a) (sizeof(a)/sizeof(a[0]))
 
 #ifndef UNUSED	/* Compile with -DUNUSED= if cc doesn't support this. */
 #define UNUSED ATTRIBUTE_UNUSED
