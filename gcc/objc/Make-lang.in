@@ -71,7 +71,7 @@ objc/objc-act.o : objc/objc-act.c \
    $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) $(EXPR_H) \
    $(TARGET_H) $(C_TREE_H) diagnostic.h toplev.h flags.h objc/objc-act.h \
    input.h function.h output.h debug.h langhooks.h $(LANGHOOKS_DEF_H) \
-   gtype-objc.h
+   gt-objc-objc-act.h gtype-objc.h
 
 po-generated: $(parsedir)/objc/objc-parse.c
 $(parsedir)/objc/objc-parse.c : $(parsedir)/objc/objc-parse.y
@@ -92,6 +92,7 @@ $(parsedir)/objc/objc-parse.y: $(srcdir)/c-parse.in
 	$(SHELL) $(srcdir)/move-if-change tmp-objc-prs.y $(parsedir)/objc/objc-parse.y
 
 gtype-objc.h : s-gtype ; @true
+gt-objc-objc-act.h : s-gtype ; @true
 
 #
 # Build hooks:

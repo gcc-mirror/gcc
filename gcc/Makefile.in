@@ -1300,7 +1300,7 @@ c-dump.o : c-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 	$(C_TREE_H) tree-dump.h
 
 c-pch.o : c-pch.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(CPPLIB_H) $(TREE_H) \
-	c-common.h output.h toplev.h c-pragma.h $(GGC_H) debug.h
+	c-common.h output.h toplev.h c-pragma.h $(GGC_H) debug.h langhooks.h
 
 # Language-independent files.
 

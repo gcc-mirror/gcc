@@ -1,3 +1,27 @@
+2003-03-06  Geoffrey Keating  <geoffk@apple.com>
+
+	* c-pch.c: Include langhooks.h.
+	(IDENT_LENGTH): New.
+	(get_ident): New.
+	(pch_ident): Delete.
+	(pch_init): Use get_ident, IDENT_LENGTH.
+	(c_common_valid_pch): Likewise.  Also, use actual language
+	in warning message.
+	* Makefile.in (c-pch.o): Add langhooks.h to dependencies.
+
+	* objc/config-lang.in (gtfiles): Add objc-act.c.  Remove duplicate
+	c-parse.in.
+	* objc/Make-lang.in (objc/objc-act.o): Add dependency on
+	gt-objc-objc-act.h.
+	(gt-objc-objc-act.h): New rule.
+	* objc/lang-specs.h: Support PCH.
+	* objc/objc-act.c: Include gt-objc-objc-act.h.
+	(objc_add_static_instance): Move num_static_inst out, mark for PCH.
+	(build_selector_reference_decl): Move idx out, mark for PCH.
+	(build_class_reference_decl): Likewise.
+	(build_objc_string_decl): Move *_idx out, mark for PCH.
+	(build_tmp_function_decl): Move xxx out, mark for PCH.
+
 2003-03-06  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_binds_local_p):  Consider

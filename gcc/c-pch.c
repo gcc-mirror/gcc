@@ -29,18 +29,41 @@ Boston, MA 02111-1307, USA.  */
 #include "debug.h"
 #include "c-pragma.h"
 #include "ggc.h"
+#include "langhooks.h"
 
 struct c_pch_header 
 {
   unsigned long asm_size;
 };
 
-static const char pch_ident[8] = "gpchC010";
+#define IDENT_LENGTH 8
 
 static FILE *pch_outfile;
 
 extern char *asm_file_name;
 static long asm_file_startpos;
+
+static const char * get_ident PARAMS((void));
+
+static const char *
+get_ident()
+{
+  static char result[IDENT_LENGTH];
+  static const char template[IDENT_LENGTH] = "gpch.010";
+  
+  memcpy (result, template, IDENT_LENGTH);
+  if (strcmp (lang_hooks.name, "GNU C") == 0)
+    result[4] = 'C';
+  else if (strcmp (lang_hooks.name, "GNU C++") == 0)
+    result[4] = '+';
+  else if (strcmp (lang_hooks.name, "GNU Objective-C") == 0)
+    result[4] = 'o';
+  else if (strcmp (lang_hooks.name, "GNU Objective-C++") == 0)
+    result[4] = 'O';
+  else
+    abort ();
+  return result;
+}
 
 void
 pch_init ()
@@ -58,7 +81,7 @@ pch_init ()
 	fatal_io_error ("can't open %s", pch_file);
       pch_outfile = f;
       
-      if (fwrite (pch_ident, sizeof (pch_ident), 1, f) != 1)
+      if (fwrite (get_ident(), IDENT_LENGTH, 1, f) != 1)
 	fatal_io_error ("can't write to %s", pch_file);
 
       /* We need to be able to re-read the output.  */
@@ -122,7 +145,8 @@ c_common_valid_pch (pfile, name, fd)
 {
   int sizeread;
   int result;
-  char ident[sizeof (pch_ident)];
+  char ident[IDENT_LENGTH];
+  const char *pch_ident;
 
   if (! allow_pch)
     return 2;
@@ -130,16 +154,17 @@ c_common_valid_pch (pfile, name, fd)
   /* Perform a quick test of whether this is a valid
      precompiled header for C.  */
 
-  sizeread = read (fd, ident, sizeof (pch_ident));
+  sizeread = read (fd, ident, IDENT_LENGTH);
   if (sizeread == -1)
     {
       fatal_io_error ("can't read %s", name);
       return 2;
     }
-  else if (sizeread != sizeof (pch_ident))
+  else if (sizeread != IDENT_LENGTH)
     return 2;
   
-  if (memcmp (ident, pch_ident, sizeof (pch_ident)) != 0)
+  pch_ident = get_ident();
+  if (memcmp (ident, pch_ident, IDENT_LENGTH) != 0)
     {
       if (cpp_get_options (pfile)->warn_invalid_pch)
 	{
@@ -150,7 +175,8 @@ c_common_valid_pch (pfile, name, fd)
 		       "%s: not compatible with this GCC version", name);
 	  else if (memcmp (ident, pch_ident, 4) == 0)
 	    /* It's a PCH for the wrong language.  */
-	    cpp_error (pfile, DL_WARNING, "%s: not for C language", name);
+	    cpp_error (pfile, DL_WARNING, "%s: not for %s", name,
+		       lang_hooks.name);
 	  else 
 	    /* Not any kind of PCH.  */
 	    cpp_error (pfile, DL_WARNING, "%s: not a PCH file", name);
