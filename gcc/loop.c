@@ -6305,15 +6305,11 @@ static int
 combine_givs_used_by_other (g1, g2)
      struct induction *g1, *g2;
 {
-  /* Lines marked with ??? test a condition that wasn't meant to be tested
-     and should be deleted.  */
   if (g1->giv_type == DEST_REG
-      && VARRAY_INT (n_times_set, REGNO (g1->dest_reg)) == 1 /* ??? */
       && reg_mentioned_p (g1->dest_reg, PATTERN (g2->insn)))
     return -1;
 
   if (g2->giv_type == DEST_REG
-      && VARRAY_INT (n_times_set, REGNO (g2->dest_reg)) == 1 /* ??? */
       && reg_mentioned_p (g2->dest_reg, PATTERN (g1->insn)))
     return 1;
 

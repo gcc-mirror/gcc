@@ -1,3 +1,7 @@
+Thu Dec 17 08:27:03 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (combine_givs_used_by_other): Don't depend on n_times_set.
+
 Wed Dec 16 17:30:35 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* toplev.c (main): Disable optimize_size if a specific
