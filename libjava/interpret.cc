@@ -1939,6 +1939,7 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	      {
 	      case 1:
 		PUSHI (*(jbyte*) (field->u.addr));
+		break;
 
 	      case 2:
 		if (type == JvPrimClass (char))
