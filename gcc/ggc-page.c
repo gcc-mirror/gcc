@@ -258,6 +258,8 @@ static struct globals
 #define GGC_MIN_LAST_ALLOCATED (4 * 1024 * 1024)
 
 
+static page_entry *** ggc_lookup_page_table PROTO ((void));
+static int ggc_allocated_p PROTO ((const void *));
 static page_entry *lookup_page_table_entry PROTO ((void *));
 static void set_page_table_entry PROTO ((void *, page_entry *));
 static char *alloc_anon PROTO ((char *, size_t));
@@ -276,15 +278,12 @@ static void poison_pages PROTO ((void));
 
 void debug_print_page_list PROTO ((int));
 
-/* Traverse the page table and find the entry for a page. 
-   Die (probably) if the object wasn't allocated via GC.  */
+/* Returns the lookup table appropriate for looking up P.  */
 
-static inline page_entry *
-lookup_page_table_entry(p)
-     void *p;
+static inline page_entry ***
+ggc_lookup_page_table ()
 {
   page_entry ***base;
-  size_t L1, L2;
 
 #if HOST_BITS_PER_PTR <= 32
   base = &G.lookup[0];
@@ -295,6 +294,39 @@ lookup_page_table_entry(p)
     table = table->next;
   base = &table->table[0];
 #endif
+
+  return base;
+}
+
+/* Returns non-zero if P was allocated in GC'able memory.  */
+
+static inline int
+ggc_allocated_p (p)
+     const void *p;
+{
+  page_entry ***base;
+  size_t L1, L2;
+
+  base = ggc_lookup_page_table ();
+
+  /* Extract the level 1 and 2 indicies.  */
+  L1 = LOOKUP_L1 (p);
+  L2 = LOOKUP_L2 (p);
+
+  return base[L1] && base[L1][L2];
+}
+
+/* Traverse the page table and find the entry for a page. 
+   Die (probably) if the object wasn't allocated via GC.  */
+
+static inline page_entry *
+lookup_page_table_entry(p)
+     void *p;
+{
+  page_entry ***base;
+  size_t L1, L2;
+
+  base = ggc_lookup_page_table ();
 
   /* Extract the level 1 and 2 indicies.  */
   L1 = LOOKUP_L1 (p);
@@ -678,7 +710,7 @@ mark_obj (p)
 
   /* Look up the page on which the object is alloced.  If the object
      wasn't allocated by the collector, we'll probably die.  */
-  entry = lookup_page_table_entry(p);
+  entry = lookup_page_table_entry (p);
 #ifdef ENABLE_CHECKING
   if (entry == NULL)
     abort ();
@@ -1073,6 +1105,14 @@ ggc_mark_string (s)
      char *s;
 {
   if (s)
+    mark_obj (s);
+}
+
+void
+ggc_mark_string_if_gcable (s)
+     char *s;
+{
+  if (s && ggc_allocated_p (s))
     mark_obj (s);
 }
 

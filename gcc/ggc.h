@@ -66,6 +66,10 @@ extern void ggc_mark_roots PROTO((void));
 extern void ggc_mark_rtx_children PROTO ((struct rtx_def *));
 extern void ggc_mark_tree_children PROTO ((union tree_node *));
 
+/* Mark the string, but only if it was allocated in collectable
+   memory.  */
+extern void ggc_mark_string_if_gcable PROTO ((char *));
+
 #define ggc_mark_rtx(RTX_EXPR)				\
   do {							\
     rtx r__ = (RTX_EXPR);				\
@@ -87,11 +91,11 @@ extern void init_ggc PROTO ((void));
 
 /* Start a new GGC context.  Memory allocated in previous contexts
    will not be collected while the new context is active.  */
-extern void ggc_pop_context PROTO ((void));
+extern void ggc_push_context PROTO ((void));
 
 /* Finish a GC context.  Any uncollected memory in the new context
    will be merged with the old context.  */
-extern void ggc_push_context PROTO ((void));
+extern void ggc_pop_context PROTO ((void));
 
 /* Allocation.  */
 struct rtx_def *ggc_alloc_rtx PROTO ((int nslots));
@@ -112,7 +116,6 @@ void ggc_collect PROTO ((void));
 int ggc_set_mark_rtx PROTO ((struct rtx_def *));
 int ggc_set_mark_rtvec PROTO ((struct rtvec_def *));
 int ggc_set_mark_tree PROTO ((union tree_node *));
-
 
 /* Callbacks to the languages.  */
 

@@ -1,3 +1,21 @@
+Sun Oct 10 18:27:27 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* ggc.h (ggc_push_context): Fix comment.
+	(ggc_pop_context): Likewise.
+	(mark_string_if_gcable): Likewise.
+	* ggc-common.c (ggc_mark_rtx_children): Use
+	ggc_mark_string_if_gcable.
+	* ggc-page.c (ggc_lookup_page_table): New function.
+	(ggc_allocated_p): Likewise.
+	(mark_obj): Fix formatting.
+	(ggc_mark_string_if_gcable): New function.
+	* ggc-simple.c (ggc_allocated_strings): New variable.
+	(ggc_strings_used): Likewise.
+	(ggc_compare_addresses): New function.
+	(ggc_pop_context): Pop the `any' memory too.
+	(ggc_mark_string_if_gcable): New function.
+	(ggc_collect): Initialize and tear down ggc_allocated_strings.
+	
 Sun Oct 10 20:05:21 1999  David Edelsohn  <edelsohn@gnu.org>
 
 	* rs6000.md (movstrsi_?reg): Use preferred rD/rS = r5 form.

@@ -268,7 +268,7 @@ ggc_mark_rtx_children (r)
 	  ggc_mark_rtvec (XVEC (r, i));
 	  break;
 	case 'S': case 's':
-	  ggc_mark_string (XSTR (r, i));
+	  ggc_mark_string_if_gcable (XSTR (r, i));
 	  break;
 	}
     }
