@@ -103,7 +103,7 @@ do {									\
 	while (base[-1] != 'm') base--;					\
 									\
 	if (*darwin_fix_and_continue_switch != '\0')			\
-	  error ("invalid option `%s'", base);				\
+	  error ("invalid option %qs", base);				\
 	darwin_fix_and_continue = (base[0] != 'n');			\
       }									\
   }									\

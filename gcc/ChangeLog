@@ -1,3 +1,8 @@
+2004-11-25  Joseph S. Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/darwin.h (SUBTARGET_OVERRIDE_OPTIONS): Use %qs
+	instead of `%s' in diagnostic.
+
 2004-11-25  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* basic-block.h (OBSTACK_ALLOC_REG_SET): Adjust.

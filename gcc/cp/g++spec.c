@@ -235,7 +235,7 @@ lang_specific_driver (int *in_argc, const char *const **in_argv,
     }
 
   if (quote)
-    fatal ("argument to `%s' missing\n", quote);
+    fatal ("argument to '%s' missing\n", quote);
 
   /* If we know we don't have to do anything, bail now.  */
   if (! added && library <= 0)
