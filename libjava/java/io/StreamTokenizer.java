@@ -293,16 +293,21 @@ public class StreamTokenizer
       ttype = TT_EOF;
     else if (isNumeric(ch))
       {
+	boolean isNegative = false;
 	if (ch == '-')
 	  {
 	    // Read ahead to see if this is an ordinary '-' rather than numeric.
 	    ch = in.read();
-	    if (ch != TT_EOF)
-	      in.unread(ch);
 	    if (isNumeric(ch) && ch != '-')
-	      ch = '-';
+	      {
+		isNegative = true;
+	      }
 	    else
-	      return (ttype = '-');
+	      {
+		if (ch != TT_EOF)
+		  in.unread(ch);
+		return (ttype = '-');
+	      }
 	  }
 
 	StringBuffer tokbuf = new StringBuffer();
@@ -318,7 +323,16 @@ public class StreamTokenizer
 	if (ch != TT_EOF)
 	  in.unread(ch);
 	ttype = TT_NUMBER;
-	nval = Double.valueOf(tokbuf.toString()).doubleValue();
+	try
+	  {
+	    nval = Double.valueOf(tokbuf.toString()).doubleValue();
+	  }
+	catch (NumberFormatException _)
+	  {
+	    nval = 0.0;
+	  }
+	if (isNegative)
+	  nval = -nval;
       }
     else if (isAlphabetic(ch))
       {
