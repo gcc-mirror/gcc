@@ -208,11 +208,12 @@ main (int argc, char **argv)
   do									\
     {									\
       int err;								\
+      const char *pex_run_err;						\
       if (trace)							\
 	fprintf (stderr, "Line %d: running %s %s\n",			\
 		 __LINE__, EXECUTABLE, ARGV[0]);			\
-      const char *pex_run_err = pex_run (PEXOBJ, FLAGS, EXECUTABLE,	\
-					 ARGV, OUTNAME, ERRNAME, &err);	\
+      pex_run_err = pex_run (PEXOBJ, FLAGS, EXECUTABLE, ARGV, OUTNAME,	\
+			     ERRNAME, &err);				\
       if (pex_run_err != NULL)						\
 	FATAL_ERROR (pex_run_err, err);					\
     }									\
