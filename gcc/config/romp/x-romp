@@ -5,7 +5,7 @@
 #
 # hc's warnings do nothing but obscure the output, hence the -w.
 # 
-CC=hc -Hnocpp -w
+CC=hc -Hnocpp -w -U__STDC__
 
 # The default `make' on the RT doesn't define MAKE, so do it here.
 MAKE=make
