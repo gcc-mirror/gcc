@@ -2183,7 +2183,7 @@ process_partial_specialization (decl)
     /* We've already got this specialization.  */
     return decl;
 
-  DECL_TEMPLATE_SPECIALIZATIONS (maintmpl) = CLASSTYPE_TI_SPEC_INFO (type)
+  DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)
     = tree_cons (inner_args, inner_parms,
 		 DECL_TEMPLATE_SPECIALIZATIONS (maintmpl));
   TREE_TYPE (DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)) = type;
