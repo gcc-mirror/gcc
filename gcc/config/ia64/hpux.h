@@ -196,10 +196,6 @@ do {								\
 #undef  TARGET_SECTION_TYPE_FLAGS
 #define TARGET_SECTION_TYPE_FLAGS  ia64_rwreloc_section_type_flags
 
-/* HP-UX does not support thread-local storage.  */
-#undef TARGET_HAVE_TLS
-#define TARGET_HAVE_TLS false
-
 /* ia64 HPUX has the float and long double forms of math functions.  */
 #undef TARGET_C99_FUNCTIONS
 #define TARGET_C99_FUNCTIONS  1
