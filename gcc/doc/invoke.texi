@@ -390,9 +390,6 @@ in the following sections.
 -mtpcs-frame  -mtpcs-leaf-frame @gol
 -mcaller-super-interworking  -mcallee-super-interworking}
 
-@emph{MN10200 Options}
-@gccoptlist{-mrelax}
-
 @emph{MN10300 Options}
 @gccoptlist{-mmult-bug  -mno-mult-bug @gol
 -mam33  -mno-am33 @gol
@@ -410,18 +407,6 @@ in the following sections.
 -mno-flush-func -mflush-func=@var{name} @gol
 -mno-flush-trap -mflush-trap=@var{number} @gol
 -G @var{num}}
-
-@emph{M88K Options}
-@gccoptlist{-m88000  -m88100  -m88110  -mbig-pic @gol
--mcheck-zero-division  -mhandle-large-shift @gol
--midentify-revision  -mno-check-zero-division @gol
--mno-ocs-debug-info  -mno-ocs-frame-position @gol
--mno-optimize-arg-area  -mno-serialize-volatile @gol
--mno-underscores  -mocs-debug-info @gol
--mocs-frame-position  -moptimize-arg-area @gol
--mserialize-volatile  -mshort-data-@var{num}  -msvr3 @gol
--msvr4  -mtrap-large-shift  -muse-div-instruction @gol
--mversion-03.00  -mwarn-passed-structs}
 
 @emph{RS/6000 and PowerPC Options}
 @gccoptlist{-mcpu=@var{cpu-type} @gol
@@ -477,11 +462,6 @@ in the following sections.
 -twolevel_namespace  -umbrella  -undefined @gol
 -unexported_symbols_list  -weak_reference_mismatches @gol
 -whatsloaded}
-
-@emph{RT Options}
-@gccoptlist{-mcall-lib-mul  -mfp-arg-in-fpregs  -mfp-arg-in-gregs @gol
--mfull-fp-blocks  -mhc-struct-return  -min-line-mul @gol
--mminimum-fp-blocks  -mnohc-struct-return}
 
 @emph{MIPS Options}
 @gccoptlist{-EL  -EB  -march=@var{arch}  -mtune=@var{arch} @gol
@@ -5840,13 +5820,10 @@ that macro, which enables you to change the defaults.
 * VAX Options::
 * SPARC Options::
 * ARM Options::
-* MN10200 Options::
 * MN10300 Options::
 * M32R/D Options::
-* M88K Options::
 * RS/6000 and PowerPC Options::
 * Darwin Options::
-* RT Options::
 * MIPS Options::
 * i386 and x86-64 Options::
 * HPPA Options::
@@ -6766,22 +6743,6 @@ of executing a function pointer if this option is enabled.
 
 @end table
 
-@node MN10200 Options
-@subsection MN10200 Options
-@cindex MN10200 options
-
-These @option{-m} options are defined for Matsushita MN10200 architectures:
-@table @gcctabopt
-
-@item -mrelax
-@opindex mrelax
-Indicate to the linker that it should perform a relaxation optimization pass
-to shorten branches, calls and absolute memory addresses.  This option only
-has an effect when used on the command line for the final link step.
-
-This option makes symbolic debugging impossible.
-@end table
-
 @node MN10300 Options
 @subsection MN10300 Options
 @cindex MN10300 options
@@ -6943,231 +6904,6 @@ will only be used if a trap is not available.
 @opindex mno-flush-func
 Indicates that there is no OS function for flushing the cache.
 
-@end table
-
-@node M88K Options
-@subsection M88K Options
-@cindex M88k options
-
-These @samp{-m} options are defined for Motorola 88k architectures:
-
-@table @gcctabopt
-@item -m88000
-@opindex m88000
-Generate code that works well on both the m88100 and the
-m88110.
-
-@item -m88100
-@opindex m88100
-Generate code that works best for the m88100, but that also
-runs on the m88110.
-
-@item -m88110
-@opindex m88110
-Generate code that works best for the m88110, and may not run
-on the m88100.
-
-@item -mbig-pic
-@opindex mbig-pic
-Obsolete option to be removed from the next revision.
-Use @option{-fPIC}.
-
-@item -midentify-revision
-@opindex midentify-revision
-@cindex identifying source, compiler (88k)
-Include an @code{ident} directive in the assembler output recording the
-source file name, compiler name and version, timestamp, and compilation
-flags used.
-
-@item -mno-underscores
-@opindex mno-underscores
-@cindex underscores, avoiding (88k)
-In assembler output, emit symbol names without adding an underscore
-character at the beginning of each name.  The default is to use an
-underscore as prefix on each name.
-
-@item -mocs-debug-info
-@itemx -mno-ocs-debug-info
-@opindex mocs-debug-info
-@opindex mno-ocs-debug-info
-@cindex OCS (88k)
-@cindex debugging, 88k OCS
-Include (or omit) additional debugging information (about registers used
-in each stack frame) as specified in the 88open Object Compatibility
-Standard, ``OCS''@.  This extra information allows debugging of code that
-has had the frame pointer eliminated.  The default for SVr4 and Delta 88
-SVr3.2 is to include this information; other 88k configurations omit this
-information by default.
-
-@item -mocs-frame-position
-@opindex mocs-frame-position
-@cindex register positions in frame (88k)
-When emitting COFF debugging information for automatic variables and
-parameters stored on the stack, use the offset from the canonical frame
-address, which is the stack pointer (register 31) on entry to the
-function.  The SVr4 and Delta88 SVr3.2, and BCS configurations use
-@option{-mocs-frame-position}; other 88k configurations have the default
-@option{-mno-ocs-frame-position}.
-
-@item -mno-ocs-frame-position
-@opindex mno-ocs-frame-position
-@cindex register positions in frame (88k)
-When emitting COFF debugging information for automatic variables and
-parameters stored on the stack, use the offset from the frame pointer
-register (register 30).  When this option is in effect, the frame
-pointer is not eliminated when debugging information is selected by the
--g switch.
-
-@item -moptimize-arg-area
-@opindex moptimize-arg-area
-@cindex arguments in frame (88k)
-Save space by reorganizing the stack frame.  This option generates code
-that does not agree with the 88open specifications, but uses less
-memory.
-
-@itemx -mno-optimize-arg-area
-@opindex mno-optimize-arg-area
-Do not reorganize the stack frame to save space.  This is the default.
-The generated conforms to the specification, but uses more memory.
-
-@item -mshort-data-@var{num}
-@opindex mshort-data
-@cindex smaller data references (88k)
-@cindex r0-relative references (88k)
-Generate smaller data references by making them relative to @code{r0},
-which allows loading a value using a single instruction (rather than the
-usual two).  You control which data references are affected by
-specifying @var{num} with this option.  For example, if you specify
-@option{-mshort-data-512}, then the data references affected are those
-involving displacements of less than 512 bytes.
-@option{-mshort-data-@var{num}} is not effective for @var{num} greater
-than 64k.
-
-@item -mserialize-volatile
-@opindex mserialize-volatile
-@itemx -mno-serialize-volatile
-@opindex mno-serialize-volatile
-@cindex sequential consistency on 88k
-Do, or don't, generate code to guarantee sequential consistency
-of volatile memory references.  By default, consistency is
-guaranteed.
-
-The order of memory references made by the MC88110 processor does
-not always match the order of the instructions requesting those
-references.  In particular, a load instruction may execute before
-a preceding store instruction.  Such reordering violates
-sequential consistency of volatile memory references, when there
-are multiple processors.   When consistency must be guaranteed,
-GCC generates special instructions, as needed, to force
-execution in the proper order.
-
-The MC88100 processor does not reorder memory references and so
-always provides sequential consistency.  However, by default, GCC
-generates the special instructions to guarantee consistency
-even when you use @option{-m88100}, so that the code may be run on an
-MC88110 processor.  If you intend to run your code only on the
-MC88100 processor, you may use @option{-mno-serialize-volatile}.
-
-The extra code generated to guarantee consistency may affect the
-performance of your application.  If you know that you can safely
-forgo this guarantee, you may use @option{-mno-serialize-volatile}.
-
-@item -msvr4
-@itemx -msvr3
-@opindex msvr4
-@opindex msvr3
-@cindex assembler syntax, 88k
-@cindex SVr4
-Turn on (@option{-msvr4}) or off (@option{-msvr3}) compiler extensions
-related to System V release 4 (SVr4).  This controls the following:
-
-@enumerate
-@item
-Which variant of the assembler syntax to emit.
-@item
-@option{-msvr4} makes the C preprocessor recognize @samp{#pragma weak}
-that is used on System V release 4.
-@item
-@option{-msvr4} makes GCC issue additional declaration directives used in
-SVr4.
-@end enumerate
-
-@option{-msvr4} is the default for the m88k-motorola-sysv4 configuration.
-@option{-msvr3} is the default for all other m88k configurations.
-
-@item -mversion-03.00
-@opindex mversion-03.00
-This option is obsolete, and is ignored.
-@c ??? which asm syntax better for GAS?  option there too?
-
-@item -mno-check-zero-division
-@itemx -mcheck-zero-division
-@opindex mno-check-zero-division
-@opindex mcheck-zero-division
-@cindex zero division on 88k
-Do, or don't, generate code to guarantee that integer division by
-zero will be detected.  By default, detection is guaranteed.
-
-Some models of the MC88100 processor fail to trap upon integer
-division by zero under certain conditions.  By default, when
-compiling code that might be run on such a processor, GCC
-generates code that explicitly checks for zero-valued divisors
-and traps with exception number 503 when one is detected.  Use of
-@option{-mno-check-zero-division} suppresses such checking for code
-generated to run on an MC88100 processor.
-
-GCC assumes that the MC88110 processor correctly detects all instances
-of integer division by zero.  When @option{-m88110} is specified, no
-explicit checks for zero-valued divisors are generated, and both
-@option{-mcheck-zero-division} and @option{-mno-check-zero-division} are
-ignored.
-
-@item -muse-div-instruction
-@opindex muse-div-instruction
-@cindex divide instruction, 88k
-Use the div instruction for signed integer division on the
-MC88100 processor.  By default, the div instruction is not used.
-
-On the MC88100 processor the signed integer division instruction
-div) traps to the operating system on a negative operand.  The
-operating system transparently completes the operation, but at a
-large cost in execution time.  By default, when compiling code
-that might be run on an MC88100 processor, GCC emulates signed
-integer division using the unsigned integer division instruction
-divu), thereby avoiding the large penalty of a trap to the
-operating system.  Such emulation has its own, smaller, execution
-cost in both time and space.  To the extent that your code's
-important signed integer division operations are performed on two
-nonnegative operands, it may be desirable to use the div
-instruction directly.
-
-On the MC88110 processor the div instruction (also known as the
-divs instruction) processes negative operands without trapping to
-the operating system.  When @option{-m88110} is specified,
-@option{-muse-div-instruction} is ignored, and the div instruction is used
-for signed integer division.
-
-Note that the result of dividing @code{INT_MIN} by @minus{}1 is undefined.  In
-particular, the behavior of such a division with and without
-@option{-muse-div-instruction} may differ.
-
-@item -mtrap-large-shift
-@itemx -mhandle-large-shift
-@opindex mtrap-large-shift
-@opindex mhandle-large-shift
-@cindex bit shift overflow (88k)
-@cindex large bit shifts (88k)
-Include code to detect bit-shifts of more than 31 bits; respectively,
-trap such shifts or emit code to handle them properly.  By default GCC
-makes no special provision for large bit shifts.
-
-@item -mwarn-passed-structs
-@opindex mwarn-passed-structs
-@cindex structure passing (88k)
-Warn when a function passes a struct as an argument or result.
-Structure-passing conventions have changed during the evolution of the C
-language, and are often the source of portability problems.  By default,
-GCC issues no such warning.
 @end table
 
 @c break page here to avoid unsightly interparagraph stretch.
@@ -7964,62 +7700,6 @@ These options are available for Darwin linker. Darwin linker man page
 describes them in detail.
 @end table
 
-
-@node RT Options
-@subsection IBM RT Options
-@cindex RT options
-@cindex IBM RT options
-
-These @samp{-m} options are defined for the IBM RT PC:
-
-@table @gcctabopt
-@item -min-line-mul
-@opindex min-line-mul
-Use an in-line code sequence for integer multiplies.  This is the
-default.
-
-@item -mcall-lib-mul
-@opindex mcall-lib-mul
-Call @code{lmul$$} for integer multiples.
-
-@item -mfull-fp-blocks
-@opindex mfull-fp-blocks
-Generate full-size floating point data blocks, including the minimum
-amount of scratch space recommended by IBM@.  This is the default.
-
-@item -mminimum-fp-blocks
-@opindex mminimum-fp-blocks
-Do not include extra scratch space in floating point data blocks.  This
-results in smaller code, but slower execution, since scratch space must
-be allocated dynamically.
-
-@cindex @file{stdarg.h} and RT PC
-@item -mfp-arg-in-fpregs
-@opindex mfp-arg-in-fpregs
-Use a calling sequence incompatible with the IBM calling convention in
-which floating point arguments are passed in floating point registers.
-Note that @code{stdarg.h} will not work with floating point operands
-if this option is specified.
-
-@item -mfp-arg-in-gregs
-@opindex mfp-arg-in-gregs
-Use the normal calling convention for floating point arguments.  This is
-the default.
-
-@item -mhc-struct-return
-@opindex mhc-struct-return
-Return structures of more than one word in memory, rather than in a
-register.  This provides compatibility with the MetaWare HighC (hc)
-compiler.  Use the option @option{-fpcc-struct-return} for compatibility
-with the Portable C Compiler (pcc).
-
-@item -mnohc-struct-return
-@opindex mnohc-struct-return
-Return some structures of more than one word in registers, when
-convenient.  This is the default.  For compatibility with the
-IBM-supplied compilers, use the option @option{-fpcc-struct-return} or the
-option @option{-mhc-struct-return}.
-@end table
 
 @node MIPS Options
 @subsection MIPS Options
@@ -11280,7 +10960,7 @@ loader is not part of GCC; it is part of the operating system).  If
 the GOT size for the linked executable exceeds a machine-specific
 maximum size, you get an error message from the linker indicating that
 @option{-fpic} does not work; in that case, recompile with @option{-fPIC}
-instead.  (These maximums are 16k on the m88k, 8k on the SPARC, and 32k
+instead.  (These maximums are 8k on the SPARC and 32k
 on the m68k and RS/6000.  The 386 has no such limit.)
 
 Position-independent code requires special support, and therefore works
@@ -11292,7 +10972,7 @@ position-independent.
 @opindex fPIC
 If supported for the target machine, emit position-independent code,
 suitable for dynamic linking and avoiding any limit on the size of the
-global offset table.  This option makes a difference on the m68k, m88k,
+global offset table.  This option makes a difference on the m68k
 and the SPARC.
 
 Position-independent code requires special support, and therefore works

@@ -1,3 +1,7 @@
+2004-01-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/invoke.texi: Remove traces of dead ports.
+
 2004-01-05  Richard Sandiford  <rsandifo@redhat.com>
 
 	* doc/invoke.texi: Add documentation for the MIPS -mexplicit-relocs
