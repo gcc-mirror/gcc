@@ -1,3 +1,7 @@
+2001-01-26  Benjamin Kosnik  <bkoz@kredhat.com>
+
+	* libsupc++/pure.cc (writestr): Just use cstdio and std::fputs.
+
 2001-01-25  Loren J. Rittle  <ljrittle@acm.org>
 
         * testsuite/21_strings/inserters_extractors.cc: Remove
