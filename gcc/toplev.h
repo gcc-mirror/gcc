@@ -113,7 +113,6 @@ extern int flag_loop_optimize;
 extern int flag_crossjumping;
 extern int flag_if_conversion;
 extern int flag_if_conversion2;
-extern int flag_delete_null_pointer_checks;
 extern int flag_keep_static_consts;
 extern int flag_peel_loops;
 extern int flag_rerun_cse_after_loop;

@@ -280,6 +280,7 @@ resize_phi_node (tree *phi, int len)
     {
       PHI_ARG_DEF (new_phi, i) = NULL_TREE;
       PHI_ARG_EDGE (new_phi, i) = NULL;
+      PHI_ARG_NONZERO (new_phi, i) = false;
     }
 
   *phi = new_phi;
@@ -366,6 +367,7 @@ add_phi_arg (tree *phi, tree def, edge e)
 
   PHI_ARG_DEF (*phi, i) = def;
   PHI_ARG_EDGE (*phi, i) = e;
+  PHI_ARG_NONZERO (*phi, i) = false;
   PHI_NUM_ARGS (*phi)++;
 }
 
@@ -408,11 +410,13 @@ remove_phi_arg_num (tree phi, int i)
     {
       PHI_ARG_DEF (phi, i) = PHI_ARG_DEF (phi, num_elem - 1);
       PHI_ARG_EDGE (phi, i) = PHI_ARG_EDGE (phi, num_elem - 1);
+      PHI_ARG_NONZERO (phi, i) = PHI_ARG_NONZERO (phi, num_elem - 1);
     }
 
   /* Shrink the vector and return.  */
   PHI_ARG_DEF (phi, num_elem - 1) = NULL_TREE;
   PHI_ARG_EDGE (phi, num_elem - 1) = NULL;
+  PHI_ARG_NONZERO (phi, num_elem - 1) = false;
   PHI_NUM_ARGS (phi)--;
 
   /* If we removed the last PHI argument, then go ahead and
