@@ -1,3 +1,7 @@
+2004-07-14  Mike Stump  <mrs@apple.com>
+
+	* gcc.dg/wchar_t-1.c: Expect to pass on darwin 10.3.x and later.
+
 2004-07-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16518
