@@ -1,3 +1,8 @@
+Wed Oct  8 00:18:22 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (finish_prevtable_vardecl): Check DECL_REALLY_EXTERN
+	for our key method; it might have been inlined by -O3.
+
 Tue Oct  7 23:00:12 1997  Mark Mitchell  <mmitchell@usa.net>
 
 	* decl.c (make_typename_type): Do not try to call lookup_field for
