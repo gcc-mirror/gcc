@@ -53,7 +53,7 @@ void test01()
   iterator_type is_it01(iss);
   string result1;
   ios_base::iostate err01 = ios_base::goodbit;
-  mon_get.get(is_it01, end, true, iss, err01, result1);
+  mon_get.get(is_it01, end, true, iss, err01, result1); // xxx
   VERIFY( result1 == digits1 );
   VERIFY( err01 == ios_base::eofbit );
 

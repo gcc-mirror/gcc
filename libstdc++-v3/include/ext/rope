@@ -215,7 +215,7 @@ class sequence_buffer : public iterator<std::output_iterator_tag,void,void,void,
         }
         sequence_buffer& operator*() { return *this; }
         sequence_buffer& operator++() { return *this; }
-        sequence_buffer& operator++(int) { return *this; }
+        sequence_buffer operator++(int) { return *this; }
 };
 
 // The following should be treated as private, at least for now.
@@ -359,7 +359,7 @@ identity_element(_Rope_Concat_fn<_CharT, _Alloc>)
     // Constructor
     __gthread_mutex_t _M_ref_count_lock;
 
-    _Refcount_Base(_RC_t __n) : _M_ref_count(__n)
+    _Refcount_Base(_RC_t __n) : _M_ref_count(__n), _M_ref_count_lock()
     {
 #ifdef __GTHREAD_MUTEX_INIT
       __gthread_mutex_t __tmp = __GTHREAD_MUTEX_INIT;
@@ -547,7 +547,11 @@ struct _Rope_RopeRep : public _Rope_rep_base<_CharT,_Alloc>
           static void _S_ref(_Rope_RopeRep*) {}
           static void _S_free_if_unref(_Rope_RopeRep*) {}
 #   endif
+protected:
+  _Rope_RopeRep&
+  operator=(const _Rope_RopeRep&);
 
+  _Rope_RopeRep(const _Rope_RopeRep&);
 };
 
 template<class _CharT, class _Alloc>
@@ -593,13 +597,18 @@ struct _Rope_RopeLeaf : public _Rope_RopeRep<_CharT,_Alloc> {
         // the proper allocator and the properly padded size.
         // In contrast, the destructor deallocates the data:
 # ifndef __GC
-    ~_Rope_RopeLeaf() {
+    ~_Rope_RopeLeaf() throw() {
         if (_M_data != this->_M_c_string) {
 	  this->_M_free_c_string();
         }
         __STL_FREE_STRING(_M_data, this->_M_size, this->get_allocator());
     }
 # endif
+protected:
+  _Rope_RopeLeaf&
+  operator=(const _Rope_RopeLeaf&);
+
+  _Rope_RopeLeaf(const _Rope_RopeLeaf&);
 };
 
 template<class _CharT, class _Alloc>
@@ -620,12 +629,17 @@ struct _Rope_RopeConcatenation : public _Rope_RopeRep<_CharT,_Alloc> {
         _M_left(__l), _M_right(__r)
       {}
 # ifndef __GC
-    ~_Rope_RopeConcatenation() {
+    ~_Rope_RopeConcatenation() throw() {
       this->_M_free_c_string();
       _M_left->_M_unref_nonnil();
       _M_right->_M_unref_nonnil();
     }
 # endif
+protected:
+  _Rope_RopeConcatenation&
+  operator=(const _Rope_RopeConcatenation&);
+
+  _Rope_RopeConcatenation(const _Rope_RopeConcatenation&);
 };
 
 template<class _CharT, class _Alloc>
@@ -666,13 +680,18 @@ struct _Rope_RopeFunction : public _Rope_RopeRep<_CharT,_Alloc> {
 #       endif
     }
 # ifndef __GC
-    ~_Rope_RopeFunction() {
+    ~_Rope_RopeFunction() throw() {
           this->_M_free_c_string();
           if (_M_delete_when_done) {
               delete _M_fn;
           }
     }
 # endif
+protected:
+  _Rope_RopeFunction&
+  operator=(const _Rope_RopeFunction&);
+
+  _Rope_RopeFunction(const _Rope_RopeFunction&);
 };
 // Substring results are usually represented using just
 // concatenation nodes.  But in the case of very long flat ropes
@@ -725,7 +744,7 @@ struct _Rope_RopeSubstring : public _Rope_RopeFunction<_CharT,_Alloc>,
 #       endif
         this->_M_tag = _Rope_constants::_S_substringfn;
     }
-    virtual ~_Rope_RopeSubstring()
+    virtual ~_Rope_RopeSubstring() throw()
       {
 #       ifndef __GC
           _M_base->_M_unref_nonnil();
@@ -787,13 +806,16 @@ class _Rope_char_ref_proxy {
     _My_rope* _M_root;     // The whole rope.
   public:
     _Rope_char_ref_proxy(_My_rope* __r, size_t __p)
-      :  _M_pos(__p), _M_current_valid(false), _M_root(__r) {}
+    :  _M_pos(__p), _M_current(), _M_current_valid(false), _M_root(__r) {}
+
     _Rope_char_ref_proxy(const _Rope_char_ref_proxy& __x)
-      : _M_pos(__x._M_pos), _M_current_valid(false), _M_root(__x._M_root) {}
-        // Don't preserve cache if the reference can outlive the
-        // expression.  We claim that's not possible without calling
-        // a copy constructor or generating reference to a proxy
-        // reference.  We declare the latter to have undefined semantics.
+    : _M_pos(__x._M_pos), _M_current(__x._M_current), _M_current_valid(false), 
+      _M_root(__x._M_root) {}
+
+  // Don't preserve cache if the reference can outlive the
+  // expression.  We claim that's not possible without calling
+  // a copy constructor or generating reference to a proxy
+  // reference.  We declare the latter to have undefined semantics.
     _Rope_char_ref_proxy(_My_rope* __r, size_t __p, _CharT __c)
       : _M_pos(__p), _M_current(__c), _M_current_valid(true), _M_root(__r) {}
     inline operator _CharT () const;
@@ -1194,6 +1216,12 @@ struct _Rope_base
           { __name##Alloc().deallocate(__p, __n); }
   __ROPE_DEFINE_ALLOCS(_Alloc)
 # undef __ROPE_DEFINE_ALLOC
+
+protected:
+  _Rope_base&
+  operator=(const _Rope_base&);
+
+  _Rope_base(const _Rope_base&);
 };
 
 
@@ -1546,10 +1574,8 @@ class rope : public _Rope_base<_CharT,_Alloc> {
             _S_ref(this->_M_tree_ptr);
         }
 
-        ~rope()
-        {
-            _S_unref(this->_M_tree_ptr);
-        }
+      ~rope() throw()
+       { _S_unref(this->_M_tree_ptr); }
 
         rope& operator=(const rope& __x)
         {
@@ -1557,7 +1583,7 @@ class rope : public _Rope_base<_CharT,_Alloc> {
             this->_M_tree_ptr = __x._M_tree_ptr;
             _S_ref(this->_M_tree_ptr);
             _S_unref(__old);
-            return(*this);
+            return *this;
         }
 
         void clear()

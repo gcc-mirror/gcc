@@ -418,14 +418,22 @@ namespace std
        *  @param  str  Source string.
        */
       basic_string&
-      operator=(const basic_string& __str) { return this->assign(__str); }
+      operator=(const basic_string& __str) 
+      { 
+	this->assign(__str); 
+	return *this;
+      }
 
       /**
        *  @brief  Copy contents of @a s into this string.
        *  @param  s  Source null-terminated string.
        */
       basic_string&
-      operator=(const _CharT* __s) { return this->assign(__s); }
+      operator=(const _CharT* __s) 
+      { 
+	this->assign(__s); 
+	return *this;
+      }
 
       /**
        *  @brief  Set value to string of length 1.
@@ -435,7 +443,11 @@ namespace std
        *  (*this)[0] == @a c.
        */
       basic_string&
-      operator=(_CharT __c) { return this->assign(1, __c); }
+      operator=(_CharT __c) 
+      { 
+	this->assign(1, __c); 
+	return *this;
+      }
 
       // Iterators:
       /**

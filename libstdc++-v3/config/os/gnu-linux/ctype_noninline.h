@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -59,21 +59,21 @@
 #if _GLIBCXX_C_LOCALE_GNU
   ctype<char>::ctype(__c_locale __cloc, const mask* __table, bool __del, 
 		     size_t __refs) 
-  : facet(__refs), _M_del(__table != 0 && __del)
+  : facet(__refs), _M_c_locale_ctype(_S_clone_c_locale(__cloc)), 
+  _M_del(__table != 0 && __del), 
+  _M_toupper(_M_c_locale_ctype->__ctype_toupper),  
+  _M_tolower(_M_c_locale_ctype->__ctype_tolower), 
+  _M_table(__table ? __table : _M_c_locale_ctype->__ctype_b), 
+  _M_widen_ok(0), _M_narrow_ok(0) 
   {
-    _M_c_locale_ctype = _S_clone_c_locale(__cloc);
-    _M_toupper = _M_c_locale_ctype->__ctype_toupper;
-    _M_tolower = _M_c_locale_ctype->__ctype_tolower;
-    _M_table = __table ? __table : _M_c_locale_ctype->__ctype_b;
     memset(_M_widen, 0, sizeof(_M_widen));
-    _M_widen_ok = 0;
     memset(_M_narrow, 0, sizeof(_M_narrow));
-    _M_narrow_ok = 0;
   }
 #else
   ctype<char>::ctype(__c_locale, const mask* __table, bool __del, 
 		     size_t __refs) 
-  : facet(__refs), _M_del(__table != 0 && __del)
+  : facet(__refs), _M_c_locale_ctype(_S_get_c_locale()), 
+  _M_del(__table != 0 && __del), _M_widen_ok(0), _M_narrow_ok(0)
   {
     char* __old=strdup(setlocale(LC_CTYPE, NULL));
     setlocale(LC_CTYPE, "C");
@@ -88,30 +88,27 @@
 #endif
     setlocale(LC_CTYPE, __old);
     free(__old);
-    _M_c_locale_ctype = _S_get_c_locale();
     memset(_M_widen, 0, sizeof(_M_widen));
-    _M_widen_ok = 0;
     memset(_M_narrow, 0, sizeof(_M_narrow));
-    _M_narrow_ok = 0;
   }
 #endif
 
 #if _GLIBCXX_C_LOCALE_GNU
   ctype<char>::ctype(const mask* __table, bool __del, size_t __refs) 
-  : facet(__refs), _M_del(__table != 0 && __del)
+  : facet(__refs), _M_c_locale_ctype(_S_get_c_locale()), 
+  _M_del(__table != 0 && __del),
+  _M_toupper(_M_c_locale_ctype->__ctype_toupper),  
+  _M_tolower(_M_c_locale_ctype->__ctype_tolower), 
+  _M_table(__table ? __table : _M_c_locale_ctype->__ctype_b), 
+  _M_widen_ok(0), _M_narrow_ok(0) 
   {
-    _M_c_locale_ctype = _S_get_c_locale(); 
-    _M_toupper = _M_c_locale_ctype->__ctype_toupper;
-    _M_tolower = _M_c_locale_ctype->__ctype_tolower;
-    _M_table = __table ? __table : _M_c_locale_ctype->__ctype_b;
     memset(_M_widen, 0, sizeof(_M_widen));
-    _M_widen_ok = 0;
     memset(_M_narrow, 0, sizeof(_M_narrow));
-    _M_narrow_ok = 0;
   }
 #else
   ctype<char>::ctype(const mask* __table, bool __del, size_t __refs)
-  : facet(__refs), _M_del(__table != 0 && __del)
+  : facet(__refs), _M_c_locale_ctype(_S_get_c_locale()), 
+  _M_del(__table != 0 && __del), _M_widen_ok(0), _M_narrow_ok(0)
   {
     char* __old=strdup(setlocale(LC_CTYPE, NULL));
     setlocale(LC_CTYPE, "C");
@@ -126,11 +123,8 @@
 #endif
     setlocale(LC_CTYPE, __old);
     free(__old);
-    _M_c_locale_ctype = _S_get_c_locale();
     memset(_M_widen, 0, sizeof(_M_widen));
-    _M_widen_ok = 0;
     memset(_M_narrow, 0, sizeof(_M_narrow));
-    _M_narrow_ok = 0;
   }
 #endif
 

@@ -1,6 +1,6 @@
 // Stream buffer classes -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -762,10 +762,15 @@ namespace std
       }
 #endif
 
-    // _GLIBCXX_RESOLVE_LIB_DEFECTS
-    // Side effect of DR 50. 
     private:
-      basic_streambuf(const __streambuf_type&) { }; 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // Side effect of DR 50. 
+      basic_streambuf(const __streambuf_type& __sb)
+      : _M_in_beg(__sb._M_in_beg), _M_in_cur(__sb._M_in_cur), 
+      _M_in_end(__sb._M_in_end), _M_out_beg(__sb._M_out_beg), 
+      _M_out_cur(__sb._M_out_cur), _M_out_end(__sb._M_out_cur),
+      _M_buf_locale(__sb._M_buf_locale) 
+      { }
 
       __streambuf_type& 
       operator=(const __streambuf_type&) { return *this; };
