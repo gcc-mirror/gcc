@@ -735,6 +735,12 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
        since it will also be used outside the loop.  */
     if (GET_CODE (copy_end) == JUMP_INSN)
       copy_end_luid--;
+    /* If copy_start points to the NOTE that starts the loop, then we must
+       use the next luid, because invariant pseudo-regs moved out of the loop
+       have their lifetimes modified to start here, but they are not safe
+       to duplicate.  */
+    if (copy_start == loop_start)
+      copy_start_luid++;
 
     for (j = FIRST_PSEUDO_REGISTER; j < max_reg_before_loop; ++j)
       if (regno_first_uid[j] > 0 && regno_first_uid[j] <= max_uid_for_loop
