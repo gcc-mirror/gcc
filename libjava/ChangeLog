@@ -1,5 +1,13 @@
 1999-07-31  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* configure.in: Check for struct hostent_data and need for
+	-D_REENTRANT for gethostbyname_r declaration.
+	* java/net/natInetAddress.cc: Define _REENTRANT if needed.
+	(lookup): Use hostent_data for fixed_buffer.
+	* configure, include/config.h.in: Rebuilt.
+
+1999-07-31  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
 	* java/lang/natSystem.cc (arraycopy): Use bcopy if memmove is not
 	available.  Don't cast memmove args to (void*).
 	* configure.in: Do not abort if memmove is not available.
