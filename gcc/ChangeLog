@@ -1,3 +1,7 @@
+2002-04-10  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/t-aix43 (SHLIB_NM_FLAGS): Add -X32_64.
+
 2002-04-10  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* reload1.c (choose_reload_regs): HARD_FRAME_POINTER_REGNUM
