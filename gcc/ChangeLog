@@ -1,5 +1,7 @@
 Mon Nov 12 05:18:42 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* dwarf2out.c (loc_descriptor_from_tree, case COMPOUND_EXPR): New case.
+
 	* alias.c (nonoverlapping_memrefs_p): Handle DECL_RTL being a CONCAT.
 
 2001-11-12  Kazu Hirata  <kazu@hxi.com>
