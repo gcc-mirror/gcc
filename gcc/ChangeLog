@@ -1,5 +1,15 @@
 2002-04-03  Jakub Jelinek  <jakub@redhat.com>
 
+	* configure.in (HAVE_SPARC_UA_PCREL_HIDDEN): Test whether %r_disp32()
+	works properly with .hidden symbols.
+	* configure: Rebuilt.
+	* config.in: Rebuilt.
+	* config/sparc/sparc.h (ASM_PREFERRED_EH_DATA_FORMAT): Use
+	DW_EH_PE_absptr for flag_pic && GLOBAL if %r_disp32() doesn't work
+	properly with .hidden symbols.
+
+2002-04-03  Jakub Jelinek  <jakub@redhat.com>
+
 	PR middle-end/6102
 	* df.c (df_insn_refs_record): Use XEXP not SET_DEST to access
 	USE argument.
