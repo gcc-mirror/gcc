@@ -1,3 +1,10 @@
+2005-02-22  Bryce McKinlay  <mckinlay@redhat.com>
+
+        PR libgcj/19823
+        * configure.host: Set gc_use_mmap on *-linux*.
+        * configure.in: Define USE_MMAP if gc_use_mmap is set.
+        * configure: Rebuilt.
+
 2004-11-04  Release Manager
 
 	* GCC 3.4.3 released.

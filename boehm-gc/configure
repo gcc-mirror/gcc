@@ -3076,7 +3076,7 @@ esac
 #
 # We don't set NO_EXECUTE_PERMISSION by default because gcj (and
 # anything else that creates trampolines in gc-allocated memory)
-# always needs exec permission.  The exception to this is IA-64 and
+# always needs exec permission.  The exceptions to this are IA-64 and
 # some variations of Power PC, where trampolines don't contain
 # executable code.
 #
@@ -3452,6 +3452,13 @@ EOF
   fi
 fi
 
+
+if test "${gc_use_mmap}" = "yes"; then
+  cat >> confdefs.h <<\EOF
+#define USE_MMAP 1
+EOF
+
+fi
 
 if test -n "$with_cross_host" &&
    test x"$with_cross_host" != x"no"; then

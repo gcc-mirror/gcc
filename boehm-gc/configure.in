@@ -419,6 +419,10 @@ AC_ARG_ENABLE(full-debug,
     esac ]
   fi)
 
+if test "${gc_use_mmap}" = "yes"; then
+  AC_DEFINE(USE_MMAP, 1, [use MMAP instead of sbrk to get new memory])
+fi
+
 if test -n "$with_cross_host" &&
    test x"$with_cross_host" != x"no"; then
   toolexecdir='$(exec_prefix)/$(target_alias)'
