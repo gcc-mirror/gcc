@@ -1,3 +1,7 @@
+2001-04-29  Toomas Rosin <toomas at ns dot tklabor dot ee>
+
+	* Makefile.in(stmp-fixinc): quote shell assignment values
+
 2001-04-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-aux-info.c: NULL_PTR->NULL in calls to `concat'.

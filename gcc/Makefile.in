@@ -2130,8 +2130,8 @@ fixinc.sh: $(FIXINCSRCDIR)/mkfixinc.sh $(FIXINCSRCDIR)/fixincl.c \
 stmp-fixinc: fixinc.sh gsyslimits.h
 	rm -rf include; mkdir include
 	-chmod a+rx include
-	(TARGET_MACHINE=$(target); srcdir=`cd $(srcdir); pwd`; \
-	INSTALL_ASSERT_H=$(INSTALL_ASSERT_H); SHELL=$(SHELL) ;\
+	(TARGET_MACHINE='$(target)'; srcdir=`cd $(srcdir); pwd`; \
+	INSTALL_ASSERT_H='$(INSTALL_ASSERT_H)'; SHELL='$(SHELL)' ;\
 	export TARGET_MACHINE srcdir INSTALL_ASSERT_H SHELL ; \
 	$(SHELL) ./fixinc.sh `pwd`/include $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS); \
 	rm -f include/syslimits.h; \
