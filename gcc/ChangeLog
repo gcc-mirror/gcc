@@ -1,3 +1,8 @@
+Wed Apr 28 10:36:39 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* config/m68k/m68k.md (cmpsi+1): Use cmp.w when comparing a 16 bit
+	constant with an address register. 
+
 Wed Apr 28 00:14:41 PDT 1999 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
