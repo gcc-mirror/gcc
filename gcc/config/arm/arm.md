@@ -1,7 +1,7 @@
 ;;- Machine description for Advanced RISC Machines' ARM for GNU compiler
 ;;  Copyright (C) 1991, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 ;;  Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
-;;             and Martin Simmons (@harleqn.co.uk).
+;;  and Martin Simmons (@harleqn.co.uk).
 ;;  More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
 
 ;; This file is part of GNU CC.
@@ -4241,14 +4241,17 @@
   DONE;
 }")
 
+;; The USE in this pattern is needed to tell flow analysis that this is
+;; a CASESI insn.  It has no other purpose.
 (define_insn "casesi_internal"
-  [(set (pc)
-	(if_then_else
-	 (leu (match_operand:SI 0 "s_register_operand" "r")
-	      (match_operand:SI 1 "arm_rhs_operand" "rI"))
-	 (mem:SI (plus:SI (mult:SI (match_dup 0) (const_int 4))
-			  (label_ref (match_operand 2 "" ""))))
-	 (label_ref (match_operand 3 "" ""))))]
+  [(parallel [(set (pc)
+	       (if_then_else
+		(leu (match_operand:SI 0 "s_register_operand" "r")
+		     (match_operand:SI 1 "arm_rhs_operand" "rI"))
+		(mem:SI (plus:SI (mult:SI (match_dup 0) (const_int 4))
+				 (label_ref (match_operand 2 "" ""))))
+		(label_ref (match_operand 3 "" ""))))
+	      (use (label_ref (match_dup 2)))])]
   ""
   "*
   if (flag_pic)
