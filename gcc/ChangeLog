@@ -1,3 +1,7 @@
+2004-03-03  Paul Brook  <paul@codesourcery.com>
+
+	* flow.c (ior_reg_cond, and_reg_cond): Remove stray ")".
+
 2004-03-03  Jan Hubicka  <jh@suse.cz>
 
 	* ggc-common.c (ggc_alloc_cleared_stat, ggc_realloc_stat):
