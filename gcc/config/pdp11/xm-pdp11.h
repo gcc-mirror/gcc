@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for pdp-11 family.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GNU CC.
@@ -19,10 +19,9 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* ???? */
-/* xm is if you want to run gcc here ??? */
-/* too big !!! */
+/* gcc can never run on a PDP, since it needs too much memory */
+/* but we need the xm-pdp.h file to compile libgcc2           */
 
-#error YOU LOSE! Gcc cannot run on a pdp-11 due to size problems!
-
-
+/* target machine dependencies.
+   tm.h is a symbolic link to the actual target specific file.   */
+#include "tm.h"
