@@ -1,3 +1,8 @@
+2002-07-21  Richard Henderson  <rth@redhat.com>
+
+	* lang.c (java_unsafe_for_reeval): New.
+	(LANG_HOOKS_UNSAFE_FOR_REEVAL): New.
+
 2002-07-21  Neil Booth  <neil@daikokuya.co.uk>
 
 	* jcf-path.c (GET_ENV_PATH_LIST): Remove.
