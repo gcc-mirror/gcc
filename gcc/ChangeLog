@@ -1,3 +1,8 @@
+2003-05-19  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (override_options): Disable explicit
+	relocs for old ABIs unless using gas.
+
 2003-05-18  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.h: Remove definition of g_switch_value.
