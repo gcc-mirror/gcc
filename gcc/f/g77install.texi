@@ -5,7 +5,7 @@
 @c The text of this file appears in the file INSTALL
 @c in the G77 distribution, as well as in the G77 manual.
 
-@c 1997-12-23
+@c 1998-05-20
 
 Note most of this information is out of date and superceded by the EGCS
 install procedures.  It is provided for historical reference only.
@@ -1699,12 +1699,12 @@ you want to build as part of building @code{g77},
 you can save time and disk space by doing a straight
 build.
 
-To build just the C and Fortran compilers and the
+To build just the compilers along with the
 necessary run-time libraries, issue the following
 command:
 
 @example
-make -k CC=gcc LANGUAGES=f77 all g77
+make -k CC=gcc
 @end example
 
 (The @samp{g77} target is necessary because the @code{gcc}
@@ -1842,7 +1842,7 @@ After configuring, building, and testing @code{g77} and @code{gcc},
 when you are ready to install them on your system, type:
 
 @example
-make -k CC=gcc LANGUAGES=f77 install
+make -k CC=gcc install
 @end example
 
 As described in @ref{Installation,,Installing GNU CC,
@@ -1867,8 +1867,8 @@ make -k @dots{} install install-libf77 install-f2c-all
 
 We don't know why some non-GNU versions of @code{make} sometimes
 require this alternate command, but they do.
-(Remember to supply the appropriate definitions for @samp{CC} and
-@samp{LANGUAGES} where you see @samp{@dots{}} in the above command.)
+(Remember to supply the appropriate definition for @samp{CC}
+where you see @samp{@dots{}} in the above command.)
 
 Note that using the @samp{-k} option tells @code{make} to
 continue after some installation problems, like not having
