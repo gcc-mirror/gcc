@@ -33,6 +33,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "where.h"
 #include "lex.h"
 #include "malloc.h"
+#include "ggc.j"
 
 /* Externals defined here. */
 
@@ -108,6 +109,33 @@ ffewhere_ll_lookup_ (ffewhereLineNumber ln)
   return NULL;
 }
 
+/* A somewhat evil way to prevent the garbage collector
+   from collecting 'file' structures.  */
+#define NUM_FFEWHERE_HEAD_FILES 31
+static struct ffewhere_ggc_tracker 
+{
+  struct ffewhere_ggc_tracker *next;
+  ffewhereFile files[NUM_FFEWHERE_HEAD_FILES];
+} *ffewhere_head = NULL;
+
+static void 
+mark_ffewhere_head (arg)
+     void *arg;
+{
+  struct ffewhere_ggc_tracker *head;
+  int i;
+  
+  for (head = * (struct ffewhere_ggc_tracker **) arg;
+       head != NULL;
+       head = head->next)
+  {
+    ggc_mark (head);
+    for (i = 0; i < NUM_FFEWHERE_HEAD_FILES; i++)
+      ggc_mark (head->files[i]);
+  }
+}
+
+
 /* Kill file object.
 
    Note that this object must not have been passed in a call
@@ -117,9 +145,18 @@ ffewhere_ll_lookup_ (ffewhereLineNumber ln)
 void
 ffewhere_file_kill (ffewhereFile wf)
 {
-  malloc_kill_ks (ffe_pool_file (), wf,
-		  offsetof (struct _ffewhere_file_, text)
-		  + wf->length + 1);
+  struct ffewhere_ggc_tracker *head;
+  int i;
+  
+  for (head = ffewhere_head; head != NULL; head = head->next)
+    for (i = 0; i < NUM_FFEWHERE_HEAD_FILES; i++)
+      if (head->files[i] == wf)
+	{
+	  head->files[i] = NULL;
+	  return;
+	}
+  /* Called on a file that has already been deallocated... */
+  abort();
 }
 
 /* Create file object.  */
@@ -128,13 +165,41 @@ ffewhereFile
 ffewhere_file_new (char *name, size_t length)
 {
   ffewhereFile wf;
-
-  wf = malloc_new_ks (ffe_pool_file (), "ffewhereFile",
-		      offsetof (struct _ffewhere_file_, text)
-		      + length + 1);
+  int filepos;
+ 
+  wf = ggc_alloc (offsetof (struct _ffewhere_file_, text)
+		  + length + 1);
   wf->length = length;
   memcpy (&wf->text[0], name, length);
   wf->text[length] = '\0';
+
+  if (ffewhere_head == NULL)
+    {
+      ggc_add_root (&ffewhere_head, 1, sizeof ffewhere_head,
+		    mark_ffewhere_head);
+      filepos = NUM_FFEWHERE_HEAD_FILES;
+    }
+  else
+    {
+      for (filepos = 0; filepos < NUM_FFEWHERE_HEAD_FILES; filepos++)
+	if (ffewhere_head->files[filepos] == NULL)
+	  {
+	    ffewhere_head->files[filepos] = wf;
+	    break;
+	  }
+    }
+  if (filepos == NUM_FFEWHERE_HEAD_FILES)
+    {
+      /* Need to allocate a new block.  */
+      struct ffewhere_ggc_tracker *old_head = ffewhere_head;
+      int i;
+      
+      ffewhere_head = ggc_alloc (sizeof (*ffewhere_head));
+      ffewhere_head->next = old_head;
+      ffewhere_head->files[0] = wf;
+      for (i = 1; i < NUM_FFEWHERE_HEAD_FILES; i++)
+	ffewhere_head->files[i] = NULL;
+    }
 
   return wf;
 }
