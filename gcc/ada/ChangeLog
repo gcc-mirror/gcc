@@ -1,3 +1,9 @@
+2004-04-02  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* gnat-style.texi, gnat_rm.texi, gnat_ugn.texi: Remove RCS tags.
+	Replace ifinfo by ifnottex, to make makeinfo --html happy again.
+	Add info directory entry and category.
+
 2004-04-02  Jan Hubicka  <jh@suse.cz>
 
 	* utils.c: Include function.h
