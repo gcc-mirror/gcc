@@ -2576,6 +2576,22 @@ bootstrap: force
 	$(MAKE) stage2
 	$(MAKE) CC="stage2/xgcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
 
+bootstrap-lean: force
+# Only build the C compiler for stage1, because that is the only one that
+# we can guarantee will build with the native compiler, and also it is the
+# only thing useful for building stage2.
+	$(MAKE) CC="$(CC)" libdir=$(libdir) LANGUAGES="$(BOOT_LANGUAGES)"
+	$(MAKE) stage1
+# This used to define ALLOCA as empty, but that would lead to bad results
+# for a subsequent `make install' since that would not have ALLOCA empty.
+# To prevent `make install' from compiling alloca.o and then relinking cc1
+# because alloca.o is newer, we permit these recursive makes to compile
+# alloca.o.  Then cc1 is newer, so it won't have to be relinked.
+	$(MAKE) CC="stage1/xgcc -Bstage1/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
+	$(MAKE) stage2
+	rm -rf stage1
+	$(MAKE) CC="stage2/xgcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage2/ LANGUAGES="$(LANGUAGES)"
+
 bootstrap2: force
 	$(MAKE) CC="stage1/xgcc -Bstage1/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) STAGE_PREFIX=stage1/ LANGUAGES="$(LANGUAGES)"
 	$(MAKE) stage2
@@ -2610,6 +2626,31 @@ compare: force
 	  cat .bad_compare; \
 	  exit 1; \
 	else true; \
+	fi
+
+# ./ avoids bug in some versions of tail.
+compare-lean: force
+	-rm -f .bad_compare
+	for file in *$(objext); do \
+	  tail +16c ./$$file > tmp-foo1; \
+	  tail +16c stage2/$$file > tmp-foo2 \
+	    && (cmp tmp-foo1 tmp-foo2 > /dev/null 2>&1 || echo $$file differs >> .bad_compare) || true; \
+	done
+	for dir in tmp-foo $(SUBDIRS); do \
+	  if [ "`echo $$dir/*$(objext)`" != "$$dir/*$(objext)" ] ; then \
+	    for file in $$dir/*$(objext); do \
+	      tail +16c ./$$file > tmp-foo1; \
+	      tail +16c stage2/$$file > tmp-foo2 \
+	        && (cmp tmp-foo1 tmp-foo2 > /dev/null 2>&1 || echo $$file differs >> .bad_compare) || true; \
+	    done; \
+	  fi; \
+	done
+	-rm -f tmp-foo*
+	if [ -f .bad_compare ]; then \
+	  echo "Bootstrap comparison failure!"; \
+	  cat .bad_compare; \
+	  exit 1; \
+	else rm -rf stage2; \
 	fi
 
 # Similar, but compare with stage3 directory

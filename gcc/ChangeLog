@@ -1,3 +1,7 @@
+Mon Sep 29 00:38:42 1997 Aaron Jackson <jackson@negril.msrce.howard.edu>
+
+	* Makefile.in (bootstrap-lean, compare-lean): New targets.
+
 Mon Sep 29 00:18:16 1997  Richard Henderson  (rth@cygnus.com)
 
 	* alias.c (base_alias_check): Two symbols can conflict if they
