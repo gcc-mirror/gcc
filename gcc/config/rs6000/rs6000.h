@@ -1478,6 +1478,7 @@ extern int rs6000_trunc_used;
 
    Initialize the section names for the RS/6000 at this point.
 
+   Specify filename to assembler.
    We want to go into the TOC section so at least one .toc will be emitted.
    Also, in order to output proper .bs/.es pairs, we need at least one static
    [RW] section emitted.
@@ -1496,6 +1497,7 @@ extern int rs6000_trunc_used;
   rs6000_gen_section_name (&xcoff_read_only_section_name,	\
 			   main_input_filename, ".ro_");	\
 								\
+  output_file_directive (FILE, main_input_filename);		\
   toc_section ();						\
   if (write_symbols != NO_DEBUG)				\
     private_data_section ();					\
