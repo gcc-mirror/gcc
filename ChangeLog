@@ -1,3 +1,8 @@
+2003-10-15  Falk Hueffner  <falk@debian.org>
+
+	* MAINTAINERS: Move myself from 'Bug database only accounts' to
+	'Write After Approval' section. Update email.
+
 2003-10-14  Roger Sayle  <roger@eyesopen.com>
 
 	* MAINTAINERS: Move myself from 'Write After Approval' to
