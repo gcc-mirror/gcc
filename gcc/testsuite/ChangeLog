@@ -1,3 +1,7 @@
+2001-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.old-deja/g++.other/inline18.C: New test.
+
 2001-01-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.c-torture/execute/stdio-opt-2.c: Also test __builtin_puts
