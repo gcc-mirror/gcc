@@ -1,4 +1,5 @@
 2005-03-07  Jeff Law  <law@redhat.com>
+	    Steven Bosscher  <stevenb@suse.de>
 
 	* tree-cfg.c (find_taken_edge_computed_goto): New function.
 	(find_taken_edge): Call find_taken_edge_computed_goto as
