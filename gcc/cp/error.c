@@ -474,7 +474,7 @@ dump_type (t, flags)
     case TYPEOF_TYPE:
       output_add_string (scratch_buffer, "__typeof (");
       dump_expr (TYPE_FIELDS (t), flags & ~TFF_EXPR_IN_PARENS);
-      print_left_paren (scratch_buffer);
+      print_right_paren (scratch_buffer);
       break;
 
     default:
