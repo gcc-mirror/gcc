@@ -3821,8 +3821,9 @@ pushdecl (x)
 	  /* Or in the innermost namespace.  */
 	  if (! t)
 	    t = namespace_binding (name, DECL_CONTEXT (x));
-	  /* Does it have linkage?  */
-	  if (t && ! (TREE_STATIC (t) || DECL_EXTERNAL (t)))
+	  /* Does it have linkage?  Note that if this isn't a DECL, it's an
+	     OVERLOAD, which is OK.  */
+	  if (t && DECL_P (t) && ! (TREE_STATIC (t) || DECL_EXTERNAL (t)))
 	    t = NULL_TREE;
 	  if (t)
 	    different_binding_level = 1;

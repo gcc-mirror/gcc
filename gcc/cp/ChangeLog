@@ -1,5 +1,7 @@
 2000-12-15  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (pushdecl): Don't check for linkage on a non-decl.
+
 	* call.c (build_op_delete_call): See through ARRAY_TYPEs.
 
 	* call.c (build_new_function_call): Lose space before paren in
