@@ -1473,7 +1473,11 @@ build_invokeinterface (dtable, method_name, method_signature)
   dtable = build1 (INDIRECT_REF, dtable_type, dtable);
   dtable = build (COMPONENT_REF, class_ptr_type, dtable,
 		  lookup_field (&dtable_type, class_ident));
-  lookup_arg = build_tree_list (NULL_TREE, build_utf8_ref (method_signature));
+  lookup_arg = build_tree_list (NULL_TREE, 
+				(build_utf8_ref 
+				 (unmangle_classname
+				  (IDENTIFIER_POINTER(method_signature),
+				   IDENTIFIER_LENGTH(method_signature)))));
   lookup_arg = tree_cons (NULL_TREE, dtable,
 			  tree_cons (NULL_TREE, build_utf8_ref (method_name),
 				     lookup_arg));

@@ -103,7 +103,7 @@ mangled_classname (prefix, type)
   tree ident = TYPE_NAME (type);
   if (TREE_CODE (ident) != IDENTIFIER_NODE)
     ident = DECL_NAME (ident);
-  return identifier_subst (ident, prefix, '/', '_', "");
+  return identifier_subst (ident, prefix, '.', '_', "");
 }
 
 tree
@@ -557,21 +557,10 @@ build_utf8_ref (name)
   PUSH_FIELD (ctype, field, "data", str_type);
   FINISH_RECORD (ctype);
   START_RECORD_CONSTRUCTOR (cinit, ctype);
-  {
-    int i;
-    /* Rewrite .class file internal form to canonical Java form. */
-#ifdef __GNUC__
-    char buffer[name_len];
-#else
-    char *buffer = (char *)alloca (name_len);
-#endif
-    for (i = 0; i < name_len; i++)
-      buffer[i] = (name_ptr[i] == '/' ? '.' : name_ptr[i]);
-    name_hash = hashUtf8String (buffer, name_len) & 0xFFFF;
-    PUSH_FIELD_VALUE (cinit, "hash", build_int_2 (name_hash, 0));
-    PUSH_FIELD_VALUE (cinit, "length", build_int_2 (name_len, 0));
-    string = build_string (name_len, buffer);
-  }
+  name_hash = hashUtf8String (name_ptr, name_len) & 0xFFFF;
+  PUSH_FIELD_VALUE (cinit, "hash", build_int_2 (name_hash, 0));
+  PUSH_FIELD_VALUE (cinit, "length", build_int_2 (name_len, 0));
+  string = build_string (name_len, name_ptr);
   TREE_TYPE (string) = str_type;
   PUSH_FIELD_VALUE (cinit, "data", string);
   FINISH_RECORD_CONSTRUCTOR (cinit);
@@ -851,7 +840,12 @@ make_field_value (tree fdecl)
   if (resolved)
     type = build_class_ref (type);
   else
-    type = build_utf8_ref (build_java_signature (type));
+    {
+      tree signature = build_java_signature (type);
+      type = build_utf8_ref (unmangle_classname 
+			     (IDENTIFIER_POINTER(signature),
+			      IDENTIFIER_LENGTH(signature)));
+    }
   PUSH_FIELD_VALUE (finit, "type", type);
   flags = get_access_flags_from_decl (fdecl);
   if (! resolved)
@@ -897,8 +891,14 @@ make_method_value (mdecl, this_class_addr)
 		    build_utf8_ref (DECL_CONSTRUCTOR_P (mdecl) ?
 				    init_identifier_node
 				    : DECL_NAME (mdecl)));
-  PUSH_FIELD_VALUE (minit, "signature",
-		    build_utf8_ref (build_java_signature (TREE_TYPE (mdecl))));
+  {
+    tree signature = build_java_signature (TREE_TYPE (mdecl));
+    PUSH_FIELD_VALUE (minit, "signature", 
+		      (build_utf8_ref 
+		       (unmangle_classname 
+			(IDENTIFIER_POINTER(signature),
+			 IDENTIFIER_LENGTH(signature)))));
+  }
   PUSH_FIELD_VALUE (minit, "accflags", build_int_2 (accflags, 0));
   PUSH_FIELD_VALUE (minit, "ncode", code);
   FINISH_RECORD_CONSTRUCTOR (minit);
