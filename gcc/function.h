@@ -140,7 +140,7 @@ struct expr_status
   int x_inhibit_defer_pop;
 
   /* If PREFERRED_STACK_BOUNDARY and PUSH_ROUNDING are defined, the stack
-     boundary can be momentairly unaligned while pushing the arguments.
+     boundary can be momentarily unaligned while pushing the arguments.
      Record the delta since last aligned boundary here in order to get
      stack alignment in the nested function calls working right.  */
   int x_stack_pointer_delta;
