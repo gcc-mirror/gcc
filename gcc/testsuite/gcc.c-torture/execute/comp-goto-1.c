@@ -123,7 +123,7 @@ insn_t program[2 + 1];
 
 void *malloc ();
 
-void
+int
 main ()
 {
   environment_t env;
