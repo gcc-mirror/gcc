@@ -552,6 +552,14 @@ optimize_reg_copy_3 (insn, dest, src)
       || GET_CODE (SET_SRC (set)) != MEM
       || SET_DEST (set) != src_reg)
     return;
+
+  /* Do not use a SUBREG to truncate from one mode to another if truncation
+     is not a nop.  */
+  if (GET_MODE_BITSIZE (GET_MODE (src_reg)) <= GET_MODE_BITSIZE (GET_MODE (src))
+      && !TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE (src)),
+				 GET_MODE_BITSIZE (GET_MODE (src_reg))))
+    return;
+
   old_mode = GET_MODE (src_reg);
   PUT_MODE (src_reg, GET_MODE (src));
   XEXP (src, 0) = SET_SRC (set);
