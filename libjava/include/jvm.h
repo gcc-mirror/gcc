@@ -163,7 +163,9 @@ void _Jv_RunMain (const char* name, int argc, const char **argv);
 inline jint
 _Jv_HashCode (jobject obj)
 {
-  return (jint) obj;
+  // This was chosen to yield relatively well distributed results on
+  // both 32- and 64-bit architectures.
+  return (jint) ((unsigned long long) obj % 0x7fffffff);
 }
 
 // Return a raw pointer to the elements of an array given the array
