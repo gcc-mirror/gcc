@@ -118,7 +118,7 @@ update_gcc() {
     changedir ${DESTINATION}
 
     # Update the tree
-    ./contrib/gcc_update || \
+    (./contrib/gcc_update | tee -a ${LOGFILE}) || \
 	error "Could not update GCC"
 }
 
@@ -139,12 +139,12 @@ build_gcc() {
     # Configure the tree.
     (eval ${DESTINATION}/configure ${CONFIGURE_OPTIONS} | 
         tee -a ${LOGFILE}) 2>&1 || \
-	error "Could not configure the compiler"
+	error "Could not configure GCC"
 
     # Bootstrap the compiler
     (eval make ${MAKE_OPTIONS} bootstrap |
 	tee -a ${LOGFILE}) 2>&1 || \
-	error "Could not build the compiler"
+	error "Could not build GCC"
 }
 
 # Test GCC.

@@ -1,3 +1,7 @@
+2000-10-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc_build: Save the output from CVS into the logfile as well.
+
 2000-10-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc_build: Fix typos.
