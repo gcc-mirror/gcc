@@ -1,3 +1,9 @@
+Tue Jun 29 01:37:53 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* expr.c (emit_block_move): Properly handle case where one of the
+	block move arguments has a queued increment or decrement.
+	(clear_storage): Similarly.  Fix formatting goof.
+
 Mon Jun 28 05:32:09 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* m68k.h (CONDITIONAL_REGISTER_USAGE): Define for !SUN_FPA
