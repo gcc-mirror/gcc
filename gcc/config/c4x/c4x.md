@@ -3751,20 +3751,33 @@
   "c4x_emit_libcall (fix_truncqfhi2_libfunc, FIX, HImode, QFmode, 2, operands);
    DONE;")
 
-; Is this allowed to be implementation dependent?  If so, we can
-; omit the conditional load.  Otherwise we should emit a split.
 (define_expand "fixuns_truncqfqi2"
- [(parallel [(set (reg:CC 21)
-                  (compare:CC (fix:QI (match_operand:QF 1 "src_operand" "fHm"))
-                              (const_int 0)))
-             (set (match_dup 2)
-                  (fix:QI (match_dup 1)))])
-  (set (match_operand:QI 0 "reg_operand" "=r")
-       (if_then_else:QI (lt (reg:CC 21) (const_int 0))
-                        (const_int 0)
-                        (match_dup 2)))]
+ [(set (match_dup 2) (match_dup 5))
+  (set (reg:CC 21)
+       (compare:CC (match_operand:QF 1 "src_operand" "fHm")
+                   (match_dup 2)))
+  (set (match_dup 2)
+       (if_then_else:QF (lt (reg:CC 21) (const_int 0))
+                        (match_dup 4)
+                        (match_dup 2)))
+  (parallel [(set (match_dup 2)
+		  (plus:QF (match_dup 2) (match_dup 2)))
+	     (clobber (reg:CC_NOOV 21))])
+  (parallel [(set (match_dup 2)
+	          (minus:QF (match_dup 1) (match_dup 2)))
+	     (clobber (reg:CC_NOOV 21))])
+  (parallel [(set (match_operand:QI 0 "reg_operand" "=r")
+		  (fix:QI (match_dup 2)))
+	     (clobber (reg:CC 21))])]
  ""
- "operands[2] = gen_reg_rtx (QImode);")
+ "operands[2] = gen_reg_rtx (QFmode);
+  operands[3] = gen_reg_rtx (QFmode);
+  operands[4] = gen_reg_rtx (QFmode);
+  operands[5] = gen_reg_rtx (QFmode);
+  emit_move_insn (operands[4],
+   immed_real_const_1 (REAL_VALUE_ATOF (\"0.0\", QFmode), QFmode));
+  emit_move_insn (operands[5],
+   immed_real_const_1 (REAL_VALUE_ATOF (\"2147483648.0\", QFmode), QFmode));")
 
 (define_expand "fixuns_truncqfhi2"
   [(parallel [(set (match_operand:HI 0 "reg_operand" "")
