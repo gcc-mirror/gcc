@@ -1,3 +1,28 @@
+Fri Aug 20 18:31:26 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* rtl.c (rtx_name): Constify a char*.
+
+	* rtl.h (rtx_name, fix_sched_param): Likewise.
+
+	* gmicro/gmicro.c (rtx_name): Remove redundant declaration.
+	(mypr): Use accessor macro, not `rtx_name'.
+
+	* genemit.c (print_code): Constify a char*.
+
+	* genopinit.c (gen_insn): Use accessor macro, not `rtx_name'.
+
+	* genpeep.c (print_code): Constify a char*.
+
+	* genrecog.c (print_code): Likewise.
+
+	* graph.c (start_fct, start_bb, node_data, draw_edge, end_fct,
+	end_bb): Add static prototype.
+	(draw_edge): Constify a char*.
+	(end_bb): Remove unused parameter.
+
+	* haifa-sched.c (fix_sched_param, safe_concat, print_exp
+	print_block_visualization): Constify a char*.
+
 Fri Aug 20 15:02:10 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.c (c_get_alias_set): Update comment.

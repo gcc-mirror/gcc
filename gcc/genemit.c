@@ -134,7 +134,7 @@ static void
 print_code (code)
      RTX_CODE code;
 {
-  register char *p1;
+  register const char *p1;
   for (p1 = GET_RTX_NAME (code); *p1; p1++)
     {
       if (*p1 >= 'a' && *p1 <= 'z')

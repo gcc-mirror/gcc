@@ -36,6 +36,13 @@ static const char *graph_ext[] =
   /* vcg */      ".vcg",
 };
 
+static void start_fct PROTO ((FILE *));
+static void start_bb PROTO ((FILE *, int));
+static void node_data PROTO ((FILE *, rtx));
+static void draw_edge PROTO ((FILE *, int, int, int, int));
+static void end_fct PROTO ((FILE *));
+static void end_bb PROTO ((FILE *));
+
 /* Output text for new basic block.  */
 static void
 start_fct (fp)
@@ -190,7 +197,7 @@ draw_edge (fp, from, to, bb_edge, class)
      int bb_edge;
      int class;
 {
-  char * color;
+  const char * color;
   switch (graph_dump_format)
     {
     case vcg:
@@ -215,9 +222,8 @@ draw_edge (fp, from, to, bb_edge, class)
 }
 
 static void
-end_bb (fp, bb)
+end_bb (fp)
      FILE *fp;
-     int bb ATTRIBUTE_UNUSED;
 {
   switch (graph_dump_format)
     {
@@ -346,7 +352,7 @@ print_rtl_graph_with_bb (base, suffix, rtx_first)
 	      bb = BASIC_BLOCK (i);
 
 	      /* End of the basic block.  */
-	      end_bb (fp, bb);
+	      end_bb (fp);
 
 	      /* Now specify the edges to all the successors of this
 		 basic block.  */
