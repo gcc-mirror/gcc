@@ -1,5 +1,11 @@
 2004-12-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/15664, c++/18276
+	* pt.c (tsubst_decl) <TEMPLATE_DECL case>: Reorganize.  Correctly
+	tsubst TEMPLATE_DECL that is a TEMPLATE_TEMPLATE_PARM.
+
+2004-12-02  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/18123
 	* parser.c (cp_parser_type_specifier): Catch template declaration
 	of enum.
