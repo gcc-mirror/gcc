@@ -11326,7 +11326,7 @@ java_complete_lhs (node)
 
     case WITH_CLEANUP_EXPR:
       COMPLETE_CHECK_OP_0 (node);
-      COMPLETE_CHECK_OP_2 (node);
+      COMPLETE_CHECK_OP_1 (node);
       CAN_COMPLETE_NORMALLY (node) = 
 	CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 0));
       TREE_TYPE (node) = void_type_node;
@@ -15326,7 +15326,7 @@ patch_synchronized_statement (node, wfl_op1)
 			build (WITH_CLEANUP_EXPR, NULL_TREE,
 			       build (COMPOUND_EXPR, NULL_TREE,
 				      assignment, enter),
-			       NULL_TREE, exit),
+			       exit, NULL_TREE),
 			block));
   node = build_expr_block (node, expr_decl);
 

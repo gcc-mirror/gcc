@@ -1,3 +1,16 @@
+2001-07-31  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* check-init.c (check_init): WITH_CLEANUP_EXPR node to use its
+	second operand calling check_init.
+	* decl.c (complete_start_java_method): Swaped second and third
+	arguments while creating WITH_CLEANUP_EXPR node.
+	* jcf-write.c (generate_bytecode_insns): Use second operand
+	instead of third when handling WITH_CLEANUP_EXPR.
+	* parse.y (java_complete_lhs): Expand second operand of
+	WITH_CLEANUP_EXPR nodes.
+	(patch_synchronized_statement): Swaped second and third arguments
+	while creating WITH_CLEANUP_EXPR node.
+
 2001-07-18  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (create_interface): Avoid cyclic inheritance report when

@@ -5858,7 +5858,7 @@ safe_from_p (x, exp, top_p)
 	  break;
 
 	case WITH_CLEANUP_EXPR:
-	  exp_rtl = RTL_EXPR_RTL (exp);
+	  exp_rtl = WITH_CLEANUP_EXPR_RTL (exp);
 	  break;
 
 	case CLEANUP_POINT_EXPR:
@@ -6452,7 +6452,7 @@ expand_expr (exp, target, tmode, modifier)
 	lineno = EXPR_WFL_LINENO (exp);
 	if (EXPR_WFL_EMIT_LINE_NOTE (exp))
 	  emit_line_note (input_filename, lineno);
-	/* Possibly avoid switching back and force here.  */
+	/* Possibly avoid switching back and forth here.  */
 	to_return = expand_expr (EXPR_WFL_NODE (exp), target, tmode, modifier);
 	input_filename = saved_input_filename;
 	lineno = saved_lineno;
@@ -7376,16 +7376,16 @@ expand_expr (exp, target, tmode, modifier)
       }
 
     case WITH_CLEANUP_EXPR:
-      if (RTL_EXPR_RTL (exp) == 0)
+      if (WITH_CLEANUP_EXPR_RTL (exp) == 0)
 	{
-	  RTL_EXPR_RTL (exp)
+	  WITH_CLEANUP_EXPR_RTL (exp)
 	    = expand_expr (TREE_OPERAND (exp, 0), target, tmode, ro_modifier);
-	  expand_decl_cleanup (NULL_TREE, TREE_OPERAND (exp, 2));
+	  expand_decl_cleanup (NULL_TREE, TREE_OPERAND (exp, 1));
 
 	  /* That's it for this cleanup.  */
-	  TREE_OPERAND (exp, 2) = 0;
+	  TREE_OPERAND (exp, 1) = 0;
 	}
-      return RTL_EXPR_RTL (exp);
+      return WITH_CLEANUP_EXPR_RTL (exp);
 
     case CLEANUP_POINT_EXPR:
       {

@@ -2293,7 +2293,7 @@ generate_bytecode_insns (exp, target, state)
 	label->next = state->labeled_blocks;
 	state->labeled_blocks = label;
 	state->num_finalizers++;
-	label->u.labeled_block = TREE_OPERAND (exp, 2);
+	label->u.labeled_block = TREE_OPERAND (exp, 1);
 	label->v.start_label = get_jcf_label_here (state);
 	if (target != IGNORE_TARGET)
 	  abort ();
