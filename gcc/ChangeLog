@@ -3,6 +3,9 @@ Sun Aug  1 22:46:42 1999  Jeffrey A Law  (law@cygnus.com)
 	* m68k.c (output_function_prologue): Fix typo in CPU32 case.
 	(output_function_epilogue): Similarly.
 
+	Tue Jul 20 12:37:30 1999  Hans-Peter Nilsson  <hp@bitrange.com>
+        * dwarf2out.c (output_abbrev_section): Terminate with a zero.
+
 	Thu Jul 15 15:40:09 1999  Jim Wilson  <wilson@cygnus.com>
 	* tree.c (build_type_attribute_variant): Move current_obstack restore
 	after build_qualified_type call.
