@@ -7085,8 +7085,8 @@ move\\t%0,%z4\\n\\
   [(set (match_dup 4) (match_operand 1 "comparison_operator" ""))
    (set (match_operand:SF 0 "register_operand" "")
 	(if_then_else:SF (match_dup 5)
-			 (match_operand:SF 2 "reg_or_0_operand" "")
-			 (match_operand:SF 3 "reg_or_0_operand" "")))]
+			 (match_operand:SF 2 "register_operand" "")
+			 (match_operand:SF 3 "register_operand" "")))]
   "mips_isa >= 4 && TARGET_HARD_FLOAT"
   "
 {
@@ -7098,8 +7098,8 @@ move\\t%0,%z4\\n\\
   [(set (match_dup 4) (match_operand 1 "comparison_operator" ""))
    (set (match_operand:DF 0 "register_operand" "")
 	(if_then_else:DF (match_dup 5)
-			 (match_operand:DF 2 "reg_or_0_operand" "")
-			 (match_operand:DF 3 "reg_or_0_operand" "")))]
+			 (match_operand:DF 2 "register_operand" "")
+			 (match_operand:DF 3 "register_operand" "")))]
   "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "
 {
