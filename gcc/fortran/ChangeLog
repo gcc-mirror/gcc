@@ -1,3 +1,8 @@
+2004-06-12  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* Make-lang.in (F95_OBJS, F95_PARSER_OBJS): Alpabetize.  Move data.c
+	* data.c (gfc_get_section_index):  Remove dependency on trans.h.
+
 2004-06-12  Steven G. Kargl  <kargls@comcast.net>
 
 	* check.c (gfc_check_second_sub, gfc_check_irand, gfc_check_rand
