@@ -1162,7 +1162,7 @@ lookup_field (typep, name)
   if (CLASS_P (*typep) && !CLASS_LOADED_P (*typep))
     {
       load_class (*typep, 1);
-      if (TREE_CODE (TYPE_SIZE (*typep)) == ERROR_MARK)
+      if (!TYPE_SIZE (*typep) || TREE_CODE (TYPE_SIZE (*typep)) == ERROR_MARK)
 	return error_mark_node;
     }
   do
@@ -1431,7 +1431,8 @@ tree dtable_ident = NULL_TREE;
 
 tree
 build_known_method_ref (method, method_type, self_type, method_signature, arg_list)
-     tree method, method_type, self_type, method_signature, arg_list;
+     tree method, method_type ATTRIBUTE_UNUSED, self_type,
+          method_signature ATTRIBUTE_UNUSED, arg_list ATTRIBUTE_UNUSED;
 {
   tree func;
   if (is_compiled_class (self_type))
@@ -1985,6 +1986,7 @@ expand_byte_code (jcf, method)
   int i;
   int saw_index;
   unsigned char *linenumber_pointer;
+  int dead_code_index = -1;
 
 #undef RET /* Defined by config/i386/i386.h */
 #undef AND /* Causes problems with opcodes for iand and land. */
@@ -2163,14 +2165,28 @@ expand_byte_code (jcf, method)
 
       if (! (instruction_bits [PC] & BCODE_VERIFIED))
 	{
-	  /* never executed - skip */
-	  warning ("Some bytecode operations (starting at pc %d) can never be executed", PC);
-	  while (PC < length
-		 && ! (instruction_bits [PC] & BCODE_VERIFIED))
-	    PC++;
-	  continue;
+	  if (dead_code_index == -1)
+	    {
+	      /* This is the start of a region of unreachable bytecodes.
+                 They still need to be processed in order for EH ranges
+                 to get handled correctly.  However, we can simply
+                 replace these bytecodes with nops.  */
+	      dead_code_index = PC;
+            }
+          
+          /* Turn this bytecode into a nop.  */
+          byte_ops[PC] = 0x0;
+        }
+       else
+        {
+	  if (dead_code_index != -1)
+	    {
+              /* We've just reached the end of a region of dead code.  */
+              warning ("Unreachable bytecode from %d to before %d.",
+                       dead_code_index, PC);
+              dead_code_index = -1;
+            }
 	}
-
 
       /* Handle possible line number entry for this PC.
 
@@ -2203,6 +2219,13 @@ expand_byte_code (jcf, method)
       maybe_poplevels (PC);
       maybe_end_try (PC);
     } /* for */
+  
+  if (dead_code_index != -1)
+    {
+      /* We've just reached the end of a region of dead code.  */
+      warning ("Unreachable bytecode from %d to the end of the method.", 
+              dead_code_index);
+    }
 }
 
 static void
@@ -2230,7 +2253,7 @@ int
 process_jvm_instruction (PC, byte_ops, length)
      int PC;
      unsigned char* byte_ops;
-     long length;
+     long length ATTRIBUTE_UNUSED;
 { 
   const char *opname; /* Temporary ??? */
   int oldpc = PC; /* PC at instruction start. */

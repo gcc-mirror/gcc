@@ -35,7 +35,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 
 static xref_flag_table xref_table [] = {
-  {NULL, NULL, NULL},
+  {NULL, NULL, NULL, NULL},
 };
 
 /* Decode an xref flag value. Return 0 if the flag wasn't found. */

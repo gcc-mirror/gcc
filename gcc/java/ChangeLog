@@ -1,3 +1,98 @@
+Wed Jun  2 10:44:38 1999  Anthony Green  <green@cygnus.com>
+
+	* except.c (link_handler): Chain exception handlers in order.
+
+Wed Jun  2 10:41:24 1999  Anthony Green  <green@cygnus.com>
+
+	* expr.c (expand_byte_code): Fill unreachable bytecode regions
+ 	with nops and process as usual in order to always set correct EH
+ 	ranges.  Emit detailed warnings about unreachable bytecodes.
+
+Wed Jun  2 10:35:13 1999  Anthony Green  <green@cygnus.com>
+
+	* class.c (build_utf8_ref): Mark cinit and utf8 tree nodes as
+ 	constant.
+
+Fri May 28 18:22:45 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * parse.y (lookup_field_wrapper): Unified returned value to NULL
+          or the searched field decl.
+	
+Fri May 28 11:34:05 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (fold_constant_for_init): Convert numerical constant
+ 	values to the type of the assigned field.
+
+Thu May 27 19:57:40 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* expr.c (lookup_field): Relaxed the test on class loading error
+ 	detection.
+	* parse.y (fold_constant_for_init): Enabeled old code.
+
+Wed May 26 18:06:02 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (valid_ref_assignconv_cast_p): Let `_Jv_CheckCast'
+ 	decide the validity of the cast of a java.lang.Cloneable reference
+ 	to an array.
+	(patch_conditional_expr): Fixed first argument passed to
+ 	binary_numeric_promotion.
+
+Wed May 26 15:33:06 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (qualify_ambiguous_name): Take into account that a
+ 	CONVERT_EXPR might specify a type as a WFL.
+
+Tue May 25 15:06:13 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+ 
+        * parse.y (patch_assignment): Save the rhs before using it as an
+        argument to _Jv_CheckArrayStore.
+ 
+Tue May 25 11:23:59 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* lex.c (java_parse_doc_section): Fixed `tag' buffer size.
+
+Mon May 24 13:26:00 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * lex.c (java_lex): Accepts `+' or `-' after the beginning of a
+        floating point litteral only when the exponent indicator has been
+        parsed.
+
+Sat May 22 13:54:41 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (formal_parameter:): Construct argument tree list
+ 	element even if a yet unsupported final parameter was encountered.
+
+Tue May 18 00:28:58 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (finish_method_declaration): Issue errors for native or
+ 	abstract methods declared with a method body, as well as for non
+ 	native or non abstract methods with no method body.
+
+1999-05-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* class.c (build_utf8_ref): Initialize variable `field'.
+
+	* decl.c (init_decl_processing): Initialize variable `field'.
+
+	* expr.c (build_known_method_ref): Mark parameters `method_type',
+	`method_signature' and `arg_list' with ATTRIBUTE_UNUSED.
+	(process_jvm_instruction): Likewise for parameter `length'.
+
+	* jvspec.c (lang_specific_driver): Mark variables `saw_math',
+	`saw_libc', `saw_gc', `saw_threadlib' and `saw_libgcj' with
+	ATTRIBUTE_UNUSED.
+
+	* parse.y (maybe_generate_clinit): Remove unused variable
+	`has_non_primitive_fields'.
+	(find_in_imports_on_demand): Initialize variables `node_to_use'
+	and `cl'.
+	(patch_binop): Likewise for variable `prom_type'.
+	(patch_unaryop): Likewise for variable `prom_type'.
+
+	* verify.c (verify_jvm_instructions): Likewise for variable `last'.
+
+	* xref.c (xref_table): Add missing initializer.
+
 1999-05-14  Tom Tromey  <tromey@cygnus.com>
 
 	* java-except.h (struct eh_range): Removed unused `next' member.
@@ -70,13 +165,13 @@ Thu May 13 13:23:38 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* xref.h (xref_get_data): New function, declared.
 	(XREF_GET_DATA): Use xref_get_data.
 	
-1999-05-13  Kaveh R. Ghazi  <ghazi@snafu.rutgers.edu>
+1999-05-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * gjavah.c (print_include): Cast the result of `strlen' to int
         when comparing against a signed value.
         (add_namelet): Likewise.
 
-1999-05-12  Kaveh R. Ghazi  <ghazi@snafu.rutgers.edu>
+1999-05-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* expr.c (expand_invoke): Mark parameter `nargs' with
 	ATTRIBUTE_UNUSED.
