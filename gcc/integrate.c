@@ -1886,7 +1886,8 @@ copy_rtx_and_substitute (orig, map)
 	      rounded = CEIL_ROUND (size, BIGGEST_ALIGNMENT / BITS_PER_UNIT);
 	      loc = plus_constant (loc, rounded);
 #endif
-	      map->reg_map[regno] = temp = force_operand (loc, NULL_RTX);
+	      map->reg_map[regno] = temp
+		= force_reg (Pmode, force_operand (loc, NULL_RTX));
 	      map->const_equiv_map[REGNO (temp)] = loc;
 	      map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
 
@@ -1905,7 +1906,8 @@ copy_rtx_and_substitute (orig, map)
 	      start_sequence ();
 	      loc = assign_stack_temp (BLKmode, size, 1);
 	      loc = XEXP (loc, 0);
-	      map->reg_map[regno] = temp = force_operand (loc, NULL_RTX);
+	      map->reg_map[regno] = temp
+		= force_reg (Pmode, force_operand (loc, NULL_RTX));
 	      map->const_equiv_map[REGNO (temp)] = loc;
 	      map->const_age_map[REGNO (temp)] = CONST_AGE_PARM;
 
