@@ -1,4 +1,5 @@
 // Build don't link:
+// Special g++ Options: -ansi
 // Origin: Theo Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
 
 inline const unsigned& f(unsigned const& a) {

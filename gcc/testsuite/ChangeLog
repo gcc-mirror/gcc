@@ -1,3 +1,8 @@
+2000-02-03  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.old-deja/g++.jason/cast3.C: Return void.
+	* g++.old-deja/g++.pt/dynarray.C: Don't be pedantic.
+
 2000-02-02  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* gcc.dg/unused-2.c: Use -Wreturn-type instead of -Wall.
