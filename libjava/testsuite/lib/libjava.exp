@@ -49,6 +49,7 @@ proc find_gcjh {} {
 proc bytecompile_file { file objdir {classpath {}} } {
     global env
     global SUN_JAVAC
+    global GCJ_UNDER_TEST
     set dirname [file dirname $file]
 
     # If JDK doesn't run on your platform but some other
@@ -63,7 +64,7 @@ proc bytecompile_file { file objdir {classpath {}} } {
 	if [info exists env(SUN_JAVAC)] {
 	    set SUN_JAVAC $env(SUN_JAVAC)
 	} else {
-	    set SUN_JAVAC "javac"
+	    set SUN_JAVAC "$GCJ_UNDER_TEST -C"
 	}
     }
 
@@ -240,9 +241,9 @@ proc libjava_arguments {{mode compile}} {
     setenv SHLIB_PATH "$ld_library_path:$original_ld_library_path"
 
     # Set the CLASSPATH environment variable
-    verbose "CLASSPATH is .:$srcdir/$subdir:$objdir/..:$objdir/../libgcj.zip"
+    verbose "CLASSPATH is .:$srcdir/$subdir:$objdir:$objdir/../libgcj.zip"
     global env
-    set env(CLASSPATH) ".:$srcdir/$subdir:$objdir/..:$objdir/../libgcj.zip"
+    set env(CLASSPATH) ".:$srcdir/$subdir:$objdir:$objdir/../libgcj.zip"
 
     global wrapper_file wrap_compile_flags;
     lappend args "additional_flags=$wrap_compile_flags";
