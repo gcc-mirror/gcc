@@ -8,8 +8,9 @@ template <class T> void f (T) { }
 extern template void f (int);
 
 template <class T> struct A {
-  void f () { }
+  void f ();
 };
+template <class T> void A<T>::f () { }
 extern template struct A<int>;
 
 int main ()
