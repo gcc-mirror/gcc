@@ -322,6 +322,9 @@ AC_CANONICAL_SYSTEM
 # Find the native compiler
 AC_PROG_CC
 AC_PROG_CC_C_O
+if test $ac_cv_prog_cc_cc_c_o = no; then
+  NO_MINUS_C_MINUS_O=yes
+fi
 AC_SUBST(NO_MINUS_C_MINUS_O)
 
 gcc_AC_C_LONG_DOUBLE
