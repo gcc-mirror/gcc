@@ -1,4 +1,4 @@
-/* NetBSD/arm (RiscBSD) version.
+/* NetBSD/arm a.out version.
    Copyright (C) 1993, 1994, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Mark Brinicombe (amb@physig.ph.kcl.ac.uk)
 
