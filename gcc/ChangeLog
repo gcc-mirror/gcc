@@ -1,3 +1,11 @@
+2000-10-04  Will Cohen  <wcohen@redhat.com>
+
+	* c-typeck.c (process_init_element): Added warning for zero-length
+	array.
+
+	* extend.texi (Zero Length): State that static initializers for
+	zero-length arrays are not allowed.
+
 Mon Oct  2 14:50:14 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* rtlanal.c (single_set_1): Do not require USE and CLOBBERs
@@ -1138,17 +1146,6 @@ Mon 18-Sep-2000 19:21:35 BST  Neil Booth  <NeilB@earthling.net>
 	* config/sh/sh.c (nonpic_symbol_mentioned_p): Check LABEL_REFs.
 	* config/sh/sh.md (sym_label2reg, symPLT_label2reg): Protect
 	LABEL_REFs with a PIC-safe unspec.
-
-2000-09-18  Will Cohen  <wcohen@redhat.com>
-
-	* extend.texi (Zero Length): State that static initializers for
-	zero-length arrays are not allowed.
-
-	* c-typeck.c (process_init_element): Flag initializers for zero
-	length arrays.
-
-	* tree.c (integer_all_onesp): Ignore TREE_INT_CST_HIGH if prec is
-	exactly HOST_BITS_PERWIDE_INT.
 
 2000-09-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
