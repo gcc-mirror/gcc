@@ -81,11 +81,11 @@ sendmsg.o: sendmsg.c fflags
 _forward: _forward.c
 	-$(GCC_FOR_TARGET) -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $(srcdir)/objc/_forward.c
 	-$(GCC_FOR_TARGET) ./_forward.o -o _forward
-	if [ \! -f ./_forward ]; then touch ./_forward; fi	
+	if [ ! -f ./_forward ]; then touch ./_forward; else true; fi	
 
 fflags: _forward
 	-rm -f fflags
-	-if [ -x ./_forward ]; then ./_forward > fflags; else touch fflags; fi
+	-if [ -s ./_forward ]; then ./_forward > fflags; else touch fflags; fi
 
 mostlyclean:
 	-rm -f *.o libobjc.a _forward fflags
