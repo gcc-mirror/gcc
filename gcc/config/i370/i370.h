@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  System/370 version.
-   Copyright (C) 1989, 93, 95, 96, 97, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1989, 93, 95-99, 2000 Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
    Modified for OS/390 LanguageEnvironment C by Dave Pitts (dpitts@cozx.com)
    Hacked for Linux-ELF/390 by Linas Vepstas (linas@linas.org)
@@ -61,7 +61,7 @@ extern int mvs_function_name_length;
 #define TARGET_SWITCHES							\
 { { "char-instructions", 1, "Generate char instructions"},            \
   { "no-char-instructions", -1, "Do not generate char instructions"}, \
-  { "", TARGET_DEFAULT} }
+  { "", TARGET_DEFAULT, 0} }
 
 /* To use IBM supplied macro function prologue and epilogue, define the
    following to 1.  Should only be needed if IBM changes the definition
@@ -152,8 +152,8 @@ extern int mvs_function_name_length;
    text can be read.  CH is the first character after the #pragma.  The
    result of the expression is the terminating character found
    (newline or EOF).  */
-#define HANDLE_PRAGMA(FILE, ungetc_unused, NODE) \
-  handle_pragma ((FILE), (NODE))
+#define HANDLE_PRAGMA(GETC, UNGETC, NAME) \
+  handle_pragma ((GETC), (UNGETC), (NAME))
 #endif /* TARGET_HLASM */
 
 /* Define maximum length of page minus page escape overhead.  */
@@ -392,7 +392,7 @@ enum reg_class
 /* Define which registers fit in which classes.  This is an initializer for
    a vector of HARD_REG_SET of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS {0, 0x0fffe, 0x0ffff, 0xf0000, 0xfffff}
+#define REG_CLASS_CONTENTS {{0}, {0x0fffe}, {0x0ffff}, {0xf0000}, {0xfffff}}
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -1016,6 +1016,8 @@ enum reg_class
               /* some shifts set the CC some don't. */			\
               case ASHIFT: 	 case ASHIFTRT:  			\
                  do {} while (0);					\
+              default:							\
+                break;							\
 	    }								\
 	}								\
     }									\
