@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 149 fixup descriptions.
+ * This file contains 152 fixup descriptions.
  *
  * See README for more information.
  *
@@ -279,19 +279,17 @@ fix = {\n\
 #endif\n\n\n\
 /*\n\
  *  Completely replace <sys/byteorder.h>; with a file that implements gcc's\n\
- *  optimized byteswapping.  Restricted to \"SVR4\" machines until either\n\
- *  it is shown to be safe to replace this file always, or we get bolder ;-)\n\
+ *  optimized byteswapping.\n\
  */\n\
 fix = {\n\
     hackname = AAB_svr4_replace_byteorder;\n\
-#ifndef SVR5\n\
     mach     = \"*-*-sysv4*\";\n\
     mach     = \"i[34567]86-*-sysv5*\";\n\
+    mach     = \"i[34567]86-*-sco3.2v5*\";\n\
     mach     = \"i[34567]86-*-udk*\";\n\
     mach     = \"i[34567]86-*-solaris2.[0-4]\";\n\
     mach     = \"powerpcle-*-solaris2.[0-4]\";\n\
     mach     = \"sparc-*-solaris2.[0-4]\";\n\
-#endif /* SVR5 */\n\
     files    = sys/byteorder.h;\n\
     replace  = <<-  _EndOfHeader_\n\
 #ifndef _SYS_BYTEORDER_H\n\
@@ -3709,6 +3707,90 @@ static const char* apzRs6000_ParamPatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Sco_Math fix
+ */
+tSCC zSco_MathName[] =
+     "sco_math";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zSco_MathList[] =
+  "|math.h|ansi/math.h|posix/math.h|xpg4/math.h|xpg4v2/math.h|xpg4plus/math.h|ods_30_compat/math.h|oldstyle/math.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+#define apzSco_MathMachs (const char**)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zSco_MathSelect0[] =
+       "inline double abs";
+
+#define    SCO_MATH_TEST_CT  1
+static tTestDesc aSco_MathTests[] = {
+  { TT_EGREP,    zSco_MathSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Sco_Math
+ */
+static const char* apzSco_MathPatch[] = { "sed",
+    "-e", "/#define.*__fp_class(a) \\\\/i\\\n\
+#ifndef __GNUC__\n",
+    "-e", "/.*__builtin_generic/a\\\n\
+#else\\\n\
+#define __fp_class(a) \\\\\\\n\
+  __builtin_choose_expr(__builtin_types_compatible_p(typeof(a),long double),\\\\\\\n\
+   __fpclassifyl(a), \\\\\\\n\
+    __builtin_choose_expr(__builtin_types_compatible_p(typeof(a), float), \\\\\\\n\
+      __fpclassifyf(a),__fpclassify(a)))\\\n\
+#endif",
+    "-e", "/extern \"C\\+\\+\"/N;/inline double abs/i\\\n\
+#ifndef __GNUC__\n",
+    "-e", "/inline long double trunc/N;/inline long double trunc.*}.*extern \"C\\+\\+\"/a\\\n\
+#endif /* ! __GNUC__ */",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  Description of Sco_Regset fix
+ */
+tSCC zSco_RegsetName[] =
+     "sco_regset";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zSco_RegsetList[] =
+  "|sys/regset.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzSco_RegsetMachs[] = {
+        "*-*-sco3.2v5*",
+        (const char*)NULL };
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zSco_RegsetSelect0[] =
+       "(struct[ \t]+.*)fpstate";
+
+#define    SCO_REGSET_TEST_CT  1
+static tTestDesc aSco_RegsetTests[] = {
+  { TT_EGREP,    zSco_RegsetSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Sco_Regset
+ */
+static const char* apzSco_RegsetPatch[] = {
+    "format",
+    "%1rsfpstate",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of Sco_Static_Func fix
  */
 tSCC zSco_Static_FuncName[] =
@@ -4594,6 +4676,40 @@ static const char* apzSvr4__PPatch[] = {
     "#ifndef __P\n\
 %0\n\
 #endif",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  Description of Svr4_Disable_Opt fix
+ */
+tSCC zSvr4_Disable_OptName[] =
+     "svr4_disable_opt";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zSvr4_Disable_OptList[] =
+  "|string.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+#define apzSvr4_Disable_OptMachs (const char**)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zSvr4_Disable_OptSelect0[] =
+       "#define.*__std_hdr_";
+
+#define    SVR4_DISABLE_OPT_TEST_CT  1
+static tTestDesc aSvr4_Disable_OptTests[] = {
+  { TT_EGREP,    zSvr4_Disable_OptSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Svr4_Disable_Opt
+ */
+static const char* apzSvr4_Disable_OptPatch[] = { "sed",
+    "-e", "/#define.*__std_hdr_/d",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -5878,9 +5994,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          161
+#define REGEX_COUNT          164
 #define MACH_LIST_SIZE_LIMIT 261
-#define FIX_COUNT            149
+#define FIX_COUNT            152
 
 /*
  *  Enumerate the fixes
@@ -5978,6 +6094,8 @@ typedef enum {
     RS6000_DOUBLE_FIXIDX,
     RS6000_FCHMOD_FIXIDX,
     RS6000_PARAM_FIXIDX,
+    SCO_MATH_FIXIDX,
+    SCO_REGSET_FIXIDX,
     SCO_STATIC_FUNC_FIXIDX,
     SCO_UTIME_FIXIDX,
     SOLARIS_MUTEX_INIT_1_FIXIDX,
@@ -6001,6 +6119,7 @@ typedef enum {
     SUNOS_MATHERR_DECL_FIXIDX,
     SUNOS_STRLEN_FIXIDX,
     SVR4__P_FIXIDX,
+    SVR4_DISABLE_OPT_FIXIDX,
     SVR4_GETCWD_FIXIDX,
     SVR4_PROFIL_FIXIDX,
     SYSV68_STRING_FIXIDX,
@@ -6498,6 +6617,16 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      RS6000_PARAM_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aRs6000_ParamTests,   apzRs6000_ParamPatch, 0 },
 
+  {  zSco_MathName,    zSco_MathList,
+     apzSco_MathMachs,
+     SCO_MATH_TEST_CT, FD_MACH_ONLY,
+     aSco_MathTests,   apzSco_MathPatch, 0 },
+
+  {  zSco_RegsetName,    zSco_RegsetList,
+     apzSco_RegsetMachs,
+     SCO_REGSET_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aSco_RegsetTests,   apzSco_RegsetPatch, 0 },
+
   {  zSco_Static_FuncName,    zSco_Static_FuncList,
      apzSco_Static_FuncMachs,
      SCO_STATIC_FUNC_TEST_CT, FD_MACH_ONLY,
@@ -6612,6 +6741,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzSvr4__PMachs,
      SVR4__P_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aSvr4__PTests,   apzSvr4__PPatch, 0 },
+
+  {  zSvr4_Disable_OptName,    zSvr4_Disable_OptList,
+     apzSvr4_Disable_OptMachs,
+     SVR4_DISABLE_OPT_TEST_CT, FD_MACH_ONLY,
+     aSvr4_Disable_OptTests,   apzSvr4_Disable_OptPatch, 0 },
 
   {  zSvr4_GetcwdName,    zSvr4_GetcwdList,
      apzSvr4_GetcwdMachs,

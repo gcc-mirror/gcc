@@ -1,3 +1,15 @@
+2003-04-19  Kean Johnston  <jkj@sco.com>
+
+	* fixinc/check.tpl: Allow user to over-ride diff program.
+	* fixinc/inclhack.def: Removed extraneous #ifndef SVR5.
+	(sco_math): Added test for SCO math header files.
+	(sco_regset): Added check for conflicts with ieeefp.h.
+	(svr4_disable_opt): Removed extraneous #ifdef SVR4.
+	* fixinc/fixincl.x: Regenerated
+	* fixinc/tests/base/math.h: Added sco_math tests.
+	* fixinc/tests/base/string.h: New file.
+	* fixinc/tests/base/sys/regset.h: New file.
+
 2003-04-19  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cpphash.h (struct cpp_buffer): Remove backup_to.

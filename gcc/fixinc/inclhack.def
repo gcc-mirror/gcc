@@ -222,19 +222,17 @@ fix = {
 
 /*
  *  Completely replace <sys/byteorder.h>; with a file that implements gcc's
- *  optimized byteswapping.  Restricted to "SVR4" machines until either
- *  it is shown to be safe to replace this file always, or we get bolder ;-)
+ *  optimized byteswapping.
  */
 fix = {
     hackname = AAB_svr4_replace_byteorder;
-#ifndef SVR5
     mach     = "*-*-sysv4*";
     mach     = "i[34567]86-*-sysv5*";
+    mach     = "i[34567]86-*-sco3.2v5*";
     mach     = "i[34567]86-*-udk*";
     mach     = "i[34567]86-*-solaris2.[0-4]";
     mach     = "powerpcle-*-solaris2.[0-4]";
     mach     = "sparc-*-solaris2.[0-4]";
-#endif /* SVR5 */
     files    = sys/byteorder.h;
     replace  = <<-  _EndOfHeader_
 	#ifndef _SYS_BYTEORDER_H
@@ -380,7 +378,6 @@ fix = {
 	#endif
 	_EndOfHeader_;
 };
-
 
 /*
  *  Cancel out ansi_compat.h on Ultrix.  Replace it with an empty file.
@@ -2019,6 +2016,73 @@ fix = {
     test_text = 'extern int rename(const char *old, const char *new);';
 };
 
+/*
+ *  On OpenServer and on UnixWare 7, <math.h> uses the native compiler
+ *  __builtin_generic. We fix that usage to use the GCC equivalent.
+ * It also has a plethora of inline functions that conflict with libstdc++.
+ */
+fix = {
+    hackname = sco_math;
+    files    = math.h;
+    files    = ansi/math.h;
+    files    = posix/math.h;
+    files    = xpg4/math.h;
+    files    = xpg4v2/math.h;
+    files    = xpg4plus/math.h;
+    files    = ods_30_compat/math.h;
+    files    = oldstyle/math.h;
+    select   = "inline double abs";
+    sed      = "/#define.*__fp_class(a) \\\\/i\\\n"
+	       "#ifndef __GNUC__\n";
+    sed      =
+"/.*__builtin_generic/a\\\n"
+"#else\\\n"
+"#define __fp_class(a) \\\\\\\n"
+"  __builtin_choose_expr(__builtin_types_compatible_p(typeof(a),long double),\\\\\\\n"
+"   __fpclassifyl(a), \\\\\\\n"
+"    __builtin_choose_expr(__builtin_types_compatible_p(typeof(a), float), \\\\\\\n"
+"      __fpclassifyf(a),__fpclassify(a)))\\\n"
+"#endif";
+
+    sed      = "/extern \"C\\+\\+\"/N;"
+	       "/inline double abs/i\\\n"
+               "#ifndef __GNUC__\n";
+    sed      = "/inline long double trunc/N;"
+	       "/inline long double trunc.*}.*extern \"C\\+\\+\"/a\\\n"
+	       "#endif /* ! __GNUC__ */";
+
+    test_text =
+    "#define __fp_class(a) \\\\\n"
+    " __builtin_generic(a,\"ld:__fplcassifyl;f:__fpclassifyf;:__fpclassify\")\n";
+
+};
+
+/*
+ *  On SCO OpenServer prior to 5.0.7UP1, <sys/regset.h> and <ieeefp.h>
+ *  have a clash on struct _fpstate and struct fpstate.
+ */
+fix = {
+    hackname = sco_regset;
+    files    = sys/regset.h;
+    mach     = "*-*-sco3.2v5*";
+    select   = "(struct[ \t]+.*)fpstate";
+    c_fix     = format;
+    c_fix_arg = "%1rsfpstate";
+
+    test_text =
+    "union u_fps {\n"
+    "    struct\tfpstate\n"
+    "    {\n"
+    "       int whatever;\n"
+    "    }\n"
+    "};\n"
+    "union _u_fps {\n"
+    "    struct _fpstate\n"
+    "    {\n"
+    "       int whatever;\n"
+    "    }\n"
+    "};\n";
+};
 
 /*
  *  The static functions lstat() and fchmod() in <sys/stat.h>
@@ -2523,15 +2587,13 @@ fix = {
  *  that is visible to any ANSI compiler using this include.  Simply
  *  delete the lines that #define some string functions to internal forms.
  */
-#ifdef SVR4
 fix = {
     hackname = svr4_disable_opt;
     files    = string.h;
     select   = '#define.*__std_hdr_';
     sed      = '/#define.*__std_hdr_/d';
+    test_text = "#define strlen __std_hdr_strlen\n";
 };
-#endif
-
 
 /*
  *  Conditionalize some of <sys/endian.h> on __GNUC__ and __GNUG__.
