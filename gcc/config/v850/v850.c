@@ -955,6 +955,7 @@ movsi_source_operand (op, mode)
      must be done with HIGH & LO_SUM patterns.  */
   if (CONSTANT_P (op)
       && GET_CODE (op) != HIGH
+      && GET_CODE (op) != CONSTANT_P_RTX
       && !(GET_CODE (op) == CONST_INT
            && (CONST_OK_FOR_J (INTVAL (op))
                || CONST_OK_FOR_K (INTVAL (op))
