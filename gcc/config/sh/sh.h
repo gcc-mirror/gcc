@@ -2197,12 +2197,6 @@ struct sh_args {
    boundaries, because they'll be loaded using quad loads.  */
 #define SH_MIN_ALIGN_FOR_CALLEE_COPY (8 * BITS_PER_UNIT)
 
-#define FUNCTION_ARG_CALLEE_COPIES(CUM,MODE,TYPE,NAMED) \
-  ((CUM).outgoing							\
-   && (((MODE) == BLKmode ? TYPE_ALIGN (TYPE)				\
-	: GET_MODE_ALIGNMENT (MODE))					\
-       % SH_MIN_ALIGN_FOR_CALLEE_COPY == 0))
-
 /* The SH5 ABI requires floating-point arguments to be passed to
    functions without a prototype in both an FP register and a regular
    register or the stack.  When passing the argument in both FP and

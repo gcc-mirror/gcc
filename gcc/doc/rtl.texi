@@ -2959,8 +2959,8 @@ clobbered by the called function.
 
 A @code{MEM} generally points to a stack slots in which arguments passed
 to the libcall by reference (@pxref{Register Arguments,
-FUNCTION_ARG_PASS_BY_REFERENCE}) are stored.  If the argument is
-caller-copied (@pxref{Register Arguments, FUNCTION_ARG_CALLEE_COPIES}),
+TARGET_PASS_BY_REFERENCE}) are stored.  If the argument is
+caller-copied (@pxref{Register Arguments, TARGET_CALLEE_COPIES}),
 the stack slot will be mentioned in @code{CLOBBER} and @code{USE}
 entries; if it's callee-copied, only a @code{USE} will appear, and the
 @code{MEM} may point to addresses that are not stack slots.  These

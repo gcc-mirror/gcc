@@ -2302,9 +2302,6 @@ typedef struct mips_args {
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST)		\
   (mips_pad_reg_upward (MODE, TYPE) ? upward : downward)
 
-#define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED)		\
-  (mips_abi == ABI_EABI && (NAMED))
-
 /* True if using EABI and varargs can be passed in floating-point
    registers.  Under these conditions, we need a more complex form
    of va_list, which tracks GPR, FPR and stack arguments separately.  */

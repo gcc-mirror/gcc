@@ -84,10 +84,6 @@ extern int frv_function_arg_partial_nregs	(CUMULATIVE_ARGS *,
 						 enum machine_mode,
 						 tree, int);
 
-extern int frv_function_arg_callee_copies	(CUMULATIVE_ARGS *,
-						 enum machine_mode,
-						 tree, int);
-
 extern void frv_expand_builtin_va_start		(tree, rtx);
 #endif /* TREE_CODE */
 

@@ -949,8 +949,6 @@ struct hppa_args {int words, nargs_prototype, incoming, indirect; };
     : GET_MODE_SIZE(MODE) <= UNITS_PER_WORD)				\
    ? PARM_BOUNDARY : MAX_PARM_BOUNDARY)
 
-#define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED) 1
-
 
 extern GTY(()) rtx hppa_compare_op0;
 extern GTY(()) rtx hppa_compare_op1;

@@ -206,6 +206,8 @@ static bool mmix_pass_by_reference (const CUMULATIVE_ARGS *,
 #define TARGET_SETUP_INCOMING_VARARGS mmix_setup_incoming_varargs
 #undef TARGET_PASS_BY_REFERENCE
 #define TARGET_PASS_BY_REFERENCE mmix_pass_by_reference
+#undef TARGET_CALLEE_COPIES
+#define TARGET_CALLEE_COPIES hook_bool_CUMULATIVE_ARGS_mode_tree_bool_true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

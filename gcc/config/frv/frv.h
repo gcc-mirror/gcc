@@ -1903,17 +1903,6 @@ struct machine_function GTY(())
 
 /* extern int frv_function_arg_partial_nregs (CUMULATIVE_ARGS, int, Tree, int);  */
 
-/* If defined, a C expression that indicates when it is the called function's
-   responsibility to make a copy of arguments passed by invisible reference.
-   Normally, the caller makes a copy and passes the address of the copy to the
-   routine being called.  When FUNCTION_ARG_CALLEE_COPIES is defined and is
-   nonzero, the caller does not make a copy.  Instead, it passes a pointer to
-   the "live" value.  The called function must not modify this value.  If it
-   can be determined that the value won't be modified, it need not make a copy;
-   otherwise a copy must be made.  */
-#define FUNCTION_ARG_CALLEE_COPIES(CUM, MODE, TYPE, NAMED)		\
-  frv_function_arg_callee_copies (&CUM, MODE, TYPE, NAMED)
-
 /* A C type for declaring a variable that is used as the first argument of
    `FUNCTION_ARG' and other related values.  For some target machines, the type
    `int' suffices and can hold the number of bytes of argument so far.

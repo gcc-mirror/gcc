@@ -3144,25 +3144,6 @@ frv_function_arg_partial_nregs (CUMULATIVE_ARGS *cum,
 }
 
 
-/* If defined, a C expression that indicates when it is the called function's
-   responsibility to make a copy of arguments passed by invisible reference.
-   Normally, the caller makes a copy and passes the address of the copy to the
-   routine being called.  When FUNCTION_ARG_CALLEE_COPIES is defined and is
-   nonzero, the caller does not make a copy.  Instead, it passes a pointer to
-   the "live" value.  The called function must not modify this value.  If it
-   can be determined that the value won't be modified, it need not make a copy;
-   otherwise a copy must be made.  */
-
-int
-frv_function_arg_callee_copies (CUMULATIVE_ARGS *cum ATTRIBUTE_UNUSED,
-                                enum machine_mode mode ATTRIBUTE_UNUSED,
-                                tree type ATTRIBUTE_UNUSED,
-                                int named ATTRIBUTE_UNUSED)
-{
-  return 0;
-}
-
-
 /* Return true if a register is ok to use as a base or index register.  */
 
 static FRV_INLINE int
