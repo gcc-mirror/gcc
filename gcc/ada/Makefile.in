@@ -1741,10 +1741,10 @@ gnattools4: ../stamp-tools
 		    $(TOOLS_LIBS)
 
 ../../gnatpsta$(exeext): deftarg.o ../stamp-tools
-	$(GNATMAKE) -c $(ADA_INCLUDES) gnatpsta --GCC="$(CC) $(ALL_ADAFLAGS)"
-	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatpsta 
-	$(GNATLINK) -v gnatpsta -o $@ --GCC="$(CC) $(ADA_INCLUDES)"\
-                      ../targtyps.o deftarg.o $(TOOLS_LIBS)
+#	$(GNATMAKE) -c $(ADA_INCLUDES) gnatpsta --GCC="$(CC) $(ALL_ADAFLAGS)"
+#	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatpsta 
+#	$(GNATLINK) -v gnatpsta -o $@ --GCC="$(CC) $(ADA_INCLUDES)"\
+#                      ../targtyps.o deftarg.o $(TOOLS_LIBS)
 
 ../../gnatxref$(exeext): ../stamp-tools
 	$(GNATMAKE) -c $(ADA_INCLUDES) gnatxref --GCC="$(CC) $(ALL_ADAFLAGS)"
