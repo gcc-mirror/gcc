@@ -371,6 +371,10 @@ for file in sys/types.h stdlib.h sys/stdtypes.h stddef.h memory.h unistd.h; do
       -e '/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]wchar_t/i\
 #ifndef __WCHAR_TYPE__\
 #define __WCHAR_TYPE__ int\
+#endif\
+#ifndef __cplusplus
+' \
+      -e '/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]wchar_t/a\
 #endif
 ' \
       -e 's/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]wchar_t/typedef __WCHAR_TYPE__ wchar_t/' \
