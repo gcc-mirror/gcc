@@ -1,3 +1,8 @@
+2003-04-29  Olivier Hainque <hainque@act-europe.fr>
+
+	* calls.c (expand_call): When modes of target and valreg match,	force
+	sibcall failure when target is a MEM.
+
 2003-04-29  Geoffrey Keating  <geoffk@apple.com>
 
 	* doc/invoke.texi (Overall Options): Mention -x objective-c-header.
