@@ -1,3 +1,8 @@
+2003-06-12  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.md (adddi3_compact, subdi3_compact): Add earlyclobber
+	constraint modifier for operand 0.
+
 2003-06-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	Don't warn on dollars in builtin macro definitions,
