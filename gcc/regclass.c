@@ -716,10 +716,6 @@ static struct reg_pref *reg_pref;
 
 static struct reg_pref *reg_pref_buffer;
 
-/* Record the depth of loops that we are in.  */
-
-static int loop_depth;
-
 /* Account for the fact that insns within a loop are executed very commonly,
    but don't keep doing this as loops go too deep.  */
 
@@ -820,26 +816,6 @@ scan_one_insn (insn, pass)
   char subreg_changes_size[MAX_RECOG_OPERANDS];
   rtx set, note;
   int i, j;
-
-  /* Show that an insn inside a loop is likely to be executed three
-     times more than insns outside a loop.  This is much more aggressive
-     than the assumptions made elsewhere and is being tried as an
-     experiment.  */
-
-  if (code == NOTE)
-    {
-      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
-	loop_depth++;
-      else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
-	loop_depth--;
-
-      if (optimize_size)
-	loop_cost = 1;
-      else
-	loop_cost = 1 << (2 * MIN (loop_depth, 5));
-
-      return insn;
-    }
 
   if (GET_RTX_CLASS (code) != 'i')
     return insn;
@@ -1085,6 +1061,7 @@ regclass (f, nregs, dump)
 
   for (pass = 0; pass <= flag_expensive_optimizations; pass++)
     {
+      int index;
       /* Zero out our accumulation of the cost of each class for each reg.  */
 
       bzero ((char *) costs, nregs * sizeof (struct costs));
@@ -1093,14 +1070,29 @@ regclass (f, nregs, dump)
       bzero (in_inc_dec, nregs);
 #endif
 
-      loop_depth = 0, loop_cost = 1;
+      loop_cost = 1;
 
       /* Scan the instructions and record each time it would
 	 save code to put a certain register in a certain class.  */
 
-      for (insn = f; insn; insn = NEXT_INSN (insn))
+      for (index = 0; index < n_basic_blocks; index++)
 	{
-	  insn = scan_one_insn (insn, pass);
+	  basic_block bb = BASIC_BLOCK (index);
+
+	  /* Show that an insn inside a loop is likely to be executed three
+	     times more than insns outside a loop.  This is much more aggressive
+	     than the assumptions made elsewhere and is being tried as an
+	     experiment.  */
+	  if (optimize_size)
+	    loop_cost = 1;
+	  else
+	    loop_cost = 1 << (2 * MIN (bb->loop_depth - 1, 5));
+	  for (insn = bb->head; ; insn = NEXT_INSN (insn))
+	    {
+	      insn = scan_one_insn (insn, pass);
+	      if (insn == bb->end)
+		break;
+	    }
 	}
       
       /* Now for each register look at how desirable each class is
