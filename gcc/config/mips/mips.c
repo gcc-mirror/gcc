@@ -4858,8 +4858,10 @@ compute_frame_size (size)
   /* The gp reg is caller saved in the 32 bit ABI, so there is no need
      for leaf routines (total_size == extra_size) to save the gp reg.
      The gp reg is callee saved in the 64 bit ABI, so all routines must
-     save the gp reg.  */
-  if (total_size == extra_size && (mips_abi == ABI_32 || mips_abi == ABI_EABI))
+     save the gp reg.  This is not a leaf routine if -p, because of the
+     call to mcount.  */
+  if (total_size == extra_size && (mips_abi == ABI_32 || mips_abi == ABI_EABI)
+      && ! profile_flag)
     total_size = extra_size = 0;
   else if (TARGET_ABICALLS)
     {
