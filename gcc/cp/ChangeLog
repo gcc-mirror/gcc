@@ -1,3 +1,12 @@
+Sun Oct 19 09:13:01 1997  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* typeck.c (rationalize_conditional_expr): Handle {MIN,MAX}_EXPR.
+	(unary_complex_lvalue): Call it for {MIN,MAX}_EXPR.
+
+	* decl.c (init_decl_processing): Call using_eh_for_cleanups.
+
+	* Make-lang.in (g++): Include prefix.o.
+
 Mon Sep 15 11:52:13 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (null_ptr_cst_p): Integer type, not integral type.
