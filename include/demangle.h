@@ -37,11 +37,11 @@
                                             same as ARM except for
                                             template arguments, etc. */
 #define DMGL_EDG	 (1 << 13)
-#define DMGL_GNU_NEW_ABI (1 << 14)
+#define DMGL_GNU_V3	 (1 << 14)
 #define DMGL_GNAT	 (1 << 15)
 
 /* If none of these are set, use 'current_demangling_style' as the default. */
-#define DMGL_STYLE_MASK (DMGL_AUTO|DMGL_GNU|DMGL_LUCID|DMGL_ARM|DMGL_HP|DMGL_EDG|DMGL_GNU_NEW_ABI|DMGL_JAVA|DMGL_GNAT)
+#define DMGL_STYLE_MASK (DMGL_AUTO|DMGL_GNU|DMGL_LUCID|DMGL_ARM|DMGL_HP|DMGL_EDG|DMGL_GNU_V3|DMGL_JAVA|DMGL_GNAT)
 
 /* Enumeration of possible demangling styles.
 
@@ -60,7 +60,7 @@ extern enum demangling_styles
   arm_demangling = DMGL_ARM,
   hp_demangling = DMGL_HP,
   edg_demangling = DMGL_EDG,
-  gnu_new_abi_demangling = DMGL_GNU_NEW_ABI,
+  gnu_v3_demangling = DMGL_GNU_V3,
   java_demangling = DMGL_JAVA,
   gnat_demangling = DMGL_GNAT
 } current_demangling_style;
@@ -73,7 +73,7 @@ extern enum demangling_styles
 #define ARM_DEMANGLING_STYLE_STRING	      "arm"
 #define HP_DEMANGLING_STYLE_STRING	      "hp"
 #define EDG_DEMANGLING_STYLE_STRING	      "edg"
-#define GNU_NEW_ABI_DEMANGLING_STYLE_STRING   "gnu-new-abi"
+#define GNU_V3_DEMANGLING_STYLE_STRING        "gnu-v3"
 #define JAVA_DEMANGLING_STYLE_STRING          "java"
 #define GNAT_DEMANGLING_STYLE_STRING          "gnat"
 
@@ -86,7 +86,7 @@ extern enum demangling_styles
 #define ARM_DEMANGLING (((int) CURRENT_DEMANGLING_STYLE) & DMGL_ARM)
 #define HP_DEMANGLING (((int) CURRENT_DEMANGLING_STYLE) & DMGL_HP)
 #define EDG_DEMANGLING (((int) CURRENT_DEMANGLING_STYLE) & DMGL_EDG)
-#define GNU_NEW_ABI_DEMANGLING (((int) CURRENT_DEMANGLING_STYLE) & DMGL_GNU_NEW_ABI)
+#define GNU_V3_DEMANGLING (((int) CURRENT_DEMANGLING_STYLE) & DMGL_GNU_V3)
 #define JAVA_DEMANGLING (((int) CURRENT_DEMANGLING_STYLE) & DMGL_JAVA)
 #define GNAT_DEMANGLING (((int) CURRENT_DEMANGLING_STYLE) & DMGL_GNAT)
 
@@ -122,6 +122,6 @@ cplus_demangle_name_to_style PARAMS ((const char *name));
 
 /* New-ABI demangling entry point, defined in cp-demangle.c.  */
 extern char*
-cplus_demangle_new_abi PARAMS ((const char* mangled));
+cplus_demangle_v3 PARAMS ((const char* mangled));
 
 #endif	/* DEMANGLE_H */
