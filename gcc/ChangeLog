@@ -1,3 +1,9 @@
+2001-05-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	* rtl.texi (CALL_INSN_FUNCTION_USAGE): Note that (and when) it may
+	contain MEMs.  Remove useless distinction about clobbering
+	registers.
+
 2001-05-13  Richard Henderson  <rth@redhat.com>
 
 	2001-03-28  Richard Henderson  <rth@redhat.com>
