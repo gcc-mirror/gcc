@@ -432,6 +432,9 @@ expand_call (exp, target, ignore)
 #endif
 #endif
 
+  /* Size of the stack reserved for paramter registers.  */
+  int reg_parm_stack_space = 0;
+
   /* 1 if scanning parms front to back, -1 if scanning back to front.  */
   int inc;
   /* Address of space preallocated for stack parms
@@ -512,6 +515,14 @@ expand_call (exp, target, ignore)
     }
 
   is_volatile = TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (p)));
+
+#ifdef REG_PARM_STACK_SPACE
+#ifdef MAYBE_REG_PARM_STACK_SPACE
+  reg_parm_stack_space = MAYBE_REG_PARM_STACK_SPACE;
+#else
+  reg_parm_stack_space = REG_PARM_STACK_SPACE (fndecl);
+#endif
+#endif
 
   /* Warn if this value is an aggregate type,
      regardless of which calling convention we are using for it.  */
@@ -844,7 +855,7 @@ expand_call (exp, target, ignore)
       /* Compute the stack-size of this argument.  */
       if (args[i].reg == 0 || args[i].partial != 0
 #ifdef REG_PARM_STACK_SPACE
-	  || REG_PARM_STACK_SPACE (fndecl) > 0
+	  || reg_parm_stack_space > 0
 #endif
 	  || args[i].pass_on_stack)
 	locate_and_pad_parm (TYPE_MODE (type), type,
@@ -896,6 +907,11 @@ expand_call (exp, target, ignore)
 			    argpos < n_named_args);
     }
 
+#ifdef FINAL_REG_PARM_STACK_SPACE
+  reg_parm_stack_space = FINAL_REG_PARM_STACK_SPACE (args_size.constant,
+						     args_size.var);
+#endif
+      
   /* Compute the actual size of the argument block required.  The variable
      and constant sizes must be combined, the size may have to be rounded,
      and there may be a minimum required size.  */
@@ -920,7 +936,7 @@ expand_call (exp, target, ignore)
 #endif
 
 #ifdef REG_PARM_STACK_SPACE
-      if (REG_PARM_STACK_SPACE (fndecl) > 0)
+      if (reg_parm_stack_space > 0)
 	{
 	  args_size.var
 	    = size_binop (MAX_EXPR, args_size.var,
@@ -931,7 +947,7 @@ expand_call (exp, target, ignore)
 	     the size of the block we need.  So make the adjustment.  */
 	  args_size.var
 	    = size_binop (MINUS_EXPR, args_size.var,
-			  size_int (REG_PARM_STACK_SPACE (fndecl)));
+			  size_int (reg_parm_stack_space));
 #endif
 	}
 #endif
@@ -945,9 +961,9 @@ expand_call (exp, target, ignore)
 
 #ifdef REG_PARM_STACK_SPACE
       args_size.constant = MAX (args_size.constant,
-				REG_PARM_STACK_SPACE (fndecl));
+				reg_parm_stack_space);
 #ifndef OUTGOING_REG_PARM_STACK_SPACE
-      args_size.constant -= REG_PARM_STACK_SPACE (fndecl);
+      args_size.constant -= reg_parm_stack_space;
 #endif
 #endif
     }
@@ -1082,7 +1098,7 @@ expand_call (exp, target, ignore)
       /* Since we will be writing into the entire argument area, the
 	 map must be allocated for its entire size, not just the part that
 	 is the responsibility of the caller.  */
-      needed += REG_PARM_STACK_SPACE (fndecl);
+      needed += reg_parm_stack_space;
 #endif
 
 #ifdef ARGS_GROW_DOWNWARD
@@ -1246,7 +1262,7 @@ expand_call (exp, target, ignore)
 
      Here we compute the boundary of the that needs to be saved, if any.  */
 
-  for (i = 0; i < REG_PARM_STACK_SPACE (fndecl); i++)
+  for (i = 0; i < reg_parm_stack_space; i++)
     {
       if (i >=  highest_outgoing_arg_in_use
 	  || stack_usage_map[i] == 0)
@@ -1299,7 +1315,7 @@ expand_call (exp, target, ignore)
   for (i = 0; i < num_actuals; i++)
     if (args[i].reg == 0 || args[i].pass_on_stack)
       store_one_arg (&args[i], argblock, may_be_alloca,
-		     args_size.var != 0, fndecl);
+		     args_size.var != 0, fndecl, reg_parm_stack_space);
 
   /* Now store any partially-in-registers parm.
      This is the last place a block-move can happen.  */
@@ -1307,7 +1323,7 @@ expand_call (exp, target, ignore)
     for (i = 0; i < num_actuals; i++)
       if (args[i].partial != 0 && ! args[i].pass_on_stack)
 	store_one_arg (&args[i], argblock, may_be_alloca,
-		       args_size.var != 0, fndecl);
+		       args_size.var != 0, fndecl, reg_parm_stack_space);
 
 #ifndef PUSH_ARGS_REVERSED
 #ifdef STACK_BOUNDARY
@@ -1618,12 +1634,14 @@ target_for_arg (type, size, args_addr, offset)
    FNDECL is the declaration of the function we are calling.  */
 
 static void
-store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl)
+store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
+	       reg_parm_stack_space)
      struct arg_data *arg;
      rtx argblock;
      int may_be_alloca;
      int variable_size;
      tree fndecl;
+     int reg_parm_stack_space;
 {
   register tree pval = arg->tree_value;
   rtx reg = 0;
@@ -1662,7 +1680,7 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl)
 #ifdef REG_PARM_STACK_SPACE
 	    /* Don't store things in the fixed argument area at this point;
 	       it has already been saved.  */
-	    && i > REG_PARM_STACK_SPACE (fndecl)
+	    && i > reg_parm_stack_space
 #endif
 	    )
 	  break;

@@ -28,6 +28,9 @@
 #ifdef __hp9000s800__
 #include "va-hp800.h"
 #else
+#ifdef __i960__
+#include "va-i960.h"
+#else
 
 #ifdef __NeXT__
 
@@ -95,6 +98,7 @@ typedef char * __va___list;
  (AP += __va_rounded_size (TYPE),					\
   *((TYPE *) (AP - __va_rounded_size (TYPE))))
 
+#endif /* not i960 */
 #endif /* not hp800 */
 #endif /* not m88k */
 #endif /* not pyr */

@@ -2916,8 +2916,10 @@ assign_parms (fndecl, second_time)
      minimum length.  */
 
 #ifdef REG_PARM_STACK_SPACE
+#ifndef MAYBE_REG_PARM_STACK_SPACE
   current_function_args_size = MAX (current_function_args_size,
 				    REG_PARM_STACK_SPACE (fndecl));
+#endif
 #endif
 
 #ifdef STACK_BOUNDARY

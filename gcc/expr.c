@@ -3681,6 +3681,9 @@ expand_expr (exp, target, tmode, modifier)
 	  temp = simplify_binary_operation (PLUS, mode, XEXP (op1, 0), op0);
 	  if (temp != 0)
 	    op0 = temp;
+	  /* Ensure that MULT comes first if there is one.  */
+	  else if (GET_CODE (op0) == MULT)
+	    op0 = gen_rtx (PLUS, mode, op0, XEXP (op1, 0));
 	  else
 	    op0 = gen_rtx (PLUS, mode, XEXP (op1, 0), op0);
 
