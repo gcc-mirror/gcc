@@ -1209,7 +1209,7 @@ emit_move_sequence (operands, mode, scratch_reg)
       rtx temp = gen_rtx_SUBREG (GET_MODE (operand0),
 				 reg_equiv_mem [REGNO (SUBREG_REG (operand0))],
 				 SUBREG_BYTE (operand0));
-      operand0 = alter_subreg (temp);
+      operand0 = alter_subreg (&temp);
     }
 
   if (scratch_reg
@@ -1226,7 +1226,7 @@ emit_move_sequence (operands, mode, scratch_reg)
       rtx temp = gen_rtx_SUBREG (GET_MODE (operand1),
 				 reg_equiv_mem [REGNO (SUBREG_REG (operand1))],
 				 SUBREG_BYTE (operand1));
-      operand1 = alter_subreg (temp);
+      operand1 = alter_subreg (&temp);
     }
 
   if (scratch_reg && reload_in_progress && GET_CODE (operand0) == MEM
@@ -3551,24 +3551,20 @@ return_addr_rtx (count, frameaddr)
      If it is an export stub, than our return address is really in
      -24[frameaddr].  */
 
-  emit_cmp_insn (gen_rtx_MEM (SImode, ins),
-		 GEN_INT (0x4bc23fd1),
-		 NE, NULL_RTX, SImode, 1, 0);
+  emit_cmp_insn (gen_rtx_MEM (SImode, ins), GEN_INT (0x4bc23fd1), NE,
+		 NULL_RTX, SImode, 1);
   emit_jump_insn (gen_bne (label));
 
   emit_cmp_insn (gen_rtx_MEM (SImode, plus_constant (ins, 4)),
-		 GEN_INT (0x004010a1),
-		 NE, NULL_RTX, SImode, 1, 0);
+		 GEN_INT (0x004010a1), NE, NULL_RTX, SImode, 1);
   emit_jump_insn (gen_bne (label));
 
   emit_cmp_insn (gen_rtx_MEM (SImode, plus_constant (ins, 8)),
-		 GEN_INT (0x00011820),
-		 NE, NULL_RTX, SImode, 1, 0);
+		 GEN_INT (0x00011820), NE, NULL_RTX, SImode, 1);
   emit_jump_insn (gen_bne (label));
 
   emit_cmp_insn (gen_rtx_MEM (SImode, plus_constant (ins, 12)),
-		 GEN_INT (0xe0400002),
-		 NE, NULL_RTX, SImode, 1, 0);
+		 GEN_INT (0xe0400002), NE, NULL_RTX, SImode, 1);
 
   /* If there is no export stub then just use the value saved from
      the return pointer register.  */
