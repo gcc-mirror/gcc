@@ -2136,7 +2136,6 @@ substitute_in_type (t, f, r)
     case REFERENCE_TYPE:
     case FILE_TYPE:
     case SET_TYPE:
-    case STRING_TYPE:
     case FUNCTION_TYPE:
     case LANG_TYPE:
       /* Don't know how to do these yet.  */
