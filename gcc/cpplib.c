@@ -1615,14 +1615,21 @@ do_pragma (pfile, keyword)
   long here, key;
   U_CHAR *buf;
   int pop;
+  enum cpp_token token;
 
   here = CPP_WRITTEN (pfile);
   CPP_PUTS (pfile, "#pragma ", 8);
 
   key = CPP_WRITTEN (pfile);
   pfile->no_macro_expand++;
-  if (get_directive_token (pfile) != CPP_NAME)
-    goto skip;
+  token = get_directive_token (pfile);
+  if (token != CPP_NAME)
+    {
+      if (token == CPP_VSPACE)
+	goto empty;
+      else
+	goto skip;
+    }
 
   buf = pfile->token_buffer + key;
   CPP_PUTC (pfile, ' ');
@@ -1649,6 +1656,7 @@ do_pragma (pfile, keyword)
  skip:
   cpp_error (pfile, "malformed #pragma directive");
   skip_rest_of_line (pfile);
+ empty:
   CPP_SET_WRITTEN (pfile, here);
   pfile->no_macro_expand--;
   return 0;
