@@ -953,7 +953,7 @@ cpp_get_token (pfile, token)
 	  cpp_hashnode *node = token->val.node;
 
 	  /* Macros invalidate controlling macros.  */
-	  pfile->mi_state = MI_FAILED;
+	  pfile->mi_valid = false;
 
 	  if (node->flags & NODE_BUILTIN)
 	    {

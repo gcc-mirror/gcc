@@ -358,7 +358,7 @@ _cpp_handle_directive (pfile, indented)
 	      /* If we have a directive that is not an opening
 		 conditional, invalidate any control macro.  */
 	      if (! (dir->flags & IF_COND))
-		pfile->mi_state = MI_FAILED;
+		pfile->mi_valid = false;
 
 	      (*dir->handler) (pfile);
 	    }
@@ -1278,27 +1278,22 @@ do_ifndef (pfile)
   push_conditional (pfile, skip, T_IFNDEF, node);
 }
 
-/* #if cooperates with parse_defined to handle multiple-include
-   optimisations.  If macro expansions or identifiers appear in the
-   expression, we cannot treat it as a controlling conditional, since
-   their values could change in the future.  */
+/* _cpp_parse_expr puts a macro in a "#if !defined ()" expression in
+   pfile->mi_ind_cmacro so we can handle multiple-include
+   optimisations.  If macro expansion occurs in the expression, we
+   cannot treat it as a controlling conditional, since the expansion
+   could change in the future.  That is handled by cpp_get_token.  */
 
 static void
 do_if (pfile)
      cpp_reader *pfile;
 {
   int skip = 1;
-  const cpp_hashnode *cmacro = 0;
 
   if (! pfile->state.skipping)
-    {
-      /* Controlling macro of #if ! defined ()  */
-      pfile->mi_ind_cmacro = 0;
-      skip = _cpp_parse_expr (pfile) == 0;
-      cmacro = pfile->mi_ind_cmacro;
-    }
+    skip = _cpp_parse_expr (pfile) == 0;
 
-  push_conditional (pfile, skip, T_IF, cmacro);
+  push_conditional (pfile, skip, T_IF, pfile->mi_ind_cmacro);
 }
 
 /* Flip skipping state if appropriate and continue without changing
@@ -1395,7 +1390,7 @@ do_endif (pfile)
       /* If potential control macro, we go back outside again.  */
       if (ifs->next == 0 && ifs->mi_cmacro)
 	{
-	  pfile->mi_state = MI_OUTSIDE;
+	  pfile->mi_valid = true;
 	  pfile->mi_cmacro = ifs->mi_cmacro;
 	}
 
@@ -1406,8 +1401,8 @@ do_endif (pfile)
 }
 
 /* Push an if_stack entry and set pfile->state.skipping accordingly.
-   If this is a #ifndef starting at the beginning of a file,
-   CMACRO is the macro name tested by the #ifndef.  */
+   If this is a #if or #ifndef, CMACRO is a potentially controlling
+   macro - we need to check here that we are at the top of the file.  */
 
 static void
 push_conditional (pfile, skip, type, cmacro)
@@ -1425,7 +1420,8 @@ push_conditional (pfile, skip, type, cmacro)
   ifs->skip_elses = pfile->state.skipping || !skip;
   ifs->was_skipping = pfile->state.skipping;
   ifs->type = type;
-  if (pfile->mi_state == MI_OUTSIDE && pfile->mi_cmacro == 0)
+  /* This condition is effectively a test for top-of-file.  */
+  if (pfile->mi_valid && pfile->mi_cmacro == 0)
     ifs->mi_cmacro = cmacro;
   else
     ifs->mi_cmacro = 0;

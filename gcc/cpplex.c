@@ -1266,7 +1266,7 @@ _cpp_lex_token (pfile, result)
 
   /* If not in a directive, this token invalidates controlling macros.  */
   if (!pfile->state.in_directive)
-    pfile->mi_state = MI_FAILED;
+    pfile->mi_valid = false;
 }
 
 /* An upper bound on the number of bytes needed to spell a token,
