@@ -1,3 +1,9 @@
+2004-06-02  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* cp-tree.h: Include cgraph.h
+	(DECL_NEEDED_P): Use cgraph_*node on the decl instead of
+	TREE_SYMBOL_REFERENCED on the DECL_ASSEMBLER_NAME of the decl.
+
 2004-06-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/15142
