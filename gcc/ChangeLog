@@ -1,3 +1,8 @@
+2001-12-19  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/coff.h (SUPPORTS_INIT_PRIORITY): Define (to false).
+	* config/arm/elf.h (SUPPORTS_INIT_PRIORITY): Define (to true).	
+
 Wed Dec 19 06:12:34 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* dwarf2out.c (add_name_and_src_coords_attributes): Fix VMS procedure

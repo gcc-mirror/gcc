@@ -122,3 +122,5 @@ rdata_section ()						\
 /* The ARM development system defines __main.  */
 #define NAME__MAIN  "__gccmain"
 #define SYMBOL__MAIN __gccmain
+
+#define SUPPORTS_INIT_PRIORITY 0
