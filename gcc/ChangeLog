@@ -1,3 +1,7 @@
+2004-12-21  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.h (TARGET_SSE_TYPELESS_LOAD0): Remove.
+
 2004-12-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* expr.c (emit_group_load_1): Return the source if the move
