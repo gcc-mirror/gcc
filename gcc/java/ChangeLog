@@ -1,3 +1,17 @@
+2000-01-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* parse.h (OBSOLETE_MODIFIER_WARNING): Don't use ANSI string
+	concatenation.
+	(OBSOLETE_MODIFIER_WARNING2): New macro allowing two args.
+
+	* parse.y (register_fields): Don't pass a format specifier to
+	OBSOLETE_MODIFIER_WARNING.
+	(check_abstract_method_header): Use OBSOLETE_MODIFIER_WARNING2
+	instead of OBSOLETE_MODIFIER_WARNING, and don't pass a format
+	specifier.
+	(check_modifiers): Change function into a macro.
+	(check_class_interface_creation): Pass a literal format string.
+
 2000-01-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* buffer.h: PROTO -> PARAMS.

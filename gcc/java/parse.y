@@ -70,7 +70,6 @@ definitions and other extensions.  */
 static char *java_accstring_lookup PARAMS ((int));
 static void  classitf_redefinition_error PARAMS ((const char *,tree, tree, tree));
 static void  variable_redefinition_error PARAMS ((tree, tree, tree, int));
-static void  check_modifiers PARAMS ((const char *, int, int));
 static tree  create_class PARAMS ((int, tree, tree, tree));
 static tree  create_interface PARAMS ((int, tree, tree));
 static tree  find_field PARAMS ((tree, tree));
@@ -325,6 +324,22 @@ static tree current_static_block = NULL_TREE;
 
 /* The list of all packages we've seen so far */
 static tree package_list = NULL_TREE;
+ 
+/* Check modifiers. If one doesn't fit, retrieve it in its declaration
+   line and point it out.  */
+/* Should point out the one that don't fit. ASCII/unicode, going
+   backward. FIXME */
+
+#define check_modifiers(__message, __value, __mask) do {	\
+  if ((__value) & ~(__mask))					\
+    {								\
+      int i, remainder = (__value) & ~(__mask);			\
+      for (i = 0; i <= 10; i++)					\
+        if ((1 << i) & remainder)				\
+	  parse_error_context (ctxp->modifier_ctx [i], (__message), \
+			       java_accstring_lookup (1 << i)); \
+    }								\
+} while (0)
 
 %}
 
@@ -2882,27 +2897,6 @@ build_unresolved_array_type (type_or_wfl)
 			 EXPR_WFL_COLNO (type_or_wfl));
 }
 
-/* Check modifiers. If one doesn't fit, retrieve it in its declaration line
-  and point it out.  */
-
-static void
-check_modifiers (message, value, mask)
-     const char *message;
-     int value;
-     int mask;
-{
-  /* Should point out the one that don't fit. ASCII/unicode,
-     going backward. FIXME */
-  if (value & ~mask)
-    {
-      int i, remainder = value & ~mask;
-      for (i = 0; i <= 10; i++)
-        if ((1 << i) & remainder)
-	  parse_error_context (ctxp->modifier_ctx [i], message, 
-			       java_accstring_lookup (1 << i));
-    }
-}
-
 static void
 parser_add_interface (class_decl, interface_decl, wfl)
      tree class_decl, interface_decl, wfl;
@@ -2967,10 +2961,12 @@ check_class_interface_creation (is_interface, flags, raw_name, qualified_name, d
 			     IDENTIFIER_POINTER (raw_name));
     }
 
-  check_modifiers ((is_interface ? 
-		    "Illegal modifier `%s' for interface declaration" :
-		    "Illegal modifier `%s' for class declaration"), flags,
-		   (is_interface ? INTERFACE_MODIFIERS : CLASS_MODIFIERS));
+  if (is_interface)
+    check_modifiers ("Illegal modifier `%s' for interface declaration",
+		     flags, INTERFACE_MODIFIERS);
+  else
+    check_modifiers ("Illegal modifier `%s' for class declaration",
+		     flags, CLASS_MODIFIERS);
   return 0;
 }
 
@@ -3239,13 +3235,11 @@ register_fields (flags, type, variable_list)
   if (CLASS_INTERFACE (TYPE_NAME (class_type)))
     {
       OBSOLETE_MODIFIER_WARNING (MODIFIER_WFL (PUBLIC_TK),
-				 flags, ACC_PUBLIC, 
-				 "%s", "interface field(s)");
+				 flags, ACC_PUBLIC, "interface field(s)");
       OBSOLETE_MODIFIER_WARNING (MODIFIER_WFL (STATIC_TK),
-				 flags, ACC_STATIC, 
-				 "%s", "interface field(s)");
+				 flags, ACC_STATIC, "interface field(s)");
       OBSOLETE_MODIFIER_WARNING (MODIFIER_WFL (FINAL_TK),
-				 flags, ACC_FINAL, "%s", "interface field(s)");
+				 flags, ACC_FINAL, "interface field(s)");
       check_modifiers ("Illegal interface member modifier `%s'", flags,
 		       INTERFACE_FIELD_MODIFIERS);
       flags |= (ACC_PUBLIC | ACC_STATIC | ACC_FINAL);
@@ -3754,12 +3748,12 @@ check_abstract_method_header (meth)
   /* DECL_NAME might still be a WFL node */
   tree name = GET_METHOD_NAME (meth);
 
-  OBSOLETE_MODIFIER_WARNING (MODIFIER_WFL (ABSTRACT_TK), flags,
-			     ACC_ABSTRACT, "abstract method `%s'",
-			     IDENTIFIER_POINTER (name));
-  OBSOLETE_MODIFIER_WARNING (MODIFIER_WFL (PUBLIC_TK), flags, 
-			     ACC_PUBLIC, "abstract method `%s'",
-			     IDENTIFIER_POINTER (name));
+  OBSOLETE_MODIFIER_WARNING2 (MODIFIER_WFL (ABSTRACT_TK), flags,
+			      ACC_ABSTRACT, "abstract method",
+			      IDENTIFIER_POINTER (name));
+  OBSOLETE_MODIFIER_WARNING2 (MODIFIER_WFL (PUBLIC_TK), flags, 
+			      ACC_PUBLIC, "abstract method",
+			      IDENTIFIER_POINTER (name));
 
   check_modifiers ("Illegal modifier `%s' for interface method",
 		  flags, INTERFACE_METHOD_MODIFIERS);
