@@ -1091,7 +1091,7 @@ extern int fixuplabelno;
 #define LINK_START_FREEBSD_SPEC	""
 
 #define LINK_OS_FREEBSD_SPEC "\
-  %{p:%e`-p' not supported; use `-pg' and gprof(1)} \
+  %{p:%nconsider using `-pg' instead of `-p' with gprof(1)} \
   %{Wl,*:%*} \
   %{v:-V} \
   %{assert*} %{R*} %{rpath*} %{defsym*} \
