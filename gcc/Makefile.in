@@ -1303,29 +1303,24 @@ bi-opname: bi-opname.o $(BI_OBJ) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o bi-opname \
 	 bi-opname.o $(BI_OBJ) $(HOST_LIBS)
 
-
 bi-run.o:	$(srcdir)/bi-run.c $(srcdir)/bi-run.h $(srcdir)/bc-typecd.h \
   bc-opname.h bc-arity.h bc-opcode.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/bi-run.c
-
 $(srcdir)/bi-parser.c $(srcdir)/bi-parser.h: $(srcdir)/bi-parser.y
 	cd $(srcdir); $(BISON) $(BISONFLAGS) -d bi-parser.y -o bi-parser.c
-
-bi-parser.o:	$(srcdir)/bi-parser.c $(srcdir)/bi-defs.h
+bi-parser.o:	$(srcdir)/bi-parser.c $(srcdir)/bi-defs.h hconfig.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	   $(srcdir)/bi-parser.c
-
-bi-lexer.o:	$(srcdir)/bi-lexer.c $(srcdir)/bi-parser.h
+bi-lexer.o:	$(srcdir)/bi-lexer.c $(srcdir)/bi-parser.h hconfig.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	   $(srcdir)/bi-lexer.c
-
-bi-arity.o: bi-arity.c $(srcdir)/bi-defs.h
+bi-arity.o: bi-arity.c $(srcdir)/bi-defs.h hconfig.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	   $(srcdir)/bi-arity.c
 bi-opcode.o: bi-opcode.c $(srcdir)/bi-defs.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	   $(srcdir)/bi-opcode.c
-bi-opname.o: bi-opname.c $(srcdir)/bi-defs.h
+bi-opname.o: bi-opname.c $(srcdir)/bi-defs.h hconfig.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	   $(srcdir)/bi-opname.c
 bi-reverse.o: bi-reverse.c $(srcdir)/bi-defs.h
