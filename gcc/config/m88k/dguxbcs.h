@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Motorola m88100 running DG/UX.
-   Copyright (C) 1988, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 93, 94, 95, 96, 1998 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@mcc.com)
    Currently maintained by (gcc@dg-rtp.dg.com)
 
@@ -45,7 +45,7 @@ Boston, MA 02111-1307, USA.  */
    -traditional, or restricting include files to one specific source
    target, specify full DG/UX features.  */
 #undef	CPP_SPEC
-#define	CPP_SPEC "%(cpp_cpu) 
+#define	CPP_SPEC "%(cpp_cpu)\
 		  %{!msvr4:-D_M88KBCS_TARGET} %{msvr4:-D_DGUX_TARGET}"
 
 /* Linker and library spec's.
