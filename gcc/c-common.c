@@ -4745,6 +4745,10 @@ cb_register_builtins (pfile)
   if (!flag_signed_char)
     cpp_define (pfile, "__CHAR_UNSIGNED__");
 
+  /* Make the choice of ObjC runtime visible to source code.  */
+  if (flag_objc && flag_next_runtime)
+    cpp_define (pfile, "__NEXT_RUNTIME__");
+
   /* A straightforward target hook doesn't work, because of problems
      linking that hook's body when part of non-C front ends.  */
 # define preprocessing_asm_p() (cpp_get_options (pfile)->lang == CLK_ASM)

@@ -1,3 +1,7 @@
+2002-08-16  Stan Shebs  <shebs@apple.com>
+
+	* objc/execute/selector-1.m: Add __NEXT_RUNTIME__ case.
+
 2002-08-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/typeof-1.c: New test.
