@@ -142,16 +142,11 @@ $(LIBG2C): s-libi77 s-libf77 s-libu77 s-libe77
 	set -e; \
 	rm -f objlist ;\
 	touch objlist ;\
-	for i in $(SUBDIRS) ;\
-	do \
-	  (cd $$i && $(MAKE) $(FLAGS_TO_PASS) objlist) ;\
-	done ;\
-	objs="`cat objlist`" ;\
 	for i in $(F2CEXT); do objs="$$objs libE77/L$$i.lo"; done ;\
 	echo -n $$objs > objlist 
 	$(LIBTOOL) --mode=link $(CC) -o $@ \
 	  -version-info $(VERSION_MAJOR):$(VERSION_MINOR):$(VERSION_SUB) \
-	  -rpath $(prefix)/lib `cat objlist` -lc -lm
+	  -rpath $(prefix)/lib `cat objlist` libF77.la libI77.la libU77.la -lc -lm
 
 i77:
 	cd libI77; $(MAKE) $(FLAGS_TO_PASS) all

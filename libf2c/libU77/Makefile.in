@@ -55,6 +55,8 @@ G77DIR = ../../../gcc/
 .c.lo:
 	@LIBTOOL@ --mode=compile $(CC) -c -DSkip_f2c_Undefs $(ALL_CFLAGS) $<
 
+LINK = @LIBTOOL@ --mode=link $(CC) $(ALL_CFLAGS) -o $@
+
 OBJS =  VersionU.lo gerror_.lo perror_.lo ierrno_.lo itime_.lo time_.lo \
 	unlink_.lo fnum_.lo getpid_.lo getuid_.lo getgid_.lo kill_.lo rand_.lo \
 	srand_.lo irand_.lo sleep_.lo idate_.lo ctime_.lo etime_.lo \
@@ -78,13 +80,15 @@ SRCS =  Version.c gerror_.c perror_.c ierrno_.c itime_.c time_.c \
 
 all: ../s-libu77
 
-../s-libu77: $(OBJS)
+../s-libu77: ../libU77.la
 	echo timestamp > ../s-libu77
+
+../libU77.la: $(OBJS)
+	$(LINK) $(OBJS)
 
 objlist:
 	objs="`cat ../objlist`" ; for i in $(OBJS) ; do \
-	   x=`echo $$i` ;\
-	   objs="$$objs libU77/$$x" ;\
+	   objs="$$objs libU77/$$i" ;\
 	done ; \
 	echo -n $$objs > ../objlist
 
