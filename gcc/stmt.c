@@ -361,6 +361,7 @@ struct stmt_status GTY(())
      record the expr's type and its RTL value here.  */
   tree x_last_expr_type;
   rtx x_last_expr_value;
+  rtx x_last_expr_alt_rtl;
 
   /* Nonzero if within a ({...}) grouping, in which case we must
      always compute a value for each expr-stmt in case it is the last one.  */
@@ -383,6 +384,7 @@ struct stmt_status GTY(())
 #define current_block_start_count (cfun->stmt->x_block_start_count)
 #define last_expr_type (cfun->stmt->x_last_expr_type)
 #define last_expr_value (cfun->stmt->x_last_expr_value)
+#define last_expr_alt_rtl (cfun->stmt->x_last_expr_alt_rtl)
 #define expr_stmts_for_value (cfun->stmt->x_expr_stmts_for_value)
 #define emit_locus (cfun->stmt->x_emit_locus)
 #define goto_fixup_chain (cfun->stmt->x_goto_fixup_chain)
@@ -2140,6 +2142,7 @@ expand_expr_stmt_value (tree exp, int want_value, int maybe_last)
 {
   rtx value;
   tree type;
+  rtx alt_rtl = NULL;
 
   if (want_value == -1)
     want_value = expr_stmts_for_value != 0;
@@ -2166,8 +2169,8 @@ expand_expr_stmt_value (tree exp, int want_value, int maybe_last)
   /* The call to `expand_expr' could cause last_expr_type and
      last_expr_value to get reset.  Therefore, we set last_expr_value
      and last_expr_type *after* calling expand_expr.  */
-  value = expand_expr (exp, want_value ? NULL_RTX : const0_rtx,
-		       VOIDmode, 0);
+  value = expand_expr_real (exp, want_value ? NULL_RTX : const0_rtx,
+			    VOIDmode, 0, &alt_rtl);
   type = TREE_TYPE (exp);
 
   /* If all we do is reference a volatile value in memory,
@@ -2203,6 +2206,7 @@ expand_expr_stmt_value (tree exp, int want_value, int maybe_last)
   if (want_value)
     {
       last_expr_value = value;
+      last_expr_alt_rtl = alt_rtl;
       last_expr_type = type;
     }
 
@@ -2322,6 +2326,7 @@ clear_last_expr (void)
 {
   last_expr_type = NULL_TREE;
   last_expr_value = NULL_RTX;
+  last_expr_alt_rtl = NULL_RTX;
 }
 
 /* Begin a statement-expression, i.e., a series of statements which
@@ -2369,6 +2374,7 @@ expand_end_stmt_expr (tree t)
   if (! last_expr_value || ! last_expr_type)
     {
       last_expr_value = const0_rtx;
+      last_expr_alt_rtl = NULL_RTX;
       last_expr_type = void_type_node;
     }
   else if (GET_CODE (last_expr_value) != REG && ! CONSTANT_P (last_expr_value))
@@ -2379,6 +2385,7 @@ expand_end_stmt_expr (tree t)
 
   TREE_TYPE (t) = last_expr_type;
   RTL_EXPR_RTL (t) = last_expr_value;
+  RTL_EXPR_ALT_RTL (t) = last_expr_alt_rtl;
   RTL_EXPR_SEQUENCE (t) = get_insns ();
 
   rtl_expr_chain = tree_cons (NULL_TREE, t, rtl_expr_chain);
@@ -3801,6 +3808,7 @@ expand_end_bindings (tree vars, int mark_ends, int dont_jump_in)
       /* Don't let cleanups affect ({...}) constructs.  */
       int old_expr_stmts_for_value = expr_stmts_for_value;
       rtx old_last_expr_value = last_expr_value;
+      rtx old_last_expr_alt_rtl = last_expr_alt_rtl;
       tree old_last_expr_type = last_expr_type;
       expr_stmts_for_value = 0;
 
@@ -3817,6 +3825,7 @@ expand_end_bindings (tree vars, int mark_ends, int dont_jump_in)
 
       expr_stmts_for_value = old_expr_stmts_for_value;
       last_expr_value = old_last_expr_value;
+      last_expr_alt_rtl = old_last_expr_alt_rtl;
       last_expr_type = old_last_expr_type;
 
       /* Restore the stack level.  */

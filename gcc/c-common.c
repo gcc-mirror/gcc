@@ -4054,8 +4054,9 @@ finish_label_address_expr (tree label)
 /* Hook used by expand_expr to expand language-specific tree codes.  */
 
 rtx
-c_expand_expr (tree exp, rtx target, enum machine_mode tmode, int modifier)
-     /* Actually enum_modifier.  */
+c_expand_expr (tree exp, rtx target, enum machine_mode tmode, 
+	       int modifier /* Actually enum_modifier.  */,
+	       rtx *alt_rtl)
 {
   switch (TREE_CODE (exp))
     {
@@ -4147,7 +4148,7 @@ c_expand_expr (tree exp, rtx target, enum machine_mode tmode, int modifier)
 	   literal, then return the variable.  */
 	tree decl = COMPOUND_LITERAL_EXPR_DECL (exp);
 	emit_local_var (decl);
-	return expand_expr (decl, target, tmode, modifier);
+	return expand_expr_real (decl, target, tmode, modifier, alt_rtl);
       }
 
     default:

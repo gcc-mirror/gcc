@@ -2448,7 +2448,8 @@ get_primitive_array_vtable (tree elt)
 
 struct rtx_def *
 java_expand_expr (tree exp, rtx target, enum machine_mode tmode,
-		  int modifier /* Actually an enum expand_modifier.  */)
+		  int modifier /* Actually an enum expand_modifier. */,
+		  rtx *alt_rtl ATTRIBUTE_UNUSED)
 {
   tree current;
 

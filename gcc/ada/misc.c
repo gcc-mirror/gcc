@@ -96,7 +96,8 @@ static const char *gnat_printable_name	(tree, int);
 static tree gnat_eh_runtime_type	(tree);
 static int gnat_eh_type_covers		(tree, tree);
 static void gnat_parse_file		(int);
-static rtx gnat_expand_expr		(tree, rtx, enum machine_mode, int);
+static rtx gnat_expand_expr		(tree, rtx, enum machine_mode, int,
+					 rtx *);
 static void internal_error_function	(const char *, va_list *);
 static void gnat_adjust_rli		(record_layout_info);
 
@@ -550,7 +551,8 @@ gnat_printable_name (tree decl, int verbosity)
    here are TRANSFORM_EXPR, ALLOCATE_EXPR, USE_EXPR and NULL_EXPR.  */
 
 static rtx
-gnat_expand_expr (tree exp, rtx target, enum machine_mode tmode, int modifier)
+gnat_expand_expr (tree exp, rtx target, enum machine_mode tmode, 
+		  int modifier, rtx *alt_rtl)
 {
   tree type = TREE_TYPE (exp);
   tree new;
@@ -606,8 +608,8 @@ gnat_expand_expr (tree exp, rtx target, enum machine_mode tmode, int modifier)
       return target;
 
     case GNAT_NOP_EXPR:
-      return expand_expr (build1 (NOP_EXPR, type, TREE_OPERAND (exp, 0)),
-			  target, tmode, modifier);
+      return expand_expr_real (build1 (NOP_EXPR, type, TREE_OPERAND (exp, 0)),
+			       target, tmode, modifier, alt_rtl);
 
     case UNCONSTRAINED_ARRAY_REF:
       /* If we are evaluating just for side-effects, just evaluate our
@@ -623,7 +625,7 @@ gnat_expand_expr (tree exp, rtx target, enum machine_mode tmode, int modifier)
       gigi_abort (201);
     }
 
-  return expand_expr (new, target, tmode, modifier);
+  return expand_expr_real (new, target, tmode, modifier, alt_rtl);
 }
 
 /* Adjusts the RLI used to layout a record after all the fields have been
