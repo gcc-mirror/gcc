@@ -25,8 +25,9 @@ config.h dbg_mlc.c dyn_load.c finalize.c gc.h gc_alloc.h gc_cpp.h \
 gc_hdrs.h gc_mark.h gc_priv.h gc_private.h gc_typed.h headers.c	\
 irix_threads.c linux_threads.c malloc.c mallocx.c mark.c mark_rts.c \
 misc.c new_hblk.c obj_map.c os_dep.c pcr_interface.c ptr_chck.c	\
-quick_threads.c real_malloc.c reclaim.c solaris_pthreads.c stubborn.c \
-typd_mlc.c version.h weakpointer.h
+quick_threads.c real_malloc.c reclaim.c solaris_pthreads.c \
+solaris_threads.c solaris_threads.h stubborn.c typd_mlc.c version.h \
+weakpointer.h
 libgcjgc_a_LIBADD = @addobjs@
 libgcjgc_a_DEPENDENCIES = @addobjs@
 
