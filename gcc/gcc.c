@@ -2810,7 +2810,7 @@ struct infile
 
 static struct infile *infiles;
 
-static int n_infiles;
+int n_infiles;
 
 /* This counts the number of libraries added by lang_specific_driver, so that
    we can tell if there were any user supplied any files or libraries.  */
@@ -2819,7 +2819,7 @@ static int added_libraries;
 
 /* And a vector of corresponding output files is made up later.  */
 
-static const char **outfiles;
+const char **outfiles;
 
 /* Used to track if none of the -B paths are used.  */
 static int warn_B;

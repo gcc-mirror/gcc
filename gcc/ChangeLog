@@ -1,3 +1,9 @@
+2001-05-18  Per Bothner  <per@bothner.com>
+
+        Changes needed for java/jvspec.c
+        * gcc.h (n_infiles, outfiles):  Add declarations.
+        * gcc.c (n_infiles, outfiles):  Mske no longer static.
+
 Fri May 18 10:12:19 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* config/pa/som.h (EXCEPTION_SECTION): Define.
