@@ -1,3 +1,10 @@
+2004-04-27  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (call_insn_operand): Check
+	SYMBOL_REF_EXTERNAL_P in addition to SYMBOL_REF_LOCAL_P.
+	* config/xtensa/xtensa.h (LEGITIMATE_PIC_OPERAND): Likewise.
+	* config/xtensa/xtensa.md (call, call_value): Likewise.
+
 2004-04-27  Wu Yongwei  <adah@sh163.net>
 
 	* gthr-win32.h (__gthread_mutex_t): Change typedef to new structure.
