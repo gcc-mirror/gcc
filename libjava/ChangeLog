@@ -1,3 +1,10 @@
+2003-09-27  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/SelectionKeyImpl.java
+	(ch): Make package-private again. Jikes found this bug.
+	Jeff Sturm submitted PR12426 for this to bugzilla
+	to fix this bug in gcj.
+
 2003-09-26  Michael Koch  <konqueror@gmx.de>
 
 	* java/rmi/server/RMIClassLoader.java:

@@ -48,7 +48,7 @@ public abstract class SelectionKeyImpl extends AbstractSelectionKey
   private int readyOps;
   private int interestOps;
   private SelectorImpl impl;
-  private SelectableChannel ch;
+  SelectableChannel ch;
 
   public SelectionKeyImpl (SelectableChannel ch, SelectorImpl impl)
   {
