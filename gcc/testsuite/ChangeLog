@@ -1,3 +1,7 @@
+2004-06-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/union-1.c: New test.
+
 2004-06-07  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/14765

@@ -5033,7 +5033,7 @@ static void function_arg_record_value_2
 static void function_arg_record_value_1
  (tree, HOST_WIDE_INT, struct function_arg_record_value_parms *, bool);
 static rtx function_arg_record_value (tree, enum machine_mode, int, int, int);
-static rtx function_arg_union_value (int, int);
+static rtx function_arg_union_value (int, enum machine_mode, int);
 
 /* A subroutine of function_arg_record_value.  Traverse the structure
    recursively and determine how many registers will be required.  */
@@ -5373,26 +5373,25 @@ function_arg_record_value (tree type, enum machine_mode mode,
    FUNCTION_ARG and FUNCTION_VALUE.
 
    SIZE is the size in bytes of the union.
+   MODE is the argument's machine mode.
    REGNO is the hard register the union will be passed in.  */
 
 static rtx
-function_arg_union_value (int size, int regno)
+function_arg_union_value (int size, enum machine_mode mode, int regno)
 {
-  enum machine_mode mode;
-  rtx reg;
-
-  if (size <= UNITS_PER_WORD)
-    mode = word_mode;
-  else
-    mode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0);
-
-  reg = gen_rtx_REG (mode, regno);
+  int nwords = ROUND_ADVANCE (size), i;
+  rtx regs;
 
   /* Unions are passed left-justified.  */
-  return gen_rtx_PARALLEL (mode,
-			   gen_rtvec (1, gen_rtx_EXPR_LIST (VOIDmode,
-							    reg,
-							    const0_rtx)));
+  regs = gen_rtx_PARALLEL (mode, rtvec_alloc (nwords));
+
+  for (i = 0; i < nwords; i++)
+    XVECEXP (regs, 0, i)
+      = gen_rtx_EXPR_LIST (VOIDmode,
+			   gen_rtx_REG (word_mode, regno + i),
+			   GEN_INT (UNITS_PER_WORD * i));
+
+  return regs;
 }
 
 /* Handle the FUNCTION_ARG macro.
@@ -5449,7 +5448,7 @@ function_arg (const struct sparc_args *cum, enum machine_mode mode,
       if (size > 16)
 	abort (); /* shouldn't get here */
 
-      return function_arg_union_value (size, regno);
+      return function_arg_union_value (size, mode, regno);
     }
   /* v9 fp args in reg slots beyond the int reg slots get passed in regs
      but also have the slot allocated for them.
@@ -5729,7 +5728,7 @@ function_value (tree type, enum machine_mode mode, int incoming_p)
 	  if (size > 32)
 	    abort (); /* shouldn't get here */
 
-	  return function_arg_union_value (size, regbase);
+	  return function_arg_union_value (size, mode, regbase);
 	}
       else if (AGGREGATE_TYPE_P (type))
 	{
