@@ -1665,7 +1665,8 @@ move_block_from_reg (regno, x, nregs, size)
     }
 }
 
-/* Mark REG as holding parameter for the CALL_INSN.  */
+/* Add a USE expression for REG to the (possibly empty) list pointed
+   to by CALL_FUSAGE.  REG must denote a hard register.  */
 
 void
 use_reg (call_fusage, reg)
@@ -1680,8 +1681,8 @@ use_reg (call_fusage, reg)
 	       gen_rtx (USE, VOIDmode, reg), *call_fusage);
 }
 
-/* Mark NREGS consecutive regs, starting at REGNO, as holding parameters
-   for the CALL_INSN.  */
+/* Add USE expressions to *CALL_FUSAGE for each of NREGS consecutive regs,
+   starting at REGNO.  All of these registers must be hard registers.  */
 
 void
 use_regs (call_fusage, regno, nregs)
