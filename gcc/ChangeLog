@@ -1,3 +1,7 @@
+Tue Jan 27 10:22:13 1998  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
+
+	* tlink.c (scan_linker_output): Call fclose() for opened files.
+
 Tue Jan 27 05:05:26 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (output_epilog [!VMS]): Don't tag global functions if
