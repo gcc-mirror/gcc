@@ -1033,6 +1033,11 @@ find_base_term (x)
   cselib_val *val;
   struct elt_loc_list *l;
 
+#if defined (FIND_BASE_TERM)
+  /* Try machine-dependent ways to find the base term.  */
+  x = FIND_BASE_TERM (x);
+#endif
+
   switch (GET_CODE (x))
     {
     case REG:
@@ -1078,6 +1083,9 @@ find_base_term (x)
 	   is a shift or multiply, then it must be the index register and the
 	   other operand is the base register.  */
 	
+	if (tmp1 == pic_offset_table_rtx && CONSTANT_P (tmp2))
+	  return find_base_term (tmp2);
+
 	/* If either operand is known to be a pointer, then use it
 	   to determine the base term.  */
 	if (REG_P (tmp1) && REGNO_POINTER_FLAG (REGNO (tmp1)))
@@ -1469,10 +1477,9 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
 				   canon_rtx (XEXP (y, 0)), c);
 
       if (CONSTANT_P (y))
-	return (xsize < 0 || ysize < 0
+	return (xsize <= 0 || ysize <= 0
 		|| (rtx_equal_for_memref_p (x, y)
-		    && (xsize == 0 || ysize == 0
-		        || (c >= 0 && xsize > c) || (c < 0 && ysize+c > 0))));
+		    && ((c >= 0 && xsize > c) || (c < 0 && ysize+c > 0))));
 
       return 1;
     }
@@ -1574,14 +1581,14 @@ true_dependence (mem, mem_mode, x, varies)
   if (DIFFERENT_ALIAS_SETS_P (x, mem))
     return 0;
 
-  /* If X is an unchanging read, then it can't possibly conflict with any
-     non-unchanging store.  It may conflict with an unchanging write though,
-     because there may be a single store to this address to initialize it.
-     Just fall through to the code below to resolve the case where we have
-     both an unchanging read and an unchanging write.  This won't handle all
-     cases optimally, but the possible performance loss should be
-     negligible.  */
-  if (RTX_UNCHANGING_P (x) && ! RTX_UNCHANGING_P (mem))
+  /* Unchanging memory can't conflict with non-unchanging memory.
+     A non-unchanging read can conflict with a non-unchanging write.
+     An unchanging read can conflict with an unchanging write since
+     there may be a single store to this address to initialize it.
+     Just fall through to the code below to resolve potential conflicts.
+     This won't handle all cases optimally, but the possible performance
+     loss should be negligible.  */
+  if (RTX_UNCHANGING_P (x) != RTX_UNCHANGING_P (mem))
     return 0;
 
   if (mem_mode == VOIDmode)
@@ -1640,6 +1647,10 @@ write_dependence_p (mem, x, writep)
     return 1;
 
   if (DIFFERENT_ALIAS_SETS_P (x, mem))
+    return 0;
+
+  /* Unchanging memory can't conflict with non-unchanging memory.  */
+  if (RTX_UNCHANGING_P (x) != RTX_UNCHANGING_P (mem))
     return 0;
 
   /* If MEM is an unchanging read, then it can't possibly conflict with

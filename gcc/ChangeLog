@@ -1,3 +1,18 @@
+Fri Aug 25 12:52:49 EDT 2000  John Wehle  (john@feith.com)
+
+	* i386.c (ix86_find_base_term): New.
+	* i386-protos.h (ix86_find_base_term): Prototype.
+	* i386.h (FIND_BASE_TERM): Define.
+	* alias.c (find_base_term): Use it.
+	* tm.texi (FIND_BASE_TERM): Document it.
+
+	* alias.c (true_dependence, write_dependence_p): Unchanging
+	memory can't conflict with non-unchanging memory.
+
+	* alias.c (memrefs_conflict_p): A BLKmode reference
+	to a symbol (or CONST_INT address) always conflicts
+	with a reference to another symbol.
+
 2000-08-25  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (time_char_table): Don't allow width and flags with
