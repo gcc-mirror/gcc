@@ -1,3 +1,14 @@
+Mon Feb  8 21:31:06 1999  Richard Henderson  <rth@cygnus.com>
+
+	* loop.c (reg_single_usage): New file-scope variable ...
+	(scan_loop): ... moved out of here.  Always initialize.
+	Test loop_has_call instead of reg_single_usage not zero.
+	Free reg_single_usage after strength reduction.
+	(count_loop_regs_set): Assume single_usage non-zero.
+	(combine_givs_used_by_other): Test reg_single_usage.
+	(load_mems_and_recount_loop_regs_set): Remove reg_single_usage
+	as a parameter.  Assume non-zero.
+	
 1999-02-08 23:25 -0500  Zack Weinberg  <zack@midnite.ec.rhno.columbia.edu>
 
 	* cpplib.c (special_symbol): Rewrite.  Don't copy things

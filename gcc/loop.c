@@ -164,6 +164,11 @@ static varray_type n_times_set;
 
 static varray_type may_not_optimize;
 
+/* Contains the insn in which a register was used if it was used
+   exactly once; contains const0_rtx if it was used more than once.  */
+
+static varray_type reg_single_usage;
+
 /* Nonzero means reg N has already been moved out of one loop.
    This reduces the desire to move it out of another.  */
 
@@ -336,8 +341,7 @@ static void record_initial PROTO((rtx, rtx));
 static void update_reg_last_use PROTO((rtx, rtx));
 static rtx next_insn_in_loop PROTO((rtx, rtx, rtx, rtx));
 static void load_mems_and_recount_loop_regs_set PROTO((rtx, rtx, rtx,
-						       rtx, varray_type, 
-						       int *));
+						       rtx, int *));
 static void load_mems PROTO((rtx, rtx, rtx, rtx));
 static int insert_loop_mem PROTO((rtx *, void *));
 static int replace_loop_mem PROTO((rtx *, void *));
@@ -655,10 +659,6 @@ scan_loop (loop_start, end, loop_cont, unroll_p, bct_p)
      since in that case saving an insn makes more difference
      and more registers are available.  */
   int threshold;
-  /* If we have calls, contains the insn in which a register was used
-     if it was used exactly once; contains const0_rtx if it was used more
-     than once.  */
-  varray_type reg_single_usage = 0;
   /* Nonzero if we are scanning instructions in a sub-loop.  */
   int loop_depth = 0;
   int nregs;
@@ -738,8 +738,7 @@ scan_loop (loop_start, end, loop_cont, unroll_p, bct_p)
 
   /* Count number of times each reg is set during this loop.
      Set VARRAY_CHAR (may_not_optimize, I) if it is not safe to move out
-     the setting of register I.  If this loop has calls, set
-     VARRAY_RTX (reg_single_usage, I).  */
+     the setting of register I.  Set VARRAY_RTX (reg_single_usage, I).  */
   
   /* Allocate extra space for REGS that might be created by
      load_mems.  We allocate a little extra slop as well, in the hopes
@@ -750,9 +749,7 @@ scan_loop (loop_start, end, loop_cont, unroll_p, bct_p)
   VARRAY_INT_INIT (set_in_loop, nregs, "set_in_loop");
   VARRAY_INT_INIT (n_times_set, nregs, "n_times_set");
   VARRAY_CHAR_INIT (may_not_optimize, nregs, "may_not_optimize");
-
-  if (loop_has_call)
-    VARRAY_RTX_INIT (reg_single_usage, nregs, "reg_single_usage");
+  VARRAY_RTX_INIT (reg_single_usage, nregs, "reg_single_usage");
 
   count_loop_regs_set (loop_top ? loop_top : loop_start, end,
 		       may_not_optimize, reg_single_usage, &insn_count, nregs);
@@ -901,7 +898,8 @@ scan_loop (loop_start, end, loop_cont, unroll_p, bct_p)
 		 Don't do this if P has a REG_RETVAL note or if we have
 		 SMALL_REGISTER_CLASSES and SET_SRC is a hard register.  */
 
-	      if (reg_single_usage && VARRAY_RTX (reg_single_usage, regno) != 0
+	      if (loop_has_call
+		  && VARRAY_RTX (reg_single_usage, regno) != 0
 		  && VARRAY_RTX (reg_single_usage, regno) != const0_rtx
 		  && REGNO_FIRST_UID (regno) == INSN_UID (p)
 		  && (REGNO_LAST_UID (regno)
@@ -1156,14 +1154,9 @@ scan_loop (loop_start, end, loop_cont, unroll_p, bct_p)
       VARRAY_INT (set_in_loop, i) = VARRAY_INT (n_times_set, i);
 
   /* Now that we've moved some things out of the loop, we might be able to
-     hoist even more memory references.  There's no need to pass
-     reg_single_usage this time, since we're done with it.  */
+     hoist even more memory references.  */
   load_mems_and_recount_loop_regs_set (scan_start, end, loop_top,
-				       loop_start, 0,
-				       &insn_count);
-
-  /* set_in_loop is still used by invariant_p, so we can't free it now.  */
-  VARRAY_FREE (reg_single_usage);
+				       loop_start, &insn_count);
 
   if (flag_strength_reduce)
     {
@@ -1172,6 +1165,7 @@ scan_loop (loop_start, end, loop_cont, unroll_p, bct_p)
 		       insn_count, loop_start, end, loop_cont, unroll_p, bct_p);
     }
 
+  VARRAY_FREE (reg_single_usage);
   VARRAY_FREE (set_in_loop);
   VARRAY_FREE (n_times_set);
   VARRAY_FREE (may_not_optimize);
@@ -3496,15 +3490,12 @@ count_loop_regs_set (from, to, may_not_move, single_usage, count_ptr, nregs)
 	{
 	  ++count;
 
-	  /* If requested, record registers that have exactly one use.  */
-	  if (single_usage)
-	    {
-	      find_single_use_in_loop (insn, PATTERN (insn), single_usage);
+	  /* Record registers that have exactly one use.  */
+	  find_single_use_in_loop (insn, PATTERN (insn), single_usage);
 
-	      /* Include uses in REG_EQUAL notes.  */
-	      if (REG_NOTES (insn))
-		find_single_use_in_loop (insn, REG_NOTES (insn), single_usage);
-	    }
+	  /* Include uses in REG_EQUAL notes.  */
+	  if (REG_NOTES (insn))
+	    find_single_use_in_loop (insn, REG_NOTES (insn), single_usage);
 
 	  if (GET_CODE (PATTERN (insn)) == SET
 	      || GET_CODE (PATTERN (insn)) == CLOBBER)
@@ -6766,19 +6757,23 @@ cmp_combine_givs_stats (x, y)
   return d;
 }
 
-/* If one of these givs is a DEST_REG that was used by the other giv,
-   this is actually a single use.  Return 0 if this is not
-   the case, -1 if g1 is the DEST_REG involved, and 1 if it was g2.  */
+/* If one of these givs is a DEST_REG that was used once by the other giv,
+   this is actually a single use.  Return 0 if this is not the case,
+   -1 if g1 is the DEST_REG involved, and 1 if it was g2.  */
 
 static int
 combine_givs_used_by_other (g1, g2)
      struct induction *g1, *g2;
 {
   if (g1->giv_type == DEST_REG
+      && VARRAY_RTX (reg_single_usage, REGNO (g1->dest_reg)) != 0
+      && VARRAY_RTX (reg_single_usage, REGNO (g1->dest_reg)) != const0_rtx
       && reg_mentioned_p (g1->dest_reg, PATTERN (g2->insn)))
     return -1;
 
   if (g2->giv_type == DEST_REG
+      && VARRAY_RTX (reg_single_usage, REGNO (g2->dest_reg)) != 0
+      && VARRAY_RTX (reg_single_usage, REGNO (g2->dest_reg)) != const0_rtx
       && reg_mentioned_p (g2->dest_reg, PATTERN (g1->insn)))
     return 1;
 
@@ -9222,12 +9217,11 @@ insert_loop_mem (mem, data)
 
 static void
 load_mems_and_recount_loop_regs_set (scan_start, end, loop_top, start,
-				     reg_single_usage, insn_count)
+				     insn_count)
      rtx scan_start;
      rtx end;
      rtx loop_top;
      rtx start;
-     varray_type reg_single_usage;
      int *insn_count;
 {
   int nregs = max_reg_num ();
@@ -9250,14 +9244,12 @@ load_mems_and_recount_loop_regs_set (scan_start, end, loop_top, start,
 	  VARRAY_GROW (set_in_loop, nregs);
 	  VARRAY_GROW (n_times_set, nregs);
 	  VARRAY_GROW (may_not_optimize, nregs);
-	  if (reg_single_usage)
-	    VARRAY_GROW (reg_single_usage, nregs);
+	  VARRAY_GROW (reg_single_usage, nregs);
 	}
       /* Clear the arrays */
       bzero ((char *) &set_in_loop->data, nregs * sizeof (int));
       bzero ((char *) &may_not_optimize->data, nregs * sizeof (char));
-      if (reg_single_usage)
-	bzero ((char *) &reg_single_usage->data, nregs * sizeof (rtx));
+      bzero ((char *) &reg_single_usage->data, nregs * sizeof (rtx));
 
       count_loop_regs_set (loop_top ? loop_top : start, end,
 			   may_not_optimize, reg_single_usage,
