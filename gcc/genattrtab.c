@@ -378,7 +378,8 @@ static void expand_units	PROTO((void));
 static rtx simplify_knowing	PROTO((rtx, rtx));
 static rtx encode_units_mask	PROTO((rtx));
 static void fill_attr		PROTO((struct attr_desc *));
-static rtx substitute_address	PROTO((rtx, rtx (*) (rtx), rtx (*) (rtx)));
+/* dpx2 compiler chokes if we specify the arg types of the args.  */
+static rtx substitute_address	PROTO((rtx, rtx (*) (), rtx (*) ()));
 static void make_length_attrs	PROTO((void));
 static rtx identity_fn		PROTO((rtx));
 static rtx zero_fn		PROTO((rtx));
