@@ -1,5 +1,8 @@
 Mon May 11 17:43:03 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* regmove.c (fixup_match_2, find_matches, regmove_profitable):
+	Add explanatory comments.
+
 	* sparc.h (SPARC_INCOMING_INT_ARG_FIRST): Support TARGET_FLAT.
 
 Mon May 11 17:24:27 1998  Richard Henderson  <rth@cygnus.com>
