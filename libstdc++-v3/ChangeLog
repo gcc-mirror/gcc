@@ -1,3 +1,8 @@
+2001-04-17  Phil Edwards  <pme@sources.redhat.com>
+
+	* include/bits/stl_algo.h (std::transform):  Disable the check
+	on _OutputIter.
+
 2001-04-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* include/bits/stl_config.h: Turn off concept-checking.
