@@ -1,3 +1,11 @@
+2003-01-10  Benjamin Kosnik  <bkoz@redhat.com>
+	    Sysoltsev Slawa  <Vyatcheslav.Sysoltsev@intel.com>
+
+	PR libstdc++/9269
+	* include/std/std_fstream.h (basic_filebuf::uflow): Declare.
+	(basic_filebuf::underflow): Declare.
+	Move definitions.
+
 2003-01-07  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/8707

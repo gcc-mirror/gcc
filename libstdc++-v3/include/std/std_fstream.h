@@ -1,6 +1,6 @@
 // File based streams -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -141,10 +141,10 @@ namespace std
       _M_underflow_common(bool __bump);
 
       virtual int_type
-      underflow() { return _M_underflow_common(false); }
+      underflow();
 
       virtual int_type
-      uflow() { return _M_underflow_common(true); }
+      uflow();
 
       virtual int_type
       pbackfail(int_type __c = _Traits::eof());
@@ -296,6 +296,18 @@ namespace std
     basic_filebuf<wchar_t>::int_type 
     basic_filebuf<wchar_t>::_M_underflow_common(bool __bump);
  #endif
+
+  // Generic definitions.
+  template <typename _CharT, typename _Traits>
+    basic_filebuf<_CharT, _Traits>::int_type
+    basic_filebuf<_CharT, _Traits>::underflow() 
+    { return _M_underflow_common(false); }
+
+  template <typename _CharT, typename _Traits>
+    basic_filebuf<_CharT, _Traits>::int_type
+    basic_filebuf<_CharT, _Traits>::uflow() 
+    { return _M_underflow_common(true); }
+
 
   // 27.8.1.5  Template class basic_ifstream
   /**
