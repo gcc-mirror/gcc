@@ -7,9 +7,6 @@
 # The makefile macros etc. are included in the order found in the
 # section "Target Fragment" in the gcc info-files (or the paper copy) of
 # "Using and Porting GCC"
-#
-# Don't run fixproto
-STMP_FIXPROTO =
 
 LIB2FUNCS_EXTRA = _udivsi3.c _divsi3.c _umodsi3.c _modsi3.c
 CRIS_LIB1CSRC = $(srcdir)/config/cris/arit.c

@@ -20,13 +20,6 @@ quadlib.c: $(srcdir)/config/ia64/quadlib.c
 
 LIBGCC1_TEST =
 
-# Don't run fix-headers.  HP-UX headers are standards conformant
-# and don't need to be fixed up in this way.
-# If we remove this (and run fix-headers) we should define FIXPROTO_DEFINES
-# and also fix the definition of putenv in sys-protos.h (const char not char).
-
-STMP_FIXPROTO =
-
 # We do not want to include the EH stuff that linux uses, we want to use
 # the HP-UX libunwind library.
 

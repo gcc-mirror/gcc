@@ -16,6 +16,4 @@ winnt.o: $(srcdir)/config/i386/winnt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	$(srcdir)/config/i386/winnt.c
 
-# Don't run fixproto
-STMP_FIXPROTO=
 STMP_FIXINC=stmp-fixinc
