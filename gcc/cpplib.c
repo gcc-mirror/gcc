@@ -256,14 +256,11 @@ end_directive (pfile, skip_line)
 {
   if (CPP_OPTION (pfile, traditional))
     {
-      if (!pfile->directive || pfile->directive == &dtable[T_DEFINE])
-	skip_line = false;
-      else
+      if (pfile->directive != &dtable[T_DEFINE])
 	_cpp_remove_overlay (pfile);
     }
-
   /* We don't skip for an assembler #.  */
-  if (skip_line)
+  else if (skip_line)
     {
       skip_rest_of_line (pfile);
       if (!pfile->keep_tokens)
@@ -289,7 +286,8 @@ prepare_directive_trad (pfile)
     CUR (pfile->context) = pfile->buffer->cur;
   else
     {
-      bool no_expand = ! (pfile->directive->flags & EXPAND);
+      bool no_expand = (pfile->directive
+			&& ! (pfile->directive->flags & EXPAND));
       bool was_skipping = pfile->state.skipping;
 
       pfile->state.skipping = false;
@@ -382,6 +380,10 @@ _cpp_handle_directive (pfile, indented)
 		   "style of line directive is a GCC extension");
     }
 
+  pfile->directive = dir;
+  if (CPP_OPTION (pfile, traditional))
+    prepare_directive_trad (pfile);
+
   if (dir)
     {
       /* If we have a directive that is not an opening conditional,
@@ -441,9 +443,6 @@ _cpp_handle_directive (pfile, indented)
 	pfile->state.save_comments =
 	  ! CPP_OPTION (pfile, discard_comments_in_macro_exp);
 
-      pfile->directive = dir;
-      if (CPP_OPTION (pfile, traditional))
-	prepare_directive_trad (pfile);
       (*pfile->directive->handler) (pfile);
     }
   else if (skip == 0)
