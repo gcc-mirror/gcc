@@ -170,6 +170,36 @@ void test01()
   mon_get.get(is_it11, end, true, iss, err11, result11);
   VERIFY( result11 == digits4 );
   VERIFY( err11 == ios_base::goodbit );
+
+  // for the "en_HK" locale the parsing of the very same input streams must
+  // be successful without showbase too, since the symbol field appears in
+  // the first positions in the format and the symbol, when present, must be
+  // consumed.
+  iss.unsetf(ios_base::showbase);
+
+  iss.str("HK$7,200,000,000.00"); 
+  iterator_type is_it12(iss);
+  string result12;
+  ios_base::iostate err12 = ios_base::goodbit;
+  mon_get.get(is_it12, end, false, iss, err12, result12);
+  VERIFY( result12 == digits1 );
+  VERIFY( err12 == ios_base::eofbit );
+
+  iss.str("(HKD 100,000,000,000.00)"); 
+  iterator_type is_it13(iss);
+  string result13;
+  ios_base::iostate err13 = ios_base::goodbit;
+  mon_get.get(is_it13, end, true, iss, err13, result13);
+  VERIFY( result13 == digits2 );
+  VERIFY( err13 == ios_base::goodbit );
+
+  iss.str("(HKD .01)"); 
+  iterator_type is_it14(iss);
+  string result14;
+  ios_base::iostate err14 = ios_base::goodbit;
+  mon_get.get(is_it14, end, true, iss, err14, result14);
+  VERIFY( result14 == digits4 );
+  VERIFY( err14 == ios_base::goodbit );
 }
 
 // test double version
@@ -309,12 +339,9 @@ void test04()
 #endif
 }
 
-class My_money_io : public std::moneypunct<char,false>
+struct My_money_io : public std::moneypunct<char,false>
 {
-public:
-  explicit My_money_io(size_t r = 0): std::moneypunct<char,false>(r) { }
   char_type do_decimal_point() const { return '.'; }
-  char_type do_thousands_sep() const { return ','; }
   std::string do_grouping() const { return "\004"; }
   
   std::string do_curr_symbol() const { return "$"; }
@@ -383,6 +410,9 @@ void test05()
   VERIFY( valn_ns == "-123456" );
 }
 
+// We were appending to the string val passed by reference, instead
+// of constructing a temporary candidate, eventually copied into
+// val in case of successful parsing.
 void test06()
 {
   using namespace std;
@@ -419,12 +449,9 @@ void test06()
   VERIFY( val == buffer3 );
 }
 
-class My_money_io_a : public std::moneypunct<char,false>
+struct My_money_io_a : public std::moneypunct<char,false>
 {
-public:
-  explicit My_money_io_a(size_t r = 0): std::moneypunct<char,false>(r) { }
   char_type do_decimal_point() const { return '.'; }
-  char_type do_thousands_sep() const { return ','; }
   std::string do_grouping() const { return "\004"; }
   
   std::string do_curr_symbol() const { return "$"; }
@@ -439,12 +466,9 @@ public:
   }
 };
 
-class My_money_io_b : public std::moneypunct<char,false>
+struct My_money_io_b : public std::moneypunct<char,false>
 {
-public:
-  explicit My_money_io_b(size_t r = 0): std::moneypunct<char,false>(r) { }
   char_type do_decimal_point() const { return '.'; }
-  char_type do_thousands_sep() const { return ','; }
   std::string do_grouping() const { return "\004"; }
   
   std::string do_curr_symbol() const { return "$"; }

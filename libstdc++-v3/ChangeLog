@@ -1,3 +1,10 @@
+2002-02-07  Paolo Carlini  <pcarlini@unitus.it>
+
+	* testsuite/22_locale/money_get_members_char.cc:
+	Add comment, tidy up.
+	(test01): more "en_HK" tests (without showbase).
+	* testsuite/22_locale/money_get_members_wchar_t.cc: Ditto.
+
 2002-02-06  Loren Rittle <ljrittle@acm.org>
 
 	* config/locale/c_locale_generic.cc: Do not trust
