@@ -4248,14 +4248,14 @@ get_parm_info (void_at_end)
     {
       tree next = TREE_CHAIN (decl);
 
-      if (TREE_ASM_WRITTEN (decl))
+      if (TREE_CODE (decl) != PARM_DECL)
 	{
-	  error_with_decl (decl, "parameter `%s' has just a forward declaration");
 	  TREE_CHAIN (decl) = new_parms;
 	  new_parms = decl;
 	}
-      if (TREE_CODE (decl) != PARM_DECL)
+      else if (TREE_ASM_WRITTEN (decl))
 	{
+	  error_with_decl (decl, "parameter `%s' has just a forward declaration");
 	  TREE_CHAIN (decl) = new_parms;
 	  new_parms = decl;
 	}
