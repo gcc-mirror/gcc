@@ -1823,6 +1823,11 @@ build_component_ref (datum, component, basetype_path, protect)
 	 build_component_ref (TREE_OPERAND (datum, 2), component,
 			      basetype_path, protect));
 
+    case TEMPLATE_DECL:
+      cp_error ("invalid use of %D", datum);
+      datum = error_mark_node;
+      break;
+
     default:
       break;
     }

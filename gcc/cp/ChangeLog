@@ -1,3 +1,69 @@
+Tue Jan 27 16:42:21 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* call.c (add_template_candidate_real): New function.
+	(add_template_candidate): Use it.
+	(add_template_conv_candidate): Likewise.
+	(joust): Pass extra argument to more_specialized.
+	* class.c (instantiate_type): Handle a single FUNCTION_DECL.
+	(is_local_class): Remove.
+	(finish_struct): Check TI_PENDING_SPECIALIZATION_FLAG.
+	* cp-tree.h (is_local_class): Remove.
+	(perform_array_to_pointer_conversion): Likewise.
+	(finish_member_template_decl): Add.
+	(check_explicit_specialization): Return a tree, not an int.
+	(more_specialized): Take additional argument.
+	(get_bindings): Likewise.
+	* cvt.c (perform_qualification_conversions): Use comp_ptr_ttypes.
+	(perform_array_to_pointer_conversion): Remove.
+	* decl.c (saved_scope): Add processing_specialization,
+	processing_explicit_instantiation fields.
+	(maybe_push_to_top_level): Save them.
+	(pop_from_top_level): Restore them.
+	(grokfndecl): Use new return value from
+	check_explicit_specialization. 
+	(start_decl): Don't check flag_guiding_decls before pushing
+	decls. 
+	(cp_finish_decl): Remove previous (bogus) change.
+	(grok_declarator): Use decl_function_context rather than
+	is_local_class. 
+	* decl2.c (finish_file): Pass extra argument to get_bindings.
+	(build_expr_from_tree): Let build_x_component_ref check 
+	validity of arguments rather than doing it here.
+	* lex.c (cons_up_default_function): Remove code fooling with
+	processing_specialization, processing_explicit_instantiation
+	flags, as that is now done in {maybe_push_top,pop_from}_top_level. 
+	* method.c (build_overload_identifier): Mangle local classes in
+	template functions correctly.
+	* parse.y (finish_member_template_decl): Move to pt.c.
+	* pt.c (finish_member_template_decl): Moved here from parse.y.
+	(print_candidates): New function.
+	(determine_specialization): Change interface.  Properly look for
+	most specialized versions of template candidates.
+	(check_explicit_specialization): Fully process explicit
+	instantiations. 
+	(push_template_decl): Avoid looking at CLASSTYPE fields in
+	FUNCTION_DECLS. 
+	(determine_overloaded_function): Remove.
+	(convert_nontype_argument): Change name from
+	convert_nontype_parameter.  Use determine_overloaded_function
+	instead of instantiate_type.
+	(mangle_class_name_for_template): Handle type contexts as well as
+	function contexts.
+	(classtype_mangled_name): Likewise.
+	(lookup_template_class): Likewise.
+	(tsubst): Likewise.
+	(more_specialized): Take explict template arguments as a
+	parameter. 
+	(most_specialized): Likewise.
+	(get_bindings): Likewise.  Check that return types match before
+	proclaiming a function a match.
+	(do_decl_instantiation): Remove code searching for function to
+	instantiate; that is now done in check_explicit_specialization.
+	(add_maybe_template): Pass extra argument to get_bindings.
+	* tree.c (really_overloaded_fn): Use is_overloaded_fn to simplify
+	implementation.
+	* typeck.c (build_component_ref): Check for invalid arguments.
+
 Tue Jan 27 01:44:02 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* expr.c (cplus_expand_expr, AGGR_INIT_EXPR): Don't check that 

@@ -4149,20 +4149,25 @@ add_builtin_candidates (candidates, code, code2, fnname, args, flags)
   return candidates;
 }
 
+
 /* If TMPL can be successfully instantiated as indicated by
    EXPLICIT_TARGS and ARGLIST, adds the instantiation to CANDIDATES.
 
-   TMPL is the template.  EXPLICIT_TARGS are any explicit template arguments.
-   ARGLIST is the arguments provided at the call-site.  The RETURN_TYPE
-   is the desired type for conversion operators.  FLAGS are as for
-   add_function_candidate.  */
+   TMPL is the template.  EXPLICIT_TARGS are any explicit template
+   arguments.  ARGLIST is the arguments provided at the call-site.
+   The RETURN_TYPE is the desired type for conversion operators.  If
+   OBJ is NULL_TREE, FLAGS are as for add_function_candidate.  If an
+   OBJ is supplied, FLAGS are ignored, and OBJ is as for
+   add_conv_candidate.  */
 
-static struct z_candidate *
-add_template_candidate (candidates, tmpl, explicit_targs, 
-			arglist, return_type, flags)
+static struct z_candidate*
+add_template_candidate_real (candidates, tmpl, explicit_targs,
+			     arglist, return_type, flags,
+			     obj)
      struct z_candidate *candidates;
      tree tmpl, explicit_targs, arglist, return_type;
      int flags;
+     tree obj;
 {
   int ntparms = DECL_NTPARMS (tmpl);
   tree targs = make_scratch_vec (ntparms);
@@ -4180,9 +4185,47 @@ add_template_candidate (candidates, tmpl, explicit_targs,
   if (fn == error_mark_node)
     return candidates;
 
-  cand = add_function_candidate (candidates, fn, arglist, flags);
-  cand->template = DECL_TEMPLATE_INFO (fn);
+  if (obj != NULL_TREE)
+    /* Aha, this is a conversion function.  */
+    cand = add_conv_candidate (candidates, fn, obj, arglist);
+  else
+    cand = add_function_candidate (candidates, fn, arglist, flags);
+  if (DECL_TI_TEMPLATE (fn) != tmpl)
+    /* This situation can occur if a member template of a template
+       class is specialized.  Then, instantiate_template might return
+       an instantiation of the specialization, in which case the
+       DECL_TI_TEMPLATE field will point at the original
+       specialization.  For example:
+
+	 template <class T> struct S { template <class U> void f(U);
+				       template <> void f(int) {}; };
+	 S<double> sd;
+	 sd.f(3);
+
+       Here, TMPL will be template <class U> S<double>::f(U).
+       And, instantiate template will give us the specialization
+       template <> S<double>::f(int).  But, the DECL_TI_TEMPLATE field
+       for this will point at template <class T> template <> S<T>::f(int),
+       so that we can find the definition.  For the purposes of
+       overload resolution, however, we want the original TMPL.  */
+    cand->template = tree_cons (tmpl, targs, NULL_TREE);
+  else
+    cand->template = DECL_TEMPLATE_INFO (fn);
+
   return cand;
+}
+
+
+static struct z_candidate *
+add_template_candidate (candidates, tmpl, explicit_targs, 
+			arglist, return_type, flags)
+     struct z_candidate *candidates;
+     tree tmpl, explicit_targs, arglist, return_type;
+     int flags;
+{
+  return 
+    add_template_candidate_real (candidates, tmpl, explicit_targs,
+				 arglist, return_type, flags, NULL_TREE);
 }
 
 
@@ -4191,24 +4234,9 @@ add_template_conv_candidate (candidates, tmpl, obj, arglist, return_type)
      struct z_candidate *candidates;
      tree tmpl, obj, arglist, return_type;
 {
-  int ntparms = DECL_NTPARMS (tmpl);
-  tree targs = make_scratch_vec (ntparms);
-  struct z_candidate *cand;
-  int i;
-  tree fn;
-
-  i = fn_type_unification (tmpl, NULL_TREE, targs, arglist, return_type, 0);
-
-  if (i != 0)
-    return candidates;
-
-  fn = instantiate_template (tmpl, targs);
-  if (fn == error_mark_node)
-    return candidates;
-
-  cand = add_conv_candidate (candidates, fn, obj, arglist);
-  cand->template = DECL_TEMPLATE_INFO (fn);
-  return cand;
+  return 
+    add_template_candidate_real (candidates, tmpl, NULL_TREE, arglist,
+				 return_type, 0, obj);
 }
 
 
@@ -4360,6 +4388,12 @@ build_user_type_conversion_1 (totype, expr, flags)
 	ics = implicit_conversion
 	  (totype, TREE_TYPE (TREE_TYPE (fn)), 0, convflags);
       else
+	/* Here, the template conversion operator result must
+	   precisely match the TOTYPE.  (FIXME: Actually, we're
+	   supposed to do some simple conversions here; see
+	   [temp.deduct.conv].).  If the result of the conversion
+	   operator is not actually TOTYPE, then
+	   add_template_candidate will fail below.  */
 	ics = implicit_conversion (totype, totype, 0, convflags);
 
       if (TREE_CODE (totype) == REFERENCE_TYPE && ics && ICS_BAD_FLAG (ics))
@@ -6273,7 +6307,8 @@ joust (cand1, cand2)
     return -1;
   else if (cand1->template && cand2->template)
     winner = more_specialized
-      (TI_TEMPLATE (cand1->template), TI_TEMPLATE (cand2->template));
+      (TI_TEMPLATE (cand1->template), TI_TEMPLATE (cand2->template),
+       NULL_TREE);
 
   /* or, if not that,
      the  context  is  an  initialization by user-defined conversion (see

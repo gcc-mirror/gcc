@@ -4504,6 +4504,7 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
     {
       tree spec_args;
       tree fn;
+      int pending_specialization;
 
       if (uses_template_parms (t))
 	/* If t is a template class, and x is a specialization, then x
@@ -4527,11 +4528,12 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
       else
 	spec_args = DECL_TI_ARGS (fn);
       
+      pending_specialization 
+	= TI_PENDING_SPECIALIZATION_FLAG (DECL_TEMPLATE_INFO (fn));
       check_explicit_specialization 
 	(lookup_template_function (DECL_NAME (fn), spec_args),
-	 fn, 0, 1 | (8 * (int) TREE_CHAIN (DECL_TEMPLATE_INFO (fn))));
-
-      TREE_CHAIN (DECL_TEMPLATE_INFO (fn)) = NULL_TREE;
+	 fn, 0, 1 | (8 * pending_specialization));
+      TI_PENDING_SPECIALIZATION_FLAG (DECL_TEMPLATE_INFO (fn)) = 0;
 
       /* Now, the assembler name will be correct for fn, so we
 	 make its RTL.  */
@@ -5423,6 +5425,16 @@ instantiate_type (lhstype, rhs, complain)
     case ERROR_MARK:
       return error_mark_node;
 
+    case FUNCTION_DECL:
+      if (!comptypes (lhstype, TREE_TYPE (rhs), 1))
+	{
+	  if (complain)
+	    cp_error ("%D is not of type %T", rhs, lhstype);
+	  return error_mark_node;
+	}
+      else
+	return rhs;
+
     default:
       my_friendly_abort (185);
       return error_mark_node;
@@ -5505,21 +5517,3 @@ build_self_reference ()
   pushdecl_class_level (value);
   return value;
 }
-
-
-/* Returns non-zero iff the TYPE is a local class; i.e., if it is
-   declared in a function context, or within a local class.  */
-
-int
-is_local_class (type)
-     tree type;
-{
-  if (type == NULL_TREE || TYPE_CONTEXT (type) == NULL_TREE)
-    return 0;
-
-  if (TREE_CODE (TYPE_CONTEXT (type)) == FUNCTION_DECL)
-    return 1;
-
-  return is_local_class (TYPE_CONTEXT (type));
-}
-

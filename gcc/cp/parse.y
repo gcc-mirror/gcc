@@ -78,7 +78,6 @@ static int processing_template_arg;
 extern int arg_looking_for_template;
 
 static tree empty_parms PROTO((void));
-static tree finish_member_template_decl PROTO((tree, tree));
 
 /* Nonzero if we have an `extern "C"' acting as an extern specifier.  */
 int have_extern_spec;
@@ -99,31 +98,6 @@ empty_parms ()
   else
     parms = NULL_TREE;
   return parms;
-}
-
-
-static tree
-finish_member_template_decl (template_arguments, decl)
-  tree template_arguments;
-  tree decl;
-{
-  if (template_arguments)
-    end_template_decl();
-  else
-    end_specialization();
-
-  if (decl && DECL_TEMPLATE_INFO (decl) &&
-      !DECL_TEMPLATE_SPECIALIZATION (decl))
-    {
-      check_member_template (DECL_TI_TEMPLATE (decl));
-      return DECL_TI_TEMPLATE (decl);
-    }
-
-  if (decl)
-    return decl;
-
-  cp_error ("invalid member template declaration");
-  return NULL_TREE;
 }
 
 %}

@@ -758,7 +758,10 @@ build_overload_identifier (name)
   if (TREE_CODE (name) == TYPE_DECL
       && IS_AGGR_TYPE (TREE_TYPE (name))
       && CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (name))
-      && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (TREE_TYPE (name))))
+      && (PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (TREE_TYPE (name)))
+	  || (TREE_CODE (DECL_CONTEXT (CLASSTYPE_TI_TEMPLATE 
+				       (TREE_TYPE (name))))
+	      == FUNCTION_DECL)))
     {
       tree template, parmlist, arglist, tname;
       template = CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (name));

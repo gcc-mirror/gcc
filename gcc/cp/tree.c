@@ -1316,16 +1316,8 @@ int
 really_overloaded_fn (x)
      tree x;
 {     
-  if (TREE_CODE (x) == TEMPLATE_ID_EXPR
-      || DECL_FUNCTION_TEMPLATE_P (x))
-    return 1;
-
-  if (TREE_CODE (x) == TREE_LIST
-      && (TREE_CODE (TREE_VALUE (x)) == FUNCTION_DECL
-	  || DECL_FUNCTION_TEMPLATE_P (TREE_VALUE (x))))
-    return 1;
-
-  return 0;
+  return TREE_CODE (x) != FUNCTION_DECL 
+    && is_overloaded_fn (x);
 }
 
 tree

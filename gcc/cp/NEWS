@@ -159,7 +159,7 @@
 * The name of a class is now implicitly declared in its own scope; A::A
   refers to A.
 
-* Local classes are now supported, though not inside templates.
+* Local classes are now supported.
 
 * __attribute__ can now be attached to types as well as declarations.
 

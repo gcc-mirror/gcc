@@ -1098,6 +1098,10 @@ struct lang_decl
 #define TI_SPEC_INFO(NODE) (TREE_CHAIN (NODE))
 #define TI_USES_TEMPLATE_PARMS(NODE) TREE_LANG_FLAG_0 (NODE)
 #define TI_PENDING_TEMPLATE_FLAG(NODE) TREE_LANG_FLAG_1 (NODE)
+/* TI_PENDING_SPECIALIZATION_FLAG on a template-info node indicates
+   that the template is a specialization of a member template, but
+   that we don't yet know which one.  */
+#define TI_PENDING_SPECIALIZATION_FLAG(NODE) TREE_LANG_FLAG_1 (NODE)
 #define DECL_TI_TEMPLATE(NODE)      TI_TEMPLATE (DECL_TEMPLATE_INFO (NODE))
 #define DECL_TI_ARGS(NODE)          TI_ARGS (DECL_TEMPLATE_INFO (NODE))
 #define CLASSTYPE_TI_TEMPLATE(NODE) TI_TEMPLATE (CLASSTYPE_TEMPLATE_INFO (NODE))
@@ -1992,7 +1996,6 @@ extern void maybe_push_cache_obstack		PROTO((void));
 extern unsigned HOST_WIDE_INT skip_rtti_stuff	PROTO((tree *));
 extern tree build_self_reference		PROTO((void));
 extern void warn_hidden				PROTO((tree));
-extern int is_local_class                       PROTO((tree));
 
 /* in cvt.c */
 extern tree convert_to_reference		PROTO((tree, tree, int, int, tree));
@@ -2009,7 +2012,6 @@ extern tree build_expr_type_conversion		PROTO((int, tree, int));
 extern int build_default_binary_type_conversion	PROTO((enum tree_code, tree *, tree *));
 extern tree type_promotes_to			PROTO((tree));
 extern tree perform_qualification_conversions   PROTO((tree, tree));
-extern tree perform_array_to_pointer_conversion PROTO((tree));
 
 /* decl.c */
 /* resume_binding_level */
@@ -2325,6 +2327,7 @@ extern tree tsubst_copy				PROTO ((tree, tree, int, tree));
 extern tree tsubst_chain			PROTO((tree, tree));
 extern void begin_member_template_processing    PROTO((tree));
 extern void end_member_template_processing      PROTO((void));
+extern tree finish_member_template_decl         PROTO((tree, tree));
 extern void begin_template_parm_list		PROTO((void));
 extern void begin_specialization                PROTO((void));
 extern void reset_specialization                PROTO((void));
@@ -2332,7 +2335,7 @@ extern void end_specialization                  PROTO((void));
 extern void begin_explicit_instantiation        PROTO((void));
 extern void end_explicit_instantiation          PROTO((void));
 extern tree determine_specialization            PROTO((tree, tree, tree *, int, int));
-extern int check_explicit_specialization        PROTO((tree, tree, int, int));
+extern tree check_explicit_specialization        PROTO((tree, tree, int, int));
 extern tree process_template_parm		PROTO((tree, tree));
 extern tree end_template_parm_list		PROTO((tree));
 extern void end_template_decl			PROTO((void));
@@ -2348,21 +2351,21 @@ extern int fn_type_unification                  PROTO((tree, tree, tree, tree, t
 extern int type_unification			PROTO((tree, tree *, tree, tree, tree, int *, int, int));
 struct tinst_level *tinst_for_decl		PROTO((void));
 extern void mark_decl_instantiated		PROTO((tree, int));
-extern int more_specialized			PROTO((tree, tree));
+extern int more_specialized			PROTO((tree, tree, tree));
 extern void mark_class_instantiated		PROTO((tree, int));
 extern void do_decl_instantiation		PROTO((tree, tree, tree));
 extern void do_type_instantiation		PROTO((tree, tree));
 extern tree instantiate_decl			PROTO((tree));
 extern tree lookup_nested_type_by_name		PROTO((tree, tree));
 extern tree do_poplevel				PROTO((void));
-extern tree get_bindings			PROTO((tree, tree));
+extern tree get_bindings			PROTO((tree, tree, tree));
 /* CONT ... */
 extern void add_tree				PROTO((tree));
 extern void begin_tree                          PROTO((void));
 extern void end_tree                            PROTO((void));
 extern void add_maybe_template			PROTO((tree, tree));
 extern void pop_tinst_level			PROTO((void));
-extern tree most_specialized			PROTO((tree, tree));
+extern tree most_specialized			PROTO((tree, tree, tree));
 extern tree most_specialized_class		PROTO((tree, tree));
 extern int more_specialized_class		PROTO((tree, tree));
 extern void do_pushlevel			PROTO((void));
