@@ -764,9 +764,8 @@ fix = {
 
     c_fix     = format;
     c_fix_arg = "#ifndef __cplusplus\n%0\n#endif";
-    c_fix_arg = "^[ \t]*typedef[ \t].*[ \t]bool[ \t]*;.*";
 
-    test_text = "typedef unsigned int\tbool \t; /* bool type */";
+    test_text = "typedef unsigned int\tbool \t; /* bool\n type */";
 };
 
 /*
@@ -781,9 +780,8 @@ fix = {
 
     c_fix     = format;
     c_fix_arg = "#ifndef __cplusplus\n%0\n#endif";
-    c_fix_arg = "^[ \t]*typedef[ \t].*[ \t]wchar_t[ \t]*;.*";
 
-    test_text = "typedef unsigned short\twchar_t \t; /* wchar_t type */";
+    test_text = "typedef unsigned short\twchar_t \t; /* wchar_t\n type */";
 };
 
 /*
