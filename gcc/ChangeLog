@@ -1,3 +1,9 @@
+Mon May 24 14:35:24 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* loop.c (strength_reduce): Do not clear NOT_EVERY_ITERATION at the
+	last CODE_LABEL in a loop if we have previously passed a jump
+	to the top of the loop.
+
 Mon May 24 07:56:29 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/arm.h (OUTPUT_INT_ADDR_CONST): Fix blunder made when
