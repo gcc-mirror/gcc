@@ -1,19 +1,20 @@
-2000-06-28  Alex Samuel  <samuel@codesourcery.com>
-
-	* mangle.c (find_substitution): Use same_type_p.
-	(write_encoding): Don't check for substitutions.
-
-2000-06-30  Nathan Sidwell  <nathan@codesourcery.com>
-
-	* parse.y (expr_no_comma_rangle): New non-terminal.
-	(template_parm): Use it for default parameter case.
-	(template_arg): Use it.
-	(expr_no_commas): Remove commented out undefined extensions.
-	* Makefile.in (CONFLICTS): Adjust to 33 s/r & 48 r/r.
-	* parse.h, parse.c: Rebuilt.
-
 2000-06-30  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (ridpointers): Don't declare.
+	* decl.c (record_builtin_type): Use CP_RID_MAX instead of RID_MAX.
+	(record_builtin_java_type): Likewise.
+	(init_decl_processing): Likewise.
+	* lex.c: Move inclusion of lex.h.
+	(ridpointers): Don't define.
+	(init_parse): Initialize ripdointers.  Use CP_RID_MAX instead of
+	RID_MAX.
+	* lex.h (enum rid): Rename to ...
+	(enum cp_rid): ... this.
+	(ridpointers): Don't declare.
+	* parse.y: Move inclusion of lex.h.
+	* parse.c: Regenerated.
+	* spew.c: Move inclusion of lex.h.
+	
 	* cp-tree.h (struct language_function): Remove temp_name_counter.
 	(temp_name_counter): Remove.
 	(get_temp_name): Change prototype.
@@ -35,6 +36,20 @@
 	(do_static_destruction): Likewise.
 	* init.c (create_temporary_var): Add comment.
 	
+2000-06-28  Alex Samuel  <samuel@codesourcery.com>
+
+	* mangle.c (find_substitution): Use same_type_p.
+	(write_encoding): Don't check for substitutions.
+
+2000-06-30  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* parse.y (expr_no_comma_rangle): New non-terminal.
+	(template_parm): Use it for default parameter case.
+	(template_arg): Use it.
+	(expr_no_commas): Remove commented out undefined extensions.
+	* Makefile.in (CONFLICTS): Adjust to 33 s/r & 48 r/r.
+	* parse.h, parse.c: Rebuilt.
+
 2000-06-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (flag_const_strings): Remove.

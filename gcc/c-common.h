@@ -19,6 +19,57 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+/* Reserved identifiers.  */
+
+enum rid
+{
+  RID_UNUSED,
+  RID_INT,
+  RID_CHAR,
+  RID_FLOAT,
+  RID_DOUBLE,
+  RID_VOID,
+  RID_UNUSED1,
+
+  /* The first seven are in the order of most frequently used,
+     as emiprically determined.  */
+  RID_FIRST_MODIFIER,
+  RID_EXTERN = RID_FIRST_MODIFIER,
+  RID_CONST,
+  RID_LONG,
+  RID_TYPEDEF,
+  RID_UNSIGNED,
+  RID_SHORT,
+  RID_INLINE,
+  RID_AUTO,
+  RID_STATIC,
+  RID_REGISTER,
+  RID_SIGNED,
+  RID_RESTRICT,
+  RID_VOLATILE,
+  RID_BOUNDED,
+  RID_UNBOUNDED,
+  RID_NOALIAS,
+  RID_ITERATOR,
+  RID_COMPLEX,
+
+  RID_IN,
+  RID_OUT,
+  RID_INOUT,
+  RID_BYCOPY,
+  RID_BYREF,
+  RID_ONEWAY,
+  RID_ID,
+
+  RID_MAX
+};
+
+#define NORID RID_UNUSED
+
+/* The elements of `ridpointers' are identifier nodes for the reserved
+   type names and storage classes.  It is indexed by a RID_... value.  */
+extern tree *ridpointers;
+
 /* Standard named or nameless data types of the C compiler.  */
 
 enum c_tree_index

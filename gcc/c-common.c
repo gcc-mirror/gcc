@@ -134,6 +134,10 @@ enum cpp_token cpp_token;
 
 tree c_global_trees[CTI_MAX];
 
+/* The elements of `ridpointers' are identifier nodes for the reserved
+   type names and storage classes.  It is indexed by a RID_... value.  */
+tree *ridpointers;
+
 tree (*make_fname_decl)                PARAMS ((tree, const char *, int));
 
 /* Nonzero means the expression being parsed will never be evaluated.

@@ -21,18 +21,17 @@ can know your rights and responsibilities.  It should be in a
 file named COPYING.  Among other things, the copyright notice
 and this notice must be preserved on all copies.  */
 
-
-
-enum rid
+enum cp_rid
 {
-  RID_UNUSED,
-  RID_INT,
+  RID_FRIEND = RID_MAX,
+  RID_VIRTUAL,
+  RID_EXPLICIT,
+  RID_EXPORT,
+  RID_MUTABLE,
+  RID_LAST_MODIFIER = RID_MUTABLE,
+
   RID_BOOL,
-  RID_CHAR,
   RID_WCHAR,
-  RID_FLOAT,
-  RID_DOUBLE,
-  RID_VOID,
 
   /* C++ extension */
   RID_CLASS,
@@ -40,37 +39,6 @@ enum rid
   RID_UNION,
   RID_ENUM,
   RID_LONGLONG,
-
-  /* This is where grokdeclarator starts its search when setting the specbits.
-     The first seven are in the order of most frequently used, as found
-     building libg++.  */
-  RID_FIRST_MODIFIER,
-
-  RID_EXTERN = RID_FIRST_MODIFIER,
-  RID_CONST,
-  RID_LONG,
-  RID_TYPEDEF,
-  RID_UNSIGNED,
-  RID_SHORT,
-  RID_INLINE,
-
-  RID_STATIC,
-
-  RID_REGISTER,
-  RID_VOLATILE,
-  RID_FRIEND,
-  RID_VIRTUAL,
-  RID_EXPLICIT,
-  RID_EXPORT,
-  RID_SIGNED,
-  RID_AUTO,
-  RID_MUTABLE,
-  RID_COMPLEX,
-  RID_RESTRICT,
-
-  RID_LAST_MODIFIER = RID_RESTRICT,
-  /* This is where grokdeclarator ends its search when setting the
-     specbits.  */
 
   RID_PUBLIC,
   RID_PRIVATE,
@@ -80,7 +48,7 @@ enum rid
   RID_NULL,
   /* Before adding enough to get up to 64, the RIDBIT_* macros
      will have to be changed a little.  */
-  RID_MAX
+  CP_RID_MAX
 };
 
 /* The type that can represent all values of RIDBIT.  */
@@ -105,11 +73,6 @@ typedef struct { unsigned long idata[2]; }
 				   (V).idata[1] = 0;			      \
 				 } while (0)
 #define RIDBIT_ANY_SET(V) ((V).idata[0] || (V).idata[1])
-
-/* The elements of `ridpointers' are identifier nodes
-   for the reserved type names and storage classes.
-   It is indexed by a RID_... value.  */
-extern tree ridpointers[(int) RID_MAX];
 
 /* the declaration found for the last IDENTIFIER token read in.
    yylex must look this up to detect typedefs, which get token type TYPENAME,
