@@ -1,3 +1,7 @@
+2002-08-14  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/sparc/sol2.h (SUBTARGET_EXTRA_SPECS): Define.
+
 2002-08-14  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* reload.c (find_reloads): Handle constraint letters marked by 
