@@ -1,3 +1,8 @@
+2002-02-25  Phil Edwards  <pme@gcc.gnu.org>
+
+	* docs/html/faq/index.html:  Update.
+	* docs/html/faq/index.txt:  Regenerate.
+
 2002-02-22  Phil Edwards  <pme@gcc.gnu.org>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_SYMVERS):  Fix comment.
