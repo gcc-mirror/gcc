@@ -6,7 +6,7 @@
 
 BUILD		=
 CC		= $(OLDCC)
-CLIB		= -lld
+CLIB		= -lbsd -lld
 X_CFLAGS	= $(DEB_OPT) $(MSTATS) $(SHLIB)
 X_CFLAGS_NODEBUG = $(NO_DEBUG) $(MSTATS) $(OPT) $(PROFILE) $(SHLIB) $(XCFLAGS)
 CPP_ABORT	= # -Dabort=fancy_abort
