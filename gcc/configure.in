@@ -1264,30 +1264,25 @@ topdir=`${PWDCMD-pwd}`
 cd $holddir
 
 # Conditionalize the makefile for this host machine.
-# Make-host contains the concatenation of all host makefile fragments
-# [there can be more than one].  This file is built by configure.frag.
-host_overrides=Make-host
-dep_host_xmake_file=
+xmake_file=
 for f in .. ${host_xmake_file}
 do
 	if test -f ${srcdir}/config/$f
 	then
-		dep_host_xmake_file="${dep_host_xmake_file} ${srcdir}/config/$f"
+		xmake_file="${xmake_file} \$(srcdir)/config/$f"
 	fi
 done
 
 # Conditionalize the makefile for this target machine.
-# Make-target contains the concatenation of all host makefile fragments
-# [there can be more than one].  This file is built by configure.frag.
-target_overrides=Make-target
-dep_tmake_file=
+tmake_file_=
 for f in .. ${tmake_file}
 do
 	if test -f ${srcdir}/config/$f
 	then
-		dep_tmake_file="${dep_tmake_file} ${srcdir}/config/$f"
+		tmake_file_="${tmake_file_} \$(srcdir)/config/$f"
 	fi
 done
+tmake_file="${tmake_file_}"
 
 symbolic_link='ln -s'
 
@@ -2726,6 +2721,8 @@ all_compilers=
 all_stagestuff=
 all_outputs='Makefile fixinc/Makefile gccbug mklibgcc mkheaders'
 # List of language makefile fragments.
+all_lang_makefrags=
+# List of language subdirectory makefiles.  Deprecated.
 all_lang_makefiles=
 # Files for gengtype
 all_gtfiles="$target_gtfiles"
@@ -2740,7 +2737,6 @@ all_gtfiles_files_files=
 # The other mechanism is a set of hooks for each of the main targets
 # like `clean', `install', etc.
 
-language_fragments="Make-lang"
 language_hooks="Make-hooks"
 
 for s in .. $subdirs
@@ -2759,9 +2755,9 @@ do
 			echo "${srcdir}/$s/config-lang.in doesn't set \$language." 1>&2
 			exit 1
 		fi
-		all_lang_makefiles="$all_lang_makefiles ${srcdir}/$s/Make-lang.in"
+		all_lang_makefrags="$all_lang_makefrags \$(srcdir)/$s/Make-lang.in"
 		if test -f ${srcdir}/$s/Makefile.in
-		then all_lang_makefiles="$all_lang_makefiles ${srcdir}/$s/Makefile.in"
+		then all_lang_makefiles="$s/Makefile"
 		fi
 		all_languages="$all_languages $language"
 		if test "x$boot_language" = xyes
@@ -2906,9 +2902,6 @@ AC_SUBST(slibdir)
 objdir=`${PWDCMD-pwd}`
 AC_SUBST(objdir)
 
-# Process the language and host/target makefile fragments.
-${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xmake_file" "$dep_tmake_file"
-
 # Substitute configuration variables
 AC_SUBST(subdirs)
 AC_SUBST(srcdir)
@@ -2917,6 +2910,7 @@ AC_SUBST(all_compilers)
 AC_SUBST(all_gtfiles)
 AC_SUBST(all_gtfiles_files_langs)
 AC_SUBST(all_gtfiles_files_files)
+AC_SUBST(all_lang_makefrags)
 AC_SUBST(all_lang_makefiles)
 AC_SUBST(all_languages)
 AC_SUBST(all_stagestuff)
@@ -2929,8 +2923,8 @@ AC_SUBST(check_languages)
 AC_SUBST(cc_set_by_configure)
 AC_SUBST(quoted_cc_set_by_configure)
 AC_SUBST(cpp_install_dir)
-AC_SUBST(dep_host_xmake_file)
-AC_SUBST(dep_tmake_file)
+AC_SUBST(xmake_file)
+AC_SUBST(tmake_file)
 AC_SUBST(extra_headers_list)
 AC_SUBST(extra_objs)
 AC_SUBST(extra_parts)
@@ -2975,9 +2969,6 @@ AC_SUBST(c_target_objs)
 AC_SUBST(cxx_target_objs)
 AC_SUBST(target_cpu_default)
 
-AC_SUBST_FILE(target_overrides)
-AC_SUBST_FILE(host_overrides)
-AC_SUBST_FILE(language_fragments)
 AC_SUBST_FILE(language_hooks)
 
 # Echo that links are built
@@ -3017,6 +3008,13 @@ case x$CONFIG_HEADERS in
 xauto-host.h:config.in)
 echo > cstamp-h ;;
 esac
+# Make sure all the subdirs exist.
+for d in .. $subdirs
+do
+  if test $d != ..; then
+    test -d $d || mkdir $d
+  fi
+done
 # If the host supports symlinks, point stage[1234] at ../stage[1234] so
 # bootstrapping and the installation procedure can still use
 # CC="stage1/xgcc -Bstage1/".  If the host doesn't support symlinks,

@@ -1,5 +1,29 @@
 2003-08-30  Zack Weinberg  <zack@codesourcery.com>
 
+	* configure.frag: Delete file.
+	* configure.in: Rename the substitution variables
+	dep_host_xmake_file and dep_tmake_file to xmake_file and
+	tmake_file respectively.  Do not expand $srcdir in the
+	value of these; leave that for Make.  Introduce a new
+	substitution varaible, all_lang_makefrags, which lists
+	subdirectory Make-lang.in files; exclude these from
+	all_lang_makefiles, which is now only for subdirectory
+	outputs.  Do not invoke configure.frag.  Do not set nor
+	AC_SUBST_FILE target_overrides, host_overrides, or
+	language_fragments. Create build subdirectories in
+	config.status extra commands.
+	* configure: Regenerate.
+	* Makefile.in: Update substitutions to match changes to
+	configure.  Use include directives instead of @-insertions
+	to read in host, target, and language fragments.
+	(Makefile rule): Do not invoke configure.frag.  Do not copy
+	config.status to config.run before executing it.  Set
+	CONFIG_HEADERS and CONFIG_FILES so that only Makefile gets
+	regenerated.
+	(cstamp-h rule): Set CONFIG_FILES as well as CONFIG_HEADERS.
+
+2003-08-30  Zack Weinberg  <zack@codesourcery.com>
+
 	* c-tree.h: Delete COMPARE_DIFFERENT_TU from enumeration.
 	* c-typeck.c (same_translation_unit_p): New function.
 	(comptypes): Use it instead of flags parameter to identify
