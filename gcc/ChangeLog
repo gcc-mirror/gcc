@@ -1,3 +1,9 @@
+2002-12-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/7622
+	* c-semantics (genrtl_scope_stmt): Do not output inlined
+	nested functions that contain no code.
+
 2002-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* fold-const.c (associate_trees): Only optimize NEGATE_EXPR in one
@@ -45,12 +51,12 @@
 	* fold-const.c (extract_muldiv): Don't propagate division unless
 	both arguments are multiples of C.
 
-2002-11-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
+2002-11-24  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/8275
 
 	Merge from mainline:
-	2002-09-19  Dale Johannesen <dalej@apple.com>
+	2002-09-19  Dale Johannesen <dalej@apple.com>
 
 	* combine.c (make_extraction): Don't create
 	invalid subreg.
@@ -67,7 +73,7 @@
 	* optabs.c (expand_binop): Convert CONST_INTs in shift
 	operations too.
 
-2002-11-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+2002-11-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c/8518
 	* c-decl.c (duplicate_decls): Outline the second definition
@@ -85,16 +91,16 @@
 	decls for g77_integer_type_node and friends from here ...
 	* c-common.c (c_common_nodes_and_builtins): ... to here.
 
-2002-11-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
+2002-11-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/8599
 
 	Merge from mainline:
-	2002-11-04  Dale Johannesen  <dalej@apple.com>
+	2002-11-04  Dale Johannesen  <dalej@apple.com>
 
-	* doloop.c (doloop_modify_runtime):  Fix loop count computation
+	* doloop.c (doloop_modify_runtime):  Fix loop count computation
 	for unrolled loops.
-	* loop.c (loop_invariant_p):  Support calling from unroller.
+	* loop.c (loop_invariant_p):  Support calling from unroller.
 
 2002-11-22  Daniel Jacobowitz  <drow@mvista.com>
 
