@@ -667,7 +667,8 @@ mmap_alloc_w_at (unix_stream * s, int *len, gfc_offset where)
     }
 
   if ((s->buffer == NULL || s->buffer_offset > where ||
-       where + *len > s->buffer_offset + s->active) &&
+       where + *len > s->buffer_offset + s->active ||
+       where < s->buffer_offset + s->active) &&
       mmap_alloc (s, where, len) == FAILURE)
     return NULL;
 

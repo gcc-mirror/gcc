@@ -1,3 +1,8 @@
+2004-11-28  Bud Davis  <bdavis9659@comcast.net>
+
+	* io/unix.c (mmap_alloc_w_a): check for a write to a location
+	less than the mapped area.
+
 2004-11-27  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/18364
