@@ -111,8 +111,6 @@ static int maybe_adjust_types_for_deduction (unification_kind_t, tree*, tree*);
 static int  type_unification_real (tree, tree, tree, tree,
 				   int, unification_kind_t, int, int);
 static void note_template_header (int);
-static tree maybe_fold_nontype_arg (tree);
-static void maybe_fold_nontype_args (tree);
 static tree convert_nontype_argument (tree, tree);
 static tree convert_template_argument (tree, tree, tree,
 				       tsubst_flags_t, int, tree);
@@ -136,7 +134,8 @@ static tree get_bindings (tree, tree, tree);
 static tree get_bindings_real (tree, tree, tree, int, int, int);
 static int template_decl_level (tree);
 static int check_cv_quals_for_unify (int, tree, tree);
-static tree tsubst_template_arg_vector (tree, tree, tsubst_flags_t);
+static tree tsubst_template_arg (tree, tree, tsubst_flags_t, tree);
+static tree tsubst_template_args (tree, tree, tsubst_flags_t, tree);
 static tree tsubst_template_parms (tree, tree, tsubst_flags_t);
 static void regenerate_decl_from_template (tree, tree);
 static tree most_specialized (tree, tree, tree);
@@ -3641,19 +3640,11 @@ coerce_template_parms (tree parms,
 	}
       else if (i < nargs)
 	arg = TREE_VEC_ELT (inner_args, i);
-      /* If no template argument was supplied, look for a default
-	 value.  */
-      else if (TREE_PURPOSE (parm) == NULL_TREE)
-	{
-	  /* There was no default value.  */
-	  my_friendly_assert (!require_all_arguments, 0);
-	  break;
-	}
-      else if (TREE_CODE (TREE_VALUE (parm)) == TYPE_DECL)
-	arg = tsubst (TREE_PURPOSE (parm), new_args, complain, in_decl);
       else
-	arg = tsubst_expr (TREE_PURPOSE (parm), new_args, complain,
-			   in_decl);
+        /* If no template argument was supplied, look for a default
+	   value.  */
+	arg = tsubst_template_arg (TREE_PURPOSE (parm), new_args,
+				   complain, in_decl);
 
       /* Now, convert the Ith argument, as necessary.  */
       if (arg == NULL_TREE)
@@ -5473,97 +5464,103 @@ list_eq (tree t1, tree t2)
   return list_eq (TREE_CHAIN (t1), TREE_CHAIN (t2));
 }
 
-/* If arg is a non-type template parameter that does not depend on template
-   arguments, fold it like we weren't in the body of a template.  */
-
 static tree
-maybe_fold_nontype_arg (tree arg)
+tsubst_template_arg (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 {
-  if (arg && !TYPE_P (arg) && !uses_template_parms (arg))
-    {
-      /* Sometimes, one of the args was an expression involving a
-	 template constant parameter, like N - 1.  Now that we've
-	 tsubst'd, we might have something like 2 - 1.  This will
-	 confuse lookup_template_class, so we do constant folding
-	 here.  We have to unset processing_template_decl, to fool
-	 tsubst_copy_and_build() into building an actual tree.  */
-
-      /* If the TREE_TYPE of ARG is not NULL_TREE, ARG is already
-	 as simple as it's going to get, and trying to reprocess
-	 the trees will break.  */
-      if (!TREE_TYPE (arg))
-	{
-	  int saved_processing_template_decl = processing_template_decl; 
-	  processing_template_decl = 0;
-	  arg = tsubst_copy_and_build (arg,
-				       /*args=*/NULL_TREE,
-				       tf_error,
-				       /*in_decl=*/NULL_TREE,
-				       /*function_p=*/false);
-	  processing_template_decl = saved_processing_template_decl; 
-	}
-
-      arg = fold (arg);
-    }
-  return arg;
-}
-
-/* Apply maybe_fold_nontype_arg on a list or vector of args.  */
-
-static void
-maybe_fold_nontype_args (tree targs)
-{
-  if (!targs)
-    /*OK*/;
-  else if (TREE_CODE (targs) == TREE_LIST)
-    {
-      tree chain;
-      for (chain = targs; chain; chain = TREE_CHAIN (chain))
-	TREE_VALUE (chain) = maybe_fold_nontype_arg (TREE_VALUE (chain));
-    }
+  tree r;
+  
+  if (!t)
+    r = t;
+  else if (TYPE_P (t))
+    r = tsubst (t, args, complain, in_decl);
   else
     {
-      int i;
-      for (i = 0; i < TREE_VEC_LENGTH (targs); ++i)
-	TREE_VEC_ELT (targs, i)
-	  = maybe_fold_nontype_arg (TREE_VEC_ELT (targs, i));
+      r = tsubst_expr (t, args, complain, in_decl);
+
+      if (!uses_template_parms (r))
+	{
+	  /* Sometimes, one of the args was an expression involving a
+	     template constant parameter, like N - 1.  Now that we've
+	     tsubst'd, we might have something like 2 - 1.  This will
+	     confuse lookup_template_class, so we do constant folding
+	     here.  We have to unset processing_template_decl, to fool
+	     tsubst_copy_and_build() into building an actual tree.  */
+
+	 /* If the TREE_TYPE of ARG is not NULL_TREE, ARG is already
+	    as simple as it's going to get, and trying to reprocess
+	    the trees will break.  Once tsubst_expr et al DTRT for
+	    non-dependent exprs, this code can go away, as the type
+	    will always be set.  */
+	  if (!TREE_TYPE (r))
+	    {
+	      int saved_processing_template_decl = processing_template_decl; 
+	      processing_template_decl = 0;
+	      r = tsubst_copy_and_build (r, /*args=*/NULL_TREE,
+					 tf_error, /*in_decl=*/NULL_TREE,
+					 /*function_p=*/false);
+	      processing_template_decl = saved_processing_template_decl; 
+	    }
+	  r = fold (r);
+	}
     }
+  return r;
 }
 
-/* Substitute ARGS into the vector of template arguments T.  */
+/* Substitute ARGS into the vector or list of template arguments T.  */
 
 static tree
-tsubst_template_arg_vector (tree t, tree args, tsubst_flags_t complain)
+tsubst_template_args (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 {
-  int len = TREE_VEC_LENGTH (t), need_new = 0, i;
+  int is_list = !(t && TREE_CODE (t) == TREE_VEC);
+  int len = is_list ? list_length (t) : TREE_VEC_LENGTH (t);
+  int need_new = 0, i;
+  tree position = t;
   tree *elts = alloca (len * sizeof (tree));
-  
-  memset (elts, 0, len * sizeof (tree));
   
   for (i = 0; i < len; i++)
     {
-      if (TREE_VEC_ELT (t, i) != NULL_TREE
-	  && TREE_CODE (TREE_VEC_ELT (t, i)) == TREE_VEC)
-	elts[i] = tsubst_template_arg_vector (TREE_VEC_ELT (t, i),
-					      args, complain);
+      tree orig_arg;
+      tree new_arg = NULL_TREE;
+
+      if (is_list)
+	{
+	  orig_arg = TREE_VALUE (position);
+	  position = TREE_CHAIN (position);
+	}
       else
-	elts[i] = maybe_fold_nontype_arg
-	  (tsubst_expr (TREE_VEC_ELT (t, i), args, complain,
-			NULL_TREE));
+	{
+	  orig_arg = TREE_VEC_ELT (t, i);
+	  if (TREE_CODE (orig_arg) == TREE_VEC)
+	    new_arg = tsubst_template_args (orig_arg, args, complain, in_decl);
+	}
+
+      if (!new_arg)
+	new_arg = tsubst_template_arg (orig_arg, args, complain, in_decl);
       
-      if (elts[i] == error_mark_node)
+      if (new_arg == error_mark_node)
 	return error_mark_node;
 
-      if (elts[i] != TREE_VEC_ELT (t, i))
+      elts[i] = new_arg;
+      if (new_arg != orig_arg)
 	need_new = 1;
     }
   
   if (!need_new)
     return t;
-  
-  t = make_tree_vec (len);
-  for (i = 0; i < len; i++)
-    TREE_VEC_ELT (t, i) = elts[i];
+
+  if (is_list)
+    {
+      t = NULL_TREE;
+
+      for (i = len; i--;)
+	t = tree_cons (NULL_TREE, elts[i], t);
+    }
+  else
+    {
+      t = make_tree_vec (len);
+      for (i = 0; i < len; i++)
+	TREE_VEC_ELT (t, i) = elts[i];
+    }
   
   return t;
 }
@@ -5597,10 +5594,10 @@ tsubst_template_parms (tree parms, tree args, tsubst_flags_t complain)
 	  tree parm_decl = TREE_VALUE (tuple);
 
 	  parm_decl = tsubst (parm_decl, args, complain, NULL_TREE);
-	  default_value = tsubst_expr (default_value, args,
-				       complain, NULL_TREE);
-	  tuple = build_tree_list (maybe_fold_nontype_arg (default_value), 
-				   parm_decl);
+	  default_value = tsubst_template_arg (default_value, args,
+					       complain, NULL_TREE);
+	  
+	  tuple = build_tree_list (default_value, parm_decl);
 	  TREE_VEC_ELT (new_vec, i) = tuple;
 	}
       
@@ -5662,8 +5659,8 @@ tsubst_aggr_type (tree t,
 	     and supposing that we are instantiating f<int, double>,
 	     then our ARGS will be {int, double}, but, when looking up
 	     S we only want {double}.  */
-	  argvec = tsubst_template_arg_vector (TYPE_TI_ARGS (t), args,
-					       complain);
+	  argvec = tsubst_template_args (TYPE_TI_ARGS (t), args,
+					 complain, in_decl);
 	  if (argvec == error_mark_node)
 	    return error_mark_node;
 
@@ -5779,10 +5776,10 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 	      : DECL_TI_ARGS (DECL_TEMPLATE_RESULT (t));
 	    tree full_args;
 	    
-	    full_args = tsubst_template_arg_vector (tmpl_args, args,
-						    complain);
+	    full_args = tsubst_template_args (tmpl_args, args,
+					      complain, in_decl);
 
-	    /* tsubst_template_arg_vector doesn't copy the vector if
+	    /* tsubst_template_args doesn't copy the vector if
 	       nothing changed.  But, *something* should have
 	       changed.  */
 	    my_friendly_assert (full_args != tmpl_args, 0);
@@ -5895,10 +5892,9 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 	       specialization, and the complete set of arguments used to
 	       specialize R.  */
 	    gen_tmpl = most_general_template (DECL_TI_TEMPLATE (t));
-	    argvec 
-	      = tsubst_template_arg_vector (DECL_TI_ARGS 
-					    (DECL_TEMPLATE_RESULT (gen_tmpl)),
-					    args, complain); 
+	    argvec = tsubst_template_args (DECL_TI_ARGS 
+					   (DECL_TEMPLATE_RESULT (gen_tmpl)),
+					   args, complain, in_decl); 
 
 	    /* Check to see if we already have this specialization.  */
 	    spec = retrieve_specialization (gen_tmpl, argvec);
@@ -6477,12 +6473,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       {
 	tree max, omax = TREE_OPERAND (TYPE_MAX_VALUE (t), 0);
 
-	max = tsubst_expr (omax, args, complain, in_decl);
-	if (max == error_mark_node)
-	  return error_mark_node;
-
-	/* See if we can reduce this expression to something simpler.  */
-	max = maybe_fold_nontype_arg (max);
+	/* The array dimension behaves like a non-type template arg,
+	   in that we want to fold it as much as possible.  */
+	max = tsubst_template_arg (omax, args, complain, in_decl);
 	if (!processing_template_decl)
 	  max = decl_constant_value (max);
 
@@ -6726,7 +6719,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	}
 
       /* Otherwise, a vector of template arguments.  */
-      return tsubst_template_arg_vector (t, args, complain);
+      return tsubst_template_args (t, args, complain, in_decl);
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
@@ -7157,8 +7150,7 @@ tsubst_qualified_id (tree qualified_id, tree args,
     }
 
   if (!BASELINK_P (name) && !DECL_P (expr))
-    expr = lookup_qualified_name (scope, expr, /*is_type_p=*/0,
-				  (complain & tf_error) != 0);
+    expr = lookup_qualified_name (scope, expr, /*is_type_p=*/0, false);
   if (DECL_P (expr))
     check_accessibility_of_qualified_id (expr, 
 					 /*object_type=*/NULL_TREE,
@@ -7175,7 +7167,9 @@ tsubst_qualified_id (tree qualified_id, tree args,
   if (is_template)
     expr = lookup_template_function (expr, template_args);
 
-  if (TYPE_P (scope))
+  if (expr == error_mark_node && complain & tf_error)
+    nested_name_lookup_error (scope, TREE_OPERAND (qualified_id, 1));
+  else if (TYPE_P (scope))
     {
       expr = (adjust_result_of_qualified_name_lookup 
 	      (expr, scope, current_class_type));
@@ -7459,12 +7453,13 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case TEMPLATE_ID_EXPR:
       {
         /* Substituted template arguments */
-	tree targs = tsubst_copy (TREE_OPERAND (t, 1), args, complain,
-				  in_decl);
+	tree fn = TREE_OPERAND (t, 0);
+	tree targs = TREE_OPERAND (t, 1);
 
-	maybe_fold_nontype_args (targs);
-	return lookup_template_function
-	  (tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl), targs);
+	fn = tsubst_copy (fn, args, complain, in_decl);
+	targs = tsubst_template_args (targs, args, complain, in_decl);
+	
+	return lookup_template_function (fn, targs);
       }
 
     case TREE_LIST:
@@ -7595,12 +7590,15 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  {
 	    tree scope = DECL_INITIAL (decl);
 	    tree name = DECL_NAME (decl);
+	    tree decl;
 	    
 	    scope = tsubst_expr (scope, args, complain, in_decl);
-	    do_local_using_decl (lookup_qualified_name (scope,
-							name, 
-							/*is_type_p=*/0,
-							/*complain=*/true));
+	    decl = lookup_qualified_name (scope, name,
+					  /*is_type_p=*/0, /*complain=*/false);
+	    if (decl == error_mark_node)
+	      nested_name_lookup_error (scope, name);
+	    else
+	      do_local_using_decl (decl);
 	  }
 	else
 	  {
@@ -8258,18 +8256,15 @@ tsubst_copy_and_build (tree t,
 	       scope is.  */
 	    tmpl = TREE_OPERAND (TREE_OPERAND (member, 1), 0);
 	    args = TREE_OPERAND (TREE_OPERAND (member, 1), 1);
-	    member = lookup_qualified_name (TREE_OPERAND (member, 0),
-					    tmpl, 
-					    /*is_type=*/0,
-					    /*complain=*/true);
+	    member = lookup_qualified_name (TREE_OPERAND (member, 0), tmpl, 
+					    /*is_type=*/0, /*complain=*/false);
 	    if (BASELINK_P (member))
 	      BASELINK_FUNCTIONS (member) 
 		= build_nt (TEMPLATE_ID_EXPR, BASELINK_FUNCTIONS (member),
 			    args);
 	    else
 	      {
-		error ("`%D' is not a member of `%T'",
-		       tmpl, TREE_TYPE (object));
+		nested_name_lookup_error (TREE_TYPE (object), tmpl);
 		return error_mark_node;
 	      }
 	  }
