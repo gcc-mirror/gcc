@@ -1,5 +1,20 @@
 Sat Apr 15 10:59:19 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* configure.in (alpha*-*-*): Aad config/alpha/t-alpha.
+	* configure: Rebuilt.
+	* libgcc2.c (__fixunstfDI): Renamed from __fixunstfdi.
+	(__fixunsxfDI): Renamed from __fixunsxfdi.
+	(__fixunsdfDI): Renamed from __fixunsdfdi.
+	(__fixunssfDI): Renamed from __fixunssfdi.
+	(__floatdisf): Use proper type in REP_BIT macro.
+	(__fixunsxfSI): Renamed from __fixunsxfsi.
+	(__fixunsdfSI): Renamed from __fixunsdfsi.
+	(__fixunssfSI): Renamed from __fixunssfsi.
+	* libgcc2.h: Add cases for MIN_UNITS_PER_WORD > 4.
+	Change location of macros and upper-case some names as above.
+	* longlong.h ([alpha]): Use PARAMS, not __P in decl of __udiv__qrnnd.
+	* config/alpha/t-alpha, config/alpha/qrnnd.asm: New files.
+
 	* varasm.c (assemble_variable): Add cast to remove warning.
 	(immed_real_const_1): Only use CONST[01]_RTX if not in nested function.
 
