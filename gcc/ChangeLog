@@ -1,3 +1,7 @@
+2003-04-03  Neil Booth  <neil@daikokuya.co.uk>
+
+	* fix-header.c (read_scan_file): Defer switch processing.
+
 2003-04-03  Matt Austern  <austern@apple.com>
 
 	* cpppch.c (reset_ht): Remove.

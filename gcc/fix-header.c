@@ -635,6 +635,11 @@ read_scan_file (in_fname, argc, argv)
   if (! cpp_read_main_file (scan_in, in_fname))
     exit (FATAL_EXIT_CODE);
 
+  cpp_change_file (scan_in, LC_RENAME, "<built-in>");
+  cpp_init_builtins (scan_in);
+  cpp_change_file (scan_in, LC_RENAME, in_fname);
+
+  /* Process switches after builtins so -D can override them.  */
   for (i = 0; i < argc; i += strings_processed)
     {
       strings_processed = 0;
@@ -674,10 +679,6 @@ read_scan_file (in_fname, argc, argv)
   register_include_chains (scan_in, NULL /* sysroot */, NULL /* iprefix */,
 			   true /* stdinc */, false /* cxx_stdinc */,
 			   false /* verbose */);
-
-  cpp_change_file (scan_in, LC_RENAME, "<built-in>");
-  cpp_init_builtins (scan_in);
-  cpp_change_file (scan_in, LC_RENAME, in_fname);
 
   /* We are scanning a system header, so mark it as such.  */
   cpp_make_system_header (scan_in, 1, 0);
