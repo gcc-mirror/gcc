@@ -151,10 +151,10 @@ Implementation Defined Pragmas
 * Pragma Obsolescent::
 * Pragma Passive::
 * Pragma Polling::
+* Pragma Profile (Ravenscar)::
 * Pragma Propagate_Exceptions::
 * Pragma Psect_Object::
 * Pragma Pure_Function::
-* Pragma Ravenscar::
 * Pragma Restricted_Run_Time::
 * Pragma Restriction_Warnings::
 * Pragma Source_File_Name::
@@ -641,10 +641,10 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Obsolescent::
 * Pragma Passive::
 * Pragma Polling::
+* Pragma Profile (Ravenscar)::
 * Pragma Propagate_Exceptions::
 * Pragma Psect_Object::
 * Pragma Pure_Function::
-* Pragma Ravenscar::
 * Pragma Restricted_Run_Time::
 * Pragma Restriction_Warnings::
 * Pragma Source_File_Name::
@@ -2804,6 +2804,147 @@ to test for an abort condition.
 Note that polling can also be enabled by use of the @code{-gnatP} switch.  See
 the @cite{GNAT User's Guide} for details.
 
+@node Pragma Profile (Ravenscar)
+@unnumberedsec Pragma Profile (Ravenscar)
+@findex Ravenscar
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Profile (Ravenscar);
+@end smallexample
+
+@noindent
+A configuration pragma that establishes the following set of configuration
+pragmas:
+
+@table @code
+@item Task_Dispatching_Policy (FIFO_Within_Priorities)
+[RM D.2.2] Tasks are dispatched following a preemptive
+priority-ordered scheduling policy.
+
+@item Locking_Policy (Ceiling_Locking)
+[RM D.3] While tasks and interrupts execute a protected action, they inherit
+the ceiling priority of the corresponding protected object.
+@c
+@c @item Detect_Blocking
+@c This pragma forces the detection of potentially blocking operations within a
+@c protected operation, and to raise Program_Error if that happens.
+@end table
+@noindent
+
+plus the following set of restrictions:
+
+@table @code
+@item Max_Entry_Queue_Length = 1
+Defines the maximum number of calls that are queued on a (protected) entry.
+Note that this restrictions is checked at run time. Violation of this
+restriction results in the raising of Program_Error exception at the point of
+the call. For the Profile (Ravenscar) the value of Max_Entry_Queue_Length is
+always 1 and hence no task can be queued on a protected entry.
+
+@item Max_Protected_Entries = 1
+[RM D.7] Specifies the maximum number of entries per protected type. The
+bounds of every entry family of a protected unit shall be static, or shall be
+defined by a discriminant of a subtype whose corresponding bound is static.
+For the Profile (Ravenscar) the value of Max_Protected_Entries is always 1.
+
+@item Max_Task_Entries = 0
+[RM D.7] Specifies the maximum number of entries
+per task.  The bounds of every entry family
+of a task unit shall be static, or shall be
+defined by a discriminant of a subtype whose
+corresponding bound is static.  A value of zero
+indicates that no rendezvous are possible.  For
+the Profile (Ravenscar), the value of Max_Task_Entries is always
+0 (zero).
+
+@item No_Abort_Statements
+[RM D.7] There are no abort_statements, and there are
+no calls to Task_Identification.Abort_Task.
+
+@item No_Asynchronous_Control
+[RM D.7] There are no semantic dependences on the package
+Asynchronous_Task_Control.
+
+@item No_Calendar
+There are no semantic dependencies on the package Ada.Calendar.
+
+@item No_Dynamic_Attachment
+There is no call to any of the operations defined in package Ada.Interrupts
+(Is_Reserved, Is_Attached, Current_Handler, Attach_Handler, Exchange_Handler,
+Detach_Handler, and Reference).
+
+@item No_Dynamic_Priorities
+[RM D.7] There are no semantic dependencies on the package Dynamic_Priorities.
+
+@item No_Implicit_Heap_Allocations
+[RM D.7] No constructs are allowed to cause implicit heap allocation.
+
+@item No_Local_Protected_Objects
+Protected objects and access types that designate
+such objects shall be declared only at library level.
+
+@item No_Protected_Type_Allocators
+There are no allocators for protected types or
+types containing protected subcomponents.
+
+@item No_Relative_Delay
+There are no delay_relative statements.
+
+@item No_Requeue_Statements
+Requeue statements are not allowed.
+
+@item No_Select_Statements
+There are no select_statements.
+
+@item No_Task_Allocators
+[RM D.7] There are no allocators for task types
+or types containing task subcomponents.
+
+@item No_Task_Attributes_Package
+There are no semantic dependencies on the Ada.Task_Attributes package.
+
+@item No_Task_Hierarchy
+[RM D.7] All (non-environment) tasks depend
+directly on the environment task of the partition.
+
+@item No_Task_Termination
+Tasks which terminate are erroneous.
+
+@item Simple_Barriers
+Entry barrier condition expressions shall be either static
+boolean expressions or boolean objects which are declared in
+the protected type which contains the entry.
+@end table
+
+@noindent
+This set of configuration pragmas and restrictions correspond to the
+definition of the ``Ravenscar Profile'' for limited tasking, devised and
+published by the @cite{International Real-Time Ada Workshop}, 1997,
+and whose most recent description is available at
+@url{ftp://ftp.openravenscar.org/openravenscar/ravenscar00.pdf}.
+
+The original definition of the profile was revised at subsequent IRTAW
+meetings. It has been included in the ISO
+@cite{Guide for the Use of the Ada Programming Language in High
+Integrity Systems}, and has been approved by ISO/IEC/SC22/WG9 for inclusion in
+the next revision of the standard. The formal definition given by
+the Ada Rapporteur Group (ARG) can be found in two Ada Issues (AI-249 and
+AI-305) available at
+@url{http://www.ada-auth.org/cgi-bin/cvsweb.cgi/AIs/AI-00249.TXT} and
+@url{http://www.ada-auth.org/cgi-bin/cvsweb.cgi/AIs/AI-00305.TXT}
+respectively.
+
+The above set is a superset of the restrictions provided by pragma
+@code{Restricted_Run_Time}, it includes six additional restrictions
+(@code{Simple_Barriers}, @code{No_Select_Statements},
+@code{No_Calendar}, @code{No_Implicit_Heap_Allocations},
+@code{No_Relative_Delay} and @code{No_Task_Termination}).  This means
+that pragma @code{Profile (Ravenscar)}, like the pragma
+@code{Restricted_Run_Time}, automatically causes the use of a simplified,
+more efficient version of the tasking run-time system.
+
 @node Pragma Propagate_Exceptions
 @unnumberedsec Pragma Propagate_Exceptions
 @findex Propagate_Exceptions
@@ -2914,123 +3055,6 @@ applies to the underlying renamed function.  This can be used to
 disambiguate cases of overloading where some but not all functions
 in a set of overloaded functions are to be designated as pure.
 
-@node Pragma Ravenscar
-@unnumberedsec Pragma Ravenscar
-@findex Ravenscar
-@noindent
-Syntax:
-
-@smallexample @c ada
-pragma Ravenscar;
-@end smallexample
-
-@noindent
-A configuration pragma that establishes the following set of restrictions:
-
-@table @code
-@item No_Abort_Statements
-[RM D.7] There are no abort_statements, and there are
-no calls to Task_Identification.Abort_Task.
-
-@item No_Select_Statements
-There are no select_statements.
-
-@item No_Task_Hierarchy
-[RM D.7] All (non-environment) tasks depend
-directly on the environment task of the partition.
-
-@item No_Task_Allocators
-[RM D.7] There are no allocators for task types
-or types containing task subcomponents.
-
-@item No_Dynamic_Priorities
-[RM D.7] There are no semantic dependencies on the package Dynamic_Priorities.
-
-@item No_Terminate_Alternatives
-[RM D.7] There are no selective_accepts with terminate_alternatives
-
-@item No_Dynamic_Interrupts
-There are no semantic dependencies on Ada.Interrupts.
-
-@item No_Implicit_Heap_Allocations
-[RM D.7] No constructs are allowed to cause implicit heap allocation
-
-@item No_Protected_Type_Allocators
-There are no allocators for protected types or
-types containing protected subcomponents.
-
-@item No_Local_Protected_Objects
-Protected objects and access types that designate
-such objects shall be declared only at library level.
-
-@item No_Requeue_Statements
-Requeue statements are not allowed.
-
-@item No_Calendar
-There are no semantic dependencies on the package Ada.Calendar.
-
-@item No_Relative_Delay
-There are no delay_relative_statements.
-
-@item No_Task_Attributes_Package
-There are no semantic dependencies on the Ada.Task_Attributes package.
-
-@item Simple_Barriers
-Entry barrier condition expressions shall be either static
-boolean expressions or boolean objects which are declared in
-the protected type which contains the entry.
-
-@item Max_Asynchronous_Select_Nesting = 0
-[RM D.7] Specifies the maximum dynamic nesting level of asynchronous_selects.
-A value of zero prevents the use of any asynchronous_select.
-
-@item Max_Task_Entries = 0
-[RM D.7] Specifies the maximum number of entries
-per task.  The bounds of every entry family
-of a task unit shall be static, or shall be
-defined by a discriminant of a subtype whose
-corresponding bound is static.  A value of zero
-indicates that no rendezvous are possible.  For
-the Ravenscar pragma, the value of Max_Task_Entries is always
-0 (zero).
-
-@item Max_Protected_Entries = 1
-[RM D.7] Specifies the maximum number of entries per
-protected type.  The bounds of every entry family of
-a protected unit shall be static, or shall be defined
-by a discriminant of a subtype whose corresponding
-bound is static.  For the Ravenscar pragma the value of
-Max_Protected_Entries is always 1.
-
-@item Max_Select_Alternatives = 0
-[RM D.7] Specifies the maximum number of alternatives in a selective_accept.
-For the Ravenscar pragma the value is always 0.
-
-@item No_Task_Termination
-Tasks which terminate are erroneous.
-
-@item No_Entry_Queue
-No task can be queued on a protected entry.  Note that this restrictions is
-checked at run time.  The violation of this restriction generates a
-Program_Error exception.
-@end table
-
-@noindent
-This set of restrictions corresponds to the definition of the ``Ravenscar
-Profile'' for limited tasking, devised and published by the
-@cite{International Real-Time Ada Workshop}, 1997,
-and whose most recent description is available at
-@url{ftp://ftp.openravenscar.org/openravenscar/ravenscar00.pdf}.
-
-The above set is a superset of the restrictions provided by pragma
-@code{Restricted_Run_Time}, it includes five additional restrictions
-(@code{Simple_Barriers}, @code{No_Select_Statements},
-@code{No_Calendar},
-@code{No_Relative_Delay} and @code{No_Task_Termination}).  This means
-that pragma @code{Ravenscar}, like the pragma @code{Restricted_Run_Time},
-automatically causes the use of a simplified, more efficient version
-of the tasking run-time system.
-
 @node Pragma Restricted_Run_Time
 @unnumberedsec Pragma Restricted_Run_Time
 @findex Restricted_Run_Time
@@ -3051,7 +3075,7 @@ A configuration pragma that establishes the following set of restrictions:
 @item No_Task_Allocators
 @item No_Dynamic_Priorities
 @item No_Terminate_Alternatives
-@item No_Dynamic_Interrupts
+@item No_Dynamic_Attachment
 @item No_Protected_Type_Allocators
 @item No_Local_Protected_Objects
 @item No_Requeue_Statements
@@ -5984,8 +6008,8 @@ restrictions to produce a more efficient implementation.
 @end cartouche
 GNAT currently takes advantage of these restrictions by providing an optimized
 run time when the Ravenscar profile and the GNAT restricted run time set
-of restrictions are specified.  See pragma @code{Ravenscar} and pragma
-@code{Restricted_Run_Time} for more details.
+of restrictions are specified.  See pragma @code{Profile (Ravenscar)} and
+pragma @code{Restricted_Run_Time} for more details.
 
 @cindex Time, monotonic
 @unnumberedsec D.8(47-49): Monotonic Time
@@ -6855,10 +6879,10 @@ for protected types are restricted to either static boolean expressions or
 references to simple boolean variables defined in the private part of the
 protected type.  No other form of entry barriers is permitted.  This is one
 of the restrictions of the Ravenscar profile for limited tasking (see also
-pragma @code{Ravenscar}).
+pragma @code{Profile (Ravenscar)}).
 
-@item Max_Entry_Queue_Depth => Expr
-@findex Max_Entry_Queue_Depth
+@item Max_Entry_Queue_Length => Expr
+@findex Max_Entry_Queue_Length
 This restriction is a declaration that any protected entry compiled in
 the scope of the restriction has at most the specified number of
 tasks waiting on the entry
@@ -6879,10 +6903,10 @@ from Boolean). This is intended for use in safety critical programs
 where the certification protocol requires the use of short-circuit
 (and then, or else) forms for all composite boolean operations.
 
-@item No_Dynamic_Interrupts
-@findex No_Dynamic_Interrupts
-This restriction ensures at compile time that there is no attempt to
-dynamically associate interrupts.  Only static association is allowed.
+@item No_Dynamic_Attachment
+@findex No_Dynamic_Attachment
+This restriction ensures that there is no call to any of the operations
+defined in package Ada.Interrupts.
 
 @item No_Enumeration_Maps
 @findex No_Enumeration_Maps
@@ -6978,7 +7002,7 @@ on some targets.
 This restriction ensures at compile time no select statements of any kind
 are permitted, that is the keyword @code{select} may not appear.
 This is one of the restrictions of the Ravenscar
-profile for limited tasking (see also pragma @code{Ravenscar}).
+profile for limited tasking (see also pragma @code{Profile (Ravenscar)}).
 
 @item No_Standard_Storage_Pools
 @findex No_Standard_Storage_Pools

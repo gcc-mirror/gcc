@@ -6221,10 +6221,17 @@ package body Exp_Ch4 is
 
                --  Reset overflow flag, since the range check will include
                --  dealing with possible overflow, and generate the check
+               --  If Address is either source or target type, suppress
+               --  range check to avoid typing anomalies when it is a visible
+               --  integer type.
 
                Set_Do_Overflow_Check (N, False);
-               Generate_Range_Check
-                 (Expr, Target_Type, CE_Range_Check_Failed);
+               if not Is_Descendent_Of_Address (Etype (Expr))
+                 and then not Is_Descendent_Of_Address (Target_Type)
+               then
+                  Generate_Range_Check
+                    (Expr, Target_Type, CE_Range_Check_Failed);
+               end if;
             end if;
          end;
       end if;
@@ -6288,7 +6295,17 @@ package body Exp_Ch4 is
                Val <= Expr_Value (Type_High_Bound (Target_Type))
             then
                Rewrite (N, Make_Integer_Literal (Sloc (N), Val));
-               Analyze_And_Resolve (N, Target_Type);
+
+               --  If Address is the target type, just set the type
+               --  to avoid a spurious type error on the literal when
+               --  Address is a visible integer type.
+
+               if Is_Descendent_Of_Address (Target_Type) then
+                  Set_Etype (N, Target_Type);
+               else
+                  Analyze_And_Resolve (N, Target_Type);
+               end if;
+
                return;
             end if;
          end;

@@ -561,6 +561,12 @@ package body Sem_Prag is
       --  argument has the right form then the Mechanism field of Ent is
       --  set appropriately.
 
+      procedure Set_Ravenscar_Profile (N : Node_Id);
+      --  Activate the set of configuration pragmas and restrictions that
+      --  make up the Ravenscar Profile. N is the corresponding pragma
+      --  node, which is used for error messages on any constructs
+      --  that violate the profile.
+
       --------------------------
       -- Check_Ada_83_Warning --
       --------------------------
@@ -3257,8 +3263,7 @@ package body Sem_Prag is
          Val   : Uint;
 
          procedure Set_Warning (R : All_Restrictions);
-         --  If this is a Restriction_Warnings pragma, set warning flag,
-         --  otherwise flag gets cleared.
+         --  If this is a Restriction_Warnings pragma, set warning flag
 
          -----------------
          -- Set_Warning --
@@ -3266,8 +3271,9 @@ package body Sem_Prag is
 
          procedure Set_Warning (R : All_Restrictions) is
          begin
-            Restriction_Warnings (R) :=
-              Prag_Id = Pragma_Restriction_Warnings;
+            if Prag_Id = Pragma_Restriction_Warnings then
+               Restriction_Warnings (R) := True;
+            end if;
          end Set_Warning;
 
       --  Start of processing for Process_Restrictions_Or_Restriction_Warnings
@@ -3820,6 +3826,70 @@ package body Sem_Prag is
          end if;
 
       end Set_Mechanism_Value;
+
+      ---------------------------
+      -- Set_Ravenscar_Profile --
+      ---------------------------
+
+      --  The tasks to be done here are
+
+      --    Set required policies
+
+      --      pragma Task_Dispatching_Policy (FIFO_Within_Priorities)
+      --      pragma Locking_Policy (Ceiling_Locking)
+
+      --    Set Detect_Blocking mode ???
+
+      --    Set required restrictions (see Restrict.Set_Ravenscar for details)
+
+      procedure Set_Ravenscar_Profile (N : Node_Id) is
+      begin
+         --  pragma Task_Dispatching_Policy (FIFO_Within_Priorities)
+
+         if Task_Dispatching_Policy /= ' '
+           and then Task_Dispatching_Policy /= 'F'
+         then
+            Error_Msg_Sloc := Task_Dispatching_Policy_Sloc;
+            Error_Pragma ("Profile (Ravenscar) incompatible with policy#");
+
+         --  Set the FIFO_Within_Priorities policy, but always
+         --  preserve System_Location since we like the error
+         --  message with the run time name.
+
+         else
+            Task_Dispatching_Policy := 'F';
+
+            if Task_Dispatching_Policy_Sloc /= System_Location then
+               Task_Dispatching_Policy_Sloc := Loc;
+            end if;
+         end if;
+
+         --  pragma Locking_Policy (Ceiling_Locking)
+
+         if Locking_Policy /= ' '
+           and then Locking_Policy /= 'C'
+         then
+            Error_Msg_Sloc := Locking_Policy_Sloc;
+            Error_Pragma ("Profile (Ravenscar) incompatible with policy#");
+
+         --  Set the Ceiling_Locking policy, but always preserve
+         --  System_Location since we like the error message with the
+         --  run time name.
+
+         else
+            Locking_Policy := 'C';
+
+            if Locking_Policy_Sloc /= System_Location then
+               Locking_Policy_Sloc := Loc;
+            end if;
+         end if;
+
+         --  ??? Detect_Blocking
+
+         --  Set the corresponding restrictions
+
+         Set_Ravenscar (N);
+      end Set_Ravenscar_Profile;
 
    --  Start of processing for Analyze_Pragma
 
@@ -8005,13 +8075,12 @@ package body Sem_Prag is
             Check_Arg_Count (1);
             Check_Valid_Configuration_Pragma;
             Check_No_Identifiers;
-            Set_Ravenscar (N);
 
             declare
                Argx : constant Node_Id := Get_Pragma_Arg (Arg1);
             begin
                if Chars (Argx) = Name_Ravenscar then
-                  Set_Ravenscar (N);
+                  Set_Ravenscar_Profile (N);
                else
                   Error_Pragma_Arg ("& is not a valid profile", Argx);
                end if;
@@ -8481,7 +8550,7 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_Arg_Count (0);
             Check_Valid_Configuration_Pragma;
-            Set_Ravenscar (N);
+            Set_Ravenscar_Profile (N);
 
          -------------------------
          -- Restricted_Run_Time --
@@ -9950,6 +10019,7 @@ package body Sem_Prag is
    --  Start of prorcessing for Is_Config_Static_String
 
    begin
+
       Name_Len := 0;
       return Add_Config_Static_String (Arg);
    end Is_Config_Static_String;
@@ -9965,6 +10035,7 @@ package body Sem_Prag is
    --  indicates that appearence in that parameter position is significant.
 
    Sig_Flags : constant array (Pragma_Id) of Int :=
+
      (Pragma_AST_Entry                    => -1,
       Pragma_Abort_Defer                  => -1,
       Pragma_Ada_83                       => -1,
@@ -10095,7 +10166,7 @@ package body Sem_Prag is
       Pragma_Thread_Body                  => +2,
       Pragma_Time_Slice                   => -1,
       Pragma_Title                        => -1,
-      Pragma_Unchecked_Union              => -1,
+      Pragma_Unchecked_Union              =>  0,
       Pragma_Unimplemented_Unit           => -1,
       Pragma_Universal_Data               => -1,
       Pragma_Unreferenced                 => -1,

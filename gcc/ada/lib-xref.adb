@@ -269,6 +269,27 @@ package body Lib.Xref is
          then
             null;
 
+         --  Constant completion does not count as a reference
+
+         elsif Typ = 'c'
+           and then Ekind (E) = E_Constant
+         then
+            null;
+
+         --  Record representation clause does not count as a reference
+
+         elsif Nkind (N) = N_Identifier
+           and then Nkind (Parent (N)) = N_Record_Representation_Clause
+         then
+            null;
+
+         --  Discriminants do not need to produce a reference to record type
+
+         elsif Typ = 'd'
+           and then Nkind (Parent (N)) = N_Discriminant_Specification
+         then
+            null;
+
          --  Any other occurrence counts as referencing the entity
 
          else

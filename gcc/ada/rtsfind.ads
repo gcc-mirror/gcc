@@ -450,6 +450,13 @@ package Rtsfind is
      RE_List_Controller,                 -- Ada.Finalization.List_Controller
 
      RE_Interrupt_ID,                    -- Ada.Interrupts
+     RE_Is_Reserved,                     -- Ada.Interrupts
+     RE_Is_Attached,                     -- Ada.Interrupts
+     RE_Current_Handler,                 -- Ada.Interrupts
+     RE_Attach_Handler,                  -- Ada.Interrupts
+     RE_Exchange_Handler,                -- Ada.Interrupts
+     RE_Detach_Handler,                  -- Ada.Interrupts
+     RE_Reference,                       -- Ada.Interrupts
 
      RE_Names,                           -- Ada.Interupts.Names
 
@@ -1522,6 +1529,13 @@ package Rtsfind is
      RE_List_Controller                  => Ada_Finalization_List_Controller,
 
      RE_Interrupt_ID                     => Ada_Interrupts,
+     RE_Is_Reserved                      => Ada_Interrupts,
+     RE_Is_Attached                      => Ada_Interrupts,
+     RE_Current_Handler                  => Ada_Interrupts,
+     RE_Attach_Handler                   => Ada_Interrupts,
+     RE_Exchange_Handler                 => Ada_Interrupts,
+     RE_Detach_Handler                   => Ada_Interrupts,
+     RE_Reference                        => Ada_Interrupts,
 
      RE_Names                            => Ada_Interrupts_Names,
 

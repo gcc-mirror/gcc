@@ -4361,6 +4361,7 @@ package body Sem_Ch4 is
       --  truly hidden.
 
       type Operand_Position is (First_Op, Second_Op);
+      Univ_Type : constant Entity_Id := Universal_Interpretation (N);
 
       procedure Remove_Address_Interpretations (Op : Operand_Position);
       --  Ambiguities may arise when the operands are literal and the
@@ -4449,6 +4450,25 @@ package body Sem_Ch4 is
                      while Present (It.Nam) loop
                         if Scope (It.Nam) = Standard_Standard then
                            Remove_Interp (I);
+                        end if;
+
+                        Get_Next_Interp (I, It);
+                     end loop;
+
+                  elsif Is_Overloaded (N)
+                    and then Present (Univ_Type)
+                  then
+                     --  If both operands have a universal interpretation,
+                     --  select the predefined operator and discard others.
+
+                     Get_First_Interp (N, I, It);
+
+                     while Present (It.Nam) loop
+                        if Scope (It.Nam) = Standard_Standard then
+                           Set_Etype (N, Univ_Type);
+                           Set_Entity (N, It.Nam);
+                           Set_Is_Overloaded (N, False);
+                           exit;
                         end if;
 
                         Get_Next_Interp (I, It);

@@ -1,3 +1,101 @@
+2004-05-27  Vincent Celier  <celier@gnat.com>
+
+	* vms_data.ads: Add new GNAT PRETTY qualifiers /NO_BACKUP and
+	COMMENTS_LAYOUT=UNTOUCHED
+
+	* symbols-vms.adb, symbols-vms-alpha.adb: Renamed symbols-vms.adb to
+	symbols-vms-alpha.adb
+
+2004-05-27  Thomas Quinot  <quinot@act-europe.fr>
+
+	* sem.ads: Clarify documentation on checks suppression.
+
+	* einfo.ads (Is_Known_Non_Null): Minor comment typo fix and rephrasing.
+
+2004-05-27  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_util.adb (Is_Descendent_Of): Examine properly all ancestors in
+	the case of multiple derivations.
+	(Is_Object_Reference): For a selected component, verify that the prefix
+	is itself an object and not a value.
+
+	* sem_ch12.adb (Same_Instantiated_Constant): New name for
+	Same_Instantiated_Entity.
+	(Same_Instantiated_Variable): Subsidiary to
+	Check_Formal_Package_Instance, to recognize actuals for in-out generic
+	formals that are obtained from a previous formal package.
+	(Instantiate_Subprogram_Body): Emit proper error when
+	generating code and the proper body of a stub is missing.
+
+	* sem_ch4.adb (Remove_Address_Interpretations): If the operation still
+	has a universal interpretation, do the disambiguation here.
+
+	* exp_ch4.adb (Expand_N_Type_Conversion,
+	Expand_N_Unchecked_Type_Conversion): Special handling when target type
+	is Address, to avoid typing anomalies when Address is a visible integer
+	type.
+
+	* exp_ch6.adb (Expand_N_Subprogram_Body): Use Is_Descendent_Of_Address
+	to determine whether a subprogram should not be marked Pure, even when
+	declared in a pure package.
+
+2004-05-27  Jose Ruiz  <ruiz@act-europe.fr>
+
+	* gnat_ugn.texi: Replace pragma Ravenscar by pragma Profile.
+
+	* gnat_rm.texi: Replace Max_Entry_Queue_Depth by Max_Entry_Queue_Length
+	Document No_Dynamic_Attachment, that supersedes No_Dynamic_Interrupts.
+	Update the documentation about the Ravenscar profile, following the
+	definition found in AI-249.
+
+	* sem_prag.adb: Use FIFO_Within_Priorities and Ceiling_Locking when
+	setting the Profile (Ravenscar). This must be done in addition to
+	setting the required restrictions.
+
+	* rtsfind.ads: Add the set of operations defined in package
+	Ada.Interrupts.
+
+	* exp_ch6.adb: Check whether we are violating the No_Dynamic_Attachment
+	restriction.
+
+2004-05-27  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	lang-specs.h: Always require -c or -S and always redirect to /dev/null
+	if -gnatc or -gnats is passed.
+
+2004-05-27  Hristian Kirtchev  <kirtchev@gnat.com>
+
+	* sem_prag.adb (Sig_Flags): A Pragma_Unchecked_Union does not count as
+	a significant reference. Warnings are now properly emitted when a
+	discriminated type is not referenced.
+
+	* lib-xref.adb (Generate_Reference): A deferred constant completion,
+	record representation clause or record type discriminant does not
+	produce a reference to its corresponding entity. Warnings are now
+	properly emitted when deferred constants and record types are not
+	referenced.
+
+2004-05-27  Geert Bosch  <bosch@gnat.com>
+
+	* Makefile.in: Use long version of libm routines on ia64 gnu/linux.
+	Fixes ACATS Annex G tests.
+
+2004-05-27  Robert Dewar  <dewar@gnat.com>
+
+	* rtsfind.adb (RTU_Loaded): Temporary kludge to get past bug of not
+	handling WITH
+
+2004-05-27  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* s-interr.adb (Server_Task): Take into account case of early return
+	from sigwait under e.g. linux.
+
+2004-05-27  Sergey Rybin  <rybin@act-europe.fr>
+
+	* gnat_ugn.texi: Add description for the new gnatpp options:
+	 -rnb - replace the original source without creating its backup copy
+	 -c0 - do not format comments
+
 2004-05-24  Geert Bosch  <bosch@gnat.com>
 
 	* a-numaux-x86.adb (Reduce): Reimplement using an approximation of Pi

@@ -147,8 +147,8 @@ package body Rtsfind is
       Use_Setting : Boolean := False);
    --  Load the unit whose Id is given if not already loaded. The unit is
    --  loaded, analyzed, and added to the WITH list, and the entry in
-   --  RT_Unit_Table is updated to reflect the load. The second parameter
-   --  indicates the initial setting for the Is_Potentially_Use_Visible
+   --  RT_Unit_Table is updated to reflect the load. Use_Setting is used
+   --  to indicate the initial setting for the Is_Potentially_Use_Visible
    --  flag of the entity for the loaded unit (if it is indeed loaded).
    --  A value of False means nothing special need be done. A value of
    --  True indicates that this flag must be set to True. It is needed
@@ -1052,7 +1052,9 @@ package body Rtsfind is
 
    function RTU_Loaded (U : RTU_Id) return Boolean is
    begin
-      return Present (RT_Unit_Table (U).Entity);
+      return True and Present (RT_Unit_Table (U).Entity);
+      --  Temp kludge, return True, deals with bug of loading unit with
+      --  WITH not being registered as a proper rtsfind load ???
    end RTU_Loaded;
 
    --------------------

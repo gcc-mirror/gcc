@@ -3456,7 +3456,9 @@ package body Sem_Util is
 
             --  Done if no more derivations to check
 
-            elsif T = T1 then
+            elsif T = T1
+              or else T = Etyp
+            then
                return False;
 
             --  Following test catches error cases resulting from prev errors
@@ -3471,11 +3473,7 @@ package body Sem_Util is
                return False;
             end if;
 
-            --  Return if no further entries to check
-
-            if T = Base_Type (T1) or else T = T1 then
-               return False;
-            end if;
+            T := Base_Type (Etyp);
          end loop;
       end if;
 
@@ -3927,7 +3925,9 @@ package body Sem_Util is
                return Attribute_Name (N) = Name_Input;
 
             when N_Selected_Component =>
-               return Is_Object_Reference (Selector_Name (N));
+               return
+                 Is_Object_Reference (Selector_Name (N))
+                   and then Is_Object_Reference (Prefix (N));
 
             when N_Explicit_Dereference =>
                return True;
