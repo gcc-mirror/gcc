@@ -3453,6 +3453,8 @@ mcore_asm_named_section (const char *name, unsigned int flags ATTRIBUTE_UNUSED)
 }
 #endif /* OBJECT_FORMAT_ELF */
 
+/* Worker function for TARGET_ASM_EXTERNAL_LIBCALL.  */
+
 static void
 mcore_external_libcall (rtx fun)
 {
@@ -3460,6 +3462,8 @@ mcore_external_libcall (rtx fun)
   assemble_name (asm_out_file, XSTR (fun, 0));
   fprintf (asm_out_file, "\n");
 }
+
+/* Worker function for TARGET_RETURN_IN_MEMORY.  */
 
 static bool
 mcore_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)

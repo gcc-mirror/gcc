@@ -1,5 +1,11 @@
 2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/mcore/mcore.c (mcore_external_libcall): Add a
+	comment.
+	(mcore_return_in_memory): Likewise.
+
+2004-01-28  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/mcore/mcore-protos.h: Remove the prototype for
 	mcore_setup_incoming_varargs.
 	* config/mcore/mcore.c (TARGET_ASM_EXTERNAL_LIBCALL): New.
