@@ -6,6 +6,9 @@
 	(solaris_mutex_init): Rename to solaris_mutex_init_2.
 	* fixinc/fixincl.x: Regenerate.
 	* fixinc/tests/base/pthread.h: Update.
+	* fixinc/fixincl.c(initialize): be explicit about the default case
+	and indicate verbose level when being very, very verbose.
+	* fixinc/check.tpl(VERBOSE): provide a means for passing the value in
 
 2003-03-22  Andreas Jaeger  <aj@suse.de>
 
