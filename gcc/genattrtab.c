@@ -1954,6 +1954,10 @@ expand_units ()
 	     candidate insn, so in the expressions below, C is a known
 	     term and E is an unknown term.
 
+	     We compute the blockage cost for each E for every possible C.
+	     Thus OP represents E, and READYCOST is a list of values for
+	     every possible C.
+
 	     The issue delay function for C is op->issue_exp and is used to
 	     write the `<name>_unit_conflict_cost' function.  Symbolicly
 	     this is "ISSUE-DELAY (E,C)".
@@ -1995,8 +1999,8 @@ expand_units ()
 				     * unit->issue_delay.min));
 
 	      if (delay > 0)
-		blockage = operate_exp (POS_MINUS_OP, blockage,
-					make_numeric_value (delay));
+		blockage = operate_exp (POS_MINUS_OP,
+					make_numeric_value (delay), blockage);
 
 	      blockage = operate_exp (MAX_OP, blockage, op->issue_exp);
 	      blockage = simplify_knowing (blockage, unit->condexp);
@@ -5114,7 +5118,7 @@ write_complex_function (unit, name, connection)
   printf ("{\n");
   printf ("  rtx insn;\n");
   printf ("  int casenum;\n\n");
-  printf ("  insn = candidate_insn;\n");
+  printf ("  insn = executing_insn;\n");
   printf ("  switch (recog_memoized (insn))\n");
   printf ("    {\n");
 
@@ -5136,7 +5140,7 @@ write_complex_function (unit, name, connection)
 
   /* Now write an outer switch statement on each case.  Then write
      the tests on the executing function within each.  */
-  printf ("  insn = executing_insn;\n");
+  printf ("  insn = candidate_insn;\n");
   printf ("  switch (casenum)\n");
   printf ("    {\n");
 
