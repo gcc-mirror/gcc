@@ -140,7 +140,7 @@ XCFLAGS =
 TCFLAGS =
 CFLAGS = -g
 STAGE1_CFLAGS = -g @stage1_cflags@
-BOOT_CFLAGS = -g -O2 
+BOOT_CFLAGS = -g -O2
 
 # Flags to determine code coverage. When coverage is disabled, this will
 # contain the optimization flags, as you normally want code coverage
@@ -1881,7 +1881,7 @@ tree-complex.o : tree-complex.c $(CONFIG_H) system.h $(TREE_H) \
     flags.h
 df.o : df.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    insn-config.h $(RECOG_H) function.h $(REGS_H) alloc-pool.h hard-reg-set.h \
-   $(BASIC_BLOCK_H) $(DF_H) $(FIBHEAP_H)
+   $(BASIC_BLOCK_H) $(DF_H)
 var-tracking.o : var-tracking.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_H) $(TREE_H) hard-reg-set.h insn-config.h reload.h flags.h \
    $(BASIC_BLOCK_H) output.h sbitmap.h alloc-pool.h $(FIBHEAP_H) $(HASHTAB_H)
