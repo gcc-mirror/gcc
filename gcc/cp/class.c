@@ -5161,6 +5161,7 @@ layout_class_type (tree t, tree *virtuals_p)
 
       /* Record the base version of the type.  */
       CLASSTYPE_AS_BASE (t) = base_t;
+      TYPE_CONTEXT (base_t) = t;
     }
   else
     CLASSTYPE_AS_BASE (t) = t;

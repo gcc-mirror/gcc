@@ -265,6 +265,14 @@ cp_dump_tree (dump_info, t)
 	  return 1;
 	}
 
+      /* Is it a type used as a base? */
+      if (TYPE_CONTEXT (t) && TREE_CODE (TYPE_CONTEXT (t)) == TREE_CODE (t)
+	  && CLASSTYPE_AS_BASE (TYPE_CONTEXT (t)) == t)
+	{
+	  dump_child ("bfld", TYPE_CONTEXT (t));
+	  return 1;
+	}
+      
       dump_child ("vfld", TYPE_VFIELD (t));
       if (CLASSTYPE_TEMPLATE_SPECIALIZATION(t))
         dump_string(di, "spec");
