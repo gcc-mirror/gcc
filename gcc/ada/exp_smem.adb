@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -344,8 +344,6 @@ package body Exp_Smem is
             New_Reference_To (S, Loc),
             New_Occurrence_Of (Ent, Loc)));
 
-      Set_OK_For_Stream (Atr, True);
-
       Insert_After_And_Analyze (N,
         Make_Subprogram_Body (Loc,
           Specification =>
@@ -407,8 +405,6 @@ package body Exp_Smem is
           Expressions => New_List (
             New_Reference_To (S, Loc),
             New_Occurrence_Of (Ent, Loc)));
-
-      Set_OK_For_Stream (Atr, True);
 
       Insert_After_And_Analyze (N,
         Make_Subprogram_Body (Loc,
