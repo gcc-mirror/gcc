@@ -1,3 +1,7 @@
+2003-02-23  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* doc/install.texi: Update for switch of boehm-gc to autoconf 2.57.
+
 2003-02-23  Matt Austern  <austern@apple.com >
 
 	* config/darwin.h (SUBTARGET_OPTIONS): Add -mmacosx= option.
