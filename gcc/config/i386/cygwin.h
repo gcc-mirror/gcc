@@ -112,7 +112,7 @@ Boston, MA 02111-1307, USA. */
 "
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC W32API_LIB "\
+#define STARTFILE_SPEC "\
   %{shared|mdll: %{mno-cygwin:" MINGW_LIBS " mingw/dllcrt2%O%s}}\
   %{!shared: %{!mdll: %{!mno-cygwin:crt0%O%s} %{mno-cygwin:" MINGW_LIBS " mingw/crt2%O%s}\
   %{pg:gcrt0%O%s}}}\
@@ -147,13 +147,15 @@ Boston, MA 02111-1307, USA. */
    ld, but that doesn't work just yet.  */
 
 #undef LIB_SPEC
-#define LIB_SPEC "%{pg:-lgmon} \
+#define LIB_SPEC "\
+  %{pg:-lgmon} \
   %{!mno-cygwin:-lcygwin} \
   %{mno-cygwin:%{mthreads:-lmingwthrd} -lmingw32} \
   %{mwindows:-lgdi32 -lcomdlg32} \
   -luser32 -lkernel32 -ladvapi32 -lshell32"
 
-#define LINK_SPEC "%{mwindows:--subsystem windows} \
+#define LINK_SPEC W32API_LIB "\
+  %{mwindows:--subsystem windows} \
   %{mconsole:--subsystem console} \
   %{shared: %{mdll: %eshared and mdll are not compatible}} \
   %{shared: --shared} %{mdll:--dll} \
