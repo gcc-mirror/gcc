@@ -5001,6 +5001,8 @@ tsubst_friend_class (tree friend_tmpl, tree args)
       DECL_USE_TEMPLATE (tmpl) = 0;
       DECL_TEMPLATE_INFO (tmpl) = NULL_TREE;
       CLASSTYPE_USE_TEMPLATE (TREE_TYPE (tmpl)) = 0;
+      CLASSTYPE_TI_ARGS (TREE_TYPE (tmpl))
+	= INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (TREE_TYPE (tmpl)));
 
       /* Inject this template into the global scope.  */
       friend_type = TREE_TYPE (pushdecl_top_level (tmpl));
