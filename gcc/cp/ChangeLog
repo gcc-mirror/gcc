@@ -1,3 +1,12 @@
+Tue Feb  3 23:50:52 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* cvt.c (ocp_convert): Obtain the constant values from constant
+	decls even if the destination type is the same as the type of the
+	decl. 
+
+	* decl2.c (finish_file): Make sure that static inlines with
+	definitions are not marked DECL_EXTERNAL before returning.
+
 Tue Feb  3 22:43:42 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c: Lose arg_looking_for_template.
