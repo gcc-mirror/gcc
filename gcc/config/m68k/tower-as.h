@@ -1,13 +1,8 @@
 /* Definitions of target machine for GNU compiler.
    For NCR Tower 32/4x0 and 32/6x0 running System V Release 3.
-   Copyright (C) 1990, 1993, 1994 Free Software Foundation, Inc.
-   Written by Robert Andersson (ra@intsys.no), International Systems,
+   Copyright (C) 1990, 1993, 1994, 1996 Free Software Foundation, Inc.
+   Contributed by Robert Andersson (ra@intsys.no), International Systems,
    Oslo, Norway.
-
-   This file outputs assembler source suitable for the native Tower as
-   and with sdb debugging symbols.  See tower.h for more comments.
-
-   This file was based on m68k.h, hp320.h and 3b1.h as of the 1.37.1 version.
 
 This file is part of GNU CC.
 
@@ -26,6 +21,12 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+
+/* This file outputs assembler source suitable for the native Tower as
+   and with sdb debugging symbols.  See tower.h for more comments.
+
+   This file was based on m68k.h, hp320.h and 3b1.h as of the
+   1.37.1 version.  */
 
 #include "m68k/tower.h"
 #undef SELECT_RTX_SECTION
@@ -586,8 +587,9 @@ do { fprintf (asm_out_file, "\ttag\t");	\
     fprintf (FILE, ",-(%%sp)\n");		\
   } while (0)
 
+/* The prefix to add to user-visible assembler symbols. */
+
 /* We do not want leading underscores.  */
 
-#undef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE,NAME)  \
-  fprintf (FILE, "%s", NAME)
+#undef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX ""

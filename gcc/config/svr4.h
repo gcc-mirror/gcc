@@ -1,7 +1,7 @@
 /* Operating system specific defines to be used when targeting GCC for some
    generic System V Release 4 system.
    Copyright (C) 1991, 1994, 1995, 1996 Free Software Foundation, Inc.
-   Contributed by Ron Guilmette (rfg@segfault.us.com).
+   Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GNU CC.
 
@@ -374,14 +374,13 @@ while (0)
 #define ASM_OUTPUT_SKIP(FILE,SIZE) \
   fprintf (FILE, "\t%s\t%u\n", SKIP_ASM_OP, (SIZE))
 
-/* This is how to output a reference to a user-level label named NAME.
-   `assemble_name' uses this.
+/* The prefix to add to user-visible assembler symbols. */
 
    For System V Release 4 the convention is *not* to prepend a leading
    underscore onto user-level symbol names.  */
 
-#undef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE,NAME) fprintf (FILE, "%s", NAME)
+#undef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX ""
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.

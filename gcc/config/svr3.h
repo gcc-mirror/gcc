@@ -1,8 +1,7 @@
-/* svr3.h  --  operating system specific defines to be used when
-   targeting GCC for some generic System V Release 3 system.
+/* Operating system specific defines to be used when targeting GCC for
+   generic System V Release 3 system.
    Copyright (C) 1991, 1996 Free Software Foundation, Inc.
-
-   Written by Ron Guilmette (rfg@netcom.com).
+   Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GNU CC.
 
@@ -160,14 +159,13 @@ Boston, MA 02111-1307, USA.
 #undef ASM_BYTE_OP
 #define ASM_BYTE_OP "\t.byte"
 
-/* This is how to output a reference to a user-level label named NAME.
-   `assemble_name' uses this.
+/* The prefix to add to user-visible assembler symbols. */
 
    For System V Release 3 the convention is to prepend a leading
    underscore onto user-level symbol names.  */
 
-#undef ASM_OUTPUT_LABELREF
-#define ASM_OUTPUT_LABELREF(FILE,NAME) fprintf (FILE, "_%s", NAME)
+#undef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX "_"
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.
