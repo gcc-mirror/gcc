@@ -73,15 +73,15 @@ public class Thread implements Runnable
 
   public static boolean interrupted ()
   {
-    return currentThread().isInterrupted();
+    return currentThread().isInterrupted_();
   }
 
   // FIXME: it seems to me that this should be synchronized.
+  // Check the threads interrupted status. Note that this does not clear the
+  // threads interrupted status (per JDK 1.2 online API documentation).
   public boolean isInterrupted ()
   {
-    boolean r = interrupt_flag;
-    interrupt_flag = false;
-    return r;
+    return interrupt_flag;
   }
 
   public final boolean isAlive ()
@@ -112,6 +112,15 @@ public class Thread implements Runnable
   // This method exists only to avoid a warning from the C++ compiler.
   private static final native void run__ (Object obj);
   private native final void finish_ ();
+
+  // Convenience method to check and clear the thread's interrupted status.  
+  private boolean isInterrupted_ ()
+  {
+    boolean r = interrupt_flag;
+    interrupt_flag = false;
+    return r;
+  }
+  
   private final void run_ ()
   {
     try
