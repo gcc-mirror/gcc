@@ -3337,6 +3337,10 @@ find_exception_handler (void *pc, exception_table *table)
       int pos;
       int best = -1;
 
+      /* We subtract 1 from PC to avoid hitting the beginning of the next
+	 region.  */
+      --pc;
+
       /* We can't do a binary search because the table isn't guaranteed
 	 to be sorted from function to function.  */
       for (pos = 0; table[pos].exception_handler != (void *) -1; ++pos)
