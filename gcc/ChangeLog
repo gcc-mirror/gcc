@@ -1,5 +1,16 @@
 2004-08-27  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* tree.h (size_int_type): Remove.
+	* fold-const.c: Do not #include gt-fold-const.h.
+	(size_htab_hash, size_htab_eq): Remove.
+	(size_int_kind): Use build_int_cst.
+	(new_const, size_htab): Remove.
+	(size_int_type): Remove.
+	(round_up): Use build_int_cst.
+	(round_down): Likewise. Remove spurious constant build.
+
+2004-08-27  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* configure.ac: Add ENABLE_ASSERT_CHECKING control.
 	Add is_release variable, use it for --enable-werror and
 	--enable-checking defaults.

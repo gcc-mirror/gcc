@@ -89,8 +89,6 @@ static tree negate_expr (tree);
 static tree split_tree (tree, enum tree_code, tree *, tree *, tree *, int);
 static tree associate_trees (tree, tree, enum tree_code, tree);
 static tree const_binop (enum tree_code, tree, tree, int);
-static hashval_t size_htab_hash (const void *);
-static int size_htab_eq (const void *, const void *);
 static tree fold_convert_const (enum tree_code, tree, tree);
 static enum tree_code invert_tree_comparison (enum tree_code, bool);
 static enum comparison_code comparison_to_compcode (enum tree_code);
@@ -1597,101 +1595,15 @@ const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
   return 0;
 }
 
-/* These are the hash table functions for the hash table of INTEGER_CST
-   nodes of a sizetype.  */
-
-/* Return the hash code code X, an INTEGER_CST.  */
-
-static hashval_t
-size_htab_hash (const void *x)
-{
-  tree t = (tree) x;
-
-  return (TREE_INT_CST_HIGH (t) ^ TREE_INT_CST_LOW (t)
-	  ^ htab_hash_pointer (TREE_TYPE (t))
-	  ^ (TREE_OVERFLOW (t) << 20));
-}
-
-/* Return nonzero if the value represented by *X (an INTEGER_CST tree node)
-   is the same as that given by *Y, which is the same.  */
-
-static int
-size_htab_eq (const void *x, const void *y)
-{
-  tree xt = (tree) x;
-  tree yt = (tree) y;
-
-  return (TREE_INT_CST_HIGH (xt) == TREE_INT_CST_HIGH (yt)
-	  && TREE_INT_CST_LOW (xt) == TREE_INT_CST_LOW (yt)
-	  && TREE_TYPE (xt) == TREE_TYPE (yt)
-	  && TREE_OVERFLOW (xt) == TREE_OVERFLOW (yt));
-}
-
-/* Return an INTEGER_CST with value whose low-order HOST_BITS_PER_WIDE_INT
-   bits are given by NUMBER and of the sizetype represented by KIND.  */
+/* Create a size type INT_CST node with NUMBER sign extended.  KIND
+   indicates which particular sizetype to create.  */
 
 tree
 size_int_kind (HOST_WIDE_INT number, enum size_type_kind kind)
 {
-  return size_int_type (number, sizetype_tab[(int) kind]);
+  return build_int_cst (sizetype_tab[(int) kind], number);
 }
-
-/* Likewise, but the desired type is specified explicitly.  */
-
-static GTY (()) tree new_const;
-static GTY ((if_marked ("ggc_marked_p"), param_is (union tree_node)))
-     htab_t size_htab;
-
-tree
-size_int_type (HOST_WIDE_INT number, tree type)
-{
-  void **slot;
-  unsigned int prec;
-  HOST_WIDE_INT high;
-  unsigned HOST_WIDE_INT low;
-
-  if (size_htab == 0)
-    {
-      size_htab = htab_create_ggc (1024, size_htab_hash, size_htab_eq, NULL);
-      new_const = make_node (INTEGER_CST);
-    }
-
-  /* Adjust NEW_CONST to be the constant we want.  If it's already in the
-     hash table, we return the value from the hash table.  Otherwise, we
-     place that in the hash table and make a new node for the next time.  */
-  prec = TYPE_PRECISION (type);
-  TREE_TYPE (new_const) = type;
-  TREE_OVERFLOW (new_const) = TREE_CONSTANT_OVERFLOW (new_const) = 0;
-  low = number;
-  if (number >= 0)
-    high = 0;
-  else
-    {
-      /* Sizetype IS sign extended.  */
-      high = -1;
-      if (prec <= HOST_BITS_PER_WIDE_INT)
-	low |= (HOST_WIDE_INT)(-1) << (prec - 1);
-    }
-  TREE_INT_CST_LOW (new_const) = low;
-  TREE_INT_CST_HIGH (new_const) = high;
-
-  if (low != (unsigned HOST_WIDE_INT)number
-      || high != (number < 0 ? -1 : 0))
-    TREE_OVERFLOW (new_const) = TREE_CONSTANT_OVERFLOW (new_const) = 1;
-  
-  slot = htab_find_slot (size_htab, new_const, INSERT);
-  if (*slot == 0)
-    {
-      tree t = new_const;
-
-      *slot = new_const;
-      new_const = make_node (INTEGER_CST);
-      return t;
-    }
-  else
-    return (tree) *slot;
-}
-
+
 /* Combine operands OP1 and OP2 with arithmetic operation CODE.  CODE
    is a tree code.  The type of the result is taken from the operands.
    Both must be the same type integer type and it must be a size type.
@@ -10649,7 +10561,7 @@ round_up (tree value, int divisor)
      doing it. */
   if (TREE_CODE (value) != INTEGER_CST)
     {
-      div = size_int_type (divisor, TREE_TYPE (value));
+      div = build_int_cst (TREE_TYPE (value), divisor);
 
       if (multiple_of_p (TREE_TYPE (value), value, div))
 	return value;
@@ -10668,7 +10580,7 @@ round_up (tree value, int divisor)
   else
     {
       if (!div)
-	div = size_int_type (divisor, TREE_TYPE (value));
+	div = build_int_cst (TREE_TYPE (value), divisor);
       value = size_binop (CEIL_DIV_EXPR, value, div);
       value = size_binop (MULT_EXPR, value, div);
     }
@@ -10688,15 +10600,13 @@ round_down (tree value, int divisor)
   if (divisor == 1)
     return value;
 
-  div = size_int_type (divisor, TREE_TYPE (value));
-
   /* See if VALUE is already a multiple of DIVISOR.  If so, we don't
      have to do anything.  Only do this when we are not given a const,
      because in that case, this check is more expensive than just
      doing it. */
   if (TREE_CODE (value) != INTEGER_CST)
     {
-      div = size_int_type (divisor, TREE_TYPE (value));
+      div = build_int_cst (TREE_TYPE (value), divisor);
 
       if (multiple_of_p (TREE_TYPE (value), value, div))
 	return value;
@@ -10713,11 +10623,10 @@ round_down (tree value, int divisor)
   else
     {
       if (!div)
-	div = size_int_type (divisor, TREE_TYPE (value));
+	div = build_int_cst (TREE_TYPE (value), divisor);
       value = size_binop (FLOOR_DIV_EXPR, value, div);
       value = size_binop (MULT_EXPR, value, div);
     }
 
   return value;
 }
-#include "gt-fold-const.h"

@@ -1,5 +1,7 @@
 2004-08-27  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* utils2.c (build_allocator): Use ssize_int.
+
 	* utils.c (gnat_init_decl_processing): Ada has a signed sizetype.
 
 2004-08-27  Andreas Schwab  <schwab@suse.de>
