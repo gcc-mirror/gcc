@@ -1341,7 +1341,9 @@ layout_type (type)
     case OFFSET_TYPE:
       TYPE_SIZE (type) = bitsize_int (POINTER_SIZE);
       TYPE_SIZE_UNIT (type) = size_int (POINTER_SIZE / BITS_PER_UNIT);
-      TYPE_MODE (type) = ptr_mode;
+      /* A pointer might be MODE_PARTIAL_INT,
+	 but ptrdiff_t must be integral.  */
+      TYPE_MODE (type) = mode_for_size (POINTER_SIZE, MODE_INT, 0);
       break;
 
     case FUNCTION_TYPE:
