@@ -1,7 +1,13 @@
+2003-12-30  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* builtins.c (expand_builtin_apply_args_1): Fix typo in previous
+	change.
+
 2003-12-30  Jan Hubicka  <jh@suse.cz>
 
 	PR ice/11936
-	* i386.h (CLASS_LIKELY_SPILLED_P): Return true for FP_TOP_REG/FP_SECOND_REG
+	* i386.h (CLASS_LIKELY_SPILLED_P): Return true for
+	FP_TOP_REG/FP_SECOND_REG.
 
 2003-12-30  Steven Bosscher  <steven@gcc.gnu.org>
 
