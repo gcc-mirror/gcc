@@ -70,24 +70,6 @@ struct file_name_list
 };
 #define ABSOLUTE_PATH ((struct file_name_list *)-1)
 
-/* This structure is used for the table of all includes.  */
-struct include_file
-{
-  const char *name;		/* actual path name of file */
-  const cpp_hashnode *cmacro;	/* macro, if any, preventing reinclusion.  */
-  const struct file_name_list *foundhere;
-				/* location in search path where file was
-				   found, for #include_next */
-  const unsigned char *buffer;	/* pointer to cached file contents */
-  struct stat st;		/* copy of stat(2) data for file */
-  int fd;			/* fd open on file (short term storage only) */
-  unsigned short include_count;	/* number of times file has been read */
-  unsigned short refcnt;	/* number of stacked buffers using this file */
-  unsigned char sysp;		/* file is a system header */
-  unsigned char mapped;		/* file buffer is mmapped */
-  unsigned char defined;	/* cmacro prevents inclusion in this state */
-};
-
 /* The cmacro works like this: If it's NULL, the file is to be
    included again.  If it's NEVER_REREAD, the file is never to be
    included again.  Otherwise it is a macro hashnode, and the file is
@@ -148,6 +130,9 @@ struct cpp_buffer
 
   /* Temporary storage for pfile->skipping whilst in a directive.  */
   unsigned char was_skipping;
+
+  /* 1 = system header file, 2 = C system header file used for C++.  */
+  unsigned char sysp;
 };
 
 /* Character classes.
@@ -191,8 +176,7 @@ extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 #define CPP_PREV_BUFFER(BUFFER) ((BUFFER)->prev)
 #define CPP_PRINT_DEPS(PFILE) CPP_OPTION (PFILE, print_deps)
 #define CPP_IN_SYSTEM_HEADER(PFILE) \
-  (CPP_BUFFER (PFILE) && CPP_BUFFER (PFILE)->inc \
-   && CPP_BUFFER (PFILE)->inc->sysp)
+  (CPP_BUFFER (PFILE) && CPP_BUFFER (PFILE)->sysp)
 #define CPP_PEDANTIC(PF) \
   CPP_OPTION (PF, pedantic)
 #define CPP_WTRADITIONAL(PF) \
@@ -223,11 +207,11 @@ extern cpp_hashnode *_cpp_lookup_with_hash PARAMS ((cpp_reader*, size_t,
 						    unsigned int));
 
 /* In cppfiles.c */
+extern void _cpp_never_reread		PARAMS ((struct include_file *));
 extern void _cpp_simplify_pathname	PARAMS ((char *));
 extern int _cpp_read_file		PARAMS ((cpp_reader *, const char *));
 extern void _cpp_execute_include	PARAMS ((cpp_reader *,
-						 const cpp_token *, int,
-						 struct file_name_list *));
+						 const cpp_token *, int, int));
 extern int _cpp_compare_file_date       PARAMS ((cpp_reader *,
 						 const cpp_token *));
 extern void _cpp_report_missing_guards	PARAMS ((cpp_reader *));

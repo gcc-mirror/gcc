@@ -90,7 +90,7 @@ static int glue_header_name	PARAMS ((cpp_reader *, cpp_token *));
 static int  parse_include	PARAMS ((cpp_reader *, cpp_token *));
 static void push_conditional	PARAMS ((cpp_reader *, int, int,
 					 const cpp_hashnode *));
-static int  read_line_number	PARAMS ((cpp_reader *, int *));
+static unsigned int read_flag	PARAMS ((cpp_reader *));
 static int  strtoul_for_line	PARAMS ((const U_CHAR *, unsigned int,
 					 unsigned long *));
 static void do_diagnostic	PARAMS ((cpp_reader *, enum error_type, int));
@@ -260,6 +260,7 @@ end_directive (pfile, skip_line)
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
   pfile->state.in_directive = 0;
   pfile->state.angled_headers = 0;
+  pfile->state.line_extension = 0;
   pfile->directive = 0;
 }
 
@@ -296,6 +297,7 @@ _cpp_handle_directive (pfile, indented)
       if (! buffer->was_skipping && CPP_OPTION (pfile, lang) != CLK_ASM)
 	{
 	  dir = &dtable[T_LINE];
+	  pfile->state.line_extension = 1;
 	  _cpp_push_token (pfile, &dname, &pfile->directive_pos);
 	  if (CPP_PEDANTIC (pfile) && buffer->inc
 	      && ! CPP_OPTION (pfile, preprocessed))
@@ -632,58 +634,32 @@ do_include_next (pfile)
      cpp_reader *pfile;
 {
   cpp_token header;
-  struct file_name_list *search_start = 0;
 
-  if (parse_include (pfile, &header))
-    return;
-
-  /* For #include_next, skip in the search path past the dir in which
-     the current file was found.  If this is the last directory in the
-     search path, don't include anything.  If the current file was
-     specified with an absolute path, use the normal search logic.  If
-     this is the primary source file, use the normal search logic and
-     generate a warning.  */
-  if (CPP_PREV_BUFFER (CPP_BUFFER (pfile)))
-    {
-      if (CPP_BUFFER (pfile)->inc->foundhere)
-	{
-	  search_start = CPP_BUFFER (pfile)->inc->foundhere->next;
-	  if (!search_start)
-	    return;
-	}
-    }
-  else
-    cpp_warning (pfile, "#include_next in primary source file");
-
-  _cpp_execute_include (pfile, &header, 0, search_start);
+  if (!parse_include (pfile, &header))
+    _cpp_execute_include (pfile, &header, 0, 1);
 }
 
-/* Subroutine of do_line.  Read next token from PFILE without adding it to
-   the output buffer.  If it is a number between 1 and 4, store it in *NUM
-   and return 1; otherwise, return 0 and complain if we aren't at the end
-   of the directive.  */
+/* Subroutine of do_line.  Read possible flags after file name.  If it
+   is a number between 1 and 4, return it, otherwise return 0.  If
+   it's not the end of the directive complain.  */
 
-static int
-read_line_number (pfile, num)
+static unsigned int
+read_flag (pfile)
      cpp_reader *pfile;
-     int *num;
 {
   cpp_token token;
-  unsigned int val;
 
   _cpp_lex_token (pfile, &token);
   if (token.type == CPP_NUMBER && token.val.str.len == 1)
     {
-      val = token.val.str.text[0] - '1';
-      if (val <= 3)
-	{
-	  *num = val + 1;
-	  return 1;
-	}
+      unsigned int flag = token.val.str.text[0] - '1';
+      if (flag <= 3)
+	return flag + 1;
     }
 
   if (token.type != CPP_EOF)
-    cpp_error (pfile, "invalid format #line");
+    cpp_error (pfile, "invalid flag \"%s\" in line directive",
+	       cpp_token_as_text (pfile, &token));
   return 0;
 }
 
@@ -747,7 +723,6 @@ do_line (pfile)
     {
       char *fname;
       unsigned int len;
-      int action_number = 0;
 
       /* FIXME: memory leak.  */
       len = token.val.str.len;
@@ -758,33 +733,28 @@ do_line (pfile)
       _cpp_simplify_pathname (fname);
       buffer->nominal_fname = fname;
 
-      if (read_line_number (pfile, &action_number) != 0)
+      if (pfile->state.line_extension)
 	{
-	  if (! CPP_OPTION (pfile, preprocessed) && CPP_PEDANTIC (pfile))
-	    cpp_pedwarn (pfile,  "extra tokens at end of #line directive");
+	  int flag, sysp = 0;
 
-	  if (action_number == 1)
+	  flag = read_flag (pfile);
+	  if (flag == 1)
 	    {
 	      reason = FC_ENTER;
-	      cpp_make_system_header (pfile, 0, 0);
-	      read_line_number (pfile, &action_number);
+	      flag = read_flag (pfile);
 	    }
-	  else if (action_number == 2)
+	  else if (flag == 2)
 	    {
 	      reason = FC_LEAVE;
-	      cpp_make_system_header (pfile, 0, 0);
-	      read_line_number (pfile, &action_number);
+	      flag = read_flag (pfile);
 	    }
-	  if (action_number == 3)
+	  if (flag == 3)
 	    {
-	      cpp_make_system_header (pfile, 1, 0);
-	      read_line_number (pfile, &action_number);
+	      flag = read_flag (pfile);
+	      sysp = 1;
 	    }
-	  if (action_number == 4)
-	    {
-	      cpp_make_system_header (pfile, 1, 1);
-	      read_line_number (pfile, &action_number);
-	    }
+
+	  cpp_make_system_header (pfile, sysp, flag == 4);
 	}
 
       check_eol (pfile);
@@ -820,8 +790,8 @@ _cpp_do_file_change (pfile, reason, from_file, from_lineno)
       fc.from.lineno = from_lineno;
       fc.to.filename = buffer->nominal_fname;
       fc.to.lineno = buffer->lineno + 1;
-      fc.sysp = buffer->inc->sysp;
-      fc.externc = CPP_OPTION (pfile, cplusplus) && buffer->inc->sysp == 2;
+      fc.sysp = buffer->sysp;
+      fc.externc = CPP_OPTION (pfile, cplusplus) && buffer->sysp == 2;
       pfile->cb.change_file (pfile, &fc);
     }
 }
@@ -1034,14 +1004,12 @@ static void
 do_pragma_once (pfile)
      cpp_reader *pfile;
 {
-  cpp_buffer *ip = CPP_BUFFER (pfile);
-
   cpp_warning (pfile, "#pragma once is obsolete");
  
-  if (CPP_PREV_BUFFER (ip) == NULL)
+  if (pfile->buffer->prev == NULL)
     cpp_warning (pfile, "#pragma once in main file");
   else
-    ip->inc->cmacro = NEVER_REREAD;
+    _cpp_never_reread (pfile->buffer->inc);
 
   check_eol (pfile);
 }

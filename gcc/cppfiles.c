@@ -63,6 +63,23 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
    C.  It is unlikely that glibc's strcmp macro helps this file at all.  */
 #undef strcmp
 
+/* This structure is used for the table of all includes.  */
+struct include_file
+{
+  const char *name;		/* actual path name of file */
+  const cpp_hashnode *cmacro;	/* macro, if any, preventing reinclusion.  */
+  const struct file_name_list *foundhere;
+				/* location in search path where file was
+				   found, for #include_next and sysp.  */
+  const unsigned char *buffer;	/* pointer to cached file contents */
+  struct stat st;		/* copy of stat(2) data for file */
+  int fd;			/* fd open on file (short term storage only) */
+  unsigned short include_count;	/* number of times file has been read */
+  unsigned short refcnt;	/* number of stacked buffers using this file */
+  unsigned char mapped;		/* file buffer is mmapped */
+  unsigned char defined;	/* cmacro prevents inclusion in this state */
+};
+
 static struct file_name_map *read_name_map
 				PARAMS ((cpp_reader *, const char *));
 static char *read_filename_string PARAMS ((int, FILE *));
@@ -118,6 +135,14 @@ _cpp_cleanup_includes (pfile)
   splay_tree_delete (pfile->all_include_files);
 }
 
+/* Mark a file to not be reread (e.g. #import, read failure).  */
+void
+_cpp_never_reread (file)
+     struct include_file *file;
+{
+  file->cmacro = NEVER_REREAD;
+}
+
 /* Given a file name, look it up in the cache; if there is no entry,
    create one with a non-NULL value (regardless of success in opening
    the file).  If the file doesn't exist or is inaccessible, this
@@ -155,6 +180,7 @@ open_file (pfile, filename)
     }
   else
     {
+      /* In particular, this clears foundhere.  */
       file = xcnew (struct include_file);
       file->name = xstrdup (filename);
       splay_tree_insert (pfile->all_include_files,
@@ -186,7 +212,7 @@ open_file (pfile, filename)
       /* Mark a regular, zero-length file never-reread now.  */
       if (S_ISREG (file->st.st_mode) && file->st.st_size == 0)
         {
-	  file->cmacro = NEVER_REREAD;
+	  _cpp_never_reread (file);
 	  close (file->fd);
 	  file->fd = -1;
 	}
@@ -239,6 +265,8 @@ stack_include_file (pfile, inc)
   fp->line_base = fp->buf;
   fp->lineno = 0;		/* For _cpp_do_file_change.  */
   fp->inc->refcnt++;
+  if (inc->foundhere)
+    fp->sysp = inc->foundhere->sysp;
 
   /* The ->actual_dir field is only used when ignore_srcdir is not in effect;
      see do_include */
@@ -377,7 +405,7 @@ read_include_file (pfile, inc)
   /* Do not try to read this file again.  */
   close (inc->fd);
   inc->fd = -1;
-  inc->cmacro = NEVER_REREAD;
+  _cpp_never_reread (inc);
   return;
 }
 
@@ -466,7 +494,6 @@ find_include_file (pfile, fname, search_start)
       file = open_file (pfile, name);
       if (file)
 	{
-	  file->sysp = path->sysp;
 	  file->foundhere = path;
 	  return file;
 	}
@@ -475,8 +502,8 @@ find_include_file (pfile, fname, search_start)
 }
 
 /* Not everyone who wants to set system-header-ness on a buffer can
-   see the details of struct include_file.  This is an exported interface
-   because fix-header needs it.  */
+   see the details of a buffer.  This is an exported interface because
+   fix-header needs it.  */
 void
 cpp_make_system_header (pfile, syshdr, externc)
      cpp_reader *pfile;
@@ -487,7 +514,7 @@ cpp_make_system_header (pfile, syshdr, externc)
   /* 1 = system header, 2 = system header to be treated as C.  */
   if (syshdr)
     flags = 1 + (externc != 0);
-  pfile->buffer->inc->sysp = flags;
+  pfile->buffer->sysp = flags;
 }
 
 /* Report on all files that might benefit from a multiple include guard.
@@ -524,12 +551,13 @@ report_missing_guard (n, b)
 
 #define PRINT_THIS_DEP(p, b) (CPP_PRINT_DEPS(p) > (b||p->system_include_depth))
 void
-_cpp_execute_include (pfile, header, no_reinclude, search_start)
+_cpp_execute_include (pfile, header, no_reinclude, include_next)
      cpp_reader *pfile;
      const cpp_token *header;
      int no_reinclude;
-     struct file_name_list *search_start;
+     int include_next;
 {
+  struct file_name_list *search_start = 0;
   unsigned int len = header->val.str.len;
   unsigned int angle_brackets = header->type == CPP_HEADER_NAME;
   struct include_file *inc;
@@ -547,6 +575,27 @@ _cpp_execute_include (pfile, header, no_reinclude, search_start)
     {
       cpp_ice (pfile, "attempt to push file buffer with contexts stacked");
       return;
+    }
+
+  /* For #include_next, skip in the search path past the dir in which
+     the current file was found.  If this is the last directory in the
+     search path, don't include anything.  If the current file was
+     specified with an absolute path, use the normal search logic.  If
+     this is the primary source file, use the normal search logic and
+     generate a warning.  */
+  if (include_next)
+    {
+      if (! pfile->buffer->prev)
+	cpp_warning (pfile, "#include_next in primary source file");
+      else
+	{
+	  if (pfile->buffer->inc->foundhere)
+	    {
+	      search_start = pfile->buffer->inc->foundhere->next;
+	      if (! search_start)
+		return;
+	    }
+	}
     }
 
   fname = alloca (len + 1);
@@ -587,7 +636,7 @@ _cpp_execute_include (pfile, header, no_reinclude, search_start)
       if (! DO_NOT_REREAD (inc))
 	{
 	  if (no_reinclude)
-	    inc->cmacro = NEVER_REREAD;
+	    _cpp_never_reread (inc);
 
 	  /* Handle -H option.  */
 	  if (CPP_OPTION (pfile, print_include_names))
@@ -981,7 +1030,7 @@ actual_directory (pfile, fname)
   x->nlen = dlen;
   x->next = CPP_OPTION (pfile, quote_include);
   x->alloc = pfile->actual_dirs;
-  x->sysp = CPP_BUFFER (pfile)->inc->sysp;
+  x->sysp = pfile->buffer->sysp;
   x->name_map = NULL;
 
   pfile->actual_dirs = x;
