@@ -47,6 +47,13 @@ if [ "${enable_gdbgui}" = "yes" ] ; then
 	host_libs="${host_libs} libgui"
 fi
 
+# Set up configure/Makefile variables if libstdc++-v3 is to be built.
+if [ "${enable_libstdcxx_v3}" = "yes" ] ; then
+        libstdcxx_version="target-libstdc++-v3"
+else
+        libstdcxx_version="target-libio target-libstdc++"
+fi
+
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
 # know that we are building the simulator.
@@ -59,9 +66,8 @@ host_tools="texinfo byacc flex bison binutils ld gas gcc sim gdb make patch prms
 target_libs="target-libiberty \
 		target-libgloss \
 		target-newlib \
-		target-libio \
+		${libstdcxx_version} \
 		target-librx \
-		target-libstdc++ \
 		target-libg++ \
 		target-libf2c \
 		target-libchill \
@@ -561,7 +567,7 @@ esac
 
 case "${target}" in
   *-*-netware)
-    noconfigdirs="$noconfigdirs target-libg++ target-libstdc++ target-librx target-newlib target-libiberty target-libgloss"
+    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-newlib target-libiberty target-libgloss"
     ;;
   *-*-rtems*)
     noconfigdirs="$noconfigdirs target-libgloss"
@@ -598,11 +604,11 @@ case "${target}" in
     noconfigdirs="$noconfigdirs tcl tix tk itcl libgui sim"
     noconfigdirs="$noconfigdirs expect dejagnu"
     # the C++ libraries don't build on top of CE's C libraries
-    noconfigdirs="$noconfigdirs target-libg++ target-libstdc++ target-libio"
+    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version}"
     skipdirs="$skipdirs target-newlib"
     case "${host}" in
       *-*-cygwin*) ;; # keep gdb and readline
-      *) noconfigdirs="$noconfigdirs gdb readline target-libio target-libstdc++ target-libg++"
+      *) noconfigdirs="$noconfigdirs gdb readline ${libstdcxx_version} target-libg++"
 	 ;;
     esac
     ;;
@@ -625,7 +631,7 @@ case "${target}" in
     fi
     ;;
   c4x-*-*)
-    noconfigdirs="$noconfigdirs target-libg++ target-libstdc++ target-libio target-librx target-libgloss"
+    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version}  target-librx target-libgloss"
     ;;
   thumb-*-coff)
     noconfigdirs="$noconfigdirs target-libgloss"
@@ -634,7 +640,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs ld target-libgloss"
     ;;
   d10v-*-*)
-    noconfigdirs="$noconfigdirs target-librx target-libg++ target-libstdc++ target-libio target-libgloss"
+    noconfigdirs="$noconfigdirs target-librx target-libg++ ${libstdcxx_version} target-libgloss"
     ;;
   fr30-*-elf*)
     if [ x${is_cross_compiler} != xno ] ; then
@@ -643,7 +649,7 @@ case "${target}" in
     ;;
   h8300*-*-* | \
   h8500-*-*)
-    noconfigdirs="$noconfigdirs target-libg++ target-libstdc++ target-libio target-librx target-libgloss"
+    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version}  target-librx target-libgloss"
     ;;
   hppa*-*-*elf* | \
   hppa*-*-lites*)
@@ -661,7 +667,7 @@ case "${target}" in
     ;;
   i[3456]86-*-go32* | i[3456]-*-msdosdjgpp*)
     # but don't build gdb
-    noconfigdirs="$noconfigdirs gdb target-libg++ target-libstdc++ target-libio target-librx"
+    noconfigdirs="$noconfigdirs gdb target-libg++ ${libstdcxx_version} target-librx"
     ;;
   *-*-linux*)
     # linux has rx in libc
@@ -692,7 +698,7 @@ case "${target}" in
     esac
     ;;    
   i[3456]86-*-pe)
-    noconfigdirs="$noconfigdirs target-libg++ target-libstdc++ target-libio target-librx target-libgloss"
+    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-libgloss"
     ;;
   i[3456]86-*-sco3.2v5*)
     # The linker does not yet know about weak symbols in COFF,
@@ -831,7 +837,7 @@ case "${target}" in
     fi
     ;;
   v810-*-*)
-    noconfigdirs="$noconfigdirs bfd binutils gas gcc gdb ld target-libio target-libg++ target-libstdc++ opcodes target-libgloss"
+    noconfigdirs="$noconfigdirs bfd binutils gas gcc gdb ld ${libstdcxx_version} target-libg++ opcodes target-libgloss"
     ;;
   v850-*-*)
     noconfigdirs="$noconfigdirs target-libgloss"

@@ -1,3 +1,12 @@
+2000-04-05  Benjamin Kosnik  <bkoz@cygnus.com>
+            Martin v. Loewis  <martin@loewis.home.cs.tu-berlin.de>
+
+        * configure.in (enable_libstdcxx_v3): Add.
+        (target_libs): Add bits here to switch between libstdc++-v2 and
+        libstdc++-v3.
+        * config.if: And this file too.
+        * Makefile.in: Add libstdc++-v3 targets.
+	
 2000-04-05  Michael Meissner  <meissner@redhat.com>
 
 	* config.sub (d30v): Add d30v as a basic machine type.
