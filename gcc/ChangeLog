@@ -1,3 +1,7 @@
+2004-01-31  Richard Henderson  <rth@redhat.com>
+
+	* varasm.c (output_constant_pool): Don't zap the pool.
+
 2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* genrecog.c (decision_type): Add DT_const_int.
