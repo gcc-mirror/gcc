@@ -4632,10 +4632,10 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	   a SUBREG and it would sometimes return a new hard register.  */
 	new = gen_rtx (SUBREG, tmode, inner,
 		       (WORDS_BIG_ENDIAN
-			&& GET_MODE_SIZE (is_mode) > UNITS_PER_WORD)
-		       ? ((GET_MODE_SIZE (is_mode) - GET_MODE_SIZE (tmode)
-			   / UNITS_PER_WORD))
-		       : 0);
+			&& GET_MODE_SIZE (is_mode) > UNITS_PER_WORD
+			? ((GET_MODE_SIZE (is_mode) - GET_MODE_SIZE (tmode))
+			   / UNITS_PER_WORD)
+			: 0));
       else
 	new = force_to_mode (inner, tmode, len, NULL_RTX);
 
