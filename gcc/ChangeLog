@@ -1,3 +1,8 @@
+Sat Oct 16 12:26:30 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (src_operand):  Check SYMBOL_REF and LABEL_REF
+	memory mode.
+
 Fri Oct 15 17:02:09 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.c (move_operand): Rely on memory_address_p to determine the

@@ -3119,7 +3119,7 @@ src_operand (op, mode)
       && ((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
 	   || GET_CODE (XEXP (op, 0)) == LABEL_REF
 	   || GET_CODE (XEXP (op, 0)) == CONST)))
-    return ! TARGET_EXPOSE_LDP;
+    return ! TARGET_EXPOSE_LDP && GET_MODE (op) == mode;
 
   return general_operand (op, mode);
 }
