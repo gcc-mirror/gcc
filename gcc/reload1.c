@@ -417,6 +417,7 @@ static int reload_reg_reaches_end_p	PARAMS ((unsigned int, int,
 						 enum reload_type));
 static int allocate_reload_reg		PARAMS ((struct insn_chain *, int,
 						 int));
+static int conflicts_with_override	PARAMS ((rtx));
 static void failed_reload		PARAMS ((rtx, int));
 static int set_reload_reg		PARAMS ((int, int));
 static void choose_reload_regs_init	PARAMS ((struct insn_chain *, rtx *));
@@ -4882,6 +4883,21 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
   return 1;
 }
 
+/* Determine whether the reload reg X overlaps any rtx'es used for
+   overriding inheritance.  Return nonzero if so.  */
+
+static int
+conflicts_with_override (x)
+     rtx x;
+{
+  int i;
+  for (i = 0; i < n_reloads; i++)
+    if (reload_override_in[i]
+	&& reg_overlap_mentioned_p (x, reload_override_in[i]))
+      return 1;
+  return 0;
+}
+
 /* Give an error message saying we failed to find a reload for INSN,
    and clear out reload R.  */
 static void
@@ -6215,6 +6231,7 @@ emit_input_reload_insns (chain, rl, old, j)
 	   && dead_or_set_p (insn, old)
 	   /* This is unsafe if some other reload
 	      uses the same reg first.  */
+	   && ! conflicts_with_override (reloadreg)
 	   && reload_reg_free_for_value_p (REGNO (reloadreg),
 					   rl->opnum,
 					   rl->when_needed,
