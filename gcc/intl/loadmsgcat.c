@@ -78,6 +78,15 @@ char *alloca ();
 # include "../locale/localeinfo.h"
 #endif
 
+/* GCC LOCAL: These macros are used below.  */
+/* The extra casts work around common compiler bugs.  */
+#define INTTYPE_SIGNED(t) (! ((t) 0 < (t) -1))
+/* The outer cast is needed to work around a bug in Cray C 5.0.3.0.
+   It is necessary at least when t == time_t.  */
+#define INTTYPE_MINIMUM(t) ((t) (INTTYPE_SIGNED (t) \
+                             ? ~ (t) 0 << (sizeof(t) * CHAR_BIT - 1) : (t) 0))
+#define INTTYPE_MAXIMUM(t) ((t) (~ (t) 0 - INTTYPE_MINIMUM (t)))
+
 /* @@ end of prolog @@ */
 
 #ifdef _LIBC
@@ -373,19 +382,23 @@ _nl_load_domain (domain_file, domainbinding)
     return;
 
   /* We must know about the size of the file.  */
+  /* GCC_LOCAL: Use INTTYPE_MAXIMUM for overflow check, cast sizeof to
+     off_t, move set of size below if.  */
   if (
 #ifdef _LIBC
       __builtin_expect (fstat64 (fd, &st) != 0, 0)
 #else
       __builtin_expect (fstat (fd, &st) != 0, 0)
 #endif
-      || __builtin_expect ((size = (size_t) st.st_size) != st.st_size, 0)
-      || __builtin_expect (size < sizeof (struct mo_file_header), 0))
+      || __builtin_expect (st.st_size > INTTYPE_MAXIMUM (ssize_t), 0)
+      || __builtin_expect (st.st_size < (off_t) sizeof (struct mo_file_header),
+			   0))
     {
       /* Something went wrong.  */
       close (fd);
       return;
     }
+  size = (size_t) st.st_size;
 
 #ifdef HAVE_MMAP
   /* Now we are ready to load the file.  If mmap() is available we try

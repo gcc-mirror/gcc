@@ -1,3 +1,11 @@
+2001-10-24  Zack Weinberg  <zack@codesourcery.com>
+
+	* loadmsgcat.c (INTTYPE_SIGNED, INTTYPE_MINIMUM,
+	INTTYPE_MAXIMUM): Clone from system.h.
+	(_nl_load_domain): Use them when testing for overflow of size_t.
+	Cast result of sizeof to off_t to compare to st_size value.
+	Move side effects out of conditional for comprehensibility.
+
 2001-10-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* dcigettext.c: Don't use #elif.

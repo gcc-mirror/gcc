@@ -4943,6 +4943,9 @@ static const char *constructor_asmspec;
 /* Nonzero if this is an initializer for a top-level decl.  */
 static int constructor_top_level;
 
+/* Nonzero if there were any member designators in this initializer.  */
+static int constructor_designated;
+
 /* Nesting depth of designator list.  */
 static int designator_depth;
 
@@ -4980,6 +4983,7 @@ struct constructor_stack
   char erroneous;
   char outer;
   char incremental;
+  char designated;
 };
 
 struct constructor_stack *constructor_stack;
@@ -5056,6 +5060,7 @@ start_init (decl, asmspec_tree, top_level)
   constructor_decl = decl;
   constructor_asmspec = asmspec;
   constructor_subconstants_deferred = 0;
+  constructor_designated = 0;
   constructor_top_level = top_level;
 
   if (decl != 0)
@@ -5165,6 +5170,7 @@ really_start_incremental_init (type)
   p->range_stack = 0;
   p->outer = 0;
   p->incremental = constructor_incremental;
+  p->designated = constructor_designated;
   p->next = 0;
   constructor_stack = p;
 
@@ -5175,6 +5181,7 @@ really_start_incremental_init (type)
   constructor_pending_elts = 0;
   constructor_type = type;
   constructor_incremental = 1;
+  constructor_designated = 0;
   designator_depth = 0;
   designator_errorneous = 0;
 
@@ -5276,6 +5283,7 @@ push_init_level (implicit)
   p->implicit = implicit;
   p->outer = 0;
   p->incremental = constructor_incremental;
+  p->designated = constructor_designated;
   p->next = constructor_stack;
   p->range_stack = 0;
   constructor_stack = p;
@@ -5285,6 +5293,7 @@ push_init_level (implicit)
   constructor_depth = SPELLING_DEPTH ();
   constructor_elements = 0;
   constructor_incremental = 1;
+  constructor_designated = 0;
   constructor_pending_elts = 0;
   if (!implicit)
     {
@@ -5465,7 +5474,9 @@ pop_init_level (implicit)
 		   || integer_zerop (DECL_SIZE (constructor_unfilled_fields))))
 	  constructor_unfilled_fields = TREE_CHAIN (constructor_unfilled_fields);
 
-	if (constructor_unfilled_fields)
+	/* Do not warn if this level of the initializer uses member
+	   designators; it is likely to be deliberate.  */
+	if (constructor_unfilled_fields && !constructor_designated)
 	  {
 	    push_member_name (constructor_unfilled_fields);
 	    warning_init ("missing initializer");
@@ -5531,6 +5542,7 @@ pop_init_level (implicit)
   constructor_simple = p->simple;
   constructor_erroneous = p->erroneous;
   constructor_incremental = p->incremental;
+  constructor_designated = p->designated;
   constructor_pending_elts = p->pending_elts;
   constructor_depth = p->depth;
   if (!p->implicit)
@@ -5577,6 +5589,7 @@ set_designator (array)
 	 braces.  */
       while (constructor_stack->implicit)
 	process_init_element (pop_init_level (1));
+      constructor_designated = 1;
       return 0;
     }
 
@@ -5612,6 +5625,7 @@ set_designator (array)
       return 1;
     }
 
+  constructor_designated = 1;
   push_init_level (2);
   return 0;
 }
@@ -6589,8 +6603,12 @@ process_init_element (value)
 	     under the assumption that the zero initializer in user
 	     code appears conditioned on e.g. __STDC__ to avoid
 	     "missing initializer" warnings and relies on default
-	     initialization to zero in the traditional C case.  */
-	  if (warn_traditional && !in_system_header
+	     initialization to zero in the traditional C case.
+	     We also skip the warning if the initializer is designated,
+	     again on the assumption that this must be conditional on
+	     __STDC__ anyway (and we've already complained about the
+	     member-designator already).  */
+	  if (warn_traditional && !in_system_header && !constructor_designated
 	      && !(value && (integer_zerop (value) || real_zerop (value))))
 	    warning ("traditional C rejects initialization of unions");
 

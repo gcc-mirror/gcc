@@ -1,3 +1,22 @@
+2001-10-24  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-common.h (struct c_common_identifier): Remove rid_code field.
+	(C_RID_CODE): Use ->node.rid_code instead of ->rid_code.
+
+	* c-typeck.c (constructor_designated): New local flag.
+	(struct constructor_stack): Add "designated" field to match.
+	(start_init): Clear it.
+	(really_start_incremental_init, push_init_level): Push and
+	clear it.
+	(pop_init_level): Pop it.
+	(set_designator): Set it.
+
+	(pop_init_level): Suppress "missing initializer" warnings if
+	constructor_designated is true.
+	(process_init_element): Suppress warning about union
+	initialization under traditional C, if constructor_designated
+	is true.
+
 Wed Oct 24 15:35:38 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* integrate.c (copy_rtx_and_substitute, case CALL): Fix error in last
@@ -10,7 +29,7 @@ Wed Oct 24 13:26:12 2001  Jeffrey A Law  (law@cygnus.com)
 2001-10-24  Dan Nicolaescu  <dann@ics.uci.edu>
 
 	* ssa-ccp.c (ssa_ccp_substitute_constants): Don't do anything if
-	the node was already a set to a constant. 
+	the node was already a set to a constant.
 
 Wed Oct 24 12:41:19 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
@@ -1811,8 +1830,8 @@ Wed Oct  3 12:22:11 EDT 2001  John Wehle  (john@feith.com)
 	* cppmain.c: Update comments.
 
 Tue Oct  2 12:46:01 CEST 2001  Bo Thorsen     <bo@suse.co.uk>,
-			       Andreas Jaeger <aj@suse.de>,
-			       Jan Hubicka    <jh@suse.cz>
+				Andreas Jaeger <aj@suse.de>,
+				Jan Hubicka    <jh@suse.cz>
 
 	* doc/invoke.texi (i386 Options): Document x86-64 options.
 	(i386 and x86-64 Options): Rename i386 options section.
@@ -8410,7 +8429,7 @@ Sun Jul 29 18:59:13 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	(try_optimize_cfg): Update call of try_forward_edges.
 
 Sun Jul 29 18:59:56 CEST 2001  Roman Zippel  <zippel@linux-m68k.org>
-			       Jan Hubicka  <jh@suse.cz>
+				Jan Hubicka  <jh@suse.cz>
 
 	* (validate_replace_rtx_1): Fix simplification of MINUS.
 
@@ -9145,7 +9164,7 @@ Sun Jul 22 21:31:04 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	insns to delete in the presence of cc0 in a jump insn.
 
 Fri Jul 20 22:14:49 CEST 2001  Roman Zippel  <zippel@linux-m68k.org>
-			       Jan Hubicka  <jh@suse.cz>
+				Jan Hubicka  <jh@suse.cz>
 
 	* m68k.md (zero_extend?i?i2 expander): Use gen_lowpart instead
 	of doing the change by hand.
@@ -9428,7 +9447,7 @@ Wed Jul 18 20:47:36 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* aclocal.m4 (AM_ICONV): New macro from Bruno Haible.
 
 Wed Jul 18 18:46:30 CEST 2001  Richard Henderson <rth@cygnus.com>
-			       Jan Hubicka  <jh@suse.cz>
+				Jan Hubicka  <jh@suse.cz>
 
 	* flow.c (redirect_edge_and_branch): Bail out on complex edges.
 	(try_optimize_cfg): Do not remove tail recursive labels before sibcall.
@@ -9485,9 +9504,9 @@ Wed Jul 18 12:05:29 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2001-07-17  Andreas Schwab  <schwab@suse.de>
 
-       * configure.in  (assembler eh_frame optimization): Handle big
-       endian.
-       * configure: Regenerated.
+	* configure.in  (assembler eh_frame optimization): Handle big
+	endian.
+	* configure: Regenerated.
 
 Tue Jul 17 23:43:31 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
