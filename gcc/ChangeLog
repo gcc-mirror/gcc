@@ -1,3 +1,7 @@
+Sun Feb 14 23:12:10 1999  Richard Henderson  <rth@cygnus.com>
+
+	* i386.c (legitimate_address_p): Verify modes of base and index.
+
 Sun Feb 14 23:01:28 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i386.c (legitimate_pic_address_disp_p): Remove static.
