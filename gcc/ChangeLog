@@ -1,3 +1,46 @@
+2003-05-12  Janis Johnson  <janis187@us.ibm.com>
+	    Alan Modra  <amodra@bigpond.net.au>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.in (HAVE_AS_TLS): Add powerpc and powerpc64 tests.
+	* configure: Rebuild.
+	* config/rs6000/rs6000-protos.h: Update.
+	* config/rs6000/rs6000.c (rs6000_tls_size): New.
+	(rs6000_tls_size_string): New.
+	(rs6000_parse_tls_size_option): New.
+	(rs6000_legitimize_tls_address): New.
+	(rs6000_tls_get_addr): New.
+	(rs6000_got_sym): New.
+	(rs6000_tls_symbol_ref): New.
+	(rs6000_tls_symbol_ref_1): New.
+	(rs6000_get_some_local_dynamic_name): New.
+	(rs6000_get_some_local_dynamic_name_1): New.
+	(TARGET_HAVE_TLS): New.
+	(TARGET_CANNOT_FORCE_CONST_MEM): New.
+	(rs6000_override_options): Handle -mtls-size option.
+	(constant_pool_expr_1): Handle TLS symbols.
+	(rs6000_legitimize_address): Handle TLS symbols.
+	(rs6000_tls_referenced_p): New.
+	(rs6000_legitimate_address): Handle TLS symbols.
+	(rs6000_emit_move): Handle TLS symbols.
+	(print_operand): Handle TLS symbols.
+	(uses_TOC): Handle TLS symbols.
+	(rs6000_emit_prologue): Use symbol for unspec constant.
+	* config/rs6000/rs6000.h (HAVE_AS_TLS): New.
+	(some_ld_name): New.
+	(LEGITIMATE_CONSTANT_P): Handle TLS symbols.
+	(PRINT_OPERAND_PUNCT_VALID_P): Handle TLS symbols.
+	(PREDICATE_CODES): Add rs6000_tls_symbol_ref.
+	* config/rs6000/rs6000.md (load_toc_v4_PIC_1, load_toc_v4_PIC_1b):
+	Support TLS.
+	(tls_gd_32, tls_gd_64, tls_ld_32, tls_ld_64, tls_dtprel_32,
+	tls_dtprel_64, tls_dtprel_ha_32, tls_dtprel_ha_64, tls_dtprel_lo_32,
+	tls_dtprel_lo_64, tls_got_dtprel_32, tls_got_dtprel_64, tls_tprel_32,
+	tls_tprel_64, tls_tprel_ha_32, tls_tprel_ha_64, tls_tprel_lo_32,
+	tls_tprel_lo_64, tls_got_tprel_32, tls_got_tprel_64, tls_tls_32,
+	tls_tls_64): New.
+	* config/rs6000/sysv4.h (SUBTARGET_OPTIONS): Add tls_size.
+
 2003-05-12  Neil Booth  <neil@cat.daikokuya.co.uk>
 
 	* Makefile.in (stage2_build, stage3_build, stage4_build):
