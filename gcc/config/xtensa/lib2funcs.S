@@ -30,46 +30,19 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #include "xtensa/xtensa-config.h"
 
-/* __xtensa_libgcc_window_spill: This function uses a series of nested
-   calls to flush out all but the current register window.  This is
-   used to set up the stack so that arbitrary frames can be accessed.
-   The functions used for the nested calls are also reused by the
-   nonlocal goto function below. */
+/* __xtensa_libgcc_window_spill: This function flushes out all but the
+   current register window.  This is used to set up the stack so that
+   arbitrary frames can be accessed. */
 
-        .align  4
-        .global __xtensa_libgcc_window_spill
-        .type   __xtensa_libgcc_window_spill,@function
+	.align	4
+	.global	__xtensa_libgcc_window_spill
+	.type	__xtensa_libgcc_window_spill,@function
 __xtensa_libgcc_window_spill:
-	entry	sp, 48
-	call4	.L__wdwspill_assist52	// called with call8, only need a call4
+	entry	sp, 32
+	movi	a2, 0
+	syscall
 	retw
-        .size   __xtensa_libgcc_window_spill,.-__xtensa_libgcc_window_spill
-
-        .align  4
-.L__wdwspill_assist56:
-	entry	sp, 16
-	call4	.L__wdwspill_assist52
-	retw
-        .align  4
-.L__wdwspill_assist52:
-	entry	sp, 48
-	call12	.L__wdwspill_assist40
-	retw
-        .align  4
-.L__wdwspill_assist40:
-	entry	sp, 48
-	call12	.L__wdwspill_assist28
-	retw
-        .align  4
-.L__wdwspill_assist28:
-	entry	sp, 48
-	call12	.L__wdwspill_assist16
-	retw
-        .align  4
-.L__wdwspill_assist16:
-	entry	sp, 16
-	movi	a15, 0
-	retw
+	.size	__xtensa_libgcc_window_spill,.-__xtensa_libgcc_window_spill
 
 
 /* __xtensa_nonlocal_goto: This code does all the hard work of a
@@ -90,7 +63,10 @@ __xtensa_nonlocal_goto:
 	entry	sp, 32
 
 	/* flush registers */
-	call8	.L__wdwspill_assist56
+	mov	a5, a2
+	movi	a2, 0
+	syscall
+	mov	a2, a5
 
 	/* Because the save area for a0-a3 is stored one frame below
 	   the one identified by a2, the only way to restore those

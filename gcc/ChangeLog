@@ -1,3 +1,9 @@
+2002-04-18  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/lib2funcs.S (__xtensa_libgcc_window_spill,
+	__xtensa_nonlocal_goto): Use a syscall instructions to flush
+	the register windows.
+
 2002-04-18  Zack Weinberg  <zack@codesourcery.com>
 
 	* real.h: Define REAL_VALUE_TYPE_SIZE as 96 or 160, as
