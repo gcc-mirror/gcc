@@ -1,3 +1,7 @@
+2003-06-08  Tim Josling  <tej@melbpc.org.au>
+
+	* treetree.c (c_lex): Add fake routine to satisfy RS6000 backend.
+
 Thu Jun  5 18:33:40 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* Make-lang.in:  Add support for stageprofile and stagefeedback
