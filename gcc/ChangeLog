@@ -1,3 +1,26 @@
+2001-03-16  Michael Meissner  <meissner@redhat.com>
+
+	* mips.h (BITMASK_HIGH): Replacement for 0x80000000 that avoids
+	warnings.
+	(BITMASK_UPPER16): Replacement for 0xffff0000 that avoids
+	warnings.
+	(BITMASK_LOWER16): Replacement for 0x0000ffff.
+
+	* mips.c (save_restore_insns): Use BITMASK_UPPER16/BITMASK_LOWER16
+	instead of 0xffff0000/0x0000ffff to avoid warnings about constants
+	being unsigned in ISO C and signed in traditional.
+	(expand_prologue): Ditto.
+	(RA_MASK): Use BITMASK_HIGH to avoid warnings.
+
+	* mips.md (divmodsi4,divmodsi4): Use BITMASK_HIGH to avoid
+	warnings.
+	(divsi3,divdi3): Ditto.
+	(modsi3,moddi3): Ditto.
+	(fix_truncdfsi2,fix_truncdfdi2): Ditto.
+	(fix_truncsfsi2,fix_truncsfdi2): Ditto.
+	(movsi split): Use BITMASK_UPPER16/BITMASK_LOWER16 to avoid
+	warnings.
+
 Fri Mar 16 14:47:57 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (ix86_expand_fp_movcc): Do not attempt to construct

@@ -6452,12 +6452,13 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		  && GET_MODE (base_reg_rtx) == SImode)
 		{
 		  insn = emit_move_insn (base_reg_rtx,
-					 GEN_INT (gp_offset & 0xffff0000));
+					 GEN_INT (gp_offset & BITMASK_UPPER16));
 		  if (store_p)
 		    RTX_FRAME_RELATED_P (insn) = 1;
 		  insn
 		    = emit_insn (gen_iorsi3 (base_reg_rtx, base_reg_rtx,
-					     GEN_INT (gp_offset & 0x0000ffff)));
+					     GEN_INT (gp_offset
+						      & BITMASK_LOWER16)));
 		  if (store_p)
 		    RTX_FRAME_RELATED_P (insn) = 1;
 		}
@@ -6671,11 +6672,12 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		  && GET_MODE (base_reg_rtx) == SImode)
 		{
 		  insn = emit_move_insn (base_reg_rtx,
-					 GEN_INT (fp_offset & 0xffff0000));
+					 GEN_INT (fp_offset & BITMASK_UPPER16));
 		  if (store_p)
 		    RTX_FRAME_RELATED_P (insn) = 1;
 		  insn = emit_insn (gen_iorsi3 (base_reg_rtx, base_reg_rtx,
-						GEN_INT (fp_offset & 0x0000ffff)));
+						GEN_INT (fp_offset
+							 & BITMASK_LOWER16)));
 		  if (store_p)
 		    RTX_FRAME_RELATED_P (insn) = 1;
 		}
@@ -7223,10 +7225,11 @@ mips_expand_prologue ()
 		  && GET_MODE (tmp_rtx) == SImode)
 		{
 		  insn = emit_move_insn (tmp_rtx,
-					 GEN_INT (tsize & 0xffff0000));
+					 GEN_INT (tsize & BITMASK_UPPER16));
 		  RTX_FRAME_RELATED_P (insn) = 1;
 		  insn = emit_insn (gen_iorsi3 (tmp_rtx, tmp_rtx,
-						GEN_INT (tsize & 0x0000ffff)));
+						GEN_INT (tsize
+							 & BITMASK_LOWER16)));
 		  RTX_FRAME_RELATED_P (insn) = 1;
 		}
 	      else
@@ -7342,7 +7345,7 @@ mips_expand_prologue ()
 /* Do any necessary cleanup after a function to restore stack, frame,
    and regs. */
 
-#define RA_MASK 0x80000000L	/* 1 << 31 */
+#define RA_MASK BITMASK_HIGH	/* 1 << 31 */
 #define PIC_OFFSET_TABLE_MASK (1 << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))
 
 void
