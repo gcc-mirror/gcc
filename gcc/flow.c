@@ -309,7 +309,7 @@ static void merge_blocks_nomove		PARAMS ((basic_block, basic_block));
 static int merge_blocks			PARAMS ((edge,basic_block,basic_block));
 static void try_merge_blocks		PARAMS ((void));
 static void tidy_fallthru_edge		PARAMS ((edge,basic_block,basic_block));
-
+static void tidy_fallthru_edges		PARAMS ((void));
 static int verify_wide_reg_1		PARAMS ((rtx *, void *));
 static void verify_wide_reg		PARAMS ((int, rtx, rtx));
 static void verify_local_live_at_start	PARAMS ((regset, basic_block));
@@ -422,6 +422,11 @@ find_basic_blocks (f, nregs, file)
   /* Discover the edges of our cfg.  */
   record_active_eh_regions (f);
   make_edges (label_value_list);
+
+  /* Do very simple cleanup now, for the benefit of code that runs between
+     here and cleanup_cfg, e.g. thread_prologue_and_epilogue_insns.  */
+  tidy_fallthru_edges ();
+
   mark_critical_edges ();
 
 #ifdef ENABLE_CHECKING
@@ -1746,36 +1751,7 @@ delete_unreachable_blocks ()
 	deleted_handler |= delete_block (b);
     }
 
-  /* Fix up edges that now fall through, or rather should now fall through
-     but previously required a jump around now deleted blocks.  Simplify
-     the search by only examining blocks numerically adjacent, since this
-     is how find_basic_blocks created them.  */
-
-  for (i = 1; i < n_basic_blocks; ++i)
-    {
-      basic_block b = BASIC_BLOCK (i - 1);
-      basic_block c = BASIC_BLOCK (i);
-      edge s;
-
-      /* We care about simple conditional or unconditional jumps with
-	 a single successor.
-
-	 If we had a conditional branch to the next instruction when
-	 find_basic_blocks was called, then there will only be one
-	 out edge for the block which ended with the conditional
-	 branch (since we do not create duplicate edges).
-
-	 Furthermore, the edge will be marked as a fallthru because we
-	 merge the flags for the duplicate edges.  So we do not want to
-	 check that the edge is not a FALLTHRU edge.  */
-      if ((s = b->succ) != NULL
-	  && s->succ_next == NULL
-	  && s->dest == c
-	  /* If the jump insn has side effects, we can't tidy the edge.  */
-	  && (GET_CODE (b->end) != JUMP_INSN
-	      || onlyjump_p (b->end)))
-	tidy_fallthru_edge (s, b, c);
-    }
+  tidy_fallthru_edges ();
 
   /* If we deleted an exception handler, we may have EH region begin/end
      blocks to remove as well. */
@@ -2365,9 +2341,8 @@ try_merge_blocks ()
     }
 }
 
-/* The given edge should potentially a fallthru edge.  If that is in
-   fact true, delete the unconditional jump and barriers that are in
-   the way.  */
+/* The given edge should potentially be a fallthru edge.  If that is in
+   fact true, delete the jump and barriers that are in the way.  */
 
 static void
 tidy_fallthru_edge (e, b, c)
@@ -2417,6 +2392,43 @@ tidy_fallthru_edge (e, b, c)
     flow_delete_insn_chain (NEXT_INSN (q), PREV_INSN (c->head));
 
   e->flags |= EDGE_FALLTHRU;
+}
+
+/* Fix up edges that now fall through, or rather should now fall through
+   but previously required a jump around now deleted blocks.  Simplify
+   the search by only examining blocks numerically adjacent, since this
+   is how find_basic_blocks created them.  */
+
+static void
+tidy_fallthru_edges ()
+{
+  int i;
+
+  for (i = 1; i < n_basic_blocks; ++i)
+    {
+      basic_block b = BASIC_BLOCK (i - 1);
+      basic_block c = BASIC_BLOCK (i);
+      edge s;
+
+      /* We care about simple conditional or unconditional jumps with
+	 a single successor.
+
+	 If we had a conditional branch to the next instruction when
+	 find_basic_blocks was called, then there will only be one
+	 out edge for the block which ended with the conditional
+	 branch (since we do not create duplicate edges).
+
+	 Furthermore, the edge will be marked as a fallthru because we
+	 merge the flags for the duplicate edges.  So we do not want to
+	 check that the edge is not a FALLTHRU edge.  */
+      if ((s = b->succ) != NULL
+	  && s->succ_next == NULL
+	  && s->dest == c
+	  /* If the jump insn has side effects, we can't tidy the edge.  */
+	  && (GET_CODE (b->end) != JUMP_INSN
+	      || onlyjump_p (b->end)))
+	tidy_fallthru_edge (s, b, c);
+    }
 }
 
 /* Discover and record the loop depth at the head of each basic block.  */
