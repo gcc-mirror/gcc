@@ -296,6 +296,7 @@ static char *save_string	PARAMS ((const char *, int));
 static void set_collect_gcc_options PARAMS ((void));
 static int do_spec_1		PARAMS ((const char *, int, const char *));
 static int do_spec_2		PARAMS ((const char *));
+static void do_self_spec	PARAMS ((const char *));
 static const char *find_file	PARAMS ((const char *));
 static int is_directory		PARAMS ((const char *, const char *, int));
 static void validate_switches	PARAMS ((const char *));
@@ -737,6 +738,12 @@ static const char *multilib_exclusions;
 #endif
 
 static const char *const multilib_defaults_raw[] = MULTILIB_DEFAULTS;
+
+#ifndef DRIVER_SELF_SPECS
+#define DRIVER_SELF_SPECS ""
+#endif
+
+static const char *const driver_self_specs[] = { DRIVER_SELF_SPECS };
 
 struct user_specs
 {
@@ -4268,6 +4275,45 @@ do_spec_2 (spec)
   return do_spec_1 (spec, 0, NULL);
 }
 
+
+/* Process the given spec string and add any new options to the end
+   of the switches/n_switches array.  */
+
+static void
+do_self_spec (spec)
+     const char *spec;
+{
+  do_spec_2 (spec);
+  do_spec_1 (" ", 0, NULL);
+
+  if (argbuf_index > 0)
+    {
+      int i, first;
+
+      first = n_switches;
+      n_switches += argbuf_index;
+      switches = xrealloc (switches,
+			   sizeof (struct switchstr) * (n_switches + 1));
+
+      switches[n_switches] = switches[first];
+      for (i = 0; i < argbuf_index; i++)
+	{
+	  struct switchstr *sw;
+
+	  /* Each switch should start with '-'.  */
+	  if (argbuf[i][0] != '-')
+	    abort ();
+
+	  sw = &switches[i + first];
+	  sw->part1 = &argbuf[i][1];
+	  sw->args = 0;
+	  sw->live_cond = SWITCH_OK;
+	  sw->validated = 0;
+	  sw->ordering = 0;
+	}
+    }
+}
+
 /* Process the sub-spec SPEC as a portion of a larger spec.
    This is like processing a whole spec except that we do
    not initialize at the beginning and we do not supply a
@@ -5916,6 +5962,12 @@ main (argc, argv)
      Decode switches that are handled locally.  */
 
   process_command (argc, argv);
+
+  /* Process DRIVER_SELF_SPECS, adding any new options to the end
+     of the command line.  */
+
+  for (i = 0; i < ARRAY_SIZE (driver_self_specs); i++)
+    do_self_spec (driver_self_specs[i]);
 
   /* Initialize the vector of specs to just the default.
      This means one element containing 0s, as a terminator.  */

@@ -163,6 +163,23 @@ multilibs.  Example nonsensical definition, where @code{-malt-abi},
 @{ "-compat", "-EB -malign=4 -mspoo" @}
 @end smallexample
 
+@findex DRIVER_SELF_SPECS
+@item DRIVER_SELF_SPECS
+A list of specs for the driver itself.  It should be a suitable
+initializer for an array of strings, with no surrounding braces.
+
+The driver applies these specs to its own command line before choosing
+the multilib directory or running any subcommands.  It applies them in
+the order given, so each spec can depend on the options added by
+earlier ones.  It is also possible to remove options using
+@samp{%<@var{option}} in the usual way.
+
+This macro can be useful when a port has several interdependent target
+options.  It provides a way of standardizing the command line so
+that the other specs are easier to write.
+
+Do not define this macro if it does not need to do anything.
+
 @findex CPP_SPEC
 @item CPP_SPEC
 A C string constant that tells the GCC driver program options to
