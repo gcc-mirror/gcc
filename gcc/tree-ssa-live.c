@@ -1323,10 +1323,8 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
         {
 	  bool is_a_copy = false;
 	  tree stmt = bsi_stmt (bsi);
-	  stmt_ann_t ann;
 
 	  get_stmt_operands (stmt);
-	  ann = stmt_ann (stmt);
 
 	  /* A copy between 2 partitions does not introduce an interference 
 	     by itself.  If they did, you would never be able to coalesce 
