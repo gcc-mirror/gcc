@@ -1,5 +1,6 @@
 2004-07-20  Andrew Haley  <aph@redhat.com>
 
+	PR java/16431.
 	* verify.c (verify_jvm_instructions): Comment change only.
 
 	* typeck.c (build_java_array_type): Add size field to array name.
