@@ -1,5 +1,7 @@
 Wed May 17 18:06:12 2000  John David Anglin <dave@hiauly1.hia.nrc.ca>
 
+	* mklibgcc.in Add missing -DL$name when compiling modules in libgcc1.c.
+
 	* tree.c (build_common_tree_nodes): Do not build TI nodes unless
 	HOST_BITS_PER_WIDE_INT is >= 64.
 
