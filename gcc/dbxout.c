@@ -1219,7 +1219,20 @@ dbxout_type (type, full)
 	 write it as a subtype.  */
       else if (TREE_TYPE (type) != 0
 	       && TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE)
-	dbxout_range_type (type);
+        {
+	  /* If the size is non-standard, say what it is if we can use
+	     GDB extensions.  */
+
+	  if (use_gnu_debug_info_extensions
+	      && TYPE_PRECISION (type) != TYPE_PRECISION (integer_type_node))
+	    {
+	      have_used_extensions = 1;
+	      fprintf (asmfile, "@s%d;", TYPE_PRECISION (type));
+	      CHARS (5);
+	    }
+
+	  dbxout_range_type (type);
+        }
 
       else
   	{
