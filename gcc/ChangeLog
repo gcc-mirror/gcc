@@ -1,3 +1,14 @@
+2004-09-14  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (stmts_to_rescan): Move from a block-local
+	to a global varray.  
+	(tree_ssa_dominator_optimize): Allocate stmts_to_rescan.
+	(dom_opt_initialize_block_local_data): No longer test state
+	of stmts_to_rescan.
+	(dom_opt_finalize_block): Update due to change in scope of
+	stmts_to_rescan.
+	(optimize_stmt): Similarly.
+
 2004-09-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cgraph.h, cgraphunit.c, fold-const.c, lambda-mat.c,

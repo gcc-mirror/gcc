@@ -53,6 +53,15 @@ Boston, MA 02111-1307, USA.  */
    in this table.  */
 static htab_t avail_exprs;
 
+/* Stack of statements we need to rescan during finalization for newly
+   exposed variables.
+
+   Statement rescanning must occur after the current block's available
+   expressions are removed from AVAIL_EXPRS.  Else we may change the
+   hash code for an expression and be unable to find/remove it from
+   AVAIL_EXPRS.  */
+varray_type stmts_to_rescan;
+
 /* Structure for entries in the expression hash table.
 
    This requires more memory for the hash table entries, but allows us
@@ -185,10 +194,6 @@ struct dom_walk_block_data
      restored during finalization.  */
   varray_type nonzero_vars;
 
-  /* Array of statements we need to rescan during finalization for newly
-     exposed variables.  */
-  varray_type stmts_to_rescan;
-
   /* Array of variables which have their values constrained by operations
      in this basic block.  We use this during finalization to know
      which variables need their VRP data updated.  */
@@ -313,6 +318,7 @@ tree_ssa_dominator_optimize (void)
   nonzero_vars = BITMAP_XMALLOC ();
   VARRAY_GENERIC_PTR_INIT (vrp_data, num_ssa_names, "vrp_data");
   need_eh_cleanup = BITMAP_XMALLOC ();
+  VARRAY_TREE_INIT (stmts_to_rescan, 20, "Statements to rescan");
 
   /* Setup callbacks for the generic dominator tree walker.  */
   walk_data.walk_stmts_backward = false;
@@ -730,8 +736,6 @@ dom_opt_initialize_block_local_data (struct dom_walk_data *walk_data ATTRIBUTE_U
 		  || VARRAY_ACTIVE_SIZE (bd->const_and_copies) == 0);
       gcc_assert (!bd->nonzero_vars
 		  || VARRAY_ACTIVE_SIZE (bd->nonzero_vars) == 0);
-      gcc_assert (!bd->stmts_to_rescan
-		  || VARRAY_ACTIVE_SIZE (bd->stmts_to_rescan) == 0);
       gcc_assert (!bd->vrp_variables
 		  || VARRAY_ACTIVE_SIZE (bd->vrp_variables) == 0);
       gcc_assert (!bd->block_defs
@@ -1046,12 +1050,17 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
       VARRAY_POP (bd->vrp_variables);
     }
 
-  /* Re-scan operands in all statements that may have had new symbols
-     exposed.  */
-  while (bd->stmts_to_rescan && VARRAY_ACTIVE_SIZE (bd->stmts_to_rescan) > 0)
+  /* If we queued any statements to rescan in this block, then
+     go ahead and rescan them now.  */
+  while (VARRAY_ACTIVE_SIZE (stmts_to_rescan) > 0)
     {
-      tree stmt = VARRAY_TOP_TREE (bd->stmts_to_rescan);
-      VARRAY_POP (bd->stmts_to_rescan);
+      tree stmt = VARRAY_TOP_TREE (stmts_to_rescan);
+      basic_block stmt_bb = bb_for_stmt (stmt);
+
+      if (stmt_bb != bb)
+	break;
+
+      VARRAY_POP (stmts_to_rescan);
       mark_new_vars_to_rename (stmt, vars_to_rename);
     }
 }
@@ -2850,11 +2859,7 @@ optimize_stmt (struct dom_walk_data *walk_data, basic_block bb,
     }
 
   if (may_have_exposed_new_symbols)
-    {
-      if (! bd->stmts_to_rescan)
-	VARRAY_TREE_INIT (bd->stmts_to_rescan, 20, "stmts_to_rescan");
-      VARRAY_PUSH_TREE (bd->stmts_to_rescan, bsi_stmt (si));
-    }
+    VARRAY_PUSH_TREE (stmts_to_rescan, bsi_stmt (si));
 }
 
 /* Replace the RHS of STMT with NEW_RHS.  If RHS can be found in the
