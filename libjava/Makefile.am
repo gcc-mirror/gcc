@@ -187,7 +187,7 @@ libgcj.jar: $(built_java_source_files) $(java_source_files) $(x_java_source_file
 	@set fnord $(MAKEFLAGS); amf=$$2; fail=no; \
 	javac="$(JAVAC)"; \
 	cat tmp-list | (while read f; do \
-	  echo $$javac $(JCFLAGS) -classpath '' -bootclasspath $(here):$(srcdir) -d $(here) $$f; \
+	  echo $$javac $(JCFLAGS) -classpath \'\' -bootclasspath $(here):$(srcdir) -d $(here) $$f; \
 	  $$javac $(JCFLAGS) -classpath '' -bootclasspath $(here):$(srcdir) -d $(here) $$f \
 	    || case "$$amf" in *=*) exit 1;; *k*) fail=yes ;; *) exit 1;; esac; \
 	done; \

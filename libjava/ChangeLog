@@ -46,6 +46,9 @@
 	* gcj/Makefile: Rebuilt.
 	* gcj/libgcj-config.h: Add warning comment.
 
+	* Makefile.am: Escape quotes in echo.
+	* Makefile.in: Rebuilt.
+
 2002-03-12  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* configure.host (powerpc*-darwin*): Enable interpreter.
