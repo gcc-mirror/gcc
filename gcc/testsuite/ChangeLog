@@ -1,3 +1,8 @@
+2000-05-04  Richard Henderson  <rth@cygnus.com>
+
+	* gcc.c-torture/compile/20000504-1.c: New test.  Derived from
+	OpenSSL by Jason R Thorpe.
+
 2000-05-03  Robert Lipe <robertlipe@usa.net>
 
 	* gcc.dg/20000503-1.c: New test.
