@@ -1,4 +1,10 @@
-2003-06-20  Doug Gregor <dgregor@apple.com>
+2003-06-23  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/17_intro/libstdc++-assign.txt: Update address.
+
+	* testsuite/performance/ifstream_getline.cc: Fix.
+	
+2003-06-23  Doug Gregor <dgregor@apple.com>
 
         * include/bits/boost_concept_check.h: Don't use _D or _R for type 
         names.
