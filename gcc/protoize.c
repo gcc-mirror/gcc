@@ -1715,8 +1715,12 @@ save_def_or_dec (l, is_syscalls)
 
     p--;
 
+#ifndef UNPROTOIZE
+    def_dec_p->f_list_chain = NULL;
+#endif /* !defined (UNPROTOIZE) */
+
     while (p != ansi_start && (p[-1] == ' ' || p[-1] == '\t')) p--;
-    if (p[-1] != ')')
+    if (*p != ')')
       {
 	free_def_dec (def_dec_p);
 	return;
@@ -1727,10 +1731,6 @@ save_def_or_dec (l, is_syscalls)
      there will only be one list to isolate, but there could be more.  */
 
   def_dec_p->f_list_count = 0;
-
-#ifndef UNPROTOIZE
-  def_dec_p->f_list_chain = NULL;
-#endif /* !defined (UNPROTOIZE) */
 
   for (;;)
     {
