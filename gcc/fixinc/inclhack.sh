@@ -1091,6 +1091,7 @@ extern "C" {\
         -e '/#[ 	]*define[ 	]*[ 	]CTRL/s/'\''\([cgx]\)'\''/\1/g' \
         -e '/#[ 	]*define[ 	]*[ 	]_CTRL/s/'\''\([cgx]\)'\''/\1/g' \
         -e '/#[ 	]*define[ 	]*[ 	]BSD43_CTRL/s/'\''\([cgx]\)'\''/\1/g' \
+        -e '/#[ 	]*define[ 	]*[ 	]_*ISCTRL/s/'\''\([cgx]\)'\''/\1/g' \
           < $infile > ${DESTDIR}/fixinc.tmp
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}

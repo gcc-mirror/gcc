@@ -622,6 +622,9 @@ fix = {
 
     sed = "/#[ \t]*define[ \t]*[ \t]BSD43_CTRL/"
               "s/'\\([cgx]\\)'/\\1/g";
+
+    sed = "/#[ \t]*define[ \t]*[ \t]_*ISCTRL/"
+              "s/'\\([cgx]\\)'/\\1/g";
 };
 
 

@@ -1,3 +1,8 @@
+Fri Jun 18 06:48:30 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fixinc/inclhack.def (ioctl_fix_ctrl): Fix the definition of _*ISCTRL().
+	* fixinc/{fixincl.x,inclhack.sh}: regen
+
 Thu Jun 17 13:28:30 1999  David O'Brien <obrien@FreeBSD.org>
 
 	* i386/freebsd-elf.h (LINK_SPEC): Fix typo.

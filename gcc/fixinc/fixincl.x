@@ -1120,6 +1120,7 @@ const char* apzIoctl_Fix_CtrlPatch[] = { "sed",
     "-e", "/#[ \t]*define[ \t]*[ \t]CTRL/s/'\\([cgx]\\)'/\\1/g",
     "-e", "/#[ \t]*define[ \t]*[ \t]_CTRL/s/'\\([cgx]\\)'/\\1/g",
     "-e", "/#[ \t]*define[ \t]*[ \t]BSD43_CTRL/s/'\\([cgx]\\)'/\\1/g",
+    "-e", "/#[ \t]*define[ \t]*[ \t]_*ISCTRL/s/'\\([cgx]\\)'/\\1/g",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
