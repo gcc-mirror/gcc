@@ -1,3 +1,8 @@
+2004-01-05  Bernardo Innocenti  <bernie@develer.com>
+
+	* config/m68k/m68k.c (output_andsi3): Fix signed/unsigned comparison
+	warning.	
+
 2004-01-04  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure.ac: Use AC_PROG_CPP_WERROR.
