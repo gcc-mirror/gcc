@@ -1,3 +1,10 @@
+2005-02-09  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/builtins-48.c: New test case.
+	* gcc.dg/builtins-49.c: New test case.
+	* gcc.dg/builtins-50.c: New test case.
+	* gcc.dg/builtins-51.c: New test case.
+
 2005-02-09  Ian Lance Taylor  <ian@airs.com>
 
 	PR middle-end/19583

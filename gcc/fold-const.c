@@ -6776,6 +6776,14 @@ fold (tree expr)
 	}
       else if (tree_expr_nonnegative_p (arg0))
 	return arg0;
+
+      /* Strip sign ops from argument.  */
+      if (TREE_CODE (type) == REAL_TYPE)
+	{
+	  tem = fold_strip_sign_ops (arg0);
+	  if (tem)
+	    return fold (build1 (ABS_EXPR, type, fold_convert (type, tem)));
+	}
       return t;
 
     case CONJ_EXPR:
@@ -7427,6 +7435,17 @@ fold (tree expr)
 	      if (tem)
 		return fold (build2 (RDIV_EXPR, type, tem,
 				     TREE_OPERAND (arg0, 1)));
+	    }
+
+          /* Strip sign operations from X in X*X, i.e. -Y*-Y -> Y*Y.  */
+	  if (operand_equal_p (arg0, arg1, 0))
+	    {
+	      tree tem = fold_strip_sign_ops (arg0);
+	      if (tem != NULL_TREE)
+		{
+		  tem = fold_convert (type, tem);
+		  return fold (build2 (MULT_EXPR, type, tem, tem));
+		}
 	    }
 
 	  if (flag_unsafe_math_optimizations)
@@ -11229,3 +11248,38 @@ ptr_difference_const (tree e1, tree e2, HOST_WIDE_INT *diff)
   *diff += (bitpos1 - bitpos2) / BITS_PER_UNIT;
   return true;
 }
+
+/* Simplify the floating point expression EXP when the sign of the
+   result is not significant.  Return NULL_TREE if no simplification
+   is possible.  */
+
+tree
+fold_strip_sign_ops (tree exp)
+{
+  tree arg0, arg1;
+
+  switch (TREE_CODE (exp))
+    {
+    case ABS_EXPR:
+    case NEGATE_EXPR:
+      arg0 = fold_strip_sign_ops (TREE_OPERAND (exp, 0));
+      return arg0 ? arg0 : TREE_OPERAND (exp, 0);
+
+    case MULT_EXPR:
+    case RDIV_EXPR:
+      if (HONOR_SIGN_DEPENDENT_ROUNDING (TYPE_MODE (TREE_TYPE (exp))))
+	return NULL_TREE;
+      arg0 = fold_strip_sign_ops (TREE_OPERAND (exp, 0));
+      arg1 = fold_strip_sign_ops (TREE_OPERAND (exp, 1));
+      if (arg0 != NULL_TREE || arg1 != NULL_TREE)
+	return fold (build2 (TREE_CODE (exp), TREE_TYPE (exp),
+			     arg0 ? arg0 : TREE_OPERAND (exp, 0),
+			     arg1 ? arg1 : TREE_OPERAND (exp, 1)));
+      break;
+
+    default:
+      break;
+    }
+  return NULL_TREE;
+}
+

@@ -1,3 +1,17 @@
+2005-02-09  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold_strip_sign_ops): New function to simplify a
+	floating point expression ignoring the sign of the result.
+	(fold) <ABS_EXPR>: Use it to simplify fabs(x).
+	(fold) <MULT_EXPR>: Use it to simplify x*x.
+	* tree.h (fold_strip_sign_ops): Prototype here.
+	* builtins.c (fold_builtin_copysign): Take an additional FNDECL
+	argument.  Use fold_strip_sign_ops to simplify the first argument.
+	(fold_builtin_pow):  Use fold_strip_sign_ops to simplify the
+	first argument when the second argument is an even integer
+	constant, but only with -funsafe_math_optimizations.
+	(fold_builtin_1): Update call to fold_builtin_copysign.
+
 2005-02-09  Ian Lance Taylor  <ian@airs.com>
 
 	PR middle-end/19583
@@ -8,7 +22,6 @@
 
 	* gcc/haifa-sched.c (schedule_block): Make queued sched group
 	insns return to ready list in the next turn.
-
 
 2005-02-09  Richard Guenther  <rguenth@gcc.gnu.org>
 
