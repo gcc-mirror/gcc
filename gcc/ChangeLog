@@ -1,6 +1,6 @@
 2002-04-23  David O'Brien  <obrien@FreeBSD.org>
 
-	* g++spec.c: Use profiled libstdc++ and libm with -p/-pg.
+	* cp/g++spec.c: Use profiled libstdc++ and libm with -p/-pg.
 	* config/freebsd.h (MATH_LIBRARY_PROFILE): Use the _p verions of
 	these libraries.
 
