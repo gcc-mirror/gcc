@@ -500,7 +500,6 @@ static bitmap modify_mem_list_set;
 
 /* This array parallels modify_mem_list, but is kept canonicalized.  */
 static rtx * canon_modify_mem_list;
-static bitmap canon_modify_mem_list_set;
 
 /* Various variables for statistics gathering.  */
 
@@ -968,7 +967,6 @@ alloc_gcse_mem (rtx f)
   modify_mem_list = gcalloc (last_basic_block, sizeof (rtx));
   canon_modify_mem_list = gcalloc (last_basic_block, sizeof (rtx));
   modify_mem_list_set = BITMAP_XMALLOC ();
-  canon_modify_mem_list_set = BITMAP_XMALLOC ();
 }
 
 /* Free memory allocated by alloc_gcse_mem.  */
@@ -984,7 +982,6 @@ free_gcse_mem (void)
   sbitmap_vector_free (reg_set_in_block);
   free_modify_mem_tables ();
   BITMAP_XFREE (modify_mem_list_set);
-  BITMAP_XFREE (canon_modify_mem_list_set);
 }
 
 /* Compute the local properties of each recorded expression.
@@ -1951,7 +1948,6 @@ canon_list_insert (rtx dest ATTRIBUTE_UNUSED, rtx unused1 ATTRIBUTE_UNUSED,
     alloc_EXPR_LIST (VOIDmode, dest_addr, canon_modify_mem_list[bb]);
   canon_modify_mem_list[bb] =
     alloc_EXPR_LIST (VOIDmode, dest, canon_modify_mem_list[bb]);
-  bitmap_set_bit (canon_modify_mem_list_set, bb);
 }
 
 /* Record memory modification information for INSN.  We do not actually care
@@ -1975,7 +1971,6 @@ record_last_mem_set_info (rtx insn)
 	 need to insert a pair of items, as canon_list_insert does.  */
       canon_modify_mem_list[bb] =
 	alloc_INSN_LIST (insn, canon_modify_mem_list[bb]);
-      bitmap_set_bit (canon_modify_mem_list_set, bb);
     }
   else
     note_stores (PATTERN (insn), canon_list_insert, (void*) insn);
@@ -2199,17 +2194,12 @@ clear_modify_mem_tables (void)
   EXECUTE_IF_SET_IN_BITMAP (modify_mem_list_set, 0, i, bi)
     {
       free_INSN_LIST_list (modify_mem_list + i);
-    }
-  bitmap_clear (modify_mem_list_set);
-
-  EXECUTE_IF_SET_IN_BITMAP (canon_modify_mem_list_set, 0, i, bi)
-    {
       free_insn_expr_list_list (canon_modify_mem_list + i);
     }
-  bitmap_clear (canon_modify_mem_list_set);
+  bitmap_clear (modify_mem_list_set);
 }
 
-/* Release memory used by modify_mem_list_set and canon_modify_mem_list_set.  */
+/* Release memory used by modify_mem_list_set.  */
 
 static void
 free_modify_mem_tables (void)

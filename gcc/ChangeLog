@@ -1,3 +1,11 @@
+2005-02-15  Jeff Law  <law@redhat.com>
+
+	* gcse.c (canon_modify_mem_set_list_set): Kill unnecessary
+	bitmap.
+	(alloc_gcse_mem, free_gcse_mem): Corresponding changes.
+	(canon_list_insert, record_last_mem_set_info): Similarly.
+	(clear_modify_mem_tables): Similarly.
+
 2005-02-15  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* bitmap.c, bitmap.h, lambda-code.c, tree-dfa.c, tree-dump.c,
