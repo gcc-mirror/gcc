@@ -42,7 +42,9 @@ typedef char * __gnuc_va_list;
 #define va_start(__AP)  __AP = (char *) &__builtin_va_alist
 #endif
 
+#ifndef va_end
 void va_end (__gnuc_va_list);		/* Defined in libgcc.a */
+#endif
 #define va_end(__AP)
 
 #ifdef lint	/* complains about constant in conditional context */
