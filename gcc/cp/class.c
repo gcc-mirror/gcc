@@ -450,15 +450,11 @@ build_vtable_entry (delta, pfn)
 					 build_expr_list (NULL_TREE, pfn)));
       tree entry = build (CONSTRUCTOR, vtable_entry_type, NULL_TREE, elems);
 
-      /* DELTA is constructed by `size_int', which means it may be an
-	 unsigned quantity on some platforms.  Therefore, we cannot use
-	 `int_fits_type_p', because when DELTA is really negative,
-	 `force_fit_type' will make it look like a very large number.  */
+      /* DELTA used to be constructed by `size_int' and/or size_binop,
+	 which caused overflow problems when it was negative.  That should
+	 be fixed now.  */
 
-      if ((TREE_INT_CST_LOW (TYPE_MAX_VALUE (delta_type_node))
-	   < TREE_INT_CST_LOW (delta))
-	  || (TREE_INT_CST_LOW (delta)
-	      < TREE_INT_CST_LOW (TYPE_MIN_VALUE (delta_type_node))))
+      if (! int_fits_type_p (delta, delta_type_node))
 	{
 	  if (flag_huge_objects)
 	    sorry ("object size exceeds built-in limit for virtual function table implementation");
@@ -663,11 +659,11 @@ set_rtti_entry (virtuals, offset, type)
       tree voff = build1 (NOP_EXPR, vfunc_ptr_type_node, offset);
       TREE_CONSTANT (voff) = 1;
 
-      TREE_VALUE (virtuals) = build_vtable_entry (size_zero_node, voff);
+      TREE_VALUE (virtuals) = build_vtable_entry (integer_zero_node, voff);
 
       /* The second slot is for the tdesc pointer when thunks are used.  */
       TREE_VALUE (TREE_CHAIN (virtuals))
-	= build_vtable_entry (size_zero_node, vfn);
+	= build_vtable_entry (integer_zero_node, vfn);
     }
 }
 
@@ -692,7 +688,7 @@ build_vtable (binfo, type)
 
       /* Now do rtti stuff.  */
       offset = get_derived_offset (TYPE_BINFO (type), NULL_TREE);
-      offset = size_binop (MINUS_EXPR, size_zero_node, offset);
+      offset = ssize_binop (MINUS_EXPR, integer_zero_node, offset);
       set_rtti_entry (virtuals, offset, type);
     }
   else
@@ -884,7 +880,7 @@ prepare_fresh_vtable (binfo, for_type)
     offset = BINFO_OFFSET (binfo);
 
   set_rtti_entry (BINFO_VIRTUALS (binfo),
-		  size_binop (MINUS_EXPR, signed_size_zero_node, offset),
+		  ssize_binop (MINUS_EXPR, integer_zero_node, offset),
 		  for_type);
 
 #ifdef GATHER_STATISTICS
@@ -2327,7 +2323,7 @@ modify_one_vtable (binfo, t, fndecl, pfn)
 	  base_offset = size_binop (PLUS_EXPR,
 				    get_derived_offset (binfo, DECL_CONTEXT (current_fndecl)),
 				    BINFO_OFFSET (binfo));
-	  this_offset = size_binop (MINUS_EXPR, offset, base_offset);
+	  this_offset = ssize_binop (MINUS_EXPR, offset, base_offset);
 
 	  /* Make sure we can modify the derived association with immunity.  */
 	  if (TREE_USED (binfo))
@@ -2424,9 +2420,10 @@ fixup_vtable_deltas1 (binfo, t)
 	     Also, we want just the delta between the most base class
 	     that we derived this vfield from and us.  */
 	  base_offset = size_binop (PLUS_EXPR,
-				    get_derived_offset (binfo, DECL_CONTEXT (fndecl)),
+				    get_derived_offset (binfo,
+							DECL_CONTEXT (fndecl)),
 				    BINFO_OFFSET (binfo));
-	  this_offset = size_binop (MINUS_EXPR, offset, base_offset);
+	  this_offset = ssize_binop (MINUS_EXPR, offset, base_offset);
 
 	  if (! tree_int_cst_equal (this_offset, delta))
 	    {
@@ -3986,7 +3983,7 @@ finish_struct_1 (t, warn_anon)
 	  /* The first slot is for the rtti offset.  */
 	  pending_virtuals = tree_cons (NULL_TREE, NULL_TREE, pending_virtuals);
 
-	  set_rtti_entry (pending_virtuals, size_zero_node, t);
+	  set_rtti_entry (pending_virtuals, integer_zero_node, t);
 	  build_vtable (NULL_TREE, t);
 	}
       else
