@@ -12932,6 +12932,17 @@ ix86_init_mmx_sse_builtins (void)
   const struct builtin_description * d;
   size_t i;
 
+  tree V16QI_type_node = build_vector_type_for_mode (intQI_type_node, V16QImode);
+  tree V2SI_type_node = build_vector_type_for_mode (intSI_type_node, V2SImode);
+  tree V2SF_type_node = build_vector_type_for_mode (float_type_node, V2SFmode);
+  tree V2DI_type_node = build_vector_type_for_mode (intDI_type_node, V2DImode);
+  tree V2DF_type_node = build_vector_type_for_mode (double_type_node, V2DFmode);
+  tree V4SF_type_node = build_vector_type_for_mode (float_type_node, V4SFmode);
+  tree V4SI_type_node = build_vector_type_for_mode (intSI_type_node, V4SImode);
+  tree V4HI_type_node = build_vector_type_for_mode (intHI_type_node, V4HImode);
+  tree V8QI_type_node = build_vector_type_for_mode (intQI_type_node, V8QImode);
+  tree V8HI_type_node = build_vector_type_for_mode (intHI_type_node, V8HImode);
+
   tree pchar_type_node = build_pointer_type (char_type_node);
   tree pcchar_type_node = build_pointer_type (
 			     build_type_variant (char_type_node, 1, 0));
@@ -14877,25 +14888,54 @@ ix86_rtx_costs (rtx x, int code, int outer_code, int *total)
 
     case MULT:
       if (FLOAT_MODE_P (mode))
-	*total = COSTS_N_INSNS (ix86_cost->fmul);
-      else if (GET_CODE (XEXP (x, 1)) == CONST_INT)
 	{
-	  unsigned HOST_WIDE_INT value = INTVAL (XEXP (x, 1));
-	  int nbits;
-
-	  for (nbits = 0; value != 0; value >>= 1)
-	    nbits++;
-
-	  *total = COSTS_N_INSNS (ix86_cost->mult_init[MODE_INDEX (mode)]
-			          + nbits * ix86_cost->mult_bit);
+	  *total = COSTS_N_INSNS (ix86_cost->fmul);
+	  return false;
 	}
       else
 	{
-	  /* This is arbitrary */
-	  *total = COSTS_N_INSNS (ix86_cost->mult_init[MODE_INDEX (mode)]
-			          + 7 * ix86_cost->mult_bit);
+	  rtx op0 = XEXP (x, 0);
+	  rtx op1 = XEXP (x, 1);
+	  int nbits;
+	  if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+	    {
+	      unsigned HOST_WIDE_INT value = INTVAL (XEXP (x, 1));
+	      for (nbits = 0; value != 0; value &= value - 1)
+	        nbits++;
+	    }
+	  else
+	    /* This is arbitrary.  */
+	    nbits = 7;
+
+	  /* Compute costs correctly for widening multiplication.  */
+	  if ((GET_CODE (op0) == SIGN_EXTEND || GET_CODE (op1) == ZERO_EXTEND)
+	      && GET_MODE_SIZE (GET_MODE (XEXP (op0, 0))) * 2
+	         == GET_MODE_SIZE (mode))
+	    {
+	      int is_mulwiden = 0;
+	      enum machine_mode inner_mode = GET_MODE (op0);
+
+	      if (GET_CODE (op0) == GET_CODE (op1))
+		is_mulwiden = 1, op1 = XEXP (op1, 0);
+	      else if (GET_CODE (op1) == CONST_INT)
+		{
+		  if (GET_CODE (op0) == SIGN_EXTEND)
+		    is_mulwiden = trunc_int_for_mode (INTVAL (op1), inner_mode)
+			          == INTVAL (op1);
+		  else
+		    is_mulwiden = !(INTVAL (op1) & ~GET_MODE_MASK (inner_mode));
+	        }
+
+	      if (is_mulwiden)
+	        op0 = XEXP (op0, 0), mode = GET_MODE (op0);
+	    }
+  
+  	  *total = COSTS_N_INSNS (ix86_cost->mult_init[MODE_INDEX (mode)]
+			          + nbits * ix86_cost->mult_bit)
+	           + rtx_cost (op0, outer_code) + rtx_cost (op1, outer_code);
+
+          return true;
 	}
-      return false;
 
     case DIV:
     case UDIV:

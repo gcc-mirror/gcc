@@ -1,3 +1,33 @@
+2004-03-16  Paolo Bonzini  <bonzini@gnu.org>
+
+	* c-common.c (c_common_type_for_mode): Build vector types on
+	demand.
+	(handle_mode_attribute): Deprecate using the mode attribute
+	to create vector types.  Fix indentation.
+	(vector_type_node_list): Remove.
+	(handle_vector_size_attribute): Create vector types on demand.
+	Strip a NON_LVALUE_EXPR from the attribute if there is one.
+	* c-typeck.c (comptypes): Make vector types compatible if they
+	have the same underlying mode.
+	(convert_for_assignment): Use comptypes to convert between
+	vector types.
+	* tree.c (build_common_tree_nodes_2): Do not create vector types.
+	* config/arm/arm.c (arm_init_iwmmxt_builtins): Create necessary
+	vector types.
+	* tree.h: Remove vector types.
+	* config/i386/i386.c (i386_init_mmx_sse_builtins): Likewise.
+	* config/rs6000/rs6000.c (rs6000_init_builtins): Likewise.
+	(V16QI_type_node, V2SI_type_node, V2SF_type_node, V4HI_type_node,
+	V4SI_type_node, V4SF_type_node, V8HI_type_node): New globals.
+	* doc/extend.texi (Vector Types): Document how to use the
+	vector_size attribute to create vectors, rather than mode.
+
+	* config/arm/mmintrin.h: Use vector_size attribute, not mode.
+	* config/i386/emmintrin.h: Likewise.
+	* config/i386/mmintrin.h: Likewise.
+	* config/i386/xmmintrin.h: Likewise.
+	* config/sh/ushmedia.h: Likewise.
+
 2004-03-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/freebsd-spec.h, config/arc/arc-protos.h,

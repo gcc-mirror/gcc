@@ -1874,38 +1874,12 @@ c_common_type_for_mode (enum machine_mode mode, int unsignedp)
   if (mode == TYPE_MODE (build_pointer_type (integer_type_node)))
     return unsignedp ? make_unsigned_type (mode) : make_signed_type (mode);
 
-  switch (mode)
+  if (VECTOR_MODE_P (mode))
     {
-    case V16QImode:
-      return unsignedp ? unsigned_V16QI_type_node : V16QI_type_node;
-    case V8HImode:
-      return unsignedp ? unsigned_V8HI_type_node : V8HI_type_node;
-    case V4SImode:
-      return unsignedp ? unsigned_V4SI_type_node : V4SI_type_node;
-    case V2DImode:
-      return unsignedp ? unsigned_V2DI_type_node : V2DI_type_node;
-    case V2SImode:
-      return unsignedp ? unsigned_V2SI_type_node : V2SI_type_node;
-    case V2HImode:
-      return unsignedp ? unsigned_V2HI_type_node : V2HI_type_node;
-    case V4HImode:
-      return unsignedp ? unsigned_V4HI_type_node : V4HI_type_node;
-    case V8QImode:
-      return unsignedp ? unsigned_V8QI_type_node : V8QI_type_node;
-    case V1DImode:
-      return unsignedp ? unsigned_V1DI_type_node : V1DI_type_node;
-    case V16SFmode:
-      return V16SF_type_node;
-    case V4SFmode:
-      return V4SF_type_node;
-    case V2SFmode:
-      return V2SF_type_node;
-    case V2DFmode:
-      return V2DF_type_node;
-    case V4DFmode:
-      return V4DF_type_node;
-    default:
-      break;
+      enum machine_mode inner_mode = GET_MODE_INNER (mode);
+      tree inner_type = c_common_type_for_mode (inner_mode, unsignedp);
+      if (inner_type != NULL_TREE)
+	return build_vector_type_for_mode (inner_type, mode);
     }
 
   for (t = registered_builtin_types; t; t = TREE_CHAIN (t))
@@ -4628,10 +4602,22 @@ handle_mode_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
 	    mode = (enum machine_mode) j;
 
       if (mode == VOIDmode)
-	error ("unknown machine mode `%s'", p);
-      else if (0 == (typefm = lang_hooks.types.type_for_mode
-		     (mode, TREE_UNSIGNED (type))))
+	{
+	  error ("unknown machine mode `%s'", p);
+	  return NULL_TREE;
+	}
+
+      if (VECTOR_MODE_P (mode))
+	{
+	  warning ("specifying vector types with __attribute__ ((mode)) "
+		   "is deprecated");
+	  warning ("use __attribute__ ((vector_size)) instead");
+	}
+
+      typefm = lang_hooks.types.type_for_mode (mode, TREE_UNSIGNED (type));
+      if (typefm == NULL_TREE)
 	error ("no data type for mode `%s'", p);
+
       else if ((TREE_CODE (type) == POINTER_TYPE
 		|| TREE_CODE (type) == REFERENCE_TYPE)
 	       && !(*targetm.valid_pointer_mode) (mode))
@@ -4659,7 +4645,7 @@ handle_mode_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
 	      *node = ptr_type;
 	    }
 	  else
-	  *node = typefm;
+	    *node = typefm;
 	  /* No need to layout the type here.  The caller should do this.  */
 	}
     }
@@ -5090,13 +5076,6 @@ handle_deprecated_attribute (tree *node, tree name,
   return NULL_TREE;
 }
 
-/* Keep a list of vector type nodes we created in handle_vector_size_attribute,
-   to prevent us from duplicating type nodes unnecessarily.
-   The normal mechanism to prevent duplicates is to use type_hash_canon, but
-   since we want to distinguish types that are essentially identical (except
-   for their debug representation), we use a local list here.  */
-static GTY(()) tree vector_type_node_list = 0;
-
 /* Handle a "vector_size" attribute; arguments as in
    struct attribute_spec.handler.  */
 
@@ -5107,19 +5086,24 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
 {
   unsigned HOST_WIDE_INT vecsize, nunits;
   enum machine_mode mode, orig_mode, new_mode;
-  tree type = *node, new_type = NULL_TREE;
-  tree type_list_node;
+  tree type = *node, new_type, size;
 
   *no_add_attrs = true;
 
-  if (! host_integerp (TREE_VALUE (args), 1))
+  /* Stripping NON_LVALUE_EXPR allows declarations such as
+     typedef short v4si __attribute__((vector_size (4 * sizeof(short)))).  */
+  size = TREE_VALUE (args);
+  if (TREE_CODE (size) == NON_LVALUE_EXPR)
+    size = TREE_OPERAND (size, 0);
+
+  if (! host_integerp (size, 1))
     {
       warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
       return NULL_TREE;
     }
 
   /* Get the vector size (in bytes).  */
-  vecsize = tree_low_cst (TREE_VALUE (args), 1);
+  vecsize = tree_low_cst (size, 1);
 
   /* We need to provide for vector pointers, vector arrays, and
      functions returning vectors.  For example:
@@ -5165,73 +5149,13 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
 	break;
       }
 
-    if (new_mode == VOIDmode)
+  if (new_mode == VOIDmode)
     {
       error ("no vector mode with the size and type specified could be found");
       return NULL_TREE;
     }
 
-  for (type_list_node = vector_type_node_list; type_list_node;
-       type_list_node = TREE_CHAIN (type_list_node))
-    {
-      tree other_type = TREE_VALUE (type_list_node);
-      tree record = TYPE_DEBUG_REPRESENTATION_TYPE (other_type);
-      tree fields = TYPE_FIELDS (record);
-      tree field_type = TREE_TYPE (fields);
-      tree array_type = TREE_TYPE (field_type);
-      if (TREE_CODE (fields) != FIELD_DECL
-	  || TREE_CODE (field_type) != ARRAY_TYPE)
-	abort ();
-
-      if (TYPE_MODE (other_type) == mode && type == array_type)
-	{
-	  new_type = other_type;
-	  break;
-	}
-    }
-
-  if (new_type == NULL_TREE)
-    {
-      tree index, array, rt, list_node;
-
-      new_type = lang_hooks.types.type_for_mode (new_mode,
-						 TREE_UNSIGNED (type));
-
-      if (!new_type)
-	{
-	  error ("no vector mode with the size and type specified could be found");
-	  return NULL_TREE;
-	}
-
-      new_type = build_type_copy (new_type);
-
-      /* If this is a vector, make sure we either have hardware
-         support, or we can emulate it.  */
-      if ((GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-	   || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
-	  && !vector_mode_valid_p (mode))
-	{
-	  error ("unable to emulate '%s'", GET_MODE_NAME (mode));
-	  return NULL_TREE;
-	}
-
-      /* Set the debug information here, because this is the only
-	 place where we know the underlying type for a vector made
-	 with vector_size.  For debugging purposes we pretend a vector
-	 is an array within a structure.  */
-      index = build_int_2 (TYPE_VECTOR_SUBPARTS (new_type) - 1, 0);
-      array = build_array_type (type, build_index_type (index));
-      rt = make_node (RECORD_TYPE);
-
-      TYPE_FIELDS (rt) = build_decl (FIELD_DECL, get_identifier ("f"), array);
-      DECL_CONTEXT (TYPE_FIELDS (rt)) = rt;
-      layout_type (rt);
-      TYPE_DEBUG_REPRESENTATION_TYPE (new_type) = rt;
-
-      list_node = build_tree_list (NULL, new_type);
-      TREE_CHAIN (list_node) = vector_type_node_list;
-      vector_type_node_list = list_node;
-    }
+  new_type = build_vector_type_for_mode (type, new_mode);
 
   /* Build back pointers if needed.  */
   *node = reconstruct_complex_type (*node, new_type);

@@ -3,8 +3,8 @@
 
 #include "altivec_check.h"
 
-typedef int int4 __attribute__ ((mode(V4SI)));
-typedef float float4 __attribute__ ((mode(V4SF)));
+typedef int int4 __attribute__ ((vector_size (16)));
+typedef float float4 __attribute__ ((vector_size (16)));
 
 int4 a1 = (int4) { 100, 200, 300, 400 };
 int4 a2 = (int4) { 500, 600, 700, 800 };

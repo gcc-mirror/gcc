@@ -3,7 +3,7 @@
 /* If double is not wider than float, we probably don't have DFmode,
    or at least it's not as wide as double.  */
 #if DBL_MANT_DIG > FLT_MANT_DIG
-typedef float floatvect2 __attribute__((mode(V2DF)));
+typedef double floatvect2 __attribute__((vector_size (16)));
 
 typedef union
 {

@@ -578,7 +578,8 @@ comptypes (tree type1, tree type2, int flags)
     case VECTOR_TYPE:
       /* The target might allow certain vector types to be compatible.  */
       val = (*targetm.vector_opaque_p) (t1)
-	|| (*targetm.vector_opaque_p) (t2);
+	|| (*targetm.vector_opaque_p) (t2)
+	|| TYPE_MODE (t1) == TYPE_MODE (t2);
       break;
 
     default:
@@ -3277,9 +3278,8 @@ convert_for_assignment (tree type, tree rhs, const char *errtype,
       return rhs;
     }
   /* Some types can interconvert without explicit casts.  */
-  else if (codel == VECTOR_TYPE && coder == VECTOR_TYPE
-	   && ((*targetm.vector_opaque_p) (type)
-	       || (*targetm.vector_opaque_p) (rhstype)))
+  else if (codel == VECTOR_TYPE
+           && comptypes (type, TREE_TYPE (rhs), COMPARE_STRICT) == 1)
     return convert (type, rhs);
   /* Arithmetic types all interconvert, and enum is treated like int.  */
   else if ((codel == INTEGER_TYPE || codel == REAL_TYPE

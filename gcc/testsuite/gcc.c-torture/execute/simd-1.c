@@ -4,7 +4,7 @@
    regardless of if the target has SIMD instructions.
 */
 
-typedef int __attribute__((mode(V4SI))) vecint;
+typedef int __attribute__((vector_size (16))) vecint;
 typedef int __attribute__((mode(SI))) siint;
 
 vecint i = { 150, 100, 150, 200 };

@@ -1,14 +1,12 @@
 /* { dg-do compile { target powerpc-*-eabi* } } */
-/* { dg-options "-mcpu=8540" } */
+/* { dg-options "-mspe=yes" } */
 
 /* Test vectors that can interconvert without a cast.  */
 
-typedef int __attribute__((mode(V2SI))) __ev64_opaque__;
-
 __ev64_opaque__ opp;
-int vint   __attribute__((mode(V2SI)));
-int vshort __attribute__((mode(V4HI)));
-int vfloat __attribute__((mode(V2SF)));
+int vint   __attribute__((vector_size (8)));
+short vshort __attribute__((vector_size (8)));
+float vfloat __attribute__((vector_size (8)));
 
 int
 main (void)

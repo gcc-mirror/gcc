@@ -216,9 +216,16 @@ int rs6000_debug_arg;		/* debug argument handling */
 static GTY(()) tree opaque_V2SI_type_node;
 static GTY(()) tree opaque_V2SF_type_node;
 static GTY(()) tree opaque_p_V2SI_type_node;
-
-/* AltiVec requires a few more basic types in addition to the vector
-   types already defined in tree.c.  */
+static GTY(()) tree V16QI_type_node;
+static GTY(()) tree V2SI_type_node;
+static GTY(()) tree V2SF_type_node;
+static GTY(()) tree V4HI_type_node;
+static GTY(()) tree V4SI_type_node;
+static GTY(()) tree V4SF_type_node;
+static GTY(()) tree V8HI_type_node;
+static GTY(()) tree unsigned_V16QI_type_node;
+static GTY(()) tree unsigned_V8HI_type_node;
+static GTY(()) tree unsigned_V4SI_type_node;
 static GTY(()) tree bool_char_type_node;	/* __bool char */
 static GTY(()) tree bool_short_type_node;	/* __bool short */
 static GTY(()) tree bool_int_type_node;		/* __bool int */
@@ -6568,6 +6575,18 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 static void
 rs6000_init_builtins (void)
 {
+  V2SI_type_node = build_vector_type (intSI_type_node, 2);
+  V2SF_type_node = build_vector_type (float_type_node, 2);
+  V4HI_type_node = build_vector_type (intHI_type_node, 4);
+  V4SI_type_node = build_vector_type (intSI_type_node, 4);
+  V4SF_type_node = build_vector_type (float_type_node, 4);
+  V8HI_type_node = build_vector_type (intQI_type_node, 8);
+  V16QI_type_node = build_vector_type (intQI_type_node, 16);
+
+  unsigned_V16QI_type_node = build_vector_type (unsigned_intQI_type_node, 16);
+  unsigned_V8HI_type_node = build_vector_type (unsigned_intHI_type_node, 8);
+  unsigned_V4SI_type_node = build_vector_type (unsigned_intSI_type_node, 4);
+
   opaque_V2SI_type_node = copy_node (V2SI_type_node);
   opaque_V2SF_type_node = copy_node (V2SF_type_node);
   opaque_p_V2SI_type_node = build_pointer_type (opaque_V2SI_type_node);
@@ -6598,10 +6617,10 @@ rs6000_init_builtins (void)
 					    get_identifier ("__pixel"),
 					    pixel_type_node));
 
-  bool_V16QI_type_node = make_vector (V16QImode, bool_char_type_node, 1);
-  bool_V8HI_type_node = make_vector (V8HImode, bool_short_type_node, 1);
-  bool_V4SI_type_node = make_vector (V4SImode, bool_int_type_node, 1);
-  pixel_V8HI_type_node = make_vector (V8HImode, pixel_type_node, 1);
+  bool_V16QI_type_node = build_vector_type (bool_char_type_node, 16);
+  bool_V8HI_type_node = build_vector_type (bool_short_type_node, 8);
+  bool_V4SI_type_node = build_vector_type (bool_int_type_node, 4);
+  pixel_V8HI_type_node = build_vector_type (pixel_type_node, 8);
 
   (*lang_hooks.decls.pushdecl) (build_decl (TYPE_DECL,
 					    get_identifier ("__vector unsigned char"),

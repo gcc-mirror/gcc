@@ -11519,6 +11519,10 @@ arm_init_iwmmxt_builtins (void)
   size_t i;
   tree endlink = void_list_node;
 
+  tree V2SI_type_node = build_vector_type_for_mode (intSI_type_node, V2SImode);
+  tree V4HI_type_node = build_vector_type_for_mode (intHI_type_node, V4HImode);
+  tree V8QI_type_node = build_vector_type_for_mode (intQI_type_node, V8QImode);
+
   tree int_ftype_int
     = build_function_type (integer_type_node,
 			   tree_cons (NULL_TREE, integer_type_node, endlink));

@@ -1,4 +1,4 @@
-typedef float floatvect2 __attribute__((mode(V2SF)));
+typedef float floatvect2 __attribute__((vector_size (8)));
 
 typedef union
 {
