@@ -1,5 +1,10 @@
 2001-02-14  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* typeck2.c (process_init_constructor): Check
+	TREE_HAS_CONSTRUCTOR before issuing missing init warning.
+
+2001-02-14  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* errfn.c (cp_deprecated): Tweak diagnostic text.
 	* parse.y (new_initializer): Deprecate initializer lists
 	extension.

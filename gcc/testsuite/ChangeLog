@@ -1,5 +1,9 @@
 2001-02-14  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.other/warn5.C: New test.
+
+2001-02-14  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.robertl/eb63.C: Remove new initializer list
 	case.
 	* g++.old-deja/g++.ext/arrnew.C: Deprecate.
