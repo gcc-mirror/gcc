@@ -1,3 +1,8 @@
+2001-08-14  Steve Ellcey <sje@cup.hp.com>
+
+	* tlink.c (scan_linker_output): Check string for unsatisfied in
+	addition to undefined and unresolved.
+
 2001-08-14  Graham Stott  <grahams@redhat.com>
 
 	* libgcc2.c (*): Replace EH_FRAME_SECTION with
