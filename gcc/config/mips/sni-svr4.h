@@ -26,9 +26,6 @@ Boston, MA 02111-1307, USA.  */
 -D_mips -D_unix -D_host_mips -D_MIPSEB -D_R3000 -D_SYSTYPE_SVR4 \
 -Asystem=unix -Asystem=svr4 -Acpu=mips -Amachine=mips"
 
-#define SUBTARGET_CPP_SIZE_SPEC "\
--D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int"
-
 #define LINK_SPEC "\
 %{G*} \
 %{!mgas: \

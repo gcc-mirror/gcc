@@ -213,12 +213,6 @@ extern const char *ia64_fixed_range_string;
    %(cpp_cpu)	\
    -D__LONG_MAX__=9223372036854775807L"
 
-/* This is always "long" so it doesn't "change" in ILP32 vs. LP64.  */
-/* #define NO_BUILTIN_SIZE_TYPE */
-
-/* This is always "long" so it doesn't "change" in ILP32 vs. LP64.  */
-/* #define NO_BUILTIN_PTRDIFF_TYPE */
-
 /* A C string constant that tells the GNU CC driver program options to pass to
    `cc1'.  It can also specify how to translate options you give to GNU CC into
    options for GNU CC to pass to the `cc1'.  */

@@ -24,8 +24,7 @@ Boston, MA 02111-1307, USA.  */
   fputs (" (SuperH SH)", stderr);
 
 #undef CPP_DEFAULT_CPU_SPEC
-#define CPP_DEFAULT_CPU_SPEC "-D__SH5__=32 -D__SHMEDIA__ \
--D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int"
+#define CPP_DEFAULT_CPU_SPEC "-D__SH5__=32 -D__SHMEDIA__"
 
 #undef ASM_SPEC
 #define ASM_SPEC  "%(subtarget_asm_endian_spec) %{mrelax:-relax} \

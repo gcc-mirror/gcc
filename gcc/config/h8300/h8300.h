@@ -44,9 +44,6 @@ extern const char * const *h8_reg_names;
 
 #define CPP_SPEC \
   "%{!mh:%{!ms:-D__H8300__}} %{mh:-D__H8300H__} %{ms:-D__H8300S__} \
-   %{!mh:%{!ms:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}} \
-   %{mh:-D__SIZE_TYPE__=unsigned\\ long -D__PTRDIFF_TYPE__=long} \
-   %{ms:-D__SIZE_TYPE__=unsigned\\ long -D__PTRDIFF_TYPE__=long} \
    %{!mh:%{!ms:-Acpu=h8300 -Amachine=h8300}} \
    %{mh:-Acpu=h8300h -Amachine=h8300h} \
    %{ms:-Acpu=h8300s -Amachine=h8300s} \
@@ -974,8 +971,6 @@ struct cum_arg
 /* ANSI C types.
    We use longs for the 300H because ints can be 16 or 32.
    GCC requires SIZE_TYPE to be the same size as pointers.  */
-#define NO_BUILTIN_SIZE_TYPE
-#define NO_BUILTIN_PTRDIFF_TYPE
 #define SIZE_TYPE (TARGET_H8300 ? "unsigned int" : "long unsigned int")
 #define PTRDIFF_TYPE (TARGET_H8300 ? "int" : "long int")
 

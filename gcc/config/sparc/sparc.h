@@ -246,19 +246,8 @@ Unrecognized value in TARGET_CPU_DEFAULT.
    sparc64 in 32 bit environments, so for now we only use `sparc64' in
    64 bit environments.  */
 
-#ifdef SPARC_BI_ARCH
-
-#define CPP_ARCH32_SPEC "-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int \
--D__GCC_NEW_VARARGS__ -Acpu=sparc -Amachine=sparc"
-#define CPP_ARCH64_SPEC "-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int \
--D__arch64__ -Acpu=sparc64 -Amachine=sparc64"
-
-#else
-
 #define CPP_ARCH32_SPEC "-D__GCC_NEW_VARARGS__ -Acpu=sparc -Amachine=sparc"
 #define CPP_ARCH64_SPEC "-D__arch64__ -Acpu=sparc64 -Amachine=sparc64"
-
-#endif
 
 #define CPP_ARCH_DEFAULT_SPEC \
 (DEFAULT_ARCH32_P ? CPP_ARCH32_SPEC : CPP_ARCH64_SPEC)
@@ -372,10 +361,6 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 #define LINK_GCC_C_SEQUENCE_SPEC "%G %L %G %L"
 
 
-#ifdef SPARC_BI_ARCH
-#define NO_BUILTIN_PTRDIFF_TYPE
-#define NO_BUILTIN_SIZE_TYPE
-#endif
 #define PTRDIFF_TYPE (TARGET_ARCH64 ? "long int" : "int")
 #define SIZE_TYPE (TARGET_ARCH64 ? "long unsigned int" : "unsigned int")
 

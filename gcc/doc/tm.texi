@@ -177,46 +177,6 @@ This macro is just like @code{CPP_SPEC}, but is used for C++, rather
 than C@.  If you do not define this macro, then the value of
 @code{CPP_SPEC} (if any) will be used instead.
 
-@findex NO_BUILTIN_SIZE_TYPE
-@item NO_BUILTIN_SIZE_TYPE
-If this macro is defined, the preprocessor will not define the built-in macro
-@code{__SIZE_TYPE__}.  The macro @code{__SIZE_TYPE__} must then be defined
-by @code{CPP_SPEC} instead.
-
-This should be defined if @code{SIZE_TYPE} depends on target dependent flags
-which are not accessible to the preprocessor.  Otherwise, it should not
-be defined.
-
-@findex NO_BUILTIN_PTRDIFF_TYPE
-@item NO_BUILTIN_PTRDIFF_TYPE
-If this macro is defined, the preprocessor will not define the built-in macro
-@code{__PTRDIFF_TYPE__}.  The macro @code{__PTRDIFF_TYPE__} must then be
-defined by @code{CPP_SPEC} instead.
-
-This should be defined if @code{PTRDIFF_TYPE} depends on target dependent flags
-which are not accessible to the preprocessor.  Otherwise, it should not
-be defined.
-
-@findex NO_BUILTIN_WCHAR_TYPE
-@item NO_BUILTIN_WCHAR_TYPE
-If this macro is defined, the preprocessor will not define the built-in macro
-@code{__WCHAR_TYPE__}.  The macro @code{__WCHAR_TYPE__} must then be
-defined by @code{CPP_SPEC} instead.
-
-This should be defined if @code{WCHAR_TYPE} depends on target dependent flags
-which are not accessible to the preprocessor.  Otherwise, it should not
-be defined.
-
-@findex NO_BUILTIN_WINT_TYPE
-@item NO_BUILTIN_WINT_TYPE
-If this macro is defined, the preprocessor will not define the built-in macro
-@code{__WINT_TYPE__}.  The macro @code{__WINT_TYPE__} must then be
-defined by @code{CPP_SPEC} instead.
-
-This should be defined if @code{WINT_TYPE} depends on target dependent flags
-which are not accessible to the preprocessor.  Otherwise, it should not
-be defined.
-
 @findex CC1_SPEC
 @item CC1_SPEC
 A C string constant that tells the GCC driver program options to

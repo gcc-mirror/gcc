@@ -142,13 +142,6 @@ void FN ()							\
 -Amachine=mips -D__ELF__ -D__PIC__ -D__pic__"
 #endif
 
-#undef SUBTARGET_CPP_SIZE_SPEC
-#define SUBTARGET_CPP_SIZE_SPEC "\
-%{mabi=32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-%{mabi=n32: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int} \
-%{mabi=64: -D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long\\ int} \
-%{!mabi*: -D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int}"
-
 /* We must make -mips3 do what -mlong64 used to do.  */
 /* ??? If no mipsX option given, but a mabi=X option is, then should set
    _MIPS_ISA based on the mabi=X option.  */
@@ -156,7 +149,6 @@ void FN ()							\
    _MIPS_SIM based on the mipsX option.  */
 /* ??? Same for _MIPS_SZINT.  */
 /* ??? Same for _MIPS_SZPTR.  */
-/* ??? Same for __SIZE_TYPE and __PTRDIFF_TYPE.  */
 #undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC "\
 %{mfp32: -D_MIPS_FPSET=16} \

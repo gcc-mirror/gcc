@@ -41,9 +41,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "except.h"		/* For USING_SJLJ_EXCEPTIONS.  */
 cpp_reader *parse_in;		/* Declared in c-lex.h.  */
 
-#undef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE TYPE_PRECISION (wchar_type_node)
-
 /* We let tm.h override the types used here, to handle trivial differences
    such as the choice of unsigned int or long unsigned int for size_t.
    When machines start needing nontrivial differences in the size type,
@@ -57,6 +54,10 @@ cpp_reader *parse_in;		/* Declared in c-lex.h.  */
 #ifndef WCHAR_TYPE
 #define WCHAR_TYPE "int"
 #endif
+
+/* WCHAR_TYPE gets overridden by -fshort-wchar.  */
+#define MODIFIED_WCHAR_TYPE \
+	(flag_short_wchar ? "short unsigned int" : WCHAR_TYPE)
 
 #ifndef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "long int"
@@ -802,7 +803,8 @@ combine_strings (strings)
 	}
       else
 	{
-	  const int nzeros = (WCHAR_TYPE_SIZE / BITS_PER_UNIT) - 1;
+	  const int nzeros = (TYPE_PRECISION (wchar_type_node)
+			      / BITS_PER_UNIT) - 1;
 	  int j, k;
 
 	  if (BYTES_BIG_ENDIAN)
@@ -2872,9 +2874,7 @@ c_common_nodes_and_builtins ()
   (*targetm.init_builtins) ();
 
   /* This is special for C++ so functions can be overloaded.  */
-  wchar_type_node = get_identifier (flag_short_wchar
-				    ? "short unsigned int"
-				    : WCHAR_TYPE);
+  wchar_type_node = get_identifier (MODIFIED_WCHAR_TYPE);
   wchar_type_node = TREE_TYPE (identifier_global_value (wchar_type_node));
   wchar_type_size = TYPE_PRECISION (wchar_type_node);
   if (c_language == clk_cplusplus)
@@ -4321,7 +4321,7 @@ cb_register_builtins (pfile)
   if (c_language == clk_cplusplus)
     {
       if (SUPPORTS_ONE_ONLY)
-	cpp_define (pfile, "__GXX_WEAK__");
+	cpp_define (pfile, "__GXX_WEAK__=1");
       else
 	cpp_define (pfile, "__GXX_WEAK__=0");
     }
@@ -4329,6 +4329,12 @@ cb_register_builtins (pfile)
   /* libgcc needs to know this.  */
   if (USING_SJLJ_EXCEPTIONS)
     cpp_define (pfile, "__USING_SJLJ_EXCEPTIONS__");
+
+  /* stddef.h needs to know these.  */
+  builtin_define_with_value ("__SIZE_TYPE__", SIZE_TYPE);
+  builtin_define_with_value ("__PTRDIFF_TYPE__", PTRDIFF_TYPE);
+  builtin_define_with_value ("__WCHAR_TYPE__", MODIFIED_WCHAR_TYPE);
+  builtin_define_with_value ("__WINT_TYPE__", WINT_TYPE);
 
   /* A straightforward target hook doesn't work, because of problems
      linking that hook's body when part of non-C front ends.  */
@@ -4377,6 +4383,27 @@ builtin_define_std (macro)
       *q = '\0';
       cpp_define (parse_in, p);
     }
+}
+
+/* Pass an object-like macro and a value to define it to.  */
+void
+builtin_define_with_value (macro, expansion)
+     const char *macro;
+     const char *expansion;
+{
+  char *buf, *q;
+  size_t mlen = strlen (macro);
+  size_t elen = strlen (expansion);
+
+  q = buf = alloca (mlen + elen + 2);
+  memcpy (q, macro, mlen);
+  q += mlen;
+  *q++ = '=';
+  memcpy (q, expansion, elen);
+  q += elen;
+  *q = '\0';
+
+  cpp_define (parse_in, buf);
 }
 
 /* Front end initialization common to C, ObjC and C++.  */

@@ -2653,32 +2653,14 @@ extern int avr_case_values_threshold;
 %{mmcu=attiny15: %(cpp_avr1) -D__AVR_ATtiny15__} \
 %{mmcu=attiny28: %(cpp_avr1) -D__AVR_ATtiny28__} \
 %{mno-interrupts:-D__NO_INTERRUPTS__} \
-%{mint8:-D__SIZE_TYPE__=long\\ unsigned\\ int -D__PTRDIFF_TYPE__=long -D__INT_MAX__=127} \
-%{!mint*:-D__SIZE_TYPE__=unsigned\\ int -D__PTRDIFF_TYPE__=int -D__INT_MAX__=32767} \
+%{mint8:-D__INT_MAX__=127} \
+%{!mint*:-D__INT_MAX__=32767} \
 %{posix:-D_POSIX_SOURCE}"
 /* A C string constant that tells the GNU CC driver program options to
    pass to CPP.  It can also specify how to translate options you
    give to GNU CC into options for GNU CC to pass to the CPP.
 
    Do not define this macro if it does not need to do anything.  */
-
-#define NO_BUILTIN_SIZE_TYPE
-/* If this macro is defined, the preprocessor will not define the
-   builtin macro `__SIZE_TYPE__'.  The macro `__SIZE_TYPE__' must
-   then be defined by `CPP_SPEC' instead.
-
-   This should be defined if `SIZE_TYPE' depends on target dependent
-   flags which are not accessible to the preprocessor.  Otherwise, it
-   should not be defined.  */
-
-#define NO_BUILTIN_PTRDIFF_TYPE
-/* If this macro is defined, the preprocessor will not define the
-   builtin macro `__PTRDIFF_TYPE__'.  The macro `__PTRDIFF_TYPE__'
-   must then be defined by `CPP_SPEC' instead.
-
-   This should be defined if `PTRDIFF_TYPE' depends on target
-   dependent flags which are not accessible to the preprocessor.
-   Otherwise, it should not be defined.  */
 
 #define CC1_SPEC "%{profile:-p}"
 /* A C string constant that tells the GNU CC driver program options to
