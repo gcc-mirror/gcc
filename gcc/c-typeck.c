@@ -999,12 +999,10 @@ build_component_ref (datum, component)
     case COMPOUND_EXPR:
       {
 	tree value = build_component_ref (TREE_OPERAND (datum, 1), component);
-	pedantic_lvalue_warning (COMPOUND_EXPR);
 	return build (COMPOUND_EXPR, TREE_TYPE (value),
 		      TREE_OPERAND (datum, 0), value);
       }
     case COND_EXPR:
-      pedantic_lvalue_warning (COND_EXPR);
       return build_conditional_expr
 	(TREE_OPERAND (datum, 0),
 	 build_component_ref (TREE_OPERAND (datum, 1), component),
