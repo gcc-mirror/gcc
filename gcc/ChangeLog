@@ -1,3 +1,9 @@
+Sat Apr 29 01:18:45 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* regmove.c (struct record_stack_memrefs_data): New.
+	(record_stack_memrefs): New function.
+	(combine_stack_adjustments_for_block): Use it.
+
 Sat Apr 29 01:15:27 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* calls.c (calls_function_1):  Propertly handle TREE_LIST expressions;
