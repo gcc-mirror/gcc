@@ -11,11 +11,20 @@ Fri May  7 09:54:11 1999  Nick Clifton  <nickc@cygnus.com>
 	(TARGET_SWITCHES): Add `no-poke-function-name'.
 
 Fri May  7 14:19:31 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* fixinc/server.c (load_data): Cast text_size to long, adapt
+	format.
 	* fixinc/server.c (read_pipe_timeout): Declare volatile, modified
 	in signal handler.
 	(sig_handler): Add debug code.
 	* fixinc/server.c (run_shell): Don't \-escape cd, it breaks the
 	Ultrix V4.3 /bin/sh.
+	* fixinc/server.c (def_args): Use static instead of STATIC to
+	avoid redefinition error from linker iff DEBUG.
+
+	* fixinc/hackshell.tpl: Don't strip trailing directory from
+	DESTDIR - that is already done
+
 	* fixinc/fixincl.c (run_compiles): fix memory leak
 
 Thu May  6 20:34:00 1999  Mark Mitchell  <mark@codesourcery.com>
