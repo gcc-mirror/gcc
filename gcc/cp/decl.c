@@ -10779,13 +10779,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		  return void_type_node;
 	      }
 
+	    /* 9.2p13 [class.mem] */
+	    if (declarator == current_class_name)
+	      cp_pedwarn ("ANSI C++ forbids data member `%D' with same name as enclosing class",
+			  declarator);
+
 	    if (staticp)
 	      {
-		/* ANSI C++ Apr '95 wp 9.2 */
-		if (declarator == current_class_name)
-		  cp_pedwarn ("ANSI C++ forbids static member `%D' with same name as enclosing class",
-			      declarator);
-
 		/* C++ allows static class members.
 		   All other work for this is done by grokfield.
 		   This VAR_DCL is built by build_lang_field_decl.

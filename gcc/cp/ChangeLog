@@ -1,3 +1,27 @@
+1998-11-18  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* search.c (get_abstract_virtuals): Complain about virtuals with
+	no final overrider.
+	* typeck2.c (abstract_virtuals_error): Remove handling for virtuals
+	with no final overrider.
+	* class.c (override_one_vtable): Don't set DECL_ABSTRACT_VIRTUAL_P
+	on virtuals with no final overrider.
+
+	* lex.c (reinit_parse_for_block): Add a space after the initial ':'.
+
+	* class.c (finish_struct_1): Don't remove zero-width bit-fields until
+	after layout_type.
+
+	* friend.c (do_friend): Don't set_mangled_name_for_decl.
+
+	* class.c (finish_struct_anon): Complain about non-fields.
+	* decl2.c (build_anon_union_vars): Likewise.
+
+	* decl.c (grokdeclarator): Normal data members can't have the same
+	name as the class, either.
+	* class.c (finish_struct_anon): Neither can members of an
+	anonymous union.
+
 1998-11-17  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (TYPE_ALIAS_SET): Document language-dependent uses.

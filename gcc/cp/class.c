@@ -2858,13 +2858,11 @@ override_one_vtable (binfo, old, t)
 	    }
 	  {
 	    /* This MUST be overridden, or the class is ill-formed.  */
-	    /* For now, we just make it abstract.  */
 	    tree fndecl = TREE_OPERAND (FNADDR_FROM_VTABLE_ENTRY (TREE_VALUE (virtuals)), 0);
 	    tree vfn;
 
 	    fndecl = copy_node (fndecl);
 	    copy_lang_decl (fndecl);
-	    DECL_ABSTRACT_VIRTUAL_P (fndecl) = 1;
 	    DECL_NEEDS_FINAL_OVERRIDER_P (fndecl) = 1;
 	    /* Make sure we search for it later.  */
 	    if (! CLASSTYPE_ABSTRACT_VIRTUALS (t))
@@ -3142,8 +3140,19 @@ finish_struct_anon (t)
 	  tree* uelt = &TYPE_FIELDS (TREE_TYPE (field));
 	  for (; *uelt; uelt = &TREE_CHAIN (*uelt))
 	    {
-	      if (TREE_CODE (*uelt) != FIELD_DECL)
+	      if (DECL_ARTIFICIAL (*uelt))
 		continue;
+
+	      if (DECL_NAME (*uelt) == TYPE_IDENTIFIER (t))
+		cp_pedwarn_at ("ANSI C++ forbids member `%D' with same name as enclosing class",
+			       *uelt);
+
+	      if (TREE_CODE (*uelt) != FIELD_DECL)
+		{
+		  cp_pedwarn_at ("`%#D' invalid; an anonymous union can only have non-static data members",
+				 *uelt);
+		  continue;
+		}
 
 	      if (TREE_PRIVATE (*uelt))
 		cp_pedwarn_at ("private member `%#D' in anonymous union",
@@ -3885,23 +3894,9 @@ finish_struct_1 (t, warn_anon)
     }
 
   /* Now DECL_INITIAL is null on all members except for zero-width bit-fields.
-     And they have already done their work.
 
      C++: maybe we will support default field initialization some day...  */
 
-  /* Delete all zero-width bit-fields from the front of the fieldlist */
-  while (fields && DECL_C_BIT_FIELD (fields)
-	 && DECL_INITIAL (fields))
-    fields = TREE_CHAIN (fields);
-  /* Delete all such fields from the rest of the fields.  */
-  for (x = fields; x;)
-    {
-      if (TREE_CHAIN (x) && DECL_C_BIT_FIELD (TREE_CHAIN (x))
-	  && DECL_INITIAL (TREE_CHAIN (x)))
-	TREE_CHAIN (x) = TREE_CHAIN (TREE_CHAIN (x));
-      else
-	x = TREE_CHAIN (x);
-    }
   /* Delete all duplicate fields from the fields */
   delete_duplicate_fields (fields);
 
@@ -3931,7 +3926,7 @@ finish_struct_1 (t, warn_anon)
 	}
     }
 
-  /* Now we have the final fieldlist for the data fields.  Record it,
+  /* Now we have the nearly final fieldlist for the data fields.  Record it,
      then lay out the structure or union (including the fields).  */
 
   TYPE_FIELDS (t) = fields;
@@ -3987,6 +3982,23 @@ finish_struct_1 (t, warn_anon)
     max_has_virtual = layout_basetypes (t, max_has_virtual);
   else if (empty)
     TYPE_FIELDS (t) = fields;
+
+  my_friendly_assert (TYPE_FIELDS (t) == fields, 981117);
+
+  /* Delete all zero-width bit-fields from the front of the fieldlist */
+  while (fields && DECL_C_BIT_FIELD (fields)
+	 && DECL_INITIAL (fields))
+    fields = TREE_CHAIN (fields);
+  /* Delete all such fields from the rest of the fields.  */
+  for (x = fields; x;)
+    {
+      if (TREE_CHAIN (x) && DECL_C_BIT_FIELD (TREE_CHAIN (x))
+	  && DECL_INITIAL (TREE_CHAIN (x)))
+	TREE_CHAIN (x) = TREE_CHAIN (TREE_CHAIN (x));
+      else
+	x = TREE_CHAIN (x);
+    }
+  TYPE_FIELDS (t) = fields;
 
   if (TYPE_USES_VIRTUAL_BASECLASSES (t))
     {

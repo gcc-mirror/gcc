@@ -1554,6 +1554,8 @@ reinit_parse_for_block (pyychar, obstackp)
   else if (pyychar == ':')
     {
       obstack_1grow (obstackp, pyychar);
+      /* Add a space so we don't get confused by ': ::A(20)'.  */
+      obstack_1grow (obstackp, ' ');
       look_for_lbrac = 1;
       blev = 0;
     }

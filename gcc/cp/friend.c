@@ -413,7 +413,6 @@ do_friend (ctype, declarator, decl, parmdecls, flags, quals, funcdef_flag)
 
 	 Note that because classes all wind up being top-level
 	 in their scope, their friend wind up in top-level scope as well.  */
-      set_mangled_name_for_decl (decl);
       DECL_ARGUMENTS (decl) = parmdecls;
       if (funcdef_flag)
 	DECL_CLASS_CONTEXT (decl) = current_class_type;
