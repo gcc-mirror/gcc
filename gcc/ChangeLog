@@ -1,3 +1,11 @@
+Wed Jul 25 08:25:01 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* ssa-ccp.c (visit_expression): Handle CALL_INSNs that can
+	throw an exception.
+	(visit_expression): When attempting to simplify an expression,
+	retrieve any modes for arguments before they are simplified
+	to constants.
+
 2001-07-25  Andrew MacLeod  <amacleod@redhat.com>
 	    Janis Johnson  <janis@us.ibm.com>
 

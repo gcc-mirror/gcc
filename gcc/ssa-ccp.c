@@ -246,6 +246,30 @@ visit_expression (insn, block)
 {
   rtx src, dest, set;
 
+
+  /* Ugh.  CALL_INSNs may end a basic block and have multiple edges
+     leading out from them.
+
+     Mark all the outgoing edges as executable, then fall into the
+     normal processing below.  */
+  if (GET_CODE (insn) == CALL_INSN && block->end == insn)
+    {
+      edge curredge;
+
+      for (curredge = block->succ; curredge;
+	   curredge = curredge->succ_next)
+	{
+	  int index = EIE (curredge->src, curredge->dest);
+
+	  if (TEST_BIT (executable_edges, index))
+	    continue;
+
+	  SET_BIT (executable_edges, index);
+	  edge_info[index] = flow_edges;
+	  flow_edges = curredge;
+	}
+    }
+
   set = single_set (insn);
   if (! set)
     {
@@ -450,7 +474,13 @@ visit_expression (insn, block)
 		  defs_to_undefined (insn);
 		  break;
 		}
-		
+
+	      /* Determine the mode for the operation before we simplify
+		 our arguments to constants.  */
+	      mode = GET_MODE (src0);
+	      if (mode == VOIDmode)
+		mode = GET_MODE (src1);
+
 	      /* Simplify source operands to whatever known values they
 		 may have.  */
 	      if (GET_CODE (src0) == REG
@@ -463,10 +493,6 @@ visit_expression (insn, block)
 
 	      /* See if the simplifier can determine if this operation
 		 computes a constant value.  */
-	      mode = GET_MODE (src0);
-	      if (mode == VOIDmode)
-		mode = GET_MODE (src1);
-
 	      simplified = simplify_relational_operation (GET_CODE (src),
 							  mode, src0, src1);
 	      break;
@@ -476,6 +502,7 @@ visit_expression (insn, block)
 	  case '1':
 	    {
 	      rtx src0 = XEXP (src, 0);
+	      enum machine_mode mode0 = GET_MODE (src0);
 
 	      /* If the operand is undefined, then the result is undefined.  */
 	      if (GET_CODE (src0) == REG
@@ -496,7 +523,7 @@ visit_expression (insn, block)
 	      simplified = simplify_unary_operation (GET_CODE (src),
 						     GET_MODE (src),
 						     src0,
-						     GET_MODE (src0));
+						     mode0);
 	      break;
 	    }
 
