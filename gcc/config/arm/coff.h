@@ -60,6 +60,9 @@ arm_valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX "."
 
+#undef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX ""
+
 /* A C statement to output assembler commands which will identify the
    object file as having been compiled with GNU CC (or another GNU
    compiler).  */
