@@ -175,6 +175,7 @@ static rtx var_rtx		PROTO((tree));
 static int get_pointer_alignment PROTO((tree, unsigned));
 static tree string_constant	PROTO((tree, tree *));
 static tree c_strlen		PROTO((tree));
+static rtx get_memory_rtx	PROTO((tree));
 static rtx expand_builtin	PROTO((tree, rtx, rtx,
 				       enum machine_mode, int));
 static int apply_args_size	PROTO((void));
@@ -8021,6 +8022,54 @@ expand_builtin_longjmp (buf_addr, value)
     }
 }
 
+static rtx
+get_memory_rtx (exp)
+     tree exp;
+{
+  rtx mem;
+  int is_aggregate;
+
+  mem = gen_rtx_MEM (BLKmode,
+		     memory_address (BLKmode,
+				     expand_expr (exp, NULL_RTX,
+						  ptr_mode, EXPAND_SUM)));
+
+  RTX_UNCHANGING_P (mem) = TREE_READONLY (exp);
+
+  /* Figure out the type of the object pointed to.  Set MEM_IN_STRUCT_P
+     if the value is the address of a structure or if the expression is
+     cast to a pointer to structure type.  */
+  is_aggregate = 0;
+
+  while (TREE_CODE (exp) == NOP_EXPR)
+    {
+      tree cast_type = TREE_TYPE (exp);
+      if (TREE_CODE (cast_type) == POINTER_TYPE
+	  && AGGREGATE_TYPE_P (TREE_TYPE (cast_type)))
+	{
+	  is_aggregate = 1;
+	  break;
+	}
+      exp = TREE_OPERAND (exp, 0);
+    }
+
+  if (is_aggregate == 0)
+    {
+      tree type;
+
+      if (TREE_CODE (exp) == ADDR_EXPR)
+	/* If this is the address of an object, check whether the
+	   object is an array.  */
+	type = TREE_TYPE (TREE_OPERAND (exp, 0));
+      else
+	type = TREE_TYPE (TREE_TYPE (exp));
+      is_aggregate = AGGREGATE_TYPE_P (type);
+    }
+
+  MEM_IN_STRUCT_P (mem) = is_aggregate;
+  return mem;
+}
+
 
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
@@ -8675,7 +8724,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	    = get_pointer_alignment (src, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
 	  int dest_align
 	    = get_pointer_alignment (dest, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-	  rtx dest_rtx, dest_mem, src_mem, src_rtx, dest_addr, len_rtx;
+	  rtx dest_mem, src_mem, dest_addr, len_rtx;
 
 	  /* If either SRC or DEST is not a pointer type, don't do
 	     this operation in-line.  */
@@ -8686,31 +8735,16 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	      break;
 	    }
 
-	  dest_rtx = expand_expr (dest, NULL_RTX, ptr_mode, EXPAND_SUM);
-	  dest_mem = gen_rtx_MEM (BLKmode,
-				  memory_address (BLKmode, dest_rtx));
-	  /* There could be a void* cast on top of the object.  */
-	  while (TREE_CODE (dest) == NOP_EXPR)
-	    dest = TREE_OPERAND (dest, 0);
-	  type = TREE_TYPE (TREE_TYPE (dest));
-	  MEM_IN_STRUCT_P (dest_mem) = AGGREGATE_TYPE_P (type);
-	  src_rtx = expand_expr (src, NULL_RTX, ptr_mode, EXPAND_SUM);
-	  src_mem = gen_rtx_MEM (BLKmode,
-				 memory_address (BLKmode, src_rtx));
+	  dest_mem = get_memory_rtx (dest);
+	  src_mem = get_memory_rtx (src);
 	  len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
 
 	  /* Just copy the rights of SRC to the rights of DEST.  */
 	  if (flag_check_memory_usage)
 	    emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
-			       dest_rtx, ptr_mode,
-			       src_rtx, ptr_mode,
+			       XEXP (dest_mem, 0), ptr_mode,
+			       XEXP (src_mem, 0), ptr_mode,
 			       len_rtx, TYPE_MODE (sizetype));
-
-	  /* There could be a void* cast on top of the object.  */
-	  while (TREE_CODE (src) == NOP_EXPR)
-	    src = TREE_OPERAND (src, 0);
-	  type = TREE_TYPE (TREE_TYPE (src));
-	  MEM_IN_STRUCT_P (src_mem) = AGGREGATE_TYPE_P (type);
 
 	  /* Copy word part most expediently.  */
 	  dest_addr
@@ -8718,7 +8752,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 			       MIN (src_align, dest_align));
 
 	  if (dest_addr == 0)
-	    dest_addr = force_operand (dest_rtx, NULL_RTX);
+	    dest_addr = force_operand (XEXP (dest_mem, 0), NULL_RTX);
 
 	  return dest_addr;
 	}
@@ -8749,7 +8783,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
 	  int dest_align
 	    = get_pointer_alignment (dest, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-	  rtx dest_rtx, dest_mem, dest_addr, len_rtx;
+	  rtx dest_mem, dest_addr, len_rtx;
 
 	  /* If DEST is not a pointer type, don't do this 
 	     operation in-line.  */
@@ -8775,34 +8809,21 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  if (GET_CODE (len_rtx) != CONST_INT)
 	    break;
 
-	  dest_rtx = expand_expr (dest, NULL_RTX, ptr_mode, EXPAND_SUM);
-	  dest_mem = gen_rtx_MEM (BLKmode,
-				  memory_address (BLKmode, dest_rtx));
+	  dest_mem = get_memory_rtx (dest);
 	   
 	  /* Just check DST is writable and mark it as readable.  */
 	  if (flag_check_memory_usage)
 	    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
-			       dest_rtx, ptr_mode,
+			       XEXP (dest_mem, 0), ptr_mode,
 			       len_rtx, TYPE_MODE (sizetype),
 			       GEN_INT (MEMORY_USE_WO),
 			       TYPE_MODE (integer_type_node));
 
-	  /* There could be a void* cast on top of the object.  */
-	  while (TREE_CODE (dest) == NOP_EXPR)
-	    dest = TREE_OPERAND (dest, 0);
-
-	  if (TREE_CODE (dest) == ADDR_EXPR)
-	    /* If this is the address of an object, check whether the
-	       object is an array.  */
-	    type = TREE_TYPE (TREE_OPERAND (dest, 0));
-	  else
-	    type = TREE_TYPE (TREE_TYPE (dest));
-	  MEM_IN_STRUCT_P (dest_mem) = AGGREGATE_TYPE_P (type);
 
 	  dest_addr = clear_storage (dest_mem, len_rtx, dest_align);
 
 	  if (dest_addr == 0)
-	    dest_addr = force_operand (dest_rtx, NULL_RTX);
+	    dest_addr = force_operand (XEXP (dest_mem, 0), NULL_RTX);
 
 	  return dest_addr;
 	}
@@ -8914,15 +8935,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	       && REGNO (result) >= FIRST_PSEUDO_REGISTER))
 	  result = gen_reg_rtx (insn_mode);
 
-	emit_insn (gen_cmpstrsi (result,
-				 gen_rtx_MEM (BLKmode,
-					      expand_expr (arg1, NULL_RTX,
-							   ptr_mode,
-							   EXPAND_NORMAL)),
-				 gen_rtx_MEM (BLKmode,
-					      expand_expr (arg2, NULL_RTX,
-							   ptr_mode,
-							   EXPAND_NORMAL)),
+	emit_insn (gen_cmpstrsi (result, get_memory_rtx (arg1),
+				 get_memory_rtx (arg2),
 				 expand_expr (len, NULL_RTX, VOIDmode, 0),
 				 GEN_INT (MIN (arg1_align, arg2_align))));
 
