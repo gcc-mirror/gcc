@@ -7968,7 +7968,6 @@ loc_descriptor_from_tree (loc, addressp)
     case PARM_DECL:
       {
 	rtx rtl = rtl_for_decl_location (loc);
-	enum machine_mode mode = GET_MODE (rtl);
 
 	if (rtl == NULL_RTX)
 	  return 0;
@@ -7981,6 +7980,8 @@ loc_descriptor_from_tree (loc, addressp)
 	  }
 	else
 	  {
+	    enum machine_mode mode = GET_MODE (rtl);
+
 	    if (GET_CODE (rtl) == MEM)
 	      {
 		indirect_p = 1;
@@ -8751,7 +8752,18 @@ rtl_for_decl_location (decl)
   /* Use DECL_RTL as the "location" unless we find something better.  */
   rtl = DECL_RTL_IF_SET (decl);
 
-  if (TREE_CODE (decl) == PARM_DECL)
+  /* When generating abstract instances, ignore everything except
+     constants and symbols living in memory.  */
+  if (! reload_completed)
+    {
+      if (rtl
+	  && (CONSTANT_P (rtl)
+	      || (GET_CODE (rtl) == MEM
+	          && CONSTANT_P (XEXP (rtl, 0)))))
+	return rtl;
+      rtl = NULL_RTX;
+    }
+  else if (TREE_CODE (decl) == PARM_DECL)
     {
       if (rtl == NULL_RTX || is_pseudo_reg (rtl))
 	{
@@ -8816,7 +8828,7 @@ rtl_for_decl_location (decl)
   /* A variable with no DECL_RTL but a DECL_INITIAL is a compile-time constant,
      and will have been substituted directly into all expressions that use it.
      C does not have such a concept, but C++ and other languages do.  */
-  else if (DECL_INITIAL (decl))
+  else if (TREE_CODE (decl) == VAR_DECL && DECL_INITIAL (decl))
     rtl = expand_expr (DECL_INITIAL (decl), NULL_RTX, VOIDmode,
 		       EXPAND_INITIALIZER);
 

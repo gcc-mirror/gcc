@@ -2363,11 +2363,6 @@ rest_of_compilation (decl)
   if (!cfun->x_whole_function_mode_p)
     identify_blocks ();
 
-  /* Then remove any notes we don't need.  That will make iterating
-     over the instruction sequence faster, and allow the garbage
-     collector to reclaim the memory used by the notes.  */
-  remove_unnecessary_notes ();
-
   /* In function-at-a-time mode, we do not attempt to keep the BLOCK
      tree in sensible shape.  So, we just recalculate it here.  */
   if (cfun->x_whole_function_mode_p)
@@ -2504,6 +2499,29 @@ rest_of_compilation (decl)
       if (DECL_EXTERNAL (decl))
 	goto exit_rest_of_compilation;
     }
+
+  /* If we're emitting a nested function, make sure its parent gets
+     emitted as well.  Doing otherwise confuses debug info.  */
+  {
+    tree parent;
+    for (parent = DECL_CONTEXT (current_function_decl);
+	 parent != NULL_TREE;
+	 parent = get_containing_scope (parent))
+      if (TREE_CODE (parent) == FUNCTION_DECL)
+	TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (parent)) = 1;
+  }
+
+  /* We are now committed to emitting code for this function.  Do any
+     preparation, such as emitting abstract debug info for the inline
+     before it gets mangled by optimization.  */
+  if (DECL_INLINE (decl))
+    (*debug_hooks->outlining_inline_function) (decl);
+
+  /* Remove any notes we don't need.  That will make iterating
+     over the instruction sequence faster, and allow the garbage
+     collector to reclaim the memory used by the notes.  */
+  remove_unnecessary_notes ();
+  reorder_blocks ();
 
   ggc_collect ();
 
