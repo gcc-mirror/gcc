@@ -1,3 +1,7 @@
+Tue Sep 23 00:59:54 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* rtlanal.c (jmp_uses_reg_or_mem): Fix typo in last change.
+
 Tue Sep 23 00:42:44 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* loop.c (indirect_jump_in_function_p): Return 0
