@@ -1,6 +1,12 @@
-2001-11-20  Mark Mitchell  <mark@codesourcery.com>
+2001-11-21  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/3637
+	* pt.c (lookup_template_class): Ensure that all specializations
+	are registered on the list corresponding to the most general
+	template.
+
+2001-11-20  Mark Mitchell  <mark@codesourcery.com>
+
 	* call.c (non_reference): Add documentation.
 	(convert_class_to_reference): Do not strip reference types 
 	from conversion operators.
