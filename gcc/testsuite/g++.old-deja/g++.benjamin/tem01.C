@@ -1,10 +1,6 @@
 // Build don't link: 
 // prms-id: 13911
 
-
- 
-
-
 template<unsigned int N>
 class ref_counter {
 public:
@@ -38,12 +34,12 @@ public:
   ref_pointer(T* just_newed) : the_p(just_newed) {}       
   virtual ~ref_pointer() {if (unique()) delete the_p;}
 protected:
-  ref_pointer::ref_pointer(T* the_p_arg, ref_counter<N>& ref_count_arg)
+  ref_pointer(T* the_p_arg, ref_counter<N>& ref_count_arg)
     : the_p(the_p_arg), ref_count(ref_count_arg) {}               
 
 public:
    
-  ref_pointer& operator=(const ref_pointer<T, N>&); 
+  ref_pointer& operator=(const ref_pointer&); 
   ref_pointer& operator=(T*);                         
   operator const T*() const {return the_p;}
   T* operator()() {return the_p;} 
