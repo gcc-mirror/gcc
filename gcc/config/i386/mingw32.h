@@ -52,10 +52,10 @@ Boston, MA 02111-1307, USA. */
 /* Specify a different entry point when linking a DLL */
 #undef LINK_SPEC
 #define LINK_SPEC \
-"%{mwindows:--subsystem windows} %{dll:--dll -e _DllMainCRTStartup@12}"
+"%{mwindows:--subsystem windows} %{mdll:--dll -e _DllMainCRTStartup@12}"
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC "%{dll:dllcrt1%O%s} %{!dll:crt1%O%s}"
+#define STARTFILE_SPEC "%{mdll:dllcrt1%O%s} %{!mdll:crt1%O%s}"
 
 /* Output STRING, a string representing a filename, to FILE.  We canonicalize
    it to be in MS-DOS format.  */
