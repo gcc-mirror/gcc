@@ -1,3 +1,12 @@
+2000-05-23  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* simplify-rtx.c (SIGN_EXTEND): New macro.
+	(simplify_unary_operation, simplify_binary_operation, 
+	simplify_relational_operation): Use SIGN_EXTEND.  Make low
+	halves of (low, high) pairs unsigned if they weren't already.       
+	(simplify_ternary_operation): Cast INTVAL to unsigned before
+	comparing to a MODE_BITSIZE.
+
 2000-05-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* aclocal.m4 (gcc_AC_CHECK_DECL, gcc_AC_CHECK_DECLS): New macros
