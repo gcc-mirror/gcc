@@ -1,3 +1,7 @@
+2003-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20030815-1.c: New test.
+
 2003-08-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/3765

@@ -1,3 +1,10 @@
+2003-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.c (pushdecl): Only put decls which finish_struct will do
+	something about onto incomplete chain.
+	(finish_struct): If not removing type from incomplete
+	list, update prev.
+
 Wed Aug 20 12:08:55 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR target/11369
