@@ -1,3 +1,38 @@
+2005-02-17  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	* java/nio/ByteBufferImpl.java (compact):
+	Set position and limit even if no bytes were moved.
+
+2005-02-17  Michael Koch  <konqueror@gmx.de>
+
+	* java/nio/CharViewBufferImpl.java (compact): Likewise.
+	* java/nio/DirectByteBufferImpl.java (compact): Likewise.
+	* java/nio/DoubleViewBufferImpl.java (compact): Likewise.
+	* java/nio/FloatViewBufferImpl.java (compact): Likewise.
+	* java/nio/IntViewBufferImpl.java (compact): Likewise.
+	* java/nio/LongViewBufferImpl.java (compact): Likewise.
+	* java/nio/MappedByteBufferImpl.java (compact): Likewise.
+	* java/nio/ShortViewBufferImpl.java (compact): Likewise.
+	* java/nio/FloatBufferImpl.java (compact): Set position.
+	* java/nio/CharBufferImpl.java (compact): Likewise.
+	* java/nio/DoubleBufferImpl.java (compact): Likewise.
+	* java/nio/IntBufferImpl.java (compact): Likewise.
+	* java/nio/LongBufferImpl.java (compact): Likewise.
+	* java/nio/ShortBufferImpl.java (compact): Likewise.
+
+2005-02-17  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/nio/ByteBufferImpl.java,
+	java/nio/CharBufferImpl.java,
+	java/nio/DirectByteBufferImpl.java,
+	java/nio/DoubleBufferImpl.java,
+	java/nio/FloatBufferImpl.java,
+	java/nio/IntBufferImpl.java,
+	java/nio/LongBufferImpl.java,
+	java/nio/MappedByteBufferImpl.java,
+	java/nio/ShortBufferImpl.java
+	(compact): Added explicit read-only check and invalidate mark.
+
 2005-02-17  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/awt/peer/gtk/GThreadNativeMethodRunner.java,

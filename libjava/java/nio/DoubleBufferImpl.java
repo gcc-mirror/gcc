@@ -80,6 +80,8 @@ final class DoubleBufferImpl extends DoubleBuffer
   
   public DoubleBuffer compact ()
   {
+    checkIfReadOnly();
+    mark = -1;
     int copied = 0;
     
     while (remaining () > 0)
@@ -89,6 +91,7 @@ final class DoubleBufferImpl extends DoubleBuffer
       }
 
     position (copied);
+    limit(capacity());
     return this;
   }
   

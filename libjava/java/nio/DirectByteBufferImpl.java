@@ -197,12 +197,19 @@ abstract class DirectByteBufferImpl extends ByteBuffer
   
   public ByteBuffer compact()
   {
+    checkIfReadOnly();
+    mark = -1;
     int pos = position();
     if (pos > 0)
       {
 	int count = remaining();
 	VMDirectByteBuffer.shiftDown(address, 0, pos, count);
 	position(count);
+	limit(capacity());
+      }
+    else
+      {
+	position(limit());
 	limit(capacity());
       }
     return this;
