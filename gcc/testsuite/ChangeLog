@@ -1,3 +1,21 @@
+2003-09-19  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/compat/mixed-struct-check.h: New.
+	* gcc.dg/compat/mixed-struct-defs.h: New.
+	* gcc.dg/compat/mixed-struct-init.h: New.
+	* gcc.dg/compat/struct-by-value-19_main.c: New.
+	* gcc.dg/compat/struct-by-value-19_x.c: New.
+	* gcc.dg/compat/struct-by-value-19_y.c: New.
+	* gcc.dg/compat/struct-by-value-20_main.c: New.
+	* gcc.dg/compat/struct-by-value-20_x.c: New.
+	* gcc.dg/compat/struct-by-value-20_y.c: New.
+	* gcc.dg/compat/struct-return-19_main.c: New.
+	* gcc.dg/compat/struct-return-19_x.c: New.
+	* gcc.dg/compat/struct-return-19_y.c: New.
+	* gcc.dg/compat/struct-return-20_main.c: New.
+	* gcc.dg/compat/struct-return-20_x.c: New.
+	* gcc.dg/compat/struct-return-20_y.c: New.
+
 2003-09-19  Andrew Pinski  <pinskia@physics.uc.edu>
 	* g++.dg/init/array11.C: Change unsigned to __SIZE_TYPE__
 	so that it will not complain on LP64 targets.
