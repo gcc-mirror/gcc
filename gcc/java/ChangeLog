@@ -1,3 +1,8 @@
+2000-02-14  Andrew Haley  <aph@cygnus.com>
+
+        * check-init.c (check_init): Add new cases for unary and binary
+        tree nodes.
+
 2000-03-13  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (resolve_package): Set `next' once a type name has been

@@ -622,6 +622,12 @@ check_init (exp, before)
     case POSTINCREMENT_EXPR:
     case NON_LVALUE_EXPR:
     case INSTANCEOF_EXPR:
+    case FIX_CEIL_EXPR:
+    case FIX_FLOOR_EXPR:
+    case FIX_ROUND_EXPR:
+    case EXPON_EXPR:
+    case ABS_EXPR:
+    case FFS_EXPR:
       /* Avoid needless recursion. */
       exp = TREE_OPERAND (exp, 0);
       goto again;
@@ -655,6 +661,15 @@ check_init (exp, before)
     case MAX_EXPR:
     case MIN_EXPR:
     case ARRAY_REF:
+    case LROTATE_EXPR:
+    case RROTATE_EXPR:
+    case CEIL_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case CEIL_MOD_EXPR:
+    case FLOOR_MOD_EXPR:
+    case ROUND_MOD_EXPR:
+    case EXACT_DIV_EXPR:
     binop:
       check_init (TREE_OPERAND (exp, 0), before);
       /* Avoid needless recursion, especially for COMPOUND_EXPR. */
