@@ -1,6 +1,6 @@
 /* Collect static initialization info into data structures that can be
    traversed by C++ initialization and finalization routines.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Chris Smith (csmith@convex.com).
    Heavily modified by Michael Meissner (meissner@cygnus.com),
    Per Bothner (bothner@cygnus.com), and John Gilmore (gnu@cygnus.com).
@@ -382,7 +382,7 @@ fatal_perror (string, arg1, arg2, arg3)
   fprintf (stderr, "collect2: ");
   fprintf (stderr, string, arg1, arg2, arg3);
   fprintf (stderr, ": %s\n", my_strerror (e));
-  collect_exit (1);
+  collect_exit (FATAL_EXIT_CODE);
 }
 
 /* Just die.  */
@@ -394,7 +394,7 @@ fatal (string, arg1, arg2, arg3)
   fprintf (stderr, "collect2: ");
   fprintf (stderr, string, arg1, arg2, arg3);
   fprintf (stderr, "\n");
-  collect_exit (1);
+  collect_exit (FATAL_EXIT_CODE);
 }
 
 /* Write error message.  */
@@ -1488,7 +1488,7 @@ collect_wait (prog)
 		 (status & 0200) ? ", core dumped" : "");
 #endif
 
-	  collect_exit (127);
+	  collect_exit (FATAL_EXIT_CODE);
 	}
 
       if (WIFEXITED (status))
