@@ -1,3 +1,9 @@
+2003-04-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/10337
+	* call.c (joust): Don't warn about conversion ops that are exact
+	or cv-conversions. Rearrange to avoid multiple type comparisons.
+
 2003-04-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10471

@@ -26,6 +26,6 @@ A::operator A::B ()
 
 int main ()
 {
-  (A::C) A ();		// WARNING - 
+  (A::C) A ();
   return 0;
 }

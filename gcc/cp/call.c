@@ -5757,44 +5757,51 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn)
      either between a constructor and a conversion op, or between two
      conversion ops.  */
   if (winner && cand1->second_conv
-      && ((DECL_CONSTRUCTOR_P (cand1->fn)
-	   != DECL_CONSTRUCTOR_P (cand2->fn))
-	  /* Don't warn if the two conv ops convert to the same type...  */
-	  || (! DECL_CONSTRUCTOR_P (cand1->fn)
-	      && ! same_type_p (TREE_TYPE (TREE_TYPE (cand1->fn)),
-				TREE_TYPE (TREE_TYPE (cand2->fn))))))
+      && (!DECL_CONSTRUCTOR_P (cand1->fn) || !DECL_CONSTRUCTOR_P (cand2->fn))
+      && winner != compare_ics (cand1->second_conv, cand2->second_conv))
     {
-      int comp = compare_ics (cand1->second_conv, cand2->second_conv);
-      if (comp != winner)
+      struct z_candidate *w, *l;
+      bool give_warning = false;
+      
+      if (winner == 1)
+	w = cand1, l = cand2;
+      else
+	w = cand2, l = cand1;
+      
+      /* We don't want to complain about `X::operator T1 ()'
+	 beating `X::operator T2 () const', when T2 is a no less
+	 cv-qualified version of T1. */
+      if (DECL_CONTEXT (w->fn) == DECL_CONTEXT (l->fn)
+	  && !DECL_CONSTRUCTOR_P (w->fn) && !DECL_CONSTRUCTOR_P (l->fn))
 	{
-	  struct z_candidate *w, *l;
-	  tree convn;
-	  if (winner == 1)
-	    w = cand1, l = cand2;
-	  else
-	    w = cand2, l = cand1;
-	  if (DECL_CONTEXT (cand1->fn) == DECL_CONTEXT (cand2->fn)
-	      && ! DECL_CONSTRUCTOR_P (cand1->fn)
-	      && ! DECL_CONSTRUCTOR_P (cand2->fn)
-	      && (convn = standard_conversion
-		  (TREE_TYPE (TREE_TYPE (l->fn)),
-		   TREE_TYPE (TREE_TYPE (w->fn)), NULL_TREE))
-	      && TREE_CODE (convn) == QUAL_CONV)
-	    /* Don't complain about `operator char *()' beating
-	       `operator const char *() const'.  */;
-	  else if (warn)
+	  tree t = TREE_TYPE (TREE_TYPE (l->fn));
+	  tree f = TREE_TYPE (TREE_TYPE (w->fn));
+	  
+	  if (TREE_CODE (t) == TREE_CODE (f) && POINTER_TYPE_P (t))
 	    {
-	      tree source = source_type (TREE_VEC_ELT (w->convs, 0));
-	      if (! DECL_CONSTRUCTOR_P (w->fn))
-		source = TREE_TYPE (source);
-	      warning ("choosing `%D' over `%D'", w->fn, l->fn);
-	      warning ("  for conversion from `%T' to `%T'",
-			  source, TREE_TYPE (w->second_conv));
-	      warning ("  because conversion sequence for the argument is better");
+	      t = TREE_TYPE (t);
+	      f = TREE_TYPE (f);
 	    }
-	  else
-	    add_warning (w, l);
+	  if (!comp_ptr_ttypes (t, f))
+	    give_warning = true;
 	}
+      else
+	give_warning = true;
+      
+      if (!give_warning)
+	/*NOP*/;
+      else if (warn)
+	{
+	  tree source = source_type (TREE_VEC_ELT (w->convs, 0));
+	  if (! DECL_CONSTRUCTOR_P (w->fn))
+	    source = TREE_TYPE (source);
+	  warning ("choosing `%D' over `%D'", w->fn, l->fn);
+	  warning ("  for conversion from `%T' to `%T'",
+		   source, TREE_TYPE (w->second_conv));
+	  warning ("  because conversion sequence for the argument is better");
+	}
+      else
+	add_warning (w, l);
     }
 
   if (winner)

@@ -1,3 +1,10 @@
+2003-04-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/10337
+	* g++.dg/warn/conv1.C: New test.
+	* g++.old-deja/g++.other/conv7.C: Adjust.
+	* g++.old-deja/g++.other/overload14.C: Adjust.
+
 2003-04-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10471
