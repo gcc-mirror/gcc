@@ -1,3 +1,7 @@
+2001-02-22  Andreas Jaeger  <aj@suse.de>
+
+	* extend.texi (C++ Attributes): Fix typo.
+
 2001-02-21  David Mosberger  <davidm@hpl.hp.com>
 
 	* config/ia64/ia64.c (ia64_epilogue_uses): For syscall_linkage
@@ -23,7 +27,7 @@
 
 2001-02-21  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppfiles.c: Update comments.   
+        * cppfiles.c: Update comments.
         (_cpp_read_file): Don't check for NULL filenames any more.
         * cppinit.c (cpp_start_read): Don't do canonicalization of
         in_fname and out_fname.  Use the passed file name exclusively.
@@ -52,7 +56,7 @@ Wed Feb 21 19:16:26 CET 2001  Jan Hubicka  <jh@suse.cz>
 	* c-decl.c (duplicate_decls): Set it.
 	* integrate.c (function_cannot_inline_p): Check it.
 
-	* dwarf2out.c (add_name_and_src_coords_attributes): Don't add 
+	* dwarf2out.c (add_name_and_src_coords_attributes): Don't add
 	DW_AT_MIPS_linkage_name to abstract methods.
 	(dwarf2out_abstract_function): Emit class context before calling
 	set_decl_abstract_flags.  Don't clear DECL_ABSTRACT.
@@ -70,7 +74,7 @@ Wed Feb 21 19:16:26 CET 2001  Jan Hubicka  <jh@suse.cz>
 2001-02-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	* flow.c (mark_set_1): Make not_dead unsigned long.  For
-	non-pseudos, use it as a bitmask of the hard regs that 
+	non-pseudos, use it as a bitmask of the hard regs that
 	don't die.
 
 2001-02-20  Will Cohen  <wcohen@redhat.com>
@@ -148,7 +152,7 @@ Sun Feb 18 17:03:06 2001  Jeffrey A Law  (law@cygnus.com)
 	(rtx_unstable_p): Do not treat the argument pointer specially
 	if it is not a fixed register.
 	(rtx_varies_p, rtx_addr_can_trap_p): Similarly.
-	
+
 Sun Feb 18 15:45:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/sparc/sparc.c (eligible_for_epilogue_delay): Don't put
@@ -177,14 +181,14 @@ Sun Feb 18 09:30:09 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-02-18  Alan Modra <alan@linuxcare.com.au>
 
 	* pa.c (hppa_expand_prologue): Simplify code storing return
- 	pointer.  For large (>=8k) frames with a post_store, adjust stack
- 	pointer by 8k-64 first rather than by 64.  When testing with
- 	VAL_14_BITS_P, always use the actual value rather than the value
- 	negated.  Add blockage to prevent scheduling of spills before
- 	stack frame has been created.
- 	(hppa_expand_epilogue): Simplify code loading return pointer.
- 	Allow a slightly larger range for merge_sp_adjust_with_load case.
- 	When testing with VAL_14_BITS_P, always use the actual value.
+	pointer.  For large (>=8k) frames with a post_store, adjust stack
+	pointer by 8k-64 first rather than by 64.  When testing with
+	VAL_14_BITS_P, always use the actual value rather than the value
+	negated.  Add blockage to prevent scheduling of spills before
+	stack frame has been created.
+	(hppa_expand_epilogue): Simplify code loading return pointer.
+	Allow a slightly larger range for merge_sp_adjust_with_load case.
+	When testing with VAL_14_BITS_P, always use the actual value.
 
 	* pa.c (pa_adjust_insn_length): Check that block move
 	pattern is a set before looking at operands.
@@ -196,7 +200,7 @@ Sun Feb 18 09:30:09 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(fold): ... here.
 	* tree.def (COND_EXPR): Document the use of VOID_TYPE for
 	conditional arms that throw exceptions.
-	
+
 	* print-tree.c (print_node): Do not use BLOCK_CHAIN when we're not
 	looking at a BLOCK.
 
@@ -228,7 +232,7 @@ Sun Feb 18 09:30:09 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* dwarf2out.c (add_bound_info): Don't crash if SAVE_EXPR_RTL is
 	NULL.
-	(gen_subprogram_die): Don't abort on seeing a second definition if 
+	(gen_subprogram_die): Don't abort on seeing a second definition if
 	the previous one was abstract.  Don't replace an abstract instance
 	in the lookup table.
 
@@ -263,7 +267,7 @@ Thu Feb 15 21:30:26 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-02-15  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* version.c: Bump to "3.0 20010215 (prerelease)".
-	
+
 Thu Feb 15 15:15:29 2001  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.h (BOOL_TYPE_SIZE): Don't define.
@@ -440,7 +444,7 @@ Fri Feb  9 15:05:27 2001  Christopher Faylor <cgf@cygnus.com>
 	* config/rs6000/aix.h (ASM_OUTPUT_SYMBOL_REF): ... to here.
 	* config/rs6000/aix51.h (CPLUSCPLUS_CPP_SPEC): Define it.
 	(__WCHAR_TYPE__): Correct macro name.
-	
+
 2001-02-08  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.c (ix86_frame_pointer_required): New.
@@ -498,11 +502,11 @@ Thu Feb  8 11:21:28 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* defaults.h (CPLUSPLUS_CPP_SPEC): New macro.
 	* gcc.c (struct compiler): Add cpp_spec field.
 	(input_file_compiler): New variable.
-	(do_spec_1): Allow a particular compiler to handle `%C' 
+	(do_spec_1): Allow a particular compiler to handle `%C'
 	specially.
 	(main): Store the current compiler in input_file_compiler.
 	* tm.texi (CPLUSPLUS_CPP_SPEC): Document.
-	
+
 2001-02-07  Zack Weinberg  <zack@wolery.stanford.edu>
 
 	* cpphash.h (struct spec_nodes): Add n_true and n_false.
@@ -571,7 +575,7 @@ Thu Feb  8 11:21:28 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* config/rs6000/rs6000.c (VTABLE_NAME_P): New macro.
 	(rs6000_output_symbol_ref): New function.
 	(output_toc): Use VTABLE_NAME_P.
-	
+
 Tue Feb  6 07:54:51 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* print-tree.c (print_node, case PARM_DECL):
@@ -637,7 +641,7 @@ Mon Feb  5 21:56:16 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-02-05  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 	    David Edelsohn  <edelsohn@gnu.org>
 
-	* config/rs6000/rs6000.c (rs6000_return_addr): Use PIC 
+	* config/rs6000/rs6000.c (rs6000_return_addr): Use PIC
 	code for AIX, even without flag_pic.
 
 2001-02-05  Jakub Jelinek  <jakub@redhat.com>
@@ -669,7 +673,7 @@ Mon Feb  5 11:23:16 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(protoize.o): Likewise.
 	(unprotoize.o): Likewise.
 	* configure.in: Recognize --enable-multilib.
-	
+
 2001-02-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (DRIVER_DEFINES): Fix quoting.
@@ -706,7 +710,7 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* config/mips/mips.c (save_restore_insns): Likewise.
 
 	* except.c (duplicate_eh_handlers): Call abort instead of fatal.
-	* flow.c (verify_flow_info): Likewise.	
+	* flow.c (verify_flow_info): Likewise.
 	* config/arm/arm.c (thumb_load_double_from_address): Likewise.
 	* config/avr/avr.c (pttreg_to_str, unique_section): Likewise.
 	(avr_normalize_condition): Likewise.
@@ -727,9 +731,9 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* graph.c (clean_graph_dump_file): Likewise.
 	* profile.c (init_branch_prob): Likewise.
 	* objc/objc-act.c (objc_init): Likewise.
-	
+
 	* config/arm/arm.c (arm_override_options): Make errors non-fatal.
-	* config/avr/avr.c (avr_override_options): Likewise.	
+	* config/avr/avr.c (avr_override_options): Likewise.
 	* config/c4x/c4x.c (c4x_expand_prologue): Likewise.
 	* config/dsp16xx/dsp16xx.c (function_prologue): Likewise.
 	* config/h8300/h8300.c (h8300_init_once): Likewise.
@@ -777,12 +781,12 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-02-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpphash.h: Rename _ALIGN POOL_ALIGN.
-	* cpplex.c (new_chunk, _cpp_pool_reserve): Update.  
+	* cpplex.c (new_chunk, _cpp_pool_reserve): Update.
 
 2001-02-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpphash.h: Rename ALIGN _ALIGN.
-	* cpplex.c (new_chunk, _cpp_pool_reserve): Update.  
+	* cpplex.c (new_chunk, _cpp_pool_reserve): Update.
 
 Fri Feb  2 23:15:29 2001  Christopher Faylor <cgf@cygnus.com>
 
@@ -848,14 +852,14 @@ Fri Feb  2 20:03:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-02-02  Mark Mitchell  <mark@codesourcery.com>
 
-	* gcc.c (init_gcc_specs): New function.  Make -shared-libgcc 
+	* gcc.c (init_gcc_specs): New function.  Make -shared-libgcc
 	the default when building a shared object.
 	(init_spec): Use it.
 	* testsuite/lib/g++.exp: Include the directory where libgcc
 	is located to the LD_LIBRARY_PATH list.
 	* invoke.texi (-shared-libgcc): Document the cases in which
 	GCC defaults to using the shared libgcc.
-	
+
 2001-02-02  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/fp-bit.h (MAX_USI_INT, MAX_SI_INT): Don't assume
@@ -987,7 +991,7 @@ Thu Feb  1 07:22:41 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* cpphash.h (struct cpp_reader): New saved_flags.
 	* cppmacro.c (cpp_get_token): Use saved_flags to remember
 	to avoid a paste after a pasted token.
-	  
+
 2001-01-31  Alexandre Oliva  <aoliva@redhat.com>
 
 	* libgcc2.h (Wtype_MAX, Wtype_MIN): Define.
@@ -1129,7 +1133,7 @@ Mon Jan 29 20:38:19 2001  Christopher Faylor <cgf@cygnus.com>
 
 	* cpphash.c (_cpp_cleanup_hashtable, _cpp_lookup_with_hash)
 	: Don't set fe_value.
-	* cpplib.h (AVOID_LPASTE): New flag. 
+	* cpplib.h (AVOID_LPASTE): New flag.
 	(struct cpp_hashnode): Remove fe_value.
 	* cpplex.c (cpp_avoid_paste): Don't paste '.' with a number.
 	* cppmacro.c (builtin_macro): Don't set flags here.
@@ -1285,7 +1289,7 @@ Fri Jan 26 11:37:26 2001  Jeffrey A Law  (law@cygnus.com)
 	(move_movables): Replace emit_call_insn_before with
 	loop_call_insn_hoist.
 	* loop.h (loop_insn_emit_before): Add.
-	* unroll.c (copy_loop_body): Replace emit_insn_before with 
+	* unroll.c (copy_loop_body): Replace emit_insn_before with
 	loop_insn_emit_before.
 
 2001-01-25  Neil Booth  <neil@daikokuya.demon.co.uk>

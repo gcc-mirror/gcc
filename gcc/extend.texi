@@ -4321,7 +4321,7 @@ In Standard C++, objects defined at namespace scope are guaranteed to be
 initialized in an order in strict accordance with that of their definitions
 @emph{in a given translation unit}.  No guarantee is made for initializations
 across translation units.  However, GNU C++ allows users to control the
-order of initialization of objects defined at namespace socpe with the
+order of initialization of objects defined at namespace scope with the
 @code{init_priority} attribute by specifying a relative @var{priority},
 a constant integral expression currently bounded between 101 and 65535
 inclusive.  Lower numbers indicate a higher priority.
