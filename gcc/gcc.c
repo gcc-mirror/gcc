@@ -2346,6 +2346,8 @@ process_command (argc, argv)
   char *temp;
   char *spec_lang = 0;
   int last_language_n_infiles;
+  int have_c = 0;
+  int have_o = 0;
 
   gcc_exec_prefix = getenv ("GCC_EXEC_PREFIX");
 
@@ -2684,6 +2686,17 @@ process_command (argc, argv)
 		  n_switches++;
 		  break;
 		}
+
+	    case 'c':
+	      have_c = 1;
+	      n_switches++;
+	      break;
+
+	    case 'o':
+	      have_o = 1;
+
+	      /* ... fall through ... */
+
 	    default:
 	      n_switches++;
 
@@ -2696,6 +2709,9 @@ process_command (argc, argv)
       else
 	n_infiles++;
     }
+
+  if (have_c && have_o && n_infiles != 1)
+    fatal ("cannot specify -o with -c and multiple compilations");
 
   /* Set up the search paths before we go looking for config files.  */
 
@@ -3828,7 +3844,7 @@ handle_braces (p)
 {
   register char *q;
   char *filter;
-  int pipe = 0;
+  int pipe_p = 0;
   int negate = 0;
   int suffix = 0;
 
@@ -3836,7 +3852,7 @@ handle_braces (p)
     /* A `|' after the open-brace means,
        if the test fails, output a single minus sign rather than nothing.
        This is used in %{|!pipe:...}.  */
-    pipe = 1, ++p;
+    pipe_p = 1, ++p;
 
   if (*p == '!')
     /* A `!' after the open-brace negates the condition:
@@ -3846,7 +3862,7 @@ handle_braces (p)
   if (*p == '.')
     /* A `.' after the open-brace means test against the current suffix.  */
     {
-      if (pipe)
+      if (pipe_p)
 	abort ();
 
       suffix = 1;
@@ -3987,7 +4003,7 @@ handle_braces (p)
 		return 0;
 	    }
 	}
-      else if (pipe)
+      else if (pipe_p)
 	{
 	  /* Here if a %{|...} conditional fails: output a minus sign,
 	     which means "standard output" or "standard input".  */
