@@ -99,7 +99,7 @@ int _Jv_CondNotifyAll (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu);
 inline void
 _Jv_CondInit (_Jv_ConditionVariable_t *cv)
 {
-  cv->first = NULL;
+  cv->first = 0;
 }
 
 //
@@ -109,7 +109,7 @@ _Jv_CondInit (_Jv_ConditionVariable_t *cv)
 inline void
 _Jv_MutexInit (_Jv_Mutex_t *mu)
 {
-  pthread_mutex_init (&mu->mutex, NULL);
+  pthread_mutex_init (&mu->mutex, 0);
 
   mu->count = 0;
   mu->owner = 0;
