@@ -1,3 +1,18 @@
+Wed Jun  2 10:44:38 1999  Anthony Green  <green@cygnus.com>
+
+	* except.c (link_handler): Chain exception handlers in order.
+
+Wed Jun  2 10:41:24 1999  Anthony Green  <green@cygnus.com>
+
+	* expr.c (expand_byte_code): Fill unreachable bytecode regions
+ 	with nops and process as usual in order to always set correct EH
+ 	ranges.  Emit detailed warnings about unreachable bytecodes.
+
+Wed Jun  2 10:35:13 1999  Anthony Green  <green@cygnus.com>
+
+	* class.c (build_utf8_ref): Mark cinit and utf8 tree nodes as
+ 	constant.
+
 Fri May 28 18:22:45 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
         * parse.y (lookup_field_wrapper): Unified returned value to NULL

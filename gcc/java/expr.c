@@ -1986,6 +1986,7 @@ expand_byte_code (jcf, method)
   int i;
   int saw_index;
   unsigned char *linenumber_pointer;
+  int dead_code_index = -1;
 
 #undef RET /* Defined by config/i386/i386.h */
 #undef AND /* Causes problems with opcodes for iand and land. */
@@ -2164,14 +2165,28 @@ expand_byte_code (jcf, method)
 
       if (! (instruction_bits [PC] & BCODE_VERIFIED))
 	{
-	  /* never executed - skip */
-	  warning ("Some bytecode operations (starting at pc %d) can never be executed", PC);
-	  while (PC < length
-		 && ! (instruction_bits [PC] & BCODE_VERIFIED))
-	    PC++;
-	  continue;
+	  if (dead_code_index == -1)
+	    {
+	      /* This is the start of a region of unreachable bytecodes.
+                 They still need to be processed in order for EH ranges
+                 to get handled correctly.  However, we can simply
+                 replace these bytecodes with nops.  */
+	      dead_code_index = PC;
+            }
+          
+          /* Turn this bytecode into a nop.  */
+          byte_ops[PC] = 0x0;
+        }
+       else
+        {
+	  if (dead_code_index != -1)
+	    {
+              /* We've just reached the end of a region of dead code.  */
+              warning ("Unreachable bytecode from %d to before %d.",
+                       dead_code_index, PC);
+              dead_code_index = -1;
+            }
 	}
-
 
       /* Handle possible line number entry for this PC.
 
@@ -2204,6 +2219,13 @@ expand_byte_code (jcf, method)
       maybe_poplevels (PC);
       maybe_end_try (PC);
     } /* for */
+  
+  if (dead_code_index != -1)
+    {
+      /* We've just reached the end of a region of dead code.  */
+      warning ("Unreachable bytecode from %d to the end of the method.", 
+              dead_code_index);
+    }
 }
 
 static void

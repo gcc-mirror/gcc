@@ -583,6 +583,7 @@ build_utf8_ref (name)
   TREE_TYPE (string) = str_type;
   PUSH_FIELD_VALUE (cinit, "data", string);
   FINISH_RECORD_CONSTRUCTOR (cinit);
+  TREE_CONSTANT (cinit) = 1;
 
   /* Build a unique identifier based on buf. */
   sprintf(buf, "_Utf%d", ++utf8_count);
@@ -608,6 +609,7 @@ build_utf8_ref (name)
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   TREE_READONLY (decl) = 1;
+  TREE_THIS_VOLATILE (decl) = 0;
   DECL_INITIAL (decl) = cinit;
   TREE_CHAIN (decl) = utf8_decl_list;
   layout_decl (decl, 0);
