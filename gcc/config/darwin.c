@@ -265,7 +265,7 @@ const char *
 machopic_non_lazy_ptr_name (name)
      const char *name;
 {
-  char *temp_name;
+  const char *temp_name;
   tree temp, ident = get_identifier (name);
   
   for (temp = machopic_non_lazy_pointers;
@@ -389,7 +389,7 @@ machopic_validate_stub_or_non_lazy_ptr (name, validate_stub)
      const char *name;
      int validate_stub;
 {
-  char *real_name;
+  const char *real_name;
   tree temp, ident = get_identifier (name), id2;
 
     for (temp = (validate_stub ? machopic_stubs : machopic_non_lazy_pointers);
@@ -428,10 +428,12 @@ machopic_indirect_data_reference (orig, reg)
 
       if (machopic_data_defined_p (name))
 	{
+#if defined (TARGET_TOC) || defined (HAVE_lo_sum)
 	  rtx pic_base = gen_rtx (SYMBOL_REF, Pmode, 
 				  machopic_function_base_name ());
 	  rtx offset = gen_rtx (CONST, Pmode,
 				gen_rtx (MINUS, Pmode, orig, pic_base));
+#endif
 
 #if defined (TARGET_TOC) /* i.e., PowerPC */
 	  rtx hi_sum_reg = reg;
@@ -855,8 +857,8 @@ machopic_finish (asm_out_file)
        temp != NULL_TREE; 
        temp = TREE_CHAIN (temp))
     {
-      char *sym_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
-      char *lazy_name = IDENTIFIER_POINTER (TREE_PURPOSE (temp));
+      const char *const sym_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
+      const char *const lazy_name = IDENTIFIER_POINTER (TREE_PURPOSE (temp));
 #if 0
       tree decl = lookup_name_darwin (TREE_VALUE (temp));
 #endif
@@ -1026,7 +1028,7 @@ update_non_lazy_ptrs (name)
        temp != NULL_TREE; 
        temp = TREE_CHAIN (temp))
     {
-      char *sym_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
+      const char *sym_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
 
       if (*sym_name == '!')
 	{
@@ -1090,7 +1092,7 @@ update_stubs (name)
        temp != NULL_TREE; 
        temp = TREE_CHAIN (temp))
     {
-      char *sym_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
+      const char *sym_name = IDENTIFIER_POINTER (TREE_VALUE (temp));
 
       if (*sym_name == '!')
 	{
@@ -1150,7 +1152,7 @@ machopic_select_section (exp, reloc, align)
 	objc_string_object_section ();
       else if (TREE_READONLY (exp) || TREE_CONSTANT (exp))
 	{
-	  if (TREE_SIDE_EFFECTS (exp) || flag_pic && reloc)
+	  if (TREE_SIDE_EFFECTS (exp) || (flag_pic && reloc))
 	    const_data_section ();
 	  else
 	    readonly_data_section ();
@@ -1223,7 +1225,7 @@ machopic_select_section (exp, reloc, align)
     }
   else if (TREE_READONLY (exp) || TREE_CONSTANT (exp))
     {
-      if (TREE_SIDE_EFFECTS (exp) || flag_pic && reloc)
+      if (TREE_SIDE_EFFECTS (exp) || (flag_pic && reloc))
 	const_data_section ();
       else
 	readonly_data_section ();

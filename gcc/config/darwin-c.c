@@ -90,7 +90,7 @@ void
 darwin_pragma_options (pfile)
      cpp_reader *pfile ATTRIBUTE_UNUSED;
 {
-  char *arg;
+  const char *arg;
   tree t, x;
 
   if (c_lex (&t) != CPP_NAME)

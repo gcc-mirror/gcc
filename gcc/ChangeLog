@@ -1,5 +1,16 @@
 2002-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* darwin-c.c (darwin_pragma_options): Const-ify.
+	* darwin.c (machopic_non_lazy_ptr_name,
+	machopic_validate_stub_or_non_lazy_ptr): Likewise.
+	(machopic_indirect_data_reference): Wrap variables in macros
+	controlling their use.
+	(machopic_finish, update_non_lazy_ptrs, update_stubs): Const-ify.
+	(machopic_select_section): Use parentheses around && within ||.
+	* i386/darwin.h (ASM_OUTPUT_ALIGN): Avoid ambiguous-else.
+
+2002-08-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* ip2k.c (mdr_resequence_xy_yx, mdr_propagate_reg_equivs,
 	mdr_try_move_dp_reload, ip2k_check_can_adjust_stack_ref,
 	ip2k_adjust_stack_ref, mdr_try_move_pushes, mdr_try_propagate_clr,
