@@ -1,5 +1,10 @@
 2004-04-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* Makefile.in: Remove (unused) gcc_version_trigger.
+	* configure.in: Remove (unused) glibcpp_builddir.  Don't AC_SUBST
+	gcc_version_trigger.
+	* configure: Regenerate.
+
 	* configure.in: Switch to modern style for AC_INIT, AC_OUTPUT.
 	Sort file into sections.  Remove dnl where appropriate.  Fix
 	other style issues.

@@ -109,16 +109,14 @@ AC_CANONICAL_SYSTEM
 _GCC_TOPLEV_NONCANONICAL_TARGET
 AC_SUBST(target_noncanonical)
 
-# Export build and source directories.
+# Export source directory.
 # These need to be absolute paths, yet at the same time need to
 # canonicalize only relative paths, because then amd will not unmount
 # drives. Thus the use of PWDCMD: set it to 'pawd' or 'amq -w' if using amd.
-glibcpp_builddir=`${PWDCMD-pwd}`
 case $srcdir in
   [\\/$]* | ?:[\\/]*) glibcpp_srcdir=${srcdir} ;;
   *) glibcpp_srcdir=`cd "$srcdir" && ${PWDCMD-pwd} || echo "$srcdir"` ;;
 esac
-AC_SUBST(glibcpp_builddir)
 AC_SUBST(glibcpp_srcdir)
 
 # Process the option "--enable-version-specific-runtime-libs"
@@ -126,7 +124,6 @@ gcc_version_trigger=${srcdir}/../gcc/version.c
 gcc_version_full=`grep version_string ${gcc_version_trigger} | sed -e 's/.*\"\([[^ \"]]*\)[[ \"]].*/\1/'`
 gcc_version=`echo ${gcc_version_full} | sed -e 's/\([^ ]*\) .*/\1/'`
 AC_SUBST(gcc_version)
-AC_SUBST(gcc_version_trigger)
 
 # Calculate glibcpp_toolexecdir, glibcpp_toolexeclibdir
 case ${version_specific_libs} in
