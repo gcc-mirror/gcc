@@ -55,7 +55,7 @@
 
    The implementation here is much more direct.  Everything that can be
    referenced by an inner function is a member of an explicitly created
-   structure herein called the "nonlocal frame struct".  The incomming
+   structure herein called the "nonlocal frame struct".  The incoming
    static chain for a nested function is a pointer to this struct in 
    the parent.  In this way, we settle on known offsets from a known
    base, and so are decoupled from the logic that places objects in the

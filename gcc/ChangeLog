@@ -1,3 +1,9 @@
+2004-08-23  Diego Novillo  <dnovillo@redhat.com>
+
+	* cfg.c (check_bb_profile): Fix typos.
+	* function.c (assign_parm_is_stack_parm): Likewise.
+	* tree-nested.c: Likewise.
+
 2004-08-23  Daniel Jacobowitz  <dan@debian.org>
 
 	* ggc-zone.c (struc alloc_chunk): Rearrange flag bits and SIZE.
