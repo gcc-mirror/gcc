@@ -396,7 +396,9 @@ rmiregistry.pod: java/gcj.texi
 
 # Install the man pages.
 java.install-man: installdirs \
-                  $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext)
+                  $(DESTDIR)$(man1dir)/$(JAVA_INSTALL_NAME)$(man1ext) \
+		  $(JAVA_TARGET_INDEPENDENT_BIN_TOOLS:%=doc/%.1) \
+		  doc/gij.1 doc/jv-convert.1 doc/rmic.1 doc/rmiregistry.1
 	for tool in $(JAVA_TARGET_INDEPENDENT_BIN_TOOLS) \
 		gij jv-convert rmic rmiregistry ; do \
 	  tool_transformed_name=`echo $$tool|sed '$(program_transform_name)'`; \

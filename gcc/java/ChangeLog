@@ -1,3 +1,7 @@
+2004-02-16  Geoffrey Keating  <geoffk@apple.com>
+
+	* Make-lang.in (java.install-man): Add extra dependencies.
+
 2004-02-13  Geoffrey Keating  <geoffk@apple.com>
 
 	* Make-lang.in: Install man pages under the same names
