@@ -312,9 +312,6 @@
 /* Define if you have the _fpclass function.  */
 #undef HAVE__FPCLASS
 
-/* Define if you have the _fqfinite function.  */
-#undef HAVE__FQFINITE
-
 /* Define if you have the _frexpf function.  */
 #undef HAVE__FREXPF
 
@@ -398,12 +395,6 @@
 
 /* Define if you have the _sqrtl function.  */
 #undef HAVE__SQRTL
-
-/* Define if you have the _strtof function.  */
-#undef HAVE__STRTOF
-
-/* Define if you have the _strtold function.  */
-#undef HAVE__STRTOLD
 
 /* Define if you have the _tanf function.  */
 #undef HAVE__TANF
@@ -611,9 +602,6 @@
 
 /* Define if you have the fpclass function.  */
 #undef HAVE_FPCLASS
-
-/* Define if you have the fqfinite function.  */
-#undef HAVE_FQFINITE
 
 /* Define if you have the frexpf function.  */
 #undef HAVE_FREXPF

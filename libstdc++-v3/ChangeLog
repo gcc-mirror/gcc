@@ -1,3 +1,14 @@
+2000-06-21  Benjamin Kosnik  <bkoz@soma.redhat.com>
+
+	Fix alpha, powerpc build failures.
+	* acinclude.m4 (GLIBCPP_CHECK_MATH_SUPPORT): Substantially
+	re-write. Need to check for both proper declaration when using a
+	c++ compiler, and "C" linkage when linking. Do both, and if both
+	exist, then define the HAVE_* bits in config.h.
+	(GLIBCPP_CHECK_MATH_DECL_AND_LINKAGE): New, uber-macro. Does all.
+	(GLIBCPP_CHECK_LINKER_FEATURES): Actually link and run this
+	program, doh.
+
 2000-06-20  Anthony Williams  <anthony@anthonyw.cjb.net>
 
 	* bits/string.tcc: Fix find.
