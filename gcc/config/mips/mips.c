@@ -6053,7 +6053,7 @@ mips_asm_file_start (stream)
   /* This code exists so that we can put all externs before all symbol
      references.  This is necessary for the MIPS assembler's global pointer
      optimizations to work.  */
-  if (TARGET_FILE_SWITCHING && ! TARGET_MIPS16)
+  if (TARGET_FILE_SWITCHING)
     {
       asm_out_data_file = stream;
       asm_out_text_file = mips_make_temp_file ();
@@ -6113,7 +6113,7 @@ mips_asm_file_end (file)
 	}
     }
 
-  if (TARGET_FILE_SWITCHING && ! TARGET_MIPS16)
+  if (TARGET_FILE_SWITCHING)
     {
       fprintf (file, "\n\t.text\n");
       rewind (asm_out_text_file);
@@ -7472,9 +7472,11 @@ mips_output_function_epilogue (file, size)
   /* Restore the output file if optimizing the GP (optimizing the GP causes
      the text to be diverted to a tempfile, so that data decls come before
      references to the data).  */
-
-  if (TARGET_GP_OPT && ! TARGET_MIPS16 && ! TARGET_GAS)
-    asm_out_file = asm_out_data_file;
+  if (TARGET_FILE_SWITCHING)
+    {
+      asm_out_file = asm_out_data_file;
+      data_section ();
+    }
 }
 
 /* Expand the epilogue into a bunch of separate insns.  */

@@ -319,7 +319,8 @@ extern void		sbss_section PARAMS ((void));
 /* This is true if we must enable the assembly language file switching
    code.  */
 
-#define TARGET_FILE_SWITCHING	(TARGET_GP_OPT && ! TARGET_GAS)
+#define TARGET_FILE_SWITCHING \
+  (TARGET_GP_OPT && ! TARGET_GAS && ! TARGET_MIPS16)
 
 /* We must disable the function end stabs when doing the file switching trick,
    because the Lscope stabs end up in the wrong place, making it impossible
@@ -4215,32 +4216,27 @@ while (0)
 #define ASM_FILE_END(STREAM) mips_asm_file_end(STREAM)
 
 
+/* Play switch file games if we're optimizing the global pointer.  */
+
+#undef TEXT_SECTION
+#define TEXT_SECTION()					\
+do {							\
+  extern FILE *asm_out_text_file;			\
+  if (TARGET_FILE_SWITCHING)				\
+    asm_out_file = asm_out_text_file;			\
+  fputs (TEXT_SECTION_ASM_OP, asm_out_file);		\
+  fputc ('\n', asm_out_file);            		\
+} while (0)
+
+
 /* This is how to declare a function name.  The actual work of
    emitting the label is moved to function_prologue, so that we can
    get the line number correctly emitted before the .ent directive,
-   and after any .file directives.
-
-   Also, switch files if we are optimizing the global pointer.  */
+   and after any .file directives.  */
 
 #undef ASM_DECLARE_FUNCTION_NAME
-#define ASM_DECLARE_FUNCTION_NAME(STREAM,NAME,DECL)			\
-{									\
-  extern FILE *asm_out_text_file;					\
-  if (TARGET_GP_OPT && ! TARGET_MIPS16)					\
-    {									\
-      STREAM = asm_out_text_file;					\
-      /* ??? text_section gets called too soon.  If the previous	\
-	 function is in a special section and we're not, we have	\
-	 to switch back to the text section.  We can't call		\
-	 text_section again as gcc thinks we're already there.  */	\
-      /* ??? See varasm.c.  There are other things that get output	\
-	 too early, like alignment (before we've switched STREAM).  */	\
-      if (DECL_SECTION_NAME (DECL) == NULL_TREE)			\
-	fprintf (STREAM, "%s\n", TEXT_SECTION_ASM_OP);			\
-    }									\
-									\
-  HALF_PIC_DECLARE (NAME);						\
-}
+#define ASM_DECLARE_FUNCTION_NAME(STREAM,NAME,DECL)	\
+  HALF_PIC_DECLARE (NAME)
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
