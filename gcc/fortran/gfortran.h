@@ -821,6 +821,7 @@ typedef union
   try (*f1m)(gfc_actual_arglist *);
   try (*f2)(struct gfc_expr *, struct gfc_expr *);
   try (*f3)(struct gfc_expr *, struct gfc_expr *, struct gfc_expr *);
+  try (*f3ml)(gfc_actual_arglist *);
   try (*f4)(struct gfc_expr *, struct gfc_expr *, struct gfc_expr *,
 	    struct gfc_expr *);
   try (*f5)(struct gfc_expr *, struct gfc_expr *, struct gfc_expr *,

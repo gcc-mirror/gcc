@@ -1,3 +1,8 @@
+2004-06-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/14928
+	* gfortran.fortran-torture/compile/mloc.f90: New test.
+	
 2004-06-13  Paul Brook  <paul@codesourcery.com>
 
 	* gfortran.fortran-torture/execute/random_2.f90: New test.
