@@ -1,3 +1,7 @@
+Fri Dec  7 06:29:03 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* g++-old.deja/g++.robertl/eb101.C: Deleted.
+
 2001-12-06  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.c-torture/execute/builtin-prefetch-1.c: Add checks for
