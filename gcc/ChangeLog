@@ -1,3 +1,9 @@
+2000-06-02  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/server.c(sig_handler):  resume closing server on SIGPIPE
+	(server_setup):  define the server's master pid
+	(close_server):  actually do the deed IFF we are the server's master
+
 2000-06-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.c (c_get_alias_set): Check whether signed_type did not
