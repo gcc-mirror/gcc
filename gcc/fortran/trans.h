@@ -374,6 +374,9 @@ void gfc_add_decl_to_function (tree);
 /* Make prototypes for runtime library functions.  */
 void gfc_build_builtin_function_decls (void);
 
+/* Set the backend source location of a decl.  */
+void gfc_set_decl_location (tree, locus *);
+
 /* Return the variable decl for a symbol.  */
 tree gfc_get_symbol_decl (gfc_symbol *);
 

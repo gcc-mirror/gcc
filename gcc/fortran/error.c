@@ -127,7 +127,13 @@ show_locus (int offset, locus * loc)
 
   lb = loc->lb;
   f = lb->file;
-  error_printf ("In file %s:%d\n", f->filename, lb->linenum);
+  error_printf ("In file %s:%d\n", f->filename,
+#ifdef USE_MAPPED_LOCATION
+		LOCATION_LINE (lb->location)
+#else
+		lb->linenum
+#endif
+		);
 
   for (;;)
     {

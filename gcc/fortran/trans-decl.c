@@ -214,6 +214,20 @@ gfc_get_return_label (void)
 }
 
 
+/* Set the backend source location of a decl.  */
+
+void
+gfc_set_decl_location (tree decl, locus * loc)
+{
+#ifdef USE_MAPPED_LOCATION
+  DECL_SOURCE_LOCATION (decl) = loc->lb->location;
+#else
+  DECL_SOURCE_LINE (decl) = loc->lb->linenum;
+  DECL_SOURCE_FILE (decl) = loc->lb->file->filename;
+#endif
+}
+
+
 /* Return the backend label declaration for a given label structure,
    or create it if it doesn't exist yet.  */
 
@@ -238,10 +252,7 @@ gfc_get_label_decl (gfc_st_label * lp)
 
       /* Tell the debugger where the label came from.  */
       if (lp->value <= MAX_LABEL_VALUE)	/* An internal label.  */
-	{
-	  DECL_SOURCE_LINE (label_decl) = lp->where.lb->linenum;
-	  DECL_SOURCE_FILE (label_decl) = lp->where.lb->file->filename;
-	}
+	gfc_set_decl_location (label_decl, &lp->where);
       else
 	DECL_ARTIFICIAL (label_decl) = 1;
 
@@ -757,6 +768,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   /* Create the decl for the variable.  */
   decl = build_decl (VAR_DECL, gfc_sym_identifier (sym), gfc_sym_type (sym));
 
+  gfc_set_decl_location (decl, &sym->declared_at);
+
   /* Symbols from modules should have their assembler names mangled.
      This is done here rather than in gfc_finish_var_decl because it
      is different for string length variables.  */
@@ -977,6 +990,10 @@ build_function_decl (gfc_symbol * sym)
 
   assert (!sym->backend_decl);
   assert (!sym->attr.external);
+
+  /* Set the line and filename.  sym->declared_at seems to point to the
+     last statement for subroutines, but it'll do for now.  */
+  gfc_set_backend_locus (&sym->declared_at);
 
   /* Allow only one nesting level.  Allow public declarations.  */
   assert (current_function_decl == NULL_TREE
@@ -1298,10 +1315,6 @@ trans_function_start (gfc_symbol * sym)
   /* Create RTL for function definition.  */
   make_decl_rtl (fndecl);
 
-  /* Set the line and filename.  sym->declared_at seems to point to the
-     last statement for subroutines, but it'll do for now.  */
-  gfc_set_backend_locus (&sym->declared_at);
-
   init_function_start (fndecl);
 
   /* Even though we're inside a function body, we still don't want to
@@ -1328,10 +1341,12 @@ build_entry_thunks (gfc_namespace * ns)
   tree args;
   tree string_args;
   tree tmp;
+  locus old_loc;
 
   /* This should always be a toplevel function.  */
   assert (current_function_decl == NULL_TREE);
 
+  gfc_get_backend_locus (&old_loc);
   for (el = ns->entries; el; el = el->next)
     {
       thunk_sym = el->sym;
@@ -1430,6 +1445,8 @@ build_entry_thunks (gfc_namespace * ns)
 	    formal->sym->ts.cl->backend_decl = NULL_TREE;
 	}
     }
+
+  gfc_set_backend_locus (&old_loc);
 }
 
 
@@ -2338,7 +2355,7 @@ gfc_generate_constructors (void)
 
   make_decl_rtl (fndecl);
 
-  init_function_start (fndecl, input_filename, input_line);
+  init_function_start (fndecl);
 
   pushlevel (0);
 
@@ -2373,8 +2390,18 @@ gfc_generate_block_data (gfc_namespace * ns)
   tree decl;
   tree id;
 
+  /* Tell the backend the source location of the block data.  */
+  if (ns->proc_name)
+    gfc_set_backend_locus (&ns->proc_name->declared_at);
+  else
+    gfc_set_backend_locus (&gfc_current_locus);
+
+  /* Process the DATA statements.  */
   gfc_trans_common (ns);
 
+  /* Create a global symbol with the mane of the block data.  This is to
+     generate linker errors if the same name is used twice.  It is never
+     really used.  */
   if (ns->proc_name)
     id = gfc_sym_mangled_function_id (ns->proc_name);
   else

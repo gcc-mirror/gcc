@@ -33,6 +33,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    seem to be sufficient on some systems.  */
 #include "system.h"
 #include "coretypes.h"
+#include "input.h"
 
 /* The following ifdefs are recommended by the autoconf documentation
    for any code using alloca.  */
@@ -459,7 +460,11 @@ typedef struct gfc_file
 
 typedef struct gfc_linebuf 
 {
+#ifdef USE_MAPPED_LOCATION
+  source_location location;
+#else
   int linenum;
+#endif
   struct gfc_file *file;
   struct gfc_linebuf *next;
 
