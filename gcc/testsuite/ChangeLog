@@ -1,3 +1,10 @@
+2001-07-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* g++.old-deja/g++.pt/static3.C: Removed alpha*-*-osf* XFAIL.
+	g++.old-deja/g++.pt/static6.C: Likewise.
+	* lib/target-supports.exp (check_weak_available): alpha*-*-osf*
+	supports weak symbols.
+
 2001-07-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* gcc.c-torture/execute/20001229-1.c: Include <sys/proc.h> for

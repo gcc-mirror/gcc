@@ -183,3 +183,26 @@ __enable_execute_stack (addr)						\
   (TARGET_GAS								     \
    ? (((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4) \
    : DW_EH_PE_aligned)
+
+/* This is how we tell the assembler that a symbol is weak.  */
+
+#define ASM_OUTPUT_WEAK_ALIAS(FILE, NAME, VALUE)	\
+  do							\
+    {							\
+      ASM_GLOBALIZE_LABEL (FILE, NAME);			\
+      fputs ("\t.weakext\t", FILE);			\
+      assemble_name (FILE, NAME);			\
+      if (VALUE)					\
+        {						\
+          fputc (' ', FILE);				\
+          assemble_name (FILE, VALUE);			\
+        }						\
+      fputc ('\n', FILE);				\
+    }							\
+  while (0)
+
+#define ASM_WEAKEN_LABEL(FILE, NAME) ASM_OUTPUT_WEAK_ALIAS(FILE, NAME, 0)
+
+/* Handle #pragma weak and #pragma pack.  */
+#undef HANDLE_SYSV_PRAGMA
+#define HANDLE_SYSV_PRAGMA 1

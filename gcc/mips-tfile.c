@@ -1637,12 +1637,7 @@ STATIC symint_t	add_local_symbol
 					 symint_t,
 					 symint_t));
 
-STATIC symint_t	add_ext_symbol	__proto((const char *,
-					 const char *,
-					 st_t,
-					 sc_t,
-					 long,
-					 symint_t,
+STATIC symint_t	add_ext_symbol	__proto((EXTR *,
 					 int));
 
 STATIC symint_t	add_aux_sym_symint
@@ -2063,23 +2058,24 @@ add_local_symbol (str_start, str_end_p1, type, storage, value, indx)
 /* Add an external symbol.  */
 
 STATIC symint_t
-add_ext_symbol (str_start, str_end_p1, type, storage, value, indx, ifd)
-     const char *str_start;		/* first byte in string */
-     const char *str_end_p1;		/* first byte after string */
-     st_t type;				/* symbol type */
-     sc_t storage;			/* storage class */
-     long value;			/* value of symbol */
-     symint_t indx;			/* index to local/aux. syms */
+add_ext_symbol (esym, ifd)
+     EXTR *esym;			/* symbol pointer */
      int ifd;				/* file index */
 {
+  const char *str_start;		/* first byte in string */
+  const char *str_end_p1;		/* first byte after string */
   register EXTR *psym;
   register varray_t *vp = &ext_symbols;
   shash_t *hash_ptr = (shash_t *) 0;
 
+  str_start = ORIG_ESTRS (esym->asym.iss);
+  str_end_p1 = str_start + strlen(str_start);
+
   if (debug > 1)
     {
-      const char *sc_str = sc_to_string (storage);
-      const char *st_str = st_to_string (type);
+      long value = esym->asym.value;
+      const char *sc_str = sc_to_string (esym->asym.sc);
+      const char *st_str = st_to_string (esym->asym.st);
 
       fprintf (stderr,
 	       "\tesym\tv= %10ld, ifd= %2d, sc= %-12s",
@@ -2097,11 +2093,9 @@ add_ext_symbol (str_start, str_end_p1, type, storage, value, indx, ifd)
 
   psym = &vp->last->datum->esym[ vp->objects_last_page++ ];
 
+  *psym = *esym;
   psym->ifd = ifd;
-  psym->asym.value = value;
-  psym->asym.st    = (unsigned) type;
-  psym->asym.sc    = (unsigned) storage;
-  psym->asym.index = indx;
+  psym->asym.index = indexNil;
   psym->asym.iss   = (str_start == (const char *) 0)
 			? 0
 			: add_string (&ext_strings,
@@ -4648,17 +4642,10 @@ copy_object __proto((void))
   for (es = 0; es < orig_sym_hdr.iextMax; es++)
     {
       register EXTR *eptr = orig_ext_syms + es;
-      register char *ename = ORIG_ESTRS (eptr->asym.iss);
       register unsigned ifd = eptr->ifd;
 
-      (void) add_ext_symbol (ename,
-			     ename + strlen (ename),
-			     (st_t) eptr->asym.st,
-			     (sc_t) eptr->asym.sc,
-			     eptr->asym.value,
-			     (symint_t) indexNil,
-			     ((long) ifd < orig_sym_hdr.ifdMax
-			      ? remap_file_number[ifd] : (int) ifd));
+      (void) add_ext_symbol (eptr, ((long) ifd < orig_sym_hdr.ifdMax)
+			     ? remap_file_number[ ifd ] : ifd );
     }
 
 
