@@ -911,7 +911,10 @@ extern struct rtx_def *i960_function_arg ();
 /* Maximum number of registers that can appear in a valid memory address.  */
 #define	MAX_REGS_PER_ADDRESS 2
 
-#define CONSTANT_ADDRESS_P(X)  CONSTANT_P (X)
+#define CONSTANT_ADDRESS_P(X)   \
+  (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
+   || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
+   || GET_CODE (X) == HIGH)
 
 /* LEGITIMATE_CONSTANT_P is nonzero if the constant value X
    is a legitimate general operand.

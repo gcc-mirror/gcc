@@ -1056,9 +1056,14 @@ extern union tree_node *current_function_decl;
 
 /* Recognize any constant value that is a valid address except
    for symbolic addresses.  We get better CSE by rejecting them
-   here and allowing hppa_legitimize_address to break them up.  */
+   here and allowing hppa_legitimize_address to break them up.  We
+   use most of the constants accepted by CONSTANT_P, except CONST_DOUBLE.  */
 
 #define CONSTANT_ADDRESS_P(X) \
+  ((GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
+   || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
+   || GET_CODE (X) == HIGH) && ! symbolic_expression_p (X))
+
  (CONSTANT_P (X) && ! symbolic_expression_p (X))
 
 /* Include all constant integers and constant doubles, but not

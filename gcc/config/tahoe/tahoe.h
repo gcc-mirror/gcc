@@ -446,7 +446,10 @@ enum reg_class {NO_REGS,GENERAL_REGS,FPP_REG,ALL_REGS,LIM_REG_CLASSES};
 
 /* constant addresses can be treated exactly the same as normal constants */
 
-#define CONSTANT_ADDRESS_P(X) CONSTANT_P (X)
+#define CONSTANT_ADDRESS_P(X)   \
+  (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
+   || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST		\
+   || GET_CODE (X) == HIGH)
 
 /* we can have as many as two regs in any given address */
 
