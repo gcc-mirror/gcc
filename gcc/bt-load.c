@@ -98,6 +98,10 @@ typedef struct btr_def_s
      as appropriate.  */
   char other_btr_uses_before_def;
   char other_btr_uses_after_use;
+  /* We set own_end when we have moved a definition into a dominator.
+     Thus, when a later combination removes this definition again, we know
+     to clear out trs_live_at_end again.  */
+  char own_end;
   bitmap live_range;
 } *btr_def;
 
@@ -123,9 +127,9 @@ static void link_btr_uses (btr_def *, btr_user *, sbitmap *, sbitmap *, int);
 static void build_btr_def_use_webs (fibheap_t);
 static int block_at_edge_of_live_range_p (int, btr_def);
 static void clear_btr_from_live_range (btr_def def);
-static void add_btr_to_live_range (btr_def);
+static void add_btr_to_live_range (btr_def, int);
 static void augment_live_range (bitmap, HARD_REG_SET *, basic_block,
-				basic_block);
+				basic_block, int);
 static int choose_btr (HARD_REG_SET);
 static void combine_btr_defs (btr_def, HARD_REG_SET *);
 static void btr_def_live_range (btr_def, HARD_REG_SET *);
@@ -832,14 +836,18 @@ clear_btr_from_live_range (btr_def def)
 	    dump_btrs_live (bb);
 	}
     }
+ if (def->own_end)
+   CLEAR_HARD_REG_BIT (btrs_live_at_end[def->bb->index], def->btr);
 }
 
 
 /* We are adding the def/use web DEF.  Add the target register used
    in this web to the live set of all of the basic blocks that contain
-   the live range of the web.  */
+   the live range of the web.
+   If OWN_END is set, also show that the register is live from our
+   definitions at the end of the basic block where it is defined.  */
 static void
-add_btr_to_live_range (btr_def def)
+add_btr_to_live_range (btr_def def, int own_end)
 {
   unsigned bb;
   bitmap_iterator bi;
@@ -851,6 +859,11 @@ add_btr_to_live_range (btr_def def)
       if (dump_file)
 	dump_btrs_live (bb);
     }
+  if (own_end)
+    {
+      SET_HARD_REG_BIT (btrs_live_at_end[def->bb->index], def->btr);
+      def->own_end = 1;
+    }
 }
 
 /* Update a live range to contain the basic block NEW_BLOCK, and all
@@ -859,19 +872,30 @@ add_btr_to_live_range (btr_def def)
    all other blocks in the existing live range.
    Also add to the set BTRS_LIVE_IN_RANGE all target registers that
    are live in the blocks that we add to the live range.
+   If FULL_RANGE is set, include the full live range of NEW_BB;
+   otherwise, if NEW_BB dominates HEAD_BB, only add registers that
+   are life at the end of NEW_BB for NEW_BB itself.
    It is a precondition that either NEW_BLOCK dominates HEAD,or
    HEAD dom NEW_BLOCK.  This is used to speed up the
    implementation of this function.  */
 static void
 augment_live_range (bitmap live_range, HARD_REG_SET *btrs_live_in_range,
-		    basic_block head_bb, basic_block new_bb)
+		    basic_block head_bb, basic_block new_bb, int full_range)
 {
   basic_block *worklist, *tos;
 
   tos = worklist = xmalloc (sizeof (basic_block) * (n_basic_blocks + 1));
 
   if (dominated_by_p (CDI_DOMINATORS, new_bb, head_bb))
-    *tos++ = new_bb;
+    {
+      if (new_bb == head_bb)
+	{
+	  if (full_range)
+	    IOR_HARD_REG_SET (*btrs_live_in_range, btrs_live[new_bb->index]);
+	  return;
+	}
+      *tos++ = new_bb;
+    }
   else
     {
       edge e;
@@ -880,14 +904,14 @@ augment_live_range (bitmap live_range, HARD_REG_SET *btrs_live_in_range,
 
       gcc_assert (dominated_by_p (CDI_DOMINATORS, head_bb, new_bb));
   
+      IOR_HARD_REG_SET (*btrs_live_in_range, btrs_live[head_bb->index]);
       bitmap_set_bit (live_range, new_block);
-      if (flag_btr_bb_exclusive)
+      /* A previous btr migration could have caused a register to be
+        live just at the end of new_block which we need in full, so
+        use trs_live_at_end even if full_range is set.  */
+      IOR_HARD_REG_SET (*btrs_live_in_range, btrs_live_at_end[new_block]);
+      if (full_range)
 	IOR_HARD_REG_SET (*btrs_live_in_range, btrs_live[new_block]);
-      else
-	{
-	  IOR_HARD_REG_SET (*btrs_live_in_range, btrs_live_at_end[new_block]);
-	  IOR_HARD_REG_SET (*btrs_live_in_range, btrs_live[head_bb->index]);
-	}
       if (dump_file)
 	{
 	  fprintf (dump_file,
@@ -912,6 +936,10 @@ augment_live_range (bitmap live_range, HARD_REG_SET *btrs_live_in_range,
 	  bitmap_set_bit (live_range, bb->index);
 	  IOR_HARD_REG_SET (*btrs_live_in_range,
 	    btrs_live[bb->index]);
+	  /* A previous btr migration could have caused a register to be
+	     live just at the end of a block which we need in full.  */
+	  IOR_HARD_REG_SET (*btrs_live_in_range,
+	    btrs_live_at_end[bb->index]);
 	  if (dump_file)
 	    {
 	      fprintf (dump_file,
@@ -977,7 +1005,10 @@ btr_def_live_range (btr_def def, HARD_REG_SET *btrs_live_in_range)
 
       for (user = def->uses; user != NULL; user = user->next)
 	augment_live_range (def->live_range, btrs_live_in_range,
-			    def->bb, user->bb);
+			    def->bb, user->bb,
+			    (flag_btr_bb_exclusive
+			     || user->insn != BB_END (def->bb)
+			     || GET_CODE (user->insn) != JUMP_INSN));
     }
   else
     {
@@ -1038,7 +1069,10 @@ combine_btr_defs (btr_def def, HARD_REG_SET *btrs_live_in_range)
 
 	  for (user = other_def->uses; user != NULL; user = user->next)
 	    augment_live_range (combined_live_range, &combined_btrs_live,
-				def->bb, user->bb);
+				def->bb, user->bb,
+				(flag_btr_bb_exclusive
+				 || user->insn != BB_END (def->bb)
+				 || GET_CODE (user->insn) != JUMP_INSN));
 
 	  btr = choose_btr (combined_btrs_live);
 	  if (btr != -1)
@@ -1072,7 +1106,7 @@ combine_btr_defs (btr_def def, HARD_REG_SET *btrs_live_in_range)
 	      clear_btr_from_live_range (other_def);
 	      other_def->uses = NULL;
 	      bitmap_copy (def->live_range, combined_live_range);
-	      if (other_def->other_btr_uses_after_use)
+	      if (other_def->btr == btr && other_def->other_btr_uses_after_use)
 		def->other_btr_uses_after_use = 1;
 	      COPY_HARD_REG_SET (*btrs_live_in_range, combined_btrs_live);
 
@@ -1119,12 +1153,12 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
   def->bb = new_def_bb;
   def->luid = 0;
   def->cost = basic_block_freq (new_def_bb);
-  def->other_btr_uses_before_def
-    = TEST_HARD_REG_BIT (btrs_live[b->index], btr) ? 1 : 0;
   bitmap_copy (def->live_range, live_range);
   combine_btr_defs (def, btrs_live_in_range);
   btr = def->btr;
-  add_btr_to_live_range (def);
+  def->other_btr_uses_before_def
+    = TEST_HARD_REG_BIT (btrs_live[b->index], btr) ? 1 : 0;
+  add_btr_to_live_range (def, 1);
   if (LABEL_P (insp))
     insp = NEXT_INSN (insp);
   /* N.B.: insp is expected to be NOTE_INSN_BASIC_BLOCK now.  Some
@@ -1292,7 +1326,8 @@ migrate_btr_def (btr_def def, int min_cost)
 	  || (try_freq == def_basic_block_freq && btr_used_near_def))
 	{
 	  int btr;
-	  augment_live_range (live_range, &btrs_live_in_range, def->bb, try);
+	  augment_live_range (live_range, &btrs_live_in_range, def->bb, try,
+			      flag_btr_bb_exclusive);
 	  if (dump_file)
 	    {
 	      fprintf (dump_file, "Now btrs live in range are: ");
