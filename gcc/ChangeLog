@@ -1,3 +1,29 @@
+2000-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* objc/objc-act.c: Include ggc.h.
+	(objc_tree_index, objc_global_trees): Convert most of the
+	static tree variables into a static array with previous names
+	as defines.
+	(objc_ellipsis_node): New variable.
+	(lang_init): Call objc_act_parse_init and c_parse_init.
+	Create objc_ellipsis_node.
+	(build_selector_translation_table): Use objc_ellipsis_node instead
+	of (tree)1.
+	(hack_method_prototype): Likewise.
+	(get_arg_type_list): Likewise.
+	(start_method_def): Likewise.
+	(continue_method_def): Likewise.
+	(gen_method_decl): Likewise.
+	(ggc_mark_imp_list): New function.
+	(ggc_mark_hash_table): New function.
+	(objc_act_parse_init): New function.
+	* objc/objc-act.h (objc_ellipsis_node): Add extern variable.
+	* c-parse.in (c_parse_init): For objc add roots of objc specific
+	local tree variables.
+	* objc/objc-parse.y: Rebuilt.
+	* objc/objc-parse.c: Rebuilt.
+	(opt_parm_list): Use objc_ellipsis_node instead of (tree)1.
+
 Wed Apr 12 01:00:44 EDT 2000  John Wehle  (john@feith.com)
 
 	* cse.c (delete_trivially_dead_insns): Also delete insns

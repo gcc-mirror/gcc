@@ -320,7 +320,7 @@ extern int errno;
                      object_get_class_name(self), sel_get_name(aSel)];
 }
 
-#ifdef __alpha__
+#if defined(__alpha__) || (defined(__sparc__) && (defined(__sparcv9) || defined(__arch64__))) || (defined(__ia64__) && defined(__LP64__))
 extern size_t strlen(const char*);
 #endif
 

@@ -51,6 +51,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "output.h"
 #include "toplev.h"
+#include "ggc.h"
 
 #if USE_CPPLIB
 #include "cpplib.h"
@@ -133,12 +134,6 @@ static struct obstack util_obstack;
 /* This points to the beginning of obstack contents,
    so we can free the whole contents.  */
 char *util_firstobj;
-
-/* List of classes with list of their static instances.  */
-static tree objc_static_instances = NULL_TREE;
-
-/* The declaration of the array administrating the static instances.  */
-static tree static_instances_decl = NULL_TREE;
 
 /* for encode_method_def */
 #include "rtl.h"
@@ -345,6 +340,7 @@ static void generate_classref_translation_entry	PARAMS ((tree));
 static void handle_class_ref			PARAMS ((tree));
 static void generate_struct_by_value_array	PARAMS ((void))
      ATTRIBUTE_NORETURN;
+static void objc_act_parse_init			PARAMS ((void));
 
 /*** Private Interface (data) ***/
 
@@ -388,16 +384,102 @@ static const char *TAG_EXECCLASS;
 #define TYPED_OBJECT(type) \
        (TREE_CODE (type) == RECORD_TYPE && TREE_STATIC_TEMPLATE (type))
 
+tree objc_ellipsis_node;
+
+enum objc_tree_index
+{
+    OCTI_STATIC_NST,
+    OCTI_STATIC_NST_DECL,
+    OCTI_SELF_ID,
+    OCTI_UCMD_ID,
+    OCTI_UNUSED_LIST,
+    OCTI_SELF_DECL,
+    OCTI_UMSG_DECL,
+    OCTI_UMSG_SUPER_DECL,
+    OCTI_GET_CLASS_DECL,
+    OCTI_GET_MCLASS_DECL,
+    OCTI_SUPER_TYPE,
+    OCTI_SEL_TYPE,
+    OCTI_ID_TYPE,
+    OCTI_CLS_TYPE,
+    OCTI_NST_TYPE,
+    OCTI_PROTO_TYPE,
+
+    OCTI_CLS_CHAIN,
+    OCTI_ALIAS_CHAIN,
+    OCTI_INTF_CHAIN,
+    OCTI_PROTO_CHAIN,
+    OCTI_CLS_REF_CHAIN,
+    OCTI_SEL_REF_CHAIN,
+    OCTI_CLS_NAMES_CHAIN,
+    OCTI_METH_VAR_NAMES_CHAIN,
+    OCTI_METH_VAR_TYPES_CHAIN,
+
+    OCTI_SYMBOLS_DECL,
+    OCTI_NST_VAR_DECL,
+    OCTI_CLS_VAR_DECL,
+    OCTI_NST_METH_DECL,
+    OCTI_CLS_METH_DECL,
+    OCTI_CLS_DECL,
+    OCTI_MCLS_DECL,
+    OCTI_SEL_TABLE_DECL,
+    OCTI_MODULES_DECL,
+    OCTI_STRG_DECL,
+
+    OCTI_IMPL_CTX,
+    OCTI_IMPL_TEMPL,
+
+    OCTI_CLS_TEMPL,
+    OCTI_CAT_TEMPL,
+    OCTI_UPRIV_REC,
+    OCTI_PROTO_TEMPL,
+    OCTI_SEL_TEMPL,
+    OCTI_UCLS_SUPER_REF,
+    OCTI_UUCLS_SUPER_REF,
+    OCTI_METH_TEMPL,
+    OCTI_IVAR_TEMPL,
+    OCTI_SYMTAB_TEMPL,
+    OCTI_MODULE_TEMPL,
+    OCTI_SUPER_TEMPL,
+    OCTI_OBJ_REF,
+    OCTI_OBJ_ID,
+    OCTI_CLS_ID,
+    OCTI_ID_ID,
+    OCTI_CNST_STR_ID,
+    OCTI_CNST_STR_TYPE,
+    OCTI_SUPER_DECL,
+    OCTI_METH_CTX,
+
+    OCTI_MAX
+};
+
+static tree objc_global_trees[OCTI_MAX];
+
+/* List of classes with list of their static instances.  */
+#define objc_static_instances	objc_global_trees[OCTI_STATIC_NST]
+
+/* The declaration of the array administrating the static instances.  */
+#define static_instances_decl	objc_global_trees[OCTI_STATIC_NST_DECL]
+
 /* Some commonly used instances of "identifier_node".  */
 
-static tree self_id, ucmd_id;
-static tree unused_list;
+#define self_id			objc_global_trees[OCTI_SELF_ID]
+#define ucmd_id			objc_global_trees[OCTI_UCMD_ID]
+#define unused_list		objc_global_trees[OCTI_UNUSED_LIST]
 
-static tree self_decl, umsg_decl, umsg_super_decl;
-static tree objc_get_class_decl, objc_get_meta_class_decl;
+#define self_decl		objc_global_trees[OCTI_SELF_DECL]
+#define umsg_decl		objc_global_trees[OCTI_UMSG_DECL]
+#define umsg_super_decl		objc_global_trees[OCTI_UMSG_SUPER_DECL]
+#define objc_get_class_decl	objc_global_trees[OCTI_GET_CLASS_DECL]
+#define objc_get_meta_class_decl			\
+				objc_global_trees[OCTI_GET_MCLASS_DECL]
 
-static tree super_type, selector_type, id_type, objc_class_type;
-static tree instance_type, protocol_type;
+#define super_type		objc_global_trees[OCTI_SUPER_TYPE]
+#define selector_type		objc_global_trees[OCTI_SEL_TYPE]
+#define id_type			objc_global_trees[OCTI_ID_TYPE]
+#define objc_class_type		objc_global_trees[OCTI_CLS_TYPE]
+#define instance_type		objc_global_trees[OCTI_NST_TYPE]
+#define protocol_type		objc_global_trees[OCTI_PROTO_TYPE]
 
 /* Type checking macros.  */
 
@@ -408,22 +490,22 @@ static tree instance_type, protocol_type;
 #define IS_SUPER(TYPE) \
   (super_type && TYPE_MAIN_VARIANT (TYPE) == TYPE_MAIN_VARIANT (super_type))
 
-static tree class_chain = NULL_TREE;
-static tree alias_chain = NULL_TREE;
-static tree interface_chain = NULL_TREE;
-static tree protocol_chain = NULL_TREE;
+#define class_chain		objc_global_trees[OCTI_CLS_CHAIN]
+#define alias_chain		objc_global_trees[OCTI_ALIAS_CHAIN]
+#define interface_chain		objc_global_trees[OCTI_INTF_CHAIN]
+#define protocol_chain		objc_global_trees[OCTI_PROTO_CHAIN]
 
 /* Chains to manage selectors that are referenced and defined in the
    module.  */
 
-static tree cls_ref_chain = NULL_TREE;	/* Classes referenced.  */
-static tree sel_ref_chain = NULL_TREE;	/* Selectors referenced.  */
+#define cls_ref_chain		objc_global_trees[OCTI_CLS_REF_CHAIN]	/* Classes referenced.  */
+#define sel_ref_chain		objc_global_trees[OCTI_SEL_REF_CHAIN]	/* Selectors referenced.  */
 
 /* Chains to manage uniquing of strings.  */
 
-static tree class_names_chain = NULL_TREE;
-static tree meth_var_names_chain = NULL_TREE;
-static tree meth_var_types_chain = NULL_TREE;
+#define class_names_chain	objc_global_trees[OCTI_CLS_NAMES_CHAIN]
+#define meth_var_names_chain	objc_global_trees[OCTI_METH_VAR_NAMES_CHAIN]
+#define meth_var_types_chain	objc_global_trees[OCTI_METH_VAR_TYPES_CHAIN]
 
 /* Hash tables to manage the global pool of method prototypes.  */
 
@@ -432,21 +514,24 @@ static hash *cls_method_hash_list = 0;
 
 /* Backend data declarations.  */
 
-static tree UOBJC_SYMBOLS_decl;
-static tree UOBJC_INSTANCE_VARIABLES_decl, UOBJC_CLASS_VARIABLES_decl;
-static tree UOBJC_INSTANCE_METHODS_decl, UOBJC_CLASS_METHODS_decl;
-static tree UOBJC_CLASS_decl, UOBJC_METACLASS_decl;
-static tree UOBJC_SELECTOR_TABLE_decl;
-static tree UOBJC_MODULES_decl;
-static tree UOBJC_STRINGS_decl;
+#define UOBJC_SYMBOLS_decl		objc_global_trees[OCTI_SYMBOLS_DECL]
+#define UOBJC_INSTANCE_VARIABLES_decl	objc_global_trees[OCTI_NST_VAR_DECL]
+#define UOBJC_CLASS_VARIABLES_decl	objc_global_trees[OCTI_CLS_VAR_DECL]
+#define UOBJC_INSTANCE_METHODS_decl	objc_global_trees[OCTI_NST_METH_DECL]
+#define UOBJC_CLASS_METHODS_decl	objc_global_trees[OCTI_CLS_METH_DECL]
+#define UOBJC_CLASS_decl		objc_global_trees[OCTI_CLS_DECL]
+#define UOBJC_METACLASS_decl		objc_global_trees[OCTI_MCLS_DECL]
+#define UOBJC_SELECTOR_TABLE_decl	objc_global_trees[OCTI_SEL_TABLE_DECL]
+#define UOBJC_MODULES_decl		objc_global_trees[OCTI_MODULES_DECL]
+#define UOBJC_STRINGS_decl		objc_global_trees[OCTI_STRG_DECL]
 
 /* The following are used when compiling a class implementation.
    implementation_template will normally be an interface, however if
    none exists this will be equal to implementation_context...it is
    set in start_class.  */
 
-static tree implementation_context = NULL_TREE;
-static tree implementation_template = NULL_TREE;
+#define implementation_context		objc_global_trees[OCTI_IMPL_CTX]
+#define implementation_template		objc_global_trees[OCTI_IMPL_TEMPL]
 
 struct imp_entry
 {
@@ -463,20 +548,29 @@ static struct imp_entry *imp_list = 0;
 static int imp_count = 0;	/* `@implementation' */
 static int cat_count = 0;	/* `@category' */
 
-static tree objc_class_template, objc_category_template, uprivate_record;
-static tree objc_protocol_template, objc_selector_template;
-static tree ucls_super_ref, uucls_super_ref;
+#define objc_class_template	objc_global_trees[OCTI_CLS_TEMPL]
+#define objc_category_template	objc_global_trees[OCTI_CAT_TEMPL]
+#define uprivate_record		objc_global_trees[OCTI_UPRIV_REC]
+#define objc_protocol_template	objc_global_trees[OCTI_PROTO_TEMPL]
+#define objc_selector_template	objc_global_trees[OCTI_SEL_TEMPL]
+#define ucls_super_ref		objc_global_trees[OCTI_UCLS_SUPER_REF]
+#define uucls_super_ref		objc_global_trees[OCTI_UUCLS_SUPER_REF]
 
-static tree objc_method_template, objc_ivar_template;
-static tree objc_symtab_template, objc_module_template;
-static tree objc_super_template, objc_object_reference;
+#define objc_method_template	objc_global_trees[OCTI_METH_TEMPL]
+#define objc_ivar_template	objc_global_trees[OCTI_IVAR_TEMPL]
+#define objc_symtab_template	objc_global_trees[OCTI_SYMTAB_TEMPL]
+#define objc_module_template	objc_global_trees[OCTI_MODULE_TEMPL]
+#define objc_super_template	objc_global_trees[OCTI_SUPER_TEMPL]
+#define objc_object_reference	objc_global_trees[OCTI_OBJ_REF]
 
-static tree objc_object_id, objc_class_id, objc_id_id;
-static tree constant_string_id;
-static tree constant_string_type;
-static tree UOBJC_SUPER_decl;
+#define objc_object_id		objc_global_trees[OCTI_OBJ_ID]
+#define objc_class_id		objc_global_trees[OCTI_CLS_ID]
+#define objc_id_id		objc_global_trees[OCTI_ID_ID]
+#define constant_string_id	objc_global_trees[OCTI_CNST_STR_ID]
+#define constant_string_type	objc_global_trees[OCTI_CNST_STR_TYPE]
+#define UOBJC_SUPER_decl	objc_global_trees[OCTI_SUPER_DECL]
 
-static tree method_context = NULL_TREE;
+#define method_context		objc_global_trees[OCTI_METH_CTX]
 static int  method_slot = 0;	/* Used by start_method_def, */
 
 #define BUFSIZE		1024
@@ -656,11 +750,16 @@ lang_init ()
       flag_typed_selectors = 1;
     }
 
+  objc_ellipsis_node = make_node (ERROR_MARK);
+
   if (doing_objc_thang)
     init_objc ();
 
   if (print_struct_values)
     generate_struct_by_value_array ();
+
+  objc_act_parse_init ();
+  c_parse_init ();
 }
 
 static void
@@ -2109,7 +2208,7 @@ build_selector_translation_table ()
       TREE_STATIC (UOBJC_SELECTOR_TABLE_decl) = 1;
       /* NULL terminate the list and fix the decl for output.  */
       initlist = tree_cons (NULL_TREE, build_int_2 (0, 0), initlist);
-      DECL_INITIAL (UOBJC_SELECTOR_TABLE_decl) = (tree) 1;
+      DECL_INITIAL (UOBJC_SELECTOR_TABLE_decl) = objc_ellipsis_node;
       initlist = build_constructor (TREE_TYPE (UOBJC_SELECTOR_TABLE_decl),
 				    nreverse (initlist));
       finish_decl (UOBJC_SELECTOR_TABLE_decl, initlist, NULL_TREE);
@@ -3013,7 +3112,7 @@ hack_method_prototype (nst_methods, tmp_decl)
   start_method_def (nst_methods);
   TREE_SET_CODE (nst_methods, INSTANCE_METHOD_DECL);
 
-  if (METHOD_ADD_ARGS (nst_methods) == (tree) 1)
+  if (METHOD_ADD_ARGS (nst_methods) == objc_ellipsis_node)
     parms = get_parm_info (0); /* we have a `, ...' */
   else
     parms = get_parm_info (1); /* place a `void_at_end' */
@@ -4751,7 +4850,7 @@ get_arg_type_list (meth, context, superflag)
       chainon (arglist, build_tree_list (NULL_TREE, TREE_TYPE (arg_decl)));
     }
 
-  if (METHOD_ADD_ARGS (meth) == (tree)1)
+  if (METHOD_ADD_ARGS (meth) == objc_ellipsis_node)
     /* We have a `, ...' immediately following the selector,
        finalize the arglist...simulate get_parm_info (0).  */
     ;
@@ -6971,7 +7070,8 @@ start_method_def (method)
       while (arglist);
     }
 
-  if (METHOD_ADD_ARGS (method) > (tree)1)
+  if (METHOD_ADD_ARGS (method) != NULL_TREE
+      && METHOD_ADD_ARGS (method) != objc_ellipsis_node)
     {
       /* We have a variable length selector - in "prototype" format.  */
       tree akey = TREE_PURPOSE (METHOD_ADD_ARGS (method));
@@ -7151,7 +7251,7 @@ continue_method_def ()
 {
   tree parmlist;
 
-  if (METHOD_ADD_ARGS (method_context) == (tree)1)
+  if (METHOD_ADD_ARGS (method_context) == objc_ellipsis_node)
     /* We have a `, ...' immediately following the selector.  */
     parmlist = get_parm_info (0);
   else
@@ -7946,7 +8046,7 @@ gen_method_decl (method, buf)
         }
       while (chain);
 
-      if (METHOD_ADD_ARGS (method) == (tree)1)
+      if (METHOD_ADD_ARGS (method) == objc_ellipsis_node)
         strcat (buf, ", ...");
       else if (METHOD_ADD_ARGS (method))
         {
@@ -8470,4 +8570,50 @@ objc_debug (fp)
 void
 print_lang_statistics ()
 {
+}
+
+static void
+ggc_mark_imp_list (arg)
+    void *arg;
+{
+  struct imp_entry *impent;
+
+  for (impent = *(struct imp_entry **)arg; impent; impent = impent->next)
+    {
+      ggc_mark_tree (impent->imp_context);
+      ggc_mark_tree (impent->imp_template);
+      ggc_mark_tree (impent->class_decl);
+      ggc_mark_tree (impent->meta_decl);
+    }
+}
+
+static void
+ggc_mark_hash_table (arg)
+    void *arg;
+{
+  hash *hash_table = *(hash **)arg;
+  hash hst;
+  attr list;
+  int i;
+
+  if (hash_table == NULL)
+    return;
+  for (i = 0; i < SIZEHASHTABLE; i++)
+    for (hst = hash_table [i]; hst; hst = hst->next)
+      {
+	ggc_mark_tree (hst->key);
+	for (list = hst->list; list; list = list->next)
+	  ggc_mark_tree (list->value);
+      }
+}
+
+/* Add GC roots for variables local to this file.  */
+static void
+objc_act_parse_init ()
+{
+  ggc_add_tree_root (&objc_ellipsis_node, 1);
+  ggc_add_tree_root (objc_global_trees, OCTI_MAX);
+  ggc_add_root (&imp_list, 1, sizeof imp_list, ggc_mark_imp_list);
+  ggc_add_root (&nst_method_hash_list, 1, sizeof nst_method_hash_list, ggc_mark_hash_table);
+  ggc_add_root (&cls_method_hash_list, 1, sizeof cls_method_hash_list, ggc_mark_hash_table);
 }
