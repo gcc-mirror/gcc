@@ -5951,9 +5951,9 @@ output_call (insn, call_dest, sibcall)
    space), and special magic is needed to construct their address.
 
    For reasons too disgusting to describe storage for the new name
-   is allocated either on the saveable_obstack (released at function
-   exit) or on the permanent_obstack for things that can never change
-   (libcall names for example). */
+   is allocated as a ggc string, or as a string on the saveable_obstack
+   (released at function exit) or on the permanent_obstack for things
+   that can never change (libcall names for example). */
 
 void
 hppa_encode_label (sym, permanent)
@@ -5964,7 +5964,10 @@ hppa_encode_label (sym, permanent)
   int len = strlen (str);
   char *newstr;
 
-  newstr = obstack_alloc ((permanent ? &permanent_obstack : saveable_obstack),
+  if (ggc_p)
+    newstr = ggc_alloc_string (NULL, len + 1);
+  else
+    newstr = obstack_alloc ((permanent ? &permanent_obstack : saveable_obstack),
 			  len + 2);
 
   if (str[0] == '*')
