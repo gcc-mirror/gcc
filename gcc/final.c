@@ -1138,6 +1138,9 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 	    {
 #ifndef JUMP_TABLES_IN_TEXT_SECTION
 	      readonly_data_section ();
+	      ASM_OUTPUT_ALIGN (file,
+				exact_log2 (BIGGEST_ALIGNMENT
+					    / BITS_PER_UNIT));
 #else
 	      text_section ();
 #endif
