@@ -24,8 +24,8 @@
 # C torture test suite, and other contributors.
 #
 
-# VAX does not have hardware support for IEEE arithmetic.
-if { [istarget "vax-*-*"] } { return }
+# Disable tests on machines with no hardware support for IEEE arithmetic.
+if { [istarget "vax-*-*"] || [ istarget "powerpc-*-*spe"] } { return }
 
 if $tracelevel then {
     strace $tracelevel
