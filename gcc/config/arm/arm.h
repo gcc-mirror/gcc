@@ -759,12 +759,12 @@ extern int arm_arch4;
    least likely to contain a function parameter; in addition results are
    returned in r0.
    */
-#define REG_ALLOC_ORDER  \
+#define REG_ALLOC_ORDER  	    \
 {                                   \
-    3, 2, 1, 0, 12, 14,	4, 5,       \
-    6, 7, 8, 10, 9, 11, 13, 15,     \
+     3,  2,  1,  0, 12, 14,  4,  5, \
+     6,  7,  8, 10,  9, 11, 13, 15, \
     16, 17, 18, 19, 20, 21, 22, 23, \
-    24, 25			    \
+    24, 25, 26			    \
 }
 
 /* Register and constant classes.  */
@@ -1408,7 +1408,9 @@ do									\
 	      && INTVAL (op) <= 31)					\
 	    goto LABEL;							\
         }								\
-      range = (MODE) == HImode ? (arm_arch4 ? 256 : 4095) : 4096;	\
+      /* NASTY: Since this limits the addressing of unsigned byte loads */      \
+      range = ((MODE) == HImode || (MODE) == QImode)                    \
+              ? (arm_arch4 ? 256 : 4095) : 4096;                        \
       if (code == CONST_INT && INTVAL (INDEX) < range			\
 	  && INTVAL (INDEX) > -range)  	      				\
         goto LABEL;							\
