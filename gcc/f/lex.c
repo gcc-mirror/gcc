@@ -920,7 +920,11 @@ ffelex_finish_statement_ (void)
     }
 }
 
-/* Copied from gcc/c-common.c get_directive_line.  */
+/* Read a preprocessor directive line from file FINPUT.  This function
+   returns either '\n' or EOF to indicate success or failure respectively.
+   Upon return, TEXT points to the contents of the line, which is stripped
+   of initial whitespace.  The buffer pointed to by TEXT should not be
+   free'd and is overwritten by subsequent calls to this function.  */
 
 static int
 ffelex_get_directive_line_ (char **text, FILE *finput)

@@ -1,3 +1,8 @@
+2004-02-15  Roger Sayle  <roger@eyesopen.com>
+
+	* c-common.h (GET_DIRECTIVE_LINE): Remove unused macro.
+	(get_directive_line): Remove unused function prototype.
+
 2004-02-14  Josef Zlomek  <zlomekj@suse.cz>
 
 	* tree-inline.c (copy_body_r): Do not replace ret_label.
