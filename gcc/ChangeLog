@@ -1,5 +1,13 @@
 2005-03-14  Richard Sandiford  <rsandifo@redhat.com>
 
+	* doc/invoke.texi: Document new MIPS -msym32 and -mno-sym32 options.
+	* config/mips/mips.h (MASK_SYM32, TARGET_SYM32): New macros.
+	(TARGET_SWITCHES): Add -msym32 and -mno-sym32.
+	(ABI_HAS_64BIT_SYMBOLS): Set to false if TARGET_SYM32.
+	(ASM_SPEC): Pass down -msym32 and -mno-sym32.
+
+2005-03-14  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.h (mips_fix_vr4130_string): Declare.
 	(TARGET_FIX_VR4130): New macro.
 	(TARGET_OPTIONS): Add -mfix-vr4130.

@@ -165,6 +165,7 @@ extern const struct mips_cpu_info *mips_tune_info;
                                            break instead of trap. */
 #define MASK_PAIRED_SINGLE 0x10000000   /* Support paired-single FPU.  */
 #define MASK_MIPS3D        0x20000000   /* Support MIPS-3D instructions.  */
+#define MASK_SYM32	   0x40000000	/* Assume 32-bit symbol values.  */
 
 					/* Debug switches, not documented */
 #define MASK_DEBUG	0		/* unused */
@@ -244,6 +245,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define TARGET_PAIRED_SINGLE_FLOAT	\
 				((target_flags & MASK_PAIRED_SINGLE) != 0)
 #define TARGET_MIPS3D		((target_flags & MASK_MIPS3D) != 0)
+#define TARGET_SYM32		((target_flags & MASK_SYM32) != 0)
 
 /* True if we should use NewABI-style relocation operators for
    symbolic addresses.  This is never true for mips16 code,
@@ -671,6 +673,10 @@ extern const struct mips_cpu_info *mips_tune_info;
      N_("FP exceptions are enabled") },					\
   {"no-fp-exceptions", 	  -MASK_FP_EXCEPTIONS,				\
      N_("FP exceptions are not enabled") },				\
+  {"sym32",		  MASK_SYM32,					\
+     N_("Assume all symbols have 32-bit values") },			\
+  {"no-sym32",		  -MASK_SYM32,					\
+     N_("Don't assume all symbols have 32-bit values") },		\
   {"debug",		  MASK_DEBUG,					\
      NULL},								\
   {"debugd",		  MASK_DEBUG_D,					\
@@ -847,7 +853,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 /* True if symbols are 64 bits wide.  At present, n64 is the only
    ABI for which this is true.  */
-#define ABI_HAS_64BIT_SYMBOLS	(mips_abi == ABI_64)
+#define ABI_HAS_64BIT_SYMBOLS	(mips_abi == ABI_64 && !TARGET_SYM32)
 
 /* ISA has instructions for managing 64 bit fp and gp regs (e.g. mips3).  */
 #define ISA_HAS_64BIT_REGS	(ISA_MIPS3				\
@@ -1102,6 +1108,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 %(subtarget_asm_debugging_spec) \
 %{mabi=*} %{!mabi*: %(asm_abi_default_spec)} \
 %{mgp32} %{mgp64} %{march=*} %{mxgot:-xgot} \
+%{msym32} %{mno-sym32} \
 %{mtune=*} %{v} \
 %(subtarget_asm_spec)"
 
