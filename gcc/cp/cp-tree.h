@@ -2288,6 +2288,7 @@ extern tree delta2_identifier;
 extern tree pfn_or_delta2_identifier;
 extern tree tag_identifier;
 extern tree vt_off_identifier;
+extern tree empty_except_spec;
 
 /* A node that is a list (length 1) of error_mark_nodes.  */
 extern tree error_mark_list;
@@ -3533,7 +3534,7 @@ extern int fntype_p				PROTO((tree));
 extern tree commonparms				PROTO((tree, tree));
 extern tree original_type			PROTO((tree));
 extern tree common_type				PROTO((tree, tree));
-extern int compexcepttypes			PROTO((tree, tree));
+extern int comp_except_specs			PROTO((tree, tree, int));
 extern int comptypes				PROTO((tree, tree, int));
 extern int comp_target_types			PROTO((tree, tree, int));
 extern int compparms				PROTO((tree, tree));
@@ -3618,6 +3619,7 @@ extern tree build_functional_cast		PROTO((tree, tree));
 extern char *enum_name_string			PROTO((tree, tree));
 extern void report_case_error			PROTO((int, tree, tree, tree));
 extern void check_for_new_type			PROTO((const char *, flagged_type_tree));
+extern tree add_exception_specifier             PROTO((tree, tree, int));
 
 /* in xref.c */
 extern void GNU_xref_begin			PROTO((const char *));

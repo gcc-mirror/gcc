@@ -336,6 +336,9 @@ tree pfn_identifier, index_identifier, delta_identifier, delta2_identifier;
 tree pfn_or_delta2_identifier, tag_identifier;
 tree vt_off_identifier;
 
+/* Exception specifier used for throw().  */
+tree empty_except_spec;
+
 struct named_label_list
 {
   struct binding_level *binding_level;
@@ -3478,11 +3481,12 @@ duplicate_decls (newdecl, olddecl)
 	  if ((pedantic || ! DECL_IN_SYSTEM_HEADER (olddecl))
 	      && DECL_SOURCE_LINE (olddecl) != 0
 	      && flag_exceptions
-	      && ! compexcepttypes (TREE_TYPE (newdecl), TREE_TYPE (olddecl)))
+	      && !comp_except_specs (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (newdecl)),
+	                             TYPE_RAISES_EXCEPTIONS (TREE_TYPE (olddecl)), 1))
 	    {
-	      cp_pedwarn ("declaration of `%D' throws different exceptions",
+	      cp_error ("declaration of `%F' throws different exceptions",
 			newdecl);
-	      cp_pedwarn_at ("previous declaration here", olddecl);
+	      cp_error_at ("to previous declaration `%F'", olddecl);
 	    }
 	}
       TREE_TYPE (newdecl) = TREE_TYPE (olddecl) = newtype;
@@ -6361,6 +6365,7 @@ init_decl_processing ()
   const_string_type_node
     = build_pointer_type (build_qualified_type (char_type_node, 
 						TYPE_QUAL_CONST));
+  empty_except_spec = build_tree_list (NULL_TREE, NULL_TREE);
 #if 0
   record_builtin_type (RID_MAX, NULL_PTR, string_type_node);
 #endif
@@ -6400,8 +6405,7 @@ init_decl_processing ()
   c_common_nodes_and_builtins (1, flag_no_builtin, flag_no_nonansi_builtin);
 
   void_ftype_ptr
-    = build_exception_variant (void_ftype_ptr,
-			       tree_cons (NULL_TREE, NULL_TREE, NULL_TREE));
+    = build_exception_variant (void_ftype_ptr, empty_except_spec);
 
   /* C++ extensions */
 
@@ -6547,9 +6551,8 @@ init_decl_processing ()
     if (flag_honor_std)
       pop_namespace ();
     newtype = build_exception_variant
-      (ptr_ftype_sizetype, build_tree_list (NULL_TREE, bad_alloc_type_node));
-    deltype = build_exception_variant
-      (void_ftype_ptr, build_tree_list (NULL_TREE, NULL_TREE));
+      (ptr_ftype_sizetype, add_exception_specifier (NULL_TREE, bad_alloc_type_node, -1));
+    deltype = build_exception_variant (void_ftype_ptr, empty_except_spec);
     auto_function (ansi_opname[(int) NEW_EXPR], newtype, NOT_BUILT_IN);
     auto_function (ansi_opname[(int) VEC_NEW_EXPR], newtype, NOT_BUILT_IN);
     global_delete_fndecl

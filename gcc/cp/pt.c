@@ -3937,6 +3937,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	  type_decl = build_decl (TYPE_DECL, DECL_NAME (template), t);
 	  SET_DECL_ARTIFICIAL (type_decl);
 	  DECL_CONTEXT (type_decl) = TYPE_CONTEXT (t);
+	  
 	  DECL_SOURCE_FILE (type_decl) 
 	    = DECL_SOURCE_FILE (TYPE_STUB_DECL (template_type));
 	  DECL_SOURCE_LINE (type_decl) 
@@ -6499,10 +6500,21 @@ tsubst (t, args, complain, in_decl)
 	raises = TYPE_RAISES_EXCEPTIONS (t);
 	if (raises)
 	  {
-	    raises = tsubst (raises, args, complain, in_decl);
-	    if (raises == error_mark_node)
-	      return raises;
-	    fntype = build_exception_variant (fntype, raises);
+	    tree   list = NULL_TREE;
+	    
+	    if (! TREE_VALUE (raises))
+	      list = raises;
+	    else
+	      for (; raises != NULL_TREE; raises = TREE_CHAIN (raises))
+	        {
+	          tree spec = TREE_VALUE (raises);
+	          
+	          spec = tsubst (spec, args, complain, in_decl);
+	          if (spec == error_mark_node)
+	            return spec;
+	          list = add_exception_specifier (list, spec, complain);
+	        }
+	    fntype = build_exception_variant (fntype, list);
 	  }
 	return fntype;
       }

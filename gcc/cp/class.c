@@ -2977,9 +2977,8 @@ check_for_override (decl, ctype)
 		 path to its virtual baseclass.  */
 	      if (TREE_CODE (TREE_TYPE (decl)) == FUNCTION_TYPE)
 		{
-		  cp_error_at ("method `%D' may not be declared static",
-			       decl);
-		  cp_error_at ("(since `%D' declared virtual in base class.)",
+		  cp_error_at ("`static %#D' cannot be declared", decl);
+		  cp_error_at ("  since `virtual %#D' declared in base class",
 			       tmp);
 		  break;
 		}
