@@ -1,3 +1,7 @@
+2002-01-24  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sparc/sparc.md (fix_trunctfdi2): Correct typo in mode.
+
 2002-01-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/2432
