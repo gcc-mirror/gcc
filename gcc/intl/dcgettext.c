@@ -19,6 +19,10 @@
 # include <config.h>
 #endif
 
+# ifndef _GNU_SOURCE
+#  define _GNU_SOURCE	1
+# endif
+
 #include <sys/types.h>
 
 #ifdef __GNUC__
@@ -58,9 +62,6 @@ void free ();
 #endif
 
 #if defined HAVE_STRING_H || defined _LIBC
-# ifndef _GNU_SOURCE
-#  define _GNU_SOURCE	1
-# endif
 # include <string.h>
 #else
 # include <strings.h>
@@ -98,7 +99,7 @@ void free ();
 # if !defined HAVE_GETCWD
 char *getwd ();
 #  define getcwd(buf, max) getwd (buf)
-# else
+# elif !defined (HAVE_DECL_GETCWD)
 char *getcwd ();
 # endif
 # ifndef HAVE_STPCPY

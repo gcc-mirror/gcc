@@ -33,3 +33,6 @@ compilers="cc1chill\$(exeext)"
 stagestuff="chill chill-cross\$(exeext) cc1chill\$(exeext)"
 
 diff_excludes="-x -x ch/chill.info*"
+
+outputs=ch/Makefile
+

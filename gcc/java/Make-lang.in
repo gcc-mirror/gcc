@@ -110,6 +110,8 @@ GCJH_SOURCES = $(srcdir)/java/gjavah.c $(srcdir)/java/jcf-io.c \
 gcjh$(exeext): $(GCJH_SOURCES) $(LIBDEPS) $(TREE_H)
 	cd java && $(MAKE) $(LANG_FLAGS_TO_PASS) $(JAVA_FLAGS_TO_PASS) ../gcjh$(exeext)
 
+$(INTL_TARGETS): $(srcdir)/java/parse.c $(srcdir)/java/parse-scan.c
+
 # This must be kept in sync with dependencies in Makefile.in.
 JV_SCAN_SOURCES = $(srcdir)/java/parse-scan.y $(srcdir)/java/lex.c \
        $(srcdir)/java/parse.h $(srcdir)/java/lex.h $(srcdir)/java/jv-scan.c
