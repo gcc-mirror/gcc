@@ -136,6 +136,7 @@ must also use @samp{-pedantic}.  @xref{Invocation}.
 * Line Control::         Use of line control when you combine source files.
 * Other Directives::     Miscellaneous preprocessing directives.
 * Output::               Format of output from the C preprocessor.
+* Implementation::       Implementation limits and behavior.
 * Unreliable Features::  Undefined behavior and deprecated features.
 * Invocation::           How to invoke the preprocessor; command options.
 * Concept Index::        Index of concepts and terms.
@@ -421,7 +422,7 @@ include.  The text @var{anything else} is checked for macro calls, which
 are expanded (@pxref{Macros}).  When this is done, the result must match
 one of the above two variants --- in particular, the expansion must form
 a string literal token, or a sequence of tokens surrounded by angle
-braces. @xref{Unreliable Features}.
+braces. @xref{Implementation}.
 
 This feature allows you to define a macro which controls the file name
 to be used at a later point in the program.  One application of this is
@@ -943,7 +944,7 @@ forbidden in open text; the standard is ambiguous.  We recommend you
 avoid using it except for its defined purpose.
 
 If your macro is complicated, you may want a more descriptive name for
-the variable argument than @code{__VA_ARGS__}.  GNU CPP permits this, as
+the variable argument than @code{__VA_ARGS__}.  GNU cpp permits this, as
 an extension.  You may write an argument name immediately before the
 @samp{@dots{}}; that name is used for the variable argument.  The
 @code{eprintf} macro above could be written
@@ -2744,7 +2745,7 @@ warning message.
 #pragma GCC dependency "/usr/include/time.h" rerun /path/to/fixincludes
 @end smallexample
 
-@node Output, Unreliable Features, Other Directives, Top
+@node Output, Implementation, Other Directives, Top
 @section C Preprocessor Output
 
 @cindex output format
@@ -2791,7 +2792,108 @@ This indicates that the following text should be treated as C@.
 @c maybe cross reference NO_IMPLICIT_EXTERN_C
 @end table
 
-@node Unreliable Features, Invocation, Output, Top
+@node Implementation, Unreliable Features, Output, Top
+@section Implementation-defined Behavior and Implemenation Limits
+@cindex implementation limits
+@cindex implementation-defined behavior
+
+The ISO C standard mandates that implementations document various
+aspects of preprocessor behavior.  You should try to avoid undue
+reliance on behaviour described here, as it is probable that it will
+change subtly in future implementations.
+
+@itemize @bullet
+
+@item The mapping of physical source file multibyte characters to the execution
+character set.
+
+Currenty, GNU cpp only supports character sets that are strict supersets
+of ASCII, and performs no translation of characters.
+
+@item Non-empty sequences of whitespace characters.
+
+Each whitespace sequence is not preserved, but collapsed to a single
+space.
+
+@item The numeric value of characeter constants in preprocessor expressions.
+
+The preprocessor interprets character constants in preprocessing
+directives on the host machine.  Expressions outside preprocessing
+directives are compiled to be interpreted on the target machine.  In the
+normal case of a native compiler, these two environments are the same
+and so character constants will be evaluated identically in both cases.
+However, in the case of a cross compiler, the values may be different.
+
+@item Source file inclusion.
+
+For a discussion on how the preprocessor locates header files,
+@pxref{Include Operation}.
+
+@item Interpretation of the filename resulting from a macro-expanded
+@samp{#include} directive.
+
+If the macro expands to a string literal, the @samp{#include} directive
+is processed as if the string had been specified directly.  Otherwise,
+the macro must expand to a token stream beginning with a @samp{<} token
+and including a @samp{>} token.  In this case, the tokens between the
+@samp{<} and the first @samp{>} are combined to form the filename to be
+included.  Any whitespace between tokens is reduced to a single space;
+then any space after the initial @samp{<} is retained, but a trailing
+space before the closing @samp{>} is ignored.
+
+In either case, if any excess tokens remain, an error occurs and the
+directive is not processed.
+
+@item Treatment of a @samp{#pragma} directive that after macro-expansion
+results in a standard pragma.
+
+The pragma is processed as if it were a normal standard pragma.
+
+@end itemize
+
+The following documents internal limits of GNU cpp.
+
+@itemize @bullet
+
+@item Nesting levels of @samp{#include} files.
+
+We impose an arbitrary limit of 200 levels, to avoid runaway recursion.
+The standard requires at least 15 levels be permitted.
+
+@item Nesting levels of conditional inclusion.
+
+The C standard mandates this be at least 63.  The GNU C preprocessor
+is limited only by available memory.
+
+@item Levels of paranthesised expressions within a full expression.
+
+The C standard requires this to be at least 63.  In preprocessor
+conditional expresssions it is limited only by available memory.
+
+@item Significant initial characters in an identifier or macro name.
+
+The preprocessor treats all characters as significant.  The C standard
+requires only that the first 63 be significant.
+
+@item Number of macros simultaneously defined in a single translation unit.
+
+The standard requires at least 4095 be possible; GNU cpp is limited only
+by available memory.
+
+@item Number of paramters in a macro definition and arguments in a macro call.
+
+We allow USHRT_MAX, which is normally 65,535, and above the minimum of
+127 required by the standard.
+
+@item Number of characters on a logical source line.
+
+The C standard requires a minimum of 4096 be permitted.  GNU cpp places
+no limits on this, but you may get incorrect column numbers reported in
+diagnostics for lines longer than 65,535 characters.
+
+@end itemize
+
+@node Unreliable Features, Invocation, Implementation, Top
 @section Undefined Behavior and Deprecated Features
 @cindex undefined behavior
 @cindex deprecated features
@@ -2809,15 +2911,6 @@ to rely on it.
 The following are undocumented and subject to change:-
 
 @itemize @bullet
-
-@item Interpretation of the filename between @samp{<} and @samp{>} tokens
- resulting from a macro-expanded filename in a @samp{#include} directive
-
-The text between the @samp{<} and @samp{>} is taken literally if given
-directly within a @samp{#include} or similar directive.  If the
-angle-bracketed filename is obtained through macro expansion, however,
-preservation of whitespace and interpretation of backslashes and quotes
-is undefined. @xref{Include Syntax}.
 
 @item Precedence of ## operators with respect to each other
 
