@@ -374,6 +374,8 @@ static void ggc_mark_hash_table			PARAMS ((void *));
 #define STRING_OBJECT_CLASS_NAME "NXConstantString"
 #define PROTOCOL_OBJECT_CLASS_NAME "Protocol"
 
+static const char *constant_string_class_name = NULL;
+
 static const char *TAG_GETCLASS;
 static const char *TAG_GETMETACLASS;
 static const char *TAG_MSGSEND;
@@ -797,6 +799,7 @@ lang_decode_option (argc, argv)
      char **argv;
 {
   const char *p = argv[0];
+
   if (!strcmp (p, "-lang-objc"))
     c_language = clk_objective_c;
   else if (!strcmp (p, "-gen-decls"))
@@ -819,6 +822,13 @@ lang_decode_option (argc, argv)
     flag_next_runtime = 1;
   else if (!strcmp (p, "-print-objc-runtime-info"))
     print_struct_values = 1;
+#define CSTSTRCLASS "-fconstant-string-class="
+  else if (!strncmp (p, CSTSTRCLASS, sizeof(CSTSTRCLASS) - 2)) {
+    if (strlen (argv[0]) <= strlen (CSTSTRCLASS))
+      error ("no class name specified as argument to -fconstant-string-class");
+    constant_string_class_name = xstrdup(argv[0] + sizeof(CSTSTRCLASS) - 1);
+  }
+#undef CSTSTRCLASS
   else
     return c_decode_option (argc, argv);
 
@@ -1382,7 +1392,10 @@ synth_module_prologue ()
   generate_forward_declaration_to_string_table ();
 
   /* Forward declare constant_string_id and constant_string_type.  */
-  constant_string_id = get_identifier (STRING_OBJECT_CLASS_NAME);
+  if (!constant_string_class_name)
+    constant_string_class_name = STRING_OBJECT_CLASS_NAME;
+  
+  constant_string_id = get_identifier (constant_string_class_name);
   constant_string_type = xref_tag (RECORD_TYPE, constant_string_id);
 }
 
