@@ -1,3 +1,7 @@
+2001-04-08  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* MAINTAINERS: Add myself as "documentation co-maintainer".
+
 2001-04-06  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* MAINTAINERS: Add self and RTH as C front end maintainers.
