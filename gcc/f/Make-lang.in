@@ -426,19 +426,19 @@ G77STAGESTUFF = f/*$(objext) f/fini f/stamp-str f/str-*.h f/str-*.j \
 
 f77.stage1: stage1-start
 	-if [ -f lang-f77 ]; then \
-	  mv $(G77STAGESTUFF) stage1/f; \
+	  mv -f $(G77STAGESTUFF) stage1/f; \
 	fi
 f77.stage2: stage2-start
 	-if [ -f lang-f77 ]; then \
-	  mv $(G77STAGESTUFF) stage2/f; \
+	  mv -f $(G77STAGESTUFF) stage2/f; \
 	fi
 f77.stage3: stage3-start
 	-if [ -f lang-f77 ]; then \
-	  mv $(G77STAGESTUFF) stage3/f; \
+	  mv -f $(G77STAGESTUFF) stage3/f; \
 	fi
 f77.stage4: stage4-start
 	-if [ -f lang-f77 ]; then \
-	  mv $(G77STAGESTUFF) stage4/f; \
+	  mv -f $(G77STAGESTUFF) stage4/f; \
 	fi
 #
 # Maintenance hooks:
