@@ -156,6 +156,11 @@ c4x_add_gc_roots ()
 {
   ggc_add_rtx_root (&c4x_compare_op0, 1);
   ggc_add_rtx_root (&c4x_compare_op1, 1);
+  ggc_add_tree_root (&code_tree, 1);
+  ggc_add_tree_root (&data_tree, 1);
+  ggc_add_tree_root (&pure_tree, 1);
+  ggc_add_tree_root (&noreturn_tree, 1);
+  ggc_add_tree_root (&interrupt_tree, 1);
 }
 
 

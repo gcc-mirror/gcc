@@ -1,3 +1,7 @@
+Wed Sep 22 19:59:19 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (c4x_add_gc_roots): Add tree roots.
+
 Wed Sep 22 19:56:25 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_process_after_reload): Rework machdep insn
