@@ -1425,7 +1425,8 @@ finish_call_expr (tree fn, tree args, bool disallow_virtual)
 	  && DERIVED_FROM_P (BINFO_TYPE (BASELINK_ACCESS_BINFO (fn)),
 			     current_class_type)
 	  && current_class_ref)
-	object = current_class_ref;
+	object = maybe_dummy_object (BINFO_TYPE (BASELINK_ACCESS_BINFO (fn)),
+				     NULL);
       else
 	{
 	  tree representative_fn;

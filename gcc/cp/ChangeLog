@@ -1,3 +1,12 @@
+2003-07-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11345
+	* search.c (lookup_base_r): Remove is_non_public and
+	within_current_scope parameters.  Remove other dead code.
+	(lookup_base): Adjust call to lookup_base_r.
+	(adjust_result_of_qualified_name_lookup): Improve comment.
+	* semantics.c (finish_call_expr): Use maybe_dummy_object.
+
 2003-07-06  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cp-lang.c (LANG_HOOKS_HANDLE_FILENAME,
