@@ -1473,37 +1473,36 @@ print_ldw (file, r, disp, base)
 /* Global variables set by FUNCTION_PROLOGUE.  */
 /* Size of frame.  Need to know this to emit return insns from
    leaf procedures.  */
-int apparent_fsize;
-int actual_fsize;
-int local_fsize, save_fregs;
+static int actual_fsize;
+static int local_fsize, save_fregs;
 
 int
-compute_frame_size (size, leaf_function, fregs_live)
+compute_frame_size (size, fregs_live)
      int size;
-     int leaf_function;
      int *fregs_live;
 {
   extern int current_function_outgoing_args_size;
-  int i;
+  int i, fsize;
 
-  /* 8 is space for frame pointer + filler */
-  local_fsize = actual_fsize = size + 8;
+  /* 8 is space for frame pointer + filler. If any frame is allocated 
+     we need to add this in because of STARTING_FRAME_OFFSET. */
+  fsize = size + (size || frame_pointer_needed ? 8 : 0);
 
   /* fp is stored in a special place. */
   for (i = 18; i >= 5; i--)
     if (regs_ever_live[i])
-      actual_fsize += 4;
+      fsize += 4;
 
   if (regs_ever_live[3])
-    actual_fsize += 4;
-  actual_fsize = (actual_fsize + 7) & ~7;
+    fsize += 4;
+  fsize = (fsize + 7) & ~7;
 
   if (!TARGET_SNAKE)
     {
       for (i = 47; i >= 44; i--)
 	if (regs_ever_live[i])
 	  {
-	    actual_fsize += 8;
+	    fsize += 8;
 	    if (fregs_live)
 	      *fregs_live = 1;
 	  }
@@ -1513,19 +1512,21 @@ compute_frame_size (size, leaf_function, fregs_live)
       for (i = 90; i >= 72; i -= 2)
 	if (regs_ever_live[i] || regs_ever_live[i + 1])
 	  {
-	    actual_fsize += 8;
+	    fsize += 8;
 	    if (fregs_live)
 	      *fregs_live = 1;
 	  }
     }
-  return actual_fsize + current_function_outgoing_args_size;
+  fsize += current_function_outgoing_args_size;
+  if (! leaf_function_p () || fsize)
+    fsize += 32;
+  return TARGET_SNAKE ? (fsize + 63 & ~63) : fsize;
 }
      
 void
-output_function_prologue (file, size, leaf_function)
+output_function_prologue (file, size)
      FILE *file;
      int size;
-     int leaf_function;
 {
   extern char call_used_regs[];
   extern int frame_pointer_needed;
@@ -1533,9 +1534,8 @@ output_function_prologue (file, size, leaf_function)
   int i, offset;
 
   save_fregs = 0;
-  actual_fsize = compute_frame_size (size, leaf_function, &save_fregs) + 32;
-  if (TARGET_SNAKE)
-    actual_fsize = (actual_fsize + 63) & ~63;
+  local_fsize =  size + (size || frame_pointer_needed ? 8 : 0);
+  actual_fsize = compute_frame_size (size, &save_fregs);
 
   /* Let's not try to bullshit more than we need to here. */
   /* This might be right a lot of the time */
@@ -1553,27 +1553,28 @@ output_function_prologue (file, size, leaf_function)
     fprintf (file, "\tstw 2,-20(0,30)\n");
 
   /* Reserve space for local variables.  */
-  if (frame_pointer_needed)
-    {
-      if (VAL_14_BITS_P (actual_fsize))
-	fprintf (file, "\tcopy 4,1\n\tcopy 30,4\n\tstwm 1,%d(0,30)\n",
-		 actual_fsize);
-      else
-	{
-	  fprintf (file, "\tcopy 4,1\n\tcopy 30,4\n\tstw 1,0(0,4)\n");
+  if (actual_fsize)
+    if (frame_pointer_needed)
+      {
+	if (VAL_14_BITS_P (actual_fsize))
+	  fprintf (file, "\tcopy 4,1\n\tcopy 30,4\n\tstwm 1,%d(0,30)\n",
+		   actual_fsize);
+	else
+	  {
+	    fprintf (file, "\tcopy 4,1\n\tcopy 30,4\n\tstw 1,0(0,4)\n");
+	    fprintf (file, "\taddil L'%d,30\n\tldo R'%d(1),30\n",
+		     actual_fsize, actual_fsize);
+	  }
+      }
+    else
+      /* Used to be abort ();  */
+      {
+	if (VAL_14_BITS_P (actual_fsize))
+	  fprintf (file, "\tldo %d(30),30\n", actual_fsize);
+	else
 	  fprintf (file, "\taddil L'%d,30\n\tldo R'%d(1),30\n",
 		   actual_fsize, actual_fsize);
-	}
-    }
-  else
-    /* Used to be abort ();  */
-    {
-      if (VAL_14_BITS_P (actual_fsize))
-	fprintf (file, "\tldo %d(30),30\n", actual_fsize);
-      else
-	fprintf (file, "\taddil L'%d,30\n\tldo R'%d(1),30\n",
-		 actual_fsize, actual_fsize);
-    }
+      }
   /* The hppa calling conventions say that that %r19, the pic offset 
      register, is saved at sp - 32 (in this function's frame) */
   if (flag_pic)
@@ -1658,43 +1659,46 @@ output_function_prologue (file, size, leaf_function)
 
   /* Floating point register store.  */
   if (save_fregs)
-    if (frame_pointer_needed)
-      {
-	if (VAL_14_BITS_P (offset))
-	  fprintf (file, "\tldo %d(4),1\n", offset);
-	else
-	  fprintf (file, "\taddil L'%d,4\n\tldo R'%d(1),1\n", offset, offset);
-      }
-    else
-      {
-	if (VAL_14_BITS_P (offset))
-	  fprintf (file, "\tldo %d(30),1\n", offset);
-	else
-	  fprintf (file, "\taddil L'%d,30\n\tldo R'%d(1),1\n", offset, offset);
-      }
-  if (!TARGET_SNAKE)
     {
-      for (i = 47; i >= 44; i--)
+      if (frame_pointer_needed)
 	{
-	  if (regs_ever_live[i])
-	    fprintf (file, "\tfstds,ma %s,8(0,1)\n", reg_names[i]);
+	  if (VAL_14_BITS_P (offset))
+	    fprintf (file, "\tldo %d(4),1\n", offset);
+	  else
+	    fprintf (file, "\taddil L'%d,4\n\tldo R'%d(1),1\n",
+		     offset, offset);
 	}
-    }
-  else
-    {
-      for (i = 90; i >= 72; i -= 2)
-	if (regs_ever_live[i] || regs_ever_live[i + 1])
-	  {
-	    fprintf (file, "\tfstds,ma %s,8(0,1)\n", reg_names[i]);
-	  }
+      else
+	{
+	  if (VAL_14_BITS_P (offset))
+	    fprintf (file, "\tldo %d(30),1\n", offset);
+	  else
+	    fprintf (file, "\taddil L'%d,30\n\tldo R'%d(1),1\n",
+		     offset, offset);
+	}
+      if (!TARGET_SNAKE)
+	{
+	  for (i = 47; i >= 44; i--)
+	    {
+	      if (regs_ever_live[i])
+		fprintf (file, "\tfstds,ma %s,8(0,1)\n", reg_names[i]);
+	    }
+	}
+      else
+	{
+	  for (i = 90; i >= 72; i -= 2)
+	    if (regs_ever_live[i] || regs_ever_live[i + 1])
+	      {
+		fprintf (file, "\tfstds,ma %s,8(0,1)\n", reg_names[i]);
+	      }
+	}
     }
 }
 
 void
-output_function_epilogue (file, size, leaf_function)
+output_function_epilogue (file, size)
      FILE *file;
      int size;
-     int leaf_function;
 {
   extern char call_used_regs[];
   extern int frame_pointer_needed;
@@ -1730,68 +1734,76 @@ output_function_epilogue (file, size, leaf_function)
 
   /* Floating point register restore.  */
   if (save_fregs)
-    if (frame_pointer_needed)
-      {
-	if (VAL_14_BITS_P (offset))
-	  fprintf (file, "\tldo %d(4),1\n", offset);
-	else
-	  fprintf (file, "\taddil L'%d,4\n\tldo R'%d(1),1\n", offset, offset);
-      }
-    else
-      {
-	if (VAL_14_BITS_P (offset))
-	  fprintf (file, "\tldo %d(30),1\n", offset);
-	else
-	  fprintf (file, "\taddil L'%d,30\n\tldo R'%d(1),1\n", offset, offset);
-      }
-  if (!TARGET_SNAKE)
     {
-      for (i = 47; i >= 44; i--)
+      if (frame_pointer_needed)
 	{
-	  if (regs_ever_live[i])
-	    fprintf (file, "\tfldds,ma 8(0,1),%s\n", reg_names[i]);
+	  if (VAL_14_BITS_P (offset))
+	    fprintf (file, "\tldo %d(4),1\n", offset);
+	  else
+	    fprintf (file, "\taddil L'%d,4\n\tldo R'%d(1),1\n",
+		     offset, offset);
+	}
+      else
+	{
+	  if (VAL_14_BITS_P (offset))
+	    fprintf (file, "\tldo %d(30),1\n", offset);
+	  else
+	    fprintf (file, "\taddil L'%d,30\n\tldo R'%d(1),1\n",
+		     offset, offset);
+	}
+      if (!TARGET_SNAKE)
+	{
+	  for (i = 47; i >= 44; i--)
+	    {
+	      if (regs_ever_live[i])
+		fprintf (file, "\tfldds,ma 8(0,1),%s\n", reg_names[i]);
+	    }
+	}
+      else
+	{
+	  for (i = 90; i >= 72; i -= 2)
+	    if (regs_ever_live[i] || regs_ever_live[i + 1])
+	      {
+		fprintf (file, "\tfldds,ma 8(0,1),%s\n", reg_names[i]);
+	      }
 	}
     }
-  else
-    {
-      for (i = 90; i >= 72; i -= 2)
-	if (regs_ever_live[i] || regs_ever_live[i + 1])
-	  {
-	    fprintf (file, "\tfldds,ma 8(0,1),%s\n", reg_names[i]);
-	  }
-    }
   /* Reset stack pointer (and possibly frame pointer).  The stack */
-  /* pointer is initially set to fp + 8 to avoid a race condition. */
+  /* pointer is initially set to fp + 64 to avoid a race condition. */
   if (frame_pointer_needed)
     {
-      fprintf (file, "\tldo 8(4),30\n");
+      fprintf (file, "\tldo 64(%%r4),%%r30\n");
       if (regs_ever_live[2] || profile_flag)
-	fprintf (file, "\tldw -28(0,30),2\n");
-      fprintf (file, "\tbv 0(2)\n\tldwm -8(30),4\n");
+	fprintf (file, "\tldw -84(%%r30),%%r2\n");
+      fprintf (file, "\tbv 0(%%r2)\n\tldwm -64(%%r30),4\n");
     }
   else if (actual_fsize)
     {
-      if ((regs_ever_live[2] || profile_flag)
-          && VAL_14_BITS_P (actual_fsize + 20))
-	fprintf (file, "\tldw %d(30),2\n\tbv 0(2)\n\tldo %d(30),30\n",
-		 -(actual_fsize + 20), -actual_fsize);
-      else if (regs_ever_live[2] || profile_flag)
-	fprintf (file,
-		 "\taddil L'%d,30\n\tldw %d(1),2\n\tbv 0(2)\n\tldo R'%d(1),30\n",
-		 - actual_fsize,
-		 - (actual_fsize + 20 + ((-actual_fsize) & ~0x7ff)),
-		 /* - ((actual_fsize + 20) - (actual_fsize & ~0x7ff)), */
-		 - actual_fsize);
+      if (regs_ever_live[2] || profile_flag)
+          
+	{
+	  if (VAL_14_BITS_P (actual_fsize + 20))
+	    fprintf (file, "\tldw %d(30),2\n\tbv 0(2)\n\tldo %d(30),30\n",
+		     -(actual_fsize + 20), -actual_fsize);
+	  else
+	    fprintf (file,
+		     "\taddil L'%d,30\n\tldw %d(1),2\n\tbv 0(2)\n\
+\tldo R'%d(1),30\n",
+		     - actual_fsize,
+		     - (actual_fsize + 20 + ((-actual_fsize) & ~0x7ff)),
+		     - actual_fsize);
+	}
       else if (VAL_14_BITS_P (actual_fsize))
 	fprintf (file, "\tbv 0(2)\n\tldo %d(30),30\n", - actual_fsize);
       else
-	fprintf (file, "\taddil L'%d,30\n\tbv 0(2)\n\tldo R'%d(1),30\n");
+	fprintf (file, "\taddil L'%d,30\n\tbv 0(2)\n\tldo R'%d(1),30\n",
+		 - actual_fsize, - actual_fsize);
     }
   else if (current_function_epilogue_delay_list)
     {
       fprintf (file, "\tbv 0(2)\n");
-      final_scan_insn (XEXP (current_function_epilogue_delay_list, 0),
-		       file, write_symbols, 1, 0, 1);
+      final_scan_insn (XEXP (current_function_epilogue_delay_list, 0), file,
+		       1, 0, 1);
     }
   else
     fprintf (file, "\tbv,n 0(2)\n");
@@ -1812,6 +1824,15 @@ gen_compare_reg (code, x, y)
   return cc_reg;
 }
 
+/* If there's a frame, it will be deallocated in the delay slot of the 
+   bv 0(2) return instruction. */
+
+int
+hppa_epilogue_delay_slots ()
+{
+  return (compute_frame_size (get_frame_size (), 0) ? 0 : 1);
+}
+
 /* Return nonzero if TRIAL can go into the function epilogue's
    delay slot.  SLOT is the slot we are trying to fill.  */
 
@@ -1827,8 +1848,7 @@ eligible_for_epilogue_delay (trial, slot)
     return 0;
   if (get_attr_length (trial) != 1)
     return 0;
-  return (leaf_function &&
-	  get_attr_in_branch_delay (trial) == IN_BRANCH_DELAY_TRUE);
+  return (get_attr_in_branch_delay (trial) == IN_BRANCH_DELAY_TRUE);
 }
 
 rtx
