@@ -999,6 +999,18 @@ i960_function_prologue (file, size)
 
   epilogue_string[0] = '\0';
 
+  if (profile_flag || profile_block_flag)
+    {
+      /* When profiling, we may use registers 20 to 27 to save arguments, so
+	 they can't be used here for saving globals.  J is the number of
+	 argument registers the mcount call will save.  */
+      for (j = 7; j >= 0 && ! regs_ever_live[j]; j--)
+	;
+
+      for (i = 20; i <= j + 20; i++)
+	regs[i] = -1;
+    }
+
   /* First look for local registers to save globals in.  */
   for (i = 0; i < 16; i++)
     {
@@ -1132,6 +1144,83 @@ i960_function_prologue (file, size)
     fprintf (file, "\t#  Register Save Size: %d regs, %d bytes\n",
 	     n_iregs, rsize);
   fprintf (file, "\t#End Prologue#\n");
+}
+
+/* Output code for the function profiler.  */
+
+void
+output_function_profiler (file, labelno)
+     FILE *file;
+     int labelno;
+{
+  /* The last used parameter register.  */
+  int last_parm_reg;
+  int i, j, increment;
+
+  /* Figure out the last used parameter register.  The proper thing to do
+     is to walk incoming args of the function.  A function might have live
+     parameter registers even if it has no incoming args.  Note that we
+     don't have to save parameter registers g8 to g11 because they are
+     call preserved.  */
+
+  /* See also output_function_prologue, which tries to use local registers
+     for preserved call-saved global registers.  */
+
+  for (last_parm_reg = 7;
+       last_parm_reg >= 0 && ! regs_ever_live[last_parm_reg];
+       last_parm_reg--)
+    ;
+
+  /* Save parameter registers in regs r4 (20) to r11 (27).  */
+
+  for (i = 0, j = 4; i <= last_parm_reg; i += increment, j += increment)
+    {
+      if (i % 4 == 0 && (last_parm_reg - i) >= 3)
+	increment = 4;
+      else if (i % 4 == 0 && (last_parm_reg - i) >= 2)
+	increment = 3;
+      else if (i % 2 == 0 && (last_parm_reg - i) >= 1)
+	increment = 2;
+      else
+	increment = 1;
+
+      fprintf (file, "\tmov%s	g%d,r%d\n",
+	       (increment == 4 ? "q" : increment == 3 ? "t"
+		: increment == 2 ? "l": ""), i, j);
+      }
+
+  /* If this function uses the arg pointer, then save it in r3 and then
+     set it to zero.  */
+
+  if (current_function_args_size != 0)
+    fprintf (file, "\tmov	g14,r3\n\tmov	0,g14");
+
+  /* Load location address into g0 and call mcount.  */
+
+  fprintf (file, "\tlda\tLP%d,g0\n\tcallx\tmcount\n", labelno);
+
+  /* If this function uses the arg pointer, restore it.  */
+
+  if (current_function_args_size != 0)
+    fprintf (file, "\tmov	r3,g14");
+
+  /* Restore parameter registers.  */
+
+  for (i = 0, j = 4; i <= last_parm_reg; i += increment, j += increment)
+    {
+      if (i % 4 == 0 && (last_parm_reg - i) >= 3)
+	increment = 4;
+      else if (i % 4 == 0 && (last_parm_reg - i) >= 2)
+	increment = 3;
+      else if (i % 2 == 0 && (last_parm_reg - i) >= 1)
+	increment = 2;
+      else
+	increment = 1;
+
+      fprintf (file, "\tmov%s	r%d,g%d\n",
+	       (increment == 4 ? "q" : increment == 3 ? "t"
+		: increment == 2 ? "l": ""), j, i);
+    }
 }
 
 /* Output code for the function epilogue.  */
