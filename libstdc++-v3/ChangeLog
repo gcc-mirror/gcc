@@ -1,3 +1,13 @@
+2002-01-23  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* include/bits/locale_facets.tcc: Remove old comments.
+
+2002-01-23  Andreas Tobler  <toa@pop.agri.ch>
+
+	* include/bits/locale_facets.tcc (__convert_to_v): Change template
+	parameter to _Tv.
+	(__convert_from_v): Same.
+	
 2002-01-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.h (num_get::_M_extract_int): Change
