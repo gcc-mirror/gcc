@@ -1,3 +1,8 @@
+1999-04-08  Tom Tromey  <tromey@cygnus.com>
+
+	* java/io/PrintStream.java (print): Handle null string argument.
+	(println): Likewise.
+
 1999-04-07  Warren Levy  <warrenl@cygnus.com>
 
 	* java/lang/natString.cc (init(jbyteArray,jint,jint,jstring)):
