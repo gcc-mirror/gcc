@@ -58,9 +58,7 @@
 
 /* Maximum value an `unsigned int' can hold.  (Minimum is 0).  */
 #undef UINT_MAX
-#define __glimits__evconcat__(x, y) __glimits__concat__ (x, y)
-#define __glimits__concat__(x, y) x##y
-#define UINT_MAX (__glimits__evconcat__ (INT_MAX, U) * 2 + 1)
+#define UINT_MAX (INT_MAX * 2U + 1)
 
 /* Minimum and maximum values a `signed long int' can hold.
    (Same as `int').  */
@@ -74,7 +72,7 @@
 
 /* Maximum value an `unsigned long int' can hold.  (Minimum is 0).  */
 #undef ULONG_MAX
-#define ULONG_MAX (__glimits__evconcat__ (LONG_MAX, U) * 2 + 1)
+#define ULONG_MAX (LONG_MAX * 2UL + 1)
 
 #if defined (__GNU_LIBRARY__) ? defined (__USE_GNU) : !defined (__STRICT_ANSI__)
 /* Minimum and maximum values a `signed long long int' can hold.  */
@@ -88,7 +86,7 @@
 
 /* Maximum value an `unsigned long long int' can hold.  (Minimum is 0).  */
 #undef ULONG_LONG_MAX
-#define ULONG_LONG_MAX (__glimits__evconcat__ (LONG_LONG_MAX, U) * 2 + 1)
+#define ULONG_LONG_MAX (LONG_LONG_MAX * 2ULL + 1)
 #endif
 
 #endif /* _MACH_MACHLIMITS_H_ */
