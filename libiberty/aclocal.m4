@@ -1,3 +1,5 @@
+sinclude(../config/accross.m4)
+
 dnl See whether strncmp reads past the end of its string parameters.
 dnl On some versions of SunOS4 at least, strncmp reads a word at a time
 dnl but erroneously reads past the end of strings.  This can cause

@@ -183,6 +183,11 @@ extern htab_eq htab_eq_pointer;
 /* A hash function for null-terminated strings.  */
 extern hashval_t htab_hash_string PARAMS ((const PTR));
 
+/* An iterative hash function for arbitrary data.  */
+extern hashval_t burtle_hash PARAMS ((const PTR, size_t, hashval_t));
+/* Shorthand for hashing something with an intrinsic size.  */
+#define burtle_hash_object(OB,INIT) burtle_hash (&OB, sizeof (OB), INIT)
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -291,6 +291,16 @@
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
 
+/* whether byteorder is bigendian */
+#undef WORDS_BIGENDIAN
+
+/* Define if the host machine stores words of multi-word integers in
+   big-endian order. */
+#undef HOST_WORDS_BIG_ENDIAN
+
+/* 1234 = LIL_ENDIAN, 4321 = BIGENDIAN */
+#undef BYTEORDER
+
 /* Define if errno must be declared even when <errno.h> is included. */
 #undef NEED_DECLARATION_ERRNO
 
