@@ -23,8 +23,7 @@ Boston, MA 02111-1307, USA.  */
 #include <stdio.h>
 #include "rtl.h"
 
-void note_stores ();
-int reg_set_p ();
+static int rtx_addr_can_trap_p	PROTO((rtx));
 
 /* Bit flags that specify the machine subtype we are compiling for.
    Bits are tested using macros TARGET_... defined in the tm.h file
@@ -121,7 +120,7 @@ rtx_varies_p (x)
 
 /* Return 0 if the use of X as an address in a MEM can cause a trap.  */
 
-int
+static int
 rtx_addr_can_trap_p (x)
      register rtx x;
 {
@@ -450,7 +449,7 @@ static int reg_set_flag;
 
 static void
 reg_set_p_1 (x, pat)
-     rtx x;
+     rtx x, pat;
 {
   /* We don't want to return 1 if X is a MEM that contains a register
      within REG_SET_REG.  */
