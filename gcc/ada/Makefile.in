@@ -109,25 +109,7 @@ LS = ls
 RANLIB = ranlib
 # Test to use to see whether ranlib exists on the system.
 RANLIB_TEST = [ -f /usr/bin/ranlib -o -f /bin/ranlib ]
-CC = cc
 
-BISON = bison
-BISONFLAGS =
-ECHO = echo
-LEX = flex
-LEXFLAGS =
-CHMOD = chmod
-CP = cp -p
-MV = mv -f
-RM = rm -f
-RMDIR = rm -rf
-MKDIR = mkdir -p
-AR = ar
-AR_FLAGS = rc
-# How to invoke ranlib.
-RANLIB = ranlib
-# Test to use to see whether ranlib exists on the system.
-RANLIB_TEST = [ -f /usr/bin/ranlib -o -f /bin/ranlib ]
 SHELL = @SHELL@
 PWD_COMMAND = $${PWDCMD-pwd}
 # How to copy preserving the date
