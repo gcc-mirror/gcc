@@ -2570,7 +2570,7 @@ scan_libraries (prog_name)
   void (*int_handler) ();
   void (*quit_handler) ();
   char *ldd_argv[4];
-  const char **ldd_argv = (const char **) real_ldd_argv;
+  const char **real_ldd_argv = (const char **) ldd_argv;
   int pid;
   int argc = 0;
   int pipe_fd[2];
