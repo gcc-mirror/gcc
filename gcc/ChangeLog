@@ -1,3 +1,8 @@
+Tue Jun 13 14:45:10 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* config/m68k/openbsd.h (ASM_SPEC): pass down options to assembler
+	correctly.
+
 2000-06-13  James E. Wilson  <wilson@cygnus.com>
 
 	* config/ia64/ia64.md (movxf_internal): Add missing "e" to ldf/stf.
