@@ -197,6 +197,9 @@ static int method_printed = 0;
 static int method_synthetic = 0;
 static int method_signature = 0;
 
+/* Set to 1 while the very first data member of a class is being handled.  */
+static int is_first_data_member = 0;
+
 #define HANDLE_METHOD(ACCESS_FLAGS, NAME, SIGNATURE, ATTRIBUTE_COUNT)	\
   {									\
     method_synthetic = 0;						\
@@ -1383,6 +1386,17 @@ print_c_decl (FILE* stream, JCF* jcf, int name_index, int signature_index,
 	    }
 	}
 
+      /* Force the alignment of the first data member.  This is
+	 because the "new" C++ ABI changed the alignemnt of non-POD
+	 classes.  gcj, however, still uses the "old" alignment.  */
+      if (is_first_data_member && ! (flags & ACC_STATIC) && ! is_method)
+      {
+	is_first_data_member = 0;
+	print_cxx_classname (out, " __attribute__((aligned(__alignof__( ",
+			     jcf, jcf->super_class, 1);
+	fputs (" )))) ", stream);
+      }
+
       /* Now print the name of the thing.  */
       if (need_space)
 	fputs (" ", stream);
@@ -2088,6 +2102,8 @@ process_file (JCF *jcf, FILE *out)
     }
 
   /* Now go back for second pass over methods and fields.  */
+  is_first_data_member = 1;
+
   JCF_SEEK (jcf, method_start);
   method_pass = 1;
   jcf_parse_methods (jcf);

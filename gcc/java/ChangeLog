@@ -1,3 +1,10 @@
+2003-03-04  Andrew Haley  <aph@redhat.com>
+
+        * gjavah.c (is_first_data_member): New global variable.
+        (print_c_decl): If it's the first data member, align it as the
+        superclass.
+        (process_file): Set is_first_data_member.
+
 2003-03-11  Tom Tromey  <tromey@redhat.com>
 
 	* parse.y (resolve_field_access): Initialize class if field is
