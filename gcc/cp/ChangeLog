@@ -1,3 +1,8 @@
+2000-06-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* class.c (indirect_primary_base_p): New function.
+	(determine_primary_base): Use it.
+
 2000-06-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Update new-abi dynamic cast algorithm.
