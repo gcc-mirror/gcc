@@ -1455,15 +1455,6 @@ init_alias_analysis ()
       new_reg_base_value[HARD_FRAME_POINTER_REGNUM]
 	= gen_rtx_ADDRESS (Pmode, hard_frame_pointer_rtx);
 #endif
-      if (struct_value_incoming_rtx
-	  && GET_CODE (struct_value_incoming_rtx) == REG)
-	new_reg_base_value[REGNO (struct_value_incoming_rtx)]
-	  = gen_rtx_ADDRESS (Pmode, struct_value_incoming_rtx);
-
-      if (static_chain_rtx
-	  && GET_CODE (static_chain_rtx) == REG)
-	new_reg_base_value[REGNO (static_chain_rtx)]
-	  = gen_rtx_ADDRESS (Pmode, static_chain_rtx);
 
       /* Walk the insns adding values to the new_reg_base_value array.  */
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
