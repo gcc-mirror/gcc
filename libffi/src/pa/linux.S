@@ -85,7 +85,7 @@ ffi_call_LINUX:
 
 	/* now %sp should point where %arg0 was pointing.  */
 
-	/* Load the arguments that should be passed in registers */
+	/* Load the arguments that should be passed in registers
 	   The fp args were loaded by the prep_args function.  */
 	ldw -36(%sp), %arg0
 	ldw -40(%sp), %arg1
