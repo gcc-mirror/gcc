@@ -619,10 +619,11 @@ variable_decl (void)
 	  if (m != MATCH_YES)
 	    goto cleanup;
 	}
-      else if (current_ts.type == BT_DERIVED)
-        {
-          initializer = default_initializer ();
-        }
+    }
+
+  if (current_ts.type == BT_DERIVED && !initializer)
+    {
+      initializer = default_initializer ();
     }
 
   /* Add the initializer.  Note that it is fine if &initializer is
