@@ -1,3 +1,7 @@
+2001-01-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* tsystem.h: Define HAVE_DECL_GETOPT.
+
 2001-01-02  Philip Blundell  <pb@futuretv.com>
 
 	* config/arm/linux-gas.h (CLEAR_INSN_CACHE): Avoid illegal clobber 
