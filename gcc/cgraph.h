@@ -96,7 +96,7 @@ struct cgraph_rtl_info GTY(())
    rest of the compilation continues.  When this reorgination is done,
    it will no longer be necessary to have the _decl_uid versions of
    local_static_vars_info and global_static_vars_info structures.
-   Having both structures is now requirred because the _ann_uid values
+   Having both structures is now required because the _ann_uid values
    for static variables are reset as each function is compiled.
    Currently, the analysis is done using the _decl_uid versions and
    converted to the _var_ann versions on demand.

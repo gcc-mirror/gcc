@@ -441,7 +441,7 @@ lambda_matrix_hermite (lambda_matrix mat, int n,
 	    }
 	}
 
-      /* Stop when only the diagonal element is non-zero.  */
+      /* Stop when only the diagonal element is nonzero.  */
       while (lambda_vector_first_nz (row, n, j + 1) < n)
 	{
 	  minimum_col = lambda_vector_min_nz (row, n, j);
@@ -548,7 +548,7 @@ lambda_matrix_left_hermite (lambda_matrix A, int m, int n,
     }
 }
 
-/* When it exists, return the first non-zero row in MAT after row
+/* When it exists, return the first nonzero row in MAT after row
    STARTROW.  Otherwise return rowsize.  */
 
 int

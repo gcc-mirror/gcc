@@ -1,5 +1,11 @@
 2004-09-14  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* cgraph.h, cgraphunit.c, fold-const.c, lambda-mat.c,
+	lambda.h, profile.c, tree-optimize.c, tree-sra.c, vec.h: Fix
+	comment typos.  Follow spelling conventions.
+
+2004-09-14  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/darwin-c.c, config/alpha/alpha.c, config/i386/i386.c,
 	config/i386/predicates.md, config/sparc/sparc.c: Follow
 	spelling conventions.

@@ -282,7 +282,7 @@ lambda_vector_equal (lambda_vector vec1, lambda_vector vec2, int size)
   return true;
 }
 
-/* Return the minimum non-zero element in vector VEC1 between START and N.
+/* Return the minimum nonzero element in vector VEC1 between START and N.
    We must have START <= N.  */
 
 static inline int

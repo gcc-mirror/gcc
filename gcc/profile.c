@@ -686,7 +686,7 @@ compute_value_histograms (histogram_values values)
 
 #define BB_TO_GCOV_INDEX(bb)  ((bb)->index + 1)
 /* When passed NULL as file_name, initialize.
-   When passed something else, output the neccesary commands to change
+   When passed something else, output the necessary commands to change
    line to LINE and offset to FILE_NAME.  */
 static void
 output_location (char const *file_name, int line,
@@ -1029,7 +1029,7 @@ branch_prob (void)
 				     &offset, bb);
 		}
 
-	      /* Notice GOTO expressions we elliminated while constructing the
+	      /* Notice GOTO expressions we eliminated while constructing the
 	         CFG.  */
 	      if (bb->succ && !bb->succ->succ_next && bb->succ->goto_locus)
 	        {

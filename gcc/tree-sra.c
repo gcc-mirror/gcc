@@ -182,7 +182,7 @@ type_can_be_decomposed_p (tree type)
   if (bitmap_bit_p (sra_type_decomp_cache, cache+1))
     return false;
 
-  /* The type must have a definite non-zero size.  */
+  /* The type must have a definite nonzero size.  */
   if (TYPE_SIZE (type) == NULL || integer_zerop (TYPE_SIZE (type)))
     goto fail;
 

@@ -166,7 +166,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 
 /* Additionally this file gathers information about how local statics
-   are used.  This is done in cgraph_charactize_statics.  After the
+   are used.  This is done in cgraph_characterize_statics.  After the
    call graph has been built, each function is analyzed to determine
    which local static variables are either read or written or have
    their address taken.  Any local static that has its address taken
@@ -2024,7 +2024,7 @@ bool has_proper_scope_for_analysis (tree t)
 }
 
 /* Check to see if T is a read or address of operation on a static var
-   we are interrested in analyzing.  FN is passed in to get access to
+   we are interested in analyzing.  FN is passed in to get access to
    its bit vectors.  */
 
 static void
@@ -2058,7 +2058,7 @@ check_rhs_var (struct cgraph_node *fn, tree t)
     }
 }
 
-/* Check to see if T is an assignement to a static var we are
+/* Check to see if T is an assignment to a static var we are
    interrested in analyzing.  FN is passed in to get access to its bit
    vectors.
 */
@@ -2325,7 +2325,7 @@ clear_static_vars_maps (int index)
 /* FIXME -- PROFILE-RESTRUCTURE: Change all *_decl_uid to *_ann_uid.  */
 
 /* Or in all of the bits from every callee into X, the caller's, bit
-   vector.  There are several cases to check to avoid the sparce
+   vector.  There are several cases to check to avoid the sparse
    bitmap oring.  */
 static void
 cgraph_propagate_bits (struct cgraph_node *x)
