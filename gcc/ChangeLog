@@ -1,3 +1,10 @@
+2004-10-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR middle-end/17967
+	Revert:
+		* tree-cfg.c (remove_usless_stmts_cond):  Fold statement.
+		(remove_useless_stmts_1):  Fold trees we know how to fold.
+
 2004-10-14  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/eabispe.h (SUBSUBTARGET_OVERRIDE_OPTIONS),
