@@ -4501,12 +4501,18 @@ lookup_name_real (name, prefer_type, nonclass)
  done:
   if (val)
     {
+      /* This should only warn about types used in qualified-ids.  */
       if (from_obj && from_obj != val)
 	{
-	  cp_pedwarn ("lookup of `%D' in the scope of `%#T' (`%D')",
-		      name, got_object, from_obj);
-	  cp_pedwarn ("  does not match lookup in the current scope (`%D')",
-		      val);
+	  if (looking_for_typename && TREE_CODE (from_obj) == TYPE_DECL
+	      && TREE_CODE (val) == TYPE_DECL
+	      && TREE_TYPE (from_obj) != TREE_TYPE (val))
+	    {
+	      cp_pedwarn ("lookup of `%D' in the scope of `%#T' (`%#T')",
+			  name, got_object, TREE_TYPE (from_obj));
+	      cp_pedwarn ("  does not match lookup in the current scope (`%#T')",
+			  TREE_TYPE (val));
+	    }
 	}
 
       if ((TREE_CODE (val) == TEMPLATE_DECL && looking_for_template)
@@ -5700,14 +5706,15 @@ shadow_tag (declspecs)
     {
       /* ANSI C++ June 5 1992 WP 9.5.3.  Anonymous unions may not have
 	 function members.  */
+      if (TYPE_METHODS (t))
+	error ("an anonymous union cannot have function members");
+
       if (TYPE_FIELDS (t))
 	{
 	  tree decl = grokdeclarator (NULL_TREE, declspecs, NORMAL, 0,
 				      NULL_TREE, NULL_TREE);
 	  finish_anon_union (decl);
 	}
-      else
-	error ("anonymous union cannot have a function member");
     }
   else
     {
@@ -6525,7 +6532,9 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	    cp_error ("storage size of `%D' isn't constant", decl);
 	}
 
-      if (!DECL_EXTERNAL (decl) && TYPE_NEEDS_DESTRUCTOR (type))
+      if (! DECL_EXTERNAL (decl) && TYPE_NEEDS_DESTRUCTOR (type)
+	  /* Cleanups for static variables are handled by `finish_file'.  */
+	  && ! TREE_STATIC (decl))
 	{
 	  int yes = suspend_momentary ();
 	  cleanup = maybe_build_cleanup (decl);
@@ -7676,8 +7685,11 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 		    ctype = cname;
 		}
 
-	      if (ctype
-		  && TREE_OPERAND (decl, 1) == constructor_name_full (ctype))
+	      if (ctype && TREE_CODE (TREE_OPERAND (decl, 1)) == TYPE_DECL
+		  && ((DECL_NAME (TREE_OPERAND (decl, 1))
+		       == constructor_name_full (ctype))
+		      || (DECL_NAME (TREE_OPERAND (decl, 1))
+			  == constructor_name (ctype))))
 		TREE_OPERAND (decl, 1) = constructor_name (ctype);
 	      next = &TREE_OPERAND (decl, 1);
 	      decl = *next;
@@ -9030,6 +9042,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 
       if (decl_context == FIELD)
 	{
+	  if (declarator == current_class_name)
+	    cp_pedwarn ("ANSI C++ forbids nested type `%D' with same name as enclosing class",
+			declarator);
 	  decl = build_lang_decl (TYPE_DECL, declarator, type);
 	  if (IS_SIGNATURE (current_class_type) && opaque_typedef)
 	    SIGNATURE_HAS_OPAQUE_TYPEDECLS (current_class_type) = 1;
@@ -9063,6 +9078,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises, attrli
 	{
 	  error ("non-object member `%s' cannot be declared mutable", name);
 	}
+
+      bad_specifiers (decl, "type", virtualp, quals != NULL_TREE,
+		      inlinep, friendp, raises != NULL_TREE);
+
+      if (initialized)
+	error ("typedef declaration includes an initializer");
 
       return decl;
     }
@@ -10597,15 +10618,19 @@ start_enum (name)
     enumtype = lookup_tag (ENUMERAL_TYPE, name, b, 1);
 
   if (enumtype != NULL_TREE && TREE_CODE (enumtype) == ENUMERAL_TYPE)
-    cp_error ("multiple definition of enum `%T'", enumtype);
+    cp_error ("multiple definition of `%#T'", enumtype);
   else
     {
       enumtype = make_node (ENUMERAL_TYPE);
       pushtag (name, enumtype, 0);
     }
 
+  if (b->pseudo_global)
+    cp_error ("template declaration of `%#T'", enumtype);
+
   if (current_class_type)
     TREE_ADDRESSABLE (b->tags) = 1;
+
   current_local_enum = NULL_TREE;
 
   /* We copy this value because enumerated type constants

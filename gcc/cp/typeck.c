@@ -3999,6 +3999,13 @@ build_x_unary_op (code, xarg)
 	return build_opfncall (code, LOOKUP_NORMAL, xarg,
 			       NULL_TREE, NULL_TREE);
     }
+
+  if (code == ADDR_EXPR)
+    {
+      if (TREE_CODE (xarg) == TARGET_EXPR)
+	warning ("taking address of temporary");
+    }
+
   return build_unary_op (code, xarg, 0);
 }
 
@@ -4499,17 +4506,30 @@ unary_complex_lvalue (code, arg)
 		return error_mark_node;
 	      }
 
+	  /* Add in the offset to the right subobject.  */
 	  offset = get_delta_difference (DECL_FIELD_CONTEXT (t), 
 					 TREE_TYPE (TREE_OPERAND (arg, 0)),
 					 0);
+
+	  /* Add in the offset to the field.  */
 	  offset = size_binop (PLUS_EXPR, offset,
 			       size_binop (EASY_DIV_EXPR,
 					   DECL_FIELD_BITPOS (t),
 					   size_int (BITS_PER_UNIT)));
+
+	  /* We offset all pointer to data memebers by 1 so that we can
+	     distinguish between a null pointer to data member and the first
+	     data member of a structure.  */
+	  offset = size_binop (PLUS_EXPR, offset, size_int (1));
+
 	  return convert (build_pointer_type (TREE_TYPE (arg)), offset);
 	}
     }
 
+  
+#if 0
+  /* This seems to be obsolete now (and posssibly wrong, compare with
+     resolve_offset_ref).  */
   if (TREE_CODE (arg) == OFFSET_REF)
     {
       tree left = TREE_OPERAND (arg, 0), left_addr;
@@ -4530,6 +4550,7 @@ unary_complex_lvalue (code, arg)
 		    build1 (NOP_EXPR, integer_type_node, left_addr),
 		    build1 (NOP_EXPR, integer_type_node, right_addr));
     }
+#endif
 
   /* We permit compiler to make function calls returning
      objects of aggregate type look like lvalues.  */
@@ -5558,7 +5579,7 @@ build_modify_expr (lhs, modifycode, rhs)
 	}
       else
 	{
-	  cp_error ("no match for `%O(%#T, %#T)'", modifycode,
+	  cp_error ("no match for `%Q(%#T, %#T)'", modifycode,
 		    TREE_TYPE (lhs), TREE_TYPE (rhs));
 	  return error_mark_node;
 	}
@@ -5567,6 +5588,12 @@ build_modify_expr (lhs, modifycode, rhs)
     {
       lhs = stabilize_reference (lhs);
       newrhs = build_binary_op (modifycode, lhs, rhs, 1);
+      if (newrhs == error_mark_node)
+	{
+	  cp_error ("  in evaluation of `%Q(%#T, %#T)'", modifycode,
+		    TREE_TYPE (lhs), TREE_TYPE (rhs));
+	  return error_mark_node;
+	}
     }
 
   /* Handle a cast used as an "lvalue".
@@ -6976,6 +7003,15 @@ c_expand_return (retval)
 	  && !TREE_STATIC (whats_returned)
 	  && !TREE_PUBLIC (whats_returned))
 	cp_warning_at ("address of local variable `%D' returned", whats_returned);
+    }
+  else if (TREE_CODE (retval) == VAR_DECL)
+    {
+      if (TREE_CODE (TREE_TYPE (retval)) == ARRAY_TYPE
+	  && DECL_NAME (retval)
+	  && IDENTIFIER_LOCAL_VALUE (DECL_NAME (retval))
+	  && !TREE_STATIC (retval)
+	  && !TREE_PUBLIC (retval))
+	cp_warning_at ("address of local array `%D' returned", retval);
     }
   
   /* Now deal with possible C++ hair:

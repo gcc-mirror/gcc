@@ -210,7 +210,7 @@ empty_parms ()
 
 %type <ttype> structsp opt.component_decl_list component_decl_list
 %type <ttype> component_decl component_decl_1 components notype_components
-%type <ttype> component_declarator component_declarator0
+%type <ttype> component_declarator component_declarator0 self_reference
 %type <ttype> notype_component_declarator notype_component_declarator0
 %type <ttype> after_type_component_declarator after_type_component_declarator0
 %type <ttype> enumlist enumerator
@@ -231,7 +231,7 @@ empty_parms ()
 %token <ttype> PRE_PARSED_FUNCTION_DECL EXTERN_LANG_STRING ALL
 %token <ttype> PRE_PARSED_CLASS_DECL
 %type <ttype> fn.def1 /* Not really! */
-%type <ttype> fn.def2 return_id fn.defpen
+%type <ttype> fn.def2 return_id fn.defpen constructor_declarator
 %type <itype> ctor_initializer_opt
 %type <ttype> named_class_head named_class_head_sans_basetype
 %type <ttype> named_complex_class_head_sans_basetype
@@ -551,6 +551,51 @@ fndef:
 		{}
 	;
 
+constructor_declarator:
+	  nested_name_specifier type_name '(' 
+		{
+		  $$ = build_parse_node (SCOPE_REF, $1, $2);
+		  if ($1 != current_class_type)
+		    {
+		      push_nested_class ($1, 3);
+		      TREE_COMPLEXITY ($$) = current_class_depth;
+		    }
+		}
+	  parmlist ')' type_quals
+		{ $$ = build_parse_node (CALL_EXPR, $<ttype>4, $5, $7); }
+	| nested_name_specifier type_name LEFT_RIGHT type_quals
+		{
+		  $$ = build_parse_node (SCOPE_REF, $1, $2);
+		  if ($1 != current_class_type)
+		    {
+		      push_nested_class ($1, 3);
+		      TREE_COMPLEXITY ($$) = current_class_depth;
+		    }
+		  $$ = build_parse_node (CALL_EXPR, $$, empty_parms (), $4);
+		}
+	| global_scope nested_name_specifier type_name '(' 
+		{
+		  $$ = build_parse_node (SCOPE_REF, $2, $3);
+		  if ($2 != current_class_type)
+		    {
+		      push_nested_class ($2, 3);
+		      TREE_COMPLEXITY ($$) = current_class_depth;
+		    }
+		}
+	 parmlist ')' type_quals
+		{ $$ = build_parse_node (CALL_EXPR, $<ttype>5, $6, $8); }
+	| global_scope nested_name_specifier type_name LEFT_RIGHT type_quals
+		{
+		  $$ = build_parse_node (SCOPE_REF, $2, $3);
+		  if ($2 != current_class_type)
+		    {
+		      push_nested_class ($2, 3);
+		      TREE_COMPLEXITY ($$) = current_class_depth;
+		    }
+		  $$ = build_parse_node (CALL_EXPR, $$, empty_parms (), $5);
+		}
+	;
+
 fn.def1:
 	  typed_declspecs declarator exception_specification_opt
 		{ tree specs, attrs;
@@ -571,6 +616,18 @@ fn.def1:
 		    YYERROR1;
 		  reinit_parse_for_function ();
 		  $$ = NULL_TREE; }
+	| declmods constructor_declarator exception_specification_opt
+		{ tree specs, attrs;
+		  split_specs_attrs ($1, &specs, &attrs);
+		  if (! start_function (specs, $2, $3, attrs, 0))
+		    YYERROR1;
+		  reinit_parse_for_function ();
+		  $$ = NULL_TREE; }
+	| constructor_declarator exception_specification_opt
+		{ if (! start_function (NULL_TREE, $$, $2, NULL_TREE, 0))
+		    YYERROR1;
+		  reinit_parse_for_function ();
+		  $$ = NULL_TREE; }
 	;
 
 /* more C++ complexity.  See component_decl for a comment on the
@@ -578,13 +635,6 @@ fn.def1:
 fn.def2:
 	  typed_declspecs '(' parmlist ')' type_quals exception_specification_opt
 		{ tree specs = strip_attrs ($1);
-		  if (TREE_VALUE (specs) == current_class_type)
-		    {
-		      if (TREE_CHAIN (specs) == NULL_TREE)
-		        specs = get_decl_list (current_class_name);
-		      else
-		        TREE_VALUE (specs) = current_class_name;
-		    } 
 		  $$ = build_parse_node (CALL_EXPR, TREE_VALUE (specs), $3, $5);
 		  $$ = start_method (TREE_CHAIN (specs), $$, $6);
 		 rest_of_mdef:
@@ -607,6 +657,11 @@ fn.def2:
 		{ tree specs = strip_attrs ($1);
 		  $$ = start_method (specs, $2, $3); goto rest_of_mdef; }
 	| notype_declarator exception_specification_opt
+		{ $$ = start_method (NULL_TREE, $$, $2); goto rest_of_mdef; }
+	| declmods constructor_declarator exception_specification_opt
+		{ tree specs = strip_attrs ($1);
+		  $$ = start_method (specs, $2, $3); goto rest_of_mdef; }
+	| constructor_declarator exception_specification_opt
 		{ $$ = start_method (NULL_TREE, $$, $2); goto rest_of_mdef; }
 	;
 
@@ -726,12 +781,16 @@ explicit_instantiation:
 		  do_function_instantiation (specs, $3, NULL_TREE); }
 	| TEMPLATE notype_declarator
 		{ do_function_instantiation (NULL_TREE, $2, NULL_TREE); }
+	| TEMPLATE constructor_declarator
+		{ do_function_instantiation (NULL_TREE, $2, NULL_TREE); }
 	| SCSPEC TEMPLATE aggr template_type
 		{ do_type_instantiation ($4, $1); }
 	| SCSPEC TEMPLATE typed_declspecs declarator
 		{ tree specs = strip_attrs ($3);
 		  do_function_instantiation (specs, $4, $1); }
 	| SCSPEC TEMPLATE notype_declarator
+		{ do_function_instantiation (NULL_TREE, $3, $1); }
+	| SCSPEC TEMPLATE constructor_declarator
 		{ do_function_instantiation (NULL_TREE, $3, $1); }
 	;
 
@@ -2408,15 +2467,26 @@ left_curly: '{'
 		}
 	;
 
+self_reference:
+	  /* empty */
+		{
+		  if (CLASSTYPE_TEMPLATE_INFO (current_class_type))
+		    $$ = NULL_TREE;
+		  else
+		    $$ = build_self_reference ();
+		}
+	;
+
 opt.component_decl_list:
-	/* empty */
-		{ $$ = NULL_TREE; }
-	| component_decl_list
+	  self_reference
+		{ if ($$) $$ = build_tree_list (access_public_node, $$); }
+	| self_reference component_decl_list
 		{
 		  if (current_aggr == signature_type_node)
-		    $$ = build_tree_list (access_public_node, $$);
+		    $$ = build_tree_list (access_public_node, $2);
 		  else
-		    $$ = build_tree_list (access_default_node, $$);
+		    $$ = build_tree_list (access_default_node, $2);
+		  if ($1) $$ = tree_cons (access_public_node, $1, $$);
 		}
 	| opt.component_decl_list VISSPEC ':' component_decl_list
 		{
@@ -2486,6 +2556,9 @@ component_decl_1:
 	| declmods notype_components
 		{ $$ = grok_x_components ($1, $2); }
 	| notype_declarator exception_specification_opt maybeasm maybe_attribute maybe_init
+		{ $$ = grokfield ($$, NULL_TREE, $2, $5, $3,
+				  build_tree_list ($4, NULL_TREE)); }
+	| constructor_declarator exception_specification_opt maybeasm maybe_attribute maybe_init
 		{ $$ = grokfield ($$, NULL_TREE, $2, $5, $3,
 				  build_tree_list ($4, NULL_TREE)); }
 	| ':' expr_no_commas
@@ -2592,6 +2665,12 @@ after_type_component_declarator0:
 
 notype_component_declarator0:
 	  notype_declarator exception_specification_opt maybeasm maybe_attribute maybe_init
+		{ split_specs_attrs ($<ttype>0, &current_declspecs,
+				     &prefix_attributes);
+		  $<ttype>0 = current_declspecs;
+		  $$ = grokfield ($$, current_declspecs, $2, $5, $3,
+				  build_tree_list ($4, prefix_attributes)); }
+	| constructor_declarator exception_specification_opt maybeasm maybe_attribute maybe_init
 		{ split_specs_attrs ($<ttype>0, &current_declspecs,
 				     &prefix_attributes);
 		  $<ttype>0 = current_declspecs;
@@ -2781,7 +2860,7 @@ direct_after_type_declarator:
 	| '(' after_type_declarator ')'
 		{ $$ = $2; }
 	| nested_name_specifier type_name %prec EMPTY
-		{ push_nested_class (TREE_TYPE ($$), 3);
+		{ push_nested_class ($1, 3);
 		  $$ = build_parse_node (SCOPE_REF, $$, $2);
 		  TREE_COMPLEXITY ($$) = current_class_depth; }
 	| type_name %prec EMPTY
@@ -3694,9 +3773,6 @@ complex_parmlist:
 		}
 	| ELLIPSIS
 		{
-		  /* ARM $8.2.5 has this as a boxed-off comment.  */
-		  if (pedantic)
-		    warning ("use of `...' without a first argument is non-portable");
 		  $$ = NULL_TREE;
 		}
 	| TYPENAME_ELLIPSIS

@@ -114,9 +114,13 @@ process_template_parm (list, next)
 			     PARM, 0, NULL_TREE, NULL_TREE);
       /* A template parameter is not modifiable.  */
       TREE_READONLY (parm) = 1;
-      if (IS_AGGR_TYPE (TREE_TYPE (parm)))
+      if (IS_AGGR_TYPE (TREE_TYPE (parm))
+	  && TREE_CODE (TREE_TYPE (parm)) != TEMPLATE_TYPE_PARM)
 	{
-	  sorry ("aggregate template parameter types");
+	  cp_error ("`%#T' is not a valid type for a template constant parameter",
+		    TREE_TYPE (parm));
+	  if (DECL_NAME (parm) == NULL_TREE)
+	    error ("  a template type parameter must begin with `class' or `typename'");
 	  TREE_TYPE (parm) = void_type_node;
 	}
       tinfo = make_node (TEMPLATE_CONST_PARM);
@@ -235,8 +239,10 @@ push_template_decl (decl)
       if (TREE_CODE (decl) == TYPE_DECL)
 	tmpl = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (decl));
       else if (! DECL_TEMPLATE_INFO (decl))
-	/* A member definition that doesn't match anything in the class.  */
-	return;
+	{
+	  cp_error ("template definition of non-template `%#D'", decl);
+	  return;
+	}
       else
 	tmpl = DECL_TI_TEMPLATE (decl);
     }
@@ -608,6 +614,11 @@ lookup_template_class (d1, arglist, in_decl)
       template = IDENTIFIER_GLOBAL_VALUE (d1); /* XXX */
       if (! template)
 	template = IDENTIFIER_CLASS_VALUE (d1);
+    }
+  else if (TREE_CODE (d1) == TYPE_DECL && IS_AGGR_TYPE (TREE_TYPE (d1)))
+    {
+      template = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (d1));
+      d1 = DECL_NAME (template);
     }
   else if (TREE_CODE_CLASS (TREE_CODE (d1)) == 't' && IS_AGGR_TYPE (d1))
     {
@@ -2728,12 +2739,15 @@ do_function_instantiation (declspecs, declarator, storage)
     }
 
   /* If we've already seen this template instance, use it.  */
-  if (name = DECL_ASSEMBLER_NAME (decl),
-      fn = IDENTIFIER_GLOBAL_VALUE (name),
-      fn && DECL_TEMPLATE_INSTANTIATION (fn))
-    result = fn;
-  else if (fn && DECL_CONTEXT (fn))
-    ;
+  if (DECL_FUNCTION_MEMBER_P (decl))
+    {
+      if (DECL_TEMPLATE_INSTANTIATION (decl))
+	result = decl;
+      else if (name = DECL_ASSEMBLER_NAME (decl),
+	       fn = IDENTIFIER_GLOBAL_VALUE (name),
+	       fn && DECL_TEMPLATE_INSTANTIATION (fn))
+	result = fn;
+    }
   else if (name = DECL_NAME (decl), fn = IDENTIFIER_GLOBAL_VALUE (name), fn)
     {
       for (fn = get_first_fn (fn); fn; fn = DECL_CHAIN (fn))
@@ -2779,10 +2793,10 @@ do_function_instantiation (declspecs, declarator, storage)
     cp_error ("storage class `%D' applied to template instantiation",
 	      storage);
 
-  if (! extern_p)
-    instantiate_decl (result);
   mark_decl_instantiated (result, extern_p);
   repo_template_instantiated (result, extern_p);
+  if (! extern_p)
+    instantiate_decl (result);
 }
 
 void

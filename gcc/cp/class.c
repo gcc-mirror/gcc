@@ -1384,7 +1384,7 @@ struct base_info
   char cant_synth_copy_ctor;
   char cant_synth_asn_ref;
   char no_const_asn_ref;
-  char needs_virtual_dtor;
+  char base_has_virtual;
 };
 
 /* Record information about type T derived from its base classes.
@@ -1520,9 +1520,8 @@ finish_base_struct (t, b, t_binfo)
 
       if (TYPE_VIRTUAL_P (basetype))
 	{
-	  /* If there's going to be a destructor needed, make
-	     sure it will be virtual.  */
-	  b->needs_virtual_dtor = 1;
+	  /* Remember that the baseclass has virtual members. */
+	  b->base_has_virtual = 1;
 
 	  /* Don't borrow virtuals from virtual baseclasses.  */
 	  if (TREE_VIA_VIRTUAL (base_binfo))
@@ -2973,7 +2972,7 @@ finish_struct_1 (t, attributes, warn_anon)
   tree fields = TYPE_FIELDS (t);
   tree fn_fields = TYPE_METHODS (t);
   tree x, last_x, method_vec;
-  int needs_virtual_dtor;
+  int base_has_virtual;
   int all_virtual;
   int has_virtual;
   int max_has_virtual;
@@ -3083,7 +3082,7 @@ finish_struct_1 (t, attributes, warn_anon)
       cant_synth_copy_ctor = base_info.cant_synth_copy_ctor;
       cant_synth_asn_ref = base_info.cant_synth_asn_ref;
       no_const_asn_ref = base_info.no_const_asn_ref;
-      needs_virtual_dtor = base_info.needs_virtual_dtor;
+      base_has_virtual = base_info.base_has_virtual;
       n_baseclasses = TREE_VEC_LENGTH (BINFO_BASETYPES (t_binfo));
       aggregate = 0;
     }
@@ -3100,7 +3099,7 @@ finish_struct_1 (t, attributes, warn_anon)
       cant_synth_copy_ctor = 0;
       cant_synth_asn_ref = 0;
       no_const_asn_ref = 0;
-      needs_virtual_dtor = 0;
+      base_has_virtual = 0;
     }
 
 #if 0
@@ -3171,6 +3170,9 @@ finish_struct_1 (t, attributes, warn_anon)
   for (x = TYPE_FIELDS (t); x; x = TREE_CHAIN (x))
     {
       GNU_xref_member (current_class_name, x);
+
+      if (TREE_CODE (x) == FIELD_DECL)
+	DECL_PACKED (x) |= TYPE_PACKED (t);
 
       /* Handle access declarations.  */
       if (TREE_CODE (x) == USING_DECL)
@@ -3537,7 +3539,7 @@ finish_struct_1 (t, attributes, warn_anon)
       && !IS_SIGNATURE (t))
     {
       /* Here we must cons up a destructor on the fly.  */
-      tree dtor = cons_up_default_function (t, name, needs_virtual_dtor != 0);
+      tree dtor = cons_up_default_function (t, name, 0);
       check_for_override (dtor, t);
 
       /* If we couldn't make it work, then pretend we didn't need it.  */
@@ -3550,11 +3552,6 @@ finish_struct_1 (t, attributes, warn_anon)
 	  TREE_CHAIN (dtor) = fn_fields;
 	  fn_fields = dtor;
 
-	  if (DECL_VINDEX (dtor) == NULL_TREE
-	      && (needs_virtual_dtor
-		  || pending_virtuals != NULL_TREE
-		  || pending_hard_virtuals != NULL_TREE))
-	    DECL_VINDEX (dtor) = error_mark_node;
 	  if (DECL_VINDEX (dtor))
 	    pending_virtuals = add_virtual_function (pending_virtuals,
 						     &has_virtual, dtor, t);
@@ -3563,7 +3560,7 @@ finish_struct_1 (t, attributes, warn_anon)
     }
 
   TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_HAS_DESTRUCTOR (t);
-  if (flag_rtti && (max_has_virtual > 0 || needs_virtual_dtor) && 
+  if (flag_rtti && (max_has_virtual > 0 || base_has_virtual) && 
 	has_virtual == 0)
     has_virtual = 1;
 
@@ -4132,7 +4129,7 @@ finish_struct_1 (t, attributes, warn_anon)
       TYPE_NONCOPIED_PARTS (t) = build_tree_list (default_conversion (TYPE_BINFO_VTABLE (t)), vfield);
 
       if (warn_nonvdtor && TYPE_HAS_DESTRUCTOR (t)
-	  && DECL_VINDEX (TREE_VEC_ELT (method_vec, 0)) == NULL_TREE)
+	  && DECL_VINDEX (TREE_VEC_ELT (method_vec, 1)) == NULL_TREE)
 	cp_warning ("`%#T' has virtual functions but non-virtual destructor",
 		    t);
     }
@@ -4212,6 +4209,7 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
   tree name = TYPE_NAME (t);
   tree x, last_x = NULL_TREE;
   tree access;
+  tree dummy = NULL_TREE;
 
   if (TREE_CODE (name) == TYPE_DECL)
     {
@@ -4233,24 +4231,32 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
   if (IS_SIGNATURE (t))
     append_signature_fields (list_of_fieldlists);
 
+  /* Move our self-reference declaration to the end of the field list so
+     any real field with the same name takes precedence.  */
+  if (list_of_fieldlists
+      && TREE_VALUE (list_of_fieldlists)
+      && DECL_ARTIFICIAL (TREE_VALUE (list_of_fieldlists)))
+    {
+      dummy = TREE_VALUE (list_of_fieldlists);
+      list_of_fieldlists = TREE_CHAIN (list_of_fieldlists);
+    }
+
   if (last_x && list_of_fieldlists)
     TREE_CHAIN (last_x) = TREE_VALUE (list_of_fieldlists);
-
-  /* For signatures, we made all methods `public' in the parser and
-     reported an error if a access specifier was used.  */
-  if (CLASSTYPE_DECLARED_CLASS (t) == 0)
-    {
-      if (list_of_fieldlists
-	  && TREE_PURPOSE (list_of_fieldlists) == access_default_node)
-	TREE_PURPOSE (list_of_fieldlists) = access_public_node;
-    }
-  else if (list_of_fieldlists
-	   && TREE_PURPOSE (list_of_fieldlists) == access_default_node)
-    TREE_PURPOSE (list_of_fieldlists) = access_private_node;
 
   while (list_of_fieldlists)
     {
       access = TREE_PURPOSE (list_of_fieldlists);
+
+      /* For signatures, we made all methods `public' in the parser and
+	 reported an error if a access specifier was used.  */
+      if (access == access_default_node)
+	{
+	  if (CLASSTYPE_DECLARED_CLASS (t) == 0)
+	    access = access_public_node;
+	  else
+	    access = access_private_node;
+	}
 
       for (x = TREE_VALUE (list_of_fieldlists); x; x = TREE_CHAIN (x))
 	{
@@ -4298,16 +4304,6 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 	      continue;
 	    }
 
-#if 0
-	  /* Handle access declarations.  */
-	  if (DECL_NAME (x) && TREE_CODE (DECL_NAME (x)) == SCOPE_REF)
-	    {
-	      tree n = DECL_NAME (x);
-	      x = build_decl
-		(USING_DECL, DECL_NAME (TREE_OPERAND (n, 1)), TREE_TYPE (x));
-	      DECL_RESULT (x) = n;
-	    }
-#endif
 	  if (TREE_CODE (x) != TYPE_DECL)
 	    DECL_FIELD_CONTEXT (x) = t;
 
@@ -4330,7 +4326,7 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 
   /* Now add the tags, if any, to the list of TYPE_DECLs
      defined for this type.  */
-  if (CLASSTYPE_TAGS (t))
+  if (CLASSTYPE_TAGS (t) || dummy)
     {
       x = CLASSTYPE_TAGS (t);
       while (x)
@@ -4350,6 +4346,8 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 	  x = TREE_CHAIN (x);
 	  last_x = chainon (last_x, tag);
 	}
+      if (dummy)
+	last_x = chainon (last_x, dummy);
       if (fields == NULL_TREE)
 	fields = last_x;
       CLASSTYPE_LOCAL_TYPEDECLS (t) = 1;
@@ -5298,10 +5296,32 @@ print_class_statistics ()
    decls that may be cached in the previous_class_values list.  For now, let's
    use the permanent obstack, later we may create a dedicated obstack just
    for this purpose.  The effect is undone by pop_obstacks.  */
+
 void
 maybe_push_cache_obstack ()
 {
   push_obstacks_nochange ();
   if (current_class_depth == 1)
     current_obstack = &permanent_obstack;
+}
+
+/* Build a dummy reference to ourselves so Derived::Base (and A::A) works,
+   according to [class]:
+                                          The class-name is also inserted
+   into  the scope of the class itself.  For purposes of access checking,
+   the inserted class name is treated as if it were a public member name.  */
+
+tree
+build_self_reference ()
+{
+  tree name = constructor_name (current_class_type);
+  tree value = build_lang_decl (TYPE_DECL, name, current_class_type);
+  DECL_NONLOCAL (value) = 1;
+  DECL_CONTEXT (value) = current_class_type;
+  DECL_CLASS_CONTEXT (value) = current_class_type;
+  CLASSTYPE_LOCAL_TYPEDECLS (current_class_type) = 1;
+  DECL_ARTIFICIAL (value) = 1;
+
+  pushdecl_class_level (value);
+  return value;
 }
