@@ -1,3 +1,7 @@
+2001-04-03  Zack Weinberg  <zackw@stanford.edu>
+
+	* make-temp-file.c (try): Inline.
+
 2001-02-28  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (make-temp-file.o): Depend on config.h.

@@ -161,7 +161,7 @@ do { ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN)); } while (0)
 /* If the target supports weak symbols, define TARGET_ATTRIBUTE_WEAK to
    provide a weak attribute.  Else define it to nothing. 
 
-   This would normally belong in gansidecl.h, but SUPPORTS_WEAK is
+   This would normally belong in ansidecl.h, but SUPPORTS_WEAK is
    not available at that time.
 
    Note, this is only for use by target files which we know are to be

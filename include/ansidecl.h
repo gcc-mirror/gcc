@@ -161,6 +161,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #endif	/* ANSI C.  */
 
+/* This is for GCC, which has historically used typed null pointer
+   constants.  It needs to be here so it is seen by headers included
+   by gcc's config.h.
+
+   FIXME: GCC probably doesn't need to use typed nulls anymore.
+   Clean it up, then remove this.  Ware variable-argument functions.  */
+#ifdef IN_GCC
+# define NULL_PTR ((PTR) 0)
+#endif
 
 /* Using MACRO(x,y) in cpp #if conditionals does not work with some
    older preprocessors.  Thus we can't define something like this:
@@ -229,5 +238,24 @@ So instead we use the macro below and test it against specific values.  */
 #if GCC_VERSION < 2008
 #define __extension__
 #endif
+
+/* Bootstrap support: Autoconf will possibly define the `inline' or
+   `const' keywords as macros, however this is only valid for the
+   stage1 compiler.  If we detect a modern version of gcc,
+   unconditionally reset the values.  This makes sure the right thing
+   happens in stage2 and later.  We need to do this very early;
+   i.e. before any header files that might use these keywords.
+   Otherwise conflicts might occur.  */
+
+#if (GCC_VERSION >= 2007)
+# ifdef __STDC__
+#  undef const
+# endif
+# undef inline
+# define inline __inline__  /* __inline__ prevents -pedantic warnings */
+# ifndef HAVE_LONG_DOUBLE
+#  define HAVE_LONG_DOUBLE 1
+# endif
+#endif /* GCC >= 2.7 */
 
 #endif	/* ansidecl.h	*/

@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #define FIXINCLUDES_FIXLIB_H
 
 #include "auto-host.h"
-#include "gansidecl.h"
+#include "ansidecl.h"
 #include "system.h"
 
 #include "gnu-regex.h"

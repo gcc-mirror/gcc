@@ -27,9 +27,6 @@ Boston, MA 02111-1307, USA.  */
 /* Set up System V.4 (aka ELF) defaults.  */
 #include "svr4.h"
 
-/* Include prototyping macros */
-#include "gansidecl.h"
-
 /*}}}*/ 
 /*{{{  Driver configuration.  */ 
 

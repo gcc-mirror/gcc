@@ -22,7 +22,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
-#include "gansidecl.h"
 #include "buffer.h"
 
 /* Grow BUFP so there is room for at least SIZE more bytes. */

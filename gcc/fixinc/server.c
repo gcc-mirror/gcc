@@ -47,7 +47,7 @@
  */
 #include "auto-host.h"
 
-#include "gansidecl.h"
+#include "ansidecl.h"
 #include "system.h"
 #include <signal.h>
 
