@@ -113,6 +113,7 @@ struct function
   int temp_slot_level;
   int target_temp_slot_level;
   int var_temp_slot_level;
+  int instrument_entry_exit;
   /* This slot is initialized as 0 and is added to
      during the nested function.  */
   struct var_refs_queue *fixup_var_refs_queue;

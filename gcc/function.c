@@ -217,6 +217,10 @@ rtx current_function_internal_arg_pointer;
 /* Language-specific reason why the current function cannot be made inline.  */
 char *current_function_cannot_inline;
 
+/* Nonzero if instrumentation calls for function entry and exit should be
+   generated.  */
+int current_function_instrument_entry_exit;
+
 /* The FUNCTION_DECL for an inline function currently being expanded.  */
 tree inline_function_decl;
 
@@ -539,6 +543,7 @@ push_function_context_to (context)
   p->fixup_var_refs_queue = 0;
   p->epilogue_delay_list = current_function_epilogue_delay_list;
   p->args_info = current_function_args_info;
+  p->instrument_entry_exit = current_function_instrument_entry_exit;
 
   save_tree_status (p, context);
   save_storage_status (p);
@@ -621,6 +626,7 @@ pop_function_context_from (context)
   current_function_epilogue_delay_list = p->epilogue_delay_list;
   reg_renumber = 0;
   current_function_args_info = p->args_info;
+  current_function_instrument_entry_exit = p->instrument_entry_exit;
 
   restore_tree_status (p, context);
   restore_storage_status (p);
@@ -5458,6 +5464,10 @@ expand_function_start (subr, parms_have_cleanups)
      valid operands of arithmetic insns.  */
   init_recog_no_volatile ();
 
+  current_function_instrument_entry_exit
+    = (flag_instrument_function_entry_exit
+       && ! DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (subr));
+
   /* If function gets a static chain arg, store it in the stack frame.
      Do this first, so it gets the first stack slot offset.  */
   if (current_function_needs_context)
@@ -5484,6 +5494,7 @@ expand_function_start (subr, parms_have_cleanups)
      or if it returns a structure, or if it has parm cleanups.  */
 #ifdef HAVE_return
   if (cleanup_label == 0 && HAVE_return
+      && ! current_function_instrument_entry_exit
       && ! current_function_returns_pcc_struct
       && ! (current_function_returns_struct && ! optimize))
     return_label = 0;
@@ -5532,7 +5543,7 @@ expand_function_start (subr, parms_have_cleanups)
   else if (DECL_MODE (DECL_RESULT (subr)) == VOIDmode)
     /* If return mode is void, this decl rtl should not be used.  */
     DECL_RTL (DECL_RESULT (subr)) = 0;
-  else if (parms_have_cleanups)
+  else if (parms_have_cleanups || current_function_instrument_entry_exit)
     {
       /* If function will end with cleanup code for parms,
 	 compute the return values into a pseudo reg,
@@ -5648,6 +5659,21 @@ expand_function_start (subr, parms_have_cleanups)
 	    save_expr_regs = gen_rtx_EXPR_LIST (VOIDmode, last_ptr,
 						save_expr_regs);
 	}
+    }
+
+  if (current_function_instrument_entry_exit)
+    {
+      rtx fun = DECL_RTL (current_function_decl);
+      if (GET_CODE (fun) == MEM)
+	fun = XEXP (fun, 0);
+      else
+	abort ();
+      emit_library_call (profile_function_entry_libfunc, 0, VOIDmode, 2,
+			 fun, Pmode,
+			 expand_builtin_return_addr (BUILT_IN_RETURN_ADDRESS,
+						     0,
+						     hard_frame_pointer_rtx),
+			 Pmode);
     }
 
   /* After the display initializations is where the tail-recursion label
@@ -5862,6 +5888,21 @@ expand_function_end (filename, line, end_bindings)
 	emit_label (label);
       }
   }
+
+  if (current_function_instrument_entry_exit)
+    {
+      rtx fun = DECL_RTL (current_function_decl);
+      if (GET_CODE (fun) == MEM)
+	fun = XEXP (fun, 0);
+      else
+	abort ();
+      emit_library_call (profile_function_exit_libfunc, 0, VOIDmode, 2,
+			 fun, Pmode,
+			 expand_builtin_return_addr (BUILT_IN_RETURN_ADDRESS,
+						     0,
+						     hard_frame_pointer_rtx),
+			 Pmode);
+    }
 
   /* If we had calls to alloca, and this machine needs
      an accurate stack pointer to exit the function,

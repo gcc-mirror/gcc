@@ -1,3 +1,31 @@
+Thu Jul 30 13:08:07 1998  Ken Raeburn  <raeburn@cygnus.com>
+
+	Function entry/exit profiling instrumentation:
+	* expr.h (profile_function_entry_libfunc,
+	profile_function_exit_libfunc): Declare new variables.
+	* optabs.c: Define them here.
+	(init_optabs): Initialize them.
+	* tree.h (struct tree_decl): New flag
+	no_instrument_function_entry_exit.
+	(DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT): New accessor macro.
+	* c-decl.c (duplicate_decls): Merge it.
+	* c-common.c (enum attrs): New value A_NO_INSTRUMENT_FUNCTION.
+	(init_attributes): Use it for "no_instrument_function".
+	(decl_attributes): Handle it, for functions that have not yet been
+	compiled.  Set decl flag.
+	* flags.h (flag_instrument_function_entry_exit): Declare new
+	variable.
+	* toplev.c (flag_instrument_function_entry_exit): Define it here.
+	(f_options): New option "instrument-functions".
+	* function.h (struct function): New field instrument_entry_exit.
+	* function.c (current_function_instrument_entry_exit): New
+	variable.
+	(push_function_context_to, pop_function_context_from): Save and
+	restore.
+	(expand_function_start): Set current_ variable, maybe emit return
+	label and entry profile call.
+	(expand_function_end): Maybe emit exit profile call.
+
 Thu Jul 30 00:58:34 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* i386.md (movqi): When optimizing a load of (const_int 1) into a

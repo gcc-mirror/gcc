@@ -214,6 +214,9 @@ rtx chkr_copy_bitmap_libfunc;
 rtx chkr_check_exec_libfunc;
 rtx chkr_check_str_libfunc;
 
+rtx profile_function_entry_libfunc;
+rtx profile_function_exit_libfunc;
+
 /* Indexed by the rtx-code for a conditional (eg. EQ, LT,...)
    gives the gen_function to make a branch to test that condition.  */
 
@@ -4390,6 +4393,12 @@ init_optabs ()
   chkr_copy_bitmap_libfunc = gen_rtx_SYMBOL_REF (VOIDmode, "chkr_copy_bitmap");
   chkr_check_exec_libfunc = gen_rtx_SYMBOL_REF (VOIDmode, "chkr_check_exec");
   chkr_check_str_libfunc = gen_rtx_SYMBOL_REF (VOIDmode, "chkr_check_str");
+
+  /* For function entry/exit instrumentation.  */
+  profile_function_entry_libfunc
+    = gen_rtx_SYMBOL_REF (VOIDmode, "__cyg_profile_func_enter");
+  profile_function_exit_libfunc
+    = gen_rtx_SYMBOL_REF (VOIDmode, "__cyg_profile_func_exit");
 
 #ifdef HAVE_conditional_trap
   init_traps ();

@@ -1286,8 +1286,9 @@ carefully.
 
 The keyword @code{__attribute__} allows you to specify special
 attributes when making a declaration.  This keyword is followed by an
-attribute specification inside double parentheses.  Eight attributes,
-@code{noreturn}, @code{const}, @code{format}, @code{section},
+attribute specification inside double parentheses.  Nine attributes,
+@code{noreturn}, @code{const}, @code{format},
+@code{no_instrument_function}, @code{section},
 @code{constructor}, @code{destructor}, @code{unused} and @code{weak} are
 currently defined for functions.  Other attributes, including
 @code{section} are supported for variables declarations (@pxref{Variable
@@ -1446,6 +1447,12 @@ calls to @code{printf}, @code{scanf}, or @code{strftime} function whose
 operands are a call to one of your own function.  The compiler always
 treats @code{gettext}, @code{dgettext}, and @code{dcgettext} in this
 manner.
+
+@item no_instrument_function
+@cindex @code{no_instrument_function} function attribute
+If @samp{-finstrument-functions} is given, profiling function calls will
+be generated at entry and exit of most user-compiled functions.
+Functions with this attribute will not be so instrumented.
 
 @item section ("section-name")
 @cindex @code{section} function attribute
