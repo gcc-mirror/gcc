@@ -46,7 +46,6 @@ static int member_init_ok_or_else PARAMS ((tree, tree, const char *));
 static void expand_virtual_init PARAMS ((tree, tree));
 static tree sort_member_init PARAMS ((tree));
 static tree initializing_context PARAMS ((tree));
-static tree build_java_class_ref PARAMS ((tree));
 static void expand_cleanup_for_base PARAMS ((tree, tree));
 static tree get_temp_regvar PARAMS ((tree, tree));
 static tree dfs_initialize_vtbl_ptrs PARAMS ((tree, void *));
@@ -2071,7 +2070,7 @@ build_new (placement, decl, init, use_global_new)
 
 /* Given a Java class, return a decl for the corresponding java.lang.Class. */
 
-static tree
+tree
 build_java_class_ref (type)
      tree type;
 {

@@ -3932,6 +3932,7 @@ extern tree create_temporary_var                PARAMS ((tree));
 extern void begin_init_stmts                    PARAMS ((tree *, tree *));
 extern tree finish_init_stmts                   PARAMS ((tree, tree));
 extern void initialize_vtbl_ptrs                PARAMS ((tree, tree));
+extern tree build_java_class_ref                PARAMS ((tree));
 
 /* in input.c */
 

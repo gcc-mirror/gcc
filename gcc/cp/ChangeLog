@@ -1,3 +1,17 @@
+2000-03-02  Tom Tromey  <tromey@cygnus.com>
+
+	* cp-tree.h (build_java_class_ref): Declare.
+	* init.c (build_java_class_ref): No longer static.
+	* except.c (expand_throw): Generate a Java-style `throw' if the
+	thrown object is a "Java" object.
+	(initialize_handler_parm): Generate a Java-style lookup of
+	exception info if the caught object is a "Java" object.
+	(catch_language, catch_language_init): New globals.
+	(decl_is_java_type): New function.
+	(expand_start_catch_block): Don't call push_eh_info() or
+	push_eh_cleanup() when handling a Java-style "catch".  Pass Java
+	class reference to build_catch_block.
+
 Thu Mar  2 13:32:01 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* typeck.c (comptypes): Treat sizetype like its language equivalent.
