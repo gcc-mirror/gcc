@@ -1,5 +1,5 @@
 /* lang-specs.h file for Fortran
-   Copyright (C) 1995-1997 Free Software Foundation, Inc.
+   Copyright (C) 1995-1997, 1999 Free Software Foundation, Inc.
    Contributed by James Craig Burley (burley@gnu.org).
 
 This file is part of GNU Fortran.
@@ -47,7 +47,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 		   %{!Q:-quiet} -dumpbase %b.F %{d*} %{m*} %{a}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} \
 		   %{v:-version -fversion} %{pg:-p} %{p} %{f*} %{I*}\
-		   %{aux-info*}\
+		   %{aux-info*} %{Qn:-fno-ident}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
 	      %{!S:as %a %Y\
@@ -62,7 +62,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	   %{!Q:-quiet} -dumpbase %b.r %{d*} %{m*} %{a}\
 	   %{g*} %{O*} %{W*} %{w} %{pedantic*} \
 	   %{v:-version -fversion} %{pg:-p} %{p} %{f*} %{I*}\
-	   %{aux-info*}\
+	   %{aux-info*} %{Qn:-fno-ident}\
 	   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 	   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
 	   %{!S:as %a %Y\
@@ -75,7 +75,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 		   %{!Q:-quiet} -dumpbase %b.f %{d*} %{m*} %{a}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*}\
 		   %{v:-version -fversion} %{pg:-p} %{p} %{f*} %{I*}\
-		   %{aux-info*}\
+		   %{aux-info*} %{Qn:-fno-ident}\
 		   %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
 	      %{!S:as %a %Y\
