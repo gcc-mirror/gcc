@@ -1,3 +1,9 @@
+2005-02-15  Andy Hutchinson  <HutchinsonAndy@netscape.net>
+
+	PR target/19924
+	* config/avr/avr.h (MODES_TIEABLE_P): Define to 1 to allow subreg
+	access optimization.
+
 2005-02-15  David Edelsohn  <edelsohn@gnu.org>
 	    Alan Modra  <amodra@bigpond.net.au>
 
