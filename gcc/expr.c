@@ -2204,7 +2204,8 @@ emit_move_insn_1 (x, y)
 #endif
 			     
       /* Show the output dies here.  */
-      emit_insn (gen_rtx (CLOBBER, VOIDmode, x));
+      if (x != y)
+        emit_insn (gen_rtx (CLOBBER, VOIDmode, x));
 
       for (i = 0;
 	   i < (GET_MODE_SIZE (mode)  + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
