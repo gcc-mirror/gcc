@@ -1166,7 +1166,6 @@ regmove_optimize (f, nregs, regmove_dump_file)
           if (! flag_regmove)
             continue;
 
-#ifdef REGISTER_CONSTRAINTS
 	  if (! find_matches (insn, &match))
 	    continue;
 
@@ -1556,7 +1555,6 @@ regmove_optimize (f, nregs, regmove_dump_file)
 
 	}
     }
-#endif /* REGISTER_CONSTRAINTS */
 
   /* In fixup_match_1, some insns may have been inserted after basic block
      ends.  Fix that here.  */

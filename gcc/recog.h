@@ -158,11 +158,6 @@ struct recog_data
      duplicate-appearance of an operand.  */
   char dup_num[MAX_DUP_OPERANDS];
 
-#ifndef REGISTER_CONSTRAINTS
-  /* Nonzero if operand N should be an address.  */
-  char operand_address_p[MAX_RECOG_OPERANDS];
-#endif
-
   /* ??? Note that these are `char' instead of `unsigned char' to (try to)
      avoid certain lossage from K&R C, wherein `unsigned char' default 
      promotes to `unsigned int' instead of `int' as in ISO C.  As of 1999,
@@ -208,15 +203,9 @@ struct insn_operand_data
 {
   insn_operand_predicate_fn predicate;
 
-#ifdef REGISTER_CONSTRAINTS
   const char *constraint;
-#endif
 
   enum machine_mode mode;
-
-#ifndef REGISTER_CONSTRAINTS
-  char address_p;
-#endif
 
   char strict_low;
 };

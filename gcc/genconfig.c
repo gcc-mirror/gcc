@@ -36,7 +36,6 @@ struct obstack *rtl_obstack = &obstack;
 static int max_recog_operands;  /* Largest operand number seen.  */
 static int max_dup_operands;    /* Largest number of match_dup in any insn.  */
 static int max_clobbers_per_insn;
-static int register_constraint_flag;
 static int have_cc0_flag;
 static int have_cmove_flag;
 static int have_cond_arith_flag;
@@ -85,8 +84,6 @@ walk_insn_part (part, recog_p, non_pc_set_src)
     case MATCH_OPERAND:
       if (XINT (part, 0) > max_recog_operands)
 	max_recog_operands = XINT (part, 0);
-      if (XSTR (part, 2) && *XSTR (part, 2))
-	register_constraint_flag = 1;
       return;
 
     case MATCH_OP_DUP:
@@ -344,9 +341,6 @@ from the machine description file `md'.  */\n\n");
      more splits than we can readily see (and knows s/he does it).  */
   printf ("#ifndef MAX_INSNS_PER_SPLIT\n#define MAX_INSNS_PER_SPLIT %d\n#endif\n",
 	  max_insns_per_split);
-
-  if (register_constraint_flag)
-    printf ("#define REGISTER_CONSTRAINTS\n");
 
   if (have_cc0_flag)
     printf ("#define HAVE_cc0\n");

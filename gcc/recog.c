@@ -2012,10 +2012,6 @@ extract_insn (insn)
 	      while (*p)
 		recog_data.n_alternatives += (*p++ == ',');
 	    }
-#ifndef REGISTER_CONSTRAINTS
-	  bzero (recog_data.operand_address_p,
-		 sizeof recog_data.operand_address_p);
-#endif
 	  break;
 	}
 
@@ -2037,12 +2033,7 @@ extract_insn (insn)
 
       for (i = 0; i < noperands; i++)
 	{
-#ifdef REGISTER_CONSTRAINTS
 	  recog_data.constraints[i] = insn_data[icode].operand[i].constraint;
-#else
-	  recog_data.operand_address_p[i]
-	    = insn_data[icode].operand[i].address_p;
-#endif
 	  recog_data.operand_mode[i] = insn_data[icode].operand[i].mode;
 	}
     }
@@ -2161,8 +2152,6 @@ preprocess_constraints ()
     }
 }
  
-#ifdef REGISTER_CONSTRAINTS
-
 /* Check the operands of an insn against the insn's operand constraints
    and return 1 if they are valid.
    The information about the insn's operands, constraints, operand modes
@@ -2572,8 +2561,6 @@ reg_fits_class_p (operand, class, offset, mode)
 
   return 0;
 }
-
-#endif /* REGISTER_CONSTRAINTS */
 
 /* Do the splitting of insns in the block B. Only try to actually split if
    DO_SPLIT is true; otherwise, just remove nops. */ 

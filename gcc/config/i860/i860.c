@@ -1493,10 +1493,8 @@ output_delay_insn (delay_insn)
 	recog_data.operand[i] = alter_subreg (recog_data.operand[i]);
     }
 
-#ifdef REGISTER_CONSTRAINTS
   if (! constrain_operands (1))
     abort ();
-#endif
 
   cc_prev_status = cc_status;
 

@@ -2353,8 +2353,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
      int live_known;
      short *reload_reg_p;
 {
-#ifdef REGISTER_CONSTRAINTS
-
   register int insn_code_number;
   register int i, j;
   int noperands;
@@ -4175,74 +4173,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	}
     }
 
-#else /* no REGISTER_CONSTRAINTS */
-  int noperands;
-  int insn_code_number;
-  int goal_earlyclobber = 0; /* Always 0, to make combine_reloads happen.  */
-  register int i;
-  rtx body = PATTERN (insn);
-  int retval = 0;
-
-  n_reloads = 0;
-  n_replacements = 0;
-  n_earlyclobbers = 0;
-  replace_reloads = replace;
-  this_insn = insn;
-
-  extract_insn (insn);
-
-  noperands = reload_n_operands = recog_data.n_operands;
-
-  /* Return if the insn needs no reload processing.  */
-  if (noperands == 0)
-    return;
-
-  for (i = 0; i < noperands; i++)
-    {
-      register RTX_CODE code = GET_CODE (recog_data.operand[i]);
-      int is_set_dest = GET_CODE (body) == SET && (i == 0);
-
-      if (insn_code_number >= 0)
-	if (insn_data[insn_code_number].operand[i].address_p)
-	  find_reloads_address (VOIDmode, NULL_PTR,
-				recog_data.operand[i],
-				recog_data.operand_loc[i],
-				i, RELOAD_FOR_INPUT, ind_levels, insn);
-
-      /* In these cases, we can't tell if the operand is an input
-	 or an output, so be conservative.  In practice it won't be
-	 problem.  */
-
-      if (code == MEM)
-	find_reloads_address (GET_MODE (recog_data.operand[i]),
-			      recog_data.operand_loc[i],
-			      XEXP (recog_data.operand[i], 0),
-			      &XEXP (recog_data.operand[i], 0),
-			      i, RELOAD_OTHER, ind_levels, insn);
-      if (code == SUBREG)
-	recog_data.operand[i] = *recog_data.operand_loc[i]
-	  = find_reloads_toplev (recog_data.operand[i], i, RELOAD_OTHER,
-				 ind_levels, is_set_dest);
-      if (code == REG)
-	{
-	  register int regno = REGNO (recog_data.operand[i]);
-	  if (reg_equiv_constant[regno] != 0 && !is_set_dest)
-	    recog_data.operand[i] = *recog_data.operand_loc[i]
-	      = reg_equiv_constant[regno];
-#if 0 /* This might screw code in reload1.c to delete prior output-reload
-	 that feeds this insn.  */
-	  if (reg_equiv_mem[regno] != 0)
-	    recog_data.operand[i] = *recog_data.operand_loc[i]
-	      = reg_equiv_mem[regno];
-#endif
-	}
-    }
-
-  /* Perhaps an output reload can be combined with another
-     to reduce needs by one.  */
-  if (!goal_earlyclobber)
-    combine_reloads ();
-#endif /* no REGISTER_CONSTRAINTS */
   return retval;
 }
 
