@@ -1,3 +1,7 @@
+2000-09-11  Robert Lipe  <robertl@sco.com>
+	
+	* gcc.dg/pragma-align.c: New test.
+
 2000-09-11  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/explicit82.C: New test.
