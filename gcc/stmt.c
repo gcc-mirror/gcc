@@ -2052,48 +2052,6 @@ expand_stack_restore (tree var)
   emit_stack_restore (SAVE_BLOCK, sa, NULL_RTX);
 }
 
-/* Emit code to perform the initialization of a declaration DECL.  */
-
-void
-expand_decl_init (tree decl)
-{
-  int was_used = TREE_USED (decl);
-
-  /* If this is a CONST_DECL, we don't have to generate any code.  Likewise
-     for static decls.  */
-  if (TREE_CODE (decl) == CONST_DECL
-      || TREE_STATIC (decl))
-    return;
-
-  /* Compute and store the initial value now.  */
-
-  push_temp_slots ();
-
-  if (DECL_INITIAL (decl) == error_mark_node)
-    {
-      enum tree_code code = TREE_CODE (TREE_TYPE (decl));
-
-      if (code == INTEGER_TYPE || code == REAL_TYPE || code == ENUMERAL_TYPE
-	  || code == POINTER_TYPE || code == REFERENCE_TYPE)
-	expand_assignment (decl, convert (TREE_TYPE (decl), integer_zero_node),
-			   0);
-    }
-  else if (DECL_INITIAL (decl) && TREE_CODE (DECL_INITIAL (decl)) != TREE_LIST)
-    {
-      emit_line_note (DECL_SOURCE_LOCATION (decl));
-      expand_assignment (decl, DECL_INITIAL (decl), 0);
-    }
-
-  /* Don't let the initialization count as "using" the variable.  */
-  TREE_USED (decl) = was_used;
-
-  /* Free any temporaries we made while initializing the decl.  */
-  preserve_temp_slots (NULL_RTX);
-  free_temp_slots ();
-  pop_temp_slots ();
-}
-
-
 /* DECL is an anonymous union.  CLEANUP is a cleanup for DECL.
    DECL_ELTS is the list of elements that belong to DECL's type.
    In each, the TREE_VALUE is a VAR_DECL, and the TREE_PURPOSE a cleanup.  */

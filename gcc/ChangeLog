@@ -1,5 +1,10 @@
 2004-10-08  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* stmt.c (expand_decl_init): Remove.
+	* tree.h: Remove the corresponding prototype.
+
+2004-10-08  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* integrate.c (try_constants, subst_constants, mark_stores):
 	Remove.
 	* integrate.h: Remove the prototype for try_constants.
