@@ -1343,7 +1343,9 @@ check_member_template (tmpl)
   my_friendly_assert (TREE_CODE (tmpl) == TEMPLATE_DECL, 0);
   decl = DECL_TEMPLATE_RESULT (tmpl);
 
-  if (TREE_CODE (decl) == FUNCTION_DECL) 
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      || (TREE_CODE (decl) == TYPE_DECL
+	  && IS_AGGR_TYPE (TREE_TYPE (decl))))
     {
       if (current_function_decl)
 	/* 14.5.2.2 [temp.mem]
@@ -1352,7 +1354,7 @@ check_member_template (tmpl)
 	cp_error ("declaration of of member template `%#D' in local class",
 		  decl);
       
-      if (DECL_VIRTUAL_P (decl)) 
+      if (TREE_CODE (decl) == FUNCTION_DECL && DECL_VIRTUAL_P (decl))
 	{
 	  /* 14.5.2.3 [temp.mem]
 
@@ -1367,16 +1369,6 @@ check_member_template (tmpl)
 	 with member templates.  */ 
       DECL_IGNORED_P (tmpl) = 1;
     } 
-  else if (TREE_CODE (decl) == TYPE_DECL
-	   && IS_AGGR_TYPE (TREE_TYPE (decl)))
-    {
-      if (current_function_decl)
-	/* 14.5.2.2 [temp.mem]
-
-	   A local class shall not have member templates.  */
-	cp_error ("declaration of of member template `%#D' in local class",
-		  decl);
-    }
   else
     cp_error ("template declaration of `%#D'", decl);
 }

@@ -2,6 +2,9 @@ Tue Apr 21 22:00:04 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* errfn.c (cp_thing): Use xrealloc, not xmalloc, to copy memory.
 
+	* decl2.c (check_member_template): Set DECL_IGNORED for member
+	class templates, too.
+
 Tue Apr 21 18:59:11 1998  Benjamin Kosnik  <bkoz@rhino.cygnus.com>
 
 	* decl.c (duplicate_decls): Only check DECL_FRIEND_P if function.
