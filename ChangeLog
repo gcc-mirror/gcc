@@ -1,3 +1,11 @@
+2004-04-26  Paolo Bonzini  <bonzini@gnu.org>
+
+        * configure.in: Invoke ACX_PROG_CMP_IGNORE_INITIAL.
+        * configure: Regenerate.
+        * config/acx.m4: Mutuate ACX_PROG_CMP_IGNORE_INITIAL from gcc.
+        * gcc/Makefile.tpl (compare): Use the result of the test.
+        * gcc/Makefile.in: Regenerate.
+
 2004-04-23  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.tpl (all-stage1-gcc, all-stage2-gcc, all-stage3-gcc):

@@ -24274,8 +24274,8 @@ compare: all-stage3-gcc
 	files=`find . -name "*$(objext)" -print` ; \
 	cd .. ; \
 	for file in $${files} ; do \
-	  cmp --ignore-initial=16 $$r/stage2-gcc/$$file $$r/stage3-gcc/$$file \
-	      > /dev/null 2>&1; \
+	  f1=$$r/stage2-gcc/$$file; f2=$$r/stage3-gcc/$$file; \
+	  @do_compare@ > /dev/null 2>&1; \
 	  test $$? -eq 1 && echo $$file differs >> .bad_compare || true; \
 	done ; \
 	if [ -f .bad_compare ]; then \
@@ -24304,21 +24304,20 @@ new-cleanstrap:
 	$(MAKE) new-bootstrap
 
 new-restage1:
-	rm -rf configure-stage1-gcc all-stage1-gcc stage1-gcc/Makefile \
+	rm -rf all-stage1-gcc \
 	  configure-stage2-gcc all-stage2-gcc stage2-gcc \
 	  configure-stage3-gcc all-stage3-gcc stage3-gcc \
 	  compare
 	$(MAKE) all-stage1-gcc
 
 new-restage2: all-stage1-gcc
-	rm -rf configure-stage2-gcc all-stage2-gcc stage2-gcc/Makefile \
+	rm -rf all-stage2-gcc \
 	  configure-stage3-gcc all-stage3-gcc stage3-gcc \
 	  compare
 	$(MAKE) all-stage2-gcc
 
 new-restage3: all-stage2-gcc
-	rm -rf configure-stage3-gcc all-stage3-gcc stage3-gcc/Makefile \
-	  compare
+	rm -rf all-stage3-gcc compare
 	$(MAKE) compare
 
 # --------------------------------------

@@ -1069,6 +1069,7 @@ EOF
 fi
 
 ACX_PROG_GNAT
+ACX_PROG_CMP_IGNORE_INITIAL
 
 # By default, C is the only stage 1 language.
 stage1_languages=c
