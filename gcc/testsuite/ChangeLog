@@ -1,3 +1,9 @@
+2003-06-15  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/builtins-22.c: New test case.
+	* gcc.dg/i386-387-1.c: Update to test exp.
+	* gcc.dg/i386-387-2.c: Likewise.
+
 2003-06-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/format/asm_fprintf-1.c: Update width/precision checks.
