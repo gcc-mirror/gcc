@@ -58,7 +58,9 @@ Boston, MA 02111-1307, USA.  */
 /* We want -fPIC by default, unless we're using -static to compile for
    the kernel or some such.  */
 
-#define CC1_SPEC "%{!static:-fPIC}"
+#define CC1_SPEC "\
+%{static: %{Zdynamic: %e conflicting code gen style switches are used}}\
+%{!static:-fPIC}"
 
 /* Make both r2 and r3 available for allocation.  */
 #define FIXED_R2 0
