@@ -1851,14 +1851,6 @@ struct mips_frame_info
 
 extern struct mips_frame_info current_frame_info;
 
-/* Store in the variable DEPTH the initial difference between the
-   frame pointer reg contents and the stack pointer reg contents,
-   as of the start of the function body.  This depends on the layout
-   of the fixed parts of the stack frame and on how registers are saved.  */
-
-/* #define INITIAL_FRAME_POINTER_OFFSET(VAR)				\
-    ((VAR) = compute_frame_size (get_frame_size ())) */
-
 /* If defined, this macro specifies a table of register pairs used to
    eliminate unneeded registers that point into the stack frame.  If
    it is not defined, the only elimination attempted by the compiler
