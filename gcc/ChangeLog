@@ -1,3 +1,8 @@
+2003-06-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* config/mips/iris6-o32.h (MIPS_ISA_DEFAULT): Remove.
+	(MIPS_CPU_STRING_DEFAULT): Redefine to mips2.
+
 2003-06-17  Christopher Faylor  <cgf@redhat.com>
 
 	* doc/install.texi: Add msvc rebuild caveat.
