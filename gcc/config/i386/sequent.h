@@ -1,5 +1,5 @@
 /* Definitions for Sequent Intel 386.
-   Copyright (C) 1988, 1994, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -103,7 +103,7 @@ Boston, MA 02111-1307, USA.  */
    fprintf (FILE, "\tmovl $.LP%d,%%eax\n\tcall mcount\n", (LABELNO));
 
 /* Assembler pseudo-op for shared data segment. */
-#define SHARED_SECTION_ASM_OP ".shdata"
+#define SHARED_SECTION_ASM_OP "\t.shdata"
 
 /* A C statement or statements which output an assembler instruction
    opcode to the stdio stream STREAM.  The macro-operand PTR is a

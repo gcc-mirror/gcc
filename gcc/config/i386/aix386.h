@@ -1,6 +1,6 @@
 /* Definitions for IBM PS2 running AIX/386 with gas.
    From: Minh Tran-Le <TRANLE@intellicorp.com>
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -53,7 +53,7 @@ Boston, MA 02111-1307, USA.  */
    constructors.  */
 
 #undef INIT_SECTION_ASM_OP
-#define INIT_SECTION_ASM_OP     ".section .init,\"x\""
+#define INIT_SECTION_ASM_OP     "\t.section .init,\"x\""
 
 #define CTOR_LIST_BEGIN				\
   asm (INIT_SECTION_ASM_OP);			\

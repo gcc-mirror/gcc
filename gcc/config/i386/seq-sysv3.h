@@ -28,7 +28,7 @@
 
 /* Assembler pseudo-op for initialized shared variables (.shdata). */
 #undef  SHARED_SECTION_ASM_OP
-#define SHARED_SECTION_ASM_OP ".section .shdata, \"ws\""
+#define SHARED_SECTION_ASM_OP "\t.section .shdata, \"ws\""
 
 /* Assembler pseudo-op for uninitialized shared global variables (.shbss). */
 #undef  ASM_OUTPUT_SHARED_COMMON
@@ -39,7 +39,7 @@
 
 /* Assembler pseudo-op for uninitialized shared local variables (.shbss). */
 #undef  SHARED_BSS_SECTION_ASM_OP
-#define SHARED_BSS_SECTION_ASM_OP ".section .shbss, \"bs\""
+#define SHARED_BSS_SECTION_ASM_OP "\t.section .shbss, \"bs\""
 
 /* seq2-sysv3.h used to define HAVE_ATEXIT, so I assume ptx1 needs this...  */
 #define NEED_ATEXIT

@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Intel 80386 using ELF
-   Copyright (C) 1988, 1991, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1991, 1995, 2000 Free Software Foundation, Inc.
 
    Derived from sysv4.h written by Ron Guilmette (rfg@netcom.com).
 
@@ -206,7 +206,7 @@ do {									\
    `-fno-common' is passed, otherwise `ASM_OUTPUT_COMMON' will be
    used.  */
 #undef BSS_SECTION_ASM_OP
-#define BSS_SECTION_ASM_OP ".section\t.bss"
+#define BSS_SECTION_ASM_OP "\t.section\t.bss"
 
 /* Like `ASM_OUTPUT_BSS' except takes the required alignment as a
    separate, explicit argument.  If you define this macro, it is used

@@ -1,5 +1,5 @@
 /* Definitions for Unix assembler syntax for the Intel 80386.
-   Copyright (C) 1988, 1994, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -48,15 +48,15 @@ Boston, MA 02111-1307, USA.  */
 
 /* Output before read-only data.  */
 
-#define TEXT_SECTION_ASM_OP ".text"
+#define TEXT_SECTION_ASM_OP "\t.text"
 
 /* Output before writable (initialized) data.  */
 
-#define DATA_SECTION_ASM_OP ".data"
+#define DATA_SECTION_ASM_OP "\t.data"
 
 /* Output before writable (uninitialized) data.  */
 
-#define BSS_SECTION_ASM_OP ".bss"
+#define BSS_SECTION_ASM_OP "\.bss"
 
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
