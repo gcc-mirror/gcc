@@ -2756,9 +2756,11 @@ do { ip = &instack[indepth];		\
 
       /* Handle any pending identifier;
 	 but the L in L'...' or L"..." is not an identifier.  */
-      if (ident_length
-	  && ! (ident_length == 1 && hash == HASHSTEP (0, 'L')))
-	goto specialchar;
+      if (ident_length) {
+	if (! (ident_length == 1 && hash == HASHSTEP (0, 'L')))
+	  goto specialchar;
+	ident_length = hash = 0;
+      }
 
       start_line = ip->lineno;
 
