@@ -1,3 +1,285 @@
+2004-08-09  Thomas Quinot  <quinot@act-europe.fr>
+
+	* g-socket.adb (Abort_Selector): Initialize Buf to prevent valgrind
+	from complaining on potential uninitialized reference.
+	Change calls to GNAT.Sockets.Thin.Is_Socket_In_Set to account for
+	new specification and test explicitly for non-zero return value.
+
+	* g-socthi.ads (Is_Socket_In_Set): Declare imported function as
+	returning C.int, to avoid using a derived boolean type.
+
+	* exp_ch5.adb (Make_Tag_Ctrl_Assignments): Use
+	Duplicate_Subexpr_No_Checks in preference to direct use of
+	Remove_Side_Effects and New_Copy_Tree.
+	Clear Comes_From_Source on prefix of 'Size attribute reference.
+
+	* g-socthi.adb, g-socthi-vms.adb, g-socthi-mingw.adb,
+	g-socthi-vxworks.adb: Change calls to
+	GNAT.Sockets.Thin.Is_Socket_In_Set to account for new specification
+	and test explicitly for non-zero return value.
+
+	* g-socthi-vms.ads, g-socthi-mingw.ads, g-socthi-vxworks.ads: 
+	(Is_Socket_In_Set): Declare imported function as returning C.int, to
+	avoid using a derived boolean type.
+
+2004-08-09  Albert Lee  <lee@gnat.com>
+
+	* system-irix-n32.ads: Refine tasking priority constants for IRIX.
+
+2004-08-09  Pascal Obry  <obry@gnat.com>
+
+	* gnat_ugn.texi: Document new way to build DLLs on Windows using
+	GCC's -shared option.
+
+	* mlib-tgt-mingw.adb (Build_Dynamic_Library): Pass GCC's options into
+	Options_2 parameter (options put after object files).
+
+2004-08-09  Olivier Hainque  <hainque@act-europe.fr>
+
+	* decl.c (gnat_to_gnu_entity) <E_Array_Subtype>: Adjust condition to
+	ignore overflows on low and high bounds of an index to also account for
+	differences in signedness between sizetype and gnu_index_subtype.
+	These are as legitimate as the ones caused by a lower TYPE_PRECISION
+	on sizetype.
+
+2004-08-09  Robert Dewar  <dewar@gnat.com>
+
+	* s-solita.ads, s-solita.adb: Minor reformatting
+
+	* gnat_rm.texi: Add documentation for pragma Profile (Restricted)
+	Move pragma Restricted_Run_Time, No_Run_Time, Ravenscar to new
+	obsolescent section
+	Add note that No_Implicit_Conditionals does not suppress
+	run time constraint checks.
+
+	* vms_conv.ads: Minor reformatting
+
+	* s-secsta.adb: Use SS_Ptr instead of Mark_Id as stack pointer (cleanup
+	and necessary for following change).
+	(Mark): Return new format Mark_Id containing sec stack address
+	(Release): Use sec stack address from Mark_Id avoiding Self call
+
+	* s-secsta.ads: Define SS_Ptr to be used instead of Mark_Id as stack
+	pointer (cleanup and necessary for following change).
+	Define Mark_Id as record containing address of secondary stack, that way
+	Release does not need to find the stack again, decreasing the number of
+	calls to Self and improving efficiency.
+
+	* sem_util.ads: Add a ??? comment for Is_Local_Variable_Reference
+
+	* sem_ch5.adb (Analyze_Case_Statement): Add circuitry to track value of
+	case variable into the individual case branches when possible.
+
+	* sem_ch11.adb: Minor reformatting
+
+	* prj.ads: Correct spelling of suffixs
+
+	* prj-nmsc.adb: Minor reformatting
+	Correct spelling suffixs throughout (also in identifiers)
+
+	* freeze.adb: Minor spelling correction
+
+	* exp_ch2.adb: Cleanups to handling of Current_Value
+	(no functional effect).
+
+	* bld.adb: Correct spelling of suffixs
+
+	* einfo.adb (Enclosing_Dynamic_Scope): Defend against junk argument
+
+2004-08-09  Ed Schonberg  <schonberg@gnat.com>
+
+	PR ada/15408
+
+	* sem_ch7.adb (Install_Private_Declarations): In the body of the
+	package or of a child, private entities are both immediately_visible
+	and not hidden.
+
+2004-08-09  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_eval.adb (Eval_Integer_Literal): If the context is Any_Integer,
+	there are no range checks on the value of the literal.
+
+	* exp_ch7.adb (Insert_Actions_In_Scope_Around): If the node being
+	wrapped is the triggering alternative of an asynchronous select, action
+	statements mustbe inserted before the select itself.
+
+	* sem_attr.adb (Analyze_Attribute, case 'Size): Handle properly the
+	case where the prefix is a protected function call.
+	(Resolve_Attribute, case 'Access): The attribute reference on a
+	subprogram is legal in a generic body if the subprogram is declared
+	elsewhere.
+
+2004-08-09  Vincent Celier  <celier@gnat.com>
+
+	* makegpr.adb (Build_Library): Link with g++ if C++ is one of the
+	languages, otherwise building the library may fail with unresolved
+	symbols.
+	(Compile_Sources): Do not build libraries if -c switch is used
+
+	* gnatlink.adb (Process_Args): New switches -M and -Mmap
+	(Write_Usage): If map file creation is supported, output new switches
+	-M and -Mmap.
+	(Gnatlink): When -M is specified, add the necessary switch(es) to the
+	gcc call, when supported.
+
+	* Makefile.in: Added indepsw.o to the object list for gnatlink
+	Specified the AIX, GNU/Linux and Windows versions of indepsw.adb
+
+	* indepsw-aix.adb, indepsw-linux.adb, indepsw-mingw.adb,
+	indepsw.adb, indepsw.ads: New files.
+
+2004-08-09  Bernard Banner  <banner@gnat.com>
+
+	* system-vxworks-x86.ads, s-vxwork-x86.ads: New files.
+
+	* Makefile.in: add section for vxworks x86
+
+2004-08-09  Hristian Kirtchev  <kirtchev@gnat.com>
+
+	* exp_ch3.adb (Build_Init_Statements): Add extra condition to deal with
+	per-object constrained components where the discriminant is of an
+	Access type.
+	(Build_Record_Init_Proc): Add condition to prevent the inheritance of
+	the parent initialization procedure for derived Unchecked_Unions.
+	Instead, derived Unchecked_Unions build their own initialization
+	procedure.
+	(Build_Variant_Record_Equality): Implement Unchecked_Union equality.
+	Check the body of the subprogram for details.
+	(Freeze_Record_Type): Prevent the inheritance of discriminant checking
+	functions for derived Unchecked_Union types by introducing a condition.
+	Allow the creation of TSS equality functions for Unchecked_Unions.
+	(Make_Eq_Case): Rename formal parameter Node to E in function signature.
+	Add formal parameter Discr to function signature. Discr is used to
+	control the generated case statement for Unchecked_Union types.
+	(Make_Eq_If): Rename formal parameter Node to E in function signature.
+
+	* exp_ch4.adb (Build_Equality_Call): Implement equality calls for
+	Unchecked_Unions.
+	Check the body of the subprogram for details.
+	(Expand_Composite_Equality): Augment composite type equality to include
+	correct handling of Unchecked_Union components.
+	(Expand_N_In): Add condition to detect illegal membership tests when the
+	subtype mark is a constrained Unchecked_Union and the expression lacks
+	inferable discriminants, and build a Raise_Program_Error node.
+	(Expand_N_Op_Eq): Add function Has_Unconstrained_UU_Component. Used
+	to detect types that contain components of unconstrained Unchecked_Union
+	subtype. Add condition to detect equality between types that have an
+	unconstrained Unchecked_Union component, and build a Raise_Program_Error
+	node. Add condition to detect equality between Unchecked_Union types
+	that lack inferable discriminants, and build a Raise_Program_Error node.
+	Otherwise build a TSS equality function call.
+	(Expand_N_Type_Conversion): Add condition to detect illegal conversions
+	from a derived Unchecked_Union to an unconstrained non-Unchecked_Union
+	with the operand lacking inferable discriminants, and build a Raise_
+	Program_Error node.
+	(Expand_Record_Equality): Remove guard that prevents Unchecked_Union
+	composite equality.
+	(Has_Inferable_Discriminants): Implement new predicate for objects and
+	expressions of Unchecked_Union type. Check the body of subprogram for
+	details.
+	(Has_Unconstrained_UU_Components): Add function
+	Component_Is_Unconstrained_UU. It is used to detect whether a single
+	component is of an unconstrained Unchecked_Union subtype. Add function
+	Variant_Is_Unconstrained_UU. It is used to detect whether a single
+	component inside a variant is of an unconstrained Unchecked_Union type.
+
+	* exp_ch5.adb (Expand_Assign_Record): Add condition to copy the
+	inferred discriminant values. Add condition to generate a case
+	statement with an inferred discriminant as the switch.
+	(Make_Component_List_Assign): Introduce a Boolean flag that determines
+	the behaviour of the subprogram in the presence of an Unchecked_Union.
+	Add condition to trigger the usage of the inferred discriminant value
+	as the generated case statement switch.
+	(Make_Field_Assign): Introduce a Boolean flag that determines the
+	behaviour of the subprogram in the presence of an Unchecked_Union. Add
+	condition to trigger the usage of the inferred discriminant value as
+	the right-hand side of the generated assignment.
+
+	* exp_ch6.adb (Expand_Call): Add condition to skip extra actual
+	parameter generation when dealing with Unchecked_Unions.
+
+	* checks.adb (Apply_Discriminant_Check): Do not apply discriminant
+	checks for Unchecked_Unions.
+
+	* einfo.ads: Update comment on usage of flag Has_Per_Object_Constraint
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Produce
+	Raise_Program_Error nodes for the execution of Read and Write
+	attributes of Unchecked_Union types and the execution of Input and
+	Output attributes of Unchecked_Union types that lack default
+	discriminant values.
+
+	* sem_prag.adb (Analyze_Pragma): Remodel the analysis of pragma
+	Unchecked_Union. Add procedure Check_Component. It is used to inspect
+	per-object constrained components of Unchecked_Unions for being
+	Unchecked_Unions themselves. Add procedure Check_Variant. It is used to
+	check individual components withing a variant.
+
+	* sem_res.adb (Resolve_Comparison_Op): Remove guard that prevents
+	comparison of Unchecked_Unions.
+	(Resolve_Equality_OP): Remove guard that prevents equality between
+	Unchecked_Unions.
+
+	* sem_util.adb (Build_Component_Subtype): Add guard to prevent creation
+	of component subtypes for Unchecked_Union components.
+	(Get_Actual_Subtype): Add condition that returs the Unchecked_Union type
+	since it is the actual subtype.
+
+	* sem_ch12.adb (Instantiate_Type): Add condition to detect the correct
+	pass of Unchecked_Union subtypes as generic actuals to formal types
+	that lack known_discriminant_parts or that are derived Unchecked_Union
+	types, and do nothing. In any other case, produce an error message.
+
+	* sem_ch3.adb (Analyze_Component_Declaration): Add function
+	Contains_POC. It determines whether a constraint uses the discriminant
+	of an enclosing record type.
+	Add condition to detect per-object constrained component and set the
+	appropriate flag.
+	(Derived_Type_Declaration): Remove guard that prevents derivation from
+	Unchecked_Union types.
+	(Process_Subtype): Remove quard that prevents the creation of Unchecked_
+	Union subtypes.
+
+	* sem_ch4.adb (Analyze_Selected_Component): Correct the detection of
+	references to Unchecked_Union discriminants.
+
+	* sem_ch6.adb (Create_Extra_Formals): Add condition to skip extra
+	formal generation when dealing with Unchecked_Unions.
+	(Set_Actual_Subtypes): Add condition to prevent generation of actual
+	subtypes for Unchecked_Unions.
+
+	* sem_ch7.adb (Analyze_Package_Specification): Add procedure
+	Inspect_Unchecked_Union_Completion. It is used to detect incorrect
+	completions of discriminated partial views by Unchecked_Unions and
+	produce an error message.
+
+2004-08-09  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* trans.c (struct stmt_group): New field, GLOBAL.
+	(global_stmt_group, gnu_elab_proc_decl, build_unit_elab): Deleted.
+	(struct elab_info): New struct.
+	(elab_info_list, gnu_elab_proc_stack): New variables.
+	(Compilation_Unit_to_gnu): New procedure.
+	(gigi): Call it and also handle elaboration procs we've saved.
+	(gnat_init_stmt_group): Don't set global_stmt_group; instead initialize
+	global field from parent.
+	(gnat_to_gnu): Get decl from gnu_elab_proc_stack.
+	(gnat_to_gnu, case N_Compilation_Unit): Call Compilation_Unit_to_gnu.
+	(start_stmt_group): Initialize global field from parent.
+	(add_decl_expr): Set to global for current statement group.
+	(gnat_gimplify_expr, case NULL_EXPR): Add operand 0 to pre list, not
+	post.
+
+	* utils.c (global_bindings_p): True when no current_function_decl; no
+	longer check current_binding_level.
+
+2004-08-09  Ben Brosgol  <brosgol@gnat.com>
+
+	* xgnatugn.adb: Added logic to deal with @ifset/@ifclear for edition
+	choice.
+
+	* gnat_rm.texi, gnat_ugn.texi: Added edition conditionalization logic.
+
 2004-08-06  Andreas Schwab  <schwab@suse.de>
 
 	* utils.c (gnat_define_builtin): Remove second parameter of

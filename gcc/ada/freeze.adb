@@ -4275,7 +4275,7 @@ package body Freeze is
       Ensure_Type_Is_SA (Etype (E));
 
       --  Reset True_Constant flag, since something strange is going on
-      --  with the scoping here, and our simple value traceing may not
+      --  with the scoping here, and our simple value tracing may not
       --  be sufficient for this indication to be reliable. We kill the
       --  Constant_Value indication for the same reason.
 

@@ -479,7 +479,6 @@ package body Sem_Ch11 is
             Rewrite (N, Make_Null_Statement (Sloc (N)));
          end if;
       end if;
-
    end Analyze_Raise_xxx_Error;
 
    -----------------------------

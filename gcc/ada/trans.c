@@ -82,16 +82,29 @@ bool type_annotate_only;
 
 struct stmt_group GTY((chain_next ("%h.previous"))) {
   struct stmt_group *previous;	/* Previous code group.  */
+  struct stmt_group *global;	/* Global code group from the level.  */
   tree stmt_list;		/* List of statements for this code group. */
   tree block;			/* BLOCK for this code group, if any. */
   tree cleanups;		/* Cleanups for this code group, if any.  */
 };
 
 static GTY(()) struct stmt_group *current_stmt_group;
-static struct stmt_group *global_stmt_group;
 
 /* List of unused struct stmt_group nodes.  */
 static GTY((deletable)) struct stmt_group *stmt_group_free_list;
+
+/* A structure used to record information on elaboration procedures
+   we've made and need to process.
+
+   ??? gnat_node should be Node_Id, but gengtype gets confused.  */
+
+struct elab_info GTY((chain_next ("%h.next"))) {
+  struct elab_info *next;	/* Pointer to next in chain. */
+  tree elab_proc;		/* Elaboration procedure.  */
+  int gnat_node;		/* The N_Compilation_Unit.  */
+};
+
+static GTY(()) struct elab_info *elab_info_list;
 
 /* Free list of TREE_LIST nodes used for stacks.  */
 static GTY((deletable)) tree gnu_stack_free_list;
@@ -101,6 +114,10 @@ static GTY((deletable)) tree gnu_stack_free_list;
    the raised exception.  Nonzero means we are in an exception
    handler.  Not used in the zero-cost case.  */
 static GTY(()) tree gnu_except_ptr_stack;
+
+/* List of TREE_LIST nodes used to store the current elaboration procedure
+   decl.  TREE_VALUE is the decl.  */
+static GTY(()) tree gnu_elab_proc_stack;
 
 /* Variable that stores a list of labels to be used as a goto target instead of
    a return in some functions.  See processing for N_Subprogram_Body.  */
@@ -114,15 +131,13 @@ static GTY(()) tree gnu_loop_label_stack;
    TREE_VALUE of each entry is the label at the end of the switch.  */
 static GTY(()) tree gnu_switch_label_stack;
 
-/* The FUNCTION_DECL for the elaboration procedure for the main unit.  */
-static GTY(()) tree gnu_elab_proc_decl;
-
 /* Map GNAT tree codes to GCC tree codes for simple expressions.  */
 static enum tree_code gnu_codes[Number_Node_Kinds];
 
 /* Current node being treated, in case abort called.  */
 Node_Id error_gnat_node;
 
+static void Compilation_Unit_to_gnu (Node_Id);
 static void record_code_position (Node_Id);
 static void insert_code_for (Node_Id);
 static void start_stmt_group (void);
@@ -149,7 +164,6 @@ static tree extract_values (tree, tree);
 static tree pos_to_constructor (Node_Id, tree, Entity_Id);
 static tree maybe_implicit_deref (tree);
 static tree gnat_stabilize_reference_1 (tree, bool);
-static bool build_unit_elab (void);
 static void annotate_with_node (tree, Node_Id);
 
 /* Constants for +0.5 and -0.5 for float-to-integer rounding.  */
@@ -169,10 +183,9 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
       Entity_Id standard_long_long_float, Entity_Id standard_exception_type,
       Int gigi_operating_mode)
 {
-  bool body_p;
-  Entity_Id gnat_unit_entity;
   tree gnu_standard_long_long_float;
   tree gnu_standard_exception_type;
+  struct elab_info *info;
 
   max_gnat_nodes = max_gnat_node;
   number_names = number_name;
@@ -226,53 +239,42 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
   if (Exception_Mechanism == GCC_ZCX)
     gnat_init_gcc_eh ();
 
-  /* Make the decl for the elaboration procedure.  */
-  body_p = (Defining_Entity (Unit (gnat_root)),
-	    Nkind (Unit (gnat_root)) == N_Package_Body
-	    || Nkind (Unit (gnat_root)) == N_Subprogram_Body);
-  gnat_unit_entity = Defining_Entity (Unit (gnat_root));
+  if (Nkind (gnat_root) != N_Compilation_Unit)
+    abort ();
 
-  gnu_elab_proc_decl
-    = create_subprog_decl
-      (create_concat_name (gnat_unit_entity,
-			   body_p ? "elabb" : "elabs"),
-       NULL_TREE, void_ftype, NULL_TREE, false, true, false, NULL,
-       gnat_unit_entity);
+  Compilation_Unit_to_gnu (gnat_root);
 
-  DECL_ELABORATION_PROC_P (gnu_elab_proc_decl) = 1;
-  allocate_struct_function (gnu_elab_proc_decl);
-  Sloc_to_locus (Sloc (gnat_unit_entity), &cfun->function_end_locus);
-  cfun = 0;
-
-      /* For a body, first process the spec if there is one. */
-  if (Nkind (Unit (gnat_root)) == N_Package_Body
-      || (Nkind (Unit (gnat_root)) == N_Subprogram_Body
-	      && !Acts_As_Spec (gnat_root)))
-    add_stmt (gnat_to_gnu (Library_Unit (gnat_root)));
-
-  process_inlined_subprograms (gnat_root);
-
-  if (type_annotate_only)
+  /* Now see if we have any elaboration procedures to deal with. */
+  for (info = elab_info_list; info; info = info->next)
     {
-      elaborate_all_entities (gnat_root);
+      tree gnu_body = DECL_SAVED_TREE (info->elab_proc);
+      tree gnu_stmts;
 
-	  if (Nkind (Unit (gnat_root)) == N_Subprogram_Declaration
-	      || Nkind (Unit (gnat_root)) == N_Generic_Package_Declaration
-	      || Nkind (Unit (gnat_root)) == N_Generic_Subprogram_Declaration)
-	    return;
+      /* Mark everything we have as not visited.  */
+      walk_tree_without_duplicates (&gnu_body, mark_unvisited, NULL);
+
+      /* Set the current function to be the elaboration procedure and gimplify
+	 what we have.  */
+      current_function_decl = info->elab_proc;
+      gimplify_body (&gnu_body, info->elab_proc);
+
+      /* We should have a BIND_EXPR, but it may or may not have any statements
+	 in it.  If it doesn't have any, we have nothing to do.  */
+      gnu_stmts = gnu_body;
+      if (TREE_CODE (gnu_stmts) == BIND_EXPR)
+	gnu_stmts = BIND_EXPR_BODY (gnu_stmts);
+
+      /* If there are no statements, there is no elaboration code.  */
+      if (!gnu_stmts || !STATEMENT_LIST_HEAD (gnu_stmts))
+	Set_Has_No_Elaboration_Code (info->gnat_node, 1);
+      else
+	{
+	  /* Otherwise, compile the function.  Note that we'll be gimplifying
+	     it twice, but that's fine for the nodes we use.  */
+	  begin_subprog_body (info->elab_proc);
+	  end_subprog_body (gnu_body);
+	}
     }
-
-  process_decls (Declarations (Aux_Decls_Node (gnat_root)), Empty, Empty,
-		 true, true);
-  add_stmt (gnat_to_gnu (Unit (gnat_root)));
-
-  /* Process any pragmas and actions following the unit.  */
-  add_stmt_list (Pragmas_After (Aux_Decls_Node (gnat_root)));
-  add_stmt_list (Actions (Aux_Decls_Node (gnat_root)));
-
-  /* Generate elaboration code for this unit, if necessary, and say whether
-     we did or not.  */
-  Set_Has_No_Elaboration_Code (gnat_root, build_unit_elab ());
 }
 
 /* Perform initializations for this module.  */
@@ -284,7 +286,7 @@ gnat_init_stmt_group ()
   init_code_table ();
   start_stmt_group ();
 
-  global_stmt_group = current_stmt_group;
+  current_stmt_group->global = current_stmt_group;
 
   /* Enable GNAT stack checking method if needed */
   if (!Stack_Check_Probes_On_Target)
@@ -2331,6 +2333,73 @@ Exception_Handler_to_gnu_zcx (Node_Id gnat_node)
 		end_stmt_group ());
 }
 
+/* Subroutine of gnat_to_gnu to generate code for an N_Compilation unit.  */
+
+static void
+Compilation_Unit_to_gnu (Node_Id gnat_node)
+{
+  /* Make the decl for the elaboration procedure.  */
+  bool body_p = (Defining_Entity (Unit (gnat_node)),
+	    Nkind (Unit (gnat_node)) == N_Package_Body
+	    || Nkind (Unit (gnat_node)) == N_Subprogram_Body);
+  Entity_Id gnat_unit_entity = Defining_Entity (Unit (gnat_node));
+  tree gnu_elab_proc_decl
+    = create_subprog_decl
+      (create_concat_name (gnat_unit_entity,
+			   body_p ? "elabb" : "elabs"),
+       NULL_TREE, void_ftype, NULL_TREE, false, true, false, NULL,
+       gnat_unit_entity);
+  struct elab_info *info;
+
+  push_stack (&gnu_elab_proc_stack, NULL_TREE, gnu_elab_proc_decl);
+
+  DECL_ELABORATION_PROC_P (gnu_elab_proc_decl) = 1;
+  allocate_struct_function (gnu_elab_proc_decl);
+  Sloc_to_locus (Sloc (gnat_unit_entity), &cfun->function_end_locus);
+  cfun = 0;
+
+      /* For a body, first process the spec if there is one. */
+  if (Nkind (Unit (gnat_node)) == N_Package_Body
+      || (Nkind (Unit (gnat_node)) == N_Subprogram_Body
+	      && !Acts_As_Spec (gnat_node)))
+    add_stmt (gnat_to_gnu (Library_Unit (gnat_node)));
+
+  process_inlined_subprograms (gnat_node);
+
+  if (type_annotate_only)
+    {
+      elaborate_all_entities (gnat_node);
+
+      if (Nkind (Unit (gnat_node)) == N_Subprogram_Declaration
+	  || Nkind (Unit (gnat_node)) == N_Generic_Package_Declaration
+	  || Nkind (Unit (gnat_node)) == N_Generic_Subprogram_Declaration)
+	return;
+    }
+
+  process_decls (Declarations (Aux_Decls_Node (gnat_node)), Empty, Empty,
+		 true, true);
+  add_stmt (gnat_to_gnu (Unit (gnat_node)));
+
+  /* Process any pragmas and actions following the unit.  */
+  add_stmt_list (Pragmas_After (Aux_Decls_Node (gnat_node)));
+  add_stmt_list (Actions (Aux_Decls_Node (gnat_node)));
+
+  /* Save away what we've made so far and record this potential elaboration
+     procedure.  */
+  info = (struct elab_info *) ggc_alloc (sizeof (struct elab_info));
+  set_current_block_context (gnu_elab_proc_decl);
+  gnat_poplevel ();
+  DECL_SAVED_TREE (gnu_elab_proc_decl) = end_stmt_group ();
+  info->next = elab_info_list;
+  info->elab_proc = gnu_elab_proc_decl;
+  info->gnat_node = gnat_node;
+  elab_info_list = info;
+
+  /* Generate elaboration code for this unit, if necessary, and say whether
+     we did or not.  */
+  pop_stack (&gnu_elab_proc_stack);
+}
+
 /* This function is the driver of the GNAT to GCC tree transformation
    process.  It is the entry point of the tree transformer.  GNAT_NODE is the
    root of some GNAT tree.  Return the root of the corresponding GCC tree.
@@ -2382,7 +2451,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	       || Nkind (gnat_node) == N_Raise_Program_Error)
 	      && (Ekind (Etype (gnat_node)) == E_Void))))
     {
-      current_function_decl = gnu_elab_proc_decl;
+      current_function_decl = TREE_VALUE (gnu_elab_proc_stack);
       start_stmt_group ();
       gnat_pushlevel ();
       went_into_elab_proc = true;
@@ -3587,24 +3656,11 @@ gnat_to_gnu (Node_Id gnat_node)
       /* This is not called for the main unit, which is handled in function
 	 gigi above.  */
       start_stmt_group ();
+      current_stmt_group->global = current_stmt_group;
+      gnat_pushlevel ();
 
-      /* For a body, first process the spec if there is one. */
-      if (Nkind (Unit (gnat_node)) == N_Package_Body
-	  || (Nkind (Unit (gnat_node)) == N_Subprogram_Body
-	      && !Acts_As_Spec (gnat_node)))
-	add_stmt (gnat_to_gnu (Library_Unit (gnat_node)));
-
-      process_inlined_subprograms (gnat_node);
-      process_decls (Declarations (Aux_Decls_Node (gnat_node)),
-		     Empty, Empty, true, true);
-      add_stmt (gnat_to_gnu (Unit (gnat_node)));
-
-      /* Process any pragmas and actions following the unit.  */
-      add_stmt_list (Pragmas_After (Aux_Decls_Node (gnat_node)));
-      add_stmt_list (Actions (Aux_Decls_Node (gnat_node)));
-
-      Set_Has_No_Elaboration_Code (gnat_node, 1);
-      gnu_result = end_stmt_group ();
+      Compilation_Unit_to_gnu (gnat_node);
+      gnu_result = alloc_stmt_list ();
       break;
 
     case N_Subprogram_Body_Stub:
@@ -4057,6 +4113,7 @@ start_stmt_group ()
 
   group->previous = current_stmt_group;
   group->stmt_list = group->block = group->cleanups = NULL_TREE;
+  group->global = current_stmt_group ? current_stmt_group->global : NULL;
   current_stmt_group = group;
 }
 
@@ -4117,7 +4174,7 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
     return;
 
   if (global_bindings_p ())
-    current_stmt_group = global_stmt_group;
+    current_stmt_group = current_stmt_group->global;
 
   add_stmt_with_node (build (DECL_EXPR, void_type_node, gnu_decl),
 		      gnat_entity);
@@ -4339,7 +4396,7 @@ gnat_expand_stmt (tree gnu_stmt)
 /* Generate GIMPLE in place for the expression at *EXPR_P.  */
 
 int
-gnat_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED, tree *post_p)
+gnat_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
 {
   tree expr = *expr_p;
 
@@ -4362,7 +4419,7 @@ gnat_gimplify_expr (tree *expr_p, tree *pre_p ATTRIBUTE_UNUSED, tree *post_p)
 	  TREE_NO_WARNING (*expr_p) = 1;
 	}
 
-      append_to_statement_list (TREE_OPERAND (expr, 0), post_p);
+      append_to_statement_list (TREE_OPERAND (expr, 0), pre_p);
       return GS_OK;
 
     case UNCONSTRAINED_ARRAY_REF:
@@ -5612,45 +5669,6 @@ gnat_stabilize_reference_1 (tree e, bool force)
   TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (e);
   TREE_SIDE_EFFECTS (result) |= TREE_SIDE_EFFECTS (e);
   return result;
-}
-
-/* Take care of building the elaboration procedure for the main unit.
-
-   Return true if we didn't need an elaboration function, false otherwise.  */
-
-static bool
-build_unit_elab ()
-{
-  tree body, stmts;
-
-  /* Mark everything we have as not visited.  */
-  walk_tree_without_duplicates (&current_stmt_group->stmt_list,
-				mark_unvisited, NULL);
-
-  /* Set the current function to be the elaboration procedure, pop our
-     binding level, end our statement group, and gimplify what we have.  */
-  set_current_block_context (gnu_elab_proc_decl);
-  gnat_poplevel ();
-  body = end_stmt_group ();
-  current_function_decl = gnu_elab_proc_decl;
-  gimplify_body (&body, gnu_elab_proc_decl);
-
-  /* We should have a BIND_EXPR, but it may or may not have any statements
-     in it.  If it doesn't have any, we have nothing to do.  */
-  stmts = body;
-  if (TREE_CODE (stmts) == BIND_EXPR)
-    stmts = BIND_EXPR_BODY (stmts);
-
-  /* If there are no statements, we have nothing to do.  */
-  if (!stmts || !STATEMENT_LIST_HEAD (stmts))
-    return true;
-
-  /* Otherwise, compile the function.  Note that we'll be gimplifying
-     it twice, but that's fine for the nodes we use.  */
-  begin_subprog_body (gnu_elab_proc_decl);
-  end_subprog_body (body);
-
-  return false;
 }
 
 extern char *__gnat_to_canonical_file_spec (char *);

@@ -27,6 +27,7 @@
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
+with Elists;   use Elists;
 with Exp_Ch2;  use Exp_Ch2;
 with Exp_Ch9;  use Exp_Ch9;
 with Exp_Imgv; use Exp_Imgv;
@@ -1883,6 +1884,21 @@ package body Exp_Attr is
                pragma Assert
                  (Is_Record_Type (U_Type) or else Is_Protected_Type (U_Type));
 
+               --  Ada 2005 (AI-216): Program_Error is raised when executing
+               --  the default implementation of the Input attribute of an
+               --  unchecked union type if the type lacks default discriminant
+               --  values.
+
+               if Is_Unchecked_Union (Base_Type (U_Type))
+                 and then not Present (Discriminant_Constraint (U_Type))
+               then
+                  Insert_Action (N,
+                    Make_Raise_Program_Error (Loc,
+                      Reason => PE_Unchecked_Union_Restriction));
+
+                  return;
+               end if;
+
                Build_Record_Or_Elementary_Input_Function
                  (Loc, Base_Type (U_Type), Decl, Fname);
                Insert_Action (N, Decl);
@@ -2393,6 +2409,21 @@ package body Exp_Attr is
                pragma Assert
                  (Is_Record_Type (U_Type) or else Is_Protected_Type (U_Type));
 
+               --  Ada 2005 (AI-216): Program_Error is raised when executing
+               --  the default implementation of the Output attribute of an
+               --  unchecked union type if the type lacks default discriminant
+               --  values.
+
+               if Is_Unchecked_Union (Base_Type (U_Type))
+                 and then not Present (Discriminant_Constraint (U_Type))
+               then
+                  Insert_Action (N,
+                    Make_Raise_Program_Error (Loc,
+                      Reason => PE_Unchecked_Union_Restriction));
+
+                  return;
+               end if;
+
                Build_Record_Or_Elementary_Output_Procedure
                  (Loc, Base_Type (U_Type), Decl, Pname);
                Insert_Action (N, Decl);
@@ -2779,13 +2810,22 @@ package body Exp_Attr is
                pragma Assert
                  (Is_Record_Type (U_Type) or else Is_Protected_Type (U_Type));
 
+               --  Ada 2005 (AI-216): Program_Error is raised when executing
+               --  the default implementation of the Read attribute of an
+               --  Unchecked_Union type.
+
+               if Is_Unchecked_Union (Base_Type (U_Type)) then
+                  Insert_Action (N,
+                    Make_Raise_Program_Error (Loc,
+                      Reason => PE_Unchecked_Union_Restriction));
+               end if;
+
                if Has_Discriminants (U_Type)
                  and then Present
                    (Discriminant_Default_Value (First_Discriminant (U_Type)))
                then
                   Build_Mutable_Record_Read_Procedure
                     (Loc, Base_Type (U_Type), Decl, Pname);
-
                else
                   Build_Record_Read_Procedure
                     (Loc, Base_Type (U_Type), Decl, Pname);
@@ -3960,13 +4000,22 @@ package body Exp_Attr is
                pragma Assert
                  (Is_Record_Type (U_Type) or else Is_Protected_Type (U_Type));
 
+               --  Ada 2005 (AI-216): Program_Error is raised when executing
+               --  the default implementation of the Write attribute of an
+               --  Unchecked_Union type.
+
+               if Is_Unchecked_Union (Base_Type (U_Type)) then
+                  Insert_Action (N,
+                    Make_Raise_Program_Error (Loc,
+                      Reason => PE_Unchecked_Union_Restriction));
+               end if;
+
                if Has_Discriminants (U_Type)
                  and then Present
                    (Discriminant_Default_Value (First_Discriminant (U_Type)))
                then
                   Build_Mutable_Record_Write_Procedure
                     (Loc, Base_Type (U_Type), Decl, Pname);
-
                else
                   Build_Record_Write_Procedure
                     (Loc, Base_Type (U_Type), Decl, Pname);

@@ -3306,10 +3306,23 @@ package body Sem_Attr is
       when Attribute_Size | Attribute_VADS_Size =>
          Check_E0;
 
-         if Is_Object_Reference (P)
-           or else (Is_Entity_Name (P)
-                     and then Ekind (Entity (P)) = E_Function)
+         --  If prefix is parameterless function call, rewrite and resolve
+         --  as such.
+
+         if Is_Entity_Name (P)
+           and then Ekind (Entity (P)) = E_Function
          then
+            Resolve (P);
+
+         --  Similar processing for a protected function call
+
+         elsif Nkind (P) = N_Selected_Component
+           and then Ekind (Entity (Selector_Name (P))) = E_Function
+         then
+            Resolve (P);
+         end if;
+
+         if Is_Object_Reference (P) then
             Check_Object_Reference (P);
 
          elsif Is_Entity_Name (P)
@@ -6566,15 +6579,16 @@ package body Sem_Attr is
                   --  outside a generic body when the subprogram is declared
                   --  within that generic body.
 
-                  elsif Enclosing_Generic_Body (Entity (P))
-                    /= Enclosing_Generic_Body (Btyp)
+                  elsif Present (Enclosing_Generic_Body (Entity (P)))
+                    and then Enclosing_Generic_Body (Entity (P)) /=
+                             Enclosing_Generic_Body (Btyp)
                   then
                      Error_Msg_N
                        ("access type must not be outside generic body", P);
                   end if;
                end if;
 
-               --  if this is a renaming, an inherited operation, or a
+               --  If this is a renaming, an inherited operation, or a
                --  subprogram instance, use the original entity.
 
                if Is_Entity_Name (P)
@@ -6603,7 +6617,8 @@ package body Sem_Attr is
 
             elsif Is_Overloaded (P) then
 
-               --  Use the designated type of the context  to disambiguate.
+               --  Use the designated type of the context  to disambiguate
+
                declare
                   Index : Interp_Index;
                   It    : Interp;
@@ -7263,7 +7278,6 @@ package body Sem_Attr is
       --  Finally perform static evaluation on the attribute reference
 
       Eval_Attribute (N);
-
    end Resolve_Attribute;
 
 end Sem_Attr;

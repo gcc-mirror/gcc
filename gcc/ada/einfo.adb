@@ -4678,6 +4678,15 @@ package body Einfo is
       S  : Entity_Id;
 
    begin
+      --  The following test is an error defense against some syntax
+      --  errors that can leave scopes very messed up.
+
+      if Id = Standard_Standard then
+         return Id;
+      end if;
+
+      --  Normal case, search enclosing scopes
+
       S := Scope (Id);
       while S /= Standard_Standard
         and then not Is_Dynamic_Scope (S)

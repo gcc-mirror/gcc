@@ -31,8 +31,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the tasking versions soft links.
-
 pragma Style_Checks (All_Checks);
 --  Turn off subprogram alpha ordering check, since we group soft link
 --  bodies and dummy soft link bodies together separately in this unit.
@@ -59,9 +57,9 @@ package body System.Soft_Links.Tasking is
    --  Boolean flag that indicates whether the tasking soft links have
    --  already been set.
 
-   ----------------------------------------------------------------------
-   -- Tasking versions of some services needed by non-tasking programs --
-   ----------------------------------------------------------------------
+   -----------------------------------------------------------------
+   -- Tasking Versions of Services Needed by Non-Tasking Programs --
+   -----------------------------------------------------------------
 
    function  Get_Jmpbuf_Address return  Address;
    procedure Set_Jmpbuf_Address (Addr : Address);
@@ -131,10 +129,10 @@ package body System.Soft_Links.Tasking is
 
    procedure Init_Tasking_Soft_Links is
    begin
-      --  If the tasking soft links have already been initialized do not
-      --  repeat it.
+      --  Set links only if not set already
 
       if not Initialized then
+
          --  Mark tasking soft links as initialized
 
          Initialized := True;
@@ -158,7 +156,6 @@ package body System.Soft_Links.Tasking is
          SSL.Set_Jmpbuf_Address     (SSL.Get_Jmpbuf_Address_NT);
          SSL.Set_Machine_State_Addr (SSL.Get_Machine_State_Addr_NT);
       end if;
-
    end Init_Tasking_Soft_Links;
 
 end System.Soft_Links.Tasking;

@@ -121,7 +121,8 @@ package body MLib.Tgt is
       Tools.Gcc
         (Output_File => Lib_File,
          Objects     => Ofiles,
-         Options     => Options,
+         Options     => Tools.No_Argument_List,
+         Options_2   => Options,
          Driver_Name => Driver_Name);
    end Build_Dynamic_Library;
 

@@ -385,9 +385,9 @@ package GNAT.Sockets.Thin is
 
    function  Is_Socket_In_Set
      (Set    : Fd_Set_Access;
-      Socket : C.int)
-     return Boolean;
-   --  Check whether Socket is in the socket set.
+      Socket : C.int) return C.int;
+   --  Check whether Socket is in the socket set, return a non-zero
+   --  value if it is, zero if it is not.
 
    procedure Last_Socket_In_Set
      (Set    : Fd_Set_Access;

@@ -503,6 +503,7 @@ package Sem_Util is
    function Is_Local_Variable_Reference (Expr : Node_Id) return Boolean;
    --  Determines whether Expr is a refeference to a variable or IN OUT
    --  mode parameter of the current enclosing subprogram.
+   --  Why are OUT parameters not considered here ???
 
    function Is_Object_Reference (N : Node_Id) return Boolean;
    --  Determines if the tree referenced by N represents an object. Both

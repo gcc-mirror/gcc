@@ -43,6 +43,7 @@ with Rident;   use Rident;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Eval; use Sem_Eval;
+with Sem_Ch3;  use Sem_Ch3;
 with Sem_Ch8;  use Sem_Ch8;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
@@ -1160,6 +1161,12 @@ package body Checks is
       --  and no check is required).
 
       if not Is_Constrained (T_Typ) then
+         return;
+      end if;
+
+      --  Nothing to do if the type is an Unchecked_Union
+
+      if Is_Unchecked_Union (Base_Type (T_Typ)) then
          return;
       end if;
 
@@ -2377,14 +2384,26 @@ package body Checks is
             Dval := Duplicate_Subexpr_No_Checks (Dval);
          end if;
 
-         Dref :=
-           Make_Selected_Component (Loc,
-             Prefix =>
-               Duplicate_Subexpr_No_Checks (N, Name_Req => True),
-             Selector_Name =>
-               Make_Identifier (Loc, Chars (Disc_Ent)));
+         --  If we have an Unchecked_Union node, we can infer the discriminants
+         --  of the node.
 
-         Set_Is_In_Discriminant_Check (Dref);
+         if Is_Unchecked_Union (Base_Type (T_Typ)) then
+            Dref := New_Copy (
+              Get_Discriminant_Value (
+                First_Discriminant (T_Typ),
+                T_Typ,
+                Stored_Constraint (T_Typ)));
+
+         else
+            Dref :=
+              Make_Selected_Component (Loc,
+                Prefix =>
+                  Duplicate_Subexpr_No_Checks (N, Name_Req => True),
+                Selector_Name =>
+                  Make_Identifier (Loc, Chars (Disc_Ent)));
+
+            Set_Is_In_Discriminant_Check (Dref);
+         end if;
 
          Evolve_Or_Else (Cond,
            Make_Op_Ne (Loc,

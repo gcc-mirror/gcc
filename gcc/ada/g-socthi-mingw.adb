@@ -385,7 +385,7 @@ package body GNAT.Sockets.Thin is
                   --  is not watching for it.
 
                   if WFSC /= No_Fd_Set
-                    and then Is_Socket_In_Set (WFSC, S)
+                    and then (Is_Socket_In_Set (WFSC, S) /= 0)
                   then
                      Insert_Socket_In_Set (WFS, S);
                   end if;

@@ -5,7 +5,7 @@
 --                               S Y S T E M                                --
 --                                                                          --
 --                                 S p e c                                  --
---                           (SGI Irix, n32 ABI)                            --
+--                         (VxWorks Version x86)                            --
 --                                                                          --
 --          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -58,7 +58,7 @@ pragma Pure (System);
    Max_Mantissa          : constant := 63;
    Fine_Delta            : constant := 2.0 ** (-Max_Mantissa);
 
-   Tick                  : constant := 0.01;
+   Tick                  : constant := 1.0 / 60.0;
 
    --  Storage-related Declarations
 
@@ -66,7 +66,7 @@ pragma Pure (System);
    Null_Address : constant Address;
 
    Storage_Unit : constant := 8;
-   Word_Size    : constant := 64;
+   Word_Size    : constant := 32;
    Memory_Size  : constant := 2 ** 32;
 
    --  Address comparison
@@ -86,30 +86,26 @@ pragma Pure (System);
    --  Other System-Dependent Declarations
 
    type Bit_Order is (High_Order_First, Low_Order_First);
-   Default_Bit_Order : constant Bit_Order := High_Order_First;
+   Default_Bit_Order : constant Bit_Order := Low_Order_First;
 
    --  Priority-related Declarations (RM D.1)
 
-   --  IRIX priorities as defined by realtime(5):
-   --
-   --  255        is for system-level interrupts
-   --  240 - 254  are suggested for hard real-time threads
-   --  200 - 239  are used by system device driver interrupt threads
-   --  110 - 199  are suggested for interactive real-time applications
-   --   90 - 109  are used by system daemon threads
-   --    0 -  89  are suggested for soft real-time applications
-   --
-   --  We don't express the full range of IRIX priorities.  For now, we
-   --  handle only the subset for soft real-time applications.
+   --  256        is reserved for the VxWorks kernel
+   --  248 - 255  correspond to hardware interrupt levels 0 .. 7
+   --  247        is a catchall default "interrupt" priority for signals,
+   --             allowing higher priority than normal tasks, but lower than
+   --             hardware priority levels.  Protected Object ceilings can
+   --             override these values.
+   --  246        is used by the Interrupt_Manager task
 
-   Max_Priority           : constant Positive := 88;
-   Max_Interrupt_Priority : constant Positive := 89;
+   Max_Priority           : constant Positive := 245;
+   Max_Interrupt_Priority : constant Positive := 255;
 
-   subtype Any_Priority       is Integer      range  0 .. 89;
-   subtype Priority           is Any_Priority range  0 .. 88;
-   subtype Interrupt_Priority is Any_Priority range 89 .. 89;
+   subtype Any_Priority       is Integer      range   0 .. 255;
+   subtype Priority           is Any_Priority range   0 .. 245;
+   subtype Interrupt_Priority is Any_Priority range 246 .. 255;
 
-   Default_Priority : constant Priority := 44;
+   Default_Priority : constant Priority := 122;
 
 private
 
@@ -129,9 +125,9 @@ private
    AAMP                      : constant Boolean := False;
    Backend_Divide_Checks     : constant Boolean := False;
    Backend_Overflow_Checks   : constant Boolean := False;
-   Command_Line_Args         : constant Boolean := True;
+   Command_Line_Args         : constant Boolean := False;
    Configurable_Run_Time     : constant Boolean := False;
-   Denorm                    : constant Boolean := False;
+   Denorm                    : constant Boolean := True;
    Duration_32_Bits          : constant Boolean := False;
    Exit_Status_Supported     : constant Boolean := True;
    Fractional_Fixed_Ops      : constant Boolean := False;
@@ -142,24 +138,21 @@ private
    OpenVMS                   : constant Boolean := False;
    Signed_Zeros              : constant Boolean := True;
    Stack_Check_Default       : constant Boolean := False;
-   Stack_Check_Probes        : constant Boolean := True;
+   Stack_Check_Probes        : constant Boolean := False;
    Support_64_Bit_Divides    : constant Boolean := True;
    Support_Aggregates        : constant Boolean := True;
    Support_Composite_Assign  : constant Boolean := True;
    Support_Composite_Compare : constant Boolean := True;
    Support_Long_Shifts       : constant Boolean := True;
    Suppress_Standard_Library : constant Boolean := False;
-   Use_Ada_Main_Program_Name : constant Boolean := False;
-   ZCX_By_Default            : constant Boolean := True;
-   GCC_ZCX_Support           : constant Boolean := True;
+   Use_Ada_Main_Program_Name : constant Boolean := True;
+   ZCX_By_Default            : constant Boolean := False;
+   GCC_ZCX_Support           : constant Boolean := False;
    Front_End_ZCX_Support     : constant Boolean := False;
 
    --  Obsolete entries, to be removed eventually (bootstrap issues!)
 
    High_Integrity_Mode       : constant Boolean := False;
-   Long_Shifts_Inlined       : constant Boolean := True;
-
-   --  Note: Denorm is False because denormals are not supported on the
-   --  R10000, and we want the code to be valid for this processor.
+   Long_Shifts_Inlined       : constant Boolean := False;
 
 end System;

@@ -597,6 +597,12 @@ package body Sem_Ch5 is
    ----------------------------
 
    procedure Analyze_Case_Statement (N : Node_Id) is
+      Exp            : Node_Id;
+      Exp_Type       : Entity_Id;
+      Exp_Btype      : Entity_Id;
+      Last_Choice    : Nat;
+      Dont_Care      : Boolean;
+      Others_Present : Boolean;
 
       Statements_Analyzed : Boolean := False;
       --  Set True if at least some statement sequences get analyzed.
@@ -640,22 +646,61 @@ package body Sem_Ch5 is
       ------------------------
 
       procedure Process_Statements (Alternative : Node_Id) is
+         Choices : constant List_Id := Discrete_Choices (Alternative);
+         Ent     : Entity_Id;
+
       begin
          Unblocked_Exit_Count := Unblocked_Exit_Count + 1;
          Statements_Analyzed := True;
+
+         --  An interesting optimization. If the case statement expression
+         --  is a simple entity, then we can set the current value within
+         --  an alternative if the alternative has one possible value.
+
+         --    case N is
+         --      when 1      => alpha
+         --      when 2 | 3  => beta
+         --      when others => gamma
+
+         --  Here we know that N is initially 1 within alpha, but for beta
+         --  and gamma, we do not know anything more about the initial value.
+
+         if Is_Entity_Name (Exp) then
+            Ent := Entity (Exp);
+
+            if Ekind (Ent) = E_Variable
+                 or else
+               Ekind (Ent) = E_In_Out_Parameter
+                 or else
+               Ekind (Ent) = E_Out_Parameter
+            then
+               if List_Length (Choices) = 1
+                 and then Nkind (First (Choices)) in N_Subexpr
+                 and then Compile_Time_Known_Value (First (Choices))
+               then
+                  Set_Current_Value (Entity (Exp), First (Choices));
+               end if;
+
+               Analyze_Statements (Statements (Alternative));
+
+               --  After analyzing the case, set the current value to empty
+               --  since we won't know what it is for the next alternative
+               --  (unless reset by this same circuit), or after the case.
+
+               Set_Current_Value (Entity (Exp), Empty);
+               return;
+            end if;
+         end if;
+
+         --  Case where expression is not an entity name of a variable
+
          Analyze_Statements (Statements (Alternative));
       end Process_Statements;
 
-      --  Variables local to Analyze_Case_Statement.
+      --  Table to record choices. Put after subprograms since we make
+      --  a call to Number_Of_Choices to get the right number of entries.
 
-      Exp       : Node_Id;
-      Exp_Type  : Entity_Id;
-      Exp_Btype : Entity_Id;
-
-      Case_Table     : Choice_Table_Type (1 .. Number_Of_Choices (N));
-      Last_Choice    : Nat;
-      Dont_Care      : Boolean;
-      Others_Present : Boolean;
+      Case_Table : Choice_Table_Type (1 .. Number_Of_Choices (N));
 
    --  Start of processing for Analyze_Case_Statement
 

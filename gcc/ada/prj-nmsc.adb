@@ -2526,11 +2526,12 @@ package body Prj.Nmsc is
       end if;
 
       if For_Language = Lang_Ada then
-         --  If we have looked for sources and found none, then
-         --  it is an error, except if it is an extending project.
-         --  If a non extending project is not supposed to contain
-         --  any source, then we never call Find_Sources.
-         --  No error either when setting up projects (gnat setup).
+
+         --  If we have looked for sources and found none, then it is an
+         --  error, except if it is an extending project. If a non-extending
+         --  project is not supposed to contain any source, then we never
+         --  Find_Sources. No error is signalled when setting up projects
+         --  using gnat setup.
 
          if Current_Source /= Nil_String then
             Data.Ada_Sources_Present := True;
@@ -3305,9 +3306,8 @@ package body Prj.Nmsc is
                   Object_Dir.Location);
 
             else
-               --  We check that the specified object directory
-               --  does exist, and attempt to create it if setting up projects
-               --  (gnat setup).
+               --  Check that the specified object directory does exist, and
+               --  attempt to create it if setting up projects (gnat setup).
 
                Locate_Directory
                  (Object_Dir.Value, Data.Display_Directory,
@@ -3319,6 +3319,7 @@ package body Prj.Nmsc is
                  and then Data.Object_Directory = No_Name
                then
                   --  The object directory does not exist, report an error
+
                   Err_Vars.Error_Msg_Name_1 := Object_Dir.Value;
                   Error_Msg
                     (Project,
@@ -3326,10 +3327,9 @@ package body Prj.Nmsc is
                      Data.Location);
 
                   --  Do not keep a nil Object_Directory. Set it to the
-                  --  specified (relative or absolute) path.
-                  --  This is for the benefit of tools that recover from
-                  --  errors; for example, these tools could create the
-                  --  non existent directory.
+                  --  specified (relative or absolute) path. This is for the
+                  --  benefit of tools that recover from errors. For example,
+                  --  these tools could create the non-existent directory.
 
                   Data.Display_Object_Dir := Object_Dir.Value;
                   Get_Name_String (Object_Dir.Value);
@@ -3447,10 +3447,10 @@ package body Prj.Nmsc is
 
          elsif Source_Dirs.Values = Nil_String then
 
-            --  If Source_Dirs is an empty string list, this means
-            --  that this project contains no source. For projects that
-            --  don't extend other projects, this also means that there is no
-            --  need for an object directory, if not specified.
+            --  If Source_Dirs is an empty string list, this means that this
+            --  contains no sources. For projects that do not extend other
+            --  projects, this also means that there is no need for an object
+            --  directory unless one is specified explicitly.
 
             if Data.Extends = No_Project
               and then  Data.Object_Directory = Data.Directory
@@ -3531,8 +3531,8 @@ package body Prj.Nmsc is
 
             begin
                --  If the project extended is a library project, we inherit
-               --  the library name, if it is not redefined; we check that
-               --  the library directory is specified; and we reset the
+               --  the library name, if it is not redefined, we check that
+               --  the library directory is specified, and we reset the
                --  library flag for the extended project.
 
                if Extended_Data.Library then
@@ -3773,26 +3773,26 @@ package body Prj.Nmsc is
             --  Check Spec_Suffix
 
             declare
-               Spec_Suffixs : Array_Element_Id :=
-                                Util.Value_Of
-                                  (Name_Spec_Suffix,
-                                   Naming.Decl.Arrays);
+               Spec_Suffixes : Array_Element_Id :=
+                                 Util.Value_Of
+                                   (Name_Spec_Suffix,
+                                    Naming.Decl.Arrays);
                Suffix  : Array_Element_Id;
                Element : Array_Element;
                Suffix2 : Array_Element_Id;
 
             begin
-               --  If some suffixs have been specified, we make sure that
+               --  If some suffixes have been specified, we make sure that
                --  for each language for which a default suffix has been
                --  specified, there is a suffix specified, either the one
                --  in the project file or if there were none, the default.
 
-               if Spec_Suffixs /= No_Array_Element then
+               if Spec_Suffixes /= No_Array_Element then
                   Suffix := Data.Naming.Spec_Suffix;
 
                   while Suffix /= No_Array_Element loop
                      Element := Array_Elements.Table (Suffix);
-                     Suffix2 := Spec_Suffixs;
+                     Suffix2 := Spec_Suffixes;
 
                      while Suffix2 /= No_Array_Element loop
                         exit when Array_Elements.Table (Suffix2).Index =
@@ -3800,9 +3800,8 @@ package body Prj.Nmsc is
                         Suffix2 := Array_Elements.Table (Suffix2).Next;
                      end loop;
 
-                     --  There is a registered default suffix, but no
-                     --  suffix specified in the project file.
-                     --  Add the default to the array.
+                     --  There is a registered default suffix, but no suffix is
+                     --  specified in the project file. Add default to array.
 
                      if Suffix2 = No_Array_Element then
                         Array_Elements.Increment_Last;
@@ -3811,16 +3810,16 @@ package body Prj.Nmsc is
                            Src_Index => Element.Src_Index,
                            Index_Case_Sensitive => False,
                            Value     => Element.Value,
-                           Next      => Spec_Suffixs);
-                        Spec_Suffixs := Array_Elements.Last;
+                           Next      => Spec_Suffixes);
+                        Spec_Suffixes := Array_Elements.Last;
                      end if;
 
                      Suffix := Element.Next;
                   end loop;
 
-                  --  Put the resulting array as the specification suffixs
+                  --  Put the resulting array as the specification suffixes
 
-                  Data.Naming.Spec_Suffix := Spec_Suffixs;
+                  Data.Naming.Spec_Suffix := Spec_Suffixes;
                end if;
             end;
 
@@ -3848,27 +3847,26 @@ package body Prj.Nmsc is
             --  Check Body_Suffix
 
             declare
-               Impl_Suffixs : Array_Element_Id :=
-                                Util.Value_Of
-                                  (Name_Body_Suffix,
-                                   Naming.Decl.Arrays);
+               Impl_Suffixes : Array_Element_Id :=
+                                 Util.Value_Of
+                                   (Name_Body_Suffix, Naming.Decl.Arrays);
 
                Suffix  : Array_Element_Id;
                Element : Array_Element;
                Suffix2 : Array_Element_Id;
 
             begin
-               --  If some suffixs have been specified, we make sure that
+               --  If some suffixes have been specified, we make sure that
                --  for each language for which a default suffix has been
                --  specified, there is a suffix specified, either the one
                --  in the project file or if there were noe, the default.
 
-               if Impl_Suffixs /= No_Array_Element then
+               if Impl_Suffixes /= No_Array_Element then
                   Suffix := Data.Naming.Body_Suffix;
 
                   while Suffix /= No_Array_Element loop
                      Element := Array_Elements.Table (Suffix);
-                     Suffix2 := Impl_Suffixs;
+                     Suffix2 := Impl_Suffixes;
 
                      while Suffix2 /= No_Array_Element loop
                         exit when Array_Elements.Table (Suffix2).Index =
@@ -3887,16 +3885,16 @@ package body Prj.Nmsc is
                            Src_Index => Element.Src_Index,
                            Index_Case_Sensitive => False,
                            Value => Element.Value,
-                           Next  => Impl_Suffixs);
-                        Impl_Suffixs := Array_Elements.Last;
+                           Next  => Impl_Suffixes);
+                        Impl_Suffixes := Array_Elements.Last;
                      end if;
 
                      Suffix := Element.Next;
                   end loop;
 
-                  --  Put the resulting array as the implementation suffixs
+                  --  Put the resulting array as the implementation suffixes
 
-                  Data.Naming.Body_Suffix := Impl_Suffixs;
+                  Data.Naming.Body_Suffix := Impl_Suffixes;
                end if;
             end;
 

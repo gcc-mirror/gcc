@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---             S Y S T E M . S O F T _ L I N K S . T A S K I N G            --
+--                              I N D E P S W                               --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---             Copyright (C) 2004, Free Software Foundation, Inc.           --
+--            Copyright (C) 2004 Free Software Foundation, Inc.             --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,15 +31,54 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the tasking versions soft links that are common
---  to the full and the restricted run times. The rest of the required soft
---  links are set by System.Tasking.Initialization and System.Tasking.Stages
---  (full run time) or System.Tasking.Restricted.Stages (restricted run time).
+--  GNATLINK platform-independent switches
 
-package System.Soft_Links.Tasking is
+--  Used to convert GNAT switches to their platform-dependent switch
+--  equivalent for the underlying linker.
 
-   procedure Init_Tasking_Soft_Links;
-   --  Set the tasking soft links that are common to the full and the
-   --  restricted run times.
+with GNAT.OS_Lib; use GNAT.OS_Lib;
 
-end System.Soft_Links.Tasking;
+package Indepsw is
+
+   type Switch_Kind is
+   --  Independent switches currently supported
+
+     (Map_File);
+      --  Produce a map file. The path name of the map file to produce
+      --  is given as an argument.
+
+   procedure Convert
+     (Switch   : Switch_Kind;
+      Argument : String;
+      To       : out String_List_Access);
+   --  Convert Switch to the platform-dependent linker switch (with or without
+   --  additional arguments) To. Issue a warning if Switch is not supported
+   --  for the platform; in this case, To is set to null.
+
+   function Is_Supported (Switch : Switch_Kind) return Boolean;
+   --  Return True for each independent switch supported by the platform.
+
+private
+   --  Default warning messages when the switches are not supported by the
+   --  implementation. These are in the spec so that the platform specific
+   --  bodies do not need to redefine them.
+
+   Map_File_Not_Supported : aliased String :=
+     "the underlying linker does not allow the output of a map file";
+
+   No_Support_For : constant array (Switch_Kind) of String_Access :=
+                      (Map_File => Map_File_Not_Supported'Access);
+   --  All implementations of procedure Convert should include a case
+   --  statements with a "when others =>" choice that output the default
+   --  warning message:
+
+   --   case Switch is
+   --      when ... =>
+   --         ...
+   --      when others =>
+   --         Write_Str ("warning: ");
+   --         Write_Line (No_Support_For (Switch).all);
+   --         To := null;
+   --   end case;
+
+end Indepsw;

@@ -467,6 +467,12 @@ package body Sem_Util is
       Decl : Node_Id;
 
    begin
+      --  Unchecked_Union components do not require component subtypes
+
+      if Is_Unchecked_Union (T) then
+         return Empty;
+      end if;
+
       Subt :=
         Make_Defining_Identifier (Loc,
           Chars => New_Internal_Name ('S'));
@@ -2394,7 +2400,7 @@ package body Sem_Util is
       --  because the discriminant is not available. The restrictions on
       --  Unchecked_Union are designed to make sure that this is OK.
 
-      elsif Is_Unchecked_Union (Utyp) then
+      elsif Is_Unchecked_Union (Base_Type (Utyp)) then
          return Typ;
 
       --  Here for the unconstrained case, we must find actual subtype

@@ -1984,16 +1984,28 @@ package body Exp_Ch7 is
    ------------------------------------
 
    procedure Insert_Actions_In_Scope_Around (N : Node_Id) is
-      SE : Scope_Stack_Entry renames Scope_Stack.Table (Scope_Stack.Last);
+      SE     : Scope_Stack_Entry renames Scope_Stack.Table (Scope_Stack.Last);
+      Target : Node_Id;
 
    begin
+      --  If the node to be wrapped is the triggering alternative of an
+      --  asynchronous select, it is not part of a statement list. The
+      --  actions must be inserted before the Select itself, which is
+      --  part of some list of statements.
+
+      if Nkind (Parent (Node_To_Be_Wrapped)) = N_Triggering_Alternative then
+         Target := Parent (Parent (Node_To_Be_Wrapped));
+      else
+         Target := N;
+      end if;
+
       if Present (SE.Actions_To_Be_Wrapped_Before) then
-         Insert_List_Before (N, SE.Actions_To_Be_Wrapped_Before);
+         Insert_List_Before (Target, SE.Actions_To_Be_Wrapped_Before);
          SE.Actions_To_Be_Wrapped_Before := No_List;
       end if;
 
       if Present (SE.Actions_To_Be_Wrapped_After) then
-         Insert_List_After (N, SE.Actions_To_Be_Wrapped_After);
+         Insert_List_After (Target, SE.Actions_To_Be_Wrapped_After);
          SE.Actions_To_Be_Wrapped_After := No_List;
       end if;
    end Insert_Actions_In_Scope_Around;

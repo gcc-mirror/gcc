@@ -4005,13 +4005,6 @@ package body Sem_Res is
             return;
 
          else
-            if Comes_From_Source (N)
-              and then Has_Unchecked_Union (T)
-            then
-               Error_Msg_N
-                ("cannot compare Unchecked_Union values", N);
-            end if;
-
             Resolve (L, T);
             Resolve (R, T);
             Check_Unset_Reference (L);
@@ -4746,13 +4739,6 @@ package body Sem_Res is
                Set_Etype (N, Any_Type);
                return;
             end if;
-         end if;
-
-         if Comes_From_Source (N)
-           and then Has_Unchecked_Union (T)
-         then
-            Error_Msg_N
-              ("cannot compare Unchecked_Union values", N);
          end if;
 
          Resolve (L, T);

@@ -2590,7 +2590,7 @@ package body Sem_Ch4 is
                Set_Etype (Sel, Etype (Comp));
 
                if Ekind (Comp) = E_Discriminant then
-                  if Is_Unchecked_Union (Prefix_Type) then
+                  if Is_Unchecked_Union (Base_Type (Prefix_Type)) then
                      Error_Msg_N
                        ("cannot reference discriminant of Unchecked_Union",
                         Sel);
@@ -4653,13 +4653,14 @@ package body Sem_Ch4 is
    --------------------------
 
    function Try_Object_Operation (N : Node_Id) return Boolean is
-      Obj        : constant Node_Id := Prefix (N);
-      Obj_Type   : Entity_Id;
-      Actual     : Node_Id;
-      Last_Node  : Node_Id;
-      --  Last_Node is used to free all the nodes generated while trying the
-      --  alternatives. NOTE: This must be removed because it is considered
-      --  too low level
+      Obj       : constant Node_Id := Prefix (N);
+      Obj_Type  : Entity_Id;
+      Actual    : Node_Id;
+
+      Last_Node : Node_Id;
+      --  Used to free all the nodes generated while trying the alternatives.
+      --  To me removed later, too low level ???
+
       use Atree_Private_Part;
 
       function Try_Replacement
@@ -4673,21 +4674,23 @@ package body Sem_Ch4 is
       --  Nam_Ent is the entity that provides the formals against which
       --  the actuals are checked. If the actuals are compatible with
       --  Ent_Nam, this function returns true.
+      --  Document other parameters, also what is Ent_Nam???
 
       function Try_Primitive_Operations
         (New_Prefix : Entity_Id;
          New_Subprg : Node_Id;
          Obj        : Node_Id;
          Obj_Type   : Entity_Id) return Boolean;
-      --  Traverse the list of primitive subprograms to look for the
+      --  Traverse list of primitive subprograms to look for the subprogram
+      --  Parameters should be documented ???
       --  subprogram.
 
       function Try_Class_Wide_Operation
         (New_Subprg : Node_Id;
          Obj        : Node_Id;
          Obj_Type   : Entity_Id) return Boolean;
-      --  Traverse all the ancestor types to look for a class-wide
-      --  subprogram
+      --  Traverse all the ancestor types to look for a class-wide subprogram
+      --  Parameters should be documented ???
 
       ------------------------------
       -- Try_Primitive_Operations --
@@ -4699,9 +4702,9 @@ package body Sem_Ch4 is
          Obj        : Node_Id;
          Obj_Type   : Entity_Id) return Boolean
       is
-         Deref      : Node_Id;
-         Elmt       : Elmt_Id;
-         Prim_Op    : Entity_Id;
+         Deref   : Node_Id;
+         Elmt    : Elmt_Id;
+         Prim_Op : Entity_Id;
 
       begin
          --  Look for the subprogram in the list of primitive operations.
@@ -4711,7 +4714,6 @@ package body Sem_Ch4 is
          --  analysis after the node replacement will resolve it.
 
          Elmt := First_Elmt (Primitive_Operations (Obj_Type));
-
          while Present (Elmt) loop
             Prim_Op := Node (Elmt);
 
@@ -4754,19 +4756,19 @@ package body Sem_Ch4 is
          Obj        : Node_Id;
          Obj_Type   : Entity_Id) return Boolean
       is
-         Deref      : Node_Id;
-         Hom        : Entity_Id;
-         Typ        : Entity_Id;
+         Deref : Node_Id;
+         Hom   : Entity_Id;
+         Typ   : Entity_Id;
 
       begin
-         Typ := Obj_Type;
+         --  Loop through ancestor types
 
+         Typ := Obj_Type;
          loop
             --  For each parent subtype we traverse all the homonym chain
             --  looking for a candidate class-wide subprogram
 
             Hom := Current_Entity (New_Subprg);
-
             while Present (Hom) loop
                if (Ekind (Hom) = E_Procedure
                      or else Ekind (Hom) = E_Function)
@@ -4801,9 +4803,10 @@ package body Sem_Ch4 is
                Hom := Homonym (Hom);
             end loop;
 
-            exit when Etype (Typ) = Typ;
+            --  Climb to ancestor type if there is one
 
-            Typ := Etype (Typ); --  Climb to the ancestor type
+            exit when Etype (Typ) = Typ;
+            Typ := Etype (Typ);
          end loop;
 
          return False;
@@ -4838,8 +4841,11 @@ package body Sem_Ch4 is
 
          if (Nkind (Parent (N)) = N_Procedure_Call_Statement
                or else Nkind (Parent (N)) = N_Function_Call)
-             and then N /= First (Parameter_Associations (Parent (N)))
-               --  Protect against recursive call; It occurs in "..:= F (O.P)"
+
+            --  Protect against recursive call; It occurs in "..:= F (O.P)"
+
+            and then N /= First (Parameter_Associations (Parent (N)))
+
          then
             Node_To_Replace := Parent (N);
 
@@ -4886,9 +4892,10 @@ package body Sem_Ch4 is
             --  Previous analysis transformed the node with the name
             --  and we have to reset it to properly re-analyze it.
 
-            New_Name := Make_Selected_Component (Loc,
-                          Prefix        => New_Reference_To (New_Prefix, Loc),
-                          Selector_Name => New_Copy_Tree (New_Subprg));
+            New_Name :=
+              Make_Selected_Component (Loc,
+                Prefix        => New_Reference_To (New_Prefix, Loc),
+                Selector_Name => New_Copy_Tree (New_Subprg));
             Set_Name (Call_Node, New_Name);
 
             Set_Analyzed (Call_Node, False);
@@ -4898,6 +4905,7 @@ package body Sem_Ch4 is
             return True;
 
          --  Free all the nodes used for this test and return
+
          else
             Nodes.Set_Last (Last_Node);
             return False;
@@ -4927,8 +4935,10 @@ package body Sem_Ch4 is
 
       if (Nkind (Parent (N)) = N_Procedure_Call_Statement
             or else Nkind (Parent (N)) = N_Function_Call)
-          and then N /= First (Parameter_Associations (Parent (N)))
-            --  Protects against recursive call in case of "..:= F (O.Proc)"
+
+         --  Protects against recursive call in case of "..:= F (O.Proc)"
+
+         and then N /= First (Parameter_Associations (Parent (N)))
       then
          Actual := First (Parameter_Associations (Parent (N)));
 
