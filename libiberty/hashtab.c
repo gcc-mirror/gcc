@@ -45,6 +45,10 @@ Boston, MA 02111-1307, USA.  */
 #include <string.h>
 #endif
 
+#ifdef HAVE_MALLOC_H
+#include <malloc.h>
+#endif
+
 #include <stdio.h>
 
 #include "libiberty.h"

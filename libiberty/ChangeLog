@@ -1,3 +1,12 @@
+2003-06-19  Dara Hazeghi  <dhazeghi@yahoo.com>
+
+	* configure.in: Add check for malloc.h needed by
+	m68k for function free().
+	* configure: Regenerated.
+	* config.in: Add HAVE_MALLOC_H.
+	* hashtab.c: include malloc.h were available for
+	free().
+
 2003-06-09  Albert Chin-A-Young  <china@thewrittenword.com>
 	
 	PR bootstrap/10974
