@@ -34,7 +34,7 @@
 #ifndef _CPP_CWCTYPE
 #define _CPP_CWCTYPE 1
 
-# pragma system_header
+# pragma GCC system_header
 # include_next <wctype.h>
 
 // Sequester the C non-inline implementations in the _C_Swamp::

@@ -30,7 +30,7 @@
 #define _CPP_EXCEPTION 1
 
 #ifdef __GNUG__
-#pragma system_header
+#pragma GCC system_header
 #include_next <exception>
 #else
 

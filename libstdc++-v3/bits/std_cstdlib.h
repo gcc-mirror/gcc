@@ -41,7 +41,7 @@
 #define __USE_ISOC9X 1
 #endif
 
-# pragma system_header
+# pragma GCC system_header
 # include_next <stdlib.h>
 
 #endif // _CPP_CSTDLIB

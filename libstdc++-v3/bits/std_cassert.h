@@ -35,5 +35,5 @@
 
 // No include guards on this header...
 
-# pragma system_header
+# pragma GCC system_header
 # include_next <assert.h>

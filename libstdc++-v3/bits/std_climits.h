@@ -35,7 +35,7 @@
 
 #ifndef _CPP_CLIMITS
 #define _CPP_CLIMITS	1
-# pragma system_header
+# pragma GCC system_header
 # include_next <limits.h>
 #endif
 

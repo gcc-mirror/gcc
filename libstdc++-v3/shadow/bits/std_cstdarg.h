@@ -37,7 +37,7 @@
   namespace _C_legacy {
     extern "C" {
 #     define _IN_C_LEGACY_
-#     pragma system_header
+#     pragma GCC system_header
 #     include_next <stdarg.h>
     }
     typedef va_list   _CPP_va_list_capture;

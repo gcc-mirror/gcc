@@ -35,6 +35,6 @@
 
 #ifndef _CPP_CERRNO
 #define _CPP_CERRNO 1
-# pragma system_header
+# pragma GCC system_header
 # include_next <errno.h>
 #endif

@@ -35,7 +35,7 @@
 
 #ifndef _CPP_CMATH
 #define _CPP_CMATH 1
-# pragma system_header
+# pragma GCC system_header
 # include_next <math.h>
 # include_next <stdlib.h>
 

@@ -37,7 +37,7 @@
   namespace _C_legacy {
     extern "C" {
 #     define _IN_C_LEGACY_
-#     pragma system_header
+#     pragma GCC system_header
 #     include_next <stddef.h>
     }
     typedef ptrdiff_t _CPP_ptrdiff_t_capture; 
