@@ -19,12 +19,12 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
+#include <stdio.h>
 #include "tree.h"
 #include "c-lex.h"
 #include "c-tree.h"
 #include "flags.h"
 #include "obstack.h"
-#include <stdio.h>
 #include <ctype.h>
 
 #ifndef WCHAR_TYPE_SIZE
@@ -50,6 +50,61 @@ static void add_attribute		PROTO((enum attrs, char *,
 					       int, int, int));
 static void init_attributes		PROTO((void));
 static void record_international_format	PROTO((tree, tree, int));
+
+/* Keep a stack of if statements.  The value recorded is the number of
+   compound statements seen up to the if keyword.  */
+static int *if_stack;
+
+/* Amount of space in the if statement stack.  */
+static int if_stack_space = 0;
+
+/* Stack pointer.  */
+static int if_stack_pointer = 0;
+
+void
+c_expand_start_cond (cond, exitflag, compstmt_count)
+     tree cond;
+     int exitflag;
+     int compstmt_count;
+{
+  /* Make sure there is enough space on the stack.  */
+  if (if_stack_space == 0)
+    {
+      if_stack_space = 10;
+      if_stack = (int *)xmalloc (10 * sizeof (int));
+    }
+  else if (if_stack_space == if_stack_pointer)
+    {
+      if_stack_space += 10;
+      if_stack = (int *)xrealloc (if_stack, if_stack_space * sizeof (int));
+    }
+  
+  /* Record this if statement.  */
+  if_stack[if_stack_pointer++] = compstmt_count;
+
+  expand_start_cond (cond, exitflag);
+}
+
+void
+c_expand_end_cond ()
+{
+  if_stack_pointer--;
+  expand_end_cond ();
+}
+
+void
+c_expand_start_else ()
+{
+  if (warn_parentheses
+      && if_stack_pointer > 1
+      && if_stack[if_stack_pointer - 1] == if_stack[if_stack_pointer - 2])
+    warning ("suggest explicit braces to avoid ambiguous `else'");
+  
+  /* This if statement can no longer cause a dangling else.  */
+  if_stack[if_stack_pointer - 1]--;
+
+  expand_start_else ();
+}
 
 /* Make bindings for __FUNCTION__ and __PRETTY_FUNCTION__.  */
 
@@ -268,7 +323,7 @@ init_attributes ()
   add_attribute (A_COMMON, "common", 0, 0, 1);
   add_attribute (A_NORETURN, "noreturn", 0, 0, 1);
   add_attribute (A_NORETURN, "volatile", 0, 0, 1);
-  add_attribute (A_UNUSED, "unused", 0, 0, 1);
+  add_attribute (A_UNUSED, "unused", 0, 0, 0);
   add_attribute (A_CONST, "const", 0, 0, 1);
   add_attribute (A_T_UNION, "transparent_union", 0, 0, 0);
   add_attribute (A_CONSTRUCTOR, "constructor", 0, 0, 1);
@@ -385,8 +440,11 @@ decl_attributes (node, attributes, prefix_attributes)
 	  break;
 
 	case A_UNUSED:
-	  if (TREE_CODE (decl) == PARM_DECL || TREE_CODE (decl) == VAR_DECL
-	      || TREE_CODE (decl) == FUNCTION_DECL)
+	  if (is_type)
+	    TREE_USED (type) = 1;
+	  else if (TREE_CODE (decl) == PARM_DECL 
+		   || TREE_CODE (decl) == VAR_DECL
+		   || TREE_CODE (decl) == FUNCTION_DECL)
 	    TREE_USED (decl) = 1;
 	  else
 	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
@@ -587,8 +645,8 @@ decl_attributes (node, attributes, prefix_attributes)
 	      is_scan = 1;
 	    else if (TREE_CODE (format_type) == IDENTIFIER_NODE)
 	      {
-		error ("`%s' is an unrecognized format function type",
-		       IDENTIFIER_POINTER (format_type));
+		warning ("`%s' is an unrecognized format function type",
+		         IDENTIFIER_POINTER (format_type));
 		continue;
 	      }
 	    else
@@ -871,7 +929,7 @@ static format_char_info print_char_table[] = {
 /* Two GNU extensions.  */
   { "Z",	0,	T_ST,	NULL,	NULL,	NULL,	NULL,	"-wp0"		},
   { "m",	0,	T_V,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
-  { "feEgG",	0,	T_D,	NULL,	NULL,	NULL,	T_LD,	"-wp0 +#"	},
+  { "feEgGaA",	0,	T_D,	NULL,	NULL,	NULL,	T_LD,	"-wp0 +#"	},
   { "c",	0,	T_I,	NULL,	T_W,	NULL,	NULL,	"-w"		},
   { "C",	0,	T_W,	NULL,	NULL,	NULL,	NULL,	"-w"		},
   { "s",	1,	T_C,	NULL,	T_W,	NULL,	NULL,	"-wp"		},
@@ -884,7 +942,7 @@ static format_char_info print_char_table[] = {
 static format_char_info scan_char_table[] = {
   { "di",	1,	T_I,	T_S,	T_L,	T_LL,	T_LL,	"*"	},
   { "ouxX",	1,	T_UI,	T_US,	T_UL,	T_ULL,	T_ULL,	"*"	},	
-  { "efgEG",	1,	T_F,	NULL,	T_D,	NULL,	T_LD,	"*"	},
+  { "efgEGaA",	1,	T_F,	NULL,	T_D,	NULL,	T_LD,	"*"	},
   { "sc",	1,	T_C,	NULL,	T_W,	NULL,	NULL,	"*a"	},
   { "[",	1,	T_C,	NULL,	NULL,	NULL,	NULL,	"*a"	},
   { "C",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	"*"	},
@@ -1232,9 +1290,12 @@ check_format_info (info, params)
 			   *format_chars);
 		  warning (message);
 		}
-	      i = strlen (flag_chars);
-	      flag_chars[i++] = *format_chars++;
-	      flag_chars[i] = 0;
+	      else
+		{
+		  i = strlen (flag_chars);
+		  flag_chars[i++] = *format_chars++;
+		  flag_chars[i] = 0;
+		}
 	    }
 	  /* "If the space and + flags both appear, 
 	     the space flag will be ignored."  */
@@ -1343,10 +1404,15 @@ check_format_info (info, params)
 	    pedwarn ("ANSI C does not support the `ll' length modifier");
 	}
       aflag = 0;
-      if (*format_chars == 'a')
+      if (*format_chars == 'a' && info->is_scan)
 	{
-	  aflag = 1;
-	  format_chars++;
+	  if (format_chars[1] == 's' || format_chars[1] == 'S'
+	      || format_chars[1] == '[')
+	    {
+	      /* `a' is used as a flag.  */
+	      aflag = 1;
+	      format_chars++;
+	    }
 	}
       if (suppressed && length_char != 0)
 	{
@@ -1485,6 +1551,8 @@ check_format_info (info, params)
       ++arg_num;
       cur_type = TREE_TYPE (cur_param);
 
+      STRIP_NOPS (cur_param);
+
       /* Check the types of any additional pointer arguments
 	 that precede the "real" argument.  */
       for (i = 0; i < fci->pointer_count + aflag; ++i)
@@ -1492,6 +1560,12 @@ check_format_info (info, params)
 	  if (TREE_CODE (cur_type) == POINTER_TYPE)
 	    {
 	      cur_type = TREE_TYPE (cur_type);
+
+	      if (TREE_CODE (cur_param) == ADDR_EXPR)
+		cur_param = TREE_OPERAND (cur_param, 0);
+	      else
+		cur_param = 0;
+
 	      continue;
 	    }
 	  if (TREE_CODE (cur_type) != ERROR_MARK)
@@ -1504,6 +1578,21 @@ check_format_info (info, params)
 	      warning (message);
 	    }
 	  break;
+	}
+
+      /* See if this is an attempt to write into a const type with
+	 scanf.  */
+      if (info->is_scan && i == fci->pointer_count + aflag
+	  && wanted_type != 0
+	  && TREE_CODE (cur_type) != ERROR_MARK
+	  && (TYPE_READONLY (cur_type)
+	      || (cur_param != 0
+		  && (TREE_CODE_CLASS (TREE_CODE (cur_param)) == 'c'
+		      || (TREE_CODE_CLASS (TREE_CODE (cur_param)) == 'd'
+			  && TREE_READONLY (cur_param))))))
+	{
+	  sprintf (message, "writing into constant object (arg %d)", arg_num);
+	  warning (message);
 	}
 
       /* Check the type of the "real" argument, if there's a type we want.  */
@@ -1856,7 +1945,7 @@ void
 binary_op_error (code)
      enum tree_code code;
 {
-  register char *opname = "unknown";
+  register char *opname;
 
   switch (code)
     {
@@ -1909,6 +1998,8 @@ binary_op_error (code)
     case LROTATE_EXPR:
     case RROTATE_EXPR:
       opname = "rotate"; break;
+    default:
+      opname = "unknown"; break;
     }
   error ("invalid operands to binary %s", opname);
 }
@@ -1994,6 +2085,8 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 	  break;
 	case GE_EXPR:
 	  code = LE_EXPR;
+	  break;
+	default:
 	  break;
 	}
       *rescode_ptr = code;
@@ -2125,6 +2218,9 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 		primop1 = TYPE_MAX_VALUE (type);
 		val = 0;
 		break;
+
+	      default:
+		break;
 	      }
 	  type = unsigned_type (type);
 	}
@@ -2222,6 +2318,10 @@ shorten_compare (op0_ptr, op1_ptr, restype_ptr, rescode_ptr)
 						     primop0))))
 		warning ("unsigned value < 0 is always 0");
 	      value = boolean_false_node;
+	      break;
+
+	    default:
+	      break;
 	    }
 
 	  if (value != 0)
@@ -2408,6 +2508,9 @@ truthvalue_conversion (expr)
     case MODIFY_EXPR:
       if (warn_parentheses && C_EXP_ORIGINAL_CODE (expr) == MODIFY_EXPR)
 	warning ("suggest parentheses around assignment used as truth value");
+      break;
+      
+    default:
       break;
     }
 

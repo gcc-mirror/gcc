@@ -1,3 +1,8 @@
+Thu Feb  5 21:56:06 1998  Mumit Khan  <khan@xraylith.wisc.edu>
+	
+	* c-common.c (decl_attributes): Flag unrecognized attribute
+	functions as warnings instead of as errors.
+
 1998-02-05  Marc Lehmann  <pcg@goof.com>
 
 	* integrate.c (INTEGRATE_THRESHOLD): Inline only small functions
