@@ -2263,7 +2263,8 @@ evaluate_eq_attr (exp, value, insn_code, insn_index)
 
   if (address_used)
     {
-      if (! RTX_UNCHANGING_P (exp) && current_alternative_string)
+      /* This had `&& current_alternative_string', which seems to be wrong.  */
+      if (! RTX_UNCHANGING_P (exp))
 	return copy_rtx_unchanging (exp);
       return exp;
     }
@@ -2768,7 +2769,7 @@ simplify_test_exp (exp, insn_code, insn_index)
   /* We have already simplified this expression.  Simplifying it again
      won't buy anything unless we weren't given a valid insn code
      to process (i.e., we are canonicalizing something.).  */
-  if (insn_code != -2 && current_alternative_string
+  if (insn_code != -2 /* Seems wrong: && current_alternative_string.  */
       && ! RTX_UNCHANGING_P (newexp))
     return copy_rtx_unchanging (newexp);
 
