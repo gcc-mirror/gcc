@@ -1,3 +1,8 @@
+2001-09-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.c (save_restore_insns): Change base_offset to
+	fp_offset in second call to mips_emit_frame_related_store.
+
 2001-09-04  Hans-Peter Nilsson  <hp@axis.com>
 
 	* doc/rtl.texi: Mention that besides as a CODE_LABEL, a label can

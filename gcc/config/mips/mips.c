@@ -6782,7 +6782,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		RTX_UNCHANGING_P (mem_rtx) = 1;
 
 		if (store_p)
-		  mips_emit_frame_related_store (mem_rtx, reg_rtx, base_offset);
+		  mips_emit_frame_related_store (mem_rtx, reg_rtx, fp_offset);
 		else
 		  emit_move_insn (reg_rtx, mem_rtx);
 	      }
