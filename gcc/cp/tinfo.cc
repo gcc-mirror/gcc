@@ -662,7 +662,7 @@ __vmi_class_type_info::
 struct __class_type_info::__upcast_result
 {
   const void *dst_ptr;        // pointer to caught object
-  __sub_kind whole2dst;       // path from most derived object to target
+  __sub_kind part2dst;        // path from current base to target
   int src_details;            // hints about the source type heirarchy
   const __class_type_info *base_type; // where we found the target,
                               // if in vbase the __class_type_info of vbase
@@ -670,7 +670,7 @@ struct __class_type_info::__upcast_result
                               // else NULL
   public:
   __upcast_result (int d)
-    :dst_ptr (NULL), whole2dst (__unknown), src_details (d), base_type (NULL)
+    :dst_ptr (NULL), part2dst (__unknown), src_details (d), base_type (NULL)
     {}
 };
 
@@ -709,10 +709,11 @@ __do_upcast (const __class_type_info *dst_type,
 {
   __upcast_result result (__vmi_class_type_info::__flags_unknown_mask);
   
-  if (__do_upcast (__contained_public, dst_type, *obj_ptr, result))
+  __do_upcast (dst_type, *obj_ptr, result);
+  if (!contained_public_p (result.part2dst))
     return false;
   *obj_ptr = const_cast <void *> (result.dst_ptr);
-  return contained_public_p (result.whole2dst);
+  return true;
 }
 
 inline __class_type_info::__sub_kind __class_type_info::
@@ -1025,47 +1026,35 @@ __do_dyncast (ptrdiff_t src2dst,
 }
 
 bool __class_type_info::
-__do_upcast (__sub_kind access_path,
-             const __class_type_info *dst, const void *obj,
+__do_upcast (const __class_type_info *dst, const void *obj,
              __upcast_result &__restrict result) const
 {
   if (*this == *dst)
     {
       result.dst_ptr = obj;
       result.base_type = nonvirtual_base_type;
-      result.whole2dst = access_path;
-      return contained_nonpublic_p (access_path);
+      result.part2dst = __contained_public;
+      return true;
     }
   return false;
 }
 
 bool __si_class_type_info::
-__do_upcast (__sub_kind access_path,
-             const __class_type_info *dst, const void *obj_ptr,
+__do_upcast (const __class_type_info *dst, const void *obj_ptr,
              __upcast_result &__restrict result) const
 {
-  if (*this == *dst)
-    {
-      result.dst_ptr = obj_ptr;
-      result.base_type = nonvirtual_base_type;
-      result.whole2dst = access_path;
-      return contained_nonpublic_p (access_path);
-    }
-  return base->__do_upcast (access_path, dst, obj_ptr, result);
+  if (__class_type_info::__do_upcast (dst, obj_ptr, result))
+    return true;
+  
+  return base->__do_upcast (dst, obj_ptr, result);
 }
 
 bool __vmi_class_type_info::
-__do_upcast (__sub_kind access_path,
-             const __class_type_info *dst, const void *obj_ptr,
+__do_upcast (const __class_type_info *dst, const void *obj_ptr,
              __upcast_result &__restrict result) const
 {
-  if (*this == *dst)
-    {
-      result.dst_ptr = obj_ptr;
-      result.base_type = nonvirtual_base_type;
-      result.whole2dst = access_path;
-      return contained_nonpublic_p (access_path);
-    }
+  if (__class_type_info::__do_upcast (dst, obj_ptr, result))
+    return true;
   
   int src_details = result.src_details;
   if (src_details & __flags_unknown_mask)
@@ -1075,47 +1064,53 @@ __do_upcast (__sub_kind access_path,
     {
       __upcast_result result2 (src_details);
       const void *base = obj_ptr;
-      __sub_kind sub_access = access_path;
       ptrdiff_t offset = vmi_bases[i].__offset ();
       bool is_virtual = vmi_bases[i].__is_virtual_p ();
+      bool is_public = vmi_bases[i].__is_public_p ();
       
-      if (!vmi_bases[i].__is_public_p ())
-        {
-          if (!(src_details & non_diamond_repeat_mask))
-            // original cannot have an ambiguous base
-            continue;
-          sub_access = __sub_kind (sub_access & ~__contained_public_mask);
-        }
-      if (is_virtual)
-    	  sub_access = __sub_kind (sub_access | __contained_virtual_mask);
+      if (!is_public && !(src_details & non_diamond_repeat_mask))
+        // original cannot have an ambiguous base, so skip private bases
+        continue;
+
       if (base)
         base = convert_to_base (base, is_virtual, offset);
       
-      if (vmi_bases[i].base->__do_upcast (sub_access, dst, base, result2))
-        return true; // must fail
-      if (result2.base_type)
+      if (vmi_bases[i].base->__do_upcast (dst, base, result2))
         {
           if (result2.base_type == nonvirtual_base_type && is_virtual)
             result2.base_type = vmi_bases[i].base;
+          if (contained_p (result2.part2dst) && !is_public)
+            result2.part2dst = __sub_kind (result2.part2dst & ~__contained_public_mask);
+          
           if (!result.base_type)
             {
               result = result2;
-              if (!(vmi_flags & non_diamond_repeat_mask))
-                // cannot have an ambiguous other base
-                return false;
+              if (!contained_p (result.part2dst))
+                return true; // found ambiguously
+              
+              if (result.part2dst & __contained_public_mask)
+                {
+                  if (!(vmi_flags & non_diamond_repeat_mask))
+                    return true;  // cannot have an ambiguous other base
+                }
+              else
+                {
+                  if (!(vmi_flags & diamond_shaped_mask))
+                    return true; // cannot have a more accessible base
+                }
             }
           else if (result.dst_ptr != result2.dst_ptr)
             {
               // Found an ambiguity.
 	      result.dst_ptr = NULL;
-	      result.whole2dst = __contained_ambig;
+	      result.part2dst = __contained_ambig;
 	      return true;
             }
           else if (result.dst_ptr)
             {
               // Ok, found real object via a virtual path.
-              result.whole2dst
-                  = __sub_kind (result.whole2dst | result2.whole2dst);
+              result.part2dst
+                  = __sub_kind (result.part2dst | result2.part2dst);
             }
           else
             {
@@ -1127,13 +1122,13 @@ __do_upcast (__sub_kind access_path,
                 {
                   // Already ambiguous, not virtual or via different virtuals.
                   // Cannot match.
-                  result.whole2dst = __contained_ambig;
+                  result.part2dst = __contained_ambig;
                   return true;
                 }
             }
         }
     }
-  return false;
+  return result.part2dst != __unknown;
 }
 
 // this is the external interface to the dynamic cast machinery
