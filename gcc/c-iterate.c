@@ -30,20 +30,6 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "obstack.h"
 #include "rtl.h"
-
-static void expand_stmt_with_iterators_1 ();
-static tree collect_iterators ();
-static void iterator_loop_prologue ();
-static void iterator_loop_epilogue ();
-static void add_ixpansion ();
-static void delete_ixpansion();
-static int top_level_ixpansion_p ();
-static void istack_sublevel_to_current ();
-
-/* A special obstack, and a pointer to the start of
-   all the data in it (so we can free everything easily).  */
-static struct obstack ixp_obstack;
-static char *ixp_firstobj;
 
 /*
 		KEEPING TRACK OF EXPANSIONS
@@ -96,11 +82,26 @@ struct iter_stack_node
 };
 
 struct iter_stack_node *iter_stack;
-
 struct iter_stack_node sublevel_ixpansions;
+
+/* A special obstack, and a pointer to the start of
+   all the data in it (so we can free everything easily).  */
+static struct obstack ixp_obstack;
+static char *ixp_firstobj;
 
 /* During collect_iterators, a list of SAVE_EXPRs already scanned.  */
 static tree save_exprs;
+
+static void expand_stmt_with_iterators_1 PROTO((tree, tree));
+static tree collect_iterators		PROTO((tree, tree));
+static void iterator_loop_prologue	PROTO((tree, rtx *, rtx *));
+static void iterator_loop_epilogue	PROTO((tree, rtx *, rtx *));
+static int top_level_ixpansion_p	PROTO((void));
+static void isn_append			PROTO((struct iter_stack_node *,
+					       struct iter_stack_node *));
+static void istack_sublevel_to_current	PROTO((void));
+static void add_ixpansion		PROTO((tree, rtx, rtx, rtx, rtx));
+static void delete_ixpansion		PROTO((tree));
 
 /* Initialize our obstack once per compilation.  */
 
