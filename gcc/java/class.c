@@ -943,13 +943,8 @@ build_class_ref (tree type)
       if (TREE_CODE (type) == POINTER_TYPE)
 	type = TREE_TYPE (type);
 
-      /* FIXME: we really want an indirect reference to our
-	 superclass.  However, libgcj assumes that a superclass
-	 pointer always points directly to a class.  As a workaround
-	 we always emit this hard superclass reference.  */
       if  (flag_indirect_dispatch
 	   && type != output_class
-// 	   && type != CLASSTYPE_SUPER (output_class)
 	   && TREE_CODE (type) == RECORD_TYPE)
 	return build_indirect_class_ref (type);
 

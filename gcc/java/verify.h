@@ -136,6 +136,7 @@ typedef enum
 #define JAVAOP(name, num, ignore1, ignore2, ignore3) \
   GLOM (op_, name) = num,
 #include "javaop.def"
+  java_opcode_end
 } java_opcode;
 
 

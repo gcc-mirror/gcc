@@ -1,5 +1,9 @@
 2004-11-24  Tom Tromey  <tromey@redhat.com>
 
+	* verify.c (defer_merging): Don't use C++-style comment.
+	* verify.h (java_opcode): Added java_opcode_end.
+	* class.c (build_class_ref): Remove C++ comment and old FIXME.
+
 	* verify-impl.c (vfy_push_type): Removed bogus "return".
 	(initialize_stack): Use vfy_alloc and vfy_free.
 	(verify_instructions_0): Likewise.
