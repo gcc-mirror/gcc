@@ -1,3 +1,8 @@
+2004-12-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/18100
+	* g++.dg/lookup/name-clash4.C: New test.
+
 2004-12-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/18672

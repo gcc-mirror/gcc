@@ -1,3 +1,9 @@
+2004-12-08  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/18100
+	* decl.c (lookup_and_check_tag): Diagnose nested class with 
+	the same name as enclosing class.
+
 2004-12-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/18803
