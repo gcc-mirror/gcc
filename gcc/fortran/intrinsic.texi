@@ -798,7 +798,7 @@ end program test_atan
 of @var{X}.
 
 @item @emph{Option}:
-f95, gnu
+gnu
 
 @item @emph{Type}:
 elemental function
@@ -826,7 +826,7 @@ end program test_besj0
 @item @emph{Specific names}:
 @multitable @columnfractions .24 .24 .24 .24
 @item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DBESJ0(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@item @code{DBESJ0(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab gnu
 @end multitable
 @end table
 
@@ -844,7 +844,7 @@ end program test_besj0
 of @var{X}.
 
 @item @emph{Option}:
-f95, gnu
+gnu
 
 @item @emph{Type}:
 elemental function
@@ -872,7 +872,7 @@ end program test_besj1
 @item @emph{Specific names}:
 @multitable @columnfractions .24 .24 .24 .24
 @item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DBESJ1(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@item @code{DBESJ1(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab gnu
 @end multitable
 @end table
 
@@ -890,7 +890,7 @@ end program test_besj1
 @var{N} of @var{X}.
 
 @item @emph{Option}:
-f95, gnu
+gnu
 
 @item @emph{Type}:
 elemental function
@@ -918,7 +918,7 @@ end program test_besjn
 @item @emph{Specific names}:
 @multitable @columnfractions .24 .24 .24 .24
 @item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DBESJN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@item @code{DBESJN(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab gnu
 @end multitable
 @end table
 
@@ -936,7 +936,7 @@ end program test_besjn
 of @var{X}.
 
 @item @emph{Option}:
-f95, gnu
+gnu
 
 @item @emph{Type}:
 elemental function
@@ -963,7 +963,7 @@ end program test_besy0
 @item @emph{Specific names}:
 @multitable @columnfractions .24 .24 .24 .24
 @item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DBESY0(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@item @code{DBESY0(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab gnu
 @end multitable
 @end table
 
@@ -981,7 +981,7 @@ end program test_besy0
 of @var{X}.
 
 @item @emph{Option}:
-f95, gnu
+gnu
 
 @item @emph{Type}:
 elemental function
@@ -1008,7 +1008,7 @@ end program test_besy1
 @item @emph{Specific names}:
 @multitable @columnfractions .24 .24 .24 .24
 @item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DBESY1(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@item @code{DBESY1(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab gnu
 @end multitable
 @end table
 
@@ -1026,7 +1026,7 @@ end program test_besy1
 @var{N} of @var{X}.
 
 @item @emph{Option}:
-f95, gnu
+gnu
 
 @item @emph{Type}:
 elemental function
@@ -1054,7 +1054,7 @@ end program test_besyn
 @item @emph{Specific names}:
 @multitable @columnfractions .24 .24 .24 .24
 @item Name            @tab Argument          @tab Return type       @tab Option
-@item @code{DBESYN(X)} @tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab f95, gnu
+@item @code{DBESYN(X)}@tab @code{REAL(8) X}  @tab @code{REAL(8)}    @tab gnu
 @end multitable
 @end table
 
