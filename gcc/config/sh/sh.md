@@ -1483,6 +1483,10 @@
 ;; Define the real conditional branch instructions.
 ;; ------------------------------------------------------------------------
 
+;; ??? Branches should compare T-bit against zero not one, so that they will
+;; be in canonical form.  get_condition in loop.c for instance will fail
+;; with these patterns.
+
 (define_insn "branch_true"
   [(set (pc) (if_then_else (eq (reg:SI 18) (const_int 1))
 			   (label_ref (match_operand 0 "" ""))
