@@ -514,11 +514,6 @@ extern char *get_directive_line			PARAMS ((void));
    See if the operands have both been converted from subword integer types
    and, if so, perhaps change them both back to their original type.  */
 extern tree shorten_compare			PARAMS ((tree *, tree *, tree *, enum tree_code *));
-/* Prepare expr to be an argument of a TRUTH_NOT_EXPR,
-   or validate its data type for an `if' or `while' statement or ?..: exp. */
-extern tree truthvalue_conversion		PARAMS ((tree));
-extern tree type_for_mode			PARAMS ((enum machine_mode, int));
-extern tree type_for_size			PARAMS ((unsigned, int));
 
 extern unsigned int min_precision		PARAMS ((tree, int));
 

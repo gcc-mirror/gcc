@@ -902,7 +902,6 @@ extern rtx gen_cond_trap PARAMS ((enum rtx_code, rtx, rtx, rtx));
 /* Functions from builtins.c:  */
 #ifdef TREE_CODE
 extern rtx expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
-extern tree expand_tree_builtin PARAMS ((tree, tree, tree));
 extern void std_expand_builtin_va_start PARAMS ((int, tree, rtx));
 extern rtx std_expand_builtin_va_arg PARAMS ((tree, tree));
 extern rtx expand_builtin_va_arg PARAMS ((tree, tree));

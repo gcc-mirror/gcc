@@ -1,3 +1,19 @@
+2001-04-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* c-common.h (truthvalue_conversion, type_for_mode,
+	type_for_size): Delete redundant declarations.
+
+	* c-lex.h (is_class_name): Likewise.
+
+	* c-tree.h (pedantic, convert, getdecls, gettags,
+	global_bindings_p, init_decl_processing, insert_block,
+	maybe_build_cleanup, poplevel, print_lang_decl,
+	print_lang_identifier, print_lang_type, pushdecl, pushlevel,
+	set_block, incomplete_type_error, build_function_call,
+	lvalue_or_else, mark_addressable): Likewise.
+
+	* expr.h (expand_tree_builtin): Likewise.
+
 2001-04-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* invoke.texi: Document --param max-gcse-memory.
