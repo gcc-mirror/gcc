@@ -56,7 +56,7 @@ public abstract class MenuComponent implements Serializable
  */
 
 // Serialization Constant
-private static final long serialVersionUID = -4269533416223798698L;
+private static final long serialVersionUID = -4536902356223894379L;
 
 /*************************************************************************/
 

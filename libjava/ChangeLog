@@ -1,3 +1,8 @@
+2003-12-16  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/MenuComponent.java
+	(serialVersionUID): Fixed value.
+
 2003-12-16  Fernando Nasser  <fnasser@redhat.com>
 
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c
