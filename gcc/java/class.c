@@ -1557,7 +1557,7 @@ register_class ()
    which calls registerClass for all the compiled classes. */
 
 void
-emit_register_class ()
+emit_register_classes ()
 {
   tree decl = getdecls ();
 

@@ -1,3 +1,13 @@
+Wed Oct 21 07:54:11 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (emit_register_classes): Renamed from
+ 	emit_register_class.
+	* java-tree.h (emit_register_classes): Prototype renamed from
+ 	emit_register_class.
+	* jcf-parse.c (yyparse): Call emit_register_classes once before
+ 	returning.
+	* parse.y (java_expand_classes): No longer register classes.
+
 Tue Oct 20 09:15:38 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* class.c (is_compiled_class): New local variable
