@@ -1610,6 +1610,8 @@ yylex ()
 	      {
 		TREE_TYPE (yylval.ttype) = unsigned_type (type);
 		yylval.ttype = convert (type, yylval.ttype);
+		TREE_OVERFLOW (yylval.ttype)
+		  = TREE_CONSTANT_OVERFLOW (yylval.ttype) = 0;
 	      }
 	    else
 	      TREE_TYPE (yylval.ttype) = type;
