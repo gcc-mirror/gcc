@@ -111,6 +111,7 @@ char *inline_text_firstobj;
 extern cpp_reader  parse_in;
 extern cpp_options parse_options;
 extern unsigned char *yy_cur, *yy_lim;
+extern int errorcount;
 #else
 FILE *finput;
 #endif
@@ -881,6 +882,7 @@ finish_parse ()
 {
 #if USE_CPPLIB
   cpp_finish (&parse_in);
+  errorcount += parse_in.errors;
 #else
   fclose (finput);
 #endif
