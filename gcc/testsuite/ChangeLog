@@ -1,5 +1,9 @@
 1998-12-04  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* g++.old-deja/g++.other/using5.C: usified using[567].C here
+	* g++.old-deja/g++.other/using6.C: removed
+	* g++.old-deja/g++.other/using7.C: Mark Mitchel removed it
+
 	* g++.old-deja/g++.pt/spec20.C: Re-insert non-bogus ERROR marks.
 
 1998-12-03  Alexandre Oliva  <oliva@dcc.unicamp.br>

@@ -11,5 +11,7 @@ struct bar {
 
 struct foo : bar {
   using bar::t;
-  void baz(t pos);
+  t field;
+  t meth();
+  void baz(t arg);
 };
