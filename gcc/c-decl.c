@@ -1191,12 +1191,24 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
       else if (TREE_CODE (newdecl) == FUNCTION_DECL && DECL_INITIAL (newdecl)
 	       && TYPE_MAIN_VARIANT (TREE_TYPE (oldtype)) == void_type_node
 	       && TYPE_MAIN_VARIANT (TREE_TYPE (newtype)) == integer_type_node
-	       && C_FUNCTION_IMPLICIT_INT (newdecl))
+	       && C_FUNCTION_IMPLICIT_INT (newdecl) && !DECL_INITIAL (olddecl))
 	{
 	  pedwarn ("%Jconflicting types for %qD", newdecl, newdecl);
 	  /* Make sure we keep void as the return type.  */
 	  TREE_TYPE (newdecl) = *newtypep = newtype = oldtype;
 	  C_FUNCTION_IMPLICIT_INT (newdecl) = 0;
+	  pedwarned = true;
+	}
+      /* Permit void foo (...) to match an earlier call to foo (...) with
+	 no declared type (thus, implicitly int).  */
+      else if (TREE_CODE (newdecl) == FUNCTION_DECL
+	       && TYPE_MAIN_VARIANT (TREE_TYPE (newtype)) == void_type_node
+	       && TYPE_MAIN_VARIANT (TREE_TYPE (oldtype)) == integer_type_node
+	       && C_DECL_IMPLICIT (olddecl) && !DECL_INITIAL (olddecl))
+	{
+	  pedwarn ("%Jconflicting types for %qD", newdecl, newdecl);
+	  /* Make sure we keep void as the return type.  */
+	  TREE_TYPE (olddecl) = *oldtypep = oldtype = newtype;
 	  pedwarned = true;
 	}
       else
