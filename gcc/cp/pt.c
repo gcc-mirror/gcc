@@ -4549,8 +4549,6 @@ tsubst_friend_function (decl, args)
 				    tsubst (DECL_TI_ARGS (decl),
 					    args, /*complain=*/1, 
 					    NULL_TREE));
-      /* FIXME: The decl we create via the next tsubst could be
-	 created on a temporary obstack.  */
       new_friend = tsubst (decl, args, /*complain=*/1, NULL_TREE);
       tmpl = determine_specialization (template_id, new_friend,
 				       &new_args, 
@@ -7466,7 +7464,10 @@ tsubst_expr (t, args, complain, in_decl)
 	  handler = TRY_HANDLERS (t);
 	  for (; handler; handler = TREE_CHAIN (handler))
 	    tsubst_expr (handler, args, complain, in_decl);
-	  finish_handler_sequence (stmt);
+	  if (FN_TRY_BLOCK_P (t))
+	    finish_function_handler_sequence (stmt);
+	  else
+	    finish_handler_sequence (stmt);
 	}
       break;
       

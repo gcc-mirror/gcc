@@ -1,3 +1,19 @@
+1999-09-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (UPT_TEMPLATE): Remove.
+	(UPT_PARMS): Likewise.
+	(DECL_NEEDED_P): New macro.
+	* decl2.c (finish_vtable_vardecl): Use it.
+	(finish_objects): Don't crash with -fsyntax-only.
+	(finish_file): Use DECL_NEEDED_P.  Don't prune vtables when
+	-fsyntax-only.
+	* pt.c (tsubst_friend_function): Remove FIXME that talks about
+	obstacks.
+	(tsubst_expr): Correct handling of function try-blocks.
+	* semantics.c: Include flags.h.
+	(expand_body): Don't do RTL generation if -fsyntax-only.
+	* Makefile.in (semantics.o): Depends on flags.h.
+	
 1999-09-28  Gabriel Dos Reis  <gdr@codesourcery.com>
 
         * pt.c (most_general_template): Adjust declaration.

@@ -31,6 +31,7 @@
 #include "except.h"
 #include "lex.h"
 #include "toplev.h"
+#include "flags.h"
 
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or
@@ -2488,8 +2489,13 @@ expand_body (fn)
 	  && uses_template_parms (DECL_TI_ARGS (fn))))
     return;
 
+  /* There's no reason to do any of the work here if we're only doing
+     semantic analysis; this code just generates RTL.  */
+  if (flag_syntax_only)
+    return;
+
   /* Save the current file name and line number.  When we expand the
-     body of the funciton, we'll set LINENO and INPUT_FILENAME so that
+     body of the function, we'll set LINENO and INPUT_FILENAME so that
      error-mesages come out in the right places.  */
   saved_lineno = lineno;
   saved_input_filename = input_filename;
