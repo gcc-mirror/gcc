@@ -1610,7 +1610,12 @@ verify_flow_info ()
 	      else
 		for (insn = NEXT_INSN (e->src->end); insn != e->dest->head;
 		     insn = NEXT_INSN (insn))
-		  if (GET_CODE (insn) == BARRIER || INSN_P (insn))
+		  if (GET_CODE (insn) == BARRIER
+#ifndef CASE_DROPS_THROUGH
+		      || INSN_P (insn))
+#else
+		      || (INSN_P (insn) && ! JUMP_TABLE_DATA_P (insn)))
+#endif
 		    {
 		      error ("verify_flow_info: Incorrect fallthru %i->%i",
 			     e->src->index, e->dest->index);
