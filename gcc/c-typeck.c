@@ -1635,24 +1635,6 @@ convert_arguments (typelist, values, name, fundecl)
 	    }
 	  else
 	    {
-#if 0 /* This turns out not to win--there's no way to write a prototype
-	 for a function whose arg type is a union with no tag.  */
-	      /* Nameless union automatically casts the types it contains.  */
-	      if (TREE_CODE (type) == UNION_TYPE && TYPE_NAME (type) == 0)
-		{
-		  tree field;
-
-		  for (field = TYPE_FIELDS (type); field;
-		       field = TREE_CHAIN (field))
-		    if (comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (field)),
-				   TYPE_MAIN_VARIANT (TREE_TYPE (val))))
-		      break;
-
-		  if (field)
-		    val = build1 (CONVERT_EXPR, type, val);
-		}
-#endif
-
 	      /* Optionally warn about conversions that
 		 differ from the default conversions.  */
 	      if (warn_conversion)
@@ -3892,14 +3874,15 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
   /* Arithmetic types all interconvert, and enum is treated like int.  */
   if ((codel == INTEGER_TYPE || codel == REAL_TYPE || codel == ENUMERAL_TYPE
        || codel == COMPLEX_TYPE)
-       &&
-      (coder == INTEGER_TYPE || coder == REAL_TYPE || coder == ENUMERAL_TYPE
-       || coder == COMPLEX_TYPE))
+      && (coder == INTEGER_TYPE || coder == REAL_TYPE || coder == ENUMERAL_TYPE
+	  || coder == COMPLEX_TYPE))
     return convert_and_check (type, rhs);
+
   /* Conversion to a union from its member types.  */
   else if (codel == UNION_TYPE)
     {
       tree memb_types;
+
       for (memb_types = TYPE_FIELDS (type); memb_types;
 	   memb_types = TREE_CHAIN (memb_types))
 	{
@@ -3910,6 +3893,7 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 		pedwarn ("ANSI C prohibits argument conversion to union type");
 	      return build1 (NOP_EXPR, type, rhs);
 	    }
+
 	  else if (coder == POINTER_TYPE
 		   && TREE_CODE (TREE_TYPE (memb_types)) == POINTER_TYPE)
 	    {
@@ -3919,44 +3903,59 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 
 	      /* Any non-function converts to a [const][volatile] void *
 		 and vice versa; otherwise, targets must be the same.
-		 Meanwhile, the lhs target must have all the qualifiers of the rhs.  */
+		 Meanwhile, the lhs target must have all the qualifiers of
+		 the rhs.  */
 	      if (TYPE_MAIN_VARIANT (ttl) == void_type_node
 		  || TYPE_MAIN_VARIANT (ttr) == void_type_node
 		  || comp_target_types (memb_type, rhstype))
 		{
-		  /* Const and volatile mean something different for function types,
-		     so the usual warnings are not appropriate.  */
+		  /* Const and volatile mean something different for function
+		     types, so the usual warnings are not appropriate.  */
 		  if (TREE_CODE (ttr) != FUNCTION_TYPE
 		      || TREE_CODE (ttl) != FUNCTION_TYPE)
 		    {
 		      if (! TYPE_READONLY (ttl) && TYPE_READONLY (ttr))
 			warn_for_assignment ("%s discards `const' from pointer target type",
-					     get_spelling (errtype), funname, parmnum);
+					     get_spelling (errtype), funname,
+					     parmnum);
 		      if (! TYPE_VOLATILE (ttl) && TYPE_VOLATILE (ttr))
 			warn_for_assignment ("%s discards `volatile' from pointer target type",
-					     get_spelling (errtype), funname, parmnum);
+					     get_spelling (errtype), funname,
+					     parmnum);
 		    }
 		  else
 		    {
-		      /* Because const and volatile on functions are restrictions
-			 that say the function will not do certain things,
-			 it is okay to use a const or volatile function
-			 where an ordinary one is wanted, but not vice-versa.  */
+		      /* Because const and volatile on functions are
+			 restrictions that say the function will not do
+			 certain things, it is okay to use a const or volatile
+			 function where an ordinary one is wanted, but not
+			 vice-versa.  */
 		      if (TYPE_READONLY (ttl) && ! TYPE_READONLY (ttr))
 			warn_for_assignment ("%s makes `const *' function pointer from non-const",
-					     get_spelling (errtype), funname, parmnum);
+					     get_spelling (errtype), funname,
+					     parmnum);
 		      if (TYPE_VOLATILE (ttl) && ! TYPE_VOLATILE (ttr))
 			warn_for_assignment ("%s makes `volatile *' function pointer from non-volatile",
-					     get_spelling (errtype), funname, parmnum);
+					     get_spelling (errtype), funname,
+					     parmnum);
 		    }
+
 		  if (pedantic
 		      && !(fundecl != 0 && DECL_IN_SYSTEM_HEADER (fundecl)))
 		    pedwarn ("ANSI C prohibits argument conversion to union type");
 		  return build1 (NOP_EXPR, type, rhs);
 		}
 	    }
+
+	  /* Can convert integer zero to any pointer type.  */
+	  else if (TREE_CODE (TREE_TYPE (memb_types)) == POINTER_TYPE
+		   && (integer_zerop (rhs)
+		       || (TREE_CODE (rhs) == NOP_EXPR
+			   && integer_zerop (TREE_OPERAND (rhs, 0)))))
+	    return build1 (NOP_EXPR, type, null_pointer_node);
 	}
     }
+
   /* Conversions among pointers */
   else if (codel == POINTER_TYPE && coder == POINTER_TYPE)
     {
