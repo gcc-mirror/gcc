@@ -1,3 +1,7 @@
+Mon Feb 17 16:16:54 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* recog.c (split_all_insns):  Fix memory overflow.
+
 2003-02-17  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (cmpqi): Remove mode from compare.
