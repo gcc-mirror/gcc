@@ -1,5 +1,9 @@
 2002-12-30  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (*addsi3_lshiftrt_16_zexthi): New.
+
+2002-12-30  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.c (output_logical_op): Use extu.w if we
 	are clearing the most significant byte.
 	(compute_logical_op_length): Update to reflect the change in
