@@ -990,13 +990,23 @@ Use this configuration for SCO release 3.2 version 4.
 
 @item i386-*-sco3.2v5*
 Use this for the SCO OpenServer Release family including 5.0.0, 5.0.2, 
-5.0.4, Internet FastStart 1.0, and Internet FastStart 1.1.
+5.0.4, 5.0.5, Internet FastStart 1.0, and Internet FastStart 1.1.
 
 GNU CC can generate either ELF or COFF binaries.   ELF is the default.
 To get COFF output, you must specify @samp{-mcoff}) on the command line.
 
 For 5.0.0 and 5.0.2, you must install TLS597 from ftp.sco.com/TLS.
 5.0.4 and later do not require this patch.
+
+The native SCO assembler that is provided with the OS at no charge
+is normally required.  If, however, you must be able to use the GNU
+assembler (perhaps you have complex asms) you must configure this
+package @samp{--with-gnu-as}.  To do this, install (cp or symlink)
+gcc/as to your copy of the GNU assembler.  You must use a recent version
+of GNU binutils; version 2.9.1 seems to work well.  If you select this
+option, you will be unable to build COFF images.  Trying to do so will
+result in non-obvious failures.  In general, the "--with-gnu-as" option
+isn't as well tested as the native assembler.
 
 @emph{NOTE:} You must follow the instructions about invoking
 @samp{make bootstrap} because the native OpenServer compiler builds

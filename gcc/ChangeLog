@@ -1,3 +1,13 @@
+Thu Jul  2 10:11:47 1998  Robert Lipe  <robertl@dgii.com>
+
+	* install.texi (sco3.2v5): Document new --with-gnu-as flag.
+	* config/i386/sco5.h (JUMP_TABLES_IN_TEXT_SECTION): Defined as
+	in other targets.
+	(USE_GAS): Conditionalize away native assembler usage.
+	* config/i386/sco5gas.h: New file.
+	* config/i386/t-sco5gas: New file.
+	* configure.in (ix86-sco3.2v5*): Use new files if --with-gnu-as
+
 Thu Jul 2 08:20:00 1998  Catherine Moore  <clm@cygnus.com>
 
         * haifa-sched.c (alloc_EXPR_LIST):  Change to use
