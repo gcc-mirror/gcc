@@ -1,5 +1,8 @@
 Wed Jul  8 21:43:14 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* flow.c (find_auto_inc): Remove most recent change.  Real bug was
+	elsewhere.
+
 	* cse.c (count_reg_usage): Count registers used in addresses of
 	CLOBBERs.
 

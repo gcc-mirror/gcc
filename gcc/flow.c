@@ -2386,10 +2386,6 @@ find_auto_inc (needed, x, insn)
 		 Then fall into the usual case.  */
 	      rtx insns, temp;
 
-	      /* Since q is now changed, clear its UNCHANGING bit.  Otherwise,
-		 we would confuse alias.c when this pseudo ends up in a stack
-		 slot.  */
-	      RTX_UNCHANGING_P (q) = 0;
 	      start_sequence ();
 	      emit_move_insn (q, addr);
 	      insns = get_insns ();
