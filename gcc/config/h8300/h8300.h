@@ -819,7 +819,7 @@ struct cum_arg
 #define REG_OK_FOR_INDEX_NONSTRICT_P(X) 0
 /* Don't use REGNO_OK_FOR_BASE_P here because it uses reg_renumber.  */
 #define REG_OK_FOR_BASE_NONSTRICT_P(X)				\
-  (REGNO (X) >= FIRST_PSEUDO_REGISTER || REGNO (X) != 8)
+  (REGNO (X) >= FIRST_PSEUDO_REGISTER || REGNO (X) != MAC_REG)
 
 /* Strict versions.  */
 #define REG_OK_FOR_INDEX_STRICT_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))

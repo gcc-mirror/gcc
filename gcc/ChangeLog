@@ -1,5 +1,10 @@
 2004-02-05  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.h (REG_OK_FOR_BASE_NONSTRICT_P): Replace
+	8 with MAC_REG.
+
+2004-02-05  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/pa/pa.c (emit_hpdiv_const): Replace gen_rtx with
 	gen_rtx_PARALLEL.
 
