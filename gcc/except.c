@@ -597,6 +597,7 @@ push_eh_entry (stack)
   entry->finalization = NULL_TREE;
   entry->label_used = 0;
   entry->exception_handler_label = gen_exception_label ();
+  entry->false_label = NULL_RTX;
 
   node->entry = entry;
   node->chain = stack->top;
@@ -1600,6 +1601,54 @@ start_catch_handler (rtime)
   receive_exception_label (handler_label);
 
   add_new_handler (eh_region_entry, get_new_handler (handler_label, rtime));
+
+  if (flag_new_exceptions && ! exceptions_via_longjmp)
+    return;
+
+  /* Under the old mechanism, as well as setjmp/longjmp, we need to
+     issue code to compare 'rtime' to the value in eh_info, via the
+     matching function in eh_info. If its is false, we branch around
+     the handler we are about to issue. */
+
+  if (rtime != NULL_TREE && rtime != CATCH_ALL_TYPE)
+    {
+      rtx call_rtx, rtime_address;
+
+      if (catchstack.top->entry->false_label != NULL_RTX)
+        error ("never issued previous false_label");
+      catchstack.top->entry->false_label = gen_exception_label ();
+
+      rtime_address = expand_expr (rtime, NULL_RTX, Pmode, EXPAND_INITIALIZER);
+      rtime_address = force_reg (Pmode, rtime_address);
+
+      /* Now issue the call, and branch around handler if needed */
+      call_rtx = emit_library_call_value (
+        gen_rtx_SYMBOL_REF (Pmode, "__eh_rtime_match"), NULL_RTX, 
+                                        0, SImode, 1, rtime_address, Pmode);
+
+      /* Did the function return true? */
+      emit_cmp_insn (call_rtx, const0_rtx, EQ, NULL_RTX,
+                                                GET_MODE (call_rtx), 0 ,0);
+      emit_jump_insn (gen_beq (catchstack.top->entry->false_label));
+    }
+}
+
+/* Called to end a catch clause. If we aren't using the new exception
+   model tabel mechanism, we need to issue the branch-around label
+   for the end of the catch block. */
+
+void 
+end_catch_handler ()
+{
+  if (! doing_eh (1) || (flag_new_exceptions && ! exceptions_via_longjmp))
+    return;
+  
+  /* A NULL label implies the catch clause was a catch all or cleanup */
+  if (catchstack.top->entry->false_label == NULL_RTX)
+    return;
+
+  emit_label (catchstack.top->entry->false_label);
+  catchstack.top->entry->false_label = NULL_RTX;
 }
 
 /* Generate RTL for the start of a group of catch clauses. 
@@ -1693,9 +1742,6 @@ expand_start_all_catch ()
       ehstack.top->entry->outer_context = outer_context;
     }
 
-  /* We also have to start the handler if we aren't using the new model. */
-  if (! flag_new_exceptions)
-    start_catch_handler (NULL);
 }
 
 /* Finish up the catch block.  At this point all the insns for the
@@ -1927,6 +1973,9 @@ output_exception_table_entry (file, n)
                                                 POINTER_SIZE / BITS_PER_UNIT);
         }
       putc ('\n', file);		/* blank line */
+      /* We only output the first label under the old scheme */
+      if (! flag_new_exceptions)
+        break;
     }
 }
 

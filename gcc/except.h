@@ -53,6 +53,10 @@ struct label_node {
    label or not. New ones are needed for additional catch blocks if
    it has.
 
+   FALSE_LABEL is used when either setjmp/longjmp exceptions are in
+   use, or old style table exceptions. It contains the label for 
+   branching to the next runtime type check as handlers are processed.
+
    FINALIZATION is the tree codes for the handler, or is NULL_TREE if
    one hasn't been generated yet, or is integer_zero_node to mark the
    end of a group of try blocks.  */
@@ -62,6 +66,7 @@ struct eh_entry {
   rtx exception_handler_label;
   tree finalization;
   int label_used;
+  rtx false_label;
 };
 
 /* A list of EH_ENTRYs. ENTRY is the entry; CHAIN points to the next
@@ -236,6 +241,10 @@ extern void add_eh_table_entry			PROTO((int n));
 #ifdef TREE_CODE
 extern void start_catch_handler                 PROTO((tree));
 #endif
+
+/* End an individual catch clause. */
+
+extern void end_catch_handler                   PROTO((void));
 
 /* Returns a non-zero value if we need to output an exception table.  */
 

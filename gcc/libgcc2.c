@@ -3355,6 +3355,21 @@ __sjpopnthrow ()
 
 /* Support code for all exception region-based exception handling.  */
 
+int
+__eh_rtime_match (void *rtime)
+{
+  void *info;
+  __eh_matcher matcher;
+  void *ret;
+
+  info = *(__get_eh_info ());
+  matcher = ((__eh_info *)info)->match_function;
+  if (!matcher)
+    perror ("No runtime type matcher available");
+  ret = (*matcher) (info, rtime, (void *)0);
+  return ((int)ret);
+}
+
 /* This value identifies the place from which an exception is being
    thrown.  */
 
