@@ -7016,18 +7016,6 @@ expand_function_end (filename, line, end_bindings)
      instead of using the general framework.  */
   use_return_register ();
 
-  /* Output a return insn if we are using one.
-     Otherwise, let the rtl chain end here, to drop through
-     into the epilogue.  */
-
-#ifdef HAVE_return
-  if (HAVE_return)
-    {
-      emit_jump_insn (gen_return ());
-      emit_barrier ();
-    }
-#endif
-
   /* Fix up any gotos that jumped out to the outermost
      binding level of the function.
      Must follow emitting RETURN_LABEL.  */

@@ -1932,6 +1932,15 @@
   ""
   "ret")
 
+(define_expand "epilogue"
+  [(return)]
+  ""
+  "
+{
+  emit_jump_insn (gen_return ());
+  DONE;
+}")
+
 (define_insn "nop"
   [(const_int 0)]
   ""

@@ -403,7 +403,7 @@ static void expand_nl_goto_receiver	PARAMS ((void));
 static void expand_nl_goto_receivers	PARAMS ((struct nesting *));
 static void fixup_gotos			PARAMS ((struct nesting *, rtx, tree,
 					       rtx, int));
-static void expand_null_return_1	PARAMS ((rtx, int));
+static void expand_null_return_1	PARAMS ((rtx));
 static void expand_value_return		PARAMS ((rtx));
 static int tail_recursion_args		PARAMS ((tree, tree));
 static void expand_cleanups		PARAMS ((tree, tree, int, int));
@@ -2864,7 +2864,6 @@ expand_exit_something ()
 void
 expand_null_return ()
 {
-  struct nesting *block = block_stack;
   rtx last_insn = get_last_insn ();
 
   /* If this function was declared to return a value, but we
@@ -2872,13 +2871,7 @@ expand_null_return ()
      propogated live to the rest of the function.  */
   clobber_return_register ();
 
-  /* Does any pending block have cleanups?  */
-  while (block && block->data.block.cleanups == 0)
-    block = block->next;
-
-  /* If yes, use a goto to return, since that runs cleanups.  */
-
-  expand_null_return_1 (last_insn, block != 0);
+  expand_null_return_1 (last_insn);
 }
 
 /* Generate RTL to return from the current function, with value VAL.  */
@@ -2887,7 +2880,6 @@ static void
 expand_value_return (val)
      rtx val;
 {
-  struct nesting *block = block_stack;
   rtx last_insn = get_last_insn ();
   rtx return_reg = DECL_RTL (DECL_RESULT (current_function_decl));
 
@@ -2914,27 +2906,15 @@ expand_value_return (val)
 	emit_move_insn (return_reg, val);
     }
 
-  /* Does any pending block have cleanups?  */
-
-  while (block && block->data.block.cleanups == 0)
-    block = block->next;
-
-  /* If yes, use a goto to return, since that runs cleanups.
-     Use LAST_INSN to put cleanups *before* the move insn emitted above.  */
-
-  expand_null_return_1 (last_insn, block != 0);
+  expand_null_return_1 (last_insn);
 }
 
 /* Output a return with no value.  If LAST_INSN is nonzero,
-   pretend that the return takes place after LAST_INSN.
-   If USE_GOTO is nonzero then don't use a return instruction;
-   go to the return label instead.  This causes any cleanups
-   of pending blocks to be executed normally.  */
+   pretend that the return takes place after LAST_INSN.  */
 
 static void
-expand_null_return_1 (last_insn, use_goto)
+expand_null_return_1 (last_insn)
      rtx last_insn;
-     int use_goto;
 {
   rtx end_label = cleanup_label ? cleanup_label : return_label;
 
@@ -2942,27 +2922,8 @@ expand_null_return_1 (last_insn, use_goto)
   do_pending_stack_adjust ();
   last_expr_type = 0;
 
-  /* PCC-struct return always uses an epilogue.  */
-  if (current_function_returns_pcc_struct || use_goto)
-    {
-      if (end_label == 0)
-	end_label = return_label = gen_label_rtx ();
-      expand_goto_internal (NULL_TREE, end_label, last_insn);
-      return;
-    }
-
-  /* Otherwise output a simple return-insn if one is available,
-     unless it won't do the job.  */
-#ifdef HAVE_return
-  if (HAVE_return && use_goto == 0 && cleanup_label == 0)
-    {
-      emit_jump_insn (gen_return ());
-      emit_barrier ();
-      return;
-    }
-#endif
-
-  /* Otherwise jump to the epilogue.  */
+  if (end_label == 0)
+     end_label = return_label = gen_label_rtx ();
   expand_goto_internal (NULL_TREE, end_label, last_insn);
 }
 
