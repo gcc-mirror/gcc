@@ -949,7 +949,7 @@ force_nonfallthru_and_redirect (e, target)
       && JUMP_LABEL (e->src->end) == e->dest->head)
     {
       rtx note;
-      edge b = make_edge (e->src, target, 0);
+      edge b = unchecked_make_edge (e->src, target, 0);
 
       if (!redirect_jump (e->src->end, block_label (target), 0))
 	abort ();

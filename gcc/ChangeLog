@@ -1,3 +1,8 @@
+Mon Apr 14 16:14:37 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	PR opt/10024
+	* cfgrtl.c (force_nonfallthru_and_redirect): Use unchecked_make_edge.
+
 2003-04-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* doc/contrib.texi (Contributors): Correct my entry.
