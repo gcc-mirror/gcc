@@ -1,3 +1,7 @@
+Tue Apr 25 14:06:40 2000  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* config/i386/freebsd.h (INT_ASM_OP): Define.
+
 Tue Apr 25 14:51:07 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* loop.c (strength_reduce): Fix typo in the last checkin.

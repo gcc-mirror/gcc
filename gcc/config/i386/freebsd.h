@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Intel 80386
    running FreeBSD.
-   Copyright (C) 1988, 1992, 1994, 1996, 1997, 1999 Free Software
+   Copyright (C) 1988, 1992, 1994, 1996, 1997, 1999, 2000 Free Software
    Foundation, Inc.
    Contributed by Poul-Henning Kamp <phk@login.dkuug.dk>
 
@@ -245,3 +245,8 @@ do {                                                                    \
 
 /* Define this so we can compile MS code for use with WINE.  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP
+
+/* This is the pseudo-op used to generate a 32-bit word of data with a
+   specific value in some section.  */
+
+#define INT_ASM_OP ".long"
