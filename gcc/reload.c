@@ -1963,12 +1963,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
       register RTX_CODE code = GET_CODE (recog_operand[i]);
       modified[i] = RELOAD_READ;
       address_reloaded[i] = 0;
-      preferred_class[i]
-	= ((code == REG && REGNO (recog_operand[i]) > FIRST_PSEUDO_REGISTER)
-	   ? reg_preferred_class (REGNO (recog_operand[i])) : NO_REGS);
-      pref_or_nothing[i]
-	= (code == REG && REGNO (recog_operand[i]) > FIRST_PSEUDO_REGISTER
-	   && reg_preferred_or_nothing (REGNO (recog_operand[i])));
 
       if (constraints[i][0] == 'p')
 	{
@@ -2037,13 +2031,17 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 				    &XEXP (recog_operand[i], 0),
 				    recog_operand[i], ind_levels);
 	      substed_operand[i] = recog_operand[i] = *recog_operand_loc[i];
-
-	      /* This is no longer a psuedo register.  To prevent later code
-		 from thinking it still is, we must reset the preferred_class
-		 to NO_REGS.  */
-	      preferred_class[i] = NO_REGS;
 	    }
 	}
+      /* If the operand is still a register (we didn't replace it with an
+	 equivalent), get the preferred class to reload it into.  */
+      code = GET_CODE (recog_operand[i]);
+      preferred_class[i]
+	= ((code == REG && REGNO (recog_operand[i]) > FIRST_PSEUDO_REGISTER)
+	   ? reg_preferred_class (REGNO (recog_operand[i])) : NO_REGS);
+      pref_or_nothing[i]
+	= (code == REG && REGNO (recog_operand[i]) > FIRST_PSEUDO_REGISTER
+	   && reg_preferred_or_nothing (REGNO (recog_operand[i])));
     }
 
   /* If this is simply a copy from operand 1 to operand 0, merge the
