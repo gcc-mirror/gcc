@@ -2878,7 +2878,6 @@ struct resword
 #define D_EXT	0x04	/* GCC extension */
 #define D_EXT89	0x08	/* GCC extension incorporated in C99 */
 #define D_OBJC	0x10	/* Objective C only */
-#define D_YES	0x20	/* always starts disabled */
 
 static const struct resword reswords[] =
 {
@@ -2971,12 +2970,12 @@ ifobjc
   { "@public",		RID_AT_PUBLIC,		D_OBJC },
   { "@selector",	RID_AT_SELECTOR,	D_OBJC },
   { "id",		RID_ID,			D_OBJC },
-  { "bycopy",		RID_BYCOPY,		D_OBJC|D_YES },
-  { "byref",		RID_BYREF,		D_OBJC|D_YES },
-  { "in",		RID_IN,			D_OBJC|D_YES },
-  { "inout",		RID_INOUT,		D_OBJC|D_YES },
-  { "oneway",		RID_ONEWAY,		D_OBJC|D_YES },
-  { "out",		RID_OUT,		D_OBJC|D_YES },
+  { "bycopy",		RID_BYCOPY,		D_OBJC },
+  { "byref",		RID_BYREF,		D_OBJC },
+  { "in",		RID_IN,			D_OBJC },
+  { "inout",		RID_INOUT,		D_OBJC },
+  { "oneway",		RID_ONEWAY,		D_OBJC },
+  { "out",		RID_OUT,		D_OBJC },
 end ifobjc
 };
 #define N_reswords (sizeof reswords / sizeof (struct resword))
@@ -3138,14 +3137,12 @@ init_reswords ()
 
       id = get_identifier (reswords[i].word);
       C_RID_CODE (id) = reswords[i].rid;
+      C_IS_RESERVED_WORD (id) = 1;
       ridpointers [(int) reswords[i].rid] = id;
-
-      /* Objective C does tricky things with enabling and disabling 
-	 keywords.  So these we must not elide in the test above, but
-	 wait and not mark them reserved now.  */
-      if (! (reswords[i].disable & D_YES))
-	C_IS_RESERVED_WORD (id) = 1;
     }
+ifobjc
+  save_and_forget_protocol_qualifiers ();
+end ifobjc
 }
 
 const char *

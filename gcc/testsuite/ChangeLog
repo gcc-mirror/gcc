@@ -1,3 +1,7 @@
+2001-03-01  Zack Weinberg  <zackw@stanford.edu>
+
+	* objc/execute/bycopy-3.m: New test.
+
 2001-03-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/using1.C: New test.

@@ -8590,25 +8590,45 @@ lookup_objc_ivar (id)
     return 0;
 }
 
-/* Parser callbacks.  */
+/* Parser callbacks.
+   Some ObjC keywords are reserved only in a particular context:
+   in out inout bycopy byref oneway.
+   We have to save and restore the IDENTIFIER_NODEs that describe
+   them as keywords, when appropriate.  */
+
+#define N_PQ 6
+static tree saved_pq[N_PQ];
+static tree saved_not_pq[N_PQ];
+static const char *const pq_strings[N_PQ] = {
+  "bycopy", "byref", "in", "inout", "oneway", "out"
+};
+
+void
+save_and_forget_protocol_qualifiers ()
+{
+  int i;
+  for (i = 0; i < N_PQ; i++)
+    saved_pq[i] = set_identifier (pq_strings[i], NULL_TREE);
+
+  ggc_add_tree_root (saved_pq, N_PQ);
+  ggc_add_tree_root (saved_not_pq, N_PQ);
+}
+
 void
 forget_protocol_qualifiers ()
 {
-  C_IS_RESERVED_WORD (ridpointers[(int) RID_IN]) = 0;
-  C_IS_RESERVED_WORD (ridpointers[(int) RID_OUT]) = 0;
-  C_IS_RESERVED_WORD (ridpointers[(int) RID_INOUT]) = 0;
-  C_IS_RESERVED_WORD (ridpointers[(int) RID_BYCOPY]) = 0;
-  C_IS_RESERVED_WORD (ridpointers[(int) RID_BYREF]) = 0;
-  C_IS_RESERVED_WORD (ridpointers[(int) RID_ONEWAY]) = 0;
+  int i;
+  for (i = 0; i < N_PQ; i++)
+    {
+      set_identifier (pq_strings[i], saved_not_pq[i]);
+      saved_not_pq[i] = NULL_TREE;
+    }
 }
 
 void
 remember_protocol_qualifiers ()
 {
-  C_IS_RESERVED_WORD (ridpointers[(int) RID_IN]) = 1;
-  C_IS_RESERVED_WORD (ridpointers[(int) RID_OUT]) = 1;
-  C_IS_RESERVED_WORD (ridpointers[(int) RID_INOUT]) = 1;
-  C_IS_RESERVED_WORD (ridpointers[(int) RID_BYCOPY]) = 1;
-  C_IS_RESERVED_WORD (ridpointers[(int) RID_BYREF]) = 1;
-  C_IS_RESERVED_WORD (ridpointers[(int) RID_ONEWAY]) = 1;
+  int i;
+  for (i = 0; i < N_PQ; i++)
+    saved_not_pq[i] = set_identifier (pq_strings[i], saved_pq[i]);
 }

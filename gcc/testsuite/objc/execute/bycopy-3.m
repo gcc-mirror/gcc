@@ -6,7 +6,7 @@
 /*
  * This test contains some no-op code which is needed to keep it
  * compile on broken gcc 3.x.  Anyway, the no-op code does not
- * interfere with what we are testing, which is that the `bycopy'
+ * interfere with what we are testing, which is that the `bycopy'   
  * keyword generates the _F_BYCOPY qualifier for the return type.  */
 
 #include <objc/objc.h>
@@ -19,7 +19,7 @@
 @end
 
 /* This no-op class to keep it compile under broken gcc 3.x */
-@interface MyObject : Object <MyProtocol> 
+@interface MyObject : Object <MyProtocol>
 @end
 
 @implementation MyObject
@@ -45,7 +45,7 @@ int main (void)
   /* Ask to the protocol for the description of the method bycopyMethod */
   method = [protocol descriptionForClassMethod: @selector (bycopyMethod)];
   if (method == NULL)
-    {
+    {                
       printf ("Could not find method bycopyMethod in protocol!\n");
       exit (1);
     }
@@ -53,10 +53,10 @@ int main (void)
   /* Get the method types for the method - which encode return type,
      arguments etc. */
   method_types = method->types;
-
+   
   /* Get the qualifiers for the return type */
   qualifiers = objc_get_type_qualifiers (method_types);
-
+ 
   /* If _F_BYCOPY is not there, the compiler is broken */
   if (! (qualifiers & _F_BYCOPY))
     {
@@ -64,6 +64,6 @@ int main (void)
       exit (1);
     }
 
-  /* Else, happy end */
+  /* Else, happy end */   
   return 0;
 }
