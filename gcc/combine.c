@@ -8803,12 +8803,11 @@ get_last_value (x)
     return 0;
 
   /* If the value was set in a later insn that the ones we are processing,
-     we can't use it, but make a quick check to see if the previous insn
-     set it to something.  This is commonly the case when the same pseudo
-     is used by repeated insns.  */
+     we can't use it even if the register was only set once, but make a quick
+     check to see if the previous insn set it to something.  This is commonly
+     the case when the same pseudo is used by repeated insns.  */
 
-  if (reg_n_sets[regno] != 1
-      && INSN_CUID (reg_last_set[regno]) >= subst_low_cuid)
+  if (INSN_CUID (reg_last_set[regno]) >= subst_low_cuid)
     {
       rtx insn, set;
 
