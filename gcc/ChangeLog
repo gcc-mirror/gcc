@@ -3,12 +3,14 @@
 	* gcc.c (init_gcc_spec): Do not link with static libgcc.a if
 	gcc invoked with -shared.
 
-2001-01-02  Hans-Peter Nilsson  <hp@bitrange.com>
+	* config/rs6000/t-aix43: Revert previous change.
+
+2002-01-02  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* unwind-dw2-fde.c (fde_unencoded_compare): Derefer pc_begin
 	fields when comparing.
 
-2001-01-02  Richard Henderson  <rth@redhat.com>
+2002-01-02  Richard Henderson  <rth@redhat.com>
 
 	* unwind-dw2-fde.c (fde_compare_t): Change return type to int.
 	(fde_unencoded_compare): Likewise.  Don't use subtraction to get
