@@ -46,6 +46,17 @@ struct range_scrollbar
 };
 
 static void 
+post_change_event (GtkRange *range,
+		   struct range_scrollbar *rs)
+{
+  GtkAdjustment *adj;
+  adj = gtk_range_get_adjustment (range);
+  (*gdk_env)->CallVoidMethod (gdk_env, *(rs->scrollbar), postAdjustmentEventID,
+			      AWT_ADJUSTMENT_TRACK, (jint) adj->value);
+  
+}
+
+static void 
 post_adjustment_event (GtkRange *range, GtkScrollType scroll, 
 		       struct range_scrollbar *rs)
 {
@@ -56,15 +67,23 @@ post_adjustment_event (GtkRange *range, GtkScrollType scroll,
 
   switch (scroll)
     {
+    case GTK_SCROLL_STEP_UP:
+    case GTK_SCROLL_STEP_RIGHT:
     case GTK_SCROLL_STEP_FORWARD:
       type = AWT_ADJUSTMENT_UNIT_INCREMENT;
       break;
+    case GTK_SCROLL_STEP_DOWN:
+    case GTK_SCROLL_STEP_LEFT:
     case GTK_SCROLL_STEP_BACKWARD:
       type = AWT_ADJUSTMENT_UNIT_DECREMENT;
       break;
+    case GTK_SCROLL_PAGE_UP:
+    case GTK_SCROLL_PAGE_RIGHT:
     case GTK_SCROLL_PAGE_FORWARD:
       type = AWT_ADJUSTMENT_BLOCK_INCREMENT;
       break;
+    case GTK_SCROLL_PAGE_DOWN:
+    case GTK_SCROLL_PAGE_LEFT:
     case GTK_SCROLL_PAGE_BACKWARD:
       type = AWT_ADJUSTMENT_BLOCK_DECREMENT;
       break;
@@ -118,8 +137,13 @@ Java_gnu_java_awt_peer_gtk_GtkScrollbarPeer_connectHooks
   rs->scrollbar = (jobject *) malloc (sizeof (jobject));
   *(rs->scrollbar) = (*env)->NewGlobalRef (env, obj);
   gtk_signal_connect (GTK_OBJECT (GTK_RANGE (ptr)), 
-		      "move_slider", 
+		      "move-slider", 
 		      GTK_SIGNAL_FUNC (post_adjustment_event), rs);
+
+  gtk_signal_connect (GTK_OBJECT (GTK_RANGE (ptr)), 
+		      "value-changed", 
+		      GTK_SIGNAL_FUNC (post_change_event), rs);
+
 
   connect_awt_hook (env, obj, 1, GTK_SCROLLBAR (ptr)->range);
   gdk_threads_leave ();
