@@ -1,3 +1,12 @@
+2000-12-05  Tom Tromey  <tromey@redhat.com>
+
+	* java/text/Collator.java (decomposeCharacter, decmp, strength):
+	Now package-private, not protected.
+	* java/text/DateFormatSymbols.java (equals): Now private.
+	* java/text/DecimalFormatSymbols.java (safeGetChar): Now private.
+	* java/util/BitSet.java: Class no longer final.
+	* java/util/Set.java (toArray(Object[])): New method.
+
 2000-12-04  Warren Levy  <warrenl@redhat.com>
 
 	* java/util/TimeZone.java (getAvailableIDs): Activated commented

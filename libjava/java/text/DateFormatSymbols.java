@@ -265,7 +265,7 @@ public class DateFormatSymbols extends Object
   }
 
   /* Does a "deep" equality test - recurses into arrays. */
-  protected static boolean equals (Object x, Object y)
+  private static boolean equals (Object x, Object y)
   {
     if (x == y)
       return true;
