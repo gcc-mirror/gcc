@@ -53,8 +53,10 @@ extern time_t time ();
 #else
 #include <strings.h>
 #define strrchr rindex
-#define getcwd(s,len) getwd(s)
 #endif
+
+char *getpwd ();
+
 
 /* IMPORTANT NOTE: Please see the file README.DWARF for important details
    regarding the GNU implementation of Dwarf.  */
@@ -305,22 +307,22 @@ static unsigned lookup_filename ();
    what is expected by "standard" AT&T System V.4 assemblers.  */
 
 #ifndef FILE_ASM_OP
-#define FILE_ASM_OP		"\t.file"
+#define FILE_ASM_OP		".file"
 #endif
 #ifndef VERSION_ASM_OP
-#define VERSION_ASM_OP		"\t.version"
+#define VERSION_ASM_OP		".version"
 #endif
 #ifndef SECTION_ASM_OP
-#define SECTION_ASM_OP		"\t.section"
+#define SECTION_ASM_OP		".section"
 #endif
 #ifndef UNALIGNED_SHORT_ASM_OP
-#define UNALIGNED_SHORT_ASM_OP	"\t.2byte"
+#define UNALIGNED_SHORT_ASM_OP	".2byte"
 #endif
 #ifndef UNALIGNED_INT_ASM_OP
-#define UNALIGNED_INT_ASM_OP	"\t.4byte"
+#define UNALIGNED_INT_ASM_OP	".4byte"
 #endif
 #ifndef DEF_ASM_OP
-#define DEF_ASM_OP		"\t.set"
+#define DEF_ASM_OP		".set"
 #endif
 
 /* This macro is already used elsewhere and has a published default.  */
@@ -484,12 +486,12 @@ static unsigned lookup_filename ();
 
 #ifndef ASM_OUTPUT_SOURCE_FILENAME
 #define ASM_OUTPUT_SOURCE_FILENAME(FILE,NAME) \
-  fprintf ((FILE), "%s\t\"%s\"\n", FILE_ASM_OP, NAME)
+  fprintf ((FILE), "\t%s\t\"%s\"\n", FILE_ASM_OP, NAME)
 #endif
 
 #ifndef ASM_OUTPUT_DEF
 #define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)				\
- do {	fprintf ((FILE), "%s\t", DEF_ASM_OP);				\
+ do {	fprintf ((FILE), "\t%s\t", DEF_ASM_OP);				\
 	assemble_name (FILE, LABEL1);					\
 	fprintf (FILE, ",");						\
 	assemble_name (FILE, LABEL2);					\
@@ -569,7 +571,7 @@ static unsigned lookup_filename ();
 
 #ifndef ASM_OUTPUT_DWARF_DELTA2
 #define ASM_OUTPUT_DWARF_DELTA2(FILE,LABEL1,LABEL2)			\
- do {	fprintf ((FILE), "%s\t", UNALIGNED_SHORT_ASM_OP);		\
+ do {	fprintf ((FILE), "\t%s\t", UNALIGNED_SHORT_ASM_OP);		\
 	assemble_name (FILE, LABEL1);					\
 	fprintf (FILE, "-");						\
 	assemble_name (FILE, LABEL2);					\
@@ -579,7 +581,7 @@ static unsigned lookup_filename ();
 
 #ifndef ASM_OUTPUT_DWARF_DELTA4
 #define ASM_OUTPUT_DWARF_DELTA4(FILE,LABEL1,LABEL2)			\
- do {	fprintf ((FILE), "%s\t", UNALIGNED_INT_ASM_OP);			\
+ do {	fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);		\
 	assemble_name (FILE, LABEL1);					\
 	fprintf (FILE, "-");						\
 	assemble_name (FILE, LABEL2);					\
@@ -589,13 +591,13 @@ static unsigned lookup_filename ();
 
 #ifndef ASM_OUTPUT_DWARF_TAG
 #define ASM_OUTPUT_DWARF_TAG(FILE,TAG)					\
-  fprintf ((FILE), "%s\t0x%x\t%s %s\n", UNALIGNED_SHORT_ASM_OP,		\
+  fprintf ((FILE), "\t%s\t0x%x\t%s %s\n", UNALIGNED_SHORT_ASM_OP,	\
 	(unsigned) TAG, ASM_COMMENT_START, tag_name (TAG))
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_ATTRIBUTE
 #define ASM_OUTPUT_DWARF_ATTRIBUTE(FILE,ATTRIBUTE)			\
-  fprintf ((FILE), "%s\t0x%x\t%s %s\n", UNALIGNED_SHORT_ASM_OP,		\
+  fprintf ((FILE), "\t%s\t0x%x\t%s %s\n", UNALIGNED_SHORT_ASM_OP,	\
 	(unsigned) ATTRIBUTE, ASM_COMMENT_START, attribute_name (ATTRIBUTE))
 #endif
 
@@ -607,7 +609,7 @@ static unsigned lookup_filename ();
 
 #ifndef ASM_OUTPUT_DWARF_FUND_TYPE
 #define ASM_OUTPUT_DWARF_FUND_TYPE(FILE,FT)				\
-  fprintf ((FILE), "%s\t0x%x\t%s %s\n", UNALIGNED_SHORT_ASM_OP,		\
+  fprintf ((FILE), "\t%s\t0x%x\t%s %s\n", UNALIGNED_SHORT_ASM_OP,	\
 	(unsigned) FT, ASM_COMMENT_START, fundamental_type_name (FT))
 #endif
 
@@ -625,7 +627,7 @@ static unsigned lookup_filename ();
 
 #ifndef ASM_OUTPUT_DWARF_ADDR
 #define ASM_OUTPUT_DWARF_ADDR(FILE,LABEL)				\
- do {	fprintf ((FILE), "%s\t", UNALIGNED_INT_ASM_OP);			\
+ do {	fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);		\
 	assemble_name (FILE, LABEL);					\
 	fprintf (FILE, "\n");						\
   } while (0)
@@ -633,14 +635,14 @@ static unsigned lookup_filename ();
 
 #ifndef ASM_OUTPUT_DWARF_ADDR_CONST
 #define ASM_OUTPUT_DWARF_ADDR_CONST(FILE,RTX)				\
-  fprintf ((FILE), "%s\t", UNALIGNED_INT_ASM_OP);			\
+  fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);			\
   output_addr_const ((FILE), (RTX));					\
   fputc ('\n', (FILE))
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_REF
 #define ASM_OUTPUT_DWARF_REF(FILE,LABEL)				\
- do {	fprintf ((FILE), "%s\t", UNALIGNED_INT_ASM_OP);			\
+ do {	fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);		\
 	assemble_name (FILE, LABEL);					\
 	fprintf (FILE, "\n");						\
   } while (0)
@@ -653,12 +655,12 @@ static unsigned lookup_filename ();
 
 #ifndef ASM_OUTPUT_DWARF_DATA2
 #define ASM_OUTPUT_DWARF_DATA2(FILE,VALUE) \
-  fprintf ((FILE), "%s\t0x%x\n", UNALIGNED_SHORT_ASM_OP, (unsigned) VALUE)
+  fprintf ((FILE), "\t%s\t0x%x\n", UNALIGNED_SHORT_ASM_OP, (unsigned) VALUE)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DATA4
 #define ASM_OUTPUT_DWARF_DATA4(FILE,VALUE) \
-  fprintf ((FILE), "%s\t0x%x\n", UNALIGNED_INT_ASM_OP, (unsigned) VALUE)
+  fprintf ((FILE), "\t%s\t0x%x\n", UNALIGNED_INT_ASM_OP, (unsigned) VALUE)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DATA8
@@ -666,13 +668,13 @@ static unsigned lookup_filename ();
   do {									\
     if (WORDS_BIG_ENDIAN)						\
       {									\
-	fprintf ((FILE), "%s\t0x%x\n", UNALIGNED_INT_ASM_OP, HIGH_VALUE); \
-	fprintf ((FILE), "%s\t0x%x\n", UNALIGNED_INT_ASM_OP, LOW_VALUE);\
+	fprintf ((FILE), "\t%s\t0x%x\n", UNALIGNED_INT_ASM_OP, HIGH_VALUE); \
+	fprintf ((FILE), "\t%s\t0x%x\n", UNALIGNED_INT_ASM_OP, LOW_VALUE);\
       }									\
     else								\
       {									\
-	fprintf ((FILE), "%s\t0x%x\n", UNALIGNED_INT_ASM_OP, LOW_VALUE);\
-	fprintf ((FILE), "%s\t0x%x\n", UNALIGNED_INT_ASM_OP, HIGH_VALUE); \
+	fprintf ((FILE), "\t%s\t0x%x\n", UNALIGNED_INT_ASM_OP, LOW_VALUE);\
+	fprintf ((FILE), "\t%s\t0x%x\n", UNALIGNED_INT_ASM_OP, HIGH_VALUE); \
       }									\
   } while (0)
 #endif
@@ -1388,7 +1390,7 @@ location_attribute (rtl)
   ASM_OUTPUT_LABEL (asm_out_file, begin_label);
 
   /* Handle a special case.  If we are about to output a location descriptor
-     for a variable or parameter which has been optimized out of existance,
+     for a variable or parameter which has been optimized out of existence,
      don't do that.  Instead we output a zero-length location descriptor
      value as part of the location attribute.  Note that we cannot simply
      suppress the entire location attribute, because the absence of a
@@ -1555,15 +1557,16 @@ location_or_const_value_attribute (decl)
      with a means to describe that location also, but for now we can only
      describe the "passing" location.  */
 
-#if 0 /* This is probably right, but it leads to a lot of trouble.
+#if 1 /* This is probably right, but it leads to a lot of trouble.
 	 Fixing one problem has been exposing another,
 	 all of which seemed to have no ill effects before.
-	 Better to turn this off for now and try fix it later.  */
+	 Let's try it again for now.  */
   rtl = (TREE_CODE (decl) == PARM_DECL)
 	 ? DECL_INCOMING_RTL (decl)
 	 : DECL_RTL (decl);
-#endif
+#else
   rtl = DECL_RTL (decl);
+#endif
 
   if (rtl == NULL)
     return;
@@ -2581,22 +2584,9 @@ output_compile_unit_die (arg)
   last_filename = xstrdup (main_input_filename);
 
   {
-    register unsigned len = 1024;
-    register char *dirname = (char *) xmalloc (len + 1);
-
-    /* We don't know how much space the dirname needs,
-       so try bigger and bigger buffers until it fits.  */
-    while (1)
-      {
-	getcwd (dirname, len);	/* Being conservative here. */
-	if (strlen (dirname) < len - 1)	/* Being conservative here. */
-	  break;
-	len *= 2;
-	dirname = (char *) xrealloc (dirname, len + 1);
-      }
-
-    comp_dir_attribute (dirname);
-    free (dirname);
+    char *wd = getpwd ();
+    if (wd)
+      comp_dir_attribute (wd);
   }
 
   if (debug_info_level >= DINFO_LEVEL_NORMAL)
@@ -3440,7 +3430,7 @@ output_decl (decl, containing_scope)
 	        register tree parm;
 
 		/* WARNING!  Kludge zone ahead!  Here we have a special
-		   hack for svr4 SDB compatability.  Instead of passing the
+		   hack for svr4 SDB compatibility.  Instead of passing the
 		   current FUNCTION_DECL node as the second parameter (i.e.
 		   the `containing_scope' parameter) to `output_decl' (as
 		   we ought to) we instead pass a pointer to our own private
@@ -4062,7 +4052,7 @@ dwarfout_line (filename, line)
           filename = tail;
       }
 
-      fprintf (asm_out_file, "%s\t%u\t%s %s:%u\n",
+      fprintf (asm_out_file, "\t%s\t%u\t%s %s:%u\n",
 	       UNALIGNED_INT_ASM_OP, line, ASM_COMMENT_START,
 	       filename, line);
       ASM_OUTPUT_DWARF_DATA2 (asm_out_file, 0xffff);
@@ -4084,7 +4074,7 @@ generate_macinfo_entry (type_and_offset, string)
 {
   fputc ('\n', asm_out_file);
   ASM_DWARF_MACINFO_SECTION (asm_out_file);
-  fprintf (asm_out_file, "%s\t%s\n", UNALIGNED_INT_ASM_OP, type_and_offset);
+  fprintf (asm_out_file, "\t%s\t%s\n", UNALIGNED_INT_ASM_OP, type_and_offset);
   ASM_OUTPUT_DWARF_STRING (asm_out_file, string);
   ASM_DWARF_POP_SECTION (asm_out_file);
 }
@@ -4245,20 +4235,12 @@ dwarfout_init (asm_out_file, main_input_filename)
       ASM_DWARF_SFNAMES_SECTION (asm_out_file);
       ASM_OUTPUT_LABEL (asm_out_file, SFNAMES_BEGIN_LABEL);
       {
-	register unsigned len = 1024;
-	register char *dirname = (char *) xmalloc (len + 1);
+	register char *pwd = getpwd ();
+	register unsigned len = strlen (pwd);
+	register char *dirname = (char *) xmalloc (len + 2);
     
-	/* We don't know how much space the dirname needs,
-	   so try bigger and bigger buffers until it fits.  */
-	for (;;)
-	  {
-	    getcwd (dirname, len);	/* Being conservative here. */
-	    if (strlen (dirname) < len - 1)	/* Being conservative here. */
-	      break;
-	    len *= 2;
-	    dirname = (char *) xrealloc (dirname, len + 1);
-	  }
-	strcat (dirname, "/");
+	strcpy (dirname, pwd);
+	strcpy (dirname + len, "/");
         ASM_OUTPUT_DWARF_STRING (asm_out_file, dirname);
         free (dirname);
       }

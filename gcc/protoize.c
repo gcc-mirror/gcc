@@ -68,27 +68,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "gvarargs.h"
 #include "getopt.h"
 
-#ifndef PATH_MAX	/* <limits.h> defines this on most POSIX systems.  */
-#include <sys/param.h>
-/* Sometimes <sys/param.h> defines these macros.  */
-#undef CHAR_BIT
-#undef CHAR_MAX
-#undef CHAR_MIN
-#undef CLK_TCK
-#undef INT_MAX
-#undef INT_MIN
-#undef LONG_MAX
-#undef LONG_MIN
-#undef SCHAR_MAX
-#undef SCHAR_MIN
-#undef SHRT_MAX
-#undef SHRT_MIN
-#undef UCHAR_MAX
-#undef UINT_MAX
-#undef ULONG_MAX
-#undef USHRT_MAX
-#endif
-
 extern int errno;
 extern char *sys_errlist[];
 extern char *version_string;
@@ -108,12 +87,7 @@ extern char *version_string;
 #define my_open(file, mode, flag)	open((char *)file, mode, flag)
 #define my_chmod(file, mode)	chmod((char *)file, mode)
 
-#if !(defined (USG) || defined (VMS) || defined (POSIX))
-#define GUESSPATHLEN (MAXPATHLEN + 1)
-#else /* (defined (USG) || defined (VMS) || defined (POSIX)) */
-/* We actually use this as a starting point, not a limit.  */
-#define GUESSPATHLEN 200
-#endif /* (defined (USG) || defined (VMS) || defined (POSIX)) */
+char *getpwd ();
 
 /* Aliases for pointers to void.
    These were made to facilitate compilation with other compilers.  */
@@ -143,17 +117,6 @@ typedef char * const_pointer_type;
 
 #define O_RDONLY        0
 #define O_WRONLY        1
-
-/* Virtually every UN*X system now in common use (except for pre-4.3-tahoe
-   BSD systems) now provides getcwd as called for by POSIX.  Allow for
-   the few exceptions to the general rule here.  */
-
-#if !(defined (USG) || defined (VMS))
-extern char *getwd ();
-#define getcwd(buf,len) getwd(buf)
-#else /* (defined (USG) || defined (VMS)) */
-extern char *getcwd ();
-#endif /* (defined (USG) || defined (VMS)) */
 
 /* Declaring stat or __flsbuf with a prototype
    causes conflicts with system headers on some systems.  */
@@ -4403,23 +4366,16 @@ main (argc, argv)
 {
   int longind;
   int c;
-  int size;
 
   pname = strrchr (argv[0], '/');
   pname = pname ? pname+1 : argv[0];
 
-  /* Read the working directory, avoiding arbitrary limit.  */
-  size = GUESSPATHLEN;
-  while (1)
+  cwd_buffer = getpwd ();
+  if (!cwd_buffer)
     {
-      char *value;
-
-      cwd_buffer = (char *) xmalloc (size);
-      value = getcwd (cwd_buffer, size);
-      if (value != 0 || errno != ERANGE)
-	break;
-      free (cwd_buffer);
-      size *= 2;
+      fprintf (stderr, "%s: cannot get working directory: %s\n",
+	       pname, sys_errlist[errno]);
+      exit (1);
     }
 
   /* By default, convert the files in the current directory.  */
