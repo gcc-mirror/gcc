@@ -1,5 +1,13 @@
 2002-01-02  Kazu Hirata  <kazu@hxi.com>
 
+	* config/h8300/fixunssfsi.c: Update copyright.
+	Fix comment typos.
+	Fix formatting.
+	* config/h8300/h8300.c: Update copyright.
+	Eliminate warnings.
+
+2002-01-02  Kazu Hirata  <kazu@hxi.com>
+
 	* config/romp/romp.c: Fix comment formatting.
 	* config/romp/romp.h: Likewise.
 	* config/romp/romp.md: Likewise.

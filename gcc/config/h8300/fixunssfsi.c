@@ -1,6 +1,6 @@
 /* More subroutines needed by GCC output code on some machines.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1989, 1992, 2001  Free Software Foundation, Inc.
+/* Copyright (C) 1989, 1992, 2001, 2002  Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -29,15 +29,15 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* The libgcc2.c implementation gets confused by our type setup and creates
-   a directly recursive call, so we do our own implementation.  For the h8300,
-   that's in lib1funcs.asm, for h8300h / h8s, it's here.  */
+   a directly recursive call, so we do our own implementation.  For
+   the H8/300, that's in lib1funcs.asm, for H8/300H and H8/S, it's here.  */
 
 #ifndef __H8300__
 long
 __fixunssfsi (float a)
 {
   if (a >= (float) 32768L)
-    return (long) (a -32768L) +32768L;
+    return (long) (a - 32768L) + 32768L;
   return (long) a;
 }
 #endif

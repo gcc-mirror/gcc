@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for Hitachi H8/300.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
-   Free Software Foundation, Inc. 
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001, 2002 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -2519,6 +2519,8 @@ get_shift_alg (shift_type, shift_mode, count, info)
 	    case SHIFT_LSHIFTRT:
 	      info->special = "shll.w\t%e0\n\tmov.w\t%e0,%f0\n\txor.w\t%e0,%e0\n\trotxl.l\t%S0";
 	      goto end;
+	    case SHIFT_ASHIFTRT:
+	      abort ();
 	    }
 	}
       else if ((TARGET_H8300 && count == 16)
@@ -2933,7 +2935,7 @@ emit_a_rotate (code, operands)
 
   /* Determine the faster direction.  After this phase, amount will be
      at most a half of GET_MODE_BITSIZE (mode).  */
-  if ((unsigned int) amount > GET_MODE_BITSIZE (mode) / 2)
+  if ((unsigned int) amount > GET_MODE_BITSIZE (mode) / 2U)
     {
       /* Flip the direction.  */
       amount = GET_MODE_BITSIZE (mode) - amount;
@@ -3435,7 +3437,7 @@ h8300_adjust_insn_length (insn, length)
 
       /* Determine the faster direction.  After this phase, amount
 	 will be at most a half of GET_MODE_BITSIZE (mode).  */
-      if ((unsigned int) amount > GET_MODE_BITSIZE (mode) / 2)
+      if ((unsigned int) amount > GET_MODE_BITSIZE (mode) / 2U)
 	/* Flip the direction.  */
 	amount = GET_MODE_BITSIZE (mode) - amount;
 
