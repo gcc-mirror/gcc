@@ -1,3 +1,8 @@
+2003-10-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* name-lookup.c (binding_entry_free): Nullify name and type
+	fields. 
+
 2003-10-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12486

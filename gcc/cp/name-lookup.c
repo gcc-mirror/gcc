@@ -66,6 +66,8 @@ binding_entry_make (tree name, tree type)
 static inline void
 binding_entry_free (binding_entry entry)
 {
+  entry->name = NULL;
+  entry->type = NULL;
   entry->chain = free_binding_entry;
   free_binding_entry = entry;
 }
@@ -114,7 +116,6 @@ binding_table_free (binding_table table)
         {
           binding_entry entry = temp;
           temp = entry->chain;
-          entry->chain = NULL; 
           binding_entry_free (entry);
         }
       table->chain[i] = NULL;
