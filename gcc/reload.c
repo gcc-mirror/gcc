@@ -272,6 +272,8 @@ static rtx find_reloads_subreg_address PROTO((rtx, int, int, enum reload_type,
 					      int, rtx));
 static int find_inc_amount	PROTO((rtx, rtx));
 static int loc_mentioned_in_p	PROTO((rtx *, rtx));
+extern void debug_reload_to_stream PROTO((FILE *));
+extern void debug_reload PROTO((void));
 
 #ifdef HAVE_SECONDARY_RELOADS
 
@@ -571,7 +573,7 @@ push_secondary_reload (in_p, x, opnum, optional, reload_class, reload_mode,
 
 rtx
 get_secondary_mem (x, mode, opnum, type)
-     rtx x;
+     rtx x ATTRIBUTE_UNUSED;
      enum machine_mode mode;
      int opnum;
      enum reload_type type;
@@ -658,7 +660,7 @@ find_valid_class (m1, n)
 {
   int class;
   int regno;
-  enum reg_class best_class;
+  enum reg_class best_class = NO_REGS;
   int best_size = 0;
 
   for (class = 1; class < N_REG_CLASSES; class++)
@@ -2452,10 +2454,9 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   insn_code_number = INSN_CODE (insn);
   this_insn_is_asm = insn_code_number < 0;
 
-  bcopy ((char *) recog_data.operand_mode, (char *) operand_mode,
-	 noperands * sizeof (enum machine_mode));
-  bcopy ((char *) recog_data.constraints, (char *) constraints,
-	 noperands * sizeof (char *));
+  memcpy (operand_mode, recog_data.operand_mode,
+	  noperands * sizeof (enum machine_mode));
+  memcpy (constraints, recog_data.constraints, noperands * sizeof (char *));
 
   commutative = -1;
 
@@ -3433,8 +3434,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	  pref_or_nothing[commutative] = pref_or_nothing[commutative + 1];
 	  pref_or_nothing[commutative + 1] = t;
 
-	  bcopy ((char *) recog_data.constraints, (char *) constraints,
-		 noperands * sizeof (char *));
+	  memcpy (constraints, recog_data.constraints,
+		  noperands * sizeof (char *));
 	  goto try_swapped;
 	}
       else

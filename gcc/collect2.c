@@ -2094,8 +2094,8 @@ scan_prog_file (prog_name, which_pass)
      const char *prog_name;
      enum pass which_pass;
 {
-  void (*int_handler) ();
-  void (*quit_handler) ();
+  void (*int_handler) PROTO ((int));
+  void (*quit_handler) PROTO ((int));
   char *real_nm_argv[4];
   const char **nm_argv = (const char **) real_nm_argv;
   int pid;
@@ -2162,9 +2162,9 @@ scan_prog_file (prog_name, which_pass)
     }
 
   /* Parent context from here on.  */
-  int_handler  = (void (*) ())signal (SIGINT,  SIG_IGN);
+  int_handler  = (void (*) PROTO ((int))) signal (SIGINT,  SIG_IGN);
 #ifdef SIGQUIT
-  quit_handler = (void (*) ())signal (SIGQUIT, SIG_IGN);
+  quit_handler = (void (*) PROTO ((int))) signal (SIGQUIT, SIG_IGN);
 #endif
 
   if (close (pipe_fd[1]) < 0)
@@ -2539,8 +2539,8 @@ scan_libraries (prog_name)
 {
   static struct head libraries;		/* list of shared libraries found */
   struct id *list;
-  void (*int_handler) ();
-  void (*quit_handler) ();
+  void (*int_handler) PROTO ((int));
+  void (*quit_handler) PROTO ((int));
   char *real_ldd_argv[4];
   const char **ldd_argv = (const char **) real_ldd_argv;
   int pid;
@@ -2604,9 +2604,9 @@ scan_libraries (prog_name)
     }
 
   /* Parent context from here on.  */
-  int_handler  = (void (*) ()) signal (SIGINT,  SIG_IGN);
+  int_handler  = (void (*) PROTO ((int))) signal (SIGINT,  SIG_IGN);
 #ifdef SIGQUIT
-  quit_handler = (void (*) ()) signal (SIGQUIT, SIG_IGN);
+  quit_handler = (void (*) PROTO ((int))) signal (SIGQUIT, SIG_IGN);
 #endif
 
   if (close (pipe_fd[1]) < 0)

@@ -3714,7 +3714,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
   rtx end_insert_before;
   int loop_depth = 0;
   int n_extra_increment;
-  int unrolled_insn_copies;
+  int unrolled_insn_copies = 0;
 
   /* If scan_start points to the loop exit test, we have to be wary of
      subversive use of gotos inside expression statements.  */
@@ -6268,8 +6268,10 @@ general_induction_var (x, src_reg, add_val, mult_val, is_addr, pbenefit)
 
    *BENEFIT will be incremented by the benefit of any sub-giv encountered.  */
 
-static rtx sge_plus PROTO ((enum machine_mode, rtx, rtx));
-static rtx sge_plus_constant PROTO ((rtx, rtx));
+static rtx sge_plus PARAMS ((enum machine_mode, rtx, rtx));
+static rtx sge_plus_constant PARAMS ((rtx, rtx));
+static int cmp_combine_givs_stats PARAMS ((const PTR, const PTR));
+static int cmp_recombine_givs_stats PARAMS ((const PTR, const PTR));
 
 static rtx
 simplify_giv_expr (x, benefit)
@@ -7015,9 +7017,14 @@ struct combine_givs_stats
 };
 
 static int
-cmp_combine_givs_stats (x, y)
-     struct combine_givs_stats *x, *y;
+cmp_combine_givs_stats (xp, yp)
+     const PTR xp;
+     const PTR yp;
 {
+  const struct combine_givs_stats * const x =
+    (const struct combine_givs_stats *) xp;
+  const struct combine_givs_stats * const y =
+    (const struct combine_givs_stats *) yp;
   int d;
   d = y->total_benefit - x->total_benefit;
   /* Stabilize the sort.  */
@@ -7202,9 +7209,14 @@ struct recombine_givs_stats
    when scanning the array starting at the end, thus the arguments are
    used in reverse.  */
 static int
-cmp_recombine_givs_stats (x, y)
-     struct recombine_givs_stats *x, *y;
+cmp_recombine_givs_stats (xp, yp)
+     const PTR xp;
+     const PTR yp;
 {
+  const struct recombine_givs_stats * const x =
+    (const struct recombine_givs_stats *) xp;
+  const struct recombine_givs_stats * const y =
+    (const struct recombine_givs_stats *) yp;
   int d;
   d = y->start_luid - x->start_luid;
   /* Stabilize the sort.  */
@@ -7994,7 +8006,7 @@ check_dbra_loop (loop_end, insn_count, loop_start, loop_info)
 		  || (GET_CODE (comparison) == LE
 		      && no_use_except_counting)))
 	    {
-	      HOST_WIDE_INT add_val, add_adjust, comparison_val;
+	      HOST_WIDE_INT add_val, add_adjust, comparison_val = 0;
 	      rtx initial_value, comparison_value;
 	      int nonneg = 0;
 	      enum rtx_code cmp_code;
