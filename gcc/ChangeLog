@@ -1,3 +1,7 @@
+2000-07-18  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.c (.h spec): Fix typo.
+
 Wed Jul 19 01:22:15 CEST 2000  Marc Espie  <espie@cvs.openbsd.org>
 
 	* Makefile.in: Fix tradcif.c path.
