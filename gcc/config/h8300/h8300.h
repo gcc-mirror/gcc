@@ -724,13 +724,13 @@ struct cum_arg
 
    H8/300
 	      vvvv context
-   1 0000 7900xxxx		mov.w	#0x1234,r3
+   1 0000 7903xxxx		mov.w	#0x1234,r3
    2 0004 5A00xxxx		jmp	@0x1234
 	      ^^^^ function
 
    H8/300H
 	      vvvvvvvv context
-   2 0000 7A00xxxxxxxx		mov.l	#0x12345678,er3
+   2 0000 7A03xxxxxxxx		mov.l	#0x12345678,er3
    3 0006 5Axxxxxx		jmp	@0x123456
 	    ^^^^^^ function
 */
