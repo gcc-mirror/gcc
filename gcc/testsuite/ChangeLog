@@ -1,3 +1,11 @@
+2005-02-20  Dorit Naishlos  <dorit@il.ibm.com>
+
+	PR tree-optimization/19951
+	* g++.dg/vect: New directory.
+	* g++.dg/vect/vect.exp: New file.
+	* g++.dg/vect/pr19951.cc: New testcase.
+	* g++.dg/dg.exp: Also prune vectorizer tests.
+
 2005-02-20  Zack Weinberg  <zack@codesourcery.com>
 
 	PR 18785
