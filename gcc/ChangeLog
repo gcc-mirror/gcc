@@ -1,3 +1,11 @@
+Thu Sep 11 15:48:32 1997  Fred Fish  <fnf@ninemoons.com>
+
+	* cpplib.c (quote_string): Cast first arg of sprintf call
+	from "unsigned char *" to "char *".
+	(output_line_command): Ditto.
+	(macroexpand): Ditto.
+	(do_line): Cast atoi arg from "unsigned char *" to "char *".
+
 Wed Sep 10 21:37:30 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
