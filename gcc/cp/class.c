@@ -4759,7 +4759,15 @@ layout_class_type (tree t, tree *virtuals_p)
 	     field to the size of its declared type; the rest of the
 	     field is effectively invisible.  */
 	  DECL_SIZE (field) = TYPE_SIZE (type);
-	  DECL_MODE (field) = TYPE_MODE (type);
+	  /* We must also reset the DECL_MODE of the field.  */
+	  if (abi_version_at_least (2))
+	    DECL_MODE (field) = TYPE_MODE (type);
+	  else if (warn_abi
+		   && DECL_MODE (field) != TYPE_MODE (type))
+	    /* Versions of G++ before G++ 3.4 did not reset the
+	       DECL_MODE.  */
+	    warning ("the offset of `%D' may not be ABI-compliant and may "
+		     "change in a future version of GCC", field);
 	}
       else
 	layout_nonempty_base_or_field (rli, field, NULL_TREE,
