@@ -1,3 +1,156 @@
+2003-11-10  Ed Falis  <falis@gnat.com>
+
+	* 5ytiitho.adb: (procStartHookAdd): Definition and call deleted
+
+	* 5zinit.adb: (Install_Handler): Moved back to spec
+	(Install_Signal_Handlers): Deleted
+
+	* 5zthrini.adb: Added context clause for System.Storage_Elements
+	(Register): Only handles creation of taskVar; initialization moved to
+	Thread_Body_Enter.
+	(Reset_TSD): Deleted; replaced by Thread_Body_Enter
+	Added declaration of environment task secondary stack and
+	initialization.
+
+	* s-thread.adb: Implement bodies for thread body processing
+
+	* s-thread.ads: 
+	Added comment identifying supported targets for pragma Thread_Body.
+
+2003-11-10  Pascal Obry  <obry@gnat.com>
+
+	* adaint.c (_gnat_stat) [WIN32]: Check if name is not bigger than
+	GNAT_MAX_PATH_LEN.
+
+	* s-fileio.adb: 
+	(Open): Properly check for string length before copying into the buffer.
+	Raises Name_Error if buffer is too small. Note that this was a potential
+	buffer overflow.
+
+2003-11-10  Romain Berrendonner  <berrendo@act-europe.fr>
+
+	* bindgen.adb, comperr.adb: Code clean ups.
+	* gnatvsn.ads, gnatvsn.adb (Get_Gnat_Version_Type): New function.
+
+2003-11-10  Sergey Rybin  <rybin@act-europe.fr>
+
+	* gnat1drv.adb: Add call to Sem_Elim.Initialize.
+
+2003-11-10  Vincent Celier  <celier@gnat.com>
+
+	* gprcmd.adb: 
+	(Gprcmd): Add new command "prefix" to get the prefix of the GNAT
+	installation.
+
+	* make.adb (Scan_Make_Arg): Transmit -nostdlib to the compiler
+
+	* prj.adb: (Project_Empty): Add new boolean component Virtual
+
+	* prj.ads: (Virtual_Prefix): New constant string
+	(Project_Data): New boolean component Virtual
+
+	* prj-nmsc.adb (Language_Independent_Check): Adjust error message when
+	a library project is extended by a virtual extending project.
+
+	* prj-part.adb: 
+	Modifications throughout to implement extending-all project, including:
+	(Virtual_Hash, Processed_Hash): New hash tables
+	(Create_Virtual_Extending_Project): New procedure
+	(Look_For_Virtual_Projects_For): New procedure
+
+	* prj-proc.adb: 
+	(Process): After checking the projects, if main project is an
+	extending-all project, set the object directory of all virtual extending
+	project to the object directory of the main project.
+	Adjust error message when a virtual extending project has the same
+	object directory as an project being extended.
+	(Recursive_Process): If name starts with the virtual prefix, set Virtual
+	to True in the project data.
+
+	* prj-tree.adb: 
+	(Default_Project_Node): Add new boolean component Extending_All
+	(Is_Extending_All): New function
+	(Set_Is_Extending_All): New procedure
+
+	* prj-tree.ads: (Is_Extending_All): New function
+	(Set_Is_Extending_All): New procedure
+	(Project_Node_Record): New boolean component Extending_All
+
+	* switch-c.adb: (Scan_Front_End_Switches): Process -nostdlib
+
+	* vms_data.ads: 
+	Add qualifier /NOSTD_LIBRARIES (-nostdlib) for the compiler
+
+	* bld.adb (Recursive_Process): If MAKE_ROOT is not defined, call
+	"gprcmd prefix" to define it.
+
+2003-11-10  Thomas Quinot  <quinot@act-europe.fr>
+
+	* einfo.ads: Fix a typo and remove an extraneous word in comments.
+
+	* lib-load.adb: 
+	(Create_Dummy_Package_Unit): Set the scope of the entity for the
+	created dummy package to Standard_Standard, not to itself, to
+	defend other parts of the front-end against encoutering a cycle in
+	the scope chain.
+
+	* sem_ch10.adb: 
+	(Analyze_With_Clause): When setting the entities for the successive
+	N_Expanded_Names that constitute the name of a child unit, do not
+	attempt to go further than Standard_Standard in the chain of scopes.
+	This case arises from the placeholder units created by
+	Create_Dummy_Package_Unit in the case of a with_clause for a
+	nonexistent child unit.
+
+2003-11-10  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_ch6.adb: 
+	(Expand_Thread_Body): Place subprogram on scope stack, so that new
+	declarations are given the proper scope.
+
+	* sem_ch13.adb: 
+	(Check_Expr_Constants): Reject an expression that contains a constant
+	created during expansion, and that appears after the object to which
+	the address clause applies.
+
+	* sem_ch5.adb (Check_Controlled_Array_Attribute): Subsidiary of
+	Analyze_Iteration_Scheme, to rewrite a loop parameter specification
+	that uses 'Range of a function call with controlled components, so
+	that the function result can be finalized before starting the loop.
+
+	* sem_ch8.adb: 
+	(Find_Selected_Component): Improve error message when prefix is
+	an implicit dereference of an incomplete type.
+
+2003-11-10  Robert Dewar  <dewar@gnat.com>
+
+	* opt.ads: New Print_Standard flag for -gnatS switch
+
+	* sem_ch13.adb: Remove some additional checks for unaligned arrays
+
+	* cstand.adb (Create_Standard): Print out package standard if -gnatS
+	switch set
+
+	* debug.adb: Update doc for -gnatds to discuss relationship with new
+	-gnatS flag
+
+	* sinfo.adb: Add new field Entity_Or_Associated_Node
+
+	* sinfo.ads: Add new field Entity_Or_Associated_Node
+	Update documentation for Associated_Node and Entity fields to clarify
+	relationship and usage.
+
+	* sprint.adb: 
+	(Write_Id): Properly process Associated_Node field in generic template
+
+	* switch-c.adb: 
+	Recognize new -gnatS switch for printing package Standard
+	This replaces gnatpsta
+
+	* usage.adb: 
+	Add line for  new -gnatS switch for printing package Standard
+	This replaces gnatpsta
+
 2003-11-10  Andreas Jaeger  <aj@suse.de>
 
 	* 7sosprim.adb: tv_usec of struct_timeval and time_t are long
