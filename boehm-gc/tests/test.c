@@ -1624,7 +1624,7 @@ main()
 	}
 #   endif	/* GC_HPUX_THREADS */
     pthread_attr_init(&attr);
-#   if defined(GC_IRIX_THREADS)
+#   if defined(GC_IRIX_THREADS) || defined(GC_FREEBSD_THREADS)
     	pthread_attr_setstacksize(&attr, 1000000);
 #   endif
     n_tests = 0;

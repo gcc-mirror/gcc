@@ -1017,7 +1017,11 @@
 #   endif
 #   ifdef FREEBSD
 #	define OS_TYPE "FREEBSD"
-#	define MPROTECT_VDB
+#	ifndef GC_FREEBSD_THREADS
+#	    define MPROTECT_VDB
+#	endif
+#	define SIG_SUSPEND SIGUSR1
+#	define SIG_THR_RESTART SIGUSR2
 #	define FREEBSD_STACKBOTTOM
 #	ifdef __ELF__
 #	    define DYNAMIC_LOADING
