@@ -1,0 +1,45 @@
+/* Definitions of target machine for GNU compiler.  MIPS R3000 version with
+   GOFAST floating point library.
+   Copyright (C) 1994 Free Software Foundation, Inc.
+
+This file is part of GNU CC.
+
+GNU CC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+GNU CC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU CC; see the file COPYING.  If not, write to
+the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+
+/* Use ELF.  */
+#define OBJECT_FORMAT_ELF
+
+/* Until we figure out what MIPS ELF targets normally use, just do
+   stabs in ELF.  */
+#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+
+/* Mostly like ECOFF.  */
+#include "mips/ecoff.h"
+
+/* We need to use .esize and .etype instead of .size and .type to
+   avoid conflicting with ELF directives.  */
+#undef PUT_SDB_SIZE
+#define PUT_SDB_SIZE(a)					\
+do {							\
+  extern FILE *asm_out_text_file;			\
+  fprintf (asm_out_text_file, "\t.esize\t%d;", (a));	\
+} while (0)
+
+#undef PUT_SDB_TYPE
+#define PUT_SDB_TYPE(a)					\
+do {							\
+  extern FILE *asm_out_text_file;			\
+  fprintf (asm_out_text_file, "\t.etype\t0x%x;", (a));	\
+} while (0)
