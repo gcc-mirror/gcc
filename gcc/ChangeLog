@@ -1,3 +1,9 @@
+Wed Oct  7 21:19:46 1998  Ken Raeburn  <raeburn@cygnus.com>
+
+	* config/mips/mips.md (tablejump_internal3, tablejump_internal4
+	and matching define_insns): Tack on a `use' of the table label, so
+	flow analysis will recognize a tablejump.
+
 Wed Oct  7 17:33:39 1998  Richard Henderson  <rth@cygnus.com>
 
 	* gcse.c (pre_insert_insn): Tweek to notice that calls do not
