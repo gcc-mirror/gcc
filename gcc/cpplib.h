@@ -28,8 +28,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 extern "C" {
 #endif
 
-typedef unsigned char U_CHAR;
-
 typedef struct cpp_reader cpp_reader;
 typedef struct cpp_buffer cpp_buffer;
 typedef struct cpp_options cpp_options;
@@ -62,14 +60,6 @@ enum cpp_token
 };
 
 typedef int (*parse_cleanup_t) PARAMS((cpp_buffer *, cpp_reader *));
-
-extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
-extern enum cpp_token cpp_get_token PARAMS ((cpp_reader *));
-extern enum cpp_token cpp_get_non_space_token PARAMS ((cpp_reader *));
-extern enum cpp_token get_directive_token PARAMS ((cpp_reader *));
-
-/* This frees resources used by PFILE. */
-extern void cpp_cleanup PARAMS ((cpp_reader *PFILE));
 
 struct cpp_buffer
 {
@@ -227,8 +217,8 @@ struct cpp_reader
   /* A buffer and a table, used only by read_and_prescan (in cppfiles.c)
      which are allocated once per cpp_reader object to keep them off the
      stack and avoid setup costs.  */
-  U_CHAR *input_buffer;
-  U_CHAR *input_speccase;
+  unsigned char *input_buffer;
+  unsigned char *input_speccase;
   size_t input_buffer_len;
 };
 
@@ -236,70 +226,25 @@ struct cpp_reader
 /* True if we have seen a "fatal" error. */
 #define CPP_FATAL_ERRORS(READER) ((READER)->errors >= CPP_FATAL_LIMIT)
 
-#define CPP_BUF_PEEK(BUFFER) \
-  ((BUFFER)->cur < (BUFFER)->rlimit ? *(BUFFER)->cur : EOF)
-#define CPP_BUF_GET(BUFFER) \
-  ((BUFFER)->cur < (BUFFER)->rlimit ? *(BUFFER)->cur++ : EOF)
-#define CPP_FORWARD(BUFFER, N) ((BUFFER)->cur += (N))
-
 /* Macros for manipulating the token_buffer. */
-
-#define CPP_OUT_BUFFER(PFILE) ((PFILE)->token_buffer)
 
 /* Number of characters currently in PFILE's output buffer. */
 #define CPP_WRITTEN(PFILE) ((size_t)((PFILE)->limit - (PFILE)->token_buffer))
 #define CPP_PWRITTEN(PFILE) ((PFILE)->limit)
+#define CPP_ADJUST_WRITTEN(PFILE,DELTA) ((PFILE)->limit += (DELTA))
+#define CPP_SET_WRITTEN(PFILE,N) ((PFILE)->limit = (PFILE)->token_buffer + (N))
 
 /* Make sure PFILE->token_buffer has space for at least N more characters. */
 #define CPP_RESERVE(PFILE, N) \
   (CPP_WRITTEN (PFILE) + (size_t)(N) > (PFILE)->token_buffer_size \
    && (cpp_grow_buffer (PFILE, N), 0))
 
-/* Append string STR (of length N) to PFILE's output buffer.
-   Assume there is enough space. */
-#define CPP_PUTS_Q(PFILE, STR, N) \
-  (memcpy ((PFILE)->limit, STR, (N)), (PFILE)->limit += (N))
-/* Append string STR (of length N) to PFILE's output buffer.  Make space. */
-#define CPP_PUTS(PFILE, STR, N) CPP_RESERVE(PFILE, N), CPP_PUTS_Q(PFILE, STR,N)
-/* Append character CH to PFILE's output buffer.  Assume sufficient space. */
-#define CPP_PUTC_Q(PFILE, CH) (*(PFILE)->limit++ = (CH))
-/* Append character CH to PFILE's output buffer.  Make space if need be. */
-#define CPP_PUTC(PFILE, CH) (CPP_RESERVE (PFILE, 1), CPP_PUTC_Q (PFILE, CH))
-/* Make sure PFILE->limit is followed by '\0'. */
-#define CPP_NUL_TERMINATE_Q(PFILE) (*(PFILE)->limit = 0)
-#define CPP_NUL_TERMINATE(PFILE) (CPP_RESERVE(PFILE, 1), *(PFILE)->limit = 0)
-#define CPP_ADJUST_WRITTEN(PFILE,DELTA) ((PFILE)->limit += (DELTA))
-#define CPP_SET_WRITTEN(PFILE,N) ((PFILE)->limit = (PFILE)->token_buffer + (N))
-
-/* Advance the current line by one. */
-#define CPP_BUMP_BUFFER_LINE(PBUF) ((PBUF)->lineno++,\
-				    (PBUF)->line_base = (PBUF)->cur)
-#define CPP_BUMP_LINE(PFILE) CPP_BUMP_BUFFER_LINE(CPP_BUFFER(PFILE))
-
 #define CPP_OPTIONS(PFILE) ((PFILE)->opts)
 #define CPP_BUFFER(PFILE) ((PFILE)->buffer)
-#define CPP_PREV_BUFFER(BUFFER) ((BUFFER)->prev)
-
-/* The `pending' structure accumulates all the options that are not
-   actually processed until we hit cpp_start_read.  It consists of
-   several lists, one for each type of option.  We keep both head and
-   tail pointers for quick insertion. */
-struct cpp_pending
-{
-  struct pending_option *define_head, *define_tail;
-  struct pending_option *assert_head, *assert_tail;
-
-  struct file_name_list *quote_head, *quote_tail;
-  struct file_name_list *brack_head, *brack_tail;
-  struct file_name_list *systm_head, *systm_tail;
-  struct file_name_list *after_head, *after_tail;
-
-  struct pending_option *imacros_head, *imacros_tail;
-  struct pending_option *include_head, *include_tail;
-};
 
 /* Pointed to by cpp_reader.opts. */
-struct cpp_options {
+struct cpp_options
+{
   char *in_fname;
 
   /* Name of output file, for error messages.  */
@@ -488,144 +433,19 @@ struct cpp_options {
   char *deps_target;
 };
 
-#define CPP_TRADITIONAL(PFILE) (CPP_OPTIONS(PFILE)-> traditional)
-#define CPP_WARN_UNDEF(PFILE) (CPP_OPTIONS(PFILE)->warn_undef)
-#define CPP_C89(PFILE) (CPP_OPTIONS(PFILE)->c89)
-#define CPP_PREPROCESSED(PFILE) (CPP_OPTIONS (PFILE)->preprocessed)
-#define CPP_PRINT_DEPS(PFILE) (CPP_OPTIONS (PFILE)->print_deps)
-
-#define CPP_PEDANTIC(PFILE) \
-  (CPP_OPTIONS (PFILE)->pedantic && !CPP_BUFFER (pfile)->system_header_p)
-
-/* List of directories to look for include files in. */
-struct file_name_list
-{
-  struct file_name_list *next;
-  struct file_name_list *alloc; /* for the cache of
-				   current directory entries */
-  char *name;
-  unsigned int nlen;
-  /* We use these to tell if the directory mentioned here is a duplicate
-     of an earlier directory on the search path. */
-  ino_t ino;
-  dev_t dev;
-  /* If the following is nonzero, it is a C-language system include
-     directory.  */
-  int sysp;
-  /* Mapping of file names for this directory.
-     Only used on MS-DOS and related platforms. */
-  struct file_name_map *name_map;
-};
-#define ABSOLUTE_PATH ((struct file_name_list *)-1)
-
-/* This structure is used for the table of all includes.  It is
-   indexed by the `short name' (the name as it appeared in the
-   #include statement) which is stored in *nshort.  */
-struct ihash
-{
-  struct ihash *next;
-  /* Next file with the same short name but a
-     different (partial) pathname). */
-  struct ihash *next_this_file;
-
-  /* Location of the file in the include search path.
-     Used for include_next */
-  struct file_name_list *foundhere;
-  const char *name;		/* (partial) pathname of file */
-  const char *nshort;		/* name of file as referenced in #include */
-  const U_CHAR *control_macro;	/* macro, if any, preventing reinclusion -
-				   see redundant_include_p */
-  char *buf, *limit;		/* for file content cache,
-				   not yet implemented */
-};
-typedef struct ihash IHASH;
-
 /* Name under which this program was invoked.  */
-
 extern const char *progname;
 
-/* The structure of a node in the hash table.  The hash table
-   has entries for all tokens defined by #define commands (type T_MACRO),
-   plus some special tokens like __LINE__ (these each have their own
-   type, and the appropriate code is run when that type of node is seen.
-   It does not contain control words like "#define", which are recognized
-   by a separate piece of code. */
+extern int cpp_handle_options PARAMS ((cpp_reader *, int, char **));
+extern enum cpp_token cpp_get_token PARAMS ((cpp_reader *));
+extern enum cpp_token cpp_get_non_space_token PARAMS ((cpp_reader *));
+extern enum cpp_token get_directive_token PARAMS ((cpp_reader *));
 
-/* different flavors of hash nodes --- also used in keyword table */
-enum node_type {
- T_DEFINE = 1,	/* the `#define' keyword */
- T_INCLUDE,	/* the `#include' keyword */
- T_INCLUDE_NEXT, /* the `#include_next' keyword */
- T_IMPORT,      /* the `#import' keyword */
- T_IFDEF,	/* the `#ifdef' keyword */
- T_IFNDEF,	/* the `#ifndef' keyword */
- T_IF,		/* the `#if' keyword */
- T_ELSE,	/* `#else' */
- T_PRAGMA,	/* `#pragma' */
- T_ELIF,	/* `#elif' */
- T_UNDEF,	/* `#undef' */
- T_LINE,	/* `#line' */
- T_ERROR,	/* `#error' */
- T_WARNING,	/* `#warning' */
- T_ENDIF,	/* `#endif' */
- T_SCCS,	/* `#sccs', used on system V.  */
- T_IDENT,	/* `#ident', used on system V.  */
- T_ASSERT,	/* `#assert', taken from system V.  */
- T_UNASSERT,	/* `#unassert', taken from system V.  */
- T_SPECLINE,	/* special symbol `__LINE__' */
- T_DATE,	/* `__DATE__' */
- T_FILE,	/* `__FILE__' */
- T_BASE_FILE,	/* `__BASE_FILE__' */
- T_INCLUDE_LEVEL, /* `__INCLUDE_LEVEL__' */
- T_VERSION,	/* `__VERSION__' */
- T_TIME,	/* `__TIME__' */
- T_STDC,	/* `__STDC__' */
- T_CONST,	/* Constant string, used by `__SIZE_TYPE__' etc */
- T_MACRO,	/* macro defined by `#define' */
- T_DISABLED,	/* macro temporarily turned off for rescan */
- T_POISON,	/* defined with `#pragma poison' */
- T_UNUSED	/* Used for something not defined.  */
- };
-
-/* Character classes.
-   If the definition of `numchar' looks odd to you, please look up the
-   definition of a pp-number in the C standard [section 6.4.8 of C99] */
-#define ISidnum		0x01	/* a-zA-Z0-9_ */
-#define ISidstart	0x02	/* _a-zA-Z */
-#define ISnumstart	0x04	/* 0-9 */
-#define IShspace	0x08	/* ' ' \t \f \v */
-#define ISspace		0x10	/* ' ' \t \f \v \n */
-
-#define _dollar_ok(x)	((x) == '$' && CPP_OPTIONS (pfile)->dollars_in_ident)
-
-#define is_idchar(x)	((_cpp_IStable[x] & ISidnum) || _dollar_ok(x))
-#define is_idstart(x)	((_cpp_IStable[x] & ISidstart) || _dollar_ok(x))
-#define is_numchar(x)	(_cpp_IStable[x] & ISidnum)
-#define is_numstart(x)	(_cpp_IStable[x] & ISnumstart)
-#define is_hspace(x)	(_cpp_IStable[x] & IShspace)
-#define is_space(x)	(_cpp_IStable[x] & ISspace)
-
-/* This table is constant if it can be initialized at compile time,
-   which is the case if cpp was compiled with GCC >=2.7, or another
-   compiler that supports C99.  */
-#if (GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L)
-extern const unsigned char _cpp_IStable[256];
-#else
-extern unsigned char _cpp_IStable[256];
-#endif
-
-/* Stack of conditionals currently in progress
-   (including both successful and failing conditionals).  */
-
-struct if_stack
-{
-  struct if_stack *next;
-  int lineno;			/* line number where condition started */
-  int if_succeeded;		/* truth of last condition in this group */
-  const U_CHAR *control_macro;	/* macro name for #ifndef around entire file */
-  enum node_type type;		/* type of last directive seen in this group */
-};
-typedef struct if_stack IF_STACK;
+extern void cpp_reader_init PARAMS ((cpp_reader *));
+extern void cpp_options_init PARAMS ((cpp_options *));
+extern int cpp_start_read PARAMS ((cpp_reader *, char *));
+extern void cpp_finish PARAMS ((cpp_reader *));
+extern void cpp_cleanup PARAMS ((cpp_reader *PFILE));
 
 extern void cpp_buf_line_and_col PARAMS((cpp_buffer *, long *, long *));
 extern cpp_buffer *cpp_file_buffer PARAMS((cpp_reader *));
@@ -667,16 +487,11 @@ extern void cpp_grow_buffer PARAMS ((cpp_reader *, long));
 extern cpp_buffer *cpp_push_buffer PARAMS ((cpp_reader *,
 					    unsigned char *, long));
 extern cpp_buffer *cpp_pop_buffer PARAMS ((cpp_reader *));
-extern int cpp_defined PARAMS ((cpp_reader *, const U_CHAR *, int));
-
-extern void cpp_reader_init PARAMS ((cpp_reader *));
-extern void cpp_options_init PARAMS ((cpp_options *));
-extern int cpp_start_read PARAMS ((cpp_reader *, char *));
-extern void cpp_finish PARAMS ((cpp_reader *));
+extern int cpp_defined PARAMS ((cpp_reader *, const unsigned char *, int));
 
 extern void quote_string		PARAMS ((cpp_reader *, const char *));
-extern void cpp_expand_to_buffer	PARAMS ((cpp_reader *, const U_CHAR *,
-						 int));
+extern void cpp_expand_to_buffer	PARAMS ((cpp_reader *,
+						 const unsigned char *, int));
 extern void cpp_scan_buffer		PARAMS ((cpp_reader *));
 
 /* Last arg to output_line_command.  */
@@ -687,16 +502,6 @@ extern void output_line_command		PARAMS ((cpp_reader *,
 /* In cppfiles.c */
 extern int cpp_included			PARAMS ((cpp_reader *, const char *));
 extern int cpp_read_file		PARAMS ((cpp_reader *, const char *));
-
-extern void _cpp_simplify_pathname	PARAMS ((char *));
-extern void _cpp_merge_include_chains	PARAMS ((struct cpp_options *));
-extern int _cpp_find_include_file	PARAMS ((cpp_reader *, const char *,
-						struct file_name_list *,
-						IHASH **, int *));
-extern int _cpp_read_include_file	PARAMS ((cpp_reader *, int, IHASH *));
-
-/* In cppexp.c */
-extern HOST_WIDEST_INT _cpp_parse_expr	PARAMS ((cpp_reader *));
 
 
 #ifdef __cplusplus

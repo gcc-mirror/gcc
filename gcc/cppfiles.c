@@ -27,6 +27,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "config.h"
 #include "system.h"
 #include "cpplib.h"
+#include "cpphash.h"
 #include "intl.h"
 
 static IHASH *include_hash	PARAMS ((cpp_reader *, const char *, int));
@@ -49,150 +50,9 @@ static U_CHAR *find_position	PARAMS ((U_CHAR *, U_CHAR *, unsigned long *));
 static void hack_vms_include_specification PARAMS ((char *));
 #endif
 
-/* Windows does not natively support inodes, and neither does MSDOS.
-   Cygwin's emulation can generate non-unique inodes, so don't use it.
-   VMS has non-numeric inodes. */
-#ifdef VMS
-#define INO_T_EQ(a, b) (!bcmp((char *) &(a), (char *) &(b), sizeof (a)))
-#elif (defined _WIN32 && ! defined (_UWIN)) \
-       || defined __MSDOS__
-#define INO_T_EQ(a, b) 0
-#else
-#define INO_T_EQ(a, b) ((a) == (b))
-#endif
-
 #ifndef INCLUDE_LEN_FUDGE
 #define INCLUDE_LEN_FUDGE 0
 #endif
-
-/* Merge the four include chains together in the order quote, bracket,
-   system, after.  Remove duplicate dirs (as determined by
-   INO_T_EQ()).  The system_include and after_include chains are never
-   referred to again after this function; all access is through the
-   bracket_include path.
-
-   For the future: Check if the directory is empty (but
-   how?) and possibly preload the include hash. */
-
-void
-_cpp_merge_include_chains (opts)
-     struct cpp_options *opts;
-{
-  struct file_name_list *prev, *cur, *other;
-  struct file_name_list *quote, *brack, *systm, *after;
-  struct file_name_list *qtail, *btail, *stail, *atail;
-
-  qtail = opts->pending->quote_tail;
-  btail = opts->pending->brack_tail;
-  stail = opts->pending->systm_tail;
-  atail = opts->pending->after_tail;
-
-  quote = opts->pending->quote_head;
-  brack = opts->pending->brack_head;
-  systm = opts->pending->systm_head;
-  after = opts->pending->after_head;
-
-  /* Paste together bracket, system, and after include chains. */
-  if (stail)
-    stail->next = after;
-  else
-    systm = after;
-  if (btail)
-    btail->next = systm;
-  else
-    brack = systm;
-
-  /* This is a bit tricky.
-     First we drop dupes from the quote-include list.
-     Then we drop dupes from the bracket-include list.
-     Finally, if qtail and brack are the same directory,
-     we cut out qtail.
-
-     We can't just merge the lists and then uniquify them because
-     then we may lose directories from the <> search path that should
-     be there; consider -Ifoo -Ibar -I- -Ifoo -Iquux. It is however
-     safe to treat -Ibar -Ifoo -I- -Ifoo -Iquux as if written
-     -Ibar -I- -Ifoo -Iquux.
-
-     Note that this algorithm is quadratic in the number of -I switches,
-     which is acceptable since there aren't usually that many of them.  */
-
-  for (cur = quote, prev = NULL; cur; cur = cur->next)
-    {
-      for (other = quote; other != cur; other = other->next)
-        if (INO_T_EQ (cur->ino, other->ino)
-	    && cur->dev == other->dev)
-          {
-	    if (opts->verbose)
-	      fprintf (stderr, _("ignoring duplicate directory `%s'\n"),
-		       cur->name);
-
-	    prev->next = cur->next;
-	    free (cur->name);
-	    free (cur);
-	    cur = prev;
-	    break;
-	  }
-      prev = cur;
-    }
-  qtail = prev;
-
-  for (cur = brack; cur; cur = cur->next)
-    {
-      for (other = brack; other != cur; other = other->next)
-        if (INO_T_EQ (cur->ino, other->ino)
-	    && cur->dev == other->dev)
-          {
-	    if (opts->verbose)
-	      fprintf (stderr, _("ignoring duplicate directory `%s'\n"),
-		       cur->name);
-
-	    prev->next = cur->next;
-	    free (cur->name);
-	    free (cur);
-	    cur = prev;
-	    break;
-	  }
-      prev = cur;
-    }
-
-  if (quote)
-    {
-      if (INO_T_EQ (qtail->ino, brack->ino) && qtail->dev == brack->dev)
-        {
-	  if (quote == qtail)
-	    {
-	      if (opts->verbose)
-		fprintf (stderr, _("ignoring duplicate directory `%s'\n"),
-			 quote->name);
-
-	      free (quote->name);
-	      free (quote);
-	      quote = brack;
-	    }
-	  else
-	    {
-	      cur = quote;
-	      while (cur->next != qtail)
-		  cur = cur->next;
-	      cur->next = brack;
-	      if (opts->verbose)
-		fprintf (stderr, _("ignoring duplicate directory `%s'\n"),
-			 qtail->name);
-
-	      free (qtail->name);
-	      free (qtail);
-	    }
-	}
-      else
-	  qtail->next = brack;
-    }
-  else
-      quote = brack;
-
-  opts->quote_include = quote;
-  opts->bracket_include = brack;
-}
 
 /* Look up or add an entry to the table of all includes.  This table
  is indexed by the name as it appears in the #include line.  The
