@@ -3223,7 +3223,7 @@ rest_of_compilation (decl)
     }
 #endif
 
-  if (flag_rename_registers || flag_cprop_registers)
+  if (optimize > 0 && (flag_rename_registers || flag_cprop_registers))
     {
       timevar_push (TV_RENAME_REGISTERS);
       open_dump_file (DFI_rnreg, decl);
