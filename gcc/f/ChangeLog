@@ -1,3 +1,8 @@
+Fri Mar  5 13:22:44 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* news.texi: Relocate IDATE (VXT) fix: we put it in 1.1.2
+	so describe it there, instead of under 1.2.
+
 Wed Mar  3 00:57:56 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* news.texi: IDATE (VXT) fixed to return year as 0..99.

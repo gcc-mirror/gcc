@@ -65,17 +65,6 @@ somewhat more difficult.
 @heading In @code{egcs} 1.2:
 @itemize @bullet
 @item
-Fix the @code{IDate} Intrinsic (VXT)
-so the returned year is in the documented, non-Y2K-compliant range
-of 0--99,
-instead of being returned as 100 in the year 2000.
-
-@ifnothtml
-@xref{IDate Intrinsic (VXT)},
-for more information.
-@end ifnothtml
-
-@item
 Fix @code{g77} so it no longer crashes when compiling
 I/O statements using keywords that define @code{INTEGER} values,
 such as @samp{IOSTAT=@var{j}},
@@ -104,6 +93,17 @@ including information on Year 2000 (Y2K) compliance.
 
 @heading In 0.5.24 and @code{egcs} 1.1.2 (versus 0.5.23 and 1.1.1):
 @itemize @bullet
+@item
+Fix the @code{IDate} Intrinsic (VXT)
+so the returned year is in the documented, non-Y2K-compliant range
+of 0--99,
+instead of being returned as 100 in the year 2000.
+
+@ifnothtml
+@xref{IDate Intrinsic (VXT)},
+for more information.
+@end ifnothtml
+
 @item
 Fix the @samp{Date_and_Time} intrinsic (in @code{libg2c})
 to return the milliseconds value properly
