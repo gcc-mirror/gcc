@@ -21,8 +21,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 */
 
-/* This is the contribution to the `lang_options' array in gcc.c for
-   g77.  */
+/* This is the contribution to the `documented_lang_options' array in
+   toplev.c for g77.  */
 
 #ifdef __STDC__	/* To be consistent with lang-specs.h.  Maybe avoid
 		   overflowing some old compiler's tables, etc. */

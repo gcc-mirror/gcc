@@ -18,11 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This is the contribution to the `lang_options' array in gcc.c for
-   CHILL.  */
-
-/* CYGNUS LOCAL - the format of this file has been changed to
-   allow cc1 to implement --help.  nickc/--help */
+/* This is the contribution to the `documented_lang_options' array in
+   toplev.c for CHILL.  */
 
 DEFINE_LANG_NAME ("Chill")
      

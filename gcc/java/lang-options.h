@@ -22,8 +22,8 @@ Java and all Java-based marks are trademarks or registered trademarks
 of Sun Microsystems, Inc. in the United States and other countries.
 The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
-/* This is the contribution to the `lang_options' array in gcc.c for
-   java.  */
+/* This is the contribution to the `documented_lang_options' array in
+   toplev.c for java.  */
 
 DEFINE_LANG_NAME ("Java")
 

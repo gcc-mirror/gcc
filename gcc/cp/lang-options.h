@@ -21,8 +21,8 @@ Boston, MA 02111-1307, USA.  */
 
 DEFINE_LANG_NAME ("C++")
      
-/* This is the contribution to the `lang_options' array in gcc.c for
-   g++.  */
+/* This is the contribution to the `documented_lang_options' array in
+   toplev.c for g++.  */
 
   { "-faccess-control", "" },
   { "-fno-access-control", "Do not obey access control semantics" },
