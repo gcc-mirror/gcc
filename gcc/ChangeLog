@@ -1,3 +1,9 @@
+2004-10-14  Ben Elliston  <bje@au.ibm.com>
+
+	PR other/17900
+	* diagnostic.c (trim_filename): Fix logic bug in walking backwards
+	up the filename looking for a previous directory separator.
+
 2004-10-14  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-tree.h (enum c_typespec_kind, struct c_typespec,
