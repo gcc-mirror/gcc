@@ -1,5 +1,13 @@
 2003-12-16  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/13387
+	* class.c (finish_struct_1): Compute mode and alias set for
+	CLASSTYPE_AS_BASE.
+	* call.c (build_over_call): Use CLASSTYPE_AS_BASE for trivial
+	assignment of a class, as necessary.
+	* cp-lang.c (cxx_get_alias_set): The alias set as a base is the
+	same as for the complete type.
+
 	PR c++/13242
 	C++ ABI change. Mangling template parameters of reference type
 	* mangle.c (write_template_args): Remove unreachable code.

@@ -5052,6 +5052,10 @@ finish_struct_1 (tree t)
 
   /* Layout the class itself.  */
   layout_class_type (t, &virtuals);
+  if (CLASSTYPE_AS_BASE (t) != t)
+    /* We use the base type for trivial assignments, and hence it
+       needs a mode.  */
+    compute_record_mode (CLASSTYPE_AS_BASE (t));
 
   /* Make sure that we get our own copy of the vfield FIELD_DECL.  */
   vfield = TYPE_VFIELD (t);

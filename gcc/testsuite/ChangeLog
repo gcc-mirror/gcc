@@ -1,5 +1,8 @@
 2003-12-16  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/13387
+	* g++.dg/expr/assign1.C: New test.
+
 	PR c++/13242
 	* g++.dg/abi/mangle19-1.C: New test.
 	* g++.dg/abi/mangle19-2.C: New test.

@@ -4631,9 +4631,30 @@ build_over_call (struct z_candidate *cand, int flags)
     {
       tree to = stabilize_reference
 	(build_indirect_ref (TREE_VALUE (converted_args), 0));
+      tree type = TREE_TYPE (to);
+      tree as_base = CLASSTYPE_AS_BASE (type);
 
       arg = build_indirect_ref (TREE_VALUE (TREE_CHAIN (converted_args)), 0);
-      val = build (MODIFY_EXPR, TREE_TYPE (to), to, arg);
+      if (tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (as_base)))
+	val = build (MODIFY_EXPR, TREE_TYPE (to), to, arg);
+      else
+	{
+	  /* We must only copy the non-tail padding parts. Use
+	     CLASSTYPE_AS_BASE for the bitwise copy.  */
+	  tree to_as_base, arg_as_base, base_ptr_type;
+
+	  to = save_expr (to);
+	  base_ptr_type = build_pointer_type (as_base);
+	  to_as_base = build_indirect_ref
+	    (build_nop (base_ptr_type, build_unary_op (ADDR_EXPR, to, 0)), 0);
+	  arg_as_base = build_indirect_ref
+	    (build_nop (base_ptr_type, build_unary_op (ADDR_EXPR, arg, 0)), 0);
+	  
+	  val = build (MODIFY_EXPR, as_base, to_as_base, arg_as_base);
+	  val = build (COMPOUND_EXPR, type, convert_to_void (val, NULL), to);
+	  TREE_USED (val) = 1;
+	}
+      
       return val;
     }
 
