@@ -81,7 +81,7 @@ Find FIND
 Format FORMAT
 Function FUNCTION
 Go GO
-Goto GOTO
+GoTo GOTO
 If IF
 Implicit IMPLICIT
 Include INCLUDE

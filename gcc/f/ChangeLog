@@ -1,3 +1,11 @@
+Sat Jul 18 19:16:48 1998  Craig Burley  <burley@gnu.org>
+
+        * lang-options.h: Fix up doc strings.
+        Remove the unimplemented -fdcp-intrinsics-* options.
+
+        * str-1t.fin: Change mixed-case spelling of `GoTo' from
+        `Goto'.
+
 Thu Jul 16 13:26:36 1998  Craig Burley  <burley@gnu.org>
 
 	* (ffecom_finish_symbol_transform_): Revert change
