@@ -7147,6 +7147,8 @@ EOF
 
 fi
 echo "$ac_t""$gcc_cv_as_hidden" 1>&6
+libgcc_visibility=$gcc_cv_as_hidden
+
 
 echo $ac_n "checking assembler leb128 support""... $ac_c" 1>&6
 echo "configure:7153: checking assembler leb128 support" >&5
@@ -8394,6 +8396,7 @@ s%@HOST_CC@%$HOST_CC%g
 s%@HOST_CFLAGS@%$HOST_CFLAGS%g
 s%@STMP_FIXINC@%$STMP_FIXINC%g
 s%@STMP_FIXPROTO@%$STMP_FIXPROTO%g
+s%@libgcc_visibility@%$libgcc_visibility%g
 s%@gthread_flags@%$gthread_flags%g
 s%@GGC@%$GGC%g
 s%@zlibdir@%$zlibdir%g
