@@ -1,5 +1,7 @@
 Tue Nov  4 18:49:42 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* fixincludes: Fix "hypot" prototype in NeXT math.h.
+
 	* Makefile.in (USE_ALLOCA): Always include alloca.o.
 	(USE_HOST_ALLOCA): Likewise.
 
