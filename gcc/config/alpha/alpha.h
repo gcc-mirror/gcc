@@ -49,11 +49,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define LIB_SPEC "-lc"
 
-/* Pass "-G 8" to ld because Alpha's CC does.  Pass -O2 if we are optimizing,
+/* Pass "-G 8" to ld because Alpha's CC does.  Pass -O3 if we are optimizing,
    -O1 if we are not.  Pass -non_shared or -call_shared as appropriate.  */
-/* Disable -O2 to ld; it seems to have problems.  */
 #define LINK_SPEC  \
-  "-G 8 %{O*:-O1} %{!O*:-O1} %{static:-non_shared} %{!static:-call_shared}"
+  "-G 8 %{O*:-O3} %{!O*:-O1} %{static:-non_shared} %{!static:-call_shared}"
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION
@@ -222,17 +221,23 @@ extern int target_flags;
 /* A bitfield declared as `int' forces `int' alignment for the struct.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
-/* Align loop starts for optimal branching.  */
+/* Align loop starts for optimal branching.  
+
+   ??? Kludge this and the next macro for the moment by not doing anything if
+   we don't optimize and also if we are writing ECOFF symbols to work around
+   a bug in DEC's assembler. */
 
 #define ASM_OUTPUT_LOOP_ALIGN(FILE) \
-  ASM_OUTPUT_ALIGN (FILE, 5) 
+  if (optimize > 0 && write_symbols != SDB_DEBUG)  \
+    ASM_OUTPUT_ALIGN (FILE, 5)
 
 /* This is how to align an instruction for optimal branching.
    On Alpha we'll get better performance by aligning on a quadword
    boundary.  */
 
 #define ASM_OUTPUT_ALIGN_CODE(FILE)	\
-  ASM_OUTPUT_ALIGN ((FILE), 4)
+  if (optimize > 0 && write_symbols != SDB_DEBUG) \
+    ASM_OUTPUT_ALIGN ((FILE), 4)
 
 /* No data type wants to be aligned rounder than this.  */
 #define BIGGEST_ALIGNMENT 64
