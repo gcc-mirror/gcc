@@ -1,3 +1,9 @@
+Sun Apr 18 21:53:58 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* com.c (ffecom_sym_transform_): COMMON and EQUIVALENCE
+	variables have constant addresses (EQUIVALENCE only if
+	containing aggregate is static).
+
 Sat Apr 17 16:55:59 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* bugs.texi, ffe.texi, g77.texi, g77install.texi, news.texi:
