@@ -1616,9 +1616,11 @@ alpha_expand_block_move (operands)
 
   /* Ideally we would do nice things when noticing the addressof.  */
   if (GET_CODE (XEXP (orig_src, 0)) == ADDRESSOF)
-    orig_src = copy_addr_to_reg (XEXP (orig_src, 0));
+    orig_src = change_address (orig_src, GET_MODE (orig_src),
+			       copy_addr_to_reg (XEXP (orig_src, 0)));
   if (GET_CODE (XEXP (orig_dst, 0)) == ADDRESSOF)
-    orig_dst = copy_addr_to_reg (XEXP (orig_dst, 0));
+    orig_dst = change_address (orig_dst, GET_MODE (orig_dst),
+			       copy_addr_to_reg (XEXP (orig_dst, 0)));
 
   /* Handle a block of contiguous words first.  */
 
@@ -3400,8 +3402,15 @@ output_epilog (file, size)
     }
   inside_function = FALSE;
 
-  /* Show that we know this function if it is called again.  */
-  SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
+  /* Show that we know this function if it is called again. 
+
+     Don't do this for global functions in object files destined for a
+     shared library because the function may be overridden by the application
+     or other libraries.
+     ??? Is this just ELF?  */
+
+  if (!flag_pic || !TREE_PUBLIC (current_function_decl))
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
 }
 #endif /* !OPEN_VMS */
 

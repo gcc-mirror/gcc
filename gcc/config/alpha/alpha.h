@@ -2030,6 +2030,48 @@ literal_section ()						\
 #define ASM_OPEN_PAREN "("
 #define ASM_CLOSE_PAREN ")"
 
+/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
+   Used for C++ multiple inheritance.  */
+
+#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
+do {									\
+  char *fn_name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION));	\
+									\
+  fprintf (FILE, "\t.ent ");						\
+  assemble_name (FILE, alpha_function_name);				\
+  fputc ('\n', FILE);							\
+  ASM_OUTPUT_LABEL (FILE, alpha_function_name);				\
+  fprintf (FILE, "\tldgp $29,0($27)\n");				\
+  fputc ('$', FILE);							\
+  assemble_name (FILE, alpha_function_name);				\
+  fprintf (FILE, "..ng:\n");						\
+  fprintf (FILE, "\t.frame $30,0,$26,0\n");				\
+  fprintf (FILE, "\t.prologue 1\n");					\
+									\
+  /* Rely on the assembler to macro expand a large delta.  */		\
+  fprintf (FILE, "\tlda $16,%ld($16)\n", (long)(DELTA));		\
+									\
+  if (current_file_function_operand (XEXP (DECL_RTL (FUNCTION), 0)))	\
+    {									\
+      fprintf (FILE, "\tbr $31,$");					\
+      assemble_name (FILE, fn_name);					\
+      fprintf (FILE, "..ng\n");						\
+    }									\
+  else									\
+    {									\
+      fprintf (FILE, "\tlda $27,");					\
+      assemble_name (FILE, fn_name);					\
+      fprintf (FILE, "\n\tjmp $31,($27),");				\
+      assemble_name (FILE, fn_name);					\
+      fputc ('\n', FILE);						\
+    }									\
+									\
+  fprintf (FILE, "\t.end ");						\
+  assemble_name (FILE, alpha_function_name);				\
+  fputc ('\n', FILE);							\
+} while (0)
+
+
 /* Define results of standard character escape sequences.  */
 #define TARGET_BELL 007
 #define TARGET_BS 010
