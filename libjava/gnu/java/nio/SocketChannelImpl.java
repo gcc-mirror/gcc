@@ -250,7 +250,7 @@ public final class SocketChannelImpl extends SocketChannel
     if (readBytes > 0
         && !dst.hasArray())
       {
-        dst.put (data);
+        dst.put (data, offset, len);
       }
 
     return readBytes;
