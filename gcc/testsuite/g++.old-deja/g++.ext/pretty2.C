@@ -40,7 +40,7 @@ X::~X ()
   printf ("__FUNCTION__ %s\n", function);
   printf ("__PRETTY_FUNCTION__ %s\n", pretty);
   
-  if (strcmp (function, "X"))
+  if (strcmp (function, "~X"))
     bad = true;
   if (strcmp (pretty, "X::~X()"))
     bad = true;

@@ -1,3 +1,9 @@
+2003-09-05  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* g++.old-deja/g++.ext/pretty2.C: Update for change 
+	in __FUNCTION__.
+	* g++.old-deja/g++.ext/pretty3.C: Likewise.
+
 2003-09-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/11922
