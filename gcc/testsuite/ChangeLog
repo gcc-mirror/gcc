@@ -1,3 +1,8 @@
+2002-09-10  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* gcc.dg/struct-ret-1.c: Add prototype for exit function and correct
+	usage.
+
 2002-09-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc.c-torture/compile/20020910-1.c: New test.
