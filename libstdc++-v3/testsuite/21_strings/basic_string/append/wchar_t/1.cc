@@ -112,7 +112,7 @@ bool test01(void)
   VERIFY( str05.size() == 0 );
   VERIFY( str05 == str03 );
   
-  str05.append(str_lit01, sizeof(str_lit01) - 1);
+  str05.append(str_lit01, sizeof(str_lit01) / sizeof(wchar_t) - 1);
   VERIFY( str05 == str01 );
 
   str06 = str02;
