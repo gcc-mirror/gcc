@@ -1,3 +1,10 @@
+2003-03-06  Reinhard Jessich <reinhard.jessich@telering.at>
+
+	PR 9954/other
+	* config/i386/linux.h (MD_FALLBACK_FRAME_STATE_FOR): Since this uses
+	<sys/ucontext.h> it should be wrapped in an inhibit_libc conditional
+	like the same code in config/i386/linux64.h.
+
 2003-03-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c/9799
