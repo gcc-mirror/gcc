@@ -3,6 +3,7 @@
    <zack@codesourcery.com>.  */
 /* { dg-options "-multiply_defined suppress" { target powerpc-*-darwin* } } */
 /* { dg-do link } */
+/* { dg-require-weak "" } */
 
 extern void tabort (void);
 extern void texit (void);
