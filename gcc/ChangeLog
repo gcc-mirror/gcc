@@ -1,3 +1,7 @@
+2003-03-04  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*extzv_8_8): Fix cc and lengths.
+
 2003-03-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c/9262
