@@ -201,7 +201,7 @@ extern int target_flags;
 */
 #define HARD_REGNO_MODE_OK(REGNO, MODE)					\
   (((REGNO) < 32) 							\
-   || ((MODE) == VOIDmode)						\
+   || (MODE) == VOIDmode || (MODE) == BLKmode				\
    || REGNO_MODE_ALIGNED (REGNO, MODE))
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
