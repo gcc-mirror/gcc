@@ -2391,10 +2391,21 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
     {
     case '1':
       /* Two conversions are equal only if signedness and modes match.  */
-      if ((TREE_CODE (arg0) == NOP_EXPR || TREE_CODE (arg0) == CONVERT_EXPR)
-	  && (TYPE_UNSIGNED (TREE_TYPE (arg0))
-	      != TYPE_UNSIGNED (TREE_TYPE (arg1))))
-	return 0;
+      switch (TREE_CODE (arg0))
+        {
+        case NOP_EXPR:
+        case CONVERT_EXPR:
+        case FIX_CEIL_EXPR:
+        case FIX_TRUNC_EXPR:
+        case FIX_FLOOR_EXPR:
+        case FIX_ROUND_EXPR:
+	  if (TYPE_UNSIGNED (TREE_TYPE (arg0))
+	      != TYPE_UNSIGNED (TREE_TYPE (arg1)))
+	    return 0;
+	  break;
+	default:
+	  break;
+	}
 
       return operand_equal_p (TREE_OPERAND (arg0, 0),
 			      TREE_OPERAND (arg1, 0), flags);

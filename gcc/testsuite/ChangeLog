@@ -1,3 +1,7 @@
+2004-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20040831-1.c: New test.
+
 2004-09-01  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	PR fortran/16579
