@@ -261,372 +261,146 @@ $_exception_handler:
 #ifdef  L_mulsi3
 	.text
 	.proc
-|#PROC# 04
 	.globl	SYM (__mulsi3)
 SYM (__mulsi3):
-|#PROLOGUE# 0
-	link	a6,#0
-	addl	#-LF14,sp
-	moveml	#LS14,sp@
-|#PROLOGUE# 1
-	movew	a6@(0x8), d0	/* x0 -> d0 */
-	muluw	a6@(0xe), d0	/* x0*y1 */
-	movew	a6@(0xa), d1	/* x1 -> d1 */
-	muluw	a6@(0xc), d1	/* x1*y0 */
+	movew	sp@(4), d0	/* x0 -> d0 */
+	muluw	sp@(10), d0	/* x0*y1 */
+	movew	sp@(6), d1	/* x1 -> d1 */
+	muluw	sp@(8), d1	/* x1*y0 */
 	addw	d1, d0
-	lsll	#8, d0
-	lsll	#8, d0
-	movew	a6@(0xa), d1	/* x1 -> d1 */
-	muluw	a6@(0xe), d1	/* x1*y1 */
+	swap	d0
+	clrw	d0
+	movew	sp@(6), d1	/* x1 -> d1 */
+	muluw	sp@(10), d1	/* x1*y1 */
 	addl	d1, d0
-	jra	LE14
-LE14:
-|#PROLOGUE# 2
-	moveml	sp@, #LS14
-	unlk	a6
-|#PROLOGUE# 3
+
 	rts
-	LF14 = 4
-	LS14 = 0x0002		/* d1 will be saved and restored */
-	LFF14 = 0
-	LSS14 = 0x0
-	LV14 = 0
 #endif /* L_mulsi3 */
 
 #ifdef  L_udivsi3
 	.text
 	.proc
-|#PROC# 04
 	.globl	SYM (__udivsi3)
 SYM (__udivsi3):
-|#PROLOGUE# 0
-	link	a6,#0
-	addl	#-LF14,sp
-	moveml	#LS14,sp@
-|#PROLOGUE# 1
-	movel	a6@(0xc), d0	/* d0 = divisor */
-	movel	a6@(0x8), d1	/* d1 = dividend */
-	movel	d1, d3
+	movel	d2, sp@-
+	movel	sp@(12), d1	/* d1 = divisor */
+	movel	sp@(8), d0	/* d0 = dividend */
 
+	cmpl	#0x10000, d1	/* divisor >= 2 ^ 16 ?   */
+	jcc	L3		/* then try next algorithm */
+	movel	d0, d2
+	clrw	d2
+	swap	d2
+	divu	d1, d2          /* high quotient in lower word */
+	movew	d2, d0		/* save high quotient */
+	swap	d0
+	movew	sp@(10), d2	/* get low dividend + high rest */
+	divu	d1, d2		/* low quotient */
+	movew	d2, d0
+	jra	L6
 
-	cmpl	#0x10000, d0	/* divisor >= 2 ^ 16 ?   */
-	bge	l4		/* then try next algorithm */
-	movel	d1, d2
-	lsrl	#8, d2		/* get high dividend */
-	lsrl	#8, d2
-	divu	d0, d2          /* high quotient in lower word */
-	movew	d2, d1		/* save high quotient */
-	swap	d1
-	movew	d3, d2		/* get low dividend + high rest */
-	divu	d0, d2		/* low quotient */
-	movew	d2, d1
-	jra	l5
+L3:	movel	d1, d2		/* use d2 as divisor backup */
+L4:	lsrl	#1, d1		/* shift divisor */
+	lsrl	#1, d0		/* shift dividend */
+	cmpl	#0x10000, d1	/* still divisor >= 2 ^ 16 ?  */
+	jcc	L4
+	divu	d1, d0		/* now we have 16 bit divisor */
+	andl	#0xffff, d0	/* mask out divisor, ignore remainder */
 
-l4:	movel	d0, d2		/* use d2 as divisor backup */
-l4a:	lsrl	#1, d0		/* shift divisor */
-	lsrl	#1, d1		/* shift dividend */
-	cmpl	#0x10000, d0	/* still divisor >= 2 ^ 16 ?  */
-	bge	l4a
-	divu	d0, d1		/* now we have 16bit divisor => compute remainder */
-	andl	#0xffff, d1
-	movel	d1, sp@-	/* multiply divisor with */
-	movel	d2, sp@-	/* remainder             */
-	jbsr	SYM (__umulsi3)	/* and                   */
-	addql	#8, sp
-	cmpl	d0, d3		/* compare the result with the dividend */
-	bge	l5		/* if dividend >= result => nofix */
-	subql	#1, d1
+/* Muliply the 16 bit tentative quotient with the 32 bit divisor.  Because of
+   the operand ranges, this might give a 33 bit product.  If this product is
+   greater than the dividend, the tentative quotient was too large. */
+	movel	d2, d1
+	mulu	d0, d1		/* low part, 32 bits */
+	swap	d2
+	mulu	d0, d2		/* high part, at most 17 bits */
+	swap	d2		/* align high part with low part */
+	btst	#0, d2		/* high part 17 bits? */
+	jne	L5		/* if 17 bits, quotient was too large */
+	addl	d2, d1		/* add parts */
+	jcs	L5		/* if sum is 33 bits, quotient was too large */
+	cmpl	sp@(8), d1	/* compare the sum with the dividend */
+	jls	L6		/* if sum > dividend, quotient was too large */
+L5:	subql	#1, d0		/* adjust quotient */
 
-l5:	movel	d1, d0	
-
-l6:	jra	LE14
-LE14:
-|#PROLOGUE# 2
-	moveml	sp@, #LS14
-	unlk	a6
-|#PROLOGUE# 3
+L6:	movel	sp@+, d2
 	rts
-	LF14 = 16
-	LS14 = 0x000e		/* d1-d3 will be saved and restored */
-	LFF14 = 0
-	LSS14 = 0x0
-	LV14 = 0
 #endif /* L_udivsi3 */
-
-#ifdef L_umulsi3
-	.text
-	.proc
-|#PROC# 04
-	.globl	SYM (__umulsi3)
-SYM (__umulsi3):
-|#PROLOGUE# 0
-	link	a6,#0
-	addl	#-LF14,sp
-	moveml	#LS14,sp@
-|#PROLOGUE# 1
-	movew	a6@(0x8), d0	/* x0 -> d0 */
-	muluw	a6@(0xe), d0	/* x0*y1 */
-	movew	a6@(0xa), d1	/* x1 -> d1 */
-	muluw	a6@(0xc), d1	/* x1*y0 */
-	addw	d1, d0
-	lsll	#8, d0
-	lsll	#8, d0
-	movew	a6@(0xa), d1	/* x1 -> d1 */
-	muluw	a6@(0xe), d1	/* x1*y1 */
-	addl	d1, d0
-	jra	LE15
-LE15:
-|#PROLOGUE# 2
-	moveml	sp@, #LS14
-	unlk	a6
-|#PROLOGUE# 3
-	rts
-	LF14 = 4
-	LS14 = 0x0002		/* d1 will be saved and restored */
-	LFF14 = 0
-	LSS14 = 0x0
-	LV14 = 0
-#endif /* L_umulsi3 */
 
 #ifdef  L_divsi3
 	.text
 	.proc
-|#PROC# 04
 	.globl	SYM (__divsi3)
 SYM (__divsi3):
-|#PROLOGUE# 0
-	link	a6,#0
-	addl	#-LF14,sp
-	moveml	#LS14,sp@
-|#PROLOGUE# 1
-	moveb	#1, d4		/* sign of result stored in d4 (=1 or =-1) */
-	movel	a6@(0xc), d0	/* d0 = divisor */
-	bpl	l1
-	negl	d0
-	negb	d4		/* change sign because divisor <0  */
-l1:	movel	a6@(0x8), d1	/* d1 = dividend */
-	bpl	l2
+	movel	d2, sp@-
+
+	moveb	#1, d2		/* sign of result stored in d2 (=1 or =-1) */
+	movel	sp@(12), d1	/* d1 = divisor */
+	jpl	L1
 	negl	d1
-	negb	d4
-l2:	movel	d1, d3
+	negb	d2		/* change sign because divisor <0  */
+L1:	movel	sp@(8), d0	/* d0 = dividend */
+	jpl	L2
+	negl	d0
+	negb	d2
 
-
-	cmpl	#0x10000, d0	/* divisor >= 2 ^ 16 ?   */
-	bge	l4		/* then try next algorithm */
-	movel	d1, d2
-	lsrl	#8, d2		/* get high dividend */
-	lsrl	#8, d2
-	divu	d0, d2          /* high quotient in lower word */
-	movew	d2, d1		/* save high quotient */
-	swap	d1
-	movew	d3, d2		/* get low dividend + high rest */
-	divu	d0, d2		/* low quotient */
-	movew	d2, d1
-	jra	l5
-
-l4:	movel	d0, d2		/* use d2 as divisor backup */
-l4a:	lsrl	#1, d0		/* shift divisor */
-	lsrl	#1, d1		/* shift dividend */
-	cmpl	#0x10000, d0	/* still divisor >= 2 ^ 16 ?  */
-	bge	l4a
-	divu	d0, d1		/* now we have 16bit divisor => compute remainder */
-	andl	#0xffff, d1
-	movel	d1, sp@-	/* multiply divisor with */
-	movel	d2, sp@-	/* remainder             */
-	jbsr	SYM (__umulsi3)	/* and                   */
+L2:	movel	d1, sp@-
+	movel	d0, sp@-
+	jbsr	SYM (__udivsi3)	/* divide abs(dividend) by abs(divisor) */
 	addql	#8, sp
-	cmpl	d0, d3		/* compare the result with the dividend */
-	bge	l5		/* if dividend >= result => nofix */
-	subql	#1, d1
 
-l5:	movel	d1, d0	
-	tstb	d4
-	bpl	l6
+	tstb	d2
+	jpl	L3
 	negl	d0
 
-l6:	jra	LE14
-LE14:
-|#PROLOGUE# 2
-	moveml	sp@, #LS14
-	unlk	a6
-|#PROLOGUE# 3
+L3:	movel	sp@+, d2
 	rts
-	LF14 = 16
-	LS14 = 0x001e		/* d1-d4 will be saved and restored */
-	LFF14 = 8
-	LSS14 = 0x0
-	LV14 = 8
 #endif /* L_divsi3 */
 
 #ifdef  L_umodsi3
 	.text
 	.proc
-|#PROC# 04
 	.globl	SYM (__umodsi3)
 SYM (__umodsi3):
-|#PROLOGUE# 0
-	link	a6,#0
-	addl	#-LF14,sp
-	moveml	#LS14,sp@
-|#PROLOGUE# 1
-	movel	a6@(0xc),d1	/* divisor */
-	movel	a6@(0x8),d2	/* dividend */
+	movel	sp@(8), d1	/* d1 = divisor */
+	movel	sp@(4), d0	/* d0 = dividend */
 	movel	d1, sp@-
-	movel	d2, sp@-
-	jbsr	SYM (__udivsi3)	/* d0 = a/b */
-	addql	#8, sp
 	movel	d0, sp@-
-	movel	d1, sp@-
-	jbsr	SYM (__umulsi3)	/* d0 = (a/b)*b */
+	jbsr	SYM (__udivsi3)
 	addql	#8, sp
-	negl	d0
-	addl	d2, d0		/* d0 = a - (a/b)*b */
-	jra	LE14
-LE14:
-|#PROLOGUE# 2
-	moveml	sp@, #LS14
-	unlk	a6
-|#PROLOGUE# 3
+	movel	sp@(8), d1	/* d1 = divisor */
+	movel	d1, sp@-
+	movel	d0, sp@-
+	jbsr	SYM (__mulsi3)	/* d0 = (a/b)*b */
+	addql	#8, sp
+	movel	sp@(4), d1	/* d1 = dividend */
+	subl	d0, d1		/* d1 = a - (a/b)*b */
+	movel	d1, d0
 	rts
-	LF14 = 8
-	LS14 = 0x006		/* d1-d2 will be saved and restored */
-	LFF14 = 0
-	LSS14 = 0x0
-	LV14 = 0
 #endif /* L_umodsi3 */
 
 #ifdef  L_modsi3
 	.text
 	.proc
-|#PROC# 04
 	.globl	SYM (__modsi3)
 SYM (__modsi3):
-|#PROLOGUE# 0
-	link	a6,#0
-	addl	#-LF14,sp
-	moveml	#LS14,sp@
-|#PROLOGUE# 1
-	movel	a6@(0xc),d1	/* divisor */
-	movel	a6@(0x8),d2	/* dividend */
+	movel	sp@(8), d1	/* d1 = divisor */
+	movel	sp@(4), d0	/* d0 = dividend */
 	movel	d1, sp@-
-	movel	d2, sp@-
-	jbsr	SYM (__divsi3)	/* d0 = a/b */
-	addql	#8, sp
 	movel	d0, sp@-
+	jbsr	SYM (__divsi3)
+	addql	#8, sp
+	movel	sp@(8), d1	/* d1 = divisor */
 	movel	d1, sp@-
+	movel	d0, sp@-
 	jbsr	SYM (__mulsi3)	/* d0 = (a/b)*b */
 	addql	#8, sp
-	negl	d0
-	addl	d2, d0		/* d0 = a - (a/b)*b */
-	jra	LE14
-LE14:
-|#PROLOGUE# 2
-	moveml	sp@, #LS14
-	unlk	a6
-|#PROLOGUE# 3
+	movel	sp@(4), d1	/* d1 = dividend */
+	subl	d0, d1		/* d1 = a - (a/b)*b */
+	movel	d1, d0
 	rts
-	LF14 = 8
-	LS14 = 0x006		/* d1-d2 will be saved and restored */
-	LFF14 = 0
-	LSS14 = 0x0
-	LV14 = 0
 #endif /* L_modsi3 */
 
-#ifdef  L_lshrsi3
-	.text
-	.proc
-|#PROC# 04
-	LF18	=	4
-	LS18	=	128
-	LFF18	=	0
-	LSS18	=	0
-	LV18	=	0
-	.text
-	.globl	SYM (__lshrsi3)
-SYM (__lshrsi3):
-|#PROLOGUE# 0
-	link	a6,#-4
-|#PROLOGUE# 1
-	movl	a6@(8),d0
-	movw	a6@(14),d1
-	lsrl	d1,d0
-|#PROLOGUE# 2
-	unlk	a6
-|#PROLOGUE# 3
-	rts
-#endif /* L_lshrsi3 */
-
-#ifdef  L_lshlsi3
-	.text
-	.proc
-|#PROC# 04
-	LF18	=	4
-	LS18	=	128
-	LFF18	=	0
-	LSS18	=	0
-	LV18	=	0
-	.text
-	.globl	SYM (__lshlsi3)
-SYM (__lshlsi3):
-|#PROLOGUE# 0
-	link	a6,#-4
-|#PROLOGUE# 1
-	movl	a6@(8),d0
-	movw	a6@(14),d1
-	lsll	d1,d0
-|#PROLOGUE# 2
-	unlk	a6
-|#PROLOGUE# 3
-	rts
-#endif /* L_lshlsi3 */
-
-#ifdef  L_ashrsi3
-	.text
-	.proc
-|#PROC# 04
-	LF18	=	4
-	LS18	=	128
-	LFF18	=	0
-	LSS18	=	0
-	LV18	=	0
-	.text
-	.globl	SYM (__ashrsi3)
-SYM (__ashrsi3):
-|#PROLOGUE# 0
-	link	a6,#-4
-|#PROLOGUE# 1
-	movl	a6@(8),d0
-	movw	a6@(14),d1
-	asrl	d1,d0
-|#PROLOGUE# 2
-	unlk	a6
-|#PROLOGUE# 3
-	rts
-#endif /* L_ashrsi3 */
-
-#ifdef  L_ashlsi3
-	.text
-	.proc
-|#PROC# 04
-	LF18	=	4
-	LS18	=	128
-	LFF18	=	0
-	LSS18	=	0
-	LV18	=	0
-	.text
-	.globl	SYM (__ashlsi3)
-SYM (__ashlsi3):
-|#PROLOGUE# 0
-	link	a6,#-4
-|#PROLOGUE# 1
-	movl	a6@(8),d0
-	movw	a6@(14),d1
-	asll	d1,d0
-|#PROLOGUE# 2
-	unlk	a6
-|#PROLOGUE# 3
-	rts
-#endif /* L_ashlsi3 */
 
 #ifdef  L_double
 
