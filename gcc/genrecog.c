@@ -1802,10 +1802,6 @@ from the machine description file `md'.  */\n\n");
 
   printf ("*/\n\n");
 
-  printf ("rtx recog_operand[MAX_RECOG_OPERANDS];\n\n");
-  printf ("rtx *recog_operand_loc[MAX_RECOG_OPERANDS];\n\n");
-  printf ("rtx *recog_dup_loc[MAX_DUP_OPERANDS];\n\n");
-  printf ("char recog_dup_num[MAX_DUP_OPERANDS];\n\n");
   printf ("#define operands recog_operand\n\n");
 
   next_subroutine_number = 0;

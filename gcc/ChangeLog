@@ -1,3 +1,29 @@
+Sat Oct 17 02:26:03 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de> 
+
+	* Makefile.in (insn-extract.o): Fix dependencies.
+	* genextract.c (main): Generate includes for insn-config.h and
+	recog.h.
+	Delete generation of declarations which are now in recog.h.
+	* genrecog.c (main): Delete generation of definitions which are
+	now in recog.c.
+	* local-alloc.c (block_alloc): Use extract_insn and the variables
+	it sets up instead of looking up values by insn_code.
+	* recog.c (recog_operand, recog_operand_loc, recog_dup_loc,
+	recog_dup_num): Define here instead of generating the definition in
+	genrecog.c.
+	(recog_n_operands, recog_n_dups, recog_n_alternatives,
+	recog_operand_mode, recog_constraints, recog_operand_address_p):
+	New variables.
+	(extract_insn): New function.
+	* recog.h (extract_insn): Declare function.
+	(which_alternative, recog_n_operands, recog_n_dups,
+	recog_n_alternatives, recog_operand_mode, recog_constraints,
+	recog_operand_address_p): Declare variables.
+	* regclass.c (n_occurrences): New static function.
+	* reload.c (n_occurrences): Delete function.
+	(find_reloads): Use extract_insn.
+	* reload.h (n_occurrences): Delete declaration.
+
 Sat Oct 17 01:17:51 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* reload1.c (reload_as_needed): Fix test for when to call

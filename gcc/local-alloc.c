@@ -955,13 +955,11 @@ block_alloc (b)
 	  register rtx r0, r1;
 	  int combined_regno = -1;
 	  int i;
-	  int insn_code_number = recog_memoized (insn);
 
 	  this_insn_number = insn_number;
 	  this_insn = insn;
 
-	  if (insn_code_number >= 0)
-	    insn_extract (insn);
+	  extract_insn (insn);
 	  which_alternative = -1;
 
 	  /* Is this insn suitable for tying two registers?
@@ -982,11 +980,11 @@ block_alloc (b)
 
 	     If tying is done, WIN is set nonzero.  */
 
-	  if (insn_code_number >= 0
+	  if (1
 #ifdef REGISTER_CONSTRAINTS
-	      && insn_n_operands[insn_code_number] > 1
-	      && insn_operand_constraint[insn_code_number][0][0] == '='
-	      && insn_operand_constraint[insn_code_number][0][1] != '&'
+	      && recog_n_operands > 1
+	      && recog_constraints[0][0] == '='
+	      && recog_constraints[0][1] != '&'
 #else
 	      && GET_CODE (PATTERN (insn)) == SET
 	      && rtx_equal_p (SET_DEST (PATTERN (insn)), recog_operand[0])
@@ -1000,19 +998,19 @@ block_alloc (b)
 		 operand 0.  */
 	      int n_matching_alts = 0;
 
-	      for (i = 1; i < insn_n_operands[insn_code_number]; i++)
+	      for (i = 1; i < recog_n_operands; i++)
 		{
-		  char *p = insn_operand_constraint[insn_code_number][i];
+		  char *p = recog_constraints[i];
 		  int this_match = (requires_inout (p));
 
 		  n_matching_alts += this_match;
-		  if (this_match == insn_n_alternatives[insn_code_number])
+		  if (this_match == recog_n_alternatives)
 		    must_match_0 = i;
 		}
 #endif
 
 	      r0 = recog_operand[0];
-	      for (i = 1; i < insn_n_operands[insn_code_number]; i++)
+	      for (i = 1; i < recog_n_operands; i++)
 		{
 #ifdef REGISTER_CONSTRAINTS
 		  /* Skip this operand if we found an operand that
@@ -1021,9 +1019,9 @@ block_alloc (b)
 
 		  if (must_match_0 >= 0 && i != must_match_0
 		      && ! (i == must_match_0 + 1
-			    && insn_operand_constraint[insn_code_number][i-1][0] == '%')
+			    && recog_constraints[i-1][0] == '%')
 		      && ! (i == must_match_0 - 1
-			    && insn_operand_constraint[insn_code_number][i][0] == '%'))
+			    && recog_constraints[i][0] == '%'))
 		    continue;
 
 		  /* Likewise if each alternative has some operand that
@@ -1031,9 +1029,8 @@ block_alloc (b)
 		     operand that doesn't list operand 0 since we know that
 		     the operand always conflicts with operand 0.  We
 		     ignore commutatity in this case to keep things simple.  */
-		  if (n_matching_alts == insn_n_alternatives[insn_code_number]
-		      && (0 == requires_inout
-			  (insn_operand_constraint[insn_code_number][i])))
+		  if (n_matching_alts == recog_n_alternatives
+		      && 0 == requires_inout (recog_constraints[i]))
 		    continue;
 #endif
 
@@ -1044,9 +1041,9 @@ block_alloc (b)
 		     of them.  */
 		  if (
 #ifdef REGISTER_CONSTRAINTS
-		      insn_operand_constraint[insn_code_number][i][0] == 'p'
+		      recog_constraints[i][0] == 'p'
 #else
-		      insn_operand_address_p[insn_code_number][i]
+		      recog_operand_address_p[i]
 #endif
 		      )
 		    while (GET_CODE (r1) == PLUS || GET_CODE (r1) == MULT)

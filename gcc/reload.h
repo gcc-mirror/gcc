@@ -247,9 +247,6 @@ extern int remove_address_replacements PROTO((rtx in_rtx));
    autoincrement and autodecrement.  */
 extern int operands_match_p PROTO((rtx, rtx));
 
-/* Return the number of times character C occurs in string S.  */
-extern int n_occurrences PROTO((int, char *));
-
 /* Return 1 if altering OP will not modify the value of CLOBBER. */
 extern int safe_from_earlyclobber PROTO((rtx, rtx));
 

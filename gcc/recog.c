@@ -54,6 +54,45 @@ static rtx *find_constant_term_loc PROTO((rtx *));
 
 int volatile_ok;
 
+/* The following vectors hold the results from insn_extract.  */
+
+/* Indexed by N, gives value of operand N.  */
+rtx recog_operand[MAX_RECOG_OPERANDS];
+
+/* Indexed by N, gives location where operand N was found.  */
+rtx *recog_operand_loc[MAX_RECOG_OPERANDS];
+
+/* Indexed by N, gives location where the Nth duplicate-appearance of
+   an operand was found.  This is something that matched MATCH_DUP.  */
+rtx *recog_dup_loc[MAX_RECOG_OPERANDS];
+
+/* Indexed by N, gives the operand number that was duplicated in the
+   Nth duplicate-appearance of an operand.  */
+char recog_dup_num[MAX_RECOG_OPERANDS];
+
+
+/* The next variables are set up by extract_insn.  */
+
+/* The number of operands of the insn.  */
+int recog_n_operands;
+
+/* The number of MATCH_DUPs in the insn.  */
+int recog_n_dups;
+
+/* The number of alternatives in the constraints for the insn.  */
+int recog_n_alternatives;
+
+/* Indexed by N, gives the mode of operand N.  */
+enum machine_mode recog_operand_mode[MAX_RECOG_OPERANDS];
+
+/* Indexed by N, gives the constraint string for operand N.  */
+char *recog_constraints[MAX_RECOG_OPERANDS];
+
+#ifndef REGISTER_CONSTRAINTS
+/* Indexed by N, nonzero if operand N should be an address.  */
+char recog_operand_address_p[MAX_RECOG_OPERANDS];
+#endif
+
 /* On return from `constrain_operands', indicate which alternative
    was satisfied.  */
 
@@ -1656,6 +1695,90 @@ adj_offsettable_operand (op, offset)
   abort ();
 }
 
+/* Analyze INSN and compute the variables recog_n_operands, recog_n_dups,
+   recog_n_alternatives, recog_operand, recog_operand_loc, recog_constraints,
+   recog_operand_mode, recog_dup_loc and recog_dup_num.
+   If REGISTER_CONSTRAINTS is not defined, also compute
+   recog_operand_address_p.  */
+void
+extract_insn (insn)
+     rtx insn;
+{
+  int i;
+  int icode;
+  int noperands;
+  rtx body = PATTERN (insn);
+
+  recog_n_operands = 0;
+  recog_n_alternatives = 0;
+  recog_n_dups = 0;
+
+  switch (GET_CODE (body))
+    {
+    case USE:
+    case CLOBBER:
+    case ASM_INPUT:
+    case ADDR_VEC:
+    case ADDR_DIFF_VEC:
+      return;
+
+    case SET:
+    case PARALLEL:
+    case ASM_OPERANDS:
+      recog_n_operands = noperands = asm_noperands (body);
+      if (noperands >= 0)
+	{
+	  char *p;
+	  /* This insn is an `asm' with operands.  */
+
+	  /* expand_asm_operands makes sure there aren't too many operands.  */
+	  if (noperands > MAX_RECOG_OPERANDS)
+	    abort ();
+
+	  /* Now get the operand values and constraints out of the insn.  */
+	  decode_asm_operands (body, recog_operand, recog_operand_loc,
+			       recog_constraints, recog_operand_mode);
+	  if (noperands > 0)
+	    {
+	      char *p =  recog_constraints[0];
+	      recog_n_alternatives = 1;
+	      while (*p)
+		recog_n_alternatives += (*p++ == ',');
+	    }
+#ifndef REGISTER_CONSTRAINTS
+	  bzero (recog_operand_address_p, sizeof recog_operand_address_p);
+#endif
+	  break;
+	}
+
+      /* FALLTHROUGH */
+
+    default:
+      /* Ordinary insn: recognize it, get the operands via insn_extract
+	 and get the constraints.  */
+
+      icode = recog_memoized (insn);
+      if (icode < 0)
+	fatal_insn_not_found (insn);
+
+      recog_n_operands = noperands = insn_n_operands[icode];
+      recog_n_alternatives = insn_n_alternatives[icode];
+      recog_n_dups = insn_n_dups[icode];
+
+      insn_extract (insn);
+
+      for (i = 0; i < noperands; i++)
+	{
+#ifdef REGISTER_CONSTRAINTS
+	  recog_constraints[i] = insn_operand_constraint[icode][i];
+#else
+	  recog_operand_address_p[i] = insn_operand_address_p[icode][i];
+#endif
+	  recog_operand_mode[i] = insn_operand_mode[icode][i];
+	}
+    }
+}
+
 #ifdef REGISTER_CONSTRAINTS
 
 /* Check the operands of an insn (found in recog_operands)

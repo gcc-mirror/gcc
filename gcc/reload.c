@@ -2156,19 +2156,6 @@ operands_match_p (x, y)
   return 1 + success_2;
 }
 
-/* Return the number of times character C occurs in string S.  */
-
-int
-n_occurrences (c, s)
-     int c;
-     char *s;
-{
-  int n = 0;
-  while (*s)
-    n += (*s++ == c);
-  return n;
-}
-
 /* Describe the range of registers or memory referenced by X.
    If X is a register, set REG_FLAG and put the first register 
    number into START and the last plus one into END.
@@ -2442,7 +2429,6 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   static int last_output_reload_regno = -1;
 
   this_insn = insn;
-  this_insn_is_asm = 0;		/* Tentative.  */
   n_reloads = 0;
   n_replacements = 0;
   n_earlyclobbers = 0;
@@ -2470,85 +2456,36 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   bzero ((char *) secondary_memlocs_elim, sizeof secondary_memlocs_elim);
 #endif
 
-  /* Find what kind of insn this is.  NOPERANDS gets number of operands.
-     Make OPERANDS point to a vector of operand values.
-     Make OPERAND_LOCS point to a vector of pointers to
-     where the operands were found.
-     Fill CONSTRAINTS and CONSTRAINTS1 with pointers to the
-     constraint-strings for this insn.
-     Return if the insn needs no reload processing.  */
-
-  switch (GET_CODE (body))
-    {
-    case USE:
-    case CLOBBER:
-    case ASM_INPUT:
-    case ADDR_VEC:
-    case ADDR_DIFF_VEC:
-      return 0;
-
-    case SET:
-      /* Dispose quickly of (set (reg..) (reg..)) if both have hard regs and it
-	 is cheap to move between them.  If it is not, there may not be an insn
-	 to do the copy, so we may need a reload.  */
-      if (GET_CODE (SET_DEST (body)) == REG
-	  && REGNO (SET_DEST (body)) < FIRST_PSEUDO_REGISTER
-	  && GET_CODE (SET_SRC (body)) == REG
-	  && REGNO (SET_SRC (body)) < FIRST_PSEUDO_REGISTER
-	  && REGISTER_MOVE_COST (REGNO_REG_CLASS (REGNO (SET_SRC (body))),
-				 REGNO_REG_CLASS (REGNO (SET_DEST (body)))) == 2)
-	return 0;
-    case PARALLEL:
-    case ASM_OPERANDS:
-      reload_n_operands = noperands = asm_noperands (body);
-      if (noperands >= 0)
-	{
-	  /* This insn is an `asm' with operands.  */
-
-	  insn_code_number = -1;
-	  this_insn_is_asm = 1;
-
-	  /* expand_asm_operands makes sure there aren't too many operands.  */
-	  if (noperands > MAX_RECOG_OPERANDS)
-	    abort ();
-
-	  /* Now get the operand values and constraints out of the insn.  */
-
-	  decode_asm_operands (body, recog_operand, recog_operand_loc,
-			       constraints, operand_mode);
-	  if (noperands > 0)
-	    {
-	      bcopy ((char *) constraints, (char *) constraints1,
-		     noperands * sizeof (char *));
-	      n_alternatives = n_occurrences (',', constraints[0]) + 1;
-	    }
-	  break;
-	}
-
-    default:
-      /* Ordinary insn: recognize it, get the operands via insn_extract
-	 and get the constraints.  */
-
-      insn_code_number = recog_memoized (insn);
-      if (insn_code_number < 0)
-	fatal_insn_not_found (insn);
-
-      reload_n_operands = noperands = insn_n_operands[insn_code_number];
-      n_alternatives = insn_n_alternatives[insn_code_number];
-      /* Just return "no reloads" if insn has no operands with constraints.  */
-      if (n_alternatives == 0)
-	return 0;
-      insn_extract (insn);
-      for (i = 0; i < noperands; i++)
-	{
-	  constraints[i] = constraints1[i]
-	    = insn_operand_constraint[insn_code_number][i];
-	  operand_mode[i] = insn_operand_mode[insn_code_number][i];
-	}
-    }
-
-  if (noperands == 0)
+  /* Dispose quickly of (set (reg..) (reg..)) if both have hard regs and it
+     is cheap to move between them.  If it is not, there may not be an insn
+     to do the copy, so we may need a reload.  */
+  if (GET_CODE (body) == SET
+      && GET_CODE (SET_DEST (body)) == REG
+      && REGNO (SET_DEST (body)) < FIRST_PSEUDO_REGISTER
+      && GET_CODE (SET_SRC (body)) == REG
+      && REGNO (SET_SRC (body)) < FIRST_PSEUDO_REGISTER
+      && REGISTER_MOVE_COST (REGNO_REG_CLASS (REGNO (SET_SRC (body))),
+			     REGNO_REG_CLASS (REGNO (SET_DEST (body)))) == 2)
     return 0;
+
+  extract_insn (insn);
+
+  noperands = reload_n_operands = recog_n_operands;
+  n_alternatives = recog_n_alternatives;
+
+  /* Just return "no reloads" if insn has no operands with constraints.  */
+  if (noperands == 0 || n_alternatives == 0)
+    return 0;
+
+  insn_code_number = INSN_CODE (insn);
+  this_insn_is_asm = insn_code_number < 0;
+
+  bcopy ((char *) recog_operand_mode, (char *) operand_mode,
+	 noperands * sizeof (enum machine_mode));
+  bcopy ((char *) recog_constraints, (char *) constraints,
+	 noperands * sizeof (char *));
+  bcopy ((char *) constraints, (char *) constraints1,
+	 noperands * sizeof (char *));
 
   commutative = -1;
 
@@ -4272,50 +4209,11 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
   replace_reloads = replace;
   this_insn = insn;
 
-  /* Find what kind of insn this is.  NOPERANDS gets number of operands.
-     Store the operand values in RECOG_OPERAND and the locations
-     of the words in the insn that point to them in RECOG_OPERAND_LOC.
-     Return if the insn needs no reload processing.  */
+  extract_insn (insn);
 
-  switch (GET_CODE (body))
-    {
-    case USE:
-    case CLOBBER:
-    case ASM_INPUT:
-    case ADDR_VEC:
-    case ADDR_DIFF_VEC:
-      return;
+  noperands = reload_n_operands = recog_n_operands;
 
-    case PARALLEL:
-    case SET:
-      noperands = asm_noperands (body);
-      if (noperands >= 0)
-	{
-	  /* This insn is an `asm' with operands.
-	     First, find out how many operands, and allocate space.  */
-
-	  insn_code_number = -1;
-	  /* ??? This is a bug! ???
-	     Give up and delete this insn if it has too many operands.  */
-	  if (noperands > MAX_RECOG_OPERANDS)
-	    abort ();
-
-	  /* Now get the operand values out of the insn.  */
-
-	  decode_asm_operands (body, recog_operand, recog_operand_loc,
-			       NULL_PTR, NULL_PTR);
-	  break;
-	}
-
-    default:
-      /* Ordinary insn: recognize it, allocate space for operands and
-	 constraints, and get them out via insn_extract.  */
-
-      insn_code_number = recog_memoized (insn);
-      noperands = insn_n_operands[insn_code_number];
-      insn_extract (insn);
-    }
-
+  /* Return if the insn needs no reload processing.  */
   if (noperands == 0)
     return;
 

@@ -61,9 +61,14 @@ extern int mode_dependent_address_p	PROTO((rtx));
 extern int recog			PROTO((rtx, rtx, int *));
 extern void add_clobbers		PROTO((rtx, int));
 extern void insn_extract		PROTO((rtx));
+extern void extract_insn		PROTO((rtx));
 
 /* Nonzero means volatile operands are recognized.  */
 extern int volatile_ok;
+
+/* Set by constrain_operands to the number of the alternative that
+   matched.  */
+extern int which_alternative;
 
 /* The following vectors hold the results from insn_extract.  */
 
@@ -80,6 +85,28 @@ extern rtx *recog_dup_loc[];
 /* Indexed by N, gives the operand number that was duplicated in the
    Nth duplicate-appearance of an operand.  */
 extern char recog_dup_num[];
+
+/* The next variables are set up by extract_insn.  */
+
+/* The number of operands of the insn.  */
+extern int recog_n_operands;
+
+/* The number of MATCH_DUPs in the insn.  */
+extern int recog_n_dups;
+
+/* The number of alternatives in the constraints for the insn.  */
+extern int recog_n_alternatives;
+
+/* Indexed by N, gives the mode of operand N.  */
+extern enum machine_mode recog_operand_mode[];
+
+/* Indexed by N, gives the constraint string for operand N.  */
+extern char *recog_constraints[];
+
+#ifndef REGISTER_CONSTRAINTS
+/* Indexed by N, nonzero if operand N should be an address.  */
+extern char recog_operand_address_p[];
+#endif
 
 /* Access the output function for CODE.  */
 

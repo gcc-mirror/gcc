@@ -460,16 +460,13 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"config.h\"\n");
   printf ("#include \"system.h\"\n");
   printf ("#include \"rtl.h\"\n");
+  printf ("#include \"insn-config.h\"\n");
+  printf ("#include \"recog.h\"\n");
   printf ("#include \"toplev.h\"\n\n");
 
   /* This variable exists only so it can be the "location"
      of any missing operand whose numbers are skipped by a given pattern.  */
   printf ("static rtx junk ATTRIBUTE_UNUSED;\n");
-
-  printf ("extern rtx recog_operand[];\n");
-  printf ("extern rtx *recog_operand_loc[];\n");
-  printf ("extern rtx *recog_dup_loc[];\n");
-  printf ("extern char recog_dup_num[];\n");
 
   printf ("void\ninsn_extract (insn)\n");
   printf ("     rtx insn;\n");
