@@ -864,9 +864,7 @@ emit_move_sequence (operands, mode, scratch_reg)
 	  return 1;
 	}
       else if (GET_CODE (operand1) != CONST_INT
-	       || (! INT_14_BITS (operand1)
-		   && ! ((INTVAL (operand1) & 0x7ff) == 0)
-		   && ! zdepi_cint_p (INTVAL (operand1))))
+	       || ! cint_ok_for_move (INTVAL (operand1)))
 	{
 	  rtx temp = reload_in_progress ? operand0 : gen_reg_rtx (mode);
 	  emit_insn (gen_rtx (SET, VOIDmode, temp,
