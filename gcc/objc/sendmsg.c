@@ -1,5 +1,5 @@
 /* GNU Objective C Runtime message lookup 
-   Copyright (C) 1993, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1993, 95, 96, 97, 98, 1999 Free Software Foundation, Inc.
    Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* this is how we hack STRUCT_VALUE to be 1 or 0 */
 #define gen_rtx(args...) 1
+#define gen_rtx_MEM(args...) 1
 #define rtx int
 
 #if !defined(STRUCT_VALUE) || STRUCT_VALUE == 0
