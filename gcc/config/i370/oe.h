@@ -39,9 +39,16 @@ Boston, MA 02111-1307, USA.  */
 #define LIBGCC_SPEC ""
 #define STARTFILE_SPEC "/usr/local/lib/gccmain.o"
 
-/* Names to predefine in the preprocessor for this target machine.  */
-
-#define CPP_PREDEFINES "-DGCC -Dgcc -DUNIX -Dunix -Dopenedition -D__i370__ -Asystem=openedition -Asystem=unix -Acpu=i370 -Amachine=i370"
+/* Target OS preprocessor built-ins.  */	\
+#define TARGET_OS_CPP_BUILTINS()		\
+    do {					\
+	builtin_define_std ("unix");		\
+	builtin_define_std ("UNIX");		\
+	builtin_define_std ("openedition");	\
+	builtin_define ("__i370__");		\
+	builtin_assert ("system=openedition");	\
+	builtin_assert ("system=unix");		\
+    } while (0)
 
 /* Include system common definitions */
 

@@ -1,3 +1,11 @@
+2002-06-02  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+config/i370:
+	* i370.h (TARGET_CPU_CPP_BUILTINS): Use.
+	* linux.h: Use TARGET_OS_CPP_BUILTINS rather than CPP_PREDEFINES.
+	* mvs.h: Similarly.
+	* oe.h: Similarly.
+
 Mon Jun  3 00:18:20 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* final.c (final):  Allow notes to not have computed addresses;

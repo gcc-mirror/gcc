@@ -32,12 +32,19 @@ Boston, MA 02111-1307, USA.  */
 
 #define CPP_SPEC "-trigraphs"
 
-/* Names to predefine in the preprocessor for this target machine.  */
+/* Target OS preprocessor built-ins.  */	\
+#define TARGET_OS_CPP_BUILTINS()		\
+    do {					\
+	builtin_define_std ("MVS");		\
+	builtin_define_std ("mvs");		\
+	MAYBE_LE370_MACROS();			\
+	builtin_assert ("system=mvs");		\
+    } while (0)
 
 #if defined(LE370)
-#define CPP_PREDEFINES "-DGCC -Dgcc -DMVS -Dmvs -DLE370 -Asystem=mvs -Acpu=i370 -Amachine=i370"
+# define MAYBE_LE370_MACROS() do {builtin_define_std ("LE370");} while (0)
 #else
-#define CPP_PREDEFINES "-DGCC -Dgcc -DMVS -Dmvs -Asystem=mvs -Acpu=i370 -Amachine=i370"
+# define MAYBE_LE370_MACROS()
 #endif
 
 /* Include system common definitions */
