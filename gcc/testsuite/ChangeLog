@@ -1,3 +1,8 @@
+2002-04-24  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c-torture/compile/labels-3.x: New file, don't assemble the
+	compiler output on mips*-*-irix*.
+
 2002-04-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/parse/attr1.C: New test.
