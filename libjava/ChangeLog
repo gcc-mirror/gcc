@@ -1,3 +1,15 @@
+2005-02-20  Dalibor Topic  <robilad@kaffe.org>
+
+	* libraries/javalib/gnu/regexp/RE.java,
+	libraries/javalib/java/io/ObjectInputStream.java,
+	libraries/javalib/java/security/AllPermission.java,
+	libraries/javalib/java/security/BasicPermission.java,
+	libraries/javalib/java/security/Permissions.java,
+	libraries/javalib/java/text/MessageFormat.java:
+	Made 'inner' classes real public static inner classes,
+	and made them final where possible, or removed them
+	where unused.
+
 2005-02-20  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/text/FormatCharacterIterator.java:

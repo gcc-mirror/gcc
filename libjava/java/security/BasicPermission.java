@@ -72,8 +72,9 @@ import java.util.Hashtable;
  * @since 1.1
  * @status updated to 1.4
  */
-public abstract class BasicPermission extends Permission
+public abstract class BasicPermission extends java.security.Permission
   implements Serializable
+  // FIXME extends with fully qualified classname as workaround for gcj 3.3.
 {
   /**
    * Compatible with JDK 1.1+.
@@ -197,111 +198,111 @@ public abstract class BasicPermission extends Permission
   {
     return new BasicPermissionCollection(getClass());
   }
+
+  /**
+   * Implements AllPermission.newPermissionCollection, and obeys serialization
+   * of JDK.
+   *
+   * @author Eric Blake (ebb9@email.byu.edu)
+   */
+  private static final class BasicPermissionCollection extends PermissionCollection
+  {
+    /**
+     * Compatible with JDK 1.1+.
+     */
+    private static final long serialVersionUID = 739301742472979399L;
+
+    /**
+     * The permissions in the collection.
+     *
+     * @serial a hash mapping name to permissions, all of type permClass
+     */
+    private final Hashtable permissions = new Hashtable();
+
+    /**
+     * If "*" is in the collection.
+     *
+     * @serial true if a permission named "*" is in the collection
+     */
+    private boolean all_allowed;
+
+    /**
+     * The runtime class which all entries in the table must belong to.
+     *
+     * @serial the limiting subclass of this collection
+     */
+    private final Class permClass;
+
+    /**
+     * Construct a collection over the given runtime class.
+     *
+     * @param c the class
+     */
+    BasicPermissionCollection(Class c)
+    {
+      permClass = c;
+    }
+
+    /**
+     * Add a Permission. It must be of the same type as the permission which
+     * created this collection.
+     *
+     * @param perm the permission to add
+     * @throws IllegalArgumentException if perm is not the correct type
+     * @throws SecurityException if the collection is read-only
+     */
+    public void add(Permission perm)
+    {
+      if (isReadOnly())
+        throw new SecurityException("readonly");
+      if (! permClass.isInstance(perm))
+        throw new IllegalArgumentException("Expecting instance of " + permClass);
+      BasicPermission bp = (BasicPermission) perm;
+      String name = bp.getName();
+      if (name.equals("*"))
+        all_allowed = true;
+      permissions.put(name, bp);
+    }
+
+    /**
+     * Returns true if this collection implies the given permission.
+     *
+     * @param permission the permission to check
+     * @return true if it is implied by this
+     */
+    public boolean implies(Permission permission)
+    {
+      if (! permClass.isInstance(permission))
+        return false;
+      if (all_allowed)
+        return true;
+      BasicPermission toImply = (BasicPermission) permission;
+      String name = toImply.getName();
+      if (name.equals("*"))
+        return false;
+      int prefixLength = name.length();
+      if (name.endsWith("*"))
+        prefixLength -= 2;
+
+      while (true)
+        {
+          if (permissions.get(name) != null)
+            return true;
+          prefixLength = name.lastIndexOf('.', prefixLength);
+          if (prefixLength < 0)
+            return false;
+          name = name.substring(0, prefixLength + 1) + '*';
+        }
+    }
+
+    /**
+     * Enumerate over the collection.
+     *
+     * @return an enumeration of the collection contents
+     */
+    public Enumeration elements()
+    {
+      return permissions.elements();
+    }
+  } // class BasicPermissionCollection
 } // class BasicPermission
-
-/**
- * Implements AllPermission.newPermissionCollection, and obeys serialization
- * of JDK.
- *
- * @author Eric Blake <ebb9@email.byu.edu>
- */
-final class BasicPermissionCollection extends PermissionCollection
-{
-  /**
-   * Compatible with JDK 1.1+.
-   */
-  private static final long serialVersionUID = 739301742472979399L;
-
-  /**
-   * The permissions in the collection.
-   *
-   * @serial a hash mapping name to permissions, all of type permClass
-   */
-  private final Hashtable permissions = new Hashtable();
-
-  /**
-   * If "*" is in the collection.
-   *
-   * @serial true if a permission named "*" is in the collection
-   */
-  private boolean all_allowed;
-
-  /**
-   * The runtime class which all entries in the table must belong to.
-   *
-   * @serial the limiting subclass of this collection
-   */
-  private final Class permClass;
-
-  /**
-   * Construct a collection over the given runtime class.
-   *
-   * @param c the class
-   */
-  BasicPermissionCollection(Class c)
-  {
-    permClass = c;
-  }
-
-  /**
-   * Add a Permission. It must be of the same type as the permission which
-   * created this collection.
-   *
-   * @param perm the permission to add
-   * @throws IllegalArgumentException if perm is not the correct type
-   * @throws SecurityException if the collection is read-only
-   */
-  public void add(Permission perm)
-  {
-    if (isReadOnly())
-      throw new SecurityException("readonly");
-    if (! permClass.isInstance(perm))
-      throw new IllegalArgumentException("Expecting instance of " + permClass);
-    BasicPermission bp = (BasicPermission) perm;
-    String name = bp.getName();
-    if (name.equals("*"))
-      all_allowed = true;
-    permissions.put(name, bp);
-  }
-
-  /**
-   * Returns true if this collection implies the given permission.
-   *
-   * @param permission the permission to check
-   * @return true if it is implied by this
-   */
-  public boolean implies(Permission permission)
-  {
-    if (! permClass.isInstance(permission))
-      return false;
-    if (all_allowed)
-      return true;
-    BasicPermission toImply = (BasicPermission) permission;
-    String name = toImply.getName();
-    if (name.equals("*"))
-      return false;
-    int prefixLength = name.length();
-    if (name.endsWith("*"))
-      prefixLength -= 2;
-
-    while (true)
-      {
-        if (permissions.get(name) != null)
-          return true;
-        prefixLength = name.lastIndexOf('.', prefixLength);
-        if (prefixLength < 0)
-          return false;
-        name = name.substring(0, prefixLength + 1) + '*';
-      }
-  }
-
-  /**
-   * Enumerate over the collection.
-   *
-   * @return an enumeration of the collection contents
-   */
-  public Enumeration elements()
-  {
-    return permissions.elements();
-  }
-} // class BasicPermissionCollection
