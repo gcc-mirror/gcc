@@ -44,3 +44,14 @@
 
 /* Handle #pragma pack and #pragma weak.  */
 #define HANDLE_SYSV_PRAGMA
+
+/* By default, target has a 80387, uses IEEE compatible arithmetic,
+   and returns float values in the 387, ie,
+   (TARGET_80387 | TARGET_FLOAT_RETURNS_IN_80387)
+
+   ISC's software emulation of a 387 fails to handle the `fucomp'
+   opcode.  fucomp is only used when generating IEEE compliant code.
+   So don't make TARGET_IEEE_FP default for ISC. */
+
+#undef TARGET_DEFAULT
+#define TARGET_DEFAULT 0201
