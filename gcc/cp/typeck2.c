@@ -182,23 +182,29 @@ abstract_virtuals_error (decl, type)
 
 /* Print an error message for invalid use of an incomplete type.
    VALUE is the expression that was used (or 0 if that isn't known)
-   and TYPE is the type that was invalid.  If WARN_ONLY is nonzero, a
-   warning is printed, otherwise an error is printed.  */
+   and TYPE is the type that was invalid.  DIAG_TYPE indicates the
+   type of diagnostic:  0 for an error, 1 for a warning, 2 for a
+   pedwarn.  */
 
 void
-cxx_incomplete_type_diagnostic (value, type, warn_only)
+cxx_incomplete_type_diagnostic (value, type, diag_type)
      tree value;
      tree type;
-     int warn_only;
+     int diag_type;
 {
   int decl = 0;
   void (*p_msg) PARAMS ((const char *, ...));
   void (*p_msg_at) PARAMS ((const char *, ...));
 
-  if (warn_only)
+  if (diag_type == 1)
     {
       p_msg = warning;
       p_msg_at = cp_warning_at;
+    }
+  else if (diag_type == 2)
+    {
+      p_msg = pedwarn;
+      p_msg_at = cp_pedwarn_at;
     }
   else
     {
@@ -1345,6 +1351,7 @@ add_exception_specifier (list, spec, complain)
   int ok;
   tree core = spec;
   int is_ptr;
+  int diag_type = -1; /* none */
   
   if (spec == error_mark_node)
     return list;
@@ -1366,7 +1373,15 @@ add_exception_specifier (list, spec, complain)
   else if (processing_template_decl)
     ok = 1;
   else
-    ok = COMPLETE_TYPE_P (complete_type (core));
+    {
+      ok = 1;
+      /* 15.4/1 says that types in an exception specifier must be complete,
+         but it seems more reasonable to only require this on definitions
+         and calls.  So just give a pedwarn at this point; we will give an
+         error later if we hit one of those two cases.  */
+      if (!COMPLETE_TYPE_P (complete_type (core)))
+	diag_type = 2; /* pedwarn */
+    }
 
   if (ok)
     {
@@ -1378,8 +1393,12 @@ add_exception_specifier (list, spec, complain)
       if (!probe)
 	list = tree_cons (NULL_TREE, spec, list);
     }
-  else if (complain)
-    cxx_incomplete_type_error (NULL_TREE, core);
+  else
+    diag_type = 0; /* error */
+    
+  if (diag_type >= 0 && complain)
+    cxx_incomplete_type_diagnostic (NULL_TREE, core, diag_type);
+
   return list;
 }
 
@@ -1417,4 +1436,35 @@ merge_exception_specifiers (list, add)
         }
     }
   return list;
+}
+
+/* Subroutine of build_call.  Ensure that each of the types in the
+   exception specification is complete.  Technically, 15.4/1 says that
+   they need to be complete when we see a declaration of the function,
+   but we should be able to get away with only requiring this when the
+   function is defined or called.  See also add_exception_specifier.  */
+
+void
+require_complete_eh_spec_types (fntype, decl)
+     tree fntype, decl;
+{
+  tree raises;
+  /* Don't complain about calls to op new.  */
+  if (decl && DECL_ARTIFICIAL (decl))
+    return;
+  for (raises = TYPE_RAISES_EXCEPTIONS (fntype); raises;
+       raises = TREE_CHAIN (raises))
+    {
+      tree type = TREE_VALUE (raises);
+      if (type && !COMPLETE_TYPE_P (type))
+	{
+	  if (decl)
+	    error
+	      ("call to function `%D' which throws incomplete type `%#T'",
+	       decl, type);
+	  else
+	    error ("call to function which throws incomplete type `%#T'",
+		   decl);
+	}
+    }
 }
