@@ -26,7 +26,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  "-DPPC -D__ELF__ -Dunix -Dlinux -Dpowerpc -Asystem(unix) -Asystem(linux) -Acpu(powerpc) -Amachine(powerpc)"
 
 #undef LINK_SPEC
-#define LINK_SPEC "-m elf32ppc %{shared:-shared} \
+#define LINK_SPEC "-m elf32ppc %{G*} %{shared:-shared} \
   %{!shared: \
     %{!static: \
       %{rdynamic:-export-dynamic} \
