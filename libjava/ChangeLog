@@ -1,3 +1,8 @@
+2002-10-03  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (awt_java_source_files): Added new files.
+
 2002-10-03  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/InetAddress.java
