@@ -1,3 +1,8 @@
+2005-01-03  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/rs6000/darwin-fallback.c: Use 'ucontext_t' rather than
+	'struct ucontext'.
+
 2004-01-03  Steven Bosscher  <stevenb@suse.de>
 
 	* passes.c (rest_of_compilation): Don't run regmove if only
