@@ -1,3 +1,7 @@
+2001-06-09  Julian Foad <julian_foad@hotmail.com>
+
+	* doc/invoke.texi: Remove superfluous text.
+
 2001-06-08  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/linux.h (CPLUSPLUS_CPP_SPEC): New.
