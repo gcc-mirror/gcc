@@ -87,8 +87,75 @@
   "ialu,compare,shift,load,sload,store,uncond_branch,branch,call,sibcall,call_no_delay_slot,return,imul,idiv,fpload,fpstore,fp,fpmove,fpcmove,fpcmp,fpmul,fpdivs,fpdivd,fpsqrts,fpsqrtd,cmove,multi,misc"
   (const_string "ialu"))
 
+;; true if branch/call has empty delay slot and will emit a nop in it
+(define_attr "empty_delay_slot" "false,true"
+  (symbol_ref "empty_delay_slot (insn)"))
+
+(define_attr "branch_type" "none,icc,fcc,reg" (const_string "none"))
+
 ;; Length (in # of insns).
-(define_attr "length" "" (const_int 1))
+(define_attr "length" ""
+  (cond [(eq_attr "type" "uncond_branch,call,sibcall")
+	   (if_then_else (eq_attr "empty_delay_slot" "true")
+	     (const_int 2)
+	     (const_int 1))
+	 (eq_attr "branch_type" "icc")
+	   (if_then_else (match_operand 0 "noov_compare64_op" "")
+	     (if_then_else (lt (pc) (match_dup 1))
+	       (if_then_else (lt (minus (match_dup 1) (pc)) (const_int 260000))
+		 (if_then_else (eq_attr "empty_delay_slot" "true")
+		   (const_int 2)
+		   (const_int 1))
+		 (if_then_else (eq_attr "empty_delay_slot" "true")
+		   (const_int 4)
+		   (const_int 3)))
+	       (if_then_else (lt (minus (pc) (match_dup 1)) (const_int 260000))
+		 (if_then_else (eq_attr "empty_delay_slot" "true")
+		   (const_int 2)
+		   (const_int 1))
+		 (if_then_else (eq_attr "empty_delay_slot" "true")
+		   (const_int 4)
+		   (const_int 3))))
+	     (if_then_else (eq_attr "empty_delay_slot" "true")
+	       (const_int 2)
+	       (const_int 1)))
+	 (eq_attr "branch_type" "fcc")
+	   (if_then_else (match_operand 0 "fcc0_reg_operand" "")
+	     (if_then_else (eq_attr "empty_delay_slot" "true")
+	       (const_int 2)
+	       (const_int 1))
+	     (if_then_else (lt (pc) (match_dup 2))
+	       (if_then_else (lt (minus (match_dup 2) (pc)) (const_int 260000))
+		 (if_then_else (eq_attr "empty_delay_slot" "true")
+		   (const_int 2)
+		   (const_int 1))
+		 (if_then_else (eq_attr "empty_delay_slot" "true")
+		   (const_int 4)
+		   (const_int 3)))
+	       (if_then_else (lt (minus (pc) (match_dup 2)) (const_int 260000))
+		 (if_then_else (eq_attr "empty_delay_slot" "true")
+		   (const_int 2)
+		   (const_int 1))
+		 (if_then_else (eq_attr "empty_delay_slot" "true")
+		   (const_int 4)
+		   (const_int 3)))))
+	 (eq_attr "branch_type" "reg")
+	   (if_then_else (lt (pc) (match_dup 2))
+	     (if_then_else (lt (minus (match_dup 2) (pc)) (const_int 32000))
+	       (if_then_else (eq_attr "empty_delay_slot" "true")
+		 (const_int 2)
+		 (const_int 1))
+	       (if_then_else (eq_attr "empty_delay_slot" "true")
+		 (const_int 4)
+		 (const_int 3)))
+	     (if_then_else (lt (minus (pc) (match_dup 2)) (const_int 32000))
+	       (if_then_else (eq_attr "empty_delay_slot" "true")
+		 (const_int 2)
+		 (const_int 1))
+	       (if_then_else (eq_attr "empty_delay_slot" "true")
+		 (const_int 4)
+		 (const_int 3))))
+	 ] (const_int 1)))
 
 ;; FP precision.
 (define_attr "fptype" "single,double" (const_string "single"))
@@ -1898,18 +1965,7 @@
 			 ! final_sequence, insn);
 }"
   [(set_attr "type" "branch")
-   (set (attr "length")
-	(if_then_else (match_operand 0 "noov_compare64_op" "")
-		      (if_then_else (lt (pc) (match_dup 1))
-				    (if_then_else (lt (minus (match_dup 1) (pc))
-						      (const_int 260000))
-						  (const_int 1)
-						  (const_int 3))
-				    (if_then_else (lt (minus (pc) (match_dup 1))
-						      (const_int 260000))
-						  (const_int 1)
-						  (const_int 3)))
-		      (const_int 1)))])
+   (set_attr "branch_type" "icc")])
 
 ;; XXX fpcmp nop braindamage
 (define_insn "*inverted_branch"
@@ -1926,18 +1982,7 @@
 			 ! final_sequence, insn);
 }"
   [(set_attr "type" "branch")
-   (set (attr "length")
-	(if_then_else (match_operand 0 "noov_compare64_op" "")
-		      (if_then_else (lt (pc) (match_dup 1))
-				    (if_then_else (lt (minus (match_dup 1) (pc))
-						      (const_int 260000))
-						  (const_int 1)
-						  (const_int 3))
-				    (if_then_else (lt (minus (pc) (match_dup 1))
-						      (const_int 260000))
-						  (const_int 1)
-						  (const_int 3)))
-		      (const_int 1)))])
+   (set_attr "branch_type" "icc")])
 
 ;; XXX fpcmp nop braindamage
 (define_insn "*normal_fp_branch"
@@ -1955,18 +2000,7 @@
 			 ! final_sequence, insn);
 }"
   [(set_attr "type" "branch")
-   (set (attr "length")
-	(if_then_else (match_operand 0 "fcc0_reg_operand" "")
-		      (const_int 1)
-		      (if_then_else (lt (pc) (match_dup 2))
-				    (if_then_else (lt (minus (match_dup 2) (pc))
-						      (const_int 260000))
-						  (const_int 1)
-						  (const_int 3))
-				    (if_then_else (lt (minus (pc) (match_dup 2))
-						      (const_int 260000))
-						  (const_int 1)
-						  (const_int 3)))))])
+   (set_attr "branch_type" "fcc")])
 
 ;; XXX fpcmp nop braindamage
 (define_insn "*inverted_fp_branch"
@@ -1984,18 +2018,7 @@
 			 ! final_sequence, insn);
 }"
   [(set_attr "type" "branch")
-   (set (attr "length")
-	(if_then_else (match_operand 0 "fcc0_reg_operand" "")
-		      (const_int 1)
-		      (if_then_else (lt (pc) (match_dup 2))
-				    (if_then_else (lt (minus (match_dup 2) (pc))
-						      (const_int 260000))
-						  (const_int 1)
-						  (const_int 3))
-				    (if_then_else (lt (minus (pc) (match_dup 2))
-						      (const_int 260000))
-						  (const_int 1)
-						  (const_int 3)))))])
+   (set_attr "branch_type" "fcc")])
 
 ;; XXX fpcmp nop braindamage
 (define_insn "*normal_fpe_branch"
@@ -2013,18 +2036,7 @@
 			 ! final_sequence, insn);
 }"
   [(set_attr "type" "branch")
-   (set (attr "length")
-	(if_then_else (match_operand 0 "fcc0_reg_operand" "")
-		      (const_int 1)
-		      (if_then_else (lt (pc) (match_dup 2))
-				    (if_then_else (lt (minus (match_dup 2) (pc))
-						      (const_int 260000))
-						  (const_int 1)
-						  (const_int 3))
-				    (if_then_else (lt (minus (pc) (match_dup 2))
-						      (const_int 260000))
-						  (const_int 1)
-						  (const_int 3)))))])
+   (set_attr "branch_type" "fcc")])
 
 ;; XXX fpcmp nop braindamage
 (define_insn "*inverted_fpe_branch"
@@ -2042,18 +2054,7 @@
 			 ! final_sequence, insn);
 }"
   [(set_attr "type" "branch")
-   (set (attr "length")
-	(if_then_else (match_operand 0 "fcc0_reg_operand" "")
-		      (const_int 1)
-		      (if_then_else (lt (pc) (match_dup 2))
-				    (if_then_else (lt (minus (match_dup 2) (pc))
-						      (const_int 260000))
-						  (const_int 1)
-						  (const_int 3))
-				    (if_then_else (lt (minus (pc) (match_dup 2))
-						      (const_int 260000))
-						  (const_int 1)
-						  (const_int 3)))))])
+   (set_attr "branch_type" "fcc")])
 
 ;; Sparc V9-specific jump insns.  None of these are guaranteed to be
 ;; in the architecture.
@@ -2076,16 +2077,7 @@
 			  ! final_sequence, insn);
 }"
   [(set_attr "type" "branch")
-   (set (attr "length")
-        (if_then_else (lt (pc) (match_dup 2))
-		      (if_then_else (lt (minus (match_dup 2) (pc))
-					(const_int 32000))
-				    (const_int 1)
-				    (const_int 3))
-		      (if_then_else (lt (minus (pc) (match_dup 2))
-					(const_int 32000))
-				    (const_int 1)
-				    (const_int 3))))])
+   (set_attr "branch_type" "reg")])
 
 ;; XXX
 (define_insn "*inverted_int_branch_sp64"
@@ -2103,16 +2095,7 @@
 			  ! final_sequence, insn);
 }"
   [(set_attr "type" "branch")
-   (set (attr "length")
-        (if_then_else (lt (pc) (match_dup 2))
-		      (if_then_else (lt (minus (match_dup 2) (pc))
-					(const_int 32000))
-				    (const_int 1)
-				    (const_int 3))
-		      (if_then_else (lt (minus (pc) (match_dup 2))
-					(const_int 32000))
-				    (const_int 1)
-				    (const_int 3))))])
+   (set_attr "branch_type" "reg")])
 
 ;; Load program counter insns.
 
@@ -6473,7 +6456,7 @@
   [(set_attr "type" "multi")
    (set (attr "length")
 	(if_then_else (eq_attr "isa" "v9")
-		      (const_int 4) (const_int 7)))])
+		      (const_int 4) (const_int 6)))])
 
 (define_insn "divsi3_sp64"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -8499,7 +8482,7 @@
   "! TARGET_ARCH64 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) >= 0"
   "call\\t%a0, %1\\n\\tnop\\n\\tunimp\\t%2"
   [(set_attr "type" "call_no_delay_slot")
-   (set_attr "length" "2")])
+   (set_attr "length" "3")])
 
 ;; This is a call that wants a structure value.
 ;; There is no such critter for v9 (??? we may need one anyway).
@@ -8512,7 +8495,7 @@
   "! TARGET_ARCH64 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) >= 0"
   "call\\t%a0, %1\\n\\tnop\\n\\tunimp\\t%2"
   [(set_attr "type" "call_no_delay_slot")
-   (set_attr "length" "2")])
+   (set_attr "length" "3")])
 
 ;; This is a call that may want a structure value.  This is used for
 ;; untyped_calls.
@@ -8525,7 +8508,7 @@
   "! TARGET_ARCH64 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0"
   "call\\t%a0, %1\\n\\tnop\\n\\tnop"
   [(set_attr "type" "call_no_delay_slot")
-   (set_attr "length" "2")])
+   (set_attr "length" "3")])
 
 ;; This is a call that wants a structure value.
 (define_insn "*call_symbolic_untyped_struct_value_sp32"
@@ -8537,7 +8520,7 @@
   "! TARGET_ARCH64 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) < 0"
   "call\\t%a0, %1\\n\\tnop\\n\\tnop"
   [(set_attr "type" "call_no_delay_slot")
-   (set_attr "length" "2")])
+   (set_attr "length" "3")])
 
 (define_expand "call_value"
   ;; Note that this expression is not used for generating RTL.

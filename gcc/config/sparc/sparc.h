@@ -2654,14 +2654,6 @@ do {                                                                    \
   case FLOAT:						\
   case FIX:						\
     return 19;
-
-/* Conditional branches with empty delay slots have a length of two.  */
-#define ADJUST_INSN_LENGTH(INSN, LENGTH)				\
-do {									\
-  if (GET_CODE (INSN) == CALL_INSN					\
-      || (GET_CODE (INSN) == JUMP_INSN && ! simplejump_p (insn)))	\
-    LENGTH += 1;							\
-} while (0)
 
 /* Control the assembler format that we output.  */
 

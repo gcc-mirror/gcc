@@ -1,5 +1,22 @@
 2002-03-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/5964
+	* config/sparc/sparc.md (empty_delay_slot, branch_type): New
+	attributes.
+	(length): Compute variable length for branches/calls/jumps here.
+	(branch, inverted_branch, normal_fp_branch, inverted_fp_branch,
+	normal_fpe_branch, inverted_fpe_branch): Remove length attribute,
+	define branch_type attribute.
+	(divsi3_sp32): Maximum length is 6 not 7.
+	(call_address_struct_value_sp32, call_symbolic_struct_value_sp32,
+	call_address_untyped_struct_value_sp32,
+	call_symbolic_untyped_struct_value_sp32): Set length to 3 not 2.
+	* config/sparc/sparc.c (empty_delay_slot): New function.
+	* config/sparc/sparc.h (ADJUST_INSN_LENGTH): Remove.
+	* config/sparc/sparc-protos.h (empty_delay_slot): Add prototype.
+
+2002-03-29  Jakub Jelinek  <jakub@redhat.com>
+
 	* combine.c (set_nonzero_bits_and_sign_copies): Don't call
 	nonzero_bits if not needed.
 	(nonzero_bits) [XOR]: Likewise.
