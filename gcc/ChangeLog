@@ -1,3 +1,13 @@
+2000-04-02  Neil Booth <NeilB@earthling.net>
+
+	* cppexp.c:  New FINISHED dummy token.  Combine operator initial
+	flags and initial priority into a single constant.  New
+	EQUALITY macro.  New operator flag SHORT_CIRCUIT.
+	(_parse_cpp_expr): Implement new constants.  Take left operand
+	checks out of reduction loop.  Handle SHORT_CIRCUIT.  End of
+	parse indicated by reducing FINISHED token.  Remove new lines
+	from cpp_error messages.
+
 2000-04-01  Mark Mitchell  <mark@codesourcery.com>
 
 	* emit-rtl.c (gen_rtx_CONST_INT): Create cached CONST_INTs on the

@@ -102,14 +102,15 @@ static struct operation lex PARAMS ((cpp_reader *, int));
 #define NAME 308
 #define INT 309
 #define CHAR 310
+#define FINISHED 311
 
 struct operation
 {
   short op;
-  U_CHAR prio; /* Priority of op (relative to it right operand).  */
+  U_CHAR prio;         /* Priority of op.  */
   U_CHAR flags;
-  U_CHAR unsignedp;    /* true if value should be treated as unsigned */
-  HOST_WIDEST_INT value;        /* The value logically "right" of op.  */
+  U_CHAR unsignedp;    /* True if value should be treated as unsigned.  */
+  HOST_WIDEST_INT value; /* The value logically "right" of op.  */
 };
 
 /* Parse and convert an integer for #if.  Accepts decimal, hex, or octal
@@ -636,60 +637,79 @@ right_shift (pfile, a, unsignedp, b)
     return a >> b;
 }
 
-/* Operator precedence table.
+/* Operator precedence and flags table.
 
 After an operator is returned from the lexer, if it has priority less
 than or equal to the operator on the top of the stack, we reduce the
-stack one operator and repeat the test.  As equal priorities reduce,
-this is naturally left-associative.
+stack by one operator and repeat the test.  Since equal priorities
+reduce, this is naturally left-associative.
 
 We handle right-associative operators by clearing the lower bit of all
 left-associative operators, and setting it for right-associative ones.
-After the reduction phase, when an operator is pushed onto the stack,
-its RIGHT_ASSOC bit is cleared.  This means that at reduction time, a
-right-associative operator of otherwise equal precedence to the
-operator on the top of the stack will have a greater priority by 1,
-avoiding a reduction pass and making the logic right-associative.
+After the reduction phase of a new operator, just before it is pushed
+onto the stack, its RIGHT_ASSOC bit is cleared.  The effect is that
+during the reduction phase, the current right-associative operator has
+a priority one greater than any other operator of otherwise equal
+precedence that has been pushed on the top of the stack.  This avoids
+a reduction pass, and effectively makes the logic right-associative.
 
 The remaining cases are '(' and ')'.  We handle '(' by skipping the
 reduction phase completely.  ')' is given lower priority than
 everything else, including '(', effectively forcing a reduction of the
-parenthesised expression.  If there is no matching '(', the expression
-will be reduced to the beginning, the ')' pushed, and the reduction
-pass forced by the next ')', or the end of the expression, will meet
-it and output an appropriate error message.  */
+parenthesised expression.  If there is no matching '(', the stack will
+be reduced all the way to the beginning, exiting the parser in the
+same way as the ultra-low priority end-of-expression dummy operator.
+The exit code checks to see if the operator that caused it is ')', and
+if so outputs an appropriate error message.
 
-#define RIGHT_ASSOC               1
-#define PREVENT_REDUCE_PRIO (0 << 1)
-#define FORCE_REDUCE_PRIO   (1 << 1)
-#define CLOSE_PAREN_PRIO    (2 << 1)
-#define OPEN_PAREN_PRIO     (3 << 1)
-#define COMMA_PRIO          (4 << 1)
-#define COND_PRIO          ((5 << 1) + RIGHT_ASSOC)
-#define COLON_PRIO          (6 << 1)
-#define OROR_PRIO           (7 << 1)
-#define ANDAND_PRIO         (8 << 1)
-#define OR_PRIO             (9 << 1)
-#define XOR_PRIO           (10 << 1)
-#define AND_PRIO           (11 << 1)
-#define EQUAL_PRIO         (12 << 1)
-#define LESS_PRIO          (13 << 1)
-#define SHIFT_PRIO         (14 << 1)
-#define PLUS_PRIO          (15 << 1)
-#define MUL_PRIO           (16 << 1)
-#define UNARY_PRIO        ((17 << 1) + RIGHT_ASSOC)
+The parser assumes all shifted operators require a right operand
+unless the flag NO_R_OPERAND is set, and similarly for NO_L_OPERAND.
+These semantics are automatically checked, any extra semantics need to
+be handled with operator-specific code.  */
 
-#define LEFT_OPERAND_REQUIRED 1
-#define RIGHT_OPERAND_REQUIRED 2
-#define HAVE_VALUE 4
+#define FLAG_BITS  8
+#define FLAG_MASK ((1 << FLAG_BITS) - 1)
+#define PRIO_SHIFT (FLAG_BITS + 1)
+#define EXTRACT_PRIO(cnst) (cnst >> FLAG_BITS)
+#define EXTRACT_FLAGS(cnst) (cnst & FLAG_MASK)
+
+/* Flags.  */
+#define HAVE_VALUE     (1 << 0)
+#define NO_L_OPERAND   (1 << 1)
+#define NO_R_OPERAND   (1 << 2)
+#define SHORT_CIRCUIT  (1 << 3)
+
+/* Priority and flag combinations.  */
+#define RIGHT_ASSOC         (1 << FLAG_BITS)
+#define FORCE_REDUCE_PRIO   (0 << PRIO_SHIFT)
+#define CLOSE_PAREN_PRIO    (1 << PRIO_SHIFT)
+#define OPEN_PAREN_PRIO    ((2 << PRIO_SHIFT) | NO_L_OPERAND)
+#define COMMA_PRIO          (3 << PRIO_SHIFT)
+#define COND_PRIO          ((4 << PRIO_SHIFT) | RIGHT_ASSOC | SHORT_CIRCUIT)
+#define COLON_PRIO         ((5 << PRIO_SHIFT) | SHORT_CIRCUIT)
+#define OROR_PRIO          ((6 << PRIO_SHIFT) | SHORT_CIRCUIT)
+#define ANDAND_PRIO        ((7 << PRIO_SHIFT) | SHORT_CIRCUIT)
+#define OR_PRIO             (8 << PRIO_SHIFT)
+#define XOR_PRIO            (9 << PRIO_SHIFT)
+#define AND_PRIO           (10 << PRIO_SHIFT)
+#define EQUAL_PRIO         (11 << PRIO_SHIFT)
+#define LESS_PRIO          (12 << PRIO_SHIFT)
+#define SHIFT_PRIO         (13 << PRIO_SHIFT)
+#define PLUS_PRIO          (14 << PRIO_SHIFT)
+#define MUL_PRIO           (15 << PRIO_SHIFT)
+#define UNARY_PRIO        ((16 << PRIO_SHIFT) | RIGHT_ASSOC | NO_L_OPERAND)
 
 #define COMPARE(OP) \
-  top->unsignedp = 0;\
+  top->unsignedp = 0; \
   top->value = (unsigned1 || unsigned2) \
-  ? (unsigned HOST_WIDEST_INT) v1 OP (unsigned HOST_WIDEST_INT) v2 : (v1 OP v2)
+  ? (unsigned HOST_WIDEST_INT) v1 OP (unsigned HOST_WIDEST_INT) v2 \
+  : (v1 OP v2)
+#define EQUALITY(OP) \
+  top->value = v1 OP v2; \
+  top->unsignedp = 0;
 #define LOGICAL(OP) \
-	      top->value = v1 OP v2;\
-	      top->unsignedp = unsigned1 || unsigned2;
+  top->value = v1 OP v2; \
+  top->unsignedp = unsigned1 || unsigned2;
 
 /* Parse and evaluate a C expression, reading from PFILE.
    Returns the truth value of the expression.  */
@@ -698,8 +718,8 @@ int
 _cpp_parse_expr (pfile)
      cpp_reader *pfile;
 {
-  /* The implementation is an operator precedence parser,
-     i.e. a bottom-up parser, using a stack for not-yet-reduced tokens.
+  /* The implementation is an operator precedence parser, i.e. a
+     bottom-up parser, using a stack for not-yet-reduced tokens.
 
      The stack base is 'stack', and the current stack pointer is 'top'.
      There is a stack element for each operator (only),
@@ -712,44 +732,48 @@ _cpp_parse_expr (pfile)
   struct operation init_stack[INIT_STACK_SIZE];
   struct operation *stack = init_stack;
   struct operation *limit = stack + INIT_STACK_SIZE;
-  register struct operation *top = stack;
-  int skip_evaluation = 0;
+  register struct operation *top = stack + 1;
   long old_written = CPP_WRITTEN (pfile);
+  int skip_evaluation = 0;
   int result;
 
   pfile->parsing_if_directive++;
-  top->prio = PREVENT_REDUCE_PRIO;
-  top->flags = 0;
+  /* We've finished when we try to reduce this.  */
+  top->op = FINISHED;
+  /* Nifty way to catch missing '('.  */
+  top->prio = EXTRACT_PRIO(CLOSE_PAREN_PRIO);
+  /* Avoid missing right operand checks.  */
+  top->flags = NO_R_OPERAND;
+
   for (;;)
     {
       unsigned int prio;
+      unsigned int flags;
       struct operation op;
-      U_CHAR flags = 0;
 
       /* Read a token */
       op = lex (pfile, skip_evaluation);
 
-      /* See if the token is an operand, in which case go to set_value.
-	 If the token is an operator, figure out its left and right
-	 priorities, and then goto maybe_reduce.  */
-
+      /* If the token is an operand, push its value and get next
+	 token.  If it is an operator, get its priority and flags, and
+	 try to reduce the expression on the stack.  */
       switch (op.op)
 	{
 	case NAME:
 	  cpp_ice (pfile, "lex returns a NAME");
-	  goto syntax_error;
 	case ERROR:
 	  goto syntax_error;
 	default:
 	  cpp_error (pfile, "invalid character in #if");
 	  goto syntax_error;
 
-	case INT:  case CHAR:
+	case INT:
+	case CHAR:
 	push_immediate:
 	  /* Push a value onto the stack.  */
 	  if (top->flags & HAVE_VALUE)
 	    {
-	      cpp_error (pfile, "suspected missing binary operator in #if");
+	      cpp_error (pfile, "missing binary operator");
 	      goto syntax_error;
 	    }
 	  top->value = op.value;
@@ -757,14 +781,11 @@ _cpp_parse_expr (pfile)
 	  top->flags |= HAVE_VALUE;
 	  continue;
 
-	case '+':  case '-':
-	  prio = PLUS_PRIO;
-	  if (top->flags & HAVE_VALUE)
-	      break;
-	  /* else fall through */
-	case '!':  case '~':
-	  flags |= RIGHT_OPERAND_REQUIRED;
-	  prio = UNARY_PRIO;  goto maybe_reduce;
+	case '+':
+	case '-':    prio = PLUS_PRIO;  if (top->flags & HAVE_VALUE) break;
+          /* else unary; fall through */
+	case '!':
+	case '~':    prio = UNARY_PRIO;  break;
 
 	case '*':
 	case '/':
@@ -783,40 +804,41 @@ _cpp_parse_expr (pfile)
 	case ANDAND: prio = ANDAND_PRIO;  break;
 	case OROR:   prio = OROR_PRIO;  break;
 	case ',':    prio = COMMA_PRIO;  break;
-	case '(':    prio = OPEN_PAREN_PRIO;  goto skip_reduction;
-	case ')':
-	  prio = CLOSE_PAREN_PRIO;
-	  flags = HAVE_VALUE;	/* At least, we will have after reduction.  */
-	  goto maybe_reduce;
-        case ':':    prio = COLON_PRIO;  goto maybe_reduce;
-        case '?':    prio = COND_PRIO;   goto maybe_reduce;
-	case 0:      prio = FORCE_REDUCE_PRIO;  goto maybe_reduce;
+	case '(':    prio = OPEN_PAREN_PRIO; break;
+	case ')':    prio = CLOSE_PAREN_PRIO;  break;
+        case ':':    prio = COLON_PRIO;  break;
+        case '?':    prio = COND_PRIO;  break;
+	case 0:      prio = FORCE_REDUCE_PRIO;  break;
 	}
 
-      /* Binary operation.  */
-      flags = LEFT_OPERAND_REQUIRED|RIGHT_OPERAND_REQUIRED;
+      /* Separate the operator's code into priority and flags.  */
+      flags = EXTRACT_FLAGS(prio);
+      prio = EXTRACT_PRIO(prio);
+      if (op.op == '(')
+	goto skip_reduction;
 
-    maybe_reduce:
       /* Check for reductions.  Then push the operator.  */
       while (prio <= top->prio)
 	{
-	  HOST_WIDEST_INT v1 = top[-1].value, v2 = top[0].value;
-	  unsigned int unsigned1 = top[-1].unsignedp;
-	  unsigned int unsigned2 = top[0].unsignedp;
+	  HOST_WIDEST_INT v1, v2;
+	  unsigned int unsigned1, unsigned2;
+	  
+	  /* Most operators that can appear on the stack require a
+	     right operand.  Check this before trying to reduce.  */
+	  if ((top->flags & (HAVE_VALUE | NO_R_OPERAND)) == 0)
+	    {
+	      if (top->op == '(')
+		cpp_error (pfile, "void expression between '(' and ')'");
+	      else
+		cpp_error (pfile, "operator has no right operand");
+	      goto syntax_error;
+	    }
+
+	  unsigned2 = top->unsignedp, v2 = top->value;
 	  top--;
-	  if ((top[1].flags & LEFT_OPERAND_REQUIRED)
-	      && ! (top[0].flags & HAVE_VALUE))
-	    {
-	      cpp_error (pfile, "syntax error - missing left operand");
-	      goto syntax_error;
-	    }
-	  if ((top[1].flags & RIGHT_OPERAND_REQUIRED)
-	      && ! (top[1].flags & HAVE_VALUE))
-	    {
-	      cpp_error (pfile, "syntax error - missing right operand");
-	      goto syntax_error;
-	    }
-	  /* top[0].value = (top[1].op)(v1, v2);*/
+	  unsigned1 = top->unsignedp, v1 = top->value;
+
+	  /* Now set top->value = (top[1].op)(v1, v2); */
 	  switch (top[1].op)
 	    {
 	    case '+':
@@ -839,7 +861,8 @@ _cpp_parse_expr (pfile)
 	      if (!(top->flags & HAVE_VALUE))
 		{ /* Unary '-' */
 		  top->value = - v2;
-		  if (!skip_evaluation && (top->value & v2) < 0 && !unsigned2)
+		  if (!skip_evaluation && (top->value & v2) < 0
+		      && !unsigned2)
 		    integer_overflow (pfile);
 		  top->unsignedp = unsigned2;
 		  top->flags |= HAVE_VALUE;
@@ -860,30 +883,12 @@ _cpp_parse_expr (pfile)
 	      else if (!skip_evaluation)
 		{
 		  top->value = v1 * v2;
-		  if (v1
-		      && (top->value / v1 != v2
-			  || (top->value & v1 & v2) < 0))
+		  if (v1 && (top->value / v1 != v2
+		             || (top->value & v1 & v2) < 0))
 		    integer_overflow (pfile);
 		}
 	      break;
 	    case '/':
-	      if (skip_evaluation)
-		break;
-	      if (v2 == 0)
-		{
-		  cpp_error (pfile, "division by zero in #if");
-		  v2 = 1;
-		}
-	      top->unsignedp = unsigned1 || unsigned2;
-	      if (top->unsignedp)
-		top->value = (unsigned HOST_WIDEST_INT) v1 / v2;
-	      else
-		{
-		  top->value = v1 / v2;
-		  if ((top->value & v1 & v2) < 0)
-		    integer_overflow (pfile);
-		}
-	      break;
 	    case '%':
 	      if (skip_evaluation)
 		break;
@@ -893,43 +898,41 @@ _cpp_parse_expr (pfile)
 		  v2 = 1;
 		}
 	      top->unsignedp = unsigned1 || unsigned2;
-	      if (top->unsignedp)
-		top->value = (unsigned HOST_WIDEST_INT) v1 % v2;
+	      if (top[1].op == '/')
+		{
+		  if (top->unsignedp)
+		    top->value = (unsigned HOST_WIDEST_INT) v1 / v2;
+		  else
+		    {
+		      top->value = v1 / v2;
+		      if ((top->value & v1 & v2) < 0)
+			integer_overflow (pfile);
+		    }
+		}
 	      else
-		top->value = v1 % v2;
+		{
+		  if (top->unsignedp)
+		    top->value = (unsigned HOST_WIDEST_INT) v1 % v2;
+		  else
+		    top->value = v1 % v2;
+		}
 	      break;
 	    case '!':
-	      if (top->flags & HAVE_VALUE)
-		{
-		  cpp_error (pfile, "syntax error");
-		  goto syntax_error;
-		}
 	      top->value = ! v2;
 	      top->unsignedp = 0;
 	      top->flags |= HAVE_VALUE;
 	      break;
 	    case '~':
-	      if (top->flags & HAVE_VALUE)
-		{
-		  cpp_error (pfile, "syntax error");
-		  goto syntax_error;
-		}
 	      top->value = ~ v2;
 	      top->unsignedp = unsigned2;
 	      top->flags |= HAVE_VALUE;
 	      break;
 	    case '<':  COMPARE(<);  break;
 	    case '>':  COMPARE(>);  break;
-	    case LEQ:  COMPARE(<=); break;
-	    case GEQ:  COMPARE(>=); break;
-	    case EQUAL:
-	      top->value = (v1 == v2);
-	      top->unsignedp = 0;
-	      break;
-	    case NOTEQUAL:
-	      top->value = (v1 != v2);
-	      top->unsignedp = 0;
-	      break;
+	    case LEQ:  COMPARE(<=);  break;
+	    case GEQ:  COMPARE(>=);  break;
+	    case EQUAL:    EQUALITY(==);  break;
+	    case NOTEQUAL: EQUALITY(!=);  break;
 	    case LSH:
 	      if (skip_evaluation)
 		break;
@@ -975,33 +978,15 @@ _cpp_parse_expr (pfile)
 			     "syntax error ':' without preceding '?'");
 		  goto syntax_error;
 		}
-	      else if (! (top[1].flags & HAVE_VALUE)
-		       || !(top[-1].flags & HAVE_VALUE)
-		       || !(top[0].flags & HAVE_VALUE))
-		{
-		  cpp_error (pfile, "bad syntax for ?: operator");
-		  goto syntax_error;
-		}
-	      else
-		{
-		  top--;
-		  if (top->value) skip_evaluation--;
-		  top->value = top->value ? v1 : v2;
-		  top->unsignedp = unsigned1 || unsigned2;
-		}
+	      top--;
+	      if (top->value) skip_evaluation--;
+	      top->value = top->value ? v1 : v2;
+	      top->unsignedp = unsigned1 || unsigned2;
 	      break;
-	    case ')':
-	      cpp_error (pfile, "missing '(' in expression");
-	      goto syntax_error;
 	    case '(':
 	      if (op.op != ')')
 		{
 		  cpp_error (pfile, "missing ')' in expression");
-		  goto syntax_error;
-		}
-	      if (!(top[1].flags & HAVE_VALUE))
-		{
-		  cpp_error (pfile, "void expression between '(' and ')'");
 		  goto syntax_error;
 		}
 	      op.value = v2;
@@ -1009,17 +994,47 @@ _cpp_parse_expr (pfile)
 	      goto push_immediate;
 	    default:
 	      if (ISGRAPH (top[1].op))
-		cpp_error (pfile, "unimplemented operator '%c'\n", top[1].op);
+		cpp_error (pfile, "unimplemented operator '%c'", top[1].op);
 	      else
-		cpp_error (pfile, "unimplemented operator '\\%03o'\n",
+		cpp_error (pfile, "unimplemented operator '\\%03o'",
 			   top[1].op);
+	      break;
+	    case FINISHED:
+	      /* Reducing this dummy operator indicates we've finished.  */
+	      if (op.op == ')')
+		{
+		  cpp_error (pfile, "missing '(' in expression");
+		  goto syntax_error;
+		}
+	      goto done;
 	    }
 	}
 
-      if (op.op == 0)
-	break;
+      /* Handle short-circuit evaluations.  */
+      if (flags & SHORT_CIRCUIT)
+	switch (op.op)
+	  {
+	  case OROR:    if (top->value) skip_evaluation++; break;
+	  case ANDAND:
+	  case '?':     if (!top->value) skip_evaluation++; break;
+	  case ':':
+	    if (top[-1].value) /* Was '?' condition true?  */
+	      skip_evaluation++;
+	    else
+	      skip_evaluation--;
+	  }
 
     skip_reduction:
+      /* Check we have a left operand iff we need one.  */
+      if (((flags & NO_L_OPERAND) != 0) ^ ((top->flags & HAVE_VALUE) == 0))
+	{
+	  if (flags & NO_L_OPERAND)
+	    cpp_error (pfile, "missing binary operator");
+	  else
+	    cpp_error (pfile, "operator has no left operand");
+	  goto syntax_error;
+	}
+
       /* Check for and handle stack overflow.  */
       top++;
       if (top == limit)
@@ -1040,40 +1055,29 @@ _cpp_parse_expr (pfile)
 	}
       
       top->flags = flags;
-      top->prio = prio & ~RIGHT_ASSOC;
+      top->prio = prio & ~EXTRACT_PRIO(RIGHT_ASSOC);
       top->op = op.op;
-
-      /* Handle short circuiting.  */
-      if ((op.op == OROR && top[-1].value)
-	  || (op.op == ANDAND && !top[-1].value)
-	  || (op.op == '?' && !top[-1].value))
-	{
-	  skip_evaluation++;
-	}
-      else if (op.op == ':')
-	{
-	  if (top[-2].value) /* Was condition true? */
-	    skip_evaluation++;
-	  else
-	    skip_evaluation--;
-	}
     }
 
+ done:
+  result = (top[1].value != 0);
   if (top != stack)
-    cpp_ice (pfile, "unbalanced stack in #if expression");
-  if (!(top->flags & HAVE_VALUE))
-    cpp_error (pfile, "#if with no expression");
-  result = (top->value != 0);
+    {
+      cpp_ice (pfile, "unbalanced stack in #if expression");
+      goto syntax_error;
+    }
+  else if (!(top[1].flags & HAVE_VALUE))
+    {
+      cpp_error (pfile, "#if with no expression");
+    syntax_error:
+      _cpp_skip_rest_of_line (pfile);
+      result = 0;  /* Return 0 on syntax error.  */
+    }
 
- tidy_up:
-  pfile->parsing_if_directive--;
-  CPP_SET_WRITTEN (pfile, old_written);
+  /* Free dynamic stack if we allocated one.  */
   if (stack != init_stack)
     free (stack);
+  pfile->parsing_if_directive--;
+  CPP_SET_WRITTEN (pfile, old_written);
   return result;
-
- syntax_error:
-  _cpp_skip_rest_of_line (pfile);
-  result = 0;
-  goto tidy_up;
 }
