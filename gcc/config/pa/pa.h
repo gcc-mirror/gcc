@@ -415,7 +415,7 @@ extern int target_flags;
    But on a machine with 16-bit registers, this would be 16.  */
 #define BITS_PER_WORD (TARGET_64BIT ? 64 : 32)
 #define MAX_BITS_PER_WORD 64
-#define MAX_LONG_TYPE_SIZE 64
+#define MAX_LONG_TYPE_SIZE 32
 #define MAX_WCHAR_TYPE_SIZE 32
 
 /* Width of a word, in units (bytes).  */
