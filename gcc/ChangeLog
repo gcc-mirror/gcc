@@ -1,3 +1,11 @@
+2003-04-13  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_memcpy): Add `endp' argument, use it.
+	(expand_builtin_stpcpy): New.
+	(expand_builtin): Add BUILT_IN_MEMPCPY & BUILT_IN_STPCPY.
+	* builtins.def: Add mempcpy & stpcpy support.
+	* doc/extend.texi (mempcpy, stpcpy): Document new builtins.
+
 2003-04-13  Nick Clifton  <nickc@redhat.com>
 
 	* config/rs6000/rs6000.c: Replace occurrences of "GNU CC" with
