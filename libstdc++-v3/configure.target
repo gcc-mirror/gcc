@@ -1,0 +1,125 @@
+# configure.target
+
+# This shell script handles all target based configuration for libstdc++.
+# It sets various shell variables based on the the target and the
+# configuration options.  You can modify this shell script without
+# needing to rerun autoconf.
+
+# This shell script should be invoked as
+#   . configure.target
+# If it encounters an error, it will exit with a message.
+
+# It uses the following shell variables:
+#   target                The configuration target
+#   target_cpu            The configuration target CPU
+#   target_os             The configuration target OS
+#   target_optspace       --enable-target-optspace ("yes", "no", "")
+
+# It possibly modifies the following shell variables:
+#   glibcpp_cflags         Special CFLAGS to use when building
+#   glibcpp_cxxflags       Special CXXFLAGS to use when building
+#   cpu_include_dir        CPU-specific include directory, relative to srcdir
+#   os_include_dir         OS-specific include directory, relative to srcdir
+# The first two are set in configure.host and modified here.
+
+
+# These are "local" and should be set in the switch statements below.  They
+# will be appended to their real conterparts once the dust settles.
+l_glibcpp_cflags=
+l_glibcpp_cxxflags=
+
+
+# Set any CPU dependent compiler flags.
+# THIS TABLE IS SORTED.  KEEP IT THAT WAY.
+
+case "${target_cpu}" in
+  alpha*)
+    cpu_include_dir="config/cpu/alpha"
+    ;;
+  arm*)
+    cpu_include_dir="config/cpu/arm"
+    ;;
+  ia64)
+    cpu_include_dir="config/cpu/ia64"
+    ;;
+  i386)
+    cpu_include_dir="config/cpu/i386"
+    ;;
+  i486 | i586 | i686 | i786)
+    cpu_include_dir="config/cpu/i486"
+    ;;
+  powerpc | rs6000)
+    cpu_include_dir="config/cpu/powerpc"
+    ;;
+  sparc64 | ultrasparc)
+    cpu_include_dir="config/cpu/sparc/sparc64"
+    ;;
+  sparc*)
+    cpu_include_dir="config/cpu/sparc/sparc32"
+    ;;
+  *)
+    cpu_include_dir="config/cpu/generic"
+    ;;
+esac
+
+
+# Set any OS dependent compiler flags.
+# THIS TABLE IS SORTED.  KEEP IT THAT WAY.
+
+case "${target_os}" in
+  aix4.[[3456789]]* | aix[[56789]]*)
+    os_include_dir="config/os/aix"
+    case "$CXX" in
+      *pthread*)
+        enable_threads='posix'
+        ;;
+      *)
+        enable_threads='no'
+        ;;
+    esac
+    ;;
+  aix*)
+    os_include_dir="config/os/aix"
+    ;;
+  bsd* | freebsd*)
+    os_include_dir="config/os/bsd"
+    ;;
+  linux*)
+    os_include_dir="config/os/gnu-linux"
+    ;;
+  irix*)
+    os_include_dir="config/os/irix"
+    ;;
+  solaris2.5*)
+    os_include_dir="config/os/solaris/solaris2.5"
+    ;;
+  solaris2.6*)
+    os_include_dir="config/os/solaris/solaris2.6"
+    ;;
+  solaris2.7* | solaris2.8*)
+    os_include_dir="config/os/solaris/solaris2.7"
+    ;;
+  *)
+    os_include_dir="config/os/generic"
+    ;;
+esac
+
+
+# Set any flags dependant on the full target triplet.
+# THIS TABLE IS SORTED.  KEEP IT THAT WAY.
+
+#case "${target}" in
+#  *-*-telepathic)
+#    # On the MindReader 10000 platform, you really *can* tell the
+#    # compiler to "do what I mean".
+#    l_glibcpp_cxxflags='-fDWIM'
+#    ;;
+#esac
+
+
+# Okay, folks, show's over.  Move along, move along.
+
+glibcpp_cflags="${glibcpp_cflags} ${libgcj_flags} ${l_glibcpp_cflags}"
+glibcpp_cxxflags="${glibcpp_cxxflags} ${libgcj_flags} ${l_glibcpp_cxxflags}"
+
+

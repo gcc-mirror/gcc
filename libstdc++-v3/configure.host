@@ -10,34 +10,32 @@
 # If it encounters an error, it will exit with a message.
 
 # It uses the following shell variables:
-#   host		The configuration host
-#   host_cpu		The configuration host CPU
-#   target_optspace	--enable-target-optspace ("yes", "no", "")
+#   host                  The configuration host
+#   host_cpu              The configuration host CPU
+#   target_optspace       --enable-target-optspace ("yes", "no", "")
 
 # It sets the following shell variables:
-#   glibcpp_cflags	Special CFLAGS to use when building
-#   glibcpp_cxxflags	Special CXXFLAGS to use when building
+#   glibcpp_cflags         Special CFLAGS to use when building
+#   glibcpp_cxxflags       Special CXXFLAGS to use when building
 
-glibcpp_cflags=
-glibcpp_cxxflags=
 
 AM_RUNTESTFLAGS= 
 
 # Set any host dependent compiler flags.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 
-echo "$target"
 
 DIVIDESPEC=-fuse-divide-subroutine
 
 case "${host}" in
   i686-*|i586-*)
-	;;
+       ;;
   sparc-*)
         ;;
   *)
-	;;
+       ;;
 esac
 
 glibcpp_cflags="${glibcpp_cflags} ${libgcj_flags}"
 glibcpp_cxxflags="${glibcpp_cxxflags} ${libgcj_flags}"
+

@@ -1,3 +1,21 @@
+2000-11-13  Phil Edwards  <pme@sources.redhat.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_TARGET):  New macro, replacing
+	  GLIBCPP_CHECK_CPU and GLIBCPP_CHECK_OS, sourcing configure.target.
+	  (GLIBCPP_CONFIGURE):  Call new macro here.
+	* configure.host:  Cleanup.
+	* configure.in:  Remove those two macros.
+	* configure.target:  New file.
+	* aclocal.m4:  Regenerated.
+	* configure:  Ditto.
+	* Makefile.in:  Ditto.
+	* libio/Makefile.in:  Ditto.
+	* libmath/Makefile.in:  Ditto.
+	* libsupc++/Makefile.in:  Ditto.
+	* src/Makefile.in:  Ditto.
+
+	* mkcheck.in:  Use libtool.  Split things out into functions.
+
 2000-11-12  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
         * Makefile.am (tmp-libstdsc++.INC:): Do not use -I$(top_builddir).
