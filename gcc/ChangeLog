@@ -1,3 +1,9 @@
+2004-02-07  Stephane Carrez  <stcarrez@nerim.fr>
+
+	PR bootstrap/13990
+	* config/m68hc11/m68hc11.md ("doloop_end"): Pass dummy arguments to
+	gen_rtx_NE.
+
 2004-02-07  Josef Zlomek  <zlomekj@suse.cz>
 
 	* var-tracking.c (vt_add_function_parameters): Surround checkings by
