@@ -194,8 +194,11 @@ typedef struct stack_def
 typedef struct block_info_def
 {
   struct stack_def stack_in;	/* Input stack configuration.  */
+  struct stack_def stack_out;	/* Output stack configuration.  */
   HARD_REG_SET out_reg_set;	/* Stack regs live on output.  */
   int done;			/* True if block already converted.  */
+  int predecesors;		/* Number of predecesors that needs
+				   to be visited.  */
 } *block_info;
 
 #define BLOCK_INFO(B)	((block_info) (B)->aux)
@@ -263,6 +266,7 @@ static int convert_regs			PARAMS ((FILE *));
 static void print_stack 		PARAMS ((FILE *, stack));
 static rtx next_flags_user 		PARAMS ((rtx));
 static void record_label_references	PARAMS ((rtx, rtx));
+static bool compensate_edge		PARAMS ((edge, FILE *));
 
 /* Return non-zero if any stack register is mentioned somewhere within PAT.  */
 
@@ -443,11 +447,20 @@ reg_to_stack (first, file)
     find_basic_blocks (first, max_reg_num (), file);
   count_or_remove_death_notes (NULL, 1);
   life_analysis (first, file, PROP_DEATH_NOTES);
+  mark_dfs_back_edges ();
 
   /* Set up block info for each basic block.  */
   bi = (block_info) xcalloc ((n_basic_blocks + 1), sizeof (*bi));
   for (i = n_basic_blocks - 1; i >= 0; --i)
-    BASIC_BLOCK (i)->aux = bi + i;
+    {
+      edge e;
+      basic_block bb = BASIC_BLOCK (i);
+      bb->aux = bi + i;
+      for (e = bb->pred; e; e=e->pred_next)
+	if (!(e->flags & EDGE_DFS_BACK)
+	    && e->src != ENTRY_BLOCK_PTR)
+	  BLOCK_INFO (bb)->predecesors++;
+    }
   EXIT_BLOCK_PTR->aux = bi + n_basic_blocks;
 
   /* Create the replacement registers up front.  */
@@ -2452,6 +2465,143 @@ convert_regs_exit ()
     }
 }
 
+/* Adjust the stack of this block on exit to match the stack of the
+   target block, or copy stack info into the stack of the successor
+   of the successor hasn't been processed yet.  */
+static bool
+compensate_edge (e, file)
+    edge e;
+    FILE *file;
+{
+  basic_block block = e->src, target = e->dest;
+  block_info bi = BLOCK_INFO (block);
+  struct stack_def regstack, tmpstack;
+  stack target_stack = &BLOCK_INFO (target)->stack_in;
+  int reg;
+
+  current_block = block;
+  regstack = bi->stack_out;
+  if (file)
+    fprintf (file, "Edge %d->%d: ", block->index, target->index);
+
+  if (target_stack->top == -2)
+    {
+      /* The target block hasn't had a stack order selected.
+         We need merely ensure that no pops are needed.  */
+      for (reg = regstack.top; reg >= 0; --reg)
+	if (!TEST_HARD_REG_BIT (target_stack->reg_set, regstack.reg[reg]))
+	  break;
+
+      if (reg == -1)
+	{
+	  if (file)
+	    fprintf (file, "new block; copying stack position\n");
+
+	  /* change_stack kills values in regstack.  */
+	  tmpstack = regstack;
+
+	  change_stack (block->end, &tmpstack, target_stack, EMIT_AFTER);
+          return false;
+	}
+
+      if (file)
+	fprintf (file, "new block; pops needed\n");
+    }
+  else
+    {
+      if (target_stack->top == regstack.top)
+	{
+	  for (reg = target_stack->top; reg >= 0; --reg)
+	    if (target_stack->reg[reg] != regstack.reg[reg])
+	      break;
+
+	  if (reg == -1)
+	    {
+	      if (file)
+		fprintf (file, "no changes needed\n");
+	      return false;
+	    }
+	}
+
+      if (file)
+	{
+	  fprintf (file, "correcting stack to ");
+	  print_stack (file, target_stack);
+	}
+    }
+
+  /* Care for non-call EH edges specially.  The normal return path have
+     values in registers.  These will be popped en masse by the unwind
+     library.  */
+  if ((e->flags & (EDGE_EH | EDGE_ABNORMAL_CALL)) == EDGE_EH)
+    target_stack->top = -1;
+
+  /* Other calls may appear to have values live in st(0), but the
+     abnormal return path will not have actually loaded the values.  */
+  else if (e->flags & EDGE_ABNORMAL_CALL)
+    {
+      /* Assert that the lifetimes are as we expect -- one value
+         live at st(0) on the end of the source block, and no
+         values live at the beginning of the destination block.  */
+      HARD_REG_SET tmp;
+
+      CLEAR_HARD_REG_SET (tmp);
+      GO_IF_HARD_REG_EQUAL (target_stack->reg_set, tmp, eh1);
+      abort ();
+    eh1:
+
+      SET_HARD_REG_BIT (tmp, FIRST_STACK_REG);
+      GO_IF_HARD_REG_EQUAL (regstack.reg_set, tmp, eh2);
+      abort ();
+    eh2:
+
+      target_stack->top = -1;
+    }
+
+  /* It is better to output directly to the end of the block
+     instead of to the edge, because emit_swap can do minimal
+     insn scheduling.  We can do this when there is only one
+     edge out, and it is not abnormal.  */
+  else if (block->succ->succ_next == NULL && !(e->flags & EDGE_ABNORMAL))
+    {
+      /* change_stack kills values in regstack.  */
+      tmpstack = regstack;
+
+      change_stack (block->end, &tmpstack, target_stack,
+		    (GET_CODE (block->end) == JUMP_INSN
+		     ? EMIT_BEFORE : EMIT_AFTER));
+    }
+  else
+    {
+      rtx seq, after;
+
+      /* We don't support abnormal edges.  Global takes care to
+         avoid any live register across them, so we should never
+         have to insert instructions on such edges.  */
+      if (e->flags & EDGE_ABNORMAL)
+	abort ();
+
+      current_block = NULL;
+      start_sequence ();
+
+      /* ??? change_stack needs some point to emit insns after. 
+         Also needed to keep gen_sequence from returning a 
+         pattern as opposed to a sequence, which would lose
+         REG_DEAD notes.  */
+      after = emit_note (NULL, NOTE_INSN_DELETED);
+
+      tmpstack = regstack;
+      change_stack (after, &tmpstack, target_stack, EMIT_BEFORE);
+
+      seq = gen_sequence ();
+      end_sequence ();
+
+      insert_insn_on_edge (seq, e);
+      return true;
+    }
+  return false;
+}
+
 /* Convert stack register references in one block.  */
 
 static int
@@ -2459,14 +2609,48 @@ convert_regs_1 (file, block)
      FILE *file;
      basic_block block;
 {
-  struct stack_def regstack, tmpstack;
+  struct stack_def regstack;
   block_info bi = BLOCK_INFO (block);
   int inserted, reg;
   rtx insn, next;
-  edge e;
+  edge e, beste = NULL;
 
-  current_block = block;
+  inserted = 0;
+
+  /* Find the edge we will copy stack from.  It should be the most frequent
+     one as it will get cheapest after compensation code is generated,
+     if multiple such exists, take one with largest count, preffer critical
+     one (as splitting critical edges is more expensive), or one with lowest
+     index, to avoid random changes with different orders of the edges.  */
+  for (e = block->pred; e ; e = e->pred_next)
+    {
+      if (e->flags & EDGE_DFS_BACK)
+	;
+      else if (! beste)
+	beste = e;
+      else if (EDGE_FREQUENCY (beste) < EDGE_FREQUENCY (e))
+	beste = e;
+      else if (beste->count < e->count)
+	beste = e;
+      else if (beste->count > e->count)
+	;
+      else if ((e->flags & EDGE_CRITICAL) != (beste->flags & EDGE_CRITICAL))
+	{
+	  if (e->flags & EDGE_CRITICAL)
+	    beste = e;
+	}
+      else if (e->src->index < beste->src->index)
+	beste = e;
+    }
+
+  /* Entry block does have stack already initialized.  */
+  if (bi->stack_in.top == -2)
+    inserted |= compensate_edge (beste, file);
+  else
+    beste = NULL;
   
+  current_block = block;
+
   if (file)
     {
       fprintf (file, "\nBasic block %d\nInput stack: ", block->index);
@@ -2546,137 +2730,28 @@ convert_regs_1 (file, block)
   GO_IF_HARD_REG_EQUAL (regstack.reg_set, bi->out_reg_set, win);
   abort ();
  win:
+  bi->stack_out = regstack;
 
-  /* Adjust the stack of this block on exit to match the stack of the
-     target block, or copy stack info into the stack of the successor
-     of the successor hasn't been processed yet.  */
-  inserted = 0;
+  /* Compensate the back edges, as those wasn't visited yet.  */
   for (e = block->succ; e ; e = e->succ_next)
     {
-      basic_block target = e->dest;
-      stack target_stack = &BLOCK_INFO (target)->stack_in;
-
-      if (file)
-	fprintf (file, "Edge to block %d: ", target->index);
-
-      if (target_stack->top == -2)
+      if (e->flags & EDGE_DFS_BACK
+	  || (e->dest == EXIT_BLOCK_PTR))
 	{
-	  /* The target block hasn't had a stack order selected.
-	     We need merely ensure that no pops are needed.  */
-	  for (reg = regstack.top; reg >= 0; --reg)
-	    if (! TEST_HARD_REG_BIT (target_stack->reg_set,
-				     regstack.reg[reg]))
-	      break;
-
-	  if (reg == -1)
-	    {
-	      if (file)
-		fprintf (file, "new block; copying stack position\n");
-
-	      /* change_stack kills values in regstack.  */
-	      tmpstack = regstack;
-
-	      change_stack (block->end, &tmpstack,
-			    target_stack, EMIT_AFTER);
-	      continue;
-	    }
-
-	  if (file)
-	    fprintf (file, "new block; pops needed\n");
-	}
-      else
-	{
-	  if (target_stack->top == regstack.top)
-	    {
-	      for (reg = target_stack->top; reg >= 0; --reg)
-		if (target_stack->reg[reg] != regstack.reg[reg])
-		  break;
-
-	      if (reg == -1)
-		{
-		  if (file)
-		    fprintf (file, "no changes needed\n");
-		  continue;
-		}
-	    }
-
-	  if (file)
-	    {
-	      fprintf (file, "correcting stack to ");
-	      print_stack (file, target_stack);
-	    }
-	}
-
-      /* Care for non-call EH edges specially.  The normal return path have
-	 values in registers.  These will be popped en masse by the unwind
-	 library.  */
-      if ((e->flags & (EDGE_EH | EDGE_ABNORMAL_CALL)) == EDGE_EH)
-	target_stack->top = -1;
-
-      /* Other calls may appear to have values live in st(0), but the
-	 abnormal return path will not have actually loaded the values.  */
-      else if (e->flags & EDGE_ABNORMAL_CALL)
-	{
-	  /* Assert that the lifetimes are as we expect -- one value
-	     live at st(0) on the end of the source block, and no
-	     values live at the beginning of the destination block.  */
-	  HARD_REG_SET tmp;
-
-	  CLEAR_HARD_REG_SET (tmp);
-	  GO_IF_HARD_REG_EQUAL (target_stack->reg_set, tmp, eh1);
-	  abort();
-	eh1:
-
-	  SET_HARD_REG_BIT (tmp, FIRST_STACK_REG);
-	  GO_IF_HARD_REG_EQUAL (regstack.reg_set, tmp, eh2);
-	  abort();
-	eh2:
-
-	  target_stack->top = -1;
-	}
-
-      /* It is better to output directly to the end of the block
-	 instead of to the edge, because emit_swap can do minimal
-	 insn scheduling.  We can do this when there is only one
-	 edge out, and it is not abnormal.  */
-      else if (block->succ->succ_next == NULL
-	       && ! (e->flags & EDGE_ABNORMAL))
-	{
-	  /* change_stack kills values in regstack.  */
-	  tmpstack = regstack;
-
-	  change_stack (block->end, &tmpstack, target_stack,
-			(GET_CODE (block->end) == JUMP_INSN
-			 ? EMIT_BEFORE : EMIT_AFTER));
-	}
-      else
-	{
-	  rtx seq, after;
-
-	  /* We don't support abnormal edges.  Global takes care to
-	     avoid any live register across them, so we should never
-	     have to insert instructions on such edges.  */
-	  if (e->flags & EDGE_ABNORMAL)
+	  if (!BLOCK_INFO (e->dest)->done
+	      && e->dest != block)
 	    abort ();
-
-	  current_block = NULL;
-	  start_sequence ();
-		  
-	  /* ??? change_stack needs some point to emit insns after. 
-	     Also needed to keep gen_sequence from returning a 
-	     pattern as opposed to a sequence, which would lose
-	     REG_DEAD notes.  */
-	  after = emit_note (NULL, NOTE_INSN_DELETED);
-
-	  tmpstack = regstack;
-	  change_stack (after, &tmpstack, target_stack, EMIT_BEFORE);
-
-	  seq = gen_sequence ();
-	  end_sequence ();
-
-	  insert_insn_on_edge (seq, e);
-	  inserted = 1;
-	  current_block = block;
+          inserted |= compensate_edge (e, file);
+	}
+    }
+  for (e = block->pred; e ; e = e->pred_next)
+    {
+      if (e != beste && !(e->flags & EDGE_DFS_BACK)
+	  && e->src != ENTRY_BLOCK_PTR)
+	{
+	  if (!BLOCK_INFO (e->src)->done)
+	    abort ();
+          inserted |= compensate_edge (e, file);
 	}
     }
 
@@ -2697,7 +2772,6 @@ convert_regs_2 (file, block)
   sp = stack;
 
   *sp++ = block;
-  BLOCK_INFO (block)->done = 1;
 
   inserted = 0;
   do
@@ -2706,12 +2780,14 @@ convert_regs_2 (file, block)
 
       block = *--sp;
       inserted |= convert_regs_1 (file, block);
+      BLOCK_INFO (block)->done = 1;
 
       for (e = block->succ; e ; e = e->succ_next)
-	if (! BLOCK_INFO (e->dest)->done)
+	if (! (e->flags & EDGE_DFS_BACK))
 	  {
-	    *sp++ = e->dest;
-	    BLOCK_INFO (e->dest)->done = 1;
+	    BLOCK_INFO (e->dest)->predecesors--;
+	    if (!BLOCK_INFO (e->dest)->predecesors)
+	       *sp++ = e->dest;
 	  }
     }
   while (sp != stack);

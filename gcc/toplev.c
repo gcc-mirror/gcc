@@ -3473,19 +3473,19 @@ rest_of_compilation (decl)
   verify_flow_info ();
 #endif
 
+  compute_bb_for_insn (get_max_uid ());
+
   /* If optimizing, then go ahead and split insns now.  */
   if (optimize > 0)
     split_all_insns (0);
 
-  cleanup_cfg (0);
+  cleanup_cfg (optimize ? CLEANUP_EXPENSIVE : 0);
 
   /* On some machines, the prologue and epilogue code, or parts thereof,
      can be represented as RTL.  Doing so lets us schedule insns between
      it and the rest of the code and also allows delayed branch
      scheduling to operate in the epilogue.  */
   thread_prologue_and_epilogue_insns (insns);
-
-  compute_bb_for_insn (get_max_uid ());
 
   if (optimize)
     {

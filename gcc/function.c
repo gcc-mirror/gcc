@@ -7226,7 +7226,8 @@ thread_prologue_and_epilogue_insns (f)
 	  inserted = 1;
 	}
       else
-	emit_insn_after (seq, f);
+	set_block_for_new_insns (emit_insn_after (seq, f),
+		       		 ENTRY_BLOCK_PTR->succ);
     }
 #endif
 

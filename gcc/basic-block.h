@@ -145,6 +145,7 @@ typedef struct edge_def {
 #define EDGE_ABNORMAL_CALL	8
 #define EDGE_EH			16
 #define EDGE_FAKE		32
+#define EDGE_DFS_BACK		64
 
 #define EDGE_COMPLEX	(EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_EH)
 
@@ -650,6 +651,7 @@ extern void conflict_graph_print        PARAMS ((conflict_graph, FILE*));
 extern conflict_graph conflict_graph_compute 
                                         PARAMS ((regset,
 						 partition));
+extern bool mark_dfs_back_edges		PARAMS ((void));
 
 /* In dominance.c */
 
