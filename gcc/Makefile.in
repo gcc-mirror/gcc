@@ -1554,6 +1554,7 @@ install-common: native install-dir xgcc $(EXTRA_PARTS)
 # Install the driver program as $(target)-gcc
 # and also as either gcc (if native) or $(tooldir)/bin/gcc.
 	-if [ -f gcc-cross ] ; then \
+	  rm -f $(bindir)/$(target)-gcc; \
 	  $(INSTALL_PROGRAM) gcc-cross $(bindir)/$(target)-gcc; \
 	  if [ -d $(tooldir)/bin/. ] ; then \
 	    rm -f $(tooldir)/bin/gcc; \
