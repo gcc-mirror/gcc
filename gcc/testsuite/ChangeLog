@@ -1,3 +1,7 @@
+2002-03-12  David Edelsohn  <edelsohn@gnu.org>
+
+        * gcc.dg/20020103-1.c: Add rs6000 target and macro.
+
 2002-03-12  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/20020312-1.c: New test case.

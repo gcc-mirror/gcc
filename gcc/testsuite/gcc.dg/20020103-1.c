@@ -1,6 +1,6 @@
 /* Verify that constant equivalences get reloaded properly, either by being
    spilled to the stack, or regenerated, but not dropped to memory.  */
-/* { dg-do compile { target i?86-*-* powerpc-*-* alpha*-*-* } } */
+/* { dg-do compile { target i?86-*-* powerpc-*-* rs6000-*-* alpha*-*-* } } */
 /* { dg-options "-O2 -fpic -fno-omit-frame-pointer" } */
 /* { dg-final { scan-assembler-not "LC" } } */
 
@@ -8,7 +8,7 @@
 #if defined(__i386__)
 #define clobber \
   asm volatile("#asm" : : : "si", "di")
-#elif defined(__powerpc__) || defined(__PPC__) || defined(__ppc__) || defined(__POWERPC__) || defined(PPC)
+#elif defined(__powerpc__) || defined(__PPC__) || defined(__ppc__) || defined(__POWERPC__) || defined(PPC) || defined (_IBMR2)
 #define clobber \
   asm volatile("#asm" : : : "14", "15", "16", "17", "18", "19", "20", \
 	       "21", "22", "23", "24", "25", "26", "27", "28", "29")
