@@ -1,3 +1,10 @@
+2001-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.c (pushdecl): Only increase n_incomplete if pushed decl's
+	type is RECORD_TYPE, UNION_TYPE or ARRAY_TYPE thereof.
+	(finish_struct): Break the loop if n_incomplete went to 0.
+	For ARRAY_TYPE, if it is not TYPE_DECL, layout the decl too.
+
 Wed Dec  5 07:41:13 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* config/alpha/alpha.c (alpha_va_start): Update VMS case.
