@@ -1,3 +1,10 @@
+2005-02-15  James A. Morrison  <phython@gcc.gnu.org>
+
+	PR pch/14940
+	PR target/19300
+	* config/host-linux.c (linux_gt_pch_use_address): Copy from
+	config/pa/pa-host.c:pa_gt_pch_use_address.
+
 2005-02-15  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree-vn.c (get_value_handle): Make sure that given an
