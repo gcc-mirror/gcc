@@ -85,6 +85,8 @@ extern CC_STATUS cc_status;
 
 /* This bit means that the current setting of the overflow flag
    is bogus and conditional jumps should pretend there is no overflow.  */
+/* ??? Note that for most targets this macro is misnamed as it applies
+   to the carry flag, not the overflow flag.  */
 #define CC_NO_OVERFLOW 010
 
 /* This bit means that what ought to be in the Z bit
