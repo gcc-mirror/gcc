@@ -1,3 +1,18 @@
+2004-03-11  Dalibor Topic  <robilad@kaffe.org>
+
+	* java/text/AttributedString.java
+	(addAttribute(AttributedCharacterIterator.Attribute,Object,int,int)):
+	Use HashMap instead of Hashtable since value can be null, and
+	you can not store a null value in a Hashtable.
+
+2004-03-11  Guilhem Lavaux <guilhem@kaffe.org>
+
+	* java/text/AttributedStringIterator.java
+	(getAllAttributesKey): Return only keys concerned
+	by the current iterator.
+	(getAttributes): Use strict inequality for
+	end_index. 
+
 2004-03-11  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/HttpURLConnection.java:
