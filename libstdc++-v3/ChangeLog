@@ -1,3 +1,17 @@
+2000-11-28  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* config/cpu/powerpc/bits/atomicity.h (__exchange_and_add): Silence
+	preprocessor multi-line string warnings.
+	(__atomic_add): Likewise.
+	(__compare_and_swap): Likewise.
+	(__always_swap): Likewise.
+	(__test_and_set): Likewise.
+	* config/cpu/arm/bits/atomicity.h (__exchange_and_add): Likewise.
+	(__atomic_add): Likewise.
+	(__compare_and_swap): Likewise.
+	(__always_swap): Likewise.
+	(__test_and_set): Likewise.
+
 2000-11-28  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	Update for 2.91 release.

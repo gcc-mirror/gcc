@@ -27,12 +27,17 @@ __attribute__ ((__unused__))
 __exchange_and_add (volatile _Atomic_word* __mem, int __val)
 {
   _Atomic_word __tmp, __res;
-  __asm__ __volatile__ ("\
-0:	lwarx	%0,0,%2
-	add%I3	%1,%0,%3
-	stwcx.	%1,0,%2
-	bne-	0b
-" : "=&b"(__res), "=&r"(__tmp) : "r" (__mem), "Ir"(__val) : "cr0", "memory");
+  __asm__ __volatile__ (
+	"/* Inline exchange & add */\n"
+	"0:\t"
+	"lwarx    %0,0,%2 \n\t"
+	"add%I3   %1,%0,%3 \n\t"
+	"stwcx.   %1,0,%2 \n\t"
+	"bne-     0b \n\t"
+	"/* End exchange & add */"
+	: "=&b"(__res), "=&r"(__tmp)
+	: "r" (__mem), "Ir"(__val)
+	: "cr0", "memory");
   return __res;
 }
 
@@ -41,12 +46,17 @@ __attribute__ ((__unused__))
 __atomic_add (volatile _Atomic_word *__mem, int __val)
 {
   _Atomic_word __tmp;
-  __asm__ __volatile__ ("\
-0:	lwarx	%0,0,%1
-	add%I2	%0,%0,%2
-	stwcx.	%0,0,%1
-	bne-	0b
-" : "=&b"(__tmp) : "r" (__mem), "Ir"(__val) : "cr0", "memory");
+  __asm__ __volatile__ (
+	"/* Inline atomic add */\n"
+	"0:\t"
+	"lwarx    %0,0,%1 \n\t"
+	"add%I2   %0,%0,%2 \n\t"
+	"stwcx.   %0,0,%1 \n\t"
+	"bne-     0b \n\t"
+	"/* End atomic add */"
+	: "=&b"(__tmp)
+	: "r" (__mem), "Ir"(__val)
+	: "cr0", "memory");
 }
 
 static inline int
@@ -54,15 +64,20 @@ __attribute__ ((__unused__))
 __compare_and_swap (volatile long *__p, long int __oldval, long int __newval)
 {
   int __res;
-  __asm__ __volatile__ ("\
-0:	lwarx	%0,0,%1
-	sub%I2c.	%0,%0,%2
-	cntlzw	%0,%0
-	bne-	1f
-	stwcx.	%3,0,%1
-	bne-	0b
-1:
-" : "=&b"(__res) : "r"(__p), "Ir"(__oldval), "r"(__newval) : "cr0", "memory");
+  __asm__ __volatile__ (
+	"/* Inline compare & swap */\n"
+	"0:\t"
+	"lwarx    %0,0,%1  \n\t"
+	"sub%I2c. %0,%0,%2 \n\t"
+	"cntlzw   %0,%0 \n\t"
+	"bne-     1f \n\t"
+	"stwcx.   %3,0,%1 \n\t"
+	"bne-     0b \n"
+	"1:\n\t"
+	"/* End compare & swap */"
+	: "=&b"(__res)
+	: "r"(__p), "Ir"(__oldval), "r"(__newval)
+	: "cr0", "memory");
   return __res >> 5;
 }
 
@@ -71,11 +86,16 @@ __attribute__ ((__unused__))
 __always_swap (volatile long *__p, long int __newval)
 {
   long __res;
-  __asm__ __volatile__ ("\
-0:	lwarx	%0,0,%1
-	stwcx.	%2,0,%1
-	bne-	0b
-" : "=&r"(__res) : "r"(__p), "r"(__newval) : "cr0", "memory");
+  __asm__ __volatile__ (
+	"/* Inline always swap */\n"
+	"0:\t"
+	"lwarx    %0,0,%1 \n\t"
+	"stwcx.   %2,0,%1 \n\t"
+	"bne-     0b \n\t"
+	"/* End always swap */"
+	: "=&r"(__res)
+	: "r"(__p), "r"(__newval)
+	: "cr0", "memory");
   return __res;
 }
 
@@ -84,14 +104,19 @@ __attribute__ ((__unused__))
 __test_and_set (volatile long *__p, long int __newval)
 {
   int __res;
-  __asm__ __volatile__ ("\
-0:	lwarx	%0,0,%1
-	cmpwi	%0,0
-	bne-	1f
-	stwcx.	%2,0,%1
-	bne-	0b
-1:
-" : "=&r"(__res) : "r"(__p), "r"(__newval) : "cr0", "memory");
+  __asm__ __volatile__ (
+	"/* Inline test & set */\n"
+	"0:\t"
+	"lwarx    %0,0,%1 \n\t"
+	"cmpwi    %0,0 \n\t"
+	"bne-     1f \n\t"
+	"stwcx.   %2,0,%1 \n\t"
+	"bne-     0b \n"
+	"1:\n\t"
+	"/* End test & set */"
+	: "=&r"(__res)
+	: "r"(__p), "r"(__newval)
+	: "cr0", "memory");
   return __res;
 }
 
