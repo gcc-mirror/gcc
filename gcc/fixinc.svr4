@@ -63,15 +63,6 @@ case $LIB in
 	;;
 esac
 
-# This prevents /bin/ex from failing if the current terminal type is
-# unrecognizable.
-TERM=dumb
-export TERM
-# This prevents /bin/ex from failing if the EXINIT environment variable
-# was set to something invalid.
-EXINIT=""
-export EXINIT
-
 echo 'Building fixincludes in ' ${LIB}
 
 # Determine whether this filesystem has symbolic links.
@@ -279,28 +270,24 @@ if [ \! -z "$file_to_fix" ]; then
   cp $file_to_fix /tmp/$base
   chmod +w /tmp/$base
   chmod a+r /tmp/$base
-  ex /tmp/$base <<EOF
-  /^#define[ 	]*NULL[ 	]*0$/c
-#ifndef NULL
-#ifdef __cplusplus
-#define __NULL_TYPE
-#else /* !defined(__cplusplus) */
-#define __NULL_TYPE (void *)
-#endif /* !defined(__cplusplus) */
-#define NULL (__NULL_TYPE 0)
-#endif /* !defined(NULL) */
-.
-  wq
-EOF
-  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+  sed -e '/^#define[ 	]*NULL[ 	]*0$/c\
+#ifndef NULL\
+#ifdef __cplusplus\
+#define __NULL_TYPE\
+#else /* !defined(__cplusplus) */\
+#define __NULL_TYPE (void *)\
+#endif /* !defined(__cplusplus) */\
+#define NULL (__NULL_TYPE 0)\
+#endif /* !defined(NULL) */' /tmp/$base > /tmp/$base.sed
+  if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then \
     true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
-    cp /tmp/$base ${LIB}/$file
+    cp /tmp/$base.sed ${LIB}/$file
     chmod a+r ${LIB}/$file
   fi
-  rm -f /tmp/$base
+  rm -f /tmp/$base /tmp/$base.sed
 fi
 
 # Likewise fix the definition of NULL in <stdio.h> so that it is conditional
@@ -321,26 +308,22 @@ if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   cp $file_to_fix /tmp/$base
   chmod +w /tmp/$base
-  ex /tmp/$base <<EOF
-  /^#define[ 	]*NULL[ 	]*0$/c
-#ifdef __cplusplus
-#define __NULL_TYPE
-#else /* !defined(__cplusplus) */
-#define __NULL_TYPE (void *)
-#endif /* !defined(__cplusplus) */
-#define NULL (__NULL_TYPE 0)
-.
-  wq
-EOF
-  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+  sed -e '/^#define[ 	]*NULL[ 	]*0$/c\
+#ifdef __cplusplus\
+#define __NULL_TYPE\
+#else /* !defined(__cplusplus) */\
+#define __NULL_TYPE (void *)\
+#endif /* !defined(__cplusplus) */\
+#define NULL (__NULL_TYPE 0)' /tmp/$base > /tmp/$base.sed
+  if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then \
     true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
-    cp /tmp/$base ${LIB}/$file
+    cp /tmp/$base.sed ${LIB}/$file
     chmod a+r ${LIB}/$file
   fi
-  rm -f /tmp/$base
+  rm -f /tmp/$base /tmp/$base.sed
 fi
 
 # Likewise fix the definition of NULL in <dbm.h> so that it is conditional
@@ -361,28 +344,24 @@ if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   cp $file_to_fix /tmp/$base
   chmod +w /tmp/$base
-  ex /tmp/$base <<EOF
-  /^#define[ 	]*NULL[ 	]*((char \*) 0)$/c
-#ifndef NULL
-#ifdef __cplusplus
-#define __NULL_TYPE
-#else /* !defined(__cplusplus) */
-#define __NULL_TYPE (void *)
-#endif /* !defined(__cplusplus) */
-#define NULL (__NULL_TYPE 0)
-#endif /* !defined(NULL) */
-.
-  wq
-EOF
-  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+  sed -e '/^#define[ 	]*NULL[ 	]*((char \*) 0)$/c\
+#ifndef NULL\
+#ifdef __cplusplus\
+#define __NULL_TYPE\
+#else /* !defined(__cplusplus) */\
+#define __NULL_TYPE (void *)\
+#endif /* !defined(__cplusplus) */\
+#define NULL (__NULL_TYPE 0)\
+#endif /* !defined(NULL) */' /tmp/$base > /tmp/$base.sed
+  if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then \
     true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
-    cp /tmp/$base ${LIB}/$file
+    cp /tmp/$base.sed ${LIB}/$file
     chmod a+r ${LIB}/$file
   fi
-  rm -f /tmp/$base
+  rm -f /tmp/$base /tmp/$base.sed
 fi
 
 # Add a prototyped declaration of mmap to <sys/mman.h>.
@@ -402,26 +381,22 @@ if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   cp $file_to_fix /tmp/$base
   chmod +w /tmp/$base
-  ex /tmp/$base <<EOF
-  /^extern caddr_t mmap();$/c
-#ifdef __STDC__
-extern caddr_t mmap (caddr_t addr, size_t len, int prot, int flags,
-                     int fd, off_t off);
-#else /* !defined(__STDC__) */
-extern caddr_t mmap ();
-#endif /* !defined(__STDC__) */
-.
-  wq
-EOF
-  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+  sed -e '/^extern caddr_t mmap();$/c\
+#ifdef __STDC__\
+extern caddr_t mmap (caddr_t addr, size_t len, int prot, int flags,\
+                     int fd, off_t off);\
+#else /* !defined(__STDC__) */\
+extern caddr_t mmap ();\
+#endif /* !defined(__STDC__) */' /tmp/$base > /tmp/$base.sed
+  if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then \
     true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
-    cp /tmp/$base ${LIB}/$file
+    cp /tmp/$base.sed ${LIB}/$file
     chmod a+r ${LIB}/$file
   fi
-  rm -f /tmp/$base
+  rm -f /tmp/$base /tmp/$base.sed
 fi
 
 # Fix declarations of `ftw' and `nftw' in <ftw.h>.
@@ -441,48 +416,42 @@ if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   cp $file_to_fix /tmp/$base
   chmod +w /tmp/$base
-  ex /tmp/$base <<EOF
-  /^extern int ftw(const/c
-#if !defined(_STYPES)
-static
-#else
-extern
-#endif
-  int ftw(const char *, int (*)(const char *, const struct stat *, int), int);
-.
-  /^extern int nftw/c
-#if defined(_STYPES)
-static
-#else
-extern
-#endif
-  int nftw(const char *, int (*)(const char *, const struct stat *, int, struct FTW *),int, int);
-.
-  /^extern int ftw(),/c
-#if !defined(_STYPES)
-static
-#else
-extern
-#endif
-  int ftw();
-#if defined(_STYPES)
-static
-#else
-extern
-#endif
-  int nftw();
-.
-  wq
-EOF
-  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+  sed -e '/^extern int ftw(const/c\
+#if !defined(_STYPES)\
+static\
+#else\
+extern\
+#endif\
+  int ftw(const char *, int (*)(const char *, const struct stat *, int), int);' \
+  -e '/^extern int nftw/c\
+#if defined(_STYPES)\
+static\
+#else\
+extern\
+#endif\
+  int nftw(const char *, int (*)(const char *, const struct stat *, int, struct FTW *),int, int);' \
+  -e '/^extern int ftw(),/c\
+#if !defined(_STYPES)\
+static\
+#else\
+extern\
+#endif\
+  int ftw();\
+#if defined(_STYPES)\
+static\
+#else\
+extern\
+#endif\
+  int nftw();' /tmp/$base > /tmp/$base.sed
+  if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then \
     true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
-    cp /tmp/$base ${LIB}/$file
+    cp /tmp/$base.sed ${LIB}/$file
     chmod a+r ${LIB}/$file
   fi
-  rm -f /tmp/$base
+  rm -f /tmp/$base /tmp/$base.sed
 fi
 
 # Add a `static' declaration of `getrnge' into <regexp.h>.
@@ -509,24 +478,20 @@ if [ \! -z "$file_to_fix" ]; then
   else
     cp $file_to_fix /tmp/$base
     chmod +w /tmp/$base
-    ex /tmp/$base <<EOF
-    /^static int[ 	]*size;/c
-static int	size ;
-
-static int getrnge ();
-.
-    wq
-EOF
-    if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+    sed -e '/^static int[ 	]*size;/c\
+static int	size ;\
+\
+static int getrnge ();' /tmp/$base > /tmp/$base.sed
+    if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then \
       true
     else
       echo Fixed $file_to_fix
       rm -f ${LIB}/$file
-      cp /tmp/$base ${LIB}/$file
+      cp /tmp/$base.sed ${LIB}/$file
       chmod a+r ${LIB}/$file
     fi
   fi
-  rm -f /tmp/$base
+  rm -f /tmp/$base /tmp/$base.sed
 fi
 
 # Disable apparent native compiler optimization cruft in SVR4.2 <string.h>
@@ -548,19 +513,16 @@ if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   cp $file_to_fix /tmp/$base
   chmod +w /tmp/$base
-  ex /tmp/$base <<EOF
-  g/#define.*__std_hdr_/d
-  wq
-EOF
-  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+  sed -e 'g/#define.*__std_hdr_/d' /tmp/$base > /tmp/$base.sed
+  if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then \
     true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
-    cp /tmp/$base ${LIB}/$file
+    cp /tmp/$base.sed ${LIB}/$file
     chmod a+r ${LIB}/$file
   fi
-  rm -f /tmp/$base
+  rm -f /tmp/$base /tmp/$base.sed
 fi
 
 # Add a #define of _SIGACTION_ into <sys/signal.h>.
@@ -581,23 +543,19 @@ if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   cp $file_to_fix /tmp/$base
   chmod +w /tmp/$base
-  ex /tmp/$base <<EOF
-  /^struct sigaction {/c
-#define _SIGACTION_
-struct  sigaction  {
-.
-  1,\$s/(void *(\*)())/(void (*)(int))/
-  wq
-EOF
-  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+  sed -e '/^struct sigaction {/c\
+#define _SIGACTION_\
+struct  sigaction  {' \
+  -e '1,$s/(void *(\*)())/(void (*)(int))/' /tmp/$base > /tmp/$base.sed
+  if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then \
     true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
-    cp /tmp/$base ${LIB}/$file
+    cp /tmp/$base.sed ${LIB}/$file
     chmod a+r ${LIB}/$file
   fi
-  rm -f /tmp/$base
+  rm -f /tmp/$base /tmp/$base.sed
 fi
 
 # Fix declarations of `makedev', `major', and `minor' in <sys/mkdev.h>.
@@ -617,36 +575,27 @@ if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   cp $file_to_fix /tmp/$base
   chmod +w /tmp/$base
-  ex /tmp/$base <<EOF
-  /^dev_t makedev(const/c
-static dev_t makedev(const major_t, const minor_t);
-.
-  /^dev_t makedev()/c
-static dev_t makedev();
-.
-  /^major_t major(const/c
-static major_t major(const dev_t);
-.
-  /^major_t major()/c
-static major_t major();
-.
-  /^minor_t minor(const/c
-static minor_t minor(const dev_t);
-.
-  /^minor_t minor()/c
-static minor_t minor();
-.
-  wq
-EOF
-  if cmp $file_to_fix /tmp/$base >/dev/null 2>&1; then \
+  sed -e '/^dev_t makedev(const/c\
+static dev_t makedev(const major_t, const minor_t);' \
+  -e '/^dev_t makedev()/c\
+static dev_t makedev();' \
+  -e '/^major_t major(const/c\
+static major_t major(const dev_t);' \
+  -e '/^major_t major()/c\
+static major_t major();' \
+  -e '/^minor_t minor(const/c\
+static minor_t minor(const dev_t);' \
+  -e '/^minor_t minor()/c\
+static minor_t minor();' /tmp/$base > /tmp/$base.sed
+  if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then \
     true
   else
     echo Fixed $file_to_fix
     rm -f ${LIB}/$file
-    cp /tmp/$base ${LIB}/$file
+    cp /tmp/$base.sed ${LIB}/$file
     chmod a+r ${LIB}/$file
   fi
-  rm -f /tmp/$base
+  rm -f /tmp/$base /tmp/$base.sed
 fi
 
 # Fix reference to NMSZ in <sys/adv.h>.
@@ -1126,46 +1075,50 @@ if [ \! -z "$file_to_fix" ]; then
   echo Checking $file_to_fix
   cp $file_to_fix /tmp/$base
   chmod +w /tmp/$base
-  ex /tmp/$base <<EOF
-/^stat(/
-s/(.*$/(/
-j
-s/;/,/
-j
-s/;/)/
-/^lstat(/
-s/(.*$/(/
-j
-s/;/,/
-j
-s/;/)/
-/^fstat(/
-s/(.*$/(/
-j
-s/;/,/
-j
-s/;/)/
-/^mknod(/
-s/(.*$/(/
-j
-s/;/,/
-j
-s/;/,/
-j
-s/;/)/
-1,\$s/\([^A-Za-z]\)path\([^A-Za-z]\)/\1__path\2/g
-1,\$s/\([^A-Za-z]\)buf\([^A-Za-z]\)/\1__buf\2/g
-1,\$s/\([^A-Za-z]\)fd\([^A-Za-z]\)/\1__fd\2/g
-1,\$s/ret\([^u]\)/__ret\1/g
-1,\$s/\([^_]\)mode\([^_]\)/\1__mode\2/g
-1,\$s/\([^_r]\)dev\([^_]\)/\1__dev\2/g
-wq
-EOF
-  echo Fixed $file_to_fix
-  rm -f ${LIB}/$file
-  cp /tmp/$base ${LIB}/$file
-  chmod a+r ${LIB}/$file
-  rm -f /tmp/$base
+  sed -e '/^stat(/{
+N
+N
+s/(.*)\n/( /
+s/;\n/, /
+s/;$/)/
+}' \
+  -e '/^lstat(/{
+N
+N
+s/(.*)\n/( /
+s/;\n/, /
+s/;$/)/
+}' \
+  -e '/^fstat(/{
+N
+N
+s/(.*)\n/( /
+s/;\n/, /
+s/;$/)/
+}' \
+  -e '/^mknod(/{
+N
+N
+N
+s/(.*)\n/( /
+s/;\n/, /g
+s/;$/)/
+}' \
+  -e '1,$s/\([^A-Za-z]\)path\([^A-Za-z]\)/\1__path\2/g' \
+  -e '1,$s/\([^A-Za-z]\)buf\([^A-Za-z]\)/\1__buf\2/g' \
+  -e '1,$s/\([^A-Za-z]\)fd\([^A-Za-z]\)/\1__fd\2/g' \
+  -e '1,$s/ret\([^u]\)/__ret\1/g' \
+  -e '1,$s/\([^_]\)mode\([^_]\)/\1__mode\2/g' \
+  -e '1,$s/\([^_r]\)dev\([^_]\)/\1__dev\2/g' /tmp/$base > /tmp/$base.sed
+  if cmp $file_to_fix /tmp/$base.sed >/dev/null 2>&1; then \
+    true
+  else
+    echo Fixed $file_to_fix
+    rm -f ${LIB}/$file
+    cp /tmp/$base.sed ${LIB}/$file
+    chmod a+r ${LIB}/$file
+  fi
+  rm -f /tmp/$base /tmp/$base.sed
 fi
 
 # Sony NEWSOS 5.0 does not support the complete ANSI C standard.
