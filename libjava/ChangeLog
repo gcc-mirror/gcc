@@ -1,3 +1,8 @@
+2003-06-05  Matt Kraai  <kraai@alumni.cmu.edu>
+
+	* java/lang/w_exp.c (o_threshold, u_threshold): Define only
+	if _IEEE_LIBM is undefined.
+
 2002-06-05  Loren J. Rittle  <ljrittle@acm.org>
 
 	* libjava/include/posix.h (O_SYNC): Define if not available
