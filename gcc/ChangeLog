@@ -1,3 +1,8 @@
+Thu Mar  9 18:10:02 2000  Jeffrey A Law  (law@cygnus.com)
+
+        * config/pa/pa-hpux10.h (LIB_SPEC): Correct typo in !p case.
+        (MD_STARTFILE_PREFIX_1): New macro.
+
 2000-03-09  Robert Lipe  <robertl@sco.com>
 
 	* config/ia64/ia64.c: Include system.h.
