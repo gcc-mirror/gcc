@@ -1268,22 +1268,31 @@ static format_char_info scan_char_table[] = {
    'E' - E modifier is acceptable
    'O' - O modifier is acceptable to Standard C
    'o' - O modifier is acceptable as a GNU extension
+   '9' - added to the C standard in C99
    'G' - other GNU extensions  */
 
 static format_char_info time_char_table[] = {
   { "y", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "2EO-_0w" },
-  { "D", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "2" },
-  { "g", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "2O-_0w" },
+  { "D", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "29" },
+  { "g", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "2Oo-_0w9" },
   { "cx", 		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "3E" },
-  { "%RTXnrt",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "" },
+  { "%",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "" },
+  { "X",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "E" },
+  { "RTnrt",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "9" },
   { "P",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "G" },
-  { "HIMSUWdemw",	0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Ow" },
-  { "Vju",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Oow" },
-  { "Gklsz",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0OGw" },
+  { "HIMSUWdmw",	0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Ow" },
+  { "e",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Ow9" },
+  { "j",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Oow" },
+  { "Vu",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Ow9" },
+  { "Gz",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0Oow9" },
+  { "kls",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0OGw" },
   { "ABZa",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^#" },
   { "p",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "#" },
-  { "bh",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^" },
-  { "CY",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0EOw" },
+  { "b",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^" },
+  { "h",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "^9" },
+  { "Y",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0EOow" },
+  { "F",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "w9" },
+  { "C",		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "-_0EOow9" },
   { NULL,		0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 };
 
@@ -1900,9 +1909,14 @@ check_format_info (info, params)
 	{
 	  if (index (fci->flag_chars, 'G') != 0)
 	    warning ("ANSI C does not support `%%%c'", format_char);
-	  if (index (fci->flag_chars, 'o') != 0
+	  if (index (fci->flag_chars, '9') != 0 && !flag_isoc99)
+	    warning ("ANSI C does not support `%%%c'", format_char);
+	  if ((index (fci->flag_chars, 'o') != 0
+	       || (!flag_isoc99 && index (fci->flag_chars, 'O') != 0))
 	      && index (flag_chars, 'O') != 0)
 	    warning ("ANSI C does not support `%%O%c'", format_char);
+	  if (!flag_isoc99 && index (flag_chars, 'E'))
+	    warning ("ANSI C does not support `%%E%c'", format_char);
 	}
       if (wide && index (fci->flag_chars, 'w') == 0)
 	warning ("width used with `%c' format", format_char);

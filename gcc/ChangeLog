@@ -1,3 +1,15 @@
+2000-08-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (time_char_table): Mark up formats added in C99 and
+	make other corrections.  %D and %g were added in C99.  %Og is an
+	extension.  %EX is permitted.  %R, %T, %n, %r, %t were added in
+	C99.  %e was added in C99.  %Oj is an extension.  %G and %z are in
+	C99 rather than GNU extensions, but %OG and %Oz are extensions.
+	%h was added in C99.  %C was added in C99.  %OY and %OC are
+	extensions.  Add the C99 format %F.
+	(check_format_info): If pedantic and not in C99 mode, warn for C99
+	formats, %E and %O.
+
 Fri Aug  4 23:01:58 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* function.c (schedule_fixup_var_refs): New function, broken out
