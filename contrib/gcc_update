@@ -93,6 +93,10 @@ boehm-gc/aclocal.m4: boehm-gc/configure.in boehm-gc/acinclude.m4
 boehm-gc/Makefile.in: boehm-gc/Makefile.am boehm-gc/configure.in boehm-gc/aclocal.m4
 boehm-gc/configure: boehm-gc/configure.in boehm-gc/aclocal.m4
 libada/configure: libada/configure.ac
+libffi/aclocal.m4: libffi/configure.ac libffi/acinclude.m4
+libffi/Makefile.in: libffi/Makefile.am libffi/configure.ac libffi/aclocal.m4
+libffi/configure: libffi/configure.ac libffi/aclocal.m4
+libffi/fficonfig.h.in: libffi/configure.ac libffi/aclocal.m4
 libjava/aclocal.m4: libjava/configure.in libjava/acinclude.m4
 libjava/Makefile.in: libjava/Makefile.am libjava/configure.in libjava/aclocal.m4
 libjava/configure: libjava/configure.in libjava/aclocal.m4
