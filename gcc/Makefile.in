@@ -981,7 +981,7 @@ mkheaders: $(srcdir)/mkheaders.in
 # Don't run autoheader automatically either.
 # Only run it if maintainer mode is enabled.
 @MAINT@ $(srcdir)/config.in: $(srcdir)/cstamp-h.in
-@MAINT@ $(srcdir)/cstamp-h.in: $(srcdir)/configure.in $(srcdir)/acconfig.h
+@MAINT@ $(srcdir)/cstamp-h.in: $(srcdir)/configure.in
 @MAINT@	(cd $(srcdir) && autoheader)
 @MAINT@	@rm -f $(srcdir)/cstamp-h.in
 @MAINT@	echo timestamp > $(srcdir)/cstamp-h.in
