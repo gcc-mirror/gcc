@@ -265,6 +265,7 @@ empty_parms ()
 %type <ttype> new_initializer new_placement
 %type <ttype> using_decl .poplevel
 %type <ttype> typename_sub typename_sub0 typename_sub1 typename_sub2
+%type <ttype> explicit_template_type
 /* in order to recognize aggr tags as defining and thus shadowing.  */
 %token TYPENAME_DEFN IDENTIFIER_DEFN PTYPENAME_DEFN
 %type <ttype> named_class_head_sans_basetype_defn
@@ -3168,6 +3169,8 @@ nested_name_specifier:
 	  nested_name_specifier_1
 	| nested_name_specifier nested_name_specifier_1
 		{ $$ = $2; }
+	| nested_name_specifier TEMPLATE template_type SCOPE
+		{ got_scope = $$ = complete_type (TREE_TYPE ($3)); }
 	;
 
 /* Why the @#$%^& do type_name and notype_identifier need to be expanded
@@ -3254,6 +3257,8 @@ typename_sub1:
 			$$ = TREE_TYPE ($$);
 		    }
 		}
+	| typename_sub1 explicit_template_type SCOPE
+		{ got_scope = $$ = make_typename_type ($1, $2); }
 	;
 
 typename_sub2:
@@ -3283,6 +3288,11 @@ typename_sub2:
 		    $$ = lastiddecl;
 		  got_scope = $$;
 		}
+	;
+
+explicit_template_type:
+	  TEMPLATE identifier '<' template_arg_list_opt template_close_bracket
+		{ $$ = build_min_nt (TEMPLATE_ID_EXPR, $2, $4); }
 	;
 
 complex_type_name:

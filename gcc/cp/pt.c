@@ -4288,7 +4288,8 @@ tsubst (t, args, in_decl)
     case TYPENAME_TYPE:
       {
 	tree ctx = tsubst (TYPE_CONTEXT (t), args, in_decl);
-	tree f = make_typename_type (ctx, TYPE_IDENTIFIER (t));
+	tree f = tsubst_copy (TYPENAME_TYPE_FULLNAME (t), args, in_decl);
+	f = make_typename_type (ctx, f);
 	return cp_build_type_variant
 	  (f, TYPE_READONLY (f) || TYPE_READONLY (t),
 	   TYPE_VOLATILE (f) || TYPE_VOLATILE (t));
