@@ -6,7 +6,7 @@
 #   Based on fixinc.svr4 script by Ron Guilmette (rfg@ncd.com) (SCO
 #   modifications by Ian Lance Taylor (ian@airs.com)).
 #
-# Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+# Copyright (C) 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 #
 # This file is part of GNU CC.
 # 
@@ -404,7 +404,7 @@ __EOF__
       # Define _CURSES_H_WRAPPER at the end of the wrapper, not the start,
       # so that if #include_next gets another instance of the wrapper,
       # this will follow the #include_next chain until we arrive at
-      # the real <curses.h>.
+      # the real system include file.
       chmod a+r $LIB/$file
     fi
   fi
