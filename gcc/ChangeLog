@@ -1,3 +1,11 @@
+2000-08-01  Jim Wilson  <wilson@cygnus.com>
+
+	* config/ia64/ia64.c (ia64_function_arg): Fix last change.  Verify
+	type exists before using it.  Use number of words as alignment
+	otherwise.
+	(ia64_function_arg_partial_nregs, ia64_function_arg_advance,
+	ia64_va_arg): Propagate ia64_function_args changes here.
+
 2000-08-01  Richard Henderson  <rth@cygnus.com>
 
 	* config/elfos.h (ASM_DECLARE_OBJECT_NAME): Care for null DECL.

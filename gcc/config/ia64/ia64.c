@@ -1544,12 +1544,15 @@ ia64_function_arg (cum, mode, type, named, incoming)
 
   /* Integer and float arguments larger than 8 bytes start at the next even
      boundary.  Aggregates larger than 8 bytes start at the next even boundary
-     if the aggregate has 16 byte alignment.  */
+     if the aggregate has 16 byte alignment.  Net effect is that types with
+     alignment greater than 8 start at the next even boundary.  */
   /* ??? The ABI does not specify how to handle aggregates with alignment from
      9 to 15 bytes, or greater than 16.   We handle them all as if they had
      16 byte alignment.  Such aggregates can occur only if gcc extensions are
      used.  */
-  if ((TYPE_ALIGN (type) > 8 * BITS_PER_UNIT) && (cum->words & 1))
+  if ((type ? (TYPE_ALIGN (type) > 8 * BITS_PER_UNIT)
+       : (words > 1))
+      && (cum->words & 1))
     offset = 1;
 
   /* If all argument slots are used, then it must go on the stack.  */
@@ -1690,8 +1693,11 @@ ia64_function_arg_partial_nregs (cum, mode, type, named)
 	       / UNITS_PER_WORD);
   int offset = 0;
 
-  /* Arguments larger than 8 bytes start at the next even boundary.  */
-  if (words > 1 && (cum->words & 1))
+  /* Arguments with alignment larger than 8 bytes start at the next even
+     boundary.  */
+  if ((type ? (TYPE_ALIGN (type) > 8 * BITS_PER_UNIT)
+       : (words > 1))
+      && (cum->words & 1))
     offset = 1;
 
   /* If all argument slots are used, then it must go on the stack.  */
@@ -1729,8 +1735,11 @@ ia64_function_arg_advance (cum, mode, type, named)
   if (cum->words >= MAX_ARGUMENT_SLOTS)
     return;
 
-  /* Arguments larger than 8 bytes start at the next even boundary.  */
-  if (words > 1 && (cum->words & 1))
+  /* Arguments with alignment larger than 8 bytes start at the next even
+     boundary.  */
+  if ((type ? (TYPE_ALIGN (type) > 8 * BITS_PER_UNIT)
+       : (words > 1))
+      && (cum->words & 1))
     offset = 1;
 
   cum->words += words + offset;
@@ -1832,9 +1841,9 @@ ia64_va_arg (valist, type)
   HOST_WIDE_INT size;
   tree t;
 
-  /* Arguments larger than 8 bytes are 16 byte aligned.  */
-  size = int_size_in_bytes (type);
-  if (size > UNITS_PER_WORD)
+  /* Arguments with alignment larger than 8 bytes start at the next even
+     boundary.  */
+  if (TYPE_ALIGN (type) > 8 * BITS_PER_UNIT)
     {
       t = build (PLUS_EXPR, TREE_TYPE (valist), valist,
 		 build_int_2 (2 * UNITS_PER_WORD - 1, 0));
