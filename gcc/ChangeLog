@@ -1,3 +1,7 @@
+Wed Feb 28 18:54:51 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* jump.c (reversed_comparison_code): Kill.
+
 Wed Feb 28 18:50:15 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* toplev.c (rest_of_compilation): Do post-reload splitting unconditionally
