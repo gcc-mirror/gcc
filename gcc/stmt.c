@@ -2722,8 +2722,6 @@ expand_value_return (val)
 	emit_move_insn (return_reg, val);
     }
 
-  diddle_return_value (USE);
-
   /* Does any pending block have cleanups?  */
 
   while (block && block->data.block.cleanups == 0)
@@ -3689,14 +3687,6 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
     /* Get rid of the beginning-mark if we don't make an end-mark.  */
     NOTE_LINE_NUMBER (thisblock->data.block.first_insn) = NOTE_INSN_DELETED;
 
-  /* If doing stupid register allocation, make sure lives of all
-     register variables declared here extend thru end of scope.  */
-
-  if (obey_regdecls)
-    for (decl = vars; decl; decl = TREE_CHAIN (decl))
-      if (TREE_CODE (decl) == VAR_DECL && DECL_RTL (decl))
-	use_variable (DECL_RTL (decl));
-
   /* Restore the temporary level of TARGET_EXPRs.  */
   target_temp_slot_level = thisblock->data.block.block_target_temp_slot_level;
 
@@ -3757,7 +3747,7 @@ expand_decl (decl)
 		&& TREE_CODE (type) == REAL_TYPE)
 	   && ! TREE_THIS_VOLATILE (decl)
 	   && ! TREE_ADDRESSABLE (decl)
-	   && (DECL_REGISTER (decl) || ! obey_regdecls)
+	   && (DECL_REGISTER (decl) || optimize)
 	   /* if -fcheck-memory-usage, check all variables.  */
 	   && ! current_function_check_memory_usage)
     {
@@ -3889,15 +3879,7 @@ expand_decl (decl)
   if (TREE_READONLY (decl))
     RTX_UNCHANGING_P (DECL_RTL (decl)) = 1;
 #endif
-
-  /* If doing stupid register allocation, make sure life of any
-     register variable starts here, at the start of its scope.  */
-
-  if (obey_regdecls)
-    use_variable (DECL_RTL (decl));
 }
-
-
 
 /* Emit code to perform the initialization of a declaration DECL.  */
 

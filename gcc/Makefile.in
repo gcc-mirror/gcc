@@ -667,7 +667,7 @@ OBJS = diagnostic.o \
  function.o stmt.o except.o expr.o calls.o expmed.o explow.o optabs.o real.o \
  builtins.o intl.o varasm.o rtl.o print-rtl.o rtlanal.o emit-rtl.o genrtl.o \
  dbxout.o sdbout.o dwarfout.o dwarf2out.o xcoffout.o bitmap.o alias.o gcse.o \
- integrate.o jump.o cse.o loop.o unroll.o flow.o stupid.o combine.o varray.o \
+ integrate.o jump.o cse.o loop.o unroll.o flow.o combine.o varray.o \
  regclass.o regmove.o local-alloc.o global.o reload.o reload1.o caller-save.o \
  insn-peep.o reorg.o haifa-sched.o final.o recog.o reg-stack.o \
  insn-opinit.o insn-recog.o insn-extract.o insn-output.o insn-emit.o lcm.o \
@@ -1546,8 +1546,6 @@ integrate.o : integrate.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
 jump.o : jump.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h $(REGS_H) \
    insn-config.h insn-flags.h $(RECOG_H) $(EXPR_H) real.h except.h function.h \
    toplev.h insn-attr.h
-stupid.o : stupid.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h \
-   $(BASIC_BLOCK_H) insn-config.h reload.h flags.h function.h toplev.h
 
 simplify-rtx.o : simplify-rtx.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) \
    hard-reg-set.h flags.h real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h \

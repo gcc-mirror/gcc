@@ -61,13 +61,13 @@ handle_pragma (p_getc, p_ungetc, pname)
 
   if (strcmp (pname, "CC_OPT_ON") == 0)
     {
-      optimize = 1, obey_regdecls = 0;
+      optimize = 1;
       warning ("optimization turned on");
       retval = 1;
     }
   else if (strcmp (pname, "CC_OPT_OFF") == 0)
     {
-      optimize = 0, obey_regdecls = 1;
+      optimize = 0;
       warning ("optimization turned off");
       retval = 1;
     }
@@ -76,13 +76,7 @@ handle_pragma (p_getc, p_ungetc, pname)
       extern int initial_optimize_flag;
 
       if (optimize != initial_optimize_flag)
-	{
-	  if (initial_optimize_flag)
-	    obey_regdecls = 0;
-	  else
-	    obey_regdecls = 1;
-	  optimize = initial_optimize_flag;
-	}
+	optimize = initial_optimize_flag;
       warning ("optimization level restored");
       retval = 1;
     }

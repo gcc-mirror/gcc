@@ -1,3 +1,46 @@
+2000-01-19  Richard Henderson  <rth@cygnus.com>
+
+	* stupid.c: Die die die.
+	* Makefile.in (OBJS): Remove stupid.o.
+	(stupid.o): Likewise.
+
+	* except.c (emit_eh_context): Don't emit USEs for stupid.
+	* explow.c (probe_stack_range): Likewise.
+	* flags.h (obey_regdecls): Remove.
+	* flow.c (find_basic_blocks): Don't run try_merge_blocks
+	when not optimizing.
+	(life_analysis): Limit data collection when not optimizing.
+	(mark_regs_live_at_end): Always mark the return value registers.
+	(mark_used_regs): Remove dummy RETURN case.
+	(print_rtl_with_bb): Don't consult obey_regdecls.
+	* function.c (use_variable, use_variable_after): Remove.
+	(assign_parms): Consult optimize not obey_regdecls.
+	(expand_function_start): Don't emit USEs for stupid.
+	(expand_function_end): Likewise.
+	* global.c (build_insn_chain): Export.
+	* integrate.c (expand_inline_function): Kill return-value USE
+	handling code.
+	* jump.c (jump_optimize_1): Do simple jump optimizations and
+	dead code elimination.
+	(calculate_can_reach_end): Remove check_deleted argument.
+	(delete_insn): Patch out insns even when not optimizing.
+	* local-alloc.c (block_alloc): Don't do tying when not optimizing.
+	* rtl.h (use_variable, use_variable_after): Remove declarations.
+	(build_insn_chain): Declare.
+	* stmt.c (expand_value_return): Don't emit USEs for stupid.
+	(expand_end_bindings): Likewise.
+	(expand_decl): Likewise.  Consult optimize not obey_regdecls.
+	* toplev.c (obey_regdecls): Remove.
+	(rest_of_compilation): Don't set it.  Kill stupid in favour of
+	flow1, local-alloc, and reload.
+	(main): Don't set obey_regdecls.
+
+	* config/nextstep.c (handle_pragma): Likewise.
+
+	* alpha/alpha.md (allocate_stack): Don't emit USEs for stupid.
+
+	* arm/arm.h (CONDITIONAL_REGISTER_USAGE): Don't fix reg 0 for stupid.
+
 2000-01-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* alpha-protos.h: PROTO -> PARAMS.

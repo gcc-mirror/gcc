@@ -305,7 +305,6 @@ static void dump_conflicts	PARAMS ((FILE *));
 static void reg_becomes_live	PARAMS ((rtx, rtx, void *));
 static void reg_dies		PARAMS ((int, enum machine_mode,
 				       struct insn_chain *));
-static void build_insn_chain	PARAMS ((rtx));
 
 /* Perform allocation of pseudo-registers not allocated by local_alloc.
    FILE is a file to output debugging information on,
@@ -1757,7 +1756,7 @@ reg_dies (regno, mode, chain)
 
 /* Walk the insns of the current function and build reload_insn_chain,
    and record register life information.  */
-static void
+void
 build_insn_chain (first)
      rtx first;
 {

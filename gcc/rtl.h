@@ -1503,12 +1503,10 @@ extern void record_excess_regs		PARAMS ((rtx, rtx, rtx *));
 extern void reposition_prologue_and_epilogue_notes	PARAMS ((rtx));
 extern void thread_prologue_and_epilogue_insns		PARAMS ((rtx));
 extern int prologue_epilogue_contains			PARAMS ((rtx));
-extern void use_variable				PARAMS ((rtx));
 extern HOST_WIDE_INT get_frame_size			PARAMS ((void));
 extern void preserve_rtl_expr_result			PARAMS ((rtx));
 extern void mark_temp_addr_taken			PARAMS ((rtx));
 extern void update_temp_slot_address			PARAMS ((rtx, rtx));
-extern void use_variable_after				PARAMS ((rtx, rtx));
 extern void purge_addressof				PARAMS ((rtx));
 
 /* In reload.c */
@@ -1562,6 +1560,7 @@ extern void dump_global_regs		PARAMS ((FILE *));
 #ifdef HARD_CONST
 extern void retry_global_alloc		PARAMS ((int, HARD_REG_SET));
 #endif
+extern void build_insn_chain		PARAMS ((rtx));
 
 /* In regclass.c */
 extern int reg_classes_intersect_p	PARAMS ((enum reg_class, enum reg_class));
