@@ -1148,12 +1148,9 @@ extern void remember_end_note                   PROTO((tree));
 /* in toplev.c */
 extern void announce_function                   PROTO((tree));
 extern int  floor_log2_wide                     PROTO((unsigned HOST_WIDE_INT));
-extern void pedwarn                             PROTO((char *, ...));
 extern void rest_of_compilation                 PROTO((tree));
-extern void warning_with_decl                   PROTO((tree, char*, ...));
 
 /* in varasm.c */
-extern void make_decl_rtl                       PROTO((tree, char *, int));
 extern void make_function_rtl                   PROTO((tree));
 
 /* in ???? */
