@@ -1,3 +1,10 @@
+2004-12-14  Steve Ellcey  <sje@cup.hp.com>
+
+	* libgfortran/io/transfer.c (us_read): Use memcpy/memset
+	instead of assignment to fill unaligned buffer.
+	(us_write): Ditto.
+	(next_record_w): Ditto.
+
 2004-12-05  Steven G. Kargl  <kargls@comcast.net>
 
 	PR libfortran/18966
