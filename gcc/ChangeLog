@@ -1,3 +1,10 @@
+2004-10-14  Roger Sayle  <roger@eyesopen.com>
+
+	PR other/17361
+	* c-opts.c (c_common_init_options): Scan command line options for
+	"-lang-asm" and if found allow any of the C-family front-end options.
+	Likewise, scan all command line options for g77's -traditional-cpp.
+
 2004-10-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* doc/install.texi (*-*-solaris2*): Update with info about kernel
