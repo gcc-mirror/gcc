@@ -1622,6 +1622,9 @@ javax/naming/ldap/UnsolicitedNotification.java \
 javax/naming/ldap/UnsolicitedNotificationEvent.java \
 javax/naming/ldap/UnsolicitedNotificationListener.java \
 javax/naming/OperationNotSupportedException.java \
+javax/print/attribute/Attribute.java \
+javax/print/attribute/AttributeSet.java \
+javax/print/attribute/PrintRequestAttributeSet.java \
 javax/sql/ConnectionEvent.java \
 javax/sql/ConnectionEventListener.java \
 javax/sql/ConnectionPoolDataSource.java \
