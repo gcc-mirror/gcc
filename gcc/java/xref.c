@@ -1,6 +1,6 @@
 /* Write cross reference information extracted from Java(TM)
    source and bytecode files, in one of formats documented below.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GNU CC.
@@ -81,7 +81,7 @@ expand_xref (node)
 {
   /* Maintain these two cached. */
   static FILE *fp = NULL;
-  static void (*current_expand) PROTO ((FILE *, tree)) = NULL;
+  static void (*current_expand) PARAMS ((FILE *, tree)) = NULL;
 
   if ( !flag_emit_xref )
     return;

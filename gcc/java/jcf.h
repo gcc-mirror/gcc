@@ -1,6 +1,6 @@
 /* Utility macros to read Java(TM) .class files and byte codes.
 
-   Copyright (C) 1996, 97-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 97-99, 2000 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -38,11 +38,11 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #endif
 #endif /* !DEFUN */
 
-#ifndef PROTO
+#ifndef PARAMS
 #if defined (__STDC__)
-#define PROTO(paramlist)    paramlist
+#define PARAMS (paramlist)    paramlist
 #else
-#define PROTO(paramlist)    ()
+#define PARAMS (paramlist)    ()
 #endif
 #endif
 
@@ -68,7 +68,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #define JCF_SOURCE 3
 
 struct JCF;
-typedef int (*jcf_filbuf_t) PROTO ((struct JCF*, int needed));
+typedef int (*jcf_filbuf_t) PARAMS ((struct JCF*, int needed));
 
 typedef struct CPool {
   /* Available number of elements in the constants array, before it
@@ -221,10 +221,10 @@ typedef struct JCF {
 
 #define DEFAULT_CLASS_PATH "."
 
-extern const char *find_class PROTO ((const char *, int, JCF*, int));
-extern const char *find_classfile PROTO ((char *, JCF*, const char *));
-extern int jcf_filbuf_from_stdio PROTO ((JCF *jcf, int count));
-extern int jcf_unexpected_eof PROTO ((JCF*, int)) ATTRIBUTE_NORETURN;
+extern const char *find_class PARAMS ((const char *, int, JCF*, int));
+extern const char *find_classfile PARAMS ((char *, JCF*, const char *));
+extern int jcf_filbuf_from_stdio PARAMS ((JCF *jcf, int count));
+extern int jcf_unexpected_eof PARAMS ((JCF*, int)) ATTRIBUTE_NORETURN;
 
 /* Extract a character from a Java-style Utf8 string.
  * PTR points to the current character.
@@ -255,25 +255,25 @@ extern int quiet_flag;
 #endif
 
 /* Declarations for dependency code.  */
-extern void jcf_dependency_reset PROTO ((void));
-extern void jcf_dependency_set_target PROTO ((const char *));
-extern void jcf_dependency_add_target PROTO ((const char *));
-extern void jcf_dependency_set_dep_file PROTO ((const char *));
-extern void jcf_dependency_add_file PROTO ((const char *, int));
-extern void jcf_dependency_write PROTO ((void));
-extern void jcf_dependency_init PROTO ((int));
+extern void jcf_dependency_reset PARAMS ((void));
+extern void jcf_dependency_set_target PARAMS ((const char *));
+extern void jcf_dependency_add_target PARAMS ((const char *));
+extern void jcf_dependency_set_dep_file PARAMS ((const char *));
+extern void jcf_dependency_add_file PARAMS ((const char *, int));
+extern void jcf_dependency_write PARAMS ((void));
+extern void jcf_dependency_init PARAMS ((int));
 
 /* Declarations for path handling code.  */
-extern void jcf_path_init PROTO ((void));
-extern void jcf_path_classpath_arg PROTO ((const char *));
-extern void jcf_path_CLASSPATH_arg PROTO ((const char *));
-extern void jcf_path_include_arg PROTO ((const char *));
-extern void jcf_path_seal PROTO ((void));
-extern void *jcf_path_start PROTO ((void));
-extern void *jcf_path_next PROTO ((void *));
-extern char *jcf_path_name PROTO ((void *));
-extern int jcf_path_is_zipfile PROTO ((void *));
-extern int jcf_path_is_system PROTO ((void *));
-extern int jcf_path_max_len PROTO ((void));
+extern void jcf_path_init PARAMS ((void));
+extern void jcf_path_classpath_arg PARAMS ((const char *));
+extern void jcf_path_CLASSPATH_arg PARAMS ((const char *));
+extern void jcf_path_include_arg PARAMS ((const char *));
+extern void jcf_path_seal PARAMS ((void));
+extern void *jcf_path_start PARAMS ((void));
+extern void *jcf_path_next PARAMS ((void *));
+extern char *jcf_path_name PARAMS ((void *));
+extern int jcf_path_is_zipfile PARAMS ((void *));
+extern int jcf_path_is_system PARAMS ((void *));
+extern int jcf_path_max_len PARAMS ((void));
 
 #endif

@@ -1,5 +1,5 @@
 /* Language lexer for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GNU CC.
@@ -41,26 +41,26 @@ extern struct obstack *expression_obstack;
 #endif
 
 /* Function declaration  */
-static int java_lineterminator PROTO ((unicode_t));
-static char *java_sprint_unicode PROTO ((struct java_line *, int));
-static void java_unicode_2_utf8 PROTO ((unicode_t));
-static void java_lex_error PROTO ((const char *, int));
+static int java_lineterminator PARAMS ((unicode_t));
+static char *java_sprint_unicode PARAMS ((struct java_line *, int));
+static void java_unicode_2_utf8 PARAMS ((unicode_t));
+static void java_lex_error PARAMS ((const char *, int));
 #ifndef JC1_LITE
-static int java_is_eol PROTO ((FILE *, int));
-static tree build_wfl_node PROTO ((tree));
+static int java_is_eol PARAMS ((FILE *, int));
+static tree build_wfl_node PARAMS ((tree));
 #endif
-static void java_store_unicode PROTO ((struct java_line *, unicode_t, int));
-static unicode_t java_parse_escape_sequence PROTO ((void));
-static int java_letter_or_digit_p PROTO ((unicode_t));
-static int java_parse_doc_section PROTO ((unicode_t));
-static void java_parse_end_comment PROTO ((unicode_t));
-static unicode_t java_get_unicode PROTO ((void));
-static unicode_t java_read_unicode PROTO ((int, int *));
-static void java_store_unicode PROTO ((struct java_line *, unicode_t, int));
-static unicode_t java_read_char PROTO ((void));
-static void java_allocate_new_line PROTO ((void));
-static void java_unget_unicode PROTO ((void));
-static unicode_t java_sneak_unicode PROTO ((void));
+static void java_store_unicode PARAMS ((struct java_line *, unicode_t, int));
+static unicode_t java_parse_escape_sequence PARAMS ((void));
+static int java_letter_or_digit_p PARAMS ((unicode_t));
+static int java_parse_doc_section PARAMS ((unicode_t));
+static void java_parse_end_comment PARAMS ((unicode_t));
+static unicode_t java_get_unicode PARAMS ((void));
+static unicode_t java_read_unicode PARAMS ((int, int *));
+static void java_store_unicode PARAMS ((struct java_line *, unicode_t, int));
+static unicode_t java_read_char PARAMS ((void));
+static void java_allocate_new_line PARAMS ((void));
+static void java_unget_unicode PARAMS ((void));
+static unicode_t java_sneak_unicode PARAMS ((void));
 
 void
 java_init_lex ()

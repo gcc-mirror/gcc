@@ -2,7 +2,7 @@
    It is not stand-alone:  It depends on tons of macros, and the
    intent is you #include this file after you've defined the macros.
 
-   Copyright (C) 1996  Free Software Foundation, Inc.
+   Copyright (C) 1996, 97-99, 2000  Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,14 +26,14 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "jcf.h"
 #include "zipfile.h"
 
-static int get_attribute PROTO((JCF *));
-static int jcf_parse_preamble PROTO((JCF *));
-static int jcf_parse_constant_pool PROTO((JCF *));
-static void jcf_parse_class PROTO((JCF *));
-static int jcf_parse_fields PROTO((JCF *));
-static int jcf_parse_one_method PROTO((JCF *));
-static int jcf_parse_methods PROTO((JCF *));
-static int jcf_parse_final_attributes PROTO((JCF *));
+static int get_attribute PARAMS ((JCF *));
+static int jcf_parse_preamble PARAMS ((JCF *));
+static int jcf_parse_constant_pool PARAMS ((JCF *));
+static void jcf_parse_class PARAMS ((JCF *));
+static int jcf_parse_fields PARAMS ((JCF *));
+static int jcf_parse_one_method PARAMS ((JCF *));
+static int jcf_parse_methods PARAMS ((JCF *));
+static int jcf_parse_final_attributes PARAMS ((JCF *));
 
 static int
 DEFUN(get_attribute, (jcf),

@@ -1,7 +1,7 @@
 /* Program to dump out a Java(TM) .class file.
    Functionally similar to Sun's javap.
 
-   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 97-99, 2000 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -78,18 +78,18 @@ int class_access_flags = 0;
 /* Print in format similar to javap.  VERY IMCOMPLETE. */
 int flag_javap_compatible = 0;
 
-static void print_access_flags PROTO ((FILE *, uint16, char));
-static void print_constant_terse PROTO ((FILE*, JCF*, int, int));
-static void print_constant PROTO ((FILE *, JCF *, int, int));
-static void print_constant_ref PROTO ((FILE *, JCF *, int));
-static void disassemble_method PROTO ((JCF*, const unsigned char *, int));
-static void print_name PROTO ((FILE*, JCF*, int));
-static void print_signature PROTO ((FILE*, JCF*, int, int));
-static int utf8_equal_string PROTO ((struct JCF*, int, const char *));
-static int usage PROTO ((void)) ATTRIBUTE_NORETURN;
-static void process_class PROTO ((struct JCF *));
-static void print_constant_pool PROTO ((struct JCF *));
-static void print_exception_table PROTO ((struct JCF *,
+static void print_access_flags PARAMS ((FILE *, uint16, char));
+static void print_constant_terse PARAMS ((FILE*, JCF*, int, int));
+static void print_constant PARAMS ((FILE *, JCF *, int, int));
+static void print_constant_ref PARAMS ((FILE *, JCF *, int));
+static void disassemble_method PARAMS ((JCF*, const unsigned char *, int));
+static void print_name PARAMS ((FILE*, JCF*, int));
+static void print_signature PARAMS ((FILE*, JCF*, int, int));
+static int utf8_equal_string PARAMS ((struct JCF*, int, const char *));
+static int usage PARAMS ((void)) ATTRIBUTE_NORETURN;
+static void process_class PARAMS ((struct JCF *));
+static void print_constant_pool PARAMS ((struct JCF *));
+static void print_exception_table PARAMS ((struct JCF *,
 					  const unsigned char *entries, int));
 
 #define PRINT_SIGNATURE_RESULT_ONLY 1

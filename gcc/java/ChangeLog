@@ -1,3 +1,39 @@
+Fri Jan 21 15:37:29 2000  Kaveh R. Ghazi  <ghazi@versicolor.rutgers.edu>
+
+	* buffer.h: PROTO -> PARAMS.
+	* check-init.c: Likewise.
+	* class.c: Likewise.
+	* constants.c: Likewise.
+	* convert.h: Likewise.
+	* decl.c: Likewise.
+	* except.c: Likewise.
+	* expr.c: Likewise.
+	* gjavah.c: Likewise.
+	* java-except.h: Likewise.
+	* java-tree.h: Likewise.
+	* jcf-depend.c: Likewise.
+	* jcf-dump.c: Likewise.
+	* jcf-parse.c: Likewise.
+	* jcf-path.c: Likewise.
+	* jcf-reader.c: Likewise.
+	* jcf-write.c: Likewise.
+	* jcf.h: Likewise.
+	* jv-scan.c: Likewise.
+	* jvgenmain.c: Likewise.
+	* jvspec.c: Likewise.
+	* lang.c: Likewise.
+	* lex.c: Likewise.
+	* lex.h: Likewise.
+	* parse-scan.y: Likewise.
+	* parse.h: Likewise.
+	* parse.y: Likewise.
+	* typeck.c: Likewise.
+	* verify.c: Likewise.
+	* xref.c: Likewise.
+	* xref.h: Likewise.
+	* zextract.c: Likewise.
+	* zipfile.h: Likewise.
+	
 Mon Jan 17 11:58:17 2000  Joerg Brunsmann  <joerg.brunsmann@fernuni-hagen.de>
 
 	* parse.y (format_parameter:): Use final: rule instead of modifiers:.

@@ -107,35 +107,35 @@ struct method_name
 /* List of method names we've seen.  */
 static struct method_name *method_name_list;
 
-static void print_field_info PROTO ((FILE*, JCF*, int, int, JCF_u2));
-static void print_mangled_classname PROTO ((FILE*, JCF*, const char*, int));
-static int  print_cxx_classname PROTO ((FILE*, const char*, JCF*, int));
-static void print_method_info PROTO ((FILE*, JCF*, int, int, JCF_u2));
-static void print_c_decl PROTO ((FILE*, JCF*, int, int, int, const char *));
-static void print_stub PROTO ((FILE*, JCF*, int, int, int, const char *));
-static void print_full_cxx_name PROTO ((FILE*, JCF*, int, int, int, const char *));
-static void decompile_method PROTO ((FILE*, JCF*, int));
-static void add_class_decl PROTO ((FILE*, JCF*, JCF_u2));
+static void print_field_info PARAMS ((FILE*, JCF*, int, int, JCF_u2));
+static void print_mangled_classname PARAMS ((FILE*, JCF*, const char*, int));
+static int  print_cxx_classname PARAMS ((FILE*, const char*, JCF*, int));
+static void print_method_info PARAMS ((FILE*, JCF*, int, int, JCF_u2));
+static void print_c_decl PARAMS ((FILE*, JCF*, int, int, int, const char *));
+static void print_stub PARAMS ((FILE*, JCF*, int, int, int, const char *));
+static void print_full_cxx_name PARAMS ((FILE*, JCF*, int, int, int, const char *));
+static void decompile_method PARAMS ((FILE*, JCF*, int));
+static void add_class_decl PARAMS ((FILE*, JCF*, JCF_u2));
 
-static int java_float_finite PROTO ((jfloat));
-static int java_double_finite PROTO ((jdouble));
-static void print_name PROTO ((FILE *, JCF *, int));
-static void print_base_classname PROTO ((FILE *, JCF *, int));
-static int utf8_cmp PROTO ((const unsigned char *, int, const char *));
-static const char *cxx_keyword_subst PROTO ((const unsigned char *, int));
-static void generate_access PROTO ((FILE *, JCF_u2));
-static int name_is_method_p PROTO ((const unsigned char *, int));
-static char *get_field_name PROTO ((JCF *, int, JCF_u2));
-static void print_field_name PROTO ((FILE *, JCF *, int, JCF_u2));
-static const unsigned char *super_class_name PROTO ((JCF *, int *));
-static void print_include PROTO ((FILE *, const unsigned char *, int));
+static int java_float_finite PARAMS ((jfloat));
+static int java_double_finite PARAMS ((jdouble));
+static void print_name PARAMS ((FILE *, JCF *, int));
+static void print_base_classname PARAMS ((FILE *, JCF *, int));
+static int utf8_cmp PARAMS ((const unsigned char *, int, const char *));
+static const char *cxx_keyword_subst PARAMS ((const unsigned char *, int));
+static void generate_access PARAMS ((FILE *, JCF_u2));
+static int name_is_method_p PARAMS ((const unsigned char *, int));
+static char *get_field_name PARAMS ((JCF *, int, JCF_u2));
+static void print_field_name PARAMS ((FILE *, JCF *, int, JCF_u2));
+static const unsigned char *super_class_name PARAMS ((JCF *, int *));
+static void print_include PARAMS ((FILE *, const unsigned char *, int));
 static const unsigned char *decode_signature_piece
-  PROTO ((FILE *, const unsigned char *, const unsigned char *, int *));
-static void print_class_decls PROTO ((FILE *, JCF *, int));
-static void usage PROTO ((void)) ATTRIBUTE_NORETURN;
-static void help PROTO ((void)) ATTRIBUTE_NORETURN;
-static void java_no_argument PROTO ((const char *)) ATTRIBUTE_NORETURN;
-static void version PROTO ((void)) ATTRIBUTE_NORETURN;
+  PARAMS ((FILE *, const unsigned char *, const unsigned char *, int *));
+static void print_class_decls PARAMS ((FILE *, JCF *, int));
+static void usage PARAMS ((void)) ATTRIBUTE_NORETURN;
+static void help PARAMS ((void)) ATTRIBUTE_NORETURN;
+static void java_no_argument PARAMS ((const char *)) ATTRIBUTE_NORETURN;
+static void version PARAMS ((void)) ATTRIBUTE_NORETURN;
 
 JCF_u2 current_field_name;
 JCF_u2 current_field_value;
@@ -1100,9 +1100,9 @@ struct namelet
   struct namelet *next;
 };
 
-static void add_namelet PROTO ((const unsigned char *,
+static void add_namelet PARAMS ((const unsigned char *,
 				const unsigned char *, struct namelet *));
-static void print_namelet PROTO ((FILE *, struct namelet *, int));
+static void print_namelet PARAMS ((FILE *, struct namelet *, int));
 
 /* The special root namelet.  */
 static struct namelet root =

@@ -1,6 +1,6 @@
  /* Specific flags and argument handling of the front-end of the 
    GNU compiler for the Java(TM) language.
-   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 97-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -39,7 +39,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 /* True if this arg is a .class input file name. */
 #define CLASS_FILE_ARG	(1<<4)
 
-static char *find_spec_file	PROTO ((const char *));
+static char *find_spec_file	PARAMS ((const char *));
 
 static const char *main_class_name = NULL;
 int lang_specific_extra_outfiles = 0;

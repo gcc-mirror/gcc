@@ -1,6 +1,6 @@
 /* Definitions for exception handling for use by the GNU compiler
    for the Java(TM) language compiler.
-   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997, 98-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -54,18 +54,18 @@ extern struct eh_range whole_range;
 
 #define NULL_EH_RANGE (&whole_range)
 
-extern struct eh_range * find_handler PROTO ((int));
+extern struct eh_range * find_handler PARAMS ((int));
 
-extern void method_init_exceptions PROTO ((void));
+extern void method_init_exceptions PARAMS ((void));
 
-extern void emit_handlers PROTO ((void));
+extern void emit_handlers PARAMS ((void));
 
-extern void maybe_start_try PROTO ((int));
+extern void maybe_start_try PARAMS ((int));
 
-extern void maybe_end_try PROTO ((int));
+extern void maybe_end_try PARAMS ((int));
 
-extern void add_handler PROTO ((int, int, tree, tree));
+extern void add_handler PARAMS ((int, int, tree, tree));
 
-extern void handle_nested_ranges PROTO ((void));
+extern void handle_nested_ranges PARAMS ((void));
 
-extern void expand_resume_after_catch PROTO ((void));
+extern void expand_resume_after_catch PARAMS ((void));

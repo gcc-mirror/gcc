@@ -1,5 +1,5 @@
 /* Main for jv-scan
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GNU CC.
@@ -24,9 +24,9 @@ Boston, MA 02111-1307, USA.  */
 
 #include "obstack.h"		/* We use obstacks in lex.c */
 
-void fatal VPROTO((const char *s, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
-void warning VPROTO((const char *s, ...)) ATTRIBUTE_PRINTF_1;
-void gcc_obstack_init PROTO ((struct obstack *obstack));
+void fatal PARAMS ((const char *s, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+void warning PARAMS ((const char *s, ...)) ATTRIBUTE_PRINTF_1;
+void gcc_obstack_init PARAMS ((struct obstack *obstack));
 
 #define JC1_LITE
 #include "jcf.h"
@@ -140,7 +140,7 @@ DEFUN (main, (argc, argv),
    functions */
 
 void
-fatal VPROTO((const char *s, ...))
+fatal VPARAMS ((const char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *s;
@@ -161,7 +161,7 @@ fatal VPROTO((const char *s, ...))
 }
 
 void
-warning VPROTO((const char *s, ...))
+warning VPARAMS ((const char *s, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *s;

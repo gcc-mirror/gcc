@@ -1,6 +1,6 @@
 /* Definitions for using a zipped' archive.
 
-   Copyright (C) 1996, 97-98, 1999  Free Software Foundation, Inc.
+   Copyright (C) 1996, 97-99, 2000  Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -57,9 +57,9 @@ extern struct ZipFileCache *SeenZipFiles;
    ((ZipDirectory*)((char*)(ZIPD)+(ZIPD)->direntry_size))
 #define ZIPMAGIC 0x504b0304	
 
-extern ZipFile * opendir_in_zip PROTO ((const char *, int));
-extern int read_zip_archive PROTO ((ZipFile *));
+extern ZipFile * opendir_in_zip PARAMS ((const char *, int));
+extern int read_zip_archive PARAMS ((ZipFile *));
 #ifdef JCF_ZIP
-extern int open_in_zip PROTO ((struct JCF *, const char *,
+extern int open_in_zip PARAMS ((struct JCF *, const char *,
 			       const char *, int));
 #endif

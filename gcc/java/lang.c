@@ -1,5 +1,5 @@
 /* Java(TM) language-specific utility routines.
-   Copyright (C) 1996, 97-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 97-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -36,10 +36,10 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "flags.h"
 #include "xref.h"
 
-static void put_decl_string PROTO ((const char *, int));
-static void put_decl_node PROTO ((tree));
-static void java_dummy_print PROTO ((const char *));
-static void lang_print_error PROTO ((const char *));
+static void put_decl_string PARAMS ((const char *, int));
+static void put_decl_node PARAMS ((tree));
+static void java_dummy_print PARAMS ((const char *));
+static void lang_print_error PARAMS ((const char *));
 
 #ifndef OBJECT_SUFFIX
 # define OBJECT_SUFFIX ".o"

@@ -1,5 +1,5 @@
 /* Program to generate "main" a Java(TM) class containing a main method.
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -38,11 +38,11 @@ const char class_mangling_prefix[] = "_CL_";
 
 struct obstack name_obstack;
 
-extern void error			PVPROTO ((const char *, ...))
+extern void error			PARAMS ((const char *, ...))
   ATTRIBUTE_PRINTF_1;
 
 void
-error VPROTO((const char *msgid, ...))
+error VPARAMS ((const char *msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
   const char *msgid;
@@ -75,8 +75,8 @@ gcc_obstack_init (obstack)
 #define OBSTACK_CHUNK_FREE free
 #endif
   _obstack_begin (obstack, OBSTACK_CHUNK_SIZE, 0,
-		  (void *(*) PROTO((long))) OBSTACK_CHUNK_ALLOC,
-		  (void (*) PROTO((void *))) OBSTACK_CHUNK_FREE);
+		  (void *(*) PARAMS ((long))) OBSTACK_CHUNK_ALLOC,
+		  (void (*) PARAMS ((void *))) OBSTACK_CHUNK_FREE);
 }
 
 static void usage (const char *) ATTRIBUTE_NORETURN;

@@ -1,6 +1,6 @@
 /* Code to test for "definitive assignment".
 
-   Copyright (C) 1999  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000  Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -97,12 +97,12 @@ static tree wfl;
 
 #define WORD_SIZE  ((unsigned int)(sizeof(word) * 8))
 
-static void check_bool_init PROTO ((tree, words, words, words));
-static void check_init PROTO ((tree, words));
-static void check_cond_init PROTO ((tree, tree, tree, words, words, words));
-static void check_bool2_init PROTO ((enum tree_code, tree, tree, words, words, words));
+static void check_bool_init PARAMS ((tree, words, words, words));
+static void check_init PARAMS ((tree, words));
+static void check_cond_init PARAMS ((tree, tree, tree, words, words, words));
+static void check_bool2_init PARAMS ((enum tree_code, tree, tree, words, words, words));
 struct alternatives;
-static void done_alternative PROTO ((words, struct alternatives *));
+static void done_alternative PARAMS ((words, struct alternatives *));
 
 #if 0
 #define ALLOC_WORDS(NUM) ((word*) xmalloc ((NUM) * sizeof (word)))

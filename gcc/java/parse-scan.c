@@ -170,8 +170,8 @@ struct method_declarator {
 }
 
 /* Two actions for this grammar */
-static void report_class_declaration PROTO ((const char *));
-static void report_main_declaration PROTO ((struct method_declarator *));
+static void report_class_declaration PARAMS ((const char *));
+static void report_main_declaration PARAMS ((struct method_declarator *));
 
 #include "lex.h"
 #include "parse.h"

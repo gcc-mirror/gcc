@@ -1,5 +1,5 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1996, 97-98, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 97-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -36,18 +36,18 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "output.h"
 #include "parse.h"
 
-static tree mangle_class_field PROTO ((tree class));
-static tree make_method_value PROTO ((tree));
-static tree build_java_method_type PROTO ((tree, tree, int));
-static int32 hashUtf8String PROTO ((const char *, int));
-static tree make_field_value PROTO ((tree));
-static tree get_dispatch_vector PROTO ((tree));
-static tree get_dispatch_table PROTO ((tree, tree));
-static void append_gpp_mangled_type PROTO ((struct obstack *, tree));
-static tree mangle_static_field PROTO ((tree));
-static void add_interface_do PROTO ((tree, tree, int));
-static tree maybe_layout_super_class PROTO ((tree, tree));
-static int assume_compiled PROTO ((const char *));
+static tree mangle_class_field PARAMS ((tree class));
+static tree make_method_value PARAMS ((tree));
+static tree build_java_method_type PARAMS ((tree, tree, int));
+static int32 hashUtf8String PARAMS ((const char *, int));
+static tree make_field_value PARAMS ((tree));
+static tree get_dispatch_vector PARAMS ((tree));
+static tree get_dispatch_table PARAMS ((tree, tree));
+static void append_gpp_mangled_type PARAMS ((struct obstack *, tree));
+static tree mangle_static_field PARAMS ((tree));
+static void add_interface_do PARAMS ((tree, tree, int));
+static tree maybe_layout_super_class PARAMS ((tree, tree));
+static int assume_compiled PARAMS ((const char *));
 
 static rtx registerClass_libfunc;
 
@@ -77,7 +77,7 @@ typedef struct assume_compiled_node_struct
 } assume_compiled_node;
 
 static assume_compiled_node *find_assume_compiled_node
-			PROTO ((assume_compiled_node *, const char *));
+			PARAMS ((assume_compiled_node *, const char *));
 
 /* This is the root of the include/exclude tree.  */
 
@@ -1892,7 +1892,7 @@ register_class ()
 void
 emit_register_classes ()
 {
-  extern tree get_file_function_name PROTO((int));
+  extern tree get_file_function_name PARAMS ((int));
   tree init_name = get_file_function_name ('I');
   tree init_type = build_function_type (void_type_node, end_params_node);
   tree init_decl;

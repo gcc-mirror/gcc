@@ -1,5 +1,5 @@
 /* A "buffer" utility type.
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -43,4 +43,4 @@ struct buffer
 
 #define BUFFER_RESET(BUFP) ((BUFP)->ptr = (BUFP)->data)
 
-extern void buffer_grow PROTO ((struct buffer*, int));
+extern void buffer_grow PARAMS ((struct buffer*, int));

@@ -1,5 +1,5 @@
 /* Language lexer definitions for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GNU CC.
@@ -132,7 +132,7 @@ typedef struct _java_lc {
 
 #else
 
-extern void set_float_handler PROTO((jmp_buf));
+extern void set_float_handler PARAMS ((jmp_buf));
 #define SET_FLOAT_HANDLER(H) set_float_handler ((H))
 #define DCONST0 dconst0
 #define GET_IDENTIFIER(S) get_identifier ((S))

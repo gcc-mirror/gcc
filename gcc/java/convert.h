@@ -1,6 +1,6 @@
 
 /* Definition of conversion functions.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1998, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -21,8 +21,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* Written by Jeffrey Hsu <hsu@cygnus.com> */
 
-extern tree convert_to_boolean PROTO ((tree, tree));
-extern tree convert_to_char    PROTO ((tree, tree));
-extern tree convert_to_integer PROTO ((tree type, tree expr));
-extern tree convert_to_real PROTO ((tree type, tree expr));
-extern tree convert_to_pointer PROTO ((tree type, tree expr));
+extern tree convert_to_boolean PARAMS ((tree, tree));
+extern tree convert_to_char    PARAMS ((tree, tree));
+extern tree convert_to_integer PARAMS ((tree type, tree expr));
+extern tree convert_to_real PARAMS ((tree type, tree expr));
+extern tree convert_to_pointer PARAMS ((tree type, tree expr));

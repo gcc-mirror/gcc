@@ -1,5 +1,5 @@
 /* Parser for Java(TM) .class files.
-   Copyright (C) 1996, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -76,16 +76,16 @@ static tree current_method = NULL_TREE;
 static struct JCF main_jcf[1];
 
 /* Declarations of some functions used here.  */
-static tree give_name_to_class PROTO ((JCF *jcf, int index));
-static void parse_zip_file_entries PROTO ((void));
-static void process_zip_dir PROTO ((void));
-static void parse_source_file PROTO ((tree));
-static void jcf_parse_source PROTO ((void));
-static int jcf_figure_file_type PROTO ((JCF *));
-static int find_in_current_zip PROTO ((const char *, struct JCF **));
-static void parse_class_file PROTO ((void));
-static void set_source_filename PROTO ((JCF *, int));
-static int predefined_filename_p PROTO ((tree));
+static tree give_name_to_class PARAMS ((JCF *jcf, int index));
+static void parse_zip_file_entries PARAMS ((void));
+static void process_zip_dir PARAMS ((void));
+static void parse_source_file PARAMS ((tree));
+static void jcf_parse_source PARAMS ((void));
+static int jcf_figure_file_type PARAMS ((JCF *));
+static int find_in_current_zip PARAMS ((const char *, struct JCF **));
+static void parse_class_file PARAMS ((void));
+static void set_source_filename PARAMS ((JCF *, int));
+static int predefined_filename_p PARAMS ((tree));
 
 /* Handle "SourceFile" attribute. */
 

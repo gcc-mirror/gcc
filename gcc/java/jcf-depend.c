@@ -1,6 +1,6 @@
 /* Functions for handling dependency tracking when reading .class files.
 
-   Copyright (C) 1998  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000  Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -39,10 +39,10 @@ struct entry
   struct entry *next;
 };
 
-static void free_entry PROTO ((struct entry **));
-static void add_entry PROTO ((struct entry **, const char *));
-static const char *munge PROTO ((const char *));
-static int print_ents PROTO ((struct entry *, int));
+static void free_entry PARAMS ((struct entry **));
+static void add_entry PARAMS ((struct entry **, const char *));
+static const char *munge PARAMS ((const char *));
+static int print_ents PARAMS ((struct entry *, int));
 
 /* List of files.  */
 static struct entry *dependencies = NULL;

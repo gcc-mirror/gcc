@@ -1,5 +1,5 @@
 /* Handle the constant pool of the Java(TM) Virtual Machine.
-   Copyright (C) 1997 Free Software Foundation, Inc.
+   Copyright (C) 1997, 98-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -30,11 +30,11 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 
 extern struct obstack permanent_obstack;
 
-static void set_constant_entry PROTO ((CPool *, int, int, jword));
-static int find_class_or_string_constant PROTO ((CPool *, int, tree));
-static int find_name_and_type_constant PROTO ((CPool *, tree, tree));
-static tree get_tag_node PROTO ((int));
-static tree build_constant_data_ref PROTO ((void));
+static void set_constant_entry PARAMS ((CPool *, int, int, jword));
+static int find_class_or_string_constant PARAMS ((CPool *, int, tree));
+static int find_name_and_type_constant PARAMS ((CPool *, tree, tree));
+static tree get_tag_node PARAMS ((int));
+static tree build_constant_data_ref PARAMS ((void));
 
 /* Set the INDEX'th constant in CPOOL to have the given TAG and VALUE. */
 

@@ -1,5 +1,5 @@
 /* Write out a Java(TM) class file.
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -271,70 +271,70 @@ struct jcf_partial
   struct jcf_switch_state *sw_state;
 };
 
-static void generate_bytecode_insns PROTO ((tree, int, struct jcf_partial *));
-static struct chunk * alloc_chunk PROTO ((struct chunk *, unsigned char *,
+static void generate_bytecode_insns PARAMS ((tree, int, struct jcf_partial *));
+static struct chunk * alloc_chunk PARAMS ((struct chunk *, unsigned char *,
 					  int, struct obstack *));
-static unsigned char * append_chunk PROTO ((unsigned char *, int,
+static unsigned char * append_chunk PARAMS ((unsigned char *, int,
 					    struct jcf_partial *));
-static void append_chunk_copy PROTO ((unsigned char *, int,
+static void append_chunk_copy PARAMS ((unsigned char *, int,
 				      struct jcf_partial *));
-static struct jcf_block * gen_jcf_label PROTO ((struct jcf_partial *));
-static void finish_jcf_block PROTO ((struct jcf_partial *));
-static void define_jcf_label PROTO ((struct jcf_block *,
+static struct jcf_block * gen_jcf_label PARAMS ((struct jcf_partial *));
+static void finish_jcf_block PARAMS ((struct jcf_partial *));
+static void define_jcf_label PARAMS ((struct jcf_block *,
 				     struct jcf_partial *));
-static struct jcf_block * get_jcf_label_here PROTO ((struct jcf_partial *));
-static void put_linenumber PROTO ((int, struct jcf_partial *));
-static void localvar_alloc PROTO ((tree, struct jcf_partial *));
-static void localvar_free PROTO ((tree, struct jcf_partial *));
-static int get_access_flags PROTO ((tree));
-static void write_chunks PROTO ((FILE *, struct chunk *));
-static int adjust_typed_op PROTO ((tree, int));
-static void generate_bytecode_conditional PROTO ((tree, struct jcf_block *,
+static struct jcf_block * get_jcf_label_here PARAMS ((struct jcf_partial *));
+static void put_linenumber PARAMS ((int, struct jcf_partial *));
+static void localvar_alloc PARAMS ((tree, struct jcf_partial *));
+static void localvar_free PARAMS ((tree, struct jcf_partial *));
+static int get_access_flags PARAMS ((tree));
+static void write_chunks PARAMS ((FILE *, struct chunk *));
+static int adjust_typed_op PARAMS ((tree, int));
+static void generate_bytecode_conditional PARAMS ((tree, struct jcf_block *,
 						  struct jcf_block *, int,
 						  struct jcf_partial *));
-static void generate_bytecode_return PROTO ((tree, struct jcf_partial *));
-static void perform_relocations PROTO ((struct jcf_partial *));
-static void init_jcf_state PROTO ((struct jcf_partial *, struct obstack *));
-static void init_jcf_method PROTO ((struct jcf_partial *, tree));
-static void release_jcf_state PROTO ((struct jcf_partial *));
-static struct chunk * generate_classfile PROTO ((tree, struct jcf_partial *));
-static struct jcf_handler *alloc_handler PROTO ((struct jcf_block *,
+static void generate_bytecode_return PARAMS ((tree, struct jcf_partial *));
+static void perform_relocations PARAMS ((struct jcf_partial *));
+static void init_jcf_state PARAMS ((struct jcf_partial *, struct obstack *));
+static void init_jcf_method PARAMS ((struct jcf_partial *, tree));
+static void release_jcf_state PARAMS ((struct jcf_partial *));
+static struct chunk * generate_classfile PARAMS ((tree, struct jcf_partial *));
+static struct jcf_handler *alloc_handler PARAMS ((struct jcf_block *,
 						 struct jcf_block *,
 						 struct jcf_partial *));
-static void emit_iinc PROTO ((tree, HOST_WIDE_INT, struct jcf_partial *));
-static void emit_reloc PROTO ((HOST_WIDE_INT, int, struct jcf_block *, 
+static void emit_iinc PARAMS ((tree, HOST_WIDE_INT, struct jcf_partial *));
+static void emit_reloc PARAMS ((HOST_WIDE_INT, int, struct jcf_block *, 
 			       struct jcf_partial *));
-static void push_constant1 PROTO ((HOST_WIDE_INT, struct jcf_partial *));
-static void push_constant2 PROTO ((HOST_WIDE_INT, struct jcf_partial *));
-static void push_int_const PROTO ((HOST_WIDE_INT, struct jcf_partial *));
-static int find_constant_wide PROTO ((HOST_WIDE_INT, HOST_WIDE_INT,
+static void push_constant1 PARAMS ((HOST_WIDE_INT, struct jcf_partial *));
+static void push_constant2 PARAMS ((HOST_WIDE_INT, struct jcf_partial *));
+static void push_int_const PARAMS ((HOST_WIDE_INT, struct jcf_partial *));
+static int find_constant_wide PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT,
 				      struct jcf_partial *));
-static void push_long_const PROTO ((HOST_WIDE_INT, HOST_WIDE_INT, 
+static void push_long_const PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT, 
 				    struct jcf_partial *));
-static int find_constant_index PROTO ((tree, struct jcf_partial *));
-static void push_long_const PROTO ((HOST_WIDE_INT, HOST_WIDE_INT,
+static int find_constant_index PARAMS ((tree, struct jcf_partial *));
+static void push_long_const PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT,
 				    struct jcf_partial *));
-static void field_op PROTO ((tree, int, struct jcf_partial *));
-static void maybe_wide PROTO ((int, int, struct jcf_partial *));
-static void emit_dup PROTO ((int, int, struct jcf_partial *));
-static void emit_pop PROTO ((int, struct jcf_partial *));
-static void emit_load_or_store PROTO ((tree, int, struct jcf_partial *));
-static void emit_load PROTO ((tree, struct jcf_partial *));
-static void emit_store PROTO ((tree, struct jcf_partial *));
-static void emit_unop PROTO ((enum java_opcode, tree, struct jcf_partial *));
-static void emit_binop PROTO ((enum java_opcode, tree, struct jcf_partial *));
-static void emit_reloc PROTO ((HOST_WIDE_INT, int, struct jcf_block *,
+static void field_op PARAMS ((tree, int, struct jcf_partial *));
+static void maybe_wide PARAMS ((int, int, struct jcf_partial *));
+static void emit_dup PARAMS ((int, int, struct jcf_partial *));
+static void emit_pop PARAMS ((int, struct jcf_partial *));
+static void emit_load_or_store PARAMS ((tree, int, struct jcf_partial *));
+static void emit_load PARAMS ((tree, struct jcf_partial *));
+static void emit_store PARAMS ((tree, struct jcf_partial *));
+static void emit_unop PARAMS ((enum java_opcode, tree, struct jcf_partial *));
+static void emit_binop PARAMS ((enum java_opcode, tree, struct jcf_partial *));
+static void emit_reloc PARAMS ((HOST_WIDE_INT, int, struct jcf_block *,
 			       struct jcf_partial *));
-static void emit_switch_reloc PROTO ((struct jcf_block *,
+static void emit_switch_reloc PARAMS ((struct jcf_block *,
 				      struct jcf_partial *));
-static void emit_case_reloc PROTO ((struct jcf_relocation *,
+static void emit_case_reloc PARAMS ((struct jcf_relocation *,
 				    struct jcf_partial *));
-static void emit_if PROTO ((struct jcf_block *, int, int,
+static void emit_if PARAMS ((struct jcf_block *, int, int,
 			    struct jcf_partial *));
-static void emit_goto PROTO ((struct jcf_block *, struct jcf_partial *));
-static void emit_jsr PROTO ((struct jcf_block *, struct jcf_partial *));
-static void call_cleanups PROTO ((struct jcf_block *, struct jcf_partial *));
-static char *make_class_file_name PROTO ((tree));
+static void emit_goto PARAMS ((struct jcf_block *, struct jcf_partial *));
+static void emit_jsr PARAMS ((struct jcf_block *, struct jcf_partial *));
+static void call_cleanups PARAMS ((struct jcf_block *, struct jcf_partial *));
+static char *make_class_file_name PARAMS ((tree));
 
 /* Utility macros for appending (big-endian) data to a buffer.
    We assume a local variable 'ptr' points into where we want to
