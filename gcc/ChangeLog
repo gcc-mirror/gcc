@@ -1,5 +1,10 @@
 2003-09-25  Ziemowit Laski  <zlaski@apple.com>
 
+	* config/darwin-protos.h (objc_image_info_section):
+	New prototype.
+
+2003-09-25  Ziemowit Laski  <zlaski@apple.com>
+
 	* Makefile.in (stub-objc.o): Depend on $(GGC_H).
 
 2003-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
