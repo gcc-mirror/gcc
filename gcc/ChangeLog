@@ -1,3 +1,8 @@
+2001-01-14  Ralf Baechle <ralf@gnu.org>
+
+        * config/mips/linux.h (SUBTARGET_CPP_SPEC): Default ABI is 32; change
+        SUBTARGET_CPP_SPEC apropriatly.
+
 2001-01-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* varasm.c (make_decl_rtl): Fix typo in last change.
@@ -54,7 +59,7 @@ Sun Jan 14 22:31:30 2001  J"orn Rennecke <amylaar@redhat.com>
 
 2001-01-14  Richard Earnshaw  <rearnsha@arm.com>
 
-	* config/arm/semi.h (ASM_SPEC): Pass -k to the assembler when 
+	* config/arm/semi.h (ASM_SPEC): Pass -k to the assembler when
 	compiling PIC.
 
 2001-01-14  Kazu Hirata  <kazu@hxi.com>

@@ -1,5 +1,5 @@
 /* Definitions for MIPS running Linux-based GNU systems with ELF format.
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -99,7 +99,7 @@ Boston, MA 02111-1307, USA.  */
 %{mabi=32: -D_MIPS_SIM=_MIPS_SIM_ABI32}	\
 %{mabi=n32: -D_ABIN32=2 -D_MIPS_SIM=_ABIN32} \
 %{mabi=64: -D_ABI64=3 -D_MIPS_SIM=_ABI64} \
-%{!mabi*: -D_ABIN32=2 -D_MIPS_SIM=_ABIN32} \
+%{!mabi*: -D_MIPS_SIM=_MIPS_SIM_ABI32}	\
 %{!mint64: -D_MIPS_SZINT=32}%{mint64: -D_MIPS_SZINT=64} \
 %{mabi=32: -D_MIPS_SZLONG=32} \
 %{mabi=n32: -D_MIPS_SZLONG=32} \
