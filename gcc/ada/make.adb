@@ -6778,14 +6778,19 @@ package body Make is
          elsif Argv (2) = 'L' then
             Add_Switch (Argv, Linker, And_Save => And_Save);
 
-         --  For -gxxxxx,-pg,-mxxx: give the switch to both the compiler and
-         --  the linker (except for -gnatxxx which is only for the compiler)
+         --  For -gxxxxx, -pg, -mxxx, -fxxx: give the switch to both the
+         --  compiler and the linker (except for -gnatxxx which is only for
+         --  the compiler). Some of the -mxxx (for example -m64) and -fxxx
+         --  (for example -ftest-coverage for gcov) need to be used when
+         --  compiling the binder generated files, and using all these gcc
+         --  switches for the binder generated files should not be a problem.
 
          elsif
            (Argv (2) = 'g' and then (Argv'Last < 5
                                        or else Argv (2 .. 5) /= "gnat"))
              or else Argv (2 .. Argv'Last) = "pg"
              or else (Argv (2) = 'm' and then Argv'Last > 2)
+             or else (Argv (2) = 'f' and then Argv'Last > 2)
          then
             Add_Switch (Argv, Compiler, And_Save => And_Save);
             Add_Switch (Argv, Linker, And_Save => And_Save);

@@ -721,7 +721,7 @@ package body Ch3 is
    --------------------------------
 
    --  SUBTYPE_DECLARATION ::=
-   --    subtype DEFINING_IDENTIFIER is SUBTYPE_INDICATION;
+   --    subtype DEFINING_IDENTIFIER is [NULL_EXCLUSION] SUBTYPE_INDICATION;
 
    --  The caller has checked that the initial token is SUBTYPE
 
@@ -1017,9 +1017,9 @@ package body Ch3 is
    --  This routine scans out a declaration starting with an identifier:
 
    --  OBJECT_DECLARATION ::=
-   --    DEFINING_IDENTIFIER_LIST : [constant] [aliased]
-   --      SUBTYPE_INDICATION [:= EXPRESSION];
-   --  | DEFINING_IDENTIFIER_LIST : [constant] [aliased]
+   --    DEFINING_IDENTIFIER_LIST : [aliased] [constant]
+   --      [NULL_EXCLUSION] SUBTYPE_INDICATION [:= EXPRESSION];
+   --  | DEFINING_IDENTIFIER_LIST : [aliased] [constant]
    --      ARRAY_TYPE_DEFINITION [:= EXPRESSION];
 
    --  NUMBER_DECLARATION ::=
@@ -1519,7 +1519,8 @@ package body Ch3 is
    -------------------------------------------------------------------------
 
    --  DERIVED_TYPE_DEFINITION ::=
-   --    [abstract] new parent_SUBTYPE_INDICATION [RECORD_EXTENSION_PART]
+   --    [abstract] new [NULL_EXCLUSION] parent_SUBTYPE_INDICATION
+   --    [RECORD_EXTENSION_PART]
 
    --  PRIVATE_EXTENSION_DECLARATION ::=
    --     type DEFINING_IDENTIFIER [DISCRIMINANT_PART] is
@@ -2116,7 +2117,7 @@ package body Ch3 is
    --    DISCRETE_SUBTYPE_INDICATION | RANGE
 
    --  COMPONENT_DEFINITION ::=
-   --    [aliased] SUBTYPE_INDICATION | ACCESS_DEFINITION
+   --    [aliased] [NULL_EXCLUSION] SUBTYPE_INDICATION | ACCESS_DEFINITION
 
    --  The caller has checked that the initial token is ARRAY
 
@@ -2385,7 +2386,7 @@ package body Ch3 is
    --    (DISCRIMINANT_SPECIFICATION {; DISCRIMINANT_SPECIFICATION})
 
    --  DISCRIMINANT_SPECIFICATION ::=
-   --    DEFINING_IDENTIFIER_LIST : SUBTYPE_MARK
+   --    DEFINING_IDENTIFIER_LIST : [NULL_EXCLUSION] SUBTYPE_MARK
    --      [:= DEFAULT_EXPRESSION]
    --  | DEFINING_IDENTIFIER_LIST : ACCESS_DEFINITION
    --      [:= DEFAULT_EXPRESSION]
@@ -2866,7 +2867,7 @@ package body Ch3 is
    --      [:= DEFAULT_EXPRESSION];
 
    --  COMPONENT_DEFINITION ::=
-   --    [aliased] SUBTYPE_INDICATION | ACCESS_DEFINITION
+   --    [aliased] [NULL_EXCLUSION] SUBTYPE_INDICATION | ACCESS_DEFINITION
 
    --  Error recovery: cannot raise Error_Resync, if an error occurs,
    --  the scan is positioned past the following semicolon.
@@ -3217,13 +3218,14 @@ package body Ch3 is
    --  | ACCESS_TO_SUBPROGRAM_DEFINITION
 
    --  ACCESS_TO_OBJECT_DEFINITION ::=
-   --    access [GENERAL_ACCESS_MODIFIER] SUBTYPE_INDICATION
+   --    [NULL_EXCLUSION] access [GENERAL_ACCESS_MODIFIER] SUBTYPE_INDICATION
 
    --  GENERAL_ACCESS_MODIFIER ::= all | constant
 
    --  ACCESS_TO_SUBPROGRAM_DEFINITION
-   --    access [protected] procedure PARAMETER_PROFILE
-   --  | access [protected] function PARAMETER_AND_RESULT_PROFILE
+   --    [NULL_EXCLUSION] access [protected] procedure PARAMETER_PROFILE
+   --  | [NULL_EXCLUSION] access [protected] function
+   --    PARAMETER_AND_RESULT_PROFILE
 
    --  PARAMETER_PROFILE ::= [FORMAL_PART]
 
@@ -3362,7 +3364,8 @@ package body Ch3 is
    -- 3.10  Access Definition --
    -----------------------------
 
-   --  ACCESS_DEFINITION ::= access SUBTYPE_MARK
+   --  ACCESS_DEFINITION ::=
+   --    [NULL_EXCLUSION] access [GENERAL_ACCESS_MODIFIER] SUBTYPE_MARK
 
    --  The caller has checked that the initial token is ACCESS
 
@@ -3375,7 +3378,7 @@ package body Ch3 is
       Def_Node := New_Node (N_Access_Definition, Token_Ptr);
       Scan; -- past ACCESS
 
-      --  Ada 0Y (AI-231): ACCESS [general_access_modifier] subtype_mark
+      --  Ada 0Y (AI-231)
 
       if Extensions_Allowed then
          if Token = Tok_All then

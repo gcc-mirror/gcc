@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -62,11 +62,11 @@ package body Eval_Fat is
    --  The result is rounded to a nearest machine number.
 
    procedure Decompose_Int
-     (RT               : R;
-      X                : in T;
-      Fraction         : out UI;
-      Exponent         : out UI;
-      Mode             : Rounding_Mode);
+     (RT       : R;
+      X        : in T;
+      Fraction : out UI;
+      Exponent : out UI;
+      Mode     : Rounding_Mode);
    --  This is similar to Decompose, except that the Fraction value returned
    --  is an integer representing the value Fraction * Scale, where Scale is
    --  the value (Radix ** Machine_Mantissa (RT)). The value is obtained by
@@ -129,7 +129,6 @@ package body Eval_Fat is
    function Compose (RT : R; Fraction : T; Exponent : UI) return T is
       Arg_Frac : T;
       Arg_Exp  : UI;
-
    begin
       if UR_Is_Zero (Fraction) then
          return Fraction;
@@ -190,18 +189,17 @@ package body Eval_Fat is
    -- Decompose_Int --
    -------------------
 
-   --  This procedure should be modified with care, as there
-   --  are many non-obvious details that may cause problems
-   --  that are hard to detect. The cases of positive and
-   --  negative zeroes are also special and should be
-   --  verified separately.
+   --  This procedure should be modified with care, as there are many
+   --  non-obvious details that may cause problems that are hard to
+   --  detect. The cases of positive and negative zeroes are also
+   --  special and should be verified separately.
 
    procedure Decompose_Int
-     (RT               : R;
-      X                : in T;
-      Fraction         : out UI;
-      Exponent         : out UI;
-      Mode             : Rounding_Mode)
+     (RT       : R;
+      X        : in T;
+      Fraction : out UI;
+      Exponent : out UI;
+      Mode     : Rounding_Mode)
    is
       Base : Int := Rbase (X);
       N    : UI  := abs Numerator (X);
@@ -466,7 +464,6 @@ package body Eval_Fat is
    function Exponent (RT : R; X : T) return UI is
       X_Frac : UI;
       X_Exp  : UI;
-
    begin
       if UR_Is_Zero (X) then
          return Uint_0;
@@ -502,7 +499,6 @@ package body Eval_Fat is
    function Fraction (RT : R; X : T) return T is
       X_Frac : T;
       X_Exp  : UI;
-
    begin
       if UR_Is_Zero (X) then
          return X;
@@ -517,19 +513,13 @@ package body Eval_Fat is
    ------------------
 
    function Leading_Part (RT : R; X : T; Radix_Digits : UI) return T is
-      L    : UI;
-      Y, Z : T;
-
+      RD : constant UI := UI_Min (Radix_Digits, Machine_Mantissa (RT));
+      L  : UI;
+      Y  : T;
    begin
-      if Radix_Digits >= Machine_Mantissa (RT) then
-         return X;
-
-      else
-         L := Exponent (RT, X) - Radix_Digits;
-         Y := Truncation (RT, Scaling (RT, X, -L));
-         Z := Scaling (RT, Y, L);
-         return Z;
-      end if;
+      L := Exponent (RT, X) - RD;
+      Y := UR_From_Uint (UR_Trunc (Scaling (RT, X, -L)));
+      return Scaling (RT, Y, L);
    end Leading_Part;
 
    -------------
@@ -540,11 +530,8 @@ package body Eval_Fat is
      (RT    : R;
       X     : T;
       Mode  : Rounding_Mode;
-      Enode : Node_Id)
-      return  T
+      Enode : Node_Id) return T
    is
-      pragma Warnings (Off, Enode); -- not yet referenced
-
       X_Frac : T;
       X_Exp  : UI;
       Emin   : constant UI := UI_From_Int (Machine_Emin (RT));
@@ -726,7 +713,6 @@ package body Eval_Fat is
    function Model (RT : R; X : T) return T is
       X_Frac : T;
       X_Exp  : UI;
-
    begin
       Decompose (RT, X, X_Frac, X_Exp);
       return Compose (RT, X_Frac, X_Exp);

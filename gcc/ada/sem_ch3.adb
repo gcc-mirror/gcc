@@ -4026,6 +4026,7 @@ package body Sem_Ch3 is
 
             Set_First_Entity (Derived_Type, First_Entity (Der_Base));
             Set_Last_Entity  (Derived_Type, Last_Entity  (Der_Base));
+            Set_Stored_Constraint (Full_Der, Stored_Constraint (Derived_Type));
 
          else
             --  If this is a completion, the derived type stays private
@@ -4343,14 +4344,14 @@ package body Sem_Ch3 is
    --  discriminants in R and T1 through T4.
 
    --   Type      Discrim     Stored Discrim  Comment
-   --    R      (D1, D2, D3)   (D1, D2, D3)   Gider discrims are implicit in R
-   --    T1     (D1, D2, D3)   (D1, D2, D3)   Gider discrims are implicit in T1
-   --    T2     (X1, X2)       (D1, D2, D3)   Gider discrims are EXPLICIT in T2
-   --    T3     (X1, X2)       (D1, D2, D3)   Gider discrims are EXPLICIT in T3
-   --    T4     (Y)            (D1, D2, D3)   Gider discrims are EXPLICIT in T4
+   --    R      (D1, D2, D3)   (D1, D2, D3)   Girder discrims implicit in R
+   --    T1     (D1, D2, D3)   (D1, D2, D3)   Girder discrims implicit in T1
+   --    T2     (X1, X2)       (D1, D2, D3)   Girder discrims EXPLICIT in T2
+   --    T3     (X1, X2)       (D1, D2, D3)   Girder discrims EXPLICIT in T3
+   --    T4     (Y)            (D1, D2, D3)   Girder discrims EXPLICIT in T4
 
-   --  Field Corresponding_Discriminant (abbreviated CD below) allows to find
-   --  the corresponding discriminant in the parent type, while
+   --  Field Corresponding_Discriminant (abbreviated CD below) allows us to
+   --  find the corresponding discriminant in the parent type, while
    --  Original_Record_Component (abbreviated ORC below), the actual physical
    --  component that is renamed. Finally the field Is_Completely_Hidden
    --  (abbreviated ICH below) is set for all explicit stored discriminants
@@ -5309,7 +5310,7 @@ package body Sem_Ch3 is
             Set_Discriminant_Constraint
               (Derived_Type, Save_Discr_Constr);
             Set_Stored_Constraint
-              (Derived_Type, Expand_To_Stored_Constraint (Parent_Base, Discs));
+              (Derived_Type, Expand_To_Stored_Constraint (Parent_Type, Discs));
             Replace_Components (Derived_Type, New_Decl);
          end if;
 
@@ -10472,11 +10473,18 @@ package body Sem_Ch3 is
       --  This is achieved by appending Derived_Base discriminants into
       --  Discs, which has the side effect of returning a non empty Discs
       --  list to the caller of Inherit_Components, which is what we want.
+      --  This must be done for private derived types if there are explicit
+      --  stored discriminants, to ensure that we can retrieve the values of
+      --  the constraints provided in the ancestors.
 
       if Inherit_Discr
         and then Is_Empty_Elmt_List (Discs)
-        and then (not Is_Private_Type (Derived_Base)
-                   or Is_Generic_Type (Derived_Base))
+        and then Present (First_Discriminant (Derived_Base))
+        and then
+          (not Is_Private_Type (Derived_Base)
+           or else Is_Completely_Hidden
+             (First_Stored_Discriminant (Derived_Base))
+           or else Is_Generic_Type (Derived_Base))
       then
          D := First_Discriminant (Derived_Base);
          while Present (D) loop

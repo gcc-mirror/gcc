@@ -459,10 +459,10 @@ package body Scng is
                C := Source (Scan_Ptr);
 
                if C = '_' then
-                  --  We do not want to accumulate the '_' in the checksum,
-                  --  so that 1_234 is equivalent to 1234, and does not
-                  --  trigger compilation in "minimal recompilation"
-                  --  (gnatmake -m).
+
+                  --  We do not accumulate the '_' in the checksum, so that
+                  --  1_234 is equivalent to 1234, and does not trigger
+                  --  compilation for "minimal recompilation" (gnatmake -m).
 
                   loop
                      Scan_Ptr := Scan_Ptr + 1;

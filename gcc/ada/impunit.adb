@@ -53,6 +53,7 @@ package body Impunit is
      "a-chlat1",    -- Ada.Characters.Latin_1
      "a-comlin",    -- Ada.Command_Line
      "a-decima",    -- Ada.Decimal
+     "a-direct",    -- Ada.Directories
      "a-direio",    -- Ada.Direct_IO
      "a-dynpri",    -- Ada.Dynamic_Priorities
      "a-except",    -- Ada.Exceptions

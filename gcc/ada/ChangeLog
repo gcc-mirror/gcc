@@ -1,3 +1,120 @@
+2004-04-05  Vincent Celier  <celier@gnat.com>
+
+	* adaint.h, adaint.c: Add function __gnat_named_file_length
+
+	* impunit.adb: Add Ada.Directories to the list
+
+	* Makefile.in: Add VMS and Windows versions of
+	Ada.Directories.Validity package body.
+
+	* Makefile.rtl: Add a-direct and a-dirval
+
+	* mlib-tgt.ads: Minor comment update.
+
+	* a-dirval.ads, a-dirval.adb, 5vdirval.adb, 5wdirval.adb,
+	a-direct.ads, a-direct.adb: New files.
+
+2004-04-05  Vincent Celier  <celier@gnat.com>
+
+	PR ada/13620
+	* make.adb (Scan_Make_Arg): Pass any -fxxx switches to gnatlink, not
+	just to the compiler.
+
+2004-04-05  Robert Dewar  <dewar@gnat.com>
+
+	* a-except.adb (Exception_Name_Simple): Make sure lower bound of
+	returned string is 1.
+
+	* ali-util.adb: Use proper specific form for Warnings (Off, entity)
+
+	* eval_fat.ads: Minor reformatting
+
+	* g-curexc.ads: Document that lower bound of returned string values
+	is always one.
+
+	* gnatlink.adb: Add ??? comment for previous change
+	(need to document why this is VMS specific)
+
+	* s-stoele.ads: Minor reformatting
+
+	* tbuild.ads: Minor reformatting throughout (new function specs)
+
+	* par-ch10.adb (P_Context_Clause): Handle comma instead of semicolon
+	after WITH.
+
+	* scng.adb: Minor reformatting
+
+2004-04-05  Geert Bosch  <bosch@gnat.com>
+
+	* eval_fat.adb (Machine): Remove unnecessary suppression of warning.
+	(Leading_Part): Still perform truncation to machine number if the
+	specified radix_digits is greater or equal to machine_mantissa.
+
+2004-04-05  Javier Miranda  <miranda@gnat.com>
+
+	* par-ch3.adb: Complete documentation of previous change
+	Correct wrong syntax documentation of the OBJECT_DECLARATION rule
+	(aliased must appear before constant).
+
+	* par-ch4.adb: Complete documentation of previous change.
+
+	* par-ch6.adb: Complete documentation of previous change.
+
+	* sinfo.ads: Fix typo in commment.
+
+2004-04-05  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch3.adb (Inherit_Components): If derived type is private and has
+	stored discriminants, use its discriminants to constrain parent type,
+	as is done for non-private derived record types.
+
+	* sem_ch4.adb (Remove_Abstract_Operations): New subprogram to implement
+	Ada 2005 AI-310: an abstract non-dispatching operation is not a
+	candidate interpretation in an overloaded call.
+
+	* tbuild.adb (Unchecked_Convert_To): Preserve conversion node if
+	expression is Null and target type is not an access type (e.g. a
+	non-private address type).
+
+2004-04-05  Thomas Quinot  <quinot@act-europe.fr>
+
+	* exp_ch6.adb (Rewrite_Function_Call): When rewriting an assignment
+	statement whose right-hand side is an inlined call, save a copy of the
+	original assignment subtree to preserve enough consistency for
+	Analyze_Assignment to proceed.
+
+	* sem_ch5.adb (Analyze_Assignment): Remove a costly copy of the
+	complete assignment subtree which is now unnecessary, as the expansion
+	of inlined call has been improved to preserve a consistent assignment
+	tree.  Note_Possible_Modification must be called only
+	after checks have been applied, or else unnecessary checks will
+	be generated.
+
+	* sem_util.adb (Note_Possible_Modification): Reorganise the handling
+	of explicit dereferences that do not Come_From_Source:
+	 - be selective on cases where we must go back to the dereferenced
+	   pointer (an assignment to an implicit dereference must not be
+	   recorded as modifying the pointer);
+	 - do not rely on Original_Node being present (Analyze_Assignment
+	   calls Note_Possible_Modification on a copied tree).
+
+	* sem_warn.adb (Check_References): When an unset reference to a pointer
+	that is never assigned is encountered, prefer '<pointer> may be null'
+	warning over '<pointer> is never assigned a value'.
+
+2004-04-05  Ramon Fernandez  <fernandez@gnat.com>
+
+	* tracebak.c: Change STOP_FRAME in ppc vxworks to be compliant with
+	the ABI.
+
+2004-04-05  Olivier Hainque  <hainque@act-europe.fr>
+
+	* 5gmastop.adb (Pop_Frame): Comment out the pragma Linker_Option for
+	libexc. We currently don't reference anything in this library and
+	linking it in triggers linker warnings we don't want to see.
+
+	* init.c: Update comments.
+
 2004-04-05  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* decl.c (gnat_to_gnu_entity): Use TYPE_READONLY.

@@ -292,15 +292,6 @@ package body System.Machine_State_Operations is
 
       procedure Exc_Unwind (Scp : Sigcontext_Ptr; Fde : Long_Integer := 0);
       pragma Import (C, Exc_Unwind, "exc_unwind");
-      pragma Linker_Options ("-lexc");
-
-   begin
-      --  exc_unwind is apparently not thread-safe under IRIX, so protect it
-      --  against race conditions within the GNAT run time.
-      --  ??? Note that we might want to use a fine grained lock here since
-      --  Lock_Task is used in many other places.
-
-      Lock_Task.all;
 
       --  ??? Calling exc_unwind in the current setup does not work and
       --  triggers the emission of system warning messages. Why it does
@@ -312,7 +303,19 @@ package body System.Machine_State_Operations is
       --  occurred and failed.
 
       --  ??? Until this is fixed, we shall document that the backtrace
-      --  computation facility does not work.
+      --  computation facility does not work, and we inhibit the pragma below
+      --  because we arrange for the call not to be emitted and the linker
+      --  complains when a library is linked in but resolves nothing.
+
+      --  pragma Linker_Options ("-lexc");
+
+   begin
+      --  exc_unwind is apparently not thread-safe under IRIX, so protect it
+      --  against race conditions within the GNAT run time.
+      --  ??? Note that we might want to use a fine grained lock here since
+      --  Lock_Task is used in many other places.
+
+      Lock_Task.all;
 
       if False then
          Exc_Unwind (Scp);

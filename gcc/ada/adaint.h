@@ -66,6 +66,7 @@ extern int    __gnat_open_create                   (char *, int);
 extern int    __gnat_create_output_file            (char *);
 extern int    __gnat_open_append                   (char *, int);
 extern long   __gnat_file_length                   (int);
+extern long   __gnat_named_file_length             (char *);
 extern void   __gnat_tmp_name			   (char *);
 extern char  *__gnat_readdir                       (DIR *, char *);
 extern int    __gnat_readdir_is_thread_safe        (void);

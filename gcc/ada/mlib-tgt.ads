@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---              Copyright (C) 2001-2003, Ada Core Technologies, Inc.        --
+--              Copyright (C) 2001-2004, Ada Core Technologies, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -86,7 +86,8 @@ package MLib.Tgt is
 
    function DLL_Ext return String;
    --  System dependent dynamic library extension, without leading dot.
-   --  On Unix, returns "so", on Windows, returns "dll".
+   --  On Windows, returns "dll". On Unix, usually returns "so", but not
+   --  always, e.g. on HP-UX the extension for shared libraries is "sl".
 
    function PIC_Option return String;
    --  Position independent code option
@@ -119,11 +120,14 @@ package MLib.Tgt is
       Lib_Version  : String  := "";
       Relocatable  : Boolean := False;
       Auto_Init    : Boolean := False);
-   --  Build a dynamic/relocatable library.
+   --  Build a dynamic/relocatable library
    --
-   --  Ofiles is the list of all object files in the library.
-   --  Foreign is the list of non Ada object files (also included in Ofiles).
-   --  Afiles is the list of ALI files for the Ada object files.
+   --  Ofiles is the list of all object files in the library
+   --
+   --  Foreign is the list of non Ada object files (also included in Ofiles)
+   --
+   --  Afiles is the list of ALI files for the Ada object files
+   --
    --  Options is a list of options to be passed to the tool (gcc or other)
    --  that effectively builds the dynamic library.
    --
@@ -131,10 +135,10 @@ package MLib.Tgt is
    --  It is empty if the library is not a SAL.
    --
    --  Lib_Filename is the name of the library, without any prefix or
-   --  extension. For example, on Unix, if Lib_Filename is "toto", the name of
-   --  the library file will be "libtoto.so".
+   --  extension. For example, on Unix, if Lib_Filename is "toto", the
+   --  name of the library file will be "libtoto.so".
    --
-   --  Lib_Dir is the directory path where the library will be located.
+   --  Lib_Dir is the directory path where the library will be located
    --
    --  Lib_Address is the base address of the library for a non relocatable
    --  library, given as an hexadecimal string.

@@ -2308,7 +2308,6 @@ package body Ch4 is
 
    function  P_Qualified_Expression (Subtype_Mark : Node_Id) return Node_Id is
       Qual_Node : Node_Id;
-
    begin
       Qual_Node := New_Node (N_Qualified_Expression, Prev_Token_Ptr);
       Set_Subtype_Mark (Qual_Node, Check_Subtype_Mark (Subtype_Mark));
@@ -2321,7 +2320,7 @@ package body Ch4 is
    --------------------
 
    --  ALLOCATOR ::=
-   --   new SUBTYPE_INDICATION | new QUALIFIED_EXPRESSION
+   --    new [NULL_EXCLUSION] SUBTYPE_INDICATION | new QUALIFIED_EXPRESSION
 
    --  The caller has checked that the initial token is NEW
 

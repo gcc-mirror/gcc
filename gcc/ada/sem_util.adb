@@ -4979,6 +4979,9 @@ package body Sem_Util is
    --------------------------------
 
    procedure Note_Possible_Modification (N : Node_Id) is
+      Modification_Comes_From_Source : constant Boolean :=
+                                         Comes_From_Source (Parent (N));
+
       Ent : Entity_Id;
       Exp : Node_Id;
 
@@ -4993,7 +4996,9 @@ package body Sem_Util is
       procedure Set_Ref (E : Entity_Id; N : Node_Id) is
       begin
          if Is_Object (E) then
-            if Comes_From_Source (N) then
+            if Comes_From_Source (N)
+              or else Modification_Comes_From_Source
+            then
                Set_Never_Set_In_Source (E, False);
             end if;
 
@@ -5015,19 +5020,60 @@ package body Sem_Util is
 
       Exp := N;
       loop
-         --  Test for node rewritten as dereference (e.g. accept parameter)
-
-         if Nkind (Exp) = N_Explicit_Dereference
-           and then not Comes_From_Source (Exp)
-         then
-            Exp := Original_Node (Exp);
-         end if;
-
-         --  Now look for entity being referenced
+         Ent := Empty;
 
          if Is_Entity_Name (Exp) then
             Ent := Entity (Exp);
 
+         elsif Nkind (Exp) = N_Explicit_Dereference then
+            declare
+               P : constant Node_Id := Prefix (Exp);
+
+            begin
+               if Nkind (P) = N_Selected_Component
+                 and then Present (
+                   Entry_Formal (Entity (Selector_Name (P))))
+               then
+                  --  Case of a reference to an entry formal
+
+                  Ent := Entry_Formal (Entity (Selector_Name (P)));
+
+               elsif Nkind (P) = N_Identifier
+                 and then Nkind (Parent (Entity (P))) = N_Object_Declaration
+                 and then Present (Expression (Parent (Entity (P))))
+                 and then Nkind (Expression (Parent (Entity (P))))
+                   = N_Reference
+               then
+                  --  Case of a reference to a value on which
+                  --  side effects have been removed.
+
+                  Exp := Prefix (Expression (Parent (Entity (P))));
+
+               else
+                  return;
+
+               end if;
+            end;
+
+         elsif     Nkind (Exp) = N_Type_Conversion
+           or else Nkind (Exp) = N_Unchecked_Type_Conversion
+         then
+            Exp := Expression (Exp);
+
+         elsif     Nkind (Exp) = N_Slice
+           or else Nkind (Exp) = N_Indexed_Component
+           or else Nkind (Exp) = N_Selected_Component
+         then
+            Exp := Prefix (Exp);
+
+         else
+            return;
+
+         end if;
+
+         --  Now look for entity being referenced
+
+         if Present (Ent) then
             if (Ekind (Ent) = E_Variable or else Ekind (Ent) = E_Constant)
               and then Present (Renamed_Object (Ent))
             then
@@ -5046,20 +5092,6 @@ package body Sem_Util is
                Kill_Checks (Ent);
                return;
             end if;
-
-         elsif     Nkind (Exp) = N_Type_Conversion
-           or else Nkind (Exp) = N_Unchecked_Type_Conversion
-         then
-            Exp := Expression (Exp);
-
-         elsif     Nkind (Exp) = N_Slice
-           or else Nkind (Exp) = N_Indexed_Component
-           or else Nkind (Exp) = N_Selected_Component
-         then
-            Exp := Prefix (Exp);
-
-         else
-            return;
          end if;
       end loop;
    end Note_Possible_Modification;
