@@ -1,5 +1,11 @@
 2002-02-12  Adam Megacz <adam@xwt.org>
 
+        * java/io/natFilePosix.cc: Copied this from natFile.cc.
+	* java/io/natFile.cc: Removed from repository.
+	* configure.in: Added AC_LINK_FILES for natFile${PLATFORM}.
+
+2002-02-12  Adam Megacz <adam@xwt.org>
+
 	* win32.cc: Added two #includes to make win32.cc compile.
 
 2002-02-12  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>

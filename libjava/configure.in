@@ -242,6 +242,7 @@ dnl to create the link will fail.
 test -d java || mkdir java
 test -d java/io || mkdir java/io
 test -d gnu || mkdir gnu
+AC_LINK_FILES(java/io/natFile${PLATFORM}.cc, java/io/natFile.cc)
 AC_LINK_FILES(java/io/natFileDescriptor${PLATFORM}.cc, java/io/natFileDescriptor.cc)
 
 dnl Likewise for ConcreteProcess.java and natConcreteProcess.cc.
