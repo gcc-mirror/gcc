@@ -1,3 +1,9 @@
+2001-01-14  Per Bothner  <per@bothner.com>
+
+	* parse.y (java_complete_lhs case EXPR_WITH_FILE_LOCATION): If body is
+	constant, return body without wrapper.  (Improves constant folding.)
+	* lex.c (build_wfl_node):  Clear TREE_TYPE from returned node.
+
 2001-01-13  Per Bothner  <per@bothner.com>
 
 	* expr.c (expand_java_field_op):  Assigning to a final field outside

@@ -1642,7 +1642,10 @@ static tree
 build_wfl_node (node)
      tree node;
 {
-  return build_expr_wfl (node, ctxp->filename, ctxp->elc.line, ctxp->elc.col);
+  node = build_expr_wfl (node, ctxp->filename, ctxp->elc.line, ctxp->elc.col);
+  /* Prevent java_complete_lhs from short-circuiting node (if constant). */
+  TREE_TYPE (node) = NULL_TREE;
+  return node;
 }
 #endif
 
