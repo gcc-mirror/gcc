@@ -1585,25 +1585,6 @@
   [(set_attr "type" "binary,binary")
    (set_attr "length" "4,8")])
 
-;; For function addresses.
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(high:SI (match_operand:SI 1 "function_label_operand" "")))]
-  "!TARGET_PORTABLE_RUNTIME"
-  "ldil LP'%G1,%0"
-  [(set_attr "type" "move")
-   (set_attr "length" "4")])
-
-;; This version is used only for the portable runtime conventions model
-;; (it does not use/support plabels)
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(high:SI (match_operand:SI 1 "function_label_operand" "")))]
-  "TARGET_PORTABLE_RUNTIME"
-  "ldil L'%G1,%0"
-  [(set_attr "type" "move")
-   (set_attr "length" "4")])
-
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(high:SI (match_operand 1 "" "")))]
@@ -1616,32 +1597,6 @@
   else
     return \"ldil L'%G1,%0\";
 }"
-  [(set_attr "type" "move")
-   (set_attr "length" "4")])
-
-;; lo_sum of a function address.
-;;
-;; Note since we are not supporting MPE style external calls we can
-;; use the short ldil;ldo sequence.  If one wanted to support
-;; MPE external calls you would want to generate something like
-;; ldil;ldo;extru;ldw;add.  See the HP compiler's output for details.
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(lo_sum:SI (match_operand:SI 1 "register_operand" "r")
-		   (match_operand:SI 2 "function_label_operand" "")))]
-  "!TARGET_PORTABLE_RUNTIME"
-  "ldo RP'%G2(%1),%0"
-  [(set_attr "type" "move")
-   (set_attr "length" "4")])
-
-;; This version is used only for the portable runtime conventions model
-;; (it does not use/support plabels)
-(define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(lo_sum:SI (match_operand:SI 1 "register_operand" "r")
-		   (match_operand:SI 2 "function_label_operand" "")))]
-  "TARGET_PORTABLE_RUNTIME"
-  "ldo R'%G2(%1),%0"
   [(set_attr "type" "move")
    (set_attr "length" "4")])
 
@@ -4538,62 +4493,6 @@
    (clobber (match_scratch:SI 4 "=X,r,r"))]
   ""
   "* return output_dbra (operands, insn, which_alternative); "
-;; Do not expect to understand this the first time through.
-[(set_attr "type" "cbranch,multi,multi")
- (set (attr "length")
-      (if_then_else (eq_attr "alternative" "0")
-;; Loop counter in register case
-;; Short branch has length of 4
-;; Long branch has length of 8
-	(if_then_else (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		      (const_int 8184))
-           (const_int 4)
-	   (const_int 8))
-
-;; Loop counter in FP reg case.
-;; Extra goo to deal with additional reload insns.
-	(if_then_else (eq_attr "alternative" "1")
-	  (if_then_else (lt (match_dup 3) (pc))
-	    (if_then_else
-	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 24))))
-		  (const_int 8184))
-	      (const_int 24)
-	      (const_int 28))
-	    (if_then_else
-	      (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		  (const_int 8184))
-	      (const_int 24)
-	      (const_int 28)))
-;; Loop counter in memory case.
-;; Extra goo to deal with additional reload insns.
-	(if_then_else (lt (match_dup 3) (pc))
-	  (if_then_else
-	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 12))))
-		(const_int 8184))
-	    (const_int 12)
-	    (const_int 16))
-	  (if_then_else
-	    (lt (abs (minus (match_dup 3) (plus (pc) (const_int 8))))
-		(const_int 8184))
-	    (const_int 12)
-	    (const_int 16))))))])
-
-;; Simply another variant of the dbra pattern.  More restrictive
-;; in testing the comparison operator as it must worry about overflow
-;; problems.
-(define_insn ""
-  [(set (pc)
-	(if_then_else
-	  (match_operator 2 "eq_neq_comparison_operator"
-	   [(match_operand:SI 0 "register_operand" "+!r,!*f,!*m")
-	    (match_operand:SI 5 "const_int_operand" "")])
-	  (label_ref (match_operand 3 "" ""))
-	  (pc)))
-   (set (match_dup 0)
-	(plus:SI (match_dup 0) (match_operand:SI 1 "int5_operand" "L,L,L")))
-   (clobber (match_scratch:SI 4 "=X,r,r"))]
-  "INTVAL (operands[5]) == - INTVAL (operands[1])"
-"* return output_dbra (operands, insn, which_alternative);"
 ;; Do not expect to understand this the first time through.
 [(set_attr "type" "cbranch,multi,multi")
  (set (attr "length")

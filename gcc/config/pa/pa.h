@@ -1376,7 +1376,7 @@ extern struct rtx_def *hppa_builtin_saveregs ();
 #define LEGITIMATE_CONSTANT_P(X)  		\
   ((GET_MODE_CLASS (GET_MODE (X)) != MODE_FLOAT	\
     || (X) == CONST0_RTX (GET_MODE (X)))	\
-   && !(flag_pic && function_label_operand (X, VOIDmode)))
+   && !function_label_operand (X, VOIDmode))
 
 /* Subroutine for EXTRA_CONSTRAINT.
 
@@ -1930,6 +1930,8 @@ do { fputs ("\t.SPACE $PRIVATE$\n\
      if (write_symbols != NO_DEBUG) \
        output_file_directive ((FILE), main_input_filename); \
    } while (0)
+
+#define ASM_FILE_END(FILE) output_deferred_plabels (FILE)
 
 /* Output to assembler file text saying following lines
    may contain character constants, extra white space, comments, etc.  */
