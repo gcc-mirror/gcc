@@ -856,6 +856,11 @@ extern int max_tinst_depth;
 
 extern int skip_evaluation;
 
+/* The count of input filenames.  Only really valid for comparisons
+   against 1.  */
+
+extern unsigned num_in_fnames;
+
 /* C types are partitioned into three subsets: object, function, and
    incomplete types.  */
 #define C_TYPE_OBJECT_P(type) \
@@ -905,7 +910,6 @@ extern void check_function_format (int *, tree, tree);
 extern void set_Wformat (int);
 extern tree handle_format_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_format_arg_attribute (tree *, tree, tree, int, bool *);
-extern void c_static_assembler_name (tree);
 extern void c_common_insert_default_attributes (tree);
 extern int c_common_handle_option (size_t code, const char *arg, int value);
 extern void c_common_handle_filename (const char *filename);

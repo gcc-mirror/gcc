@@ -52,6 +52,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "hashtab.h"
 #include "libfuncs.h"
 #include "except.h"
+#include "langhooks-def.h"
 
 /* In grokdeclarator, distinguish syntactic contexts of declarators.  */
 enum decl_context
@@ -6769,6 +6770,22 @@ make_pointer_declarator (tree type_quals_attrs, tree target)
   if (attrs != NULL_TREE)
     itarget = tree_cons (attrs, target, NULL_TREE);
   return build1 (INDIRECT_REF, quals, itarget);
+}
+
+/* A wrapper around lhd_set_decl_assembler_name that gives static
+   variables their C names if they are at the top level and only one
+   translation unit is being compiled, for backwards compatibility
+   with certain bizzare assembler hacks (like crtstuff.c).  */
+
+void
+c_static_assembler_name (tree decl)
+{
+  if (num_in_fnames == 1
+      && TREE_STATIC (decl) && !TREE_PUBLIC (decl) && DECL_CONTEXT (decl)
+      && TREE_CODE (DECL_CONTEXT (decl)) == TRANSLATION_UNIT_DECL)
+    SET_DECL_ASSEMBLER_NAME (decl, DECL_NAME (decl));
+  else
+    lhd_set_decl_assembler_name (decl);
 }
 
 /* Hash and equality functions for link_hash_table: key off
