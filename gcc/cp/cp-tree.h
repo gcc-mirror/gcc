@@ -3581,7 +3581,6 @@ extern GTY(()) operator_name_info_t assignment_operator_name_info
 
 /* in call.c */
 extern bool check_dtor_name (tree, tree);
-extern int get_arglist_len_in_bytes		(tree);
 
 extern tree build_vfield_ref			(tree, tree);
 extern tree build_scoped_method_call (tree, tree, tree, tree);
