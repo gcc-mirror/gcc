@@ -71,7 +71,8 @@ _start:
 	sll	%l0, 2, %o2
 	add	%o2, 4, %o2
 	add	%l1, %o2, %o2	! env
-	set	_environ, %o3	! *_environ
+	set	_environ, %o3
+	st	%o2, [%o3]	! *_environ
 	call	main, 4
 	nop   
 	call	exit, 0
