@@ -10891,7 +10891,7 @@ qualify_ambiguous_name (id)
      expression name. If we saw a NEW_ARRAY_EXPR before and want to
      address length, it is OK. */
   else if ((decl = lookup_field_wrapper (ptr_type, name))
-	   || (new_array_found && name == length_identifier_node))
+	   || name == length_identifier_node)
     {
       RESOLVE_EXPRESSION_NAME_P (qual_wfl) = 1;
       QUAL_RESOLUTION (qual) = (new_array_found ? NULL_TREE : decl);
@@ -10916,7 +10916,8 @@ qualify_ambiguous_name (id)
   /* Method call, array references and cast are expression name */
   else if (TREE_CODE (QUAL_WFL (qual)) == CALL_EXPR
 	   || TREE_CODE (QUAL_WFL (qual)) == ARRAY_REF
-	   || TREE_CODE (QUAL_WFL (qual)) == CONVERT_EXPR)
+	   || TREE_CODE (QUAL_WFL (qual)) == CONVERT_EXPR
+	   || TREE_CODE (QUAL_WFL (qual)) == MODIFY_EXPR)
     RESOLVE_EXPRESSION_NAME_P (qual_wfl) = 1;
 
   /* Check here that NAME isn't declared by more than one
