@@ -86,10 +86,14 @@ xtensa port		Bob Wilson		bob.wilson@acm.org
 			OS Port Maintainers	(OS alphabetical order)
 
 darwin port		Stan Shebs		shebs@apple.com
+DJGPP			DJ Delorie		dj@delorie.com
 freebsd			Loren J. Rittle		ljrittle@acm.org
 netbsd			Jason Thorpe		thorpej@wasabisystems.com
 sco5, unixware, sco udk	Kean Johnston		jkj@sco.com
 sh-linux-gnu		Kaz Kojima		kkojima@gcc.gnu.org
+RTEMS Ports		Joel Sherrill		joel@oarcorp.com
+VxWorks ports		Zack Weinberg		zack@codesourcery.com
+VxWorks ports		Nathan Sidwell		nathan@codesourcery.com
 
 			Various Maintainers
 
@@ -147,7 +151,6 @@ basic block reordering	Jason Eckhardt		jle@rice.edu
 i18n			Philipp Thomas		pthomas@suse.de
 diagnostic messages	Gabriel Dos Reis	gdr@integrable-solutions.net
 windows, cygwin, mingw	Christopher Faylor	cgf@redhat.com
-DJGPP			DJ Delorie		dj@delorie.com
 libiberty		DJ Delorie		dj@redhat.com
 libiberty		Ian Lance Taylor	ian@wasabisystems.com
 build machinery (*.in)	DJ Delorie		dj@redhat.com
@@ -155,10 +158,6 @@ build machinery (*.in)	Nathanael Nerode	neroden@gcc.gnu.org
 build machinery (*.in)	Alexandre Oliva		aoliva@redhat.com
 docs co-maintainer	Gerald Pfeifer		gerald@pfeifer.com
 docs co-maintainer	Joseph Myers		jsm@polyomino.org.uk
-Pico-Java port		Steve Chamberlain	sac@transmeta.com
-RTEMS Ports		Joel Sherrill		joel@oarcorp.com
-VxWorks	ports		Zack Weinberg		zack@codesourcery.com
-VxWorks	ports		Nathan Sidwell		nathan@codesourcery.com
 predict.def		Jan Hubicka		jh@suse.cz
 contrib/regression	Geoff Keating		geoffk@geoffk.org
 treelang                Tim Josling             tej@melbpc.org.au
@@ -190,6 +189,7 @@ Robert Bowdidge                                 bowdidge@apple.com
 Joel Brobecker					brobecker@gnat.com
 Kevin Buettner					kevinb@redhat.com
 Andrew Cagney					cagney@redhat.com
+Steve Chamberlain				sac@transmeta.com
 Chandra Chavva					cchavva@redhat.com
 William Cohen					wcohen@redhat.com
 Christian Cornelssen				ccorn@cs.tu-berlin.de
