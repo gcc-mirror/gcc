@@ -8,7 +8,7 @@
    In C, it's ok to redeclare a variable so this works for variables
    and functions.  In C++, it only works for functions.  */
 
-/* { dg-require-dll } */
+/* { dg-require-dll "" } */
 
 __declspec (dllimport) int foo1 ();
 __declspec (dllexport) int foo1 ();

@@ -41,23 +41,34 @@
 #ifdef L_negsf2
 	
 ARM_FUNC_START negsf2
+ARM_FUNC_ALIAS aeabi_fneg negsf2
+	
 	eor	r0, r0, #0x80000000	@ flip sign bit
 	RET
 
+	FUNC_END aeabi_fneg
 	FUNC_END negsf2
 
 #endif
 
 #ifdef L_addsubsf3
 
+ARM_FUNC_START aeabi_frsub
+
+	eor	r0, r0, #0x80000000	@ flip sign bit of first arg
+	b	1f	
+	
 ARM_FUNC_START subsf3
+ARM_FUNC_ALIAS aeabi_fsub subsf3
+	
 	eor	r1, r1, #0x80000000	@ flip sign bit of second arg
 #if defined(__thumb__) && !defined(__THUMB_INTERWORK__)
 	b	1f			@ Skip Thumb-code prologue
 #endif
 
 ARM_FUNC_START addsf3
-
+ARM_FUNC_ALIAS aeabi_fadd addsf3
+	
 1:	@ Compare both args, return zero if equal but the sign.
 	eor	r2, r0, r1
 	teq	r2, #0x80000000
@@ -258,14 +269,21 @@ LSYM(Lad_i):
 	orrne	r0, r3, #0x00400000	@ NAN
 	RET
 
+	FUNC_END aeabi_frsub
+	FUNC_END aeabi_fadd
 	FUNC_END addsf3
+	FUNC_END aeabi_fsub
 	FUNC_END subsf3
 
 ARM_FUNC_START floatunsisf
+ARM_FUNC_ALIAS aeabi_ui2f floatunsisf
+		
 	mov	r3, #0
 	b	1f
 
 ARM_FUNC_START floatsisf
+ARM_FUNC_ALIAS aeabi_i2f floatsisf
+	
 	ands	r3, r0, #0x80000000
 	rsbmi	r0, r0, #0
 
@@ -290,7 +308,9 @@ ARM_FUNC_START floatsisf
 	add	r2, r2, #(2 << 23)
 	b	LSYM(Lad_p)
 
+	FUNC_END aeabi_i2f
 	FUNC_END floatsisf
+	FUNC_END aeabi_ui2f
 	FUNC_END floatunsisf
 
 #endif /* L_addsubsf3 */
@@ -298,7 +318,8 @@ ARM_FUNC_START floatsisf
 #ifdef L_muldivsf3
 
 ARM_FUNC_START mulsf3
-
+ARM_FUNC_ALIAS aeabi_fmul mulsf3
+	
 	@ Mask out exponents.
 	mov	ip, #0xff000000
 	and	r2, r0, ip, lsr #1
@@ -485,10 +506,12 @@ LSYM(Lml_n):
 	orr	r0, r0, #0x00c00000
 	RET
 
+	FUNC_END aeabi_fmul
 	FUNC_END mulsf3
 
 ARM_FUNC_START divsf3
-
+ARM_FUNC_ALIAS aeabi_fdiv divsf3
+	
 	@ Mask out exponents.
 	mov	ip, #0xff000000
 	and	r2, r0, ip, lsr #1
@@ -636,11 +659,27 @@ LSYM(Ldv_s):
 	bne	LSYM(Lml_z)		@ 0 / <non_zero> -> 0
 	b	LSYM(Lml_n)		@ 0 / 0 -> NAN
 
+	FUNC_END aeabi_fdiv
 	FUNC_END divsf3
 
 #endif /* L_muldivsf3 */
 
 #ifdef L_cmpsf2
+
+	@ The return value in r0 is
+	@
+	@   0  if the operands are equal
+	@   1  if the first operand is greater than the second, or
+	@      the operands are unordered and the operation is
+	@      CMP, LT, LE, NE, or EQ.
+	@   -1 if the first operand is less than the second, or
+	@      the operands are unordered and the operation is GT
+	@      or GE.
+	@
+	@ The Z flag will be set iff the operands are equal.
+	@
+	@ The following registers are clobbered by this function:
+	@   ip, r0, r1, r2, r3
 
 ARM_FUNC_START gtsf2
 ARM_FUNC_ALIAS gesf2 gtsf2
@@ -657,24 +696,31 @@ ARM_FUNC_ALIAS nesf2 cmpsf2
 ARM_FUNC_ALIAS eqsf2 cmpsf2
 	mov	r3, #1			@ how should we specify unordered here?
 
-1:	@ Trap any INF/NAN first.
-	mov	ip, #0xff000000
+	@ Both Inf and NaN have an exponent of 255.  Therefore, we
+	@ compute (r1 & 0x8f80000) || (r2 & 0x8f8000).
+1:	mov	ip, #0xff000000
 	and	r2, r1, ip, lsr #1
 	teq	r2, ip, lsr #1
 	and	r2, r0, ip, lsr #1
 	teqne	r2, ip, lsr #1
 	beq	3f
 
-	@ Test for equality.
-	@ Note that 0.0 is equal to -0.0.
+	@ Test for equality.  The representations of +0.0 and -0.0
+	@ have all bits set to zero, except for the sign bit.  Since
+	@ 0.0 is equal to -0.0, we begin by testing 
+	@ ((r0 | r1) & ~0x8000000).
 2:	orr	r3, r0, r1
+	@ If the result of the bitwise and is zero, then the Z flag
+	@ will be set.  In any case, the C flag will be set.
 	bics	r3, r3, #0x80000000	@ either 0.0 or -0.0
 	teqne	r0, r1			@ or both the same
+	@ If the Z flag is set, the two operands were equal.  Return zero.
 	moveq	r0, #0
 	RETc(eq)
 
-	@ Check for sign difference.  The N flag is set if it is the case.
-	@ If so, return sign of r0.
+	@ Check for sign difference.  The N flag is set (due to the
+	@ use of teq above) if the sign bit is set on exactly one
+	@ of the operands.  Return the sign of the first operand.
 	movmi	r0, r0, asr #31
 	orrmi	r0, r0, #1
 	RETc(mi)
@@ -686,12 +732,24 @@ ARM_FUNC_ALIAS eqsf2 cmpsf2
 	@ Compare mantissa if exponents are equal
 	moveq	r0, r0, lsl #9
 	cmpeq	r0, r1, lsl #9
+
+	@ We know the operands cannot be equal at this point, so the
+	@ Z flag is clear.  The C flag is set if the first operand has
+	@ the greater exponent, or the exponents are equal and the 
+	@ first operand has the greater mantissa.  Therefore, if the C
+	@ flag is set, the first operand is greater iff the sign is
+	@ positive.  These next two instructions will put zero in
+	@ r0 if the first operand is greater, and -1 if the second
+	@ operand is greater.
 	movcs	r0, r1, asr #31
 	mvncc	r0, r1, asr #31
+	@ If r0 is 0, the first operand is greater, so return 1.  Leave
+	@ -1 unchanged.
 	orr	r0, r0, #1
 	RET
 
-	@ Look for a NAN. 
+	@ We know that at least one argument is either Inf or NaN.
+	@ Look for a NaN. 
 3:	and	r2, r1, ip, lsr #1
 	teq	r2, ip, lsr #1
 	bne	4f
@@ -702,7 +760,8 @@ ARM_FUNC_ALIAS eqsf2 cmpsf2
 	bne	2b
 	movs	ip, r0, lsl #9
 	beq	2b			@ r0 is not NAN
-5:	mov	r0, r3			@ return unordered code from r3.
+5:	@ The Z flag is clear at this point.
+	mov	r0, r3			@ return unordered code from r3.
 	RET
 
 	FUNC_END gesf2
@@ -713,11 +772,75 @@ ARM_FUNC_ALIAS eqsf2 cmpsf2
 	FUNC_END eqsf2
 	FUNC_END cmpsf2
 
+ARM_FUNC_START aeabi_cfrcmple
+	mov	ip, r0
+	mov	r0, r1
+	mov	r1, ip
+	b	6f
+	
+ARM_FUNC_START aeabi_cfcmpeq
+ARM_FUNC_ALIAS aeabi_cfcmple aeabi_cfcmpeq
+	@ The status-returning routines are required to preserve all
+	@ registers except ip, lr, and cpsr.
+6:	stmfd	sp!, {r0, r1, r2, r3, lr}
+	ARM_CALL cmpsf2
+	@ Set the Z flag correctly, and the C flag unconditionally.
+	cmp	 r0, #0
+	@ Clear the C flag if the return value was -1, indicating
+	@ that the first operand was smaller than the second.
+	cmnmi	 r0, #0
+	RETLDM  "r0, r1, r2, r3"
+	FUNC_END aeabi_cfcmple
+	FUNC_END aeabi_cfcmpeq
+	
+ARM_FUNC_START	aeabi_fcmpeq
+	str	lr, [sp, #-4]!
+	ARM_CALL aeabi_cfcmple
+	moveq	r0, #1	@ Equal to.
+	movne	r0, #0	@ Less than, greater than, or unordered.
+	RETLDM
+	FUNC_END aeabi_fcmpeq
+
+ARM_FUNC_START	aeabi_fcmplt
+	str	lr, [sp, #-4]!
+	ARM_CALL aeabi_cfcmple
+	movcc	r0, #1	@ Less than.
+	movcs	r0, #0	@ Equal to, greater than, or unordered.
+	RETLDM
+	FUNC_END aeabi_fcmplt
+
+ARM_FUNC_START	aeabi_fcmple
+	str	lr, [sp, #-4]!
+	ARM_CALL aeabi_cfcmple
+	movls	r0, #1  @ Less than or equal to.
+	movhi	r0, #0	@ Greater than or unordered.
+	RETLDM
+	FUNC_END aeabi_fcmple
+
+ARM_FUNC_START	aeabi_fcmpge
+	str	lr, [sp, #-4]!
+	ARM_CALL aeabi_cfrcmple
+	movls	r0, #1	@ Operand 2 is less than or equal to operand 1.
+	movhi	r0, #0	@ Operand 2 greater than operand 1, or unordered.
+	RETLDM
+	FUNC_END aeabi_fcmpge
+
+ARM_FUNC_START	aeabi_fcmpgt
+	str	lr, [sp, #-4]!
+	ARM_CALL aeabi_cfrcmple
+	movcc	r0, #1	@ Operand 2 is less than operand 1.
+	movcs	r0, #0  @ Operand 2 is greater than or equal to operand 1,
+			@ or they are unordered.
+	RETLDM
+	FUNC_END aeabi_fcmpgt
+		
 #endif /* L_cmpsf2 */
 
 #ifdef L_unordsf2
 
 ARM_FUNC_START unordsf2
+ARM_FUNC_ALIAS aeabi_fcmpun unordsf2
+	
 	mov	ip, #0xff000000
 	and	r2, r1, ip, lsr #1
 	teq	r2, ip, lsr #1
@@ -734,6 +857,7 @@ ARM_FUNC_START unordsf2
 3:	mov	r0, #1			@ arguments are unordered.
 	RET
 
+	FUNC_END aeabi_fcmpun
 	FUNC_END unordsf2
 
 #endif /* L_unordsf2 */
@@ -741,6 +865,7 @@ ARM_FUNC_START unordsf2
 #ifdef L_fixsfsi
 
 ARM_FUNC_START fixsfsi
+ARM_FUNC_ALIAS aeabi_f2iz fixsfsi
 	movs	r0, r0, lsl #1
 	RETc(eq)			@ value is 0.
 
@@ -774,6 +899,7 @@ ARM_FUNC_START fixsfsi
 3:	mov	r0, #0			@ What should we convert NAN to?
 	RET
 
+	FUNC_END aeabi_f2iz
 	FUNC_END fixsfsi
 
 #endif /* L_fixsfsi */
@@ -781,6 +907,7 @@ ARM_FUNC_START fixsfsi
 #ifdef L_fixunssfsi
 
 ARM_FUNC_START fixunssfsi
+ARM_FUNC_ALIAS aeabi_f2uiz fixunssfsi
 	movs	r0, r0, lsl #1
 	movcss	r0, #0			@ value is negative...
 	RETc(eq)			@ ... or 0.
@@ -811,6 +938,7 @@ ARM_FUNC_START fixunssfsi
 3:	mov	r0, #0			@ What should we convert NAN to?
 	RET
 
+	FUNC_END aeabi_f2uiz
 	FUNC_END fixunssfsi
 
 #endif /* L_fixunssfsi */

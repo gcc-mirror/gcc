@@ -199,6 +199,9 @@ SYM (__\name):
 _L__\name:		/* A hook to tell gdb that we've switched to ARM */
 .endm
 #define EQUIV .thumb_set
+.macro  ARM_CALL name
+	bl	_L__\name
+.endm
 #else
 .macro	ARM_FUNC_START name
 	.text
@@ -209,6 +212,9 @@ _L__\name:		/* A hook to tell gdb that we've switched to ARM */
 SYM (__\name):
 .endm
 #define EQUIV .set
+.macro  ARM_CALL name
+	bl	__\name
+.endm
 #endif
 
 .macro	ARM_FUNC_ALIAS new old
@@ -649,6 +655,15 @@ LSYM(Lgot_result):
 
 	DIV_FUNC_END udivsi3
 
+ARM_FUNC_START aeabi_uidivmod
+	stmfd	sp!, { r0, r1, lr }
+	ARM_CALL udivsi3
+	ldmfd	sp!, { r1, r2, lr }
+	mul	r3, r2, r0
+	sub	r1, r1, r3
+	RET
+	FUNC_END aeabi_uidivmod
+	
 #endif /* L_udivsi3 */
 /* ------------------------------------------------------------------------ */
 #ifdef L_umodsi3
@@ -769,6 +784,15 @@ LSYM(Lover12):
 	
 	DIV_FUNC_END divsi3
 
+ARM_FUNC_START aeabi_idivmod
+	stmfd	sp!, { r0, r1, lr }
+	ARM_CALL divsi3
+	ldmfd	sp!, { r1, r2, lr }
+	mul	r3, r2, r0
+	sub	r1, r1, r3
+	RET
+	FUNC_END aeabi_idivmod
+	
 #endif /* L_divsi3 */
 /* ------------------------------------------------------------------------ */
 #ifdef L_modsi3
@@ -834,9 +858,13 @@ LSYM(Lover12):
 #ifdef L_dvmd_tls
 
 	FUNC_START div0
+	ARM_FUNC_ALIAS aeabi_idiv0 div0
+	ARM_FUNC_ALIAS aeabi_ldiv0 div0
 
 	RET
 
+	FUNC_END aeabi_ldiv0
+	FUNC_END aeabi_idiv0
 	FUNC_END div0
 	
 #endif /* L_divmodsi_tools */
@@ -884,7 +912,8 @@ LSYM(Lover12):
 #ifdef L_lshrdi3
 
 	FUNC_START lshrdi3
-
+	ARM_FUNC_ALIAS aeabi_llsr lshrdi3
+	
 #ifdef __thumb__
 	lsr	al, r2
 	mov	r3, ah
@@ -907,6 +936,7 @@ LSYM(Lover12):
 	mov	ah, ah, lsr r2
 	RET
 #endif
+	FUNC_END aeabi_llsr
 	FUNC_END lshrdi3
 
 #endif
@@ -914,6 +944,8 @@ LSYM(Lover12):
 #ifdef L_ashrdi3
 	
 	FUNC_START ashrdi3
+	ARM_FUNC_ALIAS aeabi_lasr ashrdi3
+	
 #ifdef __thumb__
 	lsr	al, r2
 	mov	r3, ah
@@ -941,6 +973,7 @@ LSYM(Lover12):
 	RET
 #endif
 
+	FUNC_END aeabi_lasr
 	FUNC_END ashrdi3
 
 #endif
@@ -948,6 +981,8 @@ LSYM(Lover12):
 #ifdef L_ashldi3
 
 	FUNC_START ashldi3
+	ARM_FUNC_ALIAS aeabi_llsl ashldi3
+	
 #ifdef __thumb__
 	lsl	ah, r2
 	mov	r3, al
@@ -970,6 +1005,7 @@ LSYM(Lover12):
 	mov	al, al, lsl r2
 	RET
 #endif
+	FUNC_END aeabi_llsl
 	FUNC_END ashldi3
 
 #endif
@@ -1104,4 +1140,4 @@ LSYM(Lchange_\register):
 
 #include "ieee754-df.S"
 #include "ieee754-sf.S"
-
+#include "bpabi.S"

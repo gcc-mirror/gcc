@@ -20,9 +20,6 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-/* Use the SYMBIAN ABI by default.  */
-#define ARM_DEFAULT_ABI ARM_ABI_AAPCS
-
 /* Do not expand builtin functions (unless explicitly prefixed with
    "__builtin").  Symbian OS code relies on properties of the standard
    library that go beyond those guaranteed by the ANSI/ISO standard.
@@ -52,12 +49,6 @@
    configuration.  */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "crti%O%s crtbegin%O%s"
-
-/* The generic link spec in elf.h does not support shared libraries.  */
-#undef LINK_SPEC
-#define LINK_SPEC "%{mbig-endian:-EB} %{mlittle-endian:-EL} "		\
-  "%{static:-Bstatic} %{shared:-shared} %{symbolic:-Bsymbolic} "	\
-  "-X"
 
 /* Support the "dllimport" attribute.  */
 #define TARGET_DLLIMPORT_DECL_ATTRIBUTES 1

@@ -1263,7 +1263,7 @@ case "${target}" in
   arm-*-coff | strongarm-*-coff | xscale-*-coff)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
-  arm-*-elf* | strongarm-*-elf* | xscale-*-elf*)
+  arm-*-elf* | strongarm-*-elf* | xscale-*-elf* | arm*-*-eabi* )
     noconfigdirs="$noconfigdirs target-libffi target-qthreads"
     ;;
   arm*-*-symbianelf*)

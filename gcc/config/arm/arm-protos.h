@@ -34,8 +34,8 @@ extern void arm_expand_prologue (void);
 extern const char *arm_strip_name_encoding (const char *);
 extern void arm_asm_output_labelref (FILE *, const char *);
 extern unsigned long arm_current_func_type (void);
-extern unsigned int arm_compute_initial_elimination_offset (unsigned int,
-							    unsigned int);
+extern HOST_WIDE_INT arm_compute_initial_elimination_offset (unsigned int,
+							     unsigned int);
 extern HOST_WIDE_INT thumb_compute_initial_elimination_offset (unsigned int,
 							       unsigned int);
 

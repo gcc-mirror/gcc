@@ -1,3 +1,10 @@
+2004-08-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* gcc.dg/testsuite/gcc.dg/arm-eabi1.c: New test.
+	* gcc.dg/dll-2.c: Fix dg-require syntax.
+	* gcc.misc-tests/arm-isr.c (abort): Declare.
+	(exit): Likewise.
+
 2004-08-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16971
