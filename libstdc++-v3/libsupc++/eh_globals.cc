@@ -48,7 +48,17 @@ static void
 get_globals_dtor (void *ptr)
 {
   if (ptr)
-    std::free (ptr);
+    {
+      __cxa_exception *exn, *next;
+      exn = ((__cxa_eh_globals *) ptr)->caughtExceptions;
+      while (exn)
+	{
+	  next = exn->nextException;
+	  _Unwind_DeleteException (&exn->unwindHeader);
+	  exn = next;
+	}
+      std::free (ptr);
+    }
 }
 
 static void
