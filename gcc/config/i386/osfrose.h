@@ -288,19 +288,25 @@ do									\
 while (0)
 
 #undef	SELECT_SECTION
-#define SELECT_SECTION(DECL,RELOC)					\
+#define SELECT_SECTION(DECL, RELOC)					\
 {									\
-  if (TREE_CODE (DECL) == STRING_CST)					\
+  if (RELOC && HALF_PIC_P ())						\
+    data_section ();							\
+									\
+  else if (TREE_CODE (DECL) == STRING_CST)				\
     {									\
       if (flag_writable_strings)					\
 	data_section ();						\
       else								\
 	readonly_data_section ();					\
     }									\
+									\
   else if (TREE_CODE (DECL) != VAR_DECL)				\
     readonly_data_section ();						\
+									\
   else if (!TREE_READONLY (DECL))					\
     data_section ();							\
+									\
   else									\
     readonly_data_section ();						\
 }
