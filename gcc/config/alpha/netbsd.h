@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES							\
-  "-D__NetBSD__ -D__ELF__ -Asystem=unix -Asystem=NetBSD"
+  "-D__NetBSD__ -D__ELF__ -D_LP64 -Asystem=unix -Asystem=NetBSD"
 
 
 /* Show that we need a GP when profiling.  */
