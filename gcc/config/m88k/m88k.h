@@ -206,9 +206,9 @@ extern char * reg_names[];
 /* Print subsidiary information on the compiler version in use.
    Redefined in m88kv4.h, and m88kluna.h.  */
 #define VERSION_INFO1	"88open OCS/BCS, "
-#define VERSION_INFO2	"08/04/92"
+#define VERSION_INFO2	"08/05/92"
 #define VERSION_STRING	version_string
-#define	TM_SCCS_ID	"@(#)m88k.h	2.2.7.2 08/04/92 14:56:50"
+#define	TM_SCCS_ID	"@(#)m88k.h	2.2.7.4 08/05/92 11:17:26"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -2301,8 +2301,6 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #elif defined(USING_SVR3_H)
 
 #define EXTRA_SECTIONS in_const, in_tdesc, in_sdata, in_init, in_fini
-#define CTORS_SECTION_FUNCTION
-#define DTORS_SECTION_FUNCTION
 
 #else /* m88kluna or other not based on svr[34].h.  */
 
@@ -2319,7 +2317,7 @@ const_section ()							\
 #define INIT_SECTION_FUNCTION
 #define FINI_SECTION_FUNCTION
 
-#endif /* CTORS_SECTION_FUNCTION */
+#endif /* USING_SVR4_H */
 
 #undef	EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
