@@ -1728,6 +1728,16 @@ get_id_2 (name, name2)
   OB_FINISH ();
   return get_identifier (obstack_base (&scratch_obstack));
 }
+
+/* Returns a DECL_ASSEMBLER_NAME for the destructor of type TYPE.  */
+
+tree
+build_destructor_name (type)
+     tree type;
+{
+  return build_overload_with_type (get_identifier (DESTRUCTOR_DECL_PREFIX),
+				   type);
+}
 
 /* Given a tree_code CODE, and some arguments (at least one),
    attempt to use an overloaded operator on the arguments.

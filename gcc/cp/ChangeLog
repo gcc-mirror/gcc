@@ -1,3 +1,21 @@
+1998-05-29  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cp-tree.h (DECL_DESTRUCTOR_P): New macro.
+	* method.c (build_destructor_name): New fn.
+	* decl2.c (maybe_retrofit_in_chrg): Split out...
+	(grokclassfn): From here.  Reorganize.
+	* decl.c (grok_ctor_properties): Make sure ctors for types with 
+	vbases have the in_chrg parm.
+	* pt.c (instantiate_class_template): Update 
+	TYPE_USES_VIRTUAL_BASECLASSES from tsubsted bases.  Don't call
+	grok_*_properties.
+	(tsubst): Call grok_ctor_properties and maybe_retrofit_in_chrg.
+
+1998-05-28  Mark Mitchell  <mark@markmitchell.com>
+
+	* pt.c (instantiate_decl): Make test for whether or not static
+	variables should be instantiated early match its comment.
+
 1998-05-28  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (start_decl): Always pedwarn about vacuously redeclaring 
