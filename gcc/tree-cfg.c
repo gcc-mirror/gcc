@@ -717,10 +717,11 @@ make_goto_expr_edges (basic_block bb)
 
 /* Remove unreachable blocks and other miscellaneous clean up work.  */
 
-void
+bool
 cleanup_tree_cfg (void)
 {
   bool something_changed = true;
+  bool retval = false;
 
   timevar_push (TV_TREE_CLEANUP_CFG);
 
@@ -731,6 +732,7 @@ cleanup_tree_cfg (void)
       something_changed = cleanup_control_flow ();
       something_changed |= delete_unreachable_blocks ();
       something_changed |= thread_jumps ();
+      retval |= something_changed;
     }
 
   /* Merging the blocks creates no new opportunities for the other
@@ -743,6 +745,7 @@ cleanup_tree_cfg (void)
   verify_flow_info ();
 #endif
   timevar_pop (TV_TREE_CLEANUP_CFG);
+  return retval;
 }
 
 

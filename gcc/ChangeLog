@@ -1,3 +1,32 @@
+2004-08-09  Jeff Law  <law@redhat.com>
+
+	* Makefile.in (OBJC-common): Add tree-ssa-threadupdate.c
+	(tree-ssa-threadupdate.o): Add dependencies.
+	* tree-ssa-threadupdate.c: New file.
+	* tree-flow.h (incoming_edge_threaded): New flag in block annotation.
+	(rewrite_vars_out_of_ssa): Remove prototype.
+	(cleanup_tree_cfg): Returns a bool.
+	* tree.h (thread_through_all_blocks): Prototype.
+	* tree-outof-ssa.c  (SSANORM_*): Move into here.
+	(remove_ssa_form): Now static.
+	(rewrite_vars_out_of_ssa): Kill.
+	* tree-ssa-live.c (register_ssa_partitions_for_vars): Kill.
+	* tree-ssa-live.h (SSANORM_*): Moved into tree-outof-ssa.c.
+	(remove_ssa_form, register_partitions_for_vars): Kill declarations.
+	* tree-cfg.c (cleanup_tree_cfg): Return a value indicating if
+	anything was changed.
+	* tree-phinodes.c (add_phi_arg): Get the block for the PHI
+	from the PHI's annotation rather than the edge associated with
+	the new argument.
+	* tree-ssa-dom.c (redirection_edges): Kill.
+	(redirect_edges_and_update_ssa_graph): Kill.
+	(tree_ssa_dominator_optimize): Do not reset forwardable flag
+	for blocks anymore.  Do not initialize redirection_edges.
+	Call thread_through_all_blocks.  Simplify code for cleanup
+	of the CFG and iterating.  No longer call cleanup_tree_cfg
+	outside the iteration loop.
+	(thread_across_edge): No longer mess with forwardable blocks.
+
 2004-08-09  Zack Weinberg  <zack@codesourcery.com>
 
 	* explow.c (memory_address): Use memory_address_p.

@@ -335,17 +335,24 @@ add_phi_arg (tree *phi, tree def, edge e)
 	 release the old PHI node.  */
       if (*phi != old_phi)
 	{
+	  /* Extract the basic block for the PHI from the PHI's annotation
+	     rather than the edge.  This works better as the edge's
+	     destination may not currently be the block with the PHI
+	     node if we are in the process of threading the edge to
+	     a new destination.  */
+	  basic_block bb = bb_for_stmt (*phi);
+
 	  release_phi_node (old_phi);
 
 	  /* Update the list head if replacing the first listed phi.  */
-	  if (phi_nodes (e->dest) == old_phi)
-	    bb_ann (e->dest)->phi_nodes = *phi;
+	  if (phi_nodes (bb) == old_phi)
+	    bb_ann (bb)->phi_nodes = *phi;
 	  else
 	    {
 	      /* Traverse the list looking for the phi node to chain to.  */
 	      tree p;
 
-	      for (p = phi_nodes (e->dest);
+	      for (p = phi_nodes (bb);
 		   p && PHI_CHAIN (p) != old_phi;
 		   p = PHI_CHAIN (p))
 		;
