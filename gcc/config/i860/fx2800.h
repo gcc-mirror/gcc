@@ -176,14 +176,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #endif
 
 #define DBX_OUTPUT_MAIN_SOURCE_FILENAME(file,name)		\
-	fprintf (file, ".stab \"%s\",.Ltext0,0x%x,0,0\n",	\
-		name, N_SO);					\
+	fprintf (file, ".stab ");				\
+	output_quoted_string (file, name);			\
+	fprintf (file, ",.Ltext0,0x%x,0,0\n", N_SO);		\
 	text_section ();					\
 	ASM_OUTPUT_INTERNAL_LABEL (file, "Ltext", 0)
 
 #define DBX_OUTPUT_SOURCE_FILENAME(file,name)			\
-	fprintf (file, ".stab \"%s\",.Ltext0,0x%x,0,0\n",	\
-		name, N_SOL);
+  do {	fprintf (file, ".stab ");				\
+	output_quoted_string (file, name);			\
+	fprintf (file, ",.Ltext0,0x%x,0,0\n", N_SOL);		\
+  } while (0)
 
 #define DBX_OUTPUT_CONSTANT_SYMBOL(file,name,ival)		\
 	fprintf (file, ".stab \"%s:c=i%d\",0,0x%x,0,0\n",	\
