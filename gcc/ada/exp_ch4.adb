@@ -5987,9 +5987,16 @@ package body Exp_Ch4 is
       Ptp  : Entity_Id           := Etype (Pfx);
 
       function Is_Procedure_Actual (N : Node_Id) return Boolean;
-      --  Check whether context is a procedure call, in which case
-      --  expansion of a bit-packed slice is deferred until the call
-      --  itself is expanded.
+      --  Check whether the argument is an actual for a procedure call,
+      --  in which case the expansion of a bit-packed slice is deferred
+      --  until the call itself is expanded. The reason this is required
+      --  is that we might have an IN OUT or OUT parameter, and the copy out
+      --  is essential, and that copy out would be missed if we created a
+      --  temporary here in Expand_N_Slice. Note that we don't bother
+      --  to test specifically for an IN OUT or OUT mode parameter, since it
+      --  is a bit tricky to do, and it is harmless to defer expansion
+      --  in the IN case, since the call processing will still generate the
+      --  appropriate copy in operation, which will take care of the slice.
 
       procedure Make_Temporary;
       --  Create a named variable for the value of the slice, in
@@ -6004,21 +6011,30 @@ package body Exp_Ch4 is
          Par : Node_Id := Parent (N);
 
       begin
-         while Present (Par)
-           and then Nkind (Par) not in N_Statement_Other_Than_Procedure_Call
          loop
+            --  If our parent is a procedure call we can return
+
             if Nkind (Par) = N_Procedure_Call_Statement then
                return True;
 
-            elsif Nkind (Par) = N_Function_Call then
-               return False;
+            --  If our parent is a type conversion, keep climbing the
+            --  tree, since a type conversion can be a procedure actual.
+            --  Also keep climbing if parameter association or a qualified
+            --  expression, since these are additional cases that do can
+            --  appear on procedure actuals.
+
+            elsif Nkind (Par) = N_Type_Conversion
+              or else Nkind (Par) = N_Parameter_Association
+              or else Nkind (Par) = N_Qualified_Expression
+            then
+               Par := Parent (Par);
+
+               --  Any other case is not what we are looking for
 
             else
-               Par := Parent (Par);
+               return False;
             end if;
          end loop;
-
-         return False;
       end Is_Procedure_Actual;
 
       --------------------

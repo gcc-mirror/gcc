@@ -1,5 +1,12 @@
 2004-10-04  Robert Dewar  <dewar@gnat.com>
 
+	* exp_ch4.adb (Is_Procedure_Actual): Correct so that this does not
+	consider expressions buried within a procedure actual to be an actual.
+	This caused some blowups with uses of packed slices within a procedure
+	actual.
+
+2004-10-04  Robert Dewar  <dewar@gnat.com>
+
 	* exp_ch3.adb (Needs_Simple_Initialization): Modular packed arrays no
 	longer need to be initialized to zero.
 	(Get_Simple_Init_Val): Modular packed arrays no longer need to be
