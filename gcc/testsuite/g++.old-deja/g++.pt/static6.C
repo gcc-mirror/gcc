@@ -1,8 +1,6 @@
-// Build don't run:
+// Build don't link:
 
 // Simplified from testcase by Erez Louidor Lior <s3824888@techst02.technion.ac.il>
-
-// excess errors test - XFAIL *-*-*
 
 template <class T> struct A {
  static const int l[1];
