@@ -1,3 +1,8 @@
+2003-05-02  Geoffrey Keating  <geoffk@apple.com>
+
+	* c-semantics.c (genrtl_switch_stmt, genrtl_if_stmt): Call
+	expand_stmt on result of expand_unreachable_stmt.
+
 2003-05-02  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi (Contributors): Add Daniel Berlin.

@@ -416,19 +416,20 @@ genrtl_if_stmt (t)
   expand_start_cond (cond, 0);
   if (THEN_CLAUSE (t))
     {
+      tree nextt = THEN_CLAUSE (t);
+      
       if (cond && integer_zerop (cond))
-	expand_unreachable_stmt (THEN_CLAUSE (t), warn_notreached);
-      else
-	expand_stmt (THEN_CLAUSE (t));
+	nextt = expand_unreachable_stmt (nextt, warn_notreached);
+      expand_stmt (nextt);
     }
 
   if (ELSE_CLAUSE (t))
     {
+      tree nextt = ELSE_CLAUSE (t);
       expand_start_else ();
       if (cond && integer_nonzerop (cond))
-	expand_unreachable_stmt (ELSE_CLAUSE (t), warn_notreached);
-      else
-	expand_stmt (ELSE_CLAUSE (t));
+	nextt = expand_unreachable_stmt (nextt, warn_notreached);
+      expand_stmt (nextt);
     }
   expand_end_cond ();
 }
@@ -687,7 +688,7 @@ genrtl_switch_stmt (t)
 
   emit_line_note (input_filename, input_line);
   expand_start_case (1, cond, TREE_TYPE (cond), "switch statement");
-  expand_unreachable_stmt (SWITCH_BODY (t), warn_notreached);
+  expand_stmt (expand_unreachable_stmt (SWITCH_BODY (t), warn_notreached));
   expand_end_case_type (cond, SWITCH_TYPE (t));
 }
 
