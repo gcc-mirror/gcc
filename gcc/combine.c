@@ -3456,6 +3456,15 @@ simplify_rtx (x, op0_mode, last, in_dest)
       if (GET_CODE (XEXP (x, 0)) == FLOAT_EXTEND
 	  && GET_MODE (XEXP (XEXP (x, 0), 0)) == mode)
  	return XEXP (XEXP (x, 0), 0);
+
+      /* (float_truncate:SF (OP:DF (float_extend:DF foo:sf))) is
+	 (OP:SF foo:SF) if OP is NEG or ABS.  */
+      if ((GET_CODE (XEXP (x, 0)) == ABS
+	   || GET_CODE (XEXP (x, 0)) == NEG)
+	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == FLOAT_EXTEND
+	  && GET_MODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == mode)
+	return gen_unary (GET_CODE (XEXP (x, 0)),
+			  mode, XEXP (XEXP (XEXP (x, 0), 0), 0));
       break;  
 
 #ifdef HAVE_cc0
