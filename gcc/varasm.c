@@ -34,6 +34,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "flags.h"
 #include "function.h"
 #include "expr.h"
+#include "output.h"
 #include "hard-reg-set.h"
 #include "regs.h"
 #include "defaults.h"
@@ -98,25 +99,35 @@ tree last_assemble_variable_decl;
 /* Nonzero if at least one function definition has been seen.  */
 static int function_defined;
 
-extern FILE *asm_out_file;
+struct addr_const;
+struct constant_descriptor;
+struct rtx_const;
+struct pool_constant;
 
-static char *compare_constant_1 ();
-static void record_constant_1 ();
-static void output_constant_def_contents ();
-static int contains_pointers_p ();
-static void bc_output_ascii ();
-
-void output_constant_pool ();
-void assemble_name ();
-int output_addressed_constants ();
-void output_constant ();
-void output_constructor ();
-void output_byte_asm ();
-void text_section ();
-void readonly_data_section ();
-void data_section ();
-void named_section ();
-static void bc_assemble_integer ();
+static void bc_make_decl_rtl		PROTO((tree, char *, int));
+static char *strip_reg_name		PROTO((char *));
+static void bc_output_ascii		PROTO((FILE *, char *, int));
+static int contains_pointers_p		PROTO((tree));
+static void decode_addr_const		PROTO((tree, struct addr_const *));
+static int const_hash			PROTO((tree));
+static int compare_constant		PROTO((tree,
+					       struct constant_descriptor *));
+static char *compare_constant_1		PROTO((tree, char *));
+static struct constant_descriptor *record_constant PROTO((tree));
+static void record_constant_1		PROTO((tree));
+static tree copy_constant		PROTO((tree));
+static void output_constant_def_contents  PROTO((tree, int, int));
+static void decode_rtx_const		PROTO((enum machine_mode, rtx,
+					       struct rtx_const *));
+static int const_hash_rtx		PROTO((enum machine_mode, rtx));
+static int compare_constant_rtx		PROTO((enum machine_mode, rtx,
+					       struct constant_descriptor *));
+static struct constant_descriptor *record_constant_rtx PROTO((enum machine_mode,
+							      rtx));
+static struct pool_constant *find_pool_constant PROTO((rtx));
+static int output_addressed_constants	PROTO((tree));
+static void bc_assemble_integer		PROTO((tree, int));
+static void output_constructor		PROTO((tree, int));
 
 #ifdef EXTRA_SECTIONS
 static enum in_section {no_section, in_text, in_data, in_named, EXTRA_SECTIONS} in_section
@@ -291,7 +302,8 @@ make_function_rtl (decl)
    as the assembler symbol name.
    TOP_LEVEL is nonzero if this is a file-scope variable.
    This is never called for PARM_DECLs.  */
-void
+
+static void
 bc_make_decl_rtl (decl, asmspec, top_level)
      tree decl;
      char *asmspec;
@@ -913,6 +925,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
      tree decl;
      int top_level;
      int at_end;
+     int dont_output_data;
 {
   register char *name;
   int align;
@@ -1370,8 +1383,9 @@ contains_pointers_p (type)
 /* Output text storage for constructor CONSTR. */
 
 void
-bc_output_constructor (constr)
-  tree constr;
+bc_output_constructor (constr, size)
+     tree constr;
+     int size;
 {
   int i;
 
@@ -1385,14 +1399,15 @@ bc_output_constructor (constr)
   text_section ();
 
   /* Align */
-  for (i = 0; TYPE_ALIGN (constr) >= BITS_PER_UNIT << (i + 1); i++);
+  for (i = 0; TYPE_ALIGN (constr) >= BITS_PER_UNIT << (i + 1); i++)
+    ;
+
   if (i > 0)
     BC_OUTPUT_ALIGN (asm_out_file, i);
 
   /* Output data */
-  output_constant (constr, int_size_in_bytes (TREE_TYPE (constr)));
+  output_constant (constr, size);
 }
-
 
 /* Create storage for constructor CONSTR. */
 
@@ -1413,7 +1428,6 @@ bc_output_data_constructor (constr)
   /* The constructor is filled in at runtime. */
   BC_OUTPUT_SKIP (asm_out_file, int_size_in_bytes (TREE_TYPE (constr)));
 }
-
 
 /* Output something to declare an external symbol to the assembler.
    (Most assemblers don't need this, so we normally output nothing.)
@@ -2098,7 +2112,7 @@ static struct constant_descriptor *const_hash_table[MAX_HASH_TABLE];
 
 /* Compute a hash code for a constant expression.  */
 
-int
+static int
 const_hash (exp)
      tree exp;
 {
@@ -2803,7 +2817,7 @@ init_const_rtx_hash_table ()
   pool_offset = 0;
 }
 
-/* Save and restore it for a nested function.  */
+/* Save and restore status for a nested function.  */
 
 void
 save_varasm_status (p)
@@ -2941,7 +2955,7 @@ simplify_subtraction (x)
 
 /* Compute a hash code for a constant RTL expression.  */
 
-int
+static int
 const_hash_rtx (mode, x)
      enum machine_mode mode;
      rtx x;
@@ -3291,7 +3305,7 @@ output_constant_pool (fnname, fndecl)
    and make sure assembler code with a label has been output for each one.
    Indicate whether an ADDR_EXPR has been encountered.  */
 
-int
+static int
 output_addressed_constants (exp)
      tree exp;
 {
@@ -3342,22 +3356,6 @@ output_addressed_constants (exp)
       break;
     }
   return reloc;
-}
-
-
-/* Output assembler for byte constant */
-void
-output_byte_asm (byte)
-  int byte;
-{
-  if (output_bytecode)
-    bc_emit_const ((char *) &byte, sizeof (char));
-#ifdef ASM_OUTPUT_BYTE
-  else
-    {
-      ASM_OUTPUT_BYTE (asm_out_file, byte);
-    }
-#endif
 }
 
 /* Output assembler code for constant EXP to FILE, with no label.
@@ -3483,8 +3481,8 @@ output_constant (exp, size)
     assemble_zeros (size);
 }
 
-
 /* Bytecode specific code to output assembler for integer. */
+
 static void
 bc_assemble_integer (exp, size)
     tree exp;
@@ -3585,7 +3583,7 @@ bc_assemble_integer (exp, size)
    (aggregate constants).
    Generate at least SIZE bytes, padding if necessary.  */
 
-void
+static void
 output_constructor (exp, size)
      tree exp;
      int size;
