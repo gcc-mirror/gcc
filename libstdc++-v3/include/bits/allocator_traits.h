@@ -220,7 +220,6 @@ namespace std
    *  @endif
    *  (See @link Allocators allocators info @endlink for more.)
    */
-  //@{
   // The fully general version.
   template<typename _Tp, typename _Allocator>
     struct _Alloc_traits
