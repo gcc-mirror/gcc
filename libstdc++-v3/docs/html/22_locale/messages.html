@@ -251,26 +251,23 @@ documentation. Here's an idea of what is required:
 	<li> message converting, simple example using the GNU model.
 
 <pre>
+#include <iostream>
 #include <locale>
+using namespace std;
 
 void test01()
 {
-  using namespace std;
-  typedef std::messages<char>::catalog catalog;
-
-  // Set to the root directory of the libstdc++.mo catalogs.
-  const char* dir = LOCALEDIR;
-  locale loc_de("de_DE");
-
-  // Cache the messages facet.
+  typedef messages<char>::catalog catalog;
+  const char* dir =
+  "/mnt/egcs/build/i686-pc-linux-gnu/libstdc++-v3/po/share/locale";  
+  const locale loc_de("de_DE");
   const messages<char>& mssg_de = use_facet<messages<char> >(loc_de); 
 
-  // Check German (de_DE) locale.
-  catalog cat_de = mssg_de.open("libstdc++", loc_c, dir);
+  catalog cat_de = mssg_de.open("libstdc++", loc_de, dir);
   string s01 = mssg_de.get(cat_de, 0, 0, "please");
   string s02 = mssg_de.get(cat_de, 0, 0, "thank you");
-  // s01 == "bitte" 
-  // s02 == "danke" 
+  cout << "please in german:" << s01 << '\n';
+  cout << "thank you in german:" << s02 << '\n';
   mssg_de.close(cat_de);
 }
 </pre>
