@@ -1,3 +1,19 @@
+2004-10-26  Roger Sayle  <roger@eyesopen.com>
+	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	Backport 3.4 regression fix from mainline
+	* cse.c: Change encoding of quantity numbers to avoid undefined
+	pointer arithmetic on qty_table.
+	(REGNO_QTY_VALID_P): A quantity is now valid if it isn't negative.
+	(get_cse_reg_info): Initialize reg_qty to a unique negative value.
+	(new_basic_block): Assign "real" quantity numbers from zero.
+	(delete_reg_equiv): Do nothing if quantity is invalid.  Reset the
+	REG_QTY to its unique negative value.
+	(merge_equiv_classes): Calculate need_rehash if quantity is valid.
+	(cse_main): Don't include max_reg when determining max_qty.
+	(cse_basic_block): Avoid subtracting a large offset from qty_table,
+	which causes undefined C99 behaviour.  Only allocate needed memory.
+
 2004-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (rtl_for_decl_location): Avoid segfault if
