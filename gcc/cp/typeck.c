@@ -4624,13 +4624,15 @@ build_static_cast_1 (tree type, tree expr, bool c_cast_p,
      promotions, floating point promotion, integral conversions,
      floating point conversions, floating-integral conversions,
      pointer conversions, and pointer to member conversions.  */
-  if ((ARITHMETIC_TYPE_P (type) && ARITHMETIC_TYPE_P (intype))
-      /* DR 128
-
-         A value of integral _or enumeration_ type can be explicitly
-	 converted to an enumeration type.  */
-      || (INTEGRAL_OR_ENUMERATION_TYPE_P (type)
-	  && INTEGRAL_OR_ENUMERATION_TYPE_P (intype)))
+  /* DR 128
+     
+     A value of integral _or enumeration_ type can be explicitly
+     converted to an enumeration type.  */
+  /* The effect of all that is that any conversion between any two
+     types which are integral, floating, or enumeration types can be
+     performed.  */
+  if ((INTEGRAL_TYPE_P (type) || SCALAR_FLOAT_TYPE_P (type))
+      && (INTEGRAL_TYPE_P (intype) || SCALAR_FLOAT_TYPE_P (intype)))
     {
       expr = ocp_convert (type, expr, CONV_C_CAST, LOOKUP_NORMAL);
 

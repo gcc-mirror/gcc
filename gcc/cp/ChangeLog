@@ -1,3 +1,8 @@
+2005-03-24  Geoffrey Keating  <geoffk@apple.com>
+
+	* typeck.c (build_static_cast_1): Allow scalar_cast between
+	any integral, floating, or enumeration type.
+
 2005-03-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* parser.c (cp_parser_warn_min_max): New function.
