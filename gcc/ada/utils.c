@@ -1756,7 +1756,7 @@ create_subprog_decl (subprog_name, asm_name, subprog_type, param_decl_list,
   DECL_RESULT (subprog_decl)    = build_decl (RESULT_DECL, 0, return_type);
 
   if (asm_name != 0)
-    DECL_ASSEMBLER_NAME (subprog_decl) = asm_name;
+    SET_DECL_ASSEMBLER_NAME (subprog_decl, asm_name);
 
   process_attributes (subprog_decl, attr_list);
 
@@ -1935,7 +1935,7 @@ builtin_function (name, type, function_code, class, library_name)
   DECL_EXTERNAL (decl) = 1;
   TREE_PUBLIC (decl) = 1;
   if (library_name)
-    DECL_ASSEMBLER_NAME (decl) = get_identifier (library_name);
+    SET_DECL_ASSEMBLER_NAME (decl, get_identifier (library_name));
 
   pushdecl (decl);
   DECL_BUILT_IN_CLASS (decl) = class;
