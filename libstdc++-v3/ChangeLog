@@ -1,6 +1,42 @@
+2000-07-25  Benjamin Kosnik  <bkoz@gnu.org>
+
+	* configure.in: Change AM_PROG_LIBTOOL to AC_PROG_LIBTOOL. Change
+	it back for current versions of maintainer-tools...
+	* acinclude.m4: Some cleanups...
+	* aclocal: Regenerated.
+	* configure: Regenerated.
+	
+	* src/Makefile.am (CXXLINK): Add -Wl,-01 to the link line for
+	optimizing/adapting the hash table using GNU ld.
+	* src/Makefile.in: Regenerate.
+	
+2000-07-24  H.J. Lu  <hjl@gnu.org>
+
+        * src/Makefile.am (LIBIO_INCLUDES): Set to -I$(top_srcdir)/libio
+        even if GLIBCPP_NEED_LIBIO is false. The installed glibc header
+        files don't include private libio header files needed by
+        libstdc++ v3.
+        * src/Makefile.in: Rebuild.
+
 2000-07-24  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
+	* bits/std_fstream.h: Parameterize __basic_file.
+	* config/c_io_libio.cc: Add wchar_t methods for parameterization.
+	* bits/basic_file.h: Same here.
+
 	* bits/istream.tcc (getline): Tweaks.
+
+	* bits/fstream.tcc: Shorten __retval to __ret.
+	* bits/ostream.tcc: Same.
+	* bits/sbuf_iter.h: Same.
+	* bits/sstream.tcc: Same.
+	* bits/streambuf.tcc: Same.
+	* bits/std_fstream.h: Same.
+	* src/string-inst.cc: Same.
+	* src/ios.cc: Same.
+	* config/c_io_libio.cc: Same.
+	* bits/string.tcc: Same.
+	* bits/std_streambuf.h: Same.
 
 2000-07-23  Brent Verner <brent@rcfile.org>
 

@@ -56,7 +56,7 @@ namespace std {
       // Non-standard Types:
       typedef basic_streambuf<char_type, traits_type>  	__streambuf_type;
       typedef basic_filebuf<char_type, traits_type>     __filebuf_type;
-      typedef __basic_file			        __file_type;
+      typedef __basic_file<char_type>		        __file_type;
       typedef typename traits_type::state_type          __state_type;
       typedef codecvt<char_type, char, __state_type>    __codecvt_type;
       typedef typename __codecvt_type::result 	        __res_type;
@@ -199,22 +199,22 @@ namespace std {
       virtual streamsize 
       xsgetn(char_type* __s, streamsize __n)
       {
-	streamsize __retval = 0;
+	streamsize __ret = 0;
 	// Clear out pback buffer before going on to the real deal...
 	if (_M_pback_init)
 	  {
-	    while (__retval < __n && _M_in_cur < _M_in_end)
+	    while (__ret < __n && _M_in_cur < _M_in_end)
 	      {
 		*__s = *_M_in_cur;
-		++__retval;
+		++__ret;
 		++__s;
 		++_M_in_cur;
 	      }
 	    _M_pback_destroy();
 	  }
-	if (__retval < __n)
-	  __retval += __streambuf_type::xsgetn(__s, __n - __retval);
-	return __retval;
+	if (__ret < __n)
+	  __ret += __streambuf_type::xsgetn(__s, __n - __ret);
+	return __ret;
       }
  
       virtual streamsize 

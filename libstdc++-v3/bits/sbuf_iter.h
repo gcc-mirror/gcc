@@ -164,14 +164,14 @@ namespace std
       operator*() const
       { 
 	// The result of operator*() on an end of stream is undefined.
-	char_type __retval;
+	char_type __ret;
 	if (_M_istreambuf && _M_c != static_cast<int_type>(-2))
-	  __retval = _M_c;
+	  __ret = _M_c;
 	else if (_M_istreambuf)
-	  __retval = traits_type::to_char_type(_M_istreambuf->sgetc()); 
+	  __ret = traits_type::to_char_type(_M_istreambuf->sgetc()); 
 	else
-	  __retval = static_cast<char_type>(traits_type::eof());
-	return __retval;
+	  __ret = static_cast<char_type>(traits_type::eof());
+	return __ret;
       }
 	
       __istreambufiter_type& 

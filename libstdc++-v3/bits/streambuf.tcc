@@ -41,18 +41,18 @@ namespace std {
     basic_streambuf<_CharT, _Traits>::
     sbumpc()
     {
-      int_type __retval;
+      int_type __ret;
       if (_M_in_cur && _M_in_cur < _M_in_end)
 	{
 	  char_type __c = *gptr();
 	  ++_M_in_cur;
 	  if (_M_buf_unified &&  _M_mode & ios_base::out)
 	    ++_M_out_cur;
-	  __retval = traits_type::to_int_type(__c);
+	  __ret = traits_type::to_int_type(__c);
 	}
       else 
-	__retval = this->uflow();
-      return __retval;
+	__ret = this->uflow();
+      return __ret;
     }
 
   template<typename _CharT, typename _Traits>
@@ -60,19 +60,19 @@ namespace std {
     basic_streambuf<_CharT, _Traits>::
     sputbackc(char_type __c) 
     {
-      int_type __retval;
+      int_type __ret;
       bool __testpos = _M_in_cur && _M_in_beg < _M_in_cur;
       bool __testne = _M_in_cur && !traits_type::eq(__c, this->gptr()[-1]);
       if (!__testpos || __testne)
-	__retval = pbackfail(traits_type::to_int_type(__c));
+	__ret = pbackfail(traits_type::to_int_type(__c));
       else 
 	{
 	  --_M_in_cur;
 	  if (_M_buf_unified && _M_mode & ios_base::out)
 	    --_M_out_cur;
-	  __retval = traits_type::to_int_type(*this->gptr());
+	  __ret = traits_type::to_int_type(*this->gptr());
 	}
-      return __retval;
+      return __ret;
     }
   
   template<typename _CharT, typename _Traits>
@@ -80,17 +80,17 @@ namespace std {
     basic_streambuf<_CharT, _Traits>::
     sungetc()
     {
-      int_type __retval;
+      int_type __ret;
       if (_M_in_cur && _M_in_beg < _M_in_cur)
 	{
 	  --_M_in_cur;
 	  if (_M_buf_unified && _M_mode & ios_base::out)
 	    --_M_out_cur;
-	  __retval = traits_type::to_int_type(*_M_in_cur);
+	  __ret = traits_type::to_int_type(*_M_in_cur);
 	}
       else 
-	__retval = this->pbackfail();
-      return __retval;
+	__ret = this->pbackfail();
+      return __ret;
     }
 
   // Don't test against _M_buf + _M_buf_size, because _M_buf reflects
@@ -103,17 +103,17 @@ namespace std {
     basic_streambuf<_CharT, _Traits>::
     sputc(char_type __c)
     {
-      int_type __retval;
+      int_type __ret;
 
       if (_M_out_cur && _M_out_cur < _M_out_beg + _M_buf_size)
 	{
 	  *_M_out_cur = __c;
 	  _M_out_cur_move(1);
-	  __retval = traits_type::to_int_type(__c);
+	  __ret = traits_type::to_int_type(__c);
 	}
       else
-	__retval = this->overflow(traits_type::to_int_type(__c));
-      return __retval;
+	__ret = this->overflow(traits_type::to_int_type(__c));
+      return __ret;
     }
 
   template<typename _CharT, typename _Traits>
@@ -122,39 +122,39 @@ namespace std {
     xsgetn(char_type* __s, streamsize __n)
     {
       bool __testout = _M_mode & ios_base::out;
-      streamsize __retval = 0;
+      streamsize __ret = 0;
 
       if (__n)
 	{
-	  while (__retval < __n)
+	  while (__ret < __n)
 	    {
 	      if (_M_in_cur < _M_in_end)
 		{
 		  size_t __len;
-		  if (_M_in_cur + __n - __retval <= _M_in_end)
-		    __len = __n - __retval;
+		  if (_M_in_cur + __n - __ret <= _M_in_end)
+		    __len = __n - __ret;
 		  else
 		    __len = _M_in_end - _M_in_cur;
 		  traits_type::copy(__s, _M_in_cur, __len);
-		  __retval += __len;
+		  __ret += __len;
 		  __s += __len;
 		  _M_in_cur += __len;
 		  if (_M_buf_unified && __testout)
 		    _M_out_cur += __len;
 		}
 	      
-	      if (__retval != __n)
+	      if (__ret != __n)
 		{
 		  int_type __c = this->uflow();  
 		  if (traits_type::eq_int_type(__c, traits_type::eof()))
                     break;
 
 		  traits_type::assign(*__s++, traits_type::to_char_type(__c));
-                  ++__retval;
+                  ++__ret;
 		}
 	    }
 	}
-      return __retval;
+      return __ret;
     }
 
   // Don't test against _M_buf + _M_buf_size, because _M_buf reflects
@@ -167,11 +167,11 @@ namespace std {
     basic_streambuf<_CharT, _Traits>::
     xsputn(const char_type* __s, streamsize __n)
     {
-      streamsize __retval = 0;
+      streamsize __ret = 0;
 
       if (__n)
 	{
-	  while (__retval < __n)
+	  while (__ret < __n)
 	    {
 	      bool __testput = _M_out_cur < _M_out_beg + _M_buf_size;
 	      bool __testout = _M_mode & ios_base::out;
@@ -181,28 +181,28 @@ namespace std {
 		  int_type __overfc = this->overflow(__c);
 		  if (traits_type::eq_int_type(__c, __overfc))
 		    {
-		      ++__retval;
+		      ++__ret;
 		      ++__s;
 		    }
 		  else
 		    break;
 		}
 	      
-	      if (__retval != __n)
+	      if (__ret != __n)
 		{
 		  size_t __len;
-		  if (_M_out_cur + __n - __retval <= _M_out_beg + _M_buf_size)
-		    __len = __n - __retval;
+		  if (_M_out_cur + __n - __ret <= _M_out_beg + _M_buf_size)
+		    __len = __n - __ret;
 		  else
 		    __len = _M_out_beg + _M_buf_size - _M_out_cur;
 		  traits_type::copy(_M_out_cur, __s, __len);
-		  __retval += __len;
+		  __ret += __len;
 		  __s += __len;
 		  _M_out_cur_move(__len);
 		}
 	    }
 	}
-      return __retval;
+      return __ret;
     }
 
 
@@ -218,7 +218,7 @@ namespace std {
     {
       typedef typename _Traits::int_type	int_type;
 
-      streamsize __retval = 0;
+      streamsize __ret = 0;
       streamsize __bufsize = __sbin->in_avail();
       streamsize __xtrct;
       bool __testout = __sbin->_M_mode & ios_base::out;
@@ -227,7 +227,7 @@ namespace std {
 	while (__testput && __bufsize != -1)
 	  {
 	    __xtrct = __sbout->sputn(__sbin->gptr(), __bufsize);
-	    __retval += __xtrct;
+	    __ret += __xtrct;
 	    __sbin->_M_in_cur += __xtrct;
 	    if (__testout && __sbin->_M_buf_unified)
 	      __sbin->_M_out_cur += __xtrct;
@@ -249,7 +249,7 @@ namespace std {
 	if ((__ios.exceptions() & ios_base::failbit) != 0)
 	  throw;
       }
-      return __retval;
+      return __ret;
     }
 
 } // namespace std

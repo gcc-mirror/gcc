@@ -37,7 +37,176 @@
 
 namespace std {
   
-  __basic_file::__basic_file(__c_lock* __lock)
+  template<typename _CharT>
+    int 
+    __basic_file<_CharT>::get_fileno(void)
+    { return _fileno; }
+ 
+  template<typename _CharT>
+    __basic_file<_CharT>::~__basic_file()
+    { _IO_file_finish(this, 0); }
+      
+  template<typename _CharT>
+    void 
+    __basic_file<_CharT>::_M_open_mode(ios_base::openmode __mode, 
+				       int& __p_mode, int& __rw_mode)
+    {  
+#ifdef O_BINARY
+      bool __testb = __mode & ios_base::binary;
+#endif
+      bool __testi = __mode & ios_base::in;
+      bool __testo = __mode & ios_base::out;
+      bool __testt = __mode & ios_base::trunc;
+      bool __testa = __mode & ios_base::app;
+      
+      if (!__testi && __testo && !__testt && !__testa)
+	{
+	  __p_mode = O_WRONLY | O_TRUNC | O_CREAT;
+	  __rw_mode = _IO_NO_READS;
+	}
+      if (!__testi && __testo && !__testt && __testa)
+	{
+	  __p_mode = O_WRONLY | O_APPEND | O_CREAT;
+	  __rw_mode = _IO_NO_READS | _IO_IS_APPENDING;
+	}
+      if (!__testi && __testo && __testt && !__testa)
+	{
+	  __p_mode = O_WRONLY | O_TRUNC | O_CREAT;
+	  __rw_mode = _IO_NO_READS;
+	}
+      if (__testi && !__testo && !__testt && !__testa)
+	{
+	  __p_mode = O_RDONLY;
+	  __rw_mode = _IO_NO_WRITES;
+	}
+      if (__testi && __testo && !__testt && !__testa)
+	{
+	  __p_mode = O_RDWR;
+	  __rw_mode = 0;
+	}
+      if (__testi && __testo && __testt && !__testa)
+	{
+	  __p_mode = O_RDWR | O_TRUNC | O_CREAT;
+	  __rw_mode = 0;
+	}
+#ifdef O_BINARY
+      if (__testb)
+	__p_mode |= O_BINARY;
+#endif	   
+    }
+  
+  template<typename _CharT>
+    __basic_file<_CharT>*
+    __basic_file<_CharT>::sys_open(int __fd, ios_base::openmode __mode) 
+    {
+      __basic_file* __ret = NULL;
+      int __p_mode = 0;
+      int __rw_mode = _IO_NO_READS + _IO_NO_WRITES; 
+      
+      _M_open_mode(__mode, __p_mode, __rw_mode);
+      // _IO_file_attach 
+      //  sets _IO_DELETE_DONT_CLOSE
+      //  clears _IO_NO_READS + _IO_NO_WRITES
+      if (_IO_file_attach(this, __fd) != NULL)
+	{
+	  // Set flags appropriately for openmode...
+	  int __mask = _IO_NO_READS + _IO_NO_WRITES + _IO_IS_APPENDING;
+	  _IO_mask_flags(this, __rw_mode, __mask);
+	}
+      else
+	_IO_un_link((_IO_FILE_plus*) this);
+      return __ret;
+    }
+  
+  template<typename _CharT>
+    __basic_file<_CharT>* 
+    __basic_file<_CharT>::open(const char* __name, ios_base::openmode __mode, 
+			       int __prot = 0664)
+    {
+      __basic_file* __ret = NULL;
+      int __p_mode = 0;
+      int __rw_mode = _IO_NO_READS + _IO_NO_WRITES; 
+      
+      _M_open_mode(__mode, __p_mode, __rw_mode);
+      if (!_IO_file_is_open(this))
+	{
+	  __c_file_type* __f;
+	  __f = _IO_file_open(this, __name, __p_mode, __prot, __rw_mode, 0);
+	  __ret = __f ? this: NULL;
+	}
+      return __ret;
+    }
+  
+  template<typename _CharT>
+    bool 
+    __basic_file<_CharT>::is_open() { return _fileno >= 0; }
+  
+  template<typename _CharT>
+    __basic_file<_CharT>* 
+    __basic_file<_CharT>::close()
+    { 
+      return _IO_file_close_it(this) ? static_cast<__basic_file*>(NULL) : this;
+    }
+
+  // NB: Unused.
+  template<typename _CharT>
+    int 
+    __basic_file<_CharT>::uflow()  
+    { return _IO_default_uflow(this); }
+  
+  // NB: Unused.
+  template<typename _CharT>
+    int 
+    __basic_file<_CharT>::pbackfail(int __c) 
+    { return _IO_default_pbackfail(this, __c); }
+  
+  template<typename _CharT>
+    streamsize 
+    __basic_file<_CharT>::xsgetn(char* __s, streamsize __n)
+    { return _IO_file_xsgetn(this, __s, __n); }
+
+  // NB: Unused.
+  template<typename _CharT>
+    streamsize 
+    __basic_file<_CharT>::sys_read(char* __s, streamsize __n) 
+    { return _IO_file_read(this, __s, __n); }
+
+  // NB: Unused.    
+  template<typename _CharT>
+    streamsize 
+    __basic_file<_CharT>::sys_write(const char* __s, streamsize __n) 
+    { return _IO_file_write(this, __s, __n); }
+
+  // NB: Unused.
+  template<typename _CharT>
+    streamoff
+    __basic_file<_CharT>::sys_seek(streamoff __pos, ios_base::seekdir __way)
+    { return _IO_file_seek(this, __pos, __way); }
+  
+  // NB: Unused.
+  template<typename _CharT>
+    int 
+    __basic_file<_CharT>::sys_close() 
+    { return _IO_file_close(this); }
+
+  // NB: Unused.
+  template<typename _CharT>
+    int 
+    __basic_file<_CharT>::sys_stat(void* __v) 
+    { return _IO_file_stat(this, __v); }
+
+  // NB: Unused.
+  template<typename _CharT>
+    int 
+    __basic_file<_CharT>::showmanyc() { return EOF; }
+
+  // NB: Unused.
+  template<typename _CharT>
+    void 
+    __basic_file<_CharT>::imbue(void* /*__v*/) { }
+
+  // __basic_file<char> definitions
+  __basic_file<char>::__basic_file(__c_lock* __lock)
   {
 #ifdef _IO_MTSAFE_IO
     _lock = __lock;
@@ -47,196 +216,94 @@ namespace std {
     _IO_file_init((_IO_FILE_plus*)this);
   }
 
-  int 
-  __basic_file::get_fileno(void)
-  { return _fileno; }
- 
-  __basic_file::~__basic_file()
-  { _IO_file_finish(this, 0); }
-      
-  void 
-  __basic_file::_M_open_mode(ios_base::openmode __mode, int& __p_mode, 
-			     int& __rw_mode)
-  {
-#ifdef O_BINARY
-    bool __testb = __mode & ios_base::binary;
-#endif
-    bool __testi = __mode & ios_base::in;
-    bool __testo = __mode & ios_base::out;
-    bool __testt = __mode & ios_base::trunc;
-    bool __testa = __mode & ios_base::app;
-    
-    if (!__testi && __testo && !__testt && !__testa)
-      {
-	__p_mode = O_WRONLY | O_TRUNC | O_CREAT;
-	__rw_mode = _IO_NO_READS;
-      }
-    if (!__testi && __testo && !__testt && __testa)
-      {
-	__p_mode = O_WRONLY | O_APPEND | O_CREAT;
-	__rw_mode = _IO_NO_READS | _IO_IS_APPENDING;
-      }
-    if (!__testi && __testo && __testt && !__testa)
-      {
-	__p_mode = O_WRONLY | O_TRUNC | O_CREAT;
-	__rw_mode = _IO_NO_READS;
-      }
-    if (__testi && !__testo && !__testt && !__testa)
-      {
-	__p_mode = O_RDONLY;
-	__rw_mode = _IO_NO_WRITES;
-      }
-    if (__testi && __testo && !__testt && !__testa)
-	{
-	  __p_mode = O_RDWR;
-	  __rw_mode = 0;
-	}
-    if (__testi && __testo && __testt && !__testa)
-      {
-	__p_mode = O_RDWR | O_TRUNC | O_CREAT;
-	__rw_mode = 0;
-      }
-#ifdef O_BINARY
-    if (__testb)
-      __p_mode |= O_BINARY;
-#endif	   
-    }
-
-  __basic_file*
-  __basic_file::sys_open(int __fd, ios_base::openmode __mode) 
-  {
-    __basic_file* __retval = NULL;
-    int __p_mode = 0;
-    int __rw_mode = _IO_NO_READS + _IO_NO_WRITES; 
-
-    _M_open_mode(__mode, __p_mode, __rw_mode);
-    // _IO_file_attach 
-    //  sets _IO_DELETE_DONT_CLOSE
-    //  clears _IO_NO_READS + _IO_NO_WRITES
-    if (_IO_file_attach(this, __fd) != NULL)
-      {
-	// Set flags appropriately for openmode...
-	int __mask = _IO_NO_READS + _IO_NO_WRITES + _IO_IS_APPENDING;
-	_IO_mask_flags(this, __rw_mode, __mask);
-      }
-    else
-      {
-	_IO_un_link((_IO_FILE_plus*) this);
-	// XXX Extended error checking?? Note that v2 does not even have this.
-      }
-    return __retval;
-  }
-
-  __basic_file* 
-  __basic_file::open(const char* __name, ios_base::openmode __mode, 
-		     int __prot = 0664)
-  {
-    __basic_file* __retval = NULL;
-    int __p_mode = 0;
-    int __rw_mode = _IO_NO_READS + _IO_NO_WRITES; 
-
-    _M_open_mode(__mode, __p_mode, __rw_mode);
-    if (!_IO_file_is_open(this))
-      {
-	//#if _G_HAVE_IO_FILE_OPEN
-	__c_file_type* __f;
-	__f = _IO_file_open(this, __name, __p_mode, __prot, __rw_mode, 0);
-	//	_flags &= ~_IO_DELETE_DONT_CLOSE;
-	__retval = __f ? this: NULL;
-      }
-    return __retval;
-  }
-  
-  bool 
-  __basic_file::is_open() { return _fileno >= 0; }
-  
-  __basic_file* 
-  __basic_file::close()
-  { return _IO_file_close_it(this) ? static_cast<__basic_file*>(NULL) : this; }
-
   // NB: Unused.
   int 
-  __basic_file::overflow(int __c) 
+  __basic_file<char>::overflow(int __c) 
   { return _IO_file_overflow(this, __c); }
 
   // NB: Unused.
   int 
-  __basic_file::underflow()  
+  __basic_file<char>::underflow()  
   { return _IO_file_underflow(this); }
 
-  // NB: Unused.
-  int 
-  __basic_file::uflow()  
-  { return _IO_default_uflow(this); }
-  
-  // NB: Unused.
-  int 
-  __basic_file::pbackfail(int __c) 
-  { return _IO_default_pbackfail(this, __c); }
-  
   streamsize 
-  __basic_file::xsputn(const char* __s, streamsize __n)
+  __basic_file<char>::xsputn(const char* __s, streamsize __n)
   { return _IO_file_xsputn(this, __s, __n); }
-  
-  streamsize 
-  __basic_file::xsgetn(char* __s, streamsize __n)
-  { return _IO_file_xsgetn(this, __s, __n); }
 
   streamoff
-  __basic_file::seekoff(streamoff __off, ios_base::seekdir __way, 
-			ios_base::openmode __mode)
+  __basic_file<char>::seekoff(streamoff __off, ios_base::seekdir __way, 
+			      ios_base::openmode __mode)
   { return _IO_file_seekoff(this, __off, __way, __mode); }
 
   streamoff
-  __basic_file::seekpos(streamoff __pos, ios_base::openmode __mode)
+  __basic_file<char>::seekpos(streamoff __pos, ios_base::openmode __mode)
   { return _IO_file_seekoff(this, __pos, ios_base::beg, __mode); }
 
-  // NB: Unused.
+ // NB: Unused.
   streambuf* 
-  __basic_file::setbuf(char* __b, int __len)
+  __basic_file<char>::setbuf(char* __b, int __len)
   { return (streambuf*) _IO_file_setbuf(this,__b, __len); }
 
-  int 
-  __basic_file::sync()
+ int 
+  __basic_file<char>::sync()
   { return _IO_file_sync(this); }
 
   // NB: Unused.
   int 
-  __basic_file::doallocate() 
+  __basic_file<char>::doallocate() 
   { return _IO_file_doallocate(this); }
 
-  // NB: Unused.
-  streamsize 
-  __basic_file::sys_read(char* __s, streamsize __n) 
-  { return _IO_file_read(this, __s, __n); }
+  template class __basic_file<char>;
 
-  // NB: Unused.    
-  streamsize 
-  __basic_file::sys_write(const char* __s, streamsize __n) 
-  { return _IO_file_write(this, __s, __n); }
+  // __basic_file<wchar_t> definitions
+#ifdef _GLIBCPP_USE_WCHAR_T
+  __basic_file<wchar_t>::__basic_file(__c_lock* __lock)
+  {
+#ifdef _IO_MTSAFE_IO
+    _lock = __lock;
+#endif
+    // bkoz this should be -1
+    //    _IO_no_init(this, 0 /* ??? */, 1, 0, 0);
+    _IO_no_init(this, 0 /* ??? */, -1, 0, 0);
+    _IO_JUMPS(this) = &_IO_file_jumps;
+    _IO_file_init((_IO_FILE_plus*)this);
+  }
 
-  // NB: Unused.
-  streamoff
-  __basic_file::sys_seek(streamoff __pos, ios_base::seekdir __way)
-  { return _IO_file_seek(this, __pos, __way); }
+ int 
+  __basic_file<wchar_t>::overflow(int __c) 
+  { return _IO_wfile_overflow(this, __c); }
+
+  int 
+  __basic_file<wchar_t>::underflow()  
+  { return _IO_wfile_underflow(this); }
+
+  streamsize 
+  __basic_file<wchar_t>::xsputn(const char* __s, streamsize __n)
+  { return _IO_wfile_xsputn(this, __s, __n); }
   
-  // NB: Unused.
-  int 
-  __basic_file::sys_close() 
-  { return _IO_file_close(this); }
+  streamoff
+  __basic_file<wchar_t>::seekoff(streamoff __off, ios_base::seekdir __way, 
+				 ios_base::openmode __mode)
+  { return _IO_wfile_seekoff(this, __off, __way, __mode); }
 
-  // NB: Unused.
-  int 
-  __basic_file::sys_stat(void* __v) 
-  { return _IO_file_stat(this, __v); }
+  streamoff
+  __basic_file<wchar_t>::seekpos(streamoff __pos, ios_base::openmode __mode)
+  { return _IO_wfile_seekoff(this, __pos, ios_base::beg, __mode); }
 
-  // NB: Unused.
-  int 
-  __basic_file::showmanyc() { return EOF; }
+   streambuf* 
+  __basic_file<wchar_t>::setbuf(wchar_t* __b, int __len)
+  { return (streambuf*) _IO_wfile_setbuf(this,__b, __len); }
 
-  // NB: Unused.
-  void 
-  __basic_file::imbue(void* /*__v*/) { }
+   int 
+  __basic_file<wchar_t>::sync()
+  { return _IO_wfile_sync(this); }
+
+  int 
+  __basic_file<wchar_t>::doallocate() 
+  { return _IO_wfile_doallocate(this); }
+
+  template class __basic_file<wchar_t>;
+#endif
 
 }  // namespace std
 

@@ -43,7 +43,7 @@ namespace std {
     basic_stringbuf<_CharT, _Traits, _Alloc>::
     pbackfail(int_type __c)
     {
-      int_type __retval = traits_type::eof();
+      int_type __ret = traits_type::eof();
       bool __testeof = traits_type::eq_int_type(__c, traits_type::eof());
       bool __testpos = _M_in_cur && _M_in_beg < _M_in_cur; 
       
@@ -55,21 +55,21 @@ namespace std {
 	      && !__testeof)
 	    {
 	      --_M_in_cur;
-	      __retval = __c;
+	      __ret = __c;
 	    }
 	  else if (!__testeof)
 	    {
 	      --_M_in_cur;
 	      *_M_in_cur = traits_type::to_char_type(__c);
-	      __retval = __c;
+	      __ret = __c;
 	    }
 	  else if (__testeof)
 	    {
 	      --_M_in_cur;
-	      __retval = traits_type::not_eof(__c);
+	      __ret = traits_type::not_eof(__c);
 	    }
 	}
-      return __retval;
+      return __ret;
     }
   
   template <class _CharT, class _Traits, class _Alloc>
@@ -77,8 +77,8 @@ namespace std {
     basic_stringbuf<_CharT, _Traits, _Alloc>::
     overflow(int_type __c)
     {
-      int_type __retval = traits_type::eof();
-      bool __testeof = traits_type::eq_int_type(__c, __retval);
+      int_type __ret = traits_type::eof();
+      bool __testeof = traits_type::eq_int_type(__c, __ret);
       bool __testwrite = _M_out_cur < _M_buf + _M_buf_size;
       bool __testout = _M_mode & ios_base::out;
 
@@ -92,7 +92,7 @@ namespace std {
 	      __len *= 2;
 
 	      if (__testwrite)
-		__retval = this->sputc(__c);
+		__ret = this->sputc(__c);
 	      else if (__len <= _M_string.max_size())
 		{
 		  // Force-allocate, re-sync.
@@ -103,13 +103,13 @@ namespace std {
 				 _M_out_cur - _M_out_beg);
 		  *_M_out_cur = traits_type::to_char_type(__c);
 		  _M_out_cur_move(1);
-		  __retval = __c;
+		  __ret = __c;
 		}
 	    }
 	  else
-	    __retval = traits_type::not_eof(__c);
+	    __ret = traits_type::not_eof(__c);
 	}
-      return __retval;
+      return __ret;
     }
 
   template <class _CharT, class _Traits, class _Alloc>
@@ -117,7 +117,7 @@ namespace std {
     basic_stringbuf<_CharT, _Traits, _Alloc>::
     seekoff(off_type __off, ios_base::seekdir __way, ios_base::openmode __mode)
     {
-      pos_type __retval =  pos_type(off_type(-1)); 
+      pos_type __ret =  pos_type(off_type(-1)); 
       bool __testin = __mode & ios_base::in && _M_mode & ios_base::in;
       bool __testout = __mode & ios_base::out && _M_mode & ios_base::out;
       bool __testboth = __testin && __testout && __way != ios_base::cur;
@@ -158,16 +158,16 @@ namespace std {
 	      && __newoffi + __off >= 0 && __endi - __beg >= __newoffi + __off)
 	    {
 	      _M_in_cur = __beg + __newoffi + __off;
-	      __retval = pos_type(__newoffi);
+	      __ret = pos_type(__newoffi);
 	    }
 	  if (__testout
 	      && __newoffo + __off >= 0 && __endo - __beg >= __newoffo + __off)
 	    {
 	      _M_out_cur_move(__newoffo + __off - (_M_out_cur - __beg));
-	      __retval = pos_type(__newoffo);
+	      __ret = pos_type(__newoffo);
 	    }
 	}
-      return __retval;
+      return __ret;
     }
 
   template <class _CharT, class _Traits, class _Alloc>
@@ -175,7 +175,7 @@ namespace std {
     basic_stringbuf<_CharT, _Traits, _Alloc>::
     seekpos(pos_type __sp, ios_base::openmode __mode)
     {
-      pos_type __retval =  pos_type(off_type(-1)); 
+      pos_type __ret =  pos_type(off_type(-1)); 
       off_type __pos = __sp._M_position();
       char_type* __beg = NULL;
       char_type* __end = NULL;
@@ -200,10 +200,10 @@ namespace std {
 	    _M_in_cur = _M_in_beg + __pos;
 	  if (__testout)
 	    _M_out_cur_move((__pos) - (_M_out_cur - __beg));
-	  __retval = pos_type(off_type(__pos));
+	  __ret = pos_type(off_type(__pos));
 	}
       
-      return __retval;
+      return __ret;
     }
 
 } // namespace std
