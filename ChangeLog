@@ -1,8 +1,15 @@
+2004-03-12  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+            Paolo Bonzini  <bonzini@gnu.org>
+
+	PR bootstrap/14522
+	* configure.in: Cope with shells that do not support unquoted ^
+	* configure: Regenerate.
+
 2004-03-11  Eric Botcazou  <ebotcazou@gcc.gnu.org>
             Paolo Bonzini  <bonzini@gnu.org>
 
 	PR bootstrap/14522
-	* configure.in: Cope with shell that do not support nesting
+	* configure.in: Cope with shells that do not support nesting
 	quotes inside quoted backquote substitutions.
 	* configure: Regenerate.
 
