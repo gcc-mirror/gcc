@@ -30,6 +30,9 @@
 /* Define vfork as fork if vfork does not work.  */
 #undef vfork
 
+/* Define if the system defines a uintptr_t type.  */
+#undef HAVE_UINTPTR_T
+
 /* Define if you have the asprintf function.  */
 #undef HAVE_ASPRINTF
 

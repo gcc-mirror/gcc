@@ -301,7 +301,7 @@ init_syntax_once ()
 # endif /* emacs */
 
 /* Integer type for pointers.  */
-# if !defined _LIBC
+# if !defined _LIBC && !defined HAVE_UINTPTR_T
 typedef unsigned long int uintptr_t;
 # endif
 

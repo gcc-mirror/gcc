@@ -1,5 +1,11 @@
 Thu Nov 15 11:06:25 2001  Jeffrey A Law  (law@cygnus.com)
 
+	* config.in (HAVE_UINTPTR_T): Provide autoconf stub.
+	* configure.in (HAVE_UINTPTR_T): Test for system defining
+	uintptr_t and define HAVE_UINTPTR_T appropriately.
+	* regex.c (uintptr_t): Do not provide a definition if the
+	system provided one.
+
 	* regex.c (PREFIX): Provide an alternate definition for
 	non-ANSI/ISO compilers.
 	(ARG_PREFIX): Likewise.
