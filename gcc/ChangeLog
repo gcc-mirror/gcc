@@ -1,3 +1,9 @@
+2003-07-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR optimization/11557
+	* calls.c (flags_from_decl_or_type): Do not set ECF_LIBCALL_BLOCK
+	unless we know which function is being called.
+
 2003-07-17  Roger Sayle  <roger@eyesopen.com>
 
 	* cse.c (fold_rtx): Use swap_commutative_operands_p to determine
