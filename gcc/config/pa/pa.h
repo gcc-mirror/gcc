@@ -415,19 +415,19 @@ extern int target_flags;
 
 /* Largest alignment required for any stack parameter, in bits.
    Don't define this if it is equal to PARM_BOUNDARY */
-#define MAX_PARM_BOUNDARY 64
+#define MAX_PARM_BOUNDARY BIGGEST_ALIGNMENT
 
 /* Boundary (in *bits*) on which stack pointer is always aligned;
    certain optimizations in combine depend on this.
 
-   GCC for the PA always rounds its stacks to a 512bit boundary,
-   but that happens late in the compilation process.  */
-#define STACK_BOUNDARY (TARGET_64BIT ? 128 : 64)
+   GCC for the PA always rounds its stacks to a 8 * STACK_BOUNDARY
+   boundary, but that happens late in the compilation process.  */
+#define STACK_BOUNDARY BIGGEST_ALIGNMENT
 
-#define PREFERRED_STACK_BOUNDARY 512
+#define PREFERRED_STACK_BOUNDARY (8 * STACK_BOUNDARY)
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
-#define FUNCTION_BOUNDARY (TARGET_64BIT ? 64 : 32)
+#define FUNCTION_BOUNDARY BITS_PER_WORD
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 32
@@ -438,9 +438,8 @@ extern int target_flags;
 /* A bitfield declared as `int' forces `int' alignment for the struct.  */
 #define PCC_BITFIELD_TYPE_MATTERS 1
 
-/* No data type wants to be aligned rounder than this.  This is set
-   to 128 bits to allow for lock semaphores in the stack frame.*/
-#define BIGGEST_ALIGNMENT 128
+/* No data type wants to be aligned rounder than this.  */
+#define BIGGEST_ALIGNMENT (2 * BITS_PER_WORD)
 
 /* Get around hp-ux assembler bug, and make strcpy of constants fast.  */
 #define CONSTANT_ALIGNMENT(CODE, TYPEALIGN) \
@@ -451,7 +450,6 @@ extern int target_flags;
   (TREE_CODE (TYPE) == ARRAY_TYPE		\
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
 
 /* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */

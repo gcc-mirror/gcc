@@ -1,3 +1,11 @@
+2002-12-12  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.h (BIGGEST_ALIGNMENT): Change 32-bit value to 64 bits.
+	(MAX_PARM_BOUNDARY, STACK_BOUNDARY): Express in terms of
+	BIGGEST_ALIGNMENT.
+	(PREFERRED_STACK_BOUNDARY): Express in terms of STACK_BOUNDARY.
+	(FUNCTION_BOUNDARY): Express in terms of BITS_PER_WORD.
+
 2002-12-10  Janis Johnson  <janis187@us.ibm.com>
 
 	PR other/8882
