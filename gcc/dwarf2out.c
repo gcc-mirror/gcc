@@ -3501,8 +3501,6 @@ struct var_loc_list_def GTY (())
 };
 typedef struct var_loc_list_def var_loc_list;
 
-/* Unique label counter.  */
-static unsigned int loclabel_num = 0;
 
 /* Table of decl location linked lists.  */
 static GTY ((param_is (var_loc_list))) htab_t decl_loc_table;
@@ -3595,6 +3593,9 @@ static GTY(()) unsigned have_location_lists;
 #ifdef DWARF2_DEBUGGING_INFO
 /* Record whether the function being analyzed contains inlined functions.  */
 static int current_function_has_inlines;
+
+/* Unique label counter.  */
+static unsigned int loclabel_num = 0;
 #endif
 #if 0 && defined (MIPS_DEBUGGING_INFO)
 static int comp_unit_has_inlines;
