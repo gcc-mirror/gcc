@@ -1,3 +1,7 @@
+2001-01-24  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* libU77/Makefile.in:  Explicitly generate a.out for check.
+
 2001-01-23  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
 
 	* libU77/ctime_.c: #include <sys/types.h> for time_t.
