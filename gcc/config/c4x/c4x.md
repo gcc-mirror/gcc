@@ -1022,8 +1022,7 @@
   "
 {
    /* Generate two's complement value of 16 MSBs.  */
-   operands[2] = gen_rtx (CONST_INT, VOIDmode,
-			  (((INTVAL (operands[1]) >> 16) & 0xffff)
+   operands[2] = GEN_INT ((((INTVAL (operands[1]) >> 16) & 0xffff)
 			   - 0x8000) ^ ~0x7fff);
    operands[3] = GEN_INT (INTVAL (operands[1]) & 0xffff);
    operands[4] = GEN_INT (16);
@@ -1043,8 +1042,7 @@
   "
 {
    /* Generate two's complement value of 16 MSBs.  */
-   operands[2] = gen_rtx (CONST_INT, VOIDmode,
-			  (((INTVAL (operands[1]) >> 16) & 0xffff)
+   operands[2] = GEN_INT ((((INTVAL (operands[1]) >> 16) & 0xffff)
 			   - 0x8000) ^ ~0x7fff);
    operands[3] = GEN_INT (INTVAL (operands[1]) & 0xffff);
    operands[4] = GEN_INT (16);
