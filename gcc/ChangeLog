@@ -11,6 +11,13 @@
 	insns.
 	* config/s390/s390.c (struct machine_function): Introduction of
 	struct machine_function.
+	(s390_output_symbolic_const): Use of cfun.
+	(s390_optimize_prolog): Likewise.
+	(s390_fixup_clobbered_return_reg): Likewise.
+	(s390_frame_info): Likewise.
+	(s390_emit_prologue, s390_emit_epilogue): Likewise.
+	(s390_init_machine_status): New function.
+	(override_options): call s390_init_machine_status.
 	* config/s390/s390-protos.h (s390_output_constant_pool): Changed 
 	prototype.
 	
