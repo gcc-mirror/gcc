@@ -3486,7 +3486,7 @@ is_zeros_p (exp)
 	is_zeros_p (TREE_REALPART (exp)) && is_zeros_p (TREE_IMAGPART (exp));
 
     case REAL_CST:
-      return REAL_VALUES_EQUAL (TREE_REAL_CST (exp), dconst0);
+      return REAL_VALUES_IDENTICAL (TREE_REAL_CST (exp), dconst0);
 
     case CONSTRUCTOR:
       if (TREE_TYPE (exp) && TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
