@@ -2050,6 +2050,96 @@ _cpp_init_input_buffer (pfile)
 
 #if 0
 
+/* Lexing algorithm.
+
+ The original lexer in cpplib was made up of two passes: a first pass
+ that replaced trigraphs and deleted esacped newlines, and a second
+ pass that tokenized the result of the first pass.  Tokenisation was
+ performed by peeking at the next character in the input stream.  For
+ example, if the input stream contained "~=", the handler for the ~
+ character would peek at the next character, and if it were a '='
+ would skip over it, and return a "~=" token, otherwise it would
+ return just the "~" token.
+
+ To implement a single-pass lexer, this peeking ahead is unworkable.
+ An arbitrary number of escaped newlines, and trigraphs (in particular
+ ??/ which translates to the escape \), could separate the '~' and '='
+ in the input stream, yet the next token is still a "~=".
+
+ Suppose instead that we lex by one logical line at a time, producing
+ a token list or stack for each logical line, and when seeing the '~'
+ push a CPP_COMPLEMENT token on the list.  Then if the '~' is part of
+ a longer token ("~=") we know we must see the remainder of the token
+ by the time we reach the end of the logical line.  Thus we can have
+ the '=' handler look at the previous token (at the end of the list /
+ top of the stack) and see if it is a "~" token, and if so, instead of
+ pushing a "=" token revise the existing token to be a "~=" token.
+
+ This works in the presence of escaped newlines, because the '\' would
+ have been pushed on the top of the stack as a CPP_BACKSLASH.  The
+ newline ('\n' or '\r') handler looks at the token at the top of the
+ stack to see if it is a CPP_BACKSLASH, and if so discards both.
+ Otherwise it pushes the newline (CPP_VSPACE) token as normal.  Hence
+ the '=' handler would never see any intervening escaped newlines.
+
+ To make trigraphs work in this context, as in precedence trigraphs
+ are highest and converted before anything else, the '?' handler does
+ lookahead to see if it is a trigraph, and if so skips the trigraph
+ and pushes the token it represents onto the top of the stack.  This
+ also works in the particular case of a CPP_BACKSLASH trigraph.
+
+ To the preprocessor, whitespace is only significant to the point of
+ knowing whether whitespace precedes a particular token.  For example,
+ the '=' handler needs to know whether there was whitespace between it
+ and a "~" token on the top of the stack, to make the token conversion
+ decision correctly.  So each token has a PREV_WHITESPACE flag to
+ indicate this - the standard permits consecutive whitespace to be
+ regarded as a single space.  The compiler front ends are not
+ interested in whitespace at all; they just require a token stream.
+ Another place where whitespace is significant to the preprocessor is
+ a #define statment - if there is whitespace between the macro name
+ and an initial "(" token the macro is "object-like", otherwise it is
+ a function-like macro that takes arguments.
+
+ However, all is not rosy.  Parsing of identifiers, numbers, comments
+ and strings becomes trickier because of the possibility of raw
+ trigraphs and escaped newlines in the input stream.
+
+ The trigraphs are three consecutive characters beginning with two
+ question marks.  A question mark is not a valid as part of a number
+ or identifier, so parsing of a number or identifier terminates
+ normally upon reaching it, returning to the mainloop which handles
+ the trigraph just like it would in any other position.  Similarly for
+ the backslash of a backslash-newline combination.  So we just need
+ the escaped-newline dropper in the mainloop to check if the token on
+ the top of the stack is a number or identifier, and to continue the
+ processing of the token as if nothing had happened.
+
+ For strings, we replace trigraphs whenever we reach a quote or
+ newline, because there might be a backslash trigraph escaping them.
+ We need to be careful that we start trigraph replacing from where we
+ left off previously, because it is possible for a first scan to leave
+ "fake" trigraphs that a second scan would pick up as real (e.g. the
+ sequence "????\\n=" would find a fake ??= trigraph after removing the
+ escaped newline.)
+
+ For line comments, on reaching a newline we scan the previous
+ character(s) to see if it escaped, and continue if it is.  Block
+ comments ignore everything and just focus on finding the comment
+ termination mark.  The only difficult thing, and it is surprisingly
+ tricky, is checking if an asterisk precedes the final slash since
+ they could be separated by escaped newlines.  If the preprocessor is
+ invoked with the output comments option, we don't bother removing
+ escaped newlines and replacing trigraphs for output.
+
+ Finally, numbers can begin with a period, which is pushed initially
+ as a CPP_DOT token in its own right.  The digit handler checks if the
+ previous token was a CPP_DOT not separated by whitespace, and if so
+ pops it off the stack and pushes a period into the number's buffer
+ before calling the number parser.
+
+*/
+
 static void expand_comment_space PARAMS ((cpp_toklist *));
 void init_trigraph_map PARAMS ((void));
 static unsigned char* trigraph_replace PARAMS ((cpp_reader *, unsigned char *,
