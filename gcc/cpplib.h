@@ -514,8 +514,6 @@ struct cpp_options {
 #define CPP_PEDANTIC(PFILE) \
   (CPP_OPTIONS (PFILE)->pedantic && !CPP_BUFFER (pfile)->system_header_p)
 
-#define SET_CPP_PEDANTIC(PFILE) (CPP_OPTIONS (PFILE)->pedantic = 1)
-
 /* List of directories to look for include files in. */
 struct file_name_list
 {

@@ -1,3 +1,8 @@
+2000-03-03  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cppinit.c (cpp_handle_option): Set opts->pedantic directly.
+	* cpplib.h: Delete SET_CPP_PEDANTIC.
+
 Fri Mar  3 14:56:12 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (expand_expr, case COMPONENT_REF): Use bitfield case if
