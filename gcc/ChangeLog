@@ -1,3 +1,8 @@
+2002-03-28  Richard Henderson  <rth@redhat.com>
+
+	PR target/6087
+	* reload1.c (fixup_abnormal_edges): Move insn to edge via sequence.
+
 2002-03-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/i386/freebsd.h (LINK_SPEC): Don't pass default
