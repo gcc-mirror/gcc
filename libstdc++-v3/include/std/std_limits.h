@@ -81,58 +81,58 @@
 // The default values are appropriate for many 32-bit targets.
 
 #ifndef __glibcpp_char_bits
-#define __glibcpp_char_bits 8
+#  define __glibcpp_char_bits 8
 #endif
 #ifdef __CHAR_UNSIGNED__
-#define __glibcpp_plain_char_is_signed false
+#  define __glibcpp_plain_char_is_signed false
 #else
-#define __glibcpp_plain_char_is_signed true
+#  define __glibcpp_plain_char_is_signed true
 #endif
 #ifndef __glibcpp_short_bits
-#define __glibcpp_short_bits 16
+#  define __glibcpp_short_bits 16
 #endif
 #ifndef __glibcpp_int_bits
-#define __glibcpp_int_bits 32
+#  define __glibcpp_int_bits 32
 #endif
 #ifndef __glibcpp_long_bits
-#define __glibcpp_long_bits 32
+#  define __glibcpp_long_bits 32
 #endif
 #ifndef __glibcpp_wchar_t_bits
-#define __glibcpp_wchar_t_bits 32
+#  define __glibcpp_wchar_t_bits 32
 #endif
 #ifndef __glibcpp_wchar_t_is_signed
-#define __glibcpp_wchar_t_is_signed true
+#  define __glibcpp_wchar_t_is_signed true
 #endif
 #ifndef __glibcpp_long_long_bits
-#define __glibcpp_long_long_bits 64
+#  define __glibcpp_long_long_bits 64
 #endif
 #ifndef __glibcpp_float_bits
-#define __glibcpp_float_bits 32
+#  define __glibcpp_float_bits 32
 #endif
 #ifndef __glibcpp_double_bits
-#define __glibcpp_double_bits 64
+#  define __glibcpp_double_bits 64
 #endif
 #ifndef __glibcpp_long_double_bits
-#define __glibcpp_long_double_bits 128
+#  define __glibcpp_long_double_bits 128
 #endif
 
 #ifndef __glibcpp_char_traps
-#define __glibcpp_char_traps true
+#  define __glibcpp_char_traps true
 #endif
 #ifndef __glibcpp_short_traps
-#define __glibcpp_short_traps true
+#  define __glibcpp_short_traps true
 #endif
 #ifndef __glibcpp_int_traps
-#define __glibcpp_int_traps true
+#  define __glibcpp_int_traps true
 #endif
 #ifndef __glibcpp_long_traps
-#define __glibcpp_long_traps true
+#  define __glibcpp_long_traps true
 #endif
 #ifndef __glibcpp_wchar_t_traps
-#define __glibcpp_wchar_t_traps true
+#  define __glibcpp_wchar_t_traps true
 #endif
 #ifndef __glibcpp_long_long_traps
-#define __glibcpp_long_long_traps true
+#  define __glibcpp_long_long_traps true
 #endif
 
 // You should not need to define any macros below this point, unless
@@ -234,7 +234,7 @@
 //     __glibcpp_bool_digits  __glibcpp_int_traps __glibcpp_long_traps
 
 #ifndef __glibcpp_bool_digits
-#define __glibcpp_bool_digits 1
+#  define __glibcpp_bool_digits 1
 #endif
 
 // char.
@@ -243,61 +243,61 @@
 #define __glibcpp_signed_char_traps true
 #define __glibcpp_unsigned_char_traps true
 #ifndef __glibcpp_char_is_modulo
-#define __glibcpp_char_is_modulo true
+#  define __glibcpp_char_is_modulo true
 #endif
 #ifndef __glibcpp_signed_char_is_modulo
-#define __glibcpp_signed_char_is_modulo true
+#  define __glibcpp_signed_char_is_modulo true
 #endif
 #if __glibcpp_char_bits == 8
-#define __glibcpp_signed_char_min __glibcpp_s8_min
-#define __glibcpp_signed_char_max __glibcpp_s8_max
-#define __glibcpp_signed_char_digits __glibcpp_s8_digits
-#define __glibcpp_signed_char_digits10 __glibcpp_s8_digits10
-#define __glibcpp_unsigned_char_min __glibcpp_u8_min
-#define __glibcpp_unsigned_char_max __glibcpp_u8_max
-#define __glibcpp_unsigned_char_digits __glibcpp_u8_digits
-#define __glibcpp_unsigned_char_digits10 __glibcpp_u8_digits10
+#  define __glibcpp_signed_char_min __glibcpp_s8_min
+#  define __glibcpp_signed_char_max __glibcpp_s8_max
+#  define __glibcpp_signed_char_digits __glibcpp_s8_digits
+#  define __glibcpp_signed_char_digits10 __glibcpp_s8_digits10
+#  define __glibcpp_unsigned_char_min __glibcpp_u8_min
+#  define __glibcpp_unsigned_char_max __glibcpp_u8_max
+#  define __glibcpp_unsigned_char_digits __glibcpp_u8_digits
+#  define __glibcpp_unsigned_char_digits10 __glibcpp_u8_digits10
 #elif __glibcpp_char_bits == 16
-#define __glibcpp_signed_char_min __glibcpp_s16_min
-#define __glibcpp_signed_char_max __glibcpp_s16_max
-#define __glibcpp_signed_char_digits __glibcpp_s16_digits
-#define __glibcpp_signed_char_digits10 __glibcpp_s16_digits10
-#define __glibcpp_unsigned_char_min __glibcpp_u16_min
-#define __glibcpp_unsigned_char_max __glibcpp_u16_max
-#define __glibcpp_unsigned_char_digits __glibcpp_u16_digits
-#define __glibcpp_unsigned_char_digits10 __glibcpp_u16_digits10
+#  define __glibcpp_signed_char_min __glibcpp_s16_min
+#  define __glibcpp_signed_char_max __glibcpp_s16_max
+#  define __glibcpp_signed_char_digits __glibcpp_s16_digits
+#  define __glibcpp_signed_char_digits10 __glibcpp_s16_digits10
+#  define __glibcpp_unsigned_char_min __glibcpp_u16_min
+#  define __glibcpp_unsigned_char_max __glibcpp_u16_max
+#  define __glibcpp_unsigned_char_digits __glibcpp_u16_digits
+#  define __glibcpp_unsigned_char_digits10 __glibcpp_u16_digits10
 #elif __glibcpp_char_bits == 32
-#define __glibcpp_signed_char_min (signed char)__glibcpp_s32_min
-#define __glibcpp_signed_char_max (signed char)__glibcpp_s32_max
-#define __glibcpp_signed_char_digits __glibcpp_s32_digits
-#define __glibcpp_signed_char_digits10 __glibcpp_s32_digits10
-#define __glibcpp_unsigned_char_min (unsigned char)__glibcpp_u32_min
-#define __glibcpp_unsigned_char_max (unsigned char)__glibcpp_u32_max
-#define __glibcpp_unsigned_char_digits __glibcpp_u32_digits
-#define __glibcpp_unsigned_char_digits10 __glibcpp_u32_digits10
+#  define __glibcpp_signed_char_min (signed char)__glibcpp_s32_min
+#  define __glibcpp_signed_char_max (signed char)__glibcpp_s32_max
+#  define __glibcpp_signed_char_digits __glibcpp_s32_digits
+#  define __glibcpp_signed_char_digits10 __glibcpp_s32_digits10
+#  define __glibcpp_unsigned_char_min (unsigned char)__glibcpp_u32_min
+#  define __glibcpp_unsigned_char_max (unsigned char)__glibcpp_u32_max
+#  define __glibcpp_unsigned_char_digits __glibcpp_u32_digits
+#  define __glibcpp_unsigned_char_digits10 __glibcpp_u32_digits10
 #elif __glibcpp_char_bits == 64
-#define __glibcpp_signed_char_min (signed char)__glibcpp_s64_min
-#define __glibcpp_signed_char_max (signed char)__glibcpp_s64_max
-#define __glibcpp_signed_char_digits __glibcpp_s64_digits
-#define __glibcpp_signed_char_digits10 __glibcpp_s64_digits10
-#define __glibcpp_unsigned_char_min (unsigned char)__glibcpp_u64_min
-#define __glibcpp_unsigned_char_max (unsigned char)__glibcpp_u64_max
-#define __glibcpp_unsigned_char_digits __glibcpp_u64_digits
-#define __glibcpp_unsigned_char_digits10 __glibcpp_u64_digits10
+#  define __glibcpp_signed_char_min (signed char)__glibcpp_s64_min
+#  define __glibcpp_signed_char_max (signed char)__glibcpp_s64_max
+#  define __glibcpp_signed_char_digits __glibcpp_s64_digits
+#  define __glibcpp_signed_char_digits10 __glibcpp_s64_digits10
+#  define __glibcpp_unsigned_char_min (unsigned char)__glibcpp_u64_min
+#  define __glibcpp_unsigned_char_max (unsigned char)__glibcpp_u64_max
+#  define __glibcpp_unsigned_char_digits __glibcpp_u64_digits
+#  define __glibcpp_unsigned_char_digits10 __glibcpp_u64_digits10
 #else
 // You must define these macros in the configuration file.
 #endif
 
 #if __glibcpp_plain_char_is_signed
-#define __glibcpp_char_min (char)__glibcpp_signed_char_min
-#define __glibcpp_char_max (char)__glibcpp_signed_char_max
-#define __glibcpp_char_digits __glibcpp_signed_char_digits
-#define __glibcpp_char_digits10 __glibcpp_signed_char_digits
+#  define __glibcpp_char_min (char)__glibcpp_signed_char_min
+#  define __glibcpp_char_max (char)__glibcpp_signed_char_max
+#  define __glibcpp_char_digits __glibcpp_signed_char_digits
+#  define __glibcpp_char_digits10 __glibcpp_signed_char_digits
 #else
-#define __glibcpp_char_min (char)__glibcpp_unsigned_char_min
-#define __glibcpp_char_max (char)__glibcpp_unsigned_char_max
-#define __glibcpp_char_digits __glibcpp_unsigned_char_digits
-#define __glibcpp_char_digits10 __glibcpp_unsigned_char_digits
+#  define __glibcpp_char_min (char)__glibcpp_unsigned_char_min
+#  define __glibcpp_char_max (char)__glibcpp_unsigned_char_max
+#  define __glibcpp_char_digits __glibcpp_unsigned_char_digits
+#  define __glibcpp_char_digits10 __glibcpp_unsigned_char_digits
 #endif
 
 // short
@@ -305,44 +305,44 @@
 #define __glibcpp_signed_short_traps true
 #define __glibcpp_unsigned_short_traps true
 #ifndef __glibcpp_signed_short_is_modulo
-#define __glibcpp_signed_short_is_modulo true
+#  define __glibcpp_signed_short_is_modulo true
 #endif
 #if __glibcpp_short_bits == 8
-#define __glibcpp_signed_short_min __glibcpp_s8_min
-#define __glibcpp_signed_short_max __glibcpp_s8_max
-#define __glibcpp_signed_short_digits __glibcpp_s8_digits
-#define __glibcpp_signed_short_digits10 __glibcpp_s8_digits10
-#define __glibcpp_unsigned_short_min __glibcpp_u8_min
-#define __glibcpp_unsigned_short_max __glibcpp_u8_max
-#define __glibcpp_unsigned_short_digits __glibcpp_u8_digits
-#define __glibcpp_unsigned_short_digits10 __glibcpp_u8_digits10
+#  define __glibcpp_signed_short_min __glibcpp_s8_min
+#  define __glibcpp_signed_short_max __glibcpp_s8_max
+#  define __glibcpp_signed_short_digits __glibcpp_s8_digits
+#  define __glibcpp_signed_short_digits10 __glibcpp_s8_digits10
+#  define __glibcpp_unsigned_short_min __glibcpp_u8_min
+#  define __glibcpp_unsigned_short_max __glibcpp_u8_max
+#  define __glibcpp_unsigned_short_digits __glibcpp_u8_digits
+#  define __glibcpp_unsigned_short_digits10 __glibcpp_u8_digits10
 #elif __glibcpp_short_bits == 16
-#define __glibcpp_signed_short_min __glibcpp_s16_min
-#define __glibcpp_signed_short_max __glibcpp_s16_max
-#define __glibcpp_signed_short_digits __glibcpp_s16_digits
-#define __glibcpp_signed_short_digits10 __glibcpp_s16_digits10
-#define __glibcpp_unsigned_short_min __glibcpp_u16_min
-#define __glibcpp_unsigned_short_max __glibcpp_u16_max
-#define __glibcpp_unsigned_short_digits __glibcpp_u16_digits
-#define __glibcpp_unsigned_short_digits10 __glibcpp_u16_digits10
+#  define __glibcpp_signed_short_min __glibcpp_s16_min
+#  define __glibcpp_signed_short_max __glibcpp_s16_max
+#  define __glibcpp_signed_short_digits __glibcpp_s16_digits
+#  define __glibcpp_signed_short_digits10 __glibcpp_s16_digits10
+#  define __glibcpp_unsigned_short_min __glibcpp_u16_min
+#  define __glibcpp_unsigned_short_max __glibcpp_u16_max
+#  define __glibcpp_unsigned_short_digits __glibcpp_u16_digits
+#  define __glibcpp_unsigned_short_digits10 __glibcpp_u16_digits10
 #elif __glibcpp_short_bits == 32
-#define __glibcpp_signed_short_min (short)__glibcpp_s32_min
-#define __glibcpp_signed_short_max (short)__glibcpp_s32_max
-#define __glibcpp_signed_short_digits __glibcpp_s32_digits
-#define __glibcpp_signed_short_digits10 __glibcpp_s32_digits10
-#define __glibcpp_unsigned_short_min (unsigned short)__glibcpp_u32_min
-#define __glibcpp_unsigned_short_max (unsigned short)__glibcpp_u32_max
-#define __glibcpp_unsigned_short_digits __glibcpp_u32_digits
-#define __glibcpp_unsigned_short_digits10 __glibcpp_u32_digits10
+#  define __glibcpp_signed_short_min (short)__glibcpp_s32_min
+#  define __glibcpp_signed_short_max (short)__glibcpp_s32_max
+#  define __glibcpp_signed_short_digits __glibcpp_s32_digits
+#  define __glibcpp_signed_short_digits10 __glibcpp_s32_digits10
+#  define __glibcpp_unsigned_short_min (unsigned short)__glibcpp_u32_min
+#  define __glibcpp_unsigned_short_max (unsigned short)__glibcpp_u32_max
+#  define __glibcpp_unsigned_short_digits __glibcpp_u32_digits
+#  define __glibcpp_unsigned_short_digits10 __glibcpp_u32_digits10
 #elif __glibcpp_short_bits == 64
-#define __glibcpp_signed_short_min (short)__glibcpp_s64_min
-#define __glibcpp_signed_short_max (short)__glibcpp_s64_max
-#define __glibcpp_signed_short_digits __glibcpp_s64_digits
-#define __glibcpp_signed_short_digits10 __glibcpp_s64_digits10
-#define __glibcpp_unsigned_short_min (unsigned short)__glibcpp_u64_min
-#define __glibcpp_unsigned_short_max (unsigned short)__glibcpp_u64_max
-#define __glibcpp_unsigned_short_digits __glibcpp_u64_digits
-#define __glibcpp_unsigned_short_digits10 __glibcpp_u64_digits10
+#  define __glibcpp_signed_short_min (short)__glibcpp_s64_min
+#  define __glibcpp_signed_short_max (short)__glibcpp_s64_max
+#  define __glibcpp_signed_short_digits __glibcpp_s64_digits
+#  define __glibcpp_signed_short_digits10 __glibcpp_s64_digits10
+#  define __glibcpp_unsigned_short_min (unsigned short)__glibcpp_u64_min
+#  define __glibcpp_unsigned_short_max (unsigned short)__glibcpp_u64_max
+#  define __glibcpp_unsigned_short_digits __glibcpp_u64_digits
+#  define __glibcpp_unsigned_short_digits10 __glibcpp_u64_digits10
 #else
 // You must define these macros in the configuration file.
 #endif
@@ -352,44 +352,44 @@
 #define __glibcpp_signed_int_traps true
 #define __glibcpp_unsigned_int_traps true
 #ifndef __glibcpp_signed_int_is_modulo
-#define __glibcpp_signed_int_is_modulo true
+#  define __glibcpp_signed_int_is_modulo true
 #endif
 #if __glibcpp_int_bits == 8
-#define __glibcpp_signed_int_min __glibcpp_s8_min
-#define __glibcpp_signed_int_max __glibcpp_s8_max
-#define __glibcpp_signed_int_digits __glibcpp_s8_digits
-#define __glibcpp_signed_int_digits10 __glibcpp_s8_digits10
-#define __glibcpp_unsigned_int_min __glibcpp_u8_min
-#define __glibcpp_unsigned_int_max __glibcpp_u8_max
-#define __glibcpp_unsigned_int_digits __glibcpp_u8_digits
-#define __glibcpp_unsigned_int_digits10 __glibcpp_u8_digits10
+#  define __glibcpp_signed_int_min __glibcpp_s8_min
+#  define __glibcpp_signed_int_max __glibcpp_s8_max
+#  define __glibcpp_signed_int_digits __glibcpp_s8_digits
+#  define __glibcpp_signed_int_digits10 __glibcpp_s8_digits10
+#  define __glibcpp_unsigned_int_min __glibcpp_u8_min
+#  define __glibcpp_unsigned_int_max __glibcpp_u8_max
+#  define __glibcpp_unsigned_int_digits __glibcpp_u8_digits
+#  define __glibcpp_unsigned_int_digits10 __glibcpp_u8_digits10
 #elif __glibcpp_int_bits == 16
-#define __glibcpp_signed_int_min __glibcpp_s16_min
-#define __glibcpp_signed_int_max __glibcpp_s16_max
-#define __glibcpp_signed_int_digits __glibcpp_s16_digits
-#define __glibcpp_signed_int_digits10 __glibcpp_s16_digits10
-#define __glibcpp_unsigned_int_min __glibcpp_u16_min
-#define __glibcpp_unsigned_int_max __glibcpp_u16_max
-#define __glibcpp_unsigned_int_digits __glibcpp_u16_digits
-#define __glibcpp_unsigned_int_digits10 __glibcpp_u16_digits10
+#  define __glibcpp_signed_int_min __glibcpp_s16_min
+#  define __glibcpp_signed_int_max __glibcpp_s16_max
+#  define __glibcpp_signed_int_digits __glibcpp_s16_digits
+#  define __glibcpp_signed_int_digits10 __glibcpp_s16_digits10
+#  define __glibcpp_unsigned_int_min __glibcpp_u16_min
+#  define __glibcpp_unsigned_int_max __glibcpp_u16_max
+#  define __glibcpp_unsigned_int_digits __glibcpp_u16_digits
+#  define __glibcpp_unsigned_int_digits10 __glibcpp_u16_digits10
 #elif __glibcpp_int_bits == 32
-#define __glibcpp_signed_int_min (int)__glibcpp_s32_min
-#define __glibcpp_signed_int_max (int)__glibcpp_s32_max
-#define __glibcpp_signed_int_digits __glibcpp_s32_digits
-#define __glibcpp_signed_int_digits10 __glibcpp_s32_digits10
-#define __glibcpp_unsigned_int_min (unsigned)__glibcpp_u32_min
-#define __glibcpp_unsigned_int_max (unsigned)__glibcpp_u32_max
-#define __glibcpp_unsigned_int_digits __glibcpp_u32_digits
-#define __glibcpp_unsigned_int_digits10 __glibcpp_u32_digits10
+#  define __glibcpp_signed_int_min (int)__glibcpp_s32_min
+#  define __glibcpp_signed_int_max (int)__glibcpp_s32_max
+#  define __glibcpp_signed_int_digits __glibcpp_s32_digits
+#  define __glibcpp_signed_int_digits10 __glibcpp_s32_digits10
+#  define __glibcpp_unsigned_int_min (unsigned)__glibcpp_u32_min
+#  define __glibcpp_unsigned_int_max (unsigned)__glibcpp_u32_max
+#  define __glibcpp_unsigned_int_digits __glibcpp_u32_digits
+#  define __glibcpp_unsigned_int_digits10 __glibcpp_u32_digits10
 #elif __glibcpp_int_bits == 64
-#define __glibcpp_signed_int_min (int)__glibcpp_s64_min
-#define __glibcpp_signed_int_max (int)__glibcpp_s64_max
-#define __glibcpp_signed_int_digits __glibcpp_s64_digits
-#define __glibcpp_signed_int_digits10 __glibcpp_s64_digits10
-#define __glibcpp_unsigned_int_min (unsigned)__glibcpp_u64_min
-#define __glibcpp_unsigned_int_max (unsigned)__glibcpp_u64_max
-#define __glibcpp_unsigned_int_digits __glibcpp_u64_digits
-#define __glibcpp_unsigned_int_digits10 __glibcpp_u64_digits10
+#  define __glibcpp_signed_int_min (int)__glibcpp_s64_min
+#  define __glibcpp_signed_int_max (int)__glibcpp_s64_max
+#  define __glibcpp_signed_int_digits __glibcpp_s64_digits
+#  define __glibcpp_signed_int_digits10 __glibcpp_s64_digits10
+#  define __glibcpp_unsigned_int_min (unsigned)__glibcpp_u64_min
+#  define __glibcpp_unsigned_int_max (unsigned)__glibcpp_u64_max
+#  define __glibcpp_unsigned_int_digits __glibcpp_u64_digits
+#  define __glibcpp_unsigned_int_digits10 __glibcpp_u64_digits10
 #else
 // You must define these macros in the configuration file.
 #endif
@@ -399,44 +399,44 @@
 #define __glibcpp_signed_long_traps true
 #define __glibcpp_unsigned_long_traps true
 #ifndef __glibcpp_signed_long_is_modulo
-#define __glibcpp_signed_long_is_modulo true
+#  define __glibcpp_signed_long_is_modulo true
 #endif
 #if __glibcpp_long_bits == 8
-#define __glibcpp_signed_long_min __glibcpp_s8_min
-#define __glibcpp_signed_long_max __glibcpp_s8_max
-#define __glibcpp_signed_long_digits __glibcpp_s8_digits
-#define __glibcpp_signed_long_digits10 __glibcpp_s8_digits10
-#define __glibcpp_unsigned_long_min __glibcpp_u8_min
-#define __glibcpp_unsigned_long_max __glibcpp_u8_max
-#define __glibcpp_unsigned_long_digits __glibcpp_u8_digits
-#define __glibcpp_unsigned_long_digits10 __glibcpp_u8_digits10
+#  define __glibcpp_signed_long_min __glibcpp_s8_min
+#  define __glibcpp_signed_long_max __glibcpp_s8_max
+#  define __glibcpp_signed_long_digits __glibcpp_s8_digits
+#  define __glibcpp_signed_long_digits10 __glibcpp_s8_digits10
+#  define __glibcpp_unsigned_long_min __glibcpp_u8_min
+#  define __glibcpp_unsigned_long_max __glibcpp_u8_max
+#  define __glibcpp_unsigned_long_digits __glibcpp_u8_digits
+#  define __glibcpp_unsigned_long_digits10 __glibcpp_u8_digits10
 #elif __glibcpp_long_bits == 16
-#define __glibcpp_signed_long_min __glibcpp_s16_min
-#define __glibcpp_signed_long_max __glibcpp_s16_max
-#define __glibcpp_signed_long_digits __glibcpp_s16_digits
-#define __glibcpp_signed_long_digits10 __glibcpp_s16_digits10
-#define __glibcpp_unsigned_long_min __glibcpp_u16_min
-#define __glibcpp_unsigned_long_max __glibcpp_u16_max
-#define __glibcpp_unsigned_long_digits __glibcpp_u16_digits
-#define __glibcpp_unsigned_long_digits10 __glibcpp_u16_digits10
+#  define __glibcpp_signed_long_min __glibcpp_s16_min
+#  define __glibcpp_signed_long_max __glibcpp_s16_max
+#  define __glibcpp_signed_long_digits __glibcpp_s16_digits
+#  define __glibcpp_signed_long_digits10 __glibcpp_s16_digits10
+#  define __glibcpp_unsigned_long_min __glibcpp_u16_min
+#  define __glibcpp_unsigned_long_max __glibcpp_u16_max
+#  define __glibcpp_unsigned_long_digits __glibcpp_u16_digits
+#  define __glibcpp_unsigned_long_digits10 __glibcpp_u16_digits10
 #elif __glibcpp_long_bits == 32
-#define __glibcpp_signed_long_min __glibcpp_s32_min
-#define __glibcpp_signed_long_max __glibcpp_s32_max
-#define __glibcpp_signed_long_digits __glibcpp_s32_digits
-#define __glibcpp_signed_long_digits10 __glibcpp_s32_digits10
-#define __glibcpp_unsigned_long_min __glibcpp_u32_min
-#define __glibcpp_unsigned_long_max __glibcpp_u32_max
-#define __glibcpp_unsigned_long_digits __glibcpp_u32_digits
-#define __glibcpp_unsigned_long_digits10 __glibcpp_u32_digits10
+#  define __glibcpp_signed_long_min __glibcpp_s32_min
+#  define __glibcpp_signed_long_max __glibcpp_s32_max
+#  define __glibcpp_signed_long_digits __glibcpp_s32_digits
+#  define __glibcpp_signed_long_digits10 __glibcpp_s32_digits10
+#  define __glibcpp_unsigned_long_min __glibcpp_u32_min
+#  define __glibcpp_unsigned_long_max __glibcpp_u32_max
+#  define __glibcpp_unsigned_long_digits __glibcpp_u32_digits
+#  define __glibcpp_unsigned_long_digits10 __glibcpp_u32_digits10
 #elif __glibcpp_long_bits == 64
-#define __glibcpp_signed_long_min (long)__glibcpp_s64_min
-#define __glibcpp_signed_long_max (long)__glibcpp_s64_max
-#define __glibcpp_signed_long_digits __glibcpp_s64_digits
-#define __glibcpp_signed_long_digits10 __glibcpp_s64_digits10
-#define __glibcpp_unsigned_long_min (unsigned long)__glibcpp_u64_min
-#define __glibcpp_unsigned_long_max (unsigned long)__glibcpp_u64_max
-#define __glibcpp_unsigned_long_digits __glibcpp_u64_digits
-#define __glibcpp_unsigned_long_digits10 __glibcpp_u64_digits10
+#  define __glibcpp_signed_long_min (long)__glibcpp_s64_min
+#  define __glibcpp_signed_long_max (long)__glibcpp_s64_max
+#  define __glibcpp_signed_long_digits __glibcpp_s64_digits
+#  define __glibcpp_signed_long_digits10 __glibcpp_s64_digits10
+#  define __glibcpp_unsigned_long_min (unsigned long)__glibcpp_u64_min
+#  define __glibcpp_unsigned_long_max (unsigned long)__glibcpp_u64_max
+#  define __glibcpp_unsigned_long_digits __glibcpp_u64_digits
+#  define __glibcpp_unsigned_long_digits10 __glibcpp_u64_digits10
 #else
 // You must define these macros in the configuration file.
 #endif
@@ -446,46 +446,46 @@
 #define __glibcpp_signed_long_long_traps true
 #define __glibcpp_signed_long_long_traps true
 #ifndef __glibcpp_signed_long_long_is_modulo
-#define __glibcpp_signed_long_long_is_modulo true
+#  define __glibcpp_signed_long_long_is_modulo true
 #endif
 #if __glibcpp_long_long_bits == 8
-#define __glibcpp_signed_long_long_min __glibcpp_s8_min
-#define __glibcpp_signed_long_long_max __glibcpp_s8_max
-#define __glibcpp_signed_long_long_digits __glibcpp_s8_digits
-#define __glibcpp_signed_long_long_digits10 __glibcpp_s8_digits10
-#define __glibcpp_unsigned_long_long_min __glibcpp_u8_min
-#define __glibcpp_unsigned_long_long_max __glibcpp_u8_max
-#define __glibcpp_unsigned_long_long_digits __glibcpp_u8_digits
-#define __glibcpp_unsigned_long_long_digits10 __glibcpp_u8_digits10
+#  define __glibcpp_signed_long_long_min __glibcpp_s8_min
+#  define __glibcpp_signed_long_long_max __glibcpp_s8_max
+#  define __glibcpp_signed_long_long_digits __glibcpp_s8_digits
+#  define __glibcpp_signed_long_long_digits10 __glibcpp_s8_digits10
+#  define __glibcpp_unsigned_long_long_min __glibcpp_u8_min
+#  define __glibcpp_unsigned_long_long_max __glibcpp_u8_max
+#  define __glibcpp_unsigned_long_long_digits __glibcpp_u8_digits
+#  define __glibcpp_unsigned_long_long_digits10 __glibcpp_u8_digits10
 #elif __glibcpp_long_long_bits == 16
-#define __glibcpp_signed_long_long_min __glibcpp_s16_min
-#define __glibcpp_signed_long_long_max __glibcpp_s16_max
-#define __glibcpp_signed_long_long_digits __glibcpp_s16_digits
-#define __glibcpp_signed_long_long_digits10 __glibcpp_s16_digits10
-#define __glibcpp_unsigned_long_long_min __glibcpp_u16_min
-#define __glibcpp_unsigned_long_long_max __glibcpp_u16_max
-#define __glibcpp_unsigned_long_long_digits __glibcpp_u16_digits
-#define __glibcpp_unsigned_long_long_digits10 __glibcpp_u16_digits10
+#  define __glibcpp_signed_long_long_min __glibcpp_s16_min
+#  define __glibcpp_signed_long_long_max __glibcpp_s16_max
+#  define __glibcpp_signed_long_long_digits __glibcpp_s16_digits
+#  define __glibcpp_signed_long_long_digits10 __glibcpp_s16_digits10
+#  define __glibcpp_unsigned_long_long_min __glibcpp_u16_min
+#  define __glibcpp_unsigned_long_long_max __glibcpp_u16_max
+#  define __glibcpp_unsigned_long_long_digits __glibcpp_u16_digits
+#  define __glibcpp_unsigned_long_long_digits10 __glibcpp_u16_digits10
 #elif __glibcpp_long_long_bits == 32
-#define __glibcpp_signed_long_long_min __glibcpp_s32_min
-#define __glibcpp_signed_long_long_max __glibcpp_s32_max
-#define __glibcpp_signed_long_long_digits __glibcpp_s32_digits
-#define __glibcpp_signed_long_long_digits10 __glibcpp_s32_digits10
-#define __glibcpp_unsigned_long_long_min __glibcpp_u32_min
-#define __glibcpp_unsigned_long_long_max __glibcpp_u32_max
-#define __glibcpp_unsigned_long_long_digits __glibcpp_u32_digits
-#define __glibcpp_unsigned_long_long_digits10 __glibcpp_u32_digits10
+#  define __glibcpp_signed_long_long_min __glibcpp_s32_min
+#  define __glibcpp_signed_long_long_max __glibcpp_s32_max
+#  define __glibcpp_signed_long_long_digits __glibcpp_s32_digits
+#  define __glibcpp_signed_long_long_digits10 __glibcpp_s32_digits10
+#  define __glibcpp_unsigned_long_long_min __glibcpp_u32_min
+#  define __glibcpp_unsigned_long_long_max __glibcpp_u32_max
+#  define __glibcpp_unsigned_long_long_digits __glibcpp_u32_digits
+#  define __glibcpp_unsigned_long_long_digits10 __glibcpp_u32_digits10
 #elif __glibcpp_long_long_bits == 64
-#define __glibcpp_signed_long_long_min __glibcpp_s64_min
-#define __glibcpp_signed_long_long_max __glibcpp_s64_max
-#define __glibcpp_signed_long_long_digits __glibcpp_s64_digits
-#define __glibcpp_signed_long_long_digits10 __glibcpp_s64_digits10
-#define __glibcpp_signed_long_long_traps true
-#define __glibcpp_unsigned_long_long_min __glibcpp_u64_min
-#define __glibcpp_unsigned_long_long_max __glibcpp_u64_max
-#define __glibcpp_unsigned_long_long_digits __glibcpp_u64_digits
-#define __glibcpp_unsigned_long_long_digits10 __glibcpp_u64_digits10
-#define __glibcpp_unsigned_long_long_traps true
+#  define __glibcpp_signed_long_long_min __glibcpp_s64_min
+#  define __glibcpp_signed_long_long_max __glibcpp_s64_max
+#  define __glibcpp_signed_long_long_digits __glibcpp_s64_digits
+#  define __glibcpp_signed_long_long_digits10 __glibcpp_s64_digits10
+#  define __glibcpp_signed_long_long_traps true
+#  define __glibcpp_unsigned_long_long_min __glibcpp_u64_min
+#  define __glibcpp_unsigned_long_long_max __glibcpp_u64_max
+#  define __glibcpp_unsigned_long_long_digits __glibcpp_u64_digits
+#  define __glibcpp_unsigned_long_long_digits10 __glibcpp_u64_digits10
+#  define __glibcpp_unsigned_long_long_traps true
 #else
 // You must define these macros in the configuration file.
 #endif
@@ -494,97 +494,97 @@
 
 #define __glibcpp_wchar_t_traps true
 #ifndef __glibcpp_wchar_t_is_modulo
-#define __glibcpp_wchar_t_is_modulo true
+#  define __glibcpp_wchar_t_is_modulo true
 #endif
 #if __glibcpp_wchar_t_is_signed
-#if __glibcpp_wchar_t_bits == 8
-#define __glibcpp_wchar_t_min __glibcpp_s8_min
-#define __glibcpp_wchar_t_max __glibcpp_s8_max
-#define __glibcpp_wchar_t_digits __glibcpp_s8_digits
-#define __glibcpp_wchar_t_digits10 __glibcpp_s8_digits10
-#elif __glibcpp_wchar_t_bits == 16
-#define __glibcpp_wchar_t_min __glibcpp_s16_min
-#define __glibcpp_wchar_t_max __glibcpp_s16_max
-#define __glibcpp_wchar_t_digits __glibcpp_s16_digits
-#define __glibcpp_wchar_t_digits10 __glibcpp_s16_digits10
-#elif __glibcpp_wchar_t_bits == 32
-#define __glibcpp_wchar_t_min (wchar_t)__glibcpp_s32_min
-#define __glibcpp_wchar_t_max (wchar_t)__glibcpp_s32_max
-#define __glibcpp_wchar_t_digits __glibcpp_s32_digits
-#define __glibcpp_wchar_t_digits10 __glibcpp_s32_digits10
-#elif __glibcpp_wchar_t_bits == 64
-#define __glibcpp_wchar_t_min (wchar_t)__glibcpp_s64_min
-#define __glibcpp_wchar_t_max (wchar_t)__glibcpp_s64_max
-#define __glibcpp_wchar_t_digits __glibcpp_s64_digits
-#define __glibcpp_wchar_t_digits10 __glibcpp_s64_digits10
-#else
+#  if __glibcpp_wchar_t_bits == 8
+#    define __glibcpp_wchar_t_min __glibcpp_s8_min
+#    define __glibcpp_wchar_t_max __glibcpp_s8_max
+#    define __glibcpp_wchar_t_digits __glibcpp_s8_digits
+#    define __glibcpp_wchar_t_digits10 __glibcpp_s8_digits10
+#  elif __glibcpp_wchar_t_bits == 16
+#    define __glibcpp_wchar_t_min __glibcpp_s16_min
+#    define __glibcpp_wchar_t_max __glibcpp_s16_max
+#    define __glibcpp_wchar_t_digits __glibcpp_s16_digits
+#    define __glibcpp_wchar_t_digits10 __glibcpp_s16_digits10
+#  elif __glibcpp_wchar_t_bits == 32
+#    define __glibcpp_wchar_t_min (wchar_t)__glibcpp_s32_min
+#    define __glibcpp_wchar_t_max (wchar_t)__glibcpp_s32_max
+#    define __glibcpp_wchar_t_digits __glibcpp_s32_digits
+#    define __glibcpp_wchar_t_digits10 __glibcpp_s32_digits10
+#  elif __glibcpp_wchar_t_bits == 64
+#    define __glibcpp_wchar_t_min (wchar_t)__glibcpp_s64_min
+#    define __glibcpp_wchar_t_max (wchar_t)__glibcpp_s64_max
+#    define __glibcpp_wchar_t_digits __glibcpp_s64_digits
+#    define __glibcpp_wchar_t_digits10 __glibcpp_s64_digits10
+#  else
 // You must define these macros in the configuration file.
-#endif
+#  endif
 #else
-#if __glibcpp_wchar_t_bits == 8
-#define __glibcpp_wchar_t_min __glibcpp_u8_min
-#define __glibcpp_wchar_t_max __glibcpp_u8_max
-#define __glibcpp_wchar_t_digits __glibcpp_u8_digits
-#define __glibcpp_wchar_t_digits10 __glibcpp_u8_digits10
-#elif __glibcpp_wchar_t_bits == 16
-#define __glibcpp_wchar_t_min __glibcpp_u16_min
-#define __glibcpp_wchar_t_max __glibcpp_u16_max
-#define __glibcpp_wchar_t_digits __glibcpp_u16_digits
-#define __glibcpp_wchar_t_digits10 __glibcpp_u16_digits10
-#elif __glibcpp_wchar_t_bits == 32
-#define __glibcpp_wchar_t_min (wchar_t)__glibcpp_u32_min
-#define __glibcpp_wchar_t_max (wchar_t)__glibcpp_u32_max
-#define __glibcpp_wchar_t_digits __glibcpp_u32_digits
-#define __glibcpp_wchar_t_digits10 __glibcpp_u32_digits10
-#elif __glibcpp_wchar_t_bits == 64
-#define __glibcpp_wchar_t_min (wchar_t)__glibcpp_u64_min
-#define __glibcpp_wchar_t_max (wchar_t)__glibcpp_u64_max
-#define __glibcpp_wchar_t_digits __glibcpp_u64_digits
-#define __glibcpp_wchar_t_digits10 __glibcpp_u64_digits10
-#else
+#  if __glibcpp_wchar_t_bits == 8
+#    define __glibcpp_wchar_t_min __glibcpp_u8_min
+#    define __glibcpp_wchar_t_max __glibcpp_u8_max
+#    define __glibcpp_wchar_t_digits __glibcpp_u8_digits
+#    define __glibcpp_wchar_t_digits10 __glibcpp_u8_digits10
+#  elif __glibcpp_wchar_t_bits == 16
+#    define __glibcpp_wchar_t_min __glibcpp_u16_min
+#    define __glibcpp_wchar_t_max __glibcpp_u16_max
+#    define __glibcpp_wchar_t_digits __glibcpp_u16_digits
+#    define __glibcpp_wchar_t_digits10 __glibcpp_u16_digits10
+#  elif __glibcpp_wchar_t_bits == 32
+#    define __glibcpp_wchar_t_min (wchar_t)__glibcpp_u32_min
+#    define __glibcpp_wchar_t_max (wchar_t)__glibcpp_u32_max
+#    define __glibcpp_wchar_t_digits __glibcpp_u32_digits
+#    define __glibcpp_wchar_t_digits10 __glibcpp_u32_digits10
+#  elif __glibcpp_wchar_t_bits == 64
+#    define __glibcpp_wchar_t_min (wchar_t)__glibcpp_u64_min
+#    define __glibcpp_wchar_t_max (wchar_t)__glibcpp_u64_max
+#    define __glibcpp_wchar_t_digits __glibcpp_u64_digits
+#    define __glibcpp_wchar_t_digits10 __glibcpp_u64_digits10
+#  else
 // You must define these macros in the configuration file.
-#endif
+#  endif
 #endif
 
 // float
 //
 
 #if __glibcpp_float_bits == 32
-#define __glibcpp_float_min __glibcpp_f32_min
-#define __glibcpp_float_max __glibcpp_f32_max
-#define __glibcpp_float_digits __glibcpp_f32_digits
-#define __glibcpp_float_digits10 __glibcpp_f32_digits10
-#define __glibcpp_float_radix __glibcpp_f32_radix
-#define __glibcpp_float_epsilon __glibcpp_f32_epsilon
-#define __glibcpp_float_round_error __glibcpp_f32_round_error
-#define __glibcpp_float_min_exponent __glibcpp_f32_min_exponent
-#define __glibcpp_float_min_exponent10 __glibcpp_f32_min_exponent10
-#define __glibcpp_float_max_exponent __glibcpp_f32_max_exponent
-#define __glibcpp_float_max_exponent10 __glibcpp_f32_max_exponent10
+#  define __glibcpp_float_min __glibcpp_f32_min
+#  define __glibcpp_float_max __glibcpp_f32_max
+#  define __glibcpp_float_digits __glibcpp_f32_digits
+#  define __glibcpp_float_digits10 __glibcpp_f32_digits10
+#  define __glibcpp_float_radix __glibcpp_f32_radix
+#  define __glibcpp_float_epsilon __glibcpp_f32_epsilon
+#  define __glibcpp_float_round_error __glibcpp_f32_round_error
+#  define __glibcpp_float_min_exponent __glibcpp_f32_min_exponent
+#  define __glibcpp_float_min_exponent10 __glibcpp_f32_min_exponent10
+#  define __glibcpp_float_max_exponent __glibcpp_f32_max_exponent
+#  define __glibcpp_float_max_exponent10 __glibcpp_f32_max_exponent10
 #elif __glibcpp_float_bits == 64
-#define __glibcpp_float_min __glibcpp_f64_min
-#define __glibcpp_float_max __glibcpp_f64_max
-#define __glibcpp_float_digits __glibcpp_f64_digits
-#define __glibcpp_float_digits10 __glibcpp_f64_digits10
-#define __glibcpp_float_radix __glibcpp_f64_radix
-#define __glibcpp_float_epsilon __glibcpp_f64_epsilon
-#define __glibcpp_float_round_error __glibcpp_f64_round_error
-#define __glibcpp_float_min_exponent __glibcpp_f64_min_exponent
-#define __glibcpp_float_min_exponent10 __glibcpp_f64_min_exponent10
-#define __glibcpp_float_max_exponent __glibcpp_f64_max_exponent
-#define __glibcpp_float_max_exponent10 __glibcpp_f64_max_exponent10
+#  define __glibcpp_float_min __glibcpp_f64_min
+#  define __glibcpp_float_max __glibcpp_f64_max
+#  define __glibcpp_float_digits __glibcpp_f64_digits
+#  define __glibcpp_float_digits10 __glibcpp_f64_digits10
+#  define __glibcpp_float_radix __glibcpp_f64_radix
+#  define __glibcpp_float_epsilon __glibcpp_f64_epsilon
+#  define __glibcpp_float_round_error __glibcpp_f64_round_error
+#  define __glibcpp_float_min_exponent __glibcpp_f64_min_exponent
+#  define __glibcpp_float_min_exponent10 __glibcpp_f64_min_exponent10
+#  define __glibcpp_float_max_exponent __glibcpp_f64_max_exponent
+#  define __glibcpp_float_max_exponent10 __glibcpp_f64_max_exponent10
 #elif __glibcpp_float_bits == 80
-#define __glibcpp_float_min __glibcpp_f80_min
-#define __glibcpp_float_max __glibcpp_f80_max
-#define __glibcpp_float_digits __glibcpp_f80_digits
-#define __glibcpp_float_digits10 __glibcpp_f80_digits10
-#define __glibcpp_float_radix __glibcpp_f80_radix
-#define __glibcpp_float_epsilon __glibcpp_f80_epsilon
-#define __glibcpp_float_round_error __glibcpp_f80_round_error
-#define __glibcpp_float_min_exponent __glibcpp_f80_min_exponent
-#define __glibcpp_float_min_exponent10 __glibcpp_f80_min_exponent10
-#define __glibcpp_float_max_exponent __glibcpp_f80_max_exponent
-#define __glibcpp_float_max_exponent10 __glibcpp_f80_max_exponent10
+#  define __glibcpp_float_min __glibcpp_f80_min
+#  define __glibcpp_float_max __glibcpp_f80_max
+#  define __glibcpp_float_digits __glibcpp_f80_digits
+#  define __glibcpp_float_digits10 __glibcpp_f80_digits10
+#  define __glibcpp_float_radix __glibcpp_f80_radix
+#  define __glibcpp_float_epsilon __glibcpp_f80_epsilon
+#  define __glibcpp_float_round_error __glibcpp_f80_round_error
+#  define __glibcpp_float_min_exponent __glibcpp_f80_min_exponent
+#  define __glibcpp_float_min_exponent10 __glibcpp_f80_min_exponent10
+#  define __glibcpp_float_max_exponent __glibcpp_f80_max_exponent
+#  define __glibcpp_float_max_exponent10 __glibcpp_f80_max_exponent10
 #else
 // You must define these macros in the configuration file.
 #endif
@@ -592,103 +592,103 @@
 // FIXME: These are just stubs and inkorrect
 
 #ifndef __glibcpp_float_has_infinity
-#define __glibcpp_float_has_infinity false
+#  define __glibcpp_float_has_infinity false
 #endif
 
 #ifndef __glibcpp_float_has_quiet_NaN
-#define __glibcpp_float_has_quiet_NaN false
+#  define __glibcpp_float_has_quiet_NaN false
 #endif
 
 #ifndef __glibcpp_float_has_signaling_NaN
-#define __glibcpp_float_has_signaling_NaN false
+#  define __glibcpp_float_has_signaling_NaN false
 #endif
 
 #ifndef __glibcpp_float_has_denorm
-#define __glibcpp_float_has_denorm denorm_absent
+#  define __glibcpp_float_has_denorm denorm_absent
 #endif
 
 #ifndef __glibcpp_float_has_denorm_loss
-#define __glibcpp_float_has_denorm_loss false
+#  define __glibcpp_float_has_denorm_loss false
 #endif
 
 #ifndef __glibcpp_float_infinity
-#define __glibcpp_float_infinity 0.0F
+#  define __glibcpp_float_infinity 0.0F
 #endif
 
 #ifndef __glibcpp_float_quiet_NaN
-#define __glibcpp_float_quiet_NaN 0.0F
+#  define __glibcpp_float_quiet_NaN 0.0F
 #endif
 
 #ifndef __glibcpp_float_signaling_NaN
-#define __glibcpp_float_signaling_NaN 0.0F
+#  define __glibcpp_float_signaling_NaN 0.0F
 #endif
 
 #ifndef __glibcpp_float_denorm_min
-#define __glibcpp_float_denorm_min 0.0F
+#  define __glibcpp_float_denorm_min 0.0F
 #endif
 
 #ifndef __glibcpp_float_is_iec559
-#define __glibcpp_float_is_iec559 false
+#  define __glibcpp_float_is_iec559 false
 #endif
 
 #ifndef __glibcpp_float_is_bounded
-#define __glibcpp_float_is_bounded true
+#  define __glibcpp_float_is_bounded true
 #endif
 
 #ifndef __glibcpp_float_is_modulo
-#define __glibcpp_float_is_modulo false
+#  define __glibcpp_float_is_modulo false
 #endif
 
 #ifndef __glibcpp_float_traps
-#define __glibcpp_float_traps false
+#  define __glibcpp_float_traps false
 #endif
 
 #ifndef __glibcpp_float_tinyness_before
-#define __glibcpp_float_tinyness_before false
+#  define __glibcpp_float_tinyness_before false
 #endif
 
 #ifndef __glibcpp_float_round_style
-#define __glibcpp_float_round_style round_toward_zero
+#  define __glibcpp_float_round_style round_toward_zero
 #endif
 
 // double
 
 #if __glibcpp_double_bits == 32
-#define __glibcpp_double_min __glibcpp_f32_min
-#define __glibcpp_double_max __glibcpp_f32_max
-#define __glibcpp_double_digits __glibcpp_f32_digits
-#define __glibcpp_double_digits10 __glibcpp_f32_digits10
-#define __glibcpp_double_radix __glibcpp_f32_radix
-#define __glibcpp_double_epsilon __glibcpp_f32_epsilon
-#define __glibcpp_double_round_error __glibcpp_f32_round_error
-#define __glibcpp_double_min_exponent __glibcpp_f32_min_exponent
-#define __glibcpp_double_min_exponent10 __glibcpp_f32_min_exponent10
-#define __glibcpp_double_max_exponent __glibcpp_f32_max_exponent
-#define __glibcpp_double_max_exponent10 __glibcpp_f32_max_exponent10
+#  define __glibcpp_double_min __glibcpp_f32_min
+#  define __glibcpp_double_max __glibcpp_f32_max
+#  define __glibcpp_double_digits __glibcpp_f32_digits
+#  define __glibcpp_double_digits10 __glibcpp_f32_digits10
+#  define __glibcpp_double_radix __glibcpp_f32_radix
+#  define __glibcpp_double_epsilon __glibcpp_f32_epsilon
+#  define __glibcpp_double_round_error __glibcpp_f32_round_error
+#  define __glibcpp_double_min_exponent __glibcpp_f32_min_exponent
+#  define __glibcpp_double_min_exponent10 __glibcpp_f32_min_exponent10
+#  define __glibcpp_double_max_exponent __glibcpp_f32_max_exponent
+#  define __glibcpp_double_max_exponent10 __glibcpp_f32_max_exponent10
 #elif __glibcpp_double_bits == 64
-#define __glibcpp_double_min __glibcpp_f64_min
-#define __glibcpp_double_max __glibcpp_f64_max
-#define __glibcpp_double_digits __glibcpp_f64_digits
-#define __glibcpp_double_digits10 __glibcpp_f64_digits10
-#define __glibcpp_double_radix __glibcpp_f64_radix
-#define __glibcpp_double_epsilon __glibcpp_f64_epsilon
-#define __glibcpp_double_round_error __glibcpp_f64_round_error
-#define __glibcpp_double_min_exponent __glibcpp_f64_min_exponent
-#define __glibcpp_double_min_exponent10 __glibcpp_f64_min_exponent10
-#define __glibcpp_double_max_exponent __glibcpp_f64_max_exponent
-#define __glibcpp_double_max_exponent10 __glibcpp_f64_max_exponent10
+#  define __glibcpp_double_min __glibcpp_f64_min
+#  define __glibcpp_double_max __glibcpp_f64_max
+#  define __glibcpp_double_digits __glibcpp_f64_digits
+#  define __glibcpp_double_digits10 __glibcpp_f64_digits10
+#  define __glibcpp_double_radix __glibcpp_f64_radix
+#  define __glibcpp_double_epsilon __glibcpp_f64_epsilon
+#  define __glibcpp_double_round_error __glibcpp_f64_round_error
+#  define __glibcpp_double_min_exponent __glibcpp_f64_min_exponent
+#  define __glibcpp_double_min_exponent10 __glibcpp_f64_min_exponent10
+#  define __glibcpp_double_max_exponent __glibcpp_f64_max_exponent
+#  define __glibcpp_double_max_exponent10 __glibcpp_f64_max_exponent10
 #elif __glibcpp_double_bits == 80
-#define __glibcpp_double_min __glibcpp_f80_min
-#define __glibcpp_double_max __glibcpp_f80_max
-#define __glibcpp_double_digits __glibcpp_f80_digits
-#define __glibcpp_double_digits10 __glibcpp_f80_digits10
-#define __glibcpp_double_radix __glibcpp_f80_radix
-#define __glibcpp_double_epsilon __glibcpp_f80_epsilon
-#define __glibcpp_double_round_error __glibcpp_f80_round_error
-#define __glibcpp_double_min_exponent __glibcpp_f80_min_exponent
-#define __glibcpp_double_min_exponent10 __glibcpp_f80_min_exponent10
-#define __glibcpp_double_max_exponent __glibcpp_f80_max_exponent
-#define __glibcpp_double_max_exponent10 __glibcpp_f80_max_exponent10
+#  define __glibcpp_double_min __glibcpp_f80_min
+#  define __glibcpp_double_max __glibcpp_f80_max
+#  define __glibcpp_double_digits __glibcpp_f80_digits
+#  define __glibcpp_double_digits10 __glibcpp_f80_digits10
+#  define __glibcpp_double_radix __glibcpp_f80_radix
+#  define __glibcpp_double_epsilon __glibcpp_f80_epsilon
+#  define __glibcpp_double_round_error __glibcpp_f80_round_error
+#  define __glibcpp_double_min_exponent __glibcpp_f80_min_exponent
+#  define __glibcpp_double_min_exponent10 __glibcpp_f80_min_exponent10
+#  define __glibcpp_double_max_exponent __glibcpp_f80_max_exponent
+#  define __glibcpp_double_max_exponent10 __glibcpp_f80_max_exponent10
 #else
 // You must define these macros in the configuration file.
 #endif
@@ -696,127 +696,127 @@
 // FIXME: These are just stubs and inkorrect
 
 #ifndef __glibcpp_double_has_infinity
-#define __glibcpp_double_has_infinity false
+#  define __glibcpp_double_has_infinity false
 #endif
 
 #ifndef __glibcpp_double_has_quiet_NaN
-#define __glibcpp_double_has_quiet_NaN false
+#  define __glibcpp_double_has_quiet_NaN false
 #endif
 
 #ifndef __glibcpp_double_has_signaling_NaN
-#define __glibcpp_double_has_signaling_NaN false
+#  define __glibcpp_double_has_signaling_NaN false
 #endif
 
 #ifndef __glibcpp_double_has_denorm
-#define __glibcpp_double_has_denorm denorm_absent
+#  define __glibcpp_double_has_denorm denorm_absent
 #endif
 
 #ifndef __glibcpp_double_has_denorm_loss
-#define __glibcpp_double_has_denorm_loss false
+#  define __glibcpp_double_has_denorm_loss false
 #endif
 
 #ifndef __glibcpp_double_infinity
-#define __glibcpp_double_infinity 0.0
+#  define __glibcpp_double_infinity 0.0
 #endif
 
 #ifndef __glibcpp_double_quiet_NaN
-#define __glibcpp_double_quiet_NaN 0.0
+#  define __glibcpp_double_quiet_NaN 0.0
 #endif
 
 #ifndef __glibcpp_double_signaling_NaN
-#define __glibcpp_double_signaling_NaN 0.0
+#  define __glibcpp_double_signaling_NaN 0.0
 #endif
 
 #ifndef __glibcpp_double_denorm_min
-#define __glibcpp_double_denorm_min 0.0
+#  define __glibcpp_double_denorm_min 0.0
 #endif
 
 #ifndef __glibcpp_double_is_iec559
-#define __glibcpp_double_is_iec559 false
+#  define __glibcpp_double_is_iec559 false
 #endif
 
 #ifndef __glibcpp_double_is_bounded
-#define __glibcpp_double_is_bounded true
+#  define __glibcpp_double_is_bounded true
 #endif
 
 #ifndef __glibcpp_double_is_modulo
-#define __glibcpp_double_is_modulo false
+#  define __glibcpp_double_is_modulo false
 #endif
 
 #ifndef __glibcpp_double_traps
-#define __glibcpp_double_traps false
+#  define __glibcpp_double_traps false
 #endif
 
 #ifndef __glibcpp_double_tinyness_before
-#define __glibcpp_double_tinyness_before false
+#  define __glibcpp_double_tinyness_before false
 #endif
 
 #ifndef __glibcpp_double_round_style
-#define __glibcpp_double_round_style round_toward_zero
+#  define __glibcpp_double_round_style round_toward_zero
 #endif
 
 // long double
 
 #if __glibcpp_long_double_bits == 32
-#define __glibcpp_long_double_min __glibcpp_f32_min
-#define __glibcpp_long_double_max __glibcpp_f32_max
-#define __glibcpp_long_double_digits __glibcpp_f32_digits
-#define __glibcpp_long_double_digits10 __glibcpp_f32_digits10
-#define __glibcpp_long_double_radix __glibcpp_f32_radix
-#define __glibcpp_long_double_epsilon __glibcpp_f32_epsilon
-#define __glibcpp_long_double_round_error __glibcpp_f32_round_error
-#define __glibcpp_long_double_min_exponent __glibcpp_f32_min_exponent
-#define __glibcpp_long_double_min_exponent10 __glibcpp_f32_min_exponent10
-#define __glibcpp_long_double_max_exponent __glibcpp_f32_max_exponent
-#define __glibcpp_long_double_max_exponent10 __glibcpp_f32_max_exponent10
+#  define __glibcpp_long_double_min __glibcpp_f32_min
+#  define __glibcpp_long_double_max __glibcpp_f32_max
+#  define __glibcpp_long_double_digits __glibcpp_f32_digits
+#  define __glibcpp_long_double_digits10 __glibcpp_f32_digits10
+#  define __glibcpp_long_double_radix __glibcpp_f32_radix
+#  define __glibcpp_long_double_epsilon __glibcpp_f32_epsilon
+#  define __glibcpp_long_double_round_error __glibcpp_f32_round_error
+#  define __glibcpp_long_double_min_exponent __glibcpp_f32_min_exponent
+#  define __glibcpp_long_double_min_exponent10 __glibcpp_f32_min_exponent10
+#  define __glibcpp_long_double_max_exponent __glibcpp_f32_max_exponent
+#  define __glibcpp_long_double_max_exponent10 __glibcpp_f32_max_exponent10
 #elif __glibcpp_long_double_bits == 64
-#define __glibcpp_long_double_min __glibcpp_f64_min
-#define __glibcpp_long_double_max __glibcpp_f64_max
-#define __glibcpp_long_double_digits __glibcpp_f64_digits
-#define __glibcpp_long_double_digits10 __glibcpp_f64_digits10
-#define __glibcpp_long_double_radix __glibcpp_f64_radix
-#define __glibcpp_long_double_epsilon __glibcpp_f64_epsilon
-#define __glibcpp_long_double_round_error __glibcpp_f64_round_error
-#define __glibcpp_long_double_min_exponent __glibcpp_f64_min_exponent
-#define __glibcpp_long_double_min_exponent10 __glibcpp_f64_min_exponent10
-#define __glibcpp_long_double_max_exponent __glibcpp_f64_max_exponent
-#define __glibcpp_long_double_max_exponent10 __glibcpp_f64_max_exponent10
+#  define __glibcpp_long_double_min __glibcpp_f64_min
+#  define __glibcpp_long_double_max __glibcpp_f64_max
+#  define __glibcpp_long_double_digits __glibcpp_f64_digits
+#  define __glibcpp_long_double_digits10 __glibcpp_f64_digits10
+#  define __glibcpp_long_double_radix __glibcpp_f64_radix
+#  define __glibcpp_long_double_epsilon __glibcpp_f64_epsilon
+#  define __glibcpp_long_double_round_error __glibcpp_f64_round_error
+#  define __glibcpp_long_double_min_exponent __glibcpp_f64_min_exponent
+#  define __glibcpp_long_double_min_exponent10 __glibcpp_f64_min_exponent10
+#  define __glibcpp_long_double_max_exponent __glibcpp_f64_max_exponent
+#  define __glibcpp_long_double_max_exponent10 __glibcpp_f64_max_exponent10
 #elif __glibcpp_long_double_bits == 80
-#define __glibcpp_long_double_min __glibcpp_f80_min
-#define __glibcpp_long_double_max __glibcpp_f80_max
-#define __glibcpp_long_double_digits __glibcpp_f80_digits
-#define __glibcpp_long_double_digits10 __glibcpp_f80_digits10
-#define __glibcpp_long_double_radix __glibcpp_f80_radix
-#define __glibcpp_long_double_epsilon __glibcpp_f80_epsilon
-#define __glibcpp_long_double_round_error __glibcpp_f80_round_error
-#define __glibcpp_long_double_min_exponent __glibcpp_f80_min_exponent
-#define __glibcpp_long_double_min_exponent10 __glibcpp_f80_min_exponent10
-#define __glibcpp_long_double_max_exponent __glibcpp_f80_max_exponent
-#define __glibcpp_long_double_max_exponent10 __glibcpp_f80_max_exponent10
+#  define __glibcpp_long_double_min __glibcpp_f80_min
+#  define __glibcpp_long_double_max __glibcpp_f80_max
+#  define __glibcpp_long_double_digits __glibcpp_f80_digits
+#  define __glibcpp_long_double_digits10 __glibcpp_f80_digits10
+#  define __glibcpp_long_double_radix __glibcpp_f80_radix
+#  define __glibcpp_long_double_epsilon __glibcpp_f80_epsilon
+#  define __glibcpp_long_double_round_error __glibcpp_f80_round_error
+#  define __glibcpp_long_double_min_exponent __glibcpp_f80_min_exponent
+#  define __glibcpp_long_double_min_exponent10 __glibcpp_f80_min_exponent10
+#  define __glibcpp_long_double_max_exponent __glibcpp_f80_max_exponent
+#  define __glibcpp_long_double_max_exponent10 __glibcpp_f80_max_exponent10
 #elif __glibcpp_long_double_bits == 96
-#define __glibcpp_long_double_min __glibcpp_f96_min
-#define __glibcpp_long_double_max __glibcpp_f96_max
-#define __glibcpp_long_double_digits __glibcpp_f96_digits
-#define __glibcpp_long_double_digits10 __glibcpp_f96_digits10
-#define __glibcpp_long_double_radix __glibcpp_f96_radix
-#define __glibcpp_long_double_epsilon __glibcpp_f96_epsilon
-#define __glibcpp_long_double_round_error __glibcpp_f96_round_error
-#define __glibcpp_long_double_min_exponent __glibcpp_f96_min_exponent
-#define __glibcpp_long_double_min_exponent10 __glibcpp_f96_min_exponent10
-#define __glibcpp_long_double_max_exponent __glibcpp_f96_max_exponent
-#define __glibcpp_long_double_max_exponent10 __glibcpp_f96_max_exponent10
+#  define __glibcpp_long_double_min __glibcpp_f96_min
+#  define __glibcpp_long_double_max __glibcpp_f96_max
+#  define __glibcpp_long_double_digits __glibcpp_f96_digits
+#  define __glibcpp_long_double_digits10 __glibcpp_f96_digits10
+#  define __glibcpp_long_double_radix __glibcpp_f96_radix
+#  define __glibcpp_long_double_epsilon __glibcpp_f96_epsilon
+#  define __glibcpp_long_double_round_error __glibcpp_f96_round_error
+#  define __glibcpp_long_double_min_exponent __glibcpp_f96_min_exponent
+#  define __glibcpp_long_double_min_exponent10 __glibcpp_f96_min_exponent10
+#  define __glibcpp_long_double_max_exponent __glibcpp_f96_max_exponent
+#  define __glibcpp_long_double_max_exponent10 __glibcpp_f96_max_exponent10
 #elif __glibcpp_long_double_bits == 128
-#define __glibcpp_long_double_min __glibcpp_f128_min
-#define __glibcpp_long_double_max __glibcpp_f128_max
-#define __glibcpp_long_double_digits __glibcpp_f128_digits
-#define __glibcpp_long_double_digits10 __glibcpp_f128_digits10
-#define __glibcpp_long_double_radix __glibcpp_f128_radix
-#define __glibcpp_long_double_epsilon __glibcpp_f128_epsilon
-#define __glibcpp_long_double_round_error __glibcpp_f128_round_error
-#define __glibcpp_long_double_min_exponent __glibcpp_f128_min_exponent
-#define __glibcpp_long_double_min_exponent10 __glibcpp_f128_min_exponent10
-#define __glibcpp_long_double_max_exponent __glibcpp_f128_max_exponent
-#define __glibcpp_long_double_max_exponent10 __glibcpp_f128_max_exponent10
+#  define __glibcpp_long_double_min __glibcpp_f128_min
+#  define __glibcpp_long_double_max __glibcpp_f128_max
+#  define __glibcpp_long_double_digits __glibcpp_f128_digits
+#  define __glibcpp_long_double_digits10 __glibcpp_f128_digits10
+#  define __glibcpp_long_double_radix __glibcpp_f128_radix
+#  define __glibcpp_long_double_epsilon __glibcpp_f128_epsilon
+#  define __glibcpp_long_double_round_error __glibcpp_f128_round_error
+#  define __glibcpp_long_double_min_exponent __glibcpp_f128_min_exponent
+#  define __glibcpp_long_double_min_exponent10 __glibcpp_f128_min_exponent10
+#  define __glibcpp_long_double_max_exponent __glibcpp_f128_max_exponent
+#  define __glibcpp_long_double_max_exponent10 __glibcpp_f128_max_exponent10
 #else
 // You must define these macros in the configuration file.
 #endif
@@ -824,63 +824,63 @@
 // FIXME: These are just stubs and inkorrect
 
 #ifndef __glibcpp_long_double_has_infinity
-#define __glibcpp_long_double_has_infinity false
+#  define __glibcpp_long_double_has_infinity false
 #endif
 
 #ifndef __glibcpp_long_double_has_quiet_NaN
-#define __glibcpp_long_double_has_quiet_NaN false
+#  define __glibcpp_long_double_has_quiet_NaN false
 #endif
 
 #ifndef __glibcpp_long_double_has_signaling_NaN
-#define __glibcpp_long_double_has_signaling_NaN false
+#  define __glibcpp_long_double_has_signaling_NaN false
 #endif
 
 #ifndef __glibcpp_long_double_has_denorm
-#define __glibcpp_long_double_has_denorm denorm_absent
+#  define __glibcpp_long_double_has_denorm denorm_absent
 #endif
 
 #ifndef __glibcpp_long_double_has_denorm_loss
-#define __glibcpp_long_double_has_denorm_loss false
+#  define __glibcpp_long_double_has_denorm_loss false
 #endif
 
 #ifndef __glibcpp_long_double_infinity
-#define __glibcpp_long_double_infinity 0.0L
+#  define __glibcpp_long_double_infinity 0.0L
 #endif
 
 #ifndef __glibcpp_long_double_quiet_NaN
-#define __glibcpp_long_double_quiet_NaN 0.0L
+#  define __glibcpp_long_double_quiet_NaN 0.0L
 #endif
 
 #ifndef __glibcpp_long_double_signaling_NaN
-#define __glibcpp_long_double_signaling_NaN 0.0L
+#  define __glibcpp_long_double_signaling_NaN 0.0L
 #endif
 
 #ifndef __glibcpp_long_double_denorm_min
-#define __glibcpp_long_double_denorm_min 0.0L
+#  define __glibcpp_long_double_denorm_min 0.0L
 #endif
 
 #ifndef __glibcpp_long_double_is_iec559
-#define __glibcpp_long_double_is_iec559 false
+#  define __glibcpp_long_double_is_iec559 false
 #endif
 
 #ifndef __glibcpp_long_double_is_bounded
-#define __glibcpp_long_double_is_bounded true
+#  define __glibcpp_long_double_is_bounded true
 #endif
 
 #ifndef __glibcpp_long_double_is_modulo
-#define __glibcpp_long_double_is_modulo false
+#  define __glibcpp_long_double_is_modulo false
 #endif
 
 #ifndef __glibcpp_long_double_traps
-#define __glibcpp_long_double_traps false
+#  define __glibcpp_long_double_traps false
 #endif
 
 #ifndef __glibcpp_long_double_tinyness_before
-#define __glibcpp_long_double_tinyness_before false
+#  define __glibcpp_long_double_tinyness_before false
 #endif
 
 #ifndef __glibcpp_long_double_round_style
-#define __glibcpp_long_double_round_style round_toward_zero
+#  define __glibcpp_long_double_round_style round_toward_zero
 #endif
 
 
