@@ -1,3 +1,7 @@
+Tue Nov  3 17:51:36 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* dwarf2out.c (output_call_frame_info): Comments on last change.
+
 Tue Nov  3 07:51:43 1998  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm.c (add_constant): When taking the address of an item in the

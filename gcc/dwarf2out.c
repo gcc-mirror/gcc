@@ -1829,6 +1829,14 @@ output_call_frame_info (for_eh)
       fputc ('\n', asm_out_file);
       ASM_OUTPUT_LABEL (asm_out_file, l1);
 
+      /* ??? This always emits a 4 byte offset when for_eh is true, but it
+	 emits a target dependent sized offset when for_eh is not true.
+	 This inconsistency may confuse gdb.  The only case where we need a
+	 non-4 byte offset is for the Irix6 N64 ABI, so we may lose SGI
+	 compatibility if we emit a 4 byte offset.  We need a 4 byte offset
+	 though in order to be compatible with the dwarf_fde struct in frame.c.
+	 If the for_eh case is changed, then the struct in frame.c has
+	 to be adjusted appropriately.  */
       if (for_eh)
 	ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, l1, "__FRAME_BEGIN__");
       else
