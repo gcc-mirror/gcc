@@ -4444,12 +4444,34 @@ movtf_is_ok:
   [(set_attr "type" "unary")
    (set_attr "length" "1")])
 
-(define_insn "*addx_extend"
+(define_insn "*addx_extend_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:SI (plus:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ")
 			  (match_operand:SI 2 "arith_operand" "rI"))
 		 (ltu:SI (reg:CC_NOOV 100) (const_int 0))))]
-  ""
+  "! TARGET_ARCH64"
+  "#"
+  [(set_attr "type" "unary")
+   (set_attr "length" "2")])
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "")
+	(plus:SI (plus:SI (match_operand:SI 1 "reg_or_0_operand" "")
+			  (match_operand:SI 2 "arith_operand" ""))
+		 (ltu:SI (reg:CC_NOOV 100) (const_int 0))))]
+  "! TARGET_ARCH64 && reload_completed"
+  [(set (match_dup 3) (plus:SI (plus:SI (match_dup 1) (match_dup 2))
+                               (ltu:SI (reg:CC_NOOV 100) (const_int 0))))
+   (set (match_dup 4) (const_int 0))]
+  "operands[3] = gen_lowpart (SImode, operands[0]);
+   operands[4] = gen_highpart (SImode, operands[1]);")
+
+(define_insn "*addx_extend_sp64"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(plus:SI (plus:SI (match_operand:SI 1 "reg_or_0_operand" "%rJ")
+			  (match_operand:SI 2 "arith_operand" "rI"))
+		 (ltu:SI (reg:CC_NOOV 100) (const_int 0))))]
+  "TARGET_ARCH64"
   "addx\\t%r1, %2, %0"
   [(set_attr "type" "unary")
    (set_attr "length" "1")])
@@ -4464,15 +4486,37 @@ movtf_is_ok:
   [(set_attr "type" "unary")
    (set_attr "length" "1")])
 
+(define_insn "*subx_extend_sp64"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(minus:SI (minus:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
+			    (match_operand:SI 2 "arith_operand" "rI"))
+		  (ltu:SI (reg:CC_NOOV 100) (const_int 0))))]
+  "TARGET_ARCH64"
+  "subx\\t%r1, %2, %0"
+  [(set_attr "type" "unary")
+   (set_attr "length" "1")])
+
 (define_insn "*subx_extend"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(minus:SI (minus:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
 			    (match_operand:SI 2 "arith_operand" "rI"))
 		  (ltu:SI (reg:CC_NOOV 100) (const_int 0))))]
-  ""
-  "subx\\t%r1, %2, %0"
+  "! TARGET_ARCH64"
+  "#"
   [(set_attr "type" "unary")
-   (set_attr "length" "1")])
+   (set_attr "length" "2")])
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(minus:SI (minus:SI (match_operand:SI 1 "reg_or_0_operand" "rJ")
+			    (match_operand:SI 2 "arith_operand" "rI"))
+		  (ltu:SI (reg:CC_NOOV 100) (const_int 0))))]
+  "! TARGET_ARCH64 && reload_completed"
+  [(set (match_dup 3) (minus:SI (minus:SI (match_dup 1) (match_dup 2))
+                                (ltu:SI (reg:CC_NOOV 100) (const_int 0))))
+   (set (match_dup 4) (const_int 0))]
+  "operands[3] = gen_lowpart (SImode, operands[0]);
+   operands[4] = gen_highpart (SImode, operands[0]);")
 
 ;; This is only for splits at the moment.
 (define_insn ""
@@ -4487,8 +4531,8 @@ movtf_is_ok:
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r")
-      (plus:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
-               (match_operand:DI 2 "register_operand" "r")))
+        (plus:DI (zero_extend:DI (match_operand:SI 1 "register_operand" "r"))
+                 (match_operand:DI 2 "register_operand" "r")))
    (clobber (reg:CC 100))]
   "! TARGET_ARCH64"
   "#"
@@ -4501,14 +4545,17 @@ movtf_is_ok:
                  (match_operand:DI 2 "register_operand" "")))
    (clobber (reg:CC 100))]
   "! TARGET_ARCH64"
-  [(set (reg:CC_NOOV 100)
-        (compare:CC_NOOV (plus:SI (match_dup 3) (match_dup 1))
-                         (const_int 0)))
-   (set (match_dup 0)
+  [(parallel [(set (reg:CC_NOOV 100)
+                   (compare:CC_NOOV (plus:SI (match_dup 3) (match_dup 1))
+                                    (const_int 0)))
+              (set (match_dup 5) (plus:SI (match_dup 3) (match_dup 1)))])
+   (set (match_dup 6)
         (plus:SI (plus:SI (match_dup 4) (const_int 0))
                  (ltu:SI (reg:CC_NOOV 100) (const_int 0))))]
   "operands[3] = gen_lowpart (SImode, operands[2]);
-   operands[4] = gen_highpart (SImode, operands[2]);")
+   operands[4] = gen_highpart (SImode, operands[2]);
+   operands[5] = gen_lowpart (SImode, operands[0]);
+   operands[6] = gen_highpart (SImode, operands[0]);")
 
 (define_insn "*adddi3_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -4672,14 +4719,17 @@ movtf_is_ok:
                   (zero_extend:DI (match_operand:SI 2 "register_operand" ""))))
    (clobber (reg:CC 100))]
   "! TARGET_ARCH64"
-  [(set (reg:CC_NOOV 100)
-        (compare:CC_NOOV (minus:SI (match_dup 3) (match_dup 2))
-                         (const_int 0)))
-   (set (match_dup 0)
-        (plus:SI (plus:SI (match_dup 4) (const_int 0))
-                 (ltu:SI (reg:CC_NOOV 100) (const_int 0))))]
+  [(parallel [(set (reg:CC_NOOV 100)
+                   (compare:CC_NOOV (minus:SI (match_dup 3) (match_dup 2))
+                                    (const_int 0)))
+              (set (match_dup 5) (minus:SI (match_dup 3) (match_dup 2)))])
+   (set (match_dup 6)
+        (minus:SI (minus:SI (match_dup 4) (const_int 0))
+                  (ltu:SI (reg:CC_NOOV 100) (const_int 0))))]
   "operands[3] = gen_lowpart (SImode, operands[1]);
-   operands[4] = gen_highpart (SImode, operands[1]);")
+   operands[4] = gen_highpart (SImode, operands[1]);
+   operands[5] = gen_lowpart (SImode, operands[0]);
+   operands[6] = gen_highpart (SImode, operands[0]);")
 
 (define_insn "*subdi3_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r")
