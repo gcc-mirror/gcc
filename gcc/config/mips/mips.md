@@ -1827,53 +1827,29 @@
 
 ;; VR4120 errata MD(A1): signed division instructions do not work correctly
 ;; with negative operands.  We use special libgcc functions instead.
-(define_insn "divmodsi4"
-  [(set (match_operand:SI 0 "register_operand" "=l")
-	(div:SI (match_operand:SI 1 "register_operand" "d")
-		(match_operand:SI 2 "register_operand" "d")))
-   (set (match_operand:SI 3 "register_operand" "=h")
-	(mod:SI (match_dup 1)
-		(match_dup 2)))]
+(define_insn "divmod<mode>4"
+  [(set (match_operand:GPR 0 "register_operand" "=l")
+	(div:GPR (match_operand:GPR 1 "register_operand" "d")
+		 (match_operand:GPR 2 "register_operand" "d")))
+   (set (match_operand:GPR 3 "register_operand" "=h")
+	(mod:GPR (match_dup 1)
+		 (match_dup 2)))]
   "!TARGET_FIX_VR4120"
-  { return mips_output_division ("div\t$0,%1,%2", operands); }
-  [(set_attr "type"	"idiv")
-   (set_attr "mode"	"SI")])
+  { return mips_output_division ("<d>div\t$0,%1,%2", operands); }
+  [(set_attr "type" "idiv")
+   (set_attr "mode" "<MODE>")])
 
-(define_insn "divmoddi4"
-  [(set (match_operand:DI 0 "register_operand" "=l")
-	(div:DI (match_operand:DI 1 "register_operand" "d")
-		(match_operand:DI 2 "register_operand" "d")))
-   (set (match_operand:DI 3 "register_operand" "=h")
-	(mod:DI (match_dup 1)
-		(match_dup 2)))]
-  "TARGET_64BIT && !TARGET_FIX_VR4120"
-  { return mips_output_division ("ddiv\t$0,%1,%2", operands); }
-  [(set_attr "type"	"idiv")
-   (set_attr "mode"	"DI")])
-
-(define_insn "udivmodsi4"
-  [(set (match_operand:SI 0 "register_operand" "=l")
-	(udiv:SI (match_operand:SI 1 "register_operand" "d")
-		 (match_operand:SI 2 "register_operand" "d")))
-   (set (match_operand:SI 3 "register_operand" "=h")
-	(umod:SI (match_dup 1)
-		 (match_dup 2)))]
+(define_insn "udivmod<mode>4"
+  [(set (match_operand:GPR 0 "register_operand" "=l")
+	(udiv:GPR (match_operand:GPR 1 "register_operand" "d")
+		  (match_operand:GPR 2 "register_operand" "d")))
+   (set (match_operand:GPR 3 "register_operand" "=h")
+	(umod:GPR (match_dup 1)
+		  (match_dup 2)))]
   ""
-  { return mips_output_division ("divu\t$0,%1,%2", operands); }
-  [(set_attr "type"	"idiv")
-   (set_attr "mode"	"SI")])
-
-(define_insn "udivmoddi4"
-  [(set (match_operand:DI 0 "register_operand" "=l")
-	(udiv:DI (match_operand:DI 1 "register_operand" "d")
-		 (match_operand:DI 2 "register_operand" "d")))
-   (set (match_operand:DI 3 "register_operand" "=h")
-	(umod:DI (match_dup 1)
-		 (match_dup 2)))]
-  "TARGET_64BIT"
-  { return mips_output_division ("ddivu\t$0,%1,%2", operands); }
-  [(set_attr "type"	"idiv")
-   (set_attr "mode"	"DI")])
+  { return mips_output_division ("<d>divu\t$0,%1,%2", operands); }
+  [(set_attr "type" "idiv")
+   (set_attr "mode" "<MODE>")])
 
 ;;
 ;;  ....................

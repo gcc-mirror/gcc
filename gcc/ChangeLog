@@ -1,5 +1,9 @@
 2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md ({,u}divmod[sd]i4): Redefine using :GPR.
+
+2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (any_extend): New code macro.
 	(u, su): New code attributes.
 	({,u}mulsidi3, {,u}mulsidi3_32bit_internal, {,u}mulsidi3_32bit_r4000)
