@@ -1,3 +1,11 @@
+2001-07-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.md ("*ashlsi3"): Operand 1 can be a memory 
+	reference using the stack pointer, adjust it since we push Y 
+	temporarily.
+	("*ashrsi3"): Likewise.
+	("*lshrsi3"): Likewise.
+
 2001-07-05  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.h (RETURN_ADDR_RTX): Fix return address
