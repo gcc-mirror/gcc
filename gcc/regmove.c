@@ -45,7 +45,7 @@ static int optimize_reg_copy_1	PROTO((rtx, rtx, rtx));
 static void optimize_reg_copy_2	PROTO((rtx, rtx, rtx));
 static void optimize_reg_copy_3	PROTO((rtx, rtx, rtx));
 static rtx gen_add3_insn	PROTO((rtx, rtx, rtx));
-static void copy_src_to_dest	PROTO((rtx, rtx, rtx, int, int));
+static void copy_src_to_dest	PROTO((rtx, rtx, rtx, int));
 static int *regmove_bb_head;
 
 struct match {
@@ -68,7 +68,6 @@ static int stable_and_no_regs_but_for_p PROTO((rtx, rtx, rtx));
 static int regclass_compatible_p PROTO((int, int));
 static int replacement_quality PROTO((rtx));
 static int fixup_match_2 PROTO((rtx, rtx, rtx, rtx, FILE *));
-static int loop_depth;
 
 /* Return non-zero if registers with CLASS1 and CLASS2 can be merged without
    causing too much register allocation problems.  */
@@ -465,20 +464,7 @@ optimize_reg_copy_1 (insn, dest, src)
 			   && (sregno >= FIRST_PSEUDO_REGISTER
 			       || ! reg_overlap_mentioned_p (src,
 							     PATTERN (q))))
-		    {
-		      /* We assume that a register is used exactly once per
-			 insn in the REG_N_REFS updates below.  If this is not
-			 correct, no great harm is done.
-
-			 Since we do not know if we will change the lifetime of
-			 SREGNO or DREGNO, we must not update REG_LIVE_LENGTH
-			 or REG_N_CALLS_CROSSED at this time.   */
-		      if (sregno >= FIRST_PSEUDO_REGISTER)
-			REG_N_REFS (sregno) -= loop_depth;
-
-		      if (dregno >= FIRST_PSEUDO_REGISTER)
-			REG_N_REFS (dregno) += loop_depth;
-		    }
+		    ;
 		  else
 		    {
 		      validate_replace_rtx (dest, src, q);
@@ -626,15 +612,7 @@ optimize_reg_copy_2 (insn, dest, src)
 	    if (GET_RTX_CLASS (GET_CODE (q)) == 'i')
 	      {
 		if (reg_mentioned_p (dest, PATTERN (q)))
-		  {
-		    PATTERN (q) = replace_rtx (PATTERN (q), dest, src);
-
-		    /* We assume that a register is used exactly once per
-		       insn in the updates below.  If this is not correct,
-		       no great harm is done.  */
-		    REG_N_REFS (dregno) -= loop_depth;
-		    REG_N_REFS (sregno) += loop_depth;
-		  }
+		  PATTERN (q) = replace_rtx (PATTERN (q), dest, src);
 
 
 	      if (GET_CODE (q) == CALL_INSN)
@@ -755,11 +733,10 @@ optimize_reg_copy_3 (insn, dest, src)
    instead moving the value to dest directly before the operation.  */
 
 static void
-copy_src_to_dest (insn, src, dest, loop_depth, old_max_uid)
+copy_src_to_dest (insn, src, dest, old_max_uid)
      rtx insn;
      rtx src;
      rtx dest;
-     int loop_depth;
      int old_max_uid;
 {
   rtx seq;
@@ -844,8 +821,7 @@ copy_src_to_dest (insn, src, dest, loop_depth, old_max_uid)
 
       /* Update the various register tables.  */
       dest_regno = REGNO (dest);
-      REG_N_SETS (dest_regno) += loop_depth;
-      REG_N_REFS (dest_regno) += loop_depth;
+      REG_N_SETS (dest_regno) ++;
       REG_LIVE_LENGTH (dest_regno)++;
       if (REGNO_FIRST_UID (dest_regno) == insn_uid)
 	REGNO_FIRST_UID (dest_regno) = move_uid;
@@ -1007,9 +983,6 @@ fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
 		  REG_N_CALLS_CROSSED (REGNO (dst)) += num_calls;
 		}
 
-	      REG_N_REFS (REGNO (dst)) += loop_depth;
-	      REG_N_REFS (REGNO (src)) -= loop_depth;
-
 	      if (regmove_dump_file)
 		fprintf (regmove_dump_file,
 			 "Fixed operand of insn %d.\n",
@@ -1109,8 +1082,6 @@ regmove_optimize (f, nregs, regmove_dump_file)
 
   /* A forward/backward pass.  Replace output operands with input operands.  */
 
-  loop_depth = 1;
-
   for (pass = 0; pass <= 2; pass++)
     {
       if (! flag_regmove && pass >= flag_expensive_optimizations)
@@ -1125,14 +1096,6 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	{
 	  rtx set;
 	  int op_no, match_no;
-
-	  if (GET_CODE (insn) == NOTE)
-	    {
-	      if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
-		loop_depth++;
-	      else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
-		loop_depth--;
-	    }
 
 	  set = single_set (insn);
 	  if (! set)
@@ -1269,17 +1232,8 @@ regmove_optimize (f, nregs, regmove_dump_file)
   if (regmove_dump_file)
     fprintf (regmove_dump_file, "Starting backward pass...\n");
 
-  loop_depth = 1;
-
   for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
     {
-      if (GET_CODE (insn) == NOTE)
-	{
-	  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_END)
-	    loop_depth++;
-	  else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
-	    loop_depth--;
-	}
       if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
 	{
 	  int op_no, match_no;
@@ -1528,22 +1482,6 @@ regmove_optimize (f, nregs, regmove_dump_file)
 			REG_LIVE_LENGTH (srcno) = 2;
 		    }
 
-		  /* We assume that a register is used exactly once per
-		     insn in the updates above.  If this is not correct,
-		     no great harm is done.  */
-
-		  REG_N_REFS (dstno) += 2 * loop_depth;
-		  REG_N_REFS (srcno) -= 2 * loop_depth;
-
-                  /* If that was the only time src was set,
-                     and src was not live at the start of the
-                     function, we know that we have no more
-                     references to src; clear REG_N_REFS so it
-                     won't make reload do any work.  */
-                  if (REG_N_SETS (REGNO (src)) == 0
-                      && ! regno_uninitialized (REGNO (src)))
-                    REG_N_REFS (REGNO (src)) = 0;
-
 		  if (regmove_dump_file)
 		    fprintf (regmove_dump_file,
 			     "Fixed operand %d of insn %d matching operand %d.\n",
@@ -1556,8 +1494,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 	  /* If we weren't able to replace any of the alternatives, try an
 	     alternative appoach of copying the source to the destination.  */
 	  if (!success && copy_src != NULL_RTX)
-	    copy_src_to_dest (insn, copy_src, copy_dst, loop_depth,
-			      old_max_uid);
+	    copy_src_to_dest (insn, copy_src, copy_dst, old_max_uid);
 
 	}
     }
@@ -1683,7 +1620,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
   HOST_WIDE_INT insn_const, newconst;
   rtx overlap = 0; /* need to move insn ? */
   rtx src_note = find_reg_note (insn, REG_DEAD, src), dst_note;
-  int length, s_length, true_loop_depth;
+  int length, s_length;
 
   /* If SRC is marked as unchanging, we may not change it.
      ??? Maybe we could get better code by removing the unchanging bit
@@ -1905,8 +1842,6 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
   if (! success)
     return 0;
 
-  true_loop_depth = backward ? 2 - loop_depth : loop_depth;
-
   /* Remove the death note for DST from P.  */
   remove_note (p, dst_note);
   if (code == MINUS)
@@ -1918,7 +1853,6 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 	post_inc = 0;
       validate_change (insn, &XEXP (SET_SRC (set), 1), GEN_INT (insn_const), 0);
       REG_N_SETS (REGNO (src))++;
-      REG_N_REFS (REGNO (src)) += true_loop_depth;
       REG_LIVE_LENGTH (REGNO (src))++;
     }
   if (overlap)
@@ -2010,7 +1944,6 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
 	      NOTE_SOURCE_FILE (q) = 0;
 	      REG_N_SETS (REGNO (src))--;
 	      REG_N_CALLS_CROSSED (REGNO (src)) -= num_calls2;
-	      REG_N_REFS (REGNO (src)) -= true_loop_depth;
 	      REG_LIVE_LENGTH (REGNO (src)) -= s_length2;
 	      insn_const = 0;
 	    }
@@ -2104,23 +2037,6 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
       if (REG_LIVE_LENGTH (REGNO (dst)) < 2)
 	REG_LIVE_LENGTH (REGNO (dst)) = 2;
     }
-
-  /* We assume that a register is used exactly once per
-      insn in the updates above.  If this is not correct,
-      no great harm is done.  */
-
-  REG_N_REFS (REGNO (src)) += 2 * true_loop_depth;
-  REG_N_REFS (REGNO (dst)) -= 2 * true_loop_depth;
-
-  /* If that was the only time dst was set,
-     and dst was not live at the start of the
-     function, we know that we have no more
-     references to dst; clear REG_N_REFS so it
-     won't make reload do any work.  */
-  if (REG_N_SETS (REGNO (dst)) == 0
-      && ! regno_uninitialized (REGNO (dst)))
-    REG_N_REFS (REGNO (dst)) = 0;
-
   if (regmove_dump_file)
     fprintf (regmove_dump_file,
 	     "Fixed operand %d of insn %d matching operand %d.\n",
