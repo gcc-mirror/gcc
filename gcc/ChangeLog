@@ -1,3 +1,19 @@
+2004-02-15  Jan Hubicka  <jh@suse.cz>
+
+	* cselib.c (value_pool): New.
+	(new_cselib_val): Use pool.
+	(cselib_init): Initialize value_pool
+	(cselib_finish): Free pool.
+
+	* cselib.c: Include alloc-pool.h
+	(empty_vals, empty_elt_lists, empty_elt_loc_lists): Kill.
+	(elt_loc_list_pool, elt_list_pool, cselib_val_pool): Declare.
+	(new_elt_list, new_elt_loc_list, unchain_one_elt_list,
+	unchain_one_elt_loc_list_pool, unchain_one_value,
+	new_cselib_val): Simplify using allocpool.
+	(cselib_init): Initialize allocpools.
+	(cselib_finish): Finish allocpools.
+
 2004-02-14  Richard Sandiford  <rsandifo@redhat.com>
 
 	Backport from mainline:

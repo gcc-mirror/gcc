@@ -40,6 +40,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "hashtab.h"
 #include "cselib.h"
 #include "params.h"
+#include "alloc-pool.h"
 
 static int entry_and_rtx_equal_p (const void *, const void *);
 static hashval_t get_value_hash (const void *);
@@ -117,11 +118,6 @@ static GTY((deletable (""))) varray_type used_regs_old;
    memory for a non-const call instruction.  */
 static GTY(()) rtx callmem;
 
-/* Caches for unused structures.  */
-static GTY((deletable (""))) cselib_val *empty_vals;
-static GTY((deletable (""))) struct elt_list *empty_elt_lists;
-static GTY((deletable (""))) struct elt_loc_list *empty_elt_loc_lists;
-
 /* Set by discard_useless_locs if it deleted the last location of any
    value.  */
 static int values_became_useless;
@@ -134,20 +130,17 @@ static cselib_val dummy_val;
    May or may not contain the useless values - the list is compacted
    each time memory is invalidated.  */
 static cselib_val *first_containing_mem = &dummy_val;
+static alloc_pool elt_loc_list_pool, elt_list_pool, cselib_val_pool, value_pool;
 
 
 /* Allocate a struct elt_list and fill in its two elements with the
    arguments.  */
 
-static struct elt_list *
+static inline struct elt_list *
 new_elt_list (struct elt_list *next, cselib_val *elt)
 {
-  struct elt_list *el = empty_elt_lists;
-
-  if (el)
-    empty_elt_lists = el->next;
-  else
-    el = ggc_alloc (sizeof (struct elt_list));
+  struct elt_list *el;
+  el = pool_alloc (elt_list_pool);
   el->next = next;
   el->elt = elt;
   return el;
@@ -156,15 +149,11 @@ new_elt_list (struct elt_list *next, cselib_val *elt)
 /* Allocate a struct elt_loc_list and fill in its two elements with the
    arguments.  */
 
-static struct elt_loc_list *
+static inline struct elt_loc_list *
 new_elt_loc_list (struct elt_loc_list *next, rtx loc)
 {
-  struct elt_loc_list *el = empty_elt_loc_lists;
-
-  if (el)
-    empty_elt_loc_lists = el->next;
-  else
-    el = ggc_alloc (sizeof (struct elt_loc_list));
+  struct elt_loc_list *el;
+  el = pool_alloc (elt_loc_list_pool);
   el->next = next;
   el->loc = loc;
   el->canon_loc = NULL;
@@ -176,14 +165,13 @@ new_elt_loc_list (struct elt_loc_list *next, rtx loc)
 /* The elt_list at *PL is no longer needed.  Unchain it and free its
    storage.  */
 
-static void
+static inline void
 unchain_one_elt_list (struct elt_list **pl)
 {
   struct elt_list *l = *pl;
 
   *pl = l->next;
-  l->next = empty_elt_lists;
-  empty_elt_lists = l;
+  pool_free (elt_list_pool, l);
 }
 
 /* Likewise for elt_loc_lists.  */
@@ -194,8 +182,7 @@ unchain_one_elt_loc_list (struct elt_loc_list **pl)
   struct elt_loc_list *l = *pl;
 
   *pl = l->next;
-  l->next = empty_elt_loc_lists;
-  empty_elt_loc_lists = l;
+  pool_free (elt_loc_list_pool, l);
 }
 
 /* Likewise for cselib_vals.  This also frees the addr_list associated with
@@ -207,8 +194,7 @@ unchain_one_value (cselib_val *v)
   while (v->addr_list)
     unchain_one_elt_list (&v->addr_list);
 
-  v->u.next_free = empty_vals;
-  empty_vals = v;
+  pool_free (cselib_val_pool, v);
 }
 
 /* Remove all entries from the hash table.  Also used during
@@ -698,21 +684,23 @@ hash_rtx (rtx x, enum machine_mode mode, int create)
 /* Create a new value structure for VALUE and initialize it.  The mode of the
    value is MODE.  */
 
-static cselib_val *
+static inline cselib_val *
 new_cselib_val (unsigned int value, enum machine_mode mode)
 {
-  cselib_val *e = empty_vals;
+  cselib_val *e = pool_alloc (cselib_val_pool);
 
-  if (e)
-    empty_vals = e->u.next_free;
-  else
-    e = ggc_alloc (sizeof (cselib_val));
-
+#ifdef ENABLE_CHECKING
   if (value == 0)
     abort ();
+#endif
 
   e->value = value;
-  e->u.val_rtx = gen_rtx_VALUE (mode);
+  /* We use custom method to allocate this RTL construct because it accounts
+     about 8% of overall memory usage.  */
+  e->u.val_rtx = pool_alloc (value_pool);
+  memset (e->u.val_rtx, 0, RTX_HDR_SIZE);
+  PUT_CODE (e->u.val_rtx, VALUE);
+  PUT_MODE (e->u.val_rtx, mode);
   CSELIB_VAL_PTR (e->u.val_rtx) = e;
   e->addr_list = 0;
   e->locs = 0;
@@ -1404,6 +1392,14 @@ cselib_update_varray_sizes (void)
 void
 cselib_init (void)
 {
+  elt_list_pool = create_alloc_pool ("elt_list", 
+				     sizeof (struct elt_list), 10);
+  elt_loc_list_pool = create_alloc_pool ("elt_loc_list", 
+				         sizeof (struct elt_loc_list), 10);
+  cselib_val_pool = create_alloc_pool ("cselib_val_list", 
+				       sizeof (cselib_val), 10);
+  value_pool = create_alloc_pool ("value", 
+				  RTX_SIZE (VALUE), 10);
   /* This is only created once.  */
   if (! callmem)
     callmem = gen_rtx_MEM (BLKmode, const0_rtx);
@@ -1429,6 +1425,10 @@ cselib_init (void)
 void
 cselib_finish (void)
 {
+  free_alloc_pool (elt_list_pool);
+  free_alloc_pool (elt_loc_list_pool);
+  free_alloc_pool (cselib_val_pool);
+  free_alloc_pool (value_pool);
   clear_table ();
   reg_values_old = reg_values;
   reg_values = 0;
