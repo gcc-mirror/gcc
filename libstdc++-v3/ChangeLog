@@ -1,3 +1,8 @@
+2004-10-03  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/sstream.tcc (seekpos): In case of success, just
+	return __sp.
+
 2004-10-01  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/sstream.tcc (pbackfail): Implement correctly
