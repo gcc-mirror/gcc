@@ -46,7 +46,7 @@ import javax.swing.table.TableModel;
  */
 public class TableModelEvent extends EventObject
 {
-  private static final serialVersionUID = -7037680193569691706L;
+  private static final long serialVersionUID = -7037680193569691706L;
   
   public static int ALL_COLUMNS = -1;
   public static int DELETE = -1;

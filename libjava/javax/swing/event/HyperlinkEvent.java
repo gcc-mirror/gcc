@@ -102,7 +102,8 @@ public class HyperlinkEvent extends EventObject
    * @param url The URL this link pointing too.
    * @param description The description for this link.
    */
-  public HyperlinkEvent(Object source, EventType type, URL url, String description)
+  public HyperlinkEvent(Object source, EventType type, URL url,
+			String description)
   {
     this (source, type, url, description, null);
   }
@@ -116,7 +117,8 @@ public class HyperlinkEvent extends EventObject
    * @param description The description for this link.
    * @param element The element in the document representing the anchor.
    */
-  public HyperlinkEvent(Object source, EventType type, URL url, String description)
+  public HyperlinkEvent(Object source, EventType type, URL url,
+			String description, Element element)
   {
     super(source);
     this.type = type;
