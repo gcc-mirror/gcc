@@ -269,26 +269,13 @@ mmix_preferred_output_reload_class (x, class)
 enum reg_class
 mmix_secondary_reload_class (class, mode, x, in_p)
      enum reg_class class;
-     enum machine_mode mode;
-     rtx x;
-     int in_p;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     rtx x ATTRIBUTE_UNUSED;
+     int in_p ATTRIBUTE_UNUSED;
 {
   if (class == REMAINDER_REG
       || class == HIMULT_REG
       || class == SYSTEM_REGS)
-    return GENERAL_REGS;
-
-  if (mode != DImode || in_p)
-    return NO_REGS;
-
-  /* We have to help reload. */
-  if (mode == DImode && GET_CODE (x) == MEM
-      && ! address_operand (XEXP (x, 0), GET_MODE (x)))
-    return GENERAL_REGS;
-
-  /* FIXME: Optimize this; there are lots of PLUS:es that don't need a
-     reload register.  */
-  if (GET_CODE (x) == PLUS)
     return GENERAL_REGS;
 
   return NO_REGS;
@@ -330,14 +317,22 @@ mmix_const_double_ok_for_letter_p (value, c)
    CONST_INT:s, but rather often as CONST_DOUBLE:s.  */
 
 int
-mmix_extra_constraint (x, c)
+mmix_extra_constraint (x, c, strict)
      rtx x;
      int c;
+     int strict;
 {
   HOST_WIDEST_INT value;
 
+  /* When checking for an address, we need to handle strict vs. non-strict
+     register checks.  Don't use address_operand, but instead its
+     equivalent (its callee, which it is just a wrapper for),
+     memory_operand_p and the strict-equivalent strict_memory_address_p.  */
   if (c == 'U')
-    return address_operand (x, Pmode);
+    return
+      strict
+      ? strict_memory_address_p (Pmode, x)
+      : memory_address_p (Pmode, x);
 
   if (GET_CODE (x) != CONST_DOUBLE || GET_MODE (x) != VOIDmode)
     return 0;

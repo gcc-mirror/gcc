@@ -1,3 +1,15 @@
+2001-12-30  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/mmix/mmix.md ("*call_real"): Fix typo in comment.
+	* config/mmix/mmix.h (EXTRA_CONSTRAINT): Pass MMIX_REG_OK_STRICT
+	to mmix_extra_constraint.
+	* config/mmix/mmix.c (mmix_secondary_reload_class): Only handle
+	non-global register classes.  Mark now unused parameters as such.
+	(mmix_extra_constraint, 'U'): Use new parameter strict and call
+	calling memory_operand_p or strict_memory_address_p, not
+	address_operand.
+	* config/mmix/mmix-protos.h (mmix_extra_constraint): Add parameter.
+
 2001-12-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* unroll.c: Move include files above first use of `const'.

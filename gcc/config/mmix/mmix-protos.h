@@ -108,7 +108,7 @@ extern enum reg_class mmix_secondary_reload_class
   PARAMS ((enum reg_class, enum machine_mode, rtx, int));
 extern int mmix_const_ok_for_letter_p PARAMS ((HOST_WIDE_INT, int));
 extern int mmix_const_double_ok_for_letter_p PARAMS ((rtx, int));
-extern int mmix_extra_constraint PARAMS ((rtx, int));
+extern int mmix_extra_constraint PARAMS ((rtx, int, int));
 extern rtx mmix_dynamic_chain_address PARAMS ((rtx));
 extern rtx mmix_return_addr_rtx PARAMS ((int, rtx));
 extern rtx mmix_eh_return_stackadj_rtx PARAMS ((void));

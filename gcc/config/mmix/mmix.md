@@ -1038,7 +1038,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 ;; rarely compared to addresses in registers, disparaging the
 ;; first ("p") alternative by adding ? in the first operand
 ;; might do the trick.  We define 'U' as a synonym to 'p', but without the
-;; caveats (and vary small advantages) of 'p'.
+;; caveats (and very small advantages) of 'p'.
 (define_insn "*call_real"
   [(call (mem:QI
 	  (match_operand:DI 0 "mmix_symbolic_or_address_operand" "s,rU"))
