@@ -2045,8 +2045,12 @@ process_command (argc, argv)
 	      break;
 
 	    case 'v':	/* Print our subcommands and print versions.  */
-	      verbose_flag++;
 	      n_switches++;
+	      /* If they do anything other than exactly `-v', don't set
+		 verbose_flag; rather, continue on to give the error.  */
+	      if (p[1] != 0)
+		break;
+	      verbose_flag++;
 	      break;
 
 	    case 'V':
