@@ -165,45 +165,26 @@ install-exec-hook:
 	  $(LN_S) libgcjx.la gnu-awt-xlib.la; \
 	fi
 
-## Make the .class files depend on the .zip file.  This seems
-## backwards, but is right.  This doesn't catch all the .class files,
-## but that is ok, because the ones it fails to pick up are defined in
-## a .java file with some other class which is caught.  Note that we
-## only want to create headers for those files which do not have
-## hand-maintained headers.
-$(built_java_source_files:.java=.class): libgcj-@gcc_version@.jar
-$(java_source_files:.java=.class): libgcj-@gcc_version@.jar
+all_java_source_files = \
+    $(java_source_files) \
+    $(built_java_source_files) \
+    $(x_java_source_files)
 
-## The .class files for X will not be included in libgcj.jar, but the
-## rule for libgcj.jar will cause all out-of-date .class files to be
-## built. We need this to generate headers for the nat-files.
-$(x_java_source_files:.java=.class): libgcj-@gcc_version@.jar
+all_java_class_files = $(all_java_source_files:.java=.class)
 
-## We have the zip file depend on the java sources and not the class
-## files, because we don't know the names of all the class files.
-## FIXME: this method fails in a peculiar case: if libgcj.jar is
-## up-to-date, and foo.class is removed, and bar.java is touched, then
-## `make libgcj.jar' will not rebuilt foo.class.  That's because
-## libgcj.jar is not out-of-date with respect to foo.java.
-libgcj-@gcc_version@.jar: $(built_java_source_files) $(java_source_files) $(x_java_source_files)
-## Create a list of all Java sources, without exceeding any shell limits.
-	@: $(shell echo Creating list of files to compile...) $(shell rm -f tmp-list || :) $(shell touch tmp-list) $(foreach source,$?,$(shell echo $(source) >> tmp-list))
-	@set fnord $(MAKEFLAGS); amf=$$2; fail=no; \
-	javac="$(JAVAC)"; \
-	cat tmp-list | (while read f; do \
-	  echo $$javac $(JCFLAGS) -classpath \'\' -bootclasspath $(here):$(srcdir) -d $(here) $$f; \
-	  $$javac $(JCFLAGS) -classpath '' -bootclasspath $(here):$(srcdir) -d $(here) $$f \
-	    || case "$$amf" in *=*) exit 1;; *k*) fail=yes ;; *) exit 1;; esac; \
-	done; \
-	test "$$fail" = no)
-	-@rm -f tmp-list libgcj-@gcc_version@.jar
+.java.class:
+	$(JAVAC) $(JCFLAGS) -classpath '' -bootclasspath $(here):$(srcdir) \
+             -d $(here) $<
+
+libgcj-@gcc_version@.jar: $(all_java_class_files)
+	-@rm -f libgcj-@gcc_version@.jar
 ## Note that we explicitly want to include directory information.
 	find java gnu javax org -type d -o -type f -name '*.class' | \
 	  sed -e '/\/\./d' -e '/\/xlib/d' | \
 	  $(ZIP) cfM0E@ $@
 
 MOSTLYCLEANFILES = $(javao_files) $(nat_files) $(nat_headers) $(c_files) $(x_javao_files) $(x_nat_files) $(x_nat_headers)
-CLEANFILES = tmp-list libgcj-@gcc_version@.jar
+CLEANFILES = libgcj-@gcc_version@.jar
 
 clean-local:
 ## We just remove every .class file that was created.

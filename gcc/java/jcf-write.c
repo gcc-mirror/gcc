@@ -3374,16 +3374,28 @@ write_classfile (clas)
 
   if (class_file_name != NULL)
     {
-      FILE *stream = fopen (class_file_name, "wb");
+      FILE *stream;
+      char *temporary_file_name;
+
+      /* The .class file is initially written to a ".tmp" file so that
+	 if multiple instances of the compiler are running at once
+	 they do not see partially formed class files. */
+      temporary_file_name = xmalloc (strlen (class_file_name) 
+				     + strlen (".tmp") + 1);
+      sprintf (temporary_file_name, "%s.tmp", class_file_name);
+      stream = fopen (temporary_file_name, "wb");
       if (stream == NULL)
-	fatal_io_error ("can't open %s for writing", class_file_name);
+	fatal_io_error ("can't open %s for writing", temporary_file_name);
 
       jcf_dependency_add_target (class_file_name);
       init_jcf_state (state, work);
       chunks = generate_classfile (clas, state);
       write_chunks (stream, chunks);
       if (fclose (stream))
-	fatal_io_error ("error closing %s", class_file_name);
+	fatal_io_error ("error closing %s", temporary_file_name);
+      if (rename (temporary_file_name, class_file_name) == -1)
+	fatal_io_error ("can't create %s", class_file_name);
+      free (temporary_file_name);
       free (class_file_name);
     }
   release_jcf_state (state);
