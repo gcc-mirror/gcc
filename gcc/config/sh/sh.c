@@ -2204,7 +2204,7 @@ general_movsrc_operand (op, mode)
      enum machine_mode mode;
 {
   /* Any MEM(label_ref) is ok, that's a pcrel load */
-xo  if (GET_CODE (op) == MEM
+  if (GET_CODE (op) == MEM
       && GET_CODE (XEXP (op, 0)) == LABEL_REF)
     return 1;
 
