@@ -58,7 +58,7 @@
 
 #undef LINK_SPEC
 #define LINK_SPEC \
-  "%{!nostartfiles:%{!r*:%{!e*:-e start}}} -dc -dp %{static:-Bstatic} %{assert*}"
+  "%{!nostdlib:%{!r*:%{!e*:-e start}}} -dc -dp %{static:-Bstatic} %{assert*}"
 
 
 /* We have atexit(3).  */

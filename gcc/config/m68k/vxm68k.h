@@ -46,7 +46,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Provide required defaults for linker -e. */
  
-#define LINK_SPEC "%{!nostartfiles:%{!r*:%{!e*:-e start}}}"
+#define LINK_SPEC "%{!nostdlib:%{!r*:%{!e*:-e start}}}"
 
 /* VxWorks provides the functionality of crt0.o and friends itself.  */
 
