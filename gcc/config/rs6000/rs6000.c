@@ -760,7 +760,15 @@ static tree rs6000_build_builtin_va_list (void);
 static tree rs6000_gimplify_va_arg (tree, tree, tree *, tree *);
 static bool rs6000_must_pass_in_stack (enum machine_mode, tree);
 static bool rs6000_vector_mode_supported_p (enum machine_mode);
+static int get_vec_cmp_insn (enum rtx_code, enum machine_mode, 
+			     enum machine_mode);
+static rtx rs6000_emit_vector_compare (enum rtx_code, rtx, rtx, 
+				       enum machine_mode);
+static int get_vsel_insn (enum machine_mode);
+static void rs6000_emit_vector_select (rtx, rtx, rtx, rtx);
 
+
+const int INSN_NOT_AVAILABLE = -1;
 static enum machine_mode rs6000_eh_return_filter_mode (void);
 
 /* Hash table stuff for keeping track of TOC entries.  */
@@ -11200,6 +11208,271 @@ output_e500_flip_eq_bit (rtx dst, rtx src)
 
   sprintf (string, "crnot %d,%d", a, b);
   return string;
+}
+
+/* Return insn index for the vector compare instruction for given CODE,
+   and DEST_MODE, OP_MODE. Return INSN_NOT_AVAILABLE if valid insn is
+   not available.  */
+
+static int
+get_vec_cmp_insn (enum rtx_code code, 
+		  enum machine_mode dest_mode,
+		  enum machine_mode op_mode)
+{
+  if (!TARGET_ALTIVEC)
+    return INSN_NOT_AVAILABLE;
+
+  switch (code)
+    {
+    case EQ:
+      if (dest_mode == V16QImode && op_mode == V16QImode)
+	return UNSPEC_VCMPEQUB;
+      if (dest_mode == V8HImode && op_mode == V8HImode)
+	return UNSPEC_VCMPEQUH;
+      if (dest_mode == V4SImode && op_mode == V4SImode)
+	return UNSPEC_VCMPEQUW;
+      if (dest_mode == V4SImode && op_mode == V4SFmode)
+	return UNSPEC_VCMPEQFP;
+      break;
+    case GE:
+      if (dest_mode == V4SImode && op_mode == V4SFmode)
+	return UNSPEC_VCMPGEFP;
+    case GT:
+      if (dest_mode == V16QImode && op_mode == V16QImode)
+	return UNSPEC_VCMPGTSB;
+      if (dest_mode == V8HImode && op_mode == V8HImode)
+	return UNSPEC_VCMPGTSH;
+      if (dest_mode == V4SImode && op_mode == V4SImode)
+	return UNSPEC_VCMPGTSW;
+      if (dest_mode == V4SImode && op_mode == V4SFmode)
+	return UNSPEC_VCMPGTFP;
+      break;
+    case GTU:
+      if (dest_mode == V16QImode && op_mode == V16QImode)
+	return UNSPEC_VCMPGTUB;
+      if (dest_mode == V8HImode && op_mode == V8HImode)
+	return UNSPEC_VCMPGTUH;
+      if (dest_mode == V4SImode && op_mode == V4SImode)
+	return UNSPEC_VCMPGTUW;
+      break;
+    default:
+      break;
+    }
+  return INSN_NOT_AVAILABLE;
+}
+
+/* Emit vector compare for operands OP0 and OP1 using code RCODE.
+   DMODE is expected destination mode. This is a recursive function.  */
+
+static rtx
+rs6000_emit_vector_compare (enum rtx_code rcode,
+			    rtx op0, rtx op1,
+			    enum machine_mode dmode)
+{
+  int vec_cmp_insn;
+  rtx mask;
+  enum machine_mode dest_mode;
+  enum machine_mode op_mode = GET_MODE (op1);
+
+#ifdef ENABLE_CHECKING
+  if (!TARGET_ALTIVEC)
+    abort ();
+
+  if (GET_MODE (op0) != GET_MODE (op1))
+    abort ();
+#endif
+
+  /* Floating point vector compare instructions uses destination V4SImode.
+     Move destination to appropriate mode later.  */
+  if (dmode == V4SFmode)
+    dest_mode = V4SImode;
+  else
+    dest_mode = dmode;
+
+  mask = gen_reg_rtx (dest_mode);
+  vec_cmp_insn = get_vec_cmp_insn (rcode, dest_mode, op_mode);
+
+  if (vec_cmp_insn == INSN_NOT_AVAILABLE)
+    {
+      bool swap_operands = false;
+      bool try_again = false;
+      switch (rcode)
+	{
+	case LT:
+	  rcode = GT;
+	  swap_operands = true;
+	  try_again = true;
+	  break;
+	case LTU:
+	  rcode = GTU;
+	  swap_operands = true;
+	  try_again = true;
+	  break;
+	case NE:
+	  /* Treat A != B as ~(A==B).  */
+	  {
+	    enum insn_code nor_code;
+	    rtx eq_rtx = rs6000_emit_vector_compare (EQ, op0, op1,
+						     dest_mode);
+	    
+	    nor_code = one_cmpl_optab->handlers[(int)dest_mode].insn_code;
+	    if (nor_code == CODE_FOR_nothing)
+	      abort ();
+	    emit_insn (GEN_FCN (nor_code) (mask, eq_rtx));
+
+	    if (dmode != dest_mode)
+	      {
+		rtx temp = gen_reg_rtx (dest_mode);
+		convert_move (temp, mask, 0);
+		return temp;
+	      }
+	    return mask;
+	  }
+	  break;
+	case GE:
+	case GEU:
+	case LE:
+	case LEU:
+	  /* Try GT/GTU/LT/LTU OR EQ */
+	  {
+	    rtx c_rtx, eq_rtx;
+	    enum insn_code ior_code;
+	    enum rtx_code new_code;
+
+	    if (rcode == GE)
+	      new_code = GT;
+	    else if (rcode == GEU)
+	      new_code = GTU;
+	    else if (rcode == LE)
+	      new_code = LT;
+	    else if (rcode == LEU)
+	      new_code = LTU;
+	    else
+	      abort ();
+
+	    c_rtx = rs6000_emit_vector_compare (new_code,
+						op0, op1, dest_mode);
+	    eq_rtx = rs6000_emit_vector_compare (EQ, op0, op1,
+						 dest_mode);
+
+	    ior_code = ior_optab->handlers[(int)dest_mode].insn_code;
+	    if (ior_code == CODE_FOR_nothing)
+	      abort ();
+	    emit_insn (GEN_FCN (ior_code) (mask, c_rtx, eq_rtx));
+	    if (dmode != dest_mode)
+	      {
+		rtx temp = gen_reg_rtx (dest_mode);
+		convert_move (temp, mask, 0);
+		return temp;
+	      }
+	    return mask;
+	  }
+	  break;
+	default:
+	  abort ();
+	}
+
+      if (try_again)
+	{
+	  vec_cmp_insn = get_vec_cmp_insn (rcode, dest_mode, op_mode);
+	  if (vec_cmp_insn == INSN_NOT_AVAILABLE)
+	    /* You only get two chances.  */
+	    abort ();
+	}
+
+      if (swap_operands)
+	{
+	  rtx tmp;
+	  tmp = op0;
+	  op0 = op1;
+	  op1 = tmp;
+	}
+    }
+
+  emit_insn (gen_rtx_fmt_ee (SET,
+			     VOIDmode,
+			     mask,
+			     gen_rtx_fmt_Ei (UNSPEC, dest_mode,
+					     gen_rtvec (2, op0, op1),
+					     vec_cmp_insn)));
+  if (dmode != dest_mode)
+    {
+      rtx temp = gen_reg_rtx (dest_mode);
+      convert_move (temp, mask, 0);
+      return temp;
+    }
+  return mask;
+}
+
+/* Return vector select instruction for MODE. Return INSN_NOT_AVAILABLE, if
+   valid insn doesn exist for given mode.  */
+
+static int
+get_vsel_insn (enum machine_mode mode)
+{
+  switch (mode)
+    {
+    case V4SImode:
+      return UNSPEC_VSEL4SI;
+      break;
+    case V4SFmode:
+      return UNSPEC_VSEL4SF;
+      break;
+    case V8HImode:
+      return UNSPEC_VSEL8HI;
+      break;
+    case V16QImode:
+      return UNSPEC_VSEL16QI;
+      break;
+    default:
+      return INSN_NOT_AVAILABLE;
+      break;
+    }
+  return INSN_NOT_AVAILABLE;
+}
+
+/* Emit vector select insn where DEST is destination using
+   operands OP1, OP2 and MASK.  */
+
+static void
+rs6000_emit_vector_select (rtx dest, rtx op1, rtx op2, rtx mask)
+{
+  rtx t, temp;
+  enum machine_mode dest_mode = GET_MODE (dest);
+  int vsel_insn_index  = get_vsel_insn (GET_MODE (dest));
+
+  temp = gen_reg_rtx (dest_mode);
+  
+  t = gen_rtx_fmt_ee (SET, VOIDmode, temp,
+		      gen_rtx_fmt_Ei (UNSPEC, dest_mode,
+				      gen_rtvec (3, op1, op2, mask),
+				      vsel_insn_index));
+  emit_insn (t);
+  emit_move_insn (dest, temp);
+  return;
+}
+
+/* Emit vector conditional expression.  
+   DEST is destination. OP1 and OP2 are two VEC_COND_EXPR operands.
+   CC_OP0 and CC_OP1 are the two operands for the relation operation COND.  */
+
+int
+rs6000_emit_vector_cond_expr (rtx dest, rtx op1, rtx op2,
+			      rtx cond, rtx cc_op0, rtx cc_op1)
+{
+  enum machine_mode dest_mode = GET_MODE (dest);
+  enum rtx_code rcode = GET_CODE (cond);
+  rtx mask;
+
+  if (!TARGET_ALTIVEC)
+    return 0;
+
+  /* Get the vector mask for the given relational operations.  */
+  mask = rs6000_emit_vector_compare (rcode, cc_op0, cc_op1, dest_mode);
+
+  rs6000_emit_vector_select (dest, op1, op2, mask);
+
+  return 1;
 }
 
 /* Emit a conditional move: move TRUE_COND to DEST if OP of the

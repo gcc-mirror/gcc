@@ -1,3 +1,22 @@
+2004-10-07  Devang Patel  <dpatel@apple.com>
+
+        * rs6000/altivec.md (UNSPEC_VCMPBFP, UNSPEC_VCMPEQUB, UNSPEC_VCMPEQUH,
+        UNSPEC_VCMPEQUW, UNSPEC_VCMPGEFP, UNSPEC_VCMPGTUB, UNSPEC_VCMPGTSB,
+        UNSPEC_VCMPGTUH, UNSPEC_VCMPGTSH, UNSPEC_VCMPGTUW, UNSPEC_VCMPGTSW,
+        UNSPEC_VCMPGTFP, UNSPEC_VSEL4SI, UNSPEC_VSEL4SF, UNSPEC_VSEL8HI,
+        UNSPEC_VSEL16QI, UNSPEC_VCOND_V4SI, UNSPEC_VCOND_V4SF, UNSPEC_VCOND_V8HI,
+        UNSPEC_VCOND_V16QI, UNSPEC_VCONDU_V4SI, UNSPEC_VCONDU_V8HI, 
+	UNSPEC_VCONDU_V16QI): New constant defines.
+        (vcondv4si, vcondv4sf, vcondv8hi, vcondv16qi, vconduv4si, vconduv8hi,
+	vconduv16qi): New patterns.
+        * rs6000/rs6000-protos.h (rs6000_emit_vector_cond_expr): New function.
+        * rs6000/rs6000.c (rs6000_emit_vector_cond_expr): New function.
+        (get_vec_cmp_insn): Same.
+        (get_vsel_insn): Same.
+        (rs6000_emit_vector_compare): Same.
+        (rs6000_emit_vector_select): Same.
+	(INSN_NOT_AVAILABLE): New.
+	
 2004-10-07  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/17749
