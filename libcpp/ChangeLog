@@ -1,3 +1,8 @@
+2004-06-30  Per Bothner  <per@bothner.com>
+
+	* include/line-map.h (fileline):  Remove old typedef.
+	* internal.h (struct cpp_reader):  Use source_location typedef instead.
+
 2004-06-26  Zack Weinberg  <zack@codesourcery.com>
 
 	Partially revert patch of 2004-06-05.

@@ -34,7 +34,6 @@ enum lc_reason {LC_ENTER = 0, LC_LEAVE, LC_RENAME};
 /* Long-term, we want to use this to replace struct location_s (in input.h),
    and effectively typedef source_location location_t.  */
 typedef unsigned int source_location;
-typedef source_location fileline; /* deprecated name */
 
 /* Physical source file TO_FILE at line TO_LINE at column 0 is represented
    by the logical START_LOCATION.  TO_LINE+L at column C is represented by
