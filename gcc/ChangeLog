@@ -1,3 +1,8 @@
+2004-08-18  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/arm/bpabi.c (__aeabi_ul2d): Give it default visibility.
+	(__aeabi_ul2f): Likewise.
+
 2004-08-18  Richard Henderson  <rth@redhat.com>
 
 	* config/xtensa/xtensa.c (xtensa_expand_block_move): Expand block
