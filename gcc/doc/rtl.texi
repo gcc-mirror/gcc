@@ -438,7 +438,12 @@ declaration, this is the offset into that logical storage.
 If the @code{symbol_ref} @var{x} was created for a @code{VAR_DECL} or
 a @code{FUNCTION_DECL}, that tree is recorded here.  If this value is
 null, then @var{x} was created by back end code generation routines,
-and so there is no associated front end symbol table entry.
+and there is no associated front end symbol table entry.
+
+@code{SYMBOL_REF_DECL} may also point to a tree of class @code{'c'},
+that is, some sort of constant.  In this case, the @code{symbol_ref}
+is an entry in the per-file constant pool; again, there is no associated
+front end symbol table entry.
 
 @findex SYMBOL_REF_FLAGS
 @item SYMBOL_REF_FLAGS (@var{x})

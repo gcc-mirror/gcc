@@ -173,8 +173,6 @@ static void asm_output_aligned_bss
   PARAMS ((FILE *, tree, const char *, int, int)) ATTRIBUTE_UNUSED;
 #endif
 #endif /* BSS_SECTION_ASM_OP */
-static hashval_t const_str_htab_hash	PARAMS ((const void *x));
-static int const_str_htab_eq		PARAMS ((const void *x, const void *y));
 static bool asm_emit_uninitialised	PARAMS ((tree, const char*, int, int));
 static void resolve_unique_section	PARAMS ((tree, int, int));
 static void mark_weak                   PARAMS ((tree));
@@ -2166,43 +2164,7 @@ static GTY(()) struct constant_descriptor_tree *
   const_hash_table[MAX_HASH_TABLE];
 
 static struct constant_descriptor_tree * build_constant_desc PARAMS ((tree));
-
-/* We maintain a hash table of STRING_CST values.  Unless we are asked to force
-   out a string constant, we defer output of the constants until we know
-   they are actually used.  This will be if something takes its address or if
-   there is a usage of the string in the RTL of a function.  */
-
-#define STRHASH(x) htab_hash_pointer (x)
-
-struct deferred_string GTY(())
-{
-  const char *label;
-  tree exp;
-};
-
-static GTY ((param_is (struct deferred_string))) htab_t const_str_htab;
-
-/* Returns a hash code for X (which is a really a
-   struct deferred_string *).  */
-
-static hashval_t
-const_str_htab_hash (x)
-     const void *x;
-{
-  return STRHASH (((const struct deferred_string *) x)->label);
-}
-
-/* Returns nonzero if the value represented by X (which is really a
-   struct deferred_string *) is the same as that given by Y
-   (which is really a char *).  */
-
-static int
-const_str_htab_eq (x, y)
-     const void *x;
-     const void *y;
-{
-  return (((const struct deferred_string *) x)->label == (const char *) y);
-}
+static unsigned int n_deferred_strings = 0;
 
 /* Compute a hash code for a constant expression.  */
 
@@ -2562,6 +2524,7 @@ build_constant_desc (exp)
   /* We have a symbol name; construct the SYMBOL_REF and the MEM.  */
   symbol = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label));
   SYMBOL_REF_FLAGS (symbol) = SYMBOL_FLAG_LOCAL;
+  SYMBOL_REF_DECL (symbol) = exp;
 
   rtl = gen_rtx_MEM (TYPE_MODE (TREE_TYPE (exp)), symbol);
   set_mem_attributes (rtl, exp, 1);
@@ -2627,20 +2590,10 @@ output_constant_def (exp, defer)
     }
   else if (!defer && STRING_POOL_ADDRESS_P (XEXP (desc->rtl, 0)))
     {
-      /* If the string is currently deferred but we need to output it
-	 now, remove it from the deferred string hash table.  */
-      struct deferred_string **defstr;
-
-      defstr = (struct deferred_string **)
-	htab_find_slot_with_hash (const_str_htab, desc->label,
-				  STRHASH (desc->label), NO_INSERT);
-#ifdef ENABLE_CHECKING
-      if (!defstr)
-	abort ();
-#endif
-
+      /* This string is currently deferred but we need to output it
+	 now; mark it no longer deferred.  */
       STRING_POOL_ADDRESS_P (XEXP (desc->rtl, 0)) = 0;
-      htab_clear_slot (const_str_htab, (void **) defstr);
+      n_deferred_strings--;
       maybe_output_constant_def_contents (exp, desc->rtl, 0);
     }
 
@@ -2658,36 +2611,18 @@ maybe_output_constant_def_contents (exp, rtl, defer)
      rtx rtl;
      int defer;
 {
-  const char *label;
-
   if (flag_syntax_only)
     return;
 
-  label = XSTR (XEXP (rtl, 0), 0);
-
+  /* Is this a string constant that can be deferred?  */
   if (defer && TREE_CODE (exp) == STRING_CST && !flag_writable_strings)
     {
-      struct deferred_string **defstr;
-      defstr = (struct deferred_string **)
-	htab_find_slot_with_hash (const_str_htab, label,
-				  STRHASH (label), INSERT);
-      if (defstr)
-	{
-	  struct deferred_string *p;
-
-	  p = (struct deferred_string *)
-	    ggc_alloc (sizeof (struct deferred_string));
-
-	  p->exp = exp;
-	  p->label = label;
-
-	  *defstr = p;
-	  STRING_POOL_ADDRESS_P (XEXP (rtl, 0)) = 1;
-	  return;
-	}
+      STRING_POOL_ADDRESS_P (XEXP (rtl, 0)) = 1;
+      n_deferred_strings++;
+      return;
     }
 
-  output_constant_def_contents (exp, label);
+  output_constant_def_contents (exp, XSTR (XEXP (rtl, 0), 0));
 }
 
 /* Now output assembler code to define the label for EXP,
@@ -3415,7 +3350,7 @@ mark_constant_pool ()
   rtx link;
   struct pool_constant *pool;
 
-  if (first_pool == 0 && htab_elements (const_str_htab) == 0)
+  if (first_pool == 0 && n_deferred_strings == 0)
     return;
 
   for (pool = first_pool; pool; pool = pool->next)
@@ -3531,20 +3466,9 @@ mark_constant (current_rtx, data)
 	}
       else if (STRING_POOL_ADDRESS_P (x))
 	{
-	  struct deferred_string *p, **defstr;
-
-	  defstr = (struct deferred_string **)
-	    htab_find_slot_with_hash (const_str_htab, XSTR (x, 0),
-				      STRHASH (XSTR (x, 0)), NO_INSERT);
-#ifdef ENABLE_CHECKING
-	  if (!defstr)
-	    abort ();
-#endif
-
-	  p = *defstr;
 	  STRING_POOL_ADDRESS_P (x) = 0;
-	  output_constant_def_contents (p->exp, p->label);
-	  htab_clear_slot (const_str_htab, (void **) defstr);
+	  n_deferred_strings--;
+	  output_constant_def_contents (SYMBOL_REF_DECL (x), XSTR (x, 0));
 	}
     }
   return 0;
@@ -4628,8 +4552,6 @@ make_decl_one_only (decl)
 void
 init_varasm_once ()
 {
-  const_str_htab = htab_create_ggc (128, const_str_htab_hash,
-				    const_str_htab_eq, NULL);
   in_named_htab = htab_create_ggc (31, in_named_entry_hash,
 				   in_named_entry_eq, NULL);
 
