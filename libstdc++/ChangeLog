@@ -1,3 +1,13 @@
+Sun Dec  7 02:34:40 1997  Jody Goldberg	<jodyg@idt.net>
+
+	* libstdc++/std/bastring.h : Move closer to the draft standard
+	implementation of basic_string by adding 3 paramter 'Allocator'.
+	NOTE: this still differs from the standard in not offering per
+	instance allocators.
+	* libstdc++/std/bastring.cc : Likewise.
+	* libstdc++/stlinst.cc : Handle thread safe allocators if they are the
+	default.
+
 Sun Dec  7 02:32:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* iosfwd: New header.
