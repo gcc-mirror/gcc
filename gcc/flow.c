@@ -3974,6 +3974,7 @@ regno_clobbered_at_setjmp (regno)
 /* INSN references memory, possibly using autoincrement addressing modes.
    Find any entries on the mem_set_list that need to be invalidated due
    to an address change.  */
+
 static void
 invalidate_mems_from_autoinc (pbi, insn)
      struct propagate_block_info *pbi;
