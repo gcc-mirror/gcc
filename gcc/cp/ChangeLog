@@ -1,5 +1,10 @@
 1999-09-04  Mark Mitchell  <mark@codesourcery.com>
 
+	* decl.c (init_decl_processing): Set mark_lang_status.
+	(lang_mark_false_label_stack): Adjust prototype.
+	* decl2.c (grok_function_init): Remove extraneous declaration of
+	abort_fndecl.
+
 	* Make-lang.in (cc1plus): Remove dependency on GGC.
 	* Makefile.in (OBJS): Don't mention ggc-simple.o.
 	(OBJDEPS): Don't mention ggc-simple.o.

@@ -6205,6 +6205,7 @@ init_decl_processing ()
      per-function globals.  */
   save_lang_status = &push_cp_function_context;
   restore_lang_status = &pop_cp_function_context;
+  mark_lang_status = &mark_cp_function_context;
 
   /* Create the global per-function variables.  */
   push_function_context_to (NULL_TREE);
@@ -14597,12 +14598,11 @@ in_function_p ()
 
 
 void
-lang_mark_false_label_stack (arg)
-     void *arg;
+lang_mark_false_label_stack (l)
+     struct label_node *l;
 {
   /* C++ doesn't use false_label_stack.  It better be NULL.  */
-  if (*(void **)arg != NULL)
-    abort();
+  my_friendly_assert (l != NULL, 19990904);
 }
 
 void
