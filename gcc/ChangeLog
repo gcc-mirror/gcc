@@ -1,3 +1,9 @@
+2001-01-25  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* varasm.c (force_const_mem): When putting a LABEL_REF into the
+	constant pool, also put it on forced_labels list so that it won't
+	be deleted.
+
 2001-01-12  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* version.c: Bump.
