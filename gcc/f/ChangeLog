@@ -1,3 +1,9 @@
+2004-02-15  Roger Sayle  <roger@eyesopen.com>
+
+	PR fortran/14129
+	* lex.c (ffelex_cfelex_): Avoid calling xrealloc on a local stack
+	allocated array.
+
 2004-02-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* com.c (ffecom_member_phase2_): Use gen_rtx_MEM instead of
