@@ -1,3 +1,8 @@
+2004-06-29  Paul Brook  <paul@codesourcery.com>
+
+	* libsupc++/vec.cc (__cxa_vec_new2, __cxa_vec_new3): Store the
+	element size in the cookie.
+
 2004-06-28  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/cpp_type_traits.h: Move the additions to

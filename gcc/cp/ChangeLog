@@ -1,3 +1,10 @@
+2004-06-29  Paul Brook  <paul@codesourcery.com>
+
+	* init.c: Include target.h.
+	(get_cookie_size): Remove and replace with target hook.
+	Update callers.
+	(build_new_1): Store the element size in the cookie.
+
 2004-06-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/16260

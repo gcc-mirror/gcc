@@ -1,3 +1,8 @@
+2004-06-29  Paul Brook  <paul@codesourcery.com>
+
+	* g++.old-deja/g++.abi/arraynew.C: Handle ARM EABI cookies.
+	* g++.old-deja/g++.abi/cxa_vec.C: Allocate larger cookies for AEABI.
+
 2004-06-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/16260

@@ -1,3 +1,19 @@
+2004-06-29  Paul Brook  <paul@codesourcery.com>
+
+	* target-def.h (TARGET_CXX_GET_COOKIE_SIZE,
+	TARGET_CXX_COOKIE_HAS_SIZE): Define.
+	(TARGET_CXX): Use them.
+	* target.h (struct gcc_target): Add cxx.get_cookie_size and
+	cxx.cookie_has_size.
+	* targhooks.c (default_cxx_get_cookie_size): New fucntion.
+	* targhooks.h (default_cxx_get_cookie_size): Add prototype.
+	* config/arm/arm.c (TARGET_CXX_GET_COOKIE_SIZE,
+	TARGET_CXX_COOKIE_HAS_SIZE): Define.
+	(arm_get_cookie_size, arm_cookie_has_size): New functions.
+	* Make-lang.in (cp/init.o): Add dependency on $(TARGET_H).
+	* doc/tm.texi: Document TARGET_CXX_GET_COOKIE_SIZE and
+	TARGET_CXX_COOKIE_HAS_SIZE.
+
 2004-06-29  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* cfglayout.c (fixup_reorder_chain): Don't do anything for

@@ -8477,6 +8477,19 @@ This hook determines how guard variables are used.  It should return
 @code{true} indicates the least significant bit should be used.
 @end deftypefn
 
+@deftypefn {Target Hook} tree TARGET_CXX_GET_COOKIE_SIZE (tree @var{type})
+This hook returns the size of the cookie to use when allocating an array
+whose elements have the indicated @var{type}.  Assumes that it is already
+known that a cookie is needed.  The default is
+@code{max(sizeof (size_t), alignof(type))}, as defined in section 2.7 of the
+IA64/Generic C++ ABI.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_CXX_COOKIE_HAS_SIZE (void)
+This hook should return @code{true} if the element size should be stored in
+array cookies.  The default is to return @code{false}.
+@end deftypefn
+
 @node Misc
 @section Miscellaneous Parameters
 @cindex parameters, miscellaneous

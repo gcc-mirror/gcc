@@ -34,6 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "except.h"
 #include "toplev.h"
+#include "target.h"
 
 static bool begin_init_stmts (tree *, tree *);
 static tree finish_init_stmts (bool, tree, tree);
@@ -52,7 +53,6 @@ static tree get_temp_regvar (tree, tree);
 static tree dfs_initialize_vtbl_ptrs (tree, void *);
 static tree build_default_init (tree, tree);
 static tree build_new_1	(tree);
-static tree get_cookie_size (tree);
 static tree build_dtor_call (tree, special_function_kind, int);
 static tree build_field_list (tree, tree, int *);
 static tree build_vtbl_address (tree);
@@ -1756,29 +1756,6 @@ build_java_class_ref (tree type)
   return class_decl;
 }
 
-/* Returns the size of the cookie to use when allocating an array
-   whose elements have the indicated TYPE.  Assumes that it is already
-   known that a cookie is needed.  */
-
-static tree
-get_cookie_size (tree type)
-{
-  tree cookie_size;
-
-  /* We need to allocate an additional max (sizeof (size_t), alignof
-     (true_type)) bytes.  */
-  tree sizetype_size;
-  tree type_align;
-  
-  sizetype_size = size_in_bytes (sizetype);
-  type_align = size_int (TYPE_ALIGN_UNIT (type));
-  if (INT_CST_LT_UNSIGNED (type_align, sizetype_size))
-    cookie_size = sizetype_size;
-  else
-    cookie_size = type_align;
-
-  return cookie_size;
-}
 
 /* Called from cplus_expand_expr when expanding a NEW_EXPR.  The return
    value is immediately handed to expand_expr.  */
@@ -1925,7 +1902,7 @@ build_new_1 (tree exp)
 	  /* If a cookie is required, add some extra space.  */
 	  if (has_array && TYPE_VEC_NEW_USES_COOKIE (true_type))
 	    {
-	      cookie_size = get_cookie_size (true_type);
+	      cookie_size = targetm.cxx.get_cookie_size (true_type);
 	      size = size_binop (PLUS_EXPR, size, cookie_size);
 	    }
 	  /* Create the argument list.  */
@@ -1948,7 +1925,7 @@ build_new_1 (tree exp)
 	  /* Use a global operator new.  */
 	  /* See if a cookie might be required.  */
 	  if (has_array && TYPE_VEC_NEW_USES_COOKIE (true_type))
-	    cookie_size = get_cookie_size (true_type);
+	    cookie_size = targetm.cxx.get_cookie_size (true_type);
 	  else
 	    cookie_size = NULL_TREE;
 
@@ -2019,6 +1996,7 @@ build_new_1 (tree exp)
   if (cookie_size)
     {
       tree cookie;
+      tree cookie_ptr;
 
       /* Adjust so we're pointing to the start of the object.  */
       data_addr = get_target_expr (build (PLUS_EXPR, full_pointer_type,
@@ -2027,11 +2005,23 @@ build_new_1 (tree exp)
       /* Store the number of bytes allocated so that we can know how
 	 many elements to destroy later.  We use the last sizeof
 	 (size_t) bytes to store the number of elements.  */
-      cookie = build (MINUS_EXPR, build_pointer_type (sizetype),
+      cookie_ptr = build (MINUS_EXPR, build_pointer_type (sizetype),
 		      data_addr, size_in_bytes (sizetype));
-      cookie = build_indirect_ref (cookie, NULL);
+      cookie = build_indirect_ref (cookie_ptr, NULL);
 
       cookie_expr = build (MODIFY_EXPR, sizetype, cookie, nelts);
+
+      if (targetm.cxx.cookie_has_size ())
+	{
+	  /* Also store the element size.  */
+	  cookie_ptr = build (MINUS_EXPR, build_pointer_type (sizetype),
+			      cookie_ptr, size_in_bytes (sizetype));
+	  cookie = build_indirect_ref (cookie_ptr, NULL);
+	  cookie = build (MODIFY_EXPR, sizetype, cookie,
+			  size_in_bytes(true_type));
+	  cookie_expr = build (COMPOUND_EXPR, TREE_TYPE (cookie_expr),
+			       cookie, cookie_expr);
+	}
       data_addr = TARGET_EXPR_SLOT (data_addr);
     }
   else
@@ -2278,7 +2268,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 	{
 	  tree cookie_size;
 
-	  cookie_size = get_cookie_size (type);
+	  cookie_size = targetm.cxx.get_cookie_size (type);
 	  base_tbd 
 	    = cp_convert (ptype,
 			  cp_build_binary_op (MINUS_EXPR,

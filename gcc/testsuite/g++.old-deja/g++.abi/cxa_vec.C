@@ -14,6 +14,13 @@ static int ctor_count = 0;
 static int dtor_count = 0;
 static bool dtor_repeat = false;
 
+// Allocate enough padding to hold an array cookie.
+#ifdef __ARM_EABI__
+#define padding 8
+#else
+#define padding (sizeof (std::size_t))
+#endif
+
 // our pseudo ctors and dtors
 static void ctor (void *)
 {
@@ -71,8 +78,8 @@ void test0 ()
       
       try
         {
-          void *ary = abi::__cxa_vec_new (5, 1, sizeof (std::size_t), ctor, dtor);
-          abi::__cxa_vec_delete (ary, 1, sizeof (std::size_t), dtor);
+          void *ary = abi::__cxa_vec_new (5, 1, padding, ctor, dtor);
+          abi::__cxa_vec_delete (ary, 1, padding, dtor);
           if (ctor_count || dtor_count || blocks)
             longjmp (jump, 1);
         }
@@ -105,7 +112,7 @@ void test1 ()
       ctor_count = 4;
       try
         {
-          void *ary = abi::__cxa_vec_new (5, 1, sizeof (std::size_t), ctor, dtor);
+          void *ary = abi::__cxa_vec_new (5, 1, padding, ctor, dtor);
           longjmp (jump, 1);
         }
       catch (...)
@@ -138,8 +145,8 @@ void test2 ()
       dtor_count = 3;
       try
         {
-          void *ary = abi::__cxa_vec_new (5, 1, sizeof (std::size_t), ctor, dtor);
-          abi::__cxa_vec_delete (ary, 1, sizeof (std::size_t), dtor);
+          void *ary = abi::__cxa_vec_new (5, 1, padding, ctor, dtor);
+          abi::__cxa_vec_delete (ary, 1, padding, dtor);
           longjmp (jump, 1);
         }
       catch (...)
@@ -174,8 +181,8 @@ void test3 ()
       dtor_repeat = true;
       try
         {
-          void *ary = abi::__cxa_vec_new (5, 1, sizeof (std::size_t), ctor, dtor);
-          abi::__cxa_vec_delete (ary, 1, sizeof (std::size_t), dtor);
+          void *ary = abi::__cxa_vec_new (5, 1, padding, ctor, dtor);
+          abi::__cxa_vec_delete (ary, 1, padding, dtor);
           longjmp (jump, 1);
         }
       catch (...)
@@ -212,7 +219,7 @@ void test4 ()
       dtor_count = 2;
       try
         {
-          void *ary = abi::__cxa_vec_new (5, 1, sizeof (std::size_t), ctor, dtor);
+          void *ary = abi::__cxa_vec_new (5, 1, padding, ctor, dtor);
           longjmp (jump, 1);
         }
       catch (...)
