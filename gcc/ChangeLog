@@ -1,3 +1,8 @@
+Thu Dec 17 12:31:12 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* Makefile.in (INTERNAL_CFLAGS): Add SCHED_CFLAGS.
+	(ALL_CFLAGS): Delete SCHED_CFLAGS.
+
 Thu Dec 17 08:27:03 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* loop.c (combine_givs_used_by_other): Don't depend on n_times_set.

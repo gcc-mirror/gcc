@@ -530,11 +530,13 @@ all: all.indirect
 all.indirect: $(ALL)
 
 # IN_GCC tells various files that system.h, toplev.c, etc are available.
-INTERNAL_CFLAGS = $(CROSS) -DIN_GCC @extra_c_flags@
+INTERNAL_CFLAGS = $(CROSS) -DIN_GCC $(SCHED_CFLAGS) @extra_c_flags@
 
 # This is the variable actually used when we compile.
+# If you change this line, you probably also need to change the definition
+# of HOST_CFLAGS in build-make to match.
 ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS) \
-	@DEFS@ $(SCHED_CFLAGS)
+	@DEFS@
 
 # Likewise.
 ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
