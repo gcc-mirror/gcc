@@ -1,3 +1,11 @@
+2000-06-19  Benjamin Kosnik  <bkoz@soma.redhat.com>
+
+	Regenerate with fixed maintainer-tools.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* libio/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	
 2000-06-19  Russell Davidson  <russell@ehess.cnrs-mrs.fr>
 
 	* testsuite/27_io/istream_extractor_arith.cc: Patch.
@@ -11,7 +19,7 @@
 2000-06-19  Benjamin Kosnik  <bkoz@soma.redhat.com>
 
 	* acinclude.m4 (GLIBCPP_CHECK_MATH_SUPPORT): Can't use
-	AC_LANG_CPLUSPLUS as this tries to link in libstdc++, Which we are
+	AC_LANG_CPLUSPLUS as this tries to link in libstdc++, which we are
 	building. Use -x c++ instead, which does not attempt to link
 	libstdc++.
 
