@@ -478,6 +478,8 @@ extern void decl_attributes			PARAMS ((tree, tree, tree));
 extern void init_function_format_info		PARAMS ((void));
 extern void check_function_format		PARAMS ((int *, tree, tree, tree));
 extern void set_Wformat				PARAMS ((int));
+extern void decl_handle_format_attribute	PARAMS ((tree, tree));
+extern void decl_handle_format_arg_attribute	PARAMS ((tree, tree));
 extern void c_apply_type_quals_to_decl		PARAMS ((int, tree));
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
