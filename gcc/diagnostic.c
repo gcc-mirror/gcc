@@ -993,23 +993,6 @@ pedwarn_with_decl VPARAMS ((tree decl, const char *msgid, ...))
   VA_CLOSE (ap);
 }
 
-/* Same as above but within the context FILE and LINE.  */
-void
-pedwarn_with_file_and_line VPARAMS ((const char *file, int line,
-				     const char *msgid, ...))
-{
-  diagnostic_info diagnostic;
-  VA_OPEN (ap, msgid);
-  VA_FIXEDARG (ap, const char *, file);
-  VA_FIXEDARG (ap, int, line);
-  VA_FIXEDARG (ap, const char *, msgid);
-
-  diagnostic_set_info (&diagnostic, _(msgid), &ap, file, line,
-                       pedantic_error_kind ());
-  report_diagnostic (&diagnostic);
-  VA_CLOSE (ap);
-}
-
 /* Just apologize with MSGID.  */
 void
 sorry VPARAMS ((const char *msgid, ...))
