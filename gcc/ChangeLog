@@ -1,5 +1,11 @@
 2003-06-12  Richard Henderson  <rth@redhat.com>
 
+        PR middle-end/10475
+        * expmed.c (emit_store_flag): Use simplify_gen_subreg directly
+        for extracting sub-words.
+
+2003-06-12  Richard Henderson  <rth@redhat.com>
+
         PR target/7594
         * config/m68k/m68k.md (zero_extendhisi2): Use gen_lowpart_SUBREG.
         (zero_extendqihi2, zero_extendqisi2): Likewise.
