@@ -3318,7 +3318,7 @@ update-po: $(CATALOGS:.gmo=.pox)
 # N.B. We do not attempt to copy these into $(srcdir).  The snapshot
 # script does that.
 .po.gmo:
-	test -d po || mkdir po
+	-mkdir po
 	$(GMSGFMT) --statistics $< -o $@
 
 # The new .po has to be gone over by hand, so we deposit it into
@@ -3326,7 +3326,7 @@ update-po: $(CATALOGS:.gmo=.pox)
 # If build/po/$(PACKAGE).pot exists, use it (it was just created),
 # else use the one in srcdir.
 .po.pox:
-	test -d po || mkdir po
+	-mkdir po
 	$(MSGMERGE) $< `if test -f po/$(PACKAGE).pot; \
 			then echo po/$(PACKAGE).pot; \
 			else echo $(srcdir)/po/$(PACKAGE).pot; fi` -o $@
@@ -3359,7 +3359,7 @@ install-po:
 # The .pot file is left in the build directory.
 $(PACKAGE).pot: po/$(PACKAGE).pot
 po/$(PACKAGE).pot: force
-	test -d po || mkdir po
+	-mkdir po
 	$(MAKE) po-generated
 	AWK=$(AWK) $(SHELL) $(srcdir)/po/exgettext \
 		$(XGETTEXT) $(PACKAGE) $(srcdir)
