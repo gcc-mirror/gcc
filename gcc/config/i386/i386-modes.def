@@ -70,6 +70,10 @@ VECTOR_MODES (FLOAT, 8);      /*            V4HF V2SF */
 VECTOR_MODES (FLOAT, 16);     /*       V8HF V4SF V2DF */
 VECTOR_MODE (INT, DI, 4);     /*                 V4DI */
 VECTOR_MODE (INT, SI, 8);     /*                 V8SI */
+VECTOR_MODE (INT, HI, 16);    /*                V16HI */
+VECTOR_MODE (INT, QI, 32);    /*                V32QI */
+VECTOR_MODE (FLOAT, DF, 4);   /*                 V4DF */
+VECTOR_MODE (FLOAT, SF, 8);   /*                 V8SF */
 
 /* The symbol Pmode stands for one of the above machine modes (usually SImode).
    The tm.h file specifies which one.  It is not a distinct mode.  */

@@ -177,6 +177,22 @@ _mm_storer_pd (double *__P, __m128d __A)
   __builtin_ia32_storeapd (__P, __tmp);
 }
 
+static __inline int
+_mm_cvtsi128_si32 (__m128i __A)
+{
+  int __tmp;
+  __builtin_ia32_stored (&__tmp, (__v4si)__A);
+  return __tmp;
+}
+
+#ifdef __x86_64__
+static __inline long long
+_mm_cvtsi128_si64x (__m128i __A)
+{
+  return __builtin_ia32_movdq2q ((__v2di)__A);
+}
+#endif
+
 /* Sets the low DPFP value of A from the low value of B.  */
 static __inline __m128d
 _mm_move_sd (__m128d __A, __m128d __B)
@@ -1157,54 +1173,6 @@ _mm_mul_epu32 (__m128i __A, __m128i __B)
 }
 
 static __inline __m128i
-_mm_sll_epi16 (__m128i __A, __m128i __B)
-{
-  return (__m128i)__builtin_ia32_psllw128 ((__v8hi)__A, (__v2di)__B);
-}
-
-static __inline __m128i
-_mm_sll_epi32 (__m128i __A, __m128i __B)
-{
-  return (__m128i)__builtin_ia32_pslld128 ((__v4si)__A, (__v2di)__B);
-}
-
-static __inline __m128i
-_mm_sll_epi64 (__m128i __A, __m128i __B)
-{
-  return (__m128i)__builtin_ia32_psllq128 ((__v2di)__A, (__v2di)__B);
-}
-
-static __inline __m128i
-_mm_sra_epi16 (__m128i __A, __m128i __B)
-{
-  return (__m128i)__builtin_ia32_psraw128 ((__v8hi)__A, (__v2di)__B);
-}
-
-static __inline __m128i
-_mm_sra_epi32 (__m128i __A, __m128i __B)
-{
-  return (__m128i)__builtin_ia32_psrad128 ((__v4si)__A, (__v2di)__B);
-}
-
-static __inline __m128i
-_mm_srl_epi16 (__m128i __A, __m128i __B)
-{
-  return (__m128i)__builtin_ia32_psrlw128 ((__v8hi)__A, (__v2di)__B);
-}
-
-static __inline __m128i
-_mm_srl_epi32 (__m128i __A, __m128i __B)
-{
-  return (__m128i)__builtin_ia32_psrld128 ((__v4si)__A, (__v2di)__B);
-}
-
-static __inline __m128i
-_mm_srl_epi64 (__m128i __A, __m128i __B)
-{
-  return (__m128i)__builtin_ia32_psrlq128 ((__v2di)__A, (__v2di)__B);
-}
-
-static __inline __m128i
 _mm_slli_epi16 (__m128i __A, int __B)
 {
   return (__m128i)__builtin_ia32_psllwi128 ((__v8hi)__A, __B);
@@ -1246,9 +1214,12 @@ _mm_srli_si128 (__m128i __A, const int __B)
 {
   return ((__m128i)__builtin_ia32_pslldqi128 (__A, __B))
 }
+#else
+#define _mm_srli_si128(__A, __B) \
+  ((__m128i)__builtin_ia32_psrldqi128 (__A, (__B) * 8))
+#define _mm_slli_si128(__A, __B) \
+  ((__m128i)__builtin_ia32_pslldqi128 (__A, (__B) * 8))
 #endif
-#define _mm_srli_si128(__A, __B) ((__m128i)__builtin_ia32_psrldqi128 (__A, __B))
-#define _mm_slli_si128(__A, __B) ((__m128i)__builtin_ia32_pslldqi128 (__A, __B))
 
 static __inline __m128i
 _mm_srli_epi16 (__m128i __A, int __B)
@@ -1266,6 +1237,54 @@ static __inline __m128i
 _mm_srli_epi64 (__m128i __A, int __B)
 {
   return (__m128i)__builtin_ia32_psrlqi128 ((__v2di)__A, __B);
+}
+
+static __inline __m128i
+_mm_sll_epi16 (__m128i __A, __m128i __B)
+{
+  return _mm_slli_epi16 (__A, _mm_cvtsi128_si32 (__B));
+}
+
+static __inline __m128i
+_mm_sll_epi32 (__m128i __A, __m128i __B)
+{
+  return _mm_slli_epi32 (__A, _mm_cvtsi128_si32 (__B));
+}
+
+static __inline __m128i
+_mm_sll_epi64 (__m128i __A, __m128i __B)
+{
+  return _mm_slli_epi64 (__A, _mm_cvtsi128_si32 (__B));
+}
+
+static __inline __m128i
+_mm_sra_epi16 (__m128i __A, __m128i __B)
+{
+  return _mm_srai_epi16 (__A, _mm_cvtsi128_si32 (__B));
+}
+
+static __inline __m128i
+_mm_sra_epi32 (__m128i __A, __m128i __B)
+{
+  return _mm_srai_epi32 (__A, _mm_cvtsi128_si32 (__B));
+}
+
+static __inline __m128i
+_mm_srl_epi16 (__m128i __A, __m128i __B)
+{
+  return _mm_srli_epi16 (__A, _mm_cvtsi128_si32 (__B));
+}
+
+static __inline __m128i
+_mm_srl_epi32 (__m128i __A, __m128i __B)
+{
+  return _mm_srli_epi32 (__A, _mm_cvtsi128_si32 (__B));
+}
+
+static __inline __m128i
+_mm_srl_epi64 (__m128i __A, __m128i __B)
+{
+  return _mm_srli_epi64 (__A, _mm_cvtsi128_si32 (__B));
 }
 
 static __inline __m128i
@@ -1467,22 +1486,6 @@ static __inline __m128i
 _mm_cvtsi64x_si128 (long long __A)
 {
   return (__m128i) __builtin_ia32_movq2dq (__A);
-}
-#endif
-
-static __inline int
-_mm_cvtsi128_si32 (__m128i __A)
-{
-  int __tmp;
-  __builtin_ia32_stored (&__tmp, (__v4si)__A);
-  return __tmp;
-}
-
-#ifdef __x86_64__
-static __inline long long
-_mm_cvtsi128_si64x (__m128i __A)
-{
-  return __builtin_ia32_movdq2q ((__v2di)__A);
 }
 #endif
 
