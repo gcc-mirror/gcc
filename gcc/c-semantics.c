@@ -335,7 +335,7 @@ genrtl_expr_stmt (expr)
    whether to (1) save the value of the expression, (0) discard it or
    (-1) use expr_stmts_for_value to tell.  The use of -1 is
    deprecated, and retained only for backward compatibility.
-   MAYBE_LAST is non-zero if this EXPR_STMT might be the last statement
+   MAYBE_LAST is nonzero if this EXPR_STMT might be the last statement
    in expression statement.  */
 
 void 

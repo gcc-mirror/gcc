@@ -5555,7 +5555,7 @@ pop_init_level (implicit)
 }
 
 /* Common handling for both array range and field name designators.
-   ARRAY argument is non-zero for array ranges.  Returns zero for success.  */
+   ARRAY argument is nonzero for array ranges.  Returns zero for success.  */
 
 static int
 set_designator (array)

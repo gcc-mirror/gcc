@@ -414,7 +414,7 @@ stringify_arg (pfile, arg)
   return new_string_token (pfile, dest - len, len);
 }
 
-/* Try to paste two tokens.  On success, return non-zero.  In any
+/* Try to paste two tokens.  On success, return nonzero.  In any
    case, PLHS is updated to point to the pasted token, which is
    guaranteed to not have the PASTE_LEFT flag set.  */
 static bool
@@ -1240,7 +1240,7 @@ _cpp_backup_tokens (pfile, count)
 
 /* #define directive parsing and handling.  */
 
-/* Returns non-zero if a macro redefinition warning is required.  */
+/* Returns nonzero if a macro redefinition warning is required.  */
 static bool
 warn_of_redefinition (pfile, node, macro2)
      cpp_reader *pfile;
@@ -1294,7 +1294,7 @@ _cpp_free_definition (h)
 }
 
 /* Save parameter NODE to the parameter list of macro MACRO.  Returns
-   zero on success, non-zero if the parameter is a duplicate.  */
+   zero on success, nonzero if the parameter is a duplicate.  */
 bool
 _cpp_save_parameter (pfile, macro, node)
      cpp_reader *pfile;
@@ -1534,7 +1534,7 @@ create_iso_definition (pfile, macro)
   return true;
 }
 
-/* Parse a macro and save its expansion.  Returns non-zero on success.  */
+/* Parse a macro and save its expansion.  Returns nonzero on success.  */
 bool
 _cpp_create_definition (pfile, node)
      cpp_reader *pfile;

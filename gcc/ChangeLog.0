@@ -6574,8 +6574,8 @@ Wed Mar 11 12:05:20 1998  Teemu Torma  <tot@trema.com>
 	* gthr.h: Changed the comment about return values.
 	* gthr-solaris.h (__gthread_once): Do not use errno; return the
 	error number instead of -1.
-	(__gthread_key_create): Any non-zero return value is an error.
-	* libgcc2.c (eh_context_initialize): Check for non-zero return
+	(__gthread_key_create): Any nonzero return value is an error.
+	* libgcc2.c (eh_context_initialize): Check for nonzero return
 	value from __gthread_once.
 	Check that the value of get_eh_context was really changed.
 
@@ -10440,7 +10440,7 @@ Tue Nov  4 20:36:50 1997  Richard Henderson  (rth@cygnus.com)
 
 	* alpha.c (alpha_handle_trap_shadows): Init sum.defd to zero.
 
-	* alpha.md (attr trap): Make TRAP_YES non-zero for sanity's sake.
+	* alpha.md (attr trap): Make TRAP_YES nonzero for sanity's sake.
 
 Tue Nov  4 18:49:42 1997  Jeffrey A Law  (law@cygnus.com)
 

@@ -91,7 +91,7 @@ struct arg_data
   /* Number of registers to use.  0 means put the whole arg in registers.
      Also 0 if not passed in registers.  */
   int partial;
-  /* Non-zero if argument must be passed on stack.
+  /* Nonzero if argument must be passed on stack.
      Note that some arguments may be passed on the stack
      even though pass_on_stack is zero, just because FUNCTION_ARG says so.
      pass_on_stack identifies arguments that *cannot* go in registers.  */
@@ -126,7 +126,7 @@ struct arg_data
   struct args_size alignment_pad;
 };
 
-/* A vector of one char per byte of stack space.  A byte if non-zero if
+/* A vector of one char per byte of stack space.  A byte if nonzero if
    the corresponding stack location has been used.
    This vector is used to prevent a function call within an argument from
    clobbering any stack already set up.  */
@@ -1965,7 +1965,7 @@ combine_pending_stack_adjustment_and_call (unadjusted_args_size,
 /* Scan X expression if it does not dereference any argument slots
    we already clobbered by tail call arguments (as noted in stored_args_map
    bitmap).
-   Return non-zero if X expression dereferences such argument slots,
+   Return nonzero if X expression dereferences such argument slots,
    zero otherwise.  */
 
 static int
@@ -2028,7 +2028,7 @@ check_sibcall_argument_overlap_1 (x)
 /* Scan sequence after INSN if it does not dereference any argument slots
    we already clobbered by tail call arguments (as noted in stored_args_map
    bitmap).  Add stack slots for ARG to stored_args_map bitmap afterwards.
-   Return non-zero if sequence after INSN dereferences such argument slots,
+   Return nonzero if sequence after INSN dereferences such argument slots,
    zero otherwise.  */
 
 static int
@@ -4280,7 +4280,7 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value,
 
    FNDECL is the declaration of the function we are calling.
 
-   Return non-zero if this arg should cause sibcall failure,
+   Return nonzero if this arg should cause sibcall failure,
    zero otherwise.  */
 
 static int

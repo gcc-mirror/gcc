@@ -2152,7 +2152,7 @@ Fri Apr  2 12:58:26 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 Fri Apr  2 12:19:17 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (*db): Enable pattern if TARGET_LOOP_UNSIGNED
-	is non-zero.
+	is nonzero.
 	(movstrqi_small, movstrqi_large, *cmpstrqi): Add + modifier to address
 	register constraints.
 	(*movhi_clobber+1): Modify splitter pattern to handle destination
@@ -5184,10 +5184,10 @@ Mon Feb  8 21:31:06 1999  Richard Henderson  <rth@cygnus.com>
 	(scan_loop): ... moved out of here.  Always initialize.
 	Test loop_has_call instead of reg_single_usage not zero.
 	Free reg_single_usage after strength reduction.
-	(count_loop_regs_set): Assume single_usage non-zero.
+	(count_loop_regs_set): Assume single_usage nonzero.
 	(combine_givs_used_by_other): Test reg_single_usage.
 	(load_mems_and_recount_loop_regs_set): Remove reg_single_usage
-	as a parameter.  Assume non-zero.
+	as a parameter.  Assume nonzero.
 
 1999-02-08  Zack Weinberg  <zack@midnite.ec.rhno.columbia.edu>
 
@@ -10282,7 +10282,7 @@ Wed Oct 28 16:46:07 1998  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
 Wed Oct 28 14:06:49 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* dwarfout.c (dwarfout_file_scope_decl): If DECL_CONTEXT, don't abort
-	if pending_types is non-zero.
+	if pending_types is nonzero.
 	(dwarfout_finish): Verify pending_types is zero before finishing.
 
 Wed Oct 28 10:29:09 1998  Nick Clifton  <nickc@cygnus.com>
@@ -11967,7 +11967,7 @@ Fri Oct  9 14:26:44 1998  Jeffrey A Law  (law@cygnus.com)
 
 Fri Oct  9 11:44:47 1998  David Edelsohn  <edelsohn@gnu.org>
 
-	* loop.c (insert_bct): Ensure loop_iteration_var non-zero before use.
+	* loop.c (insert_bct): Ensure loop_iteration_var nonzero before use.
 
 Thu Oct  8 21:59:47 1998  Dave Brolley  <brolley@cygnus.com>
 
@@ -13059,7 +13059,7 @@ Sat Sep 19 12:05:09 1998  Richard Henderson  <rth@cygnus.com>
 Sat Sep 19 07:33:36 1998  Richard Earnshaw  (rearnsha@arm.com)
 
 	* arm.c (add_constant): New parameter address_only, change caller.
-	Set it non-zero if taking the address of an item in the pool.
+	Set it nonzero if taking the address of an item in the pool.
 	(arm_reorg): Handle cases where we need the address of an item in
 	the pool.
 

@@ -194,7 +194,7 @@ path_include (pfile, list, path)
 
 /* Append DIR to include path PATH.  DIR must be allocated on the
    heap; this routine takes responsibility for freeing it.  CXX_AWARE
-   is non-zero if the header contains extern "C" guards for C++,
+   is nonzero if the header contains extern "C" guards for C++,
    otherwise it is zero.  */
 static void
 append_include_chain (pfile, dir, path, cxx_aware)
@@ -840,7 +840,7 @@ init_standard_includes (pfile)
 }
 
 /* Pushes a command line -imacro and -include file indicated by P onto
-   the buffer stack.  Returns non-zero if successful.  */
+   the buffer stack.  Returns nonzero if successful.  */
 static bool
 push_include (pfile, p)
      cpp_reader *pfile;

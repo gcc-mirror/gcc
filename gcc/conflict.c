@@ -183,7 +183,7 @@ conflict_graph_delete (graph)
 }
 
 /* Adds a conflict to GRAPH between regs REG1 and REG2, which must be
-   distinct.  Returns non-zero, unless the conflict is already present
+   distinct.  Returns nonzero, unless the conflict is already present
    in GRAPH, in which case it does nothing and returns zero.  */
 
 int
@@ -232,7 +232,7 @@ conflict_graph_add (graph, reg1, reg2)
   return 1;
 }
 
-/* Returns non-zero if a conflict exists in GRAPH between regs REG1
+/* Returns nonzero if a conflict exists in GRAPH between regs REG1
    and REG2.  */
 
 int

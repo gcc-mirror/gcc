@@ -439,7 +439,7 @@ typedef struct
   /* The flag character in question (0 for end of array).  */
   const int flag_char;
   /* Zero if this entry describes the flag character in general, or a
-     non-zero character that may be found in flags2 if it describes the
+     nonzero character that may be found in flags2 if it describes the
      flag when used with certain formats only.  If the latter, only
      the first such entry found that applies to the current conversion
      specifier is used; the values of `name' and `long_name' it supplies
@@ -469,11 +469,11 @@ typedef struct
   const int flag_char1;
   /* The second flag character.  */
   const int flag_char2;
-  /* Non-zero if the message should say that the first flag is ignored with
+  /* Nonzero if the message should say that the first flag is ignored with
      the second, zero if the combination should simply be objected to.  */
   const int ignored;
   /* Zero if this entry applies whenever this flag combination occurs,
-     a non-zero character from flags2 if it only applies in some
+     a nonzero character from flags2 if it only applies in some
      circumstances (e.g. 'i' for printf formats ignoring 0 with precision).  */
   const int predicate;
 } format_flag_pair;
