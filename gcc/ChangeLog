@@ -1,3 +1,8 @@
+2002-04-19  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/linux.h (MD_FALLBACK_FRAME_STATE_FOR): Define.
+	* config/sparc/linux64.h (MD_FALLBACK_FRAME_STATE_FOR): Likewise.
+
 2002-04-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR optimization/3756
