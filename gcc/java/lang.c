@@ -801,7 +801,7 @@ merge_init_test_initialization (void **entry, void *x)
   does this by setting the DECL_INITIAL of the init_test_decl for that
   class, and no initializations are emitted for that class.
 
-  However, what if the method that is suppoed to do the initialization
+  However, what if the method that is supposed to do the initialization
   is itself inlined in the caller?  When expanding the called method
   we'll assume that the class initialization has already been done,
   because the DECL_INITIAL of the init_test_decl is set.
