@@ -1,5 +1,10 @@
 2003-06-11  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/im/InputSubset.java:
+	New version from classpath.
+
+2003-06-11  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/AbstractAction.java,
 	javax/swing/AbstractButton.java,
 	javax/swing/AbstractCellEditor.java,
