@@ -1,3 +1,8 @@
+2001-05-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* cppfiles.c (remove_component_p): Don't assume lstat/stat will
+	keep errno unchanged on success.
+
 2001-05-22  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-lex.c (lex_number): If pedantic and not C99, pedwarn exactly
