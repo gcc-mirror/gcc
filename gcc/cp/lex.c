@@ -170,7 +170,7 @@ make_pointer_declarator (cv_qualifiers, target)
 
    We return an ADDR_EXPR whose "contents" are TARGET
    and whose type is the modifier list.  */
-   
+
 tree
 make_reference_declarator (cv_qualifiers, target)
      tree cv_qualifiers, target;
@@ -199,7 +199,7 @@ tree
 make_call_declarator (target, parms, cv_qualifiers, exception_specification)
      tree target, parms, cv_qualifiers, exception_specification;
 {
-  target = build_parse_node (CALL_EXPR, target, 
+  target = build_parse_node (CALL_EXPR, target,
 			     tree_cons (parms, cv_qualifiers, NULL_TREE),
 			     /* The third operand is really RTL.  We
 				shouldn't put anything there.  */
@@ -323,7 +323,7 @@ init_cpp_parse ()
 operator_name_info_t operator_name_info[(int) LAST_CPLUS_TREE_CODE];
 /* Similar, but for assignment operators.  */
 operator_name_info_t assignment_operator_name_info[(int) LAST_CPLUS_TREE_CODE];
-  
+
 /* Initialize data structures that keep track of operator names.  */
 
 #define DEF_OPERATOR(NAME, C, NM, OM, AR, AP) \
@@ -337,7 +337,7 @@ init_operators ()
   tree identifier;
   char buffer[256];
   struct operator_name_info_t *oni;
-  
+
 #define DEF_OPERATOR(NAME, CODE, NEW_MANGLING, OLD_MANGLING, ARITY, ASSN_P) \
   sprintf (buffer, ISALPHA (NAME[0]) ? "operator %s" : "operator%s", NAME); \
   identifier = get_identifier (buffer);					    \
@@ -353,7 +353,7 @@ init_operators ()
 #include "operators.def"
 #undef DEF_OPERATOR
 
-  operator_name_info[(int) ERROR_MARK].identifier 
+  operator_name_info[(int) ERROR_MARK].identifier
     = get_identifier ("<invalid operator>");
 
   /* Handle some special cases.  These operators are not defined in
@@ -361,8 +361,8 @@ init_operators ()
      for error-reporting.  (Eventually, we should ensure that this
      does not happen.  Error messages involving these operators will
      be confusing to users.)  */
-  
-  operator_name_info [(int) INIT_EXPR].name 
+
+  operator_name_info [(int) INIT_EXPR].name
     = operator_name_info [(int) MODIFY_EXPR].name;
   operator_name_info [(int) EXACT_DIV_EXPR].name = "(ceiling /)";
   operator_name_info [(int) CEIL_DIV_EXPR].name = "(ceiling /)";
@@ -380,19 +380,19 @@ init_operators ()
   operator_name_info [(int) RANGE_EXPR].name = "...";
   operator_name_info [(int) CONVERT_EXPR].name = "+";
 
-  assignment_operator_name_info [(int) EXACT_DIV_EXPR].name 
+  assignment_operator_name_info [(int) EXACT_DIV_EXPR].name
     = "(exact /=)";
-  assignment_operator_name_info [(int) CEIL_DIV_EXPR].name 
+  assignment_operator_name_info [(int) CEIL_DIV_EXPR].name
     = "(ceiling /=)";
-  assignment_operator_name_info [(int) FLOOR_DIV_EXPR].name 
+  assignment_operator_name_info [(int) FLOOR_DIV_EXPR].name
     = "(floor /=)";
-  assignment_operator_name_info [(int) ROUND_DIV_EXPR].name 
+  assignment_operator_name_info [(int) ROUND_DIV_EXPR].name
     = "(round /=)";
-  assignment_operator_name_info [(int) CEIL_MOD_EXPR].name 
+  assignment_operator_name_info [(int) CEIL_MOD_EXPR].name
     = "(ceiling %=)";
-  assignment_operator_name_info [(int) FLOOR_MOD_EXPR].name 
+  assignment_operator_name_info [(int) FLOOR_MOD_EXPR].name
     = "(floor %=)";
-  assignment_operator_name_info [(int) ROUND_MOD_EXPR].name 
+  assignment_operator_name_info [(int) ROUND_MOD_EXPR].name
     = "(round %=)";
 }
 
@@ -443,7 +443,6 @@ static const struct resword reswords[] =
   { "__typeof__",	RID_TYPEOF,	0 },
   { "__volatile",	RID_VOLATILE,	0 },
   { "__volatile__",	RID_VOLATILE,	0 },
-  { "__wchar_t",	RID_WCHAR,	0 },
   { "asm",		RID_ASM,	D_ASM },
   { "and",		RID_AND,	D_OPNAME },
   { "and_eq",		RID_AND_EQ,	D_OPNAME },
@@ -515,6 +514,7 @@ static const struct resword reswords[] =
   { "virtual",		RID_VIRTUAL,	0 },
   { "void",		RID_VOID,	0 },
   { "volatile",		RID_VOLATILE,	0 },
+  { "wchar_t",          RID_WCHAR,	0 },
   { "while",		RID_WHILE,	0 },
   { "xor",		RID_XOR,	D_OPNAME },
   { "xor_eq",		RID_XOR_EQ,	D_OPNAME },
@@ -560,7 +560,7 @@ const short rid_to_yy[RID_MAX] =
   /* RID_BYCOPY */	0,
   /* RID_BYREF */	0,
   /* RID_ONEWAY */	0,
-  
+
   /* C */
   /* RID_INT */		TYPESPEC,
   /* RID_CHAR */	TYPESPEC,
@@ -708,7 +708,7 @@ init_parse (filename)
   set_identifier_size (sizeof (struct lang_identifier));
   decl_printable_name = lang_printable_name;
 
-  internal_filename = ggc_alloc_string (INTERNAL_FILENAME, 
+  internal_filename = ggc_alloc_string (INTERNAL_FILENAME,
 					sizeof (INTERNAL_FILENAME));
   input_filename = internal_filename;
 
@@ -896,7 +896,7 @@ print_parse_statistics ()
   int i;
   int maxlen = REDUCE_LENGTH;
   unsigned *sorted;
-  
+
   if (reduce_count[-1] == 0)
     return;
 
@@ -981,7 +981,7 @@ extract_interface_info ()
   if (flag_alt_external_templates)
     {
       tree til = tinst_for_decl ();
-  
+
       if (til)
 	finfo = get_fileinfo (TINST_FILE (til));
     }
@@ -1117,7 +1117,7 @@ parse_strconst_pragma (name, opt)
   error ("invalid #pragma %s", name);
   return (tree)-1;
 }
-      
+
 static void
 handle_pragma_vtable (dfile)
      cpp_reader *dfile ATTRIBUTE_UNUSED;
@@ -1392,15 +1392,15 @@ do_identifier (token, parsing, args)
      like local variables, rather than creating TEMPLATE_DECLs for the
      local variables and then finding matching instantiations.  */
   if (current_template_parms
-      && (is_overloaded_fn (id) 
-	  || (TREE_CODE (id) == VAR_DECL 
+      && (is_overloaded_fn (id)
+	  || (TREE_CODE (id) == VAR_DECL
 	      && CP_DECL_CONTEXT (id)
 	      && TREE_CODE (CP_DECL_CONTEXT (id)) == FUNCTION_DECL)
 	  || TREE_CODE (id) == PARM_DECL
 	  || TREE_CODE (id) == RESULT_DECL
 	  || TREE_CODE (id) == USING_DECL))
     id = build_min_nt (LOOKUP_EXPR, token);
-      
+
   return id;
 }
 
@@ -1418,7 +1418,7 @@ do_scoped_id (token, parsing)
 	id = NULL_TREE;
       else
 	id = BINDING_VALUE (id);
-    } 
+    }
   else
     id = IDENTIFIER_GLOBAL_VALUE (token);
   if (parsing && yychar == YYEMPTY)
@@ -1616,7 +1616,7 @@ cp_make_lang_type (code)
     {
       struct lang_type *pi;
 
-      pi = ((struct lang_type *) 
+      pi = ((struct lang_type *)
 	    ggc_alloc_cleared (sizeof (struct lang_type)));
 
       TYPE_LANG_SPECIFIC (t) = pi;
@@ -1669,9 +1669,9 @@ compiler_error VPARAMS ((const char *msg, ...))
 #endif
   char buf[1024];
   va_list ap;
-  
+
   VA_START (ap, msg);
-  
+
 #ifndef ANSI_PROTOTYPES
   msg = va_arg (ap, const char *);
 #endif

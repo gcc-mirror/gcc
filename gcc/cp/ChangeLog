@@ -1,3 +1,10 @@
+2000-11-07  Eric Christopher  <echristo@redhat.com>
+
+        * decl.c (init_decl_processing): Change definition of
+        __wchar_t to wchar_t.  Remove artificial declaration of
+        wchar_t.
+        * lex.c: Change instances of __wchar_t to wchar_t.
+
 2000-11-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* lex.c (do_identifier): Don't lookup_name for operators.
@@ -115,7 +122,7 @@
 	* error.c (dump_function_decl): Print no space between
 	`ptr-operator' the `type-specifier' of the return type.
 	(dump_type_prefix): Make sure we put space at the appropriate
-	place. 
+	place.
 
 2000-10-23  Jason Merrill  <jason@redhat.com>
 
@@ -134,7 +141,7 @@
 
 	* optimize.c (copy_body_r): Don't treat CALL_EXPRs specially.
 
-	* typeck.c (c_sizeof): Return an expression of `size_t' type, 
+	* typeck.c (c_sizeof): Return an expression of `size_t' type,
 	not one with TYPE_IS_SIZETYPE set.
 	(dubious_conversion_warnings): Remove special-case code.
 
@@ -147,7 +154,7 @@
 	* tree.c (walk_tree): Handle VECTOR_TYPE.
 
 	* decl.c (init_decl_processing): Call MD_INIT_BUILTINS.
-	
+
 2000-10-21  Jason Merrill  <jason@redhat.com>
 
 	* parse.y (operator): Set got_object from got_scope.
@@ -195,7 +202,7 @@ Fri Oct 20 13:54:59 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(splay_tree_compare_integer_csts): New function.
 	(layout_class_type): Use a splay_tree, rather than a varray, to
 	represent the offsets of empty bases.
-	
+
 	* cp-tree.h (DECL_ANTICIPATED): Don't require a FUNCTION_DECL.
 	* decl.c (select_decl): Don't return declarations that are
 	DECL_ANTICIPATED.
@@ -227,7 +234,7 @@ Fri Oct 20 13:54:59 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* except.c (init_exception_processing): Use std_identifier.
 	* init.c (build_member_call): Use fake_std_node.
 	* rtti.c (init_rtti_processing): Use std_identifier.
-	 
+
 2000-10-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (back_end_hook): Remove declaration.
@@ -295,7 +302,7 @@ Tue Oct 17 20:19:06 2000  Brad Lucier <lucier@math.purdue.edu>
 	(init_repo): Initialize it.
 	* search.c (current_obstack): Remove.
 	* typeck2.c (add_exception_specifier): Don't call build_decl_list.
-	
+
 2000-10-09  Richard Henderson  <rth@cygnus.com>
 
 	* Make-lang.in (CXX_EXTRA_HEADERS): Remove.
@@ -331,7 +338,7 @@ Tue Oct 17 20:19:06 2000  Brad Lucier <lucier@math.purdue.edu>
 
 	* pt.c (lookup_template_class): Set current access for enum.
 	(tsubst_enum): Set file & line for enum decl.
-	
+
 	* spew.c (yylex): Remove unused variable.
 
 2000-10-05  Richard Henderson  <rth@cygnus.com>
@@ -354,7 +361,7 @@ Tue Oct 17 20:19:06 2000  Brad Lucier <lucier@math.purdue.edu>
 2000-10-05  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (tsubst_expr, DECL_STMT case): Don't process if
-	tsubsting fails.	
+	tsubsting fails.
 
 2000-10-05  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -366,7 +373,7 @@ Tue Oct 17 20:19:06 2000  Brad Lucier <lucier@math.purdue.edu>
 
 	* decl.c (lang_mark_false_label_stack): Remove.
 	* lex.c (cp_mang_lang_type): Use ggc_alloc_cleared.
-	
+
 2000-09-30  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gxxint.texi: Use @email for formatting email addresses.
