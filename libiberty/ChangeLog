@@ -1,3 +1,12 @@
+Thu May 13 01:14:46 1999 Marc Espie <espie@cvs.openbsd.org>
+
+	* cplus-dem.c (standard_symbol_characters): Renamed from
+	standard_symbol_alphabet.  No longer modify TABLE.
+	(hp_symbol_characters): Renamed from hp_symbol_alphabet.  No longer
+	modify TABLE.
+	(main): Corresponding changes.  Use strchr to determine if a
+	character is valid.
+
 1999-05-11  Jim Blandy  <jimb@zwingli.cygnus.com>
 
 	* cplus-dem.c (main): Use table lookup to distinguish identifier

@@ -4394,25 +4394,19 @@ fancy_abort ()
 }
 
 
-/* Fill in TABLE so that TABLE[C] is true iff C (as an unsigned char)
-   is a valid symbol component, in the standard assembler symbol
+/* Return the string of non-alnum characters that may occur 
+   as a valid symbol component, in the standard assembler symbol
    syntax.  */
-void
-standard_symbol_alphabet (char *table)
+
+static const char *
+standard_symbol_characters ()
 {
-  int c;
-
-  for (c = 0; c < 256; c++)
-    table[c] = isalnum(c);
-
-  table['_'] = 1;
-  table['$'] = 1;
-  table['.'] = 1;
+  return "_$.";
 }
 
 
-/* Fill in TABLE so that TABLE[C] is true iff C (as an unsigned char)
-   is a valid symbol name component in an HP object file.
+/* Return the string of non-alnum characters that may occur
+   as a valid symbol name component in an HP object file.
 
    Note that, since HP's compiler generates object code straight from
    C++ source, without going through an assembler, its mangled
@@ -4441,15 +4435,10 @@ standard_symbol_alphabet (char *table)
        non-digit character.
 
    So have fun.  */
-void
-hp_symbol_alphabet (char *table)
+static const char *
+hp_symbol_characters ()
 {
-  char *c;
-
-  standard_symbol_alphabet (table);
-
-  for (c = "<>#,*&[]:(){}"; *c; c++)
-    table[(unsigned char) *c] = 1;
+  return "_$.<>#,*&[]:(){}";
 }
 
 
@@ -4460,7 +4449,7 @@ main (argc, argv)
 {
   char *result;
   int c;
-  char symbol_alphabet[256];
+  char *valid_symbols;
 
   program_name = argv[0];
 
@@ -4533,10 +4522,10 @@ main (argc, argv)
 	case lucid_demangling:
 	case arm_demangling:
 	case edg_demangling:
-	  standard_symbol_alphabet (symbol_alphabet);
+	  valid_symbols = standard_symbol_characters ();
 	  break;
 	case hp_demangling:
-	  hp_symbol_alphabet (symbol_alphabet);
+	  valid_symbols = hp_symbol_characters ();
 	  break;
 	default:
 	  /* Folks should explicitly indicate the appropriate alphabet for
@@ -4550,7 +4539,7 @@ main (argc, argv)
 	  int i = 0;
 	  c = getchar ();
 	  /* Try to read a label.  */
-	  while (c != EOF && symbol_alphabet[c])
+	  while (c != EOF && (isalnum (c) || strchr (valid_symbols, c)))
 	    {
 	      if (i >= MBUF_SIZE-1)
 		break;
