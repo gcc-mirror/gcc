@@ -1,5 +1,5 @@
 /* AbstractDocument.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,10 +37,17 @@ exception statement from your version. */
 
 package javax.swing.text;
 
-import javax.swing.event.*;
-import javax.swing.undo.*;
-import java.util.*;
-import javax.swing.tree.*;
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.EventListener;
+import java.util.Vector;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.EventListenerList;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
+import javax.swing.tree.TreeNode;
+import javax.swing.undo.UndoableEdit;
 
 public abstract class AbstractDocument implements Document
 {
