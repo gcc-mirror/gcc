@@ -2568,7 +2568,6 @@ gnu/java/nio/natFileChannelImpl.cc \
 gnu/java/nio/natFileLockImpl.cc \
 gnu/java/nio/natMappedByteFileBuffer.cc \
 gnu/java/nio/natSelectorImpl.cc \
-gnu/java/nio/natSocketChannelImpl.cc \
 java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
 java/io/natObjectInputStream.cc \
