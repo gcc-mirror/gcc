@@ -11392,6 +11392,9 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	}
 #endif
     }
+  /* Add the calling convention attribute if requested.  */
+  add_calling_convention_attribute (subr_die, TREE_TYPE (decl));
+
 }
 
 /* Generate a DIE to represent a declared data object.  */
@@ -11933,7 +11936,6 @@ gen_subroutine_type_die (tree type, dw_die_ref context_die)
   equate_type_number_to_die (type, subr_die);
   add_prototyped_attribute (subr_die, type);
   add_type_attribute (subr_die, return_type, 0, 0, context_die);
-  add_calling_convention_attribute (subr_die, type);
   gen_formal_types_die (type, subr_die);
 }
 

@@ -1,3 +1,8 @@
+2004-10-10  Eric Christopher  <echristo@redhat.com>
+
+	* dwarf2out.c: Move attribute to subprogram declaration
+	instead of subroutine type.
+
 2004-10-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* basic-block.h: Remove the prototypes for can_hoist_insn_p,
@@ -146,7 +151,7 @@
 
 2004-10-08  Andreas Krebbel  <krebbel1@de.ibm.com>
 
-	* config/s390/s390.c (s390_register_info): Don't save fprs for 
+	* config/s390/s390.c (s390_register_info): Don't save fprs for
 	-msoft-float.
 	(s390_conditional_register_usage): Make fprs 'fixed' for -msoft-float.
 
@@ -286,7 +291,7 @@
 	UNSPEC_VCMPGTUH, UNSPEC_VCMPGTSH, UNSPEC_VCMPGTUW, UNSPEC_VCMPGTSW,
 	UNSPEC_VCMPGTFP, UNSPEC_VSEL4SI, UNSPEC_VSEL4SF, UNSPEC_VSEL8HI,
 	UNSPEC_VSEL16QI, UNSPEC_VCOND_V4SI, UNSPEC_VCOND_V4SF, UNSPEC_VCOND_V8HI,
-	UNSPEC_VCOND_V16QI, UNSPEC_VCONDU_V4SI, UNSPEC_VCONDU_V8HI, 
+	UNSPEC_VCOND_V16QI, UNSPEC_VCONDU_V4SI, UNSPEC_VCONDU_V8HI,
 	UNSPEC_VCONDU_V16QI): New constant defines.
 	(vcondv4si, vcondv4sf, vcondv8hi, vcondv16qi, vconduv4si, vconduv8hi,
 	vconduv16qi): New patterns.
@@ -297,7 +302,7 @@
 	(rs6000_emit_vector_compare): Same.
 	(rs6000_emit_vector_select): Same.
 	(INSN_NOT_AVAILABLE): New.
-	
+
 2004-10-07  Zdenek Dvorak  <dvorakz@suse.cz>
 
 	PR tree-optimization/17749
