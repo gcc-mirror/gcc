@@ -981,7 +981,7 @@ the default value is @code{BIGGEST_ALIGNMENT}.
 
 @findex DATA_ALIGNMENT
 @item DATA_ALIGNMENT (@var{type}, @var{basic-align})
-If defined, a C expression to compute the alignment for a variables in
+If defined, a C expression to compute the alignment for a variable in
 the static store.  @var{type} is the data type, and @var{basic-align} is
 the alignment that the object would ordinarily have.  The value of this
 macro is used instead of that alignment to align the object.
@@ -1010,7 +1010,7 @@ constants can be done inline.
 
 @findex LOCAL_ALIGNMENT
 @item LOCAL_ALIGNMENT (@var{type}, @var{basic-align})
-If defined, a C expression to compute the alignment for a variables in
+If defined, a C expression to compute the alignment for a variable in
 the local store.  @var{type} is the data type, and @var{basic-align} is
 the alignment that the object would ordinarily have.  The value of this
 macro is used instead of that alignment to align the object.
@@ -5729,7 +5729,7 @@ the character @samp{;} is treated as a logical line separator.
 @findex ASM_CLOSE_PAREN
 @item ASM_OPEN_PAREN
 @itemx ASM_CLOSE_PAREN
-These macros are defined as C string constant, describing the syntax
+These macros are defined as C string constants, describing the syntax
 in the assembler for grouping arithmetic expressions.  The following
 definitions are correct for most assemblers:
 
