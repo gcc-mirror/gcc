@@ -315,6 +315,25 @@ arith5_operand (op, mode)
   return register_operand (op, mode) || int5_operand (op, mode);
 }
 
+/* True iff zdepi can be used to generate this CONST_INT.  */
+zdepi_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  unsigned x;
+  unsigned lbmask, t;
+
+  if (GET_CODE (op) != CONST_INT)
+    return 0;
+
+  /* This might not be obvious, but it's at least fast.
+     This function is critcal; we don't have the time loops would take.  */
+  x = INTVAL (op);
+  lbmask = x & -x;
+  t = ((x >> 4) + lbmask) & ~(lbmask - 1);
+  return ((t & (t - 1)) == 0);
+}
+
 /* Return truth value of statement that OP is a call-clobbered register.  */
 int
 clobbered_register (op, mode)
@@ -621,6 +640,8 @@ emit_move_sequence (operands, mode)
 	      return 1;
 	    }
 	}
+      else if (zdepi_operand (operand1, VOIDmode))
+	return 0;
       else if (GET_CODE (operand1) == CONST_INT
 	       ? (! SMALL_INT (operand1)
 		  && (INTVAL (operand1) & 0x7ff) != 0) : 1)
