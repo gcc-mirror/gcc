@@ -1,5 +1,10 @@
 2003-07-15  Petur Runolfsson  <peturr02@ru.is>
 
+	* Revert previous commit: not safe on platforms with
+	wint_t != size_t.
+
+2003-07-15  Petur Runolfsson  <peturr02@ru.is>
+
 	* include/bits/char_traits.h (char_traits<wchar_t>::move):
 	Change last parameter from int_type to size_t.
 
