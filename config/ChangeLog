@@ -1,3 +1,6 @@
+2004-08-31  Robert Bowdidge <bowdidge@apple.com>
+	* mh-ppc-darwin: Add file, and override BOOT_CFLAGS.
+
 2004-08-13  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Add ACX_{TARGET,HOST,BUILD}_NONCANONICAL,
