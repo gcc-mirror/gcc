@@ -1,7 +1,7 @@
 # Top level makefile fragment for TREELANG For GCC. -*- makefile -*-
 
-#   Copyright (C) 1994, 1995, 1997, 1998, 1999 2000, 2001, 2002 Free
-#   Software Foundation, Inc.
+#   Copyright (C) 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+#   Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -175,16 +175,24 @@ treelang.install.common.done:  installdirs treelang.done
 	done
 	$(STAMP) treelang.install.common.done
 
-treelang.install-info: $(srcdir)/treelang/treelang.info
-	for name in $(srcdir)/treelang/treelang.info; \
-	do \
-	   if [ -f $$name ] ; then \
-	    name2="`echo \`basename $$name\` | sed -e '$(program_transform_name)' `"; \
-	    rm -f $(DESTDIR)$(libsubdir)/$$name2$(exeext); \
-	    $(INSTALL_PROGRAM) $$name$(exeext) $(DESTDIR)$(libsubdir)/$$name2$(exeext); \
-	    chmod a+x $(DESTDIR)$(libsubdir)/$$name2$(exeext); \
-	  fi ; \
-	done
+# We might not be able to build the info files
+.PHONY: treelang.
+treelang.:
+treelang.install-info: treelang.$(BUILD_INFO)
+	if [ -f $(srcdir)/treelang/treelang.info ] ; then \
+	  rm -f $(DESTDIR)$(infodir)/treelang.info*; \
+	  for f in $(srcdir)/treelang/treelang.info*; do \
+	      realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
+	      $(INSTALL_DATA) $$f $(DESTDIR)$(infodir)/$$realfile; \
+	  done; \
+	  chmod a-x $(DESTDIR)$(infodir)/treelang.info*; \
+	else true; fi
+	@if [ -f $(srcdir)/treelang/treelang.info ] ; then \
+	  if $(SHELL) -c 'install-info --version | sed 1q | fgrep -s -v -i debian' >/dev/null 2>&1; then \
+	    echo " install-info --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/treelang.info"; \
+	    install-info --info-dir=$(DESTDIR)$(infodir) $(DESTDIR)$(infodir)/treelang.info || : ; \
+	  else : ; fi; \
+	else : ; fi
 
 treelang.install-man: 
 

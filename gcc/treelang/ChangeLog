@@ -1,3 +1,9 @@
+2003-01-14  Andreas Jaeger  <aj@suse.de>
+
+	* Make-lang.in (treelang.install-info): Depend only on info files
+	if BUILD_INFO is set.  Fix install rules.
+	(treelang.): New.
+
 2003-01-09  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
 
 	* Make-lang.in (treelang.install.common.done,
