@@ -27,6 +27,27 @@ involve a combination of these elements.
 @heading In 0.5.22:
 @itemize @bullet
 @item
+Fix @code{g77} version of @code{libf2c} so it no longer
+produces a spurious @samp{I/O recursion} diagnostic at run time
+when an I/O operation (such as @samp{READ *,I}) is interrupted
+in a manner that causes the program to be terminated
+via the @samp{f_exit} routine (such as via @kbd{C-c}).
+
+@item
+Fix compiler so it accepts @samp{-fgnu-intrinsics-*} and
+@samp{-fbadu77-intrinsics-*} options.
+
+@item
+Fix @samp{-fpedantic} to not reject procedure invocations
+such as @samp{I=J()} and @samp{CALL FOO()}.
+
+@item
+Fix @samp{-fugly-comma} to affect invocations of
+only external procedures.
+Restore rejection of gratuitous trailing omitted
+arguments to intrinsics, as in @samp{I=MAX(3,4,,)}.
+
+@item
 Fix code generation for iterative @code{DO} loops that
 have one or more references to the iteration variable,
 or to aliases of it, in their control expressions.
