@@ -1,4 +1,4 @@
-// Low-level functions for atomic operations. Mips version.
+// Low-level functions for atomic operations. MIPS II version.
 
 // Copyright (C) 2001 Free Software Foundation, Inc.
 //
@@ -30,11 +30,10 @@
 #ifndef _BITS_ATOMICITY_H 
 #define _BITS_ATOMICITY_H 1
 
-#include <sgidefs.h>
+// #include <sgidefs.h>
+// #ifdef (_MIPS_ISA_MIPS2)
 
 typedef int _Atomic_word;
-
-#if (_MIPS_ISA >= _MIPS_ISA_MIPS2)
 
 static inline int
 __attribute__ ((unused))
@@ -102,37 +101,5 @@ __compare_and_swap (volatile long int *__p, long int __oldval,
 
   return __ret;
 }
-
-#else /* (_MIPS_ISA >= _MIPS_ISA_MIPS2) */
-
-static inline int
-__attribute__ ((unused))
-__exchange_and_add (volatile _Atomic_word *__mem, int __val)
-{
-  int __result = *__mem;
-  *__mem += __val;
-  return __result;
-}
-
-static inline void
-__attribute__ ((unused))
-__atomic_add (volatile _Atomic_word *__mem, int __val)
-{
-  *__mem += __val;
-}
-
-static inline int
-__attribute__ ((unused))
-__compare_and_swap (volatile long int *__p, long int __oldval,
-		    long int __newval)
-{
-  if (*__p != __oldval)
-    return 0;
-
-  *__p = __newval;
-  return 1;
-}
-
-#endif /* !(_MIPS_ISA >= _MIPS_ISA_MIPS2) */
 
 #endif /* atomicity.h */

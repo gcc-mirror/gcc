@@ -38,7 +38,7 @@
 #include <bits/std_cstddef.h>
 
 #pragma GCC system_header
-#include_next <stdlib.h>
+#include <stdlib.h>
 
 // Get rid of those macros defined in <stdlib.h> in lieu of real functions.
 #undef abort

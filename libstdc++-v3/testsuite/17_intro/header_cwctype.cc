@@ -22,11 +22,33 @@
 
 #if _GLIBCPP_USE_WCHAR_T
 #include <cwctype>
-  // Make sure wint_t is in namespace std
-  std::wint_t i = 5;
+// Make sure wint_t is in namespace std
+std::wint_t i = 5;
+
+// Make sure table 46 is in namespace std.
+using std::wctype_t;
+using std::wctrans_t;
+using std::iswalpha;
+using std::iswupper;
+using std::iswlower;
+using std::iswdigit;
+using std::iswxdigit;
+using std::iswalnum;
+using std::iswspace;
+using std::iswpunct;
+using std::iswprint;
+using std::iswgraph;
+using std::iswcntrl;
+using std::iswctype;
+using std::towctrans;
+using std::towlower;
+using std::towupper;
+using std::wctrans;
+using std::wctype;
 #endif
 
 int main(void)
 {
   return 0;
 }
+

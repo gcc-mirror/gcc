@@ -35,7 +35,7 @@
 #define _CPP_CWCTYPE 1
 
 #pragma GCC system_header
-#include_next <wctype.h>
+#include <wctype.h>
 
 // Get rid of those macros defined in <wctype.h> in lieu of real functions.
 #undef iswalnum
@@ -56,6 +56,7 @@
 #undef towupper
 #undef towctrans
 #undef wctrans
+#undef wctype
 
 namespace std
 {
@@ -82,6 +83,7 @@ namespace std
   using ::towupper;
   using ::towctrans;
   using ::wctrans;
+  using ::wctype;
 }
 
 #endif 

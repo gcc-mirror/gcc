@@ -37,7 +37,7 @@
 #include <bits/std_cstddef.h>
 
 #pragma GCC system_header
-#include_next <time.h>
+#include <time.h>
 
 // Get rid of those macros defined in <time.h> in lieu of real functions.
 #undef clock

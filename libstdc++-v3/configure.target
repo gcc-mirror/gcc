@@ -42,9 +42,6 @@ case "${target_cpu}" in
   m68k | m680[246]0)
     cpu_include_dir="config/cpu/m68k"
     ;;
-  mips*)
-    cpu_include_dir="config/cpu/mips"
-    ;;
   powerpc | rs6000)
     cpu_include_dir="config/cpu/powerpc"
     ;;

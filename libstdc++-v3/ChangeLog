@@ -1,3 +1,12 @@
+2001-09-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/Makefile.am (libstdc___la_LDFLAGS): Increase revision number.
+	* src/Makefile.in: Regenerate.
+
+2001-09-04  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/c_std/bits/std_c*.h: Don't use include_next.
+
 2001-09-05  Phil Edwards  <pme@sources.redhat.com>
 
 	* Makefile.am:  The testsuite directory never needs to be made here.
@@ -283,6 +292,12 @@
 2001-07-31  Loren J. Rittle  <ljrittle@acm.org>
 
 	* src/gen-num-limits.cc:  Use __LONG_LONG_MAX__.
+
+2001-07-30  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* configure.target: Remove mips from cpu table.
+	* config/cpu/mips/bits/atomicity.h: Remove generic
+	versions. Comment sgidefs include.
 
 2001-07-26  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
@@ -582,6 +597,14 @@
 	* libmath/stubs.c: New file.
 	* libmath/Makefile.am (libmath_la_SOURCES): Add stubs.c.
 	* libmath/Makefile.in: Regenerate.
+
+2001-06-19  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/c_std/bits/std_cwchar.h: Include ctime.
+	* testsuite/17_intro/header_cwchar.cc : Check.
+
+	* include/c_std/bits/std_cwctype.h: Inject wctype.
+	* testsuite/17_intro/header_cwctype.cc: Update.
 
 2001-06-17 Release Manager
 

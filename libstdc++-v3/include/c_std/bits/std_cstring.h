@@ -37,7 +37,7 @@
 #include <bits/std_cstddef.h>
 
 #pragma GCC system_header
-#include_next <string.h>
+#include <string.h>
 
 // Get rid of those macros defined in <string.h> in lieu of real functions.
 #undef memcpy
