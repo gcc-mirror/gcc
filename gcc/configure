@@ -9585,7 +9585,10 @@ do
 			echo "${srcdir}/$s/config-lang.in doesn't set \$language." 1>&2
 			exit 1
 		fi
-		all_lang_makefiles="$all_lang_makefiles ${srcdir}/$s/Make-lang.in $outputs"
+		all_lang_makefiles="$all_lang_makefiles ${srcdir}/$s/Make-lang.in"
+		if test -f ${srcdir}/$s/Makefile.in
+		then all_lang_makefiles="$all_lang_makefiles ${srcdir}/$s/Makefile.in"
+		fi
 		all_languages="$all_languages $language"
 		if test "x$boot_language" = xyes
 		then
