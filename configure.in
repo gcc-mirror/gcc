@@ -876,36 +876,41 @@ esac
 
 copy_dirs=
 
-# Handle --with-headers=XXX.  The contents of the named directory are
-# copied to $(tooldir)/sys-include.
+# Handle --with-headers=XXX.  If the value is not "yes", the contents of
+# the named directory are copied to $(tooldir)/sys-include.
 if test x"${with_headers}" != x ; then
   if test x${is_cross_compiler} = xno ; then
     echo 1>&2 '***' --with-headers is only supported when cross compiling
     exit 1
   fi
-  case "${exec_prefixoption}" in
-  "") x=${prefix} ;;
-  *) x=${exec_prefix} ;;
-  esac
-  copy_dirs="${copy_dirs} ${with_headers} $x/${target_alias}/sys-include"
+  if test x"${with_headers}" != xyes ; then
+    case "${exec_prefixoption}" in
+    "") x=${prefix} ;;
+    *) x=${exec_prefix} ;;
+    esac
+    copy_dirs="${copy_dirs} ${with_headers} $x/${target_alias}/sys-include"
+  fi
 fi
 
-# Handle --with-libs=XXX.  Multiple directories are permitted.  The
-# contents are copied to $(tooldir)/lib.
+# Handle --with-libs=XXX.  If the value is not "yes", the contents of
+# the name directories are copied to $(tooldir)/lib.  Multiple directories
+# are permitted.
 if test x"${with_libs}" != x ; then
   if test x${is_cross_compiler} = xno ; then
     echo 1>&2 '***' --with-libs is only supported when cross compiling
     exit 1
   fi
-  # Copy the libraries in reverse order, so that files in the first named
-  # library override files in subsequent libraries.
-  case "${exec_prefixoption}" in
-  "") x=${prefix} ;;
-  *) x=${exec_prefix} ;;
-  esac
-  for l in ${with_libs}; do
-    copy_dirs="$l $x/${target_alias}/lib ${copy_dirs}"
-  done
+  if test x"${with_libs}" != xyes ; then
+    # Copy the libraries in reverse order, so that files in the first named
+    # library override files in subsequent libraries.
+    case "${exec_prefixoption}" in
+    "") x=${prefix} ;;
+    *) x=${exec_prefix} ;;
+    esac
+    for l in ${with_libs}; do
+      copy_dirs="$l $x/${target_alias}/lib ${copy_dirs}"
+    done
+  fi
 fi
 
 # Handle ${copy_dirs}
