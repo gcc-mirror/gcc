@@ -4241,6 +4241,8 @@ store_expr (exp, target, want_value)
        || (temp != target && (side_effects_p (temp)
 			      || side_effects_p (target))))
       && TREE_CODE (exp) != ERROR_MARK
+      /* If there's nothing to copy, don't bother.  */
+      && expr_size (exp) != const0_rtx
       && ! dont_store_target
 	 /* If store_expr stores a DECL whose DECL_RTL(exp) == TARGET,
 	    but TARGET is not valid memory reference, TEMP will differ
@@ -6810,8 +6812,7 @@ expand_expr (exp, target, tmode, modifier)
 						       * TYPE_QUAL_CONST))),
 			     0, TREE_ADDRESSABLE (exp), 1);
 
-	  store_constructor (exp, target, 0,
-			     int_size_in_bytes (TREE_TYPE (exp)));
+	  store_constructor (exp, target, 0, INTVAL (expr_size (exp)));
 	  return target;
 	}
 

@@ -328,6 +328,12 @@ struct lang_hooks
   void (*print_error_function) PARAMS ((struct diagnostic_context *,
 					const char *));
 
+  /* Called from expr_size to calculate the size of the value of an
+     expression in a language-dependent way.  Returns a tree for the size
+     in bytes.  A frontend can call lhd_expr_size to get the default
+     semantics in cases that it doesn't want to handle specially.  */
+  tree (*expr_size) PARAMS ((tree));
+
   /* Pointers to machine-independent attribute tables, for front ends
      using attribs.c.  If one is NULL, it is ignored.  Respectively, a
      table of attributes specific to the language, a table of
