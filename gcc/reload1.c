@@ -702,7 +702,7 @@ reload (first, global, dumpfile)
     if (reg_renumber[i] == -1 && reg_n_refs[i] != 0)
       break;
 
-  if (i == max_regno && num_eliminable = 0 && ! caller_save_needed)
+  if (i == max_regno && num_eliminable == 0 && ! caller_save_needed)
     return;
 #endif
 
