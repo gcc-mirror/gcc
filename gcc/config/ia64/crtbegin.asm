@@ -16,6 +16,8 @@
    write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
+#include "auto-host.h"
+
 .section .ctors,"aw","progbits"
 	.align	8
 __CTOR_LIST__:
@@ -52,6 +54,15 @@ __dso_handle:
 	.hidden __dso_handle#
 
 
+#ifdef HAVE_INITFINI_ARRAY
+
+.section .fini_array,"a","progbits"
+	data8 @fptr(__do_global_dtors_aux)
+
+.section .init_array,"a","progbits"
+	data8 @fptr(__do_jv_register_classes)
+
+#else /* !HAVE_INITFINI_ARRAY */
 /*
  * Fragment of the ELF _fini routine that invokes our dtor cleanup.
  *
@@ -98,6 +109,7 @@ __dso_handle:
 	  br.call.sptk.many b0 = b6
 	  ;;
 	}
+#endif /* !HAVE_INITFINI_ARRAY */
 
 .section .text
 	.align	16

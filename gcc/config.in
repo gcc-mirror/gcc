@@ -482,6 +482,9 @@
 /* Define if <time.h> defines clock_t. */
 #undef HAVE_CLOCK_T
 
+/* Define .init_array/.fini_array sections are available and working. */
+#undef HAVE_INITFINI_ARRAY
+
 /* Define if host mkdir takes a single argument. */
 #undef MKDIR_TAKES_ONE_ARG
 
