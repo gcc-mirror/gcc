@@ -76,6 +76,8 @@ AC_DEFUN(GLIBCPP_CONFIGURE, [
   AC_PROG_LN_S
 
   # We use these options to decide which functions to include.
+  AC_ARG_WITH(newlib,
+  [  --with-newlib        use newlib headers])
   AC_ARG_WITH(target-subdir,
   [  --with-target-subdir=SUBDIR
                           configuring in a subdirectory])

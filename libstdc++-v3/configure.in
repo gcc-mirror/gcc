@@ -277,6 +277,10 @@ changequote([,])dnl
       ;;
   esac
 
+if test x"$with_newlib" = "xyes"; then
+   os_include_dir="os/newlib"
+fi
+
   case "$target" in
     *-mingw32*)
       ;;

@@ -1,3 +1,11 @@
+2004-05-24  Ronald Landheer-Cieslak  <ronald@landheer.com>
+
+	PR libstdc++/11171
+	* acinclude.m4: Deal with --with-newlib.
+	* aclocal.m4: Regenerate.
+	* configure.in: Set os_include_dir correctly when --with-newlib.
+	* configure: Regenerate.
+	
 2004-05-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/14720
