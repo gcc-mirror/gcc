@@ -1,3 +1,7 @@
+Fri May 15 01:44:22 1998  Mumit Khan <khan@xraylith.wisc.edu>
+
+	* Make-lang.in (f77.mostlyclean): Add missing exeext.
+
 Thu Apr 30 18:59:43 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* Make-lang.in (g77.info, g77.dvi, BUGS, INSTALL, NEWS): Put -o
