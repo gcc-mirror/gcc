@@ -69,7 +69,7 @@ do								\
    that says to advance the location counter by SIZE bytes.  */
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf ((FILE), "\t.set .,.+%u\n", (SIZE))
+  fprintf ((FILE), "\t.set .,.+%u\n", (int)(SIZE))
 
 /* Can't use ASM_OUTPUT_SKIP in text section; it doesn't leave 0s.  */
 

@@ -1333,7 +1333,7 @@ __transfer_from_trampoline ()		\
   fprintf (FILE, "\t.align %d\n", (LOG))
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\t.space %u\n", (SIZE))
+  fprintf (FILE, "\t.space %u\n", (int)(SIZE))
 
 /* This says how to output an assembler line
    to define a global common symbol.  */
@@ -1341,7 +1341,7 @@ __transfer_from_trampoline ()		\
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs (".comm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ",%u\n", (ROUNDED)))
+  fprintf ((FILE), ",%u\n", (int)(ROUNDED)))
 
 /* This says how to output an assembler line
    to define a local common symbol.  */
@@ -1349,7 +1349,7 @@ __transfer_from_trampoline ()		\
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs (".lcomm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ",%u\n", (ROUNDED)))
+  fprintf ((FILE), ",%u\n", (int)(ROUNDED)))
 
 /* Print an instruction operand X on file FILE.
    CODE is the code from the %-spec that requested printing this operand;

@@ -269,13 +269,13 @@ while (0)
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)			\
 ( fputs (".comm ", (FILE)),						\
   assemble_name ((FILE), (NAME)),					\
-  fprintf ((FILE), ",%u\n", (SIZE)))
+  fprintf ((FILE), ",%u\n", (int)(SIZE)))
 
 #undef ASM_OUTPUT_LOCAL
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)			\
 ( fputs (".lcomm ", (FILE)),						\
   assemble_name ((FILE), (NAME)),					\
-  fprintf ((FILE), ",%u\n", (SIZE)))
+  fprintf ((FILE), ",%u\n", (int)(SIZE)))
 
 
 /* XXX

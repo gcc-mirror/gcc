@@ -1179,7 +1179,7 @@ struct cum_arg
   fprintf (FILE, "%s\"%s\"\n", IDENT_ASM_OP, NAME)
 
 #define ASM_OUTPUT_SKIP(FILE, SIZE) \
-  fprintf (FILE, "\t.space %d\n", (SIZE))
+  fprintf (FILE, "\t.space %d\n", (int)(SIZE))
 
 /* This says how to output an assembler line
    to define a global common symbol.  */
@@ -1202,7 +1202,7 @@ struct cum_arg
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)	\
 ( fputs ("\t.lcomm ", (FILE)),				\
   assemble_name ((FILE), (NAME)),			\
-  fprintf ((FILE), ",%d\n", (SIZE)))
+  fprintf ((FILE), ",%d\n", (int)(SIZE)))
 
 #define ASM_PN_FORMAT "%s___%lu"
 

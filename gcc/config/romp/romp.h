@@ -1295,7 +1295,7 @@ struct rt_cargs {int gregs, fregs; };
     fprintf (FILE, "\t.align %d\n", (LOG))
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\t.space %d\n", (SIZE))
+  fprintf (FILE, "\t.space %d\n", (int)(SIZE))
 
 /* This says how to output an assembler line
    to define a global common symbol.  */
@@ -1303,7 +1303,7 @@ struct rt_cargs {int gregs, fregs; };
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs (".comm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ",%d\n", (SIZE)))
+  fprintf ((FILE), ",%d\n", (int)(SIZE)))
 
 /* This says how to output an assembler line
    to define a local common symbol.  */
@@ -1311,7 +1311,7 @@ struct rt_cargs {int gregs, fregs; };
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE,ROUNDED)	\
 ( fputs (".lcomm ", (FILE)),				\
   assemble_name ((FILE), (NAME)),			\
-  fprintf ((FILE), ",%d\n", (SIZE)))
+  fprintf ((FILE), ",%d\n", (int)(SIZE)))
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.

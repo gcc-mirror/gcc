@@ -1251,7 +1251,7 @@ extern struct rtx_def *i960_compare_op0, *i960_compare_op1;
   fprintf (FILE, "\t.align %d\n", (LOG))
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "\t.space %d\n", (SIZE))
+  fprintf (FILE, "\t.space %d\n", (int)(SIZE))
 
 /* This says how to output an assembler line
    to define a global common symbol.  */
@@ -1268,7 +1268,7 @@ extern struct rtx_def *i960_compare_op0, *i960_compare_op1;
       assemble_name ((FILE), (NAME)),			\
       fputs ("\n.comm ", (FILE)),			\
       assemble_name ((FILE), (NAME)),			\
-      fprintf ((FILE), ",%d\n", (SIZE));		\
+      fprintf ((FILE), ",%d\n", (int)(SIZE));		\
     }							\
 }
 
@@ -1279,7 +1279,7 @@ extern struct rtx_def *i960_compare_op0, *i960_compare_op1;
 #define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)  \
 ( fputs (".bss\t", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ",%d,%d\n", (SIZE),		\
+  fprintf ((FILE), ",%d,%d\n", (int)(SIZE),	\
 	   (floor_log2 ((ALIGN) / BITS_PER_UNIT))))
 
 /* A C statement (sans semicolon) to output to the stdio stream

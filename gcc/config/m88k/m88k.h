@@ -1888,7 +1888,7 @@ do {									 \
 /* Override svr[34].h.  */
 #undef	ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "%s%u\n", SKIP_ASM_OP, (SIZE))
+  fprintf (FILE, "%s%u\n", SKIP_ASM_OP, (int)(SIZE))
 
 /* Override svr4.h.  */
 #undef	ASM_OUTPUT_EXTERNAL_LIBCALL
@@ -1900,9 +1900,9 @@ do {									 \
 #undef	ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)	\
 ( fprintf ((FILE), "%s",				\
-	   ((SIZE) ? (SIZE) : 1) <= m88k_gp_threshold ? SCOMM_ASM_OP : COMMON_ASM_OP), \
+	   ((SIZE) ? (int)(SIZE) : 1) <= m88k_gp_threshold ? SCOMM_ASM_OP : COMMON_ASM_OP), \
   assemble_name ((FILE), (NAME)),			\
-  fprintf ((FILE), ",%u\n", (SIZE) ? (SIZE) : 1))
+  fprintf ((FILE), ",%u\n", (SIZE) ? (int)(SIZE) : 1))
 
 /* This says how to output an assembler line to define a local common
    symbol.  Override svr[34].h.  */
@@ -1910,9 +1910,9 @@ do {									 \
 #undef	ASM_OUTPUT_ALIGNED_LOCAL
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)	\
 ( fprintf ((FILE), "%s",				\
-	   ((SIZE) ? (SIZE) : 1) <= m88k_gp_threshold ? SBSS_ASM_OP : BSS_ASM_OP), \
+	   ((SIZE) ? (int)(SIZE) : 1) <= m88k_gp_threshold ? SBSS_ASM_OP : BSS_ASM_OP), \
   assemble_name ((FILE), (NAME)),			\
-  fprintf ((FILE), ",%u,%d\n", (SIZE) ? (SIZE) : 1, (SIZE) <= 4 ? 4 : 8))
+  fprintf ((FILE), ",%u,%d\n", (SIZE) ? (int)(SIZE) : 1, (SIZE) <= 4 ? 4 : 8))
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */

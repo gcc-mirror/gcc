@@ -240,7 +240,7 @@
 /* Output a gap.  In fact we fill it with nulls.  */
 #undef  ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(STREAM, NBYTES) 	\
-  fprintf (STREAM, "\t.space\t%d\n", NBYTES)
+  fprintf (STREAM, "\t.space\t%d\n", (int)NBYTES)
 
 /* Align output to a power of two.  Horrible /bin/as.  */
 #ifndef ASM_OUTPUT_ALIGN  
@@ -265,7 +265,7 @@
       fprintf (STREAM, "\t.comm\t");			\
       assemble_name (STREAM, NAME);			\
       asm_fprintf (STREAM, ", %d\t%@ %d\n", 		\
-	           ROUNDED, SIZE);			\
+	           (int)(ROUNDED), (int)(SIZE));	\
     }							\
   while (0)
 #endif
@@ -281,7 +281,7 @@
       bss_section ();							\
       ASM_OUTPUT_ALIGN (STREAM, floor_log2 (ALIGN / BITS_PER_UNIT));	\
       ASM_OUTPUT_LABEL (STREAM, NAME);					\
-      fprintf (STREAM, "\t.space\t%d\n", SIZE);				\
+      fprintf (STREAM, "\t.space\t%d\n", (int)(SIZE));			\
     }									\
   while (0)
 #endif

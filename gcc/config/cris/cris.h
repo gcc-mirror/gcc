@@ -1474,7 +1474,7 @@ call_ ## FUNC (void)						\
 	    }								\
 	  fprintf ((FILE), "%s", COMMON_ASM_OP);			\
 	  assemble_name ((FILE), (NAME));				\
-	  fprintf ((FILE), ",%u,%u\n", (SIZE), align_);			\
+	  fprintf ((FILE), ",%u,%u\n", (int)(SIZE), align_);		\
 	}								\
       else								\
 	{								\
@@ -1485,7 +1485,7 @@ call_ ## FUNC (void)						\
 	  fputs ("\t.lcomm ", (FILE));					\
 	  assemble_name ((FILE), (NAME));				\
 	  fprintf ((FILE), ",%u\n",					\
-		   ((SIZE) + (align_ - 1)) & ~(align_ - 1));		\
+		   ((int)(SIZE) + (align_ - 1)) & ~(align_ - 1));	\
 	}								\
     }									\
   while (0)

@@ -194,7 +194,7 @@ do {								\
 
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
-  fprintf (FILE, "%s%u\n", SPACE_ASM_OP, (SIZE))
+  fprintf (FILE, "%s%u\n", SPACE_ASM_OP, (int)(SIZE))
 
 /* Translate Motorola opcodes such as `jbeq' into SGS opcodes such
    as `beq.w'.

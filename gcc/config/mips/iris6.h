@@ -390,7 +390,7 @@ do									   \
 	ASM_OUTPUT_SKIP (STREAM, SIZE);					   \
       }									   \
     else								   \
-      mips_declare_object (STREAM, NAME, "\n\t.lcomm\t", ",%u\n", (SIZE)); \
+      mips_declare_object (STREAM, NAME, "\n\t.lcomm\t", ",%u\n", (int)(SIZE)); \
   }									   \
 while (0)
 

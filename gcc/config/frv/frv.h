@@ -3077,7 +3077,7 @@ do {                                                                    \
    Defined in svr4.h.  */
 #undef  ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(STREAM, NBYTES) \
-  fprintf (STREAM, "\t.zero\t%u\n", (NBYTES))
+  fprintf (STREAM, "\t.zero\t%u\n", (int)(NBYTES))
 
 /* A C statement to output to the stdio stream STREAM an assembler command to
    advance the location counter to a multiple of 2 to the POWER bytes.  POWER

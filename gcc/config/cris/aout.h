@@ -373,7 +373,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE, SIZE) \
-  fprintf (FILE, "%s%u\n", SKIP_ASM_OP, (SIZE))
+  fprintf (FILE, "%s%u\n", SKIP_ASM_OP, (int)(SIZE))
 
 /* Node: All Debuggers */
 
