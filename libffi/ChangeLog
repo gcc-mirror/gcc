@@ -1,3 +1,8 @@
+2002-05-28  Bo Thorsen  <bo@suse.de>
+
+	* src/x86/ffi.c (ffi_prep_incoming_args_SYSV): Remove avn
+	here too.
+
 2002-05-27  Roger Sayle  <roger@eyesopen.com>
 
 	* src/x86/ffi.c (ffi_prep_args): Remove reference to avn.
