@@ -1,3 +1,33 @@
+2003-04-15  J"orn Rennecke <joern.rennecke@superh.com>
+	merge from mainline:
+
+	2003-03-05  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (OVERRIDE_OPTIONS): For TARGET_SHMEDIA, the minimum value
+	for align_jumps is 4.
+
+	(SECONDARY_INPUT_RELOAD_CLASS): If reloading a PLUS into FPUL,
+	use GENERAL_REGS.
+
+	2003-03-03  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.h (OVERRIDE_OPTIONS): Set default values for align_loops
+	and align_jumps if not set.
+	Force align_jumps to be at least 2.
+	When relaxing, force align_functions to be at least the maximum of
+	align_loops, align_jumps and 4.
+	* sh.c (find_barrier, barrier_align): Honour align_jumps_log.
+	(sh_loop_align): Honour align_loops_log.
+
+	* sh.md (length attribute): Use prev_nonnote_insn instead of PREV_INSN
+	to check for indirect_jump_scratch.
+	(indirect_jump_scratch): Add second set.
+	* sh.c (output_far_jump): Use prev_nonnote_insn instead of PREV_INSN
+	when looking for indirect_jump_scratch.
+	Extract scratch register taking new structure of indirect_jump_scratch
+	into account.
+	(gen_block_redirect): Set INSN_SCOPE for indirect_jump_scratch.
+
 2003-04-15  James A. Morrison  <ja2morri@uwaterloo.ca>
 
 	* invoke.texi (Spec Files): Wrap if-exists-else example.
