@@ -1,5 +1,9 @@
 2000-05-01  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* cppfiles.c (open_include_file): Open file in blocking mode.
+	(read_include_file): Don't fcntl(fd, F_SETFL, 0) anymore.
+	Only exclude block devices and directories.
+
 	* cpphash.c (_cpp_make_hashnode): Rename make_HASHNODE, now
 	static.  Allocate the hashnode and its string in the same
 	block of memory.
