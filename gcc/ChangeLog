@@ -1,3 +1,12 @@
+2004-05-07  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/arm.c (arm_promote_prototypes): Use TARGET_AAPCS_BASED.
+	* config/arm/arm.h (TARGET_AAPCS_BASED): Define.
+	(TARGET_DOUBLEWORD_ALIGN): Use it.
+	(WCHAR_TYPE): Define.
+	(WCHAR_SIZE_TYPE): Define.
+	(SIZE_TYPE): Define.
+
 2004-05-07  Uros Bizjak  <uros@kss-loka.si>
 
 	* config/i386/i386.c (ix86_emit_fp_unordered_jump): Use
