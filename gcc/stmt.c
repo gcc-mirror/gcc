@@ -5094,16 +5094,23 @@ mark_seen_cases (type, cases_seen, count, sparseness)
     }
 }
 
-/* Called when the index of a switch statement is an enumerated type
-   and there is no default label.
+/* Given a switch statement with an expression that is an enumeration
+   type, warn if any of the enumeration type's literals are not
+   covered by the case expressions of the switch.  Also, warn if there
+   are any extra switch cases that are *not* elements of the
+   enumerated type.
 
-   Checks that all enumeration literals are covered by the case
-   expressions of a switch.  Also, warn if there are any extra
-   switch cases that are *not* elements of the enumerated type.
+   Historical note:
 
-   If all enumeration literals were covered by the case expressions,
-   turn one of the expressions into the default expression since it should
-   not be possible to fall through such a switch.  */
+   At one stage this function would: ``If all enumeration literals
+   were covered by the case expressions, turn one of the expressions
+   into the default expression since it should not be possible to fall
+   through such a switch.''
+
+   That code has since been removed as: ``This optimization is
+   disabled because it causes valid programs to fail.  ANSI C does not
+   guarantee that an expression with enum type will have a value that
+   is the same as one of the enumeration literals.''  */
 
 void
 check_for_full_enumeration_handling (type)
@@ -5124,9 +5131,6 @@ check_for_full_enumeration_handling (type)
 
   /* The allocated size of cases_seen, in chars.  */
   HOST_WIDE_INT bytes_needed;
-
-  if (! warn_switch)
-    return;
 
   size = all_cases_count (type, &sparseness);
   bytes_needed = (size + HOST_BITS_PER_CHAR) / HOST_BITS_PER_CHAR;
@@ -5165,49 +5169,48 @@ check_for_full_enumeration_handling (type)
       && case_stack->data.case_stmt.case_list->left)
     case_stack->data.case_stmt.case_list
       = case_tree2list (case_stack->data.case_stmt.case_list, 0);
-  if (warn_switch)
-    for (n = case_stack->data.case_stmt.case_list; n; n = n->right)
-      {
-	for (chain = TYPE_VALUES (type);
-	     chain && !tree_int_cst_equal (n->low, TREE_VALUE (chain));
-	     chain = TREE_CHAIN (chain))
-	  ;
-
-	if (!chain)
-	  {
-	    if (TYPE_NAME (type) == 0)
-	      warning ("case value `%ld' not in enumerated type",
-		       (long) TREE_INT_CST_LOW (n->low));
-	    else
-	      warning ("case value `%ld' not in enumerated type `%s'",
-		       (long) TREE_INT_CST_LOW (n->low),
-		       IDENTIFIER_POINTER ((TREE_CODE (TYPE_NAME (type))
-					    == IDENTIFIER_NODE)
-					   ? TYPE_NAME (type)
-					   : DECL_NAME (TYPE_NAME (type))));
-	  }
-	if (!tree_int_cst_equal (n->low, n->high))
-	  {
-	    for (chain = TYPE_VALUES (type);
-		 chain && !tree_int_cst_equal (n->high, TREE_VALUE (chain));
-		 chain = TREE_CHAIN (chain))
-	      ;
-
-	    if (!chain)
-	      {
-		if (TYPE_NAME (type) == 0)
-		  warning ("case value `%ld' not in enumerated type",
-			   (long) TREE_INT_CST_LOW (n->high));
-		else
-		  warning ("case value `%ld' not in enumerated type `%s'",
-			   (long) TREE_INT_CST_LOW (n->high),
-			   IDENTIFIER_POINTER ((TREE_CODE (TYPE_NAME (type))
-						== IDENTIFIER_NODE)
-					       ? TYPE_NAME (type)
-					       : DECL_NAME (TYPE_NAME (type))));
-	      }
-	  }
-      }
+  for (n = case_stack->data.case_stmt.case_list; n; n = n->right)
+    {
+      for (chain = TYPE_VALUES (type);
+	   chain && !tree_int_cst_equal (n->low, TREE_VALUE (chain));
+	   chain = TREE_CHAIN (chain))
+	;
+      
+      if (!chain)
+	{
+	  if (TYPE_NAME (type) == 0)
+	    warning ("case value `%ld' not in enumerated type",
+		     (long) TREE_INT_CST_LOW (n->low));
+	  else
+	    warning ("case value `%ld' not in enumerated type `%s'",
+		     (long) TREE_INT_CST_LOW (n->low),
+		     IDENTIFIER_POINTER ((TREE_CODE (TYPE_NAME (type))
+					  == IDENTIFIER_NODE)
+					 ? TYPE_NAME (type)
+					 : DECL_NAME (TYPE_NAME (type))));
+	}
+      if (!tree_int_cst_equal (n->low, n->high))
+	{
+	  for (chain = TYPE_VALUES (type);
+	       chain && !tree_int_cst_equal (n->high, TREE_VALUE (chain));
+	       chain = TREE_CHAIN (chain))
+	    ;
+	  
+	  if (!chain)
+	    {
+	      if (TYPE_NAME (type) == 0)
+		warning ("case value `%ld' not in enumerated type",
+			 (long) TREE_INT_CST_LOW (n->high));
+	      else
+		warning ("case value `%ld' not in enumerated type `%s'",
+			 (long) TREE_INT_CST_LOW (n->high),
+			 IDENTIFIER_POINTER ((TREE_CODE (TYPE_NAME (type))
+					      == IDENTIFIER_NODE)
+					     ? TYPE_NAME (type)
+					     : DECL_NAME (TYPE_NAME (type))));
+	    }
+	}
+    }
 }
 
 /* Free CN, and its children.  */
@@ -5275,11 +5278,12 @@ expand_end_case_type (orig_index, orig_type)
   /* An ERROR_MARK occurs for various reasons including invalid data type.  */
   if (index_type != error_mark_node)
     {
-      /* If switch expression was an enumerated type, check that all
-	 enumeration literals are covered by the cases.
-	 No sense trying this if there's a default case, however.  */
+      /* If the switch expression was an enumerated type, check that
+	 exactly all enumeration literals are covered by the cases.
+	 The check is made -Wswitch was specified and there is no
+	 default case.  */
 
-      if (!thiscase->data.case_stmt.default_label
+      if ((warn_switch && !thiscase->data.case_stmt.default_label)
 	  && TREE_CODE (orig_type) == ENUMERAL_TYPE
 	  && TREE_CODE (index_expr) != INTEGER_CST)
 	check_for_full_enumeration_handling (orig_type);
