@@ -3,7 +3,7 @@
 /*
 */
 
-char __G77_LIBI77_VERSION__[] = "0.5.26 20021226 (prerelease)";
+char __G77_LIBI77_VERSION__[] = "0.5.26 20021227 (prerelease)";
 
 /*
 2.01	$ format added
