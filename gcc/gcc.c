@@ -2846,10 +2846,11 @@ display_help ()
                            guessing the language based on the file's extension\n\
 "), stdout);
 
-  printf (_("\n\
-Options starting with -g, -f, -m, -O or -W are automatically passed on to\n\
+  printf (_("\
+\nOptions starting with -g, -f, -m, -O or -W are automatically passed on to\n\
 the various sub-processes invoked by %s.  In order to pass other options\n\
-on to these processes the -W<letter> options must be used.\n\"), programname);
+on to these processes the -W<letter> options must be used.\n\
+"), programname);
 
   /* The rest of the options are displayed by invocations of the various
      sub-processes.  */

@@ -1,3 +1,8 @@
+2000-06-29  Philipp Thomas  <pthomas@suse.de>
+
+	* rtl.c : Revert NLS changes.
+	* gcc.c : Fix bug in display_help introced by my last changes.
+
 Wed Jun 28 21:09:33 2000   Raja R Harinath <harinath@cs.umn.edu>
 
 	* dbxout.c (dbxout_symbol, case RESULT_DECL, VAR_DECL): Use
