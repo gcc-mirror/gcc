@@ -1,3 +1,11 @@
+Wed Oct 20 01:41:47 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (java_complete_tree): fold_constant_for_init to work on
+ 	permanent_obstack.
+	(java_complete_lhs): Likewise.
+	(array_constructor_check_entry): Complete an initializer element
+ 	on permanent_obstack.
+
 1999-10-19  Tom Tromey  <tromey@cygnus.com>
 
 	* jcf-parse.c (parse_source_file): Call jcf_dependency_add_file.
