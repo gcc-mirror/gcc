@@ -1706,9 +1706,9 @@ delete_computation (insn)
 }
 
 /* Delete insn INSN from the chain of insns and update label ref counts
-   and delete insns now unreachable. 
+   and delete insns now unreachable.
 
-   Returns the first insn after INSN that was not deleted. 
+   Returns the first insn after INSN that was not deleted.
 
    Usage of this instruction is deprecated.  Use delete_insn instead and
    subsequent cfg_cleanup pass to delete unreachable code if needed.  */
@@ -1893,14 +1893,14 @@ delete_for_peephole (from, to)
      is also an unconditional jump in that case.  */
 }
 
-/* We have determined that INSN is never reached, and are about to
-   delete it.  Print a warning if the user asked for one.
+/* We have determined that AVOIDED_INSN is never reached, and are
+   about to delete it.  If the insn chain between AVOIDED_INSN and
+   FINISH contains more than one line from the current function, and
+   contains at least one operation, print a warning if the user asked
+   for it.  If FINISH is NULL, look between AVOIDED_INSN and a LABEL.
 
-   To try to make this warning more useful, this should only be called
-   once per basic block not reached, and it only warns when the basic
-   block contains more than one line from the current function, and
-   contains at least one operation.  CSE and inlining can duplicate insns,
-   so it's possible to get spurious warnings from this.  */
+   CSE and inlining can duplicate insns, so it's possible to get
+   spurious warnings from this.  */
 
 void
 never_reached_warning (avoided_insn, finish)
@@ -1910,15 +1910,16 @@ never_reached_warning (avoided_insn, finish)
   rtx a_line_note = NULL;
   int two_avoided_lines = 0, contains_insn = 0, reached_end = 0;
 
-  if (! warn_notreached)
+  if (!warn_notreached)
     return;
 
-  /* Scan forwards, looking at LINE_NUMBER notes, until
-     we hit a LABEL or we run out of insns.  */
+  /* Scan forwards, looking at LINE_NUMBER notes, until we hit a LABEL
+     in case FINISH is NULL, otherwise until we run out of insns.  */
 
   for (insn = avoided_insn; insn != NULL; insn = NEXT_INSN (insn))
     {
-      if (finish == NULL && GET_CODE (insn) == CODE_LABEL)
+      if ((finish == NULL && GET_CODE (insn) == CODE_LABEL)
+	  || GET_CODE (insn) == BARRIER)
 	break;
 
       if (GET_CODE (insn) == NOTE		/* A line number note?  */
