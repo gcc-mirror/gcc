@@ -903,7 +903,7 @@ mostly_false_jump (jump_insn, condition)
 
   /* EQ tests are usually false and NE tests are usually true.  Also,
      most quantities are positive, so we can make the appropriate guesses
-     about signed comparisons against zero.  Consider unsigned comparsions
+     about signed comparisons against zero.  Consider unsigned comparisons
      to be a range check and assume quantities to be in range.  */
   switch (GET_CODE (condition))
     {

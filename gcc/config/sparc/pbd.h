@@ -66,7 +66,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define SCCS_DIRECTIVE
 
-/* LINK_SPEC is needed only for Sunos 4.  */
+/* LINK_SPEC is needed only for SunOS 4.  */
 
 #undef LINK_SPEC
 

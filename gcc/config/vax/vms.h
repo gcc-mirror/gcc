@@ -63,7 +63,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* We redefine this because there is a hidden variable on the stack
    that VAXC$ESTABLISH uses.  We just need to add four bytes to whatever
-   gcc thinks that we need.  Similarily, we need to move all local variables
+   gcc thinks that we need.  Similarly, we need to move all local variables
    down 4 bytes in the stack.  */
 
 #define STARTING_FRAME_OFFSET -4

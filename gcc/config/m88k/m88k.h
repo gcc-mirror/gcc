@@ -452,7 +452,7 @@ extern char * reg_names[];
     spill area instead of memory.
       -waste if only used once
 
-    floating point caluclations
+    floating point calculations
       -probably a waste unless we have run out of general purpose registers
 
     freeing up general purpose registers
@@ -503,8 +503,8 @@ extern char * reg_names[];
 	But this is currently disabled since tying in global_alloc is not
 	yet implemented.
 
-    The explaination of why the preserved register is not used is as follows,
-    I believe.  The registers are being allocated in order.  Tieing is not
+    The explanation of why the preserved register is not used is as follows,
+    I believe.  The registers are being allocated in order.  Tying is not
     done so efficiently, so when it comes time to do the first allocation,
     there are no registers left to use without spilling except extended
     registers.  Then when the next pseudo register needs a hard reg, there
@@ -556,7 +556,7 @@ extern char * reg_names[];
    The following follows the current 88open UCS specification for the
    Extended Register File (XRF):
    Reg 32       = x0		Always equal to zero
-   Reg 33-53	= x1-x21	Tempory registers (Caller Save)
+   Reg 33-53	= x1-x21	Temporary registers (Caller Save)
    Reg 54-61	= x22-x29	Preserver registers (Callee Save)
    Reg 62-63	= x30-x31	Reserved for future ABI use.
 

@@ -1512,7 +1512,7 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
      rtx cmp0;			/* first operand to compare */
      rtx cmp1;			/* second operand to compare */
      int *p_invert;		/* NULL or ptr to hold whether branch needs */
-				/* to reserse it's test */
+				/* to reverse its test */
 {
   struct cmp_info {
     enum rtx_code test_code;	/* code to use in instruction (LT vs. LTU) */
@@ -1614,7 +1614,7 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
 	    return (rtx)0;
 	}
 
-      /* allocate a psuedo to calculate the value in.  */
+      /* allocate a pseudo to calculate the value in.  */
       result = gen_reg_rtx (SImode);
     }
 
@@ -1811,8 +1811,8 @@ fail:
 
 static rtx
 block_move_load_store (dest_reg, src_reg, p_bytes, p_offset, align, orig_src)
-     rtx src_reg;		/* register holding source memory addresss */
-     rtx dest_reg;		/* register holding dest. memory addresss */
+     rtx src_reg;		/* register holding source memory address */
+     rtx dest_reg;		/* register holding dest. memory address */
      int *p_bytes;		/* pointer to # bytes remaining */
      int *p_offset;		/* pointer to current offset */
      int align;			/* alignment */

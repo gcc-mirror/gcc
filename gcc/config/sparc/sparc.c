@@ -1018,7 +1018,7 @@ mem_aligned_8 (mem)
     }
 
   /* If it's the stack or frame pointer, check offset alignment.
-     We can have improper aligment in the function entry code.  */
+     We can have improper alignment in the function entry code.  */
   if (base
       && (REGNO (base) == FRAME_POINTER_REGNUM
 	  || REGNO (base) == STACK_POINTER_REGNUM))
@@ -1217,7 +1217,7 @@ output_move_double (operands)
 }
 
 /* Output assembler code to perform a quadword move insn
-   with operands OPERANDS.  This is very similar to the preceeding
+   with operands OPERANDS.  This is very similar to the preceding
    output_move_double function.  */
 
 char *
@@ -2676,7 +2676,7 @@ memory_ok_for_ldd (addr1, addr2)
   if (reg1 != REGNO (XEXP (addr2, 0)))
     return 0;
 
-  /* The first offset must be evenly divisable by 8 to ensure the 
+  /* The first offset must be evenly divisible by 8 to ensure the 
      address is 64 bit aligned.  */
   if (offset1 % 8 != 0)
     return 0;
