@@ -3666,6 +3666,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
   int threshold = (loop_has_call ? 1 : 2) * (3 + n_non_fixed_regs);
   /* Map of pseudo-register replacements.  */
   rtx *reg_map;
+  int reg_map_size;
   int call_seen;
   rtx test;
   rtx end_insert_before;
@@ -4419,9 +4420,12 @@ strength_reduce (scan_start, end, loop_top, insn_count,
      so that "decrement and branch until zero" insn can be used.  */
   check_dbra_loop (loop_end, insn_count, loop_start, loop_info);
 
-  /* Create reg_map to hold substitutions for replaceable giv regs.  */
-  reg_map = (rtx *) alloca (max_reg_before_loop * sizeof (rtx));
-  bzero ((char *) reg_map, max_reg_before_loop * sizeof (rtx));
+  /* Create reg_map to hold substitutions for replaceable giv regs.
+     Some givs might have been made from biv increments, so look at
+     reg_iv_type for a suitable size.  */
+  reg_map_size = reg_iv_type->num_elements;
+  reg_map = (rtx *) alloca (reg_map_size * sizeof (rtx));
+  bzero ((char *) reg_map, reg_map_size * sizeof (rtx));
 
   /* Examine each iv class for feasibility of strength reduction/induction
      variable elimination.  */
@@ -4962,8 +4966,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
     if (GET_CODE (p) == INSN || GET_CODE (p) == JUMP_INSN
  	|| GET_CODE (p) == CALL_INSN)
       {
-	replace_regs (PATTERN (p), reg_map, max_reg_before_loop, 0);
-	replace_regs (REG_NOTES (p), reg_map, max_reg_before_loop, 0);
+	replace_regs (PATTERN (p), reg_map, reg_map_size, 0);
+	replace_regs (REG_NOTES (p), reg_map, reg_map_size, 0);
 	INSN_CODE (p) = -1;
       }
 
