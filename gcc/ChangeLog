@@ -1,5 +1,8 @@
 2004-05-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* final.c (shorten_branches): Free uid_shuid before
+	reallocating it.
+
 	* bb-reoder.c (connect_traces): Free cold_traces at the end.
 
 2004-05-13  Jeff Law  <law@redhat.com>
