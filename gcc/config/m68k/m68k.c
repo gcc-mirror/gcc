@@ -67,6 +67,7 @@ static void m68k_svr3_asm_out_constructor PARAMS ((rtx, int));
 #endif
 static void m68k_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
 					  HOST_WIDE_INT, tree));
+static int m68k_save_reg PARAMS ((unsigned int));
 
 
 /* Alignment to use for loops and jumps */
@@ -207,6 +208,34 @@ override_options ()
   real_format_for_mode[XFmode - QFmode] = &ieee_extended_motorola_format;
 }
 
+/* Return 1 if we need to save REGNO.  */
+static int
+m68k_save_reg (regno)
+     unsigned int regno;
+{
+  if (flag_pic && current_function_uses_pic_offset_table
+      && regno == PIC_OFFSET_TABLE_REGNUM)
+    return 1;
+
+  if (current_function_calls_eh_return)
+    {
+      unsigned int i;
+      for (i = 0; ; i++)
+	{
+	  unsigned int test = EH_RETURN_DATA_REGNO (i);
+	  if (test == INVALID_REGNUM)
+	    break;
+	  if (test == regno)
+	    return 1;
+	}
+    }
+
+  return (regs_ever_live[regno]
+	  && !call_used_regs[regno]
+	  && !fixed_regs[regno]
+	  && !(regno == FRAME_POINTER_REGNUM && frame_pointer_needed));
+}
+
 /* This function generates the assembly code for function entry.
    STREAM is a stdio stream to output the code to.
    SIZE is an int: how many units of temporary storage to allocate.
@@ -251,13 +280,13 @@ m68k_output_function_prologue (stream, size)
     {
       /* Adding negative number is faster on the 68040.  */
       if (fsize + 4 < 0x8000)
-	  fprintf (stream, "\tadd.w #%d,sp\n", - (fsize + 4));
+	fprintf (stream, "\tadd.w $%d,sp\n", - (fsize + 4));
       else
-	  fprintf (stream, "\tadd.l #%d,sp\n", - (fsize + 4));
+	fprintf (stream, "\tadd.l $%d,sp\n", - (fsize + 4));
     }
 
   for (regno = 16; regno < 24; regno++)
-    if (regs_ever_live[regno] && ! call_used_regs[regno])
+    if (m68k_save_reg (regno))
       mask |= 1 << (regno - 16);
 
   if ((mask & 0xff) != 0)
@@ -265,10 +294,8 @@ m68k_output_function_prologue (stream, size)
 
   mask = 0;
   for (regno = 0; regno < 16; regno++)
-    if (regs_ever_live[regno] && ! call_used_regs[regno])
+    if (m68k_save_reg (regno))
       mask |= 1 << (15 - regno);
-  if (frame_pointer_needed)
-    mask &= ~ (1 << (15-FRAME_POINTER_REGNUM));
 
   if (exact_log2 (mask) >= 0)
     fprintf (stream, "\tmovel %s,-(sp)\n", reg_names[15 - exact_log2 (mask)]);
@@ -441,7 +468,7 @@ m68k_output_function_prologue (stream, size)
     }
 #ifdef SUPPORT_SUN_FPA
   for (regno = 24; regno < 56; regno++)
-    if (regs_ever_live[regno] && ! call_used_regs[regno])
+    if (m68k_save_reg (regno))
       {
 #ifdef MOTOROLA
 	asm_fprintf (stream, "\tfpmovd %s,-(%Rsp)\n",
@@ -467,7 +494,7 @@ m68k_output_function_prologue (stream, size)
   if (TARGET_68881)
     {
       for (regno = 16; regno < 24; regno++)
-	if (regs_ever_live[regno] && ! call_used_regs[regno])
+	if (m68k_save_reg (regno))
 	  {
 	    mask |= 1 << (regno - 16);
 	    num_saved_regs++;
@@ -500,21 +527,11 @@ m68k_output_function_prologue (stream, size)
       num_saved_regs = 0;
     }
   for (regno = 0; regno < 16; regno++)
-    if (regs_ever_live[regno] && ! call_used_regs[regno])
+    if (m68k_save_reg (regno))
       {
         mask |= 1 << (15 - regno);
         num_saved_regs++;
       }
-  if (frame_pointer_needed)
-    {
-      mask &= ~ (1 << (15 - FRAME_POINTER_REGNUM));
-      num_saved_regs--;
-    }
-  if (flag_pic && current_function_uses_pic_offset_table)
-    {
-      mask |= 1 << (15 - PIC_OFFSET_TABLE_REGNUM);
-      num_saved_regs++;
-    }
 
 #if NEED_PROBE
 #ifdef MOTOROLA
@@ -656,15 +673,9 @@ use_return_insn ()
   if (!reload_completed || frame_pointer_needed || get_frame_size () != 0)
     return 0;
   
-  /* Copied from output_function_epilogue ().  We should probably create a
-     separate layout routine to perform the common work.  */
-  
-  for (regno = 0 ; regno < FIRST_PSEUDO_REGISTER ; regno++)
-    if (regs_ever_live[regno] && ! call_used_regs[regno])
+  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (m68k_save_reg (regno))
       return 0;
-
-  if (flag_pic && current_function_uses_pic_offset_table)
-    return 0;
 
   return 1;
 }
@@ -693,7 +704,7 @@ m68k_output_function_epilogue (stream, size)
 
   nregs = 0;  fmask = 0; fpoffset = 0;
   for (regno = 16; regno < 24; regno++)
-    if (regs_ever_live[regno] && ! call_used_regs[regno])
+    if (m68k_save_reg (regno))
       {
 	nregs++;
 	fmask |= 1 << (23 - regno);
@@ -701,11 +712,9 @@ m68k_output_function_epilogue (stream, size)
 
   foffset = fpoffset + nregs * 12;
   nregs = 0;  mask = 0;
-  if (frame_pointer_needed)
-    regs_ever_live[FRAME_POINTER_REGNUM] = 0;
 
   for (regno = 0; regno < 16; regno++)
-    if (regs_ever_live[regno] && ! call_used_regs[regno])
+    if (m68k_save_reg (regno))
       {
 	nregs++;
 	mask |= 1 << regno;
@@ -758,7 +767,7 @@ m68k_output_function_epilogue (stream, size)
 
   if (fpoffset != 0)
     for (regno = 55; regno >= 24; regno--)
-      if (regs_ever_live[regno] && ! call_used_regs[regno])
+      if (m68k_save_reg (regno))
 	{
 	  if (big)
 	    fprintf(stream, "\tfpmoved -%d(a6,a0.l), %s\n",
@@ -777,10 +786,13 @@ m68k_output_function_epilogue (stream, size)
   else if (fsize)
     {
       if (fsize + 4 < 0x8000)
-	fprintf (stream, "\tadd.w #%d,sp\n", fsize + 4);
+	fprintf (stream, "\tadd.w $%d,sp\n", fsize + 4);
       else
-	fprintf (stream, "\tadd.l #%d,sp\n", fsize + 4);
+	fprintf (stream, "\tadd.l $%d,sp\n", fsize + 4);
     }
+
+  if (current_function_calls_eh_return)
+    fprintf (stream, "\tadd.l a0,sp\n");
 
   if (current_function_pops_args)
     fprintf (stream, "\trtd $%d\n", current_function_pops_args);
@@ -821,7 +833,7 @@ m68k_output_function_epilogue (stream, size)
   nregs = 0;  fmask = 0; fpoffset = 0;
 #ifdef SUPPORT_SUN_FPA
   for (regno = 24 ; regno < 56 ; regno++)
-    if (regs_ever_live[regno] && ! call_used_regs[regno])
+    if (m68k_save_reg (regno))
       nregs++;
   fpoffset = nregs * 8;
 #endif
@@ -829,7 +841,7 @@ m68k_output_function_epilogue (stream, size)
   if (TARGET_68881)
     {
       for (regno = 16; regno < 24; regno++)
-	if (regs_ever_live[regno] && ! call_used_regs[regno])
+	if (m68k_save_reg (regno))
 	  {
 	    nregs++;
 	    fmask |= 1 << (23 - regno);
@@ -837,19 +849,12 @@ m68k_output_function_epilogue (stream, size)
     }
   foffset = fpoffset + nregs * 12;
   nregs = 0;  mask = 0;
-  if (frame_pointer_needed)
-    regs_ever_live[FRAME_POINTER_REGNUM] = 0;
   for (regno = 0; regno < 16; regno++)
-    if (regs_ever_live[regno] && ! call_used_regs[regno])
+    if (m68k_save_reg (regno))
       {
         nregs++;
 	mask |= 1 << regno;
       }
-  if (flag_pic && current_function_uses_pic_offset_table)
-    {
-      nregs++;
-      mask |= 1 << PIC_OFFSET_TABLE_REGNUM;
-    }
   offset = foffset + nregs * 4;
   /* FIXME : leaf_function_p below is too strong.
      What we really need to know there is if there could be pending
@@ -995,7 +1000,7 @@ m68k_output_function_epilogue (stream, size)
     }
   if (fpoffset != 0)
     for (regno = 55; regno >= 24; regno--)
-      if (regs_ever_live[regno] && ! call_used_regs[regno])
+      if (m68k_save_reg (regno))
         {
 	  if (big)
 	    {
@@ -1104,6 +1109,14 @@ m68k_output_function_epilogue (stream, size)
 	  asm_fprintf (stream, "\taddl %0I%d,%Rsp\n", fsize + 4);
 #endif
 	}
+    }
+  if (current_function_calls_eh_return)
+    {
+#ifdef MOTOROLA
+      asm_fprintf (stream, "\tadd.l %Ra0,%Rsp\n");
+#else
+      asm_fprintf (stream, "\taddl %Ra0,%Rsp\n");
+#endif
     }
   if (current_function_pops_args)
     asm_fprintf (stream, "\trtd %0I%d\n", current_function_pops_args);

@@ -1,3 +1,15 @@
+2002-12-03  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.h (EH_RETURN_DATA_REGNO): Define.
+	(EH_RETURN_STACKADJ_RTX): Define.
+	(EH_RETURN_HANDLER_RTX): Define.
+	(ASM_PREFERRED_EH_DATA_FORMAT): Define.
+	* config/m68k/m68k.c (m68k_save_reg): New function.  Handle eh
+	registers and don't save fixed registers.
+	(m68k_output_function_prologue): Use it.
+	(use_return_insn): Likewise.
+	(m68k_output_function_epilogue): Likewise.
+
 2002-12-03  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.c (single_one_operand): Fix a warning.
