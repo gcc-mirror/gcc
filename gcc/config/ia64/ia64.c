@@ -1317,7 +1317,13 @@ ia64_compute_frame_size (size)
       break;
   current_frame_info.n_local_regs = regno - LOC_REG (0) + 1;
 
-  if (cfun->machine->n_varargs > 0)
+  /* For functions marked with the syscall_linkage attribute, we must mark
+     all eight input registers as in use, so that locals aren't visible to
+     the caller.  */
+
+  if (cfun->machine->n_varargs > 0
+      || lookup_attribute ("syscall_linkage",
+			   TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))))
     current_frame_info.n_input_regs = 8;
   else
     {
@@ -6040,10 +6046,10 @@ ia64_epilogue_uses (regno)
      registers are marked as live at all function exits.  This prevents the
      register allocator from using the input registers, which in turn makes it
      possible to restart a system call after an interrupt without having to
-     save/restore the input registers.  */
+     save/restore the input registers.  This also prevents kernel data from
+     leaking to application code.  */
 
   if (IN_REGNO_P (regno)
-      && (regno < IN_REG (current_function_args_info.words))
       && lookup_attribute ("syscall_linkage",
 			   TYPE_ATTRIBUTES (TREE_TYPE (current_function_decl))))
     return 1;
