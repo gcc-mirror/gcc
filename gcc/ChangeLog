@@ -1,3 +1,10 @@
+2001-03-28  Matthew Hiller  <hiller@redhat.com>
+
+	* config/mn10300/mn10300.md (cmpsi): Fix first alternative's
+	output template.
+
+	* MAINTAINERS: Added self.
+	
 2001-03-28  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (cs-tconfig.h): Depend on CONFIG_H, not GCONFIG_H.
