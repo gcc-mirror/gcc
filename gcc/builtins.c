@@ -2377,7 +2377,7 @@ expand_builtin_memcpy (arglist, target, mode, endp)
 
 	  if (endp == 2)
 	    {
-	      result = simplify_gen_binary (MINUS, GET_MODE (result),
+	      result = simplify_gen_binary (MINUS, GET_MODE (dest_addr),
 					    result, const1_rtx);
 	      result = force_operand (result, NULL_RTX);
 	    }
