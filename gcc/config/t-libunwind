@@ -1,1 +1,3 @@
-LIB2ADDEH = $(srcdir)/unwind-libunwind.c $(srcdir)/unwind-sjlj.c
+SHLIB_LC = -lunwind -lc
+LIB2ADDEH = $(srcdir)/unwind-libunwind.c $(srcdir)/unwind-sjlj.c \
+	    $(srcdir)/unwind-c.c
