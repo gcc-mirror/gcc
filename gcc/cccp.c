@@ -4950,7 +4950,7 @@ pcfinclude (buf, limit, name, op)
     /* NOTE: This works correctly even if HOST_WIDE_INT
        is narrower than a pointer.
        Do not try risky measures here to get another type to use!
-       Do not include gstddef.h or stddef.h--either one will fail!  */
+       Do not include stddef.h--it will fail!  */
     if ((HOST_WIDE_INT) cp & 3)
       cp += 4 - ((HOST_WIDE_INT) cp & 3);
     
