@@ -4191,8 +4191,7 @@ finish_struct_1 (t, warn_anon)
     {
       /* Be smarter about nested classes here.  If a type is nested,
 	 only output it if we would output the enclosing type.  */
-      if (DECL_CONTEXT (TYPE_MAIN_DECL (t))
-	  && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (TYPE_MAIN_DECL (t)))) == 't')
+      if (DECL_CLASS_SCOPE_P (TYPE_MAIN_DECL (t)))
 	DECL_IGNORED_P (TYPE_MAIN_DECL (t)) = TREE_ASM_WRITTEN (TYPE_MAIN_DECL (t));
     }
 #endif

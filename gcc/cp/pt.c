@@ -3467,8 +3467,7 @@ tsubst_friend_function (decl, args)
   if (TREE_CODE (decl) == TEMPLATE_DECL)
     DECL_USE_TEMPLATE (DECL_TEMPLATE_RESULT (new_friend)) = 0;
   
-  if (!DECL_CONTEXT (new_friend) 
-      || TREE_CODE (DECL_CONTEXT (new_friend)) == NAMESPACE_DECL)
+  if (DECL_NAMESPACE_SCOPE_P (new_friend))
     {
       if (TREE_CODE (new_friend) == TEMPLATE_DECL)
 	/* This declaration is a `primary' template.  */
@@ -4395,8 +4394,7 @@ tsubst (t, args, in_decl)
 	tree tmpl = NULL_TREE;
 	int member;
 
-	if (DECL_CONTEXT (t) != NULL_TREE
-	    && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (t))) == 't')
+	if (DECL_CLASS_SCOPE_P (t))
 	  {
 	    if (DECL_NAME (t) == constructor_name (DECL_CONTEXT (t)))
 	      member = 2;

@@ -1106,12 +1106,12 @@ struct lang_decl
    ? DECL_CLASS_CONTEXT (NODE) : DECL_CONTEXT (NODE))
 
 /* 1 iff NODE has namespace scope, including the global namespace.  */
-#define DECL_NAMESPACE_SCOPE(NODE) \
+#define DECL_NAMESPACE_SCOPE_P(NODE) \
   (DECL_CONTEXT (NODE) == NULL_TREE \
    || TREE_CODE (DECL_CONTEXT (NODE)) == NAMESPACE_DECL)
 
 /* 1 iff NODE is a class member.  */
-#define DECL_CLASS_SCOPE(NODE) \
+#define DECL_CLASS_SCOPE_P(NODE) \
   (DECL_CONTEXT (NODE) \
    && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (NODE))) == 't')
 

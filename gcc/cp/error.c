@@ -658,9 +658,7 @@ dump_simple_decl (t, type, v)
       OB_PUTC (' ');
       dump_readonly_or_volatile (t, after);
     }
-  /* DECL_CLASS_CONTEXT isn't being set in some cases.  Hmm...  */
-  if (DECL_CONTEXT (t)
-      && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (t))) == 't')
+  if (DECL_CLASS_SCOPE_P (t))
     {
       dump_type (DECL_CONTEXT (t), 0);
       OB_PUTC2 (':', ':');
@@ -1748,8 +1746,7 @@ lang_decl_name (decl, v)
 
   OB_INIT ();
 
-  if (v == 1 && DECL_CONTEXT (decl)
-      && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (decl))) == 't')
+  if (v == 1 && DECL_CLASS_SCOPE_P (decl))
     {
       tree cname;
       if (TREE_CODE (decl) == FUNCTION_DECL)

@@ -1,3 +1,15 @@
+Tue May 12 21:37:49 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* error.c (dump_simple_decl): Use DECL_CLASS_SCOPE_P and/or
+	DECL_NAMESPACE_SCOPE_P.
+	(lang_decl_name): Likewise.
+	* pt.c (tsubst_friend_function, tsubst): Likewise.
+	* decl.c (pushdecl, redeclaration_error_message, start_decl, 
+	cp_finish_decl, start_function): Likewise.
+	* class.c (finish_struct_1): Likewise.
+	* call.c (build_over_call): Likewise.
+	(compare_ics): Use DERIVED_FROM_P.
+
 Tue May 12 07:24:18 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* cp-tree.h (CANONICAL_TYPE_VARIANT): New macro.
@@ -11,11 +23,7 @@ Mon May 11 11:38:07 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* ptree.c (lang_print_xnode): Add missing `break'.
 
-Mon May 11 10:09:16 1998  Mark Mitchell  <mmitchell@usa.net>
-
 	* pt.c (tsubst): Remove duplicate check for IDENTIFIER_NODE.
-
-Mon May 11 07:16:30 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* call.c (add_template_candidate): Adjust for changes to
 	fn_type_unification. 
@@ -68,8 +76,6 @@ Mon May 11 07:16:30 1998  Mark Mitchell  <mmitchell@usa.net>
 	* parse.h: Regenerated.
 	* parse.c: Really regenerated.
 	
-Mon May 11 00:03:34 1998  Mark Mitchell  <mmitchell@usa.net>
-
 	* cp-tree.h (finish_unary_op_expr): New function.
 	(finish_id_expr): Likewise.
 	(begin_new_placement): Likewise.
@@ -108,8 +114,8 @@ Sun May 10 23:43:13 1998  Mark Mitchell  <mmitchell@usa.net>
 
 Sun May 10 22:53:56 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
-	* cp-tree.h (DECL_NAMESPACE_SCOPE): New macro.
-	(DECL_CLASS_SCOPE): Likewise.
+	* cp-tree.h (DECL_NAMESPACE_SCOPE_P): New macro.
+	(DECL_CLASS_SCOPE_P): Likewise.
 
 Sun May 10 22:48:22 1998  H.J. Lu  (hjl@gnu.org)
 
