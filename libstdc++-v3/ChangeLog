@@ -1,3 +1,8 @@
+2004-03-16  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/22_locale/num_put/put/char/4.cc: Fix for 64-bit pointers.
+	* testsuite/22_locale/num_put/put/wchar_t/4.cc: Likewise.
+	
 2004-03-15  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (money_get<>::_M_extract):
