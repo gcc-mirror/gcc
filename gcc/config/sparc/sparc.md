@@ -1028,50 +1028,52 @@
   [(set_attr "type" "store")
    (set_attr "length" "2")])
 
+;; ??? We get better code without it.  See output_block_move in sparc.c.
+
 ;; The definition of this insn does not really explain what it does,
 ;; but it should suffice
 ;; that anything generated as this insn will be recognized as one
 ;; and that it will not successfully combine with anything.
-(define_expand "movstrsi"
-  [(parallel [(set (mem:BLK (match_operand:BLK 0 "general_operand" ""))
-		   (mem:BLK (match_operand:BLK 1 "general_operand" "")))
-	      (use (match_operand:SI 2 "nonmemory_operand" ""))
-	      (use (match_operand:SI 3 "immediate_operand" ""))
-	      (clobber (match_dup 0))
-	      (clobber (match_dup 1))
-	      (clobber (match_scratch:SI 4 ""))
-	      (clobber (reg:SI 0))
-	      (clobber (reg:SI 1))])]
-  ""
-  "
-{
-  /* If the size isn't known, don't emit inline code.  output_block_move
-     would output code that's much slower than the library function.
-     Also don't output code for large blocks.  */
-  if (GET_CODE (operands[2]) != CONST_INT
-      || GET_CODE (operands[3]) != CONST_INT
-      || INTVAL (operands[2]) / INTVAL (operands[3]) > 16)
-    FAIL;
+;(define_expand "movstrsi"
+;  [(parallel [(set (mem:BLK (match_operand:BLK 0 "general_operand" ""))
+;		   (mem:BLK (match_operand:BLK 1 "general_operand" "")))
+;	      (use (match_operand:SI 2 "nonmemory_operand" ""))
+;	      (use (match_operand:SI 3 "immediate_operand" ""))
+;	      (clobber (match_dup 0))
+;	      (clobber (match_dup 1))
+;	      (clobber (match_scratch:SI 4 ""))
+;	      (clobber (reg:SI 0))
+;	      (clobber (reg:SI 1))])]
+;  ""
+;  "
+;{
+;  /* If the size isn't known, don't emit inline code.  output_block_move
+;     would output code that's much slower than the library function.
+;     Also don't output code for large blocks.  */
+;  if (GET_CODE (operands[2]) != CONST_INT
+;      || GET_CODE (operands[3]) != CONST_INT
+;      || INTVAL (operands[2]) / INTVAL (operands[3]) > 16)
+;    FAIL;
+;
+;  operands[0] = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
+;  operands[1] = copy_to_mode_reg (Pmode, XEXP (operands[1], 0));
+;  operands[2] = force_not_mem (operands[2]);
+;}")
 
-  operands[0] = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
-  operands[1] = copy_to_mode_reg (Pmode, XEXP (operands[1], 0));
-  operands[2] = force_not_mem (operands[2]);
-}")
-
-(define_insn ""
-  [(set (mem:BLK (match_operand:SI 0 "register_operand" "+r"))
-	(mem:BLK (match_operand:SI 1 "register_operand" "+r")))
-   (use (match_operand:SI 2 "nonmemory_operand" "rn"))
-   (use (match_operand:SI 3 "immediate_operand" "i"))
-   (clobber (match_dup 0))
-   (clobber (match_dup 1))
-   (clobber (match_scratch:SI 4 "=&r"))
-   (clobber (reg:SI 0))
-   (clobber (reg:SI 1))]
-  ""
-  "* return output_block_move (operands);"
-  [(set_attr "type" "multi")
-   (set_attr "length" "6")])
+;(define_insn ""
+;  [(set (mem:BLK (match_operand:SI 0 "register_operand" "+r"))
+;	(mem:BLK (match_operand:SI 1 "register_operand" "+r")))
+;   (use (match_operand:SI 2 "nonmemory_operand" "rn"))
+;   (use (match_operand:SI 3 "immediate_operand" "i"))
+;   (clobber (match_dup 0))
+;   (clobber (match_dup 1))
+;   (clobber (match_scratch:SI 4 "=&r"))
+;   (clobber (reg:SI 0))
+;   (clobber (reg:SI 1))]
+;  ""
+;  "* return output_block_move (operands);"
+;  [(set_attr "type" "multi")
+;   (set_attr "length" "6")])
 
 ;; Floating point move insns
 
