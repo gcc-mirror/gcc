@@ -1071,9 +1071,16 @@ reload (first, global)
 	  for (list = reg_equiv_init[i]; list; list = XEXP (list, 1))
 	    {
 	      rtx equiv_insn = XEXP (list, 0);
-	      if (GET_CODE (equiv_insn) == NOTE)
-		continue;
-	      if (reg_set_p (regno_reg_rtx[i], PATTERN (equiv_insn)))
+
+	      /* If we already deleted the insn or if it may trap, we can't
+		 delete it.  The latter case shouldn't happen, but can
+		 if an insn has a variable address, gets a REG_EH_REGION
+		 note added to it, and then gets converted into an load
+		 from a constant address.  */
+	      if (GET_CODE (equiv_insn) == NOTE
+		  || can_throw_internal (equiv_insn))
+		;
+	      else if (reg_set_p (regno_reg_rtx[i], PATTERN (equiv_insn)))
 		delete_dead_insn (equiv_insn);
 	      else
 		{

@@ -1,5 +1,7 @@
 Thu Nov  8 18:00:55 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* reload1.c (reload): Don't delete equiv insn if can throw.
+
 	* expr.c (emit_block_move): If X is readonly emit CLOBBER for it.
 	(clear_storage): Likewise, for OBJECT.
 
