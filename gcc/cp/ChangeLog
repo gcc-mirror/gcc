@@ -1,3 +1,8 @@
+2001-02-16  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* decl.c (check_tag_decl): Make sure a typedef for an anonymous
+	class-type introduces at least a type-name.
+
 2001-02-16  Jason Merrill  <jason@redhat.com>
 
 	* optimize.c (remap_block): If we're compiling a clone, pass the

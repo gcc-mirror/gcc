@@ -6846,6 +6846,7 @@ check_tag_decl (declspecs)
 {
   int found_type = 0;
   int saw_friend = 0;
+  int saw_typedef = 0;
   tree ob_modifier = NULL_TREE;
   register tree link;
   register tree t = NULL_TREE;
@@ -6877,6 +6878,8 @@ check_tag_decl (declspecs)
 	      t = value;
 	    }
 	}
+      else if (value == ridpointers[(int) RID_TYPEDEF])
+        saw_typedef = 1;
       else if (value == ridpointers[(int) RID_FRIEND])
 	{
 	  if (current_class_type == NULL_TREE
@@ -6910,6 +6913,27 @@ check_tag_decl (declspecs)
 	   && TYPE_NAME (t)
 	   && ANON_AGGRNAME_P (TYPE_IDENTIFIER (t)))
     {
+      /* 7/3 In a simple-declaration, the optional init-declarator-list
+         can be omitted only when declaring a class (clause 9) or
+         enumeration (7.2), that is, when the decl-specifier-seq contains
+         either a class-specifier, an elaborated-type-specifier with
+         a class-key (9.1), or an enum-specifier.  In these cases and
+         whenever a class-specifier or enum-specifier is present in the
+         decl-specifier-seq, the identifiers in these specifiers are among
+         the names being declared by the declaration (as class-name,
+         enum-names, or enumerators, depending on the syntax).  In such
+         cases, and except for the declaration of an unnamed bit-field (9.6),
+         the decl-specifier-seq shall introduce one or more names into the
+         program, or shall redeclare a name introduced by a previous
+         declaration.  [Example:
+             enum { };            // ill-formed
+             typedef class { };   // ill-formed
+         --end example]  */
+      if (saw_typedef)
+        {
+          error ("Missing type-name in typedef-declaration.");
+          return NULL_TREE;
+        }
       /* Anonymous unions are objects, so they can have specifiers.  */;
       SET_ANON_AGGR_TYPE_P (t);
 
