@@ -191,22 +191,180 @@ next_fde (fde *p)
   return (fde *)(((char *)p) + p->length + sizeof (p->length));
 }
 
-/* One iteration of an insertion sort, for adding new FDEs to the array.
-   Usually the new FDE will go in at the end, so we can expect close to
-   O(n) performance.  If this turns out to be overly optimistic, we can have
-   the linker sort the FDEs so we don't have to do it at run time.  */
+/* Sorting an array of FDEs by address.
+   (Ideally we would have the linker sort the FDEs so we don't have to do
+   it at run time. But the linkers are not yet prepared for this.)  */
 
-static void
-fde_insert (fde **array, size_t i, fde *this_fde)
+/* This is a special mix of insertion sort and heap sort, optimized for
+   the data sets that actually occur. They look like
+   101 102 103 127 128 105 108 110 190 111 115 119 125 160 126 129 130.
+   I.e. a linearly increasing sequence (coming from functions in the text
+   section), with additionally a few unordered elements (coming from functions
+   in gnu_linkonce sections) whose values are higher than the values in the
+   surrounding linear sequence (but not necessarily higher than the values
+   at the end of the linear sequence!).
+   The worst-case total run time is O(N) + O(n log (n)), where N is the
+   total number of FDEs and n is the number of erratic ones.  */
+
+typedef struct fde_vector
 {
-  array[i] = this_fde;
+  fde **array;
+  size_t count;
+} fde_vector;
 
-  for (; i > 0 && fde_compare (array[i], array[i-1]) < 0; --i)
+typedef struct fde_accumulator
+{
+  fde_vector linear;
+  fde_vector erratic;
+} fde_accumulator;
+
+static inline void
+start_fde_sort (fde_accumulator *accu, size_t count)
+{
+  accu->linear.array = (fde **) malloc (sizeof (fde *) * count);
+  accu->erratic.array = (fde **) malloc (sizeof (fde *) * count);
+  accu->linear.count = 0;
+  accu->erratic.count = 0;
+}
+
+static inline void
+fde_insert (fde_accumulator *accu, fde *this_fde)
+{
+  accu->linear.array[accu->linear.count++] = this_fde;
+}
+
+/* Split LINEAR into a linear sequence with low values and an erratic
+   sequence with high values, put the linear one (of longest possible
+   length) into LINEAR and the erratic one into ERRATIC. This is O(N).  */
+static inline void
+fde_split (fde_vector *linear, fde_vector *erratic)
+{
+  size_t count = linear->count;
+  size_t linear_max = (size_t) -1;
+  size_t previous_max[count];
+  size_t i, j;
+
+  for (i = 0; i < count; i++)
     {
-      this_fde = array[i];
-      array[i] = array[i-1];
-      array[i-1] = this_fde;
+      for (j = linear_max;
+           j != (size_t) -1
+           && fde_compare (linear->array[i], linear->array[j]) < 0;
+           j = previous_max[j])
+        {
+          erratic->array[erratic->count++] = linear->array[j];
+          linear->array[j] = (fde *) NULL;
+        }
+      previous_max[i] = j;
+      linear_max = i;
     }
+
+  for (i = 0, j = 0; i < count; i++)
+    if (linear->array[i] != (fde *) NULL)
+      linear->array[j++] = linear->array[i];
+  linear->count = j;
+}
+
+/* This is O(n log(n)). */
+static inline void
+heapsort (fde_vector *erratic)
+{
+  /* For a description of this algorithm, see:
+     Samuel P. Harbison, Guy L. Steele Jr.: C, a reference manual, 2nd ed.,
+     p. 60-61. */
+  fde ** a = erratic->array;
+  /* A portion of the array is called a "heap" if for all i>=0:
+     If i and 2i+1 are valid indices, then a[i] >= a[2i+1].
+     If i and 2i+2 are valid indices, then a[i] >= a[2i+2]. */
+#define SWAP(x,y) do { fde * tmp = x; x = y; y = tmp; } while (0)
+  size_t n = erratic->count;
+  size_t m = n;
+  size_t i;
+
+  while (m > 0)
+    {
+      /* Invariant: a[m..n-1] is a heap. */
+      m--;
+      for (i = m; 2*i+1 < n; )
+        {
+          if (2*i+2 < n
+              && fde_compare (a[2*i+2], a[2*i+1]) > 0
+              && fde_compare (a[2*i+2], a[i]) > 0)
+            {
+              SWAP (a[i], a[2*i+2]);
+              i = 2*i+2;
+            }
+          else if (fde_compare (a[2*i+1], a[i]) > 0)
+            {
+              SWAP (a[i], a[2*i+1]);
+              i = 2*i+1;
+            }
+          else
+            break;
+        }
+    }
+  while (n > 1)
+    {
+      /* Invariant: a[0..n-1] is a heap. */
+      n--;
+      SWAP (a[0], a[n]);
+      for (i = 0; 2*i+1 < n; )
+        {
+          if (2*i+2 < n
+              && fde_compare (a[2*i+2], a[2*i+1]) > 0
+              && fde_compare (a[2*i+2], a[i]) > 0)
+            {
+              SWAP (a[i], a[2*i+2]);
+              i = 2*i+2;
+            }
+          else if (fde_compare (a[2*i+1], a[i]) > 0)
+            {
+              SWAP (a[i], a[2*i+1]);
+              i = 2*i+1;
+            }
+          else
+            break;
+        }
+    }
+#undef SWAP
+}
+
+/* Merge V1 and V2, both sorted, and put the result into V1. */
+static void
+fde_merge (fde_vector *v1, const fde_vector *v2)
+{
+  size_t i1, i2;
+  fde * fde2;
+
+  i2 = v2->count;
+  if (i2 > 0)
+    {
+      i1 = v1->count;
+      do {
+        i2--;
+        fde2 = v2->array[i2];
+        while (i1 > 0 && fde_compare (v1->array[i1-1], fde2) > 0)
+          {
+            v1->array[i1+i2] = v1->array[i1-1];
+            i1--;
+          }
+        v1->array[i1+i2] = fde2;
+      } while (i2 > 0);
+      v1->count += v2->count;
+    }
+}
+
+static fde **
+end_fde_sort (fde_accumulator *accu, size_t count)
+{
+  if (accu->linear.count != count)
+    abort ();
+  fde_split (&accu->linear, &accu->erratic);
+  if (accu->linear.count + accu->erratic.count != count)
+    abort ();
+  heapsort (&accu->erratic);
+  fde_merge (&accu->linear, &accu->erratic);
+  free (accu->erratic.array);
+  return accu->linear.array;
 }
 
 static size_t
@@ -227,10 +385,8 @@ count_fdes (fde *this_fde)
 }
 
 static void
-add_fdes (fde *this_fde, fde **array, size_t *i_ptr,
-	  void **beg_ptr, void **end_ptr)
+add_fdes (fde *this_fde, fde_accumulator *accu, void **beg_ptr, void **end_ptr)
 {
-  size_t i = *i_ptr;
   void *pc_begin = *beg_ptr;
   void *pc_end = *end_ptr;
 
@@ -240,7 +396,7 @@ add_fdes (fde *this_fde, fde **array, size_t *i_ptr,
       if (this_fde->CIE_delta == 0 || this_fde->pc_begin == 0)
 	continue;
 
-      fde_insert (array, i++, this_fde);
+      fde_insert (accu, this_fde);
 
       if (this_fde->pc_begin < pc_begin)
 	pc_begin = this_fde->pc_begin;
@@ -248,7 +404,6 @@ add_fdes (fde *this_fde, fde **array, size_t *i_ptr,
 	pc_end = this_fde->pc_begin + this_fde->pc_range;
     }
 
-  *i_ptr = i;
   *beg_ptr = pc_begin;
   *end_ptr = pc_end;
 }
@@ -260,9 +415,8 @@ add_fdes (fde *this_fde, fde **array, size_t *i_ptr,
 static void
 frame_init (struct object* ob)
 {
-  fde *this_fde;
   size_t count;
-  fde **array;
+  fde_accumulator accu;
   void *pc_begin, *pc_end;
 
   if (ob->fde_array)
@@ -275,22 +429,21 @@ frame_init (struct object* ob)
     count = count_fdes (ob->fde_begin);
 
   ob->count = count;
-  array = (fde **) malloc (sizeof (fde *) * count);
 
+  start_fde_sort (&accu, count);
   pc_begin = (void*)(uaddr)-1;
   pc_end = 0;
-  count = 0;
 
   if (ob->fde_array)
     {
       fde **p = ob->fde_array;
       for (; *p; ++p)
-	add_fdes (*p, array, &count, &pc_begin, &pc_end);
+	add_fdes (*p, &accu, &pc_begin, &pc_end);
     }
   else
-    add_fdes (ob->fde_begin, array, &count, &pc_begin, &pc_end);
+    add_fdes (ob->fde_begin, &accu, &pc_begin, &pc_end);
 
-  ob->fde_array = array;
+  ob->fde_array = end_fde_sort (&accu, count);
   ob->pc_begin = pc_begin;
   ob->pc_end = pc_end;
 }

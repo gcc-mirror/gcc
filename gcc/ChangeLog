@@ -1,3 +1,11 @@
+Sun Feb 22 16:23:46 1998  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
+
+	* frame.c (start_fde_sort, fde_split, heapsort, fde_merge,
+	end_fde_sort): New functions for fast sorting of an FDE array.
+	(fde_insert): Simplified.
+	(add_fdes): Change argument list.
+	(frame_init): Use the new functions.
+
 Sun Mar  1 18:06:21 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* i386.c (reg_mentioned_in_mem): Fix dangling else statement.
