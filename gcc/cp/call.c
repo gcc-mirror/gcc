@@ -87,7 +87,7 @@ static tree reference_binding PARAMS ((tree, tree, tree, int));
 static tree non_reference PARAMS ((tree));
 static tree build_conv PARAMS ((enum tree_code, tree, tree));
 static int is_subseq PARAMS ((tree, tree));
-static int maybe_handle_ref_bind PARAMS ((tree*, tree*));
+static tree maybe_handle_ref_bind PARAMS ((tree*));
 static void maybe_handle_implicit_object PARAMS ((tree*));
 static struct z_candidate * add_candidate PARAMS ((struct z_candidate *,
 						   tree, tree, int));
@@ -638,6 +638,9 @@ build_conv (code, type, from)
   return t;
 }
 
+/* If T is a REFERENCE_TYPE return the type to which T refers.
+   Otherwise, return T itself.  */
+
 static tree
 non_reference (t)
      tree t;
@@ -998,8 +1001,7 @@ convert_class_to_reference (t, s, expr)
     return NULL_TREE;
 
   conv = build1 (IDENTITY_CONV, s, expr);
-  conv = build_conv (USER_CONV,
-		     non_reference (TREE_TYPE (TREE_TYPE (cand->fn))),
+  conv = build_conv (USER_CONV, TREE_TYPE (TREE_TYPE (cand->fn)),
 		     conv);
   TREE_OPERAND (conv, 1) = build_ptr_wrapper (cand);
   ICS_USER_FLAG (conv) = 1;
@@ -4757,23 +4759,22 @@ maybe_handle_implicit_object (ics)
     }
 }
 
-/* If ICS is a REF_BIND, modify it appropriately, set TARGET_TYPE
-   to the type the reference originally referred to, and return 1.
-   Otherwise, return 0.  */
+/* If *ICS is a REF_BIND set *ICS to the remainder of the conversion,
+   and return the type to which the reference refers.  Otherwise,
+   leave *ICS unchanged and return NULL_TREE.  */
 
-static int
-maybe_handle_ref_bind (ics, target_type)
+static tree
+maybe_handle_ref_bind (ics)
      tree* ics;
-     tree* target_type;
 {
   if (TREE_CODE (*ics) == REF_BIND)
     {
-      *target_type = TREE_TYPE (TREE_TYPE (*ics));
+      tree type = TREE_TYPE (TREE_TYPE (*ics));
       *ics = TREE_OPERAND (*ics, 0);
-      return 1;
+      return type;
     }
-  
-  return 0;
+
+  return NULL_TREE;
 }
 
 /* Compare two implicit conversion sequences according to the rules set out in
@@ -4800,8 +4801,6 @@ compare_ics (ics1, ics2)
   /* REF_BINDING is non-zero if the result of the conversion sequence
      is a reference type.   In that case TARGET_TYPE is the
      type referred to by the reference.  */
-  int ref_binding1;
-  int ref_binding2;
   tree target_type1;
   tree target_type2;
 
@@ -4810,8 +4809,8 @@ compare_ics (ics1, ics2)
   maybe_handle_implicit_object (&ics2);
 
   /* Handle reference parameters.  */
-  ref_binding1 = maybe_handle_ref_bind (&ics1, &target_type1);
-  ref_binding2 = maybe_handle_ref_bind (&ics2, &target_type2);
+  target_type1 = maybe_handle_ref_bind (&ics1);
+  target_type2 = maybe_handle_ref_bind (&ics2);
 
   /* [over.ics.rank]
 
@@ -5050,9 +5049,11 @@ compare_ics (ics1, ics2)
 	    }
 	}
     }
-  else if (IS_AGGR_TYPE_CODE (TREE_CODE (from_type1))
+  else if (CLASS_TYPE_P (non_reference (from_type1))
 	   && same_type_p (from_type1, from_type2))
     {
+      tree from = non_reference (from_type1);
+
       /* [over.ics.rank]
 	 
 	 --binding of an expression of type C to a reference of type
@@ -5060,8 +5061,8 @@ compare_ics (ics1, ics2)
 	   reference of type A&
 
 	 --conversion of C to B is better than conversion of C to A,  */
-      if (is_properly_derived_from (from_type1, to_type1)
-	  && is_properly_derived_from (from_type1, to_type2))
+      if (is_properly_derived_from (from, to_type1)
+	  && is_properly_derived_from (from, to_type2))
 	{
 	  if (is_properly_derived_from (to_type1, to_type2))
 	    return 1;
@@ -5069,9 +5070,11 @@ compare_ics (ics1, ics2)
 	    return -1;
 	}
     }
-  else if (IS_AGGR_TYPE_CODE (TREE_CODE (to_type1))
+  else if (CLASS_TYPE_P (non_reference (to_type1))
 	   && same_type_p (to_type1, to_type2))
     {
+      tree to = non_reference (to_type1);
+
       /* [over.ics.rank]
 
 	 --binding of an expression of type B to a reference of type
@@ -5079,8 +5082,8 @@ compare_ics (ics1, ics2)
 	   reference of type A&, 
 
 	 --onversion of B to A is better than conversion of C to A  */
-      if (is_properly_derived_from (from_type1, to_type1)
-	  && is_properly_derived_from (from_type2, to_type1))
+      if (is_properly_derived_from (from_type1, to)
+	  && is_properly_derived_from (from_type2, to))
 	{
 	  if (is_properly_derived_from (from_type2, from_type1))
 	    return 1;
@@ -5108,7 +5111,7 @@ compare_ics (ics1, ics2)
      initialized by S2 refers is more cv-qualified than the type to
      which the reference initialized by S1 refers */
       
-  if (ref_binding1 && ref_binding2
+  if (target_type1 && target_type2
       && same_type_ignoring_top_level_qualifiers_p (to_type1, to_type2))
     return comp_cv_qualification (target_type2, target_type1);
 

@@ -1,3 +1,12 @@
+2001-11-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/3637
+	* call.c (non_reference): Add documentation.
+	(convert_class_to_reference): Do not strip reference types 
+	from conversion operators.
+	(maybe_handle_ref_bind): Simplify.
+	(compare_ics): Correct handling of references.
+
 2001-11-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp/decl2.c (grok_alignof): Make sure that expression created
