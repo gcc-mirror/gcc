@@ -1,3 +1,8 @@
+2004-07-21  David S. Miller  <davem@nuts.davemloft.net>
+
+	* config/sparc/sparc.c (sparc_rtx_costs): Fix typo in previous
+	commit.
+
 2004-07-21  Eric Christopher  <echristo@redhat.com>
 
 	* builtins.c (expand_builtin_setjmp_receiver): Fix comment for code
