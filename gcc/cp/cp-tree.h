@@ -3786,6 +3786,7 @@ extern tree build_expr_type_conversion		PARAMS ((int, tree, int));
 extern tree type_promotes_to			PARAMS ((tree));
 extern tree perform_qualification_conversions   PARAMS ((tree, tree));
 extern void clone_function_decl                 PARAMS ((tree, int));
+extern void adjust_clone_args			PARAMS ((tree));
 
 /* decl.c */
 /* resume_binding_level */

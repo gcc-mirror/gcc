@@ -1,3 +1,9 @@
+2001-04-27  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (adjust_clone_args): Prototype new function.
+	* class.c (adjust_clone_args): New function.
+	* decl.c (start_function): Call it for in charge ctors.
+
 2001-04-26  Mark Mitchell  <mark@codesourcery.com>
 
 	* method.c (use_thunk): Make sure that thunks really are emitted

@@ -4408,6 +4408,80 @@ clone_function_decl (fn, update_method_vec_p)
   DECL_ABSTRACT (fn) = 1;
 }
 
+/* DECL is an in charge constructor, which is being defined. This will
+   have had an in class declaration, from whence clones were
+   declared. An out-of-class definition can specify additional default
+   arguments. As it is the clones that are involved in overload
+   resolution, we must propagate the information from the DECL to its
+   clones. */
+
+void
+adjust_clone_args (decl)
+     tree decl;
+{
+  tree clone;
+  
+  for (clone = TREE_CHAIN (decl); clone && DECL_CLONED_FUNCTION (clone);
+       clone = TREE_CHAIN (clone))
+    {
+      tree orig_clone_parms = TYPE_ARG_TYPES (TREE_TYPE (clone));
+      tree orig_decl_parms = TYPE_ARG_TYPES (TREE_TYPE (decl));
+      tree decl_parms, clone_parms;
+
+      clone_parms = orig_clone_parms;
+      
+      /* Skip the 'this' parameter. */
+      orig_clone_parms = TREE_CHAIN (orig_clone_parms);
+      orig_decl_parms = TREE_CHAIN (orig_decl_parms);
+
+      if (DECL_HAS_IN_CHARGE_PARM_P (decl))
+	orig_decl_parms = TREE_CHAIN (orig_decl_parms);
+      if (DECL_HAS_VTT_PARM_P (decl))
+	orig_decl_parms = TREE_CHAIN (orig_decl_parms);
+      
+      clone_parms = orig_clone_parms;
+      if (DECL_HAS_VTT_PARM_P (clone))
+	clone_parms = TREE_CHAIN (clone_parms);
+      
+      for (decl_parms = orig_decl_parms; decl_parms;
+	   decl_parms = TREE_CHAIN (decl_parms),
+	     clone_parms = TREE_CHAIN (clone_parms))
+	{
+	  my_friendly_assert (same_type_p (TREE_TYPE (decl_parms),
+					   TREE_TYPE (clone_parms)), 20010424);
+	  
+	  if (TREE_PURPOSE (decl_parms) && !TREE_PURPOSE (clone_parms))
+	    {
+	      /* A default parameter has been added. Adjust the
+		 clone's parameters. */
+	      tree exceptions = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (clone));
+	      tree basetype = TYPE_METHOD_BASETYPE (TREE_TYPE (clone));
+	      tree type;
+
+	      clone_parms = orig_decl_parms;
+
+	      if (DECL_HAS_VTT_PARM_P (clone))
+		{
+		  clone_parms = tree_cons (TREE_PURPOSE (orig_clone_parms),
+					   TREE_VALUE (orig_clone_parms),
+					   clone_parms);
+		  TREE_TYPE (clone_parms) = TREE_TYPE (orig_clone_parms);
+		}
+	      type = build_cplus_method_type (basetype,
+					      TREE_TYPE (TREE_TYPE (clone)),
+					      clone_parms);
+	      if (exceptions)
+		type = build_exception_variant (type, exceptions);
+	      TREE_TYPE (clone) = type;
+	      
+	      clone_parms = NULL_TREE;
+	      break;
+	    }
+	}
+      my_friendly_assert (!clone_parms, 20010424);
+    }
+}
+
 /* For each of the constructors and destructors in T, create an
    in-charge and not-in-charge variant.  */
 

@@ -13325,6 +13325,12 @@ start_function (declspecs, declarator, attrs, flags)
 	}
     }
 
+  if (DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl1))
+    /* This is a constructor, we must ensure that any default args
+       introduced by this definition are propagated to the clones
+       now. The clones are used directly in overload resolution.  */
+    adjust_clone_args (decl1);
+
   /* Sometimes we don't notice that a function is a static member, and
      build a METHOD_TYPE for it.  Fix that up now.  */
   if (ctype != NULL_TREE && DECL_STATIC_FUNCTION_P (decl1)
