@@ -1,3 +1,9 @@
+2000-11-04  Tom Tromey  <tromey@cygnus.com>
+
+	* lex.c (java_parse_escape_sequence): Only read two octal
+	characters if the first one is greater than 3.  Don't allow
+	"octal" numbers to include the digits 8 or 9.
+
 2000-11-05  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* Make-lang.in (java.distdir): Remove.
