@@ -1,3 +1,10 @@
+2004-02-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/13866
+	* arm.c (load_multiple_operation): Don't insist that the source reg
+	of a post-increment component is the same as the destination.
+	(store_multiple_operation): Likewise.
+
 2004-02-18  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md: Move movsf patterns into one section
