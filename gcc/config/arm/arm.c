@@ -1767,7 +1767,7 @@ current_file_function_operand (sym_ref)
   if (ENCODED_SHORT_CALL_ATTR_P (XSTR (sym_ref, 0)))
     return 1;
 
-  /* The current funciton is always defined within the current compilation
+  /* The current function is always defined within the current compilation
      unit.  if it s a weak defintion however, then this may not be the real
      defintion of the function, and so we have to say no.  */
   if (sym_ref == XEXP (DECL_RTL (current_function_decl), 0)
@@ -9026,7 +9026,7 @@ output_thumb_prologue (f)
       
       /* Generate code sequence to switch us into Thumb mode.  */
       /* The .code 32 directive has already been emitted by
-	 ASM_DECLARE_FUNCITON_NAME */
+	 ASM_DECLARE_FUNCTION_NAME.  */
       asm_fprintf (f, "\torr\t%r, %r, #1\n", IP_REGNUM, PC_REGNUM);
       asm_fprintf (f, "\tbx\t%r\n", IP_REGNUM);
 
