@@ -1,3 +1,7 @@
+2003-07-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.dg/20021018-1.c: Disable if the sizeof (int) < 4.
+
 2003-07-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9411
