@@ -58,8 +58,8 @@
       integer lenstr
       logical l
       character gerr*80, c*1
-      character ctim*25, line*80, lognam*20, wd*100, line2*80, ddate*8,
-     +     ttime*10, zone*5, ctim2*25
+      character ctim*25, line*80, lognam*20, wd*1000, line2*80,
+     +     ddate*8, ttime*10, zone*5, ctim2*25
       integer fstatb (13), statb (13)
       integer *2 i2zero
       integer values(8)
