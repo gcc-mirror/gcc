@@ -2359,14 +2359,6 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
     case TRUNC_DIV_EXPR:
       if (log >= 0 && ! unsignedp)
 	{
-	  if (! can_clobber_op0)
-	    {
-	      adjusted_op0 = copy_to_suggested_reg (adjusted_op0, target,
-						    compute_mode);
-	      /* Copy op0 to a reg, since emit_cmp_insn will call emit_queue
-		 which will screw up mem refs for autoincrements.  */
-	      op0 = force_reg (compute_mode, op0);
-	    }
 	  /* Here we need to add OP1-1 if OP0 is negative, 0 otherwise.
 	     This can be computed without jumps by arithmetically shifting
 	     OP0 right LOG-1 places and then shifting right logically
@@ -2375,17 +2367,33 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	  if (log == 1 || BRANCH_COST >= 3)
 	    {
 	      rtx temp = gen_reg_rtx (compute_mode);
+	      if (! can_clobber_op0)
+		/* Copy op0 to a reg, to play safe,
+		   since this is done in the other path.  */
+		op0 = force_reg (compute_mode, op0);
 	      temp = copy_to_suggested_reg (adjusted_op0, temp, compute_mode);
 	      temp = expand_shift (RSHIFT_EXPR, compute_mode, temp,
 				   build_int_2 (log - 1, 0), NULL_RTX, 0);
 	      temp = expand_shift (RSHIFT_EXPR, compute_mode, temp,
 				   build_int_2 (size - log, 0),
 				   temp, 1);
-	      expand_inc (adjusted_op0, temp);
+	      /* We supply 0 as the target to make a new pseudo
+		 for the value; that helps loop.c optimize the result.  */
+	      adjusted_op0 = expand_binop (compute_mode, add_optab,
+					   adjusted_op0, temp,
+					   0, 0, OPTAB_LIB_WIDEN);
 	    }
 	  else
 	    {
 	      rtx label = gen_label_rtx ();
+	      if (! can_clobber_op0)
+		{
+		  adjusted_op0 = copy_to_suggested_reg (adjusted_op0, target,
+							compute_mode);
+		  /* Copy op0 to a reg, since emit_cmp_insn will call emit_queue
+		     which will screw up mem refs for autoincrements.  */
+		  op0 = force_reg (compute_mode, op0);
+		}
 	      emit_cmp_insn (adjusted_op0, const0_rtx, GE, 
 			     NULL_RTX, compute_mode, 0, 0);
 	      emit_jump_insn (gen_bge (label));
