@@ -1246,17 +1246,31 @@ mmix_expand_builtin_va_arg (valist, type)
      tree valist;
      tree type;
 {
-  tree addr_tree, t;
-  HOST_WIDE_INT align;
-  HOST_WIDE_INT rounded_size;
+  tree ptr_size = size_int (BITS_PER_WORD / BITS_PER_UNIT);
+  tree addr_tree, type_size = NULL;
+  tree align, alignm1;
+  tree rounded_size;
   rtx addr;
 
   /* Compute the rounded size of the type.  */
-  align = PARM_BOUNDARY / BITS_PER_UNIT;
-  rounded_size = (((int_size_in_bytes (type) + align - 1) / align) * align);
 
   /* Get AP.  */
   addr_tree = valist;
+  align = size_int (PARM_BOUNDARY / BITS_PER_UNIT);
+  alignm1 = size_int (PARM_BOUNDARY / BITS_PER_UNIT - 1);
+  if (type == error_mark_node
+      || (type_size = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type))) == NULL
+      || TREE_OVERFLOW (type_size))
+    /* Presumable an error; the size isn't computable.  A message has
+       supposedly been emitted elsewhere.  */
+    rounded_size = size_zero_node;
+  else
+    rounded_size = fold (build (MULT_EXPR, sizetype,
+				fold (build (TRUNC_DIV_EXPR, sizetype,
+					     fold (build (PLUS_EXPR, sizetype,
+							  type_size, alignm1)),
+					     align)),
+				align));
 
  if (AGGREGATE_TYPE_P (type)
      && GET_MODE_UNIT_SIZE (TYPE_MODE (type)) < 8
@@ -1271,38 +1285,50 @@ mmix_expand_builtin_va_arg (valist, type)
 	cheaper than a wider memory access on MMIX.)  */
      addr_tree
        = build (PLUS_EXPR, TREE_TYPE (addr_tree), addr_tree,
-		build_int_2 ((BITS_PER_WORD / BITS_PER_UNIT)
-			     - GET_MODE_UNIT_SIZE (TYPE_MODE (type)), 0));
+		size_int ((BITS_PER_WORD / BITS_PER_UNIT)
+			  - GET_MODE_UNIT_SIZE (TYPE_MODE (type))));
    }
- else
+ else if (!integer_zerop (rounded_size))
    {
-    HOST_WIDE_INT adj;
-    adj = TREE_INT_CST_LOW (TYPE_SIZE (type)) / BITS_PER_UNIT;
-    if (rounded_size > align)
-      adj = rounded_size;
+     /* If the size is less than a register, the we need to pad the
+        address by adding the difference.  */
+     tree addend
+       = fold (build (COND_EXPR, sizetype,
+		      fold (build (GT_EXPR, sizetype,
+				   rounded_size,
+				   align)),
+		      size_zero_node,
+		      fold (build (MINUS_EXPR, sizetype,
+				   rounded_size,
+				   type_size))));
+     tree addr_tree1
+       = fold (build (PLUS_EXPR, TREE_TYPE (addr_tree), addr_tree, addend));
 
-    addr_tree = build (PLUS_EXPR, TREE_TYPE (addr_tree), addr_tree,
-		       build_int_2 (rounded_size - adj, 0));
-
-    /* If this type is larger than what fits in a register, then it is
-       passed by reference.  */
-    if (rounded_size > BITS_PER_WORD / BITS_PER_UNIT)
-      {
-	tree type_ptr = build_pointer_type (type);
-	addr_tree = build1 (INDIRECT_REF, type_ptr, addr_tree);
-      }
-  }
+     /* If this type is larger than what fits in a register, then it is
+	passed by reference.  */
+     addr_tree
+       = fold (build (COND_EXPR, TREE_TYPE (addr_tree1),
+		      fold (build (GT_EXPR, sizetype,
+				   rounded_size,
+				   ptr_size)),
+		      build1 (INDIRECT_REF, build_pointer_type (type),
+			      addr_tree1),
+		      addr_tree1));
+   }
 
   addr = expand_expr (addr_tree, NULL_RTX, Pmode, EXPAND_NORMAL);
   addr = copy_to_reg (addr);
 
-  /* Compute new value for AP.  For MMIX, it is always advanced by the
-     size of a register.  */
-  t = build (MODIFY_EXPR, TREE_TYPE (valist), valist,
-	     build (PLUS_EXPR, TREE_TYPE (valist), valist,
-		    build_int_2 (BITS_PER_WORD / BITS_PER_UNIT, 0)));
-  TREE_SIDE_EFFECTS (t) = 1;
-  expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+  if (!integer_zerop (rounded_size))
+    {
+      /* Compute new value for AP.  For MMIX, it is always advanced by the
+	 size of a register.  */
+      tree t = build (MODIFY_EXPR, TREE_TYPE (valist), valist,
+		      build (PLUS_EXPR, TREE_TYPE (valist), valist,
+			     ptr_size));
+      TREE_SIDE_EFFECTS (t) = 1;
+      expand_expr (t, const0_rtx, VOIDmode, EXPAND_NORMAL);
+    }
 
   return addr;
 }
