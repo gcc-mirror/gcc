@@ -1,3 +1,8 @@
+2001-04-03  Alan Modra  <alan@linuxcare.com.au>
+
+	* dwarf2out.c (dwarf2out_frame_debug_expr): Move errant HIGH and
+	LO_SUM cases to where they belong.
+
 2001-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* lex.c (ffelex_hash_): Avoid eating one whole line after
