@@ -469,8 +469,9 @@ count_basic_blocks (f)
 	  prev_call = insn;
 	  call_had_abnormal_edge = 0;
 
-	  /* If there is a specified EH region, we have an edge.  */
-	  if (eh_region && region > 0)
+	  /* If there is an EH region or rethrow, we have an edge.  */
+	  if ((eh_region && region > 0)
+	      || find_reg_note (insn, REG_EH_RETHROW, NULL_RTX))
 	    call_had_abnormal_edge = 1;
 	  else
 	    {
@@ -541,8 +542,9 @@ find_basic_blocks_1 (f)
 	  int region = (note ? XWINT (XEXP (note, 0), 0) : 1);
 	  call_has_abnormal_edge = 0;
 
-	  /* If there is an EH region, we have an edge.  */
-	  if (eh_list && region > 0)
+	  /* If there is an EH region or rethrow, we have an edge.  */
+	  if ((eh_list && region > 0)
+	      || find_reg_note (insn, REG_EH_RETHROW, NULL_RTX))
 	    call_has_abnormal_edge = 1;
 	  else
 	    {
@@ -983,10 +985,10 @@ make_edges (label_value_list)
 
       if (code == CALL_INSN || asynchronous_exceptions)
 	{
-	  /* If there's an EH region active at the end of a block,
-	     add the appropriate edges.  */
-	  if (bb->eh_end >= 0)
-	    make_eh_edge (edge_cache, eh_nest_info, bb, insn, bb->eh_end);
+	  /* Add any appropriate EH edges.  We do this unconditionally
+	     since there may be a REG_EH_REGION or REG_EH_RETHROW note
+	     on the call, and this needn't be within an EH region.  */
+	  make_eh_edge (edge_cache, eh_nest_info, bb, insn, bb->eh_end);
 
 	  /* If we have asynchronous exceptions, do the same for *all*
 	     exception regions active in the block.  */
@@ -1778,7 +1780,7 @@ delete_eh_regions ()
 	  {
 	    int num = NOTE_EH_HANDLER (insn);
 	    /* A NULL handler indicates a region is no longer needed,
-	       as long as it isn't the target of a rethrow.  */
+	       as long as its rethrow label isn't used.  */
 	    if (get_first_handler (num) == NULL && ! rethrow_used (num))
 	      {
 		NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;

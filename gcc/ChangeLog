@@ -1,3 +1,14 @@
+2000-03-08  Jason Merrill  <jason@casey.cygnus.com>
+
+	* flow.c (count_basic_blocks, find_basic_blocks_1): A rethrow
+	can occur outside of an EH region.
+	* except.c: Correct comments about rethrow behavior.
+	(rethrow_symbol_map): Do nothing if !flag_new_exceptions.
+
+2000-03-08  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* flow.c (make_edges): Always call make_eh_edge for calls.
+
 2000-03-08  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.h (parse_underflow_t, CPP_NULL_BUFFER): Delete.
