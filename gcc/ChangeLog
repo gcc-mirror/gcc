@@ -1,3 +1,8 @@
+Thu Mar 23 16:04:40 2000  Andrew Haley  <aph@cygnus.com>
+
+        * config/mips/mips.md (movdf_internal1a): Delete (set 'f', 'F')
+        alternative when using -fp64 -gp32.
+
 2000-03-22  Jason Merrill  <jason@casey.cygnus.com>
 
 	* config/rs6000/rs6000.h (DWARF_FRAME_RETURN_COLUMN): Define.
