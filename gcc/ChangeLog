@@ -1,9 +1,19 @@
+2004-07-22  Paolo Bonzini  <bonzini@gnu.org>
+
+	* machmode.def: Remove vector modes.
+	* config/alpha/alpha-modes.def: Add supported vector modes.
+	* config/arm/arm-modes.def: Likewise.
+	* config/frv/frv-modes.def: Likewise.
+	* config/i386/i386-modes.def: Likewise.
+	* config/rs6000/rs6000-modes.def: Likewise.
+	* config/sh/sh-modes.def: Likewise.
+
 2004-07-23  Matthias Klose  <doko@debian.org> 
  
-	intl.c (gcc_init_libintl): Use PACKAGE for the text domain. 
-	configure.ac: Add AC_DEFINE_UNQUOTED for PACKAGE. 
-	config.h: Regenerate.
-	configure: Likewise. 
+	* intl.c (gcc_init_libintl): Use PACKAGE for the text domain. 
+	* configure.ac: Add AC_DEFINE_UNQUOTED for PACKAGE. 
+	* config.h: Regenerate.
+	* configure: Likewise. 
 
 2004-07-22  Mark Mitchell  <mark@codesourcery.com>
 

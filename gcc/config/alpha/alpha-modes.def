@@ -21,3 +21,8 @@ Boston, MA 02111-1307, USA.  */
 /* 128-bit floating point.  This gets reset in alpha_override_options
    if VAX float format is in use.  */
 FLOAT_MODE (TF, 16, ieee_quad_format);
+
+/* Vector modes.  */
+VECTOR_MODES (INT, 8);        /*       V8QI V4HI V2SI */
+VECTOR_MODE (INT, QI, 4);     /*                 V4QI */
+VECTOR_MODE (INT, QI, 2);     /*                 V2QI */
