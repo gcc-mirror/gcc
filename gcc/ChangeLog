@@ -1,3 +1,8 @@
+Fri Jun 27 18:36:12 CEST 2003  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (rest_of_decl_compilation):  Only varpoolize argument
+	when called before cgraph_optimize.
+
 2003-06-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* config/darwin.h, config/elfos.h, config/i960/i960-coff.h
