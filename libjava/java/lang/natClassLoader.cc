@@ -547,7 +547,7 @@ _Jv_NewClass (_Jv_Utf8Const *name, jclass superclass,
   ret->interfaces = NULL;
   ret->loader = loader;
   ret->interface_count = 0;
-  ret->state = 0;
+  ret->state = JV_STATE_NOTHING;
   ret->thread = NULL;
 
   _Jv_RegisterClass (ret);
