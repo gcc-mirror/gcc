@@ -205,12 +205,15 @@ public final class Long extends Number implements Comparable
     long val = 0;
     int digval;
 
+    long max = MAX_VALUE / radix;
+    // We can't directly write `max = (MAX_VALUE + 1) / radix'.
+    // So instead we fake it.
+    if (isNeg && MAX_VALUE % radix == radix - 1)
+      ++max;
+
     for ( ; index < len; index++)
       {
-	// The the previous loop iteration left us with a negative
-	// value (which can only be the most negative value, but we
-	// don't check that), then having more digits is wrong.
-	if (val == MIN_VALUE)
+	if (val < 0 || val > max)
 	  throw new NumberFormatException();
 
         if ((digval = Character.digit(str.charAt(index), radix)) < 0)
@@ -218,17 +221,9 @@ public final class Long extends Number implements Comparable
 
         // Throw an exception for overflow if result is negative.
 	// However, we special-case the most negative value.
-	val *= radix;
-	if (val < 0 || val + digval < 0)
-	  {
-	    if (isNeg && val + digval == MIN_VALUE)
-	      {
-		// Ok.
-	      }
-	    else
-	      throw new NumberFormatException();
-	  }
-	val += digval;
+	val = val * radix + digval;
+	if (val < 0 && (! isNeg || val != MIN_VALUE))
+	  throw new NumberFormatException();
       }
 
     return isNeg ? -(val) : val;
