@@ -269,7 +269,7 @@ mark_flags_life_zones (flags)
       {
 	int i;
 	for (i = 0; i < flags_nregs; ++i)
-          live |= REGNO_REG_SET_P (BASIC_BLOCK (block)->global_live_at_start,
+	  live |= REGNO_REG_SET_P (BASIC_BLOCK (block)->global_live_at_start,
 				   flags_regno + i);
       }
 #endif
@@ -950,7 +950,7 @@ fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
       if (perhaps_ends_bb_p (p))
 	break;
       else if (! INSN_P (p))
-        continue;
+	continue;
 
       if (find_regno_note (p, REG_DEAD, REGNO (dst)))
 	dst_death = p;
@@ -962,7 +962,7 @@ fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
 	  && GET_CODE (SET_SRC (pset)) == PLUS
 	  && XEXP (SET_SRC (pset), 0) == src
 	  && GET_CODE (XEXP (SET_SRC (pset), 1)) == CONST_INT)
-        {
+	{
 	  HOST_WIDE_INT newconst
 	    = INTVAL (offset) - INTVAL (XEXP (SET_SRC (pset), 1));
 	  rtx add = gen_add3_insn (dst, dst, GEN_INT (newconst));
@@ -1013,10 +1013,10 @@ fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
 #endif
 	      return 1;
 	    }
-        }
+	}
 
       if (reg_set_p (dst, PATTERN (p)))
-        break;
+	break;
 
       /* If we have passed a call instruction, and the
          pseudo-reg SRC is not already live across a call,
@@ -1025,19 +1025,19 @@ fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
 	 hard regs are clobbered.  Thus, we only use it for src for
 	 non-call insns.  */
       if (GET_CODE (p) == CALL_INSN)
-        {
+	{
 	  if (! dst_death)
 	    num_calls++;
 
-          if (REG_N_CALLS_CROSSED (REGNO (src)) == 0)
-            break;
+	  if (REG_N_CALLS_CROSSED (REGNO (src)) == 0)
+	    break;
 
 	  if (call_used_regs [REGNO (dst)]
 	      || find_reg_fusage (p, CLOBBER, dst))
 	    break;
-        }
+	}
       else if (reg_set_p (src, PATTERN (p)))
-        break;
+	break;
     }
 
   return 0;
@@ -1131,8 +1131,8 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		    }
 		}
 	    }
-          if (! flag_regmove)
-            continue;
+	  if (! flag_regmove)
+	    continue;
 
 	  if (! find_matches (insn, &match))
 	    continue;
@@ -1370,7 +1370,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
 		 it for this optimization, as this would make it
 		 no longer equivalent to a constant.  */
 
-              if (reg_is_remote_constant_p (src, insn, f))
+	      if (reg_is_remote_constant_p (src, insn, f))
 		{
 		  if (!copy_src)
 		    {

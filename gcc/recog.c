@@ -161,7 +161,7 @@ check_asm_operands (x)
 	c = constraints[c[0] - '0'];
 
       if (! asm_operand_ok (operands[i], c))
-        return 0;
+	return 0;
     }
 
   return 1;
@@ -227,11 +227,11 @@ validate_change (object, loc, new, in_group)
       else
 	changes_allocated *= 2;
 
-      changes = 
-	(change_t*) xrealloc (changes, 
-			      sizeof (change_t) * changes_allocated); 
+      changes =
+	(change_t*) xrealloc (changes,
+			      sizeof (change_t) * changes_allocated);
     }
-  
+
   changes[num_changes].object = object;
   changes[num_changes].loc = loc;
   changes[num_changes].old = old;
@@ -272,7 +272,7 @@ insn_invalid_p (insn)
 		     ? &num_clobbers : 0);
   int is_asm = icode < 0 && asm_noperands (PATTERN (insn)) >= 0;
 
-  
+
   /* If this is an asm and the operand aren't legal, then fail.  Likewise if
      this is not an asm and the insn wasn't recognized.  */
   if ((is_asm && ! check_asm_operands (PATTERN (insn)))
@@ -362,7 +362,7 @@ apply_change_group ()
 		  int j;
 
 		  newpat
-		    = gen_rtx_PARALLEL (VOIDmode, 
+		    = gen_rtx_PARALLEL (VOIDmode,
 					rtvec_alloc (XVECLEN (pat, 0) - 1));
 		  for (j = 0; j < XVECLEN (newpat, 0); j++)
 		    XVECEXP (newpat, 0, j) = XVECEXP (pat, 0, j);
@@ -401,7 +401,7 @@ apply_change_group ()
 	    && ((unsigned int)INSN_UID (changes[i].object)
 		< basic_block_for_insn->num_elements)
 	    && (bb = BLOCK_FOR_INSN (changes[i].object)))
-        bb->flags |= BB_DIRTY;
+	  bb->flags |= BB_DIRTY;
 
       num_changes = 0;
       return 1;
@@ -789,7 +789,7 @@ find_single_use_1 (dest, loc)
     case MEM:
     case SUBREG:
       return find_single_use_1 (dest, &XEXP (x, 0));
-      
+
     default:
       break;
     }
@@ -971,12 +971,12 @@ general_operand (op, mode)
       /* Avoid memories with nonzero SUBREG_BYTE, as offsetting the memory
          may result in incorrect reference.  We should simplify all valid
          subregs of MEM anyway.  But allow this after reload because we
-	 might be called from cleanup_subreg_operands. 
+	 might be called from cleanup_subreg_operands.
 
 	 ??? This is a kludge.  */
       if (!reload_completed && SUBREG_BYTE (op) != 0
 	  && GET_CODE (SUBREG_REG (op)) == MEM)
-        return 0;
+	return 0;
 
       op = SUBREG_REG (op);
       code = GET_CODE (op);
@@ -1329,7 +1329,7 @@ memory_address_p (mode, addr)
 {
   if (GET_CODE (addr) == ADDRESSOF)
     return 1;
-  
+
   GO_IF_LEGITIMATE_ADDRESS (mode, addr, win);
   return 0;
 
@@ -1583,7 +1583,7 @@ decode_asm_operands (body, operands, operand_locs, constraints, modes)
 	{
 	  if (GET_CODE (XVECEXP (body, 0, i)) == CLOBBER)
 	    break;		/* Past last SET */
-	  
+
 	  if (operands)
 	    operands[i] = SET_DEST (XVECEXP (body, 0, i));
 	  if (operand_locs)
@@ -1635,7 +1635,7 @@ decode_asm_operands (body, operands, operand_locs, constraints, modes)
   return template;
 }
 
-/* Check if an asm_operand matches it's constraints. 
+/* Check if an asm_operand matches it's constraints.
    Return > 0 if ok, = 0 if bad, < 0 if inconclusive.  */
 
 int
@@ -1703,7 +1703,7 @@ asm_operand_ok (op, constraint)
 	  if (GET_CODE (op) == MEM
 	      && (1
 		  || GET_CODE (XEXP (op, 0)) == PRE_DEC
-                  || GET_CODE (XEXP (op, 0)) == POST_DEC))
+		  || GET_CODE (XEXP (op, 0)) == POST_DEC))
 	    return 1;
 	  break;
 
@@ -1711,7 +1711,7 @@ asm_operand_ok (op, constraint)
 	  if (GET_CODE (op) == MEM
 	      && (1
 		  || GET_CODE (XEXP (op, 0)) == PRE_INC
-                  || GET_CODE (XEXP (op, 0)) == POST_INC))
+		  || GET_CODE (XEXP (op, 0)) == POST_INC))
 	    return 1;
 	  break;
 
@@ -2215,7 +2215,7 @@ preprocess_constraints ()
 		  break;
 		case '&':
 		  op_alt[j].earlyclobber = 1;
-		  break;		  
+		  break;
 
 		case '0': case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
@@ -2264,7 +2264,7 @@ preprocess_constraints ()
 	}
     }
 }
- 
+
 /* Check the operands of an insn against the insn's operand constraints
    and return 1 if they are valid.
    The information about the insn's operands, constraints, operand modes
@@ -2700,7 +2700,7 @@ split_insn (insn)
 	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 
 	  /* ??? Coddle to md files that generate subregs in post-
-	     reload splitters instead of computing the proper 
+	     reload splitters instead of computing the proper
 	     hard register.  */
 	  if (reload_completed && first != last)
 	    {
@@ -2780,7 +2780,7 @@ split_all_insns (upd_life)
   sbitmap_free (blocks);
 }
 
-/* Same as split_all_insns, but do not expect CFG to be available. 
+/* Same as split_all_insns, but do not expect CFG to be available.
    Used by machine depedent reorg passes.  */
 
 void
@@ -3131,7 +3131,7 @@ peephole2_optimize (dump_file)
 		  if (i >= MAX_INSNS_PER_PEEP2 + 1)
 		    i -= MAX_INSNS_PER_PEEP2 + 1;
 
-		  note = find_reg_note (peep2_insn_data[i].insn, 
+		  note = find_reg_note (peep2_insn_data[i].insn,
 					REG_EH_REGION, NULL_RTX);
 
 		  /* Replace the old sequence with the new.  */
@@ -3357,7 +3357,7 @@ if_test_bypass_p (out_insn, in_insn)
     {
       if (reg_mentioned_p (SET_DEST (out_set), XEXP (in_set, 1))
 	  || reg_mentioned_p (SET_DEST (out_set), XEXP (in_set, 2)))
-        return false;
+	return false;
     }
   else
     {

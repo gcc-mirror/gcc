@@ -1,5 +1,5 @@
 /* Definitions for computing resource usage of specific insns.
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -281,7 +281,7 @@ mark_referenced_resources (x, res, include_delayed_effects)
 	 We can not just fall through here since then we would be confused
 	 by the ASM_INPUT rtx inside ASM_OPERANDS, which do not indicate
 	 traditional asms unlike their normal usage.  */
-      
+
       for (i = 0; i < ASM_OPERANDS_INPUT_LENGTH (x); i++)
 	mark_referenced_resources (ASM_OPERANDS_INPUT (x, i), res, 0);
       return;
@@ -423,7 +423,7 @@ mark_referenced_resources (x, res, include_delayed_effects)
 }
 
 /* A subroutine of mark_target_live_regs.  Search forward from TARGET
-   looking for registers that are set before they are used.  These are dead. 
+   looking for registers that are set before they are used.  These are dead.
    Stop after passing a few conditional jumps, and/or a small
    number of unconditional branches.  */
 
@@ -721,7 +721,7 @@ mark_set_resources (x, res, in_dest, mark_type)
     case CLOBBER:
       mark_set_resources (XEXP (x, 0), res, 1, MARK_SRC_DEST);
       return;
-      
+
     case SEQUENCE:
       for (i = 0; i < XVECLEN (x, 0); i++)
 	if (! (INSN_ANNULLED_BRANCH_P (XVECEXP (x, 0, 0))
@@ -821,7 +821,7 @@ mark_set_resources (x, res, in_dest, mark_type)
 	 We can not just fall through here since then we would be confused
 	 by the ASM_INPUT rtx inside ASM_OPERANDS, which do not indicate
 	 traditional asms unlike their normal usage.  */
-      
+
       for (i = 0; i < ASM_OPERANDS_INPUT_LENGTH (x); i++)
 	mark_set_resources (ASM_OPERANDS_INPUT (x, i), res, in_dest,
 			    MARK_SRC_DEST);
@@ -946,7 +946,7 @@ mark_target_live_regs (insns, target, res)
 	}
       else
 	{
-	  /* Allocate a place to put our results and chain it into the 
+	  /* Allocate a place to put our results and chain it into the
 	     hash table.  */
 	  tinfo = (struct target_info *) xmalloc (sizeof (struct target_info));
 	  tinfo->uid = INSN_UID (target);
@@ -1056,7 +1056,7 @@ mark_target_live_regs (insns, target, res)
 		      = (first_regno
 			 + HARD_REGNO_NREGS (first_regno,
 					     GET_MODE (XEXP (link, 0))));
-			 
+
 		    for (i = first_regno; i < last_regno; i++)
 		      SET_HARD_REG_BIT (pending_dead_regs, i);
 		  }
@@ -1075,7 +1075,7 @@ mark_target_live_regs (insns, target, res)
 		      = (first_regno
 			 + HARD_REGNO_NREGS (first_regno,
 					     GET_MODE (XEXP (link, 0))));
-			 
+
 		    for (i = first_regno; i < last_regno; i++)
 		      CLEAR_HARD_REG_BIT (current_live_regs, i);
 		  }
@@ -1093,7 +1093,7 @@ mark_target_live_regs (insns, target, res)
 	     RTL chain when there are no epilogue insns.  Certain resources
 	     are implicitly required at that point.  */
 	  else if (GET_CODE (real_insn) == NOTE
- 		   && NOTE_LINE_NUMBER (real_insn) == NOTE_INSN_EPILOGUE_BEG)
+		   && NOTE_LINE_NUMBER (real_insn) == NOTE_INSN_EPILOGUE_BEG)
 	    IOR_HARD_REG_SET (current_live_regs, start_of_epilogue_needs.regs);
 	}
 
@@ -1237,12 +1237,12 @@ free_resource_info ()
   if (target_hash_table != NULL)
     {
       int i;
-      
-      for (i = 0; i < TARGET_HASH_PRIME; ++i) 
+
+      for (i = 0; i < TARGET_HASH_PRIME; ++i)
 	{
 	  struct target_info *ti = target_hash_table[i];
 
-	  while (ti) 
+	  while (ti)
 	    {
 	      struct target_info *next = ti->next;
 	      free (ti);
@@ -1268,7 +1268,7 @@ clear_hashed_info_for_insn (insn)
      rtx insn;
 {
   struct target_info *tinfo;
-      
+
   if (target_hash_table != NULL)
     {
       for (tinfo = target_hash_table[INSN_UID (insn) % TARGET_HASH_PRIME];

@@ -188,7 +188,7 @@ typedef struct stack_def
   unsigned char reg[REG_STACK_SIZE];/* register - stack mapping */
 } *stack;
 
-/* This is used to carry information about basic blocks.  It is 
+/* This is used to carry information about basic blocks.  It is
    attached to the AUX field of the standard CFG block.  */
 
 typedef struct block_info_def
@@ -211,7 +211,7 @@ enum emit_where
 };
 
 /* We use this array to cache info about insns, because otherwise we
-   spend too much time in stack_regs_mentioned_p. 
+   spend too much time in stack_regs_mentioned_p.
 
    Indexed by insn UIDs.  A value of zero is uninitialized, one indicates
    the insn uses stack registers, two indicates the insn does not use
@@ -336,7 +336,7 @@ static rtx
 next_flags_user (insn)
      rtx insn;
 {
-  /* Search forward looking for the first use of this value. 
+  /* Search forward looking for the first use of this value.
      Stop at block boundaries.  */
 
   while (insn != current_block->end)
@@ -344,7 +344,7 @@ next_flags_user (insn)
       insn = NEXT_INSN (insn);
 
       if (INSN_P (insn) && reg_mentioned_p (ix86_flags_rtx, PATTERN (insn)))
-        return insn;
+	return insn;
 
       if (GET_CODE (insn) == CALL_INSN)
 	return NULL_RTX;
@@ -374,7 +374,7 @@ straighten_stack (insn, regstack)
 
   for (top = temp_stack.top = regstack->top; top >= 0; top--)
     temp_stack.reg[top] = FIRST_STACK_REG + temp_stack.top - top;
-  
+
   change_stack (insn, regstack, &temp_stack, EMIT_AFTER);
 }
 
@@ -439,7 +439,7 @@ reg_to_stack (first, file)
   if (i > LAST_STACK_REG)
     return;
 
-  /* Ok, floating point instructions exist.  If not optimizing, 
+  /* Ok, floating point instructions exist.  If not optimizing,
      build the CFG and run life analysis.  */
   if (!optimize)
     {
@@ -477,7 +477,7 @@ reg_to_stack (first, file)
 
   ix86_flags_rtx = gen_rtx_REG (CCmode, FLAGS_REG);
 
-  /* A QNaN for initializing uninitialized variables.  
+  /* A QNaN for initializing uninitialized variables.
 
      ??? We can't load from constant memory in PIC mode, because
      we're insertting these instructions before the prologue and
@@ -677,7 +677,7 @@ check_asm_stack_operands (insn)
 	    error_for_asm (insn, "output constraint %d must specify a single register", i);
 	    malformed_asm = 1;
 	  }
-        else
+	else
 	  {
 	    int j;
 
@@ -823,7 +823,7 @@ stack_result (decl)
     {
 #ifdef FUNCTION_OUTGOING_VALUE
       result
-        = FUNCTION_OUTGOING_VALUE (TREE_TYPE (DECL_RESULT (decl)), decl);
+	= FUNCTION_OUTGOING_VALUE (TREE_TYPE (DECL_RESULT (decl)), decl);
 #else
       result = FUNCTION_VALUE (TREE_TYPE (DECL_RESULT (decl)), decl);
 #endif
@@ -932,9 +932,9 @@ emit_pop_insn (insn, regstack, reg, where)
 
       pop_insn = NULL_RTX;
       if (get_hard_regnum (regstack, reg1) >= 0)
-         pop_insn = emit_pop_insn (insn, regstack, reg1, where);
+	pop_insn = emit_pop_insn (insn, regstack, reg1, where);
       if (get_hard_regnum (regstack, reg2) >= 0)
-         pop_insn = emit_pop_insn (insn, regstack, reg2, where);
+	pop_insn = emit_pop_insn (insn, regstack, reg2, where);
       if (!pop_insn)
 	abort ();
       return pop_insn;
@@ -1264,7 +1264,7 @@ swap_rtx_condition (insn)
     {
       rtx dest = SET_DEST (pat);
 
-      /* Search forward looking for the first use of this value. 
+      /* Search forward looking for the first use of this value.
 	 Stop at block boundaries.  */
       while (insn != current_block->end)
 	{
@@ -1430,12 +1430,12 @@ subst_stack_regs_pat (insn, regstack, pat)
       /* Deaths in USE insns can happen in non optimizing compilation.
 	 Handle them by popping the dying register.  */
       src = get_true_reg (&XEXP (pat, 0));
-      if (STACK_REG_P (*src) 
-          && find_regno_note (insn, REG_DEAD, REGNO (*src)))
-        {
-	   emit_pop_insn (insn, regstack, *src, EMIT_AFTER);
-	   return;
-        }
+      if (STACK_REG_P (*src)
+	  && find_regno_note (insn, REG_DEAD, REGNO (*src)))
+	{
+	  emit_pop_insn (insn, regstack, *src, EMIT_AFTER);
+	  return;
+	}
       /* ??? Uninitialized USE should not happen.  */
       else if (get_hard_regnum (regstack, *src) == -1)
 	abort ();
@@ -1455,7 +1455,7 @@ subst_stack_regs_pat (insn, regstack, pat)
 		/* The fix_truncdi_1 pattern wants to be able to allocate
 		   it's own scratch register.  It does this by clobbering
 		   an fp reg so that it is assured of an empty reg-stack
-		   register.  If the register is live, kill it now. 
+		   register.  If the register is live, kill it now.
 		   Remove the DEAD/UNUSED note so we don't try to kill it
 		   later too.  */
 
@@ -1474,7 +1474,7 @@ subst_stack_regs_pat (insn, regstack, pat)
 	      {
 		/* A top-level clobber with no REG_DEAD, and no hard-regnum
 		   indicates an uninitialized value.  Because reload removed
-		   all other clobbers, this must be due to a function 
+		   all other clobbers, this must be due to a function
 		   returning without a value.  Load up a NaN.  */
 
 		if (! note
@@ -1798,7 +1798,7 @@ subst_stack_regs_pat (insn, regstack, pat)
 			      reversed_comparison_code (XEXP (pat_src, 0), insn));
 		  }
 		else
-	          emit_swap_insn (insn, regstack, *dest);	
+	          emit_swap_insn (insn, regstack, *dest);
 	      }
 
 	    {
@@ -1837,7 +1837,7 @@ subst_stack_regs_pat (insn, regstack, pat)
 	    /* Make dest the top of stack.  Add dest to regstack if
 	       not present.  */
 	    if (get_hard_regnum (regstack, *dest) < FIRST_STACK_REG)
-	      regstack->reg[++regstack->top] = REGNO (*dest);	
+	      regstack->reg[++regstack->top] = REGNO (*dest);
 	    SET_HARD_REG_BIT (regstack->reg_set, REGNO (*dest));
 	    replace_reg (dest, FIRST_STACK_REG);
 	    break;
@@ -1899,7 +1899,7 @@ subst_asm_stack_regs (insn, regstack)
 
   n_inputs = get_asm_operand_n_inputs (body);
   n_outputs = recog_data.n_operands - n_inputs;
-  
+
   if (alt < 0)
     abort ();
 
@@ -2296,7 +2296,7 @@ change_stack (insn, old, new, where)
 	abort ();
 
       /* If the stack is not empty (new->top != -1), loop here emitting
-	 swaps until the stack is correct. 
+	 swaps until the stack is correct.
 
 	 The worst case number of swaps emitted is N + 2, where N is the
 	 depth of the stack.  In some cases, the reg at the top of
@@ -2372,7 +2372,7 @@ print_stack (file, s)
 }
 
 /* This function was doing life analysis.  We now let the regular live
-   code do it's job, so we only need to check some extra invariants 
+   code do it's job, so we only need to check some extra invariants
    that reg-stack expects.  Primary among these being that all registers
    are initialized before use.
 
@@ -2390,10 +2390,10 @@ convert_regs_entry ()
       basic_block block = BASIC_BLOCK (i);
       block_info bi = BLOCK_INFO (block);
       int reg;
-      
+
       /* Set current register status at last instruction `uninitialized'.  */
       bi->stack_in.top = -2;
-  
+
       /* Copy live_at_end and live_at_start into temporaries.  */
       for (reg = FIRST_STACK_REG; reg <= LAST_STACK_REG; reg++)
 	{
@@ -2404,11 +2404,11 @@ convert_regs_entry ()
 	}
     }
 
-  /* Load something into each stack register live at function entry. 
+  /* Load something into each stack register live at function entry.
      Such live registers can be caused by uninitialized variables or
-     functions not returning values on all paths.  In order to keep 
+     functions not returning values on all paths.  In order to keep
      the push/pop code happy, and to not scrog the register stack, we
-     must put something in these registers.  Use a QNaN.  
+     must put something in these registers.  Use a QNaN.
 
      Note that we are insertting converted code here.  This code is
      never seen by the convert_regs pass.  */
@@ -2510,7 +2510,7 @@ compensate_edge (e, file)
 	  tmpstack = regstack;
 
 	  change_stack (block->end, &tmpstack, target_stack, EMIT_AFTER);
-          return false;
+	  return false;
 	}
 
       if (file)
@@ -2593,8 +2593,8 @@ compensate_edge (e, file)
       current_block = NULL;
       start_sequence ();
 
-      /* ??? change_stack needs some point to emit insns after. 
-         Also needed to keep gen_sequence from returning a 
+      /* ??? change_stack needs some point to emit insns after.
+         Also needed to keep gen_sequence from returning a
          pattern as opposed to a sequence, which would lose
          REG_DEAD notes.  */
       after = emit_note (NULL, NOTE_INSN_DELETED);
@@ -2660,7 +2660,7 @@ convert_regs_1 (file, block)
     inserted |= compensate_edge (beste, file);
   else
     beste = NULL;
-  
+
   current_block = block;
 
   if (file)
@@ -2753,7 +2753,7 @@ convert_regs_1 (file, block)
 	  if (!BLOCK_INFO (e->dest)->done
 	      && e->dest != block)
 	    abort ();
-          inserted |= compensate_edge (e, file);
+	  inserted |= compensate_edge (e, file);
 	}
     }
   for (e = block->pred; e ; e = e->pred_next)
@@ -2763,7 +2763,7 @@ convert_regs_1 (file, block)
 	{
 	  if (!BLOCK_INFO (e->src)->done)
 	    abort ();
-          inserted |= compensate_edge (e, file);
+	  inserted |= compensate_edge (e, file);
 	}
     }
 
@@ -2832,8 +2832,8 @@ convert_regs (file)
   /* Process all blocks reachable from all entry points.  */
   for (e = ENTRY_BLOCK_PTR->succ; e ; e = e->succ_next)
     inserted |= convert_regs_2 (file, e->dest);
-  
-  /* ??? Process all unreachable blocks.  Though there's no excuse 
+
+  /* ??? Process all unreachable blocks.  Though there's no excuse
      for keeping these even when not optimizing.  */
   for (i = 0; i < n_basic_blocks; ++i)
     {

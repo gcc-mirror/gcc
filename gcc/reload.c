@@ -3563,7 +3563,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 
   for (i = 0; i < noperands; i++)
     goal_alternative_matched[i] = -1;
- 
+
   for (i = 0; i < noperands; i++)
     if (! goal_alternative_win[i]
 	&& goal_alternative_matches[i] >= 0)
@@ -6824,7 +6824,7 @@ regno_clobbered_p (regno, insn, mode, sets)
 	      && GET_CODE (XEXP (elt, 0)) == REG)
 	    {
 	      unsigned int test = REGNO (XEXP (elt, 0));
-	      
+
 	      if (test >= regno && test < endregno)
 		return 1;
 	    }

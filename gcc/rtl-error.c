@@ -1,5 +1,5 @@
 /* RTL specific diagnostic subroutines for the GNU C compiler
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -84,7 +84,7 @@ diagnostic_for_asm (insn, msg, args_ptr, warn)
 
   set_diagnostic_context (&dc, msg, args_ptr, NULL, 0, warn);
   file_and_line_for_asm (insn, &diagnostic_file_location (&dc),
-                         &diagnostic_line_location (&dc));
+			 &diagnostic_line_location (&dc));
   report_diagnostic (&dc);
 }
 

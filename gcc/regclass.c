@@ -97,13 +97,13 @@ static const char initial_call_used_regs[] = CALL_USED_REGISTERS;
 
 /* This is much like call_used_regs, except it doesn't have to
    be a superset of FIXED_REGISTERS. This vector indicates
-   what is really call clobbered, and is used when defining 
+   what is really call clobbered, and is used when defining
    regs_invalidated_by_call.  */
 
 #ifdef CALL_REALLY_USED_REGISTERS
 char call_really_used_regs[] = CALL_REALLY_USED_REGISTERS;
 #endif
-  
+
 /* Indexed by hard register number, contains 1 for registers that are
    fixed use or call used registers that cannot hold quantities across
    calls even if we are willing to save and restore them.  call fixed
@@ -155,7 +155,7 @@ HARD_REG_SET reg_class_contents[N_REG_CLASSES];
 #define N_REG_INTS  \
   ((FIRST_PSEUDO_REGISTER + (32 - 1)) / 32)
 
-static const unsigned int_reg_class_contents[N_REG_CLASSES][N_REG_INTS] 
+static const unsigned int_reg_class_contents[N_REG_CLASSES][N_REG_INTS]
   = REG_CLASS_CONTENTS;
 
 /* For each reg class, number of regs it contains.  */
@@ -458,7 +458,7 @@ init_reg_sets_1 ()
 	 RETURN_POPS_ARGS, in which case an explicit CLOBBER will be present.
 	 If we are generating PIC code, the PIC offset table register is
 	 preserved across calls, though the target can override that.  */
-	 
+
       if (i == STACK_POINTER_REGNUM || i == FRAME_POINTER_REGNUM)
 	;
 #if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
@@ -558,7 +558,7 @@ init_reg_sets_1 ()
   {
     HARD_REG_SET c;
     COMPL_HARD_REG_SET (c, reg_class_contents[CLASS_CANNOT_CHANGE_MODE]);
-      
+
     for (i = 0; i < N_REG_CLASSES; i++)
       {
 	GO_IF_HARD_REG_SUBSET (reg_class_contents[i], c, ok_class);
@@ -774,8 +774,8 @@ fix_register (name, fixed, call_used)
 	  static const char * const what_option[2][2] = {
 	    { "call-saved", "call-used" },
 	    { "no-such-option", "fixed" }};
-	  
-	  error ("can't use '%s' as a %s register", name, 
+
+	  error ("can't use '%s' as a %s register", name,
 		 what_option[fixed][call_used]);
 	}
       else
@@ -882,7 +882,7 @@ static void dump_regclass	PARAMS ((FILE *));
 static void record_reg_classes	PARAMS ((int, int, rtx *, enum machine_mode *,
 				       const char **, rtx,
 				       struct costs *, struct reg_pref *));
-static int copy_cost		PARAMS ((rtx, enum machine_mode, 
+static int copy_cost		PARAMS ((rtx, enum machine_mode,
 				       enum reg_class, int));
 static void record_address_regs	PARAMS ((rtx, enum reg_class, int));
 #ifdef FORBIDDEN_INC_DEC_CLASSES
@@ -987,7 +987,7 @@ record_operand_costs (insn, op_costs, reg_pref)
      Then handle any address registers.  Finally record the desired
      classes for any pseudos, doing it twice if some pair of
      operands are commutative.  */
-	     
+
   for (i = 0; i < recog_data.n_operands; i++)
     {
       op_costs[i] = init_cost;
@@ -1030,12 +1030,12 @@ record_operand_costs (insn, op_costs, reg_pref)
 	xconstraints[i] = constraints[i+1];
 	xconstraints[i+1] = constraints[i];
 	record_reg_classes (recog_data.n_alternatives, recog_data.n_operands,
-			    recog_data.operand, modes, 
+			    recog_data.operand, modes,
 			    xconstraints, insn, op_costs, reg_pref);
       }
 
   record_reg_classes (recog_data.n_alternatives, recog_data.n_operands,
-		      recog_data.operand, modes, 
+		      recog_data.operand, modes,
 		      constraints, insn, op_costs, reg_pref);
 }
 
@@ -1193,7 +1193,7 @@ regclass (f, nregs, dump)
 
 #ifdef CLASS_CANNOT_CHANGE_MODE
   reg_changes_mode = BITMAP_XMALLOC ();
-#endif  
+#endif
 
 #ifdef FORBIDDEN_INC_DEC_CLASSES
 
@@ -1258,7 +1258,7 @@ regclass (f, nregs, dump)
       int index;
 
       if (dump)
-        fprintf (dump, "\n\nPass %i\n\n",pass);
+	fprintf (dump, "\n\nPass %i\n\n",pass);
       /* Zero out our accumulation of the cost of each class for each reg.  */
 
       memset ((char *) costs, 0, nregs * sizeof (struct costs));
@@ -1277,7 +1277,7 @@ regclass (f, nregs, dump)
 	    insn = scan_one_insn (insn, pass);
 	}
       else
-	for (index = 0; index < n_basic_blocks; index++)	
+	for (index = 0; index < n_basic_blocks; index++)
 	  {
 	    basic_block bb = BASIC_BLOCK (index);
 
@@ -1293,17 +1293,17 @@ regclass (f, nregs, dump)
 		  break;
 	      }
 	  }
-      
+
       /* Now for each register look at how desirable each class is
 	 and find which class is preferred.  Store that in
 	 `prefclass'.  Record in `altclass' the largest register
 	 class any of whose registers is better than memory.  */
-    
+
       if (pass == 0)
 	reg_pref = reg_pref_buffer;
 
       if (dump)
-        {
+	{
 	  dump_regclass (dump);
 	  fprintf (dump,"\n");
 	}
@@ -1365,12 +1365,12 @@ regclass (f, nregs, dump)
 #endif
 		  )
 		alt = reg_class_subunion[(int) alt][class];
-	  
+
 	  /* If we don't add any classes, nothing to try.  */
 	  if (alt == best)
 	    alt = NO_REGS;
 
-	  if (dump 
+	  if (dump
 	      && (reg_pref[i].prefclass != (int) best
 		  || reg_pref[i].altclass != (int) alt))
 	    {
@@ -1418,7 +1418,7 @@ regclass (f, nregs, dump)
    This procedure works alternative by alternative.  For each alternative
    we assume that we will be able to allocate all pseudos to their ideal
    register class and calculate the cost of using that alternative.  Then
-   we compute for each operand that is a pseudo-register, the cost of 
+   we compute for each operand that is a pseudo-register, the cost of
    having the pseudo allocated to each register class and using it in that
    alternative.  To this cost is added the cost of the alternative.
 
@@ -1466,7 +1466,7 @@ record_reg_classes (n_alts, n_ops, ops, modes,
 	  classes[i] = NO_REGS;
 	  allows_mem[i] = 0;
 
-	  /* If this operand has no constraints at all, we can conclude 
+	  /* If this operand has no constraints at all, we can conclude
 	     nothing about it since anything is valid.  */
 
 	  if (*p == 0)
@@ -1512,7 +1512,7 @@ record_reg_classes (n_alts, n_ops, ops, modes,
 		       || REGNO (ops[j]) < FIRST_PSEUDO_REGISTER)
 		{
 		  /* This op is a pseudo but the one it matches is not.  */
-		  
+
 		  /* If we can't put the other operand into a register, this
 		     alternative can't be used.  */
 
@@ -1543,7 +1543,7 @@ record_reg_classes (n_alts, n_ops, ops, modes,
 			 + (recog_data.operand_type[i] != OP_IN
 			    ? may_move_out_cost[mode][(int) classes[i]][class]
 			    : 0));
-		  
+
 		  /* If the alternative actually allows memory, make things
 		     a bit cheaper since we won't need an extra insn to
 		     load it.  */
@@ -1726,7 +1726,7 @@ record_reg_classes (n_alts, n_ops, ops, modes,
 		{
 		  /* We must always fail if the operand is a REG, but
 		     we did not find a suitable class.
-		     
+
 		     Otherwise we may perform an uninitialized read
 		     from this_op_costs after the `continue' statement
 		     below.  */
@@ -1826,7 +1826,7 @@ record_reg_classes (n_alts, n_ops, ops, modes,
      and one operand is a pseudo with the other a hard reg or a pseudo
      that prefers a register that is in its own register class then
      we may want to adjust the cost of that register class to -1.
- 
+
      Avoid the adjustment if the source does not die to avoid stressing of
      register allocator by preferrencing two coliding registers into single
      class.
@@ -1906,7 +1906,7 @@ copy_cost (x, mode, class, to_p)
   class = PREFERRED_RELOAD_CLASS (x, class);
 
 #ifdef HAVE_SECONDARY_RELOADS
-  /* If we need a secondary reload (we assume here that we are using 
+  /* If we need a secondary reload (we assume here that we are using
      the secondary reload as an intermediate, not a scratch register), the
      cost is that to load the input into the intermediate register, then
      to copy them.  We use a special value of TO_P to avoid recursion.  */
@@ -2001,7 +2001,7 @@ record_address_regs (x, class, scale)
 
 	/* If index and base registers are the same on this machine, just
 	   record registers in any non-constant operands.  We assume here,
-	   as well as in the tests below, that all addresses are in 
+	   as well as in the tests below, that all addresses are in
 	   canonical form.  */
 
 	else if (INDEX_REG_CLASS == MODE_BASE_REG_CLASS (VOIDmode))
@@ -2192,7 +2192,7 @@ allocate_reg_info (num_regs, new_p, renumber_p)
 	{
 	  VARRAY_REG_INIT (reg_n_info, regno_allocated, "reg_n_info");
 	  renumber = (short *) xmalloc (size_renumber);
-	  reg_pref_buffer = (struct reg_pref *) xmalloc (regno_allocated 
+	  reg_pref_buffer = (struct reg_pref *) xmalloc (regno_allocated
 					      * sizeof (struct reg_pref));
 	}
 
@@ -2205,7 +2205,7 @@ allocate_reg_info (num_regs, new_p, renumber_p)
 	      free ((char *) renumber);
 	      free ((char *) reg_pref);
 	      renumber = (short *) xmalloc (size_renumber);
-	      reg_pref_buffer = (struct reg_pref *) xmalloc (regno_allocated 
+	      reg_pref_buffer = (struct reg_pref *) xmalloc (regno_allocated
 						  * sizeof (struct reg_pref));
 	    }
 
@@ -2213,7 +2213,7 @@ allocate_reg_info (num_regs, new_p, renumber_p)
 	    {
 	      renumber = (short *) xrealloc ((char *) renumber, size_renumber);
 	      reg_pref_buffer = (struct reg_pref *) xrealloc ((char *) reg_pref_buffer,
-						   regno_allocated 
+						   regno_allocated
 						   * sizeof (struct reg_pref));
 	    }
 	}
@@ -2232,7 +2232,7 @@ allocate_reg_info (num_regs, new_p, renumber_p)
     {
       /* Loop through each of the segments allocated for the actual
 	 reg_info pages, and set up the pointers, zero the pages, etc.  */
-      for (reg_data = reg_info_head; 
+      for (reg_data = reg_info_head;
 	   reg_data && reg_data->max_index >= min;
 	   reg_data = reg_data->next)
 	{
@@ -2318,7 +2318,7 @@ free_reg_info ()
 
 int max_parallel;
 
-/* Used as a temporary to record the largest number of registers in 
+/* Used as a temporary to record the largest number of registers in
    PARALLEL in a SET_DEST.  This is added to max_parallel.  */
 
 static int max_set_parallel;
@@ -2467,7 +2467,7 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
 	 Likewise if it is setting the destination from an address or from a
 	 value equivalent to an address or to the sum of an address and
 	 something else.
-		     
+
 	 But don't do any of this if the pseudo corresponds to a user
 	 variable since it should have already been set as a pointer based
 	 on the type.  */
