@@ -19,20 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
-/* The global __fltused is necessary to cause the printf/scanf routines
-   for outputting/inputting floating point numbers to be loaded.  Since this
-   is kind of hard to detect, we just do it all the time. */
-
-#ifdef ASM_FILE_START
-#undef ASM_FILE_START
-#endif
-#define ASM_FILE_START(FILE) \
-  do {	fprintf (FILE, "\t.file\t");				\
-	output_quoted_string (FILE, dump_base_name);		\
-	fprintf (FILE, "\n");					\
-        fprintf (FILE, ".global\t__fltused\n");			\
-  } while (0)
-
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC ""
 
@@ -64,16 +50,5 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
   {							\
     { 0, 0, 0 }						\
   }
-
-/* if the switch "-mwindows" is passed to ld, then specify to the Microsoft
-   linker the proper switches and libraries to build a graphical program */
-
-#define LIB_SPEC "%{mwindows:-subsystem:windows -entry:WinMainCRTStartup \
-  USER32.LIB GDI32.LIB COMDLG32.LIB WINSPOOL.LIB} \
- %{!mwindows:-subsystem:console -entry:mainCRTStartup} \
- %{mcrtmt:OLDNAMES.LIB LIBCMT.LIB KERNEL32.LIB ADVAPI32.LIB} \
- %{!mcrtmt:OLDNAMES.LIB LIBC.LIB KERNEL32.LIB ADVAPI32.LIB} \
- %{g:-debugtype:coff -debug:full} \
- %{v}"
 
 #define STDC_VALUE 0
