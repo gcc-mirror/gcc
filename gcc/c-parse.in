@@ -79,7 +79,7 @@ end ifc
 %start program
 
 %union {long itype; tree ttype; enum tree_code code;
-	const char *filename; int lineno; int ends_in_label; }
+	const char *filename; int lineno; }
 
 /* All identifiers that are not reserved words
    and are not declared typedefs in the current block */
@@ -193,8 +193,6 @@ end ifc
 %type <ttype> identifiers_or_typenames
 
 %type <itype> setspecs
-
-%type <ends_in_label> lineno_stmt_or_label lineno_stmt_or_labels stmt_or_label
 
 %type <filename> save_filename
 %type <lineno> save_lineno
@@ -822,13 +820,6 @@ datadecl:
 lineno_decl:
 	  save_filename save_lineno decl
 		{ }
-	;
-
-decls:
-	lineno_decl
-	| errstmt
-	| decls lineno_decl
-	| lineno_decl errstmt
 	;
 
 /* records the type and storage class specs to use for processing
@@ -1582,29 +1573,58 @@ absdcl1:  /* a nonempty absolute declarator */
 		{ $$ = $3; }
 	;
 
-/* at least one statement, the first of which parses without error.  */
-/* stmts is used only after decls, so an invalid first statement
-   is actually regarded as an invalid decl and part of the decls.  */
+/* A nonempty series of declarations and statements (possibly followed by
+   some labels) that can form the body of a compound statement.
+   NOTE: we don't allow labels on declarations; this might seem like a
+   natural extension, but there would be a conflict between attributes
+   on the label and prefix attributes on the declaration.  */
 
-stmts:
-	lineno_stmt_or_labels
+stmts_and_decls:
+	  lineno_stmt_decl_or_labels_ending_stmt
+	| lineno_stmt_decl_or_labels_ending_decl
+	| lineno_stmt_decl_or_labels_ending_label
 		{
-		  if (pedantic && $1)
+		  if (pedantic)
 		    pedwarn ("ISO C forbids label at end of compound statement");
 		}
+	| lineno_stmt_decl_or_labels_ending_error
 	;
 
-lineno_stmt_or_labels:
-	  lineno_stmt_or_label
-	| lineno_stmt_or_labels lineno_stmt_or_label
-		{ $$ = $2; }
-	| lineno_stmt_or_labels errstmt
-		{ $$ = 0; }
+lineno_stmt_decl_or_labels_ending_stmt:
+	  lineno_stmt
+	| lineno_stmt_decl_or_labels_ending_stmt lineno_stmt
+	| lineno_stmt_decl_or_labels_ending_decl lineno_stmt
+	| lineno_stmt_decl_or_labels_ending_label lineno_stmt
+	| lineno_stmt_decl_or_labels_ending_error lineno_stmt
 	;
 
-xstmts:
-	/* empty */
-	| stmts
+lineno_stmt_decl_or_labels_ending_decl:
+	  lineno_decl
+	| lineno_stmt_decl_or_labels_ending_stmt lineno_decl
+		{ if (pedantic && !flag_isoc99)
+		    pedwarn ("ISO C89 forbids mixed declarations and code"); }
+	| lineno_stmt_decl_or_labels_ending_decl lineno_decl
+	| lineno_stmt_decl_or_labels_ending_error lineno_decl
+	;
+
+lineno_stmt_decl_or_labels_ending_label:
+	  lineno_label
+	| lineno_stmt_decl_or_labels_ending_stmt lineno_label
+	| lineno_stmt_decl_or_labels_ending_decl lineno_label
+	| lineno_stmt_decl_or_labels_ending_label lineno_label
+	| lineno_stmt_decl_or_labels_ending_error lineno_label
+	;
+
+lineno_stmt_decl_or_labels_ending_error:
+	errstmt
+	| lineno_stmt_decl_or_labels errstmt
+	;
+
+lineno_stmt_decl_or_labels:
+	  lineno_stmt_decl_or_labels_ending_stmt
+	| lineno_stmt_decl_or_labels_ending_decl
+	| lineno_stmt_decl_or_labels_ending_label
+	| lineno_stmt_decl_or_labels_ending_error
 	;
 
 errstmt:  error ';'
@@ -1697,21 +1717,16 @@ compstmt_start: '{' { compstmt_count++;
 
 compstmt_nostart: '}'
 		{ $$ = convert (void_type_node, integer_zero_node); }
-	| pushlevel maybe_label_decls decls xstmts '}' poplevel
-		{ $$ = poplevel (1, 1, 0); 
-		  SCOPE_STMT_BLOCK (TREE_PURPOSE ($6)) 
-		    = SCOPE_STMT_BLOCK (TREE_VALUE ($6))
-		    = $$; }
-	| pushlevel maybe_label_decls error '}' poplevel
-		{ $$ = poplevel (kept_level_p (), 0, 0); 
+	| pushlevel maybe_label_decls compstmt_contents_nonempty '}' poplevel
+		{ $$ = poplevel (kept_level_p (), 1, 0); 
 		  SCOPE_STMT_BLOCK (TREE_PURPOSE ($5)) 
 		    = SCOPE_STMT_BLOCK (TREE_VALUE ($5))
 		    = $$; }
-	| pushlevel maybe_label_decls stmts '}' poplevel
-		{ $$ = poplevel (kept_level_p (), 0, 0); 
-		  SCOPE_STMT_BLOCK (TREE_PURPOSE ($5)) 
-		    = SCOPE_STMT_BLOCK (TREE_VALUE ($5))
-		    = $$; }
+	;
+
+compstmt_contents_nonempty:
+	  stmts_and_decls
+	| error
 	;
 
 compstmt_primary_start:
@@ -1807,16 +1822,14 @@ c99_block_lineno_labeled_stmt:
 		    RECHAIN_STMTS ($1, COMPOUND_BODY ($1)); }
 	;
 
-lineno_stmt_or_label:
-	  save_filename save_lineno stmt_or_label
-		{ $$ = $3; }
+lineno_stmt:
+	  save_filename save_lineno stmt
+		{ }
 	;
 
-stmt_or_label:
-	  stmt
-		{ $$ = 0; }
-	| label
-		{ $$ = 1; }
+lineno_label:
+	  save_filename save_lineno label
+		{ }
 	;
 
 select_or_iter_stmt:
