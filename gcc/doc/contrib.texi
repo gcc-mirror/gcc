@@ -196,6 +196,9 @@ maintaining complex<>, sanity checking and disbursement, configuration
 architecture, libio maintenance, and early math work.
 
 @item
+Zdenek Dvorak for a new loop unroller and various fixes.
+
+@item
 Richard Earnshaw for his ongoing work with the ARM@.
 
 @item
@@ -299,14 +302,21 @@ fixes.
 Kate Hedstrom for staking the g77 folks with an initial testsuite.
 
 @item
-Richard Henderson for his ongoing SPARC, alpha, and ia32 work, loop
+Richard Henderson for his ongoing SPARC, alpha, ia32, and ia64 work, loop
 opts, and generally fixing lots of old problems we've ignored for
 years, flow rewrite and lots of further stuff, including reviewing
 tons of patches.
 
 @item
+Aldy Hernandez for working on the PowerPC port, SIMD support, and
+various fixes.
+
+@item
 Nobuyuki Hikichi of Software Research Associates, Tokyo, contributed
 the support for the Sony NEWS machine.
+
+@item
+Kazu Hirata for caring and feeding the Hitachi H8/300 port and various fixes.
 
 @item
 Manfred Hollstein for his ongoing work to keep the m88k alive, lots
