@@ -517,6 +517,17 @@ extern void abort ();
 # define mkdir(a,b) mkdir(a)
 #endif
 
+/* Provide a way to print an address via printf.  */
+#ifndef HOST_PTR_PRINTF
+# ifdef HAVE_PRINTF_PTR
+#  define HOST_PTR_PRINTF "%p"
+# else
+#  define HOST_PTR_PRINTF \
+    (sizeof (int) == sizeof (char *) ? "%x" \
+     : sizeof (long) == sizeof (char *) ? "%lx" : "%llx")
+# endif
+#endif /* ! HOST_PTR_PRINTF */
+
 /* Get libiberty declarations. */
 #include "libiberty.h"
 

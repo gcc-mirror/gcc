@@ -21,21 +21,6 @@ Boston, MA 02111-1307, USA.  */
 #ifndef HAVE_MACHINE_MODES
 #define HAVE_MACHINE_MODES
 
-/* Strictly speaking, this isn't the proper place to include these definitions,
-   but this file is included by every GCC file. */
-
-/* Provide a default way to print an address in hex via printf.  */
-
-#ifndef HOST_PTR_PRINTF
-# ifdef HAVE_PRINTF_PTR
-#  define HOST_PTR_PRINTF "%p"
-# else
-#  define HOST_PTR_PRINTF \
-    (sizeof (int) == sizeof (char *) ? "%x" \
-     : sizeof (long) == sizeof (char *) ? "%lx" : "%llx")
-# endif
-#endif /* ! HOST_PTR_PRINTF */
-
 /* Make an enum class that gives all the machine modes.  */
 
 #define DEF_MACHMODE(SYM, NAME, TYPE, SIZE, UNIT, WIDER)  SYM,
