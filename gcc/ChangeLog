@@ -1,3 +1,9 @@
+Tue Sep  7 22:39:18 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* rs6000.c: Include ggc.h.
+	(rs6000_add_gc_roots): New function.
+	(override_options): Call it.
+
 Tue Sep  7 22:09:03 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.h (alpha_compare): New.

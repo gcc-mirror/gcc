@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "function.h"
 #include "output.h"
 #include "toplev.h"
+#include "ggc.h"
 
 #ifndef TARGET_NO_PROTOTYPE
 #define TARGET_NO_PROTOTYPE 0
@@ -110,6 +111,8 @@ int rs6000_debug_arg;		/* debug argument handling */
 
 /* Flag to say the TOC is initialized */
 int toc_initialized;
+
+static void rs6000_add_gc_roots PROTO ((void));
 
 
 /* Default register names.  */
@@ -364,6 +367,9 @@ rs6000_override_options (default_cpu)
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
+
+  /* Register global variables with the garbage collector.  */
+  rs6000_add_gc_roots ();
 }
 
 void
@@ -5999,4 +6005,14 @@ rs6000_fatal_bad_address (op)
   rtx op;
 {
   fatal_insn ("bad address", op);
+}
+
+/* Called to register all of our global variables with the garbage
+   collector.  */
+
+static void
+rs6000_add_gc_roots ()
+{
+  ggc_add_rtx_root (&rs6000_compare_op0, 1);
+  ggc_add_rtx_root (&rs6000_compare_op1, 1);
 }
