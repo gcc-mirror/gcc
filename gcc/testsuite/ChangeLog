@@ -1,3 +1,7 @@
+2004-11-06  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.dg/pr16286.c: Also test for bool and pixel.
+
 2004-11-06  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/anon-struct-6.c, gcc.dg/anon-struct-7.c,

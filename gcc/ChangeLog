@@ -1,3 +1,9 @@
+2004-11-06  Andreas Schwab  <schwab@suse.de>
+
+	PR target/16286
+	* config/rs6000/altivec.h: Replace bool by __bool and pixel by
+	__pixel.
+
 2004-11-06  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-ssa-copyrename.c (rename_ssa_copies): Make it static.

@@ -9,11 +9,16 @@
 
 #include <altivec.h>
 #undef vector
+#undef pixel
+#undef bool
 
 void test(void)
 {
         __vector unsigned int a, b;
         a = vec_and(a, b);
+	vec_step (b);
 }
 
-/* { dg-bogus "syntax error before \"vector\"" "-maltivec" { target powerpc*-*-* } 0 } */
+/* { dg-bogus "(syntax|parse) error before \"vector\"" "-maltivec" { target powerpc*-*-* } 0 } */
+/* { dg-bogus "(syntax|parse) error before \"vector\"" "-maltivec" { target powerpc*-*-* } 0 } */
+/* { dg-bogus "(syntax|parse) error before \"vector\"" "-maltivec" { target powerpc*-*-* } 0 } */
