@@ -14,3 +14,14 @@
 #ifdef DWARF_DEBUGGING_INFO
 #undef DWARF_DEBUGGING_INFO
 #endif
+
+/*
+  Changed from config/svr4.h in the following ways:
+
+  - Added "%{V}".
+  - Modified "{%v:-V}" to take into account "%{V}".
+  - Added "-s" so that stabs are saved in the final executable.  */
+
+#undef ASM_SPEC
+#define ASM_SPEC \
+  "%{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} -s"
