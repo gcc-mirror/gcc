@@ -4454,6 +4454,10 @@ assign_parms (fndecl)
 						  offset_rtx));
 
 	set_mem_attributes (stack_parm, parm, 1);
+
+	/* Set also REG_ATTRS if parameter was passed in a register.  */
+	if (entry_parm)
+	  set_reg_attrs_from_mem (entry_parm, stack_parm);
       }
 
       /* If this parameter was passed both in registers and in the stack,
