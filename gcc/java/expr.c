@@ -1,5 +1,5 @@
 /* Process expressions for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -2549,7 +2549,7 @@ build_jni_stub (tree method)
   args = NULL_TREE;
   for (tem = method_args; tem != NULL_TREE; tem = TREE_CHAIN (tem))
     {
-      int arg_bits = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (tem)));
+      int arg_bits = TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (tem)));
 #ifdef PARM_BOUNDARY
       arg_bits = (((arg_bits + PARM_BOUNDARY - 1) / PARM_BOUNDARY)
                   * PARM_BOUNDARY);
