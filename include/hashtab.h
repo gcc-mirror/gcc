@@ -1,5 +1,5 @@
 /* An expandable hash tables datatype.  
-   Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov (vmakarov@cygnus.com).
 
 This program is free software; you can redistribute it and/or modify
@@ -101,13 +101,13 @@ struct htab GTY(())
   /* Table itself.  */
   PTR * GTY ((use_param, length ("%h.size"))) entries;
 
-  /* Current size (in entries) of the hash table */
+  /* Current size (in entries) of the hash table.  */
   size_t size;
 
-  /* Current number of elements including also deleted elements */
+  /* Current number of elements including also deleted elements.  */
   size_t n_elements;
 
-  /* Current number of deleted elements in the table */
+  /* Current number of deleted elements in the table.  */
   size_t n_deleted;
 
   /* The following member is used for debugging. Its value is number
@@ -126,6 +126,10 @@ struct htab GTY(())
   PTR GTY((skip)) alloc_arg;
   htab_alloc_with_arg alloc_with_arg_f;
   htab_free_with_arg free_with_arg_f;
+
+  /* Current size (in entries) of the hash table, as an index into the
+     table of primes.  */
+  unsigned int size_prime_index;
 };
 
 typedef struct htab *htab_t;
