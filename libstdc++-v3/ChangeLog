@@ -1,3 +1,8 @@
+2004-07-14  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/22_locale/locale/cons/12658_thread-1.cc,
+	12658_thread-2.cc: Use __gnu_test::try_named_locale.
+
 2004-07-13  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* docs/html/ext/mt_allocator.html: Add docs for _Tune.
