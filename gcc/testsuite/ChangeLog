@@ -1,3 +1,8 @@
+2003-10-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.c-torture/execute/960416-1.x: Remove.
+	* gcc.c-torture/execute/divconst-3.x: Likewise.
+
 2003-10-15  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/12598
