@@ -1,3 +1,10 @@
+2004-02-24  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/14252
+	* include/bits/postypes.h (class streamoff): Add operator++(),
+	operator++(int), operator--() and operator--(int).
+	* testsuite/27_io/fpos/14252.cc: New.
+
 2004-02-24  Richard Sandiford  <rsandifo@redhat.com>
 
 	* include/bits/locale_facets.tcc (num_get::_M_extract_int): Fix bounds

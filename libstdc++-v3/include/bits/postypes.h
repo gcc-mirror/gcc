@@ -126,6 +126,36 @@ namespace std
       _M_off -= __off;
       return *this;
     }
+
+    streamoff&
+    operator++()
+    {
+      ++_M_off;
+      return *this;
+    }
+
+    streamoff
+    operator++(int)
+    {
+      const streamoff __tmp(*this);
+      ++_M_off;
+      return __tmp;
+    }
+
+    streamoff&
+    operator--()
+    {
+      --_M_off;
+      return *this;
+    }
+
+    streamoff
+    operator--(int)
+    {
+      const streamoff __tmp(*this);
+      --_M_off;
+      return __tmp;
+    }
   };
 
   /**
