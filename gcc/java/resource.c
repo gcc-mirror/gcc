@@ -105,12 +105,16 @@ write_resource_constructor (void)
   tree init_name, init_type, init_decl;
   tree iter;
   location_t saved_loc = input_location;
+  char *resource_ctor_name;
 
   /* Only do work if required.  */
   if (resources == NULL_TREE)
     return;
 
-  init_name = get_file_function_name ('I');
+  resource_ctor_name = concat (IDENTIFIER_POINTER (get_file_function_name ('I')),
+			       "_resource", NULL);
+  init_name = get_identifier (resource_ctor_name);
+  free (resource_ctor_name);
   init_type = build_function_type (void_type_node, end_params_node);
 
   init_decl = build_decl (FUNCTION_DECL, init_name, init_type);
