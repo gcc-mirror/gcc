@@ -3352,7 +3352,7 @@ elif test -d ${srcdir}/gcc; then
 elif test "$host" = "$target"; then
   GFORTRAN_FOR_TARGET='gfortran'
 else
-  GFORTRAN_FOR_TARGET=`echo gfortran | sed -e 's/x/x/' ${program_transform_name}`
+  GFORTRAN_FOR_TARGET=`echo gfortran | sed "${program_transform_name}"`
 fi
 case $GFORTRAN_FOR_TARGET in
 *' $(FLAGS_FOR_TARGET)') ;;
