@@ -5789,12 +5789,6 @@ does not have a special read-only data section, and does not put data
 in the text section.
 @end defmac
 
-@defmac SHARED_SECTION_ASM_OP
-If defined, a C expression whose value is a string, including spacing,
-containing the assembler operation to identify the following data as
-shared data.  If not defined, @code{DATA_SECTION_ASM_OP} will be used.
-@end defmac
-
 @defmac BSS_SECTION_ASM_OP
 If defined, a C expression whose value is a string, including spacing,
 containing the assembler operation to identify the following data as
