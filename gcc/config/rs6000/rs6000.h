@@ -1550,13 +1550,17 @@ typedef struct rs6000_stack {
    default, and -m switches get the final word.  See
    rs6000_override_options for more details.
 
+   The PPC32 SVR4 ABI uses IEEE double extended for long double, if 128-bit
+   long double support is enabled.  These values are returned in memory.
+
    int_size_in_bytes returns -1 for variable size objects, which go in
    memory always.  The cast to unsigned makes -1 > 8.  */
 
 #define RETURN_IN_MEMORY(TYPE) \
-  (AGGREGATE_TYPE_P (TYPE) && \
-   (TARGET_AIX_STRUCT_RET || \
-    (unsigned HOST_WIDE_INT) int_size_in_bytes (TYPE) > 8))
+  ((AGGREGATE_TYPE_P (TYPE)						\
+    && (TARGET_AIX_STRUCT_RET						\
+	|| (unsigned HOST_WIDE_INT) int_size_in_bytes (TYPE) > 8))	\
+   || (DEFAULT_ABI == ABI_V4 && TYPE_MODE (TYPE) == TFmode))
 
 /* DRAFT_V4_STRUCT_RET defaults off.  */
 #define DRAFT_V4_STRUCT_RET 0
