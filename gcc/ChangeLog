@@ -1,3 +1,9 @@
+2003-01-21  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
+
+        PR opt/7507
+        * calls.c (fix_unsafe_tree): Split out from ...
+        (expand_call): ... here.  Use it on the function address too.
+
 2003-01-20  Richard Henderson  <rth@redhat.com>
 
         PR opt/7507
