@@ -80,7 +80,7 @@ static JIS_ACTION JIS_action_table[JIS_S_NUM][JIS_C_NUM] = {
 };
 
 
-char *literal_codeset = NULL;
+const char *literal_codeset = NULL;
 
 /* Store into *PWC (if PWC is not null) the wide character
    corresponding to the multibyte character at the start of the
@@ -94,12 +94,12 @@ char *literal_codeset = NULL;
 int
 local_mbtowc (pwc, s, n)
      wchar_t *pwc;
-     char *s;
+     const char *s;
      size_t n;
 {
   static JIS_STATE save_state = ASCII;
   JIS_STATE curr_state = save_state;
-  unsigned char *t = (unsigned char *) s;
+  const unsigned char *t = (const unsigned char *) s;
 
   if (s != NULL && n == 0)
     return -1;
@@ -178,8 +178,8 @@ local_mbtowc (pwc, s, n)
     {
       JIS_ACTION action;
       JIS_CHAR_TYPE ch;
-      unsigned char *ptr;
-      int i, curr_ch;
+      const unsigned char *ptr;
+      size_t i, curr_ch;
  
       if (s == NULL)
 	{
@@ -260,7 +260,7 @@ local_mbtowc (pwc, s, n)
 
             case MAKE_A:
             case MAKE_J:
-              ptr = (char *) (t + i + 1);
+              ptr = (const unsigned char *) (t + i + 1);
               break;
 
             case ERROR:
@@ -297,7 +297,7 @@ local_mbtowc (pwc, s, n)
 
 int
 local_mblen (s, n)
-     char *s;
+     const char *s;
      size_t n;
 {
   return local_mbtowc (NULL, s, n);

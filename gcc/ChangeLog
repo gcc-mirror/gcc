@@ -1,3 +1,12 @@
+Tue Oct  5 12:16:49 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mbchar.c (literal_codeset, local_mbtowc, local_mblen): Constify
+	a char*.
+	(local_mbtowc): Change the type of variable `i' from int to size_t.
+
+	* mbchar.h (ISSJIS1, ISSJIS2): Use parens around && within ||.
+	(local_mbtowc, local_mblen, literal_codeset): Constify a char*.
+
 Tue Oct  5 11:34:52 1999  Michael Meissner  <meissner@cygnus.com>
 
 	* ggc-{common,callbacks,none,page,simple}.c (toplevel): Reorder
