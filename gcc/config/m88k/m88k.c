@@ -1341,6 +1341,16 @@ real_or_0_operand (op, mode)
 	      && op == CONST0_RTX (mode)));
 }
 
+/* Return true if OP is valid to use in the context of logic aritmethic
+   on condition codes. */
+
+int partial_ccmode_register_operand(op,mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return (register_operand(op,CCmode) || register_operand(op,CCEVENmode));
+}
+
 /* Return true if OP is a relational operator.  */
 
 int
@@ -1360,6 +1370,40 @@ relop (op, mode)
     case LEU:
     case GEU:
     case GTU:
+      return 1;
+    default:
+      return 0;
+    }
+}
+
+int even_relop(op,mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  switch (GET_CODE(op))
+    {
+    case EQ:
+    case LT:
+    case GT:
+    case LTU:
+    case GTU:
+      return 1;
+    default:
+      return 0;
+    }
+}
+
+int odd_relop(op,mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  switch (GET_CODE(op))
+    {
+    case NE:
+    case LE:
+    case GE:
+    case LEU:
+    case GEU:
       return 1;
     default:
       return 0;
@@ -2803,6 +2847,10 @@ print_operand (file, x, code)
 	     ? ".n\t" : "\t", file);
       return;
 
+    case '!': /* Reverse the following condition. */
+      sequencep++;
+      reversep=1;
+      return; 
     case 'R': /* reverse the condition of the next print_operand
 		 if operand is a label_ref.  */
       sequencep++;
