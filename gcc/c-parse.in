@@ -757,9 +757,16 @@ old_style_parm_decls_1:
 	  if (warn_traditional && !in_system_header
 	      && parsing_iso_function_signature)
 	    warning ("traditional C rejects ISO C style function definitions");
+	  if (warn_old_style_definition && !in_system_header
+	      && !parsing_iso_function_signature)
+	    warning ("old-style parameter declaration");
 	  parsing_iso_function_signature = false; /* Reset after warning.  */
 	}
 	| datadecls
+	{
+	  if (warn_old_style_definition && !in_system_header)
+	    warning ("old-style parameter declaration");
+	}
 	;
 
 /* The following are analogous to lineno_decl, decls and decl

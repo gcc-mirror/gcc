@@ -220,7 +220,7 @@ in the following sections.
 -Wmain  -Wmissing-braces @gol
 -Wmissing-format-attribute  -Wmissing-noreturn @gol
 -Wno-multichar  -Wno-format-extra-args  -Wno-format-y2k @gol
--Wno-import  -Wnonnull  -Wpacked  -Wpadded @gol
+-Wno-import  -Wnonnull -Wold-style-definition -Wpacked  -Wpadded @gol
 -Wparentheses  -Wpointer-arith  -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
 -Wsign-compare  -Wstrict-aliasing @gol
@@ -2708,6 +2708,11 @@ Warn if a function is declared or defined without specifying the
 argument types.  (An old-style function definition is permitted without
 a warning if preceded by a declaration which specifies the argument
 types.)
+
+@item -Wold-style-definition @r{(C only)}
+@opindex Wold-style-definition
+Warn if an old-style function definition is used.  A warning is given
+even if there is a previous prototype.
 
 @item -Wmissing-prototypes @r{(C only)}
 @opindex Wmissing-prototypes

@@ -550,6 +550,10 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       warn_nonnull = value;
       break;
 
+    case OPT_Wold_style_definition:
+      warn_old_style_definition = value;
+      break;
+
     case OPT_Wold_style_cast:
       warn_old_style_cast = value;
       break;

@@ -591,6 +591,10 @@ extern int warn_implicit_int;
       
 extern int warn_nonnull;
 
+/* Warn about old-style parameter declaration.  */
+
+extern int warn_old_style_definition;
+
 
 /* ObjC language option variables.  */
 
