@@ -1,3 +1,8 @@
+2005-02-21  Richard Guenther  <rguenth@gcc.gnu.org>
+
+	PR bootstrap/13770
+	* doc/install.texi: Document --with-gc.
+
 2005-02-21  Paolo Bonzini  <bonzini@gnu.org>
 
 	* simplify-rtx.c (simplify_unary_operation): Add a missing
