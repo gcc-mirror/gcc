@@ -1,3 +1,14 @@
+2004-11-28  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR target/18331
+	* config/mmix/mmix.md ("*movdicc_real_reversible"): Rename from
+	"*movdicc_real".  Only match reversible comparisons.
+	("*movdicc_real_nonreversible"): New pattern, split from
+	"*movdicc_real".  Match only nonreversible comparisons.  Exclude
+	reversed alternatives.
+	("*movdfcc_real_reversible", "*movdfcc_real_nonreversible"):
+	Similar.
+
 2004-11-27  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.md: Move all define_predicate's ...
