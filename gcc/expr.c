@@ -522,7 +522,15 @@ emit_queue ()
   register rtx p;
   while ((p = pending_chain))
     {
-      QUEUED_INSN (p) = emit_insn (QUEUED_BODY (p));
+      rtx body = QUEUED_BODY (p);
+
+      if (GET_CODE (body) == SEQUENCE)
+	{
+	  QUEUED_INSN (p) = XVECEXP (QUEUED_BODY (p), 0, 0);
+	  emit_insn (QUEUED_BODY (p));
+	}
+      else
+	QUEUED_INSN (p) = emit_insn (QUEUED_BODY (p));
       pending_chain = QUEUED_NEXT (p);
     }
 }

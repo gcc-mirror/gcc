@@ -30,7 +30,8 @@ Boston, MA 02111-1307, USA.  */
 /* The variable for which an increment is queued.  */
 #define QUEUED_VAR(P) XEXP (P, 0)
 /* If the increment has been emitted, this is the insn
-   that does the increment.  It is zero before the increment is emitted.  */
+   that does the increment.  It is zero before the increment is emitted.
+   If more than one insn is emitted, this is the first insn.  */
 #define QUEUED_INSN(P) XEXP (P, 1)
 /* If a pre-increment copy has been generated, this is the copy
    (it is a temporary reg).  Zero if no copy made yet.  */
