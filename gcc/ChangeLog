@@ -1,3 +1,64 @@
+2000-12-03  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	* Makefile.in (OBJS): Add sched-rgn.o.
+	(sched-rgn.o): New rule.  * haifa-sched.c (sched_verbose): No
+	longer static.
+	(INSN_PRIORITY, INSN_COST, INSN_UNIT, INSN_REG_WEIGHT,
+	INSN_BLOCKAGE, UNIT_BITS, BLOCKAGE_MASK, ENCODE_BLOCKAGE,
+	UNIT_BLOCKED, BLOCKAGE_RANGE, MIN_BLOCKAGE_COST,
+	MAX_BLOCKAGE_COST): Move to sched-int.h.
+	(MAX_RGN_BLOCKS, MAX_RGN_INSNS, INSN_REF_COUNT, FED_BY_SPEC_LOAD,
+	IS_LOAD_INSN, struct haifa_edge, edge_table, NEXT_IN, NEXT_OUT,
+	FROM_BLOCK, TO_BLOCK, nr_edges, in_edges, out_edges, IN_EDGES,
+	OUT_EDGES, edgelst, struct region, nr_regions, rgn_table,
+	rgn_bb_table, block_to_bb, containing_rgn, RGN_NR_BLOCKS,
+	RGN_BLOCKS, BLOCK_TO_BB, BB_TO_BLOCK, CONTAINING_RGN,
+	debug_regions, find_single_block_region, find_rgns, too_large,
+	init_regions, current_nr_blocks, current_blocks, bitset, bitlst,
+	bitlst_table_last, bitlst_table_size, bitlst_table, bitset_member,
+	extract_bitlst, bblst, struct candidate, candidate_table,
+	bblst_table, bblst_size, bblst_last, IS_VALID, IS_SPECULATIVE,
+	SRC_PROB, target_bb, split_edges, compute_trg_info,
+	debug_candidate, debug_candidates, bbset, bbset_size, dom,
+	IS_RGN_ENTRY, IS_DOMINATED, prob, GET_SRC_PROB, edgeset,
+	rgn_nr_edges, rgn_edges, edgeset_size, edgeset_bitsize,
+	EDGE_TO_BIT, edge_to_bit, pot_split, ancestor_edges,
+	compute_dom_prob_ps, ABS_VALUE, INSN_PROBABILITY,
+	IS_SPECULATIVE_INSN, INSN_BB, MIN_DIFF_PRIORITY, MIN_PROBABILITY,
+	MIN_PROB_DIFF, check_live_1, update_live_1, check_live,
+	update_live, set_spec_fed, is_pfree, find_conditional_protection,
+	is_conditionally_protected, may_trap_exp, haifa_classify_insn,
+	is_prisky, is_exception_free, add_branch_dependences,
+	propagate_deps, compute_block_backward_dependences,
+	debug_dependencies, is_cfg_nonregular, build_control_flow,
+	new_edge, bb_deps, BITSET_UNION, BITSET_INTER, BITSET_DIFFER,
+	BITSET_INVERT, BITSET_ADD, BITSET_REMOVE, debug_regions,
+	UPDATE_LOOP_RELATIONS, INSN_TRAP_CLASS, WORST_CLASS, IS_REACHABLE,
+	CONST_BASED_ADDRESS_P, free_pending_lists, sched_target_n_insns,
+	target_n_insns, sched_n_insns, init_ready_list, deaths_in_region,
+	can_schedule_ready_p, new_ready, schedule_more_p, rgn_print_insn,
+	rgn_rank, region_sched_info): Move to sched-rgn.c.
+	(debug_reg_vector): Delete useless function.
+	(get_bb_head_tail): Likewise.
+	(insn_issue_delay, insn_cost, ready_add, get_block_head_tail,
+	no_real_insns_p, rm_line_notes, save_line_notes,
+	restore_line_notes, rm_redundant_line_notes, sched_init): No
+	longer static.
+	(rm_line_notes, save_line_notes, restore_line_notes,
+	schedule_block, set_priorities): Change argument to be a real
+	basic block, not one of haifa's "bb"s.  All callers changed
+	(rm_other_notes): Initialize note_list here, not in
+	schedule_region.
+	(sched_finish): New function, called from schedule_insn.  * *
+	sched-int.h (INSN_PRIORITY, INSN_COST, INSN_UNIT, INSN_REG_WEIGHT,
+	INSN_BLOCKAGE, UNIT_BITS, BLOCKAGE_MASK, ENCODE_BLOCKAGE,
+	UNIT_BLOCKED, BLOCKAGE_RANGE, MIN_BLOCKAGE_COST,
+	MAX_BLOCKAGE_COST): Moved here from haifa-sched.c.
+	(get_block_head_tail, no_real_insns_p, rm_line_notes,
+	save_line_notes, restore_line_notes, rm_redundant_line_notes,
+	rm_other_notes, insn_issue_delay, set_priorities, schedule_block,
+	sched_init, sched_finish, ready_add, insn_cost): Declare.
+
 2000-12-03  Laurynas Biveinis  <lauras@softhome.net>
 	    Bruce Korb  <bkorb@gnu.org>
 
