@@ -2162,12 +2162,11 @@ typedef struct mips_args {
     }									    \
 									    \
   /* Flush the instruction cache.  */					    \
-  /* ??? Are the modes right? Maybe they should depend on -mint64/-mlong64? */\
   /* ??? Should check the return value for errors.  */			    \
   emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "cacheflush"),		    \
 		     0, VOIDmode, 3, addr, Pmode,			    \
-		     GEN_INT (TRAMPOLINE_SIZE), SImode,  		    \
-		     GEN_INT (1), SImode);				    \
+		     GEN_INT (TRAMPOLINE_SIZE), TYPE_MODE (integer_type_node),\
+		     GEN_INT (1), TYPE_MODE (integer_type_node));	    \
 }
 
 /* Addressing modes, and classification of registers for them.  */
