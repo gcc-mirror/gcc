@@ -8305,7 +8305,6 @@ canonicalize_condition (insn, cond, reverse, earliest, want_reg)
   rtx tem;
   rtx op0, op1;
   int reverse_code = 0;
-  int did_reverse_condition = 0;
   enum machine_mode mode;
 
   code = GET_CODE (cond);
@@ -8314,10 +8313,9 @@ canonicalize_condition (insn, cond, reverse, earliest, want_reg)
   op1 = XEXP (cond, 1);
 
   if (reverse)
-    {
-      code = reverse_condition (code);
-      did_reverse_condition ^= 1;
-    }
+    code = reversed_comparison_code (cond, insn);
+  if (code == UNKNOWN)
+    return 0;
 
   if (earliest)
     *earliest = insn;
@@ -8368,13 +8366,19 @@ canonicalize_condition (insn, cond, reverse, earliest, want_reg)
 
       if ((prev = prev_nonnote_insn (prev)) == 0
 	  || GET_CODE (prev) != INSN
-	  || FIND_REG_INC_NOTE (prev, 0)
-	  || (set = single_set (prev)) == 0)
+	  || FIND_REG_INC_NOTE (prev, 0))
+	break;
+
+      set = set_of (op0, prev);
+
+      if (set
+	  && (GET_CODE (set) != SET
+	      || !rtx_equal_p (SET_DEST (set), op0)))
 	break;
 
       /* If this is setting OP0, get what it sets it to if it looks
 	 relevant.  */
-      if (rtx_equal_p (SET_DEST (set), op0))
+      if (set)
 	{
 	  enum machine_mode inner_mode = GET_MODE (SET_DEST (set));
 
@@ -8434,10 +8438,6 @@ canonicalize_condition (insn, cond, reverse, earliest, want_reg)
 		       || mode == VOIDmode || inner_mode == VOIDmode))
 
 	    {
-	      /* We might have reversed a LT to get a GE here.  But this wasn't
-		 actually the comparison of data, so we don't flag that we
-		 have had to reverse the condition.  */
-	      did_reverse_condition ^= 1;
 	      reverse_code = 1;
 	      x = SET_SRC (set);
 	    }
@@ -8455,10 +8455,9 @@ canonicalize_condition (insn, cond, reverse, earliest, want_reg)
 	    code = GET_CODE (x);
 	  if (reverse_code)
 	    {
-	      code = reverse_condition (code);
+	      code = reversed_comparison_code (x, prev);
 	      if (code == UNKNOWN)
 		return 0;
-	      did_reverse_condition ^= 1;
 	      reverse_code = 0;
 	    }
 
@@ -8520,15 +8519,6 @@ canonicalize_condition (insn, cond, reverse, earliest, want_reg)
 	  break;
 	}
     }
-
-  /* If this was floating-point and we reversed anything other than an
-     EQ or NE or (UN)ORDERED, return zero.  */
-  if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT
-      && did_reverse_condition
-      && code != NE && code != EQ && code != UNORDERED && code != ORDERED
-      && ! flag_fast_math
-      && GET_MODE_CLASS (GET_MODE (op0)) == MODE_FLOAT)
-    return 0;
 
 #ifdef HAVE_cc0
   /* Never return CC0; return zero instead.  */
