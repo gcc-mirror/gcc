@@ -2393,16 +2393,16 @@ remove_useless_addtr_insns (insns, check_notes)
 
    Note in DISP > 8k case, we will leave the high part of the address
    in %r1.  There is code in expand_hppa_{prologue,epilogue} that knows this.*/
+
 static void
 store_reg (reg, disp, base)
      int reg, disp, base;
 {
   if (VAL_14_BITS_P (disp))
-    {
-      emit_move_insn (gen_rtx_MEM (SImode,
-				   plus_constant (base, disp)),
-		      gen_rtx_REG (SImode, reg));
-    }
+    emit_move_insn (gen_rtx_MEM (SImode,
+				 plus_constant (gen_rtx_REG (SImode, base),
+						disp)),
+		    gen_rtx_REG (SImode, reg));
   else
     {
       emit_insn (gen_add_high_const (gen_rtx_REG (SImode, 1),
@@ -2411,7 +2411,7 @@ store_reg (reg, disp, base)
       emit_move_insn (gen_rtx_MEM (SImode,
 				   gen_rtx_LO_SUM (SImode,
 						   gen_rtx_REG (SImode, 1),
-					GEN_INT (disp))),
+						   GEN_INT (disp))),
 		      gen_rtx_REG (SImode, reg));
     }
 }
@@ -2421,13 +2421,16 @@ store_reg (reg, disp, base)
 
    Note in DISP > 8k case, we will leave the high part of the address
    in %r1.  There is code in expand_hppa_{prologue,epilogue} that knows this.*/
+
 static void
 load_reg (reg, disp, base)
      int reg, disp, base;
 {
   if (VAL_14_BITS_P (disp))
     emit_move_insn (gen_rtx_REG (SImode, reg),
-		    gen_rtx_MEM (SImode, plus_constant (base, disp)));
+		    gen_rtx_MEM (SImode,
+				 plus_constant (gen_rtx_REG (SImode, base),
+						disp)));
   else
     {
       emit_insn (gen_add_high_const (gen_rtx_REG (SImode, 1),
@@ -2446,13 +2449,14 @@ load_reg (reg, disp, base)
 
    Note in DISP > 8k case, we will leave the high part of the address
    in %r1.  There is code in expand_hppa_{prologue,epilogue} that knows this.*/
+
 static void
-set_reg_plus_d(reg, base, disp)
+set_reg_plus_d (reg, base, disp)
      int reg, base, disp;
 {
   if (VAL_14_BITS_P (disp))
     emit_move_insn (gen_rtx_REG (SImode, reg),
-		    plus_constant (base, disp));
+		    plus_constant (gen_rtx_REG (SImode, base), disp));
   else
     {
       emit_insn (gen_add_high_const (gen_rtx_REG (SImode, 1),
@@ -2792,7 +2796,7 @@ hppa_expand_prologue()
 	    pc_offset += VAL_14_BITS_P (arg_offset) ? 4 : 8;
 	  }
 
-      emit_move_insn (gen_rtx_EG (SImode (26), gen_rtx_REG (SImode, 2));
+      emit_move_insn (gen_rtx_REG (SImode, 26), gen_rtx_REG (SImode, 2));
       emit_move_insn (tmpreg, gen_rtx_HIGH (SImode, hp_profile_label_rtx));
       emit_move_insn (gen_rtx_REG (SImode, 24),
 		      gen_rtx_LO_SUM (SImode, tmpreg, hp_profile_label_rtx));

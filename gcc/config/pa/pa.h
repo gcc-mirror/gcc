@@ -1042,9 +1042,9 @@ struct hppa_args {int words, nargs_prototype, indirect; };
 		       ? ((CUM).words ? 23 : 25)			\
 		       : (27 - (CUM).words -				\
 			  FUNCTION_ARG_SIZE ((MODE), (TYPE))))),	\
-	 const0_rtx)))							\
+	 const0_rtx))))							\
       /* Pass this parameter in the stack.  */				\
-      : 0))
+      : 0)
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.
