@@ -38,7 +38,7 @@ pedwarn_c99 (const char *msgid, ...)
   va_list ap;
   
   va_start (ap, msgid);
-  diagnostic_set_info (&diagnostic, msgid, &ap, input_filename, input_line,
+  diagnostic_set_info (&diagnostic, msgid, &ap, input_location,
                        flag_isoc99 ? pedantic_error_kind () : DK_WARNING);
   report_diagnostic (&diagnostic);
   va_end (ap);
