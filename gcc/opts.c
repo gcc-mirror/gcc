@@ -1487,7 +1487,7 @@ print_help (void)
 {
   size_t i, len;
 
-  printf (_("\nThe following options are language-independent:\n"));
+  puts (_("\nThe following options are language-independent:\n"));
 
   for (i = 0; i < cl_options_count; i++)
     {
