@@ -1,3 +1,10 @@
+2002-09-27  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/locale_facets.tcc (num_put::_M_widen_int):
+	Deal correctly with grouped, showbased (oct or hex) zero.
+	* testsuite/22_locale/num_put_members_char.cc: Add test05.
+	* testsuite/22_locale/num_put_members_wchar_t.cc: Ditto.
+
 2002-09-27  Richard Henderson  <rth@redhat.com>
 
 	* config/os/hpux/cpu_limits.h: Remove.
