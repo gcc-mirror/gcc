@@ -1,5 +1,10 @@
 2004-04-22  Dalibor Topic  <robilad@kaffe.org>
 
+	* javax/security/auth/x500/X500Principal.java:
+	Cleaned up imports.
+
+2004-04-22  Dalibor Topic  <robilad@kaffe.org>
+
 	* javax/swing/JSlider.java:
 	Fixed HTML tags in comments.
 
