@@ -1,3 +1,16 @@
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+      NETBSD_OS_CPP_BUILTINS_AOUT();		\
+      builtin_define_std ("unix");		\
+      builtin_define_std ("m68k");		\
+      builtin_define_std ("mc68000");		\
+      builtin_define_std ("mc68020");		\
+      builtin_assert ("cpu=m68k");		\
+      builtin_assert ("machine=m68k");		\
+    }						\
+  while (0)
+
 #include <m68k/m68k.h>
 
 /* Get generic NetBSD definitions.  */
@@ -7,18 +20,19 @@
 
 #define TARGET_DEFAULT (MASK_BITFIELD|MASK_68881|MASK_68020)
 
+#define EXTRA_SPECS \
+  { "netbsd_cpp_spec",      NETBSD_CPP_SPEC },
+
 /* Define __HAVE_68881__ in preprocessor, unless -msoft-float is specified.
    This will control the use of inline 68881 insns in certain macros.  */
 
 #undef CPP_SPEC
-#define CPP_SPEC "%{!msoft-float:-D__HAVE_68881__ -D__HAVE_FPU__} %{posix:-D_POSIX_SOURCE}"
+#define CPP_SPEC \
+  "%{!msoft-float:-D__HAVE_68881__ -D__HAVE_FPU__} %(netbsd_cpp_spec)"
 
 #undef ASM_SPEC
 #define ASM_SPEC " %| %{m68030} %{m68040} %{m68060} %{fpic:-k} %{fPIC:-k -K}"
 
-/* Names to predefine in the preprocessor for this target machine.  */
-
-#define CPP_PREDEFINES "-Dunix -Dm68k -Dmc68000 -Dmc68020 -D__NetBSD__ -Asystem=unix -Asystem=NetBSD -Acpu=m68k -Amachine=m68k"
 
 /* Make gcc agree with <machine/ansi.h> */
 
