@@ -379,6 +379,11 @@ extern int flag_schedule_speculative_load_dangerous;
    by a cheaper branch, on a count register. */
 extern int flag_branch_on_count_reg;
 
+/* This option is set to 1 on -fsingle-precision-constant option which is
+   used to convert the floating point constants to single precision 
+   constants. */
+
+extern int flag_single_precision_constant;
 
 /* Nonzero means put things in delayed-branch slots if supported. */
 
