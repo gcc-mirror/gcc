@@ -852,7 +852,7 @@ rank_for_schedule (x, y)
 {
   rtx tmp = *(const rtx *) y;
   rtx tmp2 = *(const rtx *) x;
-  rtx link;
+  rtx link, lsi;
   int tmp_class, tmp2_class, depend_count1, depend_count2;
   int val, priority_val, weight_val, info_val;
 
@@ -871,23 +871,28 @@ rank_for_schedule (x, y)
     return info_val;
 
   /* Compare insns based on their relation to the last-scheduled-insn.  */
-  if (last_scheduled_insn)
+  for (lsi = last_scheduled_insn;
+       lsi && INSN_UID (lsi) >= old_max_uid;
+       lsi = PREV_INSN (lsi))
+    continue;
+
+  if (lsi)
     {
       /* Classify the instructions into three classes:
          1) Data dependent on last schedule insn.
          2) Anti/Output dependent on last scheduled insn.
          3) Independent of last scheduled insn, or has latency of one.
          Choose the insn from the highest numbered class if different.  */
-      link = find_insn_list (tmp, INSN_DEPEND (last_scheduled_insn));
-      if (link == 0 || insn_cost (last_scheduled_insn, link, tmp) == 1)
+      link = find_insn_list (tmp, INSN_DEPEND (lsi));
+      if (link == 0 || insn_cost (lsi, link, tmp) == 1)
 	tmp_class = 3;
       else if (REG_NOTE_KIND (link) == 0)	/* Data dependence.  */
 	tmp_class = 1;
       else
 	tmp_class = 2;
 
-      link = find_insn_list (tmp2, INSN_DEPEND (last_scheduled_insn));
-      if (link == 0 || insn_cost (last_scheduled_insn, link, tmp2) == 1)
+      link = find_insn_list (tmp2, INSN_DEPEND (lsi));
+      if (link == 0 || insn_cost (lsi, link, tmp2) == 1)
 	tmp2_class = 3;
       else if (REG_NOTE_KIND (link) == 0)	/* Data dependence.  */
 	tmp2_class = 1;
