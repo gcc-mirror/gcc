@@ -431,7 +431,7 @@ build_vtable_entry (delta, pfn)
 /* We want to give the assembler the vtable identifier as well as
    the offset to the function pointer.  So we generate
 
-   __asm__ __volatile__ (".vtable_entry %0, %1"
+   __asm__ __volatile__ (".vtable_entry %c0, %c1"
       : : "s"(&class_vtable),
           "i"((long)&vtbl[idx].pfn - (long)&vtbl[0])); */
 
@@ -439,7 +439,7 @@ static void
 build_vtable_entry_ref (basetype, vtbl, idx)
      tree basetype, vtbl, idx;
 {
-  static char asm_stmt[] = ".vtable_entry %0, %1";
+  static char asm_stmt[] = ".vtable_entry %c0, %c1";
   tree s, i, i2;
 
   s = build_unary_op (ADDR_EXPR, TYPE_BINFO_VTABLE (basetype), 0);
