@@ -5179,6 +5179,8 @@ c_common_nodes_and_builtins ()
   built_in_decls[BUILT_IN_STRCHR] =
     builtin_function ("__builtin_strchr", string_ftype_string_int,
 		    BUILT_IN_STRCHR, BUILT_IN_NORMAL, "strchr");
+  builtin_function ("__builtin_strrchr", string_ftype_string_int,
+		    BUILT_IN_STRRCHR, BUILT_IN_NORMAL, "strrchr");
   builtin_function ("__builtin_strcpy", string_ftype_ptr_ptr,
 		    BUILT_IN_STRCPY, BUILT_IN_NORMAL, "strcpy");
   builtin_function ("__builtin_strlen", strlen_ftype,
@@ -5248,6 +5250,10 @@ c_common_nodes_and_builtins ()
       builtin_function ("strcmp", int_ftype_string_string, BUILT_IN_STRCMP,
 			BUILT_IN_NORMAL, NULL_PTR);
       builtin_function ("strstr", string_ftype_string_string, BUILT_IN_STRSTR,
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("strchr", string_ftype_string_int, BUILT_IN_STRCHR,
+			BUILT_IN_NORMAL, NULL_PTR);
+      builtin_function ("strrchr", string_ftype_string_int, BUILT_IN_STRRCHR,
 			BUILT_IN_NORMAL, NULL_PTR);
       builtin_function ("strpbrk", string_ftype_string_string, BUILT_IN_STRPBRK,
 			BUILT_IN_NORMAL, NULL_PTR);
