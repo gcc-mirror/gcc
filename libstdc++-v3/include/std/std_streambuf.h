@@ -154,7 +154,12 @@ namespace std
       friend streamsize
       __copy_streambufs<>(__streambuf_type* __sbin,
 			  __streambuf_type* __sbout);
-      
+
+      template<typename _CharT2, typename _Traits2, typename _Alloc>
+        friend basic_istream<_CharT2, _Traits2>&
+        getline(basic_istream<_CharT2, _Traits2>&,
+		basic_string<_CharT2, _Traits2, _Alloc>&, _CharT2);
+
     protected:
       //@{
       /**
