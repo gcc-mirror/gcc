@@ -1,6 +1,11 @@
 2004-03-03  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (money_put<>::_M_insert):
+	Fix warning regression.
+
+2004-03-03  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (money_put<>::_M_insert):
 	Deal properly with empty __digits and negative frac_digits,
 	clean-up a bit.
 
