@@ -1,5 +1,11 @@
 2001-12-21  Richard Henderson  <rth@redhat.com>
 
+	* boehm.c (PROCEDURE_OBJECT_DESCRIPTOR): Merge into ..
+	(get_boehm_type_descriptor): ... here.  Arrange for the
+	TREE_TYPE to get set properly.
+
+2001-12-21  Richard Henderson  <rth@redhat.com>
+
 	* class.c (compile_resource_file): Set TREE_PUBLIC on the constructor
 	only if the target requires collect2.
 
@@ -774,7 +780,7 @@ Tue Oct 23 14:02:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-08-28  Per Bothner  <per@bothner.com>
 
 	* jcf-write.c  (generate_bytecode_insns):  For increments and
-        decrements just recurse to push constant.  Improvement on Mark's patch.
+	decrements just recurse to push constant.  Improvement on Mark's patch.
 
 2001-08-28  Mark Mitchell  <mark@codesourcery.com>
 
@@ -981,7 +987,7 @@ Tue Oct 23 14:02:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-08-06  Richard Henderson  <rth@redhat.com>
 
-        * class.c (emit_register_classes): Pass a symbol_ref and priority
+	* class.c (emit_register_classes): Pass a symbol_ref and priority
 	to assemble_constructor.
 
 2001-08-02  Alexandre Petit-Bianco  <apbianco@redhat.com>
@@ -993,8 +999,8 @@ Tue Oct 23 14:02:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-08-01  Jeff Sturm  <jsturm@one-point.com>
 
-        * java-tree.h (BUILD_FILENAME_IDENTIFIER_NODE):
-        Use ggc_add_tree_root to register roots.
+	* java-tree.h (BUILD_FILENAME_IDENTIFIER_NODE):
+	Use ggc_add_tree_root to register roots.
 
 2001-07-31  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
@@ -1252,7 +1258,7 @@ Tue Oct 23 14:02:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-05-18  Per Bothner  <per@bothner.com>
 
 	* jvspec.c (lang_specific_pre_link):  Re-arrange the linker
-        command line so the jvgenmain-generated main program comes first.
+	command line so the jvgenmain-generated main program comes first.
 
 2001-05-15  Tom Tromey  <tromey@redhat.com>
 
@@ -1287,7 +1293,7 @@ Tue Oct 23 14:02:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-05-03  Mo DeJong  <mdejong@redhat.com>
 
-        * lex.c (java_new_lexer): Call iconv_close on temp handle used to
+	* lex.c (java_new_lexer): Call iconv_close on temp handle used to
 	check for byte swap.
 
 2000-05-02  Jeff Sturm  <jsturm@one-point.com>
@@ -1744,8 +1750,8 @@ Tue Oct 23 14:02:17 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-03-19  Andrew Haley  <aph@cambridge.redhat.com>
 
-        * class.c (build_static_field_ref): Call make_decl_rtl() after
-        setting the DECL_EXTERNAL flag.
+	* class.c (build_static_field_ref): Call make_decl_rtl() after
+	setting the DECL_EXTERNAL flag.
 
 2001-03-17  Per Bothner  <per@bothner.com>
 
@@ -1918,7 +1924,7 @@ Fri Feb 23 15:28:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* Make-lang.in (jvspec.o): Modify rule to match that of cp/g++spec.o.
 
 2001-02-14  Tom Tromey  <tromey@redhat.com>
-            Alexandre Petit-Bianco  <apbianco@cygnus.com>
+	    Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	Fix for PR java/1261.
 	* typeck.c (build_java_array_type): Add public `clone' method to
@@ -2545,7 +2551,7 @@ Sun Feb  4 15:52:44 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* gen-table.pl: new file.
 
 2000-11-20  Tom Tromey  <tromey@cygnus.com>
-            Alexandre Petit-Bianco  <apbianco@cygnus.com>
+	    Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (java_complete_lhs): Only allow compound assignment of
 	reference type if type is String.

@@ -43,14 +43,6 @@ static void set_bit PARAMS ((unsigned HOST_WIDE_INT *,
 			     unsigned HOST_WIDE_INT *,
 			     unsigned int));
 
-/* Compute a procedure-based object descriptor.  We know that our
-   `kind' is 0, and `env' is likewise 0, so we have a simple
-   computation.  From the GC sources:
-	    (((((env) << LOG_MAX_MARK_PROCS) | (proc_index)) << DS_TAG_BITS) \
-	    | DS_PROC)
-   Here DS_PROC == 2.  */
-#define PROCEDURE_OBJECT_DESCRIPTOR build_int_2 (2, 0)
-
 /* Treat two HOST_WIDE_INT's as a contiguous bitmap, with bit 0 being
    the least significant.  This function sets bit N in the bitmap.  */
 static void
@@ -167,7 +159,7 @@ get_boehm_type_descriptor (tree type)
 
   /* If we have a type of unknown size, use a proc.  */
   if (int_size_in_bytes (type) == -1)
-    return PROCEDURE_OBJECT_DESCRIPTOR;
+    goto procedure_object_descriptor;
 
   bit = POINTER_SIZE / BITS_PER_UNIT;
   /* The size of this node has to be known.  And, we only support 32
@@ -187,7 +179,7 @@ get_boehm_type_descriptor (tree type)
   ubit = (unsigned int) bit;
 
   if (type == class_type_node)
-    return PROCEDURE_OBJECT_DESCRIPTOR;
+    goto procedure_object_descriptor;
 
   field = TYPE_FIELDS (type);
   mark_reference_fields (field, &low, &high, ubit,
@@ -227,7 +219,16 @@ get_boehm_type_descriptor (tree type)
       value = build_int_2 (low, high);
     }
   else
-    value = PROCEDURE_OBJECT_DESCRIPTOR;
+    {
+      /* Compute a procedure-based object descriptor.  We know that our
+	 `kind' is 0, and `env' is likewise 0, so we have a simple
+	 computation.  From the GC sources:
+	    (((((env) << LOG_MAX_MARK_PROCS) | (proc_index)) << DS_TAG_BITS) \
+	    | DS_PROC)
+	 Here DS_PROC == 2.  */
+    procedure_object_descriptor:
+      value = build_int_2 (2, 0);
+    }
 
   TREE_TYPE (value) = type_for_mode (ptr_mode, 1);
   return value;
