@@ -351,7 +351,7 @@ byte_reg (rtx x, int b)
        /* Save any call saved register that was used.  */		\
        || (regs_ever_live[regno] && !call_used_regs[regno])		\
        /* Save the frame pointer if it was used.  */			\
-       || (regno == FRAME_POINTER_REGNUM && regs_ever_live[regno])	\
+       || (regno == HARD_FRAME_POINTER_REGNUM && regs_ever_live[regno])	\
        /* Save any register used in an interrupt handler.  */		\
        || (h8300_current_function_interrupt_function_p ()		\
 	   && regs_ever_live[regno])					\
@@ -411,7 +411,7 @@ compute_saved_regs (void)
   int regno;
 
   /* Construct a bit vector of registers to be pushed/popped.  */
-  for (regno = 0; regno <= FRAME_POINTER_REGNUM; regno++)
+  for (regno = 0; regno <= HARD_FRAME_POINTER_REGNUM; regno++)
     {
       if (WORD_REG_USED (regno))
 	saved_regs |= 1 << regno;
@@ -419,7 +419,7 @@ compute_saved_regs (void)
 
   /* Don't push/pop the frame pointer as it is treated separately.  */
   if (frame_pointer_needed)
-    saved_regs &= ~(1 << FRAME_POINTER_REGNUM);
+    saved_regs &= ~(1 << HARD_FRAME_POINTER_REGNUM);
 
   return saved_regs;
 }
@@ -501,12 +501,10 @@ h8300_expand_prologue (void)
   if (frame_pointer_needed)
     {
       /* Push fp.  */
-      push (FRAME_POINTER_REGNUM);
-      emit_insn (gen_rtx_SET (Pmode, frame_pointer_rtx, stack_pointer_rtx));
+      push (HARD_FRAME_POINTER_REGNUM);
+      emit_insn (gen_rtx_SET (Pmode, hard_frame_pointer_rtx,
+			      stack_pointer_rtx));
     }
-
-  /* Leave room for locals.  */
-  h8300_emit_stack_adjustment (-1, round_frame_size (get_frame_size ()));
 
   /* Push the rest of the registers in ascending order.  */
   saved_regs = compute_saved_regs ();
@@ -556,6 +554,9 @@ h8300_expand_prologue (void)
 	    }
 	}
     }
+
+  /* Leave room for locals.  */
+  h8300_emit_stack_adjustment (-1, round_frame_size (get_frame_size ()));
 }
 
 int
@@ -580,6 +581,9 @@ h8300_expand_epilogue (void)
     /* OS_Task epilogues are nearly naked -- they just have an
        rts instruction.  */
     return;
+
+  /* Deallocate locals.  */
+  h8300_emit_stack_adjustment (1, round_frame_size (get_frame_size ()));
 
   /* Pop the saved registers in descending order.  */
   saved_regs = compute_saved_regs ();
@@ -630,12 +634,9 @@ h8300_expand_epilogue (void)
 	}
     }
 
-  /* Deallocate locals.  */
-  h8300_emit_stack_adjustment (1, round_frame_size (get_frame_size ()));
-
   /* Pop frame pointer if we had one.  */
   if (frame_pointer_needed)
-    pop (FRAME_POINTER_REGNUM);
+    pop (HARD_FRAME_POINTER_REGNUM);
 }
 
 /* Return nonzero if the current function is an interrupt
@@ -1579,33 +1580,59 @@ h8300_expand_movsi (rtx operands[])
 int
 h8300_initial_elimination_offset (int from, int to)
 {
-  int offset = 0;
   /* The number of bytes that the return address takes on the stack.  */
   int pc_size = POINTER_SIZE / BITS_PER_UNIT;
 
-  if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
-    offset = pc_size + frame_pointer_needed * UNITS_PER_WORD;
-  else if (from == RETURN_ADDRESS_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
-    offset = frame_pointer_needed * UNITS_PER_WORD;
-  else
+  /* The number of bytes that the saved frame pointer takes on the stack.  */
+  int fp_size = frame_pointer_needed * UNITS_PER_WORD;
+
+  /* The number of bytes that the saved registers, excluding the frame
+     pointer, take on the stack.  */
+  int saved_regs_size = 0;
+
+  /* The number of bytes that the locals takes on the stack.  */
+  int frame_size = round_frame_size (get_frame_size ());
+
+  int regno;
+
+  for (regno = 0; regno <= HARD_FRAME_POINTER_REGNUM; regno++)
+    if (WORD_REG_USED (regno))
+      saved_regs_size += UNITS_PER_WORD;
+
+  /* Adjust saved_regs_size because the above loop took the frame
+     pointer int account.  */
+  saved_regs_size -= fp_size;
+
+  if (to == HARD_FRAME_POINTER_REGNUM)
     {
-      int regno;
-
-      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	if (WORD_REG_USED (regno))
-	  offset += UNITS_PER_WORD;
-
-      /* See the comments for get_frame_size.  We need to round it up to
-	 STACK_BOUNDARY.  */
-
-      offset += round_frame_size (get_frame_size ());
-
-      if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
-	/* Skip saved PC.  */
-	offset += pc_size;
+      switch (from)
+	{
+	case ARG_POINTER_REGNUM:
+	  return pc_size + fp_size;
+	case RETURN_ADDRESS_POINTER_REGNUM:
+	  return fp_size;
+	case FRAME_POINTER_REGNUM:
+	  return -saved_regs_size;
+	default:
+	  abort ();
+	}
     }
-
-  return offset;
+  else if (to == STACK_POINTER_REGNUM)
+    {
+      switch (from)
+	{
+	case ARG_POINTER_REGNUM:
+	  return pc_size + saved_regs_size + frame_size;
+	case RETURN_ADDRESS_POINTER_REGNUM:
+	  return saved_regs_size + frame_size;
+	case FRAME_POINTER_REGNUM:
+	  return frame_size;
+	default:
+	  abort ();
+	}
+    }
+  else
+    abort ();
 }
 
 rtx
