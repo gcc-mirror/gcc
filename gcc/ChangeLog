@@ -1,3 +1,35 @@
+2000-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.md: Remove all traces of TARGET_LIVE_G0.
+	(movsi_zero_liveg0): Remove.
+	(movsf_insn_novis_liveg0): Remove.
+	(negsi2): Remove.
+	(negsi2_not_liveg0): Rename to negsi2.
+	(one_cmplsi2): Remove.
+	(one_cmplsi2_not_liveg0): Rename to one_cmplsi2.
+	(one_cmplsi2_liveg0): Remove.
+	* config/sparc/sparc.h (TARGET_LIVE_G0, TARGET_BROKEN_SAVERESTORE,
+	MASK_LIVE_G0, MASK_BROKEN_SAVERESTORE): Remove.
+	(CONDITIONAL_REGISTER_USAGE): Remove TARGET_LIVE_G0 if.
+	(PREDICATE_CODES): Remove zero_operand.
+	* config/sparc/sparc.c: Remove all traces of TARGET_LIVE_G0 and
+	TARGET_BROKEN_SAVERESTORE.
+	(zero_operand): Remove.
+	* config/sparc/splet.h (SUBTARGET_SWITCHES): Remove -mlive-g0,
+	-mno-live-g0, -mbroken-saverestore and -mno-broken-saverestore
+	options.
+	(SUBTARGET_OVERRIDE_OPTIONS): Remove.
+	* config/sparc/linux-aout.h (TARGET_LIVE_G0,
+	TARGET_BROKEN_SAVERESTORE): Remove.
+	* config/sparc/linux.h (TARGET_LIVE_G0, TARGET_BROKEN_SAVERESTORE):
+	Remove.
+	* config/sparc/linux64.h (TARGET_LIVE_G0, TARGET_BROKEN_SAVERESTORE):
+	Remove.
+	* config/sparc/sol2.h (TARGET_LIVE_G0, TARGET_BROKEN_SAVERESTORE):
+	Remove.
+
+	* config/sparc/sparc.md (return_df_no_fpu): New pattern.
+
 2000-03-13  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.c (do_pragma_implementation): Fix off-by-one error

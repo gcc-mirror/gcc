@@ -522,20 +522,7 @@ extern int target_flags;
 #define MASK_STACK_BIAS 0x80000
 #define TARGET_STACK_BIAS (target_flags & MASK_STACK_BIAS)
 
-/* Non-zero means %g0 is a normal register.
-   We still clobber it as necessary, but we can't rely on it always having
-   a zero value.
-   We don't bother to support this in true 64 bit mode.  */
-#define MASK_LIVE_G0 0x100000
-#define TARGET_LIVE_G0 (target_flags & MASK_LIVE_G0)
-
-/* Non-zero means the cpu has broken `save' and `restore' insns, only
-   the trivial versions work (save %g0,%g0,%g0; restore %g0,%g0,%g0).
-   We assume the environment will properly handle or otherwise avoid
-   trouble associated with an interrupt occurring after the `save' or trap
-   occurring during it.  */
-#define MASK_BROKEN_SAVERESTORE 0x200000
-#define TARGET_BROKEN_SAVERESTORE (target_flags & MASK_BROKEN_SAVERESTORE)
+/* 0x100000,0x200000 unused */
 
 /* Non-zero means -m{,no-}fpu was passed on the command line.  */
 #define MASK_FPU_SET 0x400000
@@ -1042,8 +1029,6 @@ do								\
       fixed_regs[5] = 1;					\
     else if (TARGET_ARCH64 && fixed_regs[5] == 2)		\
       fixed_regs[5] = 0;					\
-    if (TARGET_LIVE_G0)						\
-      fixed_regs[0] = 0;					\
     if (! TARGET_V9)						\
       {								\
 	int regno;						\
@@ -3370,7 +3355,6 @@ do {									\
 {"uns_arith_operand", {SUBREG, REG, CONST_INT}},			\
 {"clobbered_register", {REG}},						\
 {"input_operand", {SUBREG, REG, CONST_INT, MEM, CONST}},		\
-{"zero_operand", {CONST_INT}},						\
 {"const64_operand", {CONST_INT, CONST_DOUBLE}},				\
 {"const64_high_operand", {CONST_INT, CONST_DOUBLE}},
 

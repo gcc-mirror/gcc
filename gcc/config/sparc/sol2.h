@@ -204,12 +204,6 @@ Boston, MA 02111-1307, USA.  */
   fixunsdfdi_libfunc							\
     = init_one_libfunc (TARGET_ARCH64 ? "__dtoul" : "__dtoull")
 
-/* No weird SPARC variants on Solaris */
-#undef TARGET_LIVE_G0
-#define TARGET_LIVE_G0	0
-#undef TARGET_BROKEN_SAVERESTORE
-#define TARGET_BROKEN_SAVERESTORE 0
-
 /* Solaris allows 64 bit out and global registers in 32 bit mode.
    sparc_override_options will disable V8+ if not generating V9 code.  */
 #undef TARGET_DEFAULT

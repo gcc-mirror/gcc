@@ -102,12 +102,6 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_SPEC \
   "%{V} %{v:%{!V:-V}} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s %{fpic:-K PIC} %{fPIC:-K PIC}"
 
-/* No weird SPARC variants on Linux */
-#undef TARGET_LIVE_G0
-#define TARGET_LIVE_G0			0
-#undef TARGET_BROKEN_SAVERESTORE
-#define TARGET_BROKEN_SAVERESTORE	0
-
 /* Override MACHINE_STATE_{SAVE,RESTORE} because we have special
    traps available which can get and set the condition codes
    reliably.  */
