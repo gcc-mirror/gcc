@@ -7736,7 +7736,7 @@ void
 alpha_end_function (file, fnname, decl)
      FILE *file;
      const char *fnname;
-     tree decl ATTRIBUTE_UNUSED;
+     tree decl;
 {
   /* End the function.  */
   if (!TARGET_ABI_UNICOSMK && !flag_inhibit_size_directive)
@@ -7747,20 +7747,16 @@ alpha_end_function (file, fnname, decl)
     }
   inside_function = FALSE;
 
-  /* Show that we know this function if it is called again. 
+  /* Show that we know this function if it is called again.
 
-     Don't do this for global functions in object files destined for a
-     shared library because the function may be overridden by the application
-     or other libraries.  Similarly, don't do this for weak functions.
+     Do this only for functions whose symbols bind locally.
 
      Don't do this for functions not defined in the .text section, as
      otherwise it's not unlikely that the destination is out of range
      for a direct branch.  */
 
-  if (!DECL_WEAK (current_function_decl)
-      && (!flag_pic || !TREE_PUBLIC (current_function_decl))
-      && decl_in_text_section (current_function_decl))
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
+  if ((*targetm.binds_local_p) (decl) && decl_in_text_section (decl))
+    SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1;
 
   /* Output jump tables and the static subroutine information block.  */
   if (TARGET_ABI_UNICOSMK)

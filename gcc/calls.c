@@ -34,6 +34,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "timevar.h"
 #include "sbitmap.h"
 #include "langhooks.h"
+#include "target.h"
 
 #if !defined FUNCTION_OK_FOR_SIBCALL
 #define FUNCTION_OK_FOR_SIBCALL(DECL) 1

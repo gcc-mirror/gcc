@@ -1158,12 +1158,11 @@ extern int alpha_memory_latency;
 
 /* We do not allow indirect calls to be optimized into sibling calls, nor
    can we allow a call to a function in a different compilation unit to
-   be optimized into a sibcall.  Except if the function is known not to
-   return, in which case our caller doesn't care what the gp is.  */
+   be optimized into a sibcall.  */
 #define FUNCTION_OK_FOR_SIBCALL(DECL)			\
   (DECL							\
-   && ((TREE_ASM_WRITTEN (DECL) && !flag_pic)		\
-       || ! TREE_PUBLIC (DECL)))
+   && (! TREE_PUBLIC (DECL)				\
+       || (TREE_ASM_WRITTEN (DECL) && (*targetm.binds_local_p) (DECL))))
 
 /* Try to output insns to set TARGET equal to the constant C if it can be
    done in less than N insns.  Do all computations in MODE.  Returns the place
