@@ -462,13 +462,14 @@ redirect_edge_pred (edge e, basic_block new_pred)
   e->src = new_pred;
 }
 
+/* Clear all basic block flags, with the exception of partitioning.  */
 void
 clear_bb_flags (void)
 {
   basic_block bb;
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
-    bb->flags = 0;
+    bb->flags = BB_PARTITION (bb);
 }
 
 /* Check the consistency of profile information.  We can't do that

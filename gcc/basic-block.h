@@ -318,7 +318,12 @@ typedef struct reorder_block_def
 /* Partitions, to be used when partitioning hot and cold basic blocks into
    separate sections.  */
 #define BB_PARTITION(bb) ((bb)->flags & (BB_HOT_PARTITION|BB_COLD_PARTITION))
-#define BB_SET_PARTITION(bb, part) ((bb)->flags |= (part))
+#define BB_SET_PARTITION(bb, part) do {					\
+  basic_block bb_ = (bb);						\
+  bb_->flags = ((bb_->flags & ~(BB_HOT_PARTITION|BB_COLD_PARTITION))	\
+		| (part));						\
+} while (0)
+
 #define BB_COPY_PARTITION(dstbb, srcbb) \
   BB_SET_PARTITION (dstbb, BB_PARTITION (srcbb))
 
