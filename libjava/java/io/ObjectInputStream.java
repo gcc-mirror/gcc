@@ -1,5 +1,6 @@
 /* ObjectInputStream.java -- Class used to read serialized objects
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -491,7 +492,6 @@ public class ObjectInputStream extends InputStream
     ObjectStreamField[] stream_fields = osc.fields;
     ObjectStreamField[] real_fields = ObjectStreamClass.lookup(clazz).fields;
     ObjectStreamField[] fieldmapping = new ObjectStreamField[2 * Math.max(stream_fields.length, real_fields.length)];
-    osc.fieldMapping = fieldmapping;
 
     int stream_idx = 0;
     int real_idx = 0;
@@ -543,9 +543,21 @@ public class ObjectInputStream extends InputStream
 	  }
 	if (real_field != null && !real_field.isToSet())
 	    real_field = null;
+	/* If some of stream_fields does not correspond to any of real_fields,
+	 * or the opposite, then fieldmapping will go short.
+	 */
+	if (map_idx == fieldmapping.length)
+	  {
+	    ObjectStreamField[] newfieldmapping =
+	      new ObjectStreamField[fieldmapping.length + 2];
+	    System.arraycopy(fieldmapping, 0,
+	      newfieldmapping, 0, fieldmapping.length);
+	    fieldmapping = newfieldmapping;
+	  }
 	fieldmapping[map_idx++] = stream_field;
 	fieldmapping[map_idx++] = real_field;
       }
+    osc.fieldMapping = fieldmapping;
 
     return osc;
   }

@@ -1,3 +1,8 @@
+2004-02-15  Ito Kazumitsu  <kaz@maczuka.gcd.org>
+
+	* java/io/ObjectInputStream.java (readClassDescriptor): Avoid the
+        overflow of fieldmapping.
+
 2004-02-14  Sascha Brawer  <brawer@dandelis.ch>
 
 	* javax/swing/undo/UndoManager.java: Re-written from scratch.
