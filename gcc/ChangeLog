@@ -1,3 +1,13 @@
+2000-02-09  Bruce Korb  <bkorb@gnu.org>
+
+	* gcc/fixincludes:  ** DELETED **
+	* gcc/fixcpp:  ** DELETED **
+	* gcc/fixinc-nt.sed:  ** DELETED **
+	* gcc/just-fixinc:  ** DELETED **
+	* gcc/Makefile.in:  Removed out-dated commentary
+	* gcc/configure.in: Removed fast-fixincludes disablement.
+	* MAINTAINERS(Ian Taylor) moved to "Write after approval" group.
+
 2000-02-09  Clinton Popetz  <cpopetz@cygnus.com>
 	* function.c (thread_prologue_and_epilogue_insns): Uncomment
 	last change.

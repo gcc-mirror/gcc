@@ -2182,26 +2182,6 @@ fixinc.sh: $(FIXINCSRCDIR)/mkfixinc.sh $(FIXINCSRCDIR)/fixincl.c \
 	export MAKE srcdir ; \
 	cd ./fixinc; $(SHELL) $${srcdir}/mkfixinc.sh $(target)
 
-##stmp-fixinc: $(FIXINCLUDES) gsyslimits.h
-##	rm -rf include
-##	mkdir include
-##	if [ x$(FIXINCLUDES) != xMakefile.in ]; \
-##	then \
-##	  for dir in $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS); do \
-##	    if [ -d $$dir ]; \
-##	    then \
-##	      $(SHELL) $(srcdir)/$(FIXINCLUDES) include $$dir; \
-##	    else true; fi; \
-##	  done; \
-##	  if [ x$(INSTALL_ASSERT_H) != x ] ; \
-##	  then \
-##	    rm -f include/assert.h; \
-##	    cp $(srcdir)/assert.h include/assert.h; \
-##	    chmod a+r include/assert.h; \
-##	  fi \
-##	else true; \
-##	fi
-
 # Build fixed copies of system files.
 stmp-fixinc: fixinc.sh gsyslimits.h
 	rm -rf include; mkdir include

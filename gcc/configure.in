@@ -236,15 +236,6 @@ if test x$enable_c_cpplib != xno; then
   cpp_main=cppmain
 fi)
 
-# Disable fast fixincludes
-AC_ARG_ENABLE(fast-fixincludes,
-[  --disable-fast-fixincludes
-                         Disable the new fast fixincludes.
-                         Run the old fixincludes script unconditionally],
-if test x$enable_fast_fixincludes = xno ; then
-  cp $srcdir/fixincludes ./fixinc.sh
-fi)
-
 # Enable Multibyte Characters for C/C++
 AC_ARG_ENABLE(c-mbchar,
 [  --enable-c-mbchar       Enable multibyte characters for C and C++.],
@@ -1132,7 +1123,6 @@ changequote([,])dnl
 		xmake_file=pa/x-pa-mpeix 
 		echo "You must use gas. Assuming it is already installed." 
 		install_headers_dir=install-headers-tar
-		fixincludes=Makefile.in
 		use_collect2=yes 
 		;; 
 	i370-*-opened*)			 # IBM 360/370/390 Architecture
@@ -1140,20 +1130,17 @@ changequote([,])dnl
 		tm_file=i370/oe.h
 		xmake_file=i370/x-oe
 		tmake_file=i370/t-oe
-		fixincludes=Makefile.in # Headers are wierd, don't mess with
 		;;
 	i370-*-mvs*)
 		xm_file=i370/xm-mvs.h
 		tm_file=i370/mvs.h
 		tmake_file=i370/t-mvs
-		fixincludes=Makefile.in # Headers are wierd, don't mess with
 		;;
 	i370-*-linux*)
 		xm_file="xm-linux.h i370/xm-linux.h"
 		xmake_file=x-linux
 		tm_file="i370/linux.h ${tm_file}"
 		tmake_file="t-linux i370/t-linux"
-		fixincludes=Makefile.in # The headers are ok already.
 		# broken_install=yes
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		# extra_parts="crtbegin.o crtend.o"
@@ -1295,7 +1282,6 @@ changequote([,])dnl
 		xmake_file=i386/x-beos
 		extra_objs=winnt.o
 		extra_parts='crtbegin.o crtend.o'
-		fixincludes=Makefile.in
 		;;
 changequote(,)dnl
 	i[34567]86-*-bsdi* | i[34567]86-*-bsd386*)
@@ -4821,7 +4807,6 @@ AC_SUBST(extra_objs)
 AC_SUBST(extra_parts)
 AC_SUBST(extra_passes)
 AC_SUBST(extra_programs)
-AC_SUBST(fixinc_defs)
 AC_SUBST(float_h_file)
 AC_SUBST(gcc_gxx_include_dir)
 AC_SUBST(gcc_version)
