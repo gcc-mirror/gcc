@@ -1,5 +1,8 @@
 2002-03-10  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/GridLayout.java (layoutContainer): Handle case where
+	there are no items in container.
+
 	* java/lang/Win32Process.java: Added comment.
 	* include/posix.h (_Jv_platform_close_on_exec): New function.
 	Include fcntl.h.

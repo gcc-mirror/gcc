@@ -152,6 +152,12 @@ public class GridLayout implements LayoutManager, Serializable
   public void layoutContainer (Container parent)
   {
     int num = parent.ncomponents;
+
+    // There's no point, and handling this would mean adding special
+    // cases.
+    if (num == 0)
+      return;
+
     // This is more efficient than calling getComponents().
     Component[] comps = parent.component;
 
