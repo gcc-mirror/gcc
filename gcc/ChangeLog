@@ -1,3 +1,8 @@
+2004-05-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c (store_parm_decls_newstyle): Correct test for a
+	nested function.
+
 2004-05-10  Richard Sandiford  <rsandifo@redhat.com>
 
 	* read-rtl.c (read_rtx): Allow 's' and 'T' strings to be omitted,
@@ -35,7 +40,7 @@
 	* config/rs6000/rs6000.c (function_arg_boundary): Align for ABI_V4
 	when size is 8 bytes.
 	(function_arg_advance): Account for stack space used by AltiVec
-	args when -mabi=altivec.  Simplify alignment calculations.  For 
+	args when -mabi=altivec.  Simplify alignment calculations.  For
 	ABI_V4, pass AltiVec vectors by reference when -mabi=no-altivec.
 	(function_arg): Similarly.
 	(function_arg_pass_by_reference): True for ABI_V4 AltiVec when
