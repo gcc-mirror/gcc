@@ -326,7 +326,15 @@ get_constant (jcf, index)
 	lshift_double (num[0], 0, 32, 64, &lo, &hi, 0);
 	num[0] = JPOOL_INT (jcf, index+1);
 	add_double (lo, hi, num[0], 0, &lo, &hi);
-	if (FLOAT_WORDS_BIG_ENDIAN)
+
+	/* Since ereal_from_double expects an array of HOST_WIDE_INT
+	   in the target's format, we swap the elements for big endian
+	   targets, unless HOST_WIDE_INT is sufficiently large to
+	   contain a target double, in which case the 2nd element
+	   is ignored.
+
+	   FIXME: Is this always right for cross targets? */
+	if (FLOAT_WORDS_BIG_ENDIAN && sizeof(num[0]) < 8)
 	  {
 	    num[0] = hi;
 	    num[1] = lo;
