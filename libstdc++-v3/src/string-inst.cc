@@ -48,9 +48,17 @@ namespace std
   template class basic_string<C>;
   template S operator+(const C*, const S&);
   template S operator+(C, const S&);
+} // namespace std
+
+namespace __gnu_cxx
+{
+  using std::S;
   template bool operator==(const S::iterator&, const S::iterator&);
   template bool operator==(const S::const_iterator&, const S::const_iterator&);
+}
 
+namespace std
+{
   // Only one template keyword allowed here. 
   // See core issue #46 (NAD)
   // http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/cwg_closed.html#46
