@@ -3,6 +3,128 @@ Wed Jan 25 15:02:09 1995  David S. Miller  (davem@nadzieja.rutgers.edu)
 	* class.c (instantiate_type): Change error message text.
 	* typeck2.c (store_init_value): Likewise.
 
+Tue Jan 31 13:28:56 1995  Mike Stump  <mrs@cygnus.com>
+
+	* gc.c (get_typeid): Pawn off error messages to build_t_desc.
+	(build_t_desc): Inform the user here if they try and build
+	with -frtti and don't include <typeinfo.h>.
+
+	* decl2.c (finish_prevtable_vardecl): Support rescanning.
+	(finish_file): Move finish_prevtable_vardecl up to before the global
+	initializers are done as tdecls are initialized in the global
+	initializer.  Also Pick up any new tdecls or vtables needed by
+	synthesized methods.
+
+	* class.c (finish_struct): Simplify.  We have to do rtti scanning at
+	end, so we might as well do all of it there.
+
+Tue Jan 31 05:35:02 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* call.c (build_method_call): Fix -fthis-is-variable for 32-bit
+	targets, too.
+
+Tue Jan 31 00:11:04 1995  Mike Stump  <mrs@cygnus.com>
+
+	* decl2.c (finish_prevtable_vardecl): New routine, mostly split from
+	finish_vtable_vardecl.  It has the first half functionality from
+	that routine.
+	* decl2.c (finish_vtable_vardecl): Update to not include stuff not
+	in  finish_prevtable_vardecl.
+	* decl2.c (finish_file): Call finish_prevtable_vardecl.
+	* gc.c (build_generic_desc): Allow it to be called when not at the
+	global binding layer, but behave as if we were.
+	(build_t_desc): Rearrange a bit so that it really works and is
+	easier to follow.
+	* class.c (finish_struct): Don't decide on tdecls here, as we have
+	to wait until the end of the file in general to decide whether or
+	not they come out.
+
+Mon Jan 30 01:00:40 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* init.c (build_delete): Check access to operator delete before
+	calling the destructor.
+	* method.c (build_opfncall, DELETE_EXPR): build_method is allowed to
+	return error_mark_node.
+	* call.c (build_method_call): Use the one-argument op delete even if
+	it's an error.
+
+	* init.c (build_new): Fix -fthis-is-variable support.
+	* call.c (build_method_call): Ditto.
+
+	* call.c (convert_harshness): Make conversion from a pointer to bool
+	worse than conversion to another pointer.
+
+Sat Jan 28 16:46:10 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* init.c (build_new): Check new return value if -fcheck-new.
+
+	* lex.c (check_newline): Clear end_of_file when we're done, too.
+
+Sat Jan 28 10:38:39 1995  Mike Stump  <mrs@cygnus.com>
+
+	* decl2.c (finish_vtable_vardecl): Make rtti TD tables follow
+	vtables whereever they go.
+
+	* gc.c (build_t_desc): Remove old way of setting it up, as it wasn't
+	right.
+
+Sat Jan 28 09:10:44 1995  Mike Stump  <mrs@cygnus.com>
+
+	* decl2.c (finish_vtable_vardecl): Now set the
+	interface/implementation of vtables on the first virtual function,
+	if one exists, otherwise we use the old method.  This is a major win
+	in terms of cutting down the size of objects and executables in
+	terms of text space and data space.  Now most of the savings that
+	#pragma interface/implementation gives is automatic in a fair number
+	of cases.
+
+Sat Jan 28 04:57:33 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (grokdeclarator): Discard the template parameters in a
+	template constructor declaration so that the function is always
+	named constructor_name (ctype).
+
+	* lex.c (check_newline): Use ungetc to put back the character before
+	calling HANDLE_PRAGMA.
+
+Fri Jan 27 17:23:47 1995  Mike Stump  <mrs@cygnus.com>
+
+	* decl2.c (check_classfn): If the cname is T<int> and fn_name is T,
+	make sure we still match them.
+
+Fri Jan 27 16:32:10 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* parse.y: Add END_OF_LINE token.
+
+	* lex.c (check_newline): Set linemode when we see a # directive, and
+	unset it when we're done.  Turn all 'return's into 'goto skipline'.
+	Fix all uses of '\n', since we won't see it anymore.  Put back the
+	character we read before checking for a sysv or target pragma.
+	(real_yylex): If we see an EOF in linemode, return END_OF_LINE.
+	(handle_sysv_pragma): Don't look at the input stream; quit when we
+	see an END_OF_LINE token.
+
+	* input.c (getch): Return EOF if we're in line mode and at the end
+	of a line.
+	(put_back): Don't put back an EOF.
+
+Thu Jan 26 19:26:34 1995  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (expand_throw): Do the newing of the exception object
+	before we load the type descriptor or the address so that we don't
+	wipe any of the values out.
+
+Thu Jan 26 19:20:00 1995  Mike Stump  <mrs@cygnus.com>
+
+	* except.c (init_exception_processing): Don't use r12 on the rs6000.
+
+Tue Jan 24 16:36:31 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (grokparms): Don't try to build up a reference at this point.
+
+	* typeck2.c (build_functional_cast): Don't assume that a NOP_EXPR
+	will suffice to convert from integer_zero_node.
+
 Mon Jan 23 21:57:14 1995  Mike Stump  <mrs@cygnus.com>
 
 	* pt.c (tsubst): When we copy a node, don't forget to copy

@@ -7239,9 +7239,12 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 	      return 0;
 	    }
 	  innermost_code = TREE_CODE (decl);
-	  decl = TREE_OPERAND (decl, 0);
 	  if (decl_context == FIELD && ctype == NULL_TREE)
 	    ctype = current_class_type;
+	  if (ctype
+	      && TREE_OPERAND (decl, 0) == constructor_name_full (ctype))
+	    TREE_OPERAND (decl, 0) = constructor_name (ctype);
+	  decl = TREE_OPERAND (decl, 0);
 	  if (ctype != NULL_TREE
 	      && decl != NULL_TREE && flags != DTOR_FLAG
 	      && decl == constructor_name (ctype))
@@ -7335,6 +7338,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		  }
 	      }
 
+	    if (ctype
+		&& TREE_OPERAND (decl, 1) == constructor_name_full (ctype))
+	      TREE_OPERAND (decl, 1) = constructor_name (ctype);
 	    decl = TREE_OPERAND (decl, 1);
 	    if (ctype)
 	      {
@@ -7346,12 +7352,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, raises)
 		  }
 		else if (TREE_CODE (decl) == BIT_NOT_EXPR
 			 && TREE_CODE (TREE_OPERAND (decl, 0)) == IDENTIFIER_NODE
-			 && constructor_name (ctype) == TREE_OPERAND (decl, 0))
+			 && (constructor_name (ctype) == TREE_OPERAND (decl, 0)
+			     || constructor_name_full (ctype) == TREE_OPERAND (decl, 0)))
 		  {
 		    return_type = return_dtor;
 		    ctor_return_type = ctype;
 		    flags = DTOR_FLAG;
-		    decl = TREE_OPERAND (decl, 0);
+		    decl = TREE_OPERAND (decl, 0) = constructor_name (ctype);
 		  }
 	      }
 	  }
@@ -9552,9 +9559,15 @@ grokparms (first_parm, funcdef_flag)
 		      else
 			init = require_instantiated_type (type, init, integer_zero_node);
 
-		      init = convert_for_initialization
-			(NULL_TREE, type, init, LOOKUP_NORMAL,
-			 "argument passing", 0, 0);
+		      /* Don't actually try to build up a reference here.  */
+		      {
+			tree t = type;
+			if (TREE_CODE (t) == REFERENCE_TYPE)
+			  t = TREE_TYPE (t);
+			init = convert_for_initialization
+			  (NULL_TREE, t, init, LOOKUP_NORMAL,
+			   "argument passing", 0, 0);
+		      }
 		    }
 #if 0 /* This is too early to check; trailing parms might be merged in by
 	 duplicate_decls.  */

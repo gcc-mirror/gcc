@@ -2319,6 +2319,8 @@ get_last_nonwhite_on_line ()
    If the line is a #-directive, read the entire line and return a newline.
    Otherwise, return the line's first non-whitespace character.  */
 
+int linemode;
+
 int
 check_newline ()
 {
@@ -2340,6 +2342,9 @@ check_newline ()
       return c;
     }
 
+  /* Don't read beyond this line.  */
+  linemode = 1;
+  
   /* Read first nonwhite char after the `#'.  */
 
   do
@@ -2372,7 +2377,7 @@ check_newline ()
 		  && getch () == 'b'
 		  && getch () == 'l'
 		  && getch () == 'e'
-		  && ((c = getch ()) == ' ' || c == '\t' || c == '\n'))
+		  && ((c = getch ()) == ' ' || c == '\t'))
 		{
 		  extern tree pending_vtables;
 
@@ -2392,14 +2397,14 @@ check_newline ()
 		  if (nextchar < 0)
 		    nextchar = getch ();
 		  c = nextchar;
-		  if (c != '\n')
+		  if (c != EOF)
 		    warning ("trailing characters ignored");
 		}
 	      else if (c == 'u'
 		       && getch () == 'n'
 		       && getch () == 'i'
 		       && getch () == 't'
-		       && ((c = getch ()) == ' ' || c == '\t' || c == '\n'))
+		       && ((c = getch ()) == ' ' || c == '\t'))
 		{
 		  /* More follows: it must be a string constant (unit name).  */
 		  token = real_yylex ();
@@ -2413,7 +2418,7 @@ check_newline ()
 		  if (nextchar < 0)
 		    nextchar = getch ();
 		  c = nextchar;
-		  if (c != '\n')
+		  if (c != EOF)
 		    warning ("trailing characters ignored");
 		}
 	      else if (c == 'i')
@@ -2429,7 +2434,7 @@ check_newline ()
 		      && getch () == 'a'
 		      && getch () == 'c'
 		      && getch () == 'e'
-		      && ((c = getch ()) == ' ' || c == '\t' || c == '\n'))
+		      && ((c = getch ()) == ' ' || c == '\t' || c == EOF))
 		    {
 		      int warned_already = 0;
 		      char *main_filename = input_filename;
@@ -2437,7 +2442,7 @@ check_newline ()
 		      main_filename = FILE_NAME_NONDIRECTORY (main_filename);
 		      while (c == ' ' || c == '\t')
 			c = getch ();
-		      if (c != '\n')
+		      if (c != EOF)
 			{
 			  put_back (c);
 			  token = real_yylex ();
@@ -2455,10 +2460,10 @@ check_newline ()
 		      while (c == ' ' || c == '\t')
 			c = getch ();
 
-		      while (c != '\n')
+		      while (c != EOF)
 			{
 			  if (!warned_already && extra_warnings
-			      && c != ' ' && c != '\t' && c != '\n')
+			      && c != ' ' && c != '\t')
 			    {
 			      warning ("garbage after `#pragma interface' ignored");
 			      warned_already = 1;
@@ -2506,7 +2511,7 @@ check_newline ()
 			   && getch () == 'i'
 			   && getch () == 'o'
 			   && getch () == 'n'
-			   && ((c = getch ()) == ' ' || c == '\t' || c == '\n'))
+			   && ((c = getch ()) == ' ' || c == '\t' || c == EOF))
 		    {
 		      int warned_already = 0;
 		      char *main_filename = main_input_filename ? main_input_filename : input_filename;
@@ -2514,7 +2519,7 @@ check_newline ()
 		      main_filename = FILE_NAME_NONDIRECTORY (main_filename);
 		      while (c == ' ' || c == '\t')
 			c = getch ();
-		      if (c != '\n')
+		      if (c != EOF)
 			{
 			  put_back (c);
 			  token = real_yylex ();
@@ -2532,10 +2537,10 @@ check_newline ()
 		      while (c == ' ' || c == '\t')
 			c = getch ();
 
-		      while (c != '\n')
+		      while (c != EOF)
 			{
 			  if (!warned_already && extra_warnings
-			      && c != ' ' && c != '\t' && c != '\n')
+			      && c != ' ' && c != '\t')
 			    {
 			      warning ("garbage after `#pragma implementation' ignored");
 			      warned_already = 1;
@@ -2591,11 +2596,19 @@ check_newline ()
 		}
 #ifdef HANDLE_SYSV_PRAGMA
 	      else
-		return handle_sysv_pragma (finput, c);
+		{
+		  put_back (c);
+		  handle_sysv_pragma ();
+		}
 #else
 #ifdef HANDLE_PRAGMA
+	      /* FIXME: This will break if we're doing any of the C++ input
+                 tricks.  */
 	      else
-	        HANDLE_PRAGMA (finput);
+		{
+		  ungetc (c, finput);
+		  HANDLE_PRAGMA (finput);
+		}
 #endif
 #endif
 	    }
@@ -2608,7 +2621,7 @@ check_newline ()
 	      && getch () == 'i'
 	      && getch () == 'n'
 	      && getch () == 'e'
-	      && ((c = getch ()) == ' ' || c == '\t' || c == '\n'))
+	      && ((c = getch ()) == ' ' || c == '\t'))
 	    {
 #ifdef DWARF_DEBUGGING_INFO
 	      if ((debug_info_level == DINFO_LEVEL_VERBOSE)
@@ -2624,7 +2637,7 @@ check_newline ()
 	      && getch () == 'd'
 	      && getch () == 'e'
 	      && getch () == 'f'
-	      && ((c = getch ()) == ' ' || c == '\t' || c == '\n'))
+	      && ((c = getch ()) == ' ' || c == '\t'))
 	    {
 #ifdef DWARF_DEBUGGING_INFO
 	      if ((debug_info_level == DINFO_LEVEL_VERBOSE)
@@ -2662,8 +2675,8 @@ check_newline ()
 		c = getch ();
 
 	      /* If no argument, ignore the line.  */
-	      if (c == '\n')
-		return c;
+	      if (c == EOF)
+		goto skipline;
 
 	      put_back (c);
 	      token = real_yylex ();
@@ -2715,8 +2728,8 @@ linenum:
 
   /* If the # is the only nonwhite char on the line,
      just ignore it.  Check the new newline.  */
-  if (c == '\n')
-    return c;
+  if (c == EOF)
+    goto skipline;
 
   /* Something follows the #; read a token.  */
 
@@ -2736,11 +2749,11 @@ linenum:
 
       int l = TREE_INT_CST_LOW (yylval.ttype) - 1;
       c = get_last_nonwhite_on_line ();
-      if (c == '\n')
+      if (c == EOF)
 	{
 	  /* No more: store the line number and check following line.  */
 	  lineno = l;
-	  return c;
+	  goto skipline;
 	}
       put_back (c);
 
@@ -2799,7 +2812,7 @@ linenum:
       extract_interface_info ();
 
       c = get_last_nonwhite_on_line ();
-      if (c != '\n')
+      if (c != EOF)
 	{
 	  put_back (c);
 
@@ -2819,7 +2832,7 @@ linenum:
 	      if (action)
 		{
 		  c = get_last_nonwhite_on_line ();
-		  if (c != '\n')
+		  if (c != EOF)
 		    {
 		      put_back (c);
 		      token = real_yylex ();
@@ -2836,7 +2849,7 @@ linenum:
 	      entering_system_header = 1;
 
 	      c = get_last_nonwhite_on_line ();
-	      if (c != '\n')
+	      if (c != EOF)
 		{
 		  put_back (c);
 		  token = real_yylex ();
@@ -2852,7 +2865,7 @@ linenum:
 	      entering_c_header = 1;
 
 	      c = get_last_nonwhite_on_line ();
-	      if (c != '\n')
+	      if (c != EOF)
 		{
 		  put_back (c);
 		  token = real_yylex ();
@@ -2927,16 +2940,16 @@ linenum:
 	}
 
       /* If NEXTCHAR is not end of line, we don't care what it is.  */
-      if (nextchar == '\n')
-	return '\n';
+      if (nextchar == EOF)
+	c = EOF;
     }
   else
     error ("invalid #-line");
 
   /* skip the rest of this line.  */
  skipline:
-  if (c == '\n')
-    return c;
+  linemode = 0;
+  end_of_file = 0;
   while ((c = getch ()) != EOF && c != '\n');
   return c;
 }
@@ -3343,6 +3356,8 @@ real_yylex ()
       end_of_file = 1;
       if (input_redirected ())
 	value = END_OF_SAVED_INPUT;
+      else if (linemode)
+	value = END_OF_LINE;
       else if (do_pending_expansions ())
 	/* this will set yychar for us */
 	return yychar;
@@ -4906,21 +4921,10 @@ yyerror (string)
 /* This function has to be in this file, in order to get at
    the token types.  */
 
-int
-handle_sysv_pragma (input, c)
-     FILE *input;
-     int c;
+handle_sysv_pragma ()
 {
   for (;;)
     {
-      while (c == ' ' || c == '\t')
-	c = getc (input);
-      if (c == '\n' || c == EOF)
-	{
-	  handle_pragma_token (0, 0);
-	  return c;
-	}
-      ungetc (c, input);
       switch (yylex ())
 	{
 	case IDENTIFIER:
@@ -4929,13 +4933,12 @@ handle_sysv_pragma (input, c)
 	case CONSTANT:
 	  handle_pragma_token (token_buffer, yylval.ttype);
 	  break;
+	case END_OF_LINE:
+	  handle_pragma_token (0, 0);
+	  return;
 	default:
 	  handle_pragma_token (token_buffer, 0);
 	}
-      if (nextchar >= 0)
-	c = nextchar, nextchar = -1;
-      else
-	c = getc (input);
     }
 }
 #endif /* HANDLE_SYSV_PRAGMA */

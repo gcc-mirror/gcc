@@ -2787,6 +2787,8 @@ build_builtin_call (type, node, arglist)
 
    PLACEMENT is the `placement' list for user-defined operator new ().  */
 
+extern int flag_check_new;
+
 tree
 build_new (placement, decl, init, use_global_new)
      tree placement;
@@ -2795,6 +2797,7 @@ build_new (placement, decl, init, use_global_new)
 {
   tree type, true_type, size, rval;
   tree nelts;
+  tree alloc_expr;
   int has_array = 0;
   enum tree_code code = NEW_EXPR;
 
@@ -3026,6 +3029,13 @@ build_new (placement, decl, init, use_global_new)
       TREE_CALLS_NEW (rval) = 1;
     }
 
+  if (flag_check_new)
+    {
+      if (rval)
+	rval = save_expr (rval);
+      alloc_expr = rval;
+    }
+
   /* if rval is NULL_TREE I don't have to allocate it, but are we totally
      sure we have some extra bytes in that case for the BI_header_size
      cookies? And how does that interact with the code below? (mrs) */
@@ -3081,7 +3091,7 @@ build_new (placement, decl, init, use_global_new)
       {
 	tree tmp = rval;
 	
-	if (TREE_CODE (TREE_TYPE (tmp)) == POINTER_TYPE)
+	if (tmp && TREE_CODE (TREE_TYPE (tmp)) == POINTER_TYPE)
 	  tmp = build_indirect_ref (tmp, NULL_PTR);
       
 	newrval = build_method_call (tmp, constructor_name_full (true_type),
@@ -3176,6 +3186,14 @@ build_new (placement, decl, init, use_global_new)
 	}
     }
  done:
+
+  if (flag_check_new && alloc_expr && rval != alloc_expr)
+    {
+      tree ifexp = build_binary_op (NE_EXPR, alloc_expr, integer_zero_node, 1);
+      rval = build_conditional_expr (ifexp, rval, convert (TREE_TYPE (rval),
+							   integer_zero_node));
+    }
+
   if (rval && TREE_TYPE (rval) != build_pointer_type (type))
     {
       /* The type of new int [3][3] is not int *, but int [3] * */
@@ -3572,7 +3590,18 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 					    auto_delete, integer_two_node));
 	}
       else
-	passed_auto_delete = auto_delete;
+	{
+	  if (TYPE_GETS_REG_DELETE (type))
+	    {
+	      /* Only do access checking here; we'll be calling op delete
+                 from the destructor.  */
+	      tree t = build_opfncall (DELETE_EXPR, LOOKUP_NORMAL, addr,
+				       size_zero_node, NULL_TREE);
+	      if (t == error_mark_node)
+		return error_mark_node;
+	    }
+	  passed_auto_delete = auto_delete;
+	}
 
       if (flags & LOOKUP_PROTECT)
 	{
