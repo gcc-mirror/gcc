@@ -1,3 +1,7 @@
+1998-09-13  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* jcf-io.c: Include string.h.
+
 Thu Sep 10 10:33:31 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Make-lang.in (GCJ): Define before using.

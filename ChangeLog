@@ -1,3 +1,7 @@
+1998-09-13  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config.sub: Recognize sparcv9 just like sparc64.
+
 Wed Sep  9 15:44:52 1998  Robert Lipe  <robertl@dgii.com>
 
 	* config.guess: Match "Pent II" or "PentII" for OpenServer.

@@ -29,6 +29,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "jcf.h"
 #ifdef __STDC__
 #include <stdlib.h>
+#include <string.h>
 #endif
 #include <sys/types.h>
 #include <sys/stat.h>

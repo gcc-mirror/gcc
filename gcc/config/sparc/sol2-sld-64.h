@@ -23,7 +23,7 @@
 
 /* The default code model.  */
 #undef SPARC_DEFAULT_CMODEL
-#define SPARC_DEFAULT_CMODEL CM_MEDLOW
+#define SPARC_DEFAULT_CMODEL CM_MEDANY
 
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE 128
@@ -45,14 +45,14 @@
 %{mcpu=f930:-D__sparclite__} %{mcpu=f934:-D__sparclite__} \
 %{mcpu=v8:-D__sparc_v8__} \
 %{mcpu=supersparc:-D__supersparc__ -D__sparcv8} \
-%{mcpu=v9:-D__sparcv9 -D_LP64} \
-%{mcpu=ultrasparc:-D__sparcv9 -D_LP64} \
+%{mcpu=v9:-D__sparcv9} \
+%{mcpu=ultrasparc:-D__sparcv9} \
 %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:%(cpp_cpu_default)}}}}}}} \
 "
 #endif
 #if TARGET_CPU_DEFAULT == TARGET_CPU_ultrasparc
 #undef CPP_CPU_DEFAULT_SPEC
-#define CPP_CPU_DEFAULT_SPEC "-D__sparcv9 -D_LP64"
+#define CPP_CPU_DEFAULT_SPEC "-D__sparcv9"
 #undef ASM_CPU_DEFAULT_SPEC
 #define ASM_CPU_DEFAULT_SPEC "-xarch=v9a"
 #undef CPP_CPU_SPEC
@@ -67,7 +67,7 @@
 %{mcpu=f930:-D__sparclite__} %{mcpu=f934:-D__sparclite__} \
 %{mcpu=v8:-D__sparc_v8__} \
 %{mcpu=supersparc:-D__supersparc__ -D__sparcv8} \
-%{mcpu=v9:-D__sparcv9 -D_LP64} \
+%{mcpu=v9:-D__sparcv9} \
 %{mcpu=ultrasparc:-D__sparcv9} \
 %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:%(cpp_cpu_default)}}}}}}} \
 "

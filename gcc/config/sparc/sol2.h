@@ -195,10 +195,14 @@ Boston, MA 02111-1307, USA.  */
 
 #undef INIT_SUBTARGET_OPTABS
 #define INIT_SUBTARGET_OPTABS	\
-  fixsfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__ftoll");	\
-  fixunssfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__ftoull");	\
-  fixdfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__dtoll");	\
-  fixunsdfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, "__dtoull")
+  fixsfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, \
+	TARGET_ARCH64 ? "__ftol" : "__ftoll");	\
+  fixunssfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, \
+	TARGET_ARCH64 ? "__ftoul" : "__ftoull");	\
+  fixdfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, \
+	TARGET_ARCH64 ? "__dtol" : "__dtoll");	\
+  fixunsdfdi_libfunc = gen_rtx_SYMBOL_REF (Pmode, \
+	TARGET_ARCH64 ? "__dtoul" : "__dtoull")
 
 /* No weird SPARC variants on Solaris */
 #undef TARGET_LIVE_G0

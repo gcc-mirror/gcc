@@ -2877,14 +2877,14 @@ changequote([,])dnl
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o crtbegin.o crtend.o"
 		fixincludes=fixinc.wrap
 		float_format=i128
-		if [ x${enable_threads} = x ]; then
+		if test x${enable_threads} = x ; then
 		    enable_threads=$have_pthread_h
-		    if [ x${enable_threads} = x ]; then
+		    if test x${enable_threads} = x ; then
 			enable_threads=$have_thread_h
 		    fi
 		fi
-		if [ x${enable_threads} = xyes ]; then
-		    if [ x${have_pthread_h} = xyes ]; then
+		if test x${enable_threads} = xyes ; then
+		    if test x${have_pthread_h} = xyes ; then
 			thread_file='posix'
 		    else
 			thread_file='solaris'
