@@ -844,6 +844,12 @@ true_dependence (mem, x)
     return 0;
 
   return ((MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
+	  /* If we have two memrefs whose MEM_IN_STRUCT_P values differ and
+	     one is volatile, show they conflict.  This isn't quite right, but
+	     works around the fact that MEM_IN_STRUCT_P cannot be set
+	     totally accurately.  */
+	  || (MEM_IN_STRUCT_P (x) != MEM_IN_STRUCT_P (mem)
+	      && (MEM_VOLATILE_P (x) || MEM_VOLATILE_P (mem)))
 	  || (memrefs_conflict_p (SIZE_FOR_MODE (mem), XEXP (mem, 0),
 				  SIZE_FOR_MODE (x), XEXP (x, 0), 0)
 	      && ! (MEM_IN_STRUCT_P (mem) && rtx_addr_varies_p (mem)
@@ -872,6 +878,8 @@ anti_dependence (mem, x)
     return 0;
 
   return ((MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
+	  || (MEM_IN_STRUCT_P (x) != MEM_IN_STRUCT_P (mem)
+	      && (MEM_VOLATILE_P (x) || MEM_VOLATILE_P (mem)))
 	  || (memrefs_conflict_p (SIZE_FOR_MODE (mem), XEXP (mem, 0),
 				  SIZE_FOR_MODE (x), XEXP (x, 0), 0)
 	      && ! (MEM_IN_STRUCT_P (mem) && rtx_addr_varies_p (mem)
@@ -894,6 +902,8 @@ output_dependence (mem, x)
   x = canon_rtx (x);
   mem = canon_rtx (mem);
   return ((MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
+	  || (MEM_IN_STRUCT_P (x) != MEM_IN_STRUCT_P (mem)
+	      && (MEM_VOLATILE_P (x) || MEM_VOLATILE_P (mem)))
 	  || (memrefs_conflict_p (SIZE_FOR_MODE (mem), XEXP (mem, 0),
 				  SIZE_FOR_MODE (x), XEXP (x, 0), 0)
 	      && ! (MEM_IN_STRUCT_P (mem) && rtx_addr_varies_p (mem)
