@@ -1,5 +1,12 @@
 2003-02-19  Alexandre Oliva  <aoliva@redhat.com>
 
+	* libtool.m4 (LD): Append -melf* option to LD on IRIX with GNU ld.
+	* ltconfig: Handle it.
+	* ltcf-cxx.sh: Use with_gnu_ld passed as a shell variable instead of
+	auto-detecting it.
+
+2003-02-19  Alexandre Oliva  <aoliva@redhat.com>
+
 	* ltcf-cxx.sh: Replace $linker_flags with $compiler_flags wherever
 	it is used as argument to $CC.
 	* ltcf-gcj.sh: Likewise.
