@@ -468,6 +468,11 @@ add_to_value (tree v, tree e)
       TREE_CONSTANT (v) = true;
       TREE_CHAIN (v) = e;
     }
+  else if (is_gimple_min_invariant (e))
+    {
+      TREE_CONSTANT (v) = true;
+      TREE_CHAIN (v) = e;
+    }
 #if DEBUG_VALUE_EXPRESSIONS
   if (va->expr_set == NULL)
     va->expr_set = set_new (false);

@@ -1,3 +1,8 @@
+2004-06-13  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-pre.c (add_to_value): is_gimple_min_invariant things
+	are available everywhere too.
+
 2004-06-13  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* fold-const.c (fold_checksum_tree <case 't'>): Only
