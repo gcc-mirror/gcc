@@ -1,3 +1,11 @@
+2002-10-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8160
+	* g++.dg/template/complit1.C: New test.
+
+	PR c++/8149
+	* g++.dg/template/typename4.C: Likewise.
+
 2002-10-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8287

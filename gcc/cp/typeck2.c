@@ -975,6 +975,8 @@ process_init_constructor (type, init, elts)
     return error_mark_node;
 
   result = build (CONSTRUCTOR, type, NULL_TREE, nreverse (members));
+  if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type) == NULL_TREE)
+    complete_array_type (type, result, /*do_default=*/0);
   if (init)
     TREE_HAS_CONSTRUCTOR (result) = TREE_HAS_CONSTRUCTOR (init);
   if (allconstant) TREE_CONSTANT (result) = 1;

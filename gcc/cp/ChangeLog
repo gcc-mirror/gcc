@@ -1,3 +1,11 @@
+2002-10-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8160
+	* typeck2.c (process_init_constructor): Call complete_array_type.
+
+	PR c++/8149
+	* decl.c (make_typename_type): Issue errors about invalid results.
+	
 2002-10-29  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/8287
