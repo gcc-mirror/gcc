@@ -1,3 +1,7 @@
+2004-12-09  David Edelsohn  <edelsohn@gnu.org>
+
+	* real.c (ibm_extended): Correct comment.
+
 2004-12-09  Stan Shebs  <shebs@apple.com>
 
 	* config/rs6000/darwin-asm.h: New file, 32/64-bit assembly macros
