@@ -1,3 +1,7 @@
+2001-03-20  Tom Tromey  <tromey@redhat.com>
+
+	* jcf-parse.c (read_class): Initialize `class'.
+
 2001-03-20  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
 
 	* jcf_parse.c (jcf_parse): Eliminate unused variable.
