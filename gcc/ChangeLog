@@ -1,3 +1,8 @@
+Wed Aug  4 23:39:20 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* real.c (GET_REAL): Don't violate ANSI/ISO aliasing rules.
+	(PUT_REAL): Likewise.
+
 Wed Aug  4 20:45:04 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* final.c (shorten_branches): Don't add an alignment for loops
