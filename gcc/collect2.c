@@ -824,6 +824,8 @@ main (argc, argv)
   char **ld1		= ld1_argv;
   char **ld2_argv	= (char **) xcalloc (sizeof (char *), argc+5);
   char **ld2		= ld2_argv;
+  char **object_lst	= (char **) xcalloc (sizeof (char *), argc);
+  char **object		= object_lst;
   int first_file;
   int num_c_args	= argc+7;
 
@@ -1154,15 +1156,19 @@ main (argc, argv)
 	      break;
 	    }
 	}
-      else if (first_file
-	       && (p = rindex (arg, '.')) != (char *)0
+      else if ((p = rindex (arg, '.')) != (char *)0
 	       && (strcmp (p, ".o") == 0 || strcmp (p, ".a") == 0))
 	{
-	  first_file = 0;
-	  /* place o_file BEFORE this argument! */
-	  ld2--;
-	  *ld2++ = o_file;
-	  *ld2++ = arg;
+	  if (first_file)
+	    {
+	      first_file = 0;
+	      /* place o_file BEFORE this argument! */
+	      ld2--;
+	      *ld2++ = o_file;
+	      *ld2++ = arg;
+	    }
+	  if (p[1] == 'o')
+	    *object++ = arg;
 	}
     }
 
@@ -1260,6 +1266,13 @@ main (argc, argv)
   /* If -r, don't build the constructor or destructor list, just return now. */
   if (rflag)
     return 0;
+
+#ifdef COLLECT_SCAN_OBJECTS
+  /* The AIX linker will discard static constructors in object files if
+     nothing else in the file is referenced, so look at them first.  */
+  while (object_lst < object)
+    scan_prog_file (*object_lst++, PASS_FIRST);
+#endif
 
   scan_prog_file (output_file, PASS_FIRST);
 
