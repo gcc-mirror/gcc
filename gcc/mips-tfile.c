@@ -937,7 +937,7 @@ enum alloc_type {
 };
 
 
-#define WORD_ALIGN(x)  (((x) + (sizeof (long) - 1)) & ~ (sizeof (long -1))))
+#define WORD_ALIGN(x)  (((x) + (sizeof (long) - 1)) & ~ (sizeof (long) - 1))
 #define DWORD_ALIGN(x) (((x) + 7) & ~7)
 
 
