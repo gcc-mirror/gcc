@@ -1,3 +1,7 @@
+2003-11-14  Arnaud Charlet  <charlet@act-europe.fr>
+
+        * Makefile.in (EXTRA_GCC_FLAGS): Pass BOOT_ADAFLAGS.
+
 2003-11-03  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config.sub: Update to 2003-11-03 version.
