@@ -243,10 +243,6 @@ static regset reg_pending_sets;
 static regset reg_pending_clobbers;
 static int reg_pending_sets_all;
 
-/* Vector indexed by INSN_UID giving the original ordering of the insns.  */
-static int *insn_luid;
-#define INSN_LUID(INSN) (insn_luid[INSN_UID (INSN)])
-
 /* To speed up the test for duplicate dependency links we keep a record
    of true dependencies created by add_dependence when the average number
    of instructions in a basic block is very large.
@@ -261,47 +257,77 @@ static int *insn_luid;
    insn chain.  */
 static sbitmap *true_dependency_cache;
 
-/* Vector indexed by INSN_UID giving each instruction a priority.  */
-static int *insn_priority;
-#define INSN_PRIORITY(INSN) (insn_priority[INSN_UID (INSN)])
+/* Indexed by INSN_UID, the collection of all data associated with
+   a single instruction.  */
 
-static short *insn_costs;
-#define INSN_COST(INSN)	insn_costs[INSN_UID (INSN)]
+struct haifa_insn_data
+{
+  /* A list of insns which depend on the instruction.  Unlike LOG_LINKS,
+     it represents forward dependancies.  */
+  rtx depend;
 
-/* Vector indexed by INSN_UID giving an encoding of the function units
-   used.  */
-static short *insn_units;
-#define INSN_UNIT(INSN)	insn_units[INSN_UID (INSN)]
+  /* The line number note in effect for each insn.  For line number 
+     notes, this indicates whether the note may be reused.  */
+  rtx line_note;
 
-/* Vector indexed by INSN_UID giving each instruction a
-   register-weight.  This weight is an estimation of the insn
-   contribution to registers pressure.  */
-static int *insn_reg_weight;
-#define INSN_REG_WEIGHT(INSN) (insn_reg_weight[INSN_UID (INSN)])
+  /* Logical uid gives the original ordering of the insns.  */
+  int luid;
 
-/* Vector indexed by INSN_UID giving list of insns which
-   depend upon INSN.  Unlike LOG_LINKS, it represents forward dependences.  */
-static rtx *insn_depend;
-#define INSN_DEPEND(INSN) insn_depend[INSN_UID (INSN)]
+  /* A priority for each insn.  */
+  int priority;
 
-/* Vector indexed by INSN_UID. Initialized to the number of incoming
-   edges in forward dependence graph (= number of LOG_LINKS).  As
-   scheduling procedes, dependence counts are decreased.  An
-   instruction moves to the ready list when its counter is zero.  */
-static int *insn_dep_count;
-#define INSN_DEP_COUNT(INSN) (insn_dep_count[INSN_UID (INSN)])
+  /* The number of incoming edges in the forward dependency graph.
+     As scheduling proceds, counts are decreased.  An insn moves to
+     the ready queue when its counter reaches zero.  */
+  int dep_count;
 
-/* Vector indexed by INSN_UID giving an encoding of the blockage range
-   function.  The unit and the range are encoded.  */
-static unsigned int *insn_blockage;
-#define INSN_BLOCKAGE(INSN) insn_blockage[INSN_UID (INSN)]
-#define UNIT_BITS 5
-#define BLOCKAGE_MASK ((1 << BLOCKAGE_BITS) - 1)
-#define ENCODE_BLOCKAGE(U, R)				\
-(((U) << BLOCKAGE_BITS					\
-  | MIN_BLOCKAGE_COST (R)) << BLOCKAGE_BITS		\
- | MAX_BLOCKAGE_COST (R))
-#define UNIT_BLOCKED(B) ((B) >> (2 * BLOCKAGE_BITS))
+  /* An encoding of the blockage range function.  Both unit and range
+     are coded.  */
+  unsigned int blockage;
+
+  /* Number of instructions referring to this insn.  */
+  int ref_count;
+
+  /* The minimum clock tick at which the insn becomes ready.  This is
+     used to note timing constraints for the insns in the pending list.  */
+  int tick;
+
+  short cost;
+
+  /* An encoding of the function units used.  */
+  short units;
+
+  /* This weight is an estimation of the insn's contribution to
+     register pressure.  */
+  short reg_weight;
+
+  /* Some insns (e.g. call) are not allowed to move across blocks.  */
+  unsigned int cant_move : 1;
+
+  /* Set if there's DEF-USE dependance between some speculatively
+     moved load insn and this one.  */
+  unsigned int fed_by_spec_load : 1;
+  unsigned int is_load_insn : 1;
+};
+
+static struct haifa_insn_data *h_i_d;
+
+#define INSN_DEPEND(INSN)	(h_i_d[INSN_UID (INSN)].depend)
+#define INSN_LUID(INSN)		(h_i_d[INSN_UID (INSN)].luid)
+#define INSN_PRIORITY(INSN)	(h_i_d[INSN_UID (INSN)].priority)
+#define INSN_DEP_COUNT(INSN)	(h_i_d[INSN_UID (INSN)].dep_count)
+#define INSN_COST(INSN)		(h_i_d[INSN_UID (INSN)].cost)
+#define INSN_UNIT(INSN)		(h_i_d[INSN_UID (INSN)].units)
+#define INSN_REG_WEIGHT(INSN)	(h_i_d[INSN_UID (INSN)].reg_weight)
+
+#define INSN_BLOCKAGE(INSN)	(h_i_d[INSN_UID (INSN)].blockage)
+#define UNIT_BITS		5
+#define BLOCKAGE_MASK		((1 << BLOCKAGE_BITS) - 1)
+#define ENCODE_BLOCKAGE(U, R)			\
+  (((U) << BLOCKAGE_BITS			\
+    | MIN_BLOCKAGE_COST (R)) << BLOCKAGE_BITS	\
+   | MAX_BLOCKAGE_COST (R))
+#define UNIT_BLOCKED(B)		((B) >> (2 * BLOCKAGE_BITS))
 #define BLOCKAGE_RANGE(B)                                                \
   (((((B) >> BLOCKAGE_BITS) & BLOCKAGE_MASK) << (HOST_BITS_PER_INT / 2)) \
    | ((B) & BLOCKAGE_MASK))
@@ -317,16 +343,12 @@ static unsigned int *insn_blockage;
 #define DONE_PRIORITY_P(INSN) (INSN_PRIORITY (INSN) < 0)
 #define LOW_PRIORITY_P(INSN) ((INSN_PRIORITY (INSN) & 0x7f000000) == 0)
 
-/* Vector indexed by INSN_UID giving number of insns referring to this
-   insn.  */
-static int *insn_ref_count;
-#define INSN_REF_COUNT(INSN) (insn_ref_count[INSN_UID (INSN)])
-
-/* Vector indexed by INSN_UID giving line-number note in effect for each
-   insn.  For line-number notes, this indicates whether the note may be
-   reused.  */
-static rtx *line_note;
-#define LINE_NOTE(INSN) (line_note[INSN_UID (INSN)])
+#define INSN_REF_COUNT(INSN)	(h_i_d[INSN_UID (INSN)].ref_count)
+#define LINE_NOTE(INSN)		(h_i_d[INSN_UID (INSN)].line_note)
+#define INSN_TICK(INSN)		(h_i_d[INSN_UID (INSN)].tick)
+#define CANT_MOVE(insn)		(h_i_d[INSN_UID (insn)].cant_move)
+#define FED_BY_SPEC_LOAD(insn)	(h_i_d[INSN_UID (insn)].fed_by_spec_load)
+#define IS_LOAD_INSN(insn)	(h_i_d[INSN_UID (insn)].is_load_insn)
 
 /* Vector indexed by basic block number giving the starting line-number
    for each basic block.  */
@@ -389,12 +411,6 @@ static int q_size = 0;
 #define NEXT_Q(X) (((X)+1) & (INSN_QUEUE_SIZE-1))
 #define NEXT_Q_AFTER(X, C) (((X)+C) & (INSN_QUEUE_SIZE-1))
 
-/* Vector indexed by INSN_UID giving the minimum clock tick at which
-   the insn becomes ready.  This is used to note timing constraints for
-   insns in the pending list.  */
-static int *insn_tick;
-#define INSN_TICK(INSN) (insn_tick[INSN_UID (INSN)])
-
 /* Forward declarations.  */
 static void add_dependence PROTO ((rtx, rtx, enum reg_note));
 #ifdef HAVE_cc0
@@ -426,10 +442,6 @@ static int schedule_block PROTO ((int, int));
 static char *safe_concat PROTO ((char *, char *, const char *));
 static int insn_issue_delay PROTO ((rtx));
 static void adjust_priority PROTO ((rtx));
-
-/* Some insns (e.g. call) are not allowed to move across blocks.  */
-static char *cant_move;
-#define CANT_MOVE(insn) (cant_move[INSN_UID (insn)])
 
 /* Control flow graph edges are kept in circular lists.  */
 typedef struct
@@ -2301,11 +2313,6 @@ enum INSN_TRAP_CLASS
 #define WORST_CLASS(class1, class2) \
 ((class1 > class2) ? class1 : class2)
 
-/* Indexed by INSN_UID, and set if there's DEF-USE dependence between 
-   some speculatively moved load insn and this one.  */
-char *fed_by_spec_load;
-char *is_load_insn;
-
 /* Non-zero if block bb_to is equal to, or reachable from block bb_from.  */
 #define IS_REACHABLE(bb_from, bb_to)					\
 (bb_from == bb_to                                                       \
@@ -2313,8 +2320,6 @@ char *is_load_insn;
    || (bitset_member (ancestor_edges[bb_to],				\
 		      EDGE_TO_BIT (IN_EDGES (BB_TO_BLOCK (bb_from))),	\
 		      edgeset_size)))
-#define FED_BY_SPEC_LOAD(insn) (fed_by_spec_load[INSN_UID (insn)])
-#define IS_LOAD_INSN(insn) (is_load_insn[INSN_UID (insn)])
 
 /* Non-zero iff the address is comprised from at most 1 register.  */
 #define CONST_BASED_ADDRESS_P(x)			\
@@ -6694,7 +6699,6 @@ schedule_region (rgn)
   /* Initializations for region data dependence analyisis.  */
   if (current_nr_blocks > 1)
     {
-      rtx *space;
       int maxreg = max_reg_num ();
 
       bb_reg_last_uses = (rtx **) xmalloc (current_nr_blocks * sizeof (rtx *));
@@ -6899,13 +6903,9 @@ schedule_insns (dump_file)
      pseudos which do not cross calls.  */
   max_uid = get_max_uid () + 1;
 
-  cant_move = xcalloc (max_uid, sizeof (char));
-  fed_by_spec_load = xcalloc (max_uid, sizeof (char));
-  is_load_insn = xcalloc (max_uid, sizeof (char));
+  h_i_d = (struct haifa_insn_data *) xcalloc (max_uid, sizeof (*h_i_d));
 
-  insn_luid = (int *) xmalloc (max_uid * sizeof (int));
-
-  insn_luid[0] = 0;
+  h_i_d[0].luid = 0;
   luid = 1;
   for (b = 0; b < n_basic_blocks; b++)
     for (insn = BLOCK_HEAD (b);; insn = NEXT_INSN (insn))
@@ -7018,24 +7018,6 @@ schedule_insns (dump_file)
 	}
     }
 
-  /* Allocate data for this pass.  See comments, above,
-     for what these vectors do.
-
-     We use xmalloc instead of alloca, because max_uid can be very large
-     when there is a lot of function inlining.  If we used alloca, we could
-     exceed stack limits on some hosts for some inputs.  */
-  insn_priority = (int *) xcalloc (max_uid, sizeof (int));
-  insn_reg_weight = (int *) xcalloc (max_uid, sizeof (int));
-  insn_tick = (int *) xcalloc (max_uid, sizeof (int));
-  insn_costs = (short *) xcalloc (max_uid, sizeof (short));
-  insn_units = (short *) xcalloc (max_uid, sizeof (short));
-  insn_blockage = (unsigned int *) xcalloc (max_uid, sizeof (unsigned int));
-  insn_ref_count = (int *) xcalloc (max_uid, sizeof (int));
-
-  /* Allocate for forward dependencies.  */
-  insn_dep_count = (int *) xcalloc (max_uid, sizeof (int));
-  insn_depend = (rtx *) xcalloc (max_uid, sizeof (rtx));
-
   deaths_in_region = (int *) xmalloc (sizeof(int) * nr_regions);
 
   init_alias_analysis ();
@@ -7044,7 +7026,6 @@ schedule_insns (dump_file)
     {
       rtx line;
 
-      line_note = (rtx *) xcalloc (max_uid, sizeof (rtx));
       line_note_head = (rtx *) xcalloc (n_basic_blocks, sizeof (rtx));
 
       /* Save-line-note-head:
@@ -7177,27 +7158,11 @@ schedule_insns (dump_file)
   free (rgn_bb_table);
   free (block_to_bb);
   free (containing_rgn);
-  free (cant_move);
-  free (fed_by_spec_load);
-  free (is_load_insn);
-  free (insn_luid);
 
-  free (insn_priority);
-  free (insn_reg_weight);
-  free (insn_tick);
-  free (insn_costs);
-  free (insn_units);
-  free (insn_blockage);
-  free (insn_ref_count);
-
-  free (insn_dep_count);
-  free (insn_depend);
+  free (h_i_d);
 
   if (write_symbols != NO_DEBUG)
-    {
-      free (line_note);
-      free (line_note_head);
-    }
+    free (line_note_head);
 
   if (edge_table)
     {
