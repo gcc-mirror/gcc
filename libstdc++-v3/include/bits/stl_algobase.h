@@ -746,10 +746,12 @@ namespace std
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator1>)
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator2>)
-      __glibcxx_function_requires(_LessThanComparableConcept<
-	    typename iterator_traits<_InputIterator1>::value_type>)
-      __glibcxx_function_requires(_LessThanComparableConcept<
+      __glibcxx_function_requires(_LessThanOpConcept<
+	    typename iterator_traits<_InputIterator1>::value_type,
 	    typename iterator_traits<_InputIterator2>::value_type>)
+      __glibcxx_function_requires(_LessThanOpConcept<
+	    typename iterator_traits<_InputIterator2>::value_type,
+	    typename iterator_traits<_InputIterator1>::value_type>)
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 

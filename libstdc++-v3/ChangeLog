@@ -1,3 +1,8 @@
+2005-01-12  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algobase.h (lexicographical_compare):
+	Fix concept check.
+
 2005-01-02  Chris Jefferson  <chris@bubblescope.net>
 
 	* include/bits/stl_algobase.h (mismatch): Correct concept check.
