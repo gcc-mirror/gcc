@@ -290,7 +290,8 @@ build_base_path (enum tree_code code,
     expr = save_expr (expr);
 
   if (want_pointer && !nonnull)
-    null_test = build (EQ_EXPR, boolean_type_node, expr, integer_zero_node);
+    null_test = fold (build2 (NE_EXPR, boolean_type_node,
+			      expr, integer_zero_node));
   
   offset = BINFO_OFFSET (binfo);
   
@@ -365,9 +366,9 @@ build_base_path (enum tree_code code,
     expr = build_indirect_ref (expr, NULL);
 
   if (null_test)
-    expr = build (COND_EXPR, target_type, null_test,
-		  build1 (NOP_EXPR, target_type, integer_zero_node),
-		  expr);
+    expr = fold (build3 (COND_EXPR, target_type, null_test, expr,
+			 fold (build1 (NOP_EXPR, target_type,
+				       integer_zero_node))));
 
   return expr;
 }
