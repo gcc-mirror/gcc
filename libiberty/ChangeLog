@@ -1,3 +1,19 @@
+2003-12-15  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	Fix handling of constructor/destructor of standard substitution:
+	* cp-demangle.c (struct d_standard_sub_info): Define.
+	(d_substitution): Add prefix argument.  Change all callers.
+	Rework handling of standard substitutions to print full name when
+	qualifying a constructor/destructor, or when DMGL_VERBOSE is set.
+	* testsuite/demangle-expected: Add test case.
+
+	Fix handling of negative literal constants:
+	* cp-demangle.c (enum d_comp_type): Add D_COMP_LITERAL_NEG.
+	(d_dump, d_make_comp): Handle D_COMP_LITERAL_NEG.
+	(d_expr_primary): Use D_COMP_LITERAL_NEG for a negative number.
+	(d_print_comp): Handle D_COMP_LITERAL_NEG.
+	* testsuite/demangle-expected: Add test case.
+
 2003-12-04  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* cp-demangle.c (IS_UPPER, IS_LOWER): Define.
