@@ -619,7 +619,7 @@ standard_conversion (tree to, tree from, tree expr)
   else if (fromref || (expr && lvalue_p (expr)))
     conv = build_conv (RVALUE_CONV, from, conv);
 
-   /* Allow conversion between `__complex__' data types  */
+   /* Allow conversion between `__complex__' data types.  */
   if (tcode == COMPLEX_TYPE && fcode == COMPLEX_TYPE)
     {
       /* The standard conversion sequence to convert FROM to TO is

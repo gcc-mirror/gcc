@@ -3631,7 +3631,7 @@ coerce_template_parms (tree parms,
       if (i < nargs)
 	arg = TREE_VEC_ELT (inner_args, i);
       else if (require_all_arguments)
-	/* There must be a default arg in this case. */
+	/* There must be a default arg in this case.  */
 	arg = tsubst_template_arg (TREE_PURPOSE (parm), new_args,
 				   complain, in_decl);
       else
@@ -7045,7 +7045,7 @@ tsubst_baselink (tree baselink, tree object_type,
        class, rather than the instantiated class.  
 
        In addition, lookups that were not ambiguous before may be
-       ambiguous now.  Therefore, we perform the lookup again. */
+       ambiguous now.  Therefore, we perform the lookup again.  */
     qualifying_scope = BINFO_TYPE (BASELINK_ACCESS_BINFO (baselink));
     fns = BASELINK_FUNCTIONS (baselink);
     if (TREE_CODE (fns) == TEMPLATE_ID_EXPR)
@@ -7902,7 +7902,7 @@ tsubst_copy_and_build (tree t,
     {
     case USING_DECL:
       t = DECL_NAME (t);
-      /* Fallthrough. */
+      /* Fallthrough.  */
     case IDENTIFIER_NODE:
       {
 	tree decl;
@@ -11383,7 +11383,7 @@ dependent_type_p_r (tree type)
   if (TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
     return true;
   /* ... or any of the template arguments is a dependent type or
-	an expression that is type-dependent or value-dependent.   */
+	an expression that is type-dependent or value-dependent.  */
   else if (CLASS_TYPE_P (type) && CLASSTYPE_TEMPLATE_INFO (type)
 	   && (any_dependent_template_arguments_p 
 	       (INNERMOST_TEMPLATE_ARGS (CLASSTYPE_TI_ARGS (type)))))

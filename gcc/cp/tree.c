@@ -1353,7 +1353,7 @@ build_min_non_dep (enum tree_code code, tree non_dep, ...)
 
   if (code == COMPOUND_EXPR && TREE_CODE (non_dep) != COMPOUND_EXPR)
     /* This should not be considered a COMPOUND_EXPR, because it
-       resolves to an overload. */
+       resolves to an overload.  */
     COMPOUND_EXPR_OVERLOADED (t) = 1;
   
   va_end (p);

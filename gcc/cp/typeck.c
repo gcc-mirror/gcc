@@ -4302,7 +4302,7 @@ build_x_conditional_expr (tree ifexp, tree op1, tree op2)
 }
 
 /* Given a list of expressions, return a compound expression
-   that performs them all and returns the value of the last of them. */
+   that performs them all and returns the value of the last of them.  */
 
 tree build_x_compound_expr_from_list (tree list, const char *msg)
 {
@@ -4348,7 +4348,7 @@ build_x_compound_expr (tree op1, tree op2)
   return result;
 }
 
-/* Build a compound expression. */
+/* Build a compound expression.  */
 
 tree
 build_compound_expr (tree lhs, tree rhs)
@@ -4754,7 +4754,7 @@ build_c_cast (tree type, tree expr)
     {
       tree t = build_min (CAST_EXPR, type,
 			  tree_cons (NULL_TREE, value, NULL_TREE));
-      /* We don't know if it will or will not have side effects. */
+      /* We don't know if it will or will not have side effects.  */
       TREE_SIDE_EFFECTS (t) = 1;
       return t;
     }

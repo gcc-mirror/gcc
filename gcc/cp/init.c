@@ -2713,7 +2713,7 @@ build_vec_init (tree base, tree maxindex, tree init, int from_array)
 
   stmt_expr = finish_init_stmts (is_global, stmt_expr, compound_stmt);
 
-  /* Now convert make the result have the correct type. */
+  /* Now convert make the result have the correct type.  */
   atype = build_pointer_type (atype);
   stmt_expr = build1 (NOP_EXPR, atype, stmt_expr);
   stmt_expr = build_indirect_ref (stmt_expr, NULL);

@@ -1054,7 +1054,7 @@ typedef enum cp_parser_declarator_kind
   CP_PARSER_DECLARATOR_ABSTRACT,
   /* We want a named declarator.  */
   CP_PARSER_DECLARATOR_NAMED,
-  /* We don't mind, but the name must be an unqualified-id  */
+  /* We don't mind, but the name must be an unqualified-id.  */
   CP_PARSER_DECLARATOR_EITHER
 } cp_parser_declarator_kind;
 
@@ -1260,7 +1260,7 @@ typedef struct cp_parser GTY(())
   unsigned num_template_parameter_lists;
 } cp_parser;
 
-/* The type of a function that parses some kind of expression  */
+/* The type of a function that parses some kind of expression.  */
 typedef tree (*cp_parser_expression_fn) (cp_parser *);
 
 /* Prototypes.  */
@@ -5294,7 +5294,7 @@ cp_parser_expression_statement (cp_parser* parser, bool in_statement_expr_p)
   tree statement = NULL_TREE;
 
   /* If the next token is a ';', then there is no expression
-     statement. */
+     statement.  */
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
     statement = cp_parser_expression (parser);
   
@@ -7735,7 +7735,7 @@ cp_parser_template_name (cp_parser* parser,
      template-argument
      template-argument-list , template-argument
 
-   Returns a TREE_VEC containing the arguments.   */
+   Returns a TREE_VEC containing the arguments.  */
 
 static tree
 cp_parser_template_argument_list (cp_parser* parser)
@@ -7751,7 +7751,7 @@ cp_parser_template_argument_list (cp_parser* parser)
       tree argument;
 
       if (n_args)
-	/* Consume the comma. */
+	/* Consume the comma.  */
 	cp_lexer_consume_token (parser->lexer);
       
       /* Parse the template-argument.  */
@@ -7864,7 +7864,7 @@ cp_parser_template_argument (cp_parser* parser)
 
      -- the address of an object or function with external linkage...
 
-     -- a pointer to member... */
+     -- a pointer to member...  */
   /* Look for a non-type template parameter.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
@@ -7941,7 +7941,7 @@ cp_parser_template_argument (cp_parser* parser)
       cp_parser_error (parser, "invalid non-type template argument");
       return error_mark_node;
     }
-  /* The argument must be a constant-expression. */
+  /* The argument must be a constant-expression.  */
   argument = cp_parser_constant_expression (parser, 
 					    /*allow_non_constant_p=*/false,
 					    /*non_constant_p=*/NULL);
@@ -8306,7 +8306,7 @@ cp_parser_simple_type_specifier (cp_parser* parser, cp_parser_flags flags,
 
 	/* Consume the `typeof' token.  */
 	cp_lexer_consume_token (parser->lexer);
-	/* Parse the operand to `typeof'  */
+	/* Parse the operand to `typeof'.  */
 	operand = cp_parser_sizeof_operand (parser, RID_TYPEOF);
 	/* If it is not already a TYPE, take its type.  */
 	if (!TYPE_P (operand))
@@ -12045,7 +12045,7 @@ cp_parser_member_declaration (cp_parser* parser)
 					       CPP_SEMICOLON))
 	    {
 	      cp_parser_error (parser, "expected `;'");
-	      /* Skip tokens until we find a `;'  */
+	      /* Skip tokens until we find a `;'.  */
 	      cp_parser_skip_to_end_of_statement (parser);
 
 	      break;
