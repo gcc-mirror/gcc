@@ -4611,9 +4611,7 @@ main (argc, argv)
       flag_schedule_insns_after_reload = 1;
 #endif
       flag_regmove = 1;
-#if 0
       flag_strict_aliasing = 1;
-#endif
     }
 
   if (optimize >= 3)
