@@ -1,5 +1,7 @@
 2001-02-04  Mark Mitchell  <mark@codesourcery.com>
 
+	* Makefile.in (DRIVER_DEFINES): Fix quoting.
+
 	* Makefile.in (site.exp): Always set HAVE_LIBSTDCXX_V3.
 	* configure.in: Remove --enable-libstdcxx_v3 support.
 	* configure: Regenerated.
