@@ -1,3 +1,11 @@
+2004-05-04  Bernard Giroud  <bgiroud2@free.fr>
+
+	* gcc/gcc/vmsdbgout.c (vms_func_node, vms_func_ref): New.
+	(func_table): Change type from char ** to vms_func_ref.
+	(write_rtnbeg):  Update to reflect func_table change.  Use
+	fde->funcdef_number instead of rtnnum in output.
+	(write_rtnend, vmxdbgout_begin_function, vmsdbgout_init): Likewise.
+
 2004-05-04  Paolo Bonzini  <bonzini@gnu.org>
 	    Richard Henderson  <rth@redhat.com>
 
