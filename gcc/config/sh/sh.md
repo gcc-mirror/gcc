@@ -4216,19 +4216,15 @@ else
    (set_attr "fp_mode" "single")])
 
 (define_expand "floatsisf2"
-  [(set (reg:SI 22)
-	(match_operand:SI 1 "arith_reg_operand" ""))
-   (parallel [(set (match_operand:SF 0 "arith_reg_operand" "")
-		   (float:SF (reg:SI 22)))
+  [(parallel [(set (match_operand:SF 0 "arith_reg_operand" "")
+		   (float:SF (match_operand:SI 1 "arith_reg_operand" "")))
 	      (use (match_dup 2))])]
   "TARGET_SH3E"
   "
 {
   if (TARGET_SH4)
     {
-      emit_insn (gen_rtx (SET, VOIDmode, gen_rtx (REG, SImode, 22),
-			  operands[1]));
-      emit_sf_insn (gen_floatsisf2_i4 (operands[0], get_fpscr_rtx ()));
+      emit_sf_insn (gen_floatsisf2_i4 (operands[0], operands[1], get_fpscr_rtx ()));
       DONE;
     }
   operands[2] = get_fpscr_rtx ();
@@ -4236,71 +4232,70 @@ else
 
 (define_insn "floatsisf2_i4"
   [(set (match_operand:SF 0 "arith_reg_operand" "=f")
-	(float:SF (reg:SI 22)))
-   (use (match_operand:PSI 1 "fpscr_operand" "c"))]
+	(float:SF (match_operand:SI 1 "register_operand" "y")))
+   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH3E"
-  "float	fpul,%0"
+  "float	%1,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])
 
-(define_insn "*floatsisf2_ie"
-  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
-	(float:SF (reg:SI 22)))]
-  "TARGET_SH3E && ! TARGET_SH4"
-  "float	fpul,%0"
-  [(set_attr "type" "fp")])
+;; ??? This pattern is used nowhere.  floatsisf always expands to floatsisf_i4.
+;; (define_insn "*floatsisf2_ie"
+;;  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
+;;	(float:SF (reg:SI 22)))]
+;;  "TARGET_SH3E && ! TARGET_SH4"
+;;  "float	fpul,%0"
+;;  [(set_attr "type" "fp")])
 
 (define_expand "fix_truncsfsi2"
-  [(set (reg:SI 22)
-	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))
-   (set (match_operand:SI 0 "arith_reg_operand" "=r")
-	(reg:SI 22))]
+  [(set (match_operand:SI 0 "arith_reg_operand" "=y")
+	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))]
   "TARGET_SH3E"
   "
 {
   if (TARGET_SH4)
     {
-      emit_sf_insn (gen_fix_truncsfsi2_i4 (operands[1], get_fpscr_rtx ()));
-      emit_insn (gen_rtx (SET, VOIDmode, operands[0],
-			  gen_rtx (REG, SImode, 22)));
+      emit_sf_insn (gen_fix_truncsfsi2_i4 (operands[0], operands[1], get_fpscr_rtx ()));
       DONE;
     }
 }")
 
 (define_insn "fix_truncsfsi2_i4"
-  [(set (reg:SI 22)
-	(fix:SI (match_operand:SF 0 "arith_reg_operand" "f")))
-   (use (match_operand:PSI 1 "fpscr_operand" "c"))]
+  [(set (match_operand:SI 0 "arith_reg_operand" "=y")
+	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))
+   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
-  "ftrc	%0,fpul"
+  "ftrc	%1,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "single")])
 
-(define_insn "fix_truncsfsi2_i4_2"
-  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))
-   (use (reg:SI 48))
-   (clobber (reg:SI 22))]
-  "TARGET_SH4"
-  "#"
-  [(set_attr "length" "4")
-   (set_attr "fp_mode" "single")])
+;; ??? This pattern is used nowhere.  fix_truncsfsi2 always expands to
+;; fix_truncsfsi2_i4.
+;; (define_insn "fix_truncsfsi2_i4_2"
+;;  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+;;	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))
+;;   (use (reg:SI 48))
+;;   (clobber (reg:SI 22))]
+;;  "TARGET_SH4"
+;;  "#"
+;;  [(set_attr "length" "4")
+;;   (set_attr "fp_mode" "single")])
 
-(define_split
-  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))
-   (clobber (reg:SI 22))]
-  "TARGET_SH4"
-  [(parallel [(set (reg:SI 22) (fix:SI (match_dup 1)))
-	      (use (match_dup 2))])
-   (set (match_dup 0) (reg:SI 22))])
+;;(define_split
+;;  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+;;	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))
+;;   (use (match_operand:PSI 2 "fpscr_operand" "c"))
+;;   (clobber (reg:SI 22))]
+;;  "TARGET_SH4"
+;;  [(parallel [(set (reg:SI 22) (fix:SI (match_dup 1)))
+;;	      (use (match_dup 2))])
+;;   (set (match_dup 0) (reg:SI 22))])
 
 (define_insn "*fixsfsi"
-  [(set (reg:SI 22)
-	(fix:SI (match_operand:SF 0 "arith_reg_operand" "f")))]
+  [(set (match_operand:SI 0 "register_operand" "=y")
+	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))]
   "TARGET_SH3E && ! TARGET_SH4"
-  "ftrc	%0,fpul"
+  "ftrc	%1,%0"
   [(set_attr "type" "fp")])
 
 (define_insn "cmpgtsf_t"
@@ -4486,17 +4481,16 @@ else
   "TARGET_SH4"
   "
 {
-  emit_insn (gen_rtx (SET, VOIDmode, gen_rtx (REG, SImode, 22), operands[1]));
-  emit_df_insn (gen_floatsidf2_i (operands[0], get_fpscr_rtx ()));
+  emit_df_insn (gen_floatsidf2_i (operands[0], operands[1], get_fpscr_rtx ()));
   DONE;
 }")
 
 (define_insn "floatsidf2_i"
   [(set (match_operand:DF 0 "arith_reg_operand" "=f")
-	(float:DF (reg:SI 22)))
-   (use (match_operand:PSI 1 "fpscr_operand" "c"))]
+	(float:DF (match_operand:SI 1 "register_operand" "y")))
+   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
-  "float	fpul,%0"
+  "float	%1,%0"
   [(set_attr "type" "dfp_conv")
    (set_attr "fp_mode" "double")])
 
@@ -4506,39 +4500,40 @@ else
   "TARGET_SH4"
   "
 {
-  emit_df_insn (gen_fix_truncdfsi2_i (operands[1], get_fpscr_rtx ()));
-  emit_insn (gen_rtx (SET, VOIDmode, operands[0], gen_rtx (REG, SImode, 22)));
+  emit_df_insn (gen_fix_truncdfsi2_i (operands[0], operands[1], get_fpscr_rtx ()));
   DONE;
 }")
 
 (define_insn "fix_truncdfsi2_i"
-  [(set (reg:SI 22)
-	(fix:SI (match_operand:DF 0 "arith_reg_operand" "f")))
-   (use (match_operand:PSI 1 "fpscr_operand" "c"))]
+  [(set (match_operand:SI 0 "register_operand" "=y")
+	(fix:SI (match_operand:DF 1 "arith_reg_operand" "f")))
+   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
-  "ftrc	%0,fpul"
+  "ftrc	%1,%0"
   [(set_attr "type" "dfp_conv")
    (set_attr "fp_mode" "double")])
 
-(define_insn "fix_truncdfsi2_i4"
-  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-	(fix:SI (match_operand:DF 1 "arith_reg_operand" "f")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))
-   (clobber (reg:SI 22))]
-  "TARGET_SH4"
-  "#"
-  [(set_attr "length" "4")
-   (set_attr "fp_mode" "double")])
-
-(define_split
-  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-	(fix:SI (match_operand:DF 1 "arith_reg_operand" "f")))
-   (use (match_operand:PSI 2 "fpscr_operand" "c"))
-   (clobber (reg:SI 22))]
-  "TARGET_SH4"
-  [(parallel [(set (reg:SI 22) (fix:SI (match_dup 1)))
-	      (use (match_dup 2))])
-   (set (match_dup 0) (reg:SI 22))])
+;; ??? This pattern is used nowhere.  fix_truncdfsi2 always expands to
+;; fix_truncdfsi2_i.
+;; (define_insn "fix_truncdfsi2_i4"
+;;   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+;; 	(fix:SI (match_operand:DF 1 "arith_reg_operand" "f")))
+;;    (use (match_operand:PSI 2 "fpscr_operand" "c"))
+;;    (clobber (reg:SI 22))]
+;;   "TARGET_SH4"
+;;   "#"
+;;   [(set_attr "length" "4")
+;;    (set_attr "fp_mode" "double")])
+;; 
+;; (define_split
+;;   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+;; 	(fix:SI (match_operand:DF 1 "arith_reg_operand" "f")))
+;;    (use (match_operand:PSI 2 "fpscr_operand" "c"))
+;;    (clobber (reg:SI 22))]
+;;   "TARGET_SH4"
+;;   [(parallel [(set (reg:SI 22) (fix:SI (match_dup 1)))
+;; 	      (use (match_dup 2))])
+;;    (set (match_dup 0) (reg:SI 22))])
 
 (define_insn "cmpgtdf_t"
   [(set (reg:SI 18) (gt:SI (match_operand:DF 0 "arith_reg_operand" "f")
@@ -4630,18 +4625,16 @@ else
   "TARGET_SH4"
   "
 {
-  emit_sf_insn (gen_movsf_ie (gen_rtx (REG, SFmode, 22), operands[1],
-			      get_fpscr_rtx ()));
-  emit_df_insn (gen_extendsfdf2_i4 (operands[0], get_fpscr_rtx ()));
+  emit_df_insn (gen_extendsfdf2_i4 (operands[0], operands[1], get_fpscr_rtx ()));
   DONE;
 }")
 
 (define_insn "extendsfdf2_i4"
   [(set (match_operand:DF 0 "arith_reg_operand" "=f")
-	(float_extend:DF (reg:SF 22)))
-   (use (match_operand:PSI 1 "fpscr_operand" "c"))]
+	(float_extend:DF (match_operand:SF 1 "register_operand" "y")))
+   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
-  "fcnvsd  fpul,%0"
+  "fcnvsd  %1,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "double")])
 
@@ -4651,18 +4644,16 @@ else
   "TARGET_SH4"
   "
 {
-  emit_df_insn (gen_truncdfsf2_i4 (operands[1], get_fpscr_rtx ()));
-  emit_sf_insn (gen_movsf_ie (operands[0], gen_rtx (REG, SFmode, 22),
-			   get_fpscr_rtx ()));
+  emit_df_insn (gen_truncdfsf2_i4 (operands[0], operands[1], get_fpscr_rtx ()));
   DONE;
 }")
 
 (define_insn "truncdfsf2_i4"
-  [(set (reg:SF 22)
-	(float_truncate:SF (match_operand:DF 0 "arith_reg_operand" "f")))
-   (use (match_operand:PSI 1 "fpscr_operand" "c"))]
+  [(set (match_operand:SF 0 "register_operand" "=y")
+	(float_truncate:SF (match_operand:DF 1 "arith_reg_operand" "f")))
+   (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
-  "fcnvds  %0,fpul"
+  "fcnvds  %1,%0"
   [(set_attr "type" "fp")
    (set_attr "fp_mode" "double")])
 

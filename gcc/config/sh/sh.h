@@ -822,6 +822,7 @@ extern enum reg_class reg_class_from_letter[];
       && (GET_CODE (X) == MEM						\
 	  || (GET_CODE (X) == REG					\
 	      && (REGNO (X) >= FIRST_PSEUDO_REGISTER			\
+		  || REGNO (X) == T_REG					\
 		  || system_reg_operand (X, VOIDmode)))))		\
    ? GENERAL_REGS							\
    : (((CLASS) == MAC_REGS || (CLASS) == PR_REGS)			\
@@ -835,6 +836,11 @@ extern enum reg_class reg_class_from_letter[];
     && ! ((fp_zero_operand (X) || fp_one_operand (X))			\
 	  && (MODE) == SFmode && fldi_ok ()))				\
    ? R0_REGS								\
+   : (CLASS == FPUL_REGS						\
+      && ((GET_CODE (X) == REG						\
+          && (REGNO (X) == MACL_REG || REGNO (X) == MACH_REG		\
+	      || REGNO (X) == T_REG))))					\
+   ? GENERAL_REGS							\
    : CLASS == FPUL_REGS && immediate_operand ((X), (MODE))		\
    ? (GET_CODE (X) == CONST_INT && CONST_OK_FOR_I (INTVAL (X))		\
       ? GENERAL_REGS							\
