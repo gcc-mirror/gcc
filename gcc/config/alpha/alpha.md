@@ -798,6 +798,15 @@
   "zapnot %1,1,%0"
   [(set_attr "type" "shift")])
 
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(zero_extend:SI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
+  "TARGET_BYTE_OPS"
+  "@
+   zapnot %1,1,%0
+   ldbu %0,%1"
+  [(set_attr "type" "shift,ld")])
+
 (define_insn "zero_extendqisi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extend:SI (match_operand:QI 1 "register_operand" "r")))]
@@ -805,12 +814,30 @@
   "zapnot %1,1,%0"
   [(set_attr "type" "shift")])
 
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(zero_extend:DI (match_operand:QI 1 "nonimmediate_operand" "r,m")))]
+  "TARGET_BYTE_OPS"
+  "@
+   zapnot %1,1,%0
+   ldbu %0,%1"
+  [(set_attr "type" "shift,ld")])
+
 (define_insn "zero_extendqidi2"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extend:DI (match_operand:QI 1 "register_operand" "r")))]
   ""
   "zapnot %1,1,%0"
   [(set_attr "type" "shift")])
+  
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(zero_extend:SI (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
+  "TARGET_BYTE_OPS"
+  "@
+   zapnot %1,3,%0
+   ldwu %0,%1"
+  [(set_attr "type" "shift,ld")])
 
 (define_insn "zero_extendhisi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -818,6 +845,15 @@
   ""
   "zapnot %1,3,%0"
   [(set_attr "type" "shift")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(zero_extend:DI (match_operand:HI 1 "nonimmediate_operand" "r,m")))]
+  "TARGET_BYTE_OPS"
+  "@
+   zapnot %1,3,%0
+   ldwu %0,%1"
+  [(set_attr "type" "shift,ld")])
 
 (define_insn "zero_extendhidi2"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -952,7 +988,7 @@
   "
 {
   /* If we have a MEM (must be unaligned), extend to DImode (which we do
-	specially) and then copy to the result.  */
+     specially) and then copy to the result.  */
   if (GET_CODE (operands[1]) == MEM)
     {
       rtx temp = gen_reg_rtx (DImode);
@@ -966,6 +1002,20 @@
   operands[1] = gen_lowpart (DImode, operands[1]);
   operands[2] = gen_reg_rtx (DImode);
 }")
+
+(define_insn "extendqidi2x"
+  [(set (match_operand:DI 0 "register_operand" "r")
+	(sign_extend:DI (match_operand:QI 1 "register_operand" "r")))]
+  "TARGET_BYTE_OPS"
+  "sextb %1,%0"
+  [(set_attr "type" "shift")])	;; not sure what class this belongs to
+
+(define_insn "extendhidi2x"
+  [(set (match_operand:DI 0 "register_operand" "r")
+	(sign_extend:DI (match_operand:HI 1 "register_operand" "r")))]
+  "TARGET_BYTE_OPS"
+  "sextw %1,%0"
+  [(set_attr "type" "shift")])
 
 (define_expand "extendqisi2"
   [(set (match_dup 2)
@@ -1003,6 +1053,21 @@
   ""
   "
 { extern rtx get_unaligned_address ();
+
+  if (TARGET_BYTE_OPS)
+    {
+      rtx temp = operands[1];
+
+      if (GET_CODE (operands[1]) == MEM)
+	{
+	  temp = gen_reg_rtx (QImode);
+	  emit_insn (gen_movqi (temp, operands[1]));
+	}
+
+      emit_insn (gen_extendqidi2x (operands[0], temp));
+      DONE;
+    }
+
   if (GET_CODE (operands[1]) == MEM)
     {
       rtx seq
@@ -1054,6 +1119,21 @@
   ""
   "
 { extern rtx get_unaligned_address ();
+
+  if (TARGET_BYTE_OPS)
+    {
+      rtx temp = operands[1];
+
+      if (GET_CODE (operands[1]) == MEM)
+	{
+	  temp = gen_reg_rtx (HImode);
+	  emit_insn (gen_movhi (temp, operands[1]));
+	}
+
+      emit_insn (gen_extendhidi2x (operands[0], temp));
+      DONE;
+    }
+
   if (GET_CODE (operands[1]) == MEM)
     {
       rtx seq
@@ -3367,32 +3447,36 @@
   [(set_attr "type" "ilog,ilog,ilog,iadd,iadd,ldsym,ld,st,fcpys,fcpys,ld,st")])
 
 (define_insn ""
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,r,f,f")
-	(match_operand:HI 1 "input_operand" "r,J,I,n,f,J"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,r,r,m,f,f")
+	(match_operand:HI 1 "input_operand" "r,J,I,n,m,rJ,f,J"))]
   "register_operand (operands[0], HImode)
-   || register_operand (operands[1], HImode)"
+   || reg_or_0_operand (operands[1], HImode)"
   "@
    bis %1,%1,%0
    bis $31,$31,%0
    bis $31,%1,%0
    lda %0,%L1
+   ldwu %0,%1
+   stw %r1,%0
    cpys %1,%1,%0
    cpys $f31,$f31,%0"
-  [(set_attr "type" "ilog,ilog,ilog,iadd,fcpys,fcpys")])
+  [(set_attr "type" "ilog,ilog,ilog,iadd,ld,st,fcpys,fcpys")])
 
 (define_insn ""
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,r,f,f")
-	(match_operand:QI 1 "input_operand" "r,J,I,n,f,J"))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,r,r,m,f,f")
+	(match_operand:QI 1 "input_operand" "r,J,I,n,m,rJ,f,J"))]
   "register_operand (operands[0], QImode)
-   || register_operand (operands[1], QImode)"
+   || reg_or_0_operand (operands[1], QImode)"
   "@
    bis %1,%1,%0
    bis $31,$31,%0
    bis $31,%1,%0
    lda %0,%L1
+   ldbu %0,%1
+   stb %r1,%0
    cpys %1,%1,%0
    cpys $f31,$f31,%0"
-  [(set_attr "type" "ilog,ilog,ilog,iadd,fcpys,fcpys")])
+  [(set_attr "type" "ilog,ilog,ilog,iadd,ld,st,fcpys,fcpys")])
 
 ;; We do two major things here: handle mem->mem and construct long
 ;; constants.
@@ -3672,6 +3756,24 @@
   "
 { extern rtx get_unaligned_address ();
 
+  if (TARGET_BYTE_OPS)
+    {
+      if (GET_CODE (operands[0]) == MEM
+	  && ! reg_or_0_operand (operands[1], QImode))
+	operands[1] = force_reg (QImode, operands[1]);
+
+      if (! CONSTANT_P (operands[1]) || input_operand (operands[1], QImode))
+	;
+      else if (GET_CODE (operands[1]) == CONST_INT)
+	{
+	  operands[1]
+	    = alpha_emit_set_const (operands[0], QImode, INTVAL (operands[1]), 3);
+	  if (rtx_equal_p (operands[0], operands[1]))
+	    DONE;
+	}
+      goto def;
+    }
+
   /* If the output is not a register, the input must be.  */
   if (GET_CODE (operands[0]) == MEM)
     operands[1] = force_reg (QImode, operands[1]);
@@ -3755,6 +3857,7 @@
 	}
       DONE;
     }
+ def:;
 }")
 
 (define_expand "movhi"
@@ -3763,6 +3866,25 @@
   ""
   "
 { extern rtx get_unaligned_address ();
+
+  if (TARGET_BYTE_OPS)
+    {
+      if (GET_CODE (operands[0]) == MEM
+	  && ! reg_or_0_operand (operands[1], HImode))
+	operands[1] = force_reg (HImode, operands[1]);
+
+      if (! CONSTANT_P (operands[1]) || input_operand (operands[1], HImode))
+	;
+      else if (GET_CODE (operands[1]) == CONST_INT)
+	{
+	  operands[1]
+	    = alpha_emit_set_const (operands[0], HImode, INTVAL (operands[1]), 3);
+	  if (rtx_equal_p (operands[0], operands[1]))
+	    DONE;
+	}
+      goto def;
+    }
+
 
   /* If the output is not a register, the input must be.  */
   if (GET_CODE (operands[0]) == MEM)
@@ -3848,6 +3970,7 @@
 
       DONE;
     }
+ def:;
 }")
 
 ;; Here are the versions for reload.  Note that in the unaligned cases
