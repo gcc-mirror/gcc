@@ -1,5 +1,10 @@
 2000-12-22  Jason Merrill  <jason@redhat.com>
 
+	* call.c (joust): Use DECL_NONSTATIC_MEMBER_FUNCTION_P, not
+	DECL_STATIC_FUNCTION_P.
+
+	* typeck.c (build_binary_op): Fix pmf comparison logic.
+
 	* semantics.c (genrtl_finish_function): Don't try to jump to
 	return_label unless it exists.
 
