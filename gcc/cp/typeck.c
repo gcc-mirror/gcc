@@ -5151,11 +5151,11 @@ build_static_cast (type, expr)
 				   LOOKUP_COMPLAIN, NULL_TREE)));
 
   if (IS_AGGR_TYPE (type))
-    return build_cplus_new
-      (type, (build_method_call
-	      (NULL_TREE, ctor_identifier, build_tree_list (NULL_TREE, expr),
-	       TYPE_BINFO (type), LOOKUP_NORMAL)));
-
+    return build_cplus_new (type, (build_method_call
+				   (NULL_TREE, complete_ctor_identifier, 
+				    build_tree_list (NULL_TREE, expr),
+				    TYPE_BINFO (type), LOOKUP_NORMAL)));
+  
   expr = decay_conversion (expr);
   intype = TREE_TYPE (expr);
 
@@ -5671,7 +5671,7 @@ build_modify_expr (lhs, modifycode, rhs)
 	/* Do the default thing */;
       else
 	{
-	  result = build_method_call (lhs, ctor_identifier,
+	  result = build_method_call (lhs, complete_ctor_identifier,
 				      build_tree_list (NULL_TREE, rhs),
 				      TYPE_BINFO (lhstype), LOOKUP_NORMAL);
 	  if (result == NULL_TREE)

@@ -6063,6 +6063,7 @@ initialize_predefined_identifiers ()
     { "Java", &lang_name_java },
     { CTOR_NAME, &ctor_identifier },
     { "__base_ctor", &base_ctor_identifier },
+    { "__comp_ctor", &complete_ctor_identifier },
     { DTOR_NAME, &dtor_identifier },
     { "__base_dtor", &base_dtor_identifier },
     { "__deleting_dtor", &deleting_dtor_identifier },
@@ -13441,13 +13442,8 @@ start_function (declspecs, declarator, attrs, flags)
 
       /* Constructors and destructors need to know whether they're "in
 	 charge" of initializing virtual base classes.  */
-      if (DECL_DESTRUCTOR_P (decl1))
-	current_in_charge_parm = TREE_CHAIN (t);
-      else if (DECL_CONSTRUCTOR_P (decl1)
-	       && TREE_CHAIN (t)
-	       && DECL_ARTIFICIAL (TREE_CHAIN (t))
-	       && (DECL_NAME (TREE_CHAIN (t))
-		   == in_charge_identifier))
+      if (DECL_CONSTRUCTOR_FOR_VBASE_P (decl1)
+	  || DECL_DESTRUCTOR_P (decl1))
 	current_in_charge_parm = TREE_CHAIN (t);
     }
 

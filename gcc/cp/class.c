@@ -2927,31 +2927,30 @@ extern int interface_only, interface_unknown;
 /* Create default constructors, assignment operators, and so forth for
    the type indicated by T, if they are needed.
    CANT_HAVE_DEFAULT_CTOR, CANT_HAVE_CONST_CTOR, and
-   CANT_HAVE_ASSIGNMENT are nonzero if, for whatever reason, the class
-   cannot have a default constructor, copy constructor taking a const
-   reference argument, or an assignment operator, respectively.  If a
-   virtual destructor is created, its DECL is returned; otherwise the
-   return value is NULL_TREE.  */
+   CANT_HAVE_CONST_ASSIGNMENT are nonzero if, for whatever reason, the
+   class cannot have a default constructor, copy constructor taking a
+   const reference argument, or an assignment operator taking a const
+   reference, respectively.  If a virtual destructor is created, its
+   DECL is returned; otherwise the return value is NULL_TREE.  */
 
 static tree
 add_implicitly_declared_members (t, cant_have_default_ctor,
 				 cant_have_const_cctor,
-				 cant_have_assignment)
+				 cant_have_const_assignment)
      tree t;
      int cant_have_default_ctor;
      int cant_have_const_cctor;
-     int cant_have_assignment;
+     int cant_have_const_assignment;
 {
   tree default_fn;
   tree implicit_fns = NULL_TREE;
-  tree name = TYPE_IDENTIFIER (t);
   tree virtual_dtor = NULL_TREE;
   tree *f;
 
   /* Destructor.  */
   if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) && !TYPE_HAS_DESTRUCTOR (t))
     {
-      default_fn = cons_up_default_function (t, name, 0);
+      default_fn = implicitly_declare_fn (sfk_destructor, t, /*const_p=*/0);
       check_for_override (default_fn, t);
 
       /* If we couldn't make it work, then pretend we didn't need it.  */
@@ -2973,7 +2972,7 @@ add_implicitly_declared_members (t, cant_have_default_ctor,
   /* Default constructor.  */
   if (! TYPE_HAS_CONSTRUCTOR (t) && ! cant_have_default_ctor)
     {
-      default_fn = cons_up_default_function (t, name, 2);
+      default_fn = implicitly_declare_fn (sfk_constructor, t, /*const_p=*/0);
       TREE_CHAIN (default_fn) = implicit_fns;
       implicit_fns = default_fn;
     }
@@ -2983,8 +2982,9 @@ add_implicitly_declared_members (t, cant_have_default_ctor,
     {
       /* ARM 12.18: You get either X(X&) or X(const X&), but
 	 not both.  --Chip  */
-      default_fn = cons_up_default_function (t, name,
-					     3 + cant_have_const_cctor);
+      default_fn 
+	= implicitly_declare_fn (sfk_copy_constructor, t,
+				 /*const_p=*/!cant_have_const_cctor);
       TREE_CHAIN (default_fn) = implicit_fns;
       implicit_fns = default_fn;
     }
@@ -2992,8 +2992,9 @@ add_implicitly_declared_members (t, cant_have_default_ctor,
   /* Assignment operator.  */
   if (! TYPE_HAS_ASSIGN_REF (t) && ! TYPE_FOR_JAVA (t))
     {
-      default_fn = cons_up_default_function (t, name,
-					     5 + cant_have_assignment);
+      default_fn 
+	= implicitly_declare_fn (sfk_assignment_operator, t,
+				 /*const_p=*/!cant_have_const_assignment);
       TREE_CHAIN (default_fn) = implicit_fns;
       implicit_fns = default_fn;
     }
