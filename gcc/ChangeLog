@@ -1,3 +1,8 @@
+Thu Sep 30 18:04:13 1999  Richard Henderson  <rth@cygnus.com>
+
+	* jump.c (jump_optimize_1) [conditional_move]: Use general_operand
+	not register_operand to determine when B may need preloading.
+
 Thu Sep 30 17:39:16 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (*): Use nonimmediate not general_operand for SET_DEST.
