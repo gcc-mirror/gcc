@@ -1,3 +1,8 @@
+Sat Dec 18 20:34:00 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_emit_conditional_move): If TARGET_FIX, handle
+	cmove with mismatched test and data modes.
+
 Sat Dec 18 20:30:15 1999  Richard Henderson  <rth@cygnus.com>
 
 	* c-typeck.c (c_expand_start_case): Don't warn for long switch

@@ -1580,18 +1580,63 @@ alpha_emit_conditional_move (cmp, mode)
     = (GET_MODE (op0) == VOIDmode ? DImode : GET_MODE (op0));
   enum machine_mode cmp_op_mode = fp_p ? DFmode : DImode;
   enum machine_mode cmov_mode = VOIDmode;
+  int local_fast_math = flag_fast_math;
   rtx tem;
 
   /* Zero the operands.  */
   memset (&alpha_compare, 0, sizeof (alpha_compare));
 
   if (fp_p != FLOAT_MODE_P (mode))
-    return 0;
+    {
+      enum rtx_code cmp_code;
+
+      if (! TARGET_FIX)
+	return 0;
+
+      /* If we have fp<->int register move instructions, do a cmov by
+	 performing the comparison in fp registers, and move the
+	 zero/non-zero value to integer registers, where we can then
+	 use a normal cmov, or vice-versa.  */
+
+      switch (code)
+	{
+	case EQ: case LE: case LT: case LEU: case LTU:
+	  /* We have these compares.  */
+	  cmp_code = code, code = NE;
+	  break;
+
+	case NE:
+	  /* This must be reversed.  */
+	  cmp_code = EQ, code = EQ;
+	  break;
+
+	case GE: case GT: case GEU: case GTU:
+	  /* These must be swapped.  */
+	  cmp_code = swap_condition (code);
+	  code = NE;
+	  tem = op0, op0 = op1, op1 = tem;
+	  break;
+
+	default:
+	  abort ();
+	}
+
+      tem = gen_reg_rtx (cmp_op_mode);
+      emit_insn (gen_rtx_SET (VOIDmode, tem,
+			      gen_rtx_fmt_ee (cmp_code, cmp_op_mode,
+					      op0, op1)));
+
+      cmp_mode = cmp_op_mode = fp_p ? DImode : DFmode;
+      op0 = gen_lowpart (cmp_op_mode, tem);
+      op1 = CONST0_RTX (cmp_op_mode);
+      fp_p = !fp_p;
+      local_fast_math = 1;
+    }
 
   /* We may be able to use a conditional move directly.
      This avoids emitting spurious compares. */
   if (signed_comparison_operator (cmp, cmp_op_mode)
-      && (!fp_p || flag_fast_math)
+      && (!fp_p || local_fast_math)
       && (op0 == CONST0_RTX (cmp_mode) || op1 == CONST0_RTX (cmp_mode)))
     return gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
 
@@ -1627,7 +1672,7 @@ alpha_emit_conditional_move (cmp, mode)
   /* ??? We mark the branch mode to be CCmode to prevent the compare
      and cmov from being combined, since the compare insn follows IEEE
      rules that the cmov does not.  */
-  if (fp_p && !flag_fast_math)
+  if (fp_p && !local_fast_math)
     cmov_mode = CCmode;
 
   tem = gen_reg_rtx (cmp_op_mode);
