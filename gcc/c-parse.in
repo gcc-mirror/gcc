@@ -1389,7 +1389,7 @@ notype_initdecls:
 
 initdcl:
 	  declarator maybeasm maybe_attribute '='
-		{ $<ttype>$ = start_decl ($1, current_declspecs, 1,
+		{ $<ttype>$ = start_decl ($1, current_declspecs, true,
 					  chainon ($3, all_prefix_attributes));
 		  start_init ($<ttype>$, $2, global_bindings_p ()); }
 	  init
@@ -1398,7 +1398,7 @@ initdcl:
 		  maybe_warn_string_init (TREE_TYPE ($<ttype>5), $6);
 		  finish_decl ($<ttype>5, $6.value, $2); }
 	| declarator maybeasm maybe_attribute
-		{ tree d = start_decl ($1, current_declspecs, 0,
+		{ tree d = start_decl ($1, current_declspecs, false,
 				       chainon ($3, all_prefix_attributes));
 		  finish_decl (d, NULL_TREE, $2);
                 }
@@ -1406,7 +1406,7 @@ initdcl:
 
 notype_initdcl:
 	  notype_declarator maybeasm maybe_attribute '='
-		{ $<ttype>$ = start_decl ($1, current_declspecs, 1,
+		{ $<ttype>$ = start_decl ($1, current_declspecs, true,
 					  chainon ($3, all_prefix_attributes));
 		  start_init ($<ttype>$, $2, global_bindings_p ()); }
 	  init
@@ -1415,7 +1415,7 @@ notype_initdcl:
 		  maybe_warn_string_init (TREE_TYPE ($<ttype>5), $6);
 		  finish_decl ($<ttype>5, $6.value, $2); }
 	| notype_declarator maybeasm maybe_attribute
-		{ tree d = start_decl ($1, current_declspecs, 0,
+		{ tree d = start_decl ($1, current_declspecs, false,
 				       chainon ($3, all_prefix_attributes));
 		  finish_decl (d, NULL_TREE, $2); }
 	;
@@ -1624,7 +1624,7 @@ after_type_declarator:
 	| after_type_declarator '(' parmlist_or_identifiers  %prec '.'
 		{ $$ = build_nt (CALL_EXPR, $1, $3, NULL_TREE); }
 	| after_type_declarator array_declarator  %prec '.'
-		{ $$ = set_array_declarator_type ($2, $1, 0); }
+		{ $$ = set_array_declarator_type ($2, $1, false); }
 	| '*' maybe_type_quals_attrs after_type_declarator  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
 	| TYPENAME
@@ -1646,7 +1646,7 @@ parm_declarator_starttypename:
 	  parm_declarator_starttypename '(' parmlist_or_identifiers  %prec '.'
 		{ $$ = build_nt (CALL_EXPR, $1, $3, NULL_TREE); }
 	| parm_declarator_starttypename array_declarator  %prec '.'
-		{ $$ = set_array_declarator_type ($2, $1, 0); }
+		{ $$ = set_array_declarator_type ($2, $1, false); }
 	| TYPENAME
 @@ifobjc
 	| OBJECTNAME
@@ -1657,7 +1657,7 @@ parm_declarator_nostarttypename:
 	  parm_declarator_nostarttypename '(' parmlist_or_identifiers  %prec '.'
 		{ $$ = build_nt (CALL_EXPR, $1, $3, NULL_TREE); }
 	| parm_declarator_nostarttypename array_declarator  %prec '.'
-		{ $$ = set_array_declarator_type ($2, $1, 0); }
+		{ $$ = set_array_declarator_type ($2, $1, false); }
 	| '*' maybe_type_quals_attrs parm_declarator_starttypename  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
 	| '*' maybe_type_quals_attrs parm_declarator_nostarttypename  %prec UNARY
@@ -1677,7 +1677,7 @@ notype_declarator:
 	| '*' maybe_type_quals_attrs notype_declarator  %prec UNARY
 		{ $$ = make_pointer_declarator ($2, $3); }
 	| notype_declarator array_declarator  %prec '.'
-		{ $$ = set_array_declarator_type ($2, $1, 0); }
+		{ $$ = set_array_declarator_type ($2, $1, false); }
 	| IDENTIFIER
 	;
 
@@ -1946,27 +1946,27 @@ direct_absdcl1:
 	| direct_absdcl1 '(' parmlist
 		{ $$ = build_nt (CALL_EXPR, $1, $3, NULL_TREE); }
 	| direct_absdcl1 array_declarator
-		{ $$ = set_array_declarator_type ($2, $1, 1); }
+		{ $$ = set_array_declarator_type ($2, $1, true); }
 	| '(' parmlist
 		{ $$ = build_nt (CALL_EXPR, NULL_TREE, $2, NULL_TREE); }
 	| array_declarator
-		{ $$ = set_array_declarator_type ($1, NULL_TREE, 1); }
+		{ $$ = set_array_declarator_type ($1, NULL_TREE, true); }
 	;
 
 /* The [...] part of a declarator for an array type.  */
 
 array_declarator:
 	'[' maybe_type_quals_attrs expr_no_commas ']'
-		{ $$ = build_array_declarator ($3.value, $2, 0, 0); }
+		{ $$ = build_array_declarator ($3.value, $2, false, false); }
 	| '[' maybe_type_quals_attrs ']'
-		{ $$ = build_array_declarator (NULL_TREE, $2, 0, 0); }
+		{ $$ = build_array_declarator (NULL_TREE, $2, false, false); }
 	| '[' maybe_type_quals_attrs '*' ']'
-		{ $$ = build_array_declarator (NULL_TREE, $2, 0, 1); }
+		{ $$ = build_array_declarator (NULL_TREE, $2, false, true); }
 	| '[' STATIC maybe_type_quals_attrs expr_no_commas ']'
-		{ $$ = build_array_declarator ($4.value, $3, 1, 0); }
+		{ $$ = build_array_declarator ($4.value, $3, true, false); }
 	/* declspecs_nosc_nots is a synonym for type_quals_attrs.  */
 	| '[' declspecs_nosc_nots STATIC expr_no_commas ']'
-		{ $$ = build_array_declarator ($4.value, $2, 1, 0); }
+		{ $$ = build_array_declarator ($4.value, $2, true, false); }
 	;
 
 /* A nonempty series of declarations and statements (possibly followed by
