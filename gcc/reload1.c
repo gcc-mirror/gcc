@@ -5209,14 +5209,14 @@ emit_reload_insns (insn)
 	   && GET_CODE (PATTERN (PREV_INSN (before_insn))) == USE)
       before_insn = PREV_INSN (before_insn);
 
-  /* If this insn is followed by any CLOBBER insns made by find_reloads,
+  /* If INSN is followed by any CLOBBER insns made by find_reloads,
      put our reloads after them since they may otherwise be 
      misinterpreted.  */
 
-  while (NEXT_INSN (following_insn) != 0
-	 && GET_CODE (NEXT_INSN (following_insn)) == INSN
-	 && GET_MODE (NEXT_INSN (following_insn)) == DImode
-	 && GET_CODE (PATTERN (NEXT_INSN (following_insn))) == CLOBBER)
+  while (GET_CODE (following_insn) == INSN
+	 && GET_MODE (following_insn) == DImode
+	 && GET_CODE (PATTERN (following_insn)) == CLOBBER
+	 && NEXT_INSN (following_insn) != 0)
     following_insn = NEXT_INSN (following_insn);
 
   /* Now output the instructions to copy the data into and out of the
