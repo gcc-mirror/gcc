@@ -277,7 +277,7 @@ get_base_filename (filename)
       return NULL;
     }
 
-  p = rindex (filename, '/');
+  p = (char *) rindex (filename, '/');
   if (p)
     return p+1;
   else
@@ -294,10 +294,10 @@ open_repo_file (filename)
   if (s == NULL)
     return;
 
-  p = rindex (s, '/');
+  p = (char *) rindex (s, '/');
   if (! p)
     p = s;
-  p = rindex (p, '.');
+  p = (char *) rindex (p, '.');
   if (! p)
     p = s + strlen (s);
 

@@ -1,5 +1,16 @@
 1997-11-01  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
+	* lex.c (FILE_NAME_NONDIRECTORY): Delete macro.
+	(file_name_nondirectory): New function, doing the same as the macro.
+	(set_typedecl_interface_info): Use it instead of the macro.
+	(check_newline): Likewise.
+	(handle_cp_pragma): Likewise.
+
+	* repo.c (get_base_filename): Cast result of rindex to char*.
+	(open_repo_file): Likewise.
+	* xref.c (open_xref_file): Likewise.
+	* error.c (dump_char): Make its arg int, not char.
+
 	* except.c (expand_builtin_throw) [!DWARF2_UNWIND_INFO]: Replace
 	remaining use of saved_throw_type with a call to get_eh_type.
 
