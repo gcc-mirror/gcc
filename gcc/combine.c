@@ -3589,37 +3589,44 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  true = subst (true, pc_rtx, pc_rtx, 0, 0);
 	  false = subst (false, pc_rtx, pc_rtx, 0, 0);
 
-	  /* Restarting if we generate a store-flag expression will cause
-	     us to loop.  Just drop through in this case.  */
+	  /* If true and false are not general_operands, an if_then_else
+	     is unlikely to be simpler.  */
+	  if (general_operand (true, VOIDmode)
+	      && general_operand (false, VOIDmode))
+	    {
+	      /* Restarting if we generate a store-flag expression will cause
+		 us to loop.  Just drop through in this case.  */
 
-	  /* If the result values are STORE_FLAG_VALUE and zero, we can
-	     just make the comparison operation.  */
-	  if (true == const_true_rtx && false == const0_rtx)
-	    x = gen_binary (cond_code, mode, cond, cop1);
-	  else if (true == const0_rtx && false == const_true_rtx)
-	    x = gen_binary (reverse_condition (cond_code), mode, cond, cop1);
+	      /* If the result values are STORE_FLAG_VALUE and zero, we can
+		 just make the comparison operation.  */
+	      if (true == const_true_rtx && false == const0_rtx)
+		x = gen_binary (cond_code, mode, cond, cop1);
+	      else if (true == const0_rtx && false == const_true_rtx)
+		x = gen_binary (reverse_condition (cond_code),
+				mode, cond, cop1);
 
-	  /* Likewise, we can make the negate of a comparison operation
-	     if the result values are - STORE_FLAG_VALUE and zero.  */
-	  else if (GET_CODE (true) == CONST_INT
-		   && INTVAL (true) == - STORE_FLAG_VALUE
-		   && false == const0_rtx)
-	    x = gen_unary (NEG, mode, mode,
-			   gen_binary (cond_code, mode, cond, cop1));
-	  else if (GET_CODE (false) == CONST_INT
-		   && INTVAL (false) == - STORE_FLAG_VALUE
-		   && true == const0_rtx)
-	    x = gen_unary (NEG, mode, mode,
-			   gen_binary (reverse_condition (cond_code), 
-				       mode, cond, cop1));
-	  else
-	    return gen_rtx_IF_THEN_ELSE (mode,
-					 gen_binary (cond_code, VOIDmode,
-						     cond, cop1),
-					 true, false);
+	      /* Likewise, we can make the negate of a comparison operation
+		 if the result values are - STORE_FLAG_VALUE and zero.  */
+	      else if (GET_CODE (true) == CONST_INT
+		       && INTVAL (true) == - STORE_FLAG_VALUE
+		       && false == const0_rtx)
+		x = gen_unary (NEG, mode, mode,
+			       gen_binary (cond_code, mode, cond, cop1));
+	      else if (GET_CODE (false) == CONST_INT
+		       && INTVAL (false) == - STORE_FLAG_VALUE
+		       && true == const0_rtx)
+		x = gen_unary (NEG, mode, mode,
+			       gen_binary (reverse_condition (cond_code), 
+					   mode, cond, cop1));
+	      else
+		return gen_rtx_IF_THEN_ELSE (mode,
+					     gen_binary (cond_code, VOIDmode,
+							 cond, cop1),
+					     true, false);
 
-	  code = GET_CODE (x);
-	  op0_mode = VOIDmode;
+	      code = GET_CODE (x);
+	      op0_mode = VOIDmode;
+	    }
 	}
     }
 
@@ -4229,7 +4236,17 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
       if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
 	  && (nonzero_bits (XEXP (x, 0), mode)
 	      & nonzero_bits (XEXP (x, 1), mode)) == 0)
-	return gen_binary (IOR, mode, XEXP (x, 0), XEXP (x, 1));
+	{
+	  /* Try to simplify the expression further.  */
+	  rtx tor = gen_binary (IOR, mode, XEXP (x, 0), XEXP (x, 1));
+	  temp = combine_simplify_rtx (tor, mode, last, in_dest);
+
+	  /* If we could, great.  If not, do not go ahead with the IOR
+	     replacement, since PLUS appears in many special purpose
+	     address arithmetic instructions.  */
+	  if (GET_CODE (temp) != CLOBBER && temp != tor)
+	    return temp;
+	}
       break;
 
     case MINUS:
