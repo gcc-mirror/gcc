@@ -1,3 +1,8 @@
+2002-07-16  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.in: Delete references to enquire.
+	* enquire.c: Move to contrib.
+
 2002-07-16  Stan Shebs  <shebs@apple.com>
 
 	* darwin.c (func_name_maybe_scoped): Remove unused decl.
