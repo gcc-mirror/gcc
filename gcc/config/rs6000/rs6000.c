@@ -2072,7 +2072,7 @@ struct rtx_def *
 rs6000_got_register (value)
      rtx value;
 {
-  if (!current_function_uses_pic_offset_table)
+  if (!current_function_uses_pic_offset_table || !pic_offset_table_rtx)
     {
       if (reload_in_progress || reload_completed)
 	fatal_insn ("internal error -- needed new GOT register during reload phase to load:", value);
