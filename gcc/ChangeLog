@@ -1,3 +1,7 @@
+2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppinit.c (cpp_finish_options): Set first_unused_line to -1.
+
 2003-03-08  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/7796

@@ -1052,6 +1052,8 @@ cpp_finish_options (pfile)
     {
       struct pending_option *p;
 
+      /* Prevent -Wunused-macros with command-line redefinitions.  */
+      pfile->first_unused_line = (unsigned int) -1;
       _cpp_do_file_change (pfile, LC_RENAME, _("<built-in>"), 1, 0);
       init_builtins (pfile);
       _cpp_do_file_change (pfile, LC_RENAME, _("<command line>"), 1, 0);

@@ -1,3 +1,7 @@
+2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
+
+	* gcc.dg/cpp/Wunused.c: Update test.
+
 2003-03-08  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9809
