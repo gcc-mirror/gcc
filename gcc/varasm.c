@@ -4766,16 +4766,16 @@ make_decl_one_only (decl)
 
   TREE_PUBLIC (decl) = 1;
 
-  if (TREE_CODE (decl) == VAR_DECL
-      && (DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node))
-    DECL_COMMON (decl) = 1;
-  else if (SUPPORTS_ONE_ONLY)
+  if (SUPPORTS_ONE_ONLY)
     {
 #ifdef MAKE_DECL_ONE_ONLY
       MAKE_DECL_ONE_ONLY (decl);
 #endif
       DECL_ONE_ONLY (decl) = 1;
     }
+  else if (TREE_CODE (decl) == VAR_DECL
+      && (DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node))
+    DECL_COMMON (decl) = 1;
   else if (SUPPORTS_WEAK)
     DECL_WEAK (decl) = 1;
   else

@@ -1,3 +1,12 @@
+2004-04-14  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 14936
+	Backport from mainline:
+	2004-03-12  Matt Austern  <austern@apple.com>
+
+	* varasm.c (make_decl_one_only): Don't use DECL_COMMON if
+	we're compiling for a SUPPORTS_ONE_ONLY target.
+
 2004-04-13  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR debug/14919
@@ -13,7 +22,7 @@
 
 	PR 14467
 	* config/darwin.h (LINK_COMMAND_SPEC): Use c++filt instead of c++filt3.
-	
+
 2004-03-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* expr.c (store_constructor): Use gen_int_mode to correctly
@@ -90,16 +99,16 @@
 
 	Backport:
 	2004-01-15  Andreas Schwab  <schwab@suse.de>
- 
+
 	PR bootstrap/13562
 	* config/m68k/m68k.c (output_move_const_into_data_reg): Clear cc
 	status for NOTB/NOTW/NEGW methods.
 
 2004-03-29  Aldy Hernandez  <aldyh@redhat.com>
- 
-        PR 14219
-        * c-typeck.c (build_binary_op): Do not allow comparisons of
-        vectors.
+
+	PR 14219
+	* c-typeck.c (build_binary_op): Do not allow comparisons of
+	vectors.
 
 2004-03-27  Matthias Klose  <doko@debian.org>
 
@@ -152,7 +161,7 @@
 
 	BackPort:
 		2004-01-09  Andrew Pinski <pinskia@physics.uc.edu>
-	
+
 		PR debug/11231
 		* dbxout.c (dbxout_type_fields): Return if any item is error_mark_node or the
 		type is error_mark_node.
@@ -253,7 +262,7 @@
 	PR target/13877
 	* unroll.c (unroll_loop): If precondition loop, clear the initial_value
 	field in loop_info.
-	
+
 2004-03-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Backport:
@@ -263,7 +272,7 @@
 	options.
 
 2004-03-12  Gabriel Dos Reis  <gdr@integrable-solutions.net>
-	
+
 	Endorse:
 	2004-01-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 	PR optimization/13472
@@ -291,7 +300,7 @@
 	2003-05-15  Philip Blundell  <philb@gnu.org>
 	* config/arm/arm.c (adjacent_mem_locations): Reject offsets
 	involving invalid constants.
- 
+
 2004-03-12  Philip Blundell  <philb@gnu.org>
 
 	PR target/14558
@@ -326,7 +335,7 @@
 	* config.gcc (powerpc*-*-rtems*): Use rs6000/t-rtems.
 
 2004-03-07  Aldy Hernandez  <aldyh@redhat.com>
- 
+
 	* config/rs6000/rs6000.md (ashrdi3): Do not call ashrdi3_no_power
 	for little endian.
 	("ashrdi3_no_power"): Disable for little endian.
@@ -514,7 +523,7 @@
 
 	PR optimization/7871
 	* flow.c (mark_set_1): Don't add LOG_LINKS for global registers
-	from or to call insns.	
+	from or to call insns.
 
 2004-02-27  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
@@ -532,7 +541,7 @@
 2004-02-25  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/14166
-	* arm.h (THUMB_GO_IF_LEGITIMATE_ADDRESS): Only allow constant pool 
+	* arm.h (THUMB_GO_IF_LEGITIMATE_ADDRESS): Only allow constant pool
 	references from SImode.
 	* arm.md (thumb_movhi_insn): Don't allow minipool references.
 
@@ -655,7 +664,7 @@
 2004-01-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Backport from mainline
-	
+
 	2004-01-20  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	PR optimization/12440
@@ -694,7 +703,7 @@
 	PR target/13073
 	* config/h8300/t-rtems (h8300-*-rtems*): New.
 	* config.gcc: Use config/h8300/t-rtems.
-	
+
 2004-01-20  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Backport from mainline
@@ -702,8 +711,8 @@
 	2004-01-10  Jan Hubicka  <jh@suse.cz>
 	PR opt/12826
 	* loop.c (insert_loop_mem): Prefer VOLATILE memory references to be
-	stored. 
-	
+	stored.
+
 2004-01-16  Jan Hubicka  <jh@suse.cz>
 
 	PR opt/13608
@@ -714,7 +723,7 @@
 	PR target/11793
 	* config/rs6000/rs6000.h (LEGITIMATE_CONSTANT_P): Handle
 	vectors.
-	
+
 2004-01-16  Jan Hubicka  <jh@suse.cz>
 
 	PR opt/11350
@@ -742,7 +751,7 @@
 	(rs6000_emit_prologue): Emit code for vrsave
 	only if TARGET_ALTIVEC_VRSAVE.
 	(rs6000_emit_epilogue): Likewise.
- 
+
 2003-01-14  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	PR objc/7993
@@ -751,7 +760,7 @@
 	(is_public): Emit the error after calling is_private.
 	(lookup_objc_ivar): If the instance variable is private, return 0
 	- the instance variable is invisible here.
-       
+
 2004-01-12  Marc Espie <espie@openbsd.org>
 
 	* system.h: handle YYBYACC like YYBISON.
@@ -813,7 +822,7 @@
 2004-01-02  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR target/13069
-	Backport the following from mainline: 
+	Backport the following from mainline:
 
 	2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
 	* config/sh/rtemself.h (TARGET_OS_CPP_BUILTINS): Use instead of
