@@ -23,17 +23,6 @@ AC_PREREQ(2.12.1)
 AC_INIT(access_.c)
 AC_CONFIG_HEADER(config.h:config.hin)
 
-# These defines are necessary to get 64-bit file size support.
-
-AC_DEFINE(_XOPEN_SOURCE, 500L, [Get Single Unix Specification semantics])
-# The following is needed by irix6.2 so that struct timeval is declared.
-AC_DEFINE(_XOPEN_SOURCE_EXTENDED, 1, [Get Single Unix Specification semantics])
-# The following is needed by Solaris2.5.1 so that struct timeval is declared.
-AC_DEFINE(__EXTENSIONS__, 1, [Solaris extensions])
-AC_DEFINE(_FILE_OFFSET_BITS, 64, [Get 64-bit file size support])
-
-dnl Checks for programs.
-
 dnl FIXME AC_PROG_CC wants CC to be able to link things, but it may
 dnl not be able to.
 define([AC_PROG_CC_WORKS],[])
@@ -41,6 +30,26 @@ define([AC_PROG_CC_WORKS],[])
 # For g77 we'll set CC to point at the built gcc, but this will get it into
 # the makefiles
 AC_PROG_CC
+
+# These defines are necessary to get 64-bit file size support.
+# NetBSD 1.4 header files does not support XOPEN_SOURCE == 500, but it
+# handles 64-bit file sizes without needing these defines.
+AC_MSG_CHECKING(whether _XOPEN_SOURCE may be defined)
+AC_TRY_COMPILE([#define _XOPEN_SOURCE 500L
+#include <unistd.h>],,
+may_use_xopen_source=yes,
+may_use_xopen_source=no)
+AC_MSG_RESULT($may_use_xopen_source)
+if test $may_use_xopen_source = yes; then
+  AC_DEFINE(_XOPEN_SOURCE, 500L, [Get Single Unix Specification semantics])
+  # The following is needed by irix6.2 so that struct timeval is declared.
+  AC_DEFINE(_XOPEN_SOURCE_EXTENDED, 1, [Get Single Unix Specification semantics])
+  # The following is needed by Solaris2.5.1 so that struct timeval is declared.
+  AC_DEFINE(__EXTENSIONS__, 1, [Solaris extensions])
+  AC_DEFINE(_FILE_OFFSET_BITS, 64, [Get 64-bit file size support])
+fi
+
+dnl Checks for programs.
 
 LIBTOOL='$(SHELL) ../libtool'
 AC_SUBST(LIBTOOL)
