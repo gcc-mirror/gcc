@@ -1,6 +1,6 @@
 // win32.h -- Helper functions for Microsoft-flavored OSs.
 
-/* Copyright (C) 2002  Free Software Foundation
+/* Copyright (C) 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -14,9 +14,7 @@ details.  */
 #include <windows.h>
 #undef STRICT
 
-#undef __INSIDE_CYGWIN__
-#include <winsock.h>
-#define IP_TOS 3
+#include <ws2tcpip.h>
 #include <gcj/cni.h>
 #include <java/util/Properties.h>
 
@@ -74,7 +72,7 @@ _Jv_socket (int domain, int type, int protocol)
 inline int
 _Jv_connect (jint fd, sockaddr *ptr, int len)
 {
-   return ::connect (fd, ptr, len);
+  return ::connect (fd, ptr, len);
 }
 
 inline int
