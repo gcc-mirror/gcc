@@ -7173,7 +7173,7 @@ cse_process_notes (x, object)
   for (i = 0; i < GET_RTX_LENGTH (code); i++)
     if (fmt[i] == 'e')
       validate_change (object, &XEXP (x, i),
-		       cse_process_notes (XEXP (x, i), object), NULL_RTX);
+		       cse_process_notes (XEXP (x, i), object), 0);
 
   return x;
 }
