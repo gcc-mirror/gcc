@@ -1,3 +1,8 @@
+2003-05-15  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.tpl (install-opcodes): Define.
+	* Makefile.in: Rebuild.
+
 2003-05-13  Andreas Jaeger  <aj@suse.de>
 
 	* config.guess: Update to 2003-05-09 version.
