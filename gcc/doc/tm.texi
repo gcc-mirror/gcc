@@ -3841,7 +3841,7 @@ register where the return value is stored.  The value can also be a
 @code{parallel} RTX, if the return value is in multiple places.  See
 @code{FUNCTION_ARG} for an explanation of the @code{parallel} form.
 
-If @code{TARGET_PROMOTE_FUNCTION_RETURN} is defined, you must apply the same
+If @code{TARGET_PROMOTE_FUNCTION_RETURN} returns true, you must apply the same
 promotion rules specified in @code{PROMOTE_MODE} if @var{valtype} is a
 scalar type.
 

@@ -1,5 +1,9 @@
 2004-01-14  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* doc/tm.texi (FUNCTION_VALUE): Fix a typo.
+
+2004-01-14  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* doc/tm.texi: Replace RETURN_IN_MEMORY with
 	TARGET_RETURN_IN_MEMORY.
 
