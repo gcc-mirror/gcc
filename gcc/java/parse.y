@@ -6585,6 +6585,8 @@ strip_out_static_field_access_decl (node)
 	       == soft_initclass_node)
 	     return TREE_OPERAND (op1, 1);
 	 }
+      else if (JDECL_P (op1))
+	return op1;
     }
   return node;
 }
