@@ -1595,6 +1595,13 @@ compute_argument_addresses (args, argblock, num_actuals)
 	  args[i].stack_slot = gen_rtx_MEM (args[i].mode, addr);
 	  set_mem_attributes (args[i].stack_slot,
 			      TREE_TYPE (args[i].tree_value), 1);
+
+	  /* Function incoming arguments may overlap with sibling call
+	     outgoing arguments and we cannot allow reordering of reads
+	     from function arguments with stores to outgoing arguments
+	     of sibling calls.  */
+	  MEM_ALIAS_SET (args[i].stack) = 0;
+	  MEM_ALIAS_SET (args[i].stack_slot) = 0;
 	}
     }
 }

@@ -1,3 +1,9 @@
+2000-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* calls.c (compute_argument_addresses): Force stack slots into
+	alias set 0.
+	* expr.c (emit_push_insn): Force pushes into alias set 0.
+
 2000-06-23  Richard Henderson  <rth@cygnus.com>
 
 	* config/ia64/ia64.md (pred_rel_mutex): Only take one register.
