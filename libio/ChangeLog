@@ -1,3 +1,7 @@
+Wed Oct 29 23:01:47 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* gen-params: Override NULL.
+
 Wed Oct 22 19:19:32 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* libio.h (_IO_LOCK_T): Handle glibc 2 when _IO_MTSAFE_IO is
