@@ -1,3 +1,8 @@
+2004-11-19  Jeff Law  <law@redhat.com>
+
+	* tree-ssa.c (verify_ssa): Remove redundant checking of PHI
+	arguments.
+
 2004-11-19  Paul Brook  <paul@codesourcery.com>
 
 	PR target/17735
