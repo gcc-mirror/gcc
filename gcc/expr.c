@@ -7104,6 +7104,9 @@ expand_expr (exp, target, tmode, modifier)
     case NOP_EXPR:
     case CONVERT_EXPR:
     case REFERENCE_EXPR:
+      if (TREE_OPERAND (exp, 0) == error_mark_node)
+	return error_mark_node;
+
       if (TREE_CODE (type) == UNION_TYPE)
 	{
 	  tree valtype = TREE_TYPE (TREE_OPERAND (exp, 0));
