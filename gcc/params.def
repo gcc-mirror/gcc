@@ -158,7 +158,7 @@ DEFPARAM(PARAM_INLINE_UNIT_GROWTH,
 	 50, 0, 0)
 DEFPARAM(PARAM_INLINE_CALL_COST,
 	 "inline-call-cost",
-	 "expense of call operation relative to ordinary aritmetic operations",
+	 "expense of call operation relative to ordinary arithmetic operations",
 	 16, 0, 0)
 
 /* The GCSE optimization will be disabled if it would require

@@ -1,3 +1,9 @@
+2005-03-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* params.def: Fix a typo.
+	* config/mips/mips.c: Follow the spelling convensions.
+	* doc/invoke.texi: Fix typos.
+
 2005-03-18  Dale Johannese  <dalej@apple.com>
 
 	* cp/tree.c (cp_tree_equal):  Handle SSA_NAME.

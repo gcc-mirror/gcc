@@ -9193,7 +9193,7 @@ mips_matching_cpu_name_p (const char *canonical, const char *given)
 
 
 /* Return the mips_cpu_info entry for the processor or ISA given
-   by CPU_STRING.  Return null if the string isn't recognised.
+   by CPU_STRING.  Return null if the string isn't recognized.
 
    A similar function exists in GAS.  */
 
