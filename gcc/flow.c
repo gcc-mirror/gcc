@@ -414,8 +414,8 @@ life_analysis (f, file, flags)
      FILE *file;
      int flags;
 {
-  int i;
 #ifdef ELIMINABLE_REGS
+  int i;
   static const struct {const int from, to; } eliminables[] = ELIMINABLE_REGS;
 #endif
 

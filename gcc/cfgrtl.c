@@ -737,7 +737,7 @@ try_redirect_by_replacing_jump (e, target)
   else
     {
       rtx target_label = block_label (target);
-      rtx barrier, label, table, tmp;
+      rtx barrier;
 
       emit_jump_insn_after (gen_jump (target_label), insn);
       JUMP_LABEL (src->end) = target_label;

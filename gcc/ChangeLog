@@ -1,3 +1,8 @@
+2003-04-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* cfgrtl.c (try_redirect_by_replacing_jump): Remove unused variables.
+	* flow.c (life_analysis): Fix warning.
+
 2003-04-18  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/contrib.texi (Contributors): Prefer "bug fix" over "bugfix".
