@@ -477,7 +477,7 @@ extern int target_flags;
       if (flag_pic && ((RELOC) || SUNOS4_SHARED_LIBRARIES))		\
 	data_section ();						\
     }									\
-  else if (*tree_code_type[(int) TREE_CODE (T)] == 'c')			\
+  else if (TREE_CODE_CLASS (TREE_CODE (T)) == 'c')			\
     {									\
       if ((TREE_CODE (T) == STRING_CST && flag_writable_strings)	\
 	  || TYPE_ALIGN (TREE_TYPE (T)) > MAX_TEXT_ALIGN		\
