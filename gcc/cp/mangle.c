@@ -2602,8 +2602,8 @@ mangle_thunk (tree fn_decl, const int this_adjusting, tree fixed_offset,
 }
 
 /* This hash table maps TYPEs to the IDENTIFIER for a conversion
-   operator to TYPE.  The nodes are TREE_LISTs whose TREE_PURPOSE is
-   the TYPE and whose TREE_VALUE is the IDENTIFIER.  */
+   operator to TYPE.  The nodes are IDENTIFIERs whose TREE_TYPE is the
+   TYPE.  */
 
 static GTY ((param_is (union tree_node))) htab_t conv_type_names;
 
@@ -2612,7 +2612,7 @@ static GTY ((param_is (union tree_node))) htab_t conv_type_names;
 static hashval_t
 hash_type (const void *val)
 {
-  return htab_hash_pointer (TREE_PURPOSE ((tree) val));
+  return (hashval_t) TYPE_UID (TREE_TYPE ((tree) val));
 }
 
 /* Compare VAL1 (a node in the table) with VAL2 (a TYPE).  */
@@ -2620,7 +2620,7 @@ hash_type (const void *val)
 static int
 compare_type (const void *val1, const void *val2)
 {
-  return TREE_PURPOSE ((tree) val1) == (tree) val2;
+  return TREE_TYPE ((tree) val1) == (tree) val2;
 }
 
 /* Return an identifier for the mangled unqualified name for a
@@ -2632,29 +2632,32 @@ mangle_conv_op_name_for_type (const tree type)
 {
   void **slot;
   tree identifier;
-  char buffer[64];
 
   if (conv_type_names == NULL) 
     conv_type_names = htab_create_ggc (31, &hash_type, &compare_type, NULL);
 
   slot = htab_find_slot_with_hash (conv_type_names, type, 
-				   htab_hash_pointer (type), INSERT);
-  if (*slot)
-    return TREE_VALUE ((tree) *slot);
+				   (hashval_t) TYPE_UID (type), INSERT);
+  identifier = (tree)*slot;
+  if (!identifier)
+    {
+      char buffer[64];
+      
+       /* Create a unique name corresponding to TYPE.  */
+      sprintf (buffer, "operator %lu",
+	       (unsigned long) htab_elements (conv_type_names));
+      identifier = get_identifier (buffer);
+      *slot = identifier;
 
-  /* Create a unique name corresponding to TYPE.  */
-  sprintf (buffer, "operator %lu", 
-	   (unsigned long) htab_elements (conv_type_names));
-  identifier = get_identifier (buffer);
-  *slot = build_tree_list (type, identifier);
+      /* Hang TYPE off the identifier so it can be found easily later
+	 when performing conversions.  */
+      TREE_TYPE (identifier) = type;
+
+      /* Set bits on the identifier so we know later it's a conversion.  */
+      IDENTIFIER_OPNAME_P (identifier) = 1;
+      IDENTIFIER_TYPENAME_P (identifier) = 1;
+    }
   
-  /* Set bits on the identifier so we know later it's a conversion.  */
-  IDENTIFIER_OPNAME_P (identifier) = 1;
-  IDENTIFIER_TYPENAME_P (identifier) = 1;
-  /* Hang TYPE off the identifier so it can be found easily later when
-     performing conversions.  */
-  TREE_TYPE (identifier) = type;
-
   return identifier;
 }
 
