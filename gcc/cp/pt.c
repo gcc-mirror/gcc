@@ -1035,7 +1035,7 @@ register_specialization (tree spec, tree tmpl, tree args)
        the default argument expression is not substituted for in an
        instantiation unless and until it is actually needed.  */
     return spec;
-    
+
   /* There should be as many levels of arguments as there are
      levels of parameters.  */
   my_friendly_assert (TMPL_ARGS_DEPTH (args) 
@@ -3000,6 +3000,13 @@ push_template_decl_real (tree decl, int is_friend)
 	    DECL_TEMPLATE_CONV_FN_P (tmpl) = 1;
 	}
     }
+
+  /* The DECL_TI_ARGS of DECL contains full set of arguments refering
+     back to its most general template.  If TMPL is a specialization,
+     ARGS may only have the innermost set of arguments.  Add the missing
+     argument levels if necessary.  */
+  if (DECL_TEMPLATE_INFO (tmpl))
+    args = add_outermost_template_args (DECL_TI_ARGS (tmpl), args);
 
   info = tree_cons (tmpl, args, NULL_TREE);
 
