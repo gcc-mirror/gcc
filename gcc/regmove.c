@@ -2331,19 +2331,17 @@ combine_stack_adjustments_for_block (bb)
   HOST_WIDE_INT last_sp_adjust = 0;
   rtx last_sp_set = NULL_RTX;
   struct csa_memlist *memlist = NULL;
-  rtx pending_delete;
-  rtx insn, next;
+  rtx insn, next, set;
   struct record_stack_memrefs_data data;
+  bool end_of_block = false;
 
-  for (insn = bb->head; ; insn = next)
+  for (insn = bb->head; !end_of_block ; insn = next)
     {
-      rtx set;
-
-      pending_delete = NULL_RTX;
+      end_of_block = insn == bb->end;
       next = NEXT_INSN (insn);
 
       if (! INSN_P (insn))
-	goto processed;
+	continue;
 
       set = single_set_for_csa (insn);
       if (set)
@@ -2365,7 +2363,7 @@ combine_stack_adjustments_for_block (bb)
 		{
 		  last_sp_set = insn;
 		  last_sp_adjust = this_adjust;
-		  goto processed;
+		  continue;
 		}
 
 	      /* If not all recorded memrefs can be adjusted, or the
@@ -2397,9 +2395,9 @@ combine_stack_adjustments_for_block (bb)
 						  this_adjust))
 		    {
 		      /* It worked!  */
-		      pending_delete = insn;
+		      delete_insn (insn);
 		      last_sp_adjust += this_adjust;
-		      goto processed;
+		      continue;
 		    }
 		}
 
@@ -2418,16 +2416,20 @@ combine_stack_adjustments_for_block (bb)
 		      last_sp_adjust += this_adjust;
 		      free_csa_memlist (memlist);
 		      memlist = NULL;
-		      goto processed;
+		      continue;
 		    }
 		}
 
-	      /* Combination failed.  Restart processing from here.  */
+	      /* Combination failed.  Restart processing from here.  If
+		 deallocation+allocation conspired to cancel, we can
+		 delete the old deallocation insn.  */
+	      if (last_sp_set && last_sp_adjust == 0)
+		delete_insn (insn);
 	      free_csa_memlist (memlist);
 	      memlist = NULL;
 	      last_sp_set = insn;
 	      last_sp_adjust = this_adjust;
-	      goto processed;
+	      continue;
 	    }
 
 	  /* Find a predecrement of exactly the previous adjustment and
@@ -2453,15 +2455,12 @@ combine_stack_adjustments_for_block (bb)
 							 stack_pointer_rtx),
 				  0))
 	    {
-	      if (last_sp_set == bb->head)
-		bb->head = NEXT_INSN (last_sp_set);
 	      delete_insn (last_sp_set);
-
 	      free_csa_memlist (memlist);
 	      memlist = NULL;
 	      last_sp_set = NULL_RTX;
 	      last_sp_adjust = 0;
-	      goto processed;
+	      continue;
 	    }
 	}
 
@@ -2471,7 +2470,7 @@ combine_stack_adjustments_for_block (bb)
 	  && !for_each_rtx (&PATTERN (insn), record_stack_memrefs, &data))
 	{
 	   memlist = data.memlist;
-	   goto processed;
+	   continue;
 	}
       memlist = data.memlist;
 
@@ -2481,20 +2480,15 @@ combine_stack_adjustments_for_block (bb)
 	  && (GET_CODE (insn) == CALL_INSN
 	      || reg_mentioned_p (stack_pointer_rtx, PATTERN (insn))))
 	{
+	  if (last_sp_set && last_sp_adjust == 0)
+	    delete_insn (last_sp_set);
 	  free_csa_memlist (memlist);
 	  memlist = NULL;
 	  last_sp_set = NULL_RTX;
 	  last_sp_adjust = 0;
 	}
-
-    processed:
-      if (insn == bb->end)
-	break;
-
-      if (pending_delete)
-	delete_insn (pending_delete);
     }
 
-  if (pending_delete)
-    delete_insn (pending_delete);
+  if (last_sp_set && last_sp_adjust == 0)
+    delete_insn (last_sp_set);
 }
