@@ -2476,7 +2476,7 @@ DTORS_SECTION_FUNCTION
       fputs (")", FILE);						\
       break;								\
     case CONST_INT:							\
-      fprintf (FILE, "%d(%r0)", INTVAL (addr));				\
+      fprintf (FILE, "%d(%%r0)", INTVAL (addr));			\
       break;								\
     default:								\
       output_addr_const (FILE, addr);					\

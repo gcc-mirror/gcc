@@ -1,3 +1,10 @@
+Sat May  8 23:05:35 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.h (PRINT_OPERAND_ADDRESS): Output "%r0", not "r0" for the
+	base register in an absolute memory address.
+	* pa.md (conditional moves): Avoid using immediate zero for
+	register zero.
+
 Sat May  8 06:23:21 1999  Philip Blundell  <pb@nexus.co.uk>
 
 	Based on patch by Scott Bambrough:
