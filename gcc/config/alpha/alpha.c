@@ -39,7 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 
 /* Specify which cpu to schedule for. */
- enum processor_type alpha_cpu;
+enum processor_type alpha_cpu;
 
 /* Specify how accurate floating-point traps need to be.  */
 
@@ -115,6 +115,12 @@ override_options ()
       else if (! strcmp (alpha_cpu_string, "ev5")
 	       || ! strcmp (alpha_cpu_string, "21164"))
 	alpha_cpu = PROCESSOR_EV5;
+      else if (! strcmp (alpha_cpu_string, "ev56")
+	       || ! strcmp (alpha_cpu_string, "21164a"))
+	{
+	  alpha_cpu = PROCESSOR_EV5;
+	  target_flags |= MASK_BYTE_OPS;
+	}
       else
 	error ("bad value `%s' for -mcpu switch", alpha_cpu_string);
     }
@@ -469,7 +475,7 @@ input_operand (op, mode)
 	return 1;
       /* ... fall through ... */
     case MEM:
-      return (TARGET_BYTE_OPS || (mode != HImode && mode != QImode)
+      return ((TARGET_BYTE_OPS || (mode != HImode && mode != QImode))
 	      && general_operand (op, mode));
 
     case CONST_DOUBLE:
