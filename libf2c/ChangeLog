@@ -1,3 +1,9 @@
+Mon Jun 28 21:27:08 1999  Craig Burley  <craig@jcb-sc.com>
+
+	Update to Netlib version of 1999-06-28:
+	* changes.netlib, libI77/Version.c, libI77/rsne.c
+	readme.netlib: See changes.netlib for info.
+
 Fri Jun 18 11:38:07 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* libU77/ttynam_.c: if !defined (HAVE_TTYNAM),
