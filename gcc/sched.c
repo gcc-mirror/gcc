@@ -137,6 +137,9 @@ static int *insn_luid;
 static int *insn_priority;
 #define INSN_PRIORITY(INSN) (insn_priority[INSN_UID (INSN)])
 
+static short *insn_costs;
+#define INSN_COST(INSN)	insn_costs[INSN_UID (INSN)]
+
 #define DONE_PRIORITY	-1
 #define MAX_PRIORITY	0x7fffffff
 #define TAIL_PRIORITY	0x7ffffffe
@@ -899,13 +902,19 @@ insn_cost (insn)
 {
   register int cost;
 
+  if (INSN_COST (insn))
+    return INSN_COST (insn);
+
   recog_memoized (insn);
 
   /* A USE insn, or something else we don't need to understand.
      We can't pass these directly to result_ready_cost because it will trigger
      a fatal error for unrecognizable insns.  */
   if (INSN_CODE (insn) < 0)
-    return 1;
+    {
+      INSN_COST (insn) = 1;
+      return 1;
+    }
   else
     {
       cost = result_ready_cost (insn);
@@ -913,6 +922,7 @@ insn_cost (insn)
       if (cost < 1)
 	cost = 1;
 
+      INSN_COST (insn) = cost;
       return cost;
     }
 }
@@ -1422,14 +1432,14 @@ sched_analyze_2 (x, insn)
     case ASM_OPERANDS:
     case ASM_INPUT:
     case UNSPEC_VOLATILE:
+    case TRAP_IF:
       {
 	rtx u;
 
 	/* Traditional and volatile asm instructions must be considered to use
 	   and clobber all hard registers and all of memory.  So must
-	   UNSPEC_VOLATILE operations.  */
-	if ((code == ASM_OPERANDS && MEM_VOLATILE_P (x)) || code == ASM_INPUT
-	    || code == UNSPEC_VOLATILE)
+	   TRAP_IF and UNSPEC_VOLATILE operations.  */
+	if (code != ASM_OPERANDS || MEM_VOLATILE_P (x))
 	  {
 	    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	      {
@@ -3794,10 +3804,9 @@ schedule_insns (dump_file)
 
   /* Allocate data for this pass.  See comments, above,
      for what these vectors do.  */
-  /* ??? Instruction splitting below may create new instructions, so these
-     arrays must be bigger than just max_uid.  */
   insn_luid = (int *) alloca (max_uid * sizeof (int));
   insn_priority = (int *) alloca (max_uid * sizeof (int));
+  insn_costs = (short *) alloca (max_uid * sizeof (short));
   insn_ref_count = (int *) alloca (max_uid * sizeof (int));
 
   if (reload_completed == 0)
@@ -3848,6 +3857,7 @@ schedule_insns (dump_file)
 
   bzero (insn_luid, max_uid * sizeof (int));
   bzero (insn_priority, max_uid * sizeof (int));
+  bzero (insn_costs, max_uid * sizeof (short));
   bzero (insn_ref_count, max_uid * sizeof (int));
 
   /* Schedule each basic block, block by block.  */

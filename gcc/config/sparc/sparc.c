@@ -1090,10 +1090,13 @@ output_move_double (operands)
 	 if it is in a struct.  But a DImode need not be 8-byte aligned,
 	 because it could be a struct containing two ints or pointers.
 	 Hence, a constant DFmode address will always be 8-byte aligned.
+	 Any DFmode access inside a struct will always be aligned.
 	 If TARGET_HOPE_ALIGN, then assume all doubles are aligned even if this
 	 is not a constant address.  */
-      else if (GET_CODE (addr) == MEM && GET_MODE (addr) == DFmode
-	       && (CONSTANT_P (addr) || TARGET_HOPE_ALIGN))
+      else if (GET_MODE (addr) == DFmode
+	       && (CONSTANT_P (XEXP (addr, 0))
+		   || MEM_IN_STRUCT_P (addr)
+		   || TARGET_HOPE_ALIGN))
 	return (addr == operands[1] ? "ldd %1,%0" : "std %1,%0");
     }
 
