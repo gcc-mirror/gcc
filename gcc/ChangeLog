@@ -1,3 +1,7 @@
+2002-11-25  Douglas B Rupp  <rupp@gnat.com>
+
+	* gcc.c (do_spec_1): Reset delete_this_arg to zero.
+
 2002-11-25  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/elfos.h (HANDLE_SYSV_PRAGMA): Define as 1.

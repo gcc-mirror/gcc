@@ -4509,6 +4509,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 			    obstack_grow (&obstack, temp_filename,
 			    			    temp_filename_length);
 			    arg_going = 1;
+			    delete_this_arg = 0;
 			    break;
 			  }
 		      }
