@@ -1735,7 +1735,10 @@ dbxout_symbol (decl, local)
 	    if ((TREE_CODE (type) == RECORD_TYPE
 		 || TREE_CODE (type) == UNION_TYPE
 		 || TREE_CODE (type) == QUAL_UNION_TYPE)
-		&& TYPE_NAME (type) == decl)
+		&& TYPE_NAME (type) == decl
+		/* Distinguish the implicit typedefs of C++
+		   from explicit ones that might be found in C.  */
+                && DECL_ARTIFICIAL (decl))
 	      {
 		if (use_gnu_debug_info_extensions && have_used_extensions)
 		  {
