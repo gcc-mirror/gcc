@@ -47,6 +47,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "lex.h"
 #include "malloc.h"
 #include "name.h"
+#include "f-options.h"
+#include "opts.h"
 #include "src.h"
 #include "st.h"
 #include "storag.h"
@@ -55,12 +57,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "where.h"
 #include "flags.h"
 #include "toplev.h"
-#include "opts.h"
 
 /* Externals defined here. */
-
-const unsigned int cl_options_count;
-const struct cl_option cl_options[1];
 
 bool ffe_is_do_internal_checks_ = FALSE;
 bool ffe_is_90_ = FFETARGET_defaultIS_90;
@@ -142,14 +140,14 @@ bool ffe_in_4 = FALSE;
 
 /* Static functions (internal). */
 
-static bool ffe_is_digit_string_ (char *s);
+static bool ffe_is_digit_string_ (const char *s);
 
 /* Internal macros. */
 
 static bool
-ffe_is_digit_string_ (char *s)
+ffe_is_digit_string_ (const char *s)
 {
-  char *p;
+  const char *p;
 
   for (p = s; ISDIGIT (*p); ++p)
     ;
@@ -159,371 +157,446 @@ ffe_is_digit_string_ (char *s)
 
 /* Handle command-line options.	 Returns 0 if unrecognized, 1 if
    recognized and handled.  */
-
 int
-ffe_decode_option (int argc ATTRIBUTE_UNUSED, char **argv)
+ffe_handle_option (size_t scode, const char *arg, int value)
 {
-  char *opt = argv[0];
-  if (opt[0] != '-')
-    return 0;
-  if (opt[1] == 'f')
+  const struct cl_option *option = &cl_options[scode];
+  enum opt_code code = (enum opt_code) scode;
+
+  /* Ignore file names.  */
+  if (code == N_OPTS)
+    return 1;
+
+  if (arg == NULL && (option->flags & (CL_JOINED | CL_SEPARATE)))
     {
-      if (strcmp (&opt[2], "version") == 0)
+      error ("missing argument to \"-%s\"", option->opt_text);
+      return 1;
+    }
+
+  switch (code)
+    {
+    default:
+      return 0;
+
+    case OPT_fversion:
+      ffe_set_is_version (TRUE);
+      ffe_set_is_do_internal_checks (TRUE);
+      break;
+
+    case OPT_ff66:
+      ffe_set_is_onetrip (value);
+      ffe_set_is_ugly_assumed (value);
+      break;
+
+    case OPT_ff77:
+      ffe_set_is_backslash (value);
+      if (value)
+	ffe_set_is_typeless_boz (FALSE);
+      break;
+
+    case OPT_ff90:
+      ffe_set_is_90 (value);
+      break;
+
+    case OPT_fautomatic:
+      ffe_set_is_automatic (value);
+      break;
+
+    case OPT_fdollar_ok:
+      ffe_set_is_dollar_ok (value);
+      break;
+
+    case OPT_ff2c:
+      ffe_set_is_f2c (value);
+      break;
+
+    case OPT_ff2c_library:
+      ffe_set_is_f2c_library (value);
+      break;
+
+    case OPT_fflatten_arrays:
+      ffe_set_is_f2c_library (value);
+      break;
+
+    case OPT_ffree_form:
+      ffe_set_is_free_form (value);
+      break;
+
+    case OPT_ffixed_form:
+      ffe_set_is_free_form (!value);
+      if (value)
+	return -1;
+      break;
+
+    case OPT_fpedantic:
+      ffe_set_is_pedantic (value);
+      break;
+
+    case OPT_fvxt:
+      ffe_set_is_vxt (value);
+      break;
+
+    case OPT_fvxt_not_f90:
+      warning ("-fvxt-not-f90 no longer supported -- try -fvxt");
+      break;
+
+    case OPT_ff90_not_vxt:
+      warning ("-ff90-not-vxt no longer supported -- try -fno-vxt -ff90");
+      break;
+
+    case OPT_fugly:
+      ffe_set_is_ugly_args (value);
+      ffe_set_is_ugly_assign (value);
+      ffe_set_is_ugly_assumed (value);
+      ffe_set_is_ugly_comma (value);
+      ffe_set_is_ugly_complex (value);
+      ffe_set_is_ugly_init (value);
+      ffe_set_is_ugly_logint (value);
+      break;
+
+    case OPT_fugly_args:
+      ffe_set_is_ugly_args (value);
+      break;
+
+    case OPT_fugly_assign:
+      ffe_set_is_ugly_assign (value);
+      break;
+
+    case OPT_fugly_assumed:
+      ffe_set_is_ugly_assumed (value);
+      break;
+
+    case OPT_fugly_comma:
+      ffe_set_is_ugly_comma (value);
+      break;
+
+    case OPT_fugly_complex:
+      ffe_set_is_ugly_complex (value);
+      break;
+
+    case OPT_fugly_init:
+      ffe_set_is_ugly_init (value);
+      break;
+
+    case OPT_fugly_logint:
+      ffe_set_is_ugly_logint (value);
+      break;
+
+    case OPT_fxyzzy:
+      ffe_set_is_ffedebug (value);
+      break;
+
+    case OPT_finit_local_zero:
+      ffe_set_is_init_local_zero (value);
+      break;
+
+    case OPT_femulate_complex:
+      ffe_set_is_emulate_complex (value);
+      break;
+
+    case OPT_fbackslash:
+      ffe_set_is_backslash (value);
+      break;
+
+    case OPT_funderscoring:
+      ffe_set_is_underscoring (value);
+      break;
+
+    case OPT_fsecond_underscore:
+      ffe_set_is_second_underscore (value);
+      break;
+
+    case OPT_fzeros:
+      ffe_set_is_zeros (value);
+      break;
+
+    case OPT_fdebug_kludge:
+      warning ("-fdebug-kludge is disabled, use normal debugging flags");
+      break;
+
+    case OPT_fonetrip:
+      ffe_set_is_onetrip (value);
+      break;
+
+    case OPT_fsilent:
+      ffe_set_is_silent (value);
+      break;
+
+    case OPT_fglobals:
+      ffe_set_is_globals (value);
+      break;
+
+    case OPT_ffortran_bounds_check:
+      flag_bounds_check = value;
+      break;
+
+    case OPT_ftypeless_boz:
+      ffe_set_is_typeless_boz (value);
+      break;
+
+    case OPT_fintrin_case_initcap:
+      ffe_set_case_intrin (FFE_caseINITCAP);
+      break;
+
+    case OPT_fintrin_case_lower:
+      ffe_set_case_intrin (FFE_caseLOWER);
+      break;
+
+    case OPT_fintrin_case_upper:
+      ffe_set_case_intrin (FFE_caseUPPER);
+      break;
+
+    case OPT_fintrin_case_any:
+      ffe_set_case_intrin (FFE_caseNONE);
+      break;
+
+    case OPT_fmatch_case_initcap:
+      ffe_set_case_match (FFE_caseINITCAP);
+      break;
+
+    case OPT_fmatch_case_lower:
+      ffe_set_case_match (FFE_caseLOWER);
+      break;
+
+    case OPT_fmatch_case_upper:
+      ffe_set_case_match (FFE_caseUPPER);
+      break;
+
+    case OPT_fmatch_case_any:
+      ffe_set_case_match (FFE_caseNONE);
+      break;
+
+    case OPT_fsource_case_lower:
+      ffe_set_case_source (FFE_caseLOWER);
+      break;
+
+    case OPT_fsource_case_preserve:
+      ffe_set_case_match (FFE_caseNONE);
+      break;
+
+    case OPT_fsource_case_upper:
+      ffe_set_case_source (FFE_caseUPPER);
+      break;
+
+    case OPT_fsymbol_case_initcap:
+      ffe_set_case_symbol (FFE_caseINITCAP);
+      break;
+
+    case OPT_fsymbol_case_lower:
+      ffe_set_case_symbol (FFE_caseLOWER);
+      break;
+
+    case OPT_fsymbol_case_upper:
+      ffe_set_case_symbol (FFE_caseUPPER);
+      break;
+
+    case OPT_fsymbol_case_any:
+      ffe_set_case_symbol (FFE_caseNONE);
+      break;
+
+    case OPT_fcase_strict_upper:
+      ffe_set_case_intrin (FFE_caseUPPER);
+      ffe_set_case_match (FFE_caseUPPER);
+      ffe_set_case_source (FFE_caseNONE);
+      ffe_set_case_symbol (FFE_caseUPPER);
+      break;
+
+    case OPT_fcase_strict_lower:
+      ffe_set_case_intrin (FFE_caseLOWER);
+      ffe_set_case_match (FFE_caseLOWER);
+      ffe_set_case_source (FFE_caseNONE);
+      ffe_set_case_symbol (FFE_caseLOWER);
+      break;
+
+    case OPT_fcase_initcap:
+      ffe_set_case_intrin (FFE_caseINITCAP);
+      ffe_set_case_match (FFE_caseINITCAP);
+      ffe_set_case_source (FFE_caseNONE);
+      ffe_set_case_symbol (FFE_caseINITCAP);
+      break;
+
+    case OPT_fcase_upper:
+      ffe_set_case_intrin (FFE_caseNONE);
+      ffe_set_case_match (FFE_caseNONE);
+      ffe_set_case_source (FFE_caseUPPER);
+      ffe_set_case_symbol (FFE_caseNONE);
+      break;
+
+    case OPT_fcase_lower:
+      ffe_set_case_intrin (FFE_caseNONE);
+      ffe_set_case_match (FFE_caseNONE);
+      ffe_set_case_source (FFE_caseLOWER);
+      ffe_set_case_symbol (FFE_caseNONE);
+
+    case OPT_fcase_preserve:
+      ffe_set_case_intrin (FFE_caseNONE);
+      ffe_set_case_match (FFE_caseNONE);
+      ffe_set_case_source (FFE_caseNONE);
+      ffe_set_case_symbol (FFE_caseNONE);
+      break;
+
+    case OPT_fbadu77_intrinsics_delete:
+      ffe_set_intrinsic_state_badu77 (FFE_intrinsicstateDELETED);
+      break;
+
+    case OPT_fbadu77_intrinsics_hide:
+      ffe_set_intrinsic_state_badu77 (FFE_intrinsicstateHIDDEN);
+      break;
+
+    case OPT_fbadu77_intrinsics_disable:
+      ffe_set_intrinsic_state_badu77 (FFE_intrinsicstateDISABLED);
+      break;
+
+    case OPT_fbadu77_intrinsics_enable:
+      ffe_set_intrinsic_state_badu77 (FFE_intrinsicstateENABLED);
+      break;
+
+    case OPT_fgnu_intrinsics_delete:
+      ffe_set_intrinsic_state_gnu (FFE_intrinsicstateDELETED);
+      break;
+
+    case OPT_fgnu_intrinsics_hide:
+      ffe_set_intrinsic_state_gnu (FFE_intrinsicstateHIDDEN);
+      break;
+
+    case OPT_fgnu_intrinsics_disable:
+      ffe_set_intrinsic_state_gnu (FFE_intrinsicstateDISABLED);
+      break;
+
+    case OPT_fgnu_intrinsics_enable:
+      ffe_set_intrinsic_state_gnu (FFE_intrinsicstateENABLED);
+      break;
+
+    case OPT_ff2c_intrinsics_delete:
+      ffe_set_intrinsic_state_f2c (FFE_intrinsicstateDELETED);
+      break;
+
+    case OPT_ff2c_intrinsics_hide:
+      ffe_set_intrinsic_state_f2c (FFE_intrinsicstateHIDDEN);
+      break;
+
+    case OPT_ff2c_intrinsics_disable:
+      ffe_set_intrinsic_state_f2c (FFE_intrinsicstateDISABLED);
+      break;
+
+    case OPT_ff2c_intrinsics_enable:
+      ffe_set_intrinsic_state_f2c (FFE_intrinsicstateENABLED);
+      break;
+
+    case OPT_ff90_intrinsics_delete:
+      ffe_set_intrinsic_state_f90 (FFE_intrinsicstateDELETED);
+      break;
+
+    case OPT_ff90_intrinsics_hide:
+      ffe_set_intrinsic_state_f90 (FFE_intrinsicstateHIDDEN);
+      break;
+
+    case OPT_ff90_intrinsics_disable:
+      ffe_set_intrinsic_state_f90 (FFE_intrinsicstateDISABLED);
+      break;
+
+    case OPT_ff90_intrinsics_enable:
+      ffe_set_intrinsic_state_f90 (FFE_intrinsicstateENABLED);
+      break;
+
+    case OPT_fmil_intrinsics_delete:
+      ffe_set_intrinsic_state_mil (FFE_intrinsicstateDELETED);
+      break;
+
+    case OPT_fmil_intrinsics_hide:
+      ffe_set_intrinsic_state_mil (FFE_intrinsicstateHIDDEN);
+      break;
+
+    case OPT_fmil_intrinsics_disable:
+      ffe_set_intrinsic_state_mil (FFE_intrinsicstateDISABLED);
+      break;
+
+    case OPT_fmil_intrinsics_enable:
+      ffe_set_intrinsic_state_mil (FFE_intrinsicstateENABLED);
+      break;
+
+    case OPT_funix_intrinsics_delete:
+      ffe_set_intrinsic_state_unix (FFE_intrinsicstateDELETED);
+      break;
+
+    case OPT_funix_intrinsics_hide:
+      ffe_set_intrinsic_state_unix (FFE_intrinsicstateHIDDEN);
+      break;
+
+    case OPT_funix_intrinsics_disable:
+      ffe_set_intrinsic_state_unix (FFE_intrinsicstateDISABLED);
+      break;
+
+    case OPT_funix_intrinsics_enable:
+      ffe_set_intrinsic_state_unix (FFE_intrinsicstateENABLED);
+      break;
+
+    case OPT_fvxt_intrinsics_delete:
+      ffe_set_intrinsic_state_vxt (FFE_intrinsicstateDELETED);
+      break;
+
+    case OPT_fvxt_intrinsics_hide:
+      ffe_set_intrinsic_state_vxt (FFE_intrinsicstateHIDDEN);
+      break;
+
+    case OPT_fvxt_intrinsics_disable:
+      ffe_set_intrinsic_state_vxt (FFE_intrinsicstateDISABLED);
+      break;
+
+    case OPT_fvxt_intrinsics_enable:
+      ffe_set_intrinsic_state_vxt (FFE_intrinsicstateENABLED);
+      break;
+
+    case OPT_ffixed_line_length_:
+      if (strcmp (arg, "none") == 0)
 	{
-	  ffe_set_is_version (TRUE);
-	  ffe_set_is_do_internal_checks (TRUE);
-	}
-      else if (strcmp (&opt[2], "f66") == 0)
-	{
-	  ffe_set_is_onetrip (TRUE);
-	  ffe_set_is_ugly_assumed (TRUE);
-	}
-      else if (strcmp (&opt[2], "no-f66") == 0)
-	{
-	  ffe_set_is_onetrip (FALSE);
-	  ffe_set_is_ugly_assumed (FALSE);
-	}
-      else if (strcmp (&opt[2], "f77") == 0)
-	{
-	  ffe_set_is_backslash (TRUE);
-	  ffe_set_is_typeless_boz (FALSE);
-	}
-      else if (strcmp (&opt[2], "no-f77") == 0)
-	{
-	  ffe_set_is_backslash (FALSE);
-	}
-      else if (strcmp (&opt[2], "f90") == 0)
-	ffe_set_is_90 (TRUE);
-      else if (strcmp (&opt[2], "no-f90") == 0)
-	ffe_set_is_90 (FALSE);
-      else if (strcmp (&opt[2], "automatic") == 0)
-	ffe_set_is_automatic (TRUE);
-      else if (strcmp (&opt[2], "no-automatic") == 0)
-	ffe_set_is_automatic (FALSE);
-      else if (strcmp (&opt[2], "dollar-ok") == 0)
-	ffe_set_is_dollar_ok (TRUE);
-      else if (strcmp (&opt[2], "no-dollar-ok") == 0)
-	ffe_set_is_dollar_ok (FALSE);
-      else if (strcmp (&opt[2], "f2c") == 0)
-	ffe_set_is_f2c (TRUE);
-      else if (strcmp (&opt[2], "no-f2c") == 0)
-	ffe_set_is_f2c (FALSE);
-      else if (strcmp (&opt[2], "f2c-library") == 0)
-	ffe_set_is_f2c_library (TRUE);
-      else if (strcmp (&opt[2], "no-f2c-library") == 0)
-	ffe_set_is_f2c_library (FALSE);
-      else if (strcmp (&opt[2], "flatten-arrays") == 0)
-	ffe_set_is_flatten_arrays (TRUE);
-      else if (strcmp (&opt[2], "no-flatten-arrays") == 0)
-	ffe_set_is_flatten_arrays (FALSE);
-      else if (strcmp (&opt[2], "free-form") == 0)
-	ffe_set_is_free_form (TRUE);
-      else if (strcmp (&opt[2], "no-free-form") == 0)
-	ffe_set_is_free_form (FALSE);
-      else if (strcmp (&opt[2], "fixed-form") == 0)
-	{
-	  ffe_set_is_free_form (FALSE);
+	  ffe_set_fixed_line_length (0);
 	  return -1;
 	}
-      else if (strcmp (&opt[2], "no-fixed-form") == 0)
-	ffe_set_is_free_form (TRUE);
-      else if (strcmp (&opt[2], "pedantic") == 0)
-	ffe_set_is_pedantic (TRUE);
-      else if (strcmp (&opt[2], "no-pedantic") == 0)
-	ffe_set_is_pedantic (FALSE);
-      else if (strcmp (&opt[2], "vxt") == 0)
-	ffe_set_is_vxt (TRUE);
-      else if (strcmp (&opt[2], "not-vxt") == 0)
-	ffe_set_is_vxt (FALSE);
-      else if (strcmp (&opt[2], "vxt-not-f90") == 0)
-	warning ("%s no longer supported -- try -fvxt", opt);
-      else if (strcmp (&opt[2], "f90-not-vxt") == 0)
-	warning ("%s no longer supported -- try -fno-vxt -ff90", opt);
-      else if (strcmp (&opt[2], "no-ugly") == 0)
+      else if (ffe_is_digit_string_ (arg))
 	{
-	  ffe_set_is_ugly_args (FALSE);
-	  ffe_set_is_ugly_assign (FALSE);
-	  ffe_set_is_ugly_assumed (FALSE);
-	  ffe_set_is_ugly_comma (FALSE);
-	  ffe_set_is_ugly_complex (FALSE);
-	  ffe_set_is_ugly_init (FALSE);
-	  ffe_set_is_ugly_logint (FALSE);
+	  ffe_set_fixed_line_length (atol (arg));
+	  return -1;
 	}
-      else if (strcmp (&opt[2], "ugly-args") == 0)
-	ffe_set_is_ugly_args (TRUE);
-      else if (strcmp (&opt[2], "no-ugly-args") == 0)
-	ffe_set_is_ugly_args (FALSE);
-      else if (strcmp (&opt[2], "ugly-assign") == 0)
-	ffe_set_is_ugly_assign (TRUE);
-      else if (strcmp (&opt[2], "no-ugly-assign") == 0)
-	ffe_set_is_ugly_assign (FALSE);
-      else if (strcmp (&opt[2], "ugly-assumed") == 0)
-	ffe_set_is_ugly_assumed (TRUE);
-      else if (strcmp (&opt[2], "no-ugly-assumed") == 0)
-	ffe_set_is_ugly_assumed (FALSE);
-      else if (strcmp (&opt[2], "ugly-comma") == 0)
-	ffe_set_is_ugly_comma (TRUE);
-      else if (strcmp (&opt[2], "no-ugly-comma") == 0)
-	ffe_set_is_ugly_comma (FALSE);
-      else if (strcmp (&opt[2], "ugly-complex") == 0)
-	ffe_set_is_ugly_complex (TRUE);
-      else if (strcmp (&opt[2], "no-ugly-complex") == 0)
-	ffe_set_is_ugly_complex (FALSE);
-      else if (strcmp (&opt[2], "ugly-init") == 0)
-	ffe_set_is_ugly_init (TRUE);
-      else if (strcmp (&opt[2], "no-ugly-init") == 0)
-	ffe_set_is_ugly_init (FALSE);
-      else if (strcmp (&opt[2], "ugly-logint") == 0)
-	ffe_set_is_ugly_logint (TRUE);
-      else if (strcmp (&opt[2], "no-ugly-logint") == 0)
-	ffe_set_is_ugly_logint (FALSE);
-      else if (strcmp (&opt[2], "xyzzy") == 0)
-	ffe_set_is_ffedebug (TRUE);
-      else if (strcmp (&opt[2], "no-xyzzy") == 0)
-	ffe_set_is_ffedebug (FALSE);
-      else if (strcmp (&opt[2], "init-local-zero") == 0)
-	ffe_set_is_init_local_zero (TRUE);
-      else if (strcmp (&opt[2], "no-init-local-zero") == 0)
-	ffe_set_is_init_local_zero (FALSE);
-      else if (strcmp (&opt[2], "emulate-complex") == 0)
-	ffe_set_is_emulate_complex (TRUE);
-      else if (strcmp (&opt[2], "no-emulate-complex") == 0)
-	ffe_set_is_emulate_complex (FALSE);
-      else if (strcmp (&opt[2], "backslash") == 0)
-	ffe_set_is_backslash (TRUE);
-      else if (strcmp (&opt[2], "no-backslash") == 0)
-	ffe_set_is_backslash (FALSE);
-      else if (strcmp (&opt[2], "underscoring") == 0)
-	ffe_set_is_underscoring (TRUE);
-      else if (strcmp (&opt[2], "no-underscoring") == 0)
-	ffe_set_is_underscoring (FALSE);
-      else if (strcmp (&opt[2], "second-underscore") == 0)
-	ffe_set_is_second_underscore (TRUE);
-      else if (strcmp (&opt[2], "no-second-underscore") == 0)
-	ffe_set_is_second_underscore (FALSE);
-      else if (strcmp (&opt[2], "zeros") == 0)
-	ffe_set_is_zeros (TRUE);
-      else if (strcmp (&opt[2], "no-zeros") == 0)
-	ffe_set_is_zeros (FALSE);
-      else if (strcmp (&opt[2], "debug-kludge") == 0)
-	warning ("%s disabled, use normal debugging flags", opt);
-      else if (strcmp (&opt[2], "no-debug-kludge") == 0)
-	warning ("%s disabled, use normal debugging flags", opt);
-      else if (strcmp (&opt[2], "onetrip") == 0)
-	ffe_set_is_onetrip (TRUE);
-      else if (strcmp (&opt[2], "no-onetrip") == 0)
-	ffe_set_is_onetrip (FALSE);
-      else if (strcmp (&opt[2], "silent") == 0)
-	ffe_set_is_silent (TRUE);
-      else if (strcmp (&opt[2], "no-silent") == 0)
-	ffe_set_is_silent (FALSE);
-      else if (strcmp (&opt[2], "globals") == 0)
-	ffe_set_is_globals (TRUE);
-      else if (strcmp (&opt[2], "no-globals") == 0)
-	ffe_set_is_globals (FALSE);
-      else if (strcmp (&opt[2], "fortran-bounds-check") == 0)
-	flag_bounds_check = TRUE;
-      else if (strcmp (&opt[2], "no-fortran-bounds-check") == 0)
-	flag_bounds_check = FALSE;
-      else if (strcmp (&opt[2], "typeless-boz") == 0)
-	ffe_set_is_typeless_boz (TRUE);
-      else if (strcmp (&opt[2], "no-typeless-boz") == 0)
-	ffe_set_is_typeless_boz (FALSE);
-      else if (strcmp (&opt[2], "intrin-case-initcap") == 0)
-	ffe_set_case_intrin (FFE_caseINITCAP);
-      else if (strcmp (&opt[2], "intrin-case-upper") == 0)
-	ffe_set_case_intrin (FFE_caseUPPER);
-      else if (strcmp (&opt[2], "intrin-case-lower") == 0)
-	ffe_set_case_intrin (FFE_caseLOWER);
-      else if (strcmp (&opt[2], "intrin-case-any") == 0)
-	ffe_set_case_intrin (FFE_caseNONE);
-      else if (strcmp (&opt[2], "match-case-initcap") == 0)
-	ffe_set_case_match (FFE_caseINITCAP);
-      else if (strcmp (&opt[2], "match-case-upper") == 0)
-	ffe_set_case_match (FFE_caseUPPER);
-      else if (strcmp (&opt[2], "match-case-lower") == 0)
-	ffe_set_case_match (FFE_caseLOWER);
-      else if (strcmp (&opt[2], "match-case-any") == 0)
-	ffe_set_case_match (FFE_caseNONE);
-      else if (strcmp (&opt[2], "source-case-upper") == 0)
-	ffe_set_case_source (FFE_caseUPPER);
-      else if (strcmp (&opt[2], "source-case-lower") == 0)
-	ffe_set_case_source (FFE_caseLOWER);
-      else if (strcmp (&opt[2], "source-case-preserve") == 0)
-	ffe_set_case_source (FFE_caseNONE);
-      else if (strcmp (&opt[2], "symbol-case-initcap") == 0)
-	ffe_set_case_symbol (FFE_caseINITCAP);
-      else if (strcmp (&opt[2], "symbol-case-upper") == 0)
-	ffe_set_case_symbol (FFE_caseUPPER);
-      else if (strcmp (&opt[2], "symbol-case-lower") == 0)
-	ffe_set_case_symbol (FFE_caseLOWER);
-      else if (strcmp (&opt[2], "symbol-case-any") == 0)
-	ffe_set_case_symbol (FFE_caseNONE);
-      else if (strcmp (&opt[2], "case-strict-upper") == 0)
-	{
-	  ffe_set_case_intrin (FFE_caseUPPER);
-	  ffe_set_case_match (FFE_caseUPPER);
-	  ffe_set_case_source (FFE_caseNONE);
-	  ffe_set_case_symbol (FFE_caseUPPER);
-	}
-      else if (strcmp (&opt[2], "case-strict-lower") == 0)
-	{
-	  ffe_set_case_intrin (FFE_caseLOWER);
-	  ffe_set_case_match (FFE_caseLOWER);
-	  ffe_set_case_source (FFE_caseNONE);
-	  ffe_set_case_symbol (FFE_caseLOWER);
-	}
-      else if (strcmp (&opt[2], "case-initcap") == 0)
-	{
-	  ffe_set_case_intrin (FFE_caseINITCAP);
-	  ffe_set_case_match (FFE_caseINITCAP);
-	  ffe_set_case_source (FFE_caseNONE);
-	  ffe_set_case_symbol (FFE_caseINITCAP);
-	}
-      else if (strcmp (&opt[2], "case-upper") == 0)
-	{
-	  ffe_set_case_intrin (FFE_caseNONE);
-	  ffe_set_case_match (FFE_caseNONE);
-	  ffe_set_case_source (FFE_caseUPPER);
-	  ffe_set_case_symbol (FFE_caseNONE);
-	}
-      else if (strcmp (&opt[2], "case-lower") == 0)
-	{
-	  ffe_set_case_intrin (FFE_caseNONE);
-	  ffe_set_case_match (FFE_caseNONE);
-	  ffe_set_case_source (FFE_caseLOWER);
-	  ffe_set_case_symbol (FFE_caseNONE);
-	}
-      else if (strcmp (&opt[2], "case-preserve") == 0)
-	{
-	  ffe_set_case_intrin (FFE_caseNONE);
-	  ffe_set_case_match (FFE_caseNONE);
-	  ffe_set_case_source (FFE_caseNONE);
-	  ffe_set_case_symbol (FFE_caseNONE);
-	}
-      else if (strcmp (&opt[2], "badu77-intrinsics-delete") == 0)
-	ffe_set_intrinsic_state_badu77 (FFE_intrinsicstateDELETED);
-      else if (strcmp (&opt[2], "badu77-intrinsics-hide") == 0)
-	ffe_set_intrinsic_state_badu77 (FFE_intrinsicstateHIDDEN);
-      else if (strcmp (&opt[2], "badu77-intrinsics-disable") == 0)
-	ffe_set_intrinsic_state_badu77 (FFE_intrinsicstateDISABLED);
-      else if (strcmp (&opt[2], "badu77-intrinsics-enable") == 0)
-	ffe_set_intrinsic_state_badu77 (FFE_intrinsicstateENABLED);
-      else if (strcmp (&opt[2], "gnu-intrinsics-delete") == 0)
-	ffe_set_intrinsic_state_gnu (FFE_intrinsicstateDELETED);
-      else if (strcmp (&opt[2], "gnu-intrinsics-hide") == 0)
-	ffe_set_intrinsic_state_gnu (FFE_intrinsicstateHIDDEN);
-      else if (strcmp (&opt[2], "gnu-intrinsics-disable") == 0)
-	ffe_set_intrinsic_state_gnu (FFE_intrinsicstateDISABLED);
-      else if (strcmp (&opt[2], "gnu-intrinsics-enable") == 0)
-	ffe_set_intrinsic_state_gnu (FFE_intrinsicstateENABLED);
-      else if (strcmp (&opt[2], "f2c-intrinsics-delete") == 0)
-	ffe_set_intrinsic_state_f2c (FFE_intrinsicstateDELETED);
-      else if (strcmp (&opt[2], "f2c-intrinsics-hide") == 0)
-	ffe_set_intrinsic_state_f2c (FFE_intrinsicstateHIDDEN);
-      else if (strcmp (&opt[2], "f2c-intrinsics-disable") == 0)
-	ffe_set_intrinsic_state_f2c (FFE_intrinsicstateDISABLED);
-      else if (strcmp (&opt[2], "f2c-intrinsics-enable") == 0)
-	ffe_set_intrinsic_state_f2c (FFE_intrinsicstateENABLED);
-      else if (strcmp (&opt[2], "f90-intrinsics-delete") == 0)
-	ffe_set_intrinsic_state_f90 (FFE_intrinsicstateDELETED);
-      else if (strcmp (&opt[2], "f90-intrinsics-hide") == 0)
-	ffe_set_intrinsic_state_f90 (FFE_intrinsicstateHIDDEN);
-      else if (strcmp (&opt[2], "f90-intrinsics-disable") == 0)
-	ffe_set_intrinsic_state_f90 (FFE_intrinsicstateDISABLED);
-      else if (strcmp (&opt[2], "f90-intrinsics-enable") == 0)
-	ffe_set_intrinsic_state_f90 (FFE_intrinsicstateENABLED);
-      else if (strcmp (&opt[2], "mil-intrinsics-delete") == 0)
-	ffe_set_intrinsic_state_mil (FFE_intrinsicstateDELETED);
-      else if (strcmp (&opt[2], "mil-intrinsics-hide") == 0)
-	ffe_set_intrinsic_state_mil (FFE_intrinsicstateHIDDEN);
-      else if (strcmp (&opt[2], "mil-intrinsics-disable") == 0)
-	ffe_set_intrinsic_state_mil (FFE_intrinsicstateDISABLED);
-      else if (strcmp (&opt[2], "mil-intrinsics-enable") == 0)
-	ffe_set_intrinsic_state_mil (FFE_intrinsicstateENABLED);
-      else if (strcmp (&opt[2], "unix-intrinsics-delete") == 0)
-	ffe_set_intrinsic_state_unix (FFE_intrinsicstateDELETED);
-      else if (strcmp (&opt[2], "unix-intrinsics-hide") == 0)
-	ffe_set_intrinsic_state_unix (FFE_intrinsicstateHIDDEN);
-      else if (strcmp (&opt[2], "unix-intrinsics-disable") == 0)
-	ffe_set_intrinsic_state_unix (FFE_intrinsicstateDISABLED);
-      else if (strcmp (&opt[2], "unix-intrinsics-enable") == 0)
-	ffe_set_intrinsic_state_unix (FFE_intrinsicstateENABLED);
-      else if (strcmp (&opt[2], "vxt-intrinsics-delete") == 0)
-	ffe_set_intrinsic_state_vxt (FFE_intrinsicstateDELETED);
-      else if (strcmp (&opt[2], "vxt-intrinsics-hide") == 0)
-	ffe_set_intrinsic_state_vxt (FFE_intrinsicstateHIDDEN);
-      else if (strcmp (&opt[2], "vxt-intrinsics-disable") == 0)
-	ffe_set_intrinsic_state_vxt (FFE_intrinsicstateDISABLED);
-      else if (strcmp (&opt[2], "vxt-intrinsics-enable") == 0)
-	ffe_set_intrinsic_state_vxt (FFE_intrinsicstateENABLED);
-      else if (strncmp (&opt[2], "fixed-line-length-",
-			strlen ("fixed-line-length-")) == 0)
-	{
-	  char *len = &opt[2] + strlen ("fixed-line-length-");
+      return 0;
 
-	  if (strcmp (len, "none") == 0)
-	    {
-	      ffe_set_fixed_line_length (0);
-	      return -1;
-	    }
-	  else if (ffe_is_digit_string_ (len))
-	    {
-	      ffe_set_fixed_line_length (atol (len));
-	      return -1;
-	    }
-	  else
-	    return 0;
-	}
-      else
-	return 0;
-    }
-  else if (opt[1] == 'W')
-    {
-      if (!strcmp (&opt[2], "comment"))
-	; /* cpp handles this one.  */
-      else if (!strcmp (&opt[2], "no-comment"))
-	; /* cpp handles this one.  */
-      else if (!strcmp (&opt[2], "comments"))
-	; /* cpp handles this one.  */
-      else if (!strcmp (&opt[2], "no-comments"))
-	; /* cpp handles this one.  */
-      else if (!strcmp (&opt[2], "trigraphs"))
-	; /* cpp handles this one.  */
-      else if (!strcmp (&opt[2], "no-trigraphs"))
-	; /* cpp handles this one.  */
-      else if (!strcmp (&opt[2], "import"))
-	; /* cpp handles this one.  */
-      else if (!strcmp (&opt[2], "no-import"))
-	; /* cpp handles this one.  */
-      else if (!strcmp (&opt[2], "globals"))
-	ffe_set_is_warn_globals (TRUE);
-      else if (!strcmp (&opt[2], "no-globals"))
-	ffe_set_is_warn_globals (FALSE);
-      else if (!strcmp (&opt[2], "implicit"))
-	ffe_set_is_warn_implicit (TRUE);
-      else if (!strcmp (&opt[2], "no-implicit"))
-	ffe_set_is_warn_implicit (FALSE);
-      else if (!strcmp (&opt[2], "surprising"))
-	ffe_set_is_warn_surprising (TRUE);
-      else if (!strcmp (&opt[2], "no-surprising"))
-	ffe_set_is_warn_surprising (FALSE);
-      else if (!strcmp (&opt[2], "all"))
+    case OPT_Wcomment:
+    case OPT_Wcomments:
+    case OPT_Wimport:
+    case OPT_Wtrigraphs:
+      /* These are for cpp.  */
+      break;
+
+    case OPT_Wglobals:
+      ffe_set_is_warn_globals (value);
+      break;
+
+    case OPT_Wimplicit:
+      ffe_set_is_warn_implicit (value);
+      break;
+
+    case OPT_Wsurprising:
+      ffe_set_is_warn_surprising (value);
+      break;
+
+    case OPT_Wall:
+      set_Wunused (value);
+      /* We save the value of warn_uninitialized, since if they put
+	 -Wuninitialized on the command line, we need to generate a
+	 warning about not using it without also specifying -O.  */
+      if (value)
 	{
-	  /* We save the value of warn_uninitialized, since if they put
-	     -Wuninitialized on the command line, we need to generate a
-	     warning about not using it without also specifying -O.  */
 	  if (warn_uninitialized != 1)
 	    warn_uninitialized = 2;
-	  set_Wunused (1);
 	}
       else
-	return 0;
+	warn_uninitialized = 0;
+      break;
+
+    case OPT_I:
+      ffecom_decode_include_option (arg);
+      break;
     }
-  else if (opt[1] == 'I')
-    return ffecom_decode_include_option (&opt[2]);
-  else
-    return 0;
 
   return 1;
 }

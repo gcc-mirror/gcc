@@ -213,7 +213,7 @@ tree ffecom_const_expr (ffebld expr);
 tree ffecom_decl_field (tree context, tree prevfield, const char *name,
 			tree type);
 void ffecom_close_include (FILE *f);
-int ffecom_decode_include_option (char *spec);
+void ffecom_decode_include_option (const char *dir);
 tree ffecom_end_compstmt (void);
 void ffecom_end_transition (void);
 void ffecom_exec_transition (void);

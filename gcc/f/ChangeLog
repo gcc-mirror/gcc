@@ -1,3 +1,20 @@
+Sun Jun  8 15:42:09 2003  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Make-lang.in (F77_OBJS, f77.mostlyclean, f/com.o): Update.
+	(f/f-options.c, f/f-options.h): New.
+	* com.c: Include opts.h and f-options.h.
+	(ffecom_decode_include_option_): Remove.
+	(LANG_HOOKS_HANDLE_OPTION): New.
+	(LANG_HOOKS_DECODE_OPTION): Drop.
+	(struct file_name_list, ffecom_decode_include_option,
+	ffecom_open_include_): Constify.
+	* com.h (ffecom_decode_include_option): Update.
+	* lang.opt: New.
+	* top.c: Include f-options.h, opts.h.
+	(ffe_is_digit_string_): Constify.
+	(ffe_decode_option): Transform to ffe_handle_option.
+	* top.h (ffe_decode_option): Replace with ffe_handle_option.
+
 2003-06-08  Andreas Jaeger  <aj@suse.de>
 
 	* std.c: Remove #if 0'ed functions.

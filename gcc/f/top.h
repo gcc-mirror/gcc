@@ -141,7 +141,7 @@ extern bool ffe_in_4;
 
 /* Declare functions with prototypes. */
 
-int ffe_decode_option (int argc, char **argv);
+int ffe_handle_option (size_t code, const char *arg, int on);
 void ffe_file (ffewhereFile wf, FILE *f);
 void ffe_init_0 (void);
 void ffe_init_1 (void);
