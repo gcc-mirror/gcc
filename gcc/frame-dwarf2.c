@@ -1,7 +1,7 @@
 /* Subroutines needed for unwinding DWARF 2 format stack frame info
    for exception handling.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@cygnus.com>.
 
 This file is part of GNU CC.
@@ -36,8 +36,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "tconfig.h"
 #include "tsystem.h"
-
-#include "defaults.h"
 
 #ifdef DWARF2_UNWIND_INFO
 #include "dwarf2.h"

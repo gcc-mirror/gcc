@@ -1,6 +1,6 @@
 # Makefile for GNU CHILL compiler.
 #   Copyright (C) 1987, 1988, 1990, 1991, 1992, 1993, 1994, 1998,
-#   1999 Free Software Foundation, Inc.
+#   1999, 2000, 2001 Free Software Foundation, Inc.
 
 #This file is part of GNU CC.
 
@@ -274,7 +274,7 @@ convert.o : convert.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h \
 	$(srcdir)/../tree.h $(srcdir)/../system.h $(srcdir)/../toplev.h \
 	$(srcdir)/../convert.h
 decl.o : decl.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h lex.h \
-	$(srcdir)/../system.h $(srcdir)/../toplev.h $(srcdir)/../defaults.h
+	$(srcdir)/../system.h $(srcdir)/../toplev.h
 except.o : except.c $(CONFIG_H) $(srcdir)/../tree.h $(RTL_H) $(CHILL_TREE_H) \
 	$(srcdir)/../system.h $(srcdir)/../toplev.h
 expr.o : expr.c $(CONFIG_H) $(RTL_H) $(CHILL_TREE_H) $(srcdir)/../flags.h \
@@ -298,8 +298,8 @@ parse.o : parse.c $(CONFIG_H) $(CHILL_TREE_H) parse.h \
 satisfy.o : satisfy.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../tree.h \
 	$(srcdir)/../flags.h lex.h $(srcdir)/../system.h $(srcdir)/../toplev.h
 timing.o : timing.c $(CONFIG_H) $(CHILL_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
-	$(srcdir)/../input.h lex.h $(srcdir)/../system.h $(srcdir)/../toplev.h \
-	$(srcdir)/../defaults.h
+	$(srcdir)/../input.h lex.h $(srcdir)/../system.h $(srcdir)/../toplev.h
+
 tasking.o : tasking.c $(CONFIG_H) $(CHILL_TREE_H) $(RTL_H) \
 	$(srcdir)/../flags.h $(srcdir)/../input.h \
 	lex.h $(srcdir)/../system.h $(srcdir)/../toplev.h

@@ -89,7 +89,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "output.h"  /* Must follow tree.h so TREE_CODE is defined! */
 #include "convert.h"
 #include "ggc.h"
-#include "defaults.h"
 #endif	/* FFECOM_targetCURRENT == FFECOM_targetGCC */
 
 #define FFECOM_GCC_INCLUDE 1	/* Enable -I. */

@@ -1,5 +1,5 @@
 /* Process declarations and variables for GNU CHILL compiler.
-   Copyright (C) 1992, 1993, 1994, 1998, 1999, 2000
+   Copyright (C) 1992, 1993, 1994, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc. 
    
 This file is part of GNU CC.
@@ -191,7 +191,6 @@ Boston, MA 02111-1307, USA.  */
 #include "input.h"
 #include "rtl.h"
 #include "toplev.h"
-#include "defaults.h"
 
 #define IS_UNKNOWN_TYPE(type) (TYPE_SIZE(type)==0)
 #define BUILTIN_NESTING_LEVEL (-1)

@@ -39,7 +39,6 @@ Boston, MA 02111-1307, USA.  */
 #include "lex.h"
 #include "output.h"
 #include "except.h"
-#include "defaults.h"
 #include "toplev.h"
 #include "dwarf2out.h"
 #include "dwarfout.h"

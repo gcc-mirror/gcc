@@ -1,5 +1,6 @@
 /* Handle #pragma, system V.4 style.  Supports #pragma weak and #pragma pack.
-   Copyright (C) 1992, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1997, 1998, 1999, 2000, 2001
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -23,7 +24,6 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "tree.h"
 #include "function.h"
-#include "defaults.h"
 #include "cpplib.h"
 #include "c-pragma.h"
 #include "flags.h"

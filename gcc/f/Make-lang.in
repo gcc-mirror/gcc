@@ -1,5 +1,5 @@
 # Top level makefile fragment for GNU Fortran.           -*-makefile-*-
-#   Copyright (C) 1995, 1996, 1997, 1998, 2000 Free Software Foundation, Inc.
+#   Copyright (C) 1995, 1996, 1997, 1998, 2000, 2001 Free Software Foundation, Inc.
 
 #This file is part of GNU Fortran.
 
@@ -417,7 +417,7 @@ f/com.o: f/com.c f/proj.h $(CONFIG_H) system.h flags.h $(RTL_H) $(TREE_H) \
  f/malloc.h f/info.h f/info-b.def f/info-k.def f/info-w.def f/target.h f/bad.h \
  f/bad.def f/where.h glimits.h f/top.h f/lex.h f/type.h f/intrin.h \
  f/intrin.def f/lab.h f/symbol.h f/symbol.def f/equiv.h f/storag.h f/global.h \
- f/name.h f/expr.h f/implic.h f/src.h f/st.h $(GGC_H) toplev.h defaults.h
+ f/name.h f/expr.h f/implic.h f/src.h f/st.h $(GGC_H) toplev.h
 f/data.o: f/data.c f/proj.h $(CONFIG_H) system.h f/data.h f/bld.h f/bld-op.def \
  f/bit.h f/malloc.h f/com.h f/com-rt.def $(TREE_H) f/info.h f/info-b.def \
  f/info-k.def f/info-w.def f/target.h f/bad.h f/bad.def f/where.h glimits.h \

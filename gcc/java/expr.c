@@ -39,7 +39,6 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "parse.h"
 #include "toplev.h"
 #include "except.h"
-#include "defaults.h"
 #include "ggc.h"
 
 static void flush_quick_stack PARAMS ((void));

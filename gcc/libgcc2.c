@@ -37,7 +37,6 @@ Boston, MA 02111-1307, USA.  */
 #include "tsystem.h"
 
 #include "machmode.h"
-#include "defaults.h" 
 
 /* Don't use `fancy_abort' here even if config.h says to use it.  */
 #ifdef abort

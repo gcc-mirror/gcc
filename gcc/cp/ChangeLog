@@ -1,3 +1,15 @@
+2001-01-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in: Remove all dependencies on defaults.h.
+	* call.c: Don't include defaults.h.
+	* decl.c: Likewise.
+	* decl2.c: Likewise.
+	* except.c: Likewise.
+	* pt.c: Likewise.
+	* rtti.c: Likewise.
+	* tree.c: Likewise.
+	* typeck.c: Likewise.
+
 2001-01-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* mangle.c (write_mangled_name, write_encoding): Mangle overloaded

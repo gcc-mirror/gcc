@@ -1,3 +1,10 @@
+2001-01-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Make-lang.in: Remove all dependencies on defaults.h.
+	* decl.c: Don't include defaults.h.
+	* expr.c: Likewise.
+	* parse.y: Likewise.
+
 2001-01-25  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* ChangeLog (2001-01-21): Fixed typo.

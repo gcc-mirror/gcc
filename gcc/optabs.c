@@ -1,6 +1,6 @@
 /* Expand the basic unary and binary arithmetic operations, for GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -39,7 +39,6 @@ Boston, MA 02111-1307, USA.  */
 #include "reload.h"
 #include "ggc.h"
 #include "real.h"
-#include "defaults.h"
 
 /* Each optab contains info on how this target machine
    can perform a particular operation

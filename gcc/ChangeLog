@@ -1,5 +1,37 @@
 2001-01-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* configure.in: Arrange to include defaults.h in [ht]config.h/tm.h.
+
+	* Makefile.in: Remove all dependencies on defaults.h.
+	* builtins.c: Don't include defaults.h.
+	* c-common.c: Likewise.
+	* c-decl.c: Likewise.
+	* c-pragma.c: Likewise.
+	* c-typeck.c: Likewise.
+	* combine.c: Likewise.
+	* i386.c: Likewise.
+	* frame-ia64.c: Likewise.
+	* cppexp.c: Likewise.
+	* crtstuff.c: Likewise.
+	* dbxout.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* dwarfout.c: Likewise.
+	* emit-rtl.c: Likewise.
+	* except.c: Likewise.
+	* expr.c: Likewise.
+	* final.c: Likewise.
+	* frame-dwarf2.c: Likewise.
+	* libgcc2.c: Likewise.
+	* optabs.c: Likewise.
+	* profile.c: Likewise.
+	* sdbout.c: Likewise.
+	* toplev.c: Likewise.
+	* tradcif.y: Likewise.
+	* tree.c: Likewise.
+	* varasm.c: Likewise.
+
+2001-01-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* builtins.c (expand_builtin_fputs): Use size_one_node when
 	transforming into fwrite.
 

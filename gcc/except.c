@@ -1,6 +1,6 @@
 /* Implements exception handling.
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GNU CC.
@@ -390,7 +390,6 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
-#include "defaults.h"
 #include "eh-common.h"
 #include "system.h"
 #include "rtl.h"

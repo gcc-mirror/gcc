@@ -1,5 +1,6 @@
 /* Implement timing-related actions for CHILL.
-   Copyright (C) 1992, 1993, 1994, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1998, 2000, 2001
+   Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -28,7 +29,6 @@ Boston, MA 02111-1307, USA.  */
 #include "obstack.h"
 #include "lex.h"
 #include "toplev.h"
-#include "defaults.h"
 
 /* set non-zero if input text is forced to lowercase */
 extern int ignore_case;

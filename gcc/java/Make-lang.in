@@ -248,7 +248,7 @@ java/class.o: java/class.c $(CONFIG_H) $(JAVA_TREE_H) $(RTL_H) java/jcf.h \
 java/constants.o: java/constants.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
   toplev.h system.h $(GGC_H)
 java/decl.o: java/decl.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h \
-  toplev.h system.h function.h defaults.h gcc.h
+  toplev.h system.h function.h gcc.h
 java/except.o: java/except.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h real.h \
   $(RTL_H) java/javaop.h java/java-opcodes.h except.h java/java-except.h \
   eh-common.h toplev.h system.h function.h

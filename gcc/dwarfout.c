@@ -1,6 +1,6 @@
 /* Output Dwarf format symbol table information from the GNU C compiler.
    Copyright (C) 1992, 1993, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com) of Network Computing Devices.
 
 This file is part of GNU CC.
@@ -32,7 +32,6 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-config.h"
 #include "reload.h"
 #include "output.h"
-#include "defaults.h"
 #include "dwarfout.h"
 #include "toplev.h"
 #include "tm_p.h"
