@@ -1,3 +1,9 @@
+2003-10-16  Jan Hubicka  <jh@suse.cz>
+
+	PR optimization/12630
+	* pa.md (movstrsi, movstrsi_internal): Use match_scratch in clobbers
+	for operands 7 and 8.
+
 2003-10-16  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* objc/Make-lang.in (objc-parse.o): Honor $(parsedir) for objc-parse.c.

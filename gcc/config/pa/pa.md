@@ -2945,8 +2945,8 @@
 (define_expand "movstrsi"
   [(parallel [(set (match_operand:BLK 0 "" "")
 		   (match_operand:BLK 1 "" ""))
-	      (clobber (match_dup 7))
-	      (clobber (match_dup 8))
+	      (clobber (match_scratch:SI 7 ""))
+	      (clobber (match_scratch:SI 8 ""))
 	      (clobber (match_dup 4))
 	      (clobber (match_dup 5))
 	      (clobber (match_dup 6))
@@ -3016,10 +3016,10 @@
 ;; therefore it is forced to operand 2.  If the count is compile-time
 ;; determined, we need two scratch registers for the unrolled code.
 (define_insn "movstrsi_internal"
-  [(set (mem:BLK (match_operand:SI 0 "register_operand" "+r,r"))
-	(mem:BLK (match_operand:SI 1 "register_operand" "+r,r")))
-   (clobber (match_dup 0))
-   (clobber (match_dup 1))
+  [(set (mem:BLK (match_operand:SI 0 "register_operand" "r,r"))
+	(mem:BLK (match_operand:SI 1 "register_operand" "r,r")))
+   (clobber (match_scratch:SI 7 "=0,0"))
+   (clobber (match_scratch:SI 8 "=1,1"))
    (clobber (match_operand:SI 2 "register_operand" "=r,r"))	;loop cnt/tmp
    (clobber (match_operand:SI 3 "register_operand" "=&r,&r"))	;item tmp
    (clobber (match_operand:SI 6 "register_operand" "=&r,&r"))	;item tmp2
