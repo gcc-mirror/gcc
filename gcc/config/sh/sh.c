@@ -3432,7 +3432,7 @@ gen_block_redirect (jump, addr, need_block)
       rtx next = next_active_insn (next_active_insn (dest));
       if (next && GET_CODE (next) == JUMP_INSN
 	  && GET_CODE (PATTERN (next)) == SET
-	  && recog_memoized (next) == CODE_FOR_jump)
+	  && recog_memoized (next) == CODE_FOR_jump_compact)
 	{
 	  dest = JUMP_LABEL (next);
 	  if (dest
@@ -4322,7 +4322,7 @@ split_branches (first)
 			|| ((beyond = next_active_insn (beyond))
 			    && GET_CODE (beyond) == JUMP_INSN))
 		    && GET_CODE (PATTERN (beyond)) == SET
-		    && recog_memoized (beyond) == CODE_FOR_jump
+		    && recog_memoized (beyond) == CODE_FOR_jump_compact
 		    && ((INSN_ADDRESSES
 			 (INSN_UID (XEXP (SET_SRC (PATTERN (beyond)), 0)))
 			 - INSN_ADDRESSES (INSN_UID (insn)) + (unsigned) 252)
@@ -4336,7 +4336,7 @@ split_branches (first)
 	    if ((GET_CODE (next) == JUMP_INSN
 		 || GET_CODE (next = next_active_insn (next)) == JUMP_INSN)
 		&& GET_CODE (PATTERN (next)) == SET
-		&& recog_memoized (next) == CODE_FOR_jump
+		&& recog_memoized (next) == CODE_FOR_jump_compact
 		&& ((INSN_ADDRESSES
 		     (INSN_UID (XEXP (SET_SRC (PATTERN (next)), 0)))
 		     - INSN_ADDRESSES (INSN_UID (insn)) + (unsigned) 252)

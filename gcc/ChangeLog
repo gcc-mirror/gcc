@@ -1,3 +1,8 @@
+2003-05-08  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (gen_block_redirect, split_branches): Use CODE_FOR_jump_compact
+	instead of CODE_FOR_jump
+
 2003-05-08  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* objc/objc-act.c (error_with_ivar): Don't use
