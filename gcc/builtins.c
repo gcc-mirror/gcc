@@ -2329,12 +2329,12 @@ expand_builtin_fputs (arglist, ignore)
      tree arglist;
      int ignore;
 {
-  tree call_expr, len, stripped_string, newarglist;
-  tree fn = built_in_decls[BUILT_IN_FPUTC];
+  tree call_expr, len, fn, fn_fputc = built_in_decls[BUILT_IN_FPUTC],
+    fn_fwrite = built_in_decls[BUILT_IN_FWRITE];
 
   /* If the return value is used, or the replacement _DECL isn't
      initialized, don't do the transformation. */
-  if (!ignore || !fn)
+  if (!ignore || !fn_fputc || !fn_fwrite)
     return 0;
 
   /* Verify the arguments in the original call. */
@@ -2345,29 +2345,54 @@ expand_builtin_fputs (arglist, ignore)
 	  != POINTER_TYPE))
     return 0;
 
-  /* Get the length of the string passed to fputs. */
-  len = c_strlen (TREE_VALUE (arglist));
-  
-  /* If the length != 1, punt. */
-  if (len == 0 || compare_tree_int (len, 1))
+  /* Get the length of the string passed to fputs.  If the length
+     can't be determined, punt.  */
+  if (!(len = c_strlen (TREE_VALUE (arglist))))
     return 0;
 
-  stripped_string = TREE_VALUE (arglist);
-  STRIP_NOPS (stripped_string);
-  if (stripped_string && TREE_CODE (stripped_string) == ADDR_EXPR)
-    stripped_string = TREE_OPERAND (stripped_string, 0);
+  switch (compare_tree_int (len, 1))
+    {
+    case -1: /* length is 0, delete the call entirely .  */
+      return const0_rtx;
+    case 0: /* length is 1, call fputc.  */
+      {
+	tree stripped_string = TREE_VALUE (arglist);
 
-  /* New argument list transforming fputs(string, stream) to
-     fputc(string[0], stream).  */
-  newarglist = build_tree_list (NULL_TREE, TREE_VALUE (TREE_CHAIN (arglist)));
-  newarglist =
-    tree_cons (NULL_TREE, 
-	       build_int_2 (TREE_STRING_POINTER (stripped_string)[0], 0),
-	       newarglist);
+	STRIP_NOPS (stripped_string);
+	if (stripped_string && TREE_CODE (stripped_string) == ADDR_EXPR)
+	  stripped_string = TREE_OPERAND (stripped_string, 0);
+      
+	/* New argument list transforming fputs(string, stream) to
+	   fputc(string[0], stream).  */
+	arglist =
+	  build_tree_list (NULL_TREE, TREE_VALUE (TREE_CHAIN (arglist)));
+	arglist =
+	  tree_cons (NULL_TREE, 
+		     build_int_2 (TREE_STRING_POINTER (stripped_string)[0], 0),
+		     arglist);
+	fn = fn_fputc;
+	break;
+      }
+    case 1: /* length is greater than 1, call fwrite.  */
+      {
+	tree string_arg = TREE_VALUE (arglist);
+      
+	/* New argument list transforming fputs(string, stream) to
+	   fwrite(string, 1, len, stream).  */
+	arglist = build_tree_list (NULL_TREE, TREE_VALUE (TREE_CHAIN (arglist)));
+	arglist = tree_cons (NULL_TREE, len, arglist);
+	arglist = tree_cons (NULL_TREE, integer_one_node, arglist);
+	arglist = tree_cons (NULL_TREE, string_arg, arglist);
+	fn = fn_fwrite;
+	break;
+      }
+    default:
+      abort();
+    }
   
   call_expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
   call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-		     call_expr, newarglist, NULL_TREE);
+		     call_expr, arglist, NULL_TREE);
   TREE_SIDE_EFFECTS (call_expr) = 1;
   return expand_expr (call_expr, (ignore ? const0_rtx : NULL_RTX),
 		      VOIDmode, EXPAND_NORMAL);
@@ -2563,7 +2588,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  || fcode == BUILT_IN_STRCMP || fcode == BUILT_IN_FFS
 	  || fcode == BUILT_IN_PUTCHAR || fcode == BUILT_IN_PUTS
 	  || fcode == BUILT_IN_PRINTF || fcode == BUILT_IN_FPUTC
-	  || fcode == BUILT_IN_FPUTS))
+	  || fcode == BUILT_IN_FPUTS || fcode == BUILT_IN_FWRITE))
     return expand_call (exp, target, ignore);
 
   switch (fcode)
@@ -2779,6 +2804,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
     case BUILT_IN_PUTCHAR:
     case BUILT_IN_PUTS:
     case BUILT_IN_FPUTC:
+    case BUILT_IN_FWRITE:
       break;
       
     case BUILT_IN_FPUTS:

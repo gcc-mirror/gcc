@@ -1,3 +1,12 @@
+2000-09-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtins.c (expand_builtin_fputs): Also expand when length!=1.
+	(expand_builtin): Handle BUILT_IN_FWRITE.
+
+	* builtins.def (BUILT_IN_FWRITE): New entry.
+
+	* c-common.c (c_common_nodes_and_builtins): Declare __builtin_fwrite.
+
 Wed Sep 20 15:39:14 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcc.c (modify_target): New variable and struct.
