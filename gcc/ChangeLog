@@ -1,3 +1,7 @@
+2004-04-09  Richard Henderson  <rth@redhat.com>
+
+	* tree-cfg.c (dump_cfg_stats): Fix 64-bit format mismatch errors.
+
 2004-07-09  Eric Christopher  <echristo@redhat.com>
 
 	* config/rs6000/40x.md: Split into two automatons.
