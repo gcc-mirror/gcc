@@ -1,3 +1,8 @@
+2002-07-16  Steve Ellcey  <sje@cup.hp.com>
+	* gcc/config/pa/long_double.h (FIXUNS_TRUNCTFDI2_LIBCALL): New define.
+	(fixunstfdi_libfunc): Change to use FIXUNS_TRUNCTFDI2_LIBCALL.
+	* gcc/config/pa/quadlib.c (_U_Qfcnvfxt_quad_to_udbl): New function.
+
 2002-07-16  Ian Dall  <ian@sibyl.beware.dropbear.id.au>
 
 	* doc/invoke.texi (NS32K Options): Document -mieee-compare option
