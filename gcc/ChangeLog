@@ -1,6 +1,8 @@
 Sat Feb 27 23:21:47 1999  Jerry Quinn <jquinn@nortelnetworks.com>
 			  Mike Stump <mrs@wrs.com>
 
+	* pa.c (override_options): Change default to 7100LC
+
 	* pa.h (REG_ALLOC_ORDER): Change order to allocate left half of
 	float regs before right half of float regs.
 
