@@ -1238,6 +1238,28 @@ __gcc_bcmp (const unsigned char *s1, const unsigned char *s2, size_t size)
 }
 
 #endif
+
+/* __eprintf used to be used by GCC's private version of <assert.h>.
+   We no longer provide that header, but this routine remains in libgcc.a
+   for binary backward compatibility.  Note that it is not included in
+   the shared version of libgcc.  */
+#ifdef L_eprintf
+#ifndef inhibit_libc
+
+#undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
+#include <stdio.h>
+
+void
+__eprintf (const char *string, const char *expression,
+	   unsigned int line, const char *filename)
+{
+  fprintf (stderr, string, expression, line, filename);
+  fflush (stderr);
+  abort ();
+}
+
+#endif
+#endif
 
 #ifdef L_bb
 

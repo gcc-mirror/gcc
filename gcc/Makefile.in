@@ -792,11 +792,13 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
     _fixunsdfsi _fixunssfsi _fixunsdfdi _fixdfdi _fixunssfdi _fixsfdi \
     _fixxfdi _fixunsxfdi _floatdixf _fixunsxfsi \
     _fixtfdi _fixunstfdi _floatditf \
-    __gcc_bcmp _eprintf \
-    _bb _clear_cache _trampoline __main _exit \
+    __gcc_bcmp _bb _clear_cache _trampoline __main _exit \
     _absvsi2 _absvdi2 _addvsi3 _addvdi3 _subvsi3 _subvdi3 \
     _mulvsi3 _mulvdi3 _negvsi2 _negvdi2 \
     _ctors
+
+# Defined in libgcc2.c, included only in the static library.
+LIB2FUNCS_ST = _eprintf
 
 FPBIT_FUNCS = _pack_sf _unpack_sf _addsub_sf _mul_sf _div_sf \
     _fpcmp_parts_sf _compare_sf _eq_sf _ne_sf _gt_sf _ge_sf \
@@ -1046,6 +1048,7 @@ libgcc.mk: config.status Makefile mklibgcc $(LIB2ADD) $(LIB2ADD_ST) xgcc$(exeext
 	LIB1ASMFUNCS='$(LIB1ASMFUNCS)' \
 	LIB1FUNCS_EXTRA='$(LIB1FUNCS_EXTRA)' \
 	LIB2FUNCS='$(LIB2FUNCS)' \
+	LIB2FUNCS_ST='$(LIB2FUNCS_ST)' \
 	LIB2ADD='$(LIB2ADD)' \
 	LIB2ADD_ST='$(LIB2ADD_ST)' \
 	LIB2ADDEH='$(LIB2ADDEH)' \
@@ -2507,7 +2510,6 @@ installdirs:
 	done
 	-if [ -d $(bindir) ] ; then true ; else mkdir $(bindir) ; chmod a+rx $(bindir) ; fi
 	-if [ -d $(includedir) ] ; then true ; else mkdir $(includedir) ; chmod a+rx $(includedir) ; fi
-	-if [ -d $(gcc_tooldir) ] ; then true ; else mkdir $(gcc_tooldir) ; chmod a+rx $(gcc_tooldir) ; fi
 	-if [ -d $(infodir) ] ; then true ; else mkdir $(infodir) ; chmod a+rx $(infodir) ; fi
 	-if [ -d $(slibdir) ] ; then true ; else mkdir $(slibdir) ; chmod a+rx $(slibdir) ; fi
 # We don't use mkdir -p to create the parents of man1dir,
