@@ -177,12 +177,49 @@ host_canonical = @host_canonical@
 # These are used because `configure' appends `cross-make'
 # to the makefile when making a cross-compiler.
 
-TARGET_TOOLPREFIX = $(tooldir)/bin/
-AR_FOR_TARGET = $(TARGET_TOOLPREFIX)ar
-AR_FOR_TARGET_FLAGS = rc
-RANLIB_FOR_TARGET = $(TARGET_TOOLPREFIX)ranlib
-RANLIB_TEST_FOR_TARGET = [ -f $(TARGET_TOOLPREFIX)ranlib ]
+# Use the tools from the build tree, if they are available.
 
+# objdir is set by configure.
+objdir = @objdir@
+
+AR_FOR_TARGET = ` \
+  if [ -f $(objdir)/../binutils/ar ] ; then \
+    echo $(objdir)/../binutils/ar ; \
+  else \
+    if [ "$(host_canonical)" = "$(target)" ] ; then \
+      echo ar; \
+    else \
+       t='$(program_transform_name)'; echo ar | sed -e $$t ; \
+    fi; \
+  fi`
+AR_FOR_TARGET_FLAGS = rc
+RANLIB_FOR_TARGET = ` \
+  if [ -f $(objdir)/../binutils/ranlib ] ; then \
+    echo $(objdir)/../binutils/ranlib ; \
+  else \
+    if [ "$(host_canonical)" = "$(target)" ] ; then \
+      echo ranlib; \
+    else \
+       t='$(program_transform_name)'; echo ranlib | sed -e $$t ; \
+    fi; \
+  fi`
+RANLIB_TEST_FOR_TARGET = \
+  [ -f $(RANLIB_FOR_TARGET) ] \
+  || ( [ "$(host_canonical)" = "$(target)" ] \
+       && [ -f /usr/bin/ranlib -o -f /bin/ranlib ] )
+
+# We always act like a cross-compiler, even when we're
+# compiling native.  This is because we want to use our own tools if
+# we can.  We don't just set RANLIB to a complicated expression,
+# because the top level Makefile.in might override RANLIB_FOR_TARGET.
+# These are from the FSF file "cross-make".
+AR = $(AR_FOR_TARGET)
+AR_FLAGS = $(AR_FOR_TARGET_FLAGS)
+OLDAR = $(AR_FOR_TARGET)
+OLDAR_FLAGS = $(AR_FOR_TARGET_FLAGS)
+RANLIB = $(RANLIB_FOR_TARGET)
+RANLIB_TEST = $(RANLIB_TEST_FOR_TARGET)
+  
 # Dir to search for system headers.  Overridden by cross-make.
 SYSTEM_HEADER_DIR = /usr/include
 
@@ -440,6 +477,9 @@ INSTALL_TARGET=install-normal
 
 # Source for float.h.  Overridden by cross-make.
 FLOAT_H=float.h-nat
+# We do not try to build float.h anymore.  Let configure select the
+# appropriate pre-built float.h file for the target.
+FLOAT_H=$(srcdir)/config/float-@float_format@.h
 
 # Setup the testing framework, if you have one
 EXPECT = `if [ -f $${rootme}/../expect/expect ] ; then \

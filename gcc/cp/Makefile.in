@@ -83,6 +83,12 @@ GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS)
 # These are used because `configure' appends `cross-make'
 # to the makefile when making a cross-compiler.
 
+# We don't use cross-make.  Instead we use the tools
+# from the build tree, if they are available.
+# program_transform_name and objdir are set by configure.in.
+program_transform_name =
+objdir = .
+
 target=@target@
 xmake_file=@dep_host_xmake_file@
 tmake_file=@dep_tmake_file@
