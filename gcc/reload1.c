@@ -698,9 +698,7 @@ reload (rtx first, int global)
   /* Look for REG_EQUIV notes; record what each pseudo is equivalent to.
      Also find all paradoxical subregs and find largest such for each pseudo.
      On machines with small register classes, record hard registers that
-     are used for user variables.  These can never be used for spills.
-     Also look for a "constant" REG_SETJMP.  This means that all
-     caller-saved registers must be marked live.  */
+     are used for user variables.  These can never be used for spills.  */
 
   num_eliminable_invariants = 0;
   for (insn = first; insn; insn = NEXT_INSN (insn))
@@ -713,12 +711,6 @@ reload (rtx first, int global)
       if (INSN_P (insn) && GET_CODE (PATTERN (insn)) == USE
 	  && GET_MODE (insn) != VOIDmode)
 	PUT_MODE (insn, VOIDmode);
-
-      if (GET_CODE (insn) == CALL_INSN
-	  && find_reg_note (insn, REG_SETJMP, NULL))
-	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	  if (! call_used_regs[i])
-	    regs_ever_live[i] = 1;
 
       if (set != 0 && GET_CODE (SET_DEST (set)) == REG)
 	{
