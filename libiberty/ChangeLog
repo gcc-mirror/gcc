@@ -1,3 +1,9 @@
+2001-04-15  Daniel Berlin  <dan@cgsoftware.com>
+
+	* ternary.c: New file - Ternary search tree implementation.
+
+	* Makefile.in: Add ternary.o, and ternary.c dependencies.
+
 2001-04-03  Zack Weinberg  <zackw@stanford.edu>
 
 	* make-temp-file.c (try): Inline.
