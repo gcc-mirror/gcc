@@ -1,3 +1,8 @@
+Mon Feb 19 08:27:21 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* sibcall.c (call_ends_block_p): New function.
+	(optimize_sibling_and_tail_recursive_call): Use it.
+
 2001-02-18  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md: Update copyright.
