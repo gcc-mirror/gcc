@@ -1,3 +1,20 @@
+Thu Sep  4 11:04:21 1997  Michael Meissner  <meissner@cygnus.com>
+
+	* bitmap.h (EXECUTE_IF_AND_IN_BITMAP): New macro, to iterate over
+	two bitmaps ANDed together.
+	(bitmap_print): Declare.
+
+	* bitmap.c (function_obstack): Don't declare any more.
+	(bitmap_obstack): Obstack for allocating links from.
+	(bitmap_obstack_init): New static to say whether to initialize
+	bitmap_obstack.
+	(bitmap_element_allocate): Use bitmap_obstack to allocate from.
+	(bitmap_release_memory): Free all memory allocated from
+	bitmap_obstack.
+
+	* basic-block.h (EXECUTE_IF_AND_IN_REG_SET): New macro, invoke
+	EXECUTE_IF_AND_IN_BITMAP.
+
 Wed Sep  3 10:39:42 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* alias.c (true_dependence): Address with AND can alias scalars.

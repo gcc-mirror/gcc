@@ -88,6 +88,9 @@ extern int bitmap_bit_p PROTO((bitmap, int));
 extern void bitmap_debug PROTO((bitmap));
 extern void bitmap_debug_file STDIO_PROTO((FILE *, bitmap));
 
+/* Print a bitmap */
+extern void bitmap_print STDIO_PROTO((FILE *, bitmap, char *, char *));
+
 /* Initialize a bitmap header.  */
 extern bitmap bitmap_initialize PROTO((bitmap));
 
@@ -210,6 +213,79 @@ do {									\
 	{								\
 	  unsigned HOST_WIDE_INT word_ = (ptr1_->bits[word_num_]	\
 					  & ~ tmp2_->bits[word_num_]);	\
+	  if (word_ != 0)						\
+	    {								\
+	      for (; bit_num_ < HOST_BITS_PER_WIDE_INT; bit_num_++)	\
+		{							\
+		  unsigned HOST_WIDE_INT mask_				\
+		    = ((unsigned HOST_WIDE_INT)1) << bit_num_;		\
+									\
+		  if ((word_ & mask_) != 0)				\
+		    {							\
+		      word_ &= ~ mask_;					\
+		      (BITNUM) = (ptr1_->indx * BITMAP_ELEMENT_ALL_BITS \
+				  + word_num_ * HOST_BITS_PER_WIDE_INT  \
+				  + bit_num_);				\
+									\
+		      CODE;						\
+		      if (word_ == 0)					\
+			break;						\
+		    }							\
+		}							\
+	    }								\
+									\
+	  bit_num_ = 0;							\
+	}								\
+									\
+      word_num_ = 0;							\
+    }									\
+} while (0)
+
+/* Loop over all bits in BITMAP1 and BITMAP2, starting with MIN, setting
+   BITNUM to the bit number and executing CODE for all bits that are set in
+   the both bitmaps. */
+
+#define EXECUTE_IF_AND_IN_BITMAP(BITMAP1, BITMAP2, MIN, BITNUM, CODE)	\
+do {									\
+  bitmap_element *ptr1_ = (BITMAP1)->first;				\
+  bitmap_element *ptr2_ = (BITMAP2)->first;				\
+  unsigned int indx_ = (MIN) / BITMAP_ELEMENT_ALL_BITS;			\
+  unsigned bit_num_ = (MIN) % ((unsigned) HOST_BITS_PER_WIDE_INT);	\
+  unsigned word_num_ = (((MIN) / ((unsigned) HOST_BITS_PER_WIDE_INT))	\
+			% BITMAP_ELEMENT_WORDS);			\
+									\
+  /* Find the block the minimum bit is in in the first bitmap.  */	\
+  while (ptr1_ != 0 && ptr1_->indx < indx_)				\
+    ptr1_ = ptr1_->next;						\
+									\
+  if (ptr1_ != 0 && ptr1_->indx != indx_)				\
+    {									\
+      bit_num_ = 0;							\
+      word_num_ = 0;							\
+    }									\
+									\
+  for (; ptr1_ != 0 ; ptr1_ = ptr1_->next)				\
+    {									\
+      /* Advance BITMAP2 to the equivalent link */			\
+      while (ptr2_ != 0 && ptr2_->indx < ptr1_->indx)			\
+	ptr2_ = ptr2_->next;						\
+									\
+      if (ptr2_ == 0)							\
+	{								\
+	  /* If there are no more elements in BITMAP2, exit loop now.*/	\
+	  ptr1_ = (bitmap_element *)0;					\
+	  break;							\
+	}								\
+      else if (ptr2_->indx > ptr1_->indx)				\
+	{								\
+	  bit_num_ = word_num_ = 0;					\
+	  continue;							\
+	}								\
+									\
+      for (; word_num_ < BITMAP_ELEMENT_WORDS; word_num_++)		\
+	{								\
+	  unsigned HOST_WIDE_INT word_ = (ptr1_->bits[word_num_]	\
+					  & ptr2_->bits[word_num_]);	\
 	  if (word_ != 0)						\
 	    {								\
 	      for (; bit_num_ < HOST_BITS_PER_WIDE_INT; bit_num_++)	\

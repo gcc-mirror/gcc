@@ -73,6 +73,12 @@ do {									\
 #define EXECUTE_IF_AND_COMPL_IN_REG_SET(REGSET1, REGSET2, MIN, REGNUM, CODE) \
   EXECUTE_IF_AND_COMPL_IN_BITMAP (REGSET1, REGSET2, MIN, REGNUM, CODE)
 
+/* Loop over all registers in REGSET1 and REGSET2, starting with MIN, setting
+   REGNUM to the register number and executing CODE for all registers that are
+   set in both regsets. */
+#define EXECUTE_IF_AND_IN_REG_SET(REGSET1, REGSET2, MIN, REGNUM, CODE) \
+  EXECUTE_IF_AND_IN_BITMAP (REGSET1, REGSET2, MIN, REGNUM, CODE)
+
 /* Allocate a register set with oballoc.  */
 #define OBSTACK_ALLOC_REG_SET(OBSTACK) BITMAP_OBSTACK_ALLOC (OBSTACK)
 

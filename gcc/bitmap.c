@@ -26,12 +26,9 @@ Boston, MA 02111-1307, USA.  */
 #include "regs.h"
 #include "basic-block.h"
 
-/* The contents of the current function definition are allocated
-   in this obstack, and all are freed at the end of the function.
-   For top-level functions, this is temporary_obstack.
-   Separate obstacks are made for nested functions.  */
-
-extern struct obstack *function_obstack;
+/* Obstack to allocate bitmap elements from.  */
+static struct obstack bitmap_obstack;
+static int bitmap_obstack_init = FALSE;
 
 
 #ifndef INLINE
@@ -95,8 +92,39 @@ bitmap_element_allocate (head)
       bitmap_free = element->next;
     }
   else
-    element = (bitmap_element *) obstack_alloc (function_obstack,
-						sizeof (bitmap_element));
+    {
+      /* We can't use gcc_obstack_init to initialize the obstack since
+	 print-rtl.c now calls bitmap functions, and bitmap is linked
+	 into the gen* functions.  */
+      if (!bitmap_obstack_init)
+	{
+	  bitmap_obstack_init = TRUE;
+
+	  /* Let particular systems override the size of a chunk.  */
+#ifndef OBSTACK_CHUNK_SIZE
+#define OBSTACK_CHUNK_SIZE 0
+#endif
+	  /* Let them override the alloc and free routines too.  */
+#ifndef OBSTACK_CHUNK_ALLOC
+#define OBSTACK_CHUNK_ALLOC xmalloc
+#endif
+#ifndef OBSTACK_CHUNK_FREE
+#define OBSTACK_CHUNK_FREE free
+#endif
+
+#if !defined(__GNUC__) || (__GNUC__ < 2)
+#define __alignof__(type) 0
+#endif
+
+	  obstack_specify_allocation (&bitmap_obstack, OBSTACK_CHUNK_SIZE,
+				      __alignof__ (bitmap_element),
+				      (void *(*) ()) OBSTACK_CHUNK_ALLOC,
+				      (void (*) ()) OBSTACK_CHUNK_FREE);
+	}
+
+      element = (bitmap_element *) obstack_alloc (&bitmap_obstack,
+						  sizeof (bitmap_element));
+    }
 
 #if BITMAP_ELEMENT_WORDS == 2
   element->bits[0] = element->bits[1] = 0;
@@ -573,11 +601,37 @@ debug_bitmap (head)
   bitmap_debug_file (stdout, head);
 }
 
-/* Release any memory allocated by bitmaps.  Since we allocate off of the
-   function_obstack, just zap the free list.  */
+/* Function to print out the contents of a bitmap.  Unlike bitmap_debug_file,
+   it does not print anything but the bits.  */
+
+void
+bitmap_print (file, head, prefix, suffix)
+     FILE *file;
+     bitmap head;
+     char *prefix;
+     char *suffix;
+{
+  char *comma = "";
+  int i;
+
+  fputs (prefix, file);
+  EXECUTE_IF_SET_IN_BITMAP (head, 0, i,
+			    {
+			      fprintf (file, "%s%d", comma, i);
+			      comma = ", ";
+			    });
+  fputs (suffix, file);
+}
+
+/* Release any memory allocated by bitmaps.  */
 
 void
 bitmap_release_memory ()
 {
   bitmap_free = 0;
+  if (bitmap_obstack_init)
+    {
+      bitmap_obstack_init = FALSE;
+      obstack_free (&bitmap_obstack, NULL_PTR);
+    }
 }
