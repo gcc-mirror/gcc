@@ -1,5 +1,6 @@
 /* Generate code to allocate RTL structures.
-   Copyright (C) 1997, 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2002, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -44,24 +45,23 @@ static const struct rtx_definition defs[] =
 
 static const char *formats[NUM_RTX_CODE];
 
-static const char *type_from_format	PARAMS ((int));
-static const char *accessor_from_format	PARAMS ((int));
-static int special_format		PARAMS ((const char *));
-static int special_rtx			PARAMS ((int));
-static int excluded_rtx			PARAMS ((int));
-static void find_formats		PARAMS ((void));
-static void gendecl			PARAMS ((const char *));
-static void genmacro			PARAMS ((int));
-static void gendef			PARAMS ((const char *));
-static void genlegend			PARAMS ((void));
-static void genheader			PARAMS ((void));
-static void gencode			PARAMS ((void));
+static const char *type_from_format	(int);
+static const char *accessor_from_format	(int);
+static int special_format		(const char *);
+static int special_rtx			(int);
+static int excluded_rtx			(int);
+static void find_formats		(void);
+static void gendecl			(const char *);
+static void genmacro			(int);
+static void gendef			(const char *);
+static void genlegend			(void);
+static void genheader			(void);
+static void gencode			(void);
 
 /* Decode a format letter into a C type string.  */
 
 static const char *
-type_from_format (c)
-     int c;
+type_from_format (int c)
 {
   switch (c)
     {
@@ -93,8 +93,7 @@ type_from_format (c)
 /* Decode a format letter into the proper accessor function.  */
 
 static const char *
-accessor_from_format (c)
-     int c;
+accessor_from_format (int c)
 {
   switch (c)
     {
@@ -131,8 +130,7 @@ accessor_from_format (c)
    the list of formats we write routines to create.  */
 
 static int
-special_format (fmt)
-     const char *fmt;
+special_format (const char *fmt)
 {
   return (strchr (fmt, '*') != 0
 	  || strchr (fmt, 'V') != 0
@@ -145,8 +143,7 @@ special_format (fmt)
    is a wrapper in emit-rtl.c).  */
 
 static int
-special_rtx (idx)
-     int idx;
+special_rtx (int idx)
 {
   return (strcmp (defs[idx].enumname, "CONST_INT") == 0
 	  || strcmp (defs[idx].enumname, "REG") == 0
@@ -160,8 +157,7 @@ special_rtx (idx)
    cannot have the obvious interface).  */
 
 static int
-excluded_rtx (idx)
-     int idx;
+excluded_rtx (int idx)
 {
   return (strcmp (defs[idx].enumname, "CONST_DOUBLE") == 0);
 }
@@ -169,7 +165,7 @@ excluded_rtx (idx)
 /* Place a list of all format specifiers we use into the array FORMAT.  */
 
 static void
-find_formats ()
+find_formats (void)
 {
   int i;
 
@@ -192,13 +188,12 @@ find_formats ()
 /* Write the declarations for the routine to allocate RTL with FORMAT.  */
 
 static void
-gendecl (format)
-     const char *format;
+gendecl (const char *format)
 {
   const char *p;
   int i, pos;
 
-  printf ("extern rtx gen_rtx_fmt_%s\tPARAMS ((RTX_CODE, ", format);
+  printf ("extern rtx gen_rtx_fmt_%s\t (RTX_CODE, ", format);
   printf ("enum machine_mode mode");
 
   /* Write each parameter that is needed and start a new line when the line
@@ -216,15 +211,14 @@ gendecl (format)
 	pos += ourlen;
       }
 
-  printf ("));\n");
+  printf (");\n");
 }
 
 /* Generate macros to generate RTL of code IDX using the functions we
    write.  */
 
 static void
-genmacro (idx)
-     int idx;
+genmacro (int idx)
 {
   const char *p;
   int i;
@@ -257,8 +251,7 @@ genmacro (idx)
    format is FORMAT.  */
 
 static void
-gendef (format)
-     const char *format;
+gendef (const char *format)
 {
   const char *p;
   int i, j;
@@ -298,7 +291,7 @@ gendef (format)
 /* Generate the documentation header for files we write.  */
 
 static void
-genlegend ()
+genlegend (void)
 {
   puts ("/* Generated automatically by gengenrtl from rtl.def.  */\n");
 }
@@ -306,7 +299,7 @@ genlegend ()
 /* Generate the text of the header file we make, genrtl.h.  */
 
 static void
-genheader ()
+genheader (void)
 {
   int i;
   const char **fmt;
@@ -329,7 +322,7 @@ genheader ()
 /* Generate the text of the code file we write, genrtl.c.  */
 
 static void
-gencode ()
+gencode (void)
 {
   const char **fmt;
 
@@ -348,12 +341,9 @@ gencode ()
 /* This is the main program.  We accept only one argument, "-h", which
    says we are writing the genrtl.h file.  Otherwise we are writing the
    genrtl.c file.  */
-extern int main PARAMS ((int, char **));
 
 int
-main (argc, argv)
-     int argc;
-     char **argv;
+main (int argc, char **argv)
 {
   find_formats ();
   genlegend ();

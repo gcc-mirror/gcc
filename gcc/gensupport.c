@@ -1,5 +1,6 @@
 /* Support routines for the various generation passes.
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003
+   Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -68,8 +69,8 @@ static struct queue_elem **define_cond_exec_tail = &define_cond_exec_queue;
 static struct queue_elem *other_queue;
 static struct queue_elem **other_tail = &other_queue;
 
-static void queue_pattern PARAMS ((rtx, struct queue_elem ***,
-				   const char *, int));
+static void queue_pattern (rtx, struct queue_elem ***,
+			   const char *, int);
 
 /* Current maximum length of directory names in the search path
    for include files.  (Altered as we get more of them.)  */
@@ -87,30 +88,30 @@ struct file_name_list *first_dir_md_include = 0;  /* First dir to search */
 struct file_name_list *first_bracket_include = 0;
 struct file_name_list *last_dir_md_include = 0;        /* Last in chain */
 
-static void remove_constraints PARAMS ((rtx));
-static void process_rtx PARAMS ((rtx, int));
+static void remove_constraints (rtx);
+static void process_rtx (rtx, int);
 
-static int is_predicable PARAMS ((struct queue_elem *));
-static void identify_predicable_attribute PARAMS ((void));
-static int n_alternatives PARAMS ((const char *));
-static void collect_insn_data PARAMS ((rtx, int *, int *));
-static rtx alter_predicate_for_insn PARAMS ((rtx, int, int, int));
-static const char *alter_test_for_insn PARAMS ((struct queue_elem *,
-						struct queue_elem *));
-static char *shift_output_template PARAMS ((char *, const char *, int));
-static const char *alter_output_for_insn PARAMS ((struct queue_elem *,
-						  struct queue_elem *,
-						  int, int));
-static void process_one_cond_exec PARAMS ((struct queue_elem *));
-static void process_define_cond_exec PARAMS ((void));
-static void process_include PARAMS ((rtx, int));
-static char *save_string PARAMS ((const char *, int));
+static int is_predicable (struct queue_elem *);
+static void identify_predicable_attribute (void);
+static int n_alternatives (const char *);
+static void collect_insn_data (rtx, int *, int *);
+static rtx alter_predicate_for_insn (rtx, int, int, int);
+static const char *alter_test_for_insn (struct queue_elem *,
+					struct queue_elem *);
+static char *shift_output_template (char *, const char *, int);
+static const char *alter_output_for_insn (struct queue_elem *,
+					  struct queue_elem *,
+					  int, int);
+static void process_one_cond_exec (struct queue_elem *);
+static void process_define_cond_exec (void);
+static void process_include (rtx, int);
+static char *save_string (const char *, int);
 
 void
 message_with_line (int lineno, const char *msg, ...)
 {
   va_list ap;
-  
+
   va_start (ap, msg);
 
   fprintf (stderr, "%s:%d: ", read_rtx_filename, lineno);
@@ -124,9 +125,8 @@ message_with_line (int lineno, const char *msg, ...)
    the gensupport programs.  */
 
 rtx
-gen_rtx_CONST_INT (mode, arg)
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-     HOST_WIDE_INT arg;
+gen_rtx_CONST_INT (enum machine_mode mode ATTRIBUTE_UNUSED,
+		   HOST_WIDE_INT arg)
 {
   rtx rt = rtx_alloc (CONST_INT);
 
@@ -137,11 +137,8 @@ gen_rtx_CONST_INT (mode, arg)
 /* Queue PATTERN on LIST_TAIL.  */
 
 static void
-queue_pattern (pattern, list_tail, filename, lineno)
-     rtx pattern;
-     struct queue_elem ***list_tail;
-     const char *filename;
-     int lineno;
+queue_pattern (rtx pattern, struct queue_elem ***list_tail,
+	       const char *filename, int lineno)
 {
   struct queue_elem *e = (struct queue_elem *) xmalloc (sizeof (*e));
   e->data = pattern;
@@ -155,8 +152,7 @@ queue_pattern (pattern, list_tail, filename, lineno)
 /* Recursively remove constraints from an rtx.  */
 
 static void
-remove_constraints (part)
-     rtx part;
+remove_constraints (rtx part)
 {
   int i, j;
   const char *format_ptr;
@@ -186,13 +182,11 @@ remove_constraints (part)
       }
 }
 
-/* Process an include file assuming that it lives in gcc/config/{target}/ 
+/* Process an include file assuming that it lives in gcc/config/{target}/
    if the include looks like (include "file").  */
 
 static void
-process_include (desc, lineno)
-     rtx desc;
-     int lineno;
+process_include (rtx desc, int lineno)
 {
   const char *filename = XSTR (desc, 0);
   const char *old_filename;
@@ -212,7 +206,7 @@ process_include (desc, lineno)
 
 	  pathname = concat (stackp->fname, sep, filename, NULL);
 	  input_file = fopen (pathname, "r");
-	  if (input_file != NULL) 
+	  if (input_file != NULL)
 	    goto success;
 	  free (pathname);
 	}
@@ -268,9 +262,7 @@ process_include (desc, lineno)
 /* Process a top level rtx in some way, queueing as appropriate.  */
 
 static void
-process_rtx (desc, lineno)
-     rtx desc;
-     int lineno;
+process_rtx (rtx desc, int lineno)
 {
   switch (GET_CODE (desc))
     {
@@ -338,8 +330,7 @@ process_rtx (desc, lineno)
    a DEFINE_INSN.  */
 
 static int
-is_predicable (elem)
-     struct queue_elem *elem;
+is_predicable (struct queue_elem *elem)
 {
   rtvec vec = XVEC (elem->data, 4);
   const char *value;
@@ -427,7 +418,7 @@ is_predicable (elem)
    and its default.  */
 
 static void
-identify_predicable_attribute ()
+identify_predicable_attribute (void)
 {
   struct queue_elem *elem;
   char *p_true, *p_false;
@@ -494,8 +485,7 @@ identify_predicable_attribute ()
 /* Return the number of alternatives in constraint S.  */
 
 static int
-n_alternatives (s)
-     const char *s;
+n_alternatives (const char *s)
 {
   int n = 1;
 
@@ -510,9 +500,7 @@ n_alternatives (s)
    operands.  */
 
 static void
-collect_insn_data (pattern, palt, pmax)
-     rtx pattern;
-     int *palt, *pmax;
+collect_insn_data (rtx pattern, int *palt, int *pmax)
 {
   const char *fmt;
   enum rtx_code code;
@@ -568,9 +556,7 @@ collect_insn_data (pattern, palt, pmax)
 }
 
 static rtx
-alter_predicate_for_insn (pattern, alt, max_op, lineno)
-     rtx pattern;
-     int alt, max_op, lineno;
+alter_predicate_for_insn (rtx pattern, int alt, int max_op, int lineno)
 {
   const char *fmt;
   enum rtx_code code;
@@ -659,8 +645,8 @@ alter_predicate_for_insn (pattern, alt, max_op, lineno)
 }
 
 static const char *
-alter_test_for_insn (ce_elem, insn_elem)
-     struct queue_elem *ce_elem, *insn_elem;
+alter_test_for_insn (struct queue_elem *ce_elem,
+		     struct queue_elem *insn_elem)
 {
   const char *ce_test, *insn_test;
 
@@ -679,10 +665,7 @@ alter_test_for_insn (ce_elem, insn_elem)
    adjusted string.  */
 
 static char *
-shift_output_template (new, old, disp)
-     char *new;
-     const char *old;
-     int disp;
+shift_output_template (char *new, const char *old, int disp)
 {
   while (*old)
     {
@@ -706,9 +689,9 @@ shift_output_template (new, old, disp)
 }
 
 static const char *
-alter_output_for_insn (ce_elem, insn_elem, alt, max_op)
-     struct queue_elem *ce_elem, *insn_elem;
-     int alt, max_op;
+alter_output_for_insn (struct queue_elem *ce_elem,
+		       struct queue_elem *insn_elem,
+		       int alt, int max_op)
 {
   const char *ce_out, *insn_out;
   char *new, *p;
@@ -768,8 +751,7 @@ alter_output_for_insn (ce_elem, insn_elem, alt, max_op)
 /* Replicate insns as appropriate for the given DEFINE_COND_EXEC.  */
 
 static void
-process_one_cond_exec (ce_elem)
-     struct queue_elem *ce_elem;
+process_one_cond_exec (struct queue_elem *ce_elem)
 {
   struct queue_elem *insn_elem;
   for (insn_elem = define_insn_queue; insn_elem ; insn_elem = insn_elem->next)
@@ -845,7 +827,7 @@ process_one_cond_exec (ce_elem)
    patterns appropriately.  */
 
 static void
-process_define_cond_exec ()
+process_define_cond_exec (void)
 {
   struct queue_elem *elem;
 
@@ -858,9 +840,7 @@ process_define_cond_exec ()
 }
 
 static char *
-save_string (s, len)
-     const char *s;
-     int len;
+save_string (const char *s, int len)
 {
   register char *result = xmalloc (len + 1);
 
@@ -873,9 +853,7 @@ save_string (s, len)
 /* The entry point for initializing the reader.  */
 
 int
-init_md_reader_args (argc, argv)
-     int argc;
-     char **argv;
+init_md_reader_args (int argc, char **argv)
 {
   int i;
   const char *in_fname;
@@ -928,8 +906,7 @@ init_md_reader_args (argc, argv)
 /* The entry point for initializing the reader.  */
 
 int
-init_md_reader (filename)
-     const char *filename;
+init_md_reader (const char *filename)
 {
   FILE *input_file;
   int c;
@@ -937,7 +914,7 @@ init_md_reader (filename)
   char *lastsl;
 
   lastsl = strrchr (filename, '/');
-  if (lastsl != NULL) 
+  if (lastsl != NULL)
     base_dir = save_string (filename, lastsl - filename + 1 );
 
   read_rtx_filename = filename;
@@ -987,9 +964,7 @@ init_md_reader (filename)
 /* The entry point for reading a single rtx from an md file.  */
 
 rtx
-read_md_rtx (lineno, seqnr)
-     int *lineno;
-     int *seqnr;
+read_md_rtx (int *lineno, int *seqnr)
 {
   struct queue_elem **queue, *elem;
   rtx desc;
@@ -1052,8 +1027,7 @@ read_md_rtx (lineno, seqnr)
 /* Compute a hash function of a c_test structure, which is keyed
    by its ->expr field.  */
 hashval_t
-hash_c_test (x)
-     const PTR x;
+hash_c_test (const void *x)
 {
   const struct c_test *a = (const struct c_test *) x;
   const unsigned char *base, *s = (const unsigned char *) a->expr;
@@ -1079,9 +1053,7 @@ hash_c_test (x)
 
 /* Compare two c_test expression structures.  */
 int
-cmp_c_test (x, y)
-     const PTR x;
-     const PTR y;
+cmp_c_test (const void *x, const void *y)
 {
   const struct c_test *a = (const struct c_test *) x;
   const struct c_test *b = (const struct c_test *) y;
@@ -1094,8 +1066,7 @@ cmp_c_test (x, y)
    at compile time.  Returns a tristate: 1 for known true, 0 for
    known false, -1 for unknown.  */
 int
-maybe_eval_c_test (expr)
-     const char *expr;
+maybe_eval_c_test (const char *expr)
 {
   const struct c_test *test;
   struct c_test dummy;
@@ -1117,8 +1088,7 @@ maybe_eval_c_test (expr)
 /* Given a string, return the number of comma-separated elements in it.
    Return 0 for the null string.  */
 int
-n_comma_elts (s)
-     const char *s;
+n_comma_elts (const char *s)
 {
   int n;
 
@@ -1139,8 +1109,7 @@ n_comma_elts (s)
    a comma and an element is ignored.  */
 
 const char *
-scan_comma_elt (pstr)
-     const char **pstr;
+scan_comma_elt (const char **pstr)
 {
   const char *start;
   const char *p = *pstr;

@@ -2,7 +2,7 @@
    - some macros CODE_FOR_... giving the insn_code_number value
    for each of the defined standard insn names.
    Copyright (C) 1987, 1991, 1995, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,12 +30,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "errors.h"
 #include "gensupport.h"
 
-static void gen_insn PARAMS ((rtx, int));
-
 static void
-gen_insn (insn, code)
-     rtx insn;
-     int code;
+gen_insn (rtx insn, int code)
 {
   const char *name = XSTR (insn, 0);
   int truth = maybe_eval_c_test (XSTR (insn, 2));
@@ -52,12 +48,8 @@ gen_insn (insn, code)
     }
 }
 
-extern int main PARAMS ((int, char **));
-
 int
-main (argc, argv)
-     int argc;
-     char **argv;
+main (int argc, char **argv)
 {
   rtx desc;
 
@@ -111,8 +103,7 @@ enum insn_code {");
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
 
 const char *
-get_insn_name (code)
-     int code ATTRIBUTE_UNUSED;
+get_insn_name (int code ATTRIBUTE_UNUSED)
 {
   return NULL;
 }

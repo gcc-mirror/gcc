@@ -1,5 +1,6 @@
 /* Basic error reporting routines.
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -42,7 +43,7 @@ void
 warning (const char *format, ...)
 {
   va_list ap;
-  
+
   va_start (ap, format);
   fprintf (stderr, "%s: warning: ", progname);
   vfprintf (stderr, format, ap);
@@ -57,7 +58,7 @@ void
 error (const char *format, ...)
 {
   va_list ap;
-  
+
   va_start (ap, format);
   fprintf (stderr, "%s: ", progname);
   vfprintf (stderr, format, ap);
@@ -74,7 +75,7 @@ void
 fatal (const char *format, ...)
 {
   va_list ap;
-  
+
   va_start (ap, format);
   fprintf (stderr, "%s: ", progname);
   vfprintf (stderr, format, ap);
@@ -89,7 +90,7 @@ void
 internal_error (const char *format, ...)
 {
   va_list ap;
-  
+
   va_start (ap, format);
   fprintf (stderr, "%s: Internal error: ", progname);
   vfprintf (stderr, format, ap);
@@ -105,8 +106,7 @@ internal_error (const char *format, ...)
    version if for the gen* programs and so needn't handle subdirectories.  */
 
 const char *
-trim_filename (name)
-     const char *name;
+trim_filename (const char *name)
 {
   static const char this_file[] = __FILE__;
   const char *p = name, *q = this_file;
@@ -130,10 +130,7 @@ trim_filename (name)
    This file is used only by build programs, so we're not as polite as
    the version in diagnostic.c.  */
 void
-fancy_abort (file, line, func)
-     const char *file;
-     int line;
-     const char *func;
+fancy_abort (const char *file, int line, const char *func)
 {
   internal_error ("abort in %s, at %s:%d", func, file, line);
 }

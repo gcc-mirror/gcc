@@ -1,6 +1,6 @@
 /* Generate code from machine description to extract operands from insn as rtl.
-   Copyright (C) 1987, 1991, 1992, 1993, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991, 1992, 1993, 1997, 1998, 1999, 2000, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,7 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 
 /* This structure contains all the information needed to describe one
-   set of extractions methods.  Each method may be used by more than 
+   set of extractions methods.  Each method may be used by more than
    one pattern if the operands are in the same place.
 
    The string for each operand describes that path to the operand and
@@ -95,14 +95,13 @@ static int dupnums[MAX_DUP_OPERANDS];
 
 static struct code_ptr *peepholes;
 
-static void gen_insn PARAMS ((rtx));
-static void walk_rtx PARAMS ((rtx, const char *));
-static void print_path PARAMS ((const char *));
-static void record_insn_name PARAMS ((int, const char *));
+static void gen_insn (rtx);
+static void walk_rtx (rtx, const char *);
+static void print_path (const char *);
+static void record_insn_name (int, const char *);
 
 static void
-gen_insn (insn)
-     rtx insn;
+gen_insn (rtx insn)
 {
   int i;
   struct extraction *p;
@@ -181,9 +180,7 @@ gen_insn (insn)
 }
 
 static void
-walk_rtx (x, path)
-     rtx x;
-     const char *path;
+walk_rtx (rtx x, const char *path)
 {
   RTX_CODE code;
   int i;
@@ -222,11 +219,11 @@ walk_rtx (x, path)
       duplocs[dup_count] = xstrdup (path);
       dupnums[dup_count] = XINT (x, 0);
       dup_count++;
-      
+
       newpath = (char *) xmalloc (depth + 2);
       strcpy (newpath, path);
       newpath[depth + 1] = 0;
-      
+
       for (i = XVECLEN (x, 1) - 1; i >= 0; i--)
         {
 	  newpath[depth] = (code == MATCH_OP_DUP ? '0' : 'a') + i;
@@ -234,7 +231,7 @@ walk_rtx (x, path)
         }
       free (newpath);
       return;
-      
+
     case MATCH_OPERATOR:
       oplocs[XINT (x, 0)] = xstrdup (path);
       op_count = MAX (op_count, XINT (x, 0) + 1);
@@ -306,8 +303,7 @@ walk_rtx (x, path)
    evaluate to the rtx at that point.  */
 
 static void
-print_path (path)
-     const char *path;
+print_path (const char *path)
 {
   int len = strlen (path);
   int i;
@@ -332,7 +328,7 @@ print_path (path)
       else
 	abort ();
     }
-  
+
   printf ("pat");
 
   for (i = 0; i < len; i++)
@@ -346,12 +342,9 @@ print_path (path)
     }
 }
 
-extern int main PARAMS ((int, char **));
 
 int
-main (argc, argv)
-     int argc;
-     char **argv;
+main (int argc, char **argv)
 {
   rtx desc;
   int i;
@@ -458,7 +451,7 @@ from the machine description file `md'.  */\n\n");
 	  else
 	    printf ("    case %d:\n", i);
 	}
-      
+
       for (i = 0; i < p->op_count; i++)
 	{
 	  if (p->oplocs[i] == 0)
@@ -522,7 +515,7 @@ record_insn_name (code, name)
       new_size = (insn_name_ptr_size ? insn_name_ptr_size * 2 : 512);
       insn_name_ptr =
 	(char **) xrealloc (insn_name_ptr, sizeof(char *) * new_size);
-      memset (insn_name_ptr + insn_name_ptr_size, 0, 
+      memset (insn_name_ptr + insn_name_ptr_size, 0,
 	      sizeof(char *) * (new_size - insn_name_ptr_size));
       insn_name_ptr_size = new_size;
     }
@@ -537,6 +530,6 @@ record_insn_name (code, name)
       last_real_name = new = xstrdup (name);
       last_real_code = code;
     }
-  
+
   insn_name_ptr[code] = new;
-}  
+}

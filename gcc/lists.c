@@ -1,6 +1,6 @@
 /* List management for the GNU C-Compiler expander.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999 Free Software Foundation, Inc.
+   1999, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,7 +27,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "rtl.h"
 #include "ggc.h"
 
-static void free_list PARAMS ((rtx *, rtx *));
+static void free_list (rtx *, rtx *);
 
 /* Functions for maintaining cache-able lists of EXPR_LIST and INSN_LISTs.  */
 
@@ -43,8 +43,7 @@ static GTY ((deletable (""))) rtx unused_expr_list;
    nodes of one type only.  This is only called by free_EXPR_LIST_list
    and free_INSN_LIST_list.  */
 static void
-free_list (listp, unused_listp)
-     rtx *listp, *unused_listp;
+free_list (rtx *listp, rtx *unused_listp)
 {
   rtx link, prev_link;
 
@@ -66,8 +65,7 @@ free_list (listp, unused_listp)
    node available, we'll use it, otherwise a call to gen_rtx_INSN_LIST
    is made.  */
 rtx
-alloc_INSN_LIST (val, next)
-     rtx val, next;
+alloc_INSN_LIST (rtx val, rtx next)
 {
   rtx r;
 
@@ -89,9 +87,7 @@ alloc_INSN_LIST (val, next)
    node available, we'll use it, otherwise a call to gen_rtx_EXPR_LIST
    is made.  */
 rtx
-alloc_EXPR_LIST (kind, val, next)
-     int kind;
-     rtx val, next;
+alloc_EXPR_LIST (int kind, rtx val, rtx next)
 {
   rtx r;
 
@@ -111,8 +107,7 @@ alloc_EXPR_LIST (kind, val, next)
 
 /* This function will free up an entire list of EXPR_LIST nodes.  */
 void
-free_EXPR_LIST_list (listp)
-     rtx *listp;
+free_EXPR_LIST_list (rtx *listp)
 {
   if (*listp == 0)
     return;
@@ -121,8 +116,7 @@ free_EXPR_LIST_list (listp)
 
 /* This function will free up an entire list of INSN_LIST nodes.  */
 void
-free_INSN_LIST_list (listp)
-     rtx *listp;
+free_INSN_LIST_list (rtx *listp)
 {
   if (*listp == 0)
     return;
@@ -131,8 +125,7 @@ free_INSN_LIST_list (listp)
 
 /* This function will free up an individual EXPR_LIST node.  */
 void
-free_EXPR_LIST_node (ptr)
-     rtx ptr;
+free_EXPR_LIST_node (rtx ptr)
 {
   XEXP (ptr, 1) = unused_expr_list;
   unused_expr_list = ptr;
@@ -140,8 +133,7 @@ free_EXPR_LIST_node (ptr)
 
 /* This function will free up an individual INSN_LIST node.  */
 void
-free_INSN_LIST_node (ptr)
-     rtx ptr;
+free_INSN_LIST_node (rtx ptr)
 {
   XEXP (ptr, 1) = unused_insn_list;
   unused_insn_list = ptr;

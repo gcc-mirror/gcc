@@ -1,6 +1,6 @@
 /* gen-protos.c - massages a list of prototypes, for use by fixproto.
    Copyright (C) 1993, 1994, 1995, 1996, 1998,
-   1999 Free Software Foundation, Inc.
+   1999, 2003 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -26,8 +26,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 int verbose = 0;
 const char *progname;
 
-static void add_hash		PARAMS ((const char *));
-static int parse_fn_proto	PARAMS ((char *, char *, struct fn_decl *));
+static void add_hash (const char *);
+static int parse_fn_proto (char *, char *, struct fn_decl *);
 
 #define HASH_SIZE 2503 /* a prime */
 int hash_tab[HASH_SIZE];
@@ -35,8 +35,7 @@ int next_index;
 int collisions;
 
 static void
-add_hash (fname)
-     const char *fname;
+add_hash (const char *fname)
 {
   int i, i0;
 
@@ -67,9 +66,7 @@ add_hash (fname)
    The fields of FN point to the input string.  */
 
 static int
-parse_fn_proto (start, end, fn)
-     char *start, *end;
-     struct fn_decl *fn;
+parse_fn_proto (char *start, char *end, struct fn_decl *fn)
 {
   char *ptr;
   int param_nesting = 1;
@@ -131,18 +128,17 @@ parse_fn_proto (start, end, fn)
   return 1;
 }
 
-extern int main PARAMS ((int, char **));
-
 int
-main (argc, argv)
-     int argc ATTRIBUTE_UNUSED;
-     char **argv;
+main (int argc, char **argv)
 {
   FILE *inf = stdin;
   FILE *outf = stdout;
   int i;
   sstring linebuf;
   struct fn_decl fn_decl;
+
+  if (argc <= 1)
+    fatal ("no input file name");
 
   i = strlen (argv[0]);
   while (i > 0 && argv[0][i-1] != '/') --i;
@@ -155,7 +151,7 @@ main (argc, argv)
   /* A hash table entry of 0 means "unused" so reserve it.  */
   fprintf (outf, "  {\"\", \"\", \"\", 0},\n");
   next_index = 1;
-  
+
   for (;;)
     {
       int c = skip_spaces (inf, ' ');
@@ -192,6 +188,6 @@ main (argc, argv)
 
   fprintf (stderr, "gen-protos: %d entries %d collisions\n",
 	   next_index, collisions);
-  
+
   return 0;
 }

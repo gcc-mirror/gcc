@@ -99,8 +99,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define MAX_MAX_OPERANDS 40
 
-static int n_occurrences		PARAMS ((int, const char *));
-static const char *strip_whitespace	PARAMS ((const char *));
+static int n_occurrences		(int, const char *);
+static const char *strip_whitespace	(const char *);
 
 /* insns in the machine description are assigned sequential code numbers
    that are used by insn-recog.c (produced by genrecog) to communicate
@@ -173,28 +173,27 @@ struct data
 
 static struct data *idata, **idata_end = &idata;
 
-static void output_prologue PARAMS ((void));
-static void output_predicate_decls PARAMS ((void));
-static void output_operand_data PARAMS ((void));
-static void output_insn_data PARAMS ((void));
-static void output_get_insn_name PARAMS ((void));
-static void scan_operands PARAMS ((struct data *, rtx, int, int));
-static int compare_operands PARAMS ((struct operand_data *,
-				   struct operand_data *));
-static void place_operands PARAMS ((struct data *));
-static void process_template PARAMS ((struct data *, const char *));
-static void validate_insn_alternatives PARAMS ((struct data *));
-static void validate_insn_operands PARAMS ((struct data *));
-static void gen_insn PARAMS ((rtx, int));
-static void gen_peephole PARAMS ((rtx, int));
-static void gen_expand PARAMS ((rtx, int));
-static void gen_split PARAMS ((rtx, int));
-static void check_constraint_len PARAMS ((void));
-static int constraint_len PARAMS ((const char *, int));
+static void output_prologue (void);
+static void output_predicate_decls (void);
+static void output_operand_data (void);
+static void output_insn_data (void);
+static void output_get_insn_name (void);
+static void scan_operands (struct data *, rtx, int, int);
+static int compare_operands (struct operand_data *,
+			     struct operand_data *);
+static void place_operands (struct data *);
+static void process_template (struct data *, const char *);
+static void validate_insn_alternatives (struct data *);
+static void validate_insn_operands (struct data *);
+static void gen_insn (rtx, int);
+static void gen_peephole (rtx, int);
+static void gen_expand (rtx, int);
+static void gen_split (rtx, int);
+static void check_constraint_len (void);
+static int constraint_len (const char *, int);
 
 const char *
-get_insn_name (index)
-     int index;
+get_insn_name (int index)
 {
   static char buf[100];
 
@@ -216,7 +215,7 @@ get_insn_name (index)
 }
 
 static void
-output_prologue ()
+output_prologue (void)
 {
   printf ("/* Generated automatically by the program `genoutput'\n\
    from the machine description file `md'.  */\n\n");
@@ -251,7 +250,7 @@ output_prologue ()
 struct predicate { const char *name; struct predicate *next; };
 
 static void
-output_predicate_decls ()
+output_predicate_decls (void)
 {
   struct predicate *predicates = 0;
   struct operand_data *d;
@@ -266,7 +265,7 @@ output_predicate_decls ()
 
 	if (p == 0)
 	  {
-	    printf ("extern int %s PARAMS ((rtx, enum machine_mode));\n",
+	    printf ("extern int %s (rtx, enum machine_mode);\n",
 		    d->predicate);
 	    p = (struct predicate *) xmalloc (sizeof (struct predicate));
 	    p->name = d->predicate;
@@ -284,7 +283,7 @@ output_predicate_decls ()
 }
 
 static void
-output_operand_data ()
+output_operand_data (void)
 {
   struct operand_data *d;
 
@@ -311,7 +310,7 @@ output_operand_data ()
 }
 
 static void
-output_insn_data ()
+output_insn_data (void)
 {
   struct data *d;
   int name_offset = 0;
@@ -369,7 +368,7 @@ output_insn_data ()
 	  {
 	    const char *p = d->template;
 	    char prev = 0;
-	    
+
 	    printf ("    \"");
 	    while (*p)
 	      {
@@ -413,7 +412,7 @@ output_insn_data ()
 }
 
 static void
-output_get_insn_name ()
+output_get_insn_name (void)
 {
   printf ("const char *\n");
   printf ("get_insn_name (code)\n");
@@ -438,11 +437,8 @@ static int max_opno;
 static int num_dups;
 
 static void
-scan_operands (d, part, this_address_p, this_strict_low)
-     struct data *d;
-     rtx part;
-     int this_address_p;
-     int this_strict_low;
+scan_operands (struct data *d, rtx part, int this_address_p,
+	       int this_strict_low)
 {
   int i, j;
   const char *format_ptr;
@@ -554,7 +550,7 @@ scan_operands (d, part, this_address_p, this_strict_low)
     case STRICT_LOW_PART:
       scan_operands (d, XEXP (part, 0), 0, 1);
       return;
-      
+
     default:
       break;
     }
@@ -579,8 +575,7 @@ scan_operands (d, part, this_address_p, this_strict_low)
 /* Compare two operands for content equality.  */
 
 static int
-compare_operands (d0, d1)
-     struct operand_data *d0, *d1;
+compare_operands (struct operand_data *d0, struct operand_data *d1)
 {
   const char *p0, *p1;
 
@@ -618,8 +613,7 @@ compare_operands (d0, d1)
    find a subsequence that is the same, or allocate a new one at the end.  */
 
 static void
-place_operands (d)
-     struct data *d;
+place_operands (struct data *d)
 {
   struct operand_data *od, *od2;
   int i;
@@ -673,9 +667,7 @@ place_operands (d)
    templates, or C code to generate the assembler code template.  */
 
 static void
-process_template (d, template)
-    struct data *d;
-    const char *template;
+process_template (struct data *d, const char *template)
 {
   const char *cp;
   int i;
@@ -686,7 +678,7 @@ process_template (d, template)
       d->template = 0;
       d->output_format = INSN_OUTPUT_FORMAT_FUNCTION;
 
-      printf ("\nstatic const char *output_%d PARAMS ((rtx *, rtx));\n",
+      printf ("\nstatic const char *output_%d (rtx *, rtx);\n",
 	      d->code_number);
       puts ("\nstatic const char *");
       printf ("output_%d (operands, insn)\n", d->code_number);
@@ -744,8 +736,7 @@ process_template (d, template)
 /* Check insn D for consistency in number of constraint alternatives.  */
 
 static void
-validate_insn_alternatives (d)
-     struct data *d;
+validate_insn_alternatives (struct data *d)
 {
   int n = 0, start;
 
@@ -816,8 +807,7 @@ validate_insn_alternatives (d)
 /* Verify that there are no gaps in operand numbers for INSNs.  */
 
 static void
-validate_insn_operands (d)
-     struct data *d;
+validate_insn_operands (struct data *d)
 {
   int i;
 
@@ -834,9 +824,7 @@ validate_insn_operands (d)
    a hairy output action, output a function for now.  */
 
 static void
-gen_insn (insn, lineno)
-     rtx insn;
-     int lineno;
+gen_insn (rtx insn, int lineno)
 {
   struct data *d = (struct data *) xmalloc (sizeof (struct data));
   int i;
@@ -877,9 +865,7 @@ gen_insn (insn, lineno)
    If the insn has a hairy output action, output it now.  */
 
 static void
-gen_peephole (peep, lineno)
-     rtx peep;
-     int lineno;
+gen_peephole (rtx peep, int lineno)
 {
   struct data *d = (struct data *) xmalloc (sizeof (struct data));
   int i;
@@ -917,9 +903,7 @@ gen_peephole (peep, lineno)
    only for the purposes of `insn_gen_function'.  */
 
 static void
-gen_expand (insn, lineno)
-     rtx insn;
-     int lineno;
+gen_expand (rtx insn, int lineno)
 {
   struct data *d = (struct data *) xmalloc (sizeof (struct data));
   int i;
@@ -962,9 +946,7 @@ gen_expand (insn, lineno)
    only for reasons of consistency and to simplify genrecog.  */
 
 static void
-gen_split (split, lineno)
-     rtx split;
-     int lineno;
+gen_split (rtx split, int lineno)
 {
   struct data *d = (struct data *) xmalloc (sizeof (struct data));
   int i;
@@ -999,12 +981,10 @@ gen_split (split, lineno)
   place_operands (d);
 }
 
-extern int main PARAMS ((int, char **));
+extern int main (int, char **);
 
 int
-main (argc, argv)
-     int argc;
-     char **argv;
+main (int argc, char **argv)
 {
   rtx desc;
 
@@ -1037,7 +1017,7 @@ main (argc, argv)
       if (GET_CODE (desc) == DEFINE_EXPAND)
 	gen_expand (desc, line_no);
       if (GET_CODE (desc) == DEFINE_SPLIT
- 	  || GET_CODE (desc) == DEFINE_PEEPHOLE2)
+	  || GET_CODE (desc) == DEFINE_PEEPHOLE2)
 	gen_split (desc, line_no);
       next_index_number++;
     }
@@ -1057,9 +1037,7 @@ main (argc, argv)
    -1 if S is the null string.  */
 
 static int
-n_occurrences (c, s)
-     int c;
-     const char *s;
+n_occurrences (int c, const char *s)
 {
   int n = 0;
 
@@ -1076,8 +1054,7 @@ n_occurrences (c, s)
    Return a new string.  */
 
 static const char *
-strip_whitespace (s)
-     const char *s;
+strip_whitespace (const char *s)
 {
   char *p, *q;
   char ch;
@@ -1098,7 +1075,7 @@ strip_whitespace (s)
    tampered with.  This isn't bullet-proof, but it should catch
    most genuine mistakes.  */
 static void
-check_constraint_len ()
+check_constraint_len (void)
 {
   const char *p;
   int d;
@@ -1110,9 +1087,7 @@ check_constraint_len ()
 }
 
 static int
-constraint_len (p, genoutput_default_constraint_len)
-     const char *p;
-     int genoutput_default_constraint_len;
+constraint_len (const char *p, int genoutput_default_constraint_len)
 {
   /* Check that we still match defaults.h .  First we do a generation-time
      check that fails if the value is not the expected one...  */
