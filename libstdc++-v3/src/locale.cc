@@ -226,7 +226,8 @@ namespace std
   locale::operator==(const locale& __rhs) const throw()
   {
     string __name = this->name();
-    return (_M_impl == __rhs._M_impl || (__name != "*" && __name == __rhs.name()));
+    return (_M_impl == __rhs._M_impl 
+	    || (__name != "*" && __name == __rhs.name()));
   }
 
   const locale&

@@ -1,3 +1,15 @@
+2002-04-18  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/localefwd.h (locale::id::_M_id): Do this correctly,
+	as type safety is important, especially on solaris.
+	* include/bits/istream.tcc (istream::read): Clean.
+	(istream::readsome): Same.
+	* locale.cc: Wrap lines.
+
+	* testsuite/21_strings/inserters_extractors.cc: Tweaks.
+	* testsuite/27_io/instantiations.cc (test): Add bool variable...
+	* testsuite/21_strings/capacity.cc: Clean.
+		
 2002-04-17  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/doxygen/doxygroups.cc:  New group on binary searching.

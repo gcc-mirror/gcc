@@ -777,39 +777,28 @@ namespace std
       sentry __cerb(*this, true);
       if (__cerb) 
 	{
-	  if (__n > 0)
+	  try 
 	    {
-	      try 
+	      const int_type __eof = traits_type::eof();
+	      __streambuf_type* __sb = this->rdbuf();
+	      int_type __c = __sb->sgetc();	
+	      
+	      while (_M_gcount < __n && __c != __eof)
 		{
-		  const int_type __eof = traits_type::eof();
-		  __streambuf_type* __sb = this->rdbuf();
-		  int_type __c = __sb->sbumpc();	
-		  bool __testeof =  __c == __eof;
-		  
-		  while (_M_gcount < __n - 1 && !__testeof)
-		    {
-		      *__s++ = traits_type::to_char_type(__c);
-		      ++_M_gcount;
-		      __c = __sb->sbumpc();
-		      __testeof = __c == __eof;
-		    }
-		  if (__testeof)
-		    this->setstate(ios_base::eofbit | ios_base::failbit);
-		  else
-		    {
-		      // _M_gcount == __n - 1
-		      *__s++ = traits_type::to_char_type(__c);
-		      ++_M_gcount;
-		    }	    
+		  *__s++ = traits_type::to_char_type(__c);
+		  ++_M_gcount;
+		  __c = __sb->snextc();
 		}
-	      catch(exception& __fail)
-		{
-		  // 27.6.1.3 paragraph 1
-		  // Turn this on without causing an ios::failure to be thrown.
-		  this->setstate(ios_base::badbit);
-		  if ((this->exceptions() & ios_base::badbit) != 0)
-		    __throw_exception_again;
-		}
+	      if (__c == __eof)
+		this->setstate(ios_base::eofbit | ios_base::failbit);
+	    }	    
+	  catch(exception& __fail)
+	    {
+	      // 27.6.1.3 paragraph 1
+	      // Turn this on without causing an ios::failure to be thrown.
+	      this->setstate(ios_base::badbit);
+	      if ((this->exceptions() & ios_base::badbit) != 0)
+		__throw_exception_again;
 	    }
 	}
       else
@@ -822,32 +811,30 @@ namespace std
     basic_istream<_CharT, _Traits>::
     readsome(char_type* __s, streamsize __n)
     {
-      const int_type __eof = traits_type::eof();
       _M_gcount = 0;
       sentry __cerb(*this, true);
       if (__cerb) 
 	{
-	  if (__n > 0)
+	  try 
 	    {
-	      try 
+	      const int_type __eof = traits_type::eof(); 
+	      streamsize __num = this->rdbuf()->in_avail();
+	      if (__num != static_cast<streamsize>(__eof))
 		{
-		  streamsize __num = this->rdbuf()->in_avail();
-		  if (__num != static_cast<streamsize>(__eof))
-		    {
-		      __num = min(__num, __n);
-		      _M_gcount = this->rdbuf()->sgetn(__s, __num);
-		    }
-		  else
-		    this->setstate(ios_base::eofbit);		    
+		  __num = min(__num, __n);
+		  if (__num)
+		    _M_gcount = this->rdbuf()->sgetn(__s, __num);
 		}
-	      catch(exception& __fail)
-		{
-		  // 27.6.1.3 paragraph 1
-		  // Turn this on without causing an ios::failure to be thrown.
-		  this->setstate(ios_base::badbit);
-		  if ((this->exceptions() & ios_base::badbit) != 0)
-		    __throw_exception_again;
-		}
+	      else
+		this->setstate(ios_base::eofbit);		    
+	    }
+	  catch(exception& __fail)
+	    {
+	      // 27.6.1.3 paragraph 1
+	      // Turn this on without causing an ios::failure to be thrown.
+	      this->setstate(ios_base::badbit);
+	      if ((this->exceptions() & ios_base::badbit) != 0)
+		__throw_exception_again;
 	    }
 	}
       else
