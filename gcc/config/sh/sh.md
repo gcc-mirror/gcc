@@ -91,9 +91,11 @@
 ;; rte		return from exception
 ;; sfunc	special function call with known used registers
 ;; call		function call
+;; fp		floating point
+;; fdiv		floating point divide (or square root)
 
 (define_attr "type"
- "cbranch,jump,arith,other,load,store,move,smpy,dmpy,return,pload,pstore,pcload,rte,sfunc,call"
+ "cbranch,jump,arith,other,load,store,move,smpy,dmpy,return,pload,pstore,pcload,rte,sfunc,call,fp,fdiv"
   (const_string "other"))
 
 ; If a conditional branch destination is within -252..258 bytes away
@@ -137,12 +139,20 @@
 ;; (define_function_unit {name} {num-units} {n-users} {test}
 ;;                       {ready-delay} {issue-delay} [{conflict-list}])
 
-;; ??? These are probably not correct.
-(define_function_unit "memory" 1 0 (eq_attr "type" "load,pcload,pload") 2 2)
+;; Load and store instructions save a cycle if they are aligned on a
+;; four byte boundary.  Using a function unit for stores encourages
+;; gcc to separate load and store instructions by one instruction,
+;; which makes it more likely that the linker will be able to word
+;; align them when relaxing.
+(define_function_unit "memory" 1 0
+  (eq_attr "type" "load,pcload,pload,store,pstore") 2 2)
+
+;; ??? These are approximations.
 (define_function_unit "mpy"    1 0 (eq_attr "type" "smpy") 2 2)
 (define_function_unit "mpy"    1 0 (eq_attr "type" "dmpy") 3 3)
 
-;; ??? Must define SH3E function units.
+(define_function_unit "fp"     1 0 (eq_attr "type" "fp") 2 1)
+(define_function_unit "fp"     1 0 (eq_attr "type" "fdiv") 13 12)
 
 ; Definitions for filling branch delay slots.
 
@@ -1460,7 +1470,7 @@
 	mov.l	%1,%0
 	flds	%1,fpul\;sts	fpul,%0
 	lds	%1,fpul\;fsts	fpul,%0"
-  [(set_attr "type" "move,move,move,move,load,store,load,store,move,move")
+  [(set_attr "type" "move,move,fp,fp,load,store,load,store,move,fp")
    (set_attr "length" "*,*,*,*,*,*,*,*,4,4")])
 
 (define_expand "movsf"
@@ -2042,21 +2052,24 @@
 	(plus:SF (match_operand:SF 1 "arith_reg_operand" "%0")
 		 (match_operand:SF 2 "arith_reg_operand" "f")))]
   "TARGET_SH3E"
-  "fadd	%2,%0")
+  "fadd	%2,%0"
+  [(set_attr "type" "fp")])
 
 (define_insn "subsf3"
   [(set (match_operand:SF 0 "arith_reg_operand" "=f")
 	(minus:SF (match_operand:SF 1 "arith_reg_operand" "0")
 		  (match_operand:SF 2 "arith_reg_operand" "f")))]
   "TARGET_SH3E"
-  "fsub	%2,%0")
+  "fsub	%2,%0"
+  [(set_attr "type" "fp")])
 
 (define_insn "mulsf3"
   [(set (match_operand:SF 0 "arith_reg_operand" "=f")
 	(mult:SF (match_operand:SF 1 "arith_reg_operand" "%0")
 		 (match_operand:SF 2 "arith_reg_operand" "f")))]
   "TARGET_SH3E"
-  "fmul	%2,%0")
+  "fmul	%2,%0"
+  [(set_attr "type" "fp")])
 
 (define_insn "*macsf3"
   [(set (match_operand:SF 0 "arith_reg_operand" "=f")
@@ -2064,14 +2077,16 @@
 			  (match_operand:SF 2 "arith_reg_operand" "f"))
 		 (match_operand:SF 3 "arith_reg_operand" "0")))]
   "TARGET_SH3E"
-  "fmac	fr0,%2,%0")
+  "fmac	fr0,%2,%0"
+  [(set_attr "type" "fp")])
 
 (define_insn "divsf3"
   [(set (match_operand:SF 0 "arith_reg_operand" "=f")
 	(div:SF (match_operand:SF 1 "arith_reg_operand" "0")
 		(match_operand:SF 2 "arith_reg_operand" "f")))]
   "TARGET_SH3E"
-  "fdiv	%2,%0")
+  "fdiv	%2,%0"
+  [(set_attr "type" "fdiv")])
 
 ;; ??? This is the right solution, but it fails because the movs[if] patterns
 ;; silently clobber FPUL (r22) for int<->fp moves.  Thus we can not explicitly
@@ -2096,7 +2111,8 @@
 	(float:SF (match_operand:SI 1 "arith_reg_operand" "r")))]
   "TARGET_SH3E"
   "lds	%1,fpul\;float	fpul,%0"
-  [(set_attr "length" "4")])
+  [(set_attr "length" "4")
+   (set_attr "type" "fp")])
 
 ;; ??? This is the right solution, but it fails because the movs[if] patterns
 ;; silently clobber FPUL (r22) for int<->fp moves.  Thus we can not explicitly
@@ -2121,7 +2137,8 @@
 	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))]
   "TARGET_SH3E"
   "ftrc	%1,fpul\;sts	fpul,%0"
-  [(set_attr "length" "4")])
+  [(set_attr "length" "4")
+   (set_attr "type" "move")])
 
 ;; ??? This should be SFmode not SImode in the compare, but that would
 ;; require fixing the branch patterns too.
@@ -2129,7 +2146,8 @@
   [(set (reg:SI 18) (gt:SI (match_operand:SF 0 "arith_reg_operand" "f")
 			   (match_operand:SF 1 "arith_reg_operand" "f")))]
   "TARGET_SH3E"
-  "fcmp/gt	%1,%0")
+  "fcmp/gt	%1,%0"
+  [(set_attr "type" "fp")])
 
 ;; ??? This should be SFmode not SImode in the compare, but that would
 ;; require fixing the branch patterns too.
@@ -2137,7 +2155,8 @@
   [(set (reg:SI 18) (eq:SI (match_operand:SF 0 "arith_reg_operand" "f")
 			   (match_operand:SF 1 "arith_reg_operand" "f")))]
   "TARGET_SH3E"
-  "fcmp/eq	%1,%0")
+  "fcmp/eq	%1,%0"
+  [(set_attr "type" "fp")])
 
 (define_expand "cmpsf"
   [(set (reg:SI 18) (compare (match_operand:SF 0 "arith_operand" "")
@@ -2154,19 +2173,22 @@
   [(set (match_operand:SF 0 "arith_reg_operand" "=f")
 	(neg:SF (match_operand:SF 1 "arith_reg_operand" "0")))]
   "TARGET_SH3E"
-  "fneg	%0")
+  "fneg	%0"
+  [(set_attr "type" "fp")])
 
 (define_insn "sqrtsf2"
   [(set (match_operand:SF 0 "arith_reg_operand" "=f")
 	(sqrt:DF (match_operand:SF 1 "arith_reg_operand" "0")))]
   "TARGET_SH3E"
-  "fsqrt	%0")
+  "fsqrt	%0"
+  [(set_attr "type" "fdiv")])
 
 (define_insn "abssf2"
   [(set (match_operand:SF 0 "arith_reg_operand" "=f")
 	(abs:SF (match_operand:SF 1 "arith_reg_operand" "0")))]
   "TARGET_SH3E"
-  "fabs	%0")
+  "fabs	%0"
+  [(set_attr "type" "fp")])
 
 ;; -------------------------------------------------------------------------
 ;; Peepholes
