@@ -1,4 +1,9 @@
-Tue Jun 18 20:00:37 2002  J"orn Rennecke <joern.rennecke@superh.com>
+Tue Jun 18 20:53:32 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* t-sh (MULTILIB_EXCEPTIONS): Set to ml.
+	config/sh/t-linux (MULTILIB_EXCEPTIONS): Clear.
+	* config/sh/t-netbsd (MULTILIB_EXCEPTIONS): Likewise.
+	* config/sh/t-sh64 (MULTILIB_EXCEPTIONS): Likewise.
 
 	* sh-protos.h (sh_pr_interrupt): Declare.
 	* sh.c (sh_pr_interrupt): New function.
