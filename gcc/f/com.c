@@ -502,7 +502,7 @@ static void delete_block (tree block);
 static int duplicate_decls (tree newdecl, tree olddecl);
 static void finish_decl (tree decl, tree init, bool is_top_level);
 static void finish_function (int nested);
-static char *lang_printable_name (tree decl, int v);
+static const char *lang_printable_name (tree decl, int v);
 static tree lookup_name_current_level (tree name);
 static struct binding_level *make_binding_level (void);
 static void pop_f_function_context (void);
@@ -14417,7 +14417,7 @@ finish_function (int nested)
    per se, but if that comes up, it should be easy to check (being a
    nested function and all).  */
 
-static char *
+static const char *
 lang_printable_name (tree decl, int v)
 {
   /* Just to keep GCC quiet about the unused variable.

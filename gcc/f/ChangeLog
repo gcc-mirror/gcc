@@ -1,3 +1,7 @@
+Sun Aug 29 09:47:45 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (lang_printable_name): Constify a char*.
+
 Wed Aug 25 01:21:06 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* lang-specs.h: Pass cc1 spec to f771.
