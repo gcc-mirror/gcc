@@ -2336,12 +2336,13 @@ do {                                                                    \
   /* Decompose SImode constants into hi+lo_sum.  We do have to 		\
      rerecognize what we produce, so be careful.  */			\
   if (CONSTANT_P (X)							\
-      && (MODE != TFmode || TARGET_V9)					\
+      && (MODE != TFmode || TARGET_ARCH64)				\
       && GET_MODE (X) == SImode						\
       && GET_CODE (X) != LO_SUM && GET_CODE (X) != HIGH			\
       && ! (flag_pic							\
 	    && (symbolic_operand (X, Pmode)				\
-		|| pic_address_needs_scratch (X))))			\
+		|| pic_address_needs_scratch (X)))			\
+      && sparc_cmodel <= CM_MEDLOW)					\
     {									\
       X = gen_rtx_LO_SUM (GET_MODE (X),					\
 			  gen_rtx_HIGH (GET_MODE (X), X), X);		\
