@@ -1320,7 +1320,10 @@ statement_expression:
 
 if_then_statement:
 	IF_TK OP_TK expression CP_TK statement
-	{ $$ = build_if_else_statement ($2.location, $3, $5, NULL_TREE); }
+		{ 
+		  $$ = build_if_else_statement ($2.location, $3, 
+						$5, NULL_TREE);
+		}
 |	IF_TK error
 		{yyerror ("'(' expected"); RECOVER;}
 |	IF_TK OP_TK error
@@ -1331,12 +1334,12 @@ if_then_statement:
 
 if_then_else_statement:
 	IF_TK OP_TK expression CP_TK statement_nsi ELSE_TK statement
-	{ $$ = build_if_else_statement ($2.location, $3, $5, $7); }
+		{ $$ = build_if_else_statement ($2.location, $3, $5, $7); }
 ;
 
 if_then_else_statement_nsi:
 	IF_TK OP_TK expression CP_TK statement_nsi ELSE_TK statement_nsi
-	{ $$ = build_if_else_statement ($2.location, $3, $5, $7); }
+		{ $$ = build_if_else_statement ($2.location, $3, $5, $7); }
 ;
 
 switch_statement:
@@ -1458,7 +1461,7 @@ do_statement:
 
 for_statement:
 	for_begin SC_TK expression SC_TK for_update CP_TK statement
-		{ $$ = complete_for_loop (EXPR_WFL_LINECOL ($3), $3, $5, $7);}
+		{ $$ = complete_for_loop (EXPR_WFL_LINECOL ($3), $3, $5, $7); }
 |	for_begin SC_TK SC_TK for_update CP_TK statement
 		{ 
 		  $$ = complete_for_loop (0, NULL_TREE, $4, $6);
@@ -1621,10 +1624,10 @@ try_statement:
 |	TRY_TK block finally
 		{ $$ = build_try_finally_statement ($1.location, $2, $3); }
 |	TRY_TK block catches finally
-		{ $$ = build_try_finally_statement ($1.location,
-						    build_try_statement ($1.location,
-									 $2, $3),
-						    $4); }
+		{ $$ = build_try_finally_statement 
+		    ($1.location, build_try_statement ($1.location,
+						       $2, $3), $4);
+		}
 |	TRY_TK error
 		{yyerror ("'{' expected"); DRECOVER (try_statement);}
 ;
@@ -2937,7 +2940,7 @@ create_interface (flags, id, super)
   decl = maybe_create_class_interface_decl (decl, q_name, id);
 
   /* Set super info and mark the class a complete */
-  set_super_info (ACC_ABSTRACT | ACC_INTERFACE | flags, TREE_TYPE (decl), 
+  set_super_info (ACC_INTERFACE | flags, TREE_TYPE (decl), 
 		  object_type_node, ctxp->interface_number);
   ctxp->interface_number = 0;
   CLASS_COMPLETE_P (decl) = 1;
@@ -3297,7 +3300,8 @@ method_header (flags, type, mdecl, throws)
       ABSTRACT_CHECK (flags, ACC_FINAL, id, "Final");
       ABSTRACT_CHECK (flags, ACC_NATIVE, id, "Native");
       ABSTRACT_CHECK (flags, ACC_SYNCHRONIZED,id, "Synchronized");
-      if (!CLASS_ABSTRACT (TYPE_NAME (this_class)))
+      if (!CLASS_ABSTRACT (TYPE_NAME (this_class))
+	  && !CLASS_INTERFACE (TYPE_NAME (this_class)))
 	parse_error_context 
 	  (id, "Class `%s' must be declared abstract to define abstract "
 	   "method `%s'", 
@@ -5248,7 +5252,7 @@ declare_local_variables (modifier, type, vlist)
   tree type_wfl = NULL_TREE;
   int must_chain = 0;
 
-  /* Push a new block if statement were seen between the last time we
+  /* Push a new block if statements were seen between the last time we
      pushed a block and now. Keep a cound of block to close */
   if (BLOCK_EXPR_BODY (DECL_FUNCTION_BODY (current_function_decl)))
     {
@@ -6394,7 +6398,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	      parse_error_context 
 		(qual_wfl, "Can't access %s field `%s.%s' from `%s'",
 		 java_accstring_lookup (get_access_flags_from_decl (decl)),
-		 IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))),
+		 GET_TYPE_NAME (type),
 		 IDENTIFIER_POINTER (DECL_NAME (decl)),
 		 IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (current_class))));
 	      return 1;
@@ -6455,9 +6459,9 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 	      if (field_decl == NULL_TREE)
 		{
 		  parse_error_context 
-		    (qual_wfl, "No variable `%s' defined in class `%s'",
+		    (qual_wfl, "No variable `%s' defined in type `%s'",
 		     IDENTIFIER_POINTER (EXPR_WFL_NODE (qual_wfl)), 
-		     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
+		     GET_TYPE_NAME (type));
 		  return 1;
 		}
 	      if (field_decl == error_mark_node)
@@ -6486,7 +6490,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 		     "Can't access %s field `%s.%s' from `%s'",
 		     java_accstring_lookup 
 		       (get_access_flags_from_decl (field_decl)),
-		     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))),
+		     GET_TYPE_NAME (type),
 		     IDENTIFIER_POINTER (DECL_NAME (field_decl)),
 		     IDENTIFIER_POINTER 
 		       (DECL_NAME (TYPE_NAME (current_class))));
@@ -7517,6 +7521,22 @@ java_complete_tree (node)
   return node;
 }
 
+static tree
+java_stabilize_reference (node)
+     tree node;
+{
+  if (TREE_CODE (node) == COMPOUND_EXPR)
+    {
+      tree op0 = TREE_OPERAND (node, 0);
+      tree op1 = TREE_OPERAND (node, 1);
+      TREE_OPERAND (node, 0) = build1 (SAVE_EXPR, TREE_TYPE (op0), op0);
+      TREE_OPERAND (node, 1) = java_stabilize_reference (op1);
+      return node;
+    }
+  else
+    return stabilize_reference (node);
+}
+
 /* Patch tree nodes in a function body. When a BLOCK is found, push
    local variable decls if present.
    Same as java_complete_tree, but does not resolve static finals to values. */
@@ -7644,13 +7664,15 @@ java_complete_lhs (node)
     case CLEANUP_POINT_EXPR:
       COMPLETE_CHECK_OP_0 (node);
       TREE_TYPE (node) = void_type_node;
-      CAN_COMPLETE_NORMALLY (node) = CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 0));
+      CAN_COMPLETE_NORMALLY (node) = 
+	CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 0));
       return node;
 
     case WITH_CLEANUP_EXPR:
       COMPLETE_CHECK_OP_0 (node);
       COMPLETE_CHECK_OP_2 (node);
-      CAN_COMPLETE_NORMALLY (node) = CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 0));
+      CAN_COMPLETE_NORMALLY (node) = 
+	CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 0));
       TREE_TYPE (node) = void_type_node;
       return node;
 
@@ -7913,26 +7935,33 @@ java_complete_lhs (node)
 
       if (COMPOUND_ASSIGN_P (wfl_op2))
 	{
-	  tree lvalue;
-	  tree other = 
-	    java_complete_tree (TREE_OPERAND (wfl_op2, 0));
+	  tree lvalue = java_stabilize_reference (TREE_OPERAND (node, 0)); 
 
 	  /* Hand stablize the lhs on both places */
-	  lvalue = stabilize_reference (other); 
 	  TREE_OPERAND (node, 0) = lvalue;
 	  TREE_OPERAND (TREE_OPERAND (node, 1), 0) = lvalue;
+
+	  /* Now complete the RHS. We write it back later on. */
+	  nn = java_complete_tree (TREE_OPERAND (node, 1));
+
+	  /* The last part of the rewrite for E1 op= E2 is to have 
+	     E1 = (T)(E1 op E2), with T being the type of E1. */
+	  nn = build_cast (EXPR_WFL_LINECOL (wfl_op2), TREE_TYPE (lvalue), nn);
 	}
 
       /* If we're about to patch a NEW_ARRAY_INIT, we call a special
 	 function to complete this RHS */
-      if (TREE_CODE (wfl_op2) == NEW_ARRAY_INIT)
+      else if (TREE_CODE (wfl_op2) == NEW_ARRAY_INIT)
 	nn = patch_new_array_init (TREE_TYPE (TREE_OPERAND (node, 0)),
 				   TREE_OPERAND (node, 1));
+      /* Otherwise we simply complete the RHS */
       else
 	nn = java_complete_tree (TREE_OPERAND (node, 1));
 
       if (nn == error_mark_node)
 	return error_mark_node;
+
+      /* Write back the RHS as we evaluated it. */
       TREE_OPERAND (node, 1) = nn;
 
       /* In case we're handling = with a String as a RHS, we need to
@@ -7981,17 +8010,23 @@ java_complete_lhs (node)
       CAN_COMPLETE_NORMALLY (node) = 1;
       /* Don't complete string nodes if dealing with the PLUS operand. */
       if (TREE_CODE (node) != PLUS_EXPR || !JSTRING_P (wfl_op1))
-	{
-	  TREE_OPERAND (node, 0) = java_complete_tree (wfl_op1);
-	  if (TREE_OPERAND (node, 0) == error_mark_node)
-	    return error_mark_node;
-	}
+        {
+          nn = java_complete_tree (wfl_op1);
+          if (nn == error_mark_node)
+            return error_mark_node;
+          if ((cn = patch_string (nn)))
+            nn = cn;
+          TREE_OPERAND (node, 0) = nn;
+        }
       if (TREE_CODE (node) != PLUS_EXPR || !JSTRING_P (wfl_op2))
-	{
-	  TREE_OPERAND (node, 1) = java_complete_tree (wfl_op2);
-	  if (TREE_OPERAND (node, 1) == error_mark_node)
-	    return error_mark_node;
-	}
+        {
+          nn = java_complete_tree (wfl_op2);
+          if (nn == error_mark_node)
+            return error_mark_node;
+          if ((cn = patch_string (nn)))
+            nn = cn;
+          TREE_OPERAND (node, 1) = nn;
+        }
       return force_evaluation_order (patch_binop (node, wfl_op1, wfl_op2));
 
     case INSTANCEOF_EXPR:
