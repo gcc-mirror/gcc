@@ -860,6 +860,7 @@ alternative to the standard JNI (Java Native Interface).
 * Mixing with C++::             How CNI can interoperate with C++.
 * Exception Handling::          How exceptions are handled.
 * Synchronization::             Synchronizing between Java and C++.
+* Invocation::			Starting the Java runtime from C++.
 * Reflection::                  Using reflection from C++.
 @end menu
 
@@ -1544,7 +1545,7 @@ in your @acronym{CNI} classes, as long as you use the appropriate cast.
 
 class ::MyClass : public java::lang::Object
 @{
-   GcjRaw string;
+   gnu.gcj.RawData string;
 
    MyClass ();
    gnu.gcj.RawData getText ();
@@ -1683,6 +1684,67 @@ of a synchronized native method to handle the synchronization
 In otherwords, you need to manually add @code{JvSynchronize}
 in a @code{native synchornized} method.
 
+@node Invocation
+@section Invocation
+
+CNI permits C++ applications to make calls into Java classes, in addition to
+allowing Java code to call into C++. Several functions, known as the 
+@dfn{invocation API}, are provided to support this.
+
+@deftypefun jint JvCreateJavaVM (void* @var{vm_args})
+Initializes the Java runtime. This function performs essential initialization
+of the threads interface, garbage collector, exception handling and other key
+aspects of the runtime. It must be called once by an application with
+a non-Java @code{main()} function, before any other Java or CNI calls are made.
+It is safe, but not recommended, to call @code{JvCreateJavaVM()} more than
+once provided it is only called from a single thread.
+The @var{vmargs} parameter can be used to specify initialization parameters 
+for the Java runtime. It may be @code{NULL}.
+This function returns @code{0} upon success, or @code{-1} if the runtime is
+already initialized.
+
+@emph{Note:} In GCJ 3.1, the @code{vm_args} parameter is ignored. It may be 
+used in a future release.
+@end deftypefun
+
+@deftypefun java::lang::Thread* JvAttachCurrentThread (jstring @var{name}, java::lang::ThreadGroup* @var{group})
+Registers an existing thread with the Java runtime.  This must be called once
+by a multi-threaded C++ application for each thread, before that thread makes
+any other Java or CNI calls.
+@var{name} specifies a name for the thread. It may be @code{NULL}, in which 
+case a name will be generated.
+@var{group} is the ThreadGroup in which this thread will be a member. If it
+is @code{NULL}, the thread will be a member of the main thread group.
+The return value is the Java @code{Thread} object that represents the thread.
+@end deftypefun
+
+@deftypefun jint JvDetachCurrentThread ()
+Unregisters a thread from the Java runtime. This should be called by threads
+that were attached using @code{JvAttachCurrentThread()}, after they have 
+finished making calls to Java code. This ensures that any resources associated
+with the thread become eligible for garbage collection.
+This function returns @code{0} upon success.
+@end deftypefun
+
+The following example demonstrates the use of @code{JvCreateJavaVM()} from
+a simple C++ application. It can be compiled with 
+@command{c++ test.cc -lgcj}.
+
+@example
+// test.cc
+#include <gcj/cni.h>
+#include <java/lang/System.h>
+#include <java/io/PrintStream.h>
+
+int main(int argc, char *argv)
+@{
+  using namespace java::lang;
+  
+  JvCreateJavaVM(NULL);
+  String *hello = JvNewStringLatin1("Hello from C++");
+  System::out->println(hello);
+@}
+@end example
 
 @node Reflection
 @section Reflection
