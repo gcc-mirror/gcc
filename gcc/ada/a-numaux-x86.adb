@@ -500,7 +500,7 @@ package body Ada.Numerics.Aux is
                   Inputs   => Double'Asm_Input  ("0", Reduced_X));
          else
             Asm (Template  => "fsincos" & NL
-                            & "fdivp   %%st(1)" & NL
+                            & "fdivp   %%st, %%st(1)" & NL
                             & "fchs",
                   Outputs  => Double'Asm_Output ("=t", Result),
                   Inputs   => Double'Asm_Input  ("0", Reduced_X));

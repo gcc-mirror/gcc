@@ -1,3 +1,7 @@
+2004-11-08  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* a-numaux-x86.adb (Tan): Fix fdivp syntax.
+
 2004-11-07  Andreas Schwab  <schwab@suse.de>
 
 	* Makefile.in (install-gnatlib): Remove spurious hyphen.
