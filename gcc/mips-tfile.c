@@ -2045,7 +2045,10 @@ add_local_symbol (str_start, str_end_p1, type, storage, value, indx)
 	      if (last_func_eptr)
 		{
 		  last_func_eptr->ifd = cur_file_ptr->file_index;
-		  last_func_eptr->asym.index = type;
+
+		  /* The index for an external st_Proc symbol is the index
+		     of the st_Proc symbol in the local symbol table.  */
+		  last_func_eptr->asym.index = psym->index;
 		}
 	    }
 
