@@ -6550,7 +6550,7 @@ add_location_or_const_value_attribute (die, decl)
   rtl = eliminate_regs (rtl, 0, NULL_RTX, 0);
 #ifdef LEAF_REG_REMAP
   if (leaf_function)
-    leaf_renumber_regs_insn (DECL_RTL (decl));
+    leaf_renumber_regs_insn (rtl);
 #endif
 
   switch (GET_CODE (rtl))
