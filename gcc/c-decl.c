@@ -28,6 +28,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "config.h"
 #include "tree.h"
 #include "flags.h"
+#include "output.h"
 #include "c-tree.h"
 #include "c-lex.h"
 #include <stdio.h>

@@ -55,18 +55,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "input.h"
 #include "tree.h"
-/* #include "c-tree.h" */
 #include "rtl.h"
 #include "flags.h"
 #include "insn-attr.h"
 #include "defaults.h"
+#include "output.h"
+#include "bytecode.h"
+#include "bc-emit.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
 #endif
-
-#include "bytecode.h"
-#include "bc-emit.h"
 
 #ifdef VMS
 /* The extra parameters substantially improve the I/O performance.  */
