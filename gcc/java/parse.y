@@ -5522,13 +5522,14 @@ tree
 do_resolve_class (enclosing, class_type, decl, cl)
      tree enclosing, class_type, decl, cl;
 {
-  tree new_class_decl;
+  tree new_class_decl, super, start;
 
   /* Do not try to replace TYPE_NAME (class_type) by a variable, since
      it is changed by find_in_imports{_on_demand} and (but it doesn't
      really matter) qualify_and_find */
 
   /* 0- Search in the current class as an inner class */
+  start = enclosing;
 
   /* Maybe some code here should be added to load the class or
      something, at least if the class isn't an inner class and ended
@@ -5551,14 +5552,28 @@ do_resolve_class (enclosing, class_type, decl, cl)
 	}
 
       /* Now go to the upper classes, bail out if necessary. */
-      enclosing = CLASSTYPE_SUPER (TREE_TYPE (enclosing));
-      if (!enclosing || enclosing == object_type_node)
+      super = CLASSTYPE_SUPER (TREE_TYPE (enclosing));
+      if (!super || super == object_type_node)
         break;
 
-      if (TREE_CODE (enclosing) == POINTER_TYPE)
-	enclosing = do_resolve_class (NULL, enclosing, NULL, NULL);
+      if (TREE_CODE (super) == POINTER_TYPE)
+        super = do_resolve_class (NULL, super, NULL, NULL);
       else
-        enclosing = TYPE_NAME (enclosing);
+	super = TYPE_NAME (super);
+ 
+      /* We may not have checked for circular inheritance yet, so do so
+         here to prevent an infinite loop. */
+      if (super == start)
+        {
+          if (!cl)
+            cl = lookup_cl (decl);
+	  
+          parse_error_context
+            (cl, "Cyclic inheritance involving %s",
+	     IDENTIFIER_POINTER (DECL_NAME (enclosing)));
+          break;
+        }
+      enclosing = super;
     }
 
   /* 1- Check for the type in single imports. This will change
