@@ -191,6 +191,13 @@ fi
 
 AC_SUBST(CHECK)
 
+case "${host}" in
+  *-*-cygwin*) 
+    AC_DEFINE(HAVE_SYS_ERRLIST)
+    AC_DEFINE(HAVE_SYS_NERR)
+    ;;
+esac
+
 if test -z "${setobjs}"; then
   case "${host}" in
 

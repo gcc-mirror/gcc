@@ -1,3 +1,9 @@
+2001-08-21  Christopher Faylor <cgf@cygnus.com>
+
+	* configure.in: Set HAVE_SYS_ERRLIST and HAVE_SYS_NERR whenever hosting
+	on cygwin.
+	* configure: Regenerate.
+
 2001-08-19  Release Manager
 
 	* GCC 3.0.1 Released.
