@@ -5166,7 +5166,29 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
 
   if (locval && classval)
     {
-      if (current_scope () == current_function_decl
+      /* We have both a local binding and a class-level binding.  This
+	 can happen in two ways:
+
+	   o We are in a member function of a class.
+           o We are in a local class within a function.
+
+	 We need to determine which one of these situations is
+	 occuring, and give the innermost binding.  One tricky bit is
+	 that with member templates we can be in the first case
+	 without CURRENT_FUNCTION_DECL being set.  Consider
+	  
+	   struct A { template <class A> void f(A); };
+
+	 Here, when we look at the `A' in the parameter declaration
+	 for `f' we have a local binding (the template parameter) and
+	 a class-level binding (the TYPE_DECL for the class).
+	 Fortunately, if LOCVAL is a template parameter it is safe to
+	 take it; nothing within the scope of the template parameter
+	 is allowed to have the same name.  */
+
+      if (decl_template_parm_p (locval))
+	val = locval;
+      else if (current_scope () == current_function_decl
 	  && ! hack_decl_function_context (current_function_decl))
 	/* Not in a nested function.  */
 	val = locval;
