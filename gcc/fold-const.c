@@ -1759,11 +1759,16 @@ operand_equal_p (arg0, arg1, only_const)
     switch (TREE_CODE (arg0))
       {
       case INTEGER_CST:
-	return (TREE_INT_CST_LOW (arg0) == TREE_INT_CST_LOW (arg1)
+	return (! TREE_CONSTANT_OVERFLOW (arg0)
+		&& ! TREE_CONSTANT_OVERFLOW (arg1)
+		&& TREE_INT_CST_LOW (arg0) == TREE_INT_CST_LOW (arg1)
 		&& TREE_INT_CST_HIGH (arg0) == TREE_INT_CST_HIGH (arg1));
 
       case REAL_CST:
-	return REAL_VALUES_EQUAL (TREE_REAL_CST (arg0), TREE_REAL_CST (arg1));
+	return (! TREE_CONSTANT_OVERFLOW (arg0)
+		&& ! TREE_CONSTANT_OVERFLOW (arg1)
+		&& REAL_VALUES_EQUAL (TREE_REAL_CST (arg0),
+				      TREE_REAL_CST (arg1)));
 
       case COMPLEX_CST:
 	return (operand_equal_p (TREE_REALPART (arg0), TREE_REALPART (arg1),
