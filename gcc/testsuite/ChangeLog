@@ -1,3 +1,7 @@
+Tue Nov 25 16:18:51 1997  Kate Hedstrom  (kate@ahab.rutgers.edu)
+
+	* lib/f-torture.exp: Improve error and loop detection.
+
 Mon Oct  6 12:03:10 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/g77.exp, lib/f-torture.exp: New files.
