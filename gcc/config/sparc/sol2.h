@@ -139,6 +139,7 @@ Boston, MA 02111-1307, USA.  */
 #undef SWITCH_TAKES_ARG
 #define SWITCH_TAKES_ARG(CHAR) \
   (DEFAULT_SWITCH_TAKES_ARG(CHAR) \
+   || (CHAR) == 'R' \
    || (CHAR) == 'h' \
    || (CHAR) == 'x' \
    || (CHAR) == 'z')
