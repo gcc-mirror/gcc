@@ -1,4 +1,15 @@
 2003-12-26  Guilhem Lavaux  <guilhem@kaffe.org>
+	    Mark Wielaard  <mark@klomp.org>
+
+	* java/io/BufferedReader.java (BufferedReader):
+	Throw IllegalArgumentException when size <= 0.
+	(mark): Document and better exception message for negative
+	readLimit IllegalArgumentException.
+	(read(char[],int,int)): Throw IndexOutOfBoundsException
+	if offset and count are not valid regarding buf.
+	(skip): Throw IllegalArgumentException when count is negative.
+
+2003-12-26  Guilhem Lavaux  <guilhem@kaffe.org>
 
 	* java/io/FileInputStream.java
 	(FileInputStream(String)): Call FileInputStream(File).

@@ -106,10 +106,14 @@ public class BufferedReader extends Reader
    *
    * @param in The subordinate stream to read from
    * @param size The buffer size to use
+   *
+   * @exception IllegalArgumentException if size &lt;&eq; 0
    */
   public BufferedReader(Reader in, int size)
   {
     super(in.lock);
+    if (size <= 0)
+      throw new IllegalArgumentException("Illegal buffer size: " + size);
     this.in = in;
     buffer = new char[size];
   }
@@ -161,11 +165,12 @@ public class BufferedReader extends Reader
    *        becomes invalid
    *
    * @exception IOException If an error occurs
+   * @exception IllegalArgumentException if readLimit is negative.
    */
   public void mark(int readLimit) throws IOException
   {
     if (readLimit < 0)
-      throw new IllegalArgumentException();
+      throw new IllegalArgumentException("Read-ahead limit is negative");
 
     synchronized (lock)
       {
@@ -280,9 +285,14 @@ public class BufferedReader extends Reader
    * @return The actual number of chars read, or -1 if end of stream.
    *
    * @exception IOException If an error occurs.
+   * @exception IndexOutOfBoundsException If offset and count are not
+   * valid regarding buf.
    */
   public int read(char[] buf, int offset, int count) throws IOException
   {
+    if (offset < 0 || offset + count > buf.length || count < 0)
+      throw new IndexOutOfBoundsException();
+
     synchronized (lock)
       {
 	checkStatus();
@@ -487,14 +497,17 @@ public class BufferedReader extends Reader
    *
    * @return The actual number of chars skipped.
    *
-   * @exception IOException If an error occurs
+   * @exception IOException If an error occurs.
+   * @exception IllegalArgumentException If count is negative.
    */
   public long skip(long count) throws IOException
   {
     synchronized (lock)
       {
 	checkStatus();
-	if (count <= 0)
+	if (count < 0)
+	  throw new IllegalArgumentException("skip value is negative");
+	if (count == 0)
 	  return 0;
 	// Yet again, we need to handle the special case of a readLine
 	// that has a '\r' at the end of the buffer.  In this case, we need
