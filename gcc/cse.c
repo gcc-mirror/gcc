@@ -1998,7 +1998,7 @@ exp_equiv_p (x, y, validate, equal_values)
       return x == y;
 
     case CONST_INT:
-      return XINT (x, 0) == XINT (y, 0);
+      return INTVAL (x) == INTVAL (y);
 
     case LABEL_REF:
     case SYMBOL_REF:

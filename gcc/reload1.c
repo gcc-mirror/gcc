@@ -5673,8 +5673,8 @@ gen_input_reload (reloadreg, in, before_insn)
       if (GET_MODE (loc) != GET_MODE (in))
 	in = gen_rtx (REG, GET_MODE (loc), REGNO (in));
 
-      emit_insn_before (gen_move_insn (reloadreg, loc), before_insn);
       emit_insn_before (gen_move_insn (loc, in), before_insn);
+      emit_insn_before (gen_move_insn (reloadreg, loc), before_insn);
     }
 #endif
 
