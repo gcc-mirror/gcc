@@ -77,25 +77,25 @@ init_attributes (void)
 	  /* The name must not begin and end with __.  */
 	  const char *name = attribute_tables[i][j].name;
 	  int len = strlen (name);
-	  if (name[0] == '_' && name[1] == '_'
-	      && name[len - 1] == '_' && name[len - 2] == '_')
-	    abort ();
+	  
+	  gcc_assert (!(name[0] == '_' && name[1] == '_'
+			&& name[len - 1] == '_' && name[len - 2] == '_'));
+	  
 	  /* The minimum and maximum lengths must be consistent.  */
-	  if (attribute_tables[i][j].min_length < 0)
-	    abort ();
-	  if (attribute_tables[i][j].max_length != -1
-	      && (attribute_tables[i][j].max_length
-		  < attribute_tables[i][j].min_length))
-	    abort ();
+	  gcc_assert (attribute_tables[i][j].min_length >= 0);
+	  
+	  gcc_assert (attribute_tables[i][j].max_length == -1
+		      || (attribute_tables[i][j].max_length
+			  >= attribute_tables[i][j].min_length));
+	  
 	  /* An attribute cannot require both a DECL and a TYPE.  */
-	  if (attribute_tables[i][j].decl_required
-	      && attribute_tables[i][j].type_required)
-	    abort ();
+	  gcc_assert (!attribute_tables[i][j].decl_required
+		      || !attribute_tables[i][j].type_required);
+	  
 	  /* If an attribute requires a function type, in particular
 	     it requires a type.  */
-	  if (attribute_tables[i][j].function_type_required
-	      && !attribute_tables[i][j].type_required)
-	    abort ();
+	  gcc_assert (!attribute_tables[i][j].function_type_required
+		      || attribute_tables[i][j].type_required);
 	}
     }
 
@@ -105,9 +105,8 @@ init_attributes (void)
       int j, k;
       for (j = 0; attribute_tables[i][j].name != NULL; j++)
 	for (k = j + 1; attribute_tables[i][k].name != NULL; k++)
-	  if (!strcmp (attribute_tables[i][j].name,
-		       attribute_tables[i][k].name))
-	    abort ();
+	  gcc_assert (strcmp (attribute_tables[i][j].name,
+			      attribute_tables[i][k].name));
     }
   /* Check that no name occurs in more than one table.  */
   for (i = 0; i < ARRAY_SIZE (attribute_tables); i++)
@@ -117,9 +116,8 @@ init_attributes (void)
       for (j = i + 1; j < ARRAY_SIZE (attribute_tables); j++)
 	for (k = 0; attribute_tables[i][k].name != NULL; k++)
 	  for (l = 0; attribute_tables[j][l].name != NULL; l++)
-	    if (!strcmp (attribute_tables[i][k].name,
-			 attribute_tables[j][l].name))
-	      abort ();
+	    gcc_assert (strcmp (attribute_tables[i][k].name,
+				attribute_tables[j][l].name));
     }
 #endif
 
@@ -327,10 +325,11 @@ decl_attributes (tree *node, tree attributes, int flags)
 	  fn_ptr_tmp = build_pointer_type (fn_ptr_tmp);
 	  if (DECL_P (*node))
 	    TREE_TYPE (*node) = fn_ptr_tmp;
-	  else if (TREE_CODE (*node) == POINTER_TYPE)
-	    *node = fn_ptr_tmp;
 	  else
-	    abort ();
+	    {
+	      gcc_assert (TREE_CODE (*node) == POINTER_TYPE);
+	      *node = fn_ptr_tmp;
+	    }
 	}
     }
 

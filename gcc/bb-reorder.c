@@ -137,8 +137,7 @@ static bbro_basic_block_data *bbd;
 #define GET_ARRAY_SIZE(X) ((((X) / 4) + 1) * 5)
 
 /* Free the memory and set the pointer to NULL.  */
-#define FREE(P) \
-  do { if (P) { free (P); P = 0; } else { abort (); } } while (0)
+#define FREE(P) (gcc_assert (P), free (P), P = 0)
 
 /* Structure for holding information about a trace.  */
 struct trace
@@ -501,10 +500,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 	  /* Select the successor that will be placed after BB.  */
 	  for (e = bb->succ; e; e = e->succ_next)
 	    {
-#ifdef ENABLE_CHECKING
-	      if (e->flags & EDGE_FAKE)
-		abort ();
-#endif
+	      gcc_assert (!(e->flags & EDGE_FAKE));
 
 	      if (e->dest == EXIT_BLOCK_PTR)
 		continue;
@@ -760,10 +756,9 @@ copy_bb (basic_block old_bb, edge e, basic_block bb, int trace)
   new_bb = duplicate_block (old_bb, e);
   BB_COPY_PARTITION (new_bb, old_bb);
 
-  if (e->dest != new_bb)
-    abort ();
-  if (e->dest->rbi->visited)
-    abort ();
+  gcc_assert (e->dest == new_bb);
+  gcc_assert (!e->dest->rbi->visited);
+
   if (dump_file)
     fprintf (dump_file,
 	     "Duplicated bb %d (created bb %d)\n",
@@ -1345,9 +1340,7 @@ mark_bb_for_unlikely_executed_section (basic_block bb)
     
   /* If basic block does not contain a NOTE_INSN_BASIC_BLOCK, there is
      a major problem.  */
-
-  if (!insert_insn)
-    abort ();
+  gcc_assert (insert_insn);
 
   /* Insert note and assign basic block number to it.  */
   
@@ -1391,28 +1384,19 @@ add_labels_and_missing_jumps (edge *crossing_edges, int n_crossing_edges)
  		    /* bb just falls through.  */
  		    {
  		      /* make sure there's only one successor */
- 		      if (src->succ && (src->succ->succ_next == NULL))
- 			{
- 			  /* Find label in dest block.  */
-			  label = block_label (dest);
-
-			  new_jump = emit_jump_insn_after (gen_jump (label), 
-							   BB_END (src));
-			  barrier = emit_barrier_after (new_jump);
-			  JUMP_LABEL (new_jump) = label;
-			  LABEL_NUSES (label) += 1;
-			  src->rbi->footer = unlink_insn_chain (barrier,
-								barrier);
-			  /* Mark edge as non-fallthru.  */
-			  crossing_edges[i]->flags &= ~EDGE_FALLTHRU;
-			}
- 		      else
- 			{ 
- 			  /* Basic block has two successors, but
- 			     doesn't end in a jump; something is wrong
- 			     here!  */
- 			  abort();
- 			}
+		      gcc_assert (src->succ && !src->succ->succ_next);
+		      
+		      /* Find label in dest block.  */
+		      label = block_label (dest);
+		      
+		      new_jump = emit_jump_insn_after (gen_jump (label), 
+						       BB_END (src));
+		      barrier = emit_barrier_after (new_jump);
+		      JUMP_LABEL (new_jump) = label;
+		      LABEL_NUSES (label) += 1;
+		      src->rbi->footer = unlink_insn_chain (barrier, barrier);
+		      /* Mark edge as non-fallthru.  */
+		      crossing_edges[i]->flags &= ~EDGE_FALLTHRU;
  		    } /* end: 'if (GET_CODE ... '  */
  		} /* end: 'if (src && src->index...'  */
   	    } /* end: 'if (dest && dest->index...'  */
@@ -1722,12 +1706,13 @@ fix_crossing_conditional_branches (void)
 						       (old_label), 
 						       BB_END (new_bb));
 		    }
-		  else if (HAVE_return
-			   && GET_CODE (old_label) == RETURN)
-		    new_jump = emit_jump_insn_after (gen_return (), 
-						     BB_END (new_bb));
 		  else
-		    abort ();
+		    {
+		      gcc_assert (HAVE_return
+				  && GET_CODE (old_label) == RETURN);
+		      new_jump = emit_jump_insn_after (gen_return (), 
+						       BB_END (new_bb));
+		    }
 		  
 		  barrier = emit_barrier_after (new_jump);
 		  JUMP_LABEL (new_jump) = old_label;
@@ -1794,13 +1779,12 @@ fix_crossing_unconditional_branches (void)
 	{
 	  rtx label2, table;
 
-	  if (any_condjump_p (last_insn))
-	    abort ();
+	  gcc_assert (!any_condjump_p (last_insn));
 
 	  /* Make sure the jump is not already an indirect or table jump.  */
 
-	  else if (!computed_jump_p (last_insn)
-		   && !tablejump_p (last_insn, &label2, &table))
+	  if (!computed_jump_p (last_insn)
+	      && !tablejump_p (last_insn, &label2, &table))
 	    {
 	      /* We have found a "crossing" unconditional branch.  Now
 		 we must convert it to an indirect jump.  First create
