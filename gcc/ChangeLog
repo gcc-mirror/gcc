@@ -1,3 +1,8 @@
+Thu Dec 13 06:48:38 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* config/alpha/vms-cc.c (preprocess_args): Fix forward
+	declaration.
+
 Thu Dec 13 12:31:07 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (estimate_probability): Reorganize opcode heuristics.

@@ -59,7 +59,7 @@ static void addarg PARAMS ((const char *));
 
 /* Preprocess the number of args in P_ARGC and contained in ARGV.
    Look for special flags, etc. that must be handled first. */
-static void preprocess_args PARAMS ((*, **));
+static void preprocess_args PARAMS ((int *, char **));
 
 /* Process the number of args in P_ARGC and contained in ARGV. Look
    for special flags, etc. that must be handled for the VMS compiler. */
