@@ -6931,19 +6931,8 @@ c_expand_body (fndecl, nested_p)
     }
 
   if (nested_p)
-    {
-      /* Return to the enclosing function.  */
-      pop_function_context ();
-      /* If the nested function was inline, write it out if that is
-	 necessary.  */
-      if (!TREE_ASM_WRITTEN (fndecl) && TREE_ADDRESSABLE (fndecl))
-	{
-	  push_function_context ();
-	  output_inline_function (fndecl);
-	  pop_function_context ();
-	}
-    }
-
+    /* Return to the enclosing function.  */
+    pop_function_context ();
 }
 
 /* Check the declarations given in a for-loop for satisfying the C99
