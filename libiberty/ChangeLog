@@ -1,3 +1,13 @@
+2000-06-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (cp-demangle.o): Depend on $(INCDIR)/demangle.h.
+
+	* cp-demangle.c: Include demangle.h.
+	(template_arg_list_new): DeANSIfy.
+	(cp_demangle): Make static and add prototype.
+	(operator_code, operators): Constify.
+	(demangle_operator_name): Likewise for variables `p1', `p2' and `p'.
+
 2000-06-05  Alex Samuel  <samuel@codesourcery.com>
 
 	* cp-demangle.c (demangle_prefix): Cast argument to isdigit to

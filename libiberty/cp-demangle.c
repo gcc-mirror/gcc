@@ -44,6 +44,7 @@
 #include "ansidecl.h"
 #include "libiberty.h"
 #include "dyn-string.h"
+#include "demangle.h"
 
 /* If CP_DEMANGLE_DEBUG is defined, a trace of the grammar evaluation,
    and other debugging output, will be generated. */
@@ -513,7 +514,7 @@ substitutions_print (dm, fp)
 /* Creates a new template argument list.  */
 
 static template_arg_list_t
-template_arg_list_new (void)
+template_arg_list_new ()
 {
   template_arg_list_t new_list 
     = (template_arg_list_t) xmalloc (sizeof (struct template_arg_list_def));
@@ -775,6 +776,8 @@ static status_t demangle_local_name
   PARAMS ((demangling_t));
 static status_t demangle_discriminator 
   PARAMS ((demangling_t, int));
+static status_t cp_demangle
+  PARAMS ((char *, dyn_string_t));
 
 /* When passed to demangle_bare_function_type, indicates that the
    function's return type is not encoded before its parameter types.  */
@@ -1308,14 +1311,14 @@ demangle_operator_name (dm, short_name, num_args)
   struct operator_code
   {
     /* The mangled code for this operator.  */
-    char *code;
+    const char *code;
     /* The source name of this operator.  */
-    char *name;
+    const char *name;
     /* The number of arguments this operator takes.  */
     int num_args;
   };
 
-  struct operator_code operators[] = 
+  static const struct operator_code operators[] = 
   {
     { "aN", "&="       , 2 },
     { "aS", "="        , 2 },
@@ -1371,8 +1374,8 @@ demangle_operator_name (dm, short_name, num_args)
 
   int c0 = next_char (dm);
   int c1 = next_char (dm);
-  struct operator_code* p1 = operators;
-  struct operator_code* p2 = operators + num_operators;
+  const struct operator_code* p1 = operators;
+  const struct operator_code* p2 = operators + num_operators;
 
   DEMANGLE_TRACE ("operator-name", dm);
 
@@ -1398,7 +1401,7 @@ demangle_operator_name (dm, short_name, num_args)
   /* Perform a binary search for the operator code.  */
   while (1)
     {
-      struct operator_code* p = p1 + (p2 - p1) / 2;
+      const struct operator_code* p = p1 + (p2 - p1) / 2;
       char match0 = p->code[0];
       char match1 = p->code[1];
 
@@ -2744,7 +2747,7 @@ demangle_discriminator (dm, suppress_first)
    dyn_string_t.  On success, returns STATUS_OK.  On failure, returns
    an error message, and the contents of RESULT are unchanged.  */
 
-status_t
+static status_t
 cp_demangle (name, result)
      char *name;
      dyn_string_t result;

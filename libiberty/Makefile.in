@@ -263,7 +263,7 @@ choose-temp.o: config.h
 clock.o: config.h
 concat.o: $(INCDIR)/libiberty.h
 cplus-dem.o: config.h $(INCDIR)/demangle.h
-cp-demangle.o: config.h $(INCDIR)/dyn-string.h
+cp-demangle.o: config.h $(INCDIR)/dyn-string.h $(INCDIR)/demangle.h
 dyn-string.o: config.h $(INCDIR)/dyn-string.h
 fdmatch.o: $(INCDIR)/libiberty.h
 fnmatch.o: config.h $(INCDIR)/fnmatch.h
