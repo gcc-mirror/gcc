@@ -157,12 +157,6 @@ int invariant_p ();
 rtx get_condition_for_loop ();
 void emit_iv_add_mult ();
 
-/* Variables declared in stmt.c but also needed in loop.c.  */
-
-extern union tree_node **loop_number_first_block;
-extern union tree_node **loop_number_last_block;
-extern int *loop_number_block_level;
-
 /* Forward declarations for non-static functions declared in stmt.c.  */
 void find_loop_tree_blocks ();
 void unroll_block_trees ();
