@@ -7,16 +7,16 @@
     This had to be done to correct non-standard usages in the
     original, manufacturer supplied header file.  */
 
-#ifndef FIXINC_WRAP_MATH_H_SUNOS_MATHERR_DECL
-#define FIXINC_WRAP_MATH_H_SUNOS_MATHERR_DECL 1
-
-struct exception;
 #ifndef FIXINC_WRAP_MATH_H_MATH_EXCEPTION
 #define FIXINC_WRAP_MATH_H_MATH_EXCEPTION 1
 
 #ifdef __cplusplus
 #define exception __math_exception
 #endif
+#ifndef FIXINC_WRAP_MATH_H_EXCEPTION_STRUCTURE
+#define FIXINC_WRAP_MATH_H_EXCEPTION_STRUCTURE 1
+
+struct exception;
 
 
 #if defined( BROKEN_CABS_CHECK )
@@ -29,6 +29,11 @@ struct exception;
  /* This is a comment
                          and it ends here. */
 #endif  /* BROKEN_CABS_CHECK */
+
+
+#if defined( EXCEPTION_STRUCTURE_CHECK )
+extern int matherr();
+#endif  /* EXCEPTION_STRUCTURE_CHECK */
 
 
 #if defined( HPUX11_CPP_POW_INLINE_CHECK )
@@ -100,11 +105,6 @@ int foo;
 #endif  /* STRICT_ANSI_NOT_CTD_CHECK */
 
 
-#if defined( SUNOS_MATHERR_DECL_CHECK )
-extern int matherr();
-#endif  /* SUNOS_MATHERR_DECL_CHECK */
-
-
 #if defined( SVR4__P_CHECK )
 #ifndef __P
 #define __P(a) a
@@ -126,10 +126,10 @@ extern double atof(const char *__nptr);
 #if defined( WINDISS_MATH2_CHECK )
 #endif /* __GNUC__ */
 #endif  /* WINDISS_MATH2_CHECK */
+
+#endif  /* FIXINC_WRAP_MATH_H_EXCEPTION_STRUCTURE */
 #ifdef __cplusplus
 #undef exception
 #endif
 
 #endif  /* FIXINC_WRAP_MATH_H_MATH_EXCEPTION */
-
-#endif  /* FIXINC_WRAP_MATH_H_SUNOS_MATHERR_DECL */
