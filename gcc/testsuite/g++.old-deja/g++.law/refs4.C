@@ -1,5 +1,6 @@
 // GROUPS passed references
-extern "C" int printf (const char *, ...);
+#include <stdio.h>
+#include <stdlib.h>
 
 const int& min(const int& tX, const int& tY)
 {
@@ -11,7 +12,7 @@ void foo(const int m, const int n)
 	if (m == 1 && n == 100)
 	  printf("PASS\n");
 	else
-	  printf("FAIL\n");
+	  abort ();
 }
 
 int main()

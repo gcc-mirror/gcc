@@ -1,3 +1,5 @@
+#include <string.h>
+
 static int
 special_format (fmt)
      const char *fmt;

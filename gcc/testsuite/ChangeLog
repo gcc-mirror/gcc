@@ -1,3 +1,12 @@
+2000-05-28  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* g++.old-deja/g++.brendan/code-gen4.C: Include stdio.h and
+	stdlib.h.  Call abort() on failure.
+	* g++.old-deja/g++.law/refs4.C: Likewise.
+	* g++.old-deja/g++.law/temps4.C: Likewise.
+	* g++.old-deja/g++.brendan/complex1.C: Don't assume argc is 1.
+	* gcc.c-torture/execute/20000112-1.c: Include string.h.	
+
 2000-05-27  Zack Weinberg  <zack@wolery.cumb.org>
 
 	Relative to g++.dg/special:
