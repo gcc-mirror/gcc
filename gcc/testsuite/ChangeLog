@@ -1,3 +1,7 @@
+2000-04-06  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.abi/vmihint.C: New test.
+
 2000-04-06  Neil Booth  <NeilB@earthling.net>
 
 	* cpp-ifparen.c, cpp-missingop.c, cpp-missingparen.c,
