@@ -3321,7 +3321,7 @@ store_expr (exp, target, want_value)
     {
       target = protect_from_queue (target, 1);
       if (GET_MODE (temp) != GET_MODE (target)
-	  && GET_MODE (target) != VOIDmode)
+	  && GET_MODE (temp) != VOIDmode)
 	{
 	  int unsignedp = TREE_UNSIGNED (TREE_TYPE (exp));
 	  if (dont_return_target)
