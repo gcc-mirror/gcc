@@ -483,6 +483,11 @@ static struct path_prefix cpath, path;
 
 static char *target_machine = TARGET_MACHINE;
 #endif
+
+/* Name under which we were executed.  Never return that file in our
+   searches.  */
+
+static char *our_file_name;
 
 /* Search for NAME using prefix list PPREFIX.  We only look for executable
    files. 
@@ -519,14 +524,14 @@ find_a_file (pprefix, name)
       {
 	strcpy (temp, pl->prefix);
 	strcat (temp, name);
-	if (access (temp, X_OK) == 0)
+	if (strcmp (temp, our_file_name) != 0 && access (temp, X_OK) == 0)
 	  return temp;
 
 #ifdef EXECUTABLE_SUFFIX
 	/* Some systems have a suffix for executable files.
 	   So try appending that.  */
 	strcat (temp, EXECUTABLE_SUFFIX);
-	if (access (temp, X_OK) == 0)
+	if (strcmp (temp, our_file_name) != 0 && access (temp, X_OK) == 0)
 	  return temp;
 #endif
       }
@@ -656,6 +661,8 @@ main (argc, argv)
   debug = 1;
   vflag = 1;
 #endif
+
+  our_file_name = argv[0];
 
   p = (char *) getenv ("COLLECT_GCC_OPTIONS");
   if (p)
