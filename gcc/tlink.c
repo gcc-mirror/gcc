@@ -550,26 +550,29 @@ scan_linker_output (fname)
       sym = symbol_hash_lookup (p, false);
 
       if (! sym && ! end)
-	/* Try a mangled name in `quotes'.  */
+	/* Try a mangled name in quotes.  */
 	{
+	  char *oldq = q+1;
 	  demangled *dem = 0;
-	  p = index (q+1, '`');
 	  q = 0;
 
-#define MUL "multiple definition of "
-#define UND "undefined reference to "
+	  /* First try `GNU style'.  */
+	  p = index (oldq, '`');
+	  if (p)
+	    p++, q = index (p, '\'');
+	  /* Then try "double quotes".  */
+	  else if (p = index (oldq, '"'), p)
+	    p++, q = index (p, '"');
 
-	  if (p && (p - line > sizeof (MUL)))
-	    {
-	      char *beg = p - sizeof (MUL) + 1;
-	      *p = 0;
-	      if (!strcmp (beg, MUL) || !strcmp (beg, UND))
-		p++, q = index (p, '\'');
-	    }
 	  if (q)
-	    *q = 0, dem = demangled_hash_lookup (p, false);
-	  if (dem)
-	    sym = symbol_hash_lookup (dem->mangled, false);
+	    {
+	      *q = 0;
+	      dem = demangled_hash_lookup (p, false);
+	      if (dem)
+		sym = symbol_hash_lookup (dem->mangled, false);
+	      else
+		sym = symbol_hash_lookup (p, false);
+	    }
 	}
 
       if (sym && sym->tweaked)

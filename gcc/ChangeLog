@@ -1,3 +1,9 @@
+Sun Oct  4 18:33:24 1998  Jason Merrill  <jason@yorick.cygnus.com>
+			  scott snyder  <snyder@d0sgif.fnal.gov>
+
+	* tlink.c (scan_linker_output): Recognize errors from irix 6.2
+	linker.  Recognize mangled names in quotes.
+
 Sun Oct  4 02:58:20 1998  Jakub Jelinek  <jj@sunsite.ms.mff.cuni.cz>
 
         * config/sparc/sparc.md (ashldi3+1): Name it ashldi3_sp64.
