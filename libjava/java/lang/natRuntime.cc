@@ -125,7 +125,9 @@ java::lang::Runtime::_load (jstring path, jboolean do_search)
   if (h == NULL)
     {
       const char *msg = lt_dlerror ();
-      _Jv_Throw (new UnsatisfiedLinkError (JvNewStringLatin1 (msg)));
+      jstring str = path->concat (JvNewStringLatin1 (": "));
+      str = str->concat (JvNewStringLatin1 (msg));
+      _Jv_Throw (new UnsatisfiedLinkError (str));
     }
 
   add_library (h);
