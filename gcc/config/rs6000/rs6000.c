@@ -7049,34 +7049,15 @@ branch_positive_comparison_operator (op, mode)
 	  || code == UNORDERED);
 }
 
-/* Return 1 if OP is a comparison operation that is valid for an scc insn.
-   We check the opcode against the mode of the CC value and disallow EQ or
-   NE comparisons for integers.  */
+/* Return 1 if OP is a comparison operation that is valid for an scc
+   insn: it must be a positive comparison.  */
 
 int
 scc_comparison_operator (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  enum rtx_code code = GET_CODE (op);
-  enum machine_mode cc_mode;
-
-  if (GET_MODE (op) != mode && mode != VOIDmode)
-    return 0;
-
-  if (GET_RTX_CLASS (code) != '<')
-    return 0;
-
-  cc_mode = GET_MODE (XEXP (op, 0));
-  if (GET_MODE_CLASS (cc_mode) != MODE_CC)
-    return 0;
-
-  validate_condition_mode (code, cc_mode);
-
-  if (code == NE && cc_mode != CCFPmode)
-    return 0;
-
-  return 1;
+  return branch_positive_comparison_operator (op, mode);
 }
 
 int
@@ -7501,6 +7482,12 @@ ccr_bit (op, scc_p)
 
   validate_condition_mode (code, cc_mode);
 
+  /* When generating a sCOND operation, only positive conditions are
+     allowed.  */
+  if (scc_p && code != EQ && code != GT && code != LT && code != UNORDERED
+      && code != GTU && code != LTU)
+    abort ();
+  
   switch (code)
     {
     case NE:
@@ -7696,42 +7683,6 @@ print_operand (file, x, code)
 
       /* %c is output_addr_const if a CONSTANT_ADDRESS_P, otherwise
 	 output_operand.  */
-
-    case 'D':
-      /* There used to be a comment for 'C' reading "This is an
-	   optional cror needed for certain floating-point
-	   comparisons.  Otherwise write nothing."  */
-
-      /* Similar, except that this is for an scc, so we must be able to
-	 encode the test in a single bit that is one.  We do the above
-	 for any LE, GE, GEU, or LEU and invert the bit for NE.  */
-      if (GET_CODE (x) == LE || GET_CODE (x) == GE
-	  || GET_CODE (x) == LEU || GET_CODE (x) == GEU)
-	{
-	  int base_bit = 4 * (REGNO (XEXP (x, 0)) - CR0_REGNO);
-
-	  fprintf (file, "cror %d,%d,%d\n\t", base_bit + 3,
-		   base_bit + 2,
-		   base_bit + (GET_CODE (x) == GE || GET_CODE (x) == GEU));
-	}
-
-      else if (GET_CODE (x) == NE)
-	{
-	  int base_bit = 4 * (REGNO (XEXP (x, 0)) - CR0_REGNO);
-
-	  fprintf (file, "crnor %d,%d,%d\n\t", base_bit + 3,
-		   base_bit + 2, base_bit + 2);
-	}
-      else if (TARGET_E500 && !TARGET_FPRS && TARGET_HARD_FLOAT
-	       && GET_CODE (x) == EQ
-	       && GET_MODE (XEXP (x, 0)) == CCFPmode)
-	{
-	  int base_bit = 4 * (REGNO (XEXP (x, 0)) - CR0_REGNO);
-
-	  fprintf (file, "crnor %d,%d,%d\n\t", base_bit + 1,
-		   base_bit + 1, base_bit + 1);
-	}
-      return;
 
     case 'E':
       /* X is a CR register.  Print the number of the EQ bit of the CR */
@@ -8686,8 +8637,28 @@ rs6000_emit_sCOND (code, result)
 {
   rtx condition_rtx;
   enum machine_mode op_mode;
+  enum rtx_code cond_code;
 
   condition_rtx = rs6000_generate_compare (code);
+  cond_code = GET_CODE (condition_rtx);
+
+  if (cond_code == NE
+      || cond_code == GE || cond_code == LE
+      || cond_code == GEU || cond_code == LEU
+      || cond_code == ORDERED || cond_code == UNGE || cond_code == UNLE)
+    {
+      rtx not_result = gen_reg_rtx (CCEQmode);
+      rtx not_op, rev_cond_rtx;
+      enum machine_mode cc_mode;
+      
+      cc_mode = GET_MODE (XEXP (condition_rtx, 0));
+
+      rev_cond_rtx = gen_rtx (rs6000_reverse_condition (cc_mode, cond_code),
+			      SImode, XEXP (condition_rtx, 0), const0_rtx);
+      not_op = gen_rtx_COMPARE (CCEQmode, rev_cond_rtx, const0_rtx);
+      emit_insn (gen_rtx_SET (VOIDmode, not_result, not_op));
+      condition_rtx = gen_rtx_EQ (VOIDmode, not_result, const0_rtx);
+    }
 
   op_mode = GET_MODE (rs6000_compare_op0);
   if (op_mode == VOIDmode)

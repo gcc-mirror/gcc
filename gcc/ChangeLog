@@ -1,5 +1,15 @@
 2003-05-03  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/rs6000.c (scc_comparison_operator): Make equivalent
+	to branch_positive_comparison_operator.
+	(ccr_bit): Check that sCOND conditions are actually a positive bit.
+	(print_operand): Remove %D substitution.
+	(rs6000_emit_sCOND): Generate complement operation to ensure that
+	sCOND input is a positive bit.
+	* config/rs6000/rs6000.md: Rearrange sCOND templates to be in the
+	same order as bCOND, and add the missing ones.  Remove the %D
+	substitutions from the scc patterns.
+
 	* simplify-rtx.c (simplify_relational_operation): Add case for
 	! (fabs(x) < 0.0).
 
