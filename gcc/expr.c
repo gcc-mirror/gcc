@@ -6490,8 +6490,7 @@ expand_expr_real (tree exp, rtx target, enum machine_mode tmode,
       emit_line_note (input_location);
       
       /* Record where the insns produced belong.  */
-      if (cfun->dont_emit_block_notes)
-	record_block_change (TREE_BLOCK (exp));
+      record_block_change (TREE_BLOCK (exp));
 
       ret = expand_expr_real_1 (exp, target, tmode, modifier, alt_rtl);
 
@@ -8534,8 +8533,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      if (EXPR_HAS_LOCATION (exp))
 		{
 		  emit_line_note (EXPR_LOCATION (exp));
-		  if (cfun->dont_emit_block_notes)
-		    record_block_change (TREE_BLOCK (exp));
+		  record_block_change (TREE_BLOCK (exp));
 		}
 	      expand_elseif (TREE_OPERAND (exp, 0));
 	      expand_expr (TREE_OPERAND (exp, 1), const0_rtx, VOIDmode, 0);

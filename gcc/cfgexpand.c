@@ -119,8 +119,7 @@ expand_block (basic_block bb, FILE * dump_file)
 	    if (EXPR_LOCUS (stmt))
 	      {
 		emit_line_note (*(EXPR_LOCUS (stmt)));
-		if (cfun->dont_emit_block_notes)
-		  record_block_change (TREE_BLOCK (stmt));
+		record_block_change (TREE_BLOCK (stmt));
 	      }
 
 	    /* These flags have no purpose in RTL land.  */

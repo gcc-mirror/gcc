@@ -1374,14 +1374,7 @@ rest_of_compilation (void)
      have been run to re-initialize it.  */
   cse_not_expected = ! optimize;
 
-  if (!cfun->dont_emit_block_notes)
-    {
-      /* In function-at-a-time mode, we do not attempt to keep the BLOCK
-	 tree in sensible shape.  So, we just recalculate it here.  */
-      reorder_blocks ();
-    }
-  else
-    finalize_block_changes ();
+  finalize_block_changes ();
 
   /* Dump the rtl code if we are dumping rtl.  */
   if (open_dump_file (DFI_rtl, current_function_decl))
@@ -1413,8 +1406,6 @@ rest_of_compilation (void)
      over the instruction sequence faster, and allow the garbage
      collector to reclaim the memory used by the notes.  */
   remove_unnecessary_notes ();
-  if (!cfun->dont_emit_block_notes)
-    reorder_blocks ();
 
   ggc_collect ();
 
