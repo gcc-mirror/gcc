@@ -1,5 +1,11 @@
 2002-01-22  Jason Merrill  <jason@redhat.com>
 
+	* parse.y (function_body): Suppress the block for the outermost
+	curly braces.
+	* decl.c (pushdecl): Don't try to skip it.
+	(begin_function_body): Keep the block we create, not the next one.
+	* init.c (emit_base_init): Don't mess with keep_next_level.
+
 	* class.c (build_base_path): Tweak formatting.
 
 2002-01-19  Nathan Sidwell  <nathan@codesourcery.com>
