@@ -1190,14 +1190,11 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
       && GET_CODE (trueop0) == CONST_VECTOR
       && GET_CODE (trueop1) == CONST_VECTOR)
     {
-      int elt_size = GET_MODE_SIZE (GET_MODE_INNER (mode));
-      unsigned n_elts = (GET_MODE_SIZE (mode) / elt_size);
+      unsigned n_elts = GET_MODE_NUNITS (mode);
       enum machine_mode op0mode = GET_MODE (trueop0);
-      int op0_elt_size = GET_MODE_SIZE (GET_MODE_INNER (op0mode));
-      unsigned op0_n_elts = (GET_MODE_SIZE (op0mode) / op0_elt_size);
+      unsigned op0_n_elts = GET_MODE_NUNITS (op0mode);
       enum machine_mode op1mode = GET_MODE (trueop1);
-      int op1_elt_size = GET_MODE_SIZE (GET_MODE_INNER (op1mode));
-      unsigned op1_n_elts = (GET_MODE_SIZE (op1mode) / op1_elt_size);
+      unsigned op1_n_elts = GET_MODE_NUNITS (op1mode);
       rtvec v = rtvec_alloc (n_elts);
       unsigned int i;
 
@@ -1211,6 +1208,41 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	  if (!x)
 	    return 0;
 	  RTVEC_ELT (v, i) = x;
+	}
+
+      return gen_rtx_CONST_VECTOR (mode, v);
+    }
+
+  if (VECTOR_MODE_P (mode)
+      && code == VEC_CONCAT
+      && CONSTANT_P (trueop0) && CONSTANT_P (trueop1))
+    {
+      unsigned n_elts = GET_MODE_NUNITS (mode);
+      rtvec v = rtvec_alloc (n_elts);
+
+      gcc_assert (n_elts >= 2);
+      if (n_elts == 2)
+	{
+	  gcc_assert (GET_CODE (trueop0) != CONST_VECTOR);
+	  gcc_assert (GET_CODE (trueop1) != CONST_VECTOR);
+
+	  RTVEC_ELT (v, 0) = trueop0;
+	  RTVEC_ELT (v, 1) = trueop1;
+	}
+      else
+	{
+	  unsigned op0_n_elts = GET_MODE_NUNITS (GET_MODE (trueop0));
+	  unsigned op1_n_elts = GET_MODE_NUNITS (GET_MODE (trueop1));
+	  unsigned i;
+
+	  gcc_assert (GET_CODE (trueop0) == CONST_VECTOR);
+	  gcc_assert (GET_CODE (trueop1) == CONST_VECTOR);
+	  gcc_assert (op0_n_elts + op1_n_elts == n_elts);
+
+	  for (i = 0; i < op0_n_elts; ++i)
+	    RTVEC_ELT (v, i) = XVECEXP (trueop0, 0, i);
+	  for (i = 0; i < op1_n_elts; ++i)
+	    RTVEC_ELT (v, op0_n_elts+i) = XVECEXP (trueop1, 0, i);
 	}
 
       return gen_rtx_CONST_VECTOR (mode, v);
