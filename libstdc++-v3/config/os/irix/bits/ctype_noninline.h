@@ -33,13 +33,11 @@
   
 // Information as gleaned from /usr/include/ctype.h
 
-  ctype<char>::ctype(const mask* __table = 0, bool __del = false, 
-	size_t __refs = 0)
-    : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
-      _M_toupper(NULL), _M_tolower(NULL), _M_ctable(NULL), 
-      _M_table(!__table
-	       ? (const mask*) (__libc_attr._ctype_tbl->_class + 1)
-	       : __table) 
+  ctype<char>::ctype(const mask* __table, bool __del, size_t __refs)
+  : __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
+    _M_toupper(NULL), _M_tolower(NULL), _M_ctable(NULL), 
+    _M_table(!__table ? 
+             (const mask*) (__libc_attr._ctype_tbl->_class + 1) : __table) 
     { }
 
   char

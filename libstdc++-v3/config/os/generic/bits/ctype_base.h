@@ -41,17 +41,17 @@
 
     enum
     {
-      space = (1 << 5),	// Whitespace
-      print = (1 << 6),	// Printing
-      cntrl = (1 << 9),	// Control character
-      upper = (1 << 0),	// UPPERCASE
-      lower = (1 << 1),	// lowercase
-      alpha = (1 << 5),	// Alphabetic
-      digit = (1 << 2),	// Numeric
-      punct = (1 << 10),// Punctuation
-      xdigit = (1 << 4),// Hexadecimal numeric
-      alnum = (1 << 11),// Alphanumeric
-      graph = (1 << 7)	// Graphical
+      space  = (1 << 0),     // Whitespace
+      print  = (1 << 1),     // Printing
+      cntrl  = (1 << 2),     // Control character
+      upper  = (1 << 3),     // UPPERCASE
+      lower  = (1 << 4),     // lowercase
+      alpha  = (1 << 5),     // Alphabetic
+      digit  = (1 << 6),     // Numeric
+      punct  = (1 << 7),     // Punctuation
+      xdigit = (1 << 8),     // Hexadecimal numeric
+      alnum  = (1 << 9),     // Alphanumeric
+      graph  = (1 << 10)     // Graphical
     };
   };
 
