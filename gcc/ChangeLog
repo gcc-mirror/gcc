@@ -1,5 +1,7 @@
 Wed Aug 27 16:08:43 1997  Jim Wilson  <wilson@cygnus.com>
 
+	* config.guess: Replace with script that uses ../config.guess.
+
 	* config/alpha/elf.h (DEFAULT_VTABLE_THUNKS): New. Defined as 1
 	if USE_GNULIBC_1 is not defined.
 

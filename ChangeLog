@@ -1,3 +1,7 @@
+Wed Aug 27 16:15:11 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* config.guess: Update from gcc directory.
+
 Wed Aug 20 19:57:37 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* Makefile.in (BISON, YACC): Use $$s.
