@@ -66,6 +66,7 @@ static void   avr_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void   avr_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
 static void   avr_unique_section PARAMS ((tree, int));
 static void   avr_encode_section_info PARAMS ((tree, int));
+static unsigned int avr_section_type_flags PARAMS ((tree, const char *, int));
 
 static void   avr_asm_out_ctor PARAMS ((rtx, int));
 static void   avr_asm_out_dtor PARAMS ((rtx, int));
@@ -220,6 +221,8 @@ int avr_case_values_threshold = 30000;
 #define TARGET_ASM_UNIQUE_SECTION avr_unique_section
 #undef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO avr_encode_section_info
+#undef TARGET_SECTION_TYPE_FLAGS
+#define TARGET_SECTION_TYPE_FLAGS avr_section_type_flags
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4828,6 +4831,27 @@ avr_encode_section_info (decl, first)
       DECL_SECTION_NAME (decl) = build_string (strlen (dsec), dsec);
       TREE_READONLY (decl) = 1;
     }
+}
+
+static unsigned int
+avr_section_type_flags (decl, name, reloc)
+     tree decl;
+     const char *name;
+     int reloc;
+{
+  unsigned int flags = default_section_type_flags (decl, name, reloc);
+
+  if (strncmp (name, ".noinit", 7) == 0)
+    {
+      if (decl && TREE_CODE (decl) == VAR_DECL
+	  && DECL_INITIAL (decl) == NULL_TREE)
+	flags |= SECTION_BSS;  /* @nobits */
+      else
+	warning ("only uninitialized variables can be placed in the "
+		 ".noinit section");
+    }
+
+  return flags;
 }
 
 /* Outputs to the stdio stream FILE some
