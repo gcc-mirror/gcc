@@ -1,5 +1,5 @@
 ;;- Machine description for the Hitachi SH.
-;;  Copyright (C) 1993, 1994, 1995, 1997Free Software Foundation, Inc.
+;;  Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
 
