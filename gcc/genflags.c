@@ -201,7 +201,7 @@ gen_insn (insn)
       printf ("(");
       for (p = XSTR (insn, 2); *p; p++)
 	{
-	  if (*p == '\n')
+	  if (IS_VSPACE (*p))
 	    printf (" \\\n");
 	  else
 	    printf ("%c", *p);
