@@ -480,7 +480,9 @@ extern int arm_is_6_or_7;
 /* Nonzero if PIC code requires explicit qualifiers to generate
    PLT and GOT relocs rather than the assembler doing so implicitly.
    Subtargets can override this if required.  */
+#ifndef NEED_PLT_GOT
 #define NEED_PLT_GOT	0
+#endif
 
 /* Target machine storage Layout.  */
 
