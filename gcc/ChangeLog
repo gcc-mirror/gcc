@@ -1,3 +1,7 @@
+Thu Jan 21 21:53:36 1999  Richard Henderson  <rth@cygnus.com>
+
+	* emit-rtl.c (try_split): Don't try to split non-instructions.
+
 Thu Jan 21 23:47:30 EST 1999  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* expr.c (emit_push_insn): Fix dumb typo.
