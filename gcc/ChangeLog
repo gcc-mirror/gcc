@@ -1,3 +1,11 @@
+2005-03-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* builtins.c (fold_fixed_mathfn, fold_builtin_trunc,
+	fold_builtin_floor, fold_builtin_ceil, fold_builtin_lround):
+	Take decomposed arguments of CALL_EXPR.
+	(fold_builtin_1): Update calls to the functions mentioned
+	above.
+
 2005-03-20  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (check_bitfield_type_and_width): Require bit-field
