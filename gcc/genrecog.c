@@ -478,6 +478,12 @@ add_to_sequence (pattern, last, position, insn_type, top)
 #endif
 	      }
 	  }
+	else
+	  {
+	    /* Wildcard match.  Can't enforce a mode because we allow
+	       anything -- const_int included.  */
+	    mode = VOIDmode;
+	  }
 
 	/* Accept the operand, ie. record it in `operands'.  */
 	test = new_decision_test (DT_accept_op, &place);
