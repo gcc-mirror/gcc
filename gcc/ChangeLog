@@ -11,6 +11,11 @@ Fri Jul  2 00:46:47 1999  Richard Henderson  <rth@cygnus.com>
 	* flow.c (delete_unreachable_blocks): Don't merge across EH edges.
 	* Makefile.in (except.o): Depend on intl.h.
 
+Fri Jul  2 00:04:23 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (movdf_hardfloat32): Handle PRE_INC and PRE_DEC the
+	same as offsettable in cases 1 and 2.
+
 1999-07-01  Mark Kettenis  <kettenis@gnu.org>
 
 	* config/i386/gnu.h (CPP_SPEC): Define __PIC__ and __pic__ if
