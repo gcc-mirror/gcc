@@ -1,3 +1,122 @@
+Tue Oct 27 23:32:34 1998  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
+
+	* reload.h (struct insn_chain): Add need_operand_change element.
+	* reload1.c (new_insn_chain): Clear it.
+	(calculate_needs_all_insns): Set it; don't overload need_reload.
+	(reload_as_needed): Use it.
+
+	* reload.c (find_reloads_address): Use BASE_REG_CLASS instead of
+	reload_address_base_reg_class throughout.  Similar for INDEX_REG_CLASS
+	and reload_address_index_reg_class.
+	(find_reloads_address_1): Likewise.
+	* reload.h (reload_address_base_reg_class,
+	reload_address_index_reg_class): Don't declare.
+	* reload1.c (reg_old_renumber, pseudo_previous_regs,
+	pseudo_forbidden_regs, bad_spill_regs_global): New static variables.
+	(used_spill_regs): Now static.
+	(reload_address_base_reg_class, reload_address_index_reg_class,
+	regs_explicitly_used, counted_for_groups, counted_for_nongroups,
+	basic_block_needs, max_needs, group_size, group_mode, max_groups,
+	max_nongroups, max_needs_insn, max_groups_insn, max_nongroups_insn,
+	forbidden_regs):
+	Deleted variables.
+	(init_reload): Delete code to compute base/index reg classes.
+	(reload): Delete variable J.
+	Delete code to manage basic_block_needs.
+	Don't compute regs_explicitly_used.
+	Allocate, initialize and free reg_old_renumber, pseudo_forbidden_regs,
+	pseudo_previous_regs.
+	Initialize bad_spill_regs_global.
+	Don't call order_regs_for_reload here.
+	Don't initialize spill_reg_order and n_spills.
+	Don't forbid explicitly used regs to be used for spill regs.
+	Change main loop to infinite loop, with explicit break statements.
+	Make SOMETHING_CHANGED variable local to that loop.
+	Don't initialize max_needs, max_groups, max_nongroups, max_needs_insn,
+	max_groups_insn, max_nongroups_insn, group_size, group_mode.
+	Make sure spilled_speudos is cleared before calling spill_hard_reg or
+	new_spill_reg.
+	Don't call dump_needs.
+	Delete code to reset potential_reload_regs.
+	Delete code to terminate loop conditional on the global needs variables
+	showing no further needs.
+	(calculate_needs_all_insns): Return void.  All callers changed.
+	Initialize somehing_needs_elimination here, not in reload.
+	Delete avoid_return_reg kludge.
+	(calculate_needs): Lose AVOID_RETURN_REG and GLOBAL args, return void.
+	All callers changed.
+	Initialize the group_mode and group_size elements of the arg CHAIN.
+	Delete code to manage basic_block_needs.
+	Operate on elements of CHAIN instead of global variables.
+	Delete avoid_return_reg kludge.
+	(find_tworeg_group): Lose GLOBAL arg, take CHAIN arg, return void.
+	All callers changed.
+	Operate on elements of CHAIN instead of global variables.
+	Delete special SMALL_REGISTER_CLASSES code.
+	Delete spill_failure code; now in new_spill_reg.
+	(find_group): Lose GLOBAL arg, take CHAIN arg, return void.
+	All callers changed.
+	Operate on elements of CHAIN instead of global variables.
+	(maybe_mark_pseudo_spilled): New static function.
+	(find_reload_regs): Lose GLOBAL arg, take CHAIN arg, return void.
+	All callers changed.
+	Operate on elements of CHAIN instead of global variables.
+	Call order_regs_for_reload here, not in reload.
+	Initialize spill_reg_order and n_spills.
+	Simplify test whether an asm insn is involved.
+	Delete spill_failure code; now in new_spill_reg.
+	Call maybe_mark_pseudo_spilled for everything marked as live in
+	CHAIN.  Merge CHAIN's used_spill_regs into the global variable
+	used_spill_regs.
+	(dump_needs): Take CHAIN arg.  No longer static, to prevent the
+	compiler from optimizing this function (now unused) away.
+	Operate on elements of CHAIN instead of global variables.
+	(possible_group_p): Lose MAX_GROUPS arg, take CHAIN arg.  All callers
+	changed.
+	Operate on elements of CHAIN instead of global variables.
+	(count_possible_groups): Lose GROUP_SIZE, GROUP_MODE, MAX_GROUPS args,
+	take CHAIN arg.  All callers changed.
+	Operate on elements of CHAIN instead of global variables.
+	(new_spill_reg): Lose MAX_NEEDS, MAX_NONGROUPS, GLOBAL args, take
+	CHAIN, NONGROUP args.  Return void.  All callers changed.
+	Verify caller isn't trying to spill a pseudo.
+	Simplify test for illegal reg, just use bad_spill_regs.
+	Generate better error messages.
+	Operate on elements of CHAIN instead of global variables.
+	Mark spilled register in CHAIN's used_spill_regs element.
+	Don't call spill_hard_reg.
+	(spill_hard_reg): Lose GLOBAL arg, return void.  All callers changed.
+	Mark spilled hard regs in bad_spill_regs_global.
+	Mark affected pseudos in spilled_pseudos, but don't spill them.
+	(ior_hard_reg_set): New static function.
+	(finish_spills): Return int.  All callers changed.
+	Compute spill_reg_order, n_spills and spill_regs here.  Also update
+	regs_ever_live for regs used as spills.
+	For every pseudo in spilled_pseudos, spill it and mark the previous
+	hard reg it had in pseudo_previous_regs.  Compute which hard regs
+	arseudo): New static function.
+	(order_regs_for_reload): Take CHAIN arg.  All callers changed.
+	Initialize bad_spill_regs from bad_spill_regs_global, then merge any
+	hard registers explicitly used across the current insn into the set.
+	Compute hard_reg_n_uses taking only pseudos live across this insn
+	into account.
+	Tweak sorting of potential_reload_regs.
+	(compare_spill_regs): Delete function.
+	(reload_as_needed): Don't sort the spill_regs array, it's computed
+	in proper order in finish_spills.
+	Delete avoid_return_reg kludge.
+	Delete code to manage basic_block_needs.
+	(allocate_reload_reg): Minor speed/readability tweaks.
+	Operate on elements of CHAIN instead of global variables.
+	(choose_reload_regs): Lose AVOID_RETURN_REG arg.  All callers changed.
+	Delete avoid_return_reg kludge.
+	Initialize reload_reg_used from CHAIN's used_spill_regs element.
+	Delete unused label FAIL.
+	(reload_combine): Replce reload_address_index_reg_class with
+	INDEX_REGS.
+	Don't use used_spill_regs to determine information about lifetime of
+	hard regs.
+
 Tue Oct 27 13:15:02 1998  Nick Clifton  <nickc@cygnus.com>
 	
 	* toplev.c (display_help): Ignore empty target specific
