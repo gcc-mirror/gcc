@@ -1,3 +1,8 @@
+Thu Sep  3 00:40:32 1998  Ovidiu Predescu  <ovidiu@aracnet.com>
+
+	* lib/{objc.exp,objc-torture.exp}: New files for objc testing harness.
+	* objc: ObjC testsuite.
+
 Mon Aug 31 15:19:32 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* lib/c-torture.exp: Add support for
