@@ -773,6 +773,7 @@ dequeue_and_dump (di)
     case ADDR_EXPR:
     case INDIRECT_REF:
     case THROW_EXPR:
+    case CLEANUP_POINT_EXPR:
       /* These nodes are unary, but do not have code class `1'.  */
       dump_child ("op 0", TREE_OPERAND (t, 0));
       break;

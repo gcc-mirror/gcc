@@ -1,3 +1,9 @@
+1999-10-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* dump.c (dequeue_and_dump): Handle CLEANUP_POINT_EXPR.
+
+	* ir.texi: Clean up documentation of RETURN_INIT.
+	
 1999-10-15  Greg McGary  <gkm@gnu.org>
 
 	* lex.c (lang_init_options): Set flag_bounds_check as "unspecified".
