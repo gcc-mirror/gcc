@@ -1704,19 +1704,25 @@ __gnat_map_signal (int sig)
       exception = &constraint_error;
       msg = "SIGILL";
       break;
+#ifdef VTHREADS
+    case SIGSEGV:
+      exception = &storage_error;
+      msg = "SIGSEGV: possible stack overflow";
+      break;
+    case SIGBUS:
+      exception = &storage_error;
+      msg = "SIGBUS: possible stack overflow";
+      break;
+#else
     case SIGSEGV:
       exception = &program_error;
       msg = "SIGSEGV";
       break;
     case SIGBUS:
-#ifdef VTHREADS
-      exception = &storage_error;
-      msg = "SIGBUS: possible stack overflow";
-#else
       exception = &program_error;
       msg = "SIGBUS";
-#endif
       break;
+#endif
     default:
       exception = &program_error;
       msg = "unhandled signal";
@@ -1777,8 +1783,10 @@ void
 __gnat_init_float (void)
 {
   /* Disable overflow/underflow exceptions on the PPC processor, this is needed
-     to get correct Ada semantic.  */
-#if defined (_ARCH_PPC) && !defined (_SOFT_FLOAT)
+     to get correct Ada semantics.  Note that for AE653 vThreads, the HW
+     overflow settings are an OS configuration issue.  The instructions
+     below have no effect */
+#if defined (_ARCH_PPC) && !defined (_SOFT_FLOAT) && !defined (VTHREADS)
   asm ("mtfsb0 25");
   asm ("mtfsb0 26");
 #endif
