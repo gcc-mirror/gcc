@@ -542,7 +542,7 @@ extern void		sbss_section PARAMS ((void));
 /* This is meant to be redefined in the host dependent files.  */
 #define SUBTARGET_TARGET_OPTIONS
 
-#define GENERATE_BRANCHLIKELY  (!TARGET_MIPS16 && (TARGET_MIPS3900 || (mips_isa >= 2)))
+#define GENERATE_BRANCHLIKELY  (!TARGET_MIPS16 && (TARGET_MIPS3900 || ISA_HAS_BRANCHLIKELY))
 
 /* Generate three-operand multiply instructions for both SImode and DImode.  */
 #define GENERATE_MULT3         (TARGET_MIPS3900				\
@@ -552,7 +552,19 @@ extern void		sbss_section PARAMS ((void));
    depending on the instruction set architecture level.  */
 
 #define BRANCH_LIKELY_P()	GENERATE_BRANCHLIKELY
-#define HAVE_SQRT_P()		(mips_isa >= 2)
+#define HAVE_SQRT_P()		(mips_isa != 1)
+
+/* ISA has instructions for managing 64 bit fp and gp regs (eg. mips3). */
+#define ISA_HAS_64BIT_REGS	(mips_isa == 3 || mips_isa == 4 || mips_isa == 64)
+
+/* ISA has branch likely instructions (eg. mips2). */ 
+#define ISA_HAS_BRANCHLIKELY	(mips_isa != 1)
+
+/* ISA has the FP instructions introduced in mips4. */
+#define ISA_HAS_FP4             (mips_isa == 4)
+
+/* ISA has the non-FP conditional move instructions introduced in mips4. */
+#define ISA_HAS_CONDMOVE        (mips_isa == 4)
 
 /* CC1_SPEC causes -mips3 and -mips4 to set -mfp64 and -mgp64; -mips1 or
    -mips2 sets -mfp32 and -mgp32.  This can be overridden by an explicit
@@ -622,7 +634,7 @@ do									\
 	for (regno = ST_REG_FIRST; regno <= ST_REG_LAST; regno++)	\
 	  fixed_regs[regno] = call_used_regs[regno] = 1;		\
       }									\
-    else if (mips_isa < 4)						\
+    else if (! ISA_HAS_FP4)						\
       {									\
 	int regno;							\
 									\

@@ -1719,7 +1719,7 @@ mips_move_1word (operands, insn, unsignedp)
 		    ret = "mflo\t%0";
 		}
 
-	      else if (ST_REG_P (regno1) && mips_isa >= 4)
+	      else if (ST_REG_P (regno1) && ISA_HAS_FP4)
 		ret = "li\t%0,1\n\tmovf\t%0,%.,%1";
 
 	      else
@@ -1728,7 +1728,7 @@ mips_move_1word (operands, insn, unsignedp)
 		  if (FP_REG_P (regno1))
 		    ret = "mfc1\t%0,%1";
 
-		  else if (regno1 == FPSW_REGNUM && mips_isa < 4)
+		  else if (regno1 == FPSW_REGNUM && ! ISA_HAS_FP4)
 		    ret = "cfc1\t%0,$31";
 		}
 	    }
@@ -1755,7 +1755,7 @@ mips_move_1word (operands, insn, unsignedp)
 		}
 	    }
 
-	  else if (regno0 == FPSW_REGNUM && mips_isa < 4)
+	  else if (regno0 == FPSW_REGNUM && ! ISA_HAS_FP4)
 	    {
 	      if (GP_REG_P (regno1))
 		{
@@ -2218,7 +2218,9 @@ mips_move_2words (operands, insn)
 		       or higher.  For !TARGET_64BIT && gp registers we
 		       need to avoid this by using two li instructions
 		       instead.  */
-		    if (mips_isa >= 3 && !TARGET_64BIT && !FP_REG_P (regno0))
+		    if (ISA_HAS_64BIT_REGS 
+			&& ! TARGET_64BIT
+			&& ! FP_REG_P (regno0))
 		      {
 			split_double (op1, operands + 2, operands + 3);
 			ret = "li\t%0,%2\n\tli\t%D0,%3";
@@ -2871,7 +2873,7 @@ gen_conditional_branch (operands, test_code)
 
     case CMP_SF:
     case CMP_DF:
-      if (mips_isa < 4)
+      if (! ISA_HAS_FP4)
 	reg = gen_rtx_REG (CCmode, FPSW_REGNUM);
       else
 	reg = gen_reg_rtx (CCmode);
@@ -4363,7 +4365,7 @@ override_options ()
   if (mips_abi_string == 0 && mips_isa_string 
       && mips_abi != ABI_EABI && mips_abi != ABI_O64)
     {
-      if (mips_isa <= 2)
+      if (! ISA_HAS_64BIT_REGS)
 	mips_abi = ABI_32;
       else
 	mips_abi = ABI_64;
@@ -4384,9 +4386,9 @@ override_options ()
   /* If both ABI and ISA were specified, check for conflicts.  */
   else if (mips_isa_string && mips_abi_string)
     {
-      if ((mips_isa <= 2 && (mips_abi == ABI_N32 || mips_abi == ABI_64
+      if ((! ISA_HAS_64BIT_REGS && (mips_abi == ABI_N32 || mips_abi == ABI_64
 			     || mips_abi == ABI_O64))
-	  || (mips_isa >= 3 && mips_abi == ABI_32))
+	  || (ISA_HAS_64BIT_REGS && mips_abi == ABI_32))
 	error ("-mabi=%s does not support -mips%d", mips_abi_string, mips_isa);
     }
 
@@ -4535,24 +4537,24 @@ override_options ()
 	}
     }
 
-  if ((mips_cpu == PROCESSOR_R3000 && mips_isa > 1)
-      || (mips_cpu == PROCESSOR_R6000 && mips_isa > 2)
+  if ((mips_cpu == PROCESSOR_R3000 && (mips_isa != 1))
+      || (mips_cpu == PROCESSOR_R6000 && mips_isa != 1 && mips_isa != 2)
       || ((mips_cpu == PROCESSOR_R4000
            || mips_cpu == PROCESSOR_R4100
            || mips_cpu == PROCESSOR_R4300
 	   || mips_cpu == PROCESSOR_R4600
 	   || mips_cpu == PROCESSOR_R4650)
-	  && mips_isa > 3))
+	  && mips_isa != 1 && mips_isa != 2 && mips_isa != 3))
     error ("-mcpu=%s does not support -mips%d", mips_cpu_string, mips_isa);
 
   /* make sure sizes of ints/longs/etc. are ok */
-  if (mips_isa < 3)
+  if (! ISA_HAS_64BIT_REGS)
     {
       if (TARGET_FLOAT64)
-	fatal ("Only MIPS-III or MIPS-IV CPUs can support 64 bit fp registers");
+	fatal ("-mips%d does not support 64 bit fp registers", mips_isa);
 
       else if (TARGET_64BIT)
-	fatal ("Only MIPS-III or MIPS-IV CPUs can support 64 bit gp registers");
+	fatal ("-mips%d does not support 64 bit gp registers", mips_isa);
     }
 
   if (mips_abi != ABI_32 && mips_abi != ABI_O64)
@@ -4731,7 +4733,7 @@ override_options ()
 
 	  if (mode == CCmode)
 	    {
-	      if (mips_isa < 4)
+	      if (! ISA_HAS_FP4)
 		temp = (regno == FPSW_REGNUM);
 	      else
 		temp = (ST_REG_P (regno) || GP_REG_P (regno)

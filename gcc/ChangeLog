@@ -1,3 +1,13 @@
+1999-10-26  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* config/mips/mips.h (ISA_HAS_64BIT_REGS,ISA_HAS_BRANCHLIKELY,
+	ISA_HAS_FP4,ISA_HAS_CONDMOVE): New.
+	(GENERATE_BRANCHLIKELY,HAVE_SQRT_P,
+	CONDITIONAL_REGISTER_USEAGE): Use them. 
+	* config/mips/mips.c (mips_move_1word,mips_move_2words,
+	gen_conditional_branch,override_options) : Use them.
+	* config/mips/mips.md : Use them.
+
 Tue Oct 26 13:09:23 1999  Richard Henderson  <rth@cygnus.com>
 
 	* i386.md (zero_extendqihi2): Use SImode register name with andl.

@@ -2075,7 +2075,7 @@
 	(plus:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
 			  (match_operand:DF 2 "register_operand" "f"))
 		 (match_operand:DF 3 "register_operand" "f")))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "madd.d\\t%0,%3,%1,%2"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"DF")])
@@ -2085,7 +2085,7 @@
 	(plus:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
 			  (match_operand:SF 2 "register_operand" "f"))
 		 (match_operand:SF 3 "register_operand" "f")))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "madd.s\\t%0,%3,%1,%2"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"SF")])
@@ -2095,7 +2095,7 @@
 	(minus:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
 			   (match_operand:DF 2 "register_operand" "f"))
 		  (match_operand:DF 3 "register_operand" "f")))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "msub.d\\t%0,%3,%1,%2"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"DF")])
@@ -2106,7 +2106,7 @@
 			   (match_operand:SF 2 "register_operand" "f"))
 		  (match_operand:SF 3 "register_operand" "f")))]
 		  
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "msub.s\\t%0,%3,%1,%2"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"SF")])
@@ -2116,7 +2116,7 @@
 	(neg:DF (plus:DF (mult:DF (match_operand:DF 1 "register_operand" "f")
 				  (match_operand:DF 2 "register_operand" "f"))
 			 (match_operand:DF 3 "register_operand" "f"))))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "nmadd.d\\t%0,%3,%1,%2"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"DF")])
@@ -2126,7 +2126,7 @@
 	(neg:SF (plus:SF (mult:SF (match_operand:SF 1 "register_operand" "f")
 				  (match_operand:SF 2 "register_operand" "f"))
 			 (match_operand:SF 3 "register_operand" "f"))))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "nmadd.s\\t%0,%3,%1,%2"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"SF")])
@@ -2136,7 +2136,7 @@
 	(minus:DF (match_operand:DF 1 "register_operand" "f")
 		  (mult:DF (match_operand:DF 2 "register_operand" "f")
 			   (match_operand:DF 3 "register_operand" "f"))))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "nmsub.d\\t%0,%1,%2,%3"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"DF")])
@@ -2146,7 +2146,7 @@
 	(minus:SF (match_operand:SF 1 "register_operand" "f")
 		  (mult:SF (match_operand:SF 2 "register_operand" "f")
 			   (match_operand:SF 3 "register_operand" "f"))))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "nmsub.s\\t%0,%1,%2,%3"
   [(set_attr "type"	"fmadd")
    (set_attr "mode"	"SF")])
@@ -2181,7 +2181,7 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(div:DF (match_operand:DF 1 "const_float_1_operand" "")
 		(match_operand:DF 2 "register_operand" "f")))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && flag_fast_math"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && flag_fast_math"
   "recip.d\\t%0,%2"
   [(set_attr "type"	"fdiv")
    (set_attr "mode"	"DF")])
@@ -2190,7 +2190,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(div:SF (match_operand:SF 1 "const_float_1_operand" "")
 		(match_operand:SF 2 "register_operand" "f")))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT && flag_fast_math"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && flag_fast_math"
   "recip.s\\t%0,%2"
   [(set_attr "type"	"fdiv")
    (set_attr "mode"	"SF")])
@@ -2782,7 +2782,7 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(div:DF (match_operand:DF 1 "const_float_1_operand" "")
 		(sqrt:DF (match_operand:DF 2 "register_operand" "f"))))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && flag_fast_math"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && flag_fast_math"
   "rsqrt.d\\t%0,%2"
   [(set_attr "type"	"fsqrt")
    (set_attr "mode"	"DF")])
@@ -2791,7 +2791,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(div:SF (match_operand:SF 1 "const_float_1_operand" "")
 		(sqrt:SF (match_operand:SF 2 "register_operand" "f"))))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT && flag_fast_math"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && flag_fast_math"
   "rsqrt.s\\t%0,%2"
   [(set_attr "type"	"fsqrt")
    (set_attr "mode"	"SF")])
@@ -5565,7 +5565,7 @@ move\\t%0,%z4\\n\\
 (define_insn "movcc"
   [(set (match_operand:CC 0 "nonimmediate_operand" "=d,*d,*d,*d,*R,*m,*d,*f,*f,*f,*f,*R,*m")
 	(match_operand:CC 1 "general_operand" "z,*d,*R,*m,*d,*d,*f,*d,*f,*R,*m,*f,*f"))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "* return mips_move_1word (operands, insn, FALSE);"
   [(set_attr "type"	"move,move,load,load,store,store,xfer,xfer,move,load,load,store,store")
    (set_attr "mode"	"SI")
@@ -5577,7 +5577,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:CC 0 "register_operand" "=z")
 	(match_operand:CC 1 "general_operand" "z"))
    (clobber (match_operand:TF 2 "register_operand" "=&f"))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "
 {
   rtx source;
@@ -5615,7 +5615,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:CC 0 "general_operand" "=z")
 	(match_operand:CC 1 "register_operand" "z"))
    (clobber (match_operand:CC 2 "register_operand" "=&d"))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "
 {
   /* This is called when we are copying a condition code register out
@@ -5657,7 +5657,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(mem:SF (plus:SI (match_operand:SI 1 "register_operand" "d")
 			 (match_operand:SI 2 "register_operand" "d"))))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "lwxc1\\t%0,%1(%2)"
   [(set_attr "type"	"load")
    (set_attr "mode"	"SF")])
@@ -5666,7 +5666,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(mem:SF (plus:DI (match_operand:DI 1 "se_register_operand" "d")
 			 (match_operand:DI 2 "se_register_operand" "d"))))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "lwxc1\\t%0,%1(%2)"
   [(set_attr "type"	"load")
    (set_attr "mode"	"SF")])
@@ -5675,7 +5675,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(mem:DF (plus:SI (match_operand:SI 1 "register_operand" "d")
 			 (match_operand:SI 2 "register_operand" "d"))))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "ldxc1\\t%0,%1(%2)"
   [(set_attr "type"	"load")
    (set_attr "mode"	"DF")])
@@ -5684,7 +5684,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(mem:DF (plus:DI (match_operand:DI 1 "se_register_operand" "d")
 			 (match_operand:DI 2 "se_register_operand" "d"))))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "ldxc1\\t%0,%1(%2)"
   [(set_attr "type"	"load")
    (set_attr "mode"	"DF")])
@@ -5693,7 +5693,7 @@ move\\t%0,%z4\\n\\
   [(set (mem:SF (plus:SI (match_operand:SI 1 "register_operand" "d")
 			 (match_operand:SI 2 "register_operand" "d")))
 	(match_operand:SF 0 "register_operand" "f"))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "swxc1\\t%0,%1(%2)"
   [(set_attr "type"	"store")
    (set_attr "mode"	"SF")])
@@ -5702,7 +5702,7 @@ move\\t%0,%z4\\n\\
   [(set (mem:SF (plus:DI (match_operand:DI 1 "se_register_operand" "d")
 			 (match_operand:DI 2 "se_register_operand" "d")))
 	(match_operand:SF 0 "register_operand" "f"))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "swxc1\\t%0,%1(%2)"
   [(set_attr "type"	"store")
    (set_attr "mode"	"SF")])
@@ -5711,7 +5711,7 @@ move\\t%0,%z4\\n\\
   [(set (mem:DF (plus:SI (match_operand:SI 1 "register_operand" "d")
 			 (match_operand:SI 2 "register_operand" "d")))
 	(match_operand:DF 0 "register_operand" "f"))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "sdxc1\\t%0,%1(%2)"
   [(set_attr "type"	"store")
    (set_attr "mode"	"DF")])
@@ -5720,7 +5720,7 @@ move\\t%0,%z4\\n\\
   [(set (mem:DF (plus:DI (match_operand:DI 1 "se_register_operand" "d")
 			 (match_operand:DI 2 "se_register_operand" "d")))
 	(match_operand:DF 0 "register_operand" "f"))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "sdxc1\\t%0,%1(%2)"
   [(set_attr "type"	"store")
    (set_attr "mode"	"DF")])
@@ -9924,7 +9924,7 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
 			  (const_int 0)])
 	 (match_operand:SI 2 "reg_or_0_operand" "dJ,0")
 	 (match_operand:SI 3 "reg_or_0_operand" "0,dJ")))]
-  "mips_isa >= 4"
+  "ISA_HAS_CONDMOVE"
   "@
     mov%B4\\t%0,%z2,%1
     mov%b4\\t%0,%z3,%1"
@@ -9939,7 +9939,7 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
 			  (const_int 0)])
 	 (match_operand:SI 2 "reg_or_0_operand" "dJ,0")
 	 (match_operand:SI 3 "reg_or_0_operand" "0,dJ")))]
-  "mips_isa >= 4"
+  "ISA_HAS_CONDMOVE"
   "@
     mov%B4\\t%0,%z2,%1
     mov%b4\\t%0,%z3,%1"
@@ -9955,7 +9955,7 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
 					  (const_int 0)])
 	 (match_operand:SI 1 "reg_or_0_operand" "dJ,0")
 	 (match_operand:SI 2 "reg_or_0_operand" "0,dJ")))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "@
     mov%T3\\t%0,%z1,%4
     mov%t3\\t%0,%z2,%4"
@@ -9970,7 +9970,7 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
 			  (const_int 0)])
 	 (match_operand:DI 2 "se_reg_or_0_operand" "dJ,0")
 	 (match_operand:DI 3 "se_reg_or_0_operand" "0,dJ")))]
-  "mips_isa >= 4"
+  "ISA_HAS_CONDMOVE"
   "@
     mov%B4\\t%0,%z2,%1
     mov%b4\\t%0,%z3,%1"
@@ -9985,7 +9985,7 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
 			  (const_int 0)])
 	 (match_operand:DI 2 "se_reg_or_0_operand" "dJ,0")
 	 (match_operand:DI 3 "se_reg_or_0_operand" "0,dJ")))]
-  "mips_isa >= 4"
+  "ISA_HAS_CONDMOVE"
   "@
     mov%B4\\t%0,%z2,%1
     mov%b4\\t%0,%z3,%1"
@@ -10001,7 +10001,7 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
 					  (const_int 0)])
 	 (match_operand:DI 1 "se_reg_or_0_operand" "dJ,0")
 	 (match_operand:DI 2 "se_reg_or_0_operand" "0,dJ")))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "@
     mov%T3\\t%0,%z1,%4
     mov%t3\\t%0,%z2,%4"
@@ -10016,7 +10016,7 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
 			  (const_int 0)])
 	 (match_operand:SF 2 "register_operand" "f,0")
 	 (match_operand:SF 3 "register_operand" "0,f")))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "@
     mov%B4.s\\t%0,%2,%1
     mov%b4.s\\t%0,%3,%1"
@@ -10031,7 +10031,7 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
 			  (const_int 0)])
 	 (match_operand:SF 2 "register_operand" "f,0")
 	 (match_operand:SF 3 "register_operand" "0,f")))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "@
     mov%B4.s\\t%0,%2,%1
     mov%b4.s\\t%0,%3,%1"
@@ -10047,7 +10047,7 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
 					  (const_int 0)])
 	 (match_operand:SF 1 "register_operand" "f,0")
 	 (match_operand:SF 2 "register_operand" "0,f")))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "@
     mov%T3.s\\t%0,%1,%4
     mov%t3.s\\t%0,%2,%4"
@@ -10062,7 +10062,7 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
 			  (const_int 0)])
 	 (match_operand:DF 2 "register_operand" "f,0")
 	 (match_operand:DF 3 "register_operand" "0,f")))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "@
     mov%B4.d\\t%0,%2,%1
     mov%b4.d\\t%0,%3,%1"
@@ -10077,7 +10077,7 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
 			  (const_int 0)])
 	 (match_operand:DF 2 "register_operand" "f,0")
 	 (match_operand:DF 3 "register_operand" "0,f")))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "@
     mov%B4.d\\t%0,%2,%1
     mov%b4.d\\t%0,%3,%1"
@@ -10093,7 +10093,7 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
 					  (const_int 0)])
 	 (match_operand:DF 1 "register_operand" "f,0")
 	 (match_operand:DF 2 "register_operand" "0,f")))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "@
     mov%T3.d\\t%0,%1,%4
     mov%t3.d\\t%0,%2,%4"
@@ -10108,7 +10108,7 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
 	(if_then_else:SI (match_dup 5)
 			 (match_operand:SI 2 "reg_or_0_operand" "")
 			 (match_operand:SI 3 "reg_or_0_operand" "")))]
-  "mips_isa >= 4"
+  "ISA_HAS_CONDMOVE || ISA_HAS_FP4"
   "
 {
   gen_conditional_move (operands);
@@ -10121,7 +10121,7 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
 	(if_then_else:DI (match_dup 5)
 			 (match_operand:DI 2 "se_reg_or_0_operand" "")
 			 (match_operand:DI 3 "se_reg_or_0_operand" "")))]
-  "mips_isa >= 4"
+  "ISA_HAS_CONDMOVE || ISA_HAS_FP4" 
   "
 {
   gen_conditional_move (operands);
@@ -10134,7 +10134,7 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
 	(if_then_else:SF (match_dup 5)
 			 (match_operand:SF 2 "register_operand" "")
 			 (match_operand:SF 3 "register_operand" "")))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT"
   "
 {
   gen_conditional_move (operands);
@@ -10147,7 +10147,7 @@ lw\\t%2,%1-%S1(%2)\;addu\\t%2,%2,$31\;j\\t%2"
 	(if_then_else:DF (match_dup 5)
 			 (match_operand:DF 2 "register_operand" "")
 			 (match_operand:DF 3 "register_operand" "")))]
-  "mips_isa >= 4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
+  "ISA_HAS_FP4 && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "
 {
   gen_conditional_move (operands);
