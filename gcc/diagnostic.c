@@ -89,6 +89,10 @@ extern int errorcount;
 /* Front-end specific tree formatter, if non-NULL.  */
 printer_fn lang_printer = NULL;
 
+/* An output_buffer surrogate for stderr.  */
+static output_buffer global_output_buffer;
+output_buffer *diagnostic_buffer = &global_output_buffer;
+
 static int need_error_newline;
 
 /* Function of last error message;
@@ -108,27 +112,30 @@ void (*print_error_function) PARAMS ((const char *)) =
 /* Maximum characters per line in automatic line wrapping mode.
    Zero means don't wrap lines. */
 
-static int output_maximum_width = 0;
+int diagnostic_message_length_per_line;
 
 /* Used to control every diagnostic message formatting.  Front-ends should
    call set_message_prefixing_rule to set up their politics.  */
-static int current_prefixing_rule = DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE;
+static int current_prefixing_rule;
 
+/* Initialize the diagnostic message outputting machinery.  */
+
+void
+initialize_diagnostics ()
+{
+  /* By default, we don't line-wrap messages.  */
+  diagnostic_message_length_per_line = 0;
+  set_message_prefixing_rule (DIAGNOSTICS_SHOW_PREFIX_ONCE);
+  /* Proceed to actual initialization.  */
+  default_initialize_buffer (diagnostic_buffer);
+}
+
 /* Predicate. Return 1 if we're in automatic line wrapping mode.  */
 
 static int
 doing_line_wrapping ()
 {
-  return output_maximum_width > 0;
-}
-
-/* Set Maximum characters per line in automatic line wrapping mode.  */
-
-void
-set_message_length (n)
-     int n;
-{
-    output_maximum_width = n;
+  return diagnostic_message_length_per_line > 0;
 }
 
 void
@@ -147,7 +154,7 @@ output_is_line_wrapping (buffer)
 }
 
 /* Return BUFFER's prefix.  */
-char *
+const char *
 output_get_prefix (buffer)
      const output_buffer *buffer;
 {
@@ -190,11 +197,24 @@ output_set_maximum_length (buffer, length)
 void
 output_set_prefix (buffer, prefix)
      output_buffer *buffer;
-     char *prefix;
+     const char *prefix;
 {
   buffer->prefix = prefix;
   set_real_maximum_length (buffer);
   buffer->emitted_prefix_p = 0;
+}
+
+/* Free BUFFER's prefix, a previously malloc()'d string.  */
+
+void
+output_destroy_prefix (buffer)
+     output_buffer *buffer;
+{
+  if (buffer->prefix)
+    {
+      free ((char *) buffer->prefix);
+      buffer->prefix = NULL;
+    }
 }
 
 /* Construct an output BUFFER with PREFIX and of MAXIMUM_LENGTH
@@ -202,7 +222,7 @@ output_set_prefix (buffer, prefix)
 void
 init_output_buffer (buffer, prefix, maximum_length)
      output_buffer *buffer;
-     char *prefix;
+     const char *prefix;
      int maximum_length;
 {
   obstack_init (&buffer->obstack);
@@ -215,6 +235,25 @@ init_output_buffer (buffer, prefix, maximum_length)
   buffer->cursor = NULL;
 }
 
+/* Initialize BUFFER with a NULL prefix and current diagnostic message
+   length cutoff.  */
+void
+default_initialize_buffer (buffer)
+     output_buffer *buffer;
+{
+  init_output_buffer (buffer, NULL, diagnostic_message_length_per_line);
+}
+
+/* Recompute diagnostic_buffer's attributes to reflect any change
+   in diagnostic formatting global options.  */
+void
+reshape_diagnostic_buffer ()
+{
+  diagnostic_buffer->ideal_maximum_length = diagnostic_message_length_per_line;
+  diagnostic_buffer->prefixing_rule = current_prefixing_rule;
+  set_real_maximum_length (diagnostic_buffer);
+}
+
 /* Reinitialize BUFFER.  */
 void
 output_clear (buffer)
@@ -223,6 +262,7 @@ output_clear (buffer)
   obstack_free (&buffer->obstack, obstack_base (&buffer->obstack));
   buffer->line_length = 0;
   buffer->cursor = NULL;
+  buffer->emitted_prefix_p = 0;
 }
 
 /* Finishes to construct a NULL-terminated character string representing
@@ -541,7 +581,7 @@ line_wrapper_printf VPARAMS ((FILE *file, const char *msgid, ...))
 #endif
   output_buffer buffer;
   
-  init_output_buffer (&buffer, NULL, output_maximum_width);
+  init_output_buffer (&buffer, NULL, diagnostic_message_length_per_line);
   VA_START (buffer.format_args, msgid);
 
 #ifndef ANSI_PROTOTYPES
@@ -567,12 +607,12 @@ vline_wrapper_message_with_location (file, line, warn, msgid, ap)
   output_buffer buffer;
   
   init_output_buffer (&buffer, build_location_prefix (file, line, warn),
-		      output_maximum_width);
+		      diagnostic_message_length_per_line);
   va_copy (buffer.format_args, ap);
   output_notice (&buffer, msgid);
   output_flush_on (&buffer, stderr);
 
-  free (output_get_prefix (&buffer));
+  output_destroy_prefix (&buffer);
   fputc ('\n', stderr);
 }
 
@@ -657,7 +697,7 @@ v_message_with_decl (decl, warn, msgid, ap)
       init_output_buffer
         (&buffer, build_location_prefix
          (DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl), warn),
-         output_maximum_width);
+         diagnostic_message_length_per_line);
     }
   else
     report_file_and_line (DECL_SOURCE_FILE (decl),
@@ -720,7 +760,7 @@ v_message_with_decl (decl, warn, msgid, ap)
   if (doing_line_wrapping())
     {
       output_flush_on (&buffer, stderr);
-      free (output_get_prefix (&buffer));
+      output_destroy_prefix (&buffer);
     }
   
   fputc ('\n', stderr);
@@ -1176,7 +1216,8 @@ default_print_error_function (file)
         prefix = build_message_string ("%s: ", file);
 
       if (doing_line_wrapping ())
-        init_output_buffer (&buffer, prefix, output_maximum_width);
+        init_output_buffer
+          (&buffer, prefix, diagnostic_message_length_per_line);
       else
         {
           if (file)

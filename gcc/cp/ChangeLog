@@ -1,3 +1,15 @@
+2000-06-06  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* lex.c (lang_init_options): Tweak.
+
+	* decl2.c: Remove #inclusion of diagnostic.h
+	(lang_decode_option): Move diagnostic formatting options to
+	toplevel. 
+
+	* lang-options.h: Remove documentation for diagnostic options.
+
+	* Makefile.in (lex.o): Depends upon diagnostic.h
+
 2000-06-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (redeclaration_error_message): If two TEMPLATE_DECLs have

@@ -74,8 +74,6 @@ DEFINE_LANG_NAME ("C++")
   { "-flabels-ok", "Labels can be used as first class objects" },
   { "-fno-labels-ok", "" },
   { "-fmemoize-lookups", "" },
-  { "-fmessage-length=", "" },
-  { "-fdiagnostics-show-location=", "" },  
   { "-fno-memoize-lookups", "" },
   { "-fms-extensions", "Don't pedwarn about uses of Microsoft extensions" },
   { "-fno-ms-extensions", "" },
