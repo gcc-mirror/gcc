@@ -30,10 +30,12 @@ Boston, MA 02111-1307, USA.  */
 
 static tree extract_aggr_init PROTO((tree, tree));
 static tree extract_scalar_init PROTO((tree, tree));
+static rtx cplus_expand_expr PROTO((tree, rtx, enum machine_mode,
+				    enum expand_modifier));
 
 /* Hook used by expand_expr to expand language-specific tree codes.  */
 
-rtx
+static rtx
 cplus_expand_expr (exp, target, tmode, modifier)
      tree exp;
      rtx target;

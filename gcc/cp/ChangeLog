@@ -1,3 +1,19 @@
+Mon Sep 29 19:57:51 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
+
+	* Makefile.in (parse.o, decl.o): Also depend on
+	$(srcdir)/../except.h $(srcdir)/../output.h.
+	(decl2.o): Also depend on $(srcdir)/../expr.h ../insn-codes.h
+	$(srcdir)/../except.h $(srcdir)/../output.h.
+	(typeck.o, init.o): Also depend on $(srcdir)/../expr.h
+	../insn-codes.h.
+
+	* call.c, cp-tree.h, decl.c, tree.c: Finish prototyping.
+
+	* expr.c (cplus_expand_expr): Make it static. 
+
+	* decl2.c, init.c, typeck.c: Include "expr.h".
+	(expand_expr): Use proper values when calling the function.
+
 Mon Sep 29 11:05:54 1997  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* lang-options.h: new -Wold-style-cast flag.

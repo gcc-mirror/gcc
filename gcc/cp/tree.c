@@ -32,6 +32,14 @@ Boston, MA 02111-1307, USA.  */
 #include <varargs.h>
 #endif
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef NEED_DECLARATION_FREE
+extern void free	PROTO((void *));
+#endif
+
 extern void compiler_error ();
 
 static tree get_identifier_list PROTO((tree));

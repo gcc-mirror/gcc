@@ -102,6 +102,7 @@ static tree non_reference PROTO((tree));
 static tree build_conv PROTO((enum tree_code, tree, tree));
 static void print_n_candidates PROTO((struct candidate *, int));
 static tree default_parm_conversions PROTO((tree, tree *));
+static int is_subseq PROTO((tree, tree));
 
 #define EVIL_RETURN(ARG)	((ARG).code = EVIL_CODE, (ARG))
 #define STD_RETURN(ARG)		((ARG).code = STD_CODE, (ARG))

@@ -37,8 +37,7 @@ Boston, MA 02111-1307, USA.  */
 #include "lex.h"
 #include "output.h"
 #include "except.h"
-
-extern tree get_file_function_name ();
+#include "expr.h"
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
@@ -3130,7 +3129,7 @@ finish_file ()
 		  expand_expr (expand_vec_init (decl, TREE_VEC_ELT (init, 0),
 						TREE_VEC_ELT (init, 1),
 						TREE_VEC_ELT (init, 2), 0),
-			       const0_rtx, VOIDmode, 0);
+			       const0_rtx, VOIDmode, EXPAND_NORMAL);
 		}
 	      else
 		expand_assignment (decl, init, 0, 0);
