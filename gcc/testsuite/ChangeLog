@@ -1,3 +1,8 @@
+2003-06-26  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* gcc.c-torture/execute/simd-4.c (main):
+	Added missing semicolon at end of union.
+
 2003-06-26  Giovanni Bajo  <giovannibajo@libero.it>
 
         PR c++/8266
