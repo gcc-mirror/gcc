@@ -1,3 +1,8 @@
+Thu Oct 15 00:57:55 1998  Robert Lipe  <robertl@dgii.com>
+
+	* c-pragma.c (handle_pragma_token): Test for null tree before
+	dereferencing TREE_CODE.
+
 Thu Oct 15 17:36:48 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c: Convert to use GEN_INT.

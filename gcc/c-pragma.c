@@ -385,7 +385,7 @@ handle_pragma_token (string, token)
 
     case ps_left:
 
-      if (TREE_CODE(token) == INTEGER_CST) 
+      if (token && TREE_CODE(token) == INTEGER_CST) 
 	align = TREE_INT_CST_LOW(token);
       else
 	align = atoi (string);
