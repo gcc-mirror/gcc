@@ -1,5 +1,7 @@
 2002-04-24  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/abi/mange7.C: New test.
+
 	PR c++/6438.
 	* g++.dg/parse/stmtexpr2.C: New test.
 

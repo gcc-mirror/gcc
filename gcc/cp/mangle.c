@@ -1358,6 +1358,11 @@ write_type (type)
        since both the qualified and uqualified types are substitution
        candidates.  */
     write_type (TYPE_MAIN_VARIANT (type));
+  else if (TREE_CODE (type) == ARRAY_TYPE)
+    /* It is important not to use the TYPE_MAIN_VARIANT of TYPE here
+       so that the cv-qualification of the element type is available
+       in write_array_type.  */
+    write_array_type (type);
   else
     {
       /* See through any typedefs.  */
@@ -1402,10 +1407,6 @@ write_type (type)
 	  /* We handle TYPENAME_TYPEs and UNBOUND_CLASS_TEMPLATEs like
 	     ordinary nested names.  */
 	  write_nested_name (TYPE_STUB_DECL (type));
-	  break;
-
-	case ARRAY_TYPE:
-	  write_array_type (type);
 	  break;
 
 	case POINTER_TYPE:
@@ -1474,19 +1475,23 @@ write_CV_qualifiers_for_type (type)
 
        "In cases where multiple order-insensitive qualifiers are
        present, they should be ordered 'K' (closest to the base type),
-       'V', 'r', and 'U' (farthest from the base type) ..."  */
+       'V', 'r', and 'U' (farthest from the base type) ..."  
 
-  if (CP_TYPE_RESTRICT_P (type))
+     Note that we do not use cp_type_quals below; given "const
+     int[3]", the "const" is emitted with the "int", not with the
+     array.  */
+
+  if (TYPE_QUALS (type) & TYPE_QUAL_RESTRICT)
     {
       write_char ('r');
       ++num_qualifiers;
     }
-  if (CP_TYPE_VOLATILE_P (type))
+  if (TYPE_QUALS (type) & TYPE_QUAL_VOLATILE)
     {
       write_char ('V');
       ++num_qualifiers;
     }
-  if (CP_TYPE_CONST_P (type))
+  if (TYPE_QUALS (type) & TYPE_QUAL_CONST)
     {
       write_char ('K');
       ++num_qualifiers;
