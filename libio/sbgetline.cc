@@ -27,5 +27,5 @@ the executable file might be covered by the GNU General Public License. */
 
 long streambuf::sgetline(char* buf, _IO_size_t n, char delim, int extract_delim)
 {
-  return _IO_getline(this, buf, n, delim, extract_delim);
+  return _IO_getline_info(this, buf, n, delim, extract_delim, (int *) 0);
 }

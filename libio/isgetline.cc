@@ -38,8 +38,9 @@ istream& istream::getline(char* buf, int len, char delim)
   if (ipfx1())
     {
       streambuf *sb = rdbuf();
-      _gcount = _IO_getline(sb, buf, len - 1, delim, -1);
-      ch = sb->sbumpc();
+      _gcount = _IO_getline_info(sb, buf, len - 1, delim, -1, &ch);
+      if (ch != EOF)
+	ch = sb->sbumpc();
       if (ch == EOF)
 	set (_gcount == 0 ? (ios::failbit|ios::eofbit) : ios::eofbit);
       else if (ch != (unsigned char) delim)
@@ -67,8 +68,9 @@ istream& istream::get(char* buf, int len, char delim)
   if (ipfx1())
     {
       streambuf *sbuf = rdbuf();
-      long count = _IO_getline(sbuf, buf, len - 1, delim, -1);
-      if (count == 0 && sbuf->sgetc() == EOF)
+      int ch;
+      long count = _IO_getline_info(sbuf, buf, len - 1, delim, -1, &ch);
+      if (_gcount == 0 && ch == EOF)
 	set(ios::failbit|ios::eofbit);
       else
 	_gcount = count;
@@ -92,8 +94,10 @@ char *_sb_readline (streambuf *sb, long& total, char terminator)
     char *ptr;
     int ch;
     
-    _IO_size_t count = _IO_getline(sb, buf, CHUNK_SIZE, terminator, -1);
-    ch = sb->sbumpc();
+    _IO_size_t count = _IO_getline_info(sb, buf, CHUNK_SIZE, terminator,
+				       -1, &ch);
+    if (ch != EOF)
+      ch = sb->sbumpc();
     long old_total = total;
     total += count;
     if (ch != EOF && ch != terminator) {
