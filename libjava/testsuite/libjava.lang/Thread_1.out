@@ -1,9 +1,0 @@
-test 0
-daemon done
-joined
-active count = 0
-test 1
-true
-still alive: false
-test 2
-interrupted

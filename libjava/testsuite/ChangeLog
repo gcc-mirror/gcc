@@ -1,3 +1,18 @@
+2000-12-16  Tom Tromey  <tromey@redhat.com>
+
+	* lib/libjava.exp (test_libjava_from_javac): Strange quoting trick
+	for `.class' link case.
+	(bytecompile_file): Change directory outside of `catch'.
+
+	* libjava.lang/Thread_1.java: Removed.
+	* libjava.lang/Thread_1.out: Likewise.
+
+	* libjava.lang/N19990310_4.xfail: New file.
+	* libjava.lang/stub.xfail: Added new failure modes.
+	* libjava.lang/stringconst.xfail: New file.
+	* libjava.lang/PR162.xfail: New file.
+	* libjava.lang/Final.xfail: Removed.
+
 2000-12-15  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.lang/instinit.out: Removed erroneous line.
