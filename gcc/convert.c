@@ -174,9 +174,9 @@ convert_to_real (tree type, tree expr)
   if (optimize
       && (((fcode == BUILT_IN_FLOORL
 	   || fcode == BUILT_IN_CEILL
-	   || fcode == BUILT_IN_ROUND
-	   || fcode == BUILT_IN_TRUNC
-	   || fcode == BUILT_IN_NEARBYINT)
+	   || fcode == BUILT_IN_ROUNDL
+	   || fcode == BUILT_IN_TRUNCL
+	   || fcode == BUILT_IN_NEARBYINTL)
 	  && (TYPE_MODE (type) == TYPE_MODE (double_type_node)
 	      || TYPE_MODE (type) == TYPE_MODE (float_type_node)))
 	  || ((fcode == BUILT_IN_FLOOR
