@@ -1,3 +1,8 @@
+1999-09-29  Nathan Sidwell  <nathan@acm.org>
+
+	* error.c (dump_template_parms): Don't use TS_PEDANTIC_NAME
+	to change primary template rendering.
+
 1999-09-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (UPT_TEMPLATE): Remove.

@@ -1350,28 +1350,6 @@ dump_template_parms (info, primary, flags)
           need_comma = 1;
         }
     }
-  else if (flags & TS_PEDANTIC_NAME)
-    {
-      tree tpl = TI_TEMPLATE (info);
-      tree parms = TREE_VALUE (DECL_TEMPLATE_PARMS (tpl));
-      int len = TREE_VEC_LENGTH (parms);
-      int ix;
-      
-      for (ix = 0; ix != len; ix++)
-        {
-          tree parm = TREE_VALUE (TREE_VEC_ELT (parms, ix));
-          
-          if (ix)
-            OB_PUTS (", ");
-          if (TREE_CODE (parm) == TYPE_DECL)
-            OB_PUTS ("class");
-          else if (TREE_CODE (parm) == TEMPLATE_DECL)
-            dump_decl (DECL_TEMPLATE_RESULT (parm), flags);
-          else
-            dump_type (TREE_TYPE (parm),
-                       flags | TS_TEMPLATE_PARM);
-        }
-    }
   else if (primary)
     {
       tree tpl = TI_TEMPLATE (info);
