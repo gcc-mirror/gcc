@@ -1,3 +1,79 @@
+Wed Oct 13 10:07:54 1999  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (genrtl.o): Depend on ggc.h.
+	* configure.in (valloc): Probe for it.
+	(with-gc): Use ggc-page if valloc present.
+	* ggc-common.c (ggc_mark_rtx_children): Use ggc_mark_if_gcable.
+	(ggc_mark_rtvec_children): New from corpse of ggc_mark_rtvec.
+	(ggc_alloc_string): Moved from ggc-page.c.
+	* ggc-none.c (ggc_alloc_obj): New.
+	(ggc_alloc_rtx, ggc_alloc_rtvec): Remove.
+	* ggc-page.c (sys/mman.h): Only include if HAVE_MMAP.
+	(struct globals): Likewise for dev_zero_fd.
+	(init_ggc): Likewise for it's initialization.
+	(ggc_allocated_p): Move careful dereference from ...
+	(ggc_lookup_page_table): ... here.  Delete.
+	(lookup_page_table_entry): Don't use ggc_lookup_page_table.
+	(alloc_anon): Use valloc if no mmap.
+	(release_pages): Use free if using valloc.
+	(ggc_alloc_obj): Renamed from alloc_obj.
+	(ggc_set_mark): Renamed from mark_obj.
+	(ggc_mark_if_gcable): Renamed from ggc_mark_string_if_gcable.
+	(ggc_alloc_rtx, ggc_alloc_rtvec): Delete.
+	(ggc_alloc_tree, ggc_alloc_string, ggc_alloc): Delete.
+	(ggc_set_mark_rtx, ggc_set_mark_rtvec): Delete.	
+	(ggc_set_mark_tree, ggc_mark_string, ggc_mark): Delete.
+	(ggc_collect): Use fp printing instead of our own rounding.
+	* ggc-simple.c (IS_MARKED, IGNORE_MARK): Delete.
+	(GGC_STRING_MAGIC, GGC_STRING_MAGIC_MARK): Delete.
+	(GGC_ANY_MAGIC, GGC_ANY_MAGIC_MARK): Delete.
+	(struct ggc_rtx, struct ggc_rtvec, struct ggc_tree): Delete.
+	(struct ggc_string, struct ggc_any): Delete.
+	(offsetof): Provide default definition.
+	(GGC_BALANCE, GGC_ALWAYS_COLLECT, GGC_ALWAYS_VERIFY): New.
+	(PTR_KEY): New.
+	(struct ggc_mem): New, from corpse of ggc_any.
+	(struct ggc_status): Delete.
+	(ggc_chain, ggc_allocated_strings, ggc_strings_used): Delete.
+	(n_rtxs_collected, n_vecs_collected, n_trees_collected): Delete.
+	(n_strings_collected, n_anys_collected): Delete.
+	(ggc_alloc_rtx, ggc_alloc_rtvec, ggc_alloc_tree): Delete.
+	(ggc_alloc_string, ggc_alloc): Delete.
+	(ggc_free_rtx, ggc_free_rtvec, ggc_free_tree): Delete.
+	(ggc_free_string, ggc_free_any): Delete.
+	(ggc_set_mark_rtx, ggc_set_mark_rtvec, ggc_set_mark_tree): Delete.
+	(ggc_compare_addresses, ggc_mark_string): Delete.
+	(ggc_mark_string_if_gcable, ggc_mark): Delete.
+	(search_data): Delete.
+	(struct globals): New.
+	(GGC_MIN_EXPAND_FOR_GC, GGC_MIN_LAST_ALLOCATED): New.	
+	(tree_insert, tree_lookup): New.
+	(ggc_alloc_obj, ggc_set_mark, ggc_mark_if_gcable): New.
+	(clear_marks, sweep_objs): New.
+	(ggc_collect): Gut.  Use clear_marks, sweep_objs.
+	(init_ggc): Set allocated_last_gc.
+	(ggc_push_context): Gut.  Use G.context.
+	(ggc_pop_context): Likewise.
+	(ggc_pop_context_1): New.
+	(debug_ggc_tree): New.
+	(debug_ggc_balance, tally_leaves): New.
+	* ggc.h (ggc_mark_rtvec, ggc_mark_string, ggc_mark): Remove decl.
+	(ggc_mark_string_if_gcable): Remove decl.
+	(ggc_mark_rtx, ggc_mark_tree): Use ggc_set_mark.
+	(ggc_mark_rtvec_children): New.
+	(ggc_mark_rtvec, ggc_mark_string, ggc_mark): New.
+	(ggc_mark_if_gcable): New decl.
+	(ggc_alloc_rtx, ggc_alloc_rtvec): Remove decl.
+	(ggc_alloc_tree, ggc_alloc): Likewise.
+	(ggc_set_mark_rtx, ggc_set_mark_rtvec, ggc_set_mark_tree): Likewise.
+	(ggc_alloc_obj): New decl.
+	(ggc_alloc_rtx, ggc_alloc_rtvec): New macros.
+	(ggc_alloc_tree, ggc_alloc): Likewise.
+	(ggc_set_mark): New decl.
+	* rtl.h (struct rtx_def): Remove gc_mark.
+	(struct rtvec_def): Likewise.
+	* tree.h (struct tree_common): Likewise.
+
 Wed Oct 13 01:44:29 1999  Carol LePage  <carolo@hal.com>
 
         * configure.in (sparc-hal-solaris2*): Fix xm_file, xm_defines,
