@@ -427,7 +427,7 @@ can_widen_reference_to (tree source_type, tree target_type)
 	      /* target_type is OK if source_type or source_type ancestors
 		 implement target_type. We handle multiple sub-interfaces  */
 
-	      tree basetype_vec = TYPE_BINFO_BASETYPES (source_type);
+	      tree basetype_vec = BINFO_BASE_BINFOS (TYPE_BINFO (source_type));
 	      int n = TREE_VEC_LENGTH (basetype_vec), i;
 	      for (i=0 ; i < n; i++)
 	        if (can_widen_reference_to 
@@ -440,7 +440,8 @@ can_widen_reference_to (tree source_type, tree target_type)
 
 	  for ( ; source_depth > target_depth;  source_depth--) 
 	    {
-	      source_type = TYPE_BINFO_BASETYPE (source_type, 0); 
+	      source_type
+		= BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (source_type), 0));
 	    }
 	  return source_type == target_type;
 	}
@@ -1466,7 +1467,7 @@ lookup_field (tree *typep, tree name)
 	  return field;
 
       /* Process implemented interfaces. */
-      basetype_vec = TYPE_BINFO_BASETYPES (*typep);
+      basetype_vec = BINFO_BASE_BINFOS (TYPE_BINFO (*typep));
       n = TREE_VEC_LENGTH (basetype_vec);
       save_field = NULL_TREE;
       for (i = 0; i < n; i++)

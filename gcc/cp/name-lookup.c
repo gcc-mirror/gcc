@@ -4313,8 +4313,9 @@ arg_assoc_class (struct arg_lookup *k, tree type)
     return true;
   
   /* Process baseclasses.  */
-  for (i = 0; i < CLASSTYPE_N_BASECLASSES (type); i++)
-    if (arg_assoc_class (k, TYPE_BINFO_BASETYPE (type, i)))
+  for (i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (type)); i++)
+    if (arg_assoc_class
+	(k, BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (type), i))))
       return true;
   
   /* Process friends.  */

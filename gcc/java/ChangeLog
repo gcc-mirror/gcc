@@ -1,3 +1,22 @@
+2004-07-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* java-tree.h (CLASSTYPE_SPUER): Adjust BINFO macros.
+	(TYPE_NVIRTUALS, TYPE_VTABLE): Likewise.
+	* java/class.c (set_super_info, class_depth, interface_of_p,
+	maybe_add_interface, add_interface, make_class_data,
+	layout_class, add_miranda_methods): Adjust BINFO macros.
+	* expr.c (can_widen_reference_to, lookup_field): Likewise.
+	* jcf-write.c (generate_classfile): Likewise.
+	* parse.y (patch_anonymous_class,
+	check_inner_circular_reference, check_circular_reference,
+	java_complete_class, check_abstract_method_definitions,
+	java_check_abstract_method_definitions,
+	check_interface_throws_clauses, java_check_abstract_methods,
+	lookup_java_interface_method2,
+	find_applicable_accessible_methods_list): Likewise.
+	* typeck.c (find_method_in_interface): Likewise.
+	* verify.c (merge_types): Likewise.
+
 2004-07-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* java-tree.h (CLASS_HAS_SUPER_FLAG): Use BINFO_FLAG_1.

@@ -1,3 +1,24 @@
+2004-07-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.h (TYPE_BINFO_OFFSET, TYPE_BINFO_VTABLE,
+	TYPE_BINFO_VIRTUALS, TYPE_BINFO_BASETYPES,
+	TYPE_BINFO_BASETYPE): Remove.
+	(BINFO_BASETYPES, BINFO_N_BASETYPES, BINFO_BASETYPE): Rename
+	to ...
+	(BINFO_BASE_BINFOS, BINFO_N_BASE_BINFOS, BINFO_BASE_BINFO): ...
+	here.
+	(BINFO_BASEACCESSES, BINFO_BASEACCESS): Rename to ...
+	(BINFO_BASE_ACCESSES, BINFO_BASE_ACCESS): ... here.
+	(BINFO_INHERITANCE_CHAIN): Redocument as it is actually used.
+	(struct tree_binfo): Rename base_types to base_binfos.
+	* alias.c (record_component_aliases): Adjust BINFO macros.
+	* dbxout.c (dbxout_type): Likewise.
+	* dwarf2out.c (gen_member_die): Likewise.
+	* sdbout.c (sdbout_one_type): Likewise.
+	* tree-dump.c (deque_and_dump): Likewise.
+	* config/i386/i386.c (classify_argument,
+	contains_128bit_aligned_vector_p): Likewise.
+
 2004-07-07  Nick Clifton  <nickc@redhat.com>
 
 	* config/fr30/fr30.c (fr30_setup_incoming_varargs): Change

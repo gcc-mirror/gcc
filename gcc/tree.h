@@ -202,7 +202,7 @@ struct tree_common GTY(())
 
        TREE_STATIC in
            VAR_DECL, FUNCTION_DECL, CONSTRUCTOR, ADDR_EXPR
-       TREE_VIA_VIRTUAL in
+       BINFO_VIRTUAL_P in
            TREE_BINFO
        TREE_CONSTANT_OVERFLOW in
            INTEGER_CST, REAL_CST, COMPLEX_CST, VECTOR_CST
@@ -1616,7 +1616,6 @@ struct tree_type GTY(())
    This is always 0 except when there is multiple inheritance.  */
 
 #define BINFO_OFFSET(NODE) (TREE_BINFO_CHECK(NODE)->binfo.offset)
-#define TYPE_BINFO_OFFSET(NODE) BINFO_OFFSET (TYPE_BINFO (NODE))
 #define BINFO_OFFSET_ZEROP(NODE) (integer_zerop (BINFO_OFFSET (NODE)))
 
 /* The virtual function table belonging to this basetype.  Virtual
@@ -1624,13 +1623,11 @@ struct tree_type GTY(())
    The entries of a virtual function table are language-dependent.  */
 
 #define BINFO_VTABLE(NODE) (TREE_BINFO_CHECK(NODE)->binfo.vtable)
-#define TYPE_BINFO_VTABLE(NODE) BINFO_VTABLE (TYPE_BINFO (NODE))
 
 /* The virtual functions in the virtual function table.  This is
    a TREE_LIST that is used as an initial approximation for building
    a virtual function table for this basetype.  */
 #define BINFO_VIRTUALS(NODE) (TREE_BINFO_CHECK(NODE)->binfo.virtuals)
-#define TYPE_BINFO_VIRTUALS(NODE) BINFO_VIRTUALS (TYPE_BINFO (NODE))
 
 /* A vector of binfos for the direct basetypes inherited by this
    basetype.
@@ -1643,17 +1640,14 @@ struct tree_type GTY(())
    base types at the end of this TREE_VEC (instead of using
    another TREE_VEC).  This would simplify the calculation
    of how many basetypes a given type had.  */
-#define BINFO_BASETYPES(NODE) (TREE_BINFO_CHECK(NODE)->binfo.base_types)
-#define TYPE_BINFO_BASETYPES(NODE) BINFO_BASETYPES (TYPE_BINFO (NODE))
+#define BINFO_BASE_BINFOS(NODE) (TREE_BINFO_CHECK(NODE)->binfo.base_binfos)
 
 /* The number of basetypes for NODE.  */
-#define BINFO_N_BASETYPES(NODE) \
-  (BINFO_BASETYPES (NODE) ? TREE_VEC_LENGTH (BINFO_BASETYPES (NODE)) : 0)
+#define BINFO_N_BASE_BINFOS(NODE) \
+  (BINFO_BASE_BINFOS (NODE) ? TREE_VEC_LENGTH (BINFO_BASE_BINFOS (NODE)) : 0)
 
-/* Accessor macro to get to the Nth basetype of this basetype.  */
-#define BINFO_BASETYPE(NODE,N) TREE_VEC_ELT (BINFO_BASETYPES (NODE), (N))
-#define TYPE_BINFO_BASETYPE(NODE,N) \
-  BINFO_TYPE (TREE_VEC_ELT (BINFO_BASETYPES (TYPE_BINFO (NODE)), (N)))
+/* Accessor macro to get to the Nth base binfo of this binfo.  */
+#define BINFO_BASE_BINFO(NODE,N) TREE_VEC_ELT (BINFO_BASE_BINFOS (NODE), (N))
 
 /* For a BINFO record describing a virtual base class, i.e., one where
    TREE_VIA_VIRTUAL is set, this field assists in locating the virtual
@@ -1665,25 +1659,17 @@ struct tree_type GTY(())
 /* Indicates the accesses this binfo has to its bases. The values are
    access_public_node, access_protected_node or access_private_node.
    If this array is not present, public access is implied.  */
-#define BINFO_BASEACCESSES(NODE) (TREE_BINFO_CHECK(NODE)->binfo.base_accesses)
-#define BINFO_BASEACCESS(NODE,N) TREE_VEC_ELT (BINFO_BASEACCESSES(NODE), (N))
+#define BINFO_BASE_ACCESSES(NODE) (TREE_BINFO_CHECK(NODE)->binfo.base_accesses)
+#define BINFO_BASE_ACCESS(NODE,N) TREE_VEC_ELT (BINFO_BASE_ACCESSES(NODE), (N))
 
 /* Number of language independent elements in a binfo.  Languages may
    add additional trailing elements.  */
 
 #define BINFO_LANG_SLOT(NODE,N) (TREE_BINFO_CHECK(NODE)->binfo.lang_slots[N])
 
-/* Slot used to build a chain that represents a use of inheritance.
-   For example, if X is derived from Y, and Y is derived from Z,
-   then this field can be used to link the binfo node for X to
-   the binfo node for X's Y to represent the use of inheritance
-   from X to Y.  Similarly, this slot of the binfo node for X's Y
-   can point to the Z from which Y is inherited (in X's inheritance
-   hierarchy).  In this fashion, one can represent and traverse specific
-   uses of inheritance using the binfo nodes themselves (instead of
-   consing new space pointing to binfo nodes).
-   It is up to the language-dependent front-ends to maintain
-   this information as necessary.  */
+/* The BINFO_INHERITANCE_CHAIN points at the binfo for the base
+   inheriting this base for non-virtual bases. For virtual bases it
+   points to the binfo of the most derived type.  */
 #define BINFO_INHERITANCE_CHAIN(NODE) \
 	(TREE_BINFO_CHECK(NODE)->binfo.inheritance)
 
@@ -1694,7 +1680,7 @@ struct tree_binfo GTY (())
   tree offset;
   tree vtable;
   tree virtuals;
-  tree base_types;
+  tree base_binfos;
   tree vptr_field;
   tree base_accesses;
   tree inheritance;

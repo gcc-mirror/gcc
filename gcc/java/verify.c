@@ -226,13 +226,13 @@ merge_types (tree type1, tree type2)
       depth1 = class_depth (type1);
       depth2 = class_depth (type2);
       for ( ; depth1 > depth2;  depth1--)
-	type1 = TYPE_BINFO_BASETYPE (type1, 0);
+	type1 = BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (type1), 0));
       for ( ; depth2 > depth1;  depth2--)
-	type2 = TYPE_BINFO_BASETYPE (type2, 0);
+	type2 = BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (type2), 0));
       while (type1 != type2)
 	{
-	  type1 = TYPE_BINFO_BASETYPE (type1, 0);
-	  type2 = TYPE_BINFO_BASETYPE (type2, 0);
+	  type1 = BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (type1), 0));
+	  type2 = BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (type2), 0));
 	}
       return promote_type (type1);
     }

@@ -125,8 +125,9 @@ struct JCF;
 #define CLASS_HAS_SUPER(TYPE) CLASS_HAS_SUPER_FLAG (TYPE_BINFO (TYPE))
 
 /* Return the supertype of class TYPE, or NULL_TREE is it has none. */
-#define CLASSTYPE_SUPER(TYPE) (CLASS_HAS_SUPER (TYPE) ? \
-  BINFO_TYPE (TREE_VEC_ELT (TYPE_BINFO_BASETYPES (TYPE), 0)) : NULL_TREE)
+#define CLASSTYPE_SUPER(TYPE) (CLASS_HAS_SUPER (TYPE) \
+  ? BINFO_TYPE (BINFO_BASE_BINFO (TYPE_BINFO (TYPE), 0)) \
+  : NULL_TREE)
 
 /* True if the class we are compiling is a .java source file;
    false if it is a .class bytecode file. */
@@ -1433,11 +1434,11 @@ extern int in_same_package (tree, tree);
 /* The number of virtual methods in this class's dispatch table.
    Does not include initial two dummy entries (one points to the
    Class object, and the other is for G++ -fvtable-thunks compatibility). */
-#define TYPE_NVIRTUALS(TYPE) TYPE_BINFO_VIRTUALS (TYPE)
+#define TYPE_NVIRTUALS(TYPE) BINFO_VIRTUALS (TYPE_BINFO (TYPE))
 
 /* A TREE_VEC (indexed by DECL_VINDEX) containing this class's
    virtual methods. */
-#define TYPE_VTABLE(TYPE) TYPE_BINFO_VTABLE(TYPE)
+#define TYPE_VTABLE(TYPE) BINFO_VTABLE(TYPE_BINFO (TYPE))
 
 /* Use CLASS_LOADED_P? FIXME */
 #define CLASS_COMPLETE_P(DECL) DECL_LANG_FLAG_2 (DECL) 

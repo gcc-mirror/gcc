@@ -718,12 +718,12 @@ record_component_aliases (tree type)
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
       /* Recursively record aliases for the base classes, if there are any.  */
-      if (TYPE_BINFO (type) != NULL && TYPE_BINFO_BASETYPES (type) != NULL)
+      if (TYPE_BINFO (type) && BINFO_BASE_BINFOS (TYPE_BINFO (type)))
 	{
 	  int i;
-	  for (i = 0; i < TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (type)); i++)
+	  for (i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (type)); i++)
 	    {
-	      tree binfo = TREE_VEC_ELT (TYPE_BINFO_BASETYPES (type), i);
+	      tree binfo = BINFO_BASE_BINFO (TYPE_BINFO (type), i);
 	      record_alias_subset (superset,
 				   get_alias_set (BINFO_TYPE (binfo)));
 	    }

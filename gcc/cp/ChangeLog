@@ -1,3 +1,39 @@
+2004-07-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (CLASSTYPE_N_BASECLASSES): Remove.
+	* class.c (build_primary_vtable, check_bases,
+	determine_primary_base, finish_struct_bits,
+	maybe_warn_about_overly_private_class, dfs_find_final_overrider_q,
+	get_basefndecls, warn_hidden, walk_subobject_offsets,
+	build_base_fields, create_vtable_ptr, propagate_binfo_offsets,
+	layout_virtual_bases, end_of_class, warn_about_ambiguous_bases,
+	finish_struct_1, get_vfield_name, contains_empty_class_p,
+	dump_class_hierarchy_r, finish_vtbls, build_vtt_inits,
+	dfs_ctor_vtable_bases_queue_p, accumulate_vtbl_inits,
+	add_vcall_offset_vtbl_entries_r, cp_fold_obj_type_ref): Adjust
+	BINFO macros.
+	* decl.c (xref_basetypes): Likewise.
+	* dump.c (cp_dump_tree): Likewise.
+	* error.c (dump_expr): Likewise.
+	* init.c (sort_mem_initializers, expand_member_init,
+	push_base_cleanups): Likewise.
+	* method.c (do_build_copy_constructor, do_build_assign_reg,
+	synthesize_exception_spec): Likewise.
+	* name-lookup.c (arg_assoc_class):
+	* pt.c (instantiate_class_template, tsubst,
+	get_template_base_recursive):
+	* ptree.c (cxx_print_type):
+	* rtti.c (get_psuedo_ti_init, get_pseudo_ti_desc): Likewise.
+	* search.c (lookup_base_r, dynamic_cast_base_recurse,
+	dfs_access_in_type, access_in_type, lookup_field_queue_p,
+	bfs_walk, dfs_walk_real, look_for_overrides, markedp, unmarkedp,
+	marked_pushdecls_p, unmarked_pushdecls_p, dfs_debug_markedp,
+	dfs_debug_unmarkedp, dfs_check_overlap, dfs_no_overlap_yet,
+	binfo_for_vtable, copied_binfo, original_binfo): Likewise
+	* tree.c (copy_base_binfos, make_binfo): Likewise.
+	* typeck.c (commmon_base_type): Likewise
+	* typeck2.c (process_init_constructor): Likewise
+
 2004-07-06  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* decl.c (check_tag_decl): Name redeclared type in diagnostic.

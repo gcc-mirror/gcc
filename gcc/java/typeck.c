@@ -797,12 +797,11 @@ find_method_in_interfaces (tree searched_class, int flags, tree method_name,
 {
   int i;
   int interface_len = 
-    TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (searched_class)) - 1;
+    TREE_VEC_LENGTH (BINFO_BASE_BINFOS (TYPE_BINFO (searched_class))) - 1;
 
   for (i = interface_len; i > 0; i--)
     {
-      tree child = 
-	TREE_VEC_ELT (TYPE_BINFO_BASETYPES (searched_class), i);
+      tree child = BINFO_BASE_BINFO (TYPE_BINFO (searched_class), i);
       tree iclass = BINFO_TYPE (child);
       tree method;
 	  

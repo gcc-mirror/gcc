@@ -1151,13 +1151,12 @@ sdbout_one_type (tree type)
 	   case.  */
 	if (TREE_CODE (type) != ENUMERAL_TYPE)
 	  {
-	    if (TYPE_BINFO (type)
-		&& TYPE_BINFO_BASETYPES (type))
-	      n_baseclasses = TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (type));
+	    if (TYPE_BINFO (type) && BINFO_BASE_BINFOS (TYPE_BINFO (type)))
+	      n_baseclasses = BINFO_N_BASE_BINFOS (TYPE_BINFO (type));
+	    
 	    for (i = 0; i < n_baseclasses; i++)
 	      {
-		tree child = TREE_VEC_ELT (BINFO_BASETYPES (TYPE_BINFO (type)),
-					   i);
+		tree child = BINFO_BASE_BINFO (TYPE_BINFO (type), i);
 		tree child_type = BINFO_TYPE (child);
 		tree child_type_name;
 		if (TYPE_NAME (child_type) == 0)

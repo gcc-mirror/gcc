@@ -268,9 +268,9 @@ cp_dump_tree (void* dump_info, tree t)
 	{
 	  int i;
 	  
-	  for (i = 0; i < CLASSTYPE_N_BASECLASSES (t); ++i)
+	  for (i = 0; i < BINFO_N_BASE_BINFOS (TYPE_BINFO (t)); ++i)
 	    {
-	      tree base_binfo = BINFO_BASETYPE (TYPE_BINFO (t), i);
+	      tree base_binfo = BINFO_BASE_BINFO (TYPE_BINFO (t), i);
 	      dump_child ("base", BINFO_TYPE (base_binfo));
 	      if (BINFO_VIRTUAL_P (base_binfo)) 
 		dump_string (di, "virtual");

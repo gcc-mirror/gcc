@@ -2063,10 +2063,10 @@ classify_argument (enum machine_mode mode, tree type,
       if (TREE_CODE (type) == RECORD_TYPE)
 	{
 	  /* For classes first merge in the field of the subclasses.  */
-	  if (TYPE_BINFO (type) != NULL && TYPE_BINFO_BASETYPES (type) != NULL)
+	  if (TYPE_BINFO (type) && BINFO_BASE_BINFOS (TYPE_BINFO (type)))
 	    {
-	      tree bases = TYPE_BINFO_BASETYPES (type);
-	      int n_bases = TREE_VEC_LENGTH (bases);
+	      tree bases = BINFO_BASE_BINFOS (TYPE_BINFO (type));
+	      int n_bases = BINFO_N_BASE_BINFOS (TYPE_BINFO (type));
 	      int i;
 
 	      for (i = 0; i < n_bases; ++i)
@@ -2151,10 +2151,10 @@ classify_argument (enum machine_mode mode, tree type,
 	       || TREE_CODE (type) == QUAL_UNION_TYPE)
 	{
 	  /* For classes first merge in the field of the subclasses.  */
-	  if (TYPE_BINFO (type) != NULL && TYPE_BINFO_BASETYPES (type) != NULL)
+	  if (TYPE_BINFO (type) && BINFO_BASE_BINFOS (TYPE_BINFO (type)))
 	    {
-	      tree bases = TYPE_BINFO_BASETYPES (type);
-	      int n_bases = TREE_VEC_LENGTH (bases);
+	      tree bases = BINFO_BASE_BINFOS (TYPE_BINFO (type));
+	      int n_bases = BINFO_N_BASE_BINFOS (TYPE_BINFO (type));
 	      int i;
 
 	      for (i = 0; i < n_bases; ++i)
@@ -2759,11 +2759,10 @@ contains_128bit_aligned_vector_p (tree type)
 	{
 	  tree field;
 
-	  if (TYPE_BINFO (type) != NULL
-	      && TYPE_BINFO_BASETYPES (type) != NULL)
+	  if (TYPE_BINFO (type) && BINFO_BASE_BINFOS (TYPE_BINFO (type)))
 	    {
-	      tree bases = TYPE_BINFO_BASETYPES (type);
-	      int n_bases = TREE_VEC_LENGTH (bases);
+	      tree bases = BINFO_BASE_BINFOS (TYPE_BINFO (type));
+	      int n_bases = BINFO_N_BASE_BINFOS (TYPE_BINFO (type));
 	      int i;
 
 	      for (i = 0; i < n_bases; ++i)
