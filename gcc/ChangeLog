@@ -1,3 +1,22 @@
+2000-02-18  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (INSN_VOLATILE, SET_INSN_VOLATILE, uid_volatile): Remove.
+	(life_analysis_1): Subsume into ...
+	(life_analysis): ... here.  Force PROP_REG_INFO off after reload.
+	Use update_life_info for the relaxation.
+	(update_life_info): Update REG_BASIC_BLOCK for registers live on
+	entry and regs_live_at_setjmp.
+	(set_noop_p): Simplify.
+	(notice_stack_pointer_modification_1): Renamed from s/_1//.
+	(record_volatile_insns): Split into ...
+	(delete_noop_moves): ... here,
+	(notice_stack_pointer_modification): ... here,
+	(insn_dead_p): ... and here.
+	(propagate_block): Don't query INSN_VOLATILE.
+	(mark_used_regs): Mind !PROP_REG_INFO.
+	* toplev.c (rest_of_compilation): Call mark_constant_function here,
+	not in life_analysis.
+
 Fri Feb 18 01:29:22 EST 2000  John Wehle  (john@feith.com)
 
 	* loop.c (canonicalize_condition): New function,
