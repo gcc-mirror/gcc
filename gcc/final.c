@@ -3037,6 +3037,7 @@ cleanup_subreg_operands (insn)
       || GET_CODE (PATTERN (insn)) == USE
       || GET_CODE (PATTERN (insn)) == ADDR_VEC
       || GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC
+      || GET_CODE (PATTERN (insn)) == ASM_INPUT
       || asm_noperands (PATTERN (insn)) >= 0)
     return;
 
