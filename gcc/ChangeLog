@@ -1,3 +1,8 @@
+2003-07-09  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR/11144
+	* config/i386/i386.c (ix86_function_arg_boundary): Remove abort.
+
 2003-07-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR bootstrap/11043
