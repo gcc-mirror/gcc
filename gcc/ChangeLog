@@ -1,3 +1,12 @@
+2004-08-02  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* gengtype.h (options::info): Change type to const char *.
+	(enum gc_used_enum): Move out of struct type scope.
+	* gengtype.c (create_option): Convert initializer for option::info to
+	appropiate type.
+	(adjust_field_type, walk_type, write_func_for_structure,
+	write_root, write_roots): Remove pointless cast. 
+
 2004-08-02  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* genopinit.c (gen_insn): Check for MODE_COMPLEX_FLOAT patterns for $F.
