@@ -7009,17 +7009,23 @@ __FRAME_BEGIN__:
 	.4byte	.L1-.LFB1
 .LEFDE1:
 EOF
-		cat > conftest.exp <<EOF
+		cat > conftest.lit <<EOF
  0000 10000000 00000000 017a0001 781a0004  .........z..x...
  0010 01000000 12000000 18000000 00000000  ................
  0020 08000000 04080000 0044               .........D      
+EOF
+		cat > conftest.big <<EOF
+ 0000 00000010 00000000 017a0001 781a0004  .........z..x...
+ 0010 00000001 00000012 00000018 00000000  ................
+ 0020 00000008 04000000 0844               .........D      
 EOF
 		# If the assembler didn't choke, and we can objdump,
 		# and we got the correct data, then succeed.
 		if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
 		   && objdump -s -j .eh_frame conftest.o 2>/dev/null \
 		      | tail -3 > conftest.got \
-		   && cmp conftest.exp conftest.got > /dev/null 2>&1
+		   && { cmp conftest.lit conftest.got > /dev/null 2>&1 \
+		        || cmp conftest.big conftest.got > /dev/null 2>&1; }
 		then
 			gcc_cv_as_eh_frame="yes"
 		else
@@ -7039,7 +7045,7 @@ echo "$ac_t""$gcc_cv_as_eh_frame" 1>&6
 case "$target" in 
   sparc*-*-*)
     echo $ac_n "checking assembler .register pseudo-op support""... $ac_c" 1>&6
-echo "configure:7043: checking assembler .register pseudo-op support" >&5
+echo "configure:7049: checking assembler .register pseudo-op support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_register_pseudo_op'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7067,7 +7073,7 @@ EOF
     fi
 
     echo $ac_n "checking assembler supports -relax""... $ac_c" 1>&6
-echo "configure:7071: checking assembler supports -relax" >&5
+echo "configure:7077: checking assembler supports -relax" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_relax_opt'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7097,7 +7103,7 @@ EOF
     case "$tm_file" in
     *64*)
 	echo $ac_n "checking for 64 bit support in assembler ($gcc_cv_as)""... $ac_c" 1>&6
-echo "configure:7101: checking for 64 bit support in assembler ($gcc_cv_as)" >&5
+echo "configure:7107: checking for 64 bit support in assembler ($gcc_cv_as)" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_flags64'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7142,7 +7148,7 @@ EOF
 
     if test "x$gcc_cv_as_flags64" != xno; then
 	echo $ac_n "checking for assembler offsetable %lo() support""... $ac_c" 1>&6
-echo "configure:7146: checking for assembler offsetable %lo() support" >&5
+echo "configure:7152: checking for assembler offsetable %lo() support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_offsetable_lo10'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7182,7 +7188,7 @@ EOF
 
   i[34567]86-*-*)
     echo $ac_n "checking assembler instructions""... $ac_c" 1>&6
-echo "configure:7186: checking assembler instructions" >&5
+echo "configure:7192: checking assembler instructions" >&5
     gcc_cv_as_instructions=
     if test x$gcc_cv_gas_major_version != x -a x$gcc_cv_gas_minor_version != x; then
       if test "$gcc_cv_gas_major_version" -eq 2 -a "$gcc_cv_gas_minor_version" -ge 9 -o "$gcc_cv_gas_major_version" -gt 2; then
@@ -7211,7 +7217,7 @@ EOF
 esac
 
 echo $ac_n "checking assembler dwarf2 debug_line support""... $ac_c" 1>&6
-echo "configure:7215: checking assembler dwarf2 debug_line support" >&5
+echo "configure:7221: checking assembler dwarf2 debug_line support" >&5
 gcc_cv_as_dwarf2_debug_line=no
 # ??? Not all targets support dwarf2 debug_line, even within a version
 # of gas.  Moreover, we need to emit a valid instruction to trigger any
@@ -7396,7 +7402,7 @@ fi
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:7400: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:7406: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"
