@@ -20,6 +20,8 @@
 # include <config.h>
 #endif
 
+#include "ansidecl.h"
+
 #include <errno.h>
 #if !defined(errno) && !defined(HAVE_ERRNO_DECL)
 extern int errno;
