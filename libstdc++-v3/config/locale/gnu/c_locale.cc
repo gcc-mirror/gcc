@@ -191,9 +191,9 @@ namespace std
 				    + _S_extra_categories_size] =
     {
       "LC_CTYPE", 
-      "LC_NUMERIC", 
-      "LC_COLLATE", 
+      "LC_NUMERIC",
       "LC_TIME", 
+      "LC_COLLATE", 
       "LC_MONETARY",
       "LC_MESSAGES", 
       "LC_PAPER", 

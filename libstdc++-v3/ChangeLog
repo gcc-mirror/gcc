@@ -1,3 +1,10 @@
+2002-11-28  Paolo Carlini  <pcarlini@unitus.it>
+
+	* config/locale/gnu/c_locale.cc (locale::_S_categories):
+	Reorder the categories to match that of glibc's setlocale(LC_ALL, ""))
+	* config/locale/generic/c_locale.cc (locale::_S_categories): Ditto.
+	* testsuite/22_locale/ctor_copy_dtor.cc (test04): Tweak.
+
 2002-11-25  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/abi_check.cc: Add CXXABI_1.2.1 as compatible.
