@@ -1,6 +1,6 @@
 2001-04-05  Benjamin Kosnik  <bkoz@redhat.com>
 
-	* lang-specs.h: Add __GXX_DEPRECATED.
+	* lang-specs.h: Add __DEPRECATED.
 
 Thu Apr  5 16:54:29 2001  J"orn Rennecke <amylaar@redhat.com>
 
