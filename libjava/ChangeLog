@@ -1,3 +1,8 @@
+2004-05-07  Ranjit Mathew  <rmathew@gmail.com>
+
+	* testsuite/libjava.jni/jni.exp (gcj_jni_test_one): Don't link the
+	main binary against the JNI shared library.
+
 2004-05-07  Jerry Quinn  <jlquinn@optonline.net>
 
 	* java/util/SimpleTimeZone.java (startTimeMode, endTimeMode,
