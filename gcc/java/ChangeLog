@@ -1,3 +1,7 @@
+2004-03-23  Tom Tromey  <tromey@redhat.com>
+
+	* gcj.texi (Extensions): Document GCJ_PROPERTIES.
+
 2004-03-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* class.c, gjavah.c, lang.c: Fix comment typos.
