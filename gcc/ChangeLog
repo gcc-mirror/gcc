@@ -1,4 +1,9 @@
-2000-02-12  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+2000-02-13  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* flow.c (flow_loop_tree_node_add): Use better algorithm by passing
+ 	previously inserted node instead of root node.	Caller changed.
+
+2000-02-13  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* basic-block.h (FLOW_LOOP_FIRST_BLOCK, FLOW_LOOP_LAST_BLOCK): Delete.
 

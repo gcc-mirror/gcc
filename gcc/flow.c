@@ -6716,41 +6716,35 @@ flow_loop_pre_header_find (header, dom)
 }
 
 
-/* Add LOOP to the loop hierarchy tree so that it is a sibling or a
-   descendant of ROOT.  */
+/* Add LOOP to the loop hierarchy tree where PREVLOOP was the loop
+   previously added.  The insertion algorithm assumes that the loops
+   are added in the order found by a depth first search of the CFG.  */
 static void
-flow_loop_tree_node_add (root, loop)
-     struct loop *root;
+flow_loop_tree_node_add (prevloop, loop)
+     struct loop *prevloop;
      struct loop *loop;
 {
-  struct loop *outer;
 
-  if (! loop)
-    return;
-
-  for (outer = root; outer; outer = outer->next)
+  if (flow_loop_nested_p (prevloop, loop))
     {
-      if (flow_loop_nested_p (outer, loop))
+      prevloop->inner = loop;
+      loop->outer = prevloop;
+      return;
+    }
+
+  while (prevloop->outer)
+    {
+      if (flow_loop_nested_p (prevloop->outer, loop))
 	{
-	  if (outer->inner)
-	    {
-	      /* Add LOOP as a sibling or descendent of OUTER->INNER.  */
-	      flow_loop_tree_node_add (outer->inner, loop);
-	    }
-	  else
-	    {
-	      /* Add LOOP as child of OUTER.  */
-	      outer->inner = loop;
-	      loop->outer = outer;
-	      loop->next = NULL;
-	    }
+	  prevloop->next = loop;
+	  loop->outer = prevloop->outer;
 	  return;
 	}
+      prevloop = prevloop->outer;
     }
-  /* Add LOOP as a sibling of ROOT.  */
-  loop->next = root->next;
-  root->next = loop;
-  loop->outer = root->outer;
+  
+  prevloop->next = loop;
+  loop->outer = NULL;
 }
 
 
@@ -6774,7 +6768,7 @@ flow_loops_tree_build (loops)
 
   /* Add the remaining loops to the tree.  */
   for (i = 1; i < num_loops; i++)
-    flow_loop_tree_node_add (loops->tree, &loops->array[i]);
+    flow_loop_tree_node_add (&loops->array[i - 1], &loops->array[i]);
 }
 
 
