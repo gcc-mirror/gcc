@@ -1,3 +1,7 @@
+Sun Jan 18 01:54:27 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* alpha/xm-winnt.h (HAS_INIT_SECTION): Undefine.
+
 Sun Jan 18 00:57:35 1998  Mike Stump  (mrs@wrs.com)
 
 	* configure.in (i960-wrs-vxworks): Default to latest vxworks release.
