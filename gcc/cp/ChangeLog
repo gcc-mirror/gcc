@@ -1,3 +1,11 @@
+2002-02-05  Alexandre Oliva  <aoliva@redhat.com>
+
+	* class.c: Include target.h.
+	(check_bitfield_decl): Disregard EMPTY_FIELD_BOUNDARY,
+	BITFIELDS_NBYTES_LIMITED and PCC_BITFIELD_TYPE_MATTERS for MS
+	bit-field layout.
+	* Make-lang.in: Adjust deps.
+
 2002-02-05  Jason Merrill  <jason@redhat.com>
 
 	* error.c (dump_type): Be more helpful about VECTOR_TYPE.
