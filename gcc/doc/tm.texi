@@ -3969,7 +3969,9 @@ If not defined, this defaults to the value 1.
 This target hook should return the location of the structure value
 address (normally a @code{mem} or @code{reg}), or 0 if the address is
 passed as an ``invisible'' first argument.  Note that @var{fndecl} may
-be @code{NULL}, for libcalls.
+be @code{NULL}, for libcalls.  You do not need to define this target
+hook if the address is always passed as an ``invisible'' first
+argument.
 
 On some architectures the place where the structure value address
 is found by the called function is not the same place that the
