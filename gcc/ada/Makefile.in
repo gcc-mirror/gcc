@@ -338,12 +338,12 @@ GNATBIND_OBJS = \
  s-stoele.o s-imgenu.o s-strops.o s-soflin.o s-wchcon.o s-wchjis.o \
  sdefault.o switch.o stylesw.o validsw.o \
  system.o table.o tree_io.o types.o widechar.o \
- raise.o exit.o argv.o init.o final.o s-wchcnv.o s-exctab.o \
+ raise.o exit.o argv.o init.o adafinal.o s-wchcnv.o s-exctab.o \
  a-except.o s-memory.o s-traceb.o tracebak.o s-mastop.o s-except.o \
  s-secsta.o $(EXTRA_GNATBIND_OBJS)
 
 GNATCHOP_RTL_OBJS = adaint.o argv.o cio.o cstreams.o exit.o \
- final.o init.o raise.o sysdep.o ada.o a-comlin.o gnat.o a-string.o \
+ adafinal.o init.o raise.o sysdep.o ada.o a-comlin.o gnat.o a-string.o \
  a-stmaco.o a-strsea.o a-charac.o a-chlat1.o g-except.o s-io.o \
  a-chahan.o a-strunb.o a-strfix.o a-strmap.o g-casuti.o g-comlin.o hostparm.o \
  g-dirope.o g-hesora.o g-htable.o g-regexp.o interfac.o system.o s-assert.o \
@@ -357,7 +357,7 @@ GNATCHOP_RTL_OBJS = adaint.o argv.o cio.o cstreams.o exit.o \
 GNATCHOP_OBJS = gnatchop.o gnatvsn.o \
    $(GNATCHOP_RTL_OBJS) $(EXTRA_GNATTOOLS_OBJS)
 
-GNATCMD_RTL_OBJS = adaint.o argv.o raise.o exit.o final.o init.o \
+GNATCMD_RTL_OBJS = adaint.o argv.o raise.o exit.o adafinal.o init.o \
    ada.o a-charac.o a-chahan.o a-comlin.o cstreams.o cio.o \
    a-except.o tracebak.o s-memory.o s-traceb.o s-mastop.o s-except.o \
    a-finali.o a-filico.o a-ioexce.o a-stream.o \
@@ -381,7 +381,7 @@ GNATKR_RTL_OBJS = ada.o a-charac.o a-chahan.o a-chlat1.o a-comlin.o \
   system.o s-bitops.o g-except.o s-finimp.o s-io.o s-parame.o s-secsta.o \
   s-stopoo.o s-sopco3.o s-sopco4.o s-sopco5.o s-stache.o \
   s-stoele.o s-soflin.o s-stalib.o s-unstyp.o adaint.o \
-  raise.o exit.o argv.o cio.o init.o final.o s-finroo.o \
+  raise.o exit.o argv.o cio.o init.o adafinal.o s-finroo.o \
   a-except.o tracebak.o s-memory.o s-traceb.o s-mastop.o s-except.o \
   a-filico.o  s-strops.o  s-stratt.o s-imgenu.o a-ioexce.o s-exctab.o
 GNATKR_OBJS = gnatkr.o gnatvsn.o \
@@ -389,7 +389,7 @@ GNATKR_OBJS = gnatkr.o gnatvsn.o \
 
 GNATLINK_RTL_OBJS = \
    adaint.o argv.o cio.o cstreams.o \
-   exit.o init.o final.o raise.o tracebak.o \
+   exit.o init.o adafinal.o raise.o tracebak.o \
    ada.o a-comlin.o a-except.o \
    gnat.o g-hesora.o g-htable.o g-os_lib.o \
    interfac.o i-cstrea.o \
@@ -416,7 +416,7 @@ GNATLS_RTL_OBJS = \
  a-except.o \
  exit.o   \
  a-filico.o \
- final.o  \
+ adafinal.o  \
  a-finali.o \
  init.o   \
  a-ioexce.o \
@@ -541,7 +541,7 @@ GNATLS_OBJS = \
  widechar.o $(GNATLS_RTL_OBJS) $(EXTRA_GNATTOOLS_OBJS)
 
 GNATMAKE_RTL_OBJS = adaint.o argv.o raise.o exit.o a-comlin.o \
- cio.o cstreams.o a-except.o s-mastop.o s-except.o final.o init.o \
+ cio.o cstreams.o a-except.o s-mastop.o s-except.o adafinal.o init.o \
  a-finali.o a-filico.o s-finroo.o s-finimp.o s-ficobl.o\
  a-charac.o a-chahan.o a-string.o a-strfix.o a-strmap.o a-strunb.o \
  a-stmaco.o a-strsea.o a-textio.o s-bitops.o sysdep.o \
@@ -578,7 +578,7 @@ argv.o \
 cio.o \
 cstreams.o \
 exit.o \
-final.o \
+adafinal.o \
 init.o \
 raise.o \
 sysdep.o \
@@ -652,7 +652,7 @@ s-valuti.o
 GNATMEM_OBJS = gnatmem.o memroot.o gmem.o \
    $(GNATMEM_RTL_OBJS) $(EXTRA_GNATTOOLS_OBJS)
 
-GNATPREP_RTL_OBJS = adaint.o argv.o raise.o exit.o final.o init.o \
+GNATPREP_RTL_OBJS = adaint.o argv.o raise.o exit.o adafinal.o init.o \
    ada.o a-charac.o a-chahan.o a-comlin.o cstreams.o cio.o \
    a-except.o tracebak.o s-memory.o s-traceb.o s-mastop.o s-except.o \
    a-finali.o a-filico.o a-ioexce.o a-stream.o a-string.o a-strmap.o \
@@ -669,7 +669,7 @@ GNATPREP_OBJS = gnatprep.o gnatvsn.o \
 
 GNATPSTA_RTL_OBJS = adaint.o argv.o cstreams.o cio.o \
    deftarg.o a-except.o targtyps.o tracebak.o s-memory.o s-traceb.o \
-   s-mastop.o s-except.o exit.o a-filico.o final.o a-finali.o init.o \
+   s-mastop.o s-except.o exit.o a-filico.o adafinal.o a-finali.o init.o \
    a-ioexce.o raise.o a-stream.o get_targ.o gnat.o g-hesora.o \
    sysdep.o a-tags.o a-textio.o i-cstrea.o system.o s-assert.o \
    s-exctab.o s-fatllf.o s-ficobl.o s-fileio.o s-finimp.o s-finroo.o \
@@ -683,7 +683,7 @@ GNATPSTA_OBJS = gnatpsta.o types.o ttypes.o \
 
 GNATPSYS_RTL_OBJS = adaint.o argv.o cstreams.o cio.o \
    a-except.o tracebak.o s-memory.o s-traceb.o s-mastop.o s-except.o exit.o \
-   a-filico.o final.o a-finali.o  init.o a-ioexce.o \
+   a-filico.o adafinal.o a-finali.o  init.o a-ioexce.o \
    raise.o a-stream.o \
    sysdep.o a-tags.o a-textio.o i-cstrea.o system.o s-assert.o \
    gnat.o g-hesora.o g-htable.o s-imgenu.o \
@@ -697,7 +697,7 @@ GNATPSYS_OBJS = gnatpsys.o \
 
 GNATXREF_RTL_OBJS =  \
    adaint.o argv.o cio.o cstreams.o \
-   exit.o init.o final.o raise.o sysdep.o tracebak.o \
+   exit.o init.o adafinal.o raise.o sysdep.o tracebak.o \
    ada.o a-charac.o a-chlat1.o gnat.o g-casuti.o g-hesora.o \
    g-htable.o interfac.o system.o i-cstrea.o s-parame.o s-exctab.o \
    a-ioexce.o a-string.o s-assert.o s-except.o \
@@ -719,7 +719,7 @@ GNATXREF_OBJS = gnatxref.o xr_tabls.o xref_lib.o \
 
 GNATFIND_RTL_OBJS = \
    adaint.o argv.o cio.o cstreams.o \
-   exit.o init.o final.o raise.o sysdep.o tracebak.o \
+   exit.o init.o adafinal.o raise.o sysdep.o tracebak.o \
    ada.o a-chahan.o a-charac.o a-chlat1.o a-comlin.o a-except.o \
    a-filico.o a-finali.o a-ioexce.o a-stmaco.o a-stream.o \
    a-strfix.o a-string.o a-strmap.o a-strsea.o a-strunb.o \
@@ -742,7 +742,7 @@ GNATFIND_OBJS = gnatfind.o xr_tabls.o xref_lib.o \
 
 GNATDLL_RTL_OBJS = \
    adaint.o argv.o cio.o cstreams.o \
-   exit.o init.o final.o raise.o sysdep.o tracebak.o \
+   exit.o init.o adafinal.o raise.o sysdep.o tracebak.o \
    a-charac.o a-chlat1.o a-chahan.o a-comlin.o a-except.o a-filico.o \
    a-finali.o a-ioexce.o a-stream.o a-strfix.o a-string.o a-strmap.o \
    a-strsea.o a-stmaco.o a-strunb.o a-tags.o a-textio.o ada.o \
@@ -1510,10 +1510,10 @@ endif
 LIBGNAT_SRCS = ada.h adaint.c adaint.h argv.c cio.c cstreams.c \
   errno.c exit.c cal.c \
   raise.h raise.c sysdep.c types.h io-aux.c init.c \
-  final.c tracebak.c expect.c $(EXTRA_LIBGNAT_SRCS)
+  adafinal.c tracebak.c expect.c $(EXTRA_LIBGNAT_SRCS)
 
 LIBGNAT_OBJS = adaint.o argv.o cio.o cstreams.o errno.o exit.o \
-  raise.o sysdep.o io-aux.o init.o cal.o final.o \
+  raise.o sysdep.o io-aux.o init.o cal.o adafinal.o \
   tracebak.o expect.o ../../prefix.o $(EXTRA_LIBGNAT_OBJS)
 
 # NOTE ??? - when the -I option for compiling Ada code is made to work,
@@ -2589,7 +2589,7 @@ cio.o     : cio.c
 deftarg.o  : deftarg.c
 errno.o   : errno.c
 exit.o    : raise.h exit.c
-final.o   : raise.h final.c
+adafinal.o   : raise.h adafinal.c
 gmem.o    : gmem.c
 
 raise.o   : raise.c raise.h
@@ -4339,7 +4339,7 @@ force:
 
 # Gnatlbr is only used on VMS
 
-GNATLBR_RTL_C_OBJS = adaint.o argv.o cio.o cstreams.o exit.o final.o init.o \
+GNATLBR_RTL_C_OBJS = adaint.o argv.o cio.o cstreams.o exit.o adafinal.o init.o \
   raise.o sysdep.o tracebak.o
 GNATLBR_C_OBJS = $(GNATLBR_RTL_C_OBJS)
 

@@ -1,3 +1,9 @@
+2003-01-28  Laurent Guerby <guerby@acm.org>
+
+	PR ada/8344
+	* final.c: rename to adafinal.c to avoid file name conflicts with gcc file.
+        * Makefile.in: match previous change. 
+	
 2003-01-28  Christian Cornelssen <ccorn@cs.tu-berlin.de>
 
 	* Make-lang.in (ada.install-common): Let $(DESTDIR)$(bindir)
