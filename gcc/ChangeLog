@@ -1,3 +1,7 @@
+2003-01-07  Richard Henderson  <rth@redhat.com>
+
+	* cfganal.c (flow_call_edges_add): Don't crash on noreturn call.
+
 2003-01-07  Daniel Berlin  <dberlin@dberlin.org>
 
 	* cfg.c: Include alloc-pool.h
