@@ -68,6 +68,7 @@ only one of these two forms, whichever one is not the default.
 * Link Options::        Specifying libraries and so on.
 * Directory Options::   Where to find header files and libraries.
                         Where to find the compiler executable files.
+* Spec Files::          How to pass switches to sub-processes.
 * Target Options::      Running a cross-compiler, or an old version of GNU CC.
 * Submodel Options::    Specifying minor hardware or convention variations,
                         such as 68010 vs 68020.
@@ -447,6 +448,7 @@ in the following sections.
 * Link Options::        Specifying libraries and so on.
 * Directory Options::   Where to find header files and libraries.
                         Where to find the compiler executable files.
+* Spec Files::          How to pass switches to sub-processes.
 * Target Options::      Running a cross-compiler, or an old version of GNU CC.
 @end menu
 
@@ -2988,6 +2990,427 @@ program uses when determining what switches to pass to @file{cc1},
 @samp{-specs=}@var{file} can be specified on the command line, and they
 are processed in order, from left to right.
 @end table
+
+@node Spec Files
+@section Specifying subprocesses and the switches to pass to them
+@cindex Spec Files
+@code{GCC} is a driver program.  It performs its job by invoking a
+sequence of other programs to do the work of compiling, assembling and
+linking.  GCC interprets its command-line parameters and uses these to
+deduce which programs it should invoke, and which command-line options
+it ought to place on their command lines.  This behaviour is controlled
+by @dfn{spec strings}.  In most cases there is one spec string for each
+program that GCC can invoke, but a few programs have multiple spec
+strings to control their behaviour.  The spec strings built into GCC can
+be overridden by using the @samp{-specs=} command-line switch to specify
+a spec file.
+
+@dfn{Spec files} are plaintext files that are used to construct spec
+strings.  They consist of a sequence of directives separated by blank
+lines.  The type of directive is determined by the first non-whitespace
+character on the line and it can be one of the following:
+
+@table @code
+@item %@var{command}
+Issues a @var{command} to the spec file processor.  The commands that can
+appear here are: 
+
+@table @code
+@item %include <@var{file}>
+@cindex %include
+Search for @var{file} and insert its text at the current point in the
+specs file.
+
+@item %include_noerr <@var{file}>
+@cindex %include_noerr
+Just like @samp{%include}, but do not generate an error message if the include
+file cannot be found.
+
+@item %rename @var{old_name} @var{new_name}
+@cindex %rename
+Rename the spec string @var{old_name} to @var{new_name}.
+
+@end table
+
+@item *[@var{spec_name}]:
+This tells the compiler to create, override or delete the named spec
+string.  All lines after this directive up to the next directive or
+blank line are considered to be the text for the spec string.  If this
+results in an empty string then the spec will be deleted.  (Or, if the
+spec did not exist, then nothing will happened.)  Otherwise, if the spec
+does not currently exist a new spec will be created.  If the spec does
+exist then its contents will be overridden by the text of this
+directive, unless the first character of that text is the @samp{+}
+character, in which case the text will be appended to the spec.
+
+@item [@var{suffix}]:
+Creates a new @samp{[@var{suffix}] spec} pair.  All lines after this directive
+and up to the next directive or blank line are considered to make up the
+spec string for the indicated suffix.  When the compiler encounters an 
+input file with the named suffix, it will processes the spec string in
+order to work out how to compile that file.  For example:
+
+@smallexample
+.ZZ:
+z-compile -input %i
+@end smallexample
+
+This says that any input file whose name ends in @samp{.ZZ} should be
+passed to the program @samp{z-compile}, which should be invoked with the
+command-line switch @samp{-input} and with the result of performing the
+@samp{%i} substitution.  (See below.)
+
+As an alternative to providing a spec string, the text that follows a
+suffix directive can be one of the following:
+
+@table @code
+@item @@@var{language}
+This says that the suffix is an alias for a known @var{language}.  This is
+similar to using the @code{-x} command-line switch to GCC to specify a
+language explicitly.  For example:
+
+@smallexample
+.ZZ:
+@@c++
+@end smallexample
+
+Says that .ZZ files are, in fact, C++ source files.
+
+@item #@var{name}
+This causes an error messages saying:
+
+@smallexample
+@var{name} compiler not installed on this system.
+@end smallexample
+@end table
+
+GCC already has an extensive list of suffixes built into it.
+This directive will add an entry to the end of the list of suffixes, but
+since the list is searched from the end backwards, it is effectively
+possible to override earlier entries using this technique.
+
+@end table
+
+GCC has the following spec strings built into it.  Spec files can
+override these strings or create their own.  Note that individual
+targets can also add their own spec strings to this list. 
+
+@smallexample
+asm          Options to pass to the assembler
+asm_final    Options to pass to the assembler post-processor
+cpp          Options to pass to the C preprocessor
+cc1          Options to pass to the C compiler
+cc1plus      Options to pass to the C++ compiler
+endfile      Object files to include at the end of the link
+link         Options to pass to the linker
+lib          Libraries to include on the command line to the linker
+libgcc       Decides which GCC support library to pass to the linker
+linker       Sets the name of the linker
+predefines   Defines to be passed to the C preprocessor
+signed_char  Defines to pass to CPP to say whether @code{char} is signed by default
+startfile    Object files to include at the start of the link
+@end smallexample
+
+Here is a small example of a spec file:
+
+@smallexample
+%rename lib                 old_lib
+
+*lib:
+--start-group -lgcc -lc -leval1 --end-group %(old_lib)
+@end smallexample
+
+This example renames the spec called @samp{lib} to @samp{old_lib} and
+then overrides the previous definition of @samp{lib} with a new one.
+The new definition adds in some extra command-line options before
+including the text of the old definition.
+
+@dfn{Spec strings} are a list of command-line options to be passed to their
+corresponding program.  In addition, the spec strings can contain
+@samp{%}-prefixed sequences to substitute variable text or to
+conditionally insert text into the command line.  Using these constructs
+it is possible to generate quite complex command lines.
+
+Here is a table of all defined @samp{%}-sequences for spec
+strings.  Note that spaces are not generated automatically around the
+results of expanding these sequences.  Therefore you can concatenate them
+together or combine them with constant text in a single argument. 
+
+@table @code
+@item %%
+Substitute one @samp{%} into the program name or argument.
+
+@item %i
+Substitute the name of the input file being processed.
+
+@item %b
+Substitute the basename of the input file being processed.
+This is the substring up to (and not including) the last period
+and not including the directory.
+
+@item %d
+Marks the argument containing or following the @samp{%d} as a
+temporary file name, so that that file will be deleted if GCC exits
+successfully.  Unlike @samp{%g}, this contributes no text to the
+argument. 
+
+@item %g@var{suffix}
+Substitute a file name that has suffix @var{suffix} and is chosen
+once per compilation, and mark the argument in the same way as
+@samp{%d}.  To reduce exposure to denial-of-service attacks, the file
+name is now chosen in a way that is hard to predict even when previously 
+chosen file names are known.  For example, @samp{%g.s ... %g.o ... %g.s}
+might turn into @samp{ccUVUUAU.s ccXYAXZ12.o ccUVUUAU.s}.  @var{suffix} matches
+the regexp @samp{[.A-Za-z]*} or the special string @samp{%O}, which is
+treated exactly as if @samp{%O} had been preprocessed.  Previously, @samp{%g}
+was simply substituted with a file name chosen once per compilation,
+without regard to any appended suffix (which was therefore treated
+just like ordinary text), making such attacks more likely to succeed.
+
+@item %u@var{suffix}
+Like @samp{%g}, but generates a new temporary file name even if
+@samp{%u@var{suffix}} was already seen.
+
+@item %U@var{suffix}
+Substitutes the last file name generated with @samp{%u@var{suffix}}, generating a
+new one if there is no such last file name.  In the absence of any
+@samp{%u@var{suffix}}, this is just like @samp{%g@var{suffix}}, except they don't share
+the same suffix @emph{space}, so @samp{%g.s ... %U.s ... %g.s ... %U.s}
+would involve the generation of two distinct file names, one
+for each @samp{%g.s} and another for each @samp{%U.s}.  Previously, @samp{%U} was
+simply substituted with a file name chosen for the previous @samp{%u},
+without regard to any appended suffix.
+
+@item %w
+Marks the argument containing or following the @samp{%w} as the
+designated output file of this compilation.  This puts the argument
+into the sequence of arguments that @samp{%o} will substitute later.
+
+@item %o
+Substitutes the names of all the output files, with spaces
+automatically placed around them.  You should write spaces
+around the @samp{%o} as well or the results are undefined.
+@samp{%o} is for use in the specs for running the linker.
+Input files whose names have no recognized suffix are not compiled
+at all, but they are included among the output files, so they will
+be linked.
+
+@item %O
+Substitutes the suffix for object files.  Note that this is
+handled specially when it immediately follows @samp{%g, %u, or %U},
+because of the need for those to form complete file names.  The
+handling is such that @samp{%O} is treated exactly as if it had already
+been substituted, except that @samp{%g, %u, and %U} do not currently
+support additional @var{suffix} characters following @samp{%O} as they would
+following, for example, @samp{.o}.
+
+@item %p
+Substitutes the standard macro predefinitions for the
+current target machine.  Use this when running @code{cpp}.
+
+@item %P
+Like @samp{%p}, but puts @samp{__} before and after the name of each
+predefined macro, except for macros that start with @samp{__} or with
+@samp{_@var{L}}, where @var{L} is an uppercase letter.  This is for ANSI
+C.  
+
+@item %I
+Substitute a @samp{-iprefix} option made from GCC_EXEC_PREFIX.
+
+@item %s
+Current argument is the name of a library or startup file of some sort.
+Search for that file in a standard list of directories and substitute
+the full name found. 
+
+@item %e@var{str}
+Print @var{str} as an error message.  @var{str} is terminated by a newline.
+Use this when inconsistent options are detected.
+
+@item %|
+Output @samp{-} if the input for the current command is coming from a pipe.
+
+@item %(@var{name})
+Substitute the contents of spec string @var{name} at this point.
+
+@item %[@var{name}]
+Like @samp{%(...)} but put @samp{__} around @samp{-D} arguments.
+
+@item %x@{@var{option}@}
+Accumulate an option for @samp{%X}.
+
+@item %X
+Output the accumulated linker options specified by @samp{-Wl} or a @samp{%x}
+spec string.
+
+@item %Y
+Output the accumulated assembler options specified by @samp{-Wa}.
+
+@item %Z
+Output the accumulated preprocessor options specified by @samp{-Wp}.
+
+@item %v1
+Substitute the major version number of GCC.
+(For version 2.9.5, this is 2.)
+
+@item %v2
+Substitute the minor version number of GCC.
+(For version 2.9.5, this is 9.)
+
+@item %a
+Process the @code{asm} spec.  This is used to compute the
+switches to be passed to the assembler.
+
+@item %A
+Process the @code{asm_final} spec.  This is a spec string for
+passing switches to an assembler post-processor, if such a program is
+needed.
+
+@item %l
+Process the @code{link} spec.  This is the spec for computing the
+command line passed to the linker.  Typically it will make use of the
+@samp{%L %G %S %D and %E} sequences.
+
+@item %D
+Dump out a @samp{-L} option for each directory that GCC believes might
+contain startup files.  If the target supports multilibs then the
+current multilib directory will be prepended to each of these paths. 
+
+@item %L
+Process the @code{lib} spec.  This is a spec string for deciding which
+libraries should be included on the command line to the linker. 
+
+@item %G
+Process the @code{libgcc} spec.  This is a spec string for deciding
+which GCC support library should be included on the command line to the linker. 
+
+@item %S
+Process the @code{startfile} spec.  This is a spec for deciding which
+object files should be the first ones passed to the linker.  Typically
+this might be a file named @file{crt0.o}. 
+
+@item %E
+Process the @code{endfile} spec.  This is a spec string that specifies
+the last object files that will be passed to the linker.  
+
+@item %C
+Process the @code{cpp} spec.  This is used to construct the arguments
+to be passed to the C preprocessor.
+
+@item %c
+Process the @code{signed_char} spec.  This is intended to be used
+to tell cpp whether a char is signed.  It typically has the definition: 
+@smallexample
+%@{funsigned-char:-D__CHAR_UNSIGNED__@}
+@end smallexample
+
+@item %1
+Process the @code{cc1} spec.  This is used to construct the options to be
+passed to the actual C compiler (@samp{cc1}).
+
+@item %2
+Process the @code{cc1plus} spec.  This is used to construct the options to be
+passed to the actual C++ compiler (@samp{cc1plus}).
+
+@item %*
+Substitute the variable part of a matched option.  See below.
+Note that each comma in the substituted string is replaced by
+a single space.
+
+@item %@{@code{S}@}
+Substitutes the @code{-S} switch, if that switch was given to GCC.
+If that switch was not specified, this substitutes nothing.  Note that
+the leading dash is omitted when specifying this option, and it is
+automatically inserted if the substitution is performed.  Thus the spec
+string @samp{%@{foo@}} would match the command-line option @samp{-foo}
+and would output the command line option @samp{-foo}.
+
+@item %W@{@code{S}@}
+Like %@{@code{S}@} but mark last argument supplied within as a file to be
+deleted on failure. 
+
+@item %@{@code{S}*@}
+Substitutes all the switches specified to GCC whose names start
+with @code{-S}, but which also take an argument.  This is used for
+switches like @samp{-o, -D, -I}, etc.  GCC considers @samp{-o foo} as being
+one switch whose names starts with @samp{o}.  %@{o*@} would substitute this
+text, including the space.  Thus two arguments would be generated. 
+
+@item %@{^@code{S}*@}
+Like %@{@code{S}*@}, but don't put a blank between a switch and its
+argument.  Thus %@{^o*@} would only generate one argument, not two.
+
+@item %@{@code{S}*:@code{X}@}
+Substitutes @code{X} if one or more switches whose names start with
+@code{-S} are specified to GCC.  Note that the tail part of the
+@code{-S} option (i.e. the part matched by the @samp{*}) will be substituted
+for each occurrence of @samp{%*} within @code{X}. 
+
+@item %@{@code{S}:@code{X}@}
+Substitutes @code{X}, but only if the @samp{-S} switch was given to GCC.
+
+@item %@{!@code{S}:@code{X}@}
+Substitutes @code{X}, but only if the @samp{-S} switch was @emph{not} given to GCC.
+
+@item %@{|@code{S}:@code{X}@}
+Like %@{@code{S}:@code{X}@}, but if no @code{S} switch, substitute @samp{-}.
+
+@item %@{|!@code{S}:@code{X}@}
+Like %@{!@code{S}:@code{X}@}, but if there is an @code{S} switch, substitute @samp{-}.
+
+@item %@{.@code{S}:@code{X}@}
+Substitutes @code{X}, but only if processing a file with suffix @code{S}.
+
+@item %@{!.@code{S}:@code{X}@}
+Substitutes @code{X}, but only if @emph{not} processing a file with suffix @code{S}.
+
+@item %@{@code{S}|@code{P}:@code{X}@}
+Substitutes @code{X} if either @code{-S} or @code{-P} was given to GCC.  This may be
+combined with @samp{!} and @samp{.} sequences as well, although they
+have a stronger binding than the @samp{|}.  For example a spec string
+like this:
+
+@smallexample
+%@{.c:-foo@} %@{!.c:-bar@} %@{.c|d:-baz@} %@{!.c|d:-boggle@}
+@end smallexample
+
+will output the following command-line options from the following input
+command-line options:
+
+@smallexample
+fred.c        -foo -baz
+jim.d         -bar -boggle
+-d fred.c     -foo -baz -boggle
+-d jim.d      -bar -baz -boggle
+@end smallexample
+
+@end table
+
+The conditional text @code{X} in a %@{@code{S}:@code{X}@} or
+%@{!@code{S}:@code{X}@} construct may contain other nested @samp{%} constructs
+or spaces, or even newlines.  They are processed as usual, as described
+above. 
+
+The @samp{-O, -f, -m, and -W} switches are handled specifically in these
+constructs.  If another value of @samp{-O} or the negated form of a @samp{-f, -m, or
+-W} switch is found later in the command line, the earlier switch
+value is ignored, except with @{@code{S}*@} where @code{S} is just one
+letter, which passes all matching options.
+
+The character @samp{|} at the beginning of the predicate text is used to indicate
+that a command should be piped to the following command, but only if @samp{-pipe}
+is specified.
+
+It is built into GCC which switches take arguments and which do not.
+(You might think it would be useful to generalize this to allow each
+compiler's spec to say which switches take arguments.  But this cannot
+be done in a consistent fashion.  GCC cannot even decide which input
+files have been specified without knowing which switches take arguments,
+and it must know which input files to compile in order to tell which
+compilers to run). 
+
+GCC also knows implicitly that arguments starting in @samp{-l} are to be
+treated as compiler output files, and passed to the linker in their
+proper position among the other output files.
 
 @node Target Options
 @section Specifying Target Machine and Compiler Version
