@@ -62,3 +62,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    patch available from jkp@cs.hut.fi. */
 
 #define PC_RELATIVE
+
+/* This machine appears to use GAS syntax.  */
+
+#define GAS_SYNTAX
