@@ -297,7 +297,7 @@ bool have_extern_spec;
 #define ENTRY_INDEX(HASH, COUNT) (((HASH) >> 3) & ((COUNT) - 1))
 
 /* A free list of "binding_entry"s awaiting for re-use.  */
-static binding_entry GTY((deletable(""))) free_binding_entry;
+static GTY((deletable("")))  binding_entry free_binding_entry;
 
 /* Create a binding_entry object for (NAME, TYPE).  */
 static inline binding_entry

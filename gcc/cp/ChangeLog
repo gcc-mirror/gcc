@@ -1,3 +1,7 @@
+2003-05-20  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* decl.c (free_binding_entry):  Fix thinko.
+
 2003-05-19  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* cp-tree.h (struct binding_entry_s): New datatype.
