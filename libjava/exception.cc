@@ -147,7 +147,7 @@ _Jv_Throw (void *value)
       _Jv_eh_alloc ();
       ehinfo = *(__get_eh_info ());
     }
-  ehinfo->eh_info.match_function = _Jv_type_matcher;
+  ehinfo->eh_info.match_function = (__eh_matcher)_Jv_type_matcher;
   ehinfo->eh_info.language = EH_LANG_Java;
   ehinfo->eh_info.version = 1;
   ehinfo->value = value;
