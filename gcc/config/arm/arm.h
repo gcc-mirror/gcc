@@ -1027,6 +1027,13 @@ extern const char * structure_size_string;
     16, 17, 18, 19, 20, 21, 22, 23, \
     24, 25, 26			    \
 }
+
+/* Interrupt functions can only use registers that have already been
+   saved by the prologue, even if they would normally be
+   call-clobbered.  */
+#define HARD_REGNO_RENAME_OK(SRC, DST)					\
+	(! IS_INTERRUPT (cfun->machine->func_type) ||			\
+		regs_ever_live[DST])
 
 /* Register and constant classes.  */
 

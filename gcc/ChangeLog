@@ -1,3 +1,8 @@
+2002-02-20  Philip Blundell  <philb@gnu.org>
+	
+	PR 5705
+	* config/arm/arm.h (HARD_REGNO_RENAME_OK): New macro.
+
 2002-02-20  Richard Henderson  <rth@redhat.com>
 
 	PR c/5615
