@@ -1,3 +1,8 @@
+Fri Jul  2 00:04:23 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (movdf_hardfloat32): Handle PRE_INC and PRE_DEC the
+	same as offsettable in cases 1 and 2.
+
 Thu Jul  1 20:54:10 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (extqh): Define as 64-((R&7)*8) instead of 56-(((R-1)&7)*8).
