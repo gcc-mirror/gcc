@@ -631,10 +631,6 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define UNLIKELY_EXECUTED_TEXT_SECTION_NAME "text.unlikely"
 #endif
 
-#ifndef SECTION_FORMAT_STRING
-#define SECTION_FORMAT_STRING "\t.section\t%s\n\t.align 2\n"
-#endif
-
 #ifndef HAS_LONG_COND_BRANCH
 #define HAS_LONG_COND_BRANCH 0
 #endif

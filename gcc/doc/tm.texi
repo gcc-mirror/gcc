@@ -5802,13 +5802,6 @@ frequently executed functions of the program.  If not defined, GCC will provide
 a default definition if the target supports named sections.
 @end defmac
 
-@defmac NORMAL_TEXT_SECTION_NAME
-If defined, a C string constant for the name of the section containing code 
-that does not go into the ``unlikely executed text'' partition.  This is used
-as part of the optimization that partitions hot and cold basic blocks into
-separate sections in the .o and executable files.
-@end defmac
-
 @defmac UNLIKELY_EXECUTED_TEXT_SECTION_NAME
 If defined, a C string constant for the name of the section containing unlikely
 executed functions in the program.
@@ -5858,12 +5851,6 @@ If defined, a C expression whose value is a string, including spacing,
 containing the assembler operation to identify the following data as
 finalization code.  If not defined, GCC will assume such a section does
 not exist.
-@end defmac
-
-@defmac SECTION_FORMAT_STRING
-If defined, format string used by fprintf to write out the
-text section headers for the hot and cold sections of the
-assembly file, when hot and cold partitioning is being performed.
 @end defmac
 
 @defmac CRT_CALL_STATIC_FUNCTION (@var{section_op}, @var{function})

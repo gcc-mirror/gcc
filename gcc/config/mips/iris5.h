@@ -213,6 +213,7 @@ current_section_name (void)						\
   switch (in_section)							\
     {									\
     case no_section:	return NULL;					\
+    case in_unlikely_executed_text:					\
     case in_text:	return ".text";					\
     case in_data:	return ".data";					\
     case in_bss:	return ".bss";					\
@@ -223,8 +224,8 @@ current_section_name (void)						\
 	return ".rdata";						\
     case in_named:							\
       return in_named_name;						\
+    default: abort();							\
     }									\
-  abort ();								\
 }									\
 									\
 unsigned int								\
