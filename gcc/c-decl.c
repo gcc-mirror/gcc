@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2132,7 +2132,8 @@ pushdecl (x)
 	      if (TYPE_NAME (TREE_TYPE (x)) == 0)
 	        TYPE_NAME (TREE_TYPE (x)) = x;
             }
-          else if (TREE_TYPE (x) != error_mark_node)
+          else if (TREE_TYPE (x) != error_mark_node
+		   && DECL_ORIGINAL_TYPE (x) == NULL_TREE)
             {
               tree tt = TREE_TYPE (x);
 	      DECL_ORIGINAL_TYPE (x) = tt;
