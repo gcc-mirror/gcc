@@ -1,3 +1,8 @@
+2000-03-26  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* compile/20000326-1.c: New test.
+	* compile/20000326-2.c: New test.
+
 2000-03-24  Geoff Keating  <geoffk@cygnus.com>
 
 	* execute/va-arg-14.c: New test for va_start where the first
