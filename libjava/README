@@ -13,12 +13,21 @@ can be found on the gcj web pages at this URL:
 		http://sourceware.cygnus.com/java/
 
 
+REQUIREMENTS
+============
+
+libgcj must be built with a compatible version of the gcc compiler. libgcj
+releases are usually numbered according to their corresponding gcc release.
+For example, if this is "libgcj 2.95.3", you need to build it using "gcc
+2.95.3".
+
+
 QUICK INSTALLATION
 ==================
 
   > mkdir build
   > cd build
-  > ../libgcj/configure --enable-threads=<THREADS_TYPE>
+  > ../libgcj/configure --enable-threads=<THREADS_TYPE> --prefix=<DIR>
   > make
   > make install
 
@@ -27,6 +36,9 @@ where:
 <THREADS_TYPE> specifies the threads library to be used by libgcj. Currently 
 the possible values are "posix" and "none". This value must be the same as
 the value used when configuring gcc itself.
+
+<DIR> specifies the installation directory. This should be the same location 
+as where gcc is installed.
 
 Consult the gcj web pages for additional "configure" arguments.
 
