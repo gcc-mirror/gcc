@@ -889,6 +889,8 @@ enum lvalue_use {
 
 extern int lvalue_or_else (tree, enum lvalue_use);
 
+extern int complete_array_type (tree *, tree, bool);
+
 /* In c-gimplify.c  */
 extern void c_genericize (tree);
 extern int c_gimplify_expr (tree *, tree *, tree *);

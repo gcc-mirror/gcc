@@ -1,5 +1,22 @@
 2005-03-29  Richard Henderson  <rth@redhat.com>
 
+	PR c/20519
+	* c-decl.c (c_finish_incomplete_decl): Update complete_array_type call.
+	(build_compound_literal): Likewise.  Propagate decl type into the
+	initializer.
+	(finish_decl): Likewise.  Use new return value from complete_array_type
+	for zero sized arrays.
+	(complete_array_type): Move ...
+	* c-common.c (complete_array_type): ... here.  Change first argument
+	to pointer-to-type-node.  Consistently use sizetype for the index
+	except for zero sized arrays.  Detect zero sized arrays for pedantic
+	mode diagnostics.  Create a new type node instead of modifying the
+	old node in place.
+	* c-tree.h (complete_array_type): Move decl ...
+	* c-common.h (complete_array_type): ... here.
+
+2005-03-29  Richard Henderson  <rth@redhat.com>
+
 	PR tree-opt/19108
 	* tree-sra.c (generate_element_init_1): Handle RANGE_EXPR.
 
@@ -23,13 +40,13 @@
 
 	* c.opt (fvisibility-inlines-hidden): Allow for ObjC++.
 
-        * config/i386/darwin.h (TARGET_SUBTARGET_DEFAULT): Add
-        MASK_128BIT_LONG_DOUBLE, MASK_ALIGN_DOUBLE.
+	* config/i386/darwin.h (TARGET_SUBTARGET_DEFAULT): Add
+	MASK_128BIT_LONG_DOUBLE, MASK_ALIGN_DOUBLE.
 
 2005-03-25  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
 
 	PR target/15491
-        * vax.c (vax_rtx_costs_1): Merge with vax_rtx_costs.
+	* vax.c (vax_rtx_costs_1): Merge with vax_rtx_costs.
 	(vax_rtx_costs): Return false when passed unsupported rtx's.  Handle
 	FLOAT_EXTEND, FLOAT_TRUNCATE and TRUNCATE.  Fix costs for POST_INC,
 	PRE_DEC, NEG and NOT.
@@ -148,7 +165,7 @@
 	current_function_name() in a label, use a local label instead.
 
 2005-03-08  Dorit Naishlos  <dorit@il.ibm.com>
-            Ira Rosen  <irar@il.ibm.com>
+	    Ira Rosen  <irar@il.ibm.com>
 
 	PR tree-optimization/20474
 	* tree-vect-analyze.c (vect_analyze_pointer_ref_access): Check the

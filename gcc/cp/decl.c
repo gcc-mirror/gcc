@@ -3913,7 +3913,8 @@ maybe_deduce_size_from_array_init (tree decl, tree init)
 	 But let's leave it here to ease the eventual merge.  */
       int do_default = !DECL_EXTERNAL (decl);
       tree initializer = init ? init : DECL_INITIAL (decl);
-      int failure = complete_array_type (type, initializer, do_default);
+      int failure = cp_complete_array_type (&TREE_TYPE (decl), initializer,
+					    do_default);
 
       if (failure == 1)
 	error ("initializer fails to determine size of %qD", decl);
@@ -3930,9 +3931,7 @@ maybe_deduce_size_from_array_init (tree decl, tree init)
 	    DECL_EXTERNAL (decl) = 1;
 	}
 
-      if (pedantic && TYPE_DOMAIN (type) != NULL_TREE
-	  && tree_int_cst_lt (TYPE_MAX_VALUE (TYPE_DOMAIN (type)),
-			      integer_zero_node))
+      if (failure == 3)
 	error ("zero-size array %qD", decl);
 
       layout_decl (decl, 0);
@@ -5340,99 +5339,41 @@ expand_static_init (tree decl, tree init)
    2 if there was no information (in which case assume 0 if DO_DEFAULT).  */
 
 int
-complete_array_type (tree type, tree initial_value, int do_default)
+cp_complete_array_type (tree *ptype, tree initial_value, bool do_default)
 {
-  tree maxindex = NULL_TREE;
-  int value = 0;
+  int failure;
+  tree type, elt_type;
 
   if (initial_value)
     {
       /* An array of character type can be initialized from a
 	 brace-enclosed string constant.  */
-      if (char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (type)))
+      if (char_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (*ptype)))
 	  && TREE_CODE (initial_value) == CONSTRUCTOR
 	  && CONSTRUCTOR_ELTS (initial_value)
 	  && (TREE_CODE (TREE_VALUE (CONSTRUCTOR_ELTS (initial_value)))
 	      == STRING_CST)
 	  && TREE_CHAIN (CONSTRUCTOR_ELTS (initial_value)) == NULL_TREE)
 	initial_value = TREE_VALUE (CONSTRUCTOR_ELTS (initial_value));
-
-      /* Note MAXINDEX is really the maximum index, one less than the
-	 size.  */
-      if (TREE_CODE (initial_value) == STRING_CST)
-	{
-	  int eltsize
-	    = int_size_in_bytes (TREE_TYPE (TREE_TYPE (initial_value)));
-	  maxindex = build_int_cst (NULL_TREE,
-				    (TREE_STRING_LENGTH (initial_value)
-				     / eltsize) - 1);
-	}
-      else if (TREE_CODE (initial_value) == CONSTRUCTOR)
-	{
-	  tree elts = CONSTRUCTOR_ELTS (initial_value);
-
-	  maxindex = ssize_int (-1);
-	  for (; elts; elts = TREE_CHAIN (elts))
-	    {
-	      if (TREE_PURPOSE (elts))
-		maxindex = TREE_PURPOSE (elts);
-	      else
-		maxindex = size_binop (PLUS_EXPR, maxindex, ssize_int (1));
-	    }
-	}
-      else
-	{
-	  /* Make an error message unless that happened already.  */
-	  if (initial_value != error_mark_node)
-	    value = 1;
-	  else
-	    initial_value = NULL_TREE;
-
-	  /* Prevent further error messages.  */
-	  maxindex = build_int_cst (NULL_TREE, 0);
-	}
     }
-
-  if (!maxindex)
+  
+  failure = complete_array_type (ptype, initial_value, do_default);
+  
+  /* We can create the array before the element type is complete, which
+     means that we didn't have these two bits set in the original type
+     either.  In completing the type, we are expected to propagate these
+     bits.  See also complete_type which does the same thing for arrays
+     of fixed size.  */
+  type = *ptype;
+  if (TYPE_DOMAIN (type))
     {
-      if (do_default)
-	maxindex = build_int_cst (NULL_TREE, 0);
-      value = 2;
-    }
-
-  if (maxindex)
-    {
-      tree itype;
-      tree domain;
-      tree elt_type;
-
-      domain = build_index_type (maxindex);
-      TYPE_DOMAIN (type) = domain;
-
-      if (initial_value)
-        itype = TREE_TYPE (initial_value);
-      else
-	itype = NULL;
-      if (itype && !TYPE_DOMAIN (itype))
-	TYPE_DOMAIN (itype) = domain;
-      /* The type of the main variant should never be used for arrays
-	 of different sizes.  It should only ever be completed with the
-	 size of the array.  */
-      if (! TYPE_DOMAIN (TYPE_MAIN_VARIANT (type)))
-	TYPE_DOMAIN (TYPE_MAIN_VARIANT (type)) = domain;
-
       elt_type = TREE_TYPE (type);
-      TYPE_NEEDS_CONSTRUCTING (type)
-	= TYPE_NEEDS_CONSTRUCTING (TYPE_MAIN_VARIANT (elt_type));
+      TYPE_NEEDS_CONSTRUCTING (type) = TYPE_NEEDS_CONSTRUCTING (elt_type);
       TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
-	= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TYPE_MAIN_VARIANT (elt_type));
+	= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (elt_type);
     }
 
-  /* Lay out the type now that we can get the real answer.  */
-
-  layout_type (type);
-
-  return value;
+  return failure;
 }
 
 /* Return zero if something is declared to be a member of type

@@ -529,7 +529,7 @@ c_finish_incomplete_decl (tree decl)
 	{
 	  warning ("%Jarray %qD assumed to have one element", decl, decl);
 
-	  complete_array_type (type, NULL_TREE, 1);
+	  complete_array_type (&TREE_TYPE (decl), NULL_TREE, true);
 
 	  layout_decl (decl, 0);
 	}
@@ -3178,14 +3178,15 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
       && TYPE_DOMAIN (type) == 0
       && TREE_CODE (decl) != TYPE_DECL)
     {
-      int do_default
+      bool do_default
 	= (TREE_STATIC (decl)
 	   /* Even if pedantic, an external linkage array
 	      may have incomplete type at first.  */
 	   ? pedantic && !TREE_PUBLIC (decl)
 	   : !DECL_EXTERNAL (decl));
       int failure
-	= complete_array_type (type, DECL_INITIAL (decl), do_default);
+	= complete_array_type (&TREE_TYPE (decl), DECL_INITIAL (decl),
+			       do_default);
 
       /* Get the completed type made by complete_array_type.  */
       type = TREE_TYPE (decl);
@@ -3206,13 +3207,11 @@ finish_decl (tree decl, tree init, tree asmspec_tree)
 	  else if (!pedantic && TREE_STATIC (decl) && !TREE_PUBLIC (decl))
 	    DECL_EXTERNAL (decl) = 1;
 	}
-
-      /* TYPE_MAX_VALUE is always one less than the number of elements
-	 in the array, because we start counting at zero.  Therefore,
-	 warn only if the value is less than zero.  */
-      else if (pedantic && TYPE_DOMAIN (type) != 0
-	       && tree_int_cst_sgn (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) < 0)
+      else if (failure == 3)
 	error ("%Jzero or negative size array %qD", decl, decl);
+
+      if (DECL_INITIAL (decl))
+	TREE_TYPE (DECL_INITIAL (decl)) = type;
 
       layout_decl (decl, 0);
     }
@@ -3501,17 +3500,19 @@ build_compound_literal (tree type, tree init)
 
   if (TREE_CODE (type) == ARRAY_TYPE && !COMPLETE_TYPE_P (type))
     {
-      int failure = complete_array_type (type, DECL_INITIAL (decl), 1);
-      
+      int failure = complete_array_type (&TREE_TYPE (decl),
+					 DECL_INITIAL (decl), true);
       gcc_assert (!failure);
+
+      type = TREE_TYPE (decl);
+      TREE_TYPE (DECL_INITIAL (decl)) = type;
     }
 
-  type = TREE_TYPE (decl);
   if (type == error_mark_node || !COMPLETE_TYPE_P (type))
     return error_mark_node;
 
   stmt = build_stmt (DECL_EXPR, decl);
-  complit = build1 (COMPOUND_LITERAL_EXPR, TREE_TYPE (decl), stmt);
+  complit = build1 (COMPOUND_LITERAL_EXPR, type, stmt);
   TREE_SIDE_EFFECTS (complit) = 1;
 
   layout_decl (decl, 0);
@@ -3535,73 +3536,6 @@ build_compound_literal (tree type, tree init)
     }
 
   return complit;
-}
-
-/* Make TYPE a complete type based on INITIAL_VALUE.
-   Return 0 if successful, 1 if INITIAL_VALUE can't be deciphered,
-   2 if there was no information (in which case assume 1 if DO_DEFAULT).  */
-
-int
-complete_array_type (tree type, tree initial_value, int do_default)
-{
-  tree maxindex = NULL_TREE;
-  int value = 0;
-
-  if (initial_value)
-    {
-      /* Note MAXINDEX  is really the maximum index,
-	 one less than the size.  */
-      if (TREE_CODE (initial_value) == STRING_CST)
-	{
-	  int eltsize
-	    = int_size_in_bytes (TREE_TYPE (TREE_TYPE (initial_value)));
-	  maxindex = build_int_cst (NULL_TREE,
-				    (TREE_STRING_LENGTH (initial_value)
-				     / eltsize) - 1);
-	}
-      else if (TREE_CODE (initial_value) == CONSTRUCTOR)
-	{
-	  tree elts = CONSTRUCTOR_ELTS (initial_value);
-	  maxindex = build_int_cst (NULL_TREE, -1);
-	  for (; elts; elts = TREE_CHAIN (elts))
-	    {
-	      if (TREE_PURPOSE (elts))
-		maxindex = TREE_PURPOSE (elts);
-	      else
-		maxindex = fold (build2 (PLUS_EXPR, integer_type_node,
-					 maxindex, integer_one_node));
-	    }
-	}
-      else
-	{
-	  /* Make an error message unless that happened already.  */
-	  if (initial_value != error_mark_node)
-	    value = 1;
-
-	  /* Prevent further error messages.  */
-	  maxindex = build_int_cst (NULL_TREE, 0);
-	}
-    }
-
-  if (!maxindex)
-    {
-      if (do_default)
-	maxindex = build_int_cst (NULL_TREE, 0);
-      value = 2;
-    }
-
-  if (maxindex)
-    {
-      TYPE_DOMAIN (type) = build_index_type (maxindex);
-      
-      gcc_assert (TREE_TYPE (maxindex));
-    }
-
-  /* Lay out the type now that we can get the real answer.  */
-
-  layout_type (type);
-
-  return value;
 }
 
 /* Determine whether TYPE is a structure with a flexible array member,

@@ -1123,7 +1123,7 @@ process_init_constructor (tree type, tree init, tree* elts)
 
   result = build_constructor (type, nreverse (members));
   if (TREE_CODE (type) == ARRAY_TYPE && TYPE_DOMAIN (type) == NULL_TREE)
-    complete_array_type (type, result, /*do_default=*/0);
+    cp_complete_array_type (&TREE_TYPE (result), result, /*do_default=*/0);
   if (init)
     TREE_HAS_CONSTRUCTOR (result) = TREE_HAS_CONSTRUCTOR (init);
   if (allconstant)
