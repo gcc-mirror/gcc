@@ -1,3 +1,12 @@
+1999-01-24  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (start_function): Make member functions one_only on windows.
+	* decl2.c (import_export_decl): Likewise.
+
+	* decl.c (grokdeclarator): Don't complain about implicit int in
+	a system header.  Change same-name field check to not complain in
+	a system header instead of within extern "C".
+
 1999-01-21  Mark Mitchell  <mark@markmitchell.com>
 
 	* cp-tree.h (PUSH_GLOBAL): New macro.

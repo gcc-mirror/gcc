@@ -9384,7 +9384,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 			 && in_namespace == NULL_TREE
 			 && current_namespace == global_namespace);
 
-	  if (pedantic || ! is_main)
+	  if (in_system_header)
+	    /* Allow it, sigh.  */;
+	  else if (pedantic || ! is_main)
 	    cp_pedwarn ("ANSI C++ forbids declaration `%D' with no type",
 			dname);
 	  else if (warn_return_type)
@@ -11050,7 +11052,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		/* Divergence from the standard:  In extern "C", we
 		   allow non-static data members here, because C does
 		   and /usr/include/netinet/in.h uses that.  */
-		&& (staticp || current_lang_name != lang_name_c))
+		&& (staticp || ! in_system_header))
 	      cp_pedwarn ("ANSI C++ forbids data member `%D' with same name as enclosing class",
 			  declarator);
 
@@ -13042,16 +13044,21 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
     }
   /* If this function belongs to an interface, it is public.
      If it belongs to someone else's interface, it is also external.
-     It doesn't matter whether it's inline or not.  */
+     This only affects inlines and template instantiations.  */
   else if (interface_unknown == 0
 	   && (! DECL_TEMPLATE_INSTANTIATION (decl1)
 	       || flag_alt_external_templates))
     {
       if (DECL_THIS_INLINE (decl1) || DECL_TEMPLATE_INSTANTIATION (decl1)
 	  || processing_template_decl)
-	DECL_EXTERNAL (decl1)
-	  = (interface_only
-	     || (DECL_THIS_INLINE (decl1) && ! flag_implement_inlines));
+	{
+	  DECL_EXTERNAL (decl1)
+	    = (interface_only
+	       || (DECL_THIS_INLINE (decl1) && ! flag_implement_inlines));
+
+	  /* For WIN32 we also want to put these in linkonce sections.  */
+	  maybe_make_one_only (decl1);
+	}
       else
 	DECL_EXTERNAL (decl1) = 0;
       DECL_NOT_REALLY_EXTERN (decl1) = 0;
