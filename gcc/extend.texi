@@ -2404,6 +2404,14 @@ asm volatile ("movc3 %0,%1,%2"
               : "r0", "r1", "r2", "r3", "r4", "r5");
 @end example
 
+It is an error for a clobber description to overlap an input or output
+operand (for example, an operand describing a register class with one
+member, mentioned in the clobber list).  Most notably, it is invalid to
+describe that an input operand is modified, but unused as output.  It has
+to be specified as an input and output operand anyway.  Note that if there
+are only unused output operands, you will then also need to specify
+@code{volatile} for the @code{asm} construct, as described below.
+
 If you refer to a particular hardware register from the assembler code,
 you will probably have to list the register after the third colon to
 tell the compiler the register's value is modified.  In some assemblers,
