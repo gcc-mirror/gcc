@@ -760,10 +760,10 @@ mmix_machine_dependent_reorg (first)
 
 /* TARGET_ASM_FUNCTION_EPILOGUE.  */
 
-void
+static void
 mmix_target_asm_function_epilogue (stream, locals_size)
      FILE *stream;
-     HOST_WIDE_INT locals_size;
+     HOST_WIDE_INT locals_size ATTRIBUTE_UNUSED;
 
 {
   /* Emit an \n for readability of the generated assembly.  */

@@ -3370,7 +3370,7 @@ ip2k_address_cost (x)
    much cheaper and the move from this to the original source operand will be
    no more expensive than the original move.  */
 
-void
+static void
 mdr_resequence_xy_yx (first_insn)
      rtx first_insn;
 {
@@ -3622,7 +3622,7 @@ mdr_propagate_reg_equivs_sequence (first_insn, orig, equiv)
    holds the same value and thus allow one or more register loads to
    be eliminated.  */
 
-void
+static void
 mdr_propagate_reg_equivs (first_insn)
      rtx first_insn;
 {
@@ -4028,7 +4028,7 @@ mdr_try_dp_reload_elim (first_insn)
    that we can move to earlier points within the file.
    Moving these out of the way allows more peepholes to match.  */
 
-void
+static void
 mdr_try_move_dp_reload (first_insn)
      rtx first_insn;
 {
@@ -4119,7 +4119,7 @@ mdr_try_move_dp_reload (first_insn)
 /* Look to see if the expression, x, can have any stack references offset by
    a fixed constant, offset.  If it definitely can then returns non-zero.  */
 
-int
+static int
 ip2k_check_can_adjust_stack_ref (x, offset)
      rtx x;
      int offset;
@@ -4167,7 +4167,7 @@ ip2k_check_can_adjust_stack_ref (x, offset)
 /* Adjusts all of the stack references in the expression pointed to by x by
    a fixed offset.  */
 
-void
+static void
 ip2k_adjust_stack_ref (x, offset)
      rtx *x;
      int offset;
@@ -4212,7 +4212,7 @@ ip2k_adjust_stack_ref (x, offset)
    to earlier points within the file.  Moving these out of the way allows more
    peepholes to match.  */
 
-void
+static void
 mdr_try_move_pushes (first_insn)
      rtx first_insn;
 {
@@ -4625,7 +4625,7 @@ mdr_try_propagate_clr_sequence (first_insn, regno)
    actually change some instruction patterns when we're doing this whereas
    move propagation is just about doing a search and replace.  */
 
-void
+static void
 mdr_try_propagate_clr (first_insn)
      rtx first_insn;
 {
@@ -4656,7 +4656,7 @@ mdr_try_propagate_clr (first_insn)
    via the specified register.  This is very conservative and only returns
    non-zero if we definitely don't have such a memory ref.  */
 
-int
+static int
 ip2k_xexp_not_uses_reg_for_mem (x, regno)
      rtx x;
      unsigned int regno;
@@ -4848,7 +4848,7 @@ mdr_try_propagate_move_sequence (first_insn, orig, equiv)
    holds the same value and thus allow one or more register loads to
    be eliminated.  */
 
-void
+static void
 mdr_try_propagate_move (first_insn)
      rtx first_insn;
 {
@@ -4897,7 +4897,7 @@ mdr_try_propagate_move (first_insn)
 
 /* Try to remove redundant instructions.  */
 
-void
+static void
 mdr_try_remove_redundant_insns (first_insn)
      rtx first_insn;
 {
@@ -4993,7 +4993,7 @@ struct we_jump_targets *ip2k_we_jump_targets;
 
 /* WREG equivalence tracking used within DP reload elimination.  */
 
-int
+static int
 track_w_reload (insn, w_current, w_current_ok, modifying)
      rtx insn;
      rtx *w_current;
@@ -5083,7 +5083,7 @@ track_w_reload (insn, w_current, w_current_ok, modifying)
 /* As part of the machine-dependent reorg we scan moves into w and track them
    to see where any are redundant.  */
 
-void
+static void
 mdr_try_wreg_elim (first_insn)
      rtx first_insn;
 {
