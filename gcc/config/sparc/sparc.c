@@ -6087,10 +6087,6 @@ sparc_assemble_integer (x, size, aligned_p)
    what kind of result this function returns.  For non-C types, we pick
    the closest C type.  */
 
-#ifndef CHAR_TYPE_SIZE
-#define CHAR_TYPE_SIZE BITS_PER_UNIT
-#endif
-
 #ifndef SHORT_TYPE_SIZE
 #define SHORT_TYPE_SIZE (BITS_PER_UNIT * 2)
 #endif

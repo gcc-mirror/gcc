@@ -368,7 +368,6 @@ extern int target_flags;
 
 /* LAYOUT OF SOURCE LANGUAGE DATA TYPES */
 
-#define CHAR_TYPE_SIZE         16
 #define SHORT_TYPE_SIZE        16
 #define INT_TYPE_SIZE          16
 #define LONG_TYPE_SIZE         32

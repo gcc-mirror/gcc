@@ -312,7 +312,6 @@ extern int flag_pic;				/* -fpic */
 /*** Storage Layout ***/
 
 /* Sizes in bits of the various types.  */
-#define CHAR_TYPE_SIZE		 8
 #define SHORT_TYPE_SIZE		16
 #define INT_TYPE_SIZE		32
 #define LONG_TYPE_SIZE		32

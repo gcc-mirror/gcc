@@ -475,7 +475,6 @@ extern int target_flags;
 
 /* Define sizes of basic C types to conform to ordinary usage -- these
    types depend on BITS_PER_WORD otherwise.  */
-#define CHAR_TYPE_SIZE		8
 #define SHORT_TYPE_SIZE		16
 #define INT_TYPE_SIZE		32
 #define LONG_TYPE_SIZE		(TARGET_LONG64 ? 64 : 32)

@@ -155,10 +155,6 @@ extern const char *const sectname[4];
         need to check out the long-long opencodings ! */
 #define LONG_LONG_TYPE_SIZE  64
 
-/* Define number of bits in char type.
-   (If undefined, default is one fourth of BITS_PER_WORD).  */
-#define CHAR_TYPE_SIZE  16
-
 /* Define number of bits in float type.
    (If undefined, default is BITS_PER_WORD).  */
 #define FLOAT_TYPE_SIZE  32
