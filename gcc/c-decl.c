@@ -4664,6 +4664,11 @@ finish_struct (t, fieldlist)
       if (C_DECL_VARIABLE_SIZE (x))
 	C_TYPE_VARIABLE_SIZE (t) = 1;
 
+      /* Detect invalid nested redefinition.  */
+      if (TREE_TYPE (x) == t)
+	error ("nested redefinition of `%s'",
+	       IDENTIFIER_POINTER (TYPE_NAME (t)));
+
       /* Detect invalid bit-field size.  */
       if (DECL_INITIAL (x))
 	STRIP_NOPS (DECL_INITIAL (x));
