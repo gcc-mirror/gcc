@@ -1,3 +1,10 @@
+2004-09-14  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/17252
+	* tree-ssa-alias.c (may_alias_p): Don't assume that a
+	pointer may not point to itself when using relaxed
+	aliasing rules.
+
 2004-09-14  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/17397

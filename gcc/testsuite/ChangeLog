@@ -1,3 +1,8 @@
+2004-09-14  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/17252
+	* gcc.c-torture/execute/pr17252.c: New test.
+
 2004-09-14  Andrew Pinski  <apinski@apple.com>
 
 	* g++.dg/tree-ssa/pointer-reference-alias.C: New test.
