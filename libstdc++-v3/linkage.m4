@@ -1,0 +1,521 @@
+dnl
+dnl This file contains stuff.
+dnl
+
+dnl
+dnl Check to see if the (math function) argument passed is
+dnl declared when using the c++ compiler
+dnl ASSUMES argument is a math function with ONE parameter
+dnl
+dnl GLIBCXX_CHECK_MATH_DECL_1
+AC_DEFUN(GLIBCXX_CHECK_MATH_DECL_1, [
+  AC_MSG_CHECKING([for $1 declaration])
+  if test x${glibcxx_cv_func_$1_use+set} != xset; then
+    AC_CACHE_VAL(glibcxx_cv_func_$1_use, [
+      AC_LANG_SAVE
+      AC_LANG_CPLUSPLUS
+      AC_TRY_COMPILE([#include <math.h>
+		      #ifdef HAVE_IEEEFP_H
+		      #include <ieeefp.h>
+		      #endif
+		     ],
+                     [ $1(0);],
+                     [glibcxx_cv_func_$1_use=yes], [glibcxx_cv_func_$1_use=no])
+      AC_LANG_RESTORE
+    ])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_func_$1_use)
+])
+
+dnl
+dnl Check to see if the (math function) argument passed is
+dnl 1) declared when using the c++ compiler
+dnl 2) has "C" linkage
+dnl 3) if not, see if 1) and 2) for argument prepended with '_'
+dnl
+dnl Define HAVE_CARGF etc if "cargf" is declared and links
+dnl
+dnl argument 1 is name of function to check
+dnl
+dnl ASSUMES argument is a math function with ONE parameter
+dnl
+dnl GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1
+AC_DEFUN(GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1, [
+  GLIBCXX_CHECK_MATH_DECL_1($1)
+  if test x$glibcxx_cv_func_$1_use = x"yes"; then
+    AC_CHECK_FUNCS($1)
+  else
+    GLIBCXX_CHECK_MATH_DECL_1(_$1)
+    if test x$glibcxx_cv_func__$1_use = x"yes"; then
+      AC_CHECK_FUNCS(_$1)
+    fi
+  fi
+])
+
+
+dnl
+dnl Like GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1, but does a bunch of
+dnl of functions at once.  It's an all-or-nothing check -- either
+dnl HAVE_XYZ is defined for each of the functions, or for none of them.
+dnl Doing it this way saves significant configure time.
+AC_DEFUN(GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1, [
+  AC_MSG_CHECKING([for $1 functions])
+  AC_CACHE_VAL(glibcxx_cv_func_$2_use, [
+    AC_LANG_SAVE
+    AC_LANG_CPLUSPLUS
+    AC_TRY_COMPILE([#include <math.h>],
+                   [ `for x in $3; do echo "$x (0);"; done` ],
+                   [glibcxx_cv_func_$2_use=yes],
+                   [glibcxx_cv_func_$2_use=no])
+    AC_LANG_RESTORE])
+  AC_MSG_RESULT($glibcxx_cv_func_$2_use)
+  if test x$glibcxx_cv_func_$2_use = x"yes"; then
+    AC_CHECK_FUNCS($3)
+  fi
+])
+
+dnl
+dnl Check to see if the (math function) argument passed is
+dnl declared when using the c++ compiler
+dnl ASSUMES argument is a math function with TWO parameters
+dnl
+dnl GLIBCXX_CHECK_MATH_DECL_2
+AC_DEFUN(GLIBCXX_CHECK_MATH_DECL_2, [
+  AC_MSG_CHECKING([for $1 declaration])
+  if test x${glibcxx_cv_func_$1_use+set} != xset; then
+    AC_CACHE_VAL(glibcxx_cv_func_$1_use, [
+      AC_LANG_SAVE
+      AC_LANG_CPLUSPLUS
+      AC_TRY_COMPILE([#include <math.h>],
+                     [ $1(0, 0);],
+                     [glibcxx_cv_func_$1_use=yes], [glibcxx_cv_func_$1_use=no])
+      AC_LANG_RESTORE
+    ])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_func_$1_use)
+])
+
+dnl
+dnl Check to see if the (math function) argument passed is
+dnl 1) declared when using the c++ compiler
+dnl 2) has "C" linkage
+dnl
+dnl Define HAVE_CARGF etc if "cargf" is declared and links
+dnl
+dnl argument 1 is name of function to check
+dnl
+dnl ASSUMES argument is a math function with TWO parameters
+dnl
+dnl GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2
+AC_DEFUN(GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2, [
+  GLIBCXX_CHECK_MATH_DECL_2($1)
+  if test x$glibcxx_cv_func_$1_use = x"yes"; then
+    AC_CHECK_FUNCS($1)
+  else
+    GLIBCXX_CHECK_MATH_DECL_2(_$1)
+    if test x$glibcxx_cv_func__$1_use = x"yes"; then
+      AC_CHECK_FUNCS(_$1)
+    fi
+  fi
+])
+
+
+dnl
+dnl Check to see if the (math function) argument passed is
+dnl declared when using the c++ compiler
+dnl ASSUMES argument is a math function with THREE parameters
+dnl
+dnl GLIBCXX_CHECK_MATH_DECL_3
+AC_DEFUN(GLIBCXX_CHECK_MATH_DECL_3, [
+  AC_MSG_CHECKING([for $1 declaration])
+  if test x${glibcxx_cv_func_$1_use+set} != xset; then
+    AC_CACHE_VAL(glibcxx_cv_func_$1_use, [
+      AC_LANG_SAVE
+      AC_LANG_CPLUSPLUS
+      AC_TRY_COMPILE([#include <math.h>],
+                     [ $1(0, 0, 0);],
+                     [glibcxx_cv_func_$1_use=yes], [glibcxx_cv_func_$1_use=no])
+      AC_LANG_RESTORE
+    ])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_func_$1_use)
+])
+
+dnl
+dnl Check to see if the (math function) argument passed is
+dnl 1) declared when using the c++ compiler
+dnl 2) has "C" linkage
+dnl
+dnl Define HAVE_CARGF etc if "cargf" is declared and links
+dnl
+dnl argument 1 is name of function to check
+dnl
+dnl ASSUMES argument is a math function with THREE parameters
+dnl
+dnl GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_3
+AC_DEFUN(GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_3, [
+  GLIBCXX_CHECK_MATH_DECL_3($1)
+  if test x$glibcxx_cv_func_$1_use = x"yes"; then
+    AC_CHECK_FUNCS($1)
+  else
+    GLIBCXX_CHECK_MATH_DECL_3(_$1)
+    if test x$glibcxx_cv_func__$1_use = x"yes"; then
+      AC_CHECK_FUNCS(_$1)
+    fi
+  fi
+])
+
+
+dnl
+dnl Check to see if the (stdlib function) argument passed is
+dnl 1) declared when using the c++ compiler
+dnl 2) has "C" linkage
+dnl
+dnl argument 1 is name of function to check
+dnl
+dnl ASSUMES argument is a math function with TWO parameters
+dnl
+dnl GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_2
+AC_DEFUN(GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_2, [
+  AC_MSG_CHECKING([for $1 declaration])
+  if test x${glibcxx_cv_func_$1_use+set} != xset; then
+    AC_CACHE_VAL(glibcxx_cv_func_$1_use, [
+      AC_LANG_SAVE
+      AC_LANG_CPLUSPLUS
+      AC_TRY_COMPILE([#include <stdlib.h>],
+                     [ $1(0, 0);],
+                     [glibcxx_cv_func_$1_use=yes], [glibcxx_cv_func_$1_use=no])
+      AC_LANG_RESTORE
+    ])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_func_$1_use)
+  if test x$glibcxx_cv_func_$1_use = x"yes"; then
+    AC_CHECK_FUNCS($1)
+  fi
+])
+
+
+dnl
+dnl Check to see if the (stdlib function) argument passed is
+dnl 1) declared when using the c++ compiler
+dnl 2) has "C" linkage
+dnl
+dnl argument 1 is name of function to check
+dnl
+dnl ASSUMES argument is a function with THREE parameters
+dnl
+dnl GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_3
+AC_DEFUN(GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_3, [
+  AC_MSG_CHECKING([for $1 declaration])
+  if test x${glibcxx_cv_func_$1_use+set} != xset; then
+    AC_CACHE_VAL(glibcxx_cv_func_$1_use, [
+      AC_LANG_SAVE
+      AC_LANG_CPLUSPLUS
+      AC_TRY_COMPILE([#include <stdlib.h>],
+                     [ $1(0, 0, 0);],
+                     [glibcxx_cv_func_$1_use=yes], [glibcxx_cv_func_$1_use=no])
+      AC_LANG_RESTORE
+    ])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_func_$1_use)
+  if test x$glibcxx_cv_func_$1_use = x"yes"; then
+    AC_CHECK_FUNCS($1)
+  fi
+])
+
+dnl
+dnl Because the builtins are picky picky picky about the arguments they take,
+dnl do an explict linkage tests here.
+dnl Check to see if the (math function) argument passed is
+dnl 1) declared when using the c++ compiler
+dnl 2) has "C" linkage
+dnl
+dnl Define HAVE_CARGF etc if "cargf" is declared and links
+dnl
+dnl argument 1 is name of function to check
+dnl
+dnl ASSUMES argument is a math function with ONE parameter
+dnl
+dnl GLIBCXX_CHECK_BUILTIN_MATH_DECL_LINKAGE_1
+AC_DEFUN(GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1, [
+  AC_MSG_CHECKING([for $1 declaration])
+  if test x${glibcxx_cv_func_$1_use+set} != xset; then
+    AC_CACHE_VAL(glibcxx_cv_func_$1_use, [
+      AC_LANG_SAVE
+      AC_LANG_CPLUSPLUS
+      AC_TRY_COMPILE([#include <math.h>],
+                     [ $1(0);],
+                     [glibcxx_cv_func_$1_use=yes], [glibcxx_cv_func_$1_use=no])
+      AC_LANG_RESTORE
+    ])
+  fi
+  AC_MSG_RESULT($glibcxx_cv_func_$1_use)
+  if test x$glibcxx_cv_func_$1_use = x"yes"; then
+    AC_MSG_CHECKING([for $1 linkage])
+    if test x${glibcxx_cv_func_$1_link+set} != xset; then
+      AC_CACHE_VAL(glibcxx_cv_func_$1_link, [
+        AC_TRY_LINK([#include <math.h>],
+                    [ $1(0);],
+                    [glibcxx_cv_func_$1_link=yes], [glibcxx_cv_func_$1_link=no])
+      ])
+    fi
+    AC_MSG_RESULT($glibcxx_cv_func_$1_link)
+    if test x$glibcxx_cv_func_$1_link = x"yes"; then
+      ac_tr_func=HAVE_`echo $1 | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+      AC_DEFINE_UNQUOTED(${ac_tr_func})
+    fi
+  fi
+])
+
+
+dnl
+dnl Check to see what builtin math functions are supported
+dnl
+dnl check for __builtin_abs
+dnl check for __builtin_fabsf
+dnl check for __builtin_fabs
+dnl check for __builtin_fabl
+dnl check for __builtin_labs
+dnl check for __builtin_sqrtf
+dnl check for __builtin_sqrtl
+dnl check for __builtin_sqrt
+dnl check for __builtin_sinf
+dnl check for __builtin_sin
+dnl check for __builtin_sinl
+dnl check for __builtin_cosf
+dnl check for __builtin_cos
+dnl check for __builtin_cosl
+dnl
+dnl GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT
+AC_DEFUN(GLIBCXX_CHECK_BUILTIN_MATH_SUPPORT, [
+  dnl Test for builtin math functions.
+  dnl These are made in gcc/c-common.c
+  GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_abs)
+  GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_fabsf)
+  GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_fabs)
+  GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_fabsl)
+  GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_labs)
+
+  GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_sqrtf)
+  GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_sqrt)
+  GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_sqrtl)
+
+  GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_sinf)
+  GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_sin)
+  GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_sinl)
+
+  GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_cosf)
+  GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_cos)
+  GLIBCXX_CHECK_BUILTIN_MATH_DECL_AND_LINKAGE_1(__builtin_cosl)
+
+  dnl There is, without a doubt, a more elegant way to have these
+  dnl names exported so that they won't be stripped out of acconfig.h by
+  dnl autoheader. I leave this as an exercise to somebody less frustrated
+  dnl than I.... please email the libstdc++ list if you can figure out a
+  dnl more elegant approach (see autoconf/acgen.m4 and specifically
+  dnl AC_CHECK_FUNC for things to steal.)
+  dummyvar=no
+  if test x$dummyvar = x"yes"; then
+    AC_DEFINE(HAVE___BUILTIN_ABS)
+    AC_DEFINE(HAVE___BUILTIN_LABS)
+    AC_DEFINE(HAVE___BUILTIN_COS)
+    AC_DEFINE(HAVE___BUILTIN_COSF)
+    AC_DEFINE(HAVE___BUILTIN_COSL)
+    AC_DEFINE(HAVE___BUILTIN_FABS)
+    AC_DEFINE(HAVE___BUILTIN_FABSF)
+    AC_DEFINE(HAVE___BUILTIN_FABSL)
+    AC_DEFINE(HAVE___BUILTIN_SIN)
+    AC_DEFINE(HAVE___BUILTIN_SINF)
+    AC_DEFINE(HAVE___BUILTIN_SINL)
+    AC_DEFINE(HAVE___BUILTIN_SQRT)
+    AC_DEFINE(HAVE___BUILTIN_SQRTF)
+    AC_DEFINE(HAVE___BUILTIN_SQRTL)
+  fi
+])
+
+dnl
+dnl Check to see what the underlying c library is like
+dnl These checks need to do two things:
+dnl 1) make sure the name is declared when using the c++ compiler
+dnl 2) make sure the name has "C" linkage
+dnl This might seem like overkill but experience has shown that it's not...
+dnl
+dnl Define HAVE_STRTOLD if "strtold" is declared and links
+dnl Define HAVE_STRTOF if "strtof" is declared and links
+dnl Define HAVE_DRAND48 if "drand48" is declared and links
+dnl
+dnl GLIBCXX_CHECK_STDLIB_SUPPORT
+AC_DEFUN(GLIBCXX_CHECK_STDLIB_SUPPORT, [
+  ac_test_CXXFLAGS="${CXXFLAGS+set}"
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS='-fno-builtin -D_GNU_SOURCE'
+
+  GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_2(strtold)
+  GLIBCXX_CHECK_STDLIB_DECL_AND_LINKAGE_2(strtof)
+  AC_CHECK_FUNCS(drand48)
+
+  CXXFLAGS="$ac_save_CXXFLAGS"
+])
+
+dnl
+dnl Check to see what the underlying c library or math library is like.
+dnl These checks need to do two things:
+dnl 1) make sure the name is declared when using the c++ compiler
+dnl 2) make sure the name has "C" linkage
+dnl This might seem like overkill but experience has shown that it's not...
+dnl
+dnl Define HAVE_CARGF etc if "cargf" is found.
+dnl
+dnl GLIBCXX_CHECK_MATH_SUPPORT
+AC_DEFUN(GLIBCXX_CHECK_MATH_SUPPORT, [
+  ac_test_CXXFLAGS="${CXXFLAGS+set}"
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS='-fno-builtin -D_GNU_SOURCE'
+
+  dnl Check libm
+  AC_CHECK_LIB(m, sin, libm="-lm")
+  ac_save_LIBS="$LIBS"
+  LIBS="$LIBS $libm"
+
+  dnl Check to see if certain C math functions exist.
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(isinf)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(isnan)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(finite)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(copysign)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_3(sincos)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(fpclass)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(qfpclass)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(hypot)
+
+  dnl Check to see if basic C math functions have float versions.
+  GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1(float trig,
+                                          float_trig,
+                                          acosf asinf atanf \
+                                          cosf sinf tanf \
+                                          coshf sinhf tanhf)
+  GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1(float round,
+                                          float_round,
+                                          ceilf floorf)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(expf)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(isnanf)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(isinff)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(atan2f)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(fabsf)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(fmodf)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(frexpf)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(hypotf)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(ldexpf)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(logf)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(log10f)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(modff)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(powf)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(sqrtf)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_3(sincosf)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(finitef)
+
+  dnl Check to see if basic C math functions have long double versions.
+  GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1(long double trig,
+                                          long_double_trig,
+                                          acosl asinl atanl \
+                                          cosl sinl tanl \
+                                          coshl sinhl tanhl)
+  GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1(long double round,
+                                          long_double_round,
+                                          ceill floorl)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(isnanl)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(isinfl)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(copysignl)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(atan2l)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(expl)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(fabsl)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(fmodl)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(frexpl)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(hypotl)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(ldexpl)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(logl)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(log10l)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(modfl)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_2(powl)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(sqrtl)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_3(sincosl)
+  GLIBCXX_CHECK_MATH_DECL_AND_LINKAGE_1(finitel)
+
+  dnl Some runtimes have these functions with a preceding underscore. Please
+  dnl keep this sync'd with the one above. And if you add any new symbol,
+  dnl please add the corresponding block in the @BOTTOM@ section of acconfig.h.
+  dnl Check to see if certain C math functions exist.
+
+  dnl Check to see if basic C math functions have float versions.
+  GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1(_float trig,
+                                          _float_trig,
+                                          _acosf _asinf _atanf \
+                                          _cosf _sinf _tanf \
+                                          _coshf _sinhf _tanhf)
+  GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1(_float round,
+                                          _float_round,
+                                          _ceilf _floorf)
+
+  dnl Check to see if basic C math functions have long double versions.
+  GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1(_long double trig,
+                                          _long_double_trig,
+                                          _acosl _asinl _atanl \
+                                          _cosl _sinl _tanl \
+                                          _coshl _sinhl _tanhl)
+  GLIBCXX_CHECK_MATH_DECLS_AND_LINKAGES_1(_long double round,
+                                          _long_double_round,
+                                          _ceill _floorl)
+
+  LIBS="$ac_save_LIBS"
+  CXXFLAGS="$ac_save_CXXFLAGS"
+])
+
+
+dnl
+dnl Check to see if there is native support for complex
+dnl
+dnl Don't compile bits in math/* if native support exits.
+dnl
+dnl Define USE_COMPLEX_LONG_DOUBLE etc if "copysignl" is found.
+dnl
+dnl GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT
+AC_DEFUN(GLIBCXX_CHECK_COMPLEX_MATH_SUPPORT, [
+  dnl Check for complex versions of math functions of platform.  This will
+  dnl always pass if libm is available, and fail if it isn't.  If it is
+  dnl available, we assume we'll need it later, so add it to LIBS.
+  AC_CHECK_LIB(m, main)
+  AC_REPLACE_MATHFUNCS(nan copysignf)
+
+  dnl For __signbit to signbit conversions.
+  AC_CHECK_FUNCS([__signbit], , [LIBMATHOBJS="$LIBMATHOBJS signbit.lo"])
+  AC_CHECK_FUNCS([__signbitf], , [LIBMATHOBJS="$LIBMATHOBJS signbitf.lo"])
+
+  dnl Compile the long double complex functions only if the function
+  dnl provides the non-complex long double functions that are needed.
+  dnl Currently this includes copysignl, which should be
+  dnl cached from the GLIBCXX_CHECK_MATH_SUPPORT macro, above.
+  if test x$ac_cv_func_copysignl = x"yes"; then
+    AC_CHECK_FUNCS([__signbitl], , [LIBMATHOBJS="$LIBMATHOBJS signbitl.lo"])
+  fi
+
+  if test -n "$LIBMATHOBJS"; then
+    need_libmath=yes
+  fi
+  AC_SUBST(LIBMATHOBJS)
+])
+
+
+# Check for functions in math library.
+# Ulrich Drepper <drepper@cygnus.com>, 1998.
+#
+# This file can be copied and used freely without restrictions.  It can
+# be used in projects which are not available under the GNU Public License
+# but which still want to provide support for the GNU gettext functionality.
+# Please note that the actual code is *not* freely available.
+#
+# serial 1
+#
+dnl AC_REPLACE_MATHFUNCS(FUNCTION...)
+AC_DEFUN(AC_REPLACE_MATHFUNCS,
+[AC_CHECK_FUNCS([$1], , [LIBMATHOBJS="$LIBMATHOBJS ${ac_func}.lo"])])
+
+dnl vim:et:ts=2
