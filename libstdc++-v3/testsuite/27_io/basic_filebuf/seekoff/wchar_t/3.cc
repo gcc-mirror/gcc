@@ -1,4 +1,4 @@
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,13 +19,11 @@
 // 27.8.1.4 Overridden virtual functions
 
 #include <fstream>
-#include <testsuite_hooks.h>
 
 void test03()
 {
   using namespace std;
 
-  bool test __attribute__((unused)) = true;
   const char* name = "tmp_seekoff_3";
 
   wfilebuf fb;
@@ -33,10 +31,15 @@ void test03()
   fb.open(name, ios_base::out);
   fb.sputc(0xf001);
 
-  // seekoff should flush the output sequence, which will fail
-  // if the output buffer contains illegal characters.
-  streampos ret = fb.pubseekoff(0, ios_base::cur);
-  VERIFY( ret == streampos(streamoff(-1)) );
+  try
+    {
+      // seekoff should flush the output sequence, which will fail
+      // if the output buffer contains illegal characters.
+      fb.pubseekoff(0, ios_base::cur);
+    }
+  catch (exception&)
+    {
+    }
 }
 
 int main()
