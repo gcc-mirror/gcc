@@ -401,7 +401,7 @@ xrealloc (old, size)
   size_t size;
 {
   register PTR ptr;
-  if (ptr)
+  if (old)
     ptr = (PTR) realloc (old, size);
   else
     ptr = (PTR) malloc (size);

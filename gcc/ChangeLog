@@ -1,3 +1,10 @@
+Fri Jan 22 11:48:56 1999  Richard Henderson  <rth@cygnus.com>
+
+	* cppp.c (xrealloc): Fix typo last change.
+	* cppalloc.c, gcc.c, genattr.c, genattrtab.c, gencodes.c: Likewise.
+	* genconfig.c, genemit.c, genextract.c, genflags.c: Likewise.
+	* genopinit.c, genoutput.c, genpeep.c, genrecog.c: Likewise.
+
 1999-01-22  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.h (CR0_REGNO_P): New macro to test if cr0.
