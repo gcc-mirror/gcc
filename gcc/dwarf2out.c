@@ -1830,7 +1830,7 @@ output_call_frame_info (for_eh)
       ASM_OUTPUT_LABEL (asm_out_file, l1);
 
       if (for_eh)
-	ASM_OUTPUT_DWARF_DELTA (asm_out_file, l1, "__FRAME_BEGIN__");
+	ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, l1, "__FRAME_BEGIN__");
       else
 	ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (FRAME_SECTION));
       if (flag_debug_asm)
