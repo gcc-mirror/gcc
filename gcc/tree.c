@@ -469,10 +469,7 @@ make_lang_type (code)
 }
 
 /* Return a new node with the same contents as NODE except that its
-   TREE_CHAIN is zero and it has a fresh uid.  Unlike make_node, this
-   function always performs the allocation on the CURRENT_OBSTACK;
-   it's up to the caller to pick the right obstack before calling this
-   function.  */
+   TREE_CHAIN is zero and it has a fresh uid.  */
 
 tree
 copy_node (node)
@@ -2423,6 +2420,13 @@ build1 (code, type, node)
   else
     kind = e_kind;
 #endif
+
+#ifdef ENABLE_CHECKING
+  if (TREE_CODE_CLASS (code) == '2' 
+      || TREE_CODE_CLASS (code) == '<'
+      || TREE_CODE_LENGTH (code) != 1)
+    abort ();
+#endif /* ENABLE_CHECKING */
 
   length = sizeof (struct tree_exp);
 

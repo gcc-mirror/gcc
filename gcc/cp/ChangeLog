@@ -1,3 +1,8 @@
+2001-01-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* call.c (build_conv): Don't use build1 for USER_CONV.
+	* pt.c (tsubst_copy): Or for PREINCREMENT_EXPR and similar nodes.
+
 2001-01-03  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* lex.c (lang_init): Call c_common_lang_init.
