@@ -1,3 +1,7 @@
+2004-09-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	* g++.dg/tree-ssa/pr17400.C: New testcase.
+
 2004-09-13  James E Wilson  <wilson@specifixinc.com>
 
 	* gcc.target/mips/sb1-1.c: New testcase.
