@@ -2635,7 +2635,7 @@ output_a_shift (insn, operands)
 
 int
 expand_a_rotate (code, operands)
-     int code;
+     enum rtx_code code;
      rtx operands[];
 {
   rtx dst = operands[0];
@@ -2692,7 +2692,7 @@ expand_a_rotate (code, operands)
 
 const char *
 emit_a_rotate (code, operands)
-     int code;
+     enum rtx_code code;
      rtx *operands;
 {
   rtx dst = operands[0];
