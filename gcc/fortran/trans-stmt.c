@@ -617,8 +617,7 @@ exit_label:
    TODO: Large loop counts
    The code above assumes the loop count fits into a signed integer kind,
    i.e. Does not work for loop counts > 2^31 for integer(kind=4) variables
-   We must support the full range.
-   TODO: Real type do variables.  */
+   We must support the full range.  */
 
 tree
 gfc_trans_do (gfc_code * code)
@@ -629,6 +628,7 @@ gfc_trans_do (gfc_code * code)
   tree to;
   tree step;
   tree count;
+  tree count_one;
   tree type;
   tree cond;
   tree cycle_label;
@@ -647,17 +647,17 @@ gfc_trans_do (gfc_code * code)
   type = TREE_TYPE (dovar);
 
   gfc_init_se (&se, NULL);
-  gfc_conv_expr_type (&se, code->ext.iterator->start, type);
+  gfc_conv_expr_val (&se, code->ext.iterator->start);
   gfc_add_block_to_block (&block, &se.pre);
   from = gfc_evaluate_now (se.expr, &block);
 
   gfc_init_se (&se, NULL);
-  gfc_conv_expr_type (&se, code->ext.iterator->end, type);
+  gfc_conv_expr_val (&se, code->ext.iterator->end);
   gfc_add_block_to_block (&block, &se.pre);
   to = gfc_evaluate_now (se.expr, &block);
 
   gfc_init_se (&se, NULL);
-  gfc_conv_expr_type (&se, code->ext.iterator->step, type);
+  gfc_conv_expr_val (&se, code->ext.iterator->step);
   gfc_add_block_to_block (&block, &se.pre);
   step = gfc_evaluate_now (se.expr, &block);
 
@@ -672,10 +672,23 @@ gfc_trans_do (gfc_code * code)
 
   tmp = fold (build2 (MINUS_EXPR, type, step, from));
   tmp = fold (build2 (PLUS_EXPR, type, to, tmp));
-  tmp = fold (build2 (TRUNC_DIV_EXPR, type, tmp, step));
-
-  count = gfc_create_var (type, "count");
+  if (TREE_CODE (type) == INTEGER_TYPE)
+    {
+      tmp = fold (build2 (TRUNC_DIV_EXPR, type, tmp, step));
+      count = gfc_create_var (type, "count");
+    }
+  else
+    {
+      /* TODO: We could use the same width as the real type.
+	 This would probably cause more problems that it solves
+	 when we implement "long double" types.  */
+      tmp = fold (build2 (RDIV_EXPR, type, tmp, step));
+      tmp = fold (build1 (FIX_TRUNC_EXPR, gfc_array_index_type, tmp));
+      count = gfc_create_var (gfc_array_index_type, "count");
+    }
   gfc_add_modify_expr (&block, count, tmp);
+
+  count_one = convert (TREE_TYPE (count), integer_one_node);
 
   /* Initialize the DO variable: dovar = from.  */
   gfc_add_modify_expr (&block, dovar, from);
@@ -688,7 +701,8 @@ gfc_trans_do (gfc_code * code)
   exit_label = gfc_build_label_decl (NULL_TREE);
 
   /* Start with the loop condition.  Loop until count <= 0.  */
-  cond = build2 (LE_EXPR, boolean_type_node, count, integer_zero_node);
+  cond = build2 (LE_EXPR, boolean_type_node, count,
+		convert (TREE_TYPE (count), integer_zero_node));
   tmp = build1_v (GOTO_EXPR, exit_label);
   TREE_USED (exit_label) = 1;
   tmp = build3_v (COND_EXPR, cond, tmp, build_empty_stmt ());
@@ -717,7 +731,7 @@ gfc_trans_do (gfc_code * code)
   gfc_add_modify_expr (&body, dovar, tmp);
 
   /* Decrement the loop count.  */
-  tmp = build2 (MINUS_EXPR, type, count, gfc_index_one_node);
+  tmp = build2 (MINUS_EXPR, TREE_TYPE (count), count, count_one);
   gfc_add_modify_expr (&body, count, tmp);
 
   /* End of loop body.  */

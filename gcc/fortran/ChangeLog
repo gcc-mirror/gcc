@@ -1,3 +1,16 @@
+2004-12-12  Steven G. Kargl  <kargls@comcast.net>
+	Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/16222
+	* resolve.c (gfc_resolve_iterator_expr): New function.
+	(gfc_resolve_iterator): Use it.  Add real_ok argument.  Convert
+	start, end and stride to correct type.
+	(resolve_code): Pass extra argument.
+	* array.c (resolve_array_list): Pass extra argument.
+	* gfortran.h (gfc_resolve): Add prototype.
+	* trans-stmt.c (gfc_trans_do): Remove redundant type conversions.
+	Handle real type iterators.
+
 2004-12-11  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/17175

@@ -2173,22 +2173,49 @@ gfc_resolve_expr (gfc_expr * e)
 }
 
 
-/* Resolve the expressions in an iterator structure and require that they all
-   be of integer type.  */
+/* Resolve an expression from an iterator.  They must be scalar and have
+   INTEGER or (optionally) REAL type.  */
 
-try
-gfc_resolve_iterator (gfc_iterator * iter)
+static try
+gfc_resolve_iterator_expr (gfc_expr * expr, bool real_ok, const char * name)
 {
-
-  if (gfc_resolve_expr (iter->var) == FAILURE)
+  if (gfc_resolve_expr (expr) == FAILURE)
     return FAILURE;
 
-  if (iter->var->ts.type != BT_INTEGER || iter->var->rank != 0)
+  if (expr->rank != 0)
     {
-      gfc_error ("Loop variable at %L must be a scalar INTEGER",
-		 &iter->var->where);
+      gfc_error ("%s at %L must be a scalar", name, &expr->where);
       return FAILURE;
     }
+
+  if (!(expr->ts.type == BT_INTEGER
+	|| (expr->ts.type == BT_REAL && real_ok)))
+    {
+      gfc_error ("%s at %L must be INTEGER%s",
+		 name,
+		 &expr->where,
+		 real_ok ? " or REAL" : "");
+      return FAILURE;
+    }
+  return SUCCESS;
+}
+
+
+/* Resolve the expressions in an iterator structure.  If REAL_OK is
+   false allow only INTEGER type iterators, otherwise allow REAL types.  */
+
+try
+gfc_resolve_iterator (gfc_iterator * iter, bool real_ok)
+{
+
+  if (iter->var->ts.type == BT_REAL)
+    gfc_notify_std (GFC_STD_F95_DEL,
+		    "Obsolete: REAL DO loop iterator at %L",
+		    &iter->var->where);
+
+  if (gfc_resolve_iterator_expr (iter->var, real_ok, "Loop variable")
+      == FAILURE)
+    return FAILURE;
 
   if (gfc_pure (NULL) && gfc_impure_variable (iter->var->symtree->n.sym))
     {
@@ -2197,43 +2224,43 @@ gfc_resolve_iterator (gfc_iterator * iter)
       return FAILURE;
     }
 
-  if (gfc_resolve_expr (iter->start) == FAILURE)
+  if (gfc_resolve_iterator_expr (iter->start, real_ok,
+				 "Start expression in DO loop") == FAILURE)
     return FAILURE;
 
-  if (iter->start->ts.type != BT_INTEGER || iter->start->rank != 0)
-    {
-      gfc_error ("Start expression in DO loop at %L must be a scalar INTEGER",
-		 &iter->start->where);
-      return FAILURE;
-    }
-
-  if (gfc_resolve_expr (iter->end) == FAILURE)
+  if (gfc_resolve_iterator_expr (iter->end, real_ok,
+				 "End expression in DO loop") == FAILURE)
     return FAILURE;
 
-  if (iter->end->ts.type != BT_INTEGER || iter->end->rank != 0)
-    {
-      gfc_error ("End expression in DO loop at %L must be a scalar INTEGER",
-		 &iter->end->where);
-      return FAILURE;
-    }
-
-  if (gfc_resolve_expr (iter->step) == FAILURE)
+  if (gfc_resolve_iterator_expr (iter->step, real_ok,
+				 "Step expression in DO loop") == FAILURE)
     return FAILURE;
 
-  if (iter->step->ts.type != BT_INTEGER || iter->step->rank != 0)
+  if (iter->step->expr_type == EXPR_CONSTANT)
     {
-      gfc_error ("Step expression in DO loop at %L must be a scalar INTEGER",
-		 &iter->step->where);
-      return FAILURE;
+      if ((iter->step->ts.type == BT_INTEGER
+	   && mpz_cmp_ui (iter->step->value.integer, 0) == 0)
+	  || (iter->step->ts.type == BT_REAL
+	      && mpfr_sgn (iter->step->value.real) == 0))
+	{
+	  gfc_error ("Step expression in DO loop at %L cannot be zero",
+		     &iter->step->where);
+	  return FAILURE;
+	}
     }
 
-  if (iter->step->expr_type == EXPR_CONSTANT
-      && mpz_cmp_ui (iter->step->value.integer, 0) == 0)
-    {
-      gfc_error ("Step expression in DO loop at %L cannot be zero",
-		 &iter->step->where);
-      return FAILURE;
-    }
+  /* Convert start, end, and step to the same type as var.  */
+  if (iter->start->ts.kind != iter->var->ts.kind
+      || iter->start->ts.type != iter->var->ts.type)
+    gfc_convert_type (iter->start, &iter->var->ts, 2);
+
+  if (iter->end->ts.kind != iter->var->ts.kind
+      || iter->end->ts.type != iter->var->ts.type)
+    gfc_convert_type (iter->end, &iter->var->ts, 2);
+
+  if (iter->step->ts.kind != iter->var->ts.kind
+      || iter->step->ts.type != iter->var->ts.type)
+    gfc_convert_type (iter->step, &iter->var->ts, 2);
 
   return SUCCESS;
 }
@@ -3728,7 +3755,7 @@ resolve_code (gfc_code * code, gfc_namespace * ns)
 
 	case EXEC_DO:
 	  if (code->ext.iterator != NULL)
-	    gfc_resolve_iterator (code->ext.iterator);
+	    gfc_resolve_iterator (code->ext.iterator, true);
 	  break;
 
 	case EXEC_DO_WHILE:
@@ -4360,7 +4387,7 @@ resolve_data_variables (gfc_data_variable * d)
 	}
       else
 	{
-	  if (gfc_resolve_iterator (&d->iter) == FAILURE)
+	  if (gfc_resolve_iterator (&d->iter, false) == FAILURE)
 	    return FAILURE;
 
 	  if (d->iter.start->expr_type != EXPR_CONSTANT
