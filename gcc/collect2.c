@@ -522,6 +522,7 @@ extract_string (pp)
 	obstack_1grow (&temporary_obstack, c);
     }
 
+  obstack_1grow (&temporary_obstack, '\0');
   *pp = p;
   return obstack_finish (&temporary_obstack);
 }
