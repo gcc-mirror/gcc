@@ -55,8 +55,8 @@ caller-save.c		Jeff Law		law@cygnus.com
 debugging code		Jim Wilson		wilson@cygnus.com
 dwarf debugging code	Jason Merrill		jason@cygnus.com
 c++ runtime libs	Ulrich Drepper		drepper@cygnus.com
-*synthetic multiply	Torbjorn Granlund	tege@matematik.su.se
-*c-torture		Torbjorn Granlund	tege@matematik.su.se
+*synthetic multiply	Torbjorn Granlund	tege@swox.com
+*c-torture		Torbjorn Granlund	tege@swox.com
 *f-torture		Kate Hedstrom		kate@ahab.rutgers.edu
 sco5, unixware, sco udk	Robert Lipe		robertl@dgii.com
 new fixincludes		Bruce Korb		korbb@datadesign.com
