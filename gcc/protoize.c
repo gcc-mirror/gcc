@@ -278,7 +278,7 @@ static const char * const other_var_style = "stdarg";
 static const char * const other_var_style = "varargs";
 /* Note that this is a string containing the expansion of va_alist.
    But in `main' we discard all but the first token.  */
-static const char *varargs_style_indicator = STRINGIFY (va_alist);
+static const char *varargs_style_indicator = STRINGX (va_alist);
 #endif /* !defined (UNPROTOIZE) */
 
 /* The following two types are used to create hash tables.  In this program,

@@ -43,11 +43,6 @@ Boston, MA 02111-1307, USA.  */
 # ifndef HAVE_LONG_DOUBLE
 #  define HAVE_LONG_DOUBLE 1
 # endif
-/* Assume that (non-traditional) gcc used in stage2 or later has the
-   stringize feature.  */
-# if !defined (HAVE_STRINGIZE) && __STDC__
-#  define HAVE_STRINGIZE 1
-# endif /* ! HAVE_STRINGIZE && __STDC__ */
 #endif /* GCC >= 2.7 */
 
 #ifndef NULL_PTR

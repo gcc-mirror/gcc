@@ -522,7 +522,7 @@ else
 fi
 
 # See if the stage1 system preprocessor understands the ANSI C
-# preprocessor stringification operator.
+# preprocessor stringification operator.  (Used by symcat.h.)
 AC_C_STRINGIZE
 
 # Use <inttypes.h> only if it exists,
