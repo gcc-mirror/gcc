@@ -4264,7 +4264,8 @@ rs6000_emit_move (rtx dest, rtx source, enum machine_mode mode)
       return;
     }
 
-  if (!no_new_pseudos && GET_CODE (operands[0]) != REG)
+  if (!no_new_pseudos && GET_CODE (operands[0]) != REG
+      && !gpc_reg_operand (operands[1], mode))
     operands[1] = force_reg (mode, operands[1]);
 
   if (mode == SFmode && ! TARGET_POWERPC
@@ -15735,6 +15736,17 @@ rs6000_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
     {
       /* Data dependency; DEP_INSN writes a register that INSN reads
 	 some cycles later.  */
+
+      /* Separate a load from a narrower, dependent store.  */
+      if (rs6000_sched_groups
+	  && GET_CODE (PATTERN (insn)) == SET
+	  && GET_CODE (PATTERN (dep_insn)) == SET
+	  && GET_CODE (XEXP (PATTERN (insn), 1)) == MEM
+	  && GET_CODE (XEXP (PATTERN (dep_insn), 0)) == MEM
+	  && (GET_MODE_SIZE (GET_MODE (XEXP (PATTERN (insn), 1)))
+	      > GET_MODE_SIZE (GET_MODE (XEXP (PATTERN (dep_insn), 0)))))
+	return cost + 14;
+
       switch (get_attr_type (insn))
 	{
 	case TYPE_JMPREG:
@@ -17831,7 +17843,8 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
       return false;
 
     case MULT:
-      if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+      if (GET_CODE (XEXP (x, 1)) == CONST_INT
+	  && CONST_OK_FOR_LETTER_P (INTVAL (XEXP (x, 1)), 'I'))
 	{
 	  if (INTVAL (XEXP (x, 1)) >= -256
 	      && INTVAL (XEXP (x, 1)) <= 255)

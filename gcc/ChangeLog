@@ -1,3 +1,13 @@
+2004-11-05  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (scc patterns): Replace subfc with subf
+	when carry not used.  Suggested by Torbjorn Granlund.
+
+	* config/rs6000/rs6000.c (rs6000_emit_move): Don't force_reg
+	operand[1] unnecessarily.  Suggested by Eric Christopher.
+	(rs6000_adjust_cost): Increase latency of store to wider load.
+	(rs6000_rtx_costs): mulli only allows 16-bit constants.
+
 2004-11-05  Stan Shebs  <shebs@apple.com>
 
 	* config/rs6000/rs6000.c (machopic_output_stub): Output
