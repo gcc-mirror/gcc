@@ -1706,6 +1706,25 @@ EOF
 		[Define if your assembler supports -relax option.])
     fi
 
+    AC_CACHE_CHECK([assembler and linker support unaligned pc related relocs],
+	gcc_cv_as_sparc_ua_pcrel, [
+	gcc_cv_as_sparc_ua_pcrel=unknown
+	if test x$gcc_cv_as != x -a x$gcc_cv_ld != x; then
+	    gcc_cv_as_sparc_ua_pcrel=no
+	    echo ".text; foo: nop; .data; .align 4; .byte 0; .uaword %r_disp32(foo)" > conftest.s
+	    if $gcc_cv_as -K PIC -o conftest.o conftest.s > /dev/null 2>&1; then
+		if $gcc_cv_ld -o conftest conftest.o -G > /dev/null 2>&1; then
+		    gcc_cv_as_sparc_ua_pcrel=yes
+		fi
+	    fi
+	    rm -f conftest.s conftest.o conftest
+	fi
+    ])
+    if test "x$gcc_cv_as_sparc_ua_pcrel" = xyes; then
+	AC_DEFINE(HAVE_AS_SPARC_UA_PCREL, 1,
+		[Define if your assembler and linker support unaligned PC relative relocs.])
+    fi
+
     case "$tm_file" in
     *64*)
 	AC_CACHE_CHECK([for 64 bit support in assembler ($gcc_cv_as)],

@@ -184,6 +184,17 @@ Boston, MA 02111-1307, USA.  */
    || (CHAR) == 'h' \
    || (CHAR) == 'x' \
    || (CHAR) == 'z')
+
+/* Select a format to encode pointers in exception handling data.  CODE
+   is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
+   true if the symbol may be affected by dynamic relocations.
+
+   Some Solaris dynamic linkers don't handle unaligned section relative
+   relocs properly, so force them to be aligned.  */
+#ifndef HAVE_AS_SPARC_UA_PCREL
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)		\
+  ((flag_pic || GLOBAL) ? DW_EH_PE_aligned : DW_EH_PE_absptr)
+#endif
 
 /* ??? This does not work in SunOS 4.x, so it is not enabled in sparc.h.
    Instead, it is enabled here, because it does work under Solaris.  */
