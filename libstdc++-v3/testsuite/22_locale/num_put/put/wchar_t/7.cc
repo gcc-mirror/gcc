@@ -21,18 +21,21 @@
 #include <sstream>
 #include <iostream>
 #include <locale>
+#include <testsuite_hooks.h>
 
 // libstdc++/9828
 void test01()
 {
   using namespace std;
+  bool test = true;
+
   typedef num_put<wchar_t> npw_t;
 
   wostringstream stream;
   const npw_t& npw = use_facet<npw_t>(stream.getloc());
 
   npw.put(stream, cout, L' ', static_cast<long>(10));
-  VERIFY( stream.str() == L' ');
+  VERIFY( stream.str() == L"10" );
 }
 
 int main()

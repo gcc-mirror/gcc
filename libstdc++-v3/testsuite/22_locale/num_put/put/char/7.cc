@@ -18,20 +18,24 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
+#include <sstream>
 #include <iostream>
 #include <locale>
+#include <testsuite_hooks.h>
 
 // libstdc++/9828
 void test01()
 {
   using namespace std;
+  bool test = true;
+
   typedef num_put<char> np_t;
 
   ostringstream stream;
   const np_t& np = use_facet<np_t>(stream.getloc());
 
   np.put(stream, wcout, ' ', static_cast<long>(10));
-  VERIFY( stream.str() == ' ');
+  VERIFY( stream.str() == "10" );
 }
 
 int main()
