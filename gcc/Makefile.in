@@ -2271,61 +2271,63 @@ stmp-fixproto: fixhdr.ready fixproto stmp-int-hdrs
 #
 # Remake the info files.
 
+docdir = $(srcdir)/doc
+
 doc: $(BUILD_INFO) gccbug
-info: $(srcdir)/cpp.info $(srcdir)/gcc.info lang.info $(srcdir)/cppinternals.info
+info: $(docdir)/cpp.info $(docdir)/gcc.info lang.info $(docdir)/cppinternals.info
 
-$(srcdir)/cpp.info: $(srcdir)/cpp.texi
-	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -o cpp.info cpp.texi
+$(docdir)/cpp.info: $(docdir)/cpp.texi
+	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -o doc/cpp.info doc/cpp.texi
 
-$(srcdir)/gcc.info: $(srcdir)/gcc.texi $(srcdir)/extend.texi $(srcdir)/install.texi \
-	 $(srcdir)/invoke.texi $(srcdir)/md.texi $(srcdir)/c-tree.texi \
-	 $(srcdir)/rtl.texi $(srcdir)/tm.texi $(srcdir)/gcov.texi \
-	 $(srcdir)/contrib.texi $(srcdir)/objc.texi $(srcdir)/fdl.texi
-	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -o gcc.info gcc.texi
+$(docdir)/gcc.info: $(docdir)/gcc.texi $(docdir)/extend.texi $(docdir)/install.texi \
+	 $(docdir)/invoke.texi $(docdir)/md.texi $(docdir)/c-tree.texi \
+	 $(docdir)/rtl.texi $(docdir)/tm.texi $(docdir)/gcov.texi \
+	 $(docdir)/contrib.texi $(docdir)/objc.texi $(docdir)/fdl.texi
+	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -o doc/gcc.info doc/gcc.texi
 
-$(srcdir)/cppinternals.info: $(srcdir)/cppinternals.texi
-	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -o cppinternals.info \
-		cppinternals.texi
+$(docdir)/cppinternals.info: $(docdir)/cppinternals.texi
+	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -I doc -o doc/cppinternals.info \
+		doc/cppinternals.texi
 
 dvi: gcc.dvi cpp.dvi lang.dvi cppinternals.dvi
 
 # This works with GNU Make's default rule.
-cpp.dvi: $(srcdir)/cpp.texi
-	$(TEXI2DVI) -I $(srcdir) $(srcdir)/cpp.texi
+cpp.dvi: $(docdir)/cpp.texi
+	$(TEXI2DVI) -I $(docdir) $(docdir)/cpp.texi
 
-gcc.dvi: $(srcdir)/gcc.texi $(srcdir)/extend.texi $(srcdir)/install.texi \
-	 $(srcdir)/invoke.texi $(srcdir)/md.texi $(srcdir)/c-tree.texi \
-	 $(srcdir)/rtl.texi $(srcdir)/tm.texi $(srcdir)/gcov.texi \
-	 $(srcdir)/contrib.texi $(srcdir)/objc.texi $(srcdir)/fdl.texi
-	$(TEXI2DVI) -I $(srcdir) $(srcdir)/gcc.texi
+gcc.dvi: $(docdir)/gcc.texi $(docdir)/extend.texi $(docdir)/install.texi \
+	 $(docdir)/invoke.texi $(docdir)/md.texi $(docdir)/c-tree.texi \
+	 $(docdir)/rtl.texi $(docdir)/tm.texi $(docdir)/gcov.texi \
+	 $(docdir)/contrib.texi $(docdir)/objc.texi $(docdir)/fdl.texi
+	$(TEXI2DVI) -I $(docdir) $(docdir)/gcc.texi
 
-cppinternals.dvi: $(srcdir)/cppinternals.texi
-	$(TEXI2DVI) -I $(srcdir) $(srcdir)/cppinternals.texi
+cppinternals.dvi: $(docdir)/cppinternals.texi
+	$(TEXI2DVI) -I $(docdir) $(docdir)/cppinternals.texi
 
-generated-manpages: $(srcdir)/gcov.1 $(srcdir)/cpp.1 $(srcdir)/gcc.1
+generated-manpages: $(docdir)/gcov.1 $(docdir)/cpp.1 $(docdir)/gcc.1
 
-$(srcdir)/gcov.1: $(srcdir)/gcov.texi
-	$(STAMP) $(srcdir)/gcov.1
-	-$(TEXI2POD) < $(srcdir)/gcov.texi > gcov.pod
-	-($(POD2MAN) gcov.pod > $(srcdir)/gcov.1.T$$$$ && \
-		mv -f $(srcdir)/gcov.1.T$$$$ $(srcdir)/gcov.1) || \
-		(rm -f $(srcdir)/gcov.1.T$$$$ && exit 1)
+$(docdir)/gcov.1: $(docdir)/gcov.texi
+	$(STAMP) $(docdir)/gcov.1
+	-$(TEXI2POD) < $(docdir)/gcov.texi > gcov.pod
+	-($(POD2MAN) gcov.pod > $(docdir)/gcov.1.T$$$$ && \
+		mv -f $(docdir)/gcov.1.T$$$$ $(docdir)/gcov.1) || \
+		(rm -f $(docdir)/gcov.1.T$$$$ && exit 1)
 	-rm -f gcov.pod
 
-$(srcdir)/cpp.1: $(srcdir)/cpp.texi
-	$(STAMP) $(srcdir)/cpp.1
-	-$(TEXI2POD) < $(srcdir)/cpp.texi > cpp.pod
-	-($(POD2MAN) cpp.pod > $(srcdir)/cpp.1.T$$$$ && \
-		mv -f $(srcdir)/cpp.1.T$$$$ $(srcdir)/cpp.1) || \
-		(rm -f $(srcdir)/cpp.1.T$$$$ && exit 1)
+$(docdir)/cpp.1: $(docdir)/cpp.texi
+	$(STAMP) $(docdir)/cpp.1
+	-$(TEXI2POD) < $(docdir)/cpp.texi > cpp.pod
+	-($(POD2MAN) cpp.pod > $(docdir)/cpp.1.T$$$$ && \
+		mv -f $(docdir)/cpp.1.T$$$$ $(docdir)/cpp.1) || \
+		(rm -f $(docdir)/cpp.1.T$$$$ && exit 1)
 	-rm -f cpp.pod
 
-$(srcdir)/gcc.1: $(srcdir)/invoke.texi
-	$(STAMP) $(srcdir)/gcc.1
-	-$(TEXI2POD) < $(srcdir)/invoke.texi > gcc.pod
-	-($(POD2MAN) gcc.pod > $(srcdir)/gcc.1.T$$$$ && \
-		mv -f $(srcdir)/gcc.1.T$$$$ $(srcdir)/gcc.1) || \
-		(rm -f $(srcdir)/gcc.1.T$$$$ && exit 1)
+$(docdir)/gcc.1: $(docdir)/invoke.texi
+	$(STAMP) $(docdir)/gcc.1
+	-$(TEXI2POD) < $(docdir)/invoke.texi > gcc.pod
+	-($(POD2MAN) gcc.pod > $(docdir)/gcc.1.T$$$$ && \
+		mv -f $(docdir)/gcc.1.T$$$$ $(docdir)/gcc.1) || \
+		(rm -f $(docdir)/gcc.1.T$$$$ && exit 1)
 	-rm -f gcc.pod
 
 #
@@ -2456,9 +2458,9 @@ maintainer-clean:
 	-rm -f c-parse.y c-parse.c c-parse.output TAGS
 	-rm -f cpp.??s cpp.*aux
 	-rm -f gcc.??s gcc.*aux
-	-rm -f $(srcdir)/cpp.info* $(srcdir)/gcc.info*
-	-rm -f $(srcdir)/cppinternals.info*
-	-rm -f $(srcdir)/gcov.1 $(srcdir)/cpp.1 $(srcdir)/gcc.1
+	-rm -f $(docdir)/cpp.info* $(docdir)/gcc.info*
+	-rm -f $(docdir)/cppinternals.info*
+	-rm -f $(docdir)/gcov.1 $(docdir)/cpp.1 $(docdir)/gcc.1
 #
 # Entry points `install' and `uninstall'.
 # Also use `install-collect2' to install collect2 when the config files don't.
@@ -2629,9 +2631,9 @@ install-driver: xgcc$(exeext)
 install-info: doc installdirs lang.install-info
 	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
 	-rm -f $(infodir)/cppinternals.info*
-	if [ -f $(srcdir)/gcc.info ]; then \
-	  for f in $(srcdir)/cpp.info* $(srcdir)/gcc.info* \
-		$(srcdir)/cppinternals.info*; do \
+	if [ -f $(docdir)/gcc.info ]; then \
+	  for f in $(docdir)/cpp.info* $(docdir)/gcc.info* \
+		$(docdir)/cppinternals.info*; do \
 	    realfile=`echo $$f | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
 	    $(INSTALL_DATA) $$f $(infodir)/$$realfile; \
 	  done; \
@@ -2652,18 +2654,18 @@ install-info: doc installdirs lang.install-info
 install-man: installdirs $(GENERATED_MANPAGES) lang.install-man
 	-if [ -f gcc-cross$(exeext) ] ; then \
 	  rm -f $(man1dir)/$(GCC_CROSS_NAME)$(manext); \
-	  $(INSTALL_DATA) $(srcdir)/gcc.1 $(man1dir)/$(GCC_CROSS_NAME)$(manext); \
+	  $(INSTALL_DATA) $(docdir)/gcc.1 $(man1dir)/$(GCC_CROSS_NAME)$(manext); \
 	  chmod a-x $(man1dir)/$(GCC_CROSS_NAME)$(manext); \
 	else \
 	  rm -f $(man1dir)/$(GCC_INSTALL_NAME)$(manext); \
-	  $(INSTALL_DATA) $(srcdir)/gcc.1 $(man1dir)/$(GCC_INSTALL_NAME)$(manext); \
+	  $(INSTALL_DATA) $(docdir)/gcc.1 $(man1dir)/$(GCC_INSTALL_NAME)$(manext); \
 	  chmod a-x $(man1dir)/$(GCC_INSTALL_NAME)$(manext); \
 	fi
 	-rm -f $(man1dir)/cpp$(manext)
-	-$(INSTALL_DATA) $(srcdir)/cpp.1 $(man1dir)/cpp$(manext)
+	-$(INSTALL_DATA) $(docdir)/cpp.1 $(man1dir)/cpp$(manext)
 	-chmod a-x $(man1dir)/cpp$(manext)
 	-rm -f $(man1dir)/gcov$(manext)
-	-$(INSTALL_DATA) $(srcdir)/gcov.1 $(man1dir)/gcov$(manext)
+	-$(INSTALL_DATA) $(docdir)/gcov.1 $(man1dir)/gcov$(manext)
 	-chmod a-x $(man1dir)/gcov$(manext)
 
 # Install the library.

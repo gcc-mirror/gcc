@@ -1201,16 +1201,6 @@ for some system library functions.  You should not refer to or test the
 definition of this macro unless you make very sure that programs will
 execute with the same effect regardless.
 
-@item __NO_INLINE__
-@findex __NO_INLINE__
-GNU CC defines this macro if it will not attempt to inline functions
-with @samp{inline} keyword (either when not optimizing or when inlining
-has been explicitely forbidden through @samp{-fno-inline}).  It causes
-certain GNU header files to define alternative macro definitions for some
-system library functions.  You should not refer to or test the definition
-of this macro unless you make very sure that programs will execute with
-the same effect regardless.
-
 @item __CHAR_UNSIGNED__
 @findex __CHAR_UNSIGNED__
 GNU C defines this macro if and only if the data type @code{char} is
@@ -2890,17 +2880,22 @@ same column as it did in the original source file.
 
 @item The numeric value of character constants in preprocessor expressions.
 
-The preprocessor and compiler interpret character constants in the same
-way; escape sequences such as @code{\a} are given the values they would
-have on the target machine.
+The preprocessor interprets character constants in preprocessing
+directives on the host machine.  Expressions outside preprocessing
+directives are compiled to be interpreted on the target machine.  In the
+normal case of a native compiler, these two environments are the same
+and so character constants will be evaluated identically in both cases.
+However, in the case of a cross compiler, the values may be different.
 
 Multi-character character constants are interpreted a character at a
 time, shifting the previous result left by the number of bits per
 character on the host, and adding the new character.  For example, 'ab'
 on an 8-bit host would be interpreted as 'a' * 256 + 'b'.  If there are
 more characters in the constant than can fit in the widest native
-integer type on the host, usually a @samp{long}, the excess characters
-are ignored and a diagnostic is given.
+integer type on the host, usually a @samp{long}, the behavior is
+undefined.
+
+Evaluation of wide character constants is not properly implemented yet.
 
 @item Source file inclusion.
 
@@ -3597,31 +3592,16 @@ activities.
 
 @item -imacros @var{file}
 @findex -imacros
-Process @var{file} as input and discard the resulting output.
-
-This has all the effects of @code{#include "file"} appearing on the
-first line of the main source file, such as generating dependencies and
-being listed with the @samp{-H} option, except that no output is
-generated, and that the first directory searched for @var{file} is the
-preprocessor's working directory @emph{instead of} the directory
-containing the main source file.  If not found there, it is searched for
-in the remainder of the @code{#include "..."} search chain as normal.
-
-Because the output is discarded, the main effect of @samp{-imacros
-@var{file}} is to make the macros defined in @var{file} available for
-use in the main input.
+Process @var{file} as input, discarding the resulting output, before
+processing the regular input file.  Because the output generated from
+@var{file} is discarded, the only effect of @samp{-imacros @var{file}}
+is to make the macros defined in @var{file} available for use in the
+main input.
 
 @item -include @var{file}
 @findex -include
-Process @var{file} as input, and include all the resulting output.
-
-This has all the effects of @code{#include "file"} appearing on the
-first line of the main source file, such as generating dependencies and
-being listed with the @samp{-H} option, except that the first directory
-searched for @var{file} is the preprocessor's working directory
-@emph{instead of} the directory containing the main source file.  If not
-found there, it is searched for in the remainder of the @code{#include
-"..."}  search chain as normal.
+Process @var{file} as input, and include all the resulting output,
+before processing the regular input file.
 
 @item -idirafter @var{dir}
 @findex -idirafter

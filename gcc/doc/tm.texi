@@ -1142,9 +1142,9 @@ get from @code{PCC_BITFIELD_TYPE_MATTERS}.
 Like PCC_BITFIELD_TYPE_MATTERS except that its effect is limited to
 aligning a bitfield within the structure.
 
-@findex MEMBER_TYPE_FORCES_BLK
-@item MEMBER_TYPE_FORCES_BLK (@var{field})
-Return 1 if a structure or array containing @var{field} should be accessed using
+@findex STRUCT_FORCE_BLK
+@item STRUCT_FORCE_BLK (@var{field})
+Return 1 if a structure containing @var{field} should be accessed using
 @code{BLKMODE}.
 
 Normally, this is not needed.  See the file @file{c4x.h} for an example
@@ -1459,6 +1459,14 @@ If you don't define this macro, the default is the first of
 unsigned int"} that has as much precision as @code{long long unsigned
 int}.
 
+@findex OBJC_INT_SELECTORS
+@item OBJC_INT_SELECTORS
+Define this macro if the type of Objective C selectors should be
+@code{int}.
+
+If this macro is not defined, then selectors should have the type
+@code{struct objc_selector *}.
+
 @findex OBJC_SELECTORS_WITHOUT_LABELS
 @item OBJC_SELECTORS_WITHOUT_LABELS
 Define this macro if the compiler can group all the selectors together
@@ -1752,6 +1760,17 @@ definition of this macro is
     / UNITS_PER_WORD)
 @end smallexample
 
+@findex ALTER_HARD_SUBREG
+@item ALTER_HARD_SUBREG (@var{tgt_mode}, @var{word}, @var{src_mode}, @var{regno})
+A C expression that returns an adjusted hard register number for
+
+@smallexample
+(subreg:@var{tgt_mode} (reg:@var{src_mode} @var{regno}) @var{word})
+@end smallexample
+
+This may be needed if the target machine has mixed sized big-endian
+registers, like Sparc v9.
+
 @findex HARD_REGNO_MODE_OK
 @item HARD_REGNO_MODE_OK (@var{regno}, @var{mode})
 A C expression that is nonzero if it is permissible to store a value
@@ -1834,19 +1853,6 @@ allocation.
 Define this macro if the compiler should avoid copies to/from @code{CCmode}
 registers.  You should only define this macro if support for copying to/from
 @code{CCmode} is incomplete.
-
-@findex SUBREG_REGNO_OFFSET
-@item SUBREG_REGNO_OFFSET
-Define this macro if the compiler needs to handle subregs in a non-standard
-way.  The macro returns the correct regno offset for mode @code{YMODE} given
-a subreg of type @code{XMODE}.
-This macro takes 4 parameters:
-@code{XREGNO} - A regno of an inner hard subreg_reg (or what will become one).
-@code{XMODE}  - The mode of xregno.
-@code{OFFSET} - The byte offset.
-@code{YMODE} - The mode of a top level SUBREG (or what may become one).
-The default function can be found in rtlanal.c, function
-@code{subreg_regno_offset}. Normally this does not need to be defined.
 @end table
 
 @node Leaf Functions
@@ -4508,12 +4514,88 @@ Define this macro if GCC should generate calls to the ISO C
 
 @findex LIBGCC_NEEDS_DOUBLE
 @item LIBGCC_NEEDS_DOUBLE
-Define this macro if @code{float} arguments cannot be passed to library
-routines (so they must be converted to @code{double}).  This macro
-affects both how library calls are generated and how the library
-routines in @file{libgcc.a} accept their arguments.  It is useful on
+Define this macro if only @code{float} arguments cannot be passed to
+library routines (so they must be converted to @code{double}).  This
+macro affects both how library calls are generated and how the library
+routines in @file{libgcc1.c} accept their arguments.  It is useful on
 machines where floating and fixed point arguments are passed
 differently, such as the i860.
+
+@findex FLOAT_ARG_TYPE
+@item FLOAT_ARG_TYPE
+Define this macro to override the type used by the library routines to
+pick up arguments of type @code{float}.  (By default, they use a union
+of @code{float} and @code{int}.)
+
+The obvious choice would be @code{float}---but that won't work with
+traditional C compilers that expect all arguments declared as @code{float}
+to arrive as @code{double}.  To avoid this conversion, the library routines
+ask for the value as some other type and then treat it as a @code{float}.
+
+On some systems, no other type will work for this.  For these systems,
+you must use @code{LIBGCC_NEEDS_DOUBLE} instead, to force conversion of
+the values @code{double} before they are passed.
+
+@findex FLOATIFY
+@item FLOATIFY (@var{passed-value})
+Define this macro to override the way library routines redesignate a
+@code{float} argument as a @code{float} instead of the type it was
+passed as.  The default is an expression which takes the @code{float}
+field of the union.
+
+@findex FLOAT_VALUE_TYPE
+@item FLOAT_VALUE_TYPE
+Define this macro to override the type used by the library routines to
+return values that ought to have type @code{float}.  (By default, they
+use @code{int}.)
+
+The obvious choice would be @code{float}---but that won't work with
+traditional C compilers gratuitously convert values declared as
+@code{float} into @code{double}.
+
+@findex INTIFY
+@item INTIFY (@var{float-value})
+Define this macro to override the way the value of a
+@code{float}-returning library routine should be packaged in order to
+return it.  These functions are actually declared to return type
+@code{FLOAT_VALUE_TYPE} (normally @code{int}).
+
+These values can't be returned as type @code{float} because traditional
+C compilers would gratuitously convert the value to a @code{double}.
+
+A local variable named @code{intify} is always available when the macro
+@code{INTIFY} is used.  It is a union of a @code{float} field named
+@code{f} and a field named @code{i} whose type is
+@code{FLOAT_VALUE_TYPE} or @code{int}.
+
+If you don't define this macro, the default definition works by copying
+the value through that union.
+
+@findex nongcc_SI_type
+@item nongcc_SI_type
+Define this macro as the name of the data type corresponding to
+@code{SImode} in the system's own C compiler.
+
+You need not define this macro if that type is @code{long int}, as it usually
+is.
+
+@findex nongcc_word_type
+@item nongcc_word_type
+Define this macro as the name of the data type corresponding to the
+word_mode in the system's own C compiler.
+
+You need not define this macro if that type is @code{long int}, as it usually
+is.
+
+@findex perform_@dots{}
+@item perform_@dots{}
+Define these macros to supply explicit C statements to carry out various
+arithmetic operations on types @code{float} and @code{double} in the
+library routines in @file{libgcc1.c}.  See that file for a full list
+of these macros and their arguments.
+
+On most machines, you don't need to define any of these macros, because
+the C compiler that comes with the system takes care of doing them.
 
 @findex NEXT_OBJC_RUNTIME
 @item NEXT_OBJC_RUNTIME
@@ -4950,18 +5032,6 @@ like:
 #define REVERSE_CONDITION(CODE, MODE) \
    ((MODE) != CCFPmode ? reverse_condtion (CODE) \
     : reverse_condition_maybe_unordered (CODE))
-@end smallexample
-
-@findex REVERSE_CONDEXEC_PREDICATES_P
-@item REVERSE_CONDEXEC_PREDICATES_P (@var{code1}, @var{code2})
-A C expression that returns true if the conditional execution predicate
-@var{code1} is the inverse of @var{code2} and vice versa.  Define this to
-return 0 if the target has conditional execution predicates that cannot be
-reversed safely.  If no expansion is specified, this macro is defined as
-follows:
-
-@smallexample
-#define REVERSE_CONDEXEC_PREDICATES_P (x, y) ((x) == reverse_condition (y))
 @end smallexample
 
 @end table
@@ -5714,18 +5784,6 @@ A C string constant, including spacing, giving the pseudo-op to use for a
 sequence of single-byte constants.  If this macro is not defined, the
 default is @code{"\t.byte\t"}.
 
-@findex UNALIGNED_SHORT_ASM_OP
-@findex UNALIGNED_INT_ASM_OP
-@findex UNALIGNED_DOUBLE_INT_ASM_OP
-@item UNALIGNED_SHORT_ASM_OP
-@itemx UNALIGNED_INT_ASM_OP
-@itemx UNALIGNED_DOUBLE_INT_ASM_OP
-A C string constant, including spacing, giving the pseudo-op to use
-to assemble 16-, 32-, and 64-bit integers respectively @emph{without}
-adding implicit padding or alignment.  These macros are required if
-DWARF 2 frame unwind is used.  On ELF systems, these will default
-to @code{.2byte}, @code{.4byte}, and @code{.8byte}.@refill
-
 @findex ASM_OUTPUT_ASCII
 @item ASM_OUTPUT_ASCII (@var{stream}, @var{ptr}, @var{len})
 A C statement to output to the stdio stream @var{stream} an assembler
@@ -6293,13 +6351,6 @@ in a category); and @var{sel_name} is the name of the selector.
 
 On systems where the assembler can handle quoted names, you can use this
 macro to provide more human-readable names.
-
-@findex ASM_DECLARE_UNRESOLVED_REFERENCE
-@item ASM_DECLARE_UNRESOLVED_REFERENCE (@var{stream}, @var{name})
-A C statement (sans semicolon) to output to the stdio stream
-@var{stream} commands to declare that the label @var{name} is an
-unresolved Objective-C class reference.  This is only needed for targets
-whose linkers have special support for NeXT-style runtimes.
 @end table
 
 @node Initialization

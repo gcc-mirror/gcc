@@ -205,17 +205,17 @@ in the following sections.
 -fsyntax-only  -pedantic  -pedantic-errors @gol
 -w  -W  -Wall  -Waggregate-return @gol
 -Wcast-align  -Wcast-qual  -Wchar-subscripts  -Wcomment @gol
--Wconversion  -Wdisabled-optimization  -Werror @gol
+-Wconversion  -Wdisabled-optimization -Werror @gol
 -Wfloat-equal  -Wformat  -Wformat=2 @gol
 -Wformat-nonliteral  -Wformat-security @gol
--Wimplicit  -Wimplicit-int  @gol
+-Wid-clash-@var{len}  -Wimplicit -Wimplicit-int @gol
 -Wimplicit-function-declaration @gol
 -Werror-implicit-function-declaration @gol
 -Wimport  -Winline @gol
 -Wlarger-than-@var{len}  -Wlong-long @gol
 -Wmain  -Wmissing-braces  -Wmissing-declarations @gol
 -Wmissing-format-attribute  -Wmissing-noreturn @gol
--Wmultichar  -Wno-format-extra-args  -Wno-format-y2k @gol
+-Wmultichar  -Wno-format-extra-args -Wno-format-y2k @gol
 -Wno-import  -Wpacked  -Wpadded @gol
 -Wparentheses  -Wpointer-arith  -Wredundant-decls @gol
 -Wreturn-type  -Wsequence-point  -Wshadow @gol
@@ -253,14 +253,12 @@ in the following sections.
 -fcse-follow-jumps  -fcse-skip-blocks  -fdata-sections  -fdce @gol
 -fdelayed-branch  -fdelete-null-pointer-checks @gol
 -fexpensive-optimizations  -ffast-math  -ffloat-store @gol
--fforce-addr  -fforce-mem  -ffunction-sections @gol
--fgcse  -fgcse-lm  -fgcse-sm @gol
+-fforce-addr  -fforce-mem  -ffunction-sections  -fgcse  @gol
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmove-all-movables @gol
 -fno-default-inline  -fno-defer-pop @gol
 -fno-function-cse  -fno-guess-branch-probability @gol
 -fno-inline  -fno-math-errno  -fno-peephole @gol
--funsafe-math-optimizations -fno-trapping-math @gol
 -fomit-frame-pointer  -foptimize-register-move @gol
 -foptimize-sibling-calls  -freduce-all-givs @gol
 -fregmove  -frename-registers @gol
@@ -315,7 +313,7 @@ in the following sections.
 @emph{M680x0 Options}
 @gccoptlist{
 -m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040 @gol
--m68060  -mcpu32  -m5200  -m68881  -mbitfield  -mc68000  -mc68020   @gol
+-m68060  -mcpu32 -m5200  -m68881  -mbitfield  -mc68000  -mc68020   @gol
 -mfpa  -mnobitfield  -mrtd  -mshort  -msoft-float  -mpcrel @gol
 -malign-int  -mstrict-align}
 
@@ -335,7 +333,7 @@ in the following sections.
 -mcmodel=@var{code model} @gol
 -m32  -m64 @gol
 -mapp-regs  -mbroken-saverestore  -mcypress @gol
--mepilogue  -mfaster-structs  -mflat @gol
+-mepilogue  -mfaster-structs -mflat @gol
 -mfpu  -mhard-float  -mhard-quad-float @gol
 -mimpure-text  -mlive-g0  -mno-app-regs @gol
 -mno-epilogue  -mno-faster-structs  -mno-flat  -mno-fpu @gol
@@ -464,22 +462,24 @@ in the following sections.
 -mintel-syntax -mieee-fp  -mno-fancy-math-387 @gol
 -mno-fp-ret-in-387  -msoft-float  -msvr3-shlib @gol
 -mno-wide-multiply  -mrtd  -malign-double @gol
--mpreferred-stack-boundary=@var{num} @gol
+-mreg-alloc=@var{list}  -mregparm=@var{num} @gol
+-malign-jumps=@var{num}  -malign-loops=@var{num} @gol
+-malign-functions=@var{num}  -mpreferred-stack-boundary=@var{num} @gol
 -mthreads  -mno-align-stringops  -minline-all-stringops @gol
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
--m96bit-long-double  -mregparm=@var{num}  -momit-leaf-frame-pointer}
+-m96bit-long-double  -momit-leaf-frame-pointer}
 
 @emph{HPPA Options}
 @gccoptlist{
 -march=@var{architecture type} @gol
 -mbig-switch  -mdisable-fpregs  -mdisable-indexing @gol
--mfast-indirect-calls  -mgas  -mjump-in-delay @gol
+-mfast-indirect-calls -mgas  -mjump-in-delay @gol
 -mlong-load-store  -mno-big-switch  -mno-disable-fpregs @gol
 -mno-disable-indexing  -mno-fast-indirect-calls  -mno-gas @gol
 -mno-jump-in-delay  -mno-long-load-store @gol
 -mno-portable-runtime  -mno-soft-float @gol
 -mno-space-regs  -msoft-float  -mpa-risc-1-0 @gol
--mpa-risc-1-1  -mpa-risc-2-0  -mportable-runtime @gol
+-mpa-risc-1-1  -mpa-risc-2-0 -mportable-runtime @gol
 -mschedule=@var{cpu type}  -mspace-regs}
 
 @emph{Intel 960 Options}
@@ -549,7 +549,7 @@ in the following sections.
 @emph{NS32K Options}
 @gccoptlist{
 -m32032  -m32332  -m32532  -m32081  -m32381 @gol
--mmult-add  -mnomult-add  -msoft-float  -mrtd  -mnortd @gol
+-mmult-add  -mnomult-add -msoft-float  -mrtd  -mnortd @gol
 -mregparam  -mnoregparam  -msb  -mnosb @gol
 -mbitfield  -mnobitfield  -mhimem  -mnohimem}
 
@@ -560,7 +560,7 @@ in the following sections.
 
 @emph{MCore Options}
 @gccoptlist{
--mhardlit  -mno-hardlit  -mdiv  -mno-div  -mrelax-immediates @gol
+-mhardlit  -mno-hardlit  -mdiv  -mno-div  -mrelax-immediates  @gol
 -mno-relax-immediates  -mwide-bitfields  -mno-wide-bitfields @gol
 -m4byte-functions  -mno-4byte-functions  -mcallgraph-data @gol
 -mno-callgraph-data  -mslow-bytes  -mno-slow-bytes  -mno-lsim @gol
@@ -691,10 +691,6 @@ Fortran input files.
 @c @var{file}.p
 @c @var{file}.pas
 
-@item @var{file}.ch
-@itemx @var{file}.chi
-CHILL source code (preprocessed with the traditional preprocessor).
-
 @item @var{file}.s
 Assembler code.
 
@@ -720,7 +716,7 @@ c++  c++-cpp-output
 objective-c  objc-cpp-output
 assembler  assembler-with-cpp
 f77  f77-cpp-input  ratfor
-java  chill
+java
 @end example
 @c Also f77-version, for internal use only.
 
@@ -907,7 +903,7 @@ ISO C as modified in amend. 1
 
 @item iso9899:1999
 ISO C99.  Note that this standard is not yet fully supported; see
-@w{@uref{http://gcc.gnu.org/c99status.html}} for more information.
+@w{@uref{http://gcc.gnu.org/gcc-3.0/c99status.html}} for more information.
 
 @item c89
 same as @option{-std=iso9899:1990}
@@ -1383,16 +1379,6 @@ This option is required for fully standards-compliant handling of static
 destructors, but will only work if your C library supports
 @code{__cxa_atexit}.
 
-@item -fvtable-gc
-Emit special relocations for vtables and virtual function references
-so that the linker can identify unused virtual functions and zero out
-vtable slots that refer to them.  This is most useful with
-@samp{-ffunction-sections} and @samp{-Wl,--gc-sections}, in order to
-also discard the functions themselves.
-
-This optimization requires GNU as and GNU ld.  Not all systems support
-this option.  @samp{-Wl,--gc-sections} is ignored without @samp{-static}.
-
 @item -fno-weak
 Do not use weak symbol support, even if it is provided by the linker.
 By default, G++ will use weak symbols if they are available.  This
@@ -1480,28 +1466,13 @@ easier to grep for.
 @item -Woverloaded-virtual (C++ only)
 @cindex overloaded virtual fn, warning
 @cindex warning for overloaded virtual fn
-Warn when a function declaration hides virtual functions from a
-base class.  For example, in:
-
-@smallexample
-struct A @{
-  virtual void f();
-@};
-
-struct B: public A @{
-  void f(int);
-@};
-@end smallexample
-
-the @code{A} class version of @code{f} is hidden in @code{B}, and code
-like this:
-
-@smallexample
-B* b;
-b->f();
-@end smallexample
-
-will fail to compile.
+Warn when a derived class function declaration may be an error in
+defining a virtual function.  In a derived class, the
+definitions of virtual functions must match the type signature of a
+virtual function declared in the base class.  With this option, the
+compiler warns when you define a function with the same name as a
+virtual function, but with a type signature that does not match any
+declarations from the base class.
 
 @item -Wno-pmf-conversions (C++ only)
 Disable the diagnostic for converting a bound pointer to member function
@@ -2228,6 +2199,11 @@ Warn if an undefined identifier is evaluated in an @samp{#if} directive.
 @item -Wshadow
 Warn whenever a local variable shadows another local variable, parameter or
 global variable or whenever a built-in function is shadowed.
+
+@item -Wid-clash-@var{len}
+Warn whenever two distinct identifiers match in the first @var{len}
+characters.  This may help you prepare a program that will compile
+with certain obsolete, brain-damaged compilers.
 
 @item -Wlarger-than-@var{len}
 Warn whenever an object of larger than @var{len} bytes is defined.
@@ -3081,8 +3057,11 @@ that alter the assembler output may be confused by the optimizations
 performed when this option is not used.
 
 @item -ffast-math
-Sets @samp{-fno-math-errno}, @samp{-funsafe-math-optimizations},
-and @samp{-fno-trapping-math}.
+This option allows GCC to violate some ISO or IEEE rules and/or
+specifications in the interest of optimizing code for speed.  For
+example, it allows the compiler to assume arguments to the @code{sqrt}
+function are non-negative numbers and that no floating-point values
+are NaNs.
 
 This option causes the preprocessor macro __FAST_MATH__ to be defined.
 
@@ -3097,39 +3076,8 @@ with a single instruction, e.g., sqrt.  A program that relies on
 IEEE exceptions for math error handling may want to use this flag
 for speed while maintaining IEEE arithmetic compatibility.
 
-This option should never be turned on by any @samp{-O} option since
-it can result in incorrect output for programs which depend on
-an exact implementation of IEEE or ISO rules/specifications for
-math functions.
-
 The default is @samp{-fmath-errno}.  The @samp{-ffast-math} option
 sets @samp{-fno-math-errno}.
-
-@item -funsafe-math-optimizations
-Allow optimizations for floating-point arithmetic that (a) assume
-that arguments and results are valid and (b) may violate IEEE or
-ANSI standards.
-
-This option should never be turned on by any @samp{-O} option since
-it can result in incorrect output for programs which depend on
-an exact implementation of IEEE or ISO rules/specifications for
-math functions.
-
-The default is @samp{-fno-unsafe-math-optimizations}.  The
-@samp{-ffast-math} option sets @samp{-funsafe-math-optimizations}.
-
-@item -fno-trapping-math
-Compile code assuming that floating-point operations cannot generate
-user-visible traps.  Setting this option may allow faster code
-if one relies on ``non-stop'' IEEE arithmetic, for example.
-
-This option should never be turned on by any @samp{-O} option since
-it can result in incorrect output for programs which depend on
-an exact implementation of IEEE or ISO rules/specifications for
-math functions.
-
-The default is @samp{-ftrapping-math}.  The @samp{-ffast-math}
-option sets @samp{-fno-trapping-math}.
 @end table
 
 @c following causes underfulls.. they don't look great, but we deal.
@@ -3179,18 +3127,6 @@ Run the loop optimizer twice.
 @item -fgcse
 Perform a global common subexpression elimination pass.
 This pass also performs global constant and copy propagation.
-
-@item -fgcse-lm
-When -fgcse-lm is enabled, global common subexpression elimination will
-attempt to move loads which are only killed by stores into themselves. This
-allows a loop containing a load/store sequence to be changed to a load outside
-the loop, and a copy/store within the loop.
-
-@item -fgcse-sm
-When -fgcse-sm is enabled, A store motion pass is run after global common
-subexpression elimination. This pass will attempt to move stores out of loops.
-When used in conjunction with -fgcse-lm, loops containing a load/store sequence
-can be changed to a load before the loop and a store after the loop.
 
 @item -fdelete-null-pointer-checks
 Use global dataflow analysis to identify and eliminate useless null
@@ -3816,13 +3752,10 @@ Options}.
 
 @cindex Libraries
 @item -l@var{library}
-@itemx -l @var{library}
-Search the library named @var{library} when linking.  (The second
-alternative with the library as a separate argument is only for
-POSIX compliance and is not recommended.)
+Search the library named @var{library} when linking.
 
 It makes a difference where in the command you write this option; the
-linker searches and processes libraries and object files in the order they
+linker searches processes libraries and object files in the order they
 are specified.  Thus, @samp{foo.o -lz bar.o} searches library @samp{z}
 after file @file{foo.o} but before @file{bar.o}.  If @file{bar.o} refers
 to functions in @samp{z}, those functions may not be loaded.
@@ -6723,14 +6656,14 @@ These @samp{-m} options are defined for the i386 family of computers:
 Assume the defaults for the machine type @var{cpu type} when scheduling
 instructions.  The choices for @var{cpu type} are @samp{i386},
 @samp{i486}, @samp{i586}, @samp{i686}, @samp{pentium},
-@samp{pentiumpro}, @samp{pentium4}, @samp{k6}, and @samp{athlon}
+@samp{pentiumpro}, @samp{k6}, and @samp{athlon}
 
 While picking a specific @var{cpu type} will schedule things appropriately
 for that particular chip, the compiler will not generate any code that
 does not run on the i386 without the @samp{-march=@var{cpu type}} option
 being used.  @samp{i586} is equivalent to @samp{pentium} and @samp{i686}
-is equivalent to @samp{pentiumpro}.  @samp{k6} and @samp{athlon} are the
-AMD chips as opposed to the Intel ones.
+is equivalent to @samp{pentiumpro}.  @samp{k6} is the AMD chip as
+opposed to the Intel ones.
 
 @item -march=@var{cpu type}
 Generate instructions for the machine type @var{cpu type}.  The choices
@@ -6781,7 +6714,7 @@ Some 387 emulators do not support the @code{sin}, @code{cos} and
 @code{sqrt} instructions for the 387.  Specify this option to avoid
 generating those instructions. This option is the default on FreeBSD.
 As of revision 2.6.1, these instructions are not generated unless you
-also use the @samp{-funsafe-math-optimizations} switch.
+also use the @samp{-ffast-math} switch.
 
 @item -malign-double
 @itemx -mno-align-double
@@ -6845,6 +6778,15 @@ In addition, seriously incorrect code will result if you call a
 function with too many arguments.  (Normally, extra arguments are
 harmlessly ignored.)
 
+@item -mreg-alloc=@var{regs}
+Control the default allocation order of integer registers.  The
+string @var{regs} is a series of letters specifying a register.  The
+supported letters are: @code{a} allocate EAX; @code{b} allocate EBX;
+@code{c} allocate ECX; @code{d} allocate EDX; @code{S} allocate ESI;
+@code{D} allocate EDI; @code{B} allocate EBP.
+This option is deprecated and will not be supported by future releases
+of gcc.
+
 @item -mregparm=@var{num}
 Control how many registers are used to pass integer arguments.  By
 default, no registers are used to pass arguments, and at most 3
@@ -6856,6 +6798,26 @@ function by using the function attribute @samp{regparm}.
 @var{num} is nonzero, then you must build all modules with the same
 value, including any libraries.  This includes the system libraries and
 startup modules.
+
+@item -malign-loops=@var{num}
+Align loops to a 2 raised to a @var{num} byte boundary.  If
+@samp{-malign-loops} is not specified, the default is 2 unless
+gas 2.8 (or later) is being used in which case the default is
+to align the loop on a 16 byte boundary if it is less than 8
+bytes away.
+
+@item -malign-jumps=@var{num}
+Align instructions that are only jumped to to a 2 raised to a @var{num}
+byte boundary.  If @samp{-malign-jumps} is not specified, the default is
+2 if optimizing for a 386, and 4 if optimizing for a 486 unless
+gas 2.8 (or later) is being used in which case the default is
+to align the instruction on a 16 byte boundary if it is less
+than 8 bytes away.
+
+@item -malign-functions=@var{num}
+Align the start of functions to a 2 raised to @var{num} byte boundary.
+If @samp{-malign-functions} is not specified, the default is 2 if optimizing
+for a 386, and 4 if optimizing for a 486.
 
 @item -mpreferred-stack-boundary=@var{num}
 Attempt to keep the stack boundary aligned to a 2 raised to @var{num}
@@ -7118,7 +7080,7 @@ These @samp{-m} options are defined for the DEC Alpha implementations:
 @itemx -msoft-float
 Use (do not use) the hardware floating-point instructions for
 floating-point operations.  When @option{-msoft-float} is specified,
-functions in @file{libgcc.a} will be used to perform floating-point
+functions in @file{libgcc1.c} will be used to perform floating-point
 operations.  Unless they are replaced by routines that emulate the
 floating-point operations, or compiled in such a way as to call such
 emulations routines, these routines will issue floating-point

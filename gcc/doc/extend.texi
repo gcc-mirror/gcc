@@ -2183,13 +2183,6 @@ An attribute specifier list may, in future, be permitted to appear after
 the declarator in a function definition (before any old-style parameter
 declarations or the function body).
 
-Attribute specifiers may be mixed with type qualifiers appearing inside
-the @code{[]} of a parameter array declarator, in the C99 construct by
-which such qualifiers are applied to the pointer to which the array is
-implicitly converted.  Such attribute specifiers apply to the pointer,
-not to the array, but at present this is not implemented and they are
-ignored.
-
 An attribute specifier list may appear at the start of a nested
 declarator.  At present, there are some limitations in this usage: the
 attributes apply to the identifer declared, and to all subsequent
@@ -3806,8 +3799,7 @@ The following ISO C89 functions are recognized as builtins unless
 @code{strlen}, @code{strncat}, @code{strncmp}, @code{strncpy},
 @code{strpbrk}, @code{strrchr}, @code{strspn}, and @code{strstr}.  All
 of these functions have corresponding versions prefixed with
-@code{__builtin_}, except that the version for @code{sqrt} is called
-@code{__builtin_fsqrt}.
+@code{__builtin_}.
 
 GNU CC provides builtin versions of the ISO C99 floating point
 comparison macros (that avoid raising exceptions for unordered
@@ -4526,6 +4518,7 @@ Some_Class  B  __attribute__ ((init_priority (543)));
 Note that the particular values of @var{priority} do not matter; only their
 relative ordering.
 
+
 @item java_interface
 @cindex java_interface attribute
 
@@ -4607,6 +4600,9 @@ removed from g++ at some point.
 The use of initializer lists with new expressions has been deprecated,
 and will be removed from g++ at some point.
 
+Floating point and complex template constant parameters are deprecated,
+and will be removed from g++ at some point.
+
 @node Backwards Compatibility
 @section Backwards Compatibility
 @cindex Backwards Compatibility
@@ -4635,3 +4631,4 @@ implicitly scoped inside a C language scope. Also, an empty prototype
 @code{()} will be treated as an unspecified number of arguments, rather
 than no arguments, as C++ demands.
 @end table
+

@@ -1538,24 +1538,13 @@ System V Release 4 small data area reference
 @item Intel 386---@file{i386.h}
 @table @code
 @item q
-@samp{a}, @code{b}, @code{c}, or @code{d} register for the i386.
-For x86-64 it is equivalent to @samp{r} class. (for 8-bit instructions that
-do not use upper halves)
-
-@item Q
-@samp{a}, @code{b}, @code{c}, or @code{d} register. (for 8-bit instructions,
-that do use upper halves)
-
-@item R
-Legacy register --- equivalent to @code{r} class in i386 mode.
-(for non-8-bit registers used together with 8-bit upper halves in a single
-instruction)
+@samp{a}, @code{b}, @code{c}, or @code{d} register
 
 @item A
 Specifies the @samp{a} or @samp{d} registers.  This is primarily useful
-for 64-bit integer values (when in 32-bit mode) intended to be returned
-with the @samp{d} register holding the most significant bits and the
-@samp{a} register holding the least significant bits.
+for 64-bit integer values intended to be returned with the @samp{d}
+register holding the most significant bits and the @samp{a} register
+holding the least significant bits.
 
 @item f
 Floating point register
@@ -1584,12 +1573,6 @@ Second floating point register
 @item S
 @samp{si} register
 
-@item x
-@samp{xmm} SSE register
-
-@item y
-MMX register
-
 @item I
 Constant in range 0 to 31 (for 32-bit shifts)
 
@@ -1607,14 +1590,6 @@ Constant in range 0 to 63 (for 64-bit shifts)
 
 @item N
 Constant in range 0 to 255 (for @code{out} instruction)
-
-@item Z
-Constant in range 0 to 0xffffffff or symbolic reference known to fit specified range.
-(for using immediates in zero extending 32-bit to 64-bit x86-64 instructions)
-
-@item e
-Constant in range -2147483648 to 2147483647 or symbolic reference known to fit specified range.
-(for using immediates in 64-bit x86-64 instructions)
 
 @item G
 Standard 80387 floating point constant
@@ -2115,13 +2090,6 @@ means of constraints requiring operands 1 and 0 to be the same location.
 @itemx @samp{smin@var{m}3}, @samp{smax@var{m}3}, @samp{umin@var{m}3}, @samp{umax@var{m}3}
 @itemx @samp{and@var{m}3}, @samp{ior@var{m}3}, @samp{xor@var{m}3}
 Similar, for other arithmetic operations.
-@cindex @code{min@var{m}3} instruction pattern
-@cindex @code{max@var{m}3} instruction pattern
-@itemx @samp{min@var{m}3}, @samp{max@var{m}3}
-Floating point min and max operations.  If both operands are zeros,
-or if either operand is NaN, then it is unspecified which of the two
-operands is returned as the result.
-
 
 @cindex @code{mulhisi3} instruction pattern
 @item @samp{mulhisi3}

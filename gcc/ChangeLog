@@ -1,3 +1,16 @@
+2001-06-07  DJ Delorie  <dj@redhat.com>
+
+	* c-tree.texi, contrib.texi, cpp.texi, cppinternals.texi,
+	extend.texi, fdl.texi, gcov.texi, invoke.texi, md.texi,
+	objc.texi, rtl.texi, tm.texi, texinfo.tex, gcc.1, cpp.1,
+	gcov.1: Move to doc subdirectory.
+	* install.texi: Move to doc/install-old.texi.
+	* gcc.texi: Move to doc, refer to install-old.texi.
+	* Makefile.in: Reflect move of docs to doc/.
+	* f/Make-lang.in: Ditto.
+	* java/Make-lang.in: Ditto.
+	* doc/.cvsignore: New.
+
 2001-06-07  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* c-tree.texi: Reformat the manual as a single chapter now

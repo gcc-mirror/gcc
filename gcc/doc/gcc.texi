@@ -167,13 +167,13 @@ included in the section entitled ``GNU Free Documentation License''.
 @sp 1
 @c The version number appears five times more in this file.
 
-@center for gcc-3.1
+@center for gcc-3.0
 @page
 @vskip 0pt plus 1filll
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1998,
 1999, 2000, 2001  Free Software Foundation, Inc.
 @sp 2
-For GCC Version 3.1@*
+For GCC Version 3.0@*
 @sp 1
 Published by the Free Software Foundation @*
 59 Temple Place - Suite 330@*
@@ -212,19 +212,19 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 @ifset USING
 This manual documents how to run, install and port the GNU
 compiler, as well as its new features and incompatibilities, and how to
-report bugs.  It corresponds to GCC version 3.1.
+report bugs.  It corresponds to GCC version 3.0.
 @end ifset
 @end ifset
 
 @ifclear INTERNALS
 This manual documents how to run and install the GNU compiler,
 as well as its new features and incompatibilities, and how to report
-bugs.  It corresponds to GCC version 3.1.
+bugs.  It corresponds to GCC version 3.0.
 @end ifclear
 @ifclear USING
 This manual documents how to port the GNU compiler,
 as well as its new features and incompatibilities, and how to report
-bugs.  It corresponds to GCC version 3.1.
+bugs.  It corresponds to GCC version 3.0.
 @end ifclear
 
 @menu
@@ -269,13 +269,12 @@ bugs.  It corresponds to GCC version 3.1.
 
 @ifset USING
 @node G++ and GCC
-@chapter Compile C, C++, Objective C, Fortran, Java or CHILL
+@chapter Compile C, C++, Objective C, Fortran, Java
 
 @cindex Objective C
-Several versions of the compiler (C, C++, Objective C, Fortran, Java
-and CHILL) are integrated; this is why we use the name
+Several versions of the compiler (C, C++, Objective C, Fortran, Java) are integrated; this is why we use the name
 ``GNU Compiler Collection''. GCC can compile programs written in any of these
-languages. The Fortran, CHILL, and Java compilers are described in
+languages. The Fortran and Java compilers are described in
 separate manuals.
 
 @cindex GCC
@@ -399,7 +398,7 @@ as @dfn{AMD1}; the amended standard is sometimes known as @dfn{C94} or
 A new edition of the ISO C standard was published in 1999 as ISO/IEC
 9899:1999, and is commonly known as @dfn{C99}.  GCC has incomplete
 support for this standard version; see
-@uref{http://gcc.gnu.org/c99status.html} for details.  To select this
+@uref{http://gcc.gnu.org/gcc-3.0/c99status.html} for details.  To select this
 standard, use @samp{-std=c99} or @samp{-std=iso9899:1999}.  (While in
 development, drafts of this standard version were referred to as
 @dfn{C9X}.)
@@ -472,7 +471,7 @@ information concerning the history of C that is available online, see
 There is no formal written standard for Objective-C.  The most
 authoritative manual is ``Object-Oriented Programming and the
 Objective-C Language'', available at a number of web sites;
-@uref{http://developer.apple.com/techpubs/macosx/Cocoa/ObjectiveC} has a
+@uref{http://developer.apple.com/techpubs/macosx/Cocoa/ObjectiveC/} has a
 recent version, while @uref{http://www.toodarkpark.org/computers/objc/}
 is an older example.  @uref{http://www.gnustep.org} includes useful
 information as well.
@@ -482,9 +481,6 @@ Fortran}, for details of the Fortran language supported by GCC.
 
 @xref{Compatibility,,Compatibility with the Java Platform, gcj, GNU gcj},
 for details of compatibility between @code{gcj} and the Java Platform.
-
-@xref{References,,Language Definition References, chill, GNU Chill},
-for details of the CHILL standard.
 
 @include invoke.texi
 
@@ -3060,11 +3056,18 @@ with @samp{-msoft-float}.  Some standard parts of the C library, such as
 @code{bcopy} or @code{memcpy}, are also called automatically.  The usual
 function call interface is used for calling the library routines.
 
-Some of these routines can be defined in mostly machine-independent C;
-they appear in @file{libgcc2.c}.  Others must be hand-written in
-assembly language for each processor.  Wherever they are defined, they
-are compiled into the support library, @file{libgcc.a}, which is
-automatically searched when you link programs with GCC.
+These library routines should be defined in the library @file{libgcc.a},
+which GCC automatically searches whenever it links a program.  On
+machines that have multiply and divide instructions, if hardware
+floating point is in use, normally @file{libgcc.a} is not needed, but it
+is searched just in case.
+
+Each arithmetic function is defined in @file{libgcc1.c} to use the
+corresponding C arithmetic operator.  As long as the file is compiled
+with another C compiler, which supports all the C arithmetic operators,
+this file will work portably.  However, @file{libgcc1.c} does not work if
+compiled with GCC, because each arithmetic function would compile
+into a call to itself!
 @end ifset
 
 @ifset INTERNALS
@@ -3587,17 +3590,12 @@ Define this macro if the host system is VMS.
 @findex FATAL_EXIT_CODE
 @item FATAL_EXIT_CODE
 A C expression for the status code to be returned when the compiler
-exits after serious errors.  The default is the system-provided macro
-@samp{EXIT_FAILURE}, or @samp{1} if the system doesn't define that
-macro.  Define this macro only if these defaults are incorrect.
+exits after serious errors.
 
 @findex SUCCESS_EXIT_CODE
 @item SUCCESS_EXIT_CODE
 A C expression for the status code to be returned when the compiler
-exits without serious errors.  (Warnings are not serious errors.)  The
-default is the system-provided macro @samp{EXIT_SUCCESS}, or @samp{0} if
-the system doesn't define that macro.  Define this macro only if these
-defaults are incorrect.
+exits without serious errors.
 
 @findex HOST_WORDS_BIG_ENDIAN
 @item HOST_WORDS_BIG_ENDIAN
@@ -3701,6 +3699,15 @@ characters.
 @item POSIX
 Define this if your system is POSIX.1 compliant.
 
+@findex USE_PROTOTYPES
+@item USE_PROTOTYPES
+Define this to be 1 if you know that the host compiler supports
+prototypes, even if it doesn't define __STDC__, or define
+it to be 0 if you do not want any prototypes used in compiling
+GCC.  If @samp{USE_PROTOTYPES} is not defined, it will be
+determined automatically whether your compiler supports
+prototypes by checking if @samp{__STDC__} is defined.
+
 @findex PATH_SEPARATOR
 @item PATH_SEPARATOR
 Define this macro to be a C character constant representing the
@@ -3715,31 +3722,23 @@ character constant specifying that character.  When GCC displays file
 names, the character you specify will be used.  GCC will test for
 both slash and the character you specify when parsing filenames.
 
-@findex TARGET_OBJECT_SUFFIX
-@item TARGET_OBJECT_SUFFIX
+@findex OBJECT_SUFFIX
+@item OBJECT_SUFFIX
 Define this macro to be a C string representing the suffix for object
-files on your target machine.  If you do not define this macro, GCC will
-use @samp{.o} as the suffix for object files.
+files on your machine.  If you do not define this macro, GCC will use
+@samp{.o} as the suffix for object files.
 
-@findex TARGET_EXECUTABLE_SUFFIX
-@item TARGET_EXECUTABLE_SUFFIX
-Define this macro to be a C string representing the suffix to be
-automatically added to executable files on your target machine.  If you
-do not define this macro, GCC will use the null string as the suffix for
-executable files.
+@findex EXECUTABLE_SUFFIX
+@item EXECUTABLE_SUFFIX
+Define this macro to be a C string representing the suffix for executable
+files on your machine.  If you do not define this macro, GCC will use
+the null string as the suffix for object files.
 
-@findex HOST_OBJECT_SUFFIX
-@item HOST_OBJECT_SUFFIX
-Define this macro to be a C string representing the suffix for object
-files on your host machine (@samp{xm-*.h}).  If you do not define this
-macro, GCC will use @samp{.o} as the suffix for object files.
-
-@findex HOST_EXECUTABLE_SUFFIX
-@item HOST_EXECUTABLE_SUFFIX
-Define this macro to be a C string representing the suffix for
-executable files on your host machine (@samp{xm-*.h}).  If you do not
-define this macro, GCC will use the null string as the suffix for
-executable files.
+@findex NO_AUTO_EXE_SUFFIX
+@item NO_AUTO_EXE_SUFFIX
+Define this macro if executable files on your machine have a suffix, but
+the compiler driver should not automatically append it to the output file
+name, if user hasn't specified one.
 
 @findex HOST_BIT_BUCKET
 @item HOST_BIT_BUCKET
@@ -3810,6 +3809,19 @@ The target makefile fragment, @file{t-@var{target}}, defines special
 target dependent variables and targets used in the @file{Makefile}:
 
 @table @code
+@findex LIBGCC1
+@item LIBGCC1
+The rule to use to build @file{libgcc1.a}.
+If your target does not need to use the functions in @file{libgcc1.a},
+set this to empty.
+@xref{Interface}.
+
+@findex CROSS_LIBGCC1
+@item CROSS_LIBGCC1
+The rule to use to build @file{libgcc1.a} when building a cross
+compiler.  If your target does not need to use the functions in
+@file{libgcc1.a}, set this to empty.
+
 @findex LIBGCC2_CFLAGS
 @item LIBGCC2_CFLAGS
 Compiler flags to use when compiling @file{libgcc2.c}.
@@ -3931,6 +3943,20 @@ dependent variables and targets used in the @file{Makefile}:
 @findex CC
 @item CC
 The compiler to use when building the first stage.
+
+@findex CLIB
+@item CLIB
+Additional host libraries to link with.
+
+@findex OLDCC
+@item OLDCC
+The compiler to use when building @file{libgcc1.a} for a native
+compilation.
+
+@findex OLDAR
+@item OLDAR
+The version of @code{ar} to use when building @file{libgcc1.a} for a native
+compilation.
 
 @findex INSTALL
 @item INSTALL
