@@ -1,3 +1,8 @@
+2004-08-18  Robert Bowdidge <bowdidge@apple.com>
+
+	* config/rs6000/x-darwin: Remove XCFLAGS -mdynamic-no-pic to
+        get regression tester working again.
+
 2004-08-18  Zack Weinberg  <zack@codesourcery.com>
 
 	* insn-notes.def, reg-notes.def: New files.
