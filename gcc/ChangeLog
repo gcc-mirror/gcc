@@ -1,3 +1,9 @@
+2003-12-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.h (c_parse_error): Declare it.
+	* c-common.c (c_parse_error): New function.
+	* c-parse.y (yyerror): Use it.
+
 2003-12-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/13054

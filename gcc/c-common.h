@@ -1330,6 +1330,7 @@ extern void c_stddef_cpp_builtins (void);
 extern void fe_file_change (const struct line_map *);
 extern int c_estimate_num_insns (tree decl);
 extern bool c_decl_uninit (tree t);
+extern void c_parse_error (const char *, enum cpp_ttype, tree);
 
 /* The following have been moved here from c-tree.h, since they're needed
    in the ObjC++ world, too.  What is more, stub-objc.c could use a few

@@ -10,5 +10,5 @@ namespace N
   class B { friend void operator>>(int, class B); };
   class N { friend void operator>>(int,class N); };
 } 
-void N::operator>>(int, N::B)  // { dg-error "`B' is not a member of|non-function|primary-expression" "" }
+void N::operator>>(int, N::B)  // { dg-error "N::N::B" }
 { } // { dg-error "" "" }

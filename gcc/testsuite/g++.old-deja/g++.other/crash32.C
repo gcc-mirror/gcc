@@ -6,7 +6,7 @@ struct foo
   enum e
   {
     not				// { dg-error "" } 
-  }; // { dg-bogus "" "" { xfail *-*-* } } 
+  }; // { dg-bogus "" } 
   ~foo(); // { dg-bogus "" "" { xfail *-*-* } } 
   void x (foo *&a, bool b = (unsigned char)0);
 }; // { dg-bogus "" "" { xfail *-*-* } } 

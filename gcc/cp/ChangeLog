@@ -1,3 +1,40 @@
+2003-12-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10779
+	PR c++/12160
+	* parser.c (struct cp_parser): Add in_template_argument_list_p.
+	(cp_parser_error): Use c_parse_error.
+	(cp_parser_name_lookup_error): New function.
+	(cp_parser_new): Initialize it.
+	(cp_parser_declarator): Add parenthesized_p parameter.
+	(cp_parser_nested_name_specifier_opt): Use
+	cp_parser_name_lookup_error.
+	(cp_parser_parenthesized_expression_list): Improve comments.
+	(cp_parser_condition): Adjust call to cp_parser_declarator.
+	(cp_parser_template_parameter): Adjust call to
+	cp_parser_parameter_declaration.
+	(cp_parser_template_argument_list): Set
+	in_template_argument_list_p.
+	(cp_parser_explicit_instantiation): Adjust call to
+	cp_parser_declarator.
+	(cp_parser_simple_type_specifier): Remove unncessary code.
+	(cp_parser_using_declaration): Use cp_parser_name_lookup_error.
+	(cp_parser_init_declarator): Handle member function definitions.
+	(cp_parser_direct_declarator): Adjust call to
+	cp_parser_declarator.
+	(cp_parser_type_id): Adjust call to cp_parser_declarator.
+	(cp_parser_parameter_declaration_list): Avoid backtracking where
+	possible.
+	(cp_parser_parameter_declaration): Add parenthesized_p parameter.
+	(cp_parser_function_definition): Remove.
+	(cp_parser_member_declaration): Do not backtrack to look for
+	function definitions.
+	(cp_parser_exception_declaration): Adjust call to
+	cp_parser_declarator.
+	(cp_parser_single_declaration): Handle function definitions via
+	cp_parser_init_declarator.
+	(cp_parser_save_member_function_body): New function.
+
 2003-12-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13106

@@ -1,3 +1,20 @@
+2003-12-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10779
+	PR c++/12160
+	* g++.dg/parse/error3.C: New test.
+	* g++.dg/parse/error4.C: Likewise.
+	* g++.dg/abi/mangle4.C: Tweak error messages.
+	* g++.dg/lookup/using5.C: Likewise.
+	* g++.dg/other/error2.C: Likewise.
+	* g++.dg/parse/typename5.C: Likewise.
+	* g++.dg/parse/undefined1.C: Likewise.
+	* g++.dg/template/arg2.C: Likewise.
+	* g++.dg/template/ttp3.C: Likewise.
+	* g++.dg/template/type1.C: Likewise.
+	* g++.old-deja/g++.other/crash32.C: Likewise.
+	* g++.old-djea/g++.pt/defarg8.C: Likewise.
+	
 2003-12-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/13106

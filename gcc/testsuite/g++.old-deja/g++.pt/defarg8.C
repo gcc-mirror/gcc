@@ -7,11 +7,11 @@
 // so)
 
 template <class T> class foo1;
-template <class T, class U> class foo2;
+template <class T, class U> class foo2; // { dg-error "" }
 
 struct bar {
   template <class T, class U>
-  bar(int i = foo1<T>::baz, // { dg-bogus "" "" { xfail *-*-* } }  - 
+  bar(int i = foo1<T>::baz, // { dg-bogus "" }  - 
       int j = int(foo2<T, U>::baz), // ok
-      int k = foo2<T, U>::baz) {} // this is the problematic one.
+      int k = foo2<T, U>::baz) {} // { dg-error "" }
 };
