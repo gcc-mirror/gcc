@@ -1,3 +1,9 @@
+2002-10-01  David S. Miller  <davem@redhat.com>
+	    Jan Hubicka <jh@suse.cz>
+	
+	* reload1.c (gen_reload:SECONDARY_MEMORY_NEEDED): Handle SUBREG.
+	* reload.c (push_reload:SECONDARY_MEMORY_NEEDED): Likewise.
+	
 2002-09-30  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h (REG_CLASS_NAMES, REG_CLASS_CONTENTS):

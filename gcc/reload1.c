@@ -7354,6 +7354,9 @@ gen_reload (out, in, opnum, type)
 {
   rtx last = get_last_insn ();
   rtx tem;
+#ifdef SECONDARY_MEMORY_NEEDED
+  int in_regnum, out_regnum;
+#endif
 
   /* If IN is a paradoxical SUBREG, remove it and try to put the
      opposite SUBREG on OUT.  Likewise for a paradoxical SUBREG on OUT.  */
@@ -7516,20 +7519,22 @@ gen_reload (out, in, opnum, type)
 
 #ifdef SECONDARY_MEMORY_NEEDED
   /* If we need a memory location to do the move, do it that way.  */
-  else if (GET_CODE (in) == REG && REGNO (in) < FIRST_PSEUDO_REGISTER
-	   && GET_CODE (out) == REG && REGNO (out) < FIRST_PSEUDO_REGISTER
-	   && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (REGNO (in)),
-				       REGNO_REG_CLASS (REGNO (out)),
+  else if ((in_regnum = true_regnum (in)) >= 0
+	   && in_regnum < FIRST_PSEUDO_REGISTER
+	   && (out_regnum = true_regnum (out)) >= 0
+	   && out_regnum < FIRST_PSEUDO_REGISTER
+	   && SECONDARY_MEMORY_NEEDED (REGNO_REG_CLASS (in_regnum),
+				       REGNO_REG_CLASS (out_regnum),
 				       GET_MODE (out)))
     {
       /* Get the memory to use and rewrite both registers to its mode.  */
       rtx loc = get_secondary_mem (in, GET_MODE (out), opnum, type);
 
       if (GET_MODE (loc) != GET_MODE (out))
-	out = gen_rtx_REG (GET_MODE (loc), REGNO (out));
+	out = gen_rtx_REG (GET_MODE (loc), out_regnum);
 
       if (GET_MODE (loc) != GET_MODE (in))
-	in = gen_rtx_REG (GET_MODE (loc), REGNO (in));
+	in = gen_rtx_REG (GET_MODE (loc), in_regnum);
 
       gen_reload (loc, in, opnum, type);
       gen_reload (out, loc, opnum, type);
