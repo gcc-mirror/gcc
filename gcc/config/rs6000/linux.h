@@ -69,11 +69,6 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
-#undef DEFAULT_VTABLE_THUNKS
-#ifndef USE_GNULIBC_1
-#define DEFAULT_VTABLE_THUNKS 1
-#endif
-
 /* Do code reading to identify a signal frame, and set the frame
    state data appropriately.  See unwind-dw2.c for the structs.  */
 

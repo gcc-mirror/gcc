@@ -164,11 +164,6 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_APP_OFF
 #define ASM_APP_OFF "#NO_APP\n"
 
-#undef DEFAULT_VTABLE_THUNKS
-#ifndef USE_GNULIBC_1
-#define DEFAULT_VTABLE_THUNKS 1
-#endif
-
 /* PowerPC no-op instruction.  */
 #undef RS6000_CALL_GLUE
 #define RS6000_CALL_GLUE "nop"

@@ -191,3 +191,6 @@ Boston, MA 02111-1307, USA.  */
    && DECL_MODE (TYPE_FIELDS (STRUCT)) == DFmode	\
    ? MAX (MAX ((COMPUTED), (SPECIFIED)), BIGGEST_ALIGNMENT) \
    : MAX ((COMPUTED), (SPECIFIED)))
+/* XXX: Darwin supports neither .quad, or .llong, but it also doesn't
+   support 64 bit powerpc either, so this just keeps things happy. */
+#define DOUBLE_INT_ASM_OP ".quad"
