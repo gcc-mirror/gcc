@@ -378,13 +378,17 @@ finish_goto_stmt (tree destination)
      mark the used labels as used.  */
   if (TREE_CODE (destination) == LABEL_DECL)
     TREE_USED (destination) = 1;
-    
-  if (TREE_CODE (destination) != LABEL_DECL)
-    /* We don't inline calls to functions with computed gotos.
-       Those functions are typically up to some funny business,
-       and may be depending on the labels being at particular
-       addresses, or some such.  */
-    DECL_UNINLINABLE (current_function_decl) = 1;
+  else
+    {
+      /* The DESTINATION is being used as an rvalue.  */
+      if (!processing_template_decl)
+	destination = decay_conversion (destination);
+      /* We don't inline calls to functions with computed gotos.
+	 Those functions are typically up to some funny business,
+	 and may be depending on the labels being at particular
+	 addresses, or some such.  */
+      DECL_UNINLINABLE (current_function_decl) = 1;
+    }
   
   check_goto (destination);
 
