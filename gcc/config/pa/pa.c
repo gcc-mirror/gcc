@@ -8253,6 +8253,17 @@ pa_asm_output_aligned_common (FILE *stream,
 			      unsigned HOST_WIDE_INT size,
 			      unsigned int align)
 {
+  unsigned int max_common_align;
+
+  max_common_align = TARGET_64BIT ? 128 : (size >= 4096 ? 256 : 64);
+  if (align > max_common_align)
+    {
+      warning ("alignment (%u) for %s exceeds maximum alignment "
+	       "for global common data.  Using %u",
+	       align / BITS_PER_UNIT, name, max_common_align / BITS_PER_UNIT);
+      align = max_common_align;
+    }
+
   bss_section ();
 
   assemble_name (stream, name);
