@@ -477,10 +477,38 @@ namespace tr1
 				      remove_all_extents<_Tp>::type>::value)>
     { };
 
+  template<typename>
+    struct __is_empty_helper_1
+    { };
+
+  template<typename _Tp>
+    struct __is_empty_helper_2
+    : public _Tp { };
+
+  // Unfortunately, without compiler support we cannot tell union from
+  // class types, and is_empty doesn't work at all with the former. 
+  template<typename _Tp, bool = (is_fundamental<_Tp>::value
+				 || is_array<_Tp>::value
+				 || is_pointer<_Tp>::value
+				 || is_reference<_Tp>::value
+				 || is_member_pointer<_Tp>::value
+				 || is_enum<_Tp>::value
+				 || is_function<_Tp>::value)>
+    struct __is_empty_helper
+    { static const bool __value = (sizeof(__is_empty_helper_1<_Tp>)
+				   == sizeof(__is_empty_helper_2<_Tp>)); };
+
+  template<typename _Tp>
+    struct __is_empty_helper<_Tp, true>
+    { static const bool __value = false; };
+
+  template<typename _Tp>
+    struct is_empty
+    : public integral_constant<bool, __is_empty_helper<_Tp>::__value>
+    { };
+
   // Exploit the resolution DR core/337.
-  template<typename _Tp, bool = (is_void<_Tp>::value
-				 || is_function<_Tp>::value
-				 || is_reference<_Tp>::value)>
+  template<typename _Tp, bool = !is_object<_Tp>::value>
     struct __is_abstract_helper
     : public __sfinae_types
     {
