@@ -1,6 +1,6 @@
 /* Analyze RTL for C-Compiler
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2285,7 +2285,9 @@ computed_jump_p (insn)
     {
       rtx pat = PATTERN (insn);
 
-      if (GET_CODE (pat) == PARALLEL)
+      if (find_reg_note (insn, REG_LABEL, NULL_RTX))
+	return 0;
+      else if (GET_CODE (pat) == PARALLEL)
 	{
 	  int len = XVECLEN (pat, 0);
 	  int has_use_labelref = 0;

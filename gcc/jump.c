@@ -863,6 +863,24 @@ mark_all_labels (f, cross_jump)
 	mark_jump_label (PATTERN (insn), insn, cross_jump, 0);
 	if (! INSN_DELETED_P (insn) && GET_CODE (insn) == JUMP_INSN)
 	  {
+	    /* When we know the LABEL_REF contained in a REG used in
+	       an indirect jump, we'll have a REG_LABEL note so that
+	       flow can tell where it's going.  */
+	    if (JUMP_LABEL (insn) == 0)
+	      {
+		rtx label_note = find_reg_note (insn, REG_LABEL, NULL_RTX);
+		if (label_note)
+		  {
+		    /* But a LABEL_REF around the REG_LABEL note, so
+		       that we can canonicalize it.  */
+		    rtx label_ref = gen_rtx_LABEL_REF (VOIDmode,
+						       XEXP (label_note, 0));
+
+		    mark_jump_label (label_ref, insn, cross_jump, 0);
+		    XEXP (label_note, 0) = XEXP (label_ref, 0);
+		    JUMP_LABEL (insn) = XEXP (label_note, 0);
+		  }
+	      }
 	    if (JUMP_LABEL (insn) != 0 && simplejump_p (insn))
 	      {
 		jump_chain[INSN_UID (insn)]

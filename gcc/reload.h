@@ -1,6 +1,6 @@
 /* Communication between reload.c and reload1.c.
    Copyright (C) 1987, 1991, 1992, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -302,7 +302,7 @@ extern rtx form_sum PARAMS ((rtx, rtx));
 
 /* Substitute into the current INSN the registers into which we have reloaded
    the things that need reloading.  */
-extern void subst_reloads PARAMS ((void));
+extern void subst_reloads PARAMS ((rtx));
 
 /* Make a copy of any replacements being done into X and move those copies
    to locations in Y, a copy of X.  We only look at the highest level of

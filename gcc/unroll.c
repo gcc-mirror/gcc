@@ -1,5 +1,5 @@
 /* Try to unroll loops, and split induction variables.
-   Copyright (C) 1992, 1993, 1994, 1995, 1997, 1998, 1999, 2000
+   Copyright (C) 1992, 1993, 1994, 1995, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
    Contributed by James E. Wilson, Cygnus Support/UC Berkeley.
 
@@ -768,7 +768,7 @@ unroll_loop (loop, insn_count, end_insert_before, strength_reduce_p)
 		}
 	    }
 	}
-      else if ((note = find_reg_note (insn, REG_LABEL, NULL_RTX)))
+      if ((note = find_reg_note (insn, REG_LABEL, NULL_RTX)))
 	set_label_in_map (map, CODE_LABEL_NUMBER (XEXP (note, 0)),
 			  XEXP (note, 0));
     }

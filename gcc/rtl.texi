@@ -1,4 +1,5 @@
-@c Copyright (C) 1988, 89, 92, 94, 97, 1998, 1999, 2000 Free Software Foundation, Inc.
+@c Copyright (C) 1988, 1989, 1992, 1994, 1997, 1998, 1999, 2000, 2001
+@c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -2752,8 +2753,10 @@ last insns, respectively.
 @findex REG_LABEL
 @item REG_LABEL
 This insn uses @var{op}, a @code{code_label}, but is not a
-@code{jump_insn}.  The presence of this note allows jump optimization to
-be aware that @var{op} is, in fact, being used.
+@code{jump_insn}, or it is a @code{jump_insn} that required the label to
+be held in a register.  The presence of this note allows jump
+optimization to be aware that @var{op} is, in fact, being used, and flow
+optimization to build an accurate flow graph.
 @end table
 
 The following notes describe attributes of outputs of an insn:
