@@ -1636,7 +1636,7 @@ xtensa_emit_loop_end (insn, operands)
 	  break;
 
 	case CODE_LABEL:
-	  output_asm_insn ("nop.n", operands);
+	  output_asm_insn (TARGET_DENSITY ? "nop.n" : "nop", operands);
 	  done = 1;
 	  break;
 
@@ -1646,7 +1646,7 @@ xtensa_emit_loop_end (insn, operands)
 
 	    if (GET_CODE (body) == JUMP_INSN)
 	      {
-		output_asm_insn ("nop.n", operands);
+		output_asm_insn (TARGET_DENSITY ? "nop.n" : "nop", operands);
 		done = 1;
 	      }
 	    else if ((GET_CODE (body) != USE)

@@ -1,3 +1,8 @@
+2003-05-09  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (xtensa_emit_loop_end): Only use "nop.n"
+	instruction if the Xtensa density option is enabled.
+
 2003-05-09  Matt Kraai <kraai@alumni.cmu.edu>
 
        * mklibgcc.in: Remove extra quotes.
