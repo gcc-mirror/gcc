@@ -5039,7 +5039,7 @@ expand_expr (exp, target, tmode, modifier)
       return target;
 
     case NEGATE_EXPR:
-      op0 = expand_expr (TREE_OPERAND (exp, 0), target, VOIDmode, 0);
+      op0 = expand_expr (TREE_OPERAND (exp, 0), subtarget, VOIDmode, 0);
       temp = expand_unop (mode, neg_optab, op0, target, 0);
       if (temp == 0)
 	abort ();
