@@ -607,10 +607,12 @@ special_function_p (name, fndecl, returns_twice, is_longjmp,
 	       && ! strcmp (tname, "longjmp"))
 	*is_longjmp = 1;
       /* Do not add any more malloc-like functions to this list,
-	 instead mark as malloc functions using the malloc attribute.  */
+         instead mark them as malloc functions using the malloc attribute.
+         Note, realloc is not suitable for attribute malloc since
+         it may return the same address across multiple calls. */
       else if (! strcmp (tname, "malloc")
 	       || ! strcmp (tname, "calloc")
-	       || ! strcmp (tname, "realloc")
+	       || ! strcmp (tname, "strdup")
 	       /* Note use of NAME rather than TNAME here.  These functions
 		  are only reserved when preceded with __.  */
 	       || ! strcmp (name, "__vn")	/* mangled __builtin_vec_new */
