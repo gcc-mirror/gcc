@@ -1,8 +1,11 @@
 #include "f2c.h"
-
-#ifndef KR_headers
 #undef abs
+#ifdef KR_headers
+extern char *F77_aloc(), *getenv();
+#else
 #include <stdlib.h>
+#include <string.h>
+extern char *F77_aloc(ftnlen, char*);
 #endif
 
 /*
@@ -18,39 +21,36 @@
  */
 
 #ifdef KR_headers
-VOID G77_getenv_0 (fname, value, flen, vlen) char *value, *fname; ftnlen vlen, flen;
+ VOID
+G77_getenv_0 (fname, value, flen, vlen) char *value, *fname; ftnlen vlen, flen;
 #else
-void G77_getenv_0 (char *fname, char *value, ftnlen flen, ftnlen vlen)
+ void
+G77_getenv_0 (char *fname, char *value, ftnlen flen, ftnlen vlen)
 #endif
 {
-extern char **environ;
-register char *ep, *fp, *flast;
-register char **env = environ;
+	char buf[256], *ep, *fp;
+	integer i;
 
-flast = fname + flen;
-for(fp = fname ; fp < flast ; ++fp)
-	if(*fp == ' ')
-		{
-		flast = fp;
-		break;
+	if (flen <= 0)
+		goto add_blanks;
+	for(i = 0; i < sizeof(buf); i++) {
+		if (i == flen || (buf[i] = fname[i]) == ' ') {
+			buf[i] = 0;
+			ep = getenv(buf);
+			goto have_ep;
+			}
 		}
-
-while (ep = *env++)
-	{
-	for(fp = fname; fp<flast ; )
-		if(*fp++ != *ep++)
-			goto endloop;
-
-	if(*ep++ == '=') {	/* copy right hand side */
-		while( *ep && --vlen>=0 )
+	while(i < flen && fname[i] != ' ')
+		i++;
+	strncpy(fp = F77_aloc(i+1, "getenv_"), fname, (int)i);
+	fp[i] = 0;
+	ep = getenv(fp);
+	free(fp);
+ have_ep:
+	if (ep)
+		while(*ep && vlen-- > 0)
 			*value++ = *ep++;
-
-		goto blank;
-		}
-endloop: ;
-	}
-
-blank:
-	while( --vlen >= 0 )
+ add_blanks:
+	while(vlen-- > 0)
 		*value++ = ' ';
-}
+	}

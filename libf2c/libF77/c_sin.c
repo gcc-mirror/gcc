@@ -11,7 +11,7 @@ VOID c_sin(r, z) complex *r, *z;
 void c_sin(complex *r, complex *z)
 #endif
 {
-	double zr = z->r;
-	r->r = sin(zr) * cosh(z->i);
-	r->i = cos(zr) * sinh(z->i);
+	double zi = z->i, zr = z->r;
+	r->r = sin(zr) * cosh(zi);
+	r->i = cos(zr) * sinh(zi);
 	}

@@ -99,59 +99,124 @@ rd_I(n,w,len, base) Uint *n; int w; ftnlen len; register int base;
 #else
 rd_I(Uint *n, int w, ftnlen len, register int base)
 #endif
-{	longint x;
-	int sign,ch;
-	char s[84], *ps;
-	ps=s; x=0;
-	while (w)
-	{
+{
+	int bad, ch, sign;
+	longint x = 0;
+
+	if (w <= 0)
+		goto have_x;
+	for(;;) {
 		GET(ch);
-		if (ch==',' || ch=='\n') break;
-		*ps=ch; ps++; w--;
-	}
-	*ps='\0';
-	ps=s;
-	while (*ps==' ') ps++;
-	if (*ps=='-') { sign=1; ps++; }
-	else { sign=0; if (*ps=='+') ps++; }
-loop:	while (*ps>='0' && *ps<='9') { x=x*base+(*ps-'0'); ps++; }
-	if (*ps==' ') {if (f__cblank) x *= base; ps++; goto loop;}
-	if(sign) x = -x;
-	if(len==sizeof(integer)) n->il=x;
-	else if(len == sizeof(char)) n->ic = (char)x;
+		if (ch != ' ')
+			break;
+		if (!--w)
+			goto have_x;
+		}
+	sign = 0;
+	switch(ch) {
+	  case ',':
+	  case '\n':
+		w = 0;
+		goto have_x;
+	  case '-':
+		sign = 1;
+	  case '+':
+		break;
+	  default:
+		if (ch >= '0' && ch <= '9') {
+			x = ch - '0';
+			break;
+			}
+		goto have_x;
+		}
+	while(--w) {
+		GET(ch);
+		if (ch >= '0' && ch <= '9') {
+			x = x*base + ch - '0';
+			continue;
+			}
+		if (ch != ' ') {
+			if (ch == '\n' || ch == ',')
+				w = 0;
+			break;
+			}
+		if (f__cblank)
+			x *= base;
+		}
+	if (sign)
+		x = -x;
+ have_x:
+	if(len == sizeof(integer))
+		n->il=x;
+	else if(len == sizeof(char))
+		n->ic = (char)x;
 #ifdef Allow_TYQUAD
-	else if (len == sizeof(longint)) n->ili = x;
+	else if (len == sizeof(longint))
+		n->ili = x;
 #endif
-	else n->is = (short)x;
-	if (*ps) return(errno=115); else return(0);
+	else
+		n->is = (short)x;
+	if (w) {
+		while(--w)
+			GET(ch);
+		return errno = 115;
+		}
+	return 0;
 }
+
  static int
 #ifdef KR_headers
 rd_L(n,w,len) ftnint *n; ftnlen len;
 #else
 rd_L(ftnint *n, int w, ftnlen len)
 #endif
-{	int ch, lv;
-	char s[84], *ps;
-	ps=s;
-	while (w) {
+{	int ch, dot, lv;
+
+	if (w <= 0)
+		goto bad;
+	for(;;) {
 		GET(ch);
-		if (ch==','||ch=='\n') break;
-		*ps=ch;
-		ps++; w--;
+		--w;
+		if (ch != ' ')
+			break;
+		if (!w)
+			goto bad;
 		}
-	*ps='\0';
-	ps=s; while (*ps==' ') ps++;
-	if (*ps=='.') ps++;
-	if (*ps=='t' || *ps == 'T')
+	dot = 0;
+ retry:
+	switch(ch) {
+	  case '.':
+		if (dot++ || !w)
+			goto bad;
+		GET(ch);
+		--w;
+		goto retry;
+	  case 't':
+	  case 'T':
 		lv = 1;
-	else if (*ps == 'f' || *ps == 'F')
+		break;
+	  case 'f':
+	  case 'F':
 		lv = 0;
-	else return(errno=116);
+		break;
+	  default:
+ bad:
+		for(; w > 0; --w)
+			GET(ch);
+		/* no break */
+	  case ',':
+	  case '\n':
+		return errno = 116;
+		}
 	switch(len) {
 		case sizeof(char):	*(char *)n = (char)lv;	 break;
 		case sizeof(short):	*(short *)n = (short)lv; break;
 		default:		*n = lv;
+		}
+	while(w-- > 0) {
+		GET(ch);
+		if (ch == ',' || ch == '\n')
+			break;
 		}
 	return 0;
 }

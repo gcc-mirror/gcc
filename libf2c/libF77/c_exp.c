@@ -11,9 +11,9 @@ extern double exp(), cos(), sin();
 void c_exp(complex *r, complex *z)
 #endif
 {
-double expx;
+	double expx, zi = z->i;
 
-expx = exp(z->r);
-r->r = expx * cos(z->i);
-r->i = expx * sin(z->i);
-}
+	expx = exp(z->r);
+	r->r = expx * cos(zi);
+	r->i = expx * sin(zi);
+	}
