@@ -1,3 +1,7 @@
+2001-02-01  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * gcc.dg/cpp/avoidpaste2.c: New tests.
+
 2001-01-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/gnu99-init-1.c: Add test for [0 ... 0] range.
