@@ -1017,15 +1017,13 @@ package Rtsfind is
      RE_Raise_Program_Error_Unknown_Tag, -- System.Partition_Interface
      RE_Register_Passive_Package,        -- System.Partition_Interface
      RE_Register_Receiving_Stub,         -- System.Partition_Interface
-     RE_RCI_Info,                        -- System.Partition_Interface
+     RE_RCI_Locator,                     -- System.Partition_Interface
      RE_RCI_Subp_Info,                   -- System.Partition_Interface
      RE_RCI_Subp_Info_Array,             -- System.Partition_Interface
      RE_Subprogram_Id,                   -- System.Partition_Interface
      RE_Get_RAS_Info,                    -- System.Partition_Interface
 
      RE_Global_Pool_Object,              -- System.Pool_Global
-
-     RE_Unbounded_Reclaim_Pool,          -- System.Pool_Local
 
      RE_Stack_Bounded_Pool,              -- System.Pool_Size
 
@@ -1077,7 +1075,6 @@ package Rtsfind is
      RE_Get_Local_Address,               -- System.PolyORB_Interface
      RE_Get_Reference,                   -- System.PolyORB_Interface
      RE_Local_Oid_To_Address,            -- System.PolyORB_Interface
-     RE_RCI_Locator,                     -- System.PolyORB_Interface
      RE_Asynchronous_P_To_Sync_Scope,    -- System.PolyORB_Interface
      RE_Buffer_Stream_Type,              -- System.PolyORB_Interface
      RE_Allocate_Buffer,                 -- System.PolyORB_Interface
@@ -2099,7 +2096,7 @@ package Rtsfind is
      RE_Raise_Program_Error_Unknown_Tag  => System_Partition_Interface,
      RE_Register_Passive_Package         => System_Partition_Interface,
      RE_Register_Receiving_Stub          => System_Partition_Interface,
-     RE_RCI_Info                         => System_Partition_Interface,
+     RE_RCI_Locator                      => System_Partition_Interface,
      RE_RCI_Subp_Info                    => System_Partition_Interface,
      RE_RCI_Subp_Info_Array              => System_Partition_Interface,
      RE_Subprogram_Id                    => System_Partition_Interface,
@@ -2147,7 +2144,6 @@ package Rtsfind is
      RE_Get_Local_Address                => System_PolyORB_Interface,
      RE_Get_Reference                    => System_PolyORB_Interface,
      RE_Local_Oid_To_Address             => System_PolyORB_Interface,
-     RE_RCI_Locator                      => System_PolyORB_Interface,
      RE_Asynchronous_P_To_Sync_Scope     => System_PolyORB_Interface,
      RE_Buffer_Stream_Type               => System_PolyORB_Interface,
      RE_Allocate_Buffer                  => System_PolyORB_Interface,
@@ -2233,8 +2229,6 @@ package Rtsfind is
      RE_TC_Object                        => System_PolyORB_Interface,
 
      RE_Global_Pool_Object               => System_Pool_Global,
-
-     RE_Unbounded_Reclaim_Pool           => System_Pool_Local,
 
      RE_Stack_Bounded_Pool               => System_Pool_Size,
 

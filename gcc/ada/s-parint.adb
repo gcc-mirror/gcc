@@ -219,11 +219,11 @@ package body System.Partition_Interface is
         (Program_Error'Identity, Ada.Exceptions.Exception_Message (E));
    end Raise_Program_Error_Unknown_Tag;
 
-   --------------
-   -- RCI_Info --
-   --------------
+   -----------------
+   -- RCI_Locator --
+   -----------------
 
-   package body RCI_Info is
+   package body RCI_Locator is
 
       -----------------------------
       -- Get_Active_Partition_ID --
@@ -254,7 +254,7 @@ package body System.Partition_Interface is
          return 0;
       end Get_RCI_Package_Receiver;
 
-   end RCI_Info;
+   end RCI_Locator;
 
    ------------------------------
    -- Register_Passive_Package --

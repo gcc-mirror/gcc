@@ -238,7 +238,7 @@ package Snames is
    --  Names of implementations of the distributed systems annex
 
    Name_No_DSA                         : constant Name_Id := N + 064;
-   Name_GLADE_DSA                      : constant Name_Id := N + 065;
+   Name_GARLIC_DSA                     : constant Name_Id := N + 065;
    Name_PolyORB_DSA                    : constant Name_Id := N + 066;
 
    --  Names of identifiers used in expanding distribution stubs
