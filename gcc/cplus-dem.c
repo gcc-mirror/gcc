@@ -35,11 +35,9 @@ Cambridge, MA 02139, USA.  */
 
 extern char *xmalloc PARAMS((unsigned));
 extern char *xrealloc PARAMS((char *, unsigned));
-extern char *strstr ();
 
-#ifndef POSIX
 char *
-strstr (s1, s2)
+mystrstr (s1, s2)
   char *s1, *s2;
 {
   register char *p = s1;
@@ -59,7 +57,6 @@ strstr (s1, s2)
     }
   return (0);
 }
-#endif
 
 /* In order to allow a single demangler executable to demangle strings
    using various common values of CPLUS_MARKER, as well as any specific
@@ -1102,7 +1099,7 @@ arm_pt (work, mangled, n, anchor, args)
      const char **anchor, **args;
 {
   /* ARM template? */
-  if (ARM_DEMANGLING && (*anchor = strstr(mangled, "__pt__")))
+  if (ARM_DEMANGLING && (*anchor = mystrstr (mangled, "__pt__")))
     {
 	int len;
         *args = *anchor + 6;
@@ -1318,7 +1315,7 @@ demangle_prefix (work, mangled, declp)
 
 /*  This block of code is a reduction in strength time optimization
     of:
-    	scan = strstr (*mangled, "__"); */
+    	scan = mystrstr (*mangled, "__"); */
 
   {
     scan = *mangled;
@@ -1388,7 +1385,7 @@ demangle_prefix (work, mangled, declp)
 	    {
 	      scan++;
 	    }
-	  if ((scan = strstr (scan, "__")) == NULL || (*(scan + 2) == '\0'))
+	  if ((scan = mystrstr (scan, "__")) == NULL || (*(scan + 2) == '\0'))
 	    {
 	      /* No separator (I.E. "__not_mangled"), or empty signature
 		 (I.E. "__not_mangled_either__") */
