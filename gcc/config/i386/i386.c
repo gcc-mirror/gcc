@@ -11569,10 +11569,7 @@ ix86_expand_clrmem (rtx dst, rtx count_exp, rtx align_exp)
 		rtx mem = adjust_automodify_address_nv (dst,
 							GET_MODE (zeroreg),
 							destreg, offset);
-		emit_insn (gen_strset (destreg, mem,
-				       (TARGET_64BIT
-					? gen_rtx_SUBREG (SImode, zeroreg, 0)
-					: zeroreg)));
+		emit_insn (gen_strset (destreg, mem, zeroreg));
 		offset += size;
 	      }
 	  else
