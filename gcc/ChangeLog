@@ -1,3 +1,19 @@
+2002-02-28  Steve Ellcey  <sje@cup.hp.com>
+
+	* doc/rtl.texi (SUBREG_PROMOTED_UNSIGNED_P): Change definition
+	to take ptr_extend into account as third type of extension.
+	(SUBREG_PROMOTED_UNSIGNED_SET): Definition of new macro to set bit
+	fields used by SUBREG_PROMOTED_UNSIGNED_P.
+	* rtl.h (SUBREG_PROMOTED_UNSIGNED_SET): New macro.
+	(SUBREG_PROMOTED_UNSIGNED_P): Change to return -1 as well as 0 or 1.
+	* calls.c (precompute_arguments): Use new macro.
+	(expand_call): Ditto.
+	* combine.c (nonzero_bits): Ditto.
+	(record_promoted_value): Ditto.
+	* expr.c (store_expr): Ditto.
+	(expand_expr): Ditto.
+	* function.c (assign_parms): Ditto.
+
 2002-02-28  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.c (init_gcc_specs): Get -static and -static-libgcc to
