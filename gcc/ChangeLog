@@ -1,5 +1,12 @@
 2000-10-27  Richard Henderson  <rth@redhat.com>
 
+	* invoke.texi: Document -frename-registers.  Add it to -O3.
+	* toplev.c (rest_of_compilation): Run regrename before ifcvt2.
+	(enum dump_file_index, dump_file): Update order.
+	(main): Set flag_rename_registers at -O3.
+
+2000-10-27  Richard Henderson  <rth@redhat.com>
+
 	* config/alpha/alpha.h (enum reg_class): Add PV_REG.
 	(REG_CLASS_NAMES, REG_CLASS_CONTENTS, REGNO_REG_CLASS): Update.
 	(REG_CLASS_FROM_LETTER): Assign it to 'c'.

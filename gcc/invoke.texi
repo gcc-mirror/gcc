@@ -175,9 +175,9 @@ in the following sections.
 -fmove-all-movables  -fno-default-inline  -fno-defer-pop
 -fno-function-cse  -fno-inline  -fno-peephole -ftrapv
 -fomit-frame-pointer  -foptimize-register-moves -foptimize-sibling-calls
--fregmove -frerun-cse-after-loop  -frerun-loop-opt  -freduce-all-givs
--fschedule-insns  -fschedule-insns2  -fssa -fstrength-reduce
--fstrict-aliasing  -fthread-jumps  -funroll-all-loops
+-fregmove  -frename-registers  -frerun-cse-after-loop  -frerun-loop-opt
+-freduce-all-givs  -fschedule-insns  -fschedule-insns2  -fssa
+-fstrength-reduce  -fstrict-aliasing  -fthread-jumps  -funroll-all-loops
 -funroll-loops 
 -O  -O0  -O1  -O2  -O3 -Os
 @end smallexample
@@ -2577,14 +2577,15 @@ perform loop unrolling or function inlining when you specify @samp{-O2}.
 As compared to @samp{-O}, this option increases both compilation time
 and the performance of the generated code.
 
-@samp{-O2} turns on all optional optimizations except for loop unrolling
-and function inlining.  It also turns on the @samp{-fforce-mem} option
-on all machines and frame pointer elimination on machines where doing so
-does not interfere with debugging.
+@samp{-O2} turns on all optional optimizations except for loop unrolling,
+function inlining, and register renaming.  It also turns on the
+@samp{-fforce-mem} option on all machines and frame pointer elimination
+on machines where doing so does not interfere with debugging.
 
 @item -O3
 Optimize yet more.  @samp{-O3} turns on all optimizations specified by
-@samp{-O2} and also turns on the @samp{inline-functions} option.
+@samp{-O2} and also turns on the @samp{-finline-functions} and
+@samp{-frename-registers} options.
 
 @item -O0
 Do not optimize.
@@ -2804,7 +2805,6 @@ pointer checks.  Programs which rely on NULL pointer dereferences @emph{not}
 halting the program may not work properly with this option.  Use
 -fno-delete-null-pointer-checks to disable this optimizing for programs
 which depend on that behavior.
-
 
 @item -fexpensive-optimizations
 Perform a number of minor optimizations that are relatively expensive.
@@ -3033,6 +3033,12 @@ Perform dead-code elimination in SSA form.  Requires @samp{-fssa}.  Like
 Treat floating point constant as single precision constant instead of
 implicitly converting it to double precision constant.
 
+@item -frename-registers
+Attempt to avoid false dependancies in scheduled code by making use
+of registers left over after register allocation.  This optimization
+will most benefit processors with lots of registers.  It can, however,
+make debugging impossible, since variables will no longer stay in
+a ``home register''.
 @end table
 
 @node Preprocessor Options
