@@ -6251,7 +6251,6 @@ tsubst (t, args, complain, in_decl)
 
     case ERROR_MARK:
     case IDENTIFIER_NODE:
-    case OP_IDENTIFIER:
     case VOID_TYPE:
     case REAL_TYPE:
     case COMPLEX_TYPE:
