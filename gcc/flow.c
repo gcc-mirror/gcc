@@ -1777,6 +1777,9 @@ redirect_edge_and_branch (e, target)
   basic_block src = e->src;
   rtx insn = src->end;
 
+  if (e->flags & EDGE_COMPLEX)
+    return false;
+
   if (try_redirect_by_replacing_jump (e, target))
     return true;
   /* Do this fast path late, as we want above code to simplify for cases
@@ -3683,30 +3686,15 @@ try_optimize_cfg (mode)
 	      changed = 1;
 	      b = c;
 	    }
-	  /* The fallthru forwarder block can be deleted.  */
-	  if (b->pred->pred_next == NULL
-	      && forwarder_block_p (b)
-	      && n_basic_blocks > 1
-	      && (b->pred->flags & EDGE_FALLTHRU)
-	      && (b->succ->flags & EDGE_FALLTHRU))
-	    {
-	      if (rtl_dump_file)
-		fprintf (rtl_dump_file, "Deleting fallthru block %i.\n",
-			 b->index);
-	      c = BASIC_BLOCK (i ? i - 1 : i + 1);
-	      redirect_edge_succ (b->pred, b->succ->dest);
-	      flow_delete_block (b);
-	      changed = 1;
-	      b = c;
-	    }
-
 	  /* Remove code labels no longer used.  
 	     Don't do the optimization before sibling calls are discovered,
 	     as some branches may be hidden inside CALL_PLACEHOLDERs.  */
-	  if (!(mode & CLEANUP_PRE_SIBCALL)
-	      && b->pred->pred_next == NULL
+	  if (b->pred->pred_next == NULL
 	      && (b->pred->flags & EDGE_FALLTHRU)
+	      && !(b->pred->flags & EDGE_COMPLEX)
 	      && GET_CODE (b->head) == CODE_LABEL
+	      && (!(mode & CLEANUP_PRE_SIBCALL)
+ 		  || !tail_recursion_label_p (b->head))
 	      /* If previous block does end with condjump jumping to next BB,
 	         we can't delete the label.  */
 	      && (b->pred->src == ENTRY_BLOCK_PTR
@@ -3719,12 +3707,31 @@ try_optimize_cfg (mode)
 		fprintf (rtl_dump_file, "Deleted label in block %i.\n",
 			 b->index);
 	    }
+	  /* The fallthru forwarder block can be deleted.  */
+	  if (b->pred->pred_next == NULL
+	      && forwarder_block_p (b)
+	      && n_basic_blocks > 1
+	      && (b->pred->flags & EDGE_FALLTHRU)
+	      && (b->succ->flags & EDGE_FALLTHRU)
+	      && GET_CODE (b->head) != CODE_LABEL)
+	    {
+	      if (rtl_dump_file)
+		fprintf (rtl_dump_file, "Deleting fallthru block %i.\n",
+			 b->index);
+	      c = BASIC_BLOCK (i ? i - 1 : i + 1);
+	      redirect_edge_succ (b->pred, b->succ->dest);
+	      flow_delete_block (b);
+	      changed = 1;
+	      b = c;
+	    }
+
 
 	  /* A loop because chains of blocks might be combineable.  */
 	  while ((s = b->succ) != NULL
 		 && s->succ_next == NULL
 		 && (s->flags & EDGE_EH) == 0
 		 && (c = s->dest) != EXIT_BLOCK_PTR
+	         && !(s->flags & EDGE_COMPLEX)
 		 && c->pred->pred_next == NULL
 		 /* If the jump insn has side effects,
 		    we can't kill the edge.  */

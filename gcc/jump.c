@@ -1999,8 +1999,6 @@ mark_jump_label (x, insn, in_mem)
     case LABEL_REF:
       {
 	rtx label = XEXP (x, 0);
-	rtx olabel = label;
-	rtx next;
 
 	/* Ignore remaining references to unreachable labels that
 	   have been deleted.  */
@@ -2015,23 +2013,6 @@ mark_jump_label (x, insn, in_mem)
 	if (LABEL_REF_NONLOCAL_P (x))
 	  break;
 
-	/* If there are other labels following this one,
-	   replace it with the last of the consecutive labels.  */
-	for (next = NEXT_INSN (label); next; next = NEXT_INSN (next))
-	  {
-	    if (GET_CODE (next) == CODE_LABEL)
-	      label = next;
-	    else if (GET_CODE (next) != NOTE)
-	      break;
-	    else if ((NOTE_LINE_NUMBER (next) == NOTE_INSN_LOOP_BEG
-		      || NOTE_LINE_NUMBER (next) == NOTE_INSN_FUNCTION_END
-		      /* ??? Optional.  Disables some optimizations, but
-			 makes gcov output more accurate with -O.  */
-		      || (flag_test_coverage
-			  && NOTE_LINE_NUMBER (next) > 0)))
-	      break;
-	  }
-
 	XEXP (x, 0) = label;
 	if (! insn || ! INSN_DELETED_P (insn))
 	  ++LABEL_NUSES (label);
@@ -2042,27 +2023,6 @@ mark_jump_label (x, insn, in_mem)
 	      JUMP_LABEL (insn) = label;
 	    else
 	      {
-		/* If we've changed the label, update notes accordingly.  */
-		if (label != olabel)
-		  {
-		    rtx note;
-
-		    /* We may have a REG_LABEL note to indicate that this
-		       instruction uses the label.  */
-		    note = find_reg_note (insn, REG_LABEL, olabel);
-		    if (note)
-		      XEXP (note, 0) = label;
-
-		    /* We may also have a REG_EQUAL note to indicate that
-		       a register is being set to the address of the
-		       label.  */
-		    note = find_reg_note (insn, REG_EQUAL, NULL_RTX);
-		    if (note 
-			&& GET_CODE (XEXP (note, 0)) == LABEL_REF
-			&& XEXP (XEXP (note, 0), 0) == olabel)
-		      XEXP (XEXP (note, 0), 0) = label;
-		  }
-
 		/* Add a REG_LABEL note for LABEL unless there already
 		   is one.  All uses of a label, except for labels
 		   that are the targets of jumps, must have a
