@@ -1,3 +1,15 @@
+2000-06-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (finish_mem_initializers): Declare.
+	(count_trees): Likewise.
+	* parse.y (base_init): Use finish_mem_initializers.
+	* semantics.c (finish_mem_initializers): New function.
+
+	* tree.c (count_trees_r): Prototype.  Use DATA parameter to store
+	the number of trees.
+	(n_trees): Remove.
+	(count_trees): Don't use it.
+	
 2000-06-15  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (count_trees): New debugging function.
