@@ -1,3 +1,8 @@
+2002-06-08  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	* config/avr/avr.c (TARGET_SECTION_TYPE_FLAGS): New.
+	(avr_section_type_flags): New, handle .noinit* sections.
+
 2002-06-08  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/sh/netbsd-elf.h (SUBTARGET_EXTRA_SPECS): Define
