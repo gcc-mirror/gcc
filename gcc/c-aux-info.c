@@ -2,7 +2,7 @@
    on information stored in GCC's tree structure.  This code implements the
    -aux-info option.
 
-   This code was written by Ron Guilmette (rfg@mcc.com).
+   Written by Ron Guilmette (rfg@netcom.com).
 
    Copyright (C) 1989, 1991 Free Software Foundation, Inc.
 

@@ -1,7 +1,8 @@
 /* Definitions of target machine for GNU compiler, for SPARC running Solaris 2
    Copyright 1992 Free Software Foundation, Inc.
-   Contributed by Ron Guilmette (rfg@ncd.com) and
-   David V. Henkel-Wallace (gumby@cygnus.com).
+
+   Written by Ron Guilmette (rfg@netcom.com).
+   Additional changes by David V. Henkel-Wallace (gumby@cygnus.com).
 
 This file is part of GNU CC.
 

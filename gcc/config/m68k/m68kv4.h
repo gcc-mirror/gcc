@@ -1,7 +1,7 @@
 /* Target definitions for GNU compiler for mc680x0 running System V.4
    Copyright (C) 1991, 1993 Free Software Foundation, Inc.
 
-   Written by Ron Guilmette (rfg@ncd.com) and Fred Fish (fnf@cygnus.com).
+   Written by Ron Guilmette (rfg@netcom.com) and Fred Fish (fnf@cygnus.com).
 
 This file is part of GNU CC.
 

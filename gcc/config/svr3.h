@@ -2,7 +2,7 @@
    targeting GCC for some generic System V Release 3 system.
    Copyright (C) 1991 Free Software Foundation, Inc.
 
-   Written by Ron Guilmette (rfg@ncd.com).
+   Written by Ron Guilmette (rfg@netcom.com).
 
 This file is part of GNU CC.
 

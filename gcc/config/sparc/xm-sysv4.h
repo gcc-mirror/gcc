@@ -1,6 +1,7 @@
 /* Configuration for GNU C-compiler for Sun Sparc running System V.4.
    Copyright (C) 1992, 1993 Free Software Foundation, Inc.
-   Contributed by Ron Guilmette (rfg@ncd.com).
+
+   Written by Ron Guilmette (rfg@netcom.com).
 
 This file is part of GNU CC.
 

@@ -1,7 +1,7 @@
 /* Specialized bits of code needed to support construction and
    destruction of file-scope objects in C++ code.
 
-   Written by Ron Guilmette (rfg@ncd.com) with help from Richard Stallman.
+   Written by Ron Guilmette (rfg@netcom.com) with help from Richard Stallman.
 
 Copyright (C) 1991 Free Software Foundation, Inc.
 

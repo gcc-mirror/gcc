@@ -2,7 +2,7 @@
    targeting GCC for some system that uses a.out file format.
    Copyright (C) 1992 Free Software Foundation, Inc.
 
-   Written by Ron Guilmette (rfg@ncd.com).
+   Written by Ron Guilmette (rfg@netcom.com).
 
 This file is part of GNU CC.
 
