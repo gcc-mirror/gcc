@@ -1,3 +1,9 @@
+1999-12-17 13:21 -0800  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* c-parse.in (string action): Do not warn about ANSI string
+	concatenation in system headers.  Affects C parser only.
+	* c-parse.y, c-parse.c, c-parse.h: Rebuild.
+
 1999-12-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/sparc/sparc.h (TARGET_ARCH32): Exchange ifdefs so that if

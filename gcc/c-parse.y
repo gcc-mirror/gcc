@@ -747,7 +747,7 @@ string:
 	  STRING
 	| string STRING
 		{ $$ = chainon ($1, $2);
-		  if (warn_traditional)
+		  if (warn_traditional && !in_system_header)
 		    warning ("Use of ANSI string concatenation");
 		}
 	;
