@@ -3,7 +3,7 @@
 	* gthr-rtems.h: Define __GTHREAD_MUTEX_INIT.  Apparently no code
 	depended on it being defined until now. This was tracked as PR9296.
 
-2003-01-13	Joel Sherrill <joel@OARcorp.com>
+2003-01-29	Joel Sherrill <joel@OARcorp.com>
 
 	* config/mips/rtems.h: Predefine __USE_INIT_FINI__ so generic
 	RTEMS code knows which C++ initialization style the toolset
