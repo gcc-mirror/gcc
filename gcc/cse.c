@@ -6658,9 +6658,7 @@ invalidate_skipped_set (dest, set, data)
     }
 
   if (GET_CODE (set) == CLOBBER
-#ifdef HAVE_cc0
-      || dest == cc0_rtx
-#endif
+      || CC0_P (dest)
       || dest == pc_rtx)
     return;
 

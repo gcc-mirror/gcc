@@ -2177,11 +2177,7 @@ simplify_relational_operation (code, mode, op0, op1)
 
   /* We can't simplify MODE_CC values since we don't know what the
      actual comparison is.  */
-  if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC
-#ifdef HAVE_cc0
-      || op0 == cc0_rtx
-#endif
-      )
+  if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC || CC0_P (op0))
     return 0;
 
   /* Make sure the constant is second.  */
