@@ -33,6 +33,8 @@
 
 #include "tconfig.h"
 #include "tsystem.h"
+#include "coretypes.h"
+#include "tm.h"
 #include "unwind.h"
 #include "unwind-ia64.h"
 #include "ia64intrin.h"
