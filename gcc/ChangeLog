@@ -1,3 +1,8 @@
+Thu Jul  8 10:28:25 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* invoke.texi (DEC Alpha Options): Put @end table at
+	beginning of line, to avoid confusing texi2html.
+
 Wed Jul  7 02:00:04 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* reload1.c (gen_reload): When synthesizing a 3 operand add 

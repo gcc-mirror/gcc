@@ -5527,7 +5527,8 @@ Dynamic rounding mode.  A field in the floating point control register
 (@var{fpcr}, see Alpha architecture reference manual) controls the
 rounding mode in effect.  The C library initializes this register for
 rounding towards plus infinity.  Thus, unless your program modifies the
-@var{fpcr}, @samp{d} corresponds to round towards plus infinity.@end table
+@var{fpcr}, @samp{d} corresponds to round towards plus infinity.
+@end table
 
 @item -mtrap-precision=@var{trap precision}
 In the Alpha architecture, floating point traps are imprecise.  This
