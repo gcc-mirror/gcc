@@ -1,5 +1,10 @@
 #include "f2c.h"
 
+#ifndef KR_headers
+#undef abs
+#include <stdlib.h>
+#endif
+
 /*
  * getenv - f77 subroutine to return environment variables
  *
