@@ -1,3 +1,9 @@
+2000-01-04  Joel Sherrill <joel@OARcorp.com>
+
+	* configure.in (v850*-*-rtems*): New target.
+	* configure: Regenerate.
+	* config/v850/rtems.h: New file.
+
 2000-01-04  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* gthr-win32.h (__gthread_active_p): Support Mingw MT runtime.

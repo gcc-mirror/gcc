@@ -6159,6 +6159,17 @@ for machine in $build $host $target; do
 #		cpu_type=gmicro
 #		use_collect2=yes
 #		;;
+	v850-*-rtems*)
+		cpu_type=v850
+		tm_file="v850/rtems.h"
+		xm_file="v850/xm-v850.h"
+		tmake_file="v850/t-v850 t-rtems"
+		if test x$stabs = xyes
+		then
+			tm_file="${tm_file} dbx.h"
+		fi
+		use_collect2=no
+		;;
 	v850-*-*)
 		target_cpu_default="TARGET_CPU_generic"
 		cpu_type=v850
