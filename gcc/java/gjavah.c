@@ -1565,7 +1565,7 @@ DEFUN(print_stub_or_jni, (stream, jcf, name_index, signature_index, is_init,
 	return;
 
       if (flag_jni && ! stubs)
-	fputs ("extern ", stream);
+	fputs ("extern JNIEXPORT ", stream);
 
       /* If printing a method, skip to the return signature and print
 	 that first.  However, there is no return value if this is a
@@ -1597,6 +1597,9 @@ DEFUN(print_stub_or_jni, (stream, jcf, name_index, signature_index, is_init,
       /* When printing a JNI header we need to respect the space.  In
 	 other cases we're just going to insert a newline anyway.  */
       fputs (need_space && ! stubs ? " " : "\n", stream);
+
+      if (flag_jni && ! stubs)
+	fputs ("JNICALL ", stream);
       
       /* Now print the name of the thing.  */
       print_name_for_stub_or_jni (stream, jcf, name_index,
