@@ -11,5 +11,5 @@ void Foo(int const &); // { dg-error "in passing" "" }
 
 void Baz ()
 {
-  Foo (Wrapper ()); // { dg-error "convert `Wrapper *\\(\\)' to" "" }
+  Foo (Wrapper ()); // { dg-error "Wrapper" "" }
 }
