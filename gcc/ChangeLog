@@ -1,3 +1,14 @@
+2001-07-11  Daniel Berlin  <dan@cgsoftware.com>
+
+	* gcse.c, lcm.c, sched-deps.c:
+	s/free on sbitmap vectors/sbitmap_vector_free on sbitmap vectors/g
+
+	* flow.c (flow_loops_find): Free dom if we found no loops, since
+	we aren't going to save it.
+
+	* lcm.c (pre_edge_rev_lcm): Free st_antin, st_antout when we are
+	done.
+
 Wed Jul 11 09:00:48 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* ssa-ccp.c (ssa_fast_dce): Free worklist when completed.

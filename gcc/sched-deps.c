@@ -1541,14 +1541,14 @@ free_dependency_caches ()
 {
   if (true_dependency_cache)
     {
-      free (true_dependency_cache);
+      sbitmap_vector_free (true_dependency_cache);
       true_dependency_cache = NULL;
-      free (anti_dependency_cache);
+      sbitmap_vector_free (anti_dependency_cache);
       anti_dependency_cache = NULL;
-      free (output_dependency_cache);
+      sbitmap_vector_free (output_dependency_cache);
       output_dependency_cache = NULL;
 #ifdef ENABLE_CHECKING
-      free (forward_dependency_cache);
+      sbitmap_vector_free (forward_dependency_cache);
       forward_dependency_cache = NULL;
 #endif
     }
