@@ -1,3 +1,8 @@
+2004-11-29  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/18479
+	* gcc.dg/pr18479.c: New test.
+
 2004-11-29  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR target/18490

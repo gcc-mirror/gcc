@@ -4571,6 +4571,12 @@ handle_visibility_attribute (tree *node, tree name, tree args,
       decl = TYPE_NAME (decl);
       if (!decl)
         return NULL_TREE;
+      if (TREE_CODE (decl) == IDENTIFIER_NODE)
+	{
+	   warning ("%qE attribute ignored on types",
+		    name);
+	   return NULL_TREE;
+	}
     }
 
   if (strcmp (TREE_STRING_POINTER (id), "default") == 0)
