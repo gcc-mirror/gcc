@@ -1633,15 +1633,20 @@ merge_equiv_classes (struct table_elt *class1, struct table_elt *class2)
 	 hash code (it also isn't necessary).  */
       if (REG_P (exp) || exp_equiv_p (exp, exp, 1, 0))
 	{
+	  bool need_rehash = false;
+
 	  hash_arg_in_memory = 0;
 	  hash = HASH (exp, mode);
 
 	  if (REG_P (exp))
-	    delete_reg_equiv (REGNO (exp));
+	    {
+	      need_rehash = (unsigned) REG_QTY (REGNO (exp)) != REGNO (exp);
+	      delete_reg_equiv (REGNO (exp));
+	    }
 
 	  remove_from_table (elt, hash);
 
-	  if (insert_regs (exp, class1, 0))
+	  if (insert_regs (exp, class1, 0) || need_rehash)
 	    {
 	      rehash_using_reg (exp);
 	      hash = HASH (exp, mode);
@@ -1914,14 +1919,13 @@ rehash_using_reg (rtx x)
     return;
 
   /* Scan all hash chains looking for valid entries that mention X.
-     If we find one and it is in the wrong hash chain, move it.  We can skip
-     objects that are registers, since they are handled specially.  */
+     If we find one and it is in the wrong hash chain, move it.  */
 
   for (i = 0; i < HASH_SIZE; i++)
     for (p = table[i]; p; p = next)
       {
 	next = p->next_same_hash;
-	if (!REG_P (p->exp) && reg_mentioned_p (x, p->exp)
+	if (reg_mentioned_p (x, p->exp)
 	    && exp_equiv_p (p->exp, p->exp, 1, 0)
 	    && i != (hash = safe_hash (p->exp, p->mode) & HASH_MASK))
 	  {
