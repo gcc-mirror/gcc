@@ -1,3 +1,13 @@
+Tue Sep 17 13:58:04 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	Fix PR/7014 and related objc bugs:
+	* c-typeck.c (comp_target_types): Added a reflexive argument.
+	Pass it to ObjC when/if calling objc_comptypes().  Updated all
+	callers to provide the appropriate reflexive argument.
+	* objc/objc-act.c (objc_comptypes): Carefully checked and fixed
+	typechecking for all cases of comparisons and assignments,
+	particularly the obscure and less common ones involving protocols.
+
 2002-09-17  Nick Clifton  <nickc@redhat.com>
 
 	* machmode.def (V1DImode): New mode.  A single element vector.
