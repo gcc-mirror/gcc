@@ -1,3 +1,8 @@
+2000-01-11  Richard Earnshaw  <rearnsha@arm.com>
+
+	* encoding.c (STRUCTURE_SIZE_BOUNDARY): Redefine in a way that
+	determines the value dynamically.
+
 Wed Jan  3 00:49:10 2001  Ovidiu Predescu  <ovidiu@cup.hp.com>
 
 	* sendmsg.c: Added __objc_msg_forward, a hook that allows external
