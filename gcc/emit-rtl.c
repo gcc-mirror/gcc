@@ -595,9 +595,14 @@ gen_lowpart_common (mode, x)
   else if (GET_CODE (x) == REG)
     {
       /* If the register is not valid for MODE, return 0.  If we don't
-	 do this, there is no way to fix up the resulting REG later.  */
+	 do this, there is no way to fix up the resulting REG later.  
+	 But we do do this if the current REG is not valid for its
+	 mode.  This latter is a kludge, but is required due to the
+	 way that parameters are passed on some machines, most
+	 notably Sparc.  */
       if (REGNO (x) < FIRST_PSEUDO_REGISTER
-	  && ! HARD_REGNO_MODE_OK (REGNO (x) + word, mode))
+	  && ! HARD_REGNO_MODE_OK (REGNO (x) + word, mode)
+	  && HARD_REGNO_MODE_OK (REGNO (x), GET_MODE (x)))
 	return 0;
       else if (REGNO (x) < FIRST_PSEUDO_REGISTER
 	       /* integrate.c can't handle parts of a return value register. */
