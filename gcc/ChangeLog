@@ -1,3 +1,8 @@
+2004-10-05  Kelley Cook  <kcook@gcc.gnu.org>
+
+	PR bootstrap/17817
+	* Makefile.in: Stage the build directory too.
+
 2004-10-05  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/frv/frv.h (LEGITIMIZE_ADDRESS): New.
