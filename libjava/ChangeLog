@@ -1,3 +1,12 @@
+2003-09-18  Ingo Proetel  <proetel@aicas.com>
+
+	* java/util/TimeZone.java: Initialize lazily.
+	* java/util/Locale.java (readManifest): Fix check for country.
+	* java/util/GregorianCalendar.java: Make use of ResourceBundle better
+	traceable 
+	* java/util/Calendar.java: Make use of ResourceBundle better
+	traceable.
+
 2003-09-18  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/sql/Timestamp.java

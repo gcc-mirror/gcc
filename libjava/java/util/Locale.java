@@ -489,7 +489,7 @@ public final class Locale implements Serializable, Cloneable
          + "WS,YE,YT,YU,ZA,ZM,ZR,ZW")
       .indexOf(country);
 
-    if (index % 3 != 0 || language.length() != 2)
+    if (index % 3 != 0 || country.length() != 2)
       throw new MissingResourceException
         ("Can't find ISO3 country for " + country,
          "java.util.Locale", country);
