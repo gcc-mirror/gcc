@@ -64,6 +64,7 @@ struct include_file
   int fd;			/* file descriptor possibly open on file */
   unsigned short include_count;	/* number of times file has been read */
   unsigned short sysp;		/* file is a system header */
+  time_t  date;                 /* modification date of file, if known */
 };
 
 /* The cmacro works like this: If it's NULL, the file is to be
@@ -193,6 +194,9 @@ extern void _cpp_simplify_pathname	PARAMS ((char *));
 extern void _cpp_execute_include	PARAMS ((cpp_reader *, U_CHAR *,
 						 unsigned int, int,
 						 struct file_name_list *));
+extern int _cpp_compare_file_date       PARAMS ((cpp_reader *, U_CHAR *,
+                                                 unsigned int,
+                                                 struct file_name_list *));
 extern void _cpp_init_include_table	PARAMS ((cpp_reader *));
 extern const char *_cpp_fake_include	PARAMS ((cpp_reader *, const char *));
 
