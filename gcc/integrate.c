@@ -758,7 +758,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 
   /* Allocate the structures we use to remap things.  */
 
-  map = (struct inline_remap *) xmalloc (sizeof (struct inline_remap));
+  map = (struct inline_remap *) xcalloc (1, sizeof (struct inline_remap));
   map->fndecl = fndecl;
 
   VARRAY_TREE_INIT (map->block_map, 10, "block_map");
@@ -1753,15 +1753,7 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 	{
 	  /* Some hard registers are also mapped,
 	     but others are not translated.  */
-	  if (map->reg_map[regno] != 0
-	      /* We shouldn't usually have reg_map set for return
-		 register, but it may happen if we have leaf-register
-		 remapping and the return register is used in one of
-		 the calling sequences of a call_placeholer.  In this
-		 case, we'll end up with a reg_map set for this
-		 register, but we don't want to use for registers
-		 marked as return values.  */
-	      && ! REG_FUNCTION_VALUE_P (orig))
+	  if (map->reg_map[regno] != 0)
 	    return map->reg_map[regno];
 
 	  /* If this is the virtual frame pointer, make space in current
@@ -1879,9 +1871,9 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 	  if (map->integrating && regno < FIRST_PSEUDO_REGISTER
 	      && LEAF_REGISTERS[regno] && LEAF_REG_REMAP (regno) != regno)
 	    {
-	      temp = gen_rtx_REG (mode, regno);
-	      map->reg_map[regno] = temp;
-	      return temp;
+	      if (!map->leaf_reg_map[regno][mode])
+		map->leaf_reg_map[regno][mode] = gen_rtx_REG (mode, regno);
+	      return map->leaf_reg_map[regno][mode]; 
 	    }
 #endif
 	  else

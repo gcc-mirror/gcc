@@ -1,5 +1,5 @@
 /* Function integration definitions for GNU C-Compiler
-   Copyright (C) 1990, 1995, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1995, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -47,6 +47,10 @@ struct inline_remap
   /* Mapping from old registers to new registers.
      It is allocated and deallocated in `expand_inline_function' */
   rtx *reg_map;
+#if defined (LEAF_REGISTERS) && defined (LEAF_REG_REMAP)
+  /* Mapping from old leaf registers to new leaf registers.  */
+  rtx leaf_reg_map[FIRST_PSEUDO_REGISTER][NUM_MACHINE_MODES];
+#endif
   /* Mapping from old code-labels to new code-labels.
      The first element of this map is label_map[min_labelno].  */
   rtx *label_map;
