@@ -1,3 +1,11 @@
+2002-07-27  Alan Modra  <amodra@bigpond.net.au>
+
+	* sysdep/powerpc/locks.h: Formatting.
+	(_LARX): Define.
+	(_STCX): Define.
+	(compare_and_swap): Use _LARX and _STCX.
+	(compare_and_swap_release): Likewise.
+
 2002-07-26  Tom Tromey  <tromey@redhat.com>
 
 	* java/net/Authenticator.java: New version from Classpath.
