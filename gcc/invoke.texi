@@ -3721,10 +3721,13 @@ Options}.
 
 @cindex Libraries
 @item -l@var{library}
-Search the library named @var{library} when linking.
+@itemx -l @var{library}
+Search the library named @var{library} when linking.  (The second
+alternative with the library as a separate argument is only for
+POSIX compliance and is not recommended.)
 
 It makes a difference where in the command you write this option; the
-linker searches processes libraries and object files in the order they
+linker searches and processes libraries and object files in the order they
 are specified.  Thus, @samp{foo.o -lz bar.o} searches library @samp{z}
 after file @file{foo.o} but before @file{bar.o}.  If @file{bar.o} refers
 to functions in @samp{z}, those functions may not be loaded.
