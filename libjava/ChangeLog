@@ -1,3 +1,16 @@
+2000-05-09  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/StringBuffer.java (toString): Don't mark buffer as
+	shared.
+	(insert(int,char[],int,int): New method.
+	(delete): New method from Classpath.
+	(deleteCharAt): Likewise.
+	(substring): Likewise.
+	(shared): No longer private.
+	Added JavaDoc comments from Classpath.
+	* java/lang/String.java (String(StringBuffer)): Ensure `buffer' is
+	shared.
+
 2000-05-07  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.
