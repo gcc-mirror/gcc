@@ -3831,6 +3831,9 @@ create_interface (int flags, tree id, tree super)
   CLASS_COMPLETE_P (decl) = 1;
   add_superinterfaces (decl, super);
 
+  /* Eventually sets the @deprecated tag flag */
+  CHECK_DEPRECATED (decl);
+
   return decl;
 }
 
