@@ -8814,7 +8814,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	{
 	  /* Remove the `this' parm added by grokclassfn.
 	     XXX Isn't this done in start_function, too?  */
-	  revert_static_member_fn (&decl, NULL, NULL);
+	  revert_static_member_fn (decl);
 	  last_function_parms = TREE_CHAIN (last_function_parms);
 	}
       if (old_decl && DECL_ARTIFICIAL (old_decl))
@@ -12070,7 +12070,7 @@ grok_op_properties (decl, virtualp, friendp)
       /* When the compiler encounters the definition of A::operator new, it
 	 doesn't look at the class declaration to find out if it's static.  */
       if (methodp)
-	revert_static_member_fn (&decl, NULL, NULL);
+	revert_static_member_fn (decl);
 
       /* Take care of function decl if we had syntax errors.  */
       if (argtypes == NULL_TREE)
@@ -12085,7 +12085,7 @@ grok_op_properties (decl, virtualp, friendp)
 	   || name == ansi_opname[(int) VEC_DELETE_EXPR])
     {
       if (methodp)
-	revert_static_member_fn (&decl, NULL, NULL);
+	revert_static_member_fn (decl);
 
       if (argtypes == NULL_TREE)
 	TREE_TYPE (decl)
@@ -13204,7 +13204,7 @@ start_function (declspecs, declarator, attrs, flags)
   if (ctype != NULL_TREE && DECL_STATIC_FUNCTION_P (decl1)
       && TREE_CODE (TREE_TYPE (decl1)) == METHOD_TYPE)
     {
-      revert_static_member_fn (&decl1, NULL, NULL);
+      revert_static_member_fn (decl1);
       last_function_parms = TREE_CHAIN (last_function_parms);
       ctype = NULL_TREE;
     }
@@ -14560,20 +14560,16 @@ finish_stmt ()
   last_expr_type = NULL_TREE;
 }
 
-/* Change a static member function definition into a FUNCTION_TYPE, instead
-   of the METHOD_TYPE that we create when it's originally parsed.
-
-   WARNING: DO NOT pass &TREE_TYPE (decl) to FN or &TYPE_ARG_TYPES
-   (TREE_TYPE (decl)) to ARGTYPES, as doing so will corrupt the types of
-   other decls.  Either pass the addresses of local variables or NULL.  */
+/* DECL was originally constructed as a non-static member function,
+   but turned out to be static.  Update it accordingly.  */
 
 void
-revert_static_member_fn (decl, fn, argtypes)
-     tree *decl, *fn, *argtypes;
+revert_static_member_fn (decl)
+     tree decl;
 {
   tree tmp;
-  tree function = fn ? *fn : TREE_TYPE (*decl);
-  tree args = argtypes ? *argtypes : TYPE_ARG_TYPES (function);
+  tree function = TREE_TYPE (decl);
+  tree args = TYPE_ARG_TYPES (function);
 
   if (CP_TYPE_QUALS (TREE_TYPE (TREE_VALUE (args)))
       != TYPE_UNQUALIFIED)
@@ -14585,14 +14581,10 @@ revert_static_member_fn (decl, fn, argtypes)
   tmp = build_qualified_type (tmp, CP_TYPE_QUALS (function));
   tmp = build_exception_variant (tmp,
 				 TYPE_RAISES_EXCEPTIONS (function));
-  TREE_TYPE (*decl) = tmp;
-  if (DECL_ARGUMENTS (*decl))
-    DECL_ARGUMENTS (*decl) = TREE_CHAIN (DECL_ARGUMENTS (*decl));
-  DECL_STATIC_FUNCTION_P (*decl) = 1;
-  if (fn)
-    *fn = tmp;
-  if (argtypes)
-    *argtypes = args;
+  TREE_TYPE (decl) = tmp;
+  if (DECL_ARGUMENTS (decl))
+    DECL_ARGUMENTS (decl) = TREE_CHAIN (DECL_ARGUMENTS (decl));
+  DECL_STATIC_FUNCTION_P (decl) = 1;
 }
 
 /* Initialize the variables used during compilation of a C++

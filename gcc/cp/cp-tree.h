@@ -3826,7 +3826,7 @@ extern void finish_stmt				PARAMS ((void));
 extern int in_function_p			PARAMS ((void));
 extern void replace_defarg			PARAMS ((tree, tree));
 extern void print_other_binding_stack		PARAMS ((struct binding_level *));
-extern void revert_static_member_fn             PARAMS ((tree*, tree*, tree*));
+extern void revert_static_member_fn             PARAMS ((tree));
 extern void fixup_anonymous_aggr                PARAMS ((tree));
 extern int check_static_variable_definition     PARAMS ((tree, tree));
 extern tree compute_array_index_type		PARAMS ((tree, tree));

@@ -1500,7 +1500,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	  if (DECL_STATIC_FUNCTION_P (tmpl)
 	      && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl))
 	    {
-	      revert_static_member_fn (&decl, 0, 0);
+	      revert_static_member_fn (decl);
 	      last_function_parms = TREE_CHAIN (last_function_parms);
 	    }
 
