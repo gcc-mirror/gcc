@@ -298,7 +298,7 @@
 
 (define_insn "subdi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(minus:DI (match_operand:DI 1 "register_operand" "%0")
+	(minus:DI (match_operand:DI 1 "register_operand" "0")
 		 (match_operand:DI 2 "register_operand" "r")))
    (clobber (reg:SI 18))]
   ""
