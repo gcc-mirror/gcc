@@ -1,3 +1,7 @@
+2002-01-31  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.dg/noncompile/20020130-1.c: New test.
+
 2002-01-30  David Billinghurst  <David.Billinghurst@riotinto.com>
 
 	* g77.dg/f77-edit-i-out.f:  Escape \. Allow \r\n and \r.
