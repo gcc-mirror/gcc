@@ -1379,18 +1379,60 @@ save_expr (expr)
      tree expr;
 {
   tree t = fold (expr);
-  tree inner;
+  tree inner = skip_simple_arithmetic (t);
 
+  /* If the tree evaluates to a constant, then we don't want to hide that
+     fact (i.e. this allows further folding, and direct checks for constants).
+     However, a read-only object that has side effects cannot be bypassed.
+     Since it is no problem to reevaluate literals, we just return the
+     literal node.  */
+  if (TREE_CONSTANT (inner)
+      || (TREE_READONLY (inner) && ! TREE_SIDE_EFFECTS (inner))
+      || TREE_CODE (inner) == SAVE_EXPR
+      || TREE_CODE (inner) == ERROR_MARK)
+    return t;
+
+  /* If INNER contains a PLACEHOLDER_EXPR, we must evaluate it each time, since
+     it means that the size or offset of some field of an object depends on
+     the value within another field.
+
+     Note that it must not be the case that T contains both a PLACEHOLDER_EXPR
+     and some variable since it would then need to be both evaluated once and
+     evaluated more than once.  Front-ends must assure this case cannot
+     happen by surrounding any such subexpressions in their own SAVE_EXPR
+     and forcing evaluation at the proper time.  */
+  if (contains_placeholder_p (inner))
+    return t;
+
+  t = build (SAVE_EXPR, TREE_TYPE (expr), t, current_function_decl, NULL_TREE);
+
+  /* This expression might be placed ahead of a jump to ensure that the
+     value was computed on both sides of the jump.  So make sure it isn't
+     eliminated as dead.  */
+  TREE_SIDE_EFFECTS (t) = 1;
+  TREE_READONLY (t) = 1;
+  return t;
+}
+
+/* Look inside EXPR and into any simple arithmetic operations.  Return
+   the innermost non-arithmetic node.  */
+
+tree
+skip_simple_arithmetic (expr)
+     tree expr;
+{
+  tree inner;
+  
   /* We don't care about whether this can be used as an lvalue in this
      context.  */
-  while (TREE_CODE (t) == NON_LVALUE_EXPR)
-    t = TREE_OPERAND (t, 0);
+  while (TREE_CODE (expr) == NON_LVALUE_EXPR)
+    expr = TREE_OPERAND (expr, 0);
 
   /* If we have simple operations applied to a SAVE_EXPR or to a SAVE_EXPR and
      a constant, it will be more efficient to not make another SAVE_EXPR since
      it will allow better simplification and GCSE will be able to merge the
      computations if they actually occur.  */
-  inner = t;
+  inner = expr;
   while (1)
     {
       if (TREE_CODE_CLASS (TREE_CODE (inner)) == '1')
@@ -1408,37 +1450,17 @@ save_expr (expr)
 	break;
     }
 
-  /* If the tree evaluates to a constant, then we don't want to hide that
-     fact (i.e. this allows further folding, and direct checks for constants).
-     However, a read-only object that has side effects cannot be bypassed.
-     Since it is no problem to reevaluate literals, we just return the
-     literal node.  */
-  if (TREE_CONSTANT (inner)
-      || (TREE_READONLY (inner) && ! TREE_SIDE_EFFECTS (inner))
-      || TREE_CODE (inner) == SAVE_EXPR
-      || TREE_CODE (inner) == ERROR_MARK)
-    return t;
+  return inner;
+}
 
-  /* If T contains a PLACEHOLDER_EXPR, we must evaluate it each time, since
-     it means that the size or offset of some field of an object depends on
-     the value within another field.
+/* Return TRUE if EXPR is a SAVE_EXPR or wraps simple arithmetic around a
+   SAVE_EXPR.  Return FALSE otherwise.  */
 
-     Note that it must not be the case that T contains both a PLACEHOLDER_EXPR
-     and some variable since it would then need to be both evaluated once and
-     evaluated more than once.  Front-ends must assure this case cannot
-     happen by surrounding any such subexpressions in their own SAVE_EXPR
-     and forcing evaluation at the proper time.  */
-  if (contains_placeholder_p (t))
-    return t;
-
-  t = build (SAVE_EXPR, TREE_TYPE (expr), t, current_function_decl, NULL_TREE);
-
-  /* This expression might be placed ahead of a jump to ensure that the
-     value was computed on both sides of the jump.  So make sure it isn't
-     eliminated as dead.  */
-  TREE_SIDE_EFFECTS (t) = 1;
-  TREE_READONLY (t) = 1;
-  return t;
+bool
+saved_expr_p (expr)
+     tree expr;
+{
+  return TREE_CODE (skip_simple_arithmetic (expr)) == SAVE_EXPR;
 }
 
 /* Arrange for an expression to be expanded multiple independent

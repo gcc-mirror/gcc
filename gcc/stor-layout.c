@@ -128,10 +128,7 @@ put_pending_size (expr)
 {
   /* Strip any simple arithmetic from EXPR to see if it has an underlying
      SAVE_EXPR.  */
-  while (TREE_CODE_CLASS (TREE_CODE (expr)) == '1'
-	 || (TREE_CODE_CLASS (TREE_CODE (expr)) == '2'
-	    && TREE_CONSTANT (TREE_OPERAND (expr, 1))))
-    expr = TREE_OPERAND (expr, 0);
+  expr = skip_simple_arithmetic (expr);
 
   if (TREE_CODE (expr) == SAVE_EXPR)
     pending_sizes = tree_cons (NULL_TREE, expr, pending_sizes);
