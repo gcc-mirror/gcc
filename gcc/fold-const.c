@@ -5148,6 +5148,9 @@ tree_swap_operands_p (tree arg0, tree arg1, bool reorder)
     return 0;
   if (TREE_CONSTANT (arg0))
     return 1;
+    
+  if (optimize_size)
+    return 0;
 
   if (reorder && flag_evaluation_order
       && (TREE_SIDE_EFFECTS (arg0) || TREE_SIDE_EFFECTS (arg1)))
