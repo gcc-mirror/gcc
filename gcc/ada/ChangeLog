@@ -1,3 +1,8 @@
+2003-11-29  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* Make-lang.in (nmake.ads): Add dependency on ada/nmake.adb
+	to force serialization.
+
 2003-11-26  Thomas Quinot  <quinot@act-europe.fr>
 
 	* g-socket.ads, g-socket.adb: 
