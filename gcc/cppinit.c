@@ -1324,24 +1324,7 @@ cpp_handle_option (pfile, argc, argv)
 
 	case OPT_A:
 	  if (arg[0] == '-')
-	    {
-	      /* -A with an argument beginning with '-' acts as
-		 #unassert on whatever immediately follows the '-'.
-		 If "-" is the whole argument, we eliminate all
-		 predefined macros and assertions, including those
-		 that were specified earlier on the command line.
-		 That way we can get rid of any that were passed
-		 automatically in from GCC.  */
-
-	      if (arg[1] == '\0')
-		{
-		  free_chain (pend->directive_head);
-		  pend->directive_head = NULL;
-		  pend->directive_tail = NULL;
-		}
-	      else
-		new_pending_directive (pend, arg + 1, cpp_unassert);
-	    }
+	    new_pending_directive (pend, arg + 1, cpp_unassert);
 	  else
 	    new_pending_directive (pend, arg, cpp_assert);
 	  break;

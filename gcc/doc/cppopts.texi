@@ -487,13 +487,6 @@ it does not use shell special characters.
 Cancel an assertion with the predicate @var{predicate} and answer
 @var{answer}.
 
-@item -A-
-@opindex A-
-Cancel all predefined assertions and all assertions preceding it on
-the command line.  Also, undefine all predefined macros and all
-macros preceding it on the command line.  (This is a historical wart and
-may change in the future.)
-
 @item -dCHARS
 @var{CHARS} is a sequence of one or more of the following characters,
 and must not be preceded by a space.  Other characters are interpreted

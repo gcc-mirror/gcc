@@ -1,3 +1,8 @@
+2003-03-16  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppinit.c: Remove support of -A-.
+	* doc/cppopts.texi: Remove documentation of -A-.
+
 2003-03-15  Richard Henderson  <rth@redhat.com>
 
 	2003-01-14  Richard Henderson  <rth@redhat.com>
