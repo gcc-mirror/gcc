@@ -1,3 +1,10 @@
+2001-07-05  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* flow.c: Reverse Jan Hubicka's patch of 02July2001.
+	(try_redirect_by_replacing_jump): Reverse updating properly the
+	count and frequency information.  Reverse removing cc0 setter.
+	(forwarder_block_p): Reverse fixing for fallthru blocks.
+
 2001-07-05  DJ Delorie  <dj@redhat.com>
 
 	* gcc.c (TARGET_OPTION_TRANSLATE_TABLE): New.
