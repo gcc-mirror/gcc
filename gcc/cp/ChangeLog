@@ -1,3 +1,9 @@
+2004-04-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/3518
+	* pt.c (check_cv_quals_for_unify): Ignore bogus CV quals at outer
+	level.
+
 2004-04-05  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* init.c (decl_constant_value): Don't look at DECL_INITIAL
