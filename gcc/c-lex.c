@@ -283,11 +283,16 @@ cb_def_pragma (cpp_reader *pfile, source_location loc)
      -Wunknown-pragmas has been given.  */
   if (warn_unknown_pragmas > in_system_header)
     {
-#ifndef USE_MAPPED_LOCATION
-      const struct line_map *map = linemap_lookup (&line_table, loc);
-#endif
       const unsigned char *space, *name;
       const cpp_token *s;
+#ifndef USE_MAPPED_LOCATION
+      location_t fe_loc;
+      const struct line_map *map = linemap_lookup (&line_table, loc);
+      fe_loc.file = map->to_file;
+      fe_loc.line = SOURCE_LINE (map, loc);
+#else
+      location_t fe_loc = loc;
+#endif
 
       space = name = (const unsigned char *) "";
       s = cpp_get_token (pfile);
@@ -299,12 +304,7 @@ cb_def_pragma (cpp_reader *pfile, source_location loc)
 	    name = cpp_token_as_text (pfile, s);
 	}
 
-#ifdef USE_MAPPED_LOCATION
-      input_location = loc;
-#else
-      input_line = SOURCE_LINE (map, loc);
-#endif
-      warning ("ignoring #pragma %s %s", space, name);
+      warning ("%Hignoring #pragma %s %s", &fe_loc, space, name);
     }
 }
 
