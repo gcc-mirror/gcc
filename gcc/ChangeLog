@@ -1,3 +1,10 @@
+2005-01-05  Jan Hubicka  <jh@suse.cz>
+	    Richard Henderson  <rth@redhat.com>
+
+	PR target/18910
+	* config/i386/i386.c (ix86_expand_move): Handle tls symbols 
+	with an offset.
+
 2005-01-05  Richard Henderson  <rth@redhat.com>
 
 	PR target/12902
