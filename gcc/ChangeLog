@@ -1,3 +1,11 @@
+2002-09-12  Richard Henderson  <rth@redhat.com>
+
+	* Makefile.in (HOST_PRINT): Use print-rtl1.o
+	(print-rtl.o): Don't define GENERATOR_FILE.
+	(print-rtl1.o): Rename from $(BUILD_PREFIX_1)print-rtl.o.
+	* print-rtl.c (print_rtx): Include CONST_DOUBLE fp decimal output
+	unless GENERATOR_FILE.
+
 2002-09-12  Stan Shebs  <shebs@apple.com>
 
 	* config/darwin.h (USER_LABEL_PREFIX): Define here...
