@@ -1,3 +1,5 @@
+// We don't try to make implicit typename handle this case.
+
 // Build don't link:
 // Special g++ Options:
 
@@ -11,10 +13,10 @@ struct A
 template <class U>
 struct B : public A<U>
 {
-  A_Type Func();
+  A_Type Func();		// ERROR - candidate
 };
 
 template <class U>
 A<U>::A_Type B<U>::Func()
-{
+{				// ERROR - no match
 }
