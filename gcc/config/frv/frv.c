@@ -3552,7 +3552,7 @@ frv_legitimize_address (x, oldx, mode)
 {
   rtx ret = NULL_RTX;
 
-  /* Don't try to legitimize addreses if we are not optimizing, since the
+  /* Don't try to legitimize addresses if we are not optimizing, since the
      address we generate is not a general operand, and will horribly mess
      things up when force_reg is called to try and put it in a register because
      we aren't optimizing.  */

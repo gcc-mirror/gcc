@@ -8092,7 +8092,7 @@ mips_select_section (decl, reloc, align)
    precisely correct.
 
    When not mips16 code nor embedded PIC, if a symbol is in a
-   gp addresable section, SYMBOL_REF_FLAG is set prevent gcc from
+   gp addressable section, SYMBOL_REF_FLAG is set prevent gcc from
    splitting the reference so that gas can generate a gp relative
    reference.
 

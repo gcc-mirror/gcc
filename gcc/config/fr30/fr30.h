@@ -992,7 +992,7 @@ do										\
    
    * indexed addressing using small signed offsets from the frame pointer
 
-   * register plus register addresing using R13 as the base register.
+   * register plus register addressing using R13 as the base register.
 
    At the moment we only support the first two of these special cases.  */
    

@@ -871,7 +871,7 @@ _mm_storeu_ps (float *__P, __m128 __A)
   __builtin_ia32_storeups (__P, (__v4sf)__A);
 }
 
-/* Store four SPFP values in reverse order.  The addres must be aligned.  */
+/* Store four SPFP values in reverse order.  The address must be aligned.  */
 static __inline void
 _mm_storer_ps (float *__P, __m128 __A)
 {
