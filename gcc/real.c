@@ -972,9 +972,10 @@ do_fix_trunc (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a)
 }
 
 /* Perform the binary or unary operation described by CODE.
-   For a unary operation, leave OP1 NULL.  */
+   For a unary operation, leave OP1 NULL.  This function returns
+   true if the result may be inexact due to loss of precision.  */
 
-void
+bool
 real_arithmetic (REAL_VALUE_TYPE *r, int icode, const REAL_VALUE_TYPE *op0,
 		 const REAL_VALUE_TYPE *op1)
 {
@@ -983,20 +984,16 @@ real_arithmetic (REAL_VALUE_TYPE *r, int icode, const REAL_VALUE_TYPE *op0,
   switch (code)
     {
     case PLUS_EXPR:
-      do_add (r, op0, op1, 0);
-      break;
+      return do_add (r, op0, op1, 0);
 
     case MINUS_EXPR:
-      do_add (r, op0, op1, 1);
-      break;
+      return do_add (r, op0, op1, 1);
 
     case MULT_EXPR:
-      do_multiply (r, op0, op1);
-      break;
+      return do_multiply (r, op0, op1);
 
     case RDIV_EXPR:
-      do_divide (r, op0, op1);
-      break;
+      return do_divide (r, op0, op1);
 
     case MIN_EXPR:
       if (op1->cl == rvc_nan)
@@ -1033,6 +1030,7 @@ real_arithmetic (REAL_VALUE_TYPE *r, int icode, const REAL_VALUE_TYPE *op0,
     default:
       gcc_unreachable ();
     }
+  return false;
 }
 
 /* Legacy.  Similar, but return the result directly.  */

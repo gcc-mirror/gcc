@@ -1288,12 +1288,13 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	}
       else
 	{
-	  REAL_VALUE_TYPE f0, f1, value;
+	  REAL_VALUE_TYPE f0, f1, value, result;
+	  bool inexact;
 
 	  REAL_VALUE_FROM_CONST_DOUBLE (f0, trueop0);
 	  REAL_VALUE_FROM_CONST_DOUBLE (f1, trueop1);
-	  f0 = real_value_truncate (mode, f0);
-	  f1 = real_value_truncate (mode, f1);
+	  real_convert (&f0, mode, &f0);
+	  real_convert (&f1, mode, &f1);
 
 	  if (HONOR_SNANS (mode)
 	      && (REAL_VALUE_ISNAN (f0) || REAL_VALUE_ISNAN (f1)))
@@ -1339,10 +1340,18 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	    /* Inf * 0 = NaN plus exception.  */
 	    return 0;
 
-	  REAL_ARITHMETIC (value, rtx_to_tree_code (code), f0, f1);
+	  inexact = real_arithmetic (&value, rtx_to_tree_code (code),
+				     &f0, &f1);
+	  real_convert (&result, mode, &value);
 
-	  value = real_value_truncate (mode, value);
-	  return CONST_DOUBLE_FROM_REAL_VALUE (value, mode);
+	  /* Don't constant fold this floating point operation if the
+	     result may dependent upon the run-time rounding mode and
+	     flag_rounding_math is set.  */
+	  if (flag_rounding_math
+	      && (inexact || !real_identical (&result, &value)))
+	    return NULL_RTX;
+
+	  return CONST_DOUBLE_FROM_REAL_VALUE (result, mode);
 	}
     }
 

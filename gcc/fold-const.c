@@ -1482,6 +1482,8 @@ const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
       REAL_VALUE_TYPE d1;
       REAL_VALUE_TYPE d2;
       REAL_VALUE_TYPE value;
+      REAL_VALUE_TYPE result;
+      bool inexact;
       tree t, type;
 
       d1 = TREE_REAL_CST (arg1);
@@ -1510,9 +1512,18 @@ const_binop (enum tree_code code, tree arg1, tree arg2, int notrunc)
       else if (REAL_VALUE_ISNAN (d2))
 	return arg2;
 
-      REAL_ARITHMETIC (value, code, d1, d2);
+      inexact = real_arithmetic (&value, code, &d1, &d2);
+      real_convert (&result, mode, &value);
 
-      t = build_real (type, real_value_truncate (mode, value));
+      /* Don't constant fold this floating point operation if the
+	 result may dependent upon the run-time rounding mode and
+	 flag_rounding_math is set.  */
+      
+      if (flag_rounding_math
+	  && (inexact || !real_identical (&result, &value)))
+	return NULL_TREE;
+
+      t = build_real (type, result);
 
       TREE_OVERFLOW (t) = TREE_OVERFLOW (arg1) | TREE_OVERFLOW (arg2);
       TREE_CONSTANT_OVERFLOW (t)
@@ -1808,20 +1819,11 @@ fold_convert_const_int_from_real (enum tree_code code, tree type, tree arg1)
 static tree
 fold_convert_const_real_from_real (tree type, tree arg1)
 {
+  REAL_VALUE_TYPE value;
   tree t;
 
-  if (REAL_VALUE_ISNAN (TREE_REAL_CST (arg1)))
-    {
-      /* We make a copy of ARG1 so that we don't modify an
-	 existing constant tree.  */
-      t = copy_node (arg1);
-      TREE_TYPE (t) = type;
-      return t;
-    }
-
-  t = build_real (type,
-		  real_value_truncate (TYPE_MODE (type),
-				       TREE_REAL_CST (arg1)));
+  real_convert (&value, TYPE_MODE (type), &TREE_REAL_CST (arg1));
+  t = build_real (type, value);
 
   TREE_OVERFLOW (t) = TREE_OVERFLOW (arg1);
   TREE_CONSTANT_OVERFLOW (t)
@@ -9506,17 +9508,20 @@ fold_initializer (tree expr)
 {
   int saved_signaling_nans = flag_signaling_nans;
   int saved_trapping_math = flag_trapping_math;
+  int saved_rounding_math = flag_rounding_math;
   int saved_trapv = flag_trapv;
   tree result;
 
   flag_signaling_nans = 0;
   flag_trapping_math = 0;
+  flag_rounding_math = 0;
   flag_trapv = 0;
 
   result = fold (expr);
 
   flag_signaling_nans = saved_signaling_nans;
   flag_trapping_math = saved_trapping_math;
+  flag_rounding_math = saved_rounding_math;
   flag_trapv = saved_trapv;
 
   return result;

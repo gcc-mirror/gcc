@@ -1,3 +1,18 @@
+2005-01-21  Roger Sayle  <roger@eyesopen.com>
+
+	PR rtl-optimization/576
+	* real.c (real_arithmetic): Change return type from void to bool
+	to return an indication that the result may be inexact.
+	* real.h (real_arithmeric): Update prototype.
+	* fold-const.c (const_binop):  Don't constant fold floating
+	point expressions when the user specifies -frounding-math and
+	the result may depend upon the run-time rounding mode.
+	(fold_convert_const_real_from_real): Clean-up.
+	(fold_initializer): Ignore flag_rounding_math for initializers.
+	* simplify-rtx.c (simplify_binary_operation): Likewise, don't
+	constant fold FP operations with flag_rounding_math if the
+	result may depend upon the run-time rounding mode.
+
 2005-01-21  Tom Tromey  <tromey@redhat.com>
 
 	* c-cppbuiltin.c (define__GNUC__): Correct assertion.
