@@ -52,6 +52,7 @@ import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.NonWritableChannelException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import gnu.gcj.RawData;
 
 /**
  * This file is not user visible !
@@ -63,11 +64,14 @@ import java.nio.channels.WritableByteChannel;
 
 public class FileChannelImpl extends FileChannel
 {
-  public long address;
-  public int length;
-  public FileDescriptor fd;
-  public MappedByteBuffer buf;
-  public Object file_obj; // just to keep it live...
+  // GCJ LOCAL: This variable stores a pointer to the memory
+  // where the file is mapped.
+  RawData map_address;
+  
+  int length;
+  FileDescriptor fd;
+  MappedByteBuffer buf;
+  Object file_obj; // just to keep it live...
 
   public FileChannelImpl (FileDescriptor fd, boolean write, Object obj)
   {
@@ -80,24 +84,27 @@ public class FileChannelImpl extends FileChannel
     this.file_obj = obj;
   }
 
+  public FileChannelImpl ()
+  {
+    this (new FileDescriptor (-1), true, null);
+  }
+
   private native long implPosition ();
   private native FileChannel implPosition (long newPosition);
   private native FileChannel implTruncate (long size);
   
-  private native long nio_mmap_file (long pos, long size, int mode);
-  private native void nio_unmmap_file (long address, int size);
-  private native void nio_msync (long address, int length);
+  private native RawData nio_mmap_file (long pos, long size, int mode);
+  private native void nio_unmmap_file (RawData map_address, int size);
+  private native void nio_msync (RawData map_address, int length);
 
   public native long size () throws IOException;
     
   protected void implCloseChannel() throws IOException
   {
-    // FIXME
-    
-    if (address != 0)
+    if (map_address != null)
       {
-        //nio_unmmap_file (fd, address, (int) length);
-        address = 0;
+        nio_unmmap_file (map_address, (int) length);
+        map_address = null;
       }
 
     if (file_obj instanceof RandomAccessFile)
@@ -126,9 +133,9 @@ public class FileChannelImpl extends FileChannel
         throw new EOFException("file not mapped");
       }
 
-    for (int i=0; i<s; i++)
+    for (int i = 0; i < s; i++)
       {
-        dst.put( buf.get() );
+        dst.put (buf.get());
       }
 
     return s;
@@ -154,9 +161,9 @@ public class FileChannelImpl extends FileChannel
     long result = 0;
 
     for (int i = offset; i < offset + length; i++)
-	    {
-        result += write (dsts[i]);
-	    }
+      {
+        result += write (dsts [i]);
+      }
 
     return result;
   }
@@ -218,23 +225,22 @@ public class FileChannelImpl extends FileChannel
         || size > Integer.MAX_VALUE)
       throw new IllegalArgumentException ();
     
-//     int cmode = mode.m;
-//     address = nio_mmap_file (fd, position, size, cmode);
-//     length = size;
-//     buf = new MappedByteFileBuffer (this);
-//     return buf;
-    return null;
+    int cmode = mode.m;
+    map_address = nio_mmap_file (position, size, cmode);
+    length = (int) size;
+    buf = new MappedByteFileBuffer (this);
+    return buf;
   }
 
-  static MappedByteBuffer create_direct_mapped_buffer (long address,
+  static MappedByteBuffer create_direct_mapped_buffer (RawData map_address,
                                                        long length)
+    throws IOException
   {
-//     FileChannelImpl ch = new FileChannelImpl (-1, null);
-//     ch.address = address;
-//     ch.length = (int) length;
-//     ch.buf = new MappedByteFileBuffer (ch);
-//     return ch.buf;			 
-    return null;
+    FileChannelImpl ch = new FileChannelImpl ();
+    ch.map_address = map_address;
+    ch.length = (int) length;
+    ch.buf = new MappedByteFileBuffer (ch);
+    return ch.buf;			 
   }
 
   public long write (ByteBuffer[] srcs)
@@ -253,7 +259,7 @@ public class FileChannelImpl extends FileChannel
 
     // FIXME: What to do with metaData ?
     
-    nio_msync (address, length);
+    nio_msync (map_address, length);
   }
 
   public long transferTo (long position, long count, WritableByteChannel target)
