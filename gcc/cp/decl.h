@@ -34,8 +34,3 @@ enum decl_context
 extern tree grokdeclarator (const cp_declarator *, 
 			    const cp_decl_specifier_seq *, 
 			    enum decl_context, int, tree*);
-
-#ifdef DEBUG_CP_BINDING_LEVELS
-/* Purely for debugging purposes.  */
-extern int debug_bindings_indentation;
-#endif
