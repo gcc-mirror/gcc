@@ -1,3 +1,10 @@
+2001-01-19  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* Makefile.in (ORDINARY_FLAGS_TO_PASS): Add MAKEOVERRIDES variable.
+	(libgcc.a): Likewise.
+	(stmp-multilib): Likewise.
+	(STAGE2_FLAGS_TO_PASS): Likewise.
+
 2001-01-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.c (prepare_move_operands) [PIC]: Use operands[0] as
