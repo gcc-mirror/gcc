@@ -6444,8 +6444,7 @@ diddle_return_value (doit, arg)
       /* If this is a BLKmode structure being returned in registers, then use
 	 the mode computed in expand_return.  */
       if (GET_MODE (outgoing) == BLKmode)
-	PUT_MODE (outgoing,
-		  GET_MODE (DECL_RTL (DECL_RESULT (current_function_decl))));
+	PUT_MODE (outgoing, GET_MODE (current_function_return_rtx));
       REG_FUNCTION_VALUE_P (outgoing) = 1;
     }
 
@@ -6730,37 +6729,58 @@ expand_function_end (filename, line, end_bindings)
 	emit_stack_restore (SAVE_FUNCTION, tem, NULL_RTX);
       }
 
-  /* If scalar return value was computed in a pseudo-reg,
-     copy that to the hard return register.  */
-  if (DECL_RTL (DECL_RESULT (current_function_decl)) != 0
-      && GET_CODE (DECL_RTL (DECL_RESULT (current_function_decl))) == REG
-      && (REGNO (DECL_RTL (DECL_RESULT (current_function_decl)))
-	  >= FIRST_PSEUDO_REGISTER))
+  /* If scalar return value was computed in a pseudo-reg, or was a named
+     return value that got dumped to the stack, copy that to the hard
+     return register.  */
+  if (DECL_RTL (DECL_RESULT (current_function_decl)) != 0)
     {
-      rtx real_decl_result;
+      tree decl_result = DECL_RESULT (current_function_decl);
+      rtx decl_rtl = DECL_RTL (decl_result);
+
+      if (REG_P (decl_rtl)
+	  ? REGNO (decl_rtl) >= FIRST_PSEUDO_REGISTER
+	  : DECL_REGISTER (decl_result))
+	{
+	  rtx real_decl_rtl;
 
 #ifdef FUNCTION_OUTGOING_VALUE
-      real_decl_result
-	= FUNCTION_OUTGOING_VALUE (TREE_TYPE (DECL_RESULT (current_function_decl)),
-				   current_function_decl);
+	  real_decl_rtl = FUNCTION_OUTGOING_VALUE (TREE_TYPE (decl_result),
+						   current_function_decl);
 #else
-      real_decl_result
-	= FUNCTION_VALUE (TREE_TYPE (DECL_RESULT (current_function_decl)),
-			  current_function_decl);
+	  real_decl_rtl = FUNCTION_VALUE (TREE_TYPE (decl_result),
+					  current_function_decl);
 #endif
-      REG_FUNCTION_VALUE_P (real_decl_result) = 1;
-      /* If this is a BLKmode structure being returned in registers, then use
-	 the mode computed in expand_return.  */
-      if (GET_MODE (real_decl_result) == BLKmode)
-	PUT_MODE (real_decl_result,
-		  GET_MODE (DECL_RTL (DECL_RESULT (current_function_decl))));
-      emit_move_insn (real_decl_result,
-		      DECL_RTL (DECL_RESULT (current_function_decl)));
+	  REG_FUNCTION_VALUE_P (real_decl_rtl) = 1;
 
-      /* The delay slot scheduler assumes that current_function_return_rtx
-	 holds the hard register containing the return value, not a temporary
-	 pseudo.  */
-      current_function_return_rtx = real_decl_result;
+	  /* If this is a BLKmode structure being returned in registers,
+	     then use the mode computed in expand_return.  Note that if
+	     decl_rtl is memory, then its mode may have been changed, 
+	     but that current_function_return_rtx has not.  */
+	  if (GET_MODE (real_decl_rtl) == BLKmode)
+	    PUT_MODE (real_decl_rtl, GET_MODE (current_function_return_rtx));
+
+	  /* If a named return value dumped decl_return to memory, then
+	     we may need to re-do the PROMOTE_MODE signed/unsigned 
+	     extension.  */
+	  if (GET_MODE (real_decl_rtl) != GET_MODE (decl_rtl))
+	    {
+	      int unsignedp = TREE_UNSIGNED (TREE_TYPE (decl_result));
+
+#ifdef PROMOTE_FUNCTION_RETURN
+	      promote_mode (TREE_TYPE (decl_result), GET_MODE (decl_rtl),
+			    &unsignedp, 1);
+#endif
+
+	      convert_move (real_decl_rtl, decl_rtl, unsignedp);
+	    }
+	  else
+	    emit_move_insn (real_decl_rtl, decl_rtl);
+
+	  /* The delay slot scheduler assumes that current_function_return_rtx
+	     holds the hard register containing the return value, not a
+	     temporary pseudo.  */
+	  current_function_return_rtx = real_decl_rtl;
+	}
     }
 
   /* If returning a structure, arrange to return the address of the value
