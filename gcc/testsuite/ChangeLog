@@ -1,3 +1,9 @@
+2003-12-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/13241
+	* g++.dg/abi/mangle18-1.C: New test.
+	* g++.dg/abi/mangle18-2.C: New test.
+
 2003-12-15  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	PR optimization/10312

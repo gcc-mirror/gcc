@@ -158,7 +158,7 @@ static void mangle_call_offset (const tree, const tree);
 
 /* Functions for emitting mangled representations of things.  */
 
-static void write_mangled_name (const tree);
+static void write_mangled_name (const tree, bool);
 static void write_encoding (const tree);
 static void write_name (tree, const int);
 static void write_unscoped_name (const tree);
@@ -602,27 +602,66 @@ find_substitution (tree node)
 }
 
 
-/*  <mangled-name>      ::= _Z <encoding>  */
+/* TOP_LEVEL is true, if this is being called at outermost level of
+  mangling. It should be false when mangling a decl appearing in an
+  expression within some other mangling.
+  
+  <mangled-name>      ::= _Z <encoding>  */
 
 static inline void
-write_mangled_name (const tree decl)
+write_mangled_name (const tree decl, bool top_level)
 {
   MANGLE_TRACE_TREE ("mangled-name", decl);
 
-  if (DECL_LANG_SPECIFIC (decl)
-      && DECL_EXTERN_C_FUNCTION_P (decl)
-      && ! DECL_OVERLOADED_OPERATOR_P (decl))
-    /* The standard notes:
-         "The <encoding> of an extern "C" function is treated like
-	 global-scope data, i.e. as its <source-name> without a type."
-       We cannot write overloaded operators that way though,
-       because it contains characters invalid in assembler.  */
-    write_source_name (DECL_NAME (decl));
-  else
-    /* C++ name; needs to be mangled.  */
+  if (/* The names of `extern "C"' functions are not mangled.  */
+      DECL_EXTERN_C_FUNCTION_P (decl)
+      /* But overloaded operator names *are* mangled.  */
+      && !DECL_OVERLOADED_OPERATOR_P (decl))
     {
+    unmangled_name:;
+      
+      if (top_level)
+	write_string (IDENTIFIER_POINTER (DECL_NAME (decl)));
+      else
+	{
+	  /* The standard notes: "The <encoding> of an extern "C"
+             function is treated like global-scope data, i.e. as its
+             <source-name> without a type."  We cannot write
+             overloaded operators that way though, because it contains
+             characters invalid in assembler.  */
+	  if (abi_version_at_least (2))
+	    write_string ("_Z");
+	  else
+	    G.need_abi_warning = true;
+	  write_source_name (DECL_NAME (decl));
+	}
+    }
+  else if (TREE_CODE (decl) == VAR_DECL
+	   /* The names of global variables aren't mangled.  */
+	   && (CP_DECL_CONTEXT (decl) == global_namespace
+	       /* And neither are `extern "C"' variables.  */
+	       || DECL_EXTERN_C_P (decl)))
+    {
+      if (top_level || abi_version_at_least (2))
+	goto unmangled_name;
+      else
+	{
+	  G.need_abi_warning = true;
+	  goto mangled_name;
+	}
+    }
+  else
+    {
+    mangled_name:;
       write_string ("_Z");
       write_encoding (decl);
+      if (DECL_LANG_SPECIFIC (decl)
+	  && (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl)
+	      || DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl)))
+	/* We need a distinct mangled name for these entities, but
+	   we should never actually output it.  So, we append some
+	   characters the assembler won't like.  */
+	write_string (" *INTERNAL* ");
     }
 }
 
@@ -1895,7 +1934,7 @@ write_expression (tree expr)
       if (code == CONST_DECL)
 	G.need_abi_warning = 1;
       write_char ('L');
-      write_mangled_name (expr);
+      write_mangled_name (expr, false);
       write_char ('E');
     }
   else if (TREE_CODE (expr) == SIZEOF_EXPR 
@@ -2365,29 +2404,9 @@ mangle_decl_string (const tree decl)
 
   if (TREE_CODE (decl) == TYPE_DECL)
     write_type (TREE_TYPE (decl));
-  else if (/* The names of `extern "C"' functions are not mangled.  */
-	   (DECL_EXTERN_C_FUNCTION_P (decl)
-	    /* But overloaded operator names *are* mangled.  */
-	    && !DECL_OVERLOADED_OPERATOR_P (decl))
-	   /* The names of global variables aren't mangled either.  */
-	   || (TREE_CODE (decl) == VAR_DECL
-	       && CP_DECL_CONTEXT (decl) == global_namespace)
-	   /* And neither are `extern "C"' variables.  */
-	   || (TREE_CODE (decl) == VAR_DECL
-	       && DECL_EXTERN_C_P (decl)))
-    write_string (IDENTIFIER_POINTER (DECL_NAME (decl)));
   else
-    {
-      write_mangled_name (decl);
-      if (DECL_LANG_SPECIFIC (decl)
-	  && (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (decl)
-	      || DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (decl)))
-	/* We need a distinct mangled name for these entities, but
-	   we should never actually output it.  So, we append some
-	   characters the assembler won't like.  */
-	write_string (" *INTERNAL* ");
-    }
-
+    write_mangled_name (decl, true);
+  
   result = finish_mangling (/*warn=*/true);
   if (DEBUG_MANGLE)
     fprintf (stderr, "mangle_decl_string = '%s'\n\n", result);
