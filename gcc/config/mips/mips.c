@@ -1554,20 +1554,21 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
     int reverse_regs;		/* reverse registers in test */
     int invert_const;		/* != 0 if invert value if cmp1 is constant */
     int invert_reg;		/* != 0 if invert value if cmp1 is register */
+    int unsignedp;		/* != 0 for unsigned comparisons.  */
   };
 
   static struct cmp_info info[ (int)ITEST_MAX ] = {
 
-    { XOR,	 0,  65535,  0,	 0,  0,	 0 },	/* EQ  */
-    { XOR,	 0,  65535,  0,	 0,  1,	 1 },	/* NE  */
-    { LT,   -32769,  32766,  1,	 1,  1,	 0 },	/* GT  */
-    { LT,   -32768,  32767,  0,	 0,  1,	 1 },	/* GE  */
-    { LT,   -32768,  32767,  0,	 0,  0,	 0 },	/* LT  */
-    { LT,   -32769,  32766,  1,	 1,  0,	 1 },	/* LE  */
-    { LTU,  -32769,  32766,  1,	 1,  1,	 0 },	/* GTU */
-    { LTU,  -32768,  32767,  0,	 0,  1,	 1 },	/* GEU */
-    { LTU,  -32768,  32767,  0,	 0,  0,	 0 },	/* LTU */
-    { LTU,  -32769,  32766,  1,	 1,  0,	 1 },	/* LEU */
+    { XOR,	 0,  65535,  0,	 0,  0,	 0, 0 },	/* EQ  */
+    { XOR,	 0,  65535,  0,	 0,  1,	 1, 0 },	/* NE  */
+    { LT,   -32769,  32766,  1,	 1,  1,	 0, 0 },	/* GT  */
+    { LT,   -32768,  32767,  0,	 0,  1,	 1, 0 },	/* GE  */
+    { LT,   -32768,  32767,  0,	 0,  0,	 0, 0 },	/* LT  */
+    { LT,   -32769,  32766,  1,	 1,  0,	 1, 0 },	/* LE  */
+    { LTU,  -32769,  32766,  1,	 1,  1,	 0, 1 },	/* GTU */
+    { LTU,  -32768,  32767,  0,	 0,  1,	 1, 1 },	/* GEU */
+    { LTU,  -32768,  32767,  0,	 0,  0,	 0, 1 },	/* LTU */
+    { LTU,  -32769,  32766,  1,	 1,  0,	 1, 1 },	/* LEU */
   };
 
   enum internal_test test;
@@ -1631,7 +1632,22 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
   if (GET_CODE (cmp1) == CONST_INT)
     {
       if (p_info->const_add != 0)
-	cmp1 = GEN_INT (INTVAL (cmp1) + p_info->const_add);
+	{
+	  HOST_WIDE_INT new = INTVAL (cmp1) + p_info->const_add;
+	  /* If modification of cmp1 caused overflow,
+	     we would get the wrong answer if we follow the usual path;
+	     thus, x > 0xffffffffu would turn into x > 0u.  */
+	  if ((p_info->unsignedp
+	       ? (unsigned HOST_WIDE_INT) new > INTVAL (cmp1)
+	       : new > INTVAL (cmp1))
+	      != (p_info->const_add > 0))
+	    /* 1 is the right value in the LE and LEU case.
+	       In the GT and GTU case, *p_invert is already set,
+	       so this is effectively 0.  */
+	    return force_reg (SImode, const1_rtx);
+	  else
+	    cmp1 = GEN_INT (new);
+	}
     }
   else if (p_info->reverse_regs)
     {
