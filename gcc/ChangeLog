@@ -1,3 +1,10 @@
+Wed Sep  3 09:28:50 CDT 1997  Joel Sherrill (joel@OARcorp.com)
+
+	* i386/go32-rtems.h, i386/rtems.h, i960/rtems.h, m68k/rtems.h,
+	  mips/rtems64.h, pa/rtems.h, rs6000/rtems.h, sh/rtems.h,
+	  sparc/rtems.h (subtarget_switches): Removed SUBTARGET_SWITCHES
+	  definitions.  Use -qrtems instead of -mrtems.
+
 Wed Sep  3 09:05:41 1997  Robert Lipe  (robert@dgii.com)
 
 	* xm-sco5.h (sys_siglist): Define.

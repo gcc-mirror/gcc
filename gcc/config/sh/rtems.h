@@ -28,8 +28,4 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-D__sh__ -D__ELF__ -Drtems -D__rtems__ \
   -Asystem(rtems) -Acpu(sh) -Amachine(sh)"
 
-#undef  SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES \
-  { "rtems", 0 },
-
 /* end of sparc/rtems.h */

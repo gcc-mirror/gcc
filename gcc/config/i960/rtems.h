@@ -28,8 +28,4 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-Di960 -Di80960 -DI960 -DI80960 -Drtems -D__rtems__ \
    -Asystem(rtems) -Acpu(i960) -Amachine(i960)"
 
-#undef  SUBTARGET_SWITCHES
-#define SUBTARGET_SWITCHES \
-  { "rtems", 0 },
-
 /* end of i960/rtems.h */
