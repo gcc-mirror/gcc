@@ -1,3 +1,7 @@
+2004-08-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* doc/tree-ssa.texi: Document new operand iterator.
+
 2004-08-26  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/16480
