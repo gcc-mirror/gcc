@@ -1,3 +1,11 @@
+2001-11-16  Tom Tromey  <tromey@redhat.com>
+
+	Re-merge with Classpath, from Brian Jones:
+	* java/lang/Integer.java (getInteger): Attempt to decode the value
+	of the system property instead of the name of the system property.
+	(parseInt): Throw NumberFormatException explicitly in the case of
+	a null argument in keeping with JDK 1.3.
+
 2001-11-16  Mark Wielaard  <mark@klomp.org>
 
 	* java/util/Timer.java (TaskQueue.isStopped): Remove method.
