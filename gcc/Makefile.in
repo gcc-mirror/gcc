@@ -1894,25 +1894,25 @@ gt-c-objc-common.h gtype-c.h gt-location.h : s-gtype ; @true
 
 gtyp-gen.h: Makefile
 	echo "/* This file is machine generated.  Do not edit.  */" > tmp-gtyp.h
-	echo "static const char *srcdir = "  >> tmp-gtyp.h
+	echo "static const char *const srcdir = "  >> tmp-gtyp.h
 	echo "\"$(GTFILES_SRCDIR)\"" >> tmp-gtyp.h
 	echo ";" >> tmp-gtyp.h
-	echo "static const char *lang_files[] = {" >> tmp-gtyp.h
+	echo "static const char *const lang_files[] = {" >> tmp-gtyp.h
 	ll="$(GTFILES_FILES_FILES)"; \
 	for f in $$ll; do \
 	echo "\"$$f\", "; done >> tmp-gtyp.h
 	echo "NULL};" >> tmp-gtyp.h
-	echo "static const char *langs_for_lang_files[] = {" >> tmp-gtyp.h
+	echo "static const char *const langs_for_lang_files[] = {" >> tmp-gtyp.h
 	ff="$(GTFILES_FILES_LANGS)"; \
 	for f in $$ff; do \
 	echo "\"$$f\", " ; done  >> tmp-gtyp.h
 	echo "NULL};" >> tmp-gtyp.h
-	echo "static const char *all_files[] = {" >> tmp-gtyp.h
+	echo "static const char *const all_files[] = {" >> tmp-gtyp.h
 	gf="$(GTFILES)"; \
 	for f in $$gf; do \
 	echo "\"$$f\", "; done >> tmp-gtyp.h
 	echo " NULL};" >> tmp-gtyp.h
-	echo "static const char *lang_dir_names[] = { \"c\", " >> tmp-gtyp.h
+	echo "static const char *const lang_dir_names[] = { \"c\", " >> tmp-gtyp.h
 	gf="$(GTFILES_LANG_DIR_NAMES)"; \
 	for l in $$gf; do \
 	echo "\"$$l\", "; done >> tmp-gtyp.h

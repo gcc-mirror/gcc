@@ -1,3 +1,8 @@
+2003-01-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (gtyp-gen.h): Const-ify.
+	* gcov-dump.c (tag_table): Likewise.
+
 2003-01-04  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/fixfixes.c(wrap_fix): the wrapper guard must be a function
