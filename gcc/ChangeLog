@@ -1,3 +1,8 @@
+2002-02-06  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* dbxout.c (dbxout_symbol_location): Accept LABEL_REFs as well
+	as SYMBOL_REFs from the constant pool.
+
 2002-02-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* dbxout.c (dbxout_parms): Apply DEBUGGER_ARG_OFFSET to parameters

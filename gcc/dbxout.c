@@ -2198,7 +2198,8 @@ dbxout_symbol_location (decl, type, suffix, home)
 		{
 		  rtx tmp = get_pool_constant (current_sym_addr);
 
-		  if (GET_CODE (tmp) == SYMBOL_REF)
+		  if (GET_CODE (tmp) == SYMBOL_REF
+		      || GET_CODE (tmp) == LABEL_REF)
 		    current_sym_addr = tmp;
 		}
   
