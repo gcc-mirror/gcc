@@ -4,11 +4,11 @@
 /* { dg-options "-fprofile-arcs -ftest-coverage -g" } */
 /* { dg-do run { target native } } */
 
-noop ()
+void noop ()
 {
 }
 
-main ()
+int main ()
 {
   int i;
 
