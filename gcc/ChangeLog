@@ -1,3 +1,11 @@
+2004-07-07  Andreas Schwab  <schwab@suse.de>
+
+	* config/ia64/ia64.md: Define new attribute "empty".
+	(prologue_use, nop_x, insn_group_barrier): Set it.
+
+	* config/ia64/ia64.c (ia64_reorg): When looking for trailing call
+	skip over "empty" insns.
+
 2004-07-07  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/16130
