@@ -8,6 +8,8 @@
 
 	* config/ia64/ia64.h (RTX_COSTS): A few more entries, and a more
 	accurate value for MULT.
+	* config/ia64/ia64.c (ia64_print_operand): Require probability to be
+	2% or > 98% before using static branch prediction bits.
 
 2000-10-28  Neil Booth  <neilb@earthling.net>
 
