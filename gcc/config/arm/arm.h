@@ -589,7 +589,7 @@ extern int arm_arch4;
 #ifndef STRUCTURE_SIZE_BOUNDARY
 #define STRUCTURE_SIZE_BOUNDARY 32
 #endif
-     
+
 /* Used when parsing command line option -mstructure_size_boundary.  */
 extern char * structure_size_string;
 
@@ -759,7 +759,7 @@ extern char * structure_size_string;
    via the stack pointer) in functions that seem suitable.  
    If we have to have a frame pointer we might as well make use of it.
    APCS says that the frame pointer does not need to be pushed in leaf
-   functions.  */
+   functions, or simple tail call functions.  */
 #define FRAME_POINTER_REQUIRED		\
   (current_function_has_nonlocal_label || (TARGET_APCS && !leaf_function_p ()))
 
@@ -1848,7 +1848,7 @@ extern int arm_compare_fp;
 #define ASM_OUTPUT_INTERNAL_LABEL(STREAM, PREFIX, NUM)  	\
   do                                    	      	   	\
     {						      	   	\
-      char *s = (char *) alloca (40 + strlen (PREFIX));	   	\
+      char * s = (char *) alloca (40 + strlen (PREFIX));	\
       extern int arm_target_label, arm_ccfsm_state;	   	\
       extern rtx arm_target_insn;				\
 						           	\
@@ -1862,15 +1862,15 @@ extern int arm_compare_fp;
 	ASM_OUTPUT_LABEL (STREAM, s);		                \
     } while (0)
 #endif
-     
+
 /* Output a push or a pop instruction (only used when profiling).  */
 #define ASM_OUTPUT_REG_PUSH(STREAM,REGNO) \
-  fprintf(STREAM,"\tstmfd\t%ssp!,{%s%s}\n", \
-	  REGISTER_PREFIX, REGISTER_PREFIX, reg_names[REGNO])
+  fprintf (STREAM,"\tstmfd\t%ssp!,{%s%s}\n", \
+	  REGISTER_PREFIX, REGISTER_PREFIX, reg_names [REGNO])
 
 #define ASM_OUTPUT_REG_POP(STREAM,REGNO) \
-  fprintf(STREAM,"\tldmfd\t%ssp!,{%s%s}\n", \
-	  REGISTER_PREFIX, REGISTER_PREFIX, reg_names[REGNO])
+  fprintf (STREAM,"\tldmfd\t%ssp!,{%s%s}\n", \
+	  REGISTER_PREFIX, REGISTER_PREFIX, reg_names [REGNO])
 
 /* Target characters.  */
 #define TARGET_BELL	007
@@ -1913,7 +1913,7 @@ extern int arm_compare_fp;
       {									\
 	rtx base = XEXP (X, 0);						\
 	rtx index = XEXP (X, 1);					\
-	char *base_reg_name;						\
+	char * base_reg_name;						\
 	HOST_WIDE_INT offset = 0;					\
 	if (GET_CODE (base) != REG)					\
 	  {								\
