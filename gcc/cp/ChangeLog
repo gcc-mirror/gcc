@@ -1,5 +1,7 @@
 2001-11-15  Jason Merrill  <jason@redhat.com>
 
+	* method.c (use_thunk): Don't emit debugging information for thunks.
+
 	* parse.y: Add ... IDENTIFIER SCOPE and ... PTYPENAME SCOPE expansions.
 	* decl.c (make_typename_type): Handle getting a class template.
 	* search.c (lookup_field_r): A class template is good enough for
