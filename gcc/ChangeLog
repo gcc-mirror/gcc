@@ -1,3 +1,15 @@
+2001-02-23  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* Makefile.in (resource.o): Add params.h dependence.
+	* params.def (MAX_DELAY_SLOT_LIVE_SEARCH): New parameter.
+	* params.h (MAX_DELAY_SLOT_LIVE_SEARCH): Likewise.
+	* resource.c: Add dependence on params.h.
+	(current_live_regs): Fix explanatory comment.
+	(find_basic_block): Add new parameter to permit limiting search
+	for a BARRIER.
+	(mark_target_live_regs): Add new argument to find_basic_block call.
+	(incr_ticks_for_insn): Likewise.
+
 2001-02-23  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* diagnostic.c (output_to_stream): Rename to

@@ -1429,7 +1429,7 @@ sibcall.o : sibcall.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) function.h \
    hard-reg-set.h flags.h insn-config.h $(RECOG_H) $(BASIC_BLOCK_H)
 resource.o : resource.c $(CONFIG_H) $(RTL_H) hard-reg-set.h system.h \
    $(BASIC_BLOCK_H) $(REGS_H) flags.h output.h resource.h function.h toplev.h \
-   $(INSN_ATTR_H) except.h
+   $(INSN_ATTR_H) except.h params.h
 lcm.o : lcm.c $(CONFIG_H) system.h $(RTL_H) $(REGS_H) hard-reg-set.h flags.h \
    real.h insn-config.h $(INSN_ATTR_H) $(RECOG_H) $(EXPR_H) $(BASIC_BLOCK_H)
 ssa.o : ssa.c $(CONFIG_H) system.h $(REGS_H) varray.h			\
