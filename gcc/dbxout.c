@@ -1270,12 +1270,12 @@ dbxout_type (type, full, show_arg_types)
 	{
 	  fprintf (asmfile, "%s:", IDENTIFIER_POINTER (TREE_PURPOSE (tem)));
 	  if (TREE_INT_CST_HIGH (TREE_VALUE (tem)) == 0)
-	    {
-	      if (TREE_INT_CST_LOW (TREE_VALUE (tem)) < 0)
-		fprintf (asmfile, "%u", TREE_INT_CST_LOW (TREE_VALUE (tem)));
-	      else
-		fprintf (asmfile, "%d", TREE_INT_CST_LOW (TREE_VALUE (tem)));
-	    }
+	    fprintf (asmfile, "%lu",
+		     (unsigned long) TREE_INT_CST_LOW (TREE_VALUE (tem)));
+	  else if (TREE_INT_CST_HIGH (TREE_VALUE (tem)) == -1
+		   && TREE_INT_CST_LOW (TREE_VALUE (tem)) < 0)
+	    fprintf (asmfile, "%ld",
+		     (long) TREE_INT_CST_LOW (TREE_VALUE (tem)));
 	  else
 	    print_int_cst_octal (TREE_VALUE (tem));
 	  fprintf (asmfile, ",");
