@@ -778,7 +778,7 @@ m68hc11_reload_operands (operands)
 
 	  /* Create the lowest part offset that still remains to be added.
 	     If it's not a valid offset, do a 16-bit add.  */
-	  offset = gen_rtx (CONST_INT, VOIDmode, vl);
+	  offset = GEN_INT (vl);
 	  if (!VALID_CONSTANT_OFFSET_P (offset, mode))
 	    {
 	      emit_insn (gen_rtx (SET, VOIDmode, reg,
@@ -789,8 +789,7 @@ m68hc11_reload_operands (operands)
 	    {
 	      emit_insn (gen_rtx (SET, VOIDmode, reg,
 				  gen_rtx (PLUS, HImode, reg,
-					   gen_rtx (CONST_INT,
-						    VOIDmode, vh << 8))));
+					   GEN_INT (vh << 8))));
 	    }
 	  emit_move_insn (operands[0],
 			  gen_rtx (MEM, GET_MODE (operands[1]),
@@ -1874,20 +1873,18 @@ m68hc11_gen_lowpart (mode, x)
 	      return second;
 	    }
 	  if (mode == SImode)
-	    return gen_rtx (CONST_INT, VOIDmode, l[0]);
+	    return GEN_INT (l[0]);
 
-	  return gen_rtx (CONST_INT, VOIDmode,
-                          trunc_int_for_mode (l[0], HImode));
+	  return gen_int_mode (l[0], HImode);
 	}
       else
 	{
 	  l[0] = CONST_DOUBLE_LOW (x);
 	}
       if (mode == SImode)
-	return gen_rtx (CONST_INT, VOIDmode, l[0]);
+	return GEN_INT (l[0]);
       else if (mode == HImode && GET_MODE (x) == SFmode)
-	return gen_rtx (CONST_INT, VOIDmode,
-                        trunc_int_for_mode (l[0], HImode));
+	return gen_int_mode (l[0], HImode);
       else
 	abort ();
     }
@@ -1953,10 +1950,9 @@ m68hc11_gen_highpart (mode, x)
 	      return first;
 	    }
 	  if (mode == SImode)
-	    return gen_rtx (CONST_INT, VOIDmode, l[1]);
+	    return GEN_INT (l[1]);
 
-	  return gen_rtx (CONST_INT, VOIDmode,
-                          trunc_int_for_mode ((l[1] >> 16), HImode));
+	  return gen_int_mode ((l[1] >> 16), HImode);
 	}
       else
 	{
@@ -1964,10 +1960,9 @@ m68hc11_gen_highpart (mode, x)
 	}
 
       if (mode == SImode)
-	return gen_rtx (CONST_INT, VOIDmode, l[1]);
+	return GEN_INT (l[1]);
       else if (mode == HImode && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
-	return gen_rtx (CONST_INT, VOIDmode,
-                        trunc_int_for_mode ((l[0] >> 16), HImode));
+	return gen_int_mode ((l[0] >> 16), HImode);
       else
 	abort ();
     }
@@ -1977,13 +1972,11 @@ m68hc11_gen_highpart (mode, x)
 
       if (mode == QImode)
 	{
-	  return gen_rtx (CONST_INT, VOIDmode,
-                          trunc_int_for_mode (val >> 8, QImode));
+	  return gen_int_mode (val >> 8, QImode);
 	}
       else if (mode == HImode)
 	{
-	  return gen_rtx (CONST_INT, VOIDmode,
-                          trunc_int_for_mode (val >> 16, HImode));
+	  return gen_int_mode (val >> 16, HImode);
 	}
     }
   if (mode == QImode && D_REG_P (x))
@@ -2752,6 +2745,10 @@ m68hc11_split_move (to, from, scratch)
       m68hc11_split_move (high_to, high_from, scratch);
     }
   else if (H_REG_P (to) || H_REG_P (from)
+	   || (low_from == const0_rtx
+	       && high_from == const0_rtx
+	       && ! push_operand (to, GET_MODE (to))
+	       && ! H_REG_P (scratch))
 	   || (TARGET_M6812
 	       && (!m68hc11_register_indirect_p (from, GET_MODE (from))
 		   || m68hc11_small_indexed_indirect_p (from,
@@ -4758,12 +4755,7 @@ m68hc11_z_replacement (insn)
 	      src = SET_SRC (body);
 	      dst = SET_DEST (body);
 	      if (SP_REG_P (src) && Z_REG_P (dst))
-		{
-		  emit_insn_after (gen_addhi3 (dst,
-					       dst,
-					       gen_rtx (CONST_INT,
-							VOIDmode, 2)), insn);
-		}
+		emit_insn_after (gen_addhi3 (dst, dst, const2_rtx), insn);
 	    }
 
 	  /* Replace any (REG:HI Z) occurrence by either X or Y.  */
@@ -4944,7 +4936,10 @@ m68hc11_reorg (first)
   /* After some splitting, there are some oportunities for CSE pass.
      This happens quite often when 32-bit or above patterns are split.  */
   if (optimize > 0 && split_done)
-    reload_cse_regs (first);
+    {
+      find_basic_blocks (first, max_reg_num (), 0);
+      reload_cse_regs (first);
+    }
 
   /* Re-create the REG_DEAD notes.  These notes are used in the machine
      description to use the best assembly directives.  */

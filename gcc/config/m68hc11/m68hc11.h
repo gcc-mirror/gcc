@@ -813,32 +813,38 @@ extern enum reg_class m68hc11_tmp_regs_class;
    C is the letter, and VALUE is a constant value.
    Return 1 if VALUE is in the range specified by C.
 
+   `K' is for 0.
    `L' is for range -65536 to 65536
    `M' is for values whose 16-bit low part is 0
    'N' is for +1 or -1.
    'O' is for 16 (for rotate using swap).
    'P' is for range -8 to 2 (used by addhi_sp)
 
-   'I', 'J', 'K' are not used.  */
+   'I', 'J' are not used.  */
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C) \
-  ((C) == 'L' ? (VALUE) >= -65536 && (VALUE) <= 65535 : \
+  ((C) == 'K' ? (VALUE) == 0 : \
+   (C) == 'L' ? ((VALUE) >= -65536 && (VALUE) <= 65535) : \
    (C) == 'M' ? ((VALUE) & 0x0ffffL) == 0 : \
-   (C) == 'N' ? ((VALUE) == 1 || (VALUE) == -1): \
+   (C) == 'N' ? ((VALUE) == 1 || (VALUE) == -1) : \
    (C) == 'O' ? (VALUE) == 16 : \
-   (C) == 'P' ? (VALUE) <= 2 && (VALUE) >= -8 : 0)
+   (C) == 'P' ? ((VALUE) <= 2 && (VALUE) >= -8) : 0)
 
 /* Similar, but for floating constants, and defining letters G and H.
-   No floating-point constants are valid on 68HC11.  */
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  0
+
+   `G' is for 0.0.  */
+#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C) \
+  ((C) == 'G' ? (GET_MODE_CLASS (GET_MODE (VALUE)) == MODE_FLOAT \
+		 && VALUE == CONST0_RTX (GET_MODE (VALUE))) : 0) 
 
 /* 'U' represents certain kind of memory indexed operand for 68HC12.
    and any memory operand for 68HC11.  */
 #define EXTRA_CONSTRAINT(OP, C)                         \
 ((C) == 'U' ? m68hc11_small_indexed_indirect_p (OP, GET_MODE (OP)) \
  : (C) == 'Q' ? m68hc11_symbolic_p (OP, GET_MODE (OP)) \
- : (C) == 'R' ? m68hc11_indirect_p (OP, GET_MODE (OP)) : 0)
-
+ : (C) == 'R' ? m68hc11_indirect_p (OP, GET_MODE (OP)) \
+ : (C) == 'S' ? (memory_operand (OP, GET_MODE (OP)) \
+		 && non_push_operand (OP, GET_MODE (OP))) : 0)
 
 
 /* Stack layout; function entry, exit and calling.  */
