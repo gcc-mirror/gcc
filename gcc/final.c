@@ -3103,7 +3103,7 @@ alter_subreg (x)
       PUT_CODE (x, MEM);
       MEM_COPY_ATTRIBUTES (x, y);
       MEM_ALIAS_SET (x) = MEM_ALIAS_SET (y);
-      XEXP (x, 0) = plus_constant (XEXP (y, 0), offset);
+      XEXP (x, 0) = plus_constant_for_output (XEXP (y, 0), offset);
     }
 
   return x;
