@@ -1,3 +1,8 @@
+Tue Oct  7 10:01:45 1997  Chip Salzenberg <chip@rio.atlantic.net>
+
+	* Makefile.in (program_transform_name): Let autoconf substitute
+	the correct value.
+
 Tue Oct  7 09:54:35 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* haifa-sched.c (schedule_block): If the first real insn in a
