@@ -776,11 +776,15 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
   else if (GET_CODE (dest) != CC0)
     return 0;
 
-  /* Don't substitute for a register intended as a clobberable operand.  */
+  /* Don't substitute for a register intended as a clobberable operand.
+     Similarly, don't substitute an expression containing a register that
+     will be clobbered in I3.  */
   if (GET_CODE (PATTERN (i3)) == PARALLEL)
     for (i = XVECLEN (PATTERN (i3), 0) - 1; i >= 0; i--)
       if (GET_CODE (XVECEXP (PATTERN (i3), 0, i)) == CLOBBER
-	  && rtx_equal_p (XEXP (XVECEXP (PATTERN (i3), 0, i), 0), dest))
+	  && (reg_overlap_mentioned_p (XEXP (XVECEXP (PATTERN (i3), 0, i), 0),
+				       src)
+	      || rtx_equal_p (XEXP (XVECEXP (PATTERN (i3), 0, i), 0), dest)))
 	return 0;
 
   /* If INSN contains anything volatile, or is an `asm' (whether volatile
