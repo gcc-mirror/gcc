@@ -2326,23 +2326,6 @@ extern enum reg_class mips_char_to_class[256];
 
 #define CLASS_MAX_NREGS(CLASS, MODE) mips_class_max_nregs (CLASS, MODE)
 
-/* If defined, gives a class of registers that cannot be used as the
-   operand of a SUBREG that changes the mode of the object illegally.
-
-   In little-endian mode, the hi-lo registers are numbered backwards,
-   so (subreg:SI (reg:DI hi) 0) gets the high word instead of the low
-   word as intended.
-
-   Similarly, when using paired floating-point registers, the first
-   register holds the low word, regardless of endianness.  So in big
-   endian mode, (subreg:SI (reg:DF $f0) 0) does not get the high word
-   as intended.
-
-   Also, loading a 32-bit value into a 64-bit floating-point register
-   will not sign-extend the value, despite what LOAD_EXTEND_OP says.
-   We can't allow 64-bit float registers to change from a 32-bit
-   mode to a 64-bit mode.  */
-
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO) \
   mips_cannot_change_mode_class (FROM, TO)
 

@@ -1,3 +1,8 @@
+2002-11-05  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.h (CANNOT_CHANGE_MODE_CLASS): Move comment to...
+	* config/mips/mips.c (mips_cannot_change_mode_class): ...here.
+
 2002-11-04  Dale Johannesen  <dalej@apple.com>
 
         * doloop.c (doloop_modify_runtime):  Fix loop count computation
