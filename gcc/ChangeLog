@@ -1,3 +1,8 @@
+2004-07-06  Mark Mitchell  <mark@codesourcery.com>
+
+	* doc/include/gcc-common.texi: Increment version number.
+	* version.c (version_string): Likewise.
+
 2004-07-06  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/sourcebuild.texi: Use semicolons instead of commas in
