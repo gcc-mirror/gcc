@@ -1,5 +1,10 @@
 2005-02-28  Paolo Bonzini  <bonzini@gnu.org>
 
+	* Makefile.in: Regenerate to fix conflict between the previous two
+	patches.
+
+2005-02-28  Paolo Bonzini  <bonzini@gnu.org>
+
 	PR bootstrap/17383
 	* Makefile.def (target_modules): Remove "stage", now unnecessary.
 	* Makefile.tpl (HOST_SUBDIR): New substitution.
