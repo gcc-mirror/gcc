@@ -1,3 +1,8 @@
+1999-09-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (finish_cleanup_try_block): New function.
+	* semantics.c (finish_cleanup_try_block): Add comment.
+
 Fri Sep 10 10:32:32 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* cp-tree.h: Delete declarations for all tree nodes now moved to
