@@ -1,3 +1,9 @@
+2003-01-13  Andreas Schwab  <schwab@suse.de>
+
+	* Makefile.in ($(parsedir)/gengtype-lex.c): Don't change to
+	$(parsedir), just move the temporary file at the end.
+	($(parsedir)/gengtype-yacc.c): Likewise.
+
 2003-01-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* aclocal.m4 (gcc_AC_PROG_GNAT): Don't try to prepend

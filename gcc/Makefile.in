@@ -2111,20 +2111,23 @@ gengtype-yacc.o : $(parsedir)/gengtype-yacc.c gengtype.h $(BCONFIG_H) $(SYSTEM_H
 
 # The sed command works around a bug in flex-2.5.4.
 $(parsedir)/gengtype-lex.c : $(srcdir)/gengtype-lex.l
-	cd $(parsedir) && \
-	$(FLEX) $(FLEXFLAGS) -t -o$@ $(srcdir)/gengtype-lex.l | \
+	$(FLEX) $(FLEXFLAGS) -t -o- $(srcdir)/gengtype-lex.l | \
 	  sed 's/^\(char msg\[\];\)/yyconst \1/' > g-$$$$ ; \
 	if test $$? -eq 0 ; then \
-	  mv -f g-$$$$ gengtype-lex.c ; \
+	  mv -f g-$$$$ $(parsedir)/gengtype-lex.c ; \
 	else \
-	  rm -f g-$$$$.* ; \
+	  rm -f g-$$$$ ; \
 	  false ; \
 	fi
 
 $(parsedir)/gengtype-yacc.c: $(srcdir)/gengtype-yacc.y
-	(cd $(parsedir) && \
-	 $(BISON) $(BISONFLAGS) -d -o gengtype-yacc.c $(srcdir)/gengtype-yacc.y || \
-	 ( rm -f $@ && false ) )
+	if $(BISON) $(BISONFLAGS) -d -o g-yacc.$$$$.c $(srcdir)/gengtype-yacc.y; then \
+	  mv -f g-yacc.$$$$.h $(parsedir)/gengtype-yacc.h; \
+	  mv -f g-yacc.$$$$.c $(parsedir)/gengtype-yacc.c; \
+	else \
+	  rm -f g-yacc.$$$$.*; \
+	  false; \
+	fi
 
 genconditions$(build_exeext) : genconditions.o $(BUILD_EARLY_SUPPORT) \
   $(BUILD_RTL) $(BUILD_ERRORS) $(BUILD_LIBDEPS)
