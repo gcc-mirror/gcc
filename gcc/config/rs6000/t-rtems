@@ -1,13 +1,13 @@
 # Multilibs for powerpc RTEMS targets.
 
 MULTILIB_OPTIONS	= \
-mcpu=403/mcpu=505/mcpu=601/mcpu=602/mcpu=603/mcpu=603e/mcpu=604/mcpu=750/mcpu=821/mcpu=860 \
+mcpu=403/mcpu=505/mcpu=601/mcpu=603/mcpu=603e/mcpu=604/mcpu=750/mcpu=821/mcpu=860 \
 Dmpc509/Dmpc8260 \
 D_OLD_EXCEPTIONS \
 msoft-float
 
 MULTILIB_DIRNAMES	= \
-m403 m505 m601 m602 m603 m603e m604 m750 m821 m860 \
+m403 m505 m601 m603 m603e m604 m750 m821 m860 \
 mpc509 \
 mpc8260 \
 roe \
@@ -15,10 +15,11 @@ nof
 
 MULTILIB_EXTRA_OPTS	= mrelocatable-lib mno-eabi mstrict-align
 
-# MULTILIB_MATCHES	= ${MULTILIB_MATCHES_FLOAT}
-MULTILIB_MATCHES  	= ${MULTILIB_MATCHES_ENDIAN} \
-			  ${MULTILIB_MATCHES_SYSV} \
-			  mcpu?505/Dmpc505=mcpu?505/Dmpc509
+MULTILIB_MATCHES	= ${MULTILIB_MATCHES_FLOAT}
+MULTILIB_MATCHES  	+= ${MULTILIB_MATCHES_ENDIAN}
+MULTILIB_MATCHES	+= ${MULTILIB_MATCHES_SYSV}
+MULTILIB_MATCHES	+= mcpu?505/Dmpc505=mcpu?505/Dmpc509
+MULTILIB_MATCHES	+= mcpu?603=mcpu?602
 
 #
 # RTEMS old/new-exceptions handling
@@ -34,6 +35,9 @@ MULTILIB_MATCHES  	= ${MULTILIB_MATCHES_ENDIAN} \
 # Cpu-variants supporting new exception processing only
 MULTILIB_NEW_EXCEPTIONS_ONLY = \
 *mcpu=505*/*D_OLD_EXCEPTIONS* \
+*mcpu=601*/*D_OLD_EXCEPTIONS* \
+*mcpu=602*/*D_OLD_EXCEPTIONS* \
+*mcpu=603/*D_OLD_EXCEPTIONS* \
 *mcpu=604*/*D_OLD_EXCEPTIONS* \
 *mcpu=750*/*D_OLD_EXCEPTIONS* \
 *mcpu=821*/*D_OLD_EXCEPTIONS* \
