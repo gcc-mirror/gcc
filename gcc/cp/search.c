@@ -1542,7 +1542,12 @@ dfs_walk_all (tree binfo, tree (*pre_fn) (tree, void *),
  skip_bases:
   /* Call the post-order walking function.  */
   if (post_fn)
-    return post_fn (binfo, data);
+    {
+      rval = post_fn (binfo, data);
+      gcc_assert (rval != dfs_skip_bases);
+      return rval;
+    }
+  
   return NULL_TREE;
 }
 
@@ -1588,7 +1593,11 @@ dfs_walk_once_r (tree binfo, tree (*pre_fn) (tree, void *),
  skip_bases:
   /* Call the post-order walking function.  */
   if (post_fn)
-    return post_fn (binfo, data);
+    {
+      rval = post_fn (binfo, data);
+      gcc_assert (rval != dfs_skip_bases);
+      return rval;
+    }
   
   return NULL_TREE;
 }
@@ -1710,7 +1719,11 @@ dfs_walk_once_accessible_r (tree binfo, bool friends_p, bool once,
  skip_bases:
   /* Call the post-order walking function.  */
   if (post_fn)
-    return post_fn (binfo, data);
+    {
+      rval = post_fn (binfo, data);
+      gcc_assert (rval != dfs_skip_bases);
+      return rval;
+    }
   
   return NULL_TREE;
 }

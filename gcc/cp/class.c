@@ -2144,37 +2144,41 @@ static tree
 dfs_modify_vtables (tree binfo, void* data)
 {
   tree t = (tree) data;
+  tree virtuals;
+  tree old_virtuals;
+  unsigned ix;
+
+  if (!TYPE_CONTAINS_VPTR_P (BINFO_TYPE (binfo)))
+    /* A base without a vtable needs no modification, and its bases
+       are uninteresting.  */
+    return dfs_skip_bases;
   
-  if (/* There's no need to modify the vtable for a non-virtual
-         primary base; we're not going to use that vtable anyhow.
-	 We do still need to do this for virtual primary bases, as they
-	 could become non-primary in a construction vtable.  */
-      (!BINFO_PRIMARY_P (binfo) || BINFO_VIRTUAL_P (binfo))
-      /* Similarly, a base without a vtable needs no modification.  */
-      && TYPE_CONTAINS_VPTR_P (BINFO_TYPE (binfo))
-      /* Don't do the primary vtable, if it's new.  */
-      && (!SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), t)
-	  || CLASSTYPE_HAS_PRIMARY_BASE_P (t)))
-    {
-      tree virtuals;
-      tree old_virtuals;
-      unsigned ix;
+  if (SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), t)
+      && !CLASSTYPE_HAS_PRIMARY_BASE_P (t))
+    /* Don't do the primary vtable, if it's new.  */
+    return NULL_TREE;
+
+  if (BINFO_PRIMARY_P (binfo) && !BINFO_VIRTUAL_P (binfo))
+    /* There's no need to modify the vtable for a non-virtual primary
+       base; we're not going to use that vtable anyhow.  We do still
+       need to do this for virtual primary bases, as they could become
+       non-primary in a construction vtable.  */
+    return NULL_TREE;
+
+  make_new_vtable (t, binfo);
       
-      make_new_vtable (t, binfo);
-      
-      /* Now, go through each of the virtual functions in the virtual
-	 function table for BINFO.  Find the final overrider, and
-	 update the BINFO_VIRTUALS list appropriately.  */
-      for (ix = 0, virtuals = BINFO_VIRTUALS (binfo),
-	     old_virtuals = BINFO_VIRTUALS (TYPE_BINFO (BINFO_TYPE (binfo)));
-	   virtuals;
-	   ix++, virtuals = TREE_CHAIN (virtuals),
-	     old_virtuals = TREE_CHAIN (old_virtuals))
-	update_vtable_entry_for_fn (t, 
-				    binfo, 
-				    BV_FN (old_virtuals),
-				    &virtuals, ix);
-    }
+  /* Now, go through each of the virtual functions in the virtual
+     function table for BINFO.  Find the final overrider, and update
+     the BINFO_VIRTUALS list appropriately.  */
+  for (ix = 0, virtuals = BINFO_VIRTUALS (binfo),
+	 old_virtuals = BINFO_VIRTUALS (TYPE_BINFO (BINFO_TYPE (binfo)));
+       virtuals;
+       ix++, virtuals = TREE_CHAIN (virtuals),
+	 old_virtuals = TREE_CHAIN (old_virtuals))
+    update_vtable_entry_for_fn (t, 
+				binfo, 
+				BV_FN (old_virtuals),
+				&virtuals, ix);
 
   return NULL_TREE;
 }
@@ -2195,7 +2199,7 @@ modify_all_vtables (tree t, tree virtuals)
   tree *fnsp;
 
   /* Update all of the vtables.  */
-  dfs_walk_once (binfo, NULL, dfs_modify_vtables, t);
+  dfs_walk_once (binfo, dfs_modify_vtables, NULL, t);
 
   /* Add virtual functions not already in our primary vtable. These
      will be both those introduced by this class, and those overridden
