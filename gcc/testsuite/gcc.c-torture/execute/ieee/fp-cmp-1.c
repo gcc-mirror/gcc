@@ -11,6 +11,13 @@ void leave ()
 main ()
 {
 #if ! defined (__vax__) && ! defined (_CRAY)
+  /* Move this line earlier, for architectures (like alpha) that issue 
+     SIGFPE on the first comparisons. */
+#ifndef SIGNAL_SUPPRESS
+  /* Some machines catches a SIGFPE when a NaN is compared.
+     Let this test succeed o such machines.  */
+  signal (SIGFPE, leave);
+#endif
   /* NaN is an IEEE unordered operand.  All these test should be false.  */
   if (nan == nan)
     abort ();
@@ -18,12 +25,6 @@ main ()
     x = 1.0;
   else
     abort ();
-
-#ifndef SIGNAL_SUPPRESS
-  /* Some machines catches a SIGFPE when a NaN is compared.
-     Let this test succeed o such machines.  */
-  signal (SIGFPE, leave);
-#endif
 
   if (nan < x)
     abort ();
