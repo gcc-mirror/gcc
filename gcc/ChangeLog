@@ -1,3 +1,44 @@
+Fri Sep  3 15:10:20 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (tlink.o): Don't depend on toplev.h.
+
+	* collect2.c (c_file, o_file, export_file, import_file, ldout,
+	output_file, nm_file_name, ldd_file_name, strip_file_name,
+	c_file_name, prefix_list, libexts, is_ctor_dtor, find_a_file,
+	add_prefix, prefix_from_env, prefix_from_string, do_wait,
+	fork_execute, maybe_unlink, add_to_list,
+	extract_init_priority, write_list, dump_list,
+	dump_prefix_list, write_list_with_asm, write_c_file,
+	write_c_file_stat, write_c_file_glob, scan_prog_file,
+	scan_libraries, is_in_list, resolve_lib_name, use_import_list,
+	ignore_library, extract_string, notice, dump_file, target_machine,
+	collect_wait, collect_execute, libname, locatelib, aix_std_libs,
+	read_file, print_load_command): Constify a char*.
+	(fdopen, error, fatal, fatal_perror): Don't prototype.
+	(my_strerror): Remove.  All callers use xstrerror instead.
+	(xcalloc, xmalloc, xrealloc, xstrdup, putenv): Remove definitions.
+	(main): Add prototype.  Constify lots of char* ptrs.  Change calls
+	to xcalloc/strcpy/strcat/...  to one call to concat.
+	(main, scan_prog_file, scan_libraries): Use an intermediate
+	`const char **' to build an argv array.
+	(mapfile, libselect, libcompare, locatelib): Add prototypes.
+
+	* collect2.h (collect_execute, collect_wait, dump_file,
+	file_exists): Constify a char*.
+	(ldout, c_file_name, temporary_obstack, permanent_obstack,
+	temporary_firstobj, vflag, debug): Add extern declarations.
+	(fancy_abort, error, notice, fatal, fatal_perror): Add prototypes.
+
+	* tlink.c: Don't include toplev.h.
+	(vflag, debug, ldout, c_file_name, temporary_obstack,
+	permanent_obstack, temporary_firstobj): Don't declare.
+	(tlink_execute, frob_extension, symbol_hash_lookup,
+	file_hash_lookup, demangled_hash_lookup, tlink_init, freadsym,
+	recompile_files, read_repo_files, demangle_new_symbols,
+	scan_linker_output): Constify a char*.
+	(symbol_hash_newfunc, file_hash_newfunc, demangled_hash_newfunc,
+	do_tlink): Mark parameters with ATTRIBUTE_UNUSED.
+	
 Fri Sep  3 18:09:24 1999  Andrew Haley  <aph@cygnus.com>
 
 	* config/m68k/m68kelf.h: Set USE_GAS; this makes gcc generate jbsr

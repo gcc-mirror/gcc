@@ -23,14 +23,29 @@ Boston, MA 02111-1307, USA.  */
 
 extern void do_tlink PARAMS ((char **, char **));
 
-extern void collect_execute PARAMS ((char *, char **, char *));
+extern void collect_execute PARAMS ((const char *, char **, const char *));
 
 extern void collect_exit PARAMS ((int)) ATTRIBUTE_NORETURN;
 
-extern int collect_wait PARAMS ((char *));
+extern int collect_wait PARAMS ((const char *));
 
-extern void dump_file PARAMS ((char *));
+extern void dump_file PARAMS ((const char *));
 
-extern int file_exists PARAMS ((char *));
+extern int file_exists PARAMS ((const char *));
+
+extern const char *ldout;
+extern const char *c_file_name;
+extern struct obstack temporary_obstack;
+extern struct obstack permanent_obstack;
+extern char *temporary_firstobj;
+extern int vflag, debug;
+
+extern void fancy_abort PARAMS ((void)) ATTRIBUTE_NORETURN;
+extern void error PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
+extern void notice PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
+extern void fatal PARAMS ((const char *, ...)) 
+  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+extern void fatal_perror PARAMS ((const char *, ...))
+  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 
 #endif /* ! __COLLECT2_H__ */
