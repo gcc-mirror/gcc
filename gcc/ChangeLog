@@ -1,3 +1,8 @@
+2002-09-21  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.md (floatdisf2_internal2): Combine
+	insns.  Supply missing clobber of scratch reg.
+
 2002-09-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/m32r/m32r.c: Follow spelling conventions.
