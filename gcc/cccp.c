@@ -640,6 +640,7 @@ enum node_type {
  T_DISABLED,	/* macro temporarily turned off for rescan */
  T_SPEC_DEFINED, /* special `defined' macro for use in #if statements */
  T_PCSTRING,	/* precompiled string (hashval is KEYDEF *) */
+ T_POISON,	/* defined with `#pragma poison' */
  T_UNUSED	/* Used for something not defined.  */
  };
 
@@ -4281,7 +4282,12 @@ special_symbol (hp, op)
 	      || (hp->type == T_MACRO && hp->value.defn->predefined)))
 	/* Output a precondition for this macro use.  */
 	fprintf (pcp_outfile, "#define %s\n", hp->name);
-      buf = " 1 ";
+      if (hp->type == T_POISON) {
+	error("attempt to use poisoned `%s'.", hp->name);
+	buf = " 0 ";
+      } else {
+	buf = " 1 ";
+      }
     }
     else
       if (pcp_outfile && pcp_inside_if)	{
@@ -4300,6 +4306,11 @@ special_symbol (hp, op)
 	goto oops;
       ++ip->bufp;
     }
+    break;
+
+  case T_POISON:
+    error("attempt to use poisoned `%s'.", hp->name);
+    buf = " 0 ";	/* Consider poisoned symbol to not be defined */
     break;
 
 oops:
@@ -5926,6 +5937,7 @@ do_define (buf, limit, op, keyword)
 {
   int hashcode;
   MACRODEF mdef;
+  enum node_type newtype = keyword->type == T_DEFINE ? T_MACRO : T_POISON;
 
   /* If this is a precompiler run (with -pcp) pass thru #define directives.  */
   if (pcp_outfile && op)
@@ -5944,35 +5956,50 @@ do_define (buf, limit, op, keyword)
       /* Redefining a precompiled key is ok.  */
       if (hp->type == T_PCSTRING)
 	ok = 1;
+      /* Redefining a poisoned identifier is even worse than `not ok'.  */
+      else if (hp->type == T_POISON)
+        ok = -1;
+      /* Poisoning anything else is not ok.  
+	 The poison should always come first.  */
+      else if (newtype == T_POISON)
+	ok = 0;
       /* Redefining a macro is ok if the definitions are the same.  */
       else if (hp->type == T_MACRO)
 	ok = ! compare_defs (mdef.defn, hp->value.defn);
       /* Redefining a constant is ok with -D.  */
       else if (hp->type == T_CONST)
         ok = ! done_initializing;
-      /* Print the warning if it's not ok.  */
-      if (!ok) {
-        /* If we are passing through #define and #undef directives, do
-	   that for this re-definition now.  */
-        if (debug_output && op)
-	  pass_thru_directive (buf, limit, op, keyword);
-
-	pedwarn ("`%.*s' redefined", mdef.symlen, mdef.symnam);
-	if (hp->type == T_MACRO)
-	  pedwarn_with_file_and_line (hp->value.defn->file,
-				      hp->value.defn->file_len,
-				      hp->value.defn->line,
-				      "this is the location of the previous definition");
-      }
-      /* Replace the old definition.  */
-      hp->type = T_MACRO;
-      hp->value.defn = mdef.defn;
+      
+      /* Print the warning or error if it's not ok.  */
+      if (ok <= 0) 
+	{
+	  /* If we are passing through #define and #undef directives, do
+	     that for this re-definition now.  */
+	  if (debug_output && op)
+	    pass_thru_directive (buf, limit, op, keyword);
+	  
+	  if (hp->type == T_POISON)
+	    error ("redefining poisoned `%.*s'", mdef.symlen, mdef.symnam);
+	  else
+	    pedwarn ("`%.*s' redefined", mdef.symlen, mdef.symnam);
+	  if (hp->type == T_MACRO)
+	    pedwarn_with_file_and_line (hp->value.defn->file,
+					hp->value.defn->file_len,
+					hp->value.defn->line,
+					"this is the location of the previous definition");
+	}
+      if (hp->type != T_POISON)
+	{
+	  /* Replace the old definition.  */
+	  hp->type = newtype;
+	  hp->value.defn = mdef.defn;
+	}
     } else {
       /* If we are passing through #define and #undef directives, do
 	 that for this new definition now.  */
       if (debug_output && op)
 	pass_thru_directive (buf, limit, op, keyword);
-      install (mdef.symnam, mdef.symlen, T_MACRO,
+      install (mdef.symnam, mdef.symlen, newtype,
 	       (char *) mdef.defn, hashcode);
     }
   }
@@ -6990,9 +7017,13 @@ do_undef (buf, limit, op, keyword)
        need to pass through all effective #undef directives.  */
     if (debug_output && op)
       pass_thru_directive (orig_buf, limit, op, keyword);
-    if (hp->type != T_MACRO)
-      warning ("undefining `%s'", hp->name);
-    delete_macro (hp);
+    if (hp->type == T_POISON)
+      error ("cannot undefine poisoned `%s'", hp->name);
+    else {
+      if (hp->type != T_MACRO)
+        warning ("undefining `%s'", hp->name);
+      delete_macro (hp);
+    }
   }
 
   if (pedantic) {
@@ -7087,9 +7118,9 @@ do_ident (buf, limit, op, keyword)
 
 static int
 do_pragma (buf, limit, op, keyword)
-     U_CHAR *buf, *limit ATTRIBUTE_UNUSED;
-     FILE_BUF *op ATTRIBUTE_UNUSED;
-     struct directive *keyword ATTRIBUTE_UNUSED;
+     U_CHAR *buf, *limit;
+     FILE_BUF *op;
+     struct directive *keyword;
 {
   SKIP_WHITE_SPACE (buf);
   if (!strncmp ((char *) buf, "once", 4)) {
@@ -7098,6 +7129,29 @@ do_pragma (buf, limit, op, keyword)
     if (!instack[indepth].system_header_p)
       warning ("`#pragma once' is obsolete");
     do_once ();
+  }
+
+  if (!strncmp (buf, "poison", 6)) {
+    /* Poison these symbols so that all subsequent usage produces an
+       error message.  */
+    U_CHAR *p = buf + 6;
+
+    SKIP_WHITE_SPACE (p);
+    while (p < limit)
+      {
+	U_CHAR *end = p;
+	
+	while (end < limit && is_idchar[*end])
+	  end++;
+	if (end < limit && !is_space[*end])
+	  {
+	    error ("invalid #pragma poison");
+	    return 0;
+	  }
+	do_define(p, end, op, keyword);
+	p = end;
+	SKIP_WHITE_SPACE (p);
+      }
   }
 
   if (!strncmp ((char *) buf, "implementation", 14)) {
@@ -7351,6 +7405,10 @@ do_xifdef (buf, limit, op, keyword)
       }
     }
 
+    if ((hp != NULL) && (hp->type == T_POISON)) {
+      error("attempt to use poisoned `%s'.", hp->name);
+      hp = NULL;
+    }
     skip = (hp == NULL) ^ (keyword->type == T_IFNDEF);
     if (start_of_file && !skip) {
       control_macro = (U_CHAR *) xmalloc (end - buf + 1);

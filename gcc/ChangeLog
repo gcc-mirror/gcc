@@ -1,3 +1,28 @@
+Thu Sep  9 13:46:06 1999  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* Makefile.in (cppexp.o): Depend on cpphash.h.
+	* cppexp.c (cpp_lex): Handle `defined (xxx)' for poisoned xxx.
+	Include cpphash.h.
+	* cpphash.c (special_symbol): Handle plain `xxx' for poisoned xxx.
+	* cpplib.c (do_define): Generalise to handle poisoned definitions,
+	redefining poisoned identifiers, etc.
+	(do_undef): Don't allow poisoned identifiers to be undefined.
+	(do_pragma): Add #pragma poison.
+	(do_xifdef): Handle `#ifdef xxx' for poisoned xxx.
+
+	* cccp.c: Add T_POISON node type.
+	(special_symbol): Handle `defined(xxx)' and plain `xxx' for 
+	poisoned xxx.  
+	(do_define): Generalise to handle poisoned definitions,
+	redefining poisoned identifiers, etc.
+	(do_undef): Don't allow poisoned identifiers to be undefined.
+	(do_pragma): Add #pragma poison.
+	(do_xifdef): Handle `#ifdef xxx' for poisoned xxx.
+
+	* c-pragma.c (handle_pragma_token): Ignore #pragma poison.
+	* c-pragma.h: Add ps_poison state.  We now always have generic
+	pragmas.
+
 Wed Sep  8 20:30:42 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* ggc.h (ggc_alloc): New function.
