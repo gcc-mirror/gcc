@@ -157,6 +157,8 @@ namespace __gnu_cxx_test
       {
 	if (std::strstr (ex.what(), "unhandled name in generic implementation"))
 	  return;
+	else if (std::strstr (ex.what(), "unknown name"))
+	  return;
 	else
 	  throw;
       }
@@ -192,6 +194,8 @@ namespace __gnu_cxx_test
       {
 	if (std::strstr (ex.what(), "unhandled name in generic implementation"))
 	  return;
+	else if (std::strstr (ex.what(), "unknown name"))
+	  return;
 	else
 	  throw;
       }
@@ -218,6 +222,8 @@ namespace __gnu_cxx_test
     catch (std::runtime_error& ex)
       {
 	if (std::strstr (ex.what(), "unhandled name in generic implementation"))
+	  return;
+	else if (std::strstr (ex.what(), "unknown name"))
 	  return;
 	else
 	  throw;

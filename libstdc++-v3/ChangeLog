@@ -1,3 +1,8 @@
+2003-03-14  Loren J. Rittle  <ljrittle@acm.org>
+
+	* testsuite/testsuite_hooks.h: Suppress runtime exception thrown by
+	missing named locale.
+
 2003-03-14  Andreas Schwab  <schwab@suse.de>
 
 	* configure.in: Only append to makefiles that are newly created to
