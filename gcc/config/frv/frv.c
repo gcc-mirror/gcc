@@ -9649,53 +9649,38 @@ frv_expand_builtin (exp, target, subtarget, mode, ignore)
 
   /* Expand groups of builtins. */
 
-  for (i = 0, d = bdesc_set; i < sizeof (bdesc_set) / sizeof *d; i++, d++)
+  for (i = 0, d = bdesc_set; i < ARRAY_SIZE (bdesc_set); i++, d++)
     if (d->code == fcode)
       return frv_expand_set_builtin (d->icode, arglist, target);
 
-  for (i = 0, d = bdesc_1arg; i < sizeof (bdesc_1arg) / sizeof *d; i++, d++)
+  for (i = 0, d = bdesc_1arg; i < ARRAY_SIZE (bdesc_1arg); i++, d++)
     if (d->code == fcode)
       return frv_expand_unop_builtin (d->icode, arglist, target);
 
-  for (i = 0, d = bdesc_2arg; i < sizeof (bdesc_2arg) / sizeof *d; i++, d++)
+  for (i = 0, d = bdesc_2arg; i < ARRAY_SIZE (bdesc_2arg); i++, d++)
     if (d->code == fcode)
       return frv_expand_binop_builtin (d->icode, arglist, target);
 
-  for (i = 0, d = bdesc_cut; i < sizeof (bdesc_cut) / sizeof *d; i++, d++)
+  for (i = 0, d = bdesc_cut; i < ARRAY_SIZE (bdesc_cut); i++, d++)
     if (d->code == fcode)
       return frv_expand_cut_builtin (d->icode, arglist, target);
 
-  for (i = 0, d = bdesc_2argimm;
-       i < sizeof (bdesc_2argimm) / sizeof *d;
-       i++, d++)
-    {
-      if (d->code == fcode)
-	return frv_expand_binopimm_builtin (d->icode, arglist, target);
-    }
+  for (i = 0, d = bdesc_2argimm; i < ARRAY_SIZE (bdesc_2argimm); i++, d++)
+    if (d->code == fcode)
+      return frv_expand_binopimm_builtin (d->icode, arglist, target);
 
-  for (i = 0, d = bdesc_void2arg;
-       i < sizeof (bdesc_void2arg) / sizeof *d;
-       i++, d++)
-    {
-      if (d->code == fcode)
-	return frv_expand_voidbinop_builtin (d->icode, arglist);
-    }
+  for (i = 0, d = bdesc_void2arg; i < ARRAY_SIZE (bdesc_void2arg); i++, d++)
+    if (d->code == fcode)
+      return frv_expand_voidbinop_builtin (d->icode, arglist);
 
-  for (i = 0, d = bdesc_void3arg;
-       i < sizeof (bdesc_void3arg) / sizeof *d;
-       i++, d++)
-    {
-      if (d->code == fcode)
-	return frv_expand_voidtriop_builtin (d->icode, arglist);
-    }
+  for (i = 0, d = bdesc_void3arg; i < ARRAY_SIZE (bdesc_void3arg); i++, d++)
+    if (d->code == fcode)
+      return frv_expand_voidtriop_builtin (d->icode, arglist);
 
-  for (i = 0, d = bdesc_voidacc;
-       i < sizeof (bdesc_voidacc) / sizeof *d;
-       i++, d++)
-    {
-      if (d->code == fcode)
-	return frv_expand_voidaccop_builtin (d->icode, arglist);
-    }
+  for (i = 0, d = bdesc_voidacc; i < ARRAY_SIZE (bdesc_voidacc); i++, d++)
+    if (d->code == fcode)
+      return frv_expand_voidaccop_builtin (d->icode, arglist);
+
   return 0;
 }
 

@@ -1,3 +1,10 @@
+2003-07-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* config/arm/arm.c (arm_init_iwmmxt_builtins, arm_expand_builtin):
+	Use ARRAY_SIZE.
+	* config/frv/frv.c (frv_expand_builtin): Likewise.
+	* config/sh/sh.c (sh_media_init_builtins): Likewise.
+
 2003-07-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10032
