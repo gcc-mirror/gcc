@@ -1,6 +1,6 @@
 // Method.java - Represent method of class or interface.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -39,6 +39,8 @@ public final class Method extends AccessibleObject implements Member
 
   public Class[] getExceptionTypes ()
     {
+      if (exception_types == null)
+	getType();
       return (Class[]) exception_types.clone();
     }
 
