@@ -2998,7 +2998,7 @@ emit_move_insn_1 (x, y)
 			       GEN_INT
 				 (PUSH_ROUNDING
 				  (GET_MODE_SIZE (GET_MODE (x)))),
-			       stack_pointer_rtx, 0,& OPTAB_LIB_WIDEN);
+			       stack_pointer_rtx, 0, OPTAB_LIB_WIDEN);
 
           if (temp != stack_pointer_rtx)
             emit_move_insn (stack_pointer_rtx, temp);
