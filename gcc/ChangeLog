@@ -1,3 +1,12 @@
+2003-08-20  Jason Merrill  <jason@redhat.com>
+
+	* stor-layout.c (do_type_align): Only copy DECL_USER_ALIGN from
+	TYPE_USER_ALIGN for FIELD_DECLs.
+	
+	* attribs.c (decl_attributes): Rebuild the function pointer type after
+	changing the target type.
+	* tree.c (get_qualified_type): Also check that the attributes match.
+
 2003-08-19  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* Makefile.in (STAGESTUFF): Move cc1obj$(exeext) from here ...
