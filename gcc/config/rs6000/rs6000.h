@@ -30,10 +30,12 @@ Boston, MA 02111-1307, USA.  */
 #define OBJECT_XCOFF 1
 #define OBJECT_ELF 2
 #define OBJECT_PEF 3
+#define OBJECT_MACHO 4
 
 #define TARGET_ELF (TARGET_OBJECT_FORMAT == OBJECT_ELF)
 #define TARGET_AIX (TARGET_OBJECT_FORMAT == OBJECT_XCOFF)
 #define TARGET_MACOS (TARGET_OBJECT_FORMAT == OBJECT_PEF)
+#define TARGET_MACHO (TARGET_OBJECT_FORMAT == OBJECT_MACHO)
 
 /* Print subsidiary information on the compiler version in use.  */
 #define TARGET_VERSION ;
@@ -861,6 +863,10 @@ extern int rs6000_debug_arg;		/* debug argument handling */
       && flag_pic == 1)							\
     fixed_regs[PIC_OFFSET_TABLE_REGNUM]					\
       = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;			\
+  if (DEFAULT_ABI == ABI_DARWIN && flag_pic)				\
+    global_regs[PIC_OFFSET_TABLE_REGNUM]				\
+      = fixed_regs[PIC_OFFSET_TABLE_REGNUM]				\
+        = call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;			\
 }
 
 /* Specify the registers used for certain standard purposes.
@@ -1159,7 +1165,8 @@ enum rs6000_abi {
   ABI_AIX,			/* IBM's AIX */
   ABI_AIX_NODESC,		/* AIX calling sequence minus function descriptors */
   ABI_V4,			/* System V.4/eabi */
-  ABI_SOLARIS			/* Solaris */
+  ABI_SOLARIS,			/* Solaris */
+  ABI_DARWIN			/* Apple's Darwin (OS X kernel) */
 };
 
 extern enum rs6000_abi rs6000_current_abi;	/* available for use by subtarget */
@@ -1210,13 +1217,14 @@ typedef struct rs6000_stack {
 
 /* Size of the outgoing register save area */
 #define RS6000_REG_SAVE ((DEFAULT_ABI == ABI_AIX			\
-			  || DEFAULT_ABI == ABI_AIX_NODESC)		\
+			  || DEFAULT_ABI == ABI_AIX_NODESC		\
+			  || DEFAULT_ABI == ABI_DARWIN)			\
 			 ? (TARGET_64BIT ? 64 : 32)			\
 			 : 0)
 
 /* Size of the fixed area on the stack */
 #define RS6000_SAVE_AREA \
-  (((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_AIX_NODESC) ? 24 : 8)	\
+  (((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_AIX_NODESC || DEFAULT_ABI == ABI_DARWIN) ? 24 : 8)	\
    << (TARGET_64BIT ? 1 : 0))
 
 /* MEM representing address to save the TOC register */
@@ -1351,7 +1359,8 @@ typedef struct rs6000_stack {
 #define	FP_ARG_AIX_MAX_REG 45
 #define	FP_ARG_V4_MAX_REG  40
 #define	FP_ARG_MAX_REG ((DEFAULT_ABI == ABI_AIX				\
-			 || DEFAULT_ABI == ABI_AIX_NODESC)		\
+			 || DEFAULT_ABI == ABI_AIX_NODESC		\
+			 || DEFAULT_ABI == ABI_DARWIN)			\
 			? FP_ARG_AIX_MAX_REG : FP_ARG_V4_MAX_REG)
 #define FP_ARG_NUM_REG (FP_ARG_MAX_REG - FP_ARG_MIN_REG + 1)
 
@@ -1645,6 +1654,7 @@ typedef struct rs6000_args
    abi's store the return address.  */
 #define RETURN_ADDRESS_OFFSET						\
  ((DEFAULT_ABI == ABI_AIX						\
+   || DEFAULT_ABI == ABI_DARWIN						\
    || DEFAULT_ABI == ABI_AIX_NODESC)	? (TARGET_32BIT ? 8 : 16) :	\
   (DEFAULT_ABI == ABI_V4						\
    || DEFAULT_ABI == ABI_SOLARIS)	? (TARGET_32BIT ? 4 : 8) :	\

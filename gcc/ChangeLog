@@ -1,3 +1,53 @@
+2001-04-11  Stan Shebs  <shebs@apple.com>
+
+	Add Darwin (Mac OS X kernel) native support.
+	* config.gcc (powerpc-*-darwin*): Add native bits.
+	* config/darwin.c: New file, generic Darwin support functions.
+	* config/darwin.h: New file, generic Darwin definitions.
+	* config/darwin-protos.h: New file, generic Darwin prototypes.
+	* rs6000/darwin.h: New file, Darwin for PowerPC.
+	* rs6000/t-darwin: New file, Darwin makefile fragment.
+	* rs6000/rs6000.h (OBJECT_MACHO): New macro.
+	(TARGET_MACHO): Ditto.
+	(rs6000_abi): Add ABI_DARWIN.
+	(RS6000_REG_SAVE): Add ABI_DARWIN case.
+	(RS6000_SAVE_AREA): Ditto.
+	(FP_ARG_MAX_REG): Ditto.
+	(RETURN_ADDRESS_OFFSET): Ditto.
+	* rs6000/rs6000.c (rs6000_legitimize_address): Add TARGET_MACHO
+	cases.
+	(rs6000_emit_move): Add ABI_DARWIN cases.
+	(print_operand): Ditto.
+	(first_reg_to_save): Ditto.
+	(rs6000_stack_info): Ditto, also align stack by 16 instead of 8.
+	(debug_stack_info): Ditto.
+	(rs6000_emit_prologue): Ditto.
+	(rs6000_emit_epilogue): Ditto.
+	(output_profiler_hook): Ditto.
+	(output_function_profiler): Ditto.
+	(rs6000_add_gc_roots): Call machopic_add_gc_roots if TARGET_MACHO.
+	(output_mi_thunk): Add TARGET_MACHO case.
+	(add_compiler_stub): Ditto.
+	(output_compiler_stub): Ditto.
+	(no_previous_def): Ditto.
+	(output_call): Ditto.
+	(machopic_output_stub): Ditto.
+	(rs6000_machopic_legitimize_pic_address): Ditto.
+	(toc_section): Ditto.
+	* rs6000/rs6000.md (addsi3_high): New TARGET_MACHO pattern.
+	(macho_high): Ditto.
+	(macho_low): Ditto.
+	(movsi_low): Ditto.
+	(load_macho_picbase): Ditto.
+	(call): Add TARGET_MACHO case to modify function.
+	(call_value): Ditto.
+	(call_nonlocal_sysv): Add ABI_DARWIN case.
+	(call_value_nonlocal_sysv): Ditto.
+	* rs6000/rs6000-protos.h (rs6000_machopic_legitimize_pic_address):
+	Add prototype.
+	(machopic_output_stub): Ditto.
+	* ginclude/stddef.h: Test _BSD_WCHAR_T_DEFINED_.
+
 2001-04-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* dwarf2out.c (modified_type_die): Don't create new types here.

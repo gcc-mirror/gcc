@@ -234,6 +234,7 @@ typedef long ssize_t;
 #ifndef __WCHAR_T
 #ifndef _WCHAR_T_
 #ifndef _BSD_WCHAR_T_
+#ifndef _BSD_WCHAR_T_DEFINED_    /* Darwin */
 #ifndef _WCHAR_T_DEFINED_
 #ifndef _WCHAR_T_DEFINED
 #ifndef _WCHAR_T_H
@@ -285,6 +286,7 @@ typedef _BSD_RUNE_T_ rune_t;
 #endif
 #ifndef __cplusplus
 typedef __WCHAR_TYPE__ wchar_t;
+#endif
 #endif
 #endif
 #endif

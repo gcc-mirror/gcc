@@ -108,8 +108,12 @@ extern void rs6000_emit_eh_toc_restore PARAMS ((rtx));
 extern void rs6000_emit_move PARAMS ((rtx, rtx, enum machine_mode));
 extern rtx rs6000_legitimize_address PARAMS ((rtx, rtx, enum machine_mode));
 extern void rs6000_select_rtx_section PARAMS ((enum machine_mode, rtx));
+
 extern rtx rs6000_return_addr PARAMS ((int, rtx));
 extern void rs6000_output_symbol_ref PARAMS ((FILE*, rtx));
+
+extern rtx rs6000_machopic_legitimize_pic_address PARAMS ((rtx orig, enum machine_mode mode, rtx reg));
+
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
@@ -139,6 +143,7 @@ extern void rs6000_unique_section PARAMS ((tree, int));
 /* expr.h defines ARGS_SIZE_RTX and `enum direction' */
 extern enum direction function_arg_padding PARAMS ((enum machine_mode, tree));
 #endif /* ARGS_SIZE_RTX */
+
 #endif /* TREE_CODE */
 
 extern void optimization_options PARAMS ((int, int));
@@ -172,3 +177,5 @@ extern void rs6000_emit_load_toc_table PARAMS ((int));
 extern void rs6000_aix_emit_builtin_unwind_init PARAMS ((void));
 extern void rs6000_emit_epilogue PARAMS ((int));
 extern void debug_stack_info PARAMS ((rs6000_stack_t *));
+
+extern void machopic_output_stub PARAMS ((FILE *, const char *, const char *));

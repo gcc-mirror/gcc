@@ -1526,6 +1526,19 @@ rs6000_legitimize_address (x, oldx, mode)
       emit_insn (gen_elf_high (reg, (x)));
       return gen_rtx_LO_SUM (Pmode, reg, (x));
     }
+  else if (TARGET_MACHO && TARGET_32BIT && TARGET_NO_TOC
+	   && ! flag_pic
+	   && GET_CODE (x) != CONST_INT
+	   && GET_CODE (x) != CONST_DOUBLE 
+	   && CONSTANT_P (x)
+	   && (TARGET_HARD_FLOAT || mode != DFmode)
+	   && mode != DImode 
+	   && mode != TImode)
+    {
+      rtx reg = gen_reg_rtx (Pmode);
+      emit_insn (gen_macho_high (reg, (x)));
+      return gen_rtx_LO_SUM (Pmode, reg, (x));
+    }
   else if (TARGET_TOC 
 	   && CONSTANT_POOL_EXPR_P (x)
 	   && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (x), Pmode))
@@ -1644,7 +1657,8 @@ rs6000_emit_move (dest, source, mode)
 	  return;
 	}
 
-      if (TARGET_ELF && TARGET_NO_TOC && ! flag_pic
+      if ((TARGET_ELF || DEFAULT_ABI == ABI_DARWIN)
+	  && TARGET_NO_TOC && ! flag_pic
 	  && mode == Pmode
 	  && CONSTANT_P (operands[1])
 	  && GET_CODE (operands[1]) != HIGH
@@ -1668,6 +1682,13 @@ rs6000_emit_move (dest, source, mode)
 	      SYMBOL_REF_FLAG (new_ref) = SYMBOL_REF_FLAG (operands[1]);
 	      SYMBOL_REF_USED (new_ref) = SYMBOL_REF_USED (operands[1]);
 	      operands[1] = new_ref;
+	    }
+
+	  if (DEFAULT_ABI == ABI_DARWIN)
+	    {
+	      emit_insn (gen_macho_high (target, operands[1]));
+	      emit_insn (gen_macho_low (operands[0], target, operands[1]));
+	      return;
 	    }
 
 	  emit_insn (gen_elf_high (target, operands[1]));
@@ -1707,6 +1728,21 @@ rs6000_emit_move (dest, source, mode)
 	     For now, we just handle the obvious case.  */
 	  if (GET_CODE (operands[1]) != LABEL_REF)
 	    emit_insn (gen_rtx_USE (VOIDmode, operands[1]));
+
+	  /* Darwin uses a special PIC legitimizer.  */
+	  if (DEFAULT_ABI == ABI_DARWIN && flag_pic)
+	    {
+	      rtx temp_reg = ((reload_in_progress || reload_completed)
+			      ? operands[0] : NULL);
+
+#if TARGET_MACHO
+	      operands[1] =
+		rs6000_machopic_legitimize_pic_address (operands[1], mode,
+								    temp_reg);
+#endif
+	      emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
+	      return;
+	    }
 
 	  /* If we are to limit the number of things we put in the TOC and
 	     this is a symbol plus a constant we can add in one insn,
@@ -4296,6 +4332,7 @@ print_operand (file, x, code)
 	    case ABI_V4:
 	    case ABI_AIX_NODESC:
 	    case ABI_SOLARIS:
+	    case ABI_DARWIN:
 	      break;
 	    }
 	}
@@ -4655,8 +4692,10 @@ first_reg_to_save ()
     if (regs_ever_live[first_reg] 
 	&& (! call_used_regs[first_reg]
 	    || (first_reg == PIC_OFFSET_TABLE_REGNUM
-		&& (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
-		&& flag_pic == 1)))
+		&& (((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+		     && flag_pic == 1)
+		    || (DEFAULT_ABI == ABI_DARWIN
+			&& flag_pic)))))
       break;
 
   if (profile_flag)
@@ -4665,7 +4704,7 @@ first_reg_to_save ()
 	 before/after the .__mcount call plus an additional register
 	 for the static chain, if needed; use registers from 30 down to 22
 	 to do this.  */
-      if (DEFAULT_ABI == ABI_AIX)
+      if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_DARWIN)
 	{
 	  int last_parm_reg, profile_first_reg;
 
@@ -4683,6 +4722,12 @@ first_reg_to_save ()
 	     Skip reg 31 which may contain the frame pointer.  */
 	  profile_first_reg = (33 - last_parm_reg
 			       - (current_function_needs_context ? 1 : 0));
+#if TARGET_MACHO
+          /* Need to skip another reg to account for R31 being PICBASE
+             (when flag_pic is set) or R30 being used as the frame
+             pointer (when flag_pic is not set).  */
+          --profile_first_reg;
+#endif
 	  /* Do not save frame pointer if no parameters needs to be saved.  */
 	  if (profile_first_reg == 31)
 	    profile_first_reg = 32;
@@ -4699,6 +4744,12 @@ first_reg_to_save ()
 	    first_reg = 30;
 	}
     }
+
+#if TARGET_MACHO
+  if (flag_pic && current_function_uses_pic_offset_table &&
+      (first_reg > PIC_OFFSET_TABLE_REGNUM))
+    return PIC_OFFSET_TABLE_REGNUM;
+#endif
 
   return first_reg;
 }
@@ -4722,7 +4773,7 @@ first_fp_reg_to_save ()
    complicated by having two separate calling sequences, the AIX calling
    sequence and the V.4 calling sequence.
 
-   AIX stack frames look like:
+   AIX (and Darwin/Mac OS) stack frames look like:
 							  32-bit  64-bit
 	SP---->	+---------------------------------------+
 		| back chain to caller			| 0	  0
@@ -4821,8 +4872,10 @@ rs6000_stack_info ()
   info_ptr->first_gp_reg_save = first_reg_to_save ();
   /* Assume that we will have to save PIC_OFFSET_TABLE_REGNUM, 
      even if it currently looks like we won't.  */
-  if (flag_pic == 1 
-      && (abi == ABI_V4 || abi == ABI_SOLARIS)
+  if (((flag_pic == 1
+	&& (abi == ABI_V4 || abi == ABI_SOLARIS))
+       || (flag_pic &&
+	   abi == ABI_DARWIN))
       && info_ptr->first_gp_reg_save > PIC_OFFSET_TABLE_REGNUM)
     info_ptr->gp_size = reg_size * (32 - PIC_OFFSET_TABLE_REGNUM);
   else
@@ -4845,6 +4898,7 @@ rs6000_stack_info ()
 	  && !FP_SAVE_INLINE (info_ptr->first_fp_reg_save))
       || (abi == ABI_V4 && current_function_calls_alloca)
       || (abi == ABI_SOLARIS && current_function_calls_alloca)
+      || (DEFAULT_ABI == ABI_DARWIN && flag_pic && current_function_uses_pic_offset_table)
       || info_ptr->calls_p)
     {
       info_ptr->lr_save_p = 1;
@@ -4886,6 +4940,8 @@ rs6000_stack_info ()
 				  + info_ptr->cr_size
 				  + info_ptr->lr_size
 				  + info_ptr->toc_size, 8);
+  if (DEFAULT_ABI == ABI_DARWIN)
+    info_ptr->save_size = RS6000_ALIGN (info_ptr->save_size, 16);
 
   /* Calculate the offsets */
   switch (abi)
@@ -4896,6 +4952,7 @@ rs6000_stack_info ()
 
     case ABI_AIX:
     case ABI_AIX_NODESC:
+    case ABI_DARWIN:
       info_ptr->fp_save_offset   = - info_ptr->fp_size;
       info_ptr->gp_save_offset   = info_ptr->fp_save_offset - info_ptr->gp_size;
       info_ptr->ehrd_offset      = info_ptr->gp_save_offset - ehrd_size;
@@ -4942,7 +4999,7 @@ rs6000_stack_info ()
 
   else
     info_ptr->push_p = (frame_pointer_needed
-			|| write_symbols != NO_DEBUG
+			|| (abi != ABI_DARWIN && write_symbols != NO_DEBUG)
 			|| ((total_raw_size - info_ptr->fixed_size)
 			    > (TARGET_32BIT ? 220 : 288)));
 
@@ -4985,6 +5042,7 @@ debug_stack_info (info)
     case ABI_NONE:	 abi_string = "NONE";		break;
     case ABI_AIX:	 abi_string = "AIX";		break;
     case ABI_AIX_NODESC: abi_string = "AIX";		break;
+    case ABI_DARWIN:	 abi_string = "Darwin";		break;
     case ABI_V4:	 abi_string = "V.4";		break;
     case ABI_SOLARIS:	 abi_string = "Solaris";	break;
     }
@@ -5740,8 +5798,10 @@ rs6000_emit_prologue ()
 	if ((regs_ever_live[info->first_gp_reg_save+i] 
 	     && ! call_used_regs[info->first_gp_reg_save+i])
 	    || (i+info->first_gp_reg_save == PIC_OFFSET_TABLE_REGNUM
-		&& (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
-		&& flag_pic == 1))
+		&& (((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+		     && flag_pic == 1)
+		    || (DEFAULT_ABI == ABI_DARWIN
+			&& flag_pic))))
 	  {
 	    rtx addr, reg, mem;
 	    reg = gen_rtx_REG (reg_mode, info->first_gp_reg_save + i);
@@ -5858,6 +5918,18 @@ rs6000_emit_prologue ()
       emit_move_insn (gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM), 
 		      gen_rtx_REG (Pmode, 11));
   }
+
+  if (DEFAULT_ABI == ABI_DARWIN
+      && flag_pic && current_function_uses_pic_offset_table)
+    {
+      rtx dest = gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM);
+
+      rs6000_maybe_dead (emit_insn (gen_load_macho_picbase (dest)));
+
+      rs6000_maybe_dead (
+	emit_move_insn (gen_rtx_REG (Pmode, PIC_OFFSET_TABLE_REGNUM),
+			gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM)));
+    }
 }
 
 
@@ -6051,8 +6123,10 @@ rs6000_emit_epilogue (sibcall)
       if ((regs_ever_live[info->first_gp_reg_save+i] 
 	   && ! call_used_regs[info->first_gp_reg_save+i])
 	  || (i+info->first_gp_reg_save == PIC_OFFSET_TABLE_REGNUM
-	      && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
-	      && flag_pic == 1))
+	      && (((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS)
+		   && flag_pic == 1)
+		  || (DEFAULT_ABI == ABI_DARWIN
+		      && flag_pic))))
 	{
 	  rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx, 
 				   GEN_INT (info->gp_save_offset 
@@ -6626,6 +6700,17 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 	  if (flag_pic) fputs ("@plt", file);
 	  putc ('\n', file);
 	  break;
+
+#if TARGET_MACHO
+	case ABI_DARWIN:
+	  fprintf (file, "\tb %s", prefix);
+	  if (flag_pic && !machopic_name_defined_p (fname))
+	    assemble_name (file, machopic_stub_name (fname));
+	  else
+	    assemble_name (file, fname);
+	  putc ('\n', file);
+	  break;
+#endif
 	}
     }
 }
@@ -7226,6 +7311,28 @@ output_profile_hook (labelno)
       emit_library_call (init_one_libfunc (RS6000_MCOUNT), 0, VOIDmode, 1,
                          fun, Pmode);
     }
+  else if (DEFAULT_ABI == ABI_DARWIN)
+    {
+      char *mcount_name = RS6000_MCOUNT;
+      int caller_addr_regno = LINK_REGISTER_REGNUM;
+
+      /* Be conservative and always set this, at least for now.  */
+      current_function_uses_pic_offset_table = 1;
+
+#if TARGET_MACHO
+      /* For PIC code, set up a stub and collect the caller's address
+	 from r0, which is where the prologue puts it.  */
+      if (flag_pic)
+	{
+	  mcount_name = machopic_stub_name (mcount_name);
+	  if (current_function_uses_pic_offset_table)
+	    caller_addr_regno = 0;
+	}
+#endif
+      emit_library_call (gen_rtx_SYMBOL_REF (Pmode, mcount_name),
+			 0, VOIDmode, 1,
+			 gen_rtx_REG (Pmode, caller_addr_regno), Pmode);
+    }
 }
 
 /* Write function profiler code. */
@@ -7296,6 +7403,7 @@ output_function_profiler (file, labelno)
       break;
 
     case ABI_AIX:
+    case ABI_DARWIN:
       /* Don't do anything, done in output_profile_hook (). */
       break;
 
@@ -7834,4 +7942,325 @@ rs6000_add_gc_roots ()
   toc_hash_table = htab_create (1021, toc_hash_function, toc_hash_eq, NULL);
   ggc_add_root (&toc_hash_table, 1, sizeof (toc_hash_table), 
 		toc_hash_mark_table);
+
+#if TARGET_MACHO
+  machopic_add_gc_roots ();
+#endif
 }
+
+#if TARGET_MACHO
+
+#if 0
+/* Returns 1 if OP is either a symbol reference or a sum of a symbol
+   reference and a constant.  */
+
+int
+symbolic_operand (op)
+     register rtx op;
+{
+  switch (GET_CODE (op))
+    {
+    case SYMBOL_REF:
+    case LABEL_REF:
+      return 1;
+    case CONST:
+      op = XEXP (op, 0);
+      return (GET_CODE (op) == SYMBOL_REF ||
+	      (GET_CODE (XEXP (op, 0)) == SYMBOL_REF
+	       || GET_CODE (XEXP (op, 0)) == LABEL_REF)
+	      && GET_CODE (XEXP (op, 1)) == CONST_INT);
+    default:
+      return 0;
+    }
+}
+#endif
+
+#ifdef RS6000_LONG_BRANCH
+
+static tree stub_list = 0;
+
+/* ADD_COMPILER_STUB adds the compiler generated stub for handling 
+   procedure calls to the linked list.  */
+
+void 
+add_compiler_stub (label_name, function_name, line_number)
+     tree label_name;
+     tree function_name;
+     int line_number;
+{
+  tree stub = build_tree_list (function_name, label_name);
+  TREE_TYPE (stub) = build_int_2 (line_number, 0);
+  TREE_CHAIN (stub) = stub_list;
+  stub_list = stub;
+}
+
+#define STUB_LABEL_NAME(STUB)     TREE_VALUE (STUB)
+#define STUB_FUNCTION_NAME(STUB)  TREE_PURPOSE (STUB)
+#define STUB_LINE_NUMBER(STUB)    TREE_INT_CST_LOW (TREE_TYPE (STUB))
+
+/* OUTPUT_COMPILER_STUB outputs the compiler generated stub for handling 
+   procedure calls from the linked list and initializes the linked list.  */
+
+void output_compiler_stub ()
+{
+  char tmp_buf[256];
+  char label_buf[256];
+  char *label;
+  tree tmp_stub, stub;
+
+  if (!flag_pic)
+    for (stub = stub_list; stub; stub = TREE_CHAIN (stub))
+      {
+	fprintf (asm_out_file,
+		 "%s:\n", IDENTIFIER_POINTER(STUB_LABEL_NAME(stub)));
+
+#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
+	if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
+	  fprintf (asm_out_file, "\t.stabd 68,0,%d\n", STUB_LINE_NUMBER(stub));
+#endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
+
+	if (IDENTIFIER_POINTER (STUB_FUNCTION_NAME (stub))[0] == '*')
+	  strcpy (label_buf,
+		  IDENTIFIER_POINTER (STUB_FUNCTION_NAME (stub))+1);
+	else
+	  {
+	    label_buf[0] = '_';
+	    strcpy (label_buf+1,
+		    IDENTIFIER_POINTER (STUB_FUNCTION_NAME (stub)));
+	  }
+
+	strcpy (tmp_buf, "lis r12,hi16(");
+	strcat (tmp_buf, label_buf);
+	strcat (tmp_buf, ")\n\tori r12,r12,lo16(");
+	strcat (tmp_buf, label_buf);
+	strcat (tmp_buf, ")\n\tmtctr r12\n\tbctr");
+	output_asm_insn (tmp_buf, 0);
+
+#if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
+	if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
+	  fprintf(asm_out_file, "\t.stabd 68,0,%d\n", STUB_LINE_NUMBER (stub));
+#endif /* DBX_DEBUGGING_INFO || XCOFF_DEBUGGING_INFO */
+      }
+
+  stub_list = 0;
+}
+
+/* NO_PREVIOUS_DEF checks in the link list whether the function name is
+   already there or not.  */
+
+int no_previous_def (function_name)
+     tree function_name;
+{
+  tree stub;
+  for (stub = stub_list; stub; stub = TREE_CHAIN (stub))
+    if (function_name == STUB_FUNCTION_NAME (stub))
+      return 0;
+  return 1;
+}
+
+/* GET_PREV_LABEL gets the label name from the previous definition of
+   the function.  */
+
+tree get_prev_label (function_name)
+     tree function_name;
+{
+  tree stub;
+  for (stub = stub_list; stub; stub = TREE_CHAIN (stub))
+    if (function_name == STUB_FUNCTION_NAME (stub))
+      return STUB_LABEL_NAME (stub);
+  return 0;
+}
+
+/* INSN is either a function call or a millicode call.  It may have an
+   unconditional jump in its delay slot.  
+
+   CALL_DEST is the routine we are calling.  */
+
+char *
+output_call (insn, call_dest, operand_number)
+     rtx insn;
+     rtx call_dest;
+     int operand_number;
+{
+  static char buf[256];
+  if (GET_CODE (call_dest) == SYMBOL_REF && TARGET_LONG_BRANCH && !flag_pic)
+    {
+      tree labelname;
+      tree funname = get_identifier (XSTR (call_dest, 0));
+      
+      if (no_previous_def (funname))
+	{
+	  int line_number;
+	  rtx label_rtx = gen_label_rtx ();
+	  char *label_buf, temp_buf[256];
+	  ASM_GENERATE_INTERNAL_LABEL (temp_buf, "L",
+				       CODE_LABEL_NUMBER (label_rtx));
+	  label_buf = temp_buf[0] == '*' ? temp_buf + 1 : temp_buf;
+	  labelname = get_identifier (label_buf);
+	  for (; insn && GET_CODE (insn) != NOTE; insn = PREV_INSN (insn));
+	  if (insn)
+	    line_number = NOTE_LINE_NUMBER (insn);
+	  add_compiler_stub (labelname, funname, line_number);
+	}
+      else
+	labelname = get_prev_label (funname);
+
+      sprintf (buf, "jbsr %%z%d,%.246s",
+	       operand_number, IDENTIFIER_POINTER (labelname));
+      return buf;
+    }
+  else
+    {
+      sprintf (buf, "bl %%z%d", operand_number);
+      return buf;
+    }
+}
+
+#endif /* RS6000_LONG_BRANCH */
+
+#define GEN_LOCAL_LABEL_FOR_SYMBOL(BUF,SYMBOL,LENGTH,N)		\
+  do {								\
+    const char *symbol_ = (SYMBOL);				\
+    char *buffer_ = (BUF);					\
+    if (symbol_[0] == '"')					\
+      {								\
+        sprintf(buffer_, "\"L%d$%s", (N), symbol_+1);		\
+      }								\
+    else if (name_needs_quotes(symbol_))			\
+      {								\
+        sprintf(buffer_, "\"L%d$%s\"", (N), symbol_);		\
+      }								\
+    else							\
+      {								\
+        sprintf(buffer_, "L%d$%s", (N), symbol_);		\
+      }								\
+  } while (0)
+
+
+/* Generate PIC and indirect symbol stubs.  */
+
+void
+machopic_output_stub (file, symb, stub)
+     FILE *file;
+     const char *symb, *stub;
+{
+  unsigned int length;
+  char *binder_name, *symbol_name, *lazy_ptr_name;
+  char *local_label_0, *local_label_1, *local_label_2;
+  static int label = 0;
+
+  label += 1;
+
+  length = strlen (stub);
+  binder_name = alloca (length + 32);
+  GEN_BINDER_NAME_FOR_STUB (binder_name, stub, length);
+
+  length = strlen (symb);
+  symbol_name = alloca (length + 32);
+  GEN_SYMBOL_NAME_FOR_SYMBOL (symbol_name, symb, length);
+
+  lazy_ptr_name = alloca (length + 32);
+  GEN_LAZY_PTR_NAME_FOR_SYMBOL (lazy_ptr_name, symb, length);
+
+  local_label_0 = alloca (length + 32);
+  GEN_LOCAL_LABEL_FOR_SYMBOL (local_label_0, symb, length, 0);
+
+  local_label_1 = alloca (length + 32);
+  GEN_LOCAL_LABEL_FOR_SYMBOL (local_label_1, symb, length, 1);
+
+  local_label_2 = alloca (length + 32);
+  GEN_LOCAL_LABEL_FOR_SYMBOL (local_label_2, symb, length, 2);
+
+  if (flag_pic == 2)
+    machopic_picsymbol_stub_section ();
+  else
+    machopic_symbol_stub_section ();
+
+  fprintf (file, "%s:\n", stub);
+  fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
+
+  if (flag_pic == 2)
+    {
+      fprintf (file, "\tmflr r0\n");
+      fprintf (file, "\tbcl 20,31,%s\n", local_label_0);
+      fprintf (file, "%s:\n\tmflr r11\n", local_label_0);
+      fprintf (file, "\taddis r11,r11,ha16(%s-%s)\n",
+	       lazy_ptr_name, local_label_0);
+      fprintf (file, "\tmtlr r0\n");
+      fprintf (file, "\tlwz r12,lo16(%s-%s)(r11)\n",
+	       lazy_ptr_name, local_label_0);
+      fprintf (file, "\tmtctr r12\n");
+      fprintf (file, "\taddi r11,r11,lo16(%s-%s)\n",
+	       lazy_ptr_name, local_label_0);
+      fprintf (file, "\tbctr\n");
+    }
+  else
+    fprintf (file, "non-pure not supported\n");
+  
+  machopic_lazy_symbol_ptr_section ();
+  fprintf (file, "%s:\n", lazy_ptr_name);
+  fprintf (file, "\t.indirect_symbol %s\n", symbol_name);
+  fprintf (file, "\t.long dyld_stub_binding_helper\n");
+}
+
+/* Legitimize PIC addresses.  If the address is already
+   position-independent, we return ORIG.  Newly generated
+   position-independent addresses go into a reg.  This is REG if non
+   zero, otherwise we allocate register(s) as necessary.  */
+
+#define SMALL_INT(X) ((unsigned) (INTVAL(X) + 0x4000) < 0x8000)
+
+rtx
+rs6000_machopic_legitimize_pic_address (orig, mode, reg)
+     rtx orig;
+     enum machine_mode mode;
+     rtx reg;
+{
+  rtx base, offset;
+
+  if (reg == NULL && ! reload_in_progress && ! reload_completed)
+    reg = gen_reg_rtx (Pmode);
+
+  if (GET_CODE (orig) == CONST)
+    {
+      if (GET_CODE (XEXP (orig, 0)) == PLUS
+	  && XEXP (XEXP (orig, 0), 0) == pic_offset_table_rtx)
+	return orig;
+
+      if (GET_CODE (XEXP (orig, 0)) == PLUS)
+	{
+	  base = rs6000_machopic_legitimize_pic_address (XEXP (XEXP (orig, 0), 0),
+							 Pmode, reg);
+	  offset = rs6000_machopic_legitimize_pic_address (XEXP (XEXP (orig, 0), 1),
+							   Pmode, reg);
+	}
+      else
+	abort ();
+
+      if (GET_CODE (offset) == CONST_INT)
+	{
+	  if (SMALL_INT (offset))
+	    return plus_constant_for_output (base, INTVAL (offset));
+	  else if (! reload_in_progress && ! reload_completed)
+	    offset = force_reg (Pmode, offset);
+	  else
+	    abort ();
+	}
+      return gen_rtx (PLUS, Pmode, base, offset);
+    }
+
+  /* Fall back on generic machopic code.  */
+  return machopic_legitimize_pic_address (orig, mode, reg);
+}
+
+/* This is just a placeholder to make linking work without having to
+   add this to the generic Darwin EXTRA_SECTIONS.  If -mcall-aix is
+   ever needed for Darwin (not too likely!) this would have to get a
+   real definition.  */
+
+void
+toc_section ()
+{
+}
+
+#endif /* TARGET_MACHO */
