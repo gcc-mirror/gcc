@@ -1,3 +1,8 @@
+2003-06-28  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/ip2k/ip2k.c (ip2k_reorg): Use INSN_P instead of its
+	definition.
+
 2003-06-29  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* opts.c: Include insn-attr.h.

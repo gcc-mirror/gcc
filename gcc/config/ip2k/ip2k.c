@@ -5359,7 +5359,7 @@ ip2k_reorg ()
 	  || GET_CODE (insn) == BARRIER)
 	continue;
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+      if (!INSN_P (insn))
 	continue;
 
       body = PATTERN (insn);
