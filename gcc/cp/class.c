@@ -726,13 +726,13 @@ build_vtable (class_type, name, vtable_type)
   tree decl;
 
   decl = build_lang_decl (VAR_DECL, name, vtable_type);
+  /* vtable names are already mangled; give them their DECL_ASSEMBLER_NAME
+     now to avoid confusion in mangle_decl.  */
+  SET_DECL_ASSEMBLER_NAME (decl, name);
   DECL_CONTEXT (decl) = class_type;
   DECL_ARTIFICIAL (decl) = 1;
   TREE_STATIC (decl) = 1;
-#ifndef WRITABLE_VTABLES
-  /* Make them READONLY by default. (mrs) */
   TREE_READONLY (decl) = 1;
-#endif
   DECL_VIRTUAL_P (decl) = 1;
   import_export_vtable (decl, class_type, 0);
 
@@ -761,7 +761,6 @@ get_vtable_decl (type, complete)
     }
   
   decl = build_vtable (type, name, void_type_node);
-  SET_DECL_ASSEMBLER_NAME (decl, name);
   decl = pushdecl_top_level (decl);
   my_friendly_assert (IDENTIFIER_GLOBAL_VALUE (name) == decl,
 		      20000517);
@@ -7030,7 +7029,6 @@ build_vtt (t)
 				 
   /* Now, build the VTT object itself.  */
   vtt = build_vtable (t, get_vtt_name (t), type);
-  SET_DECL_ASSEMBLER_NAME (vtt, DECL_NAME (vtt));
   pushdecl_top_level (vtt);
   initialize_array (vtt, inits);
 }

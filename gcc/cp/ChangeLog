@@ -1,3 +1,8 @@
+2001-05-18  Jason Merrill  <jason_merrill@redhat.com>
+
+	* class.c (build_vtable): Set DECL_ASSEMBLER_NAME for vtables here.
+	(get_vtable_decl, build_vtt): Not here.
+
 2001-05-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* except.c (cp_protect_cleanup_actions): New function.
