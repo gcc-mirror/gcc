@@ -516,7 +516,7 @@ header file names (the argument of @samp{#include}).@footnote{The C
 standard uses the term @dfn{string literal} to refer only to what we are
 calling @dfn{string constants}.}  String constants and character
 constants are straightforward: @t{"@dots{}"} or @t{'@dots{}'}.  In
-either case the closing quote may be escaped with a backslash:
+either case embedded quotes should be escaped with a backslash:
 @t{'\'@:'} is the character constant for @samp{'}.  There is no limit on
 the length of a character constant, but the value of a character
 constant that contains more than one character is
@@ -530,10 +530,10 @@ file in different places depending on which form you use.  @xref{Include
 Operation}.
 
 In standard C, no string literal may extend past the end of a line.  GNU
-CPP accepts multi-line string constants, but not character constants or
-header file names.  This extension is deprecated and will be removed in
-GCC 3.1.  You may use continued lines instead, or string constant
-concatenation.  @xref{Differences from previous versions}.
+CPP accepts multi-line string constants, but not multi-line character
+constants or header file names.  This extension is deprecated and will
+be removed in GCC 3.1.  You may use continued lines instead, or string
+constant concatenation.  @xref{Differences from previous versions}.
 
 @cindex punctuators
 @dfn{Punctuators} are all the usual bits of punctuation which are
@@ -621,7 +621,7 @@ Diagnostics.  You can detect problems at compile time and issue errors
 or warnings.
 @end itemize
 
-There are a few more, less useful features.
+There are a few more, less useful, features.
 
 Except for expansion of predefined macros, all these operations are
 triggered with @dfn{preprocessing directives}.  Preprocessing directives
@@ -855,7 +855,7 @@ If you need to look for headers in a directory named @file{-}, write
 @option{-I./-}.
 
 There are several more ways to adjust the header search path.  They are
-less generally useful.  @xref{Invocation}.
+generally less useful.  @xref{Invocation}.
 
 @node Once-Only Headers
 @section Once-Only Headers
@@ -879,7 +879,7 @@ of the file in a conditional, like this:
 
 @var{the entire file}
 
-#endif /* FILE_FOO_SEEN */
+#endif /* !FILE_FOO_SEEN */
 @end group
 @end example
 
@@ -956,7 +956,7 @@ not @samp{"} or @samp{<}, then the entire line is macro-expanded
 like running text would be.
 
 If the line expands to a single string constant, the contents of that
-string constant are the file to be included.  CPP does not reexamine the
+string constant are the file to be included.  CPP does not re-examine the
 string for embedded quotes, but neither does it process backslash
 escapes in the string.  Therefore
 
@@ -986,7 +986,7 @@ These rules are implementation-defined behavior according to the C
 standard.  To minimize the risk of different compilers interpreting your
 computed includes differently, we recommend you use only a single
 object-like macro which expands to a string constant.  This will also
-minimize confusion of people reading your program.
+minimize any confusion to people reading your program.
 
 @node Wrapper Headers
 @section Wrapper Headers
@@ -1037,9 +1037,9 @@ where the current file was found.
 
 The use of @samp{#include_next} can lead to great confusion.  We
 recommend it be used only when there is no other alternative.  In
-particular, it should not be used in the headers belonging to a
-specific program, only to make global corrections along the lines
-of @command{fixincludes}.
+particular, it should not be used in the headers belonging to a specific
+program; it should be used only to make global corrections along the
+lines of @command{fixincludes}.
 
 @node System Headers
 @section System Headers
@@ -1061,9 +1061,7 @@ There are, however, two ways to make normal headers into system headers.
 
 The @option{-isystem} command line option adds its argument to the list of
 directories to search for headers, just like @option{-I}.  Any headers
-found in that directory will be considered system headers.  Note that
-unlike @option{-I}, you must put a space between @option{-isystem} and its
-argument.
+found in that directory will be considered system headers.
 
 All directories named by @option{-isystem} are searched @emph{after} all
 directories named by @option{-I}, no matter what their order was on the
@@ -1371,7 +1369,7 @@ and then to
 (Line breaks shown here for clarity would not actually be generated.)
 
 @cindex empty macro arguments
-You can leave macro arguments empty; this is not an error for the
+You can leave macro arguments empty; this is not an error to the
 preprocessor (but many macros will then expand to invalid code).
 You cannot leave out arguments entirely; if a macro takes two arguments,
 there must be exactly one comma at the top level of its argument list.
@@ -1394,8 +1392,8 @@ documentation were incorrect on this point, insisting that a
 function-like macro that takes a single argument be passed a space if an
 empty argument was required.
 
-Macro parameters are not replaced by their corresponding actual
-arguments if they appear inside string literals.
+Macro parameters appearing inside string literals are not replaced by
+their corresponding actual arguments.
 
 @example
 #define foo(x) x, "x"
@@ -1418,7 +1416,7 @@ macro-expanded first.  This is called @dfn{stringification}.
 There is no way to combine an argument with surrounding text and
 stringify it all together.  Instead, you can write a series of adjacent
 string constants and stringified arguments.  The preprocessor will
-replace the stringified arguments with more string constants.  The C
+replace the stringified arguments with string constants.  The C
 compiler will then combine all the adjacent string constants into one
 long string.
 
@@ -1448,8 +1446,8 @@ write @code{WARN_IF (@var{arg});}, which the resemblance of
 @ref{Swallowing the Semicolon}.
 
 Stringification in C involves more than putting double-quote characters
-around the fragment.  The preprocessor backslash-escapes the surrounding
-quotes of string literals, and all backslashes within string and
+around the fragment.  The preprocessor backslash-escapes the quotes
+surrounding embedded string constants, and all backslashes within string and
 character constants, in order to get a valid C string constant with the
 proper contents.  Thus, stringifying @code{@w{p = "foo\n";}} results in
 @t{@w{"p = \"foo\\n\";"}}.  However, backslashes that are not inside string
@@ -1636,7 +1634,7 @@ eprintf("success!\n", );
      @expansion{} fprintf(stderr, "success!\n", );
 @end example
 
-GNU CPP has a pair of extensions which deal with this problem. First,
+GNU CPP has a pair of extensions which deals with this problem. First,
 you are allowed to leave the variable argument out entirely:
 
 @example
@@ -2099,8 +2097,8 @@ If a macro is redefined with a definition that is not effectively the
 same as the old one, the preprocessor issues a warning and changes the
 macro to use the new definition.  If the new definition is effectively
 the same, the redefinition is silently ignored.  This allows, for
-instance, two different headers to define a common macro.  The compiler
-will only complain if the definitions do not match.
+instance, two different headers to define a common macro.  The
+preprocessor will only complain if the definitions do not match.
 
 @node Macro Pitfalls
 @section Macro Pitfalls
@@ -2109,7 +2107,7 @@ will only complain if the definitions do not match.
 
 In this section we describe some special rules that apply to macros and
 macro expansion, and point out certain cases in which the rules have
-counterintuitive consequences that you must watch out for.
+counter-intuitive consequences that you must watch out for.
 
 @menu
 * Misnesting::
@@ -3022,15 +3020,17 @@ effect.  In addition, @var{filename} is a string constant.  The
 following line and all subsequent lines are reported to come from the
 file it specifies, until something else happens to change that.
 
-@item #line @var{linenum} @var{filename} @var{flags@dots{}}
-This form is a GCC extension.  @var{linenum} and @var{filename} are the
-same as the second form.  The @var{flags} are small positive integers,
-which have the same meaning as the flags which can appear at the end of a
-linemarker in the preprocessor's output.  @xref{Preprocessor Output}.
-
 @item #line @var{anything else}
 @var{anything else} is checked for macro calls, which are expanded.
 The result should match one of the above three forms.
+
+@item # @var{linenum} @var{filename} @var{flags@dots{}}
+This form is a GCC extension.  @var{linenum} and @var{filename} are the
+same as the second form.  The @var{flags} are small increasing positive
+integers, which have the same meaning as the flags which can appear at
+the end of a linemarker in the preprocessor's output.
+@xref{Preprocessor Output}.  Note that this form does not use the
+directive name @samp{line}.
 @end table
 
 @samp{#line} directives alter the results of the @code{__FILE__} and
@@ -3088,7 +3088,7 @@ DO_PRAGMA (GCC dependency "parse.y")
 @end example
 
 The standard is unclear on where a @code{_Pragma} operator can appear.
-The preprocessor accepts it even within a preprocessing conditional
+The preprocessor does not accept it within a preprocessing conditional
 directive like @samp{#if}.  To be safe, you are probably best keeping it
 out of directives other than @samp{#define}, and putting it on a line of
 its own.
@@ -3311,8 +3311,8 @@ This is impossible in ISO C@.
 
 @item
 None of the GNU extensions to the preprocessor are available in
-traditional mode, with the exception of assertions, and those may be
-removed in the future.
+traditional mode, with the exception of a partial implementation of
+assertions, and those may be removed in the future.
 
 @item
 A true traditional C preprocessor does not recognize @samp{#elif},
@@ -3762,9 +3762,10 @@ comma, then @samp{##} behaves as a normal token paste.
 
 Traditional mode used to be implemented in the same program as normal
 preprocessing.  Therefore, all the GNU extensions to the preprocessor
-were still available in traditional mode.  It is now a separate program,
-and does not implement any of the GNU extensions except assertions.
-Even those may be removed in a future release.
+were still available in traditional mode.  It is now a separate program
+and does not implement any of the GNU extensions, except for a partial
+implementation of assertions.  Even those may be removed in a future
+release.
 @end itemize
 
 @node Invocation
@@ -3817,8 +3818,7 @@ means the same as if @option{-} had been specified for that file.
 All single-letter options which take an argument may have that argument
 appear immediately after the option letter, or with a space between
 option and argument:  @option{-Ifoo} and @option{-I foo} have the same
-effect.  Long options that take arguments require a space between option
-and argument.
+effect.
 
 @cindex options
 @table @gcctabopt
@@ -4133,8 +4133,10 @@ is applied to the standard system directories.  @xref{System Headers}.
 Indicate to the preprocessor that the input file has already been
 preprocessed.  This suppresses things like macro expansion, trigraph
 conversion, escaped newline splicing, and processing of most directives.
-In this mode the integrated preprocessor is little more than a tokenizer
-for the front ends.
+The preprocessor still recognizes and removes comments, so that you can
+pass a file preprocessed with @option{-C} to the compiler without
+problems.  In this mode the integrated preprocessor is little more than
+a tokenizer for the front ends.
 
 @option{-fpreprocessed} is implicit if the input file has one of the
 extensions @samp{.i}, @samp{.ii} or @samp{.mi}.  These are the
