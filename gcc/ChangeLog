@@ -1,3 +1,8 @@
+2000-03-17  Richard Henderson  <rth@cygnus.com>
+
+	* rtlanal.c (single_set): Reject if the parallel has anything
+	except SET or USE or CLOBBER.
+
 2000-03-17  Jeff Law  <law@cygnus.com>
 	    Richard Henderson  <rth@cygnus.com>
 
