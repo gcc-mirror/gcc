@@ -1,3 +1,8 @@
+2004-09-21  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/Socket.java
+	(getLocalAddress): Return InetAddress.ANY_IF if not bound yet.
+
 2004-09-21  Casey Marshall  <csm@gnu.org>
 
 	* javax/crypto/MacSpi.java (clone): Provide meaningful
