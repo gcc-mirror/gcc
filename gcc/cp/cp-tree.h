@@ -1020,10 +1020,15 @@ struct lang_decl
   (TREE_CODE (NODE) == VAR_DECL || TREE_CODE (NODE) == TYPE_DECL \
    || TREE_CODE (NODE) == CONST_DECL)
 				
+/* Nonzero for FUNCTION_DECL means that this decl is a non-static
+   member function.  */
+#define DECL_NONSTATIC_MEMBER_FUNCTION_P(NODE) \
+  (TREE_CODE (TREE_TYPE (NODE)) == METHOD_TYPE)
+
 /* Nonzero for FUNCTION_DECL means that this decl is a member function
    (static or non-static).  */
 #define DECL_FUNCTION_MEMBER_P(NODE) \
- (TREE_CODE (TREE_TYPE (NODE)) == METHOD_TYPE || DECL_STATIC_FUNCTION_P (NODE))
+ (DECL_NONSTATIC_MEMBER_FUNCTION_P (NODE) || DECL_STATIC_FUNCTION_P (NODE))
 
 /* Nonzero for FUNCTION_DECL means that this member function
    has `this' as const X *const.  */
@@ -2119,6 +2124,7 @@ extern int in_function_p			PROTO((void));
 extern void replace_defarg			PROTO((tree, tree));
 extern void print_other_binding_stack		PROTO((struct binding_level *));
 extern tree strip_attrs				PROTO((tree));
+extern void revert_static_member_fn             PROTO((tree*, tree*, tree*));
 
 /* in decl2.c */
 extern int flag_assume_nonnull_objects;

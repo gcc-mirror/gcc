@@ -3140,6 +3140,10 @@ finish_file ()
 		}
 	      else
 		expand_assignment (decl, init, 0, 0);
+	      
+	      /* The expression might have involved increments and
+		 decrements.  */
+	      emit_queue ();
 
 	      /* Cleanup any temporaries needed for the initial value.  */
 	      expand_end_target_temps ();

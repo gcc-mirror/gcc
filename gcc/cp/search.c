@@ -3220,6 +3220,10 @@ note_debug_info_needed (type)
 
   if (current_template_parms)
     return;
+    
+  if (TYPE_BEING_DEFINED (type))
+    /* We can't go looking for the base types and fields just yet.  */
+    return;
 
   /* We can't do the TYPE_DECL_SUPPRESS_DEBUG thing with DWARF, which
      does not support name references between translation units.  Well, we

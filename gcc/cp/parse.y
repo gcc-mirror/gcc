@@ -3309,8 +3309,12 @@ typename_sub2:
 	  TYPENAME SCOPE
 		{
 		  if (TREE_CODE ($1) != IDENTIFIER_NODE)
-		    $$ = lastiddecl;
-		  got_scope = $$ = complete_type (TREE_TYPE ($$));
+		    $1 = lastiddecl;
+
+		  got_scope = $$ = complete_type (TREE_TYPE ($1));
+
+		  if ($$ == error_mark_node)
+		    cp_error ("`%T' is not a class or namespace", $1);
 		}
 	| SELFNAME SCOPE
 		{
