@@ -1,3 +1,9 @@
+2003-05-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR bootstrap/10805
+	* doc/install.texi (sparc-sun-solaris2.7): Document bootstrap
+	failure with Sun assembler 5.0 Alpha 03/27/98.
+
 2003-03-21  Loren James Rittle  <ljrittle@acm.org>
 
 	* config/sparc/freebsd.h (CPP_CPU64_DEFAULT_SPEC): Add -D__sparcv9
@@ -178,10 +184,10 @@
 	* unwind.h: Declare them.
 	* libgcc-std.ver (GCC_3.3): Export them.
 
-2003-05-02  Steven Bosscher  <steven@gcc.gnu.org>
+2003-05-02  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* tree-inline.c (find_alloca_call):
-	Use walk_tree_without_duplicates, instead of walk_tree.
+	Use walk_tree_without_duplicates, instead of walk_tree.
 	(find_builtin_longjmp_call): Ditto.
 	* c-objc-common.c (c_cannot_inline_fn): Ditto.
 
