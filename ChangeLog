@@ -1,4 +1,4 @@
-2001-10-11  Hans-Peter Nilsson  <hp@bitrange.com>
+2001-10-11  Hans-Peter Nilsson  <hp@axis.com>
 
 	* configure.in (noconfigdirs) [cris-*-*]: Disable libgcj.
 	* MAINTAINERS: Add self as maintainer of CRIS port.
