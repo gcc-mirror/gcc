@@ -34,6 +34,8 @@
 #ifndef _CPP_CSTDIO
 #define _CPP_CSTDIO 1
 
+#include <bits/std_cstddef.h>
+
 #pragma GCC system_header
 #include_next <stdio.h>
 
