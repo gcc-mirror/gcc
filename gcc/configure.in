@@ -23,7 +23,6 @@
 # Initialization and defaults
 AC_INIT(tree.c)
 native_prefix=/usr
-local_prefix=/usr/local
 remove=rm
 hard_link=ln
 symbolic_link='ln -s'
@@ -39,7 +38,7 @@ gnu_ld=no)
 
 # With GNU as
 AC_ARG_WITH(gnu-as,
-[  --with-gnu-s            arrange to work with GNU as.],
+[  --with-gnu-as           arrange to work with GNU as.],
 gas=yes,
 gas=no)
 
@@ -54,6 +53,17 @@ AC_ARG_WITH(elf,
 [  --with-elf              arrange to use ELF instead of host debug format.],
 elf=yes,
 elf=no)
+
+# Specify the local prefix
+AC_ARG_WITH(local-prefix,
+[  --with-local-prefix=DIR specifies directory to put local include.],
+local_prefix=$with_local_prefix,
+local_prefix=/usr/local)
+
+# Default local prefix if it is empty
+if [[ x$local_prefix = x ]]; then
+	local_prefix=/usr/local
+fi
 
 #
 # Shell script to create proper links to machine-dependent files in
