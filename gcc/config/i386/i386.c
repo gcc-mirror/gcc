@@ -4729,6 +4729,10 @@ ix86_asm_file_end (file)
       output_asm_insn ("mov{l}\t{%1, %0|%0, %1}", xops);
       output_asm_insn ("ret", xops);
     }
+
+#ifdef SUBTARGET_FILE_END
+  SUBTARGET_FILE_END (file);
+#endif
 }
 
 /* Emit code for the SET_GOT patterns.  */
