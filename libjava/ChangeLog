@@ -1,3 +1,14 @@
+2001-10-12  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (rmi_java_source_files): Added new files.
+	* gnu/java/rmi/rmic/RMIC.java (compile): Uncommented; fixed to use
+	new Compiler class.
+	* gnu/java/rmi/rmic/Makefile.am (EXTRA_DIST): Updated.
+	* gnu/java/rmi/rmic/Compile_gcj.java: New file.
+	* gnu/java/rmi/rmic/CompilerProcess.java: New file.
+	* gnu/java/rmi/rmic/Compiler.java: New file.
+
 2001-10-11  Tom Tromey  <tromey@redhat.com>
 
 	* configure: Rebuilt.
