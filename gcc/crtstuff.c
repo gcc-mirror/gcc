@@ -260,7 +260,7 @@ init_dummy ()
 
    Note that we use some tricks here to get *just* the body and just
    a function epilogue (but no function prologue) into the .init
-   section of the crtend.o file.  Sepcifically, we switch to the .text
+   section of the crtend.o file.  Specifically, we switch to the .text
    section, start to define a function, and then we switch to the .init
    section just before the body code.
 

@@ -643,7 +643,7 @@ extern rtx emit_move_insn_1 PROTO ((rtx, rtx));
    and return an rtx to address the beginning of the block.  */
 extern rtx push_block PROTO((rtx, int, int));
 
-/* Make an operand to push someting on the stack.  */
+/* Make an operand to push something on the stack.  */
 extern rtx gen_push_operand PROTO((void));
 
 #ifdef TREE_CODE

@@ -60,7 +60,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
    give the same symbol without quotes for an alternative entry point.  You
-   must define both, or niether. */
+   must define both, or neither. */
 #ifndef NAME__MAIN
 #define NAME__MAIN "__main"
 #define SYMBOL__MAIN __main
@@ -978,7 +978,7 @@ find_temp_slot_from_address (x)
   return 0;
 }
       
-/* Indicate that NEW is an alternate way of refering to the temp slot
+/* Indicate that NEW is an alternate way of referring to the temp slot
    that previous was known by OLD.  */
 
 void
@@ -1002,7 +1002,7 @@ update_temp_slot_address (old, new)
 }
 
 /* If X could be a reference to a temporary slot, mark the fact that its
-   adddress was taken.  */
+   address was taken.  */
 
 void
 mark_temp_addr_taken (x)
@@ -1470,7 +1470,7 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
 
 		 If we don't use an intermediate pseudo, such things as
 		 address computations to make the address of VAR valid
-		 if it is not can be placed beween the CALL_INSN and INSN.
+		 if it is not can be placed between the CALL_INSN and INSN.
 
 		 To make sure this doesn't happen, we record the destination
 		 of the CALL_INSN and see if the next insn uses both that
@@ -5105,7 +5105,7 @@ expand_function_start (subr, parms_have_cleanups)
   /* Fetch static chain values for containing functions.  */
   tem = decl_function_context (current_function_decl);
   /* If not doing stupid register allocation copy the static chain
-     pointer into a psuedo.  If we have small register classes, copy the
+     pointer into a pseudo.  If we have small register classes, copy the
      value from memory if static_chain_incoming_rtx is a REG.  If we do
      stupid register allocation, we use the stack address generated above.  */
   if (tem && ! obey_regdecls)
@@ -5452,7 +5452,7 @@ contains (insn, vec)
   return 0;
 }
 
-/* Generate the prologe and epilogue RTL if the machine supports it.  Thread
+/* Generate the prologue and epilogue RTL if the machine supports it.  Thread
    this into place with notes indicating where the prologue ends and where
    the epilogue begins.  Update the basic block information when possible.  */
 

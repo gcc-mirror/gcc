@@ -2685,7 +2685,7 @@ rest_of_compilation (decl)
 	TIMEVAR (integration_time,
 		 {
 		   lose = function_cannot_inline_p (decl);
-		   /* If not optimzing, then make sure the DECL_INLINE
+		   /* If not optimizing, then make sure the DECL_INLINE
 		      bit is off.  */
 		   if (lose || ! optimize)
 		     {

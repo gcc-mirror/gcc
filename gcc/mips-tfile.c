@@ -2359,7 +2359,7 @@ add_aux_sym_tir (t, state, hash_tbl)
 			      : (t->sizes[i] * 8) / t->dimensions[i]);
     };
 
-  /* NOTE:  Mips documentation claism that the bitfield width goes here.
+  /* NOTE:  Mips documentation claims that the bitfield width goes here.
      But it needs to be emitted earlier. */
 
   return ret;
@@ -3332,7 +3332,7 @@ parse_def (name_start)
     }
 
   else if (symbol_type == st_Member && t.num_sizes - t.extra_sizes == 1)
-    { /* Is this a bitfield?  This is indicated by a structure memeber
+    { /* Is this a bitfield?  This is indicated by a structure member
 	 having a size field that isn't an array.  */
 
       t.bitfield = 1;
@@ -3632,7 +3632,7 @@ mark_stabs (start)
 {
   if (!stabs_seen)
     {
-      /* Add a dummy @stabs dymbol. */
+      /* Add a dummy @stabs symbol. */
       stabs_seen = 1;
       (void) add_local_symbol (stabs_symbol,
 			       stabs_symbol + sizeof (stabs_symbol),

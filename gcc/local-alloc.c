@@ -1625,7 +1625,7 @@ qty_compare_1 (q1, q2)
    is called for quantities that have suggested hard registers.  First priority
    goes to quantities that have copy preferences, then to those that have
    normal preferences.  Within those groups, quantities with the lower
-   number of preferenes have the highest priority.  Of those, we use the same
+   number of preferences have the highest priority.  Of those, we use the same
    algorithm as above.  */
 
 static int

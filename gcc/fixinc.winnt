@@ -28,7 +28,7 @@
 #	provide many essential definitions and declarations if
 #	__STDC__ is 1.  This script modifies the header files to check
 #	for __STRICT_ANSI__ being defined instead.  However the most 
-#	important modification is to change all occurences of __stdcall
+#	important modification is to change all occurrences of __stdcall
 #	and __cdecl to __attribute__((stdcall)) and __attribute__((cdecl)),
 #	respectively.  Once munged, the
 #	resulting new system include files are placed in a directory

@@ -982,7 +982,7 @@ allocate_dynamic_stack_space (size, target, known_align)
      int known_align;
 {
   /* If we're asking for zero bytes, it doesn't matter what we point
-     to since we can't derefference it.  But return a reasonable
+     to since we can't dereference it.  But return a reasonable
      address anyway.  */
   if (size == const0_rtx)
     return virtual_stack_dynamic_rtx;

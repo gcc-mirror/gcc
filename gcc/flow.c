@@ -177,7 +177,7 @@ int *reg_basic_block;
 
 int *reg_n_refs;
 
-/* Indexed by N; says whether a psuedo register N was ever used
+/* Indexed by N; says whether a pseudo register N was ever used
    within a SUBREG that changes the size of the reg.  Some machines prohibit
    such objects to be in certain (usually floating-point) registers.  */
 
@@ -727,14 +727,14 @@ find_basic_blocks (f, nonlocal_label_list)
 	      }
 	  }
 
-      /* There are pathalogical cases where one function calling hundreds of
+      /* There are pathological cases where one function calling hundreds of
 	 nested inline functions can generate lots and lots of unreachable
 	 blocks that jump can't delete.  Since we don't use sparse matrices
 	 a lot of memory will be needed to compile such functions.
 	 Implementing sparse matrices is a fair bit of work and it is not
 	 clear that they win more than they lose (we don't want to
 	 unnecessarily slow down compilation of normal code).  By making
-	 another pass for the pathalogical case, we can greatly speed up
+	 another pass for the pathological case, we can greatly speed up
 	 their compilation without hurting normal code.  This works because
 	 all the insns in the unreachable blocks have either been deleted or
 	 turned into notes.

@@ -4999,7 +4999,7 @@ fold_rtx (x, insn)
 	    if (offset == 0 && mode == const_mode)
 	      return constant;
 
-	    /* If this actually isn't a constant (wierd!), we can't do
+	    /* If this actually isn't a constant (weird!), we can't do
 	       anything.  Otherwise, handle the two most common cases:
 	       extracting a word from a multi-word constant, and extracting
 	       the low-order bits.  Other cases don't seem common enough to
@@ -6192,7 +6192,7 @@ cse_insn (insn, in_libcall_block)
   /* Store the equivalent value in SRC_EQV, if different, or if the DEST
      is a STRICT_LOW_PART.  The latter condition is necessary because SRC_EQV
      is handled specially for this case, and if it isn't set, then there will
-     be no equivalence for the destinatation.  */
+     be no equivalence for the destination.  */
   if (n_sets == 1 && REG_NOTES (insn) != 0
       && (tem = find_reg_note (insn, REG_EQUAL, NULL_RTX)) != 0
       && (! rtx_equal_p (XEXP (tem, 0), SET_SRC (sets[0].rtl))

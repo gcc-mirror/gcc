@@ -44,7 +44,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* If we have auto-increment or auto-decrement and we can have secondary
    reloads, we are not allowed to use classes requiring secondary
-   reloads for psuedos auto-incremented since reload can't handle it.  */
+   reloads for pseudos auto-incremented since reload can't handle it.  */
 
 #ifdef AUTO_INC_DEC
 #if defined(SECONDARY_INPUT_RELOAD_CLASS) || defined(SECONDARY_OUTPUT_RELOAD_CLASS)
@@ -410,7 +410,7 @@ init_reg_modes ()
          ??? One situation in which we need to do this is on the mips where
 	 HARD_REGNO_NREGS (fpreg, [SD]Fmode) returns 2.  Ideally we'd like
 	 to use DF mode for the even registers and VOIDmode for the odd
-	 (for the cpu models where the odd ones are inaccessable).  */
+	 (for the cpu models where the odd ones are inaccessible).  */
       if (reg_raw_mode[i] == VOIDmode)
 	reg_raw_mode[i] = word_mode;
     }

@@ -1115,7 +1115,7 @@ synth_module_prologue ()
     {
       if (flag_typed_selectors)
 	{
-	  /* supress outputting debug symbols, because
+	  /* suppress outputting debug symbols, because
 	     dbxout_init hasn'r been called yet... */
 	  enum debug_info_type save_write_symbols = write_symbols;
 	  write_symbols = NO_DEBUG;
@@ -4839,7 +4839,7 @@ build_message_expr (mess)
 	  warning ("method `%s' not implemented by protocol.",
 		   IDENTIFIER_POINTER (sel_name));
 
-          /* try and find the method signiture in the global pools! */
+          /* try and find the method signature in the global pools! */
 
           if (!(hsh = hash_lookup (nst_method_hash_list, sel_name)))
 	    hsh = hash_lookup (cls_method_hash_list, sel_name);

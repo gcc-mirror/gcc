@@ -113,7 +113,7 @@ cache_ptr hash_new (unsigned int size,
 void hash_delete (cache_ptr cache);
 
 /* Add the key/value pair to the hash table.  If the
-   hash table reaches a level of fullnes then it will be resized. 
+   hash table reaches a level of fullness then it will be resized. 
                                                    
    assert if the key is already in the hash.  */
 

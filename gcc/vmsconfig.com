@@ -132,7 +132,7 @@ VARIABLE makefile_buf, opt_file_buf, complist_buf, extra_compilers; ! Globals.
 !!
 PROCEDURE process_makefile( )
   !
-  ! Intepret Makefile.in and subsidiary Make-lang.in templates.
+  ! Interpret Makefile.in and subsidiary Make-lang.in templates.
   !
   LOCAL range1, cmark, makefilename;
 
@@ -330,7 +330,7 @@ PROCEDURE fetch_tag( tag_n, punct )
   mark0 := MARK (NONE);     ! Remember where we started; restore before return.
   POSITION (BEGINNING_OF (makefile_buf));
   ! The tag definition always starts in the first column, and might have
-  ! optional space(es) before "=" or ":" punctutation.
+  ! optional space(es) before "=" or ":" punctuation.
   range2 := SEARCH_QUIETLY (LINE_BEGIN & tag_n & ((SPAN(" ") & punct) | punct),
 			    FORWARD, EXACT);
   IF (range2 = 0) THEN
@@ -360,7 +360,7 @@ ENDPROCEDURE; !fetch_tag
 
 PROCEDURE pat_replace( oldstring, newstring )
   !
-  ! Replace all occurences of a pattern.
+  ! Replace all occurrences of a pattern.
   !
   LOCAL range1, range2, kill_it, count;
 

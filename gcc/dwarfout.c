@@ -1957,7 +1957,7 @@ location_attribute (rtl)
      suppress the generation of the entire location attribute because
      the absence of a location attribute in certain kinds of DIEs is
      used to indicate something else entirely... i.e. that the DIE
-     represents an object declaration, but not a definition.  So sayeth
+     represents an object declaration, but not a definition.  So saith
      the PLSIG.
   */
 
@@ -2414,7 +2414,7 @@ subscript_data_attribute (type)
 	}
     }
 
-  /* Output the prefix byte that says that the element type is comming up.  */
+  /* Output the prefix byte that says that the element type is coming up.  */
 
   ASM_OUTPUT_DWARF_FMT_BYTE (asm_out_file, FMT_ET);
 
@@ -4524,7 +4524,7 @@ output_decl (decl, containing_scope)
               }
             else
               {
-	      /* this is unprotoyped, check for undefined (just declaration) */
+	      /* this is unprototyped, check for undefined (just declaration) */
               if (!DECL_INITIAL (decl))
                 output_die (output_unspecified_parameters_die, decl);
               }
@@ -4555,7 +4555,7 @@ output_decl (decl, containing_scope)
 
 	       Just within the `outer_scope' there will be another BLOCK
 	       node representing the function's outermost pair of curly
-	       braces.  We musn't generate a lexical_block DIE for this
+	       braces.  We mustn't generate a lexical_block DIE for this
 	       outermost pair of curly braces because that is not really an
 	       independent scope according to ANSI C rules.  Rather, it is
 	       the same scope in which the parameters were declared.  */
@@ -4756,12 +4756,12 @@ dwarfout_file_scope_decl (decl, set_finalizing)
       /* What we would really like to do here is to filter out all mere
 	 file-scope declarations of file-scope functions which are never
 	 referenced later within this translation unit (and keep all of
-	 ones that *are* referenced later on) but we aren't clarvoiant,
+	 ones that *are* referenced later on) but we aren't clairvoyant,
 	 so we have no idea which functions will be referenced in the
 	 future (i.e. later on within the current translation unit).
 	 So here we just ignore all file-scope function declarations
 	 which are not also definitions.  If and when the debugger needs
-	 to know something about these funcstion, it wil have to hunt
+	 to know something about these functions, it wil have to hunt
 	 around and find the DWARF information associated with the
 	 *definition* of the function.
 

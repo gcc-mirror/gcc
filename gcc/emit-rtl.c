@@ -1598,7 +1598,7 @@ reset_used_flags (x)
 
   code = GET_CODE (x);
 
-  /* These types may be freely shared so we needn't do any reseting
+  /* These types may be freely shared so we needn't do any resetting
      for them.  */
 
   switch (code)
@@ -3060,8 +3060,8 @@ gen_sequence ()
     sequence_result[len] = 0;
   else
     {
-      /* Ensure that this rtl goes in saveable_obstack, since we may be
-	 caching it.  */
+      /* Ensure that this rtl goes in saveable_obstack, since we may
+	 cache it.  */
       push_obstacks_nochange ();
       rtl_in_saveable_obstack ();
       result = gen_rtx (SEQUENCE, VOIDmode, rtvec_alloc (len));

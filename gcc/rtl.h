@@ -454,7 +454,7 @@ extern char *note_insn_name[];
 
 /* The rest is used instead of the above, in a CODE_LABEL,
    if bytecode is being output.
-   We make the slightly klugy assumption that a LABEL has enough slots
+   We make the slightly kludgy assumption that a LABEL has enough slots
    to hold these things.  That happens to be true.  */
 
 /* For static or external objects.  */

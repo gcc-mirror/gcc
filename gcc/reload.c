@@ -212,7 +212,7 @@ struct decomposition
 {
   int reg_flag;		/* Nonzero if referencing a register. */
   int safe;		/* Nonzero if this can't conflict with anything. */
-  rtx base;		/* Base adddress for MEM. */
+  rtx base;		/* Base address for MEM. */
   HOST_WIDE_INT start;	/* Starting offset or register number. */
   HOST_WIDE_INT end;	/* Endinf offset or register number.  */
 };

@@ -1136,7 +1136,7 @@ __fixunssfsi (SFtype a)
 #ifdef L__gcc_bcmp
 
 /* Like bcmp except the sign is meaningful.
-   Reult is negative if S1 is less than S2,
+   Result is negative if S1 is less than S2,
    positive if S1 is greater, 0 if S1 and S2 are equal.  */
 
 int
@@ -1422,7 +1422,7 @@ BLOCK_PROFILER_CODE
 #ifndef inhibit_libc
 
 /* Simple minded basic block profiling output dumper for
-   systems that don't provde tcov support.  At present,
+   systems that don't provide tcov support.  At present,
    it requires atexit and stdio.  */
 
 #undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
@@ -2017,7 +2017,7 @@ __enable_execute_stack ()
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
    give the same symbol without quotes for an alternative entry point.  You
-   must define both, or niether. */
+   must define both, or neither. */
 #ifndef NAME__MAIN
 #define NAME__MAIN "__main"
 #define SYMBOL__MAIN __main

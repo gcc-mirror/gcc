@@ -84,7 +84,7 @@ init_recog ()
 
 /* Try recognizing the instruction INSN,
    and return the code number that results.
-   Remeber the code so that repeated calls do not
+   Remember the code so that repeated calls do not
    need to spend the time for actual rerecognition.
 
    This function is the normal interface to instruction recognition.

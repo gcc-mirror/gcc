@@ -1,4 +1,4 @@
-/* GNU Objective C Runtime Miscellanious 
+/* GNU Objective C Runtime Miscellaneous 
    Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
 
 Author: Kresten Krab Thorup

@@ -27,7 +27,7 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "objc/sarray.h"
 #include "encoding.h"
 
-/* Initial selector hash table size. Value doesnt matter much */
+/* Initial selector hash table size. Value doesn't matter much */
 #define SELECTOR_HASH_SIZE 128
 
 /* Tables mapping selector names to uid and opposite */

@@ -870,7 +870,7 @@ struct tree_type
 /* Nonzero for a given ..._DECL node means that this node represents an
    "abstract instance" of the given declaration (e.g. in the original
    declaration of an inline function).  When generating symbolic debugging
-   information, we musn't try to generate any address information for nodes
+   information, we mustn't try to generate any address information for nodes
    marked as "abstract instances" because we don't actually generate
    any code or allocate any data space for such instances.  */
 #define DECL_ABSTRACT(NODE) ((NODE)->decl.abstract_flag)
@@ -1644,7 +1644,7 @@ extern void init_decl_processing		PROTO((void));
 extern void lang_init				PROTO((void));
 extern void lang_finish				PROTO((void));
 
-/* Funtion to identify which front-end produced the output file. */
+/* Function to identify which front-end produced the output file. */
 extern char *lang_identify			PROTO((void));
 
 /* Function to replace the DECL_LANG_SPECIFIC field of a DECL with a copy.  */

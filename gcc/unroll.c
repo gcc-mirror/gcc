@@ -1585,7 +1585,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 			  dest_reg = XEXP (tv->dest_reg, 0);
 			
 			/* Check for shared address givs, and avoid
-			   incrementing the shared psuedo reg more than
+			   incrementing the shared pseudo reg more than
 			   once.  */
 			if (! tv->same_insn)
 			  {
@@ -1797,8 +1797,8 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		{
 		  rtx jmp;
 		  rtx lab = gen_label_rtx ();
-		  /* Can't do it by reversing the jump (probably becasue we
-		     couln't reverse the conditions), so emit a new
+		  /* Can't do it by reversing the jump (probably because we
+		     couldn't reverse the conditions), so emit a new
 		     jump_insn after COPY, and redirect the jump around
 		     that.  */
 		  jmp = emit_jump_insn_after (gen_jump (exit_label), copy);
@@ -2670,7 +2670,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		 following cse pass.  */
 	      
 	      /* As a special case, if we have multiple identical address givs
-		 within a single instruction, then we do use a single psuedo
+		 within a single instruction, then we do use a single pseudo
 		 reg for both.  This is necessary in case one is a match_dup
 		 of the other.  */
 
@@ -3376,7 +3376,7 @@ loop_iterations (loop_start, loop_end)
   return tempu / i + ((tempu % i) != 0);
 }
 
-/* Replace uses of split bivs with their split psuedo register.  This is
+/* Replace uses of split bivs with their split pseudo register.  This is
    for original instructions which remain after loop unrolling without
    copying.  */
 

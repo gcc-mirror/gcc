@@ -670,7 +670,7 @@ layout_type (type)
     {
     case LANG_TYPE:
       /* This kind of type is the responsibility
-	 of the languge-specific code.  */
+	 of the language-specific code.  */
       abort ();
 
     case INTEGER_TYPE:

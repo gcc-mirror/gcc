@@ -2585,7 +2585,7 @@ eadd1 (a, b, c)
 	      return;
 	    }
 	  /* if same sign, result is double */
-	  /* double denomalized tiny number */
+	  /* double denormalized tiny number */
 	  if ((bi[E] == 0) && ((bi[3] & 0x8000) == 0))
 	    {
 	      eshup1 (bi);

@@ -2631,7 +2631,7 @@ unextend (c, p, unsignedp)
     c = convert (signed_type (type), c);
 
   /* We work by getting just the sign bit into the low-order bit, then
-     into the high-order bit, then sign-extened.  We then XOR that value
+     into the high-order bit, then sign-extend.  We then XOR that value
      with C.  */
   temp = const_binop (RSHIFT_EXPR, c, size_int (p - 1), 0);
   temp = const_binop (BIT_AND_EXPR, temp, size_int (1), 0);
@@ -3277,7 +3277,7 @@ fold (expr)
 	     succeed in folding one part to a constant, we do not need
 	     to make this SAVE_EXPR.  Since we do this optimization
 	     primarily to see if we do end up with constant and this
-	     SAVE_EXPR interfers with later optimizations, suppressing
+	     SAVE_EXPR interferes with later optimizations, suppressing
 	     it when we can is important.  */
 
 	  if (TREE_CODE (arg0) != SAVE_EXPR

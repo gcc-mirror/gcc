@@ -847,7 +847,7 @@ anti_dependence (mem, x)
 {
   /* If MEM is an unchanging read, then it can't possibly conflict with
      the store to X, because there is at most one store to MEM, and it must
-     have occured somewhere before MEM.  */
+     have occurred somewhere before MEM.  */
   if (RTX_UNCHANGING_P (mem))
     return 0;
 
@@ -2367,7 +2367,7 @@ sched_note_set (b, x, death)
 }
 
 /* Macros and functions for keeping the priority queue sorted, and
-   dealing with queueing and unqueueing of instructions.  */
+   dealing with queueing and dequeueing of instructions.  */
 
 #define SCHED_SORT(READY, NEW_READY, OLD_READY) \
   do { if ((NEW_READY) - (OLD_READY) == 1)				\

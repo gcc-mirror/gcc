@@ -3051,7 +3051,7 @@ output_string (str)
    buffer (which may include original comments and preprocessing directives)
    will be copied into the  output buffer.
 
-   Note that the request implide when this routine is called includes the
+   Note that the request implied when this routine is called includes the
    byte pointed to by the argument pointer `p'.  */
 
 static void
@@ -3848,7 +3848,7 @@ edit_fn_definition (def_dec_p, clean_text_p)
       output_string ("\n");
   }
 #else /* !defined (UNPROTOIZE) */
-  /* If we are protoizing, there may be some flotsum & jetsum (like comments
+  /* If we are protoizing, there may be some flotsam & jetsam (like comments
      and preprocessing directives) after the old formals list but before
      the following { and we would like to preserve that stuff while effectively
      deleting the existing K&R formal parameter declarations.  We do so here

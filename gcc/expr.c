@@ -3149,7 +3149,7 @@ store_constructor (exp, target)
       tree domain = TYPE_DOMAIN (type);
       tree domain_min, domain_max, bitlength;
 
-      /* The default implementation stategy is to extract the constant
+      /* The default implementation strategy is to extract the constant
 	 parts of the constructor, use that to initialize the target,
 	 and then "or" in whatever non-constant ranges we need in addition.
 
@@ -3274,7 +3274,7 @@ store_constructor (exp, target)
 
 #ifdef TARGET_MEM_FUNCTIONS
 	  /* Optimization:  If startbit and endbit are
-	     constants divisble by BITS_PER_UNIT,
+	     constants divisible by BITS_PER_UNIT,
 	     call memset instead. */
 	  if (TREE_CODE (startbit) == INTEGER_CST
 	      && TREE_CODE (endbit) == INTEGER_CST
@@ -7955,7 +7955,7 @@ static enum machine_mode apply_result_mode[FIRST_PSEUDO_REGISTER];
 
 /* For each register that may be used for calling a function, this
    gives the offset of that register into the block returned by
-   __bultin_apply_args.  0 indicates that the register is not
+   __builtin_apply_args.  0 indicates that the register is not
    used for calling a function. */
 static int apply_args_reg_offset[FIRST_PSEUDO_REGISTER];
 
@@ -8475,7 +8475,7 @@ expand_increment (exp, post)
   op0 = expand_expr (incremented, NULL_RTX, VOIDmode, 0);
 
   /* If OP0 is a SUBREG made for a promoted variable, we cannot increment
-     in place but intead must do sign- or zero-extension during assignment,
+     in place but instead must do sign- or zero-extension during assignment,
      so we copy it into a new register and let the code below use it as
      a copy.
 
