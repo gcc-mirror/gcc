@@ -1,3 +1,8 @@
+Mon Aug 25 01:40:01 1997  Jim Wilson  (wilson@cygnus.com)
+
+	* configure.in: Always make sure RANLIB_TEST is set.
+	* configure: Rebuilt.
+
 Fri Aug 22 08:55:12 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (UOBJ): Include symlnk.
