@@ -1,3 +1,8 @@
+Thu Nov  2 19:20:12 2000  J"orn Rennecke <amylaar@redhat.com>
+
+	* reload.c (find_equiv_reg): Test all hard registers for membership
+	in the requested class.
+
 2000-11-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* collect2.c (main, write_c_file_stat), gcc.c (translate_options,
