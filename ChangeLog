@@ -1,3 +1,7 @@
+2003-02-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* MAINTAINERS: Copy from HEAD.
+
 2003-02-19  Alexandre Oliva  <aoliva@redhat.com>
 
 	* libtool.m4 (LD): Append -melf* option to LD on IRIX with GNU ld.

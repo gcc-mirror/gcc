@@ -30,6 +30,7 @@ Michael Meissner				meissner@redhat.com
 David S. Miller					davem@redhat.com
 Mark Mitchell					mark@codesourcery.com
 Bernd Schmidt					bernds@redhat.com
+Zack Weinberg					zack@codesourcery.com
 Jim Wilson					wilson@redhat.com
 
 
@@ -164,7 +165,7 @@ Matt Austern                                    austern@apple.com
 Scott Bambrough					scottb@netwinder.org
 Daniel Berlin					dan@dberlin.org
 David Billinghurst				David.Billinghurst@riotinto.com
-Laurynas Biveinis				lauras@softhome.net
+Laurynas Biveinis			        laurynas.biveinis@mif.vu.lt
 Eric Blake					ericb@gcc.gnu.org
 Jim Blandy					jimb@redhat.com
 Phil Blundell					pb@futuretv.com
@@ -173,12 +174,12 @@ Eric Botcazou					ebotcazou@libertysurf.fr
 Andrew Cagney					cagney@redhat.com
 Chandra Chavva					cchavva@redhat.com
 William Cohen					wcohen@redhat.com
+Christian Cornelssen				ccorn@cs.tu-berlin.de
 Chris Demetriou					cgd@broadcom.com
-*Paul Eggert					eggert@twinsun.com
 Steve Ellcey					sje@cup.hp.com
 Ben Elliston					bje@redhat.com
 Marc Espie					espie@cvs.openbsd.org
-Doug Evans					devans@transmeta.com
+Doug Evans					dje@transmeta.com
 Kaveh Ghazi					ghazi@caip.rutgers.edu
 Matthew Gingell					gingell@gnat.com
 Anthony Green					green@redhat.com
@@ -190,6 +191,7 @@ Aldy Hernandez					aldyh@redhat.com
 Matthew Hiller					hiller@redhat.com
 Manfred Hollstein				mhollstein@redhat.com
 Andreas Jaeger					aj@suse.de
+Fariborz Jahanian				fjahanian@apple.com
 Jakub Jelinek					jakub@redhat.com
 Dale Johannesen 				dalej@apple.com
 Klaus Kaempf					kkaempf@progis.de
@@ -207,7 +209,7 @@ Kriang Lerdsuwanakij				lerdsuwa@users.sourceforge.net
 Don Lindsay					dlindsay@redhat.com
 Dave Love					d.love@dl.ac.uk
 Martin v. Löwis					loewis@informatik.hu-berlin.de
-*HJ Lu						hjl@lucon.org
+HJ Lu						hjl@lucon.org
 Andrew Macleod					amacleod@redhat.com
 Vladimir Makarov				vmakarov@redhat.com
 Michael Matz					matz@suse.de
@@ -260,6 +262,7 @@ Krister Walfridsson				cato@df.lth.se
 John Wehle					john@feith.com
 Florian Weimer					fw@deneb.enyo.de
 Mark Wielaard					mark@gcc.gnu.org
+Josef Zlomek					zlomekj@suse.cz
 
 GNATS only accounts
 
