@@ -327,9 +327,11 @@ or with constant text in a single argument.
  %Y	Output the accumulated assembler options specified by compilations.
  %Z	Output the accumulated preprocessor options specified by compilations.
  %v1	Substitute the major version number of GCC.
-	(For version 2.5.n, this is 2.)
+	(For version 2.5.3, this is 2.)
  %v2	Substitute the minor version number of GCC.
-	(For version 2.5.n, this is 5.)
+	(For version 2.5.3, this is 5.)
+ %v3	Substitute the patch level number of GCC.
+	(For version 2.5.3, this is 3.)
  %a     process ASM_SPEC as a spec.
         This allows config.h to specify part of the spec for running as.
  %A	process ASM_FINAL_SPEC as a spec.  A capital A is actually
@@ -614,7 +616,7 @@ static struct compiler default_compilers[] =
 	%{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2}\
+        %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
 	%{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 	%{ffast-math:-D__FAST_MATH__}\
@@ -628,7 +630,7 @@ static struct compiler default_compilers[] =
                   %{std*} %{nostdinc*} %{A*} %{I*} %I\
                   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
                   %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-                  %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2}\
+                  %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
 		  %{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
                   %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 		  %{ffast-math:-D__FAST_MATH__}\
@@ -651,7 +653,7 @@ static struct compiler default_compilers[] =
 	%{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2}\
+        %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
 	%{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 	%{ffast-math:-D__FAST_MATH__}\
@@ -679,7 +681,7 @@ static struct compiler default_compilers[] =
 	%{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2}\
+        %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
 	%{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 	%{ffast-math:-D__FAST_MATH__}\
@@ -696,7 +698,7 @@ static struct compiler default_compilers[] =
     cpp %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-        %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2}\
+        %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
 	%{!undef:%{!std=*:%p}%{std=gnu*:%p} %P} %{trigraphs}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
 	%{ffast-math:-D__FAST_MATH__}\
@@ -4497,6 +4499,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      int c1 = *p++;  /* Select first or second version number.  */
 	      char *v = compiler_version;
 	      char *q;
+	      static const char zeroc = '0';
 
 	      /* The format of the version string is
 		 ([^0-9]*-)?[0-9]+[.][0-9]+([.][0-9]+)?([- ].*)?  */
@@ -4508,7 +4511,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		abort ();
 
 	      /* If desired, advance to second version number.  */
-	      if (c1 == '2')
+	      if (c1 >= '2')
 		{
 		  /* Set V after the first period.  */
 		  while (ISDIGIT (*v))
@@ -4518,6 +4521,19 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		  v++;
 		}
 
+	      /* If desired, advance to third version number.
+                 But don't complain if it's not present */
+	      if (c1 == '3')
+		{
+		  /* Set V after the second period.  */
+		  while (ISDIGIT (*v))
+		    v++;
+		  if ((*v != 0) && (*v != ' ') && (*v != '.') && (*v != '-'))
+		    abort ();
+                  if (*v != 0)
+                      v++;
+		}
+
 	      /* Set Q at the next period or at the end.  */
 	      q = v;
 	      while (ISDIGIT (*q))
@@ -4525,8 +4541,12 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 	      if (*q != 0 && *q != ' ' && *q != '.' && *q != '-')
 		abort ();
 
-	      /* Put that part into the command.  */
-	      obstack_grow (&obstack, v, q - v);
+              if (q > v)
+	        /* Put that part into the command.  */
+	        obstack_grow (&obstack, v, q - v);
+              else
+                /* Default to "0" */
+                obstack_grow (&obstack, &zeroc, 1);
 	      arg_going = 1;
 	    }
 	    break;

@@ -978,9 +978,16 @@ The macro contains the minor version number of the compiler.  This can
 be used to work around differences between different releases of the
 compiler (for example, if gcc 2.6.3 is known to support a feature, you
 can test for @code{__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 6)}).
-The last number, @samp{3} in the
-example above, denotes the bugfix level of the compiler; no macro
-contains this value.
+
+@item __GNUC_PATCHLEVEL__
+@findex __GNUC_PATCHLEVEL__
+This macro contains the patch level of the compiler.  This can be
+used to work around differences between different patch level releases
+of the compiler (for example, if gcc 2.6.2 is known to contain a bug,
+whereas gcc 2.6.3 contains a fix, and you have code which can workaround
+ths problem depending on whether the bug is fixed or not, you can test for
+@code{__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 6) || 
+(__GNUC__ == 2 && __GNUC_MINOR__ == 6 && __GNUC_PATCHLEVEL__ > 3)}).
 
 @item __GNUG__
 @findex __GNUG__
@@ -2870,9 +2877,9 @@ Do not predefine any nonstandard macros.
 
 @item -gcc
 @findex -gcc
-Define the macros @var{__GNUC__} and @var{__GNUC_MINOR__}.  These are
-defined automatically when you use @samp{gcc -E}; you can turn them off
-in that case with @samp{-no-gcc}.
+Define the macros @var{__GNUC__}, @var{__GNUC_MINOR__} and
+@var{__GNUC_PATCHLEVEL__}. These are defined automatically when you use
+@samp{gcc -E}; you can turn them off in that case with @samp{-no-gcc}.
 
 @item -A @var{predicate}(@var{answer})
 @findex -A

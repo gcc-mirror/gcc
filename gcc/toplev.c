@@ -3237,6 +3237,7 @@ rest_of_compilation (decl)
        if (optimize)
 	 calculate_loop_depth (rtl_dump_file);
        life_analysis (insns, max_reg_num (), rtl_dump_file, 1);
+       mark_constant_function ();
      });
 
   if (warn_uninitialized || extra_warnings)

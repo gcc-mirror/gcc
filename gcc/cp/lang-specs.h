@@ -33,8 +33,8 @@ Boston, MA 02111-1307, USA.  */
      "%{E|M|MM:cpp -lang-c++ %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C++ does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-	%{!no-gcc:-D__GNUC__=%v1 -D__GNUG__=%v1 -D__GNUC_MINOR__=%v2}\
-	-D__cplusplus\
+	%{!no-gcc:-D__GNUC__=%v1 -D__GNUG__=%v1 -D__GNUC_MINOR__=%v2\
+	-D__GNUC_PATCHLEVEL__=%v3} -D__cplusplus\
 	%{ansi:-trigraphs -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
 	%{!fno-exceptions:-D__EXCEPTIONS}\
         %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}} %{trigraphs}\
@@ -46,7 +46,8 @@ Boston, MA 02111-1307, USA.  */
                             -lang-c++ %{nostdinc*} %{C} %{A*} %{I*} %{P} %{$} %I\
                             %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
                             %{!no-gcc:-D__GNUC__=%v1 -D__GNUG__=%v1\
-                            -D__GNUC_MINOR__=%v2} -D__cplusplus\
+                            -D__GNUC_MINOR__=%v2 -D__GNUC_PATCHLEVEL__=%v3}\
+                            -D__cplusplus\
                             %{ansi:-trigraphs -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
                             %{!fno-exceptions:-D__EXCEPTIONS}\
 			    %{fnew-abi:-D__GXX_ABI_VERSION=100}\
@@ -68,8 +69,8 @@ Boston, MA 02111-1307, USA.  */
    {"cpp -lang-c++ %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C++ does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
-	%{!no-gcc:-D__GNUC__=%v1 -D__GNUG__=%v1 -D__GNUC_MINOR__=%v2}\
-	-D__cplusplus\
+	%{!no-gcc:-D__GNUC__=%v1 -D__GNUG__=%v1 -D__GNUC_MINOR__=%v2\
+	-D__GNUC_PATCHLEVEL__=%v3} -D__cplusplus\
 	%{ansi:-trigraphs -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
 	%{!fno-exceptions:-D__EXCEPTIONS}\
 	%{fnew-abi:-D__GXX_ABI_VERSION=100}\
