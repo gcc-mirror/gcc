@@ -1,9 +1,12 @@
 LIBGCC1=libgcc1.null
-CROSS_LIBGCC1=libgcc1.null
+CROSS_LIBGCC1=libgcc1-asm.a
+
+LIB1ASMFUNCS =  _divI _divU _remI _remU _div_const
+LIB1ASMSRC = pa/milli64.S
+TARGET_LIBGCC2_CFLAGS = -fPIC -Dpa64=1 -DELF=1
+
 ADA_CFLAGS=-mdisable-indexing
 LIB2FUNCS_EXTRA=quadlib.c
-
-TARGET_LIBGCC2_CFLAGS = -fPIC
 
 # We'll need this once .init sections are enabled on PA64.
 #EXTRA_PARTS = crtbegin.o crtend.o

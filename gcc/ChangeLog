@@ -1,5 +1,14 @@
 2001-04-13  Alan Modra  <amodra@one.net.au>
 
+	* config/pa/mill32.S: New file.
+	* config/pa/mill64.S: New file.
+	* config/pa/t-linux (LIBGCC1, CROSS_LIBGCC1, LIB1ASMFUNCS,
+	LIB1ASMSRC, CRTSTUFF_T_CFLAGS_S, TARGET_LIBGCC2_CFLAGS): Define.
+	* config/pa/t-linux64: New file.
+	* config/pa/t-pa64 (CROSS_LIBGCC1): Change to libgcc1-asm.a
+	(LIB1ASMFUNCS, LIB1ASMSRC): Define.
+	(TARGET_LIBGCC2_CFLAGS): Add -Dpa64=1 -DELF=1.
+
 	* elfos.h (SELECT_SECTION): Undef before defining.
 	* pa-linux.h (LINUX_DEFAULT_ELF, PTRDIFF_TYPE, CPP_SPEC): Remove.
 	(LIB_SPEC): Remove -lmilli.
