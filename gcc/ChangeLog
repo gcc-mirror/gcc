@@ -1,3 +1,7 @@
+2003-10-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa64-hpux.h (LINK_SPEC): Use `-z' option with HP ld.
+
 2003-10-10  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc (mips*-*-netbsd*): Remove content-free line.

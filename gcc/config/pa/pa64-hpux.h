@@ -43,7 +43,7 @@ Boston, MA 02111-1307, USA.  */
    %{!shared:%{pg:-L/lib/pa20_64/libp -L/usr/lib/pa20_64/libp %{!static:\
      %nWarning: consider linking with `-static' as system libraries with\n\
      %n  profiling support are only provided in archive format}}}\
-   %{mhp-ld:+Accept TypeMismatch} -E %{mlinker-opt:-O} %{!shared:-u main}\
+   %{mhp-ld:+Accept TypeMismatch -z} -E %{mlinker-opt:-O} %{!shared:-u main}\
    %{static:-a archive} %{shared:%{mhp-ld:-b}%{!mhp-ld:-shared}}"
 #else
 #define LINK_SPEC \
@@ -53,7 +53,7 @@ Boston, MA 02111-1307, USA.  */
    %{!shared:%{pg:-L/lib/pa20_64/libp -L/usr/lib/pa20_64/libp %{!static:\
      %nWarning: consider linking with `-static' as system libraries with\n\
      %n  profiling support are only provided in archive format}}}\
-   %{!mgnu-ld:+Accept TypeMismatch} -E %{mlinker-opt:-O} %{!shared:-u main}\
+   %{!mgnu-ld:+Accept TypeMismatch -z} -E %{mlinker-opt:-O} %{!shared:-u main}\
    %{static:-a archive} %{shared:%{mgnu-ld:-shared}%{!mgnu-ld:-b}}"
 #endif
 
