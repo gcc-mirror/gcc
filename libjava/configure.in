@@ -78,6 +78,22 @@ if test "$libgcj_sjlj" = yes; then
    AC_DEFINE(SJLJ_EXCEPTIONS)
 fi
 
+FORCELIBGCCSPEC=
+dnl Work around libgcc design flaw.
+if test "$ac_cv_prog_gnu_ld" = yes; then
+   FORCELIBGCCSPEC="-u __rethrow -lgcc"
+fi   
+
+AC_MSG_CHECKING([for data_start])
+LIBDATASTARTSPEC=
+NEEDS_DATA_START=
+AC_TRY_LINK([extern int data_start;], [return ((int) &data_start);],
+  [AC_MSG_RESULT(found it)],
+  [LIBDATASTARTSPEC="-lgcjdata"
+   NEEDS_DATA_START=yes	
+   AC_MSG_RESULT(missing)])
+AC_SUBST(LIBDATASTARTSPEC)
+
 dnl See if the user wants to disable java.net.  This is the mildly
 dnl ugly way that we admit that target-side configuration sucks.
 AC_ARG_ENABLE(java-net,
@@ -538,11 +554,13 @@ AC_SUBST(ZDEPS)
 AC_SUBST(ZINCS)
 AC_SUBST(DIVIDESPEC)
 AC_SUBST(EXCEPTIONSPEC)
+AC_SUBST(FORCELIBGCCSPEC)
 
 AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
 AM_CONDITIONAL(NULL_TARGET, test "$NULL_TARGET" = yes)
 AM_CONDITIONAL(NATIVE, test "$NATIVE" = yes || test "$NULL_TARGET" = yes)
 AM_CONDITIONAL(USE_LIBDIR, test -z "$with_cross_host")
+AM_CONDITIONAL(NEEDS_DATA_START, test "$NEEDS_DATA_START" = yes && test "$NATIVE" = yes)
 AC_SUBST(EH_COMMON_INCLUDE)
 
 # Determine gcj version number.

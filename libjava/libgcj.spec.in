@@ -8,3 +8,11 @@
 
 *jc1:  @DIVIDESPEC@ @EXCEPTIONSPEC@
 
+#
+# libgcc should really be a shared library.  This is a design flaw
+# that causes no end of mysterious problems.  If we are using the
+# GNU linker, force parts of libgcc into the program file rather
+# than picking bits up from various shared libraries.
+#
+%rename startfile startfileorig
+*startfile: %(startfileorig) @LIBDATASTARTSPEC@ @FORCELIBGCCSPEC@
