@@ -291,9 +291,14 @@ cond_exec_get_condition (jump)
      reverse the condition.  */
   if (GET_CODE (XEXP (test_if, 2)) == LABEL_REF
       && XEXP (XEXP (test_if, 2), 0) == JUMP_LABEL (jump))
-    cond = gen_rtx_fmt_ee (reverse_condition (GET_CODE (cond)),
-			   GET_MODE (cond), XEXP (cond, 0),
-			   XEXP (cond, 1));
+    {
+      enum rtx_code rev = reversed_comparison_code (cond, jump);
+      if (rev == UNKNOWN)
+	return NULL_RTX;
+
+      cond = gen_rtx_fmt_ee (rev, GET_MODE (cond), XEXP (cond, 0),
+			     XEXP (cond, 1));
+    }
 
   return cond;
 }
@@ -321,6 +326,7 @@ cond_exec_process_if_block (test_bb, then_bb, else_bb, join_bb)
   rtx true_prob_val;		/* probability of else block */
   rtx false_prob_val;		/* probability of then block */
   int n_insns;
+  enum rtx_code false_code;
 
   /* Find the conditional jump to the ELSE or JOIN part, and isolate
      the test.  */
@@ -382,9 +388,13 @@ cond_exec_process_if_block (test_bb, then_bb, else_bb, join_bb)
      the conditionally executed code.  */
   
   true_expr = test_expr;
-  false_expr = gen_rtx_fmt_ee (reverse_condition (GET_CODE (true_expr)),
-			       GET_MODE (true_expr), XEXP (true_expr, 0),
-			       XEXP (true_expr, 1));
+
+  false_code = reversed_comparison_code (true_expr, test_bb->end);
+  if (false_code != UNKNOWN)
+    false_expr = gen_rtx_fmt_ee (false_code, GET_MODE (true_expr),
+				 XEXP (true_expr, 0), XEXP (true_expr, 1));
+  else
+    false_expr = NULL_RTX;
 
 #ifdef IFCVT_MODIFY_TESTS
   /* If the machine description needs to modify the tests, such as setting a
@@ -414,8 +424,9 @@ cond_exec_process_if_block (test_bb, then_bb, else_bb, join_bb)
      to conditional execution.  */
 
   if (then_end
-      && ! cond_exec_process_insns (then_start, then_end,
-				    false_expr, false_prob_val, then_mod_ok))
+      && (! false_expr
+	  || ! cond_exec_process_insns (then_start, then_end, false_expr,
+					false_prob_val, then_mod_ok)))
     goto fail;
 
   if (else_bb
@@ -2261,6 +2272,8 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
       rtx cond, prob_val;
 
       cond = cond_exec_get_condition (jump);
+      if (! cond)
+	return FALSE;
 
       prob_val = find_reg_note (jump, REG_BR_PROB, NULL_RTX);
       if (prob_val)
@@ -2268,8 +2281,10 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
 
       if (reversep)
 	{
-	  cond = gen_rtx_fmt_ee (reverse_condition (GET_CODE (cond)),
-			         GET_MODE (cond), XEXP (cond, 0),
+	  enum rtx_code rev = reversed_comparison_code (cond, jump);
+	  if (rev == UNKNOWN)
+	    return NULL_RTX;
+	  cond = gen_rtx_fmt_ee (rev, GET_MODE (cond), XEXP (cond, 0),
 			         XEXP (cond, 1));
 	  if (prob_val)
 	    prob_val = GEN_INT (REG_BR_PROB_BASE - INTVAL (prob_val));
