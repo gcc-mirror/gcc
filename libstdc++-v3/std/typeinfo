@@ -1,0 +1,3 @@
+#ifndef _CPP_TYPEINFO
+#include <bits/std_typeinfo.h>
+#endif

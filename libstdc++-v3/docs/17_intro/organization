@@ -1,0 +1,84 @@
+20 [lib.utilities]
+	<utility>
+		namespace rel_ops { operators !=, >, <=, >= }
+		struct pair;
+		pair binary operators { operators ==, <, !=, >, >=, <= }
+	<functional>
+		// function objects, or objects with operator() defined
+	<memory>
+		template<T> class allocator;
+		template<> class allocator<void>;
+		template<OutI, T> class raw_storage_iterator;
+		temporary buffers
+		specialized algorithms for uninitialized_{copy, fill, fill_n}
+		template<T> class auto_ptr;
+	<ctime>
+	<cstdlib>
+	<cstring>
+
+21 [lib.strings]
+	<string>
+		template<T> struct char_traits
+		template<> struct char_traits<char>
+		template<> struct char_traits<wchar_t>
+		template<C, T=c_t<T>, A=a<T> > class basic_string;
+
+		typedef basic_string<char> string;
+		typedef basic_string<wchar_t> wstring;
+		
+		template<C, T, A> void swap(string&, string&)
+		template<C, T, A> istream& operator>>(istream&, string&);
+		template<C, T, A> istream& getline(istream&, string&, C);
+		template<C, T, A> istream& getline(istream&, string&);
+		template<C, T, A> ostream& operator<<(ostream&, string&);
+	<cctype>
+	<cwctype>
+	<cstring>
+	<cwchar>
+	<cstdlib>
+
+23 [lib.containers]
+	<deque>
+	<list>
+	<queue>
+	<stack>
+	<vector>
+	<map>
+	<set>
+	<bitset>
+
+24 [lib.iterators]
+	<iterator>
+
+25 [lib.algorithms]
+	<algorithm>
+		non-modifying sequence operations 
+			for_each, find, find_if, find_end, find_first_of, 
+			adjacent_find, count, count_if, mismatch, equal, 
+			search, search_n
+		modifying sequence operations
+			copy, copy_backward, swap, swap_ranges, iter_swap, 
+			transform, replace, replace_if, replace_copy,
+			replace_copy_if, fill, fill_n, generate, generate_n, 
+			remove, remove_if, remove_copy, remove_copy_if, unique,
+			unique_copy, reverse, reverse_copy, rotate, 
+			rotate_copy, random_shuffle
+		sorting and related operations
+			sort, stable_sort, partial_sort, partial_sort_copy, 
+			nth_element, lower_bound, upper_bound, equal_range, 
+			binary_search, merge, inplace_merge, includes, 
+			set_union, set_intersection, set_difference, 
+			set_symmetric_difference, push_heap, pop_heap, 
+			make_heap, sort_heap, min, max, min_element, 
+			max_element, lexicographical_compare, next_permutation,
+			prev_permutation
+	<cstdlib>
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,672 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="AUTHOR" CONTENT="pme@sourceware.cygnus.com (Phil Edwards)">
+   <META NAME="KEYWORDS" CONTENT="libstdc++, libstdc++-v3, egcs, g++, libg++, STL">
+   <META NAME="DESCRIPTION" CONTENT="FAQ for the GNU libstdc++ effort.">
+   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <TITLE>libstdc++-v3 FAQ</TITLE>
+<LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/">
+<LINK REL=StyleSheet HREF="../lib3styles.css">
+<!-- 
+  ** Locations of "the most recent snapshot is the Nth" text are 
+  ** answers 1_1, 1_4, 4_1, 5_6.
+-->
+<!-- $Id: index.html,v 1.21 2000/03/26 03:44:35 pme Exp $ -->
+</HEAD>
+<BODY>
+
+<H1 CLASS="centered">libstdc++ Frequently Asked Questions</H1>
+
+<P>The latest version of this document is always available at
+<A HREF="http://sourceware.cygnus.com/libstdc++/faq/index.html">
+http://sourceware.cygnus.com/libstdc++/faq/</A>.</P>
+
+<P>To the <A HREF="../index.html">libstdc++-v3 homepage</A>.
+
+<!-- ####################################################### -->
+<HR>
+<H1>Questions</H1>
+<OL>
+   <LI><A HREF="#1_0">General Information</A>
+   <!-- I suspect these will mostly be links to/into existing documents. -->
+   <OL>
+      <LI><A HREF="#1_1">What is libstdc++-v3?</A>
+      <LI><A HREF="#1_2">Why should I use libstdc++?</A>
+      <LI><A HREF="#1_3">Who's in charge of it?</A>
+      <LI><A HREF="#1_4">How do I get libstdc++?</A>
+      <LI><A HREF="#1_5">When is libstdc++ going to be finished?</A>
+      <LI><A HREF="#1_6">How do I contribute to the effort?</A>
+      <LI><A HREF="#1_7">What happened to libg++?  I need that!</A>
+      <LI><A HREF="#1_8">What if I have more questions?</A>
+   </OL>
+
+   <LI><A HREF="#2_0">Installation</A>
+      <OL>
+         <LI><A HREF="#2_1">How do I install libstdc++-v3?</A>
+         <LI><A HREF="#2_2">Is this a drop-in replacement for the
+                            libstdc++ that's shipped with g++?</A>
+         <LI><A HREF="#2_3">What is this CVS thing that you keep 
+                            mentioning?</A>
+         <LI><A HREF="#2_4">How do I know if it works?</A>
+      </OL>
+
+   <LI><A HREF="#3_0">Platform-Specific Issues</A>
+      <OL>
+         <LI><A HREF="#3_1">Can libstdc++-v3 be used with &lt;my
+                            favorite compiler&gt;?</A>
+         <LI><A HREF="#3_2">Building under Cygwin hangs/explodes!?</A>
+      </OL>
+
+   <LI><A HREF="#4_0">Known Bugs and Non-Bugs</A>
+      <OL>
+         <LI><A HREF="#4_1">What works already?</A>
+         <LI><A HREF="#4_2">Bugs in gcc/g++ (not libstdc++-v3)</A>
+         <LI><A HREF="#4_3">Bugs in the C++ language/lib specification</A>
+         <LI><A HREF="#4_4">Things in libstdc++ that look like bugs</A>
+         <LI><A HREF="#4_5">Aw, that's easy to fix!</A>
+      </OL>
+
+   <LI><A HREF="#5_0">Miscellaneous</A>
+      <OL>
+         <LI><A HREF="#5_1">string::iterator is not char*;
+                            vector&lt;T&gt;::iterator is not T*</A>
+         <LI><A HREF="#5_2">What's next after libstdc++-v3?</A>
+         <LI><A HREF="#5_3">What about the STL from SGI?</A>
+         <LI><A HREF="#5_4">Extensions and Backward Compatibility</A>
+         <LI><A HREF="#5_5">Compiling with &quot;-fnew-abi&quot;</A>
+         <LI><A HREF="#5_6">Is libstdc++-v3 thread-safe?</A>
+         <LI><A HREF="#5_7">How do I get a copy of the ISO C++ Standard?</A>
+      </OL>
+
+</OL>
+
+<HR>
+
+<!-- ####################################################### -->
+
+<H1><A NAME="1_0">1.0 General Information</A></H1>
+<!-- I suspect these will mostly be links to/into existing documents. -->
+   <H2><A NAME="1_1">1.1 What is libstdc++-v3?</A></H2>
+      <P>The GNU Standard C++ Library v3, or libstdc++-2.90.x, is an 
+         ongoing project to implement the ISO 14882 Standard C++ library 
+         as described in chapters 17 through 27 and annex D.  As the 
+         library reaches stable plateaus, it is captured in a snapshot
+         and released.  The current release is <A
+HREF="ftp://sourceware.cygnus.com/pub/libstdc++/libstdc++-2.90.8.tar.gz">the
+         ninth snapshot</A>.  For those who want to see exactly how
+         far the project has come, or just want the latest
+         bleeding-edge code, the up-to-date source is available over
+         anonymous CVS, and can even be browsed over the Web (see below). 
+      </P> 
+      <P>A more formal description of the V3 goals can be found in the
+         official <A HREF="../17_intro/DESIGN">design document</A>. 
+      </P> 
+
+<HR>
+   <H2><A NAME="1_2">1.2 Why should I use libstdc++?</A></H2>
+      <P>The recent completion of the ISO C++ standardization gave the
+         C++ community a powerful set of reuseable tools in the form
+         of the C++ Standard Library.  However, all existing C++
+         implementations are (as the Draft Standard used to say)
+         &quot;incomplet and incorrekt,&quot; and many suffer from
+         limitations of the compilers that use them.
+      </P> 
+      <P>The GNU C/C++/FORTRAN/&lt;pick-a-language&gt; compiler
+         (<TT>gcc</TT>, <TT>g++</TT>, etc) is widely considered to be
+         one of the leading compilers in the world.  Its development
+         has recently been taken over by the 
+         <A HREF="http://egcs.cygnus.com/">GCC team</A>.  All of
+         the rapid development and near-legendary
+     <A
+HREF="http://egcs.cygnus.com/gcc-2.95/buildstat.html">portability</A>
+         that are the hallmarks of an open-source project are being
+         applied to libstdc++.
+      </P>
+      <P>That means that all of the Standard classes and functions
+         (such as <TT>string</TT>, <TT>vector&lt;&gt;</TT>, iostreams,
+         and algorithms) will be freely available and fully compliant.
+         Programmers will no longer need to &quot;roll their own&quot;
+         nor be worried about platform-specific incompatabilities.
+      </P>
+
+<HR>
+   <H2><A NAME="1_3">1.3 Who's in charge of it?</A></H2>
+      <P>The libstdc++ project is contributed to by several developers
+         all over the world, in the same way as GCC (EGCS) or Linux.
+         Benjamin Kosnik, Gabriel Dos Reis, Nathan Myers, and Ulrich
+         Drepper are the lead maintainers of the CVS archive.
+      </P>
+      <P>Development and discussion is held on the libstdc++ mailing
+         list. Subscribing to the list, or searching the list
+         archives, is open to everyone.  You can read instructions for
+         doing so on the <A HREF="../index.html">homepage</A>.  If you
+         have questions, ideas, code, or are just curious, sign up!
+      </P>
+
+<HR>
+   <H2><A NAME="1_4">1.4 How do I get libstdc++?</A></H2>
+      <P>The ninth (and latest) snapshot of libstdc++-v3 is <A
+HREF="ftp://sourceware.cygnus.com/pub/libstdc++/libstdc++-2.90.8.tar.gz">
+         available via ftp</A>.
+      </P>
+      <P>The <A HREF="../index.html">homepage</A>
+         has instructions for retrieving the latest CVS sources, and for
+         browsing the CVS sources over the web.
+      </P>
+      <P>The subset commonly known as the Standard Template Library
+         (chapters 23 through 25, mostly) is adapted from the SGI STL,
+         which is also an ongoing work.<!-- Possibly a link to SGI's
+         STL here. -->
+      </P> 
+
+<HR>
+   <H2><A NAME="1_5">1.5 When is libstdc++ going to be finished?</A></H2>
+      <P>Nathan Myers gave the best of all possible answers in <A 
+         HREF="http://www.deja.com/getdoc.xp?AN=469581698&fmt=text">a 
+         recent Usenet article</A>.</P>
+
+<HR>
+   <H2><A NAME="1_6">1.6 How do I contribute to the effort?</A></H2>
+      <P>Here is <A HREF="../17_intro/contribute.html">a
+         page devoted to this topic</A>.  Subscribing to the mailing
+         list (see above, or the homepage) is a very good idea if you
+         have something to contribute, or if you have spare time and
+         want to help.  Contributions don't have to be in the form of
+         source code; anybody who is willing to help write
+         documentation, for example, or has found a bug in code that
+         we all thought was working, is more than welcome!
+      </P> 
+
+<HR>
+   <H2><A NAME="1_7">1.7 What happened to libg++?  I need that!</A></H2>
+      <P>The most recent libg++ README states that libg++ is no longer
+         being actively maintained.  It should not be used for new
+         projects, and is only being kicked along to support older code.
+      </P>
+      <P>The libg++ was designed and created when there was no Standard
+         to provide guidance.  Classes like linked lists are now provided
+         for by <TT>list&lt;T&gt;</TT> and do not need to be created by
+         <TT>genclass</TT>.  (For that matter, templates exist now and
+         are well-supported, whereas genclass (mostly) predates them.)
+      </P>
+      <P>There are other classes in libg++ that are not specified in the
+         ISO Standard (e.g., statistical analysis).  While there are a
+         lot of really useful things that are used by a lot of people
+         (e.g., statistics :-), the Standards Committee couldn't include
+         everything, and so a lot of those &quot;obvious&quot; classes
+         didn't get included.
+      </P>
+      <P>Since libstdc++ is an implementation of the Standard Library, we
+         have no plans at this time to include non-Standard utilities
+         in the implementation, however handy they are.  (The extensions
+         provided in the SGI STL aren't maintained by us and don't get
+         a lot of our attention, because they don't require a lot of our
+         time.)  It is entirely plausable that the &quot;useful stuff&quot;
+         from libg++ might be extracted into an updated utilities library,
+         but nobody has stated such a project yet.
+      </P>
+      <!-- The advertisement, so to speak, might have to go.  Hmmmmm.  -->
+      <P>(The <A HREF="http://www.boost.org/">Boost</A> site houses free
+         C++ libraries that do varying things, and happened to be started
+         by members of the Standards Committee.  Certain &quot;useful
+         stuff&quot; classes will probably migrate there.)
+      </P>
+      <P>For the bold and/or desperate, the
+         <A HREF="http://egcs.cygnus.com/faq.html#libg++">GCC FAQ</A>
+         describes where to find the last libg++ source.
+      </P>
+
+<HR>
+   <H2><A NAME="1_8">1.8 What if I have more questions?</A></H2>
+      <P>If you have read the README and RELEASE-NOTES files, and your
+         question remains unanswered, then just ask the mailing list.
+         At present, you do not need to be subscribed to the list to
+         send a message to it.  More information is available on the
+         homepage (including how to browse the list archives); to send
+         to the list, use <A HREF="mailto:libstdc++@sourceware.cygnus.com">
+         <TT>libstdc++@sourceware.cygnus.com</TT></A>.
+      </P>
+      <P>If you have a question that you think should be included here,
+         or if you have a question <EM>about</EM> a question/answer here,
+         contact <A HREF="mailto:pme@sourceware.cygnus.com">Phil Edwards</A>
+         or <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
+      </P>
+
+<HR>
+
+<H1><A NAME="2_0">2.0 Installation</A></H1>
+   <H2><A NAME="2_1">2.1 How do I install libstdc++-v3?</A></H2>
+      <P>Complete instructions are not given here (this is a FAQ, not
+         an installation document), but the tools required are few:
+         <UL>
+            <LI> A release of libstdc++.
+            <LI> A recent release of GCC (version 2.95 works). Note
+                 that building GCC is much easier and more automated
+                 than building the GCC 2.[78] series was. 
+            <LI> If you plan on hacking around with the makefiles, you
+	         will need the tools <A 
+HREF="http://sourceware.cygnus.com/autoconf/">autoconf</A>and <A 
+HREF="http://sourceware.cygnus.com/automake/">automake</A>. 
+            <LI> GNU Make is the only make that supports these makefiles. 
+         </UL>
+      </P>
+      <P>The file <A HREF="../documentation.html">documentation.html</A>
+         provides a good overview of the steps necessary to build, install,
+         and use the library.  Instructions for configuring the library
+         with new flags such as --enable-threads are there also.
+      </P>
+      <P>The top-level install.html and
+         <A HREF="../17_intro/RELEASE-NOTES">RELEASE-NOTES</A> files contain
+         the exact build and installation instructions.  You may wish to
+         browse those files over CVSweb ahead of time to get a feel for
+         what's required.  RELEASE-NOTES is located in the
+         &quot;.../docs/17_intro/&quot; directory of the distribution.
+      </P> 
+
+<HR>
+   <H2><A NAME="2_2">2.2 Is this a drop-in replacement for the
+                         libstdc++ that's shipped with g++?</A></H2>
+      <P>Yes, as of 2.90.8, it is intended as such.</P>
+      <P>The installation instructions cover this in more detail, but
+         replacing the older library requires rebuilding some of the
+         code that comes with g++.  If you do not want to do that,
+         then you'll be missing out on a lot of functionality, but it
+         can still be done.
+      </P>
+      <P>In that case, you can use the same procedure that used to be
+         required:
+         <OL>
+            <LI> Build GCC as usual.
+            <LI> Build libstdc++-v3 as described in the installation
+                 document, under the section &quot;without GCC
+                 sources.&quot;  Be aware that you will lose the std::
+                 namespace encapsulation.
+            <LI> Build your code using -I and -L options so that GCC
+                 finds the libstdc++-v3 headers and library before the
+                 older headers in the GCC include tree.
+         </OL>
+      </P>
+      <P>If you configured libstdc++-v3 to install under a directory
+         called <B>/lib3</B>, for example, the command line would look
+         something like
+         <!-- Careful, the leading spaces in PRE show up directly. -->
+         <PRE>
+      g++ -Wall -I/lib3/include/g++-v3 -L/lib3/lib foo.cc -o foo
+         </PRE>
+         More information (such as using SGI or GNU extensions, and
+         setting the runtime library path) can be found in the RELEASE-NOTES.
+      </P>
+
+<HR>
+   <H2><A NAME="2_3">2.3 What is this CVS thing that you
+                         keep mentioning?</A></H2>
+      <P>The <EM>Concurrent Versions System</EM> is one of several
+         revision control packages.  It was selected for GNU projects
+         because it's free and very high quality.  The <A
+         HREF="http://www.gnu.org/software/cvs/cvs.html">CVS entry in
+         the GNU software catalogue</A> has a better description as 
+         well as a <A HREF="http://www.cyclic.com/">link to the makers
+         of CVS</A>. 
+      </P>
+      <P>The &quot;anonymous client checkout&quot; feature of CVS is
+         similar to anonymous FTP in that it allows anyone to retrieve
+         the latest libstdc++ sources.
+      </P>
+      <P>After the first of April, American users will have a
+         &quot;/pharmacy&quot; command-line option...
+         <!-- wonder how long that'll live -->
+      </P>
+
+<HR>
+   <H2><A NAME="2_4">2.4 How do I know if it works?</A></H2>
+      <P>libstdc++-v3 comes with its own testsuite.  You do not need
+         to actually install the library (&quot;<TT>gmake
+         install</TT>&quot;) to run the testsuite.
+      </P>
+      <P>To run the testsuite on the library after building it, use
+         &quot;gmake check&quot; while in your build directory.  To run
+         the testsuite on the library after building and installing it,
+         use &quot;gmake check-install&quot; instead.
+      </P>
+      <P>The testsuite subdirectory in your build directory will then
+         contain three files of the form YYYYMMDD-mkcheck*.txt.  One of
+         them (-mkcheck.txt itself) contains the results of the tests;
+         this can be mailed to the list.  The other files (-mkchecklog.txt
+         and -mkcheckfiles.txt) contain messages from the compiler while
+         building the test programs, and a list of the tests to be run,
+         respectively.
+      </P>
+      <P>If you are using the libgcc.a-rebuilding method to enable std::
+         you might find that the testsuite starts dying with nasty linker
+         errors.  This is symptomatic of the rebuilt libgcc.a not being
+         installed; the previous one is still in use.
+      </P>
+      <P>If you find bugs in the testsuite programs themselves, or if
+         you think of a new test program that should be added to the
+         suite, <B>please</B> write up your idea and send it to the list!
+      </P>
+
+<HR>
+<H1><A NAME="3_0">3.0 Platform-Specific Issues</A></H1>
+   <H2><A NAME="3_1">3.1 Can libstdc++-v3 be used with &lt;my
+                         favorite compiler&gt;?</A></H2>
+      <P>Probably not.  Yet.</P>
+      <P>Because GCC advances so rapidly, development and testing of
+         libstdc++ is being done almost entirely under that compiler.
+         If you are curious about whether other, lesser compilers
+         (*grin*) support libstdc++, you are more than welcome to try.
+         Configuring and building the library (see above) will still
+         require certain tools, however.  Also keep in mind that
+         <EM>building</EM> libstdc++ does not imply that your compiler
+         will be able to <EM>use</EM> all of the features found in the
+         C++ Standard Library.
+      </P>
+      <P>Since the goal of ISO Standardization is for all C++
+         implementations to be able to share code, the final libstdc++
+         should, in theory, be useable under any ISO-compliant
+         compiler.  It will still be targeted and optimized for
+         GCC/g++, however.
+      </P> 
+
+<HR>
+   <H2><A NAME="3_2">3.2 Building under Cygwin hangs/explodes!?</A></H2>
+      <P>Sometimes, yes.  You're probably in the middle of generating
+         the <TT>numeric_limits</TT> specializations when it hangs,
+         right?  Thought so...
+      </P> 
+      <P>The <TT>&lt;limits&gt;</TT> header and its associated library
+         code are platform-specific.  These files get generated from
+         scratch during installation, and it is this generator that is
+         hanging.  More specifically, the only sure way to determine
+         what the <TT>numeric_limits&lt;T&gt;::traps</TT> boolean
+         should be is to actually divide by zero and see if it is
+         trapped or not.
+      </P>
+      <P>Under NT, this will occasionally just hang.  On those
+         occasions when the test does not hang, the zero-division is
+         in fact trapped.  That doesn't prevent hanging elsewhere.
+      </P>
+      <P>You have two options.
+         You can wait until the signal-handling in Cygwin is reworked
+         and released; this is planned to take &quot;a few weeks&quot;
+         and will result in a fix sometime in late December or early January.
+         Or you can get a prebuilt set of bits/std_limits.h and
+         src/limitsMEMBERS.cc files from Mumit Khan's
+         <A HREF="http://www.xraylith.wisc.edu/~khan/software/gnu-win32/libstdc++-v3.html">Cygwin-related
+         website</A>.
+      </P>
+
+<HR>
+<H1><A NAME="4_0">4.0 Known Bugs and Non-Bugs</A></H1>
+   <EM>Note that this section can get rapdily outdated -- such is the
+   nature of an open-source project.  For the latest information, join
+   the mailing list or look through recent archives.   The RELEASE-
+   NOTES and BUGS files are generally kept up-to-date.</EM> 
+
+   <H2><A NAME="4_1">4.1 What works already?</A></H2>
+      <P>This is a verbatim clip from the &quot;Status&quot; section
+         of the RELEASE-NOTES for the latest snapshot.
+      </P> 
+
+<!-- Yeah, I meant that "verbatim clip" thing literally... :-)  -->
+
+<pre>
+New: 
+--- 
+- MT safe string. Supported CPUs are alpha, powerpc, x86, sparc32 and sparc64.
+- Configure support for --enable-threads=posix, as well as initial IO
+  locking implementation.
+- Support for native building on Solaris 2.5.1, Solaris 2.6, Solaris
+  2.7, cygwin, [alpha, powerpc, x86]-linux, and preliminary support for
+  Irix and Aix4.2, Aix 4.3 hosts.
+- --enable-namespaces is on by default.
+- Configure and Makefile support for "drop-in" replacement to
+  libstdc++-v2 completed. It is now possible to bootstrap g++, and
+  have g++ find libstdc++-v3 headers and libraries by default.
+- Synched with CVS egcs libio. 
+- Cygwin native compiling supported.
+- Cross compiling and embedded targets (newlib) with multilibs support added.
+- SGI's strstream implementation has been added.
+- Copyright on all sources assigned to the FSF.
+- Configure, build and install documentation has been added.
+- Support to enable long long has been added.
+- More valarray improvements.
+- Extractors and inserters for std::complex have been added.
+- Extractors and inserters for void* have been fixed.
+- autoconf macros are now in _GLIBCPP_ namespace.
+- group checking for num_get implemented.
+- Many, many bug fixes.
+</pre>
+
+
+<HR>
+   <H2><A NAME="4_2">4.2 Bugs in gcc/g++ (not libstdc++-v3)</A></H2>
+      <P>This is by no means meant to be complete nor exhaustive, but
+         mentions some problems that users may encounter when building
+         or using libstdc++.  If you are experiencing one of these
+         problems, you can find more information on the libstdc++ and
+         the GCC mailing lists.
+      </P>
+      <UL>
+         <LI>When using associative containers (like <TT>map</TT>), and
+             compiling with <TT>-O3</TT> (or <TT>-finline-functions</TT>)
+             and <TT>-Winline</TT>, I get a zillion errors like:
+             <!-- Careful, the leading spaces in PRE show up directly. -->
+             <PRE>
+   .../include/g++/stl_tree.h: In function `int __black_count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)':
+   .../include/g++/stl_tree.h:1045: warning: can't inline call to `int __black_count(struct __rb_tree_node_base *, struct __rb_tree_node_base *)'
+   .../include/g++/stl_tree.h:1053: warning: called from here
+             </PRE>
+             <P>This has been discussed a number of times; the problem
+                is that __black_count is marked inline but is also a
+                recursive function.  As of 12 July 1999, it has been
+                rewritten into an optimized non-recursive form, so 
+                fresh checkouts/releases should no longer see this warning.
+                (The compiler can usually figure out how to make that
+                transformation on its own.)
+             </P>
+
+         <LI>The reason that EGCS 1.1.2 cannot be used to build the
+             library is that lookups do not work properly, and so the
+             compiler will ICE when building the locale-related source
+             files.  This has been fixed in GCC 2.95.
+      </UL>
+
+<HR>
+   <H2><A NAME="4_3">4.3 Bugs in the C++ language/lib specification</A></H2>
+      <P>Yes, unfortunately, there are some.  In a <A 
+HREF="/ml/libstdc++/1998/msg00006.html">message
+to the list</A>, Nathan Myers announced that he has started a list of
+         problems in the ISO C++ Standard itself, especially with
+         regard to the chapters that concern the library.  The list
+         itself is <A
+         HREF="http://www.cantrip.org/draft-bugs.txt">posted on his
+         website</A>.  Developers who are having problems interpreting
+         the Standard may wish to consult his notes.
+      </P>
+      <P>For those people who are not part of the ISO Library Group
+         (i.e., nearly all of us needing to read this page in the first
+         place :-), a public list of the library defects is occasionally
+         published <A HREF="http://anubis.dkuug.dk/jtc1/sc22/wg21/">here</A>.
+      </P>
+
+<HR>
+   <H2><A NAME="4_4">4.4 Things in libstdc++ that look like bugs</A></H2>
+      <P>There are things which are not bugs in the compiler (4.2) nor
+         the language specification (4.3), but aren't really bugs in
+         libstdc++, either.  Really!
+      </P>
+      <P>The biggest of these is the quadzillions of warnings about the
+         library headers emitted when <TT>-Weffc++</TT> is used.  Making
+         libstdc++ &quot;-Weffc++-clean&quot; is not a goal of the project,
+         for a few reasons.  Mainly, that option tries to enforce
+         object-oriented programming, while the Standard Library isn't
+         necessarily trying to be OO.  There are multiple solutions
+         under discussion.
+      </P>
+
+<HR>
+   <H2><A NAME="4_5">4.5 Aw, that's easy to fix!</A></H2>
+      <P>If you have found a bug in the library and you think you have
+         a working fix, then send it in!  The main GCC site has a page
+         on <A HREF="http://egcs.cygnus.com/contribute.html">submitting
+         patches</A> that covers the procedure, but for libstdc++ you
+         should of course send the patch to our mailing list, not the
+         GCC mailing list.  The libstdc++
+         <A HREF="../17_intro/contribute.html">contributors' page</A>
+         also talks about how to submit patches.
+      </P>
+      <P>In addition to the description, the patch, and the ChangeLog
+         entry, it is a Good Thing if you can additionally create a small
+         test program to test for the presence of the bug that your
+         patch fixes.  Bugs have a way of being reintroduced; if an old
+         bug creeps back in, it will be caught immediately by the 
+         <A HREF="#2_4">testsuite</A> -- but only if such a test exists.
+      </P>
+
+<HR>
+<H1><A NAME="5_0">5.0 Miscellaneous</A></H1>
+   <H2><A NAME="5_1">5.1 string::iterator is not char*;
+                     vector&lt;T&gt;::iterator is not T*</A></H2>
+      <P>If you have code that depends on container&lt;T&gt; iterators
+         being implemented as pointer-to-T, your code is broken.
+      </P>
+      <P>While there are arguments for iterators to be implemented in
+         that manner, A) they aren't very good ones in the long term,
+         and B) they were never guaranteed by the Standard anyway.  The
+         type-safety achieved by making iterators a real class rather
+         than a typedef for <TT>T*</TT> outweighs nearly all opposing
+         arguments.
+      </P>
+
+<HR>
+   <H2><A NAME="5_2">5.2 What's next after libstdc++-v3?</A></H2>
+      <P>Hopefully, not much.  The goal of libstdc++-v3 is to produce
+         a fully-compliant, fully-portable Standard Library.  After that,
+         we're mostly done:  there won't <EM>be</EM> any more compliance
+         work to do.
+      </P>
+      <P>The ISO Committee will meet periodically to review Defect Reports
+         in the C++ Standard.  Undoubtably some of these will result in
+         changes to the Standard, which will be reflected in patches to
+         libstdc++.  Some of that is already happening, see 4.2.
+      </P>
+      <P>The current libstdc++ contains extensions to the Library which
+         must be explicitly requested by client code (for example, the
+         hash tables from SGI).  Other extensions may be added to
+         libstdc++-v3 if they seem to be &quot;standard&quot; enough.
+         (For example, the &quot;long long&quot; type from C99.)
+         Bugfixes and rewrites (to improve or fix thread safety, for
+         instance) will of course be a continuing task.
+      </P>
+      <P><A
+HREF="http://sourceware.cygnus.com/ml/libstdc++/1999/msg00080.html">This
+         question</A> about the next libstdc++ prompted some brief but
+         interesting <A
+HREF="http://sourceware.cygnus.com/ml/libstdc++/1999/msg00084.html">speculation</A>.
+      </P>
+
+<HR>
+   <H2><A NAME="5_3">5.3 What about the STL from SGI?</A></H2>
+      <P>The <A HREF="http://www.sgi.com/Technology/STL/">STL from SGI</A>
+         is merged into libstdc++-v3 with changes as necessary.  
+         Currently release 3.2 is being used.  Changes in the STL
+         usually produce some weird bugs and lots of changes in the
+         rest of the libstd++ source as we scramble to keep up. :-)
+      </P>
+      <P>In particular, <TT>string</TT> is not from SGI and makes no
+         use of their &quot;rope&quot; class (which is included as an
+         optional extension), nor is <TT>valarray</TT> and some others.
+         Classes like <TT>vector&lt;&gt;</TT> are, however.
+      </P>
+      <P>The FAQ for SGI's STL (one jump off of their main page) is
+         recommended reading.
+      </P>
+
+<HR>
+   <H2><A NAME="5_4">5.4 Extensions and Backward Compatibility</A></H2>
+      <P>Although you can specify <TT>-I</TT> options to make the
+         preprocessor search the g++-v3/ext and /backward directories,
+         it is better to refer to files there by their path, as in:
+         <!-- Careful, the leading spaces in PRE show up directly. -->
+         <PRE>
+       #include &lt;ext/hash_map&gt;
+         </PRE>
+      </P>
+
+<HR>
+   <H2><A NAME="5_5">5.5 Compiling with &quot;-fnew-abi&quot;</A></H2>
+      <P>The library mostly works if you compile it (and programs you
+         link with it) using &quot;-fnew-abi -fno-honor-std&quot; on a
+         vanilla GCC compiler.  However, some features, such as RTTI
+         and error handlers, might not link properly with a vanilla
+         libgcc built in GCC under the old ABI.  If you rebuild libgcc
+         using the &quot;-f&quot; flags above, you can get both complete
+         language support and full benefits of -fnew-abi -- short
+         mangled symbol names, far more efficient exception handling,
+         and empty base optimization, to name a few.  (Note that the
+         new ABI may change from one GCC snapshot to the next, so you
+         would have to rebuild all your libraries each time you get a
+         new compiler snapshot.) 
+      </P>
+      <P>Towards the end of July 1999, this subject was brought up again
+         on the mailing list under a different name.  The related
+         <A HREF="/ml/libstdc++/1999-q3/msg00066.html">thread</A>
+         (by the name HOWTO-honor-std) is very instructive.  More info
+         is at the end of RELEASE-NOTES.
+      </P>
+      <P>This functionality is now automated and turned on by default.
+      </P>
+
+<HR>
+   <H2><A NAME="5_6">5.6 Is libstdc++-v3 thread-safe?</A></H2>
+      <P>Quick answer:  no, as of 2.90.8 (ninth snapshot), the
+         library is not appropriate for multithreaded access.  The
+         string class is MT-safe.
+      </P>
+      <P>This is assuming that your idea of &quot;multithreaded&quot;
+         is the same as ours...  The general question of multithreading
+         and libstdc++-v3 is addressed in the chapter-specific advice for
+<A HREF="http://sourceware.cygnus.com/libstdc++/17_intro/howto.html#3">Library
+         Introduction</A>.  Threadsafe containers are covered in
+         more detail in
+<A HREF="http://sourceware.cygnus.com/libstdc++/23_containers/howto.html">the
+         Received Wisdom section on containers</A>.
+         <!-- I have successfully evaded the topic; my work here is
+              done- no, wait, I have to write those other sections... -->
+      </P>
+
+<HR>
+   <H2><A NAME="5_7">5.7 How do I get a copy of the ISO C++ Standard?</A></H2>
+      <P>Copies of the full ISO 14882 standard are available on line
+         via the ISO mirror site for committee members.  Non-members,
+         or those who have not paid for the privilege of sitting on
+         the committee and sustained their two-meeting commitment for
+         voting rights, may get a copy of the standard from their
+         respective national standards organization.  In the USA,
+         this national standards organization is ANSI and their
+         website is right <A HREF="http://www.ansi.org">here</A>.
+         (And if you've already registered with them, clicking this
+         link will take you to directly to the place where you can
+<A HREF="http://webstore.ansi.org/ansidocstore/product.asp?sku=ISO%2FIEC+14882%2D1998">buy
+         the standard on-line</A>.
+      </P>
+      <P>Who is your country's member body?  Visit the
+         <A HREF="http://www.iso.ch/">ISO homepage</A> and find out!
+      </P>
+
+<!-- ####################################################### -->
+
+<HR>
+<P CLASS="fineprint"><EM>
+Comments and suggestions are welcome, and may be sent to
+<A HREF="mailto:pme@sourceware.cygnus.com">Phil Edwards</A> or
+<A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
+<BR> $Id: index.html,v 1.21 2000/03/26 03:44:35 pme Exp $
+</EM></P>
+
+
+</BODY>
+</HTML>

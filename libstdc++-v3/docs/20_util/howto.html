@@ -1,0 +1,194 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="AUTHOR" CONTENT="pme@sourceware.cygnus.com (Phil Edwards)">
+   <META NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, egcs, g++, libg++, STL">
+   <META NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 20.">
+   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <TITLE>libstdc++-v3 HOWTO:  Chapter 20</TITLE>
+<LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/docs/20_util/">
+<LINK REL=StyleSheet HREF="../lib3styles.css">
+<!-- $Id: howto.html,v 1.5 2000/03/20 22:16:21 pme Exp $ -->
+</HEAD>
+<BODY>
+
+<H1 CLASS="centered"><A NAME="top">Chapter 20:  General Utilities</A></H1>
+
+<P>Chapter 20 deals with utility classes and functions, such as
+   the oft-debated <TT>auto_ptr&lt;&gt;</TT>.
+</P>
+
+
+<!-- ####################################################### -->
+<HR>
+<H1>Contents</H1>
+<UL>
+   <LI><A HREF="#1"><TT>auto_ptr</TT> is not omnipotent</A>
+   <LI><A HREF="#2">Automatically-generated operators</A>
+   <LI><A HREF="#3">Functors</A>
+   <LI><A HREF="#4">Pairs</A>
+</UL>
+
+<HR>
+
+<!-- ####################################################### -->
+
+<H2><A NAME="1"><TT>auto_ptr</TT> is not omnipotent</A></H2>
+   <P>I'm not going to try and explain all of the fun and delicious
+      things that can happen with misuse of the auto_ptr class template
+      (called AP here), nor am I going to try and teach you how to use
+      AP safely in the presence of copying.  The AP class is a really
+      nifty idea for a smart pointer, but it is one of the dumbest of
+      all the smart pointers -- and that's fine.
+   </P>
+   <P>AP is not meant to be a supersmart solution to all resource
+      leaks everywhere.  Neither is it meant to be an effective form
+      of garbage collection (although it can help, a little bit).
+      And it can <EM>not</EM> be used for arrays!
+   </P>
+   <P>AP <EM>is</EM> meant to prevent nasty leaks in the presence of
+      exceptions.  That's <EM>all</EM>.  This code is AP-friendly:
+      <PRE>
+    // not a recommend naming scheme, but good for web-based FAQs
+    typedef std::auto_ptr&lt;MyClass&gt;  APMC;
+
+    extern function_taking_MyClass_pointer (MyClass*);
+    extern some_throwable_function ();
+
+    void func (int data)
+    {
+        APMC  ap (new MyClass(data));
+
+        some_throwable_function();   // this will throw an exception
+
+        function_taking_MyClass_pointer (ap.get());
+    }
+      </PRE>When an exception gets thrown, the instance of MyClass that's
+      been created on the heap will be <TT>delete</TT>'d as the stack is
+      unwound past <TT>func()</TT>.
+   </P>
+   <P>Changing that code as follows is <EM>not</EM> AP-friendly:
+      <PRE>
+        APMC  ap (new MyClass[22]);
+      </PRE>You will get the same problems as you would without the use
+      of AP:
+      <PRE>
+        char*  array = new char[10];       // array new...
+        ...
+        delete array;                      // ...but single-object delete
+      </PRE>
+   </P>
+   <P>AP cannot tell whether the pointer you've passed at creation points
+      to one or many things.  If it points to many things, you are about
+      to die.  AP is trivial to write, however, so you could write your
+      own <TT>auto_array_ptr</TT> for that situation (in fact, this has
+      been done many times; check the newsgroups, Usenet, Boost, etc).
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+<HR>
+<H2><A NAME="2">Automatically-generated operators</A></H2>
+   <P>Many programs (for that matter, many of the Standard algorithms
+      and containers) require that you write comparison operators for
+      your classes, like <TT>operator&gt;=</TT>.  As any mathmatician
+      will tell you, once you have defined equality and ordering, all
+      of the other comparisons are easily defined in terms of those two.
+   </P>
+   <P>The Committee agrees.  So, once you have written
+      <TT>operator==</TT> and <TT>operator&lt;</TT> for your class
+      (whether they are global or member functions is up to you), you
+      can have the compiler do the grunt-work of generating the rest:
+      <PRE>
+    #include &lt;header_with_my_op==_and_op&lt;_defined&gt;
+    #include &lt;utility&gt;
+    using std::rel_ops;     // note the nested namespace!
+
+    ...
+    if ((obj1 != obj2) || (obj3 >= obj4))  foo();
+      </PRE>
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+<HR>
+<H2><A NAME="3">Functors</A></H2>
+   <P>If you don't know what functors are, you're not alone.  Many people
+      get slightly the wrong idea.  In the interest of not reinventing
+      the wheel, we will refer you to the introduction to the functor
+      concept written by SGI as part of their STL, in
+      <A HREF="http://www.sgi.com/Technology/STL/functors.html">their
+      http://www.sgi.com/Technology/STL/functors.html</A>.
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+<HR>
+<H2><A NAME="4">Pairs</A></H2>
+   <P>The <TT>pair&lt;T1,T2&gt;</TT> is a simple and handy way to
+      carry around a pair of objects.  One is of type T1, and another of
+      type T2; they may be the same type, but you don't get anything
+      extra if they are.  The two members can be accessed directly, as
+      <TT>.first</TT> and <TT>.second</TT>.
+   </P>
+   <P>Construction is simple.  The default ctor initializes each member
+      with its respective default ctor.  The other simple ctor,
+      <PRE>
+    pair (const T1&amp; x, const T2&amp; y);
+      </PRE>does what you think it does, <TT>first</TT> getting <TT>x</TT>
+      and <TT>second</TT> getting <TT>y</TT>.
+   </P>
+   <P>There is a copy constructor, but it requires that your compiler
+      handle member function templates:
+      <PRE>
+    template &lt;class U, class V&gt; pain (const pair&lt;U,V&gt;&amp; p);
+      </PRE>The compiler will convert as necessary from U to T1 and from
+      V to T2 in order to perform the respective initializations.
+   </P>
+   <P>The comparison operators are done for you.  Equality
+      of two <TT>pair&lt;T1,T2&gt;</TT>s is defined as both <TT>first</TT>
+      members comparing equal and both <TT>second</TT> members comparing
+      equal; this simply delegates responsibility to the respective
+      <TT>operator==</TT> functions (for types like MyClass) or builtin
+      comparisons (for types like int, char, etc).
+   </P>
+   <P>The less-than operator is a bit odd the first time you see it.  It
+      is defined as evaluating to:
+      <PRE>
+    x.first  &lt;  y.first  ||
+        ( !(y.first  &lt;  x.first)  &amp;&amp;  x.second  &lt;  y.second )
+      </PRE>
+      The other operators are not defined using the <TT>rel_ops</TT>
+      functions above, but their semantics are the same.
+   </P>
+   <P>Finally, there is a template function called <TT>make_pair</TT>
+      that takes two references-to-const objects and returns an
+      instance of a pair instantiated on their respective types:
+      <PRE>
+    pair&lt;int,MyClass&gt; p = make_pair(4,myobject);
+      </PRE>
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+
+
+
+<!-- ####################################################### -->
+
+<HR>
+<P CLASS="fineprint"><EM>
+Comments and suggestions are welcome, and may be sent to
+<A HREF="mailto:pme@sourceware.cygnus.com">Phil Edwards</A> or
+<A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
+<BR> $Id: howto.html,v 1.5 2000/03/20 22:16:21 pme Exp $
+</EM></P>
+
+
+</BODY>
+</HTML>

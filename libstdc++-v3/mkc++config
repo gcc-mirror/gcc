@@ -1,0 +1,58 @@
+#! /bin/sh
+
+# 2000-02-01 bkoz 
+# Script to take the generated "config.h" from autoconf and make the
+# macros within it namespace safe (ie wrapping them in _GLIBCPP_ so
+# that "HAVE_LC_MESSAGES" becomes "_GLIBCPP_HAVE_LC_MESSAGES" etc etc.
+
+echo "running mkc++config"
+
+BUILD_DIR=$1
+if [ ! -d "$BUILD_DIR" ]; then
+  echo "build directory $BUILD_DIR not found, exiting."
+  exit 1
+fi
+
+SRC_DIR=$2
+if [ ! -d "$SRC_DIR" ]; then
+  echo "source directory $SRC_DIR not found, exiting."
+  exit 1
+fi
+
+BASE_H="$SRC_DIR/bits/c++config.h"
+IN_H="$BUILD_DIR/config.h"
+OUT_H="$BUILD_DIR/bits/c++config.h"
+
+if [ ! -f $IN_H ]; then
+  echo "necessary file $IN_H not found, exiting"
+  exit 1
+fi
+
+if [ ! -d "$BUILD_DIR/bits" ]; then
+  mkdir  "$BUILD_DIR/bits"
+fi
+
+
+# Part 1
+# sed config.h from autoconf and make it namespace safe.
+sed 's/HAVE_/_GLIBCPP_HAVE_/g' < $IN_H > temp-1
+sed 's/PACKAGE/_GLIBCPP_PACKAGE/g' < temp-1 > temp-2
+sed 's/VERSION/_GLIBCPP_VERSION/g' < temp-2 > temp-3
+sed 's/WORDS_/_GLIBCPP_WORDS_/g' < temp-3 > temp-4
+
+
+# Part 2
+# cat this into generated bits/c++config.h
+cat $BASE_H temp-4 > $OUT_H
+rm temp-1 temp-2 temp-3 temp-4
+
+
+# Part 3
+# complete macro guards for resulting file
+cat <<EOF >> $OUT_H
+
+#endif // _CPP_CPPCONFIG_
+EOF
+
+exit 0
+

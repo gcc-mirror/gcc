@@ -1,0 +1,177 @@
+- exception specifications need to be reviewed for all parts of the
+library support and utility areas, particularly <new>. 
+
+- exception/stdexcept headers will do, but are not cleanly
+implemented. Also, some kind of consensus needs to be established on
+if the presence of stdexcept should be assumed in iostreams
+headers. V3 currently takes the position that references to stdexcept
+classes necessitates the inclusion of stdexcept, other library vendors
+seem less inclined.
+
+- scoping/linking issues WRT to C structs need to be worked out. See
+Nathan's commentary on cantrip, http://www.cantrip.org/cheaders.html
+
+- triglyphs/ciso646: and, and_eq, bitand, bitor, compl, not, not_eq,
+or, or_eq, xor, xor_eq, true && 45, true and false, true or 45, etc.
+(bool and int), etc.
+
+- operator!= and utility/rel_ops operators need to be made safe with
+string and vector iterator classes. basic_string::reverse_iterator may
+be implemented incorrectly, or need things like
+operator==(__normal_iterator, const char*&), and swap(vector)
+
+- SGI iterator/allocator classes are not strictly conforming. In
+particular, raw_storage_iterator, mem_fun1_ref_t are all problem
+areas.
+
+- auto_ptr: seems to be some disagreement on what is
+standards-conformant behavior, specially on conversion operators.
+
+- vswprintf, vwprintf, wprintf, wscanf, wcsftime, swscanf, fgetws,
+fputwc, fputws, fwide, fwprintf, fwscanf, getwc, getwchar, putwc, etc:
+C library wchar_t functionality.
+
+- facets heirarchies seem on occasion give odd errors to conformace
+tests. Need to test that they are constructed in a strictly-conforming
+manner.
+
+- stuff like `LC_CTYPE' is not found. Locale oddness?
+
+- header optimizations to keep compile times reasonable are most
+certainly detracting from full conformance, as many templatized
+definitions are squired away and pre-instantiated, so that the
+compiler doesn't have to parse them. Areas effected: valarray, string,
+all of iostreams and locales.
+
+- basic_string<wchar_T> not implemented
+
+- ostreambuf_iterator has not been made standards-conformant (both
+char and wchar_t) In particular, look at 
+time_put::put(OutIt, ios_base&, char, const tm*, const char*, const
+char*) const
+
+- C-related issues WRT to libio and filepos, mbstate_t. Need to
+straighten this stuff out with the glibc-2.2 libio. Also may need to
+define operators for mbstate_t so that 'mbstate_t& == mbstate_t' is
+something that can be done.
+
+- codecvt<wchar_t> has not been adequently handled in terms of the
+locale bits. (The io bits are done, with the exception of one
+ostream<wchar_t> inserter for char.
+
+- bool locale::operator() looks to be non-conformant
+
+- num_get<char>::do_get<user_defined_type> 
+  num_put<char>::do_put<user_defined_type> 
+num_put<char, char *>::do_put(char *, ios_base &, char, long double) const
+num_put<char, char *>::do_put(char *, ios_base &, char, double) const
+num_put<char, char *>::do_put(char *, ios_base &, char, void const *) const
+etc.
+appear to be broken, or headers mashed, or undefined.
+
+- locale and std::combine not working correctly
+ template <class _Facet> class locale locale::combine(const locale &)
+
+- ctype_byname<char>: check to make sure derivation standards-conformant.
+
+- codecvt::unshift not working for char, wchar_t
+
+- no match for money_base::pattern &[int]
+
+- money_get::do_get weirded out for wchar_t
+
+- looks like deque::get_allocator not standards conformant or deque
+allocator non-standard.
+
+- list::assignment operator needs const_cast
+
+- a cleaner division between pointers-to-value_type and true iterators
+needs to be drawn throughout the entire STL implementation.
+
+- priority_queue conversions may be non-conformant
+
+- istream_iterator uses 2 arguments, should it be 4?
+
+- 'do the right thing' ctor fixing needs to be done for string. This
+is still subject to some debate on the library issues list, so I
+suggest punting till the dust clears.
+
+- the ctype and "tolower" "isspace" stuff really needs to be sorted
+out. A portable, cross platform interface needs to be defined. A
+"fixincludes"-like solution needs to be put into place to prune
+headers. The "C" functions need to be able to work in std:: and "C"
+namespaces.
+
+- complex<float> seems to be the single largest source of internal
+compiler errors when compiling the c++ library across non-x86
+platforms. Somebody needs to make sure the complex support builtin to
+gcc is actually working. Just as a "for-instance" these things give ICEs:
+class complex<float>& complex<float>::operator-=<float>(const complex<float> &)
+class complex<float>& complex<float>::operator/=<float>(const complex<float> &)
+class complex<float>& complex<float>::operator+=<float>(const complex<float> &)
+class complex<float>& complex<float>::operator-=<float>(const complex<float> &)
+class complex<float>& complex<float>::operator*=<float>(const complex<float> &)
+
+- appears as if the following extraction operators are undefined:
+operator>>(istream, complex<float>&)
+operator>>(istream, complex<double>&)
+operator>>(istream, complex<long double>&)
+operator>>(istream, complex<user_defined_type>&)
+sqrt (const complex<T>& x)
+
+- Protect valarray::result_type (not Standard) and make it work with
+  the various helper classes.
+
+- Make sure `valarray<bool> & == _Expr<_BinClos<logical_or,_ValArray,_ValArray,double,double>,bool>' 
+  is defined
+
+- long double std_cmath stuff looks weak
+
+- fwide not declared. C++ wchar_t issues completely unaddressed.
+
+- known issues WRT to io and corner cases with the buffers. This is
+still subject to interpretation, and I think the current
+implementation is credible.
+
+- All of the Library working group closed issues need to be
+addressed. Some of them proposed resolutions are already in the v-3
+sources, with macro-guards.
+
+- add deprecated features from Annex D
+  - add #ifdef wrappers for all of them, including in each
+    C <xxx.h> header
+  - replace typedef'd non-deprecated types with more type-safe equivalents.
+
+- add optimization hooks (esp. whitespace eating) to streambuf
+  - add _M_begin() and _M_end() to streambuf
+  - add algorithm specializations for [io]streambuf_iterator (copy find etc.)
+
+- fix template members of basic_string<> to overload iterators and
+  non-iterators properly.  (This is the infamous hack as in vector<> etc
+  23.1.1 para 10.)
+
+- write filebuf for wide characters
+
+- replace stl/bits/stl_config 
+
+- add feature-test macros for non-standard extensions
+
+- move major extensions into separate namespace (e.g. stl::)
+
+- create MT abstraction layer
+
+- add MT support for locale, string, istream, ostream
+
+- specialize functions that use_facet<> calls on failure for the required 
+  facets, and construct them lazily so unused facets need not be constructed 
+  when the locale is. 
+
+- get mknumeric_limits coope with 'exotic' OSes.
+
+- <cmath>: provide missing names. 
+
+- provide testsuites for numerics.
+
+- add FAQ entries -- improve the install instructions
+
+- add HOWTO entries

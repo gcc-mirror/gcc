@@ -1,0 +1,147 @@
+
+<!--#include virtual="/libstdc++/header.html"-->
+
+
+<H3>Status</H3>
+<P>Compiling this library requires a recent version of gcc.  (For instance,
+   gcc 2-95 works well.)  In addition, <A HREF="/autoconf/">autoconf</A>
+   versions 2.13 and above and <A HREF="/automake/">automake</A> versions
+   1.3b and above are required and essential ingredients for those mucking
+   about in the Makefiles and trying to configure on new targets.
+</P>
+
+<P>New things that work are in the latest
+   <A HREF="17_intro/RELEASE-NOTES">release notes</A>.
+</P>
+
+<P>Known problems and bugs, which will force us to actually keep this
+   file up-to-date, can be found in <A HREF="17_intro/BUGS">bugs</A>.
+</P>
+
+<P>Things that need to be done and are looking for volunteers can be found
+   in: <A HREF="17_intro/TODO">pick me</A>.
+</P>
+
+<P>This release has been tested with gcc 2.95 on the following
+   platforms.  The configuration of --disable-namespaces
+   --disable-libgcc-rebuild was tested. Results for the
+   --enable-namespaces builds should be comparable.  Here are the
+   results for snapshots 2.90.N:
+</P>
+
+<TABLE CELLSPACING=4 CELLPADDING=1>
+
+    <!-- Column titles -->
+    <TR>
+    <TH ALIGN=LEFT>.N</TH>
+    <TH ALIGN=LEFT>host</TH>
+    <TH ALIGN=CENTER>build</TH>
+    <TH ALIGN=CENTER>static pass/fail</TH>
+    <TH ALIGN=CENTER>shared pass/fail</TH>
+    </TR>
+
+    <TR>
+    <TD ALIGN=LEFT>.8</TD>
+    <TD ALIGN=LEFT>alpha-unknown-linux-gnu</TD>
+    <TD ALIGN=CENTER>+ (see Note 1)</TD>
+    <TD ALIGN=CENTER>62/5</TD>
+    <TD ALIGN=CENTER>62/5</TD>
+    </TR>
+
+    <TR>
+    <TD ALIGN=LEFT>.8</TD>
+    <TD ALIGN=LEFT>i686-unknown-linux-gnu</TD>
+    <TD ALIGN=CENTER>+</TD>
+    <TD ALIGN=CENTER>65/3</TD>
+    <TD ALIGN=CENTER>65/3</TD>
+    </TR>
+
+    <TR>
+    <TD ALIGN=LEFT>.8</TD>
+    <TD ALIGN=LEFT>powerpc-unknown-linux-gnu</TD>
+    <TD ALIGN=CENTER>+</TD>
+    <TD ALIGN=CENTER>65/3</TD>
+    <TD ALIGN=CENTER>65/3</TD>
+    </TR>
+
+    <TR>
+    <TD ALIGN=LEFT>.8</TD>
+    <TD ALIGN=LEFT>sparc-sun-solaris2.5.1</TD>
+    <TD ALIGN=CENTER>+ (see Note 2)</TD>
+    <TD ALIGN=CENTER>62/6</TD>
+    <TD ALIGN=CENTER>62/6</TD>
+    </TR>
+
+    <TR>
+    <TD ALIGN=LEFT>.8</TD>
+    <TD ALIGN=LEFT>sparc-sun-solaris2.6</TD>
+    <TD ALIGN=CENTER>+ (see Note 2)</TD>
+    <TD ALIGN=CENTER>65/3</TD>
+    <TD ALIGN=CENTER>65/3</TD>
+    </TR>
+
+    <TR>
+    <TD ALIGN=LEFT>.8</TD>
+    <TD ALIGN=LEFT>sparc-sun-solaris2.7</TD>
+    <TD ALIGN=CENTER>+ (see Note 2)</TD>
+    <TD ALIGN=CENTER>65/3</TD>
+    <TD ALIGN=CENTER>65/3</TD>
+    </TR>
+
+
+    <TR>
+    <TD ALIGN=LEFT>.8</TD>
+    <TD ALIGN=LEFT>powerpc-ibm-aix4.x</TD>
+    <TD ALIGN=CENTER>- (see Note 3)</TD>
+    <TD ALIGN=CENTER>0/68</TD>
+    <TD ALIGN=CENTER>0/68</TD>
+    </TR>
+
+    <TR>
+    <TD ALIGN=LEFT>.8</TD>
+    <TD ALIGN=LEFT>i686-cygwin</TD>
+    <TD ALIGN=CENTER>+</TD>
+    <TD ALIGN=CENTER>65/3</TD>
+    <TD ALIGN=CENTER>0/68</TD>
+    </TR>
+
+    <TR>
+    <TD ALIGN=LEFT>.8</TD>
+    <TD ALIGN=LEFT>i686-linux-x-powerpc-elf</TD>
+    <TD ALIGN=CENTER>+</TD>
+    <TD ALIGN=CENTER>65/3</TD>
+    <TD ALIGN=CENTER>65/3</TD>
+    </TR>
+
+</TABLE>
+
+<P>Note 1: A newer compiler than gcc-2.95.2 is required. 
+</P>
+
+<P>Note 2: All solaris toolchains were configured with --with-gnu-ld
+--with-gnu-as --with-gnu-binutils --with-gcc. (That's a lot of --with's...)
+</P>
+
+<P>Note 3: Configuration and initial support for AIX has been
+   completed. However, problems with the compiler/linker have
+   prevented testing. For instance, mknumeric_limits will fail unless
+   weak linking is possible, which doesn't seem possible on
+   AIX. The initial bug report is 
+   <a href="http://gcc.gnu.org/ml/gcc-bugs/2000-03/msg00574.html"> here </a>
+
+<p>And the
+   response from one of the powerpc port maintainers:
+
+<p>
+<i>
+   I opposed the original solution (involving weak symbols) on ELF, as
+   it seemed to be the wrong idea.  I'm not sure what the right fix is,
+   and don't think I have time to work on it right now.</i>
+</p>
+</P>
+
+
+
+
+<!--#include virtual="/libstdc++/footer.html"-->
+

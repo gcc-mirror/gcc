@@ -1,0 +1,39 @@
+
+<!--#include virtual="/libstdc++/header.html"-->
+
+
+<H3>Getting the sources by FTP or CVS</H3>
+
+<P>Get the snapshot archive from
+<BLOCKQUOTE>
+  <A HREF="ftp://sourceware.cygnus.com/pub/libstdc++/">
+           ftp://sourceware.cygnus.com/pub/libstdc++/
+  </A>
+</BLOCKQUOTE></P>
+
+<P>CVS repository available by anonymous CVS.
+  <UL>
+   <LI>cvs -z9 -d :pserver:anoncvs@sourceware.cygnus.com:/cvs/libstdc++ login
+   <LI>enter ``anoncvs'' for the password
+   <LI>cvs -z9 -d :pserver:anoncvs@sourceware.cygnus.com:/cvs/libstdc++ co libstdc++
+
+   <LI>You only need to specify the repository root the first time; after
+       that cvs will go to the correct place automatically.  Using '-z9'
+       is highly recommended, as it will reduce the bandwidth required.
+
+   <LI>You can 
+       <A HREF="/cgi-bin/cvsweb.cgi/libstdc++?cvsroot=libstdc++">browse 
+       the CVS repository over the web</a>.
+  </UL>
+</P>
+
+<P>For those of you using Cygwin or Mingw32, you can avoid various
+   <A HREF="faq/index.html#3_2">problems building the library</A> by using
+   prebuilt binaries of snapshots from Mumit Khan's
+   <A HREF="http://www.xraylith.wisc.edu/~khan/software/gnu-win32/libstdc++-v3.html">Cygwin pages</A>.
+</P>
+
+
+
+<!--#include virtual="/libstdc++/footer.html"-->
+

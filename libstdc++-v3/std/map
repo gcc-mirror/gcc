@@ -1,0 +1,3 @@
+#ifndef _CPP_MAP
+#include <bits/std_map.h>
+#endif

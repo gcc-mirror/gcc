@@ -1,0 +1,246 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="AUTHOR" CONTENT="pme@sourceware.cygnus.com (Phil Edwards)">
+   <META NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, egcs, g++, libg++, STL">
+   <META NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 23.">
+   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <TITLE>libstdc++-v3 HOWTO:  Chapter 23</TITLE>
+<LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/docs/23_containers/">
+<LINK REL=StyleSheet HREF="../lib3styles.css">
+<!-- $Id: howto.html,v 1.8 2000/03/23 20:58:38 pme Exp $ -->
+</HEAD>
+<BODY>
+
+<H1 CLASS="centered"><A NAME="top">Chapter 23:  Containers</A></H1>
+
+<P>Chapter 23 deals with container classes and what they offer.
+</P>
+
+
+<!-- ####################################################### -->
+<HR>
+<H1>Contents</H1>
+<UL>
+   <LI><A HREF="#1">Making code unaware of the container/array difference</A>
+   <LI><A HREF="#2">Variable-sized bitmasks</A>
+   <LI><A HREF="#3">Containers and multithreading</A>
+</UL>
+
+<HR>
+
+<!-- ####################################################### -->
+
+<H2><A NAME="1">Making code unaware of the container/array difference</A></H2>
+   <P>You're writing some code and can't decide whether to use builtin
+      arrays or some kind of container.  There are compelling reasons 
+      to use one of the container classes, but you're afraid that you'll
+      eventually run into difficulties, change everything back to arrays,
+      and then have to change all the code that uses those data types to
+      keep up with the change.
+   </P>
+   <P>If your code makes use of the standard algorithms, this isn't as
+      scary as it sounds.  The algorithms don't know, nor care, about
+      the kind of &quot;container&quot; on which they work, since the
+      algorithms are only given endpoints to work with.  For the container
+      classes, these are iterators (usually <TT>begin()</TT> and
+      <TT>end()</TT>, but not always).  For builtin arrays, these are
+      the address of the first element and the past-the-end element.
+      <!-- a good explanation of the past-the-end rules is in order,
+           probably a link somewhere
+      -->
+   </P>
+   <P>Some very simple wrapper functions can hide all of that from the
+      rest of the code.  For example, a pair of functions called
+      <TT>beginof</TT> can be written, one that takes an array, another
+      that takes a vector.  The first returns a pointer to the first
+      element, and the second returns the vector's <TT>begin()</TT>
+      iterator.
+   </P>
+   <P>The functions should be made template functions, and should also 
+      be declared inline.  As pointed out in the comments in the code 
+      below, this can lead to <TT>beginof</TT> being optimized out of
+      existence, so you pay absolutely nothing in terms of increased
+      code size or execution time.
+   </P>
+   <P>The result is that if all your algorithm calls look like
+      <PRE>
+   std::transform(beginof(foo), endof(foo), beginof(foo), SomeFunction);</PRE>
+      then the type of foo can change from an array of ints to a vector
+      of ints to a deque of ints and back again, without ever changing any
+      client code.
+   </P>
+   <P>This author has a collection of such functions, called &quot;*of&quot;
+      because they all extend the builtin &quot;sizeof&quot;.  It started
+      with some Usenet discussions on a transparent way to find the length
+      of an array.  A simplified and much-reduced version for easier
+      reading is <A HREF="wrappers_h.txt">given here</A>.
+   </P>
+   <P>Astute readers will notice two things at once:  first, that the
+      container class is still a <TT>vector&lt;T&gt;</TT> instead of a
+      more general <TT>Container&lt;T&gt;</TT>.  This would mean that
+      three functions for <TT>deque</TT> would have to be added, another
+      three for <TT>list</TT>, and so on.  This is due to problems with
+      getting template resolution correct; I find it easier just to 
+      give the extra three lines and avoid confusion.
+   </P>
+   <P>Second, the line
+      <PRE>
+    inline unsigned int lengthof (T (&)[sz]) { return sz; } </PRE>
+      looks just weird!  Hint:  unused parameters can be left nameless.
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+<HR>
+<H2><A NAME="2">Variable-sized bitmasks</A></H2>
+   <P>No, you cannot write code of the form
+      <!-- Careful, the leading spaces in PRE show up directly. -->
+      <PRE>
+      #include &lt;bitset&gt;
+
+      void foo (size_t n)
+      {
+          std::bitset&lt;n&gt;   bits;
+          ....
+      } </PRE>
+      because <TT>n</TT> must be known at compile time.  Your compiler is
+      correct; it is not a bug.  That's the way templates work.  (Yes, it
+      <EM>is</EM> a feature.)
+   </P>
+   <P>There are a couple of ways to handle this kind of thing.  Please
+      consider all of them before passing judgement.  They include, in
+      no particular order:
+      <UL>
+        <LI>A very large N in <TT>bitset&lt;N&gt;</TT>.
+        <LI>A container&lt;bool&gt;.
+        <LI>Extremely weird solutions.
+      </UL>
+   </P>
+   <P><B>A very large N in <TT>bitset&lt;N&gt;</TT>.&nbsp;&nbsp;</B>  It has
+      been pointed out a few times in newsgroups that N bits only takes up
+      (N/8) bytes on most systems, and division by a factor of eight is pretty
+      impressive when speaking of memory.  Half a megabyte given over to a
+      bitset (recall that there is zero space overhead for housekeeping info;
+      it is known at compile time exactly how large the set is) will hold over
+      four million bits.  If you're using those bits as status flags (e.g.,
+      &quot;changed&quot;/&quot;unchanged&quot; flags), that's a <EM>lot</EM>
+      of state.
+   </P>
+   <P>You can then keep track of the &quot;maximum bit used&quot; during some
+      testing runs on representative data, make note of how many of those bits
+      really need to be there, and then reduce N to a smaller number.  Leave
+      some extra space, of course.  (If you plan to write code like the 
+      incorrect example above, where the bitset is a local variable, then you
+      may have to talk your compiler into allowing that much stack space;
+      there may be zero spae overhead, but it's all allocated inside the
+      object.)
+   </P>
+   <P><B>A container&lt;bool&gt;.&nbsp;&nbsp;</B>  The Committee made provision
+      for the space savings possible with that (N/8) usage previously mentioned,
+      so that you don't have to do wasteful things like
+      <TT>Container&lt;char&gt;</TT> or <TT>Container&lt;short int&gt;</TT>.
+      Specifically, <TT>vector&lt;bool&gt;</TT> is required to be
+      specialized for that space savings.
+   </P>
+   <P>The problem is that <TT>vector&lt;bool&gt;</TT> doesn't behave like a
+      normal vector anymore.  There have been recent journal articles which
+      discuss the problems (the ones by Herb Sutter in the May and
+      July/August 1999 issues of
+      <EM>C++ Report</EM> cover it well).  Future revisions of the ISO C++
+      Standard will change the requirement for <TT>vector&lt;bool&gt;</TT>
+      specialization.  In the meantime, <TT>deque&lt;bool&gt;</TT> is
+      recommended (although its behavior is sane, you probably will not get
+      the space savings, but the allocation scheme is different than that
+      of vector).
+   </P>
+   <P><B>Extremely weird solutions.&nbsp;&nbsp;</B>  If you have access to
+      the compiler and linker at runtime, you can do something insane, like
+      figuring out just how many bits you need, then writing a temporary 
+      source code file.  That file contains an instantiation of <TT>bitset</TT>
+      for the required number of bits, inside some wrapper functions with
+      unchanging signatures.  Have your program then call the
+      compiler on that file using Position Independant Code, then open the
+      newly-created object file and load those wrapper functions.  You'll have
+      an instantiation of <TT>bitset&lt;N&gt;</TT> for the exact <TT>N</TT>
+      that you need at the time.  Don't forget to delete the temporary files.
+      (Yes, this <EM>can</EM> be, and <EM>has been</EM>, done.)
+   </P>
+   <!-- I wonder if this next paragraph will get me in trouble... -->
+   <P>This would be the approach of either a visionary genius or a raving
+      lunatic, depending on your programming and management style.  Probably
+      the latter.
+   </P>
+   <P>Which of the above techniques you use, if any, are up to you and your
+      intended application.  Some time/space profiling is indicated if it
+      really matters (don't just guess).  And, if you manage to do anything
+      along the lines of the third category, the author would love to hear
+      from you...
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+<HR>
+<H2><A NAME="3">Containers and multithreading</A></H2>
+   <P>This section will mention some of the problems in designing MT
+      programs that use Standard containers.  For information on other
+      aspects of multithreading (e.g., the library as a whole), see
+      the Received Wisdom on Chapter 17.
+   </P>
+   <P>An excellent page to read when working with templatized containers
+      and threads is
+      <A HREF="http://www.sgi.com/Technology/STL/thread_safety.html">SGI's
+      http://www.sgi.com/Technology/STL/thread_safety.html</A>.  The
+      libstdc++-v3 uses the same definition of thread safety
+      when discussing design.  A key point that beginners may miss is the
+      fourth major paragraph (&quot;For most clients,&quot;...), pointing
+      out that locking must nearly always be done outside the container,
+      by client code (that'd be you, not us *grin*).
+   </P>
+   <P>You didn't read it, did you?  *sigh*  I'm serious, go read the
+      SGI page.  It's really good and doesn't take long, and makes most
+      of the points that would otherwise have to be made here (and does
+      a better job).
+   </P>
+   <P>That's much better.  Now, the issue of MT has been brought up on
+      the libstdc++-v3 mailing list as well as the main GCC mailing list
+      several times.  The Chapter 17 HOWTO has some links into the mail
+      archives, so you can see what's been thrown around.  The usual
+      container (or pseudo-container, depending on how you look at it)
+      that people have in mind is <TT>string</TT>, which is one of the
+      points where libstdc++ departs from the SGI STL.  As of the
+      2.90.8 snapshot, the libstdc++-v3 string class is safe for
+      certain kinds of multithreaded access.
+   </P>
+   <P>For implementing a container which does its own locking, it is
+      trivial to (as SGI suggests) provide a wrapper class which obtains
+      the lock, performs the container operation, then releases the lock.
+      This could be templatized <EM>to a certain extent</EM>, on the
+      underlying container and/or a locking mechanism.  Trying to provide
+      a catch-all general template solution would probably be more trouble
+      than it's worth.
+   </P>
+
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+
+
+
+<!-- ####################################################### -->
+
+<HR>
+<P CLASS="fineprint"><EM>
+Comments and suggestions are welcome, and may be sent to
+<A HREF="mailto:pme@sourceware.cygnus.com">Phil Edwards</A> or
+<A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
+<BR> $Id: howto.html,v 1.8 2000/03/23 20:58:38 pme Exp $
+</EM></P>
+
+
+</BODY>
+</HTML>

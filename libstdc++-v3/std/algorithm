@@ -1,0 +1,3 @@
+#ifndef _CPP_ALGORITHM
+#include <bits/std_algorithm.h>
+#endif

@@ -1,0 +1,217 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="AUTHOR" CONTENT="pme@sourceware.cygnus.com (Phil Edwards)">
+   <META NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, egcs, g++, libg++, STL">
+   <META NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 18.">
+   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <TITLE>libstdc++-v3 HOWTO:  Chapter 18</TITLE>
+<LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/docs/18_support/">
+<LINK REL=StyleSheet HREF="../lib3styles.css">
+<!-- $Id: howto.html,v 1.5 1999/12/15 16:57:06 pme Exp $ -->
+</HEAD>
+<BODY>
+
+<H1 CLASS="centered"><A NAME="top">Chapter 18:  Library Support</A></H1>
+
+<P>Chapter 18 deals with the functions called and objects created
+   automatically during the course of a program's existence.
+</P>
+<P>While we can't reproduce the contents of the Standard here (you need to
+   get your own copy from your nation's member body; see our homepage for
+   help), we can mention a couple of changes in what kind of support a C++
+   program gets from the Standard Library.
+</P>
+
+
+<!-- ####################################################### -->
+<HR>
+<H1>Contents</H1>
+<UL>
+   <LI><A HREF="#1">Types</A>
+   <LI><A HREF="#2">Implementation properties</A>
+   <LI><A HREF="#3">Start and Termination</A>
+   <LI><A HREF="#4">Dynamic memory management</A>
+</UL>
+
+<HR>
+
+<!-- ####################################################### -->
+
+<H2><A NAME="1">Types</A></H2>
+   <P>All the types that you're used to in C are here in one form or
+      another.  The only change that might affect people is the type of
+      NULL:  while it is required to be a macro, the definition of that
+      macro is <EM>not</EM> allowed to be <TT>(void*)0</TT>, which is
+      often used in C.
+   </P>
+   <P>
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+<HR>
+<H2><A NAME="2">Implementation properties</A></H2>
+   <P>
+   <H3><CODE>&lt;limits&gt;</CODE></H3>
+   This header mainly defines traits classes to give access to various
+   implementation defined-aspects of the fundamental types.  The
+   traits classes -- fourteen in total -- are all specilizations of the 
+   template class <CODE>numeric_limits</CODE> defined as follows:
+   <PRE>
+   template&lt;typename T&gt; struct class {
+      static const bool is_specialized;
+      static T max() throw();
+      static T min() throw();
+
+      static const int digits;
+      static const int digits10;
+      static const bool is_signed;
+      static const bool is_integer;
+      static const bool is_exact;
+      static const int radix;
+      static T epsilon() throw();
+      static T round_error() throw();
+
+      static const int min_exponent;
+      static const int min_exponent10;
+      static const int max_exponent;
+      static const int max_exponent10;
+
+      static const bool has_infinity;
+      static const bool has_quiet_NaN;
+      static const bool has_signaling_NaN;
+      static const float_denorm_style has_denorm;
+      static const bool has_denorm_loss;
+      static T infinity() throw();
+      static T quiet_NaN() throw();
+      static T denorm_min() throw();
+
+      static const bool is_iec559;
+      static const bool is_bounded;
+      static const bool is_modulo;
+
+      static const bool traps;
+      static const bool tinyness_before;
+      static const float_round_style round_style;
+   };</PRE>
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+<HR>
+<H2><A NAME="3">Start and Termination</A></H2>
+   <P>Not many changes here to <TT>&lt;cstdlib&gt;</TT> (the old stdlib.h).
+      You should note that the <TT>abort()</TT> function does not call
+      the destructors of automatic nor static objects, so if you're depending
+      on those to do cleanup, it isn't going to happen.  (The functions
+      registered with <TT>atexit()</TT> don't get called either, so you
+      can forget about that possibility, too.)
+   </P>
+   <P>The good old <TT>exit()</TT> function can be a bit funky, too, until
+      you look closer.  Basically, three points to remember are:
+      <OL>
+        <LI>Static objects are destroyed in reverse order of their creation.
+        <LI>Functions registered with <TT>atexit()</TT> are called in
+            reverse order of registration, once per registration call.
+            (This isn't actually new.)
+        <LI>The previous two actions are &quot;interleaved,&quot; that is,
+            given this code:
+            <PRE>
+              extern "C or C++" void  f1 (void);
+              extern "C or C++" void  f2 (void);
+
+              static Thing obj1;
+              atexit(f1);
+              static Thing obj2;
+              atexit(f2);
+            </PRE>then at a call of <TT>exit()</TT>, f2 will be called, then
+            obj2 will be destroyed, then f1 will be called, and finally obj1
+            will be destroyed.  If f1 or f2 allow an exception to propogate
+            out of them, Bad Things happen.
+      </OL>
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+<HR>
+<H2><A NAME="4">Dynamic memory management</A></H2>
+   <P>There are six flavors each of <TT>new</TT> and <TT>delete</TT>, so
+      make certain that you're using the right ones!  Here are quickie
+      descriptions of <TT>new</TT>:
+      <UL>
+        <LI>single object form, throwing a <TT>bad_alloc</TT> on errors;
+            this is what most people are used to using
+        <LI>single object &quot;nothrow&quot; form, returning NULL on errors
+        <LI>array new, throwing <TT>bad_alloc</TT> on errors
+        <LI>array nothrow new, returning NULL on errors
+        <LI>placement new, which does nothing (like it's supposed to)
+        <LI>placement array new, which also does nothing
+      </UL>
+      They are distinguished by the parameters that you pass to them, like
+      any other overloaded function.  The six flavors of <TT>delete</TT>
+      are distinguished the same way, but none of them are allowed to throw
+      an exception under any circumstances anyhow.  (They match up for
+      completeness' sake.)
+   </P>
+   <P>Remember that it is perfectly okay to call <TT>delete</TT> on a
+      NULL pointer!  Nothing happens, by definition.  That is not the
+      same thing as deleting a pointer twice.
+   </P>
+   <P>By default, if one of the &quot;throwing <TT>new</TT>s&quot; can't
+      allocate the memory requested, it tosses an instance of a
+      <TT>bad_alloc</TT> exception (or, technically, some class derived
+      from it).  You can change this by writing your own function (called
+      a new-handler) and then registering it with <TT>set_new_handler()</TT>:
+      <PRE>
+   typedef void (*PFV)(void);
+
+   static char*  safety;
+   static PFV    old_handler;
+
+   void my_new_handler ()
+   {
+       delete safety;
+       popup_window ("Dude, you are running low on heap memory.  You
+                      should, like, close some windows, or something.
+                      The next time you run out, we're gonna burn!");
+       set_new_handler (old_handler);
+       return;
+   }
+
+   int main ()
+   {
+       safety = new char[500000];
+       old_handler = set_new_handler (&my_new_handler);
+       ...
+   }
+      </PRE>
+   </P>
+   <P><TT>bad_alloc</TT> is derived from the base <TT>exception</TT>
+      class defined in Chapter 19.
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+
+
+
+
+<!-- ####################################################### -->
+
+<HR>
+<P CLASS="fineprint"><EM>
+Comments and suggestions are welcome, and may be sent to
+<A HREF="mailto:pme@sourceware.cygnus.com">Phil Edwards</A> or
+<A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
+<BR> $Id: howto.html,v 1.5 1999/12/15 16:57:06 pme Exp $
+</EM></P>
+
+
+</BODY>
+</HTML>

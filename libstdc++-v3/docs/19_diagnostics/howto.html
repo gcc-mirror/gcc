@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="AUTHOR" CONTENT="pme@sourceware.cygnus.com (Phil Edwards)">
+   <META NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, egcs, g++, libg++, STL">
+   <META NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 19.">
+   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <TITLE>libstdc++-v3 HOWTO:  Chapter 19</TITLE>
+<LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/docs/19_diagnostics/">
+<LINK REL=StyleSheet HREF="../lib3styles.css">
+<!-- $Id: howto.html,v 1.4 1999/12/15 16:57:06 pme Exp $ -->
+</HEAD>
+<BODY>
+
+<H1 CLASS="centered"><A NAME="top">Chapter 19:  Diagnostics</A></H1>
+
+<P>Chapter 19 deals with program diagnostics, such as exceptions
+   and assertions.
+</P>
+
+
+<!-- ####################################################### -->
+<HR>
+<H1>Contents</H1>
+<UL>
+   <LI><A HREF="#1">Adding data to exceptions</A>
+   <LI><A HREF="#2">Exception class hierarchy diagram</A>
+</UL>
+
+<HR>
+
+<!-- ####################################################### -->
+
+<H2><A NAME="1">Adding data to exceptions</A></H2>
+   <P>The standard exception classes carry with them a single string as
+      data (usually describing what went wrong or where the 'throw' took
+      place).  It's good to remember that you can add your own data to
+      these exceptions when extending the heirarchy:
+   </P>
+   <PRE>
+   using std::runtime_error;
+   struct My_Exception : public runtime_error
+   {
+     public:
+       My_Exception (const string& whatarg)
+           : runtime_error(whatarg), e(errno), id(GetDataBaseID()) { }
+       int  errno_at_time_of_throw() const { return e; }
+       DBID id_of_thing_that_threw() const { return id; }
+     protected:
+       int    e;
+       DBID   id;     // some user-defined type
+   };
+   </PRE>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+<HR>
+<H2><A NAME="2">Exception class hierarchy diagram</A></H2>
+   <P>The <A HREF="exceptions_hiearchy.pdf">diagram</A> is in PDF, or
+      at least it will be once it gets finished.
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+
+
+
+<!-- ####################################################### -->
+
+<HR>
+<P CLASS="fineprint"><EM>
+Comments and suggestions are welcome, and may be sent to
+<A HREF="mailto:pme@sourceware.cygnus.com">Phil Edwards</A> or
+<A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
+<BR> $Id: howto.html,v 1.4 1999/12/15 16:57:06 pme Exp $
+</EM></P>
+
+
+</BODY>
+</HTML>

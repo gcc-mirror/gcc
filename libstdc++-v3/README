@@ -1,0 +1,94 @@
+file: isolib/README
+
+New users may wish to point their web browsers to the file index.html
+in the 'docs' subdirectory.  It contains brief building instructions
+and notes on how to configure the library in interesting ways.
+
+
+Instructions for configuring and building this snapshot appear
+in install.html.
+
+This directory contains the files needed to create [a still broken
+subset of] an ISO Standard C++ Library.
+
+It has subdirectories:
+
+  bits
+     Files included by standard headers and by other files in
+     the bits directory.  Includes a set of files bits/std_xxxx.h
+     that implement the standard headers <xxxx>.
+
+  std
+     Files meant to be found by #include <name> directives in
+     standard-conforming user programs.  These headers are not
+     referred to by other headers, because such dependencies
+     confuse Make (leading it to delete them, all too often).
+     Installations may substitute symbolic links in place of
+     these files.
+
+  ext
+     Headers that define extensions to the standard library.  No
+     standard header refers to any of them.
+
+  backward
+     Headers provided for backward compatibility, such as <iostream.h>.
+     They are not used in this library.
+
+  src
+     Files that are used in constructing the library, but are not
+     installed.
+
+  testsuites/17_* to 27_*
+     Test programs are here, and may be used to begin to exercise the 
+     library.  Support for "make check" and "make check-install" is
+     complete, and runs through all the subdirectories here when this
+     command is issued from the build directory. Please note that
+     "make check" calls the script mkcheck, which requires bash, and which
+     may need the paths to bash adjusted to work properly, as /bin/bash is
+     assumed.
+
+  shadow
+     Headers intended to shadow standard C headers provided by an
+     underlying OS or C library, and other headers depended on directly
+     by C++ headers (e.g. unistd.h).  These are meant to wrap the names
+     defined there into the _CSwamp namespace.
+     [NB: this is still experimental, and is not currently used.]
+
+  cshadow
+     The contents of this directory are constructed by scripts which 
+     examine the underlying C headers to discover other headers they
+     depend on.  These headers are wrappers for them.
+     [NB: this is still experimental, and is not currently used.]
+
+Other subdirectories contain variant versions of certain files
+that are meant to be copied or linked by the configure script.
+Currently these are:
+
+  amm1 generic glibc math
+
+Files needed only to construct the library, but not installed,
+are in src/.  Files to be copied as part of an installation are
+all found in the subdirectories mentioned above.  (A configure
+script may link files from another directory into one of these.)
+
+In a normal installation the bits/ directory is copied
+under the std/ directory, and arranged to be searched only
+when an include directive specifies a filename of "bits/..."
+or <bits/...>.  When building the library, we use
+
+  -Istd -I. -Iconfig/* -Iconfig/cpu/*
+
+to get the same effect.
+
+Note that glibc also has a bits/ subdirectory.  We will either
+need to be careful not to collide with names in its bits/
+directory; or rename bits to (e.g.) cppbits/.
+
+To install libstdc++ you need GNU make.  The makefiles do not work with
+any other make.
+
+In files throughout the system, lines marked with an "XXX" indicate
+a bug or incompletely-implemented feature.  Lines marked "XXX MT"
+indicate a place that may require attention for multi-thread safety.
+(Warning: places that need an atomic read are not so marked yet.)
+

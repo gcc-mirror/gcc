@@ -1,0 +1,3 @@
+#ifndef _CPP_VALARRAY
+#include <bits/std_valarray.h>
+#endif

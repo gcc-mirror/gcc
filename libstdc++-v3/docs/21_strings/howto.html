@@ -1,0 +1,292 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="AUTHOR" CONTENT="pme@sourceware.cygnus.com (Phil Edwards)">
+   <META NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, egcs, g++, libg++, STL">
+   <META NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 21.">
+   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <TITLE>libstdc++-v3 HOWTO:  Chapter 21</TITLE>
+<LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/docs/21_strings/">
+<LINK REL=StyleSheet HREF="../lib3styles.css">
+<!-- $Id: howto.html,v 1.8 2000/03/20 22:16:21 pme Exp $ -->
+</HEAD>
+<BODY>
+
+<H1 CLASS="centered"><A NAME="top">Chapter 21:  Strings</A></H1>
+
+<P>Chapter 21 deals with the C++ strings library (a welcome relief).
+</P>
+
+
+<!-- ####################################################### -->
+<HR>
+<H1>Contents</H1>
+<UL>
+   <LI><A HREF="#1">MFC's CString</A>
+   <LI><A HREF="#2">A case-insensitive string class</A>
+   <LI><A HREF="#3">Breaking a C++ string into tokens</A>
+   <LI><A HREF="#4">Simple transformations</A>
+</UL>
+
+<HR>
+
+<!-- ####################################################### -->
+
+<H2><A NAME="1">MFC's CString</A></H2>
+   <P>A common lament seen in various newsgroups deals with the Standard
+      string class as opposed to the Microsoft Foundation Class called
+      CString.  Often programmers realize that a standard portable
+      answer is better than a proprietary nonportable one, but in porting
+      their application from a Win32 platform, they discover that they
+      are relying on special functons offered by the CString class.
+   </P>
+   <P>Things are not as bad as they seem.  In
+      <A HREF="http://egcs.cygnus.com/ml/egcs/1999-04/msg00233.html">this
+      message</A>, Joe Buck points out a few very important things:
+      <UL>
+         <LI>The Standard <TT>string</TT> supports all the operations
+             that CString does, with three exceptions.
+         <LI>Two of those exceptions (whitespace trimming and case 
+             conversion) are trivial to implement.  In fact, we do so
+             on this page.
+         <LI>The third is <TT>CString::Format</TT>, which allows formatting
+             in the style of <TT>sprintf</TT>.  This deserves some mention:
+      </UL>
+   </P>
+   <A NAME="1.1internal"> <!-- Coming from Chapter 27 -->
+   <P>The old libg++ library had a function called form(), which did much
+      the same thing.  But for a Standard solution, you should use the
+      stringstream classes.  These are the bridge between the iostream
+      hierarchy and the string class, and they operate with regular
+      streams seamlessly because they inherit from the iostream
+      heirarchy.  An quick example:
+      <PRE>
+   #include &lt;iostream&gt;
+   #include &lt;string&gt;
+   #include &lt;sstream&gt;
+
+   string f (string& incoming)     // incoming is something like "foo  N"
+   {
+       istringstream   incoming_stream(incoming);
+       string          the_word;
+       int             the_number;
+
+       incoming_stream &gt;&gt; the_word        // extract "foo"
+                       &gt;&gt; the_number;     // extract N
+
+       ostringstream   output_stream;
+       output_stream &lt;&lt; "The word was " &lt;&lt; the_word
+                     &lt;&lt; " and 3*N was " &lt;&lt; (3*the_number);
+
+       return output_stream.str();
+   } </PRE>
+   </P></A>
+   <P>A serious problem with CString is a design bug in its memory
+      allocation.  Specifically, quoting from that same message:
+      <PRE>
+   CString suffers from a common programming error that results in
+   poor performance.  Consider the following code:
+   
+   CString n_copies_of (const CString& foo, unsigned n)
+   {
+           CString tmp;
+           for (unsigned i = 0; i &lt; n; i++)
+                   tmp += foo;
+           return tmp;
+   }
+   
+   This function is O(n^2), not O(n).  The reason is that each +=
+   causes a reallocation and copy of the existing string.  Microsoft
+   applications are full of this kind of thing (quadratic performance
+   on tasks that can be done in linear time) -- on the other hand,
+   we should be thankful, as it's created such a big market for high-end
+   ix86 hardware. :-)
+   
+   If you replace CString with string in the above function, the
+   performance is O(n).
+      </PRE>
+   </P>
+   <P>Joe Buck also pointed out some other things to keep in mind when
+      comparing CString and the Standard string class:
+      <UL>
+         <LI>CString permits access to its internal representation; coders
+             who exploited that may have problems moving to <TT>string</TT>.
+         <LI>Microsoft ships the source to CString (in the files
+             MFC\SRC\Str{core,ex}.cpp), so you could fix the allocation
+             bug and rebuild your MFC libraries.
+             <EM><B>Note:</B>  It looks like the the CString shipped with
+             VC++6.0 has fixed this, although it may in fact have been one
+             of the VC++ SPs that did it.</EM>
+         <LI><TT>string</TT> operations like this have O(n) complexity
+             <EM>if the implementors do it correctly</EM>.  The libstdc++
+             implementors did it correctly.  Other vendors might not.
+         <LI>While parts of the SGI STL are used in libstdc++-v3, their
+             string class is not.  The SGI <TT>string</TT> is essentially
+             <TT>vector&lt;char&gt;</TT> and does not do any reference
+             counting like libstdc++-v3's does.  (It is O(n), though.)
+             So if you're thinking about SGI's string or rope classes,
+             you're now looking at four possibilities:  CString, the
+             libstdc++ string, the SGI string, and the SGI rope, and this
+             is all before any allocator or traits customizations!  (More
+             choices than you can shake a stick at -- want fries with that?)
+      </UL>
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+<HR>
+<H2><A NAME="2">A case-insensitive string class</A></H2>
+   <P>The well-known-and-if-it-isn't-well-known-it-ought-to-be
+      <A HREF="http://www.peerdirect.com/resources/">Guru of the Week</A>
+      discussions held on Usenet covered this topic in January of 1998.
+      Briefly, the challenge was, &quot;write a 'ci_string' class which
+      is identical to the standard 'string' class, but is
+      case-insensitive in the same way as the (common but nonstandard)
+      C function stricmp():&quot;
+      <PRE>
+   ci_string s( "AbCdE" );
+
+   // case insensitive
+   assert( s == "abcde" );
+   assert( s == "ABCDE" );
+
+   // still case-preserving, of course
+   assert( strcmp( s.c_str(), "AbCdE" ) == 0 );
+   assert( strcmp( s.c_str(), "abcde" ) != 0 ); </PRE>
+   </P>
+
+   <P>The solution is surprisingly easy.  The original answer pages
+      on the GotW website have been removed into cold storage, in
+      preparation for a published book of GotW notes.  Before being
+      put on the web, of course, it was posted on Usenet, and that
+      posting containing the answer is <A HREF="gotw29a.txt">available
+      here</A>.
+   </P>
+   <P>See?  Told you it was easy!</P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+<HR>
+<H2><A NAME="3">Breaking a C++ string into tokens</A></H2>
+   <P>The Standard C (and C++) function <TT>strtok()</TT> leaves a lot to
+      be desired in terms of user-friendliness.  It's unintuitive, it
+      destroys the character string on which it operates, and it requires
+      you to handle all the memory problems.  But it does let the client
+      code decide what to use to break the string into pieces; it allows
+      you to choose the &quot;whitespace,&quot; so to speak.
+   </P>
+   <P>A C++ implementation lets us keep the good things and fix those
+      annoyances.  The implementation here is more intuitive (you only
+      call it once, not in a loop with varying argument), it does not
+      affect the original string at all, and all the memory allocation
+      is handled for you.
+   </P>
+   <P>It's called stringtok, and it's a template function.  It's given
+      <A HREF="stringtok_h.txt">in this file</A> in a less-portable form than
+      it could be, to keep this example simple (for example, see the
+      comments on what kind of string it will accept).  The author uses
+      a more general (but less readable) form of it for parsing command
+      strings and the like.  If you compiled and ran this code using it:
+      <PRE>
+   std::list&lt;string>  ls;
+   stringtok (ls, " this  \t is\t\n  a test  ");
+   for (std::list&lt;string>::const_iterator i = ls.begin();
+        i != ls.end(); ++i)
+   {
+       std::cerr &lt;&lt; ':' &lt;&lt; (*i) &lt;&lt; ":\n";
+   }</PRE>
+      You would see this as output:
+      <PRE>
+   :this:
+   :is:
+   :a:
+   :test:</PRE>
+      with all the whitespace removed.  The original <TT>s</TT> is still
+      available for use, <TT>ls</TT> will clean up after itself, and
+      <TT>ls.size()</TT> will return how many tokens there were.
+   </P>
+   <P>As always, there is a price paid here, in that stringtok is not
+      as fast as strtok.  The other benefits usually outweight that, however.
+      <A HREF="stringtok_std_h.txt">Another version of stringtok is given
+      here</A>, suggested by Chris King and tweaked by Petr Prikryl,
+      and this one uses the
+      transformation functions given below.  If you are comfortable with
+      reading the new function names, this version is recommended as an example.
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+<HR>
+<H2><A NAME="4">Simple transformations</A></H2>
+   <P>Here are Standard, simple, and portable ways to perform common
+      transformations on a <TT>string</TT> instance, such as &quot;convert
+      to all upper case.&quot;  The word transformations is especially
+      apt, because the standard template function
+      <TT>transform&lt;&gt;</TT> is used.
+      <PRE>
+      #include &lt;string&gt;
+      #include &lt;algorithm&gt;
+      #include &lt;cctype&gt;      // old &lt;ctype.h&gt;
+      std::string  s ("Some Kind Of Initial Input Goes Here");
+   
+      // Change everything into upper case
+      std::transform (s.begin(), s.end(), s.begin(), toupper);
+   
+      // Change everything into lower case
+      std::transform (s.begin(), s.end(), s.begin(), tolower);
+   
+      // Change everything back into upper case, but store the
+      // result in a different string
+      std::string  capital_s;
+      capital_s.reserve(s.size());
+      std::transform (s.begin(), s.end(), capital_s.begin(), tolower); </PRE>
+      <SPAN CLASS="larger"><B>Note</B></SPAN> that these calls all involve
+      the global C locale through the use of the C functions
+      <TT>toupper/tolower</TT>.  This is absolutely guaranteed to work --
+      but only if you're using English text (bummer).  A much better and
+      more portable solution is to use a facet for a particular locale
+      and call its conversion functions.  (These are discussed more in
+      Chapter 22.)
+   </P>
+   <P>Another common operation is trimming off excess whitespace.  Much
+      like transformations, this task is trivial with the use of string's
+      <TT>find</TT> family.  These examples are broken into multiple
+      statements for readability:
+      <PRE>
+   std::string  str (" \t blah blah blah    \n ");
+
+   // trim leading whitespace
+   string::size_type  notwhite = str.find_first_not_of(" \t\n");
+   str.erase(0,notwhite);
+
+   // trim trailing whitespace
+   notwhite = str.find_last_not_of(" \t\n"); 
+   str.erase(notwhite+1); </PRE>
+      Obviously, the calls to <TT>find</TT> could be inserted directly
+      into the calls to <TT>erase</TT>, in case your compiler does not
+      optimize named temporaries out of existance.
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+
+
+
+<!-- ####################################################### -->
+
+<HR>
+<P CLASS="fineprint"><EM>
+Comments and suggestions are welcome, and may be sent to
+<A HREF="mailto:pme@sourceware.cygnus.com">Phil Edwards</A> or
+<A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
+<BR> $Id: howto.html,v 1.8 2000/03/20 22:16:21 pme Exp $
+</EM></P>
+
+
+</BODY>
+</HTML>

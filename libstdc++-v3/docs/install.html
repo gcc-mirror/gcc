@@ -1,0 +1,378 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="AUTHOR" CONTENT="pme@sourceware.cygnus.com (Phil Edwards)">
+   <META NAME="KEYWORDS" CONTENT="libstdc++, libstdc++-v3, egcs, g++">
+   <META NAME="DESCRIPTION" CONTENT="README for the GNU libstdc++ effort.">
+   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <TITLE>libstdc++-v3 Installation Instructions</TITLE>
+<LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/">
+<LINK REL=StyleSheet HREF="lib3styles.css">
+<!-- $Id: install.html,v 1.11 2000/04/18 22:05:49 pme Exp $ -->
+</HEAD>
+<BODY>
+
+<H1 CLASS="centered"><A NAME="top">libstdc++-v3 INSTALL</A></H1>
+
+<P>The latest version of this document is always available at
+   <A HREF="http://sourceware.cygnus.com/libstdc++/install.html">
+   http://sourceware.cygnus.com/libstdc++/install.html</A>.
+</P>
+
+<P>To the <A HREF="index.html">libstdc++-v3 homepage</A>.
+
+
+<!-- ####################################################### -->
+<HR>
+<H2>Contents</H2>
+<UL>
+   <LI><A HREF="#prereqs">Tools you will need beforehand</A>
+   <LI><A HREF="#srcsetup">Setting up the source directories</A>
+   <LI><A HREF="#config">Configuring</A>
+   <LI><A HREF="#install">Building and installing the library</A>
+   <LI><A HREF="#postinstall">Post-installation</A>
+   <LI><A HREF="#usage">Using the library</A>
+</UL>
+
+<HR>
+
+<!-- ####################################################### -->
+
+<H2><A NAME="prereqs">Tools you will need beforehand</A></H2>
+   <P>You will need a recent version of g++ to compile the snapshot of
+      libstdc++:  gcc-2.95.2 works well, or one of the post-2.95.2 egcs
+      snapshots (insert standard caveat about using snapshots rather
+      than formal releases).  You will need the full source
+      distribution to whatever compiler release you are using.  The
+      GCC snapshots can be had from one of the sites on their
+      <A HREF="http://gcc.gnu.org/mirrors.html">mirror list</A>.
+   </P>
+   <P>In addition, if you plan to modify the makefiles or regenerate the
+      configure scripts:  automake (version 1.4 from Cygnus, not the one on
+      the net.  It's available 
+<A HREF="ftp://sourceware.cygnus.com/pub/libstdc++/000215-automake.tar.gz">here</A>
+      and autoconf (version 2.13 and higher), which is available 
+    <A HREF="ftp://ftp.gnu.org/gnu/autoconf/autoconf-2.13.tar.gz">here</A>.
+   </P>
+   <P>If you don't have bash, and want to run <TT>'make check'</TT> to
+      test your build, you'll need to get bash 2.x.  Also recommended
+      is GNU Make, since it is the only 'make' that will parse these
+      makefiles correctly.
+   </P>
+   <P>Finally, if you are using cygwin to compile libstdc++-v3 on
+      win32, you'll have to get a version of the cygwin.dll that is
+      dated on or after February 1, 2000. This is necessary to
+      successfully run the script "mknumeric_limits" which probes the
+      floating-point environment of the host in question--before this
+      date, Cygwin would freeze when running this script. In addition,
+      you may want to get a current version of libtool (say
+      libtool-1.3.4 and above) as earlier versions supposedly had
+      problems creating shared libraries.
+   </P>
+
+<HR>
+
+<H2><A NAME="srcsetup">Setting up the source directories</A></H2>
+   <P><EM>As the libstdc++-v3 sources and the core GCC sources move
+      towards convergence, more and more effort goes to building the
+      library as the default version to be shipped with g++.  With the
+      2.90.8 snapshot, and especially for CVS versions after this
+      release, this is treated as the usual scenario.  If you want to
+      build the library all by itself, you will need to explicitly
+      disable certain features (like namespaces) since the core GCC
+      library, libgcc.a, will not be rebuilt with those same features.
+   </EM>
+   </P>
+
+   <P>By default, all configurations of libstdc++-v3 now have namespaces
+      enabled.  Being able to select/de-select this option was a complex task
+      that had hopelessly confused many otherwise intelligent people, and
+      provided an endless stream of silent cursing and cries for help.  
+      Because of this, gcc sources are required, and are no longer optional.
+   </P>
+
+   <P>The following definitions will be used throughout the rest of this
+      document:
+      <UL>
+         <LI><EM>gccsrcdir</EM>:  The directory holding the source of the
+                 compiler.  It should have several subdirectories like
+                 <EM>gccsrcdir</EM>/libio and <EM>gccsrcdir</EM>/gcc.
+         <LI><EM>libsrcdir</EM>:  The directory holding the source of the
+                 C++ library.
+         <LI><EM>gccbuilddir</EM>:  The build directory for the compiler
+                 in <EM>gccsrcdir</EM>.  GCC requires that it be built in
+                 a different directory than its sources.
+         <LI><EM>libbuilddir</EM>:  The build directory for libstdc++.
+         <LI><EM>destdir</EM>:  The eventual installation directory for
+                 the compiler/libraries, set with the --prefix option to
+                 the configure script.
+      </UL>
+      Note:
+      <OL>
+         <LI>The .8 snapshot and following are intended to replace the
+             library that comes with the compiler, so <EM>libsrcdir</EM>
+             and <EM>libbuilddir</EM> must be contained under
+             <EM>gccsrcdir</EM> and <EM>gccbuilddir</EM>, respectively.
+         <LI>The source, build, and installation directories should
+             not be parents of one another; i.e., these should all be
+             separate directories. Please don't build out of the
+             source directory.
+      </OL>
+   </P>
+
+<p>
+Since the release of libstdc++-2.90.8, configuration patches have gone
+into CVS gcc that make the management of the various libstdc++ source
+trees a bit easier. Because of this, both libstdc++-v2 and
+libstdc++-v3 and live together more or less in peace, without the need
+for soft linking. If a CVS gcc source directory after April 5, 2000 is
+being used, then the directions are slightly different: please pick
+which of the following two scenarios best represents your particular
+situation.
+
+<P>
+<B>...with gcc-2.95.2</B>
+   <P>Unpack the <EM>gccsrcdir</EM> and go into that directory.  For
+      instance, <TT>gcc-2.95.2</TT> is a valid <EM>gccsrcdir</EM>.
+      Once in <EM>gccsrcdir</EM>, you'll need to rename the directories
+      called <TT> libstdc++ </TT> and <TT> libio </TT> like so:
+      <PRE>
+      mv libstdc++ libstdc++-v2
+      mv libio libio-v2</PRE>
+   </P>
+   <P>Next, unpack the libstdc++-v3 library tarball into the
+      <EM>gccsrcdir</EM> directory; it will create a
+      <EM>libsrcdir</EM> called <TT>libstdc++-<EM>version</EM></TT>:
+      <PRE>
+   gzip -dc libstdc++-version.tar.gz | tar xf -</PRE>
+   </P>
+   <P>Finally, make a soft link between <EM>libsrcdir</EM> and
+      <TT>libstdc++</TT> so that libstdc++-v3 will be the default C++
+      library used.
+      <PRE>
+   ln -s <EM>libsrcdir</EM> libstdc++</PRE>
+      This complexity of having two completely separate libstdc++
+      libraries is necessary so that you can unlink <EM>libsrcdir</EM>
+      and update the compiler sources.  If you're not this adventurous, or
+      would not like to switch between different C++ standard libraries,
+      this extra effort is probably wasted; just remove the v2 sources.
+   </P>
+
+<P>
+<B>...with CVS gcc</B> 
+   <P> Check out or download the gcc sources: the
+   resulting source director is <EM>gccsrcdir</EM>.
+   </P>
+   <P>Next, unpack the libstdc++-v3 library tarball into this
+      <EM>gccsrcdir</EM> directory; it will create a
+      <EM>libsrcdir</EM> called <TT>libstdc++-<EM>version</EM></TT>:
+      <PRE>
+   gzip -dc libstdc++-version.tar.gz | tar xf -</PRE>
+   </P>
+
+   <P> If CVS libstdc++-v3 is being used instead of a snapshot's
+   tarball, then move the source directory from the cvs checkout into
+   the <EM>gccsrcdir</EM> directory.
+
+   <P>Finally, rename <EM>libsrcdir</EM> to
+      <TT>libstdc++-v3</TT> so that gcc's configure flags will be able
+      to deal with the new library.
+      <PRE>
+   mv <EM>libsrcdir</EM> libstdc++-v3</PRE>
+   </P>
+
+<HR>
+<H2><A NAME="config">Configuring</A></H2>
+
+Due to namespaces, when building libstdc++-v3 you'll have to configure
+the entire <EM>gccsrcdir</EM> directory. The full list of
+libstdc++-v3 specific configuration options, not dependent on the
+specific compiler release being used, can be found <A
+HREF="configopts.html"> here </A> 
+<P>
+[Consider possibly using
+--enable-languages=c++ to save time by only building the C++ language
+parts]
+
+<P>
+<B>...with gcc-2.95.2</B>
+<P>
+   <EM>gccsrcdir</EM>/configure --prefix=<EM>destdir</EM>
+       </PRE>
+<P>
+
+<P>
+<B>...with CVS gcc</B> 
+<P>
+
+   <EM>gccsrcdir</EM>/configure --prefix=<EM>destdir</EM> --enable-libstdcxx-v3
+
+<P>
+[Adding <TT> --enable-libstdcxx-v3</TT> automatically selects
+libstdc++-v3 as the C++ library to be used alongside the C++ compiler
+being built, and also enables -fhonor-std by default. This option is not available with gcc-2.95.2] </P>
+
+<HR>
+<H2><A NAME="install">Building and installing the library</A></H2>
+   <P>Now you have a few options:</P>
+   <H3>[re]building <EM>everything</EM></H3>
+   <P>If you're building GCC from scratch, you can do the usual
+      <TT> 'make boostrap' </TT> here, and libstdc++-v3 will be built
+      as its default C++ library.  The generated g++ will magically
+      use the correct headers, link against the correct library
+      binary, and in general using libstdc++-v3 will be a piece of
+      cake.  You're done; run <TT>'make install'</TT> (the GCC
+      Installation instructions) to put the new compiler and libraries
+      into place.
+   </P>
+
+   <H3>[re]building only libstdc++</H3>
+  Due to differences in the configure process, the resulting Makefiles
+  in the<EM>gccbuilddir</EM> will have different rules depending on
+  the source base being used.
+<P>
+<B>...with gcc-2.95.2</B>
+<P>
+   <EM>libstdc++-rule</EM> is <TT>libstdc++</TT>
+
+<P>
+
+<P>
+<B>...with CVS gcc</B> 
+<P>
+   <EM>libstdc++-rule</EM> is <TT>libstdc++-v3</TT>
+<P>
+
+To rebuild just libstdc++, use:
+<P>
+   <PRE>make all-target-<EM>libstdc++-rule</EM></PRE>
+      This will configure and build the C++ library in the
+      <EM>gccbuilddir/cpu-vendor-OS/</EM>libstdc++ directory.
+      As en example, for CVS gcc this would be <TT>make all-target-libstdc++-v3</TT>, and for gcc-2.95.2 it would be <TT>make all-target-libstdc++</TT>  
+   </P>
+   <P>If the build fails with a &quot;warning: can't inline call&quot;
+      message when compiling stringMAIN.cc, see <A HREF="#Werror">the
+      resolution at the end of this document</A>.
+   </P>
+   <P>You're done.  Now install the rebuilt pieces with
+      <PRE>
+   make install
+
+   or 
+
+   make install-gcc
+   make install-target-<EM>libstdc++-rule</EM></PRE>
+
+<HR>
+<H2><A NAME="postinstall">Post-installation</A></H2>
+   <P>Installation will create the <EM>destdir</EM> directory and
+      populate it with subdirectories:
+      <PRE>
+   lib/
+   include/g++-v3/
+      bits/
+      backward/
+      ext/</PRE>
+   </P>
+   <P>You can check the status of the build without installing it using
+      <PRE>
+   make check</PRE>
+      or you can check the status of the installed library using
+      <PRE>
+   make check-target-<EM>libstdc++-rule</EM></PRE>
+      These commands will create a 'testsuite' directory underneath
+      <EM>libbuilddir</EM> containing the results of the tests.  We are
+      interested in any strange failures of the testsuite; please see
+      <A HREF="faq/index.html#2_4">FAQ 2.4</A> for which files to examine.
+   </P>
+
+
+<HR>
+<H2><A NAME="usage">Using the library</A></H2>
+   <LI><B>Find the new library at runtime (shared linking only)</B>
+       <P>If you only built a static library (libstdc++.a), or if you
+          specified static linking, you don't have to worry about this.
+          But if you built a shared library (libstdc++.so) and linked
+          against it, then you will need to find that library when you
+          run the executable.
+       </P>
+       <P>Methods vary for different platforms and different styles, but
+          the usual ones are printed to the screen during installation.
+          They include:
+          <UL>
+          <LI>At runtime set LD_LIBRARY_PATH in your environment correctly,
+              so that the shared library for libstdc++ can be found and
+              loaded.  Be certain that you understand all of the other
+              implications and behavior of LD_LIBRARY_PATH first (few
+              people do, and they get into trouble).
+          <LI>Compile the path to find the library at runtime into the
+              program.  This can be done by passing certain options to g++,
+              which will in turn pass them on to the linker.  The exact
+              format of the options is dependent on which linker you use:
+              <UL>
+  <LI>GNU ld (default on Linux):<TT>  -Wl,--rpath -Wl,<EM>destdir</EM>/lib</TT>
+  <LI>IRIX ld:<TT>  -Wl,-rpath -Wl,<EM>destdir</EM>/lib</TT>
+  <LI>Solaris ld:<TT>  -Wl,-R<EM>destdir</EM>/lib</TT>
+  <LI>More...?
+              </UL>
+          </UL>
+       </P>
+       <P>Use the <TT>ldd(1)</TT> utility to show which library the system
+          thinks it will get at runtime.
+       </P>
+   </OL
+   </P>
+
+
+<HR>
+<H3><A NAME="Werror"><TT>warning: can't inline call to</TT>...</A></H3>
+   <P>When building the .8 snapshot with g++ 2.95.2, compilation may halt
+      with this warning message.  The &quot;problem&quot; is the -Werror
+      flag being passed to the compiler, which says to treat warnings as
+      errors.  (This plus a high warning level makes us track down bugs
+      <EM>quickly</EM>.)  The compiler can't inline a certain call, prints
+      a warning, and dies.
+   </P>
+   <P>The workaround is to edit either <EM>libsrcdir</EM>/src/Makefile.in
+      (before configuring) or <EM>bld-libstdc++</EM>/src/Makefile
+      (after configuring).  There's one line that reads
+      <PRE>
+   WERROR = -Werror</PRE>
+      Delete the flag itself, so that the line reads
+      <PRE>
+   WERROR =</PRE>
+      Then the compiler will still print a warning, but it won't die.
+   </P>
+   <P>For the curious, this &quot;problem&quot; is actually a symptom
+      of something else.  The compiler in CVS could inline more than what
+      2.95.2 does, and the libstdc++ changes were made with that
+      compiler.  One of the libstdc++ maintainers explains this
+<A HREF="http://sourceware.cygnus.com/ml/libstdc++/2000-q1/msg00420.html">here</A>.
+   </P>
+   <P>This has been patched in current CVS sources.
+   </P>
+
+
+<!--
+<HR>
+<H2><A NAME=""></A></H2>
+   <P>
+   </P>
+
+-->
+
+<!-- ####################################################### -->
+
+<HR>
+<P CLASS="fineprint"><EM>
+Comments and suggestions are welcome, and may be sent to
+<A HREF="mailto:pme@sourceware.cygnus.com">Phil Edwards</A> or
+<A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
+<BR> $Id: install.html,v 1.11 2000/04/18 22:05:49 pme Exp $
+</EM></P>
+
+
+</BODY>
+</HTML>
+
