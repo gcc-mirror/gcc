@@ -46,7 +46,7 @@
 
 #ifndef __GNUC_VA_LIST
 #define __GNUC_VA_LIST
-#if defined(__svr4__) || defined(_AIX) || defined(_M_UNIX)
+#if defined(__svr4__) || defined(_AIX) || defined(_M_UNIX) || defined(__NetBSD__)
 typedef char *__gnuc_va_list;
 #else
 typedef void *__gnuc_va_list;
