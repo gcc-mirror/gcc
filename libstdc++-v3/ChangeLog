@@ -1,3 +1,9 @@
+2001-05-18  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+        * include/bits/std_valarray.h (valarray<>::operator[] const):
+        Return a const reference. 
+        * testsuite/26_numerics/valarray_const_bracket.cc: New test.
+
 2001-05-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.target (ATOMICITYH): Actually use AIX-specific code on
