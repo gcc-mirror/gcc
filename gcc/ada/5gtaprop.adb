@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -139,6 +139,9 @@ package body System.Task_Primitives.Operations is
    --  ??? Check the comment above
 
    procedure Stack_Guard (T : ST.Task_ID; On : Boolean) is
+      pragma Unreferenced (T);
+      pragma Unreferenced (On);
+
    begin
       null;
    end Stack_Guard;
@@ -210,6 +213,8 @@ package body System.Task_Primitives.Operations is
    end Initialize_Lock;
 
    procedure Initialize_Lock (L : access RTS_Lock; Level : Lock_Level) is
+      pragma Unreferenced (Level);
+
       Attributes : aliased pthread_mutexattr_t;
       Result : Interfaces.C.int;
 
@@ -345,6 +350,8 @@ package body System.Task_Primitives.Operations is
      (Self_ID  : ST.Task_ID;
       Reason   : System.Tasking.Task_States)
    is
+      pragma Unreferenced (Reason);
+
       Result : Interfaces.C.int;
 
    begin
@@ -373,6 +380,8 @@ package body System.Task_Primitives.Operations is
       Timedout : out Boolean;
       Yielded  : out Boolean)
    is
+      pragma Unreferenced (Reason);
+
       Check_Time : constant Duration := Monotonic_Clock;
       Abs_Time   : Duration;
       Request    : aliased struct_timeval;
@@ -533,6 +542,8 @@ package body System.Task_Primitives.Operations is
      (T : ST.Task_ID;
       Reason : System.Tasking.Task_States)
    is
+      pragma Unreferenced (Reason);
+
       Result : Interfaces.C.int;
    begin
       Result := pthread_cond_signal (T.Common.LL.CV'Access);
@@ -805,6 +816,8 @@ package body System.Task_Primitives.Operations is
 
    begin
       Result := pthread_set_ada_tcb (pthread_self, System.Null_Address);
+
+      pragma Assert (Result = 0);
    end Exit_Task;
 
    ----------------
@@ -840,6 +853,8 @@ package body System.Task_Primitives.Operations is
    --------------------
 
    function Check_No_Locks (Self_ID : ST.Task_ID) return Boolean is
+      pragma Unreferenced (Self_ID);
+
    begin
       return True;
    end Check_No_Locks;

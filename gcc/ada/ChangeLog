@@ -1,3 +1,23 @@
+2004-01-26  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Makefile.in (mips-sgi-irix5): Remove -lathread from THREADSLIB.
+
+	* 5fsystem.ads (Functions_Return_By_DSP): Set to False.
+	(ZCX_By_Default): Likewise.
+	(Front_End_ZCX_Support): Likewise.
+
+	* 5gtaprop.adb (Stack_Guard): Mark T, On unreferenced.
+	(Initialize_Lock): Mark Level unreferenced.
+	(Sleep): Mark Reason unreferenced.
+	(Timed_Sleep): Likewise.
+	(Wakeup): Likewise.
+	(Exit_Task): Use Result.
+	(Check_No_Locks): Mark Self_ID unreferenced.
+	
+	* 5gtasinf.adb (New_Sproc): Make Attr constant.
+	(Bound_Thread_Attributes): Make Sproc constant.
+	(New_Bound_Thread_Attributes): Likewise.
+
 2004-01-20  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in: Replace $(docdir) with doc.
