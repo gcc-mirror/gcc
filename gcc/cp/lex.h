@@ -64,6 +64,7 @@ enum rid
   RID_AUTO,
   RID_MUTABLE,
   RID_COMPLEX,
+  RID_RESTRICT,
 
   /* This is where grokdeclarator ends its search when setting the
      specbits.  */

@@ -7,5 +7,5 @@
 void
 f()
 {
-  const int var [ 10 ]; // ERROR - missing initializer - XFAIL *-*-*
+  const int var [ 10 ]; // ERROR - missing initializer 
 }

@@ -784,36 +784,27 @@ grok_method_quals (ctype, function, quals)
 {
   tree fntype = TREE_TYPE (function);
   tree raises = TYPE_RAISES_EXCEPTIONS (fntype);
+  int type_quals = TYPE_UNQUALIFIED;
+  int dup_quals = TYPE_UNQUALIFIED;
 
   do
     {
-      extern tree ridpointers[];
-
-      if (TREE_VALUE (quals) == ridpointers[(int)RID_CONST])
-	{
-	  if (TYPE_READONLY (ctype))
-	    error ("duplicate `%s' %s",
-		   IDENTIFIER_POINTER (TREE_VALUE (quals)),
-		   (TREE_CODE (function) == FUNCTION_DECL
-		    ? "for member function" : "in type declaration"));
-	  ctype = build_type_variant (ctype, 1, TYPE_VOLATILE (ctype));
-	  build_pointer_type (ctype);
-	}
-      else if (TREE_VALUE (quals) == ridpointers[(int)RID_VOLATILE])
-	{
-	  if (TYPE_VOLATILE (ctype))
-	    error ("duplicate `%s' %s",
-		   IDENTIFIER_POINTER (TREE_VALUE (quals)),
-		   (TREE_CODE (function) == FUNCTION_DECL
-		    ? "for member function" : "in type declaration"));
-	  ctype = build_type_variant (ctype, TYPE_READONLY (ctype), 1);
-	  build_pointer_type (ctype);
-	}
+      int tq = cp_type_qual_from_rid (TREE_VALUE (quals));
+      
+      if (type_quals & tq)
+	dup_quals |= tq;
       else
-	my_friendly_abort (20);
+	type_quals |= tq;
       quals = TREE_CHAIN (quals);
-    }
+    } 
   while (quals);
+
+  if (dup_quals != TYPE_UNQUALIFIED)
+    cp_error ("duplicate type qualifiers in %s declaration",
+	      TREE_CODE (function) == FUNCTION_DECL 
+	      ? "member function" : "type");
+
+  ctype = cp_build_qualified_type (ctype, type_quals);
   fntype = build_cplus_method_type (ctype, TREE_TYPE (fntype),
 				    (TREE_CODE (fntype) == METHOD_TYPE
 				     ? TREE_CHAIN (TYPE_ARG_TYPES (fntype))
@@ -1417,7 +1408,7 @@ check_classfn (ctype, function)
 
 		      if (comptypes (TREE_TYPE (TREE_TYPE (function)),
 				     TREE_TYPE (TREE_TYPE (fndecl)), 1)
-			  && compparms (p1, p2, 3)
+			  && compparms (p1, p2)
 			  && (DECL_TEMPLATE_SPECIALIZATION (function)
 			      == DECL_TEMPLATE_SPECIALIZATION (fndecl))
 			  && (!DECL_TEMPLATE_SPECIALIZATION (function)
@@ -1702,7 +1693,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	}
       /* Force the compiler to know when an uninitialized static
 	 const member is being used.  */
-      if (TYPE_READONLY (value) && init == 0)
+      if (CP_TYPE_CONST_P (TREE_TYPE (value)) && init == 0)
 	TREE_USED (value) = 1;
       DECL_INITIAL (value) = init;
       DECL_IN_AGGR_P (value) = 1;

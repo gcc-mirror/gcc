@@ -442,14 +442,14 @@ build_cplus_array_type (elt_type, index_type)
      tree index_type;
 {
   tree t;
-  int constp = TYPE_READONLY (elt_type);
-  int volatilep = TYPE_VOLATILE (elt_type);
+  int type_quals = CP_TYPE_QUALS (elt_type);
+
   elt_type = TYPE_MAIN_VARIANT (elt_type);
 
   t = build_cplus_array_type_1 (elt_type, index_type);
 
-  if (constp || volatilep)
-    t = cp_build_type_variant (t, constp, volatilep);
+  if (type_quals != TYPE_UNQUALIFIED)
+    t = cp_build_qualified_type (t, type_quals);
 
   return t;
 }
@@ -458,21 +458,32 @@ build_cplus_array_type (elt_type, index_type)
    down to the element type of an array.  */
 
 tree
-cp_build_type_variant (type, constp, volatilep)
+cp_build_qualified_type (type, type_quals)
      tree type;
-     int constp, volatilep;
+     int type_quals;
 {
   if (type == error_mark_node)
     return type;
   
+  /* A restrict-qualified pointer type must be a pointer (or reference)
+     to object or incomplete type.  */
+  if ((type_quals & TYPE_QUAL_RESTRICT)
+      && (!POINTER_TYPE_P (type)
+	  || TYPE_PTRMEM_P (type)
+	  || TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE))
+    {
+      cp_error ("`%T' cannot be `restrict'-qualified", type);
+      type_quals &= ~TYPE_QUAL_RESTRICT;
+    }
+
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
       tree real_main_variant = TYPE_MAIN_VARIANT (type);
 
       push_obstacks (TYPE_OBSTACK (real_main_variant),
 		     TYPE_OBSTACK (real_main_variant));
-      type = build_cplus_array_type_1 (cp_build_type_variant
-				       (TREE_TYPE (type), constp, volatilep),
+      type = build_cplus_array_type_1 (cp_build_qualified_type 
+				       (TREE_TYPE (type), type_quals),
 				       TYPE_DOMAIN (type));
 
       /* TYPE must be on same obstack as REAL_MAIN_VARIANT.  If not,
@@ -489,7 +500,7 @@ cp_build_type_variant (type, constp, volatilep)
       pop_obstacks ();
       return type;
     }
-  return build_type_variant (type, constp, volatilep);
+  return build_qualified_type (type, type_quals);
 }
 
 /* Returns the canonical version of TYPE.  In other words, if TYPE is
@@ -501,8 +512,7 @@ tree
 canonical_type_variant (t)
      tree t;
 {
-  return cp_build_type_variant (TYPE_MAIN_VARIANT (t), CP_TYPE_READONLY (t),
-				CP_TYPE_VOLATILE (t));
+  return cp_build_qualified_type (TYPE_MAIN_VARIANT (t), CP_TYPE_QUALS (t));
 }
 
 /* Add OFFSET to all base types of T.
@@ -1448,13 +1458,11 @@ build_exception_variant (type, raises)
      tree raises;
 {
   tree v = TYPE_MAIN_VARIANT (type);
-  int constp = TYPE_READONLY (type);
-  int volatilep = TYPE_VOLATILE (type);
+  int type_quals = TYPE_QUALS (type);
 
   for (; v; v = TYPE_NEXT_VARIANT (v))
     {
-      if (TYPE_READONLY (v) != constp
-	  || TYPE_VOLATILE (v) != volatilep)
+      if (TYPE_QUALS (v) != type_quals)
 	continue;
 
       /* @@ This should do set equality, not exact match.  */
@@ -1931,31 +1939,31 @@ mapcar (t, func)
 
     case POINTER_TYPE:
       tmp = build_pointer_type (mapcar (TREE_TYPE (t), func));
-      return cp_build_type_variant (tmp, TYPE_READONLY (t), TYPE_VOLATILE (t));
+      return cp_build_qualified_type (tmp, TYPE_QUALS (t));
     case REFERENCE_TYPE:
       tmp = build_reference_type (mapcar (TREE_TYPE (t), func));
-      return cp_build_type_variant (tmp, TYPE_READONLY (t), TYPE_VOLATILE (t));
+      return cp_build_qualified_type (tmp, TYPE_QUALS (t));
     case FUNCTION_TYPE:
       tmp = build_function_type (mapcar (TREE_TYPE (t), func),
 				 mapcar (TYPE_ARG_TYPES (t), func));
-      return cp_build_type_variant (tmp, TYPE_READONLY (t), TYPE_VOLATILE (t));
+      return cp_build_qualified_type (tmp, TYPE_QUALS (t));
     case ARRAY_TYPE:
       tmp = build_cplus_array_type (mapcar (TREE_TYPE (t), func),
 				    mapcar (TYPE_DOMAIN (t), func));
-      return cp_build_type_variant (tmp, TYPE_READONLY (t), TYPE_VOLATILE (t));
+      return cp_build_qualified_type (tmp, CP_TYPE_QUALS (t));
     case INTEGER_TYPE:
       tmp = build_index_type (mapcar (TYPE_MAX_VALUE (t), func));
-      return cp_build_type_variant (tmp, TYPE_READONLY (t), TYPE_VOLATILE (t));
+      return cp_build_qualified_type (tmp, TYPE_QUALS (t));
     case OFFSET_TYPE:
       tmp = build_offset_type (mapcar (TYPE_OFFSET_BASETYPE (t), func),
 			       mapcar (TREE_TYPE (t), func));
-      return cp_build_type_variant (tmp, TYPE_READONLY (t), TYPE_VOLATILE (t));
+      return cp_build_qualified_type (tmp, TYPE_QUALS (t));
     case METHOD_TYPE:
       tmp = build_cplus_method_type
 	(mapcar (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (t))), func),
 	 mapcar (TREE_TYPE (t), func),
 	 mapcar (TREE_CHAIN (TYPE_ARG_TYPES (t)), func));
-      return cp_build_type_variant (tmp, TYPE_READONLY (t), TYPE_VOLATILE (t));
+      return cp_build_qualified_type (tmp, TYPE_QUALS (t));
 
     case COMPLEX_CST:
       t = copy_node (t);

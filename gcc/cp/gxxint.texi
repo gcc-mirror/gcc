@@ -1783,6 +1783,12 @@ Used by squangling to compress qualified names.
 @item l
 Encodes the C++ @code{long} type.
 
+@item n
+Used with squangling.
+
+@item N 
+Namespaces.
+
 @item P
 Indicates a pointer type.  Followed by the type pointed to.
 
@@ -1817,11 +1823,14 @@ A modifier that indicates that the following integer type is unsigned.
 Also used to indicate that the following class or namespace name
 is encoded using Unicode-mangling.
 
+@item u
+The @code{restrict} type qualifier.
+
 @item v
 Encodes the C++ and Java @code{void} types.
 
 @item V
-A modified for a @code{const} type or method.
+A modifier for a @code{volatile} type or method.
 
 @item w
 Encodes the C++ @code{wchar_t} type, and the Java @code{char} types.

@@ -40,11 +40,11 @@ static tree build_sptr_ref PROTO((tree));
 static tree build_member_function_pointer PROTO((tree));
 static void undo_casts PROTO((tree));
 static tree build_signature_pointer_or_reference_name
-	PROTO((tree, int, int, int));
+	PROTO((tree, int, int));
 static void build_signature_pointer_or_reference_decl
 	PROTO((tree, tree));
 static tree build_signature_pointer_or_reference_type 
-	PROTO((tree, int, int, int));
+	PROTO((tree, int, int));
 static tree get_sigtable_name PROTO((tree, tree));
 static tree build_signature_table_constructor PROTO((tree, tree));
 static int match_method_types PROTO((tree, tree));
@@ -58,25 +58,31 @@ static int global_sigtable_name_counter;
    can use it's name in function name mangling.  */
 
 static tree
-build_signature_pointer_or_reference_name (to_type, constp, volatilep, refp)
+build_signature_pointer_or_reference_name (to_type, type_quals, refp)
      tree to_type;
-     int constp, volatilep, refp;
+     int type_quals;
+     int refp;
 {
   char * sig_name = TYPE_NAME_STRING (to_type);
-  int name_len = TYPE_NAME_LENGTH (to_type) + constp + volatilep;
+  int name_len = TYPE_NAME_LENGTH (to_type) + 3 /* Enough room for
+						   C,V,R.  */;
   char * name;
+
+  char *const_rep = (type_quals & TYPE_QUAL_CONST) ? "C" : "";
+  char *restrict_rep = (type_quals & TYPE_QUAL_RESTRICT) ? "R" : ""; 
+  char *volatile_rep = (type_quals & TYPE_QUAL_VOLATILE) ? "C" : "";
 
   if (refp)
     {
       name = (char *) alloca (name_len + sizeof (SIGNATURE_REFERENCE_NAME) +2);
       sprintf (name, SIGNATURE_REFERENCE_NAME_FORMAT,
-	       constp ? "C" : "", volatilep ? "V": "", sig_name);
+	       const_rep, volatile_rep, restrict_rep, sig_name);
     }
   else
     {
       name = (char *) alloca (name_len + sizeof (SIGNATURE_POINTER_NAME) + 2);
       sprintf (name, SIGNATURE_POINTER_NAME_FORMAT,
-	       constp ? "C" : "", volatilep ? "V": "", sig_name);
+	       const_rep, volatile_rep, restrict_rep, sig_name);
     }
   return get_identifier (name);
 }
@@ -98,21 +104,22 @@ build_signature_pointer_or_reference_decl (type, name)
   TREE_CHAIN (type) = decl;
 }
 
-/* Construct, lay out and return the type of pointers or references
-   to signature TO_TYPE.  If such a type has already been constructed,
-   reuse it. If CONSTP or VOLATILEP is specified, make the `optr' const
-   or volatile, respectively.   If we are constructing a const/volatile
-   type variant and the main type variant doesn't exist yet, it is built
-   as well.  If REFP is 1, we construct a signature reference, otherwise
-   a signature pointer is constructed.
+/* Construct, lay out and return the type of pointers or references to
+   signature TO_TYPE.  If such a type has already been constructed,
+   reuse it. If TYPE_QUALS are specified, qualify the `optr'.  If we
+   are constructing a const/volatile type variant and the main type
+   variant doesn't exist yet, it is built as well.  If REFP is 1, we
+   construct a signature reference, otherwise a signature pointer is
+   constructed.
 
    This function is a subroutine of `build_signature_pointer_type' and
    `build_signature_reference_type'.  */
 
 static tree
-build_signature_pointer_or_reference_type (to_type, constp, volatilep, refp)
+build_signature_pointer_or_reference_type (to_type, type_quals, refp)
      tree to_type;
-     int constp, volatilep, refp;
+     int type_quals;
+     int refp;
 {
   register tree t, m;
   register struct obstack *ambient_obstack = current_obstack;
@@ -121,13 +128,11 @@ build_signature_pointer_or_reference_type (to_type, constp, volatilep, refp)
   m = refp ? SIGNATURE_REFERENCE_TO (to_type) : SIGNATURE_POINTER_TO (to_type);
 
   /* If we don't have the main variant yet, construct it.  */
-  if (m == NULL_TREE
-      && (constp || volatilep))
-    m = build_signature_pointer_or_reference_type (to_type, 0, 0, refp);
+  if (m == NULL_TREE && type_quals != TYPE_UNQUALIFIED)
+    m = build_signature_pointer_or_reference_type (to_type, 
+						   TYPE_UNQUALIFIED, refp);
 
   /* Treat any nonzero argument as 1.  */
-  constp = !!constp;
-  volatilep = !!volatilep;
   refp = !!refp;
 
   /* If not generating auxiliary info, search the chain of variants to see
@@ -141,8 +146,8 @@ build_signature_pointer_or_reference_type (to_type, constp, volatilep, refp)
 
   if (m && !flag_gen_aux_info)
     for (t = m; t; t = TYPE_NEXT_VARIANT (t))
-      if (constp == TYPE_READONLY (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (t))))
-	  && volatilep == TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (t)))))
+      if (type_quals == CP_TYPE_QUALS (TREE_TYPE (TREE_TYPE
+						  (TYPE_FIELDS (t)))))
         return t;
 
   /* We need a new one.  If TO_TYPE is permanent, make this permanent too.  */
@@ -170,7 +175,7 @@ build_signature_pointer_or_reference_type (to_type, constp, volatilep, refp)
 
   t = make_lang_type (RECORD_TYPE);
   {
-    tree obj_type = build_type_variant (void_type_node, constp, volatilep);
+    tree obj_type = build_qualified_type (void_type_node, type_quals);
     tree optr_type = build_pointer_type (obj_type);
     tree optr, sptr;
 
@@ -185,7 +190,8 @@ build_signature_pointer_or_reference_type (to_type, constp, volatilep, refp)
       sptr = TREE_CHAIN (TYPE_FIELDS (m));
     else
       {
-	tree sig_tbl_type = cp_build_type_variant (to_type, 1, 0);
+	tree sig_tbl_type = 
+	  cp_build_qualified_type (to_type, TYPE_QUAL_CONST);
 	
 	sptr = build_lang_field_decl (FIELD_DECL,
 				      get_identifier (SIGNATURE_SPTR_NAME),
@@ -207,8 +213,9 @@ build_signature_pointer_or_reference_type (to_type, constp, volatilep, refp)
   }
 
   {
-    tree name = build_signature_pointer_or_reference_name (to_type, constp,
-							   volatilep, refp);
+    tree name = build_signature_pointer_or_reference_name (to_type, 
+							   type_quals,
+							   refp);
 
     /* Build a DECL node for this type, so the debugger has access to it.  */
     build_signature_pointer_or_reference_decl (t, name);
@@ -255,8 +262,7 @@ build_signature_pointer_type (to_type)
 {
   return
     build_signature_pointer_or_reference_type (TYPE_MAIN_VARIANT (to_type),
-					       TYPE_READONLY (to_type),
-					       TYPE_VOLATILE (to_type), 0);
+					       CP_TYPE_QUALS (to_type), 0);
 }
 
 /* Construct, lay out and return the type of pointers to signature TO_TYPE.  */
@@ -267,8 +273,7 @@ build_signature_reference_type (to_type)
 {
   return
     build_signature_pointer_or_reference_type (TYPE_MAIN_VARIANT (to_type),
-					       TYPE_READONLY (to_type),
-					       TYPE_VOLATILE (to_type), 1);
+					       CP_TYPE_QUALS (to_type), 1);
 }
 
 /* Return the name of the signature table (as an IDENTIFIER_NODE)
@@ -420,8 +425,7 @@ match_method_types (sig_mtype, class_mtype)
 
     /* If a signature method's `this' is const or volatile, so has to be
        the corresponding class method's `this.'  */
-    if ((TYPE_READONLY (sig_this) && ! TYPE_READONLY (class_this))
-	|| (TYPE_VOLATILE (sig_this) && ! TYPE_VOLATILE (class_this)))
+    if (!at_least_as_qualified_p (class_this, sig_this))
       return 0;
   }
 
@@ -429,7 +433,7 @@ match_method_types (sig_mtype, class_mtype)
   class_arg_types = TREE_CHAIN (class_arg_types);
 
   /* The number of arguments and the argument types have to be the same.  */
-  return compparms (sig_arg_types, class_arg_types, 3);
+  return compparms (sig_arg_types, class_arg_types);
 }
 
 /* Undo casts of opaque type variables to the RHS types.  */
@@ -884,7 +888,7 @@ build_signature_pointer_constructor (lhs, rhs)
     }
   else
     {
-      if (TREE_READONLY (lhs) || TYPE_READONLY (lhstype))
+      if (TREE_READONLY (lhs) || CP_TYPE_CONST_P (lhstype))
 	  readonly_error (lhs, "assignment", 0);
 
       optr_expr = build_modify_expr (build_optr_ref (lhs), NOP_EXPR,
@@ -978,9 +982,8 @@ build_signature_method_call (function, parms)
     tree old_this = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (TREE_TYPE (pfn))));
 
     TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (TREE_TYPE (pfn))))
-      = build_type_variant (build_pointer_type (basetype),
-			    TYPE_READONLY (old_this),
-			    TYPE_VOLATILE (old_this));
+      = build_qualified_type (build_pointer_type (basetype),
+			      TYPE_QUALS (old_this));
 
     direct_call = build_function_call (pfn, new_parms);
 

@@ -702,6 +702,9 @@ init_parse (filename)
   ridpointers[(int) RID_VOLATILE] = get_identifier ("volatile");
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_VOLATILE],
 			  build_tree_list (NULL_TREE, ridpointers[(int) RID_VOLATILE]));
+  ridpointers[(int) RID_RESTRICT] = get_identifier ("__restrict");
+  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_RESTRICT],
+			  build_tree_list (NULL_TREE, ridpointers[(int) RID_RESTRICT]));
   ridpointers[(int) RID_AUTO] = get_identifier ("auto");
   SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_AUTO],
 			  build_tree_list (NULL_TREE, ridpointers[(int) RID_AUTO]));
@@ -1984,7 +1987,7 @@ cons_up_default_function (type, full_name, kind)
       break;
 
     case 3:
-      type = build_type_variant (type, 1, 0);
+      type = build_qualified_type (type, TYPE_QUAL_CONST);
       /* Fall through...  */
     case 4:
       /* According to ARM $12.8, the default copy ctor will be declared, but
@@ -2002,7 +2005,7 @@ cons_up_default_function (type, full_name, kind)
       declspecs = build_decl_list (NULL_TREE, type);
 
       if (kind == 5)
-	type = build_type_variant (type, 1, 0);
+	type = build_qualified_type (type, TYPE_QUAL_CONST);
 
       name = ansi_opname [(int) MODIFY_EXPR];
 
@@ -4934,6 +4937,25 @@ handle_cp_pragma (pname)
 
   return 0;
 }
+
+/* Return the type-qualifier corresponding to the identifier given by
+   RID.  */
+
+int
+cp_type_qual_from_rid (rid)
+     tree rid;
+{
+  if (rid == ridpointers[(int) RID_CONST])
+    return TYPE_QUAL_CONST;
+  else if (rid == ridpointers[(int) RID_VOLATILE])
+    return TYPE_QUAL_VOLATILE;
+  else if (rid == ridpointers[(int) RID_RESTRICT])
+    return TYPE_QUAL_RESTRICT;
+
+  my_friendly_abort (0);
+  return TYPE_UNQUALIFIED;
+}
+
 
 #ifdef HANDLE_GENERIC_PRAGMAS
 

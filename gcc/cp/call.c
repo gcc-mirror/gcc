@@ -843,9 +843,8 @@ standard_conversion (to, from, expr)
 	       && ufcode != FUNCTION_TYPE)
 	{
 	  from = build_pointer_type
-	    (cp_build_type_variant (void_type_node,
-				    TYPE_READONLY (TREE_TYPE (from)),
-				    TYPE_VOLATILE (TREE_TYPE (from))));
+	    (cp_build_qualified_type (void_type_node, 
+				      CP_TYPE_QUALS (TREE_TYPE (from))));
 	  conv = build_conv (PTR_CONV, from, conv);
 	}
       else if (ufcode == OFFSET_TYPE && utcode == OFFSET_TYPE)
@@ -868,9 +867,9 @@ standard_conversion (to, from, expr)
 	{
 	  if (DERIVED_FROM_P (TREE_TYPE (to), TREE_TYPE (from)))
 	    {
-	      from = cp_build_type_variant (TREE_TYPE (to),
-					    TYPE_READONLY (TREE_TYPE (from)),
-					    TYPE_VOLATILE (TREE_TYPE (from)));
+	      from = 
+		cp_build_qualified_type (TREE_TYPE (to),
+					 CP_TYPE_QUALS (TREE_TYPE (from)));
 	      from = build_pointer_type (from);
 	      conv = build_conv (PTR_CONV, from, conv);
 	    }
@@ -903,13 +902,11 @@ standard_conversion (to, from, expr)
       if (! DERIVED_FROM_P (fbase, tbase)
 	  || ! comptypes (TREE_TYPE (fromfn), TREE_TYPE (tofn), 1)
 	  || ! compparms (TREE_CHAIN (TYPE_ARG_TYPES (fromfn)),
-			  TREE_CHAIN (TYPE_ARG_TYPES (tofn)), 1)
-	  || TYPE_READONLY (fbase) != TYPE_READONLY (tbase)
-	  || TYPE_VOLATILE (fbase) != TYPE_VOLATILE (tbase))
+			  TREE_CHAIN (TYPE_ARG_TYPES (tofn)))
+	  || CP_TYPE_QUALS (fbase) != CP_TYPE_QUALS (tbase))
 	return 0;
 
-      from = cp_build_type_variant (tbase, TYPE_READONLY (fbase),
-				    TYPE_VOLATILE (fbase));
+      from = cp_build_qualified_type (tbase, CP_TYPE_QUALS (fbase));
       from = build_cplus_method_type (from, TREE_TYPE (fromfn),
 				      TREE_CHAIN (TYPE_ARG_TYPES (fromfn)));
       from = build_ptrmemfunc_type (build_pointer_type (from));
@@ -981,9 +978,7 @@ reference_binding (rto, rfrom, expr, flags)
 	     || (IS_AGGR_TYPE (to) && IS_AGGR_TYPE (from)
 		 && DERIVED_FROM_P (to, from)));
 
-  if (lvalue && related
-      && TYPE_READONLY (to) >= TYPE_READONLY (from)
-      && TYPE_VOLATILE (to) >= TYPE_VOLATILE (from))
+  if (lvalue && related && at_least_as_qualified_p (to, from))
     {
       conv = build1 (IDENTITY_CONV, from, expr);
 
@@ -1012,14 +1007,12 @@ reference_binding (rto, rfrom, expr, flags)
 	    TREE_OPERAND (conv, 0) = TREE_OPERAND (TREE_OPERAND (conv, 0), 0);
 	}
       if (conv
-	  && ((! (TYPE_READONLY (to) && ! TYPE_VOLATILE (to)
+	  && ((! (CP_TYPE_CONST_NON_VOLATILE_P (to)
 		  && (flags & LOOKUP_NO_TEMP_BIND) == 0))
 	      /* If T1 is reference-related to T2, cv1 must be the same
 		 cv-qualification as, or greater cv-qualification than,
 		 cv2; otherwise, the program is ill-formed.  */
-	      || (related
-		  && (TYPE_READONLY (to) < TYPE_READONLY (from)
-		      || TYPE_VOLATILE (to) < TYPE_VOLATILE (from)))))
+	      || (related && !at_least_as_qualified_p (to, from))))
 	ICS_BAD_FLAG (conv) = 1;
     }
 
@@ -1071,8 +1064,7 @@ implicit_conversion (to, from, expr, flags)
 	    (TYPE_MAIN_VARIANT (TREE_TYPE (to)), expr, LOOKUP_ONLYCONVERTING);
 	  if (cand)
 	    {
-	      if (! TYPE_READONLY (TREE_TYPE (to))
-		  || TYPE_VOLATILE (TREE_TYPE (to)))
+	      if (!CP_TYPE_CONST_NON_VOLATILE_P (TREE_TYPE (to)))
 		ICS_BAD_FLAG (cand->second_conv) = 1;
 	      if (!conv || (ICS_BAD_FLAG (conv)
 			    > ICS_BAD_FLAG (cand->second_conv)))
@@ -1823,7 +1815,7 @@ add_builtin_candidates (candidates, code, code2, fnname, args, flags)
 
 	      if (i == 0 && ref1
 		  && (TREE_CODE (type) != REFERENCE_TYPE
-		      || TYPE_READONLY (TREE_TYPE (type))))
+		      || CP_TYPE_CONST_P (TREE_TYPE (type))))
 		continue;
 
 	      if (code == COND_EXPR && TREE_CODE (type) == REFERENCE_TYPE)
@@ -3223,17 +3215,9 @@ build_over_call (cand, args, flags)
       tree argtype = TREE_TYPE (TREE_VALUE (arg));
       tree t;
       if (ICS_BAD_FLAG (TREE_VEC_ELT (convs, i)))
-	{
-	  int dv = (TYPE_VOLATILE (TREE_TYPE (parmtype))
-		    < TYPE_VOLATILE (TREE_TYPE (argtype)));
-	  int dc = (TYPE_READONLY (TREE_TYPE (parmtype))
-		    < TYPE_READONLY (TREE_TYPE (argtype)));
-	  char *p = (dv && dc ? "const and volatile"
-		              : dc ? "const" : dv ? "volatile" : "");
+	cp_error ("passing `%T' as `this' argument of `%#D' discards qualifiers",
+		  TREE_TYPE (argtype), fn);
 
-	  cp_error ("passing `%T' as `this' argument of `%#D' discards %s",
-		    TREE_TYPE (argtype), fn, p);
-	}
       /* [class.mfct.nonstatic]: If a nonstatic member function of a class
 	 X is called for an object that is not of type X, or of a type
 	 derived from X, the behavior is undefined.

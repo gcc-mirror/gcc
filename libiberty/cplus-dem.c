@@ -126,8 +126,7 @@ struct work_stuff
   int constructor;
   int destructor;
   int static_type;	/* A static member function */
-  int const_type;	/* A const member function */
-  int volatile_type;    /* A volatile member function */
+  int type_quals;       /* The type qualifiers.  */
   int dllimported;	/* Symbol imported from a PE DLL */
   char **tmpl_argvec;   /* Template function arguments. */
   int ntmpl_args;       /* The number of template function arguments. */
@@ -392,6 +391,24 @@ static int
 demangle_template_value_parm PARAMS ((struct work_stuff*, const char**, 
 				      string*, type_kind_t));
 
+/* There is a TYPE_QUAL value for each type qualifier.  They can be
+   combined by bitwise-or to form the complete set of qualifiers for a
+   type.  */
+
+#define TYPE_UNQUALIFIED   0x0
+#define TYPE_QUAL_CONST    0x1
+#define TYPE_QUAL_VOLATILE 0x2
+#define TYPE_QUAL_RESTRICT 0x4
+
+static int 
+code_for_qualifier PARAMS ((char));
+
+static const char*
+qualifier_string PARAMS ((int));
+
+static const char*
+demangle_qualifier PARAMS ((char));
+
 /*  Translate count to integer, consuming tokens in the process.
     Conversion terminates on the first non-digit character.
     Trying to consume something that isn't a count results in
@@ -446,6 +463,84 @@ consume_count_with_underscores (mangled)
     }
 
   return idx;
+}
+
+/* C is the code for a type-qualifier.  Return the TYPE_QUAL
+   corresponding to this qualifier.  */
+
+static int
+code_for_qualifier (c)
+     char c;
+{
+  switch (c) 
+    {
+    case 'C':
+      return TYPE_QUAL_CONST;
+
+    case 'V':
+      return TYPE_QUAL_VOLATILE;
+      
+    case 'u':
+      return TYPE_QUAL_RESTRICT;
+
+    default:
+      break;
+    }
+
+  /* C was an invalid qualifier.  */
+  abort ();
+}
+
+/* Return the string corresponding to the qualifiers given by
+   TYPE_QUALS.  */
+
+static const char*
+qualifier_string (type_quals)
+     int type_quals;
+{
+  switch (type_quals)
+    {
+    case TYPE_UNQUALIFIED:
+      return "";
+
+    case TYPE_QUAL_CONST:
+      return "const";
+
+    case TYPE_QUAL_VOLATILE:
+      return "volatile";
+
+    case TYPE_QUAL_RESTRICT:
+      return "__restrict";
+
+    case TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE:
+      return "const volatile";
+
+    case TYPE_QUAL_CONST | TYPE_QUAL_RESTRICT:
+      return "const __restrict";
+
+    case TYPE_QUAL_VOLATILE | TYPE_QUAL_RESTRICT:
+      return "volatile __restrict";
+
+    case TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE | TYPE_QUAL_RESTRICT:
+      return "const volatile __restrict";
+
+    default:
+      break;
+    }
+
+  /* TYPE_QUALS was an invalid qualifier set.  */
+  abort ();
+}
+
+/* C is the code for a type-qualifier.  Return the string
+   corresponding to this qualifier.  This function should only be
+   called with a valid qualifier code.  */
+
+static const char*
+demangle_qualifier (c)
+     char c;
+{
+  return qualifier_string (code_for_qualifier (c));
 }
 
 int
@@ -664,15 +759,12 @@ internal_cplus_demangle (work, mangled)
   int success = 0;
   char *demangled = NULL;
   int s1,s2,s3,s4;
-  int saved_volatile_type;
   s1 = work->constructor;
   s2 = work->destructor;
   s3 = work->static_type;
-  s4 = work->const_type;
-  saved_volatile_type = work->volatile_type;
+  s4 = work->type_quals;
   work->constructor = work->destructor = 0;
-  work->static_type = work->const_type = 0;
-  work->volatile_type = 0;
+  work->type_quals = TYPE_UNQUALIFIED;
   work->dllimported = 0;
 
   if ((mangled != NULL) && (*mangled != '\0'))
@@ -718,8 +810,7 @@ internal_cplus_demangle (work, mangled)
   work->constructor = s1;
   work->destructor = s2;
   work->static_type = s3;
-  work->const_type = s4;
-  work->volatile_type = saved_volatile_type;
+  work->type_quals = s4;
   return (demangled);
 }
 
@@ -871,10 +962,8 @@ demangle_signature (work, mangled, declp)
 
 	case 'C':
 	case 'V':
-	  if (**mangled == 'C')
-	    work -> const_type = 1;
-	  else
-	    work->volatile_type = 1;
+	case 'u':
+	  work->type_quals |= code_for_qualifier (**mangled);
 
 	  /* a qualified member function */
 	  if (oldmangled == NULL)
@@ -1056,12 +1145,16 @@ demangle_signature (work, mangled, declp)
 	  success = demangle_args (work, mangled, declp);
 	}
     }
-  if (success && work -> static_type && PRINT_ARG_TYPES)
-    string_append (declp, " static");
-  if (success && work -> const_type && PRINT_ARG_TYPES)
-    string_append (declp, " const");
-  else if (success && work->volatile_type && PRINT_ARG_TYPES)
-    string_append (declp, " volatile");
+  if (success && PRINT_ARG_TYPES)
+    {
+      if (work->static_type)
+	string_append (declp, " static");
+      if (work->type_quals != TYPE_UNQUALIFIED)
+	{
+	  APPEND_BLANK (declp);
+	  string_append (declp, qualifier_string (work->type_quals));
+	}
+    }
 
   return (success);
 }
@@ -1345,6 +1438,8 @@ demangle_template_value_parm (work, mangled, s, tk)
 	  p [symbol_len] = '\0';
 	  q = internal_cplus_demangle (work, p);
 	  string_appendn (s, "&", 1);
+	  /* FIXME: Pointer-to-member constants should get a
+	            qualifying class name here.  */
 	  if (q)
 	    {
 	      string_append (s, q);
@@ -2481,8 +2576,7 @@ do_type (work, mangled, result)
   int success;
   string decl;
   const char *remembered_type;
-  int constp;
-  int volatilep;
+  int type_quals;
   string btype;
   type_kind_t tk = tk_none;
 
@@ -2574,8 +2668,7 @@ do_type (work, mangled, result)
 	case 'M':
 	case 'O':
 	  {
-	    constp = 0;
-	    volatilep = 0;
+	    type_quals = TYPE_UNQUALIFIED;
 
 	    member = **mangled == 'M';
 	    (*mangled)++;
@@ -2615,16 +2708,19 @@ do_type (work, mangled, result)
 	    string_prepend (&decl, "(");
 	    if (member)
 	      {
-		if (**mangled == 'C')
+		switch (**mangled)
 		  {
+		  case 'C':
+		  case 'V':
+		  case 'u':
+		    type_quals |= code_for_qualifier (**mangled);
 		    (*mangled)++;
-		    constp = 1;
+		    break;
+
+		  default:
+		    break;
 		  }
-		if (**mangled == 'V')
-		  {
-		    (*mangled)++;
-		    volatilep = 1;
-		  }
+
 		if (*(*mangled)++ != 'F')
 		  {
 		    success = 0;
@@ -2642,15 +2738,10 @@ do_type (work, mangled, result)
 	      {
 		break;
 	      }
-	    if (constp)
+	    if (type_quals != TYPE_UNQUALIFIED)
 	      {
 		APPEND_BLANK (&decl);
-		string_append (&decl, "const");
-	      }
-	    if (volatilep)
-	      {
-		APPEND_BLANK (&decl);
-		string_append (&decl, "volatile");
+		string_append (&decl, qualifier_string (type_quals));
 	      }
 	    break;
 	  }
@@ -2660,18 +2751,13 @@ do_type (work, mangled, result)
 
 	case 'C':
 	case 'V':
-	  /*
-	    if ((*mangled)[1] == 'P')
-	    {
-	    */
+	case 'u':
 	  if (PRINT_ANSI_QUALIFIERS)
 	    {
 	      if (!STRING_EMPTY (&decl))
-		{
-		  string_prepend (&decl, " ");
-		}
-	      string_prepend (&decl, 
-			      (**mangled) == 'C' ? "const" : "volatile");
+		string_prepend (&decl, " ");
+
+	      string_prepend (&decl, demangle_qualifier (**mangled));
 	    }
 	  (*mangled)++;
 	  break;
@@ -2794,11 +2880,13 @@ demangle_fund_type (work, mangled, result)
       switch (**mangled)
 	{
 	case 'C':
+	case 'V':
+	case 'u':
 	  (*mangled)++;
 	  if (PRINT_ANSI_QUALIFIERS)
 	    {
 	      APPEND_BLANK (result);
-	      string_append (result, "const");
+	      string_append (result, demangle_qualifier (**mangled));
 	    }
 	  break;
 	case 'U':
@@ -2810,14 +2898,6 @@ demangle_fund_type (work, mangled, result)
 	  (*mangled)++;
 	  APPEND_BLANK (result);
 	  string_append (result, "signed");
-	  break;
-	case 'V':
-	  (*mangled)++;
-	  if (PRINT_ANSI_QUALIFIERS)
-	    {
-	      APPEND_BLANK (result);
-	      string_append (result, "volatile");
-	    }
 	  break;
 	case 'J':
 	  (*mangled)++;

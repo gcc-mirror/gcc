@@ -65,7 +65,8 @@ init_rtti_processing ()
     pop_namespace ();
   tinfo_fn_id = get_identifier ("__tf");
   tinfo_fn_type = build_function_type
-    (build_reference_type (build_type_variant (type_info_type_node, 1, 0)),
+    (build_reference_type (build_qualified_type (type_info_type_node, 
+						 TYPE_QUAL_CONST)),
      void_list_node);
 }
 
@@ -123,8 +124,8 @@ build_headof (exp)
   else
     offset = build_component_ref (aref, delta_identifier, NULL_TREE, 0);
 
-  type = build_type_variant (ptr_type_node, TREE_READONLY (exp),
-			     TREE_THIS_VOLATILE (exp));
+  type = build_qualified_type (ptr_type_node, 
+			       CP_TYPE_QUALS (TREE_TYPE (exp)));
   return build (PLUS_EXPR, type, exp,
 		cp_convert (ptrdiff_type_node, offset));
 }
@@ -302,7 +303,7 @@ get_tinfo_var (type)
   /* Figure out how much space we need to allocate for the type_info object.
      If our struct layout or the type_info classes are changed, this will
      need to be modified.  */
-  if (TYPE_VOLATILE (type) || TYPE_READONLY (type))
+  if (TYPE_QUALS (type) != TYPE_UNQUALIFIED)
     size = 3 * POINTER_SIZE + INT_TYPE_SIZE;
   else if (TREE_CODE (type) == POINTER_TYPE
 	   && ! (TREE_CODE (TREE_TYPE (type)) == OFFSET_TYPE
@@ -467,8 +468,8 @@ build_dynamic_cast_1 (type, expr)
 	goto fail;
       if (TYPE_SIZE (complete_type (TREE_TYPE (exprtype))) == NULL_TREE)
 	goto fail;
-      if (TREE_READONLY (TREE_TYPE (exprtype))
-	  && ! TYPE_READONLY (TREE_TYPE (type)))
+      if (!at_least_as_qualified_p (TREE_TYPE (type),
+				    TREE_TYPE (exprtype)))
 	goto fail;
       if (TYPE_MAIN_VARIANT (TREE_TYPE (type)) == void_type_node)
 	break;
@@ -487,8 +488,6 @@ build_dynamic_cast_1 (type, expr)
   /* Apply trivial conversion T -> T& for dereferenced ptrs.  */
   if (ec == RECORD_TYPE)
     {
-      exprtype = build_type_variant (exprtype, TREE_READONLY (expr),
-				     TREE_THIS_VOLATILE (expr));
       exprtype = build_reference_type (exprtype);
       expr = convert_to_reference (exprtype, expr, CONV_IMPLICIT,
 				   LOOKUP_NORMAL, NULL_TREE);
@@ -503,8 +502,8 @@ build_dynamic_cast_1 (type, expr)
 	goto fail;
       if (TYPE_SIZE (complete_type (TREE_TYPE (exprtype))) == NULL_TREE)
 	goto fail;
-      if (TREE_READONLY (TREE_TYPE (exprtype))
-	  && ! TYPE_READONLY (TREE_TYPE (type)))
+      if (!at_least_as_qualified_p (TREE_TYPE (type),
+				    TREE_TYPE (exprtype)))
 	goto fail;
     }
 
@@ -766,7 +765,9 @@ expand_class_desc (tdecl, type)
       /* Actually const __user_type_info * */
       fields [0] = build_lang_field_decl
 	(FIELD_DECL, NULL_TREE,
-	 build_pointer_type (build_type_variant (type_info_type_node, 1, 0)));
+	 build_pointer_type (build_qualified_type
+			     (type_info_type_node,
+			      TYPE_QUAL_CONST)));
       fields [1] = build_lang_field_decl
 	(FIELD_DECL, NULL_TREE, unsigned_intSI_type_node);
       DECL_BIT_FIELD (fields[1]) = 1;
@@ -967,8 +968,7 @@ expand_attr_desc (tdecl, type)
   tree elems, t, fn;
   char *name = build_overload_name (type, 1, 1);
   tree name_string = combine_strings (build_string (strlen (name)+1, name));
-  tree attrval = build_int_2
-    (TYPE_READONLY (type) | TYPE_VOLATILE (type) * 2, 0);
+  tree attrval = build_int_2 (TYPE_QUALS (type), 0);
 
   expand_expr_stmt (get_typeid_1 (TYPE_MAIN_VARIANT (type)));
   t = decay_conversion (get_tinfo_var (TYPE_MAIN_VARIANT (type)));
@@ -1091,7 +1091,7 @@ synthesize_tinfo_fn (fndecl)
     expand_generic_desc (tdecl, type, "__rtti_func");
   else if (TREE_CODE (type) == ARRAY_TYPE)
     expand_generic_desc (tdecl, type, "__rtti_array");
-  else if (TYPE_VOLATILE (type) || TYPE_READONLY (type))
+  else if (TYPE_QUALS (type) != TYPE_UNQUALIFIED)
     expand_attr_desc (tdecl, type);
   else if (TREE_CODE (type) == POINTER_TYPE)
     {

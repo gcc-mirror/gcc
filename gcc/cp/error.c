@@ -102,7 +102,7 @@ static void dump_type_suffix PROTO((tree, int, int));
 static void dump_function_name PROTO((tree));
 static void dump_expr_list PROTO((tree));
 static void dump_global_iord PROTO((tree));
-static void dump_readonly_or_volatile PROTO((tree, enum pad));
+static void dump_qualifiers PROTO((tree, enum pad));
 static void dump_char PROTO((int));
 static char *aggr_variety PROTO((tree));
 static tree ident_fndecl PROTO((tree));
@@ -115,19 +115,46 @@ init_error ()
 }
 
 static void
-dump_readonly_or_volatile (t, p)
+dump_qualifiers (t, p)
      tree t;
      enum pad p;
 {
-  if (TYPE_READONLY (t) || TYPE_VOLATILE (t))
+  if (TYPE_QUALS (t))
     {
       if (p == before) OB_PUTC (' ');
-      if (TYPE_READONLY (t))
-	OB_PUTS ("const");
-      if (TYPE_READONLY (t) && TYPE_VOLATILE (t))
-	OB_PUTC (' ');
-      if (TYPE_VOLATILE (t))
-	OB_PUTS ("volatile");
+      switch (TYPE_QUALS (t))
+	{
+	case TYPE_QUAL_CONST:
+	  OB_PUTS ("const");
+	  break;
+
+	case TYPE_QUAL_VOLATILE:
+	  OB_PUTS ("volatile");
+	  break;
+
+	case TYPE_QUAL_RESTRICT:
+	  OB_PUTS ("__restrict");
+	  break;
+
+	case TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE:
+	  OB_PUTS ("const volatile");
+	  break;
+
+	case TYPE_QUAL_CONST | TYPE_QUAL_RESTRICT:
+	  OB_PUTS ("const __restrict");
+	  break;
+
+	case TYPE_QUAL_VOLATILE | TYPE_QUAL_RESTRICT:
+	  OB_PUTS ("volatile __restrict");
+	  break;
+
+	case TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE | TYPE_QUAL_RESTRICT:
+	  OB_PUTS ("const volatile __restrict");
+	  break;
+
+	default:
+	  my_friendly_abort (0);
+	}
       if (p == after) OB_PUTC (' ');
     }
 }
@@ -197,8 +224,7 @@ dump_type_real (t, v, canonical_name)
       if (TYPE_LANG_SPECIFIC (t)
 	  && (IS_SIGNATURE_POINTER (t) || IS_SIGNATURE_REFERENCE (t)))
 	{
-	  if (TYPE_READONLY (t) | TYPE_VOLATILE (t))
-	    dump_readonly_or_volatile (t, after);
+	  dump_qualifiers (t, after);
 	  dump_type_real (SIGNATURE_TYPE (t), v, canonical_name);
 	  if (IS_SIGNATURE_POINTER (t))
 	    OB_PUTC ('*');
@@ -232,7 +258,7 @@ dump_type_real (t, v, canonical_name)
     case BOOLEAN_TYPE:
       {
 	tree type;
-	dump_readonly_or_volatile (t, after);
+	dump_qualifiers (t, after);
 	type = canonical_name ? TYPE_MAIN_VARIANT (t) : t;
 	if (TYPE_NAME (type) && TYPE_IDENTIFIER (type))
 	  OB_PUTID (TYPE_IDENTIFIER (type));
@@ -275,7 +301,7 @@ dump_type_real (t, v, canonical_name)
       break;
 
     case TEMPLATE_TYPE_PARM:
-      dump_readonly_or_volatile (t, after);
+      dump_qualifiers (t, after);
       if (TYPE_IDENTIFIER (t))
 	OB_PUTID (TYPE_IDENTIFIER (t));
       else
@@ -343,7 +369,7 @@ dump_aggr_type (t, v, canonical_name)
   tree name;
   char *variety = aggr_variety (t);
 
-  dump_readonly_or_volatile (t, after);
+  dump_qualifiers (t, after);
 
   if (v > 0)
     {
@@ -404,13 +430,14 @@ dump_type_prefix (t, v, canonical_name)
   switch (TREE_CODE (t))
     {
     case POINTER_TYPE:
+    case REFERENCE_TYPE:
       {
 	tree sub = TREE_TYPE (t);
 	
 	dump_type_prefix (sub, v, canonical_name);
 	/* A tree for a member pointer looks like pointer to offset,
 	   so let the OFFSET_TYPE case handle it.  */
-	if (TREE_CODE (sub) != OFFSET_TYPE)
+	if (!TYPE_PTRMEM_P (t))
 	  {
 	    switch (TREE_CODE (sub))
 	      {
@@ -425,42 +452,20 @@ dump_type_prefix (t, v, canonical_name)
 
 	      case POINTER_TYPE:
 		/* We don't want "char * *" */
-		if (! (TYPE_READONLY (sub) || TYPE_VOLATILE (sub)))
+		if (TYPE_QUALS (sub) == TYPE_UNQUALIFIED)
 		  break;
 		/* But we do want "char *const *" */
 		
 	      default:
 		OB_PUTC (' ');
 	      }
-	    OB_PUTC ('*');
-	    dump_readonly_or_volatile (t, none);
+	    if (TREE_CODE (t) == POINTER_TYPE)
+	      OB_PUTC ('*');
+	    else
+	      OB_PUTC ('&');
+	    dump_qualifiers (t, none);
 	  }
       }
-      break;
-
-    case REFERENCE_TYPE:
-      {
-	tree sub = TREE_TYPE (t);
-	dump_type_prefix (sub, v, canonical_name);
-
-	switch (TREE_CODE (sub))
-	  {
-	  case ARRAY_TYPE:
-	    OB_PUTC2 (' ', '(');
-	    break;
-
-	  case POINTER_TYPE:
-	    /* We don't want "char * &" */
-	    if (! (TYPE_READONLY (sub) || TYPE_VOLATILE (sub)))
-	      break;
-	    /* But we do want "char *const &" */
-
-	  default:
-	    OB_PUTC (' ');
-	  }
-      }
-      OB_PUTC ('&');
-      dump_readonly_or_volatile (t, none);
       break;
 
     case OFFSET_TYPE:
@@ -473,7 +478,7 @@ dump_type_prefix (t, v, canonical_name)
 	  OB_PUTC2 (':', ':');
 	}
       OB_PUTC ('*');
-      dump_readonly_or_volatile (t, none);
+      dump_qualifiers (t, none);
       break;
 
       /* Can only be reached through function pointer -- this would not be
@@ -555,7 +560,7 @@ dump_type_suffix (t, v, canonical_name)
 	  OB_PUTS ("...");
 	OB_PUTC (')');
 	if (TREE_CODE (t) == METHOD_TYPE)
-	  dump_readonly_or_volatile
+	  dump_qualifiers
 	    (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (t))), before);
 	dump_type_suffix (TREE_TYPE (t), v, canonical_name);
 	break;
@@ -1000,10 +1005,10 @@ dump_function_decl (t, v)
     {
       if (IS_SIGNATURE (cname))
 	/* We look at the type pointed to by the `optr' field of `this.'  */
-	dump_readonly_or_volatile
+	dump_qualifiers
 	  (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (TREE_VALUE (TYPE_ARG_TYPES (fntype))))), before);
       else
-	dump_readonly_or_volatile
+	dump_qualifiers
 	  (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (fntype))), before);
     }
 }
@@ -1951,7 +1956,7 @@ cv_as_string (p, v)
 {
   OB_INIT ();
 
-  dump_readonly_or_volatile (p, before);
+  dump_qualifiers (p, before);
 
   OB_FINISH ();
 
