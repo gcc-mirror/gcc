@@ -1,3 +1,10 @@
+Thu Nov  2 10:11:45 2000  Mark P Mitchell  <mark@codesourcery.com>
+
+	* config/os/irix/bits/atomicity.h (_Atomic_word): Make it a
+	signed type.
+	(__exchange_aand_add): Adjust accordingly.
+	(__atomic_add): Likewise.
+	
 2000-11-02  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* src/locale.cc: Match orderings for static members.
