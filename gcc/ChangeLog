@@ -1,3 +1,16 @@
+Sat Feb 24 03:32:50 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_frame): New structure.
+	(ix86_compute_frame_size): Kill.
+	(ix86_compute_frame_layout): New.
+	(ix86_save_reg): New.
+	(ix86_can_use_return_insn_p): Use frame layout stuff.
+	(ix86_expand_prologue): Likewise.
+	(ix86_expand_epilogue): Likewise.
+	(ix86_initial_elimination_offset): Likewise.
+	(ix86_nsaved_regs): Use ix86_save_reg.
+	(ix86_emit_save_regs): Likewise.
+
 Sat Feb 24 03:30:38 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* flow.c (find_sub_basic_blocks): New function.
