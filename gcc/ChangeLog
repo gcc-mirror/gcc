@@ -1,4 +1,25 @@
 2003-09-08  Bernardo Innocenti  <bernie@develer.com>
+            Peter Barada <peter@baradas.org>
+
+	* config/m68k/coff.h (REGISTER_NAMES): Add fake register `argptr'
+	* config/m68k/hp320.h (REGISTER_NAMES): Likewise.
+	* config/m68k/linux.h (REGISTER_NAMES): Likewise.
+	* config/m68k/m68kelf.h (REGISTER_NAMES): Likewise.
+	* gcc/config/m68k/sgs.h (REGISTER_NAMES): Likewise.
+	* config/m68k/m68k-protos.h (m68k_initial_elimination_offset): Add prototype.
+	* config/m68k/m68k.c (m68k_frame): New struct, simular to ix86 back-end.
+	(m68k_compute_frame_layout): New function.
+	(m68k_initial_elimination_offset): New function.
+	(m68k_output_function_prologue): ColdFire-specific movem handling.
+	(m68k_output_function_epilogue): Likewise.
+	* config/m68k/m68k.h (FIRST_PSEOUDO_REGISTER): Make room for argptr reg.
+	(ARG_POINTER_REGNUM): Add new definition.
+	(INITIAL_FRAME_POINTER_OFFSET): Remove macro.
+	(ELIMINABLE_REGS): Define new macro, like in ix86 back-end.
+	(CAN_ELIMINATE): Likewise.
+	(INITIAL_ELIMINATION_OFFSET): Likewise.
+
+2003-09-08  Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/m68k.c (m68k_output_function_prologue): Simplify
 	by removing redundant variable cfa_store_offset.

@@ -386,7 +386,7 @@ extern int target_flags;
    For the 68000, we give the data registers numbers 0-7,
    the address registers numbers 010-017,
    and the 68881 floating point registers numbers 020-027.  */
-#define FIRST_PSEUDO_REGISTER 24
+#define FIRST_PSEUDO_REGISTER 25
 
 /* This defines the register which is used to hold the offset table for PIC.  */
 #define PIC_OFFSET_TABLE_REGNUM (flag_pic ? 13 : INVALID_REGNUM)
@@ -493,8 +493,11 @@ extern int target_flags;
    This is computed in `reload', in reload1.c.  */
 #define FRAME_POINTER_REQUIRED 0
 
-/* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM 14
+/* Base register for access to arguments of the function.
+ * This isn't a hardware register. It will be eliminated to the
+ * stack pointer or frame pointer.
+ */
+#define ARG_POINTER_REGNUM 24
 
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM 8
@@ -879,32 +882,6 @@ enum reg_class {
    You should override this if you define FUNCTION_EXTRA_EPILOGUE.  */
 #define USE_RETURN_INSN use_return_insn ()
 
-/* Store in the variable DEPTH the initial difference between the
-   frame pointer reg contents and the stack pointer reg contents,
-   as of the start of the function body.  This depends on the layout
-   of the fixed parts of the stack frame and on how registers are saved.
-
-   On the 68k, if we have a frame, we must add one word to its length
-   to allow for the place that a6 is stored when we do have a frame pointer.
-   Otherwise, we would need to compute the offset from the frame pointer
-   of a local variable as a function of frame_pointer_needed, which
-   is hard.  */
-
-#define INITIAL_FRAME_POINTER_OFFSET(DEPTH)			\
-{ int regno;							\
-  int offset = -4;						\
-  for (regno = 16; regno < FIRST_PSEUDO_REGISTER; regno++)	\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-      offset += 12;						\
-  for (regno = 0; regno < 16; regno++)				\
-    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-      offset += 4;						\
-  if (flag_pic && current_function_uses_pic_offset_table)	\
-    offset += 4;						\
-  (DEPTH) = (offset + ((get_frame_size () + 3) & -4)		\
-	     + (get_frame_size () == 0 ? 0 : 4));		\
-}
-
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.  */
 
@@ -981,6 +958,38 @@ __transfer_from_trampoline ()					\
   asm volatile ("move%.l %1,%0" : "=a" (a0) : "m" (a0[18]));	\
   asm ("rts":);							\
 }
+
+/* Definitions for register eliminations.
+
+   This is an array of structures.  Each structure initializes one pair
+   of eliminable registers.  The "from" register number is given first,
+   followed by "to".  Eliminations of the same "from" register are listed
+   in order of preference.
+
+   There are two registers that can always be eliminated on the m68k.
+   The frame pointer and the arg pointer can be replaced by either the
+   hard frame pointer or to the stack pointer, depending upon the
+   circumstances.  The hard frame pointer is not used before reload and
+   so it is not eligible for elimination.  */
+
+#define ELIMINABLE_REGS					\
+{{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM },		\
+ { ARG_POINTER_REGNUM, FRAME_POINTER_REGNUM },	\
+ { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM }}
+
+/* Given FROM and TO register numbers, say whether this elimination is
+   allowed.  Frame pointer elimination is automatically handled.
+
+   All other eliminations are valid.  */
+
+#define CAN_ELIMINATE(FROM, TO) \
+  ((TO) == STACK_POINTER_REGNUM ? ! frame_pointer_needed : 1)
+
+/* Define the offset between two registers, one to be eliminated, and the other
+   its replacement, at the start of a routine.  */
+
+#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
+  (OFFSET) = m68k_initial_elimination_offset(FROM, TO)
 
 /* Addressing modes, and classification of registers for them.  */
 
@@ -1381,7 +1390,7 @@ __transfer_from_trampoline ()					\
 #define REGISTER_NAMES \
 {"d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7",	\
  "a0", "a1", "a2", "a3", "a4", "a5", "a6", "sp",	\
- "fp0", "fp1", "fp2", "fp3", "fp4", "fp5", "fp6", "fp7" }
+ "fp0", "fp1", "fp2", "fp3", "fp4", "fp5", "fp6", "fp7", "argptr" }
 
 /* How to renumber registers for dbx and gdb.
    On the Sun-3, the floating point registers have numbers

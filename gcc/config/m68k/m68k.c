@@ -215,6 +215,84 @@ override_options (void)
   real_format_for_mode[XFmode - QFmode] = &ieee_extended_motorola_format;
 }
 
+/* Structure describing stack frame layout. */
+struct m68k_frame {
+  HOST_WIDE_INT offset;
+  HOST_WIDE_INT size;
+  /* data and address register */
+  int reg_no;
+  unsigned int reg_mask;
+  unsigned int reg_rev_mask;
+  /* fpu registers */
+  int fpu_no;
+  unsigned int fpu_mask;
+  unsigned int fpu_rev_mask;
+  /* fpa registers */
+  int fpa_no;
+  /* offsets relative to ARG_POINTER.  */
+  HOST_WIDE_INT frame_pointer_offset;
+  HOST_WIDE_INT stack_pointer_offset;
+};
+
+static void
+m68k_compute_frame_layout (struct m68k_frame *frame)
+{
+  int regno, saved;
+  unsigned int mask, rmask;
+
+  frame->size = (get_frame_size () + 3) & -4;
+
+  mask = rmask = saved = 0;
+  for (regno = 0; regno < 16; regno++)
+    if (m68k_save_reg (regno))
+      {
+	mask |= 1 << regno;
+	rmask |= 1 << (15 - regno);
+	saved++;
+      }
+  frame->offset = saved * 4;
+  frame->reg_no = saved;
+  frame->reg_mask = mask;
+  frame->reg_rev_mask = rmask;
+
+  if (TARGET_68881 /* || TARGET_CFV4E */)
+    {
+      mask = rmask = saved = 0;
+      for (regno = 16; regno < 24; regno++)
+	if (regs_ever_live[regno] && ! call_used_regs[regno])
+	  {
+	    mask |= 1 << (23 - regno);
+	    rmask |= 1 << (regno - 16);
+	    saved++;
+	  }
+      frame->offset += saved * 12 /* (TARGET_CFV4E ? 8 : 12) */;
+      frame->fpu_no = saved;
+      frame->fpu_mask = mask;
+      frame->fpu_rev_mask = rmask;
+    }
+}
+
+HOST_WIDE_INT
+m68k_initial_elimination_offset (int from, int to)
+{
+  struct m68k_frame frame;
+
+  /* FIXME: The correct offset to compute here would appear to be
+       (frame_pointer_needed ? -UNITS_PER_WORD * 2 : -UNITS_PER_WORD);
+     but for some obscure reason, this must be 0 to get correct code.  */
+  if (from == ARG_POINTER_REGNUM && to == FRAME_POINTER_REGNUM)
+    return 0;
+
+  m68k_compute_frame_layout (&frame);
+
+  if (from == ARG_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
+    return frame.offset + frame.size + (frame_pointer_needed ? -UNITS_PER_WORD * 2 : -UNITS_PER_WORD);
+  else if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM)
+    return frame.offset + frame.size;
+
+  abort();
+}
+
 /* Return 1 if we need to save REGNO.  */
 static int
 m68k_save_reg (unsigned int regno)
@@ -261,6 +339,7 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
   register int mask = 0;
   int num_saved_regs = 0;
   HOST_WIDE_INT fsize = (size + 3) & -4;
+  HOST_WIDE_INT fsize_with_regs;
   HOST_WIDE_INT cfa_offset = INCOMING_FRAME_SP_OFFSET;
   
   /* If the stack limit is a symbol, we can check it here,
@@ -277,6 +356,21 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 #endif
     }
 
+  if (TARGET_COLDFIRE)
+    {
+      /* on Coldfire add register save into initial stack frame setup, if possible */
+      for (regno = 0; regno < 16; regno++)
+        if (m68k_save_reg (regno))
+          num_saved_regs++;
+
+      if (num_saved_regs <= 2)
+        num_saved_regs = 0;
+    }
+  else
+      num_saved_regs = 0;
+
+  fsize_with_regs = fsize + num_saved_regs * 4;
+  
   if (frame_pointer_needed)
     {
       if (fsize == 0 && TARGET_68040)
@@ -294,35 +388,35 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 		   reg_names[FRAME_POINTER_REGNUM]);
 #endif
 	}
-      else if (fsize < 0x8000)
+      else if (fsize_with_regs < 0x8000)
 	{
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tlink.w %s,%I%wd\n",
-		       reg_names[FRAME_POINTER_REGNUM], -fsize);
+	      asm_fprintf (stream, "\tlink.w %s,%I%wd\n",
+		reg_names[FRAME_POINTER_REGNUM], -fsize_with_regs);
 #else
-	  asm_fprintf (stream, "\tlink %s,%I%wd\n",
-		       reg_names[FRAME_POINTER_REGNUM], -fsize);
+	      asm_fprintf (stream, "\tlink %s,%I%wd\n",
+		reg_names[FRAME_POINTER_REGNUM], -fsize_with_regs);
 #endif
 	}
       else if (TARGET_68020)
 	{
 #ifdef MOTOROLA
 	  asm_fprintf (stream, "\tlink.l %s,%I%wd\n",
-		       reg_names[FRAME_POINTER_REGNUM], -fsize);
+		       reg_names[FRAME_POINTER_REGNUM], -fsize_with_regs);
 #else
 	  asm_fprintf (stream, "\tlink %s,%I%wd\n",
-		       reg_names[FRAME_POINTER_REGNUM], -fsize);
+		       reg_names[FRAME_POINTER_REGNUM], -fsize_with_regs);
 #endif
 	}
       else
 	{
-      /* Adding negative number is faster on the 68040.  */
+          /* Adding negative number is faster on the 68040.  */
 #ifdef MOTOROLA
 	  asm_fprintf (stream, "\tlink.w %s,%I0\n\tadd.l %I%wd,%Rsp\n",
-		       reg_names[FRAME_POINTER_REGNUM], -fsize);
+		       reg_names[FRAME_POINTER_REGNUM], -fsize_with_regs);
 #else
 	  asm_fprintf (stream, "\tlink %s,%I0\n\taddl %I%wd,%Rsp\n",
-		       reg_names[FRAME_POINTER_REGNUM], -fsize);
+		       reg_names[FRAME_POINTER_REGNUM], -fsize_with_regs);
 #endif
 	}
       if (dwarf2out_do_frame ())
@@ -335,32 +429,32 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 	  cfa_offset += fsize;
 	}
     }
-  else if (fsize)
+  else if (fsize_with_regs) /* !frame_pointer_needed */
     {
-      if (fsize + 4 < 0x8000)
+      if (fsize_with_regs < 0x8000)
 	{
-	  if (fsize + 4 <= 8)
+	  if (fsize_with_regs <= 8)
 	    {
 	      if (!TARGET_COLDFIRE)
 		{
 		  /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
-		  asm_fprintf (stream, "\tsubq.w %I%wd,%Rsp\n", fsize + 4);
+		  asm_fprintf (stream, "\tsubq.w %I%wd,%Rsp\n", fsize_with_regs);
 #else
-		  asm_fprintf (stream, "\tsubqw %I%wd,%Rsp\n", fsize + 4);
+		  asm_fprintf (stream, "\tsubqw %I%wd,%Rsp\n", fsize_with_regs);
 #endif
 		}
 	      else
 		{
 		  /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
-		  asm_fprintf (stream, "\tsubq.l %I%wd,%Rsp\n", fsize + 4);
+		  asm_fprintf (stream, "\tsubq.l %I%wd,%Rsp\n", fsize_with_regs);
 #else
-		  asm_fprintf (stream, "\tsubql %I%wd,%Rsp\n", fsize + 4);
+		  asm_fprintf (stream, "\tsubql %I%wd,%Rsp\n", fsize_with_regs);
 #endif
 		}
 	    }
-	  else if (fsize + 4 <= 16 && TARGET_CPU32)
+	  else if (fsize_with_regs <= 16 && TARGET_CPU32)
 	    {
 	      /* On the CPU32 it is faster to use two subqw instructions to
 		 subtract a small integer (8 < N <= 16) to a register.  */
@@ -368,10 +462,10 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 #ifdef MOTOROLA
 	      asm_fprintf (stream,
 			   "\tsubq.w %I8,%Rsp\n\tsubq.w %I%wd,%Rsp\n",
-			   fsize + 4 - 8);
+			   fsize_with_regs - 8);
 #else
 	      asm_fprintf (stream, "\tsubqw %I8,%Rsp\n\tsubqw %I%wd,%Rsp\n",
-			   fsize + 4 - 8);
+			   fsize_with_regs - 8);
 #endif
 	    }
 	  else if (TARGET_68040)
@@ -379,27 +473,26 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 	      /* Adding negative number is faster on the 68040.  */
 	      /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\tadd.w %I%wd,%Rsp\n", - (fsize + 4));
+	      asm_fprintf (stream, "\tadd.w %I%wd,%Rsp\n", -fsize_with_regs);
 #else
-	      asm_fprintf (stream, "\taddw %I%wd,%Rsp\n", - (fsize + 4));
+	      asm_fprintf (stream, "\taddw %I%wd,%Rsp\n", -fsize_with_regs);
 #endif
 	    }
 	  else
 	    {
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\tlea (%wd,%Rsp),%Rsp\n", - (fsize + 4));
+	      asm_fprintf (stream, "\tlea (%wd,%Rsp),%Rsp\n", -fsize_with_regs);
 #else
-	      asm_fprintf (stream, "\tlea %Rsp@(%wd),%Rsp\n", - (fsize + 4));
+	      asm_fprintf (stream, "\tlea %Rsp@(%wd),%Rsp\n", -fsize_with_regs);
 #endif
 	    }
 	}
-      else
+      else /* fsize_with_regs >= 0x8000 */
 	{
-	/* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tadd.l %I%wd,%Rsp\n", - (fsize + 4));
+	  asm_fprintf (stream, "\tadd.l %I%wd,%Rsp\n", -fsize_with_regs);
 #else
-	  asm_fprintf (stream, "\taddl %I%wd,%Rsp\n", - (fsize + 4));
+	  asm_fprintf (stream, "\taddl %I%wd,%Rsp\n", -fsize_with_regs);
 #endif
 	}
       if (dwarf2out_do_frame ())
@@ -407,7 +500,10 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 	  cfa_offset += fsize + 4;
 	  dwarf2out_def_cfa ("", STACK_POINTER_REGNUM, cfa_offset);
 	}
-    }
+    } /* !frame_pointer_needed */
+
+  num_saved_regs = 0;
+
   if (TARGET_68881)
     {
       for (regno = 16; regno < 24; regno++)
@@ -505,10 +601,8 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 	     then use the plain address register indirect mode.  We also
 	     have to invert the register save mask to use the new mode.
 
-	     FIXME: if num_saved_regs was calculated earlier, we could
-	     combine the stack pointer adjustment with any adjustment
-	     done when the initial stack frame is created.  This would
-	     save an instruction */
+	     The required register save space was combined earlier with
+	     the fsize amount.  Don't add it again.  */
 	     
 	  int newmask = 0;
 	  int i;
@@ -518,10 +612,8 @@ m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 		newmask |= (1 << (15-i));
 
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tlea (%d,%Rsp),%Rsp\n", -num_saved_regs*4);
 	  asm_fprintf (stream, "\tmovm.l %I0x%x,(%Rsp)\n", newmask);
 #else
-	  asm_fprintf (stream, "\tlea %Rsp@(%d),%Rsp\n", -num_saved_regs*4);
 	  asm_fprintf (stream, "\tmoveml %I0x%x,%Rsp@\n", newmask);
 #endif
 	}
@@ -595,6 +687,7 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
   register int nregs;
   HOST_WIDE_INT offset, foffset;
   HOST_WIDE_INT fsize = (size + 3) & -4;
+  HOST_WIDE_INT fsize_with_regs;
   int big = 0;
   rtx insn = get_last_insn ();
   int restore_from_sp = 0;
@@ -637,18 +730,45 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
      stack adjustment needed at that point.  */
   restore_from_sp = ! frame_pointer_needed
 	     || (! current_function_calls_alloca && leaf_function_p ());
+
+  /* fsize_with_regs is the size we need to adjust the sp when
+     popping the frame */
+  fsize_with_regs = fsize;
+
+  /* Because the ColdFire doesn't support moveml with
+     complex address modes, we must adjust the stack manually
+     after restoring registers. When the frame pointer isn't used,
+     we can merge movem adjustment into frame unlinking
+     made immediately after it. */
+  if (TARGET_COLDFIRE && restore_from_sp && (nregs > 2))
+    fsize_with_regs += nregs * 4;
+
   if (offset + fsize >= 0x8000
       && ! restore_from_sp
       && (mask || fmask))
     {
+      /* Because the ColdFire doesn't support moveml with
+         complex address modes we make an extra correction here */
+      if (TARGET_COLDFIRE)
+        {
 #ifdef MOTOROLA
-      asm_fprintf (stream, "\t%Omove.l %I%wd,%Ra1\n", -fsize);
+          asm_fprintf (stream, "\t%Omove.l %I%d,%Ra1\n", -fsize - offset);
 #else
-      asm_fprintf (stream, "\tmovel %I%wd,%Ra1\n", -fsize);
+          asm_fprintf (stream, "\tmovel %I%d,%Ra1\n", -fsize - offset);
 #endif
+        }
+      else
+        {
+#ifdef MOTOROLA
+          asm_fprintf (stream, "\t%Omove.l %I%wd,%Ra1\n", -fsize);
+#else
+          asm_fprintf (stream, "\tmovel %I%wd,%Ra1\n", -fsize);
+#endif
+        }
+
       fsize = 0, big = 1;
     }
-  if (TARGET_COLDFIRE || nregs <= 2)
+  if (nregs <= 2)
     {
       /* Restore each separately in the same order moveml does.
          Using two movel instructions instead of a single moveml
@@ -702,39 +822,77 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
     }
   else if (mask)
     {
-      if (big)
-	{
+      /* The ColdFire requires special handling due to its limited moveml insn */
+      if (TARGET_COLDFIRE)
+        {
+          if (big)
+            {
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tmovm.l -%wd(%s,%Ra1.l),%I0x%x\n",
-		       offset + fsize,
-		       reg_names[FRAME_POINTER_REGNUM],
-		       mask);
+              asm_fprintf (stream, "\tadd.l %s,%Ra1\n", reg_names[FRAME_POINTER_REGNUM]);
+              asm_fprintf (stream, "\tmovm.l (%Ra1),%I0x%x\n", mask);
 #else
-	  asm_fprintf (stream, "\tmoveml %s@(-%wd,%Ra1:l),%I0x%x\n",
-		       reg_names[FRAME_POINTER_REGNUM],
-		       offset + fsize, mask);
+              asm_fprintf (stream, "\taddl %s,%Ra1\n", reg_names[FRAME_POINTER_REGNUM]);
+              asm_fprintf (stream, "\tmoveml %Ra1@,%I0x%x\n", mask);
 #endif
-	}
-      else if (restore_from_sp)
-	{
+	     }
+	   else if (restore_from_sp)
+	     {
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tmovm.l (%Rsp)+,%I0x%x\n", mask);
+	       asm_fprintf (stream, "\tmovm.l (%Rsp),%I0x%x\n", mask);
 #else
-	  asm_fprintf (stream, "\tmoveml %Rsp@+,%I0x%x\n", mask);
+	       asm_fprintf (stream, "\tmoveml %Rsp@,%I0x%x\n", mask);
 #endif
-	}
-      else
-	{
+            }
+          else
+            {
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tmovm.l -%wd(%s),%I0x%x\n",
-		       offset + fsize,
-		       reg_names[FRAME_POINTER_REGNUM],
-		       mask);
+              asm_fprintf (stream, "\tmovm.l -%wd(%s),%I0x%x\n",
+                           offset + fsize,
+                           reg_names[FRAME_POINTER_REGNUM],
+                           mask);
 #else
-	  asm_fprintf (stream, "\tmoveml %s@(-%wd),%I0x%x\n",
-		       reg_names[FRAME_POINTER_REGNUM],
-		       offset + fsize, mask);
+              asm_fprintf (stream, "\tmoveml %s@(-%wd),%I0x%x\n",
+                           reg_names[FRAME_POINTER_REGNUM],
+                           offset + fsize, mask);
 #endif
+	    }
+        }
+      else /* !TARGET_COLDFIRE */
+	{
+	  if (big)
+	    {
+#ifdef MOTOROLA
+	      asm_fprintf (stream, "\tmovm.l -%wd(%s,%Ra1.l),%I0x%x\n",
+			   offset + fsize,
+			   reg_names[FRAME_POINTER_REGNUM],
+			   mask);
+#else
+	      asm_fprintf (stream, "\tmoveml %s@(-%wd,%Ra1:l),%I0x%x\n",
+			   reg_names[FRAME_POINTER_REGNUM],
+			   offset + fsize, mask);
+#endif
+	    }
+	  else if (restore_from_sp)
+	    {
+#ifdef MOTOROLA
+	      asm_fprintf (stream, "\tmovm.l (%Rsp)+,%I0x%x\n", mask);
+#else
+	      asm_fprintf (stream, "\tmoveml %Rsp@+,%I0x%x\n", mask);
+#endif
+	    }
+	  else
+	    {
+#ifdef MOTOROLA
+	      asm_fprintf (stream, "\tmovm.l -%wd(%s),%I0x%x\n",
+			   offset + fsize,
+			   reg_names[FRAME_POINTER_REGNUM],
+			   mask);
+#else
+	      asm_fprintf (stream, "\tmoveml %s@(-%wd),%I0x%x\n",
+			   reg_names[FRAME_POINTER_REGNUM],
+			   offset + fsize, mask);
+#endif
+	    }
 	}
     }
   if (fmask)
@@ -777,57 +935,57 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
   if (frame_pointer_needed)
     fprintf (stream, "\tunlk %s\n",
 	     reg_names[FRAME_POINTER_REGNUM]);
-  else if (fsize)
+  else if (fsize_with_regs)
     {
-      if (fsize + 4 <= 8) 
+      if (fsize_with_regs <= 8)
 	{
 	  if (!TARGET_COLDFIRE)
 	    {
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\taddq.w %I%wd,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\taddq.w %I%wd,%Rsp\n", fsize_with_regs);
 #else
-	      asm_fprintf (stream, "\taddqw %I%wd,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\taddqw %I%wd,%Rsp\n", fsize_with_regs);
 #endif
 	    }
-	  else
+	  else /* TARGET_COLDFIRE */
 	    {
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\taddq.l %I%wd,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\taddq.l %I%wd,%Rsp\n", fsize_with_regs);
 #else
-	      asm_fprintf (stream, "\taddql %I%wd,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\taddql %I%wd,%Rsp\n", fsize_with_regs);
 #endif
 	    }
 	}
-      else if (fsize + 4 <= 16 && TARGET_CPU32)
+      else if (fsize_with_regs <= 16 && TARGET_CPU32)
 	{
 	  /* On the CPU32 it is faster to use two addqw instructions to
 	     add a small integer (8 < N <= 16) to a register.  */
 	  /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
 	  asm_fprintf (stream, "\taddq.w %I8,%Rsp\n\taddq.w %I%wd,%Rsp\n",
-		       fsize + 4 - 8);
+		       fsize_with_regs - 8);
 #else
 	  asm_fprintf (stream, "\taddqw %I8,%Rsp\n\taddqw %I%wd,%Rsp\n",
-		       fsize + 4 - 8);
+		       fsize_with_regs - 8);
 #endif
 	}
-      else if (fsize + 4 < 0x8000)
+      else if (fsize_with_regs < 0x8000)
 	{
 	  if (TARGET_68040)
 	    { 
 	      /* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\tadd.w %I%wd,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\tadd.w %I%wd,%Rsp\n", fsize_with_regs);
 #else
-	      asm_fprintf (stream, "\taddw %I%wd,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\taddw %I%wd,%Rsp\n", fsize_with_regs);
 #endif
 	    }
 	  else
 	    {
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\tlea (%wd,%Rsp),%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\tlea (%wd,%Rsp),%Rsp\n", fsize_with_regs);
 #else
-	      asm_fprintf (stream, "\tlea %Rsp@(%wd),%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\tlea %Rsp@(%wd),%Rsp\n", fsize_with_regs);
 #endif
 	    }
 	}
@@ -835,9 +993,9 @@ m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
 	{
 	/* asm_fprintf() cannot handle %.  */
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\tadd.l %I%wd,%Rsp\n", fsize + 4);
+	  asm_fprintf (stream, "\tadd.l %I%wd,%Rsp\n", fsize_with_regs);
 #else
-	  asm_fprintf (stream, "\taddl %I%wd,%Rsp\n", fsize + 4);
+	  asm_fprintf (stream, "\taddl %I%wd,%Rsp\n", fsize_with_regs);
 #endif
 	}
     }
