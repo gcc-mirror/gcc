@@ -1,3 +1,8 @@
+2003-06-17  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/ia64/ia64.c (ia64_expand_builtin, case IA64_BUILTIN_BSP):
+	Handle POINTERS_EXTEND_UNSIGNED.
+
 2003-06-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/mips.c (TARGET_ASM_UNALIGNED_DI_OP) [TARGET_IRIX5 &&
