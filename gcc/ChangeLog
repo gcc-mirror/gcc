@@ -1,5 +1,10 @@
 2002-03-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR optimization/5892
+	* config/ia64/ia64.c (rotate_one_bundle): Update current packet.
+
+2002-03-13  Jakub Jelinek  <jakub@redhat.com>
+
 	* loop.c (basic_induction_var): Don't call convert_modes if mode
 	classes are different.
 

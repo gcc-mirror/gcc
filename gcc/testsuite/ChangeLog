@@ -2,6 +2,8 @@
 
 	* gcc.c-torture/compile/20020309-2.c: New test.
 
+	* gcc.c-torture/compile/20020312-1.c: New test.
+
 2002-03-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/other/access1.C: New test.
