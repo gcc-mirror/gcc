@@ -1,3 +1,8 @@
+Thu Oct 22 19:58:00 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* splay-tree.h: Wrap function pointer parameter declarations in
+	PARAMS() macro.
+
 1998-10-21  Mark Mitchell  <mark@markmitchell.com>
 
 	* splay-tree.h: New file.

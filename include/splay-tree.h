@@ -52,18 +52,18 @@ typedef struct splay_tree_node *splay_tree_node;
 
 /* The type of a function which compares two splay-tree keys.  The
    function should return values as for qsort.  */
-typedef int (*splay_tree_compare_fn)(splay_tree_key, splay_tree_key);
+typedef int (*splay_tree_compare_fn) PARAMS((splay_tree_key, splay_tree_key));
 
 /* The type of a function used to deallocate any resources associated
    with the key.  */
-typedef void (*splay_tree_delete_key_fn)(splay_tree_key);
+typedef void (*splay_tree_delete_key_fn) PARAMS((splay_tree_key));
 
 /* The type of a function used to deallocate any resources associated
    with the value.  */
-typedef void (*splay_tree_delete_value_fn)(splay_tree_value);
+typedef void (*splay_tree_delete_value_fn) PARAMS((splay_tree_value));
 
 /* The type of a function used to iterate over the tree.  */
-typedef int (*splay_tree_foreach_fn)(splay_tree_node, void*);
+typedef int (*splay_tree_foreach_fn) PARAMS((splay_tree_node, void*));
 
 /* The nodes in the splay tree.  */
 struct splay_tree_node
