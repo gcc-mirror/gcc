@@ -1,3 +1,7 @@
+2003-07-14  Dan Nicolaescu  <dann@ics.uci.edu>
+
+	* lex.c (enum tree_node_kind): Delete.
+
 2003-07-13  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11503
