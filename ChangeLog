@@ -1,3 +1,7 @@
+1999-02-24  Nick Clifton  <nickc@cygnus.com>
+
+	* config.sub: Fix typo in arm recognition.
+
 Thu Feb 18 19:55:09 1999  Marc Espie <espie@cvs.openbsd.org>
 
 	* config.guess: Recognize openbsd-*-hppa.
