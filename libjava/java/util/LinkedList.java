@@ -474,7 +474,7 @@ public class LinkedList extends AbstractSequentialList
     catch (CloneNotSupportedException ex)
       {
       }
-    copy.size = 0;
+    copy.clear();
     copy.addAll(this);
     return copy;
   }
@@ -534,9 +534,7 @@ public class LinkedList extends AbstractSequentialList
   }
   
   /** A ListIterator over the list. This class keeps track of its
-   * position in the list, the size of the list, and the two list
-   * entries it is between.  This enables it to be used identically
-   * for both the list itself and a sublist of the list.
+   * position in the list and the two list entries it is between.
    */
   class LinkedListItr implements ListIterator
   {
@@ -546,10 +544,6 @@ public class LinkedList extends AbstractSequentialList
     Entry lastReturned; // entry that will be affected by remove() or set().
     int position;       // index of `next'.
 
-    /**
-     * Create a new Iter starting at a given Entry within the list, at a given
-     * position, in a list of given size.
-     */
     LinkedListItr(int index)
     {
       if (index == size)

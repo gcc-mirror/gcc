@@ -1,3 +1,8 @@
+2001-07-17  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/util/LinkedList.java (clone): Clear the copy list with clear(), 
+	not by setting its size field.
+
 2001-07-12  Tom Tromey  <tromey@redhat.com>
 	    David Brownell  <david-b@pacbell.net>
 	
