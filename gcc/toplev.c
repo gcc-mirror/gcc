@@ -2719,6 +2719,7 @@ rest_of_compilation (decl)
 		       if (warn_inline && specd)
 			 warning_with_decl (decl, lose);
 		       DECL_INLINE (decl) = 0;
+		       DECL_ABSTRACT_ORIGIN (decl) = 0;
 		       /* Don't really compile an extern inline function.
 			  If we can't make it inline, pretend
 			  it was only declared.  */
