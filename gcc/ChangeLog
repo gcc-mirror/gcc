@@ -1,3 +1,17 @@
+Mon Feb 23 18:19:31 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* config/t-linux (LIBGCC1, CROSS_LIBGCC1, LIBGCC1_TEST): Add macros and
+	set to empty.
+	* config/t-linux-aout (LIBGCC1, CROSS_LIBGCC1, LIBGCC1_TEST): Likewise.
+	* config/alpha/t-linux: Remove file.
+	* config/sparc/t-linux: Remove file.
+	* config/m68k/t-linux (LIBGCC1, CROSS_LIBGCC1): Remove.
+	* config/m68k/t-linux-aout (LIBGCC1, CROSS_LIBGCC1): Likewise.
+	* configure.in (alpha*-*-linux-gnulibc1*): Use t-linux instead of alpha/t-linux
+	for tmake_file.
+	(alpha*-*-linux-gnu*): Likewise.
+	(sparc-*-linux-gnulibc1*): Use t-linux instead of sparc/t-linux for tmake_file.
+	(sparc-*-linux-gnu*): Likewise.
 
 Mon Feb 23 10:47:39 1998  Robert Lipe  <robertl@dgii.com>
 	* collect2.c (ldd_file_name): Bracket declaration with same
