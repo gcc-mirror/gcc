@@ -181,7 +181,7 @@ int
 __gthread_objc_thread_exit(void)
 {
   /* exit the thread */
-  ExitThread(__gthread_objc_thread_exit_status);
+  ExitThread(__objc_thread_exit_status);
 
   /* Failed if we reached here */
   return -1;

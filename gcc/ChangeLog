@@ -1,5 +1,12 @@
 2001-11-18  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
+	PR c/4448
+	* gthr-win32.h: (__gthread_objc_thread_exit): Fix variable
+	name __objc_thread_exit_status so that it matches the 
+	variable defined in objc/thr.h.
+
+2001-11-18  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
 	PR optimization/4815
 	* alias.c: Merge from mainline:
 	2001-08-05  Bernd Schmidt  <bernds@redhat.com>
