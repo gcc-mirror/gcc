@@ -2995,6 +2995,7 @@ tidy_fallthru_edges ()
 	 merge the flags for the duplicate edges.  So we do not want to
 	 check that the edge is not a FALLTHRU edge.  */
       if ((s = b->succ) != NULL
+	  && ! (s->flags & EDGE_COMPLEX)
 	  && s->succ_next == NULL
 	  && s->dest == c
 	  /* If the jump insn has side effects, we can't tidy the edge.  */
@@ -3542,13 +3543,19 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
      int flags;
 {
   basic_block *queue, *qhead, *qtail, *qend;
-  regset tmp, new_live_at_end;
-  regset_head tmp_head;
+  regset tmp, new_live_at_end, call_used;
+  regset_head tmp_head, call_used_head;
   regset_head new_live_at_end_head;
   int i;
 
   tmp = INITIALIZE_REG_SET (tmp_head);
   new_live_at_end = INITIALIZE_REG_SET (new_live_at_end_head);
+  call_used = INITIALIZE_REG_SET (call_used_head);
+
+  /* Inconveniently, this is only redily available in hard reg set form.  */
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
+    if (call_used_regs[i])
+      SET_REGNO_REG_SET (call_used, i);
 
   /* Create a worklist.  Allocate an extra slot for ENTRY_BLOCK, and one
      because the `head == tail' style test for an empty queue doesn't
@@ -3602,7 +3609,18 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
       for (e = bb->succ; e; e = e->succ_next)
 	{
 	  basic_block sb = e->dest;
-	  IOR_REG_SET (new_live_at_end, sb->global_live_at_start);
+
+	  /* Call-clobbered registers die across exception and call edges.  */
+	  /* ??? Abnormal call edges ignored for the moment, as this gets
+	     confused by sibling call edges, which crashes reg-stack.  */
+	  if (e->flags & EDGE_EH)
+	    {
+	      bitmap_operation (tmp, sb->global_live_at_start,
+				call_used, BITMAP_AND_COMPL);
+	      IOR_REG_SET (new_live_at_end, tmp);
+	    }
+	  else
+	    IOR_REG_SET (new_live_at_end, sb->global_live_at_start);
 	}
 
       /* The all-important stack pointer must always be live.  */
@@ -3750,6 +3768,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
 
   FREE_REG_SET (tmp);
   FREE_REG_SET (new_live_at_end);
+  FREE_REG_SET (call_used);
 
   if (blocks_out)
     {

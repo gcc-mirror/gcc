@@ -28,6 +28,12 @@
 	* final.c: Don't check it.
 	* except.c: Provide stub definition.
 
+	* flow.c (tidy_fallthru_edges): Don't combine complex edges.
+	(calculate_global_regs_live): Kill call-clobbered registers
+	across exception edges.
+	* reg-stack.c (convert_regs_1): Kill the entire target stack
+	across non-call exception edges.
+
 2001-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* configure.in: Don't check for bcopy.
