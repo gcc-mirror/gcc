@@ -60,7 +60,7 @@ package body System.File_IO is
    type Temp_File_Record_Ptr is access all Temp_File_Record;
 
    type Temp_File_Record is record
-      Name : String (1 .. L_tmpnam + 1);
+      Name : String (1 .. max_path_len + 1);
       Next : Temp_File_Record_Ptr;
    end record;
    --  One of these is allocated for each temporary file created
