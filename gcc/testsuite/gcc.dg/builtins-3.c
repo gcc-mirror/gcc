@@ -1,7 +1,7 @@
-/* Copyright (C) 2002  Free Software Foundation.
+/* Copyright (C) 2002, 2003  Free Software Foundation.
 
    Verify that built-in math function constant folding of constant
-   arguments is correctly performed by the by the compiler.
+   arguments is correctly performed by the compiler.
 
    Written by Roger Sayle, 16th August 2002.  */
 
@@ -24,6 +24,12 @@ int main()
   if (log (1.0) != 0.0)
     link_error ();
 
+  if (sin (0.0) != 0.0)
+    link_error ();
+
+  if (cos (0.0) != 1.0)
+    link_error ();
+
 
   if (sqrtf (0.0f) != 0.0f)
     link_error ();
@@ -37,6 +43,12 @@ int main()
   if (logf (1.0f) != 0.0f)
     link_error ();
 
+  if (sinf (0.0f) != 0.0f)
+    link_error ();
+
+  if (cosf (0.0f) != 1.0f)
+    link_error ();
+
 
   if (sqrtl (0.0l) != 0.0l)
     link_error ();
@@ -48,6 +60,12 @@ int main()
     link_error ();
 
   if (logl (1.0l) != 0.0l)
+    link_error ();
+
+  if (sinl (0.0l) != 0.0l)
+    link_error ();
+
+  if (cosl (0.0l) != 1.0l)
     link_error ();
 
   return 0;

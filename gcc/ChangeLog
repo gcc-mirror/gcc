@@ -1,3 +1,15 @@
+2003-03-31  Roger Sayle  <roger@eyesopen.com>
+
+	* emit-rtl.c (dconstm2, dconsthalf): New real constants.
+	(init_emit_once): Initialize dconstm2 and dconsthalf here.
+	* real.h (dconstm2, dconsthalf): Add prototypes here.
+	* real.c (real_sqrt): Use dconsthalf rather than local copy.
+	* builtins.c (fold_builtin): When optimizing sqrt(exp(x)) as
+	exp(x/2.0) remember to fold the division if possible.
+	Fold sin(0.0) as 0.0, cos(0.0) as 1.0, pow(x,1.0) as x,
+	pow(x,-1.0) as 1.0/x, pow(x,2.0) as x*x, pow(x,-2.0) as
+	1.0/(x*x) and pow(x,0.5) as sqrt(x).
+
 2003-03-31  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (a new peephole2): New.

@@ -4423,7 +4423,6 @@ real_sqrt (r, mode, x)
      const REAL_VALUE_TYPE *x;
 {
   static REAL_VALUE_TYPE halfthree;
-  static REAL_VALUE_TYPE half;
   static bool init = false;
   REAL_VALUE_TYPE h, t, i;
   int iter, exp;
@@ -4452,8 +4451,7 @@ real_sqrt (r, mode, x)
 
   if (!init)
     {
-      real_arithmetic (&half, RDIV_EXPR, &dconst1, &dconst2);
-      real_arithmetic (&halfthree, PLUS_EXPR, &dconst1, &half);
+      real_arithmetic (&halfthree, PLUS_EXPR, &dconst1, &dconsthalf);
       init = true;
     }
 
@@ -4467,7 +4465,7 @@ real_sqrt (r, mode, x)
       /* i(n+1) = i(n) * (1.5 - 0.5*i(n)*i(n)*x).  */
       real_arithmetic (&t, MULT_EXPR, x, &i);
       real_arithmetic (&h, MULT_EXPR, &t, &i);
-      real_arithmetic (&t, MULT_EXPR, &h, &half);
+      real_arithmetic (&t, MULT_EXPR, &h, &dconsthalf);
       real_arithmetic (&h, MINUS_EXPR, &halfthree, &t);
       real_arithmetic (&t, MULT_EXPR, &i, &h);
 
@@ -4484,7 +4482,7 @@ real_sqrt (r, mode, x)
   real_arithmetic (&h, MULT_EXPR, &t, &i);
   real_arithmetic (&i, MINUS_EXPR, &dconst1, &h);
   real_arithmetic (&h, MULT_EXPR, &t, &i);
-  real_arithmetic (&i, MULT_EXPR, &half, &h);
+  real_arithmetic (&i, MULT_EXPR, &dconsthalf, &h);
   real_arithmetic (&h, PLUS_EXPR, &t, &i);
 
   /* ??? We need a Tuckerman test to get the last bit.  */
