@@ -4117,7 +4117,6 @@ for_each_template_parm (t, fn, data)
 
     case FUNCTION_DECL:
     case VAR_DECL:
-      /* ??? What about FIELD_DECLs?  */
       if (DECL_LANG_SPECIFIC (t) && DECL_TEMPLATE_INFO (t)
 	  && for_each_template_parm (DECL_TI_ARGS (t), fn, data))
 	return 1;
@@ -4162,6 +4161,7 @@ for_each_template_parm (t, fn, data)
     case VOID_TYPE:
     case BOOLEAN_TYPE:
     case NAMESPACE_DECL:
+    case FIELD_DECL:
       return 0;
 
       /* constants */
@@ -4192,16 +4192,24 @@ for_each_template_parm (t, fn, data)
     case ALIGNOF_EXPR:
       return for_each_template_parm (TREE_OPERAND (t, 0), fn, data);
 
+    case TYPENAME_TYPE:
+      if (!fn)
+	return 1;
+      return (for_each_template_parm (TYPE_CONTEXT (t), fn, data)
+	      || for_each_template_parm (TYPENAME_TYPE_FULLNAME (t),
+					 fn, data));
+
     case INDIRECT_REF:
     case COMPONENT_REF:
-      /* We assume that the object must be instantiated in order to build
-	 the COMPONENT_REF, so we test only whether the type of the
-	 COMPONENT_REF uses template parms.  On the other hand, if
-	 there's no type, then this thing must be some expression
+      /* If there's no type, then this thing must be some expression
 	 involving template parameters.  */
-      if (TREE_TYPE (t))
-	return for_each_template_parm (TREE_TYPE (t), fn, data);
-      /* Fall through.  */
+      if (!fn && !TREE_TYPE (t))
+	return 1;
+      if (TREE_CODE (t) == COMPONENT_REF)
+	return (for_each_template_parm (TREE_OPERAND (t, 0), fn, data)
+		|| for_each_template_parm (TREE_OPERAND (t, 1), fn, data));
+      else
+	return for_each_template_parm (TREE_OPERAND (t, 0), fn, data);
 
     case MODOP_EXPR:
     case CAST_EXPR:
@@ -4213,7 +4221,6 @@ for_each_template_parm (t, fn, data)
     case DOTSTAR_EXPR:
     case TYPEID_EXPR:
     case LOOKUP_EXPR:
-    case TYPENAME_TYPE:
       if (!fn)
 	return 1;
       /* Fall through.  */
