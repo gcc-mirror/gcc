@@ -32,6 +32,9 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "tree.h"
 #include "expr.h"
+#include "insn-config.h"
+#include "recog.h"
+#include "toplev.h"
 
 
 int current_function_anonymous_args = 0;
@@ -40,12 +43,19 @@ int current_function_anonymous_args = 0;
 char * structure_size_string = NULL;
 int    arm_structure_size_boundary = 32; /* Used to be 8 */
 
+/* The register number to be used for the PIC offset register.  */
+const char * thumb_pic_register_string = NULL;
+int thumb_pic_register = 10;
+
+/* True if we are currently building a constant table. */
+int making_const_table;
+
 
 /* Predicates */
 int
 reload_memory_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED ;
 {
   int regno = true_regnum (op);
 
@@ -70,7 +80,6 @@ int
 thumb_shiftable_const (val)
      HOST_WIDE_INT val;
 {
-  unsigned HOST_WIDE_INT x = val;
   unsigned HOST_WIDE_INT mask = 0xff;
   int i;
 
@@ -103,6 +112,221 @@ thumb_trivial_epilogue ()
 
   return 1;
 #endif
+}
+
+
+/* Return TRUE if X references a SYMBOL_REF.  */
+int
+symbol_mentioned_p (x)
+     rtx x;
+{
+  register char * fmt;
+  register int i;
+
+  if (GET_CODE (x) == SYMBOL_REF)
+    return 1;
+
+  fmt = GET_RTX_FORMAT (GET_CODE (x));
+  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'E')
+	{
+	  register int j;
+
+	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	    if (symbol_mentioned_p (XVECEXP (x, i, j)))
+	      return 1;
+	}
+      else if (fmt[i] == 'e' && symbol_mentioned_p (XEXP (x, i)))
+	return 1;
+    }
+
+  return 0;
+}
+
+/* Return TRUE if X references a LABEL_REF.  */
+int
+label_mentioned_p (x)
+     rtx x;
+{
+  register char * fmt;
+  register int i;
+
+  if (GET_CODE (x) == LABEL_REF)
+    return 1;
+
+  fmt = GET_RTX_FORMAT (GET_CODE (x));
+  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'E')
+	{
+	  register int j;
+
+	  for (j = XVECLEN (x, i) - 1; j >= 0; j--)
+	    if (label_mentioned_p (XVECEXP (x, i, j)))
+	      return 1;
+	}
+      else if (fmt[i] == 'e' && label_mentioned_p (XEXP (x, i)))
+	return 1;
+    }
+
+  return 0;
+}
+
+rtx
+legitimize_pic_address (orig, mode, reg)
+     rtx orig;
+     enum machine_mode mode;
+     rtx reg;
+{
+  if (GET_CODE (orig) == SYMBOL_REF)
+    {
+      rtx pic_ref, address;
+      rtx insn;
+      int subregs = 0;
+
+      if (reg == 0)
+	{
+	  if (reload_in_progress || reload_completed)
+	    abort ();
+	  else
+	    reg = gen_reg_rtx (Pmode);
+
+	  subregs = 1;
+	}
+
+#ifdef AOF_ASSEMBLER
+      /* The AOF assembler can generate relocations for these directly, and
+	 understands that the PIC register has to be added into the offset.
+	 */
+      insn = emit_insn (gen_pic_load_addr_based (reg, orig));
+#else
+      if (subregs)
+	address = gen_reg_rtx (Pmode);
+      else
+	address = reg;
+
+      emit_insn (gen_pic_load_addr (address, orig));
+
+      pic_ref = gen_rtx_MEM (Pmode,
+			     gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
+					   address));
+      RTX_UNCHANGING_P (pic_ref) = 1;
+      insn = emit_move_insn (reg, pic_ref);
+#endif
+      current_function_uses_pic_offset_table = 1;
+      /* Put a REG_EQUAL note on this insn, so that it can be optimized
+	 by loop.  */
+      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_EQUAL, orig,
+					    REG_NOTES (insn));
+      return reg;
+    }
+  else if (GET_CODE (orig) == CONST)
+    {
+      rtx base, offset;
+
+      if (GET_CODE (XEXP (orig, 0)) == PLUS
+	  && XEXP (XEXP (orig, 0), 0) == pic_offset_table_rtx)
+	return orig;
+
+      if (reg == 0)
+	{
+	  if (reload_in_progress || reload_completed)
+	    abort ();
+	  else
+	    reg = gen_reg_rtx (Pmode);
+	}
+
+      if (GET_CODE (XEXP (orig, 0)) == PLUS)
+	{
+	  base = legitimize_pic_address (XEXP (XEXP (orig, 0), 0), Pmode, reg);
+	  offset = legitimize_pic_address (XEXP (XEXP (orig, 0), 1), Pmode,
+					   base == reg ? 0 : reg);
+	}
+      else
+	abort ();
+
+      if (GET_CODE (offset) == CONST_INT)
+	{
+	  /* The base register doesn't really matter, we only want to
+	     test the index for the appropriate mode.  */
+	  if (INDEX_REGISTER_RTX_P (offset) && GET_MODE_SIZE (mode) <= 4)
+	    goto win;
+
+	  if (! reload_in_progress && ! reload_completed)
+	    offset = force_reg (Pmode, offset);
+	  else
+	    abort ();
+
+	win:
+	  if (GET_CODE (offset) == CONST_INT)
+	    return plus_constant_for_output (base, INTVAL (offset));
+	}
+
+      if (GET_MODE_SIZE (mode) > 4)
+	{
+	  emit_insn (gen_addsi3 (reg, base, offset));
+	  return reg;
+	}
+
+      return gen_rtx_PLUS (Pmode, base, offset);
+    }
+  else if (GET_CODE (orig) == LABEL_REF)
+    current_function_uses_pic_offset_table = 1;
+
+  return orig;
+}
+
+static rtx pic_rtx;
+
+int
+is_pic(x)
+     rtx x;
+{
+  if (x == pic_rtx)
+    return 1;
+  return 0;
+}
+
+void
+thumb_finalize_pic ()
+{
+#ifndef AOF_ASSEMBLER
+  rtx l1, pic_tmp, pic_tmp2, seq;
+  rtx global_offset_table;
+
+  if (current_function_uses_pic_offset_table == 0 || TARGET_SINGLE_PIC_BASE)
+    return;
+
+  if (! flag_pic)
+    abort ();
+
+  start_sequence ();
+  l1 = gen_label_rtx ();
+
+  global_offset_table = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
+  /* On the Thumb the PC register contains 'dot + 4' at the time of the
+     addition.  XXX Is this true?  */
+  pic_tmp = plus_constant (gen_rtx_LABEL_REF (Pmode, l1), 4);
+  if (GOT_PCREL)
+    pic_tmp2 = gen_rtx_CONST (VOIDmode,
+			    gen_rtx_PLUS (Pmode, global_offset_table, pc_rtx));
+  else
+    pic_tmp2 = gen_rtx_CONST (VOIDmode, global_offset_table);
+
+  pic_rtx = gen_rtx_CONST (Pmode, gen_rtx_MINUS (Pmode, pic_tmp2, pic_tmp));
+  
+  emit_insn (gen_pic_load_addr (pic_offset_table_rtx, pic_rtx));
+  emit_insn (gen_pic_add_dot_plus_four (pic_offset_table_rtx, l1));
+
+  seq = gen_sequence ();
+  end_sequence ();
+  emit_insn_after (seq, get_insns ());
+
+  /* Need to emit this whether or not we obey regdecls,
+     since setjmp/longjmp can cause life info to screw up.  */
+  emit_insn (gen_rtx_USE (VOIDmode, pic_offset_table_rtx));
+#endif /* AOF_ASSEMBLER */
 }
 
 
@@ -194,6 +418,10 @@ add_constant (x, mode)
   if (mode == SImode && GET_CODE (x) == MEM && CONSTANT_P (XEXP (x, 0))
       && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
     x = get_pool_constant (XEXP (x, 0));
+#ifndef AOF_ASSEMBLER
+  else if (GET_CODE (x) == UNSPEC && XINT (x, 1) == 3)
+    x = XVECEXP (x, 0, 0);
+#endif
 
   /* First see if we've already got it */
  
@@ -272,6 +500,10 @@ fixit (src, mode)
      rtx src;
      enum machine_mode mode;
 {
+#ifndef AOF_ASSEMBLER
+  if (GET_CODE (src) == UNSPEC && XINT (src, 1) == 3)
+    return 1;
+#endif
   return ((CONSTANT_P (src)
 	   && (GET_CODE (src) != CONST_INT
 	       || ! (CONST_OK_FOR_LETTER_P (INTVAL (src), 'I')
@@ -1004,7 +1236,8 @@ output_return ()
   return_used_this_function = 1;
 
   for (regno = 0; regno < 8; regno++)
-    if (regs_ever_live[regno] && ! call_used_regs[regno])
+    if (regs_ever_live[regno] && ! call_used_regs[regno]
+	&& ! (TARGET_SINGLE_PIC_BASE && (regno == thumb_pic_register)))
       live_regs_mask |= 1 << regno;
 
   if (live_regs_mask == 0)
@@ -1120,7 +1353,8 @@ thumb_function_prologue (f, frame_size)
     }
 
   for (regno = 0; regno < 8; regno++)
-    if (regs_ever_live[regno] && ! call_used_regs[regno])
+    if (regs_ever_live[regno] && ! call_used_regs[regno]
+	&& ! (TARGET_SINGLE_PIC_BASE && (regno == thumb_pic_register)))
       live_regs_mask |= 1 << regno;
 
   if (live_regs_mask || ! leaf_function_p () || far_jump_used_p())
@@ -1214,7 +1448,8 @@ thumb_function_prologue (f, frame_size)
 
   for (regno = 8; regno < 13; regno++)
     {
-      if (regs_ever_live[regno] && ! call_used_regs[regno])
+      if (regs_ever_live[regno] && ! call_used_regs[regno]
+	  && ! (TARGET_SINGLE_PIC_BASE && (regno == thumb_pic_register)))
 	high_regs_pushed++;
     }
 
@@ -1226,7 +1461,8 @@ thumb_function_prologue (f, frame_size)
 
       for (next_hi_reg = 12; next_hi_reg > 7; next_hi_reg--)
 	{
-	  if (regs_ever_live[next_hi_reg] && ! call_used_regs[next_hi_reg])
+	  if (regs_ever_live[next_hi_reg] && ! call_used_regs[next_hi_reg]
+	      && ! (TARGET_SINGLE_PIC_BASE && (next_hi_reg == thumb_pic_register)))
 	    break;
 	}
 
@@ -1253,7 +1489,9 @@ thumb_function_prologue (f, frame_size)
 		    for (next_hi_reg--; next_hi_reg > 7; next_hi_reg--)
 		      {
 			if (regs_ever_live[next_hi_reg]
-			    && ! call_used_regs[next_hi_reg])
+			    && ! call_used_regs[next_hi_reg]
+			    && ! (TARGET_SINGLE_PIC_BASE 
+				  && (next_hi_reg == thumb_pic_register)))
 			  break;
 		      }
 		  else
@@ -1289,7 +1527,8 @@ thumb_expand_prologue ()
     {
       live_regs_mask = 0;
       for (regno = 0; regno < 8; regno++)
-	if (regs_ever_live[regno] && ! call_used_regs[regno])
+	if (regs_ever_live[regno] && ! call_used_regs[regno]
+	    && ! (TARGET_SINGLE_PIC_BASE && (regno == thumb_pic_register)))
 	  live_regs_mask |= 1 << regno;
 
       if (amount < 512)
@@ -1399,12 +1638,14 @@ thumb_unexpanded_epilogue ()
     return "";
 
   for (regno = 0; regno < 8; regno++)
-    if (regs_ever_live[regno] && ! call_used_regs[regno])
+    if (regs_ever_live[regno] && ! call_used_regs[regno]
+	&& ! (TARGET_SINGLE_PIC_BASE && (regno == thumb_pic_register)))
       live_regs_mask |= 1 << regno;
 
   for (regno = 8; regno < 13; regno++)
     {
-      if (regs_ever_live[regno] && ! call_used_regs[regno])
+      if (regs_ever_live[regno] && ! call_used_regs[regno]
+	  && ! (TARGET_SINGLE_PIC_BASE && (regno == thumb_pic_register)))
 	high_regs_pushed ++;
     }
 
@@ -1455,7 +1696,8 @@ thumb_unexpanded_epilogue ()
 	}
       
       for (next_hi_reg = 8; next_hi_reg < 13; next_hi_reg++)
-	if (regs_ever_live[next_hi_reg] && ! call_used_regs[next_hi_reg])
+	if (regs_ever_live[next_hi_reg] && ! call_used_regs[next_hi_reg]
+	    && ! (TARGET_SINGLE_PIC_BASE && (next_hi_reg == thumb_pic_register)))
 	  break;
 
       while (high_regs_pushed)
@@ -1483,7 +1725,9 @@ thumb_unexpanded_epilogue ()
 			       reg_names[next_hi_reg], reg_names[regno]);
 		  for (next_hi_reg++; next_hi_reg < 13; next_hi_reg++)
 		    if (regs_ever_live[next_hi_reg] && 
-			! call_used_regs[next_hi_reg])
+			! call_used_regs[next_hi_reg]
+			&& ! (TARGET_SINGLE_PIC_BASE 
+			      && (next_hi_reg == thumb_pic_register)))
 		      break;
 		}
 	    }
@@ -1788,6 +2032,10 @@ thumb_print_operand (f, x, code)
 	  fputs (ASM_COMMENT_START, f);
 	  return;
 
+	case '|':
+	  /* fputs (REGISTER_PREFIX, f); */
+	  return;
+
 	case '_':
 	  fputs (user_label_prefix, f);
 	  return;
@@ -2042,10 +2290,23 @@ thumb_override_options ()
 	warning ("Structure size boundary can only be set to 8 or 32");
     }
 
-  if (flag_pic)
+  if (thumb_pic_register_string != NULL)
     {
-      warning ("Position independent code not supported.  Ignored");
-      flag_pic = 0;
+      int pic_register;
+
+      if (! flag_pic)
+	warning ("-mpic-register= is useless without -fpic");
+
+      pic_register = decode_reg_name (thumb_pic_register_string);
+      
+      /* Prevent the user from choosing an obviously stupid PIC register.  */
+      if (pic_register < 0 || call_used_regs[pic_register]
+	  || pic_register == HARD_FRAME_POINTER_REGNUM
+	  || pic_register == STACK_POINTER_REGNUM
+	  || pic_register >= PC_REGNUM)
+	error ("Unable to use '%s' for PIC register", thumb_pic_register_string);
+      else
+	thumb_pic_register = pic_register;
     }
 }
 

@@ -1,3 +1,51 @@
+Mon Jul 26 17:24:51 1999  Philip Blundell  <pb@nexus.co.uk>
+
+	* config/arm/thumb.h (THUMB_FLAG_SINGLE_PIC_BASE): Define.
+	(TARGET_SINGLE_PIC_BASE): Likewise.
+	(GOT_PCREL, NEED_GOT_RELOC, NEED_PLT_RELOC): Provide default
+	definitions.
+	(TARGET_CALLEE_INTERWORKING): Fix typo in comment.
+	(TARGET_SWITCHES): Add -m{no-}single-pic-base.
+	(TARGET_OPTIONS): Add -mpic-register=N.
+	(OUTPUT_INT_ADDR_CONST): New macro.
+	(INDEX_REGISTER_RTX_P, PIC_OFFSET_TABLE_REGNUM, FINALIZE_PIC,
+	LEGITIMATE_PIC_OPERAND_P): Likewise.
+	(LEGITIMIZE_ADDRESS, GOT_IF_LEGITIMATE_ADDRESS): Support PIC.
+	(ASM_OUTPUT_INT): Use OUTPUT_INT_ADDR_CONST rather than calling
+	output_addr_const directly.
+	(PRINT_OPERAND_PUNCT_VALID_P): Accept `|' for compatibility with 
+	ARM port.
+	(thumb_pic_register, thumb_pic_register_string): Declare.
+	
+	* config/arm/thumb.c (symbol_mentioned_p): New function: Imported
+	from arm.c.
+	(label_mentioned_p): New function: Imported from arm.c.
+	(legitimize_pic_address): New function: Imported from arm.c.
+	(is_pic):New function: Imported	from arm.c.
+	(thumb_finalize_pic):New function: Imported from arm.c.
+	(add_constant): Cope with PIC constants.
+	(fixit): Cope with PIC constants.
+	(output_return): Do not treat the PIC register as live if
+	TARGET_SINGLE_PIC_BASE is true.
+	(thumb_function_prologue): Do not treat the PIC register as live if
+	TARGET_SINGLE_PIC_BASE is true.
+	(thumb_expand_prologue): Do not treat the PIC register as live if
+	TARGET_SINGLE_PIC_BASE is true.
+	(thumb_unexpand_epilogue): Do not treat the PIC register as live if
+	TARGET_SINGLE_PIC_BASE is true.
+	(thumb_print_operand): Accept '|'.
+	(thumb_override_options): Process PIC options.
+	
+	* config/arm/thumb.md (movsi): Support PIC.
+	(call_insn): Change "i" constraint to "X".
+	(call_value_insn): Likewise.
+	(consttable_4, consttable_8, consttable_end): Set and clear
+	"making_const_table" as appropriate.
+	(pic_load_addr, pic_add_dot_plus_four): New insns.
+	
+	* invoke.texi (Thumb Options): Fix spelling.  Document new 
+	options -msingle-pic-base and -mpic-register=.
+	
 1999-07-26  Andrew Haley  <aph@cygnus.com>
 
 	* config/m32r/initfini.c (__init): Use a full word immediate for

@@ -276,6 +276,8 @@ in the following sections.
 -mnop-fun-dllimport -mno-nop-fun-dllimport
 -mcallee-super-interworking -mno-callee-super-interworking
 -mcaller-super-interworking -mno-caller-super-interworking
+-msingle-pic-base -mno-single-pic-base
+-mpic-register=
 
 @emph{MN10200 Options}
 -mrelax
@@ -4395,7 +4397,7 @@ Generate code for a processor running in big-endian mode.
 @item -mstructure-size-boundary=<n>
 @kindex -mstructure-size-boundary
 The size of all structures and unions will be rounded up to a multiple
-of the number of bits set by this option.  Permissable values are 8 and
+of the number of bits set by this option.  Permissible values are 8 and
 32.  The default value varies for different toolchains.  For the COFF
 targeted toolchain the default value is 8.  Specifying the larger number
 can produced faster, more efficient code, but can also increase the size
@@ -4421,7 +4423,18 @@ non-interworking code.
 Allows calls via function pointers (including virtual functions) to
 execute correctly regardless of whether the target code has been
 compiled for interworking or not.  There is a small overhead in the cost
-of executing a funciton pointer if this option is enabled.
+of executing a function pointer if this option is enabled.
+
+@item -msingle-pic-base
+@kindex -msingle-pic-base
+Treat the register used for PIC addressing as read-only, rather than
+loading it in the prologue for each function.  The run-time system is
+responsible for initialising this register with an appropriate value
+before execution begins.
+
+@item -mpic-register=<reg>
+@kindex -mpic-register=
+Specify the register to be used for PIC addressing.  The default is R10.
 
 @end table
 

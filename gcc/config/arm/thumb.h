@@ -59,6 +59,7 @@ Boston, MA 02111-1307, USA.  */
 #define THUMB_FLAG_BACKTRACE    		0x0002
 #define THUMB_FLAG_LEAF_BACKTRACE		0x0004
 #define ARM_FLAG_THUMB				0x1000	/* same as in arm.h */
+#define THUMB_FLAG_SINGLE_PIC_BASE		0x4000  /* same as in arm.h */
 #define THUMB_FLAG_CALLEE_SUPER_INTERWORKING	0x40000 
 #define THUMB_FLAG_CALLER_SUPER_INTERWORKING	0x80000 
 
@@ -71,8 +72,17 @@ extern int target_flags;
 #define TARGET_BACKTRACE	(leaf_function_p()			      \
 				 ? (target_flags & THUMB_FLAG_LEAF_BACKTRACE) \
 				 : (target_flags & THUMB_FLAG_BACKTRACE))
+#define TARGET_SINGLE_PIC_BASE	(target_flags & THUMB_FLAG_SINGLE_PIC_BASE)
 
-/* Set if externally visable functions should assume that they
+#ifndef GOT_PCREL
+#define GOT_PCREL		0
+#endif
+
+#ifndef NEED_GOT_RELOC
+#define NEED_GOT_RELOC		1
+#endif
+
+/* Set if externally visible functions should assume that they
    might be called in ARM mode, from a non-thumb aware code.  */
 #define TARGET_CALLEE_INTERWORKING	\
      (target_flags & THUMB_FLAG_CALLEE_SUPER_INTERWORKING)
@@ -101,6 +111,9 @@ extern int target_flags;
   {"no-callee-super-interworking", -THUMB_FLAG_CALLEE_SUPER_INTERWORKING}, \
   {"caller-super-interworking",	    THUMB_FLAG_CALLER_SUPER_INTERWORKING}, \
   {"no-caller-super-interworking", -THUMB_FLAG_CALLER_SUPER_INTERWORKING}, \
+  {"single-pic-base",		    THUMB_FLAG_SINGLE_PIC_BASE,	\
+     "Do not load the PIC register in function prologues" },	\
+  {"no-single-pic-base",	   -THUMB_FLAG_SINGLE_PIC_BASE, "" }, \
   SUBTARGET_SWITCHES						\
   {"",                          TARGET_DEFAULT}         	\
 }
@@ -108,6 +121,8 @@ extern int target_flags;
 #define TARGET_OPTIONS						\
 {								\
   { "structure-size-boundary=", & structure_size_string }, 	\
+  { "pic-register=", & thumb_pic_register_string,		\
+     "Specify the register to be used for PIC addressing" }	\
 }
 
 #define REGISTER_PREFIX ""
@@ -170,7 +185,7 @@ extern int target_flags;
 #define ASM_OUTPUT_INT(STREAM,VALUE)					\
 {									\
   fprintf (STREAM, "\t.word\t");					\
-  output_addr_const (STREAM, (VALUE));					\
+  OUTPUT_INT_ADDR_CONST (STREAM, (VALUE));				\
   fprintf (STREAM, "\n");						\
 }
 
@@ -556,6 +571,9 @@ enum reg_class
   ((REGNO) < 8					\
    || (unsigned) reg_renumber[REGNO] < 8)
 
+#define INDEX_REGISTER_RTX_P(X)  \
+  (GET_CODE (X) == REG && REG_OK_FOR_INDEX_P (X))
+
 /* ??? This looks suspiciously wrong.  */
 /* We need to leave BASE_REGS reloads alone, in order to avoid caller_save
    lossage.  Caller_saves requests a BASE_REGS reload (caller_save_spill_class)
@@ -632,6 +650,9 @@ int thumb_shiftable_const ();
 #define ARG_POINTER_REGNUM    16	/* A fake hard register that is eliminated later on.  */
 
 #define STATIC_CHAIN_REGNUM 9
+
+/* Define this if the program counter is overloaded on a register.  */
+#define PC_REGNUM		15
 
 #define FRAME_POINTER_REQUIRED 0
 
@@ -798,6 +819,39 @@ int thumb_shiftable_const ();
 }
 
 
+/* Position Independent Code.  */
+/* We decide which register to use based on the compilation options and
+   the assembler in use.  @@@ Actually, we don't currently for Thumb.  */
+extern int thumb_pic_register;
+
+/* The register number of the register used to address a table of static
+   data addresses in memory.  */
+#define PIC_OFFSET_TABLE_REGNUM thumb_pic_register
+
+#define FINALIZE_PIC thumb_finalize_pic ()
+
+/* We can't directly access anything that contains a symbol,
+   nor can we indirect via the constant pool.  */
+#define LEGITIMATE_PIC_OPERAND_P(X)				\
+	(! symbol_mentioned_p (X)				\
+	 && (! CONSTANT_POOL_ADDRESS_P (X)			\
+	     || ! symbol_mentioned_p (get_pool_constant (X))))
+
+/* We need to know when we are making a constant pool; this determines
+   whether data needs to be in the GOT or can be referenced via a GOT
+   offset.  */
+extern int making_const_table;
+
+#define CONDITIONAL_REGISTER_USAGE  \
+{							\
+  if (flag_pic)						\
+    {							\
+      fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
+      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 0;	\
+    }							\
+}
+
+
 /* Implicit Calls to Library Routines */
 
 #define TARGET_MEM_FUNCTIONS 1
@@ -884,7 +938,7 @@ int thumb_shiftable_const ();
     goto WIN;								\
   /* This is PC relative data before MACHINE_DEPENDENT_REORG runs.  */	\
   else if (GET_MODE_SIZE (MODE) >= 4 && CONSTANT_P (X)			\
-	   && CONSTANT_POOL_ADDRESS_P (X))				\
+	   && CONSTANT_POOL_ADDRESS_P (X) && ! flag_pic)		\
     goto WIN;								\
   /* This is PC relative data after MACHINE_DEPENDENT_REORG runs.  */	\
   else if (GET_MODE_SIZE (MODE) >= 4 && reload_completed		\
@@ -955,6 +1009,12 @@ int thumb_shiftable_const ();
 	       && (INTVAL (XEXP (X, 1)) & 3) == 0)			\
 	goto WIN;							\
     }									\
+  else if (GET_MODE_CLASS (MODE) != MODE_FLOAT				\
+	   && GET_CODE (X) == SYMBOL_REF				\
+	   && CONSTANT_POOL_ADDRESS_P (X)				\
+	   && ! (flag_pic						\
+		 && symbol_mentioned_p (get_pool_constant (X))))	\
+    goto WIN;								\
 }
 
 /* ??? If an HImode FP+large_offset address is converted to an HImode
@@ -985,7 +1045,10 @@ int thumb_shiftable_const ();
   
 #define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)
 
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)
+extern struct rtx_def * legitimize_pic_address ();
+#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)				\
+  if (flag_pic)								\
+    (X) = legitimize_pic_address (OLDX, MODE, NULL_RTX);
 
 #define LEGITIMATE_CONSTANT_P(X)	\
  (GET_CODE (X) == CONST_INT		\
@@ -1078,6 +1141,28 @@ int thumb_shiftable_const ();
 
 /* Position Independent Code */
 
+extern const char * thumb_pic_register_string;
+extern int thumb_pic_register;
+
+/* The register number of the register used to address a table of static
+   data addresses in memory.  */
+#define PIC_OFFSET_TABLE_REGNUM thumb_pic_register
+
+#define FINALIZE_PIC thumb_finalize_pic ()
+
+/* We can't directly access anything that contains a symbol,
+   nor can we indirect via the constant pool.  */
+#define LEGITIMATE_PIC_OPERAND_P(X)				\
+	(! symbol_mentioned_p (X)				\
+	 && (! CONSTANT_POOL_ADDRESS_P (X)			\
+	     || ! symbol_mentioned_p (get_pool_constant (X))))
+ 
+/* We need to know when we are making a constant pool; this determines
+   whether data needs to be in the GOT or can be referenced via a GOT
+   offset.  */
+extern int making_const_table;
+
+
 #define PRINT_OPERAND(STREAM,X,CODE) \
   thumb_print_operand((STREAM), (X), (CODE))
 
@@ -1102,7 +1187,33 @@ int thumb_shiftable_const ();
     output_addr_const ((STREAM), (X));				\
 }
 
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE) ((CODE) == '@' || ((CODE) == '_'))
+/* Handles PIC addr specially */
+#define OUTPUT_INT_ADDR_CONST(STREAM,X) \
+  {									\
+    if (flag_pic && GET_CODE(X) == CONST && is_pic(X))			\
+      {									\
+	output_addr_const(STREAM, XEXP (XEXP (XEXP (X, 0), 0), 0));	\
+	fputs(" - (", STREAM);						\
+	output_addr_const(STREAM, XEXP (XEXP (XEXP (X, 0), 1), 0));	\
+	fputs(")", STREAM);						\
+      }									\
+    else output_addr_const(STREAM, X);					\
+									\
+    /* Mark symbols as position independent.  We only do this in the	\
+      .text segment, not in the .data segment. */			\
+    if (NEED_GOT_RELOC && flag_pic && making_const_table &&		\
+    	(GET_CODE(X) == SYMBOL_REF || GET_CODE(X) == LABEL_REF))	\
+     {									\
+        if (GET_CODE(X) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P(X))	\
+          fprintf(STREAM, "(GOTOFF)");					\
+        else if (GET_CODE (X) == LABEL_REF)				\
+          fprintf(STREAM, "(GOTOFF)");					\
+        else								\
+          fprintf(STREAM, "(GOT)");					\
+     }									\
+  }
+
+#define PRINT_OPERAND_PUNCT_VALID_P(CODE) ((CODE) == '@' || ((CODE) == '_') || ((CODE) == '|'))
 
 /* Emit a special directive when defining a function name.
    This is used by the assembler to assit with interworking.  */
