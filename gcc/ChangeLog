@@ -1,3 +1,8 @@
+2000-03-22  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/fp-bit.c (pack_d): Correct the case when a denormal
+	is rounded up and stops being denormal.
+
 2000-03-21  Richard Henderson  <rth@cygnus.com>
 
 	* config/alpha/alpha.c (function_arg): Check for void_type_node
