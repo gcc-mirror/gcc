@@ -34,8 +34,4 @@ stagestuff="g++\$(exeext) g++-cross\$(exeext) cc1plus\$(exeext)"
 
 diff_excludes="-x parse.c -x parse.h"
 
-headers='$(CXX_EXTRA_HEADERS)'
-
-lib2funcs=cplib2.txt
-
 outputs=cp/Makefile
