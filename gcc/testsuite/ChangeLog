@@ -1,3 +1,22 @@
+2003-03-27  Mark Mitchell  <mark@codesourcery.com>
+
+	* lib/gcov.exp (run-gcov): Add branches and calls options, rather
+	than reading .x files.
+	* g++.dg/gcov/gcov-1.C: Use run-gcov options, not .x files.
+	* g77.dg/gcov/gcov-1.f: Likewise.
+	* gcc.misc-tests/gcov-4b.c: Likewise.
+	* gcc.misc-tests/gcov-5b.c: Likewise.
+	* gcc.misc-tests/gcov-6.c: Likewise.
+	* gcc.misc-tests/gcov-7.c: Likewise.
+	* gcc.misc-tests/gcov-8.c: Likewise.
+	* g++.dg/gcov/gcov-1.x: Remove.
+	* g77.dg/gcov/gcov-1.x: Likewise.
+	* gcc.misc-tests/gcov-4b.x: Likewise.
+	* gcc.misc-tests/gcov-5b.x: Likewise.
+	* gcc.misc-tests/gcov-6.x: Likewise.
+	* gcc.misc-tests/gcov-7.x: Likewise.
+	* gcc.misc-tests/gcov-8.x: Likewise.
+
 2003-03-27  Glen Nakamura  <glen@imodulo.com>
 
 	PR opt/10087

@@ -258,4 +258,4 @@ main()
   return 0;
 }
 
-/* { dg-final { run-gcov -b gcov-4b.c } } */
+/* { dg-final { run-gcov branches { -b gcov-4b.c } } } */

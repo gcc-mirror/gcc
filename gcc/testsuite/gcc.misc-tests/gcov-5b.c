@@ -31,4 +31,4 @@ int main ()
   return 0;
 }
 
-/* { dg-final { run-gcov -b gcov-5b.c } } */
+/* { dg-final { run-gcov branches { -b gcov-5b.c } } } */

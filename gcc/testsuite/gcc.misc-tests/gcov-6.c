@@ -34,4 +34,4 @@ main()
   					/* returns(end) */
 }
 
-/* { dg-final { run-gcov -b gcov-6.c } } */
+/* { dg-final { run-gcov branches calls { -b gcov-6.c } } } */
