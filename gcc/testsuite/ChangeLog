@@ -11,6 +11,22 @@
 	* gcc.dg/compat/scalar-by-value-2_x.c: New test file.
 	* gcc.dg/compat/scalar-by-value-2_y.c: New test file.
 
+	* gcc.dg/compat/struct-by-value-1_main.c: New test file.
+	* gcc.dg/compat/struct-by-value-1_x.c: New test file.
+	* gcc.dg/compat/struct-by-value-1_y.c: New test file.
+	* gcc.dg/compat/struct-by-value-2_main.c: New test file.
+	* gcc.dg/compat/struct-by-value-2_x.c: New test file.
+	* gcc.dg/compat/struct-by-value-2_y.c: New test file.
+	* gcc.dg/compat/struct-by-value-3_main.c: New test file.
+	* gcc.dg/compat/struct-by-value-3_x.c: New test file.
+	* gcc.dg/compat/struct-by-value-3_y.c: New test file.
+	* gcc.dg/compat/struct-by-value-4_main.c: New test file.
+	* gcc.dg/compat/struct-by-value-4_x.c: New test file.
+	* gcc.dg/compat/struct-by-value-4_y.c: New test file.
+	* gcc.dg/compat/struct-by-value-5_main.c: New test file.
+	* gcc.dg/compat/struct-by-value-5_x.c: New test file.
+	* gcc.dg/compat/struct-by-value-5_y.c: New test file.
+
 2003-05-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* gcc.dg/const-elim-1.c, gcc.dg/const-elim-2.c: New testcases.
