@@ -688,6 +688,8 @@ gen_lowpart_common (mode, x)
 		   || ! rtx_equal_function_value_matters)
 #ifdef CLASS_CANNOT_CHANGE_SIZE
 	       && ! (GET_MODE_SIZE (mode) != GET_MODE_SIZE (GET_MODE (x))
+		     && GET_MODE_CLASS (GET_MODE (x)) != MODE_COMPLEX_INT
+		     && GET_MODE_CLASS (GET_MODE (x)) != MODE_COMPLEX_FLOAT
 		     && (TEST_HARD_REG_BIT
 			 (reg_class_contents[(int) CLASS_CANNOT_CHANGE_SIZE],
 			  REGNO (x))))
