@@ -1,5 +1,16 @@
 2004-06-17  Jan Hubicka  <jh@suse.cz>
 
+	PR target/15433
+	* i386.md (SSE SF cmov 0 splitter): The conditional is VOIDmode; fix
+	operand numbering in the output template.
+	(SSE DF cmov 0 splitter): The conditional is VOIDmode.
+
+2004-06-17  Jan Hubicka  <jh@suse.cz>
+
+	* except.c (can_throw_internal): Recognize RESX expresisons.
+
+2004-06-17  Jan Hubicka  <jh@suse.cz>
+
 	* cfgbuild.c (make_edges): Do not use label_value_list.
 	(find_basic_blocks_1): Do not collect label_value_list.
 	(find_sub_basic_blocks): Update call of make_edges.
