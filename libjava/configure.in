@@ -23,7 +23,8 @@ if test -z "${with_cross_host}"; then
    # Sigh.  Libtool's macro doesn't do the right thing.
    INCLTDL="-I\$(top_srcdir)/libltdl $INCLTDL"
    # FIXME: this is a hack.
-   ac_configure_args="$ac_configure_args --with-auxdir=../$ac_aux_dir"
+   sub_auxdir="`cd $ac_aux_dir && pwd`"
+   ac_configure_args="$ac_configure_args --with-auxdir=$sub_auxdir"
 fi
 AC_SUBST(INCLTDL)
 AC_SUBST(LIBLTDL)
