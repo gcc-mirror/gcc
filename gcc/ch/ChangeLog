@@ -1,3 +1,7 @@
+2000-02-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* grant.c: Don't declare `version_string'.
+
 2000-02-11  Nathan Sidwell  <nathan@acm.org>
 
 	* decl.c (init_decl_processing): Remove duplicate decl of

@@ -57,9 +57,6 @@ int chill_at_module_level = 0;
 /* mark that a SPEC MODULE was generated */
 static int spec_module_generated = 0;
 
-/* define version strings */
-extern char *version_string;
-
 /* define a faster string handling */
 typedef struct
 {

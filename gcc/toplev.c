@@ -141,7 +141,6 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #ifdef NEED_DECLARATION_ENVIRON
 extern char **environ;
 #endif
-extern char *version_string;
 
 /* Carry information from ASM_DECLARE_OBJECT_NAME
    to ASM_FINISH_DECLARE_OBJECT.  */

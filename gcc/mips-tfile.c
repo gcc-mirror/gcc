@@ -601,6 +601,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "version.h"
 
 #ifndef __SABER__
 #define saber_stop()
@@ -1697,7 +1698,6 @@ extern long   strtol			__proto((const char *, char **, int));
 extern char *optarg;
 extern int   optind;
 extern int   opterr;
-extern char *version_string;
 
 /* List of assembler pseudo ops and beginning sequences that need
    special actions.  Someday, this should be a hash table, and such,

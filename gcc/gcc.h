@@ -21,6 +21,8 @@ Boston, MA 02111-1307, USA.  */
 #ifndef __GCC_H__
 #define __GCC_H__
 
+#include "version.h"
+
 /* These are exported by gcc.c. */
 extern int do_spec PARAMS ((const char *));
 extern void fancy_abort PARAMS ((void)) ATTRIBUTE_NORETURN;

@@ -177,23 +177,23 @@ compiler: ../jc1$(exeext) ../jv-scan$(exeext)
 ../jc1$(exeext): $(P) $(JAVA_OBJS) $(OBJDEPS) $(LIBDEPS)
 	rm -f ../jc1$(exeext)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(JAVA_OBJS) $(OBJS) $(LIBS)
-../jv-scan$(exeext): $(P) $(JAVA_OBJS_LITE) $(OBJDEPS) $(LIBDEPS)
+../jv-scan$(exeext): $(P) $(JAVA_OBJS_LITE) $(OBJDEPS) ../version.o $(LIBDEPS)
 	rm -f ../jv-scan$(exeext)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(JAVA_OBJS_LITE) $(LIBS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(JAVA_OBJS_LITE) ../version.o $(LIBS)
 
 ../jcf-dump$(exeext): jcf-dump.o jcf-io.o jcf-depend.o jcf-path.o \
-		zextract.o $(LIBDEPS)
+		zextract.o ../version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ jcf-dump.o jcf-io.o \
-	  jcf-depend.o jcf-path.o zextract.o ../errors.o $(LIBS)
+	  jcf-depend.o jcf-path.o zextract.o ../errors.o ../version.o $(LIBS)
 
 # Dependencies here must be kept in sync with dependencies in Make-lang.in.
 ../jvgenmain$(exeext):  jvgenmain.o mangle.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ jvgenmain.o mangle.o $(LIBS)
 
 ../gcjh$(exeext): gjavah.o jcf-io.o jcf-depend.o jcf-path.o \
-		zextract.o $(LIBDEPS)
+		zextract.o ../version.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gjavah.o jcf-io.o \
-	  jcf-depend.o jcf-path.o zextract.o ../errors.o $(LIBS)
+	  jcf-depend.o jcf-path.o zextract.o ../errors.o ../version.o $(LIBS)
 
 Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
 	cd ..; $(SHELL) config.status
@@ -264,9 +264,9 @@ force:
 parse.o : $(PARSE_C) jcf-reader.c $(CONFIG_H) $(srcdir)/../system.h \
   $(srcdir)/../function.h $(JAVA_TREE_H)
 jcf-dump.o : $(CONFIG_H) $(srcdir)/../system.h $(JAVA_TREE_H) jcf-dump.c \
-  jcf-reader.c jcf.h javaop.h javaop.def
+  jcf-reader.c jcf.h javaop.h javaop.def $(srcdir)/../version.h
 gjavah.o : $(CONFIG_H) $(srcdir)/../system.h $(JAVA_TREE_H) gjavah.c \
-  jcf-reader.c jcf.h javaop.h
+  jcf-reader.c jcf.h javaop.h $(srcdir)/../version.h
 buffer.o : buffer.c $(CONFIG_H) buffer.h $(srcdir)/../gansidecl.h \
   $(srcdir)/../system.h $(srcdir)/../toplev.h
 check-init.o : check-init.c $(CONFIG_H) $(srcdir)/../gansidecl.h \
@@ -294,7 +294,7 @@ jcf-parse.o : jcf-parse.c $(CONFIG_H) $(JAVA_TREE_H) $(srcdir)/../flags.h \
   $(srcdir)/../toplev.h $(PARSE_H)
 jcf-write.o : jcf-write.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(RTL_H) \
   java-opcodes.h parse.h buffer.h $(srcdir)/../system.h $(srcdir)/../toplev.h
-jv-scan.o : jv-scan.c $(CONFIG_H) $(srcdir)/../system.h
+jv-scan.o : jv-scan.c $(CONFIG_H) $(srcdir)/../system.h $(srcdir)/../version.h
 jvgenmain.o : jvgenmain.c $(CONFIG_H) $(srcdir)/../system.h
 lang.o : lang.c $(CONFIG_H) $(JAVA_TREE_H) jcf.h $(srcdir)/../input.h \
   $(srcdir)/../toplev.h $(srcdir)/../system.h $(RTL_H) $(EXPR_H)

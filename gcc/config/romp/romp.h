@@ -1360,8 +1360,7 @@ struct rt_cargs {int gregs, fregs; };
 /* Output at beginning of assembler file.  */
 
 #define ASM_FILE_START(FILE)				\
-{ extern char *version_string;				\
-  const char *p;					\
+{ const char *p;					\
 							\
   fprintf (FILE, "\t.globl .oVncs\n\t.set .oVncs,0\n") ; \
   fprintf (FILE, "\t.globl .oVgcc");			\

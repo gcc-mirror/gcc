@@ -1,3 +1,42 @@
+2000-02-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (TREE_H, collect2.o, gcc.h, mips-tfile.o, cccp.o,
+	cpphash.o, cppinit.o, protoize.o, unprotoize.o): Depend on version.h.
+
+	* cccp.c: Include version.h and/or don't declare `version_string'.
+	* collect2.c: Likewise.
+	* alpha.c: Likewise.
+	* arm/aof.h: Likewise.
+	* arm/coff.h: Likewise.
+	* arm/elf.h: Likewise.
+	* arm/pe.h: Likewise.
+	* arm/tcoff.h: Likewise.
+	* arm/telf.h: Likewise.
+	* arm/tpe.h: Likewise.
+	* arm/vxarm.h: Likewise.
+	* convex/convex.c: Likewise.
+	* i386/dgux.c: Likewise.
+	* i386/sun386.h: Likewise.
+	* m88k/m88k.c: Likewise.
+	* mcore/mcore-pe.h: Likewise.
+	* mips/mips.h: Likewise.
+	* romp/romp.h: Likewise.
+	* sh/sh.c: Likewise.
+	* cpphash.c: Likewise.
+	* cppinit.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* dwarfout.c: Likewise.
+	* gcc.c: Likewise.
+	* gcc.h: Likewise.
+	* mips-tfile.c: Likewise.
+	* protoize.c: Likewise.
+	* toplev.c: Likewise.
+	* tree.h: Likewise.
+	
+	* version.c (version_string): Constify a char*.
+
+	* version.h: New file.
+
 2000-02-14  Nick Clifton  <nickc@cygnus.com>
 
 	* configure.in: Add mcore-elf and mcore-pe targets.

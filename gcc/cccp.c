@@ -32,6 +32,7 @@ typedef unsigned char U_CHAR;
 #include "pcp.h"
 #include "intl.h"
 #include "prefix.h"
+#include "version.h"
 
 #ifdef MULTIBYTE_CHARS
 #include "mbchar.h"
@@ -95,7 +96,6 @@ static void hack_vms_include_specification ();
 
 /* External declarations.  */
 
-extern char *version_string;
 HOST_WIDEST_INT parse_escape PARAMS ((char **, HOST_WIDEST_INT));
 HOST_WIDEST_INT parse_c_expression PARAMS ((char *, int));
 

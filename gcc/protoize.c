@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include <unistd.h>
 #endif
 #undef abort
+#include "version.h"
 
 /* Include getopt.h for the sake of getopt_long. */
 #include "getopt.h"
@@ -52,8 +53,6 @@ Boston, MA 02111-1307, USA.  */
 #else
 #define CPLUS_FILE_SUFFIX "C"
 #endif
-
-extern char *version_string;
 
 static void usage PARAMS ((void)) ATTRIBUTE_NORETURN;
 static void aux_info_corrupted PARAMS ((void)) ATTRIBUTE_NORETURN;

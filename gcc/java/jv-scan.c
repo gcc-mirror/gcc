@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "obstack.h"		/* We use obstacks in lex.c */
 
-#include "version.c"
+#include "version.h"
 
 #include <getopt.h>
 
