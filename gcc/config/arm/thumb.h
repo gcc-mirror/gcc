@@ -901,6 +901,7 @@ int thumb_shiftable_const ();
 	  && GET_CODE (XEXP (X, 0)) == REG				\
 	  && GET_CODE (XEXP (X, 1)) == REG				\
 	  && REGNO (XEXP (X, 0)) != FRAME_POINTER_REGNUM		\
+	  && REGNO (XEXP (X, 1)) != FRAME_POINTER_REGNUM		\
 	  && REG_OK_FOR_INDEX_P (XEXP (X, 0))				\
 	  && REG_OK_FOR_INDEX_P (XEXP (X, 1)))				\
 	goto WIN;							\
