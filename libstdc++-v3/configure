@@ -51190,7 +51190,7 @@ _ACEOF
 	;;
     esac
     ;;
-  *-linux* | *-uclinux* | *-gnu*)
+  *-linux* | *-uclinux* | *-gnu* | *-kfreebsd*-gnu | *-knetbsd*-gnu)
 
 
 
