@@ -1,3 +1,8 @@
+2004-09-29  Fariborz Jahanian <fjahanian@apple.com>
+
+	* c-decl.c (merge_decls): Use comptype when comparing
+	types to decide on DECL_SIZE save of olddecl.
+
 2004-09-29  Daniel Berlin  <dberlin@dberlin.org>
 
 	* tree.h (INDIRECT_REF_P): New macro.
