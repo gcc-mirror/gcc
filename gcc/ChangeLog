@@ -1,3 +1,14 @@
+Mon Apr  6 14:59:58 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * gansidecl.h: Check if compiler supports __attribute__.  Provide
+        definitions for ATTRIBUTE_UNUSED and ATTRIBUTE_PRINTF using
+        __attribute__ when its available.  Also provide definitions for
+        ATTRIBUTE_PRINTF_1, ATTRIBUTE_PRINTF_2 and ATTRIBUTE_PRINTF_3 in
+        terms of ATTRIBUTE_PRINTF.
+ 
+        * genoutput.c (process_template): Use ATTRIBUTE_UNUSED in place
+	of __attribute__.
+
 Mon Apr  6 07:17:52 1998  Catherine Moore  <clm@cygnus.com>
 
         * combine.c (can_combine_p):  Include successor in volatile test.
