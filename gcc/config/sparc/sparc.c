@@ -1004,17 +1004,11 @@ const64_operand (op, mode)
 int
 const64_high_operand (op, mode)
      rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+     enum machine_mode mode;
 {
   return ((GET_CODE (op) == CONST_INT
 	   && (INTVAL (op) & ~(HOST_WIDE_INT)0x3ff) != 0
-	   && SPARC_SETHI_P (INTVAL (op))
-#if HOST_BITS_PER_WIDE_INT != 64
-	   /* Must be positive on non-64bit host else the
-	      optimizer is fooled into thinking that sethi
-	      sign extends, even though it does not.  */
-	   && INTVAL (op) >= 0
-#endif
+	   && SPARC_SETHI_P (INTVAL (op) & GET_MODE_MASK (mode))
 	   )
 	  || (GET_CODE (op) == CONST_DOUBLE
 	      && CONST_DOUBLE_HIGH (op) == 0
@@ -1227,12 +1221,7 @@ input_operand (op, mode)
      variants when we are working in DImode and !arch64.  */
   if (GET_MODE_CLASS (mode) == MODE_INT
       && ((GET_CODE (op) == CONST_INT
-	   && ((SPARC_SETHI_P (INTVAL (op))
-		&& (! TARGET_ARCH64
-		    || (INTVAL (op) >= 0)
-		    || mode == SImode
-		    || mode == HImode
-		    || mode == QImode))
+	   && (SPARC_SETHI_P (INTVAL (op) & GET_MODE_MASK (mode))
 	       || SPARC_SIMM13_P (INTVAL (op))
 	       || (mode == DImode
 		   && ! TARGET_ARCH64)))
@@ -1311,7 +1300,7 @@ sparc_emit_set_const32 (op0, op1)
     {
       HOST_WIDE_INT value = INTVAL (op1);
 
-      if (SPARC_SETHI_P (value)
+      if (SPARC_SETHI_P (value & GET_MODE_MASK (mode))
 	  || SPARC_SIMM13_P (value))
 	abort ();
     }

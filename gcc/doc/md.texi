@@ -1859,6 +1859,17 @@ Zero
 32-bit constant with the low 12 bits clear (a constant that can be
 loaded with the @code{sethi} instruction)
 
+@item L
+A constant in the range supported by @code{movcc} instructions
+
+@item M
+A constant in the range supported by @code{movrcc} instructions
+
+@item N
+Same as @samp{K}, except that it verifies that bits that are not in the
+lower 32-bits range are all zero.  Must be used instead of @samp{K} for
+modes wider than @code{SImode}
+
 @item G
 Floating-point zero
 
