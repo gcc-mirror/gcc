@@ -6400,17 +6400,19 @@ ereal_from_double (d)
   /* Convert array of HOST_WIDE_INT to equivalent array of 16-bit pieces.  */
   if (REAL_WORDS_BIG_ENDIAN)
     {
+#if HOST_BITS_PER_WIDE_INT == 32
       s[0] = (unsigned EMUSHORT) (d[0] >> 16);
       s[1] = (unsigned EMUSHORT) d[0];
-#if HOST_BITS_PER_WIDE_INT == 32
       s[2] = (unsigned EMUSHORT) (d[1] >> 16);
       s[3] = (unsigned EMUSHORT) d[1];
 #else
       /* In this case the entire target double is contained in the
 	 first array element.  The second element of the input is
 	 ignored.  */
-      s[2] = (unsigned EMUSHORT) (d[0] >> 48);
-      s[3] = (unsigned EMUSHORT) (d[0] >> 32);
+      s[0] = (unsigned EMUSHORT) (d[0] >> 48);
+      s[1] = (unsigned EMUSHORT) (d[0] >> 32);
+      s[2] = (unsigned EMUSHORT) (d[0] >> 16);
+      s[3] = (unsigned EMUSHORT) d[0];
 #endif
     }
   else
