@@ -3982,7 +3982,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope, complain)
 	  arg_depth = TMPL_ARGS_DEPTH (arglist);
 	}
 
-      /* Now we should enough arguments.  */
+      /* Now we should have enough arguments.  */
       my_friendly_assert (parm_depth == arg_depth, 0);
       
       /* From here on, we're only interested in the most general

@@ -1,5 +1,13 @@
 2001-12-29  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* call.c (build_user_type_conversion_1): Use my_friendly_assert
+	rather than if ... abort.
+	* cvt.c (convert_to_reference): Likewise.
+	* semantics.c (setup_vtbl_ptr): Likewise.
+	* pt.c (lookup_template_class): Comment typo.
+	
+2001-12-29  Nathan Sidwell  <nathan@codesourcery.com>
+
 	PR c++/5125
 	* pt.c (push_template_decl_real): Make sure DECL has
 	DECL_LANG_SPECIFIC.
