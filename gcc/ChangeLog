@@ -1,3 +1,11 @@
+2002-01-07  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.c (print_operand): Remove extra space.
+        (altivec_expand_unop_builtin): Fix thinko.
+        (altivec_expand_binop_builtin): Same.
+        (altivec_expand_ternop_builtin): Same.
+        (altivec_expand_builtin): Same.
+
 2002-01-07  Richard Henderson  <rth@redhat.com>
 
 	* config/rs6000/xcoff.h (ASM_FILE_START): Reverted to profile_flag.
