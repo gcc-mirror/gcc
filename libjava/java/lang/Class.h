@@ -109,13 +109,6 @@ struct _Jv_ifaces
   jshort count;
 };
 
-// Used for vtable pointer manipulation.
-union _Jv_Self
-{
-  char *vtable_ptr;
-  jclass self;
-};
-
 struct _Jv_MethodSymbol
 {
   _Jv_Utf8Const *class_name;
@@ -232,12 +225,7 @@ public:
 
   // This constructor is used to create Class object for the primitive
   // types. See prims.cc.
-  Class ()
-  {
-    // C++ ctors set the vtbl pointer to point at an offset inside the vtable
-    // object. That doesn't work for Java, so this hack adjusts it back.
-    ((_Jv_Self *)this)->vtable_ptr -= 2 * sizeof (void *);
-  }
+  Class ();
 
   static java::lang::Class class$;
 
@@ -307,6 +295,7 @@ private:
 				 _Jv_VTable *array_vtable = 0);
   friend jclass _Jv_NewClass (_Jv_Utf8Const *name, jclass superclass,
 			      java::lang::ClassLoader *loader);
+  friend void _Jv_InitNewClassFields (jclass klass);
 
   // in prims.cc
   friend void _Jv_InitPrimClass (jclass, char *, char, int, _Jv_ArrayVTable *);

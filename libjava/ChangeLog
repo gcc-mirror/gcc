@@ -1,5 +1,18 @@
 2001-12-16  Tom Tromey  <tromey@redhat.com>
 
+	For PR java/5088:
+	* java/lang/natClassLoader.cc (_Jv_InitNewClassFields): New
+	function.
+	(_Jv_NewClass): Use it.
+	(defineClass0): Use it.
+	* prims.cc (_Jv_InitPrimClass): Adjust vtable here.
+	(_Jv_InitPrimClass): Use _Jv_InitNewClassFields.
+	(_Jv_NewArray): Don't abort; just throw exception.
+	Include InternalError.h.
+	* java/lang/Class.h (Class::Class): Declare, don't define.
+	(Class): Declare _Jv_InitNewClassFields as a friend.
+	(union _Jv_Self): Removed.
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (ordinary_java_source_files): Removed old file;
 	added new file.
