@@ -272,6 +272,8 @@ struct movable
   struct movable *next;
 };
 
+static struct movable *the_movables;
+
 FILE *loop_dump_stream;
 
 /* Forward declarations.  */
@@ -310,16 +312,12 @@ static void record_giv PROTO((struct induction *, rtx, rtx, rtx, rtx, rtx, int, 
 static void update_giv_derive PROTO((rtx));
 static int basic_induction_var PROTO((rtx, enum machine_mode, rtx, rtx, rtx *, rtx *));
 static rtx simplify_giv_expr PROTO((rtx, int *));
-static int general_induction_var PROTO((rtx, rtx *, rtx *, rtx *));
+static int general_induction_var PROTO((rtx, rtx *, rtx *, rtx *, int, int *));
 static int consec_sets_giv PROTO((int, rtx, rtx, rtx, rtx *, rtx *));
 static int check_dbra_loop PROTO((rtx, int, rtx));
-#ifdef ADDRESS_COST
+static rtx express_from_1 PROTO((rtx, rtx, rtx));
 static rtx express_from PROTO((struct induction *, struct induction *));
-#endif
-static int combine_givs_p PROTO((struct induction *, struct induction *));
-#ifdef GIV_SORT_CRITERION
-static int giv_sort PROTO((struct induction **, struct induction **));
-#endif
+static rtx combine_givs_p PROTO((struct induction *, struct induction *));
 static void combine_givs PROTO((struct iv_class *));
 static int product_cheap_p PROTO((rtx, rtx));
 static int maybe_eliminate_biv PROTO((struct iv_class *, rtx, rtx, int, int, int));
@@ -349,15 +347,19 @@ static int indirect_jump_in_function_p PROTO((rtx));
 
 
 /* Relative gain of eliminating various kinds of operations.  */
-int add_cost;
+static int add_cost;
 #if 0
-int shift_cost;
-int mult_cost;
+static int shift_cost;
+static int mult_cost;
 #endif
 
 /* Benefit penalty, if a giv is not replaceable, i.e. must emit an insn to
    copy the value of the strength reduced giv to its original register.  */
-int copy_cost;
+static int copy_cost;
+
+/* Cost of using a register, to normalize the benefits of a giv.  */
+static int reg_address_cost;
+
 
 void
 init_loop ()
@@ -366,6 +368,12 @@ init_loop ()
   rtx reg = gen_rtx_REG (word_mode, LAST_VIRTUAL_REGISTER + 1);
 
   add_cost = rtx_cost (gen_rtx_PLUS (word_mode, reg, reg), SET);
+
+#ifdef ADDRESS_COST
+  reg_address_cost = ADDRESS_COST (reg);
+#else
+  reg_address_cost = rtx_cost (reg, MEM);
+#endif
 
   /* We multiply by 2 to reconcile the difference in scale between
      these two ways of computing costs.  Otherwise the cost of a copy
@@ -542,6 +550,8 @@ loop_optimize (f, dumpfile, unroll_p)
      to one mapping will remain.  */
   if (unroll_p && write_symbols != NO_DEBUG)
     unroll_block_trees ();
+
+  end_alias_analysis ();
 }
 
 /* Optimize one loop whose start is LOOP_START and end is END.
@@ -1084,8 +1094,11 @@ scan_loop (loop_start, end, nregs, unroll_p)
       n_times_set[i] = n_times_used[i];
 
   if (flag_strength_reduce)
-    strength_reduce (scan_start, end, loop_top,
-		     insn_count, loop_start, end, unroll_p);
+    {
+      the_movables = movables;
+      strength_reduce (scan_start, end, loop_top,
+		       insn_count, loop_start, end, unroll_p);
+    }
 }
 
 /* Add elements to *OUTPUT to record all the pseudo-regs
@@ -3318,7 +3331,7 @@ loop_reg_used_before_p (set, insn, loop_start, scan_start, loop_end)
    value is a linear function of a biv.  */
 
 /* Bivs are recognized by `basic_induction_var';
-   Givs by `general_induct_var'.  */
+   Givs by `general_induction_var'.  */
 
 /* Indexed by register number, indicates whether or not register is an
    induction variable, and if so what type.  */
@@ -3789,14 +3802,13 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	    continue;
 
 	  if (/* SET_SRC is a giv.  */
-	      ((benefit = general_induction_var (SET_SRC (set),
-						 &src_reg, &add_val,
-						 &mult_val))
+	      (general_induction_var (SET_SRC (set), &src_reg, &add_val,
+				      &mult_val, 0, &benefit)
 	       /* Equivalent expression is a giv.  */
 	       || ((regnote = find_reg_note (p, REG_EQUAL, NULL_RTX))
-		   && (benefit = general_induction_var (XEXP (regnote, 0),
-							&src_reg,
-							&add_val, &mult_val))))
+		   && general_induction_var (XEXP (regnote, 0), &src_reg,
+					     &add_val, &mult_val, 0,
+					     &benefit)))
 	      /* Don't try to handle any regs made by loop optimization.
 		 We have nothing on them in regno_first_uid, etc.  */
 	      && REGNO (dest_reg) < max_reg_before_loop
@@ -4540,12 +4552,13 @@ find_mem_givs (x, insn, not_every_iteration, loop_start, loop_end)
 	rtx mult_val;
 	int benefit;
 
-	benefit = general_induction_var (XEXP (x, 0),
-					 &src_reg, &add_val, &mult_val);
+	/* This code used to disable creating GIVs with mult_val == 1 and
+	   add_val == 0.  However, this leads to lost optimizations when 
+	   it comes time to combine a set of related DEST_ADDR GIVs, since
+	   this one would not be seen.   */
 
-	/* Don't make a DEST_ADDR giv with mult_val == 1 && add_val == 0.
-	   Such a giv isn't useful.  */
-	if (benefit > 0 && (mult_val != const1_rtx || add_val != const0_rtx))
+	if (general_induction_var (XEXP (x, 0), &src_reg, &add_val,
+				   &mult_val, 1, &benefit))
 	  {
 	    /* Found one; record it.  */
 	    struct induction *v
@@ -4858,6 +4871,32 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
 	}
     }
 
+  /* Record whether the add_val contains a const_int, for later use by
+     combine_givs.  */
+  {
+    rtx tem = add_val;
+
+    v->no_const_addval = 1;
+    if (tem == const0_rtx)
+      ;
+    else if (GET_CODE (tem) == CONST_INT)
+      v->no_const_addval = 0;
+    else if (GET_CODE (tem) == PLUS)
+      {
+        while (1)
+	  {
+	    if (GET_CODE (XEXP (tem, 0)) == PLUS)
+	      tem = XEXP (tem, 0);
+	    else if (GET_CODE (XEXP (tem, 1)) == PLUS)
+	      tem = XEXP (tem, 1);
+	    else
+	      break;
+	  }
+        if (GET_CODE (XEXP (tem, 1)) == CONST_INT)
+          v->no_const_addval = 0;
+      }
+  }
+
   if (loop_dump_stream)
     {
       if (type == DEST_REG)
@@ -4874,6 +4913,9 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
 
       if (v->replaceable)
  	fprintf (loop_dump_stream, " replaceable");
+
+      if (v->no_const_addval)
+	fprintf (loop_dump_stream, " ncav");
 
       if (GET_CODE (mult_val) == CONST_INT)
 	{
@@ -5197,12 +5239,12 @@ basic_induction_var (x, mode, dest_reg, p, inc_val, mult_val)
   switch (code)
     {
     case PLUS:
-      if (XEXP (x, 0) == dest_reg
+      if (rtx_equal_p (XEXP (x, 0), dest_reg)
 	  || (GET_CODE (XEXP (x, 0)) == SUBREG
 	      && SUBREG_PROMOTED_VAR_P (XEXP (x, 0))
 	      && SUBREG_REG (XEXP (x, 0)) == dest_reg))
  	arg = XEXP (x, 1);
-      else if (XEXP (x, 1) == dest_reg
+      else if (rtx_equal_p (XEXP (x, 1), dest_reg)
 	       || (GET_CODE (XEXP (x, 1)) == SUBREG
 		   && SUBREG_PROMOTED_VAR_P (XEXP (x, 1))
 		   && SUBREG_REG (XEXP (x, 1)) == dest_reg))
@@ -5226,30 +5268,36 @@ basic_induction_var (x, mode, dest_reg, p, inc_val, mult_val)
       return 0;
 
     case REG:
-      /* If this register is assigned in the previous insn, look at its
+      /* If this register is assigned in a previous insn, look at its
 	 source, but don't go outside the loop or past a label.  */
 
-      for (insn = PREV_INSN (p);
-	   (insn && GET_CODE (insn) == NOTE
-	    && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_BEG);
-	   insn = PREV_INSN (insn))
-	;
+      insn = p;
+      while (1)
+	{
+	  do {
+	    insn = PREV_INSN (insn);
+	  } while (insn && GET_CODE (insn) == NOTE
+	           && NOTE_LINE_NUMBER (insn) != NOTE_INSN_LOOP_BEG);
 
-      if (insn)
-	set = single_set (insn);
+          if (!insn)
+	    break;
+	  set = single_set (insn);
+	  if (set == 0)
+	    break;
 
-      if (set != 0
-	  && (SET_DEST (set) == x
-	      || (GET_CODE (SET_DEST (set)) == SUBREG
-		  && (GET_MODE_SIZE (GET_MODE (SET_DEST (set)))
-		      <= UNITS_PER_WORD)
-		  && SUBREG_REG (SET_DEST (set)) == x)))
-	return basic_induction_var (SET_SRC (set),
-				    (GET_MODE (SET_SRC (set)) == VOIDmode
-				     ? GET_MODE (x)
-				     : GET_MODE (SET_SRC (set))),
-				    dest_reg, insn,
-				    inc_val, mult_val);
+	  if ((SET_DEST (set) == x
+	       || (GET_CODE (SET_DEST (set)) == SUBREG
+		   && (GET_MODE_SIZE (GET_MODE (SET_DEST (set)))
+		       <= UNITS_PER_WORD)
+		   && SUBREG_REG (SET_DEST (set)) == x))
+	      && basic_induction_var (SET_SRC (set),
+				      (GET_MODE (SET_SRC (set)) == VOIDmode
+				       ? GET_MODE (x)
+				       : GET_MODE (SET_SRC (set))),
+				      dest_reg, insn,
+				      inc_val, mult_val))
+	    return 1;
+	}
       /* ... fall through ...  */
 
       /* Can accept constant setting of biv only when inside inner most loop.
@@ -5280,6 +5328,7 @@ basic_induction_var (x, mode, dest_reg, p, inc_val, mult_val)
     case SIGN_EXTEND:
       return basic_induction_var (XEXP (x, 0), GET_MODE (XEXP (x, 0)),
 				  dest_reg, p, inc_val, mult_val);
+
     case ASHIFTRT:
       /* Similar, since this can be a sign extension.  */
       for (insn = PREV_INSN (p);
@@ -5321,14 +5370,15 @@ basic_induction_var (x, mode, dest_reg, p, inc_val, mult_val)
      such that the value of X is biv * mult + add;  */
 
 static int
-general_induction_var (x, src_reg, add_val, mult_val)
+general_induction_var (x, src_reg, add_val, mult_val, is_addr, pbenefit)
      rtx x;
      rtx *src_reg;
      rtx *add_val;
      rtx *mult_val;
+     int is_addr;
+     int *pbenefit;
 {
   rtx orig_x = x;
-  int benefit = 0;
   char *storage;
 
   /* If this is an invariant, forget it, it isn't a giv.  */
@@ -5338,7 +5388,8 @@ general_induction_var (x, src_reg, add_val, mult_val)
   /* See if the expression could be a giv and get its form.
      Mark our place on the obstack in case we don't find a giv.  */
   storage = (char *) oballoc (0);
-  x = simplify_giv_expr (x, &benefit);
+  *pbenefit = 0;
+  x = simplify_giv_expr (x, pbenefit);
   if (x == 0)
     {
       obfree (storage);
@@ -5398,12 +5449,21 @@ general_induction_var (x, src_reg, add_val, mult_val)
   if (GET_CODE (*mult_val) == USE)
     *mult_val = XEXP (*mult_val, 0);
 
-  benefit += rtx_cost (orig_x, SET);
+  if (is_addr)
+    {
+#ifdef ADDRESS_COST
+      *pbenefit += ADDRESS_COST (orig_x) - reg_address_cost;
+#else
+      *pbenefit += rtx_cost (orig_x, MEM) - reg_address_cost;
+#endif
+    }
+  else
+    *pbenefit += rtx_cost (orig_x, SET);
 
-  /* Always return some benefit if this is a giv so it will be detected
-     as such.  This allows elimination of bivs that might otherwise
-     not be eliminated.  */
-  return benefit == 0 ? 1 : benefit;
+  /* Always return true if this is a giv so it will be detected as such,
+     even if the benefit is zero or negative.  This allows elimination  
+     of bivs that might otherwise not be eliminated.  */                
+  return 1;                                                             
 }
 
 /* Given an expression, X, try to form it as a linear function of a biv.
@@ -5426,6 +5486,9 @@ general_induction_var (x, src_reg, add_val, mult_val)
 
    *BENEFIT will be incremented by the benefit of any sub-giv encountered.  */
 
+static rtx sge_plus PROTO ((enum machine_mode, rtx, rtx));
+static rtx sge_plus_constant PROTO ((rtx, rtx));
+
 static rtx
 simplify_giv_expr (x, benefit)
      rtx x;
@@ -5440,7 +5503,7 @@ simplify_giv_expr (x, benefit)
   if (mode != VOIDmode
       && (GET_MODE_CLASS (mode) != MODE_INT
 	  || GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT))
-    return 0;
+    return NULL_RTX;
 
   switch (GET_CODE (x))
     {
@@ -5448,12 +5511,14 @@ simplify_giv_expr (x, benefit)
       arg0 = simplify_giv_expr (XEXP (x, 0), benefit);
       arg1 = simplify_giv_expr (XEXP (x, 1), benefit);
       if (arg0 == 0 || arg1 == 0)
-	return 0;
+	return NULL_RTX;
 
       /* Put constant last, CONST_INT last if both constant.  */
       if ((GET_CODE (arg0) == USE
 	   || GET_CODE (arg0) == CONST_INT)
-	  && GET_CODE (arg1) != CONST_INT)
+	  && ! ((GET_CODE (arg0) == USE
+		 && GET_CODE (arg1) == USE)
+		|| GET_CODE (arg1) == CONST_INT))
 	tem = arg0, arg0 = arg1, arg1 = tem;
 
       /* Handle addition of zero, then addition of an invariant.  */
@@ -5464,29 +5529,22 @@ simplify_giv_expr (x, benefit)
 	  {
 	  case CONST_INT:
 	  case USE:
-	    /* Both invariant.  Only valid if sum is machine operand.
-	       First strip off possible USE on the operands.  */
+	    /* Adding two invariants must result in an invariant, so enclose
+ 	       addition operation inside a USE and return it.  */
 	    if (GET_CODE (arg0) == USE)
 	      arg0 = XEXP (arg0, 0);
-
 	    if (GET_CODE (arg1) == USE)
 	      arg1 = XEXP (arg1, 0);
 
-	    tem = 0;
-	    if (CONSTANT_P (arg0) && GET_CODE (arg1) == CONST_INT)
-	      {
-		tem = plus_constant (arg0, INTVAL (arg1));
-		if (GET_CODE (tem) != CONST_INT)
-		  tem = gen_rtx_USE (mode, tem);
-	      }
+	    if (GET_CODE (arg0) == CONST_INT)
+	      tem = arg0, arg0 = arg1, arg1 = tem;
+	    if (GET_CODE (arg1) == CONST_INT)
+	      tem = sge_plus_constant (arg0, arg1);
 	    else
-	      {
-		/* Adding two invariants must result in an invariant,
-		   so enclose addition operation inside a USE and
-		   return it.  */
-		tem = gen_rtx_USE (mode, gen_rtx_PLUS (mode, arg0, arg1));
-	      }
+	      tem = sge_plus (mode, arg0, arg1);
 
+	    if (GET_CODE (tem) != CONST_INT)
+	      tem = gen_rtx_USE (mode, tem);
 	    return tem;
 
 	  case REG:
@@ -5496,11 +5554,10 @@ simplify_giv_expr (x, benefit)
 
 	  case PLUS:
 	    /* (a + invar_1) + invar_2.  Associate.  */
-	    return simplify_giv_expr (gen_rtx_PLUS (mode,
-						    XEXP (arg0, 0),
-						    gen_rtx_PLUS (mode,
-								  XEXP (arg0, 1), arg1)),
-				      benefit);
+	    return simplify_giv_expr (
+		gen_rtx_PLUS (mode, XEXP (arg0, 0),
+			      gen_rtx_PLUS (mode, XEXP (arg0, 1), arg1)),
+		benefit);
 
 	  default:
 	    abort ();
@@ -5528,10 +5585,10 @@ simplify_giv_expr (x, benefit)
 
       /* Now must have MULT + MULT.  Distribute if same biv, else not giv.  */
       if (GET_CODE (arg0) != MULT || GET_CODE (arg1) != MULT)
-	abort ();
+	return NULL_RTX;
 
-      if (XEXP (arg0, 0) != XEXP (arg1, 0))
-	return 0;
+      if (!rtx_equal_p (arg0, arg1))
+	return NULL_RTX;
 
       return simplify_giv_expr (gen_rtx_MULT (mode,
 					      XEXP (arg0, 0),
@@ -5552,7 +5609,7 @@ simplify_giv_expr (x, benefit)
       arg0 = simplify_giv_expr (XEXP (x, 0), benefit);
       arg1 = simplify_giv_expr (XEXP (x, 1), benefit);
       if (arg0 == 0 || arg1 == 0)
-	return 0;
+	return NULL_RTX;
 
       /* Put constant last, CONST_INT last if both constant.  */
       if ((GET_CODE (arg0) == USE || GET_CODE (arg0) == CONST_INT)
@@ -5561,7 +5618,7 @@ simplify_giv_expr (x, benefit)
 
       /* If second argument is not now constant, not giv.  */
       if (GET_CODE (arg1) != USE && GET_CODE (arg1) != CONST_INT)
-	return 0;
+	return NULL_RTX;
 
       /* Handle multiply by 0 or 1.  */
       if (arg1 == const0_rtx)
@@ -5581,8 +5638,25 @@ simplify_giv_expr (x, benefit)
 	  return GEN_INT (INTVAL (arg0) * INTVAL (arg1));
 
 	case USE:
-	  /* invar * invar.  Not giv.  */
-	  return 0;
+	  /* invar * invar.  It is a giv, but very few of these will 
+	     actually pay off, so limit to simple registers.  */
+	  if (GET_CODE (arg1) != CONST_INT)
+	    return NULL_RTX;
+
+	  arg0 = XEXP (arg0, 0);
+	  if (GET_CODE (arg0) == REG)
+	    tem = gen_rtx_MULT (mode, arg0, arg1);
+	  else if (GET_CODE (arg0) == MULT
+		   && GET_CODE (XEXP (arg0, 0)) == REG
+		   && GET_CODE (XEXP (arg0, 1)) == CONST_INT)
+	    {
+	      tem = gen_rtx_MULT (mode, XEXP (arg0, 0), 
+				  GEN_INT (INTVAL (XEXP (arg0, 1))
+					   * INTVAL (arg1)));
+	    }
+	  else
+	    return NULL_RTX;
+	  return gen_rtx_USE (mode, tem);
 
 	case MULT:
 	  /* (a * invar_1) * invar_2.  Associate.  */
@@ -5663,6 +5737,72 @@ simplify_giv_expr (x, benefit)
 	  }
 
 	default:
+	  /* If it isn't an induction variable, and it is invariant, we
+	     may be able to simplify things further by looking through
+	     the bits we just moved outside the loop.  */
+	  if (invariant_p (x) == 1)
+	    {
+	      struct movable *m;
+
+	      for (m = the_movables; m ; m = m->next)
+		if (rtx_equal_p (x, m->set_dest))
+		  {
+		    /* Ok, we found a match.  Substitute and simplify.  */
+
+		    /* If we match another movable, we must use that, as 
+		       this one is going away.  */
+		    if (m->match)
+		      return simplify_giv_expr (m->match->set_dest, benefit);
+
+		    /* If consec is non-zero, this is a member of a group of
+		       instructions that were moved together.  We handle this
+		       case only to the point of seeking to the last insn and
+		       looking for a REG_EQUAL.  Fail if we don't find one.  */
+		    if (m->consec != 0)
+		      {
+			int i = m->consec;
+			tem = m->insn;
+			do { tem = NEXT_INSN (tem); } while (--i > 0);
+
+			tem = find_reg_note (tem, REG_EQUAL, NULL_RTX);
+			if (tem)
+			  tem = XEXP (tem, 0);
+		      }
+		    else
+		      {
+		        tem = single_set (m->insn);
+		        if (tem)
+			  tem = SET_SRC (tem);
+		      }
+
+		    if (tem)
+		      {
+			/* What we are most interested in is pointer
+			   arithmetic on invariants -- only take
+			   patterns we may be able to do something with.  */
+			if (GET_CODE (tem) == PLUS
+			    || GET_CODE (tem) == MULT
+			    || GET_CODE (tem) == ASHIFT
+			    || GET_CODE (tem) == CONST_INT
+			    || GET_CODE (tem) == SYMBOL_REF)
+			  {
+			    tem = simplify_giv_expr (tem, benefit);
+			    if (tem)
+			      return tem;
+			  }
+			else if (GET_CODE (tem) == CONST
+			    && GET_CODE (XEXP (tem, 0)) == PLUS
+			    && GET_CODE (XEXP (XEXP (tem, 0), 0)) == SYMBOL_REF
+			    && GET_CODE (XEXP (XEXP (tem, 0), 1)) == CONST_INT)
+			  {
+			    tem = simplify_giv_expr (XEXP (tem, 0), benefit);
+			    if (tem)
+			      return tem;
+			  }
+		      }
+		    break;
+		  }
+	    }
 	  break;
 	}
 
@@ -5677,12 +5817,66 @@ simplify_giv_expr (x, benefit)
 	{
 	  if (GET_CODE (x) == CONST_INT)
 	    return x;
-	  else
-	    return gen_rtx_USE (mode, x);
+	  if (GET_CODE (x) == CONST
+	      && GET_CODE (XEXP (x, 0)) == PLUS
+	      && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
+	      && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
+	    x = XEXP (x, 0);
+	  return gen_rtx_USE (mode, x);
 	}
       else
 	return 0;
     }
+}
+
+/* This routine folds invariants such that there is only ever one
+   CONST_INT in the summation.  It is only used by simplify_giv_expr.  */
+
+static rtx
+sge_plus_constant (x, c)
+     rtx x, c;
+{
+  if (GET_CODE (x) == CONST_INT)
+    return GEN_INT (INTVAL (x) + INTVAL (c));
+  else if (GET_CODE (x) != PLUS)
+    return gen_rtx_PLUS (GET_MODE (x), x, c);
+  else if (GET_CODE (XEXP (x, 1)) == CONST_INT)
+    {
+      return gen_rtx_PLUS (GET_MODE (x), XEXP (x, 0),
+			   GEN_INT (INTVAL (XEXP (x, 1)) + INTVAL (c)));
+    }
+  else if (GET_CODE (XEXP (x, 0)) == PLUS
+	   || GET_CODE (XEXP (x, 1)) != PLUS)
+    {
+      return gen_rtx_PLUS (GET_MODE (x),
+			   sge_plus_constant (XEXP (x, 0), c), XEXP (x, 1));
+    }
+  else
+    {
+      return gen_rtx_PLUS (GET_MODE (x),
+			   sge_plus_constant (XEXP (x, 1), c), XEXP (x, 0));
+    }
+}
+
+static rtx
+sge_plus (mode, x, y)
+     enum machine_mode mode;
+     rtx x, y;
+{
+  while (GET_CODE (y) == PLUS)
+    {
+      rtx a = XEXP (y, 0);
+      if (GET_CODE (a) == CONST_INT)
+	x = sge_plus_constant (x, a);
+      else
+	x = gen_rtx_PLUS (mode, x, a);
+      y = XEXP (y, 1);
+    }
+  if (GET_CODE (y) == CONST_INT)
+    x = sge_plus_constant (x, y);
+  else
+    x = gen_rtx_PLUS (mode, x, y);
+  return x;
 }
 
 /* Help detect a giv that is calculated by several consecutive insns;
@@ -5754,12 +5948,12 @@ consec_sets_giv (first_benefit, p, src_reg, dest_reg,
 	  && (set = single_set (p))
 	  && GET_CODE (SET_DEST (set)) == REG
 	  && SET_DEST (set) == dest_reg
-	  && ((benefit = general_induction_var (SET_SRC (set), &src_reg,
-						add_val, mult_val))
+	  && (general_induction_var (SET_SRC (set), &src_reg,
+				     add_val, mult_val, 0, &benefit)
 	      /* Giv created by equivalent expression.  */
 	      || ((temp = find_reg_note (p, REG_EQUAL, NULL_RTX))
-		  && (benefit = general_induction_var (XEXP (temp, 0), &src_reg,
-						       add_val, mult_val))))
+		  && general_induction_var (XEXP (temp, 0), &src_reg,
+					    add_val, mult_val, 0, &benefit)))
 	  && src_reg == v->src_reg)
 	{
 	  if (find_reg_note (p, REG_RETVAL, NULL_RTX))
@@ -5794,13 +5988,110 @@ consec_sets_giv (first_benefit, p, src_reg, dest_reg,
    it cannot possibly be a valid address, 0 is returned. 
 
    To perform the computation, we note that
-   	G1 = a * v + b		and
-	G2 = c * v + d
+   	G1 = x * v + a		and
+	G2 = y * v + b
    where `v' is the biv.
 
-   So G2 = (c/a) * G1 + (d - b*c/a)  */
+   So G2 = (y/b) * G1 + (b - a*y/x).
 
-#ifdef ADDRESS_COST
+   Note that MULT = y/x.
+
+   Update: A and B are now allowed to be additive expressions such that
+   B contains all variables in A.  That is, computing B-A will not require
+   subtracting variables.  */
+
+static rtx
+express_from_1 (a, b, mult)
+     rtx a, b, mult;
+{
+  /* If MULT is zero, then A*MULT is zero, and our expression is B.  */
+
+  if (mult == const0_rtx)
+    return b;
+
+  /* If MULT is not 1, we cannot handle A with non-constants, since we
+     would then be required to subtract multiples of the registers in A.
+     This is theoretically possible, and may even apply to some Fortran
+     constructs, but it is a lot of work and we do not attempt it here.  */
+
+  if (mult != const1_rtx && GET_CODE (a) != CONST_INT)
+    return NULL_RTX;
+
+  /* In general these structures are sorted top to bottom (down the PLUS
+     chain), but not left to right across the PLUS.  If B is a higher
+     order giv than A, we can strip one level and recurse.  If A is higher
+     order, we'll eventually bail out, but won't know that until the end.
+     If they are the same, we'll strip one level around this loop.  */
+
+  while (GET_CODE (a) == PLUS && GET_CODE (b) == PLUS)
+    {
+      rtx ra, rb, oa, ob, tmp;
+
+      ra = XEXP (a, 0), oa = XEXP (a, 1);
+      if (GET_CODE (ra) == PLUS)
+        tmp = ra, ra = oa, oa = tmp;
+
+      rb = XEXP (b, 0), ob = XEXP (b, 1);
+      if (GET_CODE (rb) == PLUS)
+        tmp = rb, rb = ob, ob = tmp;
+
+      if (rtx_equal_p (ra, rb))
+	/* We matched: remove one reg completely.  */
+	a = oa, b = ob;
+      else if (GET_CODE (ob) != PLUS && rtx_equal_p (ra, ob))
+	/* An alternate match.  */
+	a = oa, b = rb;
+      else if (GET_CODE (oa) != PLUS && rtx_equal_p (oa, rb))
+	/* An alternate match.  */
+	a = ra, b = ob;
+      else
+	{
+          /* Indicates an extra register in B.  Strip one level from B and 
+	     recurse, hoping B was the higher order expression.  */
+	  ob = express_from_1 (a, ob, mult);
+	  if (ob == NULL_RTX)
+	    return NULL_RTX;
+	  return gen_rtx_PLUS (GET_MODE (b), rb, ob);
+	}
+    }
+
+  /* Here we are at the last level of A, go through the cases hoping to
+     get rid of everything but a constant.  */
+
+  if (GET_CODE (a) == PLUS)
+    {
+      rtx ra, oa, tmp;
+
+      ra = XEXP (a, 0), oa = XEXP (a, 1);
+      if (rtx_equal_p (oa, b))
+	oa = ra;
+      else if (!rtx_equal_p (ra, b))
+	return NULL_RTX;
+
+      if (GET_CODE (oa) != CONST_INT)
+	return NULL_RTX;
+
+      return GEN_INT (-INTVAL (oa) * INTVAL (mult));
+    }
+  else if (GET_CODE (a) == CONST_INT)
+    {
+      return plus_constant (b, -INTVAL (a) * INTVAL (mult));
+    }
+  else if (GET_CODE (b) == PLUS)
+    {
+      if (rtx_equal_p (a, XEXP (b, 0)))
+	return XEXP (b, 1);
+      else if (rtx_equal_p (a, XEXP (b, 1)))
+	return XEXP (b, 0);
+      else
+	return NULL_RTX;
+    }
+  else if (rtx_equal_p (a, b))
+    return const0_rtx;
+
+  return NULL_RTX;
+}
+
 static rtx
 express_from (g1, g2)
      struct induction *g1, *g2;
@@ -5810,15 +6101,25 @@ express_from (g1, g2)
   /* The value that G1 will be multiplied by must be a constant integer.  Also,
      the only chance we have of getting a valid address is if b*c/a (see above
      for notation) is also an integer.  */
-  if (GET_CODE (g1->mult_val) != CONST_INT
-      || GET_CODE (g2->mult_val) != CONST_INT
-      || GET_CODE (g1->add_val) != CONST_INT
-      || g1->mult_val == const0_rtx
-      || INTVAL (g2->mult_val) % INTVAL (g1->mult_val) != 0)
-    return 0;
+  if (GET_CODE (g1->mult_val) == CONST_INT
+      && GET_CODE (g2->mult_val) == CONST_INT)
+    {
+      if (g1->mult_val == const0_rtx
+          || INTVAL (g2->mult_val) % INTVAL (g1->mult_val) != 0)
+        return NULL_RTX;
+      mult = GEN_INT (INTVAL (g2->mult_val) / INTVAL (g1->mult_val));
+    }
+  else if (rtx_equal_p (g1->mult_val, g2->mult_val))
+    mult = const1_rtx;
+  else
+    {
+      /* ??? Find out if the one is a multiple of the other?  */
+      return NULL_RTX;
+    }
 
-  mult = GEN_INT (INTVAL (g2->mult_val) / INTVAL (g1->mult_val));
-  add = plus_constant (g2->add_val, - INTVAL (g1->add_val) * INTVAL (mult));
+  add = express_from_1 (g1->add_val, g2->add_val, mult);
+  if (add == NULL_RTX)
+    return NULL_RTX;
 
   /* Form simplified final result.  */
   if (mult == const0_rtx)
@@ -5833,59 +6134,101 @@ express_from (g1, g2)
   else
     return gen_rtx_PLUS (g2->mode, mult, add);
 }
-#endif
 
 /* Return 1 if giv G2 can be combined with G1.  This means that G2 can use
    (either directly or via an address expression) a register used to represent
    G1.  Set g2->new_reg to a represtation of G1 (normally just
    g1->dest_reg).  */
 
-static int
+static rtx
 combine_givs_p (g1, g2)
      struct induction *g1, *g2;
 {
-#ifdef ADDRESS_COST
-  rtx tem;
-#endif
+  rtx tem = express_from (g1, g2);
 
-  /* If these givs are identical, they can be combined.  */
-  if (rtx_equal_p (g1->mult_val, g2->mult_val)
-      && rtx_equal_p (g1->add_val, g2->add_val))
+  /* If these givs are identical, they can be combined.  We use the results
+     of express_from because the addends are not in a canonical form, so
+     rtx_equal_p is a weaker test.  */
+  if (tem == const0_rtx)
     {
-      g2->new_reg = g1->dest_reg;
-      return 1;
+      return g1->dest_reg;
     }
 
-#ifdef ADDRESS_COST
   /* If G2 can be expressed as a function of G1 and that function is valid
      as an address and no more expensive than using a register for G2,
      the expression of G2 in terms of G1 can be used.  */
-  if (g2->giv_type == DEST_ADDR
-      && (tem = express_from (g1, g2)) != 0
+  if (tem != NULL_RTX
+      && g2->giv_type == DEST_ADDR
       && memory_address_p (g2->mem_mode, tem)
-      && ADDRESS_COST (tem) <= ADDRESS_COST (*g2->location))
-    {
-      g2->new_reg = tem;
-      return 1;
-    }
+      /* ??? Looses, especially with -fforce-addr, where *g2->location
+	 will always be a register, and so anything more complicated
+	 gets discarded.  */
+#if 0
+#ifdef ADDRESS_COST
+      && ADDRESS_COST (tem) <= ADDRESS_COST (*g2->location)
+#else
+      && rtx_cost (tem, MEM) <= rtx_cost (*g2->location, MEM)
 #endif
+#endif
+      )
+    {
+      return tem;
+    }
 
-  return 0;
+  return NULL_RTX;
 }
 
-#ifdef GIV_SORT_CRITERION
-/* Compare two givs and sort the most desirable one for combinations first.
-   This is used only in one qsort call below.  */
+struct combine_givs_stats
+{
+  int giv_number;
+  int total_benefit;
+};
 
 static int
-giv_sort (x, y)
-     struct induction **x, **y;
+cmp_combine_givs_stats (x, y)
+     struct combine_givs_stats *x, *y;
 {
-  GIV_SORT_CRITERION (*x, *y);
+  int d;
+  d = y->total_benefit - x->total_benefit;
+  /* Stabilize the sort.  */
+  if (!d)
+    d = x->giv_number - y->giv_number;
+  return d;
+}
+
+/* If one of these givs is a DEST_REG that was only used once, by the
+   other giv, this is actually a single use.  Return 0 if this is not
+   the case, -1 if g1 is the DEST_REG involved, and 1 if it was g2.  */
+
+static int
+combine_givs_used_once (g1, g2)
+     struct induction *g1, *g2;
+{
+  if (g1->giv_type == DEST_REG
+      && n_times_used[REGNO (g1->dest_reg)] == 1
+      && reg_mentioned_p (g1->dest_reg, PATTERN (g2->insn)))
+    return -1;
+
+  if (g2->giv_type == DEST_REG
+      && n_times_used[REGNO (g2->dest_reg)] == 1
+      && reg_mentioned_p (g2->dest_reg, PATTERN (g1->insn)))
+    return 1;
 
   return 0;
 }
-#endif
+ 
+static int
+combine_givs_benefit_from (g1, g2)
+     struct induction *g1, *g2;
+{
+  int tmp = combine_givs_used_once (g1, g2);
+  if (tmp < 0)
+    return 0;
+  else if (tmp > 0)
+    return g2->benefit - g1->benefit;
+  else
+    return g2->benefit;
+}
 
 /* Check all pairs of givs for iv_class BL and see if any can be combined with
    any other.  If so, point SAME to the giv combined with and set NEW_REG to
@@ -5897,80 +6240,155 @@ combine_givs (bl)
      struct iv_class *bl;
 {
   struct induction *g1, *g2, **giv_array;
-  int i, j, giv_count, pass;
+  int i, j, k, giv_count;
+  struct combine_givs_stats *stats;
+  rtx *can_combine;
 
   /* Count givs, because bl->giv_count is incorrect here.  */
   giv_count = 0;
   for (g1 = bl->giv; g1; g1 = g1->next_iv)
-    giv_count++;
+    if (!g1->ignore)
+      giv_count++;
 
   giv_array
     = (struct induction **) alloca (giv_count * sizeof (struct induction *));
   i = 0;
   for (g1 = bl->giv; g1; g1 = g1->next_iv)
-    giv_array[i++] = g1;
+    if (!g1->ignore)
+      giv_array[i++] = g1;
 
-#ifdef GIV_SORT_CRITERION
-  /* Sort the givs if GIV_SORT_CRITERION is defined.
-     This is usually defined for processors which lack
-     negative register offsets so more givs may be combined.  */
+  stats = (struct combine_givs_stats *) alloca (giv_count * sizeof (*stats));
+  bzero (stats, giv_count * sizeof (*stats));
 
-  if (loop_dump_stream)
-    fprintf (loop_dump_stream, "%d givs counted, sorting...\n", giv_count);
-
-  qsort (giv_array, giv_count, sizeof (struct induction *), giv_sort);
-#endif
+  can_combine = (rtx *) alloca (giv_count * giv_count * sizeof(rtx));
+  bzero (can_combine, giv_count * giv_count * sizeof(rtx));
 
   for (i = 0; i < giv_count; i++)
     {
-      g1 = giv_array[i];
-      for (pass = 0; pass <= 1; pass++)
-	for (j = 0; j < giv_count; j++)
-	  {
-	    g2 = giv_array[j];
-	    if (g1 != g2
-		/* First try to combine with replaceable givs, then all givs.  */
-		&& (g1->replaceable || pass == 1)
-		/* If either has already been combined or is to be ignored, can't
-		   combine.  */
-		&& ! g1->ignore && ! g2->ignore && ! g1->same && ! g2->same
-		/* If something has been based on G2, G2 cannot itself be based
-		   on something else.  */
-		&& ! g2->combined_with
-		&& combine_givs_p (g1, g2))
-	      {
-		/* g2->new_reg set by `combine_givs_p'  */
-		g2->same = g1;
-		g1->combined_with = 1;
+      int this_benefit;
 
-		/* If one of these givs is a DEST_REG that was only used
-		   once, by the other giv, this is actually a single use.
-		   The DEST_REG has the correct cost, while the other giv
-		   counts the REG use too often.  */
-		if (g2->giv_type == DEST_REG
-		    && n_times_used[REGNO (g2->dest_reg)] == 1
-		    && reg_mentioned_p (g2->dest_reg, PATTERN (g1->insn)))
-		  g1->benefit = g2->benefit;
-		else if (g1->giv_type != DEST_REG
-			 || n_times_used[REGNO (g1->dest_reg)] != 1
-			 || ! reg_mentioned_p (g1->dest_reg,
-					       PATTERN (g2->insn)))
-		  {
-		    g1->benefit += g2->benefit;
-		    g1->times_used += g2->times_used;
-		  }
-		/* ??? The new final_[bg]iv_value code does a much better job
-		   of finding replaceable giv's, and hence this code may no
-		   longer be necessary.  */
-		if (! g2->replaceable && REG_USERVAR_P (g2->dest_reg))
-		  g1->benefit -= copy_cost;
-		g1->lifetime += g2->lifetime;
+      g1 = giv_array[i];
+
+      this_benefit = g1->benefit;
+      /* Add an additional weight for zero addends.  */
+      if (g1->no_const_addval)
+	this_benefit += 1;
+      for (j = 0; j < giv_count; j++)
+	{
+	  rtx this_combine;
+
+	  g2 = giv_array[j];
+	  if (g1 != g2
+	      && (this_combine = combine_givs_p (g1, g2)) != NULL_RTX)
+	    {
+	      can_combine[i*giv_count + j] = this_combine;
+	      this_benefit += combine_givs_benefit_from (g1, g2);
+	      /* Add an additional weight for being reused more times.  */
+	      this_benefit += 3;
+	    }
+	}
+      stats[i].giv_number = i;
+      stats[i].total_benefit = this_benefit;
+    }
+
+  /* Iterate, combining until we can't.  */
+restart:
+  qsort (stats, giv_count, sizeof(*stats), cmp_combine_givs_stats);
+
+  if (loop_dump_stream)
+    {
+      fprintf (loop_dump_stream, "Sorted combine statistics:\n");
+      for (k = 0; k < giv_count; k++)
+	{
+	  g1 = giv_array[stats[k].giv_number];
+	  if (!g1->combined_with && !g1->same)
+	    fprintf (loop_dump_stream, " {%d, %d}", 
+		     INSN_UID (giv_array[stats[k].giv_number]->insn),
+		     stats[k].total_benefit);
+	}
+      putc ('\n', loop_dump_stream);
+    }
+
+  for (k = 0; k < giv_count; k++)
+    {
+      int g1_add_benefit = 0;
+
+      i = stats[k].giv_number;
+      g1 = giv_array[i];
+
+      /* If it has already been combined, skip.  */
+      if (g1->combined_with || g1->same)
+	continue;
+
+      for (j = 0; j < giv_count; j++)
+	{
+	  g2 = giv_array[j];
+	  if (g1 != g2 && can_combine[i*giv_count + j]
+	      /* If it has already been combined, skip.  */
+	      && ! g2->same && ! g2->combined_with)
+	    {
+	      int l;
+
+	      g2->new_reg = can_combine[i*giv_count + j];
+	      g2->same = g1;
+	      g1->combined_with = 1;
+	      if (!combine_givs_used_once (g1, g2))
+		g1->times_used += 1;
+	      g1->lifetime += g2->lifetime;
+
+	      g1_add_benefit += combine_givs_benefit_from (g1, g2);
+
+	      /* ??? The new final_[bg]iv_value code does a much better job
+		 of finding replaceable giv's, and hence this code may no
+		 longer be necessary.  */
+	      if (! g2->replaceable && REG_USERVAR_P (g2->dest_reg))
+		g1_add_benefit -= copy_cost;
 		
-		if (loop_dump_stream)
-		  fprintf (loop_dump_stream, "giv at %d combined with giv at %d\n",
-			   INSN_UID (g2->insn), INSN_UID (g1->insn));
-	      }
-	  }
+	      /* To help optimize the next set of combinations, remove
+		 this giv from the benefits of other potential mates.  */
+	      for (l = 0; l < giv_count; ++l)
+		{
+		  int m = stats[l].giv_number;
+		  if (can_combine[m*giv_count + j])
+		    {
+		      /* Remove additional weight for being reused.  */
+		      stats[l].total_benefit -= 3 + 
+			combine_givs_benefit_from (giv_array[m], g2);
+		    }
+		}
+
+	      if (loop_dump_stream)
+		fprintf (loop_dump_stream,
+			 "giv at %d combined with giv at %d\n",
+			 INSN_UID (g2->insn), INSN_UID (g1->insn));
+	    }
+	}
+
+      /* To help optimize the next set of combinations, remove
+	 this giv from the benefits of other potential mates.  */
+      if (g1->combined_with)
+	{
+	  for (j = 0; j < giv_count; ++j)
+	    {
+	      int m = stats[j].giv_number;
+	      if (can_combine[m*giv_count + j])
+		{
+		  /* Remove additional weight for being reused.  */
+		  stats[j].total_benefit -= 3 + 
+		    combine_givs_benefit_from (giv_array[m], g1);
+		}
+	    }
+
+	  g1->benefit += g1_add_benefit;
+
+	  /* We've finished with this giv, and everything it touched.
+	     Restart the combination so that proper weights for the 
+	     rest of the givs are properly taken into account.  */
+	  /* ??? Ideally we would compact the arrays at this point, so
+	     as to not cover old ground.  But sanely compacting
+	     can_combine is tricky.  */
+	  goto restart;
+	}
     }
 }
 
@@ -7262,8 +7680,8 @@ get_condition_for_loop (x)
     loop_comparison_code[loop_num] */
 
 #ifdef HAVE_decrement_and_branch_on_count
-static
-void analyze_loop_iterations (loop_start, loop_end)
+static void
+analyze_loop_iterations (loop_start, loop_end)
   rtx loop_start, loop_end;
 {
   rtx comparison, comparison_value;

@@ -1928,6 +1928,11 @@ operand_equal_p (arg0, arg1, only_const)
 	default:
 	  return 0;
 	}
+
+    case 'e':
+      if (TREE_CODE (arg0) == RTL_EXPR)
+	return rtx_equal_p (RTL_EXPR_RTL (arg0), RTL_EXPR_RTL (arg1));
+      return 0;
       
     default:
       return 0;
@@ -4413,18 +4418,36 @@ fold (expr)
 	      goto bit_ior;
 	    }
 
-	  /* (A * C) + (B * C) -> (A+B) * C.  Since we are most concerned
-	     about the case where C is a constant, just try one of the
-	     four possibilities.  */
+	  if (TREE_CODE (arg0) == MULT_EXPR && TREE_CODE (arg1) == MULT_EXPR)
+	    {
+	      tree arg00, arg01, arg10, arg11;
+	      tree alt0, alt1, same;
 
-	  if (TREE_CODE (arg0) == MULT_EXPR && TREE_CODE (arg1) == MULT_EXPR
-	      && operand_equal_p (TREE_OPERAND (arg0, 1),
-				  TREE_OPERAND (arg1, 1), 0))
-	    return fold (build (MULT_EXPR, type,
-				fold (build (PLUS_EXPR, type,
-					     TREE_OPERAND (arg0, 0),
-					     TREE_OPERAND (arg1, 0))),
-				TREE_OPERAND (arg0, 1)));
+	      /* (A * C) + (B * C) -> (A+B) * C.
+		 We are most concerned about the case where C is a constant,
+		 but other combinations show up during loop reduction.  Since
+		 it is not difficult, try all four possibilities.  */
+
+	      arg00 = TREE_OPERAND (arg0, 0);
+	      arg01 = TREE_OPERAND (arg0, 1);
+	      arg10 = TREE_OPERAND (arg1, 0);
+	      arg11 = TREE_OPERAND (arg1, 1);
+	      same = NULL_TREE;
+
+	      if (operand_equal_p (arg01, arg11, 0))
+		same = arg01, alt0 = arg00, alt1 = arg10;
+	      else if (operand_equal_p (arg00, arg10, 0))
+		same = arg00, alt0 = arg01, alt1 = arg11;
+	      else if (operand_equal_p (arg00, arg11, 0))
+		same = arg00, alt0 = arg01, alt1 = arg10;
+	      else if (operand_equal_p (arg01, arg10, 0))
+		same = arg01, alt0 = arg00, alt1 = arg11;
+
+	      if (same)
+	        return fold (build (MULT_EXPR, type,
+				    fold (build (PLUS_EXPR, type, alt0, alt1)),
+				    same));
+	    }
 	}
       /* In IEEE floating point, x+0 may not equal x.  */
       else if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
