@@ -49,23 +49,23 @@ Boston, MA 02111-1307, USA.  */
    if SGS_SWITCH_TABLE.  */
 int switch_table_difference_label_flag;
 
-static rtx find_addr_reg PARAMS ((rtx));
-static const char *singlemove_string PARAMS ((rtx *));
-static void m68k_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
-static void m68k_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
-static void m68k_coff_asm_named_section PARAMS ((const char *, unsigned int));
+static rtx find_addr_reg (rtx);
+static const char *singlemove_string (rtx *);
+static void m68k_output_function_prologue (FILE *, HOST_WIDE_INT);
+static void m68k_output_function_epilogue (FILE *, HOST_WIDE_INT);
+static void m68k_coff_asm_named_section (const char *, unsigned int);
 #ifdef CTOR_LIST_BEGIN
-static void m68k_svr3_asm_out_constructor PARAMS ((rtx, int));
+static void m68k_svr3_asm_out_constructor (rtx, int);
 #endif
 #ifdef HPUX_ASM
-static void m68k_hp320_internal_label PARAMS ((FILE *, const char *, unsigned long));
-static void m68k_hp320_file_start PARAMS ((void));
+static void m68k_hp320_internal_label (FILE *, const char *, unsigned long);
+static void m68k_hp320_file_start (void);
 #endif
-static void m68k_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT,
-					  HOST_WIDE_INT, tree));
-static int m68k_save_reg PARAMS ((unsigned int));
-static int const_int_cost PARAMS ((rtx));
-static bool m68k_rtx_costs PARAMS ((rtx, int, int, int *));
+static void m68k_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
+					  HOST_WIDE_INT, tree);
+static int m68k_save_reg (unsigned int);
+static int const_int_cost (rtx);
+static bool m68k_rtx_costs (rtx, int, int, int *);
 
 
 /* Alignment to use for loops and jumps */
@@ -150,7 +150,7 @@ struct gcc_target targetm = TARGET_INITIALIZER;
    `-O'.  That is what `OPTIMIZATION_OPTIONS' is for.  */
 
 void
-override_options ()
+override_options (void)
 {
   int def_align;
   int i;
@@ -218,8 +218,7 @@ override_options ()
 
 /* Return 1 if we need to save REGNO.  */
 static int
-m68k_save_reg (regno)
-     unsigned int regno;
+m68k_save_reg (unsigned int regno)
 {
   if (flag_pic && current_function_uses_pic_offset_table
       && regno == PIC_OFFSET_TABLE_REGNUM)
@@ -257,9 +256,7 @@ m68k_save_reg (regno)
    of the order for movem!  */
 
 static void
-m68k_output_function_prologue (stream, size)
-     FILE *stream;
-     HOST_WIDE_INT size;
+m68k_output_function_prologue (FILE *stream, HOST_WIDE_INT size)
 {
   register int regno;
   register int mask = 0;
@@ -604,9 +601,7 @@ use_return_insn ()
    omit stack adjustments before returning.  */
 
 static void
-m68k_output_function_epilogue (stream, size)
-     FILE *stream;
-     HOST_WIDE_INT size;
+m68k_output_function_epilogue (FILE *stream, HOST_WIDE_INT size)
 {
   register int regno;
   register int mask, fmask;
@@ -876,14 +871,12 @@ m68k_output_function_epilogue (stream, size)
 /* Similar to general_operand, but exclude stack_pointer_rtx.  */
 
 int
-not_sp_operand (op, mode)
-     register rtx op;
-     enum machine_mode mode;
+not_sp_operand (rtx op, enum machine_mode mode)
 {
   return op != stack_pointer_rtx && nonimmediate_operand (op, mode);
 }
 
-/* Return TRUE if X is a valid comparison operator for the dbcc 
+/* Return true if X is a valid comparison operator for the dbcc 
    instruction.  
 
    Note it rejects floating point comparison operators.
@@ -892,9 +885,7 @@ not_sp_operand (op, mode)
    It also rejects some comparisons when CC_NO_OVERFLOW is set.  */
    
 int
-valid_dbcc_comparison_p (x, mode)
-     rtx x;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+valid_dbcc_comparison_p (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   switch (GET_CODE (x))
     {
@@ -913,7 +904,7 @@ valid_dbcc_comparison_p (x, mode)
 
 /* Return nonzero if flags are currently in the 68881 flag register.  */
 int
-flags_in_68881 ()
+flags_in_68881 (void)
 {
   /* We could add support for these in the future */
   return cc_status.flags & CC_IN_68881;
@@ -926,8 +917,7 @@ flags_in_68881 ()
    kick those out before we get here.  */
 
 void
-output_dbcc_and_branch (operands)
-     rtx *operands;
+output_dbcc_and_branch (rtx *operands)
 {
   switch (GET_CODE (operands[3]))
     {
@@ -1036,11 +1026,7 @@ output_dbcc_and_branch (operands)
 }
 
 const char *
-output_scc_di(op, operand1, operand2, dest)
-     rtx op;
-     rtx operand1;
-     rtx operand2;
-     rtx dest;
+output_scc_di(rtx op, rtx operand1, rtx operand2, rtx dest)
 {
   rtx loperands[7];
   enum rtx_code op_code = GET_CODE (op);
@@ -1223,11 +1209,7 @@ output_scc_di(op, operand1, operand2, dest)
 }
 
 const char *
-output_btst (operands, countop, dataop, insn, signpos)
-     rtx *operands;
-     rtx countop, dataop;
-     rtx insn;
-     int signpos;
+output_btst (rtx *operands, rtx countop, rtx dataop, rtx insn, int signpos)
 {
   operands[0] = countop;
   operands[1] = dataop;
@@ -1265,19 +1247,17 @@ output_btst (operands, countop, dataop, insn, signpos)
   return "btst %0,%1";
 }
 
-/* Returns 1 if OP is either a symbol reference or a sum of a symbol
+/* Returns true if OP is either a symbol reference or a sum of a symbol
    reference and a constant.  */
 
-int
-symbolic_operand (op, mode)
-     register rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+bool
+symbolic_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   switch (GET_CODE (op))
     {
     case SYMBOL_REF:
     case LABEL_REF:
-      return 1;
+      return true;
 
     case CONST:
       op = XEXP (op, 0);
@@ -1292,16 +1272,14 @@ symbolic_operand (op, mode)
 #endif
 
     default:
-      return 0;
+      return false;
     }
 }
 
 /* Check for sign_extend or zero_extend.  Used for bit-count operands.  */
 
 int
-extend_operator(x, mode)
-     rtx x;
-     enum machine_mode mode;
+extend_operator(rtx x, enum machine_mode mode)
 {
     if (mode != VOIDmode && GET_MODE(x) != mode)
 	return 0;
@@ -1357,9 +1335,8 @@ extend_operator(x, mode)
    handled.  */
 
 rtx
-legitimize_pic_address (orig, mode, reg)
-     rtx orig, reg;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+legitimize_pic_address (rtx orig, enum machine_mode mode ATTRIBUTE_UNUSED,
+		        rtx reg)
 {
   rtx pic_ref = orig;
 
@@ -1409,13 +1386,12 @@ legitimize_pic_address (orig, mode, reg)
 
 typedef enum { MOVL, SWAP, NEGW, NOTW, NOTB, MOVQ } CONST_METHOD;
 
-static CONST_METHOD const_method PARAMS ((rtx));
+static CONST_METHOD const_method (rtx);
 
 #define USE_MOVQ(i)	((unsigned)((i) + 128) <= 255)
 
 static CONST_METHOD
-const_method (constant)
-     rtx constant;
+const_method (rtx constant)
 {
   int i;
   unsigned u;
@@ -1448,8 +1424,7 @@ const_method (constant)
 }
 
 static int
-const_int_cost (constant)
-     rtx constant;
+const_int_cost (rtx constant)
 {
   switch (const_method (constant))
     {
@@ -1470,10 +1445,7 @@ const_int_cost (constant)
 }
 
 static bool
-m68k_rtx_costs (x, code, outer_code, total)
-     rtx x;
-     int code, outer_code;
-     int *total;
+m68k_rtx_costs (rtx x, int code, int outer_code, int *total)
 {
   switch (code)
     {
@@ -1596,8 +1568,7 @@ m68k_rtx_costs (x, code, outer_code, total)
 }
 
 const char *
-output_move_const_into_data_reg (operands)
-     rtx *operands;
+output_move_const_into_data_reg (rtx *operands)
 {
   int i;
 
@@ -1629,8 +1600,7 @@ output_move_const_into_data_reg (operands)
 }
 
 const char *
-output_move_simode_const (operands)
-     rtx *operands;
+output_move_simode_const (rtx *operands)
 {
   if (operands[1] == const0_rtx
       && (DATA_REG_P (operands[0])
@@ -1660,8 +1630,7 @@ output_move_simode_const (operands)
 }
 
 const char *
-output_move_simode (operands)
-     rtx *operands;
+output_move_simode (rtx *operands)
 {
   if (GET_CODE (operands[1]) == CONST_INT)
     return output_move_simode_const (operands);
@@ -1677,8 +1646,7 @@ output_move_simode (operands)
 }
 
 const char *
-output_move_himode (operands)
-     rtx *operands;
+output_move_himode (rtx *operands)
 {
  if (GET_CODE (operands[1]) == CONST_INT)
     {
@@ -1740,8 +1708,7 @@ output_move_himode (operands)
 }
 
 const char *
-output_move_qimode (operands)
-     rtx *operands;
+output_move_qimode (rtx *operands)
 {
   rtx xoperands[4];
 
@@ -1806,8 +1773,7 @@ output_move_qimode (operands)
 }
 
 const char *
-output_move_stricthi (operands)
-     rtx *operands;
+output_move_stricthi (rtx *operands)
 {
   if (operands[1] == const0_rtx
       /* clr insns on 68000 read before writing.
@@ -1819,8 +1785,7 @@ output_move_stricthi (operands)
 }
 
 const char *
-output_move_strictqi (operands)
-     rtx *operands;
+output_move_strictqi (rtx *operands)
 {
   if (operands[1] == const0_rtx
       /* clr insns on 68000 read before writing.
@@ -1835,8 +1800,7 @@ output_move_strictqi (operands)
    for moving operands[1] into operands[0] as a fullword.  */
 
 static const char *
-singlemove_string (operands)
-     rtx *operands;
+singlemove_string (rtx *operands)
 {
   if (GET_CODE (operands[1]) == CONST_INT)
     return output_move_simode_const (operands);
@@ -1848,8 +1812,7 @@ singlemove_string (operands)
    with operands OPERANDS.  */
 
 const char *
-output_move_double (operands)
-     rtx *operands;
+output_move_double (rtx *operands)
 {
   enum
     {
@@ -2202,8 +2165,7 @@ compadr:
    ADDR can be effectively incremented by incrementing REG.  */
 
 static rtx
-find_addr_reg (addr)
-     rtx addr;
+find_addr_reg (rtx addr)
 {
   while (GET_CODE (addr) == PLUS)
     {
@@ -2226,8 +2188,7 @@ find_addr_reg (addr)
 /* Output assembler code to perform a 32 bit 3 operand add.  */
 
 const char *
-output_addsi3 (operands)
-     rtx *operands;
+output_addsi3 (rtx *operands)
 {
   if (! operands_match_p (operands[0], operands[1]))
     {
@@ -2249,8 +2210,7 @@ output_addsi3 (operands)
 	return "lea 0(%1,%2.l),%0";
       else
 	return "lea %c2(%1),%0";
-#else /* not SGS */
-#ifdef MOTOROLA
+#elif defined(MOTOROLA)
       if (GET_CODE (operands[2]) == REG)
 	return "lea (%1,%2.l),%0";
       else
@@ -2261,7 +2221,6 @@ output_addsi3 (operands)
       else
 	return "lea %1@(%c2),%0";
 #endif /* not MOTOROLA */
-#endif /* not SGS */
     }
   if (GET_CODE (operands[2]) == CONST_INT)
     {
@@ -2319,9 +2278,7 @@ output_addsi3 (operands)
    some or all of the saved cc's so they won't be used.  */
 
 void
-notice_update_cc (exp, insn)
-     rtx exp;
-     rtx insn;
+notice_update_cc (rtx exp, rtx insn)
 {
   if (GET_CODE (exp) == SET)
     {
@@ -2416,8 +2373,7 @@ notice_update_cc (exp, insn)
 }
 
 const char *
-output_move_const_double (operands)
-     rtx *operands;
+output_move_const_double (rtx *operands)
 {
   int code = standard_68881_constant_p (operands[1]);
 
@@ -2432,8 +2388,7 @@ output_move_const_double (operands)
 }
 
 const char *
-output_move_const_single (operands)
-     rtx *operands;
+output_move_const_single (rtx *operands)
 {
   int code = standard_68881_constant_p (operands[1]);
 
@@ -2482,7 +2437,7 @@ REAL_VALUE_TYPE values_68881[7];
    strings_68881 to binary.  */
 
 void
-init_68881_table ()
+init_68881_table (void)
 {
   int i;
   REAL_VALUE_TYPE r;
@@ -2500,8 +2455,7 @@ init_68881_table ()
 }
 
 int
-standard_68881_constant_p (x)
-     rtx x;
+standard_68881_constant_p (rtx x)
 {
   REAL_VALUE_TYPE r;
   int i;
@@ -2539,8 +2493,7 @@ standard_68881_constant_p (x)
    or 0 if X is not a power of 2.  */
 
 int
-floating_exact_log2 (x)
-     rtx x;
+floating_exact_log2 (rtx x)
 {
   REAL_VALUE_TYPE r, r1;
   int exp;
@@ -2605,10 +2558,7 @@ floating_exact_log2 (x)
    */
 
 void
-print_operand (file, op, letter)
-     FILE *file;		/* file to write to */
-     rtx op;			/* operand to print */
-     int letter;		/* %<letter> or 0 */
+print_operand (FILE *file, rtx op, int letter)
 {
   if (letter == '.')
     {
@@ -2777,9 +2727,7 @@ print_operand (file, op, letter)
 #endif /* ASM_OUTPUT_CASE_FETCH */
 
 void
-print_operand_address (file, addr)
-     FILE *file;
-     rtx addr;
+print_operand_address (FILE *file, rtx addr)
 {
   register rtx reg1, reg2, breg, ireg;
   rtx offset;
@@ -3085,11 +3033,9 @@ print_operand_address (file, addr)
    insn we are checking for redundancy.  TARGET is the register set by the
    clear insn.  */
 
-int
-strict_low_part_peephole_ok (mode, first_insn, target)
-     enum machine_mode mode;
-     rtx first_insn;
-     rtx target;
+bool
+strict_low_part_peephole_ok (enum machine_mode mode, rtx first_insn,
+                             rtx target)
 {
   rtx p;
 
@@ -3099,7 +3045,7 @@ strict_low_part_peephole_ok (mode, first_insn, target)
     {
       /* If it isn't an insn, then give up.  */
       if (GET_CODE (p) != INSN)
-	return 0;
+	return false;
 
       if (reg_set_p (target, p))
 	{
@@ -3108,7 +3054,7 @@ strict_low_part_peephole_ok (mode, first_insn, target)
 
 	  /* If it isn't an easy to recognize insn, then give up.  */
 	  if (! set)
-	    return 0;
+	    return false;
 
 	  dest = SET_DEST (set);
 
@@ -3116,7 +3062,7 @@ strict_low_part_peephole_ok (mode, first_insn, target)
 	     first_insn is redundant.  */
 	  if (rtx_equal_p (dest, target)
 	      && SET_SRC (set) == const0_rtx)
-	    return 1;
+	    return true;
 	  else if (GET_CODE (dest) == STRICT_LOW_PART
 		   && GET_CODE (XEXP (dest, 0)) == REG
 		   && REGNO (XEXP (dest, 0)) == REGNO (target)
@@ -3126,14 +3072,14 @@ strict_low_part_peephole_ok (mode, first_insn, target)
 	       we are using, so it is safe.  */
 	    ;
 	  else
-	    return 0;
+	    return false;
 	}
 
       p = prev_nonnote_insn (p);
 
     }
 
-  return 0;
+  return false;
 }
 
 /* Accept integer operands in the range 0..0xffffffff.  We have to check the
@@ -3141,9 +3087,7 @@ strict_low_part_peephole_ok (mode, first_insn, target)
    need some extra crud to make it work when hosted on 64-bit machines.  */
 
 int
-const_uint32_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+const_uint32_operand (rtx op, enum machine_mode mode)
 {
   /* It doesn't make sense to ask this question with a mode that is
      not larger than 32 bits.  */
@@ -3165,9 +3109,7 @@ const_uint32_operand (op, mode)
    contexts.  */
 
 int
-const_sint32_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+const_sint32_operand (rtx op, enum machine_mode mode)
 {
   /* It doesn't make sense to ask this question with a mode that is
      not larger than 32 bits.  */
@@ -3241,9 +3183,7 @@ const_sint32_operand (op, mode)
    is specified.  */
 
 int
-general_src_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+general_src_operand (rtx op, enum machine_mode mode)
 {
   if (TARGET_PCREL
       && GET_CODE (op) == MEM
@@ -3259,9 +3199,7 @@ general_src_operand (op, mode)
    is specified.  */
 
 int
-nonimmediate_src_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+nonimmediate_src_operand (rtx op, enum machine_mode mode)
 {
   if (TARGET_PCREL && GET_CODE (op) == MEM
       && (GET_CODE (XEXP (op, 0)) == SYMBOL_REF
@@ -3276,9 +3214,7 @@ nonimmediate_src_operand (op, mode)
    is specified.  */
 
 int
-memory_src_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+memory_src_operand (rtx op, enum machine_mode mode)
 {
   if (TARGET_PCREL && GET_CODE (op) == MEM
       && (GET_CODE (XEXP (op, 0)) == SYMBOL_REF
@@ -3293,17 +3229,14 @@ memory_src_operand (op, mode)
    "general_src_operand".  */
 
 int
-pcrel_address (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+pcrel_address (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF
 	  || GET_CODE (op) == CONST);
 }
 
 const char *
-output_andsi3 (operands)
-     rtx *operands;
+output_andsi3 (rtx *operands)
 {
   int logval;
   if (GET_CODE (operands[2]) == CONST_INT
@@ -3343,8 +3276,7 @@ output_andsi3 (operands)
 }
 
 const char *
-output_iorsi3 (operands)
-     rtx *operands;
+output_iorsi3 (rtx *operands)
 {
   register int logval;
   if (GET_CODE (operands[2]) == CONST_INT
@@ -3380,8 +3312,7 @@ output_iorsi3 (operands)
 }
 
 const char *
-output_xorsi3 (operands)
-     rtx *operands;
+output_xorsi3 (rtx *operands)
 {
   register int logval;
   if (GET_CODE (operands[2]) == CONST_INT
@@ -3418,9 +3349,7 @@ output_xorsi3 (operands)
 /* Output assembly to switch to section NAME with attribute FLAGS.  */
 
 static void
-m68k_coff_asm_named_section (name, flags)
-     const char *name;
-     unsigned int flags;
+m68k_coff_asm_named_section (const char *name, unsigned int flags)
 {
   char flagchar;
 
@@ -3434,9 +3363,7 @@ m68k_coff_asm_named_section (name, flags)
 
 #ifdef CTOR_LIST_BEGIN
 static void
-m68k_svr3_asm_out_constructor (symbol, priority)
-     rtx symbol;
-     int priority ATTRIBUTE_UNUSED;
+m68k_svr3_asm_out_constructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
 {
   rtx xop[2];
 
@@ -3450,10 +3377,8 @@ m68k_svr3_asm_out_constructor (symbol, priority)
 
 #ifdef HPUX_ASM
 static void
-m68k_hp320_internal_label (stream, prefix, labelno)
-     FILE *stream;
-     const char *prefix;
-     unsigned long labelno;
+m68k_hp320_internal_label (FILE *stream, const char *prefix,
+                           unsigned long labelno)
 {
   if (prefix[0] == 'L' && prefix[1] == 'I')
     fprintf(stream, "\tset %s%ld,.+2\n", prefix, labelno);
@@ -3462,7 +3387,7 @@ m68k_hp320_internal_label (stream, prefix, labelno)
 }
 
 static void
-m68k_hp320_file_start ()
+m68k_hp320_file_start (void)
 {
   /* version 1: 68010.
              2: 68020 without FPU.
@@ -3473,12 +3398,10 @@ m68k_hp320_file_start ()
 #endif
 
 static void
-m68k_output_mi_thunk (file, thunk, delta, vcall_offset, function)
-     FILE *file;
-     tree thunk ATTRIBUTE_UNUSED;
-     HOST_WIDE_INT delta;
-     HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED;
-     tree function;
+m68k_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
+		      HOST_WIDE_INT delta,
+		      HOST_WIDE_INT vcall_offset ATTRIBUTE_UNUSED,
+		      tree function)
 {
   rtx xops[1];
   const char *fmt;

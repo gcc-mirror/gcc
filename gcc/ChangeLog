@@ -1,3 +1,8 @@
+2003-08-22  Bernardo Innocenti  <bernie@develer.com>
+
+	* config/m68k/m68k-protos.h: Convert to ISO C90.
+	* config/m68k/m68k.c: Likewise.
+
 2003-08-21  Bernardo Innocenti  <bernie@develer.com>
             Paul Dale  <pauli@snapgear.com>
             Peter Barada <peter@baradas.org>
