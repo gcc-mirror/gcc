@@ -1,3 +1,8 @@
+Thu Jun 29 09:42:40 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* g77.f-torture/compile/20000629-1.f: New test.
+	* g77.f-torture/compile/20000629-1.x: Expected to fail.
+
 2000-06-28  Zack Weinberg  <zack@wolery.cumb.org>
 
 	Rearrange lots of files, removing entirely the
