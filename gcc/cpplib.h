@@ -329,6 +329,12 @@ struct cpp_options
   /* True for traditional preprocessing.  */
   unsigned char traditional;
 
+  /* True to warn about precompiled header files we couldn't use.  */
+  bool warn_invalid_pch;
+
+  /* True if dependencies should be restored from a precompiled header.  */
+  bool restore_pch_deps;
+
   /* Dependency generation.  */
   struct
   {
@@ -355,14 +361,11 @@ struct cpp_options
   /* True means chars (wide chars) are unsigned.  */
   bool unsigned_char, unsigned_wchar;
 
+  /* True if target is EBCDIC.  */
+  bool EBCDIC;
+
   /* Nonzero means __STDC__ should have the value 0 in system headers.  */
   unsigned char stdc_0_in_system_headers;
-
-  /* True to warn about precompiled header files we couldn't use.  */
-  bool warn_invalid_pch;
-
-  /* True if dependencies should be restored from a precompiled header.  */
-  bool restore_pch_deps;
 };
 
 /* Call backs.  */

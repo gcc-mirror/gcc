@@ -1,5 +1,13 @@
 2003-03-17  Neil Booth  <neil@daikokuya.co.uk>
 
+	* c-opts.c: Default TARGET_EBCDIC to 0 if not defined.
+	(c_common_init): Set EBCDIC in cpp options.
+	* cpplex.c (maybe_read_ucs, cpp_parse_escape): Use EBCDIC option,
+	not conditional compilation.
+	* cpplib.h (struct cpp_options): New entry EBCDIC.
+
+2003-03-17  Neil Booth  <neil@daikokuya.co.uk>
+
 	* fix-header.c (read_scan_file): Need to malloc arguments to add_path.
 
 2003-03-17  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
