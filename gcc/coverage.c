@@ -392,16 +392,17 @@ coverage_counter_alloc (unsigned counter, unsigned num)
       /* We don't know the size yet; make it big enough that nobody
 	 will make any clever transformation on it.  */
       char buf[20];
+      tree gcov_type_node = get_gcov_type ();
       tree domain_tree
         = build_index_type (build_int_cst (NULL_TREE, 1000)); /* replaced later */
       tree gcov_type_array_type
-        = build_array_type (GCOV_TYPE_NODE, domain_tree);
+        = build_array_type (gcov_type_node, domain_tree);
       tree_ctr_tables[counter]
         = build_decl (VAR_DECL, NULL_TREE, gcov_type_array_type);
       TREE_STATIC (tree_ctr_tables[counter]) = 1;
       ASM_GENERATE_INTERNAL_LABEL (buf, "LPBX", counter + 1);
       DECL_NAME (tree_ctr_tables[counter]) = get_identifier (buf);
-      DECL_ALIGN (tree_ctr_tables[counter]) = TYPE_ALIGN (GCOV_TYPE_NODE);
+      DECL_ALIGN (tree_ctr_tables[counter]) = TYPE_ALIGN (gcov_type_node);
     }
   fn_b_ctrs[counter] = fn_n_ctrs[counter];
   fn_n_ctrs[counter] += num;
@@ -440,18 +441,19 @@ rtl_coverage_counter_ref (unsigned counter, unsigned no)
 tree
 tree_coverage_counter_ref (unsigned counter, unsigned no)
 {
+  tree gcov_type_node = get_gcov_type ();
   tree domain_type = TYPE_DOMAIN (TREE_TYPE (tree_ctr_tables[counter]));
 
   gcc_assert (no < fn_n_ctrs[counter] - fn_b_ctrs[counter]);
   no += prg_n_ctrs[counter] + fn_b_ctrs[counter];
 
   /* "no" here is an array index, scaled to bytes later.  */
-  return build4 (ARRAY_REF, GCOV_TYPE_NODE, tree_ctr_tables[counter],
+  return build4 (ARRAY_REF, gcov_type_node, tree_ctr_tables[counter],
 		 fold_convert (domain_type,
 			       build_int_cst (NULL_TREE, no)),
 		 TYPE_MIN_VALUE (domain_type),
-		 size_binop (EXACT_DIV_EXPR, TYPE_SIZE_UNIT (GCOV_TYPE_NODE),
-			     size_int (TYPE_ALIGN_UNIT (GCOV_TYPE_NODE))));
+		 size_binop (EXACT_DIV_EXPR, TYPE_SIZE_UNIT (gcov_type_node),
+			     size_int (TYPE_ALIGN_UNIT (gcov_type_node))));
 }
 
 /* Generate a checksum for a string.  CHKSUM is the current
@@ -685,7 +687,7 @@ build_ctr_info_type (void)
 {
   tree type = lang_hooks.types.make_type (RECORD_TYPE);
   tree field, fields = NULL_TREE;
-  tree gcov_ptr_type = build_pointer_type (GCOV_TYPE_NODE);
+  tree gcov_ptr_type = build_pointer_type (get_gcov_type ());
   tree gcov_merge_fn_type;
 
   /* counters */

@@ -1,5 +1,14 @@
 2004-04-06  Richard Sandiford  <rsandifo@redhat.com>
 
+	* coverage.h (GCOV_TYPE_NODE): Delete.
+	* coverage.c (coverage_counter_alloc, tree_coverage_counter_ref)
+	(build_ctr_info_type): Use get_gcov_type () instead of GCOV_TYPE_NODE.
+	* tree-profile.c (tree_gen_edge_profiler, tree_gen_interval_profiler)
+	(tree_gen_pow2_profiler, tree_gen_one_value_profiler): Likewise.
+	* value-prof.c (tree_divmod_fixed_value_transform): Delete.
+
+2004-04-06  Richard Sandiford  <rsandifo@redhat.com>
+
 	PR other/20792
 	* Makefile.in (gcc.pot): Remove options.c dependency.
 	* optc-gen.awk: Don't quote help strings with N_().
