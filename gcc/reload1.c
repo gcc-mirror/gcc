@@ -387,7 +387,7 @@ static int reload_reg_reaches_end_p	PROTO((int, int, enum reload_type));
 static int allocate_reload_reg		PROTO((int, rtx, int, int));
 static void choose_reload_regs		PROTO((rtx, rtx));
 static void merge_assigned_reloads	PROTO((rtx));
-static void emit_reload_insns		PROTO((rtx));
+static void emit_reload_insns		PROTO((rtx, int));
 static void delete_output_reload	PROTO((rtx, int, rtx));
 static void inc_for_reload		PROTO((rtx, rtx, int));
 static int constraint_accepts_reg_p	PROTO((char *, rtx));
@@ -4219,7 +4219,7 @@ reload_as_needed (first, live_known)
 
 	      /* Generate the insns to reload operands into or out of
 		 their reload regs.  */
-	      emit_reload_insns (insn);
+	      emit_reload_insns (insn, this_block);
 
 	      /* Substitute the chosen reload regs from reload_reg_rtx
 		 into the insn's body (or perhaps into the bodies of other
@@ -6329,8 +6329,9 @@ merge_assigned_reloads (insn)
 /* Output insns to reload values in and out of the chosen reload regs.  */
 
 static void
-emit_reload_insns (insn)
+emit_reload_insns (insn, bb)
      rtx insn;
+     int bb;
 {
   register int j;
   rtx input_reload_insns[MAX_RECOG_OPERANDS];
@@ -6345,7 +6346,7 @@ emit_reload_insns (insn)
   rtx other_operand_reload_insns = 0;
   rtx other_output_reload_insns[MAX_RECOG_OPERANDS];
   rtx following_insn = NEXT_INSN (insn);
-  rtx before_insn = insn;
+  rtx before_insn = PREV_INSN (insn);
   int special;
   /* Values to be put in spill_reg_store are put here first.  */
   rtx new_spill_reg_store[FIRST_PSEUDO_REGISTER];
@@ -7251,18 +7252,18 @@ emit_reload_insns (insn)
      reloads for the operand.  The RELOAD_OTHER output reloads are
      output in descending order by reload number.  */
 
-  emit_insns_before (other_input_address_reload_insns, before_insn);
-  emit_insns_before (other_input_reload_insns, before_insn);
+  emit_insns_before (other_input_address_reload_insns, insn);
+  emit_insns_before (other_input_reload_insns, insn);
 
   for (j = 0; j < reload_n_operands; j++)
     {
-      emit_insns_before (inpaddr_address_reload_insns[j], before_insn);
-      emit_insns_before (input_address_reload_insns[j], before_insn);
-      emit_insns_before (input_reload_insns[j], before_insn);
+      emit_insns_before (inpaddr_address_reload_insns[j], insn);
+      emit_insns_before (input_address_reload_insns[j], insn);
+      emit_insns_before (input_reload_insns[j], insn);
     }
 
-  emit_insns_before (other_operand_reload_insns, before_insn);
-  emit_insns_before (operand_reload_insns, before_insn);
+  emit_insns_before (other_operand_reload_insns, insn);
+  emit_insns_before (operand_reload_insns, insn);
 
   for (j = 0; j < reload_n_operands; j++)
     {
@@ -7270,6 +7271,15 @@ emit_reload_insns (insn)
       emit_insns_before (output_address_reload_insns[j], following_insn);
       emit_insns_before (output_reload_insns[j], following_insn);
       emit_insns_before (other_output_reload_insns[j], following_insn);
+    }
+
+  /* Keep basic block info up to date.  */
+  if (n_basic_blocks)
+    {
+      if (basic_block_head[bb] == insn)
+        basic_block_head[bb] = NEXT_INSN (before_insn);
+      if (basic_block_end[bb] == insn)
+        basic_block_end[bb] = PREV_INSN (following_insn);
     }
 
   /* Move death notes from INSN
