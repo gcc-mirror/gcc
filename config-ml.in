@@ -756,7 +756,7 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
     esac
 
     # FIXME: POPDIR=${PWD=`pwd`} doesn't work here.
-    ML_POPDIR=`pwd`
+    ML_POPDIR=`${PWDCMD-pwd}`
     cd ${ml_dir}/${ml_libdir}
 
     if [ -f ${ml_newsrcdir}/configure ]; then
