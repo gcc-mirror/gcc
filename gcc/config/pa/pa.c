@@ -484,7 +484,7 @@ legitimize_pic_address (orig, mode, reg)
     }
   else if (GET_CODE (orig) == CONST)
     {
-      rtx base, offset;
+      rtx base;
 
       if (GET_CODE (XEXP (orig, 0)) == PLUS
 	  && XEXP (XEXP (orig, 0), 0) == pic_offset_table_rtx)
@@ -854,7 +854,7 @@ emit_move_sequence (operands, mode, scratch_reg)
     }
 
   /* Simplify the source if we need to.  */
-  if (GET_CODE (operand1) != HIGH && immediate_operand (operand1, mode)
+  if ((GET_CODE (operand1) != HIGH && immediate_operand (operand1, mode))
       || (GET_CODE (operand1) == HIGH
 	  && symbolic_operand (XEXP (operand1, 0), mode)))
     {
@@ -1393,7 +1393,6 @@ output_block_move (operands, size_is_constant)
 
   if (size_is_constant)
     {
-      unsigned long n_items;
       unsigned long offset;
       rtx temp;
 
@@ -1567,9 +1566,7 @@ compute_movstrsi_length (insn)
 
   if (size_is_constant)
     {
-      unsigned long n_items;
       unsigned long offset;
-      rtx temp;
 
       if (n_bytes == 0)
 	return 0;
@@ -1705,7 +1702,7 @@ output_ior (operands)
      rtx *operands;
 {
   unsigned mask = INTVAL (operands[2]);
-  int bs0, bs1, bs2, p, len;
+  int bs0, bs1, p, len;
  
   if (INTVAL (operands[2]) == 0)
     return "copy %1,%0";
@@ -1730,6 +1727,7 @@ output_ior (operands)
 }
 
 /* Output an ascii string.  */
+void
 output_ascii (file, p, size)
      FILE *file;
      unsigned char *p;
@@ -1999,7 +1997,7 @@ compute_frame_size (size, fregs_live)
   fsize += current_function_outgoing_args_size;
   if (! leaf_function_p () || fsize)
     fsize += 32;
-  return fsize + 63 & ~63;
+  return (fsize + 63) & ~63;
 }
      
 rtx hp_profile_label_rtx;
@@ -2044,6 +2042,7 @@ output_function_prologue (file, size)
     sprintf(hp_profile_label_name, "LP$%04d", hp_profile_labelno);
 }
 
+void
 hppa_expand_prologue()
 {
 
@@ -3022,7 +3021,7 @@ static char *milli_names[] = {"remI", "remU", "divI", "divU", "mulI", "mulU"};
 static char import_string[] = ".IMPORT $$....,MILLICODE";
 #define MILLI_START 10
 
-static int
+static void
 import_milli (code)
      enum millicodes code;
 {
@@ -3324,7 +3323,7 @@ struct rtx_def *
 hppa_builtin_saveregs (arglist)
      tree arglist;
 {
-  rtx block, float_addr, offset, float_mem;
+  rtx offset;
   tree fntype = TREE_TYPE (current_function_decl);
   int argadj = ((!(TYPE_ARG_TYPES (fntype) != 0
 		   && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
