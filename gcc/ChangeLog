@@ -1,3 +1,161 @@
+2000-10-28  Neil Booth  <neilb@earthling.net>
+
+	New macro expander.
+	
+	* cpplib.c (struct answer): New.
+	(struct if_stack): Use cpp_lexer_pos rather than line and col.
+	Rename cmacro mi_cmacro.
+	(struct directive, KANDR, STDC89, EXTENSION, COND, IF_COND, INCL,
+	IN_I): New directive and flags.
+	(skip_rest_of_line, check_eol, run_directive, glue_header_name,
+	parse_answer, parse_assertion, find_answer): New functions.
+	(parse_ifdef, detect_if_not_defined, validate_else): Remove.
+	(lex_macro_node): New function to replace parse_ifdef and
+	get_define_node.
+
+	(_cpp_handle_directive): New function, combines _cpp_check_directive
+	and _cpp_check_linemarker.
+
+	(do_define, do_undef, parse_include, do_include, do_import,
+	do_include_next, read_line_number, do_line, do_ident, do_pragma,
+	do_pragma_once, do_pragma_poison, do_pragma_dependency):
+	Update for new token getting interface.
+
+	(do_ifdef, do_ifndef, do_if, do_else, do_endif, push_conditional)
+	: Update for new multiple-include optimisation technique.
+	(do_elif): Don't forget to invalidate controlling macros.
+
+	(unwind_if_stack, cpp_defined, cpp_push_buffer, cpp_pop_buffer): Update.
+	(parse_assertion, parse_answer, find_answer, _cpp_test_assertion):
+	Functions to handle assertions with the new token interface.
+	(do_assert, do_unassert): Use them.
+
+	(cpp_define, _cpp_define_builtin, cpp_undef, cpp_assert, cpp_unassert):
+	Use run_directive.
+
+	(_cpp_init_stacks): Register directive names.  Don't register special
+	nodes.
+
+	* cpperror.c (print_containing_files, _cpp_begin_message): Update to
+	new position recording regime.
+	(cpp_ice, cpp_fatal, cpp_error, cpp_error_with_line, cpp_warning,
+	cpp_warning_with_line, cpp_pedwarn, cpp_pedwarn_with_line,
+	cpp_pedwarn_with_file_and_line): Update for _cpp_begin_message changes.
+	(cpp_type2name): Move to cpplex.c.
+
+	* cppexp.c (parse_charconst): spec_nodes is no longer a pointer.
+	(parse_defined): Update to handle new multiple include optimisation
+	method.  Remove poisoned identifier warning.
+	(parse_assertion, TYPE_NAME): Delete.
+	(lex): Update for multiple include optimisation, removal of
+	CPP_DEFINED, to use _cpp_test_assertion for assertions and
+	cpp_token_as_text.
+	(_cpp_parse_expr): Update for MI optimisation, and to use op_as_text.
+	(op_as_text): New function, to wrap cpp_token_as_text.
+
+	* cppfiles.c (stack_include_file, _cpp_pop_file_buffer):
+	Update for MI optimisation.
+	(_cpp_execute_include): Take a token rather than 3 arguments.  Fix
+	segfault on diagnostic.
+	(_cpp_compare_file_date): Take a token rather than 3 args.
+	(cpp_read_file): Work correctly for zero-length files.
+
+	* cpphash.c (_cpp_init_macros, _cpp_cleanup_macros): Rename
+	_cpp_init_hashtable and _cpp_cleanup_hashtable.
+	(cpp_lookup): Place identifiers at front of identifier pool
+	for _cpp_lookup_with_hash.
+	(_cpp_lookup_with_hash): Require identifiers to be at the front of
+	the identifier pool.  Commit the memory if not already in the
+	hash table.
+
+	* cppinit.c (cpp_reader_init): Move cpp_init_completed test to top.
+	Initialise various members of cpp_reader, memory pools, and the
+	special nodes.
+	(cpp_printer_init): Delete.
+	(cpp_cleanup): Update.
+	(struct builtin, builtin_array, initialize_builtins): Update for new
+	hashnode definition and builtin handling.
+	(cpp_start_read, cpp_finish): Don't take or initialise a
+	printer.  Update.
+
+	* cpplib.h (cpp_printer, cpp_toklist, CPP_DEFINED, BOL,
+	PASTED, VAR_ARGS, BEG_OF_FILE, IN_DIRECTIVE, KNOWN_DIRECTIVE,
+	T_VOID, T_SPECLINE, T_DATE, T_FILE, T_BASE_FILE, T_INCLUDE_LEVEL,
+	T_TIME, T_STDC, T_OPERATOR, T_POISON, T_MACRO, T_ASSERTION): Delete.
+	(struct cpp_pool, struct cpp_macro, struct cpp_lexer_pos,
+	struct cpp_lookahead, CPP_DHASH, enum mi_state, enum mi_ind,
+	NO_EXPAND, VARARGS_FIRST, struct cpp_token_with_pos,
+	struct toklist, struct cpp_context, struct specnodes,
+	TOKEN_LOOKAHEAD, TOKEN_BUFFSIZE, NODE_OPERATOR, NODE_POISONED,
+	NODE_BUILTIN, NODE_DIAGNOSTIC, NT_VOID, NT_MACRO, NT_ASSERTION,
+	enum builtin_type, cpp_can_paste): New.
+	(struct cpp_token): Delete line and col members.
+	(struct cpp_buffer): New member output_lineno.
+	(struct lexer_state): Delete indented, in_lex_line, seen_dot.
+	Add va_args_ok, poisoned_ok, prevent_expansion, parsing_args.
+	(struct cpp_reader): New members lexer_pos, macro_pos, directive_pos,
+	ident_pool, temp_string_pool, macro_pool, argument_pool, string_pool,
+	base_context, context, directive, mi_state, mi_if_not_defined,
+	mi_lexed, mi_cmacro, mi_ind_cmacro, la_read, la_write, la_unused,
+	mlstring_pos, macro_buffer, macro_buffer_len.
+	Delete members mls_line, mls_column, token_list, potential_control_macro,
+	temp_tokens, temp_cap, temp_alloced, temp_used, first_directive_token,
+	context_cap, cur_context, no_expand_level, paste_level, contexts, args,
+	save_parameter_spellings, need_newline, .
+	Change type of date, time and spec_nodes members.
+	Change prototypes for include and ident callbacks.
+	(struct cpp_hashnode): Change type of name.  Remove union members
+	expansion and code.  Add members macro, operator and builtin.
+
+	(cpp_token_len, cpp_token_as_text, cpp_spell_token, cpp_start_read,
+	cpp_finish, cpp_avoid_paste, cpp_get_token, cpp_get_line,
+	cpp_get_output_line, cpp_macro_definition, cpp_start_lookahead,
+	cpp_stop_lookahead): New prototypes.
+	(cpp_printer_init, cpp_dump_definition): Delete prototypes.
+
+	(U_CHAR, U, ustrcmp, ustrncmp, ustrlen, uxstrdup, ustrchr, ufputs):
+	Move from cpphash.h.
+
+	* cpphash.h (U_CHAR, U, ustrcmp, ustrncmp, ustrlen, uxstrdup, ustrchr,
+	ufputs): Move to cpplib.h.
+	(enum spell_type, struct token_spelling, _cpp_token_spellings, TOKEN_SPELL,
+	TOKEN_NAME, struct answer, FREE_ANSWER, KANDR, STDC89, EXTENSION,
+	COND, EXPAND, INCL, COMMENTS, IN_I, struct directive, directive_handler,
+	struct spec_nodes, _cpp_digraph_spellings, _cpp_free_temp_tokens,
+	_cpp_init_input_buffer, _cpp_grow_token_buffer, _cpp_init_toklist,
+	_cpp_clear_toklist, _cpp_expand_token_space, _cpp_expand_name_space,
+	_cpp_equiv_tokens, _cpp_equiv_toklists, _cpp_process_directive,
+	_cpp_run_directive, _cpp_get_line, _cpp_get_raw_token, _cpp_glue_header_name,
+	_cpp_can_paste, _cpp_check_directive, _cpp_check_linemarker,
+	_cpp_parse_assertion, _cpp_find_answer): Delete.
+	(VALID_SIGN, ALIGN, POOL_FRONT, POOL_LIMIT, POOL_BASE, POOL_SIZE,
+	POOL_USED, POOL_COMMIT, struct cpp_chunk, _cpp_lex_token, _cpp_init_pool,
+	_cpp_free_pool, _cpp_pool_reserve, _cpp_pool_alloc, _cpp_next_chunk,
+	_cpp_lock_pool, _cpp_unlock_pool, _cpp_test_assertion,
+	_cpp_handle_directive, DSC): New.
+	(struct include_file): New member defined.
+
+	(DO_NOT_REREAD, _cpp_begin_message, _cpp_execute_include,
+	_cpp_compare_file_date): Update.
+	(_cpp_pop_context, _cpp_get_token, _cpp_free_lookaheads, _cpp_push_token): New.
+	(_cpp_init_macros, _cpp_cleanup_macros): Rename to _cpp_init_hashtable,
+	_cpp_cleanup_hashtable.
+
+	* Makefile.in: Remove cppoutput.c.
+	
+	* cppoutput.c: Delete
+
+	* fixheader.c (read_scan_file): Update for new cpp_get_token
+	prototype.
+	(recognized_function): New argument LINE.
+
+	* scan-decls.c (skip_to_closing_brace, scan_decls): Update for
+	new cpp_get_token prototype.
+
+	* scan.h (recognized_function): Update prototype.
+
+	* po/POTFILES.in: Remove cppoutput.c.
+	
 2000-10-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-typeck.c (check_init_type_bitfields): Remove.

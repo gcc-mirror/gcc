@@ -517,8 +517,9 @@ recognized_extern (name)
    'f' for other function declarations.  */
 
 void
-recognized_function (fname, kind, have_arg_list, file_seen)
+recognized_function (fname, line, kind, have_arg_list, file_seen)
      const cpp_token *fname;
+     unsigned int line;
      int kind; /* One of 'f' 'F' or 'I' */
      int have_arg_list;
      const char *file_seen;
@@ -566,7 +567,7 @@ recognized_function (fname, kind, have_arg_list, file_seen)
   partial_count++;
   partial = (struct partial_proto *)
     obstack_alloc (&scan_file_obstack, sizeof (struct partial_proto));
-  partial->line_seen = fname->line;
+  partial->line_seen = line;
   partial->fn = fn;
   fn->partial = partial;
   partial->next = partial_proto_list;
@@ -622,7 +623,7 @@ read_scan_file (in_fname, argc, argv)
   if (CPP_FATAL_ERRORS (&scan_in))
     exit (FATAL_EXIT_CODE);
 
-  if (! cpp_start_read (&scan_in, 0, in_fname))
+  if (! cpp_start_read (&scan_in, in_fname))
     exit (FATAL_EXIT_CODE);
 
   /* We are scanning a system header, so mark it as such.  */
@@ -647,15 +648,16 @@ read_scan_file (in_fname, argc, argv)
       /* Scan the macro expansion of "getchar();".  */
       for (;;)
 	{
-	  const cpp_token *t = cpp_get_token (&scan_in);
+	  cpp_token t;
 
-	  if (t->type == CPP_EOF)
+	  cpp_get_token (&scan_in, &t);
+	  if (t.type == CPP_EOF)
 	    {
 	      cpp_pop_buffer (&scan_in);
 	      if (CPP_BUFFER (&scan_in) == buf)
 		break;
 	    }
-	  else if (cpp_ideq (t, "_filbuf"))
+	  else if (cpp_ideq (&t, "_filbuf"))
 	    seen_filbuf++;
 	}
       if (seen_filbuf)
