@@ -713,6 +713,26 @@ choose_hard_reg_mode (regno, nregs)
   if (found_mode != VOIDmode)
     return found_mode;
 
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_FLOAT);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    if (HARD_REGNO_NREGS (regno, mode) == nregs
+	&& HARD_REGNO_MODE_OK (regno, mode))
+      found_mode = mode;
+
+  if (found_mode != VOIDmode)
+    return found_mode;
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_INT);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    if (HARD_REGNO_NREGS (regno, mode) == nregs
+	&& HARD_REGNO_MODE_OK (regno, mode))
+      found_mode = mode;
+
+  if (found_mode != VOIDmode)
+    return found_mode;
+
   /* Iterate over all of the CCmodes.  */
   for (m = (unsigned int) CCmode; m < (unsigned int) NUM_MACHINE_MODES; ++m)
     {
