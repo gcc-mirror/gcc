@@ -73,7 +73,34 @@ private:
     charT* data () { return reinterpret_cast<charT *>(this + 1); }
     charT& operator[] (size_t s) { return data () [s]; }
     charT* grab () { if (selfish) return clone (); ++ref; return data (); }
+#if defined __i486__ || defined __i586__ || defined __i686__
+    void release ()
+      {
+	size_t __val;
+	asm ("lock; xaddl %0, %2"
+	     : "=r" (__val) : "0" (-1), "m" (ref) : "memory");
+	if (__val == 1)
+	  delete this;
+      }
+#elif defined __sparcv9__
+    void release ()
+      {
+	size_t __newval, __oldval = ref;
+	do
+	  {
+	    __newval = __oldval - 1;
+	    __asm__ ("cas	[%4], %2, %0"
+		     : "=r" (__oldval), "=m" (ref)
+		     : "r" (__oldval), "m" (ref), "r"(&(ref)), "0" (__newval));
+	  }
+	while (__newval != __oldval);
+
+	if (__oldval == 0)
+	  delete this;
+      }
+#else
     void release () { if (--ref == 0) delete this; }
+#endif
 
     inline static void * operator new (size_t, size_t);
     inline static void operator delete (void *);
