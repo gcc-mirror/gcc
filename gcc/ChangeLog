@@ -1,3 +1,10 @@
+2004-01-20  Hartmut Penner  <hpenner@de.ibm.com>
+
+	* gcc/config/rs6000/rs6000.c (function_arg) Handle 
+	vector register special in function without prototype.
+	(function_arg_advance): Vector parameters get always
+	GPRs allocated for the linux64 target.
+
 2004-01-20  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
 
 	* config/m32r/m32r.h (TARGET_M32R2). Test for TARGET_M32R2_MASK
