@@ -230,23 +230,21 @@ extern int first_increment_giv, last_increment_giv;
 
 /* Forward declarations for non-static functions declared in loop.c and
    unroll.c.  */
-int invariant_p PARAMS ((rtx));
-rtx get_condition_for_loop PARAMS ((rtx));
+int loop_invariant_p PARAMS ((const struct loop *, rtx));
+rtx get_condition_for_loop PARAMS ((const struct loop *, rtx));
 void emit_iv_add_mult PARAMS ((rtx, rtx, rtx, rtx, rtx));
 rtx express_from PARAMS ((struct induction *, struct induction *));
 
 void unroll_loop PARAMS ((struct loop *, int, rtx, int));
-rtx biv_total_increment PARAMS ((struct iv_class *, rtx, rtx));
+rtx biv_total_increment PARAMS ((struct iv_class *));
 unsigned HOST_WIDE_INT loop_iterations PARAMS ((struct loop *));
-int precondition_loop_p PARAMS ((rtx, struct loop_info *, 
+int precondition_loop_p PARAMS ((const struct loop *,
 			       rtx *, rtx *, rtx *, 
 			       enum machine_mode *mode));
-rtx final_biv_value PARAMS ((struct iv_class *, rtx, rtx,
-			   unsigned HOST_WIDE_INT));
-rtx final_giv_value PARAMS ((struct induction *, rtx, rtx,
-			   unsigned HOST_WIDE_INT));
+rtx final_biv_value PARAMS ((const struct loop *, struct iv_class *));
+rtx final_giv_value PARAMS ((const struct loop *, struct induction *));
 void emit_unrolled_add PARAMS ((rtx, rtx, rtx));
-int back_branch_in_range_p PARAMS ((rtx, rtx, rtx));
+int back_branch_in_range_p PARAMS ((const struct loop *, rtx));
 
 int loop_insn_first_p PARAMS ((rtx, rtx));
 
