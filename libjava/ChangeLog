@@ -1,3 +1,9 @@
+2004-04-22  Jerry Quinn  <jlquinn@optonline.net>
+
+	* java/awt/Font.java (deriveFont): Implement missing variants.
+	* gnu/java/awt/peer/ClasspathFontPeer.java (deriveFont): Implement
+	missing variants.
+
 2004-04-21  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* java/lang/natClass.cc (_Jv_LayoutInterfaceMethods): New method.
