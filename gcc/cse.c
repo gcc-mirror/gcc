@@ -6969,7 +6969,7 @@ cse_insn (insn, in_libcall_block)
 
 	  if (NEXT_INSN (insn) == 0
 	      || GET_CODE (NEXT_INSN (insn)) != BARRIER)
-	    emit_barrier_after (insn);
+	    emit_barrier_before (NEXT_INSN (insn));
 
 	  /* We might have two BARRIERs separated by notes.  Delete the second
 	     one if so.  */
