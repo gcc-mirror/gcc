@@ -5570,7 +5570,7 @@ finish_struct (t, fieldlist, attributes)
 	  register int width = TREE_INT_CST_LOW (DECL_INITIAL (x));
 
 	  DECL_FIELD_SIZE (x) = width;
-	  DECL_BIT_FIELD (x) = 1;
+	  DECL_BIT_FIELD (x) = DECL_C_BIT_FIELD (x) = 1;
 	  DECL_INITIAL (x) = NULL;
 
 	  if (width == 0)
