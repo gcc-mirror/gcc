@@ -427,42 +427,42 @@ c_compatibility_headers = \
 @GLIBCPP_C_HEADERS_COMPATIBILITY_TRUE@c_compatibility_headers_extra = @GLIBCPP_C_HEADERS_COMPATIBILITY_TRUE@${c_compatibility_headers}
 @GLIBCPP_C_HEADERS_COMPATIBILITY_FALSE@c_compatibility_headers_extra = 
 
-target_srcdir = ${glibcpp_srcdir}/@OS_INC_SRCDIR@
-target_builddir = ./${target_alias}/bits
-target_headers = \
-	${target_srcdir}/ctype_base.h \
-	${target_srcdir}/ctype_inline.h \
-	${target_srcdir}/ctype_noninline.h \
-	${target_srcdir}/os_defines.h \
+host_srcdir = ${glibcpp_srcdir}/@OS_INC_SRCDIR@
+host_builddir = ./${host_alias}/bits
+host_headers = \
+	${host_srcdir}/ctype_base.h \
+	${host_srcdir}/ctype_inline.h \
+	${host_srcdir}/ctype_noninline.h \
+	${host_srcdir}/os_defines.h \
 	${glibcpp_srcdir}/@ATOMICITY_INC_SRCDIR@/atomicity.h \
 	${glibcpp_srcdir}/@FPOS_INC_SRCDIR@/fpos.h 
 
 
-# Non-installed target_header files.
-target_headers_noinst = \
+# Non-installed host_header files.
+host_headers_noinst = \
 	${glibcpp_srcdir}/@CLOCALE_INTERNAL_H@
 
 
-# These target_headers_extra files are all built with ad hoc naming rules.
-target_headers_extra = \
-	${target_builddir}/basic_file.h \
-	${target_builddir}/c++config.h \
-	${target_builddir}/c++io.h \
-	${target_builddir}/c++locale.h \
-	${target_builddir}/messages_members.h \
-	${target_builddir}/time_members.h \
-	${target_builddir}/codecvt_specializations.h
+# These host_headers_extra files are all built with ad hoc naming rules.
+host_headers_extra = \
+	${host_builddir}/basic_file.h \
+	${host_builddir}/c++config.h \
+	${host_builddir}/c++io.h \
+	${host_builddir}/c++locale.h \
+	${host_builddir}/messages_members.h \
+	${host_builddir}/time_members.h \
+	${host_builddir}/codecvt_specializations.h
 
 
-thread_target_headers = \
-	${target_builddir}/gthr.h \
-	${target_builddir}/gthr-single.h \
-	${target_builddir}/gthr-posix.h \
-	${target_builddir}/gthr-default.h
+thread_host_headers = \
+	${host_builddir}/gthr.h \
+	${host_builddir}/gthr-single.h \
+	${host_builddir}/gthr-posix.h \
+	${host_builddir}/gthr-default.h
 
 
-pch_input = ${target_builddir}/stdc++.h
-pch_output_builddir = ${target_builddir}/stdc++.h.gch
+pch_input = ${host_builddir}/stdc++.h
+pch_output_builddir = ${host_builddir}/stdc++.h.gch
 pch_source = ${glibcpp_srcdir}/include/stdc++.h
 PCHFLAGS = -Winvalid-pch -Wno-deprecated -x c++-header $(CXXFLAGS)
 @GLIBCPP_BUILD_PCH_TRUE@pch_build = @GLIBCPP_BUILD_PCH_TRUE@${pch_input}
@@ -474,18 +474,18 @@ PCHFLAGS = -Winvalid-pch -Wno-deprecated -x c++-header $(CXXFLAGS)
 # CLEANFILES and all-local are kept up-to-date.
 allstamped = \
 	stamp-std stamp-bits stamp-c_base stamp-c_compatibility \
-	stamp-backward stamp-ext stamp-target 
+	stamp-backward stamp-ext stamp-host 
 
 
 # List of all files that are created by explicit building, editing, or
 # catenation.
 allcreated = \
-	${target_builddir}/c++config.h \
-	${thread_target_headers} \
+	${host_builddir}/c++config.h \
+	${thread_host_headers} \
 	${pch_build}
 
 
-# Target includes for threads
+# Host includes for threads
 glibcpp_thread_h = @glibcpp_thread_h@
 uppercase = [ABCDEFGHIJKLMNOPQRSTUVWXYZ_]
 
@@ -495,7 +495,7 @@ uppercase = [ABCDEFGHIJKLMNOPQRSTUVWXYZ_]
 # components.  Yes, with minor differences, this is sheer duplication
 # of the staging rules above using $(INSTALL_DATA) instead of LN_S and
 # `$(mkinstalldirs)' instead of `mkdir -p'.  In particular,
-# target_headers_extra are taken out of the build tree staging area;
+# host_headers_extra are taken out of the build tree staging area;
 # the rest are taken from the original source tree.
 gxx_include_dir = @gxx_include_dir@
 
@@ -674,18 +674,18 @@ stamp-ext: ${ext_headers}
 	  echo `date` > stamp-ext ;\
 	fi
 
-stamp-${target_alias}:
-	@if [ ! -d ${target_builddir} ]; then \
-	  mkdir -p ${target_builddir} ;\
-	  echo `date` > stamp-${target_alias} ;\
+stamp-${host_alias}:
+	@if [ ! -d ${host_builddir} ]; then \
+	  mkdir -p ${host_builddir} ;\
+	  echo `date` > stamp-${host_alias} ;\
 	fi
 
-# Target includes static.
-# XXX Missing dependency info for {target_headers_extra}
-stamp-target: ${target_headers} ${target_headers_noinst} stamp-${target_alias}
-	@if [ ! -f stamp-target ]; then \
-	  (cd ${target_builddir} ;\
-	  @LN_S@ ${target_headers} . || true ;\
+# Host includes static.
+# XXX Missing dependency info for {host_headers_extra}
+stamp-host: ${host_headers} ${host_headers_noinst} stamp-${host_alias}
+	@if [ ! -f stamp-host ]; then \
+	  (cd ${host_builddir} ;\
+	  @LN_S@ ${host_headers} . || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@BASIC_FILE_H@ basic_file.h || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CSTDIO_H@ c++io.h || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CLOCALE_H@ c++locale.h || true ;\
@@ -693,13 +693,13 @@ stamp-target: ${target_headers} ${target_headers_noinst} stamp-${target_alias}
 	  @LN_S@ ${glibcpp_srcdir}/@CMESSAGES_H@ messages_members.h || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CTIME_H@ time_members.h || true ;\
 	  @LN_S@ ${glibcpp_srcdir}/@CCODECVT_H@ codecvt_specializations.h || true);\
-	  echo `date` > stamp-target ; \
+	  echo `date` > stamp-host ; \
 	fi
 
-# Target includes dynamic.
-${target_builddir}/c++config.h: ${CONFIG_HEADER} \
+# Host includes dynamic.
+${host_builddir}/c++config.h: ${CONFIG_HEADER} \
 				${glibcpp_srcdir}/include/bits/c++config \
-				stamp-${target_alias}
+				stamp-${host_alias}
 	@cat ${glibcpp_srcdir}/include/bits/c++config > $@ ;\
 	sed -e 's/HAVE_/_GLIBCPP_HAVE_/g' \
 	    -e 's/PACKAGE/_GLIBCPP_PACKAGE/g' \
@@ -708,26 +708,26 @@ ${target_builddir}/c++config.h: ${CONFIG_HEADER} \
 	    < ${CONFIG_HEADER} >> $@ ;\
 	echo "#endif // _CPP_CPPCONFIG_" >>$@
 
-${target_builddir}/gthr.h: ${toplevel_srcdir}/gcc/gthr.h stamp-${target_alias}
+${host_builddir}/gthr.h: ${toplevel_srcdir}/gcc/gthr.h stamp-${host_alias}
 	sed -e '/^#/s/\(${uppercase}${uppercase}*\)/_GLIBCPP_\1/g' \
 	    -e 's,^#include "\(.*\)",#include <bits/\1>,g' \
 	    < ${toplevel_srcdir}/gcc/gthr.h > $@
 
-${target_builddir}/gthr-single.h: ${toplevel_srcdir}/gcc/gthr-single.h \
-				  stamp-${target_alias}
+${host_builddir}/gthr-single.h: ${toplevel_srcdir}/gcc/gthr-single.h \
+				  stamp-${host_alias}
 	sed -e 's/\(UNUSED\)/_GLIBCPP_\1/g' \
 	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCPP_\1/g' \
 	    < ${toplevel_srcdir}/gcc/gthr-single.h > $@
 
-${target_builddir}/gthr-posix.h: ${toplevel_srcdir}/gcc/gthr-posix.h \
-				   stamp-${target_alias}
+${host_builddir}/gthr-posix.h: ${toplevel_srcdir}/gcc/gthr-posix.h \
+				   stamp-${host_alias}
 	sed -e 's/\(UNUSED\)/_GLIBCPP_\1/g' \
 	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCPP_\1/g' \
 	    -e 's/\(${uppercase}*WEAK\)/_GLIBCPP_\1/g' \
 	    < ${toplevel_srcdir}/gcc/gthr-posix.h > $@
 
-${target_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcpp_thread_h} \
-				   stamp-${target_alias}
+${host_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcpp_thread_h} \
+				   stamp-${host_alias}
 	sed -e 's/\(UNUSED\)/_GLIBCPP_\1/g' \
 	    -e 's/\(GCC${uppercase}*_H\)/_GLIBCPP_\1/g' \
 	    -e 's/\(${uppercase}*WEAK\)/_GLIBCPP_\1/g' \
@@ -735,7 +735,7 @@ ${target_builddir}/gthr-default.h: ${toplevel_srcdir}/gcc/${glibcpp_thread_h} \
 	    < ${toplevel_srcdir}/gcc/${glibcpp_thread_h} > $@
 
 # Build a precompiled C++ include, stdc++.h.gch.
-${pch_input}: ${allstamped} ${target_builddir}/c++config.h ${pch_source}
+${pch_input}: ${allstamped} ${host_builddir}/c++config.h ${pch_source}
 	touch ${pch_input}; \
 	if [ ! -d "${pch_output_builddir}" ]; then \
 	  mkdir -p ${pch_output_builddir}; \
@@ -768,10 +768,10 @@ install-headers:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${std_builddir}
 	for file in ${std_headers_rename}; do \
 	  $(INSTALL_DATA) ${std_builddir}/$${file} $(DESTDIR)${gxx_include_dir}/${std_builddir}; done
-	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${target_builddir}
-	for file in ${target_headers} ${target_headers_extra} \
-	 ${thread_target_headers}; do \
-	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${target_builddir}; done
+	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${host_builddir}
+	for file in ${host_headers} ${host_headers_extra} \
+	 ${thread_host_headers}; do \
+	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${host_builddir}; done
 
 install-pch:
 	$(mkinstalldirs) $(DESTDIR)${gxx_include_dir}/${pch_output_builddir}

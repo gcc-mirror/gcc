@@ -1,6 +1,6 @@
 // Specific definitions for GNU/Linux  -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -38,30 +38,8 @@
 
 #include <features.h>
 
-#if !defined (__GLIBC__) || (__GLIBC__ == 2 && __GLIBC_MINOR__+ 0 == 0)
-
-// The types __off_t and __off64_t are not defined through <sys/types.h>
-// as _G_config assumes.  For libc5 and glibc 2.0 instead use
-// <gnu/types.h> and the old name for __off64_t.
-#include <gnu/types.h>
-typedef __loff_t __off64_t;
-
-// These systems have declarations mismatching those in libio.h by
-// omitting throw qualifiers.  Cleanest way out is to not provide
-// throw-qualifiers at all.  Defining it as empty here will make libio.h
-// not define it.
-#undef __THROW
-#define __THROW
-
-// Tell Glibc not to try to provide its own inline versions of
-// some math functions.  Those cause assembly-time clashes with
-// our definitions.
-#define __NO_MATH_INLINES
-
-#endif 
-
-#if defined __GLIBC__ && __GLIBC__ >= 2
 // We must not see the optimized string functions GNU libc defines.
+#if defined __GLIBC__ && __GLIBC__ >= 2
 #define __NO_STRING_INLINES
 #endif
 

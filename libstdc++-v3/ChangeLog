@@ -1,5 +1,14 @@
 2003-07-04  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* include/Makefile.am: Update target_ to host_.
+	* include/Makefile.in: Regenerate.
+	* src/Makefile.am: Same.
+	* src/Makefile.in: Regenerate.
+
+	* config/os/gnu-linux/os_defines.h: Remove glibc-2.0 support.
+	
+2003-07-04  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* acinclude.m4 (GLIBCPP_ENABLE_DEBUG_FLAGS): To
 	--enable-libstdcxx-debug-flags.
 	(GLIBCPP_ENABLE_DEBUG_FLAGS): To --enable-libstdcxx-debug.

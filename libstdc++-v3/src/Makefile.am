@@ -71,8 +71,8 @@ INCLUDES = \
 	$(TOPLEVEL_INCLUDES)
 
 # Source files linked in via configuration/make substitution for a
-# particular target.
-target_sources = \
+# particular host.
+host_sources = \
 	codecvt_members.cc \
 	collate_members.cc \
 	ctype_members.cc \
@@ -103,8 +103,8 @@ time_members.cc: ${glibcpp_srcdir}/@CTIME_CC@
 	@LN_S@ ${glibcpp_srcdir}/@CTIME_CC@ . || true
 
 # Source files linked in via configuration/make substitution for a
-# particular target, but with ad hoc naming rules.
-target_sources_extra = \
+# particular host, but with ad hoc naming rules.
+host_sources_extra = \
 	basic_file.cc \
 	c++locale.cc 
 
@@ -142,8 +142,8 @@ sources = \
 	strstream.cc \
 	valarray-inst.cc \
 	wstring-inst.cc \
-	${target_sources} \
-	${target_sources_extra}
+	${host_sources} \
+	${host_sources_extra}
 
 VPATH = $(top_srcdir)/src:$(top_srcdir)
 

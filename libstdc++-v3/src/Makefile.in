@@ -90,6 +90,8 @@ DEBUG_FLAGS = @DEBUG_FLAGS@
 DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
+FPOS_H = @FPOS_H@
+FPOS_INC_SRCDIR = @FPOS_INC_SRCDIR@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
 GLIBCPP_IS_CROSS_COMPILING = @GLIBCPP_IS_CROSS_COMPILING@
@@ -177,8 +179,8 @@ INCLUDES = \
 
 
 # Source files linked in via configuration/make substitution for a
-# particular target.
-target_sources = \
+# particular host.
+host_sources = \
 	codecvt_members.cc \
 	collate_members.cc \
 	ctype_members.cc \
@@ -189,8 +191,8 @@ target_sources = \
 
 
 # Source files linked in via configuration/make substitution for a
-# particular target, but with ad hoc naming rules.
-target_sources_extra = \
+# particular host, but with ad hoc naming rules.
+host_sources_extra = \
 	basic_file.cc \
 	c++locale.cc 
 
@@ -223,8 +225,8 @@ sources = \
 	strstream.cc \
 	valarray-inst.cc \
 	wstring-inst.cc \
-	${target_sources} \
-	${target_sources_extra}
+	${host_sources} \
+	${host_sources_extra}
 
 
 VPATH = $(top_srcdir)/src:$(top_srcdir)
