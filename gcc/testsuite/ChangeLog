@@ -1,3 +1,13 @@
+2001-11-03  Geoffrey Keating  <geoffk@redhat.com>
+
+	* g++.old-deja/g++.bugs/900227_01.C: short and pointer are the
+	same size, so no warning should be produced on stormy16.
+
+	* g++.old-deja/g++.eh/badalloc1.C: Will always fail on stormy16
+	due to oversized array.
+	* g++.old-deja/g++.mike/ns15.C: Likewise.
+	* g++.old-deja/g++.pt/crash16.C: Likewise.
+
 2001-11-02  Graham Stott  <grahams@redhat.com>
 
 	* g++.dgother/debug1.C: Fix typos.

@@ -1,3 +1,4 @@
+// excess errors test - XFAIL stormy16-*-*
 // Copyright (C) 2000 Free Software Foundation, Inc.
 // Contributed by Nathan Sidwell 6 June 2000 <nathan@codesourcery.com>
 

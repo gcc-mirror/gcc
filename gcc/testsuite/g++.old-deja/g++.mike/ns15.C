@@ -1,4 +1,5 @@
 // Build don't link:
+// excess errors test - XFAIL stormy16-*-*
 
 #include <stdio.h>
 #include <stdlib.h>
