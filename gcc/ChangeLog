@@ -1,3 +1,8 @@
+2004-01-31  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/install.texi: Fix typos.
+	* doc/invoke.texi: Likewise.
+
 2004-01-31  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_decompose_address): Do not treat virtual

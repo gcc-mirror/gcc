@@ -4730,7 +4730,7 @@ This parameter is ignored when @option{-funit-at-a-time} is not used.
 The default value is 3000.
 
 @item large-function-growth
-Specifies maximal growth of large functtion caused by inlining in percents.
+Specifies maximal growth of large function caused by inlining in percents.
 This parameter is ignored when @option{-funit-at-a-time} is not used.
 The default value is 200.
 
