@@ -31,6 +31,7 @@
    <li><a href="#2">Implementation properties</a>
    <li><a href="#3">Start and Termination</a>
    <li><a href="#4">Dynamic memory management</a>
+   <li><a href="#5">RTTI, the ABI, and demangling</a>
 </ul>
 
 <hr>
@@ -255,6 +256,68 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
+<hr>
+<h2><a name="5">RTTI, the ABI, and demangling</a></h2>
+   <p>If you have read the <a href="../documentation.html#4">source
+      documentation</a> for <code> namespace abi </code> then you are aware
+      of the cross-vendor C++ ABI which we use.  One of the exposed
+      functions is the one which we use for demangling in programs like
+      <code>c++filt</code>, and you can use it yourself as well.
+   </p>
+   <p>(The function itself might use different demanglers, but that's the
+      whole point of abstract interfaces.  If we change the implementation,
+      you won't notice.)
+   </p>
+   <p>Probably the only times you'll be interested in demangling at runtime
+      are when you're seeing <code>typeid</code> strings in RTTI, or when
+      you're handling the runtime-support exception classes.  For example:
+      <pre>
+#include &lt;exception&gt;
+#include &lt;iostream&gt;
+#include &lt;cxxabi.h&gt;
+
+struct empty { };
+
+template &lt;typename T, int N&gt;
+  struct bar { };
+
+
+int main()
+{
+  int     status;
+  char   *realname;
+
+  // exception classes not in &lt;stdexcept&gt;, thrown by the implementation
+  // instead of the user
+  std::bad_exception  e;
+  realname = abi::__cxa_demangle(e.what(), 0, 0, &amp;status);
+  std::cout &lt;&lt; e.what() &lt;&lt; "\t=&gt; " &lt;&lt; realname &lt;&lt; "\t: " &lt;&lt; status &lt;&lt; '\n';
+  free(realname);
+
+
+  // typeid
+  bar&lt;empty,17&gt;          u;
+  const std::type_info  &amp;ti = typeid(u);
+
+  realname = abi::__cxa_demangle(ti.name(), 0, 0, &amp;status);
+  std::cout &lt;&lt; ti.name() &lt;&lt; "\t=&gt; " &lt;&lt; realname &lt;&lt; "\t: " &lt;&lt; status &lt;&lt; '\n';
+  free(realname);
+
+  return 0;
+}</pre></p>
+   <p>With GCC 3.1 and later, this prints<pre>
+      St13bad_exception       =&gt; std::bad_exception   : 0
+      3barI5emptyLi17EE       =&gt; bar&lt;empty, 17&gt;       : 0</pre>
+   </p>
+   <p>The demangler interface is described in the source documentation
+      linked to above.  It is actually written in C, so you don't need to
+      be writing C++ in order to demangle C++.  (That also means we have to
+      use crummy memory management facilities, so don't forget to free()
+      the returned char array.)
+   </p>
+   <p>Return <a href="#top">to top of page</a> or
+      <a href="../faq/index.html">to the FAQ</a>.
+   </p>
 
 
 <!-- ####################################################### -->
