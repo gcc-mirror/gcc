@@ -83,8 +83,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    to build the libf2c with which g77-generated code is linked, or there
    will probably be bugs, some of them difficult to detect or even trigger.  */
 
-#include "config.j"
-
 /* Do we need int (for 32-bit or 64-bit systems) or long (16-bit or
    normally 32-bit) for f2c-type integers? */
 

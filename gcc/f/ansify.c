@@ -22,12 +22,10 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* From f/proj.h, which uses #error -- not all C compilers
    support that, and we want *this* program to be compilable
    by pretty much any C compiler.  */
-
-#include "assert.j"		/* Use gcc's assert.h. */
-#include <stdio.h>
+#include "hconfig.j"
+#include "system.j"
+#include "assert.j"
 #include <stddef.h>
-#include <stdlib.h>
-#include <string.h>
 
 typedef enum
   {

@@ -866,6 +866,7 @@ ffeequiv_add (ffeequiv eq, ffebld list, ffelexToken t)
    ffeequiv eq;
    ffeequiv_dump(eq);  */
 
+#if FFECOM_targetCURRENT == FFECOM_targetFFE
 void
 ffeequiv_dump (ffeequiv eq)
 {
@@ -873,6 +874,7 @@ ffeequiv_dump (ffeequiv eq)
     fprintf (dmpout, "(common %s) ", ffesymbol_text (ffeequiv_common (eq)));
   ffebld_dump (ffeequiv_list (eq));
 }
+#endif
 
 /* ffeequiv_exec_transition -- Do the hard work on all the equivalence objects
 

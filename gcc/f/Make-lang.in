@@ -204,12 +204,14 @@ F77_SRCS = \
  $(srcdir)/f/symbol.c \
  $(srcdir)/f/symbol.def \
  $(srcdir)/f/symbol.h \
+ $(srcdir)/f/system.j \
  $(srcdir)/f/target.c \
  $(srcdir)/f/target.h \
  $(srcdir)/f/tconfig.j \
  $(srcdir)/f/tm.j \
  $(srcdir)/f/top.c \
  $(srcdir)/f/top.h \
+ $(srcdir)/f/toplev.j \
  $(srcdir)/f/tree.j \
  $(srcdir)/f/type.c \
  $(srcdir)/f/type.h \

@@ -31,7 +31,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Include files. */
 
 #include "proj.h"
-#include <ctype.h>
 #include "implic.h"
 #include "info.h"
 #include "src.h"
@@ -93,7 +92,7 @@ static ffeimplic_
 ffeimplic_lookup_ (char c)
 {
   /* NOTE: This is definitely ASCII-specific!!  */
-  if (isalpha (c) || (c == '_'))
+  if (ISALPHA (c) || (c == '_'))
     return &ffeimplic_table_[c - 'A'];
   return NULL;
 }

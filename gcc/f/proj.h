@@ -24,6 +24,13 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef _H_f_proj
 #define _H_f_proj
 
+#ifdef USE_HCONFIG
+#include "hconfig.j"
+#else
+#include "config.j"
+#endif
+#include "system.j"
+
 #if !defined (__GNUC__) || (__GNUC__ < 2)
 #error "You have to use gcc 2.x to build g77 (might be fixed in g77-0.6)."
 #endif
@@ -36,18 +43,13 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 #endif	/* !defined (BUILT_WITH_270) */
 
-/* Include files everyone gets. */
-
-#include "config.j"		/* Must come before any other #includes in gcc. */
-#include "assert.j"		/* Use gcc's assert.h. */
-#include <ctype.h>
-#include <stdio.h>
+/* Include files everyone gets.  <assert.h> is needed for assert().
+   <stddef.h> is needed for offsetof, but technically also NULL,
+   size_t, ptrdiff_t, and so on.  */
+#include "assert.j"
 #include <stddef.h>
-#include <stdlib.h>
-#include <string.h>
 
 /* Generally useful definitions. */
-
 typedef enum
   {
 #if !defined(false) || !defined(true)
@@ -60,8 +62,6 @@ typedef enum
   } bool;
 
 #define ARRAY_SIZE(a) (sizeof(a)/sizeof(a[0]))
-#define STR(s) # s
-#define STRX(s) STR(s)
 
 #ifndef UNUSED	/* Compile with -DUNUSED= if cc doesn't support this. */
 #if BUILT_WITH_270

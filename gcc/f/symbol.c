@@ -794,6 +794,7 @@ ffesymbol_drive_sfnames (ffesymbol (*fn) ())
 
 /* Dump info on the symbol for debugging purposes.  */
 
+#if FFECOM_targetCURRENT == FFECOM_targetFFE
 void
 ffesymbol_dump (ffesymbol s)
 {
@@ -828,6 +829,7 @@ ffesymbol_dump (ffesymbol s)
 	     ffeintrin_name_specific (s->specific),
 	     ffeintrin_name_implementation (s->implementation));
 }
+#endif
 
 /* Produce generic error message about a symbol.
 
@@ -1011,6 +1013,7 @@ ffesymbol_reference (ffesymbol s, ffelexToken t, bool explicit)
 
 /* Report info on the symbol for debugging purposes.  */
 
+#if FFECOM_targetCURRENT == FFECOM_targetFFE
 ffesymbol
 ffesymbol_report (ffesymbol s)
 {
@@ -1172,9 +1175,11 @@ ffesymbol_report (ffesymbol s)
 
   return s;
 }
+#endif
 
 /* Report info on the symbols.	*/
 
+#if FFECOM_targetCURRENT == FFECOM_targetFFE
 void
 ffesymbol_report_all ()
 {
@@ -1182,6 +1187,7 @@ ffesymbol_report_all ()
   ffename_space_drive_symbol (ffesymbol_local_, ffesymbol_report);
   ffename_space_drive_symbol (ffesymbol_global_, ffesymbol_report);
 }
+#endif
 
 /* Resolve symbol that has become known intrinsic or non-intrinsic.  */
 

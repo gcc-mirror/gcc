@@ -69,7 +69,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Include files. */
 
 #include "proj.h"
-#include <ctype.h>
 #include "glimits.j"
 #include "target.h"
 #include "bad.h"
@@ -131,7 +130,7 @@ ffetarget_print_char_ (FILE *f, unsigned char c)
       break;
 
     default:
-      if (isprint (c) && isascii (c))
+      if (ISPRINT (c))
 	fputc (c, f);
       else
 	fprintf (f, "\\%03o", (unsigned int) c);
@@ -2386,7 +2385,7 @@ ffetarget_typeless_binary (ffetargetTypeless *xvalue, ffelexToken token)
       new_value <<= 1;
       if ((new_value >> 1) != value)
 	overflow = TRUE;
-      if (isdigit (c))
+      if (ISDIGIT (c))
 	new_value += c - '0';
       else
 	bad_digit = TRUE;
@@ -2430,7 +2429,7 @@ ffetarget_typeless_octal (ffetargetTypeless *xvalue, ffelexToken token)
       new_value <<= 3;
       if ((new_value >> 3) != value)
 	overflow = TRUE;
-      if (isdigit (c))
+      if (ISDIGIT (c))
 	new_value += c - '0';
       else
 	bad_digit = TRUE;
@@ -2474,7 +2473,7 @@ ffetarget_typeless_hex (ffetargetTypeless *xvalue, ffelexToken token)
       new_value <<= 4;
       if ((new_value >> 4) != value)
 	overflow = TRUE;
-      if (isdigit (c))
+      if (ISDIGIT (c))
 	new_value += c - '0';
       else if ((c >= 'A') && (c <= 'F'))
 	new_value += c - 'A' + 10;

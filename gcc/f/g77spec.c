@@ -45,20 +45,8 @@ Boston, MA 02111-1307, USA.  */
    `gcc' itself.  */
 
 #include "config.h"
-
-#include <sys/types.h>
-#include <stdio.h>
-
+#include "system.h"
 #include "gansidecl.h"
-
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-
-#ifdef HAVE_STRING_H
-#include <string.h>
-#endif
-
 #include <f/version.h>
 
 #ifndef MATH_LIBRARY

@@ -19,8 +19,8 @@ along with GNU Fortran; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
+#define USE_HCONFIG
 #include "proj.h"
-#include <ctype.h>
 #include "malloc.h"
 
 #define MAXNAMELEN 100
@@ -306,7 +306,7 @@ main (int argc, char **argv)
 	}
       else if (cc != EOF)
 	{
-	  while (((cc = getc (in)) != EOF) && (!isalnum (cc)))
+	  while (((cc = getc (in)) != EOF) && (! ISALNUM (cc)))
 	    ;
 	  ungetc (cc, in);
 	  break;
@@ -377,7 +377,7 @@ main (int argc, char **argv)
       for (i = 0; i < newname->namelen; ++i)
 	{
 	  cc = buf[i];
-	  if (isascii (cc) && isalpha (cc))
+	  if (ISALPHA (cc))
 	    {
 	      newname->name_uc[i] = toupper (cc);
 	      newname->name_lc[i] = tolower (cc);

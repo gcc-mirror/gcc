@@ -121,6 +121,7 @@ ffestt_caselist_create ()
 
    The cases in the list are dumped with commas separating them.  */
 
+#if FFECOM_targetCURRENT == FFECOM_targetFFE
 void
 ffestt_caselist_dump (ffesttCaseList list)
 {
@@ -140,6 +141,7 @@ ffestt_caselist_dump (ffesttCaseList list)
 	}
     }
 }
+#endif
 
 /* ffestt_caselist_kill -- Kill list of cases
 
@@ -443,6 +445,7 @@ ffestt_dimlist_create ()
 
    The dims in the list are dumped with commas separating them.	 */
 
+#if FFECOM_targetCURRENT == FFECOM_targetFFE
 void
 ffestt_dimlist_dump (ffesttDimList list)
 {
@@ -459,6 +462,7 @@ ffestt_dimlist_dump (ffesttDimList list)
 	ffebld_dump (next->upper);
     }
 }
+#endif
 
 /* ffestt_dimlist_kill -- Kill list of dims
 
@@ -614,6 +618,7 @@ ffestt_exprlist_drive (ffesttExprList list, void (*fn) ())
 
    The exprs in the list are dumped with commas separating them.  */
 
+#if FFECOM_targetCURRENT == FFECOM_targetFFE
 void
 ffestt_exprlist_dump (ffesttExprList list)
 {
@@ -626,6 +631,7 @@ ffestt_exprlist_dump (ffesttExprList list)
       ffebld_dump (next->expr);
     }
 }
+#endif
 
 /* ffestt_exprlist_kill -- Kill list of exprs
 
@@ -851,6 +857,7 @@ ffestt_implist_drive (ffesttImpList list, void (*fn) ())
 
    The token pairs in the list are dumped with commas separating them.	*/
 
+#if FFECOM_targetCURRENT == FFECOM_targetFFE
 void
 ffestt_implist_dump (ffesttImpList list)
 {
@@ -870,6 +877,7 @@ ffestt_implist_dump (ffesttImpList list)
 	}
     }
 }
+#endif
 
 /* ffestt_implist_kill -- Kill list of token pairs
 
@@ -934,7 +942,7 @@ ffestt_tokenlist_create ()
   return tl;
 }
 
-/* ffestt_tokenlist_drive -- Dump list of tokens
+/* ffestt_tokenlist_drive -- Drive list of tokens
 
    ffesttTokenList tl;
    void fn(ffelexToken t);
@@ -963,6 +971,7 @@ ffestt_tokenlist_drive (ffesttTokenList tl, void (*fn) ())
 
    The tokens in the list are dumped with commas separating them.  */
 
+#if FFECOM_targetCURRENT == FFECOM_targetFFE
 void
 ffestt_tokenlist_dump (ffesttTokenList tl)
 {
@@ -991,6 +1000,7 @@ ffestt_tokenlist_dump (ffesttTokenList tl)
 	}
     }
 }
+#endif
 
 /* ffestt_tokenlist_handle -- Handle list of tokens
 

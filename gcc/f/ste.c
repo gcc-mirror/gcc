@@ -48,8 +48,8 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "proj.h"
 
 #if FFECOM_targetCURRENT == FFECOM_targetGCC
-#include "config.j"
 #include "rtl.j"
+#include "toplev.j"
 #endif
 
 #include "ste.h"

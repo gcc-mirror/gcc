@@ -1,3 +1,69 @@
+Mon Jun 15 22:21:57 1998  Craig Burley  <burley@gnu.org>
+
+	Cutover to system.h:
+	* Make-lang.in:
+	* Makefile.in:
+	* ansify.c:
+	* bad.c:
+	* bld.c:
+	* com.c:
+	* com.h:
+	* expr.c:
+	* fini.c:
+	* g77spec.c:
+	* implic.c:
+	* intdoc.c:
+	* intrin.c:
+	* lex.c:
+	* lex.h:
+	* parse.c:
+	* proj.c:
+	* proj.h:
+	* src.c:
+	* src.h:
+	* stb.c:
+	* ste.c:
+	* target.c:
+	* top.c:
+	* system.j: New file.
+
+	Use toplev.h where appropriate:
+	* Make-lang.in:
+	* Makefile.in:
+	* bad.c:
+	* bld.c:
+	* com.c:
+	* lex.c:
+	* ste.c:
+	* top.c:
+	* toplev.j: New file.
+	
+	Conditionalize all dumping/reporting routines so they don't
+	get built for gcc/egcs:
+	* bld.c:
+	* bld.h:
+	* com.c:
+	* equiv.c:
+	* equiv.h:
+	* sta.c:
+	* stt.c:
+	* stt.h:
+	* symbol.c:
+	* symbol.h:
+
+	Use hconfig.h instead of config.h where appropriate:
+	* Makefile.in (proj-h.o): Compile with -DUSE_HCONFIG.
+	* fini.c: Define USE_HCONFIG before including proj.h.
+
+	* Makefile.in (deps-kinda): Redirect stderr to stdout,
+	to eliminate diagnostics vis-a-vis g77spec.c.
+
+	* Makefile.in: Regenerate dependencies via deps-kinda.
+
+	* lex.c (ffelex_file_fixed, ffelex_file_free): Eliminate
+	apparently spurious warnings about uninitialized variables
+	`c', `column', and so on.
+
 Sat Jun 13 03:13:18 1998  Craig Burley  <burley@gnu.org>
 
 	* g77spec.c (lang_specific_driver): Print out egcs
