@@ -367,9 +367,7 @@ namespace std
   const locale&
   locale::classic()
   {
-    static _STL_mutex_lock __lock __STL_MUTEX_INITIALIZER;
-    _STL_auto_lock __auto(__lock);
-
+    // Locking protocol: singleton-called-before-threading-starts
     if (!_S_classic)
       {
 	try 
