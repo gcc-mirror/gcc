@@ -17,4 +17,3 @@ c  Invalid declaration of or reference to symbol `foo' at (2) [initially seen at
       entry y(a)
       call foo(a(1))
       end
-c { dg-excess-errors "" }  PR 16520
