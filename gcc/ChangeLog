@@ -1,3 +1,8 @@
+1998-10-07  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* reload1.c (reload): Call free before clobbering the memory
+	locations or constants pointers.
+
 Wed Oct  7 02:05:20 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sol2-sld-64.h (TRANSFER_FROM_TRAMPOLINE): Rework

@@ -406,6 +406,9 @@ static void emit_reload_insns		PROTO((rtx, int));
 static void delete_output_reload	PROTO((rtx, int, rtx));
 static void inc_for_reload		PROTO((rtx, rtx, int));
 static int constraint_accepts_reg_p	PROTO((char *, rtx));
+static void find_set_and_used_regs	PROTO((rtx, int, int));
+static void calc_reg_usage		PROTO((rtx, int));
+
 static void reload_cse_regs_1		PROTO((rtx));
 static void reload_cse_invalidate_regno	PROTO((int, enum machine_mode, int));
 static int reload_cse_mem_conflict_p	PROTO((rtx, rtx));
@@ -417,8 +420,6 @@ static int reload_cse_simplify_set	PROTO((rtx, rtx));
 static int reload_cse_simplify_operands	PROTO((rtx));
 static void reload_cse_check_clobber	PROTO((rtx, rtx));
 static void reload_cse_record_set	PROTO((rtx, rtx));
-static void reload_cse_delete_death_notes	PROTO((rtx));
-static void reload_cse_no_longer_dead	PROTO((int, enum machine_mode));
 static void reload_combine PROTO((void));
 static void reload_combine_note_use PROTO((rtx *, rtx));
 static void reload_combine_note_store PROTO((rtx, rtx));
@@ -1179,17 +1180,13 @@ reload (first, global, dumpfile)
     }
 
   /* Make a pass over all the insns and delete all USEs which we inserted
-     only to tag a REG_EQUAL note on them; if PRESERVE_DEATH_INFO_REGNO_P
-     is defined, also remove death notes for things that are no longer
-     registers or no longer die in the insn (e.g., an input and output
-     pseudo being tied).  */
+     only to tag a REG_EQUAL note on them.  Also remove all REG_DEAD and
+     REG_UNUSED notes.  */
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
       {
-#ifdef PRESERVE_DEATH_INFO_REGNO_P
-	rtx note, next;
-#endif
+	rtx *pnote;
 
 	if (GET_CODE (PATTERN (insn)) == USE
 	    && find_reg_note (insn, REG_EQUAL, NULL_RTX))
@@ -1199,16 +1196,16 @@ reload (first, global, dumpfile)
 	    NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 	    continue;
 	  }
-#ifdef PRESERVE_DEATH_INFO_REGNO_P
-	for (note = REG_NOTES (insn); note; note = next)
+
+	pnote = &REG_NOTES (insn);
+	while (*pnote != 0)
 	  {
-	    next = XEXP (note, 1);
-	    if (REG_NOTE_KIND (note) == REG_DEAD
-		&& (GET_CODE (XEXP (note, 0)) != REG
-		    || reg_set_p (XEXP (note, 0), PATTERN (insn))))
-	      remove_note (insn, note);
+	    if (REG_NOTE_KIND (*pnote) == REG_DEAD
+		|| REG_NOTE_KIND (*pnote) == REG_UNUSED)
+	      *pnote = XEXP (*pnote, 1);
+	    else
+	      pnote = &XEXP (*pnote, 1);
 	  }
-#endif
       }
 
   /* If we are doing stack checking, give a warning if this function's
@@ -6755,28 +6752,6 @@ emit_reload_insns (insn, bb)
 		gen_reload (reloadreg, oldequiv, reload_opnum[j],
 			    reload_when_needed[j]);
 
-#if defined(SECONDARY_INPUT_RELOAD_CLASS) && defined(PRESERVE_DEATH_INFO_REGNO_P)
-	      /* We may have to make a REG_DEAD note for the secondary reload
-		 register in the insns we just made.  Find the last insn that
-		 mentioned the register.  */
-	      if (! special && second_reload_reg
-		  && PRESERVE_DEATH_INFO_REGNO_P (REGNO (second_reload_reg)))
-		{
-		  rtx prev;
-
-		  for (prev = get_last_insn (); prev;
-		       prev = PREV_INSN (prev))
-		    if (GET_RTX_CLASS (GET_CODE (prev) == 'i')
-			&& reg_overlap_mentioned_for_reload_p (second_reload_reg,
-							       PATTERN (prev)))
-		      {
-			REG_NOTES (prev) = gen_rtx_EXPR_LIST (REG_DEAD,
-							      second_reload_reg,
-							      REG_NOTES (prev));
-			break;
-		      }
-		}
-#endif
 	    }
 
 	  this_reload_insn = get_last_insn ();
@@ -6798,118 +6773,6 @@ emit_reload_insns (insn, bb)
 	  reload_in[j]
 	    = regno_reg_rtx[reg_reloaded_contents[reload_spill_index[j]]];
 	}
-      /* Add a note saying the input reload reg
-	 dies in this insn, if anyone cares.  */
-#ifdef PRESERVE_DEATH_INFO_REGNO_P
-      if (old != 0
-	  && reload_reg_rtx[j] != old
-	  && reload_reg_rtx[j] != 0
-	  && reload_out[j] == 0
-	  && ! reload_inherited[j]
-	  && PRESERVE_DEATH_INFO_REGNO_P (REGNO (reload_reg_rtx[j])))
-	{
-	  register rtx reloadreg = reload_reg_rtx[j];
-
-#if 0
-	  /* We can't abort here because we need to support this for sched.c.
-	     It's not terrible to miss a REG_DEAD note, but we should try
-	     to figure out how to do this correctly.  */
-	  /* The code below is incorrect for address-only reloads.  */
-	  if (reload_when_needed[j] != RELOAD_OTHER
-	      && reload_when_needed[j] != RELOAD_FOR_INPUT)
-	    abort ();
-#endif
-
-	  /* Add a death note to this insn, for an input reload.  */
-
-	  if ((reload_when_needed[j] == RELOAD_OTHER
-	       || reload_when_needed[j] == RELOAD_FOR_INPUT)
-	      && ! dead_or_set_p (insn, reloadreg))
-	    REG_NOTES (insn)
-	      = gen_rtx_EXPR_LIST (REG_DEAD,
-				   reloadreg, REG_NOTES (insn));
-	}
-
-      /* When we inherit a reload, the last marked death of the reload reg
-	 may no longer really be a death.  */
-      if (reload_reg_rtx[j] != 0
-	  && PRESERVE_DEATH_INFO_REGNO_P (REGNO (reload_reg_rtx[j]))
-	  && reload_inherited[j])
-	{
-	  /* Handle inheriting an output reload.
-	     Remove the death note from the output reload insn.  */
-	  if (reload_spill_index[j] >= 0
-	      && GET_CODE (reload_in[j]) == REG
-	      && spill_reg_store[reload_spill_index[j]] != 0
-	      && find_regno_note (spill_reg_store[reload_spill_index[j]],
-				  REG_DEAD, REGNO (reload_reg_rtx[j])))
-	    remove_death (REGNO (reload_reg_rtx[j]),
-			  spill_reg_store[reload_spill_index[j]]);
-	  /* Likewise for input reloads that were inherited.  */
-	  else if (reload_spill_index[j] >= 0
-		   && GET_CODE (reload_in[j]) == REG
-		   && spill_reg_store[reload_spill_index[j]] == 0
-		   && reload_inheritance_insn[j] != 0
-		   && find_regno_note (reload_inheritance_insn[j], REG_DEAD,
-				       REGNO (reload_reg_rtx[j])))
-	    remove_death (REGNO (reload_reg_rtx[j]),
-			  reload_inheritance_insn[j]);
-	  else
-	    {
-	      rtx prev;
-
-	      /* We got this register from find_equiv_reg.
-		 Search back for its last death note and get rid of it.
-		 But don't search back too far.
-		 Don't go past a place where this reg is set,
-		 since a death note before that remains valid.  */
-	      for (prev = PREV_INSN (insn);
-		   prev && GET_CODE (prev) != CODE_LABEL;
-		   prev = PREV_INSN (prev))
-		if (GET_RTX_CLASS (GET_CODE (prev)) == 'i'
-		    && dead_or_set_p (prev, reload_reg_rtx[j]))
-		  {
-		    if (find_regno_note (prev, REG_DEAD,
-					 REGNO (reload_reg_rtx[j])))
-		      remove_death (REGNO (reload_reg_rtx[j]), prev);
-		    break;
-		  }
-	    }
-	}
-
-      /* We might have used find_equiv_reg above to choose an alternate
-	 place from which to reload.  If so, and it died, we need to remove
-	 that death and move it to one of the insns we just made.  */
-
-      if (oldequiv_reg != 0
-	  && PRESERVE_DEATH_INFO_REGNO_P (true_regnum (oldequiv_reg)))
-	{
-	  rtx prev, prev1;
-
-	  for (prev = PREV_INSN (insn); prev && GET_CODE (prev) != CODE_LABEL;
-	       prev = PREV_INSN (prev))
-	    if (GET_RTX_CLASS (GET_CODE (prev)) == 'i'
-		&& dead_or_set_p (prev, oldequiv_reg))
-	      {
-		if (find_regno_note (prev, REG_DEAD, REGNO (oldequiv_reg)))
-		  {
-		    for (prev1 = this_reload_insn;
-			 prev1; prev1 = PREV_INSN (prev1))
-		      if (GET_RTX_CLASS (GET_CODE (prev1) == 'i')
-			&& reg_overlap_mentioned_for_reload_p (oldequiv_reg,
-							       PATTERN (prev1)))
-		      {
-			REG_NOTES (prev1) = gen_rtx_EXPR_LIST (REG_DEAD,
-							       oldequiv_reg,
-							       REG_NOTES (prev1));
-			break;
-		      }
-		    remove_death (REGNO (oldequiv_reg), prev);
-		  }
-		break;
-	      }
-	}
-#endif
 
       /* If we are reloading a register that was recently stored in with an
 	 output-reload, see if we can prove there was
@@ -7115,30 +6978,6 @@ emit_reload_insns (insn, bb)
 			    reload_when_needed[j]);
 	    }
 
-#ifdef PRESERVE_DEATH_INFO_REGNO_P
-	  /* If final will look at death notes for this reg,
-	     put one on the last output-reload insn to use it.  Similarly
-	     for any secondary register.  */
-	  if (PRESERVE_DEATH_INFO_REGNO_P (REGNO (reloadreg)))
-	    for (p = get_last_insn (); p; p = PREV_INSN (p))
-	      if (GET_RTX_CLASS (GET_CODE (p)) == 'i'
-		  && reg_overlap_mentioned_for_reload_p (reloadreg,
-							 PATTERN (p)))
-		REG_NOTES (p) = gen_rtx_EXPR_LIST (REG_DEAD,
-						   reloadreg, REG_NOTES (p));
-
-#ifdef SECONDARY_OUTPUT_RELOAD_CLASS
-	  if (! special && second_reloadreg
-	      && PRESERVE_DEATH_INFO_REGNO_P (REGNO (second_reloadreg)))
-	    for (p = get_last_insn (); p; p = PREV_INSN (p))
-	      if (GET_RTX_CLASS (GET_CODE (p)) == 'i'
-		  && reg_overlap_mentioned_for_reload_p (second_reloadreg,
-							 PATTERN (p)))
-		REG_NOTES (p) = gen_rtx_EXPR_LIST (REG_DEAD,
-						   second_reloadreg,
-						   REG_NOTES (p));
-#endif
-#endif
 	  /* Look at all insns we emitted, just to be safe.  */
 	  for (p = get_insns (); p; p = NEXT_INSN (p))
 	    if (GET_RTX_CLASS (GET_CODE (p)) == 'i')
@@ -7262,50 +7101,6 @@ emit_reload_insns (insn, bb)
       if (basic_block_end[bb] == insn)
         basic_block_end[bb] = PREV_INSN (following_insn);
     }
-
-  /* Move death notes from INSN
-     to output-operand-address and output reload insns.  */
-#ifdef PRESERVE_DEATH_INFO_REGNO_P
-  {
-    rtx insn1;
-    /* Loop over those insns, last ones first.  */
-    for (insn1 = PREV_INSN (following_insn); insn1 != insn;
-	 insn1 = PREV_INSN (insn1))
-      if (GET_CODE (insn1) == INSN && GET_CODE (PATTERN (insn1)) == SET)
-	{
-	  rtx source = SET_SRC (PATTERN (insn1));
-	  rtx dest = SET_DEST (PATTERN (insn1));
-
-	  /* The note we will examine next.  */
-	  rtx reg_notes = REG_NOTES (insn);
-	  /* The place that pointed to this note.  */
-	  rtx *prev_reg_note = &REG_NOTES (insn);
-
-	  /* If the note is for something used in the source of this
-	     reload insn, or in the output address, move the note.  */
-	  while (reg_notes)
-	    {
-	      rtx next_reg_notes = XEXP (reg_notes, 1);
-	      if (REG_NOTE_KIND (reg_notes) == REG_DEAD
-		  && GET_CODE (XEXP (reg_notes, 0)) == REG
-		  && ((GET_CODE (dest) != REG
-		       && reg_overlap_mentioned_for_reload_p (XEXP (reg_notes, 0),
-							      dest))
-		      || reg_overlap_mentioned_for_reload_p (XEXP (reg_notes, 0),
-							     source)))
-		{
-		  *prev_reg_note = next_reg_notes;
-		  XEXP (reg_notes, 1) = REG_NOTES (insn1);
-		  REG_NOTES (insn1) = reg_notes;
-		}
-	      else
-		prev_reg_note = &XEXP (reg_notes, 1);
-
-	      reg_notes = next_reg_notes;
-	    }
-	}
-  }
-#endif
 
   /* For all the spill regs newly reloaded in this instruction,
      record what they were reloaded from, so subsequent instructions
@@ -8014,6 +7809,270 @@ count_occurrences (x, find)
   return count;
 }
 
+static HARD_REG_SET set_regs;
+static HARD_REG_SET used_regs;
+static HARD_REG_SET live_regs;
+
+/* Walk the rtx X recursively, calling WORKER for every sub-expression with
+   the type of access as parameter.  */
+static void
+find_set_and_used_regs (x, read, written)
+     rtx x;
+     int read, written;
+{
+  enum rtx_code code;
+  const char *fmt;
+  int i, regno, nregs;
+
+  if (0 && x == 0)
+    return;
+
+  code = GET_CODE (x);
+  if (code == SUBREG)
+    {
+      x = SUBREG_REG (x);
+      code = GET_CODE (x);
+    }
+
+  switch (code)
+    {
+    case PC:
+    case CC0:
+    case SCRATCH:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      return;
+
+    case REG:
+      regno = REGNO (x);
+      if (regno >= FIRST_PSEUDO_REGISTER)
+	return;
+      nregs = HARD_REGNO_NREGS (regno, GET_MODE (x));
+      while (nregs-- > 0)
+	{
+	  if (written)
+	    SET_HARD_REG_BIT (set_regs, regno + nregs);
+	  if (read)
+	    SET_HARD_REG_BIT (used_regs, regno + nregs);
+	}
+      return;
+
+    case ZERO_EXTRACT:
+    case SIGN_EXTRACT:
+      find_set_and_used_regs (XEXP (x, 0), read, written);
+      find_set_and_used_regs (XEXP (x, 1), 1, 0);
+      find_set_and_used_regs (XEXP (x, 2), 1, 0);
+      return;
+      
+    case PRE_DEC:
+    case POST_DEC:
+    case PRE_INC:
+    case POST_INC:
+      find_set_and_used_regs (XEXP (x, 0), 1, 1);
+      return;
+      
+    case SET:
+      find_set_and_used_regs (SET_SRC (x), 1, 0);
+
+      /* fall through */
+    case CLOBBER:
+      find_set_and_used_regs (SET_DEST (x), 0, 1);
+      return;
+
+    default:
+      break;
+    }
+
+  fmt = GET_RTX_FORMAT (code);
+  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+    {
+      if (fmt[i] == 'e')
+	find_set_and_used_regs (XEXP (x, i), 1, 0);
+      else if (fmt[i] == 'E')
+	{
+	  int j;
+
+	  for (j = 0; j < XVECLEN (x, i); j++)
+	    find_set_and_used_regs (XVECEXP (x, i, j), 1, 0);
+	}
+    }
+}
+
+static void
+calc_reg_usage (insn, make_notes)
+     rtx insn;
+     int make_notes;
+{
+  int i;
+
+  CLEAR_HARD_REG_SET (set_regs);
+  CLEAR_HARD_REG_SET (used_regs);
+  find_set_and_used_regs (PATTERN (insn), 0, 0);
+
+  if (GET_CODE (insn) == CALL_INSN)
+    {
+      rtx x;
+      for (x = CALL_INSN_FUNCTION_USAGE (insn); x != 0; x = XEXP (x, 1))
+	find_set_and_used_regs (XEXP (x, 0), 0, 0);
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (call_used_regs[i] && ! fixed_regs[i] && ! global_regs[i])
+	  SET_HARD_REG_BIT (set_regs, i);
+    }
+
+  if (! make_notes)
+    return;
+
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+    {
+      if (TEST_HARD_REG_BIT (live_regs, i))
+	continue;
+      if (TEST_HARD_REG_BIT (set_regs, i))
+	REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_UNUSED,
+					      gen_rtx_REG (reg_raw_mode[i], i),
+					      REG_NOTES (insn));
+      else if (TEST_HARD_REG_BIT (used_regs, i))
+	REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_DEAD,
+					      gen_rtx_REG (reg_raw_mode[i], i),
+					      REG_NOTES (insn));
+    }
+  AND_COMPL_HARD_REG_SET (live_regs, set_regs);
+  IOR_HARD_REG_SET (live_regs, used_regs);
+}
+
+/* Now that all pseudo registers have been eliminated, calculate hard register
+   life information.  */
+void
+reload_life_analysis (first)
+     rtx first;
+{
+  rtx insn, last;
+  int b;
+  int_list_ptr *s_preds, *s_succs;
+  int *num_preds, *num_succs;
+  HARD_REG_SET *block_sets;
+  HARD_REG_SET *block_uses;
+  HARD_REG_SET *live_at_start;
+  HARD_REG_SET *live_at_end;
+  int outside_block = 1;
+
+  s_preds = (int_list_ptr *) xmalloc (n_basic_blocks * sizeof (int_list_ptr));
+  s_succs = (int_list_ptr *) xmalloc (n_basic_blocks * sizeof (int_list_ptr));
+  num_preds = (int *) xmalloc (n_basic_blocks * sizeof (int));
+  num_succs = (int *) xmalloc (n_basic_blocks * sizeof (int));
+  block_sets = (HARD_REG_SET *) xmalloc (n_basic_blocks * sizeof (HARD_REG_SET));
+  block_uses = (HARD_REG_SET *) xmalloc (n_basic_blocks * sizeof (HARD_REG_SET));
+  live_at_start = (HARD_REG_SET *) xmalloc (n_basic_blocks * sizeof (HARD_REG_SET));
+  live_at_end = (HARD_REG_SET *) xmalloc (n_basic_blocks * sizeof (HARD_REG_SET));
+
+  bzero (block_sets, n_basic_blocks * sizeof (HARD_REG_SET));
+  bzero (block_uses, n_basic_blocks * sizeof (HARD_REG_SET));
+  bzero (live_at_start, n_basic_blocks * sizeof (HARD_REG_SET));
+  bzero (live_at_end, n_basic_blocks * sizeof (HARD_REG_SET));
+
+  compute_preds_succs (s_preds, s_succs, num_preds, num_succs);
+
+  b = n_basic_blocks;
+  for (last = first; NEXT_INSN (last); last = NEXT_INSN (last))
+    ;
+  for (insn = last; insn; insn = PREV_INSN (insn))
+    {
+      enum rtx_code code = GET_CODE (insn);
+
+      /* Start with fresh live info at the end of every basic block.  */
+      if (b > 0 && basic_block_end[b - 1] == insn)
+	{
+	  outside_block = 0;
+	  b--;
+	}
+      if (GET_RTX_CLASS (code) == 'i' && outside_block)
+	abort ();
+
+      /* Clobbers are inserted during rtl expansion to show flow.c that some
+	 values die when that is non-obvious.  Once all pseudos are converted
+	 tohard regs, that information is no longer needed, and can in fact
+	 be incorrect.  */
+      if (GET_RTX_CLASS (code) == 'i' && GET_CODE (PATTERN (insn)) == CLOBBER)
+	{
+	  PUT_CODE (insn, NOTE);
+	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	  NOTE_SOURCE_FILE (insn) = 0;
+	  code = NOTE;
+	}
+      if (GET_RTX_CLASS (code) == 'i')
+	{
+	  calc_reg_usage (insn, 0);
+
+	  IOR_HARD_REG_SET (block_sets[b], set_regs);
+	  AND_COMPL_HARD_REG_SET (block_sets[b], used_regs);
+
+	  AND_COMPL_HARD_REG_SET (block_uses[b], set_regs);
+	  IOR_HARD_REG_SET (block_uses[b], used_regs);
+	}
+
+      if (insn == basic_block_head[b])
+	{
+	  outside_block = 1;
+	}
+    }
+  for (;;)
+    {
+      int something_changed = 0;
+
+      for (b = n_basic_blocks - 1; b >= 0; b--)
+	{
+	  int_list_ptr psucc;
+	  HARD_REG_SET tmp;
+
+	  CLEAR_HARD_REG_SET (live_at_end[b]);
+	  for (psucc = s_succs[b]; psucc; psucc = psucc->next)
+	    IOR_HARD_REG_SET (live_at_end[b],
+			      live_at_start[INT_LIST_VAL (psucc)]);
+	  COPY_HARD_REG_SET (tmp, live_at_end[b]);
+	  AND_COMPL_HARD_REG_SET (tmp, block_sets[b]);
+	  IOR_HARD_REG_SET (tmp, block_uses[b]);
+	  GO_IF_HARD_REG_EQUAL (tmp, live_at_start[b], win);
+	  COPY_HARD_REG_SET (live_at_start[b], tmp);
+	  something_changed = 1;
+
+	win:
+	  ;
+	}
+      if (! something_changed)
+	break;
+    }
+  for (b = 0; b < n_basic_blocks; b++)
+    {
+      int i;
+      CLEAR_REG_SET (basic_block_live_at_start[b]);
+      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	if (TEST_HARD_REG_BIT (live_at_start[b], i))
+	  SET_REGNO_REG_SET (basic_block_live_at_start[b], i);
+    }
+  for (insn = last; insn; insn = PREV_INSN (insn))
+    {
+      enum rtx_code code = GET_CODE (insn);
+
+      /* Start with fresh live info at the end of every basic block.  */
+      if (b > 0 && basic_block_end[b - 1] == insn)
+	{
+	  b--;
+	  COPY_HARD_REG_SET (live_regs, live_at_end[b]);
+	}
+
+      if (GET_RTX_CLASS (code) == 'i')
+	calc_reg_usage (insn, 1);
+    }
+
+  free (s_preds);
+  free (s_succs);
+  free (num_preds);
+  free (num_succs);
+  free (block_sets);
+  free (block_uses);
+  free (live_at_end);
+  free (live_at_start);
+}
+
 /* This array holds values which are equivalent to a hard register
    during reload_cse_regs.  Each array element is an EXPR_LIST of
    values.  Each time a hard register is set, we set the corresponding
@@ -8035,13 +8094,6 @@ static rtx *reg_values;
    new one each time through a loop in that function.  */
 
 static rtx invalidate_regno_rtx;
-
-/* This is a set of registers for which we must remove REG_DEAD notes in
-   previous insns, because our modifications made them invalid.  That can
-   happen if we introduced the register into the current insn, or we deleted
-   the current insn which used to set the register.  */
-
-static HARD_REG_SET no_longer_dead_regs;
 
 /* Invalidate any entries in reg_values which depend on REGNO,
    including those for REGNO itself.  This is called if REGNO is
@@ -8245,55 +8297,6 @@ reload_cse_invalidate_rtx (dest, ignore)
     reload_cse_invalidate_mem (dest);
 }
 
-/* Possibly delete death notes on the insns before INSN if modifying INSN
-   extended the lifespan of the registers.  */
-
-static void
-reload_cse_delete_death_notes (insn)
-     rtx insn;
-{
-  int dreg;
-
-  for (dreg = 0; dreg < FIRST_PSEUDO_REGISTER; dreg++)
-    {
-      rtx trial;
-
-      if (! TEST_HARD_REG_BIT (no_longer_dead_regs, dreg))
-	continue;
-
-      for (trial = prev_nonnote_insn (insn);
-	   (trial
-	    && GET_CODE (trial) != CODE_LABEL
-	    && GET_CODE (trial) != BARRIER);
-	   trial = prev_nonnote_insn (trial))
-	{
-	  if (find_regno_note (trial, REG_DEAD, dreg))
-	    {
-	      remove_death (dreg, trial);
-	      break;
-	    }
-	}
-    }
-}
-
-/* Record that the current insn uses hard reg REGNO in mode MODE.  This
-   will be used in reload_cse_delete_death_notes to delete prior REG_DEAD
-   notes for this register.  */
-
-static void
-reload_cse_no_longer_dead (regno, mode)
-     int regno;
-     enum machine_mode mode;
-{
-  int nregs = HARD_REGNO_NREGS (regno, mode);
-  while (nregs-- > 0)
-    {
-      SET_HARD_REG_BIT (no_longer_dead_regs, regno);
-      regno++;
-    }
-}
-
-
 /* Do a very simple CSE pass over the hard registers.
 
    This function detects no-op moves where we happened to assign two
@@ -8366,8 +8369,6 @@ reload_cse_regs_1 (first)
       if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
 	continue;
 
-      CLEAR_HARD_REG_SET (no_longer_dead_regs);
-
       /* If this is a call instruction, forget anything stored in a
 	 call clobbered register, or, if this is not a const call, in
 	 memory.  */
@@ -8408,20 +8409,18 @@ reload_cse_regs_1 (first)
 		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 		  NOTE_SOURCE_FILE (insn) = 0;
 		}
-	      reload_cse_delete_death_notes (insn);
 
 	      /* We're done with this insn.  */
 	      continue;
 	    }
 
 	  /* It's not a no-op, but we can try to simplify it.  */
-	  CLEAR_HARD_REG_SET (no_longer_dead_regs);
 	  count += reload_cse_simplify_set (body, insn);
 
-	  if (count > 0 && apply_change_group ())
-	    reload_cse_delete_death_notes (insn);
-	  else if (reload_cse_simplify_operands (insn))
-	    reload_cse_delete_death_notes (insn);
+	  if (count > 0)
+	    apply_change_group ();
+	  else
+	    reload_cse_simplify_operands (insn);
 	    
 	  reload_cse_record_set (body, body);
 	}
@@ -8465,22 +8464,20 @@ reload_cse_regs_1 (first)
 		  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
 		  NOTE_SOURCE_FILE (insn) = 0;
 		}
-	      reload_cse_delete_death_notes (insn);
 
 	      /* We're done with this insn.  */
 	      continue;
 	    }
 	  
 	  /* It's not a no-op, but we can try to simplify it.  */
-	  CLEAR_HARD_REG_SET (no_longer_dead_regs);
 	  for (i = XVECLEN (body, 0) - 1; i >= 0; --i)
 	    if (GET_CODE (XVECEXP (body, 0, i)) == SET)
 	      count += reload_cse_simplify_set (XVECEXP (body, 0, i), insn);
 
-	  if (count > 0 && apply_change_group ())
-	    reload_cse_delete_death_notes (insn);
-	  else if (reload_cse_simplify_operands (insn))
-	    reload_cse_delete_death_notes (insn);
+	  if (count > 0)
+	    apply_change_group ();
+	  else
+	    reload_cse_simplify_operands (insn);
 
 	  /* Look through the PARALLEL and record the values being
              set, if possible.  Also handle any CLOBBERs.  */
@@ -8659,14 +8656,6 @@ reload_cse_noop_set_p (set, insn)
 	ret = 1;
     }
 
-  /* If we can delete this SET, then we need to look for an earlier
-     REG_DEAD note on DREG, and remove it if it exists.  */
-  if (ret && dreg >= 0)
-    {
-      if (! find_regno_note (insn, REG_UNUSED, dreg))
-	reload_cse_no_longer_dead (dreg, dest_mode);
-    }
-
   return ret;
 }
 
@@ -8726,11 +8715,8 @@ reload_cse_simplify_set (set, insn)
              storage.  */
 	  push_obstacks (&reload_obstack, &reload_obstack);
 
-	  if (validated && ! find_regno_note (insn, REG_UNUSED, i))
-	    {
-	      reload_cse_no_longer_dead (i, dest_mode);
-	      return 1;
-	    }
+	  if (validated)
+	    return 1;
 	}
     }
   return 0;
@@ -8935,7 +8921,6 @@ reload_cse_simplify_operands (insn)
   /* Substitute the operands as determined by op_alt_regno for the best
      alternative.  */
   j = alternative_order[0];
-  CLEAR_HARD_REG_SET (no_longer_dead_regs);
 
   /* Pop back to the real obstacks while changing the insn.  */
   pop_obstacks ();
@@ -8946,7 +8931,6 @@ reload_cse_simplify_operands (insn)
       if (op_alt_regno[i][j] == -1)
 	continue;
 
-      reload_cse_no_longer_dead (op_alt_regno[i][j], mode);
       validate_change (insn, recog_operand_loc[i],
 		       gen_rtx_REG (mode, op_alt_regno[i][j]), 1);
     }
@@ -8959,7 +8943,6 @@ reload_cse_simplify_operands (insn)
       if (op_alt_regno[op][j] == -1)
 	continue;
 
-      reload_cse_no_longer_dead (op_alt_regno[op][j], mode);
       validate_change (insn, recog_dup_loc[i],
 		       gen_rtx_REG (mode, op_alt_regno[op][j]), 1);
     }
@@ -9546,8 +9529,7 @@ static int reg_base_reg[FIRST_PSEUDO_REGISTER];
 static enum machine_mode reg_mode[FIRST_PSEUDO_REGISTER];
 /* move2add_luid is linearily increased while scanning the instructions
    from first to last.  It is used to set reg_set_luid in
-   reload_cse_move2add and move2add_note_store, and to set reg_death_luid
-   (local variable of reload_cse_move2add) .  */
+   reload_cse_move2add and move2add_note_store.  */
 static int move2add_luid;
 
 static void
@@ -9557,16 +9539,10 @@ reload_cse_move2add (first)
   int i;
   rtx insn;
   int last_label_luid;
-  /* reg_death and reg_death_luid are solely used to remove stale REG_DEAD
-     notes.  */
-  int reg_death_luid[FIRST_PSEUDO_REGISTER];
-  rtx reg_death[FIRST_PSEUDO_REGISTER];
 
   for (i = FIRST_PSEUDO_REGISTER-1; i >= 0; i--)
-    {
-      reg_set_luid[i] = 0;
-      reg_death_luid[i] = 0;
-    }
+    reg_set_luid[i] = 0;
+
   last_label_luid = 0;
   move2add_luid = 1;
   for (insn = first; insn; insn = NEXT_INSN (insn), move2add_luid++)
@@ -9621,8 +9597,6 @@ reload_cse_move2add (first)
 			   && have_add2_insn (GET_MODE (reg)))
 		    success = validate_change (insn, &PATTERN (insn),
 					       gen_add2_insn (reg, new_src), 0);
-		  if (success && reg_death_luid[regno] > reg_set_luid[regno])
-		    remove_death (regno, reg_death[regno]);
 		  reg_set_luid[regno] = move2add_luid;
 		  reg_mode[regno] = GET_MODE (reg);
 		  reg_offset[regno] = src;
@@ -9672,8 +9646,6 @@ reload_cse_move2add (first)
 					     gen_add2_insn (reg, new_src), 0);
 		      if (success)
 			{
-			  if (reg_death_luid[regno] > reg_set_luid[regno])
-			    remove_death (regno, reg_death[regno]);
 			  /* INSN might be the first insn in a basic block
 			     if the preceding insn is a conditional jump
 			     or a possible-throwing call.  */
@@ -9703,18 +9675,6 @@ reload_cse_move2add (first)
 		{
 		  reg_set_luid[regno] = move2add_luid;
 		  reg_offset[regno] = note;
-		}
-	    }
-	  /* Remember any REG_DEAD notes so that we can remove them
-	     later if necessary.  */
-	  else if (REG_NOTE_KIND (note) == REG_DEAD
-	      && GET_CODE (XEXP (note, 0)) == REG)
-	    {
-	      int regno = REGNO (XEXP (note, 0));
-	      if (regno < FIRST_PSEUDO_REGISTER)
-		{
-		  reg_death[regno] = insn;
-		  reg_death_luid[regno] = move2add_luid;
 		}
 	    }
 	}
