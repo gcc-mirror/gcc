@@ -1,5 +1,10 @@
 2000-04-26  Richard Henderson  <rth@cygnus.com>
 
+	* flow.c (find_auto_inc): Use pbi->bb instead of BLOCK_FOR_INSN.
+	* ssa.c (convert_from_ssa): Don't run compute_bb_for_insn.
+
+2000-04-26  Richard Henderson  <rth@cygnus.com>
+
 	* flow.c (propagate_one_insn): Break out from propagate_block.
 	(init_propagate_block_info): Likewise.
 	(free_propagate_block_info): Likewise.

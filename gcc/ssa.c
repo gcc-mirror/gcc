@@ -1811,7 +1811,6 @@ convert_from_ssa()
   rtx insns = get_insns ();
     
   /* We need up-to-date life information.  */
-  compute_bb_for_insn (get_max_uid ());
   life_analysis (insns, NULL, PROP_KILL_DEAD_CODE | PROP_SCAN_DEAD_CODE);
 
   /* Figure out which regs in copies and phi nodes don't conflict and
