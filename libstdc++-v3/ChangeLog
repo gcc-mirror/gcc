@@ -1,5 +1,10 @@
 2003-12-10  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc (num_put::do_put(void*)):
+	Remove the try/catch, not necessary.
+
+2003-12-10  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/22_locale/locale/cons/12438.cc: Tweak memory
 	limit and iterations to avoid spurious failures on some
 	64 bit machines.
