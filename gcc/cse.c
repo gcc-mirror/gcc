@@ -4457,7 +4457,8 @@ fold_rtx (x, insn)
 	 can use the inner value.  */
 
       if (GET_CODE (folded_arg0) == REG
-	  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (folded_arg0)))
+	  && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (folded_arg0))
+	  && subreg_lowpart_p (x))
 	{
 	  struct table_elt *elt;
 
@@ -4472,6 +4473,8 @@ fold_rtx (x, insn)
 
 	  for (; elt; elt = elt->next_same_value)
 	    {
+	      enum rtx_code eltcode = GET_CODE (elt->exp);
+
 	      /* Just check for unary and binary operations.  */
 	      if (GET_RTX_CLASS (GET_CODE (elt->exp)) == '1'
 		  && GET_CODE (elt->exp) != SIGN_EXTEND
@@ -4491,6 +4494,10 @@ fold_rtx (x, insn)
 		}
 	      else if ((GET_RTX_CLASS (GET_CODE (elt->exp)) == '2'
 			|| GET_RTX_CLASS (GET_CODE (elt->exp)) == 'c')
+		       && eltcode != DIV && eltcode != MOD
+		       && eltcode != UDIV && eltcode != UMOD
+		       && eltcode != ASHIFTRT && eltcode != LSHIFTRT
+		       && eltcode != ROTATE && eltcode != ROTATERT
 		       && ((GET_CODE (XEXP (elt->exp, 0)) == SUBREG
 			    && (GET_MODE (SUBREG_REG (XEXP (elt->exp, 0)))
 				== mode))
