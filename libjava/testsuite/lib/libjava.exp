@@ -452,6 +452,7 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
 	append executable ".o"
 	set target object
     } else {
+        append executable ".exe"
 	set target executable
     }
     if { $compile_args != "" } {
