@@ -47,7 +47,7 @@
 
 #include <stddef.h>
 
-namespace std 
+namespace std
 {
   using ::ptrdiff_t;
   using ::size_t;

@@ -32,7 +32,7 @@
 #ifndef _GLIBCXX_CMATH_TCC
 #define _GLIBCXX_CMATH_TCC 1
 
-namespace std 
+namespace std
 {
   template<typename _Tp>
     _Tp

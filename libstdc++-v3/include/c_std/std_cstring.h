@@ -74,7 +74,7 @@
 #undef strerror
 #undef strlen
 
-namespace std 
+namespace std
 {
   using ::memcpy;
   using ::memmove;

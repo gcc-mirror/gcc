@@ -57,16 +57,16 @@
 // Need to do a bit of trickery here with mbstate_t as char_traits
 // assumes it is in wchar.h, regardless of wchar_t specializations.
 #ifndef _GLIBCXX_HAVE_MBSTATE_T
-extern "C" 
+extern "C"
 {
-  typedef struct 
+  typedef struct
   {
     int __fill[6];
   } mbstate_t;
 }
 #endif
 
-namespace std 
+namespace std
 {
   using ::mbstate_t;
 }
@@ -94,15 +94,15 @@ namespace std
 #undef vfwprintf
 #if _GLIBCXX_HAVE_VFWSCANF
 # undef vfwscanf
-#endif 
+#endif
 #undef vswprintf
 #if _GLIBCXX_HAVE_VSWSCANF
 # undef vswscanf
-#endif 
+#endif
 #undef vwprintf
 #if _GLIBCXX_HAVE_VWSCANF
 # undef vwscanf
-#endif 
+#endif
 #undef wcrtomb
 #undef wcscat
 #undef wcschr
@@ -123,7 +123,7 @@ namespace std
 #undef wcstod
 #if _GLIBCXX_HAVE_WCSTOF
 # undef wcstof
-#endif 
+#endif
 #undef wcstok
 #undef wcstol
 #undef wcstoul
@@ -164,15 +164,15 @@ namespace std
   using ::vfwprintf;
 #if _GLIBCXX_HAVE_VFWSCANF
   using ::vfwscanf;
-#endif 
+#endif
   using ::vswprintf;
 #if _GLIBCXX_HAVE_VSWSCANF
   using ::vswscanf;
-#endif 
+#endif
   using ::vwprintf;
 #if _GLIBCXX_HAVE_VWSCANF
   using ::vwscanf;
-#endif 
+#endif
   using ::wcrtomb;
   using ::wcscat;
   using ::wcscmp;
@@ -189,7 +189,7 @@ namespace std
   using ::wcstod;
 #if _GLIBCXX_HAVE_WCSTOF
   using ::wcstof;
-#endif 
+#endif
   using ::wcstok;
   using ::wcstol;
   using ::wcstoul;
@@ -270,4 +270,4 @@ namespace std
 
 #endif //_GLIBCXX_USE_WCHAR_T
 
-#endif 
+#endif

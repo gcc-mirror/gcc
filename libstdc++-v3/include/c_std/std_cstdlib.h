@@ -81,7 +81,7 @@
 #undef wcstombs
 #undef wctomb
 
-namespace std 
+namespace std
 {
   using ::div_t;
   using ::ldiv_t;
@@ -117,14 +117,14 @@ namespace std
 #ifdef _GLIBCXX_USE_WCHAR_T
   using ::wcstombs;
   using ::wctomb;
-#endif // _GLIBCXX_USE_WCHAR_T 
+#endif // _GLIBCXX_USE_WCHAR_T
 
-  inline long 
+  inline long
   abs(long __i) { return labs(__i); }
 
   inline ldiv_t
   div(long __i, long __j) { return ldiv(__i, __j); }
-} 
+}
 
 #if _GLIBCXX_USE_C99
 
@@ -149,18 +149,18 @@ namespace __gnu_cxx
   using ::_Exit;
 #endif
 
-  inline long long 
+  inline long long
   abs(long long __x) { return __x >= 0 ? __x : -__x; }
 
-  inline long long 
+  inline long long
   llabs(long long __x) { return __x >= 0 ? __x : -__x; }
 
 #if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
-  inline lldiv_t 
+  inline lldiv_t
   div(long long __n, long long __d)
   { lldiv_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
 
-  inline lldiv_t 
+  inline lldiv_t
   lldiv(long long __n, long long __d)
   { lldiv_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
 #endif
@@ -178,18 +178,18 @@ namespace __gnu_cxx
   using ::strtoull;
 #endif
   using ::strtof;
-  using ::strtold; 
-} 
+  using ::strtold;
+}
 
 namespace std
 {
-#if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC 
+#if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   using __gnu_cxx::lldiv_t;
 #endif
   using __gnu_cxx::_Exit;
   using __gnu_cxx::abs;
-  using __gnu_cxx::llabs; 
-#if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC 
+  using __gnu_cxx::llabs;
+#if !_GLIBCXX_USE_C99_LONG_LONG_DYNAMIC
   using __gnu_cxx::div;
   using __gnu_cxx::lldiv;
 #endif
@@ -201,4 +201,4 @@ namespace std
 }
 #endif
 
-#endif 
+#endif

@@ -80,4 +80,4 @@ namespace std
   using ::toupper;
 }
 
-#endif 
+#endif

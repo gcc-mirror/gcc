@@ -94,7 +94,7 @@
 #undef vprintf
 #undef vsprintf
 
-namespace std 
+namespace std
 {
   using ::FILE;
   using ::fpos_t;
@@ -180,6 +180,6 @@ namespace std
   using __gnu_cxx::vsnprintf;
   using __gnu_cxx::vsscanf;
 }
-#endif 
+#endif
 
 #endif
