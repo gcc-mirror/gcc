@@ -1,3 +1,9 @@
+2001-10-03  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* parse.y (patch_assignment): Use lvalue's original TYPE when
+	building the final COMPOUND_EXPR.
+	(try_reference_assignconv): Fixed leading comment.
+
 2001-09-26  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (check_final_variable_indirect_assignment): For
