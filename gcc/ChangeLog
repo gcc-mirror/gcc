@@ -1,3 +1,8 @@
+2002-02-12  Eric Christopher  <echristo@redhat.com>
+
+	* explow.c (hard_function_value): Add comment explaining
+	signed/unsigned comparison.
+
 2002-02-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* jump.c (never_reached_warning): Add finish argument.
@@ -158,7 +163,7 @@ Sat Feb  9 18:28:02 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* config/sh/sh.c (expand_prologue): Fix mis-applied 2001-11-09's
 	patch.
-	
+
 	Contribute sh64-elf.
 	2002-02-09  Alexandre Oliva  <aoliva@redhat.com>
 	* config/sh/sh.c (TARGET_CANNOT_MODIFY_JUMPS_P): Define to...
@@ -559,7 +564,7 @@ Sat Feb  9 18:28:02 CET 2002  Jan Hubicka  <jh@suse.cz>
 	2000-12-26  Alexandre Oliva  <aoliva@redhat.com>
 	* config/sh/sh.md (movdi_media split): Don't add REG_LABEL notes.
 	Increment LABEL_NUSES.
-	
+
 	* config/sh/sh.h (SIZE_TYPE): Define as conditional on
 	TARGET_SH5.
 	(SUBTARGET_CPP_SPEC): Arrange for __SIZE_TYPE__ to be always
@@ -664,7 +669,7 @@ Sat Feb  9 18:28:02 CET 2002  Jan Hubicka  <jh@suse.cz>
 	(call_media, call_value_media, sibcall_media): Use
 	target_reg_operand instead of target_operand.
 	2000-12-13  Alexandre Oliva  <aoliva@redhat.com>
-	* glimits.h (__LONG_MAX__) [SH5 == 64]: Adjust for 64 bits. 
+	* glimits.h (__LONG_MAX__) [SH5 == 64]: Adjust for 64 bits.
 	* config/sh/sh.c (target_reg_operand): Match hardware registers
 	other than branch-target registers.
 	* config/sh/sh.md (zero_extendqidi2): Input operand is %1.
