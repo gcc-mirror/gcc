@@ -46,11 +46,6 @@ rtx hppa_save_pic_table_rtx;
 /* Set by the FUNCTION_PROFILER macro. */
 int hp_profile_labelno;
 
-/* Name of where we pretend to think the frame pointer points.
-   Normally, this is "4", but if we are in a leaf procedure,
-   this is "something(30)".  Will this work? */
-char *frame_base_name;
-
 static rtx find_addr_reg ();
 
 /* Return non-zero only if OP is a register of mode MODE,
@@ -187,18 +182,6 @@ short_memory_operand (op, mode)
 }
 
 int
-register_or_short_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (register_operand (op, mode))
-    return 1;
-  if (GET_CODE (op) == SUBREG)
-    op = SUBREG_REG (op);
-  return short_memory_operand (op, mode);
-}
-
-int
 fp_reg_operand (op, mode)
      rtx op;
      enum machine_mode mode;
@@ -206,21 +189,6 @@ fp_reg_operand (op, mode)
   return reg_renumber && FP_REG_P (op);
 }
 
-int
-check_fp_mov (operands)
-     rtx *operands;
-{
-  enum machine_mode mode = GET_MODE (operands[0]);
-
-  if (fp_reg_operand (operands[0], mode))
-    return (register_operand (operands[1], mode)
-	    || short_memory_operand (operands[1], mode));
-  else if (fp_reg_operand (operands[1], mode))
-    return (register_operand (operands[0], mode)
-	    || short_memory_operand (operands[0], mode));
-  else
-    return 1;
-}
 
 extern int current_function_uses_pic_offset_table;
 extern rtx force_reg (), validize_mem ();
@@ -247,16 +215,6 @@ check_pic (i)
     default:
       return 1;
     }
-}
-
-/* Return truth value of whether OP is EQ or NE.  */
-
-int
-eq_or_neq (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  return (GET_CODE (op) == EQ || GET_CODE (op) == NE);
 }
 
 /* Return truth value of whether OP can be used as an operand in a
@@ -1854,20 +1812,6 @@ output_function_epilogue (file, size)
   fprintf (file, "\t.EXIT\n\t.PROCEND\n");
 }
 
-rtx
-gen_compare_reg (code, x, y)
-     enum rtx_code code;
-     rtx x, y;
-{
-  enum machine_mode mode = SELECT_CC_MODE (code, x, y);
-  rtx cc_reg = gen_rtx (REG, mode, 0);
-
-  emit_insn (gen_rtx (SET, VOIDmode, cc_reg,
-		      gen_rtx (COMPARE, mode, x, y)));
-
-  return cc_reg;
-}
-
 /* If there's a frame, it will be deallocated in the delay slot of the 
    bv 0(2) return instruction. */
 
@@ -2250,33 +2194,6 @@ output_global_address (file, x)
     }
   else
     output_addr_const (file, x);
-}
-
-enum rtx_code
-reverse_relop (code)
-     enum rtx_code code;
-{
-  switch (code)
-    {
-    case GT:
-      return LT;
-    case LT:
-      return GT;
-    case GE:
-      return LE;
-    case LE:
-      return GE;
-    case LTU:
-      return GTU;
-    case GTU:
-      return LTU;
-    case GEU:
-      return LEU;
-    case LEU:
-      return GEU;
-    default:
-      abort ();
-    }
 }
 
 /* HP's millicode routines mean something special to the assembler.
