@@ -1,3 +1,8 @@
+2001-08-07  Jason Merrill  <jason_merrill@redhat.com>
+
+	* cp-demangle.c (demangle_special_name): "GR" -> "reference temporary
+	for".
+
 2001-08-03  Richard Henderson  <rth@redhat.com>
 
 	* Makefile.in (concat.o): Depend on config.h.
