@@ -35,6 +35,12 @@
 #include <stdio.h>
 #include <bits/c++threads.h>
 
+#if _GLIBCPP_USE_WCHAR_T
+// Even though we use the C stdio facilities for ordinary streams,
+// we still use libio for wide-character support.
+#include <libio.h>
+#endif
+
 namespace std {
 
 // from fpos.h
