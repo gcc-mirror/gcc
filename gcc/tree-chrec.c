@@ -1002,7 +1002,23 @@ nb_vars_in_chrec (tree chrec)
 
 
 
-/* Convert the initial condition of chrec to type.  */
+/* Convert CHREC to TYPE.  The following is rule is always true:
+   TREE_TYPE (chrec) == TREE_TYPE (CHREC_LEFT (chrec)) == TREE_TYPE
+   (CHREC_RIGHT (chrec)).  An example of what could happen when adding
+   two chrecs and the type of the CHREC_RIGHT is different than
+   CHREC_LEFT is:
+   
+   {(uint) 0, +, (uchar) 10} +
+   {(uint) 0, +, (uchar) 250}
+   
+   that would produce a wrong result if CHREC_RIGHT is not (uint):
+   
+   {(uint) 0, +, (uchar) 4}
+
+   instead of
+
+   {(uint) 0, +, (uint) 260}
+*/
 
 tree 
 chrec_convert (tree type, 
@@ -1037,6 +1053,18 @@ chrec_convert (tree type,
 	TREE_OVERFLOW (res) = 0;
 	if (CONSTANT_CLASS_P (res))
 	  TREE_CONSTANT_OVERFLOW (res) = 0;
+
+	/* But reject constants that don't fit in their type after conversion.
+	   This can happen if TYPE_MIN_VALUE or TYPE_MAX_VALUE are not the
+	   natural values associated with TYPE_PRECISION and TYPE_UNSIGNED,
+	   and can cause problems later when computing niters of loops.  Note
+	   that we don't do the check before converting because we don't want
+	   to reject conversions of negative chrecs to unsigned types.  */
+	if (TREE_CODE (res) == INTEGER_CST
+	    && TREE_CODE (type) == INTEGER_TYPE
+	    && !int_fits_type_p (res, type))
+	  res = chrec_dont_know;
+
 	return res;
       }
     }
