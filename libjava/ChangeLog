@@ -1,3 +1,9 @@
+2001-12-18  Tom Tromey  <tromey@redhat.com>
+
+	* java/text/CollationElementIterator.java (secondaryOrder): Cast
+	result to `short'.
+	(tertiaryOrder): Likewise.
+
 2001-12-16  Tom Tromey  <tromey@redhat.com>
 
 	For PR libgcj/5103:
