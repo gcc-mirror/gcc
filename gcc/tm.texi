@@ -2906,7 +2906,7 @@ serves both purposes.@refill
 @findex FUNCTION_ARG_PARTIAL_NREGS
 @item FUNCTION_ARG_PARTIAL_NREGS (@var{cum}, @var{mode}, @var{type}, @var{named})
 A C expression for the number of words, at the beginning of an
-argument, must be put in registers.  The value must be zero for
+argument, that must be put in registers.  The value must be zero for
 arguments that are passed entirely in registers or that are entirely
 pushed on the stack.
 
