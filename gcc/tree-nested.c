@@ -135,7 +135,7 @@ create_tmp_var_for (struct nesting_info *info, tree type, const char *prefix)
   /* If the type is of variable size or a type which must be created by the
      frontend, something is wrong.  Note that we explicitly allow
      incomplete types here, since we create them ourselves here.  */
-  gcc_assert (TREE_ADDRESSABLE (type));
+  gcc_assert (!TREE_ADDRESSABLE (type));
   gcc_assert (!TYPE_SIZE_UNIT (type)
 	      || TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST);
 
