@@ -3,3 +3,5 @@
 #else
 #define SDATA_SECTION
 #endif
+
+extern void abort (void);
