@@ -1,3 +1,7 @@
+Mon May 31 02:22:55 1999  Philippe De Muyter  <phdm@macqel.be>
+
+	* m68k/x-mot3300 (XCFLAGS): Fixed to match stb.o, not f/stb.o.
+
 Wed Jun  2 00:08:34 1999  Robert Lipe  <robertlipe@usa.net>
 
 	* configure.in (i[34567]86-*-udk*): Install headers with cpio.
