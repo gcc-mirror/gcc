@@ -300,9 +300,6 @@ extern void push_cleanup (tree, tree, bool);
 
 extern tree walk_stmt_tree (tree *, walk_tree_fn, void *);
 extern void prep_stmt (tree);
-extern tree c_begin_if_stmt (void);
-extern tree c_begin_while_stmt (void);
-extern void c_finish_while_stmt_cond (tree, tree);
 extern int c_expand_decl (tree);
 
 extern int field_decl_cmp (const void *, const void *);

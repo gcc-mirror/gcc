@@ -2069,7 +2069,7 @@ if_prefix:
 	     line containing the "if", and not the line containing
 	     the close-parenthesis.  */
           IF
-                { $<ttype>$ = c_begin_if_stmt (); }
+                { c_begin_if_stmt (); }
             '(' expr ')'
 		{ c_finish_if_cond ($4, compstmt_count, ++stmt_count); }
         ;

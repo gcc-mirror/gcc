@@ -2780,7 +2780,7 @@ objc_build_try_enter_fragment (void)
   /* objc_exception_try_enter(&_stackExceptionData);
      if (!_setjmp(&_stackExceptionData.buf)) {  */
 
-  tree func_params, if_stmt, cond;
+  tree func_params, cond;
 
   func_params
     = tree_cons (NULL_TREE,
@@ -2802,7 +2802,7 @@ objc_build_try_enter_fragment (void)
 #error
 #endif
 
-  if_stmt = c_begin_if_stmt ();
+  c_begin_if_stmt ();
   if_nesting_count++;
   /* If <setjmp.h> has been included, the _setjmp prototype has
      acquired a real, breathing type for its parameter.  Cast our
@@ -2821,7 +2821,7 @@ objc_build_try_enter_fragment (void)
   cond = build_unary_op (TRUTH_NOT_EXPR,
 			 build_function_call (objc_setjmp_decl, func_params),
 			 0);
-  c_expand_start_cond (lang_hooks.truthvalue_conversion (cond), 0, if_stmt);
+  c_finish_if_cond (cond, 0, 0);
   objc_enter_block ();
 }
 
@@ -2865,14 +2865,14 @@ objc_build_extract_fragment (void)
 
   c_finish_then (objc_exit_block ());
 
-  c_expand_start_else ();
+  c_begin_else (0);
   objc_enter_block ();
   c_expand_expr_stmt (build_modify_expr
 		      (TREE_VALUE (objc_rethrow_exception),
 		       NOP_EXPR,
 		       objc_build_extract_expr ()));
   c_finish_else (objc_exit_block ());
-  c_expand_end_cond ();
+  c_finish_if_stmt (1);
   if_nesting_count--;
 }
 
@@ -2928,11 +2928,9 @@ objc_build_try_epilogue (int also_catch_prologue)
 	   if(!_setjmp(&_stackExceptionData.buf)) {
 	     if (0) {  */
 
-      tree if_stmt;
-
       c_finish_then (objc_exit_block ());
     		
-      c_expand_start_else ();
+      c_begin_else (0);
       objc_enter_block ();
       objc_caught_exception
 	= tree_cons (NULL_TREE,
@@ -2943,10 +2941,9 @@ objc_build_try_epilogue (int also_catch_prologue)
 		     objc_caught_exception);
       objc_build_try_enter_fragment ();
       val_stack_push (&catch_count_stack, 1);
-      if_stmt = c_begin_if_stmt ();
+      c_begin_if_stmt ();
       if_nesting_count++;
-      c_expand_start_cond (lang_hooks.truthvalue_conversion (boolean_false_node),
-			   0, if_stmt);
+      c_finish_if_cond (boolean_false_node, 0, 0);
       objc_enter_block ();
 
       /* Start a new chain of @catch statements for this @try.  */
@@ -2970,7 +2967,7 @@ objc_build_catch_stmt (tree catch_expr)
   /* } else if (objc_exception_match(objc_get_class("SomeClass"), _caughtException)) {
        register SomeClass *e = _caughtException;  */
 
-  tree if_stmt, cond, func_params, prev_catch, var_name, var_type;
+  tree cond, func_params, prev_catch, var_name, var_type;
   int catch_id;
 
 #ifndef OBJCPLUS
@@ -3014,9 +3011,9 @@ objc_build_catch_stmt (tree catch_expr)
 
   c_finish_then (objc_exit_block ());
 
-  c_expand_start_else ();
+  c_begin_else (0);
   catch_count_stack->val++;
-  if_stmt = c_begin_if_stmt ();
+  c_begin_if_stmt ();
   if_nesting_count++;
 
   if (catch_id)
@@ -3034,7 +3031,7 @@ objc_build_catch_stmt (tree catch_expr)
       cond = build_function_call (objc_exception_match_decl, func_params);
     }
 
-  c_expand_start_cond (lang_hooks.truthvalue_conversion (cond), 0, if_stmt);
+  c_finish_if_cond (cond, 0, 0);
   objc_enter_block ();
   objc_declare_variable (RID_REGISTER, var_name,
 			 build_pointer_type (var_type),
@@ -3057,7 +3054,7 @@ objc_build_catch_epilogue (void)
 
   c_finish_then (objc_exit_block ());
 
-  c_expand_start_else ();
+  c_begin_else (0);
   objc_enter_block ();
   c_expand_expr_stmt
     (build_modify_expr
@@ -3070,7 +3067,7 @@ objc_build_catch_epilogue (void)
     {
       /* FIXME.  Need to have the block of each else that was opened.  */
       c_finish_else ((abort (), NULL)); /* close off all the nested ifs ! */
-      c_expand_end_cond ();
+      c_finish_if_stmt (1);
       if_nesting_count--;
     }
   val_stack_pop (&catch_count_stack);
@@ -3079,7 +3076,7 @@ objc_build_catch_epilogue (void)
   objc_build_extract_fragment ();
 
   c_finish_else (objc_exit_block ());
-  c_expand_end_cond ();
+  c_finish_if_stmt (1);
   if_nesting_count--;
   objc_exit_block ();
 
@@ -3099,18 +3096,16 @@ objc_build_finally_prologue (void)
 
   tree blk = objc_enter_block ();
 
-  tree if_stmt = c_begin_if_stmt ();
+  c_begin_if_stmt ();
   if_nesting_count++;
 
-  c_expand_start_cond (lang_hooks.truthvalue_conversion
-			(build_unary_op (TRUTH_NOT_EXPR,
-					 TREE_VALUE (objc_rethrow_exception),
-					 0)),
-		       0, if_stmt);
+  c_finish_if_cond (build_unary_op (TRUTH_NOT_EXPR,
+				    TREE_VALUE (objc_rethrow_exception), 0),
+		    0, 0);
   objc_enter_block ();
   objc_build_try_exit_fragment ();
   c_finish_then (objc_exit_block ());
-  c_expand_end_cond ();
+  c_finish_if_stmt (1);
   if_nesting_count--;
 
   return blk;
@@ -3125,16 +3120,14 @@ objc_build_finally_epilogue (void)
       } // end FINALLY scope
     } */
 
-  tree if_stmt = c_begin_if_stmt ();
+  c_begin_if_stmt ();
   if_nesting_count++;
 
-  c_expand_start_cond
-    (lang_hooks.truthvalue_conversion (TREE_VALUE (objc_rethrow_exception)),
-     0, if_stmt);
+  c_finish_if_cond (TREE_VALUE (objc_rethrow_exception), 0, 0);
   objc_enter_block ();
   objc_build_throw_stmt (TREE_VALUE (objc_rethrow_exception));
   c_finish_then (objc_exit_block ());
-  c_expand_end_cond ();
+  c_finish_if_stmt (1);
   if_nesting_count--;
 
   objc_exit_block ();

@@ -256,7 +256,7 @@ extern tree c_convert_parm_for_inlining (tree, tree, tree, int);
 extern int c_types_compatible_p (tree, tree);
 extern tree c_begin_compound_stmt (bool);
 extern tree c_end_compound_stmt (tree, bool);
-extern tree c_begin_if_stmt (void);
+extern void c_begin_if_stmt (void);
 extern void c_finish_if_cond (tree, int, int);
 extern void c_finish_then (tree);
 extern void c_begin_else (int);

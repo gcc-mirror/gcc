@@ -1,3 +1,18 @@
+2004-06-16  Richard Henderson  <rth@redhat.com>
+
+	* c-common.h (c_begin_if_stmt, c_begin_while_stmt,
+	c_finish_while_stmt_cond): Remove decls.
+	* c-parse.in (if_prefix): Don't save c_begin_if_stmt result.
+	* c-typeck.c (c_begin_if_stmt): Return void.
+	(c_begin_else): Tidy.  Save stmt_count.
+	* c-tree.h (c_begin_if_stmt): Update decl.
+
+	* objc/objc-act.c (objc_build_try_enter_fragment,
+	objc_build_extract_fragment, objc_build_try_epilogue,
+	objc_build_catch_stmt, objc_build_catch_epilogue,
+	objc_build_finally_prologue, objc_build_finally_epilogue): Update
+	for if builder function changes.
+
 2004-06-16  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (struct machine_function):  New member
