@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2004 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2005 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -655,16 +655,14 @@ get_gmtoff (void)
 
 /* Definition of __gnat_locatime_r used by a-calend.adb */
 
-#if defined (_AIX) || defined (__EMX__)
+#if defined (__EMX__)
 #define Lock_Task system__soft_links__lock_task
 extern void (*Lock_Task) (void);
 
 #define Unlock_Task system__soft_links__unlock_task
 extern void (*Unlock_Task) (void);
 
-/* Provide reentrant version of localtime on Aix and OS/2. Note that AiX does
-   provide localtime_r, but in the library libc_r which doesn't get included
-   systematically, so we can't use it. */
+/* Provide reentrant version of localtime on OS/2. */
 
 extern struct tm *__gnat_localtime_r (const time_t *, struct tm *);
 
