@@ -6,9 +6,9 @@
 
 int main()
 {
-   std::complex<double> z(0, 1) ;
+   std::complex<double> z;
 
-   VERIFY(pow(z, 1.0/3.0) == 0.0);
+   VERIFY( pow(z, 1.0/3.0) == 0.0 );
 
    return 0;
 }

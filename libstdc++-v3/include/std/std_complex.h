@@ -705,7 +705,7 @@ namespace std
     complex<_Tp>
     pow(const complex<_Tp>& __x, const _Tp& __y)
     {
-      if (__x.imag() == _Tp())
+      if (__x.imag() == _Tp() && __x.real() > _Tp())
         return pow(__x.real(), __y);
 
       complex<_Tp> __t = log(__x);
@@ -723,9 +723,8 @@ namespace std
     inline complex<_Tp>
     pow(const _Tp& __x, const complex<_Tp>& __y)
     {
-      return __x == _Tp()
-        ? _Tp()
-        : std::polar(pow(__x, __y.real()), __y.imag() * log(__x));
+      return __x > _Tp() ? polar(pow(__x, __y.real()), __y.imag() * log(__x))
+	                 : pow(complex<_Tp>(__x, _Tp()), __y);
     }
 
   // 26.2.3  complex specializations
