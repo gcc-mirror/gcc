@@ -11,5 +11,5 @@
 #define foo	/* as nothing */
 #endif
 
-/* { dg-bogus "(start|end) of macro" "/**/ at end" { target *-*-* } 7 } */
+/* { dg-bogus "(start|end) of macro" "paste at end" { target *-*-* } 7 } */
 /* { dg-bogus "(start|end) of macro" "comment at end" { target *-*-* } 11 } */
