@@ -1,5 +1,9 @@
 Wed Dec  3 20:02:39 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* init.c (build_new): Use a TARGET_EXPR instead of SAVE_EXPR for
+ 	alloc_expr.
+  	* call.c (build_op_delete_call): Adjust.
+
 	* except.c (expand_end_catch_block): Lose rethrow region.
 	(expand_start_catch_block): Likewise.
 	(expand_end_catch_block): Don't expand_leftover_cleanups.

@@ -5148,8 +5148,9 @@ build_op_delete_call (code, addr, size, flags)
 	 is the allocation expression, so extract the info we need from it.
 	 Obviously, if the build_new process changes this may have to
 	 change as well.  */
-      /* The SAVE_EXPR.  */
-      tree t = TREE_OPERAND (addr, 0);
+
+      /* The NOP_EXPR.  */
+      tree t = TREE_OPERAND (addr, 1);
       /* The CALL_EXPR.  */
       t = TREE_OPERAND (t, 0);
       /* The function.  */
@@ -5158,6 +5159,9 @@ build_op_delete_call (code, addr, size, flags)
       argtypes = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (argtypes)));
       /* The second argument.  */
       args = TREE_CHAIN (TREE_OPERAND (t, 1));
+
+      /* Pull the dummy var out of the TARGET_EXPR for use in our call.  */
+      addr = TREE_OPERAND (addr, 0);
     }
   else
     {
