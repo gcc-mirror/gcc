@@ -39,7 +39,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
 static int add_constant ();
-static void dump_constants ();
+static int dump_constants ();
 
 int current_function_anonymous_args;
 extern int current_function_pretend_args_size;
@@ -83,12 +83,13 @@ enum reg_class reg_class_from_letter[] =
 /* Local label counter, used for constants in the pool and inside
    pattern branches.  */
 
-static int lf;
+static int lf = 100;
 
 /* Used to work out sizes of instructions */
 static int first_pc;
 static int pc;
-
+#define MAYBE_DUMP_LEVEL 900
+#define MUST_DUMP_LEVEL 1000
 static int dumpnext;
 
 /* Functions for generating procedure prologue and epilogue code */
@@ -389,8 +390,26 @@ output_epilogue (f, frame_size)
   int live_regs_mask = 0;
   int d;
   int i;
-
+  rtx delay_insn;
+  
   live_regs_mask = calc_live_regs (&d);
+
+
+  /* See if the delay insn is really ok for the slot. */
+  if (current_function_epilogue_delay_list) {
+    delay_insn = PATTERN (XEXP (current_function_epilogue_delay_list, 0));
+
+  if (GET_CODE (delay_insn) == SET
+      && SET_DEST (delay_insn) == stack_pointer_rtx)
+    {
+      /* Can not use this instruction in the delay slot because
+	 it changes the stack pointer, so emit it now.  */
+      final_scan_insn (XEXP (current_function_epilogue_delay_list, 0),
+		       asm_out_file, 1, 0, 1);
+      current_function_epilogue_delay_list = 0;
+    }
+  }
+  
 
   /* Reclaim the room for the automatics. */
 
@@ -443,7 +462,7 @@ output_epilogue (f, frame_size)
 
   output_epilogue_vec ();
 
-  dump_constants ();
+  dump_constants (0);
   current_function_anonymous_args = 0;
 }
 
@@ -530,7 +549,7 @@ print_operand (stream, x, code)
       fprintf (stream, "LF%d", lf);
       break;
     case '!':
-      dump_constants();
+      dump_constants (0);
       break;
     case '^':
       lf++;
@@ -674,7 +693,14 @@ output_movedouble (operands, mode)
     {
       if (REGNO (operands[1]) == MACH_REG)
 	return "sts	mach,%0\n\tsts	macl,%R0";
-      return "mov	%1,%0\n\tmov	%R1,%R0";
+      if (REGNO (operands[1]) > REGNO (operands[0])) 
+	{
+	  return "mov	%1,%0\n\tmov	%R1,%R0";
+	}
+      else 
+	{
+	  return "mov	%R1,%R0\n\tmov	%1,%0";
+	}
     }
 
   if (GET_CODE (operands[1]) == CONST_INT)
@@ -780,8 +806,8 @@ output_branch (logic, insn)
       fprintf (asm_out_file, "\tb%c\tLF%d\n", logic ? 'f' : 't', label);
       output_asm_insn ("bra	%l0	! 12 bit cond ", recog_operand);
       fprintf (asm_out_file, "\tor	r0,r0\n");
+      label = dump_constants (label);
       fprintf (asm_out_file, "LF%d:\n", label);
-      lf++;
       return "";
 
     case 8:
@@ -800,6 +826,23 @@ output_branch (logic, insn)
 
 /* Predicates used by the templates */
 
+/* Nonzero if OP is a normal arithmetic register. */
+
+int
+arith_reg_operand(op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (register_operand (op, mode))
+    {
+      if (GET_CODE (op) == REG)
+	return REGNO (op) != T_REG;
+      return 1;
+    }
+  return 0;
+}
+
+  
 /* Nonzero if OP is a valid source operand for an arithmetic insn.  */
 
 int
@@ -1054,7 +1097,7 @@ adjust_insn_length (insn, insn_lengths)
 	     instruction than it can reach, so we'll stop accumulating
 	     from that one and start fresh. */
 	  target_pc = current_pc;
-	  target_insn_range = current_pc + 1000;
+	  target_insn_range = current_pc + MAYBE_DUMP_LEVEL;
 	}
       else
 	{
@@ -1087,18 +1130,25 @@ adjust_insn_length (insn, insn_lengths)
 }
 
 
-/* Dump out the pending constant pool.  */
+/* Dump out the pending constant pool. 
+   If label provided then insert an branch in the middle of the table 
+  */
 
-static void
-dump_constants ()
+static int
+dump_constants (label)
 {
   int i;
+  int rlabel = label;
+  int size = 0;
+  
   for (i = 0; i < pool_size; i++)
     {
       pool_node *p = pool_vector + i;
       fprintf (asm_out_file, "\n\t! constants - waited %d\n", pc - first_pc);
       fprintf (asm_out_file, "\t.align\t2\n");
       fprintf (asm_out_file, "LK%d:", p->number);
+      size += GET_MODE_SIZE (p->mode);
+      
       switch (GET_MODE_CLASS (p->mode))
 	{
 	case MODE_INT:
@@ -1112,12 +1162,23 @@ dump_constants ()
 	    assemble_real (u.d, p->mode);
 	  }
 	}
-
+      
+      /* After 200 bytes of table, stick in another branch */
+      if (label && size > 200) 
+	{
+	  rlabel = lf ++;
+	  fprintf (asm_out_file,"LF%d:\tbra	LF%d\n", label, rlabel);
+	  fprintf (asm_out_file,"\tor	r0,r0\n");
+	  label = 0;
+	}
+      
       fprintf (asm_out_file, "\n");
     }
   pool_size = 0;
   current_pc = 0;
   target_insn_range = 0;
+  return rlabel;
+  
 }
 
 
@@ -1151,7 +1212,7 @@ output_movepcrel (insn, operands, mode)
       fprintf (asm_out_file, "\t!constant table start\n");
       fprintf (asm_out_file, "\tbra	LF%d\n", lf);
       fprintf (asm_out_file, "\tor	r0,r0 ! wasted slot\n");
-      dump_constants ();
+      dump_constants (0);
       fprintf (asm_out_file, "LF%d:\n", lf++);
       fprintf (asm_out_file, "\t!constant table end\n");
     }
@@ -1182,7 +1243,27 @@ final_prescan_insn (insn, opvec, noperands)
       if (TARGET_DUMP_RTL)
 	print_rtl (asm_out_file, body);
 
-      pc += get_attr_length (insn);
+
     }
+  
+  pc += get_attr_length (insn);
+
+  if (pool_size && pc - first_pc > MUST_DUMP_LEVEL)
+    {
+      /* For some reason we have not dumped out a constant table, and 
+      we have emitted a lot of code.  This can happen if the think
+      which wants the table is a long conditional branch (which has no
+      room for a constant table), and there has not been a move
+      constant anywhere. */
+      int label = lf++;
+      fprintf (asm_out_file, "\t!forced constant table\n");      
+      fprintf (asm_out_file, "\tbra	LF%d\n", label);
+      fprintf (asm_out_file, "\tor	r0,r0 ! wasted slot\n");
+      label = dump_constants (label);
+      fprintf (asm_out_file, "LF%d:\n", label);
+      fprintf (asm_out_file, "\t!constant table end\n");
+    }
+  
 }
+
 
