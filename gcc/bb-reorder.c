@@ -397,14 +397,25 @@ make_reorder_chain_1 (bb, prev)
 
       /* Find the normal taken edge and the normal fallthru edge.
          Note that there may in fact be other edges due to
-	 asynchronous_exceptions.  */
+	 asynchronous_exceptions. 
+
+	 Note, conditional jumps with other side effects may not
+	 be fully optimized.  In this case it is possible for
+	 the conditional jump to branch to the same location as
+	 the fallthru path.
+
+	 We should probably work to improve optimization of that
+	 case; however, it seems silly not to also deal with such
+	 problems here if they happen to occur.  */
 
       e_taken = e_fall = NULL;
       for (e = bb->succ; e ; e = e->succ_next)
-	if (e->flags & EDGE_FALLTHRU)
-	  e_fall = e;
-	else if (! (e->flags & EDGE_EH))
-	  e_taken = e;
+	{
+	  if (e->flags & EDGE_FALLTHRU)
+	    e_fall = e;
+	  if (! (e->flags & EDGE_EH))
+	    e_taken = e;
+	}
 
       next = (taken ? e_taken : e_fall)->dest;
     }
