@@ -1271,9 +1271,6 @@ extern char *oballoc			PROTO((int));
 extern char *permalloc			PROTO((int));
 extern char *savealloc			PROTO((int));
 extern char *expralloc			PROTO((int));
-#ifdef NEED_DECLARATION_FREE
-extern void free			PROTO((void *));
-#endif
 
 /* Lowest level primitive for allocating a node.
    The TREE_CODE is the only argument.  Contents are initialized
