@@ -1547,8 +1547,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 			/* Check for shared address givs, and avoid
 			   incrementing the shared psuedo reg more than
 			   once.  */
-			if (! (tv != v && tv->insn == v->insn
-			       && tv->new_reg == v->new_reg))
+			if (! tv->same_insn)
 			  {
 			    /* tv->dest_reg may actually be a (PLUS (REG)
 			       (CONST)) here, so we must call plus_constant
@@ -2449,10 +2448,18 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
      rtx increment;
      int unroll_number;
 {
-  struct induction *v;
+  struct induction *v, *v2;
   rtx final_value;
   rtx tem;
   int result = 0;
+
+  /* Scan the list of givs, and set the same_insn field when there are
+     multiple identical givs in the same insn.  */
+  for (v = bl->giv; v; v = v->next_iv)
+    for (v2 = v->next_iv; v2; v2 = v2->next_iv)
+      if (v->insn == v2->insn && rtx_equal_p (v->new_reg, v2->new_reg)
+	  && ! v2->same_insn)
+	v2->same_insn = v;
 
   for (v = bl->giv; v; v = v->next_iv)
     {
@@ -2629,14 +2636,13 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 
 	      v->const_adjust = 0;
 
-	      if (v->same && v->same->insn == v->insn
-		  && v->new_reg == v->same->new_reg)
+	      if (v->same_insn)
 		{
-		  v->dest_reg = v->same->dest_reg;
+		  v->dest_reg = v->same_insn->dest_reg;
 		  if (loop_dump_stream)
 		    fprintf (loop_dump_stream,
-			     "Sharing address givs with reg %d\n",
-			     REGNO (v->dest_reg));
+			     "Sharing address givs in insn %d\n",
+			     INSN_UID (v->insn));
 		}
 	      else if (unroll_type != UNROLL_COMPLETELY)
 		{
