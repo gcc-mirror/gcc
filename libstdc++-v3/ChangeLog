@@ -1,5 +1,10 @@
 2002-10-01  Phil Edwards  <pme@gcc.gnu.org>
 
+	* Makefile.am (check-abi):  Add @ to rule.
+	* Makefile.in:  Regenerated.
+
+2002-10-01  Phil Edwards  <pme@gcc.gnu.org>
+
 	PR libstdc++/8096
 	* include/bits/stl_deque.h (deque::_M_range_check):  Throw
 	out_of_range, not range_error.
