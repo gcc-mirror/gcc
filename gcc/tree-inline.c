@@ -666,6 +666,10 @@ initialize_inlined_parameters (id, args, fn, block)
 	      if (DECL_P (value))
 		value = build1 (NOP_EXPR, TREE_TYPE (value), value);
 
+	      /* If this is a constant, make sure it has the right type.  */
+	      else if (TREE_TYPE (value) != TREE_TYPE (p))
+		value = fold (build1 (NOP_EXPR, TREE_TYPE (p), value));
+
 	      splay_tree_insert (id->decl_map,
 				 (splay_tree_key) p,
 				 (splay_tree_value) value);

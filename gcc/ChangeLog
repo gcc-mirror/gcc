@@ -1,3 +1,9 @@
+2003-03-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/8396
+	* tree-inline.c (initialize_inlined_parameters): Make sure the value
+	of read-only constant arguments is passed with the right type.
+
 2003-03-14  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* doc/extend.texi (Function Names): Make the example compilable.
