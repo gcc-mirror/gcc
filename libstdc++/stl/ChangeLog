@@ -1,3 +1,8 @@
+Fri Mar  6 00:12:28 1998  H.J. Lu  (hjl@gnu.org)
+
+	* stl_config.h (__STL_PTHREADS): Don't define for glibc 2 if
+	_G_USING_THUNKS is not defined.
+
 1998-02-25  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* stl_config.h: Work around glibc pthread.h bug.

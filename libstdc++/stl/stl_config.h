@@ -114,7 +114,9 @@
 #     define __STL_EXPLICIT_FUNCTION_TMPL_ARGS
 #     define __STL_MEMBER_TEMPLATES
 #   endif
-#   if !defined(_NOTHREADS) && __GLIBC__ >= 2
+    /* glibc pre 2.0 is very buggy. We have to disable thread for it.
+       It should be upgraded to glibc 2.0 or later. */
+#   if !defined(_NOTHREADS) && __GLIBC__ >= 2 && defined(_G_USING_THUNKS)
 #     define __STL_PTHREADS
 #     ifdef __STRICT_ANSI__
         /* Work around a bug in the glibc pthread.h.  */
