@@ -68,10 +68,3 @@
 
 /* Define if you have the memcpy function.  */
 #undef HAVE_MEMCPY
-
-/* Name of package */
-#undef PACKAGE
-
-/* Version number of package */
-#undef VERSION
-

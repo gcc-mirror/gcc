@@ -1,3 +1,13 @@
+1999-09-01  Tom Tromey  <tromey@cygnus.com>
+
+	* include/ffi.h.in: Removed PACKAGE and VERSION defines and
+	undefs.
+	* fficonfig.h.in: Rebuilt.
+	* configure: Rebuilt.
+	* configure.in: Pass 3rd argument to AM_INIT_AUTOMAKE.
+	Use AM_PROG_LIBTOOL (automake 1.4 compatibility).
+	* acconfig.h: Don't #undef PACKAGE or VERSION.
+
 1999-08-09  Anthony Green  <green@cygnus.com>
 
 	* include/ffi.h.in: Try to work around messy header problem

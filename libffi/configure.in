@@ -11,7 +11,7 @@ AC_MSG_WARN(***********************************************************)
 
 AC_CANONICAL_HOST
 
-AM_INIT_AUTOMAKE(libffi,2.00-beta)
+AM_INIT_AUTOMAKE(libffi,2.00-beta,no-define)
 
 AC_EXEEXT
 AM_MAINTAINER_MODE
