@@ -3948,10 +3948,10 @@ alpha_end_function (file, fnname, decl)
 
      Don't do this for global functions in object files destined for a
      shared library because the function may be overridden by the application
-     or other libraries.
-     ??? Is this just ELF?  */
+     or other libraries.  Similarly, don't do this for weak functions.  */
 
-  if (!flag_pic || !TREE_PUBLIC (current_function_decl))
+  if (!DECL_WEAK (current_function_decl)
+      && (!flag_pic || !TREE_PUBLIC (current_function_decl)))
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (current_function_decl), 0)) = 1;
 }
 
