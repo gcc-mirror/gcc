@@ -6335,8 +6335,14 @@ build_asm_expr (tree string, tree outputs, tree inputs, tree clobbers,
 	{
 	  /* If the operand is going to end up in memory,
 	     mark it addressable.  */
-	  if (!allows_reg && allows_mem && !c_mark_addressable (input))
-	    input = error_mark_node;
+	  if (!allows_reg && allows_mem)
+	    {
+	      /* Strip the nops as we allow this case.  FIXME, this really
+		 should be rejected or made deprecated.  */
+	      STRIP_NOPS (input);
+	      if (!c_mark_addressable (input))
+		input = error_mark_node;
+	  }
 	}
       else
 	input = error_mark_node;

@@ -1,3 +1,8 @@
+2005-01-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR c/19472
+	* gcc.dg/asm-a.c: New test.
+
 2005-01-18  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* gcc.dg/sh-relax.c: Add prototype for abort.
