@@ -1,3 +1,27 @@
+2000-12-07  Neil Booth  <neilb@earthling.net>
+
+        * cppfiles.c (struct include_file): Move from cpphash.h.
+        (_cpp_never_reread): New function.
+        (open_file, read_include_file): Use it.
+        (stack_include_file): Set the buffer's sysp according to the
+        path in which the file was found.
+        (find_include_file): Don't set sysp.
+        (cpp_make_system_header, actual_directory): Update.
+        (_cpp_execute_include): Do #include_next lookup handling here,
+        not in cpplib.c.  Use _cpp_never_reread.
+        * cpphash.h (struct_include_file): Remove.
+        (struct cpp_buffer): New member sysp.
+        (CPP_IN_SYSTEM_HEADER, _cpp_execute_include): Update.
+        (_cpp_never_reread): New.
+        * cpplib.c (read_line_number): Rename read_flag.  Rework slightly.
+        (end_directive): Clear line_extension flag.
+        (_cpp_handle_directive): Set line_extension flag for #number.
+        (do_include_next): Handle path lookup in _cpp_execute_include.
+        (do_line): Cleanup to use read_flag.  Don't allow flags in #line.
+        (_cpp_do_file_change): Update.
+        (do_pragma_once): Use cpp_never_reread.  Clean up.
+        * cpplib.h (struct lexer_state): New member line_extension.
+
 2000-12-07  Richard Henderson  <rth@redhat.com>
 
 	* flow.c (calculate_global_regs_live): Force the stack pointer live
