@@ -2691,7 +2691,7 @@ expand_call (exp, target, ignore)
 	 passed in registers.  */
 #ifdef OUTGOING_REG_PARM_STACK_SPACE
       if (!ACCUMULATE_OUTGOING_ARGS
-	  must_preallocate == 0 && reg_parm_stack_space > 0)
+	   && must_preallocate == 0 && reg_parm_stack_space > 0)
 	anti_adjust_stack (GEN_INT (reg_parm_stack_space));
 #endif
 
