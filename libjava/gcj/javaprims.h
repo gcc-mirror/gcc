@@ -230,11 +230,16 @@ extern "Java"
         class Array;
         class Constructor;
         class Field;
+	class InvocationHandler;
         class InvocationTargetException;
         class Member;
         class Method;
         class Modifier;
+	class Proxy;
+	class Proxy$ProxyData;
+	class Proxy$ProxyType;
         class ReflectPermission;
+	class UndeclaredThrowableException;
       };
     };
 

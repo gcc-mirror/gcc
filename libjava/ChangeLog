@@ -1,3 +1,26 @@
+2002-09-29  Anthony Green  <green@redhat.com>
+
+	* java/lang/reflect/UndeclaredThrowableException.java: New file.
+	Imported from GNU Classpath.
+	* java/lang/reflect/natProxy.cc: New file.
+	* java/lang/reflect/InvocationHandler.java: New file.  Imported
+	from GNU Classpath.
+	* java/lang/reflect/Proxy.java: New file.  Imported from GNU
+	Classpath.
+	* gnu/java/lang/reflect/TypeSignature.java: Refresh from GNU
+	Classpath.	
+	* gnu/classpath/Configuration.java.in (HAVE_NATIVE_GET_PROXY_DATA,
+	HAVE_NATIVE_GET_PROXY_CLASS, HAVE_NATIVE_GENERATE_PROXY_CLASS):
+	New statics.
+	* gcj/javaprims.h ("Java"): Add new classes.
+	* java/lang/reflect/Proxy.java: Fix check for duplicate interfaces.
+	* Makefile.am (java/lang/reflect/Proxy$$ProxyData.h): Create this.
+ 	java/lang/reflect/Proxy$$ProxyType.h): And this.
+	(inner_nat_headers): Add these new headers.
+	(ordinary_java_source_files): Add new files.
+	(nat_source_files): Add new file.
+	* Makefile.in: Rebuilt.
+
 2002-09-28  Richard Earnshaw  <rearnsha@arm.com>
 
 	* configure.host: Handle arm*-elf, strongarm*-elf and xscale*-elf with

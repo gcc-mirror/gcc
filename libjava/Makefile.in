@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p5 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -246,7 +246,9 @@ ordinary_nat_headers = $(ordinary_java_source_files:.java=.h) \
 
 
 inner_nat_headers = java/io/ObjectOutputStream$$PutField.h \
-	java/io/ObjectInputStream$$GetField.h
+	java/io/ObjectInputStream$$GetField.h \
+	java/lang/reflect/Proxy$$ProxyData.h \
+	java/lang/reflect/Proxy$$ProxyType.h
 
 
 nat_headers = $(ordinary_nat_headers) $(inner_nat_headers)
@@ -1635,11 +1637,14 @@ java/lang/reflect/AccessibleObject.java	\
 java/lang/reflect/Array.java \
 java/lang/reflect/Constructor.java \
 java/lang/reflect/Field.java \
+java/lang/reflect/InvocationHandler.java \
 java/lang/reflect/InvocationTargetException.java \
 java/lang/reflect/Member.java \
 java/lang/reflect/Method.java \
 java/lang/reflect/Modifier.java	\
+java/lang/reflect/Proxy.java \
 java/lang/reflect/ReflectPermission.java \
+java/lang/reflect/UndeclaredThrowableException.java \
 java/math/BigDecimal.java \
 java/math/BigInteger.java \
 java/net/Authenticator.java \
@@ -2003,6 +2008,7 @@ java/lang/reflect/natArray.cc \
 java/lang/reflect/natConstructor.cc \
 java/lang/reflect/natField.cc \
 java/lang/reflect/natMethod.cc \
+java/lang/reflect/natProxy.cc \
 java/net/natNetworkInterface.cc \
 java/net/natInetAddress.cc \
 java/net/natPlainDatagramSocketImpl.cc \
@@ -2157,11 +2163,11 @@ java/lang/natStringBuffer.lo java/lang/natSystem.lo \
 java/lang/natThread.lo java/lang/natVMThrowable.lo \
 java/lang/ref/natReference.lo java/lang/reflect/natArray.lo \
 java/lang/reflect/natConstructor.lo java/lang/reflect/natField.lo \
-java/lang/reflect/natMethod.lo java/net/natNetworkInterface.lo \
-java/net/natInetAddress.lo java/net/natPlainDatagramSocketImpl.lo \
-java/net/natPlainSocketImpl.lo java/text/natCollator.lo \
-java/util/natTimeZone.lo java/util/zip/natDeflater.lo \
-java/util/zip/natInflater.lo
+java/lang/reflect/natMethod.lo java/lang/reflect/natProxy.lo \
+java/net/natNetworkInterface.lo java/net/natInetAddress.lo \
+java/net/natPlainDatagramSocketImpl.lo java/net/natPlainSocketImpl.lo \
+java/text/natCollator.lo java/util/natTimeZone.lo \
+java/util/zip/natDeflater.lo java/util/zip/natInflater.lo
 libgcjx_la_OBJECTS =  gnu/gcj/xlib/natClip.lo \
 gnu/gcj/xlib/natColormap.lo gnu/gcj/xlib/natDisplay.lo \
 gnu/gcj/xlib/natDrawable.lo gnu/gcj/xlib/natFont.lo \
@@ -2854,29 +2860,32 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/lang/reflect/AccessibleObject.P \
 .deps/java/lang/reflect/Array.P .deps/java/lang/reflect/Constructor.P \
 .deps/java/lang/reflect/Field.P \
+.deps/java/lang/reflect/InvocationHandler.P \
 .deps/java/lang/reflect/InvocationTargetException.P \
 .deps/java/lang/reflect/Member.P .deps/java/lang/reflect/Method.P \
-.deps/java/lang/reflect/Modifier.P \
+.deps/java/lang/reflect/Modifier.P .deps/java/lang/reflect/Proxy.P \
 .deps/java/lang/reflect/ReflectPermission.P \
+.deps/java/lang/reflect/UndeclaredThrowableException.P \
 .deps/java/lang/reflect/natArray.P \
 .deps/java/lang/reflect/natConstructor.P \
 .deps/java/lang/reflect/natField.P .deps/java/lang/reflect/natMethod.P \
-.deps/java/lang/s_atan.P .deps/java/lang/s_ceil.P \
-.deps/java/lang/s_copysign.P .deps/java/lang/s_cos.P \
-.deps/java/lang/s_fabs.P .deps/java/lang/s_floor.P \
-.deps/java/lang/s_rint.P .deps/java/lang/s_scalbn.P \
-.deps/java/lang/s_sin.P .deps/java/lang/s_tan.P \
-.deps/java/lang/sf_fabs.P .deps/java/lang/sf_rint.P \
-.deps/java/lang/strtod.P .deps/java/lang/w_acos.P \
-.deps/java/lang/w_asin.P .deps/java/lang/w_atan2.P \
-.deps/java/lang/w_exp.P .deps/java/lang/w_fmod.P \
-.deps/java/lang/w_log.P .deps/java/lang/w_pow.P \
-.deps/java/lang/w_remainder.P .deps/java/lang/w_sqrt.P \
-.deps/java/math/BigDecimal.P .deps/java/math/BigInteger.P \
-.deps/java/net/Authenticator.P .deps/java/net/BindException.P \
-.deps/java/net/ConnectException.P .deps/java/net/ContentHandler.P \
-.deps/java/net/ContentHandlerFactory.P .deps/java/net/DatagramPacket.P \
-.deps/java/net/DatagramSocket.P .deps/java/net/DatagramSocketImpl.P \
+.deps/java/lang/reflect/natProxy.P .deps/java/lang/s_atan.P \
+.deps/java/lang/s_ceil.P .deps/java/lang/s_copysign.P \
+.deps/java/lang/s_cos.P .deps/java/lang/s_fabs.P \
+.deps/java/lang/s_floor.P .deps/java/lang/s_rint.P \
+.deps/java/lang/s_scalbn.P .deps/java/lang/s_sin.P \
+.deps/java/lang/s_tan.P .deps/java/lang/sf_fabs.P \
+.deps/java/lang/sf_rint.P .deps/java/lang/strtod.P \
+.deps/java/lang/w_acos.P .deps/java/lang/w_asin.P \
+.deps/java/lang/w_atan2.P .deps/java/lang/w_exp.P \
+.deps/java/lang/w_fmod.P .deps/java/lang/w_log.P \
+.deps/java/lang/w_pow.P .deps/java/lang/w_remainder.P \
+.deps/java/lang/w_sqrt.P .deps/java/math/BigDecimal.P \
+.deps/java/math/BigInteger.P .deps/java/net/Authenticator.P \
+.deps/java/net/BindException.P .deps/java/net/ConnectException.P \
+.deps/java/net/ContentHandler.P .deps/java/net/ContentHandlerFactory.P \
+.deps/java/net/DatagramPacket.P .deps/java/net/DatagramSocket.P \
+.deps/java/net/DatagramSocketImpl.P \
 .deps/java/net/DatagramSocketImplFactory.P .deps/java/net/FileNameMap.P \
 .deps/java/net/HttpURLConnection.P .deps/java/net/InetAddress.P \
 .deps/java/net/InetSocketAddress.P .deps/java/net/JarURLConnection.P \
@@ -3776,7 +3785,7 @@ maintainer-clean-recursive:
 	dot_seen=no; \
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \
-	  test "$$subdir" = "." && dot_seen=yes; \
+	  test "$$subdir" != "." || dot_seen=yes; \
 	done; \
 	test "$$dot_seen" = "no" && rev=". $$rev"; \
 	target=`echo $@ | sed s/-recursive//`; \
@@ -4161,6 +4170,18 @@ java/lang/reflect/Method.h: java/lang/reflect/Method.class
 	    -friend 'class java::io::ObjectInputStream;' \
 	    -friend 'jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
 	    $(basename $<)
+
+java/lang/reflect/Proxy.h: java/lang/reflect/Proxy.class
+	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
+	    $(basename $<)
+
+java/lang/reflect/Proxy$$ProxyData.h: java/lang/reflect/Proxy.class
+	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
+	'java/lang/reflect/Proxy$$ProxyData'
+
+java/lang/reflect/Proxy$$ProxyType.h: java/lang/reflect/Proxy.class
+	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
+	'java/lang/reflect/Proxy$$ProxyType'
 
 gnu/gcj/runtime/VMClassLoader.h: gnu/gcj/runtime/VMClassLoader.class
 	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \

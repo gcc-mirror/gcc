@@ -1,5 +1,5 @@
 /* TypeSignature.java -- Class used to compute type signatures
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -7,7 +7,7 @@ GNU Classpath is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation; either version 2, or (at your option)
 any later version.
- 
+
 GNU Classpath is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
@@ -44,230 +44,218 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
 /**
-   This class provides static methods that can be used to compute
-   type-signatures of <code>Class</code>s or <code>Member</code>s.
-   More specific methods are also provided for computing the
-   type-signature of <code>Constructor</code>s and
-   <code>Method</code>s.  Methods are also provided to go in the
-   reverse direction.
-*/
+ * This class provides static methods that can be used to compute
+ * type-signatures of <code>Class</code>s or <code>Member</code>s.
+ * More specific methods are also provided for computing the
+ * type-signature of <code>Constructor</code>s and
+ * <code>Method</code>s.  Methods are also provided to go in the
+ * reverse direction.
+ *
+ * @author Eric Blake <ebb9@email.byu.edu>
+ */
 public class TypeSignature
 {
- 
   /**
-     Returns a <code>String</code> representing the type-encoding of
-     CLAZZ.  Type-encodings are computed as follows:
-
-     <pre>
-     boolean -> "Z"
-     byte    -> "B"
-     char    -> "C"
-     double  -> "D"
-     float   -> "F"
-     int     -> "I"
-     long    -> "J"
-     short   -> "S"
-     void    -> "V"
-     arrays  -> "[" + type-encoding of component type
-     object  -> "L"
-                 + fully qualified class name with "."'s replaced by "/"'s
-                 + ";"</pre>
-  */
-  public static String getEncodingOfClass( Class clazz )
+   * Returns a <code>String</code> representing the type-encoding of a class.
+   * The .class file format has different encodings for classes, depending
+   * on whether it must be disambiguated from primitive types or not; hence
+   * the descriptor parameter to choose between them. If you are planning
+   * on decoding primitive types along with classes, then descriptor should
+   * be true for correct results. Type-encodings are computed as follows:
+   *
+   * <pre>
+   * boolean -> "Z"
+   * byte    -> "B"
+   * char    -> "C"
+   * double  -> "D"
+   * float   -> "F"
+   * int     -> "I"
+   * long    -> "J"
+   * short   -> "S"
+   * void    -> "V"
+   * arrays  -> "[" + descriptor format of component type
+   * object  -> class format: fully qualified name with '.' replaced by '/'
+   *            descriptor format: "L" + class format + ";"
+   * </pre>
+   *
+   * @param type the class name to encode
+   * @param descriptor true to return objects in descriptor format
+   * @return the class name, as it appears in bytecode constant pools
+   * @see #getClassForEncoding(String)
+   */
+  public static String getEncodingOfClass(String type, boolean descriptor)
   {
-    if( clazz.isPrimitive() )
-    {
-      if( clazz == Boolean.TYPE )
-	return "Z";
-      if( clazz == Byte.TYPE )
-	return "B";
-      if( clazz == Character.TYPE )
-	return "C";
-      if( clazz == Double.TYPE )
-	return "D";
-      if( clazz == Float.TYPE )
-	return "F";
-      if( clazz == Integer.TYPE )
-	return "I";
-      if( clazz == Long.TYPE )
-	return "J";
-      if( clazz == Short.TYPE )
-	return "S";
-      if( clazz == Void.TYPE )
-	return "V";
-      else
-	throw new RuntimeException( "Unknown primitive class " + clazz );
-    }
-    else if( clazz.isArray() )
-    {
-      return '[' + getEncodingOfClass( clazz.getComponentType() );
-    }
-    else
-    {
-      String classname = clazz.getName();
-      int name_len = classname.length();
-      char[] buf = new char[ name_len + 2 ];
-      buf[0] = 'L';
-      classname.getChars( 0, name_len, buf, 1 );
-      
-      int i;
-      for( i=1; i <= name_len; i++ )
-      {
-	if( buf[i] == '.' )
-	  buf[i] = '/';
-      }
-      
-      buf[i] = ';';
-      return new String( buf );
-    }
+    if (! descriptor || type.charAt(0) == '[')
+      return type.replace('.', '/');
+    if (type.equals("boolean"))
+      return "Z";
+    if (type.equals("byte"))
+      return "B";
+    if (type.equals("short"))
+      return "S";
+    if (type.equals("char"))
+      return "C";
+    if (type.equals("int"))
+      return "I";
+    if (type.equals("long"))
+      return "J";
+    if (type.equals("float"))
+      return "F";
+    if (type.equals("double"))
+      return "D";
+    if (type.equals("void"))
+      return "V";
+    return 'L' + type.replace('.', '/') + ';';
   }
 
-  
   /**
-     This function is the inverse of <code>getEncodingOfClass</code>.
+   * Gets the descriptor encoding for a class.
+   *
+   * @param clazz the class to encode
+   * @param descriptor true to return objects in descriptor format
+   * @return the class name, as it appears in bytecode constant pools
+   * @see #getEncodingOfClass(String, boolean)
+   */
+  public static String getEncodingOfClass(Class clazz, boolean descriptor)
+  {
+    return getEncodingOfClass(clazz.getName(), descriptor);
+  }
 
-     @see getEncodingOfClass
+  /**
+   * Gets the descriptor encoding for a class.
+   *
+   * @param clazz the class to encode
+   * @return the class name, as it appears in bytecode constant pools
+   * @see #getEncodingOfClass(String, boolean)
+   */
+  public static String getEncodingOfClass(Class clazz)
+  {
+    return getEncodingOfClass(clazz.getName(), true);
+  }
 
-     @exception ClassNotFoundException If class encoded as type_code
-     cannot be located.
-  */
-  public static Class getClassForEncoding( String type_code )
+
+  /**
+   * This function is the inverse of <code>getEncodingOfClass</code>. This
+   * accepts both object and descriptor formats, but must know which style
+   * of string is being passed in (usually, descriptor should be true). In
+   * descriptor format, "I" is treated as int.class, in object format, it
+   * is treated as a class named I in the unnamed package.
+   *
+   * @param type_code the class name to decode
+   * @param descriptor if the string is in descriptor format
+   * @return the corresponding Class object
+   * @throws ClassNotFoundException if the class cannot be located
+   * @see #getEncodingOfClass(Class, boolean)
+   */
+  public static Class getClassForEncoding(String type_code, boolean descriptor)
     throws ClassNotFoundException
   {
-    if( type_code.equals( "B" ) )
-      return Byte.TYPE;
-    if( type_code.equals( "C" ) )
-      return Character.TYPE;
-    if( type_code.equals( "D" ) )
-      return Double.TYPE;
-    if( type_code.equals( "F" ) )
-      return Float.TYPE;
-    if( type_code.equals( "I" ) )
-      return Integer.TYPE;
-    if( type_code.equals( "J" ) )
-      return Long.TYPE;
-    if( type_code.equals( "S" ) )
-      return Short.TYPE;
-    if( type_code.equals( "Z" ) )
-      return Boolean.TYPE;
-    if( type_code.charAt( 0 ) == 'L' )
-    {
-      return Class.forName(
-	type_code.substring( 1, type_code.length() - 1 ).replace( '/', '.' ));
-    }
-    if( type_code.charAt( 0 ) == '[' )
-    {
-      int last_bracket = type_code.lastIndexOf( '[' );
-      String brackets = type_code.substring( 0, last_bracket + 1 );
-      String component = type_code.substring( last_bracket + 1 );
-      
-// ??? This is what the Classpath implementation did, but I don't
-// think that it's correct.  The JLS says that Class.forName takes the
-// classname of an array element in fully qualified form, whereas this
-// code is tring to strip off the punctuation.
-
-//        if( component.charAt( 0 ) == 'L' )
-//  	component =
-//  	  component.substring( 1, component.length() - 1 ).replace('/', '.');
-
-      if( component.charAt( 0 ) == 'L' )
-  	component = component.replace('/', '.');
-	
-      return Class.forName( brackets + component );
-    }
-    else
-      throw new ClassNotFoundException( "Type code cannot be parsed as a valid class name" );
+    if (descriptor)
+      {
+        switch (type_code.charAt(0))
+          {
+          case 'B':
+            return byte.class;
+          case 'C':
+            return char.class;
+          case 'D':
+            return double.class;
+          case 'F':
+            return float.class;
+          case 'I':
+            return int.class;
+          case 'J':
+            return long.class;
+          case 'S':
+            return short.class;
+          case 'V':
+            return void.class;
+          case 'Z':
+            return boolean.class;
+          default:
+            throw new ClassNotFoundException("Invalid class name: "
+                                             + type_code);
+          case 'L':
+            type_code = type_code.substring(1, type_code.length() - 1);
+            // Fallthrough.
+          case '[':
+          }
+      }
+    return Class.forName(type_code.replace('/', '.'));
   }
-  
 
   /**
-     Returns a <code>String</code> representing the type-encoding of
-     M.  The type-encoding of a method is:
-
-     "(" + type-encodings of parameter types + ")" 
-     + type-encoding of return type
-  */
-  public static String getEncodingOfMethod( Method m )
+   * Gets the Class object for a type name.
+   *
+   * @param type_code the class name to decode
+   * @return the corresponding Class object
+   * @throws ClassNotFoundException if the class cannot be located
+   * @see #getClassForEncoding(String, boolean)
+   */
+  public static Class getClassForEncoding(String type_code)
+    throws ClassNotFoundException
   {
-    String returnEncoding = getEncodingOfClass( m.getReturnType() );
+    return getClassForEncoding(type_code, true);
+  }
+
+  /**
+   * Returns a <code>String</code> representing the type-encoding of a
+   * method.  The type-encoding of a method is:
+   *
+   * "(" + parameter type descriptors + ")" + return type descriptor
+   *
+   * XXX This could be faster if it were implemented natively.
+   *
+   * @param m the method to encode
+   * @return the encoding
+   */
+  public static String getEncodingOfMethod(Method m)
+  {
     Class[] paramTypes = m.getParameterTypes();
-    String[] paramEncodings = new String[ paramTypes.length ];
-
-    String paramEncoding;
-    int size = 2; // make room for parens
-    for( int i=0; i < paramTypes.length; i++ )
-    {
-      paramEncoding = getEncodingOfClass( paramTypes[i] );
-      size += paramEncoding.length();
-      paramEncodings[i] = paramEncoding;
-    }
-    
-    size += returnEncoding.length();
-
-    StringBuffer buf = new StringBuffer( size );
-    buf.append( '(' );
-    
-    for( int i=0; i < paramTypes.length; i++ )
-    {
-      buf.append( paramEncodings[i] );
-    }
-    
-    buf.append( ')' );
-    buf.append( returnEncoding );
-    
+    StringBuffer buf = new StringBuffer().append('(');
+    for (int i = 0; i < paramTypes.length; i++)
+      buf.append(getEncodingOfClass(paramTypes[i].getName(), true));
+    buf.append(')').append(getEncodingOfClass(m.getReturnType().getName(),
+                                              true));
     return buf.toString();
   }
 
-
   /**
-     Returns a <code>String</code> representing the type-encoding of
-     C.  The type-encoding of a method is:
-
-     "(" + type-encodings of parameter types + ")V" 
-  */
-  public static String getEncodingOfConstructor( Constructor c )
+   * Returns a <code>String</code> representing the type-encoding of a
+   * constructor. The type-encoding of a method is:
+   *
+   * "(" + parameter type descriptors + ")V"
+   *
+   * XXX This could be faster if it were implemented natively.
+   *
+   * @param c the constructor to encode
+   * @return the encoding
+   */
+  public static String getEncodingOfConstructor(Constructor c)
   {
     Class[] paramTypes = c.getParameterTypes();
-    String[] paramEncodings = new String[ paramTypes.length ];
-
-    String paramEncoding;
-    int size = 3; // make room for parens and V for return type
-    for( int i=0; i < paramTypes.length; i++ )
-    {
-      paramEncoding = getEncodingOfClass( paramTypes[i] );
-      size += paramEncoding.length();
-      paramEncodings[i] = paramEncoding;
-    }
-    
-    StringBuffer buf = new StringBuffer( size );
-    buf.append( '(' );
-    
-    for( int i=0; i < paramTypes.length; i++ )
-    {
-      buf.append( paramEncodings[i] );
-    }
-    
-    buf.append( ")V" );
-    
+    StringBuffer buf = new StringBuffer().append('(');
+    for (int i = 0; i < paramTypes.length; i++)
+      buf.append(getEncodingOfClass(paramTypes[i].getName(), true));
+    buf.append(")V");
     return buf.toString();
   }
 
-
   /**
-     Returns a <code>String</code> representing the type-encoding of
-     MEM.  <code>Constructor</code>s are handled by
-     <code>getEncodingOfConstructor</code>.  <code>Method</code>s are
-     handled by <code>getEncodingOfMethod</code>.  <code>Field</code>s
-     are handled by returning the encoding of the type of the
-     <code>Field</code>.
-  */
-  public static String getEncodingOfMember( Member mem )
+   * Returns a <code>String</code> representing the type-encoding of a
+   * class member. This appropriately handles Constructors, Methods, and
+   * Fields.
+   *
+   * @param mem the member to encode
+   * @return the encoding
+   */
+  public static String getEncodingOfMember(Member mem)
   {
-    if( mem instanceof Constructor )
-      return getEncodingOfConstructor( (Constructor)mem );
-    if( mem instanceof Method )
-      return getEncodingOfMethod( (Method)mem );
+    if (mem instanceof Constructor)
+      return getEncodingOfConstructor((Constructor) mem);
+    if (mem instanceof Method)
+      return getEncodingOfMethod((Method) mem);
     else // Field
-      return getEncodingOfClass( ((Field)mem).getType() );
+      return getEncodingOfClass(((Field) mem).getType().getName(), true);
   }
-}
+} // class TypeSignature
