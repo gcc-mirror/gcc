@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.6 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1997-2000, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2001, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,7 +52,7 @@ procedure Gnatdll is
    procedure Syntax;
    --  print out usage.
 
-   procedure Check (Filename : in String);
+   procedure Check (Filename : String);
    --  check that filename exist.
 
    procedure Parse_Command_Line;
@@ -60,8 +60,6 @@ procedure Gnatdll is
 
    procedure Check_Context;
    --  check the context before runing any commands to build the library.
-
-
 
    Syntax_Error  : exception;
    Context_Error : exception;
@@ -98,7 +96,6 @@ procedure Gnatdll is
    Largs_Options : Argument_List_Access := Null_Argument_List_Access;
    Bargs_Options : Argument_List_Access := Null_Argument_List_Access;
 
-
    type Build_Mode_State is (Import_Lib, Dynamic_Lib, Nil);
 
    Build_Mode             : Build_Mode_State := Nil;
@@ -111,31 +108,33 @@ procedure Gnatdll is
 
    procedure Syntax is
       use Text_IO;
+
+      procedure P (Str : in String) renames Text_IO.Put_Line;
+
    begin
-      Put_Line ("Usage : gnatdll [options] [list-of-files]");
+      P ("Usage : gnatdll [options] [list-of-files]");
       New_Line;
-      Put_Line
-        ("[list-of-files] a list of Ada libraries (.ali) and/or " &
+      P ("[list-of-files] a list of Ada libraries (.ali) and/or " &
          "foreign object files");
       New_Line;
-      Put_Line ("[options] can be");
-      Put_Line ("   -h       help - display this message");
-      Put_Line ("   -v       verbose");
-      Put_Line ("   -q       quiet");
-      Put_Line ("   -k       remove @nn suffix from exported names");
-      Put_Line ("   -Idir    Specify source and object files search path");
-
-      Put_Line ("   -l file  " &
-                "file contains a list-of-files to be added to the library");
-      Put_Line ("   -e file  definition file containing exports");
-      Put_Line
-        ("   -d file  put objects in the relocatable dynamic library <file>");
-      Put_Line ("   -a[addr] build non-relocatable DLL at address <addr>");
-      Put_Line ("            if <addr> is not specified use " &
-                Default_DLL_Address);
-      Put_Line ("   -n       no-import - do not create the import library");
-      Put_Line ("   -bargs   binder option");
-      Put_Line ("   -largs   linker (library builder) option");
+      P ("[options] can be");
+      P ("   -h            Help - display this message");
+      P ("   -v            Verbose");
+      P ("   -q            Quiet");
+      P ("   -k            Remove @nn suffix from exported names");
+      P ("   -g            Generate debugging information");
+      P ("   -Idir         Specify source and object files search path");
+      P ("   -l file       File contains a list-of-files to be added to "
+         & "the library");
+      P ("   -e file       Definition file containing exports");
+      P ("   -d file       Put objects in the relocatable dynamic "
+         & "library <file>");
+      P ("   -a[addr]      Build non-relocatable DLL at address <addr>");
+      P ("                 if <addr> is not specified use "
+         & Default_DLL_Address);
+      P ("   -n            No-import - do not create the import library");
+      P ("   -bargs opts   opts are passed to the binder");
+      P ("   -largs opts   opts are passed to the linker");
    end Syntax;
 
    -----------
@@ -273,13 +272,17 @@ procedure Gnatdll is
       --  scan gnatdll switches
 
       loop
-         case Getopt ("h v q k a? d: e: l: n I:") is
+         case Getopt ("g h v q k a? d: e: l: n I:") is
 
             when ASCII.Nul =>
                exit;
 
             when 'h' =>
                Help := True;
+
+            when 'g' =>
+               Gopts (G) := new String'("-g");
+               G := G + 1;
 
             when 'v' =>
                --  verbose mode on.
@@ -501,8 +504,9 @@ begin
       case Build_Mode is
 
          when Import_Lib =>
-            MDLL.Build_Import_Library (To_String (Lib_Filename),
-                                       To_String (Def_Filename));
+            MDLL.Build_Import_Library
+              (To_String (Lib_Filename),
+               To_String (Def_Filename));
 
          when Dynamic_Lib =>
             MDLL.Build_Dynamic_Library

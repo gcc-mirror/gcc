@@ -1,3 +1,13 @@
+2001-10-30  Pascal Obry <obry@gnat.com>
+
+	* gnatdll.adb (Parse_Command_Line): handle -g option to be passed 
+	to the binder and linker.
+	Minor style fix.
+	
+	* mdll.ads: Fix layout.  Update copyright notice.
+
+	* mdll.adb: Fix layout.  Update copyright notice.
+
 2001-10-30  Robert Dewar <dewar@gnat.com>
 
 	* usage.adb: Minor fix to output for -gnaty.
