@@ -1639,57 +1639,11 @@ typedef struct
 /* Define the offset between two registers, one to be eliminated, and the
    other its replacement, at the start of a routine.  */
 #define ARM_INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)		\
-{									\
-  int volatile_func = IS_VOLATILE (arm_current_func_type ());		\
-  if ((FROM) == ARG_POINTER_REGNUM && (TO) == HARD_FRAME_POINTER_REGNUM)\
+  do									\
     {									\
-      if (! current_function_needs_context || ! frame_pointer_needed)	\
-        (OFFSET) = 0;							\
-      else								\
-        (OFFSET) = 4;							\
+      (OFFSET) = arm_compute_initial_elimination_offset (FROM, TO);	\
     }									\
-  else if ((FROM) == FRAME_POINTER_REGNUM				\
-	   && (TO) == STACK_POINTER_REGNUM)				\
-    (OFFSET) = current_function_outgoing_args_size			\
-		+ ROUND_UP (get_frame_size ());				\
-  else									\
-    {									\
-      int regno;							\
-      int offset = 12;							\
-      int saved_hard_reg = 0;						\
-									\
-      if (! volatile_func)						\
-        {								\
-          for (regno = 0; regno <= 10; regno++)				\
-	    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-	      saved_hard_reg = 1, offset += 4;				\
-	  if (! TARGET_APCS_FRAME					\
-	      && ! frame_pointer_needed					\
-	      && regs_ever_live[HARD_FRAME_POINTER_REGNUM]		\
-	      && ! call_used_regs[HARD_FRAME_POINTER_REGNUM])		\
-	    saved_hard_reg = 1, offset += 4;				\
-	  /* PIC register is a fixed reg, so call_used_regs set.  */	\
-	  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])	\
-	    saved_hard_reg = 1, offset += 4;				\
-          for (regno = FIRST_ARM_FP_REGNUM;				\
-	       regno <= LAST_ARM_FP_REGNUM; regno++)			\
-	    if (regs_ever_live[regno] && ! call_used_regs[regno])	\
-	      offset += 12;						\
-	}								\
-      if ((FROM) == FRAME_POINTER_REGNUM)				\
-	(OFFSET) = - offset;						\
-      else								\
-	{								\
-	   if (! frame_pointer_needed)					\
-	     offset -= 16;						\
-	   if (! volatile_func						\
-	       && (regs_ever_live[LR_REGNUM] /*|| saved_hard_reg */))	\
-	     offset += 4;						\
-	   offset += current_function_outgoing_args_size;		\
-	   (OFFSET) = ROUND_UP (get_frame_size ()) + offset;		\
-         }								\
-    }									\
-}
+  while (0)
 
 /* Note:  This macro must match the code in thumb_function_prologue().  */
 #define THUMB_INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)		\
@@ -1727,7 +1681,7 @@ typedef struct
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
   if (TARGET_ARM)							\
-    ARM_INITIAL_ELIMINATION_OFFSET (FROM, TO, OFFSET)			\
+    ARM_INITIAL_ELIMINATION_OFFSET (FROM, TO, OFFSET);			\
   else									\
     THUMB_INITIAL_ELIMINATION_OFFSET (FROM, TO, OFFSET)
      
