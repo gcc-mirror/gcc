@@ -16,13 +16,14 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
+#ifdef _GLIBCXX_USE___ENC_TRAITS
+
 #include <ext/enc_filebuf.h>
 #include <testsuite_hooks.h>
 
-int main()
+void test01()
 {
   using namespace std;
-
   typedef __enc_traits state_type;
   typedef char char_type;
   typedef __gnu_cxx::enc_filebuf<char_type> filebuf_type;
@@ -46,5 +47,14 @@ int main()
     {
       VERIFY( false );
     }
-  return 0;
+}
+
+#else
+void test01() { }
+#endif
+
+int main() 
+{ 
+  test01();
+  return 0; 
 }
