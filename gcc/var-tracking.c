@@ -1226,7 +1226,7 @@ dataflow_set_different_1 (void **slot, void *data)
     {
       dataflow_set_different_value = true;
 
-      /* Stop traversing the hash table.   */
+      /* Stop traversing the hash table.  */
       return 0;
     }
 
@@ -1234,7 +1234,7 @@ dataflow_set_different_1 (void **slot, void *data)
     {
       dataflow_set_different_value = true;
 
-      /* Stop traversing the hash table.   */
+      /* Stop traversing the hash table.  */
       return 0;
     }
 
@@ -1258,7 +1258,7 @@ dataflow_set_different_2 (void **slot, void *data)
     {
       dataflow_set_different_value = true;
 
-      /* Stop traversing the hash table.   */
+      /* Stop traversing the hash table.  */
       return 0;
     }
 

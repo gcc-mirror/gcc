@@ -1599,7 +1599,7 @@ do {                                                                    \
    sections when it shrinks the code.  This results in invalid addresses
    when debugging.  This does not bless too much the HC11/HC12 as most
    applications are embedded and small, hence a reasonable debug info.
-   This problem is known for binutils 2.13, 2.14 and mainline.   */
+   This problem is known for binutils 2.13, 2.14 and mainline.  */
 #undef HAVE_AS_DWARF2_DEBUG_LINE
 
 /* The prefix for local labels.  You should be able to define this as

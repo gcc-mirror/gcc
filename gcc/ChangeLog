@@ -1,3 +1,15 @@
+2004-03-11  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-typeck.c, combine.c, cse.c, dominance.c, et-forest.h,
+	ggc-page.c, var-tracking.c, config/fp-bit.c, config/c4x/c4x.c,
+	config/cris/cris.c, config/i386/ppro.md, config/i860/i860.c,
+	config/i860/i860.h, config/m32r/m32r.h, config/m32r/xm-m32r.h,
+	config/m68hc11/m68hc11.h, config/m68hc11/m68hc11.md,
+	config/mips/mips.c, config/mmix/mmix.c, config/ns32k/ns32k.h,
+	config/pa/pa.c, config/pa/pa32-regs.h, config/pa/pa64-regs.h,
+	config/pdp11/pdp11.h, config/rs6000/rs6000.c,
+	config/stormy16/stormy16.c: Fix comment typos and formatting.
+
 2004-03-11  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* configure: Regenerate, since I forgot to while committing Paolo's

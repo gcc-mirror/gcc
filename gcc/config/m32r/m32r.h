@@ -737,7 +737,7 @@ enum reg_class
 
 #define N_REG_CLASSES ((int) LIM_REG_CLASSES)
 
-/* Give names of register classes as strings for dump file.   */
+/* Give names of register classes as strings for dump file.  */
 #define REG_CLASS_NAMES \
   { "NO_REGS", "CARRY_REG", "ACCUM_REGS", "GENERAL_REGS", "ALL_REGS" }
 
@@ -1764,7 +1764,7 @@ extern char m32r_punct_chars[256];
 extern struct rtx_def * m32r_compare_op0;
 extern struct rtx_def * m32r_compare_op1;
 
-/* M32R function types.   */
+/* M32R function types.  */
 enum m32r_function_type
 {
   M32R_FUNCTION_UNKNOWN, M32R_FUNCTION_NORMAL, M32R_FUNCTION_INTERRUPT

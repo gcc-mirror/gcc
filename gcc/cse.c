@@ -5118,7 +5118,7 @@ cse_insn (rtx insn, rtx libcall_insn)
       /* See if a MEM has already been loaded with a widening operation;
 	 if it has, we can use a subreg of that.  Many CISC machines
 	 also have such operations, but this is only likely to be
-	 beneficial these machines.  */
+	 beneficial on these machines.  */
 
       if (flag_expensive_optimizations && src_related == 0
 	  && (GET_MODE_SIZE (mode) < UNITS_PER_WORD)

@@ -67,8 +67,8 @@ struct et_node
   struct et_node *left;
   struct et_node *right;	/* The brothers of the node.  */
 
-  struct et_occ *rightmost_occ;	/* The rightmost occurence.  */
-  struct et_occ *parent_occ;	/* The occurence of the parent node.  */
+  struct et_occ *rightmost_occ;	/* The rightmost occurrence.  */
+  struct et_occ *parent_occ;	/* The occurrence of the parent node.  */
 };
 
 struct et_node *et_new_tree (void *data);

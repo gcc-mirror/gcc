@@ -159,7 +159,7 @@ reg_clobbered_p (rtx reg, rtx in)
 	  /* Anything that sets just part of the register
 	     is considered using as well as setting it.
 	     But note that a straight SUBREG of a single-word value
-	     clobbers the entire value.   */
+	     clobbers the entire value.  */
 	  if (dest != SET_DEST (in)
 	      && ! (GET_CODE (SET_DEST (in)) == SUBREG
 		    || UNITS_PER_WORD >= GET_MODE_SIZE (GET_MODE (dest))))
@@ -766,7 +766,7 @@ load_opcode (enum machine_mode mode, const char *args, rtx reg)
 /* Return a template for a store instruction with mode MODE and
    arguments from the string ARGS.
 
-   This string is in static storage.   */
+   This string is in static storage.  */
 
 static const char *
 store_opcode (enum machine_mode mode, const char *args, rtx reg)

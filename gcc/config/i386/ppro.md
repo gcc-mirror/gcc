@@ -18,7 +18,7 @@
 ;; the Free Software Foundation, 59 Temple Place - Suite 330,
 ;; Boston, MA 02111-1307, USA.  */
 
-;; The P6 familiy includes the Pentium Pro, Pentium II, Pentium III, Celeron
+;; The P6 family includes the Pentium Pro, Pentium II, Pentium III, Celeron
 ;; and Xeon lines of CPUs.  The DFA scheduler description in this file is
 ;; based on information that can be found in the following three documents:
 ;;
@@ -111,7 +111,7 @@
 ;; P3FPU
 ;;
 ;; (SAC=Store Address Calculation, SDA=Store Data Unit, P3FPU = SSE unit,
-;;  JUE = Jump Execution Unit, AGU = Addres Generation Unit)
+;;  JUE = Jump Execution Unit, AGU = Address Generation Unit)
 ;;
 (define_cpu_unit "p0,p1" "ppro_core")
 (define_cpu_unit "p2" "ppro_load")
@@ -135,7 +135,7 @@
 ;; doesn't make sense because we don't know how these instructions are
 ;; executed in the core.  So we just model that they can only be decoded
 ;; on decoder 0, and say that it takes a little while before the result
-;; is availale.
+;; is available.
 (define_insn_reservation "ppro_complex_insn" 6
 			 (eq_attr "type" "other,multi,call,callv,str")
 			 "decoder0")
@@ -200,14 +200,14 @@
 			      (eq_attr "type" "cld"))
 			 "decoder0,(p0+p1)*2")
 
-;; The P6 has a sophisticated branch prediction mechanism to miminize
+;; The P6 has a sophisticated branch prediction mechanism to minimize
 ;; latencies due to branching.  In particular, it has a fast way to
 ;; execute branches that are taken multiple times (such as in loops).
 ;; Branches not taken suffer no penalty, and correctly predicted
 ;; branches cost only one fetch cycle.  Mispredicted branches are very
 ;; costly: typically 15 cycles and possibly as many as 26 cycles.
 ;;
-;; Unfortunatetely all this makes it quite difficult to properly model
+;; Unfortunately all this makes it quite difficult to properly model
 ;; the latencies for the compiler.  Here I've made the choice to be
 ;; optimistic and assume branches are often predicted correctly, so
 ;; they have latency 1, and the decoders are not blocked.

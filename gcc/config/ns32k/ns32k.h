@@ -433,7 +433,7 @@ enum reg_class
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
-/* Give names of register classes as strings for dump file.   */
+/* Give names of register classes as strings for dump file.  */
 
 #define REG_CLASS_NAMES							    \
  {"NO_REGS", "GENERAL_REGS", "FLOAT_REG0", "LONG_FLOAT_REG0", "FLOAT_REGS", \

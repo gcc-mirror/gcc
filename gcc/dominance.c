@@ -772,7 +772,7 @@ verify_dominators (enum cdi_direction dir)
 /* Determine immediate dominator (or postdominator, according to DIR) of BB,
    assuming that dominators of other blocks are correct.  We also use it to
    recompute the dominators in a restricted area, by iterating it until it
-   reaches a fixpoint.  */
+   reaches a fixed point.  */
 
 basic_block
 recount_dominator (enum cdi_direction dir, basic_block bb)

@@ -2349,7 +2349,7 @@ rs6000_special_round_type_align (tree type, int computed, int specified)
   tree field = TYPE_FIELDS (type);
 
   /* Skip all the static variables only if ABI is greater than
-     1 or equal to 0.   */
+     1 or equal to 0.  */
   while (field != NULL && TREE_CODE (field) == VAR_DECL)
     field = TREE_CHAIN (field);
 
