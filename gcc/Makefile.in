@@ -221,8 +221,9 @@ BISON = @BISON@
 BISONFLAGS =
 FLEX = @FLEX@
 FLEXFLAGS =
-AR = ar
+AR = @AR@
 AR_FLAGS = rc
+NM = @NM@
 RANLIB = @RANLIB@
 RANLIB_FLAGS = @ranlib_flags@
 
@@ -326,7 +327,7 @@ AR_FOR_TARGET := $(shell \
     echo $(objdir)/../binutils/ar ; \
   else \
     if [ "$(host)" = "$(target)" ] ; then \
-      echo ar; \
+      echo $(AR); \
     else \
        t='$(program_transform_name)'; echo ar | sed -e $$t ; \
     fi; \
@@ -351,7 +352,7 @@ NM_FOR_TARGET := $(shell \
     echo $(objdir)/../binutils/nm-new ; \
   else \
     if [ "$(host)" = "$(target)" ] ; then \
-      echo nm; \
+      echo $(NM); \
     else \
        t='$(program_transform_name)'; echo nm | sed -e $$t ; \
     fi; \
