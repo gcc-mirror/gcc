@@ -104,7 +104,10 @@ fixincl.x: fixincl.tpl inclhack.def
 	cd $(srcdir) ; $(SHELL) ./genfixes $@
 
 clean:
-	rm -f *.o $(TARGETS) fixincl.x machname.h *~ *.exe
+	rm -f *.o $(TARGETS) machname.h *~ *.exe
+
+maintainer-clean : clean
+	rm -f $(srcdir)/fixincl.x
 
 #  Build the executable and copy up into gcc dir.
 #  We still copy the script because we still have alternative scripts.
