@@ -1,3 +1,11 @@
+2001-03-17  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c (lookup_filename): Emit .file if the assembler
+	is generating .debug_line.
+	(dwarf2out_init): Add main_input_filename to the file table first.
+	* configure.in (as_dwarf2_debug_line): Test with file number 1
+	instead of file number 0.
+
 Sat Mar 17 11:52:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* combine.c (undobuf): Remove field previous_undos; all refs deleted.

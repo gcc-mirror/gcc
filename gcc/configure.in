@@ -1491,8 +1491,8 @@ then
     gcc_cv_as_dwarf2_debug_line="yes"
   fi
 elif test x$gcc_cv_as != x -a x"$insn" != x ; then
-	echo '	.file 0 "conftest.s"' > conftest.s
-	echo '	.loc 0 3 0' >> conftest.s
+	echo '	.file 1 "conftest.s"' > conftest.s
+	echo '	.loc 1 3 0' >> conftest.s
 	echo "	$insn" >> conftest.s
 	# ??? This fails with non-gnu grep.
 	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
