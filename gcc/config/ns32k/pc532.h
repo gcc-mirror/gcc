@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    PC532 with National 32532.
-   Copyright (C) 1990 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1994 Free Software Foundation, Inc.
    Contributed by Jukka Virtanen <jtv@hut.fi>, Jyrki Kuoppala <jkp@cs.hut.fi>,
    Tatu Yl|nen <ylo@ngs.fi>, Johannes Helander <jvh@cs.hut.fi>.
 
@@ -34,11 +34,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Use the re-entrant and potentially faster method */
 
 #undef PCC_STATIC_STRUCT_RETURN
-
-/* There's a bug in the setjmp implementation that strikes
-   if the caller of setjmp doesn't have a frame pointer.  */
-#undef FRAME_POINTER_REQUIRED
-#define FRAME_POINTER_REQUIRED current_function_calls_setjmp
 
 /* 32-bit alignment for efficiency */
 #undef POINTER_BOUNDARY
