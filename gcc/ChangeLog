@@ -1,5 +1,9 @@
 2001-06-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* doc/md.texi: Use four digit years in copyright notice.
+
+2001-06-08  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* config.gcc: For $target_alias of athlon-*, set
 	target_cpu_default2=5.
 
