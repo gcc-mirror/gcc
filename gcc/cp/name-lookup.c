@@ -439,13 +439,20 @@ supplement_binding (cxx_binding *binding, tree decl)
   if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
     /* The new name is the type name.  */
     binding->type = decl;
-  else if (!bval || bval == error_mark_node)
-    /* VALUE is null when push_class_level_binding moves an inherited
-       type-binding out of the way to make room for a new value binding.
-       It is an error_mark_node when DECL's name has been used in a
-       non-class scope prior declaration.  In that case, we should have
-       already issued a diagnostic; for graceful error recovery purpose,
-       pretend this was the intended declaration for that name.  */
+  else if (/* BVAL is null when push_class_level_binding moves an
+	      inherited type-binding out of the way to make room for a
+	      new value binding.  */
+	   !bval 
+	   /* BVAL is error_mark_node when DECL's name has been used
+	      in a non-class scope prior declaration.  In that case,
+	      we should have already issued a diagnostic; for graceful
+	      error recovery purpose, pretend this was the intended
+	      declaration for that name.  */
+	   || bval == error_mark_node
+	   /* If BVAL is a built-in that has not yet been declared,
+	      pretend it is not there at all.  */
+	   || (TREE_CODE (bval) == FUNCTION_DECL
+	       && DECL_ANTICIPATED (bval)))
     binding->value = decl;
   else if (TREE_CODE (bval) == TYPE_DECL && DECL_ARTIFICIAL (bval))
     {
