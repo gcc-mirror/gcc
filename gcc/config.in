@@ -563,7 +563,7 @@
 #undef HAVE_AS_GOTOFF_IN_DATA
 
 /* Define if your assembler supports dwarf2 .file/.loc directives,
-   and preserves file table indicies exactly as given. */
+   and preserves file table indices exactly as given. */
 #undef HAVE_AS_DWARF2_DEBUG_LINE
 
 /* Define 0/1 to force the choice for exception handling model. */

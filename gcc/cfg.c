@@ -33,7 +33,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	 make_edge, make_single_succ_edge, cached_make_edge, remove_edge
 	 - Low level edge redirection (without updating instruction chain)
 	     redirect_edge_succ, redirect_edge_succ_nodup, redirect_edge_pred
-     - Dumpipng and debugging
+     - Dumping and debugging
 	 dump_flow_info, debug_flow_info, dump_edge_info
      - Allocation of AUX fields for basic blocks
 	 alloc_aux_for_blocks, free_aux_for_blocks, alloc_aux_for_block
@@ -119,7 +119,7 @@ struct basic_block_def entry_exit_blocks[2]
 void debug_flow_info			PARAMS ((void));
 static void free_edge			PARAMS ((edge));
 
-/* Called once at intialization time.  */
+/* Called once at initialization time.  */
 
 void
 init_flow ()
@@ -319,7 +319,7 @@ make_edge (src, dest, flags)
   return cached_make_edge (NULL, src, dest, flags);
 }
 
-/* Create an edge connecting SRC to DEST and set probability by knowling
+/* Create an edge connecting SRC to DEST and set probability by knowing
    that it is the single edge leaving SRC.  */
 
 edge
@@ -389,7 +389,7 @@ redirect_edge_succ (e, new_succ)
   e->dest = new_succ;
 }
 
-/* Like previous but avoid possible dupplicate edge.  */
+/* Like previous but avoid possible duplicate edge.  */
 
 edge
 redirect_edge_succ_nodup (e, new_succ)

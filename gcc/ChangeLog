@@ -1,3 +1,13 @@
+2001-11-11  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* ChangeLog.2, ChangeLog.3, ChangeLog.4, ChangeLog.5, ChangeLog,
+	cfg.c, cfganal.c, cfgcleanup.c, cfglayout.c, cfgloop.c, cfgrtl.c,
+	collect2.c, combine.c, config.in, configure, configure.in,
+	conflict.c, dwarf2out.c, dwarfout.c, except.c, final.c, flow.c,
+	genattrtab.c, ggc-page.c, jump.c, lcm.c, predict.c, reg-stack.c,
+	reload1.c, rtlanal.c, sched-rgn.c, toplev.c, unwind-dw2-fde.h: Fix
+	spelling errors.
+
 Sun Nov 11 05:56:01 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/rs6000/rs6000.c (rs6000_hash_constant, toc_hash_eq):
@@ -927,8 +937,8 @@ Tue Nov  6 09:21:34 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 Mon Nov  5 16:15:25 CET 2001  Jan Hubicka  <jh@suse.cz>
 
-	* Makefile.in (bb-reoder.o): Add depdendency on cfglayout.h;
-	remove unneded depdendencies;
+	* Makefile.in (bb-reoder.o): Add dependency on cfglayout.h;
+	remove unneeded dependencies;
 	(cfglayout.o): New.
 	* cfglayout.c, cfglayout.h: New files; break out from ...
 	* bb-reorder.c: ... here; Remove unneeded includes;
@@ -1935,7 +1945,7 @@ Fri Oct 26 07:18:08 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-10-26  Christopher Faylor  <cgf@redhat.com>
 
-	* config/i386/cygwin.h: Search target specfic include directory, if
+	* config/i386/cygwin.h: Search target specific include directory, if
 	appropriate.
 
 2001-10-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
@@ -10303,12 +10313,12 @@ Mon Jul 30 22:16:08 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* alias.c (loop_p): Remove.
 	(mark_constant_function): Use mark_dfs_back_edges.
 
-	* reg-stack.c (block_info_def): Add predecesors counter and stack_out.
-	(reg_to_stack): Call mark_dfs_back_edges; count the predecesors.
+	* reg-stack.c (block_info_def): Add predecessors counter and stack_out.
+	(reg_to_stack): Call mark_dfs_back_edges; count the predecessors.
 	(compensate_edge): Break out from ...
 	(convert_regs_1): ... here; do smart choosing of stack_out to copy.
 	(convert_regs_2): Set block_done once block is really done;
-	Do updating of the predecesors counts.
+	Do updating of the predecessors counts.
 
 	* toplev.c (rest_of_compilation): Recompute block_for_insn
 	before post-reload cfg_cleanup.
@@ -10986,7 +10996,7 @@ Mon Jul 23 16:03:19 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	* toplev.c (rest_of_compilation): Conditionally call purge_all_dead_edges
 	after combine.
 	* gcse.c (cprop_cc0_jump, cprop_insn): New argument "basic_block".
-	(cprop_jump): Likewise; call purge_dead_edges if substitution suceeded.
+	(cprop_jump): Likewise; call purge_dead_edges if substitution succeeded.
 
 2001-07-23  Hans-Peter Nilsson  <hp@bitrange.com>
 
@@ -11040,7 +11050,7 @@ Sun Jul 22 23:28:56 CEST 2001  Jan Hubicka  <jh@suse.cz>
 	redirect_edge_and_branch, block_label, forwarder_block_p): Make global.
 	(redirect_edge_and_branch_force): Fix copying of lifeness information.
 	(block_label): Handle EXIT_BLOCK_PTR by returning NULL.
-	* ifcvt.c (dead_or_predictable): Take BB as an new destionation
+	* ifcvt.c (dead_or_predictable): Take BB as an new destination
 	instead of label; update CFG after transformation.
 	(find_if_case_1): Update call, use redirect_edge_and_branch_force
 	for finishing the transformation; handle even case where ELSE

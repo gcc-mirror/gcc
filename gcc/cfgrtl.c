@@ -34,7 +34,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	     redirect_edge_and_branch_force, tidy_fallthru_edge, force_nonfallthru
      - Edge splitting and commiting to edges
 	  split_edge, insert_insn_on_edge, commit_edge_insertions
-     - Dumpipng and debugging
+     - Dumping and debugging
 	  print_rtl_with_bb, dump_bb, debug_bb, debug_bb_n
      - Consistency checking
 	  verify_flow_info
@@ -291,7 +291,7 @@ create_basic_block_structure (index, head, end, bb_note)
 }
 
 /* Create new basic block consisting of instructions in between HEAD and
-   END and place it to the BB chain at possition INDEX.
+   END and place it to the BB chain at position INDEX.
    END can be NULL in to create new empty basic block before HEAD.
    Both END and HEAD can be NULL to create basic block at the end of
    INSN chain.  */
@@ -691,7 +691,7 @@ try_redirect_by_replacing_jump (e, target)
 	fprintf (rtl_dump_file, "Removing jump %i.\n", INSN_UID (insn));
       fallthru = 1;
 
-      /* Selectivly unlink whole insn chain.  */
+      /* Selectively unlink whole insn chain.  */
       delete_insn_chain (kill_from, PREV_INSN (target->head));
     }
   /* If this already is simplejump, redirect it.  */
@@ -749,9 +749,9 @@ try_redirect_by_replacing_jump (e, target)
 /* Return last loop_beg note appearing after INSN, before start of next
    basic block.  Return INSN if there are no such notes.
 
-   When emmiting jump to redirect an fallthru edge, it should always
+   When emitting jump to redirect an fallthru edge, it should always
    appear after the LOOP_BEG notes, as loop optimizer expect loop to
-   eighter start by fallthru edge or jump following the LOOP_BEG note
+   either start by fallthru edge or jump following the LOOP_BEG note
    jumping to the loop exit test.  */
 
 static rtx
@@ -774,11 +774,11 @@ last_loop_beg_note (insn)
    Don't do that on expense of adding new instructions or reordering
    basic blocks.
 
-   Function can be also called with edge destionation equivalent to the
+   Function can be also called with edge destination equivalent to the
    TARGET.  Then it should try the simplifications and do nothing if
    none is possible.
 
-   Return true if transformation suceeded.  We still return flase in case
+   Return true if transformation succeeded.  We still return false in case
    E already destinated TARGET and we didn't managed to simplify instruction
    stream.  */
 
@@ -958,7 +958,7 @@ force_nonfallthru (e)
 
 /* Redirect edge even at the expense of creating new jump insn or
    basic block.  Return new basic block if created, NULL otherwise.
-   Abort if converison is impossible.  */
+   Abort if conversion is impossible.  */
 
 basic_block
 redirect_edge_and_branch_force (e, target)
@@ -1119,7 +1119,7 @@ split_edge (edge_in)
     abort ();
 
   /* We are going to place the new block in front of edge destination.
-     Avoid existence of fallthru predecesors.  */
+     Avoid existence of fallthru predecessors.  */
   if ((edge_in->flags & EDGE_FALLTHRU) == 0)
     {
       edge e;
@@ -1810,7 +1810,7 @@ verify_flow_info ()
   free (edge_checksum);
 }
 
-/* Assume that the preceeding pass has possibly eliminated jump instructions
+/* Assume that the preceding pass has possibly eliminated jump instructions
    or converted the unconditional jumps.  Eliminate the edges from CFG.
    Return true if any edges are eliminated.  */
 
@@ -1928,7 +1928,7 @@ purge_dead_edges (bb)
   return purged;
 }
 
-/* Search all basic blocks for potentionally dead edges and purge them.
+/* Search all basic blocks for potentially dead edges and purge them.
 
    Return true iff some edge has been eliminated.
  */

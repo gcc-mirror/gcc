@@ -810,7 +810,7 @@ delete_noop_moves (f)
 }
 
 /* Delete any jump tables never referenced.  We can't delete them at the
-   time of removing tablejump insn as they are referenced by the preceeding
+   time of removing tablejump insn as they are referenced by the preceding
    insns computing the destination, so we delay deleting and garbagecollect
    them once life information is computed.  */
 static void

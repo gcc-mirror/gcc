@@ -1693,7 +1693,7 @@ elif test x$gcc_cv_as != x -a x"$insn" != x ; then
 	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
 	   && grep debug_line conftest.o > /dev/null 2>&1 ; then
 		# The .debug_line file table must be in the exact order that
-		# we specified the files, since these indicies are also used
+		# we specified the files, since these indices are also used
 		# by DW_AT_decl_file.  Approximate this test by testing if
 		# the assembler bitches if the same index is assigned twice.
 		echo '	.file 1 "foo.s"' > conftest.s
@@ -1710,7 +1710,7 @@ fi
 if test x"$gcc_cv_as_dwarf2_debug_line" = xyes; then
 	AC_DEFINE(HAVE_AS_DWARF2_DEBUG_LINE, 1,
 [Define if your assembler supports dwarf2 .file/.loc directives,
-   and preserves file table indicies exactly as given.])
+   and preserves file table indices exactly as given.])
 fi
 AC_MSG_RESULT($gcc_cv_as_dwarf2_debug_line)
 

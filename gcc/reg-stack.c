@@ -197,7 +197,7 @@ typedef struct block_info_def
   struct stack_def stack_out;	/* Output stack configuration.  */
   HARD_REG_SET out_reg_set;	/* Stack regs live on output.  */
   int done;			/* True if block already converted.  */
-  int predecesors;		/* Number of predecesors that needs
+  int predecesors;		/* Number of predecessors that needs
 				   to be visited.  */
 } *block_info;
 

@@ -884,7 +884,7 @@ set_of_1 (x, pat, data1)
 }
 
 /* Give an INSN, return a SET or CLOBBER expression that does modify PAT
-   (eighter directly or via STRICT_LOW_PART and similar modifiers).  */
+   (either directly or via STRICT_LOW_PART and similar modifiers).  */
 rtx
 set_of (pat, insn)
      rtx pat, insn;
@@ -2859,7 +2859,7 @@ find_first_parameter_load (call_insn, boundary)
 
       /* Our caller needs either ensure that we will find all sets
          (in case code has not been optimized yet), or take care
-         for possible labels in a way by setting boundary to preceeding
+         for possible labels in a way by setting boundary to preceding
          CODE_LABEL.  */
       if (GET_CODE (before) == CODE_LABEL)
 	{

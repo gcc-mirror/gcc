@@ -4133,7 +4133,7 @@ Sun May  7 00:54:57 EDT 2000  John Wehle  (john@feith.com)
 	(rtx_needs_barrier): Handle COND_EXEC.
 	* config/ia64/ia64.h (BRANCH_COST): Define.
 	(PREDICATE_CODES): Update.
-	* config/ia64/ia64.md: Docuement used unspec values.
+	* config/ia64/ia64.md: Document used unspec values.
 	(attr predicable): New.
 	(movxf, movxf_internal): New.
 	(extendsfdf2): Don't comment out nop.
@@ -5972,7 +5972,7 @@ Sat Apr 22 22:35:38 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	(diagnostic.h): #include.
 	(struct output_buffer): Move into diagnostic.h.
 	(get_output_prefix): Rename to output_get_prefix.  Export.
-	(init_output_buffer): Export. Break out.  Ajust intialization.
+	(init_output_buffer): Export. Break out.  Adjust initialization.
 	(output_space_left, output_append): Export.
 	(output_newline): Rename to output_add_newline.  Export.
 	(output_clear): Nullify additional output_buffer fields.
@@ -5991,7 +5991,7 @@ Sat Apr 22 22:35:38 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	(vline_wrapper_message_with_location): Ditto.
 	(v_message_with_decl): Ditto.  Adjust call to output_puts
 	and get_output_prefix.
-	(default_print_error_function): Adjust buffer intialization.
+	(default_print_error_function): Adjust buffer initialization.
 
 Sat Apr 22 06:45:04 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
@@ -6390,7 +6390,7 @@ Mon Apr 17 23:35:29 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 Mon Apr 17 14:59:36 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
-	* cse.c (struct check_depdendence_data): New.
+	* cse.c (struct check_dependence_data): New.
 	(check_dependence): New function.
 	(invalidate): Use check_depdenence.
 
@@ -6407,7 +6407,7 @@ Mon Apr 17 14:59:36 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	message in quotes. Otherwise, IBM's make program treats the '#' as the
 	start of a comment and ignores the remainder of the line.
 
-	* c-lex.c (yylex): Change for EBCDIC, lower case characters preceed
+	* c-lex.c (yylex): Change for EBCDIC, lower case characters precede
 	upper case.
 	* cccp.c (initialize_char_syntax): Allow for holes in EBCDIC.
 	* cexp.y (initialize_random_junk): Likewise.
@@ -6420,7 +6420,7 @@ Mon Apr 17 14:59:36 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 	(real_hex_to_f): Use it.
 	* real.c (CHARMASK): New.
 	(etoasc, asctoeg): Use it.
-	(asctoeg): EBCDIC lower case characters preceed upper case.
+	(asctoeg): EBCDIC lower case characters precede upper case.
 
 	* i370.c (mvs_add_label): Change spacing for coding conventions.
 	* i370.h (ASM_OUTPUT_CASE_LABEL): Change to the data CSECT for the
@@ -7756,7 +7756,7 @@ Fri Apr  7 11:50:54 2000  Jim Wilson  <wilson@cygnus.com>
 	(compute_coalesced_reg_partition): New function.
 	(coalesce_regs_in_copies): Likewise.
 	(coalesce_reg_in_phi): Likewise.
-	(coalesce_regs_in_sucessor_phi_nodes): Likewise.
+	(coalesce_regs_in_successor_phi_nodes): Likewise.
 	(for_each_successor_phi): Likewise.
 	(rename_context): New struct.
 	(rename_block): Use a rename_context with rename_insn_1.  When
@@ -12922,7 +12922,7 @@ Fri Feb 18 20:08:57 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* function.c (assign_parms): Make thisparm_boundary unsigned.
 	* genrecog.c (write_switch): Cast XWINT result to int.
 	* lcm.c: Many static fcns and vars now #ifdef OPTIMIZE_MODE_SWITCHING.
-	* mips-tfile.c (init_file): Make two versions of FDR intializer:
+	* mips-tfile.c (init_file): Make two versions of FDR initializer:
 	one for MIPS and one for Alpha.
 	(get_tag, copy_object): Add casts to avoid warnings.
 	* optabs.c (init_one_libfunc): Cast NAME to (char *).

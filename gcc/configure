@@ -7582,7 +7582,7 @@ elif test x$gcc_cv_as != x -a x"$insn" != x ; then
 	if $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
 	   && grep debug_line conftest.o > /dev/null 2>&1 ; then
 		# The .debug_line file table must be in the exact order that
-		# we specified the files, since these indicies are also used
+		# we specified the files, since these indices are also used
 		# by DW_AT_decl_file.  Approximate this test by testing if
 		# the assembler bitches if the same index is assigned twice.
 		echo '	.file 1 "foo.s"' > conftest.s

@@ -112,7 +112,7 @@ typedef unsigned char ubyte;
    is located, and what the register lifetimes and stack layout are
    within the function.
 
-   The data structures are defined in the DWARF specfication, although
+   The data structures are defined in the DWARF specification, although
    not in a very readable way (see LITERATURE).
 
    Every time an exception is thrown, the code needs to locate the FDE
