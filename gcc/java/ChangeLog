@@ -1,5 +1,16 @@
 2001-12-20  Tom Tromey  <tromey@redhat.com>
 
+	For PR java/4509:
+	* parse.y (java_complete_lhs) [COMPOUND_EXPR]: Correctly compute
+	CAN_COMPLETE_NORMALLY for the node.
+	* jcf-write.c (generate_bytecode_insns) [COMPOUND_EXPR]: Don't
+	generate code for second branch if first branch can't complete
+	normally.
+	(generate_bytecode_insns) [LOOP_EXPR]: Don't generate `goto' to
+	the loop head if the loop body can't complete normally.
+
+2001-12-20  Tom Tromey  <tromey@redhat.com>
+
 	For PR java/4766:
 	* jcf-write.c (generate_bytecode_insns) [TRY_FINALLY_EXPR]: Handle
 	case where `finally' clause can't complete normally.
