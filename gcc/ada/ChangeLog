@@ -1,3 +1,11 @@
+2003-12-23  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* gnat_ug.texi: Force a CVS commit by updating copyright.
+	* gnat_ug_vxw.texi: Regenerate.
+	* gnat_ug_wnt.texi: Regenerate.
+	* gnat_ug_vms.texi: Regenerate.
+	* gnat_ug_unx.texi: Regenerate.
+
 2003-12-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* trans.c: Remove uses of "register" specifier in

@@ -79,7 +79,7 @@
 @c %**end of header
 
 @copying
-Copyright @copyright{} 1995-2002, Free Software Foundation
+Copyright @copyright{} 1995-2003, Free Software Foundation
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2
