@@ -1180,7 +1180,7 @@ __builtin_saveregs ()
 #endif
 
 #ifdef L_eprintf
-#ifndef inhibit_eprintf
+#ifndef inhibit_libc
 
 #undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
 #include <stdio.h>
@@ -1256,6 +1256,7 @@ __builtin_new (size_t sz)
 
 #ifdef L_new_handler
 
+#ifndef inhibit_libc
 /* This gets us __GNU_LIBRARY__.  */
 #undef NULL /* Avoid errors if stdio.h and our stddef.h mismatch.  */
 #include <stdio.h>
@@ -1265,6 +1266,7 @@ __builtin_new (size_t sz)
      by using the "internal" name (for use within the library)  */
 #define write(fd, buf, n)	__write((fd), (buf), (n))
 #endif
+#endif /* inhibit_libc */
 
 typedef void (*vfp)(void);
 
