@@ -1,5 +1,9 @@
 1999-05-20  Mark Mitchell  <mark@codesourcery.com>
 
+	* call.c (build_object_call): Don't look at DECL_NAME for a type.
+	(pt.c): Or CP_TYPE_QUALS for an ERROR_MARK.
+	(typeck.c): Or TYPE_MAIN_VARIANT for a type.
+
  	* pt.c (for_each_template_parm): Rework to match documentation.
 	Don't be fooled by a COMPONENT_REF with no TREE_TYPE.
 
