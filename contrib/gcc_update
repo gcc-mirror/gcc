@@ -73,7 +73,7 @@ gcc/java/keyword.h: gcc/java/keyword.gperf
 gcc/testsuite/gcc.dg/cpp/_Pragma3.c: gcc/testsuite/gcc.dg/cpp/mi1c.h
 # And libraries, at last
 libbanshee/configure: libbanshee/configure.ac
-libmudflap/configure: libmudflap/configure.in
+libmudflap/configure: libmudflap/configure.ac
 libobjc/configure: libobjc/configure.ac
 zlib/aclocal.m4: zlib/configure.ac zlib/acinclude.m4
 zlib/Makefile.in: zlib/Makefile.am zlib/configure.ac zlib/aclocal.m4
