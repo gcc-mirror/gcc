@@ -1,5 +1,10 @@
 2004-11-26  Ben Elliston  <bje@au.ibm.com>
 
+	* gcc.dg/cpp/isysroot-2.c: Move target selector from dg-options to
+	dg-do directive.
+
+2004-11-26  Ben Elliston  <bje@au.ibm.com>
+
 	* gcc.dg/pr17957.c: Pass --param, not -param.
 
 2004-11-25  Andrew Pinski  <pinskia@physics.uc.edu>

@@ -1,5 +1,5 @@
-/* { dg-options "-isysroot ${srcdir}/gcc.dg/cpp" { target *-*-darwin* } } */
-/* { dg-do compile } */
+/* { dg-options "-isysroot ${srcdir}/gcc.dg/cpp" } */
+/* { dg-do compile { target *-*-darwin* } } */
 
 #include <Carbon/Carbon.h>
 int main()
