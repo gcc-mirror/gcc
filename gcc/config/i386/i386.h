@@ -819,11 +819,16 @@ extern int ix86_arch;
    || ((MODE1) == HImode && (MODE2) == SImode))
 
 /* Specify the modes required to caller save a given hard regno.
-   We do this on i386 to prevent flags from being saved at all.  */
+   We do this on i386 to prevent flags from being saved at all.
 
-#define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS)		\
+   Kill any attempts to combine saving of modes.  */
+
+#define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE)		\
   (CC_REGNO_P (REGNO) ? VOIDmode				\
-   : choose_hard_reg_mode ((REGNO), (NREGS)))
+   : (MODE) == VOIDmode && (NREGS) != 1 ? VOIDmode		\
+   : (MODE) == VOIDmode ? choose_hard_reg_mode ((REGNO), (NREGS)) \
+   : (MODE) == HImode && !TARGET_PARTIAL_REG_STALL ? SImode	\
+   : (MODE) == QImode && (REGNO) >= 4 ? SImode : (MODE))
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */

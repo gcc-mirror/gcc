@@ -648,7 +648,7 @@ extern const char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
 
 /* Specify the modes required to caller save a given hard regno.  */
 
-#define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS) (c4x_caller_save_map[REGNO])
+#define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE) (c4x_caller_save_map[REGNO])
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE) c4x_hard_regno_mode_ok(REGNO, MODE)
 
