@@ -5104,16 +5104,15 @@ assign_parms (tree fndecl)
 	    {
 	      enum machine_mode submode = GET_MODE (XEXP (parmreg, 0));
 
-	      regnor = REGNO (XEXP (parmreg, 0));
-	      regnoi = REGNO (XEXP (parmreg, 1));
+	      regnor = REGNO (gen_realpart (submode, parmreg));
+	      regnoi = REGNO (gen_imagpart (submode, parmreg));
 
 	      if (stack_parm != 0)
 		{
 		  parm_reg_stack_loc[regnor]
-		    = adjust_address_nv (stack_parm, submode, 0);
+		    = gen_realpart (submode, stack_parm);
 		  parm_reg_stack_loc[regnoi]
-		    = adjust_address_nv (stack_parm, submode,
-					 GET_MODE_SIZE (submode));
+		    = gen_imagpart (submode, stack_parm);
 		}
 	      else
 		{

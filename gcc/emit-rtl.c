@@ -197,6 +197,7 @@ static int reg_attrs_htab_eq (const void *, const void *);
 static reg_attrs *get_reg_attrs (tree, int);
 static tree component_ref_for_mem_expr (tree);
 static rtx gen_const_vector_0 (enum machine_mode);
+static rtx gen_complex_constant_part (enum machine_mode, rtx, int);
 static void copy_rtx_if_shared_1 (rtx *orig);
 
 /* Probability of the conditional branch currently proceeded by try_split.
@@ -1106,6 +1107,96 @@ gen_lowpart_common (enum machine_mode mode, rtx x)
 
   /* Otherwise, we can't do this.  */
   return 0;
+}
+
+/* Return the constant real or imaginary part (which has mode MODE)
+   of a complex value X.  The IMAGPART_P argument determines whether
+   the real or complex component should be returned.  This function
+   returns NULL_RTX if the component isn't a constant.  */
+
+static rtx
+gen_complex_constant_part (enum machine_mode mode, rtx x, int imagpart_p)
+{
+  tree decl, part;
+
+  if (GET_CODE (x) == MEM
+      && GET_CODE (XEXP (x, 0)) == SYMBOL_REF)
+    {
+      decl = SYMBOL_REF_DECL (XEXP (x, 0));
+      if (decl != NULL_TREE && TREE_CODE (decl) == COMPLEX_CST)
+	{
+	  part = imagpart_p ? TREE_IMAGPART (decl) : TREE_REALPART (decl);
+	  if (TREE_CODE (part) == REAL_CST
+	      || TREE_CODE (part) == INTEGER_CST)
+	    return expand_expr (part, NULL_RTX, mode, 0);
+	}
+    }
+  return NULL_RTX;
+}
+
+/* Return the real part (which has mode MODE) of a complex value X.
+   This always comes at the low address in memory.  */
+
+rtx
+gen_realpart (enum machine_mode mode, rtx x)
+{
+  rtx part;
+
+  /* Handle complex constants.  */
+  part = gen_complex_constant_part (mode, x, 0);
+  if (part != NULL_RTX)
+    return part;
+
+  if (WORDS_BIG_ENDIAN
+      && GET_MODE_BITSIZE (mode) < BITS_PER_WORD
+      && REG_P (x)
+      && REGNO (x) < FIRST_PSEUDO_REGISTER)
+    internal_error
+      ("can't access real part of complex value in hard register");
+  else if (WORDS_BIG_ENDIAN)
+    return gen_highpart (mode, x);
+  else
+    return gen_lowpart (mode, x);
+}
+
+/* Return the imaginary part (which has mode MODE) of a complex value X.
+   This always comes at the high address in memory.  */
+
+rtx
+gen_imagpart (enum machine_mode mode, rtx x)
+{
+  rtx part;
+
+  /* Handle complex constants.  */
+  part = gen_complex_constant_part (mode, x, 1);
+  if (part != NULL_RTX)
+    return part;
+
+  if (WORDS_BIG_ENDIAN)
+    return gen_lowpart (mode, x);
+  else if (! WORDS_BIG_ENDIAN
+	   && GET_MODE_BITSIZE (mode) < BITS_PER_WORD
+	   && REG_P (x)
+	   && REGNO (x) < FIRST_PSEUDO_REGISTER)
+    internal_error
+      ("can't access imaginary part of complex value in hard register");
+  else
+    return gen_highpart (mode, x);
+}
+
+/* Return 1 iff X, assumed to be a SUBREG,
+   refers to the real part of the complex value in its containing reg.
+   Complex values are always stored with the real part in the first word,
+   regardless of WORDS_BIG_ENDIAN.  */
+
+int
+subreg_realpart_p (rtx x)
+{
+  if (GET_CODE (x) != SUBREG)
+    abort ();
+
+  return ((unsigned int) SUBREG_BYTE (x)
+	  < (unsigned int) GET_MODE_UNIT_SIZE (GET_MODE (SUBREG_REG (x))));
 }
 
 /* Assuming that X is an rtx (e.g., MEM, REG or SUBREG) for a value,

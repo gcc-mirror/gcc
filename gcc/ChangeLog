@@ -1,3 +1,8 @@
+2004-12-04  Richard Henderson  <rth@redhat.com>
+
+	* emit-rtl.c, expr.c, function.c, integrate.c, optabs.c, rtl.h:
+	Revert the patches for PR rtl-opt/15289.
+
 2004-12-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* integrate.c (expand_inline_function): Accept non-CONCAT arguments
