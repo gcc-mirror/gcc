@@ -67,6 +67,23 @@ int flag_simple = 0;
 int dump_for_graph;
 
 #ifndef GENERATOR_FILE
+static void
+print_decl_name (FILE *outfile, tree node)
+{
+  if (DECL_NAME (node))
+    fputs (IDENTIFIER_POINTER (DECL_NAME (node)), outfile);
+  else
+    {
+      if (TREE_CODE (node) == LABEL_DECL && LABEL_DECL_UID (node) != -1)
+	fprintf (outfile, "L." HOST_WIDE_INT_PRINT_DEC, LABEL_DECL_UID (node));
+      else
+        {
+          char c = TREE_CODE (node) == CONST_DECL ? 'C' : 'D';
+	  fprintf (outfile, "%c.%u", c, DECL_UID (node));
+        }
+    }
+}
+
 void
 print_mem_expr (FILE *outfile, tree expr)
 {
@@ -76,9 +93,8 @@ print_mem_expr (FILE *outfile, tree expr)
 	print_mem_expr (outfile, TREE_OPERAND (expr, 0));
       else
 	fputs (" <variable>", outfile);
-      if (DECL_NAME (TREE_OPERAND (expr, 1)))
-	fprintf (outfile, ".%s",
-		 IDENTIFIER_POINTER (DECL_NAME (TREE_OPERAND (expr, 1))));
+      fputc ('.', outfile);
+      print_decl_name (outfile, TREE_OPERAND (expr, 1));
     }
   else if (TREE_CODE (expr) == INDIRECT_REF)
     {
@@ -86,12 +102,13 @@ print_mem_expr (FILE *outfile, tree expr)
       print_mem_expr (outfile, TREE_OPERAND (expr, 0));
       fputs (")", outfile);
     }
-  else if (DECL_NAME (expr))
-    fprintf (outfile, " %s", IDENTIFIER_POINTER (DECL_NAME (expr)));
   else if (TREE_CODE (expr) == RESULT_DECL)
     fputs (" <result>", outfile);
   else
-    fputs (" <anonymous>", outfile);
+    {
+      fputc (' ', outfile);
+      print_decl_name (outfile, expr);
+    }
 }
 #endif
 
