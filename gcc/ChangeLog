@@ -1,3 +1,12 @@
+2001-04-20  Geoff Keating  <geoffk@redhat.com>
+
+	* config/rs6000/rs6000.md (ctrsi_internal1, ctrsi_internal2,
+	ctrsi_internal3, ctrsi_internal4, ctrsi_internal5,
+	ctrsi_internal6, ctrdi_internal1, ctrdi_internal2,
+	ctrdi_internal3, ctrdi_internal4, ctrdi_internal5,
+	ctrdi_internal6): In the short-branch case, this insn is only 4
+	bytes long.  Reported by Reza Yazdani <reza@apple.com>.
+
 2001-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* reg-stack.c (check_asm_stack_operands): Issue error if "=t" resp.
