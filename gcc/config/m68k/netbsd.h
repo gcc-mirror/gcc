@@ -28,12 +28,13 @@
 #define PTRDIFF_TYPE "int"
 
 #undef WCHAR_TYPE
-#define WCHAR_TYPE "short unsigned int"
+#define WCHAR_TYPE "int"
 
-#define WCHAR_UNSIGNED 1
+#undef WCHAR_UNSIGNED
+#define WCHAR_UNSIGNED 0
 
 #undef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE 16
+#define WCHAR_TYPE_SIZE 32
 
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 
