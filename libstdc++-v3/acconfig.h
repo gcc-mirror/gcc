@@ -1,4 +1,4 @@
-// acconfig.h symbols and macros for libstdc++ v3 -*- C++ -*-
+// Symbols and macros for libstdc++ -*- C++ -*-
 
 // Defines libstdc++ version.
 #undef PACKAGE
@@ -10,20 +10,24 @@
 #undef HAVE_GETTEXT
 #undef HAVE_STPCPY
 
-// Include I/O support for 'long long' and 'unsigned long long'.
+// Define if code specialized for long long should be used.
 #undef _GLIBCXX_USE_LONG_LONG
-
-// Define if C99 features such as lldiv_t, llabs, lldiv should be exposed.
-#undef _GLIBCXX_USE_C99
-
-// Define if C99 math functions (like fpclassify) should be exposed.
-#undef _GLIBCXX_USE_C99_MATH
-
-// Define if C99 complex math functions should be used in std::complex.
-#undef _GLIBCXX_USE_C99_COMPLEX
 
 // Define if code specialized for wchar_t should be used.
 #undef _GLIBCXX_USE_WCHAR_T
+
+// Define if C99 functions or macros from <wchar.h>, <math.h>,
+// <complex.h>, <stdio.h>, and <stdlib.h> can be used or exposed.
+#undef _GLIBCXX_USE_C99
+
+// Define if C99 functions or macros in <math.h> should be imported in
+// <cmath> in namespace std.
+#undef _GLIBCXX_USE_C99_MATH
+
+// Define if C99 functions in <complex.h> should be used in
+// <complex>. Using compiler builtins for these functions requires
+// corresponding C99 library functions to be present.
+#undef _GLIBCXX_USE_C99_COMPLEX
 
 // Define if using setrlimit to set resource limits during 'make check'.
 #undef _GLIBCXX_RES_LIMITS

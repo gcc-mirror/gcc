@@ -234,14 +234,13 @@ options</a></h1>
     </p>
  </dd>
 
- <dt><code>--enable-c-mbchar  </code>[default]</dt>
- <dd><p>Certain template specializations are required for wide
-        character conversion support.  This is tricky and currently
-        changing rapidly, and can cause problems on new platforms.
-        Disabling wide character specializations is useful for initial
-        porting steps, but builds only a subset of what is required by
-        ISO.  By default, this option is on.  This option can change
-        the library ABI.
+ <dt><code>--enable-wchar_t  </code>[default]</dt>
+ <dd><p>Template specializations for the &quot;wchar_t&quot; type are
+        required for wide character conversion support.  Disabling
+        wide character specializations may be expedient for initial
+        porting efforts, but builds only a subset of what is required by
+        ISO, and is not recommended.  By default, this option is on.
+        This option can change the library ABI.
      </p>
  </dd>
 
