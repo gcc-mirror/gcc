@@ -5102,7 +5102,10 @@ print_operand (FILE *file, rtx x, int code)
 	}
       return;
     /* For floating point comparisons.  Note that the output
-       predicates are the complement of the desired mode.  */
+       predicates are the complement of the desired mode.  The
+       conditions for GT, GE, LT, LE and LTGT cause an invalid
+       operation exception if the result is unordered and this
+       exception is enabled in the floating-point status register.  */
     case 'Y':
       switch (GET_CODE (x))
 	{
@@ -5121,19 +5124,19 @@ print_operand (FILE *file, rtx x, int code)
 	case LTGT:
 	  fputs ("!<>", file);  break;
 	case UNLE:
-	  fputs (">", file);  break;
+	  fputs ("!?<=", file);  break;
 	case UNLT:
-	  fputs (">=", file);  break;
+	  fputs ("!?<", file);  break;
 	case UNGE:
-	  fputs ("<", file);  break;
+	  fputs ("!?>=", file);  break;
 	case UNGT:
-	  fputs ("<=", file);  break;
+	  fputs ("!?>", file);  break;
 	case UNEQ:
-	  fputs ("<>", file);  break;
+	  fputs ("!?=", file);  break;
 	case UNORDERED:
-	  fputs ("<=>", file);  break;
+	  fputs ("!?", file);  break;
 	case ORDERED:
-	  fputs ("!<=>", file);  break;
+	  fputs ("?", file);  break;
 	default:
 	  abort ();
 	}
