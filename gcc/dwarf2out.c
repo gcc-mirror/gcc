@@ -448,8 +448,12 @@ expand_builtin_init_dwarf_reg_sizes (tree address)
     if (DWARF_FRAME_REGNUM (i) < DWARF_FRAME_REGISTERS)
       {
 	HOST_WIDE_INT offset = DWARF_FRAME_REGNUM (i) * GET_MODE_SIZE (mode);
-	HOST_WIDE_INT size = GET_MODE_SIZE (reg_raw_mode[i]);
+	enum machine_mode save_mode = reg_raw_mode[i];
+	HOST_WIDE_INT size;
 
+	if (HARD_REGNO_CALL_PART_CLOBBERED (i, save_mode))
+	  save_mode = choose_hard_reg_mode (i, 1, true);
+	size = GET_MODE_SIZE (save_mode);
 	if (offset < 0)
 	  continue;
 
