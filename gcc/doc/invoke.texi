@@ -4718,15 +4718,6 @@ memory to improve the performance of loops that access large arrays.
 These options may generate better or worse code; results are highly
 dependent on the structure of loops within the source code.
 
-These two options are intended to be removed someday, once
-they have helped determine the efficacy of various
-approaches to improving loop optimizations.
-
-Please contact @w{@email{gcc@@gcc.gnu.org}}, and describe how use of
-these options affects the performance of your production code.
-Examples of code that runs @emph{slower} when these options are
-@emph{enabled} are very valuable.
-
 @item -fno-peephole
 @itemx -fno-peephole2
 @opindex fno-peephole
