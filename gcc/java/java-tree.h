@@ -135,6 +135,11 @@ extern int flag_assume_compiled;
 
 extern int flag_emit_class_files;
 
+/* When non zero, assume all native functions are implemented with
+   JNI, not CNI.  */
+
+extern int flag_jni;
+
 /* When non zero, we emit xref strings. Values of the flag for xref
    backends are defined in xref.h.  */
 
@@ -296,6 +301,9 @@ extern tree soft_checkarraystore_node;
 extern tree soft_monitorenter_node;
 extern tree soft_monitorexit_node;
 extern tree soft_lookupinterfacemethod_node;
+extern tree soft_lookupjnimethod_node;
+extern tree soft_getjnienvnewframe_node;
+extern tree soft_jnipopsystemframe_node;
 extern tree soft_fmod_node;
 extern tree soft_exceptioninfo_call_node;
 extern tree soft_idiv_node;
@@ -514,6 +522,9 @@ struct lang_decl
   tree inner_access;		/* The identifier of the access method
 				   used for invocation from inner classes */
   int nap;			/* Number of artificial parameters */
+
+  int native : 1;		/* Nonzero if this is a native
+				   method.  */
 };
 
 /* init_test_table hash table entry structure.  */
@@ -649,6 +660,7 @@ extern tree build_known_method_ref PARAMS ((tree, tree, tree, tree, tree));
 extern tree build_class_init PARAMS ((tree, tree));
 extern tree build_invokevirtual PARAMS ((tree, tree));
 extern tree build_invokeinterface PARAMS ((tree, tree));
+extern tree build_jni_stub PARAMS ((tree));
 extern tree invoke_build_dtable PARAMS ((int, tree));
 extern tree build_field_ref PARAMS ((tree, tree, tree));
 extern void pushdecl_force_head PARAMS ((tree));
@@ -773,7 +785,7 @@ struct rtx_def * java_lang_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 #define METHOD_STATIC(DECL) DECL_LANG_FLAG_2 (DECL)
 #define METHOD_FINAL(DECL) DECL_LANG_FLAG_3 (DECL)
 #define METHOD_SYNCHRONIZED(DECL) DECL_LANG_FLAG_4 (DECL)
-#define METHOD_NATIVE(DECL) DECL_EXTERNAL(DECL)
+#define METHOD_NATIVE(DECL) (DECL_LANG_SPECIFIC(DECL)->native)
 #define METHOD_ABSTRACT(DECL) DECL_LANG_FLAG_5 (DECL)
 #define METHOD_TRANSIENT(DECL) DECL_LANG_FLAG_6 (DECL)
 

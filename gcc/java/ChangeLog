@@ -1,3 +1,32 @@
+2000-04-19  Tom Tromey  &lt;tromey@cygnus.com&gt;
+
+	* class.c (add_method_1): Set both DECL_EXTERNAL and METHOD_NATIVE
+	on native function.
+	* jcf-parse.c (parse_class_file): Call build_jni_stub for native
+	JNI methods.
+	* expr.c (build_jni_stub): New function.
+	* lang-specs.h: -fjni and -femit-class-file are incompatible.
+	* parse.c: Rebuilt.
+	* parse.y (java_complete_expand_methods): Expand a native method
+	and call build_jni_stub if -fjni given.
+	* lang-options.h: Document -fjni.
+	* lang.c (flag_jni): New global.
+	(lang_f_options): Added `jni' entry.
+	* java-tree.h (soft_lookupjnimethod_node,
+	soft_getjnienvnewframe_node, soft_jnipopsystemframe_node):
+	Declare.
+	(flag_jni): Declare.
+	(build_jni_stub): Declare.
+	(struct lang_decl): Added `native' flag.
+	(METHOD_NATIVE): Redefined to use `native' field of lang specific
+	structure.
+	* decl.c (soft_lookupjnimethod_node, soft_getjnienvnewframe_node,
+	soft_jnipopsystemframe_node): New globals.
+	(init_decl_processing): Set them.  _Jv_InitClass only takes one
+	argument.
+
+	* java-tree.def: Put into `C' mode.
+
 2000-04-27  Tom Tromey  <tromey@cygnus.com>
 
 	Fix for PR gcj/2:
