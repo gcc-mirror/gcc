@@ -69,7 +69,6 @@ Boston, MA 02111-1307, USA.  */
    FP codes supplied by HP we'll keep it at 64 bits.  */
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE 64
-#define MAX_WCHAR_TYPE_SIZE 32
 
 /* Temporary until we figure out what to do with those *(&@$ 32bit
    relocs which appear in stabs.  */
