@@ -1201,12 +1201,6 @@ rtl_tidy_fallthru_edge (edge e)
 {
   rtx q;
   basic_block b = e->src, c = b->next_bb;
-  edge e2;
-  edge_iterator ei;
-
-  FOR_EACH_EDGE (e2, ei, b->succs)
-    if (e == e2)
-      break;
 
   /* ??? In a late-running flow pass, other folks may have deleted basic
      blocks by nopping out blocks, leaving multiple BARRIERs between here
@@ -1229,7 +1223,7 @@ rtl_tidy_fallthru_edge (edge e)
   if (JUMP_P (q)
       && onlyjump_p (q)
       && (any_uncondjump_p (q)
-	  || (EDGE_SUCC (b, 0) == e && ei.index == EDGE_COUNT (b->succs) - 1)))
+	  || EDGE_COUNT (b->succs) == 1))
     {
 #ifdef HAVE_cc0
       /* If this was a conditional jump, we need to also delete
