@@ -501,7 +501,7 @@ recognized_extern (name)
   switch (special_file_handling)
     {
     case errno_h:
-      if (!cpp_idcmp (name->val.name.text, name->val.name.len, "errno"))
+      if (cpp_ideq (name, "errno"))
 	seen_errno = 1, required_other--;
       break;
 
@@ -531,8 +531,8 @@ recognized_function (fname, kind, have_arg_list, file_seen)
     missing_extern_C_count++;
 #endif
 
-  fn = lookup_std_proto ((const char *)fname->val.name.text,
-			 fname->val.name.len);
+  fn = lookup_std_proto ((const char *)fname->val.node->name,
+			 fname->val.node->length);
 
   /* Remove the function from the list of required function.  */
   if (fn)
@@ -653,9 +653,7 @@ read_scan_file (in_fname, argc, argv)
 	      if (CPP_BUFFER (&scan_in) == buf)
 		break;
 	    }
-	  else if (t->type == CPP_NAME && cpp_idcmp (t->val.name.text,
-						     t->val.name.len,
-						     "_filbuf") == 0)
+	  else if (cpp_ideq (t, "_filbuf"))
 	    seen_filbuf++;
 	}
       if (seen_filbuf)

@@ -137,10 +137,10 @@ parse_number (pfile, tok)
      const cpp_token *tok;
 {
   struct op op;
-  const U_CHAR *start = tok->val.name.text;
-  const U_CHAR *end = start + tok->val.name.len;
+  const U_CHAR *start = tok->val.str.text;
+  const U_CHAR *end = start + tok->val.str.len;
   const U_CHAR *p = start;
-  int c, i, nsuff;
+  int c = 0, i, nsuff;
   unsigned HOST_WIDEST_INT n = 0, nd, MAX_over_base;
   int base = 10;
   int overflow = 0;
@@ -261,8 +261,8 @@ parse_charconst (pfile, tok)
   int num_bits;
   unsigned int width = MAX_CHAR_TYPE_SIZE, mask = MAX_CHAR_TYPE_MASK;
   int max_chars;
-  const U_CHAR *ptr = tok->val.name.text;
-  const U_CHAR *end = ptr + tok->val.name.len;
+  const U_CHAR *ptr = tok->val.str.text;
+  const U_CHAR *end = ptr + tok->val.str.len;
 
   int c = -1;
 
@@ -304,8 +304,7 @@ parse_charconst (pfile, tok)
   /* If char type is signed, sign-extend the constant.  */
   num_bits = num_chars * width;
       
-  if (cpp_defined (pfile, U"__CHAR_UNSIGNED__",
-		   sizeof ("__CHAR_UNSIGNED__")-1)
+  if (pfile->spec_nodes->n__CHAR_UNSIGNED__->type != T_VOID
       || ((result >> (num_bits - 1)) & 1) == 0)
     op.value = result & ((unsigned HOST_WIDEST_INT) ~0
 			 >> (HOST_BITS_PER_WIDEST_INT - num_bits));
@@ -345,9 +344,12 @@ parse_defined (pfile)
   if (paren && _cpp_get_raw_token (pfile)->type != CPP_CLOSE_PAREN)
     SYNTAX_ERROR ("missing close paren after \"defined\"");
 
+  if (tok->val.node->type == T_POISON)
+    SYNTAX_ERROR2 ("attempt to use poisoned \"%s\"", tok->val.node->name);
+
+  op.value = tok->val.node->type != T_VOID;
   op.unsignedp = 0;
   op.op = CPP_INT;
-  op.value = cpp_defined (pfile, tok->val.name.text, tok->val.name.len);
   return op;
 
  syntax_error:
@@ -419,7 +421,7 @@ lex (pfile, skip_evaluation)
 	SYNTAX_ERROR2 ("invalid character '\\%03o' in #if", tok->val.aux);
 
     case CPP_NAME:
-      if (!cpp_idcmp (tok->val.name.text, tok->val.name.len, "defined"))
+      if (tok->val.node == pfile->spec_nodes->n_defined)
 	return parse_defined (pfile);
 
       op.op = CPP_INT;
@@ -427,8 +429,7 @@ lex (pfile, skip_evaluation)
       op.value = 0;
 
       if (CPP_OPTION (pfile, warn_undef) && !skip_evaluation)
-	cpp_warning (pfile, "\"%.*s\" is not defined",
-		     (int) tok->val.name.len, tok->val.name.text);
+	cpp_warning (pfile, "\"%s\" is not defined", tok->val.node->name);
       return op;
 
     case CPP_HASH:

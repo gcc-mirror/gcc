@@ -148,8 +148,6 @@ _cpp_check_directive (pfile, token, bol)
      const cpp_token *token;
      int bol;
 {
-  const U_CHAR *name = token->val.name.text;
-  size_t len = token->val.name.len;
   unsigned int i;
 
   /* If we are rescanning preprocessed input, don't obey any directives
@@ -158,7 +156,7 @@ _cpp_check_directive (pfile, token, bol)
     return 0;
 
   for (i = 0; i < N_DIRECTIVES; i++)
-    if (dtable[i].length == len && !memcmp (dtable[i].name, name, len))
+    if (pfile->spec_nodes->dirs[i] == token->val.node)
       {
 	/* If we are skipping a failed conditional group, all non-conditional
 	   directives are ignored.  */
@@ -250,8 +248,6 @@ get_define_node (pfile)
 {
   cpp_hashnode *node;
   const cpp_token *token;
-  const U_CHAR *sym;
-  unsigned int len;
 
   /* Skip any -C comments.  */
   while ((token = cpp_get_token (pfile))->type == CPP_COMMENT)
@@ -259,27 +255,26 @@ get_define_node (pfile)
 
   if (token->type != CPP_NAME)
     {
-      cpp_error_with_line (pfile, pfile->token_list.line, token->col,
+      cpp_error_with_line (pfile, token->line, token->col,
 			   "macro names must be identifiers");
       return 0;
     }
 
   /* That identifier is not allowed to be "defined".  See predefined
      macro names (6.10.8.4).  */
-  len = token->val.name.len;
-  sym = token->val.name.text;
-  if (str_match (sym, len, "defined"))
+  node = token->val.node;
+
+  if (node == pfile->spec_nodes->n_defined)
     {
       cpp_error_with_line (pfile, pfile->token_list.line, token->col,
 			   "\"defined\" is not a legal macro name");
       return 0;
     }
 
-  node = cpp_lookup (pfile, sym, len);
   /* Check for poisoned identifiers now.  */
   if (node->type == T_POISON)
     {
-      cpp_error (pfile, "attempt to use poisoned \"%.*s\"", (int) len, sym);
+      cpp_error (pfile, "attempt to use poisoned \"%s\"", node->name);
       return 0;
     }
 
@@ -360,7 +355,7 @@ parse_include (pfile, dir, trail, strp, lenp, abp)
 	  return 1;
 	}
     }
-  if (name->val.name.len == 0)
+  if (name->val.str.len == 0)
     {
       cpp_error (pfile, "empty file name in #%s", dir);
       return 1;
@@ -369,8 +364,8 @@ parse_include (pfile, dir, trail, strp, lenp, abp)
   if (!trail && cpp_get_token (pfile)->type != CPP_EOF)
     cpp_error (pfile, "junk at end of #%s", dir);
 
-  *lenp = name->val.name.len;
-  *strp = name->val.name.text;
+  *lenp = name->val.str.len;
+  *strp = name->val.str.text;
   *abp = (name->type == CPP_HEADER_NAME);
   return 0;
 }
@@ -466,8 +461,8 @@ read_line_number (pfile, num)
 {
   const cpp_token *tok = cpp_get_token (pfile);
   enum cpp_ttype type = tok->type;
-  const U_CHAR *p = tok->val.name.text;
-  unsigned int len = tok->val.name.len;
+  const U_CHAR *p = tok->val.str.text;
+  unsigned int len = tok->val.str.len;
 
   if (type == CPP_NUMBER && len == 1 && p[0] >= '1' && p[0] <= '4')
     {
@@ -526,8 +521,8 @@ do_line (pfile)
 
   tok = cpp_get_token (pfile);
   type = tok->type;
-  str = tok->val.name.text;
-  len = tok->val.name.len;
+  str = tok->val.str.text;
+  len = tok->val.str.len;
 
   if (type != CPP_NUMBER || strtoul_for_line (str, len, &new_lineno))
     {
@@ -542,8 +537,8 @@ do_line (pfile)
   ip->lineno = new_lineno;
   tok = cpp_get_token (pfile);
   type = tok->type;
-  str = tok->val.name.text;
-  len = tok->val.name.len;
+  str = tok->val.str.text;
+  len = tok->val.str.len;
 
   if (type == CPP_EOF)
     goto done;
@@ -683,8 +678,7 @@ struct pragma_entry
 };
 
 static int pragma_dispatch             
-    PARAMS ((cpp_reader *, const struct pragma_entry *,
-	     const U_CHAR *, size_t));
+    PARAMS ((cpp_reader *, const struct pragma_entry *, const cpp_hashnode *));
 static int do_pragma_once		PARAMS ((cpp_reader *));
 static int do_pragma_implementation	PARAMS ((cpp_reader *));
 static int do_pragma_poison		PARAMS ((cpp_reader *));
@@ -710,12 +704,14 @@ static const struct pragma_entry gcc_pragmas[] =
   {NULL, NULL}
 };
 
-static int pragma_dispatch (pfile, table, p, len)
+static int pragma_dispatch (pfile, table, node)
      cpp_reader *pfile;
      const struct pragma_entry *table;
-     const U_CHAR *p;
-     size_t len;
+     const cpp_hashnode *node;
 {
+  const U_CHAR *p = node->name;
+  size_t len = node->length;
+  
   for (; table->name; table++)
     if (strlen (table->name) == len && !memcmp (p, table->name, len))
       return (*table->handler) (pfile);
@@ -738,8 +734,7 @@ do_pragma (pfile)
       return 0;
     }
 
-  pop = pragma_dispatch (pfile, top_pragmas,
-			 tok->val.name.text, tok->val.name.len);
+  pop = pragma_dispatch (pfile, top_pragmas, tok->val.node);
   if (!pop)
     pass_thru_directive (pfile);
   return 0;
@@ -757,8 +752,7 @@ do_pragma_gcc (pfile)
   else if (tok->type != CPP_NAME)
     return 0;
   
-  return pragma_dispatch (pfile, gcc_pragmas,
-			  tok->val.name.text, tok->val.name.len);
+  return pragma_dispatch (pfile, gcc_pragmas, tok->val.node);
 }
 
 static int
@@ -799,9 +793,9 @@ do_pragma_implementation (pfile)
     }
 
   /* Make a NUL-terminated copy of the string.  */
-  copy = alloca (tok->val.name.len + 1);
-  memcpy (copy, tok->val.name.text, tok->val.name.len);
-  copy[tok->val.name.len] = '\0';
+  copy = alloca (tok->val.str.len + 1);
+  memcpy (copy, tok->val.str.text, tok->val.str.len);
+  copy[tok->val.str.len] = '\0';
   
   if (cpp_included (pfile, copy))
     cpp_warning (pfile,
@@ -837,7 +831,7 @@ do_pragma_poison (pfile)
 	  return 1;
 	}
 
-      hp = cpp_lookup (pfile, tok->val.name.text, tok->val.name.len);
+      hp = tok->val.node;
       if (hp->type == T_POISON)
 	;  /* It is allowed to poison the same identifier twice.  */
       else
@@ -943,7 +937,7 @@ detect_if_not_defined (pfile)
 
   token++;
   if (token->type != CPP_NAME
-      || !str_match (token->val.name.text, token->val.name.len, "defined"))
+      || token->val.node != pfile->spec_nodes->n_defined)
     return 0;
 
   token++;
@@ -953,7 +947,7 @@ detect_if_not_defined (pfile)
   if (token->type != CPP_NAME)
     return 0;
 
-  cmacro = cpp_lookup (pfile, token->val.name.text, token->val.name.len);
+  cmacro = token->val.node;
 
   if (token[-1].type == CPP_OPEN_PAREN)
     {
@@ -977,15 +971,11 @@ parse_ifdef (pfile, name)
      cpp_reader *pfile;
      const U_CHAR *name;
 {
-  const U_CHAR *ident;
-  unsigned int len;
   enum cpp_ttype type;
   const cpp_hashnode *node = 0;
 
   const cpp_token *token = cpp_get_token (pfile);
   type = token->type;
-  ident = token->val.name.text;
-  len = token->val.name.len;
 
   if (!CPP_TRADITIONAL (pfile))
     {
@@ -998,9 +988,13 @@ parse_ifdef (pfile, name)
     }
 
   if (type == CPP_NAME)
-    node = cpp_lookup (pfile, ident, len);
+    node = token->val.node;
   if (node && node->type == T_POISON)
-    cpp_error (pfile, "attempt to use poisoned identifier \"%s\"", node->name);
+    {
+      cpp_error (pfile, "attempt to use poisoned identifier \"%s\"",
+		 node->name);
+      node = 0;
+    }
     
   return node;
 }
@@ -1011,17 +1005,12 @@ static int
 do_ifdef (pfile)
      cpp_reader *pfile;
 {
-  int def = 0;
   const cpp_hashnode *node = 0;
 
   if (! pfile->skipping)
-    {
-      node = parse_ifdef (pfile, dtable[T_IFDEF].name);
-      if (node)
-	def = (node->type != T_VOID && node->type != T_POISON);
-    }
+    node = parse_ifdef (pfile, dtable[T_IFDEF].name);
 
-  push_conditional (pfile, !def, T_IFDEF, 0);
+  push_conditional (pfile, !(node && node->type != T_VOID), T_IFDEF, 0);
   return 0;
 }
 
@@ -1033,18 +1022,16 @@ do_ifndef (pfile)
      cpp_reader *pfile;
 {
   int start_of_file = 0;
-  int def = 0;
-  const cpp_hashnode *cmacro = 0;
+  const cpp_hashnode *node = 0;
 
   if (! pfile->skipping)
     {
       start_of_file = (pfile->token_list.flags & BEG_OF_FILE);
-      cmacro = parse_ifdef (pfile, dtable[T_IFNDEF].name);
-      if (cmacro)
-	def = cmacro->type != T_VOID;
+      node = parse_ifdef (pfile, dtable[T_IFNDEF].name);
     }
 
-  push_conditional (pfile, def, T_IFNDEF, start_of_file ? cmacro : 0);
+  push_conditional (pfile, node && node->type != T_VOID,
+		    T_IFNDEF, start_of_file ? node : 0);
   return 0;
 }
 
@@ -1060,7 +1047,8 @@ do_if (pfile)
 
   if (! pfile->skipping)
     {
-      cmacro = detect_if_not_defined (pfile);  
+      if (pfile->token_list.flags & BEG_OF_FILE)
+	cmacro = detect_if_not_defined (pfile);
       value = _cpp_parse_expr (pfile);
     }
   push_conditional (pfile, value == 0, T_IF, cmacro);
@@ -1294,13 +1282,13 @@ _cpp_parse_assertion (pfile, answerp)
       dest = &list->tokens[list->tokens_used++];
       *dest = *token;
 
-      if (token_spellings[token->type].type > SPELL_NONE)
+      if (token_spellings[token->type].type == SPELL_STRING)
 	{
-	  _cpp_expand_name_space (list, token->val.name.len);
-	  dest->val.name.text = list->namebuf + list->name_used;
+	  _cpp_expand_name_space (list, token->val.str.len);
+	  dest->val.str.text = list->namebuf + list->name_used;
 	  memcpy (list->namebuf + list->name_used,
-		  token->val.name.text, token->val.name.len);
-	  list->name_used += token->val.name.len;
+		  token->val.str.text, token->val.str.len);
+	  list->name_used += token->val.str.len;
 	}
     }
 
@@ -1322,12 +1310,12 @@ _cpp_parse_assertion (pfile, answerp)
 
  lookup_node:
   *answerp = answer;
-  len = predicate->val.name.len;
+  len = predicate->val.node->length;
   sym = alloca (len + 1);
 
   /* Prefix '#' to get it out of macro namespace.  */
   sym[0] = '#';
-  memcpy (sym + 1, predicate->val.name.text, len);
+  memcpy (sym + 1, predicate->val.node->name, len);
   return cpp_lookup (pfile, sym, len + 1);
 
  error:
@@ -1586,12 +1574,26 @@ cpp_pop_buffer (pfile)
 
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
+#define DSC(x) U x, sizeof x - 1
 void
 _cpp_init_stacks (pfile)
      cpp_reader *pfile;
 {
+  int i;
+  struct spec_nodes *s;
+
   pfile->buffer_ob = xnew (struct obstack);
   obstack_init (pfile->buffer_ob);
+
+  /* Perhaps not the ideal place to put this.  */
+  pfile->spec_nodes = s = xnew (struct spec_nodes);
+  s->n_L                = cpp_lookup (pfile, DSC("L"));
+  s->n_defined          = cpp_lookup (pfile, DSC("defined"));
+  s->n__STRICT_ANSI__   = cpp_lookup (pfile, DSC("__STRICT_ANSI__"));
+  s->n__CHAR_UNSIGNED__ = cpp_lookup (pfile, DSC("__CHAR_UNSIGNED__"));
+  s->n__VA_ARGS__       = cpp_lookup (pfile, DSC("__VA_ARGS__"));
+  for (i = 0; i < N_DIRECTIVES; i++)
+    s->dirs[i] = cpp_lookup (pfile, dtable[i].name, dtable[i].length);
 }
 
 void

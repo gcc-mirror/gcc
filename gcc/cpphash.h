@@ -25,15 +25,15 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 typedef unsigned char U_CHAR;
 #define U (const U_CHAR *)  /* Intended use: U"string" */
 
-/* Order here matters.  Those beyond SPELL_NONE store their spelling
-   in the token list, and it's length in the token->val.name.len.  */
+/* Tokens with SPELL_STRING store their spelling in the token list,
+   and it's length in the token->val.name.len.  */
 enum spell_type
 {
   SPELL_OPERATOR = 0,
   SPELL_CHAR,
-  SPELL_NONE,
   SPELL_IDENT,
-  SPELL_STRING
+  SPELL_STRING,
+  SPELL_NONE
 };
 
 struct token_spelling
@@ -116,6 +116,20 @@ struct include_file
   time_t  date;                 /* modification date of file, if known */
 };
 
+/* Special nodes - identifiers with predefined significance.
+   Note that the array length of dirs[] must be kept in sync with
+   cpplib.c's dtable[].  */
+struct spec_nodes
+{
+  cpp_hashnode *n_L;			/* L"str" */
+  cpp_hashnode *n_defined;		/* #if defined */
+  cpp_hashnode *n__STRICT_ANSI__;	/* STDC_0_IN_SYSTEM_HEADERS */
+  cpp_hashnode *n__CHAR_UNSIGNED__;	/* plain char is unsigned */
+  cpp_hashnode *n__VA_ARGS__;		/* C99 vararg macros */
+  cpp_hashnode *dirs[19];		/* 19 directives counting #sccs */
+};
+
+
 /* The cmacro works like this: If it's NULL, the file is to be
    included again.  If it's NEVER_REREAD, the file is never to be
    included again.  Otherwise it is a macro hashnode, and the file is
@@ -173,7 +187,9 @@ extern unsigned char _cpp_IStable[256];
 #define CPP_PREV_BUFFER(BUFFER) ((BUFFER)->prev)
 #define CPP_PRINT_DEPS(PFILE) CPP_OPTION (PFILE, print_deps)
 #define CPP_TRADITIONAL(PFILE) CPP_OPTION (PFILE, traditional)
-#define CPP_IN_SYSTEM_HEADER(PFILE) (CPP_BUFFER (PFILE)->inc->sysp)
+#define CPP_IN_SYSTEM_HEADER(PFILE) \
+  (CPP_BUFFER (PFILE) && CPP_BUFFER (PFILE)->inc \
+   && CPP_BUFFER (PFILE)->inc->sysp)
 #define CPP_PEDANTIC(PF) \
   (CPP_OPTION (PF, pedantic) && !CPP_IN_SYSTEM_HEADER (PF))
 #define CPP_WTRADITIONAL(PF) \
