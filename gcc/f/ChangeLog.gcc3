@@ -1,11 +1,13 @@
+Sun Aug 17 08:35:11 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* intdoc.texi: Remove generated file from distribution.
+
 Fri Aug 15 13:44:14 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in, Make-lang.in: Remove "^L" at the beginning
 	of lines.
 
 Tue Aug 12 10:23:02 1997  Jeffrey A Law  (law@cygnus.com)
-
-	* g77.info*: Rebuilt.
 
 	* config-lang.in: Don't demand the backend patch.
 	* com.c (lang_printable_name): Second argument is now an int.  Don't
