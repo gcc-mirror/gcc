@@ -308,11 +308,15 @@ find_unreachable_blocks (void)
       basic_block b = *--tos;
 
       FOR_EACH_EDGE (e, ei, b->succs)
-	if (!(e->dest->flags & BB_REACHABLE))
-	  {
-	    *tos++ = e->dest;
-	    e->dest->flags |= BB_REACHABLE;
-	  }
+	{
+	  basic_block dest = e->dest;
+
+	  if (!(dest->flags & BB_REACHABLE))
+	    {
+	      *tos++ = dest;
+	      dest->flags |= BB_REACHABLE;
+	    }
+	}
     }
 
   free (worklist);
