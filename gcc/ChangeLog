@@ -136,7 +136,6 @@ Tue Dec 19 00:37:08 2000  J"orn Rennecke <amylaar@redhat.com>
         (cpp_push_buffer): Don't generate a callback.  Clear sysp.
         (cpp_pop_buffer): Clean up logic.
 
->>>>>>> 1.8655
 2000-12-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.in (gcc_gxx_include_dir): Simplify.
