@@ -1829,13 +1829,13 @@ clear_storage (object, size)
 #ifdef TARGET_MEM_FUNCTIONS
       emit_library_call (memset_libfunc, 0,
 			 VOIDmode, 3,
-			 XEXP (object, 0), Pmode, const0_rtx, Pmode,
-			 GEN_INT (size), Pmode);
+			 XEXP (object, 0), Pmode, const0_rtx, ptr_mode,
+			 GEN_INT (size), ptr_mode);
 #else
       emit_library_call (bzero_libfunc, 0,
 			 VOIDmode, 2,
 			 XEXP (object, 0), Pmode,
-			 GEN_INT (size), Pmode);
+			 GEN_INT (size), ptr_mode);
 #endif
     }
   else
@@ -2018,6 +2018,8 @@ push_block (size, extra, below)
      int extra, below;
 {
   register rtx temp;
+
+  size = convert_modes (Pmode, ptr_mode, size, 1);
   if (CONSTANT_P (size))
     anti_adjust_stack (plus_constant (size, extra));
   else if (GET_CODE (size) == REG && extra == 0)
@@ -2494,8 +2496,8 @@ expand_assignment (to, from, want_value, suggest_reg)
 	  if (GET_CODE (to_rtx) != MEM)
 	    abort ();
 	  to_rtx = change_address (to_rtx, VOIDmode,
-				   gen_rtx (PLUS, Pmode, XEXP (to_rtx, 0),
-					    force_reg (Pmode, offset_rtx)));
+				   gen_rtx (PLUS, ptr_mode, XEXP (to_rtx, 0),
+					    force_reg (ptr_mode, offset_rtx)));
 	  /* If we have a variable offset, the known alignment
 	     is only that of the innermost structure containing the field.
 	     (Actually, we could sometimes do better by using the
@@ -2867,24 +2869,25 @@ store_expr (exp, target, want_value)
 	      emit_block_move (target, temp, copy_size_rtx,
 			       TYPE_ALIGN (TREE_TYPE (exp)) / BITS_PER_UNIT);
 
-	      /* Figure out how much is left in TARGET
-		 that we have to clear.  */
+	      /* Figure out how much is left in TARGET that we have to clear.
+		 Do all calculations in ptr_mode.  */
+
+	      addr = XEXP (target, 0);
+	      addr = convert_modes (ptr_mode, Pmode, addr, 1);
+
 	      if (GET_CODE (copy_size_rtx) == CONST_INT)
 		{
-		  addr = plus_constant (XEXP (target, 0),
-					TREE_STRING_LENGTH (exp));
+		  addr = plus_constant (addr, TREE_STRING_LENGTH (exp));
 		  size = plus_constant (size, - TREE_STRING_LENGTH (exp));
 		}
 	      else
 		{
-		  enum machine_mode size_mode = Pmode;
-
-		  addr = force_reg (Pmode, XEXP (target, 0));
-		  addr = expand_binop (size_mode, add_optab, addr,
+		  addr = force_reg (ptr_mode, addr);
+		  addr = expand_binop (ptr_mode, add_optab, addr,
 				       copy_size_rtx, NULL_RTX, 0,
 				       OPTAB_LIB_WIDEN);
 
-		  size = expand_binop (size_mode, sub_optab, size,
+		  size = expand_binop (ptr_mode, sub_optab, size,
 				       copy_size_rtx, NULL_RTX, 0,
 				       OPTAB_LIB_WIDEN);
 
@@ -2898,10 +2901,10 @@ store_expr (exp, target, want_value)
 		{
 #ifdef TARGET_MEM_FUNCTIONS
 		  emit_library_call (memset_libfunc, 0, VOIDmode, 3, addr,
-				     Pmode, const0_rtx, Pmode, size, Pmode);
+				     Pmode, const0_rtx, Pmode, size, ptr_mode);
 #else
 		  emit_library_call (bzero_libfunc, 0, VOIDmode, 2,
-				     addr, Pmode, size, Pmode);
+				     addr, Pmode, size, ptr_mode);
 #endif
 		}
 
@@ -3038,8 +3041,8 @@ store_constructor (exp, target)
 
 	      to_rtx
 		= change_address (to_rtx, VOIDmode,
-				  gen_rtx (PLUS, Pmode, XEXP (to_rtx, 0),
-					   force_reg (Pmode, offset_rtx)));
+				  gen_rtx (PLUS, ptr_mode, XEXP (to_rtx, 0),
+					   force_reg (ptr_mode, offset_rtx)));
 	    }
 
 	  store_field (to_rtx, bitsize, bitpos, mode, TREE_VALUE (elt),
@@ -4509,9 +4512,7 @@ expand_expr (exp, target, tmode, modifier)
 	   code, suitable for indexing, may be generated.  */
 	if (TREE_CODE (exp1) == SAVE_EXPR
 	    && SAVE_EXPR_RTL (exp1) == 0
-	    && TREE_CODE (exp2 = TREE_OPERAND (exp1, 0)) != ERROR_MARK
-	    && TYPE_MODE (TREE_TYPE (exp1)) == Pmode
-	    && TYPE_MODE (TREE_TYPE (exp2)) == Pmode)
+	    && TYPE_MODE (TREE_TYPE (exp1)) == ptr_mode)
 	  {
 	    temp = expand_expr (TREE_OPERAND (exp1, 0), NULL_RTX,
 				VOIDmode, EXPAND_SUM);
@@ -4754,8 +4755,8 @@ expand_expr (exp, target, tmode, modifier)
 	    if (GET_CODE (op0) != MEM)
 	      abort ();
 	    op0 = change_address (op0, VOIDmode,
-				  gen_rtx (PLUS, Pmode, XEXP (op0, 0),
-					   force_reg (Pmode, offset_rtx)));
+				  gen_rtx (PLUS, ptr_mode, XEXP (op0, 0),
+					   force_reg (ptr_mode, offset_rtx)));
 	  /* If we have a variable offset, the known alignment
 	     is only that of the innermost structure containing the field.
 	     (Actually, we could sometimes do better by using the
@@ -5125,7 +5126,7 @@ expand_expr (exp, target, tmode, modifier)
 	  TREE_OPERAND (TREE_OPERAND (exp, 0), 0) = t;
 	}
 
-      /* If the result is to be Pmode and we are adding an integer to
+      /* If the result is to be ptr_mode and we are adding an integer to
 	 something, we might be forming a constant.  So try to use
 	 plus_constant.  If it produces a sum and we can't accept it,
 	 use force_operand.  This allows P = &ARR[const] to generate
@@ -5134,7 +5135,7 @@ expand_expr (exp, target, tmode, modifier)
 
 	 If this is an EXPAND_SUM call, always return the sum.  */
       if (modifier == EXPAND_SUM || modifier == EXPAND_INITIALIZER
-	  || mode == Pmode)
+	  || mode == ptr_mode)
 	{
 	  if (TREE_CODE (TREE_OPERAND (exp, 0)) == INTEGER_CST
 	      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
@@ -5176,7 +5177,7 @@ expand_expr (exp, target, tmode, modifier)
 	 And force_operand won't know whether to sign-extend or
 	 zero-extend.  */
       if ((modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
-	  || mode != Pmode)
+	  || mode != ptr_mode)
 	goto binop;
 
       preexpand_calls (exp);
@@ -5300,7 +5301,7 @@ expand_expr (exp, target, tmode, modifier)
       /* Attempt to return something suitable for generating an
 	 indexed address, for machines that support that.  */
 
-      if (modifier == EXPAND_SUM && mode == Pmode
+      if (modifier == EXPAND_SUM && mode == ptr_mode
 	  && TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST
 	  && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
 	{
@@ -6259,7 +6260,16 @@ expand_expr (exp, target, tmode, modifier)
 	    abort ();
   
 	  if (modifier == EXPAND_SUM || modifier == EXPAND_INITIALIZER)
-	    return XEXP (op0, 0);
+	    {
+	      temp = XEXP (op0, 0);
+#ifdef POINTERS_EXTEND_UNSIGNED
+	      if (GET_MODE (temp) == Pmode && GET_MODE (temp) != mode
+		  && mode == ptr_mode)
+		temp = convert_modes (ptr_mode, Pmode, temp,
+				      POINTERS_EXTEND_UNSIGNED);
+#endif
+	      return temp;
+	    }
 
 	  op0 = force_operand (XEXP (op0, 0), target);
 	}
@@ -6274,6 +6284,12 @@ expand_expr (exp, target, tmode, modifier)
 	 for it.  */
       if (temp != 0)
 	update_temp_slot_address (temp, op0);
+
+#ifdef POINTERS_EXTEND_UNSIGNED
+      if (GET_MODE (op0) == Pmode && GET_MODE (op0) != mode
+	  && mode == ptr_mode)
+	op0 = convert_modes (ptr_mode, Pmode, op0, POINTERS_EXTEND_UNSIGNED);
+#endif
 
       return op0;
 
@@ -7642,7 +7658,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	    result = gen_reg_rtx (insn_mode);
 
 	  src_rtx = memory_address (BLKmode,
-				    expand_expr (src, NULL_RTX, Pmode,
+				    expand_expr (src, NULL_RTX, ptr_mode,
 						 EXPAND_NORMAL));
 	  if (! (*insn_operand_predicate[(int)icode][1]) (src_rtx, Pmode))
 	    src_rtx = copy_to_mode_reg (Pmode, src_rtx);
@@ -7726,14 +7742,14 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	      break;
 	    }
 
-	  dest_rtx = expand_expr (dest, NULL_RTX, Pmode, EXPAND_NORMAL);
+	  dest_rtx = expand_expr (dest, NULL_RTX, ptr_mode, EXPAND_SUM);
 	  dest_mem = gen_rtx (MEM, BLKmode,
 			      memory_address (BLKmode, dest_rtx));
 	  src_mem = gen_rtx (MEM, BLKmode,
 			     memory_address (BLKmode,
 					     expand_expr (src, NULL_RTX,
-							  Pmode,
-							  EXPAND_NORMAL)));
+							  ptr_mode,
+							  EXPAND_SUM)));
 
 	  /* Copy word part most expediently.  */
 	  emit_block_move (dest_mem, src_mem,
@@ -7844,10 +7860,12 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
 	emit_insn (gen_cmpstrsi (result,
 				 gen_rtx (MEM, BLKmode,
-					  expand_expr (arg1, NULL_RTX, Pmode,
+					  expand_expr (arg1, NULL_RTX,
+						       ptr_mode,
 						       EXPAND_NORMAL)),
 				 gen_rtx (MEM, BLKmode,
-					  expand_expr (arg2, NULL_RTX, Pmode,
+					  expand_expr (arg2, NULL_RTX,
+						       ptr_mode,
 						       EXPAND_NORMAL)),
 				 expand_expr (len, NULL_RTX, VOIDmode, 0),
 				 GEN_INT (MIN (arg1_align, arg2_align))));
