@@ -199,7 +199,8 @@ int
 i386_pe_dllexport_name_p (symbol)
      const char *symbol;
 {
-  return symbol[0] == '@' && symbol[1] == 'e' && symbol[2] == '.';
+  return symbol[0] == DLL_IMPORT_EXPORT_PREFIX
+         && symbol[1] == 'e' && symbol[2] == '.';
 }
 
 /* Return nonzero if SYMBOL is marked as being dllimport'd.  */
@@ -208,7 +209,8 @@ int
 i386_pe_dllimport_name_p (symbol)
      const char *symbol;
 {
-  return symbol[0] == '@' && symbol[1] == 'i' && symbol[2] == '.';
+  return symbol[0] == DLL_IMPORT_EXPORT_PREFIX
+         && symbol[1] == 'i' && symbol[2] == '.';
 }
 
 /* Mark a DECL as being dllexport'd.
@@ -237,7 +239,7 @@ i386_pe_mark_dllexport (decl)
     return; /* already done */
 
   newname = alloca (strlen (oldname) + 4);
-  sprintf (newname, "@e.%s", oldname);
+  sprintf (newname, "%ce.%s", DLL_IMPORT_EXPORT_PREFIX, oldname);
 
   /* We pass newname through get_identifier to ensure it has a unique
      address.  RTL processing can sometimes peek inside the symbol ref
@@ -312,7 +314,7 @@ i386_pe_mark_dllimport (decl)
     }
 
   newname = alloca (strlen (oldname) + 11);
-  sprintf (newname, "@i._imp__%s", oldname);
+  sprintf (newname, "%ci._imp__%s", DLL_IMPORT_EXPORT_PREFIX, oldname);
 
   /* We pass newname through get_identifier to ensure it has a unique
      address.  RTL processing can sometimes peek inside the symbol ref
@@ -399,8 +401,8 @@ i386_pe_encode_section_info (decl, first)
     i386_pe_mark_dllimport (decl);
   /* It might be that DECL has already been marked as dllimport, but a
      subsequent definition nullified that.  The attribute is gone but
-     DECL_RTL still has @i._imp__foo.  We need to remove that. Ditto
-     for the DECL_NON_ADDR_CONST_P flag.  */
+     DECL_RTL still has (DLL_IMPORT_EXPORT_PREFIX)i._imp__foo.  We need
+     to remove that. Ditto for the DECL_NON_ADDR_CONST_P flag.  */
   else if ((TREE_CODE (decl) == FUNCTION_DECL
 	    || TREE_CODE (decl) == VAR_DECL)
 	   && DECL_RTL (decl) != NULL_RTX
@@ -428,7 +430,7 @@ const char *
 i386_pe_strip_name_encoding (str)
      const char *str;
 {
-  if (*str == '@')
+  if (*str == DLL_IMPORT_EXPORT_PREFIX)
     str += 3;
   if (*str == '*')
     str += 1;

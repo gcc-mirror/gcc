@@ -3444,6 +3444,9 @@ enum fp_cw_mode {FP_CW_STORED, FP_CW_UNINITIALIZED, FP_CW_ANY};
 
 
 #define MACHINE_DEPENDENT_REORG(X) x86_machine_dependent_reorg(X)
+
+#define DLL_IMPORT_EXPORT_PREFIX '@'
+
 /*
 Local variables:
 version-control: t
