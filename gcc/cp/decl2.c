@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "except.h"
 #include "expr.h"
+#include "defaults.h"
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
@@ -2527,6 +2528,12 @@ import_export_vtable (decl, type, final)
       TREE_PUBLIC (decl) = 1;
       DECL_EXTERNAL (decl) = ! CLASSTYPE_VTABLE_NEEDS_WRITING (type);
       DECL_INTERFACE_KNOWN (decl) = 1;
+
+      /* For WIN32 we also want to put explicit instantiations in
+	 linkonce sections.  */
+      if (CLASSTYPE_EXPLICIT_INSTANTIATION (type)
+	  && supports_one_only () && ! SUPPORTS_WEAK)
+	comdat_linkage (decl);
     }
   else
     {
@@ -2618,6 +2625,7 @@ finish_vtable_vardecl (prev, vars)
   if (write_virtuals >= 0
       && ! DECL_EXTERNAL (vars)
       && ((TREE_PUBLIC (vars) && ! DECL_WEAK (vars) && ! DECL_ONE_ONLY (vars))
+	  || CLASSTYPE_EXPLICIT_INSTANTIATION (DECL_CONTEXT (vars))
 	  || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (vars))
 	  || (hack_decl_function_context (vars) && TREE_USED (vars)))
       && ! TREE_ASM_WRITTEN (vars))
@@ -2815,6 +2823,12 @@ import_export_decl (decl)
 	  DECL_NOT_REALLY_EXTERN (decl)
 	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
 		 || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines));
+
+	  /* For WIN32 we also want to put explicit instantiations in
+	     linkonce sections.  */
+	  if (CLASSTYPE_EXPLICIT_INSTANTIATION (ctype)
+	      && supports_one_only () && ! SUPPORTS_WEAK)
+	    comdat_linkage (decl);
 	}
       else if (TYPE_BUILT_IN (ctype) && ctype == TYPE_MAIN_VARIANT (ctype))
 	DECL_NOT_REALLY_EXTERN (decl) = 0;

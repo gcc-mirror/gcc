@@ -1,5 +1,12 @@
 Wed Nov 26 20:28:49 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl2.c (import_export_vtable): If we support one_only but not
+	weak symbols, mark instantiated template vtables one_only.
+	(import_export_decl): Likewise for tinfo functions.
+	(finish_vtable_vardecl): Also write out vtables from explicitly 
+	instantiated template classes.
+	* pt.c (mark_class_instantiated): Revert last change.
+
 	* except.c (expand_throw): Call mark_used on the destructor.
 
 1997-11-26  Mark Mitchell  <mmitchell@usa.net>
