@@ -748,11 +748,13 @@ _cpp_read_file (pfile, fname)
 
 /* Do appropriate cleanup when a file buffer is popped off the input
    stack.  Push the next -include file, if any remain.  */
-void
+bool
 _cpp_pop_file_buffer (pfile, inc)
      cpp_reader *pfile;
      struct include_file *inc;
 {
+  bool pushed = false;
+
   /* Record the inclusion-preventing macro, which could be NULL
      meaning no controlling macro.  */
   if (pfile->mi_valid && inc->cmacro == NULL)
@@ -772,8 +774,10 @@ _cpp_pop_file_buffer (pfile, inc)
 
       /* Finally, push the next -included file, if any.  */
       if (!pfile->buffer->prev)
-	_cpp_push_next_buffer (pfile);
+	pushed = _cpp_push_next_buffer (pfile);
     }
+
+  return pushed;
 }
 
 /* Returns the first place in the include chain to start searching for

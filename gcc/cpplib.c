@@ -1805,6 +1805,7 @@ _cpp_pop_buffer (pfile)
 {
   cpp_buffer *buffer = pfile->buffer;
   struct if_stack *ifs;
+  bool pushed = false;
 
   /* Walk back up the conditional stack till we reach its level at
      entry to this file, issuing error messages.  */
@@ -1819,9 +1820,10 @@ _cpp_pop_buffer (pfile)
   pfile->buffer = buffer->prev;
 
   if (buffer->inc)
-    _cpp_pop_file_buffer (pfile, buffer->inc);
+    pushed = _cpp_pop_file_buffer (pfile, buffer->inc);
 
-  obstack_free (&pfile->buffer_ob, buffer);
+  if (!pushed)
+    obstack_free (&pfile->buffer_ob, buffer);
 }
 
 void
