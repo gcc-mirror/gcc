@@ -4650,7 +4650,15 @@ lookup_namespace_name (namespace, name)
     return error_mark_node;
 
   if (BINDING_VALUE (val))
-    return BINDING_VALUE (val);
+    {
+      val = BINDING_VALUE (val);
+
+      /* If we have a single function from a using decl, pull it out.  */
+      if (TREE_CODE (val) == OVERLOAD && ! really_overloaded_fn (val))
+	val = OVL_FUNCTION (val);
+      return val;
+    }
+
   cp_error ("`%D' undeclared in namespace `%D'", name, namespace);
   return error_mark_node;
 }
@@ -4760,6 +4768,11 @@ select_decl (binding, flags)
   else if (val && LOOKUP_TYPES_ONLY (flags)  && TREE_CODE (val) != TYPE_DECL
 	   && (!looking_for_template || TREE_CODE (val) != TEMPLATE_DECL))
     val = NULL_TREE;
+
+  /* If we have a single function from a using decl, pull it out.  */
+  if (val && TREE_CODE (val) == OVERLOAD && ! really_overloaded_fn (val))
+    val = OVL_FUNCTION (val);
+
   return val;
 }
 

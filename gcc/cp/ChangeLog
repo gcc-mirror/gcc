@@ -1,5 +1,13 @@
 1998-07-16  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* init.c (build_offset_ref): Don't call mark_used on an OVERLOAD.
+	* decl.c (select_decl): Extract a lone function from an OVERLOAD.
+	(lookup_namespace_name): Likewise.
+	* typeck.c (build_unary_op): Not here anymore.
+
+	* decl2.c (do_class_using_decl): Make sure we get an identifier.
+	* class.c (handle_using_decl): Ignore TYPE_DECLs.
+
 	* decl.c (qualify_lookup): New fn.
 	(lookup_name_real): Use it.
 

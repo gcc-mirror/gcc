@@ -4547,14 +4547,6 @@ build_unary_op (code, xarg, noconvert)
 	  return build1 (ADDR_EXPR, unknown_type_node, arg);
 	}
 
-      /* If we have a single function from a using decl, pull it out.  */
-      if (TREE_CODE (arg) == OVERLOAD
-	  && ! really_overloaded_fn (arg))
-	{
-	  arg = OVL_FUNCTION (arg);
-	  argtype = TREE_TYPE (arg);
-	}
-
       if (TREE_CODE (arg) == OVERLOAD 
 	  || (TREE_CODE (arg) == OFFSET_REF
 	      && TREE_CODE (TREE_OPERAND (arg, 1)) == TEMPLATE_ID_EXPR))
