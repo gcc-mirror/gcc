@@ -1,3 +1,8 @@
+2002-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.c (store_expr): Convert VOIDmode constants back to target's
+	mode.
+
 2002-01-08  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* doc/invoke.texi: Markup gcc as @command.  Refer to

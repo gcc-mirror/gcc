@@ -4041,13 +4041,19 @@ store_expr (exp, target, want_value)
 	 target.  Otherwise, the caller might get confused by a result whose
 	 mode is larger than expected.  */
 
-      if (want_value && GET_MODE (temp) != GET_MODE (target)
-	  && GET_MODE (temp) != VOIDmode)
+      if (want_value && GET_MODE (temp) != GET_MODE (target))
 	{
-	  temp = gen_lowpart_SUBREG (GET_MODE (target), temp);
-	  SUBREG_PROMOTED_VAR_P (temp) = 1;
-	  SUBREG_PROMOTED_UNSIGNED_P (temp)
-	    = SUBREG_PROMOTED_UNSIGNED_P (target);
+	  if (GET_MODE (temp) != VOIDmode)
+	    {
+	      temp = gen_lowpart_SUBREG (GET_MODE (target), temp);
+	      SUBREG_PROMOTED_VAR_P (temp) = 1;
+	      SUBREG_PROMOTED_UNSIGNED_P (temp)
+		= SUBREG_PROMOTED_UNSIGNED_P (target);
+	    }
+	  else
+	    temp = convert_modes (GET_MODE (target),
+				  GET_MODE (SUBREG_REG (target)),
+				  temp, SUBREG_PROMOTED_UNSIGNED_P (target));
 	}
 
       return want_value ? temp : NULL_RTX;
