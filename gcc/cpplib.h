@@ -633,9 +633,10 @@ struct cpp_reader
 /* Name under which this program was invoked.  */
 extern const char *progname;
 
-/* Where does this buffer come from?  A file, a builtin macro, a
-   command-line option, or a _Pragma operator.  */
-enum cpp_buffer_type {BUF_FILE, BUF_BUILTIN, BUF_CL_OPTION, BUF_PRAGMA};
+/* Where does this buffer come from?  A faked include, a source file,
+   a builtin macro, a command-line option, or a _Pragma operator.  */
+enum cpp_buffer_type {BUF_FAKE, BUF_FILE, BUF_BUILTIN,
+		      BUF_CL_OPTION, BUF_PRAGMA};
 
 /* The structure of a node in the hash table.  The hash table has
    entries for all identifiers: either macros defined by #define

@@ -69,7 +69,7 @@ print_containing_files (ip)
 	   The trailing comma is at the beginning of this message,
 	   and the trailing colon is not translated.  */
 	fprintf (stderr, _(",\n                 from %s:%u"),
-		 ip->nominal_fname, CPP_BUF_LINE (ip) - 1);
+		 ip->nominal_fname, CPP_BUF_LINE (ip));
     }
   fputs (":\n", stderr);
 }
@@ -110,6 +110,9 @@ print_location (pfile, filename, pos)
 	      line = pos->line;
 	      col = pos->col;
 	    }
+
+	  if (col == 0)
+	    col = 1;
 
 	  /* Don't repeat the include stack unnecessarily.  */
 	  if (buffer->prev && ! buffer->include_stack_listed)
