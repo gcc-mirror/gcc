@@ -318,16 +318,67 @@ void FN ()					\
 
 
 /* Switch into a generic section.
-   This is currently only used to support section attributes.
 
    We make the section read-only and executable for a function decl,
-   read-only for a const data decl, and writable for a non-const data decl.  */
-#undef  ASM_OUTPUT_SECTION_NAME
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC) \
-  fprintf (FILE, ".section\t%s,\"%s\",@progbits\n", NAME, \
-	   (DECL) && TREE_CODE (DECL) == FUNCTION_DECL ? "ax" : \
-	   (DECL) && DECL_READONLY_SECTION (DECL, RELOC) ? "a" : "aw")
+   read-only for a const data decl, and writable for a non-const data decl.
 
+   If the section has already been defined, we must not emit the
+   attributes here. The SVR4 assembler does not recognize section
+   redefinitions.  If DECL is NULL, no attributes are emitted.  */
+
+#undef  ASM_OUTPUT_SECTION_NAME
+#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC)		\
+  do									\
+    {									\
+      static htab_t htab;                                               \
+                                                                        \
+      struct section_info                                               \
+      {									\
+	enum sect_enum {SECT_RW, SECT_RO, SECT_EXEC} type;		\
+      };                                                                \
+                                                                        \
+      struct section_info *s;						\
+      const char *mode;							\
+      enum sect_enum type;                                              \
+      PTR* slot;                                                        \
+                                                                        \
+      /* The names we put in the hashtable will always be the unique    \
+	 versions gived to us by the stringtable, so we can just use    \
+	 their addresses as the keys.  */                               \
+      if (!htab)                                                        \
+	htab = htab_create (31,                                         \
+			    htab_hash_pointer,                          \
+			    htab_eq_pointer,                            \
+			    NULL);                                      \
+                                                                        \
+      if (DECL && TREE_CODE (DECL) == FUNCTION_DECL)			\
+	type = SECT_EXEC, mode = "ax";					\
+      else if (DECL && DECL_READONLY_SECTION (DECL, RELOC))		\
+	type = SECT_RO, mode = "a";					\
+      else								\
+	type = SECT_RW, mode = "aw";					\
+      									\
+      /* See if we already have an entry for this section.  */          \
+      slot = htab_find_slot (htab, NAME, INSERT);                       \
+      if (!*slot)                                                       \
+	{                                                               \
+	  s = (struct section_info *) xmalloc (sizeof (* s));		\
+	  s->type = type;						\
+	  *slot = s;							\
+	  fprintf (FILE, "\t.section\t%s,\"%s\",@progbits\n",		\
+		   NAME, mode);						\
+	}								\
+      else								\
+	{								\
+	  s = (struct section_info *) *slot;                            \
+	  if (DECL && s->type != type)					\
+	    error_with_decl (DECL,                                      \
+			     "%s causes a section type conflict");      \
+	  								\
+	  fprintf (FILE, "\t.section\t%s\n", NAME);			\
+	}								\
+    }									\
+  while (0)
 
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */
@@ -354,53 +405,118 @@ void FN ()					\
 /* A C statement or statements to switch to the appropriate
    section for output of DECL.  DECL is either a `VAR_DECL' node
    or a constant of some sort.  RELOC indicates whether forming
-   the initial value of DECL requires link-time relocations.  */
+   the initial value of DECL requires link-time relocations.
+
+   Set SECNUM to:
+	0	.text
+	1	.rodata
+	2	.data
+	3	.sdata
+	4	.bss
+	5	.sbss
+*/
+
+#define DO_SELECT_SECTION(SECNUM, DECL, RELOC)			\
+  do								\
+     {								\
+       SECNUM = 1;						\
+       if (TREE_CODE (DECL) == FUNCTION_DECL)			\
+	 SECNUM = 0;						\
+       else if (TREE_CODE (DECL) == STRING_CST)			\
+	 {							\
+	   if (flag_writable_strings)				\
+	     SECNUM = 2;					\
+	 }							\
+       else if (TREE_CODE (DECL) == VAR_DECL)			\
+	 {							\
+	   if (DECL_INITIAL (DECL) == NULL			\
+	       || DECL_INITIAL (DECL) == error_mark_node)	\
+	     SECNUM = 4;					\
+	   else if ((flag_pic && RELOC)				\
+		    || ! TREE_READONLY (DECL)			\
+		    || TREE_SIDE_EFFECTS (DECL)			\
+		    || ! TREE_CONSTANT (DECL_INITIAL (DECL)))	\
+	     SECNUM = 2;					\
+	 }							\
+       else if (TREE_CODE (DECL) == CONSTRUCTOR)		\
+	 {							\
+	   if ((flag_pic && RELOC)				\
+	       || ! TREE_READONLY (DECL)			\
+	       || TREE_SIDE_EFFECTS (DECL)			\
+	       || ! TREE_CONSTANT (DECL))			\
+	     SECNUM = 2;					\
+	 }							\
+								\
+       /* Select small data sections based on size.  */		\
+       if (SECNUM >= 2)						\
+	 {							\
+	   int size = int_size_in_bytes (TREE_TYPE (DECL));	\
+	   if (size >= 0 && size <= g_switch_value)		\
+	     SECNUM += 1;					\
+	 }							\
+     }								\
+   while (0)
 
 #undef  SELECT_SECTION
-#define SELECT_SECTION(DECL, RELOC)					\
-{									\
-  if (TREE_CODE (DECL) == STRING_CST)					\
+#define SELECT_SECTION(DECL, RELOC)		\
+  do						\
+    {						\
+      typedef void (*sec_fn) PARAMS ((void));	\
+      static sec_fn const sec_functions[6] =	\
+      {						\
+	text_section,				\
+	const_section,				\
+	data_section,				\
+	sdata_section,				\
+	bss_section,				\
+	sbss_section				\
+      };					\
+						\
+      int sec;					\
+						\
+      DO_SELECT_SECTION (sec, DECL, RELOC);	\
+						\
+      (*sec_functions[sec]) ();			\
+    }						\
+  while (0)
+
+#define UNIQUE_SECTION_P(DECL)   (DECL_ONE_ONLY (DECL))
+
+#undef  UNIQUE_SECTION
+#define UNIQUE_SECTION(DECL, RELOC)					\
+  do									\
     {									\
-      if (! flag_writable_strings)					\
-	const_section ();						\
-      else								\
-	data_section ();						\
+      static const char * const prefixes[6][2] =			\
+      {									\
+	{ ".text.",   ".gnu.linkonce.t." },				\
+	{ ".rodata.", ".gnu.linkonce.r." },				\
+	{ ".data.",   ".gnu.linkonce.d." },				\
+	{ ".sdata.",  ".gnu.linkonce.s." },				\
+	{ ".bss.",    ".gnu.linkonce.b." },				\
+	{ ".sbss.",   ".gnu.linkonce.sb." }				\
+      };								\
+									\
+      int nlen, plen, sec;						\
+      const char *name, *prefix;					\
+      char *string;							\
+									\
+      DO_SELECT_SECTION (sec, DECL, RELOC);				\
+									\
+      name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));		\
+      STRIP_NAME_ENCODING (name, name);					\
+      nlen = strlen (name);						\
+									\
+      prefix = prefixes[sec][DECL_ONE_ONLY(DECL)];			\
+      plen = strlen (prefix);						\
+									\
+      string = alloca (nlen + plen + 1);				\
+									\
+      memcpy (string, prefix, plen);					\
+      memcpy (string + plen, name, nlen + 1);				\
+									\
+      DECL_SECTION_NAME (DECL) = build_string (nlen + plen, string);	\
     }									\
-  else if (TREE_CODE (DECL) == VAR_DECL)				\
-    {									\
-      if ((flag_pic && RELOC)						\
-	  || ! TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)		\
-	  || ! DECL_INITIAL (DECL)					\
-	  || (DECL_INITIAL (DECL) != error_mark_node			\
-	      && !TREE_CONSTANT (DECL_INITIAL (DECL))))			\
-	{								\
-	  int size = int_size_in_bytes (TREE_TYPE (DECL));		\
-	  if (size >= 0 && size <= g_switch_value)			\
-	    sdata_section ();						\
-	  else								\
-	    data_section ();						\
-	}								\
-      else								\
-	const_section ();						\
-    }									\
-  else if (TREE_CODE (DECL) == CONSTRUCTOR)				\
-    {									\
-      if ((flag_pic && RELOC)						\
-	  || ! TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)		\
-	  || ! TREE_CONSTANT (DECL))					\
-	{								\
-	  int size = int_size_in_bytes (TREE_TYPE (DECL));		\
-	  if (size >= 0 && size <= g_switch_value)			\
-	    sdata_section ();						\
-	  else								\
-	    data_section ();						\
-	}								\
-      else								\
-	const_section ();						\
-    }									\
-  else									\
-    const_section ();							\
-}
+  while (0)
 
 /* A C statement or statements to switch to the appropriate
    section for output of RTX in mode MODE.  RTX is some kind
