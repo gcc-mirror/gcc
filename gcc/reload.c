@@ -2964,7 +2964,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 
 		     This is doubly true if WORD_REGISTER_OPERATIONS.  In
 		     this case eliminate_regs has left non-paradoxical
-		     subregs for push_reloads to see.  Make sure it does
+		     subregs for push_reload to see.  Make sure it does
 		     by forcing the reload.
 
 		     ??? When is it right at this stage to have a subreg

@@ -439,7 +439,6 @@ static rtx inc_for_reload		PARAMS ((rtx, rtx, rtx, int));
 static void add_auto_inc_notes		PARAMS ((rtx, rtx));
 #endif
 static void copy_eh_notes		PARAMS ((rtx, rtx));
-extern void dump_needs			PARAMS ((struct insn_chain *));
 
 /* Initialize the reload pass once per compilation.  */
 
@@ -2538,7 +2537,7 @@ eliminate_regs (x, mem_mode, insn)
 	 Convert (subreg (mem)) to (mem) if not paradoxical.
 	 Also, if we have a non-paradoxical (subreg (pseudo)) and the
 	 pseudo didn't get a hard reg, we must replace this with the
-	 eliminated version of the memory location because push_reloads
+	 eliminated version of the memory location because push_reload
 	 may do the replacement in certain circumstances.  */
       if (GET_CODE (SUBREG_REG (x)) == REG
 	  && (GET_MODE_SIZE (GET_MODE (x))
@@ -2565,7 +2564,7 @@ eliminate_regs (x, mem_mode, insn)
 		      happen to the entire word.  Moreover, it will use the
 		      (reg:m2 R) later, expecting all bits to be preserved.
 		      So if the number of words is the same, preserve the
-		      subreg so that push_reloads can see it.  */
+		      subreg so that push_reload can see it.  */
 		   && ! ((x_size - 1) / UNITS_PER_WORD
 			 == (new_size -1 ) / UNITS_PER_WORD)
 #endif

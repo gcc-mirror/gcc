@@ -1,3 +1,10 @@
+2003-06-29  James E Wilson  <wilson@tuliptree.org>
+
+	* reload.c (find_reloads): Change push_reloads to push_reload in
+	comment.
+	* reload1.c (eliminate_regs): Likewise.
+	(dump_needs): Delete prototype for deleted function.
+
 2003-06-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtin-attrs.def (gcc_diag, gcc_cdiag, gcc_cxxdiag): New
