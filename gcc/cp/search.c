@@ -104,8 +104,6 @@ static void expand_upcast_fixups
 static void fixup_virtual_upcast_offsets
 	PARAMS ((tree, tree, int, int, tree, tree, tree, tree,
 	       tree *));
-static tree marked_vtable_pathp PARAMS ((tree, void *));
-static tree unmarked_vtable_pathp PARAMS ((tree, void *));
 static tree marked_new_vtablep PARAMS ((tree, void *));
 static tree unmarked_new_vtablep PARAMS ((tree, void *));
 static tree marked_pushdecls_p PARAMS ((tree, void *));
@@ -2346,30 +2344,6 @@ dfs_marked_real_bases_queue_p (binfo, data)
   return binfo ? markedp (binfo, NULL) : NULL_TREE;
 }
 
-/* Like dfs_unmarked_real_bases_queue_p but walks only into things
-   that are not BINFO_VTABLE_PATH_MARKED.  */
-
-tree
-dfs_vtable_path_unmarked_real_bases_queue_p (binfo, data)
-     tree binfo;
-     void *data;
-{
-  binfo = get_shared_vbase_if_not_primary (binfo, data); 
-  return binfo ? unmarked_vtable_pathp (binfo, NULL): NULL_TREE;
-}
-
-/* Like dfs_unmarked_real_bases_queue_p but walks only into things
-   that are BINFO_VTABLE_PATH_MARKED.  */
-
-tree
-dfs_vtable_path_marked_real_bases_queue_p (binfo, data)
-     tree binfo;
-     void *data;
-{
-  binfo = get_shared_vbase_if_not_primary (binfo, data); 
-  return binfo ? marked_vtable_pathp (binfo, NULL): NULL_TREE;
-}
-
 /* A queue function that skips all virtual bases (and their 
    bases).  */
 
@@ -2400,9 +2374,7 @@ dfs_get_pure_virtuals (binfo, data)
     {
       tree virtuals;
       
-      for (virtuals = skip_rtti_stuff (binfo, 
-				       BINFO_TYPE (binfo), 
-				       NULL);
+      for (virtuals = BINFO_VIRTUALS (binfo);
 	   virtuals;
 	   virtuals = TREE_CHAIN (virtuals))
 	if (DECL_PURE_VIRTUAL_P (TREE_VALUE (virtuals)))
@@ -2447,7 +2419,7 @@ get_pure_virtuals (type)
     {
       tree virtuals;
 
-      for (virtuals = skip_rtti_stuff (vbases, BINFO_TYPE (vbases), NULL);
+      for (virtuals = BINFO_VIRTUALS (vbases);
 	   virtuals;
 	   virtuals = TREE_CHAIN (virtuals))
 	{
@@ -2527,7 +2499,7 @@ unmarkedp (binfo, data)
   return !BINFO_MARKED (binfo) ? binfo : NULL_TREE;
 }
 
-static tree
+tree
 marked_vtable_pathp (binfo, data) 
      tree binfo;
      void *data ATTRIBUTE_UNUSED;
@@ -2535,7 +2507,7 @@ marked_vtable_pathp (binfo, data)
   return BINFO_VTABLE_PATH_MARKED (binfo) ? binfo : NULL_TREE; 
 }
 
-static tree
+tree
 unmarked_vtable_pathp (binfo, data) 
      tree binfo;
      void *data ATTRIBUTE_UNUSED;
@@ -2863,9 +2835,10 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
       *vbase_offsets = delta;
     }
 
-  virtuals = skip_rtti_stuff (binfo, BINFO_TYPE (binfo), &n);
-
-  while (virtuals)
+  for (virtuals = BINFO_VIRTUALS (binfo), 
+	 n = first_vfun_index (BINFO_TYPE (binfo));
+       virtuals;
+       virtuals = TREE_CHAIN (virtuals), ++n)
     {
       tree current_fndecl = TREE_VALUE (virtuals);
 
@@ -2956,8 +2929,6 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
 	  finish_expr_stmt (build_modify_expr (new_delta, NOP_EXPR,
 					       old_delta));
 	}
-      ++n;
-      virtuals = TREE_CHAIN (virtuals);
     }
 }
 

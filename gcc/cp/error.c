@@ -1857,7 +1857,7 @@ dump_expr (t, flags)
 	      t = TYPE_METHOD_BASETYPE (t);
 	      virtuals = TYPE_BINFO_VIRTUALS (TYPE_MAIN_VARIANT (t));
 	      
-	      n = tree_low_cst (idx, 0);
+	      n = tree_low_cst (idx, 0) - first_vfun_index (t);
 
 	      /* Map vtable index back one, to allow for the null pointer to
 		 member.  */

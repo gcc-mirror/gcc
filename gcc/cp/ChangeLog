@@ -1,3 +1,58 @@
+2000-03-28  Mark Mitchell  <mark@codesourcery.com>
+
+	Put RTTI entries at negative offsets in new ABI.
+	* class.c (dfs_build_vbase_offset_vtbl_entries): Put the first
+	vbase offset at index -3, not -1.
+	(build_vtabe_offset_vtbl_entries): Use unmarked_vtable_pathp, not
+	dfs_vtable_path_unmarked_real_bases_queue_p to walk bases.
+	(dfs_build_vcall_offset_vtbl_entries): Don't use skip_rtti_stuff.
+	(build_rtti_vtbl_entries): New function.
+	(set_rtti_entry): Remove.
+	(build_primary_vtable): Don't use it.
+	(build_secondary_vtable): Likewise.
+	(start_vtable): Remove.
+	(first_vfun_index): New function.
+	(set_vindex): Likewise.
+	(add_virtual_function): Don't call start_vtable.  Do call
+	set_vindex.
+	(set_primary_base): Rename parameter.
+	(determine_primary_base): Likewise.
+	(num_vfun_entries): Don't use skip_rtti_stuff.
+	(num_extra_vtbl_entries): Include RTTI information.
+	(build_vtbl_initializer): Use build_rtti_vtbl_entries.
+	(skip_rtti_stuff): Remove.
+	(dfs_modify_vtables): Don't use it.
+	(modify_all_vtables): Don't use start_vtable.  Do use set_vindex.
+	(layout_nonempty_base_or_field): Update size handling.
+	(create_vtable_ptr): Tweak.
+	(layout_class_type): Adjust parameter names.
+	(finish_struct_1): Simplify.
+	* cp-tree.h (CLASSTYPE_VSIZE): Tweak documentation.
+	(skip_rtti_stuff): Remove.
+	(first_vfun_index): New function.
+	(dfs_vtable_path_unmarked_real_bases_queue_p): Remove.
+	(dfs_vtable_path_marked_real_bases_queue_p): Remove.
+	(marked_vtable_pathp): Declare.
+	(unmarked_vtable_pathp): Likewise.
+	* error.c (dump_expr): Use first_vfun_index to calculate vtable
+	offsets.
+	* rtti.c (build_headof): Look for RTTI at negative offsets.
+	(get_tinfo_decl_dynamic): Likewise.
+	(tinfo_base_init): Don't take the address of the TINFO_VTABLE_DECL
+	here.
+	(create_pseudo_type_info): Do it here instead.  Adjust so that
+	vptr points at first virtual function.
+	* search.c (marked_vtable_pathp): Make it global.
+	(unmarked_vtable_pathp): Likewise.
+	(dfs_vtable_path_unmarked_real_bases_queue_p): Remove.
+	(dfs_vtable_path_marked_real_bases_queue_p): Likewise.
+	(dfs_get_pure_virtuals): Don't use skip_rtti_stuff.
+	(get_pure_virtuals): Likewise.
+	(expand_upcast_fixups): Likewise.
+	* tree.c (debug_binfo): Likewise.
+	* tinfo.cc (__dynamic_cast): Look for vtable_prefix at appropriate
+	negative offset.
+	
 Sun Mar 26 20:15:26 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* class.c (check_field_decl): Fix typo.
