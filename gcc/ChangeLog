@@ -1,3 +1,10 @@
+2002-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR optimization/6086
+	* combine.c (combine_simplify_rtx): If simplify_rtx failed because
+	of SUBREG of volatile MEM or because the MEM was mode dependent,
+	return CLOBBER instead of unmodified SUBREG.
+
 2002-03-30  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/i370/linux.h: Update copyright.

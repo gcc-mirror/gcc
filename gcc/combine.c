@@ -3873,6 +3873,13 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  return temp;
       }
 
+      /* Don't change the mode of the MEM if that would change the meaning
+	 of the address.  */
+      if (GET_CODE (SUBREG_REG (x)) == MEM
+	  && (MEM_VOLATILE_P (SUBREG_REG (x))
+	      || mode_dependent_address_p (XEXP (SUBREG_REG (x), 0))))
+	return gen_rtx_CLOBBER (mode, const0_rtx);
+
       /* Note that we cannot do any narrowing for non-constants since
 	 we might have been counting on using the fact that some bits were
 	 zero.  We now do this in the SET.  */
