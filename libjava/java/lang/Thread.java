@@ -614,11 +614,6 @@ public class Thread implements Runnable
   public Thread (ThreadGroup g, Runnable r, String n)
   {
     this (currentThread (), g, r, n);
-
-    // The Class Libraries book says ``threadName cannot be null''.  I
-    // take this to mean NullPointerException.
-    if (n == null)
-      throw new NullPointerException ();
   }
 
   /**
@@ -645,15 +640,15 @@ public class Thread implements Runnable
   {
     // Just ignore stackSize for now.
     this (currentThread (), g, r, n);
-
-    // The Class Libraries book says ``threadName cannot be null''.  I
-    // take this to mean NullPointerException.
-    if (n == null)
-      throw new NullPointerException ();
   }
 
   private Thread (Thread current, ThreadGroup g, Runnable r, String n)
   {
+    // The Class Libraries book says ``threadName cannot be null''.  I
+    // take this to mean NullPointerException.
+    if (n == null)
+      throw new NullPointerException ();
+      
     if (g == null)
       {
 	// If CURRENT is null, then we are bootstrapping the first thread. 
