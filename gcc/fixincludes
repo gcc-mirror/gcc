@@ -1520,6 +1520,33 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# sys/wait.h on AIX 3.2.5 puts the declaration of wait3 before the definition
+# of struct rusage, so the prototype (added by fixproto) causes havoc.
+file=sys/wait.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ] \
+  && grep 'bos325,' ${LIB}/$file >/dev/null; then
+  echo Fixing $file, wait3 declaration
+  sed -e '/^extern pid_t wait3();$/i\
+struct rusage;
+'\
+    ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  else
+    # Find any include directives that use "file".
+    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+      dir=`echo $file | sed -e s'|/[^/]*$||'`
+      required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+    done
+  fi
+fi
+
 # NeXT 2.0 defines 'int wait(union wait*)', which conflicts with Posix.1.
 # Note that version 3 of the NeXT system has wait.h in a different directory,
 # so that this code won't do anything.  But wait.h in version 3 has a
