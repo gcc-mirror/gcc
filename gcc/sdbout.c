@@ -659,7 +659,12 @@ sdbout_symbol (decl, local)
       if (DECL_RTL (decl) == 0)
 	return;
 
-      value = eliminate_regs (DECL_RTL (decl), 0, 0);
+      DECL_RTL (decl) = eliminate_regs (DECL_RTL (decl), 0, 0);
+#ifdef LEAF_REG_REMAP
+      if (leaf_function)
+	leaf_renumber_regs_insn (DECL_RTL (decl));
+#endif
+      value = DECL_RTL (decl);
 
       /* Don't mention a variable at all
 	 if it was completely optimized into nothingness.
@@ -671,11 +676,9 @@ sdbout_symbol (decl, local)
 	{
 	  regno = REGNO (DECL_RTL (decl));
 	  if (regno >= FIRST_PSEUDO_REGISTER)
-	    regno = reg_renumber[REGNO (DECL_RTL (decl))];
-	  if (regno < 0)
 	    return;
 	}
-      else if (GET_CODE (DECL_RTL (decl)) == SUBREG)
+      else if (GET_CODE (value) == SUBREG)
 	{
 	  int offset = 0;
 	  while (GET_CODE (value) == SUBREG)
@@ -687,10 +690,11 @@ sdbout_symbol (decl, local)
 	    {
 	      regno = REGNO (value);
 	      if (regno >= FIRST_PSEUDO_REGISTER)
-		regno = reg_renumber[REGNO (value)];
-	      if (regno >= 0)
-		regno += offset;
+		return;
+	      regno += offset;
 	    }
+	  alter_subreg (DECL_RTL (decl));
+	  value = DECL_RTL (decl);
 	}
 
       /* Emit any structure, union, or enum type that has not been output.
