@@ -1,3 +1,7 @@
+2000-10-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (DECL_ALIGN_UNIT): New macro.
+
 2000-10-14  Marek Michalkiewicz  <marekm@linux.org.pl>
 
 	* config/avr/avr-protos.h (avr_output_bld): New.

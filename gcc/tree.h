@@ -1309,8 +1309,10 @@ struct tree_type
 #define DECL_SIZE(NODE) (DECL_CHECK (NODE)->decl.size)
 /* Likewise for the size in bytes.  */
 #define DECL_SIZE_UNIT(NODE) (DECL_CHECK (NODE)->decl.size_unit)
-/* Holds the alignment required for the datum.  */
+/* Holds the alignment required for the datum, in bits.  */
 #define DECL_ALIGN(NODE) (DECL_CHECK (NODE)->decl.u1.a.align)
+/* The alignment of NODE, in bytes.  */
+#define DECL_ALIGN_UNIT(NODE) (DECL_ALIGN (NODE) / BITS_PER_UNIT)
 /* For FIELD_DECLs, off_align holds the number of low-order bits of
    DECL_FIELD_OFFSET which are known to be always zero.
    DECL_OFFSET_ALIGN thus returns the alignment that DECL_FIELD_OFFSET
