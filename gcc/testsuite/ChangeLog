@@ -1,3 +1,7 @@
+Wed May 17 18:30:10 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/compile/20000517-1.c: New test.
+
 2000-05-16  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.c-torture/execute/20000516-1.c: New test.
