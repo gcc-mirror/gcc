@@ -1680,7 +1680,8 @@ fix = {
 
 
 /*
- *  Some math.h files define struct exception, which conflicts with
+ *  Some math.h files define struct exception (it's in the System V
+ *  Interface Definition), which conflicts with
  *  the class exception defined in the C++ file std/stdexcept.h.  We
  *  redefine it to __math_exception.  This is not a great fix, but I
  *  haven't been able to think of anything better.
@@ -1692,7 +1693,7 @@ fix = {
     hackname  = math_exception;
     files     = math.h;
     select    = "struct exception";
-    bypass    = 'We have a problem when using C\+\+';
+    bypass    = '__cplusplus';
     c_fix     = wrap;
 
     c_fix_arg = "#ifdef __cplusplus\n"

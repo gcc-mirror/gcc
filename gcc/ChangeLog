@@ -1,3 +1,8 @@
+2003-07-09  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* fixinc/inclhack.def (math_exception):  Improve bypass and comment.
+	* fixinc/fixincl.x: Rebuild.
+
 2003-07-09  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* doc/install.texi (Configuration): Document the valgrind option
