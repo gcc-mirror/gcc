@@ -39,14 +39,14 @@ typedef enum formals_style_enum formals_style;
 
 static char *data_type;
 
-static char *concat ();
-static char *concat3 ();
-static char *gen_formal_list_for_type ();
-static int   deserves_ellipsis ();
-static char *gen_formal_list_for_func_def ();
-static char *gen_type ();
-static char *gen_decl ();
-void   gen_aux_info_record ();
+static char *concat			PROTO((char *, char *));
+static char *concat3			PROTO((char *, char *, char *));
+static char *affix_data_type		PROTO((char *));
+static char *gen_formal_list_for_type	PROTO((tree, formals_style));
+static int   deserves_ellipsis		PROTO((tree));
+static char *gen_formal_list_for_func_def PROTO((tree, formals_style));
+static char *gen_type			PROTO((char *, tree, formals_style));
+static char *gen_decl			PROTO((tree, int, formals_style));
 
 /*  Take two strings and mash them together into a newly allocated area.  */
 

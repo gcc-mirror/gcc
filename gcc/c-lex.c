@@ -135,6 +135,9 @@ static int end_of_file;
 static int nextchar = -1;
 #endif
 
+static int skip_which_space		PROTO((int));
+static char *extend_token_buffer	PROTO((char *));
+static int readescape			PROTO((int *));
 int check_newline ();
 
 /* Do not insert generated code into the source, instead, include it.
@@ -330,7 +333,6 @@ yyprint (file, yychar, yylval)
       break;
     }
 }
-
 
 /* If C is not whitespace, return C.
    Otherwise skip whitespace and return first nonwhite char read.  */
@@ -422,7 +424,6 @@ extend_token_buffer (p)
 
   return token_buffer + offset;
 }
-
 
 #if !USE_CPPLIB
 #define GET_DIRECTIVE_LINE() get_directive_line (finput)
