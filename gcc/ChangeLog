@@ -1,3 +1,9 @@
+Fri Jun 19 00:33:33 1998  H.J. Lu  (hjl@gnu.org)
+
+	* config/float-i386.h: New.
+
+	* configure.in (i[34567]86-*-linux-*): Set float_format to i386.
+
 Thu Jun 18 20:11:00 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* sched.c (schedule_insns): Use xmalloc not alloca for max_uid
