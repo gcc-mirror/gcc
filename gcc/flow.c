@@ -1327,7 +1327,7 @@ find_regno_partial (ptr, data)
       case STRICT_LOW_PART:
         if (GET_CODE (XEXP (*ptr, 0)) == REG && REGNO (XEXP (*ptr, 0)) == reg)
 	  {
-	    param->retval = *ptr;
+	    param->retval = XEXP (*ptr, 0);
 	    return 1;
 	  }
 	break;
@@ -1336,7 +1336,7 @@ find_regno_partial (ptr, data)
         if (GET_CODE (SUBREG_REG (*ptr)) == REG 
 	    && REGNO (SUBREG_REG (*ptr)) == reg)
 	  {
-	    param->retval = *ptr;
+	    param->retval = SUBREG_REG (*ptr);
 	    return 1;
 	  }
 	break;

@@ -1,3 +1,8 @@
+2001-12-06  Andrew MacLeod <amacleod@redhat.com>
+
+	* flow.c (find_regno_partial): Return register, not the expression
+	the register is in.
+
 Thu Dec  6 09:24:12 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* function.c (handle_epilogue_set): Check for FP setting case when
