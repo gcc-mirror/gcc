@@ -1,5 +1,13 @@
 2001-03-17  Richard Henderson  <rth@redhat.com>
 
+	* integrate.h (struct inline_remap): Add local_return_label.
+	* integrate.c (expand_inline_function): Initialize it and emit
+	it after copy_insn_notes.
+	(copy_insn_list): Don't store local_return_label here.
+	(copy_insn_notes): New function split out from copy_insn_list.
+
+2001-03-17  Richard Henderson  <rth@redhat.com>
+
 	* dwarf2out.c (lookup_filename): Emit .file if the assembler
 	is generating .debug_line.
 	(dwarf2out_init): Add main_input_filename to the file table first.

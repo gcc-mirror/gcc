@@ -87,6 +87,7 @@ static void mark_stores                 PARAMS ((rtx, rtx, void *));
 static void save_parm_insns		PARAMS ((rtx, rtx));
 static void copy_insn_list              PARAMS ((rtx, struct inline_remap *,
 						 rtx));
+static void copy_insn_notes		PARAMS ((rtx, struct inline_remap *));
 static int compare_blocks               PARAMS ((const PTR, const PTR));
 static int find_block                   PARAMS ((const PTR, const PTR));
 
@@ -778,6 +779,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   real_label_map
     = (rtx *) xmalloc ((max_labelno) * sizeof (rtx));
   map->label_map = real_label_map;
+  map->local_return_label = NULL_RTX;
 
   inl_max_uid = (inl_f->emit->x_cur_insn_uid + 1);
   map->insn_map = (rtx *) xcalloc (inl_max_uid, sizeof (rtx));
@@ -1142,6 +1144,13 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   /* Now copy the insns one by one.  */
   copy_insn_list (insns, map, static_chain_value);
 
+  /* Now copy the REG_NOTES for those insns.  */
+  copy_insn_notes (insns, map);
+
+  /* If the insn sequence required one, emit the return label.  */
+  if (map->local_return_label)
+    emit_label (map->local_return_label);
+
   /* Restore the stack pointer if we saved it above.  */
   if (inl_f->calls_alloca)
     emit_stack_restore (SAVE_BLOCK, stack_save, NULL_RTX);
@@ -1226,7 +1235,6 @@ copy_insn_list (insns, map, static_chain_value)
   register int i;
   rtx insn;
   rtx temp;
-  rtx local_return_label = NULL_RTX;
 #ifdef HAVE_cc0
   rtx cc0_insn = 0;
 #endif
@@ -1391,9 +1399,9 @@ copy_insn_list (insns, map, static_chain_value)
 	      || (GET_CODE (PATTERN (insn)) == PARALLEL
 		  && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == RETURN))
 	    {
-	      if (local_return_label == 0)
-		local_return_label = gen_label_rtx ();
-	      pattern = gen_jump (local_return_label);
+	      if (map->local_return_label == 0)
+		map->local_return_label = gen_label_rtx ();
+	      pattern = gen_jump (map->local_return_label);
 	    }
 	  else
 	    pattern = copy_rtx_and_substitute (PATTERN (insn), map, 0);
@@ -1578,10 +1586,19 @@ copy_insn_list (insns, map, static_chain_value)
 
       map->insn_map[INSN_UID (insn)] = copy;
     }
+}
 
-  /* Now copy the REG_NOTES.  Increment const_age, so that only constants
-     from parameters can be substituted in.  These are the only ones that
-     are valid across the entire function.  */
+/* Copy the REG_NOTES.  Increment const_age, so that only constants
+   from parameters can be substituted in.  These are the only ones
+   that are valid across the entire function.  */
+
+static void
+copy_insn_notes (insns, map)
+     rtx insns;
+     struct inline_remap *map;
+{
+  rtx insn;
+
   map->const_age++;
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn)
@@ -1604,9 +1621,6 @@ copy_insn_list (insns, map, static_chain_value)
 	      remove_note (map->insn_map[INSN_UID (insn)], note);
 	  }
       }
-
-  if (local_return_label)
-    emit_label (local_return_label);
 }
 
 /* Given a chain of PARM_DECLs, ARGS, copy each decl into a VAR_DECL,

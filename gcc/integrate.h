@@ -93,6 +93,9 @@ struct inline_remap
   /* Likewise, this is the copied constraints vector.  */
   rtvec copy_asm_constraints_vector;
 
+  /* Target of a return insn, if needed and inlining.  */
+  rtx local_return_label;
+
   /* Indications for regs being pointers and their alignment.  */
   unsigned char *regno_pointer_align;
   rtx *x_regno_reg_rtx;
