@@ -3018,6 +3018,7 @@ extern rtx emit_line_note		PARAMS ((const char *, int));
 /* In calls.c */
 
 extern int setjmp_call_p		PARAMS ((tree));
+extern bool alloca_call_p		PARAMS ((tree));
 
 /* In attribs.c.  */
 

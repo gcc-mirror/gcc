@@ -801,6 +801,21 @@ setjmp_call_p (fndecl)
   return special_function_p (fndecl, 0) & ECF_RETURNS_TWICE;
 }
 
+/* Return true when exp contains alloca call.  */
+bool
+alloca_call_p (exp)
+     tree exp;
+{
+  if (TREE_CODE (exp) == CALL_EXPR
+      && TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
+      && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
+	  == FUNCTION_DECL)
+      && (special_function_p (TREE_OPERAND (TREE_OPERAND (exp, 0), 0),
+			      0) & ECF_MAY_BE_ALLOCA))
+    return true;
+  return false;
+}
+
 /* Detect flags (function attributes) from the function decl or type node.  */
 
 static int
