@@ -68,8 +68,20 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
       echo m68k-cbm-netbsd${UNAME_RELEASE}
       exit 0 ;;
     amiga:OpenBSD:*:*)
-      echo m68k-cbm-openbsd${UNAME_RELEASE}
-      exit 0 ;;
+	echo m68k-unknown-openbsd${UNAME_RELEASE}
+	exit 0 ;;
+    arc:OpenBSD:*:*)
+	echo mips64el-unknown-openbsd${UNAME_RELEASE}
+	exit 0 ;;
+    laguna:OpenBSD:*:*)
+	echo mips64-unknown-openbsd${UNAME_RELEASE}
+	exit 0 ;;
+    pmax:OpenBSD:*:*)
+	echo mips64el-unknown-openbsd${UNAME_RELEASE}
+	exit 0 ;;
+    wgrisc:OpenBSD:*:*)
+	echo mips64el-unknown-openbsd${UNAME_RELEASE}
+	exit 0 ;;
     arm:RISC*:1.[012]*:*|arm:riscix:1.[012]*:*)
 	echo arm-acorn-riscix${UNAME_RELEASE}
 	exit 0;;
@@ -118,19 +130,25 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	echo m68k-atari-netbsd${UNAME_RELEASE}
 	exit 0 ;;
     atari*:OpenBSD:*:*)
-	echo m68k-atari-openbsd${UNAME_RELEASE}
+	echo m68k-unknown-openbsd${UNAME_RELEASE}
 	exit 0 ;;
     sun3*:NetBSD:*:*)
 	echo m68k-sun-netbsd${UNAME_RELEASE}
 	exit 0 ;;
     sun3*:OpenBSD:*:*)
-	echo m68k-sun-openbsd${UNAME_RELEASE}
+	echo m68k-unknown-openbsd${UNAME_RELEASE}
 	exit 0 ;;
     mac68k:NetBSD:*:*)
 	echo m68k-apple-netbsd${UNAME_RELEASE}
 	exit 0 ;;
     mac68k:OpenBSD:*:*)
-	echo m68k-apple-openbsd${UNAME_RELEASE}
+	echo m68k-unknown-openbsd${UNAME_RELEASE}
+	exit 0 ;;
+    mvme68k:OpenBSD:*:*)
+	echo m68k-unknown-openbsd${UNAME_RELEASE}
+	exit 0 ;;
+    mvme88k:OpenBSD:*:*)
+	echo m88k-unknown-openbsd${UNAME_RELEASE}
 	exit 0 ;;
     powerpc:machten:*:*)
 	echo powerpc-apple-machten${UNAME_RELEASE}
@@ -378,8 +396,8 @@ EOF
     hp3[0-9][05]:NetBSD:*:*)
 	echo m68k-hp-netbsd${UNAME_RELEASE}
 	exit 0 ;;
-    hp3[0-9][05]:OpenBSD:*:*)
-	echo m68k-hp-openbsd${UNAME_RELEASE}
+    hp300:OpenBSD:*:*)
+	echo m68k-unknown-openbsd${UNAME_RELEASE}
 	exit 0 ;;
     i?86:BSD/386:*:* | *:BSD/OS:*:*)
 	echo ${UNAME_MACHINE}-pc-bsdi${UNAME_RELEASE}
