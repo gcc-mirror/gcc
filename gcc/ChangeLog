@@ -1,3 +1,10 @@
+Sun Apr  1 11:49:05 CEST 2001  Jan Hubicka  <jH@suse.cz>
+
+	* i386.md: remove obsoleted comments.
+	(adddi_?): Rename to adddi_?_rex64; disable for 32bit.
+	(x86_movsicc_0_m1_rex64): Rename to x86_movdicc_0_m1_rex64;
+	fix output template.
+
 2001-03-31  Marek Michalkiewicz  <marekm@linux.org.pl>
 
 	* config/avr/libgcc.S (__mulhi3): Optimize previous change.
