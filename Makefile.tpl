@@ -1374,6 +1374,8 @@ all-stage1-gcc: configure-stage1-gcc prebootstrap
 	$(STAMP) all-stage1-gcc
 
 # TODO: Deal with STAGE_PREFIX (which is only for ada, incidentally)
+# Possibly pass --enable-werror-always (depending on --enable-werror);
+# that's what @stage2_werror_flag@ is for
 configure-stage2-gcc: all-stage1-gcc
 	echo configure-stage2-gcc > stage_last ; \
 	if [ -f stage2-gcc/Makefile ] ; then \
@@ -1417,7 +1419,7 @@ configure-stage2-gcc: all-stage1-gcc
 	    libsrcdir="$$s/gcc";; \
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} ; \
+	  $(HOST_CONFIGARGS) $${srcdiroption} @stage2_werror_flag@ ; \
 	cd .. ; \
 	mv gcc stage2-gcc ; \
 	mv prev-gcc stage1-gcc ; \
@@ -1491,7 +1493,7 @@ configure-stage3-gcc: all-stage2-gcc
 	    libsrcdir="$$s/gcc";; \
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} ; \
+	  $(HOST_CONFIGARGS) $${srcdiroption} @stage2_werror_flag@ ; \
 	cd .. ; \
 	mv gcc stage3-gcc ; \
 	mv prev-gcc stage2-gcc ; \

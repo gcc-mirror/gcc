@@ -1,3 +1,12 @@
+2004-03-24  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in (top level bootstrap support): Rework --enable-werror
+	to set @stage2_werror_flag@.
+	* configure: Regenerate.
+	* Makefile.tpl (top level bootstrap support): Pass
+	@stage2_werror_flag@ down to configure in stages 2 and 3.
+	* Makefile.in: Regenerate.
+
 2004-03-23  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.tpl (new-bootstrap): Set CC and CC_FOR_BUILD in configure

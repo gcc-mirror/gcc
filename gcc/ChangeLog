@@ -1,3 +1,9 @@
+2004-03-24  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.ac: Add --enable-werror-always (for top level bootstrap
+	support).
+	* configure: Regenerate.
+
 2004-03-24  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc/objc-act.c (objc_comptypes): Treat comparisons

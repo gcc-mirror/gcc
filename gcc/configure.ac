@@ -346,6 +346,15 @@ if test $ac_cv_prog_cc_w_old_style_definition = yes ; then
   strict1_warn="${strict1_warn} -Wold-style-definition"
 fi
 
+# Enable -Werror, period.
+AC_ARG_ENABLE(werror_always, 
+[  --enable-werror-always         enable -Werror always], [],
+[enable_werror_always=no])
+if test x${enable_werror_always} = xyes ; then
+  strict1_warn="${strict1_warn} -Werror"
+  WERROR=-Werror
+fi
+
 # If the native compiler is GCC, we can enable warnings even in stage1.  
 # That's useful for people building cross-compilers, or just running a
 # quick `make'.
