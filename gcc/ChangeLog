@@ -1,3 +1,7 @@
+Sat Jun 26 17:18:18 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.c (print_operand, case 'L'): Use plus_constant_for_output.
+
 Fri Jun 25 11:33:24 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.c (override_options): Add -mcpu=ev45 as an alias for ev4.
