@@ -164,7 +164,7 @@ and includes all the necessary compilation tools and libraries.
           `--nfp' currently has no effect, though perhaps there are
           other systems where it could usefully make a difference.
 
-    `--enable-objcthreads=TYPE'
+    `--enable-threads=TYPE'
           Certain systems, notably Linux-based GNU systems, can't be
           relied on to supply a threads facility for the Objective C
           runtime and so will default to single-threaded runtime.  They

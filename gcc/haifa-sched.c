@@ -884,17 +884,19 @@ remove_dependence (insn, elem)
   rtx prev, link;
   int found = 0;
 
-  for (prev = 0, link = LOG_LINKS (insn); link;
-       prev = link, link = XEXP (link, 1))
+  for (prev = 0, link = LOG_LINKS (insn); link; link = XEXP (link, 1))
     {
       if (XEXP (link, 0) == elem)
 	{
+	  RTX_INTEGRATED_P (link) = 1;
 	  if (prev)
 	    XEXP (prev, 1) = XEXP (link, 1);
 	  else
 	    LOG_LINKS (insn) = XEXP (link, 1);
 	  found = 1;
 	}
+      else
+	prev = link;
     }
 
   if (!found)
@@ -3209,6 +3211,9 @@ priority (insn)
 	  {
 	    rtx next;
 	    int next_priority;
+
+	    if (RTX_INTEGRATED_P (link))
+	      continue;
 
 	    next = XEXP (link, 0);
 
