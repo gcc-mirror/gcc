@@ -6,6 +6,9 @@
 	* reload1.c (choose_reload_regs): Never set reload_override_in for an
 	optional reload.
 
+	* config/ia64/ia64.h (RTX_COSTS): A few more entries, and a more
+	accurate value for MULT.
+
 2000-10-28  Neil Booth  <neilb@earthling.net>
 
 	New macro expander.
