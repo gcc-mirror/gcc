@@ -1,3 +1,9 @@
+2002-12-22  Mark Mitchell  <mark@codesourcery.com>
+
+	* stor-layout.c (update_alignment_for_field): Use
+	ADJUST_FIELD_ALIGN when computing the alignment for a zero-width
+	bitfield when PCC_BITFIELD_TYPE_MATTERS.
+
 2002-12-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* genautomata.c: Fix comment typos.
