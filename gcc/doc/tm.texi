@@ -1392,6 +1392,17 @@ A C expression for the size in bits of the type @code{long double} on
 the target machine.  If you don't define this, the default is two
 words.
 
+@findex MAX_LONG_DOUBLE_TYPE_SIZE
+Maximum number for the size in bits of the type @code{long double} on the
+target machine.  If this is undefined, the default is
+@code{LONG_DOUBLE_TYPE_SIZE}.  Otherwise, it is the constant value that is
+the largest value that @code{LONG_DOUBLE_TYPE_SIZE} can have at run-time.
+This is used in @code{cpp}.
+
+@findex INTEL_EXTENDED_IEEE_FORMAT
+Define this macro to be 1 if the target machine uses 80-bit floating-point
+values with 128-bit size and alignment.  This is used in @file{real.c}.
+
 @findex WIDEST_HARDWARE_FP_SIZE
 @item WIDEST_HARDWARE_FP_SIZE
 A C expression for the size in bits of the widest floating-point format
