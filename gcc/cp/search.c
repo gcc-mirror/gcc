@@ -196,8 +196,6 @@ lookup_base_r (tree binfo, tree base, base_access access,
   for (i = TREE_VEC_LENGTH (bases); i--;)
     {
       tree base_binfo = TREE_VEC_ELT (bases, i);
-      tree base_access = TREE_VEC_ELT (accesses, i);
-      
       base_kind bk;
 
       bk = lookup_base_r (base_binfo, base,
