@@ -1,3 +1,10 @@
+2005-02-18  Tom Tromey  <tromey@redhat.com>
+
+	PR java/20056:
+	* verify.cc (type::equals): Fixed test.
+	* testsuite/libjava.lang/PR20056.out: New file.
+	* testsuite/libjava.lang/PR20056.java: New file.
+
 2005-02-18  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* java/util/LinkedHashMap (addEntry): Call remove() with key argument, 
