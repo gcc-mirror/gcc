@@ -1,13 +1,13 @@
         ! Program to test data statement
         program data
-	call sub1()
-	call sub2()
-	end
+        call sub1()
+        call sub2()
+        end
         subroutine sub1()
         integer i
         type tmp
           integer, dimension(4)::a 
-	  real :: r 
+          real :: r 
         end type
         type tmp1
           type (tmp) t1(4)
@@ -58,7 +58,7 @@
         if (tmp2(2)%b .ne. 0) call abort
 
         end
-	subroutine sub2()
+        subroutine sub2()
         integer a(4,4), b(10)
         integer i,j,k
         real r,t

@@ -1,7 +1,7 @@
 c { dg-do run }
 * From: "Billinghurst, David (RTD)" <David.Billinghurst@riotinto.com.au>
 * Subject: RE: single precision complex bug in g77 - was Testing g77 with LA
-* 	PACK 3.0
+* PACK 3.0
 * Date: Thu, 8 Jul 1999 00:55:11 +0100 
 * X-UIDL: b00d9d8081a36fef561b827d255dd4a5
 
