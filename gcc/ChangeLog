@@ -1,3 +1,8 @@
+Wed Dec 12 07:35:24 2001  Douglas B. Rupp  <rupp@gnat.com>
+
+	* cppfiles.c (read_include_file): Set buffer size properly when
+	file is shorter than expected.
+
 Wed Dec 12 08:35:33 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc/objc-act.c (encode_complete_bitfield): Fixed encoding
