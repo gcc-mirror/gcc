@@ -574,6 +574,9 @@ consume_count (type)
       (*type)++;
     }
 
+  if (count < 0)
+    count = -1;
+
   return (count);
 }
 
