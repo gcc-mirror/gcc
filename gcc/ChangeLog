@@ -1,5 +1,10 @@
 2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* fold-const.c (pedantic_non_lvalue): Make it static.
+	* tree.h: Remove the corresponding prototype.
+
+2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* optabs.c (prepare_operand): Make it static.
 	* optabs.h: Remove the corresponding prototype.
 

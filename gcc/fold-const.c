@@ -2035,7 +2035,7 @@ int pedantic_lvalues;
 /* When pedantic, return an expr equal to X but certainly not valid as a
    pedantic lvalue.  Otherwise, return X.  */
 
-tree
+static tree
 pedantic_non_lvalue (tree x)
 {
   if (pedantic_lvalues)
