@@ -529,8 +529,6 @@ Thu Mar  8 06:32:50 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* invoke.texi: Document __FAST_MATH__.
 
-2001-03-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
-
 2001-03-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* function.c (purge_addressof_1): Change type of function
