@@ -1,7 +1,24 @@
+2004-02-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/cpu/hppa/atomicity.h: Include c++config.h to get defines.
+
+	* src/misc-inst.cc (_S_atomicity_lock): Move to __gnu_cxx.
+
+	* config/os/irix/irix5.2/atomicity.h: Merge..
+	* config/os/irix/irix6.5/atomicity.h: Merge..
+	* config/os/irix/atomicity.h: ...into this.
+	* config/os/irix/atomic_word.h: New.
+	* configure.host: Set atomic_word_dir for irix.
+
+	* hppa/atomicity.h: Change __Atomicity_lock to _Atomicity_lock.
+	* i386/atomicity.h: Same.
+	* m68k/atomicity.h: Same.
+	* sparc/atomicity.h: Same.
+
 2004-02-27  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/os/aix/atomicity.h: Use __gnu_cxx namespace. Remove
-	static, and inline keyworks.
+	static, and inline keywords.
 
 2004-02-27  Paolo Carlini  <pcarlini@suse.de>
 
@@ -74,7 +91,7 @@
 	(ios_base::Init::~Init): Same.
 	* src/locale.cc (locale::id::_M_id): Same.
 	* config/cpu/i486/atomicity.h: Use __gnu_cxx namespace. Remove
-	static, and inline keyworks.
+	static, and inline keywords.
 	* config/cpu/alpha/atomicity.h: Same.
 	* config/cpu/cris/atomicity.h: Same.
 	* config/cpu/generic/atomicity.h: Same.

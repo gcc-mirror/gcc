@@ -27,26 +27,26 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+#include <bits/c++config.h>
 #include <bits/atomicity.h>
 
 namespace __gnu_cxx
 {
-  template<int __inst>
-    struct __Atomicity_lock
+  template<int _Inst>
+    struct _Atomicity_lock
     {
       static volatile int _S_atomicity_lock;
     };
   
-  template<int __inst>
+  template<int _Inst>
   volatile int
-  __Atomicity_lock<__inst>::_S_atomicity_lock __attribute__ ((aligned (16))) = 1;
+  _Atomicity_lock<_Inst>::_S_atomicity_lock __attribute__ ((aligned (16))) = 1;
 
-  /* Because of the lack of weak support when using the hpux
-     som linker, we explicitly instantiate the atomicity lock
-     in src/misc-inst.cc when _GLIBCXX_INST_ATOMICITY_LOCK
-     is defined.  */
+  // Because of the lack of weak support when using the hpux som
+  // linker, we explicitly instantiate the atomicity lock in
+  // src/misc-inst.cc when _GLIBCXX_INST_ATOMICITY_LOCK is defined.
 #ifndef _GLIBCXX_INST_ATOMICITY_LOCK
-  template volatile int __Atomicity_lock<0>::_S_atomicity_lock;
+  template volatile int _Atomicity_lock<0>::_S_atomicity_lock;
 #endif
 
   int
@@ -55,7 +55,7 @@ namespace __gnu_cxx
   {
     _Atomic_word result;
     int tmp;
-    volatile int& lock = __Atomicity_lock<0>::_S_atomicity_lock;
+    volatile int& lock = _Atomicity_lock<0>::_S_atomicity_lock;
     
     __asm__ __volatile__ ("ldcw 0(%1),%0\n\t"
 			  "cmpib,<>,n 0,%0,.+20\n\t"
@@ -79,7 +79,7 @@ namespace __gnu_cxx
   __atomic_add(_Atomic_word* __mem, int __val)
   {
     int tmp;
-    volatile int& lock = __Atomicity_lock<0>::_S_atomicity_lock;
+    volatile int& lock = _Atomicity_lock<0>::_S_atomicity_lock;
     
     __asm__ __volatile__ ("ldcw 0(%1),%0\n\t"
 			  "cmpib,<>,n 0,%0,.+20\n\t"
