@@ -24,5 +24,5 @@ f()
 	}
     }
   for (l = sm; l <= sx; l++)
-    smap[l] = l > 0 ? 1 + pow(sin(.1 * l / sx)) : 1 - pow(sin(.1 * l / sm));
+    smap[l] = l > 0 ? 1 + foo(sin(.1 * l / sx)) : 1 - foo(sin(.1 * l / sm));
 }
