@@ -7268,7 +7268,7 @@ delete_trivially_dead_insns (rtx insns, int nreg)
   int *counts;
   rtx insn, prev;
   int in_libcall = 0, dead_libcall = 0;
-  int ndead = 0, nlastdead, niterations = 0;
+  int ndead = 0;
 
   timevar_push (TV_DELETE_TRIVIALLY_DEAD);
   /* First count the number of times each register is used.  */
@@ -7276,65 +7276,59 @@ delete_trivially_dead_insns (rtx insns, int nreg)
   for (insn = next_real_insn (insns); insn; insn = next_real_insn (insn))
     count_reg_usage (insn, counts, 1);
 
-  do
+  /* Go from the last insn to the first and delete insns that only set unused
+     registers or copy a register to itself.  As we delete an insn, remove
+     usage counts for registers it uses.
+
+     The first jump optimization pass may leave a real insn as the last
+     insn in the function.   We must not skip that insn or we may end
+     up deleting code that is not really dead.  */
+  insn = get_last_insn ();
+  if (! INSN_P (insn))
+    insn = prev_real_insn (insn);
+
+  for (; insn; insn = prev)
     {
-      nlastdead = ndead;
-      niterations++;
-      /* Go from the last insn to the first and delete insns that only set unused
-	 registers or copy a register to itself.  As we delete an insn, remove
-	 usage counts for registers it uses.
+      int live_insn = 0;
 
-	 The first jump optimization pass may leave a real insn as the last
-	 insn in the function.   We must not skip that insn or we may end
-	 up deleting code that is not really dead.  */
-      insn = get_last_insn ();
-      if (! INSN_P (insn))
-	insn = prev_real_insn (insn);
+      prev = prev_real_insn (insn);
 
-      for (; insn; insn = prev)
+      /* Don't delete any insns that are part of a libcall block unless
+	 we can delete the whole libcall block.
+
+	 Flow or loop might get confused if we did that.  Remember
+	 that we are scanning backwards.  */
+      if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
 	{
-	  int live_insn = 0;
+	  in_libcall = 1;
+	  live_insn = 1;
+	  dead_libcall = dead_libcall_p (insn, counts);
+	}
+      else if (in_libcall)
+	live_insn = ! dead_libcall;
+      else
+	live_insn = insn_live_p (insn, counts);
 
-	  prev = prev_real_insn (insn);
+      /* If this is a dead insn, delete it and show registers in it aren't
+	 being used.  */
 
-	  /* Don't delete any insns that are part of a libcall block unless
-	     we can delete the whole libcall block.
+      if (! live_insn)
+	{
+	  count_reg_usage (insn, counts, -1);
+	  delete_insn_and_edges (insn);
+	  ndead++;
+	}
 
-	     Flow or loop might get confused if we did that.  Remember
-	     that we are scanning backwards.  */
-	  if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
-	    {
-	      in_libcall = 1;
-	      live_insn = 1;
-	      dead_libcall = dead_libcall_p (insn, counts);
-	    }
-	  else if (in_libcall)
-	    live_insn = ! dead_libcall;
-	  else
-	    live_insn = insn_live_p (insn, counts);
-
-	  /* If this is a dead insn, delete it and show registers in it aren't
-	     being used.  */
-
-	  if (! live_insn)
-	    {
-	      count_reg_usage (insn, counts, -1);
-	      delete_insn_and_edges (insn);
-	      ndead++;
-	    }
-
-	  if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
-	    {
-	      in_libcall = 0;
-	      dead_libcall = 0;
-	    }
+      if (find_reg_note (insn, REG_LIBCALL, NULL_RTX))
+	{
+	  in_libcall = 0;
+	  dead_libcall = 0;
 	}
     }
-  while (ndead != nlastdead);
 
   if (dump_file && ndead)
-    fprintf (dump_file, "Deleted %i trivially dead insns; %i iterations\n",
-	     ndead, niterations);
+    fprintf (dump_file, "Deleted %i trivially dead insns\n",
+	     ndead);
   /* Clean up.  */
   free (counts);
   timevar_pop (TV_DELETE_TRIVIALLY_DEAD);
