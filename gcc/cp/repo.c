@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "input.h"
 #include "obstack.h"
+#include "toplev.h"
 
 extern char *getpwd PROTO((void));
 

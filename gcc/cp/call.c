@@ -30,6 +30,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "flags.h"
 #include "rtl.h"
+#include "toplev.h"
 
 #include "obstack.h"
 #define obstack_chunk_alloc xmalloc

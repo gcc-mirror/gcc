@@ -39,6 +39,7 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "expr.h"
 #include "defaults.h"
+#include "toplev.h"
 
 static tree get_sentry PROTO((tree));
 static void mark_vtable_entries PROTO((tree));

@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include "cp-tree.h"
 #include "flags.h"
 #include "output.h"
+#include "toplev.h"
 
 static void add_friend PROTO((tree, tree));
 static void add_friends PROTO((tree, tree, tree));

@@ -24,6 +24,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tree.h"
 #include "cp-tree.h"
 #include "obstack.h"
+#include "toplev.h"
 
 typedef char* cp_printer ();
 

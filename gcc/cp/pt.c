@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "defaults.h"
 #include "except.h"
+#include "toplev.h"
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */

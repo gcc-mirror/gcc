@@ -27,6 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "expr.h"
 #include "cp-tree.h"
+#include "toplev.h"
 
 #if 0
 static tree extract_aggr_init PROTO((tree, tree));
