@@ -1,3 +1,8 @@
+2003-02-26  Tom Tromey  <tromey@redhat.com>
+
+	* jcf-write.c (generate_classfile): Check whether class is
+	deprecated before writing attribute count.
+
 2003-02-25  Roger Sayle  <roger@eyesopen.com>
 
 	* java/decl.c (java_init_decl_processing): Get soft_fmod_node from
