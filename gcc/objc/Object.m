@@ -27,7 +27,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "objc/Protocol.h"
 #include "objc/objc-api.h"
 
-#include "gstdarg.h"
+#include <stdarg.h>
 extern void (*_objc_error)(id object, const char *format, va_list);
 
 extern int errno;
