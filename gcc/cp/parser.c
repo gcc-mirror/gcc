@@ -2648,6 +2648,12 @@ cp_parser_primary_expression (cp_parser *parser,
 		      return build_nt (SCOPE_REF, 
 				       parser->scope, 
 				       id_expression);
+		    else if (TYPE_P (parser->scope)
+			     && DECL_P (decl))
+		      return build (SCOPE_REF,
+				    TREE_TYPE (decl),
+				    parser->scope,
+				    id_expression);
 		    else
 		      return decl;
 		  }
@@ -2705,6 +2711,11 @@ cp_parser_primary_expression (cp_parser *parser,
 		  *qualifying_class = parser->scope;
 		else if (!processing_template_decl)
 		  decl = convert_from_reference (decl);
+		else if (TYPE_P (parser->scope))
+		  decl = build (SCOPE_REF,
+				TREE_TYPE (decl),
+				parser->scope,
+				decl);
 	      }
 	    else
 	      /* Transform references to non-static data members into

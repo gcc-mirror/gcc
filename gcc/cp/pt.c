@@ -3054,7 +3054,6 @@ convert_nontype_argument (tree type, tree expr)
 	goto bad_argument;
     }
   else if (TYPE_PTR_P (expr_type)
-	   || TYPE_PTRMEM_P (expr_type)
 	   || TREE_CODE (expr_type) == ARRAY_TYPE
 	   || TREE_CODE (type) == REFERENCE_TYPE
 	   /* If expr is the address of an overloaded function, we
@@ -3099,6 +3098,9 @@ convert_nontype_argument (tree type, tree expr)
 		    referent);
 	  return NULL_TREE;
 	}
+
+      if (TREE_CODE (referent) == SCOPE_REF)
+	referent = TREE_OPERAND (referent, 1);
 
       if (is_overloaded_fn (referent))
 	/* We'll check that it has external linkage later.  */
@@ -7160,14 +7162,13 @@ tsubst_qualified_id (tree qualified_id, tree args,
     }
 
   expr = tsubst_copy (name, args, complain, in_decl);
-  if (!BASELINK_P (name))
-    {
-      expr = lookup_qualified_name (scope, expr, /*is_type_p=*/0);
-      if (DECL_P (expr))
-	check_accessibility_of_qualified_id (expr, 
-					     /*object_type=*/NULL_TREE,
-					     scope);
-    }
+  if (!BASELINK_P (name)
+      && !DECL_P (expr))
+    expr = lookup_qualified_name (scope, expr, /*is_type_p=*/0);
+  if (DECL_P (expr))
+    check_accessibility_of_qualified_id (expr, 
+					 /*object_type=*/NULL_TREE,
+					 scope);
 
   /* Remember that there was a reference to this entity.  */
   if (DECL_P (expr))

@@ -1,3 +1,13 @@
+2003-07-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* parser.c (cp_parser_primary_expression): Preserve the form of
+	qualified expressions in templates, even if they are not
+	dependent.
+	* pt.c (convert_nontype_argument): Handle non-dependent SCOPE_REFs.
+	(tsubst_qualified_id): Likewise.
+	* search.c (accessible_p): Treat everything in the body of a
+	template as accessible.
+
 2003-07-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.def (NON_DEPENDENT_EXPR): New node.
