@@ -2215,7 +2215,7 @@ subst_stack_regs (insn, regstack)
   /* subst_stack_regs_pat may have deleted a no-op insn.  If so, any
      REG_UNUSED will already have been dealt with, so just return.  */
 
-  if (GET_CODE (insn) == NOTE)
+  if (GET_CODE (insn) == NOTE || INSN_DELETED_P (insn))
     return;
 
   /* If there is a REG_UNUSED note on a stack register on this insn,

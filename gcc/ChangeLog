@@ -7,6 +7,8 @@
 
 Sun Jan 20 18:40:14 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* reg-stack.c (subst_stack_regs): Properly check for deleted insn.
+
 	* dwarf2out.c (loc_descriptor_from_tree): Add TRUTH_*_EXPR cases.
 	(gen_struct_or_union_type_die): Don't SIGSEGV if no TYPE_STUB_DECL
 	in incomplete case.
