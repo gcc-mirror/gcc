@@ -1,5 +1,8 @@
 2004-07-20  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (vec_binfo_member): Remove.
+	* tree.c (vec_binfo_member): Remove.
+
 	* cp-tree.h (struct lang_type_class): Remove vfields field.
 	(CLASSTYPE_VFIELDS): Remove.
 	(SET_BINFO_NEW_VTABLE_MARKED): Adjust.
