@@ -1,3 +1,8 @@
+2000-05-24  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* emit-rtl.c (unshare_all_decls): New function.
+	(unshare_all_rtl): Call it.
+
 2000-05-23  Nick Clifton  <nickc@cygnus.com>
 
 	* configure.in: Treat 'strongarm' as if it were 'arm' when
