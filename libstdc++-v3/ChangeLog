@@ -1,3 +1,9 @@
+2003-08-27  Daniel Jacobowitz  <drow@mvista.com>
+
+	* acinclude.m4: Don't call AC_ISC_POSIX.
+	* aclocal.m4: Regenerated.
+	* configure: Regenerated.
+
 2003-08-27  Phil Edwards  <pme@gcc.gnu.org>
 
 	* acinclude.m4 (GLIBCXX_CONDITIONAL):  New macro.  Wrap
