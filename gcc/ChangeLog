@@ -1,5 +1,10 @@
 2004-09-24  Andrew Pinski  <pinskia@physics.uc.edu>
 
+	* tree-ssa-phiopt.c (conditional_replacement): Use the correct
+	type with the copy of the conditional.
+
+2004-09-24  Andrew Pinski  <pinskia@physics.uc.edu>
+
 	PR tree-opt/16954
 	* tree-ssa-copyrename.c (copy_rename_partition_coalesce):
 	Prevent renaming if the aliasing sets of the type which the

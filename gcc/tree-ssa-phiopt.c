@@ -344,11 +344,11 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
       if (!COMPARISON_CLASS_P (old_result))
 	return false;
       
-      new1 = build (TREE_CODE (old_result), TREE_TYPE (result),
+      new1 = build (TREE_CODE (old_result), TREE_TYPE (old_result),
 		    TREE_OPERAND (old_result, 0),
 		    TREE_OPERAND (old_result, 1));
       
-      new1 = build (MODIFY_EXPR, TREE_TYPE (result), new_var, new1);
+      new1 = build (MODIFY_EXPR, TREE_TYPE (old_result), new_var, new1);
       bsi_insert_after (&bsi, new1, BSI_NEW_STMT);
     }
   
