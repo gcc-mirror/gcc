@@ -1,31 +1,185 @@
-/* Copyright (C) 2000 Free Software Foundation
+/* Name.java -- Name build up from different components
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 
-   This file is part of libgcj.
+This file is part of GNU Classpath.
 
-This software is copyrighted work licensed under the terms of the
-Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
-details.  */
+GNU Classpath is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+ 
+GNU Classpath is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Classpath; see the file COPYING.  If not, write to the
+Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+02111-1307 USA.
+
+As a special exception, if you link this library with other files to
+produce an executable, this library does not by itself cause the
+resulting executable to be covered by the GNU General Public License.
+This exception does not however invalidate any other reasons why the
+executable file might be covered by the GNU General Public License. */
 
 package javax.naming;
 
 import java.util.Enumeration;
 import java.io.Serializable;
 
+/**
+ * Interface descriping a name build up from different components.
+ * The components are represented as <code>String</code>s which are
+ * ordered from most significant to least significant. There are methods to
+ * get the number of components. Methods to get a particular component or group
+ * of components. Components can be added as <code>String</code>s or
+ * <code>Name</code>s and a component can be removed from any position in the
+ * <code>Name</code>.
+ * A <code>Name</code> can be compared to another <code>Name</code> and it can
+ * be checked if a particular <code>Name</code> starts or ends with the same
+ * components as another <code>Name</code>. Finally <code>Name</code>s can be
+ * serialized and cloned.
+ * <p>
+ * Since <code>Name</code>s can be empty (have no components) methods that
+ * return a <code>Name</code> will never return <code>null</code>.
+ *
+ * @since 1.3
+ * @author Anthony Green (green@redhat.com)
+ * @author Mark Wielaard (mark@klomp.org)
+ */
 public interface Name extends Cloneable, Serializable
 {
-  public Object clone();
-  public int compareTo(Object obj);
+  /**
+   * Returns the number of components of this <code>Name</code>.
+   * The returned number can be zero.
+   */
   public int size();
+
+  /**
+   * Returns <code>true</code> if the number of components of this
+   * <code>Name</code> is zero, <code>false</code> otherwise.
+   */
   public boolean isEmpty();
+
+  /**
+   * Returns a non-null (but possibly empty) <code>Enumeration</code> of the
+   * components of the <code>Name</code> as <code>String</code>s.
+   */
   public Enumeration getAll();
-  public String get(int posn);
-  public Name getPrefix(int posn);
-  public Name getSuffix(int posn);
-  public boolean startsWith(Name n);
-  public boolean endsWith(Name n);
-  public Name addAll(Name suffix) throws InvalidNameException;
-  public Name addAll(int posn, Name n) throws InvalidNameException;
+
+  /**
+   * Gets the component at the given index.
+   *
+   * @exception ArrayIndexOutOfBoundsException if the given index is smaller
+   *            then zero or greater then or equal to <code>size()</code>.
+   */
+  public String get(int i);
+
+  /**
+   * Returns the components till the given index as a <code>Name</code>.
+   * The returned <code>Name</code> can be modified without changing the
+   * original.
+   *
+   * @exception ArrayIndexOutOfBoundsException if the given index is smaller
+   *            then zero or greater then or equal to <code>size()</code>.
+   */
+  public Name getPrefix(int i);
+
+  /**
+   * Returns the components from the given index till the end as a
+   * <code>Name</code>.
+   * The returned <code>Name</code> can be modified without changing the
+   * original.
+   *
+   * @exception ArrayIndexOutOfBoundsException if the given index is smaller
+   *            then zero or greater then or equal to <code>size()</code>.
+   */
+  public Name getSuffix(int i);
+
+  /**
+   * Adds the given <code>String</code> component to the end of this
+   * <code>Name</code>. The method modifies the current <code>Name</code> and
+   * then returns it.
+   *
+   * @exception InvalidNameException if the given <code>String</code> is not a
+   *            valid component for this <code>Name</code>.
+   */
   public Name add(String comp) throws InvalidNameException;
+
+  /**
+   * Inserts the given <code>String</code> component to this <code>Name</code>
+   * at the given index. The method modifies the current <code>Name</code> and
+   * then returns it.
+   *
+   * @exception ArrayIndexOutOfBoundsException if the given index is smaller
+   *            then zero or greater then or equal to <code>size()</code>.
+   * @exception InvalidNameException if the given <code>String</code> is not a
+   *            valid component for this <code>Name</code>.
+   */
   public Name add(int posn, String comp) throws InvalidNameException;
+
+  /**
+   * Adds all the components of the given <code>Name</code> to the end of this
+   * <code>Name</code>. The method modifies the current <code>Name</code> and
+   * then returns it.
+   *
+   * @exception InvalidNameException if any of the given components is not a
+   *            valid component for this <code>Name</code>.
+   */
+  public Name addAll(Name suffix) throws InvalidNameException;
+
+  /**
+   * Inserts all the components of the given <code>Name</code> to this
+   * <code>Name</code> at the given index. The method modifies the current
+   * <code>Name</code> and then returns it.
+   *
+   * @exception ArrayIndexOutOfBoundsException if the given index is smaller
+   *            then zero or greater then or equal to <code>size()</code>.
+   * @exception InvalidNameException if any of the given components is not a
+   *            valid component for this <code>Name</code>.
+   */
+  public Name addAll(int posn, Name n) throws InvalidNameException;
+
+  /**
+   * Removes the component at the given index from this <code>Name</code>.
+   * The method modifies the current <code>Name</code> and then returns it.
+   *
+   * @exception InvalidNameException if the given <code>String</code> is not a
+   *            valid component for this <code>Name</code>.
+   */
   public Object remove(int posn) throws InvalidNameException;
+
+  /**
+   * Returns <code>true</code> if this <code>Name</code> starts with the
+   * components of the given <code>Name</code>, <code>false</code> otherwise.
+   */
+  public boolean startsWith(Name name);
+
+  /**
+   * Returns <code>true</code> if this <code>Name</code> ends with the
+   * components of the given <code>Name</code>, <code>false</code> otherwise.
+   */
+  public boolean endsWith(Name name);
+
+  /**
+   * Compares the given object to this <code>Name</code>.
+   * Returns a negative value if the given <code>Object</code> is smaller then
+   * this <code>Name</code>, a positive value if the <code>Object</code> is
+   * bigger, and zero if the are equal. If the <code>Object</code> is not of
+   * a class that can be compared to the class of this <code>Name</code> then
+   * a <code>ClassCastException</code> is thrown. Note that it is not
+   * guaranteed that <code>Name</code>s implemented in different classes can
+   * be compared. The definition of smaller, bigger and equal is up to the
+   * actual implementing class.
+   */
+  public int compareTo(Object obj);
+
+  /**
+   * Returns a clone of this <code>Name</code>. It will be a deep copy of
+   * all the components of the <code>Name</code> so that changes to components
+   * of the components does not change the component in this <code>Name</code>.
+   */
+  public Object clone();
 }

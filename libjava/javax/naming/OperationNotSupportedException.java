@@ -8,9 +8,7 @@ details.  */
  
 package javax.naming;
 
-import java.lang.Exception;
- 
-public class OperationNotSupportedException extends Exception
+public class OperationNotSupportedException extends NamingException
 {
   public OperationNotSupportedException()
   {

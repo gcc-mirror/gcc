@@ -308,12 +308,12 @@ public class InitialContext implements Context
   public Object addToEnvironment (String propName, 
                                 Object propVal) throws NamingException
   {
-    myProps.put (propName, propVal);
+    return myProps.put (propName, propVal);
   }
 
   public Object removeFromEnvironment (String propName) throws NamingException
   {
-    myProps.remove (propName);
+    return myProps.remove (propName);
   }
 
   public Hashtable getEnvironment () throws NamingException

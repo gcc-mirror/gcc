@@ -1,3 +1,15 @@
+2001-10-19  Mark Wielaard  <mark@klomp.org>
+
+	* javax/naming/BinaryRefAddr.java: New file
+	* javax/naming/InitialContext.java: Compile fix
+	* javax/naming/InvalidNameException.java: Add comments
+	* javax/naming/Name.java: Ditto
+	* javax/naming/NamingException.java: Implement
+	* javax/naming/OperationNotSupportedException.java: Compile fix
+	* javax/naming/RefAddr.java: Implement
+	* javax/naming/StringRefAddr.java: Add comments and implement
+	* javax/naming/directory/InitialDirContext.java: Compile fix
+
 2001-10-18  Tom Tromey  <tromey@redhat.com>
 
 	* java/io/BufferedWriter.java (write(String,int,int)): Correctly
