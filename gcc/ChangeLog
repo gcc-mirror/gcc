@@ -1,3 +1,9 @@
+2003-01-20  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.md (sibcall_epilogue): Add an
+	UNSPEC_PROLOGUE_USE to prevent the link register from being
+	considered dead.
+
 Mon Jan 20 14:36:23 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (SSE cmov splitter):  Handle memory operand in operand 5.
