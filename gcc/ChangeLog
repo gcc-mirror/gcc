@@ -1,3 +1,8 @@
+2004-06-18  Richard Henderson  <rth@redhat.com>
+
+	* tree-eh.c (decide_copy_try_finally): Fix scaling of copy and
+	switch estimates.
+
 2004-06-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* config/i386/darwin.h (HOT_TEXT_SECTION_NAME): Define.
