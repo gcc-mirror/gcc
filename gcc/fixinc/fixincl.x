@@ -5,7 +5,7 @@
  * files which are fixed to work correctly with ANSI C and placed in a
  * directory that GNU C will search.
  *
- * This file contains 146 fixup descriptions.
+ * This file contains 147 fixup descriptions.
  *
  * See README for more information.
  *
@@ -248,6 +248,38 @@ static const char* apzAab_Fd_Zero_Selectbits_HPatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
+ *  Description of Aab_Solaris_Sys_Varargs_H fix
+ */
+tSCC zAab_Solaris_Sys_Varargs_HName[] =
+     "AAB_solaris_sys_varargs_h";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zAab_Solaris_Sys_Varargs_HList[] =
+  "|sys/varargs.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzAab_Solaris_Sys_Varargs_HMachs[] = {
+        "*-*-solaris*",
+        (const char*)NULL };
+#define AAB_SOLARIS_SYS_VARARGS_H_TEST_CT  0
+#define aAab_Solaris_Sys_Varargs_HTests   (tTestDesc*)NULL
+
+/*
+ *  Fix Command Arguments for Aab_Solaris_Sys_Varargs_H
+ */
+static const char* apzAab_Solaris_Sys_Varargs_HPatch[] = {
+"#ifdef __STDC__\n\
+#include <stdarg.h>\n\
+#else\n\
+#include <varargs.h>\n\
+#endif\n",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
  *  Description of Aab_Sun_Memcpy fix
  */
 tSCC zAab_Sun_MemcpyName[] =
@@ -293,38 +325,6 @@ extern char *memset();\n\
 #endif /* __STDC__ */\n\n\
 extern int memcmp();\n\n\
 #endif /* __memory_h__ */\n",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
- *  Description of Aab_Solaris_Sys_Varargs_H fix
- */
-tSCC zAab_Solaris_Sys_Varargs_HName[] =
-     "AAB_solaris_sys_varargs_h";
-
-/*
- *  File name selection pattern
- */
-tSCC zAab_Solaris_Sys_Varargs_HList[] =
-  "|sys/varargs.h|";
-/*
- *  Machine/OS name selection pattern
- */
-tSCC* apzAab_Solaris_Sys_Varargs_HMachs[] = {
-        "*-*-solaris*",
-        (const char*)NULL };
-#define AAB_SOLARIS_SYS_VARARGS_H_TEST_CT  0
-#define aAab_Solaris_Sys_Varargs_HTests   (tTestDesc*)NULL
-
-/*
- *  Fix Command Arguments for Aab_Solaris_Sys_Varargs_H
- */
-static const char* apzAab_Solaris_Sys_Varargs_HPatch[] = {
-"#ifdef __STDC__\n\
-#include <stdarg.h>\n\
-#else\n\
-#include <varargs.h>\n\
-#endif\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1908,6 +1908,42 @@ static const char* apzHpux11_FabsfPatch[] = {
     "#ifndef __cplusplus\n\
 %0\n\
 #endif",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  Description of Hpux11_Abs fix
+ */
+tSCC zHpux11_AbsName[] =
+     "hpux11_abs";
+
+/*
+ *  File name selection pattern
+ */
+tSCC zHpux11_AbsList[] =
+  "|stdlib.h|";
+/*
+ *  Machine/OS name selection pattern
+ */
+tSCC* apzHpux11_AbsMachs[] = {
+        "ia64-hp-hpux11*",
+        (const char*)NULL };
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zHpux11_AbsSelect0[] =
+       "ifndef _MATH_INCLUDED";
+
+#define    HPUX11_ABS_TEST_CT  1
+static tTestDesc aHpux11_AbsTests[] = {
+  { TT_EGREP,    zHpux11_AbsSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Hpux11_Abs
+ */
+static const char* apzHpux11_AbsPatch[] = { "sed",
+    "-e", "s/ifndef _MATH_INCLUDED/if !defined(_MATH_INCLUDED) || defined(__GNUG__)/",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -3881,6 +3917,7 @@ s@ va_list@ __not_va_list__@\n\
 s@\\*va_list@*__not_va_list__@\n\
 s@ __va_list)@ __gnuc_va_list)@\n\
 s@typedef[ \t]\\(.*\\)[ \t]va_list[ \t]*;@typedef \\1 __not_va_list__;@\n\
+s@typedef[ \t]*__va_list__@typedef __gnuc_va_list@\n\
 s@GNUC_VA_LIST@GNUC_Va_LIST@\n\
 s@_NEED___VA_LIST@_NEED___Va_LIST@\n\
 s@VA_LIST@DUMMY_VA_LIST@\n\
@@ -5707,9 +5744,9 @@ static const char* apzX11_SprintfPatch[] = {
  *
  *  List of all fixes
  */
-#define REGEX_COUNT          153
+#define REGEX_COUNT          154
 #define MACH_LIST_SIZE_LIMIT 279
-#define FIX_COUNT            146
+#define FIX_COUNT            147
 
 /*
  *  Enumerate the fixes
@@ -5719,8 +5756,8 @@ typedef enum {
     AAB_FD_ZERO_ASM_POSIX_TYPES_H_FIXIDX,
     AAB_FD_ZERO_GNU_TYPES_H_FIXIDX,
     AAB_FD_ZERO_SELECTBITS_H_FIXIDX,
-    AAB_SUN_MEMCPY_FIXIDX,
     AAB_SOLARIS_SYS_VARARGS_H_FIXIDX,
+    AAB_SUN_MEMCPY_FIXIDX,
     AAB_SVR4_REPLACE_BYTEORDER_FIXIDX,
     AAB_ULTRIX_ANSI_COMPAT_FIXIDX,
     AAB_ULTRIX_LIMITS_FIXIDX,
@@ -5761,6 +5798,7 @@ typedef enum {
     HPUX10_CPP_POW_INLINE_FIXIDX,
     HPUX11_CPP_POW_INLINE_FIXIDX,
     HPUX11_FABSF_FIXIDX,
+    HPUX11_ABS_FIXIDX,
     HPUX11_SIZE_T_FIXIDX,
     HPUX11_UINT32_C_FIXIDX,
     HPUX11_VSNPRINTF_FIXIDX,
@@ -5884,15 +5922,15 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      AAB_FD_ZERO_SELECTBITS_H_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
      aAab_Fd_Zero_Selectbits_HTests,   apzAab_Fd_Zero_Selectbits_HPatch, 0 },
 
-  {  zAab_Sun_MemcpyName,    zAab_Sun_MemcpyList,
-     apzAab_Sun_MemcpyMachs,
-     AAB_SUN_MEMCPY_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
-     aAab_Sun_MemcpyTests,   apzAab_Sun_MemcpyPatch, 0 },
-
   {  zAab_Solaris_Sys_Varargs_HName,    zAab_Solaris_Sys_Varargs_HList,
      apzAab_Solaris_Sys_Varargs_HMachs,
      AAB_SOLARIS_SYS_VARARGS_H_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
      aAab_Solaris_Sys_Varargs_HTests,   apzAab_Solaris_Sys_Varargs_HPatch, 0 },
+
+  {  zAab_Sun_MemcpyName,    zAab_Sun_MemcpyList,
+     apzAab_Sun_MemcpyMachs,
+     AAB_SUN_MEMCPY_TEST_CT, FD_MACH_ONLY | FD_REPLACEMENT,
+     aAab_Sun_MemcpyTests,   apzAab_Sun_MemcpyPatch, 0 },
 
   {  zAab_Svr4_Replace_ByteorderName,    zAab_Svr4_Replace_ByteorderList,
      apzAab_Svr4_Replace_ByteorderMachs,
@@ -6093,6 +6131,11 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      apzHpux11_FabsfMachs,
      HPUX11_FABSF_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aHpux11_FabsfTests,   apzHpux11_FabsfPatch, 0 },
+
+  {  zHpux11_AbsName,    zHpux11_AbsList,
+     apzHpux11_AbsMachs,
+     HPUX11_ABS_TEST_CT, FD_MACH_ONLY,
+     aHpux11_AbsTests,   apzHpux11_AbsPatch, 0 },
 
   {  zHpux11_Size_TName,    zHpux11_Size_TList,
      apzHpux11_Size_TMachs,
