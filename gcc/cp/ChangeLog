@@ -1,7 +1,7 @@
 1999-10-28  Ian Lance Taylor  <ian@zembu.com>
 
 	* rtti.c (build_dynamic_cast_1): Give a better error message for
-	an attempt to dynamic_cast a polymorphic type.
+	an attempt to dynamic_cast from a non-polymorphic type.
 
 1999-10-27  Mark Mitchell  <mark@codesourcery.com>
 
