@@ -393,7 +393,7 @@ for machine in $build $host $target; do
 	arm-*-netbsd*)
 		tm_file=arm/netbsd.h
 		xm_file=arm/xm-netbsd.h
-		tmake_file=arm-t-netbsd
+		tmake_file=arm/t-netbsd
 		# On NetBSD, the headers are already okay.
 		fixincludes=Makefile.in
 		use_collect2=yes
