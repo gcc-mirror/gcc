@@ -3939,6 +3939,10 @@ finish_decl_parsing (decl)
     case ARRAY_REF:
       TREE_OPERAND (decl, 0) = finish_decl_parsing (TREE_OPERAND (decl, 0));
       return decl;
+    case TREE_LIST:
+      /* For attribute handling.  */
+      TREE_VALUE (decl) = finish_decl_parsing (TREE_VALUE (decl));
+      return decl;
     default:
       my_friendly_abort (5);
       return NULL_TREE;
