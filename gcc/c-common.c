@@ -3466,32 +3466,22 @@ c_expand_expr (exp, target, tmode, modifier)
 
 	/* If we want the result of this expression, find the last
            EXPR_STMT in the COMPOUND_STMT and mark it as addressable.  */
-	if (target != const0_rtx)
+	if (target != const0_rtx
+	    && TREE_CODE (STMT_EXPR_STMT (exp)) == COMPOUND_STMT
+	    && TREE_CODE (COMPOUND_BODY (STMT_EXPR_STMT (exp))) == SCOPE_STMT)
 	  {
-	    tree expr = STMT_EXPR_STMT (exp);
-	    tree last;
+	    tree expr = COMPOUND_BODY (STMT_EXPR_STMT (exp));
+	    tree last = TREE_CHAIN (expr);
 
-	    while (TREE_CODE (expr) == COMPOUND_STMT
-		   && TREE_CODE (COMPOUND_BODY (expr)) == SCOPE_STMT)
+	    while (TREE_CHAIN (last))
 	      {
-		expr = COMPOUND_BODY (expr);
-		last = TREE_CHAIN (expr);
-
-		while (TREE_CHAIN (last))
-		  {
-		    expr = last;
-		    last = TREE_CHAIN (last);
-		  }
-
-		if (TREE_CODE (last) != SCOPE_STMT)
-		  abort ();
-
-		if (TREE_CODE (expr) == EXPR_STMT)
-		  {
-		    TREE_ADDRESSABLE (expr) = 1;
-		    break;
-		  }
+		expr = last;
+		last = TREE_CHAIN (last);
 	      }
+
+	    if (TREE_CODE (last) == SCOPE_STMT
+		&& TREE_CODE (expr) == EXPR_STMT)
+	      TREE_ADDRESSABLE (expr) = 1;
 	  }
 
 	expand_stmt (STMT_EXPR_STMT (exp));
