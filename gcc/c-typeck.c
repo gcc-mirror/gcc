@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987, 88, 91-6, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91-7, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -802,7 +802,7 @@ signed_or_unsigned_type (unsignedp, type)
      int unsignedp;
      tree type;
 {
-  if (! INTEGRAL_TYPE_P (type)
+  if ((! INTEGRAL_TYPE_P (type) && ! POINTER_TYPE_P (type))
       || TREE_UNSIGNED (type) == unsignedp)
     return type;
   if (TYPE_PRECISION (type) == TYPE_PRECISION (signed_char_type_node))
