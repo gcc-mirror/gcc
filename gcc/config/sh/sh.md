@@ -7185,9 +7185,9 @@
 {
   if (operands[1] != const0_rtx)
     {
-      union real_extract u;
-      memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
-      assemble_real (u.d, SFmode, GET_MODE_ALIGNMENT (SFmode));
+      REAL_VALUE_TYPE d;
+      REAL_VALUE_FROM_CONST_DOUBLE (d, operands[0]);
+      assemble_real (d, SFmode, GET_MODE_ALIGNMENT (SFmode));
     }
   return \"\";
 }"
@@ -7205,9 +7205,9 @@
 {
   if (operands[1] != const0_rtx)
     {
-      union real_extract u;
-      memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
-      assemble_real (u.d, DFmode, GET_MODE_ALIGNMENT (DFmode));
+      REAL_VALUE_TYPE d;
+      REAL_VALUE_FROM_CONST_DOUBLE (d, operands[0]);
+      assemble_real (d, DFmode, GET_MODE_ALIGNMENT (DFmode));
     }
   return \"\";
 }"
