@@ -113,19 +113,24 @@ __cxa_allocate_exception(std::size_t thrown_size)
       bitmask_type used = emergency_used;
       unsigned int which = 0;
 
+      if (thrown_size > EMERGENCY_OBJ_SIZE)
+	goto failed;
       while (used & 1)
 	{
 	  used >>= 1;
 	  if (++which >= EMERGENCY_OBJ_COUNT)
-	    std::terminate ();
+	    goto failed;
 	}
 
       emergency_used |= (bitmask_type)1 << which;
       ret = &emergency_buffer[which][0];
 
+    failed:;
 #ifdef __GTHREADS
       __gthread_mutex_unlock (&emergency_mutex);
 #endif
+      if (!ret)
+	std::terminate ();
     }
 
   memset (ret, 0, sizeof (__cxa_exception));
