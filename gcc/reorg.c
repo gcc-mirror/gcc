@@ -36,18 +36,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    cycle, and the Branch Penalty is 0.  Several RISC machines approach
    branch delays differently:
 
-   The MIPS and AMD 29000 have a single branch delay slot.  Most insns
+   The MIPS has a single branch delay slot.  Most insns
    (except other branches) can be used to fill this slot.  When the
    slot is filled, two insns execute in two cycles, reducing the
    branch penalty to zero.
-
-   The Motorola 88000 conditionally exposes its branch delay slot,
-   so code is shorter when it is turned off, but will run faster
-   when useful insns are scheduled there.
-
-   The IBM ROMP has two forms of branch and call insns, both with and
-   without a delay slot.  Much like the 88k, insns not using the delay
-   slot can be shorted (2 bytes vs. 4 bytes), but will run slowed.
 
    The SPARC always has a branch delay slot, but its effects can be
    annulled when the branch is not taken.  This means that failing to
@@ -84,8 +76,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    `fill_eager_delay_slots' tries to guess the direction the branch
    will go; if it guesses right 100% of the time, it can reduce the
    branch penalty as much as `fill_simple_delay_slots' does.  If it
-   guesses wrong 100% of the time, it might as well schedule nops (or
-   on the m88k, unexpose the branch slot).  When
+   guesses wrong 100% of the time, it might as well schedule nops.  When
    `fill_eager_delay_slots' takes insns from the fall-through path of
    the jump, usually there is no code expansion; when it takes insns
    from the branch target, there is code expansion if it is not the
