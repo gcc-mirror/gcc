@@ -1,3 +1,8 @@
+1999-02-01  Mark Mitchell  <mark@markmitchell.com>
+
+	* pt.c (tsubst, case TYPENAME_TYPE): Check TYPE_BEING_DEFINED
+	before calling complete_type_or_else.
+
 Mon Feb  1 09:49:52 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* input.c (inline): Don't define, its handled by system.h.

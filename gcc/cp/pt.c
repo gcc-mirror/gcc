@@ -6083,7 +6083,8 @@ tsubst (t, args, in_decl)
 	   But, such constructs have already been resolved by this
 	   point, so here CTX really should have complete type, unless
 	   it's a partial instantiation.  */
-	if (!uses_template_parms (ctx) 
+	if (!uses_template_parms (ctx)
+	    && !TYPE_BEING_DEFINED (ctx)
 	    && !complete_type_or_else (ctx))
 	  return error_mark_node;
 
