@@ -1,3 +1,11 @@
+2005-03-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cfgloop.h, cfgloopanal.c, cfgloopmanip.c, conflict.c,
+	loop-init.c, loop-unroll.c, print-tree.c, reg-notes.def,
+	config/m68k/m68k.c, config/mips/mips.h,
+	config/rs6000/rs6000-protos.h, doc/contrib.texi,
+	doc/include/gcc-common.texi: Update copyright.
+
 2005-03-02  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* cgraph.h (struct cgraph_edge): Add prev_caller and
