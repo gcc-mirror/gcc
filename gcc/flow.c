@@ -428,9 +428,6 @@ find_basic_blocks (f, nregs, file)
   make_edges (label_value_list);
   mark_critical_edges ();
 
-  /* Kill the data we won't maintain.  */
-  label_value_list = NULL_RTX;
-
 #ifdef ENABLE_CHECKING
   verify_flow_info ();
 #endif
@@ -735,6 +732,9 @@ cleanup_cfg (f)
   record_active_eh_regions (f);
   try_merge_blocks ();
   mark_critical_edges ();
+
+  /* Kill the data we won't maintain.  */
+  label_value_list = NULL_RTX;
 }
 
 /* Create a new basic block consisting of the instructions between

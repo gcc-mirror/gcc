@@ -1,3 +1,9 @@
+2000-02-02  Clinton Popetz  <cpopetz@cygnus.com>
+	
+	* flow.c (find_basic_blocks): Don't kill label_value_list
+	here.
+	(cleanup_cfg): Kill it here.
+
 Wed Feb  2 08:12:30 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (store_field): Ensure ALIGN is no stricter than the
