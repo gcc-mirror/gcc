@@ -1,5 +1,11 @@
 2003-01-29	Joel Sherrill <joel@OARcorp.com>
 
+	* config/m68k/t-crtstuff: Replace spaces with tabs, add 
+	 $(MULTILIB_CFLAGS) as compiler option and multilib crtbegin/end.o.
+	This issue was tracked as PR9293.
+
+2003-01-29	Joel Sherrill <joel@OARcorp.com>
+
 	* config.gcc (hppa1.1-rtems):  Did not include t-rtems nor enable
 	RTEMS threads.
 	* config/pa/rtems.h (LIB_SPEC): Use -N when linking.
