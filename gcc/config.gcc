@@ -2779,7 +2779,7 @@ rs6000-*-lynxos*)
 s390-*-linux*)	
 	xmake_file=x-linux
 	tm_file=s390/linux.h
-	tmake_file="t-linux s390/t-linux"
+	tmake_file="t-slibgcc-elf-ver t-linux s390/t-linux"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -2788,7 +2788,7 @@ s390-*-linux*)
 s390x-*-linux*)	
 	xmake_file=x-linux
 	tm_file=s390/linux64.h
-	tmake_file="t-linux s390/t-linux"
+	tmake_file="t-slibgcc-elf-ver t-linux s390/t-linux"
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
