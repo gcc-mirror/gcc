@@ -1,3 +1,9 @@
+2000-08-13 Theodore Papadopoulo <Theodore.Papadopoulo@sophia.inria.fr>
+
+	* dwarf2out.c (output_cfa_loc): Fix typo in comment.
+	* gcc.c (init_spec): Fix typo in comment.
+	* varasm.c (data_section): Fix typo in comment.
+
 Mon Aug 13 02:27:39 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (dump_prediction): New argument "USED".

@@ -2854,7 +2854,7 @@ output_cfa_loc (cfi)
   output_loc_sequence (loc);
 }
 
-/* This function builds a dwarf location descriptor seqeunce from
+/* This function builds a dwarf location descriptor sequence from
    a dw_cfa_location.  */
 
 static struct dw_loc_descr_struct *

@@ -248,7 +248,7 @@ data_section ()
     }
 }
 /* Tell assembler to ALWAYS switch to data section, in case
-   it's not sure where it it.  */
+   it's not sure where it is.  */
 
 void
 force_data_section ()
