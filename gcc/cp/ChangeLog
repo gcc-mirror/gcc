@@ -1,3 +1,14 @@
+1999-10-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* pt.c (tsubst_expr): Set DECL_TEMPLATE_INSTANTIATED for a catch
+	paramter.
+	
+	* semantics.c (expand_stmt): Don't pretend to have asmspecs for
+	local statics if we don't really have them.
+
+	* ir.texi: Improve documentation for STMT_EXPR.  Describe
+	CLEANUP_POINT_EXPR.
+
 1999-10-07  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c (build_vtable_entry_ref): Use finish_asm_stmt.

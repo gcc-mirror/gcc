@@ -2301,9 +2301,21 @@ expand_stmt (t)
 					  DECL_ANON_UNION_ELEMS (decl));
 	      }
 	    else if (TREE_CODE (decl) == VAR_DECL && TREE_STATIC (decl))
-	      rest_of_decl_compilation 
-		(decl, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
-		 /*top_level=*/0, /*at_end=*/0);
+	      {
+		const char *asmspec = NULL;
+
+		if (DECL_ASSEMBLER_NAME (decl) != DECL_NAME (decl))
+		  {
+		    /* The only way this situaton can occur is if the
+		       user specified a name for this DECL using the
+		       `attribute' syntax.  */
+		    asmspec = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+		    DECL_ASSEMBLER_NAME (decl) = DECL_NAME (decl);
+		  }
+
+		rest_of_decl_compilation (decl, asmspec, 
+					  /*top_level=*/0, /*at_end=*/0);
+	      }
 
 	    resume_momentary (i);
 	  }
