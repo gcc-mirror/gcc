@@ -38,6 +38,49 @@ Boston, MA 02111-1307, USA.  */
 #include "diagnostic.h"
 #include "toplev.h"
 
+/* Verify that there is exactly single jump instruction since last and attach
+   REG_BR_PROB note specifying probability.
+   ??? We really ought to pass the probability down to RTL expanders and let it
+   re-distribute it when the conditional expands into multiple coniditionals.
+   This is however dificult to do.  */
+static void
+add_reg_br_prob_note (FILE *dump_file, rtx last, int probability)
+{
+  if (profile_status == PROFILE_ABSENT)
+    return;
+  for (last = NEXT_INSN (last); last && NEXT_INSN (last); last = NEXT_INSN (last))
+    if (GET_CODE (last) == JUMP_INSN)
+      {
+	/* It is common to emit condjump-around-jump sequence when we don't know
+	   how to reverse the conditional.  Special case this.  */
+	if (!any_condjump_p (last)
+	    || GET_CODE (NEXT_INSN (last)) != JUMP_INSN
+	    || !simplejump_p (NEXT_INSN (last))
+	    || GET_CODE (NEXT_INSN (NEXT_INSN (last))) != BARRIER
+	    || GET_CODE (NEXT_INSN (NEXT_INSN (NEXT_INSN (last)))) != CODE_LABEL
+	    || NEXT_INSN (NEXT_INSN (NEXT_INSN (NEXT_INSN (last)))))
+	  goto failed;
+	if (find_reg_note (last, REG_BR_PROB, 0))
+	  abort ();
+	REG_NOTES (last)
+	  = gen_rtx_EXPR_LIST (REG_BR_PROB,
+			       GEN_INT (REG_BR_PROB_BASE - probability),
+			       REG_NOTES (last));
+	return;
+      }
+  if (!last || GET_CODE (last) != JUMP_INSN || !any_condjump_p (last))
+      goto failed;
+  if (find_reg_note (last, REG_BR_PROB, 0))
+    abort ();
+  REG_NOTES (last)
+    = gen_rtx_EXPR_LIST (REG_BR_PROB,
+			 GEN_INT (probability), REG_NOTES (last));
+  return;
+failed:
+  if (dump_file)
+    fprintf (dump_file, "Failed to add probability note\n");
+}
+
 
 #ifndef LOCAL_ALIGNMENT
 #define LOCAL_ALIGNMENT(TYPE, ALIGNMENT) ALIGNMENT
@@ -804,7 +847,7 @@ expand_gimple_cond_expr (basic_block bb, tree stmt)
   tree pred = COND_EXPR_COND (stmt);
   tree then_exp = COND_EXPR_THEN (stmt);
   tree else_exp = COND_EXPR_ELSE (stmt);
-  rtx last;
+  rtx last = get_last_insn ();
 
   extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
   if (EXPR_LOCUS (stmt))
@@ -822,17 +865,20 @@ expand_gimple_cond_expr (basic_block bb, tree stmt)
   if (TREE_CODE (then_exp) == GOTO_EXPR && IS_EMPTY_STMT (else_exp))
     {
       jumpif (pred, label_rtx (GOTO_DESTINATION (then_exp)));
+      add_reg_br_prob_note (dump_file, last, true_edge->probability);
       return NULL;
     }
   if (TREE_CODE (else_exp) == GOTO_EXPR && IS_EMPTY_STMT (then_exp))
     {
       jumpifnot (pred, label_rtx (GOTO_DESTINATION (else_exp)));
+      add_reg_br_prob_note (dump_file, last, false_edge->probability);
       return NULL;
     }
   gcc_assert (TREE_CODE (then_exp) == GOTO_EXPR
 	      && TREE_CODE (else_exp) == GOTO_EXPR);
 
   jumpif (pred, label_rtx (GOTO_DESTINATION (then_exp)));
+  add_reg_br_prob_note (dump_file, last, true_edge->probability);
   last = get_last_insn ();
   expand_expr (else_exp, const0_rtx, VOIDmode, 0);
 
@@ -1192,8 +1238,6 @@ tree_expand_cfg (void)
 {
   basic_block bb, init_block;
   sbitmap blocks;
-
-  profile_status = PROFILE_ABSENT;
 
   /* Some backends want to know that we are expanding to RTL.  */
   currently_expanding_to_rtl = 1;

@@ -438,6 +438,15 @@ combine_predictions_for_insn (rtx insn, basic_block bb)
 	    = REG_BR_PROB_BASE - combined_probability;
 	}
     }
+  else if (bb->succ->succ_next)
+    {
+      int prob = INTVAL (XEXP (prob_note, 0));
+
+      BRANCH_EDGE (bb)->probability = prob;
+      FALLTHRU_EDGE (bb)->probability = REG_BR_PROB_BASE - prob;
+    }
+  else
+    bb->succ->probability = REG_BR_PROB_BASE;
 }
 
 /* Combine predictions into single probability and store them into CFG.

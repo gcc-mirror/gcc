@@ -1969,7 +1969,8 @@ rtl_verify_flow_info_1 (void)
 	  && bb->succ && bb->succ->succ_next
 	  && any_condjump_p (BB_END (bb)))
 	{
-	  if (INTVAL (XEXP (note, 0)) != BRANCH_EDGE (bb)->probability)
+	  if (INTVAL (XEXP (note, 0)) != BRANCH_EDGE (bb)->probability
+	      && profile_status != PROFILE_ABSENT)
 	    {
 	      error ("verify_flow_info: REG_BR_PROB does not match cfg %wi %i",
 		     INTVAL (XEXP (note, 0)), BRANCH_EDGE (bb)->probability);
