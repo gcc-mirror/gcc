@@ -30,3 +30,18 @@ SHLIB_LINK = $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
 # -Wl,-exports_file,@shlib_map_file@
 SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk
 SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver 
+
+# We want fine grained libraries, so use the new code to build the
+# floating point emulation libraries.
+FPBIT = fp-bit.c
+DPBIT = dp-bit.c
+
+dp-bit.c: $(srcdir)/config/fp-bit.c
+	echo '#undef US_SOFTWARE_GOFAST' > dp-bit.c
+	echo '#undef FLOAT' >> dp-bit.c
+	cat $(srcdir)/config/fp-bit.c >> dp-bit.c
+
+fp-bit.c: $(srcdir)/config/fp-bit.c
+	echo '#define FLOAT' > fp-bit.c
+	echo '#undef US_SOFTWARE_GOFAST' >> fp-bit.c
+	cat $(srcdir)/config/fp-bit.c >> fp-bit.c

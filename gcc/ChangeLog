@@ -1,3 +1,11 @@
+2000-11-07  Jeffrey Oldham  <oldham@oz.codesourcery.com>
+
+	* config/mips/t-iris6 (FPBIT): New.  Added so that __unorddf2 is
+	included in libgcc.a.
+	(DPBIT): Likewise.
+	(dp-bit.c): Likewise.
+	(fp-bit.c): Likewise.
+
 2000-11-07  Nick Clifton  <nickc@redhat.com>
 
 	* config/m88k/m88k.h (GLOBAL_ASM_OP): Add missing tab.
