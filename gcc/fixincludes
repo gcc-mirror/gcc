@@ -361,6 +361,24 @@ EOF
   fi
 fi
 
+# Fix an error in this file: the #if says _cplusplus, not the double
+# underscore __cplusplus that it should be
+file=tinfo.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  mkdir ${LIB}/rpcsvc 2>/dev/null
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file, __cplusplus macro
+  sed -e 's/[ 	]_cplusplus/ __cplusplus/' ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm ${LIB}/$file
+  fi
+fi
+
 # Fix an error in this file: a missing semi-colon at the end of the statsswtch
 # structure definition.
 file=rpcsvc/rstat.h
