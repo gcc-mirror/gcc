@@ -1,3 +1,7 @@
+2000-07-15  Neil Booth  <NeilB@earthling.net>
+
+	* README.Portability: New file.
+
 Fri Jul 14 18:13:53 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* INSTALL: Give special instructions for building GCC on Irix 6.
