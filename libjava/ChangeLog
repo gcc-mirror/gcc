@@ -1,3 +1,22 @@
+2002-07-24  Mark Wielaard  <mark@klomp.org>
+
+	* java/lang/reflect/natField.cc (setAddr): Check isAccessible().
+	* java/io/ObjectInputStream.java (setBooleanField): Before setting
+	field call setAccessible(true).
+	(setByteField): Likewise.
+	(setCharField): Likewise.
+	(setDoubleField): Likewise.
+	(setFloatField): Likewise.
+	(setIntField): Likewise.
+	(setLongField): Likewise.
+	(setShortField): Likewise.
+	(setObjectField): Likewise.
+
+2002-07-24  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/ObjectInputStream.java (readObject) [TC_ARRAY]: Don't
+	use toString() to format array element.
+
 2002-07-23  Mark Wielaard  <mark@klomp.org>
 
 	* gnu/java/security/provider/MD5.java: Extends MessageDigest, not

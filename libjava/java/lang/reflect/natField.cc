@@ -257,7 +257,8 @@ static void*
 setAddr (java::lang::reflect::Field* field, jclass caller, jobject obj)
 {
   void *addr = getAddr(field, caller, obj);
-  if  (field->getModifiers() & java::lang::reflect::Modifier::FINAL)
+  if  (!field->isAccessible()
+	&& field->getModifiers() & java::lang::reflect::Modifier::FINAL)
     throw new java::lang::IllegalAccessException();
   return addr;
 }
