@@ -101,22 +101,26 @@ static void fixup_virtual_upcast_offsets
 	       tree *));
 static int markedp PROTO((tree));
 static int unmarkedp PROTO((tree));
+#ifdef MI_MATRIX
 static int numberedp PROTO((tree));
 static int unnumberedp PROTO((tree));
+#endif
 static int marked_vtable_pathp PROTO((tree));
 static int unmarked_vtable_pathp PROTO((tree));
 static int marked_new_vtablep PROTO((tree));
 static int unmarked_new_vtablep PROTO((tree));
 static int dfs_debug_unmarkedp PROTO((tree));
+#ifdef MI_MATRIX
 static void dfs_number PROTO((tree));
 static void dfs_unnumber PROTO((tree));
+static void dfs_record_inheritance PROTO((tree));
+#endif
 static void dfs_debug_mark PROTO((tree));
 static void dfs_find_vbases PROTO((tree));
 static void dfs_clear_vbase_slots PROTO((tree));
 static void dfs_unmark PROTO((tree));
 static void dfs_init_vbase_pointers PROTO((tree));
 static void dfs_get_vbase_types PROTO((tree));
-static void dfs_record_inheritance PROTO((tree));
 static void dfs_pushdecls PROTO((tree));
 static void dfs_compress_decls PROTO((tree));
 static void dfs_unuse_fields PROTO((tree));
