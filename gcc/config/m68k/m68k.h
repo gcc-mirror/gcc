@@ -736,7 +736,8 @@ extern enum reg_class regno_reg_class[];
 
    `Q' means address register indirect addressing mode.
    `S' is for operands that satisfy 'm' when -mpcrel is in effect.
-   `T' is for operands that satisfy 's' when -mpcrel is not in effect.  */
+   `T' is for operands that satisfy 's' when -mpcrel is not in effect.
+   `U' is for register offset addressing.  */
 
 #define EXTRA_CONSTRAINT(OP,CODE)			\
   (((CODE) == 'S')					\
@@ -756,7 +757,13 @@ extern enum reg_class regno_reg_class[];
    ? (GET_CODE (OP) == MEM 				\
       && GET_CODE (XEXP (OP, 0)) == REG)		\
    :							\
-   0)))
+  (((CODE) == 'U')					\
+   ? (GET_CODE (OP) == MEM 				\
+      && GET_CODE (XEXP (OP, 0)) == PLUS		\
+      && GET_CODE (XEXP (XEXP (OP, 0), 0)) == REG	\
+      && GET_CODE (XEXP (XEXP (OP, 0), 1)) == CONST_INT) \
+   :							\
+   0))))
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
