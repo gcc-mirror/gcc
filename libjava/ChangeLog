@@ -1,3 +1,10 @@
+2004-05-19  Anthony Green  <green@redhat.com>
+
+	* Makefile.am: Define JAVA_EXT_DIRS.
+	* Makefile.in: Rebuilt.
+	* java/lang/natRuntime.cc (insertSystemProperties): Set
+	java.ext.dirs property.
+
 2004-05-16  Mark Wielaard  <mark@klomp.org>
 
 	* java/io/Writer.java (Writer(Object)): Check for null lock object.

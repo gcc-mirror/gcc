@@ -592,6 +592,9 @@ java::lang::Runtime::insertSystemProperties (java::util::Properties *newprops)
   // The name used to invoke this process (argv[0] in C).
   SET ("gnu.gcj.progname", _Jv_GetSafeArg (0));
 
+  // The the java extensions directory.
+  SET ("java.ext.dirs", JAVA_EXT_DIRS);
+
   // Allow platform specific settings and overrides.
   _Jv_platform_initProperties (newprops);
 
