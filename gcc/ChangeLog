@@ -1,3 +1,34 @@
+Wed Oct 28 22:27:05 1998  Richard Henderson  <rth@cygnus.com>
+
+	* Makefile.in (cc1): Put C_OBJS, and thence @extra_c_objs@ last.
+	(LIBCPP_OBJS): New.  Add cppulp.o.
+	(cppmain, fix-header): Depend on and use libcpp.a.
+	* configure.in (extra_c_objs, extra_cxx_objs): Use libcpp.a instead
+	of the individual object files.
+	* objc/Make-lang.in (cc1obj): Put OBJC_OBJS, and thence @extra_c_objs@,
+	last.
+
+	* cccp.c (user_label_prefix): New.
+	(main): Set it off -f*leading-underscore.
+	(special_symbol): Use it.
+	* cpplib.c (special_symbol): Likewise.
+	(cpp_handle_option): Handle -f*leading-underscore.
+	* cppulp.c: New file.
+
+	* output.h (user_label_prefix): Declare it.
+	* dwarf2out.c (ASM_NAME_TO_STRING): Prepend user_label_prefix.
+	* toplev.c (f_options, main): Handle -f*leading-underscore.
+
+	* defaults.h (ASM_OUTPUT_LABELREF): Use asm_fprintf instead of
+	referencing USER_LABEL_PREFIX directly.
+	* config/nextstep.h (ASM_OUTPUT_LABELREF): Likewise.
+	* m32r/m32r.h (ASM_OUTPUT_LABELREF): Likewise.
+	* final.c (asm_fprintf): Use user_label_prefix instead.
+	* arm/thumb.c (thumb_print_operand): Likewise.
+
+	* gcc.c (default_compilers): Pass -f*leading-underscore on to
+	cpp wherever appropriate.
+
 Wed Oct 28 23:09:25 1998  Robert Lipe  <robertl@dgii.com>
 
 	* sco5.h (SUBTARGET_SWITCHES): Add documentation for OpenServer-

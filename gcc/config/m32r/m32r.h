@@ -1660,7 +1660,7 @@ do {				\
 do {							\
   char * real_name;					\
   STRIP_NAME_ENCODING (real_name, (NAME));		\
-  fprintf (FILE, "%s%s", USER_LABEL_PREFIX, real_name);	\
+  asm_fprintf (FILE, "%U%s", real_name);		\
 } while (0)           
 
 /* If -Os, don't force line number labels to begin at the beginning of

@@ -59,9 +59,8 @@ OBJECTIVE-C objective-c: cc1obj$(exeext)
 # Language-specific object files for Objective C.
 OBJC_OBJS = objc-parse.o objc-act.o $(C_AND_OBJC_OBJS)
 
-cc1obj$(exeext): $(P) $(OBJC_OBJS) $(OBJS) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(OBJC_OBJS) $(OBJS) \
-		$(LIBS)
+cc1obj$(exeext): $(P) $(OBJS) $(OBJC_OBJS) $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(OBJS) $(OBJC_OBJS) $(LIBS)
 
 # Objective C language specific files.
 

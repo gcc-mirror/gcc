@@ -1732,7 +1732,7 @@ thumb_print_operand (f, x, code)
 	  return;
 
 	case '_':
-	  fputs (USER_LABEL_PREFIX, f);
+	  fputs (user_label_prefix, f);
 	  return;
 	  
 	case 'D':

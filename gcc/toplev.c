@@ -770,6 +770,17 @@ typedef struct
 }
 lang_independent_options;
 
+/* Add or remove a leading underscore from user symbols.  */
+int flag_leading_underscore = -1;
+
+/* The user symbol prefix after having resolved same.  */
+char *user_label_prefix;
+
+/* A default for same.  */
+#ifndef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX ""
+#endif
+
 /* Table of language-independent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE
@@ -915,6 +926,8 @@ lang_independent_options f_options[] =
    "Suppress output of instruction numbers and line number notes in debugging dumps"},
   {"instrument-functions", &flag_instrument_function_entry_exit, 1,
    "Instrument function entry/exit with profiling calls"},
+  {"leading-underscore", &flag_leading_underscore, 1,
+   "External symbols have a leading underscore" }
 };
 
 #define NUM_ELEM(a)  (sizeof (a) / sizeof ((a)[0]))
@@ -4898,6 +4911,21 @@ main (argc, argv)
   if (flag_delayed_branch)
     warning ("this target machine does not have delayed branches");
 #endif
+
+  user_label_prefix = USER_LABEL_PREFIX;
+  if (flag_leading_underscore != -1)
+    {
+      /* If the default prefix is more complicated than "" or "_", 
+	 issue a warning and ignore this option.  */
+      if (user_label_prefix[0] == 0 ||
+	  (user_label_prefix[0] == '_' && user_label_prefix[1] == 0))
+	{
+	  user_label_prefix = flag_leading_underscore ? "_" : "";
+	}
+      else
+	warning ("-f%sleading-underscore not supported on this target machine",
+		 flag_leading_underscore ? "" : "no-");
+    }
 
   /* If we are in verbose mode, write out the version and maybe all the
      option flags in use.  */

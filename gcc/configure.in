@@ -190,9 +190,8 @@ AC_ARG_ENABLE(c-cpplib,
 [  --enable-c-cpplib       link cpplib directly into C and C++ compilers
                           (implies --enable-cpplib).],
 if test x$enable_c_cpplib != xno; then
-  extra_c_objs="${extra_c_objs} cpplib.o cppexp.o cpphash.o cpperror.o"
-  extra_c_objs="${extra_c_objs} prefix.o"
-  extra_cxx_objs="${extra_cxx_objs} ../cpplib.o ../cppexp.o ../cpphash.o ../cpperror.o ../prefix.o"
+  extra_c_objs="${extra_c_objs} libcpp.a"
+  extra_cxx_objs="${extra_cxx_objs} ../libcpp.a"
   extra_c_flags=-DUSE_CPPLIB=1
   cpp_main=cppmain
 fi)

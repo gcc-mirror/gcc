@@ -727,6 +727,8 @@ char * wchar_type = WCHAR_TYPE;
 #ifndef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX ""
 #endif
+char * user_label_prefix = USER_LABEL_PREFIX;
+#undef USER_LABEL_PREFIX
 
 /* The string value for __REGISTER_PREFIX__ */
 
@@ -1527,6 +1529,13 @@ main (argc, argv)
 	    warn_trigraphs = 1;
 	    warn_comments = 1;
 	  }
+	break;
+
+      case 'f':
+	if (!strcmp (argv[i], "-fleading-underscore"))
+	  user_label_prefix = "_";
+	else if (!strcmp (argv[i], "-fno-leading-underscore"))
+	  user_label_prefix = "";
 	break;
 
       case 'M':
@@ -4282,7 +4291,7 @@ special_symbol (hp, op)
     break;
 
   case T_USER_LABEL_PREFIX_TYPE:
-    buf = USER_LABEL_PREFIX;
+    buf = user_label_prefix;
     break;
 
   case T_REGISTER_PREFIX_TYPE:
