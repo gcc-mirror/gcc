@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -402,8 +402,25 @@ package body Ch4 is
                   if Apostrophe_Should_Be_Semicolon then
                      Expr_Form := EF_Name;
                      return Name_Node;
+
+                  --  Here for a bad attribute name
+
                   else
                      Signal_Bad_Attribute;
+                     Scan; -- past bad identifier
+
+                     if Token = Tok_Left_Paren then
+                        Scan; -- past left paren
+
+                        loop
+                           Discard_Junk_Node (P_Expression);
+                           exit when not Comma_Present;
+                        end loop;
+
+                        T_Right_Paren;
+                     end if;
+
+                     return Error;
                   end if;
                end if;
 
