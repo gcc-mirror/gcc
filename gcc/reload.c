@@ -4916,8 +4916,7 @@ find_reloads_address (enum machine_mode mode, rtx *memrefloc, rtx ad,
 	continue;
 
       operand = XEXP (XEXP (ad, 0), op_index);
-      if (!(REG_P (operand) 
-	    || REGNO (operand) < FIRST_PSEUDO_REGISTER))
+      if (!REG_P (operand) || REGNO (operand) >= FIRST_PSEUDO_REGISTER)
 	continue;
 
       if ((REG_MODE_OK_FOR_BASE_P (operand, mode)
