@@ -45,12 +45,11 @@ static tree build_headof_sub PARAMS((tree));
 static tree build_headof PARAMS((tree));
 static tree ifnonnull PARAMS((tree, tree));
 static tree tinfo_name PARAMS((tree));
-static tree get_base_offset PARAMS((tree, tree));
 static tree build_dynamic_cast_1 PARAMS((tree, tree));
 static tree throw_bad_cast PARAMS((void));
 static tree throw_bad_typeid PARAMS((void));
 static tree get_tinfo_decl_dynamic PARAMS((tree));
-static tree tinfo_from_decl PARAMS((tree));
+static bool typeid_ok_p PARAMS ((void));
 static int qualifier_flags PARAMS((tree));
 static int target_incomplete_p PARAMS((tree));
 static tree tinfo_base_init PARAMS((tree, tree));
@@ -79,9 +78,6 @@ init_rtti_processing ()
     (class_type_node, get_identifier ("type_info"), 1);
   if (flag_honor_std)
     pop_namespace ();
-  /* FIXME: These identifier prefixes are not set in stone yet.  */
-  tinfo_decl_id = get_identifier ("__ti");
-  tinfo_var_id = get_identifier ("__tn");
   tinfo_decl_type = 
     build_qualified_type (type_info_type_node, TYPE_QUAL_CONST);
 }
@@ -231,6 +227,24 @@ get_tinfo_decl_dynamic (exp)
   return build_unary_op (ADDR_EXPR, exp, 0);
 }
 
+static bool
+typeid_ok_p ()
+{
+  if (! flag_rtti)
+    {
+      error ("cannot use typeid with -fno-rtti");
+      return false;
+    }
+  
+  if (!COMPLETE_TYPE_P (type_info_type_node))
+    {
+      error ("must #include <typeinfo> before using typeid");
+      return false;
+    }
+  
+  return true;
+}
+
 tree
 build_typeid (exp)
      tree exp;
@@ -238,18 +252,9 @@ build_typeid (exp)
   tree cond = NULL_TREE;
   int nonnull = 0;
 
-  if (! flag_rtti)
-    {
-      error ("cannot use typeid with -fno-rtti");
-      return error_mark_node;
-    }
-  
-  if (!COMPLETE_TYPE_P (type_info_type_node))
-    {
-      error ("must #include <typeinfo> before using typeid");
-      return error_mark_node;
-    }
-  
+  if (exp == error_mark_node || !typeid_ok_p ())
+    return error_mark_node;
+
   if (processing_template_decl)
     return build_min_nt (TYPEID_EXPR, exp);
 
@@ -268,7 +273,7 @@ build_typeid (exp)
   if (exp == error_mark_node)
     return error_mark_node;
 
-  exp = tinfo_from_decl (exp);
+  exp = build_indirect_ref (exp, NULL);
 
   if (cond)
     {
@@ -293,13 +298,9 @@ tinfo_name (type)
   return name_string;
 }
 
-/* Returns a decl for a function or variable which can be used to obtain a
-   type_info object for TYPE.  The old-abi uses functions, the new-abi
-   uses the type_info object directly.  You can take the address of the
-   returned decl, to save the decl.  To use the decl call
-   tinfo_from_decl.  You must arrange that the decl is mark_used, if
-   actually use it --- decls in vtables are only used if the vtable is
-   output.  */ 
+/* Returns a decl for the type_info variable for TYPE.  You must
+   arrange that the decl is mark_used, if actually use it --- decls in
+   vtables are only used if the vtable is output.  */ 
 
 tree
 get_tinfo_decl (type)
@@ -356,48 +357,14 @@ get_tinfo_decl (type)
   return d;
 }
 
-/* Given an expr produced by get_tinfo_decl, return an expr which
-   produces a reference to the type_info object.  */
-
-static tree
-tinfo_from_decl (expr)
-     tree expr;
-{
-  tree t;
-  
-  if (TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE)
-    t = build_indirect_ref (expr, NULL);
-  else
-    t = expr;
-  
-  return t;
-}
-
-tree
-get_typeid_1 (type)
-     tree type;
-{
-  tree t;
-
-  t = get_tinfo_decl (type);
-  t = tinfo_from_decl (t);
-  return convert_from_reference (t);
-}
-  
 /* Return the type_info object for TYPE.  */
 
 tree
 get_typeid (type)
      tree type;
 {
-  if (type == error_mark_node)
+  if (type == error_mark_node || !typeid_ok_p ())
     return error_mark_node;
-
-  if (!COMPLETE_TYPE_P (type_info_type_node))
-    {
-      error ("must #include <typeinfo> before using typeid");
-      return error_mark_node;
-    }
   
   if (processing_template_decl)
     return build_min_nt (TYPEID_EXPR, type);
@@ -418,7 +385,7 @@ get_typeid (type)
   if (!type)
     return error_mark_node;
 
-  return get_typeid_1 (type);
+  return get_tinfo_decl (type);
 }
 
 /* Check whether TEST is null before returning RESULT.  If TEST is used in
@@ -432,25 +399,6 @@ ifnonnull (test, result)
 		build (EQ_EXPR, boolean_type_node, test, integer_zero_node),
 		cp_convert (TREE_TYPE (result), integer_zero_node),
 		result);
-}
-
-/* Generate the constant expression describing where direct base BINFO
-   appears within the PARENT. How to interpret this expression depends on
-   details of the ABI, which the runtime must be aware of.  */
-
-static tree
-get_base_offset (binfo, parent)
-     tree binfo;
-     tree parent;
-{
-  if (! TREE_VIA_VIRTUAL (binfo))
-    return BINFO_OFFSET (binfo);
-  else
-    /* We store the vtable offset at which the virtual base offset can
-       be found.  */
-    return convert (sizetype,
-		    BINFO_VPTR_FIELD (binfo_for_vbase (BINFO_TYPE (binfo),
-						       parent)));
 }
 
 /* Execute a dynamic cast, as described in section 5.2.6 of the 9/93 working
@@ -1110,13 +1058,21 @@ synthesize_tinfo_var (target_type, real_name)
               tree tinfo;
               tree offset;
               
-              if (TREE_VIA_VIRTUAL (base_binfo))
-                flags |= 1;
               if (TREE_PUBLIC (base_binfo))
                 flags |= 2;
               tinfo = get_tinfo_decl (BINFO_TYPE (base_binfo));
               tinfo = build_unary_op (ADDR_EXPR, tinfo, 0);
-              offset = get_base_offset (base_binfo, target_type);
+	      if (TREE_VIA_VIRTUAL (base_binfo))
+		{
+		   /* We store the vtable offset at which the virtual
+       		      base offset can be found.  */
+		  offset = BINFO_VPTR_FIELD (binfo_for_vbase (BINFO_TYPE (base_binfo),
+							      target_type));
+		  offset = convert (sizetype, offset);
+		  flags |= 1;
+		}
+	      else
+		offset = BINFO_OFFSET (base_binfo);
               
               /* is it a single public inheritance? */
               if (is_simple && flags == 2 && integer_zerop (offset))
@@ -1170,7 +1126,6 @@ synthesize_tinfo_var (target_type, real_name)
       my_friendly_abort (20000117);
     }
   
-  
   return create_real_tinfo_var (target_type,
 				real_name, TINFO_PSEUDO_TYPE (var_type),
                                 var_init, non_public);
@@ -1192,9 +1147,7 @@ create_real_tinfo_var (target_type, name, type, init, non_public)
   tree hidden_name;
   char hidden[30];
   
-  sprintf (hidden, "%.*s_%d",
-           IDENTIFIER_LENGTH (tinfo_decl_id), IDENTIFIER_POINTER (tinfo_decl_id),
-           count++);
+  sprintf (hidden, "__ti_%d", count++);
   hidden_name = get_identifier (hidden);
   
   decl = build_lang_decl (VAR_DECL, hidden_name,
@@ -1433,7 +1386,7 @@ create_tinfo_types ()
 /* Emit the type_info descriptors which are guaranteed to be in the runtime
    support.  Generating them here guarantees consistency with the other
    structures.  We use the following heuristic to determine when the runtime
-   is being generated.  If std::__fundamental_type_info is defined, and it's
+   is being generated.  If std::__fundamental_type_info is defined, and its
    destructor is defined, then the runtime is being built.  */
 
 void

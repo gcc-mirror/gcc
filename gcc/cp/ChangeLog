@@ -1,3 +1,22 @@
+2001-07-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Simplify rtti, now we've only one ABI.
+	* cp-tree.h (cp_tree_index): Remove CPTI_TINFO_DECL_ID,
+	CPTI_TINFO_VAR_ID.
+	(tinfo_decl_id, tinfo_var_id): Remove.
+	(get_typeid_1): Remove.
+	* rtti.c
+	(init_rtti_processing): Remove tinfo_decl_id & tinfo_var_id.
+	(typeid_ok_p): New function.
+	(build_type_id): Call typeid_ok_p. Don't call tinfo_from_decl.
+	(get_tinfo_decl): Remove old abi documentation.
+	(tinfo_from_decl): Remove.
+	(get_type_id): Call typeid_ok_p. Absorb get_typeid_1.
+	(get_typeid_1): Remove.
+	(get_base_offset): Remove.
+	(synthesize_tinfo_var): Absorb get_base_offset.
+	(create_real_tinfo_var): Don't use tinfo_decl_id.
+
 2001-07-23  Graham Stott  <grahams@redhat.com>
 
 	* cp/class.c (type_requires_array_cookie): Fix use of uninitialised
