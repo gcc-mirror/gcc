@@ -1,7 +1,8 @@
 @ libgcc routines for ARM cpu.
 @ Division routines, written by Richard Earnshaw, (rearnsha@armltd.co.uk)
 
-/* Copyright 1995, 1996, 1998, 1999, 2000 Free Software Foundation, Inc.
+/* Copyright 1995, 1996, 1998, 1999, 2000, 2003, 2004
+   Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -202,11 +203,23 @@ SYM (__\name):
 	.arm
 _L__\name:		/* A hook to tell gdb that we've switched to ARM */
 .endm
+#define EQUIV .thumb_set
 #else
 .macro	ARM_FUNC_START name
-	FUNC_START \name
+	.text
+	.globl SYM (__\name)
+	TYPE (__\name)
+	.align 0
+	.arm
+SYM (__\name):
 .endm
+#define EQUIV .set
 #endif
+
+.macro	ARM_FUNC_ALIAS new old
+	.globl	SYM (__\new)
+	EQUIV	SYM (__\new), SYM (__\old)
+.endm
 
 #ifdef __thumb__
 /* Register aliases.  */

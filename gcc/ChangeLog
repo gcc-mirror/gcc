@@ -1,3 +1,12 @@
+2004-01-15  Richard Earnshaw  <rearnsha@arm.com>
+	    Daniel Jacobowitz  <drow@mvista.com>
+
+	* arm/lib1funcs.asm (ARM_FUNC_START): Correct interworking case.
+	(EQUIV): Define.
+	(ARM_FUNC_ALIAS): New macro.
+	* arm/ieee754-df.S (gedf2, ledf2, nedf2, eqdf2): Use it.
+	* arm/ieee754-sf.S (gesf2, lesf2, nesf2, eqsf2): Use it.
+
 2004-01-15  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR optimization/12372

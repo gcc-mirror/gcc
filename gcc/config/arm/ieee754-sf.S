@@ -1,6 +1,6 @@
 /* ieee754-sf.S single-precision floating point support for ARM
 
-   Copyright (C) 2003  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
    Contributed by Nicolas Pitre (nico@cam.org)
 
    This file is free software; you can redistribute it and/or modify it
@@ -642,19 +642,19 @@ LSYM(Ldv_s):
 
 #ifdef L_cmpsf2
 
-FUNC_START gesf2
 ARM_FUNC_START gtsf2
+ARM_FUNC_ALIAS gesf2 gtsf2
 	mov	r3, #-1
 	b	1f
 
-FUNC_START lesf2
 ARM_FUNC_START ltsf2
+ARM_FUNC_ALIAS lesf2 ltsf2
 	mov	r3, #1
 	b	1f
 
-FUNC_START nesf2
-FUNC_START eqsf2
 ARM_FUNC_START cmpsf2
+ARM_FUNC_ALIAS nesf2 cmpsf2
+ARM_FUNC_ALIAS eqsf2 cmpsf2
 	mov	r3, #1			@ how should we specify unordered here?
 
 1:	@ Trap any INF/NAN first.
