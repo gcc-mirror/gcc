@@ -1,3 +1,8 @@
+Wed Dec 16 05:11:04 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (consec_sets_giv): New argument last_consec_insn.
+	(strength_reduce): Provide / use it.
+
 Wed Dec 16 17:24:07 1998  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* loop.h (loop_info): New field 'vtop'.

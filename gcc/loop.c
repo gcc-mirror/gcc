@@ -311,7 +311,7 @@ static void update_giv_derive PROTO((rtx));
 static int basic_induction_var PROTO((rtx, enum machine_mode, rtx, rtx, rtx *, rtx *));
 static rtx simplify_giv_expr PROTO((rtx, int *));
 static int general_induction_var PROTO((rtx, rtx *, rtx *, rtx *, int, int *));
-static int consec_sets_giv PROTO((int, rtx, rtx, rtx, rtx *, rtx *));
+static int consec_sets_giv PROTO((int, rtx, rtx, rtx, rtx *, rtx *, rtx *));
 static int check_dbra_loop PROTO((rtx, int, rtx, struct loop_info *));
 static rtx express_from_1 PROTO((rtx, rtx, rtx));
 static rtx express_from PROTO((struct induction *, struct induction *));
@@ -3900,6 +3900,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 	  rtx mult_val;
 	  int benefit;
 	  rtx regnote = 0;
+	  rtx last_consec_insn;
 
 	  dest_reg = SET_DEST (set);
 	  if (REGNO (dest_reg) < FIRST_PSEUDO_REGISTER)
@@ -3923,7 +3924,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		  /* or all sets must be consecutive and make a giv.  */
 		  || (benefit = consec_sets_giv (benefit, p,
 						 src_reg, dest_reg,
-						 &add_val, &mult_val))))
+						 &add_val, &mult_val,
+						 &last_consec_insn))))
 	    {
 	      int count;
 	      struct induction *v
@@ -3935,19 +3937,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		benefit += libcall_benefit (p);
 
 	      /* Skip the consecutive insns, if there are any.  */
-	      for (count = VARRAY_INT (n_times_set, REGNO (dest_reg)) - 1;
-		   count > 0; count--)
-		{
-		  /* If first insn of libcall sequence, skip to end.
-		     Do this at start of loop, since INSN is guaranteed to
-		     be an insn here.  */
-		  if (GET_CODE (p) != NOTE
-		      && (temp = find_reg_note (p, REG_LIBCALL, NULL_RTX)))
-		    p = XEXP (temp, 0);
-
-		  do p = NEXT_INSN (p);
-		  while (GET_CODE (p) == NOTE);
-		}
+	      if (VARRAY_INT (n_times_set, REGNO (dest_reg)) != 1)
+		p = last_consec_insn;
 
 	      record_giv (v, p, src_reg, dest_reg, mult_val, add_val, benefit,
 			  DEST_REG, not_every_iteration, NULL_PTR, loop_start,
@@ -5997,13 +5988,14 @@ sge_plus (mode, x, y)
 
 static int
 consec_sets_giv (first_benefit, p, src_reg, dest_reg,
-		 add_val, mult_val)
+		 add_val, mult_val, last_consec_insn)
      int first_benefit;
      rtx p;
      rtx src_reg;
      rtx dest_reg;
      rtx *add_val;
      rtx *mult_val;
+     rtx *last_consec_insn;
 {
   int count;
   enum rtx_code code;
@@ -6077,6 +6069,7 @@ consec_sets_giv (first_benefit, p, src_reg, dest_reg,
 	}
     }
 
+  *last_consec_insn = p;
   return v->benefit;
 }
 
