@@ -1,3 +1,8 @@
+2001-04-05  Alexandre Oliva  <aoliva@redhat.com>
+
+        * config.sub: Make sure to match an already-canonicalized
+        machine name (eg. mn10300-unknown-elf).
+
 2001-04-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in (CXX_FOR_TARGET_FOR_RECURSIVE_MAKE, RECURSE_FLAGS):
