@@ -1,3 +1,7 @@
+2002-09-12  Janis Johnson  <janis187@us.ibm.com>
+
+	* doc/compat.texi: New file with new chapter, Binary Compatibility.
+
 2002-09-12  Jason Merrill  <jason@redhat.com>
 
 	* calls.c (store_one_arg): Use size_in_bytes to determine the
@@ -20,6 +24,29 @@
 
 	Wed Apr 24 13:48:25 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* loop.c (canonicalize_condition): Use gen_int_mode.
+
+2002-09-11  Janis Johnson  <janis187@us.ibm.com>
+
+	* Makefile.in (TEXI_GCC_FILES): Add compat.texi.
+	* doc/gcc.texi (Top): Add new chapter, Binary Compatibility, and
+	include its file, compat.texi.
+	* doc/trouble.texi (Interoperation): Update information about C++ ABI
+	issues.
+	* doc/invoke.texi (-fshort-wchar): Move to Code Generation Options.
+	(-fpcc-struct-return, -freg-struct-return, -fshort-enums,
+	-fshort-double, -fshort-wchar, -fpack-struct, -fleading-underscore):
+	Warn that these options can break ABI compatibility.
+	(Many places): Fix overfull hboxes.
+
+	* doc/extend.texi: Fix a broken link; fix overfull hboxes.
+	* doc/install.texi: Fix a typo, some formatting directives, and
+	overfull hboxes.
+	* doc/c-tree.texi: Fix overfull hboxes.
+	* doc/cppopts.texi: Ditto.
+	* doc/makefile.texi: Ditto.
+	* doc/rtl.texi: Ditto.
+	* doc/standards.texi: Ditto.
+	* doc/tm.texi: Ditto.
 
 2002-09-08  Alan Modra  <amodra@bigpond.net.au>
 
