@@ -1756,6 +1756,10 @@ integrate_parm_decls (args, map, arg_vector)
       rtx new_decl_rtl
 	= copy_rtx_and_substitute (RTVEC_ELT (arg_vector, i), map);
 
+      DECL_ARG_TYPE (decl) = DECL_ARG_TYPE (tail);
+      /* We really should be setting DECL_INCOMING_RTL to something reasonable
+	 here, but that's going to require some more work.  */
+      /* DECL_INCOMING_RTL (decl) = ?; */
       /* These args would always appear unused, if not for this.  */
       TREE_USED (decl) = 1;
       /* Prevent warning for shadowing with these.  */
