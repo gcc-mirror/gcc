@@ -1,3 +1,9 @@
+Wed Feb 25 20:50:08 1998  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
+
+	* reorg.c (fill_slots_from_thread): Mark resources referenced in
+	opposite_needed thread.  Return delay_list even when cannot get
+	any more delay insns from end of subroutine.
+
 Wed Feb 25 19:50:01 1998  Mikael Pettersson <Mikael.Pettersson@sophia.inria.fr>
 
 	* gcc.c (lookup_compiler): Remove redundant test.
