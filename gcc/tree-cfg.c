@@ -1189,7 +1189,7 @@ group_case_labels (void)
           i = 0;
 	  while (i < old_size - 1)
 	    {
-	      tree base_case, base_label, base_high, type;
+	      tree base_case, base_label, base_high;
 	      base_case = TREE_VEC_ELT (labels, i);
 
 	      gcc_assert (base_case);
@@ -1205,7 +1205,6 @@ group_case_labels (void)
 		  continue;
 		}
 
-	      type = TREE_TYPE (CASE_LOW (base_case));
 	      base_high = CASE_HIGH (base_case) ?
 		CASE_HIGH (base_case) : CASE_LOW (base_case);
 	      i++;
