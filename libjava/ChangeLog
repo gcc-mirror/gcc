@@ -1,5 +1,8 @@
 1999-07-07  Tom Tromey  <tromey@cygnus.com>
 
+	* mauve-libgcj: Explicitly enable formerly disabled java.text
+	tests.
+
 	* mauve-libgcj: Turn off ClassTest test.  Enable java.text tests
 	again.
 

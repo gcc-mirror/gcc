@@ -12,6 +12,9 @@ java.lang.String.hash
 !java.rmi
 !java.security
 !java.sql
+java.text.FieldPosition.Test
+java.text.ParsePosition.Test
+java.text.SimpleDateFormat.getAndSet2DigitYearStart
 java.text.StringCharacterIterator.iter
 !java.text.ACIAttribute
 !java.text.AttributedCharacterIterator
