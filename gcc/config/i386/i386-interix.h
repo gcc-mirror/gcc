@@ -44,7 +44,6 @@ Boston, MA 02111-1307, USA.  */
 #undef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT 2 /* 486 */
 
-#define WCHAR_UNSIGNED 1
 #define WCHAR_TYPE_SIZE 16
 #define WCHAR_TYPE "short unsigned int"
 

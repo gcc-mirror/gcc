@@ -95,7 +95,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define SIZE_TYPE "unsigned int"
 #define PTRDIFF_TYPE "int"
-#define WCHAR_UNSIGNED 1
 #define WCHAR_TYPE_SIZE 16
 #define WCHAR_TYPE "short unsigned int"
 /* Currently we do not have the atexit() function,

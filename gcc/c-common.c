@@ -4310,6 +4310,15 @@ c_common_init (filename)
   options->char_precision = TYPE_PRECISION (char_type_node);
   options->int_precision = TYPE_PRECISION (integer_type_node);
   options->wchar_precision = TYPE_PRECISION (wchar_type_node);
+  options->unsigned_wchar = TREE_UNSIGNED (wchar_type_node);
+  /* This can be uncommented when 1) This all happens before
+     cpp_post_options() (needed for __CHAR_UNSIGNED__ builtin), which
+     in turn requires wchat_type_node to be set up properly by then,
+     and 2) tradcpp is integrated, so that the preprocessors don't
+     need to handle the command-line options and the specs in gcc.c
+     can be updated.
+
+     options->unsigned_char = !flag_signed_char; */
 
   options->warn_multichar = warn_multichar;
 

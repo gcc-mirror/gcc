@@ -494,11 +494,6 @@ cpp_create_reader (lang)
   CPP_OPTION (pfile, tabstop) = 8;
   CPP_OPTION (pfile, operator_names) = 1;
   CPP_OPTION (pfile, warn_endif_labels) = 1;
-#if DEFAULT_SIGNED_CHAR
-  CPP_OPTION (pfile, signed_char) = 1;
-#else
-  CPP_OPTION (pfile, signed_char) = 0;
-#endif
 
   CPP_OPTION (pfile, pending) =
     (struct cpp_pending *) xcalloc (1, sizeof (struct cpp_pending));
@@ -510,6 +505,8 @@ cpp_create_reader (lang)
   CPP_OPTION (pfile, char_precision) = CHAR_BIT;
   CPP_OPTION (pfile, wchar_precision) = CHAR_BIT * sizeof (int);
   CPP_OPTION (pfile, int_precision) = CHAR_BIT * sizeof (int);
+  CPP_OPTION (pfile, unsigned_char) = !DEFAULT_SIGNED_CHAR;
+  CPP_OPTION (pfile, unsigned_wchar) = 1;
 
   /* It's simplest to just create this struct whether or not it will
      be needed.  */
@@ -779,7 +776,7 @@ init_builtins (pfile)
   else if (CPP_OPTION (pfile, c99))
     _cpp_define_builtin (pfile, "__STDC_VERSION__ 199901L");
 
-  if (CPP_OPTION (pfile, signed_char) == 0)
+  if (CPP_OPTION (pfile, unsigned_char))
     _cpp_define_builtin (pfile, "__CHAR_UNSIGNED__ 1");
 
   if (CPP_OPTION (pfile, lang) == CLK_STDC89
@@ -1450,10 +1447,10 @@ cpp_handle_option (pfile, argc, argv, ignore)
 	  CPP_OPTION (pfile, show_column) = 0;
 	  break;
 	case OPT_fsigned_char:
-	  CPP_OPTION (pfile, signed_char) = 1;
+	  CPP_OPTION (pfile, unsigned_char) = 0;
 	  break;
 	case OPT_funsigned_char:
-	  CPP_OPTION (pfile, signed_char) = 0;
+	  CPP_OPTION (pfile, unsigned_char) = 1;
 	  break;
 	case OPT_ftabstop:
 	  /* Silently ignore empty string, non-longs and silly values.  */

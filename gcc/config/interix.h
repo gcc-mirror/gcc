@@ -100,7 +100,6 @@ for windows/multi thread */
 
 #undef WCHAR_TYPE
 #undef WCHAR_TYPE_SIZE
-#define WCHAR_UNSIGNED 1
 #define WCHAR_TYPE "short unsigned int"
 #define WCHAR_TYPE_SIZE 16
 

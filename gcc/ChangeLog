@@ -1,3 +1,23 @@
+2002-05-07  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-common.c (c_common_init): Set options->unsigned_wchar.
+	* cppinit.c (cpp_create_reader): Default unsigned_wchar,
+	group target dependencies.
+	(init_builtins, cpp_handle_option): Update.
+	* cpplex.c (cpp_interpret_charconst): Update.
+	* cpplib.h (struct cpp_options): Add unsigned_wchar, rename
+	signed_char to unsigned_char, group target dependencies.
+	* defaults.h (WCHAR_UNSIGNED): Remove.
+	* system.h (WCHAR_UNSIGNED, MAX_CHAR_TYPE_SIZE): Poison.
+config:
+	* freebsd.h, interix.h, alpha/freebsd.h, arm/freebsd.h,
+	i386/386bsd.h, i386/beos-elf.h, i386/bsd386.h, i386/cygwin.h,
+	i386/djgpp.h, i386/freebsd-aout.h, i386/i386-interix.h,
+	i386/win32.h, ia64/freebsd.h, mips/netbsd.h, rs6000/freebsd.h,
+	sh/elf.h, sh/sh.h, sparc/freebsd.h: Remove WCHAR_UNSIGNED.
+doc:
+	* tm.texi: Remove MAX_CHAR_TYPE_SIZE.
+
 2002-05-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* fixinc/inclhack.def (windiss_math1): New fix.
