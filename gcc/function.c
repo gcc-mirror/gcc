@@ -3150,6 +3150,13 @@ assign_parms (fndecl, second_time)
 	  continue;
 	}
 
+      /* If the parm is to be passed as a transparent union, use the
+	 type of the first field for the tests below.  We have already
+	 verified that the modes are the same.  */
+      if (DECL_TRANSPARENT_UNION (parm)
+	  || TYPE_TRANSPARENT_UNION (passed_type))
+	passed_type = TREE_TYPE (TYPE_FIELDS (passed_type));
+
       /* See if this arg was passed by invisible reference.  It is if
 	 it is an object whose size depends on the contents of the
 	 object itself or if the machine requires these objects be passed
