@@ -1,3 +1,7 @@
+2002-10-24  Denis Chertykov  <denisc@overta.ru>
+
+	* MAINTAINERS: Add myself as ip2k port maintainer.
+
 2002-10-07  Svein E. Seldal  <Svein.Seldal@solidas.com>
 
 	* configure.in: Add tic4x target.

@@ -52,6 +52,7 @@ hppa port		Dave Anglin		dave.anglin@nrc.ca
 i386 port		Richard Henderson	rth@redhat.com
 i960 port		Jim Wilson		wilson@redhat.com
 ia64 port		Jim Wilson		wilson@redhat.com
+ip2k port		Denis Chertykov		denisc@overta.ru
 m32r port		Nick Clifton		nickc@redhat.com
 m32r port		Michael Meissner	meissner@redhat.com
 m68hc11 port		Stephane Carrez		stcarrez@nerim.fr
