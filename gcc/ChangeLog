@@ -1,5 +1,19 @@
 2004-03-02  Stephane Carrez  <stcarrez@nerim.fr>
 
+	* config/m68hc11/m68hc11.c (m68hc11_addr_mode): New variable.
+	(m68hc11_mov_addr_mode): Likewise.
+	(m68hc11_override_options): Initialize them based on target.
+	(register_indirect_p): Allow a MEM for indirect addressing modes and
+	use flags to control what is allowed.
+	(m68hc11_small_indexed_indirect_p): Use m68hc11_mov_addr_mode for
+	supported addressing modes.
+	(m68hc11_register_indirect_p): Use m68hc11_addr_mode.
+	(go_if_legitimate_address_internal): Likewise.
+	(m68hc11_indirect_p): Likewise and check the mode.
+	(print_operand): Allow a (MEM (MEM)) and generate indirect addressing.
+
+2004-03-02  Stephane Carrez  <stcarrez@nerim.fr>
+
 	* config/m68hc11/m68hc11.md (move peephole2): New peepholes to optimize
 	sequences of moves.
 	(add peepholes): New peepholes to optimize sequences adding small
