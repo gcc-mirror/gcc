@@ -1,3 +1,8 @@
+2003-12-16  Fernando Nasser  <fnasser@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkContainerPeer.java (handleEvent): Check for
+	null Graphics pointer returned by FileDialogPeer.
+
 2003-12-17  Michael Koch  <konqueror@gmx.de>
 
 	* libltdl/stamp-h.in: Removed, not used anymore.

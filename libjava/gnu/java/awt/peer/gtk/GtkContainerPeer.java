@@ -107,6 +107,11 @@ public class GtkContainerPeer extends GtkComponentPeer
 	  try 
 	    {
 	      Graphics g = getGraphics ();
+
+	      // Some peers like GtkFileDialogPeer are repainted by Gtk itself
+	      if (g == null)
+	        break;
+
 	      g.setClip (((PaintEvent)event).getUpdateRect());
 
 	      if (id == PaintEvent.PAINT)
