@@ -880,6 +880,7 @@ mop_up (work, declp, success)
     {
       free ((char *) work -> typevec);
       work -> typevec = NULL;
+      work -> typevec_size = 0;
     }
   if (work->tmpl_argvec)
     {
@@ -3377,14 +3378,22 @@ demangle_fund_type (work, mangled, result)
 	{
 	  int i;
 	  ++(*mangled);
-	  for (i = 0; **mangled && **mangled != '_'; ++(*mangled), ++i)
+	  for (i = 0;
+	       (i < sizeof (buf) - 1 && **mangled && **mangled != '_');
+	       ++(*mangled), ++i)
 	    buf[i] = **mangled;
+	  if (**mangled != '_')
+	    {
+	      success = 0;
+	      break;
+	    }
 	  buf[i] = '\0';
 	  ++(*mangled);
 	}
       else
 	{
 	  strncpy (buf, *mangled, 2);
+	  buf[2] = '\0';
 	  *mangled += 2;
 	}
       sscanf (buf, "%x", &dec);
