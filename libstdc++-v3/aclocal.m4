@@ -1449,16 +1449,16 @@ changequote([, ])
   case "$enable_cheaders" in
     c_shadow) 
         CSHADOW_FLAGS="-fno-builtin"
-        C_INCLUDE_DIR='${top_srcdir}/include/c_shadow'
+        C_INCLUDE_DIR='${glibcpp_srcdir}/include/c_shadow'
         AC_DEFINE(_GLIBCPP_USE_SHADOW_HEADERS)
         ;;
     c_std)   
         CSHADOW_FLAGS=""
-        C_INCLUDE_DIR='${top_srcdir}/include/c_std'
+        C_INCLUDE_DIR='${glibcpp_srcdir}/include/c_std'
         ;;
     c)   
         CSHADOW_FLAGS=""
-        C_INCLUDE_DIR='${top_srcdir}/include/c'
+        C_INCLUDE_DIR='${glibcpp_srcdir}/include/c'
         ;;
   esac
 
