@@ -18,16 +18,19 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-extern void dbxout_init 		PROTO ((FILE *, char *, tree));
-extern void dbxout_finish		PROTO ((FILE *, char *));
+extern void dbxout_init 		PROTO ((FILE *, const char *, tree));
+extern void dbxout_finish		PROTO ((FILE *, const char *));
 
-extern void dbxout_start_new_source_file 	PROTO ((char *));
+extern void dbxout_start_new_source_file 	PROTO ((const char *));
 extern void dbxout_resume_previous_source_file	PROTO ((void));
 
+extern void dbxout_source_file		PROTO ((FILE *, const char *));
+extern void dbxout_types		PROTO ((tree));
+extern void dbxout_args			PROTO ((tree));
 extern void dbxout_symbol		PROTO ((tree, int));
 extern void dbxout_parms		PROTO ((tree));
 extern void dbxout_reg_parms		PROTO ((tree));
 extern void dbxout_syms			PROTO ((tree));
 extern void dbxout_function		PROTO ((tree));
-extern void dbxout_source_line		PROTO ((FILE *, char*, int));
+extern void dbxout_source_line		PROTO ((FILE *, const char *, int));
 extern void dbxout_begin_function	PROTO ((tree));

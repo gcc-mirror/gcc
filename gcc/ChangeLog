@@ -1,3 +1,33 @@
+Mon Oct 25 22:49:34 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* dbxout.c (lastfile, cwd, dbxout_type_method_1,
+	dbxout_symbol_location, dbxout_symbol_name, dbxout_init,
+	dbxout_start_new_source_file, dbxout_source_file,
+	dbxout_source_line, dbxout_finish, dbxout_type_fields,
+	dbxout_type_methods, dbxout_symbol, dbxout_prepare_symbol):
+	Constify a char*.
+	(dbxout_types, dbxout_args, dbxout_symbol): Delete prototypes.
+	(dbxout_symbol): Mark parameter `local' with ATTRIBUTE_UNUSED.
+	(dbxout_block): Initialize variable `blocknum'.	
+
+	* dbxout.h (dbxout_init, dbxout_finish,
+	dbxout_start_new_source_file, dbxout_source_file, dbxout_types,
+	dbxout_args, dbxout_source_line): Constify a char*.
+
+	* dwarfout.c (dwarf_tag_name, dwarf_attr_name,
+	dwarf_stack_op_name, dwarf_typemod_name, dwarf_fmt_byte_name,
+	dwarf_fund_type_name, name_attribute, stmt_list_attribute,
+	low_pc_attribute, high_pc_attribute, body_begin_attribute,
+	body_end_attribute, comp_dir_attribute, sf_names_attribute,
+	src_info_attribute, mac_info_attribute, producer_attribute,
+	lookup_filename, generate_macinfo_entry, fundamental_type_code,
+	dwarfout_line, dwarfout_start_new_source_file, dwarfout_define,
+	dwarfout_undef): Constify a char*.
+	(add_incomplete_type, retry_incomplete_types): Add prototypes.
+
+	* dwarfout.h (dwarfout_define, dwarfout_undef,
+	dwarfout_start_new_source_file, dwarfout_line): Constify a char*.
+
 1999-10-25  Gavin Romig-Koch  <gavin@cygnus.com>
 
 	* config/mips/mips.h (MIPS_ISA_DEFAULT): Insure it's defined.
