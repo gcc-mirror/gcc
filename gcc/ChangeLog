@@ -1,3 +1,8 @@
+2003-06-29  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* opts.c: Include insn-attr.h.
+	* Makefile.in (opts.o): Depend on INSN_ATTR_H.
+
 2003-06-27  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* flow.c (propagate_one_insn): Use proper test for a register
