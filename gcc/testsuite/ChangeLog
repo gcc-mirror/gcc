@@ -4,6 +4,10 @@
 	* g++.dg/parse/semicolon1.C: New test.
 	* g++.dg/parse/semicolon1.h: Likewise.
 
+2003-12-22  Fariborz Jahanian <fjahanian@apple.com>
+
+	* gcc.dg/darwin-misaligned.c: New test.
+
 2003-12-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/9163
