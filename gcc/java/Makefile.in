@@ -148,10 +148,12 @@ ALL_CFLAGS = $(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) $(XCFLAGS)
 # Likewise.
 ALL_CPPFLAGS = $(CPPFLAGS) $(X_CPPFLAGS) $(T_CPPFLAGS)
 
+# CYGNUS LOCAL: SUBDIR_USE_ALLOCA is different from FSF.
 # Even if ALLOCA is set, don't use it if compiling with GCC.
 
 SUBDIR_OBSTACK = `if [ x$(OBSTACK) != x ]; then echo ../$(OBSTACK); else true; fi`
-SUBDIR_USE_ALLOCA = `case "${CC}" in "${OLDCC}") if [ x$(ALLOCA) != x ]; then echo ../$(ALLOCA); else true; fi ;; esac`
+#SUBDIR_USE_ALLOCA = `case "${CC}" in "${OLDCC}") if [ x$(ALLOCA) != x ]; then echo ../$(ALLOCA); else true; fi ;; esac`
+SUBDIR_USE_ALLOCA = `if [ x$(ALLOCA) != x ]; then echo ../$(ALLOCA); else true; fi`
 SUBDIR_MALLOC = `if [ x$(MALLOC) != x ]; then echo ../$(MALLOC); else true; fi`
 
 # How to link with both our special library facilities
@@ -226,18 +228,21 @@ RTL_H = $(srcdir)/../rtl.h $(srcdir)/../rtl.def \
         $(srcdir)/../machmode.h $(srcdir)/../machmode.def
 EXPR_H = $(srcdir)/../expr.h ../insn-codes.h
 
+# CYGNUS LOCAL: we put these files into the build dir.
+PARSE_C = parse.c
+PARSE_SCAN_C = parse-scan.c
 PARSE_H = $(srcdir)/parse.h
-PARSE_C = $(srcdir)/parse.c
-PARSE_SCAN_C = $(srcdir)/parse-scan.c
 
 $(PARSE_C):  $(srcdir)/parse.y $(srcdir)/lex.c $(PARSE_H) $(srcdir)/lex.h
 	$(BISON) -t -v $(BISONFLAGS) $(JAVABISONFLAGS) -o $(PARSE_C) \
 	  $(srcdir)/parse.y
 $(PARSE_SCAN_C):  $(srcdir)/parse-scan.y $(srcdir)/lex.c $(PARSE_H) \
-		$(srcdir)/lex.h
+	  $(srcdir)/lex.h
 	$(BISON) -t -v $(BISONFLAGS) -o $(PARSE_SCAN_C) $(srcdir)/parse-scan.y
 
 lex.c: keyword.h lex.h
+
+lang.o: $(srcdir)/java-tree.def
 
 keyword.h: keyword.gperf
 	gperf -L KR-C -F ', 0' -p -t -j1 -i 1 -g -o -N java_keyword -k1,3,$$ \
@@ -258,8 +263,9 @@ TAGS: force
 mostlyclean:
 	rm -f *.o
 
+# CYGNUS LOCAL: Remove these files, as they are in the build dir.
 clean:  mostlyclean
-	rm -f parse.c
+	rm -f parse.c parse-scan.c
 
 force:
 

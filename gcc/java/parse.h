@@ -148,22 +148,32 @@ extern tree stabilize_reference PROTO ((tree));
     EXPR_WFL_EMIT_LINE_NOTE (node) = 1, node : node)
 
 /* Types classification, according to the JLS, section 4.2 */
-#define JFLOAT_TYPE_P(TYPE)      (TREE_CODE ((TYPE)) == REAL_TYPE)
-#define JINTEGRAL_TYPE_P(TYPE)   ((TREE_CODE ((TYPE)) == INTEGER_TYPE)	\
-				  || (TREE_CODE ((TYPE)) == CHAR_TYPE))
-#define JNUMERIC_TYPE_P(TYPE)    (JFLOAT_TYPE_P ((TYPE)) 	\
-				  || JINTEGRAL_TYPE_P ((TYPE)))
-#define JPRIMITIVE_TYPE_P(TYPE)  (JNUMERIC_TYPE_P ((TYPE)) 		   \
-				  || (TREE_CODE ((TYPE)) == BOOLEAN_TYPE))
+#define JFLOAT_TYPE_P(TYPE)      (TYPE && TREE_CODE ((TYPE)) == REAL_TYPE)
+#define JINTEGRAL_TYPE_P(TYPE)   ((TYPE) 				   \
+				  && (TREE_CODE ((TYPE)) == INTEGER_TYPE   \
+				      || TREE_CODE ((TYPE)) == CHAR_TYPE))
+#define JNUMERIC_TYPE_P(TYPE)    ((TYPE)				\
+				  && (JFLOAT_TYPE_P ((TYPE))		\
+				      || JINTEGRAL_TYPE_P ((TYPE))))
+#define JPRIMITIVE_TYPE_P(TYPE)  ((TYPE) 				  \
+				  && (JNUMERIC_TYPE_P ((TYPE))		  \
+				  || TREE_CODE ((TYPE)) == BOOLEAN_TYPE))
 
 /* Not defined in the LRM */
-#define JSTRING_TYPE_P(TYPE) ((TYPE) == string_type_node ||		\
-			 (TREE_CODE (TYPE) == POINTER_TYPE &&		\
-			  TREE_TYPE (op1_type) == string_type_node))
+#define JSTRING_TYPE_P(TYPE) ((TYPE) 					   \
+			      && ((TYPE) == string_type_node ||		   \
+				  (TREE_CODE (TYPE) == POINTER_TYPE &&	   \
+				   TREE_TYPE (TYPE) == string_type_node)))
+#define JSTRING_P(NODE) ((NODE)						\
+			 && (TREE_CODE (NODE) == STRING_CST		\
+			     || IS_CRAFTED_STRING_BUFFER_P (NODE)	\
+			     || JSTRING_TYPE_P (TREE_TYPE (NODE))))
 
-#define JREFERENCE_TYPE_P(TYPE) (TREE_CODE (TYPE) == RECORD_TYPE ||	\
-				 (TREE_CODE (TYPE) == POINTER_TYPE &&	\
-				 TREE_CODE (TREE_TYPE (TYPE)) == RECORD_TYPE))
+#define JREFERENCE_TYPE_P(TYPE) ((TYPE)					      \
+				 && (TREE_CODE (TYPE) == RECORD_TYPE 	      \
+				     ||	(TREE_CODE (TYPE) == POINTER_TYPE     \
+					 &&  TREE_CODE (TREE_TYPE (TYPE)) ==  \
+					 RECORD_TYPE)))
 
 /* Other predicate */
 #define DECL_P(NODE) (NODE && (TREE_CODE (NODE) == PARM_DECL		\
@@ -198,12 +208,12 @@ extern tree stabilize_reference PROTO ((tree));
 
 #define ERROR_VARIABLE_NOT_INITIALIZED(WFL, V)			\
   parse_error_context						\
-    ((WFL), "Variable `%s' may not have been initialized", 	\
+    ((WFL), "Variable `%s' may not have been initialized",	\
      IDENTIFIER_POINTER (V))
 
-/* Definition for loop handling. This Java's own definition of a loop
-   body. See parse.y for documentation. It's valid once you hold a
-   loop's body (LOOP_EXPR_BODY) */
+/* Definition for loop handling. This is Java's own definition of a
+   loop body. See parse.y for documentation. It's valid once you hold
+   a loop's body (LOOP_EXPR_BODY) */
 
 /* The loop main block is the one hold the condition and the loop body */
 #define LOOP_EXPR_BODY_MAIN_BLOCK(NODE) TREE_OPERAND (NODE, 0)
@@ -251,7 +261,6 @@ extern tree stabilize_reference PROTO ((tree));
     ctxp->current_loop = (L);			\
   }
 #define POP_LOOP() ctxp->current_loop = TREE_CHAIN (ctxp->current_loop)
-
 
 /* Invocation modes, as returned by invocation_mode (). */
 enum {
@@ -414,6 +423,14 @@ static jdeplist *reverse_jdep_list ();
 #define COMPLETE_CHECK_OP_0(NODE) COMPLETE_CHECK_OP(NODE, 0)
 #define COMPLETE_CHECK_OP_1(NODE) COMPLETE_CHECK_OP(NODE, 1)
 
+/* Building invocations: append(ARG) and StringBuffer(ARG) */
+#define BUILD_APPEND(ARG)						     \
+  build_method_invocation (wfl_append, 					     \
+			   (ARG ? build_tree_list (NULL, (ARG)): NULL_TREE))
+#define BUILD_STRING_BUFFER(ARG)					      \
+  build_new_invocation (wfl_string_buffer, 				      \
+			(ARG ? build_tree_list (NULL, (ARG)) : NULL_TREE))
+
 /* Parser context data structure. */
 struct parser_ctxt {
 
@@ -472,7 +489,8 @@ struct parser_ctxt {
 #ifndef JC1_LITE
 static char *java_accstring_lookup PROTO ((int));
 static void  parse_error PROTO ((char *));
-static void  redefinition_error PROTO ((char *,tree, tree, tree));
+static void  classitf_redefinition_error PROTO ((char *,tree, tree, tree));
+static void  variable_redefinition_error PROTO ((tree, tree, tree, int));
 static void  check_modifiers PROTO ((char *, int, int));
 static tree  create_class PROTO ((int, tree, tree, tree));
 static tree  create_interface PROTO ((int, tree, tree));
@@ -490,6 +508,7 @@ static tree method_header PROTO ((int, tree, tree, tree));
 static tree method_declarator PROTO ((tree, tree));
 static void parse_error_context VPROTO ((tree cl, char *msg, ...));
 static void parse_warning_context VPROTO ((tree cl, char *msg, ...));
+static tree parse_jdk1_1_error PROTO ((char *));
 static void complete_class_report_errors PROTO ((jdep *));
 static int process_imports PROTO ((void));
 static void read_import_dir PROTO ((tree));
@@ -514,7 +533,9 @@ static tree resolve_and_layout PROTO ((tree, tree));
 static tree resolve_no_layout PROTO ((tree, tree));
 static int identical_subpath_p PROTO ((tree, tree));
 static int invocation_mode PROTO ((tree, int));
-static tree refine_accessible_methods_list PROTO ((int, tree));
+static tree find_applicable_accessible_methods_list PROTO ((tree, tree, tree));
+static tree find_most_specific_methods_list PROTO ((tree));
+static int argument_types_convertible PROTO ((tree, tree));
 static tree patch_invoke PROTO ((tree, tree, tree, tree));
 static tree lookup_method_invoke PROTO ((int, tree, tree, tree, tree));
 static tree register_incomplete_type PROTO ((int, tree, tree, tree));
@@ -525,10 +546,12 @@ static int  unresolved_type_p PROTO ((tree, tree *));
 static void create_jdep_list PROTO ((struct parser_ctxt *));
 static tree build_expr_block PROTO ((tree, tree));
 static tree enter_block PROTO ((void));
+static tree enter_a_block PROTO ((tree));
 static tree exit_block PROTO ((void));
 static tree lookup_name_in_blocks PROTO ((tree));
 static void maybe_absorb_scoping_blocks PROTO ((void));
 static tree build_method_invocation PROTO ((tree, tree));
+static tree build_new_invocation PROTO ((tree, tree));
 static tree build_assignment PROTO ((int, int, tree, tree));
 static tree build_binop PROTO ((enum tree_code, int, tree, tree));
 static tree patch_assignment PROTO ((tree, tree, tree ));
@@ -539,7 +562,11 @@ static tree patch_unaryop PROTO ((tree, tree));
 static tree build_cast PROTO ((int, tree, tree));
 static tree patch_cast PROTO ((tree, tree, tree));
 static int valid_ref_assignconv_cast_p PROTO ((tree, tree, int));
-static int can_cast_to_p PROTO ((tree, tree));
+static int valid_builtin_assignconv_identity_widening_p PROTO ((tree, tree));
+static int valid_cast_to_p PROTO ((tree, tree));
+static int valid_method_invocation_conversion_p PROTO ((tree, tree));
+static tree try_builtin_assignconv PROTO ((tree, tree, tree));
+static tree try_reference_assignconv PROTO ((tree, tree));
 static tree build_unresolved_array_type PROTO ((tree));
 static tree build_array_ref PROTO ((int, tree, tree));
 static tree patch_array_ref PROTO ((tree, tree, tree));
@@ -565,6 +592,7 @@ static int class_in_current_package PROTO ((tree));
 static tree build_if_else_statement PROTO ((int, tree, tree, tree));
 static tree patch_if_else_statement PROTO ((tree));
 static tree add_stmt_to_compound PROTO ((tree, tree, tree));
+static tree add_stmt_to_block PROTO ((tree, tree, tree));
 static tree patch_exit_expr PROTO ((tree));
 static tree build_labeled_block PROTO ((int, tree, tree));
 static tree generate_labeled_block PROTO (());
@@ -577,6 +605,14 @@ static tree build_loop_body PROTO ((int, tree, int));
 static tree complete_loop_body PROTO ((int, tree, tree, int));
 static tree build_debugable_stmt PROTO ((int, tree));
 static tree complete_for_loop PROTO ((int, tree, tree, tree));
+static tree patch_switch_statement PROTO ((tree));
+static tree string_constant_concatenation PROTO ((tree, tree));
+static tree build_string_concatenation PROTO ((tree, tree));
+static tree patch_string_cst PROTO ((tree));
+static tree patch_string PROTO ((tree));
+static tree build_jump_to_finally PROTO ((tree, tree, tree, tree));
+static tree build_try_statement PROTO ((int, tree, tree, tree));
+static tree patch_try_statement PROTO ((tree));
 
 void safe_layout_class PROTO ((tree));
 void java_complete_class PROTO ((void));
@@ -586,6 +622,8 @@ void java_check_methods PROTO ((void));
 void java_layout_classes PROTO ((void));
 tree java_method_add_stmt PROTO ((tree, tree));
 char *java_get_line_col PROTO ((char *, int, int));
+void java_expand_switch PROTO ((tree));
+tree java_get_catch_block PROTO ((tree, int));
 #endif /* JC1_LITE */
 
 /* Always in use, no matter what you compile */
