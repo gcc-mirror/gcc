@@ -2449,8 +2449,16 @@ legitimize_pic_address (orig, mode, reg)
 	     won't get confused into thinking that these two instructions
 	     are loading in the true address of the symbol.  If in the
 	     future a PIC rtx exists, that should be used instead.  */
-	  emit_insn (gen_movsi_high_pic (temp_reg, orig));
-	  emit_insn (gen_movsi_lo_sum_pic (temp_reg, temp_reg, orig));
+	  if (Pmode == SImode)
+	    {
+	      emit_insn (gen_movsi_high_pic (temp_reg, orig));
+	      emit_insn (gen_movsi_lo_sum_pic (temp_reg, temp_reg, orig));
+	    }
+	  else
+	    {
+	      emit_insn (gen_movdi_high_pic (temp_reg, orig));
+	      emit_insn (gen_movdi_lo_sum_pic (temp_reg, temp_reg, orig));
+	    }
 	  address = temp_reg;
 	}
       else

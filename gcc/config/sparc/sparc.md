@@ -2405,7 +2405,7 @@
 ;; Sparc-v9 code model support insns.  See sparc_emit_set_symbolic_const64
 ;; in sparc.c to see what is going on here... PIC stuff comes first.
 
-(define_insn "*pic_lo_sum_di"
+(define_insn "movdi_lo_sum_pic"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (lo_sum:DI (match_operand:DI 1 "register_operand" "r")
                    (unspec:DI [(match_operand:DI 2 "immediate_operand" "in")] 0)))]
@@ -2414,7 +2414,7 @@
   [(set_attr "type" "ialu")
    (set_attr "length" "1")])
 
-(define_insn "*pic_sethi_di"
+(define_insn "movdi_high_pic"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (high:DI (unspec:DI [(match_operand 1 "" "")] 0)))]
   "TARGET_ARCH64 && flag_pic && check_pic (1)"
