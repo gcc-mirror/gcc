@@ -458,8 +458,15 @@ static struct globals
 /* Allocate pages in chunks of this size, to throttle calls to memory
    allocation routines.  The first page is used, the rest go onto the
    free list.  This cannot be larger than HOST_BITS_PER_INT for the
-   in_use bitmask for page_group.  */
-#define GGC_QUIRE_SIZE 16
+   in_use bitmask for page_group.  Hosts that need a different value
+   can override this by defining GGC_QUIRE_SIZE explicitly. */
+#ifndef GGC_QUIRE_SIZE
+# ifdef USING_MMAP
+#  define GGC_QUIRE_SIZE 256
+# else
+#  define GGC_QUIRE_SIZE 16
+# endif
+#endif
 
 /* Initial guess as to how many page table entries we might need.  */
 #define INITIAL_PTE_COUNT 128
