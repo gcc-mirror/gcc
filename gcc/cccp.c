@@ -67,7 +67,6 @@ typedef unsigned char U_CHAR;
 #include <sys/stat.h>
 #include <ctype.h>
 #include <stdio.h>
-#include <signal.h>
 
 #ifndef VMS
 #ifndef USG
@@ -866,24 +865,10 @@ static int deps_size;
 /* Number of bytes since the last newline.  */
 static int deps_column;
 
-/* File name which deps are being written to.
-   This is 0 if deps are being written to stdout.  */
-static char *deps_file = 0;
-
 /* Nonzero means -I- has been seen,
    so don't look for #include "foo" the source-file directory.  */
 static int ignore_srcdir;
 
-/* Handler for SIGPIPE.  */
-
-static void
-pipe_closed (signo)
-     /* If this is missing, some compilers complain.  */
-     int signo;
-{
-  fatal ("output pipe has been closed");
-}
-
 int
 main (argc, argv)
      int argc;
@@ -913,6 +898,9 @@ main (argc, argv)
   /* Non-0 means don't output the preprocessed program.  */
   int inhibit_output = 0;
 
+  /* File name which deps are being written to.
+     This is 0 if deps are being written to stdout.  */
+  char *deps_file = 0;
   /* Stream on which to print the dependency information.  */
   FILE *deps_stream = 0;
   /* Target-name to write with the dependency information.  */
@@ -961,10 +949,6 @@ main (argc, argv)
   dump_macros = dump_none;
   no_output = 0;
   cplusplus = 0;
-
-#ifdef SIGPIPE
-  signal (SIGPIPE, pipe_closed);
-#endif
 
   for (i = 0; include_defaults[i].fname; i++)
     max_include_len = MAX (max_include_len,
@@ -1143,9 +1127,6 @@ main (argc, argv)
 	    || !strcmp (argv[i], "-MMD")) {
 	  i++;
 	  deps_file = argv[i];
-	  deps_stream = fopen (argv[i], "a");
-	  if (deps_stream == 0)
-	    pfatal_with_name (argv[i]);
 	} else {
 	  /* For -M and -MM, write deps on standard output
 	     and suppress the usual output.  */
@@ -1658,9 +1639,6 @@ main (argc, argv)
     }
       
     deps_file = output_file;
-    deps_stream = fopen (output_file, "a");
-    if (deps_stream == 0)
-      pfatal_with_name (output_file);
   }
 
   /* For -M, print the expected object file name
@@ -1816,22 +1794,20 @@ main (argc, argv)
   }
 
   if (print_deps) {
-    /* Don't actually write the deps file if compilation has failed.
-       Delete it instead.  */
-    if (errors > 0 && deps_file != 0)
-      unlink (deps_file);
-    else {
+    /* Don't actually write the deps file if compilation has failed.  */
+    if (errors == 0) {
+      if (deps_file && ! (deps_stream = fopen (deps_file, "a")))
+	pfatal_with_name (deps_file);
       fputs (deps_buffer, deps_stream);
       putc ('\n', deps_stream);
-      if (deps_stream != stdout) {
-	fclose (deps_stream);
-	if (ferror (deps_stream))
+      if (deps_file) {
+	if (ferror (deps_stream) || fclose (deps_stream) != 0)
 	  fatal ("I/O error on output");
       }
     }
   }
 
-  if (ferror (stdout))
+  if (ferror (stdout) || fclose (stdout) != 0)
     fatal ("I/O error on output");
 
   if (errors)
@@ -8419,8 +8395,6 @@ static void
 fatal (str, arg)
      char *str, *arg;
 {
-  if (deps_file)
-    unlink (deps_file);
   fprintf (stderr, "%s: ", progname);
   fprintf (stderr, str, arg);
   fprintf (stderr, "\n");
