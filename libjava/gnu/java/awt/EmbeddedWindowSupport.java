@@ -61,5 +61,5 @@ public interface EmbeddedWindowSupport
    *
    * @param w The embedded window with which to associate a peer.
    */
-  public EmbeddedWindowPeer createEmbeddedWindow (EmbeddedWindow w);
+  EmbeddedWindowPeer createEmbeddedWindow (EmbeddedWindow w);
 }
