@@ -1884,7 +1884,7 @@ $(srcdir)/cexp.c: $(srcdir)/cexp.y
 # We use $(libsubdir)/$(unlibsubdir) to match the
 # -iprefix argument which gcc will pass if GCC_EXEC_PREFIX is used.
 cccp.o: cccp.c $(CONFIG_H) pcp.h version.c config.status system.h \
-           mbchar.h prefix.h
+           mbchar.h prefix.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
@@ -1913,7 +1913,7 @@ cppmain$(exeext): cppmain.o libcpp.a $(LIBDEPS)
 cppmain.o: cppmain.c $(CONFIG_H) cpplib.h machmode.h system.h
 
 cpplib.o: cpplib.c $(CONFIG_H) cpplib.h machmode.h cpphash.h config.status \
-	system.h prefix.h
+	system.h prefix.h Makefile
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 	  -DGCC_INCLUDE_DIR=\"$(libsubdir)/include\" \
 	  -DGPLUSPLUS_INCLUDE_DIR=\"$(gxx_include_dir)\" \
