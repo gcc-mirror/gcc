@@ -1,4 +1,4 @@
-/* Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1991, 1995, 1996, 1997 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -19,12 +19,12 @@
 #include "libioP.h"
 #include "stdio.h"
 
-void
-clearerr (fp)
-     FILE *fp;
+#undef putchar_unlocked
+
+int
+putchar_unlocked (c)
+     int c;
 {
-  CHECK_FILE (fp, /*nothing*/);
-  _IO_flockfile (fp);
-  _IO_clearerr (fp);
-  _IO_funlockfile (fp);
+  CHECK_FILE (stdout, EOF);
+  return _IO_putc_unlocked (c, stdout);
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+/* Copyright (C) 1991, 1995, 1996, 1997 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -19,12 +19,24 @@
 #include "libioP.h"
 #include "stdio.h"
 
-void
-clearerr (fp)
-     FILE *fp;
+#undef _IO_putc
+
+int
+_IO_putc (c, fp)
+     int c;
+     _IO_FILE *fp;
 {
-  CHECK_FILE (fp, /*nothing*/);
+  int result;
+  CHECK_FILE (fp, EOF);
+  _IO_cleanup_region_start ((void (*) __P ((void *))) _IO_funlockfile, fp);
   _IO_flockfile (fp);
-  _IO_clearerr (fp);
-  _IO_funlockfile (fp);
+  result = _IO_putc_unlocked (c, fp);
+  _IO_cleanup_region_end (1);
+  return result;
 }
+
+#undef putc
+
+#ifdef weak_alias
+weak_alias (_IO_putc, putc)
+#endif

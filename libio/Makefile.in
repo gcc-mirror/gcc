@@ -29,7 +29,8 @@ IO_OBJECTS = filedoalloc.o floatconv.o genops.o fileops.o \
   iofgetpos.o iofread.o iofscanf.o \
   iofsetpos.o iogetdelim.o iogetline.o \
   ioprintf.o ioseekoff.o ioseekpos.o \
-  outfloat.o strops.o iofclose.o iopopen.o ioungetc.o
+  outfloat.o strops.o iofclose.o iopopen.o ioungetc.o peekc.o iogetc.o \
+  ioputc.o iofeof.o ioferror.o
 
 # These emulate stdio functionality, but with a different name (_IO_ungetc
 # instead of ungetc), and using _IO_FILE instead of FILE.
@@ -40,7 +41,7 @@ IO_OBJECTS = filedoalloc.o floatconv.o genops.o fileops.o \
 # iofclose.o is not here, because it is needed for stdio (by pclose).
 STDIO_WRAP_OBJECTS =  iofdopen.o iofflush.o iofgets.o iofopen.o iofprintf.o iofputs.o iofwrite.o \
   iogets.o ioperror.o ioputs.o ioscanf.o iosetbuffer.o iosetvbuf.o \
-  iosprintf.o iosscanf.o ioftell.o iovsprintf.o iovsscanf.o
+  iosprintf.o iosscanf.o ioftell.o iovsscanf.o iovsprintf.o
 
 IOSTREAM_OBJECTS = builtinbuf.o filebuf.o fstream.o \
   indstream.o ioassign.o ioextend.o iomanip.o iostream.o \
@@ -82,15 +83,11 @@ tpipe: tpipe.o libio.a
 
 iostream.list: stamp-picdir $(_G_CONFIG_H) $(LIBIOSTREAM_DEP)
 	@echo "$(LIBIOSTREAM_USE)"> iostream.list
+	@echo "$(STDIO_WRAP_OBJECTS)" >> iostream.list
 
-stdio/stdio.list: force
+stmp-stdio:
 	@rootme=`pwd`/ ; export rootme; cd stdio ; \
 	  $(MAKE) $(FLAGS_TO_PASS) stdio.list
-
-stdio.list: stdio/stdio.list
-	rm -f tstdio.list
-	sed 's,\([a-z_]*\.o\),stdio/\1,g' stdio/stdio.list > tstdio.list
-	mv tstdio.list stdio.list
 
 _G_config.h: ${srcdir}/gen-params
 	rootme=`pwd`/ ; export rootme; \

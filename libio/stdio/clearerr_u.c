@@ -20,11 +20,9 @@
 #include "stdio.h"
 
 void
-clearerr (fp)
+clearerr_unlocked (fp)
      FILE *fp;
 {
   CHECK_FILE (fp, /*nothing*/);
-  _IO_flockfile (fp);
   _IO_clearerr (fp);
-  _IO_funlockfile (fp);
 }

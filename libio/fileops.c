@@ -1,30 +1,33 @@
-/* 
-Copyright (C) 1993, 1995 Free Software Foundation
+/* Copyright (C) 1993, 1995, 1997 Free Software Foundation, Inc.
+   This file is part of the GNU IO Library.
+   Written by Per Bothner <bothner@cygnus.com>.
 
-This file is part of the GNU IO Library.  This library is free
-software; you can redistribute it and/or modify it under the
-terms of the GNU General Public License as published by the
-Free Software Foundation; either version 2, or (at your option)
-any later version.
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public License as
+   published by the Free Software Foundation; either version 2, or (at
+   your option) any later version.
 
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this library; see the file COPYING.  If not, write to the Free
-Software Foundation, 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+   You should have received a copy of the GNU General Public License
+   along with this library; see the file COPYING.  If not, write to
+   the Free Software Foundation, 59 Temple Place - Suite 330, Boston,
+   MA 02111-1307, USA.
 
-As a special exception, if you link this library with files
-compiled with a GNU compiler to produce an executable, this does not cause
-the resulting executable to be covered by the GNU General Public License.
-This exception does not however invalidate any other reasons why
-the executable file might be covered by the GNU General Public License. */
+   As a special exception, if you link this library with files
+   compiled with a GNU compiler to produce an executable, this does
+   not cause the resulting executable to be covered by the GNU General
+   Public License.  This exception does not however invalidate any
+   other reasons why the executable file might be covered by the GNU
+   General Public License.  */
 
-/*  written by Per Bothner (bothner@cygnus.com) */
 
-#define _POSIX_SOURCE
+#ifndef _POSIX_SOURCE
+# define _POSIX_SOURCE
+#endif
 #include "libioP.h"
 #include <fcntl.h>
 #include <sys/types.h>
@@ -35,11 +38,16 @@ the executable file might be covered by the GNU General Public License. */
 extern int errno;
 #endif
 
+
+#ifdef _LIBC
+# define open(Name, Flags, Prot) __open ((Name), (Flags), (Prot))
+#endif
+
 /* An fstream can be in at most one of put mode, get mode, or putback mode.
    Putback mode is a variant of get mode.
 
    In a filebuf, there is only one current position, instead of two
-   separate get and put pointers.  In get mode, the current posistion
+   separate get and put pointers.  In get mode, the current position
    is that of gptr(); in put mode that of pptr().
 
    The position in the buffer that corresponds to the position
@@ -73,14 +81,14 @@ extern int errno;
    (The pointers save_gptr() and save_egptr() are the values
    of gptr() and egptr() at the time putback mode was entered.)
    The OS position corresponds to that of save_egptr().
-   
+
    LINE BUFFERED OUTPUT:
    During line buffered output, _IO_write_base==base() && epptr()==base().
    However, ptr() may be anywhere between base() and ebuf().
    This forces a call to filebuf::overflow(int C) on every put.
    If there is more space in the buffer, and C is not a '\n',
    then C is inserted, and pptr() incremented.
-   
+
    UNBUFFERED STREAMS:
    If a filebuf is unbuffered(), the _shortbuf[1] is used as the buffer.
 */
@@ -90,8 +98,8 @@ extern int errno;
 
 
 void
-DEFUN(_IO_file_init, (fp),
-      register _IO_FILE *fp)
+_IO_file_init (fp)
+     _IO_FILE *fp;
 {
   /* POSIX.1 allows another file handle to be used to change the position
      of our file descriptor.  Hence we actually don't know the actual
@@ -104,11 +112,11 @@ DEFUN(_IO_file_init, (fp),
 }
 
 int
-DEFUN(_IO_file_close_it, (fp),
-      register _IO_FILE* fp)
+_IO_file_close_it (fp)
+     _IO_FILE *fp;
 {
   int write_status, close_status;
-  if (!_IO_file_is_open(fp))
+  if (!_IO_file_is_open (fp))
     return EOF;
 
   write_status = _IO_do_flush (fp);
@@ -118,11 +126,11 @@ DEFUN(_IO_file_close_it, (fp),
   close_status = _IO_SYSCLOSE (fp);
 
   /* Free buffer. */
-  _IO_setb(fp, NULL, NULL, 0);
-  _IO_setg(fp, NULL, NULL, NULL);
-  _IO_setp(fp, NULL, NULL);
+  _IO_setb (fp, NULL, NULL, 0);
+  _IO_setg (fp, NULL, NULL, NULL);
+  _IO_setp (fp, NULL, NULL);
 
-  _IO_un_link(fp);
+  _IO_un_link (fp);
   fp->_flags = _IO_MAGIC|CLOSED_FILEBUF_FLAGS;
   fp->_fileno = EOF;
   fp->_offset = _IO_pos_BAD;
@@ -131,86 +139,99 @@ DEFUN(_IO_file_close_it, (fp),
 }
 
 void
-DEFUN(_IO_file_finish, (fp),
-      register _IO_FILE* fp)
+_IO_file_finish (fp, dummy)
+     _IO_FILE *fp;
+     int dummy;
 {
-  if (_IO_file_is_open(fp))
+  if (_IO_file_is_open (fp))
     {
       _IO_do_flush (fp);
       if (!(fp->_flags & _IO_DELETE_DONT_CLOSE))
 	_IO_SYSCLOSE (fp);
     }
-  _IO_default_finish(fp);
+  _IO_default_finish (fp, 0);
 }
 
 _IO_FILE *
-DEFUN(_IO_file_fopen, (fp, filename, mode),
-      register _IO_FILE *fp AND const char *filename AND const char *mode)
+_IO_file_fopen (fp, filename, mode)
+     _IO_FILE *fp;
+     const char *filename;
+     const char *mode;
 {
   int oflags = 0, omode;
   int read_write, fdesc;
   int oprot = 0666;
   if (_IO_file_is_open (fp))
     return 0;
-  switch (*mode++) {
-  case 'r':
-    omode = O_RDONLY;
-    read_write = _IO_NO_WRITES;
-    break;
-  case 'w':
-    omode = O_WRONLY;
-    oflags = O_CREAT|O_TRUNC;
-    read_write = _IO_NO_READS;
-    break;
-  case 'a':
-    omode = O_WRONLY;
-    oflags = O_CREAT|O_APPEND;
-    read_write = _IO_NO_READS|_IO_IS_APPENDING;
-    break;
-  default:
-    errno = EINVAL;
-    return NULL;
-  }
-  if (mode[0] == '+' || (mode[0] == 'b' && mode[1] == '+')) {
-    omode = O_RDWR;
-    read_write &= _IO_IS_APPENDING;
-  }
-  fdesc = open(filename, omode|oflags, oprot);
+  switch (*mode++)
+    {
+    case 'r':
+      omode = O_RDONLY;
+      read_write = _IO_NO_WRITES;
+      break;
+    case 'w':
+      omode = O_WRONLY;
+      oflags = O_CREAT|O_TRUNC;
+      read_write = _IO_NO_READS;
+      break;
+    case 'a':
+      omode = O_WRONLY;
+      oflags = O_CREAT|O_APPEND;
+      read_write = _IO_NO_READS|_IO_IS_APPENDING;
+      break;
+    default:
+      __set_errno (EINVAL);
+      return NULL;
+    }
+  if (mode[0] == '+' || (mode[0] == 'b' && mode[1] == '+'))
+    {
+      omode = O_RDWR;
+      read_write &= _IO_IS_APPENDING;
+    }
+  fdesc = open (filename, omode|oflags, oprot);
   if (fdesc < 0)
     return NULL;
   fp->_fileno = fdesc;
-  _IO_mask_flags(fp, read_write,_IO_NO_READS+_IO_NO_WRITES+_IO_IS_APPENDING);
+  _IO_mask_flags (fp, read_write,_IO_NO_READS+_IO_NO_WRITES+_IO_IS_APPENDING);
   if (read_write & _IO_IS_APPENDING)
     if (_IO_SEEKOFF (fp, (_IO_off_t)0, _IO_seek_end, _IOS_INPUT|_IOS_OUTPUT)
-	== _IO_pos_BAD)
+	== _IO_pos_BAD && errno != ESPIPE)
       return NULL;
-  _IO_link_in(fp);
+  _IO_link_in (fp);
   return fp;
 }
 
-_IO_FILE*
-DEFUN(_IO_file_attach, (fp, fd),
-      _IO_FILE *fp AND int fd)
+_IO_FILE *
+_IO_file_attach (fp, fd)
+     _IO_FILE *fp;
+     int fd;
 {
-  if (_IO_file_is_open(fp))
+  if (_IO_file_is_open (fp))
     return NULL;
   fp->_fileno = fd;
   fp->_flags &= ~(_IO_NO_READS+_IO_NO_WRITES);
   fp->_flags |= _IO_DELETE_DONT_CLOSE;
+  /* Get the current position of the file. */
+  /* We have to do that since that may be junk. */
   fp->_offset = _IO_pos_BAD;
+  if (_IO_SEEKOFF (fp, (_IO_off_t)0, _IO_seek_cur, _IOS_INPUT|_IOS_OUTPUT)
+      == _IO_pos_BAD && errno != ESPIPE)
+    return NULL;
   return fp;
 }
 
-_IO_FILE*
-DEFUN(_IO_file_setbuf, (fp, p, len),
-      register _IO_FILE *fp AND char* p AND _IO_ssize_t len)
+_IO_FILE *
+_IO_file_setbuf (fp, p, len)
+     _IO_FILE *fp;
+     char *p;
+     _IO_ssize_t len;
 {
-    if (_IO_default_setbuf(fp, p, len) == NULL)
-	return NULL;
+    if (_IO_default_setbuf (fp, p, len) == NULL)
+      return NULL;
 
     fp->_IO_write_base = fp->_IO_write_ptr = fp->_IO_write_end
       = fp->_IO_buf_base;
-    _IO_setg(fp, fp->_IO_buf_base, fp->_IO_buf_base, fp->_IO_buf_base);
+    _IO_setg (fp, fp->_IO_buf_base, fp->_IO_buf_base, fp->_IO_buf_base);
 
     return fp;
 }
@@ -219,44 +240,42 @@ DEFUN(_IO_file_setbuf, (fp, p, len),
    Then mark FP as having empty buffers. */
 
 int
-DEFUN(_IO_do_write, (fp, data, to_do),
-      register _IO_FILE *fp AND const char* data AND _IO_size_t to_do)
+_IO_do_write (fp, data, to_do)
+     _IO_FILE *fp;
+     const char *data;
+     _IO_size_t to_do;
 {
   _IO_size_t count;
   if (to_do == 0)
     return 0;
-  else
+  if (fp->_flags & _IO_IS_APPENDING)
+    /* On a system without a proper O_APPEND implementation,
+       you would need to sys_seek(0, SEEK_END) here, but is
+       is not needed nor desirable for Unix- or Posix-like systems.
+       Instead, just indicate that offset (before and after) is
+       unpredictable. */
+    fp->_offset = _IO_pos_BAD;
+  else if (fp->_IO_read_end != fp->_IO_write_base)
     {
-      if (fp->_flags & _IO_IS_APPENDING)
-	/* On a system without a proper O_APPEND implementation,
-	   you would need to sys_seek(0, SEEK_END) here, but is
-	   is not needed nor desirable for Unix- or Posix-like systems.
-	   Instead, just indicate that offset (before and after) is
-	   unpredictable. */
-	fp->_offset = _IO_pos_BAD;
-      else if (fp->_IO_read_end != fp->_IO_write_base)
-	{ 
-	  _IO_pos_t new_pos
-	    = _IO_SYSSEEK(fp, fp->_IO_write_base - fp->_IO_read_end, 1);
-	  if (new_pos == _IO_pos_BAD)
-	    return EOF;
-	  fp->_offset = new_pos;
-	}
-      count = _IO_SYSWRITE (fp, data, to_do);
-      if (fp->_cur_column)
-	fp->_cur_column
-	  = _IO_adjust_column (fp->_cur_column - 1, data, to_do) + 1;
+      _IO_pos_t new_pos
+	= _IO_SYSSEEK (fp, fp->_IO_write_base - fp->_IO_read_end, 1);
+      if (new_pos == _IO_pos_BAD)
+	return EOF;
+      fp->_offset = new_pos;
     }
-  _IO_setg(fp, fp->_IO_buf_base, fp->_IO_buf_base, fp->_IO_buf_base);
+  count = _IO_SYSWRITE (fp, data, to_do);
+  if (fp->_cur_column)
+    fp->_cur_column = _IO_adjust_column (fp->_cur_column - 1, data, to_do) + 1;
+  _IO_setg (fp, fp->_IO_buf_base, fp->_IO_buf_base, fp->_IO_buf_base);
   fp->_IO_write_base = fp->_IO_write_ptr = fp->_IO_buf_base;
-  fp->_IO_write_end = (fp->_flags & (_IO_LINE_BUF+_IO_UNBUFFERED)) ? fp->_IO_buf_base
-    : fp->_IO_buf_end;
+  fp->_IO_write_end = ((fp->_flags & (_IO_LINE_BUF+_IO_UNBUFFERED))
+		       ? fp->_IO_buf_base : fp->_IO_buf_end);
   return count != to_do ? EOF : 0;
 }
 
 int
-DEFUN(_IO_file_underflow, (fp),
-      register _IO_FILE *fp)
+_IO_file_underflow (fp)
+     _IO_FILE *fp;
 {
   _IO_ssize_t count;
 #if 0
@@ -266,19 +285,31 @@ DEFUN(_IO_file_underflow, (fp),
 #endif
 
   if (fp->_flags & _IO_NO_READS)
-    return EOF;
+    {
+      __set_errno (EBADF);
+      return EOF;
+    }
   if (fp->_IO_read_ptr < fp->_IO_read_end)
-    return *(unsigned char*)fp->_IO_read_ptr;
+    return *(unsigned char *) fp->_IO_read_ptr;
 
   if (fp->_IO_buf_base == NULL)
-    _IO_doallocbuf(fp);
+    _IO_doallocbuf (fp);
 
   /* Flush all line buffered files before reading. */
   /* FIXME This can/should be moved to genops ?? */
   if (fp->_flags & (_IO_LINE_BUF|_IO_UNBUFFERED))
-    _IO_flush_all_linebuffered();
+    _IO_flush_all_linebuffered ();
 
-  _IO_switch_to_get_mode(fp);
+  _IO_switch_to_get_mode (fp);
+
+  /* This is very tricky. We have to adjust those
+     pointers before we call _IO_SYSREAD () since
+     we may longjump () out while waiting for
+     input. Those pointers may be screwed up. H.J. */
+  fp->_IO_read_base = fp->_IO_read_ptr = fp->_IO_buf_base;
+  fp->_IO_read_end = fp->_IO_buf_base;
+  fp->_IO_write_base = fp->_IO_write_ptr = fp->_IO_write_end
+    = fp->_IO_buf_base;
 
   count = _IO_SYSREAD (fp, fp->_IO_buf_base,
 		       fp->_IO_buf_end - fp->_IO_buf_base);
@@ -289,30 +320,32 @@ DEFUN(_IO_file_underflow, (fp),
       else
 	fp->_flags |= _IO_ERR_SEEN, count = 0;
   }
-  fp->_IO_read_base = fp->_IO_read_ptr = fp->_IO_buf_base;
-  fp->_IO_read_end = fp->_IO_buf_base + count;
-  fp->_IO_write_base = fp->_IO_write_ptr = fp->_IO_write_end
-    = fp->_IO_buf_base;
+  fp->_IO_read_end += count;
   if (count == 0)
     return EOF;
   if (fp->_offset != _IO_pos_BAD)
-    _IO_pos_adjust(fp->_offset, count);
-  return *(unsigned char*)fp->_IO_read_ptr;
+    _IO_pos_adjust (fp->_offset, count);
+  return *(unsigned char *) fp->_IO_read_ptr;
 }
 
 int
-DEFUN(_IO_file_overflow, (f, ch),
-      register _IO_FILE* f AND int ch)
+_IO_file_overflow (f, ch)
+      _IO_FILE *f;
+      int ch;
 {
   if (f->_flags & _IO_NO_WRITES) /* SET ERROR */
-    return EOF;
+    {
+      f->_flags |= _IO_ERR_SEEN;
+      __set_errno (EBADF);
+      return EOF;
+    }
   /* If currently reading or no buffer allocated. */
   if ((f->_flags & _IO_CURRENTLY_PUTTING) == 0)
     {
       /* Allocate a buffer if needed. */
       if (f->_IO_write_base == 0)
 	{
-	  _IO_doallocbuf(f);
+	  _IO_doallocbuf (f);
 	  _IO_setg (f, f->_IO_buf_base, f->_IO_buf_base, f->_IO_buf_base);
 	}
       /* Otherwise must be currently reading.
@@ -334,35 +367,35 @@ DEFUN(_IO_file_overflow, (f, ch),
       f->_flags |= _IO_CURRENTLY_PUTTING;
     }
   if (ch == EOF)
-    return _IO_do_flush(f);
+    return _IO_do_flush (f);
   if (f->_IO_write_ptr == f->_IO_buf_end ) /* Buffer is really full */
-    if (_IO_do_flush(f) == EOF)
+    if (_IO_do_flush (f) == EOF)
       return EOF;
   *f->_IO_write_ptr++ = ch;
   if ((f->_flags & _IO_UNBUFFERED)
       || ((f->_flags & _IO_LINE_BUF) && ch == '\n'))
-    if (_IO_do_flush(f) == EOF)
+    if (_IO_do_flush (f) == EOF)
       return EOF;
-  return (unsigned char)ch;
+  return (unsigned char) ch;
 }
 
 int
-DEFUN(_IO_file_sync, (fp),
-      register _IO_FILE* fp)
+_IO_file_sync (fp)
+     _IO_FILE *fp;
 {
   _IO_size_t delta;
   /*    char* ptr = cur_ptr(); */
   if (fp->_IO_write_ptr > fp->_IO_write_base)
     if (_IO_do_flush(fp)) return EOF;
-  delta = fp->_IO_read_ptr - fp->_IO_read_end; 
+  delta = fp->_IO_read_ptr - fp->_IO_read_end;
   if (delta != 0)
     {
 #ifdef TODO
-      if (_IO_in_backup(fp))
-	delta -= eGptr() - Gbase();
+      if (_IO_in_backup (fp))
+	delta -= eGptr () - Gbase ();
 #endif
       _IO_off_t new_pos = _IO_SYSSEEK (fp, delta, 1);
-      if (new_pos != (_IO_off_t)EOF)
+      if (new_pos != (_IO_off_t) EOF)
 	fp->_IO_read_end = fp->_IO_read_ptr;
 #ifdef ESPIPE
       else if (errno == ESPIPE)
@@ -378,12 +411,19 @@ DEFUN(_IO_file_sync, (fp),
 }
 
 _IO_pos_t
-DEFUN(_IO_file_seekoff, (fp, offset, dir, mode),
-      register _IO_FILE *fp AND _IO_off_t offset AND int dir AND int mode)
+_IO_file_seekoff (fp, offset, dir, mode)
+     _IO_FILE *fp;
+     _IO_off_t offset;
+     int dir;
+     int mode;
 {
   _IO_pos_t result;
   _IO_off_t delta, new_offset;
   long count;
+  /* POSIX.1 8.2.3.7 says that after a call the fflush() the file
+     offset of the underlying file must be exact.  */
+  int must_be_exact = (fp->_IO_read_base == fp->_IO_read_end
+		       && fp->_IO_write_base == fp->_IO_write_ptr);
 
   if (mode == 0)
     dir = _IO_seek_cur, offset = 0; /* Don't move any pointers. */
@@ -396,14 +436,15 @@ DEFUN(_IO_file_seekoff, (fp, offset, dir, mode),
      end up flushing when we close(), it doesn't make much difference.)
      FIXME: simulate mem-papped files. */
 
-  if (fp->_IO_write_ptr > fp->_IO_write_base || _IO_in_put_mode(fp))
-    if (_IO_switch_to_get_mode(fp)) return EOF;
+  if (fp->_IO_write_ptr > fp->_IO_write_base || _IO_in_put_mode (fp))
+    if (_IO_switch_to_get_mode (fp))
+      return EOF;
 
   if (fp->_IO_buf_base == NULL)
     {
-      _IO_doallocbuf(fp);
-      _IO_setp(fp, fp->_IO_buf_base, fp->_IO_buf_base);
-      _IO_setg(fp, fp->_IO_buf_base, fp->_IO_buf_base, fp->_IO_buf_base);
+      _IO_doallocbuf (fp);
+      _IO_setp (fp, fp->_IO_buf_base, fp->_IO_buf_base);
+      _IO_setg (fp, fp->_IO_buf_base, fp->_IO_buf_base, fp->_IO_buf_base);
     }
 
   switch (dir)
@@ -414,7 +455,7 @@ DEFUN(_IO_file_seekoff, (fp, offset, dir, mode),
       if (fp->_offset == _IO_pos_BAD)
 	goto dumb;
       /* Make offset absolute, assuming current pointer is file_ptr(). */
-      offset += _IO_pos_as_off(fp->_offset);
+      offset += _IO_pos_as_off (fp->_offset);
 
       dir = _IO_seek_set;
       break;
@@ -423,7 +464,7 @@ DEFUN(_IO_file_seekoff, (fp, offset, dir, mode),
     case _IO_seek_end:
       {
 	struct stat st;
-	if (_IO_SYSSTAT (fp, &st) == 0 && S_ISREG(st.st_mode))
+	if (_IO_SYSSTAT (fp, &st) == 0 && S_ISREG (st.st_mode))
 	  {
 	    offset += st.st_size;
 	    dir = _IO_seek_set;
@@ -439,46 +480,46 @@ DEFUN(_IO_file_seekoff, (fp, offset, dir, mode),
       && !_IO_in_backup (fp))
     {
       /* Offset relative to start of main get area. */
-      _IO_pos_t rel_offset = offset - fp->_offset
-	+ (fp->_IO_read_end - fp->_IO_read_base);
+      _IO_pos_t rel_offset = (offset - fp->_offset
+			      + (fp->_IO_read_end - fp->_IO_read_base));
       if (rel_offset >= 0)
 	{
 #if 0
-	  if (_IO_in_backup(fp))
-	    _IO_switch_to_main_get_area(fp);
+	  if (_IO_in_backup (fp))
+	    _IO_switch_to_main_get_area (fp);
 #endif
 	  if (rel_offset <= fp->_IO_read_end - fp->_IO_read_base)
 	    {
-	      _IO_setg(fp, fp->_IO_buf_base, fp->_IO_buf_base + rel_offset,
-		       fp->_IO_read_end);
-	      _IO_setp(fp, fp->_IO_buf_base, fp->_IO_buf_base);
+	      _IO_setg (fp, fp->_IO_buf_base, fp->_IO_buf_base + rel_offset,
+			fp->_IO_read_end);
+	      _IO_setp (fp, fp->_IO_buf_base, fp->_IO_buf_base);
 	      return offset;
 	    }
 #ifdef TODO
 	    /* If we have streammarkers, seek forward by reading ahead. */
-	    if (_IO_have_markers(fp))
+	    if (_IO_have_markers (fp))
 	      {
 		int to_skip = rel_offset
 		  - (fp->_IO_read_ptr - fp->_IO_read_base);
-		if (ignore(to_skip) != to_skip)
+		if (ignore (to_skip) != to_skip)
 		  goto dumb;
 		return offset;
 	      }
 #endif
 	}
 #ifdef TODO
-      if (rel_offset < 0 && rel_offset >= Bbase() - Bptr())
+      if (rel_offset < 0 && rel_offset >= Bbase () - Bptr ())
 	{
-	  if (!_IO_in_backup(fp))
-	    _IO_switch_to_backup_area(fp);
-	  gbump(fp->_IO_read_end + rel_offset - fp->_IO_read_ptr);
+	  if (!_IO_in_backup (fp))
+	    _IO_switch_to_backup_area (fp);
+	  gbump (fp->_IO_read_end + rel_offset - fp->_IO_read_ptr);
 	  return offset;
 	}
 #endif
     }
 
 #ifdef TODO
-  _IO_unsave_markers(fp);
+  _IO_unsave_markers (fp);
 #endif
 
   if (fp->_flags & _IO_NO_READS)
@@ -500,7 +541,8 @@ DEFUN(_IO_file_seekoff, (fp, offset, dir, mode),
   else
     {
       count = _IO_SYSREAD (fp, fp->_IO_buf_base,
-			   fp->_IO_buf_end - fp->_IO_buf_base);
+			   (must_be_exact
+			    ? delta : fp->_IO_buf_end - fp->_IO_buf_base));
       if (count < delta)
 	{
 	  /* We weren't allowed to read, but try to seek the remainder. */
@@ -509,31 +551,38 @@ DEFUN(_IO_file_seekoff, (fp, offset, dir, mode),
 	  goto dumb;
 	}
     }
-  _IO_setg(fp, fp->_IO_buf_base, fp->_IO_buf_base+delta, fp->_IO_buf_base+count);
-  _IO_setp(fp, fp->_IO_buf_base, fp->_IO_buf_base);
+  _IO_setg (fp, fp->_IO_buf_base, fp->_IO_buf_base + delta,
+	    fp->_IO_buf_base + count);
+  _IO_setp (fp, fp->_IO_buf_base, fp->_IO_buf_base);
   fp->_offset = result + count;
-  _IO_mask_flags(fp, 0, _IO_EOF_SEEN);
+  _IO_mask_flags (fp, 0, _IO_EOF_SEEN);
   return offset;
  dumb:
 
-  _IO_unsave_markers(fp);
+  _IO_unsave_markers (fp);
   result = _IO_SYSSEEK (fp, offset, dir);
   if (result != EOF)
-    _IO_mask_flags(fp, 0, _IO_EOF_SEEN);
+    _IO_mask_flags (fp, 0, _IO_EOF_SEEN);
   fp->_offset = result;
-  _IO_setg(fp, fp->_IO_buf_base, fp->_IO_buf_base, fp->_IO_buf_base);
-  _IO_setp(fp, fp->_IO_buf_base, fp->_IO_buf_base);
+  _IO_setg (fp, fp->_IO_buf_base, fp->_IO_buf_base, fp->_IO_buf_base);
+  _IO_setp (fp, fp->_IO_buf_base, fp->_IO_buf_base);
   return result;
 }
 
 _IO_ssize_t
-DEFUN(_IO_file_read, (fp, buf, size),
-      register _IO_FILE* fp AND void* buf AND _IO_ssize_t size)
+_IO_file_read (fp, buf, size)
+     _IO_FILE *fp;
+     void *buf;
+     _IO_ssize_t size;
 {
   for (;;)
     {
-      _IO_ssize_t count = _IO_read(fp->_fileno, buf, size);
-#ifdef EINTR
+      _IO_ssize_t count = _IO_read (fp->_fileno, buf, size);
+#if 0 && defined EINTR
+      /* We must not do this optimization since POSIX.1 explicitly
+	 requests that the stream operations must return with the
+	 error EINTR if this happens.  There must be the possibility
+	 that stream operations time out.  --drepper  */
       if (count == -1 && errno == EINTR)
 	continue;
 #endif
@@ -542,37 +591,46 @@ DEFUN(_IO_file_read, (fp, buf, size),
 }
 
 _IO_pos_t
-DEFUN(_IO_file_seek, (fp, offset, dir),
-      _IO_FILE *fp AND _IO_off_t offset AND int dir)
+_IO_file_seek (fp, offset, dir)
+     _IO_FILE *fp;
+     _IO_off_t offset;
+     int dir;
 {
-  return _IO_lseek(fp->_fileno, offset, dir);
+  return _IO_lseek (fp->_fileno, offset, dir);
 }
 
 int
-DEFUN(_IO_file_stat, (fp, st),
-      _IO_FILE *fp AND void* st)
+_IO_file_stat (fp, st)
+     _IO_FILE *fp;
+     void *st;
 {
-  return _IO_fstat(fp->_fileno, (struct stat*)st);
+  return _IO_fstat (fp->_fileno, (struct stat *) st);
 }
 
 int
-DEFUN(_IO_file_close, (fp),
-      _IO_FILE* fp)
+_IO_file_close (fp)
+     _IO_FILE *fp;
 {
-  return _IO_close(fp->_fileno);
+  return _IO_close (fp->_fileno);
 }
 
 _IO_ssize_t
-DEFUN(_IO_file_write, (f, data, n),
-      register _IO_FILE* f AND const void* data AND _IO_ssize_t n)
+_IO_file_write (f, data, n)
+     _IO_FILE *f;
+     const void *data;
+     _IO_ssize_t n;
 {
   _IO_ssize_t to_do = n;
   while (to_do > 0)
     {
-      _IO_ssize_t count = _IO_write(f->_fileno, data, to_do);
+      _IO_ssize_t count = _IO_write (f->_fileno, data, to_do);
       if (count == EOF)
 	{
-#ifdef EINTR
+#if 0 && defined EINTR
+	  /* We must not do this optimization since POSIX.1 explicitly
+	     requests that the stream operations must return with the
+	     error EINTR if this happens.  There must be the
+	     possibility that stream operations time out.  --drepper  */
 	  if (errno == EINTR)
 	    continue;
 	  else
@@ -583,7 +641,7 @@ DEFUN(_IO_file_write, (f, data, n),
             }
         }
       to_do -= count;
-      data = (void*)((char*)data + count);
+      data = (void *) ((char *) data + count);
     }
   n -= to_do;
   if (f->_offset >= 0)
@@ -592,10 +650,12 @@ DEFUN(_IO_file_write, (f, data, n),
 }
 
 _IO_size_t
-DEFUN(_IO_file_xsputn, (f, data, n),
-      _IO_FILE *f AND const void *data AND _IO_size_t n)
+_IO_file_xsputn (f, data, n)
+     _IO_FILE *f;
+     const void *data;
+     _IO_size_t n;
 {
-  register const char *s = (char*) data;
+  register const char *s = (char *) data;
   _IO_size_t to_do = n;
   int must_flush = 0;
   _IO_size_t count;
@@ -612,14 +672,16 @@ DEFUN(_IO_file_xsputn, (f, data, n),
     {
       count = f->_IO_buf_end - f->_IO_write_ptr;
       if (count >= n)
-	{ register const char *p;
+	{
+	  register const char *p;
 	  for (p = s + n; p > s; )
 	    {
-	      if (*--p == '\n') {
-		count = p - s + 1;
-		must_flush = 1;
-		break;
-	      }
+	      if (*--p == '\n')
+		{
+		  count = p - s + 1;
+		  must_flush = 1;
+		  break;
+		}
 	    }
 	}
     }
@@ -628,23 +690,26 @@ DEFUN(_IO_file_xsputn, (f, data, n),
     {
       if (count > to_do)
 	count = to_do;
-      if (count > 20) {
-	memcpy(f->_IO_write_ptr, s, count);
-	s += count;
-      }
+      if (count > 20)
+	{
+	  memcpy (f->_IO_write_ptr, s, count);
+	  s += count;
+	}
       else
 	{
 	  register char *p = f->_IO_write_ptr;
-	  register int i = (int)count;
-	  while (--i >= 0) *p++ = *s++;
+	  register int i = (int) count;
+	  while (--i >= 0)
+	    *p++ = *s++;
 	}
       f->_IO_write_ptr += count;
       to_do -= count;
     }
   if (to_do + must_flush > 0)
-    { _IO_size_t block_size, dont_write;
+    {
+      _IO_size_t block_size, dont_write;
       /* Next flush the (full) buffer. */
-      if (__overflow(f, EOF) == EOF)
+      if (__overflow (f, EOF) == EOF)
 	return n - to_do;
 
       /* Try to maintain alignment: write a whole number of blocks.
@@ -653,15 +718,15 @@ DEFUN(_IO_file_xsputn, (f, data, n),
       dont_write = block_size >= 128 ? to_do % block_size : 0;
 
       count = to_do - dont_write;
-      if (_IO_do_write(f, s, count) == EOF)
+      if (_IO_do_write (f, s, count) == EOF)
 	return n - to_do;
       to_do = dont_write;
-      
+
       /* Now write out the remainder.  Normally, this will fit in the
 	 buffer, but it's somewhat messier for line-buffered files,
 	 so we let _IO_default_xsputn handle the general case. */
       if (dont_write)
-	to_do -= _IO_default_xsputn(f, s+count, dont_write);
+	to_do -= _IO_default_xsputn (f, s+count, dont_write);
     }
   return n - to_do;
 }
@@ -669,21 +734,24 @@ DEFUN(_IO_file_xsputn, (f, data, n),
 #if 0
 /* Work in progress */
 _IO_size_t
-DEFUN(_IO_file_xsgetn, (fp, data, n),
-      _IO_FILE *fp AND void *data AND _IO_size_t n)
+_IO_file_xsgetn (fp, data, n)
+     _IO_FILE *fp;
+     void *data;
+     _IO_size_t n;
 {
   register _IO_size_t more = n;
   register char *s = data;
   for (;;)
     {
-      _IO_ssize_t count = fp->_IO_read_end - fp->_IO_read_ptr; /* Data available. */
+      /* Data available. */
+      _IO_ssize_t count = fp->_IO_read_end - fp->_IO_read_ptr;
       if (count > 0)
 	{
 	  if (count > more)
 	    count = more;
 	  if (count > 20)
 	    {
-	      memcpy(s, fp->_IO_read_ptr, count);
+	      memcpy (s, fp->_IO_read_ptr, count);
 	      s += count;
 	      fp->_IO_read_ptr += count;
 	    }
@@ -692,8 +760,9 @@ DEFUN(_IO_file_xsgetn, (fp, data, n),
 	  else
 	    {
 	      register char *p = fp->_IO_read_ptr;
-	      register int i = (int)count;
-	      while (--i >= 0) *s++ = *p++;
+	      register int i = (int) count;
+	      while (--i >= 0)
+		*s++ = *p++;
 	      fp->_IO_read_ptr = p;
             }
             more -= count;
@@ -708,11 +777,11 @@ DEFUN(_IO_file_xsgetn, (fp, data, n),
 	  /* If we're reading a lot of data, don't bother allocating
 	     a buffer.  But if we're only reading a bit, perhaps we should ??*/
 	  if (count <= 512 && fp->_IO_buf_base == NULL)
-	    _IO_doallocbuf(fp);
+	    _IO_doallocbuf (fp);
 	  if (fp->_flags & (_IO_LINE_BUF|_IO_UNBUFFERED))
-	    _IO_flush_all_linebuffered();
+	    _IO_flush_all_linebuffered ();
 
-	  _IO_switch_to_get_mode(fp); ???;
+	  _IO_switch_to_get_mode (fp); ???;
 	  count = _IO_SYSREAD (fp, s, more);
 	  if (count <= 0)
 	     {
@@ -721,19 +790,20 @@ DEFUN(_IO_file_xsgetn, (fp, data, n),
 	       else
 		 fp->_flags |= _IO_ERR_SEEN, count = 0;
 	     }
-	  
+
 	  s += count;
 	  more -= count;
 	}
 #endif
-      if (more == 0 || __underflow(fp) == EOF)
+      if (more == 0 || __underflow (fp) == EOF)
 	break;
     }
   return n - more;
 }
 #endif
 
-struct _IO_jump_t _IO_file_jumps = {
+struct _IO_jump_t _IO_file_jumps =
+{
   JUMP_INIT_DUMMY,
   JUMP_INIT(finish, _IO_file_finish),
   JUMP_INIT(overflow, _IO_file_overflow),

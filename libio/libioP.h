@@ -1,31 +1,37 @@
-/* 
-Copyright (C) 1993 Free Software Foundation
+/* Copyright (C) 1993, 1997 Free Software Foundation, Inc.
+   This file is part of the GNU IO Library.
 
-This file is part of the GNU IO Library.  This library is free
-software; you can redistribute it and/or modify it under the
-terms of the GNU General Public License as published by the
-Free Software Foundation; either version 2, or (at your option)
-any later version.
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU General Public License as
+   published by the Free Software Foundation; either version 2, or (at
+   your option) any later version.
 
-This library is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   This library is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this library; see the file COPYING.  If not, write to the Free
-Software Foundation, 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+   You should have received a copy of the GNU General Public License
+   along with this library; see the file COPYING.  If not, write to
+   the Free Software Foundation, 59 Temple Place - Suite 330, Boston,
+   MA 02111-1307, USA.
 
-As a special exception, if you link this library with files
-compiled with a GNU compiler to produce an executable, this does not cause
-the resulting executable to be covered by the GNU General Public License.
-This exception does not however invalidate any other reasons why
-the executable file might be covered by the GNU General Public License. */
+   As a special exception, if you link this library with files
+   compiled with a GNU compiler to produce an executable, this does
+   not cause the resulting executable to be covered by the GNU General
+   Public License.  This exception does not however invalidate any
+   other reasons why the executable file might be covered by the GNU
+   General Public License.  */
 
 #include <errno.h>
 #ifndef errno
 extern int errno;
 #endif
+#ifndef __set_errno
+/* This is a GNU libc special.  Simply set errno to the  given value here.  */
+#define __set_errno(Val) (errno = (Val))
+#endif
+#include <stdio-lock.h>
 
 #include "iolibio.h"
 
@@ -100,8 +106,8 @@ extern "C" {
 /* The 'finish' function does any final cleaning up of an _IO_FILE object.
    It does not delete (free) it, but does everything else to finalize it/
    It matches the streambuf::~streambuf virtual destructor.  */
-typedef void (*_IO_finish_t) __P((_IO_FILE*)); /* finalize */
-#define _IO_FINISH(FP) JUMP0(__finish, FP)
+typedef void (*_IO_finish_t) __P((_IO_FILE*, int)); /* finalize */
+#define _IO_FINISH(FP) JUMP1(__finish, FP, 0)
 
 /* The 'overflow' hook flushes the buffer.
    The second argument is a character, or EOF.
@@ -266,6 +272,9 @@ struct _IO_FILE_plus {
 
 /* Generic functions */
 
+extern _IO_fpos_t _IO_seekoff __P((_IO_FILE*, _IO_off_t, int, int));
+extern _IO_fpos_t _IO_seekpos __P((_IO_FILE*, _IO_fpos_t, int));
+
 extern int _IO_switch_to_get_mode __P((_IO_FILE*));
 extern void _IO_init __P((_IO_FILE*, int));
 extern int _IO_sputbackc __P((_IO_FILE*, int));
@@ -291,7 +300,7 @@ extern int _IO_seekmark __P((_IO_FILE *, struct _IO_marker *, int));
 extern int _IO_default_underflow __P((_IO_FILE*));
 extern int _IO_default_uflow __P((_IO_FILE*));
 extern int _IO_default_doallocate __P((_IO_FILE*));
-extern void _IO_default_finish __P((_IO_FILE *));
+extern void _IO_default_finish __P((_IO_FILE *, int));
 extern int _IO_default_pbackfail __P((_IO_FILE*, int));
 extern _IO_FILE* _IO_default_setbuf __P((_IO_FILE *, char*, _IO_ssize_t));
 extern _IO_size_t _IO_default_xsputn __P((_IO_FILE *, const void*, _IO_size_t));
@@ -347,7 +356,7 @@ extern _IO_ssize_t _IO_file_read __P((_IO_FILE*, void*, _IO_ssize_t));
 extern int _IO_file_sync __P((_IO_FILE*));
 extern int _IO_file_close_it __P((_IO_FILE*));
 extern _IO_fpos_t _IO_file_seek __P((_IO_FILE *, _IO_off_t, int));
-extern void _IO_file_finish __P((_IO_FILE*));
+extern void _IO_file_finish __P((_IO_FILE*, int));
 
 /* Other file functions. */
 extern _IO_FILE* _IO_file_attach __P((_IO_FILE *, int));
@@ -361,11 +370,19 @@ extern int _IO_str_underflow __P((_IO_FILE*));
 extern int _IO_str_overflow __P((_IO_FILE *, int));
 extern int _IO_str_pbackfail __P((_IO_FILE*, int));
 extern _IO_fpos_t _IO_str_seekoff __P((_IO_FILE*,_IO_off_t,int,int));
+extern void _IO_str_finish __P ((_IO_FILE*, int));
 
 /* Other strfile functions */
 extern void _IO_str_init_static __P((_IO_FILE *, char*, int, char*));
 extern void _IO_str_init_readonly __P((_IO_FILE *, const char*, int));
 extern _IO_ssize_t _IO_str_count __P ((_IO_FILE*));
+
+extern int _IO_vasprintf __P ((char **result_ptr, __const char *format,
+			       _IO_va_list args));
+extern int _IO_vdprintf __P ((int d, __const char *format, _IO_va_list arg));
+extern int _IO_vsnprintf __P ((char *string, _IO_size_t maxlen,
+			       __const char *format, _IO_va_list args));
+
 
 extern _IO_size_t _IO_getline __P((_IO_FILE*,char*,_IO_size_t,int,int));
 extern _IO_ssize_t _IO_getdelim __P((char**, _IO_size_t*, int, _IO_FILE*));
@@ -394,8 +411,52 @@ extern void (*_IO_cleanup_registration_needed) __P ((void));
 #endif
 #endif
 
-#define FREE_BUF(_B) free(_B)
-#define ALLOC_BUF(_S) (char*)malloc(_S)
+#if _G_HAVE_MMAP
+
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <sys/param.h>
+
+#if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
+#define MAP_ANONYMOUS MAP_ANON
+#endif
+
+#if !defined(MAP_ANONYMOUS) || !defined(EXEC_PAGESIZE)
+#undef _G_HAVE_MMAP
+#define _G_HAVE_MMAP 0
+#endif
+
+#endif /* _G_HAVE_MMAP */
+
+#if _G_HAVE_MMAP
+
+#define ROUND_TO_PAGE(_S) \
+       (((_S) + EXEC_PAGESIZE - 1) & ~(EXEC_PAGESIZE - 1))
+
+#define FREE_BUF(_B, _S) \
+       munmap ((_B), ROUND_TO_PAGE (_S))
+#define ALLOC_BUF(_B, _S, _R) \
+       do {								      \
+         (_B) = (char *) mmap (0, ROUND_TO_PAGE (_S),			      \
+                               PROT_READ | PROT_WRITE,			      \
+                               MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);	      \
+         if ((_B) == (char *) -1)					      \
+           return _R;							      \
+       } while (0)
+
+#else /* _G_HAVE_MMAP */
+
+#define FREE_BUF(_B, _S) \
+       free(_B)
+#define ALLOC_BUF(_B, _S, _R) \
+       do {								      \
+         (_B) = (char*)malloc(_S);					      \
+         if ((_B) == NULL)						      \
+           return _R;							      \
+       } while (0)
+
+#endif /* _G_HAVE_MMAP */
 
 #ifndef OS_FSTAT
 #define OS_FSTAT fstat
@@ -433,10 +494,18 @@ extern int _IO_fstat __P((int, struct stat *));
 }
 #endif
 
+#ifdef _IO_MTSAFE_IO
+/* check following! */
+#define FILEBUF_LITERAL(CHAIN, FLAGS, FD) \
+	{ _IO_MAGIC+_IO_LINKED+_IO_IS_FILEBUF+FLAGS, \
+	  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, CHAIN, FD, \
+	  0, 0, 0, 0, { 0 }, &_IO_stdfile_##FD##_lock }
+#else
 /* check following! */
 #define FILEBUF_LITERAL(CHAIN, FLAGS, FD) \
        { _IO_MAGIC+_IO_LINKED+_IO_IS_FILEBUF+FLAGS, \
          0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, CHAIN, FD}
+#endif
 
 /* VTABLE_LABEL defines NAME as of the CLASS class.
    CNLENGTH is strlen(#CLASS).  */
@@ -480,7 +549,7 @@ extern struct _IO_fake_stdiobuf _IO_stdin_buf, _IO_stdout_buf, _IO_stderr_buf;
 #endif
 
 #ifdef EINVAL
-#define MAYBE_SET_EINVAL errno = EINVAL
+#define MAYBE_SET_EINVAL __set_errno (EINVAL)
 #else
 #define MAYBE_SET_EINVAL /* nothing */
 #endif
@@ -490,7 +559,7 @@ extern struct _IO_fake_stdiobuf _IO_stdin_buf, _IO_stdout_buf, _IO_stderr_buf;
 	if ((FILE) == NULL) { MAYBE_SET_EINVAL; return RET; } \
 	else { COERCE_FILE(FILE); \
 	       if (((FILE)->_IO_file_flags & _IO_MAGIC_MASK) != _IO_MAGIC) \
-	  { errno = EINVAL; return RET; }}
+	  { MAYBE_SET_EINVAL; return RET; }}
 #else
 #define CHECK_FILE(FILE,RET) \
 	COERCE_FILE(FILE)

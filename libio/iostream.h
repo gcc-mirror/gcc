@@ -1,4 +1,4 @@
-/*  This is part of libio/iostream, providing -*- C++ -*- input/output. 
+/*  This is part of libio/iostream, providing -*- C++ -*- input/output.
 Copyright (C) 1993 Free Software Foundation
 
 This file is part of the GNU IO Library.  This library is free
@@ -96,7 +96,11 @@ class ostream : virtual public ios
 #endif
     ostream& operator<<(double n);
     ostream& operator<<(float n) { return operator<<((double)n); }
+#if _G_HAVE_LONG_DOUBLE_IO
+    ostream& operator<<(long double n);
+#else
     ostream& operator<<(long double n) { return operator<<((double)n); }
+#endif
     ostream& operator<<(__omanip func) { return (*func)(*this); }
     ostream& operator<<(__manip func) {(*func)(*this); return *this;}
     ostream& operator<<(streambuf*);
