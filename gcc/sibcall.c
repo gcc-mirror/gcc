@@ -574,8 +574,8 @@ optimize_sibling_and_tail_recursive_calls ()
   rtx insn, insns;
   basic_block alternate_exit = EXIT_BLOCK_PTR;
   bool no_sibcalls_this_function = false;
-  int successful_sibling_call = 0;
-  int replaced_call_placeholder = 0;
+  bool successful_replacement = false;
+  bool replaced_call_placeholder = false;
   edge e;
 
   insns = get_insns ();
@@ -715,10 +715,11 @@ optimize_sibling_and_tail_recursive_calls ()
 	  /* Select a set of insns to implement the call and emit them.
 	     Tail recursion is the most efficient, so select it over
 	     a tail/sibling call.  */
-	  if (sibcall)
-	    successful_sibling_call = 1;
 
-	  replaced_call_placeholder = 1;
+	  if (sibcall || tailrecursion)
+	    successful_replacement = true;
+	  replaced_call_placeholder = true;
+
 	  replace_call_placeholder (insn, 
 				    tailrecursion != 0 
 				      ? sibcall_use_tail_recursion
@@ -728,7 +729,7 @@ optimize_sibling_and_tail_recursive_calls ()
 	}
     }
 
-  if (successful_sibling_call)
+  if (successful_replacement)
     {
       rtx insn;
       tree arg;

@@ -1,3 +1,8 @@
+2002-09-17  Richard Henderson  <rth@redhat.com>
+
+	* sibcall.c (optimize_sibling_and_tail_recursive_call): Also remove
+	RTX_UNCHANGING_P markers for successful tail-recursive replacement.
+
 2002-09-16  Richard Henderson  <rth@redhat.com>
 
 	PR opt/7515
