@@ -1,3 +1,16 @@
+2001-05-21  Per Bothner  <per@bothner.com>
+
+	* gcj/javaprims.h (_Jv_FormatInt):  New declaration.
+	* java/lang/natString.cc (_JvFormatInt):  New primitive, with logic
+	taken from old Integer.toString code.
+	(Integer::valueOf):  Use _Jv_FormatInt.
+	* java/lang/Integer.java (toString):  Just use call String.valueOf.
+	* java/lang/Long.java (toString):  Fix typo in comment.
+	* java/lang/String.java (valueOf(int)):  Make native.
+	* java/lang/StringBuffer.java (append(int)):  Make native.
+	* java/lang/natStringBuffer.cc:  New file, for append(jint).
+	* Makefile.am (ant_source_files):  Add java/lang/natStringBuffer.cc.
+
 2001-05-21  Tom Tromey  <tromey@redhat.com>
 
 	* gnu/gcj/runtime/VMClassLoader.java (VMClassLoader): Now public.

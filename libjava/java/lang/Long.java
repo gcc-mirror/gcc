@@ -273,7 +273,7 @@ public final class Long extends Number implements Comparable
     if (num <= Integer.MAX_VALUE && num >= Integer.MIN_VALUE)
       return Integer.toString((int) num);
 
-    // Use an arrary large enough for "-9223372036854775808"; i.e. 11 chars.
+    // Use an array large enough for "-9223372036854775808"; i.e. 20 chars.
     char[] buffer = new char[20];
     int i = 20;
     boolean isNeg;

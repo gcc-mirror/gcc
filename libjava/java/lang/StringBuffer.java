@@ -89,10 +89,7 @@ public final class StringBuffer implements Serializable
    *  @return this <code>StringBuffer</code>.
    *  @see java.lang.String#valueOf(int)
    */
-  public StringBuffer append (int inum)
-  {
-    return append (String.valueOf(inum));
-  }
+  public native StringBuffer append (int inum);
 
   /** Append the <code>String</code> value of the argument to this <code>StringBuffer</code>.
    *  Uses <code>String.valueOf()</code> to convert to

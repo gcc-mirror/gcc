@@ -371,6 +371,7 @@ extern "C" jboolean _Jv_IsInstanceOf(jobject, jclass);
 extern "C" jstring _Jv_AllocString(jsize) __attribute__((__malloc__));
 extern "C" jstring _Jv_NewString (const jchar*, jsize)
   __attribute__((__malloc__));
+extern jint _Jv_FormatInt (jchar* bufend, jint num);
 extern "C" jchar* _Jv_GetStringChars (jstring str);
 extern "C" jint _Jv_MonitorEnter (jobject);
 extern "C" jint _Jv_MonitorExit (jobject);
