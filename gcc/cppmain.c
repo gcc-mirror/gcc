@@ -94,6 +94,7 @@ main (argc, argv)
     }
 
   cpp_finish (&parse_in);
+  fwrite (parse_in.token_buffer, 1, CPP_WRITTEN (&parse_in), stdout);
 
   if (parse_in.errors)
     exit (FATAL_EXIT_CODE);

@@ -511,7 +511,7 @@ handle_directive (pfile)
       if (CPP_PEDANTIC (pfile))
 	cpp_pedwarn (pfile, "`#' followed by integer");
       do_line (pfile, NULL);
-      goto done_a_directive;
+      return 1;
     }
 
   /* Now find the directive name.  */
@@ -519,109 +519,54 @@ handle_directive (pfile)
   parse_name (pfile, GETC());
   ident = pfile->token_buffer + old_written + 1;
   ident_length = CPP_PWRITTEN (pfile) - ident;
-  if (ident_length == 0 && PEEKC() == '\n')
+  if (ident_length == 0)
     {
       /* A line of just `#' becomes blank.  */
-      goto done_a_directive;
-    }
-
-#if 0
-  if (ident_length == 0 || !is_idstart[*ident]) {
-    U_CHAR *p = ident;
-    while (is_idchar[*p]) {
-      if (*p < '0' || *p > '9')
-	break;
-      p++;
-    }
-    /* Avoid error for `###' and similar cases unless -pedantic.  */
-    if (p == ident) {
-      while (*p == '#' || is_hor_space[*p]) p++;
-      if (*p == '\n') {
-	if (pedantic && !lang_asm)
-	  cpp_warning (pfile, "invalid preprocessor directive");
+      if (PEEKC() == '\n')
+	return 1;
+      else
 	return 0;
-      }
     }
 
-    if (!lang_asm)
-      cpp_error (pfile, "invalid preprocessor directive name");
-
-    return 0;
-  }
-#endif
   /*
    * Decode the keyword and call the appropriate expansion
    * routine, after moving the input pointer up to the next line.
    */
-  for (kt = directive_table; ; kt++) {
-    if (kt->length <= 0)
-      goto not_a_directive;
-    if (kt->length == ident_length
-	&& !strncmp (kt->name, ident, ident_length)) 
-      break;
-  }
-
-  /* We may want to pass through #define, #undef, #pragma, and #include.
-     Other directives may create output, but we don't want the directive
-     itself out, so we pop it now.  For example conditionals may emit
-     #failed ... #endfailed stuff.  */
-
-  if (! (kt->type == T_DEFINE
-	 || kt->type == T_PRAGMA
-	 || (IS_INCLUDE_DIRECTIVE_TYPE (kt->type)
-	     && CPP_OPTIONS (pfile)->dump_includes)))
-    CPP_SET_WRITTEN (pfile, old_written);
-
-  (*kt->func) (pfile, kt);
-
-  if (kt->type == T_DEFINE)
+  for (kt = directive_table; ; kt++)
     {
-      if (CPP_OPTIONS (pfile)->dump_macros == dump_names)
-	{
-	  /* Skip "#define". */
-	  U_CHAR *p = pfile->token_buffer + old_written + 7;
-
-	  SKIP_WHITE_SPACE (p);
-	  while (is_idchar[*p]) p++;
-	  pfile->limit = p;
-	  CPP_PUTC (pfile, '\n');
-	}
-      else if (CPP_OPTIONS (pfile)->dump_macros != dump_definitions)
-	CPP_SET_WRITTEN (pfile, old_written);
+      if (kt->length <= 0)
+	return 0;
+      if (kt->length == ident_length
+	  && !strncmp (kt->name, ident, ident_length)) 
+	break;
     }
 
- done_a_directive:
-  return 1;
+  CPP_SET_WRITTEN (pfile, old_written);
+  (*kt->func) (pfile, kt);
 
- not_a_directive:
-  return 0;
+  return 1;
 }
 
 /* Pass a directive through to the output file.
    BUF points to the contents of the directive, as a contiguous string.
-m   LIMIT points to the first character past the end of the directive.
+   LEN is the length of the string pointed to by BUF.
    KEYWORD is the keyword-table entry for the directive.  */
 
 static void
-pass_thru_directive (buf, limit, pfile, keyword)
-     U_CHAR *buf, *limit;
+pass_thru_directive (buf, len, pfile, keyword)
+     U_CHAR *buf;
+     size_t len;
      cpp_reader *pfile;
      struct directive *keyword;
 {
   register unsigned keyword_length = keyword->length;
 
-  CPP_RESERVE (pfile, 1 + keyword_length + (limit - buf));
+  CPP_RESERVE (pfile, 1 + keyword_length + len);
   CPP_PUTC_Q (pfile, '#');
   CPP_PUTS_Q (pfile, keyword->name, keyword_length);
-  if (limit != buf && buf[0] != ' ')
+  if (len != 0 && buf[0] != ' ')
     CPP_PUTC_Q (pfile, ' ');
-  CPP_PUTS_Q (pfile, buf, limit - buf);
-#if 0
-  CPP_PUTS_Q (pfile, '\n');
-  /* Count the line we have just made in the output,
-     to get in sync properly.  */
-  pfile->lineno++;
-#endif
+  CPP_PUTS_Q (pfile, buf, len);
 }
 
 /* Check a purported macro name SYMNAME, and yield its length.
@@ -658,7 +603,6 @@ check_macro_name (pfile, symname, assertion)
   return sym_length;
 }
 
-
 /* Process a #define command.
 KEYWORD is the keyword-table entry for #define,
 or NULL for a "predefined" macro.  */
@@ -686,15 +630,9 @@ do_define (pfile, keyword)
 
   CPP_SET_WRITTEN (pfile, here);
 
-#if 0
-  /* If this is a precompiler run (with -pcp) pass thru #define commands.  */
-  if (pcp_outfile && keyword)
-    pass_thru_directive (macro, end, pfile, keyword);
-#endif
-
   mdef = create_definition (macro, end, pfile, keyword == NULL);
   if (mdef.defn == 0)
-    goto nope;
+    return 0;
 
   hashcode = hashf (mdef.symnam, mdef.symlen, HASHSIZE);
 
@@ -713,35 +651,30 @@ do_define (pfile, keyword)
       /* Print the warning if it's not ok.  */
       if (!ok)
 	{
-	  /* If we are passing through #define and #undef directives, do
-	     that for this re-definition now.  */
-	  if (CPP_OPTIONS (pfile)->debug_output && keyword)
-	    pass_thru_directive (macro, end, pfile, keyword);
-
 	  cpp_pedwarn (pfile, "`%.*s' redefined", mdef.symlen, mdef.symnam);
 	  if (hp->type == T_MACRO)
-	    cpp_pedwarn_with_file_and_line (pfile, hp->value.defn->file, hp->value.defn->line,
-				      "this is the location of the previous definition");
+	    cpp_pedwarn_with_file_and_line (pfile, hp->value.defn->file,
+					    hp->value.defn->line,
+			"this is the location of the previous definition");
 	}
       /* Replace the old definition.  */
       hp->type = T_MACRO;
       hp->value.defn = mdef.defn;
     }
   else
+    cpp_install (pfile, mdef.symnam, mdef.symlen, T_MACRO,
+		 (char *) mdef.defn, hashcode);
+
+  if (keyword)
     {
-      /* If we are passing through #define and #undef directives, do
-	 that for this new definition now.  */
-      if (CPP_OPTIONS (pfile)->debug_output && keyword)
-	pass_thru_directive (macro, end, pfile, keyword);
-      cpp_install (pfile, mdef.symnam, mdef.symlen, T_MACRO,
-		   (char *) mdef.defn, hashcode);
+      if (CPP_OPTIONS (pfile)->debug_output
+	  || CPP_OPTIONS (pfile)->dump_macros == dump_definitions)
+	dump_definition (pfile, mdef);
+      else if (CPP_OPTIONS (pfile)->dump_macros == dump_names)
+	pass_thru_directive (mdef.symnam, mdef.symlen, pfile, keyword);
     }
 
   return 0;
-
-nope:
-
-  return 1;
 }
 
 
@@ -1020,7 +953,7 @@ do_include (pfile, keyword)
   int angle_brackets = 0;	/* 0 for "...", 1 for <...> */
   int before;  /* included before? */
   long flen;
-  unsigned char *fbeg, *fend;
+  unsigned char *ftok;
   cpp_buffer *fp;
 
   enum cpp_token token;
@@ -1046,7 +979,8 @@ do_include (pfile, keyword)
       && !CPP_BUFFER (pfile)->system_header_p && !pfile->import_warning)
     {
       pfile->import_warning = 1;
-      cpp_warning (pfile, "`#import' is obsolete, use an #ifndef wrapper in the header file");
+      cpp_warning (pfile,
+	   "#import is obsolete, use an #ifndef wrapper in the header file");
     }
 
   pfile->parsing_include_directive++;
@@ -1055,28 +989,20 @@ do_include (pfile, keyword)
 
   if (token == CPP_STRING)
     {
-      fbeg = pfile->token_buffer + old_written + 1;
-      fend = CPP_PWRITTEN (pfile) - 1;
-      *fend = '\0';
-      if (fbeg[-1] == '<')
-	  angle_brackets = 1;
+      if (pfile->token_buffer[old_written] == '<')
+	angle_brackets = 1;
     }
 #ifdef VMS
   else if (token == CPP_NAME)
     {
-      /* Support '#include xyz' like VAX-C to allow for easy use of
-       * all the decwindow include files. It defaults to '#include
-       * <xyz.h>' and generates a warning.  */
+      /* Support '#include xyz' like VAX-C.  It is taken as
+         '#include <xyz.h>' and generates a warning.  */
       cpp_warning (pfile,
-		   "VAX-C-style include specification found, use '#include <filename.h>' !");
+	       "`#include filename' is obsolete, use `#include <filename.h>'");
       angle_brackets = 1;
 
       /* Append the missing `.h' to the name. */
-      CPP_PUTS (pfile, ".h", 3)
-      CPP_NUL_TERMINATE_Q (pfile);
-
-      fbeg = pfile->token_buffer + old_written;
-      fend = CPP_PWRITTEN (pfile);
+      CPP_PUTS (pfile, ".h", 2);
     }
 #endif
   else
@@ -1088,8 +1014,12 @@ do_include (pfile, keyword)
       return 0;
     }
 
-  token = get_directive_token (pfile);
-  if (token != CPP_VSPACE)
+  flen = CPP_WRITTEN (pfile) - old_written;
+  ftok = alloca (flen + 1);
+  memcpy (ftok, pfile->token_buffer + old_written, flen);
+  ftok[flen] = '\0';
+
+  if (get_directive_token (pfile) != CPP_VSPACE)
     {
       cpp_error (pfile, "junk at end of `#include'");
       skip_rest_of_line (pfile);
@@ -1097,12 +1027,27 @@ do_include (pfile, keyword)
 
   CPP_SET_WRITTEN (pfile, old_written);
 
-  flen = fend - fbeg;
-
   if (flen == 0)
     {
       cpp_error (pfile, "empty file name in `#%s'", keyword->name);
       return 0;
+    }
+
+  if (CPP_OPTIONS (pfile)->dump_includes)
+    pass_thru_directive (ftok,
+			 flen
+#ifdef VMS
+	  - ((token == CPP_NAME) ? 2 : 0)
+#endif
+			 , pfile, keyword);
+
+#ifdef VMS
+  if (token == CPP_STRING)
+#endif
+    {
+      ftok++;
+      flen -= 2;
+      ftok[flen] = '\0';
     }
 
   search_start = 0;
@@ -1116,7 +1061,7 @@ do_include (pfile, keyword)
   if (fp == CPP_NULL_BUFFER (pfile))
     {
       cpp_fatal (pfile, "cpp internal error: fp == NULL_BUFFER in do_include");
-      return 1;
+      return 0;
     }
   
   /* For #include_next, skip in the search path past the dir in which the
@@ -1149,11 +1094,11 @@ do_include (pfile, keyword)
 
   if (!search_start)
     {
-      cpp_error (pfile, "No include path in which to find %s", fbeg);
+      cpp_error (pfile, "No include path in which to find %s", ftok);
       return 0;
     }
 
-  fd = find_include_file (pfile, fbeg, search_start, &ihash, &before);
+  fd = find_include_file (pfile, ftok, search_start, &ihash, &before);
 
   if (fd == -2)
     return 0;
@@ -1165,7 +1110,7 @@ do_include (pfile, keyword)
 				       (pfile->system_include_depth > 0)))
         {
 	  if (!angle_brackets)
-	    deps_output (pfile, fbeg, ' ');
+	    deps_output (pfile, ftok, ' ');
 	  else
 	    {
 	      char *p;
@@ -1178,13 +1123,13 @@ do_include (pfile, keyword)
 	        ptr = CPP_OPTIONS (pfile)->quote_include;
 
 	      p = (char *) alloca (strlen (ptr->name)
-				   + strlen (fbeg) + 2);
+				   + strlen (ftok) + 2);
 	      if (*ptr->name != '\0')
 	        {
 		  strcpy (p, ptr->name);
 		  strcat (p, "/");
 	        }
-	      strcat (p, fbeg);
+	      strcat (p, ftok);
 	      deps_output (pfile, p, ' ');
 	    }
 	}
@@ -1197,9 +1142,9 @@ do_include (pfile, keyword)
       else if (CPP_PRINT_DEPS (pfile)
 	       && (CPP_PRINT_DEPS (pfile)
 		   <= (angle_brackets || (pfile->system_include_depth > 0))))
-	cpp_warning (pfile, "No include path in which to find %s", fbeg);
+	cpp_warning (pfile, "No include path in which to find %s", ftok);
       else
-	cpp_error_from_errno (pfile, fbeg);
+	cpp_error_from_errno (pfile, ftok);
 
       return 0;
     }
@@ -1410,12 +1355,6 @@ do_undef (pfile, keyword)
 
   CPP_SET_WRITTEN (pfile, here);
 
-#if 0
-  /* If this is a precompiler run (with -pcp) pass thru #undef commands.  */
-  if (pcp_outfile && keyword)
-    pass_thru_directive (buf, limit, pfile, keyword);
-#endif
-
   sym_length = check_macro_name (pfile, buf, 0);
 
   while ((hp = cpp_lookup (pfile, name, sym_length, -1)) != NULL)
@@ -1423,7 +1362,7 @@ do_undef (pfile, keyword)
       /* If we are generating additional info for debugging (with -g) we
 	 need to pass through all effective #undef commands.  */
       if (CPP_OPTIONS (pfile)->debug_output && keyword)
-	pass_thru_directive (name, name+sym_length, pfile, keyword);
+	pass_thru_directive (name, sym_length, pfile, keyword);
       if (hp->type != T_MACRO)
 	cpp_warning (pfile, "undefining `%s'", hp->name);
       delete_macro (hp);
@@ -1494,7 +1433,10 @@ do_warning (pfile, keyword)
   return 0;
 }
 
-/* Report program identification.  */
+/* Report program identification.
+   This is not precisely what cccp does with #ident, however I believe
+   it matches `closely enough' (behavior is identical as long as there
+   are no macros on the #ident line, which is pathological in my opinion).  */
 
 static int
 do_ident (pfile, keyword)
@@ -1505,7 +1447,9 @@ do_ident (pfile, keyword)
   if (CPP_PEDANTIC (pfile) && !CPP_BUFFER (pfile)->system_header_p)
     cpp_pedwarn (pfile, "ANSI C does not allow `#ident'");
 
-  skip_rest_of_line (pfile);  /* Correct?  Appears to match cccp.  */
+  CPP_PUTS (pfile, "#ident ", 7);
+  cpp_skip_hspace (pfile);
+  copy_rest_of_line (pfile);
 
   return 0;
 }
@@ -1518,12 +1462,15 @@ do_pragma (pfile, keyword)
      cpp_reader *pfile;
      struct directive *keyword ATTRIBUTE_UNUSED;
 {
-  long here = CPP_WRITTEN (pfile);
+  long here;
   U_CHAR *buf;
+
+  CPP_PUTS (pfile, "#pragma ", 8);
+  cpp_skip_hspace (pfile);
   
+  here = CPP_WRITTEN (pfile);
   copy_rest_of_line (pfile);
   buf = pfile->token_buffer + here;
-  SKIP_WHITE_SPACE (buf);
   
   if (!strncmp (buf, "once", 4))
     {
@@ -1547,8 +1494,7 @@ do_pragma (pfile, keyword)
       else
 	ip->ihash->control_macro = "";  /* never repeat */
     }
-
-  if (!strncmp (buf, "implementation", 14))
+  else if (!strncmp (buf, "implementation", 14))
     {
       /* Be quiet about `#pragma implementation' for a file only if it hasn't
 	 been included yet.  */
@@ -2831,9 +2777,9 @@ do_assert (pfile, keyword)
   return 0;
 
  error:
-  pfile->limit = (unsigned char *) sym; /* Pop */
   skip_rest_of_line (pfile);
-  return 1;
+  pfile->limit = (unsigned char *) sym; /* Pop */
+  return 0;
 }
 
 static int
@@ -2900,9 +2846,9 @@ do_unassert (pfile, keyword)
   pfile->limit = (unsigned char *) sym; /* Pop */
   return 0;
  error:
-  pfile->limit = (unsigned char *) sym; /* Pop */
   skip_rest_of_line (pfile);
-  return 1;
+  pfile->limit = (unsigned char *) sym; /* Pop */
+  return 0;
 }
 
 /* Process STR as if it appeared as the body of an #unassert. */
