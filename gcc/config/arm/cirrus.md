@@ -370,7 +370,7 @@
 
 (define_insn "*cirrus_arm_movdi"
   [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r,r,o<>,v,r,v,m,v")
-	(match_operand:DI 1 "di_operand"              "rIK,mi,r,r,v,m,v,v"))]
+	(match_operand:DI 1 "di_operand"              "rIK,mi,r,r,v,mi,v,v"))]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_MAVERICK"
   "*
   {
@@ -395,8 +395,8 @@
   }"
   [(set_attr "length"         "  8,   8,     8,   8,     8,     4,     4,     4")
    (set_attr "type"           "  *,load2,store2,   *,     *,  load2,store2,     *")
-   (set_attr "pool_range"     "  *,1020,     *,   *,     *,     *,     *,     *")
-   (set_attr "neg_pool_range" "  *,1012,     *,   *,     *,     *,     *,     *")
+   (set_attr "pool_range"     "  *,1020,     *,   *,     *,  1020,     *,     *")
+   (set_attr "neg_pool_range" "  *,1012,     *,   *,     *,  1008,     *,     *")
    (set_attr "cirrus"         "not, not,   not,move,normal,double,double,normal")]
 )
 
@@ -427,7 +427,7 @@
 
 (define_insn "*cirrus_movsf_hard_insn"
   [(set (match_operand:SF 0 "nonimmediate_operand" "=v,v,v,r,m,r,r,m")
-        (match_operand:SF 1 "general_operand"       "v,m,r,v,v,r,mE,r"))]
+        (match_operand:SF 1 "general_operand"      "v,mE,r,v,v,r,mE,r"))]
   "TARGET_ARM && TARGET_HARD_FLOAT && TARGET_MAVERICK
    && (GET_CODE (operands[0]) != MEM
        || register_operand (operands[1], SFmode))"
@@ -442,14 +442,14 @@
    str%?\\t%1, %0\\t%@ float"
   [(set_attr "length"         "     *,     *,   *,     *,     *,  4,   4,     4")
    (set_attr "type"           "     *,  load1,   *,     *,store1,  *,load1,store1")
-   (set_attr "pool_range"     "     *,     *,   *,     *,     *,  *,4096,     *")
-   (set_attr "neg_pool_range" "     *,     *,   *,     *,     *,  *,4084,     *")
+   (set_attr "pool_range"     "     *,   1020,   *,     *,     *,  *,4096,     *")
+   (set_attr "neg_pool_range" "     *,   1008,   *,     *,     *,  *,4084,     *")
    (set_attr "cirrus"         "normal,normal,move,normal,normal,not, not,   not")]
 )
 
 (define_insn "*cirrus_movdf_hard_insn"
   [(set (match_operand:DF 0 "nonimmediate_operand" "=r,Q,r,m,r,v,v,v,r,m")
-	(match_operand:DF 1 "general_operand"       "Q,r,r,r,mF,v,m,r,v,v"))]
+	(match_operand:DF 1 "general_operand"       "Q,r,r,r,mF,v,mF,r,v,v"))]
   "TARGET_ARM
    && TARGET_HARD_FLOAT && TARGET_MAVERICK
    && (GET_CODE (operands[0]) != MEM
@@ -471,8 +471,8 @@
   }"
   [(set_attr "type"           "load1,store2,  *,store2,load1,     *,  load1,   *,     *,store2")
    (set_attr "length"         "   4,     4,  8,     8,   8,     4,     4,   8,     8,     4")
-   (set_attr "pool_range"     "   *,     *,  *,     *, 252,     *,     *,   *,     *,     *")
-   (set_attr "neg_pool_range" "   *,     *,  *,     *, 244,     *,     *,   *,     *,     *")
+   (set_attr "pool_range"     "   *,     *,  *,     *, 252,     *,  1020,   *,     *,     *")
+   (set_attr "neg_pool_range" "   *,     *,  *,     *, 244,     *,  1008,   *,     *,     *")
    (set_attr "cirrus"         " not,   not,not,   not, not,normal,double,move,normal,double")]
 )
 

@@ -1,3 +1,8 @@
+2004-06-30  Paul Brook  <paul@codesourcery.com>
+
+	* config/arm/cirrus.md (cirrus_arm_movdi, cirrus_movsf_hard_insn,
+	cirrus_movdf_hard_insn): Set pool ranges for coprocessor loads.
+
 2004-06-30  Sebastian Pop  <pop@cri.ensmp.fr>
 
 	* Makefile.in (OBJS-common): Add tree-chrec.o.
