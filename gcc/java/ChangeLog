@@ -1,5 +1,10 @@
 2002-04-08  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
+	* parse.y (resolve_qualified_expression_name): Clear "from_super" flag
+	after using it to patch CALL_EXPR.
+
+2002-04-08  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
 	* gcj.texi (Invocation): Document CNI invocation API.	
 
 2002-04-05  Nic Ferrier  <nferrier@tapsellferrier.co.uk>
