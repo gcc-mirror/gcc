@@ -4248,7 +4248,10 @@ output_type (type, containing_scope)
 	   can safely generate correct Dwarf descriptions for these file-
 	   scope tagged types.  */
 
-	if (TYPE_SIZE (type) == 0 && !finalizing)
+	if (TYPE_SIZE (type) == 0
+	    && (TYPE_CONTEXT (type) == NULL
+		|| TREE_CODE_CLASS (TREE_CODE (TYPE_CONTEXT (type))) == 't')
+	    && !finalizing)
 	  return;	/* EARLY EXIT!  Avoid setting TREE_ASM_WRITTEN.  */
 
 	/* Prevent infinite recursion in cases where the type of some
