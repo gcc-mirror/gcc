@@ -308,11 +308,25 @@ test03()
   return 0;
 }
 
+// libstdc++/3655
+int
+test04()
+{
+  stringbuf strbuf;
+  ostream o(&strbuf);
+
+  o << hex << showbase << setw(6) << internal << 255;
+  VERIFY( strbuf.str() == "0x  ff" );
+  
+  return 0;
+}
+
 int 
 main()
 {
   test01();
   test02();
+  test04();
 #ifdef TEST_NUMPUT_VERBOSE
   cout << "Test passed!" << endl;
 #endif
