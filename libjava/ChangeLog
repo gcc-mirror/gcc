@@ -1,3 +1,12 @@
+2004-09-03  Bryce McKinlay  <mckinlay@redhat.com>
+            H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcj/17290
+	* Makefile.am (GCJCOMPILE): Remove definition.
+	(AM_CFLAGS): Add -fclasspath and -fbootclasspath flags.
+	Use LTGCJCOMPILE, not GCJCOMPILE, to build .lo targets.
+	* Makefile.in: Rebuilt.
+
 2004-09-03  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure.ac (enable-gc-debug): Update help for new syntax.
