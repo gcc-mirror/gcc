@@ -2,6 +2,8 @@
 
 	* cse.c, tree-ssa-operands.c: Fix comment typos.
 
+	* tree-cfg.c (tree_split_edge): Speed up by using find_edge.
+
 2004-11-26  James A. Morrison  <phython@gcc.gnu.org>
 
 	PR target/18510
