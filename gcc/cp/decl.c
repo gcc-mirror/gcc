@@ -191,6 +191,7 @@ static tree record_builtin_java_type PROTO((const char *, int));
 static const char *tag_name PROTO((enum tag_types code));
 static void find_class_binding_level PROTO((void));
 static struct binding_level *innermost_nonclass_level PROTO((void));
+static tree poplevel_class PROTO((void));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PROTO((void));
@@ -1330,11 +1331,11 @@ poplevel (keep, reverse, functionbody)
   int block_previously_created;
   int leaving_for_scope;
 
-  if (current_binding_level->parm_flag == 2
-      || current_binding_level->class_shadowed)
-    /* We should not be using poplevel to pop a class binding level.
-       Use poplevel_class instead.  */
-    my_friendly_abort (0);
+  if (current_binding_level->parm_flag == 2)
+    return poplevel_class ();
+
+  my_friendly_assert (!current_binding_level->class_shadowed,
+		      19990414);
 
   /* We used to use KEEP == 2 to indicate that the new block should go
      at the beginning of the list of blocks at this binding level,
@@ -1723,15 +1724,12 @@ pushlevel_class ()
   class_binding_level->parm_flag = 2;
 }
 
-/* ...and a poplevel for class declarations.  FORCE is used to force
-   clearing out of CLASS_VALUEs after a class definition.  */
+/* ...and a poplevel for class declarations.  */
 
-tree
-poplevel_class (force)
-     int force;
+static tree
+poplevel_class ()
 {
   register struct binding_level *level = class_binding_level;
-  tree block = NULL_TREE;
   tree shadowed;
 
   my_friendly_assert (level != 0, 354);
@@ -1742,7 +1740,7 @@ poplevel_class (force)
      shouldn't even be used when current_class_type isn't set, and second,
      if we don't touch it here, we're able to use the cache effect if the
      next time we're entering a class scope, it is the same class.  */
-  if (current_class_depth != 1 || force)
+  if (current_class_depth != 1)
     {
       struct binding_level* b;
 
@@ -1805,7 +1803,7 @@ poplevel_class (force)
 
   pop_binding_level ();
 
-  return block;
+  return NULL_TREE;
 }
 
 /* We are entering the scope of a class.  Clear IDENTIFIER_CLASS_VALUE
@@ -2533,7 +2531,7 @@ pop_everything ()
   while (!toplevel_bindings_p ())
     {
       if (current_binding_level->parm_flag == 2)
-	pop_nested_class (1);
+	pop_nested_class ();
       else
 	poplevel (0, 0, 0);
     }
@@ -8160,7 +8158,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
 	       the binding level..  */
 	    && TYPE_SIZE (context) != NULL_TREE
 	    && context == current_class_type)
-	  popclass (1);
+	  popclass ();
       }
     }
 
@@ -10569,7 +10567,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
                    push_nested_class used to push into class scope for
                    parsing the argument list of a function decl, in
                    qualified_id.  */
-		pop_nested_class (1);
+		pop_nested_class ();
 		TREE_COMPLEXITY (declarator) = current_class_depth;
 	      }
 	    else
@@ -14129,7 +14127,7 @@ finish_function (lineno, flags, nested)
   if (current_class_name)
     {
       ctype = current_class_type;
-      pop_nested_class (1);
+      pop_nested_class ();
     }
 
   /* Must mark the RESULT_DECL as being in this function.  */

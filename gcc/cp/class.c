@@ -3143,7 +3143,7 @@ finish_struct_1 (t, warn_anon)
 	cp_error ("redefinition of `%#T'", t);
       else
 	my_friendly_abort (172);
-      popclass (1);
+      popclass ();
       return t;
     }
 
@@ -4220,7 +4220,7 @@ finish_struct (t, attributes, warn_anon)
   TYPE_BEING_DEFINED (t) = 0;
 
   if (current_class_type)
-    popclass (1);
+    popclass ();
   else
     error ("trying to finish struct, but kicked out due to previous parse errors.");
 
@@ -4551,36 +4551,25 @@ invalidate_class_lookup_cache ()
 }
  
 /* Get out of the current class scope. If we were in a class scope
-   previously, that is the one popped to.  The flag MODIFY tells whether
-   the current scope declarations needs to be modified as a result of
-   popping to the previous scope.  0 is used for class definitions.  */
+   previously, that is the one popped to.  */
 
 void
-popclass (modify)
-     int modify;
+popclass ()
 {
-  if (modify)
-    {
-      /* Just remove from this class what didn't make
+  /* Just remove from this class what didn't make
 	 it into IDENTIFIER_CLASS_VALUE.  */
-      tree tags = CLASSTYPE_TAGS (current_class_type);
+  tree tags = CLASSTYPE_TAGS (current_class_type);
 
-      while (tags)
-	{
-	  TREE_NONLOCAL_FLAG (TREE_VALUE (tags)) = 0;
-	  tags = TREE_CHAIN (tags);
-	}
+  while (tags)
+    {
+      TREE_NONLOCAL_FLAG (TREE_VALUE (tags)) = 0;
+      tags = TREE_CHAIN (tags);
     }
 
-  /* Force clearing of IDENTIFIER_CLASS_VALUEs after a class definition,
-     since not all class decls make it there currently.  */
-  poplevel_class (! modify);
-
+  poplevel (1, 0, 0);
   /* Since poplevel_class does the popping of class decls nowadays,
-     this really only frees the obstack used for these decls.
-     That's why it had to be moved down here.  */
-  if (modify)
-    pop_class_decls ();
+     this really only frees the obstack used for these decls.  */
+  pop_class_decls ();
 
   current_class_depth--;
   current_class_name = current_class_stack[current_class_depth].name;
@@ -4636,14 +4625,13 @@ push_nested_class (type, modify)
 /* Undoes a push_nested_class call.  MODIFY is passed on to popclass.  */
 
 void
-pop_nested_class (modify)
-     int modify;
+pop_nested_class ()
 {
   tree context = DECL_CONTEXT (TYPE_MAIN_DECL (current_class_type));
 
-  popclass (modify);
+  popclass ();
   if (context && TREE_CODE (context) == RECORD_TYPE)
-    pop_nested_class (modify);
+    pop_nested_class ();
 }
 
 /* Set global variables CURRENT_LANG_NAME to appropriate value

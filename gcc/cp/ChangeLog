@@ -1,3 +1,28 @@
+1999-04-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (popclass): Change declaration.
+	(pop_nested_class): Likewise.
+	(poplevel_class): Remove declaration.
+	* call.c (convert_default_argument): Pass no arguments to
+	popclass.
+	* class.c (finish_struct_1): Likewise.
+	(finish_struct): Likewise.
+	(popclass): Remove argument.  Simplify code accordingly.
+	(pop_nested_class): Likewise.
+	* decl.c (poplevel_class): Declare it here, and make it static.
+	(poplevel): Handle class scopes.
+	(pop_level_class): Don't take an rgument.  Simplify.
+	(pop_everything): Pass no arguments to pop_nested_class.
+	(cp_finish_decl): Pass no arguments to popclass.
+	(grokdeclarator): Pass no arguments to pop_nested_class.
+	(finish_function): Likewise.
+	* decl2.c (grokfield): Likewise.
+	(pop_scope): Pass no arguments to popclass.
+	* lex.c (do_pending_defargs): Pass no arguments to pop_nested_class.
+	* pt.c (instantiate_class_template): Move call to pushclass, and
+	document.  Pass no arguments to popclass.
+	(regenerate_decl_from_template): Likewise.
+	
 1999-04-14  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (build_unary_op): Handle taking the address of a unique
@@ -9135,6 +9160,26 @@ Sat Sep 27 16:22:48 1997  Jason Merrill  <jason@yorick.cygnus.com>
 	(notype_qualified_id): Don't add template declarators here.
 
 Sat Sep 27 16:21:58 1997  Mark Mitchell  <mmitchell@usa.net>
+<<<<<<< ChangeLog
+<<<<<<< ChangeLog
+
+        * call.c (add_template_candidate): Add explicit_targs parameter.
+        (build_scoped_method_call): Use it.
+        (build_overload_call_real): Likewise.
+        (build_user_type_conversion_1): Likewise.
+        (build_new_function_call): Likewise.
+        (build_object_call): Likewise.
+        (build_new_op): Likewise.
+        (build_new_method_call): Likewise.
+        (build_new_function_call): Handle TEMPLATE_ID_EXPR.
+        (build_new_method_call): Likewise.
+
+        * class.c (finish_struct_methods): Add specialization pass to
+        determine which methods were specializing which other methods.
+        (instantiate_type): Handle TEMPLATE_ID_EXPR.
+=======
+=======
+>>>>>>> 1.996
 
 	* call.c (add_template_candidate): Add explicit_targs parameter.
 	(build_scoped_method_call): Use it.
@@ -9179,11 +9224,31 @@ Sat Sep 27 16:21:58 1997  Mark Mitchell  <mmitchell@usa.net>
 
 	* friend.c (do_friend): Don't call pushdecl for template
 	instantiations.
+<<<<<<< ChangeLog
+>>>>>>> 1.988
+=======
+>>>>>>> 1.996
 
+<<<<<<< ChangeLog
+<<<<<<< ChangeLog
+        * init.c (build_member_call): Handle TEMPLATE_ID_EXPR.
+
+        * lang-options.h: Add -fname-mangling-version, -fguiding-decls, 
+=======
+=======
+>>>>>>> 1.996
 	* init.c (build_member_call): Handle TEMPLATE_ID_EXPR.
 
 	* lang-options.h: Add -fname-mangling-version, -fguiding-decls,
 	and -fno-guiding-decls.
+<<<<<<< ChangeLog
+<<<<<<< ChangeLog
+
+        * lex.c (identifier_type): Return PFUNCNAME for template function
+        names.
+=======
+=======
+>>>>>>> 1.996
 
 	* lex.c (identifier_type): Return PFUNCNAME for template function
 	names.
