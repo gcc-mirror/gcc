@@ -399,7 +399,6 @@ extern int target_flags;
     {"no-app-regs", -MASK_APP_REGS},	\
     {"hard-quad-float", MASK_HARD_QUAD}, \
     {"soft-quad-float", -MASK_HARD_QUAD}, \
-    {"live-g0", MASK_LIVE_G0},		\
     /* ??? These are coerced to -mcpu=.  Delete in 2.9.  */ \
     {"cypress", 0},			\
     {"sparclite", 0},			\
