@@ -130,9 +130,7 @@ __mulvsi3 (Wtype a, Wtype b)
 {
   const DWtype w = (DWtype) a * (DWtype) b;
 
-  if (((a >= 0) == (b >= 0))
-      ? (UDWtype) w > (UDWtype) (((DWtype) 1 << (WORD_SIZE - 1)) - 1)
-      : (UDWtype) w < (UDWtype) ((DWtype) -1 << (WORD_SIZE - 1)))
+  if ((Wtype) (w >> WORD_SIZE) != (Wtype) w >> (WORD_SIZE - 1))
     abort ();
 
   return w;
