@@ -18,147 +18,59 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Any reasonable C++ compiler should have all of the same features
-   as __STDC__ plus more, so make sure that __STDC__ is defined if
-   __cplusplus is defined.  */
-
-#if defined(__cplusplus) && !defined(__STDC__)
-#define __STDC__ 1
-#endif /* defined(__cplusplus) && !defined(__STDC__) */
-
-#if defined(__GNUC__) || defined (__GNUG__)
-#define VOLATILE volatile
-#else
-#define VOLATILE
-#endif
-
-#ifndef __STDC__
-#define const
-#define volatile
-#endif
-
 #include "config.h"
-
-#if 0
-/* Users are not supposed to use _POSIX_SOURCE to say the
-   system is a POSIX system.  That is not what _POSIX_SOURCE means! -- rms  */ 
-/* If the user asked for POSIX via _POSIX_SOURCE, turn on POSIX code.  */
-#if defined(_POSIX_SOURCE) && !defined(POSIX)
-#define POSIX
-#endif
-#endif /* 0 */
-
-#ifdef POSIX /* We should be able to define _POSIX_SOURCE unconditionally,
-		but some systems respond in buggy ways to it,
-		including SunOS 4.1.1.  Which we don't classify as POSIX.  */
-/* In case this is a POSIX system with an ANSI C compiler,
-   ask for definition of all POSIX facilities.  */
-#undef _POSIX_SOURCE
-#define _POSIX_SOURCE
-#endif
-
 #include "system.h"
 #include "intl.h"
+
+#include <setjmp.h>
+#include <signal.h>
 #undef abort
 
-#if ! defined (_WIN32) || defined (__CYGWIN__) || defined (_UWIN)
-#if defined(POSIX) || defined(CONCURRENT)
-#include <dirent.h>
-#else
-#include <sys/dir.h>
-#endif
-#endif
-#include <setjmp.h>
-
-/* Some systems like Linux don't declare rindex if _POSIX_SOURCE is declared,
-   but it normally does declare it.  This means that configure thinks we don't
-   need to declare it.  Favor using strrchr if it is available.  */
-
-#ifndef strrchr
-#ifndef HAVE_STRRCHR
-#ifdef  HAVE_RINDEX
-#define strrchr rindex
-#endif
-#endif
-#endif
-
-/* Include getopt.h for the sake of getopt_long.
-   We don't need the declaration of getopt, and it could conflict
-   with something from a system header file, so effectively nullify that.  */
-#define getopt getopt_loser
+/* Include getopt.h for the sake of getopt_long. */
 #include "getopt.h"
-#undef getopt
 
 extern char *version_string;
-
-/* Systems which are compatible only with POSIX 1003.1-1988 (but *not*
-   with POSIX 1003.1-1990), e.g. Ultrix 4.2, might not have
-   const qualifiers in the prototypes in the system include files.
-   Unfortunately, this can lead to GCC issuing lots of warnings for
-   calls to the following functions.  To eliminate these warnings we
-   provide the following #defines.  */
-
-#define my_access(file,flag)	access((char *)file, flag)
-#define my_stat(file,pkt)	stat((char *)file, pkt)
-#ifdef __MINGW32__
-#define my_link(file1, file2)	-1
-#else
-#define my_link(file1, file2)	link((char *)file1, (char *)file2)
-#endif
-#define my_unlink(file)		unlink((char *)file)
-#define my_open(file, mode, flag)	open((char *)file, mode, flag)
-#define my_chmod(file, mode)	chmod((char *)file, mode)
 
 static void usage PARAMS ((void)) ATTRIBUTE_NORETURN;
 static void aux_info_corrupted PARAMS ((void)) ATTRIBUTE_NORETURN;
 static void declare_source_confusing PARAMS ((const char *)) ATTRIBUTE_NORETURN;
-
-/* Aliases for pointers to void.
-   These were made to facilitate compilation with old brain-dead DEC C
-   compilers which didn't properly grok `void*' types.  */
-
-typedef PTR pointer_type;
-typedef const PTR const_pointer_type;
-
-#if defined(POSIX)
-
-#include <signal.h>
-
-#else /* !defined(POSIX) */
-
-/* Declaring stat or __flsbuf with a prototype
-   causes conflicts with system headers on some systems.  */
-
-#if 0 /* These conflict with stdio.h on some systems.  */
-extern int creat ();
-extern int fprintf (FILE *, const char *, ...);
-extern int printf (const char *, ...);
-extern int open (const char *, int, ...);
-extern int read ();
-extern int write ();
-#endif /* 0 */
-extern int close ();
-extern int fflush ();
-extern int atoi ();
-extern int puts ();
-#ifndef fputs	/* This may have been #defined by "system.h".  */
-extern int fputs ();
-#endif
-#ifndef fputc   /* some systems define this as a macro. */
-extern int fputc ();
-#endif
-extern int unlink ();
-extern int access ();
-
-#if 0 /* size_t from sys/types.h may fail to match GCC.
-	 If so, we would get a warning from this.  */
-extern size_t   strlen ()
-#endif
-
-#endif /* !defined (POSIX) */
+static const char *shortpath PARAMS ((const char *, const char *));
+extern void fancy_abort PARAMS ((void)) ATTRIBUTE_NORETURN;
+static void notice PARAMS ((const char *, ...)) ATTRIBUTE_PRINTF_1;
+static char *savestring PARAMS ((const char *, unsigned int));
+static char *dupnstr PARAMS ((const char *, size_t));
+static const char *substr PARAMS ((const char *, const char * const));
+static int safe_read PARAMS ((int, PTR, int));
+static void safe_write PARAMS ((int, PTR, int, const char *));
+static void save_pointers PARAMS ((void));
+static void restore_pointers PARAMS ((void));
+static int is_id_char PARAMS ((int));
+static int in_system_include_dir PARAMS ((const char *));
+static int directory_specified_p PARAMS ((const char *));
+static int file_excluded_p PARAMS ((const char *));
+static char *unexpand_if_needed PARAMS ((const char *));
+static char *abspath PARAMS ((const char *, const char *));
+static void check_aux_info PARAMS ((int));
+static const char *find_corresponding_lparen PARAMS ((const char *));
+static int referenced_file_is_newer PARAMS ((const char *, time_t));
+static void save_def_or_dec PARAMS ((const char *, int));
+static void munge_compile_params PARAMS ((const char *));
+static int gen_aux_info_file PARAMS ((const char *));
+static void process_aux_info_file PARAMS ((const char *, int, int));
+static int identify_lineno PARAMS ((const char *));
+static void check_source PARAMS ((int, const char *));
+static const char *seek_to_line PARAMS ((int));
+static const char *forward_to_next_token_char PARAMS ((const char *));
+static void output_bytes PARAMS ((const char *, size_t));
+static void output_string PARAMS ((const char *));
+static void output_up_to PARAMS ((const char *));
+static int other_variable_style_function PARAMS ((const char *));
+static const char *find_rightmost_formals_list PARAMS ((const char *));
+static void do_cleaning PARAMS ((char *, const char *));
+static const char *careful_find_l_paren PARAMS ((const char *));
+static void do_processing PARAMS ((void));
 
 /* Look for these where the `const' qualifier is intentionally cast aside.  */
-
 #define NONCONST
 
 /* Define a default place to find the SYSCALLS.X file.  */
@@ -169,9 +81,9 @@ extern size_t   strlen ()
 #define STANDARD_EXEC_PREFIX "/usr/local/lib/gcc-lib/"
 #endif /* !defined STANDARD_EXEC_PREFIX */
 
-static char *standard_exec_prefix = STANDARD_EXEC_PREFIX;
-static char *target_machine = DEFAULT_TARGET_MACHINE;
-static char *target_version = DEFAULT_TARGET_VERSION;
+static const char * const standard_exec_prefix = STANDARD_EXEC_PREFIX;
+static const char * const target_machine = DEFAULT_TARGET_MACHINE;
+static const char * const target_version = DEFAULT_TARGET_VERSION;
 
 #ifndef GET_ENV_PATH_LIST
 #define GET_ENV_PATH_LIST(VAR,NAME)	do { (VAR) = getenv (NAME); } while (0)
@@ -197,7 +109,7 @@ static const char syscalls_filename[] = "SYSCALLS.c";
 
 /* Default place to find the above file.  */
 
-static char * default_syscalls_dir;
+static const char * default_syscalls_dir;
 
 /* Variable to hold the complete absolutized filename of the SYSCALLS.c.X
    file.  */
@@ -288,9 +200,12 @@ struct default_include { const char *fname;
 /* Datatype for lists of directories or filenames.  */
 struct string_list
 {
-  char *name;
+  const char *name;
   struct string_list *next;
 };
+
+static struct string_list *string_list_cons PARAMS ((const char *,
+						     struct string_list *));
 
 /* List of directories in which files should be converted.  */
 
@@ -335,6 +250,31 @@ typedef struct hash_table_entry_struct hash_table_entry;
 typedef struct def_dec_info_struct def_dec_info;
 typedef struct file_info_struct file_info;
 typedef struct f_list_chain_item_struct f_list_chain_item;
+
+#ifndef UNPROTOIZE
+static int is_syscalls_file PARAMS ((const file_info *));
+static void rename_c_file PARAMS ((const hash_table_entry *));
+static const def_dec_info *find_extern_def PARAMS ((const def_dec_info *,
+						    const def_dec_info *));
+static const def_dec_info *find_static_definition PARAMS ((const def_dec_info *));
+static void connect_defs_and_decs PARAMS ((const hash_table_entry *));
+static void add_local_decl PARAMS ((const def_dec_info *, const char *));
+static void add_global_decls PARAMS ((const file_info *, const char *));
+#endif /* ! UNPROTOIZE */
+static int needs_to_be_converted PARAMS ((const file_info *));
+static void visit_each_hash_node PARAMS ((const hash_table_entry *,
+					  void (*)(const hash_table_entry *)));
+static hash_table_entry *add_symbol PARAMS ((hash_table_entry *, const char *));
+static hash_table_entry *lookup PARAMS ((hash_table_entry *, const char *));
+static void free_def_dec PARAMS ((def_dec_info *));
+static file_info *find_file PARAMS ((const char *, int));
+static void reverse_def_dec_list PARAMS ((const hash_table_entry *));
+static void edit_fn_declaration PARAMS ((const def_dec_info *, const char *));
+static int edit_formals_lists PARAMS ((const char *, unsigned int,
+				       const def_dec_info *));
+static void edit_fn_definition PARAMS ((const def_dec_info *, const char *));
+static void scan_for_missed_items PARAMS ((const file_info *));
+static void edit_file PARAMS ((const hash_table_entry *));
 
 /* In the struct below, note that the "_info" field has two different uses
    depending on the type of hash table we are in (i.e. either the filenames
@@ -573,14 +513,8 @@ static const char * saved_clean_read_ptr;
    attempt at editing will succeed.  */
 
 static char * saved_repl_write_ptr;
-
-/* Forward declaration.  */
-
-static const char *shortpath ();
 
 /* Translate and output an error message.  */
-static void notice			PARAMS ((const char *, ...))
-  ATTRIBUTE_PRINTF_1;
 static void
 notice VPARAMS ((const char *msgid, ...))
 {
@@ -667,7 +601,7 @@ outer:
 static int
 safe_read (desc, ptr, len)
      int desc;
-     char *ptr;
+     PTR ptr;
      int len;
 {
   int left = len;
@@ -695,9 +629,9 @@ safe_read (desc, ptr, len)
 static void
 safe_write (desc, ptr, len, out_fname)
      int desc;
-     char *ptr;
+     PTR ptr;
      int len;
-     char *out_fname;
+     const char *out_fname;
 {
   while (len > 0) {
     int written = write (desc, ptr, len);
@@ -719,7 +653,7 @@ safe_write (desc, ptr, len, out_fname)
 
 /* Get setup to recover in case the edit we are about to do goes awry.  */
 
-void
+static void
 save_pointers ()
 {
   saved_clean_read_ptr = clean_read_ptr;
@@ -729,7 +663,7 @@ save_pointers ()
 /* Call this routine to recover our previous state whenever something looks
    too confusing in the source code we are trying to edit.  */
 
-void
+static void
 restore_pointers ()
 {
   clean_read_ptr = saved_clean_read_ptr;
@@ -740,7 +674,7 @@ restore_pointers ()
 
 static int
 is_id_char (ch)
-     unsigned char ch;
+     int ch;
 {
   return (ISALNUM (ch) || (ch == '_') || (ch == '$'));
 }
@@ -791,7 +725,7 @@ file_could_be_converted (const char *path)
 {
   char *const dir_name = (char *) alloca (strlen (path) + 1);
 
-  if (my_access (path, R_OK))
+  if (access (path, R_OK))
     return 0;
 
   {
@@ -805,7 +739,7 @@ file_could_be_converted (const char *path)
       abort ();  /* Should have been an absolutized filename.  */
   }
 
-  if (my_access (path, W_OK))
+  if (access (path, W_OK))
     return 0;
 
   return 1;
@@ -839,7 +773,7 @@ file_normally_convertible (const char *path)
       abort ();  /* Should have been an absolutized filename.  */
   }
 
-  if (my_access (path, R_OK))
+  if (access (path, R_OK))
     {
       if (!quiet_flag)
         notice ("%s: warning: no read access for file `%s'\n",
@@ -847,7 +781,7 @@ file_normally_convertible (const char *path)
       return 0;
     }
 
-  if (my_access (path, W_OK))
+  if (access (path, W_OK))
     {
       if (!quiet_flag)
         notice ("%s: warning: no write access for file `%s'\n",
@@ -855,7 +789,7 @@ file_normally_convertible (const char *path)
       return 0;
     }
 
-  if (my_access (dir_name, W_OK))
+  if (access (dir_name, W_OK))
     {
       if (!quiet_flag)
         notice ("%s: warning: no write access for dir containing `%s'\n",
@@ -978,7 +912,7 @@ file_excluded_p (name)
 
 static struct string_list *
 string_list_cons (string, rest)
-     char *string;
+     const char *string;
      struct string_list *rest;
 {
   struct string_list *temp
@@ -1001,7 +935,7 @@ string_list_cons (string, rest)
 static void
 visit_each_hash_node (hash_tab_p, func)
      const hash_table_entry *hash_tab_p;
-     void (*func)();
+     void (*func) PARAMS ((const hash_table_entry *));
 {
   const hash_table_entry *primary;
 
@@ -1075,7 +1009,7 @@ static void
 free_def_dec (p)
      def_dec_info *p;
 {
-  free ((NONCONST pointer_type) p->ansi_decl);
+  free ((NONCONST PTR) p->ansi_decl);
 
 #ifndef UNPROTOIZE
   {
@@ -1085,7 +1019,7 @@ free_def_dec (p)
     for (curr = p->f_list_chain; curr; curr = next)
       {
         next = curr->chain_next;
-        free ((NONCONST pointer_type) curr);
+        free ((NONCONST PTR) curr);
       }
   }
 #endif /* !defined (UNPROTOIZE) */
@@ -1378,7 +1312,7 @@ shortpath (cwd, filename)
 
 static file_info *
 find_file (filename, do_not_stat)
-     char *filename;
+     const char *filename;
      int do_not_stat;
 {
   hash_table_entry *hash_entry_p;
@@ -1398,7 +1332,7 @@ find_file (filename, do_not_stat)
         stat_buf.st_mtime = (time_t) 0;
       else
         {
-          if (my_stat (filename, &stat_buf) == -1)
+          if (stat (filename, &stat_buf) == -1)
             {
 	      int errno_val = errno;
               notice ("%s: %s: can't get status: %s\n",
@@ -2076,7 +2010,7 @@ process_aux_info_file (base_source_filename, keep_it, is_syscalls)
   /* Come here with must_create set to 1 if file is out of date.  */
 start_over: ;
 
-  if (my_access (aux_info_filename, R_OK) == -1)
+  if (access (aux_info_filename, R_OK) == -1)
     {
       if (errno == ENOENT)
 	{
@@ -2117,7 +2051,7 @@ start_over: ;
 	  errors++;
 	  return;
 	}
-      if (my_access (aux_info_filename, R_OK) == -1)
+      if (access (aux_info_filename, R_OK) == -1)
 	{
 	  int errno_val = errno;
 	  notice ("%s: can't read aux info file `%s': %s\n",
@@ -2133,7 +2067,7 @@ start_over: ;
 
     /* Get some status information about this aux_info file.  */
   
-    if (my_stat (aux_info_filename, &stat_buf) == -1)
+    if (stat (aux_info_filename, &stat_buf) == -1)
       {
 	int errno_val = errno;
         notice ("%s: can't get status of aux info file `%s': %s\n",
@@ -2161,7 +2095,7 @@ start_over: ;
 	   The code later on can fail to check the .c file
 	   if it did not directly define any functions.  */
 
-	if (my_stat (base_source_filename, &stat_buf) == -1)
+	if (stat (base_source_filename, &stat_buf) == -1)
 	  {
 	    int errno_val = errno;
 	    notice ("%s: can't get status of aux info file `%s': %s\n",
@@ -2183,7 +2117,7 @@ start_over: ;
 
     /* Open the aux_info file.  */
   
-    if ((aux_info_file = my_open (aux_info_filename, O_RDONLY, 0444 )) == -1)
+    if ((aux_info_file = open (aux_info_filename, O_RDONLY, 0444 )) == -1)
       {
 	int errno_val = errno;
         notice ("%s: can't open aux info file `%s' for reading: %s\n",
@@ -2230,7 +2164,7 @@ start_over: ;
      fails for some reason, don't even worry about it.  */
 
   if (must_create && !keep_it)
-    if (my_unlink (aux_info_filename) == -1)
+    if (unlink (aux_info_filename) == -1)
       {
 	int errno_val = errno;
 	notice ("%s: can't delete aux info file `%s': %s\n",
@@ -2298,7 +2232,7 @@ start_over: ;
               {
                 free (aux_info_base);
 		free (aux_info_relocated_name);
-                if (keep_it && my_unlink (aux_info_filename) == -1)
+                if (keep_it && unlink (aux_info_filename) == -1)
                   {
 		    int errno_val = errno;
                     notice ("%s: can't delete file `%s': %s\n",
@@ -2375,7 +2309,7 @@ rename_c_file (hp)
   strcpy (new_filename, filename);
   new_filename[last_char_index] = 'C';
 
-  if (my_link (filename, new_filename) == -1)
+  if (link (filename, new_filename) == -1)
     {
       int errno_val = errno;
       notice ("%s: warning: can't link file `%s' to `%s': %s\n",
@@ -2385,7 +2319,7 @@ rename_c_file (hp)
       return;
     }
 
-  if (my_unlink (filename) == -1)
+  if (unlink (filename) == -1)
     {
       int errno_val = errno;
       notice ("%s: warning: can't delete file `%s': %s\n",
@@ -3775,7 +3709,7 @@ edit_fn_definition (def_dec_p, clean_text_p)
 static void
 do_cleaning (new_clean_text_base, new_clean_text_limit)
      char *new_clean_text_base;
-     char *new_clean_text_limit;
+     const char *new_clean_text_limit;
 {
   char *scan_p;
   int non_whitespace_since_newline = 0;
@@ -4088,7 +4022,7 @@ edit_file (hp)
   /* Find out the size (in bytes) of the original file.  */
 
   /* The cast avoids an erroneous warning on AIX.  */
-  if (my_stat ((char *)convert_filename, &stat_buf) == -1)
+  if (stat (convert_filename, &stat_buf) == -1)
     {
       int errno_val = errno;
       notice ("%s: can't get status for file `%s': %s\n",
@@ -4124,7 +4058,7 @@ edit_file (hp)
 
     /* Open the file to be converted in READ ONLY mode.  */
 
-    if ((input_file = my_open (convert_filename, O_RDONLY, 0444)) == -1)
+    if ((input_file = open (convert_filename, O_RDONLY, 0444)) == -1)
       {
 	int errno_val = errno;
         notice ("%s: can't open file `%s' for reading: %s\n",
@@ -4271,7 +4205,7 @@ edit_file (hp)
   
       strcpy (new_filename, convert_filename);
       strcat (new_filename, save_suffix);
-      if (my_link (convert_filename, new_filename) == -1)
+      if (link (convert_filename, new_filename) == -1)
         {
 	  int errno_val = errno;
 	  if (errno_val == EEXIST)
@@ -4294,7 +4228,7 @@ edit_file (hp)
         }
     }
 
-  if (my_unlink (convert_filename) == -1)
+  if (unlink (convert_filename) == -1)
     {
       int errno_val = errno;
       notice ("%s: can't delete file `%s': %s\n",
@@ -4337,7 +4271,7 @@ edit_file (hp)
   /* Change the mode of the output file to match the original file.  */
 
   /* The cast avoids an erroneous warning on AIX.  */
-  if (my_chmod ((char *)convert_filename, stat_buf.st_mode) == -1)
+  if (chmod (convert_filename, stat_buf.st_mode) == -1)
     {
       int errno_val = errno;
       notice ("%s: can't change mode of file `%s': %s\n",
@@ -4481,6 +4415,8 @@ static struct option longopts[] =
   {0, 0, 0, 0}
 };
 
+extern int main PARAMS ((int, char **const));
+
 int
 main (argc, argv)
      int argc;
@@ -4504,7 +4440,7 @@ main (argc, argv)
     {
       notice ("%s: cannot get working directory: %s\n",
 	      pname, xstrerror(errno));
-      exit (FATAL_EXIT_CODE);
+      return (FATAL_EXIT_CODE);
     }
 
   /* By default, convert the files in the current directory.  */
@@ -4631,7 +4567,5 @@ main (argc, argv)
       do_processing ();
     }
 
-  exit (errors ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
-
-  return 1;
+  return (errors ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
 }
