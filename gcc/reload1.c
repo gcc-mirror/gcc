@@ -459,7 +459,7 @@ static void failed_reload		PARAMS ((rtx, int));
 static int set_reload_reg		PARAMS ((int, int));
 static void reload_cse_delete_noop_set	PARAMS ((rtx, rtx));
 static void reload_cse_simplify		PARAMS ((rtx));
-static void fixup_abnormal_edges	PARAMS ((void));
+void fixup_abnormal_edges		PARAMS ((void));
 extern void dump_needs			PARAMS ((struct insn_chain *));
 
 /* Initialize the reload pass once per compilation.  */
@@ -9465,7 +9465,7 @@ copy_eh_notes (insn, x)
    proper call and fix the damage.
  
    Similar handle instructions throwing exceptions internally.  */
-static void
+void
 fixup_abnormal_edges ()
 {
   int i;

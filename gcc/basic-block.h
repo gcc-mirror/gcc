@@ -697,6 +697,7 @@ extern conflict_graph conflict_graph_compute
 						 partition));
 extern bool mark_dfs_back_edges		PARAMS ((void));
 extern void update_br_prob_note		PARAMS ((basic_block));
+extern void fixup_abnormal_edges	PARAMS ((void));
 
 /* In dominance.c */
 

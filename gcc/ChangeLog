@@ -1,3 +1,13 @@
+Thu Mar  7 16:33:54 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (fixup_abnormal_edges): Declare.
+	* reload1.c (fixup_abnormal_edges): New function.
+	* reg-stack.c (convert_regs): Use it.
+
+	* gcse.c (insert_insn_end_bb): Handle trapping insns.
+
+	* gcse.c (hash_scan_set): Refuse instructions with EH edges.
+
 2002-03-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	* defaults.h (MODE_HAS_NANS, MODE_HAS_INFINITIES): New.

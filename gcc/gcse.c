@@ -2189,6 +2189,10 @@ hash_scan_set (pat, insn, set_p)
 	  && regno >= FIRST_PSEUDO_REGISTER
 	  /* Don't GCSE something if we can't do a reg/reg copy.  */
 	  && can_copy_p [GET_MODE (dest)]
+	  /* GCSE commonly inserts instruction after the insn.  We can't
+	     do that easily for EH_REGION notes so disable GCSE on these
+	     for now.  */
+	  && !find_reg_note (insn, REG_EH_REGION, NULL_RTX)
 	  /* Is SET_SRC something we want to gcse?  */
 	  && want_to_gcse_p (src)
 	  /* Don't CSE a nop.  */
@@ -4609,13 +4613,23 @@ insert_insn_end_bb (expr, bb, pre)
   pat = process_insert_insn (expr);
 
   /* If the last insn is a jump, insert EXPR in front [taking care to
-     handle cc0, etc. properly].  */
+     handle cc0, etc. properly].  Similary we need to care trapping
+     instructions in presence of non-call exceptions.  */
 
-  if (GET_CODE (insn) == JUMP_INSN)
+  if (GET_CODE (insn) == JUMP_INSN
+      || (GET_CODE (insn) == INSN
+	  && (bb->succ->succ_next || (bb->succ->flags & EDGE_ABNORMAL))))
     {
 #ifdef HAVE_cc0
       rtx note;
 #endif
+      /* It should always be the case that we can put these instructions
+	 anywhere in the basic block with performing PRE optimizations.
+	 Check this.  */
+      if (GET_CODE (insn) == insn && pre
+	  && !TEST_BIT (antloc[bb->index], expr->bitmap_index)
+          && !TEST_BIT (transp[bb->index], expr->bitmap_index))
+	abort ();
 
       /* If this is a jump table, then we can't insert stuff here.  Since
 	 we know the previous real insn must be the tablejump, we insert
@@ -4645,7 +4659,8 @@ insert_insn_end_bb (expr, bb, pre)
 
   /* Likewise if the last insn is a call, as will happen in the presence
      of exception handling.  */
-  else if (GET_CODE (insn) == CALL_INSN)
+  else if (GET_CODE (insn) == CALL_INSN
+	   && (bb->succ->succ_next || (bb->succ->flags & EDGE_ABNORMAL)))
     {
       /* Keeping in mind SMALL_REGISTER_CLASSES and parameters in registers,
 	 we search backward and place the instructions before the first
