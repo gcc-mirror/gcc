@@ -163,10 +163,10 @@ std_headers =  	algorithm bitset complex deque fstream functional 	iomanip ios i
 @GLIBCPP_NEED_LIBIO_TRUE@libio_headers = 	$(top_srcdir)/libio/_G_config.h $(top_srcdir)/libio/libio.h
 @GLIBCPP_NEED_LIBIO_FALSE@libio_headers = 
 
-build_headers =  	bits/std_limits.h 	bits/c++config.h bits/c++io.h bits/c++locale.h bits/c++threads.h 	bits/atomicity.h bits/os_defines.h 	bits/ctype_base.h bits/ctype_noninline.h bits/ctype_inline.h 
+build_headers =  	bits/std_limits.h 	bits/c++config.h bits/c++io.h bits/c++locale.h bits/c++threads.h 	bits/basic_file_model.h 	bits/atomicity.h bits/os_defines.h 	bits/ctype_base.h bits/ctype_noninline.h bits/ctype_inline.h 
 
 
-sources =  	limitsMEMBERS.cc 	stdexcept.cc functexcept.cc bitset.cc         globals.cc 	c++io.cc ios.cc complex_io.cc strstream.cc 	c++locale.cc locale.cc localename.cc codecvt.cc 	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc string-inst.cc
+sources =  	limitsMEMBERS.cc 	stdexcept.cc functexcept.cc bitset.cc         globals.cc 	basic_file.cc ios.cc complex_io.cc strstream.cc 	c++locale.cc locale.cc localename.cc codecvt.cc 	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc string-inst.cc
 
 
 wstring_sources =  	wstring-inst.cc
@@ -252,7 +252,7 @@ libinst_wstring_la_LDFLAGS =
 libinst_wstring_la_LIBADD = 
 libinst_wstring_la_OBJECTS =  wstring-inst.lo
 libstdc___la_OBJECTS =  limitsMEMBERS.lo stdexcept.lo functexcept.lo \
-bitset.lo globals.lo c++io.lo ios.lo complex_io.lo strstream.lo \
+bitset.lo globals.lo basic_file.lo ios.lo complex_io.lo strstream.lo \
 c++locale.lo locale.lo localename.lo codecvt.lo locale-inst.lo \
 stl-inst.lo misc-inst.lo valarray-inst.lo string-inst.lo
 CXXFLAGS = @CXXFLAGS@

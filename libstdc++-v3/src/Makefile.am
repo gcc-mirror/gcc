@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.72 2001/02/16 00:43:41 bkoz Exp $
+## $Id: Makefile.am,v 1.71.2.2 2001/02/19 20:19:06 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -160,6 +160,7 @@ endif
 build_headers = \
 	bits/std_limits.h \
 	bits/c++config.h bits/c++io.h bits/c++locale.h bits/c++threads.h \
+	bits/basic_file_model.h \
 	bits/atomicity.h bits/os_defines.h \
 	bits/ctype_base.h bits/ctype_noninline.h bits/ctype_inline.h 
 
@@ -167,7 +168,7 @@ sources = \
 	limitsMEMBERS.cc \
 	stdexcept.cc functexcept.cc bitset.cc \
         globals.cc \
-	c++io.cc ios.cc complex_io.cc strstream.cc \
+	basic_file.cc ios.cc complex_io.cc strstream.cc \
 	c++locale.cc locale.cc localename.cc codecvt.cc \
 	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc string-inst.cc
 

@@ -1,5 +1,26 @@
 2001-02-27  Benjamin Kosnik  <bkoz@redhat.com>
 
+	libstdc++/1886
+	* include/bits/basic_file.h: Include basic_file_model.h.
+	* config/c_io_libio.cc: Move to...
+	* config/basic_file_libio.cc: Here.
+	* config/basic_file_libio.h: New file.
+	* config/c_io_stdio.cc: Move to...
+	* config/basic_file_stdio.cc: Here.
+	* config/basic_file_stdio.h: New file.
+	* config/c_io_libio.h: Tweak.
+	* config/c_io_stdio.h: Tweak.
+	* src/Makefile.am (build_headers): Add basic_file_model.h.
+	(sources): Add basic_file.cc, remove c++io.cc.
+	* src/Makefile.in: Regenerate.
+	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Add support for
+	basic_file_model.h and basic_file.cc.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* testsuite/27_io/filebuf.cc (test05): Add regression.
+
+2001-02-27  Benjamin Kosnik  <bkoz@redhat.com>
+
 	Correct license.
 	* config/cpu/alpha/bits/atomicity.h: Change.
 	* config/cpu/arm/bits/atomicity.h
@@ -59,6 +80,10 @@
         * mknumeric_limits: Remove special-casing on target.  Use
         gcc instead of g++ to build gen-num-limits.cc
 	
+2001-02-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* tests_flags.in (CXXFLAGS): Add -rpath to gcc build dir.
+
 2001-02-19  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* include/bits/basic_file.h: Add #pragma system_header
