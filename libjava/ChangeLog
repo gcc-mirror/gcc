@@ -1,3 +1,7 @@
+2002-03-27  Richard Henderson  <rth@redhat.com>
+
+	* include/posix-threads.h [alpha] (_Jv_ThreadSelf): Avoid a copy.
+
 2002-03-25  Andrew Haley <aph@cambridge.redhat.com>, Hans Boehm <Hans_Boehm@hp.com>
 
         * include/dwarf2-signal.h (MAKE_THROW_FRAME): Add for IA-64.

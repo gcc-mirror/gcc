@@ -256,8 +256,8 @@ typedef unsigned long _Jv_ThreadId_t;
 inline _Jv_ThreadId_t
 _Jv_ThreadSelf (void)
 {
-  unsigned long id;
-  __asm__ ("call_pal %1\n\tmov $0, %0" : "=r"(id) : "i"(PAL_rduniq) : "$0");
+  register unsigned long id __asm__("$0");
+  __asm__ ("call_pal %1" : "=r"(id) : "i"(PAL_rduniq));
   return id;
 }
 
