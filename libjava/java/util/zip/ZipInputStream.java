@@ -61,6 +61,7 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
   private int method;
   private int flags;
   private int avail;
+  private boolean entryAtEOF;
 
   /**
    * Creates a new Zip input stream, reading a zip archive.
@@ -150,7 +151,8 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
 	return null;
       }
     if (header != LOCSIG)
-      throw new ZipException("Wrong Local header signature" + Integer.toHexString(header));
+      throw new ZipException("Wrong Local header signature"
+			     + Integer.toHexString(header));
     /* skip version */
     readLeShort();
     flags = readLeShort();
@@ -171,6 +173,7 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
     String name = new String(buffer);
     
     entry = createZipEntry(name);
+    entryAtEOF = false;
     entry.setMethod(method);
     if ((flags & 8) == 0)
       {
@@ -252,11 +255,12 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
     if (method == ZipOutputStream.DEFLATED)
       inf.reset();
     entry = null;
+    entryAtEOF = true;
   }
 
   public int available() throws IOException
   {
-    return entry != null ? 1 : 0;
+    return entryAtEOF ? 0 : 1;
   }
 
   /**
@@ -335,6 +339,7 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
 	  throw new ZipException("CRC mismatch");
 	crc.reset();
 	entry = null;
+	entryAtEOF = true;
       }
     return len;
   }
@@ -348,6 +353,7 @@ public class ZipInputStream extends InflaterInputStream implements ZipConstants
     super.close();
     crc = null;
     entry = null;
+    entryAtEOF = true;
   }
 
   /**
