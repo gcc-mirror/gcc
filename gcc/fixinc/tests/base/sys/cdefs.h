@@ -12,3 +12,8 @@
 #if defined( FREEBSD_GCC3_BREAKAGE_CHECK )
 #if __GNUC__ == 2 && __GNUC_MINOR__ >= 7 || __GNUC__ >= 3
 #endif  /* FREEBSD_GCC3_BREAKAGE_CHECK */
+
+
+#if defined( NETBSD_EXTRA_SEMICOLON_CHECK )
+#define __END_DECLS }
+#endif  /* NETBSD_EXTRA_SEMICOLON_CHECK */

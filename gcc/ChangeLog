@@ -1,3 +1,9 @@
+2003-02-18  Krister Walfridsson  <cato@df.lth.se>
+
+	* inclhack.def (netbsd_bogus_semicolon): New fix.
+	* fixincl.x: Rebuilt.
+	* tests/base/ctype.h: Update.
+
 2003-02-18  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (negate_expr_p): New function to determine whether

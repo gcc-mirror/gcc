@@ -1710,6 +1710,22 @@ fix = {
 
 
 /*
+ * NetBSD has a semicolon after the ending '}' for some extern "C".
+ */
+fix = {
+    hackname  = netbsd_extra_semicolon;
+    mach      = *-*-netbsd*;
+    files     = sys/cdefs.h;
+    select    = "#define[ \t]*__END_DECLS[ \t]*};";
+
+    c_fix     = format;
+    c_fix_arg = "#define __END_DECLS }";
+
+    test_text = "#define __END_DECLS };";
+};
+
+
+/*
  *  NeXT 3.2 adds const prefix to some math functions.
  *  These conflict with the built-in functions.
  */
