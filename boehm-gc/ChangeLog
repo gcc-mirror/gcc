@@ -1,5 +1,11 @@
 2004-02-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* acinclude.m4: Remove GC_CONFIGURE macro; move contents
+	to configure.in.
+	* aclocal.m4: Regenerate.
+	* configure.in: Receive contents of GC_CONFIGURE macro.
+	* configure: Regenerate.
+
 	* configure.in: Remove more obsolete, bogus code.
 	* configure: Regenerate.
 

@@ -1703,8 +1703,6 @@ echo "${ECHO_T}no" >&6
 fi
 
 
-
-
 PACKAGE=gc
 
 VERSION=6.1a1
@@ -3411,7 +3409,6 @@ esac
 GC_CFLAGS=${gc_cflags}
 
 
-
 # Check whether --enable-shared or --disable-shared was given.
 if test "${enable_shared+set}" = set; then
   enableval="$enable_shared"
@@ -4154,7 +4151,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4157 "configure"' > conftest.$ac_ext
+  echo '#line 4154 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
