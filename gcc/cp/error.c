@@ -713,19 +713,17 @@ dump_decl (tree t, int flags)
   switch (TREE_CODE (t))
     {
     case TYPE_DECL:
-      {
-	/* Don't say 'typedef class A' */
-        if (DECL_ARTIFICIAL (t))
-	  {
-	    if ((flags & TFF_DECL_SPECIFIERS)
-	        && TREE_CODE (TREE_TYPE (t)) == TEMPLATE_TYPE_PARM)
-	      /* Say `class T' not just `T'.  */
-	      pp_cxx_identifier (cxx_pp, "class");
-
-	    dump_type (TREE_TYPE (t), flags);
-	    break;
-	  }
-      }
+      /* Don't say 'typedef class A' */
+      if (DECL_ARTIFICIAL (t))
+	{
+	  if ((flags & TFF_DECL_SPECIFIERS)
+	      && TREE_CODE (TREE_TYPE (t)) == TEMPLATE_TYPE_PARM)
+	    /* Say `class T' not just `T'.  */
+	    pp_cxx_identifier (cxx_pp, "class");
+	  
+	  dump_type (TREE_TYPE (t), flags);
+	  break;
+	}
       if (flags & TFF_DECL_SPECIFIERS)
 	pp_cxx_identifier (cxx_pp, "typedef");
       dump_simple_decl (t, DECL_ORIGINAL_TYPE (t)

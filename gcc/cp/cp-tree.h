@@ -2192,10 +2192,11 @@ struct lang_decl GTY(())
 
 /* For a template instantiation TYPE, returns the TYPE corresponding
    to the primary template.  Otherwise returns TYPE itself.  */
-#define CLASSTYPE_PRIMARY_TEMPLATE_TYPE(TYPE)						\
-  ((CLASSTYPE_USE_TEMPLATE ((TYPE)) && !CLASSTYPE_TEMPLATE_SPECIALIZATION ((TYPE)))	\
-   ? TREE_TYPE (DECL_TEMPLATE_RESULT (DECL_PRIMARY_TEMPLATE				\
-				      (CLASSTYPE_TI_TEMPLATE ((TYPE)))))		\
+#define CLASSTYPE_PRIMARY_TEMPLATE_TYPE(TYPE)				\
+  ((CLASSTYPE_USE_TEMPLATE ((TYPE))					\
+    && !CLASSTYPE_TEMPLATE_SPECIALIZATION ((TYPE)))			\
+   ? TREE_TYPE (DECL_TEMPLATE_RESULT (DECL_PRIMARY_TEMPLATE		\
+				      (CLASSTYPE_TI_TEMPLATE ((TYPE))))) \
    : (TYPE))
 
 /* Like DECL_TI_TEMPLATE, but for an ENUMERAL_, RECORD_, or UNION_TYPE.  */

@@ -857,7 +857,8 @@ add_method (tree type, tree method)
   int using;
   unsigned slot;
   tree overload;
-  int template_conv_p;
+  bool template_conv_p = false;
+  bool conv_p;
   VEC(tree) *method_vec;
   bool complete_p;
   bool insert_p = false;
@@ -868,8 +869,10 @@ add_method (tree type, tree method)
 
   complete_p = COMPLETE_TYPE_P (type);
   using = (DECL_CONTEXT (method) != type);
-  template_conv_p = (TREE_CODE (method) == TEMPLATE_DECL
-                     && DECL_TEMPLATE_CONV_FN_P (method));
+  conv_p = DECL_CONV_FN_P (method);
+  if (conv_p)
+    template_conv_p = (TREE_CODE (method) == TEMPLATE_DECL
+		       && DECL_TEMPLATE_CONV_FN_P (method));
 
   method_vec = CLASSTYPE_METHOD_VEC (type);
   if (!method_vec)
@@ -901,7 +904,6 @@ add_method (tree type, tree method)
     }
   else
     {
-      bool conv_p = DECL_CONV_FN_P (method);
       tree m;
 
       insert_p = true;
@@ -1012,7 +1014,7 @@ add_method (tree type, tree method)
   /* Add the new binding.  */ 
   overload = build_overload (method, current_fns);
   
-  if (slot >= CLASSTYPE_FIRST_CONVERSION_SLOT && !complete_p)
+  if (!conv_p && slot >= CLASSTYPE_FIRST_CONVERSION_SLOT && !complete_p)
     push_class_level_binding (DECL_NAME (method), overload);
 
   if (insert_p)
