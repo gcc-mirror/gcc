@@ -579,6 +579,8 @@ struct noce_if_info
   rtx insn_a, insn_b;
   rtx x, a, b;
   rtx jump, cond, cond_earliest;
+  /* True if "b" was originally evaluated unconditionally.  */
+  bool b_unconditional;
 };
 
 static rtx noce_emit_store_flag (struct noce_if_info *, rtx, int, int);
@@ -1730,8 +1732,11 @@ noce_try_sign_mask (struct noce_if_info *if_info)
   if (GET_MODE (m) != mode)
     return FALSE;
 
-  /* This is only profitable if T is cheap.  */
-  if (rtx_cost (t, SET) >= COSTS_N_INSNS (2))
+  /* This is only profitable if T is cheap, or T is unconditionally
+     executed/evaluated in the original insn sequence.  */
+  if (rtx_cost (t, SET) >= COSTS_N_INSNS (2)
+      && (!if_info->b_unconditional
+          || t != if_info->b))
     return FALSE;
 
   start_sequence ();
@@ -1983,6 +1988,7 @@ noce_process_if_block (struct ce_if_block * ce_info)
   if_info.x = x;
   if_info.a = a;
   if_info.b = b;
+  if_info.b_unconditional = else_bb == 0;
 
   /* Try optimizations in some approximation of a useful order.  */
   /* ??? Should first look to see if X is live incoming at all.  If it
