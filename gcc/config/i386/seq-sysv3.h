@@ -11,10 +11,13 @@
  %{p:-L/usr/lib/libp}%{pg:-L/usr/lib/libp}"
 
 #undef LIB_SPEC
-#define LIB_SPEC "%{posix:-lcposix} %{shlib:-lc_s} -lc crtend.o%s"
+#define LIB_SPEC \
+"%{posix:-lcposix}\
+ %{shlib:-lc_s}\
+ %{fshared-data:-lpps -lseq} -lc crtend.o%s"
 
 #undef CPP_SPEC
-#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} -D_SEQUENT_"
+#define CPP_SPEC "%{posix:-D_POSIX_SOURCE} -D_SEQUENT_=1"
 
 /* Although the .init section is used, it is not automatically invoked.
    This because the _start() function in /lib/crt0.o never calls anything
@@ -25,5 +28,31 @@
    our own exit function.  */
 #define HAVE_ATEXIT
 
-/* Assembler pseudo-op for shared data segment. */
+/* Assembler pseudo-op for initialized shared variables (.shdata). */
+#undef  SHARED_SECTION_ASM_OP
 #define SHARED_SECTION_ASM_OP ".section .shdata, \"ws\""
+
+/* Assembler pseudo-op for uninitialized shared global variables (.shbss). */
+#undef  ASM_OUTPUT_SHARED_COMMON
+#define ASM_OUTPUT_SHARED_COMMON(FILE, NAME, SIZE, ROUNDED) \
+( fputs(".comm ", (FILE)),			\
+  assemble_name((FILE), (NAME)),		\
+   fprintf((FILE), ",%u,-3\n", (SIZE)))
+
+/* Assembler pseudo-op for uninitialized shared local variables (.shbss). */
+#undef  SHARED_BSS_SECTION_ASM_OP
+#define SHARED_BSS_SECTION_ASM_OP ".section .shbss, \"bs\""
+#undef  BSS_SECTION_FUNCTION
+#define BSS_SECTION_FUNCTION					\
+void								\
+bss_section ()							\
+{								\
+  if (in_section != in_bss)					\
+    {								\
+      if (flag_shared_data)                                     \
+        fprintf (asm_out_file, "%s\n", SHARED_BSS_SECTION_ASM_OP);	\
+      else							\
+        fprintf (asm_out_file, "%s\n", BSS_SECTION_ASM_OP);	\
+      in_section = in_bss;					\
+    }								\
+}
