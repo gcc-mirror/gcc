@@ -13465,6 +13465,11 @@ patch_binop (node, wfl_op1, wfl_op2)
       op1 = do_unary_numeric_promotion (op1);
       op2 = do_unary_numeric_promotion (op2);
 
+      /* If the right hand side is of type `long', first cast it to
+	 `int'.  */
+      if (TREE_TYPE (op2) == long_type_node)
+	op2 = build1 (CONVERT_EXPR, int_type_node, op2);
+
       /* The type of the shift expression is the type of the promoted
          type of the left-hand operand */
       prom_type = TREE_TYPE (op1);
