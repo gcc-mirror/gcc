@@ -1,3 +1,13 @@
+2001-11-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (struct disabled_builtin, disabled_builtins,
+	disable_builtin_function, builtin_function_disabled_p): New.
+	(builtin_function_2): Check for disabled built-in functions.
+	* c-common.h (disable_builtin_function): Declare.
+	* c-decl.c (c_decode_option): Handle -fno-builtin-FUNCTION.
+	* doc/invoke.texi: Document -fno-builtin-FUNCTION.
+	* doc/extend.texi: Mention -fno-builtin-FUNCTION.
+
 2001-11-17  Craig Rodrigues  <rodrigc@gcc.gnu.org>
 
 	PR target/4606

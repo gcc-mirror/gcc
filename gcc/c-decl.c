@@ -596,6 +596,8 @@ c_decode_option (argc, argv)
     flag_no_builtin = 0;
   else if (!strcmp (p, "-fno-builtin"))
     flag_no_builtin = 1;
+  else if (!strncmp (p, "-fno-builtin-", strlen ("-fno-builtin-")))
+    disable_builtin_function (p + strlen ("-fno-builtin-"));
   else if (p[0] == '-' && p[1] == 'f' && dump_switch_p (p + 2))
     ;
   else if (!strcmp (p, "-ansi"))

@@ -162,7 +162,7 @@ in the following sections.
 @xref{C Dialect Options,,Options Controlling C Dialect}.
 @gccoptlist{
 -ansi  -std=@var{standard}  -aux-info @var{filename} @gol
--fno-asm  -fno-builtin @gol
+-fno-asm  -fno-builtin -fno-builtin-@var{function} @gol
 -fhosted  -ffreestanding @gol
 -trigraphs  -traditional  -traditional-cpp @gol
 -fallow-single-precision  -fcond-mismatch @gol
@@ -1025,6 +1025,7 @@ switch only affects the @code{asm} and @code{typeof} keywords, since
 @code{inline} is a standard keyword in ISO C99.
 
 @item -fno-builtin
+@itemx -fno-builtin-@var{function} @r{(C and Objective-C only)}
 @opindex fno-builtin
 @cindex built-in functions
 Don't recognize built-in functions that do not begin with
@@ -1048,6 +1049,20 @@ optimization benefits of built-in functions is to call the function
 using the @samp{__builtin_} prefix.  The GNU C++ Standard Library uses
 built-in functions to implement many functions (like
 @code{std::strchr}), so that you automatically get efficient code.
+
+With the @option{-fno-builtin-@var{function}} option, not available
+when compiling C++, only the built-in function @var{function} is
+disabled.  @var{function} must not begin with @samp{__builtin_}.  If a
+function is named this is not built-in in this version of GCC, this
+option is ignored.  There is no corresponding
+@option{-fbuiltin-@var{function}} option; if you wish to enable
+built-in functions selectively when using @option{-fno-builtin} or
+@option{-ffreestanding}, you may define macros such as:
+
+@smallexample
+#define abs(n)          __builtin_abs ((n))
+#define strcpy(d, s)    __builtin_strcpy ((d), (s))
+@end smallexample
 
 @item -fhosted
 @opindex fhosted
