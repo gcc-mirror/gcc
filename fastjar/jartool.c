@@ -1,6 +1,6 @@
 /*
   jartool.c - main functions for fastjar utility
-  Copyright (C) 2002 Free Software Foundation
+  Copyright (C) 2002, 2004  Free Software Foundation
   Copyright (C) 1999, 2000, 2001  Bryan Burns
   
   This program is free software; you can redistribute it and/or
@@ -238,6 +238,7 @@
 #include "dostime.h"
 #include "pushback.h"
 #include "compress.h"
+#include "shift.h"
 
 /* Some systems have mkdir that takes a single argument.  */
 #ifdef MKDIR_TAKES_ONE_ARG
@@ -273,15 +274,18 @@ void init_headers(void);
 int consume(pb_file *, int);
 int list_jar(int, char**, int);
 int extract_jar(int, char**, int);
-int add_file_to_jar(int, int, const char*, struct stat*);
-int add_to_jar(int, const char*);
-int add_to_jar_with_dir(int, const char*, const char*);
+int add_file_to_jar(int, int, const char*, struct stat*, int);
+int add_to_jar(int, const char*, int);
+int add_to_jar_with_dir(int, const char*, const char*, int);
 int create_central_header(int);
-int make_manifest(int, const char*);
+int make_manifest(int, const char*, int);
+int read_entries (int);
 static void init_args(char **, int);
 static char *get_next_arg (void);
 static char *jt_strdup (char*);
 static void expand_options (int *argcp, char ***argvp);
+static inline struct zipentry *find_entry (const char *);
+static inline int looks_like_dir (const char *);
 
 /* global variables */
 ub1 file_header[30];
@@ -304,6 +308,12 @@ zipentry *ziplist; /* linked list of entries */
 zipentry *ziptail; /* tail of the linked list */
 
 int number_of_entries; /* number of entries in the linked list */
+
+/* What we go by. */
+const char *progname;
+
+/* The offset of the end of the last zip entry. */
+ub4 end_of_entries;
 
 /* This is used to mark options with no short value.  */
 #define LONG_OPT(Num)  ((Num) + 128)
@@ -339,6 +349,8 @@ int main(int argc, char **argv){
      second pass through the command line.  */
   int new_argc;
   char **new_argv;
+
+  progname = argv[0];
 
   do_compress = TRUE;
   verbose = FALSE;
@@ -418,13 +430,9 @@ int main(int argc, char **argv){
   new_argv[new_argc] = NULL;
 
   if(action == ACTION_NONE){
-    fprintf(stderr, "One of options -{ctxu} must be specified.\n");
+    fprintf(stderr, "%s: one of options -{ctxu} must be specified.\n",
+	    progname);
     usage(argv[0]);
-  }
-
-  if(action == ACTION_UPDATE){
-    fprintf(stderr, "%s: `-u' mode unimplemented.\n", argv[0]);
-    exit(1);
   }
 
   /* Verify unsupported combinations and warn of the use of non
@@ -435,7 +443,8 @@ int main(int argc, char **argv){
     fprintf (stderr, "Warning: using non standard '-@' option\n");
   if(read_names_from_stdin
       && (action != ACTION_CREATE && action != ACTION_UPDATE)){
-      fprintf(stderr, "Option '-@' is supported only with '-c' or '-u'.\n");
+      fprintf(stderr, "%s: option '-@' is supported only with '-c' or '-u'.\n",
+	      progname);
       usage(argv[0]);
   }
 
@@ -445,8 +454,8 @@ int main(int argc, char **argv){
       jarfd = open(jarfile, O_CREAT | O_BINARY | O_WRONLY | O_TRUNC, 0666);
 
       if(jarfd < 0){
-        fprintf(stderr, "Error opening %s for writing!\n", jarfile);
-        perror(jarfile);
+        fprintf(stderr, "%s: error opening %s for writing: %s\n", progname,
+		jarfile, strerror (errno));
         exit(1);
       }
       
@@ -470,8 +479,8 @@ int main(int argc, char **argv){
       jarfd = open(jarfile, O_RDONLY | O_BINARY);
 
       if(jarfd < 0){
-        fprintf(stderr, "Error opening %s for reading!\n", jarfile);
-        perror(jarfile);
+        fprintf(stderr, "%s: error opening %s for reading: %s\n", progname,
+		jarfile, strerror (errno));
         exit(1);
       }
 
@@ -484,28 +493,51 @@ int main(int argc, char **argv){
     }
   }
 
+  if (action == ACTION_UPDATE)
+    {
+      if (!jarfile)
+	{
+	  fprintf (stderr, "%s: `-u' mode requires a file name\n",
+		   argv[0]);
+	  exit (1);
+	}
+
+      if ((jarfd = open (jarfile, O_RDWR | O_BINARY)) < 0)
+	{
+	  fprintf (stderr, "Error opening %s for reading!\n", jarfile);
+	  perror (jarfile);
+	  exit (1);
+	}
+
+      /* Assert that jarfd is seekable. */
+      if (lseek (jarfd, 0, SEEK_CUR) == -1)
+	{
+	  fprintf (stderr, "%s: %s is not seekable\n", argv[0], jarfile);
+	  exit (1);
+	}
+
+      seekable = TRUE;
+    }
+
   if(action == ACTION_CREATE || action == ACTION_UPDATE){
     const char *arg;
     init_headers();
 
-   if((action == ACTION_UPDATE) && jarfile) {
-      if((jarfd = open(jarfile, O_RDWR | O_BINARY)) < 0) {
-	fprintf(stderr, "Error opening %s for reading!\n", jarfile);
-        perror(jarfile);
-        exit(1);
-      }
-    }
-
     if(do_compress)
       init_compression();
-  
+
+    if (action == ACTION_UPDATE)
+      {
+	if (read_entries (jarfd))
+	  exit (1);
+      }
 
     /* Add the META-INF/ directory and the manifest */
     if(manifest && mfile)
-      make_manifest(jarfd, mfile);
-    else if(manifest)
-      make_manifest(jarfd, NULL);
-    
+      make_manifest(jarfd, mfile, action == ACTION_UPDATE);
+    else if(manifest && action == ACTION_CREATE)
+      make_manifest(jarfd, NULL, FALSE);
+
     init_args (new_argv, 0);
     /* now we add the files to the archive */
     while ((arg = get_next_arg ())){
@@ -514,17 +546,19 @@ int main(int argc, char **argv){
 	const char *dir_to_change = get_next_arg ();
 	const char *file_to_add = get_next_arg ();
         if (!dir_to_change || !file_to_add) {
-          fprintf(stderr, "Error: missing argument for -C.\n");
+          fprintf(stderr, "%s: error: missing argument for -C.\n", progname);
           exit(1);
         }
-	if (add_to_jar_with_dir(jarfd, dir_to_change, file_to_add)) {
-          fprintf(stderr,
-                 "Error adding %s (in directory %s) to jar archive!\n",
-                 file_to_add, dir_to_change);
-          exit(1);
-        }
+	if (add_to_jar_with_dir(jarfd, dir_to_change, file_to_add,
+				action == ACTION_UPDATE))
+	  {
+	    fprintf(stderr,
+		    "Error adding %s (in directory %s) to jar archive!\n",
+		    file_to_add, dir_to_change);
+	    exit(1);
+	  }
       } else {
-        if(add_to_jar(jarfd, arg)){
+        if(add_to_jar(jarfd, arg, action == ACTION_UPDATE)){
           fprintf(stderr, "Error adding %s to jar archive!\n", arg);
           exit(1);
         }
@@ -533,11 +567,20 @@ int main(int argc, char **argv){
     /* de-initialize the compression DS */
     if(do_compress)
       end_compression();
+
+    if (action == ACTION_UPDATE)
+      lseek (jarfd, end_of_entries, SEEK_SET);
     
     create_central_header(jarfd);
-    
-    if (close(jarfd) != 0) {
-      fprintf(stderr, "Error closing jar archive!\n");
+
+    /* Check if the file shrunk when we updated it. */
+    if (action == ACTION_UPDATE)
+      ftruncate (jarfd, lseek (jarfd, 0, SEEK_CUR));
+
+    if (jarfd != STDIN_FILENO && close(jarfd) != 0) {
+      fprintf(stderr, "%s: error closing jar archive: %s\n",
+	      progname, strerror (errno));
+      exit (1);
     }
   } else if(action == ACTION_LIST){
     list_jar(jarfd, &new_argv[0], new_argc);
@@ -688,7 +731,175 @@ void add_entry(struct zipentry *ze){
   number_of_entries++;
 }
 
-int make_manifest(int jfd, const char *mf_name){
+static inline struct zipentry *
+find_entry (const char *fname)
+{
+  struct zipentry *ze;
+
+  for (ze = ziptail; ze; ze = ze->next_entry)
+    {
+      if (!strcmp (ze->filename, fname))
+	return ze;
+    }
+  return NULL;
+}
+
+
+static inline int
+looks_like_dir (const char *fname)
+{
+  struct zipentry *ze;
+  size_t len = strlen (fname);
+
+  for (ze = ziptail; ze; ze = ze->next_entry)
+    {
+      if (strlen (ze->filename) > len
+	  && !strncmp (fname, ze->filename, len)
+	  && ze->filename[len] == '/')
+	return 1;
+    }
+  return 0;
+}
+
+
+/*
+ * Read the zip entries of an existing file, building `ziplist' as we go.
+ */
+int read_entries (int fd)
+{
+  struct zipentry *ze;
+  ub1 intbuf[4];
+  ub1 header[46];
+  ub2 len;
+  ub2 count, i;
+  off_t offset;
+
+  if (lseek (fd, -22, SEEK_END) == -1)
+    {
+      fprintf (stderr, "%s: %s: can't seek file\n", progname, jarfile);
+      return 1;
+    }
+
+  if (read (fd, intbuf, 4) < 4)
+    {
+      perror (progname);
+      return 1;
+    }
+  /* Is there a zipfile comment? */
+  while (UNPACK_UB4(intbuf, 0) != 0x06054b50)
+    {
+      if (lseek (fd, -5, SEEK_CUR) == -1 ||
+	  read (fd, intbuf, 4) != 4)
+	{
+	  fprintf (stderr, "%s: can't find end of central directory: %s\n",
+		   progname, strerror (errno));
+	  return 1;
+	}
+    }
+
+  /* Skip disk numbers. */
+  if (lseek (fd, 6, SEEK_CUR) == -1)
+    {
+      perror (progname);
+      return 1;
+    }
+
+  /* Number of entries in the central directory. */
+  if (read (fd, intbuf, 2) != 2)
+    {
+      perror (progname);
+      return 1;
+    }
+  count = UNPACK_UB2(intbuf, 0);
+
+  if (lseek (fd, 4, SEEK_CUR) == -1)
+    {
+      perror (progname);
+      return 1;
+    }
+
+  /* Offset where the central directory begins. */
+  if (read (fd, intbuf, 4) != 4)
+    {
+      perror (progname);
+      return 1;
+    }
+  offset = UNPACK_UB4(intbuf, 0);
+  end_of_entries = offset;
+
+  if (lseek (fd, offset, SEEK_SET) != offset)
+    {
+      perror (progname);
+      return 1;
+    }
+
+  if (read (fd, header, 46) != 46)
+    {
+      fprintf (stderr, "%s: %s: unexpected end of file\n",
+	       progname, jarfile);
+      return 1;
+    }
+
+  for (i = 0; i < count; i++)
+    {
+      if (UNPACK_UB4(header, 0) != 0x02014b50)
+	{
+	  fprintf (stderr, "%s: can't find central directory header\n",
+		   progname);
+	  return 1;
+	}
+      ze = (struct zipentry *) malloc (sizeof (struct zipentry));
+      if (!ze)
+	{
+	  perror (progname);
+	  return 1;
+	}
+      memset (ze, 0, sizeof (struct zipentry));
+      ze->flags = UNPACK_UB2(header, CEN_FLAGS);
+      ze->mod_time = UNPACK_UB2(header, CEN_MODTIME);
+      ze->mod_date = UNPACK_UB2(header, CEN_MODDATE);
+      ze->crc = UNPACK_UB4(header, CEN_CRC);
+      ze->usize = UNPACK_UB4(header, CEN_USIZE);
+      ze->csize = UNPACK_UB4(header, CEN_CSIZE);
+      ze->offset = UNPACK_UB4(header, CEN_OFFSET);
+      ze->compressed = (header[CEN_COMP] || header[CEN_COMP+1]);
+      len = UNPACK_UB2(header, CEN_FNLEN);
+      ze->filename = (char *) malloc ((len+1) * sizeof (char));
+      if (!ze->filename)
+	{
+	  perror (progname);
+	  return 1;
+	}
+      if (read (fd, ze->filename, len) != len)
+	{
+	  fprintf (stderr, "%s: %s: unexpected end of file\n",
+		   progname, jarfile);
+	  return 1;
+	}
+      len = UNPACK_UB4(header, CEN_EFLEN);
+      len += UNPACK_UB4(header, CEN_COMLEN);
+      if (lseek (fd, len, SEEK_CUR) == -1)
+	{
+	  perror (progname);
+	  return 1;
+	}
+      add_entry (ze);
+      if (i < count - 1)
+	{
+	  if (read (fd, header, 46) != 46)
+	    {
+	      fprintf (stderr, "%s: %s: unexpected end of file\n",
+		       progname, jarfile);
+	      return 1;
+	    }
+	}
+    }
+
+  lseek (fd, 0, SEEK_SET);
+  return 0;
+}
+
+int make_manifest(int jfd, const char *mf_name, int updating){
   time_t current_time;
   int nlen;   /* length of file name */
   int mod_time; /* file modification time */
@@ -812,7 +1023,7 @@ int make_manifest(int jfd, const char *mf_name){
       exit(1);
     }
 
-    if(add_file_to_jar(jfd, mfd, "META-INF/MANIFEST.MF", &statbuf)){
+    if(add_file_to_jar(jfd, mfd, "META-INF/MANIFEST.MF", &statbuf, updating)){
       perror("error writing to jar");
       exit(1);
     }
@@ -823,9 +1034,16 @@ int make_manifest(int jfd, const char *mf_name){
 }
 
 /* Implements -C by wrapping add_to_jar.  new_dir is the directory 
-   to switch to. */
+   to switch to.
+
+   `updating', if nonzero, will indicate that we are updating an
+   existing file, and will need to take special care. If set, we will
+   also expect that the linked list of zip entries will be filled in
+   with the jar file's current contents.
+ */
 int 
-add_to_jar_with_dir (int fd, const char* new_dir, const char* file)
+add_to_jar_with_dir (int fd, const char* new_dir, const char* file,
+		     const int updating)
 {
   int retval;
   char old_dir[MAXPATHLEN]; 
@@ -837,7 +1055,7 @@ add_to_jar_with_dir (int fd, const char* new_dir, const char* file)
     perror(new_dir);
     return 1;
   }
-  retval=add_to_jar(fd, file);
+  retval=add_to_jar(fd, file, updating);
   if (chdir(old_dir) == -1) {
     perror(old_dir);
     return 1;
@@ -846,11 +1064,13 @@ add_to_jar_with_dir (int fd, const char* new_dir, const char* file)
 }
 
 int 
-add_to_jar (int fd, const char *file) {
+add_to_jar (int fd, const char *file, const int updating)
+{
   struct stat statbuf;
   DIR *dir;
   struct dirent *de;
   zipentry *ze;
+  zipentry *existing = NULL;
   int stat_return;
 
   /* This is a quick compatibility fix -- Simon Weijgers <simon@weijgers.com> 
@@ -917,9 +1137,6 @@ add_to_jar (int fd, const char *file) {
     PACK_UB2(file_header, LOC_FNLEN, nlen);
     PACK_UB4(file_header, LOC_MODTIME, mod_time);
 
-    if(verbose)
-      printf("adding: %s (in=%d) (out=%d) (stored 0%%)\n", fullname, 0, 0);
-
     ze = (zipentry*)malloc(sizeof(zipentry));
     if(ze == NULL){
       perror("malloc");
@@ -936,10 +1153,36 @@ add_to_jar (int fd, const char *file) {
     ze->mod_date = (ub2)((mod_time & 0xffff0000) >> 16);
     ze->compressed = FALSE;
 
-    add_entry(ze);
+    if (updating)
+      {
+	if ((existing = find_entry (ze->filename)) != NULL)
+	  {
+	    if (existing->usize != 0)
+	      {
+		/* XXX overwriting non-directory with directory? */
+		fprintf (stderr, "%s: %s: can't overwrite non-directory with directory\n",
+			 progname, fullname);
+		return 1;
+	      }
+	  }
+	if (lseek (fd, end_of_entries, SEEK_SET) == -1)
+	  {
+	    fprintf (stderr, "%s %d\n", __FILE__, __LINE__);
+	    perror ("lseek");
+	    return 1;
+	  }
+      }
 
-    write(fd, file_header, 30);
-    write(fd, fullname, nlen);
+    if (!existing)
+      {
+	add_entry (ze);
+	write (fd, file_header, 30);
+	write (fd, fullname, nlen);
+	end_of_entries = lseek (fd, 0, SEEK_CUR);
+
+	if (verbose)
+	  printf ("adding: %s (in=%d) (out=%d) (stored 0%%)\n", fullname, 0, 0);
+      }
 
     while(!use_explicit_list_only && (de = readdir(dir)) != NULL){
       if(de->d_name[0] == '.')
@@ -953,7 +1196,7 @@ add_to_jar (int fd, const char *file) {
 
       strcpy(t_ptr, de->d_name);
 
-      if (add_to_jar(fd, fullname)) {
+      if (add_to_jar(fd, fullname, updating)) {
         fprintf(stderr, "Error adding file to jar!\n");
         return 1;
       }
@@ -971,7 +1214,7 @@ add_to_jar (int fd, const char *file) {
       return 1;
     }
     
-    if(add_file_to_jar(fd, add_fd, file, &statbuf)){
+    if(add_file_to_jar(fd, add_fd, file, &statbuf, updating)){
       fprintf(stderr, "Error adding file to jar!\n");
       return 1;
     }
@@ -982,8 +1225,9 @@ add_to_jar (int fd, const char *file) {
   return 0;
 }
 
-int add_file_to_jar(int jfd, int ffd, const char *fname, struct stat *statbuf){
-
+int add_file_to_jar(int jfd, int ffd, const char *fname, struct stat *statbuf,
+		    const int updating)
+{
   unsigned short file_name_length;
   unsigned long mod_time;
   ub1 rd_buff[RDSZ];
@@ -991,6 +1235,18 @@ int add_file_to_jar(int jfd, int ffd, const char *fname, struct stat *statbuf){
   off_t offset = 0;
   int rdamt;
   struct zipentry *ze;
+  struct zipentry *existing = NULL;
+
+  if (updating)
+    {
+      existing = find_entry (fname);
+      if (existing && looks_like_dir (fname))
+	{
+	  fprintf (stderr, "%s: %s is a directory in the archive\n",
+		   progname, fname);
+	  return 1;
+	}
+    }
 
   mod_time = unix2dostime(&(statbuf->st_mtime));
   file_name_length = strlen(fname);
@@ -1045,13 +1301,29 @@ int add_file_to_jar(int jfd, int ffd, const char *fname, struct stat *statbuf){
 
   ze->csize = statbuf->st_size;
   ze->usize = ze->csize;
-  ze->offset = lseek(jfd, 0, SEEK_CUR);
+
+  if (existing)
+    ze->offset = existing->offset;
+  else if (updating)
+    ze->offset = end_of_entries;
+  else
+    ze->offset = lseek(jfd, 0, SEEK_CUR);
+
   if(do_compress)
     ze->compressed = TRUE;
   else
     ze->compressed = FALSE;
-  
-  add_entry(ze);
+
+  if (!existing)
+    add_entry(ze);
+  if (updating && lseek (jfd, ze->offset, SEEK_SET) < 0)
+    {
+      perror ("lseek");
+      return 1;
+    }
+
+  /* We can safely write the header here, since it will be the same size
+     as before */
   
   /* Write the local header */
   write(jfd, file_header, 30);
@@ -1061,14 +1333,31 @@ int add_file_to_jar(int jfd, int ffd, const char *fname, struct stat *statbuf){
 
 
   if(verbose){
-    printf("adding: %s ", fname);
+    if (existing)
+      printf ("updating: %s ", fname);
+    else
+      printf("adding: %s ", fname);
     fflush(stdout);
   }
  
   if(do_compress){
     /* compress the file */
-    compress_file(ffd, jfd, ze);
+    compress_file(ffd, jfd, ze, existing);
   } else {
+    /* If we are not writing the last entry, make space for it. */
+    if (existing && existing->next_entry)
+      {
+	if (ze->usize > existing->usize)
+	  {
+	    if (shift_down (jfd, existing->next_entry->offset,
+			    ze->usize - existing->usize, existing->next_entry))
+	      {
+		fprintf (stderr, "%s: %s\n", progname, strerror (errno));
+		return 1;
+	      }
+	  }
+      }
+
     /* Write the contents of the file (uncompressed) to the zip file */
     /* calculate the CRC as we go along */
     ze->crc = crc32(0L, Z_NULL, 0); 
@@ -1112,12 +1401,42 @@ int add_file_to_jar(int jfd, int ffd, const char *fname, struct stat *statbuf){
     /* Sun's jar tool will only allow a data descriptor if the entry is
        compressed, but we'll save 16 bytes/entry if we only use it when
        we can't seek back on the file */
+    /* Technically, you CAN'T have a data descriptor unless the data
+       part has an obvious end, which DEFLATED does. Otherwise, there
+       would not be any way to determine where the data descriptor is.
+       Store an uncompressed file that ends with 0x504b0708, and see.
+       -- csm */
     
     if(write(jfd, data_descriptor, 16) != 16){
       perror("write");
       return 0;
     }
   }
+
+  if (existing)
+    {
+      int dd = (existing->flags & (1 << 3)) ? 12 : 0;
+      if (existing->next_entry && ze->csize < existing->csize + dd)
+	{
+	  if (shift_up (jfd, existing->next_entry->offset,
+			existing->csize + dd - ze->csize,
+			existing->next_entry))
+	    {
+	      perror (progname);
+	      return 1;
+	    }
+	}
+      /* Replace the existing entry data with this entry's. */
+      existing->csize = ze->csize;
+      existing->usize = ze->usize;
+      existing->crc = ze->crc;
+      existing->mod_time = ze->mod_time;
+      existing->mod_date = ze->mod_date;
+      free (ze->filename);
+      free (ze);
+    }
+  else if (updating)
+    end_of_entries = lseek (jfd, 0, SEEK_CUR);
   
   if(verbose)
     printf("(in=%d) (out=%d) (%s %d%%)\n", 
@@ -1890,7 +2209,7 @@ void version ()
 {
   printf("jar (%s) %s\n\n", PACKAGE, VERSION);
   printf("Copyright 1999, 2000, 2001  Bryan Burns\n");
-  printf("Copyright 2002 Free Software Foundation\n");
+  printf("Copyright 2002, 2004 Free Software Foundation\n");
   printf("\
 This is free software; see the source for copying conditions.  There is NO\n\
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n");

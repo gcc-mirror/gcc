@@ -74,6 +74,7 @@
 /*
   compress.c - code for handling deflation
   Copyright (C) 1999  Bryan Burns
+  Copyright (C) 2004  Free Software Foundation, Inc.
   
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
@@ -109,8 +110,12 @@
 #include "jartool.h"
 #include "pushback.h"
 #include "compress.h"
+#include "shift.h"
+
+int write_data (int, void *, size_t, struct zipentry *);
 
 extern int seekable;
+extern off_t end_of_entries;
 
 static z_stream zs;
 
@@ -133,7 +138,36 @@ void init_compression(){
   }
 }
 
-int compress_file(int in_fd, int out_fd, struct zipentry *ze){
+int
+write_data (int fd, void *buf, size_t len, struct zipentry *ze)
+{
+#ifdef WITH_SHIFT_DOWN
+  struct zipentry *next = NULL;
+  off_t here = lseek (fd, 0, SEEK_CUR);
+  /*
+   * If we are updating and there is not enough space before the next
+   * entry, expand the file.
+   */
+  if (ze)
+    {
+      next = ze->next_entry;
+      if (next && here + len >= next->offset)
+	{
+	  if (shift_down (fd, next->offset, (here + len) - next->offset, next))
+	    {
+	      perror ("can't expand file");
+	      exit (1);
+	    }
+	}
+    }
+#endif /* WITH_SHIFT_DOWN */
+
+  return write (fd, buf, len);
+}
+
+int compress_file(int in_fd, int out_fd, struct zipentry *ze,
+		  struct zipentry *existing)
+{
   Bytef in_buff[RDSZ];
   Bytef out_buff[RDSZ];
   unsigned int rdamt, wramt;
@@ -183,10 +217,11 @@ int compress_file(int in_fd, int out_fd, struct zipentry *ze){
     /* If the output buffer is full, dump it to disk */
     if(zs.avail_out == 0){
 
-      if(write(out_fd, out_buff, RDSZ) != RDSZ){
-        perror("write");
-        exit(1);
-      }
+      if (write_data (out_fd, out_buff, RDSZ, existing) != RDSZ)
+	{
+	  perror("write");
+	  exit(1);
+	}
 
       /* clear the output buffer */
       zs.next_out = out_buff;
@@ -201,10 +236,11 @@ int compress_file(int in_fd, int out_fd, struct zipentry *ze){
 
     wramt = RDSZ - zs.avail_out;
 
-    if(write(out_fd, out_buff, wramt) != (int)wramt){
-      perror("write");
-      exit(1);
-    }
+    if (write_data (out_fd, out_buff, wramt, existing) != (int)wramt)
+      {
+	perror("write");
+	exit(1);
+      }
     /* clear the output buffer */
     zs.next_out = out_buff;
     zs.avail_out = (uInt)RDSZ;
@@ -215,10 +251,11 @@ int compress_file(int in_fd, int out_fd, struct zipentry *ze){
   while(deflate(&zs, Z_FINISH) == Z_OK){
     wramt = RDSZ - zs.avail_out;
 
-    if(write(out_fd, out_buff, wramt) != (int)wramt){
-      perror("write");
-      exit(1);
-    }
+    if (write_data (out_fd, out_buff, wramt, existing) != (int)wramt)
+      {
+	perror("write");
+	exit(1);
+      }
 
     zs.next_out = out_buff;
     zs.avail_out = (uInt)RDSZ;
@@ -228,10 +265,11 @@ int compress_file(int in_fd, int out_fd, struct zipentry *ze){
   if(zs.avail_out != RDSZ){
     wramt = RDSZ - zs.avail_out;
 
-    if(write(out_fd, out_buff, wramt) != (int)wramt){
-      perror("write");
-      exit(1);
-    }
+    if (write_data (out_fd, out_buff, wramt, existing) != (int)wramt)
+      {
+	perror("write");
+	exit(1);
+      }
   }
 
   /* update fastjar's entry information */

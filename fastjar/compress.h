@@ -46,7 +46,7 @@
 void init_compression(void);
 
 /* Compresses the file specified by in_fd and appends it to out_fd */
-int compress_file(int in_fd, int out_fd, struct zipentry *ze);
+int compress_file(int, int, struct zipentry *, struct zipentry *);
 
 /* Frees memory used by compression function */
 void end_compression(void);

@@ -125,8 +125,7 @@ List table of contents for archive.
 Extract named (or all) files from archive.
 
 @item -u
-Update existing archive. This option is disabled due to bugs (currently
-fails with exit status 1 and does nothing).
+Update existing archive.
 
 @end table
 
