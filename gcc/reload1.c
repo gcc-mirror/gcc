@@ -3016,6 +3016,7 @@ eliminate_regs_in_insn (insn, replace)
      currently support: a single set with the source being a PLUS of an
      eliminable register and a constant.  */
   if (old_set
+      && GET_CODE (SET_DEST (old_set)) == REG
       && GET_CODE (SET_SRC (old_set)) == PLUS
       && GET_CODE (XEXP (SET_SRC (old_set), 0)) == REG
       && GET_CODE (XEXP (SET_SRC (old_set), 1)) == CONST_INT
