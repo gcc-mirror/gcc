@@ -1,3 +1,9 @@
+2001-02-24  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mn10300/mn10300.h (DBX_REGISTER_NUMBER): Reverted
+	2000-08-26's patch.
+	(EXTRA_CONSTRAINT): Formatting changes.
+
 2001-02-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* rtl.c (rtl_check_failed_code2): Fix typo in last change.
