@@ -63,12 +63,9 @@
 #    define __STL_UITHREADS
 #endif
 
-// Concept-checking code is on by default unless users define
-// the _STL_NO_CONCEPT_CHECKS hook.
-//#define _STL_NO_CONCEPT_CHECKS 1
-#if !defined(_STL_NO_CONCEPT_CHECKS)
-#  define __STL_USE_CONCEPT_CHECKS
-#endif
+// Concept-checking code is off by default unless users define
+// the _STL_USE_CONCEPT_CHECKS hook.
+//#define _STL_USE_CONCEPT_CHECKS 1
 
 // This is also a user hook, but via -f[no-]exceptions, not direct #defines.
 #ifdef __EXCEPTIONS
