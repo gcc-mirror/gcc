@@ -1,3 +1,24 @@
+Wed Mar 21 20:33:26 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (override_options): Default ix86_regparm to REGPARM_MAX.
+	(override_options): Use properlimits for preferred_stack_boundary.
+	(ix86_valid_type_attribute_p): Disable stdcall and cdecl attributes
+	on x86_64.
+	(ext_register_operand): Accept DImode.
+	(load_pic_register): Abort on 64bit.
+	(gen_push): Use Pmode instead of SImode.
+	(ix86_save_reg): Pic reg is never used on 64bit.
+	(ix86_expand_prologue): Likewise.
+	(ix86_emit_save_regs): Use Pmode instead of SImode.
+	(legitimate_address_p): Check displacement for 64bit.
+	(print_operand): Avoid outputting of (%rip) on 64bit.
+	(print_operand_address): Output (%rip) where possible.
+	(split_di): Abort on 64bit registers.
+	(ix86_expand_branch): DImode comparison is simple for x86_64.
+	(memory_address_length): Recognize memory addresses formed using PRE/POST modify.
+	(ix86_data_alignment, ix86_local_alignment): Align arrays to 16 bytes for x86_64.
+	* i386.h (TARGET_USE_SAHF): Disable for 64bit.
+
 Wed Mar 21 18:51:19 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* recog.c (push_operand): Recognize new format of push instructions.

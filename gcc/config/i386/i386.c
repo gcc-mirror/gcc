@@ -738,6 +738,9 @@ override_options ()
       else
 	ix86_regparm = i;
     }
+  else
+   if (TARGET_64BIT)
+     ix86_regparm = REGPARM_MAX;
 
   /* Validate -malign-loops= value, or provide default.  */
   ix86_align_loops = processor_target_table[ix86_cpu].align_loop;
@@ -779,8 +782,9 @@ override_options ()
   if (ix86_preferred_stack_boundary_string)
     {
       i = atoi (ix86_preferred_stack_boundary_string);
-      if (i < 2 || i > 31)
-	error ("-mpreferred-stack-boundary=%d is not between 2 and 31", i);
+      if (i < (TARGET_64BIT ? 3 : 2) || i > 31)
+	error ("-mpreferred-stack-boundary=%d is not between %d and 31", i,
+	       TARGET_64BIT ? 3 : 2);
       else
 	ix86_preferred_stack_boundary = (1 << i) * BITS_PER_UNIT;
     }
@@ -857,11 +861,13 @@ ix86_valid_type_attribute_p (type, attributes, identifier, args)
 
   /* Stdcall attribute says callee is responsible for popping arguments
      if they are not variable.  */
-  if (is_attribute_p ("stdcall", identifier))
+  if (is_attribute_p ("stdcall", identifier)
+      && !TARGET_64BIT)
     return (args == NULL_TREE);
 
   /* Cdecl attribute says the callee is a normal C declaration.  */
-  if (is_attribute_p ("cdecl", identifier))
+  if (is_attribute_p ("cdecl", identifier)
+      && !TARGET_64BIT)
     return (args == NULL_TREE);
 
   /* Regparm attribute specifies how many integer arguments are to be
@@ -950,7 +956,8 @@ ix86_return_pops_args (fundecl, funtype, size)
   }
 
   /* Lose any fake structure return argument.  */
-  if (aggregate_value_p (TREE_TYPE (funtype)))
+  if (aggregate_value_p (TREE_TYPE (funtype))
+      && !TARGET_64BIT)
     return GET_MODE_SIZE (Pmode);
 
     return 0;
@@ -1654,7 +1661,8 @@ ext_register_operand (op, mode)
      register rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  if (GET_MODE (op) != SImode && GET_MODE (op) != HImode)
+  if ((!TARGET_64BIT || GET_MODE (op) != DImode)
+      && GET_MODE (op) != SImode && GET_MODE (op) != HImode)
     return 0;
   return register_operand (op, VOIDmode);
 }
@@ -2179,6 +2187,9 @@ load_pic_register ()
 {
   rtx gotsym, pclab;
 
+  if (TARGET_64BIT)
+    abort();
+
   gotsym = gen_rtx_SYMBOL_REF (Pmode, "_GLOBAL_OFFSET_TABLE_");
 
   if (TARGET_DEEP_BRANCH_PREDICTION)
@@ -2200,15 +2211,15 @@ load_pic_register ()
   emit_insn (gen_prologue_set_got (pic_offset_table_rtx, gotsym, pclab));
 }
 
-/* Generate an SImode "push" pattern for input ARG.  */
+/* Generate an "push" pattern for input ARG.  */
 
 static rtx
 gen_push (arg)
      rtx arg;
 {
   return gen_rtx_SET (VOIDmode,
-		      gen_rtx_MEM (SImode,
-				   gen_rtx_PRE_DEC (SImode,
+		      gen_rtx_MEM (Pmode,
+				   gen_rtx_PRE_DEC (Pmode,
 						    stack_pointer_rtx)),
 		      arg);
 }
@@ -2219,7 +2230,8 @@ ix86_save_reg (regno)
 	int regno;
 {
   int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
-				  || current_function_uses_const_pool);
+				  || current_function_uses_const_pool)
+		     && !TARGET_64BIT;
   return ((regs_ever_live[regno] && !call_used_regs[regno]
 	   && !fixed_regs[regno]
 	   && (regno != HARD_FRAME_POINTER_REGNUM || !frame_pointer_needed))
@@ -2368,7 +2380,7 @@ ix86_emit_save_regs ()
   for (regno = FIRST_PSEUDO_REGISTER - 1; regno >= 0; regno--)
     if (ix86_save_reg (regno))
       {
-	insn = emit_insn (gen_push (gen_rtx_REG (SImode, regno)));
+	insn = emit_insn (gen_push (gen_rtx_REG (Pmode, regno)));
 	RTX_FRAME_RELATED_P (insn) = 1;
       }
 }
@@ -2379,8 +2391,9 @@ void
 ix86_expand_prologue ()
 {
   rtx insn;
-  int pic_reg_used = flag_pic && (current_function_uses_pic_offset_table
-				  || current_function_uses_const_pool);
+  int pic_reg_used = (flag_pic && (current_function_uses_pic_offset_table
+				  || current_function_uses_const_pool)
+		      && !TARGET_64BIT);
   struct ix86_frame frame;
 
   ix86_compute_frame_layout (&frame);
@@ -2976,14 +2989,30 @@ legitimate_address_p (mode, addr, strict)
 	  goto report_error;
 	}
 
-      if (GET_CODE (disp) == CONST_DOUBLE)
+      if (TARGET_64BIT)
 	{
-	  reason = "displacement is a const_double";
-	  goto report_error;
+	  if (!x86_64_sign_extended_value (disp))
+	    {
+	      reason = "displacement is out of range";
+	      goto report_error;
+	    }
+	}
+      else
+	{
+	  if (GET_CODE (disp) == CONST_DOUBLE)
+	    {
+	      reason = "displacement is a const_double";
+	      goto report_error;
+	    }
 	}
 
       if (flag_pic && SYMBOLIC_CONST (disp))
 	{
+	  if (TARGET_64BIT && (index || base))
+	    {
+	      reason = "non-constant pic memory reference";
+	      goto report_error;
+	    }
 	  if (! legitimate_pic_address_disp_p (disp))
 	    {
 	      reason = "displacement is an invalid pic construct";
@@ -3958,6 +3987,10 @@ print_operand (file, x, code)
       x = XEXP (x, 0);
       if (flag_pic && CONSTANT_ADDRESS_P (x))
 	output_pic_addr_const (file, x, code);
+      /* Avoid (%rip) for call operands.  */
+      else if (CONSTANT_ADDRESS_P (x) && code =='P'
+	       && GET_CODE (x) != CONST_INT)
+	output_addr_const (file, x);
       else
 	output_address (x);
     }
@@ -4060,6 +4093,10 @@ print_operand_address (file, addr)
 	output_pic_addr_const (file, addr, 0);
       else
 	output_addr_const (file, addr);
+
+      /* Use one byte shorter RIP relative addressing for 64bit mode.  */
+      if (GET_CODE (disp) != CONST_INT && TARGET_64BIT)
+	fputs ("(%rip)", file);
     }
   else
     {
@@ -4165,6 +4202,8 @@ split_di (operands, num, lo_half, hi_half)
 	}
       else if (GET_CODE (op) == REG)
 	{
+	  if (TARGET_64BIT)
+	    abort();
 	  lo_half[num] = gen_rtx_REG (SImode, REGNO (op));
 	  hi_half[num] = gen_rtx_REG (SImode, REGNO (op) + 1);
 	}
@@ -5726,6 +5765,7 @@ ix86_expand_branch (code, label)
     case QImode:
     case HImode:
     case SImode:
+      simple:
       tmp = ix86_expand_compare (code, NULL, NULL);
       tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
 				  gen_rtx_LABEL_REF (VOIDmode, label),
@@ -5769,6 +5809,8 @@ ix86_expand_branch (code, label)
       }
 
     case DImode:
+      if (TARGET_64BIT)
+	goto simple;
       /* Expand DImode branch into multiple compare+branch.  */
       {
 	rtx lo[2], hi[2], label2;
@@ -7178,7 +7220,9 @@ memory_address_length (addr)
   int len;
 
   if (GET_CODE (addr) == PRE_DEC
-      || GET_CODE (addr) == POST_INC)
+      || GET_CODE (addr) == POST_INC
+      || GET_CODE (addr) == PRE_MODIFY
+      || GET_CODE (addr) == POST_MODIFY)
     return 0;
 
   if (! ix86_decompose_address (addr, &parts))
@@ -7985,6 +8029,18 @@ ix86_data_alignment (type, align)
 	   || TREE_INT_CST_HIGH (TYPE_SIZE (type))) && align < 256)
     return 256;
 
+  /* x86-64 ABI requires arrays greater than 16 bytes to be aligned
+     to 16byte boundary.  */
+  if (TARGET_64BIT)
+    {
+      if (AGGREGATE_TYPE_P (type)
+	   && TYPE_SIZE (type)
+	   && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+	   && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= 128
+	       || TREE_INT_CST_HIGH (TYPE_SIZE (type))) && align < 128)
+	return 128;
+    }
+
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
       if (TYPE_MODE (TREE_TYPE (type)) == DFmode && align < 64)
@@ -8032,6 +8088,17 @@ ix86_local_alignment (type, align)
      tree type;
      int align;
 {
+  /* x86-64 ABI requires arrays greater than 16 bytes to be aligned
+     to 16byte boundary.  */
+  if (TARGET_64BIT)
+    {
+      if (AGGREGATE_TYPE_P (type)
+	   && TYPE_SIZE (type)
+	   && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+	   && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= 16
+	       || TREE_INT_CST_HIGH (TYPE_SIZE (type))) && align < 128)
+	return 128;
+    }
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
       if (TYPE_MODE (TREE_TYPE (type)) == DFmode && align < 64)
