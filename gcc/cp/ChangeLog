@@ -1,3 +1,14 @@
+2001-06-08  Nathan Sidwell  <nathan@codesourcery.com>
+	    Jason Merrill <jason_merrill@redhat.com>
+
+	PR c++/3061
+	* class.c (build_secondary_vtable): Use assert, rather than an error
+	message.
+	(dfs_fixup_binfo_vtbls): BINFO_VTABLE might be NULL.
+	(dfs_accumulate_vtbl_inits): A lost primary virtual base may
+	be between ORIG_BINFO and RTTI_BINFO, but neither of them.
+	Don't set BINFO_VTABLE for a primary virtual base.
+
 2001-06-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (duplicate_decls): Update source position information
