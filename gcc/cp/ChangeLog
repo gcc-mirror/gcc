@@ -1,5 +1,10 @@
 2001-11-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	* decl.c (create_array_type_for_decl): Check if NAME is NULL_TREE
+	when displaying error message about missing array bounds.
+
+2001-11-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	* mangle.c (write_expression): Handle CAST_EXPR, STATIC_CAST_EXPR,
 	CONST_CAST_EXPR.
 	* operators.def: Add CAST_EXPR, STATIC_CAST_EXPR, CONST_CAST_EXPR.

@@ -9476,8 +9476,11 @@ create_array_type_for_decl (name, type, size)
      can be omitted only for the first member of the sequence.  */
   if (TREE_CODE (type) == ARRAY_TYPE && !TYPE_DOMAIN (type))
     {
-      cp_error ("declaration of `%D' as multidimensional array must have bounds for all dimensions except the first",
-		name);
+      if (name)
+	cp_error ("declaration of `%D' as multidimensional array must have bounds for all dimensions except the first",
+		  name);
+      else
+	cp_error ("multidimensional array must have bounds for all dimensions except the first");
 
       return error_mark_node;
     }
