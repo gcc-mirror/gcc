@@ -1,3 +1,51 @@
+1999-12-04  Geoffrey Keating  <geoffk@cygnus.com>
+	    Greg McGary  <gkm@gnu.org>
+
+	* c-common.c (enum attrs): Add A_NO_LIMIT_STACK.
+	(init_attributes): Add A_NO_LIMIT_STACK.
+	(decl_attributes): Handle A_NO_LIMIT_STACK.
+	* c-decl.c (duplicate_decls): Handle DECL_NO_LIMIT_STACK.
+	* explow.c (allocate_dynamic_stack_space) [!HAVE_allocate_stack]:
+ 	Handle stack bounds checking.
+	* flags.h (flag_stack_check): Use the word 'probe' rather than
+ 	'check', because the flag doesn't actually cause any checking to
+ 	be done.
+	* function.c (expand_function_start): Set
+ 	current_function_limit_stack.
+	* function.h (struct function): Add limit_stack.
+	(current_function_limit_stack): Define.
+	* invoke.texi (Code Gen Options): Document new options.
+	* rtl.h: Declare stack_limit_rtx.
+	* toplev.c (stack_limit_rtx): New variable.
+	(decode_f_option): Handle new options -fstack-limit-register=REG,
+	-fstack-limit-symbol=IDENT, -fno-stack-limit.
+	(main): Add stack_limit_rtx as GC root.
+	* tree.h (DECL_NO_LIMIT_STACK): New macro.
+	(struct tree_decl): New member no_limit_stack.
+
+	* config/rs6000/rs6000.c (rs6000_allocate_stack_space): Handle
+ 	stack_limit_rtx.
+	* config/rs6000/rs6000.md (allocate_stack): Handle stack_limit_rtx.
+	(conditional_trap+1): Get new mnemonic correct.
+	(conditional_trap+2): New pattern for DImode traps.
+
+	* config/m68k/m68k.c (output_function_prologue): Handle
+	stack_limit_rtx.
+	* config/m68k/m68k.md (trap): New insn.
+	(conditional_trap): New insn.
+	* md.texi (Standard Names): Document `trap' and
+ 	`conditional_trap'.
+	* optabs.c (gen_cond_trap): Use start_sequence()/end_sequence()
+	so a cc0 setter doesn't get emitted at some random place in the
+	function.
+
+	* config/i960/i960.md (trap): New insn.
+	(conditional_trap): New expander.
+	(conditional_trap+1, conditional_trap+2): New insns for signed
+	and unsigned cases.
+	* config/i960/i960.c (i960_function_prologue): Use 
+	STARTING_FRAME_OFFSET.  Handle stack_limit_rtx.
+
 Thu Dec  2 21:22:45 1999  Greg McGary  <gkm@gnu.org>
 			  Geoffrey Keating  <geoffk@cygnus.com>
 

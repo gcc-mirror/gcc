@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 #include "except.h"
 #include "function.h"
 #include "recog.h"
+#include "toplev.h"
 #include <math.h>
 
 /* Save the operands last given to a compare for use when we
@@ -1431,6 +1432,34 @@ i960_function_prologue (file, size)
   actual_fsize = (actual_fsize + 15) & ~0xF;
 #endif
 
+  /* Check stack limit if necessary.  */
+  if (current_function_limit_stack)
+    {
+      rtx min_stack = stack_limit_rtx;
+      if (actual_fsize != 0)
+	min_stack = plus_constant (stack_limit_rtx, -actual_fsize);
+
+      /* Now, emulate a little bit of reload.  We want to turn 'min_stack'
+	 into an arith_operand.  Use register 20 as the temporary.  */
+      if (legitimate_address_p (Pmode, min_stack, 1) 
+	  && !arith_operand (min_stack, Pmode))
+	{
+	  rtx tmp = gen_rtx_MEM (Pmode, min_stack);
+	  fputs ("\tlda\t", file);
+	  i960_print_operand (file, tmp, 0);
+	  fputs (",r4\n", file);
+	  min_stack = gen_rtx_REG (Pmode, 20);
+	}
+      if (arith_operand (min_stack, Pmode))
+	{
+	  fputs ("\tcmpo\tsp,", file);
+	  i960_print_operand (file, min_stack, 0);
+	  fputs ("\n\tfaultge.f\n", file);
+	}
+      else
+	warning ("stack limit expression is not supported");
+    }
+
   /* Allocate space for register save and locals.  */
   if (actual_fsize > 0)
     {
@@ -1443,7 +1472,7 @@ i960_function_prologue (file, size)
   /* Take hardware register save area created by the call instruction
      into account, but store them before the argument block area.  */
   lvar_size = actual_fsize - compute_frame_size (0) - n_saved_regs * 4;
-  offset = 64 + lvar_size;
+  offset = STARTING_FRAME_OFFSET + lvar_size;
   /* Save registers on stack if needed.  */
   /* ??? Is it worth to use the same algorithm as one for saving
      global registers in local registers? */

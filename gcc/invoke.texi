@@ -439,6 +439,7 @@ in the following sections.
 -freg-struct-return  -fshared-data  -fshort-enums
 -fshort-double  -fvolatile  -fvolatile-global -fvolatile-static
 -fverbose-asm -fpack-struct  -fstack-check
+-fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym}
 -fargument-alias  -fargument-noalias
 -fargument-noalias-global
 -fleading-underscore
@@ -7084,6 +7085,25 @@ stack.  You should specify this flag if you are running in an
 environment with multiple threads, but only rarely need to specify it in
 a single-threaded environment since stack overflow is automatically
 detected on nearly all systems if there is only one stack.
+
+Note that this switch does not actually cause checking to be done; the
+operating system must do that.  The switch causes generation of code
+to ensure that the operating system sees the stack being extended.
+
+@item -fstack-limit-register=@var{reg}
+@itemx -fstack-limit-symbol=@var{sym}
+@itemx -fno-stack-limit
+Generate code to ensure that the stack does not grow beyond a certain value,
+either the value of a register or the address of a symbol.  If the stack
+would grow beyond the value, a signal is raised.  For most targets,
+the signal is raised before the stack overruns the boundary, so
+it is possible to catch the signal without taking special precautions.
+
+For instance, if the stack starts at address @samp{0x80000000} and grows
+downwards you can use the flags
+@samp{-fstack-limit-symbol=__stack_limit}
+@samp{-Wl,--defsym,__stack_limit=0x7ffe0000} which will enforce a stack
+limit of 128K.
 
 @cindex aliasing of parameters
 @cindex parameters, aliased

@@ -1576,6 +1576,8 @@ extern void reg_scan			PROTO ((rtx, int, int));
 extern void reg_scan_update		PROTO ((rtx, rtx, int));
 extern void fix_register		PROTO ((const char *, int, int));
 
+extern void delete_null_pointer_checks	PROTO ((rtx));
+
 /* In regmove.c */
 #ifdef BUFSIZ
 extern void regmove_optimize		PROTO ((rtx, int, FILE *));
@@ -1703,6 +1705,8 @@ extern rtx addr_side_effect_eval	PROTO ((rtx, int, int));
 extern int stack_regs_mentioned		PROTO((rtx insn));
 #endif
 
+/* In toplev.c */
 
-extern void delete_null_pointer_checks	PROTO ((rtx));
+extern rtx stack_limit_rtx;
+
 #endif /* _RTL_H */

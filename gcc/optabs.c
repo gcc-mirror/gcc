@@ -4806,11 +4806,17 @@ gen_cond_trap (code, op1, op2, tcode)
       && cmp_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
     {
       rtx insn;
+      start_sequence();
       emit_insn (GEN_FCN (cmp_optab->handlers[(int) mode].insn_code) (op1, op2));
       PUT_CODE (trap_rtx, code);
       insn = gen_conditional_trap (trap_rtx, tcode);
       if (insn)
-	return insn;
+	{
+	  emit_insn (insn);
+	  insn = gen_sequence ();
+	}
+      end_sequence();
+      return insn;
     }
 #endif
 

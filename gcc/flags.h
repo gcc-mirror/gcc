@@ -476,8 +476,8 @@ extern int flag_argument_noalias;
    if alias analysis (in general) is enabled.  */
 extern int flag_strict_aliasing;
 
-/* Emit code to check for stack overflow; also may cause large objects
-   to be allocated dynamically.  */
+/* Emit code to probe the stack, to help detect stack overflow; also
+   may cause large objects to be allocated dynamically.  */
 extern int flag_stack_check;
 
 /* Do the full regmove optimization pass.  */
