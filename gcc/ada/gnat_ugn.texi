@@ -4419,6 +4419,9 @@ Unreachable code
 Fixed-point type declarations with a null range
 
 @item
+Direct_IO or Sequential_IO instantiated with a type that has access values
+
+@item
 Variables that are never assigned a value
 
 @item

@@ -75,9 +75,12 @@ package System.Tasking.Restricted.Stages is
    --   task type t (discr : integer);
    --   tE : aliased boolean := false;
    --   tZ : size_type := unspecified_size;
+
    --   type tV (discr : integer) is limited record
    --      _task_id : task_id;
+   --      _atcb : aliased system__tasking__ada_task_control_block (0);
    --   end record;
+
    --   procedure tB (_task : access tV);
    --   freeze tV [
    --      procedure tVIP (_init : in out tV; _master : master_id;
@@ -86,26 +89,28 @@ package System.Tasking.Restricted.Stages is
    --      begin
    --         _init.discr := discr;
    --         _init._task_id := null;
+   --         system__tasking__ada_task_control_blockIP (_init._atcb, 0);
+   --         _init._task_id := _init._atcb'unchecked_access;
    --         create_restricted_task (unspecified_priority, tZ,
    --           unspecified_task_info, task_procedure_access!(tB'address),
    --           _init'address, tE'unchecked_access, _chain, _task_name, _init.
    --           _task_id);
    --         return;
    --      end tVIP;
-   --   ]
 
    --   _chain : aliased activation_chain;
    --   activation_chainIP (_chain);
 
    --   procedure tB (_task : access tV) is
    --      discr : integer renames _task.discr;
-   --
+
    --      procedure _clean is
    --      begin
    --         complete_restricted_task;
    --         finalize_list (F14b);
    --         return;
    --      end _clean;
+
    --   begin
    --      ...declarations...
    --      complete_restricted_activation;
@@ -131,7 +136,7 @@ package System.Tasking.Restricted.Stages is
       Elaborated    : Access_Boolean;
       Chain         : in out Activation_Chain;
       Task_Image    : String;
-      Created_Task  : out Task_Id);
+      Created_Task  : Task_Id);
    --  Compiler interface only. Do not call from within the RTS.
    --  This must be called to create a new task.
    --

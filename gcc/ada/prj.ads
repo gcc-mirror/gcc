@@ -240,6 +240,9 @@ package Prj is
    type Variable_Kind is (Undefined, List, Single);
    --  Different kinds of variables
 
+   subtype Defined_Variable_Kind is Variable_Kind range List .. Single;
+   --  The defined kinds of variables
+
    Ignored : constant Variable_Kind := Single;
    --  Used to indicate that a package declaration must be ignored
    --  while processing the project tree (unknown package name).

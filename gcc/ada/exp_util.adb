@@ -624,12 +624,14 @@ package body Exp_Util is
          if Nkind (Id_Ref) = N_Identifier
            or else Nkind (Id_Ref) = N_Defining_Identifier
          then
-            --  For a simple variable, the image of the task is the name
-            --  of the variable.
+            --  For a simple variable, the image of the task is built from
+            --  the name of the variable. To avoid possible conflict with
+            --  the anonymous type created for a single protected object,
+            --  add a numeric suffix.
 
             T_Id :=
               Make_Defining_Identifier (Loc,
-                New_External_Name (Chars (Id_Ref), 'T'));
+                New_External_Name (Chars (Id_Ref), 'T', 1));
 
             Get_Name_String (Chars (Id_Ref));
 
@@ -1331,7 +1333,10 @@ package body Exp_Util is
 
       Par := Exp;
       while Present (Par)
-        and then Nkind (Par) = N_Selected_Component
+        and then
+         (Nkind (Par) = N_Selected_Component
+            or else
+          Nkind (Par) = N_Indexed_Component)
       loop
          if Nkind (Parent (Par)) = N_Assignment_Statement
            and then Par = Name (Parent (Par))

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -137,7 +137,7 @@ pragma Elaborate_Body (Finalization_Implementation);
    --  Initialize the field My_Address to the Object'Address
 
    procedure Adjust (Object : in out Record_Controller);
-   --  Adjust the components and their finalization pointers by substracting
+   --  Adjust the components and their finalization pointers by subtracting
    --  by the offset of the target and the source addresses of the assignment.
 
    --  Inherit Finalize from Limited_Record_Controller

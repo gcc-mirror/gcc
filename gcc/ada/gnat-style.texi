@@ -716,7 +716,10 @@ format:
 
 @noindent
 Note that the name in the header is preceded by a single space,
-not two spaces as for other comments.
+not two spaces as for other comments. These headers are used on
+nested subprograms as well as outer level subprograms. They may
+also be used as headers for sections of comments, or collections
+of declarations that are related.
 
 @item
 Every subprogram body must have a preceding @syntax{subprogram_declaration}.

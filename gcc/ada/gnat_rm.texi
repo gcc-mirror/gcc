@@ -202,6 +202,7 @@ Implementation Defined Attributes
 * Enum_Rep::
 * Epsilon::
 * Fixed_Value::
+* Has_Access_Values::
 * Has_Discriminants::
 * Img::
 * Integer_Value::
@@ -4000,6 +4001,7 @@ consideration, you should minimize the use of these attributes.
 * Enum_Rep::
 * Epsilon::
 * Fixed_Value::
+* Has_Access_Values::
 * Has_Discriminants::
 * Img::
 * Integer_Value::
@@ -4304,6 +4306,19 @@ conversion to the fixed-point type.  The difference is
 that there are full range checks, to ensure that the result is in range.
 This attribute is primarily intended for use in implementation of the
 input-output functions for fixed-point values.
+
+@node Has_Access_Values
+@unnumberedsec Has_Access_Values
+@cindex Access values, testing for
+@findex Has_Access_Values
+@noindent
+The prefix of the @code{Has_Access_Values} attribute is a type.  The result
+is a Boolean value which is True if the is an access type, or is a composite
+type with a component (at any nesting depth) that is an access type, and is
+False otherwise.
+The intended use of this attribute is in conjunction with generic
+definitions.  If the attribute is applied to a generic private type, it
+indicates whether or not the corresponding actual type has access values.
 
 @node Has_Discriminants
 @unnumberedsec Has_Discriminants

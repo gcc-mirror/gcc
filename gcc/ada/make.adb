@@ -1728,8 +1728,9 @@ package body Make is
 
             if Arguments_Project = No_Project then
                if not External_Unit_Compilation_Allowed then
-                  Make_Failed ("external source, not part of any projects, " &
-                               "cannot be compiled (", Source_File_Name, ")");
+                  Make_Failed ("external source (", Source_File_Name,
+                               ") is not part of any project; cannot be " &
+                               "compiled without gnatmake switch -x");
                end if;
 
                --  If it is allowed, simply add the saved gcc switches

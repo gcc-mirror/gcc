@@ -52,6 +52,7 @@ with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
 with Tbuild;   use Tbuild;
+with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
 with Validsw;  use Validsw;
 
@@ -97,7 +98,7 @@ package body Exp_Ch5 is
    --  of representation.
 
    function Make_Tag_Ctrl_Assignment (N : Node_Id) return List_Id;
-   --  Generate the necessary code for controlled and Tagged assignment,
+   --  Generate the necessary code for controlled and tagged assignment,
    --  that is to say, finalization of the target before, adjustement of
    --  the target after and save and restore of the tag and finalization
    --  pointers which are not 'part of the value' and must not be changed
@@ -3031,12 +3032,7 @@ package body Exp_Ch5 is
 
       Res       : List_Id;
       Tag_Tmp   : Entity_Id;
-      Prev_Tmp  : Entity_Id;
-      Next_Tmp  : Entity_Id;
-      Ctrl_Ref  : Node_Id;
-      Ctrl_Ref2 : Node_Id   := Empty;
-      Prev_Tmp2 : Entity_Id := Empty;  -- prevent warning
-      Next_Tmp2 : Entity_Id := Empty;  -- prevent warning
+      Original_Size, Range_Type, Opaque_Type : Entity_Id;
 
    begin
       Res := New_List;
@@ -3074,8 +3070,6 @@ package body Exp_Ch5 is
              With_Detach => New_Reference_To (Standard_False, Loc)));
       end if;
 
-      Next_Tmp := Make_Defining_Identifier (Loc, New_Internal_Name ('C'));
-
       --  Save the Tag in a local variable Tag_Tmp
 
       if Save_Tag then
@@ -3097,102 +3091,263 @@ package body Exp_Ch5 is
          Tag_Tmp := Empty;
       end if;
 
-      --  Save the Finalization Pointers in local variables Prev_Tmp and
-      --  Next_Tmp. For objects with Has_Controlled_Component set, these
-      --  pointers are in the Record_Controller and if it is also
-      --  Is_Controlled, we need to save the object pointers as well.
+      --  We really need a comment here ???
 
       if Ctrl_Act then
-         Ctrl_Ref := Duplicate_Subexpr_No_Checks (L);
 
-         if Has_Controlled_Component (T) then
-            Ctrl_Ref :=
-              Make_Selected_Component (Loc,
-                Prefix => Ctrl_Ref,
-                Selector_Name =>
-                  New_Reference_To (Controller_Component (T), Loc));
+         --  subtype G is Storage_Offset range 1 .. Expr'Size
+
+         Original_Size :=
+           Make_Defining_Identifier (Loc,
+             New_Internal_Name ('S'));
+
+         Append_To (Res,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Original_Size,
+             Constant_Present    => True,
+             Object_Definition   => New_Occurrence_Of (
+               RTE (RE_Storage_Offset), Loc),
+             Expression          =>
+               Make_Op_Divide (Loc,
+                 Left_Opnd =>
+                   Make_Attribute_Reference (Loc,
+                     Prefix =>
+                       Duplicate_Subexpr_No_Checks (L),
+                     Attribute_Name => Name_Size),
+                 Right_Opnd => Make_Integer_Literal (Loc,
+                     Intval => System_Storage_Unit))));
+
+         Range_Type :=
+           Make_Defining_Identifier (Loc,
+             New_Internal_Name ('G'));
+
+         Append_To (Res,
+           Make_Subtype_Declaration (Loc,
+             Defining_Identifier => Range_Type,
+             Subtype_Indication =>
+               Make_Subtype_Indication (Loc,
+                 Subtype_Mark =>
+                   New_Reference_To (RTE (RE_Storage_Offset), Loc),
+                 Constraint   => Make_Range_Constraint (Loc,
+                   Range_Expression =>
+                     Make_Range (Loc,
+                       Low_Bound  => Make_Integer_Literal (Loc, 1),
+                       High_Bound => New_Occurrence_Of (
+                         Original_Size, Loc))))));
+
+         --  subtype S is Storage_Array (G)
+
+         Append_To (Res,
+           Make_Subtype_Declaration (Loc,
+             Defining_Identifier =>
+               Make_Defining_Identifier (Loc,
+                 New_Internal_Name ('S')),
+             Subtype_Indication  =>
+               Make_Subtype_Indication (Loc,
+                 Subtype_Mark =>
+                   New_Reference_To (RTE (RE_Storage_Array), Loc),
+                 Constraint =>
+                   Make_Index_Or_Discriminant_Constraint (Loc,
+                     Constraints =>
+                       New_List (New_Reference_To (Range_Type, Loc))))));
+
+         --  type A is access S
+
+         Opaque_Type := Make_Defining_Identifier (Loc,
+           New_Internal_Name ('A'));
+         Append_To (Res,
+           Make_Full_Type_Declaration (Loc,
+             Defining_Identifier => Opaque_Type,
+             Type_Definition     =>
+               Make_Access_To_Object_Definition (Loc,
+                 Subtype_Indication =>
+                   New_Occurrence_Of (
+                     Defining_Identifier (Last (Res)), Loc))));
+
+         --  Give a label name to this declare block, and add comments here???
+
+         declare
+            Prev_Ref : Node_Id;
+
+            First_After_Root : Node_Id := Empty;
+            --  Index of first byte to be copied (used to skip
+            --  Root_Controlled in controlled objects).
+
+            Last_Before_Hole : Node_Id := Empty;
+            --  Index of last byte to be copied before outermost record
+            --  controller data.
+
+            Hole_Length      : Node_Id := Empty;
+            --  Length of record controller data (Prev and Next pointers)
+
+            First_After_Hole : Node_Id := Empty;
+            --  Index of first byte to be copied after outermost record
+            --  controller data.
+
+            function Build_Slice
+              (Rec    : Entity_Id;
+               Lo, Hi : Node_Id) return Node_Id;
+            --  Function specs must have comments, saying what all the
+            --  parameters are and what the function does ???
+
+            -----------------
+            -- Build_Slice --
+            -----------------
+
+            function Build_Slice
+              (Rec    : Node_Id;
+               Lo, Hi : Node_Id) return Node_Id
+            is
+               Lo_Bound, Hi_Bound : Node_Id;
+
+               Opaque : constant Node_Id :=
+                          Unchecked_Convert_To (Opaque_Type,
+                            Make_Attribute_Reference (Loc,
+                              Prefix         => Rec,
+                              Attribute_Name => Name_Address));
+               --  Comment required, what is this???
+
+            begin
+               --  Comments required in this body ???
+
+               if No (Lo) then
+                  Lo_Bound := Make_Integer_Literal (Loc, 1);
+               else
+                  Lo_Bound := Lo;
+               end if;
+
+               if No (Hi) then
+                  Hi_Bound := Make_Attribute_Reference (Loc,
+                    Prefix => New_Occurrence_Of (Range_Type, Loc),
+                    Attribute_Name => Name_Last);
+               else
+                  Hi_Bound := Hi;
+               end if;
+
+               return Make_Slice (Loc,
+                 Prefix =>
+                   Opaque,
+                 Discrete_Range => Make_Range (Loc,
+                   Lo_Bound, Hi_Bound));
+            end Build_Slice;
+
+         --  Start of processing for ??? (name of block)
+
+         begin
+            First_After_Root := Make_Integer_Literal (Loc, 1);
+
+            --  Comment ???
 
             if Is_Controlled (T) then
-               Ctrl_Ref2 := Duplicate_Subexpr_No_Checks (L);
+               First_After_Root :=
+                 Make_Op_Add (Loc,
+                   First_After_Root,
+                   Make_Op_Divide (Loc,
+                     Make_Attribute_Reference (Loc,
+                       Prefix =>
+                         New_Occurrence_Of (RTE (RE_Root_Controlled), Loc),
+                       Attribute_Name => Name_Size),
+                     Make_Integer_Literal (Loc, System_Storage_Unit)));
             end if;
-         end if;
 
-         Prev_Tmp := Make_Defining_Identifier (Loc, New_Internal_Name ('B'));
+            if Has_Controlled_Component (T) then
 
-         Append_To (Res,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Prev_Tmp,
+               --  The record controller Prev and Next pointers must be left
+               --  intact in the target object, not copied. Compute the bounds
+               --  of the hole to be skipped in copying the objecct.
 
-             Object_Definition =>
-               New_Reference_To (RTE (RE_Finalizable_Ptr), Loc),
+               Prev_Ref :=
+                 Make_Selected_Component (Loc,
+                   Prefix =>
+                     Make_Selected_Component (Loc,
+                       Prefix => Duplicate_Subexpr_No_Checks (L),
+                       Selector_Name =>
+                         New_Reference_To (Controller_Component (T), Loc)),
+                   Selector_Name =>  Make_Identifier (Loc, Name_Prev));
 
-             Expression =>
-               Make_Selected_Component (Loc,
-                 Prefix =>
-                   Unchecked_Convert_To (RTE (RE_Finalizable), Ctrl_Ref),
-                 Selector_Name => Make_Identifier (Loc, Name_Prev))));
+               --  Last index before hole
 
-         Next_Tmp := Make_Defining_Identifier (Loc, New_Internal_Name ('C'));
+               Last_Before_Hole :=
+                 Make_Defining_Identifier (Loc,
+                   New_Internal_Name ('L'));
 
-         Append_To (Res,
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Next_Tmp,
+               Append_To (Res,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => Last_Before_Hole,
+                   Object_Definition   => New_Occurrence_Of (
+                     RTE (RE_Storage_Offset), Loc),
+                   Constant_Present    => True,
+                   Expression          => Make_Op_Add (Loc,
+                       Make_Attribute_Reference (Loc,
+                         Prefix => Prev_Ref,
+                         Attribute_Name => Name_Position),
+                       Make_Attribute_Reference (Loc,
+                         Prefix => New_Copy_Tree (Prefix (Prev_Ref)),
+                         Attribute_Name => Name_Position))));
 
-             Object_Definition =>
-               New_Reference_To (RTE (RE_Finalizable_Ptr), Loc),
+               --  Hole length
 
-             Expression =>
-               Make_Selected_Component (Loc,
-                 Prefix =>
-                   Unchecked_Convert_To (RTE (RE_Finalizable),
-                     New_Copy_Tree (Ctrl_Ref)),
-                 Selector_Name => Make_Identifier (Loc, Name_Next))));
+               Hole_Length :=
+                 Make_Op_Multiply (Loc,
+                   Make_Integer_Literal (Loc, Uint_2),
+                     Make_Op_Divide (Loc,
+                       Make_Attribute_Reference (Loc,
+                         Prefix =>
+                           New_Copy_Tree (Prev_Ref),
+                         Attribute_Name =>
+                           Name_Size),
+                     Make_Integer_Literal (Loc, System_Storage_Unit)));
 
-         if Present (Ctrl_Ref2) then
-            Prev_Tmp2 :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('B'));
+               --  First index after hole
 
-            Append_To (Res,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Prev_Tmp2,
+               First_After_Hole :=
+                 Make_Defining_Identifier (Loc,
+                   New_Internal_Name ('F'));
 
-                Object_Definition =>
-                  New_Reference_To (RTE (RE_Finalizable_Ptr), Loc),
+               Append_To (Res,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => First_After_Hole,
+                   Object_Definition   => New_Occurrence_Of (
+                     RTE (RE_Storage_Offset), Loc),
+                   Constant_Present    => True,
+                   Expression          =>
+                     Make_Op_Add (Loc,
+                       Make_Op_Add (Loc,
+                         New_Occurrence_Of (Last_Before_Hole, Loc),
+                         Hole_Length),
+                       Make_Integer_Literal (Loc, 1))));
 
-                Expression =>
-                  Make_Selected_Component (Loc,
-                    Prefix =>
-                      Unchecked_Convert_To (RTE (RE_Finalizable), Ctrl_Ref2),
-                    Selector_Name => Make_Identifier (Loc, Name_Prev))));
+               Last_Before_Hole := New_Occurrence_Of (Last_Before_Hole, Loc);
+               First_After_Hole := New_Occurrence_Of (First_After_Hole, Loc);
+            end if;
 
-            Next_Tmp2 :=
-              Make_Defining_Identifier (Loc, New_Internal_Name ('C'));
+            --  More comments needed everywhere ???
 
-            Append_To (Res,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Next_Tmp2,
+            Append_To (Res, Make_Assignment_Statement (Loc,
+              Name       => Build_Slice (Duplicate_Subexpr_No_Checks (L),
+                                         First_After_Root,
+                                         Last_Before_Hole),
 
-                Object_Definition =>
-                  New_Reference_To (RTE (RE_Finalizable_Ptr), Loc),
+              Expression => Build_Slice (Expression (N),
+                                         First_After_Root,
+                                         New_Copy_Tree (Last_Before_Hole))));
 
-                Expression =>
-                  Make_Selected_Component (Loc,
-                    Prefix =>
-                      Unchecked_Convert_To (RTE (RE_Finalizable),
-                        New_Copy_Tree (Ctrl_Ref2)),
-                    Selector_Name => Make_Identifier (Loc, Name_Next))));
-         end if;
 
-      --  If not controlled type, then Prev_Tmp and Ctrl_Ref unused
+            if Present (First_After_Hole) then
+               Remove_Side_Effects (Expression (N));
+               Append_To (Res, Make_Assignment_Statement (Loc,
+                 Name       => Build_Slice (Duplicate_Subexpr_No_Checks (L),
+                                            First_After_Hole,
+                                            Empty),
+                 Expression => Build_Slice (New_Copy_Tree (Expression (N)),
+                                            New_Copy_Tree (First_After_Hole),
+                                            Empty)));
+            end if;
+         end;
 
       else
-         Prev_Tmp := Empty;
-         Ctrl_Ref := Empty;
+         Append_To (Res, Relocate_Node (N));
       end if;
-
-      --  Do the Assignment
-
-      Append_To (Res, Relocate_Node (N));
 
       --  Restore the Tag
 
@@ -3206,55 +3361,8 @@ package body Exp_Ch5 is
              Expression => New_Reference_To (Tag_Tmp, Loc)));
       end if;
 
-      --  Restore the finalization pointers
-
-      if Ctrl_Act then
-         Append_To (Res,
-           Make_Assignment_Statement (Loc,
-             Name =>
-               Make_Selected_Component (Loc,
-                 Prefix =>
-                   Unchecked_Convert_To (RTE (RE_Finalizable),
-                     New_Copy_Tree (Ctrl_Ref)),
-                 Selector_Name => Make_Identifier (Loc, Name_Prev)),
-             Expression => New_Reference_To (Prev_Tmp, Loc)));
-
-         Append_To (Res,
-           Make_Assignment_Statement (Loc,
-             Name =>
-               Make_Selected_Component (Loc,
-                 Prefix =>
-                   Unchecked_Convert_To (RTE (RE_Finalizable),
-                     New_Copy_Tree (Ctrl_Ref)),
-                 Selector_Name => Make_Identifier (Loc, Name_Next)),
-             Expression => New_Reference_To (Next_Tmp, Loc)));
-
-         if Present (Ctrl_Ref2) then
-            Append_To (Res,
-              Make_Assignment_Statement (Loc,
-                Name =>
-                  Make_Selected_Component (Loc,
-                    Prefix =>
-                      Unchecked_Convert_To (RTE (RE_Finalizable),
-                        New_Copy_Tree (Ctrl_Ref2)),
-                    Selector_Name => Make_Identifier (Loc, Name_Prev)),
-                Expression => New_Reference_To (Prev_Tmp2, Loc)));
-
-            Append_To (Res,
-              Make_Assignment_Statement (Loc,
-                Name =>
-                  Make_Selected_Component (Loc,
-                    Prefix =>
-                      Unchecked_Convert_To (RTE (RE_Finalizable),
-                        New_Copy_Tree (Ctrl_Ref2)),
-                    Selector_Name => Make_Identifier (Loc, Name_Next)),
-                Expression => New_Reference_To (Next_Tmp2, Loc)));
-         end if;
-      end if;
-
-      --  Adjust the target after the assignment when controlled. (not in
-      --  the init proc since it is an initialization more than an
-      --  assignment)
+      --  Adjust the target after the assignment when controlled (not in the
+      --  init proc since it is an initialization more than an assignment).
 
       if Ctrl_Act then
          Append_List_To (Res,
@@ -3268,6 +3376,8 @@ package body Exp_Ch5 is
       return Res;
 
    exception
+      --  Could use comment here ???
+
       when RE_Not_Available =>
          return Empty_List;
    end Make_Tag_Ctrl_Assignment;

@@ -885,14 +885,31 @@ package body Sem_Ch7 is
 
       Public_Child := False;
 
-      if Present (Parent_Spec (Parent (N))) then
-         Generate_Parent_References;
+      declare
+         Par       : Entity_Id;
+         Pack_Decl : Node_Id;
+         Par_Spec  : Node_Id;
 
-         declare
-            Par       : Entity_Id := Id;
-            Pack_Decl : Node_Id;
+      begin
+         Par := Id;
+         Par_Spec := Parent_Spec (Parent (N));
 
-         begin
+         --  If the package is formal package of an enclosing generic, is is
+         --  transformed into a local generic declaration, and compiled to make
+         --  its spec available. We need to retrieve the original generic to
+         --  determine whether it is a child unit, and install its parents.
+
+         if No (Par_Spec)
+           and then
+             Nkind (Original_Node (Parent (N))) = N_Formal_Package_Declaration
+         then
+            Par := Entity (Name (Original_Node (Parent (N))));
+            Par_Spec := Parent_Spec (Unit_Declaration_Node (Par));
+         end if;
+
+         if Present (Par_Spec) then
+            Generate_Parent_References;
+
             while Scope (Par) /= Standard_Standard
               and then Is_Public_Child (Id, Par)
             loop
@@ -903,8 +920,8 @@ package body Sem_Ch7 is
                Pack_Decl := Unit_Declaration_Node (Par);
                Set_Use (Private_Declarations (Specification (Pack_Decl)));
             end loop;
-         end;
-      end if;
+         end if;
+      end;
 
       if Is_Compilation_Unit (Id) then
          Install_Private_With_Clauses (Id);

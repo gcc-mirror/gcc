@@ -1,4 +1,164 @@
-Wed Jul 14 23:16:59 2004  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2004-07-15  Robert Dewar  <dewar@gnat.com>
+
+	* makegpr.adb, s-secsta.ads, sem_ch3.adb, sem_case.adb: Minor
+	reformatting
+
+	* gnat_ugn.texi: Add instantiation of direct_io or sequential_io with
+	access values as an example of a warning.
+
+	* gnat_rm.texi: Document new attribute Has_Access_Values
+
+	* gnat-style.texi: Document that box comments belong on nested
+	subprograms
+
+	* sem_util.ads (Has_Access_Values): Improved documentation
+
+	* s-finimp.ads, s-finimp.adb: Fix spelling error in comment
+
+	* sem_prag.adb (Check_Duplicated_Export_Name): New procedure
+	(Process_Interface_Name): Call to this new procedure
+	(Set_Extended_Import_Export_External_Name): Call to this new procedure
+
+	* s-mastop-x86.adb, 9drpc.adb: Fix spelling error in comment
+
+	* a-direio.ads, a-sequio.ads: Warn if Element_Type has access values
+
+	* einfo.ads: Minor comment typo fixed
+
+2004-07-15  Jose Ruiz  <ruiz@act-europe.fr>
+
+	* snames.adb: Add _atcb.
+
+	* snames.ads: Add Name_uATCB.
+
+	* s-tarest.adb (Create_Restricted_Task): ATCBs are always preallocated
+	(in the expanded code) when using the restricted run time.
+
+	* s-tarest.ads (Create_Restricted_Task): Created_Task transformed into
+	a in parameter in order to allow ATCBs to be preallocated (in the
+	expanded code).
+
+	* s-taskin.adb (Initialize_ATCB): T converted into a in parameter in
+	order to allow ATCBs to be preallocated. In case of error, the ATCB is
+	deallocated in System.Tasking.Stages.
+
+	* s-taskin.ads (Initialize_ATCB): T converted into a in parameter in
+	order to allow ATCBs to be preallocated.
+
+	* s-tassta.adb (Create_Task): In case of error the ATCB is deallocated
+	here. It was previously done in Initialize_ATCB.
+
+	* rtsfind.ads: Make the Ada_Task_Control_Block visible.
+
+	* exp_ch9.adb: Preallocate the Ada_Task_Control_Block when using the
+	Restricted run time.
+
+	* exp_ch3.adb: When using the Restricted run time, pass the
+	preallocated Ada_Task_Control_Block when creating a task.
+
+2004-07-15  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_util.adb (Normalize_Actuals): If there are no actuals on a
+	function call that is itself an actual in an enclosing call, diagnose
+	problem here rather than assuming that resolution will catch it.
+
+	* sem_ch7.adb (Analyze_Package_Specification): If the specification is
+	the local copy of a generic unit for a formal package, and the generic
+	is a child unit, install private part of ancestors before compiling
+	private part of spec.
+
+	* sem_cat.adb (Validate_Categorization_Dependency): Simplify code to
+	use scope entities rather than tree structures, to handle properly
+	parent units that are instances rewritten as bodies for inlining
+	purposes.
+
+	* sem_ch10.adb (Get_Parent_Entity, Implicit_With_On_Parent,
+	Remove_Parents): Handle properly a parent unit that is an
+	instantiation, when the unit has been rewritten as a body for inlining
+	purposes.
+
+	* par.adb (Goto_List): Global variable to collect goto statements in a
+	given unit, for use in detecting natural loops.
+
+	* par-ch5.adb (P_Goto_Statement): Add goto to global Goto_List, for
+	use in detecting natural loops.
+
+	* par-labl.adb (Find_Natural_Loops): Recognize loops create by
+	backwards goto's, and rewrite as a infinite loop, to improve locality
+	of temporaries.
+
+	* exp_util.adb (Force_Evaluation): Recognize a left-hand side
+	subcomponent that includes an indexed reference, to prevent the
+	generation of copies that would miscompile the desired assignment
+	statement.
+	(Build_Task_Image_Decls): Add a numeric suffix to
+	generated name for string variable, to avoid spurious conflicts with
+	the name of the type of a single protected object.
+
+	* exp_ch4.adb (Expand_Array_Equality): If indices are distinct, use a
+	loop with an explicit exit statement, to avoid generating an
+	out-of-range value with 'Succ leading to spurious constraint_errors
+	when compiling with -gnatVo.
+
+2004-07-15  Thomas Quinot  <quinot@act-europe.fr>
+
+	* sem_ch4.adb (Analyze_Slice): Always call Analyze on the prefix: it
+	might not be analyzed yet, even if its Etype is already set (case of an
+	unchecked conversion built using Unchecked_Convert_To, for example).
+	If the prefix has already been analyzed, this will be a nop anyway.
+
+	* exp_ch5.adb (Make_Tag_Ctrl_Assignment): For an assignment of a
+	controller type, or an assignment of a record type with controlled
+	components, copy only user data, and leave the finalization chain
+	pointers untouched.
+
+2004-07-15  Vincent Celier  <celier@gnat.com>
+
+	* make.adb (Collect_Arguments): Improve error message when attempting
+	to compile a source not part of any project, when -x is not used.
+
+	* prj.ads: (Defined_Variable_Kind): New subtype
+
+	* prj-attr.adb (Register_New_Package): Two new procedures to register
+	a package with or without its attributes.
+	(Register_New_Attribute): Mew procedure to register a new attribute in a
+	package.
+	New attribute oriented subprograms: Attribute_Node_Id_Of,
+	Attribute_Kind_Of, Set_Attribute_Kind_Of, Attribute_Name_Of,
+	Variable_Kind_Of, Set_Variable_Kind_Of, Optional_Index_Of,
+	Next_Attribute.
+	New package oriented subprograms: Package_Node_Id_Of,
+	Add_Unknown_Package, First_Attribute_Of, Add_Attribute.
+
+	* prj-attr.ads (Attribute_Node_Id): Now a private, self initialized
+	type.
+	(Package_Node_Id): Now a private, self initialized type
+	(Register_New_Package): New procedure to register a package with its
+	attributes.
+	New attribute oriented subprograms: Attribute_Node_Id_Of,
+	Attribute_Kind_Of, Set_Attribute_Kind_Of, Attribute_Name_Of,
+	Variable_Kind_Of, Set_Variable_Kind_Of, Optional_Index_Of,
+	Next_Attribute.
+	New package oriented subprograms: Package_Node_Id_Of,
+	Add_Unknown_Package, First_Attribute_Of, Add_Attribute.
+
+	* prj-dect.adb (Parse_Attribute_Declaration,
+	Parse_Package_Declaration): Adapt to new spec of Prj.Attr.
+
+	* prj-makr.adb (Make): Parse existing project file before creating
+	other files. Fail if there was an error during parsing.
+
+	* prj-proc.adb (Add_Attributes, Process_Declarative_Items): Adapt to
+	new spec of Prj.Attr.
+
+	* prj-strt.adb (Attribute_Reference, Parse_Variable_Reference): Adapt
+	to new spec of Prj.Attr.
+
+2004-07-15  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* utils2.c: Fix typo in comment.
+
+2004-07-14  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* trans.c (add_decl_expr): Clear TREE_READONLY if clear DECL_INITIAL.
 	* utils.c (unchecked_convert): Don't do two VIEW_CONVERT_EXPRs.

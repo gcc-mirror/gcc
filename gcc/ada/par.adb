@@ -395,6 +395,11 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    SS_Whtm           : constant SS_Rec := SS_Rec'(F, F, F, F, F, F, T, F);
    SS_Unco           : constant SS_Rec := SS_Rec'(F, F, F, F, F, F, F, T);
 
+   Goto_List : Elist_Id;
+   --  List of goto nodes appearing in the current compilation. Used to
+   --  recognize natural loops and convert them into bona fide loops for
+   --  optimization purposes.
+
    Label_List : Elist_Id;
    --  List of label nodes for labels appearing in the current compilation.
    --  Used by Par.Labl to construct the corresponding implicit declarations.
@@ -1260,6 +1265,7 @@ begin
          SIS_Entry_Active := False;
          Last_Resync_Point := No_Location;
 
+         Goto_List  := New_Elmt_List;
          Label_List := New_Elmt_List;
 
          --  If in multiple unit per file mode, skip past ignored unit

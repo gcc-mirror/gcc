@@ -960,13 +960,13 @@ package System.Tasking is
       Base_Priority    : System.Any_Priority;
       Task_Info        : System.Task_Info.Task_Info_Type;
       Stack_Size       : System.Parameters.Size_Type;
-      T                : in out Task_Id;
+      T                : Task_Id;
       Success          : out Boolean);
    --  Initialize fields of a TCB and link into global TCB structures
    --  Call this only with abort deferred and holding RTS_Lock.
+   --  Need more documentation, mention T, and describe Success ???
 
 private
-
    Null_Task : constant Task_Id := null;
 
    type Activation_Chain is record

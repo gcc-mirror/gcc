@@ -774,7 +774,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
     case ARRAY_RANGE_REF:
 
       /* First convert the right operand to its base type.  This will
-	 prevent unneed signedness conversions when sizetype is wider than
+	 prevent unneeded signedness conversions when sizetype is wider than
 	 integer.  */
       right_operand = convert (right_base_type, right_operand);
       right_operand = convert (TYPE_DOMAIN (left_type), right_operand);

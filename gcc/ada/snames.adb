@@ -65,6 +65,7 @@ package body Snames is
      "_abort_signal#" &
      "_alignment#" &
      "_assign#" &
+     "_atcb#" &
      "_chain#" &
      "_clean#" &
      "_controller#" &

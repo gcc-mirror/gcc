@@ -1274,6 +1274,8 @@ package Rtsfind is
      RE_Asynchronous_Call,               -- System.Tasking
      RE_Timed_Call,                      -- System.Tasking
 
+     RE_Ada_Task_Control_Block,          -- System.Tasking
+
      RE_Task_List,                       -- System.Tasking
 
      RE_Accept_Alternative,              -- System.Tasking
@@ -2353,6 +2355,8 @@ package Rtsfind is
      RE_Conditional_Call                 => System_Tasking,
      RE_Asynchronous_Call                => System_Tasking,
      RE_Timed_Call                       => System_Tasking,
+
+     RE_Ada_Task_Control_Block           => System_Tasking,
 
      RE_Task_List                        => System_Tasking,
 

@@ -664,6 +664,107 @@ package body Prj.Makr is
          Output_Name (1 .. Path_Last) := To_Lower (Path_Name (1 .. Path_Last));
          Output_Name_Last := Path_Last - Project_File_Extension'Length;
 
+         --  If there is already a project file with the specified name, parse
+         --  it to get the components that are not automatically generated.
+
+         if Is_Regular_File (Output_Name (1 .. Path_Last)) then
+            if Opt.Verbose_Mode then
+               Output.Write_Str ("Parsing already existing project file """);
+               Output.Write_Str (Output_Name (1 .. Output_Name_Last));
+               Output.Write_Line ("""");
+            end if;
+
+            Part.Parse
+              (Project                => Project_Node,
+               Project_File_Name      => Output_Name (1 .. Output_Name_Last),
+               Always_Errout_Finalize => False);
+
+            --  Fail if parsing was not successful
+
+            if Project_Node = Empty_Node then
+               Fail ("parsing of existing project file failed");
+
+            else
+               --  If parsing was successful, remove the components that are
+               --  automatically generated, if any, so that they will be
+               --  unconditionally added later.
+
+               --  Remove the with clause for the naming project file
+
+               declare
+                  With_Clause : Project_Node_Id :=
+                                  First_With_Clause_Of (Project_Node);
+                  Previous    : Project_Node_Id := Empty_Node;
+
+               begin
+                  while With_Clause /= Empty_Node loop
+                     if Tree.Name_Of (With_Clause) = Project_Naming_Id then
+                        if Previous = Empty_Node then
+                           Set_First_With_Clause_Of
+                             (Project_Node,
+                              To => Next_With_Clause_Of (With_Clause));
+                        else
+                           Set_Next_With_Clause_Of
+                             (Previous,
+                              To => Next_With_Clause_Of (With_Clause));
+                        end if;
+
+                        exit;
+                     end if;
+
+                     Previous := With_Clause;
+                     With_Clause := Next_With_Clause_Of (With_Clause);
+                  end loop;
+               end;
+
+               --  Remove attribute declarations of Source_Files,
+               --  Source_List_File, Source_Dirs, and the declaration of
+               --  package Naming, if they exist.
+
+               declare
+                  Declaration  : Project_Node_Id :=
+                                   First_Declarative_Item_Of
+                                     (Project_Declaration_Of
+                                       (Project_Node));
+                  Previous     : Project_Node_Id := Empty_Node;
+                  Current_Node : Project_Node_Id := Empty_Node;
+
+               begin
+                  while Declaration /= Empty_Node loop
+                     Current_Node := Current_Item_Node (Declaration);
+
+                     if (Kind_Of (Current_Node) = N_Attribute_Declaration
+                           and then
+                            (Tree.Name_Of (Current_Node) = Name_Source_Files
+                               or else Tree.Name_Of (Current_Node) =
+                                                 Name_Source_List_File
+                               or else Tree.Name_Of (Current_Node) =
+                                                 Name_Source_Dirs))
+                       or else
+                       (Kind_Of (Current_Node) = N_Package_Declaration
+                          and then Tree.Name_Of (Current_Node) = Name_Naming)
+                     then
+                        if Previous = Empty_Node then
+                           Set_First_Declarative_Item_Of
+                             (Project_Declaration_Of (Project_Node),
+                              To => Next_Declarative_Item (Declaration));
+
+                        else
+                           Set_Next_Declarative_Item
+                             (Previous,
+                              To => Next_Declarative_Item (Declaration));
+                        end if;
+
+                     else
+                        Previous := Declaration;
+                     end if;
+
+                     Declaration := Next_Declarative_Item (Declaration);
+                  end loop;
+               end;
+            end if;
+         end if;
+
          if Directory_Last /= 0 then
             Output_Name (1 .. Output_Name_Last - Directory_Last) :=
               Output_Name (Directory_Last + 1 .. Output_Name_Last);
@@ -831,104 +932,6 @@ package body Prj.Makr is
             Output.Write_Str
               (Project_Naming_File_Name (1 .. Project_Naming_Last));
             Output.Write_Line ("""");
-         end if;
-
-         --  If there is already a project file with the specified name,
-         --  parse it to get the components that are not automatically
-         --  generated.
-
-         if Is_Regular_File (Output_Name (1 .. Output_Name_Last)) then
-            if Opt.Verbose_Mode then
-               Output.Write_Str ("Parsing already existing project file """);
-               Output.Write_Str (Output_Name (1 .. Output_Name_Last));
-               Output.Write_Line ("""");
-            end if;
-
-            Part.Parse
-              (Project                => Project_Node,
-               Project_File_Name      => Output_Name (1 .. Output_Name_Last),
-               Always_Errout_Finalize => False);
-
-            --  If parsing was successful, remove the components that are
-            --  automatically generated, if any, so that they will be
-            --  unconditionally added later.
-
-            if Project_Node /= Empty_Node then
-
-               --  Remove the with clause for the naming project file
-
-               declare
-                  With_Clause : Project_Node_Id :=
-                                  First_With_Clause_Of (Project_Node);
-                  Previous    : Project_Node_Id := Empty_Node;
-
-               begin
-                  while With_Clause /= Empty_Node loop
-                     if Tree.Name_Of (With_Clause) = Project_Naming_Id then
-                        if Previous = Empty_Node then
-                           Set_First_With_Clause_Of
-                             (Project_Node,
-                              To => Next_With_Clause_Of (With_Clause));
-                        else
-                           Set_Next_With_Clause_Of
-                             (Previous,
-                              To => Next_With_Clause_Of (With_Clause));
-                        end if;
-
-                        exit;
-                     end if;
-
-                     Previous := With_Clause;
-                     With_Clause := Next_With_Clause_Of (With_Clause);
-                  end loop;
-               end;
-
-               --  Remove attribute declarations of Source_Files,
-               --  Source_List_File, Source_Dirs, and the declaration of
-               --  package Naming, if they exist.
-
-               declare
-                  Declaration  : Project_Node_Id :=
-                                   First_Declarative_Item_Of
-                                     (Project_Declaration_Of
-                                       (Project_Node));
-                  Previous     : Project_Node_Id := Empty_Node;
-                  Current_Node : Project_Node_Id := Empty_Node;
-
-               begin
-                  while Declaration /= Empty_Node loop
-                     Current_Node := Current_Item_Node (Declaration);
-
-                     if (Kind_Of (Current_Node) = N_Attribute_Declaration
-                           and then
-                           (Tree.Name_Of (Current_Node) = Name_Source_Files
-                             or else Tree.Name_Of (Current_Node) =
-                                               Name_Source_List_File
-                              or else Tree.Name_Of (Current_Node) =
-                              Name_Source_Dirs))
-                       or else
-                       (Kind_Of (Current_Node) = N_Package_Declaration
-                          and then Tree.Name_Of (Current_Node) = Name_Naming)
-                     then
-                        if Previous = Empty_Node then
-                           Set_First_Declarative_Item_Of
-                             (Project_Declaration_Of (Project_Node),
-                              To => Next_Declarative_Item (Declaration));
-
-                        else
-                           Set_Next_Declarative_Item
-                             (Previous,
-                              To => Next_Declarative_Item (Declaration));
-                        end if;
-
-                     else
-                        Previous := Declaration;
-                     end if;
-
-                     Declaration := Next_Declarative_Item (Declaration);
-                  end loop;
-               end;
-            end if;
          end if;
 
          --  If there were no already existing project file, or if the parsing

@@ -1877,6 +1877,7 @@ package body Ch5 is
       Goto_Node := New_Node (N_Goto_Statement, Token_Ptr);
       Scan; -- past GOTO (or TO)
       Set_Name (Goto_Node, P_Qualified_Simple_Name_Resync);
+      Append_Elmt (Goto_Node, Goto_List);
       No_Constraint;
       TF_Semicolon;
       return Goto_Node;

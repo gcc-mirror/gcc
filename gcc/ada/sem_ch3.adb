@@ -1238,7 +1238,7 @@ package body Sem_Ch3 is
       --  appear in the private part of a package, for a private type that has
       --  already been declared.
 
-      --  In this case, the discriminants (if any) must match.
+      --  In this case, the discriminants (if any) must match
 
       T := Find_Type_Name (N);
 
