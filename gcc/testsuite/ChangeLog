@@ -1,3 +1,7 @@
+2003-04-21  Andreas Tobler <a.tobler@schweiz.ch>
+
+	* g++.dg/other/packed1.C: Fix dg options.
+
 2003-04-22  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/other/offsetof2.C: New test.
