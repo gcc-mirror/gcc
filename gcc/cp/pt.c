@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "rtl.h"
 #include "varray.h"
+#include "expr.h"
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */
@@ -5839,12 +5840,11 @@ tsubst_decl (t, args, type, in_decl)
 				     /*complain=*/1, in_decl);
 
 	DECL_CONTEXT (r) = NULL_TREE;
-#ifdef PROMOTE_PROTOTYPES
-	if ((TREE_CODE (type) == INTEGER_TYPE
-	     || TREE_CODE (type) == ENUMERAL_TYPE)
+	if (PROMOTE_PROTOTYPES
+	    && (TREE_CODE (type) == INTEGER_TYPE
+		|| TREE_CODE (type) == ENUMERAL_TYPE)
 	    && TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node))
 	  DECL_ARG_TYPE (r) = integer_type_node;
-#endif
 	if (TREE_CHAIN (t))
 	  TREE_CHAIN (r) = tsubst (TREE_CHAIN (t), args,
 				   /*complain=*/1, TREE_CHAIN (t));
