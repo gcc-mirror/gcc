@@ -1,3 +1,12 @@
+Wed Apr 17 15:20:10 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* lex.c (handle_cp_pragma): New function, with decl, doing the cc1plus
+	pragmas.
+	(check_newline): Put the vtable/unit/implementation/interface pragma
+	code into handle_cp_pragma, replacing it with a call.
+	(handle_sysv_pragma): Give int return type, and take FINPUT and TOKEN
+	args.  Get the next token after handling the pragma token.
+
 Fri Apr 12 09:08:27 1996  Bob Manson  <manson@charmed.cygnus.com>
 
 	* search.c (expand_upcast_fixups): Mark the new fixup as
