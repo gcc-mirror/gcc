@@ -2651,6 +2651,14 @@ build_conditional_expr (tree ifexp, tree op1, tree op2)
   type2 = TREE_TYPE (op2);
   code2 = TREE_CODE (type2);
 
+  /* C90 does not permit non-lvalue arrays in conditional expressions.
+     In C99 they will be pointers by now.  */
+  if (code1 == ARRAY_TYPE || code2 == ARRAY_TYPE)
+    {
+      error ("non-lvalue array in conditional expression");
+      return error_mark_node;
+    }
+
   /* Quickly detect the usual case where op1 and op2 have the same type
      after promotion.  */
   if (TYPE_MAIN_VARIANT (type1) == TYPE_MAIN_VARIANT (type2))
