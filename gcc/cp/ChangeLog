@@ -1,3 +1,12 @@
+2004-02-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14199
+	* pt.c (tsubst_copy): Call mark_used for a PARM_DECL.
+
+	PR c++/14173
+	* semantics.c (begin_class_definition): Set TYPE_PACKED correctly
+	for all type variants.
+
 2004-02-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/14186

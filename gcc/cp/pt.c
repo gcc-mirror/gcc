@@ -7382,6 +7382,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case PARM_DECL:
       r = retrieve_local_specialization (t);
       my_friendly_assert (r != NULL, 20020903);
+      mark_used (r);
       return r;
 
     case CONST_DECL:
