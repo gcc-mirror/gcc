@@ -1,5 +1,8 @@
 Mon Oct  5 06:23:27 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* function.c (purge_addressof_1): Add new parm IN_DEST.
+	If have different modes and IN_DEST, try making STRICT_LOW_PART.
+
 	* regmove.c (regmove_profitable_p): Put obfree at right place.
 
 Sun Oct  4 08:37:36 1998  Paul Edwards  <avon@matra.com.au>
