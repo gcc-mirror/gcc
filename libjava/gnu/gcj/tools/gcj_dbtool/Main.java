@@ -22,7 +22,22 @@ public class Main
 
   public static void main (String[] s)
   {
+    boolean fileListFromStdin = false;
+    char filenameSeparator = ' ';
+
     insist (s.length >= 1);
+
+    if (s[0].equals("-") ||
+	s[0].equals("-0"))
+      {
+	if (s[0].equals("-0"))
+	  filenameSeparator = (char)0;
+	fileListFromStdin = true;
+	String[] newArgs = new String[s.length - 1];
+	System.arraycopy(s, 1, newArgs, 0, s.length - 1);
+	s = newArgs;
+      }
+
     if (s[0].equals("-v") || s[0].equals("--version"))
       {
 	insist (s.length == 1);
@@ -145,7 +160,8 @@ public class Main
     if (s[0].equals("-m"))
       {
 	// Merge databases.
-	insist (s.length >= 3);
+	insist (s.length >= 3
+		|| fileListFromStdin && s.length == 2);
 	try
 	  {
 	    File database = new File(s[1]);
@@ -155,24 +171,32 @@ public class Main
 	    	
 	    int newSize = 0;
 	    int newStringTableSize = 0;
-	    PersistentByteMap[] sourceMaps = new PersistentByteMap[s.length - 2];
+	    Fileset files = getFiles(s, 2, fileListFromStdin, 
+				     filenameSeparator);
+	    PersistentByteMap[] sourceMaps 
+	      = new PersistentByteMap[files.size()];
+
 	    // Scan all the input files, calculating worst case string
 	    // table and hash table use.
-	    for (int i = 2; i < s.length; i++)
-	      {
-		PersistentByteMap b 
-		  = new PersistentByteMap(new File(s[i]),
-					  PersistentByteMap.AccessMode.READ_ONLY);
-		newSize += b.size();
-		newStringTableSize += b.stringTableSize();
-		sourceMaps[i - 2] = b;
-	      }
+	    {
+	      Iterator it = files.iterator();
+	      int i = 0;
+	      while (it.hasNext())
+		{
+		  PersistentByteMap b 
+		    = new PersistentByteMap((File)it.next(),
+					    PersistentByteMap.AccessMode.READ_ONLY);
+		  newSize += b.size();
+		  newStringTableSize += b.stringTableSize();
+		  sourceMaps[i++] = b;
+		}
+	    }
 	    
 	    newSize *= 1.5; // Scaling the new size by 1.5 results in
 			    // fewer collisions.
 	    PersistentByteMap map 
 	      = PersistentByteMap.emptyPersistentByteMap
-	        (temp, newSize, newStringTableSize);
+	      (temp, newSize, newStringTableSize);
 
 	    for (int i = 0; i < sourceMaps.length; i++)
 	      {
@@ -296,16 +320,19 @@ public class Main
        + "  Usage: \n"
        + "    gcj-dbtool -n file.gcjdb [size]     - Create a new gcj map database\n"
        + "    gcj-dbtool -a file.gcjdb file.jar file.so\n"
-       + "            - Add the contents of file.jar to a new gcj map database\n"
+       + "            - Add the contents of file.jar to a gcj map database\n"
        + "    gcj-dbtool -f file.gcjdb file.jar file.so\n"
-       + "            - Add the contents of file.jar to a new gcj map database\n"
+       + "            - Add the contents of file.jar to a gcj map database\n"
        + "    gcj-dbtool -t file.gcjdb            - Test a gcj map database\n"
        + "    gcj-dbtool -l file.gcjdb            - List a gcj map database\n"
-       + "    gcj-dbtool -m dest.gcjdb [source.gcjdb]...\n"
-       + "             - Merge gcj map databases into dest\n"
-       + "               Replaces dest\n"
-       + "               To add to dest, include dest in the list of sources\n"
-       + "    gcj-dbtool -p [LIBDIR]              - Print default database name");
+       + "    gcj-dbtool [-][-0] -m dest.gcjdb [source.gcjdb]...\n"
+       + "            - Merge gcj map databases into dest\n"
+       + "              Replaces dest\n"
+       + "              To add to dest, include dest in the list of sources\n"
+       + "              If the first arg is -, read the list from stdin\n"
+       + "              If the first arg is -0, filenames separated by nul\n"
+       + "    gcj-dbtool -p [LIBDIR]              - Print default database name"
+       );
   }
 
   // Add a jar to a map.  This copies the map first and returns a
@@ -405,5 +432,104 @@ public class Main
       hexBytes.append(Integer.toHexString(b[i] & 0xff));
     return hexBytes.toString();
   }
+
+
+  // Return a Fileset, either from a String array or from System.in,
+  // depending on fileListFromStdin.
+  private static final Fileset getFiles(String[] s, int startPos,
+					boolean fileListFromStdin,
+					char separator)
+  {
+    if (fileListFromStdin)
+      return new Fileset(System.in, separator);
+    else
+      return new Fileset(s, startPos, s.length);
+  }
 }
-    
+
+// Parse a stream into tokens.  The separator can be any char, and
+// space is equivalent to any whitepace character.
+class Tokenizer
+{
+  final Reader r;
+  final char separator;
+
+  Tokenizer(Reader r, char separator)
+  {
+    this.r = r;
+    this.separator = separator;
+  }
+
+  boolean isSeparator(int c)
+  {
+    if (Character.isWhitespace(separator))
+      return Character.isWhitespace((char)c);
+    else
+      return c == separator;
+  }
+
+  // Parse a token from the input stream.  Return the empty string
+  // when the stream is exhausted.
+  String nextToken ()
+  {
+    StringBuffer buf = new StringBuffer();
+    int c;
+    try
+      {
+	while ((c = r.read()) != -1)
+	  {
+	    if (! isSeparator(c))
+	      {
+		buf.append((char)c);
+		break;
+	      }
+	  }
+	while ((c = r.read()) != -1)
+	  {
+	    if (isSeparator(c))
+	      break;
+	    else
+	      buf.append((char)c);
+	  }
+      }
+    catch (java.io.IOException e)
+      {
+      }
+    return buf.toString();
+  }
+}
+
+// A Fileset is a container for a set of files; it can be created
+// either from a string array or from an input stream, given a
+// separator character.
+class Fileset
+{
+  LinkedHashSet files = new LinkedHashSet();
+  
+  Fileset (String[] s, int start, int end)
+  {
+    for (int i = start; i < end; i++)
+      {
+	files.add(new File(s[i]));
+      }
+  }
+
+  Fileset (InputStream is, char separator)
+  {
+    Reader r = new BufferedReader(new InputStreamReader(is));
+    Tokenizer st = new Tokenizer(r, separator);
+    String name;
+    while (! "".equals(name = st.nextToken()))
+      files.add(new File(name));
+  }
+
+  Iterator iterator()
+  {
+    return files.iterator();
+  }
+
+  int size()
+  {
+    return files.size();
+  }
+}
