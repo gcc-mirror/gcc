@@ -513,6 +513,11 @@ _cpp_scan_line (pfile, list)
 	  space_before = 1;
 	  continue;
 	}
+      else if (type == CPP_COMMENT)
+	/* Only happens when processing -traditional macro definitions.
+	   Do not give this a token entry, but do not change space_before
+	   either.  */
+	continue;
 
       if (list->tokens_used >= list->tokens_cap)
 	expand_token_space (list);
@@ -644,13 +649,17 @@ skip_comment (pfile, m)
 	}
       else if (CPP_OPTION (pfile, cplusplus_comments))
 	{
-	  if (CPP_OPTION (pfile, c89)
-	      && CPP_PEDANTIC (pfile)
-	      && ! CPP_BUFFER (pfile)->warned_cplusplus_comments)
+	  if (! CPP_BUFFER (pfile)->warned_cplusplus_comments)
 	    {
-	      cpp_pedwarn (pfile,
-			   "C++ style comments are not allowed in ISO C89");
-	      cpp_pedwarn (pfile,
+	      if (CPP_WTRADITIONAL (pfile))
+		cpp_pedwarn (pfile,
+			"C++ style comments are not allowed in traditional C");
+	      else if (CPP_OPTION (pfile, c89) && CPP_PEDANTIC (pfile))
+		cpp_pedwarn (pfile,
+			"C++ style comments are not allowed in ISO C89");
+	      if (CPP_WTRADITIONAL (pfile)
+		  || (CPP_OPTION (pfile, c89) && CPP_PEDANTIC (pfile)))
+		cpp_pedwarn (pfile,
 			   "(this will be reported only once per input file)");
 	      CPP_BUFFER (pfile)->warned_cplusplus_comments = 1;
 	    }
@@ -1053,7 +1062,11 @@ _cpp_lex_token (pfile)
       if (!CPP_OPTION (pfile, discard_comments))
 	return CPP_COMMENT;
       else if (CPP_TRADITIONAL (pfile))
-	goto get_next;
+	{
+	  if (pfile->parsing_define_directive)
+	    return CPP_COMMENT;
+	  goto get_next;
+	}
       else
 	{
 	  CPP_PUTC (pfile, c);
