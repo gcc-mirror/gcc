@@ -13,8 +13,8 @@ developers.
 These tests are included "as is". If any of them fails, do not report
 a bug.  Bug reports for DejaGnu can go to bug-dejagnu@prep.ai.mit.edu.
 Discussion and comments about this testsuite should be sent to
-egcs@cygnus.com; additions and changes to should go to sent to
-egcs-patches@cygnus.com.
+egcs@egcs.cygnus.com; additions and changes to should go to sent to
+egcs-patches@egcs.cygnus.com.
 
 The entire testsuite is invoked by `make check` at the top level of
 the EGCS tree. `make check-g++` runs the C++ testsuite only.
@@ -41,5 +41,5 @@ following structure:
   g++.other
   g++.pt  	Tests for templates
   g++.rfg
-  g++.robertl	Tests from egcs-bugs@cygnus.com, gathered by Robert Lipe
+  g++.robertl	Tests from egcs-bugs@egcs.cygnus.com, gathered by Robert Lipe
 	

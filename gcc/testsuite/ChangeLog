@@ -1,3 +1,7 @@
+Sat Feb  6 18:00:38 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* README: Update email addresses.
+
 Sat Jan 30 16:22:47 1999  Richard Henderson  <rth@cygnus.com>
 
 	* gcc.c-torture/execute/990130-1.c: New test.
