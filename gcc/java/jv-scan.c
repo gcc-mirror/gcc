@@ -26,6 +26,10 @@ Boston, MA 02111-1307, USA.  */
 
 #include "version.h"
 
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif
+
 #ifdef HAVE_NL_LANGINFO
 #include <langinfo.h>
 #endif
