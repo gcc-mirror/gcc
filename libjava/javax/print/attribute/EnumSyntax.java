@@ -139,7 +139,7 @@ public abstract class EnumSyntax implements Cloneable, Serializable
     return null;
   }
 
-  public int getOffset()
+  protected int getOffset()
   {
     return 0;
   }

@@ -1,5 +1,5 @@
 /* TextSyntax.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,12 +57,12 @@ public abstract class TextSyntax implements Cloneable, Serializable
    * @param value the value for this syntax
    * @param locale the locale to use
    *
-   * @exception NullPointerException if value is null
+   * @exception NullPointerException if value and/or locale is null
    */
   protected TextSyntax(String value, Locale locale)
   {
-    if (value == null)
-      throw new NullPointerException("value may not be null");
+    if (value == null || locale == null)
+      throw new NullPointerException("value and/or locale may not be null");
 
     this.value = value;
     this.locale = locale;
@@ -95,7 +95,7 @@ public abstract class TextSyntax implements Cloneable, Serializable
    */
   public int hashCode()
   {
-    return value.hashCode() + locale.hashCode();
+    return value.hashCode() ^ locale.hashCode();
   }
 
   /**
@@ -103,7 +103,7 @@ public abstract class TextSyntax implements Cloneable, Serializable
    *
    * @param obj the object to test
    *
-   * @returns true if both objects are equal, false otherwise.
+   * @return true if both objects are equal, false otherwise.
    */
   public boolean equals(Object obj)
   {
@@ -114,5 +114,13 @@ public abstract class TextSyntax implements Cloneable, Serializable
     
     return (value.equals(tmp.getValue())
             && locale.equals(tmp.getLocale()));
+  }
+
+  /**
+   * Returns a string representing the object.
+   */
+  public String toString()
+  {
+    return value;
   }
 }

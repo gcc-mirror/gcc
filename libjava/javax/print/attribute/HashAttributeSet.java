@@ -151,7 +151,7 @@ public class HashAttributeSet implements AttributeSet, Serializable
    * @exception ClassCastException if any element of attributes is not an
    * interface of interfaceName
    */
-  public HashAttributeSet(AttributeSet attributes, Class interfaceName)
+  protected HashAttributeSet(AttributeSet attributes, Class interfaceName)
   {
     this(interfaceName);
     
