@@ -808,8 +808,13 @@ make_generic (const char *name, gfc_generic_isym_id generic_id, int standard)
    freed as a single block.  */
 
 static void
-make_alias (const char *name)
+make_alias (const char *name, int standard)
 {
+
+  /* First check that the intrinsic belongs to the selected standard.
+     If not, don't add it to the symbol list.  */
+  if (!(gfc_option.allow_std & standard))
+    return;
 
   switch (sizing)
     {
@@ -884,7 +889,7 @@ add_functions (void)
 	     NULL, gfc_simplify_abs, gfc_resolve_abs, 
 	     a, BT_COMPLEX, dd, REQUIRED);
 
-  make_alias ("cdabs");
+  make_alias ("cdabs", GFC_STD_GNU);
 
   make_generic ("abs", GFC_ISYM_ABS, GFC_STD_F77);
 
@@ -1127,7 +1132,7 @@ add_functions (void)
 	     NULL, gfc_simplify_cos, gfc_resolve_cos, 
 	     x, BT_COMPLEX, dd, REQUIRED);
 
-  make_alias ("cdcos");
+  make_alias ("cdcos", GFC_STD_GNU);
 
   make_generic ("cos", GFC_ISYM_COS, GFC_STD_F77);
 
@@ -1158,7 +1163,7 @@ add_functions (void)
 	     gfc_check_dble, gfc_simplify_dble, gfc_resolve_dble,
 	     a, BT_REAL, dr, REQUIRED);
 
-  make_alias ("dfloat");
+  make_alias ("dfloat", GFC_STD_GNU);
 
   make_generic ("dble", GFC_ISYM_DBLE, GFC_STD_F77);
 
@@ -1239,7 +1244,7 @@ add_functions (void)
 	     gfc_check_etime, NULL, NULL,
 	     x, BT_REAL, 4, REQUIRED);
 
-  make_alias ("dtime");
+  make_alias ("dtime", GFC_STD_GNU);
 
   make_generic ("etime", GFC_ISYM_ETIME, GFC_STD_GNU);
 
@@ -1259,7 +1264,7 @@ add_functions (void)
 	     NULL, gfc_simplify_exp, gfc_resolve_exp, 
 	     x, BT_COMPLEX, dd, REQUIRED);
 
-  make_alias ("cdexp");
+  make_alias ("cdexp", GFC_STD_GNU);
 
   make_generic ("exp", GFC_ISYM_EXP, GFC_STD_F77);
 
@@ -1491,7 +1496,7 @@ add_functions (void)
 	     NULL, gfc_simplify_log, gfc_resolve_log,
 	     x, BT_COMPLEX, dd, REQUIRED);
 
-  make_alias ("cdlog");
+  make_alias ("cdlog", GFC_STD_GNU);
 
   make_generic ("log", GFC_ISYM_LOG, GFC_STD_F77);
 
@@ -1713,7 +1718,7 @@ add_functions (void)
 
   /* Compatibility with HP FORTRAN 77/iX Reference.  Note, rand() and ran()
      use slightly different shoddy multiplicative congruential PRNG.  */
-  make_alias ("ran");
+  make_alias ("ran", GFC_STD_GNU);
 
   make_generic ("rand", GFC_ISYM_RAND, GFC_STD_GNU);
 
@@ -1831,7 +1836,7 @@ add_functions (void)
 	     NULL, gfc_simplify_sin, gfc_resolve_sin,
 	     x, BT_COMPLEX, dd, REQUIRED);
 
-  make_alias ("cdsin");
+  make_alias ("cdsin", GFC_STD_GNU);
 
   make_generic ("sin", GFC_ISYM_SIN, GFC_STD_F77);
 
@@ -1880,7 +1885,7 @@ add_functions (void)
 	     NULL, gfc_simplify_sqrt, gfc_resolve_sqrt,
 	     x, BT_COMPLEX, dd, REQUIRED);
 
-  make_alias ("cdsqrt");
+  make_alias ("cdsqrt", GFC_STD_GNU);
 
   make_generic ("sqrt", GFC_ISYM_SQRT, GFC_STD_F77);
 
