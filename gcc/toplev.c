@@ -2163,18 +2163,19 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
     TIMEVAR (varconst_time,
 	     {
 	       make_decl_rtl (decl, asmspec, top_level);
-	       /* For a user-invisible decl that should be replaced
-		  by its value when used, don't output anything.  */
+	       /* Initialized extern variable exists to be replaced
+		  with its value, or represents something that will be
+		  output in another file.  */
 	       if (! (TREE_CODE (decl) == VAR_DECL
-		      && DECL_IGNORED_P (decl) && TREE_READONLY (decl)
-		      && DECL_INITIAL (decl) != 0))
+		      && DECL_EXTERNAL (decl) && TREE_READONLY (decl)
+		      && DECL_INITIAL (decl) != 0
+		      && DECL_INITIAL (decl) != error_mark_node)
 		 /* Don't output anything
 		    when a tentative file-scope definition is seen.
 		    But at end of compilation, do output code for them.  */
 		 if (! (! at_end && top_level
 			&& (DECL_INITIAL (decl) == 0
-			    || DECL_INITIAL (decl) == error_mark_node
-			    || DECL_IGNORED_P (decl))))
+			    || DECL_INITIAL (decl) == error_mark_node)))
 		   assemble_variable (decl, top_level, at_end, 0);
 	     });
   else if (DECL_REGISTER (decl) && asmspec != 0)
