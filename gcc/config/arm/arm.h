@@ -486,13 +486,13 @@ enum reg_class
    Return 1 if VALUE is in the range specified by C.
 	I: immediate arithmetic operand (i.e. 8 bits shifted as required).
 	J: valid indexing constants.  
-	K: as I but also (not (value)) ok.
-	L: as I but also (neg (value)) ok.*/
-#define CONST_OK_FOR_LETTER_P(VALUE, C)  				      \
-  ((C) == 'I' ? const_ok_for_arm (VALUE) :				      \
-   (C) == 'J' ? ((VALUE) < 4096 && (VALUE) > -4096) :			      \
-   (C) == 'K' ? (const_ok_for_arm (VALUE) || const_ok_for_arm (~(VALUE))) :   \
-   (C) == 'L' ? (const_ok_for_arm (VALUE) || const_ok_for_arm (-(VALUE))) : 0)
+	K: ~value ok in rhs argument of data operand.
+	L: -value ok in rhs argument of data operand. */
+#define CONST_OK_FOR_LETTER_P(VALUE, C)  		\
+  ((C) == 'I' ? const_ok_for_arm (VALUE) :		\
+   (C) == 'J' ? ((VALUE) < 4096 && (VALUE) > -4096) :	\
+   (C) == 'K' ? (const_ok_for_arm (~(VALUE))) :		\
+   (C) == 'L' ? (const_ok_for_arm (-(VALUE))) : 0)
 
 /* For the ARM, `Q' means that this is a memory operand that is just
    an offset from a register.  
