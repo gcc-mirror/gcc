@@ -93,7 +93,7 @@ Boston, MA 02111-1307, USA.  */
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
 /* This is BSD, so it wants DBX format.  */
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 
 /* Override parts of m68k.h */
 

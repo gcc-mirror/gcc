@@ -26,8 +26,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* The rest must follow.  */
 
-#define DBX_DEBUGGING_INFO
-#define SDB_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
+#define SDB_DEBUGGING_INFO 1
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 #define HANDLE_SYSV_PRAGMA

@@ -58,14 +58,14 @@ Boston, MA 02111-1307, USA.  */
 
 /* We want to output DBX (stabs) debugging information normally.  */
 
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 /* It is convenient to be able to generate standard coff debugging
    if requested via -gcoff. */
 
-#define SDB_DEBUGGING_INFO
+#define SDB_DEBUGGING_INFO 1
 
 /* Be function-relative for block and source line stab directives. */
 

@@ -28,17 +28,13 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_CPP_PREDEFINES " -D__ELF__"
 
 /* Use DWARF2 debugging info.  */
-#ifndef DWARF2_DEBUGGING_INFO
 #define DWARF2_DEBUGGING_INFO 1
-#endif
 
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 /* But allow DWARF 1 if the user wants it.  */
-#ifndef DWARF_DEBUGGING_INFO
 #define DWARF_DEBUGGING_INFO 1
-#endif
 
 #define EXPORTS_SECTION_ASM_OP	"\t.section .exports"
 

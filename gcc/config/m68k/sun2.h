@@ -74,4 +74,4 @@ Boston, MA 02111-1307, USA.  */
 
 /* This is BSD, so it wants DBX format.  */
 
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1

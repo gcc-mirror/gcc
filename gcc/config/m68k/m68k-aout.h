@@ -25,7 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include "m68k/m68kemb.h"
 #include "aoutos.h"
 
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 #undef SDB_DEBUGGING_INFO
 
 /* If defined, a C expression whose value is a string containing the

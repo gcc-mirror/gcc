@@ -27,8 +27,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Output DBX (stabs) debugging information if doing -gstabs.  */
 
-#undef  DBX_DEBUGGING_INFO
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 
 /* Make LBRAC and RBRAC addresses relative to the start of the
    function.  The native Solaris stabs debugging format works this

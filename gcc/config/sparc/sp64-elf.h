@@ -112,7 +112,7 @@ crtbegin.o%s \
    GDB doesn't support 64 bit stabs yet and the desired debug format is DWARF
    anyway so it is the default.  */
 
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG

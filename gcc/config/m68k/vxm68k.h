@@ -65,7 +65,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{!mc68000:%{!m68000:%{!m68010:%{!mc68020:%{!m68020:%{!m68030:%{!m68040:%{!m68020-40:%{!m68302:%{!m68332:%(cpp_subtarget_cpu_default) }}}}}}}}}} \
 "
 
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 #undef SDB_DEBUGGING_INFO
 
 /* These are the official values from WRS.  */

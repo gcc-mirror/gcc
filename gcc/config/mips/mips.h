@@ -1220,9 +1220,9 @@ extern int mips_abi;
 #endif
 
 
-#define SDB_DEBUGGING_INFO		/* generate info for mips-tfile */
-#define DBX_DEBUGGING_INFO		/* generate stabs (OSF/rose) */
-#define MIPS_DEBUGGING_INFO		/* MIPS specific debugging info */
+#define SDB_DEBUGGING_INFO 1		/* generate info for mips-tfile */
+#define DBX_DEBUGGING_INFO 1		/* generate stabs (OSF/rose) */
+#define MIPS_DEBUGGING_INFO 1		/* MIPS specific debugging info */
 
 #ifndef PREFERRED_DEBUGGING_TYPE	/* assume SDB_DEBUGGING_INFO */
 #define PREFERRED_DEBUGGING_TYPE SDB_DEBUG

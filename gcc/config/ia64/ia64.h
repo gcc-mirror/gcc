@@ -2245,7 +2245,7 @@ do {									\
 /* Define this macro if GNU CC should produce dwarf version 2 format debugging
    output in response to the `-g' option.  */
 
-#define DWARF2_DEBUGGING_INFO
+#define DWARF2_DEBUGGING_INFO 1
 
 #define DWARF2_ASM_LINE_DEBUG_INFO (TARGET_DWARF2_ASM)
 

@@ -85,7 +85,7 @@ Boston, MA 02111-1307, USA.  */
 
 #ifdef HAVE_GAS_2_X
 #undef DBX_DEBUGGING_INFO
-#define SDB_DEBUGGING_INFO
+#define SDB_DEBUGGING_INFO 1
 
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE) \

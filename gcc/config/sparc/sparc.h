@@ -375,7 +375,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 /* Generate DBX debugging information.  */
 
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 

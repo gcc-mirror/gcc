@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_IDENT(FILE, NAME) fprintf (FILE, "\t.ident \"%s\"\n", NAME);
 
 #undef DBX_DEBUGGING_INFO
-#define SDB_DEBUGGING_INFO
+#define SDB_DEBUGGING_INFO 1
 
 #undef LIB_SPEC
 

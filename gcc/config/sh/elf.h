@@ -20,7 +20,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Generate DWARF2 debugging information and make it the default */
-#undef DWARF2_DEBUGGING_INFO
 #define DWARF2_DEBUGGING_INFO 1
 
 #undef PREFERRED_DEBUGGING_TYPE

@@ -43,7 +43,7 @@ Boston, MA 02111-1307, USA.  */
 /* Specific options for DBX Output.  */
 
 /* This is BSD, so it wants DBX format.  */
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 
 /* This is the char to use for continuation */
 #define DBX_CONTIN_CHAR '?'

@@ -1100,7 +1100,7 @@ struct rt_cargs {int gregs, fregs; };
 #define LOAD_EXTEND_OP(MODE) ZERO_EXTEND
 
 /* This is BSD, so it wants DBX format.  */
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 
 /* Define the letter code used in a stabs entry for parameters passed
    with the register attribute.

@@ -47,7 +47,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* We want DBX format for use with gdb under COFF.  */
 
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 
 /* Generate calls to memcpy, memcmp and memset.  */
 

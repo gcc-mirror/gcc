@@ -27,8 +27,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* We want to be able to get DBX debugging information via -gstabs.  */
 
-#undef DBX_DEBUGGING_INFO
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 
 #undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE SDB_DEBUG

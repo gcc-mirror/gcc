@@ -43,7 +43,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Ask for COFF symbols.  */
 
-#define SDB_DEBUGGING_INFO
+#define SDB_DEBUGGING_INFO 1
 
 /* Output #ident as a .ident.  */
 

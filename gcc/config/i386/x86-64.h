@@ -85,9 +85,8 @@ Boston, MA 02111-1307, USA.  */
 /* i386 System V Release 4 uses DWARF debugging info.
    x86-64 ABI specifies DWARF2.  */
 
-#undef DWARF2_DEBUGGING_INFO
 #undef DWARF_DEBUGGING_INFO
-#define DWARF2_DEBUGGING_INFO
+#define DWARF2_DEBUGGING_INFO 1
 #define DWARF2_UNWIND_INFO 1
 /* Incorrectly autodetected in cross compilation.  */
 #undef HAVE_AS_DWARF2_DEBUG_LINE

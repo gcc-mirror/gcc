@@ -105,11 +105,11 @@ Boston, MA 02111-1307, USA.  */
 
 /* We use Dbx symbol format.  */
 
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 
 /* Also enable Dwarf 2 as an option.  */
 
-#define DWARF2_DEBUGGING_INFO
+#define DWARF2_DEBUGGING_INFO 1
 
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 

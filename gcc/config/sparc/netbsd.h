@@ -29,7 +29,7 @@
 
 /* This is BSD, so it wants DBX format.  */
 
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 
 /* This is the char to use for continuation (in case we need to turn
    continuation back on).  */

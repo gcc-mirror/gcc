@@ -2548,7 +2548,7 @@ extern int ip2k_reorg_merge_qimode;
 					 EQ, LEU, GEU}},\
   {"ip2k_signed_comparison_operator", {LT, GT, LE, GE}},
 
-#define DWARF2_DEBUGGING_INFO		1
+#define DWARF2_DEBUGGING_INFO 1
 
 #define DWARF2_ASM_LINE_DEBUG_INFO	1
 

@@ -24,8 +24,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Output DBX (stabs) debugging information if doing -gstabs.  */
 
-#undef DBX_DEBUGGING_INFO
-#define DBX_DEBUGGING_INFO
+#define DBX_DEBUGGING_INFO 1
 
 /* Generate SDB debugging information by default. */
 
