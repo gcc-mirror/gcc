@@ -1,3 +1,18 @@
+1999-05-19  Jason Merrill  <jason@yorick.cygnus.com>
+
+	Implement anonymous structs.
+	* cp-tree.h (ANON_AGGR_TYPE_P): Rename from ANON_UNION_TYPE_P.
+	* class.c, decl.c, decl2.c, init.c, pt.c, search.c, typeck.c: Adjust.
+	* class.c (finish_struct_1): Remove redundant check for anon struct.
+	* decl.c (fixup_anonymous_aggr): Renamed from fixup_anonymous_union.
+	(check_tag_decl): Check for anonymous struct here.
+	* decl2.c (build_anon_union_vars): Catch anon struct at file scope.
+	* init.c (sort_member_init, emit_base_init): Handle getting fields
+	as well as names in current_member_init_list.
+	(perform_member_init): Handle getting an anon aggr.
+	* method.c (do_build_assign_ref): Don't descend into anon aggrs.
+	(do_build_copy_constructor): Likewise.
+
 1999-05-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.c (cp_build_qualified_type): Don't allow qualified function

@@ -2282,18 +2282,10 @@ do_build_copy_constructor (fndecl)
 		continue;
 	    }
 	  else if ((t = TREE_TYPE (field)) != NULL_TREE
-		   && ANON_UNION_TYPE_P (t)
+		   && ANON_AGGR_TYPE_P (t)
 		   && TYPE_FIELDS (t) != NULL_TREE)
-	    {
-	      do
-		{
-		  init = build (COMPONENT_REF, t, init, field);
-		  field = largest_union_member (t);
-		}
-	      while ((t = TREE_TYPE (field)) != NULL_TREE
-		     && ANON_UNION_TYPE_P (t)
-		     && TYPE_FIELDS (t) != NULL_TREE);
-	    }
+	    /* Just use the field; anonymous types can't have
+	       nontrivial copy ctors or assignment ops.  */;
 	  else
 	    continue;
 
@@ -2301,7 +2293,7 @@ do_build_copy_constructor (fndecl)
 	  init = build_tree_list (NULL_TREE, init);
 
 	  current_member_init_list
-	    = tree_cons (DECL_NAME (field), init, current_member_init_list);
+	    = tree_cons (field, init, current_member_init_list);
 	}
       current_member_init_list = nreverse (current_member_init_list);
       current_base_init_list = nreverse (current_base_init_list);
@@ -2390,19 +2382,10 @@ do_build_assign_ref (fndecl)
 		continue;
 	    }
 	  else if ((t = TREE_TYPE (field)) != NULL_TREE
-		   && ANON_UNION_TYPE_P (t)
+		   && ANON_AGGR_TYPE_P (t)
 		   && TYPE_FIELDS (t) != NULL_TREE)
-	    {
-	      do
-		{
-		  comp = build (COMPONENT_REF, t, comp, field);
-		  init = build (COMPONENT_REF, t, init, field);
-		  field = largest_union_member (t);
-		}
-	      while ((t = TREE_TYPE (field)) != NULL_TREE
-		     && ANON_UNION_TYPE_P (t)
-		     && TYPE_FIELDS (t) != NULL_TREE);
-	    }
+	    /* Just use the field; anonymous types can't have
+	       nontrivial copy ctors or assignment ops.  */;
 	  else
 	    continue;
 

@@ -887,10 +887,10 @@ grok_x_components (specs)
 
   /* The only case where we need to do anything additional here is an
      anonymous union field, e.g.: `struct S { union { int i; }; };'.  */
-  if (t == NULL_TREE || !ANON_UNION_TYPE_P (t))
+  if (t == NULL_TREE || !ANON_AGGR_TYPE_P (t))
     return;
 
-  fixup_anonymous_union (t);
+  fixup_anonymous_aggr (t);
   finish_member_declaration (build_lang_field_decl (FIELD_DECL,
 						    NULL_TREE,
 						    t)); 
@@ -2152,6 +2152,11 @@ build_anon_union_vars (anon_decl, elems, static_p, external_p)
   tree main_decl = NULL_TREE;
   tree field;
 
+  /* Rather than write the code to handle the non-union case,
+     just give an error.  */
+  if (TREE_CODE (type) != UNION_TYPE)
+    error ("anonymous struct not inside named type");
+
   for (field = TYPE_FIELDS (type); 
        field != NULL_TREE; 
        field = TREE_CHAIN (field))
@@ -2173,7 +2178,7 @@ build_anon_union_vars (anon_decl, elems, static_p, external_p)
 	cp_pedwarn_at ("protected member `%#D' in anonymous union", field);
 
       if (DECL_NAME (field) == NULL_TREE
-	  && TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
+	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
 	{
 	  decl = build_anon_union_vars (field, elems, static_p, external_p);
 	  if (!decl)
@@ -2205,7 +2210,7 @@ build_anon_union_vars (anon_decl, elems, static_p, external_p)
 	TREE_ASM_WRITTEN (decl) = 1;
       
       if (DECL_NAME (field) == NULL_TREE
-	  && TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
+	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
 	/* The remainder of the processing was already done in the
 	   recursive call.  */
 	continue;
