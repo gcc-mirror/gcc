@@ -1,6 +1,6 @@
 2002-04-29  Benjamin Kosnik  <bkoz@redhat.com>
 
-	PR libstdc++/5280
+	PR libstdc++/5820
 	* include/bits/fstream.tcc (basic_filebuf::_M_underflow_common):
 	Check for eof.
 	* include/bits/streambuf_iterator.h: Match stream_iterator.h.
@@ -16,7 +16,7 @@
 
 2002-04-28  Benjamin Kosnik  <bkoz@redhat.com>
 
-	PR libstdc++/5280
+	PR libstdc++/5820
 	* config/io/basic_file_stdio.h (__basic_file::sys_getc): Return int.
 	(__basic_file::sys_ungetc): Take int.
 	* config/io/basic_file_stdio.cc (__basic_file::sys_ungetc): Same.
