@@ -1,3 +1,7 @@
+2002-04-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20020418-1.c: New test.
+
 2002-04-18  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.c-torture/compile/20020415-1.c: New.
