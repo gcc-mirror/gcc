@@ -1,3 +1,8 @@
+2002-05-22  Kevin Buettner  <kevinb@redhat.com>
+
+	* dbxout.c (dbxout_class_name_qualifiers): New function.
+	(dbxout_symbol): Output class/struct qualifiers for a .stabs entry.
+
 2002-05-23  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpperror.c (_cpp_begin_message): No special casing
