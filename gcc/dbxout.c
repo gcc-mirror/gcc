@@ -824,7 +824,7 @@ dbxout_type_methods (type)
 
   sprintf(formatted_type_identifier_length, "%d", type_identifier_length);
 
-  if (TREE_CODE (methods) == FUNCTION_DECL)
+  if (TREE_CODE (methods) != TREE_VEC)
     fndecl = methods;
   else if (TREE_VEC_ELT (methods, 0) != NULL_TREE)
     fndecl = TREE_VEC_ELT (methods, 0);
