@@ -3,8 +3,10 @@
 
 /* { dg-do compile { target *-*-linux* *-*-cygwin* powerpc*-*-eabi* } } */
 
-#pragma pack(push)              /* { dg-error "malformed" } */
 #pragma pack(pop)               /* { dg-error "without matching" } */
+
+#pragma pack(push)
+#pragma pack(pop)               /* reset */
 
 #pragma pack(push, foo, 1)
 #pragma pack(pop, foo, 1)       /* { dg-error "malformed" } (/

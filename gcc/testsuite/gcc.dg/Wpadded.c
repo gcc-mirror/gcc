@@ -1,7 +1,9 @@
 /* Source: EMC.  */
 
 /* { dg-do compile } */
-/* { dg-options "-Wpadded" } */
+/* -fpack-struct is necessary because the warning expected requires the initial
+   packing to be larger than 1, which cannot ge guaranteed for all targets. */
+/* { dg-options "-Wpadded -fpack-struct=8" } */
 
 struct foo {
   char bar;

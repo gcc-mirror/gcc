@@ -1,3 +1,11 @@
+2004-09-03  Jan Beulich  <jbeulich@novell.com>
+
+	* gcc.dg/pack-test-2.c: Adjust to permit and check #pragma pack(push).
+	* gcc.dg/c99-flex-array-4.c: Add -fpack-struct=8 to provide a
+	deterministic starting point for the alignment of structure fields.
+	* gcc.dg/Wpadded.c: Dito.
+	* g++.dg/abi/vbase10.C: Dito.
+
 2004-09-03  Devang Patel  <dpatel@apple.com>
 
 	* g++.dg/debug/pr15736.cc: New test.

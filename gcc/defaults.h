@@ -476,6 +476,10 @@ do { fputs (integer_asm_op (POINTER_SIZE / BITS_PER_UNIT, TRUE), FILE); \
 #define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
 #endif
 
+#ifndef TARGET_DEFAULT_PACK_STRUCT
+#define TARGET_DEFAULT_PACK_STRUCT 0
+#endif
+
 /* By default, the C++ compiler will use function addresses in the
    vtable entries.  Setting this nonzero tells the compiler to use
    function descriptors instead.  The value of this macro says how

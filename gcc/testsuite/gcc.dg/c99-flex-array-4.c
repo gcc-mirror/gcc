@@ -5,7 +5,9 @@
    from Tony Finch <dot@dotat.at>, adapted to a testcase by Joseph Myers
    <jsm28@cam.ac.uk>.  See also WG14 reflector messages 9571-3.  */
 /* { dg-do compile } */
-/* { dg-options "-std=iso9899:1999 -pedantic-errors" } */
+/* -fpack-struct is necessary because the code below assumes the initial
+   packing is larger than 1, which cannot ge guaranteed for all targets. */
+/* { dg-options "-std=iso9899:1999 -fpack-struct=8 -pedantic-errors" } */
 
 #include <stddef.h>
 
