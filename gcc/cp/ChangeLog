@@ -1,3 +1,8 @@
+Fri Feb 13 13:24:32 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (simple_stmt): If the condition isn't a declaration, 
+	start the controlled block after the test.
+
 Fri Feb 13 02:26:10 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* call.c (build_over_call): Convert builtin abs, labs and fabs to

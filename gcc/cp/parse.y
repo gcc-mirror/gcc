@@ -3654,6 +3654,15 @@ simple_stmt:
 		      emit_line_note (input_filename, lineno);
 		      expand_exit_loop_if_false (0, $4);
 		    }
+
+		  /* If the condition wasn't a declaration, clear out the
+		     block we made for it and start a new one here so the
+		     optimization in expand_end_loop will work.  */
+		  if (TREE_CODE ($4) != VAR_DECL)
+		    {
+		      do_poplevel ();
+		      do_pushlevel ();
+		    }
 		}
 	  already_scoped_stmt .poplevel
 		{
@@ -3762,6 +3771,15 @@ simple_stmt:
 		    {
 		      emit_line_note (input_filename, lineno);
 		      if ($7) expand_exit_loop_if_false (0, $7);
+		    }
+
+		  /* If the condition wasn't a declaration, clear out the
+		     block we made for it and start a new one here so the
+		     optimization in expand_end_loop will work.  */
+		  if ($7 == NULL_TREE || TREE_CODE ($7) != VAR_DECL)
+		    {
+		      do_poplevel ();
+		      do_pushlevel ();
 		    }
 		}
 	  xexpr ')'
