@@ -311,4 +311,4 @@ extern int insn_unit PARAMS ((rtx));
 extern int insn_cost PARAMS ((rtx, rtx, rtx));
 extern rtx get_unit_last_insn PARAMS ((int));
 extern int actual_hazard_this_instance PARAMS ((int, int, rtx, int, int));
-
+extern void print_insn PARAMS ((char *, rtx, int));

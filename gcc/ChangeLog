@@ -1,3 +1,13 @@
+2002-05-02  Jan Hubicka  <jh@suse.cz>
+
+	* haifa-sched.c (schedule_insn): Print table of instructions and
+	reservations.
+	(sched_block): Do not print ready list at verbosity level 1.
+	* sched-vis.c (print_insn): Make global.
+	* sched-ebb.c (ebb_print_insn): Rename from...
+	(print_insn): ... this one.
+	* sched-int.h (print_insn): Declare
+
 2002-05-02  Richard Henderson  <rth@redhat.com>
 
 	* haifa-sched.c (rank_for_schedule): Skip past last_scheduled_insn
