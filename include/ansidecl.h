@@ -187,6 +187,15 @@ So instead we use the macro below and test it against specific values.  */
 # define __attribute__(x)
 #endif
 
+/* Attribute __malloc__ on functions was valid as of gcc 2.96. */
+#ifndef ATTRIBUTE_MALLOC
+# if (GCC_VERSION >= 2096)
+#  define ATTRIBUTE_MALLOC __attribute__ ((__malloc__))
+# else
+#  define ATTRIBUTE_MALLOC
+# endif /* GNUC >= 2.96 */
+#endif /* ATTRIBUTE_MALLOC */
+
 /* Attributes on labels were valid as of gcc 2.93. */
 #ifndef ATTRIBUTE_UNUSED_LABEL
 # if (GCC_VERSION >= 2093)
