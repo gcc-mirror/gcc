@@ -2030,12 +2030,15 @@ expand_complex_abs (mode, op0, target, unsignedp)
 
       real = gen_realpart (submode, op0);
       imag = gen_imagpart (submode, op0);
+
       /* Square both parts.  */
-      real = expand_mult (mode, real, real, NULL_RTX, 0);
-      imag = expand_mult (mode, imag, imag, NULL_RTX, 0);
+      real = expand_mult (submode, real, real, NULL_RTX, 0);
+      imag = expand_mult (submode, imag, imag, NULL_RTX, 0);
+
       /* Sum the parts.  */
       total = expand_binop (submode, add_optab, real, imag, 0,
 			    0, OPTAB_LIB_WIDEN);
+
       /* Get sqrt in TARGET.  Set TARGET to where the result is.  */
       target = expand_unop (submode, sqrt_optab, total, target, 0);
       if (target == 0)
