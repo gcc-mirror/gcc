@@ -1,3 +1,7 @@
+Wed Nov 28 15:05:54 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/20011128-1.c: New test.
+
 2001-11-28  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.dg/20011127-1.c: New test.
