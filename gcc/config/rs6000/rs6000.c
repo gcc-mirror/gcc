@@ -2361,6 +2361,27 @@ small_data_operand (rtx op ATTRIBUTE_UNUSED,
 #endif
 }
 
+/* Return true, if operand is a memory operand and has a
+   displacement divisible by 4.  */
+
+int
+word_offset_memref_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
+{
+  rtx addr;
+  int off = 0;
+
+  if (!memory_operand (op, mode))
+    return 0;
+
+  addr = XEXP (op, 0);
+  if (GET_CODE (addr) == PLUS
+      && GET_CODE (XEXP (addr, 0)) == REG
+      && GET_CODE (XEXP (addr, 1)) == CONST_INT)
+    off = INTVAL (XEXP (addr, 1));
+
+  return (off % 4) == 0;
+}
+
 /* Return true if either operand is a general purpose register.  */
 
 bool

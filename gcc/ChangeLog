@@ -1,3 +1,17 @@
+2004-01-12  Hartmut Penner  <hpenner@de.ibm.com>
+
+	* gcc/config/rs6000/rs6000.c (word_offset_memref_operand): New
+	predicate to handle 'ld' conform addresses.
+	* gcc/config/rs6000/rs6000.h (EXTRA_CONSTRAINT): New 'Y'
+	contraint.
+	(EXTRA_MEMORY_CONSTRAINT): Tell reload which constraint
+	are memory contraints.
+	* gcc/config/rs6000/rs6000-protos.h (word_offset_memref_operand): 
+	New prototype.
+	* gcc/config/rs6000/rs6000.md (*movdf_hardfloat64): 
+	Change 'o' to 'Y' constraint.
+	(*movdf_softfloat64): Ditto.
+	
 2004-01-12  Bernardo Innocenti  <bernie@develer.com>
 
 	* gcc/config/m68k/m68k.md: Switch from the "*..." syntax to the

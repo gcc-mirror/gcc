@@ -1419,6 +1419,7 @@ enum reg_class
    'T' is a constant that can be placed into a 32-bit mask operand
    'U' is for V.4 small data references.
    'W' is a vector constant that can be easily generated (no mem refs).
+   'Y' is a indexed or word-aligned displacement memory operand. 
    't' is for AND masks that can be performed by two rldic{l,r} insns.  */
 
 #define EXTRA_CONSTRAINT(OP, C)						\
@@ -1433,7 +1434,15 @@ enum reg_class
 		       || !logical_operand (OP, DImode))		\
 		   && !mask64_operand (OP, DImode))			\
    : (C) == 'W' ? (easy_vector_constant (OP, GET_MODE (OP)))		\
+   : (C) == 'Y' ? (word_offset_memref_operand (OP, GET_MODE (OP)))      \
    : 0)
+
+/* Defining, which contraints are memory contraints. Tells reload,
+   that any memory address can be reloaded by copying the 
+   memory address into a base register if required.  */
+
+#define EXTRA_MEMORY_CONSTRAINT(C, STR)				\
+  ((C) == 'Q' || (C) == 'Y')
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.

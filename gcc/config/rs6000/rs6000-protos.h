@@ -52,6 +52,7 @@ extern int reg_or_add_cint64_operand (rtx, enum machine_mode);
 extern int reg_or_sub_cint64_operand (rtx, enum machine_mode);
 extern int reg_or_logical_cint_operand (rtx, enum machine_mode);
 extern int got_operand (rtx, enum machine_mode);
+extern int word_offset_memref_operand (rtx, enum machine_mode);
 extern int got_no_const_operand (rtx, enum machine_mode);
 extern int num_insns_constant (rtx, enum machine_mode);
 extern int easy_fp_constant (rtx, enum machine_mode);
