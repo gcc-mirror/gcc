@@ -22,14 +22,17 @@ static bool dtor_repeat = false;
 #endif
 
 // our pseudo ctors and dtors
-static void ctor (void *)
+static abi::__cxa_cdtor_return_type ctor (void *x)
 {
   if (!ctor_count)
     throw 1;
   ctor_count--;
+#ifdef __ARM_EABI__
+  return x;
+#endif
 }
 
-static void dtor (void *)
+static abi::__cxa_cdtor_return_type dtor (void *x)
 {
   if (!dtor_count)
     {
@@ -38,6 +41,9 @@ static void dtor (void *)
       throw 1;
     }
   dtor_count--;
+#ifdef __ARM_EABI__
+  return x;
+#endif
 }
 
 // track new and delete

@@ -1,3 +1,42 @@
+2004-09-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* config/cpu/arm/cxxabi_tweaks.h (__cxa_cdtor_return_type):
+	Define.
+	* config/cpu/generic/cxxabi_tweaks.h (__cxa_cdtor_return_type):
+	Define.
+	* libsupc++/cxxabi.h (__cxa_cdtor_return_type): New type.
+	(__cxa_vec_new): Use it.
+	(__cxa_vec_new2): Likewise.
+	(__cxa_vec_new3): Likewise.
+	(__cxa_vec_cdtor): Likewise.
+	(__cxa_vec_cctor): Likeiwse.
+	(__cxa_vec_dtor): Likewise.
+	(__cxa_vec_cleanup): Likewise.
+	(__cxa_vec_delete2): Likewise.
+	(__cxa_vec_delete3): Likewise.
+	* libsupc++/vec.cc (__cxa_vec_new): Likewise.
+	(__cxa_vec_new2): Likewise.
+	(__cxa_vec_new3): Likewise.
+	(__cxa_vec_cdtor): Likewise.
+	(__cxa_vec_cctor): Likeiwse.
+	(__cxa_vec_dtor): Likewise.
+	(__cxa_vec_cleanup): Likewise.
+	(__cxa_vec_delete2): Likewise.
+	(__cxa_vec_delete3): Likewise.
+	(__aeabi_vec_ctor_nocookie_nodtor): New function.
+	(__aeabi_vec_ctor_cookie_nodtor): Likewise.
+	(__aeabi_vec_cctor_nocookie_nodtor): Likewise.
+	(__aeabi_vec_new_cookie_noctor): Likewise.
+	(__aeabi_vec_new_nocookie): Likewise.
+	(__aeabi_vec_new_cookie_nodtor): Likewise.
+	(__aeabi_vec_new_cookie): Likewise.
+	(__aeabi_vec_dtor): Likewise.
+	(__aeabi_vec_dtor_cookie): Likewise.
+	(__aeabi_vec_delete): Likewise.
+	(__aeabi_vec_delete3): Likewise.
+	(__aeabi_vec_delete3_nodtor): Likewise.
+	(__aeabi_atexit): Likewise.
+
 2004-09-14  Nathan Myers  <ncm@cantrip.org>
 
 	* include/bits/fstream.tcc (xsgetn): Slightly tweak the recent fix

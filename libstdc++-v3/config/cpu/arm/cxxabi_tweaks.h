@@ -48,6 +48,8 @@ namespace __cxxabiv1
   // __cxa_vec_ctor should return a pointer to the array.
   typedef void * __cxa_vec_ctor_return_type;
 #define _GLIBCXX_CXA_VEC_CTOR_RETURN(x) return x
+  // Constructors and destructors return the "this" pointer.
+  typedef void * __cxa_cdtor_return_type;
 
 #else // __ARM_EABI__
 
@@ -59,6 +61,8 @@ namespace __cxxabiv1
   // __cxa_vec_ctor has void return type.
   typedef void __cxa_vec_ctor_return_type;
 #define _GLIBCXX_CXA_VEC_CTOR_RETURN(x) return
+  // Constructors and destructors do not return a value.
+  typedef void __cxa_cdtor_return_type;
 
 #endif //!__ARM_EABI__
 

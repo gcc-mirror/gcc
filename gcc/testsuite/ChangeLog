@@ -1,5 +1,10 @@
 2004-09-15  Mark Mitchell  <mark@codesourcery.com>
 
+	* testsuite/g++.old-deja/g++.abi/cxa_vec.C: Adjust for ARM
+	EABI.
+
+2004-09-15  Mark Mitchell  <mark@codesourcery.com>
+
 	* g++.dg/opt/switch1.C: New test.
 
 2004-09-15  Joseph S. Myers  <jsm@polyomino.org.uk>
