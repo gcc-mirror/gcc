@@ -1,3 +1,8 @@
+2003-10-04  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/t-m68hc11-gas (MULTILIB_MATCHES): m68hcs12 is
+	identical to m68hc12 as far as libraries are concerned.
+
 2003-10-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c/12446
