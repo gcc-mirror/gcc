@@ -1,3 +1,9 @@
+2004-06-08  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/rs6000/rs6000.c (print_operand, <case 'z'>):
+	Make sure that we are in INDIRECT mode when getting the
+	stub name.
+
 2004-06-08  Anil Paranjpe <anilp1@kpitcummins.com>
 
 	* h8300.md (extendqisi2_h8300): Add constraints.

@@ -9744,7 +9744,8 @@ print_operand (FILE *file, rtx x, int code)
 	{
 	  const char *name = XSTR (x, 0);
 #if TARGET_MACHO
-	  if (machopic_classify_name (name) == MACHOPIC_UNDEFINED_FUNCTION)
+	  if (MACHOPIC_INDIRECT
+	      && machopic_classify_name (name) == MACHOPIC_UNDEFINED_FUNCTION)
 	    name = machopic_stub_name (name);
 #endif
 	  assemble_name (file, name);
