@@ -1,5 +1,5 @@
 /* Message translation utilities.
-   Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -24,6 +24,16 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm.h"
 #include "intl.h"
 
+#ifdef HAVE_LANGINFO_CODESET
+#include <langinfo.h>
+#endif
+
+/* Opening quotation mark for diagnostics.  */
+const char *open_quote = "'";
+
+/* Closing quotation mark for diagnostics.  */
+const char *close_quote = "'";
+
 #ifdef ENABLE_NLS
 
 /* Initialize the translation library for GCC.  This performs the
@@ -43,6 +53,33 @@ gcc_init_libintl (void)
 
   (void) bindtextdomain ("gcc", LOCALEDIR);
   (void) textdomain ("gcc");
+
+  /* Opening quotation mark.  */
+  open_quote = _("`");
+
+  /* Closing quotation mark.  */
+  close_quote = _("'");
+
+  if (!strcmp (open_quote, "`") && !strcmp (close_quote, "'"))
+    {
+#if defined HAVE_LANGINFO_CODESET
+      const char *encoding;
+#endif
+      /* Untranslated quotes that it may be possible to replace with
+	 U+2018 and U+2019; but otherwise use "'" instead of "`" as
+	 opening quote.  */
+      open_quote = "'";
+#if defined HAVE_LANGINFO_CODESET
+      encoding = nl_langinfo (CODESET);
+      if (encoding != NULL
+	  && (!strcasecmp (encoding, "utf-8")
+	      || !strcasecmp (encoding, "utf8")))
+	{
+	  open_quote = "\xe2\x80\x98";
+	  close_quote = "\xe2\x80\x99";
+	}
+#endif
+    }
 }
 
 #if defined HAVE_WCHAR_H && defined HAVE_WORKING_MBSTOWCS && defined HAVE_WCSWIDTH

@@ -200,7 +200,7 @@ decode_format_attr (tree args, function_format_info *info, int validated_p)
 	{
 	  if (validated_p)
 	    abort ();
-	  warning ("`%s' is an unrecognized format function type", p);
+	  warning ("%qs is an unrecognized format function type", p);
 	  return false;
 	}
     }
@@ -615,6 +615,7 @@ static const format_flag_pair gcc_diag_flag_pairs[] =
 
 static const format_flag_spec gcc_diag_flag_specs[] =
 {
+  { 'q',  0, 0, N_("`q' flag"),        N_("the `q' diagnostic flag"),          STD_C89 },
   { 'p',  0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
   { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
   { 0, 0, 0, NULL, NULL, 0 }
@@ -626,6 +627,7 @@ static const format_flag_spec gcc_cxxdiag_flag_specs[] =
 {
   { '+',  0, 0, N_("`+' flag"),        N_("the `+' printf flag"),              STD_C89 },
   { '#',  0, 0, N_("`#' flag"),        N_("the `#' printf flag"),              STD_C89 },
+  { 'q',  0, 0, N_("`q' flag"),        N_("the `q' diagnostic flag"),          STD_C89 },
   { 'p',  0, 0, N_("precision"),       N_("precision in printf format"),       STD_C89 },
   { 'L',  0, 0, N_("length modifier"), N_("length modifier in printf format"), STD_C89 },
   { 0, 0, 0, NULL, NULL, 0 }
@@ -798,69 +800,75 @@ static const format_char_info asm_fprintf_char_table[] =
 static const format_char_info gcc_diag_char_table[] =
 {
   /* C89 conversion specifiers.  */
-  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  ""   },
-  { "ox",  0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  ""   },
-  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  ""   },
-  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
-  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "p",  "cR" },
-  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   "c"  },
+  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  ""   },
+  { "ox",  0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  ""   },
+  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  ""   },
+  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  ""   },
+  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "pq", "cR" },
+  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "c"  },
 
   /* Custom conversion specifiers.  */
 
   /* %H will require "location_t" at runtime.  */
-  { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
+  { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  ""   },
 
   /* These will require a "tree" at runtime.  */
-  { "J", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
+  { "J", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",    ""   },
 
-  { "m",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { "`",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { "'",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { "m",   0, STD_C89, NOARGUMENTS, "q",     ""   },
   { NULL,  0, 0, NOLENGTHS, NULL, NULL }
 };
 
 static const format_char_info gcc_cdiag_char_table[] =
 {
   /* C89 conversion specifiers.  */
-  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  ""   },
-  { "ox",  0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  ""   },
-  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  ""   },
-  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
-  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "p",  "cR" },
-  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   "c"  },
+  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  ""   },
+  { "ox",  0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  ""   },
+  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  ""   },
+  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  ""   },
+  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "pq", "cR" },
+  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "c"  },
 
   /* Custom conversion specifiers.  */
 
   /* %H will require "location_t" at runtime.  */
-  { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
+  { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  ""   },
 
   /* These will require a "tree" at runtime.  */
-  { "DEFJT", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
+  { "DEFJT", 0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q", ""   },
 
-  { "m",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { "`",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { "'",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { "m",   0, STD_C89, NOARGUMENTS, "q",     ""   },
   { NULL,  0, 0, NOLENGTHS, NULL, NULL }
 };
 
 static const format_char_info gcc_cxxdiag_char_table[] =
 {
   /* C89 conversion specifiers.  */
-  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  ""   },
-  { "ox",  0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  ""   },
-  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  ""   },
-  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
-  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "p",  "cR" },
-  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   "c"  },
+  { "di",  0, STD_C89, { T89_I,   BADLEN,  BADLEN,  T89_L,   T9L_LL,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  ""   },
+  { "ox",  0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  ""   },
+  { "u",   0, STD_C89, { T89_UI,  BADLEN,  BADLEN,  T89_UL,  T9L_ULL, BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  ""   },
+  { "c",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  ""   },
+  { "s",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "pq", "cR" },
+  { "p",   1, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "c"  },
 
   /* Custom conversion specifiers.  */
 
   /* %H will require "location_t" at runtime.  */
-  { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
+  { "H",   0, STD_C89, { T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  ""   },
 
   /* These will require a "tree" at runtime.  */
-  { "ADEFJTV",0,STD_C89,{ T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "+#",   ""   },
+  { "ADEFJTV",0,STD_C89,{ T89_V,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+#",   ""   },
 
   /* These accept either an `int' or an `enum tree_code' (which is handled as an `int'.)  */
-  { "CLOPQ",0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   ""   },
+  { "CLOPQ",0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  ""   },
 
-  { "m",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { "`",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { "'",   0, STD_C89, NOARGUMENTS, "",      ""   },
+  { "m",   0, STD_C89, NOARGUMENTS, "q",     ""   },
   { NULL,  0, 0, NOLENGTHS, NULL, NULL }
 };
 
@@ -933,19 +941,19 @@ static const format_kind_info format_types_orig[] =
     'w', 0, 'p', 0, 'L',
     NULL, NULL
   },
-  { "gcc_diag",   gcc_diag_length_specs,  gcc_diag_char_table, "", NULL, 
+  { "gcc_diag",   gcc_diag_length_specs,  gcc_diag_char_table, "q", NULL, 
     gcc_diag_flag_specs, gcc_diag_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
     0, 0, 'p', 0, 'L',
     NULL, &integer_type_node
   },
-  { "gcc_cdiag",   gcc_cdiag_length_specs,  gcc_cdiag_char_table, "", NULL, 
+  { "gcc_cdiag",   gcc_cdiag_length_specs,  gcc_cdiag_char_table, "q", NULL, 
     gcc_cdiag_flag_specs, gcc_cdiag_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
     0, 0, 'p', 0, 'L',
     NULL, &integer_type_node
   },
-  { "gcc_cxxdiag",   gcc_cxxdiag_length_specs,  gcc_cxxdiag_char_table, "+#", NULL, 
+  { "gcc_cxxdiag",   gcc_cxxdiag_length_specs,  gcc_cxxdiag_char_table, "q+#", NULL, 
     gcc_cxxdiag_flag_specs, gcc_cxxdiag_flag_pairs,
     FMT_FLAG_ARG_CONVERT,
     0, 0, 'p', 0, 'L',
@@ -1018,7 +1026,7 @@ static void check_format_info_main (int *, format_check_results *,
 				    const char *, int, tree,
 				    unsigned HOST_WIDE_INT);
 static void status_warning (int *, const char *, ...)
-     ATTRIBUTE_PRINTF_2;
+     ATTRIBUTE_GCC_DIAG(2, 3);
 
 static void init_dollar_format_checking (int, tree);
 static int maybe_read_dollar_number (int *, const char **, int,
@@ -1105,7 +1113,7 @@ check_function_format (int *status, tree attrs, tree params)
 			break;
 		    }
 		  if (args != 0)
-		    warning ("function might be possible candidate for `%s' format attribute",
+		    warning ("function might be possible candidate for %qs format attribute",
 			     format_types[info.format_type].name);
 		}
 	    }
@@ -1699,7 +1707,7 @@ check_format_info_main (int *status, format_check_results *res,
       if (*format_chars == 0)
 	{
 	  if (format_chars - orig_format_chars != format_length)
-	    status_warning (status, "embedded `\\0' in format");
+	    status_warning (status, "embedded %`\\0%' in format");
 	  if (info->first_arg_num != 0 && params != 0
 	      && has_operand_number <= 0)
 	    {
@@ -1714,7 +1722,7 @@ check_format_info_main (int *status, format_check_results *res,
 	continue;
       if (*format_chars == 0)
 	{
-	  status_warning (status, "spurious trailing `%%' in format");
+	  status_warning (status, "spurious trailing %`%%%' in format");
 	  continue;
 	}
       if (*format_chars == '%')
@@ -1989,7 +1997,7 @@ check_format_info_main (int *status, format_check_results *res,
 	    {
 	      /* Warn if the length modifier is non-standard.  */
 	      if (ADJ_STD (length_chars_std) > C_STD_VER)
-		status_warning (status, "%s does not support the `%s' %s length modifier",
+		status_warning (status, "%s does not support the %qs %s length modifier",
 				C_STD_NAME (length_chars_std), length_chars,
 				fki->name);
 	    }
@@ -2050,7 +2058,7 @@ check_format_info_main (int *status, format_check_results *res,
       if (fci->format_chars == 0)
 	{
           if (ISGRAPH(format_char))
-	    status_warning (status, "unknown conversion type character `%c' in format",
+	    status_warning (status, "unknown conversion type character %qc in format",
 		     format_char);
 	  else
 	    status_warning (status, "unknown conversion type character 0x%x in format",
@@ -2060,7 +2068,7 @@ check_format_info_main (int *status, format_check_results *res,
       if (pedantic)
 	{
 	  if (ADJ_STD (fci->std) > C_STD_VER)
-	    status_warning (status, "%s does not support the `%%%c' %s format",
+	    status_warning (status, "%s does not support the %`%%%c%' %s format",
 			    C_STD_NAME (fci->std), format_char, fki->name);
 	}
 
@@ -2076,7 +2084,7 @@ check_format_info_main (int *status, format_check_results *res,
 	      continue;
 	    if (strchr (fci->flag_chars, flag_chars[i]) == 0)
 	      {
-		status_warning (status, "%s used with `%%%c' %s format",
+		status_warning (status, "%s used with %`%%%c%' %s format",
 				_(s->name), format_char, fki->name);
 		d++;
 		continue;
@@ -2094,7 +2102,7 @@ check_format_info_main (int *status, format_check_results *res,
 					     ? t->long_name
 					     : s->long_name);
 		    if (ADJ_STD (t->std) > C_STD_VER)
-		      status_warning (status, "%s does not support %s with the `%%%c' %s format",
+		      status_warning (status, "%s does not support %s with the %`%%%c%' %s format",
 				      C_STD_NAME (t->std), _(long_name),
 				      format_char, fki->name);
 		  }
@@ -2127,7 +2135,7 @@ check_format_info_main (int *status, format_check_results *res,
 	  if (bad_flag_pairs[i].ignored)
 	    {
 	      if (bad_flag_pairs[i].predicate != 0)
-		status_warning (status, "%s ignored with %s and `%%%c' %s format",
+		status_warning (status, "%s ignored with %s and %`%%%c%' %s format",
 				_(s->name), _(t->name), format_char,
 				fki->name);
 	      else
@@ -2137,7 +2145,7 @@ check_format_info_main (int *status, format_check_results *res,
 	  else
 	    {
 	      if (bad_flag_pairs[i].predicate != 0)
-		status_warning (status, "use of %s and %s together with `%%%c' %s format",
+		status_warning (status, "use of %s and %s together with %`%%%c%' %s format",
 				_(s->name), _(t->name), format_char,
 				fki->name);
 	      else
@@ -2160,10 +2168,10 @@ check_format_info_main (int *status, format_check_results *res,
 	  else if (strchr (fci->flags2, '2') != 0)
 	    y2k_level = 2;
 	  if (y2k_level == 3)
-	    status_warning (status, "`%%%c' yields only last 2 digits of year in some locales",
+	    status_warning (status, "%`%%%c%' yields only last 2 digits of year in some locales",
 			    format_char);
 	  else if (y2k_level == 2)
-	    status_warning (status, "`%%%c' yields only last 2 digits of year", format_char);
+	    status_warning (status, "%`%%%c%' yields only last 2 digits of year", format_char);
 	}
 
       if (strchr (fci->flags2, '[') != 0)
@@ -2179,7 +2187,7 @@ check_format_info_main (int *status, format_check_results *res,
 	    ++format_chars;
 	  if (*format_chars != ']')
 	    /* The end of the format string was reached.  */
-	    status_warning (status, "no closing `]' for `%%[' format");
+	    status_warning (status, "no closing %`]%' for %`%%[%' format");
 	}
 
       wanted_type = 0;
@@ -2192,7 +2200,7 @@ check_format_info_main (int *status, format_check_results *res,
 	  wanted_type_std = fci->types[length_chars_val].std;
 	  if (wanted_type == 0)
 	    {
-	      status_warning (status, "use of `%s' length modifier with `%c' type character",
+	      status_warning (status, "use of %qs length modifier with %qc type character",
 			      length_chars, format_char);
 	      /* Heuristic: skip one argument when an invalid length/type
 		 combination is encountered.  */
@@ -2213,7 +2221,7 @@ check_format_info_main (int *status, format_check_results *res,
 		   && ADJ_STD (wanted_type_std) > ADJ_STD (fci->std))
 	    {
 	      if (ADJ_STD (wanted_type_std) > C_STD_VER)
-		status_warning (status, "%s does not support the `%%%s%c' %s format",
+		status_warning (status, "%s does not support the %`%%%s%c%' %s format",
 				C_STD_NAME (wanted_type_std), length_chars,
 				format_char, fki->name);
 	    }
