@@ -861,7 +861,9 @@ fix = {
     hackname = cxx_unready;
     files    = sys/mman.h;
     files    = rpc/types.h;
-    bypass = '"C"|__BEGIN_DECLS';
+    select   = '[^#]+malloc.*;';  /* Should catch any form of a declaration
+				     but not mention within a macro.  */
+    bypass   = '"C"|__BEGIN_DECLS';
 
     sed      = "1i\\\n"
                "#ifdef __cplusplus\\\n"
@@ -1012,8 +1014,7 @@ fix = {
 
 
 /*
- *  IRIX 4.0.5 <rpc/auth.h> uses struct sockaddr
- *  in prototype without previous definition.
+ *  Some IRIX header files contain the string "//"
  */
 fix = {
     hackname = irix_multiline_cmnt;
@@ -1025,12 +1026,14 @@ fix = {
 
 
 /*
- *  Some IRIX header files contain the string "//"
+ *  IRIX 4.0.5 <rpc/auth.h> uses struct sockaddr
+ *  in prototype without previous definition.
  */
 fix = {
     hackname = irix_sockaddr;
     files    = rpc/auth.h;
     select   = "authdes_create.*struct sockaddr";
+    bypass   = "<sys/socket\.h>";
     sed      = "/authdes_create.*struct sockaddr/i\\\n"
                "struct sockaddr;\n";
 };
@@ -1248,6 +1251,19 @@ fix = {
       echo \"#define __GCC_GOT_${cpp_wrapper}_\"
       cat
       echo \"#endif /* ! __GCC_GOT_${cpp_wrapper}_ */\"";
+};
+
+
+/*
+ * Fix BSD machine/ansi.h to use __builtin_va_list to define _BSD_VA_LIST_.
+ */
+fix = {
+    hackname = machine_ansi_h_va_list;
+    files    = machine/ansi.h;
+    select   = '_BSD_VA_LIST_';
+    bypass   = '__builtin_va_list';
+
+    sed	     = "s/\\(_BSD_VA_LIST_[ \t][ \t]*\\).*$/\\1__builtin_va_list/";
 };
 
 
@@ -1641,6 +1657,7 @@ fix = {
 };
 #endif
 
+
 /*
  *  a missing semi-colon at the end of the statsswtch structure definition.
  */
@@ -1653,41 +1670,51 @@ fix = {
 
 
 /*
+ *  Arrange for stdio.h to use stdarg.h to define __gnuc_va_list.
+ *  On 4BSD-derived systems, stdio.h defers to machine/ansi.h; that's
+ *  OK too.
+ */
+fix = {
+    hackname = stdio_stdarg_h;
+    files    = stdio.h;
+    bypass   = "include.*(stdarg\.h|machine/ansi\.h)";
+
+    sed      = '1i\\
+\#define __need___va_list\\
+\#include <stdarg.h>
+';
+
+};
+
+
+/*
  *  Don't use or define the name va_list in stdio.h.
  *  This is for ANSI and also to interoperate properly with gcc's varargs.h.
- *  Arrange for stdio.h to use stdarg.h to define __gnuc_va_list
+ *  Note _BSD_VA_LIST_ is dealt with elsewhere.
  */
 fix = {
     hackname = stdio_va_list;
     files    = stdio.h;
-    bypass   = "__gnuc_va_list";
+    bypass   = '__gnuc_va_list|_BSD_VA_LIST_';
 
     /*
      * Use __gnuc_va_list in arg types in place of va_list.
      * On 386BSD use __gnuc_va_list instead of _VA_LIST_.  We're hoping the
      * trailing parentheses and semicolon save all other systems from this.
-     * Define __not_va_list__ (something harmless and unused) instead of va_list.
+     * Define __not_va_list__ (something harmless and unused)
+     * instead of va_list.
      * Don't claim to have defined va_list.
      */
-    shell =
- "if ( egrep \"__need___va_list\" $file ) > /dev/null 2>&1 ; then
-    :
-  else
-    echo \"#define __need___va_list\"
-    echo \"#include <stdarg.h>\"
-  fi
-
-  sed -e 's@ va_list @ __gnuc_va_list @' \\
-      -e 's@ va_list)@ __gnuc_va_list)@' \\
-      -e 's@ _BSD_VA_LIST_))@ __gnuc_va_list))@' \\
-      -e 's@ _VA_LIST_));@ __gnuc_va_list));@' \\
-      -e 's@ va_list@ __not_va_list__@' \\
-      -e 's@\\*va_list@*__not_va_list__@' \\
-      -e 's@ __va_list)@ __gnuc_va_list)@' \\
-      -e 's@GNUC_VA_LIST@GNUC_Va_LIST@' \\
-      -e 's@_NEED___VA_LIST@_NEED___Va_LIST@' \\
-      -e 's@VA_LIST@DUMMY_VA_LIST@' \\
-      -e 's@_Va_LIST@_VA_LIST@'";
+    sed = "s@ va_list @ __gnuc_va_list @\n"
+          "s@ va_list)@ __gnuc_va_list)@\n"
+          "s@ _VA_LIST_));@ __gnuc_va_list));@\n"
+          "s@ va_list@ __not_va_list__@\n"
+          "s@\\*va_list@*__not_va_list__@\n"
+          "s@ __va_list)@ __gnuc_va_list)@\n"
+          "s@GNUC_VA_LIST@GNUC_Va_LIST@\n"
+          "s@_NEED___VA_LIST@_NEED___Va_LIST@\n"
+          "s@VA_LIST@DUMMY_VA_LIST@\n"
+          "s@_Va_LIST@_VA_LIST@";
 };
 
 
@@ -2175,14 +2202,8 @@ fix = {
 };
 #endif /*  SVR5 */
 
-
-/*
- *  Fix return value of mem{ccpy,chr,cpy,set} and str{len,spn,cspn}
- *  in string.h on sysV68
- *  Correct the return type for strlen in string.h on Lynx.
- *  Correct the argument type for ffs in string.h on Alpha OSF/1 V2.0.
- *  Add missing const for strdup on OSF/1 V3.0.
- *  On sysV88 layout is slightly different.
+/* Fix these files to use the same types that we think they should.
+ * XXX - extremely dubious changes here.
  */
 fix = {
     hackname = systypes;
@@ -2235,15 +2256,15 @@ fix = {
 
 
 /*
- *  Fix this file to avoid interfering with stddef.h,
- *  but don't mistakenly match ssize_t present in AIX for the ps/2,
- *  or typedefs which use (but do not set) size_t.
+ * Fix files that may contain a stray definition of size_t.  Take care
+ * not to match ssize_t or mere uses of size_t.
  */
 fix = {
-    hackname = systypes_for_aix;
+    hackname = systypes_stdlib_size_t;
     files    = sys/types.h;
+    files    = stdlib.h;
     select   = "typedef[ \t][ \t]*[A-Za-z_][ \tA-Za-z_]*[ \t]size_t";
-    bypass   = "_GCC_SIZE_T";
+    bypass   = "_(GCC|BSD)_SIZE_T";
 
     sed    = "/typedef[ \t][ \t]*[A-Za-z_][ \tA-Za-z_]*[ \t]size_t/i\\\n"
                  "#ifndef _GCC_SIZE_T\\\n"
@@ -2255,9 +2276,12 @@ fix = {
 
 
 /*
- *  Fix return type of exit and abort in <stdlib.h> on SunOS 4.1.
- *  Also wrap protection around size_t for m88k-sysv3 systems.
- *  We use a funny name to ensure it follows 'systypes' fix.
+ *  Fix return value of mem{ccpy,chr,cpy,set} and str{len,spn,cspn}
+ *  in string.h on sysV68
+ *  Correct the return type for strlen in string.h on Lynx.
+ *  Correct the argument type for ffs in string.h on Alpha OSF/1 V2.0.
+ *  Add missing const for strdup on OSF/1 V3.0.
+ *  On sysV88 layout is slightly different.
  */
 fix = {
     hackname = sysv68_string;
@@ -2278,7 +2302,6 @@ fix = {
 
 /*
  *  Fix return type of exit and abort in <stdlib.h>
- *  Also wrap protection around size_t.
  */
 fix = {
     hackname = sysz_stdlib_for_sun;
@@ -2291,13 +2314,6 @@ fix = {
     sed   = "s/char[ \t]*\\*[ \t]*realloc/void \\*\trealloc/g";
     sed   = "s/char[ \t]*\\*[ \t]*bsearch/void \\*\tbsearch/g";
     sed   = "s/int[ \t][ \t]*exit/void\texit/g";
-
-    sed   = "/typedef[ \ta-zA-Z_]*[ \t]size_t[ \t]*;/i\\\n"
-                "#ifndef _GCC_SIZE_T\\\n"
-                "#define _GCC_SIZE_T\n";
-
-    sed   = "/typedef[ \ta-zA-Z_]*[ \t]size_t[ \t]*;/a\\\n"
-                "#endif\n";
 };
 
 
@@ -2395,7 +2411,7 @@ fix = {
  */
 fix = {
     hackname = ultrix_ifdef;
-    select   = "#ifdef KERNEL";
+    select   = "#ifdef KERNEL[ \t]*[^ \t]";
     files    = sys/file.h;
     sed      = "s/#ifdef KERNEL/#if defined(KERNEL)/";
 };

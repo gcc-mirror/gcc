@@ -10,13 +10,15 @@ sh
 # Install modified versions of certain ANSI-incompatible system header
 # files which are fixed to work correctly with ANSI C and placed in a
 # directory that GNU C will search.
-#
+#[=
+_IF PROGRAM _env ! =]
 # This script contains [=_eval fix _count =] fixup scripts.
-#
+#[=
+_ENDIF =]
 # See README-fixinc for more information.
 #
-#  fixincludes copyright (c) [=_eval "date +%Y" _shell
-                                =] The Free Software Foundation, Inc.
+#  fixincludes copyright (c) 1998, 1999, 2000
+#  The Free Software Foundation, Inc.
 #
 [=_eval fixincludes "## " _gpl=]
 #

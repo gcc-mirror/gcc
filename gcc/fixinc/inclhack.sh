@@ -6,11 +6,12 @@
 # files which are fixed to work correctly with ANSI C and placed in a
 # directory that GNU C will search.
 #
-# This script contains 113 fixup scripts.
+# This script contains 115 fixup scripts.
 #
 # See README-fixinc for more information.
 #
-#  fixincludes copyright (c) 2000 The Free Software Foundation, Inc.
+#  fixincludes copyright (c) 1998, 1999, 2000
+#  The Free Software Foundation, Inc.
 #
 # fixincludes is free software.
 # 
@@ -1392,6 +1393,8 @@ extern "C"\
     #
     case "${file}" in ./sys/mman.h | \
 	./rpc/types.h )
+    if ( test -n "`egrep '[^#]+malloc.*;' ${file}`"
+       ) > /dev/null 2>&1 ; then
     if ( test -z "`egrep '\"C\"|__BEGIN_DECLS' ${file}`"
        ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
@@ -1415,6 +1418,7 @@ extern "C" {\
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
     fi # end of bypass 'if'
+    fi # end of select 'if'
     ;; # case end for file name test
     esac
 
@@ -1644,6 +1648,8 @@ extern "C" {\
     case "${file}" in ./rpc/auth.h )
     if ( test -n "`egrep 'authdes_create.*struct sockaddr' ${file}`"
        ) > /dev/null 2>&1 ; then
+    if ( test -z "`egrep '<sys/socket.h>' ${file}`"
+       ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
       irix_sockaddr"
     if [ ! -r ${DESTFILE} ]
@@ -1656,6 +1662,7 @@ struct sockaddr;
           < $infile > ${DESTDIR}/fixinc.tmp
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
+    fi # end of bypass 'if'
     fi # end of select 'if'
     ;; # case end for file name test
     esac
@@ -1995,6 +2002,30 @@ static __inline__ double fake_hypot (x, y)\
     fi # end of bypass 'if'
     ;; # case end for machine type test
     esac
+    ;; # case end for file name test
+    esac
+
+
+    #
+    # Fix Machine_Ansi_H_Va_List
+    #
+    case "${file}" in ./machine/ansi.h )
+    if ( test -n "`egrep '_BSD_VA_LIST_' ${file}`"
+       ) > /dev/null 2>&1 ; then
+    if ( test -z "`egrep '__builtin_va_list' ${file}`"
+       ) > /dev/null 2>&1 ; then
+    fixlist="${fixlist}
+      machine_ansi_h_va_list"
+    if [ ! -r ${DESTFILE} ]
+    then infile=${file}
+    else infile=${DESTFILE} ; fi 
+
+    sed -e 's/\(_BSD_VA_LIST_[ 	][ 	]*\).*$/\1__builtin_va_list/' \
+          < $infile > ${DESTDIR}/fixinc.tmp
+    rm -f ${DESTFILE}
+    mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
+    fi # end of bypass 'if'
+    fi # end of select 'if'
     ;; # case end for file name test
     esac
 
@@ -2469,40 +2500,52 @@ typedef __regmatch_t	regmatch_t;
 
 
     #
+    # Fix Stdio_Stdarg_H
+    #
+    case "${file}" in ./stdio.h )
+    if ( test -z "`egrep 'include.*(stdarg.h|machine/ansi.h)' ${file}`"
+       ) > /dev/null 2>&1 ; then
+    fixlist="${fixlist}
+      stdio_stdarg_h"
+    if [ ! -r ${DESTFILE} ]
+    then infile=${file}
+    else infile=${DESTFILE} ; fi 
+
+    sed -e '1i\
+#define __need___va_list\
+#include <stdarg.h>
+' \
+          < $infile > ${DESTDIR}/fixinc.tmp
+    rm -f ${DESTFILE}
+    mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
+    fi # end of bypass 'if'
+    ;; # case end for file name test
+    esac
+
+
+    #
     # Fix Stdio_Va_List
     #
     case "${file}" in ./stdio.h )
-    if ( test -z "`egrep '__gnuc_va_list' ${file}`"
+    if ( test -z "`egrep '__gnuc_va_list|_BSD_VA_LIST_' ${file}`"
        ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
       stdio_va_list"
     if [ ! -r ${DESTFILE} ]
     then infile=${file}
     else infile=${DESTFILE} ; fi 
-    ( if ( egrep "__need___va_list" $file ) > /dev/null 2>&1 ; then
-    :
-  else
-    echo "#define __need___va_list"
-    echo "#include <stdarg.h>"
-  fi
 
-  sed -e 's@ va_list @ __gnuc_va_list @' \
-      -e 's@ va_list)@ __gnuc_va_list)@' \
-      -e 's@ _BSD_VA_LIST_))@ __gnuc_va_list))@' \
-      -e 's@ _VA_LIST_));@ __gnuc_va_list));@' \
-      -e 's@ va_list@ __not_va_list__@' \
-      -e 's@\*va_list@*__not_va_list__@' \
-      -e 's@ __va_list)@ __gnuc_va_list)@' \
-      -e 's@GNUC_VA_LIST@GNUC_Va_LIST@' \
-      -e 's@_NEED___VA_LIST@_NEED___Va_LIST@' \
-      -e 's@VA_LIST@DUMMY_VA_LIST@' \
-      -e 's@_Va_LIST@_VA_LIST@' ) < $infile > ${DESTDIR}/fixinc.tmp
-
-    #  Shell scripts have the potential of removing the output
-    #  We interpret that to mean the file is not to be altered
-    #
-    if test ! -f ${DESTDIR}/fixinc.tmp
-    then continue ; fi 
+    sed -e 's@ va_list @ __gnuc_va_list @
+s@ va_list)@ __gnuc_va_list)@
+s@ _VA_LIST_));@ __gnuc_va_list));@
+s@ va_list@ __not_va_list__@
+s@\*va_list@*__not_va_list__@
+s@ __va_list)@ __gnuc_va_list)@
+s@GNUC_VA_LIST@GNUC_Va_LIST@
+s@_NEED___VA_LIST@_NEED___Va_LIST@
+s@VA_LIST@DUMMY_VA_LIST@
+s@_Va_LIST@_VA_LIST@' \
+          < $infile > ${DESTDIR}/fixinc.tmp
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
     fi # end of bypass 'if'
@@ -2781,15 +2824,16 @@ typedef __SIZE_TYPE__ size_t;\
 
 
     #
-    # Fix Systypes_For_Aix
+    # Fix Systypes_Stdlib_Size_T
     #
-    case "${file}" in ./sys/types.h )
+    case "${file}" in ./sys/types.h | \
+	./stdlib.h )
     if ( test -n "`egrep 'typedef[ 	][ 	]*[A-Za-z_][ 	A-Za-z_]*[ 	]size_t' ${file}`"
        ) > /dev/null 2>&1 ; then
-    if ( test -z "`egrep '_GCC_SIZE_T' ${file}`"
+    if ( test -z "`egrep '_(GCC|BSD)_SIZE_T' ${file}`"
        ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
-      systypes_for_aix"
+      systypes_stdlib_size_t"
     if [ ! -r ${DESTFILE} ]
     then infile=${file}
     else infile=${DESTFILE} ; fi 
@@ -2855,13 +2899,6 @@ extern unsigned int\
         -e 's/char[ 	]*\*[ 	]*realloc/void \*	realloc/g' \
         -e 's/char[ 	]*\*[ 	]*bsearch/void \*	bsearch/g' \
         -e 's/int[ 	][ 	]*exit/void	exit/g' \
-        -e '/typedef[ 	a-zA-Z_]*[ 	]size_t[ 	]*;/i\
-#ifndef _GCC_SIZE_T\
-#define _GCC_SIZE_T
-' \
-        -e '/typedef[ 	a-zA-Z_]*[ 	]size_t[ 	]*;/a\
-#endif
-' \
           < $infile > ${DESTDIR}/fixinc.tmp
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
@@ -3002,7 +3039,7 @@ struct utsname;
     # Fix Ultrix_Ifdef
     #
     case "${file}" in ./sys/file.h )
-    if ( test -n "`egrep '#ifdef KERNEL' ${file}`"
+    if ( test -n "`egrep '#ifdef KERNEL[ 	]*[^ 	]' ${file}`"
        ) > /dev/null 2>&1 ; then
     fixlist="${fixlist}
       ultrix_ifdef"

@@ -1,3 +1,28 @@
+2000-01-25  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* inclhack.def: Fixes to play nicer with FreeBSD, and
+	corrections to comments.
+	(cxx_unready): Add select expression.
+	(irix_sockaddr): Add bypass expression.
+	(machine_ansi_h_va_list): New fix.
+	(stdio_va_list): No need to edit _BSD_VA_LIST_.
+	Split out addition of "#include <stdarg.h>" to...
+	(stdio_stdarg_h): ... here.
+	(systypes_for_aix): Rename to systypes_stdlib_size_t.  Apply
+	to stdlib.h also.  Do not munge _BSD_SIZE_T_.
+	(sysz_stdlib_for_sun): Delete duplicate fix for unprotected
+	size_t.
+	(ultrix_ifdef): Tighten up select expression.
+
+	* fixincl.tpl: Exorcise 'exesel'.  Rewrite calculations of
+	re_ct and max_mach to avoid use of shell.  Make printed names
+	match names in inclhack.def.  Use static copyright date.
+	Don't count c_test and test expressions as requiring regex_t
+	slots.  Add some commentary.
+	* inclhack.tpl: Do not include the 'This script contains N
+	fixup scripts' line if PROGRAM is defined.  Use static
+	copyright date.
+
 2000-01-24  Jason Merrill  <jason@casey.cygnus.com>
 
 	* dwarf2out.c: include "varray.h", not dyn-string.h.

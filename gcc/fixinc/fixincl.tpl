@@ -11,19 +11,27 @@ x =]
  *
  * See README-fixinc for more information.
  *
- *  inclhack copyright (c) [=_eval "date +%Y" _shell
-                                =] The Free Software Foundation, Inc.
+ *  inclhack copyright (c) 1998, 1999, 2000
+ *  The Free Software Foundation, Inc.
  *
 [=_eval inclhack "# *  " _gpl=]
- *[=_EVAL "re_ct=0\nmax_mach=0" _shell=][=
+ */
+[= _SETENV re_ct 0 =][= _SETENV max_mach 0 =][=
 
 _FOR fix =]
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description of [=hackname _Cap=] fix
- */
+ *  Description of [=hackname _cap=] fix
+ */[=
+
+# Note that this is not just for debugging purposes, but in case
+  some C fix wishes to refer to the regexps it is paired with.
+  See commentary at the top of fixfixes.c.
+=]
 #define [=hackname _up #_FIXIDX + #%-32s _printf=] [=_eval _index=]
 tSCC z[=hackname _cap=]Name[] =
-     [=hackname _cap _krstr=];
+     [=hackname _krstr=];
+
 /*
  *  File name selection pattern
  */[=
@@ -41,35 +49,21 @@ tSCC z[=hackname _cap=]List[] =
 
   _IF mach _exist=]
 tSCC* apz[=hackname _cap=]Machs[] = {[=
-    _EVAL "this_mach=0" _shell =][=
+    _SETENV this_mach 0 =][=
 
     _FOR mach =]
         [=mach _krstr=],[=
-      _EVAL mach _len "this_mach=`expr $this_mach + %d + 5`"
-            _printf _shell =][=
-    /mach=]
+      _SETENV this_mach mach _len this_mach _env _val 5 + +
+      =][= /mach=]
         (const char*)NULL };[=
 
-    _EVAL "if [ $this_mach -gt $max_mach ] ; then max_mach=$this_mach ; fi"
-          _shell =][=
+    _SETENV max_mach _mark this_mach _env _val max_mach _env _val _max =][=
 
   _ELSE =]
 #define apz[=hackname _cap=]Machs (const char**)NULL[=
   _ENDIF "files _exist" =][=
 
-  _IF exesel _exist=]
-
-/*
- *  content selection pattern - do fix if pattern found
- *  This is a special pattern that not all egrep commands
- *  are capable of coping with.  We use the GNU library, tho :)
- */[=
-    _FOR exesel =]
-tSCC z[=hackname _cap=]Select[=_eval _index=][] =
-       [=exesel _krstr=];[=
-    /exesel =][=
-
-  _ELIF select _exist=]
+  _IF select _exist=]
 
 /*
  *  content selection pattern - do fix if pattern found
@@ -115,29 +109,21 @@ tSCC z[=hackname _cap=]FTst[=_eval _index=][] = "[=c_test=]";[=
 
 #  Build the array of test descriptions for this fix: =][=
 
-  _IF exesel  _exist
-      select  _exist |
+  _IF select  _exist
       bypass  _exist |
       test    _exist |
       c_test  _exist |
 =]
 
 #define    [=hackname _up =]_TEST_CT  [=
-    _IF exesel _exist =][=
-       _eval exesel       _count
-             bypass       _count +
-             test         _count + 
-             c_test       _count +
-        "ct=%d ; re_ct=`expr $ct + $re_ct` ; echo $ct"
-        _printf _shell =][=
-    _ELSE =][=
        _eval select       _count
              bypass       _count +
              test         _count + 
-             c_test       _count +
-        "ct=%d ; re_ct=`expr $ct + $re_ct` ; echo $ct"
-        _printf _shell =][=
-    _ENDIF =]
+             c_test       _count + =][=
+_SETENV re_ct
+	re_ct _env _val
+	select _count +
+	bypass _count + =]
 tTestDesc a[=hackname _cap=]Tests[] = {[=
 
     _FOR test =]
@@ -152,19 +138,9 @@ tTestDesc a[=hackname _cap=]Tests[] = {[=
   { TT_NEGREP,   z[=hackname _cap=]Bypass[=_eval _index=], (regex_t*)NULL },[=
     /bypass =][=
 
-    #  IF there is an exesel, then use that (those) selection
-          expressions, instead of the regular select expressions
-    =][=
-    _IF exesel _exist =][=
-      _FOR exesel =]
-  { TT_EGREP,    z[=hackname _cap=]Select[=_eval _index=], (regex_t*)NULL },[=
-      /exesel =][=
-
-    _ELSE =][=
       _FOR select =]
   { TT_EGREP,    z[=hackname _cap=]Select[=_eval _index=], (regex_t*)NULL },[=
-      /select =][=
-    _ENDIF =] };[=
+      /select =] };[=
   _ELSE =]
 #define [=hackname _up=]_TEST_CT  0
 #define a[=hackname _cap=]Tests   (tTestDesc*)NULL[=
@@ -189,21 +165,19 @@ const char* apz[=hackname _cap=]Patch[] = {[=
 
     _ENDIF=]
     (char*)NULL };
+[=/fix=]
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * *[=
-/fix=]
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  *  List of all fixes
- */
-[=_EVAL '
-echo "#define REGEX_COUNT          $re_ct"
-echo "#define MACH_LIST_SIZE_LIMIT `expr $max_mach + 128`" ' _shell =][=
-
+ */[=
 #  as of this writing, 49 bytes are needed by the case statement format.
    We also must allow for the size of the target machine machine name.
    This allows for a 79 byte machine name.  Better be enough.
 =]
-#define FIX_COUNT            [=_eval fix _count =]
+#define REGEX_COUNT          [= _eval re_ct _env =]
+#define MACH_LIST_SIZE_LIMIT [= _eval max_mach _env _val 128 + =]
+#define FIX_COUNT            [= _eval fix _count =]
 
 tFixDesc fixDescList[ FIX_COUNT ] = {[=
 

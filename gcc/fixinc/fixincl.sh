@@ -6,11 +6,10 @@
 # files which are fixed to work correctly with ANSI C and placed in a
 # directory that GNU C will search.
 #
-# This script contains 113 fixup scripts.
-#
 # See README-fixinc for more information.
 #
-#  fixincludes copyright (c) 2000 The Free Software Foundation, Inc.
+#  fixincludes copyright (c) 1998, 1999, 2000
+#  The Free Software Foundation, Inc.
 #
 # fixincludes is free software.
 # 
