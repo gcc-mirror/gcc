@@ -303,7 +303,7 @@ frame n    |            |            |            |
 
 /* Base register for access to local variables of the function.
    Pyramid uses CFP (GR13) as both frame pointer and argument pointer. */
-#define FRAME_POINTER_REGNUM PYR_GREG(13)
+#define FRAME_POINTER_REGNUM 13 /* pyr cpp fails on PYR_GREG(13) */
 
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms
