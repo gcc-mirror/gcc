@@ -16,11 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA.
-
-*/
-
-#include <ns32k/ns32k.h>
+Boston, MA 02111-1307, USA.  */
 
 /* Compile for the floating point unit & 32532 by default;
    Don't assume SB is zero;
@@ -63,10 +59,6 @@ Boston, MA 02111-1307, USA.
 /* movd insns may have floating point constant operands.  */
 
 #define MOVD_FLOAT_OK
-
-/* Get generic NetBSD definitions. */
-#include <netbsd.h>
-#include <netbsd-aout.h>
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
