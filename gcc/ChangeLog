@@ -1,3 +1,11 @@
+2000-09-06  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md: Correct function unit definitions for cr_logical and
+	mtjmpr.
+	(sCOND): Additionally fail for sgt, slt, sge, sle if !TARGET_POWER
+	and use portable method for >=0 and floating point >=.  Remove
+	associated matchers.
+
 2000-09-06  Mark Mitchell  <mark@codesourcery.com>
 
 	* extend.texi: Mark named return value extension as deprecated.
