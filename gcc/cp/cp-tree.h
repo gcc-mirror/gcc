@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
       AGGR_INIT_VIA_CTOR_P (in AGGR_INIT_EXPR)
       CTOR_BEGIN_P (in CTOR_STMT)
       BV_USE_VCALL_INDEX_P (in the BINFO_VIRTUALS TREE_LIST)
+      PTRMEM_OK_P (in ADDR_EXPR, OFFSET_REF)
    1: IDENTIFIER_VIRTUAL_P.
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -2666,6 +2667,10 @@ extern int flag_new_for_scope;
 #define TYPE_PTRMEMFUNC_FLAG(NODE) \
   (TYPE_LANG_SPECIFIC(NODE)->ptrmemfunc_flag)
 
+/* Indicates when overload resolution may resolve to a pointer to
+   member function. [expr.unary.op]/3 */
+#define PTRMEM_OK_P(NODE) TREE_LANG_FLAG_0 (NODE)
+
 /* A pointer-to-function member type looks like:
 
    struct {
@@ -3208,7 +3213,8 @@ typedef enum special_function_kind {
 typedef enum instantiate_type_flags {
   itf_none = 0,               /* nothing special */
   itf_complain = 1 << 0,      /* complain about errors */
-  itf_no_attributes = 1 << 1  /* ignore attributes on comparisons */
+  itf_no_attributes = 1 << 1, /* ignore attributes on comparisons */
+  itf_ptrmem_ok = 1 << 2,     /* pointers to member ok (internal use) */
 } instantiate_type_flags;
 
 /* Non-zero means that if a label exists, and no other identifier

@@ -132,7 +132,7 @@ static int method_name_cmp PARAMS ((const tree *, const tree *));
 static tree add_implicitly_declared_members PARAMS ((tree, int, int, int));
 static tree fixed_type_or_null PARAMS ((tree, int *));
 static tree resolve_address_of_overloaded_function PARAMS ((tree, tree, int,
-							  int, tree));
+							  int, int, tree));
 static void build_vtable_entry_ref PARAMS ((tree, tree, tree));
 static tree build_vtbl_initializer PARAMS ((tree, tree, tree, tree, int *));
 static int count_fields PARAMS ((tree));
@@ -5725,19 +5725,22 @@ pop_lang_context ()
 /* Given an OVERLOAD and a TARGET_TYPE, return the function that
    matches the TARGET_TYPE.  If there is no satisfactory match, return
    error_mark_node, and issue an error message if COMPLAIN is
-   non-zero.  If TEMPLATE_ONLY, the name of the overloaded function
+   non-zero.  Permit pointers to member function if PTRMEM is non-zero.
+   If TEMPLATE_ONLY, the name of the overloaded function
    was a template-id, and EXPLICIT_TARGS are the explicitly provided
    template arguments.  */
 
 static tree
 resolve_address_of_overloaded_function (target_type, 
 					overload,
-					complain, 
+					complain,
+	                                ptrmem,
 					template_only,
 					explicit_targs)
      tree target_type;
      tree overload;
      int complain;
+     int ptrmem;
      int template_only;
      tree explicit_targs;
 {
@@ -5960,6 +5963,14 @@ resolve_address_of_overloaded_function (target_type,
   /* Good, exactly one match.  Now, convert it to the correct type.  */
   fn = TREE_PURPOSE (matches);
 
+  if (TREE_CODE (TREE_TYPE (fn)) == METHOD_TYPE
+      && !ptrmem && !flag_ms_extensions)
+    {
+      if (!complain)
+        return error_mark_node;
+
+      cp_pedwarn ("assuming pointer to member `%D'", fn);
+    }
   mark_used (fn);
 
   if (TYPE_PTRFN_P (target_type) || TYPE_PTRMEMFUNC_P (target_type))
@@ -5993,7 +6004,9 @@ instantiate_type (lhstype, rhs, flags)
   int complain = (flags & itf_complain);
   int strict = (flags & itf_no_attributes)
                ? COMPARE_NO_ATTRIBUTES : COMPARE_STRICT;
-  tree r;
+  int allow_ptrmem = flags & itf_ptrmem_ok;
+  
+  flags &= ~itf_ptrmem_ok;
   
   if (TREE_CODE (lhstype) == UNKNOWN_TYPE)
     {
@@ -6053,36 +6066,13 @@ instantiate_type (lhstype, rhs, flags)
       return instantiate_type (lhstype, rhs, flags);
 
     case COMPONENT_REF:
-      {
-	r = instantiate_type (lhstype, TREE_OPERAND (rhs, 1), flags);
-
-      comp:
-	if (r != error_mark_node && TYPE_PTRMEMFUNC_P (lhstype)
-	    && complain && !flag_ms_extensions)
-	  {
-	    /* Note: we check this after the recursive call to avoid
-	       complaining about cases where overload resolution fails.  */
-
-	    tree t = TREE_TYPE (TREE_OPERAND (rhs, 0));
-	    tree fn = PTRMEM_CST_MEMBER (r);
-
-	    my_friendly_assert (TREE_CODE (r) == PTRMEM_CST, 990811);
-
-	    cp_pedwarn
-	      ("object-dependent reference to `%E' can only be used in a call",
-	       DECL_NAME (fn));
-	    cp_pedwarn
-	      ("  to form a pointer to member function, say `&%T::%E'",
-	       t, DECL_NAME (fn));
-	  }
-
-	return r;
-      }
+      return instantiate_type (lhstype, TREE_OPERAND (rhs, 1), flags);
 
     case OFFSET_REF:
       rhs = TREE_OPERAND (rhs, 1);
       if (BASELINK_P (rhs))
-	return instantiate_type (lhstype, TREE_VALUE (rhs), flags);
+	return instantiate_type (lhstype, TREE_VALUE (rhs),
+	                         flags | allow_ptrmem);
 
       /* This can happen if we are forming a pointer-to-member for a
 	 member template.  */
@@ -6095,18 +6085,13 @@ instantiate_type (lhstype, rhs, flags)
 	tree fns = TREE_OPERAND (rhs, 0);
 	tree args = TREE_OPERAND (rhs, 1);
 
-	r =
+	return
 	  resolve_address_of_overloaded_function (lhstype,
 						  fns,
 						  complain,
+	                                          allow_ptrmem,
 						  /*template_only=*/1,
 						  args);
-	if (TREE_CODE (fns) == COMPONENT_REF)
-	  {
-	    rhs = fns;
-	    goto comp;
-	  }
-	return r;
       }
 
     case OVERLOAD:
@@ -6114,6 +6099,7 @@ instantiate_type (lhstype, rhs, flags)
 	resolve_address_of_overloaded_function (lhstype, 
 						rhs,
 						complain,
+	                                        allow_ptrmem,
 						/*template_only=*/0,
 						/*explicit_targs=*/NULL_TREE);
 
@@ -6225,8 +6211,12 @@ instantiate_type (lhstype, rhs, flags)
       return rhs;
       
     case ADDR_EXPR:
+    {
+      if (PTRMEM_OK_P (rhs))
+        flags |= itf_ptrmem_ok;
+      
       return instantiate_type (lhstype, TREE_OPERAND (rhs, 0), flags);
-
+    }
     case ENTRY_VALUE_EXPR:
       my_friendly_abort (184);
       return error_mark_node;

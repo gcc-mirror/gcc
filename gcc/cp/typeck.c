@@ -4260,6 +4260,9 @@ build_x_unary_op (code, xarg)
      enum tree_code code;
      tree xarg;
 {
+  tree exp;
+  int ptrmem = 0;
+  
   if (processing_template_decl)
     return build_min_nt (code, xarg, NULL_TREE);
 
@@ -4280,14 +4283,26 @@ build_x_unary_op (code, xarg)
       if (rval || code != ADDR_EXPR)
 	return rval;
     }
-
   if (code == ADDR_EXPR)
     {
-      if (TREE_CODE (xarg) == TARGET_EXPR)
+      if (TREE_CODE (xarg) == OFFSET_REF)
+        {
+          ptrmem = PTRMEM_OK_P (xarg);
+          
+          if (!ptrmem && !flag_ms_extensions
+              && TREE_CODE (TREE_TYPE (TREE_OPERAND (xarg, 1))) == METHOD_TYPE)
+            /* A single non-static member, make sure we don't allow a
+               pointer-to-member.  */
+            xarg = ovl_cons (TREE_OPERAND (xarg, 1), NULL_TREE);
+        }
+      else if (TREE_CODE (xarg) == TARGET_EXPR)
 	warning ("taking address of temporary");
     }
+  exp = build_unary_op (code, xarg, 0);
+  if (TREE_CODE (exp) == ADDR_EXPR)
+    PTRMEM_OK_P (exp) = ptrmem;
 
-  return build_unary_op (code, xarg, 0);
+  return exp;
 }
 
 /* Just like truthvalue_conversion, but we want a CLEANUP_POINT_EXPR.  */
@@ -4635,35 +4650,21 @@ build_unary_op (code, xarg, noconvert)
 	  return build1 (ADDR_EXPR, unknown_type_node, arg);
 	}
 
-      if (TREE_CODE (arg) == COMPONENT_REF && type_unknown_p (arg)
-	  && OVL_NEXT (TREE_OPERAND (arg, 1)) == NULL_TREE)
-	{
+      if (TREE_CODE (arg) == COMPONENT_REF && flag_ms_extensions
+          && type_unknown_p (arg)
+          && OVL_NEXT (TREE_OPERAND (arg, 1)) == NULL_TREE)
+        {
 	  /* They're trying to take the address of a unique non-static
-	     member function.  This is ill-formed, but let's try to DTRT.
-	     Note: We only handle unique functions here because we don't
-	     want to complain if there's a static overload; non-unique
-	     cases will be handled by instantiate_type.  But we need to
-	     handle this case here to allow casts on the resulting PMF.  */
+	     member function.  This is ill-formed, except in microsoft-land.  */
 
 	  tree base = TREE_TYPE (TREE_OPERAND (arg, 0));
 	  tree name = DECL_NAME (OVL_CURRENT (TREE_OPERAND (arg, 1)));
-
-	  if (! flag_ms_extensions)
-	    {
-	      if (current_class_type
-		  && TREE_OPERAND (arg, 0) == current_class_ref)
-		/* An expression like &memfn.  */
-		cp_pedwarn ("ISO C++ forbids taking the address of a non-static member function to form a pointer to member function.  Say `&%T::%D'", base, name);
-	      else
-		cp_pedwarn ("ISO C++ forbids taking the address of a bound member function to form a pointer to member function", base, name);
-	    }
-
 	  arg = build_offset_ref (base, name);
-	}
-
+        }
+        
       if (type_unknown_p (arg))
 	return build1 (ADDR_EXPR, unknown_type_node, arg);
-
+	
       /* Handle complex lvalues (when permitted)
 	 by reduction to simpler cases.  */
       val = unary_complex_lvalue (code, arg);
