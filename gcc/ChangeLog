@@ -1,3 +1,10 @@
+2004-07-23  Zack Weinberg  <zack@codesourcery.com>
+
+	* print-rtl.c (print_rtx <case 'b'>): Don't attempt to print
+	bitmap contents if GENERATOR_FILE is defined.
+	* Makefile.in (BUILD_RTL): Remove $(BUILD_PREFIX)bitmap.o.
+	($(BUILD_PREFIX_1)bitmap.o): Delete rule.
+
 2004-07-23  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-decl.c (start_function): Form composite type of function types
@@ -50,12 +57,12 @@
 	* config/rs6000/rs6000-modes.def: Likewise.
 	* config/sh/sh-modes.def: Likewise.
 
-2004-07-23  Matthias Klose  <doko@debian.org> 
- 
-	* intl.c (gcc_init_libintl): Use PACKAGE for the text domain. 
-	* configure.ac: Add AC_DEFINE_UNQUOTED for PACKAGE. 
+2004-07-23  Matthias Klose  <doko@debian.org>
+
+	* intl.c (gcc_init_libintl): Use PACKAGE for the text domain.
+	* configure.ac: Add AC_DEFINE_UNQUOTED for PACKAGE.
 	* config.h: Regenerate.
-	* configure: Likewise. 
+	* configure: Likewise.
 
 2004-07-22  Mark Mitchell  <mark@codesourcery.com>
 
@@ -132,7 +139,7 @@
 	(rs6000_emit_prologue): Use machopic_function_base_sym.
 	(output_profile_hook): Do not use machopic_stub_name.
 	(macho_branch_isalnds): Do not use darwin_strip_name_encoding.
-	
+
 2004-07-22  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/7284
@@ -157,7 +164,7 @@
 	* tree-ssa-ccp.c (latticevalue): Add UNKNOWN_VAL.
 	(substitute_and_fold): Propigate into VUSE operands when possible.
 	(visit_phi_node): Handle UNKNOWN_VAL latticevalue.
-	(cp_lattice_meet): Handle merging of latticevalues when 
+	(cp_lattice_meet): Handle merging of latticevalues when
 	UNKNOWN_VAL is present.
 	(visit_stmt): Visit assignments with V_MUST_DEFs.
 	(visit_assignment): Gather ccp information for V_MUST_DEF operands.
@@ -165,13 +172,13 @@
 	(evaluate_stmt): Handle UNKNOWN_VAL likely values.
 	(dump_lattice_value): Dump UNKNOWN_VAL latticevalues.
 	(initialize): Mark statements with V_MUST_DEFs as VARYING only if the
-	V_MUST_DEF operand is VARYING. Fix comment and include VOPS when 
+	V_MUST_DEF operand is VARYING. Fix comment and include VOPS when
 	computing immediate uses.
-	(set_lattice_value): Disallow a UNKNOWN_VAL->UNDEFINED state 
+	(set_lattice_value): Disallow a UNKNOWN_VAL->UNDEFINED state
 	transition.
 	(replace_vuse_in): New function.
 	(likely_value): Add check of vuse operands.
-	(get_default_value): Set the default value of virtually defined 
+	(get_default_value): Set the default value of virtually defined
 	variables to UKNOWN_VAL instead of VARYING.
 
 2004-07-22  Richard Henderson  <rth@redhat.com>

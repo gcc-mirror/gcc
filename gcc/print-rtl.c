@@ -484,10 +484,14 @@ print_rtx (rtx in_rtx)
 	break;
 
       case 'b':
+#ifdef GENERATOR_FILE
+	fputs (" {bitmap}", outfile);
+#else
 	if (XBITMAP (in_rtx, i) == NULL)
 	  fputs (" {null}", outfile);
 	else
 	  bitmap_print (outfile, XBITMAP (in_rtx, i), " {", "}");
+#endif
 	sawclose = 0;
 	break;
 
