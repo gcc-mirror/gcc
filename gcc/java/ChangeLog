@@ -1,4 +1,4 @@
-2005-01-18  Ranjit Mathew  <rmathew@hotmail.com>
+2005-01-25  Ranjit Mathew  <rmathew@hotmail.com>
 
 	PR java/19070
 	* parse.y (patch_binop): Allow comparisons against NULL only
