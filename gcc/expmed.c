@@ -297,19 +297,22 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
   if (flag_force_mem)
     value = force_not_mem (value);
 
-  if ((GET_MODE_SIZE (fieldmode) >= UNITS_PER_WORD
-       || (GET_MODE_SIZE (GET_MODE (op0)) == GET_MODE_SIZE (fieldmode)
-	   && GET_MODE_SIZE (fieldmode) != 0))
-      && (GET_CODE (op0) != MEM
-	  || ! SLOW_UNALIGNED_ACCESS (fieldmode, align)
-	  || (offset * BITS_PER_UNIT % bitsize == 0
-	      && align % GET_MODE_BITSIZE (fieldmode) == 0))
-      && (BYTES_BIG_ENDIAN ? bitpos + bitsize == unit : bitpos == 0)
-      && bitsize == GET_MODE_BITSIZE (fieldmode))
+  /* If the target is a register, overwriting the entire object, or storing
+     a full-word or multi-word field can be done with just a SUBREG.
+
+     If the target is memory, storing any naturally aligned field can be
+     done with a simple store.  For targets that support fast unaligned
+     memory, any naturally sized, unit aligned field can be done directly.  */
+     
+  if (bitsize == GET_MODE_BITSIZE (fieldmode)
+      && (GET_MODE_SIZE (fieldmode) >= UNITS_PER_WORD
+	  || GET_MODE_SIZE (GET_MODE (op0)) == GET_MODE_SIZE (fieldmode)
+	  || (GET_CODE (op0) == MEM
+	      && (! SLOW_UNALIGNED_ACCESS (fieldmode, align)
+		  || (offset * BITS_PER_UNIT % bitsize == 0
+		      && align % GET_MODE_BITSIZE (fieldmode) == 0))))
+      && (BYTES_BIG_ENDIAN ? bitpos + bitsize == unit : bitpos == 0))
     {
-      /* Storing in a full-word or multi-word field in a register
-	 can be done with just SUBREG.  Also, storing in the entire object
-	 can be done with just SUBREG.  */
       if (GET_MODE (op0) != fieldmode)
 	{
 	  if (GET_CODE (op0) == SUBREG)
