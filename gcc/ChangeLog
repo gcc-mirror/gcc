@@ -1,3 +1,7 @@
+2000-11-28  Richard Henderson  <rth@redhat.com>
+
+	* config.gcc: Kill residual pyramid support.
+
 2000-11-28  Neil Booth  <neilb@earthling.net>
 
 	* c-lex.h (parse_in): Change parse_in to a cpp_reader *.

@@ -234,9 +234,6 @@ pj*-*-*)
 powerpc*-*-*)
 	cpu_type=rs6000
 	;;
-pyramid-*-*)
-	cpu_type=pyr
-	;;
 sparc*-*-*)
 	cpu_type=sparc
 	;;
