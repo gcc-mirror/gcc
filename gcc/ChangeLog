@@ -1,3 +1,8 @@
+Thu Jan 22 01:40:52 1998  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.md (abssf2, absdf2): Disable in IEEE mode.
+	(negsf2, negdf2): Use proper subtract in IEEE mode.
+
 Tue Jan 20 09:29:09 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in: Remove more bytecode stuff.
