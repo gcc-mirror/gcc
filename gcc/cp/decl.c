@@ -13043,7 +13043,7 @@ finish_enum (tree enumtype)
   int highprec; 
   int precision;
   integer_type_kind itk;
-  tree underlying_type;
+  tree underlying_type = NULL_TREE;
 
   /* We built up the VALUES in reverse order.  */
   TYPE_VALUES (enumtype) = nreverse (TYPE_VALUES (enumtype));
