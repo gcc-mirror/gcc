@@ -2369,6 +2369,7 @@ push_namespace (name)
 	 level is set elsewhere.  */
       if (!global)
 	{
+	  DECL_CONTEXT (d) = FROB_CONTEXT (current_namespace);
 	  d = pushdecl (d);
 	  pushlevel (0);
 	  declare_namespace_level ();
@@ -3829,8 +3830,6 @@ pushdecl (x)
 	  && !(TREE_CODE (x) == VAR_DECL && DECL_EXTERNAL (x))
 	  && !DECL_CONTEXT (x))
 	DECL_CONTEXT (x) = current_function_decl;
-      if (!DECL_CONTEXT (x))
-	DECL_CONTEXT (x) = FROB_CONTEXT (current_namespace);
 
       /* If this is the declaration for a namespace-scope function,
 	 but the declaration itself is in a local scope, mark the

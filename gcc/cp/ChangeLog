@@ -1,3 +1,13 @@
+2000-06-24  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (pushdecl): Don't set DECL_CONTEXT from current_namespace.
+	(push_namespace): Set DECL_CONTEXT for a new NAMESPACE_DECL.
+
+2000-06-24  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* parse.y (complex_direct_notype_declarator): Support global_scope.
+	* Makefile.in: Adjust conflict count.
+
 2000-06-23  Kriang Lerdsuwanakij <lerdsuwa@scf.usc.edu>
 
 	* parse.y (template_arg): Convert TEMPLATE_DECL

@@ -2872,6 +2872,12 @@ complex_direct_notype_declarator:
 		{ $$ = build_parse_node (ARRAY_REF, $$, NULL_TREE); }
 	| notype_qualified_id
                 { enter_scope_of ($1); }
+	| global_scope notype_qualified_id
+                { enter_scope_of ($2); $$ = $2;}
+	| global_scope notype_unqualified_id
+                { $$ = build_parse_node (SCOPE_REF, global_namespace, $2);
+		  enter_scope_of ($$); 
+		}
         | nested_name_specifier notype_template_declarator
                 { got_scope = NULL_TREE;
 		  $$ = build_parse_node (SCOPE_REF, $1, $2);
