@@ -5283,10 +5283,10 @@ create_edge_list ()
   for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
     num_edges++;
 
-  elist = malloc (sizeof (struct edge_list));
+  elist = xmalloc (sizeof (struct edge_list));
   elist->num_blocks = block_count;
   elist->num_edges = num_edges;
-  elist->index_to_edge = malloc (sizeof (edge) * num_edges);
+  elist->index_to_edge = xmalloc (sizeof (edge) * num_edges);
 
   num_edges = 0;
 
