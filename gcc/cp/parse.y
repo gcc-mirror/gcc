@@ -319,7 +319,7 @@ parse_decl(declarator, specs_attrs, attributes, initialized, decl)
   split_specs_attrs (specs_attrs, &current_declspecs, &prefix_attributes);
   if (current_declspecs
       && TREE_CODE (current_declspecs) != TREE_LIST)
-    current_declspecs = get_decl_list (current_declspecs);
+    current_declspecs = build_decl_list (NULL_TREE, current_declspecs);
   if (have_extern_spec && !used_extern_spec)
     {
       current_declspecs = decl_tree_cons (NULL_TREE, 
@@ -1686,7 +1686,8 @@ type_id:
 		{ $$.t = build_decl_list ($1.t, $2); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	| typespec absdcl
-		{ $$.t = build_decl_list (get_decl_list ($1.t), $2); 
+		{ $$.t = build_decl_list (build_decl_list (NULL_TREE, $1.t),
+					  $2); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	| typed_typespecs  %prec EMPTY
 		{ $$.t = build_decl_list ($1.t, NULL_TREE);
@@ -1756,7 +1757,7 @@ declmods:
 	  nonempty_cv_qualifiers  %prec EMPTY
 		{ $$ = $1.t; TREE_STATIC ($$) = 1; }
 	| SCSPEC
-		{ $$ = IDENTIFIER_AS_LIST ($$); }
+		{ $$ = build_decl_list (NULL_TREE, $$); }
 	| declmods CV_QUALIFIER
 		{ $$ = decl_tree_cons (NULL_TREE, $2, $$);
 		  TREE_STATIC ($$) = 1; }
@@ -1780,7 +1781,7 @@ declmods:
 
 typed_typespecs:
 	  typespec  %prec EMPTY
-		{ $$.t = get_decl_list ($1.t); 
+		{ $$.t = build_decl_list (NULL_TREE, $1.t); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	| nonempty_cv_qualifiers typespec
 		{ $$.t = decl_tree_cons (NULL_TREE, $2.t, $1.t); 
@@ -2688,7 +2689,7 @@ cv_qualifiers:
 
 nonempty_cv_qualifiers:
 	  CV_QUALIFIER
-		{ $$.t = IDENTIFIER_AS_LIST ($1); 
+		{ $$.t = build_decl_list (NULL_TREE, $1); 
 		  $$.new_type_flag = 0; }
 	| nonempty_cv_qualifiers CV_QUALIFIER
 		{ $$.t = decl_tree_cons (NULL_TREE, $2, $1.t); 
@@ -3578,7 +3579,8 @@ named_parm:
 		{ $$.t = build_tree_list ($1.t, $2); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	| typespec declarator
-		{ $$.t = build_tree_list (get_decl_list ($1.t), $2); 
+		{ $$.t = build_tree_list (build_decl_list (NULL_TREE, $1.t),
+					  $2); 
 		  $$.new_type_flag = $1.new_type_flag; }
 	| typed_declspecs1 absdcl
 		{ tree specs = strip_attrs ($1.t);

@@ -679,70 +679,28 @@ init_parse (filename)
   token_buffer = (char *) xmalloc (maxtoken + 2);
 
   ridpointers[(int) RID_INT] = get_identifier ("int");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_INT],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_INT]));
   ridpointers[(int) RID_BOOL] = get_identifier ("bool");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_BOOL],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_BOOL]));
   ridpointers[(int) RID_CHAR] = get_identifier ("char");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_CHAR],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_CHAR]));
   ridpointers[(int) RID_VOID] = get_identifier ("void");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_VOID],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_VOID]));
   ridpointers[(int) RID_FLOAT] = get_identifier ("float");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_FLOAT],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_FLOAT]));
   ridpointers[(int) RID_DOUBLE] = get_identifier ("double");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_DOUBLE],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_DOUBLE]));
   ridpointers[(int) RID_SHORT] = get_identifier ("short");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_SHORT],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_SHORT]));
   ridpointers[(int) RID_LONG] = get_identifier ("long");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_LONG],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_LONG]));
   ridpointers[(int) RID_UNSIGNED] = get_identifier ("unsigned");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_UNSIGNED],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_UNSIGNED]));
   ridpointers[(int) RID_SIGNED] = get_identifier ("signed");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_SIGNED],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_SIGNED]));
   ridpointers[(int) RID_INLINE] = get_identifier ("inline");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_INLINE],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_INLINE]));
   ridpointers[(int) RID_CONST] = get_identifier ("const");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_CONST],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_CONST]));
   ridpointers[(int) RID_VOLATILE] = get_identifier ("volatile");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_VOLATILE],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_VOLATILE]));
   ridpointers[(int) RID_RESTRICT] = get_identifier ("__restrict");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_RESTRICT],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_RESTRICT]));
   ridpointers[(int) RID_AUTO] = get_identifier ("auto");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_AUTO],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_AUTO]));
   ridpointers[(int) RID_STATIC] = get_identifier ("static");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_STATIC],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_STATIC]));
   ridpointers[(int) RID_EXTERN] = get_identifier ("extern");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_EXTERN],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_EXTERN]));
   ridpointers[(int) RID_TYPEDEF] = get_identifier ("typedef");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_TYPEDEF],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_TYPEDEF]));
   ridpointers[(int) RID_REGISTER] = get_identifier ("register");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_REGISTER],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_REGISTER]));
   ridpointers[(int) RID_COMPLEX] = get_identifier ("__complex");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_COMPLEX],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_COMPLEX]));
 
   /* C++ extensions. These are probably not correctly named.  */
   ridpointers[(int) RID_WCHAR] = get_identifier ("__wchar_t");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_WCHAR],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_WCHAR]));
   class_type_node = build_int_2 (class_type, 0);
   TREE_TYPE (class_type_node) = class_type_node;
   ridpointers[(int) RID_CLASS] = class_type_node;
@@ -760,34 +718,16 @@ init_parse (filename)
   ridpointers[(int) RID_ENUM] = enum_type_node;
 
   ridpointers[(int) RID_VIRTUAL] = get_identifier ("virtual");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_VIRTUAL],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_VIRTUAL]));
   ridpointers[(int) RID_EXPLICIT] = get_identifier ("explicit");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_EXPLICIT],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_EXPLICIT]));
   ridpointers[(int) RID_EXPORT] = get_identifier ("export");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_EXPORT],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_EXPORT]));
   ridpointers[(int) RID_FRIEND] = get_identifier ("friend");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_FRIEND],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_FRIEND]));
 
   ridpointers[(int) RID_PUBLIC] = get_identifier ("public");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_PUBLIC],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_PUBLIC]));
   ridpointers[(int) RID_PRIVATE] = get_identifier ("private");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_PRIVATE],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_PRIVATE]));
   ridpointers[(int) RID_PROTECTED] = get_identifier ("protected");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_PROTECTED],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_PROTECTED]));
   ridpointers[(int) RID_TEMPLATE] = get_identifier ("template");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_TEMPLATE],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_TEMPLATE]));
   /* This is for ANSI C++.  */
   ridpointers[(int) RID_MUTABLE] = get_identifier ("mutable");
-  SET_IDENTIFIER_AS_LIST (ridpointers[(int) RID_MUTABLE],
-			  build_tree_list (NULL_TREE, ridpointers[(int) RID_MUTABLE]));
 
   /* Signature handling extensions.  */
   signature_type_node = build_int_2 (signature_type, 0);
@@ -4724,12 +4664,9 @@ make_lang_type (code)
       bzero ((char *) pi, (int) sizeof (struct lang_type));
 
       TYPE_LANG_SPECIFIC (t) = pi;
-      CLASSTYPE_AS_LIST (t) = build_expr_list (NULL_TREE, t);
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, interface_unknown);
       CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
       TYPE_BINFO (t) = make_binfo (integer_zero_node, t, NULL_TREE, NULL_TREE);
-      CLASSTYPE_BINFO_AS_LIST (t) 
-	= build_tree_list (NULL_TREE, TYPE_BINFO (t));
 
       /* Make sure this is laid out, for ease of use later.  In the
 	 presence of parse errors, the normal was of assuring this

@@ -1295,18 +1295,6 @@ add_method (type, fields, method)
       /* Actually insert the new method.  */
       TREE_VEC_ELT (method_vec, slot) 
 	= build_overload (method, TREE_VEC_ELT (method_vec, slot));
-
-      if (TYPE_BINFO_BASETYPES (type) && CLASSTYPE_BASELINK_VEC (type))
-	{
-	  /* ??? May be better to know whether these can be extended?  */
-	  tree baselink_vec = CLASSTYPE_BASELINK_VEC (type);
-	  
-	  TREE_VEC_LENGTH (baselink_vec) += 1;
-	  CLASSTYPE_BASELINK_VEC (type) = copy_node (baselink_vec);
-	  TREE_VEC_LENGTH (baselink_vec) -= 1;
-	  
-	  TREE_VEC_ELT (CLASSTYPE_BASELINK_VEC (type), len) = 0;
-	}
     }
   pop_obstacks ();
 }
@@ -1641,10 +1629,6 @@ build_class_init_list (type)
 	  continue;
 	}
 
-      if ((blist = CLASSTYPE_BASE_INIT_LIST (BINFO_TYPE (base_binfo))) == NULL_TREE)
-	/* Nothing to initialize.  */
-	continue;
-
       /* ...ditto...  */
       base_init_list = maybe_fixup_vptrs (type, base_binfo, base_init_list);
 
@@ -1687,30 +1671,15 @@ build_class_init_list (type)
 	  /* The function expand_aggr_init knows how to do the
 	     initialization of `basetype' without getting
 	     an explicit `blist'.  */
-	  if (base_init_list)
-	    base_init_list = tree_cons (NULL_TREE, base_binfo, base_init_list);
-	  else
-	    base_init_list = CLASSTYPE_BINFO_AS_LIST (BINFO_TYPE (base_binfo));
+	  base_init_list = tree_cons (NULL_TREE, base_binfo, base_init_list);
 	}
     }
-
-  if (base_init_list)
-    {
-      if (member_init_list)
-	CLASSTYPE_BASE_INIT_LIST (type) =
-	  build_tree_list (base_init_list, member_init_list);
-      else
-	CLASSTYPE_BASE_INIT_LIST (type) = base_init_list;
-    }
-  else if (member_init_list)
-    CLASSTYPE_BASE_INIT_LIST (type) = member_init_list;
 }
 
 struct base_info
 {
   int has_virtual;
   int max_has_virtual;
-  int n_ancestors;
   tree vfield;
   tree vfields;
   tree rtti;
@@ -1793,7 +1762,6 @@ finish_base_struct (t, b)
 	  && !TYPE_HAS_CONST_ASSIGN_REF (basetype))
 	b->no_const_asn_ref = 1;
 
-      b->n_ancestors += CLASSTYPE_N_SUPERCLASSES (basetype);
       TYPE_NEEDS_CONSTRUCTING (t) |= TYPE_NEEDS_CONSTRUCTING (basetype);
       TYPE_NEEDS_DESTRUCTOR (t) |= TYPE_NEEDS_DESTRUCTOR (basetype);
       TYPE_HAS_COMPLEX_ASSIGN_REF (t) |= TYPE_HAS_COMPLEX_ASSIGN_REF (basetype);
@@ -1802,9 +1770,6 @@ finish_base_struct (t, b)
       TYPE_OVERLOADS_CALL_EXPR (t) |= TYPE_OVERLOADS_CALL_EXPR (basetype);
       TYPE_OVERLOADS_ARRAY_REF (t) |= TYPE_OVERLOADS_ARRAY_REF (basetype);
       TYPE_OVERLOADS_ARROW (t) |= TYPE_OVERLOADS_ARROW (basetype);
-
-      if (! TREE_VIA_VIRTUAL (base_binfo))
-	CLASSTYPE_N_SUPERCLASSES (t) += 1;
 
       if (TYPE_VIRTUAL_P (basetype))
 	{
@@ -1960,14 +1925,14 @@ finish_struct_bits (t, max_has_virtual)
 
   if (n_baseclasses && max_has_virtual)
     {
-      /* for a class w/o baseclasses, `finish_struct' has set
-       * CLASS_TYPE_ABSTRACT_VIRTUALS correctly (by definition). Similarly
-       * for a class who's base classes do not have vtables. When neither of
-       * these is true, we might have removed abstract virtuals (by
-       * providing a definition), added some (by declaring new ones), or
-       * redeclared ones from a base class. We need to recalculate what's
-       * really an abstract virtual at this point (by looking in the vtables).
-       */
+      /* For a class w/o baseclasses, `finish_struct' has set
+         CLASS_TYPE_ABSTRACT_VIRTUALS correctly (by definition). Similarly
+         for a class who's base classes do not have vtables. When neither
+         of these is true, we might have removed abstract virtuals (by
+         providing a definition), added some (by declaring new ones), or
+         redeclared ones from a base class. We need to recalculate what's
+         really an abstract virtual at this point (by looking in the
+         vtables).  */
       CLASSTYPE_ABSTRACT_VIRTUALS (t) = get_abstract_virtuals (t);
     }
 
@@ -1983,8 +1948,6 @@ finish_struct_bits (t, max_has_virtual)
 	  basetype = BINFO_TYPE (TREE_VEC_ELT (binfos, i));
 
 	  TYPE_HAS_CONVERSION (t) |= TYPE_HAS_CONVERSION (basetype);
-	  if (CLASSTYPE_MAX_DEPTH (basetype) >= CLASSTYPE_MAX_DEPTH (t))
-	    CLASSTYPE_MAX_DEPTH (t) = CLASSTYPE_MAX_DEPTH (basetype) + 1;
 	}
     }
 
@@ -2185,7 +2148,6 @@ finish_struct_methods (t)
   tree fn_fields;
   tree method_vec = CLASSTYPE_METHOD_VEC (t);
   tree ctor_name = constructor_name (t);
-  int i, n_baseclasses = CLASSTYPE_N_BASECLASSES (t);
 
   /* First fill in entry 0 with the constructors, entry 1 with destructors,
      and the next few with type conversion operators (if any).  */
@@ -2244,34 +2206,6 @@ finish_struct_methods (t)
   /* Issue warnings about private constructors and such.  If there are
      no methods, then some public defaults are generated.  */
   maybe_warn_about_overly_private_class (t); 
-
-  /* Now for each member function (except for constructors and
-     destructors), compute where member functions of the same
-     name reside in base classes.  */
-  if (n_baseclasses != 0
-      && method_vec
-      && TREE_VEC_LENGTH (method_vec) > 2)
-    {
-      int len = TREE_VEC_LENGTH (method_vec);
-      tree baselink_vec = make_tree_vec (len);
-      int any_links = 0;
-      tree baselink_binfo = build_tree_list (NULL_TREE, TYPE_BINFO (t));
-
-      for (i = 2; i < len && TREE_VEC_ELT (method_vec, i); i++)
-	{
-	  tree ovl = TREE_VEC_ELT (method_vec, i);
-
-	  TREE_VEC_ELT (baselink_vec, i)
-	    = get_baselinks (baselink_binfo, t, 
-			     DECL_NAME (OVL_CURRENT (ovl)));
-	  if (TREE_VEC_ELT (baselink_vec, i) != 0)
-	    any_links = 1;
-	}
-      if (any_links != 0)
-	CLASSTYPE_BASELINK_VEC (t) = baselink_vec;
-      else
-	obstack_free (current_obstack, baselink_vec);
-    }
 }
 
 /* Emit error when a duplicate definition of a type is seen.  Patch up.  */
@@ -2310,18 +2244,14 @@ duplicate_tag_error (t)
 
   if (TYPE_LANG_SPECIFIC (t))
     {
-      tree as_list = CLASSTYPE_AS_LIST (t);
       tree binfo = TYPE_BINFO (t);
-      tree binfo_as_list = CLASSTYPE_BINFO_AS_LIST (t);
       int interface_only = CLASSTYPE_INTERFACE_ONLY (t);
       int interface_unknown = CLASSTYPE_INTERFACE_UNKNOWN (t);
 
       bzero ((char *) TYPE_LANG_SPECIFIC (t), sizeof (struct lang_type));
       BINFO_BASETYPES(binfo) = NULL_TREE;
 
-      CLASSTYPE_AS_LIST (t) = as_list;
       TYPE_BINFO (t) = binfo;
-      CLASSTYPE_BINFO_AS_LIST (t) = binfo_as_list;
       CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, interface_unknown);
       TYPE_REDEFINED (t) = 1;
@@ -3370,7 +3300,6 @@ finish_struct_1 (t, warn_anon)
       CLASSTYPE_VFIELD_PARENT (t) = first_vfn_base_index;
       has_virtual = base_info.has_virtual;
       max_has_virtual = base_info.max_has_virtual;
-      CLASSTYPE_N_SUPERCLASSES (t) += base_info.n_ancestors;
       vfield = base_info.vfield;
       vfields = base_info.vfields;
       CLASSTYPE_RTTI (t) = base_info.rtti;
@@ -3899,7 +3828,7 @@ finish_struct_1 (t, warn_anon)
 	fields = vfield;
 #endif
       empty = 0;
-      vfields = chainon (vfields, CLASSTYPE_AS_LIST (t));
+      vfields = chainon (vfields, build_tree_list (NULL_TREE, t));
     }
 
   /* Now DECL_INITIAL is null on all members except for zero-width bit-fields.
@@ -4014,7 +3943,6 @@ finish_struct_1 (t, warn_anon)
       tree vbases;
 
       vbases = CLASSTYPE_VBASECLASSES (t);
-      CLASSTYPE_N_VBASECLASSES (t) = list_length (vbases);
 
       {
 	/* Now fixup overrides of all functions in vtables from all

@@ -1432,12 +1432,6 @@ finish_class_definition (t, attributes, semi)
      tree attributes;
      int semi;
 {
-#if 0
-  /* Need to rework class nesting in the presence of nested classes,
-     etc.  */
-  shadow_tag (CLASSTYPE_AS_LIST (t)); */
-#endif
-
   /* finish_struct nukes this anyway; if finish_exception does too,
      then it can go.  */
   if (semi)

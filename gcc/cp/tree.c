@@ -28,7 +28,6 @@ Boston, MA 02111-1307, USA.  */
 #include "rtl.h"
 #include "toplev.h"
 
-static tree get_identifier_list PROTO((tree));
 static tree bot_manip PROTO((tree));
 static tree perm_manip PROTO((tree));
 static tree build_cplus_array_type_1 PROTO((tree, tree));
@@ -1086,60 +1085,6 @@ hash_chainon (list1, list2)
     return hash_tree_chain (TREE_VALUE (list1), list2);
   return hash_tree_chain (TREE_VALUE (list1),
 			  hash_chainon (TREE_CHAIN (list1), list2));
-}
-
-static tree
-get_identifier_list (value)
-     tree value;
-{
-  tree list = IDENTIFIER_AS_LIST (value);
-  if (list != NULL_TREE
-      && (TREE_CODE (list) != TREE_LIST
-	  || TREE_VALUE (list) != value))
-    list = NULL_TREE;
-  else if (IDENTIFIER_HAS_TYPE_VALUE (value)
-	   && TREE_CODE (IDENTIFIER_TYPE_VALUE (value)) == RECORD_TYPE
-	   && IDENTIFIER_TYPE_VALUE (value)
-	      == TYPE_MAIN_VARIANT (IDENTIFIER_TYPE_VALUE (value)))
-    {
-      tree type = IDENTIFIER_TYPE_VALUE (value);
-
-      if (TYPE_PTRMEMFUNC_P (type))
-	list = NULL_TREE;
-      else if (type == current_class_type)
-	/* Don't mess up the constructor name.  */
-	list = tree_cons (NULL_TREE, value, NULL_TREE);
-      else
-	{
-	  if (! CLASSTYPE_ID_AS_LIST (type))
-	    CLASSTYPE_ID_AS_LIST (type)
-	      = perm_tree_cons (NULL_TREE, TYPE_IDENTIFIER (type), NULL_TREE);
-	  list = CLASSTYPE_ID_AS_LIST (type);
-	}
-    }
-  return list;
-}
-
-tree
-get_decl_list (value)
-     tree value;
-{
-  tree list = NULL_TREE;
-
-  if (TREE_CODE (value) == IDENTIFIER_NODE)
-    list = get_identifier_list (value);
-  else if (TREE_CODE (value) == RECORD_TYPE
-	   && TYPE_LANG_SPECIFIC (value)
-	   && value == TYPE_MAIN_VARIANT (value))
-    list = CLASSTYPE_AS_LIST (value);
-
-  if (list != NULL_TREE)
-    {
-      my_friendly_assert (TREE_CHAIN (list) == NULL_TREE, 301);
-      return list;
-    }
-
-  return build_decl_list (NULL_TREE, value);
 }
 
 /* Build an association between TYPE and some parameters:

@@ -78,6 +78,7 @@ pop_stack_level (stack)
 static struct search_level *search_stack;
 
 static tree get_abstract_virtuals_1 PROTO((tree, int, tree));
+static tree next_baselink PROTO((tree));
 static tree get_vbase_1 PROTO((tree, tree, unsigned int *));
 static tree convert_pointer_to_vbase PROTO((tree, tree));
 static tree lookup_field_1 PROTO((tree, tree));
@@ -2041,77 +2042,7 @@ get_abstract_virtuals (type)
   return nreverse (abstract_virtuals);
 }
 
-/* For the type TYPE, return a list of member functions available from
-   base classes with name NAME.  The TREE_VALUE of the list is a chain of
-   member functions with name NAME.  The TREE_PURPOSE of the list is a
-   basetype, or a list of base types (in reverse order) which were
-   traversed to reach the chain of member functions.  If we reach a base
-   type which provides a member function of name NAME, and which has at
-   most one base type itself, then we can terminate the search.  */
-
-tree
-get_baselinks (type_as_binfo_list, type, name)
-     tree type_as_binfo_list;
-     tree type, name;
-{
-  int head = 0, tail = 0, idx;
-  tree rval = 0, nval = 0;
-  tree basetypes = type_as_binfo_list;
-  tree binfo = TYPE_BINFO (type);
-
-  search_stack = push_search_level (search_stack, &search_obstack);
-
-  while (1)
-    {
-      tree binfos = BINFO_BASETYPES (binfo);
-      int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
-
-      /* Process and/or queue base types.  */
-      for (i = 0; i < n_baselinks; i++)
-	{
-	  tree base_binfo = TREE_VEC_ELT (binfos, i);
-	  tree btypes;
-
-	  btypes = hash_tree_cons (TREE_VIA_PUBLIC (base_binfo),
-				   TREE_VIA_VIRTUAL (base_binfo),
-				   TREE_VIA_PROTECTED (base_binfo),
-				   NULL_TREE, base_binfo,
-				   basetypes);
-	  obstack_ptr_grow (&search_obstack, btypes);
-	  search_stack->first = (tree *)obstack_base (&search_obstack);
-	  tail += 1;
-	}
-
-    dont_queue:
-      /* Process head of queue, if one exists.  */
-      if (head >= tail)
-	break;
-
-      basetypes = search_stack->first[head++];
-      binfo = TREE_VALUE (basetypes);
-      type = BINFO_TYPE (binfo);
-      idx = lookup_fnfields_1 (type, name);
-      if (idx >= 0)
-	{
-	  nval = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), idx);
-	  rval = hash_tree_cons (0, 0, 0, basetypes, nval, rval);
-	  if (TYPE_BINFO_BASETYPES (type) == 0)
-	    goto dont_queue;
-	  else if (TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES (type)) == 1)
-	    {
-	      if (CLASSTYPE_BASELINK_VEC (type))
-		TREE_TYPE (rval) = TREE_VEC_ELT (CLASSTYPE_BASELINK_VEC (type), idx);
-	      goto dont_queue;
-	    }
-	}
-      nval = NULL_TREE;
-    }
-
-  search_stack = pop_search_level (search_stack);
-  return rval;
-}
-
-tree
+static tree
 next_baselink (baselink)
      tree baselink;
 {

@@ -104,7 +104,7 @@ struct lang_identifier
 struct lang_id2
 {
   tree label_value, implicit_decl;
-  tree type_desc, as_list, error_locus;
+  tree error_locus;
 };
 
 typedef struct 
@@ -277,14 +277,6 @@ struct tree_srcloc
 #define IDENTIFIER_IMPLICIT_DECL(NODE)	    LANG_ID_FIELD(implicit_decl, NODE)
 #define SET_IDENTIFIER_IMPLICIT_DECL(NODE,VALUE) \
 	SET_LANG_ID(NODE, VALUE, implicit_decl)
-
-#define IDENTIFIER_AS_DESC(NODE)	    LANG_ID_FIELD(type_desc, NODE)
-#define SET_IDENTIFIER_AS_DESC(NODE,DESC)	\
-	SET_LANG_ID(NODE, DESC, type_desc)
-
-#define IDENTIFIER_AS_LIST(NODE)	    LANG_ID_FIELD(as_list, NODE)
-#define SET_IDENTIFIER_AS_LIST(NODE,LIST)	\
-	SET_LANG_ID(NODE, LIST, as_list)
 
 #define IDENTIFIER_ERROR_LOCUS(NODE)	    LANG_ID_FIELD(error_locus, NODE)
 #define SET_IDENTIFIER_ERROR_LOCUS(NODE,VALUE)	\
@@ -737,13 +729,9 @@ struct lang_type
       unsigned dummy : 11;
     } type_flags;
 
-  int n_ancestors;
-  int n_vancestors;
   int vsize;
-  int max_depth;
   int vfield_parent;
 
-  union tree_node *baselink_vec;
   union tree_node *vfields;
   union tree_node *vbases;
 
@@ -756,11 +744,7 @@ struct lang_type
 
   union tree_node *size;
 
-  union tree_node *base_init_list;
   union tree_node *abstract_virtuals;
-  union tree_node *as_list;
-  union tree_node *id_as_list;
-  union tree_node *binfo_as_list;
   union tree_node *friend_classes;
 
   union tree_node *rtti;
@@ -862,7 +846,7 @@ struct lang_type
    signature reference type.  */
 #define SIGNATURE_REFERENCE_TO(NODE) (TYPE_LANG_SPECIFIC(NODE)->signature_reference_to)
 
-/* The is the VAR_DECL that contains NODE's rtti.  */
+/* The is the basetype that contains NODE's rtti.  */
 #define CLASSTYPE_RTTI(NODE) (TYPE_LANG_SPECIFIC(NODE)->rtti)
 
 /* Nonzero means that this _CLASSTYPE node overloads operator().  */
@@ -899,10 +883,6 @@ struct lang_type
   TREE_VEC_LENGTH (CLASSTYPE_METHOD_VEC (NODE)) > 2 \
     ? TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (NODE), 2) \
     : NULL_TREE;
-
-/* Pointer from any member function to the head of the list of
-   member functions of the type that member function belongs to.  */
-#define CLASSTYPE_BASELINK_VEC(NODE) (TYPE_LANG_SPECIFIC(NODE)->baselink_vec)
 
 /* Mark bits for depth-first and breath-first searches.  */
 
@@ -974,17 +954,6 @@ struct lang_type
 #define CLASSTYPE_N_BASECLASSES(NODE) \
   (TYPE_BINFO_BASETYPES (NODE) ? TREE_VEC_LENGTH (TYPE_BINFO_BASETYPES(NODE)) : 0)
 
-/* Memoize the number of super classes (base classes) that this node
-   has.  That way we can know immediately (albeit conservatively how
-   large a multiple-inheritance matrix we need to build to find
-   derivation information.  */
-#define CLASSTYPE_N_SUPERCLASSES(NODE) (TYPE_LANG_SPECIFIC(NODE)->n_ancestors)
-#define CLASSTYPE_N_VBASECLASSES(NODE) (TYPE_LANG_SPECIFIC(NODE)->n_vancestors)
-
-/* Record how deep the inheritance is for this class so `void*' conversions
-   are less favorable than a conversion to the most base type.  */
-#define CLASSTYPE_MAX_DEPTH(NODE) (TYPE_LANG_SPECIFIC(NODE)->max_depth)
-
 /* Used for keeping search-specific information.  Any search routine
    which uses this must define what exactly this slot is used for.  */
 #define CLASSTYPE_SEARCH_SLOT(NODE) (TYPE_LANG_SPECIFIC(NODE)->search_slot)
@@ -993,17 +962,6 @@ struct lang_type
    virtual base classes, for when we use this type as a base itself.  */
 #define CLASSTYPE_SIZE(NODE) (TYPE_LANG_SPECIFIC(NODE)->size)
 #define CLASSTYPE_ALIGN(NODE) (TYPE_LANG_SPECIFIC(NODE)->align)
-
-/* A cons list of structure elements which either have constructors
-   to be called, or virtual function table pointers which
-   need initializing.  Depending on what is being initialized,
-   the TREE_PURPOSE and TREE_VALUE fields have different meanings:
-
-   Member initialization: <FIELD_DECL, TYPE>
-   Base class construction: <NULL_TREE, BASETYPE>
-   Base class initialization: <BASE_INITIALIZATION, THESE_INITIALIZATIONS>
-   Whole type: <MEMBER_INIT, BASE_INIT>.  */
-#define CLASSTYPE_BASE_INIT_LIST(NODE) (TYPE_LANG_SPECIFIC(NODE)->base_init_list)
 
 /* A cons list of virtual functions which cannot be inherited by
    derived classes.  When deriving from this type, the derived
@@ -1037,16 +995,6 @@ struct lang_type
 /* Nonzero means that this type contains a mutable member */
 #define CLASSTYPE_HAS_MUTABLE(NODE) (TYPE_LANG_SPECIFIC(NODE)->type_flags.has_mutable)
 #define TYPE_HAS_MUTABLE_P(NODE) (cp_has_mutable_p (NODE))
-
-/* Many routines need to cons up a list of basetypes for access
-   checking.  This field contains a TREE_LIST node whose TREE_VALUE
-   is the main variant of the type, and whose TREE_VIA_PUBLIC
-   and TREE_VIA_VIRTUAL bits are correctly set.  */
-#define CLASSTYPE_AS_LIST(NODE) (TYPE_LANG_SPECIFIC(NODE)->as_list)
-/* Same, but cache a list whose value is the name of this type.  */
-#define CLASSTYPE_ID_AS_LIST(NODE) (TYPE_LANG_SPECIFIC(NODE)->id_as_list)
-/* Same, but cache a list whose value is the binfo of this type.  */
-#define CLASSTYPE_BINFO_AS_LIST(NODE) (TYPE_LANG_SPECIFIC(NODE)->binfo_as_list)
 
 /* A list of class types of which this type is a friend.  The
    TREE_VALUE is normally a TYPE, but will be a TEMPLATE_DECL in the
@@ -3221,8 +3169,6 @@ extern tree lookup_member			PROTO((tree, tree, int, int));
 extern tree lookup_nested_tag			PROTO((tree, tree));
 extern tree get_matching_virtual		PROTO((tree, tree, int));
 extern tree get_abstract_virtuals		PROTO((tree));
-extern tree get_baselinks			PROTO((tree, tree, tree));
-extern tree next_baselink			PROTO((tree));
 extern tree init_vbase_pointers			PROTO((tree, tree));
 extern void expand_indirect_vtbls_init		PROTO((tree, tree, tree));
 extern void clear_search_slots			PROTO((tree));
@@ -3352,7 +3298,6 @@ extern tree build_base_fields			PROTO((tree));
 extern tree hash_tree_cons			PROTO((int, int, int, tree, tree, tree));
 extern tree hash_tree_chain			PROTO((tree, tree));
 extern tree hash_chainon			PROTO((tree, tree));
-extern tree get_decl_list			PROTO((tree));
 extern tree make_binfo				PROTO((tree, tree, tree, tree));
 extern tree binfo_value				PROTO((tree, tree));
 extern tree reverse_path			PROTO((tree));
