@@ -1173,7 +1173,7 @@ classify_zip_file (struct ZipDirectory *zdir)
     return 1;
 
   /* For now we drop the manifest, but not other information.  */
-  if (zdir->filename_length > 8
+  if (zdir->filename_length == 20
       && !strncmp (class_name_in_zip_dir, "META-INF/MANIFEST.MF", 20))
     return 0;
 

@@ -1,3 +1,8 @@
+2003-11-10  Tom Tromey  <tromey@redhat.com>
+
+	* jcf-parse.c (classify_zip_file): Correctly compare
+	filename_length against length of manifest file's name.
+
 2003-11-08  Tom Tromey  <tromey@redhat.com>
 
 	PR java/12894:
