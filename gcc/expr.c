@@ -5100,22 +5100,33 @@ expand_expr (exp, target, tmode, modifier)
 	 further information, see tree.def.  */
       if (placeholder_list)
 	{
-	  tree object;
+	  tree need_type = TYPE_MAIN_VARIANT (type);
+	  tree object = 0;
 	  tree old_list = placeholder_list;
+	  tree elt;
 
-	  for (object = TREE_PURPOSE (placeholder_list);
-	       (TYPE_MAIN_VARIANT (TREE_TYPE (object))
-		!= TYPE_MAIN_VARIANT (type))
-	       && (TREE_CODE_CLASS (TREE_CODE (object)) == 'r'
-		   || TREE_CODE_CLASS (TREE_CODE (object)) == '1'
-		   || TREE_CODE_CLASS (TREE_CODE (object)) == '2'
-		   || TREE_CODE_CLASS (TREE_CODE (object)) == 'e');
-	       object = TREE_OPERAND (object, 0))
-	    ;
+	  /* See if the object is the type that we want.  Then see if
+	     the operand of any reference is the type we want.  */
+	  if ((TYPE_MAIN_VARIANT (TREE_TYPE (TREE_PURPOSE (placeholder_list)))
+	       == need_type))
+	    object = TREE_PURPOSE (placeholder_list);
 
-	  if (object != 0
-	      && (TYPE_MAIN_VARIANT (TREE_TYPE (object))
-		  == TYPE_MAIN_VARIANT (type)))
+	  /* Find the innermost reference that is of the type we want.    */
+	  for (elt = TREE_PURPOSE (placeholder_list);
+	       elt != 0
+	       && (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
+		   || TREE_CODE_CLASS (TREE_CODE (elt)) == '1'
+		   || TREE_CODE_CLASS (TREE_CODE (elt)) == '2'
+		   || TREE_CODE_CLASS (TREE_CODE (elt)) == 'e');
+	       elt = ((TREE_CODE (elt) == COMPOUND_EXPR
+		       || TREE_CODE (elt) == COND_EXPR)
+		      ? TREE_OPERAND (elt, 1) : TREE_OPERAND (elt, 0)))
+	    if (TREE_CODE_CLASS (TREE_CODE (elt)) == 'r'
+		&& (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_OPERAND (elt, 0)))
+		    == need_type))
+	      object = TREE_OPERAND (elt, 0);
+
+	  if (object != 0)
 	    {
 	      /* Expand this object skipping the list entries before
 		 it was found in case it is also a PLACEHOLDER_EXPR.
