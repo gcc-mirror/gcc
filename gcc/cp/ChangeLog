@@ -1,3 +1,15 @@
+2000-10-09  Richard Henderson  <rth@cygnus.com>
+
+	* Make-lang.in (CXX_EXTRA_HEADERS): Remove.
+	(c++ language support bits for libgcc): Remove.
+	(c++.clean): Remove cplib2.txt cleanup.
+	* config-lang.in (headers, lib2funcs): Remove.
+
+	* exception.cc, new.cc, new1.cc, new2.cc: Remove files.
+	* tinfo.cc, tinfo.h, tinfo2.cc, vec.cc: Remove files.
+	* inc/cxxabi.h, inc/exception, inc/new: Remove files.
+	* inc/new.h, inc/typeinfo: Remove files.
+
 2000-10-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* decl.c (INTMAX_TYPE, UINTMAX_TYPE): Define if not already
