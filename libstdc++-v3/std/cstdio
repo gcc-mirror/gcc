@@ -1,0 +1,3 @@
+#ifndef _CPP_CSTDIO
+#include <bits/std_cstdio.h>
+#endif

@@ -1,0 +1,569 @@
+/* config.h.in.  Generated automatically from configure.in by autoheader.  */
+
+/* Define if you have a working `mmap' system call.  */
+#undef HAVE_MMAP
+
+// Include support for 'long long' and 'unsigned long long'.
+#undef _GLIBCPP_USE_LONG_LONG
+
+// Define if the host has a type mbstate_t defined in
+// wchar.h, as required by 21.1.3.1. Some systems, namely
+// hppa-hp-hpux10.20 do not meet this requirement, and must be worked
+// around.
+#undef _GLIBCPP_NEED_MBSTATE_T
+
+// Define if WCHAR_MIN and WCHAR_MAX are in the <cwchar_t>
+// header. Presently, this is needed so that solaris won't
+// instantitate numeric_limits<wchar_t>
+#undef _GLIBCPP_HAS_WCHAR_MIN_MAX
+
+// Define if code specialized for wchar_t should be used.
+#undef _GLIBCPP_USE_WCHAR_T
+
+// Define if the compiler/host combination has __builtin_sinf defined.
+#undef _GLIBCPP_HAS_BUILTIN_SINF
+
+// Define if the compiler/host combination has __builtin_cosf defined.
+#undef _GLIBCPP_HAS_BUILTIN_COSF
+
+// Define if the compiler/host combination has __builtin_fabsf defined.
+#undef _GLIBCPP_HAS_BUILTIN_FABSF
+
+// Define if the compiler/host combination has __builtin_fabsf defined.
+#undef _GLIBCPP_HAS_BUILTIN_SQRTF
+
+// Define if GCC support for __complex__ float is buggy.
+#undef _GLIBCPP_BUGGY_FLOAT_COMPLEX
+
+// Define if GCC support for __complex__ is buggy.
+#undef _GLIBCPP_BUGGY_COMPLEX
+
+// Define if LC_MESSAGES is available in <locale.h>.
+#undef HAVE_LC_MESSAGES
+
+// Define if <float.h> exists.
+#undef HAVE_FLOAT_H
+
+// Define if modf is present in <math.h>
+#undef HAVE_MODF
+
+/* Define if you have the _copysign function.  */
+#undef HAVE__COPYSIGN
+
+/* Define if you have the _copysignl function.  */
+#undef HAVE__COPYSIGNL
+
+/* Define if you have the _cosf function.  */
+#undef HAVE__COSF
+
+/* Define if you have the _coshf function.  */
+#undef HAVE__COSHF
+
+/* Define if you have the _fabsf function.  */
+#undef HAVE__FABSF
+
+/* Define if you have the _finite function.  */
+#undef HAVE__FINITE
+
+/* Define if you have the _finitef function.  */
+#undef HAVE__FINITEF
+
+/* Define if you have the _fpclass function.  */
+#undef HAVE__FPCLASS
+
+/* Define if you have the _isinf function.  */
+#undef HAVE__ISINF
+
+/* Define if you have the _isinff function.  */
+#undef HAVE__ISINFF
+
+/* Define if you have the _isinfl function.  */
+#undef HAVE__ISINFL
+
+/* Define if you have the _isnan function.  */
+#undef HAVE__ISNAN
+
+/* Define if you have the _isnanf function.  */
+#undef HAVE__ISNANF
+
+/* Define if you have the _isnanl function.  */
+#undef HAVE__ISNANL
+
+/* Define if you have the _log10f function.  */
+#undef HAVE__LOG10F
+
+/* Define if you have the _logf function.  */
+#undef HAVE__LOGF
+
+/* Define if you have the _modf function.  */
+#undef HAVE__MODF
+
+/* Define if you have the _powf function.  */
+#undef HAVE__POWF
+
+/* Define if you have the _qfinite function.  */
+#undef HAVE__QFINITE
+
+/* Define if you have the _qfpclass function.  */
+#undef HAVE__QFPCLASS
+
+/* Define if you have the _sincos function.  */
+#undef HAVE__SINCOS
+
+/* Define if you have the _sincosf function.  */
+#undef HAVE__SINCOSF
+
+/* Define if you have the _sincosl function.  */
+#undef HAVE__SINCOSL
+
+/* Define if you have the _sinf function.  */
+#undef HAVE__SINF
+
+/* Define if you have the _sinhf function.  */
+#undef HAVE__SINHF
+
+/* Define if you have the _sqrtf function.  */
+#undef HAVE__SQRTF
+
+/* Define if you have the _strtof function.  */
+#undef HAVE__STRTOF
+
+/* Define if you have the _strtold function.  */
+#undef HAVE__STRTOLD
+
+/* Define if you have the _tanf function.  */
+#undef HAVE__TANF
+
+/* Define if you have the _tanhf function.  */
+#undef HAVE__TANHF
+
+/* Define if you have the atan2f function.  */
+#undef HAVE_ATAN2F
+
+/* Define if you have the c_log function.  */
+#undef HAVE_C_LOG
+
+/* Define if you have the c_logf function.  */
+#undef HAVE_C_LOGF
+
+/* Define if you have the c_logl function.  */
+#undef HAVE_C_LOGL
+
+/* Define if you have the carg function.  */
+#undef HAVE_CARG
+
+/* Define if you have the cargf function.  */
+#undef HAVE_CARGF
+
+/* Define if you have the cargl function.  */
+#undef HAVE_CARGL
+
+/* Define if you have the ccos function.  */
+#undef HAVE_CCOS
+
+/* Define if you have the ccosf function.  */
+#undef HAVE_CCOSF
+
+/* Define if you have the ccosh function.  */
+#undef HAVE_CCOSH
+
+/* Define if you have the ccoshf function.  */
+#undef HAVE_CCOSHF
+
+/* Define if you have the ccoshl function.  */
+#undef HAVE_CCOSHL
+
+/* Define if you have the ccosl function.  */
+#undef HAVE_CCOSL
+
+/* Define if you have the cexp function.  */
+#undef HAVE_CEXP
+
+/* Define if you have the cexpf function.  */
+#undef HAVE_CEXPF
+
+/* Define if you have the cexpl function.  */
+#undef HAVE_CEXPL
+
+/* Define if you have the clog10 function.  */
+#undef HAVE_CLOG10
+
+/* Define if you have the clog10f function.  */
+#undef HAVE_CLOG10F
+
+/* Define if you have the clog10l function.  */
+#undef HAVE_CLOG10L
+
+/* Define if you have the copysign function.  */
+#undef HAVE_COPYSIGN
+
+/* Define if you have the copysignf function.  */
+#undef HAVE_COPYSIGNF
+
+/* Define if you have the copysignl function.  */
+#undef HAVE_COPYSIGNL
+
+/* Define if you have the cosf function.  */
+#undef HAVE_COSF
+
+/* Define if you have the coshf function.  */
+#undef HAVE_COSHF
+
+/* Define if you have the cpow function.  */
+#undef HAVE_CPOW
+
+/* Define if you have the cpowf function.  */
+#undef HAVE_CPOWF
+
+/* Define if you have the cpowl function.  */
+#undef HAVE_CPOWL
+
+/* Define if you have the csin function.  */
+#undef HAVE_CSIN
+
+/* Define if you have the csinf function.  */
+#undef HAVE_CSINF
+
+/* Define if you have the csinh function.  */
+#undef HAVE_CSINH
+
+/* Define if you have the csinhf function.  */
+#undef HAVE_CSINHF
+
+/* Define if you have the csinhl function.  */
+#undef HAVE_CSINHL
+
+/* Define if you have the csinl function.  */
+#undef HAVE_CSINL
+
+/* Define if you have the csqrt function.  */
+#undef HAVE_CSQRT
+
+/* Define if you have the csqrtf function.  */
+#undef HAVE_CSQRTF
+
+/* Define if you have the csqrtl function.  */
+#undef HAVE_CSQRTL
+
+/* Define if you have the ctan function.  */
+#undef HAVE_CTAN
+
+/* Define if you have the ctanf function.  */
+#undef HAVE_CTANF
+
+/* Define if you have the ctanh function.  */
+#undef HAVE_CTANH
+
+/* Define if you have the ctanhf function.  */
+#undef HAVE_CTANHF
+
+/* Define if you have the ctanhl function.  */
+#undef HAVE_CTANHL
+
+/* Define if you have the ctanl function.  */
+#undef HAVE_CTANL
+
+/* Define if you have the expf function.  */
+#undef HAVE_EXPF
+
+/* Define if you have the fabsf function.  */
+#undef HAVE_FABSF
+
+/* Define if you have the finite function.  */
+#undef HAVE_FINITE
+
+/* Define if you have the fpclass function.  */
+#undef HAVE_FPCLASS
+
+/* Define if you have the fqfinite function.  */
+#undef HAVE_FQFINITE
+
+/* Define if you have the getpagesize function.  */
+#undef HAVE_GETPAGESIZE
+
+/* Define if you have the hypot function.  */
+#undef HAVE_HYPOT
+
+/* Define if you have the hypotf function.  */
+#undef HAVE_HYPOTF
+
+/* Define if you have the hypotl function.  */
+#undef HAVE_HYPOTL
+
+/* Define if you have the isinf function.  */
+#undef HAVE_ISINF
+
+/* Define if you have the isinff function.  */
+#undef HAVE_ISINFF
+
+/* Define if you have the isinfl function.  */
+#undef HAVE_ISINFL
+
+/* Define if you have the isnan function.  */
+#undef HAVE_ISNAN
+
+/* Define if you have the isnanf function.  */
+#undef HAVE_ISNANF
+
+/* Define if you have the isnanl function.  */
+#undef HAVE_ISNANL
+
+/* Define if you have the log10f function.  */
+#undef HAVE_LOG10F
+
+/* Define if you have the logf function.  */
+#undef HAVE_LOGF
+
+/* Define if you have the modf function.  */
+#undef HAVE_MODF
+
+/* Define if you have the nan function.  */
+#undef HAVE_NAN
+
+/* Define if you have the powf function.  */
+#undef HAVE_POWF
+
+/* Define if you have the qfpclass function.  */
+#undef HAVE_QFPCLASS
+
+/* Define if you have the signbitl function.  */
+#undef HAVE_SIGNBITL
+
+/* Define if you have the sincos function.  */
+#undef HAVE_SINCOS
+
+/* Define if you have the sincosf function.  */
+#undef HAVE_SINCOSF
+
+/* Define if you have the sincosl function.  */
+#undef HAVE_SINCOSL
+
+/* Define if you have the sinf function.  */
+#undef HAVE_SINF
+
+/* Define if you have the sinhf function.  */
+#undef HAVE_SINHF
+
+/* Define if you have the sqrtf function.  */
+#undef HAVE_SQRTF
+
+/* Define if you have the strtof function.  */
+#undef HAVE_STRTOF
+
+/* Define if you have the strtold function.  */
+#undef HAVE_STRTOLD
+
+/* Define if you have the tanf function.  */
+#undef HAVE_TANF
+
+/* Define if you have the tanhf function.  */
+#undef HAVE_TANHF
+
+/* Define if you have the wcslen function.  */
+#undef HAVE_WCSLEN
+
+/* Define if you have the wmemchr function.  */
+#undef HAVE_WMEMCHR
+
+/* Define if you have the wmemcmp function.  */
+#undef HAVE_WMEMCMP
+
+/* Define if you have the wmemcpy function.  */
+#undef HAVE_WMEMCPY
+
+/* Define if you have the wmemmove function.  */
+#undef HAVE_WMEMMOVE
+
+/* Define if you have the wmemset function.  */
+#undef HAVE_WMEMSET
+
+/* Define if you have the <complex.h> header file.  */
+#undef HAVE_COMPLEX_H
+
+/* Define if you have the <endian.h> header file.  */
+#undef HAVE_ENDIAN_H
+
+/* Define if you have the <float.h> header file.  */
+#undef HAVE_FLOAT_H
+
+/* Define if you have the <fp.h> header file.  */
+#undef HAVE_FP_H
+
+/* Define if you have the <ieeefp.h> header file.  */
+#undef HAVE_IEEEFP_H
+
+/* Define if you have the <inttypes.h> header file.  */
+#undef HAVE_INTTYPES_H
+
+/* Define if you have the <locale.h> header file.  */
+#undef HAVE_LOCALE_H
+
+/* Define if you have the <machine/endian.h> header file.  */
+#undef HAVE_MACHINE_ENDIAN_H
+
+/* Define if you have the <machine/param.h> header file.  */
+#undef HAVE_MACHINE_PARAM_H
+
+/* Define if you have the <nan.h> header file.  */
+#undef HAVE_NAN_H
+
+/* Define if you have the <sys/isa_defs.h> header file.  */
+#undef HAVE_SYS_ISA_DEFS_H
+
+/* Define if you have the <sys/machine.h> header file.  */
+#undef HAVE_SYS_MACHINE_H
+
+/* Define if you have the <unistd.h> header file.  */
+#undef HAVE_UNISTD_H
+
+/* Name of package */
+#undef PACKAGE
+
+/* Version number of package */
+#undef VERSION
+
+//
+// Systems that have certain non-standard functions prefixed with an
+// underscore, we'll handle those here. Must come after config.h.in.
+//
+
+#if defined (HAVE__ISNAN) && ! defined (HAVE_ISNAN)
+# define HAVE_ISNAN 1
+# define isnan _isnan
+#endif
+
+#if defined (HAVE__ISNANF) && ! defined (HAVE_ISNANF)
+# define HAVE_ISNANF 1
+# define isnanf _isnanf
+#endif
+
+#if defined (HAVE__ISNANL) && ! defined (HAVE_ISNANL)
+# define HAVE_ISNANL 1
+# define isnanl _isnanl
+#endif
+
+#if defined (HAVE__ISINF) && ! defined (HAVE_ISINF)
+# define HAVE_ISINF 1
+# define isinf _isinf
+#endif
+
+#if defined (HAVE__ISINFF) && ! defined (HAVE_ISINFF)
+# define HAVE_ISINFF 1
+# define isinff _isinff
+#endif
+
+#if defined (HAVE__ISINFL) && ! defined (HAVE_ISINFL)
+# define HAVE_ISINFL 1
+# define isinfl _isinfl
+#endif
+
+#if defined (HAVE__COPYSIGN) && ! defined (HAVE_COPYSIGN)
+# define HAVE_COPYSIGN 1
+# define copysign _copysign
+#endif
+
+#if defined (HAVE__COPYSIGNL) && ! defined (HAVE_COPYSIGNL)
+# define HAVE_COPYSIGNL 1
+# define copysignl _copysignl
+#endif
+
+#if defined (HAVE__COSF) && ! defined (HAVE_COSF)
+# define HAVE_COSF 1
+# define cosf _cosf
+#endif
+
+#if defined (HAVE__COSHF) && ! defined (HAVE_COSHF)
+# define HAVE_COSHF 1
+# define coshf _coshf
+#endif
+
+#if defined (HAVE__LOGF) && ! defined (HAVE_LOGF)
+# define HAVE_LOGF 1
+# define logf _logf
+#endif
+
+#if defined (HAVE__LOG10F) && ! defined (HAVE_LOG10F)
+# define HAVE_LOG10F 1
+# define log10f _log10f
+#endif
+
+#if defined (HAVE__POWF) && ! defined (HAVE_POWF)
+# define HAVE_POWF 1
+# define powf _powf
+#endif
+
+#if defined (HAVE__SINF) && ! defined (HAVE_SINF)
+# define HAVE_SINF 1
+# define sinf _sinf
+#endif
+
+#if defined (HAVE__SINHF) && ! defined (HAVE_SINHF)
+# define HAVE_SINHF 1
+# define sinhf _sinhf
+#endif
+
+#if defined (HAVE__SQRTF) && ! defined (HAVE_SQRTF)
+# define HAVE_SQRTF 1
+# define sqrtf _sqrtf
+#endif
+
+#if defined (HAVE__TANF) && ! defined (HAVE_TANF)
+# define HAVE_TANF 1
+# define tanf _tanf
+#endif
+
+#if defined (HAVE__TANHF) && ! defined (HAVE_TANHF)
+# define HAVE_TANHF 1
+# define tanhf _tanhf
+#endif
+
+#if defined (HAVE__STRTOF) && ! defined (HAVE_STRTOF)
+# define HAVE_STRTOF 1
+# define strtof _strtof
+#endif
+
+#if defined (HAVE__STRTOLD) && ! defined (HAVE_STRTOLD)
+# define HAVE_STRTOLD 1
+# define strtold _strtold
+#endif
+
+#if defined (HAVE__FABSF) && ! defined (HAVE_FABSF)
+# define HAVE_FABSF 1
+# define fabsf _fabsf
+#endif
+
+#if defined (HAVE__SINCOS) && ! defined (HAVE_SINCOS)
+# define HAVE_SINCOS 1
+# define sincos _sincos
+#endif
+
+#if defined (HAVE__SINCOSF) && ! defined (HAVE_SINCOSF)
+# define HAVE_SINCOSF 1
+# define sincosf _sincosf
+#endif
+
+#if defined (HAVE__SINCOSL) && ! defined (HAVE_SINCOSL)
+# define HAVE_SINCOSL 1
+# define sincosl _sincosl
+#endif
+
+#if defined (HAVE__FINITE) && ! defined (HAVE_FINITE)
+# define HAVE_FINITE 1
+# define finite _finite
+#endif
+
+#if defined (HAVE__QFINITE) && ! defined (HAVE_QFINITE)
+# define HAVE_QFINITE 1
+# define qfinite _qfinite
+#endif
+
+#if defined (HAVE__FPCLASS) && ! defined (HAVE_FPCLASS)
+# define HAVE_FPCLASS 1
+# define fpclass _fpclass
+#endif
+
+#if defined (HAVE__QFPCLASS) && ! defined (HAVE_QFPCLASS)
+# define HAVE_QFPCLASS 1
+# define qfpclass _qfpclass
+#endif
+

@@ -1,0 +1,99 @@
+2000-03-24
+
+Release Notes   
+-------------
+The Standard C++ Library v3, or libstdc++-2.90.x, is an ongoing
+project to implement the ISO 14882 Standard C++ library as described
+in chapters 17 through 27 and annex D, as a drop-in replacement
+for the current (ARM-conformant) library.
+
+This is the ninth snapshot of the libstdc++ rewrite.  It is still
+incomplet and incorrekt. It's a lot less incomplete and incorrect than
+some of the earlier snapshots though, and quite usable.
+
+The Standard C++ Library v3, or libstdc++-2.90.x, follows an open
+development model, attempting to be fully buzzword, bazaar, and GNU
+compliant. Full details on participating, including contributor
+guidelines, mailing list subscription, mailing list archives,
+up-to-date documentation, and various and sundry other details can be
+found at the following URL:
+
+  http://sourceware.cygnus.com/libstdc++/
+
+
+New: 
+--- 
+
+- MT safe string. Supported CPUs are alpha, powerpc, x86, sparc32 and sparc64.
+- Configure support for --enable-threads=posix, as well as initial IO
+  locking implementation.
+- Support for native building on Solaris 2.5.1, Solaris 2.6, Solaris
+  2.7, cygwin, [alpha, powerpc, x86]-linux, and preliminary support for
+  Irix and Aix4.2, Aix 4.3 hosts.
+- --enable-namespaces is on by default.
+- Configure and Makefile support for "drop-in" replacement to
+  libstdc++-v2 completed. It is now possible to bootstrap g++, and
+  have g++ find libstdc++-v3 headers and libraries by default.
+- Synched with CVS egcs libio. 
+- Cygwin native compiling supported.
+- Cross compiling and embedded targets (newlib) with multilibs support added.
+- SGI's strstream implementation has been added.
+- Copyright on all sources assigned to the FSF.
+- Configure, build and install documentation has been added.
+- Support to enable long long has been added.
+- More valarray improvements.
+- Extractors and inserters for std::complex have been added.
+- Extractors and inserters for void* have been fixed.
+- autoconf macros are now in _GLIBCPP_ namespace.
+- group checking for num_get implemented.
+- Many, many bug fixes.
+
+
+What doesn't:
+-------------
+- see BUGS.
+
+ 
+Build and Install
+-----------------
+Up to date build and install directions can be found at:
+http://sourceware.cygnus.com/libstdc++/install.html
+
+
+Contact:
+--------
+Places have changed from previous snapshots.  The web page, which has
+information about joining the mailing list and searching its archives,
+CVS access, and contribution information is now at:
+
+  http://sourceware.cygnus.com/libstdc++/
+
+Please note that the mailing list has recently moved, and is now
+hosted on sourceware.cygnus.com. (The web site above has the most
+up-to-date info.)
+   
+Obtain the library snapshot via ftp (including these release notes) from
+
+  ftp://sourceware.cygnus.com/pub/libstdc++/
+
+The library is maintained by Benjamin Kosnik, Nathan Myers, Gabriel
+Dos Reis, and Ulrich Drepper.  
+
+
+Development tools:
+------------------
+You will need a recent version of gcc to compile the snapshot of
+libstdc++. The recently released gcc-2.95.2 works well. In addition,
+you may need up-to-date tools for modifying Makefiles and regenerating
+configure scripts: automake (version 1.4 from Cygnus, not the one on
+the net) and autoconf (version 2.13 and higher). Please see the
+website for more info on where to obtain these additional tools.
+
+If you compile programs -fnew-abi -fno-honor-std, uses of RTTI and
+certain other language features will link only if you build your
+compiler's libgcc using the same flags.  (The defaults use the old
+abi.)  Using -fnew-abi offers real benefits, but note that it is not
+stable: later snapshots will *not* be binary-compatible with code
+compiled with older snapshots. See the configuration options page in
+the Documentation section.
+

@@ -1,0 +1,751 @@
+#!/bin/sh
+# Copyright (C) 1992, 1993, 1994, 1997, 1998, 1999 Free Software Foundation
+# 
+# This file is part of the GNU IO Library.  This library is free
+# software; you can redistribute it and/or modify it under the
+# terms of the GNU General Public License as published by the
+# Free Software Foundation; either version 2, or (at your option)
+# any later version.
+# 
+# This library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this library; see the file COPYING.  If not, write to the Free
+# Software Foundation, 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+#    Written by Per Bothner (bothner@cygnus.com)
+
+# This is a shell-script that figures out various things about a
+# system, and writes (to stdout) a C-style include files with
+# suitable definitions, including all the standard Posix types.
+# It works by compiling various test programs -- some are run through
+# the C pre-processor, and the output examined.
+# The test programs are only compiled, not executed, so the script
+# should even if you're cross-compiling.
+# It uses $CC (which defaults to cc) to compile C programs (extension .c),
+# and $CXX (which defaults to gcc) to compile C++ programs (extension .C).
+# The shell-script is written for libg++.a.
+
+# Usage: gen-params [NAME1=name1 ...]
+# - where an assignment (such as size_t="unsigned int" means to
+# use that value, instead of trying to figure it out.
+
+# Uncomment following line for debugging
+# set -x
+
+SED=sed
+
+# Evaluate the arguments (which should be assignments):
+for arg in "$@"; do
+  # Quote arg (i.e. FOO=bar => FOO='bar'), then eval it.
+  eval `echo "$arg" | ${SED} -e "s|^\(.*\)=\(.*\)|\1='\2'|"`
+done
+
+macro_prefix=${macro_prefix-"_G_"}
+rootdir=`pwd`/..
+gccdir=${gccdir-${rootdir}/gcc}
+binutilsdir=${binutilsdir-${rootdir}/binutils}
+CC=${CC-`if [ -f ${gccdir}/xgcc ] ; \
+	then echo ${gccdir}/xgcc -B${gccdir}/ ; \
+	else echo cc ; fi`}
+CXX=${CXX-`if [ -f ${gccdir}/xgcc ] ; \
+	then echo ${gccdir}/xgcc -B${gccdir}/ ; \
+	else echo gcc ; fi`}
+CPP=${CPP-`echo ${CC} -E`}
+CONFIG_NM=${CONFIG_NM-`if [ -f ${binutilsdir}/nm.new ] ; \
+	then echo ${binutilsdir}/nm.new ; \
+	else echo nm ; fi`}
+
+# 2000-02-20 bkoz
+# Eventually use AC_CHECK_PROG(NM,nm,nm) instead of this hackery.
+# For now, as solaris and cygwin seem to require this, hardwire it.
+if test -z "$CONFIG_NM"; then
+  CONFIG_NM=nm
+fi
+
+cat <<!EOF!
+/* AUTOMATICALLY GENERATED; DO NOT EDIT! */ 
+#ifndef ${macro_prefix}config_h
+#define ${macro_prefix}config_h
+!EOF!
+
+if [ x"${LIB_VERSION}" != "x" ] ; then
+  echo "#define ${macro_prefix}LIB_VERSION" '"'${LIB_VERSION}'"'
+fi
+
+# This program is used to test if the compiler prepends '_' before identifiers.
+# It is also used to check the g++ uses '$' or '.' various places.
+
+if test -z "${NAMES_HAVE_UNDERSCORE}" \
+   || test -z "${DOLLAR_IN_LABEL}" \
+   || test -z "${VTABLE_LABEL_PREFIX}"; then
+  cat >dummy.h <<!EOF!
+#ifdef __GNUG__
+#pragma interface
+#endif
+  struct filebuf {
+      virtual int foo();
+  };
+!EOF!
+  cat >dummy.C <<!EOF!
+#ifdef __GNUG__
+#pragma implementation
+#endif
+#include "dummy.h"
+  int filebuf::foo() { return 0; }
+  extern "C" int FUNC(int);
+  int FUNC(int i) { return i+10; }
+!EOF!
+
+  if ${CXX} -O -c dummy.C ; then
+    if test -z "${NAMES_HAVE_UNDERSCORE}" ; then
+      if test "`${CONFIG_NM} dummy.o | grep _FUNC`" != ""; then
+        NAMES_HAVE_UNDERSCORE=1
+      elif test "`${CONFIG_NM} dummy.o | grep FUNC`" != ""; then
+        NAMES_HAVE_UNDERSCORE=0
+      else
+        echo "${CONFIG_NM} failed to find FUNC in dummy.o!" 1>&2; exit -1;
+      fi
+    fi
+    echo "#define ${macro_prefix}NAMES_HAVE_UNDERSCORE ${NAMES_HAVE_UNDERSCORE}"
+
+    if test -z "${VTABLE_LABEL_PREFIX}" ; then
+      # Determine how virtual function tables are named.  This is fragile,
+      # because different nm's produce output in different formats.
+      ${CONFIG_NM} dummy.o >TMP
+      if [ -n "`${SED} -n -e 's/ virtual table/nope/p' <TMP`" ] ; then
+	${CONFIG_NM} --no-cplus dummy.o >TMP 2>/dev/null ||
+	  ${CONFIG_NM} --no-demangle dummy.o >TMP 2>/dev/null ||
+	  ${CONFIG_NM} dummy.o >TMP 2>/dev/null
+      fi
+      # First we look for a pattern that matches historical output from g++.
+      # We surround the actual label name by <> to separate it from
+      # other nm junk. 
+      ${SED} -n -e 's/_*vt[$_.]7*filebuf/<&>/p' <TMP >dummy.out
+      # For paranoia's sake (e.g. if we're using some other C++ compiler)
+      # we try a more general pattern, and append the result.
+      grep -v foo <TMP \
+	| ${SED} -n -e 's/[a-zA-Z0-9_.$]*filebuf[a-zA-Z0-9_.$]*/<&>/p' \
+	>>dummy.out
+      # Now we get rid of the <>, and any other junk on the nm output line.
+      # (We get rid of <filebuf> in case nm included debugging output for
+      # class filebuf itself.)  On windows32, we also need to delete the 
+      # unique sections (.data$_vt$*), otherwise we get the wrong result.
+      # Finally, we select the first line of the result, and hope that's 
+      # what we wanted!
+      vtab_name=`${SED} -n -e '/<filebuf>/d' \
+        -e '/\.data[$_.]<_vt\$7filebuf>/d' \
+        -e 's/^.*<\(.*\)>.*$/\1/p' \
+        <dummy.out | ${SED} -n -e '1p'`
+      case "${vtab_name}" in
+        *7filebuf) echo "#define ${macro_prefix}VTABLE_LABEL_HAS_LENGTH 1" ;;
+        *) echo "#define ${macro_prefix}VTABLE_LABEL_HAS_LENGTH 0" ;;
+      esac
+      VTABLE_LABEL_PREFIX=`echo $vtab_name | ${SED} -e 's/7*filebuf//'`
+    fi
+    echo "#define ${macro_prefix}VTABLE_LABEL_PREFIX" '"'"${VTABLE_LABEL_PREFIX}"'"'
+    if [ "${VTABLE_LABEL_PREFIX}" = "__vt_" -o \
+        "${VTABLE_LABEL_PREFIX}" = "___vt_" ] ; then
+      echo "#define ${macro_prefix}USING_THUNKS"
+    fi
+
+    # VTABLE_LABEL_PREFIX_ID is the same as VTABLE_LABEL_PREFIX,
+    # but the former is a C identifier, while the latter is a quoted
+    # st
+    if [ -z ""`echo ${VTABLE_LABEL_PREFIX} | ${SED} -e 's/[a-zA-Z0-9_]//g'` ] ; then
+      if [ "${NAMES_HAVE_UNDERSCORE}" = "1" ] ; then
+	VTABLE_LABEL_PREFIX=`echo ${VTABLE_LABEL_PREFIX} | ${SED} -e 's/^_//'`
+      fi
+      echo "#define ${macro_prefix}VTABLE_LABEL_PREFIX_ID ${VTABLE_LABEL_PREFIX}"
+    fi
+
+#    if test -n "${DOLLAR_IN_LABEL}" ; then
+#      echo "#define ${macro_prefix}DOLLAR_IN_LABEL ${DOLLAR_IN_LABEL}"
+#    elif test "`${CONFIG_NM} dummy.o | grep 'vt[$$]7filebuf'`" != ""; then
+#      echo "#define ${macro_prefix}DOLLAR_IN_LABEL 1"
+#    elif test "`${CONFIG_NM} dummy.o | grep 'vt[.]7filebuf'`" != ""; then
+#      echo "#define ${macro_prefix}DOLLAR_IN_LABEL 0"
+#    elif test "`${CONFIG_NM} dummy.o | grep 'vtbl__7filebuf'`" != ""; then
+#      echo "#define ${macro_prefix}DOLLAR_IN_LABEL 0"
+#    else
+#      echo "gen-params: ${CONFIG_NM} failed to find vt[.\$]filebuf in dummy.o!" 1>&2; exit 1
+#    fi
+  else
+    # The compile failed for some reason (no C++?)
+    echo "gen-params: could not compile dummy.C with ${CXX}" 1>&2; exit 1;
+  fi
+fi
+
+# A little test program to check if struct stat has st_blksize.
+cat >dummy.c <<!EOF!
+#include <sys/types.h>
+#include <sys/stat.h>
+int BLKSIZE(struct stat *st)
+{
+    return st->st_blksize;
+}
+!EOF!
+
+if ${CC} -c dummy.c >/dev/null 2>&1 ; then
+  echo "#define ${macro_prefix}HAVE_ST_BLKSIZE 1"
+else
+  echo "#define ${macro_prefix}HAVE_ST_BLKSIZE 0"
+fi
+
+# A little test program to check if the name 'clog' is defined in libm,
+# as it is under DEC UNIX.
+cat >dummy.c <<!EOF!
+int clog;
+main () {}
+!EOF!
+
+if ${CC} dummy.c -lm 2>&1 >/dev/null | grep clog >/dev/null; then
+  echo "#define ${macro_prefix}CLOG_CONFLICT 1"
+fi
+
+echo ""
+
+# Next, generate definitions for the standard types (such as mode_t)
+# compatible with those in the standard C header files.
+# It works by a dummy program through the C pre-processor, and then
+# using sed to search for typedefs in the output.
+
+for hdr in wchar wctype; do
+  eval $hdr=0
+  cat >dummy.c <<EOF
+#include <${hdr}.h>
+EOF
+  if ${CPP} dummy.c >/dev/null 2>&1 ; then eval $hdr=1; fi
+done
+
+cat >dummy.c <<!EOF!
+#include <sys/types.h>
+#include <stddef.h>
+#ifdef __STDC__
+#include <stdarg.h>
+#else /* !__STDC__ */
+#include <varargs.h>
+#endif /* __STDC__ */
+#include <stdio.h>
+#include <time.h>
+#include <signal.h>
+#ifdef __STDC__
+#include <limits.h>
+#endif
+#if WCHAR == 1
+#include <wchar.h>
+#endif
+#if WCTYPE == 1
+#include <wctype.h>
+#endif
+#ifdef size_t
+typedef size_t Xsize_t;
+#elif defined(__SIZE_TYPE__)
+typedef __SIZE_TYPE__ Xsize_t;
+#endif
+#ifdef ptrdiff_t
+typedef ptrdiff_t Xptrdiff_t;
+#elif defined(__PTRDIFF_TYPE__)
+typedef __PTRDIFF_TYPE__ Xptrdiff_t;
+#endif
+#ifdef wchar_t
+typedef wchar_t Xwchar_t;
+#elif defined(__WCHAR_TYPE__)
+typedef __WCHAR_TYPE__ Xwchar_t;
+#endif
+#ifdef va_list
+typedef va_list XXXva_list;
+#endif
+#ifdef BUFSIZ
+long XBUFSIZ=BUFSIZ;
+#endif
+#ifdef FOPEN_MAX
+long XFOPEN_MAX=FOPEN_MAX;
+#endif
+#ifdef FILENAME_MAX
+long XFILENAME_MAX=FILENAME_MAX;
+#endif
+#ifdef SHRT_MAX
+long XSHRT_MAX=SHRT_MAX;
+#endif
+#ifdef INT_MAX
+long XINT_MAX=INT_MAX;
+#endif
+#ifdef LONG_MAX
+long XLONG_MAX=LONG_MAX;
+#endif
+#ifdef LONG_LONG_MAX
+long XLONG_LONG_MAX=LONG_LONG_MAX;
+#endif
+!EOF!
+
+if ${CPP} dummy.c -DWCHAR=$wchar -DWCTYPE=$wctype >TMP ; then true
+else
+  echo "gen-params: could not invoke ${CPP} on dummy.c" 1>&2 ; exit 1
+fi
+tr '	' ' ' <TMP >dummy.out
+
+for TYPE in dev_t clock_t fpos_t gid_t ino_t mode_t nlink_t off_t pid_t ptrdiff_t sigset_t size_t ssize_t time_t uid_t va_list wchar_t wint_t int16_t uint16_t int32_t uint_32_t u_int16_t u_int32_t; do
+    eval IMPORTED=\$$TYPE
+    if [ -n "${IMPORTED}" ] ; then
+	eval "$TYPE='$IMPORTED'"
+    else
+	t=$TYPE
+	VALUE=''
+
+	# Follow `typedef VALUE TYPE' chains, but don't loop indefinitely.
+	for iteration in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
+	    # Search dummy.out for a typedef for X*$t.
+	    sed_script="
+		s/unsigned long long int/_G_ullong/g
+		s/long long int/_G_llong/g
+		s/unsigned long long/_G_ullong/g
+		s/long long/_G_llong/g
+		/.*typedef  *\\(.*[^ ]\\)  *X*$t *;.*/{s||\1|;p;q;}
+		/.*typedef  *\\(.*[^ a-zA-Z0-9_]\\)X*$t *;.*/{s||\1|;p;q;}
+	    "
+	    t=`${SED} -n "$sed_script" <dummy.out`
+	    case "$t" in
+	      '')
+		break;;
+	      *)
+		# Found a type $t; save it in VALUE.
+		VALUE=$t
+		# If it won't cause problems in matching,
+		# look for a typedef for it in turn.
+		case "$VALUE" in
+		  *.* | */* | *\ * | *\** | *\[* | *\\*) break;;
+		esac;;
+	    esac
+	done
+
+	case "$VALUE" in
+	  ?*) eval "$TYPE=\"$VALUE\""
+	esac
+    fi
+done
+
+# Look for some standard macros.
+for NAME in BUFSIZ FOPEN_MAX FILENAME_MAX NULL; do
+    eval IMPORTED=\$$NAME
+    if [ -n "${IMPORTED}" ] ; then
+	eval "$NAME='$IMPORTED /* specified */'"
+    else
+	rm -f TMP
+	${SED} -n -e 's| *;|;|g' -e "s|long X${NAME}= *\(.*\);|\1|w TMP" \
+	  <dummy.out>/dev/null
+	# Now select the first definition.
+	if [ -s TMP ]; then
+	    eval "$NAME='"`${SED} -e '2,$d' <TMP`"'"
+	fi
+    fi
+done
+
+# These macros must be numerical constants; strip any trailing 'L's.
+for NAME in SHRT_MAX INT_MAX LONG_MAX LONG_LONG_MAX; do
+    eval IMPORTED=\$$NAME
+    if [ -n "${IMPORTED}" ] ; then
+	eval "$NAME='$IMPORTED /* specified */'"
+    else
+	rm -f TMP
+	${SED} -n -e 's| *;|;|g' -e "s|long X${NAME}= *\([0-9]*\)L* *;|\1|w TMP" \
+	  <dummy.out>/dev/null
+	# Now select the first definition.
+	if [ -s TMP ]; then
+	    eval "$NAME='"`${SED} -e '2,$d' <TMP`"'"
+	fi
+    fi
+done
+
+# Figure out integral type sizes.
+
+default_int16='short /* deduction failed */'
+default_int32='long /* deduction failed */'
+INT16=32767
+INT32=2147483647
+
+if [ "${SHRT_MAX}" = $INT16 ] ; then
+  default_int16='short /* deduced */'
+  if [ "${LONG_MAX}" = $INT32 ] ; then
+    default_int32='long /* deduced */'
+  elif [ "${INT_MAX}" = $INT32 ] ; then
+    default_int32='int /* deduced */'
+  fi
+fi
+
+[ -n "$u_int16_t" ] && uint16_t="$u_int16_t"
+[ -n "$u_int32_t" ] && uint32_t="$u_int32_t"
+
+[ -z  "$int16_t" ] &&  int16_t="$default_int16"
+[ -z "$uint16_t" ] && uint16_t="unsigned $int16_t"
+[ -z  "$int32_t" ] &&  int32_t="$default_int32"
+[ -z "$uint32_t" ] && uint32_t="unsigned $int32_t"
+
+cat <<!EOF!
+#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 7)
+typedef          int   ${macro_prefix}int8_t __attribute__((__mode__(__QI__)));
+typedef unsigned int  ${macro_prefix}uint8_t __attribute__((__mode__(__QI__)));
+typedef          int  ${macro_prefix}int16_t __attribute__((__mode__(__HI__)));
+typedef unsigned int ${macro_prefix}uint16_t __attribute__((__mode__(__HI__)));
+typedef          int  ${macro_prefix}int32_t __attribute__((__mode__(__SI__)));
+typedef unsigned int ${macro_prefix}uint32_t __attribute__((__mode__(__SI__)));
+typedef          int  ${macro_prefix}int64_t __attribute__((__mode__(__DI__)));
+typedef unsigned int ${macro_prefix}uint64_t __attribute__((__mode__(__DI__)));
+#if __GNUC__ > 2 || __GNUC_MINOR__ >= 8
+__extension__ typedef long long ${macro_prefix}llong;
+__extension__ typedef unsigned long long ${macro_prefix}ullong;
+#endif
+#else
+typedef  $int16_t  ${macro_prefix}int16_t;
+typedef $uint16_t ${macro_prefix}uint16_t;
+typedef  $int32_t  ${macro_prefix}int32_t;
+typedef $uint32_t ${macro_prefix}uint32_t;
+#endif
+
+typedef ${clock_t-int /* default */} ${macro_prefix}clock_t;
+typedef ${dev_t-int /* default */} ${macro_prefix}dev_t;
+typedef ${fpos_t-long /* default */} ${macro_prefix}fpos_t;
+typedef ${gid_t-int /* default */} ${macro_prefix}gid_t;
+typedef ${ino_t-int /* default */} ${macro_prefix}ino_t;
+typedef ${mode_t-int /* default */} ${macro_prefix}mode_t;
+typedef ${nlink_t-int /* default */} ${macro_prefix}nlink_t;
+typedef ${off_t-long /* default */} ${macro_prefix}off_t;
+typedef ${pid_t-int /* default */} ${macro_prefix}pid_t;
+#ifndef __PTRDIFF_TYPE__
+#define __PTRDIFF_TYPE__ ${ptrdiff_t-long int /* default */}
+#endif
+typedef __PTRDIFF_TYPE__ ${macro_prefix}ptrdiff_t;
+typedef ${sigset_t-int /* default */} ${macro_prefix}sigset_t;
+#ifndef __SIZE_TYPE__
+#define __SIZE_TYPE__ ${size_t-unsigned long /* default */}
+#endif
+typedef __SIZE_TYPE__ ${macro_prefix}size_t;
+typedef ${time_t-int /* default */} ${macro_prefix}time_t;
+typedef ${uid_t-int /* default */} ${macro_prefix}uid_t;
+typedef ${wchar_t-int /* default */} ${macro_prefix}wchar_t;
+
+#define ${macro_prefix}BUFSIZ ${BUFSIZ-1024 /* default */}
+#define ${macro_prefix}FOPEN_MAX ${FOPEN_MAX-32 /* default */}
+#define ${macro_prefix}FILENAME_MAX ${FILENAME_MAX-1024 /* default */}
+#if defined (__cplusplus) || defined (__STDC__)
+#define ${macro_prefix}ARGS(ARGLIST) ARGLIST
+#else
+#define ${macro_prefix}ARGS(ARGLIST) ()
+#endif
+#if !defined (__GNUG__) || defined (__STRICT_ANSI__)
+#define ${macro_prefix}NO_NRV
+#endif
+#if !defined (__GNUG__)
+#define _G_NO_EXTERN_TEMPLATES
+#endif
+!EOF!
+
+# ssize_t is the signed version of size_t
+if [ -n "${ssize_t}" ] ; then
+    echo "typedef ${ssize_t} ${macro_prefix}ssize_t;"
+elif [ -z "${size_t}" ] ; then
+    echo "typedef long ${macro_prefix}ssize_t;"
+else
+    # Remove "unsigned" from ${size_t} to get ${ssize_t}.
+    tmp="`echo ${size_t} | ${SED} -e 's|unsigned||g' -e 's|  | |g'`"
+    if [ -z "$tmp" ] ; then
+	tmp=int
+    else
+	# check $tmp doesn't conflict with <unistd.h>
+	echo "#include <unistd.h>
+	extern $tmp read();" >dummy.c
+	${CC} -c dummy.c >/dev/null 2>&1 || tmp=int
+    fi
+    echo "typedef $tmp /* default */ ${macro_prefix}ssize_t;"
+fi
+
+# wint_t is often the integral type to which wchar_t promotes.
+if [ -z "${wint_t}" ] ; then
+  for TYPE in int 'unsigned int' 'long int' 'long unsigned int'; do
+    cat >dummy.C <<!EOF!
+#ifndef __WCHAR_TYPE__
+#define __WCHAR_TYPE__ ${wchar_t-int /* default */}
+#endif
+typedef __WCHAR_TYPE__ ${macro_prefix}wchar_t;
+void foo ($TYPE);
+void foo (double);
+void bar (${macro_prefix}wchar_t w)
+{
+  foo (w);
+}
+!EOF!
+    if ${CXX} -c dummy.C >/dev/null 2>&1 ; then  
+      wint_t="$TYPE /* default */"
+      break
+    fi
+  done
+fi
+echo "typedef ${wint_t-int /* wchar_t is broken */} ${macro_prefix}wint_t;"
+
+# va_list can cause problems (e.g. some systems have va_list as a struct).
+# Check to see if ${va_list-char*} really is compatible with stdarg.h.
+cat >dummy.C <<!EOF!
+#define X_va_list ${va_list-char* /* default */}
+extern long foo(X_va_list ap); /* Check that X_va_list compiles on its own */
+extern "C" {
+#include <stdarg.h>
+}
+long foo(X_va_list ap) { return va_arg(ap, long); }
+long bar(int i, ...)
+{ va_list ap; long j; va_start(ap, i); j = foo(ap); va_end(ap); return j; }
+!EOF!
+if ${CXX} -c dummy.C >/dev/null 2>&1 ; then
+  # Ok: We have something that works.
+  echo "typedef ${va_list-char* /* default */} ${macro_prefix}va_list;"
+else
+  echo "#define ${macro_prefix}NEED_STDARG_H"
+  # Check and see if we have __gnuc_va_list, as we might set up define
+  # loops if we use va_list.
+  cat >dummy.C <<!EOF!
+#include <stdarg.h>
+long foo(__gnuc_va_list ap) { return va_arg(ap, long); }
+!EOF!
+  if ${CXX} -c dummy.C >/dev/null 2>&1 ; then
+    echo "#define ${macro_prefix}va_list __gnuc_va_list"
+  else
+    echo "#define ${macro_prefix}va_list va_list"
+  fi
+fi
+
+cat >dummy.c <<!EOF!
+#include <signal.h>
+extern int (*signal())();
+extern int dummy (int);
+main()
+{
+    int (*oldsig)(int) = signal (1, dummy);
+    (void) signal (2, oldsig);
+    return 0;
+}
+!EOF!
+if ${CC} -c dummy.c >/dev/null 2>&1 ; then
+  echo "#define ${macro_prefix}signal_return_type int"
+else
+  echo "#define ${macro_prefix}signal_return_type void"
+fi
+
+# check sprintf return type
+
+cat >dummy.c <<!EOF!
+#include <stdio.h>
+extern int sprintf(); char buf[100];
+int main() { return sprintf(buf, "%d", 34); }
+!EOF!
+if ${CC} -c dummy.c >/dev/null 2>&1 ; then
+  echo "#define ${macro_prefix}sprintf_return_type int"
+else
+  echo "#define ${macro_prefix}sprintf_return_type char*"
+fi
+
+if test -n "${HAVE_ATEXIT}" ; then
+ echo "#define ${macro_prefix}HAVE_ATEXIT ${HAVE_ATEXIT}"
+else
+  cat >dummy.c <<!EOF!
+#include <stdlib.h>
+int main()
+{
+  atexit (0);
+}
+!EOF!
+  if ${CC} dummy.c >/dev/null 2>&1 ; then
+    echo "#define ${macro_prefix}HAVE_ATEXIT 1"
+  else
+    echo "#define ${macro_prefix}HAVE_ATEXIT 0"
+  fi
+fi
+
+
+# *** Check for presence of certain include files ***
+
+# check for sys/resource.h
+
+if test -n "${HAVE_SYS_RESOURCE}" ; then
+ echo "#define ${macro_prefix}HAVE_SYS_RESOURCE ${HAVE_SYS_RESOURCE}"
+else
+  cat >dummy.c <<!EOF!
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+  int main()
+  {
+    struct rusage res;
+    getrusage(RUSAGE_SELF, &res);
+    return (int)(res.ru_utime.tv_sec + (res.ru_utime.tv_usec / 1000000.0));
+  }
+!EOF!
+  # Note: We link because some systems have sys/resource, but not getrusage().
+  if ${CC} dummy.c >/dev/null 2>&1 ; then
+    echo "#define ${macro_prefix}HAVE_SYS_RESOURCE 1"
+  else
+    echo "#define ${macro_prefix}HAVE_SYS_RESOURCE 0"
+  fi
+fi
+
+# check for struct tms in sys/times.h
+
+if test -n "${HAVE_SYS_TIMES}" ; then
+ echo "#define ${macro_prefix}HAVE_SYS_TIMES ${HAVE_SYS_TIMES}"
+else
+ cat >dummy.c <<!EOF!
+#include <sys/types.h>
+#include <sys/times.h>
+  int main()
+  {
+    struct tms s;
+    return s.tms_utime;
+  }
+!EOF!
+  if ${CC} -c dummy.c >/dev/null 2>&1 ; then
+    echo "#define ${macro_prefix}HAVE_SYS_TIMES 1"
+  else
+    echo "#define ${macro_prefix}HAVE_SYS_TIMES 0"
+  fi
+fi
+
+# check for sys/socket.h
+
+if test -n "${HAVE_SYS_SOCKET}" ; then
+ echo "#define ${macro_prefix}HAVE_SYS_SOCKET ${HAVE_SYS_SOCKET}"
+else
+  echo '#include <sys/types.h>' >dummy.c
+  echo '#include <sys/socket.h>' >>dummy.c
+  if ${CC} -c dummy.c >/dev/null 2>&1 ; then
+    echo "#define ${macro_prefix}HAVE_SYS_SOCKET 1"
+  else
+    echo "#define ${macro_prefix}HAVE_SYS_SOCKET 0"
+  fi
+fi
+
+# check for sys/cdefs.h
+
+if test -n "${HAVE_SYS_CDEFS}" ; then
+ echo "#define ${macro_prefix}HAVE_SYS_CDEFS ${HAVE_SYS_CDEFS}"
+else
+  echo '#include <sys/cdefs.h>' >dummy.c
+  echo 'extern int myfunc __P((int, int));' >>dummy.c
+  if ${CC} -c dummy.c >/dev/null 2>&1 ; then
+    echo "#define ${macro_prefix}HAVE_SYS_CDEFS 1"
+  else
+    echo "#define ${macro_prefix}HAVE_SYS_CDEFS 0"
+  fi
+fi
+
+# Check for a (Posix-compatible) sys/wait.h */
+
+if test -n "${HAVE_SYS_WAIT}" ; then
+ echo "#define ${macro_prefix}HAVE_SYS_WAIT ${HAVE_SYS_WAIT}"
+else
+  cat >dummy.c <<!EOF!
+#include <sys/types.h>
+#include <sys/wait.h>
+  int f() { int i; wait(&i); return i; }
+!EOF!
+  if ${CC} -c dummy.c >/dev/null 2>&1 ; then
+    echo "#define ${macro_prefix}HAVE_SYS_WAIT 1"
+  else
+    echo "#define ${macro_prefix}HAVE_SYS_WAIT 0"
+  fi
+fi
+
+if test -n "${HAVE_UNISTD}" ; then
+ echo "#define ${macro_prefix}HAVE_UNISTD ${HAVE_UNISTD}"
+else
+  echo '#include <unistd.h>' >dummy.c
+  if ${CC} -c dummy.c >/dev/null 2>&1 ; then
+    echo "#define ${macro_prefix}HAVE_UNISTD 1"
+  else
+    echo "#define ${macro_prefix}HAVE_UNISTD 0"
+  fi
+fi
+
+if test -n "${HAVE_DIRENT}" ; then
+ echo "#define ${macro_prefix}HAVE_DIRENT ${HAVE_DIRENT}"
+else
+  echo '#include <sys/types.h>
+#include <dirent.h>' >dummy.c
+  if ${CC} -c dummy.c >/dev/null 2>&1 ; then
+    echo "#define ${macro_prefix}HAVE_DIRENT 1"
+  else
+    echo "#define ${macro_prefix}HAVE_DIRENT 0"
+  fi
+fi
+
+if test -n "${HAVE_CURSES}" ; then
+ echo "#define ${macro_prefix}HAVE_CURSES ${HAVE_CURSES}"
+else
+  echo '#include <curses.h>' >dummy.c
+  if ${CC} -c dummy.c >/dev/null 2>&1 ; then
+    echo "#define ${macro_prefix}HAVE_CURSES 1"
+  else
+    echo "#define ${macro_prefix}HAVE_CURSES 0"
+  fi
+fi
+
+# There is no test for this at the moment; it is just set by the
+# configuration files.
+if test -n "${MATH_H_INLINES}" ; then
+  echo "#define ${macro_prefix}MATH_H_INLINES ${MATH_H_INLINES}"
+else
+  echo "#define ${macro_prefix}MATH_H_INLINES 0"
+fi
+
+if test -n "${HAVE_BOOL}" ; then
+ echo "#define ${macro_prefix}HAVE_BOOL ${HAVE_BOOL}"
+else
+  echo 'bool i=true,j=false;' >dummy.C
+  if ${CXX} -c dummy.C >/dev/null 2>&1 ; then
+    echo "#define ${macro_prefix}HAVE_BOOL 1"
+  else
+    echo "#define ${macro_prefix}HAVE_BOOL 0"
+  fi
+fi
+
+if test -n "${NO_USE_DTOA}" ; then
+    echo "#define ${macro_prefix}NO_USE_DTOA 1"
+fi
+if test -n "${USE_INT32_FLAGS}" ; then
+    echo "#define ${macro_prefix}USE_INT32_FLAGS 1"
+fi
+
+if test -n "$HAVE_PRINTF_FP"; then
+  echo "#define ${macro_prefix}HAVE_PRINTF_FP $HAVE_PRINTF_FP"
+  echo "#define ${macro_prefix}HAVE_LONG_DOUBLE_IO $HAVE_LONG_DOUBLE_IO"
+else
+  # A little test program to check if __printf_fp is available.
+  cat >dummy.c <<EOF
+int main()
+{
+    return __printf_fp ();
+}
+EOF
+
+  if ${CC} dummy.c >/dev/null 2>&1 ; then
+    echo "#define ${macro_prefix}HAVE_PRINTF_FP 1"
+    echo "#define ${macro_prefix}HAVE_LONG_DOUBLE_IO 1"
+  else
+    echo "#define ${macro_prefix}HAVE_PRINTF_FP 0"
+    echo "#define ${macro_prefix}HAVE_LONG_DOUBLE_IO 0"
+  fi
+fi
+
+# Uncomment the following line if you don't have working templates.
+# echo "#define ${macro_prefix}NO_TEMPLATES"
+
+# Override bogus definitions of NULL in system headers.
+cat <<EOF
+#undef NULL
+#define __need_NULL
+#include <stddef.h>
+EOF
+
+rm -f dummy.C dummy.o dummy.c dummy.out TMP core a.out
+
+echo "#endif /* !${macro_prefix}config_h */"

@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="AUTHOR" CONTENT="pme@sourceware.cygnus.com (Phil Edwards)">
+   <META NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, egcs, g++, libg++, STL">
+   <META NAME="DESCRIPTION" CONTENT="HOWTO for the libstdc++ chapter 24.">
+   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <TITLE>libstdc++-v3 HOWTO:  Chapter 24</TITLE>
+<LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/docs/24_iterators/">
+<LINK REL=StyleSheet HREF="../lib3styles.css">
+<!-- $Id: howto.html,v 1.4 1999/12/15 16:57:06 pme Exp $ -->
+</HEAD>
+<BODY>
+
+<H1 CLASS="centered"><A NAME="top">Chapter 24:  Iterators</A></H1>
+
+<P>Chapter 24 deals with the FORTRAN subroutines for automatically
+   transforming lemmings into gold.
+</P>
+
+
+<!-- ####################################################### -->
+<HR>
+<H1>Contents</H1>
+<UL>
+   <LI><A HREF="#1">They ain't pointers!</A>
+   <LI><A HREF="#2">Topic</A>
+</UL>
+
+<HR>
+
+<!-- ####################################################### -->
+
+<H2><A NAME="1">They ain't pointers!</A></H2>
+   <P><A HREF="../faq/index.html#5_1">FAQ 5.1</A> points out that iterators
+      are not implemented as pointers.  They are a generalization of
+      pointers, but they are implemented in libstdc++-v3 as separate classes.
+   </P>
+   <P>Keeping that simple fact in mind as you design your code will
+      prevent a whole lot of difficult-to-understand bugs.
+   </P>
+   <P>You can think of it the other way 'round, even.  Since iterators
+      are a generalization, that means that <EM>pointers</EM> are
+      <EM>iterators</EM>, and that pointers can be used whenever an
+      iterator would be.  All those functions in the Algorithms chapter
+      of the Standard will work just as well on plain arrays and their
+      pointers.
+   </P>
+   <P>That doesn't mean that when you pass in a pointer, it gets wrapped
+      into some special delegating iterator-to-pointer class with a layer
+      of overhead.  (If you think that's the case anywhere, you don't
+      understand templates to begin with...)  Oh, no; if you pass
+      in a pointer, then the compiler will instantiate that template
+      using T* as a type and good old high-speed pointer arithmetic as
+      its operations, so the resulting code will be doing exactly the same
+      things as it would be doing if you had hand-coded it yourself (for
+      the 273rd time).
+   </P>
+   <P>How much overhead <EM>is</EM> there when using an interator class?
+      Very little.  Most of the layering classes contain nothing but
+      typedefs, and typedefs are &quot;meta-information&quot; that simply
+      tell the compiler some nicknames; they don't create code.  That
+      information gets passed down through inheritance, so while the
+      compiler has to do work looking up all the names, your runtime code
+      does not.  (This has been a prime concern from the beginning.)
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+<HR>
+<H2><A NAME="2">Topic</A></H2>
+   <P>Blah.
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+
+
+
+<!-- ####################################################### -->
+
+<HR>
+<P CLASS="fineprint"><EM>
+Comments and suggestions are welcome, and may be sent to
+<A HREF="mailto:pme@sourceware.cygnus.com">Phil Edwards</A> or
+<A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
+<BR> $Id: howto.html,v 1.4 1999/12/15 16:57:06 pme Exp $
+</EM></P>
+
+
+</BODY>
+</HTML>

@@ -1,0 +1,3 @@
+#ifndef _CPP_CSTRING
+#include <bits/std_cstring.h>
+#endif

@@ -1,0 +1,100 @@
+#!/bin/bash
+#
+# usage: inclosure [ -I dir ] ... [ -G header-name ] ... header-name ...
+#
+# Locates each standard header and argument header-name in the
+# specified "-I" include path (default is /usr/include) and parses 
+# any header names out of its #include directives.  These names are 
+# treated recursively to identify a _transitive_closure_ of standard
+# header names, which is sorted and sent to standard output.  Headers 
+# not specified with -G, and included somewhere but not located are 
+# reported.
+#
+# Each header reported by this program must be "shadowed" by a 
+# file of the same name in a C++ header.  See 
+#   http://www.cantrip.org/cheaders.html
+#
+# BUGS: 
+#  - Cannot cope with header file names that contain spaces
+#  - Ignores comment-block delimiters
+#  - Ignores sub-includes under #include_next headers.
+
+OLDH=/tmp/old$$
+echo "this-compensates-for-a-stupid-bug-in-GNU-fgrep." >$OLDH
+HDRS=/tmp/hdrs$$
+>$HDRS
+NEW=/tmp/new$$
+>$NEW
+IGNORES=/tmp/ignores$$
+echo "this-compensates-for-a-stupid-bug-in-GNU-fgrep.">$IGNORES
+
+trap "rm -f $NEW $HDRS $OLDH $IGNORES" 0
+
+# process arguments
+unset INCPATH
+while [ $# != 0 -a "$1" != "${1#-}" ]; do
+  FLAG="${1%%${1##-?}}"
+  case "$FLAG" in -I|-G)
+    ARG="${1##${FLAG}}"
+    if [ "$ARG" = "" ]; then
+      if [ $# != 0 ]; then 
+        shift;
+        ARG="$1"
+      else
+        echo "$0: $FLAG needs an argument."
+	exit
+      fi
+    fi ;;
+  esac
+  shift
+  case "$FLAG" in 
+    -I) INCPATH="$INCPATH $ARG" ;;
+    -G) echo " $ARG " >>$IGNORES ;;
+  esac
+done
+INCPATH=${INCPATH-"/usr/include"}  
+
+# identify headers
+
+STDHDRS="assert.h ctype.h errno.h float.h limits.h \
+ locale.h math.h setjmp.h signal.h stdarg.h stddef.h \
+ stdio.h stdlib.h string.h time.h wchar.h wctype.h "
+OTHERS="$*"
+
+for file in $STDHDRS $OTHERS; do
+  echo "$file" 
+done >$HDRS
+
+until cmp -s $OLDH $HDRS; do #  (until no new headers found)
+
+  fgrep -v -f $OLDH $HDRS \
+  | while read file; do
+    found=no
+    for dir in $INCPATH; do 
+      name="$dir/$file"
+      if [ -f "$name" ]; then 
+        cat "$name"
+	found=yes
+        break;
+      fi
+    done
+    if [ "$found" = no ]; then # && echo " $file " | fgrep -v -q -f $IGNORES 
+      echo "$0: warning: header $file not found in include path." $1>&2
+    fi
+  done \
+  | sed -n -e \
+'/^[ 	]*#[ 	]*include[ 	]*<[^>]*>/s/^[^<]*<\([^>]*\)>.*/\1/p' \
+  | while read file; do
+     drop=no
+     for ignore in `cat $IGNORES`; do
+       if [ "$ignore" == "$file" ]; then drop=yes; fi
+     done
+     case "$file" in /*) drop=yes;; esac   # no absolute paths
+     case $drop in no) echo "$file";; esac
+  done >$NEW
+  mv $HDRS $OLDH
+  cat $OLDH $NEW | sort -u -o $HDRS
+
+done
+cat $HDRS
+

@@ -1,0 +1,3 @@
+#ifndef _CPP_CFLOAT
+#include <bits/std_cfloat.h>
+#endif

@@ -1,0 +1,302 @@
+#!/usr/bin/env bash
+
+# 1999-07-19 bkoz 
+# Script to do automated testing and data collection for
+# various test files, and avoid doing this on every test file.
+# It attempts to collect some diagnostic info about size
+# and speed that should be useful in the future as the library gets
+# tuned for size and speed.
+
+# invocation == mkcheck [01] (path to build) (path to src) (path to install)
+
+if [ $# != 3 ] && [ $# != 4 ]; then
+    echo 'Usage: mkcheck 0 (path to build) (path to src)'
+    echo '       mkcheck 1 (path to build) (path to src) (path to install)'
+    exit 1
+fi
+echo "running mkcheck"
+
+#
+# 1: variables
+#
+# WHICH determines if you are testing the installed binary and headers, or
+# the build binary and headers.
+WHICH=$1
+if [ $WHICH != "1" ]; then
+  WHICH=0
+  echo "$0: testing the build directory"
+elif [ $WHICH -eq 1 ]; then
+  echo "$0: testing the install directory $1"
+fi
+
+BUILD_DIR=$2
+if [ ! -d "$BUILD_DIR" ]; then
+  echo "build directory $BUILD_DIR not found, exiting."
+  exit 1
+fi
+
+SRC_DIR=$3
+if [ ! -d "$SRC_DIR" ]; then
+  echo "source directory $SRC_DIR not found, exiting."
+  exit 1
+fi
+
+if [ $WHICH -eq 1 ]; then 
+    PREFIX_DIR=$4
+    if [ ! -d "$PREFIX_DIR" ]; then
+    echo "install directory $PREFIX_DIR not found, exiting."
+    exit 1
+    fi
+fi
+
+# INC_PATH == include path to new headers for use on gcc command-line
+if [ $WHICH != "1" ]; then
+  INC_PATH="-I$BUILD_DIR -I$SRC_DIR/@ctype_include_dir@ -I$SRC_DIR/@cpu_include_dir@  -I$SRC_DIR/std -I$SRC_DIR -I$SRC_DIR/libio"
+elif [ $WHICH -eq 1 ]; then
+  INC_PATH=""
+fi
+
+#LIB_PATH == where to find the build library binaries.
+if [ $WHICH != "1" ]; then
+  LIB_PATH="-L$BUILD_DIR/src/.libs"
+  CXX="../../gcc/g++ -B../../gcc/"
+elif [ $WHICH -eq 1 ]; then
+  LIB_PATH="-L$PREFIX_DIR/lib"
+  CXX="$PREFIX_DIR/bin/g++"
+fi
+
+# gcc compiler flags
+#CXX_FLAG="-fsquangle -fhonor-std -fnew-exceptions -g -O2 -DDEBUG_ASSERT "
+#CXX_FLAG="-g -O2 -DDEBUG_ASSERT "
+CXX_FLAG="-g -DDEBUG_ASSERT "
+
+# a specific flag to force the use of shared libraries, if any
+SH_FLAG=
+
+# a specific flag to force the use of static libraries, if any
+ST_FLAG="-static"
+
+# Set up the testing directory, which should be in a directory called
+# "testsuite" in the root level of the build directory.
+TEST_DIR="`pwd`/testsuite"
+if [ ! -d "$TEST_DIR" ]; then
+    echo "making directory $TEST_DIR"
+    mkdir $TEST_DIR
+    chmod 777 $TEST_DIR
+fi
+
+# the name of the file that will collect and hold all this useful data:
+RESULTS_FILE="$TEST_DIR/$(date +%Y%m%d)-mkcheck.txt"
+
+# the name of the log file that will append compiler diagnostics:
+LOG_FILE="$TEST_DIR/$(date +%Y%m%d)-mkchecklog.txt"
+
+# the names of the specific test files to be run
+TESTS_FILE="$TEST_DIR/$(date +%Y%m%d)-mkcheckfiles.txt"
+
+
+#
+# 2: clean, make files, append general test info
+#
+if [ -f $RESULTS_FILE ]; then
+    rm $RESULTS_FILE
+fi
+if [ -f $LOG_FILE ]; then
+    rm $LOG_FILE
+fi
+
+# Make a list of the files we're going to run, or use an old one if it exists.
+if [ ! -f "$TESTS_FILE" ]; then
+    echo "making file $TESTS_FILE"
+    for LONG_NAME in $SRC_DIR/testsuite/*/*.cc
+    do
+	DIR_NAME=$(dirname $LONG_NAME)
+	SHORT_NAME="`basename $DIR_NAME`/`basename $LONG_NAME`"
+	echo "$SHORT_NAME" >> $TESTS_FILE
+    done
+fi
+
+# Nasty solution to replace GNU date(1)'s %s time_t output function.
+if [ ! -x "$TEST_DIR/printnow" ]; then
+    echo "making utility $TEST_DIR/printnow"
+    gcc -o "$TEST_DIR/printnow" "$SRC_DIR/testsuite/printnow.c"
+    strip "$TEST_DIR/printnow"
+fi
+
+# Remove old executables.
+rm -rf "$TEST_DIR/*exe"
+rm -rf "$TEST_DIR/core" "$TEST_DIR/*core"
+
+# Copy over the data files for filebufs in read-only mode
+cp $SRC_DIR/testsuite/27_io/*.txt $TEST_DIR
+cp $SRC_DIR/testsuite/27_io/*.tst $TEST_DIR
+
+# Emit useful info about compiler and platform
+echo "host: $(uname -mrsv)" >> $RESULTS_FILE
+echo "compiler: $(g++ --version)" >> $RESULTS_FILE
+echo "compiler flags: $CXX_FLAG $ST_FLAG" >> $RESULTS_FILE
+echo "date: $(date +%Y%m%d)" >> $RESULTS_FILE
+echo "" >> $RESULTS_FILE
+
+echo "p == pass/fail execution test" >> $RESULTS_FILE
+echo "ctime == time to compile and link" >> $RESULTS_FILE
+echo "etime == time for executable to run (take with salt)" >> $RESULTS_FILE
+echo "text == size of the executable text section" >> $RESULTS_FILE
+echo "data == size of the executable data section" >> $RESULTS_FILE
+echo "total == size of the executable" >> $RESULTS_FILE
+echo "" >> $RESULTS_FILE
+
+echo "p" | awk '{printf("%s ", $1)}' >> $RESULTS_FILE
+echo "ctime" "etime" | awk '{printf("%s\t%s\t", $1, $2)}' >> $RESULTS_FILE
+echo "text" "data" | awk '{printf("%s\t%s\t", $1, $2)}' >> $RESULTS_FILE
+echo "total" "name" | awk '{printf("%s\t%s\t", $1, $2)}' >> $RESULTS_FILE
+echo "" >> $RESULTS_FILE
+    
+
+#
+# 3: compile, link, execute, time
+#
+for NAME in `cat $TESTS_FILE`
+do
+    echo "$NAME"
+    PRE_NAME="$TEST_DIR/`basename $NAME`"
+    ST_NAME="`echo $PRE_NAME | sed 's/cc$/st-exe/'`"
+    SH_NAME="`echo $PRE_NAME | sed 's/cc$/sh-exe/'`"
+    CNAME="$SRC_DIR/testsuite/$NAME"
+
+    # This would be deliciously easy if GNU date's %s were always around.
+    # There are three ways to do this:  1) use the builtin 'time' like we
+    # do later; then getting compiler errors into LOG_FILE is a nightmare.
+    # 2) Grab the output of a formatted date(1) and do the math; harder
+    # and harder as we try compiling at, say, top of the hour; we would
+    # eventually have to calculate time_t anyhow.  Or 3) just grab two
+    # time_t's (no more overhead than grabbing two date(1)'s).
+    COMP_TIME_START=$($TEST_DIR/printnow)
+    $CXX $CXX_FLAG $ST_FLAG $INC_PATH $LIB_PATH $CNAME \
+	 -o $ST_NAME 2>> $LOG_FILE
+    COMP_TIME_END=$($TEST_DIR/printnow)
+
+    if [ $COMP_TIME_START -lt $COMP_TIME_END ]; then
+	C_TIME=$[ $COMP_TIME_END - $COMP_TIME_START ]
+    else
+	C_TIME="0"
+    fi
+
+    if [ -f $ST_NAME ]; then
+        case @host_os@ in
+          *solaris*)
+            # These numbers seem to match up to text/data/total,
+            # although their meanings seem to be different.  Very
+            # important to not compare these numbers across platforms.
+            ST_TEXT="$(size $ST_NAME | awk '{print $1}')"
+            ST_DATA="$(size $ST_NAME | awk '{print $3}')"
+            ST_SIZE="$(size $ST_NAME | awk '{print $7}')"
+            ;;
+          *)
+            ST_TEXT="$(size -A $ST_NAME | grep text | awk '{print $2}')"
+            ST_DATA="$(size -A $ST_NAME | grep data | awk '{print $2}')"
+            ST_SIZE="$(size -A $ST_NAME | grep otal | awk '{print $2}')"
+            ;;
+        esac
+
+        # Actually run the executable and time it . . .
+        TIMEFORMAT='timemark %R'
+        E_TIME_TEXT="$(exec 2>&1; time $ST_NAME)"
+        E_TIME="$(echo $E_TIME_TEXT | awk '{print $2}')"
+        # joining those two commands does not work due to quoting problems:
+        #E_TIME="$(exec 2>&1; time $ST_NAME | awk '{print $2}')"
+        # this will work as a fallback on certain systems...?
+        #E_TIME=$(exec 2>&1; time $ST_NAME | cut -d ' ' -f 2)
+ 
+	if [ -f core ]; then
+	    ST_EXEC='-'
+	    echo "st_fail" | awk '{printf("\t%s\n", $1)}'
+	    rm core
+	else
+	    # XXX this should probably be a function? 
+
+	    # This checks for emitted output files, which is useful
+	    # when testing file-related output. The rules for this
+	    # working are as follows: the emitted file must have the
+	    # ".txt" extension, and be based on the actual *.cc file's
+	    # name. For example, 27/filbuf.cc currently outputs files
+	    # named 27/filebuf-2.txt and 27/filebuf-3.txt. Also, the first
+	    # emitted file must be in the form $NAME-1.txt. The
+	    # control file must follow the same constraints, but have
+	    # a ".tst" extension. Thus, you have 27/filebuf-2.tst, etc
+	    # etc.
+
+	    # NAME contains the source name, like 27/filebuf.cc
+	    # From that NAME, we want to generate some possible names, using
+	    # ls on MATCH, a pattern description generated with sed.
+
+	    # this is the name of the resulting diff file, if any
+	    DIFF_FILE="`echo $PRE_NAME | sed 's/cc$/diff/'`"
+	    # construct wildcard names,ie for $NAME=filebuf.cc, makes
+	    # "filebuf*.tst"
+	    ST_DATA_FILES="`echo $NAME | sed 's/\.cc/\*\.tst/g'`"
+	    # make sure there is at least one, then go
+	    ST_E="`echo $NAME | sed 's/\.cc/\-1\.tst/g'`"
+	    if [ -f $ST_E ]; then
+		# list of actual files that match the wildcard above, ie
+		# "filebuf-1.tst"
+		ST_MATCH_LIST="`ls $ST_DATA_FILES`"
+		for i in $ST_MATCH_LIST
+		    do
+			# ST_OUT_FILE is generated in the build directory.
+			PRE_NAME2="$TEST_DIR/`basename $i`"
+			ST_OUT_FILE="`echo $PRE_NAME2 | sed 's/tst$/txt/'`"
+			diff $ST_OUT_FILE $i > $DIFF_FILE
+			if [ -s $DIFF_FILE ]; then
+			    ST_EXEC="-"
+			    echo "st_fail" | awk '{printf("\t%s\n", $1)}'
+			    echo "$ST_OUT_FILE has some problems, dude"
+			else
+			    ST_EXEC="+"
+			    echo "st_pass" | awk '{printf("\t%s\n", $1)}'
+			fi
+			rm $DIFF_FILE
+		    done
+		else
+		    # the file does no output, and didn't core, so
+		    # assume passed.
+		    ST_EXEC="+"
+		    echo "st_pass" | awk '{printf("\t%s\t", $1)}'
+		fi
+	    fi
+	rm "$ST_NAME"
+    else
+        # the file did not compile. Write out compilation info to the log file.
+	echo "$CXX $CXX_FLAG $ST_FLAG $INC_PATH $LIB_PATH $CNAME -o $ST_NAME" \
+        2>> $LOG_FILE
+
+	ST_EXEC="-"
+	echo "st_fail" | awk '{printf("\t%s\t", $1)}'
+	ST_TEXT="0"
+	ST_DATA="0"
+	ST_SIZE="0"
+    fi
+
+    echo $ST_EXEC | awk '{printf ("%.1s ", $1)}'>>$RESULTS_FILE
+    echo $C_TIME $E_TIME |awk '{printf("%d\t%.3f\t", $1, $2)}'>>$RESULTS_FILE
+    echo $ST_TEXT $ST_DATA | awk '{printf("%s\t%s\t", $1, $2)}'>>$RESULTS_FILE
+    echo $ST_SIZE | awk '{printf("%s\t", $1)}'>>$RESULTS_FILE
+    echo $NAME | awk '{printf("%s\n", $1)}'>>$RESULTS_FILE
+
+    echo "" >> $RESULTS_FILE
+    echo ""
+done
+
+# grep can count faster than we can...
+total_failures=$(egrep -c "^\-" $RESULTS_FILE)
+total_successes=$(egrep -c "^\+" $RESULTS_FILE)
+resultstext="pass/fail results:  ${total_successes}/${total_failures}"
+if [ $total_failures -eq 0 ]; then
+    resultstext="${resultstext}, WIN WIN"
+fi
+sed -e "/^date:/a\\
+$resultstext" $RESULTS_FILE > ${RESULTS_FILE}.tmp
+mv ${RESULTS_FILE}.tmp $RESULTS_FILE
+
+exit 0
+

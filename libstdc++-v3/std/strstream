@@ -1,0 +1,3 @@
+#ifndef _CPP_STRSTREAM
+#include <bits/std_strstream.h>
+#endif

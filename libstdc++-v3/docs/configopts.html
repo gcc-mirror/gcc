@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="AUTHOR" CONTENT="pme@sourceware.cygnus.com (Phil Edwards)">
+   <META NAME="KEYWORDS" CONTENT="libstdc++, libstdc++-v3, egcs, g++">
+   <META NAME="DESCRIPTION" CONTENT="Configuration options for libstdc++-v3.">
+   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <TITLE>libstdc++-v3 configure options</TITLE>
+<LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/">
+<LINK REL=StyleSheet HREF="lib3styles.css">
+<!-- $Id: configopts.html,v 1.2 2000/03/21 03:54:40 bkoz Exp $ -->
+</HEAD>
+<BODY>
+
+<H1 CLASS="centered"><A NAME="top">Interesting <TT>configure</TT>
+options</A></H1>
+
+<P>The latest version of this document is always available at
+   <A HREF="http://sourceware.cygnus.com/libstdc++/configopts.html">
+   http://sourceware.cygnus.com/libstdc++/configopts.html</A>.
+</P>
+
+<P>To the <A HREF="index.html">libstdc++-v3 homepage</A>.
+
+
+<!-- ####################################################### -->
+<HR>
+<P>Here are some of the non-obvious options to libstdc++'s configure.
+   Keep in mind that
+   <!-- This should be the "Choosing Package Options" section. -->
+   <A HREF="http://sourceware.cygnus.com/autoconf/autoconf.html#SEC74">they
+   all have opposite forms as well</A>
+   (enable/disable and with/without).  The defaults are for the latest
+   snapshot, 2.90.8.
+<DL>
+ <DT><TT>--enable-multilib  </TT>[default]
+ <DD><P>This is part of the generic multilib support for building
+ 	cross compilers. As such, targets like "powerpc-elf" will be
+ 	have libstdc++ built many different ways: "-msoft-float" and
+ 	not, etc. A different libstdc++ will be built for each of the
+ 	different multilib versions. This option is on by default.
+     </P>
+
+ <DT><TT>--enable-debug  </TT>
+ <DD><P>The configure script will automatically detect the highest level
+        of optimization that the compiler in use can use (certain
+        versions of g++ will ICE if given the <TT>-O2</TT> option, but
+        this is fixed in later versions of the compiler).  This --enable
+        flag will disable all optimizations and instruct the compiler to
+        emit as much extra debugging information as it can, for use
+        inside GDB.
+     </P>
+
+ <DT><TT>--enable-cstdio  </TT>[default]
+ <DD><P>This is an abbreviated form of <TT>'--enable-cstdio=libio'</TT>
+        (described next).
+     </P>
+
+ <DT><TT>--enable-cstdio=LIB  </TT>
+ <DD><P>Select a target-specific I/O package.  As of libstdc++-v3
+        snapshot 2.90.8, the choices are 'libio' to specify the GNU
+        I/O package (from
+        <A HREF="http://sourceware.cygnus.com/glibc/">glibc</A>, the
+        GNU C library), or 'wince' to specify the Microsoft Windows CE
+        library. Eventually a generic cstdio interface will be added
+        so that people who want to use libstdc++-v3 with say, the Palm
+        Pilot, will be able to use libstdc++-v3 without libio.
+     </P>
+
+ <DT><TT>--enable-long_long  </TT>
+ <DD><P>The &quot;long long&quot; type was introduced in C99.  It is
+        provided as a GNU extension to C++98 in g++.  This flag builds
+        support for &quot;long long&quot; into the library (specialized
+        templates and the like).
+     </P>
+     <P>Careful, that's an underscore between the words, not a hyphen.
+     </P>
+
+ <DT><TT>--enable-namespaces  </TT>[default]
+ <DD><P>By default, g++ currently ignores namespace <TT>std</TT> for
+        backwards compatibility.  It can be turned on with the
+        <TT> -fhonor-std </TT> flag to the compiler.  As of libstdc++-v3
+        snapshot 2.90.8, that flag is passed to g++ when building the
+        library.  (This will eventually be the default for the compiler
+        itself.)  The --disable variant will put all std:: symbols into
+        the global namespace.
+     </P>
+
+ <DT><TT>--enable-threads  </TT>
+ <DD><P>This is an abbreviated form of <TT>'--enable-threads=yes'</TT>
+        (described next).
+     </P>
+
+ <DT><TT>--enable-threads=LIB  </TT>
+ <DD><P>Select a threading library.  As of libstdc++-v3 snapshot 2.90.8,
+        the choices are:
+        'yes' for some kind of default (hmmmmm);
+        'decosf1', 'irix', 'mach', 'os2', 'posix'/'pthreads'
+        (same thing),
+        'solaris', 'win32', 'dce', or 'vxworks' to select the
+        corresponding interface;
+        and 'single', 'no', or 'none' for the null-case,
+        single-threaded library.
+     </P>
+     <P>All of this is currently undergoing a lot of changes.  As of
+        2.90.8, 'single' and 'posix' are the only implemented models.
+     </P>
+
+ <DT><TT>--enable-libgcc-rebuild=DIR / --disable-libgcc-rebuild</TT>
+ <DD><P>This is a grueling temporary hack no matter which way you look
+        at it.  It's described in <A HREF="gccrebuild.html">its own
+        little page</A>.  Note that other --enable flags will
+        interact with this one.  As of libstdc++-v3 snapshot 2.90.8,
+        this is enabled by default, with DIR
+        set to <TT> '../..' </TT>, so that building
+        the complete GCC sources with libstdc++-v3 in place works
+        transparently.
+     </P>
+
+<!--
+ <DT><TT>--enable-func-flags=FLAGS</TT>
+ <DD><P>With this option, you can pass a string of -f (functionality)
+        flags to the compiler to use when building libstdc++.  FLAGS
+        is a quoted string of options, like
+        <PRE>
+  --enable-func-flags='-fsquangle -fvtable-gc -ansi'</PRE>
+        Note that the flags don't necessarily have to all be -f flags,
+        as shown, but usually those are the ones that will make sense
+        for experimentation and configure-time overriding.
+     </P>
+     <P>The advantage of --enable-func-flags over setting CXXFLAGS in
+        the 'make' environment is that, if libgcc is automatically
+        rebuilt, the same flags will be used when compiling those files
+        as well, so that everything matches.
+     </P>
+     <P>Fun flags to try might include combinations of
+        <PRE>
+  -fstrict-aliasing
+  -fnew-abi
+  -fnew-exceptions
+  -ffunction-sections
+  -fvtable-gc</PRE>
+        and -fno- forms of the same.  Tell us (the mailing list) if
+        you discover more!
+     </P>
+-->
+</DL>
+</P>
+<P>Return <A HREF="#top">to the top of the README</A> or
+   <A HREF="index.html">to the homepage</A>.
+</P>
+
+
+<!-- ####################################################### -->
+
+<HR>
+<P CLASS="fineprint"><EM>
+$Id: configopts.html,v 1.2 2000/03/21 03:54:40 bkoz Exp $
+</EM></P>
+
+
+</BODY>
+</HTML>

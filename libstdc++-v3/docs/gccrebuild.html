@@ -1,0 +1,120 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="AUTHOR" CONTENT="pme@sourceware.cygnus.com (Phil Edwards)">
+   <META NAME="KEYWORDS" CONTENT="libgcc.a, rebuild">
+   <META NAME="DESCRIPTION" CONTENT="How to automatically rebuild libgcc.a.">
+   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <TITLE>How to automatically rebuild libgcc.a.</TITLE>
+<LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/">
+<LINK REL=StyleSheet HREF="lib3styles.css">
+<!-- $Id: gccrebuild.html,v 1.1 2000/01/14 20:03:09 pme Exp $ -->
+</HEAD>
+<BODY>
+
+<H2 CLASS="centered"><TT>--enable-libgcc-rebuild</TT></H2>
+
+<P>If you build libstdc++ using certain flags (e.g., -fnew-abi), then
+   programs that use some of the new C++ language features (like namespace
+   std and RTTI) will only link if the compiler's libgcc is built using
+   the same flags.  Other extralinguistic flags (like -fsquangle to change
+   the name mangling algorithm) will have the same effect.
+</P>
+
+<P>Since the compiler and this library are currently separate projects,
+   you would normally have to do this yourself.  Passing
+   --enable-libgcc-rebuild to libstdc++'s configure script means that when
+   you type 'make' next, after libstdc++ is built, then libgcc will also
+   be rebuilt.  If you've given other --enable/--with switches to libstdc++
+   that would require a core library rebuild, then those compiler options
+   will be automatically used when compiling libgcc, such that both
+   libraries will always be built with the same options.
+</P>
+
+<P>Of course, since they are currently separate projects, the libstdc++
+   scripts have no idea where you've built your GCC, so you must tell it.
+   The argument to this enable switch is the path to the GCC build
+   directory.  The GCC configuration documentation refers to this directory
+   as <EM>objdir</EM>; here it will be called <EM>GCCobjdir</EM>.
+</P>
+
+<P>This is a kludge, and will go away eventually.</P>
+
+<HR>
+
+<H3>If you kept your <EM>GCCobjdir</EM></H3>
+<P>Easy as pi, er, pie.  Just pass the pathname to the --enable switch
+   (absolute pathnames are best), and build libstdc++ as you normally
+   would.  When it is finished, 'make' will go over to <EM>GCCobjdir</EM>
+   and build a new libgcc.a for you.
+</P>
+<P>Once that's done, skip down to &quot;Installing the new libgcc.a.&quot;
+</P>
+
+
+<H3>If you deleted your <EM>GCCobjdir</EM>, or never had one</H3>
+<P>Aaargggghhh, you had to make things difficult.  Okay, note for future
+   reference:  if you plan on experimenting with weird features, you'll want
+   to keep your build directories around.  If you're having to re-unpack
+   the GCC source for this step, the same thing applies.
+</P>
+<P>We don't put a whole lot of effort into supporting this, so you might
+   just have to go the long way 'round if you run into difficulties.
+</P>
+<P>You'll have to trick the configure script into believing that libgcc.a
+   has been previously built.  You'll also have to build the libraries that
+   libgcc.a needs.  The steps are these:
+   <OL>
+   <LI>Unpack the GCC sources.  Call this directory <EM>GCCsrcdir</EM>.
+   <LI>&quot;<TT>mkdir <EM>GCCobjdir</EM> && cd <EM>GCCobjdir</EM> &&
+       <EM>GCCsrcdir</EM>/configure --whatever</TT>&quot;
+       <BR>Configure GCC like you normally would.  See
+          <A HREF="http://gcc.gnu.org/install/configure.html">the GCC
+          configuration instructions</A> for all the possible values
+          of <TT>--whatever</TT>.
+   <LI>&quot;<TT>cd libiberty && make</TT>&quot;
+   <LI>&quot;<TT>cd ../gcc; touch libgcc2.ready</TT>&quot;
+   </OL>
+   Now go back to &quot;If you kept your GCCobjdir&quot; and proceed from there.
+</P>
+
+
+<H3>Installing the new libgcc.a</H3>
+<P>The reckless method is
+   <PRE>
+   cd GCCobjdir/gcc
+   make install-libgcc</PRE>
+   This will copy in the new libgcc.a on top of the old one.
+</P>
+<P>The wiser method is to keep the old one around under a different name,
+   and install the new one under another different name, and then make
+   libgcc.a be a hard or soft link to one of the two real libraries.  Or
+   copy one of them by a new name into a directory searched by the linker,
+   and use -l (dash ell) to pick it up before finding the default
+   <EM>other</EM> library.
+</P>
+
+<HR>
+
+<P>If you're <B>really</B> interested in using a particular flag (say,
+   -fhonor-std) under <B>all</B> conditions, then you can edit
+   <EM>GCCsrcdir</EM>/gcc/cp/decl2.c and change the initialization of the
+   appropriate <TT>flag_</TT> variable to 1.  This will turn that flag
+   on by default, which means that libgcc.a, libstdc++.a, libstdc++.so,
+   and everything else you ever do will be built with that feature
+   unless you specifically turn it <EM>off</EM>.
+</P>
+
+
+<!-- ####################################################### -->
+
+<HR>
+<P CLASS="fineprint"><EM>
+$Id: gccrebuild.html,v 1.1 2000/01/14 20:03:09 pme Exp $
+</EM></P>
+
+
+</BODY>
+</HTML>
+

@@ -1,0 +1,197 @@
+# Process this file with autoconf to produce a configure script, like so:
+# aclocal -I m4, autoconf, autoheader, automake
+
+AC_PREREQ(2.13)
+AC_INIT(src/complex.cc)
+AC_CONFIG_AUX_DIR(..)
+
+# Gets and sets build, host, target, *_vendor, *_cpu, *_os, etc.
+AC_CANONICAL_SYSTEM
+
+# We use these options to decide which functions to include.
+AC_ARG_WITH(target-subdir,
+[  --with-target-subdir=SUBDIR
+                           configuring in a subdirectory])
+AC_ARG_WITH(cross-host,
+[  --with-cross-host=HOST  configuring with a cross compiler])
+
+GLIBCPP_CONFIGURE(.)
+AC_LIBTOOL_DLOPEN
+AM_PROG_LIBTOOL
+AM_CONFIG_HEADER(config.h)
+
+# Check for c++ or library specific bits that don't require linking.
+GLIBCPP_CHECK_COMPILER_VERSION
+GLIBCPP_CHECK_CPU
+
+# Enable all the crazy c++ stuff.
+GLIBCPP_ENABLE_DEBUG
+GLIBCPP_ENABLE_CSTDIO
+GLIBCPP_ENABLE_LONG_LONG
+GLIBCPP_ENABLE_THREADS
+#GLIBCPP_ENABLE_NAMESPACES(yes)
+#GLIBCPP_ENABLE_RELIBGCC([../..])
+
+if test -n "$with_cross_host"; then
+
+  # We are being configured with a cross compiler.  AC_REPLACE_FUNCS
+  # may not work correctly, because the compiler may not be able to
+  # link executables.
+
+  xcompiling=1
+  NATIVE=no
+  # If Canadian cross, then don't pick up tools from the build
+  # directory.
+  if test "$build" != "$with_cross_host"; then
+    CANADIAN=yes
+    NULL_TARGET=yes
+  else
+    CANADIAN=no
+    NULL_TARGET=no
+  fi
+
+  case "$target_alias" in
+    *-wince-*)
+	# Configure for Microsoft Windows CE, or whatever they are
+	# currently calling it.
+	AC_DEFINE(HAVE_FLOAT_H)
+
+    	AC_DEFINE(HAVE__FINITE)
+    	AC_DEFINE(HAVE__ISNAN)
+    	AC_DEFINE(HAVE__COPYSIGN)
+    	AC_DEFINE(HAVE__FPCLASS)
+    	AC_DEFINE(HAVE_MODF)
+
+    	ctype_include_dir="config/wince"
+    	AC_SUBST(ctype_include_dir)
+
+    	AC_DEFINE(_GLIBCPP_NEED_MBSTATE_T)
+
+    	AC_DEFINE(_GLIBCPP_BUGGY_FLOAT_COMPLEX)
+    	AC_DEFINE(_GLIBCPP_BUGGY_COMPLEX)
+	;;
+    *)
+	# We assume newlib.  This lets us hard-code the functions we know
+	# we'll have.
+    	AC_DEFINE(HAVE_FINITE)
+    	AC_DEFINE(HAVE_ISNAN)
+    	AC_DEFINE(HAVE_ISNANF)
+    	AC_DEFINE(HAVE_ISINF)
+    	AC_DEFINE(HAVE_ISINFF)
+
+    	ctype_include_dir="config/newlib"
+    	AC_SUBST(ctype_include_dir)
+
+    	AC_DEFINE(_GLIBCPP_NEED_MBSTATE_T)
+
+    	AC_DEFINE(_GLIBCPP_BUGGY_FLOAT_COMPLEX)
+    	AC_DEFINE(_GLIBCPP_BUGGY_COMPLEX)
+    	# need to ceck for faster f versions of math functions, ie sinf?
+	;;
+  esac
+else
+
+  # We are being configured natively. We can do more elaborate tests
+  # that include AC_TRY_COMPILE now, as the linker is assumed to be
+  # working.
+
+  xcompiling=0
+  NATIVE=yes
+  CANADIAN=no
+  NULL_TARGET=no
+
+  # Check for available headers.
+  AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h machine/endian.h \
+  machine/param.h sys/machine.h fp.h locale.h float.h inttypes.h])
+
+  GLIBCPP_CHECK_COMPLEX_SUPPORT
+  GLIBCPP_CHECK_COMPLEX_FLOAT_SUPPORT
+  GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT
+  GLIBCPP_CHECK_MATH_SUPPORT
+  GLIBCPP_CHECK_WCHAR_T_SUPPORT
+  GLIBCPP_CHECK_CTYPE
+
+  AC_FUNC_MMAP
+fi
+
+AM_CONDITIONAL(CANADIAN, test "$CANADIAN" = yes)
+AM_CONDITIONAL(NULL_TARGET, test "$NULL_TARGET" = yes)
+AM_CONDITIONAL(NATIVE, test "$NATIVE" = yes || test "$NULL_TARGET" = yes)
+AM_CONDITIONAL(USE_LIBDIR, test -z "$with_cross_host")
+
+AC_LC_MESSAGES
+
+
+# Sanity checking & User-visible messages.
+# Checks down here, otherwise they get scrolled off before
+# the user will notice.
+if test "$enable_namespaces" = "yes" && test "$enable_libgcc_rebuild" = "no"
+then
+  AC_MSG_WARN([libgcc.a will not match mangled symbols unless it is rebuilt])
+fi
+if test "$enable_namespaces" = "no" && test "$enable_libgcc_rebuild" != "no"
+then
+  # Other things besides namespaces can make this true as well, but none
+  # of them are done automatically... yet
+  AC_MSG_WARN([no point in rebuilding libgcc.a if namespaces aren't used])
+fi
+
+
+if test "${multilib}" = "yes"; then
+  multilib_arg="--enable-multilib"
+else
+  multilib_arg=
+fi
+
+
+# Generate the various Makefiles, include files, and scripts.
+
+# NB: Multilibs need MULTISUBDIR defined correctly in src/Makefile.am
+# so that multilib installs will end up installed in the correct
+# place. To work around this not being passed down from config-ml.in
+# -> top_srcdir/Makefile.am -> top_srcdir/src/Makefile.am, manually
+# append it here.
+
+AC_OUTPUT(mkcheck Makefile src/Makefile math/Makefile libio/Makefile,
+[if test -n "$CONFIG_FILES"; then
+  ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
+  grep '^MULTISUBDIR =' Makefile >> src/Makefile
+fi],
+srcdir=${srcdir}
+host=${host}
+target=${target}
+with_multisubdir=${with_multisubdir}
+ac_configure_args="${multilib_arg} ${ac_configure_args}"
+CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
+glibcpp_basedir=${glibcpp_basedir}
+CC="${CC}"
+CXX="${CXX}"
+)
+
+
+blddir=`pwd`
+# Generate mkcheck having execute privs
+AC_OUTPUT_COMMANDS([chmod +x $blddir/mkcheck])
+
+# Generate bits/c++config.h
+# NB: This must be the first generated file as others include it. . .
+AC_OUTPUT_COMMANDS([$srcdir/mkc++config $blddir $srcdir])
+
+# Generate bits/std_limits.h and src/limitsMEMBERS.cc
+AC_OUTPUT_COMMANDS([$srcdir/mknumeric_limits $blddir $srcdir $xcompiling])
+
+# Generate bits/c++threads.h
+AC_OUTPUT_COMMANDS([cp $srcdir/config/$THREADH $blddir/bits/c++threads.h])
+
+# Generate bits/c++io.h and src/c++io.cc
+AC_OUTPUT_COMMANDS([cp $srcdir/config/$CSTDIO_H $blddir/bits/c++io.h])
+AC_OUTPUT_COMMANDS([cp $srcdir/config/$CSTDIO_CC $blddir/src/c++io.cc])
+
+
+
+
+
+
+
+
+

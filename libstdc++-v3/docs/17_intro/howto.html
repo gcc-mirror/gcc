@@ -1,0 +1,156 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="AUTHOR" CONTENT="pme@sourceware.cygnus.com (Phil Edwards)">
+   <META NAME="KEYWORDS" CONTENT="HOWTO, libstdc++, gcc, g++, libg++, STL">
+   <META NAME="DESCRIPTION" CONTENT="HOWTO for libstdc++ chapter 17.">
+   <META NAME="GENERATOR" CONTENT="vi and eight fingers">
+   <TITLE>libstdc++-v3 HOWTO:  Chapter 17</TITLE>
+<LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/docs/18_support/">
+<LINK REL=StyleSheet HREF="../lib3styles.css">
+<!-- $Id: howto.html,v 1.10 2000/04/18 22:05:49 pme Exp $ -->
+</HEAD>
+<BODY>
+
+<H1 CLASS="centered"><A NAME="top">Chapter 17:  Library Introduction</A></H1>
+
+<P>Chapter 17 is actually a list of definitions and descriptions used
+   in the following chapters of the Standard when describing the actual
+   library.  Here, we use &quot;Introduction&quot; as an introduction
+   to the <EM>GNU implementation of</EM> the ISO Standard C++ Library.
+</P>
+
+
+<!-- ####################################################### -->
+<HR>
+<H1>Contents</H1>
+<UL>
+   <LI><A HREF="#2">The Standard C++ header files</A>
+   <LI><A HREF="#3">Thread-safety</A>
+   <LI><A HREF="#4"><TT>&lt;foo&gt;</TT> vs <TT>&lt;foo.h&gt;</TT></A>
+</UL>
+
+<HR>
+
+<!-- ####################################################### -->
+
+<H2><A NAME="2">The Standard C++ header files</A></H2>
+   <P>The Standard C++ Library specifies 50 header files that must be
+      available to all hosted implementations.  Actually, the word
+      &quot;files&quot; is a misnomer, since the contents of the headers
+      don't necessarily have to be in any kind of external file.  The
+      only rule is that when you <TT>#include</TT> a certain header, the
+      contents of that header, as defined by the Standard, become
+      available to you, no matter how.
+   </P>
+   <P>The names of the headers can be easily seen in
+      <A HREF="../testsuite/17_intro/headers.cc">this source code</A>,
+      which is a small testbed we use to make certain that the headers
+      all compile and run.
+   </P>
+
+<HR>
+<H2><A NAME="3">Thread-safety</A></H2>
+   <P>This is a thorny issue that gets brought up on the libstdc++-v3
+      and gcc mailing lists on a regular basis (probably by a cron job).
+      This entry will mention a very little bit about the general MT
+      issues with libstdc++.  The latest status and quick notes will be
+      in FAQ 5.6.  Some discussion about threadsafe containers will be
+      in section 6.8 (the HOWTOs on containers).
+   </P>
+   <P>The libstdc++ code (all of it, not just the containers) has been
+      designed so that thread-safety will be easily possible.  The first
+      (!) problem is finding a <EM>fast</EM> method of implementation
+      portable to all platforms.  A minor problem that pops up every so
+      often is different interpretations of what &quot;thread-safe&quot;
+      means for a library (not a general program).  We currently use the
+      <A HREF="http://www.sgi.com/Technology/STL/thread_safety.html">same
+      definition that SGI</A> uses for their STL subset.
+   </P>
+   <P>A recent journal article has described &quot;atomic integer
+      operations,&quot; which would allow us to, well, perform updates
+      on integers atomically, and without requiring an explicit mutex
+      lock.  This appears promising, but the major difficulty is that
+      these operations &quot;may not be available on all systems, and
+      if they are, may have different interfaces.&quot; [quoting from
+      mailing list messages]
+   </P>
+   <P>Here is a small link farm to threads (no pun) in the mail archives
+      that discuss the threading problem.  Each link is to the first
+      relevent message in the thread; from there you can use
+      &quot;Thread Next&quot; to move down the thread.  This farm is in
+      latest-to-oldest order.
+      <UL>
+        <LI>
+      </UL>
+      <BR>
+      Here are discussions that took place before the current snapshot;
+      they are still relevant and instructive.
+      <BR>
+      <UL>
+        <LI>One way of preventing memory leaks by the old default memory
+            allocator in multithreaded code is
+            <A HREF="/ml/gcc/1999-11/msg00431.html">discussed here</A>.
+        <LI><A HREF="/ml/libstdc++/1999-q3/msg00167.html">This thread
+            concerns strings</A>.
+        <LI><A HREF="/ml/libstdc++/1999-q2/msg00339.html">So does this
+            one</A>.  This initial message also refers to another
+            thread in the GCC mailing list...
+        <LI><A HREF="/ml/egcs/1999-06/msg00680.html">which is here</A>,
+            and goes on for some time.  Ironically, the initial message
+            in this thread also mentions another threading thread...
+        <LI><A HREF="/ml/egcs/1999-06/msg00771.html">beginning here</A>,
+            and talking about pthreads.  (Note that a much more recent
+            message from the first thread in this list notes that
+            <A HREF="/ml/libstdc++/1999-q3/msg00176.html">pthreads
+            should not be used as a starting point</A> for making
+            libstdc++ threadsafe.)
+        <LI><A HREF="/ml/libstdc++/1999-q2/msg00168.html">This
+            message</A>,
+            <A HREF="/ml/libstdc++/1999-q2/msg00159.html">this one</A>,
+            and <A HREF="/ml/libstdc++/1999-q2/msg00156.html">this one</A>
+            are the tops of related threads (all within the same time
+            period) discussing threading and the IO library.  Much of it
+            is dealing with the C library, but C++ is included as well.
+      </UL>
+   </P>
+   <P>This section will be updated as new and interesting issues come
+      to light.
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+<HR>
+<H2><A NAME="4"><TT>&lt;foo&gt;</TT> vs <TT>&lt;foo.h&gt;</TT></A></H2>
+   <P>The new-style headers are fully supported in libstdc++-v3.  The compiler
+      itself fully supports namespaces.  However, at the moment, the compiler
+      treats std:: as the global namespace by default.
+   </P>
+   <P>For those of you new to ISO C++98, no, that isn't a typo, the headers
+      really have new names.  Marshall Cline's C++ FAQ Lite has a good
+      explanation in
+<A HREF="http://www.cerfnet.com/~mpcline/On-Line-C++-FAQ/coding-standards.html#[25.4]">item [25.4]</A>.
+   </P>
+   <P>Return <A HREF="#top">to top of page</A> or
+      <A HREF="../faq/index.html">to the FAQ</A>.
+   </P>
+
+
+
+<!-- ####################################################### -->
+
+<HR>
+<P CLASS="fineprint"><EM>
+Comments and suggestions are welcome, and may be sent to
+<A HREF="mailto:pme@sourceware.cygnus.com">Phil Edwards</A> or
+<A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
+<BR> $Id: howto.html,v 1.10 2000/04/18 22:05:49 pme Exp $
+</EM></P>
+
+
+</BODY>
+</HTML>
+
+
