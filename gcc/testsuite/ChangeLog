@@ -1,3 +1,8 @@
+2000-09-12  Andreas Jaeger  <aj@suse.de>
+
+	* gcc.c-torture/execute/widechar-2.c: New test for wchar_t
+	constant by Ulrich Drepper <drepper@redhat.com>.
+
 Tue Sep 12 18:32:07 2000  J"orn Rennecke <amylaar@redhat.co.uk>
 
 	* gcc.c-torture/compile/981006-1.x: No -fpic for sh-coff / sh-hms.
