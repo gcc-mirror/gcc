@@ -113,6 +113,10 @@ static int frame_base_offset;
 
 static rtx find_addr_reg ();
 static void sparc_init_modes ();
+
+#ifdef DWARF2_DEBUGGING_INFO
+extern char *dwarf2out_cfi_label ();
+#endif
 
 /* Option handling.  */
 
@@ -2888,9 +2892,6 @@ sparc_init_modes ()
    N_REGS is the number of 4-byte regs saved thus far.  This applies even to
    v9 int regs as it simplifies the code.  */
 
-#ifdef __GNUC__
-__inline__
-#endif
 static int
 save_regs (file, low, high, base, offset, n_regs, real_offset)
      FILE *file;
@@ -2930,7 +2931,7 @@ save_regs (file, low, high, base, offset, n_regs, real_offset)
 #ifdef DWARF2_DEBUGGING_INFO
 		if (write_symbols == DWARF2_DEBUG)
 		  {
-		    char *l = (char *) dwarf2out_cfi_label ();
+		    char *l = dwarf2out_cfi_label ();
 		    dwarf2out_reg_save (l, i, real_offset + 4 * n_regs);
 		    dwarf2out_reg_save (l, i+1, real_offset + 4 * n_regs + 4);
 		  }
@@ -2967,9 +2968,6 @@ save_regs (file, low, high, base, offset, n_regs, real_offset)
    N_REGS is the number of 4-byte regs saved thus far.  This applies even to
    v9 int regs as it simplifies the code.  */
 
-#ifdef __GNUC__
-__inline__
-#endif
 static int
 restore_regs (file, low, high, base, offset, n_regs)
      FILE *file;
@@ -3199,7 +3197,7 @@ output_function_prologue (file, size, leaf_function)
 #ifdef DWARF2_DEBUGGING_INFO
   if (write_symbols == DWARF2_DEBUG && actual_fsize)
     {
-      char *label = (char *) dwarf2out_cfi_label ();
+      char *label = dwarf2out_cfi_label ();
 
       /* The canonical frame address refers to the top of the frame.  */
       dwarf2out_def_cfa (label, (leaf_function ? STACK_POINTER_REGNUM
@@ -4699,7 +4697,8 @@ sparc_flat_compute_frame_size (size)
    DOUBLEWORD_OP is either "std" for save, "ldd" for restore.  */
 
 void
-sparc_flat_save_restore (file, base_reg, offset, gmask, fmask, word_op, doubleword_op, base_offset)
+sparc_flat_save_restore (file, base_reg, offset, gmask, fmask, word_op,
+			 doubleword_op, base_offset)
      FILE *file;
      char *base_reg;
      unsigned int offset;
@@ -4742,7 +4741,7 @@ sparc_flat_save_restore (file, base_reg, offset, gmask, fmask, word_op, doublewo
 #ifdef DWARF2_DEBUGGING_INFO
 		      if (write_symbols == DWARF2_DEBUG)
 			{
-			  char *l = (char *) dwarf2out_cfi_label ();
+			  char *l = dwarf2out_cfi_label ();
 			  dwarf2out_reg_save (l, regno, offset + base_offset);
 			  dwarf2out_reg_save
 			    (l, regno+1, offset+base_offset + UNITS_PER_WORD);
@@ -4894,7 +4893,7 @@ sparc_flat_output_function_prologue (file, size)
 #ifdef DWARF2_DEBUGGING_INFO
 	  if (write_symbols == DWARF2_DEBUG)
 	    {
-	      char *l = (char *) dwarf2out_cfi_label ();
+	      char *l = dwarf2out_cfi_label ();
 	      if (gmask & FRAME_POINTER_MASK)
 		{
 		  dwarf2out_reg_save (l, FRAME_POINTER_REGNUM,
@@ -4954,7 +4953,7 @@ sparc_flat_output_function_prologue (file, size)
 #ifdef DWARF2_DEBUGGING_INFO
 	  if (write_symbols == DWARF2_DEBUG)
 	    {
-	      char *l = (char *) dwarf2out_cfi_label ();
+	      char *l = dwarf2out_cfi_label ();
 	      if (gmask & FRAME_POINTER_MASK)
 		{
 		  dwarf2out_reg_save (l, FRAME_POINTER_REGNUM,
