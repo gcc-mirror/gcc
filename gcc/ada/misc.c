@@ -237,6 +237,9 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
 
   switch (code)
     {
+    default:
+      return 0;
+
     case OPT_I:
       q = xmalloc (sizeof("-I") + strlen (arg));
       strcpy (q, "-I");
@@ -246,7 +249,7 @@ gnat_handle_option (size_t scode, const char *arg, int value ATTRIBUTE_UNUSED)
       break;
 
     case OPT_fRTS:
-      gnat_argv[gnat_argc] = "-fRTS";
+      gnat_argv[gnat_argc] = xstrdup ("-fRTS");
       gnat_argc++;
       break;
 
