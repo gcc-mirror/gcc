@@ -1,3 +1,8 @@
+2001-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* unroll.c (loop_iterations): If we cannot prove iteration variable
+	is set once in each iteration, punt.
+
 Sun Jan 14 00:23:15 2001  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.md ("strlenhi"): Remove clobber of input address.
