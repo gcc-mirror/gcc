@@ -30,7 +30,7 @@ dg-init
 
 # Gather a list of all tests, with the exception of those in directories
 # that are handled specially.
-set all [lsort [find $srcdir/$subdir *.C]]
+set tests [lsort [find $srcdir/$subdir *.C]]
 set tests [prune $tests $srcdir/$subdir/bprob/*]
 set tests [prune $tests $srcdir/$subdir/debug/*]
 set tests [prune $tests $srcdir/$subdir/gcov/*]
