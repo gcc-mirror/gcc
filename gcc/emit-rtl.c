@@ -2258,7 +2258,9 @@ try_split (pat, trial, last)
 
       /* Return either the first or the last insn, depending on which was
 	 requested.  */
-      return last ? prev_active_insn (after) : next_active_insn (before);
+      return last 
+		? (after ? prev_active_insn (after) : last_insn) 
+		: next_active_insn (before);
     }
 
   return trial;

@@ -1,3 +1,8 @@
+2000-01-19  Clinton Popetz  <cpopetz@cygnus.com>
+
+	* emit-rtl.c (try_split): Return last_insn if we split the 
+	last_insn.
+
 Thu Jan 20 01:01:23 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* i386-protos.h (ix86_compute_frame_size): Remove prototype.
