@@ -6321,13 +6321,13 @@ sparc64_initialize_trampoline (tramp, fnaddr, cxt)
    */
 
   emit_move_insn (gen_rtx_MEM (SImode, tramp),
-		  GEN_INT (0x83414000));
+		  GEN_INT (trunc_int_for_mode (0x83414000, SImode)));
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 4)),
-		  GEN_INT (0xca586018));
+		  GEN_INT (trunc_int_for_mode (0xca586018, SImode)));
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 8)),
-		  GEN_INT (0x81c14000));
+		  GEN_INT (trunc_int_for_mode (0x81c14000, SImode)));
   emit_move_insn (gen_rtx_MEM (SImode, plus_constant (tramp, 12)),
-		  GEN_INT (0xca586010));
+		  GEN_INT (trunc_int_for_mode (0xca586010, SImode)));
   emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, 16)), cxt);
   emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, 24)), fnaddr);
   emit_insn (gen_flushdi (validize_mem (gen_rtx_MEM (DImode, tramp))));
