@@ -1,3 +1,8 @@
+2003-05-27  Aaron W. LaFramboise  <awlaframboise@aol.com>
+
+	* config/i386/mingw32.h (STANDARD_INCLUDE_DIR): Update.
+	(MD_STARTFILE_PREFIX): Define.
+
 2003-05-27  Denis Chertykov  <denisc@overta.ru>
 
 	* cselib.c (cselib_invalidate_regno): Abort if hardreg have a
