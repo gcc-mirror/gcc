@@ -1,3 +1,9 @@
+2005-02-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR ada/19902
+	* ada/acats/tests/cxa/cxa3004.a: Remove.
+	* ada/acats/tests/cxb/cxb30061.am: Likewise.
+
 2005-02-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20073
