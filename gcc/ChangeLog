@@ -1,3 +1,9 @@
+2004-03-24  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR preprocessor/14438
+	* cpplib.c (do_pragma): Remove line_change call after pragma
+	handler.
+
 2004-03-22  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	BackPort:

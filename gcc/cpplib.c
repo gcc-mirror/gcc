@@ -1122,9 +1122,6 @@ do_pragma (pfile)
       if (pfile->cb.line_change)
 	(*pfile->cb.line_change) (pfile, pragma_token, false);
       (*p->u.handler) (pfile);
-      if (pfile->cb.line_change)
-	(*pfile->cb.line_change) (pfile, pfile->cur_token, false);
-      
     }
   else if (pfile->cb.def_pragma)
     {
