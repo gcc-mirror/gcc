@@ -1,3 +1,11 @@
+2001-08-31  Geoffrey Keating  <geoffk@redhat.com>
+
+	* g++.dg/abi/empty4.C: Allow for 16-bit ints.
+
+	* g++.dg/special/initp1.C (X): Allow for 16-bit ints.
+
+	* gcc.c-torture/unsorted/bcopy.c (BYTES): Honor STACK_SIZE.
+
 2001-08-30  Geoffrey Keating  <geoffk@redhat.com>
 
 	* gcc.c-torture/execute/longlong.c (alpha_ep_extbl_i_eq_0): Allow
