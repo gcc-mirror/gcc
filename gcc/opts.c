@@ -129,6 +129,10 @@ static size_t find_opt (const char *, int);
 static int common_handle_option (size_t scode, const char *arg, int value);
 static void handle_param (const char *);
 static void set_Wextra (int);
+static unsigned int handle_option (char **argv, unsigned int lang_mask);
+static char *write_langs (unsigned int lang_mask);
+static void complain_wrong_lang (const char *, const struct cl_option *,
+				 unsigned int lang_mask);
 
 /* Perform a binary search to find which option the command-line INPUT
    matches.  Returns its index in the option array, and N_OPTS
@@ -200,7 +204,7 @@ find_opt (const char *input, int lang_mask)
 
 	  /* If we haven't remembered a prior match, remember this
 	     one.  Any prior match is necessarily better.  */
-	  if (match_wrong_lang != cl_options_count)
+	  if (match_wrong_lang == cl_options_count)
 	    match_wrong_lang = mn;
 	}
 
@@ -230,15 +234,62 @@ integral_argument (const char *arg)
   return -1;
 }
 
-/* Handle the switch beginning at ARGV, with ARGC remaining.  */
-int
-handle_option (int argc ATTRIBUTE_UNUSED, char **argv, int lang_mask)
+/* Return a malloced slash-separated list of languages in MASK.  */
+static char *
+write_langs (unsigned int mask)
+{
+  unsigned int n = 0, len = 0;
+  const char *lang_name;
+  char *result;
+
+  for (n = 0; (lang_name = lang_names[n]) != 0; n++)
+    if (mask & (1U << n))
+      len += strlen (lang_name) + 1;
+
+  result = xmalloc (len);
+  len = 0;
+  for (n = 0; (lang_name = lang_names[n]) != 0; n++)
+    if (mask & (1U << n))
+      {
+	if (len)
+	  result[len++] = '/';
+	strcpy (result + len, lang_name);
+	len += strlen (lang_name);
+      }
+
+  result[len] = 0;
+
+  return result;
+}
+
+/* Complain that switch OPT_INDEX does not apply to this front end.  */
+static void
+complain_wrong_lang (const char *text, const struct cl_option *option,
+		     unsigned int lang_mask)
+{
+  char *ok_langs, *bad_lang;
+
+  ok_langs = write_langs (option->flags);
+  bad_lang = write_langs (lang_mask);
+
+  /* Eventually this should become a hard error IMO.  */
+  warning ("command line option \"%s\" is valid for %s but not for %s",
+	   text, ok_langs, bad_lang);
+
+  free (ok_langs);
+  free (bad_lang);
+}
+
+/* Handle the switch beginning at ARGV for the language indicated by
+   LANG_MASK.  Returns the number of switches consumed.  */
+static unsigned int
+handle_option (char **argv, unsigned int lang_mask)
 {
   size_t opt_index;
   const char *opt, *arg = 0;
   char *dup = 0;
   int value = 1;
-  int result = 0;
+  unsigned int result = 0;
   const struct cl_option *option;
 
   opt = argv[0];
@@ -273,7 +324,8 @@ handle_option (int argc ATTRIBUTE_UNUSED, char **argv, int lang_mask)
 
       option = &cl_options[opt_index];
 
-      /* Reject negative form of switches that don't take negatives.  */
+      /* Reject negative form of switches that don't take negatives as
+	 unrecognized.  */
       if (!value && (option->flags & CL_REJECT_NEGATIVE))
 	goto done;
 
@@ -308,6 +360,14 @@ handle_option (int argc ATTRIBUTE_UNUSED, char **argv, int lang_mask)
 	  result = 2;
 	}
 
+      /* Now we've swallowed any potential argument, complain if this
+	 is a switch for a different front end.  */
+      if (!(option->flags & (lang_mask | CL_COMMON)))
+	{
+	  complain_wrong_lang (argv[0], option, lang_mask);
+	  goto done;
+	}
+
       /* If the switch takes an integer, convert it.  */
       if (arg && (option->flags & CL_UINTEGER))
 	{
@@ -333,6 +393,26 @@ handle_option (int argc ATTRIBUTE_UNUSED, char **argv, int lang_mask)
   if (dup)
     free (dup);
   return result;
+}
+
+/* Decode and handle the vector of command line options.  LANG_MASK
+   contains has a single bit set representing the current
+   language.  */
+void
+handle_options (unsigned int argc, char **argv, unsigned int lang_mask)
+{
+  unsigned int n, i;
+
+  for (i = 1; i < argc; i += n)
+    {
+      n = handle_option (argv + i, lang_mask);
+
+      if (!n)
+	{
+	  n = 1;
+	  error ("unrecognized command line option \"%s\"", argv[i]);
+	}
+    }
 }
 
 /* Handle target- and language-independent options.  Return zero to

@@ -4735,58 +4735,7 @@ parse_options_and_default_flags (int argc, char **argv)
   OPTIMIZATION_OPTIONS (optimize, optimize_size);
 #endif
 
-  /* Perform normal command line switch decoding.  */
-  for (i = 1; i < argc;)
-    {
-      int processed;
-
-      /* Give the language a chance to decode the option for itself.  */
-      processed = handle_option (argc - i, argv + i, lang_mask);
-
-      if (processed)
-	i += processed;
-      else
-	{
-	  const char *option = NULL;
-	  const char *lang = NULL;
-	  unsigned int j;
-
-	  /* It is possible that the command line switch is not valid for the
-	     current language, but it is valid for another language.  In order
-	     to be compatible with previous versions of the compiler (which
-	     did not issue an error message in this case) we check for this
-	     possibility here.  If we do find a match, then if extra_warnings
-	     is set we generate a warning message, otherwise we will just
-	     ignore the option.  */
-	  for (j = 0; j < ARRAY_SIZE (documented_lang_options); j++)
-	    {
-	      option = documented_lang_options[j].option;
-
-	      if (option == NULL)
-		lang = documented_lang_options[j].description;
-	      else if (! strncmp (argv[i], option, strlen (option)))
-		break;
-	    }
-
-	  if (j != ARRAY_SIZE (documented_lang_options))
-	    {
-	      if (extra_warnings)
-		{
-		  warning ("ignoring command line option '%s'", argv[i]);
-		  if (lang)
-		    warning
-		      ("(it is valid for %s but not the selected language)",
-		       lang);
-		}
-	    }
-	  else if (argv[i][0] == '-' && argv[i][1] == 'g')
-	    warning ("`%s': unknown or unsupported -g option", &argv[i][2]);
-	  else
-	    error ("unrecognized option `%s'", argv[i]);
-
-	  i++;
-	}
-    }
+  handle_options (argc, argv, lang_mask);
 
   if (flag_pie)
     flag_pic = flag_pie;

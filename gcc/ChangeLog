@@ -1,3 +1,17 @@
+2003-06-25  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-opts.c (complain_wrong_lang, write_langs): Remove.
+	(c_common_handle_option): Complaints about wrong language are
+	handled in opts.c now.
+	* opts.c (complain_wrong_lang, write_langs, handle_options): New.
+	(find_opt): Fix thinko.
+	(handle_option): Update prototype.  Complain about switches for
+	a different front end.
+	* opts.h (lang_names, handle_options): New.
+	(handle_option): Remove.
+	* opts.sh: Write out language names array.
+	* toplev.c (parse_options_and_default_flags): Use handle_options.
+
 2003-06-25  H.J. Lu <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (MASK_SSE1): Removed.

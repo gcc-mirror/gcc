@@ -102,8 +102,6 @@ static size_t include_cursor;
 
 static void missing_arg (enum opt_code);
 static void set_Wimplicit (int);
-static void complain_wrong_lang (size_t, int);
-static void write_langs (char *, int);
 static void print_help (void);
 static void handle_OPT_d (const char *);
 static void set_std_cxx98 (int);
@@ -245,7 +243,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
 {
   const struct cl_option *option = &cl_options[scode];
   enum opt_code code = (enum opt_code) scode;
-  int result = 1, lang_mask;
+  int result = 1;
 
   if (code == N_OPTS)
     {
@@ -256,13 +254,6 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       else
 	  error ("too many filenames given.  Type %s --help for usage",
 		 progname);
-      return 1;
-    }
-
-  lang_mask = lang_flags[(c_language << 1) + flag_objc];
-  if (!(option->flags & lang_mask))
-    {
-      complain_wrong_lang (code, value);
       return 1;
     }
 
@@ -1509,42 +1500,6 @@ handle_OPT_d (const char *arg)
 	flag_dump_includes = 1;
 	break;
       }
-}
-
-/* Write a slash-separated list of languages in FLAGS to BUF.  */
-static void
-write_langs (char *buf, int flags)
-{
-  *buf = '\0';
-  if (flags & CL_C)
-    strcat (buf, "C");
-  if (flags & CL_ObjC)
-    {
-      if (*buf)
-	strcat (buf, "/");
-      strcat (buf, "ObjC");
-    }
-  if (flags & CL_CXX)
-    {
-      if (*buf)
-	strcat (buf, "/");
-      strcat (buf, "C++");
-    }
-}
-
-/* Complain that switch OPT_INDEX does not apply to this front end.  */
-static void
-complain_wrong_lang (size_t opt_index, int on)
-{
-  char ok_langs[60], bad_langs[60];
-  int ok_flags = cl_options[opt_index].flags;
-
-  write_langs (ok_langs, ok_flags);
-  write_langs (bad_langs, ~ok_flags);
-  /* Eventually this should become a hard error.  */
-  warning ("\"-%c%s%s\" is valid for %s but not for %s",
-	   cl_options[opt_index].opt_text[0], on ? "" : "no-",
-	   cl_options[opt_index].opt_text + 1, ok_langs, bad_langs);
 }
 
 /* Handle --help output.  */
