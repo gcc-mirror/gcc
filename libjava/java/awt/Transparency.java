@@ -40,7 +40,7 @@ package java.awt;
 /**
  * A common transparency mode for layering graphics.
  *
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @since 1.1
  * @status updated to 1.4
  */

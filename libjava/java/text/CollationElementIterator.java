@@ -53,9 +53,9 @@ import java.util.ArrayList;
  * <code>getCollationElementIterator</code> method on 
  * <code>RuleBasedCollator</code>.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Tom Tromey <tromey@cygnus.com>
- * @author Guilhem Lavaux <guilhem.lavaux@free.fr>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Tom Tromey (tromey@cygnus.com)
+ * @author Guilhem Lavaux (guilhem.lavaux@free.fr)
  */
 public final class CollationElementIterator
 {

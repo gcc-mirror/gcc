@@ -1,5 +1,5 @@
 /* java.lang.reflect.Modifier
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,8 +50,8 @@ package java.lang.reflect;
  * Sun does it, but I'm willing to bet money that it is.
  *
  * @author John Keiser
- * @author Tom Tromey <tromey@cygnus.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Tom Tromey (tromey@cygnus.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Member#getModifiers()
  * @see Method#getModifiers()
  * @see Field#getModifiers()

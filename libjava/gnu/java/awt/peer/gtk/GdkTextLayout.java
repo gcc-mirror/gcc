@@ -1,5 +1,5 @@
 /* GdkTextLayout.java
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,24 +38,24 @@ exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
 
+import gnu.classpath.Configuration;
+import gnu.java.awt.peer.ClasspathTextLayoutPeer;
+
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphMetrics;
 import java.awt.font.GlyphVector;
+import java.awt.font.TextAttribute;
 import java.awt.font.TextHitInfo;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
-import java.text.CharacterIterator;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
-import java.awt.font.TextAttribute;
-
-import gnu.classpath.Configuration;
-import gnu.java.awt.peer.ClasspathTextLayoutPeer;
+import java.text.CharacterIterator;
 
 /**
  * This is an implementation of the text layout peer interface which
@@ -82,7 +82,7 @@ public class GdkTextLayout
   private native void indexToPos(int idx, double[] pos);
   private native void initState ();
   private native void dispose ();
-  native static void initStaticState ();
+  static native void initStaticState();
   private final int native_state = GtkGenericPeer.getUniqueInteger ();
   protected void finalize ()
   {

@@ -1,5 +1,5 @@
 /* ContainerOrderFocusTraversalPolicy.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,7 +57,7 @@ import java.io.Serializable;
  * can override these acceptance criteria by overriding accept.
  *
  * @author Michael Koch
- * @author Thomas Fitzsimmons <fitzsim@redhat.com>
+ * @author Thomas Fitzsimmons (fitzsim@redhat.com)
  * @since 1.4
  */
 public class ContainerOrderFocusTraversalPolicy extends FocusTraversalPolicy

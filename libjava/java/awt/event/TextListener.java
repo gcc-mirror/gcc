@@ -1,5 +1,5 @@
 /* TextListener.java -- listen for text changes
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ import java.util.EventListener;
  * This interface is for classes that wish to be notified when text changes
  * in a component.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see TextEvent
  * @since 1.1
  * @status updated to 1.4

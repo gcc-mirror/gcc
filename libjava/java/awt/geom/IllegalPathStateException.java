@@ -41,7 +41,7 @@ package java.awt.geom;
  * Thrown when an operation on a path is in an illegal state, such as appending
  * a segment to a <code>GeneralPath</code> without an initial moveto.
  *
- * @author Tom Tromey <tromey@cygnus.com>
+ * @author Tom Tromey (tromey@cygnus.com)
  * @see GeneralPath
  * @status updated to 1.4
  */

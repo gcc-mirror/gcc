@@ -1,5 +1,5 @@
 /* JToggleButton.java -- 
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,16 +53,15 @@ import javax.swing.plaf.ButtonUI;
  * for the implementations of radio buttons (<code>JRadioButton</code>)
  * and check boxes (<code>JCheckBox</code>).
  *
- * @author Michael Koch  <konqueror@gmx.de>
- * @author Graydon Hoare  <graydon@redhat.com>
- * @author Andrew John Hughes  <gnu_andrew@member.fsf.org>
+ * @author Michael Koch  (konqueror@gmx.de)
+ * @author Graydon Hoare  (graydon@redhat.com)
+ * @author Andrew John Hughes  (gnu_andrew@member.fsf.org)
  * @see JRadioButton
  * @see JCheckBox
  * @since 1.2
  */
 public class JToggleButton extends AbstractButton implements Accessible
 {
-  
   /**
    * This class provides accessibility support for the toggle button.
    */

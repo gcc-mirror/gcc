@@ -1,5 +1,5 @@
 /* SAXSource.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,7 +48,7 @@ import org.xml.sax.XMLReader;
  * Specifies a SAX XML source. This is a tuple of input source and SAX
  * parser.
  *
- * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
+ * @author (a href='mailto:dog@gnu.org'>Chris Burdess</a)
  */
 public class SAXSource
   implements Source

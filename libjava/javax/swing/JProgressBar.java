@@ -60,7 +60,7 @@ import javax.swing.plaf.ProgressBarUI;
  * </p>
  * 
  * <table>
- * <tr><th> Property         </td><th> Stored in   </td><th> Bound? </td></tr>
+ * <tr><th> Property         </th><th> Stored in   </th><th> Bound? </th></tr>
  * <tr><td> borderPainted    </td><td> progressBar </td><td> yes    </td></tr>
  * <tr><td> changeListeners  </td><td> progressBar </td><td> no     </td></tr>
  * <tr><td> indeterminate    </td><td> progressBar </td><td> yes    </td></tr> 

@@ -1,5 +1,5 @@
 /* Autoscroll.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ import java.awt.Point;
  * subject of the operation on a region of a scrollable GUI control that
  * is not currently visible to the user.
  *
- * @author Michael Koch <konqueror@gmx.de>
+ * @author Michael Koch (konqueror@gmx.de)
  * @since 1.2
  * @status updated to 1.4
  */

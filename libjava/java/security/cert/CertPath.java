@@ -1,5 +1,5 @@
 /* CertPath.java -- a sequence of certificates
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -54,7 +54,7 @@ import java.util.List;
  * the path is consolidated into a {@link CertPathRep}, which preserves the
  * data regardless of the underlying implementation of the path.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.4
  * @status updated to 1.4
  */
@@ -63,7 +63,7 @@ public abstract class CertPath implements Serializable
   /**
    * The serialized representation of a path.
    *
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    */
   protected static class CertPathRep implements Serializable
   {

@@ -1,5 +1,5 @@
 /* IllegalBlockingModeException.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,7 +39,7 @@ package java.nio.channels;
 
 
 /**
- * @author Michael Koch <konqueror@gmx.de>
+ * @author Michael Koch (konqueror@gmx.de)
  * @since 1.4
  *
  * Written using JDK 1.4.1 Online API from Sun

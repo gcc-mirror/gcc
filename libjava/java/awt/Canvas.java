@@ -54,8 +54,8 @@ import javax.accessibility.AccessibleRole;
  * full-scale custom components.
  *
  * @author Original author unknown
- * @author Tom Tromey  <tromey@redhat.com>
- * @author Andrew John Hughes  <gnu_andrew@member.fsf.org>
+ * @author Tom Tromey  (tromey@redhat.com)
+ * @author Andrew John Hughes  (gnu_andrew@member.fsf.org)
  * @since 1.0
  */
 

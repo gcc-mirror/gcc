@@ -42,7 +42,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.Raster;
 
 /**
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @see Paint
  * @since 1.1
  * @status updated to 1.4

@@ -40,7 +40,7 @@ import gnu.java.awt.BitMaskExtent;
 import gnu.java.awt.Buffers;
 
 /**
- * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
+ * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
  */
 public class SinglePixelPackedSampleModel extends SampleModel
 {

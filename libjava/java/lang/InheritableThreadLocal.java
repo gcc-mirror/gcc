@@ -1,5 +1,5 @@
 /* InheritableThreadLocal -- a ThreadLocal which inherits values across threads
-   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -55,8 +55,8 @@ import java.util.WeakHashMap;
  * is in transferring items like User ID or Transaction ID across threads
  * automatically.
  *
- * @author Mark Wielaard <mark@klomp.org>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Mark Wielaard (mark@klomp.org)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see ThreadLocal
  * @since 1.2
  * @status updated to 1.4

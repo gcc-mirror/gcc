@@ -1,5 +1,5 @@
 /* List.java -- An ordered collection which allows indexed access
-   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -66,7 +66,7 @@ package java.util;
  * hashCode or equals.
  *
  * @author Original author unknown
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Collection
  * @see Set
  * @see ArrayList

@@ -52,7 +52,7 @@ import java.util.ResourceBundle;
  * normally handled automatically, but an application can override
  * values as desired using this class.
  *
- * @author Tom Tromey <tromey@cygnus.com>
+ * @author Tom Tromey (tromey@cygnus.com)
  * @author Aaron M. Renn (arenn@urbanophile.com)
  * @date February 24, 1999
  */

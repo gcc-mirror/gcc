@@ -1,6 +1,6 @@
 /* InvalidAlgorithmParameterException.java -- an invalid parameter to a
    security algorithm
-   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,7 @@ package java.security;
 /**
  * Thrown for an invalid security algorithm parameter.
  *
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @since 1.2
  * @status updated to 1.4
  */

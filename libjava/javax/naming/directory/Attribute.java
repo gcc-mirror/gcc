@@ -1,5 +1,5 @@
 /* Attribute.java --
-   Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 
 /**
- * @author Warren Levy <warrenl@redhat.com>
+ * @author Warren Levy (warrenl@redhat.com)
  * @date June 14, 2001
  */
 public interface Attribute extends Cloneable, Serializable

@@ -1,5 +1,5 @@
 /* GuardedObject.java -- An object protected by a Guard
-   Copyright (C) 1998, 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1998, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,7 +50,7 @@ import java.io.Serializable;
  * <code>Guard</code>.  If the <code>Guard</code> disallows access, an
  * exception will be thrown.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @since 1.1
  * @status updated to 1.4
  */

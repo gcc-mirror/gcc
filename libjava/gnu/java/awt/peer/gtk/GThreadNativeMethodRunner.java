@@ -3,7 +3,7 @@
    --portable-native-sync option. 
    This is used by gthread-jni.c
    
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,10 +40,11 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 package gnu.java.awt.peer.gtk;
+
 import java.lang.ref.WeakReference;
-import java.util.Set;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Set;
 
 /** Implements pthread_create(), under glib's gthread abstraction, for use
     with GNU Classpath's --portable-native-sync option.  This is used in

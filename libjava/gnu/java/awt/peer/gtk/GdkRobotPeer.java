@@ -1,5 +1,5 @@
 /* GdkRobot.java -- an XTest implementation of RobotPeer
-   Copyright (C) 2004  Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -39,9 +39,9 @@ package gnu.java.awt.peer.gtk;
 
 import java.awt.AWTException;
 import java.awt.GraphicsDevice;
+import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.DirectColorModel;
-import java.awt.Rectangle;
 import java.awt.peer.RobotPeer;
 
 /**

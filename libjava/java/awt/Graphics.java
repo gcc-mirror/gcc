@@ -1,5 +1,5 @@
 /* Graphics.java -- Abstract Java drawing class
-   Copyright (C) 1999, 2000, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ import java.text.AttributedCharacterIterator;
   * devices such as the screen or printers.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Warren Levy <warrenl@cygnus.com>
+  * @author Warren Levy (warrenl@cygnus.com)
   */
 public abstract class Graphics
 {

@@ -1,5 +1,5 @@
 /* ComponentEvent.java -- notification of events for components
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,7 +48,7 @@ import java.awt.Component;
  * is also the superclass for other events on components, but
  * ComponentListeners ignore such subclasses.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see ComponentAdapter
  * @see ComponentListener
  * @since 1.1

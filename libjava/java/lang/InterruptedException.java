@@ -1,5 +1,5 @@
 /* InterruptedException.java -- thrown when a thread is interrupted
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ package java.lang;
  * <code>interrupt</code> method of class <code>Thread</code>.
  *
  * @author Brian Jones
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @see Object#wait()
  * @see Object#wait(long)
  * @see Object#wait(long, int)

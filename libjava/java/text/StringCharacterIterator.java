@@ -1,5 +1,5 @@
 /* StringCharacterIterator.java -- Iterate over a character range in a string
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ package java.text;
  * the index to be set. 
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
- * @author Tom Tromey <tromey@cygnus.com>
+ * @author Tom Tromey (tromey@cygnus.com)
  */
 public final class StringCharacterIterator implements CharacterIterator
 {

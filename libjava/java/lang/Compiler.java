@@ -1,5 +1,5 @@
 /* Compiler.java -- placeholder for Java-to-native runtime compilers
-   Copyright (C) 1998, 1999, 2001, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,7 +50,7 @@ package java.lang;
  *
  * <p>Note that a VM might not have implemented any of this.
  *
- * @author Tom Tromey <tromey@cygnus.com>
+ * @author Tom Tromey (tromey@cygnus.com)
  * @see System#getProperty(String)
  * @see System#getProperty(String, String)
  * @see System#loadLibrary(String)

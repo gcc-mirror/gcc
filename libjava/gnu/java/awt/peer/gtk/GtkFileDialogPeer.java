@@ -1,5 +1,5 @@
 /* GtkFileDialogPeer.java -- Implements FileDialogPeer with GTK
-   Copyright (C) 1998, 1999, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,11 +57,12 @@ public class GtkFileDialogPeer extends GtkDialogPeer implements FileDialogPeer
   native void create (GtkContainerPeer parent);
   native void connectSignals ();
   native void nativeSetFile (String file);
-  native public String nativeGetDirectory();
-  native public void nativeSetDirectory(String directory);
+  public native String nativeGetDirectory();
+  public native void nativeSetDirectory(String directory);
   native void nativeSetFilenameFilter (FilenameFilter filter);
 
-  public void create() {
+  public void create()
+  {
     create((GtkContainerPeer) awtComponent.getParent().getPeer());
 
     FileDialog fd = (FileDialog) awtComponent;

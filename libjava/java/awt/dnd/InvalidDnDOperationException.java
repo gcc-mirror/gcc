@@ -1,5 +1,5 @@
 /* InvalidDnDOperationException.java -- thrown when drag-and-drop fails
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,7 +43,7 @@ package java.awt.dnd;
  * requested operation, usually because the underlying DnD system is in the
  * wrong state.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.2
  * @status updated to 1.4
  */

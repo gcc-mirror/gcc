@@ -1,5 +1,5 @@
 /* CertStoreException.java -- wraps an exception during certificate storage
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,7 +47,7 @@ import java.security.GeneralSecurityException;
  * <code>CertStore</code>, wrapping the lower exception. This class is not
  * thread-safe.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see CertStore
  * @since 1.4
  * @status updated to 1.4

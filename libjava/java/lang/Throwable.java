@@ -1,5 +1,5 @@
 /* java.lang.Throwable -- Root class for all Exceptions and Errors
-   Copyright (C) 1998, 1999, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -98,7 +98,7 @@ import java.io.Serializable;
  * @author John Keiser
  * @author Mark Wielaard
  * @author Tom Tromey
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.0
  * @status updated to 1.4
  */

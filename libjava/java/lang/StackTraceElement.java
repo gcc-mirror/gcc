@@ -1,5 +1,5 @@
 /* StackTraceElement.java -- One function call or call stack element
-   Copyright (C) 2001, 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,8 +46,8 @@ import java.io.Serializable;
  * the fully qualified class name, the method name and whether this method
  * is native, if this information is known.
  *
- * @author Mark Wielaard <mark@klomp.org>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Mark Wielaard (mark@klomp.org)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.4
  * @status updated to 1.4
  */

@@ -1,5 +1,5 @@
 /* CheckboxGroup.java -- A grouping class for checkboxes.
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,7 +43,7 @@ package java.awt;
   * one checkbox in the group can be selected at any one time.
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Tom Tromey <tromey@redhat.com>
+  * @author Tom Tromey (tromey@redhat.com)
   */
 public class CheckboxGroup implements java.io.Serializable
 {

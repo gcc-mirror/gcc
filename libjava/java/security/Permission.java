@@ -1,5 +1,5 @@
 /* Permission.java -- The superclass for all permission objects
-   Copyright (C) 1998, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -61,7 +61,7 @@ import java.io.Serializable;
  * <p><code>Permission</code>'s must be immutable - do not change their
  * state after creation.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see Permissions
  * @see PermissionCollection
  * @since 1.1

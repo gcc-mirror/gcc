@@ -1,5 +1,5 @@
 /* KeyEventDispatcher.java -- dispatches key events
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,7 +50,7 @@ import java.awt.event.KeyEvent;
  * dispatched by other dispatchers. Therefore, it is unnecessary for the user
  * to register the focus manager as a dispatcher.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see KeyboardFocusManager#addKeyEventDispatcher(KeyEventDispatcher)
  * @see KeyboardFocusManager#removeKeyEventDispatcher(KeyEventDispatcher)
  * @since 1.4

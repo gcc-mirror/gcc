@@ -1,5 +1,5 @@
 /* ItemSelectable.java -- items that can be selected
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ import java.awt.event.ItemListener;
  * This interface is for objects that can have one or more items selected.
  * For example, radio buttons.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @since 1.0
  * @status updated to 1.4
  */

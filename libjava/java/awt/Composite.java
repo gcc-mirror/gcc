@@ -1,5 +1,5 @@
 /* Composite.java -- graphics formed from composite layers
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,7 +50,7 @@ import java.awt.image.ColorModel;
  * check on custom objects, <code>readDisplayPixels</code>, to prevent leaking
  * restricted information graphically.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see AlphaComposite
  * @see CompositeContext
  * @see Graphics2D#setComposite(Composite)

@@ -1,5 +1,5 @@
 /* GtkMenuItemPeer.java -- Implements MenuItemPeer with GTK+
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,8 +40,8 @@ package gnu.java.awt.peer.gtk;
 
 import java.awt.Font;
 import java.awt.Menu;
-import java.awt.MenuComponent;
 import java.awt.MenuBar;
+import java.awt.MenuComponent;
 import java.awt.MenuItem;
 import java.awt.peer.MenuItemPeer;
 import java.awt.peer.MenuPeer;
@@ -109,9 +109,9 @@ public class GtkMenuItemPeer extends GtkMenuComponentPeer
     setEnabled (true);
   }
 
-  native public void setEnabled (boolean b);
+  public native void setEnabled(boolean b);
 
-  native public void setLabel (String label);
+  public native void setLabel(String label);
 
   protected void postMenuActionEvent ()
   {

@@ -1,5 +1,5 @@
 /* EventObject.java -- represents an event on an object
-   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -43,7 +43,7 @@ import java.io.Serializable;
 /**
  * Represents Events fired by Objects.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see EventListener
  * @since 1.1
  * @status updated to 1.4

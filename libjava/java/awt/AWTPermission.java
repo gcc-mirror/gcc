@@ -82,7 +82,7 @@ import java.security.BasicPermission;
  *   <td>malicious code could masquerade as a trusted program</td></tr>
  * </table>
  *
- * @author Tom Tromey <tromey@redhat.com>
+ * @author Tom Tromey (tromey@redhat.com)
  * @since 1.2
  * @status updated to 1.4
  */

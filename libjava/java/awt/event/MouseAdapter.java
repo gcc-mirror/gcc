@@ -1,5 +1,5 @@
 /* MouseAdapter.java -- convenience class for writing mouse listeners
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ package java.awt.event;
  * a subset of the <code>MouseListener</code> interface to extend this class
  * and override only the desired methods.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see MouseEvent
  * @see MouseListener
  * @since 1.1

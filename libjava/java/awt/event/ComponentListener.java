@@ -1,5 +1,5 @@
 /* ComponentListener.java -- receive all events for a component
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ import java.util.EventListener;
  * handles them internally, taking all appropriate actions. To watch a subset
  * of these events, use a ComponentAdapter.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see ComponentAdapter
  * @see ComponentEvent
  * @since 1.1

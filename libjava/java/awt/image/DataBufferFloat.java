@@ -47,8 +47,8 @@ package java.awt.image;
    code is a maintenance nightmare.  */
 
 /**
- * @author <a href="mailto:rolfwr@ii.uib.no">Rolf W. Rasmussen</a>
- * @author <a href="mailto:brawer@dandelis.ch">Sascha Brawer</a>
+ * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
 public final class DataBufferFloat
   extends DataBuffer

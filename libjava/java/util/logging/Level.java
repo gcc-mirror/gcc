@@ -1,5 +1,5 @@
 /* Level.java -- a class for indicating logging levels
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,7 +48,7 @@ import java.util.ResourceBundle;
  * purposes, however, applications can sub-class Level in order to define
  * custom logging levels.
  *
- * @author Sascha Brawer <brawer@acm.org>
+ * @author Sascha Brawer (brawer@acm.org)
  */
 public class Level implements Serializable
 {

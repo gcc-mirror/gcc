@@ -123,7 +123,7 @@ import java.io.Serializable;
  *  of signatures, resembling a chain of authorization and delegation.</li>
  * </ul>
  *
- * @author Mark Benvenuto <ivymccough@worldnet.att.net>
+ * @author Mark Benvenuto (ivymccough@worldnet.att.net)
  * @since 1.2
  * @see Signature
  */

@@ -52,7 +52,7 @@ import java.io.Serializable;
  * horizontal and vertical gaps; these are used as spacing between
  * cells.
  *
- * @author Tom Tromey <tromey@redhat.com>
+ * @author Tom Tromey (tromey@redhat.com)
  * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public class GridLayout implements LayoutManager, Serializable

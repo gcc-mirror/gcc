@@ -49,7 +49,7 @@ import java.security.spec.AlgorithmParameterSpec;
  * cryptographic service provider who wishes to supply the implementation of a
  * particular signature algorithm.
  *
- * @author Mark Benvenuto <ivymccough@worldnet.att.net>
+ * @author Mark Benvenuto (ivymccough@worldnet.att.net)
  * @since 1.2
  * @see Signature
  */

@@ -1,5 +1,5 @@
 /* InputMethodDescriptor.java -- enables loading and use of an input method
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,7 @@ import java.util.Locale;
  * This interface provides information about an InputMethod before it is
  * loaded.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.3
  * @status updated to 1.4
  */

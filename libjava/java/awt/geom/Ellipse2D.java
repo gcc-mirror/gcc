@@ -46,10 +46,10 @@ package java.awt.geom;
  * The ellipse is defined by it's bounding box (shown in red),
  * and is defined by the implicit curve:<BR>
  * <blockquote>(<i>x</i>/<i>a</i>)<sup>2</sup> +
- * (<i>y</i>/<i>b</i>)<sup>2</sup> = 1<BR><BR>
+ * (<i>y</i>/<i>b</i>)<sup>2</sup> = 1<BR><BR></blockquote>
  *
- * @author Tom Tromey <tromey@cygnus.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Tom Tromey (tromey@cygnus.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  *
  * @since 1.2
  */

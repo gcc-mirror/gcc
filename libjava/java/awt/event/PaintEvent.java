@@ -1,5 +1,5 @@
 /* PaintEvent.java -- an area of the screen needs to be repainted
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ import java.awt.Rectangle;
  * This event is not meant for users, but exists to allow proper serialization
  * behavior in the EventQueue with user-accessible events.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @since 1.1
  * @status updated to 1.4
  */

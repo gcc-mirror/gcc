@@ -1,5 +1,5 @@
 /* AbstractMap.java -- Abstract implementation of most of Map
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,7 +53,7 @@ package java.util;
  *
  * @author Original author unknown
  * @author Bryce McKinlay
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Map
  * @see Collection
  * @see HashMap
@@ -622,7 +622,7 @@ public abstract class AbstractMap implements Map
    * life much easier.
    *
    * @author Jon Zeppieri
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    */
   // XXX - FIXME Use fully qualified implements as gcj 3.1 workaround.
   //       Bug still exists in 3.4.1

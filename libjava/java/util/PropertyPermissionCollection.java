@@ -1,5 +1,5 @@
 /* PropertyPermissionCollection.java -- a collection of PropertyPermissions
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,7 +47,7 @@ import java.security.PermissionCollection;
  * PropertyPermissions, and correctly implements <code>implies</code>. It
  * is synchronized, as specified in the superclass.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @status an undocumented class, but this matches Sun's serialization
  */
 class PropertyPermissionCollection extends PermissionCollection

@@ -1,5 +1,5 @@
 /* StringTokenizer -- breaks a String into tokens
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -54,7 +54,7 @@ package java.util;
  * single character.
  *
  * @author Jochen Hoenicke
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @see java.io.StreamTokenizer
  * @status updated to 1.4
  */

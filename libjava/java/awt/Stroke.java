@@ -1,5 +1,5 @@
 /* Stroke.java -- a stroked outline of a shape
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ package java.awt;
  * Strokes must be immutable, because the graphics object does not clone
  * them.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see BasicStroke
  * @see Graphics2D#setStroke(Stroke)
  * @since 1.1

@@ -1,5 +1,5 @@
 /* RGBImageFilter.java -- Java class for filtering Pixels by RGB values
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,7 +42,7 @@ package java.awt.image;
  * A filter designed to filter images in the default RGBColorModel regardless of 
  * the ImageProducer's ColorModel.
  *
- * @author Mark Benvenuto <mcb54@columbia.edu>
+ * @author Mark Benvenuto (mcb54@columbia.edu)
  */
 public abstract class RGBImageFilter extends ImageFilter
 {

@@ -1,5 +1,5 @@
 /* KeyListener.java -- listen for keyboard presses
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ import java.util.EventListener;
  * This interface is for classes that wish to receive keyboard events. To
  * watch a subset of these events, use a KeyAdapter.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see KeyAdapter
  * @see KeyEvent
  * @since 1.1

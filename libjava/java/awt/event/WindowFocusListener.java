@@ -1,5 +1,5 @@
 /* WindowFocusListener.java -- listens for window focus events
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ import java.util.EventListener;
  * This interface is for classes that wish to monitor events for window
  * focus changes. To watch a subset of these events, use a WindowAdapter.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see WindowAdapter
  * @see WindowEvent
  * @since 1.4

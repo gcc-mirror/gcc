@@ -52,7 +52,7 @@ import java.util.Iterator;
  * ignored, and '#' starts comments. Duplicates are ignored. The
  * implementations must be accessible to the classloader that requests them.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Charset
  * @since 1.4
  * @status updated to 1.4

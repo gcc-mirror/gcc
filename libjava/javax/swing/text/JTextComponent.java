@@ -1,5 +1,5 @@
 /* JTextComponent.java --
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -302,7 +302,7 @@ public abstract class JTextComponent extends JComponent
    * report</a>, a pair of private classes wraps a {@link
    * javax.swing.text.Keymap} in the new {@link InputMap} / {@link
    * ActionMap} interfaces, such that old Keymap-using code can make use of
-   * the new framework.</p>
+   * the new framework.
    *
    * <p>A little bit of experimentation with these classes reveals the following
    * structure:
@@ -843,7 +843,7 @@ public abstract class JTextComponent extends JComponent
    * <code>b</code>, if there exists a provided action <code>a</code> such
    * that <code>a.getValue(Action.NAME) == b.ActionName</code> then an
    * entry is added to the Keymap mapping <code>b</code> to
-   * </code>a</code>.
+   * <code>a</code>.
    *
    * @param map The Keymap to add new mappings to
    * @param bindings The set of bindings to add to the Keymap
@@ -943,7 +943,7 @@ public abstract class JTextComponent extends JComponent
   }
 
   /**
-   * Get the <code>AccessibleContext<code> of this object.
+   * Get the <code>AccessibleContext</code> of this object.
    *
    * @return an <code>AccessibleContext</code> object
    */

@@ -1,6 +1,6 @@
 /* Map.java: interface Map -- An object that maps keys to values
              interface Map.Entry -- an Entry in a Map
-   Copyright (C) 1998, 2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -68,7 +68,7 @@ package java.util;
  * normally fail with a non-empty argument.
  *
  * @author Original author unknown
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see HashMap
  * @see TreeMap
  * @see Hashtable
@@ -267,7 +267,7 @@ public interface Map
    * for undefined behavior.
    *
    * @author Original author unknown
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    * @see Map
    * @see Map#entrySet()
    * @since 1.2

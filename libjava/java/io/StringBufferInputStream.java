@@ -1,5 +1,5 @@
 /* StringBufferInputStream.java -- Read an String as a stream
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -65,7 +65,7 @@ package java.io;
   * @deprecated
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Warren Levy <warrenl@cygnus.com>
+  * @author Warren Levy (warrenl@cygnus.com)
   */
 public class StringBufferInputStream extends InputStream
 {

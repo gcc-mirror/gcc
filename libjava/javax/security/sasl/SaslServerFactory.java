@@ -48,8 +48,8 @@ import javax.security.auth.callback.CallbackHandler;
  * simultaneous requests. It must also have a public constructor that accepts
  * no arguments.</p>
  *
- * This interface is not normally accessed directly by a server, which will use
- * the {@link Sasl} static methods to create a {@link SaslServer} instance
+ * <p>This interface is not normally accessed directly by a server, which will
+ * use the {@link Sasl} static methods to create a {@link SaslServer} instance
  * instead. However, a particular environment may provide and install a new or
  * different <code>SaslServerFactory</code>.</p>
  *

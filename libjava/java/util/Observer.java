@@ -1,5 +1,5 @@
 /* Observer.java -- an object that will be informed of changes in an Observable
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,7 +42,7 @@ package java.util;
  * Interface that is implemented when a class wants to be informed of changes
  * in Observable objects.
  *
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @see Observable
  * @status updated to 1.4
  */

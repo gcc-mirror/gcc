@@ -1,5 +1,5 @@
 /* FileOutputStream.java -- Writes to a file on disk.
-   Copyright (C) 1998, 2001, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -51,8 +51,8 @@ import java.nio.channels.FileChannel;
  * This classes allows a stream of data to be written to a disk file or
  * any open <code>FileDescriptor</code>.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Tom Tromey <tromey@cygnus.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Tom Tromey (tromey@cygnus.com)
  */
 public class FileOutputStream extends OutputStream
 {

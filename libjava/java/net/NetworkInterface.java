@@ -1,5 +1,5 @@
 /* NetworkInterface.java --
-   Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -212,7 +212,7 @@ public final class NetworkInterface
    *
    * @param obj The object to compare with
    *
-   * @return <code>true</code> if equal, <code>false<code> otherwise
+   * @return <code>true</code> if equal, <code>false</code> otherwise
    */
   public boolean equals(Object obj)
   {

@@ -1,5 +1,5 @@
 /* SourceLocator.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,7 +40,7 @@ package javax.xml.transform;
  * The location in an XML resource at which an event occurred.
  * Tis is equivalent to the SAX Locator.
  * 
- * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
+ * @author (a href='mailto:dog@gnu.org'>Chris Burdess</a)
  */
 public interface SourceLocator
 {

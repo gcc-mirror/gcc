@@ -1,6 +1,6 @@
 /* Stack.java - Class that provides a Last In First Out (LIFO)
    datatype, known more commonly as a Stack
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,8 +50,8 @@ package java.util;
  * methods for stack manipulation (push, pop, peek). You can also seek for
  * the 1-based position of an element on the stack.
  *
- * @author Warren Levy <warrenl@cygnus.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Warren Levy (warrenl@cygnus.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see List
  * @see AbstractList
  * @see LinkedList

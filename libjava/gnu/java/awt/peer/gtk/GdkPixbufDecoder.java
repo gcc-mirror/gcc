@@ -1,5 +1,5 @@
 /* GdkPixbufDecoder.java -- Image data decoding object
-   Copyright (C) 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -57,16 +57,16 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Vector;
 
-import javax.imageio.ImageReader;
-import javax.imageio.ImageWriter;
+import javax.imageio.IIOImage;
 import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
 import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriteParam;
-import javax.imageio.IIOImage;
+import javax.imageio.ImageWriter;
 import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.spi.IIORegistry;
 import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.spi.ImageWriterSpi;
-import javax.imageio.spi.IIORegistry;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
@@ -80,7 +80,8 @@ public class GdkPixbufDecoder extends gnu.java.awt.image.ImageDecoder
       }
     initStaticState ();
   }
-  native static void initStaticState ();
+  
+  static native void initStaticState();
   private final int native_state = GtkGenericPeer.getUniqueInteger ();
   private boolean initialized = false;
 

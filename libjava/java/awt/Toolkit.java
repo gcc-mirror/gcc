@@ -1,5 +1,5 @@
 /* Toolkit.java -- AWT Toolkit superclass
-   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -91,7 +91,7 @@ import java.util.Properties;
  * toolkit <code>gnu.java.awt.peer.gtk.GtkToolkit</code> is used.  This
  * toolkit creates its peers using the GTK+ toolkit.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  */
 public abstract class Toolkit
 {

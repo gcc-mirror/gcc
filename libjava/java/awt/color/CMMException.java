@@ -1,5 +1,5 @@
 /* CMMException.java -- error in the native CMM
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,7 @@ package java.awt.color;
 /**
   * Thrown when there is an error in the native CMM.
   *
-  * @author Eric Blake <ebb9@email.byu.edu>
+  * @author Eric Blake (ebb9@email.byu.edu)
   * @status updated to 1.4
   */
 public class CMMException extends RuntimeException

@@ -41,7 +41,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 
 /**
- * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
+ * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
  */
 public class Raster
 {

@@ -1,5 +1,5 @@
 /* Dialog.java -- An AWT dialog box
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,8 +48,8 @@ import javax.accessibility.AccessibleStateSet;
 /**
  * A dialog box widget class.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Tom Tromey <tromey@redhat.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Tom Tromey (tromey@redhat.com)
  */
 public class Dialog extends Window
 {

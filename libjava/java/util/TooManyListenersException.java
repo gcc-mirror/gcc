@@ -1,6 +1,6 @@
 /* TooManyListenersException.java -- thrown when a unicast event can't accept
    another Listener
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ package java.util;
  * single event listener.
  *
  * @author Jochen Hoenicke
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @see EventListener
  * @see EventObject
  * @since 1.1

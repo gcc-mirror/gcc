@@ -1,5 +1,5 @@
 /* FocusListener.java -- listen for focus changes
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,7 @@ import java.util.EventListener;
  * keyboard focus for a component. To watch a subset of these events, use a
  * FocusAdapter.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see FocusAdapter
  * @see FocusEvent
  * @since 1.1

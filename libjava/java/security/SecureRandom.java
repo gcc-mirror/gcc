@@ -1,5 +1,5 @@
 /* SecureRandom.java --- Secure Random class implementation
-   Copyright (C) 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2002, 2003, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -49,7 +49,7 @@ import java.util.Random;
  * keys and initialization vectors to the generation of random padding
  * bytes.
  *
- * @author Mark Benvenuto <ivymccough@worldnet.att.net>
+ * @author Mark Benvenuto (ivymccough@worldnet.att.net)
  * @author Casey Marshall
  */
 public class SecureRandom extends Random

@@ -1,5 +1,5 @@
 /* Enumeration.java -- Interface for enumerating lists of objects
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -52,8 +52,8 @@ package java.util;
  * the new collections classes, for use with legacy APIs that require them, can
  * be obtained by the enumeration method in class Collections.
  *
- * @author Warren Levy <warrenl@cygnus.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Warren Levy (warrenl@cygnus.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Iterator
  * @see Hashtable
  * @see Vector

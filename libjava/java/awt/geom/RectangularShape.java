@@ -46,8 +46,8 @@ import java.awt.Shape;
  * subclasses which represent geometric objects inside a rectangular frame.
  * This does not specify any geometry except for the bounding box.
  *
- * @author Tom Tromey <tromey@cygnus.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Tom Tromey (tromey@cygnus.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.2
  * @see Arc2D
  * @see Ellipse2D

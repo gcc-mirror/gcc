@@ -57,9 +57,9 @@ import java.io.Serializable;
  * ArrayIndexOutOfBoundsException, or invalid results. Also, this class is
  * not threadsafe.
  *
- * @author Warren Levy  <warrenl@cygnus.com>
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Warren Levy  (warrenl@cygnus.com)
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.0
  * @status updated to 1.4
  */

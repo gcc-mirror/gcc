@@ -1,5 +1,5 @@
 /* GtkToolkit.java -- Implements an AWT Toolkit using GTK for peers
-   Copyright (C) 1998, 1999, 2002, 2003, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,6 @@ import gnu.java.awt.EmbeddedWindowSupport;
 import gnu.java.awt.peer.ClasspathFontPeer;
 import gnu.java.awt.peer.ClasspathTextLayoutPeer;
 import gnu.java.awt.peer.EmbeddedWindowPeer;
-import gnu.java.awt.peer.gtk.GdkPixbufDecoder;
 
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -68,6 +67,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
+
 import javax.imageio.spi.IIORegistry;
 
 /* This class uses a deprecated method java.awt.peer.ComponentPeer.getPeer().
@@ -129,8 +129,8 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
     systemClipboard = new GtkClipboard ();
   }
 
-  native public void beep ();
-  native private void getScreenSizeDimensions (int[] xy);
+  public native void beep();
+  private native void getScreenSizeDimensions(int[] xy);
   
   public int checkImage (Image image, int width, int height, 
 			 ImageObserver observer) 
@@ -389,9 +389,10 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
     return null;
   }
 
-  native public int getScreenResolution();
+  public native int getScreenResolution();
 
-  public Dimension getScreenSize () {
+  public Dimension getScreenSize ()
+  {
     int dim[] = new int[2];
     getScreenSizeDimensions(dim);
     return new Dimension(dim[0], dim[1]);
@@ -430,7 +431,7 @@ public class GtkToolkit extends gnu.java.awt.ClasspathToolkit
     return false;
   }
 
-  native public void sync ();
+  public native void sync();
 
   protected void setComponentState (Component c, GtkComponentPeer cp)
   {

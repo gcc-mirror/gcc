@@ -41,7 +41,7 @@ package java.awt.image;
  * of one or more banks.  A bank is a continuous region of data
  * elements.
  *
- * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
+ * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
  */
 public abstract class DataBuffer
 {

@@ -366,7 +366,7 @@ public class GdkGraphics2D extends Graphics2D
   // "middle of pixel" coordinates and light up complete pixels.
   private boolean shiftDrawCalls = false;
 
-  private final double shifted(double coord, boolean doShift)
+  private double shifted(double coord, boolean doShift)
   {
     if (doShift)
       return Math.floor(coord) + 0.5;
@@ -374,7 +374,7 @@ public class GdkGraphics2D extends Graphics2D
       return coord;
   }
 
-  private final void walkPath(PathIterator p, boolean doShift)
+  private void walkPath(PathIterator p, boolean doShift)
   {
     double x = 0;
     double y = 0;
@@ -424,7 +424,7 @@ public class GdkGraphics2D extends Graphics2D
       }
   }
 
-  private final Map getDefaultHints()
+  private Map getDefaultHints()
   {
     HashMap defaultHints = new HashMap();
 
@@ -446,7 +446,7 @@ public class GdkGraphics2D extends Graphics2D
     return defaultHints;
   }
 
-  public static final int[] findSimpleIntegerArray (ColorModel cm, Raster raster)
+  public static int[] findSimpleIntegerArray (ColorModel cm, Raster raster)
   {
     if (cm == null || raster == null)
       return null;
@@ -485,7 +485,7 @@ public class GdkGraphics2D extends Graphics2D
     return db.getData();
   }
 
-  private final void updateBufferedImage()
+  private void updateBufferedImage()
   {
     if (bimage != null && pixelConversionRequired)
       {
@@ -497,8 +497,8 @@ public class GdkGraphics2D extends Graphics2D
       }
   }
 
-  private final boolean drawImage(Image img, AffineTransform xform,
-                                  Color bgcolor, ImageObserver obs)
+  private boolean drawImage(Image img, AffineTransform xform,
+                            Color bgcolor, ImageObserver obs)
   {
     if (img == null)
       return false;
@@ -927,8 +927,8 @@ public class GdkGraphics2D extends Graphics2D
     return bg;
   }
 
-  private final void doPolygon(int[] xPoints, int[] yPoints, int nPoints,
-                               boolean close, boolean fill)
+  private void doPolygon(int[] xPoints, int[] yPoints, int nPoints,
+                         boolean close, boolean fill)
   {
     if (nPoints < 1)
       return;
@@ -981,8 +981,8 @@ public class GdkGraphics2D extends Graphics2D
     doPolygon(xPoints, yPoints, nPoints, false, false);
   }
 
-  private final boolean drawRaster(ColorModel cm, Raster r,
-                                   AffineTransform imageToUser, Color bgcolor)
+  private boolean drawRaster(ColorModel cm, Raster r,
+                             AffineTransform imageToUser, Color bgcolor)
   {
     if (r == null)
       return false;

@@ -107,8 +107,8 @@ import java.util.EventListener;
  * new listener is then chained to the old.
  *
  * @author Bryce McKinlay
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.1
  * @status updated to 1.4
  */

@@ -1,5 +1,5 @@
 /* NoSuchElementException.java -- Attempt to access element that does not exist
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -51,8 +51,8 @@ package java.util;
  * thrown by Vector and Stack when attempting to access the first or last
  * element of an empty collection.
  *
- * @author Warren Levy <warrenl@cygnus.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Warren Levy (warrenl@cygnus.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Enumeration
  * @see Iterator
  * @see ListIterator

@@ -56,7 +56,7 @@ import gnu.java.awt.Buffers;
  * is controlled by bandOffset, pixelStride, and scanlineStride, which means
  * that any combination of interleavings is supported.
  *
- * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
+ * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
  */
 public class ComponentSampleModel extends SampleModel
 {

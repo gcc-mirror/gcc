@@ -1,5 +1,5 @@
 /* Shape.java -- the classic Object-Oriented shape interface
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -54,7 +54,7 @@ import java.awt.geom.Rectangle2D;
  * Unclosed shapes are considered as implicitly closed when performing
  * <code>contains</code> or <code>intersects</code>.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see PathIterator
  * @see AffineTransform
  * @see java.awt.geom.FlatteningPathIterator

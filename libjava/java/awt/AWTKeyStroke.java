@@ -63,7 +63,7 @@ import java.util.StringTokenizer;
  * instances of a subclass, using reflection, provided the subclass has a
  * no-arg constructor (of any accessibility).
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see #getAWTKeyStroke(char)
  * @since 1.4
  * @status updated to 1.4

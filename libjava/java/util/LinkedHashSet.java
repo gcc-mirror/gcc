@@ -1,6 +1,6 @@
 /* LinkedHashSet.java -- a set backed by a LinkedHashMap, for linked
    list traversal.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -78,7 +78,7 @@ import java.io.Serializable;
  * {@link ConcurrentModificationException} rather than exhibit
  * non-deterministic behavior.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Object#hashCode()
  * @see Collection
  * @see Set

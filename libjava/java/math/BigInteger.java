@@ -1,5 +1,5 @@
 /* java.math.BigInteger -- Arbitary precision integers
-   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,10 +50,10 @@ import java.util.Random;
  * as "The Java Class Libraries", 2nd edition (Addison-Wesley, 1998) and
  * "Applied Cryptography, Second Edition" by Bruce Schneier (Wiley, 1996).
  * 
- * Based primarily on IntNum.java BitOps.java by Per Bothner <per@bothner.com>
+ * Based primarily on IntNum.java BitOps.java by Per Bothner (per@bothner.com)
  * (found in Kawa 1.6.62).
  *
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @date December 20, 1999.
  * @status believed complete and correct.
  */

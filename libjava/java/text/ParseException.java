@@ -1,5 +1,5 @@
 /* ParseException.java -- an error occurred while parsing
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,7 +42,7 @@ package java.text;
  * This exception is thrown when an unexpected error occurs during parsing.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
- * @author Per Bothner <bothner@cygnus.com>
+ * @author Per Bothner (bothner@cygnus.com)
  * @see Format
  * @see FieldPosition
  * @status updated to 1.4

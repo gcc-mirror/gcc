@@ -1,5 +1,5 @@
 /* ColorPaintContext.java -- context for painting solid colors
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ import java.awt.image.Raster;
  * a raster scan with the given color. However, it is not yet completely
  * implemented.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  */
 class ColorPaintContext implements PaintContext
 {

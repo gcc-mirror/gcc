@@ -1,5 +1,5 @@
 /* ProfileDataException.java -- error in processing an ICC_Profile
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -42,7 +42,7 @@ package java.awt.color;
   * Thrown when there is an error accessing or processing an
   * <code>ICC_Profile</code>.
   *
-  * @author Eric Blake <ebb9@email.byu.edu>
+  * @author Eric Blake (ebb9@email.byu.edu)
   * @status updated to 1.4
   */
 public class ProfileDataException extends RuntimeException

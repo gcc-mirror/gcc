@@ -1,5 +1,5 @@
 /* LineNumberInputStream.java -- An input stream which counts line numbers
-   Copyright (C) 1998, 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -67,7 +67,7 @@ package java.io;
  * compatibility only and should not be used in new applications.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  */
 public class LineNumberInputStream extends FilterInputStream
 {

@@ -1,5 +1,5 @@
 /* GraphicsConfigTemplate.java -- a template for selecting configurations
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,7 @@ import java.io.Serializable;
  * one based on various requirements. The resulting configuration has had
  * all non-default attributes set as required to meet or exceed the request.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see GraphicsConfiguration
  * @see GraphicsDevice
  * @since 1.2

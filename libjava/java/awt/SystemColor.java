@@ -1,5 +1,5 @@
 /* SystemColor.java -- access dynamic system color values
-   Copyright (C) 1999, 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -52,8 +52,8 @@ import java.io.Serializable;
  * track the actual color of instances in this class. This means that equals
  * may give surprising results; you are better off relying on getRGB.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.1
  * @status updated to 1.4
  */

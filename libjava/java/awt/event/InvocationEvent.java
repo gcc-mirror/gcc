@@ -1,5 +1,5 @@
 /* InvocationEvent.java -- call a runnable when dispatched
-   Copyright (C) 1999, 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,7 +48,7 @@ import java.awt.EventQueue;
  * <code>invokeAndWait</code>, so client code can use this fact to avoid
  * writing special-casing AWTEventListener objects.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see ActiveEvent
  * @see EventQueue#invokeLater(Runnable)
  * @see EventQueue#invokeAndWait(Runnable)

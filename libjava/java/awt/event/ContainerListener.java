@@ -1,5 +1,5 @@
 /* ContainerListener.java -- listen for container events
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ import java.util.EventListener;
  * listens for and processes these events. To watch a subset of these events,
  * use a ContainerAdapter.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see ContainerAdapter
  * @see ContainerEvent
  * @since 1.1

@@ -41,7 +41,7 @@ import java.util.NoSuchElementException;
 
 
 /** This class implements a rectangle with rounded corners.
- * @author Tom Tromey <tromey@cygnus.com>
+ * @author Tom Tromey (tromey@cygnus.com)
  * @date December 3, 2000
  */
 public abstract class RoundRectangle2D extends RectangularShape

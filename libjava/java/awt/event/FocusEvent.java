@@ -1,5 +1,5 @@
 /* FocusEvent.java -- generated for a focus change
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ import java.awt.Component;
  * during a sroll then returned, and permanent changes, such as when the user
  * TABs through focusable components.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see FocusAdapter
  * @see FocusListener
  * @since 1.1

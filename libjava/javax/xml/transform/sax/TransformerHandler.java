@@ -1,5 +1,5 @@
 /* TransformerHandler.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ import org.xml.sax.ext.LexicalHandler;
 /**
  * A content handler that transforms SAX events into a result tree.
  *
- * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
+ * @author (a href='mailto:dog@gnu.org'>Chris Burdess</a)
  */
 public interface TransformerHandler
   extends ContentHandler, LexicalHandler, DTDHandler

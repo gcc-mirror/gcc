@@ -1,5 +1,5 @@
 /* Panel.java -- Simple container object
-   Copyright (C) 1999, 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -127,7 +127,7 @@ public class Panel extends Container implements Accessible
    * This class provides accessibility support for Panels, and is the
    * runtime type returned by {@link #getAccessibleContext()}.
    *
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    * @since 1.3
    */
   protected class AccessibleAWTPanel extends AccessibleAWTContainer

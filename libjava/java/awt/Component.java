@@ -140,7 +140,7 @@ import javax.accessibility.AccessibleStateSet;
  * present but commented out.
  *
  * @author original author unknown
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.0
  * @status still missing 1.4 support
  */
@@ -4949,7 +4949,7 @@ p   * <li>the set of backward traversal keys
   /**
    * This class provides accessibility support for subclasses of container.
    *
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    * @since 1.3
    * @status updated to 1.4
    */
@@ -5477,7 +5477,7 @@ p   * <li>the set of backward traversal keys
     /**
      * Converts component changes into property changes.
      *
-     * @author Eric Blake <ebb9@email.byu.edu>
+     * @author Eric Blake (ebb9@email.byu.edu)
      * @since 1.3
      * @status updated to 1.4
      */
@@ -5534,7 +5534,7 @@ p   * <li>the set of backward traversal keys
     /**
      * Converts focus changes into property changes.
      *
-     * @author Eric Blake <ebb9@email.byu.edu>
+     * @author Eric Blake (ebb9@email.byu.edu)
      * @since 1.3
      * @status updated to 1.4
      */
@@ -5574,7 +5574,7 @@ p   * <li>the set of backward traversal keys
   /**
    * This class provides support for blitting offscreen surfaces.
    *
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    * @since 1.4
    * @XXX Shell class, to allow compilation. This needs documentation and
    * correct implementation.
@@ -5610,7 +5610,7 @@ p   * <li>the set of backward traversal keys
    * This class provides support for flipping component buffers. It is only
    * designed for use by Canvas and Window.
    *
-   * @author Eric Blake <ebb9@email.byu.edu>
+   * @author Eric Blake (ebb9@email.byu.edu)
    * @since 1.4
    * @XXX Shell class, to allow compilation. This needs documentation and
    * correct implementation.

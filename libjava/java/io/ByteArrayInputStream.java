@@ -1,5 +1,5 @@
 /* ByteArrayInputStream.java -- Read an array as a stream
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,7 @@ package java.io;
 /**
   * This class permits an array of bytes to be read as an input stream.
   *
-  * @author Warren Levy <warrenl@cygnus.com>
+  * @author Warren Levy (warrenl@cygnus.com)
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */ 
 public class ByteArrayInputStream extends InputStream

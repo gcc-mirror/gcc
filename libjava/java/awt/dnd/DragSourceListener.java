@@ -1,5 +1,5 @@
 /* DragSourceListener.java -- listen to events during the drag
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ import java.util.EventListener;
  * also use a <code>DragSourceAdapter</code> to filter the events you are
  * interested in.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.2
  * @status updated to 1.4
  */

@@ -1,5 +1,5 @@
 /* DropTargetContextPeer.java -- interface for drag-and-drop peers
-   Copyright (C) 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,7 +50,7 @@ import java.awt.dnd.InvalidDnDOperationException;
  * with an associated <code>DropTarget</code> and visible geometry is first 
  * intersected by a logical cursor.
  * 
- * @author Michael Koch <konqueror@gmx.de>
+ * @author Michael Koch (konqueror@gmx.de)
  */
 public interface DropTargetContextPeer
 {

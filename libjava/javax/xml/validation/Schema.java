@@ -1,5 +1,5 @@
 /* Schema.java -- 
-   Copyright (C) 2004 Free Software Foundation, Inc.
+   Copyright (C) 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,7 +40,7 @@ package javax.xml.validation;
 /**
  * An immutable grammar.
  *
- * @author <a href='mailto:dog@gnu.org'>Chris Burdess</a>
+ * @author (a href='mailto:dog@gnu.org'>Chris Burdess</a)
  * @since 1.3
  */
 public abstract class Schema

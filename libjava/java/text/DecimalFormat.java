@@ -49,7 +49,8 @@ import java.util.HashMap;
 import java.util.Locale;
 
 /**
- * @author Tom Tromey <tromey@cygnus.com>
+ * @author Tom Tromey (tromey@cygnus.com)
+ * @author Andrew John Hughes (gnu_andrew@member.fsf.org)
  * @date March 4, 1999
  */
 /* Written using "Java Class Libraries", 2nd edition, plus online

@@ -1,5 +1,5 @@
 /* AWTEventListener.java -- listen for all events in the AWT system
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,7 +46,7 @@ import java.util.EventListener;
  * system. In general, this should not be used except for classes like
  * javax.accessibility or by event recorders.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see AWTEvent
  * @see Toolkit#addAWTEventListener(AWTEventListener, long)
  * @see Toolkit#removeAWTEventListener(AWTEventListener)

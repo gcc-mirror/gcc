@@ -1,5 +1,5 @@
 /* GtkScrollPanePeer.java -- Implements ScrollPanePeer with GTK
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -83,9 +83,9 @@ public class GtkScrollPanePeer extends GtkContainerPeer
       setPolicy (((ScrollPane) awtComponent).getScrollbarDisplayPolicy ());
   }
 
-  native public int getHScrollbarHeight ();
-  native public int getVScrollbarWidth ();
-  native public void setScrollPosition (int x, int y);
+  public native int getHScrollbarHeight();
+  public native int getVScrollbarWidth();
+  public native void setScrollPosition(int x, int y);
 
   public Dimension getPreferredSize ()
   {

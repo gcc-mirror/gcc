@@ -1,5 +1,5 @@
 /* Button.java -- AWT button widget
-   Copyright (C) 1999, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -54,7 +54,7 @@ import javax.accessibility.AccessibleValue;
   * This class provides a button widget for the AWT. 
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
-  * @author Tom Tromey <tromey@cygnus.com>
+  * @author Tom Tromey (tromey@cygnus.com)
   */
 public class Button extends Component
   implements java.io.Serializable, Accessible

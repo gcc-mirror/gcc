@@ -1,5 +1,5 @@
 /* java.util.Date
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -685,6 +685,7 @@ public class Date
    * <p>
    * A sequence of consecutive alphabetic characters is recognised as a word,
    * and interpreted as follows, in a case-insentive fashion:
+   * <ul>
    * <li>
    * The characters 'AM' or 'PM' restrict the hour value to a value between 0
    * and 12.  In the latter case, 12 is added to the hour value before storage.

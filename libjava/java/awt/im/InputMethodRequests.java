@@ -1,5 +1,5 @@
 /* InputMethodRequests.java -- handles text insertion via input methods
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -51,7 +51,7 @@ import java.text.AttributedCharacterIterator.Attribute;
  * usually below the main text window, until it is committed into place at
  * the insertion point, overwriting any selected text</li></ul>
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Component#getInputMethodRequests()
  * @see InputMethodListener
  * @since 1.2

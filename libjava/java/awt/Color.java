@@ -1,5 +1,5 @@
 /* Color.java -- represents a color in Java
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -53,7 +53,7 @@ import java.io.Serializable;
  * <a href="http://www.w3.org/pub/WWW/Graphics/Color/sRGB.html">
  * http://www.w3.org/pub/WWW/Graphics/Color/sRGB.html</a>.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see ColorSpace
  * @see AlphaComposite
  * @since 1.0

@@ -42,7 +42,7 @@ package java.io;
  * million-zillion flags that can be set to control the parsing, as 
  * described under the various method headings.
  *
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  * @date October 25, 1998.  
  */
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3

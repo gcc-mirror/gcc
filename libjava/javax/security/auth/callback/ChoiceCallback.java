@@ -47,7 +47,6 @@ import java.io.Serializable;
  * selected choice(s).
  *
  * @see CallbackHandler
- * @version $Revision: 1.1 $
  */
 public class ChoiceCallback implements Callback, Serializable
 {

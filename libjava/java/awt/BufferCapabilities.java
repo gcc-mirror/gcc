@@ -1,5 +1,5 @@
 /* BufferCapabilities.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,7 @@ package java.awt;
 /**
  * Needs documentation...
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see BufferStrategy#getCapabilities()
  * @see GraphicsConfiguration#getCapabilities()
  * @since 1.4

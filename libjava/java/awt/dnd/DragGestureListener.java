@@ -1,5 +1,5 @@
 /* DragGestureListener.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,7 +44,7 @@ import java.util.EventListener;
  * This is a listener for starting a drag-and-drop gesture. Upon receiving
  * notification, the implementor then starts the drag operation.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see DragGestureRecognizer
  * @see DragGestureEvent
  * @see DragSource

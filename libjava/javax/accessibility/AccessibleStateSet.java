@@ -43,7 +43,7 @@ import java.util.Vector;
  * Describes all elements of an accessible object's state. For example, an
  * object may be enabled and have focus.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see AccessibleState
  * @since 1.2
  * @status updated to 1.4

@@ -1,5 +1,5 @@
 /* Composite.java -- the context for compositing graphics layers
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,7 @@ import java.awt.image.WritableRaster;
  * This interface provides an optimized environment for compositing graphics.
  * Several such contexts may exist for a given <code>Composite</code> object.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Composite
  * @since 1.2
  * @status updated to 1.4

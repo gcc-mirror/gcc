@@ -47,7 +47,7 @@ package java.awt;
  * untrusted code. For example, system code should use an ActiveEvent to
  * invoke user code securely.
  *
- * @author Tom Tromey <tromey@cygnus.com>
+ * @author Tom Tromey (tromey@cygnus.com)
  * @since 1.2
  * @status updated to 1.4
  */

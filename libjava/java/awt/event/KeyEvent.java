@@ -1,5 +1,5 @@
 /* KeyEvent.java -- event for key presses
-   Copyright (C) 1999, 2002, 2004  Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -70,8 +70,8 @@ import java.io.ObjectInputStream;
  * as VK_ALL_CANDIDATES in place of ALT+VK_CONVERT. Do not rely on the value
  * of the VK_* constants, except for VK_ENTER, VK_BACK_SPACE, and VK_TAB.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see KeyAdapter
  * @see KeyListener
  * @since 1.1

@@ -49,7 +49,7 @@ import java.text.AttributedCharacterIterator;
 import java.util.Map;
 
 /**
- * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
+ * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
  */
 public abstract class Graphics2D extends Graphics
 {

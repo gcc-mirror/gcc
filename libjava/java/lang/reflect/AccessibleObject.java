@@ -1,5 +1,5 @@
 /* java.lang.reflect.AccessibleObject
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -46,8 +46,8 @@ package java.lang.reflect;
  * to mess with this, don't try. Fortunately, there are adequate
  * security checks before you can set a reflection object as accessible.
  *
- * @author Tom Tromey <tromey@cygnus.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Tom Tromey (tromey@cygnus.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Field
  * @see Constructor
  * @see Method

@@ -1,5 +1,5 @@
 /* FileHandler.java -- a class for publishing log messages to log files
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -403,7 +403,7 @@ public class FileHandler
    * the system property <code>"user.home"</code>, <code>"%g"</code>
    * by the value of <code>generation</code>, <code>"%u"</code> by the
    * value of <code>uniqueNumber</code>, and <code>"%%"</code> by a
-   * single percent character.  If <code>pattern<code> does
+   * single percent character.  If <code>pattern</code> does
    * <em>not</em> contain the sequence <code>"%g"</code>,
    * the value of <code>generation</code> will be appended to
    * the result.

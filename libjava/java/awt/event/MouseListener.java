@@ -1,5 +1,5 @@
 /* MouseListener.java -- listen for mouse clicks and crossing component edges
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,7 +48,7 @@ import java.util.EventListener;
  * use MouseWheelListener. To watch a subset of these events, use a
  * MouseAdapter.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @see MouseAdapter
  * @see MouseEvent
  * @since 1.1

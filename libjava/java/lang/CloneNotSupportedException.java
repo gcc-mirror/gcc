@@ -1,5 +1,5 @@
 /* CloneNotSupportedException.java -- thrown when an object cannot be cloned
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -60,8 +60,8 @@ package java.lang;
  * </pre>
  *
  * @author Brian Jones
- * @author Warren Levy <warrenl@cygnus.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Warren Levy (warrenl@cygnus.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Cloneable
  * @see Object#clone()
  * @status updated to 1.4

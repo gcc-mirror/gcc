@@ -1,5 +1,5 @@
 /* Cloneable.java -- Interface for marking objects cloneable by Object.clone()
-   Copyright (C) 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -65,8 +65,8 @@ package java.lang;
  * <code>CloneNotSupportedException</code>.
  *
  * @author Paul Fisher
- * @author Eric Blake <ebb9@email.byu.edu>
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Eric Blake (ebb9@email.byu.edu)
+ * @author Warren Levy (warrenl@cygnus.com)
  * @see Object#clone()
  * @see CloneNotSupportedException
  * @since 1.0

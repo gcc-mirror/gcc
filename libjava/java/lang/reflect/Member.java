@@ -1,5 +1,5 @@
 /* java.lang.reflect.Member - common query methods in reflection
-   Copyright (C) 1998, 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,8 +44,8 @@ package java.lang.reflect;
  * class, name or modifiers of the member with this interface.
  *
  * @author John Keiser
- * @author Per Bothner <bothner@cygnus.com>
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Per Bothner (bothner@cygnus.com)
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Class
  * @see Field
  * @see Method

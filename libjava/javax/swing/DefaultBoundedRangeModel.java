@@ -1,6 +1,6 @@
 /* DefaultBoundedRangeModel.java -- Default implementation
    of BoundedRangeModel.
-   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -49,8 +49,8 @@ import javax.swing.event.EventListenerList;
 /**
  * A default implementation of <code>BoundedRangeModel</code>.
  *
- * @author <a href="mailto:aselkirk@sympatico.ca">Andrew Selkirk</a>
- * @author <a href="mailto:brawer@dandelis.ch">Sascha Brawer</a>
+ * @author Andrew Selkirk (aselkirk@sympatico.ca)
+ * @author Sascha Brawer (brawer@dandelis.ch)
  */
 public class DefaultBoundedRangeModel
   implements BoundedRangeModel, Serializable

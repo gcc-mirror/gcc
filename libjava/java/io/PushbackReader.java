@@ -1,5 +1,5 @@
 /* PushbackReader.java -- An character stream that can unread chars
-   Copyright (C) 1998, 2000, 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000, 2001, 2003, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -49,7 +49,7 @@ package java.io;
  * by the creator of the stream.
  *
  * @author Aaron M. Renn (arenn@urbanophile.com)
- * @author Warren Levy <warrenl@cygnus.com>
+ * @author Warren Levy (warrenl@cygnus.com)
  */
 public class PushbackReader extends FilterReader
 {

@@ -1,5 +1,5 @@
 /* java.beans.AppletInitializer
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,7 @@ import java.beans.beancontext.BeanContext;
  * Bean that is also an Applet.  It is used by
  * <code>Beans.instantiate()</code>.
  *
- * @author Tom Tromey <tromey@redhat.com>
+ * @author Tom Tromey (tromey@redhat.com)
  * @since 1.2
  */
 public interface AppletInitializer

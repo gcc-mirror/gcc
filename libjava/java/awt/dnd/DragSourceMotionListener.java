@@ -1,5 +1,5 @@
 /* DragSourceMotionListener.java -- tracks motion in the drag source
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,7 +45,7 @@ import java.util.EventListener;
  * event occurs. You can also use a <code>DragSourceAdapter</code> to filter
  * the events you are interested in.
  *
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see DragSourceDragEvent
  * @see DragSource
  * @see DragSourceListener

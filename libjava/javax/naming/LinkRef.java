@@ -1,5 +1,5 @@
 /* LinkRef.java --
-   Copyright (C) 2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2004, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -40,7 +40,7 @@ package javax.naming;
 
 
 /**
- * @author Tom Tromey <tromey@redhat.com>
+ * @author Tom Tromey (tromey@redhat.com)
  * @date May 16, 2001
  */
 public class LinkRef extends Reference

@@ -1,5 +1,5 @@
 /* Iterator.java -- Interface for iterating over collections
-   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,7 +47,7 @@ package java.util;
  * have the remove method and had less conveniently named methods.
  *
  * @author Original author unknown
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @see Collection
  * @see ListIterator
  * @see Enumeration

@@ -1,5 +1,5 @@
 /* MenuContainer.java -- container for menu items
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2005  Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -41,7 +41,7 @@ package java.awt;
 /**
  * This interface is a container for menu components.
  *
- * @author Aaron M. Renn <arenn@urbanophile.com>
+ * @author Aaron M. Renn (arenn@urbanophile.com)
  * @since 1.0
  * @status updated to 1.4
  */

@@ -37,7 +37,7 @@ exception statement from your version. */
 package java.awt.image;
 
 /**
- * @author Rolf W. Rasmussen <rolfwr@ii.uib.no>
+ * @author Rolf W. Rasmussen (rolfwr@ii.uib.no)
  */
 public abstract class SampleModel
 {
