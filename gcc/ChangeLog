@@ -1,3 +1,8 @@
+Mon Dec 21 17:39:38 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* toplev.c (main): Don't emit any warnings when using -dD, -dM, or
+	-dI, which are handled by the preprocessor.
+
 Sun Dec 20 16:13:44 1998  John F. Carr  <jfc@mit.edu>
 
 	* configure.in: Handle Digital UNIX 5.x the same as 4.x.
