@@ -1,3 +1,10 @@
+1998-11-08  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (grokdeclarator): Tighten checks for invalid
+	destructors.  Improve error-messages and error-recovery.
+	* decl2.c (check_classfn): Don't assume that mangled destructor 
+	names contain type information.
+
 1998-11-02  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (import_export_decl): Call import_export_class.
