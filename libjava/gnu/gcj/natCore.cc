@@ -1,6 +1,6 @@
 // natCore -- C++ side of Core
 
-/* Copyright (C) 2001  Free Software Foundation
+/* Copyright (C) 2001, 2002  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -40,7 +40,7 @@ void _Jv_RegisterResource (void *vptr)
   // These are permanent data structures for now.  This routine is
   // called from a static constructor, so we shouldn't depend on too
   // much existing infrastructure.
-  core_chain *cc = (core_chain *) malloc (sizeof (core_chain));
+  core_chain *cc = (core_chain *) _Jv_Malloc (sizeof (core_chain));
 
   cc->name_length = ((int *)rptr)[0];
   cc->data_length = ((int *)rptr)[1];
@@ -56,9 +56,17 @@ void _Jv_RegisterResource (void *vptr)
 gnu::gcj::Core *
 gnu::gcj::Core::create (jstring name)
 {
-  char buf[name->length() + 1];
+  char *buf = (char *) __builtin_alloca (JvGetStringUTFLength (name) + 1);
   jsize total = JvGetStringUTFRegion (name, 0, name->length(), buf);
   buf[total] = '\0';
+
+  // Usually requests here end up as an absolute URL.  We strip the
+  // initial `/'.
+  if (buf[0] == '/')
+    {
+      ++buf;
+      --total;
+    }
 
   core_chain *node = root;
 
