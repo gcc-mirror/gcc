@@ -1,3 +1,12 @@
+Mon Jun  3 22:24:48 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libF77/main.c (f_setarg, f_setsig): Prototype.
+	* libI77/lread.c (quad_read): Delete.
+	* libI77/uio.c: Include config.h.
+	* libI77/wref.c (wrt_E): Cast isdigit arg to unsigned char.
+	* libU77/dtime_.c (clk_tck): Move to the scope where it is used.
+	* libU77/etime_.c (clk_tck): Likewise.
+
 Mon Jun  3 22:23:03 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libF77/lbitbits.c (lbit_cshift): disambiguate expressions

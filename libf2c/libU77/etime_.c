@@ -44,13 +44,6 @@ Boston, MA 02111-1307, USA.  */
 #include <errno.h>		/* for ENOSYS */
 #include "f2c.h"
 
-/* For dtime, etime we store the clock tick parameter (clk_tck) the
-   first time either of them is invoked rather than each time.  This
-   approach probably speeds up each invocation by avoiding a system
-   call each time, but means that the overhead of the first call is
-   different to all others. */
-static long clk_tck = 0;
-
 double
 G77_etime_0 (real tarray[2])
 {
@@ -131,6 +124,12 @@ G77_etime_0 (real tarray[2])
   tarray[1] = ((float) (rbuff.ru_stime).tv_sec +
 	       (float) (rbuff.ru_stime).tv_usec / 1000000.0);
 #else /* HAVE_GETRUSAGE */
+  /* For dtime, etime we store the clock tick parameter (clk_tck) the
+     first time either of them is invoked rather than each time.  This
+     approach probably speeds up each invocation by avoiding a system
+     call each time, but means that the overhead of the first call is
+     different to all others. */
+  static long clk_tck = 0;
   struct tms buffer;
 
 /* NeXTStep seems to define _SC_CLK_TCK but not to have sysconf;

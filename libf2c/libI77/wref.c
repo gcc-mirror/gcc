@@ -82,7 +82,7 @@ wrt_E (ufloat * p, int w, int d, int e, ftnlen len)
   sprintf (buf, "%#.*E", d, dd);
 #ifndef VAX
   /* check for NaN, Infinity */
-  if (!isdigit (buf[0]))
+  if (!isdigit ((unsigned char) buf[0]))
     {
       switch (buf[0])
 	{
