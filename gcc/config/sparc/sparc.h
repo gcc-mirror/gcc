@@ -2672,18 +2672,12 @@ do {                                                                    \
    CCFP[E]mode is used.  CC_NOOVmode should be used when the first operand is a
    PLUS, MINUS, NEG, or ASHIFT.  CCmode should be used when no special
    processing is needed.  */
-#define SELECT_CC_MODE(OP,X,Y) \
-  (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT				\
-   ? ((OP == EQ || OP == NE) ? CCFPmode : CCFPEmode)			\
-   : ((GET_CODE (X) == PLUS || GET_CODE (X) == MINUS			\
-       || GET_CODE (X) == NEG || GET_CODE (X) == ASHIFT)		\
-      ? (TARGET_ARCH64 && GET_MODE (X) == DImode ? CCX_NOOVmode : CC_NOOVmode) \
-      : ((TARGET_ARCH64 || TARGET_V8PLUS) && GET_MODE (X) == DImode ? CCXmode : CCmode)))
+#define SELECT_CC_MODE(OP,X,Y)  select_cc_mode ((OP), (X), (Y))
 
 /* Return non-zero if SELECT_CC_MODE will never return MODE for a
    floating point inequality comparison.  */
 
-#define REVERSIBLE_CC_MODE(MODE) ((MODE) != CCFPEmode)
+#define REVERSIBLE_CC_MODE(MODE) ((MODE) != CCFPEmode && (MODE) != CCFPmode)
 
 /* A function address in a call instruction
    is a byte address (for indexing purposes)

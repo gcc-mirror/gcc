@@ -1,5 +1,16 @@
 2000-01-25  Richard Henderson  <rth@cygnus.com>
 
+	* sparc-protos.h (select_cc_mode): Declare.
+	* sparc.c (select_cc_mode): New.  Handle unordered compares.
+	(output_cbranch): Always reverse via code change.  Handle
+	unordered compares.  Factor tests and string updates.
+	* sparc.h (SELECT_CC_MODE): Split out to select_cc_mode.
+	(REVERSIBLE_CC_MODE): Also exclude CCFPmode.
+	* sparc.md (bunordered, bordered): New.
+	(bungt, bunlt, buneq, bunge, bunle): New.
+
+2000-01-25  Richard Henderson  <rth@cygnus.com>
+
 	* dwarf2out.c (dwarf2out_init): Use ggc_add_rtx_varray_root.
 	* ggc-common.c (ggc_add_rtx_varray_root): New.
 	(ggc_mark_rtx_varray): New.

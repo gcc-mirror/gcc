@@ -2072,6 +2072,61 @@ sparc_emit_set_const64 (op0, op1)
   sparc_emit_set_const64_longway (op0, temp, high_bits, low_bits);
 }
 
+/* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
+   return the mode to be used for the comparison.  For floating-point,
+   CCFP[E]mode is used.  CC_NOOVmode should be used when the first operand
+   is a PLUS, MINUS, NEG, or ASHIFT.  CCmode should be used when no special
+   processing is needed.  */
+
+enum machine_mode
+select_cc_mode (op, x, y)
+     enum rtx_code op;
+     rtx x;
+     rtx y ATTRIBUTE_UNUSED;
+{
+  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+    {
+      switch (op)
+	{
+	case EQ:
+	case NE:
+	case UNORDERED:
+	case ORDERED:
+	case UNLT:
+	case UNLE:
+	case UNGT:
+	case UNGE:
+	case UNEQ:
+	case UNNE:
+	  return CCFPmode;
+
+	case LT:
+	case LE:
+	case GT:
+	case GE:
+	  return CCFPEmode;
+
+	default:
+	  abort ();
+	}
+    }
+  else if (GET_CODE (x) == PLUS || GET_CODE (x) == MINUS
+	   || GET_CODE (x) == NEG || GET_CODE (x) == ASHIFT)
+    {
+      if (TARGET_ARCH64 && GET_MODE (x) == DImode)
+	return CCX_NOOVmode;
+      else
+	return CC_NOOVmode;
+    }
+  else
+    {
+      if (TARGET_ARCH64 && GET_MODE (x) == DImode)
+	return CCXmode;
+      else
+	return CCmode;
+    }
+}
+
 /* X and Y are two things to compare using CODE.  Emit the compare insn and
    return the rtx for the cc reg in the proper mode.  */
 
@@ -4583,6 +4638,7 @@ output_cbranch (op, label, reversed, annul, noop, insn)
   static char v9_xcc_labelno[] = "%%xcc, %lX";
   static char v9_fcc_labelno[] = "%%fccX, %lY";
   char *labelno;
+  const char *branch;
   int labeloff, spaces = 8;
 
   /* ??? !v9: FP branches cannot be preceded by another floating point insn.
@@ -4594,147 +4650,158 @@ output_cbranch (op, label, reversed, annul, noop, insn)
   else
     string[0] = '\0';
 
-  /* If not floating-point or if EQ or NE, we can just reverse the code.  */
-  if (reversed
-      && ((mode != CCFPmode && mode != CCFPEmode) || code == EQ || code == NE))
-    code = reverse_condition (code), reversed = 0;
+  if (reversed)
+    {
+      /* Reversal of FP compares takes care -- an ordered compare
+	 becomes an unordered compare and vice versa.  */
+      if (mode == CCFPmode || mode == CCFPEmode)
+	{
+	  switch (code)
+	    {
+	    case EQ:
+	      code = NE;
+	      break;
+	    case NE:
+	      code = EQ;
+	      break;
+	    case GE:
+	      code = UNLT;
+	      break;
+	    case GT:
+	      code = UNLE;
+	      break;
+	    case LE:
+	      code = UNGT;
+	      break;
+	    case LT:
+	      code = UNGE;
+	      break;
+	    case UNORDERED:
+	      code = ORDERED;
+	      break;
+	    case ORDERED:
+	      code = UNORDERED;
+	      break;
+	    case UNGT:
+	      code = LE;
+	      break;
+	    case UNLT:
+	      code = GE;
+	      break;
+	    case UNEQ:
+	      /* ??? We don't have a "less or greater" rtx code.  */
+	      code = UNKNOWN;
+	      break;
+	    case UNGE:
+	      code = LT;
+	      break;
+	    case UNLE:
+	      code = GT;
+	      break;
+
+	    default:
+	      abort ();
+	    }
+	}
+      else
+	code = reverse_condition (code);
+    }
 
   /* Start by writing the branch condition.  */
-  switch (code)
-    {
-    case NE:
-      if (mode == CCFPmode || mode == CCFPEmode)
-	{
-	  strcat (string, "fbne");
-	  spaces -= 4;
-	}
-      else
-	{
-	  strcpy (string, "bne");
-	  spaces -= 3;
-	}
-      break;
+  if (mode == CCFPmode || mode == CCFPEmode)
+    switch (code)
+      {
+      case NE:
+	branch = "fbne";
+	break;
+      case EQ:
+	branch = "fbe";
+	break;
+      case GE:
+	branch = "fbge";
+	break;
+      case GT:
+	branch = "fbg";
+	break;
+      case LE:
+	branch = "fble";
+	break;
+      case LT:
+	branch = "fbl";
+	break;
+      case UNORDERED:
+	branch = "fbu";
+	break;
+      case ORDERED:
+	branch = "fbo";
+	break;
+      case UNGT:
+	branch = "fbug";
+	break;
+      case UNLT:
+	branch = "fbul";
+	break;
+      case UNEQ:
+	branch = "fbue";
+	break;
+      case UNGE:
+	branch = "fbuge";
+	break;
+      case UNLE:
+	branch = "fbule";
+	break;
+      case UNKNOWN:
+	branch = "fblg";
+	break;
 
-    case EQ:
-      if (mode == CCFPmode || mode == CCFPEmode)
-	{
-	  strcat (string, "fbe");
-	  spaces -= 3;
-	}
-      else
-	{
-	  strcpy (string, "be");
-	  spaces -= 2;
-	}
-      break;
+      default:
+	abort ();
+      }
+  else
+    switch (code)
+      {
+      case NE:
+	branch = "bne";
+	break;
+      case EQ:
+	branch = "be";
+	break;
+      case GE:
+	if (mode == CC_NOOVmode)
+	  branch = "bpos";
+	else
+	  branch = "bge";
+	break;
+      case GT:
+	branch = "bg";
+	break;
+      case LE:
+	branch = "ble";
+	break;
+      case LT:
+	if (mode == CC_NOOVmode)
+	  branch = "bneg";
+	else
+	  branch = "bl";
+	break;
+      case GEU:
+	branch = "bgeu";
+	break;
+      case GTU:
+	branch = "bgu";
+	break;
+      case LEU:
+	branch = "bleu";
+	break;
+      case LTU:
+	branch = "blu";
+	break;
 
-    case GE:
-      if (mode == CCFPmode || mode == CCFPEmode)
-	{
-	  if (reversed)
-	    strcat (string, "fbul");
-	  else
-	    strcat (string, "fbge");
-	  spaces -= 4;
-	}
-      else if (mode == CC_NOOVmode)
-	{
-	  strcpy (string, "bpos");
-	  spaces -= 4;
-	}
-      else
-	{
-	  strcpy (string, "bge");
-	  spaces -= 3;
-	}
-      break;
-
-    case GT:
-      if (mode == CCFPmode || mode == CCFPEmode)
-	{
-	  if (reversed)
-	    {
-	      strcat (string, "fbule");
-	      spaces -= 5;
-	    }
-	  else
-	    {
-	      strcat (string, "fbg");
-	      spaces -= 3;
-	    }
-	}
-      else
-	{
-	  strcpy (string, "bg");
-	  spaces -= 2;
-	}
-      break;
-
-    case LE:
-      if (mode == CCFPmode || mode == CCFPEmode)
-	{
-	  if (reversed)
-	    strcat (string, "fbug");
-	  else
-	    strcat (string, "fble");
-	  spaces -= 4;
-	}
-      else
-	{
-	  strcpy (string, "ble");
-	  spaces -= 3;
-	}
-      break;
-
-    case LT:
-      if (mode == CCFPmode || mode == CCFPEmode)
-	{
-	  if (reversed)
-	    {
-	      strcat (string, "fbuge");
-	      spaces -= 5;
-	    }
-	  else
-	    {
-	      strcat (string, "fbl");
-	      spaces -= 3;
-	    }
-	}
-      else if (mode == CC_NOOVmode)
-	{
-	  strcpy (string, "bneg");
-	  spaces -= 4;
-	}
-      else
-	{
-	  strcpy (string, "bl");
-	  spaces -= 2;
-	}
-      break;
-
-    case GEU:
-      strcpy (string, "bgeu");
-      spaces -= 4;
-      break;
-
-    case GTU:
-      strcpy (string, "bgu");
-      spaces -= 3;
-      break;
-
-    case LEU:
-      strcpy (string, "bleu");
-      spaces -= 4;
-      break;
-
-    case LTU:
-      strcpy (string, "blu");
-      spaces -= 3;
-      break;
-
-    default:
-      abort ();
-    }
+      default:
+	abort ();
+      }
+  strcpy (string, branch);
+  spaces -= strlen (branch);
 
   /* Now add the annulling, the label, and a possible noop.  */
   if (annul)
