@@ -1778,6 +1778,7 @@ extern void debug_rtx_range		PARAMS ((rtx, rtx));
 extern rtx debug_rtx_find		PARAMS ((rtx, int));
 #ifdef BUFSIZ
 extern void print_rtl			PARAMS ((FILE *, rtx));
+extern void print_simple_rtl		PARAMS ((FILE *, rtx));
 extern int print_rtl_single		PARAMS ((FILE *, rtx));
 extern void print_inline_rtx		PARAMS ((FILE *, rtx, int));
 #endif

@@ -65,6 +65,9 @@ const char *print_rtx_head = "";
    This must be defined here so that programs like gencodes can be linked.  */
 int flag_dump_unnumbered = 0;
 
+/* Nonzero means use simplified format without flags, modes, etc.  */
+int flag_simple = 0;
+
 /* Nonzero if we are dumping graphical description.  */
 int dump_for_graph;
 
@@ -85,9 +88,12 @@ print_rtx (in_rtx)
 
   if (sawclose)
     {
-      fprintf (outfile, "\n%s%s",
-               print_rtx_head,
- 	       (xspaces + (sizeof xspaces - 1 - indent * 2)));
+      if (flag_simple)
+	fputc (' ', outfile);
+      else
+	fprintf (outfile, "\n%s%s",
+		 print_rtx_head,
+		 (xspaces + (sizeof xspaces - 1 - indent * 2)));
       sawclose = 0;
     }
 
@@ -112,36 +118,44 @@ print_rtx (in_rtx)
   else
     {
       /* print name of expression code */
-      fprintf (outfile, "(%s", GET_RTX_NAME (GET_CODE (in_rtx)));
-
-      if (in_rtx->in_struct)
-	fputs ("/s", outfile);
-
-      if (in_rtx->volatil)
-	fputs ("/v", outfile);
-
-      if (in_rtx->unchanging)
-	fputs ("/u", outfile);
-
-      if (in_rtx->integrated)
-	fputs ("/i", outfile);
-
-      if (in_rtx->frame_related)
-	fputs ("/f", outfile);
-
-      if (in_rtx->jump)
-	fputs ("/j", outfile);
-
-      if (in_rtx->call)
-	fputs ("/c", outfile);
-
-      if (GET_MODE (in_rtx) != VOIDmode)
+      if (flag_simple && GET_CODE (in_rtx) == CONST_INT)
+	fputc ('(', outfile);
+      else
+	fprintf (outfile, "(%s", GET_RTX_NAME (GET_CODE (in_rtx)));
+      
+      if (! flag_simple)
 	{
-	  /* Print REG_NOTE names for EXPR_LIST and INSN_LIST.  */
-	  if (GET_CODE (in_rtx) == EXPR_LIST || GET_CODE (in_rtx) == INSN_LIST)
-	    fprintf (outfile, ":%s", GET_REG_NOTE_NAME (GET_MODE (in_rtx)));
-	  else
-	    fprintf (outfile, ":%s", GET_MODE_NAME (GET_MODE (in_rtx)));
+	  if (in_rtx->in_struct)
+	    fputs ("/s", outfile);
+
+	  if (in_rtx->volatil)
+	    fputs ("/v", outfile);
+	  
+	  if (in_rtx->unchanging)
+	    fputs ("/u", outfile);
+	  
+	  if (in_rtx->integrated)
+	    fputs ("/i", outfile);
+	  
+	  if (in_rtx->frame_related)
+	    fputs ("/f", outfile);
+	  
+	  if (in_rtx->jump)
+	    fputs ("/j", outfile);
+	  
+	  if (in_rtx->call)
+	    fputs ("/c", outfile);
+
+	  if (GET_MODE (in_rtx) != VOIDmode)
+	    {
+	      /* Print REG_NOTE names for EXPR_LIST and INSN_LIST.  */
+	      if (GET_CODE (in_rtx) == EXPR_LIST 
+		  || GET_CODE (in_rtx) == INSN_LIST)
+		fprintf (outfile, ":%s",
+			 GET_REG_NOTE_NAME (GET_MODE (in_rtx)));
+	      else
+		fprintf (outfile, ":%s", GET_MODE_NAME (GET_MODE (in_rtx)));
+	    }
 	}
     }
 
@@ -296,11 +310,15 @@ print_rtx (in_rtx)
 	break;
 
       case 'w':
-	fprintf (outfile, " ");
+	if (! flag_simple)
+	  fprintf (outfile, " ");
 	fprintf (outfile, HOST_WIDE_INT_PRINT_DEC, XWINT (in_rtx, i));
-	fprintf (outfile, " [");
-	fprintf (outfile, HOST_WIDE_INT_PRINT_HEX, XWINT (in_rtx, i));
-	fprintf (outfile, "]");
+	if (! flag_simple)
+	  {
+	    fprintf (outfile, " [");
+	    fprintf (outfile, HOST_WIDE_INT_PRINT_HEX, XWINT (in_rtx, i));
+	    fprintf (outfile, "]");
+	  }
 	break;
 
       case 'i':
@@ -662,4 +680,18 @@ print_rtl_single (outf, x)
       return 1;
     }
   return 0;
+}
+
+
+/* Like print_rtl except without all the detail; for example,
+   if RTX is a CONST_INT then print in decimal format.  */
+
+void
+print_simple_rtl (outf, x)
+     FILE *outf;
+     rtx x;
+{
+  flag_simple = 1;
+  print_rtl (outf, x);
+  flag_simple = 0;
 }
