@@ -193,6 +193,7 @@ extern "Java"
       class SecurityManager;
       class Short;
       class StackOverflowError;
+      class StackTraceElement;
       class StrictMath;
       class String;
       class String$CaseInsensitiveComparator;
@@ -241,32 +242,43 @@ extern "Java"
     {
       class AbstractCollection;
       class AbstractList;
-      class AbstractList$AbstractListItr;
       class AbstractMap;
       class AbstractSequentialList;
       class AbstractSet;
       class ArrayList;
       class Arrays;
+      class Arrays$ArrayList;
       class Arrays$ListImpl;
       class BasicMapEntry;
       class BitSet;
       class Calendar;
       class Collection;
       class Collections;
+      class Collections$CopiesList;
+      class Collections$EmptyList;
+      class Collections$EmptyMap;
+      class Collections$EmptySet;
       class Collections$ReverseComparator;
+      class Collections$SingletonList;
+      class Collections$SingletonMap;
+      class Collections$SingletonSet;
       class Collections$SynchronizedCollection;
       class Collections$SynchronizedIterator;
       class Collections$SynchronizedList;
       class Collections$SynchronizedListIterator;
       class Collections$SynchronizedMap;
+      class Collections$SynchronizedMapEntry;
+      class Collections$SynchronizedRandomAccessList;
       class Collections$SynchronizedSet;
       class Collections$SynchronizedSortedMap;
       class Collections$SynchronizedSortedSet;
       class Collections$UnmodifiableCollection;
+      class Collections$UnmodifiableEntrySet;
       class Collections$UnmodifiableIterator;
       class Collections$UnmodifiableList;
       class Collections$UnmodifiableListIterator;
       class Collections$UnmodifiableMap;
+      class Collections$UnmodifiableRandomAccessList;
       class Collections$UnmodifiableSet;
       class Collections$UnmodifiableSortedMap;
       class Collections$UnmodifiableSortedSet;
@@ -288,10 +300,12 @@ extern "Java"
       class Hashtable$HashEntry;
       class Hashtable$HashIterator;
       class IdentityHashMap;
+      class IdentityHashMap$IdentityEntry;
       class IdentityHashMap$IdentityIterator;
       class Iterator;
       class LinkedHashMap;
       class LinkedHashMap$LinkedHashEntry;
+      class LinkedHashSet;
       class LinkedList;
       class LinkedList$Entry;
       class LinkedList$LinkedListItr;
@@ -311,7 +325,9 @@ extern "Java"
       class PropertyResourceBundle;
       class Random;
       class RandomAccess;
+      class RandomAccessSubList;
       class ResourceBundle;
+      class ResourceBundle$Security;
       class Set;
       class SimpleTimeZone;
       class SortedMap;
@@ -329,12 +345,11 @@ extern "Java"
       class TreeMap$Node;
       class TreeMap$SubMap;
       class TreeMap$TreeIterator;
-      class TreeMap$VerifyResult;
       class TreeSet;
       class Vector;
       class WeakHashMap;
-      class WeakHashMap$Entry;
       class WeakHashMap$WeakBucket;
+      class WeakHashMap$WeakEntry;
       class WeakHashMap$WeakEntrySet;
       namespace jar
       {
@@ -372,7 +387,7 @@ extern "Java"
         class ZipOutputStream;
       };
     };
-  };
+  };  
 };
   
 typedef struct java::lang::Object* jobject;

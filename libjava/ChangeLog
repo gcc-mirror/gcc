@@ -1,3 +1,14 @@
+2002-05-24  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	Merge JDK 1.4 exception chaining support from classpath.
+	* java/lang/Throwable.java: Merge 1.4 support from classpath.
+	(stackTraceBytes): Rename from stackTrace.
+	* java/lang/Exception.java: Merge from classpath.
+	* java/lang/StackTraceElement: New file from classpath.
+	* gcj/javaprims.h: Rebuild CNI namespace declarations.
+	* Makefile.am: Add StackTraceElement.
+	* Makefile.in: Rebuilt.
+
 2002-05-23  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* Makefile.am (all-recursive): Depend on $all_java_class_files so that
