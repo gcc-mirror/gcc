@@ -1,3 +1,11 @@
+2003-09-12  Andrew Haley  <aph@redhat.com>
+
+	* java-tree.h (LOCAL_VAR_OUT_OF_SCOPE_P): New.
+	(struct lang_decl_var:freed): New variable. 
+	* decl.c (poplevel): Mark local vars that have gone out of scope.
+	(push_jvm_slot): Don't use the RTL of a var that has gone out of
+	scope.
+
 2003-11-16  Jason Merrill  <jason@redhat.com>
 
 	* Make-lang.in (java.tags): Create TAGS.sub files in each directory
