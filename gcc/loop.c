@@ -5995,6 +5995,11 @@ basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val, location)
       /* If this register is assigned in a previous insn, look at its
 	 source, but don't go outside the loop or past a label.  */
 
+      /* If this sets a register to itself, we would repeat any previous
+	 biv increment if we applied this strategy blindly.  */
+      if (rtx_equal_p (dest_reg, x))
+	return 0;
+
       insn = p;
       while (1)
 	{
@@ -6066,7 +6071,8 @@ basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val, location)
       if (insn)
 	set = single_set (insn);
 
-      if (set && SET_DEST (set) == XEXP (x, 0)
+      if (! rtx_equal_p (dest_reg, XEXP (x, 0))
+	  && set && SET_DEST (set) == XEXP (x, 0)
 	  && GET_CODE (XEXP (x, 1)) == CONST_INT
 	  && INTVAL (XEXP (x, 1)) >= 0
 	  && GET_CODE (SET_SRC (set)) == ASHIFT
