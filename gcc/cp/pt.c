@@ -102,6 +102,7 @@ static int mark_template_parm PROTO((tree, void *));
 static tree tsubst_friend_function PROTO((tree, tree));
 static tree get_bindings_real PROTO((tree, tree, tree, int));
 static int template_decl_level PROTO((tree));
+static tree maybe_get_template_decl_from_type_decl PROTO((tree));
 
 /* Do any processing required when DECL (a member template declaration
    using TEMPLATE_PARAMETERS as its innermost parameter list) is
@@ -2695,6 +2696,23 @@ lookup_template_function (fns, arglist)
 		    fns, arglist);  
 }
 
+/* Within the scope of a template class S<T>, the name S gets bound
+   (in build_self_reference) to a TYPE_DECL for the class, not a
+   TEMPLATE_DECL.  If DECL is a TYPE_DECL for current_class_type,
+   or one of its enclosing classes, and that type is a template,
+   return the associated TEMPLATE_DECL.  Otherwise, the original
+   DECL is returned.  */
+
+tree
+maybe_get_template_decl_from_type_decl (decl)
+     tree decl;
+{
+  return (decl != NULL_TREE
+	  && TREE_CODE (decl) == TYPE_DECL 
+	  && DECL_ARTIFICIAL (decl)
+	  && CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (decl))) 
+    ? CLASSTYPE_TI_TEMPLATE (TREE_TYPE (decl)) : decl;
+}
 
 /* Given an IDENTIFIER_NODE (type TEMPLATE_DECL) and a chain of
    parameters, find the desired type.
@@ -2727,9 +2745,11 @@ lookup_template_class (d1, arglist, in_decl, context)
 	template = IDENTIFIER_LOCAL_VALUE (d1);
       else
 	{
-	  template = IDENTIFIER_NAMESPACE_VALUE (d1); /* XXX */
-	  if (! template)
-	    template = IDENTIFIER_CLASS_VALUE (d1);
+	  template = 
+	    maybe_get_template_decl_from_type_decl
+	    (IDENTIFIER_CLASS_VALUE (d1));
+	  if (template == NULL_TREE)
+	    template = IDENTIFIER_NAMESPACE_VALUE (d1);
 	}
       if (template)
 	context = DECL_CONTEXT (template);
