@@ -484,14 +484,22 @@ dtors_section ()						\
       else							\
 	data_section ();					\
     }								\
-  else if (TREE_CODE (DECL) == VAR_DECL				\
-	   || TREE_CODE (DECL) == CONSTRUCTOR)			\
+  else if (TREE_CODE (DECL) == VAR_DECL)			\
     {								\
       if ((flag_pic && RELOC)					\
 	  || !TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)	\
 	  || !DECL_INITIAL (DECL)				\
 	  || (DECL_INITIAL (DECL) != error_mark_node		\
 	      && !TREE_CONSTANT (DECL_INITIAL (DECL))))		\
+	data_section ();					\
+      else							\
+	const_section ();					\
+    }								\
+  else if (TREE_CODE (DECL) == CONSTRUCTOR)			\
+    {								\
+      if ((flag_pic && RELOC)					\
+	  || !TREE_READONLY (DECL) || TREE_SIDE_EFFECTS (DECL)	\
+	  || ! TREE_CONSTANT (DECL))				\
 	data_section ();					\
       else							\
 	const_section ();					\
