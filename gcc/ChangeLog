@@ -1,5 +1,9 @@
 2004-04-18  Mark Mitchell  <mark@codesourcery.com>
 
+	PR bootstrap/14992
+	* gcc.c (init_gcc_specs): Only honor HAVE_LD_AS_NEEDED on
+	GNU/Linux.
+
 	* doc/extend.texi (Strong Using): Warn users against using this
 	feature.
 
