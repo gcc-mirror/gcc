@@ -1,3 +1,8 @@
+2004-09-04  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* java/net/natNetworkInterfaceWin32.cc (getRealNetworkInterfaces):
+	Changed pfn from static local to local.
+
 2004-09-03  Bryce McKinlay  <mckinlay@redhat.com>
             H.J. Lu  <hongjiu.lu@intel.com>
 

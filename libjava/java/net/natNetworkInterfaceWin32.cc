@@ -116,7 +116,16 @@ determineGetRealNetworkInterfacesFN ()
 ::java::util::Vector*
 java::net::NetworkInterface::getRealNetworkInterfaces ()
 {
-  static PfnGetRealNetworkInterfaces pfn =
+  // This next declaration used to be a static local,
+  // but this introduced a dependency on libsupc++ due
+  // to _cxa_guard_acquire and _cxa_guard_release.
+  // When Win95 is gone and we eventually get rid of
+  // winsock2GetRealNetworkInterfaces, we can rework
+  // all of this. Alternatively, we could move this all
+  // to win32.cc and initialize this at startup time,
+  // but that seems more trouble than it's worth at
+  // the moment.
+  PfnGetRealNetworkInterfaces pfn =
     determineGetRealNetworkInterfacesFN ();
     
   jstring arIFName[MAX_INTERFACES];
