@@ -1,3 +1,8 @@
+1999-12-12  Stephen L Moshier <moshier@mediaone.net>
+
+	* loop.c (load_mems): Don't hoist written floating point mem
+	if -ffloat-store.
+	
 1999-12-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* except.h (struct eh_queue): Add `next' pointer.
