@@ -8560,19 +8560,15 @@ loc_descriptor_from_tree (tree loc, int addressp)
 
     case CONSTRUCTOR:
       {
-	/* If this is already in memory and at a constant address, we can
-	   support it.  */
-	rtx rtl = TREE_CST_RTL (loc);
+	/* Get an RTL for this, which will may have the effect of outputting
+	   it.  This may violates the principle of not having -g affect
+	   the generated code, but it's in the data segment and it's hard
+	   to see a case where it won't already have been output.  */
+	rtx rtl = output_constant_def (loc, 0);
 
 #ifdef ASM_SIMPLIFY_DWARF_ADDR
-	if (rtl)
-	  rtl = ASM_SIMPLIFY_DWARF_ADDR (rtl);
+	rtl = ASM_SIMPLIFY_DWARF_ADDR (rtl);
 #endif
-
-	if (rtl == NULL_RTX ||  GET_CODE (rtl) != MEM
-	    || !CONSTANT_P (XEXP (rtl, 0)))
-	  return 0;
-
 	indirect_p = 1;
 	ret = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (rtl));
 	break;
