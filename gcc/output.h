@@ -144,7 +144,7 @@ extern void allocate_for_life_analysis	PARAMS ((void));
 extern int regno_uninitialized		PARAMS ((int));
 extern int regno_clobbered_at_setjmp	PARAMS ((int));
 extern void find_basic_blocks		PARAMS ((rtx, int, FILE *));
-extern void cleanup_cfg			PARAMS ((int));
+extern bool cleanup_cfg			PARAMS ((int));
 extern void check_function_return_warnings PARAMS ((void));
 #endif
 

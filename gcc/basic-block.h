@@ -246,6 +246,12 @@ extern varray_type basic_block_info;
 
 extern regset regs_live_at_setjmp;
 
+/* Special labels found during CFG build.  */
+
+extern rtx label_value_list, tail_recursion_label_list;
+
+extern struct obstack flow_obstack;
+
 /* Indexed by n, gives number of basic block that  (REG n) is used in.
    If the value is REG_BLOCK_GLOBAL (-2),
    it means (REG n) is used in more than one basic block.
@@ -310,6 +316,7 @@ extern int flow_delete_block		PARAMS ((basic_block));
 extern void merge_blocks_nomove		PARAMS ((basic_block, basic_block));
 extern void tidy_fallthru_edge		PARAMS ((edge, basic_block,
 						 basic_block));
+extern void tidy_fallthru_edges		PARAMS ((void));
 extern void flow_reverse_top_sort_order_compute	PARAMS ((int *));
 extern int flow_depth_first_order_compute	PARAMS ((int *, int *));
 extern void dump_edge_info		PARAMS ((FILE *, edge, int));
@@ -616,9 +623,7 @@ extern void debug_regset		PARAMS ((regset));
 extern void allocate_reg_life_data      PARAMS ((void));
 extern void allocate_bb_life_data	PARAMS ((void));
 extern void find_unreachable_blocks	PARAMS ((void));
-extern void expunge_block		PARAMS ((basic_block));
 extern void delete_noop_moves		PARAMS ((rtx));
-extern rtx last_loop_beg_note		PARAMS ((rtx));
 extern basic_block redirect_edge_and_branch_force PARAMS ((edge, basic_block));
 extern bool redirect_edge_and_branch	PARAMS ((edge, basic_block));
 extern rtx block_label			PARAMS ((basic_block));
@@ -626,7 +631,11 @@ extern bool forwarder_block_p		PARAMS ((basic_block));
 extern bool purge_all_dead_edges	PARAMS ((void));
 extern bool purge_dead_edges		PARAMS ((basic_block));
 extern void find_sub_basic_blocks	PARAMS ((basic_block));
-
+extern bool can_fallthru		PARAMS ((basic_block, basic_block));
+extern void flow_nodes_print		PARAMS ((const char *, const sbitmap,
+						 FILE *));
+extern void flow_edge_list_print	PARAMS ((const char *, const edge *,
+						 int, FILE *));
 
 /* This function is always defined so it can be called from the
    debugger, and it is declared extern so we don't get warnings about
