@@ -1,5 +1,7 @@
 2002-06-19  Nathanael Nerode  <neroden@twcny.rr.com>
 
+	* configure.in: Rearrange a little.
+
 	* configure.in: Remove references to librx.
 	* Makefile.in: Remove references to librx.
 
