@@ -418,8 +418,8 @@
 #endif
 
 #if defined (HAVE__TANL) && ! defined (HAVE_TANL)
-# define HAVE_TANF 1
-# define tanf _tanf
+# define HAVE_TANL 1
+# define tanl _tanl
 #endif
 
 #if defined (HAVE__STRTOF) && ! defined (HAVE_STRTOF)
