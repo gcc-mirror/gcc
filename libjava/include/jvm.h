@@ -448,7 +448,8 @@ extern void _Jv_UnregisterClass (_Jv_Utf8Const*, java::lang::ClassLoader*);
 extern jclass _Jv_FindClass (_Jv_Utf8Const *name,
 			     java::lang::ClassLoader *loader);
 extern jclass _Jv_FindClassFromSignature (char *,
-					  java::lang::ClassLoader *loader);
+					  java::lang::ClassLoader *loader,
+					  char ** = NULL);
 extern void _Jv_GetTypesFromSignature (jmethodID method,
 				       jclass declaringClass,
 				       JArray<jclass> **arg_types_out,

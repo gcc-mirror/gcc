@@ -123,6 +123,7 @@ java::lang::VMClassLoader::getPrimitiveClass (jchar type)
   char sig[2];
   sig[0] = (char) type;
   sig[1] = '\0';
+  // Note: this cannot return NULL, since the input is always correct.
   return _Jv_FindClassFromSignature (sig, NULL);
 }
 

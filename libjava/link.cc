@@ -90,8 +90,11 @@ _Jv_Linker::resolve_field (_Jv_Field *field, java::lang::ClassLoader *loader)
 {
   if (! field->isResolved ())
     {
-      _Jv_Utf8Const *sig = (_Jv_Utf8Const*)field->type;
-      field->type = _Jv_FindClassFromSignature (sig->chars(), loader);
+      _Jv_Utf8Const *sig = (_Jv_Utf8Const *) field->type;
+      jclass type = _Jv_FindClassFromSignature (sig->chars(), loader);
+      if (type == NULL)
+	throw new java::lang::NoClassDefFoundError(field->name->toString());
+      field->type = type;
       field->flags &= ~_Jv_FIELD_UNRESOLVED_FLAG;
     }
 }
@@ -174,6 +177,8 @@ _Jv_Linker::find_field (jclass klass, jclass owner,
   // it cheaper.
   jclass field_type = _Jv_FindClassFromSignature (field_type_name->chars(),
 						  klass->loader);
+  if (field_type == NULL)
+    throw new java::lang::NoClassDefFoundError(field_name->toString());
 
   jclass found_class = 0;
   _Jv_Field *the_field = find_field_helper (owner, field_name,

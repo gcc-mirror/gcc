@@ -1,5 +1,17 @@
 2005-04-05  Tom Tromey  <tromey@redhat.com>
 
+	* jni.cc (_Jv_JNI_GetAnyFieldID): Throw ClassNotFoundException.
+	* java/lang/reflect/natMethod.cc (_Jv_GetTypesFromSignature):
+	Rewrote to use _Jv_FindClassFromSignature.
+	* verify.cc (resolve): throw NoClassDefFoundError.
+	* link.cc (resolve_field): Throw NoClassDefFoundError.
+	(find_field): Likewise.
+	* prims.cc (_Jv_FindClassFromSignature): Removed recursion.
+	Handle error cases.  Added 'endp' argument.
+	* include/jvm.h (_Jv_FindClassFromSignature): Updated prototype.
+
+2005-04-05  Tom Tromey  <tromey@redhat.com>
+
 	* Makefile.in: Rebuilt.
 	* Makefile.am (lib_gnu_java_awt_peer_gtk_la_SOURCES): Removed
 	gtk_awt_peer_sources.
