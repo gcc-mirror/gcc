@@ -53,7 +53,7 @@ public class GtkTextFieldPeer extends GtkTextComponentPeer
 
   native void create ();
 
-  native void gtkEntryGetSize (int cols, int dims[]);
+  native void gtkEntryGetSize (int dims[]);
 
   native void gtkSetFont(String xlfd, int size);
 
@@ -69,7 +69,7 @@ public class GtkTextFieldPeer extends GtkTextComponentPeer
   {
     int dims[] = new int[2];
 
-    gtkEntryGetSize (cols, dims);
+    gtkEntryGetSize (dims);
 
     return (new Dimension (dims[0], dims[1]));
   }
@@ -78,7 +78,7 @@ public class GtkTextFieldPeer extends GtkTextComponentPeer
   {
     int dims[] = new int[2];
 
-    gtkEntryGetSize (cols, dims);
+    gtkEntryGetSize (dims);
 
     return (new Dimension (dims[0], dims[1]));
   }

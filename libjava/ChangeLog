@@ -1,3 +1,17 @@
+2003-10-07  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkTextAreaPeer.java (gtkTextGetSize):
+	Remove unused parameters.
+	* gnu/java/awt/peer/gtk/GtkTextFieldPeer.java (gtkEntryGetSize):
+	Likewise.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkEvents.c
+	(keyevent_state_to_awt_mods): Export function.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextComponentPeer.c
+	(getCaretPosition): Fix TextArea case.
+	(textcomponent_commit_cb): Get exact event time and modifier
+	state.
+	* jni/gtk-peer/gtkpeer.h: Declare keyevent_state_to_awt_mods.
+
 2003-10-02  Guilhem Lavaux  <guilhem@kaffe.org>
 
 	* java/net/InetSocketAddress.java

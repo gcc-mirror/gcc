@@ -54,7 +54,7 @@ Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_create
 
 JNIEXPORT void JNICALL
 Java_gnu_java_awt_peer_gtk_GtkTextFieldPeer_gtkEntryGetSize
-  (JNIEnv *env, jobject obj, jint cols, jintArray jdims)
+  (JNIEnv *env, jobject obj, jintArray jdims)
 {
   void *ptr;
   jint *dims;

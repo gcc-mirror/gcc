@@ -380,6 +380,8 @@ GtkLayout *find_gtk_layout (GtkWidget *parent);
 void setup_window (JNIEnv *env, jobject obj, GtkWidget *window, jint width, 
 		   jint height, jboolean visible);
 
+jint keyevent_state_to_awt_mods (GdkEvent *event);
+
 struct item_event_hook_info
 {
   jobject peer_obj;
