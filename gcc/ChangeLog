@@ -1,3 +1,10 @@
+2002-08-01  Stan Shebs  <shebs@apple.com>
+	    Andreas Tobler  <toa@pop.agri.ch>
+
+	* ginclude/stddef.h (_BSD_SIZE_T_DEFINED_): Define if not defined,
+	plays nice with Darwin headers.
+	(_BSD_RUNE_T_DEFINED_): Likewise. (from Andr
+
 2002-08-01  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-common.c (c_common_init): -Wtraditional also implies -Wlong-long.

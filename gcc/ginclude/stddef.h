@@ -175,6 +175,7 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #ifndef _BSD_SIZE_T_
 #ifndef _SIZE_T_DEFINED_
 #ifndef _SIZE_T_DEFINED
+#ifndef _BSD_SIZE_T_DEFINED_	/* Darwin */
 #ifndef ___int_size_t_h
 #ifndef _GCC_SIZE_T
 #ifndef _SIZET_
@@ -190,6 +191,7 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 #define _BSD_SIZE_T_
 #define _SIZE_T_DEFINED_
 #define _SIZE_T_DEFINED
+#define _BSD_SIZE_T_DEFINED_	/* Darwin */
 #define ___int_size_t_h
 #define _GCC_SIZE_T
 #define _SIZET_
@@ -207,6 +209,7 @@ typedef long ssize_t;
 #endif /* _SIZET_ */
 #endif /* _GCC_SIZE_T */
 #endif /* ___int_size_t_h */
+#endif /* _BSD_SIZE_T_DEFINED_ */
 #endif /* _SIZE_T_DEFINED */
 #endif /* _SIZE_T_DEFINED_ */
 #endif /* _BSD_SIZE_T_ */
@@ -239,6 +242,7 @@ typedef long ssize_t;
 #ifndef _WCHAR_T_
 #ifndef _BSD_WCHAR_T_
 #ifndef _BSD_WCHAR_T_DEFINED_    /* Darwin */
+#ifndef _BSD_RUNE_T_DEFINED_	/* Darwin */
 #ifndef _WCHAR_T_DEFINED_
 #ifndef _WCHAR_T_DEFINED
 #ifndef _WCHAR_T_H
@@ -276,6 +280,7 @@ typedef long ssize_t;
 #if !defined (_ANSI_SOURCE) && !defined (_POSIX_SOURCE)
 typedef _BSD_RUNE_T_ rune_t;
 #define _BSD_WCHAR_T_DEFINED_
+#define _BSD_RUNE_T_DEFINED_	/* Darwin */
 #if defined (__FreeBSD__)
 /* Why is this file so hard to maintain properly?  In constrast to
    the comment above regarding BSD/386 1.1, on FreeBSD for as long
@@ -299,6 +304,7 @@ typedef __WCHAR_TYPE__ wchar_t;
 #endif
 #endif
 #endif
+#endif /* _BSD_RUNE_T_DEFINED_ */
 #endif
 #endif
 #endif
