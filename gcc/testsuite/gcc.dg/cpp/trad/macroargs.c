@@ -4,6 +4,7 @@
 /* { dg-do run } */
 
 #define f(x, y) "x y"
+#define g(x) x
 
 extern void abort (void);
 
@@ -18,6 +19,11 @@ foo
     abort ();
 
   if (strcmp (str1, str2))
+    abort ();
+
+  /* Verify that quoted state is preserved over a newline.  */
+  if (strcmp (g /* { dg-bogus "unterminated 2" } */ ("1
+, 2"), "1 , 2"))	
     abort ();
 
   return 0;

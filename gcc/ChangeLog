@@ -1,3 +1,7 @@
+2002-07-03  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cpptrad.c: Update comment.
+
 2002-07-02  Neil Booth  <neil@daikokuya.co.uk>
 	
 	* doc/cpp.texi: Update for traditional preprocessing changes.

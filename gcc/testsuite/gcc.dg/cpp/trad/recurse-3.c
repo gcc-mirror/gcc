@@ -14,3 +14,12 @@ f(f,f,f,f,f,f,f,f,f)	       /* { dg-bogus "detected recursion" } */
    sources so let's try it too.  */
 #define foo(x,y) bar (x (y,0), y)
 foo (foo, baz);	       /* { dg-bogus "detected recursion" } */
+
+#define mac mac/**/ro
+mac		       /* { dg-bogus "detected recursion" } */
+
+#define mac2 mac2
+"mac2" 		       /* { dg-bogus "detected recursion" } */
+
+#define macro "macro
+macro mac2	       /* { dg-bogus "detected recursion" } */

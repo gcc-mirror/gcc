@@ -10,3 +10,11 @@
  #if 0	/* { dg-bogus "unterminated" } */
 
 #wrong	/* { dg-error "invalid" } */
+
+#define foo 2
+#define bar + 3
+#define foobar 6
+
+#if foo/**/bar != 5
+# error Comments in directive is a separator /* { dg-bogus "error" } */
+#endif
