@@ -5945,6 +5945,19 @@ The usual definition of this macro is as follows:
 fprintf (@var{stream}, "L%s%d:\n", @var{prefix}, @var{num})
 @end example
 
+@findex ASM_OUTPUT_DEBUG_LABEL
+@item ASM_OUTPUT_DEBUG_LABEL (@var{stream}, @var{prefix}, @var{num})
+A C statement to output to the stdio stream @var{stream} a debug info
+label whose name is made from the string @var{prefix} and the number
+@var{num}.  This is useful for VLIW targets, where debug info labels
+may need to be treated differently than branch target labels.  On some
+systems, branch target labels must be at the beginning of instruction
+bundles, but debug info labels can occur in the middle of instruction
+bundles.
+
+If this macro is not defined, then @code{ASM_OUTPUT_INTERNAL_LABEL} will be
+used.
+
 @findex ASM_OUTPUT_ALTERNATE_LABEL_NAME
 @item ASM_OUTPUT_ALTERNATE_LABEL_NAME (@var{stream}, @var{string})
 A C statement to output to the stdio stream @var{stream} the string

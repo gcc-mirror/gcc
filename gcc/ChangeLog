@@ -1,3 +1,13 @@
+2000-10-31  Jim Wilson  <wilson@redhat.com>
+
+	* defaults.h (ASM_OUTPUT_DEBUG_LABEL): New.
+	* tm.texi (ASM_OUTPUT_DEBUG_LABEL): Document.
+	* dwarf2out.c (dwarf2out_begin_block): Use ASM_OUTPUT_DEBUG_LABEL
+	instead of ASM_OUTPUT_INTERNAL_LABEL.
+	(dwarf2out_end_block, dwarf2out_label): Likewise.
+	* final.c (final_scan_insn, case NOTE_INSN_DELETED_LABEL): Likewise
+	* config/ia64/ia64.h (ASM_OUTPUT_DEBUG_LABEL): Define.
+	
 2000-10-31  Richard Henderson  <rth@redhat.com>
 
 	* dwarf2out.c (struct dw_loc_descr_struct): Add dw_loc_addr.
