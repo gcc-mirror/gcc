@@ -1,3 +1,8 @@
+Fri Oct  2 10:39:08 1998  Hans-Peter Nilsson  <hp@axis.se>
+
+	* expr.c (expand_expr, case CONSTRUCTOR): Change ">" to ">="
+	making MOVE_RATIO use consistent.
+
 Fri Oct  2 08:22:01 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* h8300.c (get_shift_alg): Fix typo in asm string; "n" should be "\n".
