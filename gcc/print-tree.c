@@ -352,22 +352,47 @@ print_node (file, prefix, node, indent)
     case 'd':
       mode = DECL_MODE (node);
 
-      if (DECL_EXTERNAL (node))
-	fputs (" external", file);
-      if (DECL_NONLOCAL (node))
-	fputs (" nonlocal", file);
-      if (DECL_REGISTER (node))
-	fputs (" regdecl", file);
-      if (DECL_INLINE (node))
-	fputs (" inline", file);
-      if (DECL_BIT_FIELD (node))
-	fputs (" bit-field", file);
-      if (DECL_VIRTUAL_P (node))
-	fputs (" virtual", file);
       if (DECL_IGNORED_P (node))
 	fputs (" ignored", file);
+      if (DECL_ABSTRACT (node))
+	fputs (" abstract", file);
       if (DECL_IN_SYSTEM_HEADER (node))
 	fputs (" in_system_header", file);
+      if (DECL_COMMON (node))
+	fputs (" common", file);
+      if (DECL_EXTERNAL (node))
+	fputs (" external", file);
+      if (DECL_REGISTER (node))
+	fputs (" regdecl", file);
+      if (DECL_PACKED (node))
+	fputs (" packed", file);
+      if (DECL_NONLOCAL (node))
+	fputs (" nonlocal", file);
+      if (DECL_INLINE (node))
+	fputs (" inline", file);
+
+      if (TREE_CODE (node) == TYPE_DECL && TYPE_DECL_SUPPRESS_DEBUG (node))
+	fputs (" supress-debug", file);
+
+      if (TREE_CODE (node) == FUNCTION_DECL && DECL_BUILT_IN (node))
+	fputs (" built-in", file);
+      if (TREE_CODE (node) == FUNCTION_DECL && DECL_BUILT_IN_NONANSI (node))
+	fputs (" built-in-nonansi", file);
+
+      if (TREE_CODE (node) == FIELD_DECL && DECL_BIT_FIELD (node))
+	fputs (" bit-field", file);
+      if (TREE_CODE (node) == LABEL_DECL && DECL_TOO_LATE (node))
+	fputs (" too-late", file);
+      if (TREE_CODE (node) == VAR_DECL && DECL_IN_TEXT_SECTION (node))
+	fputs (" in-text-section", file);
+
+      if (DECL_VIRTUAL_P (node))
+	fputs (" virtual", file);
+      if (DECL_DEFER_OUTPUT (node))
+	fputs (" defer-output", file);
+      if (DECL_TRANSPARENT_UNION (node))
+	fputs (" transparent-union", file);
+
       if (DECL_LANG_FLAG_0 (node))
 	fputs (" decl_0", file);
       if (DECL_LANG_FLAG_1 (node))
@@ -441,7 +466,14 @@ print_node (file, prefix, node, indent)
 
     case 't':
       if (TYPE_NO_FORCE_BLK (node))
-	fputs (" no_force_blk", file);
+	fputs (" no-force-blk", file);
+      if (TYPE_STRING_FLAG (node))
+	fputs (" string-flag", file);
+      if (TYPE_NEEDS_CONSTRUCTING (node))
+	fputs (" needs-constructing", file);
+      if (TYPE_TRANSPARENT_UNION (node))
+	fputs (" transparent-union", file);
+
       if (TYPE_LANG_FLAG_0 (node))
 	fputs (" type_0", file);
       if (TYPE_LANG_FLAG_1 (node))
