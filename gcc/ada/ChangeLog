@@ -1,3 +1,7 @@
+2001-12-04  Arnaud Charlet <charlet@gnat.com>
+
+	* Makefile.in: (HIE_SOURCES): add s-fat*.
+
 2001-12-04  Robert Dewar <dewar@gnat.com>
 
 	* sem_attr.adb:

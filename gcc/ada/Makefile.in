@@ -1896,6 +1896,12 @@ HIE_SOURCES = \
  unchdeal.ads \
  s-maccod.ads \
  s-unstyp.ads \
+ s-fatgen.ads \
+ s-fatgen.adb \
+ s-fatflt.ads \
+ s-fatlfl.ads \
+ s-fatllf.ads \
+ s-fatsfl.ads \
  a-tags.ads   \
  a-tags.adb $(EXTRA_HIE_SOURCES)
 
