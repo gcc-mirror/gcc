@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -56,10 +56,11 @@ public class Input_UTF8 extends BytesToUnicode
 			// partial == (hi-0xD800)*0x10+((lo-0xDC00)>>6)+0x400.
 			// The definition lo>=0xDC00 && lo<=0xDFFF implies
 			// that (lo-0xDC00)>>6 is in the range 0..15.
-			// Hence we can infer (partial-0x400)>>4 == (hi-0xDB00)
-			// and we can emit the high-surrogate without waiting
-			// for the final byte:
-			outbuffer[outpos++] = (char) (0xDA00+(partial>>4));
+			// Hence we can solve for `hi' and we can emit
+			// the high-surrogate without waiting for the
+			// final byte:
+			outbuffer[outpos++]
+			  = (char) (0xD800 + ((partial - 0x400) >> 4));
 
 			// Now we want to set it up so that when we read
 			// the final byte on the next iteration, we will
