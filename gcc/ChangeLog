@@ -1,3 +1,8 @@
+Fri Apr  12 15:00:52 1999  Stan Cox  <scox@cygnus.com>
+
+	* c-decl.c (c_decode_option, start_decl, start_function,
+	finish_function) : Recognize -Wno-main so we can avoid warnings.
+
 1999-04-12 14:55 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* cpphash.c (collect_expansion, macroexpand,
