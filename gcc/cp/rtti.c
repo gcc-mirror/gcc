@@ -548,7 +548,7 @@ get_base_offset (binfo, parent)
     /* Under the new ABI, we store the vtable offset at which
        the virtual base offset can be found.  */
     return convert (sizetype,
-		    BINFO_VPTR_FIELD (BINFO_FOR_VBASE (BINFO_TYPE (binfo),
+		    BINFO_VPTR_FIELD (binfo_for_vbase (BINFO_TYPE (binfo),
 						       parent)));
 
 }
@@ -930,11 +930,6 @@ expand_class_desc (tdecl, type)
   int i = CLASSTYPE_N_BASECLASSES (type);
   int base_cnt = 0;
   tree binfos = TYPE_BINFO_BASETYPES (type);
-#if 0
-  /* See code below that used these.  */
-  tree vb = CLASSTYPE_VBASECLASSES (type);
-  int n_base = i;
-#endif
   tree base, elems, access, offset, isvir;
   tree elt, elts = NULL_TREE;
 
@@ -1000,39 +995,6 @@ expand_class_desc (tdecl, type)
       elts = tree_cons (NULL_TREE, elt, elts);
       base_cnt++;
     }
-#if 0
-  i = n_base;
-  while (vb)
-    {
-      tree b;
-      access = access_public_node;
-      while (--i >= 0)
-	{
-	  b = TREE_VEC_ELT (binfos, i);
-	  if (BINFO_TYPE (vb) == BINFO_TYPE (b) && TREE_VIA_VIRTUAL (b))
-	    {
-	      if (TREE_VIA_PUBLIC (b))
-		access = access_public_node;
-	      else if (TREE_VIA_PROTECTED (b))
-		access = access_protected_node;
-	      else
-		access = access_private_node;
-	      break;
-	    }
-	}
-      base = build_t_desc (BINFO_TYPE (vb), 1);
-      offset = BINFO_OFFSET (vb);
-      isvir = build_int_2 (1, 0);
-
-      base_list = tree_cons (NULL_TREE, base, base_list);
-      isvir_list = tree_cons (NULL_TREE, isvir, isvir_list);
-      acc_list = tree_cons (NULL_TREE, access, acc_list);
-      off_list = tree_cons (NULL_TREE, offset, off_list);
-
-      base_cnt++;
-      vb = TREE_CHAIN (vb);
-    }
-#endif
 
   name_string = tinfo_name (type);
 

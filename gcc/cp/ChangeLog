@@ -1,3 +1,58 @@
+2000-05-19  Mark Mitchell  <mark@codesourcery.com>
+
+	Don't create a separate copy of virtual bases for the
+	CLASSTYPE_VBASECLASSES list.
+	* cp-tree.h (CLASSTYPE_VBASECLASSES): Change documentation.
+	(BINFO_FOR_VBASE): Remove.
+	(CANONICAL_BINFO): Adjust.
+	(binfo_for_vbase): New function.
+	* class.c (build_vbase_pointer_fields): Use binfo_for_vbase
+	instead of BINFO_FOR_VBASE.
+	(build_vbase_pointer): Likewise.
+	(build_secondary_vtable): Likewise.
+	(dfs_mark_primary_bases): Likewise.
+	(mark_primary_bases): Likewise.
+	(layout_nonempty_base_or_field): Likewise.
+	(dfs_set_offset_for_shared_vbases): Likewise.
+	(dfs_set_offset_for_unshared_vbases): Likewise.
+	(layout_virtual_bases): Likewise.  Adjust for changes to the
+	CLASSTYPE_VBASECLASSES list.
+	(dump_class_hierarchy_r): Use binfo_for_vbase
+	instead of BINFO_FOR_VBASE.
+	(dump_class_hierarchy): Likewise.
+	(finish_vtbls): Likewise.
+	(build_vtbl_initializer): Adjust for changes to the
+	CLASSTYPE_VBASECLASSES list.
+	(build_vbase_offset_vtbl_entries): Use binfo_for_vbase.
+	* decl.c (finish_destructor_body): Adjust for changes to the
+	CLASSTYPE_VBASECLASSES list.
+	* init.c (sort_base_init): Use binfo_for_vbase.
+	(construct_virtual_bases): Adjust for changes to the
+	CLASSTYPE_VBASECLASSES list.
+	(expand_member_init): Use binfo_for_vbase.
+	(build_vbase_delete):  Adjust for changes to the
+	CLASSTYPE_VBASECLASSES list.
+	* method.c (do_build_copy_constructor): Likewise.
+	* rtti.c (get_base_offset): Use binfo_for_vbase.
+	(expand_class_desc): Remove #if 0'd code.
+	* search.c (struct vbase_info): Remove vbase_types.
+	(get_base_distance):  Use binfo_for_vbase.
+	(lookup_field_queue_p): Use CANONICAL_BINFO.
+	(get_shared_vbase_if_not_primary): Use binfo_for_vbase.
+	(get_pure_virtuals): Adjust for changes to the
+	CLASSTYPE_VBASECLASSES list.
+	(dfs_find_vbases): Use binfo_for_vbase.
+	(dfs_init_vbase_pointers): Likewise.
+	(init_vbase_pointers): Don't initialize vi.vbase_types.
+	(virtual_context): Use binfo_for_vbase.
+	(fixup_all_virtual_upcast_offsets): Adjust for changes to the
+	CLASSTYPE_VBASECLASSES list.
+	(expand_indirect_vtbls_init): Simplify.
+	(dfs_get_vbase_types): Don't replicate virtual bases.
+	(find_vbase_instance): Use binfo_for_vbase.
+	(binfo_for_vbase): New function.
+	* typeck.c (get_delta_difference): Use binfo_for_vbase.
+	
 2000-05-17  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (finish_anon_union): Generalize error messages to handle

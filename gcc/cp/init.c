@@ -537,7 +537,7 @@ sort_base_init (t, rbase_ptr, vbase_ptr)
 	     this constructor is the top-level constructor called.  */
 	  if (TREE_VIA_VIRTUAL (binfo))
 	    {
-	      tree v = BINFO_FOR_VBASE (BINFO_TYPE (binfo), t);
+	      tree v = binfo_for_vbase (BINFO_TYPE (binfo), t);
 	      vbases = tree_cons (v, TREE_VALUE (x), vbases);
 	      continue;
 	    }
@@ -855,6 +855,7 @@ construct_virtual_bases (type, this_ref, this_ptr, init_list, flag)
       tree inner_if_stmt;
       tree compound_stmt;
       tree exp;
+      tree vbase;
 
       /* If there are virtual base classes with destructors, we need to
 	 emit cleanups to destroy them if an exception is thrown during
@@ -878,21 +879,22 @@ construct_virtual_bases (type, this_ref, this_ptr, init_list, flag)
 	 constructing virtual bases, then we must be the most derived
 	 class.  Therefore, we don't have to look up the virtual base;
 	 we already know where it is.  */
+      vbase = TREE_VALUE (vbases);
       exp = build (PLUS_EXPR,
 		   TREE_TYPE (this_ptr),
 		   this_ptr,
 		   fold (build1 (NOP_EXPR, TREE_TYPE (this_ptr),
-				 BINFO_OFFSET (vbases))));
+				 BINFO_OFFSET (vbase))));
       exp = build1 (NOP_EXPR, 
-		    build_pointer_type (BINFO_TYPE (vbases)), 
+		    build_pointer_type (BINFO_TYPE (vbase)), 
 		    exp);
 
-      expand_aggr_vbase_init_1 (vbases, this_ref, exp, init_list);
+      expand_aggr_vbase_init_1 (vbase, this_ref, exp, init_list);
       finish_compound_stmt (/*has_no_scope=*/1, compound_stmt);
       finish_then_clause (inner_if_stmt);
       finish_if_stmt ();
       
-      expand_cleanup_for_base (vbases, flag);
+      expand_cleanup_for_base (vbase, flag);
     }
 }
 
@@ -1022,7 +1024,7 @@ expand_member_init (exp, name, init)
 	       && ! current_template_parms
 	       && ! vec_binfo_member (basetype,
 				      TYPE_BINFO_BASETYPES (type))
-	       && ! BINFO_FOR_VBASE (basetype, type))
+	       && ! binfo_for_vbase (basetype, type))
 	{
 	  if (IDENTIFIER_CLASS_VALUE (name))
 	    goto try_member;
@@ -3290,8 +3292,9 @@ build_vbase_delete (type, decl)
 
   while (vbases)
     {
-      tree this_addr = convert_force (build_pointer_type (BINFO_TYPE (vbases)),
-				      addr, 0);
+      tree this_addr 
+	= convert_force (build_pointer_type (BINFO_TYPE (TREE_VALUE (vbases))),
+			 addr, 0);
       result = tree_cons (NULL_TREE,
 			  build_delete (TREE_TYPE (this_addr), this_addr,
 					integer_zero_node,

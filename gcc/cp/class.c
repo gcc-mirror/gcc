@@ -246,7 +246,7 @@ build_vbase_pointer_fields (rli, empty_p)
 	    {
 	      tree other_base_binfo = TREE_VEC_ELT (binfos, j);
 	      if (! TREE_VIA_VIRTUAL (other_base_binfo)
-		  && BINFO_FOR_VBASE (basetype, BINFO_TYPE (other_base_binfo)))
+		  && binfo_for_vbase (basetype, BINFO_TYPE (other_base_binfo)))
 		goto got_it;
 	    }
 	  FORMAT_VBASE_NAME (name, basetype);
@@ -285,7 +285,7 @@ build_vbase_pointer (exp, type)
 
       /* Find the shared copy of TYPE; that's where the vtable offset
 	 is recorded.  */
-      vbase = BINFO_FOR_VBASE (type, TREE_TYPE (exp));
+      vbase = binfo_for_vbase (type, TREE_TYPE (exp));
       /* Find the virtual function table pointer.  */
       vbase_ptr = build_vfield_ref (exp, TREE_TYPE (exp));
       /* Compute the location where the offset will lie.  */
@@ -841,7 +841,7 @@ build_secondary_vtable (binfo, for_type)
 #endif
 
   if (TREE_VIA_VIRTUAL (binfo))
-    my_friendly_assert (binfo == BINFO_FOR_VBASE (BINFO_TYPE (binfo),
+    my_friendly_assert (binfo == binfo_for_vbase (BINFO_TYPE (binfo),
 						  current_class_type),
 			170);
 
@@ -859,7 +859,7 @@ build_secondary_vtable (binfo, for_type)
 
   if (TREE_VIA_VIRTUAL (binfo))
     {
-      tree binfo1 = BINFO_FOR_VBASE (BINFO_TYPE (binfo), for_type);
+      tree binfo1 = binfo_for_vbase (BINFO_TYPE (binfo), for_type);
 
       /* XXX - This should never happen, if it does, the caller should
 	 ensure that the binfo is from for_type's binfos, not from any
@@ -1694,7 +1694,7 @@ dfs_mark_primary_bases (binfo, data)
       tree shared_binfo;
 
       shared_binfo 
-	= BINFO_FOR_VBASE (BINFO_TYPE (base_binfo), (tree) data);
+	= binfo_for_vbase (BINFO_TYPE (base_binfo), (tree) data);
 
       /* If this virtual base is not already primary somewhere else in
 	 the hiearchy, then we'll be using this copy.  */
@@ -1741,7 +1741,7 @@ mark_primary_bases (type)
       if (!TREE_VIA_VIRTUAL (vbases))
 	continue;
 
-      vbase = BINFO_FOR_VBASE (BINFO_TYPE (vbases), type);
+      vbase = binfo_for_vbase (BINFO_TYPE (vbases), type);
       if (BINFO_VBASE_PRIMARY_P (vbase))
 	/* This virtual base was already included in the hierarchy, so
 	   there's nothing to do here.  */
@@ -3667,7 +3667,7 @@ layout_nonempty_base_or_field (rli, decl, binfo, v)
 	 a data member.  */
       if (binfo && flag_new_abi && layout_conflict_p (binfo, v))
 	{
-	  /* Undo the propogate_binfo_offsets call.  */
+	  /* Undo the propagate_binfo_offsets call.  */
 	  offset = size_diffop (size_zero_node, offset);
 	  propagate_binfo_offsets (binfo, convert (ssizetype, offset));
 	 
@@ -4376,7 +4376,7 @@ dfs_set_offset_for_shared_vbases (binfo, data)
       /* Update the shared copy.  */
       tree shared_binfo;
 
-      shared_binfo = BINFO_FOR_VBASE (BINFO_TYPE (binfo), (tree) data);
+      shared_binfo = binfo_for_vbase (BINFO_TYPE (binfo), (tree) data);
       BINFO_OFFSET (shared_binfo) = BINFO_OFFSET (binfo);
     }
 
@@ -4399,7 +4399,7 @@ dfs_set_offset_for_unshared_vbases (binfo, data)
       tree vbase;
       tree offset;
       
-      vbase = BINFO_FOR_VBASE (BINFO_TYPE (binfo), t);
+      vbase = binfo_for_vbase (BINFO_TYPE (binfo), t);
       offset = size_diffop (BINFO_OFFSET (vbase), BINFO_OFFSET (binfo));
       propagate_binfo_offsets (binfo, offset);
     }
@@ -4448,13 +4448,14 @@ layout_virtual_bases (t, base_offsets)
     {
       tree vbase;
 
-      if (!TREE_VIA_VIRTUAL (vbases))
-	continue;
-
       if (flag_new_abi)
-	vbase = BINFO_FOR_VBASE (BINFO_TYPE (vbases), t);
+	{
+	  if (!TREE_VIA_VIRTUAL (vbases))
+	    continue;
+	  vbase = binfo_for_vbase (BINFO_TYPE (vbases), t);
+	}
       else
-	vbase = vbases;
+	vbase = TREE_VALUE (vbases);
 
       if (!BINFO_VBASE_PRIMARY_P (vbase))
 	{
@@ -4486,9 +4487,15 @@ layout_virtual_bases (t, base_offsets)
 			       *base_offsets);
 	  else
 	    {
+	      tree offset;
+
+	      offset = ssize_int (CEIL (dsize, BITS_PER_UNIT));
+	      offset = size_diffop (offset, 
+				    convert (ssizetype, 
+					     BINFO_OFFSET (vbase)));
+
 	      /* And compute the offset of the virtual base.  */
-	      propagate_binfo_offsets (vbase, 
-				       ssize_int (CEIL (dsize, BITS_PER_UNIT)));
+	      propagate_binfo_offsets (vbase, offset);
 	      /* Every virtual baseclass takes a least a UNIT, so that
 		 we can take it's address and get something different
 		 for each base.  */
@@ -4516,10 +4523,6 @@ layout_virtual_bases (t, base_offsets)
      in get_base_distance depend on the BINFO_OFFSETs being set
      correctly.  */
   dfs_walk (TYPE_BINFO (t), dfs_set_offset_for_unshared_vbases, NULL, t);
-  for (vbases = CLASSTYPE_VBASECLASSES (t);
-       vbases;
-       vbases = TREE_CHAIN (vbases))
-    dfs_walk (vbases, dfs_set_offset_for_unshared_vbases, NULL, t);
 
   /* If we had empty base classes that protruded beyond the end of the
      class, we didn't update DSIZE above; we were hoping to overlay
@@ -4542,7 +4545,7 @@ layout_virtual_bases (t, base_offsets)
 	 vbases; 
 	 vbases = TREE_CHAIN (vbases))
       {
-	tree basetype = BINFO_TYPE (vbases);
+	tree basetype = BINFO_TYPE (TREE_VALUE (vbases));
 	if (get_base_distance (basetype, t, 0, (tree*)0) == -2)
 	  cp_warning ("virtual base `%T' inaccessible in `%T' due to ambiguity",
 		      basetype, t);
@@ -6334,7 +6337,7 @@ dump_class_hierarchy_r (t, binfo, indent)
     fprintf (stderr, " virtual");
   if (BINFO_PRIMARY_MARKED_P (binfo)
       || (TREE_VIA_VIRTUAL (binfo) 
-	  && BINFO_VBASE_PRIMARY_P (BINFO_FOR_VBASE (BINFO_TYPE (binfo), 
+	  && BINFO_VBASE_PRIMARY_P (binfo_for_vbase (BINFO_TYPE (binfo), 
 						     t))))
     fprintf (stderr, " primary");
   fprintf (stderr, "\n");
@@ -6349,12 +6352,7 @@ void
 dump_class_hierarchy (t)
      tree t;
 {
-  tree vbase;
-
   dump_class_hierarchy_r (t, TYPE_BINFO (t), 0);
-  fprintf (stderr, "virtual bases\n");
-  for (vbase = CLASSTYPE_VBASECLASSES (t); vbase; vbase = TREE_CHAIN (vbase))
-    dump_class_hierarchy_r (t, vbase, 0);
 }
 
 /* Virtual function table initialization.  */
@@ -6383,7 +6381,7 @@ finish_vtbls (t)
 	{
 	  if (!TREE_VIA_VIRTUAL (vbase))
 	    continue;
-	  accumulate_vtbl_inits (BINFO_FOR_VBASE (BINFO_TYPE (vbase), t),
+	  accumulate_vtbl_inits (binfo_for_vbase (BINFO_TYPE (vbase), t),
 				 list);
 	}
 
@@ -6554,7 +6552,7 @@ build_vtbl_initializer (binfo, original_binfo, t, rtti_binfo,
   for (vbase = CLASSTYPE_VBASECLASSES (t); 
        vbase; 
        vbase = TREE_CHAIN (vbase))
-    CLEAR_BINFO_VTABLE_PATH_MARKED (vbase);
+    CLEAR_BINFO_VTABLE_PATH_MARKED (TREE_VALUE (vbase));
 
   /* Add entries to the vtable for RTTI.  */
   inits = chainon (inits, build_rtti_vtbl_entries (binfo, rtti_binfo));
@@ -6673,7 +6671,7 @@ build_vbase_offset_vtbl_entries (binfo, vod)
 
       /* Find the instance of this virtual base in the complete
 	 object.  */
-      b = BINFO_FOR_VBASE (BINFO_TYPE (vbase), t);
+      b = binfo_for_vbase (BINFO_TYPE (vbase), t);
 
       /* If we've already got an offset for this virtual base, we
 	 don't need another one.  */
@@ -6694,7 +6692,7 @@ build_vbase_offset_vtbl_entries (binfo, vod)
 	  tree orig_vbase;
 
 	  /* Find the instance of this virtual base in the type of BINFO.  */
-	  orig_vbase = BINFO_FOR_VBASE (BINFO_TYPE (vbase),
+	  orig_vbase = binfo_for_vbase (BINFO_TYPE (vbase),
 					BINFO_TYPE (binfo));
 
 	  /* The vbase offset had better be the same.  */

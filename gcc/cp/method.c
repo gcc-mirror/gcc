@@ -2262,7 +2262,8 @@ do_build_copy_constructor (fndecl)
       for (t = CLASSTYPE_VBASECLASSES (current_class_type); t;
 	   t = TREE_CHAIN (t))
 	current_base_init_list 
-	  = tree_cons (BINFO_TYPE (t), parm, current_base_init_list);
+	  = tree_cons (BINFO_TYPE (TREE_VALUE (t)), parm, 
+		       current_base_init_list);
       for (i = 0; i < n_bases; ++i)
 	{
 	  t = TREE_VEC_ELT (binfos, i);
