@@ -23,10 +23,8 @@
 #include <testsuite_hooks.h>
 
 std::wstring str_01(L"mykonos. . . or what?");
-std::wstring str_02(L"paris, or sainte-maxime?");
 std::wstring str_03;
 std::wstringbuf strb_01(str_01);
-std::wstringbuf strb_02(str_02, std::ios_base::in);
 std::wstringbuf strb_03(str_03, std::ios_base::out);
 
 // test overloaded virtual functions
@@ -34,11 +32,6 @@ void test04()
 {
   bool test __attribute__((unused)) = true;
   std::wstring 		str_tmp;
-  std::wstringbuf 		strb_tmp;
-  typedef std::wstringbuf::int_type int_type;
-  typedef std::wstringbuf::traits_type traits_type;
-  typedef std::wstringbuf::pos_type pos_type;
-  typedef std::wstringbuf::off_type off_type;
 
   // PUT
   strb_03.str(str_01); //reset
