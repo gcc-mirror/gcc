@@ -1324,7 +1324,6 @@ uw_identify_context (struct _Unwind_Context *context)
 alias (_Unwind_Backtrace);
 alias (_Unwind_DeleteException);
 alias (_Unwind_FindEnclosingFunction);
-alias (_Unwind_FindTableEntry);
 alias (_Unwind_ForcedUnwind);
 alias (_Unwind_GetDataRelBase);
 alias (_Unwind_GetTextRelBase);
