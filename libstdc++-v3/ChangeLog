@@ -1,3 +1,8 @@
+2000-11-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* include/bits/codecvt.h (codecvt::do_out): Make it const-correct.
+	(codecvt::do_in): Likewise.
+
 2000-11-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* src/locale-inst.cc: Add explicit instantiations of

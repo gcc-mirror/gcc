@@ -393,7 +393,7 @@ namespace std
 	  // Argument list for iconv specifies a byte sequence. Thus,
 	  // all to/from arrays must be brutally casted to char*.
 	  char* __cto = reinterpret_cast<char*>(__to);
-	  char* __cfrom;
+	  const char* __cfrom;
 	  size_t __conv;
 
 	  // Some encodings need a byte order marker as the first item
@@ -408,13 +408,13 @@ namespace std
 	      intern_type __cfixed[__size + 1];
 	      __cfixed[0] = static_cast<intern_type>(__int_bom);
 	      char_traits<intern_type>::copy(__cfixed + 1, __from, __size);
-	      __cfrom = reinterpret_cast<char*>(__cfixed);
+	      __cfrom = reinterpret_cast<const char*>(__cfixed);
 	      __conv = iconv(*__desc, &__cfrom, &__flen, &__cto, &__tlen); 
 	    }
 	  else
 	    {
 	      intern_type* __cfixed = const_cast<intern_type*>(__from);
-	      __cfrom = reinterpret_cast<char*>(__cfixed);
+	      __cfrom = reinterpret_cast<const char*>(__cfixed);
 	      __conv = iconv(*__desc, &__cfrom, &__flen, &__cto, &__tlen); 
 	    }
 
@@ -495,7 +495,7 @@ namespace std
 	  // Argument list for iconv specifies a byte sequence. Thus,
 	  // all to/from arrays must be brutally casted to char*.
 	  char* __cto = reinterpret_cast<char*>(__to);
-	  char* __cfrom;
+	  const char* __cfrom;
 	  size_t __conv;
 
 	  // Some encodings need a byte order marker as the first item
@@ -510,13 +510,13 @@ namespace std
 	      extern_type __cfixed[__size + 1];
 	      __cfixed[0] = static_cast<extern_type>(__ext_bom);
 	      char_traits<extern_type>::copy(__cfixed + 1, __from, __size);
-	      __cfrom = reinterpret_cast<char*>(__cfixed);
+	      __cfrom = reinterpret_cast<const char*>(__cfixed);
 	      __conv = iconv(*__desc, &__cfrom, &__flen, &__cto, &__tlen); 
 	    }
 	  else
 	    {
 	      extern_type* __cfixed = const_cast<extern_type*>(__from);
-	      __cfrom = reinterpret_cast<char*>(__cfixed);
+	      __cfrom = reinterpret_cast<const char*>(__cfixed);
 	      __conv = iconv(*__desc, &__cfrom, &__flen, &__cto, &__tlen); 
 	    }
 
