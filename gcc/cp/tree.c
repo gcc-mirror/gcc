@@ -125,6 +125,9 @@ real_lvalue_p (ref)
     case MIN_EXPR:
       return (real_lvalue_p (TREE_OPERAND (ref, 0))
 	      && real_lvalue_p (TREE_OPERAND (ref, 1)));
+
+    default:
+      break;
     }
 
   return 0;
@@ -210,6 +213,9 @@ lvalue_p (ref)
     case MIN_EXPR:
       return (lvalue_p (TREE_OPERAND (ref, 0))
 	      && lvalue_p (TREE_OPERAND (ref, 1)));
+
+    default:
+      break;
     }
 
   return 0;
@@ -2052,6 +2058,9 @@ cp_tree_equal (t1, t2)
 	return 0;
       if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (t1, 0))) == 't')
 	return comptypes (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0), 1);
+      break;
+
+    default:
       break;
     }
 

@@ -844,6 +844,9 @@ comptypes (type1, type2, strict)
       if (TYPE_IDENTIFIER (t1) != TYPE_IDENTIFIER (t2))
 	return 0;
       return comptypes (TYPE_CONTEXT (t1), TYPE_CONTEXT (t2), 1);
+
+    default:
+      break;
     }
   return attrval == 2 && val == 1 ? 2 : val;
 }
@@ -1788,6 +1791,9 @@ build_component_ref (datum, component, basetype_path, protect)
 			      basetype_path, protect),
 	 build_component_ref (TREE_OPERAND (datum, 2), component,
 			      basetype_path, protect));
+
+    default:
+      break;
     }
 
   code = TREE_CODE (basetype);
@@ -2724,6 +2730,9 @@ build_function_call_real (function, params, require_complete, flags)
 	if (coerced_params == 0)
 	  return integer_zero_node;
 	return build_unary_op (ABS_EXPR, TREE_VALUE (coerced_params), 0);
+
+      default:
+	break;
       }
 
   /* C++ */
@@ -3568,6 +3577,9 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 	  pedwarn ("ANSI C++ forbids comparison between pointer and integer");
 	}
       break;
+
+    default:
+      break;
     }
 
   if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE || code0 == COMPLEX_TYPE)
@@ -4334,6 +4346,9 @@ build_unary_op (code, xarg, noconvert)
 	      TREE_NO_UNUSED_WARNING (compound) = 1;
 	      return compound;
 	    }
+
+	  default:
+	    break;
 	  }
 
 	/* Complain about anything else that is not a true lvalue.  */
@@ -4497,6 +4512,10 @@ build_unary_op (code, xarg, noconvert)
 	case FIX_CEIL_EXPR:
 	  if (! lvalue_p (arg) && pedantic)
 	    pedwarn ("taking the address of a cast to non-reference type");
+	  break;
+	  
+	default:
+	  break;
 	}
 
       /* Allow the address of a constructor if all the elements
@@ -4550,6 +4569,9 @@ build_unary_op (code, xarg, noconvert)
 
 	return addr;
       }
+
+    default:
+      break;
     }
 
   if (!errstring)
@@ -5783,6 +5805,9 @@ build_modify_expr (lhs, modifycode, rhs)
 			 from warn_if_unused_value.  */
 		      cp_convert (void_type_node, rhs), cond);
       }
+
+    default:
+      break;
     }
 
   if (TREE_CODE (lhs) == OFFSET_REF)
@@ -5934,6 +5959,9 @@ build_modify_expr (lhs, modifycode, rhs)
 	  return result;
 	return cp_convert (TREE_TYPE (lhs), result);
       }
+
+    default:
+      break;
     }
 
   /* Now we have handled acceptable kinds of LHS that are not truly lvalues.

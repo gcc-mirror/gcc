@@ -473,6 +473,9 @@ initializer_constant_valid_p (value, endtype)
 	  return null_pointer_node;
 	return 0;
       }
+
+    default:
+      break;
     }
 
   return 0;
