@@ -166,7 +166,9 @@ print_rtx (in_rtx)
 	    else if (NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_BLOCK_BEG
 		     || NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_BLOCK_END)
 	      {
-		fprintf (outfile, " %d", NOTE_BLOCK_NUMBER (in_rtx));
+		fprintf (outfile, " ");
+		fprintf (outfile, HOST_PTR_PRINTF, 
+			 (char *) NOTE_BLOCK (in_rtx));
 		sawclose = 1;
 	      }
 	    else if (NOTE_LINE_NUMBER (in_rtx) == NOTE_INSN_RANGE_START

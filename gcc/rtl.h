@@ -517,15 +517,11 @@ extern const char * const reg_note_name[];
    information as a rtx in the field.  */
 
 #define NOTE_SOURCE_FILE(INSN) 	XCSTR(INSN, 3, NOTE)
-#define NOTE_BLOCK_NUMBER(INSN)	XCINT(INSN, 3, NOTE)
+#define NOTE_BLOCK(INSN)	XCTREE(INSN, 3, NOTE)
 #define NOTE_EH_HANDLER(INSN)	XCINT(INSN, 3, NOTE)
 #define NOTE_RANGE_INFO(INSN)  	XCEXP(INSN, 3, NOTE)
 #define NOTE_LIVE_INFO(INSN)   	XCEXP(INSN, 3, NOTE)
 #define NOTE_BASIC_BLOCK(INSN)	XCBBDEF(INSN, 3, NOTE)
-
-/* If the NOTE_BLOCK_NUMBER field gets a -1, it means create a new
-   block node for a live range block.  */
-#define NOTE_BLOCK_LIVE_RANGE_BLOCK -1
 
 /* In a NOTE that is a line number, this is the line number.
    Other kinds of NOTEs are identified by negative numbers here.  */
