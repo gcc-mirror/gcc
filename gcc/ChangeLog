@@ -1,3 +1,11 @@
+2003-08-14  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (pa_adjust_insn_length): Delete adjustment for delay slot in
+	direct calls.
+	(attr_length_call): Include it here.  Improve length estimate for
+	local calls.
+	(output_call): Use targetm.binds_local_p.
+
 2003-08-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (CASE_MATHFN): New helper macro.
