@@ -1199,7 +1199,7 @@
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(high:SI (match_operand 1 "" "")))]
-  "check_pic (1)"
+  "check_pic (1) && !is_function_label_plus_const (operands[1])"
   "ldil L'%G1,%0"
   [(set_attr "type" "move")
    (set_attr "length" "4")])
@@ -1232,7 +1232,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lo_sum:SI (match_operand:SI 1 "register_operand" "r")
 		   (match_operand:SI 2 "immediate_operand" "i")))]
-  ""
+  "!is_function_label_plus_const (operands[2])"
   "ldo R'%G2(%1),%0"
   [(set_attr "length" "4")])
 
