@@ -1787,7 +1787,7 @@ print_operand_address (file, addr)
 			     CODE_LABEL_NUMBER (XEXP (addr, 0)),
 			     reg_names[REGNO (XEXP (ireg, 0))]);
 #else
-		asm_fprintf (file, "%LL%d-%LLI%d-2.b(%Rpc,%s.w",
+		asm_fprintf (file, "%LL%d-%LLI%d.b(%Rpc,%s.w",
 			     CODE_LABEL_NUMBER (XEXP (addr, 0)),
 			     CODE_LABEL_NUMBER (XEXP (addr, 0)),
 			     reg_names[REGNO (XEXP (ireg, 0))]);
@@ -1807,7 +1807,7 @@ print_operand_address (file, addr)
 			     CODE_LABEL_NUMBER (XEXP (addr, 0)),
 			     reg_names[REGNO (ireg)]);
 #else
-		asm_fprintf (file, "%LL%d-%LLI%d-2.b(%Rpc,%s.l",
+		asm_fprintf (file, "%LL%d-%LLI%d.b(%Rpc,%s.l",
 			     CODE_LABEL_NUMBER (XEXP (addr, 0)),
 			     CODE_LABEL_NUMBER (XEXP (addr, 0)),
 			     reg_names[REGNO (ireg)]);
@@ -1839,7 +1839,7 @@ print_operand_address (file, addr)
 			 CODE_LABEL_NUMBER (XEXP (addr, 0)),
 			 reg_names[REGNO (breg)]);
 #else
-	    asm_fprintf (file, "%LL%d-%LLI%d-2.b(%Rpc,%s.l",
+	    asm_fprintf (file, "%LL%d-%LLI%d.b(%Rpc,%s.l",
 			 CODE_LABEL_NUMBER (XEXP (addr, 0)),
 			 CODE_LABEL_NUMBER (XEXP (addr, 0)),
 			 reg_names[REGNO (breg)]);
@@ -1934,7 +1934,7 @@ print_operand_address (file, addr)
 			 CODE_LABEL_NUMBER (XEXP (addr, 0)),
 			 reg_names[REGNO (reg1)]);
 #else
-	    asm_fprintf (file, "%LL%d-%LLI%d-2.b(%Rpc,%s.l)",
+	    asm_fprintf (file, "%LL%d-%LLI%d.b(%Rpc,%s.l)",
 			 CODE_LABEL_NUMBER (XEXP (addr, 0)),
 			 CODE_LABEL_NUMBER (XEXP (addr, 0)),
 			 reg_names[REGNO (reg1)]);
