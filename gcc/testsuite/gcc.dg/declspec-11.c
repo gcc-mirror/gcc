@@ -42,4 +42,4 @@ register void f8 (void); /* { dg-error "error: invalid storage class for functio
 void i (void) { auto void y (void) {} } /* { dg-error "error: ISO C forbids nested functions" } */
 /* { dg-error "error: function definition declared 'auto'" "nested" { target *-*-* } 42 } */
 
-inline int main (void) { return 0; } /* { dg-warning "warning: cannot inline function 'main'" } */
+inline int main (void) { return 0; } /* { dg-error "error: cannot inline function 'main'" } */

@@ -8,7 +8,7 @@
 
 /* Duplicate specifiers.  */
 
-inline inline void f0 (void), /* { dg-error "error: duplicate 'inline'" } */
+inline inline void f0 (void),
   f1 (void);
 
 static static int a, /* { dg-error "error: duplicate 'static'" } */
