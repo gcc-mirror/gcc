@@ -86,6 +86,12 @@ int _Jv_CondNotifyAll (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *);
 // We use CRITICAL_SECTIONs instead of CreateMutex() for better performance
 //
 
+// Returns 0 if the mutex lock is held by the current thread, and 1 otherwise.
+inline int _Jv_MutexCheckMonitor (_Jv_Mutex_t *mu)
+{
+  return (mu->owner != GetCurrentThreadId ( ));
+}
+
 inline void _Jv_MutexInit (_Jv_Mutex_t *mu)
 {
   mu->owner = 0UL;

@@ -182,6 +182,15 @@ public class Thread implements Runnable
   }
 
   /**
+   * Return true if this Thread holds the object's lock, false otherwise.
+   *
+   * @param obj the object to test lock ownership on.
+   * @throws NullPointerException if obj is null.
+   * @since 1.4
+   */
+  public static native boolean holdsLock (Object obj);
+
+  /**
    * Interrupt this Thread. First, there is a security check,
    * <code>checkAccess</code>. Then, depending on the current state of the
    * thread, various actions take place:

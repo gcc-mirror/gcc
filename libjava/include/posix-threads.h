@@ -77,12 +77,9 @@ typedef struct
 // this out.  Returns 0 if the lock is held by the current thread, and
 // 1 otherwise.
 inline int
-_Jv_PthreadCheckMonitor (_Jv_Mutex_t *mu)
+_Jv_MutexCheckMonitor (_Jv_Mutex_t *mu)
 {
-  pthread_t self = pthread_self();
-  if (mu->owner == self)
-    return 0;
-  else return 1;
+  return (mu->owner != pthread_self());
 }
 
 //
@@ -155,7 +152,7 @@ _Jv_MutexLock (_Jv_Mutex_t *mu)
 inline int
 _Jv_MutexUnlock (_Jv_Mutex_t *mu)
 {
-  if (_Jv_PthreadCheckMonitor (mu))
+  if (_Jv_MutexCheckMonitor (mu))
     {
 #     ifdef LOCK_DEBUG
 	fprintf(stderr, "_Jv_MutexUnlock: Not owner\n");

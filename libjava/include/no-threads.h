@@ -75,6 +75,11 @@ _Jv_CondNotifyAll (_Jv_ConditionVariable_t *, _Jv_Mutex_t *)
 // Mutexes.
 //
 
+inline int _Jv_MutexCheckMonitor (_Jv_Mutex_t *mu)
+{
+  return 0;
+}
+
 inline void
 _Jv_MutexInit (_Jv_Mutex_t *)
 {

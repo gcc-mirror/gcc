@@ -49,6 +49,7 @@ public:
   friend void _Jv_MonitorExit (jobject obj);
   friend void _Jv_InitializeSyncMutex (void);
   friend void _Jv_FinalizeObject (jobject obj);
+  friend bool _Jv_ObjectCheckMonitor (jobject obj);
 
 #ifdef JV_MARKOBJ_DECL
   friend JV_MARKOBJ_DECL;
