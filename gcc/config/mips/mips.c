@@ -3687,7 +3687,7 @@ override_options ()
     }
 
   /* This optimization requires a linker that can support a R_MIPS_LO16
-     relocation which is not immediately preceeded by a R_MIPS_HI16 relocation.
+     relocation which is not immediately preceded by a R_MIPS_HI16 relocation.
      GNU ld has this support, but not all other MIPS linkers do, so we enable
      this optimization only if the user requests it, or if GNU ld is the
      standard linker for this configuration.  */

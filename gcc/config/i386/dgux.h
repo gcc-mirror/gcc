@@ -25,7 +25,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "i386/sysv4.h"
 
 #ifndef VERSION_INFO2
-#define VERSION_INFO2   "$Revision: 1.6 $"
+#define VERSION_INFO2   "$Revision: 1.7 $"
 #endif
 
 #ifndef VERSION_STRING
@@ -170,7 +170,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Linker and library spec's.
    -static, -shared, -symbolic, -h* and -z* access AT&T V.4 link options.
    -svr4 instructs gcc to place /usr/lib/values-X[cat].o on link the line.
-   The absense of -msvr4 indicates linking done in a COFF environment and
+   The absence of -msvr4 indicates linking done in a COFF environment and
    adds the link script to the link line.  In all environments, the first
    and last objects are crtbegin.o and crtend.o.
    When the -G link option is used (-shared and -symbolic) a final link is

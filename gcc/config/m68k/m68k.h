@@ -277,8 +277,8 @@ extern int target_flags;
 
 /* No data type wants to be aligned rounder than this. 
    Most published ABIs say that ints should be aligned on 16 bit
-   boundries, but cpus with 32 bit busses get better performance
-   aligned on 32 bit boundries.  Coldfires without a misalignment
+   boundaries, but cpus with 32 bit busses get better performance
+   aligned on 32 bit boundaries.  Coldfires without a misalignment
    module require 32 bit alignment. */
 #define BIGGEST_ALIGNMENT (TARGET_ALIGN_INT ? 32 : 16)
 
@@ -375,7 +375,7 @@ extern int target_flags;
    and are not available for the register allocator.
    On the 68000, only the stack pointer is such.  */
 
-/* fpa0 is also reserved so that it can be used to move shit back and
+/* fpa0 is also reserved so that it can be used to move data back and
    forth between high fpa regs and everything else. */
 
 #define FIXED_REGISTERS        \

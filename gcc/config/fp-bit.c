@@ -241,7 +241,7 @@ typedef unsigned int UDItype __attribute__ ((mode (DI)));
 /* numeric parameters */
 /* F_D_BITOFF is the number of bits offset between the MSB of the mantissa
    of a float and of a double. Assumes there are only two float types.
-   (double::FRAC_BITS+double::NGARGS-(float::FRAC_BITS-float::NGARDS))
+   (double::FRAC_BITS+double::NGARDS-(float::FRAC_BITS-float::NGARDS))
  */
 #define F_D_BITOFF (52+8-(23+7))
 
@@ -456,7 +456,7 @@ pack_d ( fp_number_type *  src)
     }
 
   /* We previously used bitfields to store the number, but this doesn't
-     handle little/big endian systems conviently, so use shifts and
+     handle little/big endian systems conveniently, so use shifts and
      masks */
 #ifdef FLOAT_BIT_ORDER_MISMATCH
   dst.bits.fraction = fraction;
@@ -483,7 +483,7 @@ static void
 unpack_d (FLO_union_type * src, fp_number_type * dst)
 {
   /* We previously used bitfields to store the number, but this doesn't
-     handle little/big endian systems conviently, so use shifts and
+     handle little/big endian systems conveniently, so use shifts and
      masks */
   fractype fraction;
   int exp;

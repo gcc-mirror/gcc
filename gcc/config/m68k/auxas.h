@@ -1,5 +1,5 @@
 /* Definitions for Motorola 680x0 running A/UX using /bin/as
-   Copyright (C) 1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -31,7 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_SPEC "%{m68030:-68030 }%{m68040:-68040 }"
 
 /* Modify AT&T SGS assembler syntax */
-/* A/UX's as doesn't do dots in pseodo-ops */
+/* A/UX's as doesn't do dots in pseudo-ops */
 
 #define SDB_DEBUGGING_INFO
 

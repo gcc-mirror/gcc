@@ -1448,7 +1448,7 @@ do {							\
 
    On the MIPS, all general registers are one word long.  Except on
    the R4000 with the FR bit set, the floating point uses register
-   pairs, with the second register not being allocatable.  */
+   pairs, with the second register not being allocable.  */
 
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
   (! FP_REG_P (REGNO)							\

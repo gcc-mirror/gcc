@@ -4849,7 +4849,7 @@ reg_mentioned_in_mem (reg, rtl)
   return 0;
 }
 
-/* Output the approprate insns for doing strlen if not just doing repnz; scasb
+/* Output the appropriate insns for doing strlen if not just doing repnz; scasb
 
    operands[0] = result, initialized with the startaddress
    operands[1] = alignment of the address.
@@ -4904,7 +4904,7 @@ output_strlen_unroll (operands)
 	     therefore use andl rather than andb. */
 	  output_asm_insn (AS2 (and%L1,%4,%1), xops);
 
-	  /* Is aligned to 4-byte adress when zero */
+	  /* Is aligned to 4-byte address when zero */
 	  output_asm_insn (AS1 (je,%l8), xops);
 
 	  /* Side-effect even Parity when %eax == 3 */
@@ -4924,7 +4924,7 @@ output_strlen_unroll (operands)
 	     check if is aligned to 4 - byte.  */
 	  output_asm_insn (AS2 (and%L1,%3,%1), xops);
 
-	  /* Is aligned to 4-byte adress when zero */
+	  /* Is aligned to 4-byte address when zero */
 	  output_asm_insn (AS1 (je,%l8), xops);
         }
 

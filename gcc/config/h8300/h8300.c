@@ -52,7 +52,7 @@ int cpu_type;
    (either via #pragma or an attribute specification).  */
 int interrupt_handler;
 
-/* True if the current fucntion is an OS Task
+/* True if the current function is an OS Task
    (via an attribute specification).  */
 int os_task;
 

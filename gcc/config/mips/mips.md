@@ -255,7 +255,7 @@
        (and (eq_attr "mode" "DI") (eq_attr "cpu" "r5000")))
   68 68)
 
-;; The R4300 does *NOT* have a seperate Floating Point Unit, instead
+;; The R4300 does *NOT* have a separate Floating Point Unit, instead
 ;; the FP hardware is part of the normal ALU circuitry.  This means FP
 ;; instructions affect the pipe-line, and no functional unit
 ;; parallelism can occur on R4300 processors.  To force GCC into coding
