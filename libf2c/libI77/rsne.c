@@ -368,7 +368,7 @@ have_amp:
 	  case '&':
 	    return 0;
 	  default:
-	    if (ch <= ' ' && ch >= 0 || ch == ',')
+	    if ((ch <= ' ' && ch >= 0) || ch == ',')
 	      continue;
 	    Ungetc (ch, f__cf);
 	    if ((ch = getname (buf, sizeof (buf))))

@@ -56,7 +56,7 @@ f_inqu (inlist * a)
     }
   if (a->inex != NULL)
     {
-      if (byfile && x != -1 || !byfile && p != NULL)
+      if ((byfile && x != -1) || (!byfile && p != NULL))
 	*a->inex = 1;
       else
 	*a->inex = 0;
@@ -72,7 +72,7 @@ f_inqu (inlist * a)
     *a->innum = p - f__units;
   if (a->innamed != NULL)
     {
-      if (byfile || p != NULL && p->ufnm != NULL)
+      if (byfile || (p != NULL && p->ufnm != NULL))
 	*a->innamed = 1;
       else
 	*a->innamed = 0;

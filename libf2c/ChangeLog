@@ -1,3 +1,12 @@
+Mon Jun  3 22:23:03 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* libF77/lbitbits.c (lbit_cshift): disambiguate expressions
+	with parentheses.
+	* libF77/qbitbits.c (qbit_cshift): Likewise.
+	* libI77/inquire.c (f_inqu): Likewise.
+	* libI77/rdfmt.c (rd_Z): Likewise.
+	* libI77/rsne.c (x_rsne): Likewise.
+
 Mon Jun  3 22:21:23 2002  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (s-libe77): Add WARN_CFLAGS.
