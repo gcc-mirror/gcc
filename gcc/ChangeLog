@@ -1,3 +1,14 @@
+2000-07-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mips.c (function_arg_pass_by_reference): Don't do automatic
+	aggregate initialization.
+	(machine_dependent_reorg): Initialize variable `mode'.
+	
+	* mips.md (absdi2): Change variable `regno1' to unsigned int.
+	(reload_indi): Rename loword/hiword to lo_word/hi_word to avoid
+	conflicts with sys/param.h macro of the same name.
+	(reload_outdi): Likewise.
+
 2000-07-15  Michael Meissner  <meissner@redhat.com>
 
 	* fold-const.c (fold): When optimizing FOO++ == CONST into ++FOO
