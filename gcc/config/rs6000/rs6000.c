@@ -5436,12 +5436,11 @@ rs6000_expand_builtin (exp, target, subtarget, mode, ignore)
 static void
 rs6000_init_builtins ()
 {
+  opaque_V2SI_type_node = copy_node (V2SI_type_node);
+  opaque_V2SF_type_node = copy_node (V2SF_type_node);
+
   if (TARGET_SPE)
-    {
-      opaque_V2SI_type_node = copy_node (V2SI_type_node);
-      opaque_V2SF_type_node = copy_node (V2SF_type_node);
-      spe_init_builtins ();
-    }
+    spe_init_builtins ();
   if (TARGET_ALTIVEC)
     altivec_init_builtins ();
   if (TARGET_ALTIVEC || TARGET_SPE)
@@ -5483,47 +5482,47 @@ spe_init_builtins ()
   tree endlink = void_list_node;
   tree puint_type_node = build_pointer_type (unsigned_type_node);
   tree pushort_type_node = build_pointer_type (short_unsigned_type_node);
-  tree pv2si_type_node = build_pointer_type (V2SI_type_node);
+  tree pv2si_type_node = build_pointer_type (opaque_V2SI_type_node);
   struct builtin_description *d;
   size_t i;
 
   tree v2si_ftype_4_v2si
     = build_function_type
-    (V2SI_type_node,
-     tree_cons (NULL_TREE, V2SI_type_node,
-		tree_cons (NULL_TREE, V2SI_type_node,
-			   tree_cons (NULL_TREE, V2SI_type_node,
-				      tree_cons (NULL_TREE, V2SI_type_node,
+    (opaque_V2SI_type_node,
+     tree_cons (NULL_TREE, opaque_V2SI_type_node,
+		tree_cons (NULL_TREE, opaque_V2SI_type_node,
+			   tree_cons (NULL_TREE, opaque_V2SI_type_node,
+				      tree_cons (NULL_TREE, opaque_V2SI_type_node,
 						 endlink)))));
 
   tree v2sf_ftype_4_v2sf
     = build_function_type
-    (V2SF_type_node,
-     tree_cons (NULL_TREE, V2SF_type_node,
-		tree_cons (NULL_TREE, V2SF_type_node,
-			   tree_cons (NULL_TREE, V2SF_type_node,
-				      tree_cons (NULL_TREE, V2SF_type_node,
+    (opaque_V2SF_type_node,
+     tree_cons (NULL_TREE, opaque_V2SF_type_node,
+		tree_cons (NULL_TREE, opaque_V2SF_type_node,
+			   tree_cons (NULL_TREE, opaque_V2SF_type_node,
+				      tree_cons (NULL_TREE, opaque_V2SF_type_node,
 						 endlink)))));
 
   tree int_ftype_int_v2si_v2si
     = build_function_type
     (integer_type_node,
      tree_cons (NULL_TREE, integer_type_node,
-		tree_cons (NULL_TREE, V2SI_type_node,
-			   tree_cons (NULL_TREE, V2SI_type_node,
+		tree_cons (NULL_TREE, opaque_V2SI_type_node,
+			   tree_cons (NULL_TREE, opaque_V2SI_type_node,
 				      endlink))));
 
   tree int_ftype_int_v2sf_v2sf
     = build_function_type
     (integer_type_node,
      tree_cons (NULL_TREE, integer_type_node,
-		tree_cons (NULL_TREE, V2SF_type_node,
-			   tree_cons (NULL_TREE, V2SF_type_node,
+		tree_cons (NULL_TREE, opaque_V2SF_type_node,
+			   tree_cons (NULL_TREE, opaque_V2SF_type_node,
 				      endlink))));
 
   tree void_ftype_v2si_puint_int
     = build_function_type (void_type_node,
-			   tree_cons (NULL_TREE, V2SI_type_node,
+			   tree_cons (NULL_TREE, opaque_V2SI_type_node,
 				      tree_cons (NULL_TREE, puint_type_node,
 						 tree_cons (NULL_TREE,
 							    integer_type_node,
@@ -5531,7 +5530,7 @@ spe_init_builtins ()
 
   tree void_ftype_v2si_puint_char
     = build_function_type (void_type_node,
-			   tree_cons (NULL_TREE, V2SI_type_node,
+			   tree_cons (NULL_TREE, opaque_V2SI_type_node,
 				      tree_cons (NULL_TREE, puint_type_node,
 						 tree_cons (NULL_TREE,
 							    char_type_node,
@@ -5539,7 +5538,7 @@ spe_init_builtins ()
 
   tree void_ftype_v2si_pv2si_int
     = build_function_type (void_type_node,
-			   tree_cons (NULL_TREE, V2SI_type_node,
+			   tree_cons (NULL_TREE, opaque_V2SI_type_node,
 				      tree_cons (NULL_TREE, pv2si_type_node,
 						 tree_cons (NULL_TREE,
 							    integer_type_node,
@@ -5547,7 +5546,7 @@ spe_init_builtins ()
 
   tree void_ftype_v2si_pv2si_char
     = build_function_type (void_type_node,
-			   tree_cons (NULL_TREE, V2SI_type_node,
+			   tree_cons (NULL_TREE, opaque_V2SI_type_node,
 				      tree_cons (NULL_TREE, pv2si_type_node,
 						 tree_cons (NULL_TREE,
 							    char_type_node,
@@ -5562,19 +5561,19 @@ spe_init_builtins ()
 			   tree_cons (NULL_TREE, void_type_node, endlink));
 
   tree v2si_ftype_pv2si_int
-    = build_function_type (V2SI_type_node,
+    = build_function_type (opaque_V2SI_type_node,
 			   tree_cons (NULL_TREE, pv2si_type_node,
 				      tree_cons (NULL_TREE, integer_type_node,
 						 endlink)));
 
   tree v2si_ftype_puint_int
-    = build_function_type (V2SI_type_node,
+    = build_function_type (opaque_V2SI_type_node,
 			   tree_cons (NULL_TREE, puint_type_node,
 				      tree_cons (NULL_TREE, integer_type_node,
 						 endlink)));
 
   tree v2si_ftype_pushort_int
-    = build_function_type (V2SI_type_node,
+    = build_function_type (opaque_V2SI_type_node,
 			   tree_cons (NULL_TREE, pushort_type_node,
 				      tree_cons (NULL_TREE, integer_type_node,
 						 endlink)));
