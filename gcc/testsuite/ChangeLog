@@ -1,5 +1,10 @@
 2002-12-01  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/5919
+	* g++.dg/template/varmod1.C: New test.
+
+2002-12-01  Mark Mitchell  <mark@codesourcery.com>
+
 	PR c++/8727
 	* g++.dg/inherit/typeinfo1.C: New test.
 	
