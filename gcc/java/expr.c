@@ -79,7 +79,6 @@ static void java_push_constant_from_pool PARAMS ((struct JCF *, int));
 static void java_stack_pop PARAMS ((int)); 
 static tree build_java_throw_out_of_bounds_exception PARAMS ((tree)); 
 static tree build_java_check_indexed_type PARAMS ((tree, tree)); 
-static tree java_array_data_offset PARAMS ((tree)); 
 static tree case_identity PARAMS ((tree, tree)); 
 static unsigned char peek_opcode_at_pc PARAMS ((struct JCF *, int, int));
 static bool emit_init_test_initialization PARAMS ((struct hash_entry *,
@@ -628,11 +627,6 @@ build_java_ret (location)
  
 /* Implementation of operations on array: new, load, store, length */
 
-/* Array core info access macros */
-
-#define JAVA_ARRAY_LENGTH_OFFSET(A) \
-  byte_position (TREE_CHAIN (TYPE_FIELDS (TREE_TYPE (TREE_TYPE (A)))))
-
 tree
 decode_newarray_type (atype)
   int atype;
@@ -699,6 +693,7 @@ build_java_array_length_access (node)
     tree node;
 {
   tree type = TREE_TYPE (node);
+  tree array_type = TREE_TYPE (type);
   HOST_WIDE_INT length;
 
   if (!is_array_type_p (type))
@@ -707,13 +702,13 @@ build_java_array_length_access (node)
   length = java_array_type_length (type);
   if (length >= 0)
     return build_int_2 (length, 0);
-  node = build1 (INDIRECT_REF, int_type_node,
-		 fold (build (PLUS_EXPR, ptr_type_node,
-			      java_check_reference (node, 
-						    flag_check_references), 
-			      JAVA_ARRAY_LENGTH_OFFSET(node))));
+
+  node = build (COMPONENT_REF, int_type_node,
+		build_java_indirect_ref (array_type, node,
+					 flag_check_references),
+		lookup_field (&array_type, get_identifier ("length")));
   IS_ARRAY_LENGTH_ACCESS (node) = 1;
-  return fold (node);
+  return node;
 }
 
 /* Optionally checks a reference against the NULL pointer.  ARG1: the
@@ -752,19 +747,6 @@ build_java_indirect_ref (type, expr, check)
   return build1 (INDIRECT_REF, type, java_check_reference (expr, check));
 }
 
-static tree
-java_array_data_offset (array)
-     tree array;
-{
-  tree array_type = TREE_TYPE (TREE_TYPE (array));
-  tree data_fld = TREE_CHAIN (TREE_CHAIN (TYPE_FIELDS (array_type)));
-
-  if (data_fld == NULL_TREE)
-    return size_in_bytes (array_type);
-  else
-    return byte_position (data_fld);
-}
-
 /* Implement array indexing (either as l-value or r-value).
    Returns a tree for ARRAY[INDEX], assume TYPE is the element type.
    Optionally performs bounds checking and/or test to NULL.
@@ -774,12 +756,10 @@ tree
 build_java_arrayaccess (array, type, index)
     tree array, type, index;
 {
-  tree arith, node, throw = NULL_TREE;
-
-  arith = fold (build (PLUS_EXPR, int_type_node,
-		       java_array_data_offset (array),
-		       fold (build (MULT_EXPR, int_type_node,
-				    index, size_in_bytes(type)))));
+  tree node, throw = NULL_TREE;
+  tree data_field;
+  tree ref;
+  tree array_type = TREE_TYPE (TREE_TYPE (array));
 
   if (flag_bounds_check)
     {
@@ -803,21 +783,84 @@ build_java_arrayaccess (array, type, index)
 	}
     }
 
-  /* The SAVE_EXPR is for correct evaluation order.  It would be
-     cleaner to use force_evaluation_order (see comment there), but
-     that is difficult when we also have to deal with bounds
-     checking. The SAVE_EXPR is not necessary to do that when we're
-     not checking for array bounds. */
-  if (TREE_SIDE_EFFECTS (index) && throw)
-    throw = build (COMPOUND_EXPR, int_type_node, save_expr (array), throw);
+  /* If checking bounds, wrap the index expr with a COMPOUND_EXPR in order
+     to have the bounds check evaluated first. */
+  if (throw != NULL_TREE)
+    index = build (COMPOUND_EXPR, int_type_node, throw, index);
+ 
+  data_field = lookup_field (&array_type, get_identifier ("data"));
 
-  node = build1 (INDIRECT_REF, type, 
-		 fold (build (PLUS_EXPR, ptr_type_node, 
-			      java_check_reference (array,
-						    flag_check_references), 
-			      (throw ? build (COMPOUND_EXPR, int_type_node, 
-					      throw, arith ) : arith))));
+  ref = build (COMPONENT_REF, TREE_TYPE (data_field),    
+	       build_java_indirect_ref (array_type, array, 
+					flag_check_references),
+	       data_field);
+  
+  node = build (ARRAY_REF, type, ref, index);
   return node;
+}
+
+/* Generate code to throw an ArrayStoreException if OBJECT is not assignable
+   (at runtime) to an element of ARRAY.  A NOP_EXPR is returned if it can
+   determine that no check is required. */
+
+tree
+build_java_arraystore_check (array, object)
+   tree array; 
+   tree object;
+{
+  tree check, element_type;
+  tree array_type_p = TREE_TYPE (array);
+  tree object_type = TYPE_NAME (TREE_TYPE (TREE_TYPE (object)));
+
+  if (! is_array_type_p (array_type_p))
+    abort ();
+
+  /* Get the TYPE_DECL for ARRAY's element type. */
+  element_type = TYPE_NAME (TREE_TYPE (TREE_TYPE (TREE_TYPE (array_type_p))));
+
+  if (TREE_CODE (element_type) != TYPE_DECL   
+      || TREE_CODE (object_type) != TYPE_DECL)
+    abort ();
+
+  if (!flag_store_check)
+  return build1 (NOP_EXPR, array_type_p, array);
+
+  /* No check is needed if the element type is final or is itself an array.  
+     Also check that element_type matches object_type, since in the bytecode 
+     compilation case element_type may be the actual element type of the arra
+     rather than its declared type. */
+  if (element_type == object_type
+      && (TYPE_ARRAY_P (TREE_TYPE (element_type))
+	 || CLASS_FINAL (element_type)))
+    return build1 (NOP_EXPR, array_type_p, array);
+  
+  /* Avoid the check if OBJECT was just loaded from the same array. */
+  if (TREE_CODE (object) == ARRAY_REF)
+    {
+      tree target;
+      tree source = TREE_OPERAND (object, 0); /* COMPONENT_REF. */
+      source = TREE_OPERAND (source, 0); /* INDIRECT_REF. */
+      source = TREE_OPERAND (source, 0); /* Source array's DECL or SAVE_EXPR. */
+      if (TREE_CODE (source) == SAVE_EXPR)
+	source = TREE_OPERAND (source, 0);
+      
+      target = array;
+      if (TREE_CODE (target) == SAVE_EXPR)
+	target = TREE_OPERAND (target, 0);
+      
+      if (source == target)
+      return build1 (NOP_EXPR, array_type_p, array);
+    }
+
+  /* Build an invocation of _Jv_CheckArrayStore */
+  check = build (CALL_EXPR, void_type_node,
+		 build_address_of (soft_checkarraystore_node),
+		 tree_cons (NULL_TREE, array,
+		 	    build_tree_list (NULL_TREE, object)),
+		 NULL_TREE);
+  TREE_SIDE_EFFECTS (check) = 1;
+
+  return check;
 }
 
 /* Makes sure that INDEXED_TYPE is appropriate. If not, make it from
@@ -973,12 +1016,7 @@ expand_java_arraystore (rhs_type_node)
 
   if (TREE_CODE (rhs_type_node) == POINTER_TYPE)
     {
-      tree check = build (CALL_EXPR, void_type_node,
-			  build_address_of (soft_checkarraystore_node),
-			  tree_cons (NULL_TREE, array,
-				     build_tree_list (NULL_TREE, rhs_node)),
-			  NULL_TREE);
-      TREE_SIDE_EFFECTS (check) = 1;
+      tree check = build_java_arraystore_check (array, rhs_node);
       expand_expr_stmt (check);
     }
   

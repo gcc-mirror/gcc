@@ -1,3 +1,26 @@
+2002-02-28  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* expr.c (java_array_data_offset): Removed function.
+	(JAVA_ARRAY_LENGTH_OFFSET): Removed macro.
+	(build_java_array_length_access): Obtain "length" value using a
+	COMPONENT_REF, instead of INDIRECT_REF and arithmetic.
+	(build_java_arrayaccess): Correct comment. Access "data" using a
+	COMPONENT_REF, and return an ARRAY_REF instead of an INDIRECT_REF.
+	(build_java_arraystore_check): New function.
+	(expand_java_arraystore): Use build_java_arraystore_check.
+	* parse.y (patch_assignment): Simplify code to insert a store check
+	when lvalue is an ARRAY_REF. Use build_java_arraystore_check.
+	* check-init.c (check_init): Update to reflect that an array length
+	access is now a COMPONENT_REF.
+	* gcj.texi (Code Generation): Improve documentation of
+	-fno-bounds-check. Add documentation for -fno-store-check.
+	* java-tree.h (flag_store_check): Declare.
+	(build_java_arraystore_check): Declare.
+	* lang.c (flag_store_check): Initialize to 1.
+	(lang_f_options): Add store-check option.
+	* jvspec.c: Don't pass store-check option to jvgenmain.
+	* lang-options.h: Add help string for -fno-store-check.
+
 2002-02-28  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* decl.c (copy_lang_decl): Rename java_dup_lang_specific_decl.
@@ -20,7 +43,7 @@
 
 2002-02-22  Per Bothner  <per@bothner.com>
 
-	*  class.c:  Change vtable to be more compatible with g++ v3 abi.
+	* class.c:  Change vtable to be more compatible with g++ v3 abi.
 	(get_dispatch_table):  Prepend offset-to-top (always 0) and
 	type_info pointer (currently unimplemented hence NULL) to vtable.
 	Specifically, prepend offset-to-top and typeinfo ptr (currently null).

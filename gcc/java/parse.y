@@ -12585,9 +12585,8 @@ patch_assignment (node, wfl_op1)
     {
       lhs_type = TREE_TYPE (lvalue);
     }
-  /* Or Lhs can be a array access. Should that be lvalue ? FIXME +
-     comment on reason why */
-  else if (TREE_CODE (wfl_op1) == ARRAY_REF)
+  /* Or Lhs can be an array access. */
+  else if (TREE_CODE (lvalue) == ARRAY_REF)
     {
       lhs_type = TREE_TYPE (lvalue);
       lvalue_from_array = 1;
@@ -12689,80 +12688,29 @@ patch_assignment (node, wfl_op1)
       && lvalue_from_array 
       && JREFERENCE_TYPE_P (TYPE_ARRAY_ELEMENT (lhs_type)))
     {
-      tree check;
-      tree base = lvalue;
+      tree array, store_check, base, index_expr;
 
-      /* We need to retrieve the right argument for
-         _Jv_CheckArrayStore.  This is somewhat complicated by bounds
-         and null pointer checks, both of which wrap the operand in
-         one layer of COMPOUND_EXPR.  */
-      if (TREE_CODE (lvalue) == COMPOUND_EXPR)
-	base = TREE_OPERAND (lvalue, 0);
-      else
+      /* Get the INDIRECT_REF. */
+      array = TREE_OPERAND (TREE_OPERAND (lvalue, 0), 0);
+      /* Get the array pointer expr. */
+      array = TREE_OPERAND (array, 0);
+      store_check = build_java_arraystore_check (array, new_rhs);
+      
+      index_expr = TREE_OPERAND (lvalue, 1);
+      
+      if (TREE_CODE (index_expr) == COMPOUND_EXPR)
 	{
-          tree op = TREE_OPERAND (base, 0);
-	  
-          /* We can have a SAVE_EXPR here when doing String +=.  */
-          if (TREE_CODE (op) == SAVE_EXPR)
-            op = TREE_OPERAND (op, 0);
-	  /* We can have a COMPOUND_EXPR here when doing bounds check. */
-	  if (TREE_CODE (op) == COMPOUND_EXPR)
-	    op = TREE_OPERAND (op, 1);
-	  base = TREE_OPERAND (op, 0);
-	  /* Strip the last PLUS_EXPR to obtain the base. */
-	  if (TREE_CODE (base) == PLUS_EXPR)
-	    base = TREE_OPERAND (base, 0);
+	  /* A COMPOUND_EXPR here is a bounds check. The bounds check must 
+	     happen before the store check, so prepare to insert the store
+	     check within the second operand of the existing COMPOUND_EXPR. */
+	  base = index_expr;
 	}
-
-      /* Build the invocation of _Jv_CheckArrayStore */
-      new_rhs = save_expr (new_rhs);
-      check = build (CALL_EXPR, void_type_node,
-		     build_address_of (soft_checkarraystore_node),
-		     tree_cons (NULL_TREE, base,
-				build_tree_list (NULL_TREE, new_rhs)),
-		     NULL_TREE);
-      TREE_SIDE_EFFECTS (check) = 1;
-
-      /* We have to decide on an insertion point */
-      if (TREE_CODE (lvalue) == COMPOUND_EXPR)
-	{
-	  tree t;
-	  if (flag_bounds_check)
-	    {
-	      t = TREE_OPERAND (TREE_OPERAND (TREE_OPERAND (lvalue, 1), 0), 0);
-	      TREE_OPERAND (TREE_OPERAND (TREE_OPERAND (lvalue, 1), 0), 0) =
-		build (COMPOUND_EXPR, void_type_node, t, check);
-	    }
-	  else
-	    TREE_OPERAND (lvalue, 1) = build (COMPOUND_EXPR, lhs_type,
-					      check, TREE_OPERAND (lvalue, 1));
-	}
-      else if (flag_bounds_check)
-	{
-          tree hook = lvalue;
-          tree compound = TREE_OPERAND (lvalue, 0);
-          tree bound_check, new_compound;
-
-          if (TREE_CODE (compound) == SAVE_EXPR)
-            {
-              compound = TREE_OPERAND (compound, 0);
-              hook = TREE_OPERAND (hook, 0);
-            }
-
-          /* Find the array bound check, hook the original array access. */
-          bound_check = TREE_OPERAND (compound, 0);
-          TREE_OPERAND (hook, 0) = TREE_OPERAND (compound, 1);
-
-	  /* Make sure the bound check will happen before the store check */
-          new_compound =
-            build (COMPOUND_EXPR, void_type_node, bound_check, check);
-
-          /* Re-assemble the augmented array access. */
-          lvalue = build (COMPOUND_EXPR, TREE_TYPE (lvalue),
-			  new_compound, lvalue);
-        }
       else
-        lvalue = build (COMPOUND_EXPR, TREE_TYPE (lvalue), check, lvalue);
+        base = lvalue;
+      
+      index_expr = TREE_OPERAND (base, 1);
+      TREE_OPERAND (base, 1) = build (COMPOUND_EXPR, TREE_TYPE (index_expr), 
+	  			      store_check, index_expr);
     }
 
   /* Final locals can be used as case values in switch

@@ -558,7 +558,7 @@ check_init (exp, before)
 	    final_assign_error (DECL_NAME (decl));
 	  break;
 	}
-      else if (TREE_CODE (tmp) == INDIRECT_REF && IS_ARRAY_LENGTH_ACCESS (tmp))
+      else if (TREE_CODE (tmp) == COMPONENT_REF && IS_ARRAY_LENGTH_ACCESS (tmp))
 	{
 	  /* We can't emit a more specific message here, because when
 	     compiling to bytecodes we don't get here. */
