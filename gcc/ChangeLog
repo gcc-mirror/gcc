@@ -1,3 +1,9 @@
+2003-04-11  Richard Henderson  <rth@redhat.com>
+
+	PR c++/10202
+	* expr.c (expand_expr): Use COMPLETE_OR_UNBOUND_ARRAY_TYPE_P
+	not COMPLETE_TYPE_P for re-invoking layout_decl.
+
 2003-04-11  Simon Law  <sfllaw@engmail.uwaterloo.ca>
 
 	* doc/bugreport.texi: Fix paragraph breaking between sections
