@@ -8,6 +8,12 @@
 	* Makefile.in (cc1plus): Put CXX_OBJS, and thence @extra_cxx_objs@,
 	last.
 
+1998-10-28  Zack Weinberg  <zack@rabi.phys.columbia.edu>
+	
+	* cp/lex.c: Call check_newline from lang_init always.	After
+	calling cpp_start_read, set yy_cur and yy_lim to read from the
+	cpplib token buffer.
+
 1998-10-28  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c (instantiate_type): Don't consider templates for a normal

@@ -395,11 +395,14 @@ lang_init_options ()
 void
 lang_init ()
 {
-#if ! USE_CPPLIB
   /* the beginning of the file is a new line; check for # */
   /* With luck, we discover the real source file's name from that
      and put it in input_filename.  */
+#if ! USE_CPPLIB
   put_back (check_newline ());
+#else
+  check_newline ();
+  yy_cur--;
 #endif
   if (flag_gnu_xref) GNU_xref_begin (input_filename);
   init_repo (input_filename);
@@ -475,12 +478,15 @@ init_parse (filename)
 #endif
 
 #if USE_CPPLIB
-  yy_cur = "\n";
-  yy_lim = yy_cur + 1;
-
   parse_in.show_column = 1;
   if (! cpp_start_read (&parse_in, filename))
     abort ();
+
+  /* cpp_start_read always puts at least one line directive into the
+     token buffer.  We must arrange to read it out here. */
+  yy_cur = parse_in.token_buffer;
+  yy_lim = CPP_PWRITTEN (&parse_in);
+
 #else
   /* Open input file.  */
   if (filename == 0 || !strcmp (filename, "-"))
