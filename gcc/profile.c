@@ -169,7 +169,7 @@ instrument_edges (el)
   if (rtl_dump_file)
     fprintf (rtl_dump_file, "%d edges instrumented\n", num_instr_edges);
 
-  commit_edge_insertions ();
+  commit_edge_insertions_watch_calls ();
 }
 
 /* Output STRING to bb_file, surrounded by DELIMITER.  */

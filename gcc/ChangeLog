@@ -1,3 +1,36 @@
+Wed Mar  6 10:59:39 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* cfgrtl.c (delete_insn_and_edges, delete_insn_chain_and_edges): New.
+	* rtl.h (delete_insn_and_edges, delete_insn_chain_and_edges): Declare
+
+	* basic-block.h (update_life_info, update_life_info_in_dirty_blocks,
+	delete_noop_moves): Return indeger.
+	* flow.c (ndead): New variable.
+	(propagate_block_delete_insn): Use delete_insn_and_edges; remove
+	BB argument; update callers.
+	(propagate_block_delete_libcall): Use delete_insn_chain_and_edges.
+	(life_analysis): Do not call purge_all_dead_edges.
+	(update_life_info): Return number of deleted insns; print statistics.
+	(update_life_info_in_dirty_blocks): likewise.
+	(delete_noop_moves): Use delete_insn_and_edges; print statistics;
+	return number of insns deleted.
+
+	* cse.c: Include timevar.h
+	(delete_trivially_dead_insns): Kill preserve_basic_blocks argument;
+	iterate until stabilizes; print statistics; return number of killed
+	insns.
+	* Makefile.in: (cse.o): Add timevar.h dependency
+	* rtl.h (delete_trivially_dead_insns): New.
+	* timever.def: Add TV_DELETE_TRIVIALLY_DEAD timer.
+	* toplev.c (rest_of_compilation): Update callers.
+
+	* cfgcleanup.c (try_optimize_cfg): Kill blocks.
+	(try_optimize_cfg): Do not update liveness.
+	(cleanup-cfg): Loop until try_optimize_cfg and dead code
+	removal stabilizes; use delete_trivially_dead_insns.
+
+	* cfgrtl.c (verify_flow_info): Sanity check outgoing edges.
+
 2002-03-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* cppmain.c (setup_callbacks): Disable #pragma and #ident

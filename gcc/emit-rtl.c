@@ -2468,6 +2468,17 @@ get_insns ()
   return first_insn;
 }
 
+/* Specify a new insn as the first in the chain.  */
+
+void
+set_first_insn (insn)
+     rtx insn;
+{
+  if (PREV_INSN (insn) != 0)
+    abort ();
+  first_insn = insn;
+}
+
 /* Return the last insn emitted in current sequence or current function.  */
 
 rtx
