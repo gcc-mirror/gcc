@@ -1522,7 +1522,7 @@ install-fixincludes: install-headers
 	rm -rf *
 # Install fixed copies of system files.
 	$(srcdir)/$(FIXINCLUDES) $(libsubdir)/include /usr/include $(srcdir)
-	cd $(libsubdir)/include; if [ -f limits.h ]; mv limits.h ../tmp/syslimits.h; done
+	-cd $(libsubdir)/include; if [ -f limits.h ]; then mv limits.h ../tmp/syslimits.h; fi
 # Bring back gcc's header files.
 	cd $(libsubdir)/include; mv ../tmp/* .; rmdir ../tmp
 # Install the README
