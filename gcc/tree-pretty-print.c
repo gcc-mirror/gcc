@@ -627,12 +627,15 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, str);
       dump_generic_node (buffer, TREE_OPERAND (node, 1), spc, flags, false);
 
-      op0 = component_ref_field_offset (node);
-      if (op0 && TREE_CODE (op0) != INTEGER_CST)
+      if (TREE_CODE (op0) != VALUE_HANDLE)
 	{
-	  pp_string (buffer, "{off: ");
-	  dump_generic_node (buffer, op0, spc, flags, false);
-	  pp_character (buffer, '}');
+	  op0 = component_ref_field_offset (node);
+	  if (op0 && TREE_CODE (op0) != INTEGER_CST)
+	    {
+	      pp_string (buffer, "{off: ");
+	      dump_generic_node (buffer, op0, spc, flags, false);
+	      pp_character (buffer, '}');
+	    }
 	}
       break;
 
