@@ -1,5 +1,20 @@
 2000-01-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* alpha-protos.h: PROTO -> PARAMS.
+	* alpha.c: Likewise.
+	* elf.h: Likewise.
+	* h8300.c: Likewise.
+	* i386-protos.h: Likewise.
+	* i386.c: Likewise.
+	* m32r-protos.h: Likewise.
+	* m32r.c: Likewise.
+	* mips.c: Likewise.
+	* mips.md: Likewise.
+	* gmon-sol2.c: Likewise.
+	* sparc.c: Likewise.
+
+2000-01-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* ns32k-protos.h: New file.
 
 	* ns32k.c: Fix compile time warnings.

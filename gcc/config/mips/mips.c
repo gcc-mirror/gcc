@@ -86,30 +86,30 @@ enum internal_test {
 
 
 struct constant;
-static enum internal_test map_test_to_internal_test	PROTO ((enum rtx_code));
-static int mips16_simple_memory_operand		PROTO ((rtx, rtx,
+static enum internal_test map_test_to_internal_test	PARAMS ((enum rtx_code));
+static int mips16_simple_memory_operand		PARAMS ((rtx, rtx,
 							enum machine_mode));
-static int m16_check_op				PROTO ((rtx, int, int, int));
-static void block_move_loop			PROTO ((rtx, rtx, int, int,
+static int m16_check_op				PARAMS ((rtx, int, int, int));
+static void block_move_loop			PARAMS ((rtx, rtx, int, int,
 							rtx, rtx));
-static void block_move_call			PROTO ((rtx, rtx, rtx));
-static FILE *mips_make_temp_file		PROTO ((void));
-static void save_restore_insns			PROTO ((int, rtx,
+static void block_move_call			PARAMS ((rtx, rtx, rtx));
+static FILE *mips_make_temp_file		PARAMS ((void));
+static void save_restore_insns			PARAMS ((int, rtx,
 							long, FILE *));
-static void mips16_output_gp_offset		PROTO ((FILE *, rtx));
-static void mips16_fp_args			PROTO ((FILE *, int, int));
-static void build_mips16_function_stub		PROTO ((FILE *));
-static void mips16_optimize_gp			PROTO ((rtx));
-static rtx add_constant				PROTO ((struct constant **,
+static void mips16_output_gp_offset		PARAMS ((FILE *, rtx));
+static void mips16_fp_args			PARAMS ((FILE *, int, int));
+static void build_mips16_function_stub		PARAMS ((FILE *));
+static void mips16_optimize_gp			PARAMS ((rtx));
+static rtx add_constant				PARAMS ((struct constant **,
 							rtx,
 							enum machine_mode));
-static void dump_constants			PROTO ((struct constant *,
+static void dump_constants			PARAMS ((struct constant *,
 							rtx));
-static rtx mips_find_symbol			PROTO ((rtx));
-static void abort_with_insn			PROTO ((rtx, const char *))
+static rtx mips_find_symbol			PARAMS ((rtx));
+static void abort_with_insn			PARAMS ((rtx, const char *))
   ATTRIBUTE_NORETURN;
-static int symbolic_expression_p                PROTO ((rtx));
-static void mips_add_gc_roots                   PROTO ((void));
+static int symbolic_expression_p                PARAMS ((rtx));
+static void mips_add_gc_roots                   PARAMS ((void));
 
 /* Global variables for machine-dependent things.  */
 

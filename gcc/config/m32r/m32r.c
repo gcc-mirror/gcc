@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Mitsubishi M32R cpu.
-   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 97-99, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -56,7 +56,7 @@ enum m32r_sdata m32r_sdata;
 int m32r_sched_odd_word_p;
 
 /* Forward declaration.  */
-static void init_reg_tables			PROTO ((void));
+static void init_reg_tables			PARAMS ((void));
 
 /* Called by OVERRIDE_OPTIONS to initialize various things.  */
 
@@ -221,7 +221,7 @@ static tree large_ident1;
 static tree large_ident2;
 
 static void
-init_idents PROTO ((void))
+init_idents PARAMS ((void))
 {
   if (interrupt_ident1 == 0)
     {

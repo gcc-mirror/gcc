@@ -42,11 +42,11 @@ Boston, MA 02111-1307, USA.  */
 #include "tm_p.h"
 
 /* Forward declarations.  */
-static int h8300_interrupt_function_p PROTO ((tree));
-static int h8300_monitor_function_p PROTO ((tree));
-static int h8300_os_task_function_p PROTO ((tree));
-static void dosize PROTO ((FILE *, const char *, unsigned int));
-static const char *cond_string PROTO ((enum rtx_code));
+static int h8300_interrupt_function_p PARAMS ((tree));
+static int h8300_monitor_function_p PARAMS ((tree));
+static int h8300_os_task_function_p PARAMS ((tree));
+static void dosize PARAMS ((FILE *, const char *, unsigned int));
+static const char *cond_string PARAMS ((enum rtx_code));
 
 /* CPU_TYPE, says what cpu we're compiling for.  */
 int cpu_type;
@@ -865,8 +865,8 @@ eq_operator (x, mode)
 
 int
 handle_pragma (p_getc, p_ungetc, pname)
-     int (* ATTRIBUTE_UNUSED p_getc) PROTO ((void));
-     void (* ATTRIBUTE_UNUSED p_ungetc) PROTO ((int));
+     int (* ATTRIBUTE_UNUSED p_getc) PARAMS ((void));
+     void (* ATTRIBUTE_UNUSED p_ungetc) PARAMS ((int));
      const char *pname;
 {
   int retval = 0;
