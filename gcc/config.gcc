@@ -370,11 +370,18 @@ case ${target} in
   gnu_ld=yes
   extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
   case ${target} in
-    *-*-freebsd3 | *-*-freebsd[3].*) fbsd_tm_file="freebsd3.h";;
-    *-*-freebsd4 | *-*-freebsd[4].*) fbsd_tm_file="freebsd4.h";;
-    *-*-freebsd5 | *-*-freebsd[5].*) fbsd_tm_file="freebsd5.h";;
-    *-*-freebsd6 | *-*-freebsd[6].*) fbsd_tm_file="freebsd6.h";;
-    *) echo 'Please update *-*-freebsd* in gcc/config.gcc'; exit 1;;
+    *-*-freebsd3 | *-*-freebsd[3].*)
+      tm_defines="${tm_defines} FBSD_MAJOR=3" ;;
+    *-*-freebsd4 | *-*-freebsd[4].*)
+      tm_defines="${tm_defines} FBSD_MAJOR=4" ;;
+    *-*-freebsd5 | *-*-freebsd[5].*)
+      tm_defines="${tm_defines} FBSD_MAJOR=5" ;;
+    *-*-freebsd6 | *-*-freebsd[6].*)
+      tm_defines="${tm_defines} FBSD_MAJOR=6" ;;
+    *)
+      echo 'Please update *-*-freebsd* in gcc/config.gcc'
+      exit 1
+      ;;
   esac
   tmake_file="t-slibgcc-elf-ver t-freebsd"
   case ${enable_threads} in

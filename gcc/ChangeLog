@@ -1,3 +1,10 @@
+2003-10-12  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc (*-*-freebsd*): Use tm_defines instead of tiny
+	config files which do the same thing.
+	* config/freebsd3.h, config/freebsd4.h, config/freebsd5.h,
+	config/freebsd6.h: Remove now unnecessary files.
+
 2003-10-12  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* c-common.c (c_common_truthvalue_conversion): Warn if the
@@ -9,13 +16,6 @@
 	a literal.
 	* config/h8300/h8300.h (REGNO_OK_FOR_BASE_P): Use MAC_REG
 	instead of a literal.
-
-2003-10-12  Nathanael Nerode  <neroden@gcc.gnu.org>
-
-	* config.gcc (*-*-freebsd*): Use tm_defines instead of tiny
-	config files which do the same thing.
-	* config/freebsd3.h, config/freebsd4.h, config/freebsd5.h,
-	config/freebsd6.h: Remove now unnecessary files.
 
 2003-10-12  Hans-Peter Nilsson  <hp@bitrange.com>
 
