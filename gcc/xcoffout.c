@@ -116,8 +116,8 @@ char *xcoff_lastfile;
 #define ASM_OUTPUT_LBE(FILE,LINENUM,BLOCKNUM) \
   fprintf (FILE, "\t.eb\t%d\n", ABS_OR_RELATIVE_LINENO (LINENUM))
 
-static void assign_type_number		PROTO((tree, char *, int));
-static void xcoffout_block		PROTO((tree, int, tree));
+static void assign_type_number		PARAMS ((tree, char *, int));
+static void xcoffout_block		PARAMS ((tree, int, tree));
 
 /* Support routines for XCOFF debugging info.  */
 

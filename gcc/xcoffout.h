@@ -188,24 +188,24 @@ extern char *xcoff_lastfile;
 
 /* Prototype functions in xcoffout.c. */
 
-extern int stab_to_sclass			PROTO ((int));
+extern int stab_to_sclass			PARAMS ((int));
 #ifdef BUFSIZ
-extern void xcoffout_begin_function		PROTO ((FILE *, int));
-extern void xcoffout_begin_block		PROTO ((FILE *, int, int));
-extern void xcoffout_end_epilogue		PROTO ((FILE *));
-extern void xcoffout_end_function		PROTO ((FILE *, int));
-extern void xcoffout_end_block			PROTO ((FILE *, int, int));
+extern void xcoffout_begin_function		PARAMS ((FILE *, int));
+extern void xcoffout_begin_block		PARAMS ((FILE *, int, int));
+extern void xcoffout_end_epilogue		PARAMS ((FILE *));
+extern void xcoffout_end_function		PARAMS ((FILE *, int));
+extern void xcoffout_end_block			PARAMS ((FILE *, int, int));
 #endif /* BUFSIZ */
 
 #ifdef TREE_CODE
-extern void xcoff_output_standard_types		PROTO ((tree));
+extern void xcoff_output_standard_types		PARAMS ((tree));
 #ifdef BUFSIZ
-extern void xcoffout_declare_function		PROTO ((FILE *, tree, char *));
+extern void xcoffout_declare_function		PARAMS ((FILE *, tree, char *));
 #endif /* BUFSIZ */
 #endif /* TREE_CODE */
 
 #ifdef RTX_CODE
 #ifdef BUFSIZ
-extern void xcoffout_source_line		PROTO ((FILE *, char *, rtx));
+extern void xcoffout_source_line		PARAMS ((FILE *, char *, rtx));
 #endif /* BUFSIZ */
 #endif /* RTX_CODE */
