@@ -1,5 +1,12 @@
 2004-01-21  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/basic_string.tcc (append(const basic_string&)):
+	Revert previous change.
+	(append(const basic_string&, size_type, size_type)): Revert
+	previous change, use _M_check and _M_limit.
+
+2004-01-21  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/basic_string.h (_M_check): Change to return
 	a checked __pos and take an additional const char* argument.
 	(_M_fold): Rename to _M_limit, change to return a size_type,

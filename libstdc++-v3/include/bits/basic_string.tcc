@@ -676,16 +676,33 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>&
     basic_string<_CharT, _Traits, _Alloc>::
     append(const basic_string& __str)
-    { return this->append(__str._M_data(), __str.size()); }
+    {
+      // Iff appending itself, string needs to pre-reserve the
+      // correct size so that _M_mutate does not clobber the
+      // iterators formed here.
+      const size_type __size = __str.size();
+      const size_type __len = __size + this->size();
+      if (__len > this->capacity())
+	this->reserve(__len);
+      return _M_replace_safe(_M_iend(), _M_iend(), __str._M_ibegin(),
+			     __str._M_iend());
+    }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>&
     basic_string<_CharT, _Traits, _Alloc>::
     append(const basic_string& __str, size_type __pos, size_type __n)
     {
-      return this->append(__str._M_data()
-			  + __str._M_check(__pos, "basic_string::append"),
-			  __str._M_limit(__pos, __n));
+      // Iff appending itself, string needs to pre-reserve the
+      // correct size so that _M_mutate does not clobber the
+      // iterators formed here.
+      __pos = __str._M_check(__pos, "basic_string::append");
+      __n = __str._M_limit(__pos, __n);
+      const size_type __len = __n + this->size();
+      if (__len > this->capacity())
+	this->reserve(__len);
+      return _M_replace_safe(_M_iend(), _M_iend(), __str._M_ibegin()
+			     + __pos, __str._M_ibegin() + __pos + __n);
     }
 
   template<typename _CharT, typename _Traits, typename _Alloc>
@@ -693,9 +710,6 @@ namespace std
     basic_string<_CharT, _Traits, _Alloc>::
     append(const _CharT* __s, size_type __n)
     {
-      // Iff appending itself, string needs to pre-reserve the
-      // correct size so that _M_mutate does not clobber the
-      // iterators formed here.
       __glibcxx_requires_string_len(__s, __n);
       const size_type __len = __n + this->size();
       if (__len > this->capacity())
