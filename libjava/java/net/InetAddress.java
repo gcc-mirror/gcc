@@ -12,6 +12,7 @@ package java.net;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * @author Per Bothner
@@ -27,7 +28,7 @@ import java.io.IOException;
  * @specnote This class is not final since JK 1.4
  */
 
-public class InetAddress implements java.io.Serializable
+public class InetAddress implements Serializable
 {
   // The Serialized Form specifies that an int 'address' is saved/restored.
   // This class uses a byte array internally so we'll just do the conversion
@@ -80,6 +81,11 @@ public class InetAddress implements java.io.Serializable
       family = getFamily (address);
   }
 
+  /**
+   * Utility routine to check if the InetAddress is an IP multicast address
+   *
+   * @since 1.1
+   */
   public boolean isMulticastAddress ()
   {
     int len = addr.length;
@@ -127,6 +133,11 @@ public class InetAddress implements java.io.Serializable
       }
   }
 
+  /**
+   * Returns the IP address as string
+   *
+   * @since 1.0.2
+   */
   public String getHostAddress ()
   {
     StringBuffer sbuf = new StringBuffer(40);
@@ -204,6 +215,9 @@ public class InetAddress implements java.io.Serializable
     return true;
   }
 
+  /**
+   * Returns then <code>InetAddress</code> as string
+   */
   public String toString()
   {
     return getHostName()+'/'+getHostAddress();
@@ -215,7 +229,7 @@ public class InetAddress implements java.io.Serializable
    * The argument is in network byte order: the highest order byte of the
    * address is in getAddress()[0].
    *
-   * @exception UnknownHostException If no IP address for the host could
+   * @exception UnknownHostException If IP address has illegal length
    * be found
    *
    * @since 1.4
@@ -236,6 +250,14 @@ public class InetAddress implements java.io.Serializable
   private static native InetAddress[] lookup
   (String hostname, InetAddress addr, boolean all);
 
+  /**
+   * Determines the IP address of a host, given the host's name.
+   *
+   * @exception UnknownHostException If no IP address for the host could
+   * be found
+   * @exception SecurityException If a security manager exists and its
+   * checkConnect method doesn't allow the operation
+   */
   public static InetAddress getByName (String host)
     throws UnknownHostException
   {
@@ -249,6 +271,15 @@ public class InetAddress implements java.io.Serializable
     return iaddr;
   }
 
+  /**
+   * Given the name of a host, returns an array of its IP addresses,
+   * based on the configured name service on the system.
+   *
+   * @exception UnknownHostException If no IP address for the host could
+   * be found
+   * @exception SecurityException If a security manager exists and its
+   * checkConnect method doesn't allow the operation
+   */
   public static InetAddress[] getAllByName (String host)
     throws UnknownHostException
   {
@@ -272,6 +303,12 @@ public class InetAddress implements java.io.Serializable
 
   private static InetAddress localhost = null;
 
+  /**
+   * Returns the local host
+   *
+   * @exception UnknownHostException If no IP address for the host could
+   * be found
+   */
   public static InetAddress getLocalHost() throws UnknownHostException
   {
     SecurityManager s = System.getSecurityManager();

@@ -1,5 +1,16 @@
 2002-10-04  Michael Koch  <konqueror@gmx.de>
 
+	* java/net/InetAddress.java:
+	(isMulticastAddress): Added documentation.
+	(getHostAddress): Added documentation.
+	(toString): Added documentation.
+	(getByAddress): Fixed documentation.
+	(getByName): Added documentation.
+	(getAllByName): Added documentation.
+	(getLocalHost): Added documentation.
+
+2002-10-04  Michael Koch  <konqueror@gmx.de>
+
 	* java/beans/beancontext/BeanContextChildSupport.java:
 	Added serialVersionUID.
 	* java/text/Collator.java: (compare): Made documentation HTML-aware.
