@@ -152,16 +152,6 @@ Boston, MA 02111-1307, USA.  */
 #undef  TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION  arm_elf_asm_named_section
 
-#undef  ASM_OUTPUT_ALIGNED_COMMON
-#define ASM_OUTPUT_ALIGNED_COMMON(STREAM, NAME, SIZE, ALIGN)	\
-  do								\
-    {								\
-      fprintf (STREAM, "\t.comm\t");				\
-      assemble_name (STREAM, NAME);				\
-      fprintf (STREAM, ", %d, %d\n", SIZE, ALIGN);		\
-    }								\
-  while (0)
-
 /* For PIC code we need to explicitly specify (PLT) and (GOT) relocs.  */
 #define NEED_PLT_RELOC	flag_pic
 #define NEED_GOT_RELOC	flag_pic

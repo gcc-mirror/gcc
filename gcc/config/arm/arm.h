@@ -571,7 +571,10 @@ extern int thumb_code;
 extern int arm_is_strong;
 
 /* Nonzero if this chip is an XScale.  */
-extern int arm_is_xscale;
+extern int arm_arch_xscale;
+
+/* Nonzero if tuning for XScale  */
+extern int arm_tune_xscale;
 
 /* Nonzero if this chip is an ARM6 or an ARM7.  */
 extern int arm_is_6_or_7;
@@ -703,7 +706,7 @@ extern int arm_is_6_or_7;
 #define BIGGEST_ALIGNMENT  32
 
 /* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT_FACTOR (TARGET_THUMB || ! arm_is_xscale ? 1 : 2)
+#define CONSTANT_ALIGNMENT_FACTOR (TARGET_THUMB || ! arm_arch_xscale ? 1 : 2)
     
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)				\
   ((TREE_CODE (EXP) == STRING_CST				\
@@ -1770,13 +1773,19 @@ typedef struct
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
    CXT is an RTX for the static chain value for the function.  */
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)  					\
-{											\
-  emit_move_insn									\
-    (gen_rtx_MEM (SImode, plus_constant (TRAMP, TARGET_ARM ? 8 : 16)), CXT);		\
-  emit_move_insn									\
-    (gen_rtx_MEM (SImode, plus_constant (TRAMP, TARGET_ARM ? 12 : 20)),	FNADDR);	\
+#ifndef INITIALIZE_TRAMPOLINE
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
+{									\
+  emit_move_insn (gen_rtx_MEM (SImode,					\
+			       plus_constant (TRAMP,			\
+					      TARGET_ARM ? 8 : 16)),	\
+		  CXT);							\
+  emit_move_insn (gen_rtx_MEM (SImode,					\
+			       plus_constant (TRAMP,			\
+					      TARGET_ARM ? 12 : 20)),	\
+		  FNADDR);						\
 }
+#endif
 
 
 /* Addressing modes, and classification of registers for them.  */
@@ -2330,7 +2339,7 @@ typedef struct
 #define MOVE_MAX 4
 
 #undef  MOVE_RATIO
-#define MOVE_RATIO (arm_is_xscale ? 4 : 2)
+#define MOVE_RATIO (arm_arch_xscale ? 4 : 2)
 
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */

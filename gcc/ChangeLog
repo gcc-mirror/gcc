@@ -1,3 +1,31 @@
+2004-03-30  Matthias Klose  <doko@debian.org>
+
+	Backport:
+
+	2004-01-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR bootstrap/12527
+	* config.gcc (arm*-*-linux*): Don't include unknown-elf.h in tm_file.
+	Move linux-gas.h and linux-elf.h before aout.h.
+	* arm/arm.h (INITIALIZE_TRAMPOLINE): Only define if not already.
+	* arm/linux-elf.h (SUBTARGET_CPU_DEFAULT): Define.
+
+	2003-05-15  Philip Blundell  <philb@gnu.org>
+
+	* config/arm/arm.c (arm_is_xscale): Rename to arm_arch_xscale.
+	All uses updated.
+	(arm_tune_xscale): New variable.
+	(arm_override_options): Set it.
+	(arm_adjust_cost): Use it in place of arm_arch_xscale.
+	(arm_gen_load_multiple): Likewise.
+	(arm_gen_store_multiple): Likewise.
+	* config/arm/arm.md (is_xscale): Likewise.
+	* config/arm/arm.h (arm_tune_xscale): Declare.
+
+	2003-04-28  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/elf.h (ASM_OUTPUT_ALIGNED_COMMON): Remove definition.
+
 2004-03-29  Matthias Klose  <doko@debian.org>
 
 	2003-09-17  Daniel Jacobowitz  <drow@mvista.com>
