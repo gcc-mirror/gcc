@@ -1,3 +1,15 @@
+2001-02-08  Geoffrey Keating  <geoffk@redhat.com>
+
+	* configure.in: Don't run AC_PROG_CC_WORKS, because
+	we're not interested in the result and it might fail.
+	* libF77/configure.in: Likewise.
+	* libI77/configure.in: Likewise.
+	* libU77/configure.in: Likewise.
+	* configure: Regenerated.
+	* libF77/configure: Likewise.
+	* libI77/configure: Likewise.
+	* libU77/configure: Likewise.
+
 2001-01-29  Phil Edwards  <pme@sources.redhat.com>
 
 	* libU77/COPYING.LIB:  Update to LGPL 2.1 from the FSF.

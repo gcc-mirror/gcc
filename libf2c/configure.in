@@ -64,8 +64,14 @@ then
 fi
 
 dnl Checks for programs.
+
+dnl FIXME AC_PROG_CC wants CC to be able to link things, but it may
+dnl not be able to.
+define([AC_PROG_CC_WORKS],[])
+
 # For g77 we'll set CC to point at the built gcc, but this will get it into
 # the makefiles
+
 AC_PROG_CC
 
 dnl These should be inherited in the recursive make, but ensure they are

@@ -24,6 +24,11 @@ AC_INIT(access_.c)
 AC_CONFIG_HEADER(config.h:config.hin)
 
 dnl Checks for programs.
+
+dnl FIXME AC_PROG_CC wants CC to be able to link things, but it may
+dnl not be able to.
+define([AC_PROG_CC_WORKS],[])
+
 # For g77 we'll set CC to point at the built gcc, but this will get it into
 # the makefiles
 AC_PROG_CC

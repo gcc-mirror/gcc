@@ -1,3 +1,9 @@
+2001-02-08  Geoffrey Keating  <geoffk@redhat.com>
+
+	* configure.in: Don't run AC_PROG_CC_WORKS or AC_EXEEXT, because
+	we're not interested in the result and they might fail.
+	* configure: Regenerated.
+
 2001-01-12  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* objc-features.texi: Use @email.
