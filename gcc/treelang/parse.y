@@ -83,6 +83,9 @@ static void ensure_not_void (unsigned int type, struct prod_token_parm_item* nam
 static int check_type_match (int type_num, struct prod_token_parm_item *exp);
 static int get_common_type (struct prod_token_parm_item *type1, struct prod_token_parm_item *type2);
 static struct prod_token_parm_item *make_integer_constant (struct prod_token_parm_item* value);
+static struct prod_token_parm_item *make_plus_expression
+  (struct prod_token_parm_item* tok, struct prod_token_parm_item* op1,
+   struct prod_token_parm_item* op2, int type_code, int prod_code);
 static void set_storage (struct prod_token_parm_item *prod);
 
 /* File global variables.  */
@@ -569,118 +572,41 @@ INTEGER {
   $$ = $1;
 }
 |expression tl_PLUS expression {
-  struct prod_token_parm_item* tok;
-  struct prod_token_parm_item *prod;
-  struct prod_token_parm_item *op1;
-  struct prod_token_parm_item *op2;
-  tree type;
-  
-  op1 = $1;
-  op2 = $3;
-  tok = $2;
-  ensure_not_void (NUMERIC_TYPE (op1), op1->tp.pro.main_token);
-  ensure_not_void (NUMERIC_TYPE (op2), op2->tp.pro.main_token);
-  prod = make_production (PROD_PLUS_EXPRESSION, tok);
-  NUMERIC_TYPE (prod) = get_common_type (op1, op2);
-  if (!NUMERIC_TYPE (prod))
+  struct prod_token_parm_item *tok = $2;
+  struct prod_token_parm_item *op1 = $1;
+  struct prod_token_parm_item *op2 = $3;
+  int type_code = get_common_type (op1, op2);
+  if (!type_code)
     YYERROR;
-  else 
-    {
-      type = get_type_for_numeric_type (NUMERIC_TYPE (prod));
-      if (!type)
-        abort ();
-      OP1 (prod) = $1;
-      OP2 (prod) = $3;
-      
-      prod->tp.pro.code = tree_code_get_expression
-        (EXP_PLUS, type, op1->tp.pro.code, op2->tp.pro.code, NULL);
-    }
-  $$ = prod;
+  $$ = make_plus_expression
+     (tok, op1, op2, type_code, EXP_PLUS);
 }
 |expression tl_MINUS expression %prec tl_PLUS {
-  struct prod_token_parm_item* tok;
-  struct prod_token_parm_item *prod;
-  struct prod_token_parm_item *op1;
-  struct prod_token_parm_item *op2;
-  tree type;
-  
-  op1 = $1;
-  op2 = $3;
-  ensure_not_void (NUMERIC_TYPE (op1), op1->tp.pro.main_token);
-  ensure_not_void (NUMERIC_TYPE (op2), op2->tp.pro.main_token);
-  tok = $2;
-  prod = make_production (PROD_PLUS_EXPRESSION, tok);
-  NUMERIC_TYPE (prod) = get_common_type (op1, op2);
-  if (!NUMERIC_TYPE (prod))
+  struct prod_token_parm_item *tok = $2;
+  struct prod_token_parm_item *op1 = $1;
+  struct prod_token_parm_item *op2 = $3;
+  int type_code = get_common_type (op1, op2);
+  if (!type_code)
     YYERROR;
-  else 
-    {
-      type = get_type_for_numeric_type (NUMERIC_TYPE (prod));
-      if (!type)
-        abort ();
-      OP1 (prod) = $1;
-      OP2 (prod) = $3;
-      
-      prod->tp.pro.code = tree_code_get_expression (EXP_MINUS, 
-                                          type, op1->tp.pro.code, op2->tp.pro.code, NULL);
-    }
-  $$ = prod;
+  $$ = make_plus_expression
+     (tok, op1, op2, type_code, EXP_MINUS);
 }
 |expression EQUALS expression {
-  struct prod_token_parm_item* tok;
-  struct prod_token_parm_item *prod;
-  struct prod_token_parm_item *op1;
-  struct prod_token_parm_item *op2;
-  tree type;
-  
-  op1 = $1;
-  op2 = $3;
-  ensure_not_void (NUMERIC_TYPE (op1), op1->tp.pro.main_token);
-  ensure_not_void (NUMERIC_TYPE (op2), op2->tp.pro.main_token);
-  tok = $2;
-  prod = make_production (PROD_PLUS_EXPRESSION, tok);
-  NUMERIC_TYPE (prod) = SIGNED_INT;
-  if (!NUMERIC_TYPE (prod))
-    YYERROR;
-  else 
-    {
-      type = get_type_for_numeric_type (NUMERIC_TYPE (prod));
-      if (!type)
-        abort ();
-      OP1 (prod) = $1;
-      OP2 (prod) = $3;
-      
-      prod->tp.pro.code = tree_code_get_expression (EXP_EQUALS, 
-                                          type, op1->tp.pro.code, op2->tp.pro.code, NULL);
-    }
-  $$ = prod;
+  struct prod_token_parm_item *tok = $2;
+  struct prod_token_parm_item *op1 = $1;
+  struct prod_token_parm_item *op2 = $3;
+  $$ = make_plus_expression
+     (tok, op1, op2, SIGNED_INT, EXP_EQUALS);
 }
 |variable_ref ASSIGN expression {
-  struct prod_token_parm_item* tok;
-  struct prod_token_parm_item *prod;
-  struct prod_token_parm_item *op1;
-  struct prod_token_parm_item *op2;
-  tree type;
-  
-  op1 = $1;
-  op2 = $3;
-  tok = $2;
-  ensure_not_void (NUMERIC_TYPE (op2), op2->tp.pro.main_token);
-  prod = make_production (PROD_ASSIGN_EXPRESSION, tok);
-  NUMERIC_TYPE (prod) = NUMERIC_TYPE (op1);
-  if (!NUMERIC_TYPE (prod))
+  struct prod_token_parm_item *tok = $2;
+  struct prod_token_parm_item *op1 = $1;
+  struct prod_token_parm_item *op2 = $3;
+  int type_code = NUMERIC_TYPE (op1);
+  if (!type_code)
     YYERROR;
-  else 
-    {
-      type = get_type_for_numeric_type (NUMERIC_TYPE (prod));
-      if (!type)
-        abort ();
-      OP1 (prod) = $1;
-      OP2 (prod) = $3;
-      prod->tp.pro.code = tree_code_get_expression (EXP_ASSIGN, 
-                                          type, op1->tp.pro.code, op2->tp.pro.code, NULL);
-    }
-  $$ = prod;
+  $$ = make_plus_expression
+     (tok, op1, op2, type_code, EXP_ASSIGN);
 }
 |function_invocation {
   $$ = $1;
@@ -973,6 +899,39 @@ make_integer_constant (struct prod_token_parm_item* value)
   return prod;
 }
 
+
+/* Build a PROD_PLUS_EXPRESSION.  This is uses for PLUS, MINUS, ASSIGN
+   and EQUALS expressions.  */
+
+static struct prod_token_parm_item *
+make_plus_expression (struct prod_token_parm_item* tok,
+		      struct prod_token_parm_item* op1,
+		      struct prod_token_parm_item* op2,
+		      int type_code, int prod_code)
+{
+  struct prod_token_parm_item *prod;
+  tree type;
+
+  ensure_not_void (NUMERIC_TYPE (op1), op1->tp.pro.main_token);
+  ensure_not_void (NUMERIC_TYPE (op2), op2->tp.pro.main_token);
+
+  prod = make_production (PROD_PLUS_EXPRESSION, tok);
+
+  NUMERIC_TYPE (prod) = type_code;
+  type = get_type_for_numeric_type (NUMERIC_TYPE (prod));
+  if (!type)
+    abort ();
+  OP1 (prod) = op1;
+  OP2 (prod) = op2;
+      
+  prod->tp.pro.code = tree_code_get_expression
+     (prod_code, type, op1->tp.pro.code,
+      op2->tp.pro.code, NULL);
+
+  return prod;
+}
+
+
 /* Set STORAGE_CLASS in PROD according to CLASS_TOKEN.  */
 
 static void
@@ -1011,3 +970,4 @@ treelang_debug (void)
   if (option_parser_trace)
     yydebug = 1;
 }
+
