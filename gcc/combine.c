@@ -2945,7 +2945,7 @@ subst (x, from, to, in_dest, unique_copy)
        || code == MULT || code == AND || code == IOR || code == XOR
        || code == DIV || code == UDIV
        || code == SMAX || code == SMIN || code == UMAX || code == UMIN)
-      && GET_MODE_CLASS (mode) == MODE_INT)
+      && INTEGRAL_MODE_P (mode))
     {
       if (GET_CODE (XEXP (x, 0)) == code)
 	{
@@ -3235,7 +3235,7 @@ subst (x, from, to, in_dest, unique_copy)
 
       /* (neg (minus X Y)) can become (minus Y X).  */
       if (GET_CODE (XEXP (x, 0)) == MINUS
-	  && (GET_MODE_CLASS (mode) != MODE_FLOAT
+	  && (! FLOAT_MODE_P (mode)
 	      /* x-y != -(y-x) with IEEE floating point. */
 	      || TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT))
 	{
@@ -3330,7 +3330,7 @@ subst (x, from, to, in_dest, unique_copy)
 
       /* In IEEE floating point, x-0 is not the same as x.  */
       if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
-	   || GET_MODE_CLASS (GET_MODE (XEXP (x, 0))) == MODE_INT)
+	   || ! FLOAT_MODE_P (GET_MODE (XEXP (x, 0))))
 	  && XEXP (x, 1) == CONST0_RTX (GET_MODE (XEXP (x, 0))))
 	return XEXP (x, 0);
       break;
@@ -3703,7 +3703,7 @@ subst (x, from, to, in_dest, unique_copy)
 
       /* Look for MIN or MAX.  */
 
-      if (GET_MODE_CLASS (mode) == MODE_INT
+      if (! FLOAT_MODE_P (mode)
 	  && GET_RTX_CLASS (GET_CODE (XEXP (x, 0))) == '<'
 	  && rtx_equal_p (XEXP (XEXP (x, 0), 0), XEXP (x, 1))
 	  && rtx_equal_p (XEXP (XEXP (x, 0), 1), XEXP (x, 2))
@@ -5773,7 +5773,7 @@ apply_distributive_law (x)
   /* Distributivity is not true for floating point.
      It can change the value.  So don't do it.
      -- rms and moshier@world.std.com.  */
-  if (GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT)
+  if (FLOAT_MODE_P (GET_MODE (x)))
     return x;
 
   /* The outer operation can only be one of the following:  */
@@ -8923,12 +8923,14 @@ reversible_comparison_p (x)
   switch (GET_MODE_CLASS (GET_MODE (XEXP (x, 0))))
     {
     case MODE_INT:
+    case MODE_PARTIAL_INT:
+    case MODE_COMPLEX_INT:
       return 1;
 
     case MODE_CC:
       x = get_last_value (XEXP (x, 0));
       return (x && GET_CODE (x) == COMPARE
-	      && GET_MODE_CLASS (GET_MODE (XEXP (x, 0))) == MODE_INT);
+	      && ! FLOAT_MODE_P (GET_MODE (XEXP (x, 0))));
     }
 
   return 0;
