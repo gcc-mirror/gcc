@@ -1,5 +1,14 @@
 2000-01-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* we32k-protos.h: New file.
+
+	* we32k.c: Fix compile time warnings.
+	
+	* we32k.h: Move prototypes to we32k-protos.h.  Fix compile time
+	warnings.
+
+2000-01-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* calls.c (emit_call_1): Mark parameter with ATTRIBUTE_UNUSED.
 
 	* except.c (eh_regs): Likewise.

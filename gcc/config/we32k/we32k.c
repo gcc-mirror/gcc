@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for AT&T we32000 Family.
-   Copyright (C) 1991, 1992, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1991, 92, 97-99, 2000 Free Software Foundation, Inc.
    Contributed by John Wehle (john@feith1.uucp)
 
 This file is part of GNU CC.
@@ -22,9 +22,13 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
+#include "insn-config.h"
 #include "rtl.h"
 #include "function.h"
 #include "real.h"
+#include "recog.h"
+#include "output.h"
+#include "tm_p.h"
 
 void
 output_move_double (operands)
@@ -120,7 +124,7 @@ output_push_double (operands)
     lsw_operands[0] = adj_offsettable_operand (operands[0], 4);
   else if (GET_CODE (operands[0]) == CONST_DOUBLE)
     {
-      lsw_operands[0] = GEN_INT CONST_DOUBLE_HIGH (operands[0]));
+      lsw_operands[0] = GEN_INT (CONST_DOUBLE_HIGH (operands[0]));
       operands[0] = GEN_INT (CONST_DOUBLE_LOW (operands[0]));
     }
   else if (GET_CODE (operands[0]) == CONST_INT)
