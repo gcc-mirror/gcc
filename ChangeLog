@@ -1,5 +1,8 @@
 2003-09-20  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* Makefile.tpl: Don't pass down obsolete ENQUIRE variable.
+	* Makefile.in: Regenerate.
+
 	* Makefile.tpl: Don't pass (unused) DLLTOOL or WINDRES to gcc.
 	* Makefile.in: Regenerate.
 
