@@ -868,11 +868,11 @@ do {									\
 
 /* This is the end of what might become sysv4.h.  */
 
-/* Allow stabs and dwarf, for now, make stabs the default debugging type,
-   not dwarf since G++ doesn't support dwarf.  */
+/* Use DWARF 2 debugging information by default.  */
 #undef	PREFERRED_DEBUGGING_TYPE
-#define	PREFERRED_DEBUGGING_TYPE DBX_DEBUG
+#define	PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
+/* Historically we have also supported stabs debugging.  */
 #define	DBX_DEBUGGING_INFO
 
 /* If we are referencing a function that is static or is known to be

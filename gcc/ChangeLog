@@ -1,3 +1,8 @@
+2001-08-13  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config/rs6000/sysv4.h (PREFERRED_DEBUGGING_TYPE): Use
+	DWARF2 instead of stabs by default.
+
 2001-08-13  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c: Include optabs.h.
