@@ -3893,7 +3893,7 @@ expand_expr (exp, target, tmode, modifier)
 		    || TREE_CODE (TREE_TYPE (exp2)) == UNION_TYPE
 		    || TREE_CODE (TREE_TYPE (exp2)) == QUAL_UNION_TYPE)))
 	  MEM_IN_STRUCT_P (temp) = 1;
-	MEM_VOLATILE_P (temp) = TREE_THIS_VOLATILE (exp);
+	MEM_VOLATILE_P (temp) = TREE_THIS_VOLATILE (exp) | flag_volatile;
 #if 0 /* It is incorrect to set RTX_UNCHANGING_P here, because the fact that
 	 a location is accessed through a pointer to const does not mean
 	 that the value there can never change.  */
