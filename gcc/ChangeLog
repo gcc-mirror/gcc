@@ -1,3 +1,8 @@
+Tue Jul 27 15:31:53 1999  Vladimir Makarov  <vmakarov@toad.to.cygnus.com>
+
+	* config/sparc/sparc.c (sparc_override_options): Enable SPARCLITE
+	instead of V8 for sparclite86x in cpu_table.
+
 Tue Jul 27 17:49:42 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* config/arm/coff.h (ASM_FILE_START): If generating SDB output, call
