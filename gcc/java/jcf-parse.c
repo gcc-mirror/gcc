@@ -85,6 +85,7 @@ static tree parse_roots[3] = { NULL_TREE, NULL_TREE, NULL_TREE };
 static struct JCF main_jcf[1];
 
 /* Declarations of some functions used here.  */
+static void handle_innerclass_attribute PARAMS ((int count, JCF *));
 static tree give_name_to_class PARAMS ((JCF *jcf, int index));
 static void parse_zip_file_entries PARAMS ((void));
 static void process_zip_dir PARAMS ((FILE *));
@@ -158,7 +159,10 @@ set_source_filename (jcf, index)
 { int sig_index = SIGNATURE; \
   current_field = add_field (current_class, get_name_constant (jcf, NAME), \
 			     parse_signature (jcf, sig_index), ACCESS_FLAGS); \
- set_java_signature (TREE_TYPE (current_field), JPOOL_UTF (jcf, sig_index)); }
+ set_java_signature (TREE_TYPE (current_field), JPOOL_UTF (jcf, sig_index)); \
+ if ((ACCESS_FLAGS) & ACC_FINAL) \
+   MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC (current_field); \
+}
 
 #define HANDLE_END_FIELDS() \
   (current_field = NULL_TREE)
@@ -182,7 +186,8 @@ set_source_filename (jcf, index)
 
 #define HANDLE_END_METHODS() \
 { tree handle_type = CLASS_TO_HANDLE_TYPE (current_class); \
-  if (handle_type != current_class) layout_type (handle_type); }
+  if (handle_type != current_class) layout_type (handle_type); \
+  current_method = NULL_TREE; }
 
 #define HANDLE_CODE_ATTRIBUTE(MAX_STACK, MAX_LOCALS, CODE_LENGTH) \
 { DECL_MAX_STACK (current_method) = (MAX_STACK); \
@@ -214,27 +219,16 @@ set_source_filename (jcf, index)
 
 /* Link seen inner classes to their outer context and register the
    inner class to its outer context. They will be later loaded.  */
-#define HANDLE_INNERCLASSES_ATTRIBUTE(COUNT)				  \
-{									  \
-  int c = (count);							  \
-  while (c--)								  \
-    {									  \
-      tree class = get_class_constant (jcf, JCF_readu2 (jcf));	   	  \
-      tree decl = TYPE_NAME (class);					  \
-      if (DECL_P (decl) && !CLASS_COMPLETE_P (decl))			  \
-	{								  \
-	  tree outer = TYPE_NAME (get_class_constant (jcf, 		  \
-						      JCF_readu2 (jcf))); \
-	  tree alias = get_name_constant (jcf, JCF_readu2 (jcf));	  \
-	  JCF_SKIP (jcf, 2);					     	  \
-	  DECL_CONTEXT (decl) = outer;					  \
-	  DECL_INNER_CLASS_LIST (outer) = 				  \
-	    tree_cons (decl, alias, DECL_INNER_CLASS_LIST (outer));	  \
-	  CLASS_COMPLETE_P (decl) = 1;					  \
-	}								  \
-      else								  \
-	JCF_SKIP (jcf, 6);						  \
-    }									  \
+#define HANDLE_INNERCLASSES_ATTRIBUTE(COUNT) \
+  handle_innerclass_attribute (COUNT, jcf)
+
+#define HANDLE_SYNTHETIC_ATTRIBUTE()					\
+{									\
+  /* Irrelevant decls should have been nullified by the END macros. */ \
+  if (current_method)							\
+    DECL_ARTIFICIAL (current_method) = 1;				\
+  else									\
+    DECL_ARTIFICIAL (current_field) = 1;				\
 }
 
 #include "jcf-reader.c"
@@ -438,6 +432,46 @@ get_name_constant (jcf, index)
   if (TREE_CODE (name) != IDENTIFIER_NODE)
     fatal ("bad nameandtype index %d", index);
   return name;
+}
+
+/* Handle reading innerclass attributes. If a non zero entry (denoting
+   a non anonymous entry) is found, We augment the inner class list of
+   the outer context with the newly resolved innerclass.  */
+
+static void
+handle_innerclass_attribute (count, jcf)
+     int count;
+     JCF *jcf;
+{
+  int c = (count);
+  while (c--)
+    {
+      /* Read inner_class_info_index. This may be 0 */
+      int icii = JCF_readu2 (jcf);
+      /* Read outer_class_info_index. If the innerclasses attribute
+	 entry isn't a member (like an inner class) the value is 0. */
+      int ocii = JCF_readu2 (jcf);
+      /* Read inner_name_index. If the class we're dealing with is
+	 an annonymous class, it must be 0. */
+      int ini = JCF_readu2 (jcf);
+      /* If icii is 0, don't try to read the class. */
+      if (icii >= 0)
+	{
+	  tree class = get_class_constant (jcf, icii);
+	  tree decl = TYPE_NAME (class);
+          /* Skip reading further if ocii is null */
+          if (DECL_P (decl) && !CLASS_COMPLETE_P (decl) && ocii)
+	    {
+	      tree outer = TYPE_NAME (get_class_constant (jcf, ocii));
+	      tree alias = (ini ? get_name_constant (jcf, ini) : NULL_TREE);
+	      DECL_CONTEXT (decl) = outer;
+	      DECL_INNER_CLASS_LIST (outer) =
+		tree_cons (decl, alias, DECL_INNER_CLASS_LIST (outer));
+	      CLASS_COMPLETE_P (decl) = 1;
+            }
+	}
+      JCF_SKIP (jcf, 2);
+    }
 }
 
 static tree
@@ -677,7 +711,12 @@ jcf_parse (jcf)
   /* And if we came across inner classes, load them now. */
   for (current = DECL_INNER_CLASS_LIST (TYPE_NAME (current_class)); current;
        current = TREE_CHAIN (current))
-    load_class (DECL_NAME (TREE_PURPOSE (current)), 1);
+    {
+      tree name = DECL_NAME (TREE_PURPOSE (current));
+      tree decl = IDENTIFIER_GLOBAL_VALUE (name);
+      if (decl && !CLASS_BEING_LAIDOUT (TREE_TYPE (decl)))
+	load_class (name, 1);
+    }
 }
 
 void

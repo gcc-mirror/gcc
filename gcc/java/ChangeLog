@@ -1,3 +1,41 @@
+2001-01-23  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (layout_class): Don't lay the superclass out if it's
+	already being laid out.
+	* jcf-parse.c (handle_innerclass_attribute): New function.
+	(HANDLE_INNERCLASSES_ATTRIBUTE): Invoke
+	handle_innerclasses_attribute.
+	(jcf_parse): Don't load an innerclasses if it's already being
+	laid out.
+	* jcf-write.c (append_innerclass_attribute_entry): Static
+	`anonymous_name' and its initialization deleted. `ocii' and `ini'
+	to be zero for anonymous classes.
+
+2001-01-23  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (set_constant_value): Set DECL_FIELD_FINAL_IUD if
+	necessary.
+	* jcf-parse.c (set_source_filename): Use
+	MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC if necessary.
+
+2001-01-23  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* expr.c (build_jni_stub): Set DECL_CONTEXT on `meth_var' so it
+	gets a unique asm name.
+
+2001-01-23  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-parse.c (HANDLE_END_METHODS): Nullify current_method.
+	(HANDLE_START_FIELD): Invoke MAYBE_CREATE_VAR_LANG_DECL_SPECIFIC
+	if necessary.
+	(HANDLE_SYNTHETIC_ATTRIBUTE): New macro.
+	* jcf-reader.c (get_attribute): Handle `Synthetic' attribute.
+	* parse.y (lookup_package_type_and_set_next): Deleted.
+	(resolve_package): Removed unnecessary code.
+	(find_applicable_accessible_methods_list): `finit$' can't be
+ 	inherited.
+	* verify.c (pop_argument_types): Added missing prototype.
+
 2001-01-23  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* config-lang.in: Disable java by default.

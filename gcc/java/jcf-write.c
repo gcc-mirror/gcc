@@ -3216,27 +3216,24 @@ append_innerclasses_attribute_entry (state, decl, name)
      struct jcf_partial *state;
      tree decl, name;
 {
-  static tree anonymous_name = NULL_TREE;
-  int icii, ocii, ini, icaf;
+  int icii, icaf;
+  int ocii = 0, ini = 0;
   unsigned char *ptr = append_chunk (NULL, 8, state);
 
-  if (!anonymous_name)
-    {
-      anonymous_name = get_identifier ("");
-      ggc_add_tree_root (&anonymous_name, 1);
-    }
-
   icii = find_class_constant (&state->cpool, TREE_TYPE (decl));
-  ocii = find_class_constant (&state->cpool, TREE_TYPE (DECL_CONTEXT (decl))); 
 
-  /* The specs are saying that if the class is anonymous,
-     inner_name_index must be zero. But the implementation makes it
-     point to an empty string. */
-  ini = find_utf8_constant (&state->cpool,
-			    (ANONYMOUS_CLASS_P (TREE_TYPE (decl)) ? 
-			     anonymous_name : name));
+  /* Sun's implementation seems to generate ocii to 0 for inner
+     classes (which aren't considered members of the class they're
+     in.) The specs are saying that if the class is anonymous,
+     inner_name_index must be zero. */
+  if (!ANONYMOUS_CLASS_P (TREE_TYPE (decl)))
+    {
+      ocii = find_class_constant (&state->cpool, 
+				  TREE_TYPE (DECL_CONTEXT (decl)));
+      ini = find_utf8_constant (&state->cpool, name);
+    }
   icaf = get_access_flags (decl);
-  
+
   PUT2 (icii); PUT2 (ocii); PUT2 (ini);  PUT2 (icaf);
 }
 

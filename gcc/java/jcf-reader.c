@@ -206,6 +206,13 @@ DEFUN(get_attribute, (jcf),
     }
   else
 #endif
+#ifdef HANDLE_SYNTHETIC_ATTRIBUTE
+  if (name_length == 9 && memcmp (name_data, "Synthetic", 9) == 0)
+    {
+      HANDLE_SYNTHETIC_ATTRIBUTE ();
+    }
+  else
+#endif
     {
 #ifdef PROCESS_OTHER_ATTRIBUTE
       PROCESS_OTHER_ATTRIBUTE(jcf, attribute_name, attribute_length);

@@ -38,6 +38,7 @@ static tree merge_types PARAMS ((tree, tree));
 static const char *check_pending_block PARAMS ((tree));
 static void type_stack_dup PARAMS ((int, int));
 static int start_pc_cmp PARAMS ((const PTR, const PTR));
+static char *pop_argument_types PARAMS ((tree));
 
 extern int stack_pointer;
 

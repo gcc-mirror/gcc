@@ -743,7 +743,11 @@ set_constant_value (field, constant)
     warning ("duplicate ConstanValue atribute for field '%s'",
 	     IDENTIFIER_POINTER (DECL_NAME (field)));
   else
-    DECL_INITIAL (field) = constant;
+    {
+      DECL_INITIAL (field) = constant;
+      if (FIELD_FINAL (field))
+	DECL_FIELD_FINAL_IUD (field) = 1;
+    }
 }
 
 /* Count the number of Unicode chars encoded in a given Ut8 string. */
@@ -1655,7 +1659,7 @@ layout_class (this_class)
     }
   CLASS_BEING_LAIDOUT (this_class) = 1;
 
-  if (super_class)
+  if (super_class && !CLASS_BEING_LAIDOUT (super_class))
     {
       tree maybe_super_class 
 	= maybe_layout_super_class (super_class, this_class);
