@@ -916,6 +916,8 @@ public class SimpleDateFormat extends DateFormat
 	    boolean is_numeric = true;
 	    int offset = 0;
 	    boolean maybe2DigitYear = false;
+	    boolean oneBasedHour = false;
+	    boolean oneBasedHourOfDay = false;
 	    Integer simpleOffset;
 	    String[] set1 = null;
 	    String[] set2 = null;
@@ -964,12 +966,14 @@ public class SimpleDateFormat extends DateFormat
 		break;
 	      case 'h':
 		calendar_field = Calendar.HOUR;
+		oneBasedHour = true;
 		break;
 	      case 'H':
 		calendar_field = Calendar.HOUR_OF_DAY;
 		break;
 	      case 'k':
 		calendar_field = Calendar.HOUR_OF_DAY;
+		oneBasedHourOfDay = true;
 		break;
 	      case 'm':
 		calendar_field = Calendar.MINUTE;
@@ -1107,6 +1111,14 @@ public class SimpleDateFormat extends DateFormat
 		    value += defaultCentury;
 		  }
 	      }
+	    
+	    // Calendar uses 0-based hours. 
+	    // I.e. 00:00 AM is midnight, not 12 AM or 24:00
+	    if (oneBasedHour && value == 12)
+	      value = 0;
+
+	    if (oneBasedHourOfDay && value == 24)
+	      value = 0;
 	    
 	    // Assign the value and move on.
 	    calendar.set(calendar_field, value);

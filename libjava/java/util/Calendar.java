@@ -706,6 +706,8 @@ public abstract class Calendar implements Serializable, Cloneable
 	isSet[WEEK_OF_YEAR] = false;
 	break;
       case WEEK_OF_MONTH: // pattern 2
+	if (! isSet[DAY_OF_WEEK])
+	  fields[DAY_OF_WEEK] = getFirstDayOfWeek();
 	isSet[YEAR] = true;
 	isSet[MONTH] = true;
 	isSet[DAY_OF_WEEK] = true;
@@ -715,6 +717,8 @@ public abstract class Calendar implements Serializable, Cloneable
 	isSet[WEEK_OF_YEAR] = false;
 	break;
       case DAY_OF_WEEK_IN_MONTH: // pattern 3
+	if (! isSet[DAY_OF_WEEK])
+	  fields[DAY_OF_WEEK] = getFirstDayOfWeek();
 	isSet[YEAR] = true;
 	isSet[MONTH] = true;
 	isSet[DAY_OF_WEEK] = true;
@@ -733,6 +737,8 @@ public abstract class Calendar implements Serializable, Cloneable
 	isSet[DAY_OF_WEEK_IN_MONTH] = false;
 	break;
       case WEEK_OF_YEAR: // pattern 5
+	if (! isSet[DAY_OF_WEEK])
+	  fields[DAY_OF_WEEK] = getFirstDayOfWeek();
 	isSet[YEAR] = true;
 	isSet[DAY_OF_WEEK] = true;
 	isSet[MONTH] = false;
