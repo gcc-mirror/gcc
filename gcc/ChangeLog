@@ -1,3 +1,30 @@
+2002-05-05  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* genautomata.c (form_the_same_automaton_unit_lists_from_regexp,
+	process_unit_to_form_the_same_automaton_unit_lists,
+	form_the_same_automaton_unit_lists
+	check_unit_distributions_to_automata): New prototypes and
+	functions.
+	(check_automata): Rename it into `check_automata_insn_issues'.
+	(unit_decl): New fields `the_same_automaton_unit' and
+	`the_same_automaton_message_reported_p'.
+	(unit_decl_t): New typedef.
+	(the_same_automaton_lists): New gloval variable.
+	(unit_regexp, unit_set_el, units_array, units_cmp,
+	output_get_cpu_unit_code_func): Use the typedef.
+	(evaluate_max_reserv_cycles): Increment
+	`description->max_insn_reserv_cycles'.
+	(initiate_states): Don't increment `max_cycles_num'.
+	(transform_insn_regexps): Move code around transformation of
+	regexps from `generate'.
+	(generate): Remove call of `transform_insn_regexps'.
+	(expand_automata): Call `transform_insn_regexps' and
+	`check_unit_distributions_to_automata'.  Check errors before
+	`generate'.
+
+	* config/sparc/ultra3.md (us3_a0, us3_a1): Move the units into
+	automaton `ultrasparc3_1'.
+	
 2002-05-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.c (c_common_init): Set up CPP arithmetic.

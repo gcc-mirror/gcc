@@ -26,8 +26,9 @@
 
 (define_automaton "ultrasparc3_0,ultrasparc3_1")
 
-(define_cpu_unit "us3_a0,us3_a1,us3_ms,us3_br,us3_fpm" "ultrasparc3_0")
-(define_cpu_unit "us3_slot0,us3_slot1,us3_slot2,us3_slot3,us3_fpa" "ultrasparc3_1")
+(define_cpu_unit "us3_ms,us3_br,us3_fpm" "ultrasparc3_0")
+(define_cpu_unit "us3_a0,us3_a1,us3_slot0,\
+                  us3_slot1,us3_slot2,us3_slot3,us3_fpa" "ultrasparc3_1")
 (define_cpu_unit "us3_load_writeback" "ultrasparc3_1")
 
 (define_reservation "us3_slotany" "(us3_slot0 | us3_slot1 | us3_slot2 | us3_slot3)")
