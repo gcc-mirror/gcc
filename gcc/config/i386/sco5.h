@@ -508,19 +508,56 @@ do {									\
 #undef USER_LABEL_PREFIX
 #define USER_LABEL_PREFIX ""
 
+/* 
+ * Compensate for the difference between ELF and COFF assembler syntax.
+ * Otherwise, this is cribbed from ../svr4.h.
+ * We rename 'gcc_except_table' to the shorter name in preparation
+ * for the day when we're ready to do DWARF2 eh unwinding under COFF 
+ */
 #undef ASM_OUTPUT_SECTION_NAME
 #define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME, RELOC) \
 do {									\
-  char *snam = NAME ;							\
-  if (strcmp(NAME, ".gcc_except_table") == 0) snam = ".gccexc" ;	\
-  if (TARGET_ELF)							\
-    fprintf (FILE, ".section\t%s,\"%s\",@progbits\n", NAME, 		\
-	   (DECL) && TREE_CODE (DECL) == FUNCTION_DECL ? "ax" : 	\
-	   (DECL) && DECL_READONLY_SECTION (DECL, RELOC) ? "a" : "aw");	\
-  else									\
-    fprintf (FILE, ".section\t%s,\"%s\"\n", snam,			\
-	(DECL) && TREE_CODE (DECL) == FUNCTION_DECL ? "x" : 		\
-	(DECL) && DECL_READONLY_SECTION (DECL, RELOC) ? "a" : "w");	\
+  static struct section_info                                            \
+    {                                                                   \
+      struct section_info *next;                                        \
+      char *name;                                                       \
+      enum sect_enum {SECT_RW, SECT_RO, SECT_EXEC} type;                \
+    } *sections;                                                        \
+  struct section_info *s;                                               \
+  char *mode;                                                           \
+  enum sect_enum type;                                                  \
+  char *sname = NAME ;							\
+  if (strcmp(NAME, ".gcc_except_table") == 0) sname = ".gccexc" ;	\
+                                                                        \
+  for (s = sections; s; s = s->next)                                    \
+    if (!strcmp (NAME, s->name))                                        \
+      break;                                                            \
+                                                                        \
+  if (DECL && TREE_CODE (DECL) == FUNCTION_DECL)                        \
+    type = SECT_EXEC, mode = (TARGET_ELF) ? "ax" : "x" ;                \
+  else if (DECL && DECL_READONLY_SECTION (DECL, RELOC))                 \
+    type = SECT_RO, mode = "a";                                         \
+  else                                                                  \
+    type = SECT_RW, mode = (TARGET_ELF) ? "aw" : "w" ;                  \
+                                                                        \
+  if (s == 0)                                                           \
+    {                                                                   \
+      s = (struct section_info *) xmalloc (sizeof (struct section_info));  \
+      s->name = xmalloc ((strlen (NAME) + 1) * sizeof (*NAME));         \
+      strcpy (s->name, NAME);                                           \
+      s->type = type;                                                   \
+      s->next = sections;                                               \
+      sections = s;                                                     \
+      fprintf (FILE, ".section\t%s,\"%s\"%s\n", sname, mode,		\
+		(TARGET_ELF) ? ",@progbits" : "" );    			\
+    }                                                                   \
+  else                                                                  \
+    {                                                                   \
+      if (DECL && s->type != type)                                      \
+        error_with_decl (DECL, "%s causes a section type conflict");    \
+                                                                        \
+      fprintf (FILE, ".section\t%s\n", sname);                          \
+    }                                                                   \
 } while (0)
 
 #undef ASM_OUTPUT_SKIP

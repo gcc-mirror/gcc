@@ -1,3 +1,7 @@
+Tue Jan 13 23:27:54 1998  Robert Lipe   (robertl@dgii.com)
+
+	* sco5.h (ASM_OUTPUT_SECTION_NAME): Refresh from ../svr4.h.
+
 Tue Jan 13 22:47:02 1998  Herman ten Brugge <herman@htbrug.net.HCC.nl>
 
 	* cppexp.c: Include gansidecl.h
