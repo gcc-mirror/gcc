@@ -1,3 +1,43 @@
+2003-07-29  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c (last_function_parm_vars, current_function_parm_vars):
+	New static variables.
+	(struct c_scope): Add parms and warned_forward_parm_decls
+	fields; remove parm_order.
+	(storedecls, storetags): Delete.
+	(poplevel): Also clear bindings on the parms chain.
+	(pushdecl): Handle forward declarations of parameters, and
+	chain PARM_DECLs on the parms list, not the names list.
+	(lookup_name_current_level): Check for PARM_DECLs on the parms
+	list too.
+	(push_parm_decl): Don't update parm_order.
+	(clear_parm_order): Rename mark_forward_parm_decls.  Issue the
+	warning, only once per parameter list, and set TREE_ASM_WRITTEN
+	on the decls here.  Then move the forward decls to the names list.
+	(grokparms): Set last_function_parm_vars.
+	(get_parm_info): Don't use gettags or getdecls.  No need to
+	extract non-parms from the parms list, or reorganize the parms
+	list.  Feed nonparms back in the TREE_TYPE of the list node
+	returned.  Issue only one error per parameter list for "void"
+	appearing more than once in said parameter list.  Collapse
+	parmlist_tags_warning into this function to avoid double scan
+	of tags list.
+	(start_function): Set current_function_parm_vars.
+	(store_parm_decls_newstyle): Bypass pushdecl, manipulate scope
+	directly.  Get non-parms from current_function_parm_vars; no
+	need to extract them from the parms chain.  Properly bind tags
+	in the new scope.
+	(store_parm_decls_oldstyle): No need to extract non-parameters
+	from the parms chain, nor to store them back afterward.  Move
+	declaration to top of function, restructure code reordering
+	DECL_ARGUMENTS.
+	(store_parm_decls): No need to save and restore warn_shadow.
+	* c-parse.in: Don't call parmlist_tags_warning nor
+	clear_parm_order.  Call mark_forward_parm_decls when forward
+	parm decls are encountered.
+	* c-tree.h: Prototype mark_forward_parm_decls; not
+	clear_parm_order or parmlist_tags_warning.
+
 2003-07-29  Geoffrey Keating  <geoffk@apple.com>
 
 	* c-common.c (allow_pch): Remove.
