@@ -71,7 +71,7 @@ char *language_string = "GNU CHILL";
 
 extern struct rtx_def* gen_label_rtx	      PROTO((void));
 extern void emit_jump                         PROTO((struct rtx_def *));
-extern void emit_label                        PROTO((struct rtx_def *));
+extern struct rtx_def* emit_label             PROTO((struct rtx_def *));
 
 static int parse_action				PROTO((void));
 
