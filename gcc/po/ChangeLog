@@ -1,3 +1,9 @@
+2004-09-14  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* be.po, ca.po, da.po, de.po, el.po, es.po, fr.po, ja.po, nl.po,
+	sv.po, tr.po: Update.
+	* gcc.pot: Regenerate.
+
 2004-05-26  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* fr.po: Update.
