@@ -1862,11 +1862,9 @@ static tree
 build_builtin_delete_call (addr)
      tree addr;
 {
-  tree BID = get_first_fn
-    (IDENTIFIER_GLOBAL_VALUE (ansi_opname[(int) DELETE_EXPR]));
-
-  assemble_external (BID);
-  return build_call (BID, void_type_node, build_expr_list (NULL_TREE, addr));
+  assemble_external (global_delete_fndecl);
+  return build_call (global_delete_fndecl, 
+		     void_type_node, build_expr_list (NULL_TREE, addr));
 }
 
 /* Generate a C++ "new" expression. DECL is either a TREE_LIST

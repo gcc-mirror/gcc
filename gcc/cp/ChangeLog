@@ -1,3 +1,13 @@
+1998-11-18  Mark Mitchell  <mark@markmitchell.com>
+
+	* cp-tree.h (PTRMEM_CST_CLASS): Fix typo.
+	(global_delete_fndecl): New variable.
+	* decl.c (global_delete_fndecl): Define it.
+	(init_decl_processing): Set it.
+	* init.c (build_builtin_delete_call): Use it.
+	* tree.c (mapcar): Recursively call mapcar for the type of EXPR
+	nodes.
+
 1998-11-18  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (cplus_expand_expr_stmt): Always complain about unresolved
