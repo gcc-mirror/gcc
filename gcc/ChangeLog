@@ -1,3 +1,8 @@
+2002-01-31  Jason Merrill  <jason@redhat.com>
+
+	* Makefile.in (c-parse.c): Handle .output file.
+	* objc/Make-lang.in (objc-parse.c): Likewise.
+
 2002-02-01  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/mips/mips.h (ENDIAN_SPEC): Output the endianness flag if
@@ -74,7 +79,7 @@
 
 	* expmed.c (emit_store_flag): Call protect_from_queue on op0 and op1.
 
-2002-01-28  Jason Merrill  <jason@redhat.com>
+2002-01-30  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2out.c (dwarf_cfi_name): Add other DWARF 3 codes.
 	(output_cfi): Likewise. Disable DW_CFA_GNU_negative_offset_extended.
