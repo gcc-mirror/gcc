@@ -1,3 +1,8 @@
+2003-12-15  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/13400
+	* gcc.c-torture/execute/20031215-1.c: New test case.
+
 2003-12-15  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13269
