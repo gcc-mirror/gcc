@@ -1,3 +1,8 @@
+Sun Nov 26 10:02:37 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* fold-const.c (fold, case CONVERT_EXPR): Always return tree of
+	proper type.
+
 2000-11-26  Neil Booth  <neilb@earthling.net>
 
         * Makefile.in: Remove MAYBE_CPPLIB and maybe_cpplib.
