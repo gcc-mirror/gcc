@@ -646,7 +646,7 @@ struct tree_list
 /* In a TREE_VEC node.  */
 #define TREE_VEC_LENGTH(NODE) (TREE_VEC_CHECK (NODE)->vec.length)
 #define TREE_VEC_ELT(NODE,I) (TREE_VEC_CHECK (NODE)->vec.a[I])
-#define TREE_VEC_END(NODE) (TREE_VEC_CHECK (NODE),&((NODE)->vec.a[(NODE)->vec.length]))
+#define TREE_VEC_END(NODE) ((void) TREE_VEC_CHECK (NODE),&((NODE)->vec.a[(NODE)->vec.length]))
 
 struct tree_vec
 {
