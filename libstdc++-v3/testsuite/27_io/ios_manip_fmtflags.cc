@@ -1,6 +1,7 @@
 // 981027 ncm work with libstdc++v3
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+// Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -69,7 +70,7 @@ test01()
   oss << ":" << std::setw(3) << std::left << true << ":" << std::endl;
   oss << ":" << std::setw(3) << std::right << false << ":" << std::endl;
 
-  std::locale loc = std::locale (std::locale(), new MyNP);
+  std::locale loc = std::locale (std::locale::classic(), new MyNP);
   oss.imbue(loc);
 
   oss << std::boolalpha;

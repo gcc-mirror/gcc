@@ -315,7 +315,7 @@ struct My_money_io : public std::moneypunct<wchar_t,false>
 
   pattern do_neg_format() const
   {
-    static pattern pat = { { symbol, space, sign, value } };
+    pattern pat = { { symbol, space, sign, value } };
     return pat;
   }
 };
