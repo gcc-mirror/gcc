@@ -132,30 +132,22 @@ bool
 function_attribute_inlinable_p (fndecl)
      tree fndecl;
 {
-  bool has_machine_attr = false;
-  tree a;
-
-  for (a = DECL_ATTRIBUTES (fndecl); a; a = TREE_CHAIN (a))
+  if (targetm.attribute_table)
     {
-      tree name = TREE_PURPOSE (a);
-      int i;
+      tree a;
 
-      for (i = 0; targetm.attribute_table[i].name != NULL; i++)
+      for (a = DECL_ATTRIBUTES (fndecl); a; a = TREE_CHAIN (a))
 	{
-	  if (is_attribute_p (targetm.attribute_table[i].name, name))
-	    {
-	      has_machine_attr = true;
-	      break;
-	    }
+	  tree name = TREE_PURPOSE (a);
+	  int i;
+
+	  for (i = 0; targetm.attribute_table[i].name != NULL; i++)
+	    if (is_attribute_p (targetm.attribute_table[i].name, name))
+	      return (*targetm.function_attribute_inlinable_p) (fndecl);
 	}
-      if (has_machine_attr)
-	break;
     }
 
-  if (has_machine_attr)
-    return (*targetm.function_attribute_inlinable_p) (fndecl);
-  else
-    return true;
+  return true;
 }
 
 /* Zero if the current function (whose FUNCTION_DECL is FNDECL)
