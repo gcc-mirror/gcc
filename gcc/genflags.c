@@ -33,8 +33,8 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-/* Obstacks to remember normal, and call insns.  */
-static struct obstack call_obstack, normal_obstack;
+/* Obstack to remember insns with.  */
+static struct obstack obstack;
 
 /* Max size of names encountered.  */
 static int max_id_len;
@@ -45,7 +45,7 @@ static int max_opno;
 static void max_operand_1	PARAMS ((rtx));
 static int num_operands		PARAMS ((rtx));
 static void gen_proto		PARAMS ((rtx));
-static void gen_nonproto	PARAMS ((rtx));
+static void gen_macro		PARAMS ((const char *, int, int));
 static void gen_insn		PARAMS ((rtx));
 
 /* Count the number of match_operand's found.  */
@@ -98,6 +98,36 @@ num_operands (insn)
   return max_opno + 1;
 }
 
+/* Print out a wrapper macro for a function which corrects the number
+   of arguments it takes.  Any missing arguments are assumed to be at
+   the end.  */
+static void
+gen_macro (name, real, expect)
+     const char *name;
+     int real, expect;
+{
+  int i;
+
+  if (real > expect)
+    abort ();
+  if (real == 0)
+    abort ();
+
+  /* #define GEN_CALL(A, B, C, D) gen_call((A), (B)) */
+  fputs ("#define GEN_", stdout);
+  for (i = 0; name[i]; i++)
+    putchar (TOUPPER (name[i]));
+
+  putchar('(');
+  for (i = 0; i < expect - 1; i++)
+    printf ("%c, ", i + 'A');
+  printf ("%c) gen_%s (", i + 'A', name);
+
+  for (i = 0; i < real - 1; i++)
+    printf ("(%c), ", i + 'A');
+  printf ("(%c))\n", i + 'A');
+}
+
 /* Print out prototype information for a function.  */
 
 static void
@@ -105,7 +135,28 @@ gen_proto (insn)
      rtx insn;
 {
   int num = num_operands (insn);
-  printf ("extern rtx gen_%-*s PARAMS ((", max_id_len, XSTR (insn, 0));
+  const char *name = XSTR (insn, 0);
+
+  /* Many md files don't refer to the last two operands passed to the
+     call patterns.  This means their generator functions will be two
+     arguments too short.  Instead of changing every md file to touch
+     those operands, we wrap the prototypes in macros that take the
+     correct number of arguments.  */
+  if (name[0] == 'c' || name[0] == 's')
+    {
+      if (!strcmp (name, "call")
+	  || !strcmp (name, "call_pop")
+	  || !strcmp (name, "sibcall")
+	  || !strcmp (name, "sibcall_pop"))
+	gen_macro (name, num, 4);
+      else if (!strcmp (name, "call_value")
+	       || !strcmp (name, "call_value_pop")
+	       || !strcmp (name, "sibcall_value")
+	       || !strcmp (name, "sibcall_value_pop"))
+	gen_macro (name, num, 5);
+    }
+
+  printf ("extern rtx gen_%-*s PARAMS ((", max_id_len, name);
 
   if (num == 0)
     printf ("void");
@@ -118,15 +169,7 @@ gen_proto (insn)
     }
 
   printf ("));\n");
-}
 
-/* Print out a function declaration without a prototype.  */
-
-static void
-gen_nonproto (insn)
-     rtx insn;
-{
-  printf ("extern rtx gen_%s ();\n", XSTR (insn, 0));
 }
 
 static void
@@ -135,7 +178,6 @@ gen_insn (insn)
 {
   const char *name = XSTR (insn, 0);
   const char *p;
-  struct obstack *obstack_ptr;
   int len;
 
   /* Don't mention instructions whose names are the null string
@@ -167,24 +209,7 @@ gen_insn (insn)
       printf (")\n");
     }
 
-  /* Save the current insn, so that we can later put out appropriate
-     prototypes.  At present, most md files have the wrong number of
-     arguments for the call insns (call, call_value, call_pop,
-     call_value_pop) ignoring the extra arguments that are passed for
-     some machines, so by default, turn off the prototype.  */
-
-  obstack_ptr = ((name[0] == 'c' || name[0] == 's')
-		 && (!strcmp (name, "call")
-		     || !strcmp (name, "call_value")
-		     || !strcmp (name, "call_pop")
-		     || !strcmp (name, "call_value_pop")
-		     || !strcmp (name, "sibcall")
-		     || !strcmp (name, "sibcall_value")
-		     || !strcmp (name, "sibcall_pop")
-		     || !strcmp (name, "sibcall_value_pop")))
-    ? &call_obstack : &normal_obstack;
-
-  obstack_grow (obstack_ptr, &insn, sizeof (rtx));
+  obstack_grow (&obstack, &insn, sizeof (rtx));
 }
 
 extern int main PARAMS ((int, char **));
@@ -196,13 +221,11 @@ main (argc, argv)
 {
   rtx desc;
   rtx dummy;
-  rtx *call_insns;
-  rtx *normal_insns;
+  rtx *insns;
   rtx *insn_ptr;
 
   progname = "genflags";
-  obstack_init (&call_obstack);
-  obstack_init (&normal_obstack);
+  obstack_init (&obstack);
 
   if (argc <= 1)
     fatal ("No input file name.");
@@ -228,24 +251,11 @@ from the machine description file `md'.  */\n\n");
 
   /* Print out the prototypes now.  */
   dummy = (rtx) 0;
-  obstack_grow (&call_obstack, &dummy, sizeof (rtx));
-  call_insns = (rtx *) obstack_finish (&call_obstack);
+  obstack_grow (&obstack, &dummy, sizeof (rtx));
+  insns = (rtx *) obstack_finish (&obstack);
 
-  obstack_grow (&normal_obstack, &dummy, sizeof (rtx));
-  normal_insns = (rtx *) obstack_finish (&normal_obstack);
-
-  for (insn_ptr = normal_insns; *insn_ptr; insn_ptr++)
+  for (insn_ptr = insns; *insn_ptr; insn_ptr++)
     gen_proto (*insn_ptr);
-
-  printf ("\n#ifdef MD_CALL_PROTOTYPES\n");
-  for (insn_ptr = call_insns; *insn_ptr; insn_ptr++)
-    gen_proto (*insn_ptr);
-
-  printf ("\n#else /* !MD_CALL_PROTOTYPES */\n");
-  for (insn_ptr = call_insns; *insn_ptr; insn_ptr++)
-    gen_nonproto (*insn_ptr);
-
-  printf ("#endif /* !MD_CALL_PROTOTYPES */\n");
 
   fflush (stdout);
   return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);

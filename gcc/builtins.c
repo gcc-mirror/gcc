@@ -981,7 +981,7 @@ expand_builtin_apply (function, arguments, argsize)
 	    valreg = gen_rtx_REG (mode, regno);
 	  }
 
-      emit_call_insn (gen_call_value (valreg,
+      emit_call_insn (GEN_CALL_VALUE (valreg,
 				      gen_rtx_MEM (FUNCTION_MODE, function),
 				      const0_rtx, NULL_RTX, const0_rtx));
 
