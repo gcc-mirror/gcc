@@ -289,6 +289,10 @@
 ;; from the same template.
 (define_mode_macro GPR [SI (DI "TARGET_64BIT")])
 
+;; This mode macro allows :P to be used for patterns that operate on
+;; pointer-sized quantities.  Exactly one of the two alternatives will match.
+(define_mode_macro P [(SI "Pmode == SImode") (DI "Pmode == DImode")])
+
 ;; In GPR templates, a string like "<d>subu" will expand to "subu" in the
 ;; 32-bit version and "dsubu" in the 64-bit version.
 (define_mode_attr d [(SI "") (DI "d")])
@@ -3309,183 +3313,105 @@ beq\t%2,%.,1b\;\
 
 ;; Insns to fetch a global symbol from a big GOT.
 
-(define_insn_and_split "*xgot_hisi"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(high:SI (match_operand:SI 1 "global_got_operand" "")))]
+(define_insn_and_split "*xgot_hi<mode>"
+  [(set (match_operand:P 0 "register_operand" "=d")
+	(high:P (match_operand:P 1 "global_got_operand" "")))]
   "TARGET_EXPLICIT_RELOCS && TARGET_XGOT"
   "#"
   "&& reload_completed"
-  [(set (match_dup 0) (high:SI (match_dup 2)))
-   (set (match_dup 0) (plus:SI (match_dup 0) (match_dup 3)))]
+  [(set (match_dup 0) (high:P (match_dup 2)))
+   (set (match_dup 0) (plus:P (match_dup 0) (match_dup 3)))]
 {
   operands[2] = mips_unspec_address (operands[1], SYMBOL_GOTOFF_GLOBAL);
   operands[3] = pic_offset_table_rtx;
 }
-  [(set_attr "got" "xgot_high")])
+  [(set_attr "got" "xgot_high")
+   (set_attr "mode" "<MODE>")])
 
-(define_insn_and_split "*xgot_losi"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(lo_sum:SI (match_operand:SI 1 "register_operand" "d")
-		   (match_operand:SI 2 "global_got_operand" "")))]
+(define_insn_and_split "*xgot_lo<mode>"
+  [(set (match_operand:P 0 "register_operand" "=d")
+	(lo_sum:P (match_operand:P 1 "register_operand" "d")
+		  (match_operand:P 2 "global_got_operand" "")))]
   "TARGET_EXPLICIT_RELOCS && TARGET_XGOT"
   "#"
   "&& reload_completed"
   [(set (match_dup 0)
-	(unspec:SI [(match_dup 1) (match_dup 3)] UNSPEC_LOAD_GOT))]
+	(unspec:P [(match_dup 1) (match_dup 3)] UNSPEC_LOAD_GOT))]
   { operands[3] = mips_unspec_address (operands[2], SYMBOL_GOTOFF_GLOBAL); }
-  [(set_attr "got" "load")])
-
-(define_insn_and_split "*xgot_hidi"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(high:DI (match_operand:DI 1 "global_got_operand" "")))]
-  "TARGET_EXPLICIT_RELOCS && TARGET_XGOT"
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 0) (high:DI (match_dup 2)))
-   (set (match_dup 0) (plus:DI (match_dup 0) (match_dup 3)))]
-{
-  operands[2] = mips_unspec_address (operands[1], SYMBOL_GOTOFF_GLOBAL);
-  operands[3] = pic_offset_table_rtx;
-}
-  [(set_attr "got" "xgot_high")])
-
-(define_insn_and_split "*xgot_lodi"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(lo_sum:DI (match_operand:DI 1 "register_operand" "d")
-		   (match_operand:DI 2 "global_got_operand" "")))]
-  "TARGET_EXPLICIT_RELOCS && TARGET_XGOT"
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 0)
-	(unspec:DI [(match_dup 1) (match_dup 3)] UNSPEC_LOAD_GOT))]
-  { operands[3] = mips_unspec_address (operands[2], SYMBOL_GOTOFF_GLOBAL); }
-  [(set_attr "got" "load")])
+  [(set_attr "got" "load")
+   (set_attr "mode" "<MODE>")])
 
 ;; Insns to fetch a global symbol from a normal GOT.
 
-(define_insn_and_split "*got_dispsi"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(match_operand:SI 1 "global_got_operand" ""))]
+(define_insn_and_split "*got_disp<mode>"
+  [(set (match_operand:P 0 "register_operand" "=d")
+	(match_operand:P 1 "global_got_operand" ""))]
   "TARGET_EXPLICIT_RELOCS && !TARGET_XGOT"
   "#"
   "&& reload_completed"
   [(set (match_dup 0)
-	(unspec:SI [(match_dup 2) (match_dup 3)] UNSPEC_LOAD_GOT))]
+	(unspec:P [(match_dup 2) (match_dup 3)] UNSPEC_LOAD_GOT))]
 {
   operands[2] = pic_offset_table_rtx;
   operands[3] = mips_unspec_address (operands[1], SYMBOL_GOTOFF_GLOBAL);
 }
-  [(set_attr "got" "load")])
-
-(define_insn_and_split "*got_dispdi"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(match_operand:DI 1 "global_got_operand" ""))]
-  "TARGET_EXPLICIT_RELOCS && !TARGET_XGOT"
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 0)
-	(unspec:DI [(match_dup 2) (match_dup 3)] UNSPEC_LOAD_GOT))]
-{
-  operands[2] = pic_offset_table_rtx;
-  operands[3] = mips_unspec_address (operands[1], SYMBOL_GOTOFF_GLOBAL);
-}
-  [(set_attr "got" "load")])
+  [(set_attr "got" "load")
+   (set_attr "mode" "<MODE>")])
 
 ;; Insns for loading the high part of a local symbol.
 
-(define_insn_and_split "*got_pagesi"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(high:SI (match_operand:SI 1 "local_got_operand" "")))]
+(define_insn_and_split "*got_page<mode>"
+  [(set (match_operand:P 0 "register_operand" "=d")
+	(high:P (match_operand:P 1 "local_got_operand" "")))]
   "TARGET_EXPLICIT_RELOCS"
   "#"
   "&& reload_completed"
   [(set (match_dup 0)
-	(unspec:SI [(match_dup 2) (match_dup 3)] UNSPEC_LOAD_GOT))]
+	(unspec:P [(match_dup 2) (match_dup 3)] UNSPEC_LOAD_GOT))]
 {
   operands[2] = pic_offset_table_rtx;
   operands[3] = mips_unspec_address (operands[1], SYMBOL_GOTOFF_PAGE);
 }
-  [(set_attr "got" "load")])
-
-(define_insn_and_split "*got_pagedi"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(high:DI (match_operand:DI 1 "local_got_operand" "")))]
-  "TARGET_EXPLICIT_RELOCS"
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 0)
-	(unspec:DI [(match_dup 2) (match_dup 3)] UNSPEC_LOAD_GOT))]
-{
-  operands[2] = pic_offset_table_rtx;
-  operands[3] = mips_unspec_address (operands[1], SYMBOL_GOTOFF_PAGE);
-}
-  [(set_attr "got" "load")])
+  [(set_attr "got" "load")
+   (set_attr "mode" "<MODE>")])
 
 ;; Lower-level instructions for loading an address from the GOT.
 ;; We could use MEMs, but an unspec gives more optimization
 ;; opportunities.
 
-(define_insn "*load_gotsi"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(unspec:SI [(match_operand:SI 1 "register_operand" "d")
-		    (match_operand:SI 2 "immediate_operand" "")]
-		   UNSPEC_LOAD_GOT))]
+(define_insn "*load_got<mode>"
+  [(set (match_operand:P 0 "register_operand" "=d")
+	(unspec:P [(match_operand:P 1 "register_operand" "d")
+		   (match_operand:P 2 "immediate_operand" "")]
+		  UNSPEC_LOAD_GOT))]
   "TARGET_ABICALLS"
-  "lw\t%0,%R2(%1)"
+  "<load>\t%0,%R2(%1)"
   [(set_attr "type" "load")
-   (set_attr "length" "4")])
-
-(define_insn "*load_gotdi"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(unspec:DI [(match_operand:DI 1 "register_operand" "d")
-		    (match_operand:DI 2 "immediate_operand" "")]
-		   UNSPEC_LOAD_GOT))]
-  "TARGET_ABICALLS"
-  "ld\t%0,%R2(%1)"
-  [(set_attr "type" "load")
+   (set_attr "mode" "<MODE>")
    (set_attr "length" "4")])
 
 ;; Instructions for adding the low 16 bits of an address to a register.
 ;; Operand 2 is the address: print_operand works out which relocation
 ;; should be applied.
 
-(define_insn "*lowsi"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(lo_sum:SI (match_operand:SI 1 "register_operand" "d")
-		   (match_operand:SI 2 "immediate_operand" "")))]
+(define_insn "*low<mode>"
+  [(set (match_operand:P 0 "register_operand" "=d")
+	(lo_sum:P (match_operand:P 1 "register_operand" "d")
+		  (match_operand:P 2 "immediate_operand" "")))]
   "!TARGET_MIPS16"
-  "addiu\t%0,%1,%R2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")])
+  "<d>addiu\t%0,%1,%R2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")])
 
-(define_insn "*lowdi"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(lo_sum:DI (match_operand:DI 1 "register_operand" "d")
-		   (match_operand:DI 2 "immediate_operand" "")))]
-  "!TARGET_MIPS16 && TARGET_64BIT"
-  "daddiu\t%0,%1,%R2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"DI")])
-
-(define_insn "*lowsi_mips16"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(lo_sum:SI (match_operand:SI 1 "register_operand" "0")
-		   (match_operand:SI 2 "immediate_operand" "")))]
+(define_insn "*low<mode>_mips16"
+  [(set (match_operand:P 0 "register_operand" "=d")
+	(lo_sum:P (match_operand:P 1 "register_operand" "0")
+		  (match_operand:P 2 "immediate_operand" "")))]
   "TARGET_MIPS16"
-  "addiu\t%0,%R2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"8")])
-
-(define_insn "*lowdi_mips16"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(lo_sum:DI (match_operand:DI 1 "register_operand" "0")
-		   (match_operand:DI 2 "immediate_operand" "")))]
-  "TARGET_MIPS16 && TARGET_64BIT"
-  "daddiu\t%0,%R2"
-  [(set_attr "type"	"arith")
-   (set_attr "mode"	"DI")
-   (set_attr "length"	"8")])
+  "<d>addiu\t%0,%R2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "<MODE>")
+   (set_attr "length" "8")])
 
 ;; 64-bit integer moves
 
