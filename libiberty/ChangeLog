@@ -1,3 +1,22 @@
+2003-02-21  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* physmem.c (physmem_total) [HAVE_GETSYSINFO]: Use getsysinfo on
+	Tru64 UNIX.
+	(physmem_available) [HAVE_TABLE && HAVE_SYS_TABLE_H]: Use table on
+	Tru64 UNIX.
+
+	* configure.in (AC_CHECK_HEADERS): Check for sys/sysinfo.h,
+	machine/hal_sysinfo.h, sys/table.h.
+	(checkfuncs, AC_CHECKFUNCS): Check for getsysinfo, table.
+	* configure, config.in: Regenerate.
+
+2003-02-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in: Check for sys/sysmp.h and sysmp.
+	* physmem.c: Pull upstream copy, add support for irix6.
+
+	* config.in, configure: Regenerated.
+
 2003-02-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* physmem.c (physmem_total, physmem_available): De-ANSI-fy.
