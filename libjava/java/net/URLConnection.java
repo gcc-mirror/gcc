@@ -509,7 +509,8 @@ public abstract class URLConnection
    * to be done for this connection.  This default to true unless the
    * doOutput flag is set to false, in which case this defaults to false.
    * 
-   * @param doinput The new value of the doInput field
+   * @param input <code>true</code> if input is to be done,
+   * <code>false</code> otherwise
    *
    * @exception IllegalStateException If already connected
    */
@@ -671,7 +672,10 @@ public abstract class URLConnection
   }
 
   /**
-   * Returns the default value of the useCaches field
+   * Returns the default value used to determine whether or not caching
+   * of documents will be done when possible.
+   *
+   * @return true if caches will be used, false otherwise
    */
   public boolean getDefaultUseCaches()
   {
@@ -701,6 +705,8 @@ public abstract class URLConnection
    *
    * @see URLConnection#getRequestProperty(String key)
    * @see URLConnection#addRequestProperty(String key, String value)
+   * 
+   * @since 1.4
    */
   public void setRequestProperty(String key, String value)
   {

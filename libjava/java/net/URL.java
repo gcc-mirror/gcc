@@ -418,14 +418,12 @@ public final class URL implements Serializable
    *
    * @return true if the URL is equal, false otherwise
    */
-  public boolean equals(Object obj)
+  public boolean equals (Object obj)
   {
     if (obj == null || ! (obj instanceof URL))
       return false;
 
-    URL uObj = (URL) obj;
-
-    return handler.equals (this, uObj);
+    return handler.equals (this, (URL) obj);
   }
 
   /**
