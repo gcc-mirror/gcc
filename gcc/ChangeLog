@@ -1,3 +1,8 @@
+2001-07-10  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* reload1.c (merge_assigned_reloads): After a RELOAD_OTHER merge,
+	fix setting of the reloads of that reload to RELOAD_FOR_OTHER_ADDRESS.
+
 Tue Jul 10 07:27:53 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/rs6000/rs6000.c (print_operand, case 'L', 'Y', 'Z'): Use
