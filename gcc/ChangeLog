@@ -1,3 +1,37 @@
+Thu Sep 23 13:40:23 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* abi64.h (mips_function_value): Add prototype arguments.
+
+	* mips-protos.h: New file with mips prototypes.
+
+	* mips.c: Include "tm_p.h".
+	(mktemp, lookup_name): Add prototype arguments.
+	(extern_list, string_constant, mips_fill_delay_slot,
+	mips_output_external, mips_output_external_libcall,
+	mips_output_filename, mips_declare_object, function_prologue,
+	mips_expand_prologue, function_epilogue, mips16_constant,
+	build_mips16_function_stub, mips_output_conditional_branch):
+	Constify a char*.
+	(mips_va_start): Remove unused variable `u'.
+	(mips_va_arg): Cast value to unsigned when comparing against one.
+	(trace): Delete.
+	(save_restore_insns, mips_expand_prologue): Add missing arg in
+	call to `large_int'.
+
+	* mips.h: Move prototypes to mips-protos.h.
+	(data_section, memory_address_p, rdata_section,
+	readonly_data_section, simple_epilogue_p, text_section): Delete
+	prototypes delcared elsewhere.
+	(mips_epilogue_delay_slots, print_options): Delete unused decls.
+	(trace): Delete.
+	(GO_PRINTF, GO_PRINTF2): Call fprintf, not trace.
+
+	* mips.md: Delete extra args in call to `mips_move_2words'.
+
+	* xm-iris6.h (alloca): Add prototype argument.
+
+	* genpeep.c: Include "tm_p.h" in generated output file.
+
 Thu Sep 23 10:36:55 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* basic-block.h (find_edge_index): Change parameters.

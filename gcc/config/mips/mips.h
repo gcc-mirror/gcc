@@ -160,132 +160,9 @@ extern struct rtx_def *embedded_pic_fnaddr_rtx;	/* function address */
 extern int mips_string_length;		/* length of strings for mips16 */
 extern struct rtx_def *mips16_gp_pseudo_rtx; /* psuedo reg holding $gp */
 
-/* Functions within mips.c that we reference.  Some of these return
-   type HOST_WIDE_INT, so define that here.  */
-
-#include "hwint.h"
-
-extern int		arith32_operand ();
-extern int		arith_operand ();
-extern int		cmp_op ();
-#ifdef HOST_WIDE_INT
-extern HOST_WIDE_INT	compute_frame_size ();
-#endif
-extern int		const_float_1_operand ();
-extern void		expand_block_move ();
-extern int		equality_op ();
-extern void		final_prescan_insn ();
-extern struct rtx_def *	function_arg ();
-extern void		function_arg_advance ();
-extern int		function_arg_partial_nregs ();
-extern int		function_arg_pass_by_reference ();
-extern void		function_epilogue ();
-extern void		function_prologue ();
-extern void		gen_conditional_branch ();
-extern void		gen_conditional_move ();
-extern struct rtx_def * gen_int_relational ();
-extern void		init_cumulative_args ();
-extern int		large_int ();
-extern void		machine_dependent_reorg ();
-extern int		mips_address_cost ();
-extern void		mips_asm_file_end ();
-extern void		mips_asm_file_start ();
-extern int		mips_can_use_return_insn ();
-extern int		mips_const_double_ok ();
-extern void		mips_count_memory_refs ();
-#ifdef HOST_WIDE_INT
-extern HOST_WIDE_INT	mips_debugger_offset ();
-#endif
-extern void		mips_declare_object ();
-extern int		mips_epilogue_delay_slots ();
-extern void		mips_expand_epilogue ();
-extern void		mips_expand_prologue ();
-extern int		mips_check_split ();
-extern char	       *mips_fill_delay_slot ();
-extern const char       *mips_move_1word ();
-extern const char       *mips_move_2words ();
-extern void		mips_output_double ();
-extern int		mips_output_external ();
-extern void		mips_output_float ();
-extern void		mips_output_filename ();
-extern void		mips_output_lineno ();
-extern const char       *output_block_move ();
-extern void		override_options ();
-extern int		pc_or_label_operand ();
-extern void		print_operand_address ();
-extern void		print_operand ();
-extern void		print_options ();
-extern int		reg_or_0_operand ();
-extern int		true_reg_or_0_operand ();
-extern int		simple_epilogue_p ();
-extern int		simple_memory_operand ();
-extern int		double_memory_operand ();
-extern int		small_int ();
-extern void		trace ();
-extern int		uns_arith_operand ();
-extern struct rtx_def *	embedded_pic_offset ();
-extern void		mips_order_regs_for_local_alloc ();
-extern struct rtx_def *	mips16_gp_pseudo_reg ();
-extern struct rtx_def * mips16_gp_offset ();
-extern int		mips16_gp_offset_p ();
-extern int		mips16_constant ();
-extern int		mips16_constant_after_function_p ();
-extern int		build_mips16_call_stub ();
-extern char  	       *mips_output_conditional_branch ();
-extern int              mips_adjust_insn_length ();
-
-/* Recognition functions that return if a condition is true.  */
-extern int		address_operand ();
-extern int		call_insn_operand ();
-extern int		const_double_operand ();
-extern int		const_int_operand ();
-extern int		consttable_operand ();
-extern int		general_operand ();
-extern int		immediate_operand ();
-extern int		memory_address_p ();
-extern int		memory_operand ();
-extern int		nonimmediate_operand ();
-extern int		nonmemory_operand ();
-extern int		pic_address_needs_scratch ();
-extern int		register_operand ();
-extern int		scratch_operand ();
-extern int		move_operand ();
-extern int		movdi_operand ();
-extern int		se_register_operand ();
-extern int		se_reg_or_0_operand ();
-extern int		se_uns_arith_operand ();
-extern int		se_arith_operand ();
-extern int		se_nonmemory_operand ();
-extern int		se_nonimmediate_operand ();
-extern int              extend_operator ();
-extern int              highpart_shift_operator ();
-extern int		m16_uimm3_b ();
-extern int		m16_simm4_1 ();
-extern int		m16_nsimm4_1 ();
-extern int		m16_simm5_1 ();
-extern int		m16_nsimm5_1 ();
-extern int		m16_uimm5_4 ();
-extern int		m16_nuimm5_4 ();
-extern int		m16_simm8_1 ();
-extern int		m16_nsimm8_1 ();
-extern int		m16_uimm8_1 ();
-extern int		m16_nuimm8_1 ();
-extern int		m16_uimm8_m1_1 ();
-extern int		m16_uimm8_4 ();
-extern int		m16_nuimm8_4 ();
-extern int		m16_simm8_8 ();
-extern int		m16_nsimm8_8 ();
-extern int		m16_usym8_4 ();
-extern int		m16_usym5_4 ();
-
 /* Functions to change what output section we are using.  */
-extern void		data_section ();
-extern void		rdata_section ();
-extern void		readonly_data_section ();
-extern void		sdata_section ();
-extern void		text_section ();
-extern void		mips_select_rtx_section ();
-extern void		mips_select_section ();
+extern void		rdata_section PARAMS ((void));
+extern void		sdata_section PARAMS ((void));
 
 /* Stubs for half-pic support if not OSF/1 reference platform.  */
 
@@ -2072,10 +1949,6 @@ extern enum reg_class mips_char_to_class[];
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X)			\
   mips_secondary_reload_class (CLASS, MODE, X, 0)
 
-/* Not declared above, with the other functions, because enum
-   reg_class is not declared yet.  */
-extern enum reg_class	mips_secondary_reload_class ();
-
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 
@@ -2623,10 +2496,6 @@ typedef struct mips_args {
 /* Implement `va_arg'.  */
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \
   mips_va_arg (valist, type)
-
-extern union tree_node *mips_build_va_list ();
-extern void mips_va_start ();
-extern struct rtx_def *mips_va_arg ();
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
@@ -2861,8 +2730,8 @@ extern struct rtx_def *mips_va_arg ();
    the `symbol_ref' in order to determine the section.  */
 
 #if 1
-#define GO_PRINTF(x)	trace(x)
-#define GO_PRINTF2(x,y)	trace(x,y)
+#define GO_PRINTF(x)	fprintf(stderr, (x))
+#define GO_PRINTF2(x,y)	fprintf(stderr, (x), (y))
 #define GO_DEBUG_RTX(x) debug_rtx(x)
 
 #else

@@ -93,7 +93,10 @@ Boston, MA 02111-1307, USA.  */
    : (int_size_in_bytes (TYPE)						\
       > (mips_abi == ABI_EABI ? 2 * UNITS_PER_WORD : 16)))
 
-extern struct rtx_def *mips_function_value ();
+#ifdef ANSI_PROTOTYPES
+union tree_node;
+#endif
+extern struct rtx_def *mips_function_value PARAMS ((union tree_node *, union tree_node *));
 #undef FUNCTION_VALUE
 #define FUNCTION_VALUE(VALTYPE, FUNC)	mips_function_value (VALTYPE, FUNC)
 

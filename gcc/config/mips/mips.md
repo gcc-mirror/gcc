@@ -4140,7 +4140,7 @@ move\\t%0,%z4\\n\\
 
   xoperands[0] = operands[0];
   xoperands[1] = operands[2];
-  output_asm_insn (mips_move_2words (xoperands, insn, FALSE), xoperands);
+  output_asm_insn (mips_move_2words (xoperands, insn), xoperands);
   return \"\";
 }"
   [(set_attr "type"	"fcvt")
@@ -4167,7 +4167,7 @@ move\\t%0,%z4\\n\\
 
   xoperands[0] = operands[0];
   xoperands[1] = operands[2];
-  output_asm_insn (mips_move_2words (xoperands, insn, FALSE), xoperands);
+  output_asm_insn (mips_move_2words (xoperands, insn), xoperands);
   return \"\";
 }"
   [(set_attr "type"	"fcvt")
