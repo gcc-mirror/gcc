@@ -2343,41 +2343,26 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
       break;
 
     case LSHIFTRT:
-      /* If shift count is undefined, don't fold it; let the machine do
-	 what it wants.  But truncate it if the machine will do that.  */
-      if (arg1 < 0)
-	return 0;
-
-      if (SHIFT_COUNT_TRUNCATED)
-	arg1 %= width;
-
-      val = ((unsigned HOST_WIDE_INT) arg0) >> arg1;
-      break;
-
     case ASHIFT:
-      if (arg1 < 0)
-	return 0;
-
-      if (SHIFT_COUNT_TRUNCATED)
-	arg1 %= width;
-
-      val = ((unsigned HOST_WIDE_INT) arg0) << arg1;
-      break;
-
     case ASHIFTRT:
-      if (arg1 < 0)
+      /* Truncate the shift if SHIFT_COUNT_TRUNCATED, otherwise make sure the
+	 value is in range.  We can't return any old value for out-of-range
+	 arguments because either the middle-end (via shift_truncation_mask)
+	 or the back-end might be relying on target-specific knowledge.
+	 Nor can we rely on shift_truncation_mask, since the shift might
+	 not be part of an ashlM3, lshrM3 or ashrM3 instruction.  */
+      if (SHIFT_COUNT_TRUNCATED)
+	arg1 = (unsigned HOST_WIDE_INT) arg1 % width;
+      else if (arg1 < 0 || arg1 >= GET_MODE_BITSIZE (mode))
 	return 0;
 
-      if (SHIFT_COUNT_TRUNCATED)
-	arg1 %= width;
+      val = (code == ASHIFT
+	     ? ((unsigned HOST_WIDE_INT) arg0) << arg1
+	     : ((unsigned HOST_WIDE_INT) arg0) >> arg1);
 
-      val = arg0s >> arg1;
-
-      /* Bootstrap compiler may not have sign extended the right shift.
-	 Manually extend the sign to insure bootstrap cc matches gcc.  */
-      if (arg0s < 0 && arg1 > 0)
-	val |= ((HOST_WIDE_INT) -1) << (HOST_BITS_PER_WIDE_INT - arg1);
-
+      /* Sign-extend the result for arithmetic right shifts.  */
+      if (code == ASHIFTRT && arg0s < 0 && arg1 > 0)
+	val |= ((HOST_WIDE_INT) -1) << (width - arg1);
       break;
 
     case ROTATERT:

@@ -301,6 +301,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_BINDS_LOCAL_P default_binds_local_p
 #endif
 
+#ifndef TARGET_SHIFT_TRUNCATION_MASK
+#define TARGET_SHIFT_TRUNCATION_MASK default_shift_truncation_mask
+#endif
+
 #ifndef TARGET_VALID_POINTER_MODE
 #define TARGET_VALID_POINTER_MODE default_valid_pointer_mode
 #endif
@@ -488,6 +492,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_BINDS_LOCAL_P,				\
   TARGET_ENCODE_SECTION_INFO,			\
   TARGET_STRIP_NAME_ENCODING,			\
+  TARGET_SHIFT_TRUNCATION_MASK,			\
   TARGET_VALID_POINTER_MODE,                    \
   TARGET_SCALAR_MODE_SUPPORTED_P,		\
   TARGET_VECTOR_MODE_SUPPORTED_P,               \

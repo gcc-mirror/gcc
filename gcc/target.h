@@ -378,6 +378,10 @@ struct gcc_target
   /* Undo the effects of encode_section_info on the symbol string.  */
   const char * (* strip_name_encoding) (const char *);
 
+  /* If shift optabs for MODE are known to always truncate the shift count,
+     return the mask that they apply.  Return 0 otherwise.  */
+  unsigned HOST_WIDE_INT (* shift_truncation_mask) (enum machine_mode mode);
+
   /* True if MODE is valid for a pointer in __attribute__((mode("MODE"))).  */
   bool (* valid_pointer_mode) (enum machine_mode mode);
 

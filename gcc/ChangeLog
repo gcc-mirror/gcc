@@ -1,3 +1,24 @@
+2004-09-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* doc/md.texi (shift patterns): New anchor.  Add reference to
+	TARGET_SHIFT_TRUNCATION_MASK.
+	* doc/tm.texi (TARGET_SHIFT_TRUNCATION_MASK): Document.
+	* target.h (shift_truncation_mask): New target hook.
+	* targhook.h (default_shift_truncation_mask): Declare.
+	* targhook.c (default_shift_truncation_mask): Define.
+	* target-def.h (TARGET_SHIFT_TRUNCATION_MASK): Define.
+	(TARGET_INITIALIZER): Include it.
+	* simplify-rtx.c (simplify_binary_operation): Combine ASHIFT, ASHIFTRT
+	and LSHIFTRT cases.  Truncate arg1 if SHIFT_COUNT_TRUNCATED, otherwise
+	reject all out-of-range values.  Fix sign-extension code for modes
+	whose width is smaller than HOST_BITS_PER_WIDE_INT.
+	* optabs.c (simplify_expand_binop, force_expand_binop): New functions.
+	(expand_superword_shift, expand_subword_shift): Likewise.
+	(expand_doubleword_shift_condmove, expand_doubleword_shift): Likewise.
+	(expand_binop): Use them to implement double-word shifts.
+	* config/arm/arm.c (arm_shift_truncation_mask): New function.
+	(TARGET_SHIFT_TRUNCATION_MASK): Define.
+
 2004-09-04  Jan Hubicka  <jh@suse.cz>
 
 	* tree.c (iterate_hash_expr): Optimize, avoid use of iterative_hash_object.

@@ -32,6 +32,8 @@ extern bool hook_bool_CUMULATIVE_ARGS_false (CUMULATIVE_ARGS *);
 extern bool default_pretend_outgoing_varargs_named (CUMULATIVE_ARGS *);
 
 extern enum machine_mode default_eh_return_filter_mode (void);
+extern unsigned HOST_WIDE_INT default_shift_truncation_mask
+  (enum machine_mode);
 
 extern bool hook_bool_CUMULATIVE_ARGS_true (CUMULATIVE_ARGS *);
 extern tree default_cxx_guard_type (void);
