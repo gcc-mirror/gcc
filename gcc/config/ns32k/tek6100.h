@@ -1,4 +1,4 @@
-#include "tek6000.h"
+#include "ns32k/tek6000.h"
 
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES \

@@ -23,7 +23,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define SEQUENT_ADDRESS_BUG 1
 #define SEQUENT_BASE_REGS
 
-#include "ns32k.h"
+#include "ns32k/ns32k.h"
 
 /* This is BSD, so it wants DBX format.  */
 #define DBX_DEBUGGING_INFO

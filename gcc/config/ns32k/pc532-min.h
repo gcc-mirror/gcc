@@ -23,7 +23,7 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include "pc532.h"
+#include "ns32k/pc532.h"
 
 /* Minix has crtso.o instead of crt0.o */
 #undef STARTFILE_SPEC
