@@ -1,4 +1,7 @@
-Wed Apr 24 21:35:11 2002  J"orn Rennecke <joern.rennecke@superh.com>
+Wed Apr 24 21:51:54 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.c (sh_va_arg): If argument was passed by reference,
+	dereference the pointer.
 
 	* sh.h (PIC_OFFSET_TABLE_REGNUM): Conditionalize on flag_pic.
 

@@ -5293,10 +5293,15 @@ sh_va_arg (valist, type)
   HOST_WIDE_INT size, rsize;
   tree tmp, pptr_type_node;
   rtx addr_rtx, r;
+  rtx result;
+  int pass_by_ref = MUST_PASS_IN_STACK (TYPE_MODE (type), type);
 
   size = int_size_in_bytes (type);
   rsize = (size + UNITS_PER_WORD - 1) & -UNITS_PER_WORD;
   pptr_type_node = build_pointer_type (ptr_type_node);
+
+  if (pass_by_ref)
+    type = build_pointer_type (type);
 
   if (! TARGET_SH5 && (TARGET_SH3E || TARGET_SH4) && ! TARGET_HITACHI)
     {
@@ -5411,7 +5416,19 @@ sh_va_arg (valist, type)
   /* ??? In va-sh.h, there had been code to make values larger than
      size 8 indirect.  This does not match the FUNCTION_ARG macros.  */
 
-  return std_expand_builtin_va_arg (valist, type);
+  result = std_expand_builtin_va_arg (valist, type);
+  if (pass_by_ref)
+    {
+#ifdef POINTERS_EXTEND_UNSIGNED
+      if (GET_MODE (addr) != Pmode)
+	addr = convert_memory_address (Pmode, result);
+#endif
+      result = gen_rtx_MEM (ptr_mode, force_reg (Pmode, result));
+      set_mem_alias_set (result, get_varargs_alias_set ());
+    }
+  /* ??? expand_builtin_va_arg will also set the alias set of the dereferenced
+     argument to the varargs alias set.  */
+  return result;
 }
 
 /* Define the offset between two registers, one to be eliminated, and
