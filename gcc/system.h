@@ -333,6 +333,10 @@ extern char *getwd ();
 extern char *sbrk ();
 #endif
 
+#ifdef NEED_DECLARATION_STRSTR
+extern char *strstr ();
+#endif
+
 #ifdef HAVE_STRERROR
 # ifdef NEED_DECLARATION_STRERROR
 #  ifndef strerror
