@@ -293,7 +293,7 @@ java_new_lexer (finput, encoding)
     }
 
   if (enc_error)
-    fatal_error ("unknown encoding: `%s'", encoding);
+    fatal_error ("unknown encoding: `%s'\nThis might mean that your locale's encoding is not supported\nby your system's iconv(3) implementation.  If you aren't trying\nto use a particular encoding for your input file, try the\n`--encoding=UTF-8' option.", encoding);
 
   return lex;
 }
