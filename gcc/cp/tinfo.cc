@@ -243,7 +243,7 @@ do_dyncast (int boff, sub_kind access_path,
       if (boff >= 0)
         result.target2sub = ((char *)subptr - (char *)objptr) == boff
               ? contained_public : not_contained;
-      else if (boff == -3)
+      else if (boff == -2)
         result.target2sub = not_contained;
       return false;
     }
@@ -361,7 +361,7 @@ do_dyncast (int boff, sub_kind access_path,
       if (boff >= 0)
         result.target2sub = ((char *)subptr - (char *)objptr) == boff
               ? contained_public : not_contained;
-      else if (boff == -3)
+      else if (boff == -2)
         result.target2sub = not_contained;
       return false;
     }
@@ -519,7 +519,7 @@ do_find_public_subobj (int boff, const type_info &subtype, void *objptr, void *s
         continue; // Not public, can't be here.
       void *p;
 
-      if (base_list[i].is_virtual && boff == -1)
+      if (base_list[i].is_virtual && boff == -3)
 	// Not a virtual base, so can't be here.
 	continue;
       

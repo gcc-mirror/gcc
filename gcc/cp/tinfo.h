@@ -24,12 +24,12 @@ struct __user_type_info : public std::type_info {
   // BOFF >= 0, there is only one public non-virtual SUBTYPE base at offset
   //    BOFF, and there are no public virtual SUBTYPE bases.
   //    Therefore check if SUBOBJ is at offset BOFF when we find a target
-  // BOFF == -1, SUBTYPE occurs as multiple public non-virtual bases.
-  //    Lazily search the non-virtual bases of TARGET.
-  // BOFF == -2, SUBTYPE occurs as multiple public virtual or non-virtual bases.
+  // BOFF == -1, SUBTYPE occurs as multiple public virtual or non-virtual bases.
   //    Lazily search all the bases of TARGET.
-  // BOFF == -3, SUBTYPE is not a public base.
-  // For backwards compatibility set BOFF to -2, that is the safe `don't know'
+  // BOFF == -2, SUBTYPE is not a public base.
+  // BOFF == -3, SUBTYPE occurs as multiple public non-virtual bases.
+  //    Lazily search the non-virtual bases of TARGET.
+  // For backwards compatibility set BOFF to -1, that is the safe `don't know'
   // value. We don't care about SUBTYPES as private bases of TARGET, as they
   // can never succeed as downcasts, only as crosscasts -- and then only if
   // they are virtual. This is more complicated that it might seem.
@@ -131,7 +131,7 @@ struct __user_type_info : public std::type_info {
     if (boff >= 0)
       return ((char *)subptr - (char *)objptr) == boff
               ? contained_public : not_contained;
-    if (boff == -3)
+    if (boff == -2)
       return not_contained;
     return do_find_public_subobj (boff, subtype, objptr, subptr);
   }

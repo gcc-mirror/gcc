@@ -503,12 +503,12 @@ dynamic_cast_base_recurse (subtype, binfo, via_virtual, offset_ptr)
 {
   tree binfos;
   int i, n_baselinks;
-  int worst = -3;
+  int worst = -2;
   
   if (BINFO_TYPE (binfo) == subtype)
     {
       if (via_virtual)
-        return -2;
+        return -1;
       else
         {
           *offset_ptr = BINFO_OFFSET (binfo);
@@ -528,26 +528,28 @@ dynamic_cast_base_recurse (subtype, binfo, via_virtual, offset_ptr)
       rval = dynamic_cast_base_recurse
              (subtype, base_binfo,
               via_virtual || TREE_VIA_VIRTUAL (base_binfo), offset_ptr);
-      if (worst == -3)
+      if (worst == -2)
         worst = rval;
       else if (rval >= 0)
-        worst = worst >= 0 ? -1 : worst;
-      else if (rval > -3)
-        worst = worst < rval ? worst : rval;
+        worst = worst >= 0 ? -3 : worst;
+      else if (rval == -1)
+        worst = -1;
+      else if (rval == -3 && worst != -1)
+        worst = -3;
     }
   return worst;
 }
 
-/* The dynamic cast runtime needs a hint about how the static SUBTYPE type started
-   from is related to the required TARGET type, in order to optimize the
-   inheritance graph search. This information is independant of the
+/* The dynamic cast runtime needs a hint about how the static SUBTYPE type
+   started from is related to the required TARGET type, in order to optimize
+   the inheritance graph search. This information is independant of the
    current context, and ignores private paths, hence get_base_distance is
    inappropriate. Return a TREE specifying the base offset, BOFF.
    BOFF >= 0, there is only one public non-virtual SUBTYPE base at offset BOFF,
       and there are no public virtual SUBTYPE bases.
-   BOFF == -1, SUBTYPE occurs as multiple public non-virtual bases.
-   BOFF == -2, SUBTYPE occurs as multiple public virtual or non-virtual bases.
-   BOFF == -3, SUBTYPE is not a public base.  */
+   BOFF == -1, SUBTYPE occurs as multiple public virtual or non-virtual bases.
+   BOFF == -2, SUBTYPE is not a public base.
+   BOFF == -3, SUBTYPE occurs as multiple public non-virtual bases.  */
 
 tree
 get_dynamic_cast_base_type (subtype, target)

@@ -1,5 +1,5 @@
 // Methods for type_info for -*- C++ -*- Run Time Type Identification.
-// Copyright (C) 1994, 96-97, 1998, 1999 Free Software Foundation
+// Copyright (C) 1994, 96-97, 1998, 1999, 2000 Free Software Foundation
 
 // This file is part of GNU CC.
 
@@ -274,7 +274,7 @@ __dynamic_cast (const type_info& (*from)(void), const type_info& (*to)(void),
 {
   if (!require_public) abort();
   return static_cast <__user_type_info const &> (from ()).dyncast
-      (/*boff=*/-2, to (), address, sub (), subptr);
+      (/*boff=*/-1, to (), address, sub (), subptr);
 }
 
 extern "C" void *
