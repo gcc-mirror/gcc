@@ -998,6 +998,7 @@ changequote([,])dnl
 	hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
 		target_cpu_default="MASK_PA_11"
 		tm_file="${tm_file} pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
+		float_format=i128
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
 		tmake_file=pa/t-pa
@@ -1017,6 +1018,7 @@ changequote([,])dnl
 		;;
 	hppa1.0-*-hpux10*)
 		tm_file="${tm_file} pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux10.h"
+		float_format=i128
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
 		tmake_file=pa/t-pa
@@ -1037,6 +1039,7 @@ changequote([,])dnl
 	hppa1.1-*-hpux11* | hppa2*-*-hpux11*)
 		target_cpu_default="MASK_PA_11"
 		tm_file="${tm_file} pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
+		float_format=i128
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
 		tmake_file=pa/t-pa
@@ -1056,6 +1059,7 @@ changequote([,])dnl
 		;;
 	hppa1.0-*-hpux11*)
 		tm_file="${tm_file} pa/long_double.h pa/som.h pa/pa-hpux.h pa/pa-hpux11.h"
+		float_format=i128
 		xm_file=pa/xm-pahpux.h
 		xmake_file=pa/x-pa-hpux
 		if test x$gas = xyes
