@@ -1,3 +1,7 @@
+Tue Apr  7 21:48:52 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.h (LEGITIMIZE_RELOAD_ADDRESS): Define.
+
 1998-04-07  Ken Raeburn  <raeburn@cygnus.com>
 
 	* config/mips/mips.c (siginfo): Deleted.
