@@ -1570,7 +1570,7 @@ gcc.xtar.Z: gcc.xtar
 gcc.xtar: doc
 	if grep -s "for version ${version}" gcc.texi; \
 	then true; \
-	else echo "You must update the version number in \`gcc.texi'"; exit 1;\
+	else echo "You must update the version number in \`gcc.texi'"; sleep 10;\
 	fi
 # Update the version number in README
 	awk '$$1 " " $$2 " " $$3 == "This directory contains" \
