@@ -33,7 +33,7 @@
 // turn off glibc-2.0 weirdness. Other systems define similar foolishness
 #undef __need_time_t
 #undef __need_clock_t
-#undef __need_timespec))
+#undef __need_timespec
 
 # undef _SHADOW_NAME
 # define _SHADOW_NAME <ctime>

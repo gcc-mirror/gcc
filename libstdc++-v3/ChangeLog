@@ -1,3 +1,15 @@
+2000-05-31  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_LONG_LONG): Add strtoull checks...
+
+2000-05-31 Steven King <sxking@uswest.net>
+
+        * shadow/time.h: fix typo
+        * shadow/wchar.h: ifdef __USE_GNU for wcsdup
+        * shadow/bits/std_cwchar.h: ditto
+        * shadow/bits/std_cstdlib.h: add overloads of abs and div for long
+        and long long.
+
 2000-05-26  Phil Edwards  <pme@sourceware.cygnus.com>
 
 	* acinclude.m4 (GLIBCPP_ENABLE_LONG_LONG):  If strtoll isn't

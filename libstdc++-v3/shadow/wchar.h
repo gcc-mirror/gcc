@@ -66,7 +66,9 @@
   using ::std::wcscmp;
   using ::std::wcscoll;
   using ::std::wcsxfrm;
+# ifdef __USE_GNU
   using ::std::wcsdup;
+# endif
   using ::std::wcschr;
   using ::std::wcscspn;
   using ::std::wcspbrk;

@@ -1,6 +1,6 @@
 // -*- C++ -*- header wrapper
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -40,25 +40,25 @@
 
 # include <bits/std_cstddef.h>  /* pick up NULL, size_t */
 
-  namespace _C_legacy {
-    extern "C" {
+namespace _C_legacy {
+  extern "C" {
 #     define _IN_C_LEGACY_
 #     pragma system_header
 #     include_next <stdlib.h>
       typedef int (*_C_cmp_fun_ptr)(const void*, const void*);  // C fn ptr
     }
-    const int _CPP_EXIT_SUCCESS_capture = int(EXIT_SUCCESS);
-    const int _CPP_EXIT_FAILURE_capture = int(EXIT_FAILURE);
-    const int _CPP_RAND_MAX_capture     = int(RAND_MAX);
-    inline int _CPP_MB_CUR_MAX_capture() { return int(MB_CUR_MAX); }
-    // typedef size_t  _CPP_size_t_capture;
-    // typedef wchar_t _CPP_wchar_t_capture;
-    typedef div_t   _CPP_div_t_capture;
-    typedef ldiv_t  _CPP_ldiv_t_capture;
+  const int _CPP_EXIT_SUCCESS_capture = int(EXIT_SUCCESS);
+  const int _CPP_EXIT_FAILURE_capture = int(EXIT_FAILURE);
+  const int _CPP_RAND_MAX_capture     = int(RAND_MAX);
+  inline int _CPP_MB_CUR_MAX_capture() { return int(MB_CUR_MAX); }
+  // typedef size_t  _CPP_size_t_capture;
+  // typedef wchar_t _CPP_wchar_t_capture;
+  typedef div_t   _CPP_div_t_capture;
+  typedef ldiv_t  _CPP_ldiv_t_capture;
 
-    namespace _C_shadow { 
-    }
-  } // close namespace ::_C_legacy::
+  namespace _C_shadow { 
+  }
+} // namespace _C_legacy::
 
 #  undef size_t
 #  undef wchar_t
@@ -100,6 +100,10 @@
 #  undef div
 #  undef labs
 #  undef ldiv
+#ifdef _GLIBCPP_USE_LONG_LONG
+#  undef llabs
+#  undef lldiv
+#endif
 #  undef mblen
 #  undef mbtowc
 #  undef wctomb
@@ -185,11 +189,25 @@
     inline int abs(int __x) 
       { return __x >= 0 ? __x : -__x; }
     inline div_t div(int __n, int __d)
-      { _div_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
+      { div_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
     inline long labs(long __x)
       { return __x >= 0 ? __x : -__x; }
-    inline ldiv_t ldiv(long __num, long __den)
-      { _ldiv_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
+    inline long abs(long __x)
+      { return __x >= 0 ? __x : -__x; }
+    inline ldiv_t ldiv(long __n, long __d)
+      { ldiv_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
+    inline ldiv_t div(long __n, long __d)
+      { ldiv_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
+#ifdef _GLIBCPP_USE_LONG_LONG
+    inline long long llabs(long long __x)
+      { return __x >= 0 ? __x : -__x; }
+    inline long long abs(long long __x)
+      { return __x >= 0 ? __x : -__x; }
+    inline lldiv_t lldiv(long long __n, long long __d)
+      { lldiv_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
+    inline lldiv_t div(long long __n, long long __d)
+      { lldiv_t __q; __q.quot = __n / __d; __q.rem = __n % __d; return __q; }
+#endif
 
     using ::_C_legacy::mblen;
     using ::_C_legacy::mbtowc;;
@@ -213,10 +231,15 @@
       using ::std::div;
       using ::std::labs;
       using ::std::ldiv;
+#ifdef _GLIBCPP_USE_LONG_LONG
+      using ::std::llabs;
+      using ::std::lldiv;
+#endif
     }
   }
 
 # undef _IN_C_LEGACY_
 
 #endif
+
 
