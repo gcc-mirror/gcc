@@ -24,13 +24,11 @@
 #include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
-class ClassType { };
-
 void test01()
 {
   bool test __attribute__((unused)) = true;
   using std::tr1::is_arithmetic;
-  using __gnu_test::test_category;
+  using namespace __gnu_test;
   
   VERIFY( (test_category<is_arithmetic, void, false>()) );
 

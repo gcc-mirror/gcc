@@ -1,4 +1,4 @@
-// 2004-12-06  Paolo Carlini  <pcarlini@suse.de>
+// 2004-12-07  Paolo Carlini  <pcarlini@suse.de>
 //
 // Copyright (C) 2004 Free Software Foundation, Inc.
 //
@@ -18,32 +18,19 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 4.5.1 Primary type categories
+// 
+// NB: This file is for testing tr1/type_traits with NO OTHER INCLUDES.
 
 #include <tr1/type_traits>
-#include <testsuite_hooks.h>
-#include <testsuite_tr1.h>
+
+// { dg-do compile }
 
 void test01()
 {
-  bool test __attribute__((unused)) = true;
-  using std::tr1::is_reference;
-  using namespace __gnu_test;
-
-  typedef int&           int_ref;
-  typedef ClassType&     ClassType_ref;
-  typedef int (&fun_ref) (int);
-
-  VERIFY( (test_category<is_reference, int_ref, true>()) );
-  VERIFY( (test_category<is_reference, ClassType_ref, true>()) );
-  VERIFY( (test_category<is_reference, fun_ref, true>()) );
-
-  // Sanity check.
-  VERIFY( (test_category<is_reference, ClassType, false>()) );
-}
-
-int main()
-{
-  test01();
-  return 0;
+  // Check for required typedefs
+  typedef std::tr1::is_volatile<int>          test_type;
+  typedef test_type::value_type               value_type;
+  typedef test_type::type                     type;
+  typedef test_type::type::value_type         type_value_type;
+  typedef test_type::type::type               type_type;
 }
