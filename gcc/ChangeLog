@@ -1,3 +1,9 @@
+Fri Nov 14 06:59:33 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* i386/xm-cygwin32.h (HAVE_FILE_H, HAVE_RUSAGE): Delete defines.
+	* i386/xm-mingw32.h (HAVE_FILE_H, HAVE_RUSAGE): Likewise.
+	* rs6000/xm-cygwin32.h (HAVE_FILE_H, HAVE_RUSAGE): Likewise.
+
 Thu Nov 13 20:37:33 1997  Michael Meissner  <meissner@tiktok.cygnus.com>
 
 	* reload1.c (new_spill_reg): Improve fixed or forbidden register
