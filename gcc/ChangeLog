@@ -1,3 +1,16 @@
+2003-04-14  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md ("*mov_sideqi", "*mov_sidehi")
+	("*mov_sidesi", "*mov_sideqi_mem", "*mov_sidehi_mem")
+	("*mov_sidesi_mem", "*clear_sidesi", "*clear_sidehi")
+	("*clear_sideqi", "*ext_sideqihi", "*ext_sideqisi")
+	("*ext_sidehisi", "*op_sideqi", "*op_sidehi", "*op_sidesi")
+	("*op_swap_sideqi", "*op_swap_sidehi", "*op_swap_sidesi")
+	("*extopqihi_side", "*extopqisi_side", "*extophisi_side")
+	("*extopqihi_swap_side", "*extopqisi_swap_side")
+	("*extophisi_swap_side", 8th, 9th, 10th, 11th, 14th peepholes):
+	When next to constraint R, replace constraint i with n.
+
 2003-04-10  Bob Wilson  <bob.wilson@asm.org>
 
 	* config/xtensa/xtensa.h (MAX_INT_TYPE_SIZE, IMPLICIT_FIX_EXPR,
