@@ -1,5 +1,15 @@
 2003-03-24  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/10119
+	* error.c (dump_expr) [BASELINK]: Use dump_expr.
+	* pt.c (maybe_fold_nontype_args): New function.
+	(tsubst_copy) [SCOPE_REF]: Subst any template_id args.
+	[TEMPLATE_ID_EXPR]: Break out folding code, call it.
+	(tsubst_copy_and_build) [TEMPLATE_ID_EXPR]: Call
+	maybe_fold_nontype_args.
+
+2003-03-24  Nathan Sidwell  <nathan@codesourcery.com>
+
 	PR c++/10026
 	* decl2.c (arg_assoc_type) [ERROR_MARK]: Don't die.
 
