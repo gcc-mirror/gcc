@@ -202,13 +202,32 @@ extern long atol();
 extern void free ();
 #endif
 
+#ifdef NEED_DECLARATION_GETCWD
+extern char *getcwd ();
+#endif
+
 #ifdef NEED_DECLARATION_GETENV
 extern char *getenv ();
+#endif
+
+#ifdef NEED_DECLARATION_GETWD
+extern char *getwd ();
 #endif
 
 #ifdef NEED_DECLARATION_SBRK
 extern char *sbrk ();
 #endif
+
+#ifdef HAVE_STRERROR
+# ifdef NEED_DECLARATION_STRERROR
+#  ifndef strerror
+extern char *strerror ();
+#  endif
+# endif
+#else /* ! HAVE_STRERROR */
+extern int sys_nerr;
+extern char *sys_errlist[];
+#endif /* HAVE_STRERROR */
 
 /* HAVE_VOLATILE only refers to the stage1 compiler.  We also check
    __STDC__ and assume gcc sets it and has volatile in stage >=2. */
@@ -229,7 +248,7 @@ extern char *sbrk ();
 
 #ifdef USE_SYSTEM_ABORT
 # ifdef NEED_DECLARATION_ABORT
-void abort ();
+extern void abort ();
 # endif
 #else
 #if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)

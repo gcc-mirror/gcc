@@ -1,3 +1,30 @@
+Sun Jun 28 08:57:09 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in (GCC_NEED_DECLARATIONS): Add strerror, getcwd and
+	getwd.
+
+	* acconfig.m4: Add stubs for NEED_DECLARATION_STRERROR,
+	NEED_DECLARATION_GETCWD and NEED_DECLARATION_GETWD. 
+
+	* cccp.c: Remove strerror()/sys_nerr/sys_errlist decls.
+	(my_strerror): Add prototype and make it static.
+
+	* collect2.c: Likewise.
+
+	* cpplib.c: Likewise.
+
+	* gcc.c: Likewise, but keep `my_strerror' extern.
+
+	* protoize.c: Likewise.
+
+	* pexecute.c (my_strerror): Add argument to prototype.
+
+	* system.h: Add prototypes for getcwd, getwd and strerror.  Add
+	extern decls for sys_nerr and sys_errlist.  Make abort decl
+	explicitly extern.
+
+	* getpwd.c: Remove decls for getwd and getcwd.
+
 Sun Jun 28 02:11:16 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.

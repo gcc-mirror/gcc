@@ -9,7 +9,6 @@
    the few exceptions to the general rule here.  */
 
 #if !(defined (POSIX) || defined (USG) || defined (VMS)) || defined (HAVE_GETWD)
-extern char *getwd ();
 #define getcwd(buf,len) getwd(buf)
 #ifdef MAXPATHLEN
 #define GUESSPATHLEN (MAXPATHLEN + 1)
@@ -17,7 +16,6 @@ extern char *getwd ();
 #define GUESSPATHLEN 100
 #endif
 #else /* (defined (USG) || defined (VMS)) */
-extern char *getcwd ();
 /* We actually use this as a starting point, not a limit.  */
 #define GUESSPATHLEN 100
 #endif /* (defined (USG) || defined (VMS)) */

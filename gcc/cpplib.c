@@ -203,6 +203,7 @@ struct cpp_pending {
 char *xmalloc ();
 extern void cpp_hash_cleanup PARAMS ((cpp_reader *));
 
+static char *my_strerror		PROTO ((int));
 static void add_import			PROTO ((cpp_reader *, int, char *));
 static void append_include_chain	PROTO ((cpp_reader *,
 						struct file_name_list *,
@@ -7599,21 +7600,10 @@ cpp_pedwarn_with_file_and_line VPROTO ((cpp_reader *pfile, char *file, int line,
   va_end(ap);
 }
 
-#ifndef VMS
-#ifndef HAVE_STRERROR
-extern int sys_nerr;
-extern char *sys_errlist[];
-#else	/* HAVE_STRERROR */
-char *strerror ();
-#endif
-#else	/* VMS */
-char *strerror (int,...);
-#endif
-
 /* my_strerror - return the descriptive text associated with an
    `errno' code.  */
 
-char *
+static char *
 my_strerror (errnum)
      int errnum;
 {

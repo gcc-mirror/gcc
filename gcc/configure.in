@@ -197,7 +197,7 @@ GCC_FUNC_VFPRINTF_DOPRNT
 GCC_FUNC_PRINTF_PTR
 
 GCC_NEED_DECLARATIONS(malloc realloc calloc free bcopy bzero bcmp \
-	index rindex getenv atol sbrk abort atof)
+	index rindex getenv atol sbrk abort atof strerror getcwd getwd)
 
 AC_DECL_SYS_SIGLIST
 
