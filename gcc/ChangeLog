@@ -1,3 +1,9 @@
+2004-01-31  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (s390_decompose_address): Do not treat virtual
+	registers as pointers.
+	* config/s390/s390.md ("*la_31" second peephole2): Fix incorrect mode.
+
 2004-01-31  Paolo Bonzini  <bonzini@gnu.org>
 
  	* combine.c (cse_main): Set gen_lowpart to gen_lowpart_for_combine
