@@ -1,3 +1,13 @@
+2000-08-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* ginclude/stddef.h: Don't declare wint_t unless __need_wint_t.
+	* c-common.h (enum c_tree_index): Add CTI_WINT_TYPE.
+	(wint_type_node): Define.
+	* c-decl.c (WINT_TYPE): Define.
+	(init_decl_processing): Create the wint_type_node type.
+	* c-common.c (T_WI): Define.
+	(print_char_table): Use T_WI for %lc format.
+
 2000-08-04  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/:  Verified that the MSDOS patch does not break

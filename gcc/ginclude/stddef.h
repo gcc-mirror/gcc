@@ -302,7 +302,7 @@ typedef __WCHAR_TYPE__ wchar_t;
 #undef	__need_wchar_t
 #endif /* _STDDEF_H or __need_wchar_t.  */
 
-#if defined (_STDDEF_H) || defined (__need_wint_t)
+#if defined (__need_wint_t)
 #ifndef _WINT_T
 #define _WINT_T
 

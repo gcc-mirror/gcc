@@ -1193,6 +1193,7 @@ strip_attrs (specs_attrs)
 #define T_UC	&unsigned_char_type_node
 #define T_V	&void_type_node
 #define T_W	&wchar_type_node
+#define T_WI	&wint_type_node
 #define T_ST    &sizetype
 
 typedef struct {
@@ -1229,7 +1230,7 @@ static format_char_info print_char_table[] = {
 /* A GNU extension.  */
   { "m",	0,	T_V,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
   { "feEgGaA",	0,	T_D,	NULL,	NULL,	NULL,	NULL,	T_LD,	NULL,	"-wp0 +#"	},
-  { "c",	0,	T_I,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	"-w"		},
+  { "c",	0,	T_I,	NULL,	NULL,	T_WI,	NULL,	NULL,	NULL,	"-w"		},
   { "C",	0,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-w"		},
   { "s",	1,	T_C,	NULL,	NULL,	T_W,	NULL,	NULL,	NULL,	"-wp"		},
   { "S",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
