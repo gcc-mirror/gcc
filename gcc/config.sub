@@ -676,8 +676,8 @@ case $os in
 	      | -*vms* | -sco* | -esix* | -isc* | -aix* | -sunos | -sunos[34]*\
 	      | -hpux* | -unos* | -osf* | -luna* | -dgux* | -solaris* | -sym* \
 	      | -amigados* | -msdos* | -newsos* | -unicos* | -aof* | -aos* \
-	      | -nindy* | -vxworks* | -ebmon* | -hms* | -mvs* | -clix* \
-	      | -riscos* | -uniplus* | -iris* | -rtu* | -xenix* \
+	      | -nindy* | -vxsim* | -vxworks* | -ebmon* | -hms* | -mvs* \
+	      | -clix* | -riscos* | -uniplus* | -iris* | -rtu* | -xenix* \
 	      | -hiux* | -386bsd* | -netbsd* | -freebsd* | -riscix* \
 	      | -lynxos* | -bosx* | -nextstep* | -cxux* | -aout* | -elf* \
 	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta* \
@@ -907,7 +907,7 @@ case $basic_machine in
 			-ptx*)
 				vendor=sequent
 				;;
-			-vxworks*)
+			-vxsim* | -vxworks*)
 				vendor=wrs
 				;;
 			-aux*)
