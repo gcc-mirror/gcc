@@ -5113,7 +5113,7 @@ add_label_notes (x, insn)
 	 We no longer ignore such label references (see LABEL_REF handling in
 	 mark_jump_label for additional information).  */
 
-      REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL, XEXP (x, 0),
+      REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL, XEXP (x, 0),
 					    REG_NOTES (insn));
       if (LABEL_P (XEXP (x, 0)))
         LABEL_NUSES (XEXP (x, 0))++;

@@ -3875,7 +3875,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	  if (GET_CODE (insn) != JUMP_INSN
 	      && GET_CODE (substitution) == LABEL_REF
 	      && !find_reg_note (insn, REG_LABEL, XEXP (substitution, 0)))
-	    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL,
+	    REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL,
 						  XEXP (substitution, 0),
 						  REG_NOTES (insn));
 	}
@@ -5782,7 +5782,7 @@ subst_reloads (insn)
 	     register refers to.  */
 	  if (GET_CODE (*r->where) == LABEL_REF
 	      && GET_CODE (insn) == JUMP_INSN)
-	    REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL,
+	    REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_LABEL,
 						  XEXP (*r->where, 0),
 						  REG_NOTES (insn));
 
