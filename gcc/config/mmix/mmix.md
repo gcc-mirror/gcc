@@ -42,7 +42,7 @@
 ;; be synthesized ok?
 (define_insn "movqi"
   [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r ,r ,x ,r,r,m,??r")
-	(match_operand:QI 1 "general_operand"	    "r,LS,K,rI,x,m,r,n"))]
+	(match_operand:QI 1 "general_operand"	    "r,LS,K,rI ,x,m,r,n"))]
   ""
   "@
    SET %0,%1
@@ -1095,7 +1095,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 ;; The only peculiar thing is that the register stack has to be unwound at
 ;; nonlocal_goto_receiver.  At each function that has a nonlocal label, we
 ;; save at function entry the location of the "alpha" register stack
-;; pointer, rO, in stack slot known to that function (right below where
+;; pointer, rO, in a stack slot known to that function (right below where
 ;; the frame-pointer would be located).
 ;; In the nonlocal goto receiver, we unwind the register stack by a series
 ;; of "pop 0,0" until rO equals the saved value.  (If it goes lower, we
@@ -1135,7 +1135,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(plus:DI (mult:DI (match_operand:DI 1 "register_operand" "r")
 			  (match_operand:DI 2 "const_int_operand" "n"))
-	       (match_operand:DI 3 "mmix_reg_or_8bit_operand" "rI")))]
+		 (match_operand:DI 3 "mmix_reg_or_8bit_operand" "rI")))]
   "GET_CODE (operands[2]) == CONST_INT
    && (INTVAL (operands[2]) == 2
        || INTVAL (operands[2]) == 4
