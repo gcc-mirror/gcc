@@ -480,16 +480,18 @@
   [(set_attr "type" "binary,binary")
    (set_attr "length" "2,3")])
 
-;; Signed/Unsigned minimum and maximum patterns.
+; Patterns for max and min.  (There is no need for an earlyclobber in the
+; last alternative since the middle alternative will match if op0 == op1.)
+
 (define_insn "sminsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r")
-	(smin:SI (match_operand:SI 1 "register_operand" "%r,0,0")
-		 (match_operand:SI 2 "arith11_operand" "M,r,I")))]
+	(smin:SI (match_operand:SI 1 "register_operand" "%0,0,r")
+		 (match_operand:SI 2 "arith11_operand" "r,I,M")))]
   ""
   "@
-  comclr,> %1,%2,%0\;copy %1,%0
   comclr,> %2,%0,0\;copy %2,%0
-  comiclr,> %2,%0,0\;ldi %2,%0"
+  comiclr,> %2,%0,0\;ldi %2,%0
+  comclr,> %1,%2,%0\;copy %1,%0"
 [(set_attr "type" "multi,multi,multi")
  (set_attr "length" "2,2,2")])
 
@@ -506,13 +508,13 @@
 
 (define_insn "smaxsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,r,r")
-	(smax:SI (match_operand:SI 1 "register_operand" "%r,0,0")
-		 (match_operand:SI 2 "arith11_operand" "M,r,I")))]
+	(smax:SI (match_operand:SI 1 "register_operand" "%0,0,r")
+		 (match_operand:SI 2 "arith11_operand" "r,I,M")))]
   ""
   "@
-  comclr,< %1,%2,%0\;copy %1,%0
   comclr,< %2,%0,0\;copy %2,%0
-  comiclr,< %2,%0,0\;ldi %2,%0"
+  comiclr,< %2,%0,0\;ldi %2,%0
+  comclr,< %1,%2,%0\;copy %1,%0"
 [(set_attr "type" "multi,multi,multi")
  (set_attr "length" "2,2,2")])
 
