@@ -1,3 +1,13 @@
+2000-09-06  Richard Henderson  <rth@cygnus.com>
+	    Benjamin Kosnik  <bkoz@cygnus.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_CPU): Add ia64 support.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* config/cpu/ia64: New directory.
+	* config/cpu/ia64/bits: New directory.
+	* config/cpu/ia64/bits/atomicity.h: New file.
+	
 2000-09-06  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 	
 	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Force glibc_satisfactory
