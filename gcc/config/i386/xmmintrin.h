@@ -1619,6 +1619,12 @@ _mm_storel_epi64 (__m128i *__P, __m128i __B)
   *(long long *)__P = __builtin_ia32_movdq2q ((__v2di)__B);
 }
 
+static __inline __m64
+_mm_movepi64_pi64 (__m128i __B)
+{
+  return (__m64) __builtin_ia32_movdq2q ((__v2di)__B);
+}
+
 static __inline __m128i
 _mm_move_epi64 (__m128i __A)
 {
@@ -2048,7 +2054,7 @@ _mm_add_epi32 (__m128i __A, __m128i __B)
 static __inline __m128i
 _mm_add_epi64 (__m128i __A, __m128i __B)
 {
-  return (__m128i)__builtin_ia32_paddq128 ((__v4si)__A, (__v4si)__B);
+  return (__m128i)__builtin_ia32_paddq128 ((__v2di)__A, (__v2di)__B);
 }
 
 static __inline __m128i
@@ -2096,7 +2102,7 @@ _mm_sub_epi32 (__m128i __A, __m128i __B)
 static __inline __m128i
 _mm_sub_epi64 (__m128i __A, __m128i __B)
 {
-  return (__m128i)__builtin_ia32_psubq128 ((__v4si)__A, (__v4si)__B);
+  return (__m128i)__builtin_ia32_psubq128 ((__v2di)__A, (__v2di)__B);
 }
 
 static __inline __m128i
@@ -2142,7 +2148,7 @@ _mm_mullo_epi16 (__m128i __A, __m128i __B)
 }
 
 static __inline __m64
-_mm_mul_pu16 (__m64 __A, __m64 __B)
+_mm_mul_su32 (__m64 __A, __m64 __B)
 {
   return (__m64)__builtin_ia32_pmuludq ((__v2si)__A, (__v2si)__B);
 }

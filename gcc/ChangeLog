@@ -1,3 +1,26 @@
+Sat Feb 22 00:48:22 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (builtin_description): Add __builtin_ia32_paddq and
+	__builtin_ia32_psubq. Fix __builtin_ia32_paddq128
+	 and __builtin_ia32_psubq128.
+	* i386.h (IX86_BUILTIN_PADDQ, IX86_BUILTIN_PSUBQ): New.
+	* i386.md (addv*, mmx_ior*, mmx_xoe*, mmx_and*): Add missing '%'.
+	(mmx_adddi3, mmx_subdi3): New.
+	* mmintrin.h (_mm_add_si64, _mm_sub_si64): New.
+	* xmmintrin.h (_mm_movepi64_pi64): New.
+	(_mm_add_epi64, _mm_sub_epi64): fix.
+	(_mm_mul_pu16): Rename to...
+	(_mm_mul_su32): ... this one.
+
+	* builtins.c (expand_builtin_expect):  Do not predict
+	flag_guess_branch_prob is not set.
+	* c-semantics.c (expand_stmt): Likewise.
+	* predict.c (predict_insn): Likewise.
+	* stmt.c (expand_continue_loop): Likewise.
+	* toplev.c (rest_of_compilation): Do not call
+	note_prediction_to_br_prob and note_prediction_to_br_prob
+	when not optimizing.
+
 Fri Feb 21 23:10:13 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cfgrtl.c (commit_edge_insertions):  Call

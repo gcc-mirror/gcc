@@ -160,6 +160,13 @@ _mm_add_pi32 (__m64 __m1, __m64 __m2)
   return (__m64) __builtin_ia32_paddd ((__v2si)__m1, (__v2si)__m2);
 }
 
+/* Add the 64-bit values in M1 to the 64-bit values in M2.  */
+static __inline __m64
+_mm_add_si64 (__m64 __m1, __m64 __m2)
+{
+  return (__m64) __builtin_ia32_paddq ((long long)__m1, (long long)__m2);
+}
+
 /* Add the 8-bit values in M1 to the 8-bit values in M2 using signed
    saturated arithmetic.  */
 static __inline __m64
@@ -211,6 +218,13 @@ static __inline __m64
 _mm_sub_pi32 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_psubd ((__v2si)__m1, (__v2si)__m2);
+}
+
+/* Add the 64-bit values in M1 to the 64-bit values in M2.  */
+static __inline __m64
+_mm_sub_si64 (__m64 __m1, __m64 __m2)
+{
+  return (__m64) __builtin_ia32_psubq ((long long)__m1, (long long)__m2);
 }
 
 /* Subtract the 8-bit values in M2 from the 8-bit values in M1 using signed

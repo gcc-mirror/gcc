@@ -2781,8 +2781,11 @@ expand_continue_loop (whichloop)
   /* Emit information for branch prediction.  */
   rtx note;
 
-  note = emit_note (NULL, NOTE_INSN_PREDICTION);
-  NOTE_PREDICTION (note) = NOTE_PREDICT (PRED_CONTINUE, IS_TAKEN);
+  if (flag_guess_branch_prob)
+    {
+      note = emit_note (NULL, NOTE_INSN_PREDICTION);
+      NOTE_PREDICTION (note) = NOTE_PREDICT (PRED_CONTINUE, IS_TAKEN);
+    }
   clear_last_expr ();
   if (whichloop == 0)
     whichloop = loop_stack;
@@ -2974,7 +2977,8 @@ expand_value_return (val)
   rtx return_reg;
   enum br_predictor pred;
 
-  if ((pred = return_prediction (val)) != PRED_NO_PREDICTION)
+  if (flag_guess_branch_prob
+      && (pred = return_prediction (val)) != PRED_NO_PREDICTION)
     {
       /* Emit information for branch prediction.  */
       rtx note;
