@@ -1,3 +1,10 @@
+2000-07-31  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/awt/Component.java (toString): Implemented.
+	* java/awt/Container.java (addImpl): Remove FIXME. Only call 
+	dispatchEvent() to dispatch the event.
+	(removeImpl): Ditto.
+
 2000-07-30  Anthony Green  <green@redhat.com>
 
 	* java/awt/Component.java: Add treeLock object.

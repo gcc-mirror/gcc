@@ -154,11 +154,7 @@ public abstract class Container extends Component
     ContainerEvent ce = new ContainerEvent (this,
 					    ContainerEvent.COMPONENT_ADDED,
 					    comp);
-
-    // FIXME: is this right?
     dispatchEvent (ce);
-    if (containerListener != null)
-      containerListener.componentAdded (ce);
   }
 
   public void remove (int index)
@@ -179,11 +175,7 @@ public abstract class Container extends Component
     ContainerEvent ce = new ContainerEvent (this,
 					    ContainerEvent.COMPONENT_REMOVED,
 					    r);
-
-    // FIXME: is this right?
     dispatchEvent (ce);
-    if (containerListener != null)
-      containerListener.componentAdded (ce);
   }
 
   public void remove (Component comp)
