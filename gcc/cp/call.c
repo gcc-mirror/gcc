@@ -4319,11 +4319,11 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       return error_mark_node;
     }
 
-  if (DECL_ABSTRACT_VIRTUAL_P (cand->fn)
+  if (DECL_PURE_VIRTUAL_P (cand->fn)
       && instance == current_class_ref
       && DECL_CONSTRUCTOR_P (current_function_decl)
       && ! (flags & LOOKUP_NONVIRTUAL)
-      && value_member (cand->fn, CLASSTYPE_ABSTRACT_VIRTUALS (basetype)))
+      && value_member (cand->fn, CLASSTYPE_PURE_VIRTUALS (basetype)))
     cp_error ("abstract virtual `%#D' called from constructor", cand->fn);
   if (TREE_CODE (TREE_TYPE (cand->fn)) == METHOD_TYPE
       && is_dummy_object (instance_ptr))

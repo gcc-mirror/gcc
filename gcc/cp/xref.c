@@ -608,7 +608,7 @@ GNU_xref_member(cls, fld)
     confg = 1;
 
   pure = 0;
-  if (TREE_CODE (fld) == FUNCTION_DECL && DECL_ABSTRACT_VIRTUAL_P(fld))
+  if (TREE_CODE (fld) == FUNCTION_DECL && DECL_PURE_VIRTUAL_P(fld))
     pure = 1;
 
   d = IDENTIFIER_POINTER(cls);
