@@ -357,7 +357,7 @@
   [(set (reg:CCFP 0)
 	(compare:CCFP (match_operand:SF 0 "reg_or_0_operand" "")
 		      (match_operand:SF 1 "reg_or_0_operand" "")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "
 {
   hppa_compare_op0 = operands[0];
@@ -370,7 +370,7 @@
   [(set (reg:CCFP 0)
       (compare:CCFP (match_operand:DF 0 "reg_or_0_operand" "")
                     (match_operand:DF 1 "reg_or_0_operand" "")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "
 {
   hppa_compare_op0 = operands[0];
@@ -384,7 +384,7 @@
 	(match_operator:CCFP 2 "comparison_operator"
 			     [(match_operand:SF 0 "reg_or_0_operand" "fG")
 			      (match_operand:SF 1 "reg_or_0_operand" "fG")]))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fcmp,sgl,%Y2 %r0,%r1"
   [(set_attr "length" "4")
    (set_attr "type" "fpcc")])
@@ -394,7 +394,7 @@
 	(match_operator:CCFP 2 "comparison_operator"
 			     [(match_operand:DF 0 "reg_or_0_operand" "fG")
 			      (match_operand:DF 1 "reg_or_0_operand" "fG")]))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fcmp,dbl,%Y2 %r0,%r1"
   [(set_attr "length" "4")
    (set_attr "type" "fpcc")])
@@ -1074,7 +1074,7 @@
   [(set (pc) (if_then_else (ne (reg:CCFP 0) (const_int 0))
 			   (label_ref (match_operand 0 "" ""))
 			   (pc)))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "*
 {
   if (INSN_ANNULLED_BRANCH_P (insn))
@@ -1089,7 +1089,7 @@
   [(set (pc) (if_then_else (ne (reg:CCFP 0) (const_int 0))
 			   (pc)
 			   (label_ref (match_operand 0 "" ""))))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "*
 {
   if (INSN_ANNULLED_BRANCH_P (insn))
@@ -1161,8 +1161,9 @@
 				"=r,r,r,r,r,Q,*q,!f,f,*T")
 	(match_operand:SI 1 "move_operand"
 				"r,J,N,K,Q,rM,rM,!fM,*T,f"))]
-  "register_operand (operands[0], SImode)
-   || reg_or_0_operand (operands[1], SImode)"
+  "(register_operand (operands[0], SImode)
+    || reg_or_0_operand (operands[1], SImode))
+   && ! TARGET_SOFT_FLOAT"
   "@
    copy %1,%0
    ldi %1,%0
@@ -1176,6 +1177,25 @@
    fstws%F0 %1,%0"
   [(set_attr "type" "move,move,move,shift,load,store,move,fpalu,fpload,fpstore")
    (set_attr "length" "4,4,4,4,4,4,4,4,4,4")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "reg_or_nonsymb_mem_operand"
+				"=r,r,r,r,r,Q,*q")
+	(match_operand:SI 1 "move_operand"
+				"r,J,N,K,Q,rM,rM"))]
+  "(register_operand (operands[0], SImode)
+    || reg_or_0_operand (operands[1], SImode))
+   && TARGET_SOFT_FLOAT"
+  "@
+   copy %1,%0
+   ldi %1,%0
+   ldil L'%1,%0
+   zdepi %Z1,%0
+   ldw%M1 %1,%0
+   stw%M0 %r1,%0
+   mtsar %r1"
+  [(set_attr "type" "move,move,move,move,load,store,move")
+   (set_attr "length" "4,4,4,4,4,4,4")])
 
 ;; Load indexed.  We don't use unscaled modes since they can't be used
 ;; unless we can tell which of the registers is the base and which is
@@ -1681,9 +1701,10 @@
 ;; to handle obscure reloading cases.
 (define_insn ""
   [(set (match_operand:DF 0 "general_operand" "=?r,f")
-	(match_operand:DF 1 "" "?E,m"))]
+	(match_operand:DF 1 "" "?F,m"))]
   "GET_CODE (operands[1]) == CONST_DOUBLE
-   && operands[1] != CONST0_RTX (DFmode)"
+   && operands[1] != CONST0_RTX (DFmode)
+   && ! TARGET_SOFT_FLOAT"
   "* return (which_alternative == 0 ? output_move_double (operands)
 				    : \" fldds%F1 %1,%0\");"
   [(set_attr "type" "move,fpload")
@@ -1737,8 +1758,9 @@
 			  "=f,*r,Q,?o,?Q,f,*&r,*&r")
 	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
 			  "fG,*rG,f,*r,*r,Q,o,Q"))]
-  "register_operand (operands[0], DFmode)
-   || reg_or_0_operand (operands[1], DFmode)"
+  "(register_operand (operands[0], DFmode)
+    || reg_or_0_operand (operands[1], DFmode))
+   && ! TARGET_SOFT_FLOAT"
   "*
 {
   if (FP_REG_P (operands[0]) || FP_REG_P (operands[1])
@@ -1750,11 +1772,26 @@
    (set_attr "length" "4,8,4,8,16,4,8,16")])
 
 (define_insn ""
+  [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand"
+			  "=r,?o,?Q,&r,&r")
+	(match_operand:DF 1 "reg_or_0_or_nonsymb_mem_operand"
+			  "rG,r,r,o,Q"))]
+  "(register_operand (operands[0], DFmode)
+    || reg_or_0_operand (operands[1], DFmode))
+   && TARGET_SOFT_FLOAT"
+  "*
+{
+  return output_move_double (operands);
+}"
+  [(set_attr "type" "move,store,store,load,load")
+   (set_attr "length" "8,8,16,8,16")])
+
+(define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(mem:DF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 				  (const_int 8))
 			 (match_operand:SI 2 "register_operand" "r"))))]
-  "! TARGET_DISABLE_INDEXING"
+  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT"
   "flddx,s %1(0,%2),%0"
   [(set_attr "type" "fpload")
    (set_attr "length" "4")])
@@ -1777,7 +1814,7 @@
 			     (const_int 8))
 		    (match_operand:SI 2 "register_operand" "r"))
 		  (match_operand:SI 3 "const_int_operand" "rL"))))]
-  "! TARGET_DISABLE_INDEXING && reload_in_progress"
+  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT && reload_in_progress"
   "*
 {
   if (GET_CODE (operands[3]) == CONST_INT)
@@ -1793,7 +1830,7 @@
 				  (const_int 8))
 			 (match_operand:SI 2 "register_operand" "r")))
 	(match_operand:DF 0 "register_operand" "f"))]
-  "! TARGET_DISABLE_INDEXING"
+  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT"
   "fstdx,s %0,%1(0,%2)"
   [(set_attr "type" "fpstore")
    (set_attr "length" "4")])
@@ -1816,7 +1853,7 @@
 		     (match_operand:SI 2 "register_operand" "r"))
 		  (match_operand:SI 3 "const_int_operand" "rL")))
 	(match_operand:DF 0 "register_operand" "f"))]
-  "! TARGET_DISABLE_INDEXING && reload_in_progress"
+  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT && reload_in_progress"
   "*
 {
   if (GET_CODE (operands[3]) == CONST_INT)
@@ -1912,8 +1949,9 @@
 			  "=r,o,Q,&r,&r,&r,f,f,*T")
 	(match_operand:DI 1 "general_operand"
 			  "rM,r,r,o,Q,i,fM,*T,f"))]
-  "register_operand (operands[0], DImode)
-   || reg_or_0_operand (operands[1], DImode)"
+  "(register_operand (operands[0], DImode)
+    || reg_or_0_operand (operands[1], DImode))
+   && ! TARGET_SOFT_FLOAT"
   "*
 {
   if (FP_REG_P (operands[0]) || FP_REG_P (operands[1])
@@ -1923,6 +1961,21 @@
 }"
   [(set_attr "type" "move,store,store,load,load,multi,fpalu,fpload,fpstore")
    (set_attr "length" "8,8,16,8,16,16,4,4,4")])
+
+(define_insn ""
+  [(set (match_operand:DI 0 "reg_or_nonsymb_mem_operand"
+			  "=r,o,Q,&r,&r,&r")
+	(match_operand:DI 1 "general_operand"
+			  "rM,r,r,o,Q,i"))]
+  "(register_operand (operands[0], DImode)
+    || reg_or_0_operand (operands[1], DImode))
+   && TARGET_SOFT_FLOAT"
+  "*
+{
+  return output_move_double (operands);
+}"
+  [(set_attr "type" "move,store,store,load,load,misc")
+   (set_attr "length" "8,8,16,8,16,16")])
 
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,&r")
@@ -1953,9 +2006,10 @@
 ;; to handle obscure reloading cases.
 (define_insn ""
   [(set (match_operand:SF 0 "general_operand" "=?r,f")
-	(match_operand:SF 1 "" "?E,m"))]
+	(match_operand:SF 1 "" "?F,m"))]
   "GET_CODE (operands[1]) == CONST_DOUBLE
-   && operands[1] != CONST0_RTX (SFmode)"
+   && operands[1] != CONST0_RTX (SFmode)
+   && ! TARGET_SOFT_FLOAT"
   "* return (which_alternative == 0 ? singlemove_string (operands)
 				    : \" fldws%F1 %1,%0\");"
   [(set_attr "type" "move,fpload")
@@ -2009,8 +2063,9 @@
 			  "=f,r,f,r,Q,Q")
 	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
 			  "fG,rG,Q,Q,f,rG"))]
-  "register_operand (operands[0], SFmode)
-   || reg_or_0_operand (operands[1], SFmode)"
+  "(register_operand (operands[0], SFmode)
+    || reg_or_0_operand (operands[1], SFmode))
+   && ! TARGET_SOFT_FLOAT"
   "@
    fcpy,sgl %r1,%0
    copy %r1,%0
@@ -2022,11 +2077,26 @@
    (set_attr "length" "4,4,4,4,4,4")])
 
 (define_insn ""
+  [(set (match_operand:SF 0 "reg_or_nonsymb_mem_operand"
+			  "=r,r,Q")
+	(match_operand:SF 1 "reg_or_0_or_nonsymb_mem_operand"
+			  "rG,Q,rG"))]
+  "(register_operand (operands[0], SFmode)
+    || reg_or_0_operand (operands[1], SFmode))
+   && TARGET_SOFT_FLOAT"
+  "@
+   copy %r1,%0
+   ldw%M1 %1,%0
+   stw%M0 %r1,%0"
+  [(set_attr "type" "move,load,store")
+   (set_attr "length" "4,4,4")])
+
+(define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(mem:SF (plus:SI (mult:SI (match_operand:SI 1 "register_operand" "r")
 				  (const_int 4))
 			 (match_operand:SI 2 "register_operand" "r"))))]
-  "! TARGET_DISABLE_INDEXING"
+  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT"
   "fldwx,s %1(0,%2),%0"
   [(set_attr "type" "fpload")
    (set_attr "length" "4")])
@@ -2049,7 +2119,7 @@
 			     (const_int 4))
 		    (match_operand:SI 2 "register_operand" "r"))
 		  (match_operand:SI 3 "const_int_operand" "rL"))))]
-  "! TARGET_DISABLE_INDEXING && reload_in_progress"
+  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT && reload_in_progress"
   "*
 {
   if (GET_CODE (operands[3]) == CONST_INT)
@@ -2065,7 +2135,7 @@
 				  (const_int 4))
 			 (match_operand:SI 2 "register_operand" "r")))
 	(match_operand:SF 0 "register_operand" "f"))]
-  "! TARGET_DISABLE_INDEXING"
+  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT"
   "fstwx,s %0,%1(0,%2)"
   [(set_attr "type" "fpstore")
    (set_attr "length" "4")])
@@ -2088,7 +2158,7 @@
 		     (match_operand:SI 2 "register_operand" "r"))
 		  (match_operand:SI 3 "const_int_operand" "rL")))
 	(match_operand:SF 0 "register_operand" "f"))]
-  "! TARGET_DISABLE_INDEXING && reload_in_progress"
+  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT && reload_in_progress"
   "*
 {
   if (GET_CODE (operands[3]) == CONST_INT)
@@ -2166,7 +2236,7 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(float_extend:DF
 	 (match_operand:SF 1 "register_operand" "f")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fcnvff,sgl,dbl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2175,7 +2245,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(float_truncate:SF
 	 (match_operand:DF 1 "register_operand" "f")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fcnvff,dbl,sgl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2194,7 +2264,7 @@
 (define_insn ""
   [(set (match_operand:SF 0 "general_operand" "=f")
 	(float:SF (match_operand:SI 1 "const_int_operand" "m")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fldws %1,%0\;fcnvxf,sgl,sgl %0,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "8")])
@@ -2202,7 +2272,7 @@
 (define_insn "floatsisf2"
   [(set (match_operand:SF 0 "general_operand" "=f")
 	(float:SF (match_operand:SI 1 "register_operand" "f")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fcnvxf,sgl,sgl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2213,7 +2283,7 @@
 (define_insn ""
   [(set (match_operand:DF 0 "general_operand" "=f")
 	(float:DF (match_operand:SI 1 "const_int_operand" "m")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fldws %1,%0\;fcnvxf,sgl,dbl %0,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "8")])
@@ -2221,7 +2291,7 @@
 (define_insn "floatsidf2"
   [(set (match_operand:DF 0 "general_operand" "=f")
 	(float:DF (match_operand:SI 1 "register_operand" "f")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fcnvxf,sgl,dbl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2233,7 +2303,7 @@
 	(const_int 0))
    (set (match_operand:SF 0 "general_operand" "")
 	(float:SF (match_dup 2)))]
-  "TARGET_SNAKE"
+  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT"
   "operands[2] = gen_reg_rtx (DImode);")
 
 (define_expand "floatunssidf2"
@@ -2243,13 +2313,13 @@
 	(const_int 0))
    (set (match_operand:DF 0 "general_operand" "")
 	(float:DF (match_dup 2)))]
-  "TARGET_SNAKE"
+  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT"
   "operands[2] = gen_reg_rtx (DImode);")
 
 (define_insn "floatdisf2"
   [(set (match_operand:SF 0 "general_operand" "=f")
 	(float:SF (match_operand:DI 1 "register_operand" "f")))]
-  "TARGET_SNAKE"
+  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT"
   "fcnvxf,dbl,sgl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2257,7 +2327,7 @@
 (define_insn "floatdidf2"
   [(set (match_operand:DF 0 "general_operand" "=f")
 	(float:DF (match_operand:DI 1 "register_operand" "f")))]
-  "TARGET_SNAKE"
+  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT"
   "fcnvxf,dbl,dbl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2268,7 +2338,7 @@
 (define_insn "fix_truncsfsi2"
   [(set (match_operand:SI 0 "register_operand" "=f")
 	(fix:SI (fix:SF (match_operand:SF 1 "register_operand" "f"))))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fcnvfxt,sgl,sgl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2276,7 +2346,7 @@
 (define_insn "fix_truncdfsi2"
   [(set (match_operand:SI 0 "register_operand" "=f")
 	(fix:SI (fix:DF (match_operand:DF 1 "register_operand" "f"))))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fcnvfxt,dbl,sgl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2284,7 +2354,7 @@
 (define_insn "fix_truncsfdi2"
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(fix:DI (fix:SF (match_operand:SF 1 "register_operand" "f"))))]
-  "TARGET_SNAKE"
+  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT"
   "fcnvfxt,sgl,dbl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2292,7 +2362,7 @@
 (define_insn "fix_truncdfdi2"
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(fix:DI (fix:DF (match_operand:DF 1 "register_operand" "f"))))]
-  "TARGET_SNAKE"
+  "TARGET_SNAKE && ! TARGET_SOFT_FLOAT"
   "fcnvfxt,dbl,dbl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2432,7 +2502,7 @@
   ""
   "
 {
-  if (TARGET_SNAKE && ! TARGET_DISABLE_FPREGS)
+  if (TARGET_SNAKE && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT)
     {
       rtx scratch = gen_reg_rtx (DImode);
       operands[1] = force_reg (SImode, operands[1]);
@@ -2450,7 +2520,7 @@
   [(set (match_operand:DI 0 "nonimmediate_operand" "=f")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "f"))
 		 (zero_extend:DI (match_operand:SI 2 "nonimmediate_operand" "f"))))]
-  "TARGET_SNAKE && ! TARGET_DISABLE_FPREGS"
+  "TARGET_SNAKE && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT"
   "xmpyu %1,%2,%0"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "4")])
@@ -2459,7 +2529,7 @@
   [(set (match_operand:DI 0 "nonimmediate_operand" "=f")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "f"))
 		 (match_operand:DI 2 "uint32_operand" "f")))]
-  "TARGET_SNAKE && ! TARGET_DISABLE_FPREGS"
+  "TARGET_SNAKE && ! TARGET_DISABLE_FPREGS && ! TARGET_SOFT_FLOAT"
   "xmpyu %1,%R2,%0"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "4")])
@@ -2868,7 +2938,7 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(plus:DF (match_operand:DF 1 "register_operand" "f")
 		 (match_operand:DF 2 "register_operand" "f")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fadd,dbl %1,%2,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2877,7 +2947,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(plus:SF (match_operand:SF 1 "register_operand" "f")
 		 (match_operand:SF 2 "register_operand" "f")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fadd,sgl %1,%2,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2886,7 +2956,7 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(minus:DF (match_operand:DF 1 "register_operand" "f")
 		  (match_operand:DF 2 "register_operand" "f")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fsub,dbl %1,%2,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2895,7 +2965,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(minus:SF (match_operand:SF 1 "register_operand" "f")
 		  (match_operand:SF 2 "register_operand" "f")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fsub,sgl %1,%2,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2904,7 +2974,7 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(mult:DF (match_operand:DF 1 "register_operand" "f")
 		 (match_operand:DF 2 "register_operand" "f")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fmpy,dbl %1,%2,%0"
   [(set_attr "type" "fpmuldbl")
    (set_attr "length" "4")])
@@ -2913,7 +2983,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(mult:SF (match_operand:SF 1 "register_operand" "f")
 		 (match_operand:SF 2 "register_operand" "f")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fmpy,sgl %1,%2,%0"
   [(set_attr "type" "fpmulsgl")
    (set_attr "length" "4")])
@@ -2922,7 +2992,7 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(div:DF (match_operand:DF 1 "register_operand" "f")
 		(match_operand:DF 2 "register_operand" "f")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fdiv,dbl %1,%2,%0"
   [(set_attr "type" "fpdivdbl")
    (set_attr "length" "4")])
@@ -2931,7 +3001,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(div:SF (match_operand:SF 1 "register_operand" "f")
 		(match_operand:SF 2 "register_operand" "f")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fdiv,sgl %1,%2,%0"
   [(set_attr "type" "fpdivsgl")
    (set_attr "length" "4")])
@@ -2939,7 +3009,7 @@
 (define_insn "negdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(neg:DF (match_operand:DF 1 "register_operand" "f")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fsub,dbl 0,%1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2947,7 +3017,7 @@
 (define_insn "negsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(neg:SF (match_operand:SF 1 "register_operand" "f")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fsub,sgl 0,%1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2955,7 +3025,7 @@
 (define_insn "absdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(abs:DF (match_operand:DF 1 "register_operand" "f")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fabs,dbl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2963,7 +3033,7 @@
 (define_insn "abssf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(abs:SF (match_operand:SF 1 "register_operand" "f")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fabs,sgl %1,%0"
   [(set_attr "type" "fpalu")
    (set_attr "length" "4")])
@@ -2971,7 +3041,7 @@
 (define_insn "sqrtdf2"
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(sqrt:DF (match_operand:DF 1 "register_operand" "f")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fsqrt,dbl %1,%0"
   [(set_attr "type" "fpsqrtdbl")
    (set_attr "length" "4")])
@@ -2979,7 +3049,7 @@
 (define_insn "sqrtsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(sqrt:SF (match_operand:SF 1 "register_operand" "f")))]
-  ""
+  "! TARGET_SOFT_FLOAT"
   "fsqrt,sgl %1,%0"
   [(set_attr "type" "fpsqrtsgl")
    (set_attr "length" "4")])
