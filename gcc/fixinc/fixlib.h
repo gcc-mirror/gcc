@@ -3,7 +3,7 @@
    files which are fixed to work correctly with ANSI C and placed in a
    directory that GNU C will search.
 
-   Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -97,5 +97,6 @@ typedef int apply_fix_p_t;  /* Apply Fix Predicate Type */
  */
 char * load_file_data _P_(( FILE* fp ));
 t_bool is_cxx_header  _P_(( tCC* filename, tCC* filetext ));
-
+void   compile_re     _P_(( tCC* pat, regex_t* re, int match,
+			    tCC *e1, tCC *e2 ));
 #endif /* FIXINCLUDES_FIXLIB_H */
