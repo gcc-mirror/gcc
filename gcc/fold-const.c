@@ -9582,11 +9582,22 @@ tree_expr_nonzero_p (tree t)
       break;
 
    case ADDR_EXPR:
-      /* Weak declarations may link to NULL.  */
-      if (DECL_P (TREE_OPERAND (t, 0)))
-	return !DECL_WEAK (TREE_OPERAND (t, 0));
-      /* Constants and all other cases are never weak.  */
-      return true;
+      {
+	tree base = get_base_address (TREE_OPERAND (t, 0));
+
+	if (!base)
+	  return false;
+
+	/* Weak declarations may link to NULL.  */
+	if (DECL_P (base))
+	  return !DECL_WEAK (base);
+
+	/* Constants are never weak.  */
+	if (TREE_CODE_CLASS (TREE_CODE (base)) == 'c')
+	  return true;
+
+	return false;
+      }
 
     case COND_EXPR:
       return (tree_expr_nonzero_p (TREE_OPERAND (t, 1))

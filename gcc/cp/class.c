@@ -5238,9 +5238,17 @@ fixed_type_or_null (tree instance, int* nonnull, int* cdtorp)
       return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull, cdtorp);
 
     case ADDR_EXPR:
+      instance = TREE_OPERAND (instance, 0);
       if (nonnull)
-	*nonnull = 1;
-      return fixed_type_or_null (TREE_OPERAND (instance, 0), nonnull, cdtorp);
+	{
+	  /* Just because we see an ADDR_EXPR doesn't mean we're dealing
+	     with a real object -- given &p->f, p can still be null.  */
+	  tree t = get_base_address (instance);
+	  /* ??? Probably should check DECL_WEAK here.  */
+	  if (t && DECL_P (t))
+	    *nonnull = 1;
+	}
+      return fixed_type_or_null (instance, nonnull, cdtorp);
 
     case COMPONENT_REF:
       /* If this component is really a base class reference, then the field
