@@ -1,4 +1,8 @@
 2004-06-30  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* config/linker-map.gnu: Revert new exports.
+
+2004-06-30  Benjamin Kosnik  <bkoz@redhat.com>
             Stuart Anderson  <anderson@netsweng.com>
 	
 	* config/linker-map.gnu: Add destructor exports for abstract base
