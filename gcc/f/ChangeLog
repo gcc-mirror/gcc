@@ -1,3 +1,7 @@
+2000-11-21  David Billinghurst  <David.Billinghurst@riotinto.com)
+
+	* Make-lang.in:  Add $(build_exeext) to f/fini target
+
 2000-11-21  Andreas Jaeger  <aj@suse.de>
 
 	* g77.texi (Floating-point Exception Handling): Use feenableexcept
