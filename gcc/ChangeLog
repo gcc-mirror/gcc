@@ -1,3 +1,8 @@
+Sun Jan  3 21:01:04 1999  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* mips.md (div_trap): Use local labels instead of dot-relative
+	branches.
+
 Sun Jan  3 20:40:34 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.md (branch, negated branch): Handle (const_int 0) as first

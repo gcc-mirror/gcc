@@ -2435,16 +2435,16 @@
       if (GENERATE_BRANCHLIKELY)
 	{
           if (GET_CODE (operands[1]) == CONST_INT)
-	    return \"%(beql\\t%0,$0,.+8\\n\\tbreak\\t%2%)\";
+	    return \"%(beql\\t%0,$0,1f\\n\\tbreak\\t%2\\n1:%)\";
 	  else
-	    return \"%(beql\\t%0,%1,.+8\\n\\tbreak\\t%2%)\";
+	    return \"%(beql\\t%0,%1,1f\\n\\tbreak\\t%2\\n1:%)\";
 	}
       else
 	{
           if (GET_CODE (operands[1]) == CONST_INT)
-	    return \"%(bne\\t%0,$0,.+12\\n\\tnop\\n\\tbreak\\t%2%)\";
+	    return \"%(bne\\t%0,$0,1f\\n\\tnop\\n\\tbreak\\t%2\\n1:%)\";
 	  else
-	    return \"%(bne\\t%0,%1,.+12\\n\\tnop\\n\\tbreak\\t%2%)\";
+	    return \"%(bne\\t%0,%1,1f\\n\\tnop\\n\\tbreak\\t%2\\n1:%)\";
 	}
     }
   return \"\";
