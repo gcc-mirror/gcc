@@ -24,10 +24,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    tm file can be used unchanged to build a GCC for RISC OS.
    (Since in fact, it can't.)  */
 
-extern void output_prologue ();
-extern void output_epilogue ();
-extern char *arm_output_llc ();
-extern char *arithmetic_instr ();
+extern void output_func_prologue ();
+extern void output_func_epilogue ();
 extern char *output_add_immediate ();
 extern char *output_call ();
 extern char *output_call_mem ();
@@ -39,14 +37,9 @@ extern char *output_mov_long_double_arm_from_fpu ();
 extern char *output_mov_long_double_arm_from_arm ();
 extern char *output_mov_immediate ();
 extern char *output_multi_immediate ();
-extern char *output_shifted_move ();
-extern char *output_shift_compare ();
-extern char *output_arithmetic_with_immediate_multiply ();
-extern char *output_arithmetic_with_shift ();
 extern char *output_return_instruction ();
 extern char *output_load_symbol ();
 extern char *fp_immediate_constant ();
-extern char *shift_instr ();
 extern struct rtx_def *gen_compare_reg ();
 extern struct rtx_def *arm_gen_store_multiple ();
 extern struct rtx_def *arm_gen_load_multiple ();
@@ -1616,86 +1609,34 @@ do { char dstr[30];							\
 #define TARGET_FF	014
 #define TARGET_CR	015
 
-/* FINAL_PRESCAN_INSN is used to take a look at the insns, in order to delete
-   small-distance conditional branches and have ASM_OUTPUT_OPCODE make the
-   instructions conditional.  Suffixes like s (affect flags) and b (bytewise
-   load/store) need to stay suffixes, so the possible condition code comes
-   before these suffixes.  %d<n> or %D<n> may appear in the opcode if
-   it can take a condition; a null rtx will cause no condition to be added,
-   this is what we expect to happen if arm_ccfsm_state is non-zero. */
-#define ASM_OUTPUT_OPCODE(STREAM, PTR)  \
-  {					        		      \
-    extern int arm_ccfsm_state, arm_current_cc;			      \
-    extern char *arm_condition_codes[];				      \
-    int i;							      \
-								      \
-    fflush (STREAM);	    /* XXX for debugging only.  */	      \
-    if (arm_ccfsm_state == 3 || arm_ccfsm_state == 4)	  		\
-      {					        		             \
-	for (i = 0; *(PTR) != ' ' && *(PTR) != '\t' && *(PTR) != '%' && i < 3;\
-	     i++, (PTR)++)  						     \
-	  putc (*(PTR), STREAM);	        		             \
-	fprintf (STREAM, "%s", arm_condition_codes[arm_current_cc]);         \
-	for (; *(PTR) != ' ' && *(PTR) != '\t' && *(PTR) != '%'; (PTR)++)    \
-	  putc (*(PTR), STREAM);					     \
-      }								             \
-  }
-
 /* Only perform branch elimination (by making instructions conditional) if
    we're optimising.  Otherwise it's of no use anyway.  */
 #define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS)  \
   if (optimize)					    \
     final_prescan_insn (INSN, OPVEC, NOPERANDS)
 
-/* Output an operand of an instruction.  If X is a REG and CODE is `M', output
-   a ldm/stm style multi-reg.  */
+#ifndef ARM_COMMENT_CHAR
+#define ARM_COMMENT_CHAR '@'
+#endif
+
+/* Default is for register names not to have a prefix.  */
+#ifndef ARM_REG_PREFIX
+#define ARM_REG_PREFIX ""
+#endif
+
+#define PRINT_OPERAND_PUNCT_VALID_P(CODE)	\
+  ((CODE) == '?' || (CODE) == '|' || (CODE) == '@')
+/* Output an operand of an instruction.  */
 #define PRINT_OPERAND(STREAM, X, CODE)  \
-{					        			\
-  if ((CODE) == 'd')							\
-    {									\
-      if (X)								\
-        fputs (arm_condition_codes[get_arm_condition_code (X)],		\
-	       (STREAM));						\
-    }									\
-  else if ((CODE) == 'D')						\
-    {									\
-      if (X)								\
-        fputs (arm_condition_codes[get_arm_condition_code (X) ^ 1], 	\
-	       (STREAM));						\
-    }									\
-  else if ((CODE) == 'R')			                	\
-    fputs (reg_names[REGNO (X) + 1], (STREAM));				\
-  else if (GET_CODE (X) == REG)		        			\
-    {					        			\
-      if ((CODE) != 'M')						\
-	fputs (reg_names[REGNO (X)], (STREAM));				\
-      else				        			\
-	fprintf ((STREAM), "{%s-%s}",	        			\
-		 reg_names[REGNO (X)],	        			\
-		 reg_names[REGNO (X) - 1        			\
-			   + ((GET_MODE_SIZE (GET_MODE (X))		\
-			       + GET_MODE_SIZE (SImode) - 1)		\
-			      / GET_MODE_SIZE (SImode))]);		\
-    }									\
-  else if (GET_CODE (X) == MEM)						\
-    {									\
-      extern int output_memory_reference_mode;				\
-      output_memory_reference_mode = GET_MODE (X);			\
-      output_address (XEXP (X, 0));					\
-    }									\
-  else if (GET_CODE(X) == CONST_DOUBLE)					\
-    fprintf(STREAM,"#%s", fp_immediate_constant(X));			\
-  else if (GET_CODE (X) == NEG)						\
-    {									\
-      fputc ('-', (STREAM));						\
-      output_operand ((X), 0);						\
-    }									\
-  else									\
-    {									\
-      fputc('#', STREAM);						\
-      output_addr_const(STREAM, X);					\
-    }									\
-}
+  arm_print_operand (STREAM, X, CODE)
+
+#define ARM_SIGN_EXTEND(x)  ((HOST_WIDE_INT)		\
+  (HOST_BITS_PER_WIDE_INT <= 32 ? (x)			\
+   : (((x) & (unsigned HOST_WIDE_INT) 0xffffffff) |	\
+      (((x) & (unsigned HOST_WIDE_INT) 0x80000000)	\
+       ? ((~ (HOST_WIDE_INT) 0)				\
+	  & ~ (unsigned HOST_WIDE_INT) 0xffffffff)	\
+       : 0))))
 
 /* Output the address of an operand.  */
 #define PRINT_OPERAND_ADDRESS(STREAM,X)  \
@@ -1709,8 +1650,7 @@ do { char dstr[30];							\
 	rtx base = XEXP (X, 0);						\
 	rtx index = XEXP (X, 1);					\
 	char *base_reg_name;						\
-	int offset = 0; 						\
-	int shift;							\
+	HOST_WIDE_INT offset = 0;					\
 	if (GET_CODE (base) != REG)					\
 	  {								\
 	    /* Ensure that BASE is a register (one of them must be). */	\
@@ -1734,34 +1674,16 @@ do { char dstr[30];							\
 	    break;							\
 									\
 	  case MULT:							\
-	    if (GET_CODE (XEXP (index,0)) == CONST_INT)			\
-	      {								\
-		shift = int_log2 (INTVAL (XEXP (index, 0)));		\
-		index = XEXP (index, 1);				\
-	      }								\
-	    else if (GET_CODE(XEXP(index,1)) == CONST_INT)		\
-	      {								\
-		shift = int_log2 (INTVAL (XEXP (index, 1)));		\
-		index = XEXP (index, 0);				\
-	      }								\
-	    else							\
-		abort();						\
-	    fprintf (STREAM, "[%s, %s%s, asl #%d]", base_reg_name,	\
-		     is_minus ? "-" : "", reg_names[REGNO (index)],	\
-		     shift);						\
-	    break;							\
 	  case ASHIFTRT:						\
 	  case LSHIFTRT:						\
 	  case ASHIFT:							\
 	  case ROTATERT:						\
 	  {								\
-	    char *shift_type = shift_instr (GET_CODE (index),		\
-					    &XEXP (index, 1));		\
-	    shift = INTVAL (XEXP (index, 1));				\
-	    index = XEXP (index, 0);					\
-	    fprintf (STREAM, "[%s, %s%s, %s #%d]", base_reg_name,	\
-		     is_minus ? "-" : "", reg_names[REGNO (index)],	\
-		     shift_type, shift);				\
+	    fprintf (STREAM, "[%s, %s%s, ", base_reg_name,		\
+		     is_minus ? "-" : "", 				\
+		     reg_names[REGNO (XEXP (index, 0))]);		\
+	    arm_print_operand (STREAM, index, 'S');			\
+	    fputs ("]", STREAM);					\
 	    break;							\
 	  }								\
 	    								\
