@@ -1,3 +1,8 @@
+2000-04-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* compile/20000405-2.c: New test.
+	* compile/20000405-3.c: New test.
+
 2000-04-05  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* compile/20000405-1.c: New test.
