@@ -6312,7 +6312,10 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	case RID_FRIEND:
 	  /* decl-specifier:
 	       friend  */
-	  friend_p = true;
+	  if (friend_p)
+	    error ("duplicate `friend'");
+	  else
+	    friend_p = true;
 	  /* The representation of the specifier is simply the
 	     appropriate TREE_IDENTIFIER node.  */
 	  decl_spec = token->value;

@@ -1,3 +1,9 @@
+2003-09-02  Scott Brumbaugh  <scottb.lists@verizon.net>
+
+	PR c++/11553
+	* parser.c (cp_parser_decl_specifier_seq): Add check for a
+	duplicate friend decl-specifier.
+
 2003-09-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11847
