@@ -1,4 +1,4 @@
-2004-04-06  Nathanael Nerode  <neroden@gcc.gnu.org>
+2004-06-25  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR bootstrap/14760
 	* configure.in: When computing baseargs, strip *all* copies of
