@@ -1,3 +1,10 @@
+2004-07-16  Andris Pavenis  <pavenis@latnet.lv>
+
+	PR preprocessor/16366
+	* internal.h (struct cpp_reader): New field dir_hash.
+	* files.c (make_cpp_dir): Use dir_hash, not file_hash.
+	(_cpp_init_files, _cpp_cleanup_files): Update for new field.
+
 2004-07-04  Neil Booth  <neil@duron.akihabara.co.uk>
 
 	PR preprocessor/16192
