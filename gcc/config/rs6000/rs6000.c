@@ -186,6 +186,9 @@ rs6000_override_options (default_cpu)
 	 {"powerpc", PROCESSOR_POWERPC,
 	    MASK_POWERPC | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
+	 {"powerpc64", PROCESSOR_POWERPC64,
+	    MASK_POWERPC | MASK_POWERPC64 | MASK_NEW_MNEMONICS,
+	    POWER_MASKS | POWERPC_OPT_MASKS},
 	 {"rios", PROCESSOR_RIOS1,
 	    MASK_POWER | MASK_MULTIPLE | MASK_STRING,
 	    MASK_POWER2 | POWERPC_MASKS | MASK_NEW_MNEMONICS},
@@ -201,6 +204,9 @@ rs6000_override_options (default_cpu)
 	 {"rios2", PROCESSOR_RIOS2,
 	    MASK_POWER | MASK_MULTIPLE | MASK_STRING | MASK_POWER2,
 	    POWERPC_MASKS | MASK_NEW_MNEMONICS},
+	 {"rs64a", PROCESSOR_RS64A,
+	    MASK_POWERPC | MASK_NEW_MNEMONICS,
+	    POWER_MASKS | POWERPC_OPT_MASKS},
 	 {"401", PROCESSOR_PPC403,
 	    MASK_POWERPC | MASK_SOFT_FLOAT | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | POWERPC_OPT_MASKS | MASK_POWERPC64},
@@ -234,6 +240,9 @@ rs6000_override_options (default_cpu)
 	 {"620", PROCESSOR_PPC620,
 	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
 	    POWER_MASKS | MASK_PPC_GPOPT},
+	 {"630", PROCESSOR_PPC630,
+	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
+	    POWER_MASKS | MASK_PPC_GPOPT},
 	 {"740", PROCESSOR_PPC750,
  	    MASK_POWERPC | MASK_PPC_GFXOPT | MASK_NEW_MNEMONICS,
  	    POWER_MASKS | MASK_PPC_GPOPT | MASK_POWERPC64},
@@ -262,7 +271,7 @@ rs6000_override_options (default_cpu)
 
   /* Identify the processor type */
   rs6000_select[0].string = default_cpu;
-  rs6000_cpu = PROCESSOR_DEFAULT;
+  rs6000_cpu = TARGET_POWERPC64 ? PROCESSOR_DEFAULT64 : PROCESSOR_DEFAULT;
 
   for (i = 0; i < sizeof (rs6000_select) / sizeof (rs6000_select[0]); i++)
     {
@@ -1072,7 +1081,7 @@ reg_or_mem_operand (op, mode)
 }
 
 /* Return 1 if the operand is a general register or memory operand without
-   pre-inc or pre_dec which produces invalid form of PowerPC lwa
+   pre_inc or pre_dec which produces invalid form of PowerPC lwa
    instruction.  */
 
 int
@@ -2355,15 +2364,16 @@ secondary_reload_class (class, mode, in)
 {
   int regno;
 
+#if TARGET_ELF
   /* We can not copy a symbolic operand directly into anything other than
      BASE_REGS for TARGET_ELF.  So indicate that a register from BASE_REGS
      is needed as an intermediate register.  */
-  if (TARGET_ELF
-      && class != BASE_REGS
+  if (class != BASE_REGS
       && (GET_CODE (in) == SYMBOL_REF
 	  || GET_CODE (in) == LABEL_REF
 	  || GET_CODE (in) == CONST))
     return BASE_REGS;
+#endif
 
   if (GET_CODE (in) == REG)
     {
@@ -2469,10 +2479,11 @@ rs6000_got_register (value)
   /* The second flow pass currently (June 1999) can't update regs_ever_live
      without disturbing other parts of the compiler, so update it here to
      make the prolog/epilogue code happy. */
-  if (no_new_pseudos && !regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+  if (no_new_pseudos && ! regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
     regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
 
   current_function_uses_pic_offset_table = 1;
+
   return pic_offset_table_rtx;
 }
 
@@ -3211,12 +3222,14 @@ print_operand_address (file, x)
     }
   else if (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == CONST_INT)
     fprintf (file, "%d(%s)", INTVAL (XEXP (x, 1)), reg_names[ REGNO (XEXP (x, 0)) ]);
-  else if (TARGET_ELF && !TARGET_64BIT && GET_CODE (x) == LO_SUM
-	   && GET_CODE (XEXP (x, 0)) == REG && CONSTANT_P (XEXP (x, 1)))
+#if TARGET_ELF
+  else if (GET_CODE (x) == LO_SUM && GET_CODE (XEXP (x, 0)) == REG
+           && CONSTANT_P (XEXP (x, 1)))
     {
       output_addr_const (file, XEXP (x, 1));
       fprintf (file, "@l(%s)", reg_names[ REGNO (XEXP (x, 0)) ]);
     }
+#endif
   else
     abort ();
 }
@@ -4882,10 +4895,10 @@ output_toc (file, x, labelno)
       else
 	{
 	  if (TARGET_MINIMAL_TOC)
-	    fprintf (file, "\t.long %ld\n\t.long %ld\n",
+	    fprintf (file, "\t.long 0x%lx\n\t.long 0x%lx\n",
 		     (long)high, (long)low);
 	  else
-	    fprintf (file, "\t.tc ID_%lx_%lx[TC],%ld,%ld\n",
+	    fprintf (file, "\t.tc ID_%lx_%lx[TC],0x%lx,0x%lx\n",
 		     (long)high, (long)low, (long)high, (long)low);
 	  return;
 	}
@@ -5259,7 +5272,8 @@ rs6000_adjust_priority (insn, priority)
 
       case TYPE_IMUL:
       case TYPE_IDIV:
-	fprintf (stderr, "priority was %#x (%d) before adjustment\n", priority, priority);
+	fprintf (stderr, "priority was %#x (%d) before adjustment\n",
+		 priority, priority);
 	if (priority >= 0 && priority < 0x01000000)
 	  priority >>= 3;
 	break;
@@ -5274,21 +5288,18 @@ rs6000_adjust_priority (insn, priority)
 int get_issue_rate()
 {
   switch (rs6000_cpu_attr) {
-  case CPU_RIOS1:
-    return 3;       /* ? */
-  case CPU_RIOS2:
-    return 4;
-  case CPU_PPC601:
-    return 3;       /* ? */
+  case CPU_RIOS1:  /* ? */
+  case CPU_RS64A:
+  case CPU_PPC601: /* ? */
+    return 3;
   case CPU_PPC603:
-    return 2; 
   case CPU_PPC750:
     return 2; 
+  case CPU_RIOS2:
   case CPU_PPC604:
-    return 4;
   case CPU_PPC604E:
-    return 4;
   case CPU_PPC620:
+  case CPU_PPC630:
     return 4;
   default:
     return 1;
@@ -5518,9 +5529,9 @@ rs6000_valid_type_attribute_p (type, attributes, identifier, args)
       if (is_attribute_p ("dllexport", identifier))
 	return (args == NULL_TREE);
 
-      /* Exception attribute allows the user to specify 1-2 strings or identifiers
-	 that will fill in the 3rd and 4th fields of the structured exception
-	 table.  */
+      /* Exception attribute allows the user to specify 1-2 strings
+	 or identifiers that will fill in the 3rd and 4th fields
+	 of the structured exception table.  */
       if (is_attribute_p ("exception", identifier))
 	{
 	  int i;
@@ -5565,6 +5576,7 @@ void
 rs6000_set_default_type_attributes (type)
      tree type ATTRIBUTE_UNUSED;
 {
+  return;
 }
 
 /* Return a dll import reference corresponding to a call's SYMBOL_REF */
@@ -5590,13 +5602,15 @@ rs6000_dll_import_ref (call_ref)
   strcat (p, call_name);
   node = get_identifier (p);
 
-  reg1 = force_reg (Pmode, gen_rtx_SYMBOL_REF (VOIDmode, IDENTIFIER_POINTER (node)));
+  reg1 = force_reg (Pmode, gen_rtx_SYMBOL_REF (VOIDmode,
+					       IDENTIFIER_POINTER (node)));
   emit_move_insn (reg2, gen_rtx_MEM (Pmode, reg1));
 
   return reg2;
 }
 
-/* Return a reference suitable for calling a function with the longcall attribute.  */
+/* Return a reference suitable for calling a function with the
+   longcall attribute.  */
 struct rtx_def *
 rs6000_longcall_ref (call_ref)
      rtx call_ref;
@@ -5666,25 +5680,27 @@ rs6000_select_section (decl, reloc)
   else if (TREE_CODE (decl) == VAR_DECL)
     {
       if ((flag_pic && reloc)
-	  || !TREE_READONLY (decl)
+	  || ! TREE_READONLY (decl)
 	  || TREE_SIDE_EFFECTS (decl)
-	  || !DECL_INITIAL (decl)
+	  || ! DECL_INITIAL (decl)
 	  || (DECL_INITIAL (decl) != error_mark_node
-	      && !TREE_CONSTANT (DECL_INITIAL (decl))))
+	      && ! TREE_CONSTANT (DECL_INITIAL (decl))))
 	{
-	  if (rs6000_sdata != SDATA_NONE && (size > 0) && (size <= g_switch_value))
+	  if (rs6000_sdata != SDATA_NONE && (size > 0)
+	      && (size <= g_switch_value))
 	    sdata_section ();
 	  else
 	    data_section ();
 	}
       else
 	{
-	  if (rs6000_sdata != SDATA_NONE && (size > 0) && (size <= g_switch_value))
+	  if (rs6000_sdata != SDATA_NONE && (size > 0)
+	      && (size <= g_switch_value))
 	    {
 	      if (rs6000_sdata == SDATA_EABI)
 		sdata2_section ();
 	      else
-		sdata_section ();	/* System V doesn't have .sdata2/.sbss2 */
+		sdata_section ();  /* System V doesn't have .sdata2/.sbss2 */
 	    }
 	  else
 	    const_section ();
@@ -5695,7 +5711,6 @@ rs6000_select_section (decl, reloc)
 }
 
 
-
 /* If we are referencing a function that is static or is known to be
    in this file, make the SYMBOL_REF special.  We can use this to indicate
    that we can branch to this function without emitting a no-op after the
@@ -5746,12 +5761,18 @@ rs6000_encode_section_info (decl)
 
       if ((size > 0 && size <= g_switch_value)
 	  || (name
-	      && ((len == sizeof (".sdata")-1 && strcmp (name, ".sdata") == 0)
-		  || (len == sizeof (".sdata2")-1 && strcmp (name, ".sdata2") == 0)
-		  || (len == sizeof (".sbss")-1 && strcmp (name, ".sbss") == 0)
-		  || (len == sizeof (".sbss2")-1 && strcmp (name, ".sbss2") == 0)
-		  || (len == sizeof (".PPC.EMB.sdata0")-1 && strcmp (name, ".PPC.EMB.sdata0") == 0)
-		  || (len == sizeof (".PPC.EMB.sbss0")-1 && strcmp (name, ".PPC.EMB.sbss0") == 0))))
+	      && ((len == sizeof (".sdata")-1
+		   && strcmp (name, ".sdata") == 0)
+		  || (len == sizeof (".sdata2")-1
+		      && strcmp (name, ".sdata2") == 0)
+		  || (len == sizeof (".sbss")-1
+		      && strcmp (name, ".sbss") == 0)
+		  || (len == sizeof (".sbss2")-1
+		      && strcmp (name, ".sbss2") == 0)
+		  || (len == sizeof (".PPC.EMB.sdata0")-1
+		      && strcmp (name, ".PPC.EMB.sdata0") == 0)
+		  || (len == sizeof (".PPC.EMB.sbss0")-1
+		      && strcmp (name, ".PPC.EMB.sbss0") == 0))))
 	{
 	  rtx sym_ref = XEXP (DECL_RTL (decl), 0);
 	  char *str = permalloc (2 + strlen (XSTR (sym_ref, 0)));

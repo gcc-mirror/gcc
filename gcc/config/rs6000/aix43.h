@@ -81,6 +81,7 @@ do {									\
 %{mcpu=rios2: -mpwr2} \
 %{mcpu=rsc: -mpwr} \
 %{mcpu=rsc1: -mpwr} \
+%{mcpu=rs64a: -mppc} \
 %{mcpu=403: -mppc} \
 %{mcpu=505: -mppc} \
 %{mcpu=601: -m601} \
@@ -90,6 +91,7 @@ do {									\
 %{mcpu=604: -m604} \
 %{mcpu=604e: -m604} \
 %{mcpu=620: -mppc} \
+%{mcpu=630: -mppc} \
 %{mcpu=821: -mppc} \
 %{mcpu=860: -mppc}"
 
@@ -125,6 +127,7 @@ do {									\
 %{mcpu=rios2: -D_ARCH_PWR2} \
 %{mcpu=rsc: -D_ARCH_PWR} \
 %{mcpu=rsc1: -D_ARCH_PWR} \
+%{mcpu=rs64a: -D_ARCH_PPC} \
 %{mcpu=403: -D_ARCH_PPC} \
 %{mcpu=505: -D_ARCH_PPC} \
 %{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
@@ -133,6 +136,7 @@ do {									\
 %{mcpu=603e: -D_ARCH_PPC} \
 %{mcpu=604: -D_ARCH_PPC} \
 %{mcpu=620: -D_ARCH_PPC} \
+%{mcpu=630: -D_ARCH_PPC} \
 %{mcpu=821: -D_ARCH_PPC} \
 %{mcpu=860: -D_ARCH_PPC}"
 
