@@ -459,6 +459,14 @@ void __cxa_vec_delete (void *__array_address,
                        __SIZE_TYPE__ __padding_size,
                        void (*__destructor) (void *));
 
+/* demangling routines */
+
+extern "C" 
+char *__cxa_demangle (const char *__mangled_name,
+		      char *__output_buffer,
+		      __SIZE_TYPE__ *__length,
+		      int *__status);
+
 } /* namespace __cxxabiv1 */
 
 /* User programs should use the alias `abi'. */
