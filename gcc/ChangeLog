@@ -1,5 +1,6 @@
 2002-03-19  Richard Henderson  <rth@redhat.com>
 
+	PR 5977, 5991
 	* config/ia64/ia64.c: Revert 2002-03-01 patch.
 	* config/ia64/ia64.h (INIT_EXPANDERS): New.
 
