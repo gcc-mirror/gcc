@@ -12557,7 +12557,7 @@ xref_tag (code_type_node, name, globalize)
       cp_warning ("`%s %T' declares a new type at namespace scope",
 		  tag_name (tag_code), name);
       if (!explained++)
-	cp_warning ("  names from dependent base classes are not visible to unqualified name lookup - to refer to the inherited type, say `%s %T::%T'%s",
+	cp_warning ("  names from dependent base classes are not visible to unqualified name lookup - to refer to the inherited type, say `%s %T::%T'",
 		    tag_name (tag_code),
 		    constructor_name (current_class_type),
 		    TYPE_IDENTIFIER (t));
