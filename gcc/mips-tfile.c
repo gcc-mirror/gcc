@@ -4369,9 +4369,6 @@ copy_object __proto((void))
 	   sys_read);
 
 
-  if (orig_file_header.f_flags != 0)
-    fatal ("Non-zero flags encountered in %s filehdr", input_name);
-
   if (orig_file_header.f_nsyms != sizeof (HDRR))
     fatal ("%s symbolic header wrong size (%d bytes, should be %d)",
 	   input_name, orig_file_header.f_nsyms, sizeof (HDRR));
