@@ -31,7 +31,12 @@ extern "C" {
    inefficient for 32-bit and smaller machines.  */
 typedef unsigned _Unwind_Word __attribute__((__mode__(__word__)));
 typedef signed _Unwind_Sword __attribute__((__mode__(__word__)));
+#if defined(__ia64__) && defined(__hpux__)
+typedef unsigned _Unwind_Ptr __attribute__((__mode__(__word__)));
+#else
 typedef unsigned _Unwind_Ptr __attribute__((__mode__(__pointer__)));
+#endif
+typedef unsigned _Unwind_Internal_Ptr __attribute__((__mode__(__pointer__)));
 
 /* @@@ The IA-64 ABI uses a 64-bit word to identify the producer and
    consumer of an exception.  We'll go along with this for now even on

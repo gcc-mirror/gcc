@@ -179,13 +179,13 @@ read_encoded_value_with_base (unsigned char encoding, _Unwind_Ptr base,
     } __attribute__((__packed__));
 
   union unaligned *u = (union unaligned *) p;
-  _Unwind_Ptr result;
+  _Unwind_Internal_Ptr result;
 
   if (encoding == DW_EH_PE_aligned)
     {
-      _Unwind_Ptr a = (_Unwind_Ptr) p;
+      _Unwind_Internal_Ptr a = (_Unwind_Internal_Ptr) p;
       a = (a + sizeof (void *) - 1) & - sizeof(void *);
-      result = *(_Unwind_Ptr *) a;
+      result = *(_Unwind_Internal_Ptr *) a;
       p = (const unsigned char *) (a + sizeof (void *));
     }
   else
@@ -193,7 +193,7 @@ read_encoded_value_with_base (unsigned char encoding, _Unwind_Ptr base,
       switch (encoding & 0x0f)
 	{
 	case DW_EH_PE_absptr:
-	  result = (_Unwind_Ptr) u->ptr;
+	  result = (_Unwind_Internal_Ptr) u->ptr;
 	  p += sizeof (void *);
 	  break;
 
@@ -201,7 +201,7 @@ read_encoded_value_with_base (unsigned char encoding, _Unwind_Ptr base,
 	  {
 	    _Unwind_Word tmp;
 	    p = read_uleb128 (p, &tmp);
-	    result = (_Unwind_Ptr) tmp;
+	    result = (_Unwind_Internal_Ptr) tmp;
 	  }
 	  break;
 
@@ -209,7 +209,7 @@ read_encoded_value_with_base (unsigned char encoding, _Unwind_Ptr base,
 	  {
 	    _Unwind_Sword tmp;
 	    p = read_sleb128 (p, &tmp);
-	    result = (_Unwind_Ptr) tmp;
+	    result = (_Unwind_Internal_Ptr) tmp;
 	  }
 	  break;
 
@@ -246,9 +246,9 @@ read_encoded_value_with_base (unsigned char encoding, _Unwind_Ptr base,
       if (result != 0)
 	{
 	  result += ((encoding & 0x70) == DW_EH_PE_pcrel
-		     ? (_Unwind_Ptr) u : base);
+		     ? (_Unwind_Internal_Ptr) u : base);
 	  if (encoding & DW_EH_PE_indirect)
-	    result = *(_Unwind_Ptr *) result;
+	    result = *(_Unwind_Internal_Ptr *) result;
 	}
     }
 
