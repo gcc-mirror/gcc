@@ -69,8 +69,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
    there are no such switches except those implemented by GCC itself.  */
 
 #define WORD_SWITCH_TAKES_ARG(STR)			\
- (!strcmp (STR, "include") || !strcmp (STR, "imacros")	\
-  || !strcmp (STR, "aux-info"))
+ (DEFAULT_WORD_SWITCH_TAKES_ARG (STR)			\
+  && strcmp (STR, "Tdata") && strcmp (STR, "Ttext")	\
+  && strcmp (STR, "Tbss"))
 
 /* You should redefine CPP_PREDEFINES in any file which includes this one.
    The definition should be appropriate for the type of target system
