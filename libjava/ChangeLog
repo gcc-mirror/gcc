@@ -1,3 +1,18 @@
+2003-03-29  Mohan Embar  <gnustuff@thisiscool.com>
+
+	* include/jvm.h: (_Jv_GetNbArgs) added
+	(_Jv_GetSafeArg) added
+	(_Jv_SetArgs) added
+	* prims.cc: (_Jv_GetNbArgs) implemented
+	(_Jv_GetSafeArg) implemented
+	(_Jv_SetArgs) implemented
+	(_Jv_RunMain) use _Jv_SetArgs() instead of explicitly
+	setting _Jv_argc and _Jv_argv
+	* posix.cc: (_Jv_ThisExecutable) use _Jv_GetSafeArg()
+	instead of _Jv_argv
+	* java/lang/natRuntime.cc: (insertSystemProperties) use
+	_Jv_GetSafeArg() instead of _Jv_argv
+
 2003-04-23  Tom Tromey  <tromey@redhat.com>
 
 	* resolve.cc (_Jv_PrepareClass): Round size up to alignment

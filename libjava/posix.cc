@@ -25,9 +25,6 @@ details.  */
 extern "C" unsigned long long _clock (void);
 #endif
 
-// platform-specific executable name
-extern const char **_Jv_argv;
-
 #if defined(HAVE_PROC_SELF_EXE)
 static char exec_name[20];
   // initialized in _Jv_platform_initialize()
@@ -41,7 +38,7 @@ const char *_Jv_ThisExecutable (void)
   return exec_name;
     // initialized in _Jv_platform_initialize()
 #else
-  return _Jv_argv[0];
+  return _Jv_GetSafeArg (0);
 #endif
 }
 
