@@ -4721,9 +4721,6 @@ alpha_expand_epilogue ()
 			       gen_rtx_REG (DImode, vms_save_fp_regno)));
         }
     }
-
-  /* Return.  */
-  emit_jump_insn (gen_return_internal ());
 }
 
 /* Output the rest of the textual info surrounding the epilogue.  */
