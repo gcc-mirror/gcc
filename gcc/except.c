@@ -985,7 +985,7 @@ get_exception_filter ()
   rtx filter = cfun->eh->filter;
   if (! filter)
     {
-      filter = gen_reg_rtx (Pmode);
+      filter = gen_reg_rtx (word_mode);
       cfun->eh->filter = filter;
     }
   return filter;
