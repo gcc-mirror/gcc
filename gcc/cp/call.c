@@ -87,7 +87,6 @@ static tree reference_binding PROTO((tree, tree, tree, int));
 static tree strip_top_quals PROTO((tree));
 static tree non_reference PROTO((tree));
 static tree build_conv PROTO((enum tree_code, tree, tree));
-static tree default_parm_conversions PROTO((tree, tree *));
 static int is_subseq PROTO((tree, tree));
 
 tree
@@ -557,7 +556,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
      tree instance, name, parms, basetype_path;
      int flags;
 {
-  tree result, basetype, instance_ptr;
+  tree basetype, instance_ptr;
 
 #ifdef GATHER_STATISTICS
   n_build_method_call++;
@@ -585,15 +584,15 @@ build_method_call (instance, name, parms, basetype_path, flags)
   if (name == ansi_opname[(int) DELETE_EXPR] && list_length (parms)==2)
     {
       tree save_last = TREE_CHAIN (parms);
-      tree result;
+
       /* get rid of unneeded argument */
       TREE_CHAIN (parms) = NULL_TREE;
-      result = build_method_call (instance, name, parms, basetype_path,
-				  (LOOKUP_SPECULATIVELY|flags)
-				  &~LOOKUP_COMPLAIN);
-      /* If it finds a match, return it.  */
-      if (result)
-	return build_method_call (instance, name, parms, basetype_path, flags);
+      if (build_method_call (instance, name, parms, basetype_path,
+			     (LOOKUP_SPECULATIVELY|flags) & ~LOOKUP_COMPLAIN))
+	{
+	  /* If it finds a match, return it.  */
+	  return build_method_call (instance, name, parms, basetype_path, flags);
+	}
       /* If it doesn't work, two argument delete must work */
       TREE_CHAIN (parms) = save_last;
     }

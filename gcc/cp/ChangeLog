@@ -1,3 +1,29 @@
+Thu Mar 12 09:26:04 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* call.c (default_parm_conversions): Remove prototype definition.
+	(build_method_call): Remove unused variable result.
+
+	* cvt.c (ocp_convert): Remove unused variable conversion.
+
+	* decl2.c (ambiguous_decl): Add explicit parameter definition for name.
+
+	* except.c (do_unwind): #if 0 definition of unused variables fcall
+	and next_pc.
+
+	* expr.c (extract_scalar_init): #if 0 prototype and function definition.
+
+	* init.c (expand_aggr_init_1): Remove unused variable init_type.
+	(build_new_1): Remove unused variable t.
+
+	* pt.c (instantiate_class_template): Remove unused variable newtag;
+	cast called function return value to void.
+	(do_decl_instantiation): Remove unused variables name and fn.
+
+	* tree.c (get_type_decl): Add default return to shut up compiler from
+	complaining control reaches end of non-void function.
+
+	* typeck.c (build_x_conditional_expr): Remove unused variable rval.
+
 Thu Mar 12 09:12:15 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* call.c (default_parm_conversions): Remove prototype definition.

@@ -52,7 +52,7 @@ bitmap_element bitmap_zero;		/* An element of all zero bits. */
 bitmap_element *bitmap_free;		/* Freelist of bitmap elements. */
 
 static void bitmap_element_free		PROTO((bitmap, bitmap_element *));
-static bitmap_element *bitmap_element_allocate PROTO((bitmap));
+static bitmap_element *bitmap_element_allocate PROTO(());
 static int bitmap_element_zerop		PROTO((bitmap_element *));
 static void bitmap_element_link		PROTO((bitmap, bitmap_element *));
 static bitmap_element *bitmap_find_bit	PROTO((bitmap, unsigned int));
@@ -88,8 +88,7 @@ bitmap_element_free (head, elt)
 /* Allocate a bitmap element.  The bits are cleared, but nothing else is.  */
 
 static INLINE bitmap_element *
-bitmap_element_allocate (head)
-     bitmap head;
+bitmap_element_allocate ()
 {
   bitmap_element *element;
 #if BITMAP_ELEMENT_WORDS != 2
@@ -257,7 +256,7 @@ bitmap_copy (to, from)
   /* Copy elements in forward direction one at a time */
   for (from_ptr = from->first; from_ptr; from_ptr = from_ptr->next)
     {
-      bitmap_element *to_elt = bitmap_element_allocate (to);
+      bitmap_element *to_elt = bitmap_element_allocate ();
 
       to_elt->indx = from_ptr->indx;
 
@@ -364,7 +363,7 @@ bitmap_set_bit (head, bit)
 
   if (ptr == 0)
     {
-      ptr = bitmap_element_allocate (head);
+      ptr = bitmap_element_allocate ();
       ptr->indx = bit / BITMAP_ELEMENT_ALL_BITS;
       ptr->bits[word_num] = bit_val;
       bitmap_element_link (head, ptr);
@@ -463,7 +462,7 @@ bitmap_operation (to, from1, from2, operation)
 	}
 
       if (to_ptr == 0)
-	to_ptr = bitmap_element_allocate (to);
+	to_ptr = bitmap_element_allocate ();
 
       /* Do the operation, and if any bits are set, link it into the
 	 linked list.  */

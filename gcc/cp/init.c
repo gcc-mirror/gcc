@@ -1335,7 +1335,6 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
      int flags;
 {
   tree type = TREE_TYPE (exp);
-  tree init_type = NULL_TREE;
 
   my_friendly_assert (init != error_mark_node && type != error_mark_node, 211);
 
@@ -2212,7 +2211,7 @@ tree
 build_new_1 (exp)
      tree exp;
 {
-  tree placement, init, t;
+  tree placement, init;
   tree type, true_type, size, rval;
   tree nelts = NULL_TREE;
   tree alloc_expr, alloc_node = NULL_TREE;

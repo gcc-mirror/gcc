@@ -714,9 +714,11 @@ do_unwind (inner_throw_label)
 #endif
 #endif
 #if ! defined (TARGET_88000) && ! defined (ARM_FRAME_RTX) && ! defined (SPARC_STACK_ALIGN)
+#if 0
   tree fcall;
-  tree params;
   rtx next_pc;
+#endif
+  tree params;
 
 #if 0
   /* I would like to do this here, but the move below doesn't seem to work.  */
