@@ -852,6 +852,7 @@ c_sizeof (type)
   /* Convert in case a char is more than one unit.  */
   t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), 
 		  size_int (TYPE_PRECISION (char_type_node)));
+  t = convert (sizetype, t);
   /* size_binop does not put the constant in range, so do it now.  */
   if (TREE_CODE (t) == INTEGER_CST && force_fit_type (t, 0))
     TREE_CONSTANT_OVERFLOW (t) = TREE_OVERFLOW (t) = 1;
@@ -875,6 +876,7 @@ c_sizeof_nowarn (type)
   /* Convert in case a char is more than one unit.  */
   t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), 
 		  size_int (TYPE_PRECISION (char_type_node)));
+  t = convert (sizetype, t);
   force_fit_type (t, 0);
   return t;
 }
@@ -903,6 +905,7 @@ c_size_in_bytes (type)
   /* Convert in case a char is more than one unit.  */
   t = size_binop (CEIL_DIV_EXPR, TYPE_SIZE (type), 
 		     size_int (BITS_PER_UNIT));
+  t = convert (sizetype, t);
   force_fit_type (t, 0);
   return t;
 }
@@ -5347,6 +5350,7 @@ really_start_incremental_init (type)
 	constructor_fields = TREE_CHAIN (constructor_fields);
       constructor_unfilled_fields = constructor_fields;
       constructor_bit_index = copy_node (integer_zero_node);
+      TREE_TYPE (constructor_bit_index) = sbitsizetype;
     }
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
     {
@@ -5426,13 +5430,17 @@ push_init_level (implicit)
       if (! tree_int_cst_equal (constructor_bit_index,
 				DECL_FIELD_BITPOS (constructor_fields)))
 	{
-	  int next = (TREE_INT_CST_LOW
-		      (DECL_FIELD_BITPOS (constructor_fields))
-		      / BITS_PER_UNIT);
-	  int here = (TREE_INT_CST_LOW (constructor_bit_index)
-		      / BITS_PER_UNIT);
+	  /* By using unsigned arithmetic, the result will be correct even
+	     in case of overflows, if BITS_PER_UNIT is a power of two.  */
+	  unsigned next = (TREE_INT_CST_LOW
+			   (DECL_FIELD_BITPOS (constructor_fields))
+			   / (unsigned)BITS_PER_UNIT);
+	  unsigned here = (TREE_INT_CST_LOW (constructor_bit_index)
+			   / (unsigned)BITS_PER_UNIT);
 
-	  assemble_zeros (next - here);
+	  assemble_zeros ((next - here)
+			  * (unsigned)BITS_PER_UNIT
+			  / (unsigned)BITS_PER_UNIT);
 	}
       /* Indicate that we have now filled the structure up to the current
 	 field.  */
@@ -5524,6 +5532,7 @@ push_init_level (implicit)
 	constructor_fields = TREE_CHAIN (constructor_fields);
       constructor_unfilled_fields = constructor_fields;
       constructor_bit_index = copy_node (integer_zero_node);
+      TREE_TYPE (constructor_bit_index) = sbitsizetype;
     }
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
     {
@@ -6018,12 +6027,19 @@ output_init_element (value, type, field, pending)
 		  if (! tree_int_cst_equal (constructor_bit_index,
 					    DECL_FIELD_BITPOS (field)))
 		    {
-		      int next = (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field))
-				  / BITS_PER_UNIT);
-		      int here = (TREE_INT_CST_LOW (constructor_bit_index)
-				  / BITS_PER_UNIT);
+		      /* By using unsigned arithmetic, the result will be
+			 correct even in case of overflows, if BITS_PER_UNIT
+			 is a power of two.  */
+		      unsigned next = (TREE_INT_CST_LOW
+				       (DECL_FIELD_BITPOS (field))
+				       / (unsigned)BITS_PER_UNIT);
+		      unsigned here = (TREE_INT_CST_LOW
+				       (constructor_bit_index)
+				       / (unsigned)BITS_PER_UNIT);
 
-		      assemble_zeros (next - here);
+		      assemble_zeros ((next - here)
+				      * (unsigned)BITS_PER_UNIT
+				      / (unsigned)BITS_PER_UNIT);
 		    }
 		}
 	      output_constant (digest_init (type, value,
