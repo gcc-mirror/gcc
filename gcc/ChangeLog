@@ -1,3 +1,8 @@
+2000-03-09  Andreas Jaeger  <aj@suse.de>
+
+	* config/mips/linux.h (NO_IMPLICIT_EXTERN_C): Define.
+	(TARGET_MEM_FUNCTIONS): Define.
+
 2000-03-09  Jason Merrill  <jason@casey.cygnus.com>
 
 	* i386.c (ix86_valid_type_attribute_p): Use compare_tree_int.
