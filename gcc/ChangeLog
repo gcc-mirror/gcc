@@ -51,7 +51,7 @@
 	PR target/4198
 	PR target/12027
 	* config.gcc (Obsolete configurations): Remove
-	sparclite-*-coff*, sparclite-*-elf* and sparc-*-openbsd*.
+	sparclite-*-coff*, sparclite-*-elf* and sparc86x-*-elf*.
 	(sparclite-*-coff*): Delete.
 	(sparclite-*-elf*): Likewise.
 	(sparc86x-*-elf*): Likewise.
