@@ -8,6 +8,7 @@ Godmar Back for his improvements and encouragement.
 Scott Bambrough for help porting the compiler.
 Jon Beniston for his Win32 port.
 Geoff Berry for his object serialization work and various patches.
+Eric Blake for helping to make gcj and libgcj conform to the specifications
 Hans-J. Boehm for his garbage collector, IA-64 libffi port, and other work.
 Per Bothner for dreaming up, designing and implementing much of gcj.
 Joerg Brunsmann for compiler hacking and help with the FAQ.
@@ -26,6 +27,7 @@ Andrew Haley for his amazing compiler and library efforts.
 Jakub Jelinek for improving the build system.
 Oskar Liljeblad for hacking on AWT and his many bug reports and patches.
 Bryce McKinlay for numerous gcj and libgcj fixes and improvements.
+Adam Megacz for his work on the Win32 port
 Jason Molenda for establishing the project infrastructure 
 	on sources.redhat.com.
 Mike Moreton for his various patches.
@@ -41,10 +43,13 @@ Bradley Schatz for his work on the FAQ.
 Jason Schroeder for jcf-dump patches.
 John Stracke for his HTTP protocol fixes.
 Jeff Sturm for porting help, bug fixes, and encouragement.
+Andreas Tobler for his work porting libgcj to Darwin
 Tom Tromey for his many contributions and libgcj maintainership.
 Matt Welsh for help with Linux Threads.
 Urban Widmark for help fixing java.io.
+Mark Wielaard for new library code and his work integrating with Classpath
 Gilles Zunino for help porting to Irix.
+
 
 We'd also like to thank the folks who have contributed time and energy
 in testing GCJ:
