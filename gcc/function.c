@@ -798,7 +798,8 @@ assign_stack_temp_for_type (mode, size, keep, type)
   /* If a type is specified, set the relevant flags.  */
   if (type != 0)
     {
-      RTX_UNCHANGING_P (slot) = TYPE_READONLY (type);
+      RTX_UNCHANGING_P (slot) = (lang_hooks.honor_readonly 
+				 && TYPE_READONLY (type));
       MEM_VOLATILE_P (slot) = TYPE_VOLATILE (type);
       MEM_SET_IN_STRUCT_P (slot, AGGREGATE_TYPE_P (type));
     }
