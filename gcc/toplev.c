@@ -709,6 +709,8 @@ char *lang_options[] =
   "-Wno-extern-inline",
   "-Wreorder",
   "-Wno-reorder",
+  "-Wsynth",
+  "-Wno-synth",
 
   /* these are for obj c */
   "-lang-objc",
