@@ -108,8 +108,8 @@ I. What is an ABI? What's covered? What's not?
     gcc-3.2.x: 102
 
 
-  - Incremental bumping of a library pre-defined macro,
-    __GLIBCPP__. This macro is defined as the date the library was
+  - Incremental bumping of a library pre-defined macro, __GLIBCPP__ or
+    __GLIBCXX__.  This macro is defined as the date the library was
     released, in compressed ISO date format, as an unsigned long.
 
     This macro is defined in the file "c++config" in the
@@ -130,7 +130,7 @@ I. What is an ABI? What's covered? What's not?
   - Incremental bumping of a library pre-defined macro,
     _GLIBCPP_VERSION. This macro is defined as the released version of
     the library, as a string literal. This is only implemented in
-    gcc-3.1.0 releases and higher.
+    gcc-3.1.0 releases and higher, and changed to _GLIBCXX_VERSION in 3.4.
 
     This macro is defined in the file "c++config" in the
     "libstdc++-v3/include/bits" directory and is generated
@@ -200,7 +200,7 @@ I. What is an ABI? What's covered? What's not?
   --enable-symvers. 
 
   In particular, libstdc++-v3/acinclude.m4 has a macro called
-  GLIBCPP_ENABLE_SYMVERS that defaults to yes (or the argument passed
+  GLIBCXX_ENABLE_SYMVERS that defaults to yes (or the argument passed
   in via --enable-symvers=foo). At that point, the macro attempts to
   make sure that all the requirement for symbol versioning are in
   place. For more information, please consult acinclude.m4. 

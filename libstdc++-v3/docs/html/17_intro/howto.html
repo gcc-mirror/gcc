@@ -291,7 +291,8 @@
       <a href="../configopts.html">the configuration step</a>, with the
       various --enable/--disable choices being translated to #define/#undef).
    </p>
-   <p>All library macros begin with <code>_GLIBCPP_</code>.  The fact that
+   <p>All library macros begin with <code>_GLIBCPP_</code> in earlier
+      versions, and <code>_GLIBCXX_</code> in later versions.  The fact that
       these symbols start with a leading underscore should give you a clue
       that (by default) they aren't meant to be changed by the user.  :-)
    </p>
@@ -310,9 +311,10 @@
       The default state of the symbol is listed.  &quot;Configurable&quot;
       (or &quot;Not configurable&quot;) means that the symbol is initially
       chosen (or not) based on --enable/--disable options at configure time.
+      For 3.1 through 3.3, the prefixes are <code>_GLIBCPP_</code>.
    </p>
     <dl>
-    <dt><code>_GLIBCPP_DEPRECATED</code></dt>
+    <dt><code>_GLIBCXX_DEPRECATED</code></dt>
     <dd>Undefined by default.  Not configurable.  Turning this on enables
         older ARM-style iostreams code, and other anachronisms.  This may be
         useful in updating old C++ programs which no longer meet the
@@ -331,7 +333,7 @@
         you might try undefining this macro.
     </dd>
     -->
-    <dt><code>_GLIBCPP_CONCEPT_CHECKS</code></dt>
+    <dt><code>_GLIBCXX_CONCEPT_CHECKS</code></dt>
     <dd>Undefined by default.  Configurable.  When defined, performs
         compile-time checking on certain template instantiations to detect
         violations of the requirements of the standard.  This is described
