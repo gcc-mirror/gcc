@@ -1180,8 +1180,8 @@ if test -d ${srcdir}/gcc; then
 	    missing_languages=`echo "$missing_languages" | sed "s/,$language,/,/"`
 	    case ${boot_language} in
 	      yes)
-		# Add to (space-separated) list of stage 1 languages.
-		stage1_languages="${stage1_languages} ${language}"
+		# Add to (comma-separated) list of stage 1 languages.
+		stage1_languages="${stage1_languages},${language}"
 		;;
 	    esac
 	    ;;

@@ -1294,7 +1294,11 @@ STAMP = echo timestamp >
 STAGE1_CFLAGS=@stage1_cflags@
 STAGE1_LANGUAGES=@stage1_languages@
 
-# TODO: deal with OBJS-onestep
+# For stage 1:
+# * we force-disable intermodule optimizations, even if
+#   --enable-intermodule was passed.  Luckily, autoconf always accepts
+#   the last* argument when conflicting --enable arguments are passed.
+# * we build only C (and possibly Ada).
 configure-stage1-gcc:
 	echo configure-stage1-gcc > stage_last ; \
 	if [ -f stage1-gcc/Makefile ] ; then \
@@ -1337,19 +1341,26 @@ configure-stage1-gcc:
 	    libsrcdir="$$s/gcc";; \
 	esac; \
 	$(SHELL) $${libsrcdir}/configure \
-	  $(HOST_CONFIGARGS) $${srcdiroption} ; \
+	  $(HOST_CONFIGARGS) $${srcdiroption} \
+	  --disable-intermodule \
+	  --enable-languages="$(STAGE1_LANGUAGES)"; \
 	cd .. ; \
 	mv gcc stage1-gcc ; \
 	$(STAMP) configure-stage1-gcc
 
-all-stage1-gcc: configure-stage1-gcc all-bootstrap
+# Real targets act phony if they depend on phony targets; this hack
+# prevents gratuitous rebuilding of stage 1.
+prebootstrap:
+	$(MAKE) all-bootstrap
+	$(STAMP) prebootstrap
+
+all-stage1-gcc: configure-stage1-gcc prebootstrap
 	echo all-stage1-gcc > stage_last ; \
 	r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
 	mv stage1-gcc gcc ; \
 	cd gcc && \
 	$(MAKE) $(GCC_FLAGS_TO_PASS) \
-                LANGUAGES="$(STAGE1_LANGUAGES)" \
 		CFLAGS="$(STAGE1_CFLAGS)" \
 		COVERAGE_FLAGS= || exit 1 ; \
 	cd .. ; \
