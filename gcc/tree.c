@@ -1123,17 +1123,43 @@ tree_cons (purpose, value, chain)
   return node;
 }
 
+/* Return the first expression in a sequence of COMPOUND_EXPRs.  */
+
+tree
+expr_first (tree expr)
+{
+  if (expr == NULL_TREE)
+    return expr;
+  while (TREE_CODE (expr) == COMPOUND_EXPR)
+    expr = TREE_OPERAND (expr, 0);
+  return expr;
+}
+
 /* Return the last expression in a sequence of COMPOUND_EXPRs.  */
 
 tree
-expr_last (expr)
-     tree expr;
+expr_last (tree expr)
 {
   if (expr == NULL_TREE)
     return expr;
   while (TREE_CODE (expr) == COMPOUND_EXPR)
     expr = TREE_OPERAND (expr, 1);
   return expr;
+}
+
+/* Return the number of subexpressions in a sequence of COMPOUND_EXPRs.  */
+
+int
+expr_length (tree expr)
+{
+  int len = 0;
+  
+  if (expr == NULL_TREE)
+    return 0;
+  for (; TREE_CODE (expr) == COMPOUND_EXPR; expr = TREE_OPERAND (expr, 1))
+    len += expr_length (TREE_OPERAND (expr, 0));
+  ++len;
+  return len;
 }
 
 /* Return the size nominally occupied by an object of type TYPE
@@ -3653,9 +3679,28 @@ iterative_hash_expr (tree t, hashval_t val)
       if (code == NOP_EXPR || code == CONVERT_EXPR
 	  || code == NON_LVALUE_EXPR)
 	val = iterative_hash_object (TREE_TYPE (t), val);
-  
-      for (i = first_rtl_op (code) - 1; i >= 0; --i)
-	val = iterative_hash_expr (TREE_OPERAND (t, i), val);
+
+      if (code == PLUS_EXPR || code == MULT_EXPR || code == MIN_EXPR
+	  || code == MAX_EXPR || code == BIT_IOR_EXPR || code == BIT_XOR_EXPR
+	  || code == BIT_AND_EXPR || code == NE_EXPR || code == EQ_EXPR)
+	{
+	  /* It's a commutative expression.  We want to hash it the same
+	     however it appears.  We do this by first hashing both operands
+	     and then rehashing based on the order of their independent
+	     hashes.  */
+	  hashval_t one = iterative_hash_expr (TREE_OPERAND (t, 0), 0);
+	  hashval_t two = iterative_hash_expr (TREE_OPERAND (t, 1), 0);
+	  hashval_t t;
+
+	  if (one > two)
+	    t = one, one = two, two = t;
+
+	  val = iterative_hash_object (one, val);
+	  val = iterative_hash_object (two, val);
+	}
+      else
+	for (i = first_rtl_op (code) - 1; i >= 0; --i)
+	  val = iterative_hash_expr (TREE_OPERAND (t, i), val);
     }
   else if (code == TREE_LIST)
     {
