@@ -1043,8 +1043,7 @@ validate_proto_after_old_defn (tree newdecl, tree newtype, tree oldtype)
   tree newargs, oldargs;
   int i;
 
-  /* ??? Elsewhere TYPE_MAIN_VARIANT is not used in this context.  */
-#define END_OF_ARGLIST(t) (TYPE_MAIN_VARIANT (t) == void_type_node)
+#define END_OF_ARGLIST(t) ((t) == void_type_node)
 
   oldargs = TYPE_ACTUAL_ARG_TYPES (oldtype);
   newargs = TYPE_ARG_TYPES (newtype);
@@ -1052,8 +1051,8 @@ validate_proto_after_old_defn (tree newdecl, tree newtype, tree oldtype)
 
   for (;;)
     {
-      tree oldargtype = TREE_VALUE (oldargs);
-      tree newargtype = TREE_VALUE (newargs);
+      tree oldargtype = TYPE_MAIN_VARIANT (TREE_VALUE (oldargs));
+      tree newargtype = TYPE_MAIN_VARIANT (TREE_VALUE (newargs));
 
       if (END_OF_ARGLIST (oldargtype) && END_OF_ARGLIST (newargtype))
 	break;
