@@ -1,3 +1,9 @@
+2001-03-24  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/util/HashMap.java (HashMap): If 0 is given for initialCapacity 
+	paramater, bump it to 1.
+	* java/util/Hashtable.java (Hashtable): Likewise.
+
 2001-03-23  Per Bothner  <per@bothner.com>
 
 	* java/lang/natDouble.cc (parseDouble):  Cannot use errno to
