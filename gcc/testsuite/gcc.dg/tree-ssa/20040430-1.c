@@ -1,7 +1,7 @@
 /* PR middle-end/14470.  Similar to
    gcc.c-torture/execute/20040313-1.c, but with a compile time test to
-   make sure the second if() is removed.  We should actually get rid
-   of the first if() too, but we're not that smart yet.  */
+   make sure the second if() is removed.  */
+/* Update: We now remove both ifs.  Whee. */
 
 /* { dg-do run } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
@@ -22,4 +22,4 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "if " 1 "optimized"} } */
+/* { dg-final { scan-tree-dump-times "if " 0 "optimized"} } */
