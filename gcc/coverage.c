@@ -271,7 +271,7 @@ read_counts_file ()
 	  for (ix = 0; ix != n_counts; ix++)
 	    entry->counts[ix] += gcov_read_counter ();
 	}
-      gcov_seek (offset, length);
+      gcov_sync (offset, length);
       if ((error = gcov_is_error ()))
 	{
 	  warning (error < 0 ? "`%s' has overflowed" : "`%s' is corrupted",

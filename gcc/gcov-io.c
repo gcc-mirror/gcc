@@ -37,7 +37,7 @@ gcov_open (const char *name, int mode)
 {
   int result = 1;
   size_t alloc = 1024;
-#if defined (TARGET_HAS_F_SETLKW) && IN_LIBGCOV
+#if GCOV_LOCKED
   struct flock s_flock;
 
   s_flock.l_type = F_WRLCK;
@@ -61,7 +61,7 @@ gcov_open (const char *name, int mode)
   if (!gcov_var.file)
     return 0;
 
-#if defined (TARGET_HAS_F_SETLKW) && IN_LIBGCOV
+#if GCOV_LOCKED
   while (fcntl (fileno (gcov_var.file), F_SETLKW, &s_flock)
 	 && errno == EINTR)
     continue;
@@ -257,6 +257,7 @@ gcov_write_string (const char *string)
 }
 #endif
 
+#if !IN_LIBGCOV
 /* Write a tag TAG and reserve space for the record length. Return a
    value to be used for gcov_write_length.  */
 
@@ -299,6 +300,30 @@ gcov_write_length (unsigned long position)
 	}
     }
 }
+#endif
+
+/* Write a tag TAG and length LENGTH.  */
+
+GCOV_LINKAGE void
+gcov_write_tag_length (unsigned tag, unsigned length)
+{
+  unsigned char *buffer = gcov_write_bytes (8);
+  unsigned ix;
+
+  if (!buffer)
+    return;
+  for (ix = 4; ix--; )
+    {
+      buffer[ix] = tag;
+      tag >>= 8;
+    }
+  for (ix = 4; ix--; )
+    {
+      buffer[ix + 4] = length;
+      length >>= 8;
+    }
+  return;
+}
 
 #if IN_LIBGCOV
 /* Write a summary structure to the gcov file.  Return non-zero on
@@ -309,9 +334,8 @@ gcov_write_summary (unsigned tag, const struct gcov_summary *summary)
 {
   unsigned ix;
   const struct gcov_ctr_summary *csum;
-  unsigned long base;
 
-  base = gcov_write_tag (tag);
+  gcov_write_tag_length (tag, GCOV_TAG_SUMMARY_LENGTH);
   gcov_write_unsigned (summary->checksum);
   for (csum = summary->ctrs, ix = GCOV_COUNTERS; ix--; csum++)
     {
@@ -321,7 +345,6 @@ gcov_write_summary (unsigned tag, const struct gcov_summary *summary)
       gcov_write_counter (csum->run_max);
       gcov_write_counter (csum->sum_max);
     }
-  gcov_write_length (base);
 }
 #endif /* IN_LIBGCOV */
 
