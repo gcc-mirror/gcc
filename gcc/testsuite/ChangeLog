@@ -1,3 +1,8 @@
+2004-11-30  Loren James Rittle  <ljrittle@acm.org>
+
+        * g++.old-deja/g++.eh/badalloc1.C (arena_size): Bump up to 262144
+	to support new requirements on FreeBSD 5.
+
 2004-11-30  Devang Patel  <dpatel@apple.com>
 
 	PR 18702
