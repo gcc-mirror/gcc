@@ -4501,79 +4501,147 @@ __ch (__un_args_eq (vector float, (a1)), \
 #define vec_ld(a, b) \
 __ch (__un_args_eq (vector unsigned char *, (b)), \
       ((vector unsigned char) __builtin_altivec_lvx ((a), (b))), \
+__ch (__un_args_eq (vector unsigned char [], (b)), \
+      ((vector unsigned char) __builtin_altivec_lvx ((a), (b))), \
 __ch (__un_args_eq (unsigned char *, (b)), \
+      ((vector unsigned char) __builtin_altivec_lvx ((a), (b))), \
+__ch (__un_args_eq (unsigned char [], (b)), \
       ((vector unsigned char) __builtin_altivec_lvx ((a), (b))), \
 __ch (__un_args_eq (vector signed char *, (b)), \
       ((vector signed char) __builtin_altivec_lvx ((a), (b))), \
+__ch (__un_args_eq (vector signed char [], (b)), \
+      ((vector signed char) __builtin_altivec_lvx ((a), (b))), \
 __ch (__un_args_eq (signed char *, (b)), \
+      ((vector signed char) __builtin_altivec_lvx ((a), (b))), \
+__ch (__un_args_eq (signed char [], (b)), \
       ((vector signed char) __builtin_altivec_lvx ((a), (b))), \
 __ch (__un_args_eq (vector unsigned short *, (b)), \
       ((vector unsigned short) __builtin_altivec_lvx ((a), (b))), \
+__ch (__un_args_eq (vector unsigned short [], (b)), \
+      ((vector unsigned short) __builtin_altivec_lvx ((a), (b))), \
 __ch (__un_args_eq (unsigned short *, (b)), \
+      ((vector unsigned short) __builtin_altivec_lvx ((a), (b))), \
+__ch (__un_args_eq (unsigned short [], (b)), \
       ((vector unsigned short) __builtin_altivec_lvx ((a), (b))), \
 __ch (__un_args_eq (vector signed short *, (b)), \
       ((vector signed short) __builtin_altivec_lvx ((a), (b))), \
+__ch (__un_args_eq (vector signed short [], (b)), \
+      ((vector signed short) __builtin_altivec_lvx ((a), (b))), \
 __ch (__un_args_eq (signed short *, (b)), \
+      ((vector signed short) __builtin_altivec_lvx ((a), (b))), \
+__ch (__un_args_eq (signed short [], (b)), \
       ((vector signed short) __builtin_altivec_lvx ((a), (b))), \
 __ch (__un_args_eq (vector unsigned int *, (b)), \
       ((vector unsigned int) __builtin_altivec_lvx ((a), (b))), \
+__ch (__un_args_eq (vector unsigned int [], (b)), \
+      ((vector unsigned int) __builtin_altivec_lvx ((a), (b))), \
 __ch (__un_args_eq (unsigned int *, (b)), \
+      ((vector unsigned int) __builtin_altivec_lvx ((a), (b))), \
+__ch (__un_args_eq (unsigned int [], (b)), \
       ((vector unsigned int) __builtin_altivec_lvx ((a), (b))), \
 __ch (__un_args_eq (vector signed int *, (b)), \
       ((vector signed int) __builtin_altivec_lvx ((a), (b))), \
+__ch (__un_args_eq (vector signed int [], (b)), \
+      ((vector signed int) __builtin_altivec_lvx ((a), (b))), \
 __ch (__un_args_eq (signed int *, (b)), \
+      ((vector signed int) __builtin_altivec_lvx ((a), (b))), \
+__ch (__un_args_eq (signed int [], (b)), \
       ((vector signed int) __builtin_altivec_lvx ((a), (b))), \
 __ch (__un_args_eq (vector float *, (b)), \
       ((vector float) __builtin_altivec_lvx ((a), (b))), \
+__ch (__un_args_eq (vector float [], (b)), \
+      ((vector float) __builtin_altivec_lvx ((a), (b))), \
 __ch (__un_args_eq (float *, (b)), \
       ((vector float) __builtin_altivec_lvx ((a), (b))), \
-__altivec_link_error_invalid_argument ()))))))))))))))
+__ch (__un_args_eq (float [], (b)), \
+      ((vector float) __builtin_altivec_lvx ((a), (b))), \
+__altivec_link_error_invalid_argument ()))))))))))))))))))))))))))))
 
 #define vec_lde(a, b) \
 __ch (__un_args_eq (unsigned char *, (b)), \
       ((vector unsigned char) __builtin_altivec_lvebx ((a), (b))), \
+__ch (__un_args_eq (unsigned char [], (b)), \
+      ((vector unsigned char) __builtin_altivec_lvebx ((a), (b))), \
 __ch (__un_args_eq (signed char *, (b)), \
+      ((vector signed char) __builtin_altivec_lvebx ((a), (b))), \
+__ch (__un_args_eq (signed char [], (b)), \
       ((vector signed char) __builtin_altivec_lvebx ((a), (b))), \
 __ch (__un_args_eq (unsigned short *, (b)), \
       ((vector unsigned short) __builtin_altivec_lvehx ((a), (b))), \
+__ch (__un_args_eq (unsigned short [], (b)), \
+      ((vector unsigned short) __builtin_altivec_lvehx ((a), (b))), \
 __ch (__un_args_eq (signed short *, (b)), \
+      ((vector signed short) __builtin_altivec_lvehx ((a), (b))), \
+__ch (__un_args_eq (signed short [], (b)), \
       ((vector signed short) __builtin_altivec_lvehx ((a), (b))), \
 __ch (__un_args_eq (unsigned int *, (b)), \
       ((vector unsigned int) __builtin_altivec_lvewx ((a), (b))), \
+__ch (__un_args_eq (unsigned int [], (b)), \
+      ((vector unsigned int) __builtin_altivec_lvewx ((a), (b))), \
 __ch (__un_args_eq (signed int *, (b)), \
       ((vector signed int) __builtin_altivec_lvewx ((a), (b))), \
-__altivec_link_error_invalid_argument ()))))))
+__ch (__un_args_eq (signed int [], (b)), \
+      ((vector signed int) __builtin_altivec_lvewx ((a), (b))), \
+__altivec_link_error_invalid_argument ()))))))))))))
 
 #define vec_ldl(a, b) \
 __ch (__un_args_eq (vector unsigned char *, (b)), \
       ((vector unsigned char) __builtin_altivec_lvxl ((a), (b))), \
+__ch (__un_args_eq (vector unsigned char [], (b)), \
+      ((vector unsigned char) __builtin_altivec_lvxl ((a), (b))), \
 __ch (__un_args_eq (unsigned char *, (b)), \
+      ((vector unsigned char) __builtin_altivec_lvxl ((a), (b))), \
+__ch (__un_args_eq (unsigned char [], (b)), \
       ((vector unsigned char) __builtin_altivec_lvxl ((a), (b))), \
 __ch (__un_args_eq (vector signed char *, (b)), \
       ((vector signed char) __builtin_altivec_lvxl ((a), (b))), \
+__ch (__un_args_eq (vector signed char [], (b)), \
+      ((vector signed char) __builtin_altivec_lvxl ((a), (b))), \
 __ch (__un_args_eq (signed char *, (b)), \
+      ((vector signed char) __builtin_altivec_lvxl ((a), (b))), \
+__ch (__un_args_eq (signed char [], (b)), \
       ((vector signed char) __builtin_altivec_lvxl ((a), (b))), \
 __ch (__un_args_eq (vector unsigned short *, (b)), \
       ((vector unsigned short) __builtin_altivec_lvxl ((a), (b))), \
+__ch (__un_args_eq (vector unsigned short [], (b)), \
+      ((vector unsigned short) __builtin_altivec_lvxl ((a), (b))), \
 __ch (__un_args_eq (unsigned short *, (b)), \
+      ((vector unsigned short) __builtin_altivec_lvxl ((a), (b))), \
+__ch (__un_args_eq (unsigned short [], (b)), \
       ((vector unsigned short) __builtin_altivec_lvxl ((a), (b))), \
 __ch (__un_args_eq (vector signed short *, (b)), \
       ((vector signed short) __builtin_altivec_lvxl ((a), (b))), \
+__ch (__un_args_eq (vector signed short [], (b)), \
+      ((vector signed short) __builtin_altivec_lvxl ((a), (b))), \
 __ch (__un_args_eq (signed short *, (b)), \
+      ((vector signed short) __builtin_altivec_lvxl ((a), (b))), \
+__ch (__un_args_eq (signed short [], (b)), \
       ((vector signed short) __builtin_altivec_lvxl ((a), (b))), \
 __ch (__un_args_eq (vector unsigned int *, (b)), \
       ((vector unsigned int) __builtin_altivec_lvxl ((a), (b))), \
+__ch (__un_args_eq (vector unsigned int [], (b)), \
+      ((vector unsigned int) __builtin_altivec_lvxl ((a), (b))), \
 __ch (__un_args_eq (unsigned int *, (b)), \
+      ((vector unsigned int) __builtin_altivec_lvxl ((a), (b))), \
+__ch (__un_args_eq (unsigned int [], (b)), \
       ((vector unsigned int) __builtin_altivec_lvxl ((a), (b))), \
 __ch (__un_args_eq (vector signed int *, (b)), \
       ((vector signed int) __builtin_altivec_lvxl ((a), (b))), \
+__ch (__un_args_eq (vector signed int [], (b)), \
+      ((vector signed int) __builtin_altivec_lvxl ((a), (b))), \
 __ch (__un_args_eq (signed int *, (b)), \
+      ((vector signed int) __builtin_altivec_lvxl ((a), (b))), \
+__ch (__un_args_eq (signed int [], (b)), \
       ((vector signed int) __builtin_altivec_lvxl ((a), (b))), \
 __ch (__un_args_eq (vector float *, (b)), \
       ((vector float) __builtin_altivec_lvxl ((a), (b))), \
+__ch (__un_args_eq (vector float [], (b)), \
+      ((vector float) __builtin_altivec_lvxl ((a), (b))), \
 __ch (__un_args_eq (float *, (b)), \
       ((vector float) __builtin_altivec_lvxl ((a), (b))), \
-__altivec_link_error_invalid_argument ()))))))))))))))
+__ch (__un_args_eq (float [], (b)), \
+      ((vector float) __builtin_altivec_lvxl ((a), (b))), \
+__altivec_link_error_invalid_argument ()))))))))))))))))))))))))))))
 
 #define vec_loge(a1) __builtin_altivec_vlogefp ((a1))
 
