@@ -1,4 +1,11 @@
-2004-11-20  Roger Sayle  <roger@eyesopen.com>
+2004-11-21  Roger Sayle  <roger@eyesopen.com>
+
+	* fixinc/inclhack.def (alpha_pthread_init): Fix technical problems
+	with the last check-in caused by CVS variable substitution.
+	* fixinc/fixincl.x: Likewise.
+	* fixinc/tests/base/pthread.h: Likewise.
+
+2004-11-21  Roger Sayle  <roger@eyesopen.com>
 	    Bruce Korb  <bkorb@gnu.org>
 
 	Synchronize with mainline

@@ -37,7 +37,7 @@
 
 #if defined( ALPHA_PTHREAD_INIT_CHECK )
 /*
- * @(#)$RCSfile: pthread.h,v $ $Revision: 1.1.33.21 $ (DEC) $Date: 2000/08/15 15:30:13 $
+ * @(#)_RCSfile: pthread.h,v $ _Revision: 1.1.33.21 $ (DEC) _Date: 2000/08/15 15:30:13 $
  */
 #ifndef _PTHREAD_NOMETER_STATIC
 # define PTHREAD_MUTEX_INITIALIZER     {_PTHREAD_MSTATE_CONFIG, _PTHREAD_MVALID | _PTHREAD_MVF_STA, 0, 0, 0, 0, 0, 0 }
