@@ -82,23 +82,21 @@ package System.Task_Primitives.Operations is
 
    procedure Enter_Task (Self_ID : ST.Task_Id);
    pragma Inline (Enter_Task);
-   --  Initialize data structures specific to the calling task.
-   --  Self must be the ID of the calling task.
-   --  It must be called (once) by the task immediately after creation,
-   --  while abortion is still deferred.
-   --  The effects of other operations defined below are not defined
-   --  unless the caller has previously called Initialize_Task.
+   --  Initialize data structures specific to the calling task. Self must be
+   --  the ID of the calling task. It must be called (once) by the task
+   --  immediately after creation, while abort is still deferred. The effects
+   --  of other operations defined below are not defined unless the caller has
+   --  previously called Initialize_Task.
 
    procedure Exit_Task;
    pragma Inline (Exit_Task);
-   --  Destroy the thread of control.
-   --  Self must be the ID of the calling task.
-   --  The effects of further calls to operations defined below
-   --  on the task are undefined thereafter.
+   --  Destroy the thread of control. Self must be the ID of the calling task.
+   --  The effects of further calls to operations defined below on the task
+   --  are undefined thereafter.
 
    function New_ATCB (Entry_Num : ST.Task_Entry_Index) return ST.Task_Id;
    pragma Inline (New_ATCB);
-   --  Allocate a new ATCB with the specified number of entries.
+   --  Allocate a new ATCB with the specified number of entries
 
    procedure Initialize_TCB (Self_ID : ST.Task_Id; Succeeded : out Boolean);
    pragma Inline (Initialize_TCB);
@@ -106,19 +104,17 @@ package System.Task_Primitives.Operations is
 
    procedure Finalize_TCB (T : ST.Task_Id);
    pragma Inline (Finalize_TCB);
-   --  Finalizes Private_Data of ATCB, and then deallocates it.
-   --  This is also responsible for recovering any storage or other resources
-   --  that were allocated by Create_Task (the one in this package).
-   --  This should only be called from Free_Task.
-   --  After it is called there should be no further
+   --  Finalizes Private_Data of ATCB, and then deallocates it. This is also
+   --  responsible for recovering any storage or other resources that were
+   --  allocated by Create_Task (the one in this package). This should only be
+   --  called from Free_Task. After it is called there should be no further
    --  reference to the ATCB that corresponds to T.
 
    procedure Abort_Task (T : ST.Task_Id);
    pragma Inline (Abort_Task);
-   --  Abort the task specified by T (the target task). This causes
-   --  the target task to asynchronously raise Abort_Signal if
-   --  abort is not deferred, or if it is blocked on an interruptible
-   --  system call.
+   --  Abort the task specified by T (the target task). This causes the target
+   --  task to asynchronously raise Abort_Signal if abort is not deferred, or
+   --  if it is blocked on an interruptible system call.
    --
    --  precondition:
    --    the calling task is holding T's lock and has abort deferred
@@ -130,7 +126,7 @@ package System.Task_Primitives.Operations is
 
    function Self return ST.Task_Id;
    pragma Inline (Self);
-   --  Return a pointer to the Ada Task Control Block of the calling task.
+   --  Return a pointer to the Ada Task Control Block of the calling task
 
    type Lock_Level is
      (PO_Level,
@@ -138,27 +134,27 @@ package System.Task_Primitives.Operations is
       RTS_Lock_Level,
       ATCB_Level);
    --  Type used to describe kind of lock for second form of Initialize_Lock
-   --  call specified below.
-   --  See locking rules in System.Tasking (spec) for more details.
+   --  call specified below. See locking rules in System.Tasking (spec) for
+   --  more details.
 
    procedure Initialize_Lock (Prio : System.Any_Priority; L : access Lock);
    procedure Initialize_Lock (L : access RTS_Lock; Level : Lock_Level);
    pragma Inline (Initialize_Lock);
    --  Initialize a lock object.
    --
-   --  For Lock, Prio is the ceiling priority associated with the lock.
-   --  For RTS_Lock, the ceiling is implicitly Priority'Last.
+   --  For Lock, Prio is the ceiling priority associated with the lock. For
+   --  RTS_Lock, the ceiling is implicitly Priority'Last.
    --
    --  If the underlying system does not support priority ceiling
    --  locking, the Prio parameter is ignored.
    --
-   --  The effect of either initialize operation is undefined unless L
-   --  is a lock object that has not been initialized, or which has been
-   --  finalized since it was last initialized.
+   --  The effect of either initialize operation is undefined unless is a lock
+   --  object that has not been initialized, or which has been finalized since
+   --  it was last initialized.
    --
-   --  The effects of the other operations on lock objects
-   --  are undefined unless the lock object has been initialized
-   --  and has not since been finalized.
+   --  The effects of the other operations on lock objects are undefined
+   --  unless the lock object has been initialized and has not since been
+   --  finalized.
    --
    --  Initialization of the per-task lock is implicit in Create_Task.
    --
@@ -230,89 +226,82 @@ package System.Task_Primitives.Operations is
    --  read or write permission. (That is, matching pairs of Lock and Unlock
    --  operations on each lock object must be properly nested.)
 
-   --  For the operation on RTS_Lock, Global_Lock should be set to True
-   --  if L is a global lock (Single_RTS_Lock, Global_Task_Lock).
+   --  For the operation on RTS_Lock, Global_Lock should be set to True if L
+   --  is a global lock (Single_RTS_Lock, Global_Task_Lock).
    --
    --  Note that Write_Lock for RTS_Lock does not have an out-parameter.
-   --  RTS_Locks are used in situations where we have not made provision
-   --  for recovery from ceiling violations. We do not expect them to
-   --  occur inside the runtime system, because all RTS locks have ceiling
-   --  Priority'Last.
+   --  RTS_Locks are used in situations where we have not made provision for
+   --  recovery from ceiling violations. We do not expect them to occur inside
+   --  the runtime system, because all RTS locks have ceiling Priority'Last.
 
-   --  There is one way there can be a ceiling violation.
-   --  That is if the runtime system is called from a task that is
-   --  executing in the Interrupt_Priority range.
+   --  There is one way there can be a ceiling violation. That is if the
+   --  runtime system is called from a task that is executing in the
+   --  Interrupt_Priority range.
 
-   --  It is not clear what to do about ceiling violations due
-   --  to RTS calls done at interrupt priority. In general, it
-   --  is not acceptable to give all RTS locks interrupt priority,
-   --  since that whould give terrible performance on systems where
-   --  this has the effect of masking hardware interrupts, though we
-   --  could get away with allowing Interrupt_Priority'last where we
-   --  are layered on an OS that does not allow us to mask interrupts.
-   --  Ideally, we would like to raise Program_Error back at the
-   --  original point of the RTS call, but this would require a lot of
-   --  detailed analysis and recoding, with almost certain performance
-   --  penalties.
+   --  It is not clear what to do about ceiling violations due to RTS calls
+   --  done at interrupt priority. In general, it is not acceptable to give
+   --  all RTS locks interrupt priority, since that whould give terrible
+   --  performance on systems where this has the effect of masking hardware
+   --  interrupts, though we could get away with allowing
+   --  Interrupt_Priority'last where we are layered on an OS that does not
+   --  allow us to mask interrupts. Ideally, we would like to raise
+   --  Program_Error back at the original point of the RTS call, but this
+   --  would require a lot of detailed analysis and recoding, with almost
+   --  certain performance penalties.
 
-   --  For POSIX systems, we considered just skipping setting a
-   --  priority ceiling on RTS locks. This would mean there is no
-   --  ceiling violation, but we would end up with priority inversions
-   --  inside the runtime system, resulting in failure to satisfy the
-   --  Ada priority rules, and possible missed validation tests.
-   --  This could be compensated-for by explicit priority-change calls
-   --  to raise the caller to Priority'Last whenever it first enters
-   --  the runtime system, but the expected overhead seems high, though
-   --  it might be lower than using locks with ceilings if the underlying
-   --  implementation of ceiling locks is an inefficient one.
+   --  For POSIX systems, we considered just skipping setting priority ceiling
+   --  on RTS locks. This would mean there is no ceiling violation, but we
+   --  would end up with priority inversions inside the runtime system,
+   --  resulting in failure to satisfy the Ada priority rules, and possible
+   --  missed validation tests. This could be compensated-for by explicit
+   --  priority-change calls to raise the caller to Priority'Last whenever it
+   --  first enters the runtime system, but the expected overhead seems high,
+   --  though it might be lower than using locks with ceilings if the
+   --  underlying implementation of ceiling locks is an inefficient one.
 
-   --  This issue should be reconsidered whenever we get around to
-   --  checking for calls to potentially blocking operations from
-   --  within protected operations. If we check for such calls and
-   --  catch them on entry to the OS, it may be that we can eliminate
-   --  the possibility of ceiling violations inside the RTS. For this
-   --  to work, we would have to forbid explicitly setting the priority
-   --  of a task to anything in the Interrupt_Priority range, at least.
-   --  We would also have to check that there are no RTS-lock operations
-   --  done inside any operations that are not treated as potentially
-   --  blocking.
+   --  This issue should be reconsidered whenever we get around to checking
+   --  for calls to potentially blocking operations from within protected
+   --  operations. If we check for such calls and catch them on entry to the
+   --  OS, it may be that we can eliminate the possibility of ceiling
+   --  violations inside the RTS. For this to work, we would have to forbid
+   --  explicitly setting the priority of a task to anything in the
+   --  Interrupt_Priority range, at least. We would also have to check that
+   --  there are no RTS-lock operations done inside any operations that are
+   --  not treated as potentially blocking.
 
-   --  The latter approach seems to be the best, i.e. to check on entry
-   --  to RTS calls that may need to use locks that the priority is not
-   --  in the interrupt range. If there are RTS operations that NEED to
-   --  be called from interrupt handlers, those few RTS locks should then
-   --  be converted to PO-type locks, with ceiling Interrupt_Priority'Last.
+   --  The latter approach seems to be the best, i.e. to check on entry to RTS
+   --  calls that may need to use locks that the priority is not in the
+   --  interrupt range. If there are RTS operations that NEED to be called
+   --  from interrupt handlers, those few RTS locks should then be converted
+   --  to PO-type locks, with ceiling Interrupt_Priority'Last.
 
-   --  For now, we will just shut down the system if there is a
-   --  ceiling violation.
+   --  For now, we will just shut down the system if there is ceiling violation
 
    procedure Yield (Do_Yield : Boolean := True);
    pragma Inline (Yield);
-   --  Yield the processor. Add the calling task to the tail of the
-   --  ready queue for its active_priority.
-   --  The Do_Yield argument is only used in some very rare cases very
-   --  a yield should have an effect on a specific target and not on regular
-   --  ones.
+   --  Yield the processor. Add the calling task to the tail of the ready
+   --  queue for its active_priority. The Do_Yield argument is only used in
+   --  some very rare cases very a yield should have an effect on a specific
+   --  target and not on regular ones.
 
    procedure Set_Priority
      (T : ST.Task_Id;
       Prio : System.Any_Priority;
       Loss_Of_Inheritance : Boolean := False);
    pragma Inline (Set_Priority);
-   --  Set the priority of the task specified by T to T.Current_Priority.
-   --  The priority set is what would correspond to the Ada concept of
-   --  "base priority" in the terms of the lower layer system, but
-   --  the operation may be used by the upper layer to implement
-   --  changes in "active priority" that are not due to lock effects.
-   --  The effect should be consistent with the Ada Reference Manual.
-   --  In particular, when a task lowers its priority due to the loss of
-   --  inherited priority, it goes at the head of the queue for its new
-   --  priority (RM D.2.2 par 9). Loss_Of_Inheritance helps the underlying
-   --  implementation to do it right when the OS doesn't.
+   --  Set the priority of the task specified by T to T.Current_Priority. The
+   --  priority set is what would correspond to the Ada concept of "base
+   --  priority" in the terms of the lower layer system, but the operation may
+   --  be used by the upper layer to implement changes in "active priority"
+   --  that are not due to lock effects. The effect should be consistent with
+   --  the Ada Reference Manual. In particular, when a task lowers its
+   --  priority due to the loss of inherited priority, it goes at the head of
+   --  the queue for its new priority (RM D.2.2 par 9). Loss_Of_Inheritance
+   --  helps the underlying implementation to do it right when the OS doesn't.
 
    function Get_Priority (T : ST.Task_Id) return System.Any_Priority;
    pragma Inline (Get_Priority);
-   --  Returns the priority last set by Set_Priority for this task.
+   --  Returns the priority last set by Set_Priority for this task
 
    function Monotonic_Clock return Duration;
    pragma Inline (Monotonic_Clock);
@@ -343,17 +332,16 @@ package System.Task_Primitives.Operations is
    --    and has abort deferred
    --
    --  postcondition:
-   --    The calling task is holding its own ATCB lock
-   --    and has abort deferred.
+   --    The calling task is holding its own ATCB lock and has abort deferred.
 
    --  The effect is to atomically unlock T's lock and wait, so that another
    --  task that is able to lock T's lock can be assured that the wait has
    --  actually commenced, and that a Wakeup operation will cause the waiting
-   --  task to become ready for execution once again. When Sleep returns,
-   --  the waiting task will again hold its own ATCB lock. The waiting task
-   --  may become ready for execution at any time (that is, spurious wakeups
-   --  are permitted), but it will definitely become ready for execution when
-   --  a Wakeup operation is performed for the same task.
+   --  task to become ready for execution once again. When Sleep returns, the
+   --  waiting task will again hold its own ATCB lock. The waiting task may
+   --  become ready for execution at any time (that is, spurious wakeups are
+   --  permitted), but it will definitely become ready for execution when a
+   --  Wakeup operation is performed for the same task.
 
    procedure Timed_Sleep
      (Self_ID  : ST.Task_Id;
@@ -399,21 +387,20 @@ package System.Task_Primitives.Operations is
    -- RTS Entrance/Exit --
    -----------------------
 
-   --  Following two routines are used for possible operations needed
-   --  to be setup/cleared upon entrance/exit of RTS while maintaining
-   --  a single thread of control in the RTS. Since we intend these
-   --  routines to be used for implementing the Single_Lock RTS,
-   --  Lock_RTS should follow the first Defer_Abortion operation
-   --  entering RTS. In the same fashion Unlock_RTS should preceed
-   --  the last Undefer_Abortion exiting RTS.
+   --  Following two routines are used for possible operations needed to be
+   --  setup/cleared upon entrance/exit of RTS while maintaining a single
+   --  thread of control in the RTS. Since we intend these routines to be used
+   --  for implementing the Single_Lock RTS, Lock_RTS should follow the first
+   --  Defer_Abortion operation entering RTS. In the same fashion Unlock_RTS
+   --  should preceed the last Undefer_Abortion exiting RTS.
    --
    --  These routines also replace the functions Lock/Unlock_All_Tasks_List
 
    procedure Lock_RTS;
-   --  Take the global RTS lock.
+   --  Take the global RTS lock
 
    procedure Unlock_RTS;
-   --  Release the global RTS lock.
+   --  Release the global RTS lock
 
    --------------------
    -- Stack Checking --
@@ -424,30 +411,29 @@ package System.Task_Primitives.Operations is
    --  an insufficient amount of stack space remains in the current task.
 
    --  The exact mechanism for a stack probe is target dependent. Typical
-   --  possibilities are to use a load from a non-existent page, a store
-   --  to a read-only page, or a comparison with some stack limit constant.
-   --  Where possible we prefer to use a trap on a bad page access, since
-   --  this has less overhead. The generation of stack probes is either
-   --  automatic if the ABI requires it (as on for example DEC Unix), or
-   --  is controlled by the gcc parameter -fstack-check.
+   --  possibilities are to use a load from a non-existent page, a store to a
+   --  read-only page, or a comparison with some stack limit constant. Where
+   --  possible we prefer to use a trap on a bad page access, since this has
+   --  less overhead. The generation of stack probes is either automatic if
+   --  the ABI requires it (as on for example DEC Unix), or is controlled by
+   --  the gcc parameter -fstack-check.
 
-   --  When we are using bad-page accesses, we need a bad page, called a
-   --  guard page, at the end of each task stack. On some systems, this
-   --  is provided automatically, but on other systems, we need to create
-   --  the guard page ourselves, and the procedure Stack_Guard is provided
-   --  for this purpose.
+   --  When we are using bad-page accesses, we need a bad page, called guard
+   --  page, at the end of each task stack. On some systems, this is provided
+   --  automatically, but on other systems, we need to create the guard page
+   --  ourselves, and the procedure Stack_Guard is provided for this purpose.
 
    procedure Stack_Guard (T : ST.Task_Id; On : Boolean);
    --  Ensure guard page is set if one is needed and the underlying thread
    --  system does not provide it. The procedure is as follows:
    --
    --    1. When we create a task adjust its size so a guard page can
-   --       safely be set at the bottom of the stack
+   --       safely be set at the bottom of the stack.
    --
    --    2. When the thread is created (and its stack allocated by the
    --       underlying thread system), get the stack base (and size, depending
-   --       how the stack is growing), and create the guard page taking care of
-   --       page boundaries issues.
+   --       how the stack is growing), and create the guard page taking care
+   --       of page boundaries issues.
    --
    --    3. When the task is destroyed, remove the guard page.
    --
@@ -467,11 +453,11 @@ package System.Task_Primitives.Operations is
 
    function Check_Exit (Self_ID : ST.Task_Id) return Boolean;
    pragma Inline (Check_Exit);
-   --  Check that the current task is holding only Global_Task_Lock.
+   --  Check that the current task is holding only Global_Task_Lock
 
    function Check_No_Locks (Self_ID : ST.Task_Id) return Boolean;
    pragma Inline (Check_No_Locks);
-   --  Check that current task is holding no locks.
+   --  Check that current task is holding no locks
 
    function Suspend_Task
      (T           : ST.Task_Id;

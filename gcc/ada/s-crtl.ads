@@ -139,6 +139,12 @@ pragma Preelaborate (CRTL);
    function opendir (file_name : String) return DIRs;
    pragma Import (C, opendir, "opendir");
 
+   function pclose (stream : System.Address) return int;
+   pragma Import (C, pclose, "pclose");
+
+   function popen (command, mode : System.Address) return System.Address;
+   pragma Import (C, popen, "popen");
+
    function read (fd : int; buffer : chars; nbytes : int) return int;
    pragma Import (C, read, "read");
 

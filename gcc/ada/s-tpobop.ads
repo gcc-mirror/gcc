@@ -2,12 +2,11 @@
 --                                                                          --
 --                GNU ADA RUN-TIME LIBRARY (GNARL) COMPONENTS               --
 --                                                                          --
---    S Y S T E M . T A S K I N G . P R O T E C T E D _ O B J E C T S .     --
---                            O P E R A T I O N S                           --
+--                SYSTEM.TASKING.PROTECTED_OBJECTS.OPERATIONS               --
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,19 +31,20 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains all the extended primitives related to
---  Protected_Objects with entries.
+--  This package contains all the extended primitives related to protected
+--  objects with entries.
+
 --  The handling of protected objects with no entries is done in
 --  System.Tasking.Protected_Objects, the simple routines for protected
---  objects with entries in System.Tasking.Protected_Objects.Entries.
---  The split between Entries and Operations is needed to break circular
+--  objects with entries in System.Tasking.Protected_Objects.Entries. The
+--  split between Entries and Operations is needed to break circular
 --  dependencies inside the run time.
 
 --  Note: the compiler generates direct calls to this interface, via Rtsfind.
 --  Any changes to this interface may require corresponding compiler changes.
 
 with Ada.Exceptions;
---  used for Exception_Id
+--  Used for Exception_Id
 
 with System.Tasking.Protected_Objects.Entries;
 
@@ -108,7 +108,7 @@ package System.Tasking.Protected_Objects.Operations is
    --  barriers, so this routine keeps checking barriers until all of
    --  them are closed.
    --
-   --  This must be called with abortion deferred and with the corresponding
+   --  This must be called with abort deferred and with the corresponding
    --  object locked.
    --
    --  If Unlock_Object is set True, then Object is unlocked on return,
@@ -173,7 +173,7 @@ package System.Tasking.Protected_Objects.Operations is
      (Object : Entries.Protection_Entries'Class;
       E      : Protected_Entry_Index)
       return   Natural;
-   --  Return the number of entry calls to E on Object.
+   --  Return the number of entry calls to E on Object
 
    function Protected_Entry_Caller
      (Object : Entries.Protection_Entries'Class) return Task_Id;
@@ -181,7 +181,7 @@ package System.Tasking.Protected_Objects.Operations is
    --  being handled. This will only work if called from within an entry
    --  body, as required by the LRM (C.7.1(14)).
 
-   --  For internal use only:
+   --  For internal use only
 
    procedure PO_Do_Or_Queue
      (Self_ID    : Task_Id;
@@ -189,7 +189,7 @@ package System.Tasking.Protected_Objects.Operations is
       Entry_Call : Entry_Call_Link;
       With_Abort : Boolean);
    --  This procedure either executes or queues an entry call, depending
-   --  on the status of the corresponding barrier. It assumes that abortion
+   --  on the status of the corresponding barrier. It assumes that abort
    --  is deferred and that the specified object is locked.
 
 private
@@ -201,10 +201,9 @@ private
    pragma Volatile (Communication_Block);
 
    --  ?????
-   --  The Communication_Block seems to be a relic.
-   --  At the moment, the compiler seems to be generating
-   --  unnecessary conditional code based on this block.
-   --  See the code generated for async. select with task entry
+   --  The Communication_Block seems to be a relic. At the moment, the
+   --  compiler seems to be generating unnecessary conditional code based on
+   --  this block. See the code generated for async. select with task entry
    --  call for another way of solving this.
 
 end System.Tasking.Protected_Objects.Operations;

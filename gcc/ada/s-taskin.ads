@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,7 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package provides necessary type definitions for compiler interface.
+--  This package provides necessary type definitions for compiler interface
 
 --  Note: the compiler generates direct calls to this interface, via Rtsfind.
 --  Any changes to this interface may require corresponding compiler changes.
@@ -62,13 +62,12 @@ package System.Tasking is
    --  The following rules must be followed at all times, to prevent
    --  deadlock and generally ensure correct operation of locking.
 
-   --  . Never lock a lock unless abort is deferred.
+   --  Never lock a lock unless abort is deferred
 
-   --  . Never undefer abort while holding a lock.
+   --  Never undefer abort while holding a lock
 
-   --  . Overlapping critical sections must be properly nested,
-   --    and locks must be released in LIFO order.
-   --    e.g., the following is not allowed:
+   --  Overlapping critical sections must be properly nested, and locks must
+   --  be released in LIFO order. e.g., the following is not allowed:
 
    --         Lock (X);
    --         ...
@@ -80,7 +79,6 @@ package System.Tasking is
 
    --  Locks with lower (smaller) level number cannot be locked
    --  while holding a lock with a higher level number. (The level
-   --  number is the number at the left.)
 
    --  1. System.Tasking.PO_Simple.Protection.L (any PO lock)
    --  2. System.Tasking.Initialization.Global_Task_Lock (in body)
@@ -94,13 +92,13 @@ package System.Tasking is
    --  clearly wrong since there can be calls to "new" inside protected
    --  operations. The new ordering prevents these failures.
 
-   --  Sometimes we need to hold two ATCB locks at the same time. To allow
-   --  us to order the locking, each ATCB is given a unique serial
-   --  number. If one needs to hold locks on several ATCBs at once,
-   --  the locks with lower serial numbers must be locked first.
+   --  Sometimes we need to hold two ATCB locks at the same time. To allow us
+   --  to order the locking, each ATCB is given a unique serial number. If one
+   --  needs to hold locks on several ATCBs at once, the locks with lower
+   --  serial numbers must be locked first.
 
-   --  We don't always need to check the serial numbers, since
-   --  the serial numbers are assigned sequentially, and so:
+   --  We don't always need to check the serial numbers, since the serial
+   --  numbers are assigned sequentially, and so:
 
    --  . The parent of a task always has a lower serial number.
    --  . The activator of a task always has a lower serial number.
@@ -157,13 +155,13 @@ package System.Tasking is
       --  alternatives have been awakened and have terminated themselves.
 
       Activator_Sleep,
-      --  Task is waiting for created tasks to complete activation.
+      --  Task is waiting for created tasks to complete activation
 
       Acceptor_Sleep,
-      --  Task is waiting on an accept or selective wait statement.
+      --  Task is waiting on an accept or selective wait statement
 
       Entry_Caller_Sleep,
-      --  Task is waiting on an entry call.
+      --  Task is waiting on an entry call
 
       Async_Select_Sleep,
       --  Task is waiting to start the abortable part of an
@@ -309,20 +307,20 @@ package System.Tasking is
       State : Entry_Call_State;
       pragma Atomic (State);
       --  Indicates part of the state of the call.
-      --  Protection:
-      --  If the call is not on a queue, it should
-      --  only be accessed by Self, and Self does not need any
-      --  lock to modify this field.
-      --  Once the call is on a queue, the value should be
-      --  something other than Done unless it is cancelled, and access is
-      --  controller by the "server" of the queue -- i.e., the lock
-      --  of Checked_To_Protection (Call_Target)
-      --  if the call record is on the queue of a PO, or the lock
-      --  of Called_Target if the call is on the queue of a task.
-      --  See comments on type declaration for more details.
+      --
+      --  Protection: If the call is not on a queue, it should only be
+      --  accessed by Self, and Self does not need any lock to modify this
+      --  field.
+      --
+      --  Once the call is on a queue, the value should be something other
+      --  than Done unless it is cancelled, and access is controller by the
+      --  "server" of the queue -- i.e., the lock of Checked_To_Protection
+      --  (Call_Target) if the call record is on the queue of a PO, or the
+      --  lock of Called_Target if the call is on the queue of a task. See
+      --  comments on type declaration for more details.
 
       Uninterpreted_Data : System.Address;
-      --  Data passed by the compiler.
+      --  Data passed by the compiler
 
       Exception_To_Raise : Ada.Exceptions.Exception_Id;
       --  The exception to raise once this call has been completed without
@@ -351,7 +349,7 @@ package System.Tasking is
    -- Ada_Task_Control_Block (ATCB) definition --
    ----------------------------------------------
 
-   --  Notes on protection (synchronization) of TRTS data structures.
+   --  Notes on protection (synchronization) of TRTS data structures
 
    --  Any field of the TCB can be written by the activator of a task when the
    --  task is created, since no other task can access the new task's
@@ -360,7 +358,7 @@ package System.Tasking is
    --  The protection for each field is described in a comment starting with
    --  "Protection:".
 
-   --  When a lock is used to protect an ATCB field, this lock is simply named.
+   --  When a lock is used to protect an ATCB field, this lock is simply named
 
    --  Some protection is described in terms of tasks related to the
    --  ATCB being protected. These are:
@@ -390,7 +388,8 @@ package System.Tasking is
       --  Encodes some basic information about the state of a task,
       --  including whether it has been activated, whether it is sleeping,
       --  and whether it is terminated.
-      --  Protection: Self.L.
+      --
+      --  Protection: Self.L
 
       Parent : Task_Id;
       --  The task on which this task depends.
@@ -399,7 +398,8 @@ package System.Tasking is
       Base_Priority : System.Any_Priority;
       --  Base priority, not changed during entry calls, only changed
       --  via dynamic priorities package.
-      --  Protection: Only written by Self, accessed by anyone.
+      --
+      --  Protection: Only written by Self, accessed by anyone
 
       Current_Priority : System.Any_Priority;
       --  Active priority, except that the effects of protected object
@@ -428,96 +428,104 @@ package System.Tasking is
 
       Protected_Action_Nesting : Natural;
       pragma Atomic (Protected_Action_Nesting);
-      --  The dynamic level of protected action nesting for this task.
-      --  This field is needed for checking whether potentially
-      --  blocking operations are invoked from protected actions.
-      --  pragma Atomic is used because it can be read/written from
-      --  protected interrupt handlers.
+      --  The dynamic level of protected action nesting for this task. This
+      --  field is needed for checking whether potentially blocking operations
+      --  are invoked from protected actions. pragma Atomic is used because it
+      --  can be read/written from protected interrupt handlers.
 
       Task_Image : String (1 .. 32);
       --  Hold a string that provides a readable id for task,
       --  built from the variable of which it is a value or component.
 
       Task_Image_Len : Natural;
-      --  Actual length of Task_Image.
+      --  Actual length of Task_Image
 
       Call : Entry_Call_Link;
       --  The entry call that has been accepted by this task.
-      --  Protection: Self.L. Self will modify this field
-      --  when Self.Accepting is False, and will not need the mutex to do so.
-      --  Once a task sets Pending_ATC_Level = 0, no other task can access
-      --  this field.
+      --
+      --  Protection: Self.L. Self will modify this field when Self.Accepting
+      --  is False, and will not need the mutex to do so. Once a task sets
+      --  Pending_ATC_Level = 0, no other task can access this field.
 
       LL : aliased Task_Primitives.Private_Data;
-      --  Control block used by the underlying low-level tasking
-      --  service (GNULLI).
+      --  Control block used by the underlying low-level tasking service
+      --  (GNULLI).
+      --
       --  Protection: This is used only by the GNULLI implementation, which
       --  takes care of all of its synchronization.
 
       Task_Arg : System.Address;
       --  The argument to task procedure. Provide a handle for discriminant
-      --  information.
-      --  Protection: Part of the synchronization between Self and
-      --  Activator. Activator writes it, once, before Self starts
-      --  executing. Thereafter, Self only reads it.
+      --  information
+      --
+      --  Protection: Part of the synchronization between Self and Activator.
+      --  Activator writes it, once, before Self starts executing. Thereafter,
+      --  Self only reads it.
 
       Task_Entry_Point : Task_Procedure_Access;
       --  Information needed to call the procedure containing the code for
       --  the body of this task.
-      --  Protection: Part of the synchronization between Self and
-      --  Activator. Activator writes it, once, before Self starts
-      --  executing. Self reads it, once, as part of its execution.
+      --
+      --  Protection: Part of the synchronization between Self and Activator.
+      --  Activator writes it, once, before Self starts executing. Self reads
+      --  it, once, as part of its execution.
 
       Compiler_Data : System.Soft_Links.TSD;
-      --  Task-specific data needed by the compiler to store
-      --  per-task structures.
-      --  Protection: Only accessed by Self.
+      --  Task-specific data needed by the compiler to store per-task
+      --  structures.
+      --
+      --  Protection: Only accessed by Self
 
       All_Tasks_Link : Task_Id;
-      --  Used to link this task to the list of all tasks in the system.
-      --  Protection: RTS_Lock.
+      --  Used to link this task to the list of all tasks in the system
+      --
+      --  Protection: RTS_Lock
 
       Activation_Link : Task_Id;
-      --  Used to link this task to a list of tasks to be activated.
-      --  Protection: Only used by Activator.
+      --  Used to link this task to a list of tasks to be activated
+      --
+      --  Protection: Only used by Activator
 
       Activator : Task_Id;
       --  The task that created this task, either by declaring it as a task
-      --  object or by executing a task allocator.
-      --  The value is null iff Self has completed activation.
-      --  Protection: Set by Activator before Self is activated, and
-      --  only read and modified by Self after that.
+      --  object or by executing a task allocator. The value is null iff Self
+      --  has completed activation.
+      --
+      --  Protection: Set by Activator before Self is activated, and only read
+      --  and modified by Self after that.
 
       Wait_Count : Integer;
-      --  This count is used by a task that is waiting for other tasks.
-      --  At all other times, the value should be zero.
-      --  It is used differently in several different states.
-      --  Since a task cannot be in more than one of these states at the
-      --  same time, a single counter suffices.
-      --  Protection: Self.L.
+      --  This count is used by a task that is waiting for other tasks. At all
+      --  other times, the value should be zero. It is used differently in
+      --  several different states. Since a task cannot be in more than one of
+      --  these states at the same time, a single counter suffices.
+      --
+      --  Protection: Self.L
 
       --  Activator_Sleep
 
       --  This is the number of tasks that this task is activating, i.e. the
       --  children that have started activation but have not completed it.
-      --  Protection: Self.L and Created.L. Both mutexes must be locked,
-      --  since Self.Activation_Count and Created.State must be synchronized.
+      --
+      --  Protection: Self.L and Created.L. Both mutexes must be locked, since
+      --  Self.Activation_Count and Created.State must be synchronized.
 
       --  Master_Completion_Sleep (phase 1)
 
-      --  This is the number dependent tasks of a master being
-      --  completed by Self that are not activated, not terminated, and
-      --  not waiting on a terminate alternative.
+      --  This is the number dependent tasks of a master being completed by
+      --  Self that are not activated, not terminated, and not waiting on a
+      --  terminate alternative.
 
       --  Master_Completion_2_Sleep (phase 2)
 
-      --  This is the count of tasks dependent on a master being
-      --  completed by Self which are waiting on a terminate alternative.
+      --  This is the count of tasks dependent on a master being completed by
+      --  Self which are waiting on a terminate alternative.
 
       Elaborated : Access_Boolean;
       --  Pointer to a flag indicating that this task's body has been
       --  elaborated. The flag is created and managed by the
       --  compiler-generated code.
+      --
       --  Protection: The field itself is only accessed by Activator. The flag
       --  that it points to is updated by Master and read by Activator; access
       --  is assumed to be atomic.
@@ -539,6 +547,7 @@ package System.Tasking is
    --  restricted GNULL implementations to allocate an ATCB (see
    --  System.Task_Primitives.Operations.New_ATCB) that will take
    --  significantly less memory.
+
    --  Note that the restricted GNARLI should only access fields that are
    --  present in the Restricted_Ada_Task_Control_Block structure.
 
@@ -564,7 +573,7 @@ package System.Tasking is
    -----------------------
 
    All_Tasks_List : Task_Id;
-   --  Global linked list of all tasks.
+   --  Global linked list of all tasks
 
    ------------------------------------------
    -- Regular (non restricted) definitions --
@@ -577,13 +586,13 @@ package System.Tasking is
    subtype Master_Level is Integer;
    subtype Master_ID is Master_Level;
 
-   --  Normally, a task starts out with internal master nesting level
-   --  one larger than external master nesting level. It is incremented
-   --  to one by Enter_Master, which is called in the task body only if
-   --  the compiler thinks the task may have dependent tasks. It is set to 1
-   --  for the environment task, the level 2 is reserved for server tasks of
-   --  the run-time system (the so called "independent tasks"), and the level
-   --  3 is for the library level tasks.
+   --  Normally, a task starts out with internal master nesting level one
+   --  larger than external master nesting level. It is incremented to one by
+   --  Enter_Master, which is called in the task body only if the compiler
+   --  thinks the task may have dependent tasks. It is set to for the
+   --  environment task, the level 2 is reserved for server tasks of the
+   --  run-time system (the so called "independent tasks"), and the level 3 is
+   --  for the library level tasks.
 
    Environment_Task_Level : constant Master_Level := 1;
    Independent_Task_Level : constant Master_Level := 2;
@@ -596,7 +605,7 @@ package System.Tasking is
    Unspecified_Priority : constant Integer := System.Priority'First - 1;
 
    Priority_Not_Boosted : constant Integer := System.Priority'First - 1;
-   --  Definition of Priority actually has to come from the RTS configuration.
+   --  Definition of Priority actually has to come from the RTS configuration
 
    subtype Rendezvous_Priority is Integer
      range Priority_Not_Boosted .. System.Any_Priority'Last;
@@ -652,21 +661,19 @@ package System.Tasking is
 
       State : Entry_Call_State;
       pragma Atomic (State);
-      --  Indicates part of the state of the call.
-      --  Protection:
-      --  If the call is not on a queue, it should
-      --  only be accessed by Self, and Self does not need any
-      --  lock to modify this field.
-      --  Once the call is on a queue, the value should be
-      --  something other than Done unless it is cancelled, and access is
-      --  controller by the "server" of the queue -- i.e., the lock
-      --  of Checked_To_Protection (Call_Target)
-      --  if the call record is on the queue of a PO, or the lock
-      --  of Called_Target if the call is on the queue of a task.
-      --  See comments on type declaration for more details.
+      --  Indicates part of the state of the call
+      --
+      --  Protection: If the call is not on a queue, it should only be
+      --  accessed by Self, and Self does not need any lock to modify this
+      --  field. Once the call is on a queue, the value should be something
+      --  other than Done unless it is cancelled, and access is controller by
+      --  the "server" of the queue -- i.e., the lock of Checked_To_Protection
+      --  (Call_Target) if the call record is on the queue of a PO, or the
+      --  lock of Called_Target if the call is on the queue of a task. See
+      --  comments on type declaration for more details.
 
       Uninterpreted_Data : System.Address;
-      --  Data passed by the compiler.
+      --  Data passed by the compiler
 
       Exception_To_Raise : Ada.Exceptions.Exception_Id;
       --  The exception to raise once this call has been completed without
@@ -693,42 +700,39 @@ package System.Tasking is
 
       Called_Task : Task_Id;
       pragma Atomic (Called_Task);
-      --  Use for task entry calls.
-      --  The value is null if the call record is not in use.
-      --  Conversely, unless State is Done and Onqueue is false,
+      --  Use for task entry calls. The value is null if the call record is
+      --  not in use. Conversely, unless State is Done and Onqueue is false,
       --  Called_Task points to an ATCB.
-      --  Protection:  Called_Task.L.
+      --
+      --  Protection:  Called_Task.L
 
       Called_PO : System.Address;
       pragma Atomic (Called_PO);
-      --  Similar to Called_Task but for protected objects.
+      --  Similar to Called_Task but for protected objects
+      --
       --  Note that the previous implementation tried to merge both
       --  Called_Task and Called_PO but this ended up in many unexpected
       --  complications (e.g having to add a magic number in the ATCB, which
-      --  caused gdb lots of confusion) with no real gain since the Lock_Server
-      --  implementation still need to loop around chasing for pointer changes
-      --  even with a single pointer.
+      --  caused gdb lots of confusion) with no real gain since the
+      --  Lock_Server implementation still need to loop around chasing for
+      --  pointer changes even with a single pointer.
 
       Acceptor_Prev_Call : Entry_Call_Link;
-      --  For task entry calls only.
+      --  For task entry calls only
 
       Acceptor_Prev_Priority : Rendezvous_Priority := Priority_Not_Boosted;
-      --  For task entry calls only.
-      --  The priority of the most recent prior call being serviced.
-      --  For protected entry calls, this function should be performed by
-      --  GNULLI ceiling locking.
+      --  For task entry calls only. The priority of the most recent prior
+      --  call being serviced. For protected entry calls, this function should
+      --  be performed by GNULLI ceiling locking.
 
       Cancellation_Attempted : Boolean := False;
       pragma Atomic (Cancellation_Attempted);
       --  Cancellation of the call has been attempted.
-      --  If it has succeeded, State = Cancelled.
-      --  ?????
-      --  Consider merging this into State?
+      --  Consider merging this into State???
 
       Requeue_With_Abort : Boolean := False;
       --  Temporary to tell caller whether requeue is with abort.
-      --  ?????
-      --  Find a better way of doing this.
+      --  Find a better way of doing this ???
 
       Needs_Requeue : Boolean := False;
       --  Temporary to tell acceptor of task entry call that
@@ -756,10 +760,10 @@ package System.Tasking is
 
    type Direct_Index is range 0 .. Parameters.Default_Attribute_Count;
    subtype Direct_Index_Range is Direct_Index range 1 .. Direct_Index'Last;
-   --  Attributes with indices in this range are stored directly in
-   --  the task control block. Such attributes must be Address-sized.
-   --  Other attributes will be held in dynamically allocated records
-   --  chained off of the task control block.
+   --  Attributes with indices in this range are stored directly in the task
+   --  control block. Such attributes must be Address-sized. Other attributes
+   --  will be held in dynamically allocated records chained off of the task
+   --  control block.
 
    type Direct_Attribute_Element is mod Memory_Size;
    pragma Atomic (Direct_Attribute_Element);
@@ -772,86 +776,95 @@ package System.Tasking is
    --  the usage of the direct attribute fields.
 
    type Task_Serial_Number is mod 2 ** 64;
-   --  Used to give each task a unique serial number.
+   --  Used to give each task a unique serial number
 
    type Ada_Task_Control_Block (Entry_Num : Task_Entry_Index) is record
       Common : Common_ATCB;
       --  The common part between various tasking implementations
 
       Entry_Calls : Entry_Call_Array;
-      --  An array of entry calls.
+      --  An array of entry calls
+      --
       --  Protection: The elements of this array are on entry call queues
       --  associated with protected objects or task entries, and are protected
       --  by the protected object lock or Acceptor.L, respectively.
 
       New_Base_Priority : System.Any_Priority;
-      --  New value for Base_Priority (for dynamic priorities package).
-      --  Protection: Self.L.
+      --  New value for Base_Priority (for dynamic priorities package)
+      --
+      --  Protection: Self.L
 
       Global_Task_Lock_Nesting : Natural := 0;
       --  This is the current nesting level of calls to
-      --  System.Tasking.Stages.Lock_Task_T.
-      --  This allows a task to call Lock_Task_T multiple times without
-      --  deadlocking. A task only locks All_Task_Lock when its
-      --  All_Tasks_Nesting goes from 0 to 1, and only unlocked when it
-      --  goes from 1 to 0.
-      --  Protection: Only accessed by Self.
+      --  System.Tasking.Stages.Lock_Task_T. This allows a task to call
+      --  Lock_Task_T multiple times without deadlocking. A task only locks
+      --  All_Task_Lock when its All_Tasks_Nesting goes from 0 to 1, and only
+      --  unlocked when it goes from 1 to 0.
+      --
+      --  Protection: Only accessed by Self
 
       Open_Accepts : Accept_List_Access;
       --  This points to the Open_Accepts array of accept alternatives passed
-      --  to the RTS by the compiler-generated code to Selective_Wait.
-      --  It is non-null iff this task is ready to accept an entry call.
-      --  Protection: Self.L.
+      --  to the RTS by the compiler-generated code to Selective_Wait. It is
+      --  non-null iff this task is ready to accept an entry call.
+      --
+      --  Protection: Self.L
 
       Chosen_Index : Select_Index;
       --  The index in Open_Accepts of the entry call accepted by a selective
       --  wait executed by this task.
-      --  Protection: Written by both Self and Caller. Usually protected
-      --  by Self.L. However, once the selection is known to have been
-      --  written it can be accessed without protection. This happens
-      --  after Self has updated it itself using information from a suspended
-      --  Caller, or after Caller has updated it and awakened Self.
+      --
+      --  Protection: Written by both Self and Caller. Usually protected by
+      --  Self.L. However, once the selection is known to have been written it
+      --  can be accessed without protection. This happens after Self has
+      --  updated it itself using information from a suspended Caller, or
+      --  after Caller has updated it and awakened Self.
 
       Master_of_Task : Master_Level;
       --  The task executing the master of this task, and the ID of this task's
       --  master (unique only among masters currently active within Parent).
-      --  Protection: Set by Activator before Self is activated, and
-      --  read after Self is activated.
+      --
+      --  Protection: Set by Activator before Self is activated, and read
+      --  after Self is activated.
 
       Master_Within : Master_Level;
       --  The ID of the master currently executing within this task; that is,
       --  the most deeply nested currently active master.
+      --
       --  Protection: Only written by Self, and only read by Self or by
-      --  dependents when Self is attempting to exit a master. Since Self
-      --  will not write this field until the master is complete, the
+      --  dependents when Self is attempting to exit a master. Since Self will
+      --  not write this field until the master is complete, the
       --  synchronization should be adequate to prevent races.
 
       Alive_Count : Integer := 0;
       --  Number of tasks directly dependent on this task (including itself)
       --  that are still "alive", i.e. not terminated.
-      --  Protection: Self.L.
+      --
+      --  Protection: Self.L
 
       Awake_Count : Integer := 0;
       --  Number of tasks directly dependent on this task (including itself)
       --  still "awake", i.e., are not terminated and not waiting on a
       --  terminate alternative.
+      --
       --  Invariant: Awake_Count <= Alive_Count
-      --  Protection: Self.L.
 
-      --  beginning of flags
+      --  Protection: Self.L
+
+      --  Beginning of flags
 
       Aborting : Boolean := False;
       pragma Atomic (Aborting);
       --  Self is in the process of aborting. While set, prevents multiple
-      --  abortion signals from being sent by different aborter while abortion
+      --  abort signals from being sent by different aborter while abort
       --  is acted upon. This is essential since an aborter which calls
       --  Abort_To_Level could set the Pending_ATC_Level to yet a lower level
       --  (than the current level), may be preempted and would send the
-      --  abortion signal when resuming execution. At this point, the abortee
-      --  may have completed abortion to the proper level such that the
-      --  signal (and resulting abortion exception) are not handled any more.
+      --  abort signal when resuming execution. At this point, the abortee
+      --  may have completed abort to the proper level such that the
+      --  signal (and resulting abort exception) are not handled any more.
       --  In other words, the flag prevents a race between multiple aborters
-      --  and the abortee.
+      --
       --  Protection: protected by atomic access.
 
       ATC_Hack : Boolean := False;
@@ -863,17 +876,17 @@ package System.Tasking is
       --  handler itself.
 
       Callable : Boolean := True;
-      --  It is OK to call entries of this task.
+      --  It is OK to call entries of this task
 
       Dependents_Aborted : Boolean := False;
-      --  This is set to True by whichever task takes responsibility
-      --  for aborting the dependents of this task.
-      --  Protection: Self.L.
+      --  This is set to True by whichever task takes responsibility for
+      --  aborting the dependents of this task.
+      --
+      --  Protection: Self.L
 
       Interrupt_Entry : Boolean := False;
-      --  Indicates if one or more Interrupt Entries are attached to
-      --  the task. This flag is needed for cleaning up the Interrupt
-      --  Entry bindings.
+      --  Indicates if one or more Interrupt Entries are attached to the task.
+      --  This flag is needed for cleaning up the Interrupt Entry bindings.
 
       Pending_Action : Boolean := False;
       --  Unified flag indicating some action needs to be take when abort
@@ -884,65 +897,68 @@ package System.Tasking is
       --    (Abortable field may have changed and the Wait_Until_Abortable
       --     has to recheck the abortable status of the call.)
       --  . Exception_To_Raise is non-null
-      --  Protection: Self.L.
-      --  This should never be reset back to False outside of the
-      --  procedure Do_Pending_Action, which is called by Undefer_Abort.
-      --  It should only be set to True by Set_Priority and Abort_To_Level.
+      --
+      --  Protection: Self.L
+      --
+      --  This should never be reset back to False outside of the procedure
+      --  Do_Pending_Action, which is called by Undefer_Abort. It should only
+      --  be set to True by Set_Priority and Abort_To_Level.
 
       Pending_Priority_Change : Boolean := False;
       --  Flag to indicate pending priority change (for dynamic priorities
-      --  package). The base priority is updated on the next abortion
+      --  package). The base priority is updated on the next abort
       --  completion point (aka. synchronization point).
-      --  Protection: Self.L.
+      --
+      --  Protection: Self.L
 
       Terminate_Alternative : Boolean := False;
-      --  Task is accepting Select with Terminate Alternative.
-      --  Protection: Self.L.
+      --  Task is accepting Select with Terminate Alternative
+      --
+      --  Protection: Self.L
 
-      --  end of flags
+      --  End of flags
 
-      --  beginning of counts
+      --  Beginning of counts
 
       ATC_Nesting_Level : ATC_Level := 1;
       --  The dynamic level of ATC nesting (currently executing nested
       --  asynchronous select statements) in this task.
-      --  Protection:  Self_ID.L.
-      --  Only Self reads or updates this field.
+
+      --  Protection: Self_ID.L. Only Self reads or updates this field.
       --  Decrementing it deallocates an Entry_Calls component, and care must
-      --  be taken that all references to that component are eliminated
-      --  before doing the decrement. This in turn will require locking
-      --  a protected object (for a protected entry call) or the Acceptor's
-      --  lock (for a task entry call).
-      --  No other task should attempt to read or modify this value.
+      --  be taken that all references to that component are eliminated before
+      --  doing the decrement. This in turn will require locking a protected
+      --  object (for a protected entry call) or the Acceptor's lock (for a
+      --  task entry call). No other task should attempt to read or modify
+      --  this value.
 
       Deferral_Level : Natural := 1;
       --  This is the number of times that Defer_Abortion has been called by
-      --  this task without a matching Undefer_Abortion call. Abortion is
-      --  only allowed when this zero.
-      --  It is initially 1, to protect the task at startup.
-      --  Protection: Only updated by Self; access assumed to be atomic.
+      --  this task without a matching Undefer_Abortion call. Abortion is only
+      --  allowed when this zero. It is initially 1, to protect the task at
+      --  startup.
+
+      --  Protection: Only updated by Self; access assumed to be atomic
 
       Pending_ATC_Level : ATC_Level_Base := ATC_Level_Infinity;
-      --  The ATC level to which this task is currently being aborted.
-      --  If the value is zero, the entire task has "completed".
-      --  That may be via abort, exception propagation, or normal exit.
-      --  If the value is ATC_Level_Infinity, the task is not being
-      --  aborted to any level.
-      --  If the value is positive, the task has not completed.
-      --  This should ONLY be modified by
-      --  Abort_To_Level and Exit_One_ATC_Level.
-      --  Protection: Self.L.
+      --  The ATC level to which this task is currently being aborted. If the
+      --  value is zero, the entire task has "completed". That may be via
+      --  abort, exception propagation, or normal exit. If the value is
+      --  ATC_Level_Infinity, the task is not being aborted to any level. If
+      --  the value is positive, the task has not completed. This should ONLY
+      --  be modified by Abort_To_Level and Exit_One_ATC_Level.
+      --
+      --  Protection: Self.L
 
       Serial_Number : Task_Serial_Number;
-      --  A growing number to provide some way to check locking
-      --  rules/ordering.
+      --  A growing number to provide some way to check locking  rules/ordering
 
       Known_Tasks_Index : Integer := -1;
-      --  Index in the System.Tasking.Debug.Known_Tasks array.
+      --  Index in the System.Tasking.Debug.Known_Tasks array
 
       User_State : Long_Integer := 0;
-      --  User-writeable location, for use in debugging tasks;
-      --  also provides a simple task specific data.
+      --  User-writeable location, for use in debugging tasks; also provides a
+      --  simple task specific data.
 
       Direct_Attributes : Direct_Attribute_Array;
       --  For task attributes that have same size as Address
@@ -951,11 +967,12 @@ package System.Tasking is
       --  Bit I is 1 iff Direct_Attributes (I) is defined
 
       Indirect_Attributes : Access_Address;
-      --  A pointer to chain of records for other attributes that
-      --  are not address-sized, including all tagged types.
+      --  A pointer to chain of records for other attributes that are not
+      --  address-sized, including all tagged types.
 
       Entry_Queues : Task_Entry_Queue_Array (1 .. Entry_Num);
-      --  An array of task entry queues.
+      --  An array of task entry queues
+      --
       --  Protection: Self.L. Once a task has set Self.Stage to Completing, it
       --  has exclusive access to this field.
    end record;
@@ -975,18 +992,18 @@ package System.Tasking is
       Stack_Size       : System.Parameters.Size_Type;
       T                : Task_Id;
       Success          : out Boolean);
-   --  Initialize fields of a TCB and link into global TCB structures
-   --  Call this only with abort deferred and holding RTS_Lock.
-   --  Need more documentation, mention T, and describe Success ???
+   --  Initialize fields of a TCB and link into global TCB structures Call
+   --  this only with abort deferred and holding RTS_Lock. Need more
+   --  documentation, mention T, and describe Success ???
 
 private
    Null_Task : constant Task_Id := null;
 
    GL_Detect_Blocking : Integer;
    pragma Import (C, GL_Detect_Blocking, "__gl_detect_blocking");
-   --  Global variable exported by the binder generated file. A value
-   --  equal to 1 indicates that pragma Detect_Blocking is active,
-   --  while 0 is used for the pragma not being present.
+   --  Global variable exported by the binder generated file. A value equal to
+   --  1 indicates that pragma Detect_Blocking is active, while 0 is used for
+   --  the pragma not being present.
 
    Detect_Blocking : constant Boolean := GL_Detect_Blocking = 1;
 

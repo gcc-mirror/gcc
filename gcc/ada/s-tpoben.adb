@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2004, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2005, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,39 +31,40 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains all the simple primitives related to
---  Protected_Objects with entries (i.e init, lock, unlock).
+--  This package contains all the simple primitives related to protected
+--  objects with entries (i.e init, lock, unlock).
 
 --  The handling of protected objects with no entries is done in
 --  System.Tasking.Protected_Objects, the complex routines for protected
 --  objects with entries in System.Tasking.Protected_Objects.Operations.
+
 --  The split between Entries and Operations is needed to break circular
 --  dependencies inside the run time.
 
---  Note: the compiler generates direct calls to this interface, via Rtsfind.
+--  Note: the compiler generates direct calls to this interface, via Rtsfind
 
 with Ada.Exceptions;
---  used for Exception_Occurrence_Access
+--  Used for Exception_Occurrence_Access
 --           Raise_Exception
 
 with System.Task_Primitives.Operations;
---  used for Initialize_Lock
+--  Used for Initialize_Lock
 --           Write_Lock
 --           Unlock
 --           Get_Priority
 --           Wakeup
 
 with System.Tasking.Initialization;
---  used for Defer_Abort,
+--  Used for Defer_Abort,
 --           Undefer_Abort,
 --           Change_Base_Priority
 
 pragma Elaborate_All (System.Tasking.Initialization);
---  this insures that tasking is initialized if any protected objects are
+--  This insures that tasking is initialized if any protected objects are
 --  created.
 
 with System.Parameters;
---  used for Single_Lock
+--  Used for Single_Lock
 
 package body System.Tasking.Protected_Objects.Entries is
 
@@ -103,8 +104,9 @@ package body System.Tasking.Protected_Objects.Entries is
       end if;
 
       if Ceiling_Violation then
-         --  Dip our own priority down to ceiling of lock.
-         --  See similar code in Tasking.Entry_Calls.Lock_Server.
+
+         --  Dip our own priority down to ceiling of lock. See similar code in
+         --  Tasking.Entry_Calls.Lock_Server.
 
          STPO.Write_Lock (Self_ID);
          Old_Base_Priority := Self_ID.Common.Base_Priority;
@@ -130,7 +132,7 @@ package body System.Tasking.Protected_Objects.Entries is
          Object.Pending_Action := True;
       end if;
 
-      --  Send program_error to all tasks still queued on this object.
+      --  Send program_error to all tasks still queued on this object
 
       for E in Object.Entry_Queues'Range loop
          Entry_Call := Object.Entry_Queues (E).Head;
@@ -229,10 +231,10 @@ package body System.Tasking.Protected_Objects.Entries is
            (Program_Error'Identity, "Protected Object is finalized");
       end if;
 
-      --  If pragma Detect_Blocking is active then Program_Error must
-      --  be raised if this potentially blocking operation is called from
-      --  a protected action, and the protected object nesting level
-      --  must be increased.
+      --  If pragma Detect_Blocking is active then Program_Error must be
+      --  raised if this potentially blocking operation is called from a
+      --  protected action, and the protected object nesting level must be
+      --  increased.
 
       if Detect_Blocking then
          declare
@@ -242,8 +244,8 @@ package body System.Tasking.Protected_Objects.Entries is
                Ada.Exceptions.Raise_Exception
                  (Program_Error'Identity, "potentially blocking operation");
             else
-               --  We are entering in a protected action, so that we
-               --  increase the protected object nesting level.
+               --  We are entering in a protected action, so that we increase
+               --  the protected object nesting level.
 
                Self_Id.Common.Protected_Action_Nesting :=
                  Self_Id.Common.Protected_Action_Nesting + 1;
@@ -251,15 +253,15 @@ package body System.Tasking.Protected_Objects.Entries is
          end;
       end if;
 
-      --  The lock is made without defering abortion.
+      --  The lock is made without defering abort
 
-      --  Therefore the abortion has to be deferred before calling this
-      --  routine. This means that the compiler has to generate a Defer_Abort
-      --  call before the call to Lock.
+      --  Therefore the abort has to be deferred before calling this routine.
+      --  This means that the compiler has to generate a Defer_Abort call
+      --  before the call to Lock.
 
-      --  The caller is responsible for undeferring abortion, and compiler
+      --  The caller is responsible for undeferring abort, and compiler
       --  generated calls must be protected with cleanup handlers to ensure
-      --  that abortion is undeferred in all cases.
+      --  that abort is undeferred in all cases.
 
       pragma Assert (STPO.Self.Deferral_Level > 0);
       Write_Lock (Object.L'Access, Ceiling_Violation);
@@ -302,8 +304,8 @@ package body System.Tasking.Protected_Objects.Entries is
                Ada.Exceptions.Raise_Exception
                  (Program_Error'Identity, "potentially blocking operation");
             else
-               --  We are entering in a protected action, so that we
-               --  increase the protected object nesting level.
+               --  We are entering in a protected action, so that we increase
+               --  the protected object nesting level.
 
                Self_Id.Common.Protected_Action_Nesting :=
                  Self_Id.Common.Protected_Action_Nesting + 1;

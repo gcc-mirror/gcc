@@ -383,19 +383,22 @@ package body System.Finalization_Implementation is
    procedure Finalize_Global_List is
    begin
       --  There are three case here:
+
       --  a. the application uses tasks, in which case Finalize_Global_Tasks
-      --     will defer abortion
+      --     will defer abort.
+
       --  b. the application doesn't use tasks but uses other tasking
       --     constructs, such as ATCs and protected objects. In this case,
       --     the binder will call Finalize_Global_List instead of
       --     Finalize_Global_Tasks, letting abort undeferred, and leading
       --     to assertion failures in the GNULL
+
       --  c. the application doesn't use any tasking construct in which case
       --     deferring abort isn't necessary.
-      --
+
       --  Until another solution is found to deal with case b, we need to
       --  call abort_defer here to pass the checks, but we do not need to
-      --  undefer abortion, since Finalize_Global_List is the last procedure
+      --  undefer abort, since Finalize_Global_List is the last procedure
       --  called before exiting the partition.
 
       SSL.Abort_Defer.all;

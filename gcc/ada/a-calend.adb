@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -91,15 +91,16 @@ package body Ada.Calendar is
    --  The following constants are used in adjusting Ada dates so that they
    --  fit into a 56 year range that can be handled by Unix (1970 included -
    --  2026 excluded). Dates that are not in this 56 year range are shifted
-   --  by multiples of 56 years to fit in this range
+   --  by multiples of 56 years to fit in this range.
+
    --  The trick is that the number of days in any four year period in the Ada
    --  range of years (1901 - 2099) has a constant number of days. This is
    --  because we have the special case of 2000 which, contrary to the normal
-   --  exception for centuries, is a leap year after all.
-   --  56 has been chosen, because it is not only a multiple of 4, but also
-   --  a multiple of 7. Thus two dates 56 years apart fall on the same day of
-   --  the week, and the Daylight Saving Time change dates are usually the same
-   --  for these two years.
+   --  exception for centuries, is a leap year after all. 56 has been chosen,
+   --  because it is not only a multiple of 4, but also a multiple of 7. Thus
+   --  two dates 56 years apart fall on the same day of the week, and the
+   --  Daylight Saving Time change dates are usually the same for these two
+   --  years.
 
    Unix_Year_Min : constant := 1970;
    Unix_Year_Max : constant := 2026;
@@ -125,7 +126,6 @@ package body Ada.Calendar is
       pragma Unsuppress (Overflow_Check);
    begin
       return (Left + Time (Right));
-
    exception
       when Constraint_Error =>
          raise Time_Error;
@@ -135,7 +135,6 @@ package body Ada.Calendar is
       pragma Unsuppress (Overflow_Check);
    begin
       return (Time (Left) + Right);
-
    exception
       when Constraint_Error =>
          raise Time_Error;
@@ -149,7 +148,6 @@ package body Ada.Calendar is
       pragma Unsuppress (Overflow_Check);
    begin
       return Left - Time (Right);
-
    exception
       when Constraint_Error =>
          raise Time_Error;
@@ -159,7 +157,6 @@ package body Ada.Calendar is
       pragma Unsuppress (Overflow_Check);
    begin
       return Duration (Left) - Duration (Right);
-
    exception
       when Constraint_Error =>
          raise Time_Error;
@@ -219,7 +216,6 @@ package body Ada.Calendar is
       DM : Month_Number;
       DD : Day_Number;
       DS : Day_Duration;
-
    begin
       Split (Date, DY, DM, DD, DS);
       return DD;
@@ -234,7 +230,6 @@ package body Ada.Calendar is
       DM : Month_Number;
       DD : Day_Number;
       DS : Day_Duration;
-
    begin
       Split (Date, DY, DM, DD, DS);
       return DM;
@@ -249,7 +244,6 @@ package body Ada.Calendar is
       DM : Month_Number;
       DD : Day_Number;
       DS : Day_Duration;
-
    begin
       Split (Date, DY, DM, DD, DS);
       return DS;
@@ -291,11 +285,11 @@ package body Ada.Calendar is
 
       D := Duration (Date);
 
-      --  First of all, filter out completely ludicrous values. Remember
-      --  that we use the full stored range of duration values, which may
-      --  be significantly larger than the allowed range of Ada times. Note
-      --  that these checks are wider than required to make absolutely sure
-      --  that there are no end effects from time zone differences.
+      --  First of all, filter out completely ludicrous values. Remember that
+      --  we use the full stored range of duration values, which may be
+      --  significantly larger than the allowed range of Ada times. Note that
+      --  these checks are wider than required to make absolutely sure that
+      --  there are no end effects from time zone differences.
 
       if D < LowD or else D > HighD then
          raise Time_Error;
@@ -306,11 +300,11 @@ package body Ada.Calendar is
       --  required range of years (the guaranteed range available is only
       --  EPOCH through EPOCH + N seconds). N is in practice 2 ** 31 - 1.
 
-      --  If we have a value outside this range, then we first adjust it
-      --  to be in the required range by adding multiples of 56 years.
-      --  For the range we are interested in, the number of days in any
-      --  consecutive 56 year period is constant. Then we do the split
-      --  on the adjusted value, and readjust the years value accordingly.
+      --  If we have a value outside this range, then we first adjust it to be
+      --  in the required range by adding multiples of 56 years. For the range
+      --  we are interested in, the number of days in any consecutive 56 year
+      --  period is constant. Then we do the split on the adjusted value, and
+      --  readjust the years value accordingly.
 
       Year_Val := 0;
 
@@ -325,13 +319,13 @@ package body Ada.Calendar is
       end loop;
 
       --  Now we need to take the value D, which is now non-negative, and
-      --  break it down into seconds (to pass to the localtime_r function)
-      --  and fractions of seconds (for the adjustment below).
+      --  break it down into seconds (to pass to the localtime_r function) and
+      --  fractions of seconds (for the adjustment below).
 
       --  Surprisingly there is no easy way to do this in Ada, and certainly
-      --  no easy way to do it and generate efficient code. Therefore we
-      --  do it at a low level, knowing that it is really represented as
-      --  an integer with units of Small
+      --  no easy way to do it and generate efficient code. Therefore we do it
+      --  at a low level, knowing that it is really represented as an integer
+      --  with units of Small
 
       declare
          type D_Int is range 0 .. 2 ** (Duration'Size - 1) - 1;
@@ -356,18 +350,18 @@ package body Ada.Calendar is
       Day      := Tm_Val.tm_mday;
 
       --  The Seconds value is a little complex. The localtime function
-      --  returns the integral number of seconds, which is what we want,
-      --  but we want to retain the fractional part from the original
-      --  Time value, since this is typically stored more accurately.
+      --  returns the integral number of seconds, which is what we want, but
+      --  we want to retain the fractional part from the original Time value,
+      --  since this is typically stored more accurately.
 
       Seconds := Duration (Tm_Val.tm_hour * 3600 +
                            Tm_Val.tm_min  * 60 +
                            Tm_Val.tm_sec)
                    + Frac_Sec;
 
-      --  Note: the above expression is pretty horrible, one of these days
-      --  we should stop using time_of and do everything ourselves to avoid
-      --  these unnecessary divides and multiplies???.
+      --  Note: the above expression is pretty horrible, one of these days we
+      --  should stop using time_of and do everything ourselves to avoid these
+      --  unnecessary divides and multiplies???.
 
       --  The Year may still be out of range, since our entry test was
       --  deliberately crude. Trying to make this entry test accurate is
@@ -404,8 +398,8 @@ package body Ada.Calendar is
    begin
       --  The following checks are redundant with respect to the constraint
       --  error checks that should normally be made on parameters, but we
-      --  decide to raise Constraint_Error in any case if bad values come
-      --  in (as a result of checks being off in the caller, or for other
+      --  decide to raise Constraint_Error in any case if bad values come in
+      --  (as a result of checks being off in the caller, or for other
       --  erroneous or bounded error cases).
 
       if        not Year   'Valid
@@ -433,10 +427,10 @@ package body Ada.Calendar is
       TM_Val.tm_mon  := Month - 1;
 
       --  For the year, we have to adjust it to a year that Unix can handle.
-      --  We do this in 56 year steps, since the number of days in 56 years
-      --  is constant, so the timezone effect on the conversion from local
-      --  time to GMT is unaffected; also the DST change dates are usually
-      --  not modified.
+      --  We do this in 56 year steps, since the number of days in 56 years is
+      --  constant, so the timezone effect on the conversion from local time
+      --  to GMT is unaffected; also the DST change dates are usually not
+      --  modified.
 
       while Year_Val < Unix_Year_Min loop
          Year_Val := Year_Val + 56;
@@ -450,8 +444,8 @@ package body Ada.Calendar is
 
       TM_Val.tm_year := Year_Val - 1900;
 
-      --  Since we do not have information on daylight savings,
-      --  rely on the default information.
+      --  Since we do not have information on daylight savings, rely on the
+      --  default information.
 
       TM_Val.tm_isdst := -1;
       Result_Secs := mktime (TM_Val'Unchecked_Access);
@@ -459,14 +453,13 @@ package body Ada.Calendar is
       --  That gives us the basic value in seconds. Two adjustments are
       --  needed. First we must undo the year adjustment carried out above.
       --  Second we put back the fraction seconds value since in general the
-      --  Day_Duration value we received has additional precision which we
-      --  do not want to lose in the constructed result.
+      --  Day_Duration value we received has additional precision which we do
+      --  not want to lose in the constructed result.
 
       return
         Time (Duration (Result_Secs) +
               Duration_Adjust +
               (Seconds - Duration (Int_Secs)));
-
    end Time_Of;
 
    ----------
@@ -478,7 +471,6 @@ package body Ada.Calendar is
       DM : Month_Number;
       DD : Day_Number;
       DS : Day_Duration;
-
    begin
       Split (Date, DY, DM, DD, DS);
       return DY;

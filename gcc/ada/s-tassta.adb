@@ -36,24 +36,24 @@ pragma Polling (Off);
 --  tasking operations. It causes infinite loops and other problems.
 
 with Ada.Exceptions;
---  used for Raise_Exception
+--  Used for Raise_Exception
 
 with System.Tasking.Debug;
---  used for enabling tasking facilities with gdb
+--  Used for enabling tasking facilities with gdb
 
 with System.Address_Image;
---  used for the function itself.
+--  Used for the function itself
 
 with System.Parameters;
---  used for Size_Type
+--  Used for Size_Type
 --           Single_Lock
 --           Runtime_Traces
 
 with System.Task_Info;
---  used for Task_Info_Type
+--  Used for Task_Info_Type
 
 with System.Task_Primitives.Operations;
---  used for Finalize_Lock
+--  Used for Finalize_Lock
 --           Enter_Task
 --           Write_Lock
 --           Unlock
@@ -64,11 +64,11 @@ with System.Task_Primitives.Operations;
 --           New_ATCB
 
 with System.Soft_Links;
---  These are procedure pointers to non-tasking routines that use
---  task specific data. In the absence of tasking, these routines
---  refer to global data. In the presense of tasking, they must be
---  replaced with pointers to task-specific versions.
---  Also used for Create_TSD, Destroy_TSD, Get_Current_Excep
+--  These are procedure pointers to non-tasking routines that use task
+--  specific data. In the absence of tasking, these routines refer to global
+--  data. In the presense of tasking, they must be replaced with pointers to
+--  task-specific versions. Also used for Create_TSD, Destroy_TSD,
+--  Get_Current_Excep
 
 with System.Tasking.Initialization;
 --  Used for Remove_From_All_Tasks_List
@@ -79,7 +79,7 @@ with System.Tasking.Initialization;
 --           Initialize_Attributes_Link
 
 pragma Elaborate_All (System.Tasking.Initialization);
---  This insures that tasking is initialized if any tasks are created.
+--  This insures that tasking is initialized if any tasks are created
 
 with System.Tasking.Utilities;
 --  Used for Make_Passive
@@ -98,22 +98,22 @@ with System.Finalization_Implementation;
 --  Used for System.Finalization_Implementation.Finalize_Global_List
 
 with System.Secondary_Stack;
---  used for SS_Init
+--  Used for SS_Init
 
 with System.Storage_Elements;
---  used for Storage_Array
+--  Used for Storage_Array
 
 with System.Restrictions;
---  used for Abort_Allowed
+--  Used for Abort_Allowed
 
 with System.Standard_Library;
---  used for Exception_Trace
+--  Used for Exception_Trace
 
 with System.Traces.Tasking;
---  used for Send_Trace_Info
+--  Used for Send_Trace_Info
 
 with Unchecked_Deallocation;
---  To recover from failure of ATCB initialization.
+--  To recover from failure of ATCB initialization
 
 package body System.Tasking.Stages is
 
@@ -787,11 +787,11 @@ package body System.Tasking.Stages is
 
       Self_ID.Callable := False;
 
-      --  Exit level 2 master, for normal tasks in library-level packages.
+      --  Exit level 2 master, for normal tasks in library-level packages
 
       Complete_Master;
 
-      --  Force termination of "independent" library-level server tasks.
+      --  Force termination of "independent" library-level server tasks
 
       Lock_RTS;
 
@@ -977,7 +977,7 @@ package body System.Tasking.Stages is
          --  clean ups associated with the exception handler that need to
          --  access task specific data.
 
-         --  Defer abortion so that this task can't be aborted while exiting
+         --  Defer abort so that this task can't be aborted while exiting
 
          when Standard'Abort_Signal =>
             Initialization.Defer_Abort_Nestable (Self_ID);
@@ -1209,7 +1209,7 @@ package body System.Tasking.Stages is
 
       --  The activator raises a Tasking_Error if any task it is activating
       --  is completed before the activation is done. However, if the reason
-      --  for the task completion is an abortion, we do not raise an exception.
+      --  for the task completion is an abort, we do not raise an exception.
       --  See RM 9.2(5).
 
       if not Self_ID.Callable and then Self_ID.Pending_ATC_Level /= 0 then
@@ -1392,7 +1392,7 @@ package body System.Tasking.Stages is
 
          pragma Assert (Self_ID.Common.Wait_Count = 0);
 
-         --  Force any remaining dependents to terminate, by aborting them.
+         --  Force any remaining dependents to terminate by aborting them
 
          if not Single_Lock then
             Lock_RTS;
@@ -1461,8 +1461,8 @@ package body System.Tasking.Stages is
          Unlock (Self_ID);
       end if;
 
-      --  We don't wake up for abortion here. We are already terminating
-      --  just as fast as we can, so there is no point.
+      --  We don't wake up for abort here. We are already terminating just as
+      --  fast as we can, so there is no point.
 
       --  Remove terminated tasks from the list of Self_ID's dependents, but
       --  don't free their ATCBs yet, because of lock order restrictions,
@@ -1687,7 +1687,7 @@ package body System.Tasking.Stages is
 --  Package elaboration code
 
 begin
-   --  Establish the Adafinal softlink.
+   --  Establish the Adafinal softlink
 
    --  This is not done inside the central RTS initialization routine
    --  to avoid with-ing this package from System.Tasking.Initialization.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1998-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,8 +31,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This package contains the procedures to implements timeouts (delays)
---  for asynchronous select statements.
+--  This package contains the procedures to implements timeouts (delays) for
+--  asynchronous select statements.
 
 --  Note: the compiler generates direct calls to this interface, via Rtsfind.
 --  Any changes to this interface may require corresponding compiler changes.
@@ -100,8 +100,8 @@ package System.Tasking.Async_Delays is
      (T : in Duration;
       D : Delay_Block_Access) return Boolean;
    --  Enqueue the specified relative delay. Returns True if the delay has
-   --  been enqueued, False if it has already expired.
-   --  If the delay has been enqueued, abortion is deferred.
+   --  been enqueued, False if it has already expired. If the delay has been
+   --  enqueued, abort is deferred.
 
    procedure Cancel_Async_Delay (D : Delay_Block_Access);
    --  Cancel the specified asynchronous delay
@@ -117,10 +117,10 @@ package System.Tasking.Async_Delays is
 private
 
    type Delay_Block is record
-      Self_Id     : Task_Id;
+      Self_Id : Task_Id;
       --  ID of the calling task
 
-      Level       : ATC_Level_Base;
+      Level : ATC_Level_Base;
       --  Normally Level is the ATC nesting level of the
       --  async. select statement to which this delay belongs, but
       --  after a call has been dequeued we set it to
@@ -130,10 +130,10 @@ private
       Resume_Time : Duration;
       --  The absolute wake up time, represented as Duration
 
-      Timed_Out   : Boolean := False;
+      Timed_Out : Boolean := False;
       --  Set to true if the delay has timed out
 
-      Succ, Pred  : Delay_Block_Access;
+      Succ, Pred : Delay_Block_Access;
       --  A double linked list
    end record;
 
