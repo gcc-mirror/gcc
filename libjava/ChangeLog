@@ -1,5 +1,13 @@
+2005-02-14  Anthony Green  <green@redhat.com>
+
+	PR libgcj/18116
+	* testsuite/libjava.jni/PR18116.c: New file.
+	* testsuite/libjava.jni/PR18116.java: New file.
+	* testsuite/libjava.jni/PR18116.out: New file.
+
 2005-02-13  Anthony Green  <green@redhat.com>
 
+	PR libgcj/18116
 	* jni.cc (nathash_add): Don't strdup the method signature.
 	(_Jv_JNI_RegisterNatives): Convert the slashes to dots in the
 	method signature.
