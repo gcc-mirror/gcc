@@ -162,7 +162,7 @@ struct alloc_chunk {
     double align_d;
 #endif
   } u;
-} __attribute__ ((packed));
+};
 
 #define CHUNK_OVERHEAD	(offsetof (struct alloc_chunk, u))
 
@@ -177,7 +177,7 @@ struct alloc_chunk {
    on a PowerPC G4 7450 - 667 mhz, and a Pentium 4 - 2.8ghz,
    these were determined to be the optimal values.  */
 #define NUM_FREE_BINS		64
-#define MAX_FREE_BIN_SIZE	256
+#define MAX_FREE_BIN_SIZE	(64 * sizeof (void *))
 #define FREE_BIN_DELTA		(MAX_FREE_BIN_SIZE / NUM_FREE_BINS)
 #define SIZE_BIN_UP(SIZE)	(((SIZE) + FREE_BIN_DELTA - 1) / FREE_BIN_DELTA)
 #define SIZE_BIN_DOWN(SIZE)	((SIZE) / FREE_BIN_DELTA)
@@ -761,10 +761,6 @@ ggc_free (void *p)
   
   /* Poison the chunk.  */
   poison_chunk (chunk, ggc_get_size (p));
-
-  /* XXX: We only deal with explicitly freeing large objects ATM.  */
-  if (chunk->large)
-    free (p);
 }
 
 /* If P is not marked, mark it and return false.  Otherwise return true.
@@ -990,13 +986,14 @@ sweep_pages (struct alloc_zone *zone)
 	  if (((struct alloc_chunk *)p->page)->mark == 1)
 	    {
 	      ((struct alloc_chunk *)p->page)->mark = 0;
+	      pp = &p->next;
 	    }
 	  else
 	    {
 	      *pp = next;
 #ifdef ENABLE_GC_CHECKING
-	  /* Poison the page.  */
-	  memset (p->page, 0xb5, p->bytes);
+	      /* Poison the page.  */
+	      memset (p->page, 0xb5, p->bytes);
 #endif
 	      free_page (p);
 	    }
