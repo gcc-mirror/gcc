@@ -6060,6 +6060,19 @@ fold (tree expr)
 	      && real_minus_onep (arg1))
 	    return fold (build1 (NEGATE_EXPR, type, arg0));
 
+	  /* Convert (C1/X)*C2 into (C1*C2)/X.  */
+	  if (flag_unsafe_math_optimizations
+	      && TREE_CODE (arg0) == RDIV_EXPR
+	      && TREE_CODE (arg1) == REAL_CST
+	      && TREE_CODE (TREE_OPERAND (arg0, 0)) == REAL_CST)
+	    {
+	      tree tem = const_binop (MULT_EXPR, TREE_OPERAND (arg0, 0),
+				      arg1, 0);
+	      if (tem)
+		return fold (build (RDIV_EXPR, type, tem,
+				    TREE_OPERAND (arg0, 1)));
+	    }
+
 	  if (flag_unsafe_math_optimizations)
 	    {
 	      enum built_in_function fcode0 = builtin_mathfn_code (arg0);
@@ -6393,7 +6406,7 @@ fold (tree expr)
 					  arg1, 0)))
 	    return fold (build (MULT_EXPR, type, arg0, tem));
 	  /* Find the reciprocal if optimizing and the result is exact.  */
-	  else if (optimize)
+	  if (optimize)
 	    {
 	      REAL_VALUE_TYPE r;
 	      r = TREE_REAL_CST (arg1);
@@ -6407,19 +6420,29 @@ fold (tree expr)
       /* Convert A/B/C to A/(B*C).  */
       if (flag_unsafe_math_optimizations
 	  && TREE_CODE (arg0) == RDIV_EXPR)
-	{
-	  return fold (build (RDIV_EXPR, type, TREE_OPERAND (arg0, 0),
-			      build (MULT_EXPR, type, TREE_OPERAND (arg0, 1),
-				     arg1)));
-	}
+	return fold (build (RDIV_EXPR, type, TREE_OPERAND (arg0, 0),
+			    fold (build (MULT_EXPR, type,
+					 TREE_OPERAND (arg0, 1), arg1))));
+
       /* Convert A/(B/C) to (A/B)*C.  */
       if (flag_unsafe_math_optimizations
 	  && TREE_CODE (arg1) == RDIV_EXPR)
+	return fold (build (MULT_EXPR, type,
+			    fold (build (RDIV_EXPR, type, arg0,
+					 TREE_OPERAND (arg1, 0))),
+			    TREE_OPERAND (arg1, 1)));
+
+      /* Convert C1/(X*C2) into (C1/C2)/X.  */
+      if (flag_unsafe_math_optimizations
+	  && TREE_CODE (arg1) == MULT_EXPR
+	  && TREE_CODE (arg0) == REAL_CST
+	  && TREE_CODE (TREE_OPERAND (arg1, 1)) == REAL_CST)
 	{
-	  return fold (build (MULT_EXPR, type,
-			      build (RDIV_EXPR, type, arg0,
-				     TREE_OPERAND (arg1, 0)),
-			      TREE_OPERAND (arg1, 1)));
+	  tree tem = const_binop (RDIV_EXPR, arg0,
+				  TREE_OPERAND (arg1, 1), 0);
+	  if (tem)
+	    return fold (build (RDIV_EXPR, type, tem,
+				TREE_OPERAND (arg1, 0)));
 	}
 
       if (flag_unsafe_math_optimizations)
