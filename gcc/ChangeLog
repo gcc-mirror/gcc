@@ -1,3 +1,11 @@
+2000-07-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* rs6000/aix.h (ASM_GENERATE_INTERNAL_LABEL): Fix format specifier.
+
+	* xcoffout.c (assign_type_number): Constify.
+	(xcoffout_source_file): Add static prototype.  Don't needlessly
+	cast away const-ness.
+
 2000-07-04  Jason Merrill  <jason@redhat.com>
 
 	* frame.h (frame_state): Move base_offset to end.
