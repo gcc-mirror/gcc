@@ -1,3 +1,11 @@
+2005-03-30  Steve Ellcey  <sje@cup.hp.com>
+
+	* src/ia64/ffitarget.h (ffi_arg) ADD DI attribute.
+	(ffi_sarg) Ditto.
+	* src/ia64/unix.S (ffi_closure_unix): Extend gp
+	to 64 bits in ILP32 mode.
+	Load 64 bits even for short data.
+
 2005-03-23  Mike Stump  <mrs@apple.com>
 
 	* src/powerpc/darwin.S: Update for -m64 multilib.
