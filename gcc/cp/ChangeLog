@@ -1,3 +1,8 @@
+2002-12-30  David Edelsohn  <edelsohn@gnu.org>
+
+	* parser.c (cp_parser_parameter_declaration_clause): Treat system
+	header as extern "C" if NO_IMPLICIT_EXTERN_C undefined.
+
 2002-12-30  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config-lang.in, Make-lang.in, operators.def, cp-tree.def:  
