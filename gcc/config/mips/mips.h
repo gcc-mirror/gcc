@@ -365,8 +365,7 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 /* IRIX specific stuff.  */
 #define TARGET_IRIX	   0
-#define TARGET_IRIX5	   0
-#define TARGET_SGI_O32_AS  (TARGET_IRIX && mips_abi == ABI_32 && !TARGET_GAS)
+#define TARGET_IRIX6	   0
 
 /* Define preprocessor macros for the -march and -mtune options.
    PREFIX is either _MIPS_ARCH or _MIPS_TUNE, INFO is the selected
@@ -1060,12 +1059,6 @@ extern const struct mips_cpu_info *mips_tune_info;
 #define ASM_ABI_DEFAULT_SPEC "-mabi=eabi"
 #endif
 
-/* Only ELF targets can switch the ABI.  */
-#ifndef OBJECT_FORMAT_ELF
-#undef ASM_ABI_DEFAULT_SPEC
-#define ASM_ABI_DEFAULT_SPEC ""
-#endif
-
 /* TARGET_ASM_SPEC is used to select either MIPS_AS_ASM_SPEC or
    GAS_ASM_SPEC as the default, depending upon the value of
    TARGET_DEFAULT.  */
@@ -1210,18 +1203,6 @@ extern const struct mips_cpu_info *mips_tune_info;
 #ifndef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS
 #endif
-
-/* If defined, this macro is an additional prefix to try after
-   `STANDARD_EXEC_PREFIX'.  */
-
-#ifndef MD_EXEC_PREFIX
-#define MD_EXEC_PREFIX "/usr/lib/cmplrs/cc/"
-#endif
-
-#ifndef MD_STARTFILE_PREFIX
-#define MD_STARTFILE_PREFIX "/usr/lib/cmplrs/cc/"
-#endif
-
 
 #define DBX_DEBUGGING_INFO 1		/* generate stabs (OSF/rose) */
 #define MIPS_DEBUGGING_INFO 1		/* MIPS specific debugging info */
@@ -2858,11 +2839,6 @@ while (0)
 
 
 /* How to tell the debugger about changes of source files.  */
-
-#ifndef SET_FILE_NUMBER
-#define SET_FILE_NUMBER() ++num_source_filenames
-#endif
-
 #define ASM_OUTPUT_SOURCE_FILENAME(STREAM, NAME)			\
   mips_output_filename (STREAM, NAME)
 
@@ -2875,14 +2851,6 @@ do								\
     fputs ("\n", STREAM);					\
   }								\
 while (0)
-
-/* This is how to output a note the debugger telling it the line number
-   to which the following sequence of instructions corresponds.
-   Silicon graphics puts a label after each .loc.  */
-
-#ifndef LABEL_AFTER_LOC
-#define LABEL_AFTER_LOC(STREAM)
-#endif
 
 #ifndef ASM_OUTPUT_SOURCE_LINE
 #define ASM_OUTPUT_SOURCE_LINE(STREAM, LINE, COUNTER)		\

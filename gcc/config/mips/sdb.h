@@ -87,3 +87,18 @@ do {							\
 } while (0)
 
 #define PUT_SDB_EPILOGUE_END(NAME)
+
+/* We need to use .esize and .etype instead of .size and .type to
+   avoid conflicting with ELF directives.  */
+#undef PUT_SDB_SIZE
+#define PUT_SDB_SIZE(a)					\
+do {							\
+  fprintf (asm_out_file, "\t.esize\t" HOST_WIDE_INT_PRINT_DEC ";", \
+ 	   (HOST_WIDE_INT) (a));			\
+} while (0)
+
+#undef PUT_SDB_TYPE
+#define PUT_SDB_TYPE(a)					\
+do {							\
+  fprintf (asm_out_file, "\t.etype\t0x%x;", (a));	\
+} while (0)

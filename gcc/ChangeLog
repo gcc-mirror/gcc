@@ -1,3 +1,108 @@
+2004-08-20  Richard Sandiford  <rsandifo@redhat.com>
+
+	* configure.ac (mips*-*-*): Print an error if not using GAS.
+	* configure: Regenerated.
+	* doc/install.texi: Remove irix5 bullet from --with-gnu-as.  Remove
+	comments about buggy MIPSpro assemblers.
+	* config.gcc (mips-sgi-irix[56]*): Combine stanzas.  Include elfos.h
+	before mips.h and iris.h after it.  Use t-iris and t-slibgcc-irix.
+	Use iris5.h only for IRIX 5 configs.  Use iris6.h and t-iris6 for
+	IRIX 6 configs.  Define IRIX_USING_GNU_LD if using GNU ld.
+	* config/mips/iris5.h (TARGET_IRIX, SWITCHES_NEED_SPACES)
+	(DEFAULT_SIGNED_CHAR, WORD_SWITCH_TAKES_ARG, SUBTARGET_CC1_SPEC)
+	(NO_IMPLICIT_EXTERN_C, MIPS_DEFAULT_GVALUE)
+	(TARGET_ASM_EXTERNAL_LIBCALL): Move to iris.h.
+	(WCHAR_TYPE, WCHAR_TYPE_SIZE, TARGET_OS_CPP_BUILTINS): Delete in favor
+	of more general IRIX 6 definitions.
+	(OBJECT_FORMAT_ELF, ASM_OUTPUT_ASCII, ASM_WEAKEN_LABEL)
+	(HANDLE_SYSV_PRAGMA): Delete in favor of elfos.h definitions.
+	(TARGET_IRIX5, ABICALLS_ASM_OP, BSS_SECTION_ASM_OP, HAS_INIT_SECTION)
+	(LD_INIT_SWITCH, LD_FINI_SWITCH, SUBTARGET_ASM_OPTIMIZING_SPEC)
+	(ASM_FINAL_SPEC, DBX_DEBUGGING_INFO, MIPS_DEBUGGING_INFO)
+	(PREFERRED_DEBUGGING_TYPE, DWARF2_UNWIND_INFO, SET_FILE_NUMBER)
+	(LABEL_AFTER_LOC, DOLLARS_IN_IDENTIFIERS, NO_DOLLAR_IN_LABEL)
+	(TARGET_ASM_NAMED_SECTION, EXTRA_SECTION_FUNCTIONS)
+	(ASM_DECLARE_FUNCTION_SIZE, ASM_OUTPUT_WEAK_ALIAS)
+	(SUBTARGET_EXTRA_SPECS): Delete definitions or undefs.
+	(LINK_SPEC): Move most of definition to iris.h.
+	(SUBTARGET_LINK_SPEC): New macro.
+	(IRIX_STARTFILE_SPEC): Fold into...
+	(STARTFILE_SPEC): ...here.
+	(IRIX_ENDFILE_SPEC): Fold into...
+	(ENDFILE_SPEC): ...here.
+	* config/mips/iris6.h (TARGET_IRIX5): Remove override.
+	(WCHAR_TYPE, WCHAR_TYPE_SIZE, WINT_TYPE, WINT_TYPE_SIZE)
+	(DWARF_OFFSET_SIZE, DWARF_INITIAL_LENGTH_SIZE, SET_ASM_OP)
+	(LINK_ELIMINATE_DUPLICATE_LDIRECTORIES, ASM_DECLARE_OBJECT_NAME)
+	(ASM_FINISH_DECLARE_OBJECT, LOCAL_LABEL_PREFIX): Move to iris.h.
+	(TARGET_OS_CPP_BUILTINS): Likewise.  Guard IRIX6-specific bits.
+	(DWARF2_UNWIND_INFO, DWARF2_GENERATE_TEXT_SECTION_LABEL)
+	(SUBTARGET_CPP_SPEC, DWARF2_DEBUGGING_INFO, MIPS_DEBUGGING_INFO)
+	(PREFERRED_DEBUGGING_TYPE, DWARF2_FRAME_INFO, MD_EXEC_PREFIX)
+	(ASM_DECLARE_FUNCTION_NAME, ASM_DECLARE_FUNCTION_SIZE)
+	(FUNCTION_NAME_ALREADY_DECLARED, SUPPORTS_INIT_PRIORITY)
+	(POPSECTION_ASM_OP, SUBTARGET_ASM_SPEC, SUBTARGET_MIPS_AS_ASM_SPEC)
+	(SUBTARGET_ASM_DEBUGGING_SPEC, SUBTARGET_ASM_OPTIMIZING_SPEC)
+	(BSS_SECTION_ASM_OP*, READONLY_DATA_SECTION_ASM_OP*)
+	(EH_FRAME_SECTION_NAME, MUST_USE_SJLJ_EXCEPTIONS, CTORS_SECTION_ASM_OP)
+	(DTORS_SECTION_ASM_OP, TARGET_ASM_NAMED_SECTION, EH_FRAME_SECTION_NAME)
+	(ASM_OUTPUT_ALIGN, ASM_OUTPUT_FILENAME, ASM_OUTPUT_ALIGNED_LOCAL)
+	(ASM_OUTPUT_ALIGNED_BSS): Remove definitions or undefs.
+	(TARGET_IRIX6): Define to 1.
+	(DRIVER_SELF_SPECS): Define.
+	(DWARF2_FRAME_INFO): Define to 1 rather than !TARGET_SGI_O32_AS.
+	(SUBTARGET_CC1_SPEC): Remove in favor of DRIVER_SELF_SPECS.
+	(SUBTARGET_LINK_SPEC): New macro.
+	(IRIX_STARTFILE_SPEC): Fold into...
+	(STARTFILE_SPEC): ...here.  Remove !mabi=* case.
+	(SUBTARGET_{,DONT_}WARN_UNUSED_SPEC): New macros.
+	(LIB_SPEC, LIBGCC_SPEC): Use them.
+	(LIB_SPEC): Remove !mabi=* case.
+	(IRIX_ENDFILE_SPEC): Fold into...
+	(ENDFILE_SPEC): ...here.  Remove !mabi=* case.
+	* config/mips/mips-protos.h (irix_output_external_libcall): Delete.
+	* config/mips/mips.h (TARGET_IRIX5, TARGET_SGI_O32_AS): Delete.
+	(TARGET_IRIX6): New macro.
+	(ASM_ABI_DEFAULT_SPEC): Remove !ELF definition.
+	(MD_EXEC_PREFIX, MD_STARTFILE_PREFIX, SET_FILE_NUMBER)
+	(LABEL_AFTER_LOC): Delete.
+	* config/mips/mips.c (TARGET_ASM_FILE_START, TARGET_ASM_FILE_END)
+	(TARGET_SECTION_TYPE_FLAGS): Remove TARGET_IRIX versions.
+	(mips_build_builtin_va_list): Check TARGET_IRIX6.
+	(override_options): Remove TARGET_SGI_O32_AS-related code.
+	(irix_output_external_libcall): Make static.
+	(mips_output_filename): Avoid use of SET_FILE_NUMBER and
+	LABEL_AFTER_LOC.
+	(mips_file_start): Tidy guard for ABI sections.  Remove use of
+	ABICALLS_ASM_OP; use .abicalls instead.
+	(mips_output_aligned_decl_common, mips_declare_object_name)
+	(mips_finish_declare_object): Remove use of TARGET_SGI_O32_AS.
+	(mips_output_function_prologue): Set TREE_ASM_WRITTEN if emitting
+	.globl foo .text directives.
+	(irix_asm_named_section_1, irix_asm_named_section)
+	(irix_section_align_entry, irix_section_align_htab)
+	(irix_orig_asm_out_file, irix_section_align_entry_eq)
+	(irix_section_align_entry_hash, irix_asm_output_align)
+	(irix_file_start, irix_section_align_1, copy_file_data)
+	(irix_file_end, irix_section_type_flags): Delete.
+	* config/mips/irix-crti.asm (__gcc_init): Move to .gcc_init section.
+	Use standard section syntax.  Remove protective "jr $31".
+	(__gcc_fini): Likewise .gcc_fini.
+	* config/mips/irix-crtn.asm: Adjust sections accordingly.
+	* config/mips/sdb.h (PUT_SDB_SIZE, PUT_SDB_TYPE): Moved from
+	iris5gas.h.
+	* config/mips/t-iris (irix-crti.o, irix-crtn.o): New rules, moved
+	from t-irix-gld.
+	(EXTRA_MULTILIB_PARTS): Define.
+	* config/mips/t-iris6: Remove bogus comment.
+	(EXTRA_MULTILIB_PARTS, CRTSTUFF_T_CFLAGS): Delete.
+	* config/mips/iris5gas.h, config/mips/iris5gld.h,
+	config/mips/iris6gas.h, config/mips/iris6gld.h,
+	config/mips/t-iris5-as, config/mips/t-iris5-gas
+	config/mips/t-irix-gld: Delete.
+	* config/mips/iris.h: New file.
+	* config/mips/t-slibgcc-irix: Renamed from t-iris5-6.
+
 2004-08-20  Richard Earnshaw  <rearnsha@arm.com>
 
 	* postreload.c (reload_cse_move2add): Allow any condjump, but check
