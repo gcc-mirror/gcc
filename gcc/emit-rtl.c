@@ -808,6 +808,26 @@ gen_lowpart_common (mode, x)
       return CONST_DOUBLE_FROM_REAL_VALUE (u.d, mode);
     }
 #endif
+
+  /* We need an extra case for machines where HOST_BITS_PER_WIDE_INT is the
+     same as sizeof (double), such as the alpha.  We only handle the
+     REAL_ARITHMETIC case, which is easy.  Testing HOST_BITS_PER_WIDE_INT
+     is not strictly necessary, but is done to restrict this code to cases
+     where it is known to work.  */
+#ifdef REAL_ARITHMETIC
+  else if (mode == SFmode
+	   && GET_CODE (x) == CONST_INT
+	   && GET_MODE_BITSIZE (mode) * 2 == HOST_BITS_PER_WIDE_INT)
+    {
+      REAL_VALUE_TYPE r;
+      HOST_WIDE_INT i;
+
+      i = INTVAL (x);
+      r = REAL_VALUE_FROM_TARGET_SINGLE (i);
+      return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
+    }
+#endif
+
   /* Similarly, if this is converting a floating-point value into a
      single-word integer.  Only do this is the host and target parameters are
      compatible.  */
