@@ -7970,6 +7970,9 @@ use of the header file.
 @item #pragma interface
 @itemx #pragma interface "@var{subdir}/@var{objects}.h"
 @kindex #pragma interface
+This @samp{#pragma} has been deprecated and will be removed in a
+future release of GCC.
+
 Use this directive in @emph{header files} that define object classes, to save
 space in most of the object files that use those classes.  Normally,
 local copies of certain information (backup copies of inline member
@@ -7990,6 +7993,9 @@ implementation}.
 @item #pragma implementation
 @itemx #pragma implementation "@var{objects}.h"
 @kindex #pragma implementation
+This @samp{#pragma} has been deprecated and will be removed in a
+future release of GCC.
+
 Use this pragma in a @emph{main input file}, when you want full output from
 included header files to be generated (and made globally visible).  The
 included header file, in turn, should use @samp{#pragma interface}.

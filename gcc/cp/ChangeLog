@@ -1,5 +1,9 @@
 2004-06-07  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/15815
+	* lex.c (handle_pragma_interface): Deprecate.
+	(handle_pragma_implementation): Likewise.
+
 	PR c++/15766
 	* parser.c (cp_parser_iteration_statement): Fix typo in error
 	message.
