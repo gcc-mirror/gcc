@@ -1063,7 +1063,8 @@ validate_proto_after_old_defn (tree newdecl, tree newtype, tree oldtype)
 	 for the arg.  */
       else if (!comptypes (oldargtype, newargtype))
 	{
-	  error ("%Jprototype for %qD declares arg %d with incompatible type",
+	  error ("%Jprototype for %qD declares argument %d"
+		 " with incompatible type",
 		 newdecl, newdecl, i);
 	  return false;
 	}

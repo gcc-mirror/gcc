@@ -139,7 +139,7 @@ check_format_string (tree argument, unsigned HOST_WIDE_INT format_num,
 	  != char_type_node))
     {
       if (!(flags & (int) ATTR_FLAG_BUILT_IN))
-	error ("format string arg not a string type");
+	error ("format string argument not a string type");
       *no_add_attrs = true;
       return false;
     }
@@ -219,7 +219,7 @@ decode_format_attr (tree args, function_format_info *info, int validated_p)
   if (info->first_arg_num != 0 && info->first_arg_num <= info->format_num)
     {
       gcc_assert (!validated_p);
-      error ("format string arg follows the args to be formatted");
+      error ("format string argument follows the args to be formatted");
       return false;
     }
 
@@ -2069,7 +2069,7 @@ check_format_types (format_wanted_type *types, const char *format_start,
 		  && i == 0
 		  && cur_param != 0
 		  && integer_zerop (cur_param))
-		warning ("writing through null pointer (arg %d)",
+		warning ("writing through null pointer (argument %d)",
 			 arg_num);
 
 	      /* Check for reading through a NULL pointer.  */
@@ -2077,7 +2077,7 @@ check_format_types (format_wanted_type *types, const char *format_start,
 		  && i == 0
 		  && cur_param != 0
 		  && integer_zerop (cur_param))
-		warning ("reading through null pointer (arg %d)",
+		warning ("reading through null pointer (argument %d)",
 			 arg_num);
 
 	      if (cur_param != 0 && TREE_CODE (cur_param) == ADDR_EXPR)
@@ -2097,7 +2097,8 @@ check_format_types (format_wanted_type *types, const char *format_start,
 			  && (CONSTANT_CLASS_P (cur_param)
 			      || (DECL_P (cur_param)
 				  && TREE_READONLY (cur_param))))))
-		warning ("writing into constant object (arg %d)", arg_num);
+		warning ("writing into constant object (argument %d)",
+			 arg_num);
 
 	      /* If there are extra type qualifiers beyond the first
 		 indirection, then this makes the types technically
@@ -2107,7 +2108,8 @@ check_format_types (format_wanted_type *types, const char *format_start,
 		  && (TYPE_READONLY (cur_type)
 		      || TYPE_VOLATILE (cur_type)
 		      || TYPE_RESTRICT (cur_type)))
-		warning ("extra type qualifiers in format argument (arg %d)",
+		warning ("extra type qualifiers in format argument "
+			 "(argument %d)",
 			 arg_num);
 
 	    }
