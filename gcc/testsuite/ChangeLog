@@ -1,5 +1,8 @@
 1998-11-26  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* g++.old-deja/g++.other/lookup5.C: New test.  Not sure the
+	problem is actually related with name lookup, but so what? :-)
+
 	* g++.old-deja/g++.pt/friend37.C: New test.
 
 1998-11-25  Dave Love  <d.love@dl.ac.uk>
