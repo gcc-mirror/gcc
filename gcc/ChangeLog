@@ -1,8 +1,15 @@
+2002-01-22  Roger Sayle  <roger@eyesopen.com>
+	    Richard Henderson  <rth@redhat.com>
+
+	PR opt/3640
+	* fold-const.c (fold): Optimize unsigned comparisons against
+	UINT_MAX (and similar unsigned constants).
+
 2002-01-22  Janis Johnson  <janis187@us.ibm.com>
 
-        * Makefile.in (loop.o): Depend on OPTABS_H.
-        * loop.c (expand_builtin_prefetch): Check the prefetch operand
-        against the predicate.
+	* Makefile.in (loop.o): Depend on OPTABS_H.
+	* loop.c (expand_builtin_prefetch): Check the prefetch operand
+	against the predicate.
 
 	PR target/5379
 	* config/i386/i386.md (prefetch_sse): Specify "p" as a constraint
@@ -25,18 +32,18 @@
 
 2002-01-22  Aldy Hernandez  <aldyh@redhat.com>
 
-        * regrename.c (kill_value): Fix typo.
+	* regrename.c (kill_value): Fix typo.
 
 2002-01-22  Aldy Hernandez  <aldyh@redhat.com>
 
-        * doc/tm.texi: Remove STARTING_FRAME_PHASE.
+	* doc/tm.texi: Remove STARTING_FRAME_PHASE.
 
-        * config/rs6000/rs6000.h: Same.
+	* config/rs6000/rs6000.h: Same.
 
-        * function.c (instantiate_virtual_regs): Remove
-        STARTING_FRAME_PHASE.
-        (assign_stack_local_1): Same.
-        Calculate frame phase.
+	* function.c (instantiate_virtual_regs): Remove
+	STARTING_FRAME_PHASE.
+	(assign_stack_local_1): Same.
+	Calculate frame phase.
 
 2002-01-22  Nick Clifton  <nickc@redhat.com>
 
@@ -276,15 +283,15 @@ Sun Jan 20 18:40:14 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2002-01-18  Aldy Hernandez  <aldyh@redhat.com>
 
-        * doc/tm.texi (STARTING_FRAME_PHASE): Document.
+	* doc/tm.texi (STARTING_FRAME_PHASE): Document.
 
-        * function.c (assign_stack_local_1): Adjust x_frame_offset with
-        STARTING_FRAME_PHASE.
-        (STARTING_FRAME_PHASE): New.
-        (instantiate_virtual_regs): Check saneness of
-        STARTING_FRAME_PHASE.
+	* function.c (assign_stack_local_1): Adjust x_frame_offset with
+	STARTING_FRAME_PHASE.
+	(STARTING_FRAME_PHASE): New.
+	(instantiate_virtual_regs): Check saneness of
+	STARTING_FRAME_PHASE.
 
-        * config/rs6000/rs6000.h (STARTING_FRAME_PHASE): New.
+	* config/rs6000/rs6000.h (STARTING_FRAME_PHASE): New.
 
 2002-01-19  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -327,11 +334,11 @@ Thu Jan 17 15:28:26 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2002-01-17  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config.gcc (cpu_type): Include altivec.h in powerpc
-        extra_headers.
-        Same for darwin.
+	* config.gcc (cpu_type): Include altivec.h in powerpc
+	extra_headers.
+	Same for darwin.
 
-        * config/rs6000/altivec.h: New.
+	* config/rs6000/altivec.h: New.
 
 2002-01-17  David Edelsohn  <edelsohn@gnu.org>
 
@@ -409,7 +416,7 @@ Thu Jan 17 15:28:26 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2002-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/5309:
-        * config/sparc/sparc.c (ultrasparc_adjust_cost): Handle TYPE_IDIV the
+	* config/sparc/sparc.c (ultrasparc_adjust_cost): Handle TYPE_IDIV the
 	same way as TYPE_IMUL.
 	(ultrasparc_sched_reorder): Likewise.
 	* config/sparc/sparc.md (type): Add comment to update
@@ -505,27 +512,27 @@ Wed Jan 16 17:54:22 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 2002-01-15  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.md (altivec_stvx): Add parallels to stvx.
-        (altivec_lvsl): Change constraint to b.
-        (altivec_lvsr): Same.
-        (altivec_lvebx): Same.
-        (altivec_lvehx): Same.
-        (altivec_lvewx): Same.
-        (altivec_lvxl): Same.
-        (altivec_lvx): Same.
-        (altivec_stvx): Add parallel.
-        (altivec_stvxl): Same.
-        (altivec_stvehx): Same.
-        (altivec_stvebx): Same.
-        (altivec_stvebx): Same.
+	* config/rs6000/rs6000.md (altivec_stvx): Add parallels to stvx.
+	(altivec_lvsl): Change constraint to b.
+	(altivec_lvsr): Same.
+	(altivec_lvebx): Same.
+	(altivec_lvehx): Same.
+	(altivec_lvewx): Same.
+	(altivec_lvxl): Same.
+	(altivec_lvx): Same.
+	(altivec_stvx): Add parallel.
+	(altivec_stvxl): Same.
+	(altivec_stvehx): Same.
+	(altivec_stvebx): Same.
+	(altivec_stvebx): Same.
 
 2002-01-15  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config.gcc: Change altivec.h to altivec-defs.h.
+	* config.gcc: Change altivec.h to altivec-defs.h.
 
-        * config/rs6000/altivec.h: Delete.
+	* config/rs6000/altivec.h: Delete.
 
-        * config/rs6000/altivec-defs.h: Add.
+	* config/rs6000/altivec-defs.h: Add.
 
 2002-01-15  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
@@ -903,24 +910,24 @@ Fri Jan 11 09:25:05 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2002-01-10  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.c (altivec_init_builtins): Add support for
-        lvebx, lvehx, lvewx, lvxl, lvx, stvx, stvebx, stvehx, stvewx,
-        stvxl.
-        (altivec_expand_builtin): Same.
-        (altivec_expand_stv_builtin): New.
+	* config/rs6000/rs6000.c (altivec_init_builtins): Add support for
+	lvebx, lvehx, lvewx, lvxl, lvx, stvx, stvebx, stvehx, stvewx,
+	stvxl.
+	(altivec_expand_builtin): Same.
+	(altivec_expand_stv_builtin): New.
 
-        * config/rs6000/rs6000.h (rs6000_builtins): Same.
+	* config/rs6000/rs6000.h (rs6000_builtins): Same.
 
-        * config/rs6000/rs6000.md ("altivec_lvebx"): New.
-        ("altivec_lvehx"): New.
-        ("altivec_lvewx"): New.
-        ("altivec_lvxl"): New.
-        ("altivec_lvx"): New.
-        ("altivec_stvx"): New.
-        ("altivec_stvebx"): New.
-        ("altivec_stvehx"): New.
-        ("altivec_stvewx"): New.
-        ("altivec_stvxl"): New.
+	* config/rs6000/rs6000.md ("altivec_lvebx"): New.
+	("altivec_lvehx"): New.
+	("altivec_lvewx"): New.
+	("altivec_lvxl"): New.
+	("altivec_lvx"): New.
+	("altivec_stvx"): New.
+	("altivec_stvebx"): New.
+	("altivec_stvehx"): New.
+	("altivec_stvewx"): New.
+	("altivec_stvxl"): New.
 
 2002-01-10  Richard Henderson  <rth@redhat.com>
 
