@@ -3064,7 +3064,7 @@ static rtx
 expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
 {
   unsigned HOST_WIDE_INT mask;
-  rtx result, temp, label;
+  rtx result, temp, shift, label;
   int logd;
 
   logd = floor_log2 (d);
@@ -3079,17 +3079,42 @@ expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
       if (signmask)
 	{
 	  signmask = force_reg (mode, signmask);
-	  temp = expand_binop (mode, xor_optab, op0, signmask,
-			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
-	  temp = expand_binop (mode, sub_optab, temp, signmask,
-			       NULL_RTX, 0, OPTAB_LIB_WIDEN);
 	  mask = ((HOST_WIDE_INT) 1 << logd) - 1;
-	  temp = expand_binop (mode, and_optab, temp, GEN_INT (mask),
-			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
-	  temp = expand_binop (mode, xor_optab, temp, signmask,
-			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
-	  temp = expand_binop (mode, sub_optab, temp, signmask,
-			       NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	  shift = GEN_INT (GET_MODE_BITSIZE (mode) - logd);
+
+	  /* Use the rtx_cost of a LSHIFTRT instruction to determine
+	     which instruction sequence to use.  If logical right shifts
+	     are expensive the use 2 XORs, 2 SUBs and an AND, otherwise
+	     use a LSHIFTRT, 1 ADD, 1 SUB and an AND.  */
+	     
+	  temp = gen_rtx_LSHIFTRT (mode, result, shift);
+	  if (lshr_optab->handlers[mode].insn_code == CODE_FOR_nothing
+	      || rtx_cost (temp, SET) > COSTS_N_INSNS (2))
+	    {
+	      temp = expand_binop (mode, xor_optab, op0, signmask,
+				   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	      temp = expand_binop (mode, sub_optab, temp, signmask,
+				   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	      temp = expand_binop (mode, and_optab, temp, GEN_INT (mask),
+				   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	      temp = expand_binop (mode, xor_optab, temp, signmask,
+				   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	      temp = expand_binop (mode, sub_optab, temp, signmask,
+				   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	    }
+	  else
+	    {
+	      signmask = expand_binop (mode, lshr_optab, signmask, shift,
+				       NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	      signmask = force_reg (mode, signmask);
+
+	      temp = expand_binop (mode, add_optab, op0, signmask,
+				   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	      temp = expand_binop (mode, and_optab, temp, GEN_INT (mask),
+				   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	      temp = expand_binop (mode, sub_optab, temp, signmask,
+				   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	    }
 	  return temp;
 	}
     }

@@ -1,3 +1,9 @@
+2004-06-29  Roger Sayle  <roger@eyesopen.com>
+
+	* expmed.c (expand_smod_pow2): Provide alternate implementations
+	that avoid conditional jumps, and choose between them based upon
+	the target's rtx_costs.
+
 2004-06-29  Andrew Pinski  <apinski@apple.com>
 
 	* tree-sra.c: Include expr.h for definition of MOVE_RATIO.
