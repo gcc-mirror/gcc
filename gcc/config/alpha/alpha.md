@@ -350,7 +350,7 @@
 			  (match_operand:DI 3 "register_operand" "r"))
 		 (match_operand:DI 4 "add_operand" "rIOKL")))]
   "reload_in_progress"
-  "s%2addq %r1,%3,%0\;addq %0,%4,%0"
+  "#"
   [(set_attr "type" "iaddlog")])
 
 (define_split
