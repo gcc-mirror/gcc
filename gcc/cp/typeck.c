@@ -2147,7 +2147,12 @@ finish_class_member_access_expr (tree object, tree name)
 	  /* Look up the member.  */
 	  member = lookup_member (access_path, name, /*protect=*/1, 
 				  /*want_type=*/0);
-	  if (member == error_mark_node)
+	  if (member == NULL_TREE)
+	    {
+	      error ("'%D' has no member named '%E'", object_type, name);
+	      return error_mark_node;
+	    }
+	  else if (member == error_mark_node)
 	    return error_mark_node;
 	}
       else if (TREE_CODE (name) == BIT_NOT_EXPR)
@@ -2171,7 +2176,12 @@ finish_class_member_access_expr (tree object, tree name)
 	  /* An unqualified name.  */
 	  member = lookup_member (object_type, name, /*protect=*/1, 
 				  /*want_type=*/0);
-	  if (member == error_mark_node)
+	  if (member == NULL_TREE)
+	    {
+	      error ("'%D' has no member named '%E'", object_type, name);
+	      return error_mark_node;
+	    }
+	  else if (member == error_mark_node)
 	    return error_mark_node;
 	}
       else

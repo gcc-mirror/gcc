@@ -1,3 +1,9 @@
+2002-08-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	Fix PR/7621
+	* typeck.c (finish_class_member_access_expr): Diagnose cases where
+	name lookup finds nothing.
+
 2002-08-15  Jason Merrill  <jason@redhat.com>
 
 	* semantics.c (finish_then_clause): Remove redundant assignment.
