@@ -171,6 +171,14 @@ SYSTEM_HEADER_DIR = /usr/include
 # Control whether to run fixproto.
 STMP_FIXPROTO = stmp-fixproto
 
+# Test to see whether <float.h> exists in the system header files,
+# and is not derived from GCC.
+FLOAT_H_TEST = \
+  [ -f $(SYSTEM_HEADER_DIR)/float.h ] && \
+  if grep 'ifndef _FLOAT_H___' $(SYSTEM_HEADER_DIR)/float.h >/dev/null; \
+  then false; \
+  else :; fi
+
 # Test to see whether <limits.h> exists in the system header files.
 LIMITS_H_TEST = [ -f $(SYSTEM_HEADER_DIR)/limits.h ]
 
@@ -769,8 +777,10 @@ gfloat.h: $(FLOAT_H)
 	cp $(FLOAT_H) gfloat.h
 
 # Create float.h source for the native machine.
+# Make it empty if we can use the system float.h without changes.
 float.h-nat: enquire
 	-./enquire -f > tmp-float.h
+	grep '#define [^_]' tmp-float.h >/dev/null || cp /dev/null tmp-float.h
 	mv tmp-float.h float.h-nat
 
 # Create a dummy float.h source for a cross-compiler.
@@ -787,8 +797,15 @@ float.h-cross:
 enquire: enquire.o $(GCC_PARTS)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ENQUIRE_LDFLAGS) enquire.o -o $@
 enquire.o: $(srcdir)/enquire.c $(GCC_PASSES) stmp-int-hdrs
-# Breaking this line caused a problem with one version of GNU make.
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(ENQUIRE_CFLAGS) -I. -c $(srcdir)/enquire.c
+	rm -f include/float.h
+	if $(FLOAT_H_TEST); then \
+	  SYS_FLOAT_H_WRAP=1; \
+	else :; \
+	  SYS_FLOAT_H_WRAP=0; \
+	fi; \
+	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) $(ENQUIRE_CFLAGS) \
+	  -DSYS_FLOAT_H_WRAP=$$SYS_FLOAT_H_WRAP \
+	  -I. -c $(srcdir)/enquire.c
 
 # Build the version of limits.h that we will install.
 xlimits.h: glimits.h limitx.h limity.h
@@ -1850,11 +1867,13 @@ stmp-int-hdrs: stmp-fixinc $(USER_H) xlimits.h
 	chmod a+r include/README
 	touch stmp-int-hdrs
 
-# Build the complete include directory.
+# Build the complete include directory, including float.h.
 stmp-headers: stmp-int-hdrs gfloat.h
 	rm -f include/float.h
-	cp gfloat.h include/float.h
-	chmod a+r include/float.h
+	if [ -s gfloat.h ]; then \
+	  cp gfloat.h include/float.h && \
+	  chmod a+r include/float.h; \
+	else :; fi
 	touch stmp-headers
 
 # Build fixed copies of system files.
