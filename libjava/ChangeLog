@@ -1,5 +1,11 @@
 2005-01-10  Michael Koch  <konqueror@gmx.de>
 
+	PR libgcj/18014
+	* java/util/Locale.java (Locale): Don't uppercase variant.
+	(getISOCountries): Fixed typo in javadoc.
+
+2005-01-10  Michael Koch  <konqueror@gmx.de>
+
 	* java/util/SimpleTimeZone.java (checkRule):
 	Throw IllegalArgumentException on invalid month values.
 	* java/util/TimeZone.java (setID):

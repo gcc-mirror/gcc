@@ -35,6 +35,7 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.util;
 
 import java.io.IOException;
@@ -74,7 +75,7 @@ import java.io.Serializable;
  * @see java.text.Collator
  * @author Jochen Hoenicke
  * @author Paul Fisher
- * @author Eric Blake <ebb9@email.byu.edu>
+ * @author Eric Blake (ebb9@email.byu.edu)
  * @since 1.1
  * @status updated to 1.4
  */
@@ -233,7 +234,7 @@ public final class Locale implements Serializable, Cloneable
       {
         language = convertLanguage(language).intern();
         country = country.toUpperCase().intern();
-        variant = variant.toUpperCase().intern();
+        variant = variant.intern();
       }
     this.language = language;
     this.country = country;
@@ -321,7 +322,7 @@ public final class Locale implements Serializable, Cloneable
    * Returns a list of all 2-letter uppercase country codes as defined
    * in ISO 3166.
    *
-   * @return a list of acceptible country codes
+   * @return a list of acceptable country codes
    */
   public static String[] getISOCountries()
   {
