@@ -1,5 +1,8 @@
 2000-05-19  Andreas Jaeger  <aj@suse.de>
 
+	* gcc.c-torture/execute/20000519-1.c: Testcase from Ulrich Drepper
+	which fails with SSA.
+
 	* lib/c-torture.exp: Also test with -O3 -fssa.
 
 2000-05-18  Michael Meissner  <meissner@redhat.com>
