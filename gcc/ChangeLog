@@ -1,3 +1,9 @@
+2003-03-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR target/10067
+	* config/sparc/sparc.md (jump pattern): Correct order
+	when issuing the annuling marker.
+
 2003-03-28  Alan Modra  <amodra@bigpond.net.au>
 
 	* loop.c: (find_mem_in_note_1, find_mem_in_note): New functions.
