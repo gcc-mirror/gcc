@@ -26,9 +26,6 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_VERSION fprintf (stderr, " (IA-64) HP-UX");
 
 /* Target OS builtins.  */
-/* -D__fpreg=long double is needed to compensate for
-   the lack of __fpreg which is a primitive type in
-   HP C but does not exist in GNU C.  */
 #define TARGET_OS_CPP_BUILTINS()			\
 do {							\
 	builtin_assert("system=hpux");			\
@@ -39,9 +36,6 @@ do {							\
 	builtin_define("__IA64__");			\
 	builtin_define("_LONGLONG");			\
 	builtin_define("_UINT128_T");			\
-	builtin_define("__fpreg=long double");		\
-	builtin_define("__float80=long double");	\
-	builtin_define("__float128=long double");	\
 	if (c_dialect_cxx () || !flag_iso)		\
 	  {						\
 	    builtin_define("_HPUX_SOURCE");		\

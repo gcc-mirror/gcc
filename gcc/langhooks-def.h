@@ -61,6 +61,7 @@ extern bool lhd_can_use_bit_fields_p (void);
 extern bool lhd_warn_unused_global_decl (tree);
 extern void lhd_incomplete_type_error (tree, tree);
 extern tree lhd_type_promotes_to (tree);
+extern void lhd_register_builtin_type (tree, const char *);
 extern bool lhd_decl_ok_for_sibcall (tree);
 extern tree lhd_expr_size (tree);
 extern bool lhd_decl_uninit (tree);
@@ -213,6 +214,7 @@ extern int lhd_tree_dump_type_quals (tree);
 #define LANG_HOOKS_MAKE_TYPE make_node
 #define LANG_HOOKS_INCOMPLETE_TYPE_ERROR lhd_incomplete_type_error
 #define LANG_HOOKS_TYPE_PROMOTES_TO lhd_type_promotes_to
+#define LANG_HOOKS_REGISTER_BUILTIN_TYPE lhd_register_builtin_type
 
 #define LANG_HOOKS_FOR_TYPES_INITIALIZER { \
   LANG_HOOKS_MAKE_TYPE, \
@@ -222,6 +224,7 @@ extern int lhd_tree_dump_type_quals (tree);
   LANG_HOOKS_SIGNED_TYPE, \
   LANG_HOOKS_SIGNED_OR_UNSIGNED_TYPE, \
   LANG_HOOKS_TYPE_PROMOTES_TO, \
+  LANG_HOOKS_REGISTER_BUILTIN_TYPE, \
   LANG_HOOKS_INCOMPLETE_TYPE_ERROR \
 }
 

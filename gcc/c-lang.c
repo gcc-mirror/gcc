@@ -133,6 +133,8 @@ enum c_language_kind c_language = clk_c;
 #define LANG_HOOKS_INCOMPLETE_TYPE_ERROR c_incomplete_type_error
 #undef LANG_HOOKS_TYPE_PROMOTES_TO
 #define LANG_HOOKS_TYPE_PROMOTES_TO c_type_promotes_to
+#undef LANG_HOOKS_REGISTER_BUILTIN_TYPE
+#define LANG_HOOKS_REGISTER_BUILTIN_TYPE c_register_builtin_type
 
 #undef LANG_HOOKS_WRITE_GLOBALS
 #define LANG_HOOKS_WRITE_GLOBALS c_write_global_declarations

@@ -184,6 +184,8 @@ static void cxx_initialize_diagnostics (diagnostic_context *);
 #define LANG_HOOKS_INCOMPLETE_TYPE_ERROR cxx_incomplete_type_error
 #undef LANG_HOOKS_TYPE_PROMOTES_TO
 #define LANG_HOOKS_TYPE_PROMOTES_TO cxx_type_promotes_to
+#undef LANG_HOOKS_REGISTER_BUILTIN_TYPE
+#define LANG_HOOKS_REGISTER_BUILTIN_TYPE c_register_builtin_type
 
 /* Each front end provides its own hooks, for toplev.c.  */
 const struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;

@@ -1,3 +1,19 @@
+2003-09-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* langhooks-def.h (lhd_register_builtin_type): New function.
+	(LANG_HOOKS_REGISTER_BUILTIN_TYPE): New macro.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Update.
+	* langhooks.h (lang_hooks_for_types): Add register_builtin_type.
+	* langhooks.c (lhd_register_builtin_type): New function.
+	* c-common.h (c_register_builtin_type): Declare.
+	* c-common.c (c_register_builtin_type): New function.
+	* c-lang.c (LANG_HOOKS_REGISTER_BUILTIN_TYPE): Define to
+	c_register_builtin_type.
+	* config/ia64/hpux.h (TARGET_OS_CPP_BUILTINS): Remove __fpreg,
+	__float80, and __float128 macros.
+	* config/ia64/ia64.c (ia64_init_builtins): Create __fpreg,
+	__float80, and __float128 types.
+
 2003-09-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtin-types.def

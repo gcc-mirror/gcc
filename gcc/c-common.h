@@ -948,6 +948,7 @@ extern bool c_common_init (void);
 extern void c_common_finish (void);
 extern void c_common_parse_file (int);
 extern HOST_WIDE_INT c_common_get_alias_set (tree);
+extern void c_register_builtin_type (tree, const char*);
 extern bool c_promoting_integer_type_p (tree);
 extern int self_promoting_args_p (tree);
 extern tree strip_array_types (tree);

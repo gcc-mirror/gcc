@@ -1,5 +1,8 @@
 2003-09-08  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-lang.c (LANG_HOOKS_REGISTER_BUILTIN_TYPE): Define to
+	c_register_builtin_type.
+
 	PR c++/11786
 	* decl2.c (add_function): Do not complain about seeing the same
 	non-function twice.
