@@ -146,6 +146,7 @@
 
 # ifdef __GNUC__
 #   include <_G_config.h>
+#   define __STL_HAS_WCHAR_T
 #   if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 8)
 #     define __STL_STATIC_TEMPLATE_MEMBER_BUG
 #     define __STL_NEED_TYPENAME
@@ -153,10 +154,11 @@
 #   else
 #     define __STL_CLASS_PARTIAL_SPECIALIZATION
 #     define __STL_FUNCTION_TMPL_PARTIAL_ORDER
-#     define __STL_EXPLICIT_FUNCTION_TMPL_ARGS
 #     define __STL_MEMBER_TEMPLATES
-      //    g++ 2.8.1 supports member template functions, but not member
-      //    template nested classes.
+#     define __STL_MEMBER_TEMPLATE_CLASSES
+#     define __STL_EXPLICIT_FUNCTION_TMPL_ARGS
+#     define __STL_HAS_NAMESPACES
+#     define __STL_NO_NAMESPACES
 #   endif
     /* glibc pre 2.0 is very buggy. We have to disable thread for it.
        It should be upgraded to glibc 2.0 or later. */
@@ -169,6 +171,9 @@
 #   endif
 #   ifdef __EXCEPTIONS
 #     define __STL_USE_EXCEPTIONS
+#   endif
+#   ifndef __STRICT_ANSI__
+#     define __STL_LONG_LONG
 #   endif
 # endif
 
