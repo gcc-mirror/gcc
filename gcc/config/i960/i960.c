@@ -507,7 +507,7 @@ i960_address_cost (x)
 
    Return 1 if we have written out everything that needs to be done to
    do the move.  Otherwise, return 0 and the caller will emit the move
-   normally. */
+   normally.  */
 
 int
 emit_move_sequence (operands, mode)
@@ -520,7 +520,7 @@ emit_move_sequence (operands, mode)
       && (operands[1] != const0_rtx || current_function_args_size
 	  || current_function_varargs || current_function_stdarg
 	  || rtx_equal_function_value_matters))
-    /* Here we use the same test as movsi+1 pattern -- see i960.md. */
+    /* Here we use the same test as movsi+1 pattern -- see i960.md.  */
     operands[1] = force_reg (mode, operands[1]);
 
   /* Storing multi-word values in unaligned hard registers to memory may
@@ -1031,7 +1031,7 @@ i960_function_name_declare (file, name, fndecl)
       leaf_proc_ok = 0;
     }
       
-  /* See if caller passes in an address to return value. */
+  /* See if caller passes in an address to return value.  */
 
   if (aggregate_value_p (DECL_RESULT (fndecl)))
     {
@@ -1173,7 +1173,7 @@ compute_frame_size (size)
 }
 
 /* Here register group is range of registers which can be moved by
-   one i960 instruction. */
+   one i960 instruction.  */
 
 struct reg_group
 {
@@ -1189,7 +1189,7 @@ static void i960_arg_size_and_align PARAMS ((enum machine_mode, tree, int *, int
 /* The following functions forms the biggest as possible register
    groups with registers in STATE.  REGS contain states of the
    registers in range [start, finish_reg).  The function returns the
-   number of groups formed. */
+   number of groups formed.  */
 static int
 i960_form_reg_groups (start_reg, finish_reg, regs, state, reg_groups)
      int start_reg;
@@ -1223,7 +1223,7 @@ i960_form_reg_groups (start_reg, finish_reg, regs, state, reg_groups)
   return nw;
 }
 
-/* We sort register winodws in descending order by length. */
+/* We sort register winodws in descending order by length.  */
 static int
 i960_reg_group_compare (group1, group2)
      const void *group1;
@@ -1242,7 +1242,7 @@ i960_reg_group_compare (group1, group2)
 
 /* Split the first register group in REG_GROUPS on subgroups one of
    which will contain SUBGROUP_LENGTH registers.  The function
-   returns new number of winodws. */
+   returns new number of winodws.  */
 static int
 i960_split_reg_group (reg_groups, nw, subgroup_length)
      struct reg_group *reg_groups;
@@ -1253,11 +1253,11 @@ i960_split_reg_group (reg_groups, nw, subgroup_length)
     /* This guarantees correct alignments of the two subgroups for
        i960 (see spliting for the group length 2, 3, 4).  More
        generalized algorithm would require splitting the group more
-       two subgroups. */
+       two subgroups.  */
     subgroup_length = reg_groups->length - subgroup_length;
   /* More generalized algorithm would require to try merging
      subgroups here.  But in case i960 it always results in failure
-     because of register group alignment. */
+     because of register group alignment.  */
   reg_groups[nw].length = reg_groups->length - subgroup_length;
   reg_groups[nw].start_reg = reg_groups->start_reg + subgroup_length;
   nw++;
@@ -1284,9 +1284,9 @@ i960_output_function_prologue (file, size)
   /* -1 if reg must be saved on proc entry, 0 if available, 1 if saved
      somewhere.  */
   int regs[FIRST_PSEUDO_REGISTER];
-  /* All global registers (which must be saved) divided by groups. */
+  /* All global registers (which must be saved) divided by groups.  */
   struct reg_group global_reg_groups [16];
-  /* All local registers (which are available) divided by groups. */
+  /* All local registers (which are available) divided by groups.  */
   struct reg_group local_reg_groups [16];
 
 
@@ -2132,7 +2132,7 @@ legitimize_address (x, oldx, mode)
 
 #if 0
 /* Return the most stringent alignment that we are willing to consider
-   objects of size SIZE and known alignment ALIGN as having. */
+   objects of size SIZE and known alignment ALIGN as having.  */
    
 int
 i960_alignment (size, align)
@@ -2244,7 +2244,7 @@ i960_expr_alignment (x, size)
 
     case SYMBOL_REF:
       /* If this is a valid program, objects are guaranteed to be
-	 correctly aligned for whatever size the reference actually is. */
+	 correctly aligned for whatever size the reference actually is.  */
       align = i960_object_bytes_bitalign (size) / BITS_PER_UNIT;
       break;
 
@@ -2556,7 +2556,7 @@ i960_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 
      If there are no stack arguments but there are exactly NPARM_REGS
      registers, either there were no extra arguments or the caller
-     allocated an argument block. */
+     allocated an argument block.  */
 
   if (cum->ca_nstackparms == 0 && first_reg < NPARM_REGS && !no_rtl)
     {

@@ -510,7 +510,7 @@ get_alias_set (t)
 
 	  if (decl && DECL_POINTER_ALIAS_SET_KNOWN_P (decl))
 	    {
-	      /* If we haven't computed the actual alias set, do it now. */
+	      /* If we haven't computed the actual alias set, do it now.  */
 	      if (DECL_POINTER_ALIAS_SET (decl) == -2)
 		{
 		  /* No two restricted pointers can point at the same thing.
