@@ -1,3 +1,37 @@
+Wed Sep 15 17:56:00 1999  Richard Henderson  <rth@cygnus.com>
+
+	* emit-rtl.c (free_emit_status): Don't check DECL_DEFER_OUTPUT.
+	Free the struct.
+	(mark_emit_status): Renamed from mark_emit_state.
+	* except.c (mark_eh_status): Renamed from mark_eh_state.
+	Check not null before marking.
+	(free_eh_status): New.
+	* expr.c (mark_expr_status, free_expr_status): New.
+	* function.c (free_machine_status): New.
+	(free_after_parsing): New.
+	(free_after_compilation): Move bits to free_after_parsing; call
+	free_eh_status, free_expr_status; zero the marked members of the
+	function state.
+	(prepare_function_start): No can_garbage_collect. 
+	Call init_eh_for_function.
+	(expand_dummy_function_end): Free up current_function state.
+	(mark_function_status): Renamed from mark_function_state.
+	(mark_function_chain): No can_garbage_collect.  Call mark_expr_status.
+	* function.h (struct function): No can_garbage_collect.
+	(free_machine_status, free_after_parsing): Declare.
+	(free_eh_status, free_expr_status): Declare.
+	* ggc.h (mark_expr_status): Declare.
+	* stmt.c (free_stmt_status): Free the struct.
+	(mark_stmt_status): Renamed from mark_stmt_state.
+	(init_stmt): Don't call init_eh.
+	(init_stmt_for_function): Don't call init_eh_for_function.
+	* toplev.c (compile_file): Call init_eh.
+	(rest_of_compilation): Free basic block info before ggc_collect.
+	Call free_after_parsing; conditionally call free_after_compilation.
+	* varasm.c (mark_varasm_status): Renamed from mark_varasm_state.
+	Check not null before marking.
+	(free_varasm_status): Don't check DECL_DEFER_OUTPUT.  Free the struct.
+
 Wed Sep 15 17:53:16 1999  Richard Henderson  <rth@cygnus.com>
 
 	* c-lex.c (yylex): Initialize warn.

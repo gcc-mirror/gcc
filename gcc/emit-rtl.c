@@ -1609,13 +1609,11 @@ void
 free_emit_status (f)
      struct function *f;
 {
-  if (DECL_DEFER_OUTPUT (f->decl))
-    return;
-
   free (f->emit->x_regno_reg_rtx);
   free (f->emit->regno_pointer_flag);
   free (f->emit->regno_pointer_align);
-  f->emit->x_regno_reg_rtx = 0;
+  free (f->emit);
+  f->emit = NULL;
 }
 
 /* Go through all the RTL insn bodies and copy any invalid shared structure.
@@ -3486,7 +3484,7 @@ mark_sequence_stack (ss)
 /* Mark ES for GC.  */
 
 void
-mark_emit_state (es)
+mark_emit_status (es)
      struct emit_status *es;
 {
   rtx *r;

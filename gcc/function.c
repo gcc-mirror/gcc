@@ -122,6 +122,7 @@ void (*init_machine_status) PROTO((struct function *));
 void (*save_machine_status) PROTO((struct function *));
 void (*restore_machine_status) PROTO((struct function *));
 void (*mark_machine_status) PROTO((struct function *));
+void (*free_machine_status) PROTO((struct function *));
 
 /* Likewise, but for language-specific data.  */
 void (*init_lang_status) PROTO((struct function *));
@@ -276,7 +277,7 @@ static boolean insns_for_mem_comp PROTO ((hash_table_key, hash_table_key));
 static int insns_for_mem_walk   PROTO ((rtx *, void *));
 static void compute_insns_for_mem PROTO ((rtx, rtx, struct hash_table *));
 static void mark_temp_slot PROTO ((struct temp_slot *));
-static void mark_function_state PROTO ((struct function *));
+static void mark_function_status PROTO ((struct function *));
 static void mark_function_chain PROTO ((void *));
 
 
@@ -390,6 +391,24 @@ pop_function_context ()
 }
 
 /* Clear out all parts of the state in F that can safely be discarded
+   after the function has been parsed, but not compiled, to let
+   garbage collection reclaim the memory.  */
+
+void
+free_after_parsing (f)
+     struct function *f;
+{
+  /* f->expr->forced_labels is used by code generation.  */
+  /* f->emit->regno_reg_rtx is used by code generation.  */
+  /* f->varasm is used by code generation.  */
+  /* f->eh->eh_return_stub_label is used by code generation.  */
+
+  if (free_lang_status)
+    (*free_lang_status) (f);
+  free_stmt_status (f);
+}
+
+/* Clear out all parts of the state in F that can safely be discarded
    after the function has been compiled, to let garbage collection
    reclaim the memory.  */
 
@@ -397,18 +416,44 @@ void
 free_after_compilation (f)
      struct function *f;
 {
+  free_eh_status (f);
+  free_expr_status (f);
   free_emit_status (f);
   free_varasm_status (f);
-  free_stmt_status (f);
-  if (free_lang_status)
-    (*free_lang_status) (f);
 
-  if (!DECL_DEFER_OUTPUT (f->decl))
-    {
-      free (f->x_parm_reg_stack_loc);
-      f->can_garbage_collect = 1;
-    }
+  if (free_machine_status)
+    (*free_machine_status) (f);
+
+  free (f->x_parm_reg_stack_loc);
+
+  f->arg_offset_rtx = NULL;
+  f->return_rtx = NULL;
+  f->internal_arg_pointer = NULL;
+  f->x_nonlocal_labels = NULL;
+  f->x_nonlocal_goto_handler_slots = NULL;
+  f->x_nonlocal_goto_handler_labels = NULL;
+  f->x_nonlocal_goto_stack_level = NULL;
+  f->x_cleanup_label = NULL;
+  f->x_return_label = NULL;
+  f->x_save_expr_regs = NULL;
+  f->x_stack_slot_list = NULL;
+  f->x_rtl_expr_chain = NULL;
+  f->x_tail_recursion_label = NULL;
+  f->x_tail_recursion_reentry = NULL;
+  f->x_arg_pointer_save_area = NULL;
+  f->x_context_display = NULL;
+  f->x_trampoline_list = NULL;
+  f->x_parm_birth_insn = NULL;
+  f->x_last_parm_insn = NULL;
+  f->x_parm_reg_stack_loc = NULL;
+  f->x_temp_slots = NULL;
+  f->fixup_var_refs_queue = NULL;
+  f->original_arg_vector = NULL;
+  f->original_decl_initial = NULL;
+  f->inl_last_parm_insn = NULL;
+  f->epilogue_delay_list = NULL;
 }
+
 
 /* Allocate fixed slots in the stack frame of the current function.  */
 
@@ -5495,9 +5540,9 @@ static void
 prepare_function_start ()
 {
   current_function = (struct function *) xcalloc (1, sizeof (struct function));
-  current_function->can_garbage_collect = 0;
 
   init_stmt_for_function ();
+  init_eh_for_function ();
 
   cse_not_expected = ! optimize;
 
@@ -5981,6 +6026,10 @@ expand_dummy_function_end ()
 
   /* Outside function body, can't compute type's actual size
      until next function's body starts.  */
+
+  free_after_parsing (current_function);
+  free_after_compilation (current_function);
+  free (current_function);
   current_function = 0;
 }
 
@@ -6664,7 +6713,7 @@ mark_temp_slot (t)
 /* Mark P for GC.  */
 
 static void
-mark_function_state (p)
+mark_function_status (p)
      struct function *p;
 {
   int i;
@@ -6724,20 +6773,14 @@ mark_function_chain (arg)
 
   for (; f; f = f->next_global)
     {
-      if (f->can_garbage_collect)
-	continue;
-
       ggc_mark_tree (f->decl);
 
-      mark_function_state (f);
-      mark_stmt_state (f->stmt);
-      mark_eh_state (f->eh);
-      mark_emit_state (f->emit);
-      mark_varasm_state (f->varasm);
-
-      ggc_mark_rtx (f->expr->x_saveregs_value);
-      ggc_mark_rtx (f->expr->x_apply_args_value);
-      ggc_mark_rtx (f->expr->x_forced_labels);
+      mark_function_status (f);
+      mark_eh_status (f->eh);
+      mark_stmt_status (f->stmt);
+      mark_expr_status (f->expr);
+      mark_emit_status (f->emit);
+      mark_varasm_status (f->varasm);
 
       if (mark_machine_status)
 	(*mark_machine_status) (f);

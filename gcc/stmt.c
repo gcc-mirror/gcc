@@ -561,13 +561,15 @@ free_stmt_status (f)
   /* We're about to free the function obstack.  If we hold pointers to
      things allocated there, then we'll try to mark them when we do
      GC.  So, we clear them out here explicitly.  */
-  f->stmt->x_goto_fixup_chain = 0;
+
+  free (f->stmt);
+  f->stmt = NULL;
 }
 
 /* Mark P for GC.  */
 
 void
-mark_stmt_state (p)
+mark_stmt_status (p)
      struct stmt_status *p;
 {
   if (p == 0)
@@ -590,7 +592,6 @@ void
 init_stmt ()
 {
   gcc_obstack_init (&stmt_obstack);
-  init_eh ();
 }
 
 void
@@ -617,8 +618,6 @@ init_stmt_for_function ()
   expr_stmts_for_value = 0;
   last_expr_type = 0;
   last_expr_value = NULL_RTX;
-
-  init_eh_for_function ();
 }
 
 /* Return nonzero if anything is pushed on the loop, condition, or case

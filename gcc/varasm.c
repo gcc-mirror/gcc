@@ -3228,9 +3228,12 @@ mark_pool_sym_hash_table (pps)
 /* Mark P for GC.  */
 
 void
-mark_varasm_state (p)
-  struct varasm_status *p;
+mark_varasm_status (p)
+     struct varasm_status *p;
 {
+  if (p == NULL)
+    return;
+
   mark_pool_constant (p->x_first_pool);
   mark_pool_sym_hash_table (p->x_const_rtx_sym_hash_table);
   ggc_mark_rtx (p->x_const_double_chain);
@@ -3246,17 +3249,11 @@ free_varasm_status (f)
 {
   struct varasm_status *p;
 
-  if (DECL_DEFER_OUTPUT (f->decl))
-    return;
-
   p = f->varasm;
   free (p->x_const_rtx_hash_table);
   free (p->x_const_rtx_sym_hash_table);
-
-  p->x_first_pool = p->x_last_pool = 0;
-  p->x_const_rtx_hash_table = 0;
-  p->x_const_rtx_sym_hash_table = 0;
-  p->x_const_double_chain = 0;
+  free (p);
+  f->varasm = NULL;
 }
 
 enum kind { RTX_DOUBLE, RTX_INT };

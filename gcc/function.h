@@ -184,9 +184,6 @@ struct function
   struct emit_status *emit;
   struct varasm_status *varasm;
 
-  /* Nonzero if we are done compiling this function.  */
-  int can_garbage_collect;
-  
   /* For function.c.  */
 
   /* Name of this function.  */
@@ -539,6 +536,7 @@ extern void (*init_machine_status)	PROTO((struct function *));
 extern void (*mark_machine_status)	PROTO((struct function *));
 extern void (*save_machine_status)	PROTO((struct function *));
 extern void (*restore_machine_status)	PROTO((struct function *));
+extern void (*free_machine_status)	PROTO((struct function *));
 
 /* Likewise, but for language-specific data.  */
 extern void (*init_lang_status)         PROTO((struct function *));
@@ -551,12 +549,16 @@ extern void (*free_lang_status)         PROTO((struct function *));
 extern void save_tree_status		PROTO((struct function *));
 extern void restore_tree_status		PROTO((struct function *));
 extern void restore_emit_status		PROTO((struct function *));
+extern void free_after_parsing		PROTO((struct function *));
 extern void free_after_compilation	PROTO((struct function *));
 
 extern void init_varasm_status		PROTO((struct function *));
 extern void free_varasm_status		PROTO((struct function *));
 extern void free_emit_status		PROTO((struct function *));
 extern void free_stmt_status            PROTO((struct function *));
+extern void free_eh_status		PROTO((struct function *));
+extern void free_expr_status		PROTO((struct function *));
+
 extern rtx get_first_block_beg		PROTO((void));
 
 extern void init_virtual_regs		PROTO((struct emit_status *));
