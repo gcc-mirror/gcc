@@ -227,7 +227,6 @@ static tree sh_handle_renesas_attribute (tree *, tree, tree, int, bool *);
 static void sh_output_function_epilogue (FILE *, HOST_WIDE_INT);
 static void sh_insert_attributes (tree, tree *);
 static int sh_adjust_cost (rtx, rtx, rtx, int);
-static int sh_use_dfa_interface (void);
 static int sh_issue_rate (void);
 static int sh_dfa_new_cycle (FILE *, int, rtx, int, int, int *sort_p);
 static short find_set_regmode_weight (rtx, enum machine_mode);
@@ -323,8 +322,8 @@ static bool sh_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode,
 #define TARGET_SCHED_ADJUST_COST sh_adjust_cost
 
 #undef TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE 
-#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE \
-				sh_use_dfa_interface
+#define TARGET_SCHED_USE_DFA_PIPELINE_INTERFACE hook_int_void_1
+
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE sh_issue_rate
 
@@ -8549,19 +8548,6 @@ int
 sh_pr_n_sets (void)
 {
   return REG_N_SETS (TARGET_SHMEDIA ? PR_MEDIA_REG : PR_REG);
-}
-
-/* This Function returns nonzero if the DFA based scheduler interface
-   is to be used.  At present this is only supported properly for the SH4.
-   For the SH1 the current DFA model is just the converted form of the old
-   pipeline model description.  */
-static int
-sh_use_dfa_interface (void)
-{
-  if (TARGET_SH1)
-    return 1;
-  else
-    return 0;
 }
 
 /* This function returns "2" to indicate dual issue for the SH4
