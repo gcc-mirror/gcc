@@ -1,3 +1,9 @@
+2004-07-03  Steven Bosscher  <stevenb@suse.de>
+
+	* config/sh/sh.c (sh_use_dfa_interface): Add TARGET_SH1.
+	* config/sh/sh.md: Convert the SH1 pipeline description to
+	a DFA model.
+
 2004-07-02  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c (struct c_binding): Remove contour field; add

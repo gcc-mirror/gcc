@@ -8488,11 +8488,13 @@ sh_pr_n_sets (void)
 }
 
 /* This Function returns nonzero if the DFA based scheduler interface
-   is to be used.  At present this is supported for the SH4 only.  */
+   is to be used.  At present this is only supported properly for the SH4.
+   For the SH1 the current DFA model is just the converted form of the old
+   pipeline model description.  */
 static int
 sh_use_dfa_interface (void)
 {
-  if (TARGET_HARD_SH4)
+  if (TARGET_SH1)
     return 1;
   else
     return 0;
