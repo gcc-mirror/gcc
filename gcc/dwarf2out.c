@@ -11447,7 +11447,7 @@ gen_compile_unit_die (filename)
   if (strcmp (language_string, "GNU C++") == 0)
     language = DW_LANG_C_plus_plus;
   else if (strcmp (language_string, "GNU Ada") == 0)
-    language = DW_LANG_Ada83;
+    language = DW_LANG_Ada95;
   else if (strcmp (language_string, "GNU F77") == 0)
     language = DW_LANG_Fortran77;
   else if (strcmp (language_string, "GNU Pascal") == 0)
