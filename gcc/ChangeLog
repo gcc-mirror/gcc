@@ -1,8 +1,13 @@
+2004-08-03  Andrew Pinski  <apinski@apple.com>
+
+	PR bootstrap/16865
+	* loop-iv.c (simplify_using_assignment): Initialize lhs.
+
 2004-08-03  Paul Brook  <paul@codesourcery.com>
 
 	* gcc/doc/install.texi: Document MPFR requirement.
 
-2004-07-30  Maciej W. Rozycki  <macro@linux-mips.org>
+2004-08-03  Maciej W. Rozycki  <macro@linux-mips.org>
 
 	* aclocal.m4 (gcc_AC_FUNC_MMAP_BLACKLIST): Check for <sys/mman.h> 
 	and mmap() explicitly instead of relying on preset autoconf cache 

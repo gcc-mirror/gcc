@@ -1357,7 +1357,7 @@ static void
 simplify_using_assignment (rtx insn, rtx *expr, regset altered)
 {
   rtx set = single_set (insn);
-  rtx lhs, rhs;
+  rtx lhs = NULL_RTX, rhs;
   bool ret = false;
 
   if (set)
