@@ -382,15 +382,6 @@ arith32_operand (op, mode)
   return register_operand (op, mode) || GET_CODE (op) == CONST_INT;
 }
 
-/* Return truth value of statement that OP is a call-clobbered register.  */
-int
-clobbered_register (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  return (GET_CODE (op) == REG && call_used_regs[REGNO (op)]);
-}
-
 /* True iff OP can be the source of a move to a general register.  */
 int
 srcsi_operand (op, mode)
@@ -403,6 +394,9 @@ srcsi_operand (op, mode)
 
   /* Accept any register or memory reference.  */
   if (nonimmediate_operand (op, mode))
+    return 1;
+
+  if (depi_cint_operand (op, mode))
     return 1;
 
   /* OK if ldo or ldil can be used.  */
@@ -2378,8 +2372,8 @@ output_arg_descriptor (insn)
   fputc ('\n', asm_out_file);
 }
 
-/* Memory loads/stores to/from fp registers may need a scratch
-   register in which to reload the address. */
+/* Memory loads/stores to/from the shift need to go through
+   the general registers.  */
 
 enum reg_class
 secondary_reload_class (class, mode, in)
@@ -2389,12 +2383,10 @@ secondary_reload_class (class, mode, in)
 {
   int regno = true_regnum (in);
 
-  if ((regno >= FIRST_PSEUDO_REGISTER || regno == -1)
-      && (class == FP_REGS || class == SNAKE_FP_REGS
-	  || class == HI_SNAKE_FP_REGS))
+  if (class == SHIFT_REGS && (regno <= 0 || regno >= 32))
     return GENERAL_REGS;
-  else
-    return NO_REGS;
+
+  return NO_REGS;
 }
 
 enum direction
