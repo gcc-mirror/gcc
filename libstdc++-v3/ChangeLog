@@ -1,4 +1,18 @@
 2002-05-13  Paolo Carlini  <pcarlini@unitus.it>
+            Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/22_locale/money_get_members_char.cc
+	(test01, test02, test04): Use the de_DE@euro named locale
+	instead of de_DE to allow for an uniform behaviour with
+	both old and Euro-era localedata; tweak some tests.
+	* testsuite/22_locale/money_get_members_wchar_t.cc
+	(test01, test02, test04): Likewise.
+	* testsuite/22_locale/money_put_members_char.cc
+	(test01, test02, test04): Likewise.
+	* testsuite/22_locale/money_put_members_wchar_t.cc
+	(test01, test02, test04): Likewise.
+
+2002-05-13  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/22_locale/codecvt_members_char_char.cc
         (test03): Robustify wrt localedata.
