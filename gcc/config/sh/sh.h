@@ -1382,9 +1382,13 @@ extern enum reg_class reg_class_from_letter[];
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.
 
-   On SH this is the size of MODE in words.  */
+   If TARGET_SHMEDIA, we need two FP registers per word.
+   Otherwise we will need at most one register per word.  */
 #define CLASS_MAX_NREGS(CLASS, MODE) \
-     ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+    (TARGET_SHMEDIA \
+     && TEST_HARD_REG_BIT (reg_class_contents[CLASS], FIRST_FP_REG) \
+     ? (GET_MODE_SIZE (MODE) + UNITS_PER_WORD/2 - 1) / (UNITS_PER_WORD/2) \
+     : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* If defined, gives a class of registers that cannot be used as the
    operand of a SUBREG that changes the mode of the object illegally.  */
