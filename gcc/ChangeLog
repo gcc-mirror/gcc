@@ -1,3 +1,12 @@
+Fri Jun  2 00:22:52 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.h (CPP_SPEC): Add -D__NOMACSAVE__ for -mnomacsave.
+	(CONDITIONAL_REGISTER_USAGE): Mac registers are call used
+	for TARGET_NOMACSAVE.
+	(NOMACSAVE_BIT): Define.
+	(TARGET_NOMACSAVE): Define.
+	(TARGET_SWITCHES): Add "nomacsave".
+
 2000-06-02  Toshiyasu Morita  <toshi.morita@sega.com>
 
 	* sh.md (untyped_call): Remove excess parameters
