@@ -523,15 +523,14 @@ libgcj-@gcc_version@.jar: $(all_java_class_files)
 
 endif
 
-# Note: The libtool objects are removed by mostlyclean-local
-# because of command-line-length issues.
-MOSTLYCLEANFILES = $(nat_headers) $(xlib_nat_headers)
-
 CLEANFILES = libgcj-@gcc_version@.jar
 
 mostlyclean-local:
 ## Use libtool rm to remove each libtool object
 	find . -name '*.lo' -print | xargs $(LIBTOOL) rm -f
+## Remove headers.  We use GNU make trickery because otherwise
+## the command line is too long.
+	@: $(foreach header,$(nat_headers) $(xlib_nat_headers) $(gtk_jni_headers),$(shell rm -f '$(header)'))
 
 clean-local:
 ## Remove every .class file that was created.
