@@ -4864,6 +4864,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 
 	if (extern_ref)
 	  DECL_EXTERNAL (decl) = 1;
+	else if (current_function_decl != NULL_TREE)
+	    FUNCTION_NEEDS_STATIC_CHAIN (decl) = 1;
 
 	/* Record absence of global scope for `static' or `auto'.  */
 	TREE_PUBLIC (decl)
