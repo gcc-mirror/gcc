@@ -829,6 +829,7 @@ get_static_reference (interface, protocols)
 
       current_obstack = &permanent_obstack;
       t = copy_node (type);
+      TYPE_BINFO (t) = make_tree_vec (2);
 
       /* Add this type to the chain of variants of TYPE.  */
       TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (m);
@@ -880,6 +881,7 @@ get_object_reference (protocols)
 
       current_obstack = &permanent_obstack;
       t = copy_node (type);
+      TYPE_BINFO (t) = make_tree_vec (2);
 
       /* Add this type to the chain of variants of TYPE.  */
       TYPE_NEXT_VARIANT (t) = TYPE_NEXT_VARIANT (m);
@@ -5346,7 +5348,7 @@ start_class (code, class_name, super_name, protocol_list)
     objc_fatal ();
 
   class = make_node (code);
-  TYPE_BINFO (class) = make_tree_vec (4);
+  TYPE_BINFO (class) = make_tree_vec (5);
 
   CLASS_NAME (class) = class_name;
   CLASS_SUPER_NAME (class) = super_name;
@@ -5639,6 +5641,7 @@ start_protocol (code, name, list)
     objc_protocol_template = build_protocol_template ();
 
   protocol = make_node (code);
+  TYPE_BINFO (protocol) = make_tree_vec (2);
 
   PROTOCOL_NAME (protocol) = name;
   PROTOCOL_LIST (protocol) = list;
