@@ -1,3 +1,9 @@
+1999-03-27  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* call.c (build_field_call): Unify 'this' and non-'this' cases.
+
+	* typeck.c (build_indirect_ref): Check for 'this' sooner.
+
 Fri Mar 26 10:20:34 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* call.c (op_error): Const-ify a char*.

@@ -128,92 +128,40 @@ build_field_call (basetype_path, instance_ptr, name, parms)
   if (name == ctor_identifier || name == dtor_identifier)
     return NULL_TREE;
 
-  if (instance_ptr == current_class_ptr)
-    {
-      /* Check to see if we really have a reference to an instance variable
-	 with `operator()()' overloaded.  */
-      field = IDENTIFIER_CLASS_VALUE (name);
+  /* Speed up the common case.  */
+  if (instance_ptr == current_class_ptr
+      && IDENTIFIER_CLASS_VALUE (name) == NULL_TREE)
+    return NULL_TREE;
 
-      if (field == NULL_TREE)
-	{
-	  cp_error ("`this' has no member named `%D'", name);
-	  return error_mark_node;
-	}
-
-      if (TREE_CODE (field) == FIELD_DECL || TREE_CODE (field) == VAR_DECL)
-	{
-	  /* If it's a field, try overloading operator (),
-	     or calling if the field is a pointer-to-function.  */
-	  instance = build_component_ref_1 (current_class_ref, field, 0);
-	  if (instance == error_mark_node)
-	    return error_mark_node;
-
-	  if (TYPE_LANG_SPECIFIC (TREE_TYPE (instance)))
-	    return build_opfncall (CALL_EXPR, LOOKUP_NORMAL, instance, parms, NULL_TREE);
-
-	  if (TREE_CODE (TREE_TYPE (instance)) == POINTER_TYPE)
-	    {
-	      if (TREE_CODE (TREE_TYPE (TREE_TYPE (instance))) == FUNCTION_TYPE)
-		return build_function_call (instance, parms);
-	      else if (TREE_CODE (TREE_TYPE (TREE_TYPE (instance))) == METHOD_TYPE)
-		return build_function_call (instance, expr_tree_cons (NULL_TREE, current_class_ptr, parms));
-	    }
-	}
-      return NULL_TREE;
-    }
-
-  /* Check to see if this is not really a reference to an instance variable
-     with `operator()()' overloaded.  */
   field = lookup_field (basetype_path, name, 1, 0);
 
-  /* This can happen if the reference was ambiguous or for access
-     violations.  */
-  if (field == error_mark_node)
-    return error_mark_node;
+  if (field == error_mark_node || field == NULL_TREE)
+    return field;
 
-  if (field && (TREE_CODE (field) == FIELD_DECL ||
-		TREE_CODE (field) == VAR_DECL))
+  if (TREE_CODE (field) == FIELD_DECL || TREE_CODE (field) == VAR_DECL)
     {
-      tree basetype;
-      tree ftype = TREE_TYPE (field);
+      /* If it's a field, try overloading operator (),
+	 or calling if the field is a pointer-to-function.  */
+      instance = build_indirect_ref (instance_ptr, NULL_PTR);
+      instance = build_component_ref_1 (instance, field, 0);
 
-      if (TREE_CODE (ftype) == REFERENCE_TYPE)
-	ftype = TREE_TYPE (ftype);
+      if (instance == error_mark_node)
+	return error_mark_node;
 
-      if (TYPE_LANG_SPECIFIC (ftype))
+      if (IS_AGGR_TYPE (TREE_TYPE (instance)))
+	return build_opfncall (CALL_EXPR, LOOKUP_NORMAL,
+			       instance, parms, NULL_TREE);
+      else if (TREE_CODE (TREE_TYPE (instance)) == POINTER_TYPE)
 	{
-	  /* Make the next search for this field very short.  */
-	  basetype = DECL_FIELD_CONTEXT (field);
-	  instance_ptr = convert_pointer_to (basetype, instance_ptr);
-
-	  instance = build_indirect_ref (instance_ptr, NULL_PTR);
-	  return build_opfncall (CALL_EXPR, LOOKUP_NORMAL,
-				 build_component_ref_1 (instance, field, 0),
-				 parms, NULL_TREE);
+	  if (TREE_CODE (TREE_TYPE (TREE_TYPE (instance))) == FUNCTION_TYPE)
+	    return build_function_call (instance, parms);
+	  else if (TREE_CODE (TREE_TYPE (TREE_TYPE (instance)))
+		   == METHOD_TYPE)
+	    return build_function_call
+	      (instance, expr_tree_cons (NULL_TREE, instance_ptr, parms));
 	}
-      if (TREE_CODE (ftype) == POINTER_TYPE)
-	{
-	  if (TREE_CODE (TREE_TYPE (ftype)) == FUNCTION_TYPE
-	      || TREE_CODE (TREE_TYPE (ftype)) == METHOD_TYPE)
-	    {
-	      /* This is a member which is a pointer to function.  */
-	      tree ref
-		= build_component_ref_1 (build_indirect_ref (instance_ptr,
-							     NULL_PTR),
-					 field, LOOKUP_COMPLAIN);
-	      if (ref == error_mark_node)
-		return error_mark_node;
-	      return build_function_call (ref, parms);
-	    }
-	}
-      else if (TREE_CODE (ftype) == METHOD_TYPE)
-	{
-	  error ("invalid call via pointer-to-member function");
-	  return error_mark_node;
-	}
-      else
-	return NULL_TREE;
     }
+
   return NULL_TREE;
 }
 
