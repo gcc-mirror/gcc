@@ -4101,8 +4101,10 @@ main (argc, argv, envp)
 			    {
 #ifdef DWARF2_DEBUGGING_INFO
 			      type = DWARF2_DEBUG;
-#elif defined DBX_DEBUGGING_INFO
+#else
+#ifdef DBX_DEBUGGING_INFO
 			      type = DBX_DEBUG;
+#endif
 #endif
 			    }
 			}
