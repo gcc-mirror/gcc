@@ -62,7 +62,7 @@ public class SecureRandom extends Random
   /** Service name for PRNGs. */
   private static final String SECURE_RANDOM = "SecureRandom";
 
-  static final long serialVersionUID = 4940670005562187L;
+  private static final long serialVersionUID = 4940670005562187L;
 
   //Serialized Field
   long counter = 0;		//Serialized

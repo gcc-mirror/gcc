@@ -47,6 +47,7 @@ import java.io.ObjectInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InvalidObjectException;
 import java.io.ObjectStreamException;
+import java.io.Serializable;
 
 /**
  * The Certificate class is an abstract class used to manage 
@@ -71,9 +72,9 @@ import java.io.ObjectStreamException;
  * @author Mark Benvenuto
  * @author Casey Marshall
  */
-public abstract class Certificate
+public abstract class Certificate implements Serializable
 {
-  static final long serialVersionUID = -6751606818319535583L;
+  private static final long serialVersionUID = -6751606818319535583L;
 	
   private String type;
 
@@ -227,7 +228,7 @@ public abstract class Certificate
    * @throws ObjectStreamException If the replacement could not be
    * created.
    */
-  public Object writeReplace() throws ObjectStreamException
+  protected Object writeReplace() throws ObjectStreamException
   {
     try
       {

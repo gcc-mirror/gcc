@@ -70,7 +70,7 @@ import java.util.Enumeration;
  */
 public abstract class IdentityScope extends Identity
 {
-  static final long serialVersionUID = -2337346281189773310L;
+  private static final long serialVersionUID = -2337346281189773310L;
   private static IdentityScope systemScope = null;
 
   /**
