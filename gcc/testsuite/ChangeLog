@@ -1,3 +1,9 @@
+2004-06-19  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* g++.dg/lookup/crash3.C: Use __SIZE_TYPE__
+	instead of setting the type of size_t by
+	hand.
+
 2004-06-18  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/unordered-2.c: New test case.
