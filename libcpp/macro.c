@@ -1540,7 +1540,7 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
 
       /* Restore lexer position because of games lex_expansion_token()
 	 plays lexing the macro.  We set the type for SEEN_EOL() in
-	 cpplib.c.
+	 directives.c.
 
 	 Longer term we should lex the whole line before coming here,
 	 and just copy the expansion.  */

@@ -326,7 +326,7 @@ directive_diagnostics (cpp_reader *pfile, const directive *dir, int indented)
 
 /* Check if we have a known directive.  INDENTED is nonzero if the
    '#' of the directive was indented.  This function is in this file
-   to save unnecessarily exporting dtable etc. to cpplex.c.  Returns
+   to save unnecessarily exporting dtable etc. to lex.c.  Returns
    nonzero if the line of tokens has been handled, zero if we should
    continue processing the line.  */
 int
@@ -382,7 +382,7 @@ _cpp_handle_directive (cpp_reader *pfile, int indented)
 
 	 does not cause '#define foo bar' to get executed when
 	 compiled with -save-temps, we recognize directives in
-	 -fpreprocessed mode only if the # is in column 1.  cppmacro.c
+	 -fpreprocessed mode only if the # is in column 1.  macro.c
 	 puts a space in front of any '#' at the start of a macro.  */
       if (CPP_OPTION (pfile, preprocessed)
 	  && (indented || !(dir->flags & IN_I)))
@@ -503,7 +503,7 @@ lex_macro_node (cpp_reader *pfile)
   return NULL;
 }
 
-/* Process a #define directive.  Most work is done in cppmacro.c.  */
+/* Process a #define directive.  Most work is done in macro.c.  */
 static void
 do_define (cpp_reader *pfile)
 {
