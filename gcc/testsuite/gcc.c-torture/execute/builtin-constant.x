@@ -3,8 +3,8 @@ set torture_eval_before_execute {
     set compiler_conditional_xfail_data {
         "This test fails on all targets when optimizing." \
         { "*-*-*" } \
-        { "*" } \
-        { "-O0" }
+        { "-O1" } \
+        { "" }
     }
 }
 
