@@ -1275,10 +1275,12 @@ warn_of_redefinition (pfile, node, macro2)
   if (CPP_OPTION (pfile, traditional))
     return _cpp_expansions_different_trad (macro1, macro2);
 
-  if (macro1->count == macro2->count)
-    for (i = 0; i < macro1->count; i++)
-      if (!_cpp_equiv_tokens (&macro1->exp.tokens[i], &macro2->exp.tokens[i]))
-	return true;
+  if (macro1->count != macro2->count)
+    return true;
+
+  for (i = 0; i < macro1->count; i++)
+    if (!_cpp_equiv_tokens (&macro1->exp.tokens[i], &macro2->exp.tokens[i]))
+      return true;
 
   return false;
 }

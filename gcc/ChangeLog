@@ -1,3 +1,8 @@
+2003-05-29  DJ Delorie  <dj@redhat.com>
+
+	* cppmacro.c (warn_of_redefinition): Handle cases where the two
+	definitions have different numbers of tokens.
+
 2003-06-01  Andreas Jaeger  <aj@suse.de>
 
 	* gen-protos.c (main): Readd unused attribute for argc.

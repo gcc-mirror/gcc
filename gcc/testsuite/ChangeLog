@@ -1,3 +1,7 @@
+2003-06-01  Loren James Rittle  <ljrittle@acm.org>
+	
+	* gcc.dg/cpp/redef3.c: New file.
+
 2003-06-01  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/i386-loop-3.c: New test.
