@@ -1,3 +1,9 @@
+Wed May 19 03:10:08 1999  Bruce Korb <ddsinc09@ix.netcom.com>
+
+	* fixinc/fixincl.tpl: Avoid depending on ANSI C features for
+	filename lists.
+	* fixinc/fixincl.x: Rebuilt.
+
 Wed May 19 02:47:11 1999  Jan Hubicka  (hubicka@freesoft.cz)
 
 	* i386.c (output_float_compare): Avoid GNU-C extensions.
