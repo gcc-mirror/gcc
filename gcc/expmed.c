@@ -2406,6 +2406,10 @@ expand_mult (mode, op0, op1, target, unsignedp)
       int mult_cost;
       enum {basic_variant, negate_variant, add_variant} variant = basic_variant;
 
+      /* op0 must be register to make mult_cost match the precomputed
+         shiftadd_cost array.  */
+      op0 = force_reg (mode, op0);
+
       /* Try to do the computation three ways: multiply by the negative of OP1
 	 and then negate, do the multiplication directly, or do multiplication
 	 by OP1 - 1.  */
