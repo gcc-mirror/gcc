@@ -1,3 +1,9 @@
+2005-03-03  Alan Modra  <amodra@bigpond.net.au>
+
+	PR target/20277
+	* config/rs6000/rs6000.c (rs6000_override_options): Don't allow
+	-mcpu to override any other explicitly given flags.
+
 2005-03-02  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19916
