@@ -1197,8 +1197,13 @@ extern struct rtx_def *alpha_emit_conditional_move ();
    stored from the compare operation.  Note that we can't use "rtx" here
    since it hasn't been defined!  */
 
-extern struct rtx_def *alpha_compare_op0, *alpha_compare_op1;
-extern int alpha_compare_fp_p;
+struct alpha_compare
+{
+  struct rtx_def *op0, *op1;
+  int fp_p;
+};
+
+extern struct alpha_compare alpha_compare;
 
 /* Machine specific function data.  */
 

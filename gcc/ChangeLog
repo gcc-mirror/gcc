@@ -1,3 +1,14 @@
+Tue Sep  7 22:09:03 1999  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.h (alpha_compare): New.
+	(alpha_compare_op0, alpha_compare_op1, alpha_compare_fp_p): Remove.
+	* alpha.c: Likewise for the definitions.
+	(alpha_emit_conditional_branch): Update for alpha_compare.
+	(alpha_emit_conditional_move): Likewise.
+	* alpha.md (cmpdf, cmpdi): Likewise.
+	(setcc patterns): Likewise.  Zero alpha_compare after use.
+	(sne): Optimize (x != 0) into (0U < x).
+
 Tue Sep  7 21:55:02 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.h (alpha_eh_epilogue_sp_ofs): Remove.
