@@ -89,50 +89,6 @@ can_fallthru (src, target)
   return next_active_insn (insn) == insn2;
 }
 
-/* Identify critical edges and set the bits appropriately.  */
-
-void
-mark_critical_edges ()
-{
-  int i, n = n_basic_blocks;
-  basic_block bb;
-
-  /* We begin with the entry block.  This is not terribly important now,
-     but could be if a front end (Fortran) implemented alternate entry
-     points.  */
-  bb = ENTRY_BLOCK_PTR;
-  i = -1;
-
-  while (1)
-    {
-      edge e;
-
-      /* (1) Critical edges must have a source with multiple successors.  */
-      if (bb->succ && bb->succ->succ_next)
-	{
-	  for (e = bb->succ; e; e = e->succ_next)
-	    {
-	      /* (2) Critical edges must have a destination with multiple
-		 predecessors.  Note that we know there is at least one
-		 predecessor -- the edge we followed to get here.  */
-	      if (e->dest->pred->pred_next)
-		e->flags |= EDGE_CRITICAL;
-	      else
-		e->flags &= ~EDGE_CRITICAL;
-	    }
-	}
-      else
-	{
-	  for (e = bb->succ; e; e = e->succ_next)
-	    e->flags &= ~EDGE_CRITICAL;
-	}
-
-      if (++i >= n)
-	break;
-      bb = BASIC_BLOCK (i);
-    }
-}
-
 /* Mark the back edges in DFS traversal.
    Return non-zero if a loop (natural or otherwise) is present.
    Inspired by Depth_First_Search_PP described in:

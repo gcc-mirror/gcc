@@ -140,12 +140,11 @@ typedef struct edge_def {
 } *edge;
 
 #define EDGE_FALLTHRU		1
-#define EDGE_CRITICAL		2
-#define EDGE_ABNORMAL		4
-#define EDGE_ABNORMAL_CALL	8
-#define EDGE_EH			16
-#define EDGE_FAKE		32
-#define EDGE_DFS_BACK		64
+#define EDGE_ABNORMAL		2
+#define EDGE_ABNORMAL_CALL	4
+#define EDGE_EH			8
+#define EDGE_FAKE		16
+#define EDGE_DFS_BACK		32
 
 #define EDGE_COMPLEX	(EDGE_ABNORMAL | EDGE_ABNORMAL_CALL | EDGE_EH)
 
@@ -315,7 +314,8 @@ extern void remove_edge			PARAMS ((edge));
 extern void redirect_edge_succ		PARAMS ((edge, basic_block));
 extern edge redirect_edge_succ_nodup	PARAMS ((edge, basic_block));
 extern void redirect_edge_pred		PARAMS ((edge, basic_block));
-extern void create_basic_block		PARAMS ((int, rtx, rtx, rtx));
+extern basic_block create_basic_block_structure PARAMS ((int, rtx, rtx, rtx));
+extern basic_block create_basic_block	PARAMS ((int, rtx, rtx));
 extern int flow_delete_block		PARAMS ((basic_block));
 extern void merge_blocks_nomove		PARAMS ((basic_block, basic_block));
 extern void tidy_fallthru_edge		PARAMS ((edge, basic_block,
@@ -536,6 +536,10 @@ struct edge_list
 					  + REG_BR_PROB_BASE / 2) \
 					 / REG_BR_PROB_BASE)
 
+/* Return nonzero if edge is critical.  */
+#define EDGE_CRITICAL_P(e)		((e)->src->succ->succ_next \
+					 && (e)->dest->pred->pred_next)
+
 struct edge_list * create_edge_list	PARAMS ((void));
 void free_edge_list			PARAMS ((struct edge_list *));
 void print_edge_list			PARAMS ((FILE *, struct edge_list *));
@@ -629,6 +633,7 @@ extern void allocate_bb_life_data	PARAMS ((void));
 extern void find_unreachable_blocks	PARAMS ((void));
 extern void delete_noop_moves		PARAMS ((rtx));
 extern basic_block redirect_edge_and_branch_force PARAMS ((edge, basic_block));
+extern basic_block force_nonfallthru	PARAMS ((edge));
 extern bool redirect_edge_and_branch	PARAMS ((edge, basic_block));
 extern rtx block_label			PARAMS ((basic_block));
 extern bool forwarder_block_p		PARAMS ((basic_block));

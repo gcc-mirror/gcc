@@ -1,3 +1,42 @@
+Tue Sep 11 18:57:47 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (EDGE_CRITICAL): Remove; renumber other flags.
+	(EDGE_CRITICAL_P): New predicate.
+	* cfg.c (force_nonfallthru_and_redirect, split_edge): Kill EDGE_CRITICAL
+	handling.
+	(insert_insn_on_edge): Use EDGE_CRITICAL_P.
+	(dump_edge_info): Remove "crit".
+	* cfganal.c (mark_critical_edges): Kill.
+	* cfgbuild.c (find_basic_blocks): Remove mark_critical_edges call.
+	* cfgcleanup.c (cleanup_cfg): Likewise.
+	* profile.c (instrument_edges): Use EDGE_CRITICAL_P.
+	(find_spanning_tree): Likewise.
+	* reg-stack.c (convert_regs_1): Likewise.
+	* ssa.c (mark_regs_equivalent_over_bad_edges): Likewise.
+
+	* basic-block.h (create_basic_block_structure): New.
+	(create_basic_block): Update prototype.
+	(force_nonfallthru): New.
+	* bb-reorder.c (fixup_reorder_chain): Fixup use force_nonfallthru.
+	* cfg.c (create_basic_block_structure): Rename from create_basic_block;
+	handle updating of block_for_insn, creating of empty BBs and BBs at
+	the end of INSN chain.
+	(create_basic_block): New function.
+	(split_block): Use create_basic_block.
+	(force_nonfallthru_and_redirect): Break out from ...; cleanup
+	(redirect_edge_and_branch_force): ... here.
+	(force_nonfallthru): New.
+	(split_edge): Rewrite to use force_nonfallthru and create_block.
+	* cfgbuild.c (find_basic_blocks_1): Use create_basic_block_structure.
+	(find_basic_blocks): Free basic_block_for_insn.
+	* cfgcleanup.c (merge_blocks): Use force_nonfallthru.
+
+	* cfg.c: Fix formating.
+	* cfgcleanup.c: Fix formating.
+	(merge_blocks, tail_recursion_label_p): Return bool.
+	(merge_blocks_move_predecessor_nojumps,
+	 merge_blocks_move_successor_nojumps): Return void.
+
 2001-09-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.in: Check whether assembler supports section merging.

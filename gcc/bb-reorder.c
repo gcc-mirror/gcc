@@ -610,7 +610,7 @@ fixup_reorder_chain ()
   for (bb = BASIC_BLOCK (0); bb ; bb = RBI (bb)->next)
     {
       edge e_fall, e_taken, e;
-      rtx jump_insn, barrier_insn, bb_end_insn;
+      rtx bb_end_insn;
       basic_block nb;
 
       if (bb->succ == NULL)
@@ -698,54 +698,24 @@ fixup_reorder_chain ()
 	  /* An fallthru to exit block.  */
 	  if (!RBI (bb)->next && e_fall->dest == EXIT_BLOCK_PTR)
 	    continue;
-
-	  /* We need a new jump insn.  If the block has only one outgoing
-	     edge, then we can stuff the new jump insn in directly.  */
-	  if (bb->succ->succ_next == NULL)
-	    {
-	      e_fall->flags &= ~EDGE_FALLTHRU;
-
-	      jump_insn = emit_jump_to_block_after (e_fall->dest, bb_end_insn);
-	      bb->end = jump_insn;
-	      barrier_insn = emit_barrier_after (jump_insn);
-	      RBI (bb)->eff_end = barrier_insn;
-	      continue;
-	    }
 	}
 
-      /* We got here if we need to add a new jump insn in a new block
-	 across the edge e_fall.  */
+      /* We got here if we need to add a new jump insn.  */
 
-      jump_insn = emit_jump_to_block_after (e_fall->dest, bb_end_insn);
-      barrier_insn = emit_barrier_after (jump_insn);
+      nb = force_nonfallthru (e_fall);
 
-      VARRAY_GROW (basic_block_info, ++n_basic_blocks);
-      create_basic_block (n_basic_blocks - 1, jump_insn, jump_insn, NULL);
-
-      nb = BASIC_BLOCK (n_basic_blocks - 1);
-      nb->local_set = 0;
-      nb->count = e_fall->count;
-      nb->frequency = EDGE_FREQUENCY (e_fall);
-
-      nb->global_live_at_start = OBSTACK_ALLOC_REG_SET (&flow_obstack);
-      nb->global_live_at_end = OBSTACK_ALLOC_REG_SET (&flow_obstack);
-      COPY_REG_SET (nb->global_live_at_start, bb->global_live_at_start);
-      COPY_REG_SET (nb->global_live_at_end, bb->global_live_at_start);
-
-      nb->aux = xmalloc (sizeof (struct reorder_block_def));
-      RBI (nb)->eff_head = nb->head;
-      RBI (nb)->eff_end = barrier_insn;
-      RBI (nb)->scope = RBI (bb)->scope;
-      RBI (nb)->visited = 1;
-      RBI (nb)->next = RBI (bb)->next;
-      RBI (bb)->next = nb;
-
-      /* Link to new block.  */
-      make_single_succ_edge (nb, e_fall->dest, 0);
-      redirect_edge_succ (e_fall, nb);
-
-      /* Don't process this new block.  */
-      bb = nb;
+      if (nb)
+	{
+	  nb->aux = xmalloc (sizeof (struct reorder_block_def));
+	  RBI (nb)->eff_head = nb->head;
+	  RBI (nb)->eff_end = NEXT_INSN (nb->end);
+	  RBI (nb)->scope = RBI (bb)->scope;
+	  RBI (nb)->visited = 1;
+	  RBI (nb)->next = RBI (bb)->next;
+	  RBI (bb)->next = nb;
+	  /* Don't process this new block.  */
+	  bb = nb;
+	}
     }
 
   /* Put basic_block_info in the new order.  */
