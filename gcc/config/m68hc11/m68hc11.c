@@ -4077,6 +4077,12 @@ m68hc11_notice_update_cc (rtx exp, rtx insn ATTRIBUTE_UNUSED)
       && cc_status.value2
       && reg_overlap_mentioned_p (cc_status.value1, cc_status.value2))
     cc_status.value2 = 0;
+
+  else if (cc_status.value1 && side_effects_p (cc_status.value1))
+    cc_status.value1 = 0;
+
+  else if (cc_status.value2 && side_effects_p (cc_status.value2))
+    cc_status.value2 = 0;
 }
 
 /* The current instruction does not affect the flags but changes

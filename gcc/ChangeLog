@@ -1,3 +1,18 @@
+2004-03-07  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/m68hc11.md ("*lshrsi3_const"): Disable for 68HC12.
+	("*lshrsi3"): Also accept an immediate for 68HC12.
+	("*ashrsi3_const"): Likewise.
+	("*ashrsi3"): Likewise.
+	("*ashlsi3_const"): Likewise.
+	("*ashlsi3"): Likewise.
+	("cmphi_1_hc12"): Compare two hard register by pushing them and
+	comparing with a pop; don't use a split for that.
+	("cmphi split"): Disable compare split for 68HC12.
+
+	* config/m68hc11/m68hc11.c (m68hc11_notice_update_cc): Invalidate
+	the status operands if they have side effects.
+
 2004-03-07  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.c (mips_in_small_data_p): Return false if
