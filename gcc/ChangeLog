@@ -1,3 +1,9 @@
+2005-03-20  Roger Sayle  <roger@eyesopen.com>
+	    Joseph S. Myers  <joseph@codesourcery.com>
+
+	* varasm.c (do_assemble_alias): Restore comment describing function.
+	Annotate the target parameter as potentially unused.
+
 2005-03-20  Marek Michalkiewicz  <marekm@amelek.gda.pl>
 
 	PR target/18551
