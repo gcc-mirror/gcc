@@ -10064,9 +10064,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
       explicit_int = -1;
 
-	  /* We handle `main' specially here, because 'main () { }' is so
-	     common.  With no options, it is allowed.  With -Wreturn-type,
-	     it is a warning.  It is only an error with -pedantic-errors.  */
+      /* We handle `main' specially here, because 'main () { }' is so
+	 common.  With no options, it is allowed.  With -Wreturn-type,
+	 it is a warning.  It is only an error with -pedantic-errors.  */
       is_main = (funcdef_flag
 		 && MAIN_NAME_P (dname)
 		 && ctype == NULL_TREE
