@@ -1,3 +1,8 @@
+2000-08-16  Alexandre Oliva  <aoliva@redhat.com>
+
+	* src/Makefile.am (libstdc++.INC): Renamed from INCLUDES.
+	* src/Makefile.in: Regenerate.
+
 2000-08-15  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
 
 	* bits/codecvt.h: New file.

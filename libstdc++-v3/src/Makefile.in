@@ -515,16 +515,16 @@ wstring-inst.o: string-inst.cc
 wstring-inst.lo: string-inst.cc
 	$(LTCXXCOMPILE) -fimplicit-templates -c -DC=wchar_t $< -o $@
 
-all: INCLUDES
-INCLUDES: Makefile
+all: libstdc++.INC
+libstdc++.INC: Makefile
 	$(MAKE) \
 	  top_builddir=`CDPATH=:. && cd $(top_builddir) && pwd` \
 	  top_srcdir=`CDPATH=:. && cd $(top_srcdir) && pwd` \
-	  tmp-INCLUDES
-	-rm -f INCLUDES
-	mv tmp-INCLUDES INCLUDES
+	  tmp-$@
+	-rm -f $@
+	mv tmp-$@ $@
 
-tmp-INCLUDES: Makefile
+tmp-libstdc++.INC: Makefile
 	echo -I$(top_builddir) $(INCLUDES) > $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
