@@ -1,3 +1,17 @@
+2001-04-02  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/PrintStream.java (out): Removed field.  Fixes PR
+	java/2449.
+	(write): Call flush, not out.flush, per spec.
+	(close): Flush output stream, per spec.  Handle
+	InterruptedIOException.
+	(checkError): Likewise.
+	(flush, print, write): Handle InterruptedIOException per spec.
+	(PrintStream): Don't create BufferedOutputStream.
+	(work_bytes): New field.
+	(writeChars): Use work_bytes.  Don't assume `out' is a
+	BufferedOutputStream.
+
 2001-04-02  Torsten Rueger  <torsten.rueger@firsthop.com>
 
 	* java/text/MessageFormat.java (setLocale): Added missing `else'.

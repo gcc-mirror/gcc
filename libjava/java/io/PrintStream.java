@@ -1,6 +1,6 @@
 // PrintStream.java - Print string representations
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -18,7 +18,7 @@ import gnu.gcj.convert.UnicodeToBytes;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
- * Status:  Not finished.
+ * Status:  Believed complete and correct to 1.3
  */
 
 public class PrintStream extends FilterOutputStream
@@ -29,6 +29,7 @@ public class PrintStream extends FilterOutputStream
 
   public boolean checkError ()
   {
+    flush();
     return error;
   }
 
@@ -36,7 +37,12 @@ public class PrintStream extends FilterOutputStream
   {
     try
       {
+	flush();
 	out.close();
+      }
+    catch (InterruptedIOException iioe)
+      {
+	Thread.currentThread().interrupt();
       }
     catch (IOException e)
       {
@@ -49,6 +55,10 @@ public class PrintStream extends FilterOutputStream
     try
       {
 	out.flush();
+      }
+    catch (InterruptedIOException iioe)
+      {
+	Thread.currentThread().interrupt();
       }
     catch (IOException e)
       {
@@ -65,6 +75,10 @@ public class PrintStream extends FilterOutputStream
 	  writeChars(line_separator, 0, line_separator.length);
 	if (auto_flush)
 	  flush();
+      }
+    catch (InterruptedIOException iioe)
+      {
+	Thread.currentThread().interrupt();
       }
     catch (IOException e)
       {
@@ -83,32 +97,26 @@ public class PrintStream extends FilterOutputStream
 	if (auto_flush)
 	  flush();
       }
+    catch (InterruptedIOException iioe)
+      {
+	Thread.currentThread().interrupt();
+      }
     catch (IOException e)
       {
 	setError ();
       }
   }
 
-  /** Writes characters through to the inferior BufferedOutputStream. */
   private void writeChars(char[] buf, int offset, int count)
     throws IOException
   {
     while (count > 0)
       {
-	// We must flush if out.count == out.buf.length.
-	// It is probably a good idea to flush if out.buf is almost full.
-	// This test is an approximation for "almost full".
-	if (out.count + count >= out.buf.length)
-	  {
-	    out.flush();
-	    if (out.count != 0)
-	      throw new IOException("unable to flush output byte buffer");
-	  }
-	converter.setOutput(out.buf, out.count);
+	converter.setOutput(work_bytes, 0);
 	int converted = converter.write(buf, offset, count);
 	offset += converted;
 	count -= converted;
-	out.count = converter.count;
+	out.write(work_bytes, 0, converter.count);
       }
   }
 
@@ -117,20 +125,11 @@ public class PrintStream extends FilterOutputStream
   {
     while (count > 0)
       {
-	// We must flush if out.count == out.buf.length.
-	// It is probably a good idea to flush if out.buf is almost full.
-	// This test is an approximation for "almost full".
-	if (out.count + count >= out.buf.length)
-	  {
-	    out.flush();
-	    if (out.count != 0)
-	      throw new IOException("unable to flush output byte buffer");
-	  }
-	converter.setOutput(out.buf, out.count);
+	converter.setOutput(work_bytes, 0);
 	int converted = converter.write(str, offset, count, work);
 	offset += converted;
 	count -= converted;
-	out.count = converter.count;
+	out.write(work_bytes, 0, converter.count);
       }
   }
 
@@ -239,15 +238,6 @@ public class PrintStream extends FilterOutputStream
   public PrintStream (OutputStream out, boolean af)
   {
     super(out);
-    if (out instanceof BufferedOutputStream)
-      this.out = (BufferedOutputStream) out;
-    else
-      {
-        this.out = new BufferedOutputStream(out, 250);
-	/* PrintStream redefines "out". Explicitly reset FilterOutputStream's
-	 * "out" so that they're referring to the same thing. */
-	super.out = this.out;    
-      }
     converter = UnicodeToBytes.getDefaultEncoder();
     error = false;
     auto_flush = af;
@@ -264,7 +254,11 @@ public class PrintStream extends FilterOutputStream
       {
 	out.write(oneByte);
 	if (auto_flush && oneByte == '\n')
-	  out.flush();
+	  flush();
+      }
+    catch (InterruptedIOException iioe)
+      {
+	Thread.currentThread().interrupt();
       }
     catch (IOException e)
       {
@@ -278,7 +272,11 @@ public class PrintStream extends FilterOutputStream
       {
 	out.write(buffer, offset, count);
 	if (auto_flush)
-	  out.flush();
+	  flush();
+      }
+    catch (InterruptedIOException iioe)
+      {
+	Thread.currentThread().interrupt();
       }
     catch (IOException e)
       {
@@ -286,10 +284,12 @@ public class PrintStream extends FilterOutputStream
       }
   }
 
-  BufferedOutputStream out;
   UnicodeToBytes converter;
 
+  // Work buffer of characters for converter.
   char[] work = new char[100];
+  // Work buffer of bytes where we temporarily keep converter output.
+  byte[] work_bytes = new byte[100];
 
   // True if error occurred.
   private boolean error;
