@@ -1,3 +1,9 @@
+Thu Sep 11 09:53:40 1997  Joe Buck  (jbuck@synopsys.com)
+
+	* g++.old-deja/g++.mike/p658.C: eliminate <bool.h> use.
+	* g++.old-deja/g++.mike/p784.C: Ditto.
+	* g++.old-deja/g++.mike/p785.C: Ditto.
+
 Fri Sep  5 00:20:39 1997  Richard Henderson  (rth@cygnus.com)
 
 	* cbrt.c: Tweak to work on more targets.
