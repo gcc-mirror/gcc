@@ -1,5 +1,17 @@
 2004-11-05  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* bitmap.h (enum bitmap_bits): Remove.
+	(bitmap_operation): Remove.
+	(bitmap_and, bitmap_and_into, bitmap_and_compl,
+	bitmap_and_compl_into, bitmap_ior, bitmap_ior_into, bitmap_xor,
+	bitmap_xor_into): Prototype.
+	* bitmap.c (bitmap_elt_insert_after, bitmap_elt_clear_from): New.
+	(bitmap_operation): Remove.
+	(bitmap_and, bitmap_and_into, bitmap_and_compl,
+	bitmap_and_compl_into, bitmap_ior, bitmap_ior_into, bitmap_xor,
+	bitmap_xor_into): New.
+	(bitmap_ior_and_compl, bitmap_ior_and_compl_into): Adjust.
+
 	PR tree-optimization/18307
 	* tree-ssa-alias.c (merge_pointed_to_info): Protected against DEST
 	and ORIG being the same node.

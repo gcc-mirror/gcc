@@ -66,15 +66,6 @@ typedef struct bitmap_head_def GTY(()) {
 } bitmap_head;
 typedef struct bitmap_head_def *bitmap;
 
-/* Enumeration giving the various operations we support.  */
-enum bitmap_bits {
-  BITMAP_AND,			/* TO = FROM1 & FROM2 */
-  BITMAP_AND_COMPL,		/* TO = FROM1 & ~ FROM2 */
-  BITMAP_IOR,			/* TO = FROM1 | FROM2 */
-  BITMAP_XOR,			/* TO = FROM1 ^ FROM2 */
-  BITMAP_IOR_COMPL			/* TO = FROM1 | ~FROM2 */
-};
-
 /* Global data */
 extern bitmap_element bitmap_zero_bits;	/* Zero bitmap element */
 
@@ -97,23 +88,23 @@ extern bool bitmap_intersect_compl_p (bitmap, bitmap);
 /* True if MAP is an empty bitmap.  */
 #define bitmap_empty_p(MAP) (!(MAP)->first)
 
-/* Perform an operation on two bitmaps, yielding a third.  */
-extern int bitmap_operation (bitmap, bitmap, bitmap, enum bitmap_bits);
+/* Boolean operations on bitmaps.  The _into variants are two operand
+   versions that modify the first source operand.  The other variants
+   are three operand versions that to not destroy the source bitmaps.
+   The operations supported are &, & ~, |, ^.  */
+extern void bitmap_and (bitmap, bitmap, bitmap);
+extern void bitmap_and_into (bitmap, bitmap);
+extern void bitmap_and_compl (bitmap, bitmap, bitmap);
+extern void bitmap_and_compl_into (bitmap, bitmap);
+extern bool bitmap_ior (bitmap, bitmap, bitmap);
+extern bool bitmap_ior_into (bitmap, bitmap);
+extern void bitmap_xor (bitmap, bitmap, bitmap);
+extern void bitmap_xor_into (bitmap, bitmap);
 
-#define bitmap_and(DST,A,B) (void)bitmap_operation (DST,A,B,BITMAP_AND)
-#define bitmap_and_into(DST_SRC,B) (void)bitmap_operation (DST_SRC,DST_SRC,B,BITMAP_AND)
-#define bitmap_and_compl(DST,A,B) (void)bitmap_operation (DST,A,B,BITMAP_AND_COMPL)
-#define bitmap_and_compl_into(DST_SRC,B) (void)bitmap_operation (DST_SRC,DST_SRC,B,BITMAP_AND_COMPL)
-#define bitmap_ior(DST,A,B) (void)bitmap_operation (DST,A,B,BITMAP_IOR)
-#define bitmap_ior_into(DST_SRC,B) (void)bitmap_operation (DST_SRC,DST_SRC,B,BITMAP_IOR)
-#define bitmap_ior_compl(DST,A,B) (void)bitmap_operation (DST,A,Br,BITMAP_IOR_COMPL)
-#define bitmap_xor(DST,A,B) (void)bitmap_operation (DST,A,B,BITMAP_XOR)
-#define bitmap_xor_into(DST_SRC,B) (void)bitmap_operation (DST_SRC,DST_SRC,B,BITMAP_XOR)
-
-/* `or' into one bitmap the `and' of a second bitmap witih the complement
-   of a third. Return nonzero if the bitmap changes.  */
-extern bool bitmap_ior_and_compl_into (bitmap, bitmap, bitmap);
-extern bool bitmap_ior_and_compl (bitmap, bitmap, bitmap, bitmap);
+/* DST = A | (B & ~C).  Return true if DST changes.  */
+extern bool bitmap_ior_and_compl (bitmap DST, bitmap A, bitmap B, bitmap C);
+/* A |= (B & ~C).  Return true if A changes.  */
+extern bool bitmap_ior_and_compl_into (bitmap DST, bitmap B, bitmap C);
 
 /* Clear a single register in a register set.  */
 extern void bitmap_clear_bit (bitmap, int);
