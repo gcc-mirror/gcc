@@ -448,8 +448,11 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
 
 /* We use the following register classes:
    GENERAL_REGS     All general purpose registers
+   CC_REGS          Contains only the condition code register
    ADDR_REGS        All general purpose registers except %r0
                     (These registers can be used in address generation)
+   ADDR_CC_REGS     Union of ADDR_REGS and CC_REGS
+   GENERAL_CC_REGS  Union of GENERAL_REGS and CC_REGS
    FP_REGS          All floating point registers
 
    GENERAL_FP_REGS  Union of GENERAL_REGS and FP_REGS
@@ -464,22 +467,26 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
 
 enum reg_class
 {
-  NO_REGS, ADDR_REGS, GENERAL_REGS,
+  NO_REGS, CC_REGS, ADDR_REGS, GENERAL_REGS, 
+  ADDR_CC_REGS, GENERAL_CC_REGS, 
   FP_REGS, ADDR_FP_REGS, GENERAL_FP_REGS,
   ALL_REGS, LIM_REG_CLASSES
 };
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
-#define REG_CLASS_NAMES                                                 \
-{ "NO_REGS", "ADDR_REGS", "GENERAL_REGS", 				\
-  "FP_REGS", "ADDR_FP_REGS", "GENERAL_FP_REGS", "ALL_REGS" }
+#define REG_CLASS_NAMES                                                        \
+{ "NO_REGS", "CC_REGS", "ADDR_REGS", "GENERAL_REGS", "ADDR_CC_REGS",           \
+  "GENERAL_CC_REGS", "FP_REGS", "ADDR_FP_REGS", "GENERAL_FP_REGS", "ALL_REGS" }
 
 /* Class -> register mapping.  */
 #define REG_CLASS_CONTENTS \
 {				       			\
   { 0x00000000, 0x00000000 },	/* NO_REGS */		\
+  { 0x00000000, 0x00000002 },	/* CC_REGS */		\
   { 0x0000fffe, 0x0000000d },	/* ADDR_REGS */		\
   { 0x0000ffff, 0x0000000d },	/* GENERAL_REGS */	\
+  { 0x0000fffe, 0x0000000f },	/* ADDR_CC_REGS */	\
+  { 0x0000ffff, 0x0000000f },	/* GENERAL_CC_REGS */	\
   { 0xffff0000, 0x00000000 },	/* FP_REGS */		\
   { 0xfffffffe, 0x0000000d },	/* ADDR_FP_REGS */	\
   { 0xffffffff, 0x0000000d },	/* GENERAL_FP_REGS */	\
@@ -535,7 +542,8 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 #define REG_CLASS_FROM_LETTER(C)                                        \
   ((C) == 'a' ? ADDR_REGS :                                             \
    (C) == 'd' ? GENERAL_REGS :                                          \
-   (C) == 'f' ? FP_REGS : NO_REGS)
+   (C) == 'f' ? FP_REGS :                                               \
+   (C) == 'c' ? CC_REGS : NO_REGS)
 
 #define CONST_OK_FOR_CONSTRAINT_P(VALUE, C, STR)                          \
   s390_const_ok_for_constraint_p ((VALUE), (C), (STR))

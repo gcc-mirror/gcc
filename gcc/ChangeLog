@@ -1,3 +1,16 @@
+2004-11-01  Andreas Krebbel  <krebbel1@de.ibm.com>
+
+	* config/s390/s390.c (regclass_map): Put reg 33 (cc) to CC_REGS group.
+	(s390_secondary_input_reload_class)
+	(s390_secondary_output_reload_class): Use GENERAL_REGS to reload a cc
+	register.
+	(s390_expand_cmpmem): Enable cmpmem implementation.
+	* config/s390/s390.h (reg_class, REG_CLASS_NAMES, REG_CLASS_CONTENTS):
+	Added three new classes: CC_REGS, ADDR_CC_REGS, GENERAL_CC_REGS.
+	(REG_CLASS_FROM_LETTER): New constraint 'c' added.
+	* config/s390/s390.md ("movcc"): New insn pattern.
+	* doc/md.texi: Document 'c' constraint for s390.
+
 2004-11-01  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/18064
