@@ -108,7 +108,7 @@ java::io::FileDescriptor::seek (jlong pos, jint whence, jboolean)
 }
 
 jlong
-java::io::FileDescriptor::length (void)
+java::io::FileDescriptor::getLength (void)
 {
   return 0;
 }

@@ -96,15 +96,17 @@ public class RandomAccessFile implements DataOutput, DataInput
   /**
    * This method initializes a new instance of <code>RandomAccessFile</code>
    * to read from the specified file name with the specified access mode.
-   * The access mode is either "r" for read only access or "rw" for read
-   * write access.
+   * The access mode is either "r" for read only access, "rw" for read
+   * write access, "rws" for synchronized read/write access of both
+   * content and metadata, or "rwd" for read/write access
+   * where only content is required to be synchronous.
    * <p>
    * Note that a <code>SecurityManager</code> check is made prior to
    * opening the file to determine whether or not this file is allowed to
    * be read or written.
    *
    * @param fileName The name of the file to read and/or write
-   * @param mode "r" for read only or "rw" for read-write access to the file
+   * @param mode "r", "rw", "rws", or "rwd"
    *
    * @exception IllegalArgumentException If <code>mode</code> has an 
    * illegal value
@@ -115,16 +117,21 @@ public class RandomAccessFile implements DataOutput, DataInput
   public RandomAccessFile (String fileName, String mode)
     throws FileNotFoundException
   {
-    // Check the mode
-    if (!mode.equals("r") && !mode.equals("rw") && !mode.equals("rws") &&
-        !mode.equals("rwd"))
-      throw new IllegalArgumentException("Bad mode value: " + mode);
-  
     int fdmode;
-    if (mode.compareTo ("r") == 0)
+    if (mode.equals("r"))
       fdmode = FileDescriptor.READ;
-    else if (mode.compareTo ("rw") == 0)
+    else if (mode.equals("rw"))
       fdmode = FileDescriptor.READ | FileDescriptor.WRITE;
+    else if (mode.equals("rws"))
+      {
+	fdmode = (FileDescriptor.READ | FileDescriptor.WRITE
+		  | FileDescriptor.SYNC);
+      }
+    else if (mode.equals("rwd"))
+      {
+	fdmode = (FileDescriptor.READ | FileDescriptor.WRITE
+		  | FileDescriptor.DSYNC);
+      }
     else
       throw new IllegalArgumentException ("invalid mode: " + mode);
 
@@ -197,9 +204,9 @@ public class RandomAccessFile implements DataOutput, DataInput
    *
    * @exception IOException If an error occurs
    */
-  public void setLength (long pos) throws IOException
+  public void setLength (long newLen) throws IOException
   {
-    fd.setLength(pos);
+    fd.setLength (newLen);
   }
 
   /**
@@ -211,7 +218,7 @@ public class RandomAccessFile implements DataOutput, DataInput
    */
   public long length () throws IOException
   {
-    return fd.length();
+    return fd.getLength ();
   }
 
   /**
