@@ -1140,7 +1140,15 @@ shorten_branches (first)
 
       body = PATTERN (insn);
       if (GET_CODE (body) == ADDR_VEC || GET_CODE (body) == ADDR_DIFF_VEC)
-	; /* This should be handled by LABEL_ALIGN.  */
+	{
+	  /* This only takes room if read-only data goes into the text
+	     section.  */
+#if !defined(READONLY_DATA_SECTION) || defined(JUMP_TABLES_IN_TEXT_SECTION)
+	  insn_lengths[uid] = (XVECLEN (body, GET_CODE (body) == ADDR_DIFF_VEC)
+			       * GET_MODE_SIZE (GET_MODE (body)));
+	  /* Alignment is handled by ADDR_VEC_ALIGN.  */
+#endif
+	}
       else if (asm_noperands (body) >= 0)
 	insn_lengths[uid] = asm_insn_count (body) * insn_default_length (insn);
       else if (GET_CODE (body) == SEQUENCE)
