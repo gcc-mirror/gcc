@@ -258,7 +258,9 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{!mthumb-interwork:%{!mno-thumb-interwork:%(cpp_interwork_default)}}	\
 "
 
+#ifndef CC1_SPEC
 #define CC1_SPEC ""
+#endif
 
 /* This macro defines names of additional specifications to put in the specs
    that can be used in various specifications like CC1_SPEC.  Its definition
@@ -548,7 +550,9 @@ extern enum floating_point_type arm_fpu_arch;
 
 /* Default floating point architecture.  Override in sub-target if
    necessary.  */
+#ifndef FP_DEFAULT
 #define FP_DEFAULT FP_SOFT2
+#endif
 
 /* Nonzero if the processor has a fast multiply insn, and one that does
    a 64-bit multiply of two 32-bit values.  */
@@ -586,6 +590,7 @@ extern int arm_is_6_or_7;
    that is controlled by the APCS-FRAME option.  */
 #define CAN_DEBUG_WITHOUT_FP
 
+#undef  TARGET_MEM_FUNCTIONS
 #define TARGET_MEM_FUNCTIONS 1
 
 #define OVERRIDE_OPTIONS  arm_override_options ()
@@ -1554,6 +1559,7 @@ typedef struct
 
    The ``mov ip,lr'' seems like a good idea to stick with cc convention.
    ``prof'' doesn't seem to mind about this!  */
+#ifndef ARM_FUNCTION_PROFILER
 #define ARM_FUNCTION_PROFILER(STREAM, LABELNO)  	\
 {							\
   char temp[20];					\
@@ -1567,6 +1573,7 @@ typedef struct
   sym = gen_rtx (SYMBOL_REF, Pmode, temp);		\
   ASM_OUTPUT_INT (STREAM, sym);				\
 }
+#endif
 
 #define THUMB_FUNCTION_PROFILER(STREAM, LABELNO)	\
 {							\
@@ -2578,6 +2585,7 @@ extern int making_const_table;
 
 /* This is how to output a label which precedes a jumptable.  Since
    Thumb instructions are 2 bytes, we may need explicit alignment here.  */
+#undef  ASM_OUTPUT_CASE_LABEL
 #define ASM_OUTPUT_CASE_LABEL(FILE, PREFIX, NUM, JUMPTABLE)	\
   do								\
     {								\

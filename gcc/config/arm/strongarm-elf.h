@@ -1,5 +1,5 @@
 /* Definitions for non-Linux based StrongARM systems using ELF
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
    Contributed by Catherine Moore <clm@cygnus.com>
 
 This file is part of GNU CC.
@@ -28,4 +28,3 @@ Boston, MA 02111-1307, USA.  */
 #define SUBTARGET_CPU_DEFAULT 		TARGET_CPU_strongarm
 #endif
 
-#include "unknown-elf.h"

@@ -1,3 +1,50 @@
+2001-09-14  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config.gcc: Move inclusion of arm elf specific header files
+	from the files themselves into the tm_file variable.  Make
+	sure that elfos.h is included before target specific elf
+	headers.
+	* config/arm/aout.h (NO_DOLLAR_IN_LABEL): Only define if not
+	already defined.
+	(ASM_OUTPUT_ASCII, ASM_OUTPUT_SKIP): Protect definition.
+	* config/arm.arm.h (TARGET_MEM_FUNCTIONS,
+	ASM_OUTPUT_CASE_LABEL): Protect definition.
+	(CC1_SPEC, FP_DEFAULT, ARM_FUNCTION_PROFILE): Only define if
+	not already defined.
+	* config/arm/conix-elf.h: (USER_LABEL_PREFIX,
+	LOCAL_LABEL_PREFIX, MAKE_DECL_ONE_ONLY, UNIQUE_SECTION):
+	Remove duplicate definition. 
+	(READONLY_DATA_SECTION, SUBTARGET_EXTRA_SECTION,
+	(SUBTARGET_EXTRA_SECTION_FUNCTION, RDATA_SECTION_ASM_OP,
+	(RDATA_SECTION_FUNCTION): Remove redundant definition.
+	(STARTFILE_SPEC, ENDFILE_SPEC): Protect definition.
+	Remove inclusion of arm/elf.h.
+	* config/arm/unknown-elf.h: as for conix-elf.h.
+	(STARTFILE_SPEC): Include crti.o and crtn.o.
+	* config/arm/linux-elf.h: as for conix-elf.h.
+	* config/arm/ecos-elf.h: Remove inclusion of unknown-elf.h.
+	* config/arm/strongarm-elf.h: Remove inclusion of
+	unknown-elf.h.
+	* config/arm/xscale-elf.h: Remove inclusion of unknown-elf.h.
+	* config/arm/unknown-elf-oabi.h: Remove inclusion of
+	unknown-elf.h and elf.h.
+	* config/arm/uclinux-elf.h: Remove inclusion of linux-elf.h.
+	* config/arm/linux-gas.h (DBX_DEBUGGING_INFO,
+	ASM_WEAKEN_LABEL): Remove redundant definition.
+	* config/arm/elf.h: Test for inclusion of elfos.h
+	(USER_LABEL_PREFIX, ASM_DECLARE_RESULT, ASM_DECLARE_RESULT,
+	ASM_DECLARE_OBJECT_NAME, ASM_FINISH_DECLARE_OBJECT_NAME,
+	SUBTARGET_EXTRA_SECTION, SUBTARGET_EXTRA_SECTION_FUNCTION,
+	EXTRA_SECTIONS, INT_ASM_OP, ASM_WEAKEN_LABEL): Remove
+	redundant definition.
+	(TYPE_OPERAND_FMT, ASM_DECLARE_FUNCTION_NAME,
+	ASM_DECLARE_FUNCTION_SIZE, ASM_OUTPUT_INTERNAL_LABEL,
+	ASM_OUTPUT_ALIGNED_COMMON): Protect definition.
+	* t-arm-elf (EXTRA_MULTILIB_PARTS): Add crti.o and crtn.o.
+	Add rules to build crti.o and crtn.o
+	* crti.asm: New file.
+	* crtn.asm: New file.
+
 2001-09-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-parse.in (_yylex): Use _cpp_backup_tokens.

@@ -22,15 +22,12 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
-#define OBJECT_FORMAT_ELF
+#ifndef OBJECT_FORMAT_ELF
+ #error elf.h included before elfos.h
+#endif
 
 #ifndef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX "."
-#endif
-
-#ifndef USER_LABEL_PREFIX
-#define USER_LABEL_PREFIX ""
 #endif
 
 #ifndef SUBTARGET_CPP_SPEC
@@ -58,30 +55,13 @@ Boston, MA 02111-1307, USA.  */
 %(subtarget_extra_asm_spec)"
 #endif
 
-/* The following macro defines the format used to output the second
-   operand of the .type assembler directive.  Different svr4 assemblers
-   expect various different forms for this operand.  The one given here
-   is just a default.  You may need to override it in your machine-
-   specific tm.h file (depending upon the particulars of your assembler).  */
+/* The ARM uses @ are a comment character so we need to redefine
+   TYPE_OPERAND_FMT.  */
+#undef  TYPE_OPERAND_FMT
 #define TYPE_OPERAND_FMT	"%s"
 
-/* Write the extra assembler code needed to declare a function's result.
-   Most svr4 assemblers don't require any special declaration of the
-   result value, but there are exceptions.  */
-#ifndef ASM_DECLARE_RESULT
-#define ASM_DECLARE_RESULT(FILE, RESULT)
-#endif
-
-/* These macros generate the special .type and .size directives which
-   are used to set the corresponding fields of the linker symbol table
-   entries in an ELF object file under SVR4.  These macros also output
-   the starting labels for the relevant functions/objects.  */
-#define TYPE_ASM_OP     "\t.type\t"
-#define SIZE_ASM_OP     "\t.size\t"
-
-/* Write the extra assembler code needed to declare a function properly.
-   Some svr4 assemblers need to also have something extra said about the
-   function's return value.  We allow for that here.  */
+/* We might need a ARM specific header to function declarations.  */
+#undef  ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)	\
   do							\
     {							\
@@ -96,56 +76,8 @@ Boston, MA 02111-1307, USA.  */
     }							\
   while (0)
 
-/* Write the extra assembler code needed to declare an object properly.  */
-#define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)		\
-  do								\
-    {								\
-      fprintf (FILE, "%s", TYPE_ASM_OP);			\
-      assemble_name (FILE, NAME);				\
-      putc (',', FILE);						\
-      fprintf (FILE, TYPE_OPERAND_FMT, "object");		\
-      putc ('\n', FILE);					\
-      size_directive_output = 0;				\
-      if (!flag_inhibit_size_directive && DECL_SIZE (DECL))	\
-        {							\
-	  size_directive_output = 1;				\
-	  fprintf (FILE, "%s", SIZE_ASM_OP);			\
-	  assemble_name (FILE, NAME);				\
-	  putc (',', FILE);					\
-	  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC,		\
-		   int_size_in_bytes (TREE_TYPE (DECL)));	\
-	  fputc ('\n', FILE);					\
-        }							\
-      ASM_OUTPUT_LABEL(FILE, NAME);				\
-    }								\
-  while (0)
-
-/* Output the size directive for a decl in rest_of_decl_compilation
-   in the case where we did not do so before the initializer.
-   Once we find the error_mark_node, we know that the value of
-   size_directive_output was set
-   by ASM_DECLARE_OBJECT_NAME when it was run for the same decl.  */
-#define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	\
-  do									\
-    {									\
-      const char * name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);		\
-      if (!flag_inhibit_size_directive && DECL_SIZE (DECL)		\
-          && ! AT_END && TOP_LEVEL					\
-	  && DECL_INITIAL (DECL) == error_mark_node			\
-	  && !size_directive_output)					\
-        {								\
-	  size_directive_output = 1;					\
-	  fprintf (FILE, "%s", SIZE_ASM_OP);				\
-	  assemble_name (FILE, name);					\
-	  putc (',', FILE);						\
-	  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC,			\
-		  int_size_in_bytes (TREE_TYPE (DECL)));		\
-	 fputc ('\n', FILE);						\
-        }								\
-    }									\
-  while (0)
-
-/* This is how to declare the size of a function.  */
+/* We might need an ARM specific trailer for function declarations.  */
+#undef  ASM_DECLARE_FUNCTION_SIZE
 #define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)		\
   do								\
     {								\
@@ -207,7 +139,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Output an internal label definition.  */
-#ifndef ASM_OUTPUT_INTERNAL_LABEL
+#undef  ASM_OUTPUT_INTERNAL_LABEL
 #define ASM_OUTPUT_INTERNAL_LABEL(STREAM, PREFIX, NUM)  	\
   do								\
     {								\
@@ -216,58 +148,20 @@ Boston, MA 02111-1307, USA.  */
       extern rtx arm_target_insn;				\
 								\
       if (arm_ccfsm_state == 3 && arm_target_label == (NUM)	\
-	&& !strcmp (PREFIX, "L"))				\
+	  && !strcmp (PREFIX, "L"))				\
 	{							\
 	  arm_ccfsm_state = 0;					\
 	  arm_target_insn = NULL;				\
 	}							\
-	ASM_GENERATE_INTERNAL_LABEL (s, (PREFIX), (NUM));	\
-        ASM_OUTPUT_LABEL (STREAM, s);		                \
+      ASM_GENERATE_INTERNAL_LABEL (s, (PREFIX), (NUM));		\
+      ASM_OUTPUT_LABEL (STREAM, s);		                \
     }								\
   while (0)
-#endif
 
-/* A list of other sections which the compiler might be "in" at any
-   given time.  */
-#ifndef SUBTARGET_EXTRA_SECTIONS
-#define SUBTARGET_EXTRA_SECTIONS
-#endif
-
-#ifndef EXTRA_SECTIONS
-#define EXTRA_SECTIONS SUBTARGET_EXTRA_SECTIONS
-#endif
-
-/* A list of extra section function definitions.  */
-#ifndef SUBTARGET_EXTRA_SECTION_FUNCTIONS
-#define SUBTARGET_EXTRA_SECTION_FUNCTIONS
-#endif
-
-#ifndef EXTRA_SECTION_FUNCTIONS
-#define EXTRA_SECTION_FUNCTIONS 		\
-  SUBTARGET_EXTRA_SECTION_FUNCTIONS
-#endif
-
-/* Switch into a generic section.  */
-#undef TARGET_ASM_NAMED_SECTION
+#undef  TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION  arm_elf_asm_named_section
 
-/* Support the ctors/dtors sections for g++.  */
-#ifndef INT_ASM_OP
-#define INT_ASM_OP 	"\t.word\t"
-#endif
-
-/* This is how we tell the assembler that a symbol is weak.  */
-
-#define ASM_WEAKEN_LABEL(FILE, NAME)		\
-  do						\
-    {						\
-      fputs ("\t.weak\t", FILE);		\
-      assemble_name (FILE, NAME);		\
-      fputc ('\n', FILE);			\
-    }						\
-  while (0)
-
-#ifndef ASM_OUTPUT_ALIGNED_COMMON
+#undef  ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(STREAM, NAME, SIZE, ALIGN)	\
   do								\
     {								\
@@ -276,7 +170,6 @@ Boston, MA 02111-1307, USA.  */
       fprintf (STREAM, ", %d, %d\n", SIZE, ALIGN);		\
     }								\
   while (0)
-#endif
 
 /* For PIC code we need to explicitly specify (PLT) and (GOT) relocs.  */
 #define NEED_PLT_RELOC	flag_pic

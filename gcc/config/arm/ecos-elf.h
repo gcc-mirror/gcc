@@ -1,5 +1,5 @@
 /* Definitions for ecos based ARM systems using ELF
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
  
 This file is part of GNU CC.
  
@@ -19,11 +19,10 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Run-time Target Specification.  */
+#undef  TARGET_VERSION
 #define TARGET_VERSION	fputs (" (ARM/ELF Ecos)", stderr);
 
 #define HAS_INIT_SECTION
-
-#include "unknown-elf.h"
 
 #undef INVOKE_main
 

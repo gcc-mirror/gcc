@@ -20,24 +20,10 @@ along with this program; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/*
- * We are using GAS, so stabs should work.
- */
+/* This is how we tell the assembler that a symbol is weak.
+   GAS always supports weak symbols.  */
 
-#ifndef DBX_DEBUGGING_INFO
-#define DBX_DEBUGGING_INFO 1
-#endif
-
-/*
- * This is how we tell the assembler that a symbol is weak.  GAS always
- * supports weak symbols.
- */
-
-#define ASM_WEAKEN_LABEL(FILE,NAME) \
-  do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME); \
-       fputc ('\n', FILE); } while (0)
-
-/* This is used in ASM_FILE_START */
+/* This is used in ASM_FILE_START.  */
 #undef  ARM_OS_NAME
 #define ARM_OS_NAME "Linux"
 

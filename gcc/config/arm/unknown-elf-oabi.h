@@ -20,17 +20,13 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Run-time Target Specification.  */
-#ifndef TARGET_VERSION
+#undef  TARGET_VERSION
 #define TARGET_VERSION	fputs (" (ARM/ELF non-Linux old abi)", stderr);
-#endif
 
+#undef  CPP_PREDEFINES
 #define CPP_PREDEFINES "-Darm_oabi -Darm -Darm_elf -Acpu=arm -Amachine=arm -D__ELF__"
 
-#ifndef ASM_SPEC
+#undef  ASM_SPEC
 #define ASM_SPEC "-moabi %{mbig-endian:-EB} %{mcpu=*:-m%*} %{march=*:-m%*} \
  %{mapcs-*:-mapcs-%*} %{mthumb-interwork:-mthumb-interwork}"
-#endif
 
-/* Now get the routine arm-elf definitions.  */
-#include "arm/unknown-elf.h"
-#include "arm/elf.h"

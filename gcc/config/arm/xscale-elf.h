@@ -1,5 +1,5 @@
 /* Definitions for XScale architectures using ELF
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Catherine Moore <clm@cygnus.com>
 
 This file is part of GNU CC.
@@ -34,5 +34,3 @@ Boston, MA 02111-1307, USA.  */
 #define MULTILIB_DEFAULTS \
   { "mlittle-endian", "mno-thumb-interwork", "marm" }
 #endif
-
-#include "unknown-elf.h"
