@@ -230,7 +230,8 @@ proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
 
     lappend cflags "compiler=$compiler"
 
-    set output "$tmpdir/a.out"
+    regsub -all "\[./\]" "$name" "-" output;
+    set output "$tmpdir/$output";
     set compile_type "executable"
 
     set tmp [lindex [grep $prog "Build don.t link:"] 0]
@@ -522,7 +523,9 @@ proc old-dejagnu { compiler prog cflagsx default_cflags libs } {
 	    set result [eval [format "%s_load %s" $tool $executable]]
 	    set status [lindex $result 0];
 	    set output [lindex $result 1];
-	    remote_file build delete $executable;
+	    if { $status == "pass" } {
+		remote_file build delete $executable;
+	    }
 	    if { $execbug_flag || $excessbug_flag } then {
 		setup_xfail "*-*-*"
 	    }

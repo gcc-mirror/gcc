@@ -1,12 +1,34 @@
-Mon Oct  6 12:03:10 1997  Jeffrey A Law  (law@cygnus.com)
+Fri Sep 26 10:50:53 1997  Bob Manson  <manson@charmed.cygnus.com>
 
-	* lib/g77.exp, lib/f-torture.exp: New files.
+	* lib/c-torture.exp(c-torture-execute): Fix typo.
+
+	* lib/old-dejagnu.exp(old-dejagnu): Use a name derived from the
+	testcase as the executable name. Keep the executable around if
+	the test fails.
+
+Fri Sep 19 17:19:53 1997  Bob Manson  <manson@charmed.cygnus.com>
+
+	* lib/c-torture.exp (TORTURE_OPTIONS): Removed unnecessary
+ 	changes.  Only test one -g option, and move it to the end of the
+ 	list of options to test.
+
+Fri Sep 19 17:58:00 1997  Michael Meissner  <meissner@cygnus.com>
+
+	* lib/c-torture.exp (TORTURE_OPTIONS): Check for the environment
+	variable GCC_TORTURE_OPTIONS to supply default switches separated
+	by colons.  If no environment variable, run tests with -O0 -g, -O1
+	-g, and -O2 -g as well.
+
+Wed Sep 17 10:12:26 1997  Bob Manson  <manson@charmed.cygnus.com>
+
+	* lib/plumhall.exp: Don't set PHSRC in this file. Add a few
+	explanatory comments. Fix indentation.
 
 Mon Sep 15 00:36:53 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* lib/g++.exp (g++_init): Look for xgcc in $basedir too.
-	
-Thu Sep 11 13:52:01 1997  Jeffrey A Law  (law@cygnus.com)
+
+Thu Sep 11 13:54:47 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* g++.old-deja/g++.brendan/scope4.C: No longer expected to fail.
 	* g++.old-deja/g++.mike/p7325.C: Likewise.
@@ -25,9 +47,17 @@ Thu Sep 11 09:53:40 1997  Joe Buck  (jbuck@synopsys.com)
 	* g++.old-deja/g++.mike/p784.C: Ditto.
 	* g++.old-deja/g++.mike/p785.C: Ditto.
 
-Fri Sep  5 00:20:39 1997  Richard Henderson  (rth@cygnus.com)
+Fri Sep  5 00:21:42 1997  Jeffrey A Law  (law@cygnus.com)
 
-	* cbrt.c: Tweak to work on more targets.
+        * gcc.c-torture/execute/cbrt.c: Tweak to work on more targets.
+
+Wed Sep  3 17:15:00 1997  Bob Manson  <manson@charmed.cygnus.com>
+
+	* lib/c-torture.exp(c-torture-execute): If the previous and the
+ 	current executables being tested are identical, we don't need to
+ 	run the executable again. Try to make the executable names
+ 	unique. Add an optional argument for passing additional compiler
+ 	flags.
 
 Tue Sep  2 16:34:31 1997  Doug Evans  <dje@canuck.cygnus.com>
 

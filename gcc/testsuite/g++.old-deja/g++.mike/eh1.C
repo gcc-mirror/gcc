@@ -3,6 +3,7 @@
 
 extern "C" void printf (char *, ...);
 extern "C" int atoi (const char *);
+extern "C" void exit (int);
 
 struct Exception
  {
@@ -10,7 +11,7 @@ struct Exception
      Exception(int i) { v = i; };
  };
 
- inc(int &i)
+ void inc(int &i)
  {
      try {
          if (i == 0)
