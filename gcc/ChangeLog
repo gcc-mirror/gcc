@@ -1,3 +1,20 @@
+2005-01-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/7525
+	* arm.h (struct machine_function): Add call_via field.
+	(thumb_call_via_label): Declare.
+	* arm.c (thumb_call_via_label): New variable.
+	(thumb_call_reg_needed): New variable.
+	(arm_output_function_epilogue): For Thumb code, output any per-function
+	call-indirect trampolines.
+	(thumb_call_via_reg): New function.
+	(arm_file_end): New function.
+	(TARGET_ASM_FILE_END): Call arm_file_end.
+	(aof_file_end): Likewise.
+	* arm-protos.h (thumb_call_via_reg): Declare.
+	* arm.md (call_reg_thumb, call_value_reg_thumb): Call 
+	thumb_call_via_reg in normal case.
+
 2005-01-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/19084
