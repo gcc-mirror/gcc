@@ -1,5 +1,10 @@
 2000-08-23  Gabriel Dos Reis  <gdr@codesourcery.com>
 
+	* error.c (cp_print_error_function): Don't use embedded '\n' in
+	output_printf. 
+
+2000-08-23  Gabriel Dos Reis  <gdr@codesourcery.com>
+
 	* decl.c (init_decl_processing): Remove bogus initialization.
 	* error.c (lang_print_error_function): Restore here.
 	(init_error): Initialize print_error_function. 

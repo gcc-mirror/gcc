@@ -2486,14 +2486,12 @@ cp_print_error_function (buffer, dc)
       output_set_prefix (buffer, prefix);
       
       if (current_function_decl == NULL)
-        {
-          output_add_string (buffer, "At global scope:");
-          output_add_newline (buffer);
-        }
+        output_add_string (buffer, "At global scope:");
       else
         output_printf
-          (buffer, "In %s `%s':\n", function_category (current_function_decl),
+          (buffer, "In %s `%s':", function_category (current_function_decl),
            (*decl_printable_name) (current_function_decl, 2));
+      output_add_newline (buffer);
 
       record_last_error_function ();
       output_destroy_prefix (buffer);
