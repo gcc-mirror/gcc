@@ -1626,7 +1626,7 @@
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "
 {
-  if (mips_cpu != PROCESSOR_R4300)
+  if (TARGET_MIPS4300)
     emit_insn (gen_muldf3_internal (operands[0], operands[1], operands[2]));
   else
     emit_insn (gen_muldf3_r4300 (operands[0], operands[1], operands[2]));
@@ -1637,7 +1637,7 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(mult:DF (match_operand:DF 1 "register_operand" "f")
 		 (match_operand:DF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && mips_cpu != PROCESSOR_R4300"
+  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && !TARGET_MIPS4300"
   "mul.d\\t%0,%1,%2"
   [(set_attr "type"	"fmul")
    (set_attr "mode"	"DF")])
@@ -1646,7 +1646,7 @@
   [(set (match_operand:DF 0 "register_operand" "=f")
 	(mult:DF (match_operand:DF 1 "register_operand" "f")
 		 (match_operand:DF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && mips_cpu == PROCESSOR_R4300"
+  "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT && TARGET_MIPS4300"
   "*
 {
   output_asm_insn (\"mul.d\\t%0,%1,%2\", operands);
@@ -1665,7 +1665,7 @@
   "TARGET_HARD_FLOAT"
   "
 {
-  if (mips_cpu != PROCESSOR_R4300)
+  if (!TARGET_MIPS4300)
     emit_insn( gen_mulsf3_internal (operands[0], operands[1], operands[2]));
   else
     emit_insn( gen_mulsf3_r4300 (operands[0], operands[1], operands[2]));
@@ -1676,7 +1676,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(mult:SF (match_operand:SF 1 "register_operand" "f")
 		 (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && mips_cpu != PROCESSOR_R4300"
+  "TARGET_HARD_FLOAT && !TARGET_MIPS4300"
   "mul.s\\t%0,%1,%2"
   [(set_attr "type"	"fmul")
    (set_attr "mode"	"SF")])
@@ -1685,7 +1685,7 @@
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(mult:SF (match_operand:SF 1 "register_operand" "f")
 		 (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && mips_cpu == PROCESSOR_R4300"
+  "TARGET_HARD_FLOAT && TARGET_MIPS4300"
   "*
 {
   output_asm_insn (\"mul.s\\t%0,%1,%2\", operands);
@@ -1713,7 +1713,7 @@
 {
   if (HAVE_mulsi3_mult3)
     emit_insn (gen_mulsi3_mult3 (operands[0], operands[1], operands[2]));
-  else if (mips_cpu != PROCESSOR_R4000 || TARGET_MIPS16)
+  else if (!TARGET_MIPS4000 || TARGET_MIPS16)
     emit_insn (gen_mulsi3_internal (operands[0], operands[1], operands[2]));
   else
     emit_insn (gen_mulsi3_r4000 (operands[0], operands[1], operands[2]));
@@ -1746,7 +1746,7 @@
 		 (match_operand:SI 2 "register_operand" "d")))
    (clobber (match_scratch:SI 3 "=h"))
    (clobber (match_scratch:SI 4 "=a"))]
-  "mips_cpu != PROCESSOR_R4000 || TARGET_MIPS16"
+  "!TARGET_MIPS4000 || TARGET_MIPS16"
   "mult\\t%1,%2"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"SI")])
@@ -1758,7 +1758,7 @@
    (clobber (match_scratch:SI 3 "=h"))
    (clobber (match_scratch:SI 4 "=l"))
    (clobber (match_scratch:SI 5 "=a"))]
-  "mips_cpu == PROCESSOR_R4000 && !TARGET_MIPS16"
+  "TARGET_MIPS4000 && !TARGET_MIPS16"
   "*
 {
   rtx xoperands[10];
@@ -1855,7 +1855,7 @@
 
   "
 {
-  if (GENERATE_MULT3 || mips_cpu == PROCESSOR_R4000 || TARGET_MIPS16)
+  if (GENERATE_MULT3 || TARGET_MIPS4000 || TARGET_MIPS16)
     emit_insn (gen_muldi3_internal2 (operands[0], operands[1], operands[2]));
   else
     emit_insn (gen_muldi3_internal (operands[0], operands[1], operands[2]));
@@ -1873,7 +1873,7 @@
 		 (match_operand:DI 2 "register_operand" "d")))
    (clobber (match_scratch:DI 3 "=h"))
    (clobber (match_scratch:DI 4 "=a"))]
-  "TARGET_64BIT && mips_cpu != PROCESSOR_R4000 && !TARGET_MIPS16"
+  "TARGET_64BIT && !TARGET_MIPS4000 && !TARGET_MIPS16"
   "dmult\\t%1,%2"
   [(set_attr "type"	"imul")
    (set_attr "mode"	"DI")])
@@ -1885,7 +1885,7 @@
    (clobber (match_scratch:DI 3 "=h"))
    (clobber (match_scratch:DI 4 "=l"))
    (clobber (match_scratch:DI 5 "=a"))]
-  "TARGET_64BIT && (GENERATE_MULT3 || mips_cpu == PROCESSOR_R4000 || TARGET_MIPS16)"
+  "TARGET_64BIT && (GENERATE_MULT3 || TARGET_MIPS4000 || TARGET_MIPS16)"
   "*
 {
   if (GENERATE_MULT3)

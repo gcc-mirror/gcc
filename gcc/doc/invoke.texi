@@ -447,8 +447,8 @@ in the following sections.
 
 @emph{MIPS Options}
 @gccoptlist{
--mabicalls  -mcpu=@var{cpu-type} @gol
--membedded-data  -muninit-const-in-rodata @gol
+-mabicalls -march=@var{cpu-type} -mtune=@var{cpu=type} @gol
+-mcpu=@var{cpu-type} -membedded-data  -muninit-const-in-rodata @gol
 -membedded-pic  -mfp32  -mfp64  -mgas  -mgp32  -mgp64 @gol
 -mgpopt  -mhalf-pic  -mhard-float  -mint64  -mips1 @gol
 -mips2  -mips3  -mips4  -mlong64  -mlong32  -mlong-calls  -mmemcpy @gol
@@ -935,9 +935,16 @@ names @samp{c9x} and @samp{iso9899:199x} are deprecated.
 Default, ISO C89 plus GNU extensions (including some C99 features).
 
 @item gnu99
-@itemx gnu9x
-ISO C99 plus GNU extensions.  When ISO C99 is fully implemented in GCC,
-this will become the default.  The name @samp{gnu9x} is deprecated.
+iso9899:1999 + gnu extensions
+
+@item iso9899:199x
+same as @option{-std=iso9899:1999}, deprecated
+
+@item c9x
+same as @option{-std=iso9899:1999}, deprecated
+
+@item gnu9x
+same as @option{-std=gnu99}, deprecated
 
 @end table
 
@@ -3804,7 +3811,7 @@ optimization.  If more memory than specified is required, the
 optimization will not be done.
 
 @item max-gcse-passes
-The maximum number of passes of GCSE to run. 
+The maximum number of passes of GCSE to run.
 
 @item max-inline-insns
 If an function contains more than this many instructions, it
@@ -4451,7 +4458,7 @@ Variables}.
 As a special kludge, if the path provided by @option{-B} is
 @file{[dir/]stage@var{N}/}, where @var{N} is a number in the range 0 to
 9, then it will be replaced by @file{[dir/]include}.  This is to help
-with boot-strapping the compiler. 
+with boot-strapping the compiler.
 
 @item -specs=@var{file}
 @opindex specs
@@ -7031,8 +7038,19 @@ option @option{-mhc-struct-return}.
 These @samp{-m} options are defined for the MIPS family of computers:
 
 @table @gcctabopt
-@item -mcpu=@var{cpu-type}
-@opindex mcpu
+
+@item -march=@var{cpu-type}
+@opindex march
+Assume the defaults for the machine type @var{cpu-type} when generating
+instructions.  The choices for @var{cpu-type} are  @samp{r2000}, @samp{r3000},
+@samp{r3900}, @samp{r4000}, @samp{r4100}, @samp{r4300}, @samp{r4400},
+@samp{r4600}, @samp{r4650}, @samp{r5000}, @samp{r6000}, @samp{r8000},
+and @samp{orion}.  Additionally, the @samp{r2000}, @samp{r3000},
+@samp{r4000}, @samp{r5000}, and @samp{r6000} can be abbreviated as
+@samp{r2k} (or @samp{r2K}), @samp{r3k}, etc.
+
+@item -mtune=@var{cpu-type}
+@opindex mtune
 Assume the defaults for the machine type @var{cpu-type} when scheduling
 instructions.  The choices for @var{cpu-type} are @samp{r2000}, @samp{r3000},
 @samp{r3900}, @samp{r4000}, @samp{r4100}, @samp{r4300}, @samp{r4400},
@@ -7044,6 +7062,10 @@ and @samp{orion}.  Additionally, the @samp{r2000}, @samp{r3000},
 chip, the compiler will not generate any code that does not meet level 1
 of the MIPS ISA (instruction set architecture) without a @option{-mipsX}
 or @option{-mabi} switch being used.
+
+@item -mcpu=@var{cpu-type}
+@opindex mcpu
+This is identical to specifying both @option{-march} and @option{-mtune}.
 
 @item -mips1
 @opindex mips1
