@@ -292,8 +292,7 @@ verify_ssa (void)
 {
   bool err = false;
   basic_block bb;
-  basic_block *definition_block = xcalloc (highest_ssa_version,
-		  			   sizeof (basic_block));
+  basic_block *definition_block = xcalloc (num_ssa_names, sizeof (basic_block));
 
   timevar_push (TV_TREE_SSA_VERIFY);
 
@@ -850,8 +849,8 @@ raise_value (tree phi, tree val, tree *eq_to)
 static void
 kill_redundant_phi_nodes (void)
 {
-  tree *eq_to, *ssa_names;
-  unsigned i, ver, aver;
+  tree *eq_to;
+  unsigned i;
   basic_block bb;
   tree phi, t, stmt, var;
 
@@ -871,15 +870,7 @@ kill_redundant_phi_nodes (void)
 
      The remaining phi nodes have their uses replaced with their value
      in the lattice and the phi node itself is removed.  */
-  eq_to = xcalloc (highest_ssa_version, sizeof (tree));
-
-  /* The SSA_NAMES array holds each SSA_NAME node we encounter
-     in a PHI node (indexed by ssa version number).
-
-     One could argue that the SSA_NAME manager ought to provide a
-     generic interface to get at the SSA_NAME node for a given
-     ssa version number.  */
-  ssa_names = xcalloc (highest_ssa_version, sizeof (tree));
+  eq_to = xcalloc (num_ssa_names, sizeof (tree));
 
   /* We have had cases where computing immediate uses takes a
      significant amount of compile time.  If we run into such
@@ -893,8 +884,6 @@ kill_redundant_phi_nodes (void)
       for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
 	{
 	  var = PHI_RESULT (phi);
-	  ver = SSA_NAME_VERSION (var);
-	  ssa_names[ver] = var;
 
 	  for (i = 0; i < (unsigned) PHI_NUM_ARGS (phi); i++)
 	    {
@@ -907,8 +896,6 @@ kill_redundant_phi_nodes (void)
 		}
 
 	      stmt = SSA_NAME_DEF_STMT (t);
-	      aver = SSA_NAME_VERSION (t);
-	      ssa_names[aver] = t;
 
 	      /* If the defining statement for this argument is not a
 		 phi node or the argument is associated with an abnormal
@@ -917,7 +904,7 @@ kill_redundant_phi_nodes (void)
 	      if (TREE_CODE (stmt) != PHI_NODE
 		  || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (t))
 		{
-		  eq_to[aver] = t;
+		  eq_to[SSA_NAME_VERSION (t)] = t;
 		  raise_value (phi, t, eq_to);
 		}
 	    }
@@ -925,23 +912,22 @@ kill_redundant_phi_nodes (void)
     }
 
   /* Now propagate the values.  */
-  for (i = 0; i < highest_ssa_version; i++)
+  for (i = 0; i < num_ssa_names; i++)
     if (eq_to[i]
-	&& eq_to[i] != ssa_names[i])
-      replace_immediate_uses (ssa_names[i], eq_to[i]);
+	&& eq_to[i] != ssa_name (i))
+      replace_immediate_uses (ssa_name (i), eq_to[i]);
 
   /* And remove the dead phis.  */
-  for (i = 0; i < highest_ssa_version; i++)
+  for (i = 0; i < num_ssa_names; i++)
     if (eq_to[i]
-	&& eq_to[i] != ssa_names[i])
+	&& eq_to[i] != ssa_name (i))
       {
-	stmt = SSA_NAME_DEF_STMT (ssa_names[i]);
+	stmt = SSA_NAME_DEF_STMT (ssa_name (i));
 	remove_phi_node (stmt, 0, bb_for_stmt (stmt));
       }
 
   free_df ();
   free (eq_to);
-  free (ssa_names);
 }
 
 struct tree_opt_pass pass_redundant_phi =

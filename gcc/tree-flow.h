@@ -348,6 +348,12 @@ extern GTY(()) varray_type referenced_vars;
 #define num_referenced_vars VARRAY_ACTIVE_SIZE (referenced_vars)
 #define referenced_var(i) VARRAY_TREE (referenced_vars, i)
 
+/* Array of all SSA_NAMEs used in the function.  */
+extern GTY(()) varray_type ssa_names;
+
+#define num_ssa_names VARRAY_ACTIVE_SIZE (ssa_names)
+#define ssa_name(i) VARRAY_TREE (ssa_names, i)
+
 /* Artificial variable used to model the effects of function calls.  */
 extern GTY(()) tree global_var;
 
@@ -528,8 +534,6 @@ extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *);
 
 /* In tree-into-ssa.c  */
 extern void rewrite_into_ssa (void);
-
-extern unsigned int highest_ssa_version;
 
 /* In tree-ssa-pre.c  */
 extern void tree_perform_ssapre (tree, enum tree_dump_index);
