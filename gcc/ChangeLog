@@ -1,5 +1,9 @@
 2002-02-15  Richard Sandiford  <rsandifo@redhat.com>
 
+	* c-decl.c (grokdeclarator): Prevent a segfault on unnamed decls.
+
+2002-02-15  Richard Sandiford  <rsandifo@redhat.com>
+
 	* reload.c (find_dummy_reload): Check that an output register
 	is valid for its mode.
 

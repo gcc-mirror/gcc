@@ -4534,9 +4534,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	  if (inner_decl == NULL_TREE
 	      || TREE_CODE (inner_decl) == IDENTIFIER_NODE)
 	    attr_flags |= (int) ATTR_FLAG_DECL_NEXT;
-	  if (TREE_CODE (inner_decl) == CALL_EXPR)
+	  else if (TREE_CODE (inner_decl) == CALL_EXPR)
 	    attr_flags |= (int) ATTR_FLAG_FUNCTION_NEXT;
-	  if (TREE_CODE (inner_decl) == ARRAY_REF)
+	  else if (TREE_CODE (inner_decl) == ARRAY_REF)
 	    attr_flags |= (int) ATTR_FLAG_ARRAY_NEXT;
 	  returned_attrs = decl_attributes (&type,
 					    chainon (returned_attrs, attrs),
