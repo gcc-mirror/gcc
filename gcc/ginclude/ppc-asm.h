@@ -35,6 +35,48 @@
 #define r29	29
 #define r30	30
 #define r31	31
+
+#define cr0	0
+#define cr1	1
+#define cr2	2
+#define cr3	3
+#define cr4	4
+#define cr5	5
+#define cr6	6
+#define cr7	7
+
+#define f0	0
+#define f1	1
+#define f2	2
+#define f3	3
+#define f4	4
+#define f5	5
+#define f6	6
+#define f7	7
+#define f8	8
+#define f9	9
+#define f10	10
+#define f11	11
+#define f12	12
+#define f13	13
+#define f14	14
+#define f15	15
+#define f16	16
+#define f17	17
+#define f18	18
+#define f19     19
+#define f20	20
+#define f21	21
+#define f22	22
+#define f23	23
+#define f24	24
+#define f25	25
+#define f26	26
+#define f27	27
+#define f28	28
+#define f29	29
+#define f30	30
+#define f31	31
 #endif
 
 /*

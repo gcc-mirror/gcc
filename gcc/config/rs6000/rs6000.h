@@ -441,7 +441,6 @@ struct rs6000_cpu_select
 
 extern struct rs6000_cpu_select rs6000_select[];
 
-
 /* Sometimes certain combinations of command options do not make sense
    on a particular target machine.  You can define a macro
    `OVERRIDE_OPTIONS' to take account of this.  This macro, if
@@ -1520,12 +1519,7 @@ typedef struct rs6000_args
 
 #define FUNCTION_EPILOGUE(FILE, SIZE) output_epilog (FILE, SIZE)
 
-/* Output assembler code for a block containing the constant parts
-   of a trampoline, leaving space for the variable parts.
-
-   The trampoline should set the static chain pointer to value placed
-   into the trampoline and should branch to the specified routine.  */
-#define TRAMPOLINE_TEMPLATE(FILE) rs6000_trampoline_template (FILE)
+/* TRAMPOLINE_TEMPLATE deleted */
 
 /* Length in units of the trampoline for entering a nested function.  */
 

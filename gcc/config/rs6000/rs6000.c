@@ -4381,65 +4381,6 @@ int get_issue_rate()
   }
 }
 
-
-/* Output insns to flush the {data|instruction} caches after building a
-   trampoline. */
-
-static void
-rs6000_sync_trampoline (addr)
-     rtx addr;
-{
-  enum machine_mode pmode = Pmode;
-  rtx reg = gen_reg_rtx (pmode);
-  rtx mem2;
-  rtx mem1;
-  int size = rs6000_trampoline_size ();
-  rtx (*sub_fcn) PROTO ((rtx, rtx, rtx));
-  rtx (*cmp_fcn) PROTO ((rtx, rtx));
-  rtx label;
-
-  if (TARGET_32BIT)
-    {
-      sub_fcn = gen_subsi3;
-      cmp_fcn = gen_cmpsi;
-    }
-  else
-    {
-      sub_fcn = gen_subdi3;
-      cmp_fcn = gen_cmpdi;
-    }
-
-  addr = force_reg (pmode, addr);
-  mem2 = gen_rtx (MEM, pmode, gen_rtx (PLUS, pmode, addr, reg));
-  mem1 = gen_rtx (MEM, pmode, addr);
-
-  /* Issue a loop of dcbst's to flush the data cache */
-  emit_move_insn (reg, GEN_INT (size-4));
-  label = gen_label_rtx ();
-  emit_label (label);
-  emit_insn (gen_dcbst (mem2, addr, reg));
-  emit_insn ((*sub_fcn) (reg, reg, GEN_INT (4)));
-  emit_insn ((*cmp_fcn) (reg, const0_rtx));
-  emit_jump_insn (gen_bgt (label));
-
-  /* Issue a sync after the dcbst's to let things settle down */
-  emit_insn (gen_sync (mem1));
-
-  /* Issue a loop of icbi's to flush the instruction cache */
-  emit_move_insn (reg, GEN_INT (size-4));
-  label = gen_label_rtx ();
-  emit_label (label);
-  emit_insn (gen_icbi (mem2, addr, reg));
-  emit_insn ((*sub_fcn) (reg, reg, GEN_INT (4)));
-  emit_insn ((*cmp_fcn) (reg, const0_rtx));
-  emit_jump_insn (gen_bgt (label));
-
-  /* Issue a sync after the icbi's to let things settle down */
-  emit_insn (gen_sync (mem1));
-
-  /* Finally issue an isync to synchronize the icache */
-  emit_insn (gen_isync (mem1));
-}
 
 
 /* Output assembler code for a block containing the constant parts
@@ -4466,7 +4407,6 @@ rs6000_trampoline_template (file)
        the address of the function, the second word is the TOC pointer (r2),
        and the third word is the static chain value.  */
     case ABI_AIX:
-      fprintf (file, "\t.long %s\n", (TARGET_32BIT) ? "0,0,0" : "0,0,0,0,0,0");
       break;
 
 
@@ -4475,35 +4415,6 @@ rs6000_trampoline_template (file)
     case ABI_V4:
     case ABI_SOLARIS:
     case ABI_AIX_NODESC:
-      if (STATIC_CHAIN_REGNUM == 0 || !TARGET_NEW_MNEMONICS)
-	abort ();
-
-      if (TARGET_32BIT)
-	{
-	  fprintf (file, "\tmflr %s\n", r0);		/* offset  0 */
-	  fprintf (file, "\tbl .LTRAMP1\n");		/* offset  4 */
-	  fprintf (file, "\t.long 0,0\n");		/* offset  8 */
-	  fprintf (file, ".LTRAMP1:\n");
-	  fprintf (file, "\tmflr %s\n", sc);		/* offset 20 */
-	  fprintf (file, "\tmtlr %s\n", r0);		/* offset 24 */
-	  fprintf (file, "\tlwz %s,0(%s)\n", r0, sc);	/* offset 28 */
-	  fprintf (file, "\tlwz %s,4(%s)\n", sc, sc);	/* offset 32 */
-	  fprintf (file, "\tmtctr %s\n", r0);		/* offset 36 */
-	  fprintf (file, "\tbctr\n");			/* offset 40 */
-	}
-      else
-	{
-	  fprintf (file, "\tmflr %s\n", r0);		/* offset  0 */
-	  fprintf (file, "\tbl .LTRAMP1\n");		/* offset  4 */
-	  fprintf (file, "\t.long 0,0,0,0\n");		/* offset  8 */
-	  fprintf (file, ".LTRAMP1:\n");
-	  fprintf (file, "\tmflr %s\n", sc);		/* offset 28 */
-	  fprintf (file, "\tmtlr %s\n", r0);		/* offset 32 */
-	  fprintf (file, "\tld %s,0(%s)\n", r0, sc);	/* offset 36 */
-	  fprintf (file, "\tld %s,8(%s)\n", sc, sc);	/* offset 40 */
-	  fprintf (file, "\tmtctr %s\n", r0);		/* offset 44 */
-	  fprintf (file, "\tbctr\n");			/* offset 48 */
-	}
       break;
 
   /* NT function pointers point to a two word area (real address, TOC)
@@ -4600,18 +4511,16 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
       }
       break;
 
-    /* Under V.4/eabi, update the two words after the bl to have the real
-       function address and the static chain.  */
+    /* Under V.4/eabi, call __trampoline_setup to do the real work.  */
     case ABI_V4:
     case ABI_SOLARIS:
     case ABI_AIX_NODESC:
-      {
-	rtx reg = gen_reg_rtx (pmode);
-	emit_move_insn (reg, fnaddr);
-	emit_move_insn (MEM_PLUS (addr, 8), reg);
-	emit_move_insn (MEM_PLUS (addr, 8 + regsize), ctx_reg);
-	rs6000_sync_trampoline (addr);
-      }
+      emit_library_call (gen_rtx (SYMBOL_REF, SImode, "__trampoline_setup"),
+			 FALSE, VOIDmode, 4,
+			 addr, pmode,
+			 GEN_INT (rs6000_trampoline_size ()), SImode,
+			 fnaddr, pmode,
+			 ctx_reg, pmode);
       break;
 
     /* Under NT, update the first word to point to the ..LTRAMP1..0 header,
@@ -4944,74 +4853,3 @@ rs6000_encode_section_info (decl)
 }
 
 #endif /* USING_SVR4_H */
-
-
-/* CYGNUS LOCAL mac */
-
-/* Whether we are using m68k-compatible alignment.  */
-
-int mac68k_aligned;
-
-/* Most Mac compiler pragmas are unimportant, but we must recognize
-   the m68k alignment pragma, because that is crucial to transitions
-   to and from the m68k emulator on PowerMacs.  */
-
-int
-handle_mac_pragma (finput, t)
-     FILE *finput;
-     tree t;
-{
-  int retval = 0;
-  register char *pname;
-  char pbuf[200];
-  int c, psize = 0;
-
-  if (TREE_CODE (t) != IDENTIFIER_NODE)
-    return 0;
-
-  pname = IDENTIFIER_POINTER (t);
-  if (strcmp (pname, "segment") == 0)
-    {
-      /* (should collect pbuf + 8 into a segment name) */
-    }
-  else if (strcmp (pname, "options") == 0)
-    {
-      c = getc (finput);
-      /* Skip over initial whitespace.  */
-      while (c == ' ' || c == '\t')
-	c = getc (finput);
-
-      /* Return without doing anything if no content.  */
-      if (c == '\n' || c == EOF)
-	{
-	  ungetc (c, finput);
-	  return 0;
-	}
-
-      /* Collect the rest of the line.  */
-      while (psize < sizeof (pbuf) - 1 && c != '\n')
-	{
-	  pbuf[psize++] = c;
-	  c = getc (finput);
-	}
-
-      if (strncmp (pbuf, "align=mac68k", 12) == 0)
-	{
-	  mac68k_aligned = 1;
-	  retval = 1;
-	}
-      else if (strncmp (pbuf, "align=power", 11) == 0)
-	{
-	  mac68k_aligned = 0;
-	  retval = 1;
-	}
-      else if (strncmp (pbuf, "align=reset", 11) == 0)
-	{
-	  mac68k_aligned = 0;
-	  retval = 1;
-	}
-    }
-
-  return retval;
-}
-/* END CYGNUS LOCAL mac */

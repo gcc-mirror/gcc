@@ -1,24 +1,4 @@
-# Do not build libgcc1.
-LIBGCC1 =
-CROSS_LIBGCC1 =
-
-# These are really part of libgcc1, but this will cause them to be
-# built correctly, so... [taken from t-sparclite]
-LIB2FUNCS_EXTRA = fp-bit.c dp-bit.c eabi.S eabi-ctors.c
-
-dp-bit.c: $(srcdir)/config/fp-bit.c
-	cat $(srcdir)/config/fp-bit.c > dp-bit.c
-
-fp-bit.c: $(srcdir)/config/fp-bit.c
-	echo '#define FLOAT' > fp-bit.c
-	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
-
-eabi.S: $(srcdir)/config/rs6000/eabi.asm
-	cat $(srcdir)/config/rs6000/eabi.asm > eabi.S
-
-eabi-ctors.c: $(srcdir)/config/rs6000/eabi-ctors.c
-	cat $(srcdir)/config/rs6000/eabi-ctors.c > eabi-ctors.c
-
+# PowerPC embedded support with gas.
 # Build libgcc.a with different options.
 
 MULTILIB_OPTIONS	= msoft-float \
@@ -29,14 +9,6 @@ MULTILIB_DIRNAMES	= nof \
 			  le be \
 			  cs ca sol lin
 
-MULTILIB_MATCHES	= mlittle=mlittle-endian \
-			  mbig=mbig-endian \
-			  msoft-float=mcpu?403 \
-			  msoft-float=mcpu?821 \
-			  msoft-float=mcpu?860 \
-			  mcall-sysv=mcall-sysv-eabi \
-			  mcall-sysv=mcall-sysv-noeabi
-
 MULTILIB_EXTRA_OPTS	= mrelocatable-lib mno-eabi
 MULTILIB_EXCEPTIONS	= *mbig/*mcall-solaris* \
 			  *mlittle/*mcall-solaris* \
@@ -45,41 +17,6 @@ MULTILIB_EXCEPTIONS	= *mbig/*mcall-solaris* \
 			  *mlittle/*mcall-linux* \
 			  *msoft-float/*mcall-linux*
 
-LIBGCC = stmp-multilib
-INSTALL_LIBGCC = install-multilib
-EXTRA_MULTILIB_PARTS = ecrti$(objext) ecrtn$(objext) scrt0$(objext) scrti$(objext) scrtn$(objext)
-
-# For eabigas we build {e,s}crti.o and {e,s}crtn.o which serve to add begin and
-# end labels to all of the special sections used when we link using gcc.
-
-# Assemble startup files.
-ecrti.S: $(srcdir)/config/rs6000/eabi-ci.asm
-	cat $(srcdir)/config/rs6000/eabi-ci.asm >ecrti.S
-
-ecrtn.S: $(srcdir)/config/rs6000/eabi-cn.asm
-	cat $(srcdir)/config/rs6000/eabi-cn.asm >ecrtn.S
-
-scrti.S: $(srcdir)/config/rs6000/sol-ci.asm
-	cat $(srcdir)/config/rs6000/sol-ci.asm >scrti.S
-
-scrtn.S: $(srcdir)/config/rs6000/sol-cn.asm
-	cat $(srcdir)/config/rs6000/sol-cn.asm >scrtn.S
-
-scrt0.c: $(srcdir)/config/rs6000/sol-c0.c
-	cat $(srcdir)/config/rs6000/sol-c0.c >scrt0.c
-
-# Build multiple copies of ?crt{i,n}.o, one for each target switch.
-$(T)ecrti$(objext): ecrti.S
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c ecrti.S -o $(T)ecrti$(objext)
-
-$(T)ecrtn$(objext): ecrtn.S
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c ecrtn.S -o $(T)ecrtn$(objext)
-
-$(T)scrti$(objext): scrti.S
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c ecrti.S -o $(T)scrti$(objext)
-
-$(T)scrtn$(objext): scrtn.S
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c ecrti.S -o $(T)scrtn$(objext)
-
-$(T)scrt0$(objext): scrt0.c
-	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c ecrti.S -o $(T)scrt0$(objext)
+MULTILIB_MATCHES	= ${MULTILIB_MATCHES_FLOAT} \
+			  ${MULTILIB_MATCHES_ENDIAN} \
+			  ${MULTILIB_MATCHES_SYSV}

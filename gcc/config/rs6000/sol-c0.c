@@ -84,12 +84,13 @@ _start(int argc, char *argv[], char *envp[], void *auxp, void (*termfunc)())
   int ret;
   int dummy = 0;
 
-  /* Load up r13 before we do anything else.  */
-  __asm__ volatile ("mr %%r13,%0;mr %%r2,%1" : "=r" (dummy) : "r" (&_SDA_BASE_[0]), "r" (&_SDA2_BASE_[0]));
-  _environ = envp;
+  /* Load up r13/r2 before we do anything else.  */
+  __asm__ volatile ("mr %%r13,%0;mr %%r2,%1" : "=r" (dummy) : "r" (&_SDA_BASE_[0]), "r" (&_SDA2_BASE_[0]), "r" (dummy));
+  _environ = envp + dummy;
 
-  /* Register loader termination function */
-  if (termfunc || dummy)
+  /* Register loader termination function (the || dummy is to make sure the above asm
+     is not optimized away).  */
+  if (termfunc)
     atexit (termfunc);
 
   /* Register exception handler if needed */

@@ -967,7 +967,7 @@ do {									\
 %{memb} %{!memb: %{msdata: -memb} %{msdata=eabi: -memb}} \
 %{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian} \
 %{!mlittle: %{!mlittle-endian: %{!mbig: %{!mbig-endian: \
-    %{mcall-solaris: -mlittle} %{mcall-linux: -mbig} }}}}"
+    %{mcall-solaris: -mlittle -msolaris} %{mcall-linux: -mbig} }}}}"
 
 #undef CC1_SPEC
 /* Pass -G xxx to the compiler and set correct endian mode */
