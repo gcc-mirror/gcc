@@ -475,6 +475,7 @@ extern void no_asm_to_stream PARAMS ((FILE *));
 extern unsigned int get_named_section_flags PARAMS ((const char *));
 extern bool set_named_section_flags	PARAMS ((const char *, unsigned int));
 extern void named_section_flags		PARAMS ((const char *, unsigned int));
+extern bool named_section_first_declaration PARAMS((const char *));
 
 union tree_node;
 extern unsigned int default_section_type_flags PARAMS ((union tree_node *,

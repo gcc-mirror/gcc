@@ -1,3 +1,10 @@
+2001-10-08  Robert Lipe  <robertlipe@usa.net>
+
+	* varasm.c  (struct in_named_entry): Add declared.
+	(named_section_first_declaration): New function.
+	(default_elf_asm_named_section): Use it.
+	* output.h (named_section_first_declaration): New.
+
 2001-10-08  Richard Henderson  <rth@redhat.com>
 
         * i386.md (movsi_xor): Export.
