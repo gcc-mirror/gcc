@@ -2459,6 +2459,26 @@ leaf_return_peephole_ok ()
   return (actual_fsize == 0);
 }
 
+/* Return nonzero if a branch/jump/call instruction will be emitting
+   nop into its delay slot.  */
+
+int
+empty_delay_slot (insn)
+     rtx insn;
+{
+  rtx seq;
+
+  /* If no previous instruction (should not happen), return true.  */
+  if (PREV_INSN (insn) == NULL)
+    return 1;
+
+  seq = NEXT_INSN (PREV_INSN (insn));
+  if (GET_CODE (PATTERN (seq)) == SEQUENCE)
+    return 0;
+
+  return 1;
+}
+
 /* Return nonzero if TRIAL can go into the function epilogue's
    delay slot.  SLOT is the slot we are trying to fill.  */
 
