@@ -1,3 +1,9 @@
+2000-04-10  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* config/elfos.h (SELECT_SECTION): Decide whether to use a data or
+	const section to output a CONSTRUCTOR based on the same conditions
+	used for VAR_DECLs.
+
 Tue Apr 11 09:55:59 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* pa/long-double.h (FIX_TRUNCTFSI2_LIBCALL): Tweak for PA64.
