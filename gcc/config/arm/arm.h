@@ -2,7 +2,8 @@
    Copyright (C) 1991, 1993 Free Software Foundation, Inc.
    Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
               and Martin Simmons (@harleqn.co.uk).
-
+   More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
+   
 This file is part of GNU CC.
 
 GNU CC is free software; you can redistribute it and/or modify
@@ -27,30 +28,45 @@ extern void output_prologue ();
 extern void output_epilogue ();
 extern char *arm_output_asm_insn ();
 extern char *arm_output_llc ();
+extern char *arithmetic_instr ();
 extern char *output_add_immediate ();
 extern char *output_call ();
+extern char *output_call_mem ();
 extern char *output_move_double ();
 extern char *output_mov_double_fpu_from_arm ();
 extern char *output_mov_double_arm_from_fpu ();
 extern char *output_mov_immediate ();
 extern char *output_multi_immediate ();
 extern char *output_shifted_move ();
+extern char *output_shift_compare ();
 extern char *output_arithmetic_with_immediate_multiply ();
-
-/* Translation to find startup files.  On RISCiX boxes, gcrt0.o is in
-   /usr/lib.  */
-#define STARTFILE_SPEC  \
-  "%{pg:/usr/lib/gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}"
+extern char *output_arithmetic_with_shift ();
+extern char *output_return_instruction ();
+extern char *output_load_symbol ();
+extern char *fp_immediate_constant ();
+extern struct rtx_def *gen_compare_reg ();
+extern struct rtx_def *arm_gen_store_multiple ();
+extern struct rtx_def *arm_gen_load_multiple ();
 
-#ifdef riscos
-#define CPP_PREDEFINES  "-Darm -Driscos -Acpu(arm) -Amachine(arm)"
-#else
-#define CPP_PREDEFINES  "-Darm -Driscix -Dunix -Asystem(unix) -Acpu(arm) -Amachine(arm)"
+extern char *arm_condition_codes[];
+
+/* This is needed by the tail-calling peepholes */
+extern int frame_pointer_needed;
+
+
+#ifndef CPP_PREDEFINES
+#define CPP_PREDEFINES  "-Darm -Acpu(arm) -Amachine(arm)"
+#endif
+
+#ifndef CPP_SPEC
+#define CPP_SPEC "%{m6:-D__arm6__}"
 #endif
 
 /* Run-time Target Specification.  */
+#ifndef TARGET_VERSION
 #define TARGET_VERSION  \
-  fputs (" (ARM/RISCiX)", stderr);
+  fputs (" (ARM/generic)", stderr);
+#endif
 
 /* Run-time compilation parameters selecting different hardware subsets.
    On the ARM, misuse it in a different way.  */
@@ -70,13 +86,49 @@ extern int target_flags;
    case instruction scheduling becomes very uninteresting.  */
 #define TARGET_FPE	(target_flags & 4)
 
+/* Nonzero if destined for an ARM6xx.  Takes out bits that assume restoration
+   of condition flags when returning from a branch & link (ie. a function) */
+#define TARGET_6        (target_flags & 8)
+
+/* ARM_EXTRA_TARGET_SWITCHES is used in riscix.h to define some options which
+   are passed to the preprocessor and the assembler post-processor.  They
+   aren't needed in the main pass of the compiler, but if we don't define
+   them in target switches cc1 complains about them.  For the sake of
+   argument lets allocate bit 31 of target flags for such options. */
+
+#ifndef ARM_EXTRA_TARGET_SWITCHES
+#define ARM_EXTRA_TARGET_SWITCHES
+#endif
+
 #define TARGET_SWITCHES  \
 {                         			\
   {"apcs",		 1},			\
   {"poke-function-name", 2},			\
   {"fpe",		 4},			\
+  {"6",			 8},			\
+  {"2",			-8},			\
+  {"3",			-8},			\
+  ARM_EXTRA_TARGET_SWITCHES			\
   {"",   		 TARGET_DEFAULT }	\
 }
+
+/* Which processor we are running on.  Currently this is only used to
+   get the condition code clobbering attribute right when we are running on
+   an arm 6 */
+
+enum processor_type 
+{
+  PROCESSOR_ARM2,
+  PROCESSOR_ARM3,
+  PROCESSOR_ARM6
+};
+
+/* Recast the cpu class to be the cpu attribute. */
+
+/* Recast the cpu class to be the cpu attribute.  */
+#define arm_cpu_attr ((enum attr_cpu)arm_cpu)
+
+extern enum processor_type arm_cpu;
 
 #define TARGET_DEFAULT  0
 
@@ -88,32 +140,76 @@ extern int target_flags;
    - if floating point is done by emulation, forget about instruction
      scheduling.  Note that this only saves compilation time; it doesn't
      matter for the final code.  */
-#ifdef riscos
-#define TARGET_WHEN_DEBUGGING  3
-#else
+#ifndef TARGET_WHEN_DEBUGGING
 #define TARGET_WHEN_DEBUGGING  1
 #endif
 
 #define OVERRIDE_OPTIONS  \
 {								\
-  if (write_symbols != NO_DEBUG)				\
-    target_flags |= TARGET_WHEN_DEBUGGING;			\
-  else if (TARGET_POKE_FUNCTION_NAME)				\
+  if (write_symbols != NO_DEBUG && flag_omit_frame_pointer)	\
+    warning ("-g without a frame pointer may not give sensible debugging");\
+  if (TARGET_POKE_FUNCTION_NAME)				\
     target_flags |= 1;						\
   if (TARGET_FPE)						\
     flag_schedule_insns = flag_schedule_insns_after_reload = 0;	\
+  arm_cpu = TARGET_6 ? PROCESSOR_ARM6: PROCESSOR_ARM2;		\
 }
 
 /* Omitting the frame pointer is a very good idea on the ARM, especially if
    not TARGET_APCS, in which case all that pushing on function entry isn't
-   mandatory anymore.  */
+   mandatory anymore.  
+   Forcing loads to be explicit also allows cse to work better */
+
 #define OPTIMIZATION_OPTIONS(OPTIMIZE)  \
 {					\
   if (OPTIMIZE)				\
-    flag_omit_frame_pointer = 1;	\
+    {					\
+      flag_force_mem = 1;		\
+      flag_omit_frame_pointer = 1;	\
+    }					\
 }
 
 /* Target machine storage Layout.  */
+
+
+/* Define this macro if it is advisable to hold scalars in registers
+   in a wider mode than that declared by the program.  In such cases,
+   the value is constrained to be within the bounds of the declared
+   type, but kept valid in the wider mode.  The signedness of the
+   extension may differ from that of the type.  */
+
+/* It is far faster to zero extend chars than to sign extend them */
+
+#define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)  \
+  if (GET_MODE_CLASS (MODE) == MODE_INT \
+      && GET_MODE_SIZE (MODE) < 4)      \
+    {					\
+      if (MODE == QImode)		\
+	UNSIGNEDP = 1;			\
+      (MODE) = SImode;			\
+    }
+
+/* Define for XFmode extended real floating point support.
+   This will automatically cause REAL_ARITHMETIC to be defined.  */
+/* For the ARM:
+   I think I have added all the code to make this work.  Unfortunately,
+   early releases of the floating point emulation code on RISCiX used a
+   different format for extended precision numbers.  On my RISCiX box there
+   is a bug somewhere which causes the machine to lock up when running enquire
+   with long doubles.  There is the additional aspect that Norcroft C
+   treats long doubles as doubles and we ought to remain compatible.
+   Perhaps someone with an FPA coprocessor and not running RISCiX would like
+   to try this someday. */
+/* #define LONG_DOUBLE_TYPE_SIZE 96 */
+
+/* Disable XFmode patterns in md file */
+#define ENABLE_XF_PATTERNS 0
+
+/* Define if you don't want extended real, but do want to use the
+   software floating point emulator for REAL_ARITHMETIC and
+   decimal <-> binary conversion. */
+/* See comment above */
+#define REAL_ARITHMETIC
 
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
@@ -145,10 +241,19 @@ extern int target_flags;
 
 #define BIGGEST_ALIGNMENT  32
 
+/* Make strings word-aligned so strcpy from constants will be faster.  */
+#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
+  (TREE_CODE (EXP) == STRING_CST        \
+   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
+
 /* Every structures size must be a multiple of 32 bits.  */
 #define STRUCTURE_SIZE_BOUNDARY 32
 
+/* Non-zero if move instructions will actually fail to work
+   when given unaligned data.  */
 #define STRICT_ALIGNMENT 1
+
+#define TARGET_FLOAT_FORMAT IEEE_FLOAT_FORMAT
 
 /* Define number of bits in most basic integer type.
    (If undefined, default is BITS_PER_WORD).  */
@@ -177,10 +282,43 @@ extern int target_flags;
 
 	f4-f7	     S	floating point variable
 
+	cc		This is NOT a real register, but is used internally
+	                to represent things that use or set the condition
+			codes.
+	sfp             This isn't either.  It is used during rtl generation
+	                since the offset between the frame pointer and the
+			auto's isn't known until after register allocation.
+	afp		Nor this, we only need this because of non-local
+	                goto.  Without it fp appears to be used and the
+			elimination code won't get rid of sfp.  It tracks
+			fp exactly at all times.
+
    *: See CONDITIONAL_REGISTER_USAGE  */
 
-/* The number of hard registers is 16 ARM + 8 FPU.  */
-#define FIRST_PSEUDO_REGISTER  24
+/* The stack backtrace structure is as follows:
+  fp points to here:  |  save code pointer  |      [fp]
+                      |  return link value  |      [fp, #-4]
+                      |  return sp value    |      [fp, #-8]
+                      |  return fp value    |      [fp, #-12]
+                     [|  saved r10 value    |]
+                     [|  saved r9 value     |]
+                     [|  saved r8 value     |]
+                     [|  saved r7 value     |]
+                     [|  saved r6 value     |]
+                     [|  saved r5 value     |]
+                     [|  saved r4 value     |]
+                     [|  saved r3 value     |]
+                     [|  saved r2 value     |]
+                     [|  saved r1 value     |]
+                     [|  saved r0 value     |]
+                     [|  saved f7 value     |]     three words
+                     [|  saved f6 value     |]     three words
+                     [|  saved f5 value     |]     three words
+                     [|  saved f4 value     |]     three words
+  r0-r3 are not normally saved in a C function.  */
+
+/* The number of hard registers is 16 ARM + 8 FPU + 1 CC + 1 SFP.  */
+#define FIRST_PSEUDO_REGISTER  27
 
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.  */
@@ -188,7 +326,8 @@ extern int target_flags;
 {                        \
   0,0,0,0,0,0,0,0,	 \
   0,0,1,1,0,1,0,1,	 \
-  0,0,0,0,0,0,0,0	 \
+  0,0,0,0,0,0,0,0,	 \
+  1,1,1			 \
 }
 
 /* 1 for registers not available across function calls.
@@ -196,12 +335,15 @@ extern int target_flags;
    registers that can be used without being saved.
    The latter must include the registers where values are returned
    and the register where structure-value addresses are passed.
-   Aside from that, you can include as many other registers as you like.  */
+   Aside from that, you can include as many other registers as you like.
+   The CC is not preserved over function calls on the ARM 6, so it is 
+   easier to assume this for all.  SFP is preserved, since FP is. */
 #define CALL_USED_REGISTERS  \
 {                            \
   1,1,1,1,0,0,0,0,	     \
   0,0,1,1,1,1,1,1,	     \
-  1,1,1,1,0,0,0,0	     \
+  1,1,1,1,0,0,0,0,	     \
+  1,1,1			     \
 }
 
 /* If doing stupid life analysis, avoid a bug causing a return value r0 to be
@@ -221,15 +363,19 @@ extern int target_flags;
 
    On the ARM regs are UNITS_PER_WORD bits wide; FPU regs can hold any FP
    mode.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)  \
-    ((REGNO) >= 16 ? 1							\
+#define HARD_REGNO_NREGS(REGNO, MODE)  					\
+    (((REGNO) >= 16 && REGNO != FRAME_POINTER_REGNUM			\
+      && (REGNO) != ARG_POINTER_REGNUM) ? 1				\
      : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    This is TRUE for ARM regs since they can hold anything, and TRUE for FPU
    regs holding FP.  */
-#define HARD_REGNO_MODE_OK(REGNO, MODE)  \
-  ((REGNO) < 16 || GET_MODE_CLASS (MODE) == MODE_FLOAT)
+#define HARD_REGNO_MODE_OK(REGNO, MODE)  			\
+  ((GET_MODE_CLASS (MODE) == MODE_CC) ? (REGNO == CC_REGNUM) :	\
+  ((REGNO) < 16 || REGNO == FRAME_POINTER_REGNUM		\
+   || REGNO == ARG_POINTER_REGNUM				\
+   || GET_MODE_CLASS (MODE) == MODE_FLOAT))
 
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
@@ -249,15 +395,24 @@ extern int target_flags;
 #define STACK_POINTER_REGNUM	13
 
 /* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM	9
+#define FRAME_POINTER_REGNUM	25
+
+/* Define this to be where the real frame pointer is if it is not possible to
+   work out the offset between the frame pointer and the automatic variables
+   until after register allocation has taken place.  FRAME_POINTER_REGNUM
+   should point to a special register that we will make sure is eliminated. */
+#define HARD_FRAME_POINTER_REGNUM 11
 
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms may be accessed
-   via the stack pointer) in functions that seem suitable.  */
-#define FRAME_POINTER_REQUIRED	0
+   via the stack pointer) in functions that seem suitable.  
+   If we have to have a frame pointer we might as well make use of it.
+   APCS says that the frame pointer does not need to be pushed in leaf
+   functions.  */
+#define FRAME_POINTER_REQUIRED	(TARGET_APCS && !leaf_function_p ())
 
 /* Base register for access to arguments of the function.  */
-#define ARG_POINTER_REGNUM	11
+#define ARG_POINTER_REGNUM	26
 
 /* The native (Norcroft) Pascal compiler for the ARM passes the static chain
    as an invisible last argument (possible since varargs don't exist in
@@ -268,14 +423,22 @@ extern int target_flags;
    is passed to a function.  */
 #define STRUCT_VALUE_REGNUM	0
 
+/* Internal, so that we don't need to refer to a raw number */
+#define CC_REGNUM		24
+
 /* The order in which register should be allocated.  It is good to use ip
-   since no saving is required (though calls clobber it).  It is quite good to
-   use lr since other calls may clobber it anyway.  */
+   since no saving is required (though calls clobber it) and it never contains
+   function parameters.  It is quite good to use lr since other calls may
+   clobber it anyway.  Allocate r0 through r3 in reverse order since r3 is 
+   least likely to contain a function parameter; in addition results are
+   returned in r0.
+   */
 #define REG_ALLOC_ORDER  \
 {                                   \
-    0, 1, 2, 3, 12, 14,	4, 5,       \
+    3, 2, 1, 0, 12, 14,	4, 5,       \
     6, 7, 8, 10, 9, 11, 13, 15,     \
-    16, 17, 18, 19, 20, 21, 22, 23  \
+    16, 17, 18, 19, 20, 21, 22, 23, \
+    24, 25			    \
 }
 
 /* Register and constant classes.  */
@@ -306,18 +469,21 @@ enum reg_class
    of length N_REG_CLASSES.  */
 #define REG_CLASS_CONTENTS  \
 {				\
-  0x000000,  /* NO_REGS  */	\
-  0xFF0000,  /* FPU_REGS */	\
-  0x00FFFF,  /* GENERAL_REGS */	\
-  0xFFFFFF   /* ALL_REGS */	\
+  0x0000000, /* NO_REGS  */	\
+  0x0FF0000, /* FPU_REGS */	\
+  0x200FFFF, /* GENERAL_REGS */	\
+  0x2FFFFFF  /* ALL_REGS */	\
 }
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
    reg number REGNO.  This could be a conditional expression
    or could index an array.  */
-#define REGNO_REG_CLASS(REGNO)  \
-  ((REGNO) < 16 ? GENERAL_REGS : FPU_REGS)
+#define REGNO_REG_CLASS(REGNO)  			\
+  (((REGNO) < 16 || REGNO == FRAME_POINTER_REGNUM	\
+    || REGNO == ARG_POINTER_REGNUM)			\
+   ? GENERAL_REGS : (REGNO) == CC_REGNUM		\
+   ? NO_REGS : FPU_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS  GENERAL_REGS
@@ -334,20 +500,44 @@ enum reg_class
    C is the letter, and VALUE is a constant value.
    Return 1 if VALUE is in the range specified by C.
 	I: immediate arithmetic operand (i.e. 8 bits shifted as required).
-	J: valid indexing constants.  */
-#define CONST_OK_FOR_LETTER_P(VALUE, C)  \
-  ((C) == 'I' ? const_ok_for_arm (VALUE) :		\
-   (C) == 'J' ? (abs (VALUE) < 4096) : 0)
+	J: valid indexing constants.  
+	K: as I but also (not (value)) ok.
+	L: as I but also (neg (value)) ok.*/
+#define CONST_OK_FOR_LETTER_P(VALUE, C)  				      \
+  ((C) == 'I' ? const_ok_for_arm (VALUE) :				      \
+   (C) == 'J' ? ((VALUE) < 4096 && (VALUE) > -4096) :			      \
+   (C) == 'K' ? (const_ok_for_arm (VALUE) || const_ok_for_arm (~(VALUE))) :   \
+   (C) == 'L' ? (const_ok_for_arm (VALUE) || const_ok_for_arm (-(VALUE))) : 0)
 
-/* Constant letter 'G' for the FPU immediate constants. */
-#define CONST_DOUBLE_OK_FOR_LETTER_P(X,C)	\
-    ((C) == 'G' ? const_double_rtx_ok_for_fpu (X) : 0)
+/* For the ARM, `Q' means that this is a memory operand that is just
+   an offset from a register.  
+   `S' means any symbol that has the SYMBOL_REF_FLAG set or a CONSTANT_POOL
+   address.  This means that the symbol is in the text segment and can be
+   accessed without using a load. */
+
+#define EXTRA_CONSTRAINT(OP, C)                                         \
+  ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG  \
+   : (C) == 'S' ? CONSTANT_ADDRESS_P (OP) : 0)
+
+/* Constant letter 'G' for the FPU immediate constants. 
+   'H' means the same constant negated.  */
+#define CONST_DOUBLE_OK_FOR_LETTER_P(X,C)			\
+    ((C) == 'G' ? const_double_rtx_ok_for_fpu (X) 		\
+     : (C) == 'H' ? neg_const_double_rtx_ok_for_fpu (X) : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
    In general this is just CLASS; but on some machines
    in some cases it is preferable to use a more restrictive class.  */
 #define PREFERRED_RELOAD_CLASS(X, CLASS)  (CLASS)
+
+/* Return the register class of a scratch register needed to copy IN into
+   or out of a register in CLASS in MODE.  If it can be done directly,
+   NO_REGS is returned.  */
+#define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS,MODE,X)	\
+  (((MODE) == DFmode && (CLASS) == GENERAL_REGS		\
+    && true_regnum (X) == -1) ? GENERAL_REGS		\
+   : NO_REGS)
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.
@@ -356,11 +546,11 @@ enum reg_class
     ((CLASS) == FPU_REGS ? 1					       \
      : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
-/* Moves between FPU_REGS and GENERAL_REGS are two insns.  */
+/* Moves between FPU_REGS and GENERAL_REGS are two memory insns.  */
 #define REGISTER_MOVE_COST(CLASS1, CLASS2)  \
   ((((CLASS1) == FPU_REGS && (CLASS2) != FPU_REGS)	\
     || ((CLASS2) == FPU_REGS && (CLASS1) != FPU_REGS))	\
-   ? 4 : 2)
+   ? 20 : 2)
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -462,7 +652,7 @@ enum reg_class
    For a library call, FNTYPE is 0.
    On the ARM, the offset starts at 0.  */
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME)  \
-  ((CUM) = (((FNTYPE) && aggregate_value_p (TREE_TYPE ((FNTYPE))) ? 4 : 0))
+  ((CUM) = (((FNTYPE) && aggregate_value_p (TREE_TYPE ((FNTYPE)))) ? 4 : 0))
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
@@ -529,15 +719,91 @@ enum reg_class
 
 /* Determine if the epilogue should be output as RTL.
    You should override this if you define FUNCTION_EXTRA_EPILOGUE.  */
-/* #define USE_RETURN_INSN use_return_insn () */
+#define USE_RETURN_INSN use_return_insn ()
 
+/* Definitions for register eliminations.
+
+   This is an array of structures.  Each structure initializes one pair
+   of eliminable registers.  The "from" register number is given first,
+   followed by "to".  Eliminations of the same "from" register are listed
+   in order of preference.
+
+   We have two registers that can be eliminated on the ARM.  First, the
+   arg pointer register can often be eliminated in favor of the stack
+   pointer register.  Secondly, the pseudo frame pointer register can always
+   be eliminated; it is replaced with either the stack or the real frame
+   pointer. */
+
+#define ELIMINABLE_REGS					\
+{{ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
+ {ARG_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM},	\
+ {FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
+ {FRAME_POINTER_REGNUM, HARD_FRAME_POINTER_REGNUM}}
+
+/* Given FROM and TO register numbers, say whether this elimination is allowed.
+   Frame pointer elimination is automatically handled.
+
+   All eliminations are permissible.  Note that ARG_POINTER_REGNUM and
+   HARD_FRAME_POINTER_REGNUM are infact the same thing.  If we need a frame
+   pointer, we must eliminate FRAME_POINTER_REGNUM into
+   HARD_FRAME_POINTER_REGNUM and not into STACK_POINTER_REGNUM.  */
+#define CAN_ELIMINATE(FROM, TO)		\
+  (((TO) == STACK_POINTER_REGNUM && frame_pointer_needed) ? 0 : 1)
+
+/* Define the offset between two registers, one to be eliminated, and the other
+   its replacement, at the start of a routine.  */
+#define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET)			\
+{									\
+  if ((FROM) == ARG_POINTER_REGNUM && (TO) == HARD_FRAME_POINTER_REGNUM)\
+    (OFFSET) = 0;							\
+  else if ((FROM) == FRAME_POINTER_REGNUM && (TO) == STACK_POINTER_REGNUM)\
+    (OFFSET) = (get_frame_size () + 3 & ~3);				\
+  else									\
+    {									\
+      int regno;							\
+      int offset = 12;							\
+									\
+      for (regno = 4; regno <= 10; regno++)				\
+	if (regs_ever_live[regno])					\
+	  offset += 4;							\
+      for (regno = 20; regno <=23; regno++)				\
+	if (regs_ever_live[regno])					\
+	  offset += 12;							\
+      if ((FROM) == FRAME_POINTER_REGNUM)				\
+	(OFFSET) = -offset;						\
+      else								\
+	{								\
+	   if (! regs_ever_live[HARD_FRAME_POINTER_REGNUM])		\
+	     offset -= 16;						\
+	   if (regs_ever_live[14])					\
+	     offset += 4;						\
+	   (OFFSET) = (get_frame_size () + 3 & ~3) + offset;		\
+         }								\
+    }									\
+}
+
+#if 0
 /* Store in the variable DEPTH the initial difference between the frame
    pointer reg contents and the stack pointer reg contents, as of the start of
    the function body.  This depends on the layout of the fixed parts of the
    stack frame and on how registers are saved.  */
+#define INITIAL_FRAME_POINTER_OFFSET(DEPTH) 			\
+{								\
+  int regno;							\
+  int offset = 12;						\
+								\
+  for (regno = 0; regno < FRAME_POINTER_REGNUM; regno++)	\
+    if (regs_ever_live[regno])					\
+      offset += 4;						\
+  for (regno = 20; regno < 24; regno++)				\
+    if (regs_ever_live[regno])					\
+      offset += 12;						\
+  (DEPTH) = offset + (get_frame_size () + 3 & ~3);		\
+}
+
 #define INITIAL_FRAME_POINTER_OFFSET(DEPTH)  \
   (DEPTH) = (get_frame_size () + 3) & ~3;
-
+#endif
 /* Output assembler code for a block containing the constant parts
    of a trampoline, leaving space for the variable parts.
 
@@ -600,15 +866,19 @@ enum reg_class
    has been allocated, which happens in local-alloc.c.
 
    On the ARM, don't allow the pc to be used.  */
-#define REGNO_OK_FOR_BASE_P(REGNO)  \
-  ((REGNO) < 15 || (unsigned) reg_renumber[(REGNO)] < 15)
-#define REGNO_OK_FOR_INDEX_P(REGNO)  \
+#define REGNO_OK_FOR_BASE_P(REGNO)				\
+  ((REGNO) < 15 || (REGNO) == FRAME_POINTER_REGNUM		\
+   || (REGNO) == ARG_POINTER_REGNUM				\
+   || (unsigned) reg_renumber[(REGNO)] < 15			\
+   || (unsigned) reg_renumber[(REGNO)] == FRAME_POINTER_REGNUM	\
+   || (unsigned) reg_renumber[(REGNO)] == ARG_POINTER_REGNUM)
+#define REGNO_OK_FOR_INDEX_P(REGNO) \
   REGNO_OK_FOR_BASE_P(REGNO)
 
 /* Maximum number of registers that can appear in a valid memory address.
-   The addressing mode [ra,rb, <shift> rc] uses the greatest number of
-   registers.  */
-#define MAX_REGS_PER_ADDRESS 3
+   Shifts in addresses can't be by a register. */
+
+#define MAX_REGS_PER_ADDRESS 2
 
 /* Recognize any constant value that is a valid address.  */
 /* XXX We can address any constant, eventually...  */
@@ -620,8 +890,9 @@ enum reg_class
   ||  GET_CODE(X) == CONST )
 #endif
 
-#define CONSTANT_ADDRESS_P(X)  \
-  (GET_CODE (X) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P (X))
+#define CONSTANT_ADDRESS_P(X)  					\
+  (GET_CODE (X) == SYMBOL_REF 					\
+   && (CONSTANT_POOL_ADDRESS_P (X) || SYMBOL_REF_FLAG (X)))
 
 /* Nonzero if the constant value X is a legitimate general operand.
    It is given that X satisfies CONSTANT_P or is a CONST_DOUBLE.
@@ -632,10 +903,20 @@ enum reg_class
 #define LEGITIMATE_CONSTANT_P(X)				\
   (GET_CODE (X) == CONST_INT					\
    || (GET_CODE (X) == CONST_DOUBLE				\
-       &&  const_double_rtx_ok_for_fpu (X)))
-#if 0
-   || GET_CODE(X) == SYMBOL_REF && CONSTANT_POOL_ADDRESS_P(X))
-#endif
+       && (const_double_rtx_ok_for_fpu (X)			\
+	   || neg_const_double_rtx_ok_for_fpu (X)))		\
+   || CONSTANT_ADDRESS_P (X))
+
+/* Symbols in the text segment can be accessed without indirecting via the
+   constant pool; it may take an extra binary operation, but this is still
+   faster than indirecting via memory.  */
+
+#define ENCODE_SECTION_INFO(decl)					\
+{									\
+  if (TREE_CONSTANT (decl)						\
+      && (!flag_writable_strings || TREE_CODE (decl) != STRING_CST))	\
+    SYMBOL_REF_FLAG (XEXP (TREE_CST_RTL (decl), 0)) = 1;		\
+}
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -644,23 +925,36 @@ enum reg_class
    them unless they have been allocated suitable hard regs.
    The symbol REG_OK_STRICT causes the latter definition to be used.  */
 #ifndef REG_OK_STRICT
+
 /* Nonzero if X is a hard reg that can be used as a base reg
    or if it is a pseudo reg.  */
-#define REG_OK_FOR_BASE_P(X)  \
-  (REGNO (X) < 16 || REGNO (X) >= 24)
+#define REG_OK_FOR_BASE_P(X)  				\
+  (REGNO (X) < 16 || REGNO (X) >= FIRST_PSEUDO_REGISTER \
+   || REGNO (X) == FRAME_POINTER_REGNUM || REGNO (X) == ARG_POINTER_REGNUM)
+
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_INDEX_P(X)  \
   REG_OK_FOR_BASE_P(X)
-#define REG_OK_FOR_PRE_POST_P(X)  \
-  (REGNO (X) < 16 || REGNO (X) >= FIRST_PSEUDO_REGISTER)
+
+#define REG_OK_FOR_PRE_POST_P(X)  			\
+  (REGNO (X) < 16 || REGNO (X) >= FIRST_PSEUDO_REGISTER	\
+   || REGNO (X) == FRAME_POINTER_REGNUM || REGNO (X) == ARG_POINTER_REGNUM)
+
 #else
+
 /* Nonzero if X is a hard reg that can be used as a base reg.  */
 #define REG_OK_FOR_BASE_P(X)  REGNO_OK_FOR_BASE_P (REGNO (X))
+
 /* Nonzero if X is a hard reg that can be used as an index.  */
 #define REG_OK_FOR_INDEX_P(X)  REGNO_OK_FOR_INDEX_P (REGNO (X))
-#define REG_OK_FOR_PRE_POST_P(X)  \
-  (REGNO (X) < 16 || (unsigned) reg_renumber[REGNO (X)] < 16)
+
+#define REG_OK_FOR_PRE_POST_P(X)  					   \
+  (REGNO (X) < 16 || (unsigned) reg_renumber[REGNO (X)] < 16		   \
+   || REGNO (X) == FRAME_POINTER_REGNUM || REGNO (X) == ARG_POINTER_REGNUM \
+   || (unsigned) reg_renumber[REGNO (X)] == FRAME_POINTER_REGNUM	   \
+   || (unsigned) reg_renumber[REGNO (X)] == ARG_POINTER_REGNUM)
+
 #endif
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
@@ -678,18 +972,24 @@ enum reg_class
 /* A C statement (sans semicolon) to jump to LABEL for legitimate index RTXs
    used by the macro GO_IF_LEGITIMATE_ADDRESS.  Floating point indices can
    only be small constants. */
-#define GO_IF_LEGITIMATE_INDEX(MODE, BASE_REGNO, INDEX, LABEL)		\
+#define GO_IF_LEGITIMATE_INDEX(MODE, BASE_REGNO, INDEX, LABEL)  	\
 do									\
 {									\
   int range;								\
+  int code = GET_CODE (INDEX);						\
 									\
   if (GET_MODE_CLASS (MODE) == MODE_FLOAT)				\
-    range = 1024;							\
+    {									\
+      if (code == CONST_INT && INTVAL (INDEX) < 1024			\
+	  && INTVAL (INDEX) > -1024					\
+	  && (INTVAL (INDEX) & 3) == 0)					\
+	goto LABEL;							\
+    }									\
   else									\
     {									\
-      if (INDEX_REGISTER_RTX_P (INDEX))					\
+      if (INDEX_REGISTER_RTX_P (INDEX) && GET_MODE_SIZE (MODE) <= 4)	\
 	goto LABEL;							\
-      if (GET_MODE_SIZE (MODE) <= 4  &&  GET_CODE (INDEX) == MULT)	\
+      if (GET_MODE_SIZE (MODE) <= 4  && code == MULT)			\
 	{								\
 	  rtx xiop0 = XEXP (INDEX, 0);					\
 	  rtx xiop1 = XEXP (INDEX, 1);					\
@@ -700,20 +1000,29 @@ do									\
 	      && power_of_two_operand (xiop0, SImode))			\
 	    goto LABEL;							\
 	}								\
-      range = 4096;							\
+      if (GET_MODE_SIZE (MODE) <= 4					\
+	  && (code == LSHIFTRT || code == ASHIFTRT || code == LSHIFT	\
+	      || code == ASHIFT || code == ROTATERT))			\
+	{								\
+	  rtx op = XEXP (INDEX, 1);					\
+	  if (INDEX_REGISTER_RTX_P (XEXP (INDEX, 0))			\
+	      && GET_CODE (op) == CONST_INT && INTVAL (op) > 0		\
+	      && INTVAL (op) <= 31)					\
+	    goto LABEL;							\
+        }								\
+      range = (MODE) == HImode ? 4095 : 4096;				\
+      if (code == CONST_INT && INTVAL (INDEX) < range			\
+	  && INTVAL (INDEX) > -range)  	      				\
+        goto LABEL;							\
     }									\
-									\
-    if (GET_CODE (INDEX) == CONST_INT && INTVAL (INDEX) < range		\
-	&& INTVAL (INDEX) > -range)					\
-      goto LABEL;							\
 } while (0)
 
 /* Jump to LABEL if X is a valid address RTX.  This must also take
    REG_OK_STRICT into account when deciding about valid registers, but it uses
    the above macros so we are in luck.  Allow REG, REG+REG, REG+INDEX,
    INDEX+REG, REG-INDEX, and non floating SYMBOL_REF to the constant pool.
-   Allow REG-only and AUTINC-REG if handling TImode.  Other symbol refs must
-   be forced though a static cell to ensure addressability.  */
+   Allow REG-only and AUTINC-REG if handling TImode or HImode.  Other symbol
+   refs must be forced though a static cell to ensure addressability.  */
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)  \
 {									\
   if (BASE_REGISTER_RTX_P (X))						\
@@ -834,10 +1143,9 @@ do									\
 /* This is the kind of divide that is easiest to do in the general case.  */
 #define EASY_DIV_EXPR  TRUNC_DIV_EXPR
 
-/* 'char' is signed by default on RISCiX, unsigned on RISCOS.  */
-#ifdef riscos
-#define DEFAULT_SIGNED_CHAR  0
-#else
+/* signed 'char' is most compatible, but RISC OS wants it unsigned.
+   unsigned is probably best, but may break some code.  */
+#ifndef DEFAULT_SIGNED_CHAR
 #define DEFAULT_SIGNED_CHAR  1
 #endif
 
@@ -847,6 +1155,17 @@ do									\
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
 #define MOVE_MAX 4
+
+/* Define if operations between registers always perform the operation
+   on the full register even if a narrower mode is specified.  */
+#define WORD_REGISTER_OPERATIONS
+
+/* Define if loading in MODE, an integral mode narrower than BITS_PER_WORD
+   will either zero-extend or sign-extend.  The value of this macro should
+   be the code that says which one of the two operations is implicitly
+   done, NIL if none.  */
+#define LOAD_EXTEND_OP(MODE) \
+  ((MODE) == QImode ? ZERO_EXTEND : NIL)
 
 /* Define this if zero-extension is slow (more than one real instruction).
    On the ARM, it is more than one instruction only if not fetching from
@@ -861,10 +1180,11 @@ do									\
    that the native compiler puts too large (> 32) immediate shift counts
    into a register and shifts by the register, letting the ARM decide what
    to do instead of doing that itself.  */
-#define SHIFT_COUNT_TRUNCATED 1
-
-/* We have the vprintf function.  */
-#define HAVE_VPRINTF 1
+/* This is all wrong.  Defining SHIFT_COUNT_TRUNCATED tells combine that
+   code like (X << (Y % 32)) for register X, Y is equivalent to (X << Y).
+   On the arm, Y in a register is used modulo 256 for the shift. Only for
+   rotates is modulo 32 used. */
+/* #define SHIFT_COUNT_TRUNCATED 1 */
 
 /* XX This is not true, is it?  */
 /* All integers have the same format so truncation is easy.  */
@@ -886,77 +1206,194 @@ do									\
 
 /* The relative costs of various types of constants.  Note that cse.c defines
    REG = 1, SUBREG = 2, any node = (2 + sum of subnodes).  */
-#define CONST_COSTS(RTX, CODE, OUTER_CODE)  \
-  case CONST_INT:				\
-    if (const_ok_for_arm (INTVAL (RTX)))	\
-      return (2);				\
-    else					\
-      return (5);				\
-						\
-  case CONST: 					\
-  case LABEL_REF:				\
-  case SYMBOL_REF:				\
-    return (6);					\
-						\
-  case CONST_DOUBLE:				\
-    if (const_double_rtx_ok_for_fpu (RTX))	\
-      return(2);				\
-    else					\
-      return(7);
+#define CONST_COSTS(RTX, CODE, OUTER_CODE)			\
+  case CONST_INT:						\
+    if (const_ok_for_arm (INTVAL (RTX)))			\
+      return (OUTER_CODE) == SET ? 2 : -1;	    		\
+    else if (OUTER_CODE == AND                  		\
+             && const_ok_for_arm (~INTVAL (RTX)))		\
+      return -1;	                              		\
+    else if ((OUTER_CODE == COMPARE             		\
+              || OUTER_CODE == PLUS || OUTER_CODE == MINUS)     \
+             && const_ok_for_arm (-INTVAL (RTX)))		\
+      return -1;	                              		\
+    else                                        		\
+      return 5;		                               		\
+  case CONST: 							\
+  case LABEL_REF:						\
+  case SYMBOL_REF:						\
+    return 6;							\
+  case CONST_DOUBLE:						\
+    if (const_double_rtx_ok_for_fpu (RTX))			\
+      return (OUTER_CODE) == SET ? 2 : -1;			\
+    else if (((OUTER_CODE) == COMPARE || (OUTER_CODE) == PLUS)	\
+	     && neg_const_double_rtx_ok_for_fpu (RTX))		\
+       return -1;						\
+    return(7);
+
+#define RTX_COSTS(X,CODE,OUTER_CODE)                                    \
+  case MEM:                                                             \
+    {                                                                   \
+      int num_words = (GET_MODE_SIZE (GET_MODE (X)) > UNITS_PER_WORD) ? 2 : 1;\
+      return (COSTS_N_INSNS (10*num_words));                             \
+    }                                                                   \
+  case MULT:                                                            \
+    if (GET_CODE (XEXP (X, 1)) == CONST_INT                             \
+        && exact_log2 (INTVAL (XEXP (X, 1))) >= 0)                      \
+      return rtx_cost (XEXP (X, 0), GET_CODE (X))+1;                    \
+    return COSTS_N_INSNS (9);                                           \
+  case LSHIFT:								\
+  case ASHIFT:								\
+  case LSHIFTRT:							\
+  case ASHIFTRT:							\
+    if (GET_CODE (XEXP (X, 1)) == CONST_INT)				\
+      return rtx_cost (XEXP (X, 0), GET_CODE (X))+1;			\
+    break;								\
+  case MINUS:								\
+  {									\
+    enum rtx_code code = GET_CODE (XEXP (X, 1));			\
+    if (code == MULT)							\
+      {									\
+	if (GET_CODE (XEXP (XEXP (X, 1), 1)) == CONST_INT		\
+	    && exact_log2 (INTVAL (XEXP (XEXP (X, 0), 1))) >= 0)	\
+	  return COSTS_N_INSNS (1);					\
+	break;								\
+      }									\
+    else if (code == ASHIFT || code == LSHIFT || code == ASHIFTRT	\
+	     || code == LSHIFTRT)					\
+      return COSTS_N_INSNS (1);						\
+  } /* fall through */							\
+  case PLUS:								\
+  case IOR:								\
+  case XOR:								\
+  case AND:								\
+  {									\
+    enum rtx_code code = GET_CODE (XEXP (X, 0));			\
+    if (code == MULT)							\
+      {									\
+	if (GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT		\
+	    && exact_log2 (INTVAL (XEXP (XEXP (X, 0), 1))) >= 0)	\
+	  return COSTS_N_INSNS (1);					\
+	if (GET_CODE (X) == PLUS)					\
+	  return COSTS_N_INSNS (12);					\
+	break;								\
+      }									\
+    else if (code == ASHIFT || code == LSHIFT || code == ASHIFTRT	\
+	     || code == LSHIFTRT)					\
+      return COSTS_N_INSNS (1);						\
+    break;								\
+  }									\
+  case NOT:								\
+    return rtx_cost (XEXP (X, 0), GET_CODE (XEXP (X, 0)));		\
+  case IF_THEN_ELSE:                                                    \
+    {                                                                   \
+      if (GET_CODE (XEXP(X,1)) == PC || GET_CODE (XEXP(X,2)) == PC)     \
+        return COSTS_N_INSNS (4);                                       \
+      return COSTS_N_INSNS (1);                                 	\
+    }                                                                   \
+  case SIGN_EXTEND:                                                     \
+    return COSTS_N_INSNS (2);						\
+  case ZERO_EXTEND:							\
+    if (GET_MODE (XEXP (X, 0)) == QImode)				\
+      {									\
+	if (GET_CODE (XEXP (X, 0)) == MEM)				\
+	  return COSTS_N_INSNS (10);					\
+	return COSTS_N_INSNS (1);					\
+      }									\
+    break;								\
+  case COMPARE:								\
+    if (GET_CODE (XEXP (X, 1)) == REG)					\
+      return 4;								\
+  case SMIN:								\
+  case SMAX:								\
+  case UMIN:								\
+  case UMAX:								\
+    return COSTS_N_INSNS (3);						\
+  case ABS:								\
+    if (GET_MODE (X) == SImode)						\
+      return COSTS_N_INSNS (2);						\
+    return COSTS_N_INSNS (1);
+
+/* Moves to and from memory are quite expensive */
+#define MEMORY_MOVE_COST(MODE)  10
+
+/* All address computations that can be done are free */
+#define ADDRESS_COST(x) 2
+
+/* Try to generate sequences that don't involve branches, we can then use
+   conditional instructions */
+#define BRANCH_COST 4
 
-/* Condition code information.  */
+/* Condition code information. */
+/* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,
+   return the mode to be used for the comparison. 
+   CCFPEmode should be used with floating inequalites,
+   CCFPmode should be used with floating equalities.
+   CC_NOOVmode should be used with SImode integer equalites
+   CCmode should be used otherwise. */
 
-/* Store in cc_status the expressions
-   that the condition codes will describe
-   after execution of an instruction whose pattern is EXP.
-   Do not alter them if the instruction would not alter the cc's.  */
+#define EXTRA_CC_MODES CC_NOOVmode, CCFPmode, CCFPEmode
 
-/* On the ARM nothing sets the condition code implicitly---apart from DImode
-   operations excluding moves---but we have to watch for registers in the
-   condition code value being clobbered.  This clobbering includes (alas)
-   function calls.  XXX They could just be considered to clobber regs 0-3 and
-   10-15 with extra work.  */
-#define NOTICE_UPDATE_CC(EXP, INSN)  \
-{									\
-  if (GET_MODE (EXP) == DImode						\
-      && GET_CODE (EXP) == SET						\
-      && GET_CODE (SET_SRC (EXP)) != REG				\
-      && GET_CODE (SET_SRC (EXP)) != MEM				\
-      && GET_CODE (SET_SRC (EXP)) != CONST_INT)				\
-    CC_STATUS_INIT;							\
-  else if (GET_CODE (EXP) == SET)					\
-    {									\
-      rtx dest = SET_DEST (EXP);					\
-      if (dest == cc0_rtx)						\
-	{								\
-	  cc_status.flags = 0;						\
-	  cc_status.value1 = SET_DEST (EXP);				\
-	  cc_status.value2 = SET_SRC (EXP);				\
-	}								\
-      if (BASE_REGISTER_RTX_P (dest))					\
-	{								\
-	  if (cc_status.value1						\
-	      && reg_overlap_mentioned_p (dest, cc_status.value1))	\
-	    cc_status.value1 = 0;					\
-	  if (cc_status.value2						\
-	      && reg_overlap_mentioned_p (dest, cc_status.value2)) 	\
-	    cc_status.value2 = 0;				        \
-	}							        \
-    }								        \
-  else if (GET_CODE (INSN) != JUMP_INSN && GET_CODE (EXP) == PARALLEL)	\
-    {									\
-      CC_STATUS_INIT;							\
-    }									\
-}
+#define EXTRA_CC_NAMES "CC_NOOV", "CCFP", "CCFPE"
+
+#define SELECT_CC_MODE(OP,X,Y)				      		\
+  (GET_MODE_CLASS (GET_MODE (X)) == MODE_FLOAT				\
+   ? ((OP == EQ || OP == NE) ? CCFPmode : CCFPEmode)			\
+   : ((GET_MODE (X) == SImode)						\
+      && ((OP) == EQ || (OP) == NE)					\
+      && (GET_CODE (X) == PLUS || GET_CODE (X) == MINUS			\
+	  || GET_CODE (X) == AND || GET_CODE (X) == IOR			\
+	  || GET_CODE (X) == XOR || GET_CODE (X) == MULT		\
+	  || GET_CODE (X) == NOT || GET_CODE (X) == NEG			\
+	  || GET_CODE (X) == LSHIFT || GET_CODE (X) == LSHIFTRT		\
+	  || GET_CODE (X) == ASHIFT || GET_CODE (X) == ASHIFTRT		\
+	  || GET_CODE (X) == ROTATERT || GET_CODE (X) == ZERO_EXTRACT)	\
+      ? CC_NOOVmode							\
+      : GET_MODE (X) == QImode ? CC_NOOVmode : CCmode))
+
+#define STORE_FLAG_VALUE 1
+
+/* Define the information needed to generate branch insns.  This is
+   stored from the compare operation.  Note that we can't use "rtx" here
+   since it hasn't been defined!  */
+
+extern struct rtx_def *arm_compare_op0, *arm_compare_op1;
+extern int arm_compare_fp;
+
+/* Define the codes that are matched by predicates in arm.c */
+#define PREDICATE_CODES							\
+  {"s_register_operand", {SUBREG, REG}},				\
+  {"arm_add_operand", {SUBREG, REG, CONST_INT}},			\
+  {"fpu_add_operand", {SUBREG, REG, CONST_DOUBLE}},			\
+  {"arm_rhs_operand", {SUBREG, REG, CONST_INT}},			\
+  {"fpu_rhs_operand", {SUBREG, REG, CONST_DOUBLE}},			\
+  {"arm_not_operand", {SUBREG, REG, CONST_INT}},			\
+  {"shiftable_operator", {PLUS, MINUS, AND, IOR, XOR}},			\
+  {"minmax_operator", {SMIN, SMAX, UMIN, UMAX}},			\
+  {"shift_operator", {ASHIFT, LSHIFT, ASHIFTRT, LSHIFTRT, MULT}},	\
+  {"di_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE, MEM}},		\
+  {"load_multiple_operation", {PARALLEL}},				\
+  {"store_multiple_operation", {PARALLEL}},				\
+  {"equality_operator", {EQ, NE}},					\
+  {"arm_rhsm_operand", {SUBREG, REG, CONST_INT, MEM}},			\
+  {"const_shift_operand", {CONST_INT}},					\
+  {"index_operand", {SUBREG, REG, CONST_INT}},				\
+  {"cc_register", {REG}},
+
 
 /* Assembler output control */
+
+#ifndef ARM_OS_NAME
+#define ARM_OS_NAME "(generic)"
+#endif
 
 /* The text to go at the start of the assembler file */
 #define ASM_FILE_START(STREAM)  \
 {                                                                             \
   extern char *version_string;                                                \
-                                                                              \
-  fprintf (STREAM,"@ Generated by gcc %s for ARM/RISCiX\n", version_string);  \
+                                                                             \
+  fprintf (STREAM,"@ Generated by gcc %s for ARM/%s\n", version_string,	      \
+	   ARM_OS_NAME); 						      \
   fprintf (STREAM,"rfp\t.req\tr9\n");                                         \
   fprintf (STREAM,"fp\t.req\tr11\n");				              \
   fprintf (STREAM,"ip\t.req\tr12\n");				              \
@@ -980,18 +1417,35 @@ do									\
 {				                   \
   "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7",  \
   "r8","rfp", "sl", "fp", "ip", "sp", "lr", "pc",  \
-  "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7"   \
+  "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7",  \
+  "cc", "sfp", "afp"				   \
 }
+
+/* Arm Assembler barfs on dollars */
+#define DOLLARS_IN_IDENTIFIERS 0
+
+#define NO_DOLLAR_IN_LABEL
 
 /* DBX register number for a given compiler register number */
 #define DBX_REGISTER_NUMBER(REGNO)  (REGNO)
 
-/* Generate DBX debugging information.  */
+/* Generate DBX debugging information.  riscix.h will undefine this because
+   the native assembler does not support stabs. */
 #define DBX_DEBUGGING_INFO  1
 
 /* Acorn dbx moans about continuation chars, so don't use any.  */
 #define DBX_CONTIN_LENGTH  0
 
+/* Output a source filename for the debugger. RISCiX dbx insists that the
+   ``desc'' field is set to compiler version number >= 315 (sic).  */
+#define DBX_OUTPUT_MAIN_SOURCE_FILENAME(STREAM,NAME) 			\
+do {									\
+  fprintf (STREAM, ".stabs \"%s\",%d,0,315,%s\n", (NAME), N_SO,		\
+	   &ltext_label_name[1]);					\
+  text_section ();							\
+  ASM_OUTPUT_INTERNAL_LABEL (STREAM, "Ltext", 0);			\
+} while (0)
+  
 /* Output a label definition.  */
 #define ASM_OUTPUT_LABEL(STREAM,NAME)  \
   arm_asm_output_label ((STREAM), (NAME))
@@ -1021,11 +1475,14 @@ do									\
       char *s = (char *) alloca (11 + strlen (PREFIX));	   		\
       extern int arm_target_label, arm_ccfsm_state;	   		\
 						           		\
-      if (arm_ccfsm_state == 3 && arm_target_label == (NUM))   		\
-	arm_ccfsm_state = 0;				        	\
-      strcpy (s, "*");				           		\
-      sprintf (&s[strlen (s)], "%s%d", (PREFIX), (NUM));   		\
-      arm_asm_output_label (STREAM, s);		                        \
+      if (arm_ccfsm_state == 3 && arm_target_label == (NUM)   		\
+	&& !strcmp (PREFIX, "L"))					\
+	{								\
+	  arm_ccfsm_state = 0;				        	\
+	}								\
+	strcpy (s, "*");				      		\
+	sprintf (&s[strlen (s)], "%s%d", (PREFIX), (NUM));   		\
+	arm_asm_output_label (STREAM, s);		                \
     } while (0)
 
 /* Nothing special is done about jump tables */
@@ -1057,13 +1514,30 @@ do									\
    , fprintf (STREAM, "\t.word\tL%d\n", VALUE))
 
 /* Output various types of constants.  */
-#define ASM_OUTPUT_DOUBLE(STREAM, VALUE)  \
-  (arm_increase_location (sizeof (double))        \
-   , fprintf (STREAM, "\t.double\t%20.20f\n", VALUE))
+#define ASM_OUTPUT_LONG_DOUBLE(STREAM,VALUE)				\
+do { long l[3];								\
+     arm_increase_location (12);					\
+     REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
+     if (sizeof (int) == sizeof (long))					\
+       fprintf (STREAM, "\t.long 0x%x,0x%x,0x%x\n", l[2], l[1], l[0]);	\
+     else								\
+       fprintf (STREAM, "\t.long 0x%lx,0x%lx,0x%lx\n", l[2], l[1], l[0]);	\
+   } while (0)
 
-#define ASM_OUTPUT_FLOAT(STREAM, VALUE)	\
-  (arm_increase_location (sizeof (float))        \
-   , fprintf (STREAM, "\t.float\t%20.20f\n", VALUE))
+    
+#define ASM_OUTPUT_DOUBLE(STREAM, VALUE)  		\
+do { char dstr[30];					\
+     arm_increase_location (8);				\
+     REAL_VALUE_TO_DECIMAL (VALUE, "%.20g", dstr);	\
+     fprintf (STREAM, "\t.double %s\n", dstr);	\
+   } while (0)
+
+#define ASM_OUTPUT_FLOAT(STREAM, VALUE)			\
+do { char dstr[30];					\
+     arm_increase_location (4);				\
+     REAL_VALUE_TO_DECIMAL (VALUE, "%.20g", dstr);	\
+     fprintf (STREAM, "\t.float %s\n", dstr);		\
+   } while (0);
 
 #define ASM_OUTPUT_INT(STREAM, EXP)  \
   (fprintf (STREAM, "\t.word\t"),      \
@@ -1154,7 +1628,9 @@ do									\
    small-distance conditional branches and have ASM_OUTPUT_OPCODE make the
    instructions conditional.  Suffixes like s (affect flags) and b (bytewise
    load/store) need to stay suffixes, so the possible condition code comes
-   before these suffixes.  */
+   before these suffixes.  %d<n> or %D<n> may appear in the opcode if
+   it can take a condition; a null rtx will cause no condition to be added,
+   this is what we expect to happen if arm_ccfsm_state is non-zero. */
 #define ASM_OUTPUT_OPCODE(STREAM, PTR)  \
   {					        		      \
     extern int arm_ccfsm_state, arm_current_cc;			      \
@@ -1162,17 +1638,13 @@ do									\
     int i;							      \
 								      \
     fflush (STREAM);	    /* XXX for debugging only.  */	      \
-    if (arm_ccfsm_state == 1 || arm_ccfsm_state == 2)   	      \
-      {				                        	      \
-	fprintf (STREAM, "@ \t");				      \
-	arm_ccfsm_state += 2;		        		      \
-      }					        		             \
-    else if (arm_ccfsm_state == 3 || arm_ccfsm_state == 4)	             \
+    if (arm_ccfsm_state == 3 || arm_ccfsm_state == 4)	  		\
       {					        		             \
-	for (i = 0; *(PTR) != ' ' && *(PTR) != '\t' && i < 3; i++, (PTR)++)  \
+	for (i = 0; *(PTR) != ' ' && *(PTR) != '\t' && *(PTR) != '%' && i < 3;\
+	     i++, (PTR)++)  						     \
 	  putc (*(PTR), STREAM);	        		             \
 	fprintf (STREAM, "%s", arm_condition_codes[arm_current_cc]);         \
-	for (; *(PTR) != ' ' && *(PTR) != '\t'; (PTR)++)		     \
+	for (; *(PTR) != ' ' && *(PTR) != '\t' && *(PTR) != '%'; (PTR)++)    \
 	  putc (*(PTR), STREAM);					     \
       }								             \
   }
@@ -1186,44 +1658,56 @@ do									\
 /* Output an operand of an instruction.  If X is a REG and CODE is `M', output
    a ldm/stm style multi-reg.  */
 #define PRINT_OPERAND(STREAM, X, CODE)  \
-{					        		\
-  if ((CODE) == 'R')			        		\
-    fputs (reg_names[REGNO (X) + 1], (STREAM));			\
-  else if (GET_CODE (X) == REG)		        		\
-    {					        		\
-      if ((CODE) != 'M')					\
-	fputs (reg_names[REGNO (X)], (STREAM));			\
-      else				        		\
-	fprintf ((STREAM), "{%s-%s}",	        		\
-		 reg_names[REGNO (X)],	        		\
-		 reg_names[REGNO (X) - 1        		\
-			   + ((GET_MODE_SIZE (GET_MODE (X))	\
-			       + GET_MODE_SIZE (SImode) - 1)	\
-			      / GET_MODE_SIZE (SImode))]);	\
-    }								\
-  else if (GET_CODE (X) == MEM)					\
-    {								\
-      extern int output_memory_reference_mode;			\
-      output_memory_reference_mode = GET_MODE (X);		\
-      output_address (XEXP (X, 0));				\
-    }								\
-  else if (GET_CODE(X) == CONST_DOUBLE)				\
-    {								\
-      union real_extract u;					\
-      u.i[0] = CONST_DOUBLE_LOW (X);				\
-      u.i[1] = CONST_DOUBLE_HIGH (X);				\
-      fprintf(STREAM,"#%20.20f",u.d);				\
-    }								\
-  else if (GET_CODE (X) == NEG)					\
-    {								\
-      fputc ('-', (STREAM));					\
-      output_operand ((X), 0);					\
-    }								\
-  else								\
-    {								\
-      fputc('#', STREAM);					\
-      output_addr_const(STREAM, X);				\
-    }								\
+{					        			\
+  if ((CODE) == 'd')							\
+    {									\
+      if (X)								\
+        fputs (arm_condition_codes[get_arm_condition_code (X)],		\
+	       (STREAM));						\
+    }									\
+  else if ((CODE) == 'D')						\
+    {									\
+      if (X)								\
+        fputs (arm_condition_codes[get_arm_condition_code (X) ^ 1], 	\
+	       (STREAM));						\
+    }									\
+  else if ((CODE) == 'R')			                	\
+    fputs (reg_names[REGNO (X) + 1], (STREAM));				\
+  else if (GET_CODE (X) == REG)		        			\
+    {					        			\
+      if ((CODE) != 'M')						\
+	fputs (reg_names[REGNO (X)], (STREAM));				\
+      else				        			\
+	fprintf ((STREAM), "{%s-%s}",	        			\
+		 reg_names[REGNO (X)],	        			\
+		 reg_names[REGNO (X) - 1        			\
+			   + ((GET_MODE_SIZE (GET_MODE (X))		\
+			       + GET_MODE_SIZE (SImode) - 1)		\
+			      / GET_MODE_SIZE (SImode))]);		\
+    }									\
+  else if (GET_CODE (X) == MEM)						\
+    {									\
+      extern int output_memory_reference_mode;				\
+      output_memory_reference_mode = GET_MODE (X);			\
+      output_address (XEXP (X, 0));					\
+    }									\
+  else if (GET_CODE(X) == CONST_DOUBLE)					\
+    {									\
+      union real_extract u;						\
+      u.i[0] = CONST_DOUBLE_LOW (X);					\
+      u.i[1] = CONST_DOUBLE_HIGH (X);					\
+      fprintf(STREAM,"#%s", fp_immediate_constant(X));			\
+    }									\
+  else if (GET_CODE (X) == NEG)						\
+    {									\
+      fputc ('-', (STREAM));						\
+      output_operand ((X), 0);						\
+    }									\
+  else									\
+    {									\
+      fputc('#', STREAM);						\
+      output_addr_const(STREAM, X);					\
+    }									\
 }
 
 /* Output the address of an operand.  */
@@ -1275,10 +1759,25 @@ do									\
 	      }								\
 	    else							\
 		abort();						\
-	    fprintf (STREAM, "[%s, %s%s, asl#%d]", base_reg_name,	\
+	    fprintf (STREAM, "[%s, %s%s, asl #%d]", base_reg_name,	\
 		     is_minus ? "-" : "", reg_names[REGNO (index)],	\
 		     shift);						\
 	    break;							\
+	  case ASHIFTRT:						\
+	  case LSHIFTRT:						\
+	  case ASHIFT:							\
+	  case LSHIFT:							\
+	  case ROTATERT:						\
+	  {								\
+	    char *shift_type = shift_instr (GET_CODE (index),		\
+					    &XEXP (index, 1));		\
+	    shift = INTVAL (XEXP (index, 1));				\
+	    index = XEXP (index, 0);					\
+	    fprintf (STREAM, "[%s, %s%s, %s #%d]", base_reg_name,	\
+		     is_minus ? "-" : "", reg_names[REGNO (index)],	\
+		     shift_type, shift);				\
+	    break;							\
+	  }								\
 	    								\
 	  default:							\
 	    abort();							\
