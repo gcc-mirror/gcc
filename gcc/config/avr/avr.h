@@ -812,9 +812,9 @@ extern int avr_case_values_threshold;
 
 #define LINK_SPEC " %{!mmcu*:-m avr2}\
 %{mmcu=at90s1200|mmcu=attiny11|mmcu=attiny12|mmcu=attiny15|mmcu=attiny28:-m avr1} \
-%{mmcu=attiny22|mmcu=attiny26|mmcu=at90s2*|mmcu=at90s4*|mmcu=at90s8*|mmcu=at90c8*|mmcu=at86rf401:-m avr2}\
+%{mmcu=attiny22|mmcu=attiny26|mmcu=at90s2*|mmcu=at90s4*|mmcu=at90s8*|mmcu=at90c8*|mmcu=at86rf401|mmcu=attiny13|mmcu=attiny2313:-m avr2}\
 %{mmcu=atmega103|mmcu=atmega603|mmcu=at43*|mmcu=at76*:-m avr3}\
-%{mmcu=atmega8*|mmcu=atmega48|mmcu=attiny13|mmcu=attiny2313:-m avr4}\
+%{mmcu=atmega8*|mmcu=atmega48:-m avr4}\
 %{mmcu=atmega16*|mmcu=atmega32*|mmcu=atmega64*|mmcu=atmega128|mmcu=at90can128|mmcu=at94k:-m avr5}\
 %{mmcu=atmega325|mmcu=atmega3250|mmcu=atmega48|mmcu=atmega88|mmcu=atmega64|mmcu=atmega645|mmcu=atmega6450|mmcu=atmega128|mmcu=at90can128|mmcu=at90can128|mmcu=atmega162|mmcu=atmega165|mmcu=atmega168|mmcu=atmega169: -Tdata 0x800100} "
 
@@ -850,6 +850,8 @@ extern int avr_case_values_threshold;
 %{mmcu=at90c8534:crtc8534.o%s} \
 %{mmcu=at90s8535:crts8535.o%s} \
 %{mmcu=at86rf401:crt86401.o%s} \
+%{mmcu=attiny13:crttn13.o%s} \
+%{mmcu=attiny2313:crttn2313.o%s} \
 %{mmcu=atmega103|mmcu=avr3:crtm103.o%s} \
 %{mmcu=atmega603:crtm603.o%s} \
 %{mmcu=at43usb320:crt43320.o%s} \
@@ -860,8 +862,6 @@ extern int avr_case_values_threshold;
 %{mmcu=atmega88:crtm88.o%s} \
 %{mmcu=atmega8515:crtm8515.o%s} \
 %{mmcu=atmega8535:crtm8535.o%s} \
-%{mmcu=attiny13:crttn13.o%s} \
-%{mmcu=attiny2313:crttn2313.o%s} \
 %{mmcu=atmega16:crtm16.o%s} \
 %{mmcu=atmega161|mmcu=avr5:crtm161.o%s} \
 %{mmcu=atmega162:crtm162.o%s} \
