@@ -2251,6 +2251,9 @@ set_label_offsets (x, insn, initial_p)
   switch (code)
     {
     case LABEL_REF:
+      if (LABEL_REF_NONLOCAL_P (x))
+	return;
+
       x = XEXP (x, 0);
 
       /* ... fall through ... */
