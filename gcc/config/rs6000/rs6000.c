@@ -1493,7 +1493,7 @@ rs6000_override_options (const char *default_cpu)
 
   /* We should always be splitting complex arguments, but we can't break
      Linux and Darwin ABIs at the moment.  For now, only AIX is fixed.  */
-  if (DEFAULT_ABI != ABI_AIX)
+  if (DEFAULT_ABI != ABI_AIX && !TARGET_E500_DOUBLE)
     targetm.calls.split_complex_arg = NULL;
 
   /* Initialize rs6000_cost with the appropriate target costs.  */
@@ -18315,19 +18315,30 @@ rs6000_complex_function_value (enum machine_mode mode)
   enum machine_mode inner = GET_MODE_INNER (mode);
   unsigned int inner_bytes = GET_MODE_SIZE (inner);
 
-  if (FLOAT_MODE_P (mode) && TARGET_HARD_FLOAT && TARGET_FPRS)
-    regno = FP_ARG_RETURN;
+  if (TARGET_E500_DOUBLE)
+    {
+      /* FIXME: This causes complex values to be returned in the full
+	 64-bit GPR.  It works, but is not ABI compatible with
+	 soft-float.  Complex doubles should be returned in 4
+	 consecutive 32-bit GPRs.  */
+      regno = GP_ARG_RETURN;
+    }
   else
     {
-      regno = GP_ARG_RETURN;
+      if (FLOAT_MODE_P (mode) && TARGET_HARD_FLOAT && TARGET_FPRS)
+	regno = FP_ARG_RETURN;
+      else
+	{
+	  regno = GP_ARG_RETURN;
 
-      /* 32-bit is OK since it'll go in r3/r4.  */
-      if (TARGET_32BIT && inner_bytes >= 4)
+	  /* 32-bit is OK since it'll go in r3/r4.  */
+	  if (TARGET_32BIT && inner_bytes >= 4)
+	    return gen_rtx_REG (mode, regno);
+	}
+
+      if (inner_bytes >= 8)
 	return gen_rtx_REG (mode, regno);
     }
-
-  if (inner_bytes >= 8)
-    return gen_rtx_REG (mode, regno);
 
   r1 = gen_rtx_EXPR_LIST (inner, gen_rtx_REG (inner, regno),
 			  const0_rtx);
