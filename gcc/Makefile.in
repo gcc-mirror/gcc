@@ -740,6 +740,32 @@ libgcc1.a: libgcc1.c $(CONFIG_H) $(LIB1FUNCS_EXTRA) config.status
 	done
 	mv tmplibgcc1.a libgcc1.a
 
+# Build libgcc1.a from assembler source.  LIB1ASMFUNCS is the list of
+# functions.  LIB1ASMSRC is the name of the source file in the config
+# subdirectory.
+libgcc1-asm.a: libgcc2.ready config.status $(srcdir)/config/$(LIB1ASMSRC)
+	-rm -f tmplibgcc1.a libgcc1.S
+	cp $(srcdir)/config/$(LIB1ASMSRC) libgcc1.S
+# Actually build it in tmplibgcc1.a, then rename at end,
+# so that libgcc1-asm.a itself remains nonexistent if compilation is aborted.
+# -e causes any failing command to make this rule fail.
+# -e doesn't work in certain shells, so we test $$? as well.
+# lynx has a broken ar, it always complains when the initial library is
+# empty, thus this command works only if we don't do -e
+# There is a trailing backslash (\) deleted from the following line.
+#	set -e;
+	for name in $(LIB1ASMFUNCS); \
+	do \
+	  echo $${name}; \
+	  $(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) -c -DL$${name} libgcc1.S; \
+	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
+	  mv libgcc1.o $${name}.o; \
+	  $(AR) $(AR_FLAGS) tmplibgcc1.a $${name}.o; \
+	  rm -f $${name}.o; \
+	done
+	-rm -f libgcc1.S
+	mv tmplibgcc1.a libgcc1-asm.a
+
 # Compiling libgcc2.a requires making sure that cc1, etc. have been compiled.
 # But recompiling cc1 should not force recompilation of libgcc2.a.
 # If you want to force recompilation, delete libgcc2.a.
