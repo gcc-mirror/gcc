@@ -1,3 +1,31 @@
+2004-09-28  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/16612
+	* include/bits/basic_string.h (_M_dispose, _M_refcopy,
+	basic_string()): When _GLIBCXX_FULLY_DYNAMIC_STRING is defined,
+	don't deal with _S_empty_rep.
+	* include/bits/basic_string.tcc (_S_construct, _M_destroy,
+	_M_leak_hard, _M_mutate): Likewise.
+	* acinclude.m4 (GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING): New.
+	* acconfig.h: Add corresponding undef. 	
+	* configure.ac: Use GLIBCXX_ENABLE_FULLY_DYNAMIC_STRING.
+	* docs/html/configopts.html: Document --enable-fully-dynamic-string.
+	* configure: Regenerate.
+	* config.h.in: Likewise.
+
+2004-09-28  Benjamin Kosnik  <bkoz@redhat.com>
+            Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/21_strings/basic_string/operations/char/1.cc: New.
+	* testsuite/21_strings/basic_string/operations/wchar_t/1.cc: New.
+	* testsuite/21_strings/basic_string/element_access/char/empty.cc: New.
+	* testsuite/21_strings/basic_string/element_access/wchar_t/empty.cc: 
+	New.
+
+2004-09-28  Paolo Carlini  <pcarlini@suse.de>
+
+	* README: Remove obsolete entry about include/c_shadow.
+
 2004-09-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libstdc++/17469

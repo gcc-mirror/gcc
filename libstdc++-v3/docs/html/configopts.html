@@ -144,9 +144,8 @@ options</a></h1>
 
  <dt><code>--enable-cheaders=OPTION  </code></dt>
  <dd><p>This allows the user to define what kind of C headers are
-        used.  Options are: c, c_std, and c_shadow. These correspond
-        to the source directory's include/c, include/c_std, and
-        include/c_shadow directories.  The default is c_std.
+        used.  Options are c and c_std.  These correspond to the source
+	directory's include/c and include/c_std.  The default is c_std.
      </p>
  </dd>
 
@@ -258,6 +257,14 @@ options</a></h1>
         the flag is -D_ISOC99_SOURCE, which is added automatically via
         CPLUSPLUS_CPP_SPEC's addition of _GNU_SOURCE).
         This option can change the library ABI. 
+     </p>
+ </dd>
+
+ <dt><code>--enable-fully-dynamic-string  </code></dt>
+ <dd><p>This option enables a special version of basic_string avoiding
+        the optimization that allocates empty objects in static memory.
+	Mostly useful together with shared memory allocators, see PR
+	libstdc++/16612 for details.
      </p>
  </dd>
 

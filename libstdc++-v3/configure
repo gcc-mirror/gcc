@@ -884,6 +884,9 @@ Optional Features:
   --enable-cxx-flags=FLAGS
                           pass compiler FLAGS when building library
                           [default=]
+  --enable-fully-dynamic-string
+                          do not put empty strings in per-process static
+                          memory [default=no]
   --enable-symvers=STYLE  enables symbol versioning of the shared library
                           [default=yes]
   --enable-version-specific-runtime-libs
@@ -4394,7 +4397,7 @@ test x"$pic_mode" = xno && libtool_flags="$libtool_flags --prefer-non-pic"
 case $host in
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 4397 "configure"' > conftest.$ac_ext
+  echo '#line 4400 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -5015,7 +5018,7 @@ fi;
     #
     # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
     cat > conftest.$ac_ext << EOF
-#line 5018 "configure"
+#line 5021 "configure"
 struct S { ~S(); };
 void bar();
 void foo()
@@ -7839,6 +7842,29 @@ echo "$as_me: error: compiler flags start with a -" >&2;}
   echo "$as_me:$LINENO: result: $EXTRA_CXX_FLAGS" >&5
 echo "${ECHO_T}$EXTRA_CXX_FLAGS" >&6
 
+
+
+   # Check whether --enable-fully-dynamic-string or --disable-fully-dynamic-string was given.
+if test "${enable_fully_dynamic_string+set}" = set; then
+  enableval="$enable_fully_dynamic_string"
+
+      case "$enableval" in
+       yes|no) ;;
+       *) { { echo "$as_me:$LINENO: error: Argument to enable/disable fully-dynamic-string must be yes or no" >&5
+echo "$as_me: error: Argument to enable/disable fully-dynamic-string must be yes or no" >&2;}
+   { (exit 1); exit 1; }; } ;;
+      esac
+
+else
+  enable_fully_dynamic_string=no
+fi;
+
+  if test $enable_fully_dynamic_string = yes; then
+    cat >>confdefs.h <<\_ACEOF
+#define _GLIBCXX_FULLY_DYNAMIC_STRING 1
+_ACEOF
+
+  fi
 
 
 # No surprises, no surprises...
