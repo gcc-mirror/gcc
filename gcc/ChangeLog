@@ -1,5 +1,9 @@
 Sat Jun 20 00:36:16 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* except.c (jumpif_rtx): Put declaration and definition
+	inside a suitable #ifdef.
+	(jumpifnot_rtx): Delete dead function.
+
 	* i386.h (output_int_conditional_move): Declare.
 	(output_fp_conditional_move): Likewise.
 
