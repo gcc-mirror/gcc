@@ -1,5 +1,5 @@
 /* NIOServerSocket.java -- 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -50,7 +50,6 @@ import java.nio.channels.SocketChannel;
  */
 public final class NIOServerSocket extends ServerSocket
 {
-  private PlainSocketImpl impl;
   private ServerSocketChannelImpl channel;
     
   protected NIOServerSocket (ServerSocketChannelImpl channel)

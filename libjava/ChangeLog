@@ -1,3 +1,11 @@
+2004-02-05  Michael Koch  <konqueror@gmx.de>
+
+	* gnu/java/nio/NIOServerSocket.java
+	(impl): Unused, removed.
+	* gnu/java/nio/SocketChannelImpl.java
+	(finnishConnect): Don't throw NoConnectionPendingException if not
+	connected or no connection pending.
+
 2004-02-03  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natPosixProcess.cc (startProcess): Handle case where
