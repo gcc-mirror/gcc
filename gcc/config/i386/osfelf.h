@@ -40,10 +40,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Turn on -mpic-extern by default (change to later use -fpic.  */
 #undef  CC1_SPEC
 #define CC1_SPEC "\
-%{!melf: %{!mrose: -melf }} \
-%{!mrose: %{!munderscores: %{!mno-underscores: -mno-underscores }}} \
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
-%{mrose: %{pic-none: -mno-half-pic} \
+%{!melf: %{!mrose: -melf }} \
+%{!mrose: %{!munderscores: %{!mno-underscores: -mno-underscores }} \
+	  %{!mmcount: %{!mno-mcount: %{!mmcount-ptr: -mmcount-ptr }}}} \
+%{mrose: %{!mmcount: %{!mno-mcount: %{!mmcount-ptr: -mmcount }}} \
+	 %{pic-none: -mno-half-pic} \
 	 %{pic-extern: } %{pic-lib: } %{pic-calls: } %{pic-names*: } \
 	 %{!pic-none: -mhalf-pic }}"
 
