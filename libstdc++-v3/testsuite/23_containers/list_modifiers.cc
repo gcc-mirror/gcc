@@ -1,4 +1,4 @@
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,7 +21,7 @@
 #include <list>
 #include <testsuite_hooks.h>
 
-typedef gnu_copy_tracker  T;
+typedef __gnu_cxx_test::copy_tracker  T;
 
 bool test = true;
 

@@ -1,3 +1,67 @@
+2003-01-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4 (GLIBCPP_CHECK_WCHAR_T_SUPPORT): Substitute
+	GLIBCPP_TEST_WCHAR_T if building wchar_t bits in the library.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* testsuite/Makefile.am (all-local): Add conditional rule to
+	generate testsuite_wchar_t.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/lib/libstdc++-v3-dg.exp
+	(libstdc++-v3-list-sourcefiles): Remove wchar_t files if
+	testsuite_wchar_t is not present in the build directory.
+	* testsuite/libstdc++-v3.dg/dg.exp: Add -g -O2 to DEFAULT_CXXFLAGS.
+	Remove setulimit bits.
+	* testsuite/26_numerics/complex_value.cc: Set to noopts.
+	* testsuite/Makefile.am (CLEANFILES): Add.
+	* testsuite/Makefile.in: Regenerate.	
+
+2003-01-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Renames, namespaces for testsuite utilities.	
+	* testsuite/testsuite_hooks.h: Put into namespace __gnu_cxx_test.
+	(gnu_allocator_tracker): Rename to allocation_tracker.
+	(gnu_new_allocator): Rename to tracker_alloc.
+	(__set_testsuite_memlimit): Rename to set_memory_limits.
+	(gnu_assignment_operator): Rename to assignment_operator.
+	(gnu_destructor): Rename to destructor.
+	(gnu_copy_tracker): Rename to copy_tracker.
+	(gnu_char, gnu_int, gnu_long): Rename to pod_char, pod_int, pod_long.
+	(run_tests_wrapped_locale): New.
+	(run_tests_wrapped_env): New.
+	* testsuite/testsuite_hooks.cc: Same.
+	(class locale_data): Add.
+	(class enviornment_variable): Add.
+	(class not_found): Add.
+	* testsuite/testsuite_allocator.h: Same.
+	* testsuite/testsuite_allocator.cc: Same.
+	* testsuite/23_containers/deque_ctor.cc
+	(test_copy_ctor_exception_safety): Change gnu_allocator_tracker to
+	allocation_tracker. 
+	Change gnu_new_allocator to tracker_alloc.
+	Change gnu_counting_struct to counter.
+	Change gnu_copy_tracker to copy_tracker.
+	Change gnu_copy_constructor to copy_constructor.
+	Change gnu_assignment_operator to assignment_operator.	
+	Inject.
+	* testsuite/23_containers/vector_capacity.cc: Same.
+	* testsuite/23_containers/vector_ctor.cc (test01): Same.
+	* testsuite/23_containers/list_modifiers.cc: Change
+	gnu_copy_tracker to copy_tracker.
+	* testsuite/21_strings/ctor_copy_dtor.cc (main): Change
+	__set_testsuite_memlimit to set_memory_limits.
+	* testsuite/21_strings/insert.cc (main): Same.
+	* testsuite/27_io/filebuf.cc: Change gnu_char to pod_char.
+	* testsuite/27_io/stringstream.cc: Same.
+	* testsuite/27_io/stringbuf.cc: Same.
+	* testsuite/27_io/streambuf.cc: Same.
+	* testsuite/27_io/ostream.cc: Same.
+	* testsuite/27_io/istream.cc: Same.
+	* testsuite/27_io/fstream.cc: Same.
+	* testsuite/lib/libstdc++-v3-dg.exp
+	(libstdc++-v3-list-sourcefiles): Additionally handle files two and
+	three levels deeper in glob patterns.
+
 2003-01-15  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* config/os/hpux/os_defines.h (_GLIBCPP_GTHREAD_USE_WEAK): Define for

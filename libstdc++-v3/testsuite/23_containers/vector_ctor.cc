@@ -1,6 +1,6 @@
 // 1999-06-29 bkoz
 
-// Copyright (C) 1999-2001, 2002 Free Software Foundation, Inc.
+// Copyright (C) 1999-2001, 2002, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,6 +25,12 @@
 #include <testsuite_allocator.h>
 #include <testsuite_hooks.h>
 
+using __gnu_cxx_test::copy_tracker;
+using __gnu_cxx_test::allocation_tracker;
+using __gnu_cxx_test::tracker_alloc;
+using __gnu_cxx_test::copy_constructor;
+using __gnu_cxx_test::assignment_operator;
+ 
 template<typename T>
   struct A { };
 
@@ -32,7 +38,6 @@ struct B { };
 
 void test01()
 {
-
   // 1
   bool test = true;
   std::vector< A<B> > vec01;
@@ -62,22 +67,22 @@ void test02()
 void
 test03()
 {
-    const int A[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
-    const int B[] = {7, 7, 7, 7, 7};
-    const int N = sizeof(A) / sizeof(int);
-    const int M = sizeof(B) / sizeof(int);
-    bool test = true;
-
-    std::vector<int> v3(A, A + N);
-    VERIFY(std::equal(v3.begin(), v3.end(), A));
-
-    std::vector<int> v4(v3.begin(), v3.end());
-    VERIFY(std::equal(v4.begin(), v4.end(), A));
-
-    std::vector<int> v5(M, 7);
-    VERIFY(std::equal(v5.begin(), v5.end(), B));
-    VERIFY(std::equal(B, B + M, v5.begin()));
-
+  bool test = true;
+  const int A[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
+  const int B[] = {7, 7, 7, 7, 7};
+  const int N = sizeof(A) / sizeof(int);
+  const int M = sizeof(B) / sizeof(int);
+  
+  std::vector<int> v3(A, A + N);
+  VERIFY(std::equal(v3.begin(), v3.end(), A));
+  
+  std::vector<int> v4(v3.begin(), v3.end());
+  VERIFY(std::equal(v4.begin(), v4.end(), A));
+  
+  std::vector<int> v5(M, 7);
+  VERIFY(std::equal(v5.begin(), v5.end(), B));
+  VERIFY(std::equal(B, B + M, v5.begin()));
+  
 #ifdef DEBUG_ASSERT
   assert(test);
 #endif
@@ -105,12 +110,13 @@ void
 test_default_ctor_exception_gurantee()
 {
   // setup
-  typedef gnu_copy_tracker T;
-  typedef std::vector<T, gnu_new_allocator<T> > X;
+  bool test = true;
+  typedef copy_tracker T;
+  typedef std::vector<T, tracker_alloc<T> > X;
 
-  gnu_copy_tracker::reset();
-  gnu_copy_constructor::throw_on(3);
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  copy_constructor::throw_on(3);
+  allocation_tracker::resetCounts();
 
   // run test
   try
@@ -124,7 +130,7 @@ test_default_ctor_exception_gurantee()
 
   // assert postconditions
   VERIFY(("memory leak detected:",
-          gnu_allocator_tracker::allocationTotal() == gnu_allocator_tracker::deallocationTotal()));
+          allocation_tracker::allocationTotal() == allocation_tracker::deallocationTotal()));
 
   // teardown
 }
@@ -137,14 +143,15 @@ void
 test_copy_ctor_exception_gurantee()
 {
   // setup
-  typedef gnu_copy_tracker T;
-  typedef std::vector<T, gnu_new_allocator<T> > X;
+  bool test = true;
+  typedef copy_tracker T;
+  typedef std::vector<T, tracker_alloc<T> > X;
 
-  gnu_allocator_tracker::resetCounts();
+  allocation_tracker::resetCounts();
   {
     X a(7);
-    gnu_copy_tracker::reset();
-    gnu_copy_constructor::throw_on(3);
+    copy_tracker::reset();
+    copy_constructor::throw_on(3);
 
     // run test
     try
@@ -158,11 +165,11 @@ test_copy_ctor_exception_gurantee()
   }
 
   // assert postconditions
-  VERIFY(gnu_allocator_tracker::allocationTotal() == gnu_allocator_tracker::deallocationTotal());
+  VERIFY(allocation_tracker::allocationTotal() == allocation_tracker::deallocationTotal());
 
   // teardown
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 }
 
 // operator=()
@@ -175,13 +182,14 @@ void
 test_assignment_operator_1()
 {
   // setup
-  typedef gnu_copy_tracker T;
-  typedef std::vector<T, gnu_new_allocator<T> > X;
+  bool test = true;
+  typedef copy_tracker T;
+  typedef std::vector<T, tracker_alloc<T> > X;
 
   X r(9);
   X a(r.size() - 2);
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 
   // preconditions
   VERIFY(r.size() > a.size());
@@ -191,25 +199,26 @@ test_assignment_operator_1()
 
   // assert postconditions
   VERIFY(r == a);
-  VERIFY(gnu_allocator_tracker::allocationTotal() == 0);
+  VERIFY(allocation_tracker::allocationTotal() == 0);
 
   // teardown
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 }
 
 void
 test_assignment_operator_2()
 {
   // setup
-  typedef gnu_copy_tracker T;
-  typedef std::vector<T, gnu_new_allocator<T> > X;
+  bool test = true;
+  typedef copy_tracker T;
+  typedef std::vector<T, tracker_alloc<T> > X;
 
   X r(1);
   r.reserve(17);
   X a(r.size() + 7);
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 
   // preconditions
   VERIFY(r.size() < a.size());
@@ -220,25 +229,26 @@ test_assignment_operator_2()
 
   // assert postconditions
   VERIFY(r == a);
-  VERIFY(gnu_allocator_tracker::allocationTotal() == 0);
+  VERIFY(allocation_tracker::allocationTotal() == 0);
 
   // teardown
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 }
 
 void
 test_assignment_operator_3()
 {
   // setup
-  typedef gnu_copy_tracker T;
-  typedef std::vector<T, gnu_new_allocator<T> > X;
+  bool test = true;
+  typedef copy_tracker T;
+  typedef std::vector<T, tracker_alloc<T> > X;
 
-  gnu_allocator_tracker::resetCounts();
+  allocation_tracker::resetCounts();
   {
     X r(1);
     X a(r.capacity() + 7);
-    gnu_copy_tracker::reset();
+    copy_tracker::reset();
 
     // preconditions
     VERIFY(r.capacity() < a.size());
@@ -249,26 +259,27 @@ test_assignment_operator_3()
     // assert postconditions
     VERIFY(r == a);
   }
-  VERIFY(gnu_allocator_tracker::allocationTotal() == gnu_allocator_tracker::deallocationTotal());
+  VERIFY(allocation_tracker::allocationTotal() == allocation_tracker::deallocationTotal());
 
   // teardown
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 }
 
 void
 test_assignment_operator_3_exception_guarantee()
 {
   // setup
-  typedef gnu_copy_tracker T;
-  typedef std::vector<T, gnu_new_allocator<T> > X;
+  bool test = true;
+  typedef copy_tracker T;
+  typedef std::vector<T, tracker_alloc<T> > X;
 
-  gnu_allocator_tracker::resetCounts();
+  allocation_tracker::resetCounts();
   {
     X r(1);
     X a(r.capacity() + 7);
-    gnu_copy_tracker::reset();
-    gnu_copy_constructor::throw_on(3);
+    copy_tracker::reset();
+    copy_constructor::throw_on(3);
 
     // preconditions
     VERIFY(r.capacity() < a.size());
@@ -285,11 +296,11 @@ test_assignment_operator_3_exception_guarantee()
   }
 
   // assert postconditions
-  VERIFY(gnu_allocator_tracker::allocationTotal() == gnu_allocator_tracker::deallocationTotal());
+  VERIFY(allocation_tracker::allocationTotal() == allocation_tracker::deallocationTotal());
 
   // teardown
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 }
 
 // fill assign()
@@ -304,35 +315,37 @@ void
 test_fill_assign_1()
 {
   // setup
-  typedef gnu_copy_tracker T;
-  typedef std::vector<T, gnu_new_allocator<T> > X;
+  bool test = true;
+  typedef copy_tracker T;
+  typedef std::vector<T, tracker_alloc<T> > X;
 
   X a(7);
   X::size_type old_size = a.size();
   X::size_type new_size = old_size - 2;
   const T t;
 
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 
   // run test
   a.assign(new_size, t);
 
   // assert postconditions
   VERIFY(a.size() == new_size);
-  VERIFY(gnu_allocator_tracker::allocationTotal() == 0);
+  VERIFY(allocation_tracker::allocationTotal() == 0);
 
   // teardown
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 }
 
 void
 test_fill_assign_2()
 {
   // setup
-  typedef gnu_copy_tracker T;
-  typedef std::vector<T, gnu_new_allocator<T> > X;
+  bool test = true;
+  typedef copy_tracker T;
+  typedef std::vector<T, tracker_alloc<T> > X;
 
   X a(7);
   a.reserve(11);
@@ -341,8 +354,8 @@ test_fill_assign_2()
   X::size_type new_size     = old_size + 2;
   const T t;
 
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 
   // assert preconditions
   VERIFY(old_size < new_size);
@@ -353,21 +366,22 @@ test_fill_assign_2()
 
   // assert postconditions
   VERIFY(a.size() == new_size);
-  VERIFY(gnu_allocator_tracker::allocationTotal() == 0);
+  VERIFY(allocation_tracker::allocationTotal() == 0);
 
   // teardown
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 }
 
 void
 test_fill_assign_3()
 {
   // setup
-  typedef gnu_copy_tracker T;
-  typedef std::vector<T, gnu_new_allocator<T> > X;
+  bool test = true;
+  typedef copy_tracker T;
+  typedef std::vector<T, tracker_alloc<T> > X;
 
-  gnu_allocator_tracker::resetCounts();
+  allocation_tracker::resetCounts();
   {
     X a(7);
     X::size_type old_size     = a.size();
@@ -375,7 +389,7 @@ test_fill_assign_3()
     X::size_type new_size     = old_capacity + 4;
     const T t;
 
-    gnu_copy_tracker::reset();
+    copy_tracker::reset();
 
     // assert preconditions
     VERIFY(new_size > old_capacity);
@@ -387,22 +401,23 @@ test_fill_assign_3()
     VERIFY(a.size() == new_size);
   }
 
-  VERIFY(gnu_allocator_tracker::allocationTotal() > 0);
-  VERIFY(gnu_allocator_tracker::allocationTotal() == gnu_allocator_tracker::deallocationTotal());
+  VERIFY(allocation_tracker::allocationTotal() > 0);
+  VERIFY(allocation_tracker::allocationTotal() == allocation_tracker::deallocationTotal());
 
   // teardown
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 }
 
 void
 test_fill_assign_3_exception_guarantee()
 {
   // setup
-  typedef gnu_copy_tracker T;
-  typedef std::vector<T, gnu_new_allocator<T> > X;
+  bool test = true;
+  typedef copy_tracker T;
+  typedef std::vector<T, tracker_alloc<T> > X;
 
-  gnu_allocator_tracker::resetCounts();
+  allocation_tracker::resetCounts();
   {
     X a(7);
     X::size_type old_size     = a.size();
@@ -410,8 +425,8 @@ test_fill_assign_3_exception_guarantee()
     X::size_type new_size     = old_capacity + 4;
     const T t;
 
-    gnu_copy_tracker::reset();
-    gnu_copy_constructor::throw_on(3);
+    copy_tracker::reset();
+    copy_constructor::throw_on(3);
 
     // assert preconditions
     VERIFY(new_size > old_capacity);
@@ -431,39 +446,40 @@ test_fill_assign_3_exception_guarantee()
     VERIFY(a.capacity() == old_capacity);
   }
 
-  VERIFY(gnu_allocator_tracker::allocationTotal() > 0);
-  VERIFY(gnu_allocator_tracker::allocationTotal() == gnu_allocator_tracker::deallocationTotal());
+  VERIFY(allocation_tracker::allocationTotal() > 0);
+  VERIFY(allocation_tracker::allocationTotal() == allocation_tracker::deallocationTotal());
 
   // teardown
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 }
 
 void
 test_fill_assign_4()
 {
   // setup
-  typedef gnu_copy_tracker T;
-  typedef std::vector<T, gnu_new_allocator<T> > X;
+  bool test = true;
+  typedef copy_tracker T;
+  typedef std::vector<T, tracker_alloc<T> > X;
 
   X a(7);
   X::size_type old_size  = a.size();
   X::size_type new_size  = old_size - 2;
   X::size_type new_value = 117;
 
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 
   // run test
   a.assign(new_size, new_value);
 
   // assert postconditions
   VERIFY(a.size() == new_size);
-  VERIFY(gnu_allocator_tracker::allocationTotal() == 0);
+  VERIFY(allocation_tracker::allocationTotal() == 0);
 
   // teardown
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 }
 
 // range assign()
@@ -486,15 +502,16 @@ void
 test_range_assign_2()
 {
   // setup
-  typedef gnu_copy_tracker T;
-  typedef std::vector<T, gnu_new_allocator<T> > X;
+  bool test = true;
+  typedef copy_tracker T;
+  typedef std::vector<T, tracker_alloc<T> > X;
 
   X a(7);
   X b(3);
   X::size_type old_size = a.size();
 
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 
   // assert preconditions
   VERIFY(b.size() < a.capacity());
@@ -505,27 +522,28 @@ test_range_assign_2()
   // assert postconditions
   VERIFY(a.size() == b.size());
   VERIFY(a == b);
-  VERIFY(gnu_allocator_tracker::allocationTotal() == 0);
+  VERIFY(allocation_tracker::allocationTotal() == 0);
 
   // teardown
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 }
 
 void
 test_range_assign_3()
 {
   // setup
-  typedef gnu_copy_tracker T;
-  typedef std::vector<T, gnu_new_allocator<T> > X;
+  bool test = true;
+  typedef copy_tracker T;
+  typedef std::vector<T, tracker_alloc<T> > X;
 
   X a(7);
   a.reserve(a.size() + 7);
   X b(a.size() + 3);
   X::size_type old_size = a.size();
 
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 
   // assert preconditions
   VERIFY(a.size() < b.size());
@@ -537,27 +555,28 @@ test_range_assign_3()
   // assert postconditions
   VERIFY(a.size() == b.size());
   VERIFY(a == b);
-  VERIFY(gnu_allocator_tracker::allocationTotal() == 0);
+  VERIFY(allocation_tracker::allocationTotal() == 0);
 
   // teardown
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 }
 
 void
 test_range_assign_4()
 {
   // setup
-  typedef gnu_copy_tracker T;
-  typedef std::vector<T, gnu_new_allocator<T> > X;
+  bool test = true;
+  typedef copy_tracker T;
+  typedef std::vector<T, tracker_alloc<T> > X;
 
-  gnu_allocator_tracker::resetCounts();
+  allocation_tracker::resetCounts();
   {
     X a(7);
     X b(a.capacity() + 7);
     X::size_type old_size = a.size();
 
-    gnu_copy_tracker::reset();
+    copy_tracker::reset();
 
     // assert preconditions
     VERIFY(b.size() > a.capacity());
@@ -569,29 +588,30 @@ test_range_assign_4()
     VERIFY(a.size() == b.size());
     VERIFY(a == b);
   }
-  VERIFY(gnu_allocator_tracker::allocationTotal() > 0);
-  VERIFY(gnu_allocator_tracker::allocationTotal() == gnu_allocator_tracker::deallocationTotal());
+  VERIFY(allocation_tracker::allocationTotal() > 0);
+  VERIFY(allocation_tracker::allocationTotal() == allocation_tracker::deallocationTotal());
 
   // teardown
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 }
 
 void
 test_range_assign_4_exception_guarantee()
 {
   // setup
-  typedef gnu_copy_tracker T;
-  typedef std::vector<T, gnu_new_allocator<T> > X;
+  bool test = true;
+  typedef copy_tracker T;
+  typedef std::vector<T, tracker_alloc<T> > X;
 
-  gnu_allocator_tracker::resetCounts();
+  allocation_tracker::resetCounts();
   {
     X a(7);
     X b(a.capacity() + 7);
     X::size_type old_size = a.size();
 
-    gnu_copy_tracker::reset();
-    gnu_copy_constructor::throw_on(3);
+    copy_tracker::reset();
+    copy_constructor::throw_on(3);
 
     // assert preconditions
     VERIFY(b.size() > a.capacity());
@@ -608,12 +628,12 @@ test_range_assign_4_exception_guarantee()
   }
 
   // assert postconditions
-  VERIFY(gnu_allocator_tracker::allocationTotal() > 0);
-  VERIFY(gnu_allocator_tracker::allocationTotal() == gnu_allocator_tracker::deallocationTotal());
+  VERIFY(allocation_tracker::allocationTotal() > 0);
+  VERIFY(allocation_tracker::allocationTotal() == allocation_tracker::deallocationTotal());
 
   // teardown
-  gnu_copy_tracker::reset();
-  gnu_allocator_tracker::resetCounts();
+  copy_tracker::reset();
+  allocation_tracker::resetCounts();
 }
 
 

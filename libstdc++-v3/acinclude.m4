@@ -937,6 +937,8 @@ dnl Define HAVE_MBSTATE_T if mbstate_t is not in wchar.h
 dnl
 dnl GLIBCPP_CHECK_WCHAR_T_SUPPORT
 AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
+  dnl Wide characters disabled by default.
+  enable_wchar_t=no
 
   dnl Test wchar.h for mbstate_t, which is needed for char_traits and
   dnl others even if wchar_t support is not on.
@@ -982,7 +984,7 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
     ac_wfuncs=no)
   
     dnl Checks for names injected into std:: by the c_std headers.
-    AC_CHECK_FUNCS(btowc wctob fgetwc fgetwc fgetws fputwc fputws fwide \
+    AC_CHECK_FUNCS(btowc wctob fgetwc fgetws fputwc fputws fwide \
     fwprintf fwscanf swprintf swscanf vfwprintf vfwscanf vswprintf vswscanf \
     vwprintf vwscanf wprintf wscanf getwc getwchar mbsinit mbrlen mbrtowc \
     mbsrtowcs wcsrtombs putwc putwchar ungetwc wcrtomb wcstod wcstof wcstol \
@@ -1027,18 +1029,15 @@ AC_DEFUN(GLIBCPP_CHECK_WCHAR_T_SUPPORT, [
   
     dnl At the moment, only enable wchar_t specializations if all the
     dnl above support is present.
-    AC_MSG_CHECKING([for enabled wchar_t specializations])
     if test x"$ac_isoC99_wchar_t" = xyes &&
        test x"$ac_XPG2_wchar_t" = xyes; then
-      AC_DEFINE(_GLIBCPP_USE_WCHAR_T)
-      AC_MSG_RESULT("yes")
-    else
-      AC_MSG_RESULT("no")
+       AC_DEFINE(_GLIBCPP_USE_WCHAR_T)
+       enable_wchar_t=yes 
     fi
-  else
-    dnl Wide characters disabled by the user. 
-    AC_MSG_WARN([wchar_t support disabled.])
   fi
+  AC_MSG_CHECKING([for enabled wchar_t specializations])
+  AC_MSG_RESULT($enable_wchar_t)	
+  AM_CONDITIONAL(GLIBCPP_TEST_WCHAR_T, test "$enable_wchar_t" = yes)	
 ])
 
 
