@@ -23,7 +23,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
  do { (RES)->memory = (RES)->unch_memory = (RES)->volatil = (RES)->cc = 0; \
       CLEAR_HARD_REG_SET ((RES)->regs); } while (0)
 
-/* The resources used by a given insn. */
+/* The resources used by a given insn.  */
 struct resources
 {
   char memory;		/* Insn sets or needs a memory location.  */

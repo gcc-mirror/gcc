@@ -24,7 +24,7 @@ enum br_predictor
 {
 #include "predict.def"
 
-  /* Upper bound on non-language-specific builtins. */
+  /* Upper bound on non-language-specific builtins.  */
   END_PREDICTORS
 };
 #undef DEF_PREDICTOR

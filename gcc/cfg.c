@@ -210,7 +210,7 @@ expunge_block (b)
 }
 
 /* Create an edge connecting SRC and DST with FLAGS optionally using
-   edge cache CACHE.  Return the new edge, NULL if already exist. */
+   edge cache CACHE.  Return the new edge, NULL if already exist.  */
 
 edge
 cached_make_edge (edge_cache, src, dst, flags)

@@ -343,7 +343,7 @@ get_named_section_flags (section)
 
 /* Returns true if the section has been declared before.   Sets internal
    flag on this section in in_named_hash so subsequent calls on this 
-   section will return false. */
+   section will return false.  */
 
 bool
 named_section_first_declaration (name)

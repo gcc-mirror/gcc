@@ -1913,7 +1913,7 @@ dw2_build_landing_pads ()
 	  /* @@@ This is a kludge.  Not all machine descriptions define a
 	     blockage insn, but we must not allow the code we just generated
 	     to be reordered by scheduling.  So emit an ASM_INPUT to act as
-	     blockage insn. */
+	     blockage insn.  */
 	  emit_insn (gen_rtx_ASM_INPUT (VOIDmode, ""));
 	}
 

@@ -49,7 +49,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 enum rid
 {
   /* Modifiers: */
-  /* C, in empirical order of frequency. */
+  /* C, in empirical order of frequency.  */
   RID_STATIC = 0,
   RID_UNSIGNED, RID_LONG,    RID_CONST, RID_EXTERN,
   RID_REGISTER, RID_TYPEDEF, RID_SHORT, RID_INLINE,
@@ -166,7 +166,7 @@ enum c_tree_index
     CTI_G77_LONGINT_TYPE,
     CTI_G77_ULONGINT_TYPE,
 
-    /* These are not types, but we have to look them up all the time. */
+    /* These are not types, but we have to look them up all the time.  */
     CTI_FUNCTION_NAME_DECL,
     CTI_PRETTY_FUNCTION_NAME_DECL,
     CTI_C99_FUNCTION_NAME_DECL,
@@ -239,7 +239,7 @@ extern tree c_global_trees[CTI_MAX];
 typedef enum c_language_kind
 {
   clk_c,           /* A dialect of C: K&R C, ANSI/ISO C89, C2000,
-		       etc. */
+		       etc.  */
   clk_cplusplus,   /* ANSI/ISO C++ */
   clk_objective_c  /* Objective C */
 }
@@ -368,7 +368,7 @@ extern int flag_short_double;
 
 extern int flag_short_wchar;
 
-/* Warn about *printf or *scanf format/argument anomalies. */
+/* Warn about *printf or *scanf format/argument anomalies.  */
 
 extern int warn_format;
 
@@ -555,18 +555,18 @@ extern tree strip_array_types                   PARAMS ((tree));
 
 /* IF_STMT accessors. These give access to the condtion of the if
    statement, the then block of the if statement, and the else block
-   of the if stsatement if it exists. */
+   of the if stsatement if it exists.  */
 #define IF_COND(NODE)           TREE_OPERAND (IF_STMT_CHECK (NODE), 0)
 #define THEN_CLAUSE(NODE)       TREE_OPERAND (IF_STMT_CHECK (NODE), 1)
 #define ELSE_CLAUSE(NODE)       TREE_OPERAND (IF_STMT_CHECK (NODE), 2)
 
 /* WHILE_STMT accessors. These give access to the condtion of the
-   while statement and the body of the while statement, respectively. */
+   while statement and the body of the while statement, respectively.  */
 #define WHILE_COND(NODE)        TREE_OPERAND (WHILE_STMT_CHECK (NODE), 0)
 #define WHILE_BODY(NODE)        TREE_OPERAND (WHILE_STMT_CHECK (NODE), 1)
 
 /* DO_STMT accessors. These give access to the condition of the do
-   statement and the body of the do statement, respectively. */
+   statement and the body of the do statement, respectively.  */
 #define DO_COND(NODE)           TREE_OPERAND (DO_STMT_CHECK (NODE), 0)
 #define DO_BODY(NODE)           TREE_OPERAND (DO_STMT_CHECK (NODE), 1)
 
@@ -576,42 +576,42 @@ extern tree strip_array_types                   PARAMS ((tree));
 #define RETURN_EXPR(NODE)       TREE_OPERAND (RETURN_STMT_CHECK (NODE), 0)
 
 /* EXPR_STMT accessor. This gives the expression associated with an
-   expression statement. */
+   expression statement.  */
 #define EXPR_STMT_EXPR(NODE)    TREE_OPERAND (EXPR_STMT_CHECK (NODE), 0)
 
 /* FOR_STMT accessors. These give access to the init statement,
    condition, update expression, and body of the for statement,
-   respectively. */
+   respectively.  */
 #define FOR_INIT_STMT(NODE)     TREE_OPERAND (FOR_STMT_CHECK (NODE), 0)
 #define FOR_COND(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 1)
 #define FOR_EXPR(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 2)
 #define FOR_BODY(NODE)          TREE_OPERAND (FOR_STMT_CHECK (NODE), 3)
 
 /* SWITCH_STMT accessors. These give access to the condition and body
-   of the switch statement, respectively. */
+   of the switch statement, respectively.  */
 #define SWITCH_COND(NODE)       TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 0)
 #define SWITCH_BODY(NODE)       TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 1)
 
 /* CASE_LABEL accessors. These give access to the high and low values
-   of a case label, respectively. */
+   of a case label, respectively.  */
 #define CASE_LOW(NODE)          TREE_OPERAND (CASE_LABEL_CHECK (NODE), 0)
 #define CASE_HIGH(NODE)         TREE_OPERAND (CASE_LABEL_CHECK (NODE), 1)
 #define CASE_LABEL_DECL(NODE)   TREE_OPERAND (CASE_LABEL_CHECK (NODE), 2)
 
 /* GOTO_STMT accessor. This gives access to the label associated with
-   a goto statement. */
+   a goto statement.  */
 #define GOTO_DESTINATION(NODE)  TREE_OPERAND (GOTO_STMT_CHECK (NODE), 0)
 
 /* COMPOUND_STMT accessor. This gives access to the TREE_LIST of
    statements assocated with a compound statement. The result is the
    first statement in the list. Succeeding nodes can be acccessed by
-   calling TREE_CHAIN on a node in the list. */
+   calling TREE_CHAIN on a node in the list.  */
 #define COMPOUND_BODY(NODE)     TREE_OPERAND (COMPOUND_STMT_CHECK (NODE), 0)
 
 /* ASM_STMT accessors. ASM_STRING returns a STRING_CST for the
    instruction (e.g., "mov x, y"). ASM_OUTPUTS, ASM_INPUTS, and
    ASM_CLOBBERS represent the outputs, inputs, and clobbers for the
-   statement. */
+   statement.  */
 #define ASM_CV_QUAL(NODE)       TREE_OPERAND (ASM_STMT_CHECK (NODE), 0)
 #define ASM_STRING(NODE)        TREE_OPERAND (ASM_STMT_CHECK (NODE), 1)
 #define ASM_OUTPUTS(NODE)       TREE_OPERAND (ASM_STMT_CHECK (NODE), 2)
@@ -619,14 +619,14 @@ extern tree strip_array_types                   PARAMS ((tree));
 #define ASM_CLOBBERS(NODE)      TREE_OPERAND (ASM_STMT_CHECK (NODE), 4)
 
 /* DECL_STMT accessor. This gives access to the DECL associated with
-   the given declaration statement. */
+   the given declaration statement.  */
 #define DECL_STMT_DECL(NODE)    TREE_OPERAND (DECL_STMT_CHECK (NODE), 0)
 
-/* STMT_EXPR accessor. */
+/* STMT_EXPR accessor.  */
 #define STMT_EXPR_STMT(NODE)    TREE_OPERAND (STMT_EXPR_CHECK (NODE), 0)
 
 /* LABEL_STMT accessor. This gives access to the label associated with
-   the given label statement. */
+   the given label statement.  */
 #define LABEL_STMT_LABEL(NODE)  TREE_OPERAND (LABEL_STMT_CHECK (NODE), 0)
 
 /* Nonzero if this SCOPE_STMT is for the beginning of a scope.  */
@@ -682,7 +682,7 @@ extern tree strip_array_types                   PARAMS ((tree));
   (TREE_LANG_FLAG_2 ((NODE)))
 
 /* Nonzero if we want the new ISO rules for pushing a new scope for `for'
-   initialization variables. */
+   initialization variables.  */
 #define NEW_FOR_SCOPE_P(NODE) (TREE_LANG_FLAG_0 (NODE))
 
 /* Nonzero if we want to create an ASM_INPUT instead of an
@@ -825,7 +825,7 @@ enum tree_dump_index
   TDI_original,			/* dump each function before optimizing it */
   TDI_optimized,		/* dump each function after optimizing it */
   TDI_inlined,			/* dump each function after inlining
-				   within it. */
+				   within it.  */
   TDI_end
 };
 

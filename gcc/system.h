@@ -28,7 +28,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    not under control of the preprocessor.  */
 #define GCCBUGURL "<URL:http://www.gnu.org/software/gcc/bugs.html>"
 
-/* We must include stdarg.h/varargs.h before stdio.h. */
+/* We must include stdarg.h/varargs.h before stdio.h.  */
 #ifdef ANSI_PROTOTYPES
 #include <stdarg.h>
 #else
@@ -313,7 +313,7 @@ extern PTR realloc PARAMS ((PTR, size_t));
 #endif
 
 /* If the system doesn't provide strsignal, we get it defined in
-   libiberty but no declaration is supplied. */
+   libiberty but no declaration is supplied.  */
 #ifndef HAVE_STRSIGNAL
 # ifndef strsignal
 extern const char *strsignal PARAMS ((int));
@@ -343,7 +343,7 @@ extern int setrlimit PARAMS ((int, const struct rlimit *));
 #endif
 
 /* HAVE_VOLATILE only refers to the stage1 compiler.  We also check
-   __STDC__ and assume gcc sets it and has volatile in stage >=2. */
+   __STDC__ and assume gcc sets it and has volatile in stage >=2.  */
 #if !defined(HAVE_VOLATILE) && !defined(__STDC__) && !defined(volatile)
 #define volatile
 #endif
@@ -428,7 +428,7 @@ extern void abort PARAMS ((void));
 # define STDERR_FILENO  2
 #endif
 
-/* Some systems have mkdir that takes a single argument. */
+/* Some systems have mkdir that takes a single argument.  */
 #ifdef MKDIR_TAKES_ONE_ARG
 # define mkdir(a,b) mkdir(a)
 #endif
@@ -474,7 +474,7 @@ extern void abort PARAMS ((void));
   (IS_DIR_SEPARATOR ((STR)[0]) || (STR)[0] == '$')
 #endif
 
-/* Get libiberty declarations. */
+/* Get libiberty declarations.  */
 #include "libiberty.h"
 #include "symcat.h"
 

@@ -85,7 +85,7 @@ enum built_in_function
 {
 #include "builtins.def"
 
-  /* Upper bound on non-language-specific builtins. */
+  /* Upper bound on non-language-specific builtins.  */
   END_BUILTINS
 };
 #undef DEF_BUILTIN
@@ -393,7 +393,7 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
    || (TREE_CODE (TYPE) == COMPLEX_TYPE \
        && TREE_CODE (TREE_TYPE (TYPE)) == REAL_TYPE))
 
-/* Nonzero if TYPE represents an aggregate (multi-component) type. */
+/* Nonzero if TYPE represents an aggregate (multi-component) type.  */
 
 #define AGGREGATE_TYPE_P(TYPE) \
   (TREE_CODE (TYPE) == ARRAY_TYPE || TREE_CODE (TYPE) == RECORD_TYPE \
@@ -989,7 +989,7 @@ struct tree_block
    type node.  You then set the TYPE_STUB_DECL field of the type node
    to point back at the TYPE_DECL node.  This allows the debug routines
    to know that the two nodes represent the same type, so that we only
-   get one debug info record for them. */
+   get one debug info record for them.  */
 #define TYPE_STUB_DECL(NODE) (TREE_CHAIN (NODE))
 
 /* In a RECORD_TYPE, UNION_TYPE or QUAL_UNION_TYPE, it means the type
@@ -1067,11 +1067,11 @@ struct tree_block
 
 /* If set in an ARRAY_TYPE, indicates a string type (for languages
    that distinguish string from array of char).
-   If set in a SET_TYPE, indicates a bitstring type. */
+   If set in a SET_TYPE, indicates a bitstring type.  */
 #define TYPE_STRING_FLAG(NODE) (TYPE_CHECK (NODE)->type.string_flag)
 
 /* If non-NULL, this is an upper bound of the size (in bytes) of an
-   object of the given ARRAY_TYPE.  This allows temporaries to be allocated. */
+   object of the given ARRAY_TYPE.  This allows temporaries to be allocated.  */
 #define TYPE_ARRAY_MAX_SIZE(ARRAY_TYPE) TYPE_MAX_VALUE (ARRAY_TYPE)
 
 /* For a VECTOR_TYPE, this is the number of sub-parts of the vector.  */
@@ -1477,7 +1477,7 @@ struct tree_type
 /* Nonzero for any sort of ..._DECL node means this decl node represents an
    inline instance of some original (abstract) decl from an inline function;
    suppress any warnings about shadowing some other variable.  FUNCTION_DECL
-   nodes can also have their abstract origin set to themselves. */
+   nodes can also have their abstract origin set to themselves.  */
 #define DECL_FROM_INLINE(NODE) (DECL_ABSTRACT_ORIGIN (NODE) != (tree) 0 \
 				&& DECL_ABSTRACT_ORIGIN (NODE) != (NODE))
 
@@ -1511,7 +1511,7 @@ struct tree_type
 #define DECL_EXTERNAL(NODE) (DECL_CHECK (NODE)->decl.external_flag)
 
 /* In a VAR_DECL for a RECORD_TYPE, sets number for non-init_priority
-   initializatons. */
+   initializatons.  */
 #define DEFAULT_INIT_PRIORITY 65535
 #define MAX_INIT_PRIORITY 65535
 #define MAX_RESERVED_INIT_PRIORITY 100
@@ -1519,7 +1519,7 @@ struct tree_type
 /* In a TYPE_DECL
    nonzero means the detail info about this type is not dumped into stabs.
    Instead it will generate cross reference ('x') of names. 
-   This uses the same flag as DECL_EXTERNAL. */
+   This uses the same flag as DECL_EXTERNAL.  */
 #define TYPE_DECL_SUPPRESS_DEBUG(NODE) \
 (TYPE_DECL_CHECK (NODE)->decl.external_flag)
 
@@ -2089,7 +2089,7 @@ extern tree make_tree			PARAMS ((tree, rtx));
    is ATTRIBUTE.
 
    Such modified types already made are recorded so that duplicates
-   are not made. */
+   are not made.  */
 
 extern tree build_type_attribute_variant PARAMS ((tree, tree));
 extern tree build_decl_attribute_variant PARAMS ((tree, tree));
@@ -2331,8 +2331,8 @@ extern HOST_WIDE_INT int_byte_position	PARAMS ((tree));
 
 enum size_type_kind
 {
-  SIZETYPE,		/* Normal representation of sizes in bytes. */
-  SSIZETYPE,		/* Signed representation of sizes in bytes. */
+  SIZETYPE,		/* Normal representation of sizes in bytes.  */
+  SSIZETYPE,		/* Signed representation of sizes in bytes.  */
   USIZETYPE,		/* Unsigned representation of sizes in bytes.  */
   BITSIZETYPE,		/* Normal representation of sizes in bits.  */
   SBITSIZETYPE,		/* Signed representation of sizes in bits.  */
@@ -2374,10 +2374,10 @@ extern void put_pending_sizes		PARAMS ((tree));
    + (BITS_PER_UNIT > 8) + (BITS_PER_UNIT > 16) + (BITS_PER_UNIT > 32) \
    + (BITS_PER_UNIT > 64) + (BITS_PER_UNIT > 128) + (BITS_PER_UNIT > 256))
 
-/* If nonzero, an upper limit on alignment of structure fields, in bits. */
+/* If nonzero, an upper limit on alignment of structure fields, in bits.  */
 extern unsigned int maximum_field_alignment;
 
-/* If non-zero, the alignment of a bitstring or (power-)set value, in bits. */
+/* If non-zero, the alignment of a bitstring or (power-)set value, in bits.  */
 extern unsigned int set_alignment;
 
 /* Concatenate two lists (chains of TREE_LIST nodes) X and Y
@@ -2617,7 +2617,7 @@ extern int pedantic_lvalues;
 
 extern int immediate_size_expand;
 
-/* Points to the FUNCTION_DECL of the function whose body we are reading. */
+/* Points to the FUNCTION_DECL of the function whose body we are reading.  */
 
 extern tree current_function_decl;
 
@@ -2778,7 +2778,7 @@ extern void init_lex				PARAMS ((void));
 /* Function of no arguments for initializing the symbol table.  */
 extern void init_decl_processing		PARAMS ((void));
 
-/* Function to identify which front-end produced the output file. */
+/* Function to identify which front-end produced the output file.  */
 extern const char *lang_identify			PARAMS ((void));
 
 /* Function to replace the DECL_LANG_SPECIFIC field of a DECL with a copy.  */

@@ -806,7 +806,7 @@ static struct dump_file_info dump_files[TDI_end] =
   {".inlined", "dump-tree-inlined", 0, 0},
 };
 
-/* Define a name->number mapping for a dump flag value. */
+/* Define a name->number mapping for a dump flag value.  */
 struct dump_option_value_info
 {
   const char *const name;	/* the name of the value */

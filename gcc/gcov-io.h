@@ -32,11 +32,11 @@ static int __store_gcov_type PARAMS ((gcov_type, char *, size_t)) ATTRIBUTE_UNUS
 static int __read_gcov_type  PARAMS ((gcov_type *, FILE *, size_t)) ATTRIBUTE_UNUSED;
 static int __write_gcov_type PARAMS ((gcov_type, FILE *, size_t)) ATTRIBUTE_UNUSED;
 
-/* These routines only work for signed values. */
+/* These routines only work for signed values.  */
 
 /* Store a portable representation of VALUE in DEST using BYTES*8-1 bits.
    Return a non-zero value if VALUE requires more than BYTES*8-1 bits
-   to store. */
+   to store.  */
 
 static int
 __store_gcov_type (value, dest, bytes)
@@ -71,7 +71,7 @@ __store_gcov_type (value, dest, bytes)
 
 /* Retrieve a quantity containing BYTES*8-1 bits from SOURCE and store
    the result in DEST. Returns a non-zero value if the value in SOURCE
-   will not fit in DEST. */
+   will not fit in DEST.  */
 
 static int
 __fetch_gcov_type (dest, source, bytes)
@@ -126,7 +126,7 @@ __fetch_long (dest, source, bytes)
    Note that VALUE may not actually be large enough to hold BYTES*8
    bits, but BYTES characters will be written anyway.
 
-   BYTES may be a maximum of 10. */
+   BYTES may be a maximum of 10.  */
 
 static int
 __write_gcov_type (value, file, bytes)
@@ -163,7 +163,7 @@ __write_long (value, file, bytes)
    Note that DEST may not be large enough to hold all of the requested
    data, but the function will read BYTES characters anyway.
 
-   BYTES may be a maximum of 10. */
+   BYTES may be a maximum of 10.  */
 
 static int
 __read_gcov_type (dest, file, bytes)
