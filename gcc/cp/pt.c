@@ -3689,20 +3689,7 @@ tsubst (t, args, in_decl)
 	  {
 	  case TEMPLATE_TYPE_PARM:
 	  case TEMPLATE_TEMPLATE_PARM:
-
-	    if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM
-		&& CLASSTYPE_TEMPLATE_INFO (t))
-	      {
-		tree argvec = tsubst (CLASSTYPE_TI_ARGS (t),
-				      args, in_decl);
-		r = lookup_template_class (TYPE_NAME (t), argvec, in_decl, 
-					   DECL_CONTEXT (TYPE_NAME (t)));
-		r = cp_build_type_variant (r, TYPE_READONLY (t),
-					   TYPE_VOLATILE (t));
-	      }
-	    else
-	      r = copy_node (t);
-
+	    r = copy_node (t);
 	    TEMPLATE_TYPE_PARM_INDEX (r)
 	      = reduce_template_parm_level (TEMPLATE_TYPE_PARM_INDEX (t),
 					    r, levels);
@@ -3710,6 +3697,14 @@ tsubst (t, args, in_decl)
 	    TYPE_MAIN_VARIANT (r) = r;
 	    TYPE_POINTER_TO (r) = NULL_TREE;
 	    TYPE_REFERENCE_TO (r) = NULL_TREE;
+
+	    if (TREE_CODE (t) == TEMPLATE_TEMPLATE_PARM
+		&& CLASSTYPE_TEMPLATE_INFO (t))
+	      {
+		tree argvec = tsubst (CLASSTYPE_TI_ARGS (t), args, in_decl);
+		CLASSTYPE_TEMPLATE_INFO (r)
+		  = perm_tree_cons (TYPE_NAME (t), argvec, NULL_TREE);
+	      }
 	    break;
 
 	  case TEMPLATE_PARM_INDEX:
