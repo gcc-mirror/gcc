@@ -1,3 +1,11 @@
+2005-01-23  Roger Sayle  <roger@eyesopen.com>
+
+	* expmed.c (expand_mult_highpart): Make static.  Change type of
+	constant multiplier argument from unsigned HOST_WIDE_INT to rtx.
+	(expand_divmod): Updates calls to expand_mult_highpart by using
+	gen_int_mode to pass a CONST_INT rtx.
+	* rtl.h (expand_mult_highpart): Remove prototype.
+
 2005-01-23  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* flow.c (regset_bytes, regset_size): Remove.

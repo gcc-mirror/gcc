@@ -2028,8 +2028,6 @@ extern void dump_flow_info (FILE *);
 extern void init_expmed (void);
 extern void expand_inc (rtx, rtx);
 extern void expand_dec (rtx, rtx);
-extern rtx expand_mult_highpart (enum machine_mode, rtx,
-				 unsigned HOST_WIDE_INT, rtx, int, int);
 
 /* In gcse.c */
 extern bool can_copy_p (enum machine_mode);
