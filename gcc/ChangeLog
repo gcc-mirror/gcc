@@ -1,3 +1,11 @@
+Mon May 11 08:24:18 1998  Richard Henderson <rth@cygnus.com>
+
+	* alpha.h (PRINT_OPERAND_PUNCT_VALID_P): Add '`'.
+	* alpha.c (print_operand): Handle it.
+	* alpha.md (fix_truncdfsi2, fix_truncsfsi2): New patterns and 
+	related define_splits.  Also add peepholes for SImode reload
+	plus sign_extend lossage.
+
 Mon May 11 09:33:10 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
         * genattr.c: Include stdarg.h/varargs.h.  Change function
