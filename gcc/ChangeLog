@@ -1,3 +1,13 @@
+Wed Jun  2 07:07 1999 Bruce Korb <ddsinc09@ix.netcom.com
+
+	*fixinc/fixincl.c(global def): Add FD_SHELL_SCRIPT to mark
+	fixes that need "file=xxx\n" prepended before invocation
+	(start_fixer - new): starting the fixer process is complex enough
+	to warrent its own routine.  It prepends the "file=xxx\n" stuff.
+	(process): uses the new routine; omit usage of putenv()
+	*fixinc/fixincl.tpl: mark shell scripts with FD_SHELL_SCRIPT
+	*fixinc/fixincl.x: regenerate
+
 Wed Jun  2 02:29:07 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* README, configure.in, gcc.1, gcc.texi: Update name (egcs -> gcc)
