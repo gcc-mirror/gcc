@@ -1170,16 +1170,12 @@ enum reg_class
 	{								\
 	  if (j % MVS_ASCII_TEXT_LENGTH == 0)				\
             fprintf (FILE, "\tDC\tC'%c", c);				\
-	  else								\
-	    {								\
-	      if ( c == '\'' )						\
-		fprintf (FILE, "%c%c", c, c);				\
-	      else							\
-		fprintf (FILE, "%c", c);				\
-	      if (j % MVS_ASCII_TEXT_LENGTH				\
-		  == MVS_ASCII_TEXT_LENGTH - 1)				\
-		fprintf (FILE, "'\n" );					\
-	    }								\
+          if ( c == '\'' )                                       	\
+	    fprintf (FILE, "%c%c", c, c);                        	\
+	  else                                                   	\
+	    fprintf (FILE, "%c", c);                             	\
+	  if (j % MVS_ASCII_TEXT_LENGTH == MVS_ASCII_TEXT_LENGTH - 1)	\
+	    fprintf (FILE, "'\n" );					\
 	}								\
     }									\
   if (j % MVS_ASCII_TEXT_LENGTH != 0)					\
