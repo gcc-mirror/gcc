@@ -45,7 +45,7 @@
 # exit code.
 
 error() {
-    echo "build-gcc.sh: error: $1"
+    echo "gcc_build: error: $1"
     exit 1
 }
 
@@ -53,7 +53,7 @@ error() {
 
 usage() {
 cat <<EOF
-build-gcc.sh [-c configure_options] 
+gcc_build        [-c configure_options] 
 		 [-d destination_directory]
 		 [-m make_options]
 		 [-u username]
@@ -265,7 +265,7 @@ fi
 # Remove any old logfiles.
 rm -f ${LOGFILE}
 # Tell the user where to find the logfile.
-echo "build-gcc.sh: The logfile for this run is ${LOGFILE}"
+echo "gcc_build: The logfile for this run is ${LOGFILE}"
 
 # Checkout the tree.
 if [ ${CHECKOUT} -ne 0 ]; then
