@@ -551,11 +551,19 @@ reload (first, global, dumpfile)
   /* Look for REG_EQUIV notes; record what each pseudo is equivalent to.
      Also find all paradoxical subregs and find largest such for each pseudo.
      On machines with small register classes, record hard registers that
-     are used for user variables.  These can never be used for spills.  */
+     are used for user variables.  These can never be used for spills. 
+     Also look for a "constant" NOTE_INSN_SETJMP.  This means that all
+     caller-saved registers must be marked live.  */
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
       rtx set = single_set (insn);
+
+      if (GET_CODE (insn) == NOTE && CONST_CALL_P (insn)
+	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)
+	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	  if (! call_used_regs[i])
+	    regs_ever_live[i] = 1;
 
       if (set != 0 && GET_CODE (SET_DEST (set)) == REG)
 	{
