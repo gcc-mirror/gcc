@@ -5103,7 +5103,7 @@ expand_expr (exp, target, tmode, modifier)
 	  else if (temp != const0_rtx)
 	    {
 	      if (bcc_gen_fctn[(int) GET_CODE (temp)] != 0)
-		emit_jump_insn ((*bcc_gen_fctn[(int) GET_CODE (temp)]) (op0));
+		emit_jump_insn ((*bcc_gen_fctn[(int) GET_CODE (temp)]) (op1));
 	      else
 		abort ();
 	    }
