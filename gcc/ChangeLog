@@ -1,3 +1,8 @@
+2002-08-15  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.c (legitimize_address): Optimize loading
+	of large displacements.
+
 2002-08-14  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/alpha-protos.h: Update.
