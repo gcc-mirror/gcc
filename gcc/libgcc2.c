@@ -2801,6 +2801,34 @@ __enable_execute_stack ()
     }
 }
 #endif /* __pyr__ */
+
+#if defined (sony_news) && defined (SYSTYPE_BSD)
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/param.h>
+#include <syscall.h>
+#include <machine/sysnews.h>
+
+/* cacheflush function for NEWS-OS 4.2.
+   This function is called from trampoline-initialize code
+   defined in config/mips/mips.h.  */
+
+void
+cacheflush (beg,size,flag)
+     char *beg;
+     int size;
+     int flag;
+{
+  if (syscall (SYS_sysnews, NEWS_CACHEFLUSH, beg, size, FLUSH_BCACHE))
+    {
+      perror ("cache_flush");
+      fflush (stderr);
+      abort ();
+    }
+}
+
+#endif /* sony_news */
 #endif /* L_trampoline */
 
 #ifdef L__main
