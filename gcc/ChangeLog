@@ -1,3 +1,10 @@
+2004-09-22  Diego Novillo  <dnovillo@redhat.com>
+
+	* fold-const.c (fold): Avoid non INTEGER_TYPEs when widening
+	operands in an integer comparison.
+	* tree-cfg.c (find_taken_edge): Call fold() to determine
+	whether the predicate is known.
+
 2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* aclocal.m4: Import AM_PROG_CC_C_O and AM_AUX_DIR_EXPAND.
