@@ -71,7 +71,7 @@ static void dump_prediction (enum br_predictor, int, basic_block, int);
 static void estimate_loops_at_level (struct loop *loop);
 static void propagate_freq (struct loop *);
 static void estimate_bb_frequencies (struct loops *);
-static void counts_to_freqs (void);
+static int counts_to_freqs (void);
 static void process_note_predictions (basic_block, int *);
 static void process_note_prediction (basic_block, int *, int, int);
 static bool last_basic_block_p (basic_block);
@@ -1048,19 +1048,22 @@ estimate_loops_at_level (struct loop *first_loop)
     }
 }
 
-/* Convert counts measured by profile driven feedback to frequencies.  */
+/* Convert counts measured by profile driven feedback to frequencies.
+   Return nonzero iff there was any nonzero execution count.  */
 
-static void
+static int
 counts_to_freqs (void)
 {
-  gcov_type count_max = 1;
+  gcov_type count_max, true_count_max = 0;
   basic_block bb;
 
   FOR_EACH_BB (bb)
-    count_max = MAX (bb->count, count_max);
+    true_count_max = MAX (bb->count, true_count_max);
 
+  count_max = MAX (true_count_max, 1);
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
     bb->frequency = (bb->count * BB_FREQ_MAX + count_max / 2) / count_max;
+  return true_count_max;
 }
 
 /* Return true if function is likely to be expensive, so there is no point to
@@ -1113,9 +1116,7 @@ estimate_bb_frequencies (struct loops *loops)
   basic_block bb;
   sreal freq_max;
 
-  if (flag_branch_probabilities)
-    counts_to_freqs ();
-  else
+  if (!flag_branch_probabilities || !counts_to_freqs ())
     {
       static int real_values_initialized = 0;
 

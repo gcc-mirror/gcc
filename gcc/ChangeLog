@@ -1,3 +1,11 @@
+2004-01-27  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* coverage.c (get_coverage_counts): Give a different message
+	if flag_guess_branch_prob is set.
+	* predict.c (counts_to_freqs): Return an int.
+	(estimate_bb_frequencies): If counts_to_freqs returns zero,
+	calculate estimates.
+
 2004-01-27  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/iq2000/iq2000-protos.h: Remove the prototype for
