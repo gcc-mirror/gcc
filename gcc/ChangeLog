@@ -1,3 +1,7 @@
+2001-03-06  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cppinternals.texi: Update.
+
 2001-03-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* config/a29k/xm-a29k.h, config/a29k/xm-unix.h,
