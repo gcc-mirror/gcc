@@ -1,3 +1,10 @@
+Wed Aug 23 04:55:48 2000  Alexandre Oliva  <aoliva@redhat.com>
+
+	* simplify-rtx.c (simplify_rtx): Don't pass VOIDmode to
+	simplify_relational_operation() unless both operands are of
+	VOIDmode.
+	* cse.c (fold_rtx): Likewise.
+
 Tue Aug 22 23:53:27 EDT 2000  John Wehle  (john@feith.com)
 
 	* rtlanal.c (rtx_unstable_p): The pic register is stable
