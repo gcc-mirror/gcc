@@ -1,3 +1,24 @@
+2004-06-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+            Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/cpp_type_traits.h: Add __is_pointer and
+	__is_trivially_copyable.
+	* include/bits/stl_algobase.h (fill, fill_n): Slightly
+	tweak to use the latter.
+	(__copy_backward_dispatch): Remove.
+	(__copy_backward_aux): Rewrite to use __is_pointer and
+	__is_trivially_copyable and __copy_backward::copy_b.
+	(__copy_backward): Rewrite as a class template and two
+	specializations.
+
+2004-06-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/25_algorithms/copy.cc: Move to...
+	* testsuite/25_algorithms/copy/1.cc: ... here, extend.
+	* testsuite/25_algorithms/copy/2.cc: New.
+	* testsuite/25_algorithms/copy/3.cc: New.
+	* testsuite/25_algorithms/copy/4.cc: New.
+
 2004-06-29  Paul Brook  <paul@codesourcery.com>
 
 	* libsupc++/vec.cc (__cxa_vec_new2, __cxa_vec_new3): Store the

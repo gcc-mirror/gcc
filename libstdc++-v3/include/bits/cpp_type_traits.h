@@ -304,6 +304,27 @@ namespace std
     };
 
   //
+  // Pointer types
+  //
+  template<typename _Tp>
+    struct __is_pointer
+    {
+      enum
+	{
+	  _M_type = 0
+	};
+    };
+
+  template<typename _Tp>
+    struct __is_pointer<_Tp*>
+    {
+      enum
+	{
+	  _M_type = 1
+	};
+    };
+
+  //
   // An arithmetic type is an integer type or a floating point type
   //
   template<typename _Tp>
@@ -324,6 +345,18 @@ namespace std
       enum
 	{
 	  _M_type = __is_void<_Tp>::_M_type || __is_arithmetic<_Tp>::_M_type
+	};
+    };
+
+  //
+  // A trivially copyable type is an arithmetic type or a pointer type
+  // 
+  template<typename _Tp>
+    struct __is_trivially_copyable
+    {
+      enum
+	{
+	  _M_type = __is_arithmetic<_Tp>::_M_type || __is_pointer<_Tp>::_M_type
 	};
     };
 
