@@ -1,3 +1,7 @@
+1999-10-04  Ulrich Drepper  <drepper@cygnus.com>
+
+	* execute/va-arg-11.c: New test.
+
 1999-09-28  Nick Clifton  <nickc@cygnus.com>
 
 	* compile/990928-1.c: New test.
