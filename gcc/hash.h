@@ -96,7 +96,7 @@ extern void hash_table_free PARAMS ((struct hash_table *));
    COPY is non-NULL, it is used to copy the KEY before storing it in
    the hash table.  */
 extern struct hash_entry *hash_lookup
-  PARAMS ((struct hash_table *, hash_table_key key, bool create,
+  PARAMS ((struct hash_table *, hash_table_key key, int create,
 	   hash_table_key (*copy)(struct obstack*, hash_table_key)));
 
 /* Base method for creating a hash table entry.  */

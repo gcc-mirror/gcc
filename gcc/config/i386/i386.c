@@ -559,7 +559,7 @@ static int ix86_split_to_parts PARAMS ((rtx, rtx *, enum machine_mode));
 static int ix86_safe_length_prefix PARAMS ((rtx));
 static int ix86_nsaved_regs PARAMS((void));
 static void ix86_emit_save_regs PARAMS((void));
-static void ix86_emit_restore_regs_using_mov PARAMS ((rtx, int, bool));
+static void ix86_emit_restore_regs_using_mov PARAMS ((rtx, int, int));
 static void ix86_emit_epilogue_esp_adjustment PARAMS((int));
 static void ix86_set_move_mem_attrs_1 PARAMS ((rtx, rtx, rtx, rtx, rtx));
 static void ix86_sched_reorder_pentium PARAMS((rtx *, rtx *));
@@ -599,7 +599,7 @@ static int ix86_fp_comparison_arithmetics_cost PARAMS ((enum rtx_code code));
 static int ix86_fp_comparison_fcomi_cost PARAMS ((enum rtx_code code));
 static int ix86_fp_comparison_sahf_cost PARAMS ((enum rtx_code code));
 static int ix86_fp_comparison_cost PARAMS ((enum rtx_code code));
-static int ix86_save_reg PARAMS ((int, bool));
+static int ix86_save_reg PARAMS ((int, int));
 static void ix86_compute_frame_layout PARAMS ((struct ix86_frame *));
 
 /* Sometimes certain combinations of command options do not make
@@ -2268,7 +2268,7 @@ gen_push (arg)
 static int
 ix86_save_reg (regno, maybe_eh_return)
      int regno;
-     bool maybe_eh_return;
+     int maybe_eh_return;
 {
   if (flag_pic
       && ! TARGET_64BIT
@@ -2573,7 +2573,7 @@ static void
 ix86_emit_restore_regs_using_mov (pointer, offset, maybe_eh_return)
      rtx pointer;
      int offset;
-     bool maybe_eh_return;
+     int maybe_eh_return;
 {
   int regno;
 

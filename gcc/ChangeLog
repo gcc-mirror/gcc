@@ -1,3 +1,14 @@
+2001-05-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* i386.c (ix86_emit_restore_regs_using_mov, ix86_save_reg): Change
+	`bool' parameter to `int'.
+
+	* hash.c (hash_lookup): Likewise.
+	
+	* hash.h (hash_lookup): Likewise.
+
+	* tlink.c (symbol_hash_lookup, demangled_hash_lookup): Likewise.
+
 Fri May  4 13:10:03 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (x86_initialize_trampoline): Fix mode of constant.
