@@ -1,3 +1,7 @@
+2004-04-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Make-lang.in (GNATBIND_OBJS): Add s-addope.o.
+
 2004-04-23  Emmanuel Briot  <briot@act-europe.fr>
 
 	* adaint.c (__gnat_try_lock): No longer requires that the parent
