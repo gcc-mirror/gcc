@@ -208,8 +208,7 @@ extern tree stabilize_reference PROTO ((tree));
   (CLASS_P (TYPE) && CLASS_INTERFACE (TYPE_NAME (TYPE)))
 
 #define TYPE_CLASS_P(TYPE) (CLASS_P (TYPE) 				\
-			    && !CLASS_INTERFACE (TYPE_NAME (TYPE))	\
-			    && !TYPE_ARRAY_P (TYPE))
+			    && !CLASS_INTERFACE (TYPE_NAME (TYPE)))
 
 /* Standard error messages */
 #define ERROR_CANT_CONVERT_TO_BOOLEAN(OPERATOR, NODE, TYPE)		\

@@ -77,7 +77,7 @@ int class_access_flags = 0;
 /* Print in format similar to javap.  VERY IMCOMPLETE. */
 int flag_javap_compatible = 0;
 
-static int print_access_flags PROTO ((FILE *, uint16));
+static int print_access_flags PROTO ((FILE *, uint16, char));
 static void print_constant_terse PROTO ((FILE*, JCF*, int, int));
 static void print_constant PROTO ((FILE *, JCF *, int, int));
 static void print_constant_ref PROTO ((FILE *, JCF *, int));
@@ -127,7 +127,7 @@ DEFUN(utf8_equal_string, (jcf, index, value),
   class_access_flags = ACCESS_FLAGS; \
   if (flag_print_class_info) \
     { fprintf (out, "\nAccess flags: 0x%x", ACCESS_FLAGS); \
-      print_access_flags (out, ACCESS_FLAGS); \
+      print_access_flags (out, ACCESS_FLAGS, 'c'); \
       fputc ('\n', out); \
       fprintf (out, "This class: "); \
       if (flag_print_constant_pool) \
@@ -163,7 +163,7 @@ DEFUN(utf8_equal_string, (jcf, index, value),
   if (flag_print_fields) \
     { fprintf (out, "Field name:"); \
       print_constant_terse (out, jcf, NAME, CONSTANT_Utf8); \
-      print_access_flags (out, ACCESS_FLAGS); \
+      print_access_flags (out, ACCESS_FLAGS, 'f'); \
       fprintf (out, " Signature: "); \
       if (flag_print_constant_pool) \
         fprintf (out, "%d=", SIGNATURE); \
@@ -194,7 +194,7 @@ DEFUN(utf8_equal_string, (jcf, index, value),
       if (flag_javap_compatible) \
         { \
 	  fprintf (out, "    "); \
-	  print_access_flags (out, ACCESS_FLAGS); \
+	  print_access_flags (out, ACCESS_FLAGS, 'm'); \
 	  fputc (' ', out); \
 	  print_signature (out, jcf, SIGNATURE, PRINT_SIGNATURE_RESULT_ONLY); \
 	  fputc (' ', out); \
@@ -206,7 +206,7 @@ DEFUN(utf8_equal_string, (jcf, index, value),
 	{ \
 	  fprintf (out, "\nMethod name:"); \
 	  print_constant_terse (out, jcf, NAME, CONSTANT_Utf8); \
-	  print_access_flags (out, ACCESS_FLAGS); \
+	  print_access_flags (out, ACCESS_FLAGS, 'm'); \
 	  fprintf (out, " Signature: "); \
 	  if (flag_print_constant_pool) \
 	    fprintf (out, "%d=", SIGNATURE); \
@@ -305,16 +305,24 @@ DEFUN(print_constant_ref, (stream, jcf, index),
   fprintf (stream, ">");
 }
 
+/* Print the access flags given by FLAGS.
+   The CONTEXT is one of 'c' (class flags), 'f' (field flags),
+   or 'm' (method flags). */
+
 static int
-DEFUN (print_access_flags, (stream, flags),
-       FILE *stream AND uint16 flags)
+DEFUN (print_access_flags, (stream, flags, context),
+       FILE *stream AND uint16 flags AND char context)
 {
   if (flags & ACC_PUBLIC) fprintf (stream, " public");
   if (flags & ACC_PRIVATE) fprintf (stream, " private");
   if (flags & ACC_PROTECTED) fprintf (stream, " protected");
   if (flags & ACC_STATIC) fprintf (stream, " static");
   if (flags & ACC_FINAL) fprintf (stream, " final");
-  if (flags & ACC_SYNCHRONIZED) fprintf (stream, " synchronized");
+  if (flags & ACC_SYNCHRONIZED)
+    if (context == 'c')
+      fprintf (stream, " super");
+    else
+      fprintf (stream, " synchronized");
   if (flags & ACC_VOLATILE) fprintf (stream, " volatile");
   if (flags & ACC_TRANSIENT) fprintf (stream, " transient");
   if (flags & ACC_NATIVE) fprintf (stream, " native");
