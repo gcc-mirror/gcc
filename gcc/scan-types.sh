@@ -13,7 +13,7 @@ SED=sed
 # It works by a dummy program through the C pre-processor, and then
 # using sed to search for typedefs in the output.
 
-cat >dummy.c <<!EOF!
+cat >st-dummy.c <<!EOF!
 #include <sys/types.h>
 #include <stddef.h>
 #include <stdarg.h>
@@ -30,21 +30,21 @@ typedef va_list XXXva_list;
 #endif
 !EOF!
 
-if ${CPP} dummy.c >TMP ; then true
+if ${CPP} st-dummy.c >TMP ; then true
 else
-  echo "gen-params: could not invoke ${CPP} on dummy.c" 1>&2 ; exit 1
+  echo "scan-types: could not invoke ${CPP} on st-dummy.c" 1>&2 ; exit 1
 fi
-tr '	' ' ' <TMP >dummy.out
+tr '	' ' ' <TMP >st-dummy.out
 
 for TYPE in dev_t clock_t fpos_t gid_t ino_t mode_t nlink_t off_t pid_t size_t ssize_t time_t uid_t va_list int32_t uint_32_t ; do
     IMPORTED=`eval 'echo $'"$TYPE"`
     if [ -n "${IMPORTED}" ] ; then
 	eval "$TYPE='$IMPORTED"
     else
-	# Search dummy.out for a typedef for $TYPE, and write it out
+	# Search st-dummy.out for a typedef for $TYPE, and write it out
 	# to TMP in #define syntax.
 	rm -f TMP
-	${SED} -n -e "s|.*typedef  *\(.*\) X*$TYPE *;.*|\1|w TMP" <dummy.out>/dev/null
+	${SED} -n -e "s|.*typedef  *\(.*\) X*$TYPE *;.*|\1|w TMP" <st-dummy.out>/dev/null
 	# Now select the first definition.
         if [ -s TMP ]; then
 	    # VALUE is now the typedef'd definition of $TYPE.
@@ -54,7 +54,7 @@ for TYPE in dev_t clock_t fpos_t gid_t ino_t mode_t nlink_t off_t pid_t size_t s
 	    if echo $VALUE | grep " " >/dev/null ; then true
 	    else
 		rm -f TMP
-		${SED} -n -e "s|.*typedef[ 	][ 	]*\(.*[^a-zA-Z0-9_]\)${VALUE}[ 	]*;.*|\1|w TMP" <dummy.out>/dev/null
+		${SED} -n -e "s|.*typedef[ 	][ 	]*\(.*[^a-zA-Z0-9_]\)${VALUE}[ 	]*;.*|\1|w TMP" <st-dummy.out>/dev/null
 		if [ -s TMP ]; then
 		    eval "VALUE='`${SED} -e '2,$d' -e 's|[ 	]*$||' <TMP`'"
 		fi
@@ -100,15 +100,15 @@ else
     else
 	# check $tmp doesn't conflict with <unistd.h>
 	echo "#include <unistd.h>
-	extern $tmp read();" >dummy.c
-	${CC} -c dummy.c >/dev/null 2>&1 || tmp=int
+	extern $tmp read();" >st-dummy.c
+	${CC} -c st-dummy.c >/dev/null 2>&1 || tmp=int
     fi
     echo "#define ${macro_prefix}ssize_t $tmp /* default */"
 fi
 
 # va_list can cause problems (e.g. some systems have va_list as a struct).
 # Check to see if ${va_list-char*} really is compatible with stdarg.h.
-cat >dummy.c <<!EOF!
+cat >st-dummy.c <<!EOF!
 #define X_va_list ${va_list-char* /* default */}
 extern long foo(X_va_list ap); /* Check that X_va_list compiles on its own */
 #include <stdarg.h>
@@ -116,7 +116,7 @@ long foo(X_va_list ap) { return va_arg(ap, long); }
 long bar(int i, ...)
 { va_list ap; long j; va_start(ap, i); j = foo(ap); va_end(ap); return j; }
 !EOF!
-if ${CC} -c dummy.c >/dev/null 2>&1 ; then
+if ${CC} -c st-dummy.c >/dev/null 2>&1 ; then
   # Ok: We have something that works.
   echo "#define ${macro_prefix}va_list ${va_list-char* /* default */}"
 else
@@ -136,4 +136,4 @@ echo "#define initscr32 initscr"
 echo "#define w32addch waddch"
 echo "#define w32insch winsch"
 
-rm -f dummy.c dummy.o TMP dummy.out
+rm -f st-dummy.c st-dummy.o TMP st-dummy.out
