@@ -1,3 +1,12 @@
+1999-06-19  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (expand_static_init): When building an anonymous function
+	for use with atexit, compute its body before and after entering
+	the function.
+
+	* error.c (dump_expr): Handle BIND_EXPR, LOOP_EXPR, and
+	EXIT_EXPR.
+	
 1999-06-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* init.c (expand_aggr_vbase_init): Add flag parameter.

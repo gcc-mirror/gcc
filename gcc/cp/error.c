@@ -1779,6 +1779,24 @@ dump_expr (t, nop)
       dump_decl (t, 0);
       break;
 
+    case BIND_EXPR:
+      OB_PUTS ("{ ");
+      dump_expr (TREE_OPERAND (t, 1), nop);
+      OB_PUTS ("} ");
+      break;
+      
+    case LOOP_EXPR:
+      OB_PUTS ("while (1) { ");
+      dump_expr (TREE_OPERAND (t, 0), nop);
+      OB_PUTS ("} ");
+      break;
+
+    case EXIT_EXPR:
+      OB_PUTS ("if (");
+      dump_expr (TREE_OPERAND (t, 0), nop);
+      OB_PUTS (") break; ");
+      break;
+
     case TREE_LIST:
       if (TREE_VALUE (t) && TREE_CODE (TREE_VALUE (t)) == FUNCTION_DECL)
 	{
