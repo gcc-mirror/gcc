@@ -1,5 +1,5 @@
 /* Utility routines for finding and reading Java(TM) .class files.
-   Copyright (C) 1996, 97-98, 1999  Free Software Foundation, Inc.
+   Copyright (C) 1996, 97-98, 1999, 2000  Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -505,11 +505,15 @@ DEFUN(jcf_print_utf8_replace, (stream, str, length, in_char, out_char),
       FILE *stream AND const unsigned char *str AND int length
       AND int in_char AND int out_char)
 {
-
-  int i;/* FIXME - actually handle Unicode! */
-  for (i = 0; i < length; i++)
+  const unsigned char *limit = str + length;
+  while (str < limit)
     {
-      int ch = str[i];
+      int ch = UTF8_GET (str, limit);
+      if (ch < 0)
+	{
+	  fprintf (stream, "\\<invalid>");
+	  return;
+	}
       jcf_print_char (stream, ch == in_char ? out_char : ch);
     }
 }
