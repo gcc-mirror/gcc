@@ -460,10 +460,10 @@
 
 (define_insn "altivec_vandc"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
-        (and:V4SI (match_operand:V4SI 1 "register_operand" "v")
-                  (not:V4SI (match_operand:V4SI 2 "register_operand" "v"))))]
+        (and:V4SI (not:V4SI (match_operand:V4SI 1 "register_operand" "v"))
+                  (match_operand:V4SI 2 "register_operand" "v")))]
   "TARGET_ALTIVEC"
-  "vandc %0,%1,%2"
+  "vandc %0,%2,%1"
   [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_vavgub"
