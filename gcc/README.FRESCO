@@ -1,0 +1,17 @@
+Compiling Fresco with g++
+-----------------------------
+
+Fresco is an evolving interface and toolkit for object-oriented
+graphics.  A preliminary version (written in C++) was released
+with x11r6.
+
+Previous versions of Fresco have not compiled using g++,
+partly because of the use of true and false as identifiers.
+(They are now reserved words in g++, as required by the
+ANSI/ISO draft standard for C++.)
+
+If you get x11r6 with public patch #5 or a later version
+of Fresco, these problems should now be fixed.
+
+See http://www.faslab.com/fresco/HomePage.html for information
+on Fresco, including how to get the latest version.
