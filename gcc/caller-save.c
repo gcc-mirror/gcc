@@ -208,6 +208,10 @@ init_caller_save ()
 	  PUT_MODE (test_reg, mode);
 	  PUT_MODE (test_mem, mode);
 
+	  /* Force re-recognition of the modified insns.  */
+	  INSN_CODE (saveinsn) = -1;
+	  INSN_CODE (restinsn) = -1;
+
 	  reg_save_code[i][mode] = recog_memoized (saveinsn);
 	  reg_restore_code[i][mode] = recog_memoized (restinsn);
 
@@ -234,6 +238,7 @@ init_caller_save ()
 	  reg_save_code[i][mode] = -1;
 	  reg_restore_code[i][mode] = -1;
 	}
+
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     for (j = 1; j <= MOVE_MAX_WORDS; j++)
       if (reg_save_code [i][regno_save_mode[i][j]] == -1)
