@@ -136,13 +136,13 @@ typedef __gnuc_va_list va_list;
    But on BSD NET2 we must not test or define or undef it.
    (Note that the comments in NET 2's ansi.h
    are incorrect for _VA_LIST_--see stdio.h!)  */
-#if !defined (_VA_LIST_) || defined (__BSD_NET2__) || defined (____386BSD____)
+#if !defined (_VA_LIST_) || defined (__BSD_NET2__) || defined (____386BSD____) || defined (__bsdi__)
 /* The macro _VA_LIST is used in SCO Unix 3.2.  */
 #ifndef _VA_LIST
 /* The macro _VA_LIST_T_H is used in the Bull dpx2  */
 #ifndef _VA_LIST_T_H
 #define _VA_LIST_T_H
-#if !(defined (__BSD_NET2__) || defined (____386BSD____))
+#if !(defined (__BSD_NET2__) || defined (____386BSD____) || defined (__bsdi__))
 #define _VA_LIST_
 #endif
 #define _VA_LIST
