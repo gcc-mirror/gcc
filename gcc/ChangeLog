@@ -1,3 +1,10 @@
+2004-02-29  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/14346
+	* config/cris/cris.c (cris_asm_output_mi_thunk): For PIC, prepend
+	TAB to jumping "add.d" insn.  Avoid PLT indirection by equating a
+	local symbol and jumping through it.
+
 2004-02-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	Backport from mainline:
