@@ -562,13 +562,8 @@ process_template (d, template)
 
   printf ("\nstatic char *\n");
   printf ("output_%d (operands, insn)\n", d->code_number);
-  printf ("#ifdef __GNUC__\n");
-  printf ("     rtx *operands __attribute__ ((unused));\n");
-  printf ("     rtx insn __attribute__ ((unused));\n");
-  printf ("#else\n");
-  printf ("     rtx *operands;\n");
-  printf ("     rtx insn;\n");
-  printf ("#endif\n");
+  printf ("     rtx *operands ATTRIBUTE_UNUSED;\n");
+  printf ("     rtx insn ATTRIBUTE_UNUSED;\n");
   printf ("{\n");
 
   /* If the assembler code template starts with a @ it is a newline-separated

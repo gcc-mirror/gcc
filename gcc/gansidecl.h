@@ -46,6 +46,21 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #endif
 
+#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
+# define __attribute__(x)
+#endif
+
+#ifndef ATTRIBUTE_UNUSED
+#define ATTRIBUTE_UNUSED __attribute__ ((unused))
+#endif /* ATTRIBUTE_UNUSED */
+
+#ifndef ATTRIBUTE_PRINTF
+#define ATTRIBUTE_PRINTF(m, n) __attribute__ ((format (__printf__, m, n)))
+#define ATTRIBUTE_PRINTF_1 ATTRIBUTE_PRINTF(1, 2)
+#define ATTRIBUTE_PRINTF_2 ATTRIBUTE_PRINTF(2, 3)
+#define ATTRIBUTE_PRINTF_3 ATTRIBUTE_PRINTF(3, 4)
+#endif /* ATTRIBUTE_PRINTF */
+
 /* Define a generic NULL if one hasn't already been defined.  */
 
 #ifndef NULL
