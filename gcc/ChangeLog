@@ -1,3 +1,14 @@
+2002-12-19  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.md (define_attr type): Remove altivec.
+	* config/rs6000/altivec.md (movv4si_internal): Set correct instruction
+	attributes.
+	(movv8hi_internal,movv16qi_internal,movv4sf_internal): Same.
+	(get_vrsave_internal,set_vrsave_internal): Same.
+	(altivec_vspltisb,altivec_vspltish,altivec_vspltisw): Same.
+	(absv16qi2,absv8hi2,absv4si2,absv4sf2): Same
+	(altivec_abss_v16qi,altivec_abss_v8hi,altivec_abss_v4si): Same.
+
 2002-12-19  Casper S. Hornstrup  <chorns@users.sourceforge.net>
 	    Danny Smith  <dannysmith@users.sourceforge.net>
 	    Eric Kohl  <ekohl@rz-online.de>

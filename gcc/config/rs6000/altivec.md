@@ -95,7 +95,7 @@
    stw%U0 %1,%0\;stw %L1,%L0\;stw %Y1,%Y0\;stw %Z1,%Z0
    lwz%U1 %0,%1\;lwz %L0,%L1\;lwz %Y0,%Y1\;lwz %Z0,%Z1
    mr %0,%1\;mr %L0,%L1\;mr %Y0,%Y1\;mr %Z0,%Z1"
-  [(set_attr "type" "altivec")
+  [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*")
    (set_attr "length" "*,*,*,16,16,16")])
 
 (define_expand "movv8hi"
@@ -115,7 +115,7 @@
    stw%U0 %1,%0\;stw %L1,%L0\;stw %Y1,%Y0\;stw %Z1,%Z0
    lwz%U1 %0,%1\;lwz %L0,%L1\;lwz %Y0,%Y1\;lwz %Z0,%Z1
    mr %0,%1\;mr %L0,%L1\;mr %Y0,%Y1\;mr %Z0,%Z1"
-  [(set_attr "type" "altivec")
+  [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*")
    (set_attr "length" "*,*,*,16,16,16")])
 
 (define_expand "movv16qi"
@@ -132,10 +132,10 @@
    stvx %1,%y0
    lvx %0,%y1
    vor %0,%1,%1
-  stw%U0 %1,%0\;stw %L1,%L0\;stw %Y1,%Y0\;stw %Z1,%Z0
-  lwz%U1 %0,%1\;lwz %L0,%L1\;lwz %Y0,%Y1\;lwz %Z0,%Z1
-  mr %0,%1\;mr %L0,%L1\;mr %Y0,%Y1\;mr %Z0,%Z1"
-  [(set_attr "type" "altivec")
+   stw%U0 %1,%0\;stw %L1,%L0\;stw %Y1,%Y0\;stw %Z1,%Z0
+   lwz%U1 %0,%1\;lwz %L0,%L1\;lwz %Y0,%Y1\;lwz %Z0,%Z1
+   mr %0,%1\;mr %L0,%L1\;mr %Y0,%Y1\;mr %Z0,%Z1"
+  [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*")
    (set_attr "length" "*,*,*,16,16,16")])
 
 (define_expand "movv4sf"
@@ -155,7 +155,7 @@
    stw%U0 %1,%0\;stw %L1,%L0\;stw %Y1,%Y0\;stw %Z1,%Z0
    lwz%U1 %0,%1\;lwz %L0,%L1\;lwz %Y0,%Y1\;lwz %Z0,%Z1
    mr %0,%1\;mr %L0,%L1\;mr %Y0,%Y1\;mr %Z0,%Z1"
-  [(set_attr "type" "altivec")
+  [(set_attr "type" "vecstore,vecload,vecsimple,store,load,*")
    (set_attr "length" "*,*,*,16,16,16")])
 
 (define_insn "get_vrsave_internal"
@@ -169,7 +169,7 @@
   else
      return \"mfvrsave %0\";
 }"
-  [(set_attr "type" "altivec")])
+  [(set_attr "type" "*")])
 
 (define_insn "*set_vrsave_internal"
   [(match_parallel 0 "vrsave_operation"
@@ -184,7 +184,7 @@
   else
     return \"mtvrsave %1\";
 }"
-  [(set_attr "type" "altivec")])
+  [(set_attr "type" "*")])
 
 ;; Vector clears
 (define_insn "*movv4si_const0"
@@ -1299,29 +1299,28 @@
         (unspec:V16QI [(match_operand:QI 1 "immediate_operand" "i")] 139))]
   "TARGET_ALTIVEC"
   "vspltisb %0, %1"
-  [(set_attr "type" "vecsimple")])
-
+  [(set_attr "type" "vecperm")])
 
 (define_insn "altivec_vspltish"
   [(set (match_operand:V8HI 0 "register_operand" "=v")
         (unspec:V8HI [(match_operand:QI 1 "immediate_operand" "i")] 140))]
   "TARGET_ALTIVEC"
   "vspltish %0, %1"
-  [(set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecperm")])
 
 (define_insn "altivec_vspltisw"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
         (unspec:V4SI [(match_operand:QI 1 "immediate_operand" "i")] 141))]
   "TARGET_ALTIVEC"
   "vspltisw %0, %1"
-  [(set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecperm")])
 
 (define_insn ""
   [(set (match_operand:V4SF 0 "register_operand" "=v")
         (unspec:V4SF [(match_operand:QI 1 "immediate_operand" "i")] 142))]
   "TARGET_ALTIVEC"
   "vspltisw %0, %1"
-  [(set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecperm")])
 
 (define_insn "ftruncv4sf2"
   [(set (match_operand:V4SF 0 "register_operand" "=v")
@@ -1834,7 +1833,7 @@
    (clobber (match_scratch:V16QI 3 "=&v"))]
   "TARGET_ALTIVEC"
   "vspltisb %2,0\;vsububm %3,%2,%1\;vmaxsb %0,%1,%3"
-  [(set_attr "type" "altivec")
+  [(set_attr "type" "vecsimple")
    (set_attr "length" "12")])
 
 (define_insn "absv8hi2"
@@ -1844,7 +1843,7 @@
    (clobber (match_scratch:V8HI 3 "=&v"))]
   "TARGET_ALTIVEC"
   "vspltisb %2,0\;vsubuhm %3,%2,%1\;vmaxsh %0,%1,%3"
-  [(set_attr "type" "altivec")
+  [(set_attr "type" "vecsimple")
    (set_attr "length" "12")])
 
 (define_insn "absv4si2"
@@ -1854,7 +1853,7 @@
    (clobber (match_scratch:V4SI 3 "=&v"))]
   "TARGET_ALTIVEC"
   "vspltisb %2,0\;vsubuwm %3,%2,%1\;vmaxsw %0,%1,%3"
-  [(set_attr "type" "altivec")
+  [(set_attr "type" "vecsimple")
    (set_attr "length" "12")])
 
 (define_insn "absv4sf2"
@@ -1864,7 +1863,7 @@
    (clobber (match_scratch:V4SF 3 "=&v"))]
   "TARGET_ALTIVEC"
   "vspltisw %2, -1\;vslw %3,%2,%2\;vandc %0,%1,%3"
-  [(set_attr "type" "altivec")
+  [(set_attr "type" "vecsimple")
    (set_attr "length" "12")])
 
 (define_insn "altivec_abss_v16qi"
@@ -1874,7 +1873,7 @@
    (clobber (match_scratch:V16QI 3 "=&v"))]
   "TARGET_ALTIVEC"
   "vspltisb %2,0\;vsubsbs %3,%2,%1\;vmaxsb %0,%1,%3"
-  [(set_attr "type" "altivec")
+  [(set_attr "type" "vecsimple")
    (set_attr "length" "12")])
 
 (define_insn "altivec_abss_v8hi"
@@ -1884,7 +1883,7 @@
    (clobber (match_scratch:V8HI 3 "=&v"))]
   "TARGET_ALTIVEC"
   "vspltisb %2,0\;vsubshs %3,%2,%1\;vmaxsh %0,%1,%3"
-  [(set_attr "type" "altivec")
+  [(set_attr "type" "vecsimple")
    (set_attr "length" "12")])
 
 (define_insn "altivec_abss_v4si"
@@ -1894,5 +1893,5 @@
    (clobber (match_scratch:V4SI 3 "=&v"))]
   "TARGET_ALTIVEC"
   "vspltisb %2,0\;vsubsws %3,%2,%1\;vmaxsw %0,%1,%3"
-  [(set_attr "type" "altivec")
+  [(set_attr "type" "vecsimple")
    (set_attr "length" "12")])
