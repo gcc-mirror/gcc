@@ -1465,10 +1465,11 @@ pop{l} %0"							\
    followed by "to".  Eliminations of the same "from" register are listed
    in order of preference.
 
-   We have three registers that can be eliminated on the i386.  First, the
-   hard frame pointer register can often be eliminated in favor of the stack
-   pointer register.  Secondly, the argument and frame pointer register can
-   always be eliminated; They are replaced with either the stack or frame pointer. */
+   There are two registers that can always be eliminated on the i386.
+   The frame pointer and the arg pointer can be replaced by either the
+   hard frame pointer or to the stack pointer, depending upon the
+   circumstances.  The hard frame pointer is not used before reload and
+   so it is not eligible for elimination.  */
 
 #define ELIMINABLE_REGS					\
 {{ ARG_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
