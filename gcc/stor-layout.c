@@ -389,7 +389,7 @@ layout_record (rec)
 	      int type_align = TYPE_ALIGN (TREE_TYPE (field));
 	      if (maximum_field_alignment != 0)
 		type_align = MIN (type_align, maximum_field_alignment);
-	      else if (TYPE_PACKED (rec))
+	      else if (DECL_PACKED (field))
 		type_align = MIN (type_align, BITS_PER_UNIT);
 
 	      record_align = MAX (record_align, type_align);
@@ -463,11 +463,15 @@ layout_record (rec)
 
 	  if (maximum_field_alignment != 0)
 	    type_align = MIN (type_align, maximum_field_alignment);
-	  else if (TYPE_PACKED (rec))
+	  /* ??? This test is opposite the test in the containing if
+	     statement, so this code is unreachable currently.  */
+	  else if (DECL_PACKED (field))
 	    type_align = MIN (type_align, BITS_PER_UNIT);
 
 	  /* A bit field may not span the unit of alignment of its type.
 	     Advance to next boundary if necessary.  */
+	  /* ??? This code should match the code above for the
+	     PCC_BITFIELD_TYPE_MATTERS case.  */
 	  if (const_size / type_align
 	      != (const_size + field_size - 1) / type_align)
 	    const_size = CEIL (const_size, type_align) * type_align;
