@@ -1,3 +1,14 @@
+2002-09-04  David Edelsohn  <edelsohn@gnu.org>
+
+	* target-def.h (TARGET_HAVE_SRODATA_SECTION): New macro.
+	* target.h (gcc_target): Add have_srodata_section member.
+	* varasm.c (section_category): Add SECCAT_SRODATA.
+	(categorize_decl_for_section): Return SECCAT_SRODATA for sdata if
+	READONLY_SDATA_SECTION defined.
+	(decl_readonly_section_1): True for SECCAT_SRODATA also.
+	(default_elf_select_section_1): Map SECCAT_SRODATA to .sdata2.
+	(default_unique_section_1): Likewise.
+
 2002-09-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* expr.c (emit_group_load): Revise to allow splitting TCmode source

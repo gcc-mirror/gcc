@@ -118,6 +118,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #define TARGET_HAVE_TLS false
 #endif
 
+#ifndef TARGET_HAVE_SRODATA_SECTION
+#define TARGET_HAVE_SRODATA_SECTION false
+#endif
+
 #ifndef TARGET_ASM_EXCEPTION_SECTION
 #define TARGET_ASM_EXCEPTION_SECTION default_exception_section
 #endif
@@ -224,7 +228,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 /* In hook.c.  */
 #define TARGET_CANNOT_MODIFY_JUMPS_P hook_void_bool_false
+
+#ifndef TARGET_IN_SMALL_DATA_P
 #define TARGET_IN_SMALL_DATA_P hook_tree_bool_false
+#endif
 
 #ifndef TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO hook_tree_int_void
@@ -253,7 +260,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
   TARGET_STRIP_NAME_ENCODING,			\
   TARGET_HAVE_NAMED_SECTIONS,			\
   TARGET_HAVE_CTORS_DTORS,			\
-  TARGET_HAVE_TLS				\
+  TARGET_HAVE_TLS,				\
+  TARGET_HAVE_SRODATA_SECTION			\
 }
 
 #include "hooks.h"
