@@ -128,6 +128,8 @@ static int rs6000_ra_ever_killed PARAMS ((void));
 static int rs6000_valid_type_attribute_p PARAMS ((tree, tree, tree, tree));
 static void rs6000_output_function_prologue PARAMS ((FILE *, HOST_WIDE_INT));
 static void rs6000_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
+static rtx rs6000_emit_set_long_const PARAMS ((rtx,
+  HOST_WIDE_INT, HOST_WIDE_INT));
 
 /* Default register names.  */
 char rs6000_reg_names[][8] =
@@ -364,15 +366,16 @@ rs6000_override_options (default_cpu)
 	}
     }
 
-  if (flag_pic && (DEFAULT_ABI == ABI_AIX))
+  if (flag_pic && DEFAULT_ABI == ABI_AIX)
     {
-      warning ("-f%s ignored for AIX (all code is position independent)",
+      warning ("-f%s ignored (all code is position independent)",
 	       (flag_pic > 1) ? "PIC" : "pic");
       flag_pic = 0;
     }
 
+#ifdef XCOFF_DEBUGGING_INFO
   if (flag_function_sections && (write_symbols != NO_DEBUG)
-      && (DEFAULT_ABI == ABI_AIX))
+      && DEFAULT_ABI == ABI_AIX)
     {
       warning ("-ffunction-sections disabled on AIX when debugging");
       flag_function_sections = 0;
@@ -383,6 +386,7 @@ rs6000_override_options (default_cpu)
       warning ("-fdata-sections not supported on AIX");
       flag_data_sections = 0;
     }
+#endif
 
   /* Set debug flags */
   if (rs6000_debug_name)
@@ -585,6 +589,19 @@ non_short_cint_operand (op, mode)
 	  && (unsigned HOST_WIDE_INT) (INTVAL (op) + 0x8000) >= 0x10000);
 }
 
+/* Returns 1 if OP is a CONST_INT that is a positive value
+   and an exact power of 2.  */
+
+int
+exact_log2_cint_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (GET_CODE (op) == CONST_INT
+	  && INTVAL (op) > 0
+	  && exact_log2 (INTVAL (op)) >= 0);
+}
+
 /* Returns 1 if OP is a register that is not special (i.e., not MQ,
    ctr, or lr).  */
 
@@ -689,6 +706,42 @@ reg_or_arith_cint_operand (op, mode)
 #if HOST_BITS_PER_WIDE_INT != 32
 		 && ((unsigned HOST_WIDE_INT) (INTVAL (op) + 0x80000000)
 		     < (unsigned HOST_WIDE_INT) 0x100000000ll)
+#endif
+		 ));
+}
+
+/* Return 1 is the operand is either a non-special register or a 32-bit
+   signed constant integer valid for 64-bit addition.  */
+
+int
+reg_or_add_cint64_operand (op, mode)
+    register rtx op;
+    enum machine_mode mode;
+{
+     return (gpc_reg_operand (op, mode)
+	     || (GET_CODE (op) == CONST_INT
+		 && INTVAL (op) < 0x7fff8000
+#if HOST_BITS_PER_WIDE_INT != 32
+		 && ((unsigned HOST_WIDE_INT) (INTVAL (op) + 0x80008000)
+		     < 0x100000000ll)
+#endif
+		 ));
+}
+
+/* Return 1 is the operand is either a non-special register or a 32-bit
+   signed constant integer valid for 64-bit subtraction.  */
+
+int
+reg_or_sub_cint64_operand (op, mode)
+    register rtx op;
+    enum machine_mode mode;
+{
+     return (gpc_reg_operand (op, mode)
+	     || (GET_CODE (op) == CONST_INT
+		 && (- INTVAL (op)) < 0x7fff8000
+#if HOST_BITS_PER_WIDE_INT != 32
+		 && ((unsigned HOST_WIDE_INT) ((- INTVAL (op)) + 0x80008000)
+		     < 0x100000000ll)
 #endif
 		 ));
 }
@@ -996,9 +1049,11 @@ add_operand (op, mode)
     register rtx op;
     enum machine_mode mode;
 {
-  return (reg_or_short_operand (op, mode)
-	  || (GET_CODE (op) == CONST_INT
-	      && CONST_OK_FOR_LETTER_P (INTVAL (op), 'L')));
+  if (GET_CODE (op) == CONST_INT)
+    return (CONST_OK_FOR_LETTER_P (INTVAL(op), 'I')
+	    || CONST_OK_FOR_LETTER_P (INTVAL(op), 'L'));
+
+  return gpc_reg_operand (op, mode);
 }
 
 /* Return 1 if OP is a constant but not a valid add_operand.  */
@@ -1636,6 +1691,124 @@ rs6000_legitimate_address (mode, x, reg_ok_strict)
   return 0;
 }
 
+/* Try to output insns to set TARGET equal to the constant C if it can be
+   done in less than N insns.  Do all computations in MODE.  Returns the place
+   where the output has been placed if it can be done and the insns have been
+   emitted.  If it would take more than N insns, zero is returned and no
+   insns and emitted.  */
+
+rtx
+rs6000_emit_set_const (dest, mode, source, n)
+     rtx dest, source;
+     enum machine_mode mode;
+     int n ATTRIBUTE_UNUSED;
+{
+  HOST_WIDE_INT c0, c1;
+
+  if (mode == QImode || mode == HImode || mode == SImode)
+    {
+      if (dest == NULL)
+        dest = gen_reg_rtx (mode);
+      emit_insn (gen_rtx_SET (VOIDmode, dest, source));
+      return dest;
+    }
+
+  if (GET_CODE (source) == CONST_INT)
+    {
+      c0 = INTVAL (source);
+      c1 = -(c0 < 0);
+    }
+  else if (GET_CODE (source) == CONST_DOUBLE)
+    {
+#if HOST_BITS_PER_WIDE_INT >= 64
+      c0 = CONST_DOUBLE_LOW (source);
+      c1 = -(c0 < 0);
+#else
+      c0 = CONST_DOUBLE_LOW (source);
+      c1 = CONST_DOUBLE_HIGH (source);
+#endif
+    }
+  else
+    abort();
+
+  return rs6000_emit_set_long_const (dest, c0, c1);
+}
+
+/* Having failed to find a 3 insn sequence in rs6000_emit_set_const,
+   fall back to a straight forward decomposition.  We do this to avoid
+   exponential run times encountered when looking for longer sequences
+   with rs6000_emit_set_const.  */
+static rtx
+rs6000_emit_set_long_const (dest, c1, c2)
+     rtx dest;
+     HOST_WIDE_INT c1, c2;
+{
+  if (!TARGET_POWERPC64)
+    {
+      rtx operand1, operand2;
+
+      operand1 = operand_subword_force (dest, WORDS_BIG_ENDIAN == 0,
+					DImode);
+      operand2 = operand_subword_force (dest, WORDS_BIG_ENDIAN != 0,
+					DImode);
+      emit_move_insn (operand1, GEN_INT (c1));
+      emit_move_insn (operand2, GEN_INT (c2));
+    }
+  else
+    {
+      HOST_WIDE_INT d1, d2, d3, d4;
+
+  /* Decompose the entire word */
+#if HOST_BITS_PER_WIDE_INT >= 64
+      if (c2 != -(c1 < 0))
+	abort ();
+      d1 = ((c1 & 0xffff) ^ 0x8000) - 0x8000;
+      c1 -= d1;
+      d2 = ((c1 & 0xffffffff) ^ 0x80000000) - 0x80000000;
+      c1 = (c1 - d2) >> 32;
+      d3 = ((c1 & 0xffff) ^ 0x8000) - 0x8000;
+      c1 -= d3;
+      d4 = ((c1 & 0xffffffff) ^ 0x80000000) - 0x80000000;
+      if (c1 != d4)
+	abort ();
+#else
+      d1 = ((c1 & 0xffff) ^ 0x8000) - 0x8000;
+      c1 -= d1;
+      d2 = ((c1 & 0xffffffff) ^ 0x80000000) - 0x80000000;
+      if (c1 != d2)
+	abort ();
+      c2 += (d2 < 0);
+      d3 = ((c2 & 0xffff) ^ 0x8000) - 0x8000;
+      c2 -= d3;
+      d4 = ((c2 & 0xffffffff) ^ 0x80000000) - 0x80000000;
+      if (c2 != d4)
+	abort ();
+#endif
+
+      /* Construct the high word */
+      if (d4)
+	{
+	  emit_move_insn (dest, GEN_INT (d4));
+	  if (d3)
+	    emit_move_insn (dest,
+			    gen_rtx_PLUS (DImode, dest, GEN_INT (d3)));
+	}
+      else
+	emit_move_insn (dest, GEN_INT (d3));
+
+      /* Shift it into place */
+      emit_move_insn (dest, gen_rtx_ASHIFT (DImode, dest, GEN_INT (32)));
+
+      /* Add in the low bits.  */
+      if (d2)
+	emit_move_insn (dest, gen_rtx_PLUS (DImode, dest, GEN_INT (d2)));
+      if (d1)
+	emit_move_insn (dest, gen_rtx_PLUS (DImode, dest, GEN_INT (d1)));
+    }
+
+  return dest;
+}
+
 /* Emit a move from SOURCE to DEST in mode MODE.  */
 void
 rs6000_emit_move (dest, source, mode)
@@ -4107,6 +4280,7 @@ print_operand (file, x, code)
     case 'p':
       /* X is a CONST_INT that is a power of two.  Output the logarithm.  */
       if (! INT_P (x)
+	  || INT_LOWPART (x) < 0
 	  || (i = exact_log2 (INT_LOWPART (x))) < 0)
 	output_operand_lossage ("invalid %%p value");
       else
@@ -4512,19 +4686,33 @@ print_operand_address (file, x)
 #endif
   else if (LEGITIMATE_CONSTANT_POOL_ADDRESS_P (x))
     {
-      if (TARGET_AIX)
+      if (TARGET_AIX && (!TARGET_ELF || !TARGET_MINIMAL_TOC))
 	{
-	  rtx contains_minus = XEXP (x, 1); 
-	  rtx minus;
+	  rtx contains_minus = XEXP (x, 1);
+	  rtx minus, symref;
+	  const char *name;
 	  
 	  /* Find the (minus (sym) (toc)) buried in X, and temporarily
 	     turn it into (sym) for output_addr_const. */
 	  while (GET_CODE (XEXP (contains_minus, 0)) != MINUS)
 	    contains_minus = XEXP (contains_minus, 0);
 
-	  minus = XEXP (contains_minus, 0); 
-	  XEXP (contains_minus, 0) = XEXP (minus, 0);
-	  output_addr_const (file, XEXP (x, 1)); 	  
+	  minus = XEXP (contains_minus, 0);
+	  symref = XEXP (minus, 0);
+	  XEXP (contains_minus, 0) = symref;
+	  if (TARGET_ELF)
+	    {
+	      char *newname;
+
+	      name = XSTR (symref, 0);
+	      newname = alloca (strlen (name) + sizeof ("@toc"));
+	      strcpy (newname, name);
+	      strcat (newname, "@toc");
+	      XSTR (symref, 0) = newname;
+	    }
+	  output_addr_const (file, XEXP (x, 1));
+	  if (TARGET_ELF)
+	    XSTR (symref, 0) = name;
 	  XEXP (contains_minus, 0) = minus;
 	}
       else
@@ -5137,8 +5325,9 @@ rs6000_stack_info ()
   info_ptr->first_gp_reg_save = first_reg_to_save ();
   /* Assume that we will have to save PIC_OFFSET_TABLE_REGNUM, 
      even if it currently looks like we won't.  */
-  if (((flag_pic == 1
-	&& (abi == ABI_V4 || abi == ABI_SOLARIS))
+  if (((TARGET_TOC && TARGET_MINIMAL_TOC)
+       || (flag_pic == 1
+	   && (abi == ABI_V4 || abi == ABI_SOLARIS))
        || (flag_pic &&
 	   abi == ABI_DARWIN))
       && info_ptr->first_gp_reg_save > PIC_OFFSET_TABLE_REGNUM)
@@ -5459,7 +5648,7 @@ rs6000_emit_load_toc_table (fromprolog)
   rtx dest;
   dest = gen_rtx_REG (Pmode, PIC_OFFSET_TABLE_REGNUM);
 
-  if (TARGET_ELF)
+  if (TARGET_ELF && DEFAULT_ABI != ABI_AIX)
     {
       if ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS) 
 	  && flag_pic == 1)
@@ -5467,10 +5656,7 @@ rs6000_emit_load_toc_table (fromprolog)
 	  rtx temp = (fromprolog 
 		      ? gen_rtx_REG (Pmode, LINK_REGISTER_REGNUM)
 		      : gen_reg_rtx (Pmode));
-	  if (TARGET_32BIT)
-	    rs6000_maybe_dead (emit_insn (gen_load_toc_v4_pic_si (temp)));
-	  else
-	    rs6000_maybe_dead (emit_insn (gen_load_toc_v4_pic_di (temp)));
+	  rs6000_maybe_dead (emit_insn (gen_load_toc_v4_pic_si (temp)));
 	  rs6000_maybe_dead (emit_move_insn (dest, temp));
 	}
       else if (flag_pic == 2)
@@ -7259,19 +7445,19 @@ output_toc (file, x, labelno, mode)
       if (TARGET_64BIT)
 	{
 	  if (TARGET_MINIMAL_TOC)
-	    fprintf (file, "\t.llong 0x%lx%08lx\n", k[0], k[1]);
+	    fputs (DOUBLE_INT_ASM_OP, file);
 	  else
-	    fprintf (file, "\t.tc FD_%lx_%lx[TC],0x%lx%08lx\n",
-		     k[0], k[1], k[0] & 0xffffffff, k[1] & 0xffffffff);
+	    fprintf (file, "\t.tc FD_%lx_%lx[TC],", k[0], k[1]);
+	  fprintf (file, "0x%lx%08lx\n", k[0], k[1]);
 	  return;
 	}
       else
 	{
 	  if (TARGET_MINIMAL_TOC)
-	    fprintf (file, "\t.long 0x%lx\n\t.long 0x%lx\n", k[0], k[1]);
+	    fputs ("\t.long ", file);
 	  else
-	    fprintf (file, "\t.tc FD_%lx_%lx[TC],0x%lx,0x%lx\n",
-		     k[0], k[1], k[0], k[1]);
+	    fprintf (file, "\t.tc FD_%lx_%lx[TC],", k[0], k[1]);
+	  fprintf (file, "0x%lx,0x%lx\n", k[0], k[1]);
 	  return;
 	}
     }
@@ -7286,17 +7472,19 @@ output_toc (file, x, labelno, mode)
       if (TARGET_64BIT)
 	{
 	  if (TARGET_MINIMAL_TOC)
-	    fprintf (file, "\t.llong 0x%lx00000000\n", l);
+	    fputs (DOUBLE_INT_ASM_OP, file);
 	  else
-	    fprintf (file, "\t.tc FS_%lx[TC],0x%lx00000000\n", l, l);
+	    fprintf (file, "\t.tc FS_%lx[TC],", l);
+	  fprintf (file, "0x%lx00000000\n", l);
 	  return;
 	}
       else
 	{
 	  if (TARGET_MINIMAL_TOC)
-	    fprintf (file, "\t.long 0x%lx\n", l);
+	    fputs ("\t.long ", file);
 	  else
-	    fprintf (file, "\t.tc FS_%lx[TC],0x%lx\n", l, l);
+	    fprintf (file, "\t.tc FS_%lx[TC],", l);
+	  fprintf (file, "0x%lx\n", l);
 	  return;
 	}
     }
@@ -7344,10 +7532,10 @@ output_toc (file, x, labelno, mode)
       if (TARGET_64BIT)
 	{
 	  if (TARGET_MINIMAL_TOC)
-	    fprintf (file, "\t.llong 0x%lx%08lx\n", (long)high, (long)low);
+	    fputs (DOUBLE_INT_ASM_OP, file);
 	  else
-	    fprintf (file, "\t.tc ID_%lx_%lx[TC],0x%lx%08lx\n",
-		     (long)high, (long)low, (long)high, (long)low);
+	    fprintf (file, "\t.tc ID_%lx_%lx[TC],", (long)high, (long)low);
+	  fprintf (file, "0x%lx%08lx\n", (long) high, (long) low);
 	  return;
 	}
       else
@@ -7355,20 +7543,19 @@ output_toc (file, x, labelno, mode)
 	  if (POINTER_SIZE < GET_MODE_BITSIZE (mode))
 	    {
 	      if (TARGET_MINIMAL_TOC)
-		fprintf (file, "\t.long 0x%lx\n\t.long 0x%lx\n",
-			 (long)high, (long)low);
+		fputs ("\t.long ", file);
 	      else
-		fprintf (file, "\t.tc ID_%lx_%lx[TC],0x%lx,0x%lx\n",
-			 (long)high, (long)low, (long)high, (long)low);
+		fprintf (file, "\t.tc ID_%lx_%lx[TC],",
+			 (long)high, (long)low);
+	      fprintf (file, "0x%lx,0x%lx\n", (long) high, (long) low);
 	    }
 	  else
 	    {
 	      if (TARGET_MINIMAL_TOC)
-		fprintf (file, "\t.long 0x%lx\n",
-			 (long)low);
+		fputs ("\t.long ", file);
 	      else
-		fprintf (file, "\t.tc IS_%lx[TC],0x%lx\n",
-			 (long)low, (long)low);
+		fprintf (file, "\t.tc IS_%lx[TC],", (long) low);
+	      fprintf (file, "0x%lx\n", (long) low);
 	    }
 	  return;
 	}
@@ -7376,6 +7563,9 @@ output_toc (file, x, labelno, mode)
 
   if (GET_CODE (x) == CONST)
     {
+      if (GET_CODE (XEXP (x, 0)) != PLUS)
+	abort ();
+
       base = XEXP (XEXP (x, 0), 0);
       offset = INTVAL (XEXP (XEXP (x, 0), 1));
     }
@@ -7391,7 +7581,7 @@ output_toc (file, x, labelno, mode)
 
   STRIP_NAME_ENCODING (real_name, name);
   if (TARGET_MINIMAL_TOC)
-    fputs (TARGET_32BIT ? "\t.long " : "\t.llong ", file);
+    fputs (TARGET_32BIT ? "\t.long " : DOUBLE_INT_ASM_OP, file);
   else
     {
       fprintf (file, "\t.tc %s", real_name);
