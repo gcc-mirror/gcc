@@ -1,3 +1,9 @@
+Sun Mar 28 12:22:12 1999  Robert Lipe  (robertlipe@usa.net)
+
+	* i386/sysv5.h: New file to describe UnixWare7/SVR5.
+	* configure.in (i?86-UnixWare7*-sysv): Use it.      
+	* i386/udk.h: Use sysv5.h.   Now uses Dwarf-2.
+
 Sun Mar 28 01:15:04 PST 1999 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
