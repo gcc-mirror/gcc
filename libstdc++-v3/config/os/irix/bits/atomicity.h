@@ -22,21 +22,19 @@
 
 #include <mutex.h>
 
-typedef unsigned long _Atomic_word;
+typedef long _Atomic_word;
 
 static inline _Atomic_word
-__attribute__ ((__unused__))
 __exchange_and_add (_Atomic_word* __mem, int __val)
 {
-  return test_then_add (__mem, __val);
+  return (_Atomic_word) test_then_add ((unsigned long*) __mem, __val);
 }
 
 
 static inline void
-__attribute__ ((unused))
 __atomic_add (_Atomic_word* __mem, int __val)
 {
-  test_then_add (__mem, __val);
+  __exchange_and_add (__mem, __val);
 }
 
 #endif /* atomicity.h */
