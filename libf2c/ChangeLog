@@ -1,3 +1,9 @@
+1998-09-28  Dave Love  <d.love@dl.ac.uk>
+
+	* libI77/open.c: Back out part of last Netlib update affecting
+	scratch files which clashed with the g77 variations and broke
+	implicit endfile on rewind.
+
 1998-09-21  Dave Love  <d.love@dl.ac.uk>
 
 	* libI77/Version.c: Update.
