@@ -1217,9 +1217,19 @@ __transfer_from_trampoline ()					\
 	    || INTVAL (XEXP (X, 1)) == 4		\
 	    || INTVAL (XEXP (X, 1)) == 8)))
 
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)  \
-{ GO_IF_NONINDEXED_ADDRESS (X, ADDR);			\
-  GO_IF_INDEXED_ADDRESS (X, ADDR); }
+/* If pic, we accept INDEX+LABEL, which is what do_tablejump makes.  */
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)				\
+{ GO_IF_NONINDEXED_ADDRESS (X, ADDR);					\
+  GO_IF_INDEXED_ADDRESS (X, ADDR);					\
+  if (flag_pic && MODE == CASE_VECTOR_MODE && GET_CODE (X) == PLUS	\
+      && LEGITIMATE_INDEX_P (XEXP (X, 0))				\
+      && GET_CODE (XEXP (X, 1)) == LABEL_REF)				\
+    goto ADDR; }
+
+/* Don't call memory_address_noforce for the address to fetch
+   the switch offset.  This address is ok as it stands (see above),
+   but memory_address_noforce would alter it.  */
+#define PIC_CASE_VECTOR_ADDRESS(index) index
 
 /* Try machine-dependent ways of modifying an illegitimate address
    to be legitimate.  If we find one, return the new, valid address.
