@@ -2739,10 +2739,17 @@ emit_no_conflict_block (insns, target, op0, op1, equiv)
      these from the list.  */
   for (insn = insns; insn; insn = next)
     {
-      rtx set = 0;
+      rtx set = 0, note;
       int i;
 
       next = NEXT_INSN (insn);
+
+      /* Some ports (cris) create an libcall regions at their own.  We must
+	 avoid any potential nesting of LIBCALLs.  */
+      if ((note = find_reg_note (insn, REG_LIBCALL, NULL)) != NULL)
+	remove_note (insn, note);
+      if ((note = find_reg_note (insn, REG_RETVAL, NULL)) != NULL)
+	remove_note (insn, note);
 
       if (GET_CODE (PATTERN (insn)) == SET || GET_CODE (PATTERN (insn)) == USE
 	  || GET_CODE (PATTERN (insn)) == CLOBBER)
@@ -2906,6 +2913,14 @@ emit_libcall_block (insns, target, result, equiv)
   for (insn = insns; insn; insn = next)
     {
       rtx set = single_set (insn);
+      rtx note;
+
+      /* Some ports (cris) create an libcall regions at their own.  We must
+	 avoid any potential nesting of LIBCALLs.  */
+      if ((note = find_reg_note (insn, REG_LIBCALL, NULL)) != NULL)
+	remove_note (insn, note);
+      if ((note = find_reg_note (insn, REG_RETVAL, NULL)) != NULL)
+	remove_note (insn, note);
 
       next = NEXT_INSN (insn);
 

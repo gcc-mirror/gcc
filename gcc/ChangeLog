@@ -1,3 +1,8 @@
+Wed Mar 27 23:11:35 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* optabs.c (emit_no_conflict_block, emit_libcall_block): Avoid nesting
+	of libcall regions.
+
 Wed Mar 27 22:54:14 CET 2002  Zdenek Dvorak <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* cfgrtl.c (merge_blocks_nomove): Use set_block_for_insn instead of
