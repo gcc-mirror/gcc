@@ -1653,9 +1653,13 @@ future implementation may also work for C++ programs.
 There is some controversy over the precise meaning of the sequence point
 rules in subtle cases.  Alternative formal definitions may be found in
 Clive Feather's ``Annex S''
-@uref{http://wwwold.dkuug.dk/JTC1/SC22/WG14/www/docs/n908.htm} and in
+@uref{http://wwwold.dkuug.dk/JTC1/SC22/WG14/www/docs/n925.htm} and in
 Michael Norrish's thesis
 @uref{http://www.cl.cam.ac.uk/users/mn200/PhD/thesis-report.ps.gz}.
+Other discussions are by Raymond Mak
+@uref{http://wwwold.dkuug.dk/JTC1/SC22/WG14/www/docs/n926.htm} and
+D. Hugh Redelmeier
+@uref{http://wwwold.dkuug.dk/JTC1/SC22/WG14/www/docs/n927.htm}.
 
 @item -Wreturn-type
 Warn whenever a function is defined with a return-type that defaults to
