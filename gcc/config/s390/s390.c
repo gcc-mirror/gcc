@@ -2062,12 +2062,6 @@ legitimate_reload_constant_p (register rtx op)
 enum reg_class
 s390_preferred_reload_class (rtx op, enum reg_class class)
 {
-  /* This can happen if a floating point constant is being
-     reloaded into an integer register.  Leave well alone.  */
-  if (GET_MODE_CLASS (GET_MODE (op)) == MODE_FLOAT
-      && class != FP_REGS)
-    return class;
-
   switch (GET_CODE (op))
     {
       /* Constants we cannot reload must be forced into the
@@ -2111,7 +2105,17 @@ s390_secondary_input_reload_class (enum reg_class class ATTRIBUTE_UNUSED,
 				   enum machine_mode mode, rtx in)
 {
   if (s390_plus_operand (in, mode))
-    return ADDR_REGS;
+    {
+      /* ??? Reload sometimes pushes a PLUS reload with a too-large constant.
+	 Until reload is fixed, we need to force_const_mem while emitting the
+	 secondary reload insn -- thus we need to make sure here that we do
+	 have a literal pool for the current function.  */
+      if (CONSTANT_P (XEXP (in, 1))
+	  && !legitimate_reload_constant_p (XEXP (in, 1)))
+	current_function_uses_const_pool = true;
+
+      return ADDR_REGS;
+    }
 
   return NO_REGS;
 }
@@ -2193,6 +2197,10 @@ s390_expand_plus_operand (register rtx target, register rtx src,
 	}
       if (true_regnum (sum2) < 1 || true_regnum (sum2) > 15)
 	{
+	  /* ??? See comment in s390_secondary_input_reload_class.  */
+	  if (CONSTANT_P (sum2) && !legitimate_reload_constant_p (sum2))
+	    sum2 = force_const_mem (Pmode, sum2);
+
 	  emit_move_insn (scratch, sum2);
 	  sum2 = scratch;
 	}
