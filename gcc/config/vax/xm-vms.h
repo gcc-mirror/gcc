@@ -101,6 +101,14 @@ Boston, MA 02111-1307, USA.  */
 /* vprintf() has been available since VMS V4.6.  */
 
 #define HAVE_VPRINTF
+
+/* Early versions of VAX C for VMS do not have putenv.  Comment out
+   the following define if your system doesn't have putenv.  */
+#define HAVE_PUTENV
+
+#ifndef HAVE_PUTENV
+#define putenv(x)
+#endif
 
 #if defined(VAXC) || defined(__DECC)
 

@@ -1,3 +1,10 @@
+2001-04-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in: Don't check for putenv.
+	* configure: Regenerate.
+	* gcc.c (putenv): Don't define.
+	* vax/xm-vms.h: Handle putenv.
+
 2001-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* ifcvt.c (noce_emit_move_insn): New.
