@@ -1640,6 +1640,9 @@ search_tree (t, func)
       TRY (TREE_OPERAND (t, 2));
       break;
 
+    case TRUTH_AND_EXPR:
+    case TRUTH_OR_EXPR:
+    case TRUTH_XOR_EXPR:
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
     case PREDECREMENT_EXPR:
@@ -1899,6 +1902,9 @@ mapcar (t, func)
       TREE_OPERAND (t, 2) = mapcar (TREE_OPERAND (t, 2), func);
       return t;
 
+    case TRUTH_AND_EXPR:
+    case TRUTH_OR_EXPR:
+    case TRUTH_XOR_EXPR:
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
     case PREDECREMENT_EXPR:
