@@ -1070,7 +1070,7 @@ case "${target}" in
     ;;
   *-*-darwin*)
     noconfigdirs="$noconfigdirs bfd binutils ld gas opcodes gdb gprof"
-    noconfigdirs="$noconfigdirs target-libobjc ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libobjc"
     ;;
   *-*-freebsd[12] | *-*-freebsd[12].* | *-*-freebsd*aout*)
     noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
