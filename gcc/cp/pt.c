@@ -7235,6 +7235,7 @@ tsubst_expr (t, args, complain, in_decl)
   switch (TREE_CODE (t))
     {
     case RETURN_INIT:
+      prep_stmt (t);
       finish_named_return_value
 	(TREE_OPERAND (t, 0),
 	 tsubst_expr (TREE_OPERAND (t, 1), args, /*complain=*/1, in_decl));
@@ -7242,6 +7243,7 @@ tsubst_expr (t, args, complain, in_decl)
       break;
 
     case CTOR_INITIALIZER:
+      prep_stmt (t);
       current_member_init_list
 	= tsubst_expr_values (TREE_OPERAND (t, 0), args);
       current_base_init_list
@@ -7251,13 +7253,18 @@ tsubst_expr (t, args, complain, in_decl)
       break;
 
     case RETURN_STMT:
-      lineno = STMT_LINENO (t);
+      prep_stmt (t);
       finish_return_stmt (tsubst_expr (RETURN_EXPR (t),
 				       args, complain, in_decl));
       break;
 
     case EXPR_STMT:
-      lineno = STMT_LINENO (t);
+      prep_stmt (t);
+      /* If we're doing tsubst'ing, then we should not yet have done
+	 semantic analysisy, so we should not know that this statement
+	 assigns to the `this' pointer.  */
+      my_friendly_assert (EXPR_STMT_ASSIGNS_THIS (t) == 0,
+			  19990831);
       finish_expr_stmt (tsubst_expr (EXPR_STMT_EXPR (t),
 				     args, complain, in_decl));
       break;
@@ -7268,7 +7275,7 @@ tsubst_expr (t, args, complain, in_decl)
 	tree decl;
 	tree init;
 
-	lineno = STMT_LINENO (t);
+	prep_stmt (t);
 	decl = DECL_STMT_DECL (t);
 	if (TREE_CODE (decl) == LABEL_DECL)
 	  finish_label_decl (DECL_NAME (decl));
@@ -7296,7 +7303,7 @@ tsubst_expr (t, args, complain, in_decl)
     case FOR_STMT:
       {
 	tree tmp;
-	lineno = STMT_LINENO (t);
+	prep_stmt (t);
 
 	stmt = begin_for_stmt ();
 	for (tmp = FOR_INIT_STMT (t); tmp; tmp = TREE_CHAIN (tmp))
@@ -7314,7 +7321,7 @@ tsubst_expr (t, args, complain, in_decl)
 
     case WHILE_STMT:
       {
-	lineno = STMT_LINENO (t);
+	prep_stmt (t);
 	stmt = begin_while_stmt ();
 	finish_while_stmt_cond (tsubst_expr (WHILE_COND (t),
 					     args, complain, in_decl),
@@ -7326,7 +7333,7 @@ tsubst_expr (t, args, complain, in_decl)
 
     case DO_STMT:
       {
-	lineno = STMT_LINENO (t);
+	prep_stmt (t);
 	stmt = begin_do_stmt ();
 	tsubst_expr (DO_BODY (t), args, complain, in_decl);
 	finish_do_body (stmt);
@@ -7340,7 +7347,7 @@ tsubst_expr (t, args, complain, in_decl)
       {
 	tree tmp;
 
-	lineno = STMT_LINENO (t);
+	prep_stmt (t);
 	stmt = begin_if_stmt ();
 	finish_if_stmt_cond (tsubst_expr (IF_COND (t),
 					  args, complain, in_decl),
@@ -7367,7 +7374,7 @@ tsubst_expr (t, args, complain, in_decl)
       {
 	tree substmt;
 
-	lineno = STMT_LINENO (t);
+	prep_stmt (t);
 	stmt = begin_compound_stmt (COMPOUND_STMT_NO_SCOPE (t));
 	for (substmt = COMPOUND_BODY (t); 
 	     substmt != NULL_TREE;
@@ -7378,12 +7385,12 @@ tsubst_expr (t, args, complain, in_decl)
       break;
 
     case BREAK_STMT:
-      lineno = STMT_LINENO (t);
+      prep_stmt (t);
       finish_break_stmt ();
       break;
 
     case CONTINUE_STMT:
-      lineno = STMT_LINENO (t);
+      prep_stmt (t);
       finish_continue_stmt ();
       break;
 
@@ -7391,7 +7398,7 @@ tsubst_expr (t, args, complain, in_decl)
       {
 	tree val;
 
-	lineno = STMT_LINENO (t);
+	prep_stmt (t);
 	stmt = begin_switch_stmt ();
 	val = tsubst_expr (SWITCH_COND (t), args, complain, in_decl);
 	finish_switch_cond (val, stmt);
@@ -7401,6 +7408,7 @@ tsubst_expr (t, args, complain, in_decl)
       break;
 
     case CASE_LABEL:
+      prep_stmt (t);
       finish_case_label (tsubst_expr (CASE_LOW (t), args, complain, in_decl),
 			 tsubst_expr (CASE_HIGH (t), args, complain, in_decl));
       break;
@@ -7411,7 +7419,7 @@ tsubst_expr (t, args, complain, in_decl)
       break;
 
     case GOTO_STMT:
-      lineno = STMT_LINENO (t);
+      prep_stmt (t);
       t = GOTO_DESTINATION (t);
       if (TREE_CODE (t) != LABEL_DECL)
 	/* Computed goto's must be tsubst'd into.  On the other hand,
@@ -7424,7 +7432,7 @@ tsubst_expr (t, args, complain, in_decl)
       break;
 
     case ASM_STMT:
-      lineno = STMT_LINENO (t);
+      prep_stmt (t);
       finish_asm_stmt (ASM_CV_QUAL (t),
 		       tsubst_expr (ASM_STRING (t), args, complain, in_decl),
 		       tsubst_expr (ASM_OUTPUTS (t), args, complain, in_decl),
@@ -7434,7 +7442,7 @@ tsubst_expr (t, args, complain, in_decl)
       break;
 
     case TRY_BLOCK:
-      lineno = STMT_LINENO (t);
+      prep_stmt (t);
       stmt = begin_try_block ();
       tsubst_expr (TRY_STMTS (t), args, complain, in_decl);
       finish_try_block (stmt);
@@ -7452,7 +7460,7 @@ tsubst_expr (t, args, complain, in_decl)
       break;
 
     case HANDLER:
-      lineno = STMT_LINENO (t);
+      prep_stmt (t);
       stmt = begin_handler ();
       if (HANDLER_PARMS (t))
 	expand_start_catch_block
@@ -7466,7 +7474,7 @@ tsubst_expr (t, args, complain, in_decl)
       break;
 
     case TAG_DEFN:
-      lineno = STMT_LINENO (t);
+      prep_stmt (t);
       t = TREE_TYPE (t);
       if (TREE_CODE (t) == ENUMERAL_TYPE)
 	tsubst (t, args, complain, NULL_TREE);
@@ -9852,14 +9860,6 @@ tsubst_expr_values (t, argvec)
     }
   return first;
 }
-
-void
-add_tree (t)
-     tree t;
-{
-  last_tree = TREE_CHAIN (last_tree) = t;
-}
-
 
 void
 begin_tree ()

@@ -44,6 +44,7 @@
 static void expand_stmts PROTO((tree));
 static void do_pushlevel PROTO((void));
 static tree do_poplevel PROTO((void));
+static void finish_expr_stmt_real PROTO((tree, int));
 static tree expand_cond PROTO((tree));
 
 /* When parsing a template, LAST_TREE contains the last statement
@@ -75,11 +76,29 @@ static tree expand_cond PROTO((tree));
       substmt = cond;				\
   } while (0)
   
-/* Finish an expression-statement, whose EXPRESSION is as indicated.  */
+/* T is a statement.  Add it to the statement-tree.  */
 
-void 
-finish_expr_stmt (expr)
+void
+add_tree (t)
+     tree t;
+{
+  /* Add T to the statement-tree.  */
+  last_tree = TREE_CHAIN (last_tree) = t;
+
+  /* When we expand a statement-tree, we must know whether or not the
+     statements are full-expresions.  We record that fact here.  */
+  if (building_stmt_tree ())
+    STMT_IS_FULL_EXPR_P (last_tree) = stmts_are_full_exprs_p;
+}
+
+/* Finish an expression-statement, whose EXPRESSION is as indicated.
+   If ASSIGNED_THIS is non-zero, then this statement just assigned to
+   the `this' pointer.  */
+
+static void 
+finish_expr_stmt_real (expr, assigned_this)
      tree expr;
+     int assigned_this;
 {
   if (expr != NULL_TREE)
     {
@@ -109,11 +128,25 @@ finish_expr_stmt (expr)
 	}
     }
 
+  /* If this statement assigned to the `this' pointer, record that
+     fact for finish_stmt.  */
+  if (assigned_this)
+    current_function_just_assigned_this = 1;
+
   finish_stmt ();
 
   /* This was an expression-statement, so we save the type of the
      expression.  */
   last_expr_type = expr ? TREE_TYPE (expr) : NULL_TREE;
+}
+
+/* Like finish_expr_stmt_real, but ASSIGNS_THIS is always zero.  */
+
+void
+finish_expr_stmt (expr)
+     tree expr;
+{
+  finish_expr_stmt_real (expr, /*assigns_this=*/0);
 }
 
 /* Begin an if-statement.  Returns a newly created IF_STMT if
@@ -146,12 +179,7 @@ finish_if_stmt_cond (cond, if_stmt)
      tree if_stmt;
 {
   if (building_stmt_tree ())
-    {
-      if (last_tree != if_stmt)
-	RECHAIN_STMTS_FROM_LAST (if_stmt, IF_COND (if_stmt));
-      else
-	IF_COND (if_stmt) = cond;
-    }
+    FINISH_COND (cond, if_stmt, IF_COND (if_stmt));
   else
     {
       emit_line_note (input_filename, lineno);
@@ -244,12 +272,7 @@ finish_while_stmt_cond (cond, while_stmt)
      tree while_stmt;
 {
   if (building_stmt_tree ())
-    {
-      if (last_tree != while_stmt)
-	RECHAIN_STMTS_FROM_LAST (while_stmt, WHILE_COND (while_stmt)); 
-      else
-	TREE_OPERAND (while_stmt, 0) = cond;
-    }
+    FINISH_COND (cond, while_stmt, WHILE_COND (while_stmt));
   else
     {
       emit_line_note (input_filename, lineno);
@@ -409,12 +432,7 @@ finish_for_cond (cond, for_stmt)
      tree for_stmt;
 {
   if (building_stmt_tree ())
-    {
-      if (last_tree != for_stmt)
-	RECHAIN_STMTS_FROM_LAST (for_stmt, FOR_COND (for_stmt));
-      else
-	FOR_COND (for_stmt) = cond;
-    }
+    FINISH_COND (cond, for_stmt, FOR_COND (for_stmt));
   else
     {
       emit_line_note (input_filename, lineno);
@@ -1973,7 +1991,28 @@ void
 finish_stmt_tree (fn)
      tree fn;
 {
-  DECL_SAVED_TREE (fn) = TREE_CHAIN (DECL_SAVED_TREE (fn));
+  tree stmt;
+  
+  /* Remove the fake extra statement added in begin_stmt_tree.  */
+  stmt = TREE_CHAIN (DECL_SAVED_TREE (fn));
+  DECL_SAVED_TREE (fn) = stmt;
+
+  /* The line-number recorded in the outermost statement in a function
+     is the line number of the end of the function.  */
+  STMT_LINENO (stmt) = lineno;
+  STMT_LINENO_FOR_FN_P (stmt) = 1;
+}
+
+/* We're about to expand T, a statement.  Set up appropriate context
+   for the substitution.  */
+
+void
+prep_stmt (t)
+     tree t;
+{
+  if (!STMT_LINENO_FOR_FN_P (t))
+    lineno = STMT_LINENO (t);
+  stmts_are_full_exprs_p = STMT_IS_FULL_EXPR_P (t);
 }
 
 /* Some statements, like for-statements or if-statements, require a
@@ -2013,19 +2052,28 @@ tree
 expand_stmt (t)
      tree t;
 {
+  int saved_stmts_are_full_exprs_p;
+  tree rval;
+
   if (t == NULL_TREE || t == error_mark_node)
     return NULL_TREE;
+
+  /* Assume we'll have nothing to return.  */
+  rval = NULL_TREE;
+
+  /* Set up context appropriately for handling this statement.  */
+  saved_stmts_are_full_exprs_p = stmts_are_full_exprs_p;
+  prep_stmt (t);
 
   switch (TREE_CODE (t))
     {
     case RETURN_STMT:
-      lineno = STMT_LINENO (t);
       finish_return_stmt (RETURN_EXPR (t));
       break;
 
     case EXPR_STMT:
-      lineno = STMT_LINENO (t);
-      finish_expr_stmt (EXPR_STMT_EXPR (t));
+      finish_expr_stmt_real (EXPR_STMT_EXPR (t),
+			     EXPR_STMT_ASSIGNS_THIS (t));
       break;
 
     case DECL_STMT:
@@ -2064,7 +2112,6 @@ expand_stmt (t)
       {
 	tree tmp;
 
-	lineno = STMT_LINENO (t);
 	begin_for_stmt ();
 	for (tmp = FOR_INIT_STMT (t); tmp; tmp = TREE_CHAIN (tmp))
 	  expand_stmt (tmp);
@@ -2079,7 +2126,6 @@ expand_stmt (t)
 
     case WHILE_STMT:
       {
-	lineno = STMT_LINENO (t);
 	begin_while_stmt ();
 	finish_while_stmt_cond (expand_cond (WHILE_COND (t)), NULL_TREE);
 	expand_stmt (WHILE_BODY (t));
@@ -2089,7 +2135,6 @@ expand_stmt (t)
 
     case DO_STMT:
       {
-	lineno = STMT_LINENO (t);
 	begin_do_stmt ();
 	expand_stmt (DO_BODY (t));
 	finish_do_body (NULL_TREE);
@@ -2098,7 +2143,6 @@ expand_stmt (t)
       break;
 
     case IF_STMT:
-      lineno = STMT_LINENO (t);
       begin_if_stmt ();
       finish_if_stmt_cond (expand_cond (IF_COND (t)), NULL_TREE);
       if (THEN_CLAUSE (t))
@@ -2116,19 +2160,17 @@ expand_stmt (t)
       break;
 
     case COMPOUND_STMT:
-      lineno = STMT_LINENO (t);
       begin_compound_stmt (COMPOUND_STMT_NO_SCOPE (t));
       expand_stmts (COMPOUND_BODY (t));
-      return finish_compound_stmt (COMPOUND_STMT_NO_SCOPE (t), 
+      rval = finish_compound_stmt (COMPOUND_STMT_NO_SCOPE (t), 
 				   NULL_TREE);
+      break;
 
     case BREAK_STMT:
-      lineno = STMT_LINENO (t);
       finish_break_stmt ();
       break;
 
     case CONTINUE_STMT:
-      lineno = STMT_LINENO (t);
       finish_continue_stmt ();
       break;
 
@@ -2136,7 +2178,6 @@ expand_stmt (t)
       {
 	tree cond;
 
-	lineno = STMT_LINENO (t);
 	begin_switch_stmt ();
 	cond = expand_cond (SWITCH_COND (t));
 	finish_switch_cond (cond, NULL_TREE);
@@ -2150,12 +2191,10 @@ expand_stmt (t)
       break;
 
     case LABEL_STMT:
-      lineno = STMT_LINENO (t);
       finish_label_stmt (DECL_NAME (LABEL_STMT_LABEL (t)));
       break;
 
     case GOTO_STMT:
-      lineno = STMT_LINENO (t);
       if (TREE_CODE (GOTO_DESTINATION (t)) == LABEL_DECL)
 	finish_goto_stmt (DECL_NAME (GOTO_DESTINATION (t)));
       else
@@ -2163,13 +2202,11 @@ expand_stmt (t)
       break;
 
     case ASM_STMT:
-      lineno = STMT_LINENO (t);
       finish_asm_stmt (ASM_CV_QUAL (t), ASM_STRING (t), ASM_OUTPUTS
 		       (t), ASM_INPUTS (t), ASM_CLOBBERS (t));
       break;
 
     case TRY_BLOCK:
-      lineno = STMT_LINENO (t);
       if (CLEANUP_P (t))
 	{
 	  expand_eh_region_start ();
@@ -2187,7 +2224,6 @@ expand_stmt (t)
       break;
 
     case HANDLER:
-      lineno = STMT_LINENO (t);
       begin_handler ();
       if (HANDLER_PARMS (t))
 	expand_start_catch_block (DECL_STMT_DECL (HANDLER_PARMS (t)));
@@ -2199,7 +2235,6 @@ expand_stmt (t)
       break;
 
     case SUBOBJECT:
-      lineno = STMT_LINENO (t);
       finish_subobject (SUBOBJECT_CLEANUP (t));
       break;
 
@@ -2208,7 +2243,10 @@ expand_stmt (t)
       break;
     }
 
-  return NULL_TREE;
+  /* Restore saved state.  */
+  stmts_are_full_exprs_p = saved_stmts_are_full_exprs_p;
+
+  return rval;
 }
 
 /* Generate RTL for FN.  */
