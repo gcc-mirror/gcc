@@ -1,3 +1,12 @@
+2000-02-12  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* libjava.lang/inner_interface.out: New file.
+	* libjava.lang/inner_interface.java: New file.
+	* libjava.lang/final_int.out: New file.
+	* libjava.lang/final_int.java: New file.
+	* libjava.lang/final_static_and_friend.out: New file.
+	* libjava.lang/final_static_and_friend.java: New file.
+
 2000-02-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* libjava.lang/anonarray3.out: New file.
