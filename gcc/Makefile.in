@@ -420,7 +420,7 @@ STAGESTUFF = *.o insn-flags.h insn-config.h insn-codes.h \
  stamp-attr stamp-attrtab stamp-opinit stamp-proto \
  genemit genoutput genrecog genextract genflags gencodes genconfig genpeep \
  genattrtab genattr genopinit \
- $(GCC_PASSES) $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross cccp \
+ $(GCC_PASSES) $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross cccp g++ g++-cross \
  cc1plus cc1obj enquire protoize unprotoize specs collect2 $(USE_COLLECT2)
 
 # Members of libgcc1.a.
@@ -469,9 +469,9 @@ all.internal: start.encap rest.encap
 # This is what to compile if making a cross-compiler.
 # Note that we can compile enquire using the cross-compiler just build,
 # although we can't run it on this machine.
-all.cross: native gcc-cross specs $(LIBGCC) stmp-headers $(STMP_FIXPROTO) cross-test enquire $(EXTRA_PARTS)
+all.cross: native gcc-cross g++-cross specs $(LIBGCC) stmp-headers $(STMP_FIXPROTO) cross-test enquire $(EXTRA_PARTS)
 # This is what to compile if making gcc with a cross-compiler.
-all.build: native xgcc $(EXTRA_PARTS)
+all.build: native xgcc g++ $(EXTRA_PARTS)
 # This is what must be made before installing GCC and converting libraries.
 start.encap: native xgcc specs $(LIBGCC1) xlimits.h
 # Use this to make a GCC that will be used only to recompile GCC.
@@ -526,11 +526,20 @@ xgcc: gcc.o version.o $(LIBDEPS)
 specs: xgcc
 	$(GCC_FOR_TARGET) -dumpspecs > specs
 
+# Create the compiler driver for g++.
+g++: g++.o $(LIBDEPS)
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o g++ g++.o $(LIBS)
+
 # We do want to create an executable named `xgcc', so we can use it to
 # compile libgcc2.a.
 # Also create gcc-cross, so that install-common will install properly.
 gcc-cross: xgcc
 	cp xgcc gcc-cross
+
+# Create a version of the g++ driver which calls the cross-compiler.
+g++-cross: $(srcdir)/g++.c
+	$(CC) $(ALL_CFLAGS) $(INCLUDES) $(LDFLAGS) -o g++-cross \
+	   -DGCC_NAME=\"$(target)-gcc\" $(srcdir)/g++.c version.o $(LIBS)
 
 cc1:$(P) $(C_OBJS) $(OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1 $(C_OBJS) $(OBJS) $(LIBS)
@@ -1616,7 +1625,7 @@ install-dir:
 # Install the compiler executables built during cross compilation.
 # Deps on  $(srcdir)/g++ $(srcdir)/c++  would be natural here,
 # but the latter would get confused with the target `c++'.
-install-common: native install-dir xgcc $(EXTRA_PARTS)
+install-common: native install-dir xgcc g++ $(EXTRA_PARTS)
 	for file in $(COMPILERS); do \
 	  if [ -f $$file ] ; then \
 	    rm -f $(libsubdir)/$$file; \
@@ -1644,6 +1653,13 @@ install-common: native install-dir xgcc $(EXTRA_PARTS)
 	    rm -f $(tooldir)/bin/gcc; \
 	    $(INSTALL_PROGRAM) gcc-cross $(tooldir)/bin/gcc; \
 	  else true; fi; \
+	  if [ -f cc1plus ] ; then \
+	    rm -f $(bindir)/$(target)-g++; \
+	    $(INSTALL_PROGRAM) g++-cross $(bindir)/$(target)-g++; \
+	    chmod a+x $(bindir)/$(target)-g++; \
+	    rm -f $(bindir)/$(target)-c++; \
+	    ln $(bindir)/$(target)-g++ $(bindir)/$(target)-c++; \
+	  fi ; \
 	else \
 	  rm -f $(bindir)/gcc; \
 	  $(INSTALL_PROGRAM) xgcc $(bindir)/gcc; \
@@ -1663,10 +1679,11 @@ install-common: native install-dir xgcc $(EXTRA_PARTS)
 	    chmod a-x $(libsubdir)/SYSCALLS.c.X; \
 	fi
 	-if [ -f cc1plus ] ; then \
-	  rm -f $(bindir)/c++ ; \
-	  $(INSTALL_PROGRAM) $(srcdir)/c++ $(bindir)/c++ ; \
-	  rm -f $(bindir)/g++ ; \
-	  $(INSTALL_PROGRAM) $(srcdir)/g++ $(bindir)/g++ ; \
+	    rm -f $(bindir)/g++; \
+	    $(INSTALL_PROGRAM) g++ $(bindir)/g++; \
+	    chmod a+x $(bindir)/g++; \
+	    rm -f $(bindir)/c++; \
+	    ln $(bindir)/g++ $(bindir)/c++; \
 	fi
 	-rm -f $(libsubdir)/cpp
 	$(INSTALL_PROGRAM) cpp $(libsubdir)/cpp
