@@ -62,7 +62,6 @@ TEXINFO_TEX = ../gcc/doc/include/texinfo.tex
 info_TEXINFOS = fastjar.texi
 fastjar_TEXINFOS = \
 	../gcc/doc/include/gcc-common.texi \
-	../gcc/doc/include/fdl.texi \
 	../gcc/doc/include/gpl.texi
 man_MANS = jar.1 grepjar.1
 EXTRA_DIST = $(man_MANS)
