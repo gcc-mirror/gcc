@@ -21,6 +21,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
+/* Header files should be C++ aware in general.  */
+#define NO_IMPLICIT_EXTERN_C
+
 /* Yes!  We are ELF.  */
 #define	TARGET_OBJECT_FORMAT OBJECT_ELF
 
