@@ -78,7 +78,7 @@ __register_frame_info_bases (void *begin, struct object *ob,
 			     void *tbase, void *dbase)
 {
   /* If .eh_frame is empty, don't register at all.  */
-  if (*(uword *) begin == 0)
+  if ((uword *) begin == 0 || *(uword *) begin == 0)
     return;
 
   ob->pc_begin = (void *)-1;
@@ -176,7 +176,7 @@ __deregister_frame_info_bases (void *begin)
   struct object *ob = 0;
 
   /* If .eh_frame is empty, we haven't registered.  */
-  if (*(uword *) begin == 0)
+  if ((uword *) begin == 0 || *(uword *) begin == 0)
     return ob;
 
   init_object_mutex_once ();

@@ -1,3 +1,9 @@
+2003-04-18  Douglas B Rupp  <rupp@gnat.com>
+
+	* unwind-dw2-fde.c (__register_frame_info_bases): Check for
+	null begin parameter (as well as pointer to null).
+	(__deregister_frame_info_bases): Likewise.
+
 2003-04-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* function.c (purge_addressof_1): For ADDRESSOF, see if SUB is a
