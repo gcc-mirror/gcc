@@ -1,3 +1,16 @@
+2002-05-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* gensupport.c (n_comma_elts): Moved here from genattrtab.c.
+	(scan_comma_elt): New function.  Accepts whitespace in comma lists.
+	* gensupport.h: Prototype new routines.
+	* genattr.c (gen_attr): Use scan_comma_elt.  Avoid unnecessary
+	use of printf.
+	* genattrtab.c (n_comma_elts): Moved to gensupport.c.
+	(next_comma_elt): Use scan_comma_elt.
+
+	* config/i386/i386.md: Use new attribute notation to break up
+	long lines in define_attr forms.
+
 2002-05-12  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (compress_float_constant): New.

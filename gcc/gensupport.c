@@ -1,5 +1,5 @@
 /* Support routines for the various generation passes.
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1098,4 +1098,52 @@ read_md_rtx (lineno, seqnr)
     }
 
   return desc;
+}
+
+/* Given a string, return the number of comma-separated elements in it.
+   Return 0 for the null string.  */
+int
+n_comma_elts (s)
+     const char *s;
+{
+  int n;
+
+  if (*s == '\0')
+    return 0;
+
+  for (n = 1; *s; s++)
+    if (*s == ',')
+      n++;
+
+  return n;
+}
+
+/* Given a pointer to a (char *), return a pointer to the beginning of the
+   next comma-separated element in the string.  Advance the pointer given
+   to the end of that element.  Return NULL if at end of string.  Caller
+   is responsible for copying the string if necessary.  White space between
+   a comma and an element is ignored.  */
+
+const char *
+scan_comma_elt (pstr)
+     const char **pstr;
+{
+  const char *start;
+  const char *p = *pstr;
+
+  if (*p == ',')
+    p++;
+  while (ISSPACE(*p))
+    p++;
+
+  if (*p == '\0')
+    return NULL;
+
+  start = p;
+
+  while (*p != ',' && *p != '\0')
+    p++;
+
+  *pstr = p;
+  return start;
 }

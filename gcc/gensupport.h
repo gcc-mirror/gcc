@@ -1,5 +1,5 @@
 /* Declarations for rtx-reader support for gen* routines.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -27,3 +27,7 @@ extern rtx read_md_rtx		PARAMS ((int *, int *));
 
 extern void message_with_line	PARAMS ((int, const char *, ...))
      ATTRIBUTE_PRINTF_2;
+
+extern int n_comma_elts		PARAMS ((const char *));
+extern const char *scan_comma_elt PARAMS ((const char **));
+
