@@ -1,5 +1,12 @@
 2004-07-13  Bernardo Innocenti  <bernie@develer.com>
 
+	* libiberty.h (XNEW, XCNEW, XNEWVEC, XCNEWVEC, XOBNEW): Move here from
+	libcpp/internal.h.
+	(XDELETE, XRESIZEVEC, XDELETEVEC, XNEWVAR, XCNEWVAR, XRESIZEVAR): New
+	macros.
+
+2004-07-13  Bernardo Innocenti  <bernie@develer.com>
+
 	* libiberty.h (ASTRDUP): Add casts required for stricter
 	type conversion rules of C++.
 	* obstack.h (obstack_free): Likewise.
