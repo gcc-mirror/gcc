@@ -1,6 +1,6 @@
 // Wrapper for underlying C-language localization -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -39,6 +39,130 @@
 
 namespace std 
 {
+  template<>
+    void
+    __convert_to_v(const char* __s, long& __v, ios_base::iostate& __err, 
+		   const __c_locale& __cloc, int __base)
+    {
+      if (!(__err & ios_base::failbit))
+      {
+	char* __sanity;
+	errno = 0;
+	long __l = __strtol_l(__s, &__sanity, __base, __cloc);
+	if (__sanity != __s && *__sanity == '\0' && errno == 0)
+	  __v = __l;
+	else
+	  __err |= ios_base::failbit;
+      }
+    }
+
+  template<>
+    void
+    __convert_to_v(const char* __s, unsigned long& __v, 
+		   ios_base::iostate& __err, const __c_locale& __cloc, 
+		   int __base)
+    {
+      if (!(__err & ios_base::failbit))
+	{
+	  char* __sanity;
+	  errno = 0;
+	  unsigned long __ul = __strtoul_l(__s, &__sanity, __base, __cloc);
+          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+	    __v = __ul;
+	  else
+	    __err |= ios_base::failbit;
+	}
+    }
+
+#ifdef _GLIBCPP_USE_LONG_LONG
+  template<>
+    void
+    __convert_to_v(const char* __s, long long& __v, ios_base::iostate& __err, 
+		   const __c_locale& __cloc, int __base)
+    {
+      if (!(__err & ios_base::failbit))
+	{
+	  char* __sanity;
+	  errno = 0;
+	  long long __ll = __strtoll_l(__s, &__sanity, __base, __cloc);
+          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+	    __v = __ll;
+	  else
+	    __err |= ios_base::failbit;
+	}
+    }
+
+  template<>
+    void
+    __convert_to_v(const char* __s, unsigned long long& __v, 
+		   ios_base::iostate& __err, const __c_locale& __cloc, 
+		   int __base)
+    {
+      if (!(__err & ios_base::failbit))
+	{      
+	  char* __sanity;
+	  errno = 0;
+	  unsigned long long __ull = __strtoull_l(__s, &__sanity, __base, 
+						  __cloc);
+          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+	    __v = __ull;
+	  else
+	    __err |= ios_base::failbit;
+	}  
+    }
+#endif
+
+  template<>
+    void
+    __convert_to_v(const char* __s, float& __v, ios_base::iostate& __err, 
+		   const __c_locale& __cloc, int)
+    {
+      if (!(__err & ios_base::failbit))
+	{
+	  char* __sanity;
+	  errno = 0;
+	  float __f = __strtof_l(__s, &__sanity, __cloc);
+          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+	    __v = __f;
+	  else
+	    __err |= ios_base::failbit;
+	}
+    }
+
+  template<>
+    void
+    __convert_to_v(const char* __s, double& __v, ios_base::iostate& __err, 
+		   const __c_locale& __cloc, int)
+    {
+      if (!(__err & ios_base::failbit))
+	{
+	  char* __sanity;
+	  errno = 0;
+	  double __d = __strtod_l(__s, &__sanity, __cloc);
+          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+	    __v = __d;
+	  else
+	    __err |= ios_base::failbit;
+	}
+    }
+
+  template<>
+    void
+    __convert_to_v(const char* __s, long double& __v, ios_base::iostate& __err,
+		   const __c_locale& __cloc, int)
+    {
+      if (!(__err & ios_base::failbit))
+	{
+	  char* __sanity;
+	  errno = 0;
+	  long double __ld = __strtold_l(__s, &__sanity, __cloc);
+          if (__sanity != __s && *__sanity == '\0' && errno == 0)
+	    __v = __ld;
+	  else
+	    __err |= ios_base::failbit;
+	}
+    }
+
   void
   locale::facet::_S_create_c_locale(__c_locale& __cloc, const char* __s)
   {

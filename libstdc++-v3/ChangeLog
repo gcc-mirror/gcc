@@ -1,3 +1,67 @@
+2002-01-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Audit for LANG independence.
+	* include/bits/localefwd.h: Tweaks.
+	* include/bits/locale_facets.tcc (money_get::do_get(long double)):
+	Use __convert_to_v.
+	(time_get::do_get_year): Same.
+	(__convert_from_v): Add.
+	(num_put::_M_convert_float): Use.
+	(num_put::_M_convert_int): Same.
+	(money_put::do_put): Same.
+	
+	* src/locale-inst.cc: Add instantiations for __convert_from_v.
+	* config/locale/time_members_gnu.cc: Cleanup setlocale usage.
+	* config/locale/time_members_generic.cc: 
+	* config/locale/messages_members_gnu.cc: Same.
+	* config/locale/messages_members_gnu.h: Same.
+	
+	* testsuite/22_locale/codecvt_members_wchar_t_char.cc (test02): New.
+	* testsuite/22_locale/codecvt_members_char_char.cc (test02): New.
+	* testsuite/22_locale/collate_members_wchar_t.cc (test02): New.
+	* testsuite/22_locale/collate_members_char.cc (test02): New.
+	* testsuite/22_locale/ctype_members_wchar_t.cc (test03): New.
+	* testsuite/22_locale/ctype_members_char.cc (test03): New.
+	* testsuite/22_locale/messages_members_char.cc (test02): New.
+	* testsuite/22_locale/moneypunct_members_wchar_t.cc (test02): New.
+	* testsuite/22_locale/moneypunct_members_char.cc (test02): New.
+	* testsuite/22_locale/money_get_members_wchar_t.cc (test04): New.
+	* testsuite/22_locale/money_get_members_char.cc (test04): New.
+	* testsuite/22_locale/money_put_members_wchar_t.cc (test04): New.
+	* testsuite/22_locale/money_put_members_char.cc (test04): New.
+	* testsuite/22_locale/numpunct_members_wchar_t.cc (test02): New.
+	* testsuite/22_locale/numpunct_members_char.cc (test02): New.
+	* testsuite/22_locale/time_put_members_wchar_t.cc (test03): New.
+	* testsuite/22_locale/time_put_members_char.cc (test03): New.
+	* testsuite/22_locale/time_get_members_wchar_t.cc (test07): New.
+	* testsuite/22_locale/time_get_members_char.cc (test07): New.
+	* testsuite/22_locale/num_get_members_wchar_t.cc (test03): New.
+	* testsuite/22_locale/num_get_members_char.cc (test03): New.
+	* testsuite/22_locale/num_put_members_wchar_t.cc (test03): New.
+	* testsuite/22_locale/num_put_members_char.cc (test03): New.
+
+	* testsuite/22_locale/time_get_members_char.cc: Fixups for global
+	locale issues.
+	* testsuite/22_locale/time_get_members_char.cc: Same.
+	
+2002-01-22  Benjamin Kosnik  <bkoz@redhat.com>
+
+	libstdc++/5280
+	* include/bits/localefwd.h: Tweak comments.
+	* include/bits/locale_facets.h (__convert_to_v): Add.
+	* include/bits/locale_facets.tcc (num_get::do_get(double)): Use it.
+	(num_get::do_get(float)): Same.
+	(num_get::do_get(long double)): Same.
+	(num_get::do_get(bool)): Same.
+	(num_get::do_get(long)): Same.
+	(num_get::do_get(long long)): Same.
+	(num_get::do_get(unsigned int)): Same.
+	(num_get::do_get(unsigned short)): Same.
+	(num_get::do_get(unsigned long)): Same.
+	(num_get::do_get(unsigned long long)): Same.
+	* config/locale/c_locale_gnu.cc (__convert_to_v): Specialize.
+	* config/locale/c_locale_generic.cc: Same.
+	
 2002-01-22  Loren Rittle <ljrittle@acm.org>
 
 	* include/Makefile.am (c_base_builddir): Remove redundant slash.
