@@ -1,3 +1,8 @@
+2004-08-23  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c/14492
+	* dwarf2out.c (loc_descriptor_from_tree): Robustify.
+
 2004-08-23  Diego Novillo  <dnovillo@redhat.com>
 
 	* cfg.c (check_bb_profile): Fix typos.
