@@ -25,16 +25,6 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #define STDC_VALUE 1
 #endif
 
-#include <signal.h>
-
-#ifdef HAVE_SYS_TIMES_H
-#include <sys/times.h>
-#endif
-
-#ifdef HAVE_SYS_RESOURCE_H
-# include <sys/resource.h>
-#endif
-
 #include "cpplib.h"
 #include "cpphash.h"
 #include "output.h"
@@ -170,10 +160,7 @@ enum file_change_code {same_file, enter_file, leave_file};
 /* External declarations.  */
 
 extern HOST_WIDE_INT cpp_parse_expr PARAMS ((cpp_reader *));
-
 extern char *version_string;
-extern struct tm *localtime ();
-
 
 /* #include "file" looks in source file dir, then stack.  */
 /* #include <file> just looks in the stack.  */
@@ -2380,7 +2367,7 @@ macroexpand (pfile, hp)
      HASHNODE *hp;
 {
   int nargs;
-  DEFINITION *defn = hp->value.defn;
+  DEFINITION *defn;
   register U_CHAR *xbuf;
   long start_line, start_column;
   int xbuf_len;
@@ -2403,10 +2390,23 @@ macroexpand (pfile, hp)
     dump_single_macro (hp, pcp_outfile);
 #endif
 
-  pfile->output_escapes++;
   cpp_buf_line_and_col (cpp_file_buffer (pfile), &start_line, &start_column);
 
+  /* Check for and handle special symbols. */
+  if (hp->type != T_MACRO)
+    {
+      special_symbol (hp, pfile);
+      xbuf_len = CPP_WRITTEN (pfile) - old_written;
+      xbuf = (U_CHAR *) xmalloc (xbuf_len + 1);
+      CPP_SET_WRITTEN (pfile, old_written);
+      bcopy (CPP_PWRITTEN (pfile), xbuf, xbuf_len + 1);
+      push_macro_expansion (pfile, xbuf, xbuf_len, hp);
+      return;
+    }
+
+  defn = hp->value.defn;
   nargs = defn->nargs;
+  pfile->output_escapes++;
 
   if (nargs >= 0)
     {
@@ -2830,6 +2830,19 @@ push_macro_expansion (pfile, xbuf, xbuf_len, hp)
       && (is_idchar[xbuf[2]] || xbuf[2] == '(' || xbuf[2] == '\''
 	  || xbuf[2] == '\"'))
     mbuf->cur += 2;
+
+  /* Likewise, avoid the extra space at the end of the macro expansion
+     if this is safe.  (We can do a better job here since we can know
+     what the next char will be.) */
+  if (xbuf_len >= 3
+      && mbuf->rlimit[-2] == '@'
+      && mbuf->rlimit[-1] == ' ')
+    {
+      int c1 = mbuf->rlimit[-3];
+      int c2 = CPP_BUF_PEEK (CPP_PREV_BUFFER (CPP_BUFFER (pfile)));
+      if (c2 == EOF || ! unsafe_chars (c1, c2))
+	mbuf->rlimit -= 2;
+    }
 }
 
 /* Like cpp_get_token, except that it does not read past end-of-line.
@@ -4145,12 +4158,12 @@ cpp_get_token (pfile)
 
 	case '\"':
 	case '\'':
+	string:
 	  /* A single quoted string is treated like a double -- some
 	     programs (e.g., troff) are perverse this way */
 	  cpp_buf_line_and_col (cpp_file_buffer (pfile),
 				&start_line, &start_column);
 	  old_written = CPP_WRITTEN (pfile);
-	string:
 	  CPP_PUTC (pfile, c);
 	  while (1)
 	    {
@@ -4163,11 +4176,7 @@ cpp_get_token (pfile)
 			 boundary.  This can happen naturally if -traditional.
 			 Otherwise, only -D can make a macro with an unmatched
 			 quote.  */
-			cpp_buffer *next_buf
-			    = CPP_PREV_BUFFER (CPP_BUFFER (pfile));
-			(*CPP_BUFFER (pfile)->cleanup)
-			    (CPP_BUFFER (pfile), pfile);
-			CPP_BUFFER (pfile) = next_buf;
+			cpp_pop_buffer (pfile);
 			continue;
 		    }
 		  if (!CPP_TRADITIONAL (pfile))
@@ -4558,40 +4567,11 @@ cpp_get_token (pfile)
 	      if (!is_macro_call)
 		return CPP_NAME;
 	    }
-	    /* This is now known to be a macro call.  */
-
-	    /* it might not actually be a macro.  */
-	    if (hp->type != T_MACRO) {
-	      int xbuf_len;  U_CHAR *xbuf;
-	      CPP_SET_WRITTEN (pfile, before_name_written);
-	      special_symbol (hp, pfile);
-	      xbuf_len = CPP_WRITTEN (pfile) - before_name_written;
-	      xbuf = (U_CHAR *) xmalloc (xbuf_len + 1);
-	      CPP_SET_WRITTEN (pfile, before_name_written);
-	      bcopy (CPP_PWRITTEN (pfile), xbuf, xbuf_len + 1);
-	      push_macro_expansion (pfile, xbuf, xbuf_len, hp);
-	    }
-	    else
-	      {
-		/* Expand the macro, reading arguments as needed,
-		   and push the expansion on the input stack.  */
-		macroexpand (pfile, hp);
-		CPP_SET_WRITTEN (pfile, before_name_written);
-	      }
-
-	    /* An extra "@ " is added to the end of a macro expansion
-	       to prevent accidental token pasting.  We prefer to avoid
-	       unneeded extra spaces (for the sake of cpp-using tools like
-	       imake).  Here we remove the space if it is safe to do so.  */
-	    if (pfile->buffer->rlimit - pfile->buffer->cur >= 3
-		&& pfile->buffer->rlimit[-2] == '@'
-		&& pfile->buffer->rlimit[-1] == ' ')
-	      {
-		int c1 = pfile->buffer->rlimit[-3];
-		int c2 = CPP_BUF_PEEK (CPP_PREV_BUFFER (CPP_BUFFER (pfile)));
-		if (c2 == EOF || ! unsafe_chars (c1, c2))
-		  pfile->buffer->rlimit -= 2;
-	      }
+	    /* This is now known to be a macro call.
+	       Expand the macro, reading arguments as needed,
+	       and push the expansion on the input stack.  */
+	    macroexpand (pfile, hp);
+	    CPP_SET_WRITTEN (pfile, before_name_written);
 	  }
 	  goto get_next;
 
