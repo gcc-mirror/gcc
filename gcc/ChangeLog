@@ -1,3 +1,9 @@
+Tue Dec 15 13:49:55 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10200.md (abssf2, negsf2): New expanders.
+
+	* mn10300.md (absdf2, abssf2, negdf2, negsf2): New expanders.
+
 Tue Dec 15 11:55:30 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* integrate.c (copy_rtx_and_substitute): If a SUBREG is
