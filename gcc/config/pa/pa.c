@@ -4242,6 +4242,7 @@ output_call (insn, call_dest, return_pointer)
   return "";
 }
 
+extern struct obstack permanent_obstack;
 extern struct obstack *saveable_obstack;
 
 /* In HPUX 8.0's shared library scheme, special relocations are needed
@@ -4251,8 +4252,8 @@ extern struct obstack *saveable_obstack;
 
    For reasons too disgusting to describe storage for the new name
    is allocated either on the saveable_obstack (released at function
-   exit) or via malloc for things that can never change (libcall names
-   for example). */
+   exit) or on the permanent_obstack for things that can never change
+   (libcall names for example). */
 
 void
 hppa_encode_label (sym, permanent)
@@ -4263,10 +4264,8 @@ hppa_encode_label (sym, permanent)
   int len = strlen (str);
   char *newstr;
 
-  if (permanent)
-    newstr = malloc (len + 2);
-  else
-    newstr = obstack_alloc (saveable_obstack, len + 2);
+  newstr = obstack_alloc ((permanent ? &permanent_obstack : saveable_obstack),
+			  len + 2);
 
   if (str[0] == '*')
     *newstr++ = *str++;
