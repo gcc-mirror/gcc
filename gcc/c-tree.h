@@ -1,5 +1,5 @@
 /* Definitions for C parsing and type checking.
-   Copyright (C) 1987 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -16,6 +16,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+
+#ifndef _C_TREE_H
+#define _C_TREE_H
+#if 0 /* I fear this may cause failures on some systems,
+	 so I turned off the few prototypes that needed it -- rms. */
+#include <stdio.h>
+#endif
 
 /* Language-dependent contents of an identifier.  */
 
@@ -131,110 +138,175 @@ struct lang_type
        || TYPE_MAIN_VARIANT (t) == short_integer_type_node	\
        || TYPE_MAIN_VARIANT (t) == short_unsigned_type_node))
 
-/* in c-typecheck.c */
-extern tree build_component_ref (), build_conditional_expr (), build_compound_expr ();
-extern tree build_unary_op (), build_binary_op (), build_function_call ();
-extern tree parser_build_binary_op ();
-extern tree build_indirect_ref (), build_array_ref (), build_c_cast ();
-extern tree build_modify_expr ();
-extern tree c_sizeof (), c_alignof (), c_alignof_expr ();
-extern void store_init_value ();
-extern tree digest_init ();
-extern tree c_expand_start_case ();
-extern tree default_conversion ();
+extern int maybe_objc_comptypes                 PROTO((tree, tree));
+extern tree maybe_building_objc_message_expr    PROTO((void));
+
+/* in c-aux-info.c */
+extern void gen_aux_info_record                 PROTO((tree, int, int, int));
 
-/* Given two integer or real types, return the type for their sum.
-   Given two compatible ANSI C types, returns the merged type.  */
-
-extern tree common_type ();
-
-/* in c-decl.c */
-extern tree build_label ();
-
-extern int start_function ();
-extern void finish_function ();
-extern void store_parm_decls ();
-extern tree get_parm_info ();
-extern tree combine_parm_decls ();
-
-extern void pushlevel ();
-extern tree poplevel ();
-
-extern tree groktypename (), lookup_name ();
-
-extern tree lookup_label (), define_label (), shadow_label ();
-
-extern tree implicitly_declare (), getdecls (), gettags ();
-
-extern tree start_decl ();
-extern void finish_decl ();
-
-extern tree start_struct (), finish_struct (), xref_tag ();
-extern tree grokfield ();
-
-extern tree start_enum (), finish_enum ();
-extern tree build_enumerator ();
-
-extern tree make_index_type ();
-
-/* Add qualifiers to a type, in the fashion for C.  */
-extern tree c_build_type_variant ();
-
-/* Declare a predefined function.  Return the declaration.  */
-extern tree builtin_function ();
-
-/* Functions in c-common.c: */
-
-/* Concatenate a list of STRING_CST nodes into one STRING_CST.  */
-extern tree combine_strings ();
-
-/* Validate the expression after `case' and apply default promotions.  */
-extern tree check_case_value ();
-
+/* in c-common.c */
 /* Print an error message for invalid operands to arith operation CODE.
    NOP_EXPR is used as a special case (see truthvalue_conversion).  */
-
-extern void binary_op_error ();
-
+extern void binary_op_error                     PROTO((enum tree_code));
+extern void c_expand_expr_stmt                  PROTO((tree));
+/* Validate the expression after `case' and apply default promotions.  */
+extern tree check_case_value                    PROTO((tree));
+/* Concatenate a list of STRING_CST nodes into one STRING_CST.  */
+extern tree combine_strings                     PROTO((tree));
+extern void constant_expression_warning         PROTO((tree));
+extern void decl_attributes                     PROTO((tree, tree));
+extern void declare_function_name               PROTO((void));
+/* Read the rest of the current #-directive line.  */
+#if 0
+extern char *get_directive_line                 PROTO((FILE *));
+#endif
+extern char *get_directive_line ();
 /* Subroutine of build_binary_op, used for comparison operations.
    See if the operands have both been converted from subword integer types
    and, if so, perhaps change them both back to their original type.  */
-
-extern tree shorten_compare ();
-
-/* Read the rest of the current #-directive line.  */
-extern char *get_directive_line ();
-
+extern tree shorten_compare                     PROTO((tree *, tree *, tree *, enum tree_code *));
 /* Prepare expr to be an argument of a TRUTH_NOT_EXPR,
    or validate its data type for an `if' or `while' statement or ?..: exp. */
-extern tree truthvalue_conversion ();
+extern tree truthvalue_conversion               PROTO((tree));
+extern tree type_for_mode                       PROTO((enum machine_mode, int));
+extern tree type_for_size                       PROTO((unsigned, int));
 
-extern int maybe_objc_comptypes ();
-extern tree maybe_building_objc_message_expr ();
-
+/* in c-convert.c */
+extern tree convert                             PROTO((tree, tree));
+
+/* in c-decl.c */
 /* Standard named or nameless data types of the C compiler.  */
-
-extern tree short_integer_type_node, integer_type_node;
-extern tree long_integer_type_node, long_long_integer_type_node;
-extern tree short_unsigned_type_node, unsigned_type_node;
-extern tree long_unsigned_type_node, long_long_unsigned_type_node;
-extern tree ptrdiff_type_node;
-extern tree unsigned_char_type_node, signed_char_type_node, char_type_node;
-extern tree wchar_type_node, signed_wchar_type_node, unsigned_wchar_type_node;
-extern tree float_type_node, double_type_node, long_double_type_node;
-extern tree intQI_type_node, unsigned_intQI_type_node;
-extern tree intHI_type_node, unsigned_intHI_type_node;
-extern tree intSI_type_node, unsigned_intSI_type_node;
-extern tree intDI_type_node, unsigned_intDI_type_node;
-extern tree void_type_node, ptr_type_node, const_ptr_type_node;
-extern tree string_type_node, const_string_type_node;
-extern tree char_array_type_node, int_array_type_node, wchar_array_type_node;
+extern tree char_array_type_node;
+extern tree char_type_node;
+extern tree const_ptr_type_node;
+extern tree const_string_type_node;
 extern tree default_function_type;
-extern tree double_ftype_double, double_ftype_double_double;
-extern tree int_ftype_int, long_ftype_long;
-extern tree void_ftype_ptr_ptr_int, int_ftype_ptr_ptr_int;
-extern tree void_ftype_ptr_int_int, string_ftype_ptr_ptr;
-extern tree int_ftype_string_string, int_ftype_cptr_cptr_sizet;
+extern tree double_ftype_double;
+extern tree double_ftype_double_double;
+extern tree double_type_node;
+extern tree float_type_node;
+extern tree intDI_type_node;
+extern tree intHI_type_node;
+extern tree intQI_type_node;
+extern tree intSI_type_node;
+extern tree int_array_type_node;
+extern tree int_ftype_cptr_cptr_sizet;
+extern tree int_ftype_int;
+extern tree int_ftype_ptr_ptr_int;
+extern tree int_ftype_string_string;
+extern tree integer_type_node;
+extern tree long_double_type_node;
+extern tree long_ftype_long;
+extern tree long_integer_type_node;
+extern tree long_long_integer_type_node;
+extern tree long_long_unsigned_type_node;
+extern tree long_unsigned_type_node;
+extern tree ptr_type_node;
+extern tree ptrdiff_type_node;
+extern tree short_integer_type_node;
+extern tree short_unsigned_type_node;
+extern tree signed_char_type_node;
+extern tree signed_wchar_type_node;
+extern tree string_ftype_ptr_ptr;
+extern tree string_type_node;
+extern tree unsigned_char_type_node;
+extern tree unsigned_intDI_type_node;
+extern tree unsigned_intHI_type_node;
+extern tree unsigned_intQI_type_node;
+extern tree unsigned_intSI_type_node;
+extern tree unsigned_type_node;
+extern tree unsigned_wchar_type_node;
+extern tree void_ftype_ptr_int_int;
+extern tree void_ftype_ptr_ptr_int;
+extern tree void_type_node;
+extern tree wchar_array_type_node;
+extern tree wchar_type_node;
+
+extern tree build_enumerator                    PROTO((tree, tree));
+/* Declare a predefined function.  Return the declaration.  */
+extern tree builtin_function                    PROTO((char *, tree, enum built_in_function function_, char *));
+/* Add qualifiers to a type, in the fashion for C.  */
+extern tree c_build_type_variant                PROTO((tree, int, int));
+extern int  c_decode_option                     PROTO((char *));
+extern void c_mark_varargs                      PROTO((void));
+extern tree check_identifier                    PROTO((tree, tree));
+extern void clear_parm_order                    PROTO((void));
+extern tree combine_parm_decls                  PROTO((tree, tree, int));
+extern int  complete_array_type                 PROTO((tree, tree, int));
+extern void declare_parm_level                  PROTO((int));
+extern tree define_label                        PROTO((char *, int, tree));
+extern void delete_block                        PROTO((tree));
+extern void finish_decl                         PROTO((tree, tree, tree));
+extern tree finish_enum                         PROTO((tree, tree));
+extern void finish_function                     PROTO((int));
+extern tree finish_struct                       PROTO((tree, tree));
+extern tree get_parm_info                       PROTO((int));
+extern tree getdecls                            PROTO((void));
+extern tree gettags                             PROTO((void));
+extern int  global_bindings_p                   PROTO((void));
+extern tree grokfield                           PROTO((char *, int, tree, tree, tree));
+extern tree groktypename                        PROTO((tree));
+extern tree groktypename_in_parm_context        PROTO((tree));
+extern tree implicitly_declare                  PROTO((tree));
+extern int  in_parm_level_p                     PROTO((void));
+extern void init_decl_processing                PROTO((void));
+extern void insert_block                        PROTO((tree));
+extern void keep_next_level                     PROTO((void));
+extern int  kept_level_p                        PROTO((void));
+extern tree lookup_label                        PROTO((tree));
+extern tree lookup_name                         PROTO((tree));
+extern tree maybe_build_cleanup                 PROTO((tree));
+extern void parmlist_tags_warning               PROTO((void));
+extern void pending_xref_error                  PROTO((void));
+extern void pop_c_function_context              PROTO((void));
+extern void pop_label_level                     PROTO((void));
+extern tree poplevel                            PROTO((int, int, int));
+extern void print_lang_decl                     PROTO((void));
+#if 0
+extern void print_lang_identifier               PROTO((FILE *, tree, int));
+#endif
+extern void print_lang_type                     PROTO((void));
+extern void push_c_function_context             PROTO((void));
+extern void push_label_level                    PROTO((void));
+extern void push_parm_decl                      PROTO((tree));
+extern tree pushdecl                            PROTO((tree));
+extern tree pushdecl_top_level                  PROTO((tree));
+extern void pushlevel                           PROTO((int));
+extern void pushtag                             PROTO((tree, tree));
+extern void set_block                           PROTO((tree));
+extern tree shadow_label                        PROTO((tree));
+extern void shadow_record_fields                PROTO((tree));
+extern void shadow_tag                          PROTO((tree));
+extern void shadow_tag_warned                   PROTO((tree, int));
+extern tree start_enum                          PROTO((tree));
+extern int  start_function                      PROTO((tree, tree, int));
+extern tree start_decl                          PROTO((tree, tree, int));
+extern tree start_struct                        PROTO((enum tree_code, tree));
+extern void store_parm_decls                    PROTO((void));
+extern tree xref_tag                            PROTO((enum tree_code, tree));
+
+/* in c-typeck.c */
+extern tree build_array_ref                     PROTO((tree, tree));
+extern tree build_binary_op                     PROTO((enum tree_code, tree, tree, int));
+extern tree build_c_cast                        PROTO((tree, tree));
+extern tree build_component_ref                 PROTO((tree, tree));
+extern tree build_compound_expr                 PROTO((tree));
+extern tree build_conditional_expr              PROTO((tree, tree, tree));
+extern tree build_function_call                 PROTO((tree, tree));
+extern tree build_indirect_ref                  PROTO((tree, char *));
+extern tree build_modify_expr                   PROTO((tree, enum tree_code, tree));
+extern tree build_unary_op                      PROTO((enum tree_code, tree, int));
+extern tree c_alignof                           PROTO((tree));
+extern tree c_alignof_expr                      PROTO((tree));
+extern tree c_sizeof                            PROTO((tree));
+extern tree c_expand_start_case                 PROTO((tree));
+/* Given two integer or real types, return the type for their sum.
+   Given two compatible ANSI C types, returns the merged type.  */
+extern tree common_type                         PROTO((tree, tree));
+extern tree default_conversion                  PROTO((tree));
+extern tree digest_init                         PROTO((tree, tree, tree *, int, int, char *));
+extern tree parser_build_binary_op              PROTO((enum tree_code, tree, tree));
+extern void store_init_value                    PROTO((tree, tree));
 
 /* Set to 0 at beginning of a function definition, set to 1 if
    a return statement that specifies a return value is seen.  */
@@ -332,3 +404,5 @@ extern int (*comptypes_record_hook) ();
 /* Nonzero means we are reading code that came from a system header file.  */
 
 extern int system_header_p;
+
+#endif /* not _C_TREE_H */
