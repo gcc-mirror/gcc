@@ -428,12 +428,22 @@ static int
 consume_count (type)
      const char **type;
 {
-  int count = 0;
+  unsigned int count = 0;
+  char *save = *type;
 
   while (isdigit ((unsigned char)**type))
     {
       count *= 10;
       count += **type - '0';
+      /* A sanity check.  Otherwise a symbol like
+	 `_Utf390_1__1_9223372036854775807__9223372036854775'
+	 can cause this function to return a negative value.
+	 In this case we just consume until the end of the string.  */
+      if (count > strlen (*type))
+	{
+	  *type = save;
+	  return 0;
+	}
       (*type)++;
     }
   return (count);
@@ -1946,7 +1956,7 @@ demangle_class_name (work, mangled, declp)
   int success = 0;
 
   n = consume_count (mangled);
-  if ((int) strlen (*mangled) >= n)
+  if (n > 0)
     {
       demangle_arm_hp_template (work, mangled, n, declp);
       success = 1;

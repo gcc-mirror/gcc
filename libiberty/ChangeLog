@@ -1,3 +1,11 @@
+1999-03-30  Tom Tromey  <tromey@cygnus.com>
+
+	* cplus-dem.c (consume_count): If `count' wraps, return 0 and
+	don't advance input pointer.
+	(demangle_class_name): If consume_count didn't find a count, do
+	nothing.  Don't bother with `strlen' sanity check; consume_count
+	does it for us.
+
 Thu Mar 11 01:22:58 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* pexecute.c (__CYGWIN32__): Rename to
