@@ -118,6 +118,8 @@ char *token_buffer;	/* Pointer to token buffer.
 			   Actual allocated length is maxtoken + 2.
 			   This is not static because objc-parse.y uses it.  */
 
+static int indent_level = 0;        /* Number of { minus number of }. */
+
 /* Nonzero if end-of-file has been seen on input.  */
 static int end_of_file;
 
@@ -747,6 +749,7 @@ linenum:
 	      input_file_stack->line = old_lineno;
 	      p->next = input_file_stack;
 	      p->name = input_filename;
+	      p->indent_level = indent_level;
 	      input_file_stack = p;
 	      input_file_stack_tick++;
 	      debug_start_source_file (input_filename);
@@ -758,6 +761,14 @@ linenum:
 	      if (input_file_stack->next)
 		{
 		  struct file_stack *p = input_file_stack;
+		  if (indent_level != p->indent_level)
+		    {
+		      warning_with_file_and_line 
+			(p->name, old_lineno,
+			 "This file contains more `%c's than `%c's.",
+			 indent_level > p->indent_level ? '{' : '}',
+			 indent_level > p->indent_level ? '}' : '{');
+		    }
 		  input_file_stack = p->next;
 		  free (p);
 		  input_file_stack_tick++;
@@ -2120,13 +2131,13 @@ yylex ()
 	      break;
 	    case '<':
 	      if (c1 == '%')
-		{ value = '{'; goto done; }
+		{ value = '{'; indent_level++; goto done; }
 	      if (c1 == ':')
 		{ value = '['; goto done; }
 	      break;
 	    case '%':
 	      if (c1 == '>')
-		{ value = '}'; goto done; }
+		{ value = '}'; indent_level--; goto done; }
 	      break;
 	    }
 	UNGETC (c1);
@@ -2141,6 +2152,16 @@ yylex ()
     case 0:
       /* Don't make yyparse think this is eof.  */
       value = 1;
+      break;
+
+    case '{':
+      indent_level++;
+      value = c;
+      break;
+
+    case '}':
+      indent_level--;
+      value = c;
       break;
 
     default:
