@@ -1149,6 +1149,7 @@ extern tree unmangle_classname (const char *name, int name_length);
 extern tree parse_signature_string (const unsigned char *, int);
 extern tree get_type_from_signature (tree);
 extern void layout_class (tree);
+extern int get_interface_method_index (tree, tree);
 extern tree layout_class_method (tree, tree, tree, tree);
 extern void layout_class_methods (tree);
 extern tree build_class_ref (tree);
