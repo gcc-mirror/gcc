@@ -1501,7 +1501,14 @@ import_export_class (tree ctype)
       && TYPE_POLYMORPHIC_P (ctype))
     {
       tree method = CLASSTYPE_KEY_METHOD (ctype);
-      if (method)
+
+      /* If weak symbol support is not available, then we must be
+	 careful not to emit the vtable when the key function is
+	 inline.  An inline function can be defined in multiple
+	 translation units.  If we were to emit the vtable in each
+	 translation unit containing a definition, we would get
+	 multiple definition errors at link-time.  */
+      if (method && (flag_weak || ! DECL_DECLARED_INLINE_P (method)))
 	import_export = (DECL_REALLY_EXTERN (method) ? -1 : 1);
     }
 
