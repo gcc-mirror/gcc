@@ -29,6 +29,39 @@ Boston, MA 02111-1307, USA.  */
 
 enum pad { none, before, after };
 
+/* These constants can used as bit flags in the process of tree formatting.
+
+   TFF_PLAIN_IDENTIFER: unqualified part of a name.
+   TFF_NAMESPACE_SCOPE: the complete qualified-id form of a name.
+   TFF_CLASS_SCOPE: if possible, include the class-name part of a
+        qualified-id.  This flag may be implied in some circumstances by
+        TFF_NAMESPACE_SCOPE.
+   TFF_SCOPE: the combinaison of the two above.        
+   TFF_CHASE_TYPDEF: print the original type-id instead of the typedef-name.
+   TFF_DECL_SPECIFIERS: print decl-specifiers.
+   TFF_CLASS_KEY_OR_ENUM: precede a class-type name (resp. enum name) with
+       a class-key (resp. `enum').
+   TFF_RETURN_TYPE: include function return type.
+   TFF_FUNCTION_DEFAULT_ARGUMENTS: include function default parameter values.
+   TFF_EXCEPTION_SPECIFICATION: show function exception specification.
+   TFF_TEMPLATE_HEADER: show the template<...> hearder in a
+       template-declaration.
+   TFF_TEMPLATE_DEFAULT_ARGUMENTS: show template paramter default values.  */
+
+#define TFF_PLAIN_IDENTIFIER               (0)
+#define TFF_NAMESPACE_SCOPE                (1)
+#define TFF_CLASS_SCOPE                    (1 << 1)
+#define TFF_CHASE_NAMESPACE_ALIAS          (1 << 2)
+#define TFF_CHASE_TYPEDEF                  (1 << 3)
+#define TFF_DECL_SPECIFIERS                (1 << 4)
+#define TFF_CLASS_KEY_OR_ENUM              (1 << 5)
+#define TFF_RETURN_TYPE                    (1 << 6)
+#define TFF_FUNCTION_DEFAULT_ARGUMENTS     (1 << 7)
+#define TFF_EXCEPTION_SPECIFICATION        (1 << 8)
+#define TFF_TEMPLATE_HEADER                (1 << 9)
+#define TFF_TEMPLATE_DEFAULT_ARGUMENTS     (1 << 10)
+#define TFF_SCOPE (TFF_NAMESPACE_SCOPE | TFF_CLASS_SCOPE)
+
 /* This data structure bundles altogether, all the information necessary
    for pretty-printing a C++ source-level entity represented by a tree.  */
 typedef struct
@@ -41,6 +74,21 @@ typedef struct
 #define tree_being_formatted(TFI) (TFI)->decl
 #define tree_formatting_flags(TFI) (TFI)->flags
 #define put_whitespace(TFI) (TFI)->pad
+
+#define sorry_for_unsupported_tree(T)                                      \
+   sorry ("`%s' not supported by %s", tree_code_name[(int) TREE_CODE (T)], \
+             __FUNCTION__)
+
+#define print_scope_operator(BUFFER)  output_add_string (BUFFER, "::")
+#define print_left_paren(BUFFER)      output_add_character (BUFFER, '(')
+#define print_right_paren(BUFFER)     output_add_character (BUFFER, ')')
+#define print_left_bracket(BUFFER)    output_add_character (BUFFER, '[')
+#define print_right_bracket(BUFFER)   output_add_character (BUFFER, ']')
+#define print_whitespace(BUFFER, TFI)        \
+   do {                                      \
+     output_add_space (BUFFER);              \
+     put_whitespace (TFI) = none;            \
+   } while (0)
 
 typedef const char *cp_printer ();
 
@@ -105,7 +153,7 @@ static enum pad dump_qualifiers PARAMS ((tree, enum pad));
 static void dump_char PARAMS ((int));
 static void dump_parameters PARAMS ((tree, enum tree_string_flags));
 static void dump_exception_spec PARAMS ((tree, enum tree_string_flags));
-static const char *aggr_variety PARAMS ((tree));
+static const char *class_key_or_enum PARAMS ((tree));
 static tree ident_fndecl PARAMS ((tree));
 static void dump_template_argument PARAMS ((tree, enum tree_string_flags));
 static void dump_template_argument_list PARAMS ((tree, enum tree_string_flags));
@@ -133,9 +181,21 @@ static void print_declaration PARAMS ((output_buffer *, tfi_t));
 static void print_expression PARAMS ((output_buffer *, tfi_t));
 static void print_function_declaration PARAMS ((output_buffer *, tfi_t));
 static void print_function_parameter PARAMS ((output_buffer *, int));
-static void print_type PARAMS ((output_buffer *, tfi_t));
-static void print_cv_qualifier PARAMS ((output_buffer *, tfi_t));
-
+static void print_type_id PARAMS ((output_buffer *, tfi_t));
+static void print_cv_qualifier_seq PARAMS ((output_buffer *, tfi_t));
+static void print_type_specifier_seq PARAMS ((output_buffer *, tfi_t));
+static void print_simple_type_specifier PARAMS ((output_buffer *, tfi_t));
+static void print_elaborated_type_specifier PARAMS ((output_buffer *, tfi_t));
+static void print_rest_of_abstract_declarator PARAMS ((output_buffer *,
+                                                       tfi_t));
+static void print_parameter_declaration_clause PARAMS ((output_buffer *,
+                                                        tfi_t));
+static void print_exception_specification PARAMS ((output_buffer *, tfi_t));
+static void print_nested_name_specifier PARAMS ((output_buffer *, tfi_t));
+static void print_template_id PARAMS ((output_buffer *, tfi_t));
+static void print_template_argument_list_start PARAMS ((output_buffer *));
+static void print_template_argument_list_end PARAMS ((output_buffer *));
+static tree typedef_original_name PARAMS ((tree));
 
 #define A args_to_string
 #define C code_to_string
@@ -545,7 +605,7 @@ dump_typename (t, flags)
 /* Return the name of the supplied aggregate, or enumeral type.  */
 
 static const char *
-aggr_variety (t)
+class_key_or_enum (t)
      tree t;
 {
   if (TREE_CODE (t) == ENUMERAL_TYPE)
@@ -567,7 +627,7 @@ dump_aggr_type (t, flags)
      enum tree_string_flags flags;
 {
   tree name;
-  const char *variety = aggr_variety (t);
+  const char *variety = class_key_or_enum (t);
   int typdef = 0;
   int tmplate = 0;
 
@@ -2658,8 +2718,8 @@ cp_tree_printer (buffer)
 {
   int be_verbose = 0;
   tree_formatting_info tfi;
-  
-  put_whitespace (&tfi) = none;
+
+  bzero (&tfi, sizeof (tree_formatting_info));
 
   if (*output_buffer_text_cursor (buffer) == '+')
     ++output_buffer_text_cursor (buffer);
@@ -2674,24 +2734,38 @@ cp_tree_printer (buffer)
     case 'A':
       tree_being_formatted (&tfi) =
         va_arg (output_buffer_format_args (buffer), tree);
+      if (be_verbose)
+        tree_formatting_flags (&tfi) = TFF_SCOPE
+          | TFF_FUNCTION_DEFAULT_ARGUMENTS;
       print_function_argument_list (buffer, &tfi);
       break;
       
     case 'D':
       tree_being_formatted (&tfi) =
         va_arg (output_buffer_format_args (buffer), tree);
+      if (be_verbose)
+        tree_formatting_flags (&tfi) = TFF_SCOPE | TFF_DECL_SPECIFIERS
+          | TFF_CLASS_KEY_OR_ENUM | TFF_RETURN_TYPE
+          | TFF_FUNCTION_DEFAULT_ARGUMENTS | TFF_TEMPLATE_DEFAULT_ARGUMENTS
+          | TFF_EXCEPTION_SPECIFICATION | TFF_CHASE_NAMESPACE_ALIAS;
       print_declaration (buffer, &tfi);
       break;
       
     case 'E':
       tree_being_formatted (&tfi) =
         va_arg (output_buffer_format_args (buffer), tree);
+      if (be_verbose)
+        tree_formatting_flags (&tfi) = TFF_SCOPE;
       print_expression (buffer, &tfi);
       break;
       
     case 'F':
       tree_being_formatted (&tfi) =
         va_arg (output_buffer_format_args (buffer), tree);
+      if (be_verbose)
+        tree_formatting_flags (&tfi) = TFF_SCOPE | TFF_DECL_SPECIFIERS
+          | TFF_RETURN_TYPE | TFF_FUNCTION_DEFAULT_ARGUMENTS
+          | TFF_EXCEPTION_SPECIFICATION;          
       print_function_declaration (buffer, &tfi);
       break;
       
@@ -2703,13 +2777,16 @@ cp_tree_printer (buffer)
     case 'T':
       tree_being_formatted (&tfi) =
         va_arg (output_buffer_format_args (buffer), tree);
-      print_type (buffer, &tfi);
+      if (be_verbose)
+        tree_formatting_flags (&tfi) = TFF_SCOPE | TFF_CLASS_KEY_OR_ENUM
+          | TFF_RETURN_TYPE | TFF_EXCEPTION_SPECIFICATION;
+      print_type_id (buffer, &tfi);
       break;
       
     case 'V':
       tree_being_formatted (&tfi) =
         va_arg (output_buffer_format_args (buffer), tree);
-      print_cv_qualifier (buffer, &tfi);
+      print_cv_qualifier_seq (buffer, &tfi);
       break;
       
     default:
@@ -2755,14 +2832,6 @@ print_function_declaration (buffer, tfi)
 {
 }
 
-/* Print a type represented by tree_being_formattted (TFI) onto BUFFER.  */
-static void
-print_type (buffer, tfi)
-     output_buffer *buffer __attribute__ ((__unused__));
-     tfi_t tfi __attribute__ ((__unused__));
-{
-}
-
 /* Print the N'th function parameter onto BUFFER.  A negative value of N
    means the implicit "this" parameter of a member function.  */
 static void
@@ -2775,10 +2844,479 @@ print_function_parameter (buffer, n)
   else
     output_decimal (buffer, n + 1);
 }
+
+/* Print a type represented by tree_being_formatted (TFI) onto BUFFER.  */
+static void
+print_type_id (buffer, tfi)
+     output_buffer *buffer;
+     tfi_t tfi;
+{
+  tree t = tree_being_formatted (tfi);
+  int flags = tree_formatting_flags (tfi);
+  if (t == NULL_TREE)
+    return;
+
+  if (flags & TFF_CHASE_TYPEDEF)
+    tree_being_formatted (tfi) =
+      typedef_original_name (tree_being_formatted (tfi));
+  
+  /* A type-id is of the form:
+     type-id:
+        type-specifier-seq abstract-declarator(opt)  */
+  print_type_specifier_seq (buffer, tfi);
+
+  if (TYPE_PTRMEMFUNC_P (t))
+    goto ptr_mem_fun;
+
+  /* For types with abstract-declarator, print_type_specifier_seq prints
+     the start of the abstract-declarator.  Fiinish the job.  */
+  switch (TREE_CODE (t))
+    {
+    case ARRAY_TYPE:
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+    case OFFSET_TYPE:
+    case METHOD_TYPE:
+    case FUNCTION_TYPE:
+    ptr_mem_fun:
+      print_rest_of_abstract_declarator (buffer, tfi);
+  
+    default:
+      break;
+    }
+
+  tree_being_formatted (tfi) = t;
+}
+
+/* Print the type-specifier-seq part of a type-id.  If appropriate, print
+ also the prefix of the abstract-declarator.  */
+static void
+print_type_specifier_seq (buffer, tfi)
+     output_buffer *buffer;
+     tfi_t tfi;
+{
+  int flags = tree_formatting_flags (tfi);
+  tree t = tree_being_formatted (tfi);
+  enum tree_code code = TREE_CODE (t);
+
+  /* A type-speficier-seq is:
+         type-specifier type-specifier-seq(opt)
+     where
+         type-specifier:
+             simple-type-specifier
+             class-specifier
+             enum-specifier
+             elaborated-type-specifier
+             cv-qualifier
+
+     We do not, however, pretty-print class-specifier nor enum-specifier.  */
+
+  switch (code)
+    {
+    case UNKNOWN_TYPE:
+    case IDENTIFIER_NODE:
+    case VOID_TYPE:
+    case INTEGER_TYPE:
+    case REAL_TYPE:
+    case COMPLEX_TYPE:
+    case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
+    case UNION_TYPE:
+    case TYPE_DECL:
+    case TEMPLATE_DECL:
+    case TEMPLATE_TYPE_PARM:
+    case TYPEOF_TYPE:
+    case TEMPLATE_TEMPLATE_PARM:
+    case TYPENAME_TYPE:
+    class_type:
+      print_cv_qualifier_seq (buffer, tfi);
+      if ((flags & TFF_DECL_SPECIFIERS)
+          && (code ==  TYPENAME_TYPE || IS_AGGR_TYPE (t)))
+        print_elaborated_type_specifier (buffer, tfi);
+      else
+        print_simple_type_specifier (buffer, tfi);
+      break;
+
+      /* Because the abstract-declarator can modify the type-specifier-seq
+         in a highly non linear manner, we pretty-print its prefix here.
+         The suffix part is handled by print_rest_of_abstract_declarator.  */
+      
+      /* A RECORD_TYPE is also used to represent a pointer to member
+         function.  */
+    case RECORD_TYPE:
+      if (TYPE_PTRMEMFUNC_P (t))
+        {
+          /* Print the return type.  */
+          tree_being_formatted (tfi) =
+            TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (t));
+          print_type_id (buffer, tfi);
+          print_whitespace (buffer, tfi);
+          
+          /* Then the beginning of the abstract-declarator part.  */
+          tree_being_formatted (tfi) =
+            TYPE_METHOD_BASETYPE (TYPE_PTRMEMFUNC_FN_TYPE (t));
+          print_left_paren (buffer);
+          print_nested_name_specifier (buffer, tfi);
+        }
+      else
+        goto class_type;
+      break;
+
+    case POINTER_TYPE:
+      if (TYPE_PTRMEM_P (t))
+        goto ptr_data_member;
+      else
+        goto non_ptr_data_member;
+      break;
+
+    case ARRAY_TYPE:
+    case REFERENCE_TYPE:
+    case FUNCTION_TYPE:
+    case METHOD_TYPE:
+    non_ptr_data_member:
+      tree_being_formatted (tfi) = TREE_TYPE (t);
+      print_type_specifier_seq (buffer, tfi);
+      if (code == POINTER_TYPE || code == REFERENCE_TYPE)
+        {
+          if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
+            print_left_paren (buffer);
+        }
+      else if (code == FUNCTION_TYPE || code == METHOD_TYPE)
+        {
+          print_whitespace (buffer, tfi);
+          print_left_paren (buffer);
+          if (code == METHOD_TYPE)
+            {
+              tree_being_formatted (tfi) = TYPE_METHOD_BASETYPE (t);
+              print_nested_name_specifier (buffer, tfi);
+              tree_being_formatted (tfi) = t;
+            }
+        }
+      tree_being_formatted (tfi) = t;
+      break;
+
+    ptr_data_member:
+    case OFFSET_TYPE:
+      /* Firstly, the type of the member.  */
+      tree_being_formatted (tfi) = TREE_TYPE (t);
+      print_type_id (buffer, tfi);
+      print_whitespace (buffer, tfi);
+      
+      /* Then, the containing class.  */
+      tree_being_formatted (tfi) = TYPE_OFFSET_BASETYPE (t);
+      print_nested_name_specifier (buffer, tfi);
+      tree_being_formatted (tfi) = t;
+      break;
+
+    default:
+      sorry_for_unsupported_tree (t);
+      /* fall throught  */
+
+    case ERROR_MARK:
+      print_identifier (buffer, "{type-specifier-seq error}");
+      break;
+    }
+
+  tree_being_formatted (tfi) = t;
+}
+
+/* Print the simpe-type-specifier component of a type-specifier.  */
+static void
+print_simple_type_specifier (buffer, tfi)
+     output_buffer *buffer;
+     tfi_t tfi;
+{
+  int flags = tree_formatting_flags (tfi);
+  tree t = tree_being_formatted (tfi);
+  enum tree_code code = TREE_CODE (t);
+
+  switch (code)
+    {
+    case UNKNOWN_TYPE:
+      print_identifier (buffer, "{unknown type}");
+      break;
+
+    case IDENTIFIER_NODE:
+      print_tree_identifier (buffer, t);
+      break;
+
+    case COMPLEX_TYPE:
+      print_identifier (buffer, "__complex__ ");
+      tree_being_formatted (tfi) = TREE_TYPE (t);
+      print_type_id (buffer, tfi);
+      break;
+
+    case TYPENAME_TYPE:
+      tree_being_formatted (tfi) = TYPE_CONTEXT (t);
+      print_nested_name_specifier (buffer, tfi);
+      tree_being_formatted (tfi) = TYPENAME_TYPE_FULLNAME (t);
+      tree_formatting_flags (tfi) |= ~TFF_CHASE_TYPEDEF;
+      print_type_id (buffer, tfi);
+      break;
+
+    case TYPEOF_TYPE:
+      print_identifier (buffer, "__typeof__");
+      tree_being_formatted (tfi) = TYPE_FIELDS (t);
+      print_left_paren (buffer);
+      print_expression (buffer, tfi);
+      print_right_paren (buffer);
+      break;
+
+    case INTEGER_TYPE:
+      if (TREE_UNSIGNED (t))
+        {
+          if (TYPE_MAIN_VARIANT (t) == integer_type_node)
+            /* We don't want pedantry like `unsigned int'.  */;
+          else if (!TREE_UNSIGNED (TYPE_MAIN_VARIANT (t)))
+            {
+              print_identifier (buffer, "unsigned");
+              print_whitespace (buffer, tfi);
+            }
+        }
+      else if (TYPE_MAIN_VARIANT (t) == char_type_node)
+        {
+          print_identifier (buffer, "signed");
+          print_whitespace (buffer, tfi);
+        }
+    case REAL_TYPE:
+    case BOOLEAN_TYPE:
+    case VOID_TYPE:
+      {
+        tree s = (flags & TFF_CHASE_TYPEDEF) ? TYPE_MAIN_VARIANT (t) : t;
+
+        if (TYPE_NAME (s) && TYPE_IDENTIFIER (s))
+          print_tree_identifier (buffer, TYPE_IDENTIFIER (s));
+        else
+	  /* Types like intQI_type_node and friends have no names.
+	     These don't come up in user error messages, but it's nice
+	     to be able to print them from the debugger.  */
+          print_identifier (buffer, "{anonymous}");
+      }
+      break;
+
+    case TEMPLATE_TEMPLATE_PARM:
+      if (TYPE_IDENTIFIER (t))
+        print_tree_identifier (buffer, TYPE_IDENTIFIER (t));
+      else
+        print_identifier (buffer, "{anonymous template template parameter}");
+      break;
+
+    case TYPE_DECL:
+      if (flags & TFF_CHASE_TYPEDEF)
+        print_type_id (buffer, tfi);
+      else
+        print_tree_identifier (buffer, DECL_NAME (t));
+      break;
+
+    case BOUND_TEMPLATE_TEMPLATE_PARM:
+    case TEMPLATE_DECL:
+      print_template_id (buffer, tfi);
+      break;
+
+    case TEMPLATE_TYPE_PARM:
+      if (TYPE_IDENTIFIER (t))
+        print_tree_identifier (buffer, TYPE_IDENTIFIER (t));
+      else
+        print_identifier (buffer, "{anonymous template type parameter}");
+      break;
+
+    default:
+      break;
+    }
+
+  tree_being_formatted (tfi) = t;
+  tree_formatting_flags (tfi) = flags;
+}
+
+/* Print the elaborated-type-specifier form of a type-specifier.  */
+static void
+print_elaborated_type_specifier (buffer, tfi)
+     output_buffer *buffer;
+     tfi_t tfi;
+{
+  int flags = tree_formatting_flags (tfi);
+  tree t = tree_being_formatted (tfi);
+
+  switch (TREE_CODE (t))
+    {
+    case TYPENAME_TYPE:
+      print_identifier (buffer, "typename");
+      print_whitespace (buffer, tfi);
+      tree_formatting_flags (tfi) |= ~TFF_DECL_SPECIFIERS;
+      print_simple_type_specifier (buffer, tfi);
+      break;
+
+    case UNION_TYPE:
+    case RECORD_TYPE:
+      {
+        tree name = NULL_TREE;
+
+        if (flags & TFF_CHASE_TYPEDEF)
+          tree_being_formatted (tfi) = typedef_original_name (t);
+
+        print_identifier
+          (buffer, class_key_or_enum (tree_being_formatted (tfi)));
+        print_whitespace (buffer, tfi);
+
+        name = TYPE_NAME (tree_being_formatted (tfi));
+        if (name)
+          {
+            if (flags & TFF_SCOPE)
+              {
+                tree_being_formatted (tfi) = CP_DECL_CONTEXT (name);
+                print_nested_name_specifier (buffer, tfi);
+              }
+            print_tree_identifier (buffer, DECL_NAME (name));
+          }
+        else
+          print_identifier (buffer, "{anonymous}");
+      }
+      break;
+
+    default:
+      sorry_for_unsupported_tree (t);
+      break;
+    }
+
+  tree_being_formatted (tfi) = t;
+  tree_formatting_flags (tfi) = flags;
+}
+
+/* Finish the job of printing the abstract-declarator part of a
+   type-id.  */
+static void
+print_rest_of_abstract_declarator (buffer, tfi)
+     output_buffer *buffer;
+     tfi_t tfi;
+{
+  tree t = tree_being_formatted (tfi);
+  enum tree_code code = TREE_CODE (t);
+  
+  /* An abstract-declarator has the form:
+    
+     abstract-declarator:
+          ptr-operator abstract-declarator(opt)
+          direct-abstract-declarator
+
+     direct-abstract-declarator:
+          direct-abstract-declarator(opt)
+              ( parameter-declaration-clause ) cv-qualifier-seq(opt)
+                    exception-specification(opt)
+          direct-abstract-declarator(opt) [ constant-expression(opt) ]
+          ( direct-abstract-declarator )   */
+
+  switch (code)
+    {
+    case ARRAY_TYPE:
+      print_left_bracket (buffer);
+      if (TYPE_DOMAIN (t))
+	{
+          tree s = TYPE_DOMAIN (t);
+
+	  if (host_integerp (TYPE_MAX_VALUE (s), 0))
+	    output_decimal (buffer, tree_low_cst (TYPE_MAX_VALUE (s), 0) + 1);
+	  else if (TREE_CODE (TYPE_MAX_VALUE (s)) == MINUS_EXPR)
+            {
+              tree_being_formatted (tfi) =
+                TREE_OPERAND (TYPE_MAX_VALUE (s), 0);
+              print_expression (buffer, tfi);
+              tree_being_formatted (tfi) = t;
+            }
+	  else
+            {
+              tree_being_formatted (tfi) = fold
+                (cp_build_binary_op (PLUS_EXPR, TYPE_MAX_VALUE (s),
+                                     integer_one_node));
+              print_expression (buffer, tfi);
+              tree_being_formatted (tfi) = t;
+            }
+	}
+      print_right_bracket (buffer);
+      put_whitespace (tfi) = none;
+      tree_being_formatted (tfi) = TREE_TYPE (t);
+      print_rest_of_abstract_declarator (buffer, tfi);
+      tree_being_formatted (tfi) = t;
+      break;
+
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+    case OFFSET_TYPE:
+      if (code == POINTER_TYPE || code == REFERENCE_TYPE)
+        {
+          output_add_character (buffer, "&*"[code == POINTER_TYPE]);
+          if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
+            print_right_paren (buffer);
+        }
+      put_whitespace (tfi) = before;
+      print_cv_qualifier_seq (buffer, tfi);
+      tree_being_formatted (tfi) = TREE_TYPE (t);
+      print_rest_of_abstract_declarator (buffer, tfi);
+      tree_being_formatted (tfi) = t;
+      break;
+
+    case FUNCTION_TYPE:
+    case METHOD_TYPE:
+      print_right_paren (buffer);
+      print_whitespace (buffer, tfi);
+
+      /* Skip the `this' implicit parameter if present.  */
+      tree_being_formatted (tfi) = TYPE_ARG_TYPES (t);
+      if (code == METHOD_TYPE)
+        tree_being_formatted (tfi) = TREE_CHAIN (tree_being_formatted (tfi));
+
+      /* Print the parameter-list.  */
+      print_left_paren (buffer);
+      print_parameter_declaration_clause (buffer, tfi);
+      print_right_paren (buffer);
+
+      print_whitespace (buffer, tfi);
+
+      if (code == METHOD_TYPE)
+        {
+          tree_being_formatted (tfi) =
+            TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (t)));
+          print_cv_qualifier_seq (buffer, tfi);
+        }
+
+      /* Finish the abstract-declarator.  */
+      tree_being_formatted (tfi) = TREE_TYPE (t);
+      print_rest_of_abstract_declarator (buffer, tfi);
+
+      /* Print the exception-specification for documentaion purpose.  */
+      tree_being_formatted (tfi) = TYPE_RAISES_EXCEPTIONS (t);
+      print_exception_specification (buffer, tfi);
+      tree_being_formatted (tfi) = t;
+      break;
+
+      /* These types don't have abstract-declarator.  */
+    case UNKNOWN_TYPE:
+    case IDENTIFIER_NODE:
+    case VOID_TYPE:
+    case INTEGER_TYPE:
+    case REAL_TYPE:
+    case COMPLEX_TYPE:
+    case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
+    case UNION_TYPE:
+    case TYPE_DECL:
+    case TEMPLATE_DECL:
+    case TEMPLATE_TYPE_PARM:
+    case TYPEOF_TYPE:
+    case TEMPLATE_TEMPLATE_PARM:
+    case TYPENAME_TYPE:
+      break;
+
+    default:
+      sorry_for_unsupported_tree (t);
+      /* fall throught.  */
+    case ERROR_MARK:
+      break;      
+    }
+}
 
 /* Print the cv-quafilers of tree_being_formatted (TFI) onto BUFFER.  */
 static void
-print_cv_qualifier (buffer, tfi)
+print_cv_qualifier_seq (buffer, tfi)
      output_buffer *buffer;
      tree_formatting_info *tfi;
 {
@@ -2807,4 +3345,95 @@ print_cv_qualifier (buffer, tfi)
           put_whitespace (tfi) = none;
         }
     }
+}
+
+static void
+print_parameter_declaration_clause (buffer, tfi)
+     output_buffer *buffer __attribute__ ((__unused__));
+     tfi_t tfi __attribute__ ((__unused__));
+{
+}
+
+static void
+print_exception_specification (buffer, tfi)
+     output_buffer *buffer __attribute__ ((__unused__));
+     tfi_t tfi __attribute__ ((__unused__));
+{
+}
+
+static void
+print_nested_name_specifier (buffer, tfi)
+     output_buffer *buffer;
+     tfi_t tfi;
+{
+  int flags = tree_formatting_flags (tfi);
+  tree t = tree_being_formatted (tfi);
+  /* A nested-name-specifier is:
+        class-or-namespace-name :: nested-name-specifier(opt)
+        class-or-namespace-name :: template nested-name-specifier
+
+     The latter form being the correct syntax for a name  designating
+     a template member, where the preceding class-or-namespace-name part
+     is name-dependent.  For the time being, we do not do such a
+     sophisticated pretty-printing.
+
+     class-or-namespace-name:
+        class-name
+        namespace-name  */
+
+  if (t == NULL_TREE || t == global_namespace)
+    return;
+
+  if (CLASS_TYPE_P (t) && !(flags & TFF_CLASS_SCOPE))
+    return;
+
+  if (TREE_CODE (t) == NAMESPACE_DECL && !(flags & TFF_NAMESPACE_SCOPE))
+    return;
+
+  tree_being_formatted (tfi) = DECL_CONTEXT (t);
+  print_nested_name_specifier (buffer, tfi);
+  print_scope_operator (buffer);
+  if (TREE_CODE (t) == NAMESPACE_DECL)
+    print_tree_identifier (buffer, DECL_NAME (t));
+  else if (CLASS_TYPE_P (t))
+    {
+      if (!DECL_USE_TEMPLATE (t))
+        print_tree_identifier (buffer, TYPE_IDENTIFIER (t));
+      else
+        {
+          tree_being_formatted (tfi) = t;
+          print_template_id (buffer, tfi);
+        }
+    }
+
+  tree_being_formatted (tfi) = t;             
+}
+
+static void
+print_template_id (buffer, tfi)
+     output_buffer *buffer;
+     tfi_t tfi __attribute__ ((__unused__));
+{
+  print_template_argument_list_start (buffer);
+  /* ... */
+  print_template_argument_list_end (buffer);
+}
+
+static tree
+typedef_original_name (t)
+     tree t;
+{
+  return DECL_ORIGINAL_TYPE (t) ? DECL_ORIGINAL_TYPE (t) : TREE_TYPE (t);
+}
+
+static void
+print_template_argument_list_start (buffer)
+     output_buffer *buffer __attribute__ ((__unused__));
+{
+}
+
+static void
+print_template_argument_list_end (buffer)
+     output_buffer *buffer __attribute__ ((__unused__));
+{
 }
