@@ -766,6 +766,7 @@ digest_init (type, init, tail)
 
   if (code == INTEGER_TYPE || code == REAL_TYPE || code == POINTER_TYPE
       || code == ENUMERAL_TYPE || code == REFERENCE_TYPE
+      || code == BOOLEAN_TYPE
       || (code == RECORD_TYPE && ! raw_constructor
 	  && (IS_SIGNATURE_POINTER (type) || IS_SIGNATURE_REFERENCE (type))))
     {
@@ -951,13 +952,7 @@ process_init_constructor (type, init, elts)
 	      continue;
 	    }
 
-	  if (TREE_CODE (field) == CONST_DECL || TREE_CODE (field) == TYPE_DECL)
-	    continue;
-
-	  /* A static member isn't considered "part of the object", so
-	     it has no business even thinking about involving itself in
-	     what an initializer-list is trying to do.  */
-	  if (TREE_CODE (field) == VAR_DECL && TREE_STATIC (field))
+	  if (TREE_CODE (field) != FIELD_DECL)
 	    continue;
 
 	  if (TREE_VALUE (tail) != 0)
@@ -1462,16 +1457,18 @@ build_functional_cast (exp, parms)
     }
 
   {
-    int flags = LOOKUP_SPECULATIVELY|LOOKUP_COMPLAIN;
+    int flags = LOOKUP_SPECULATIVELY|LOOKUP_NORMAL;
 
     if (parms && TREE_CHAIN (parms) == NULL_TREE)
       flags |= LOOKUP_NO_CONVERSION;
 
-  try_again:
     expr_as_ctor = build_method_call (NULL_TREE, name, parms,
 				      NULL_TREE, flags);
 
-    if (expr_as_ctor && expr_as_ctor != error_mark_node)
+    if (expr_as_ctor == error_mark_node)
+      return error_mark_node;
+
+    else if (expr_as_ctor)
       {
 	if (expr_as_conversion && expr_as_conversion != error_mark_node)
 	  {
@@ -1512,18 +1509,6 @@ build_functional_cast (exp, parms)
 	  TREE_HAS_CONSTRUCTOR (expr_as_ctor) = 1;
 	}
 	return expr_as_ctor;
-      }
-
-    /* If it didn't work going through constructor, try type conversion.  */
-    if (! (flags & LOOKUP_COMPLAIN))
-      {
-	if (expr_as_conversion)
-	  return expr_as_conversion;
-	if (flags & LOOKUP_NO_CONVERSION)
-	  {
-	    flags = LOOKUP_NORMAL;
-	    goto try_again;
-	  }
       }
 
     if (expr_as_conversion)

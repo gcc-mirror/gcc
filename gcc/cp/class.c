@@ -1490,6 +1490,12 @@ finish_base_struct (t, b, t_binfo)
 	      if (b->has_virtual == 0)
 		{
 		  first_vfn_base_index = i;
+
+		  /* Update these two, now that we know what vtable we are
+		     going to extend.  This is so that we can add virtual
+		     functions, and override them properly.  */
+		  BINFO_VTABLE (t_binfo) = TYPE_BINFO_VTABLE (basetype);
+		  BINFO_VIRTUALS (t_binfo) = TYPE_BINFO_VIRTUALS (basetype);
 		  b->has_virtual = CLASSTYPE_VSIZE (basetype);
 		  b->vfield = CLASSTYPE_VFIELD (basetype);
 		  CLASSTYPE_VFIELD (t) = b->vfield;
@@ -1678,7 +1684,9 @@ finish_struct_bits (t, max_has_virtual)
 		  else
 		    conv_index = ptr_conv;
 		}
-	      else if (typecode_p (return_type, INTEGER_TYPE))
+	      else if (typecode_p (return_type, INTEGER_TYPE)
+		       || typecode_p (return_type, BOOLEAN_TYPE)
+		       || typecode_p (return_type, ENUMERAL_TYPE))
 		{
 		  TYPE_HAS_INT_CONVERSION (t) = 1;
 		  conv_index = int_conv;
@@ -2160,9 +2168,11 @@ modify_one_vtable (binfo, t, fndecl, pfn)
 		}
 	    }
 
-	  /* Find the right offset for the this pointer based on the base
-	     class we just found.  */
-	  base_offset = BINFO_OFFSET (binfo);
+	  /* Find the right offset for the this pointer based on the
+	     base class we just found.  We have to take into
+	     consideration the virtual base class pointers that we
+	     stick in before the virtual function table pointer.  */
+	  base_offset = get_vfield_offset (binfo);
 	  this_offset = size_binop (MINUS_EXPR, offset, base_offset);
 
 	  /* Make sure we can modify the derived association with immunity.  */
@@ -2929,10 +2939,9 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	      /* Invalid bit-field size done by grokfield.  */
 	      /* Detect invalid bit-field type.  */
 	      if (DECL_INITIAL (x)
-		  && TREE_CODE (TREE_TYPE (x)) != INTEGER_TYPE
-		  && TREE_CODE (TREE_TYPE (x)) != ENUMERAL_TYPE)
+		  && ! INTEGRAL_TYPE_P (TREE_TYPE (x)))
 		{
-		  cp_error_at ("bit-field `%D' has invalid type", x);
+		  cp_error_at ("bit-field `%#D' with non-integral type", x);
 		  DECL_INITIAL (x) = NULL;
 		}
 
@@ -3499,6 +3508,27 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	}
     }
 
+  /* Set up the DECL_FIELD_BITPOS of the vfield if we need to, as we
+     might need to know it for setting up the offsets in the vtable
+     (or in thunks) below.  */
+  if (vfield != NULL_TREE
+      && DECL_FIELD_CONTEXT (vfield) != t)
+    {
+      tree binfo = get_binfo (DECL_FIELD_CONTEXT (vfield), t, 0);
+      tree offset = BINFO_OFFSET (binfo);
+
+      vfield = copy_node (vfield);
+      copy_lang_decl (vfield);
+
+      if (! integer_zerop (offset))
+	offset = size_binop (MULT_EXPR, offset, size_int (BITS_PER_UNIT));
+      DECL_FIELD_CONTEXT (vfield) = t;
+      DECL_CLASS_CONTEXT (vfield) = t;
+      DECL_FIELD_BITPOS (vfield)
+	= size_binop (PLUS_EXPR, offset, DECL_FIELD_BITPOS (vfield));
+      CLASSTYPE_VFIELD (t) = vfield;
+    }
+    
 #ifdef NOTQUITE
   cp_warning ("Doing hard virtuals for %T...", t);
 #endif
@@ -3739,6 +3769,8 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	  DECL_REGISTER (vtbl_ptr) = 1;
 	  CLASSTYPE_VTBL_PTR (t) = vtbl_ptr;
 	}
+#if 0
+      /* This is now done above. */
       if (DECL_FIELD_CONTEXT (vfield) != t)
 	{
 	  tree binfo = get_binfo (DECL_FIELD_CONTEXT (vfield), t, 0);
@@ -3755,6 +3787,7 @@ finish_struct (t, list_of_fieldlists, warn_anon)
 	    = size_binop (PLUS_EXPR, offset, DECL_FIELD_BITPOS (vfield));
 	  CLASSTYPE_VFIELD (t) = vfield;
 	}
+#endif
 
       /* In addition to this one, all the other vfields should be listed. */
       /* Before that can be done, we have to have FIELD_DECLs for them, and

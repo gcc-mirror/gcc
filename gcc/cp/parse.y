@@ -149,7 +149,7 @@ empty_parms ()
 /* the reserved words... C++ extensions */
 %token <ttype> AGGR
 %token <itype> VISSPEC
-%token DELETE NEW OVERLOAD THIS OPERATOR
+%token DELETE NEW OVERLOAD THIS OPERATOR CXX_TRUE CXX_FALSE
 %token LEFT_RIGHT TEMPLATE
 %token TYPEID DYNAMIC_CAST STATIC_CAST REINTERPRET_CAST CONST_CAST
 %token <itype> SCOPE
@@ -197,14 +197,15 @@ empty_parms ()
 %type <ttype> identifier IDENTIFIER TYPENAME CONSTANT expr nonnull_exprlist
 %type <ttype> paren_expr_or_null nontrivial_exprlist
 %type <ttype> expr_no_commas cast_expr unary_expr primary string STRING
-%type <ttype> typed_declspecs reserved_declspecs
+%type <ttype> typed_declspecs reserved_declspecs boolean.literal
 %type <ttype> typed_typespecs reserved_typespecquals
 %type <ttype> declmods typespec typespecqual_reserved
 %type <ttype> SCSPEC TYPESPEC TYPE_QUAL nonempty_type_quals maybe_type_qual
 %type <itype> initdecls notype_initdecls initdcl	/* C++ modification */
 %type <ttype> init initlist maybeasm
 %type <ttype> asm_operands nonnull_asm_operands asm_operand asm_clobbers
-%type <ttype> maybe_attribute attribute_list attrib
+%type <ttype> maybe_attribute attributes attribute attribute_list attrib
+%type <ttype> any_word
 
 %type <ttype> compstmt implicitly_scoped_stmt
 
@@ -284,7 +285,6 @@ static tree current_aggr;
 #define YYPRINT(FILE,YYCHAR,YYLVAL) yyprint(FILE,YYCHAR,YYLVAL)
 extern void yyprint ();
 extern tree combine_strings		PROTO((tree));
-extern tree truthvalue_conversion	PROTO((tree));
 %}
 
 %%
@@ -320,8 +320,7 @@ extdefs:
 	;
 
 asm_keyword:
-	ASM_KEYWORD { if (pedantic)
-		      pedwarn ("ANSI C++ forbids use of `asm' keyword"); }
+	  ASM_KEYWORD
 	| GCC_ASM_KEYWORD
 	;
 
@@ -550,15 +549,6 @@ datadef:
 		      CLASSTYPE_USE_TEMPLATE (t) = 2;
 		    else if (CLASSTYPE_USE_TEMPLATE (t) == 1)
 		      error ("override declaration for already-expanded template");
-		  }
-		else if (TREE_CODE (t) == ENUMERAL_TYPE
-			 && !TYPE_SIZE (t))
-		  cp_error ("forward declaration of `%#T'", t);
-		else if (TREE_CODE (t) == IDENTIFIER_NODE)
-		  {
-		    tree v = lookup_name (t, 1);
-		    cp_error ("abstract declarator `%T' used as declaration",
-			      v);
 		  }
 	      }
 	    note_list_got_semicolon ($<ttype>$);
@@ -1098,7 +1088,7 @@ new_initializer:
 	   syntactically valid but semantically invalid.  */
 	| '=' init
 		{
-		  if (pedantic || flag_ansi)
+		  if (flag_ansi)
 		    pedwarn ("ANSI C++ forbids initialization of new expression with `='");
 		  $$ = $2;
 		}
@@ -1125,7 +1115,7 @@ cast_expr:
 		{ 
 		  tree init = build_nt (CONSTRUCTOR, NULL_TREE,
 					nreverse ($3)); 
-		  if (pedantic)
+		  if (flag_ansi)
 		    pedwarn ("ANSI C++ forbids constructor-expressions");
 		  /* Indicate that this was a GNU C constructor expression.  */
 		  TREE_HAS_CONSTRUCTOR (init) = 1;
@@ -1279,6 +1269,7 @@ primary:
 		    $$ = do_identifier ($$);
 		}		
 	| CONSTANT
+	| boolean.literal
 	| string
 		{ $$ = combine_strings ($$); }
 	| '(' expr ')'
@@ -1295,7 +1286,7 @@ primary:
 		  $<ttype>$ = expand_start_stmt_expr (); }
 	  compstmt ')'
 		{ tree rtl_exp;
-		  if (pedantic)
+		  if (flag_ansi)
 		    pedwarn ("ANSI C++ forbids braced-groups within expressions");
 		  rtl_exp = expand_end_stmt_expr ($<ttype>2);
 		  /* The statements have side effects, so the group does.  */
@@ -1576,7 +1567,7 @@ primary_no_id:
 		    }
 		  $<ttype>$ = expand_start_stmt_expr (); }
 	  compstmt ')'
-		{ if (pedantic)
+		{ if (flag_ansi)
 		    pedwarn ("ANSI C++ forbids braced-groups within expressions");
 		  $$ = expand_end_stmt_expr ($<ttype>2); }
 	| primary_no_id '(' nonnull_exprlist ')'
@@ -1609,6 +1600,13 @@ delete:	  DELETE
 		{ $$ = 0; }
 	| global_scope delete
 		{ got_scope = NULL_TREE; $$ = 1; }
+	;
+
+boolean.literal:
+	  CXX_TRUE
+		{ $$ = true_node; }
+	| CXX_FALSE
+		{ $$ = false_node; }
 	;
 
 /* Produces a STRING_CST with perhaps more STRING_CSTs chained onto it.  */
@@ -1802,11 +1800,11 @@ typespec: structsp
 	| complete_type_name
 	| TYPEOF '(' expr ')'
 		{ $$ = TREE_TYPE ($3);
-		  if (pedantic)
+		  if (flag_ansi)
 		    pedwarn ("ANSI C++ forbids `typeof'"); }
 	| TYPEOF '(' type_id ')'
 		{ $$ = groktypename ($3);
-		  if (pedantic)
+		  if (flag_ansi)
 		    pedwarn ("ANSI C++ forbids `typeof'"); }
 	| SIGOF '(' expr ')'
 		{ tree type = TREE_TYPE ($3);
@@ -1912,9 +1910,9 @@ initdcl:
 /* Note how the declaration of the variable is in effect while its init is parsed! */
 		{ finish_decl ($<ttype>6, $7, $3, 0); }
 	| declarator maybe_raises maybeasm maybe_attribute
-		{ tree d = start_decl ($<ttype>1, current_declspecs, 0, $2);
+		{ $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 0, $2);
 		  cplus_decl_attributes ($<ttype>$, $4);
-		  finish_decl (d, NULL_TREE, $3, 0); }
+		  finish_decl ($<ttype>$, NULL_TREE, $3, 0); }
 	;
 
 notype_initdcl0:
@@ -1958,64 +1956,53 @@ nomods_initdcl0:
 /* the * rules are dummies to accept the Apollo extended syntax
    so that the header files compile. */
 maybe_attribute:
+      /* empty */
+  		{ $$ = NULL_TREE; }
+	| attributes
+		{ $$ = $1; }
+	;
+ 
+attributes:
+      attribute
+		{ $$ = $1; }
+	| attributes attribute
+		{ $$ = chainon ($1, $2); }
+	;
+
+attribute:
+      ATTRIBUTE '(' '(' attribute_list ')' ')'
+		{ $$ = $4; }
+	;
+
+attribute_list:
+      attrib
+		{ $$ = build_tree_list (NULL_TREE, $1); }
+	| attribute_list ',' attrib
+		{ $$ = chainon ($1, build_tree_list (NULL_TREE, $3)); }
+	;
+ 
+attrib:
     /* empty */
-	{ $$ = NULL_TREE; }
-    | maybe_attribute ATTRIBUTE '(' '(' attribute_list ')' ')'
-	{ $$ = chainon ($5, $1); }
-    ;
+		{ $$ = NULL_TREE; }
+	| any_word
+		{ $$ = $1; }
+	| any_word '(' IDENTIFIER ')'
+		{ $$ = tree_cons ($1, NULL_TREE, build_tree_list (NULL_TREE, $3)); }
+	| any_word '(' IDENTIFIER ',' nonnull_exprlist ')'
+		{ $$ = tree_cons ($1, NULL_TREE, tree_cons (NULL_TREE, $3, $5)); }
+	| any_word '(' nonnull_exprlist ')'
+		{ $$ = tree_cons ($1, NULL_TREE, $3); }
+	;
 
-attribute_list
-    : attrib
-	{ $$ = tree_cons (NULL_TREE, $1, NULL_TREE); }
-    | attribute_list ',' attrib
-	{ $$ = tree_cons (NULL_TREE, $3, $1); }
-    ;
+/* This still leaves out most reserved keywords,
+   shouldn't we include them?  */
 
-attrib
-    : identifier
-	{ if (strcmp (IDENTIFIER_POINTER ($1), "packed")
-	      && strcmp (IDENTIFIER_POINTER ($1), "noreturn"))
-	    warning ("`%s' attribute directive ignored",
-		     IDENTIFIER_POINTER ($1));
-	  $$ = $1; }
-    | TYPE_QUAL
-    | identifier '(' expr_no_commas ')'
-	{ /* If not aligned(n), section(name), or mode(name),
-	     then issue warning */
-	  if (strcmp (IDENTIFIER_POINTER ($1), "section") == 0
-	      || strcmp (IDENTIFIER_POINTER ($1), "mode") == 0)
-	    {
-	      if (TREE_CODE ($3) != STRING_CST)
-		{
-		  error ("invalid argument in `%s' attribute",
-			 IDENTIFIER_POINTER ($1));
-		  $$ = $1;
-		}
-	      $$ = tree_cons ($1, $3, NULL_TREE);
-	    }
-	  else if (strcmp (IDENTIFIER_POINTER ($1), "aligned") != 0)
-	    {
-	      warning ("`%s' attribute directive ignored",
-		       IDENTIFIER_POINTER ($1));
-	      $$ = $1;
-	    }
-	  else
-	    $$ = tree_cons ($1, $3, NULL_TREE); }
-    | identifier '(' IDENTIFIER ',' expr_no_commas ',' expr_no_commas ')'
-	{ /* if not "format(...)", then issue warning */
-	  if (strcmp (IDENTIFIER_POINTER ($1), "format") != 0)
-	    {
-	      warning ("`%s' attribute directive ignored",
-		       IDENTIFIER_POINTER ($1));
-	      $$ = $1;
-	    }
-	  else
-	    $$ = tree_cons ($1,
-			    tree_cons ($3,
-				       tree_cons ($5, $7, NULL_TREE),
-				       NULL_TREE),
-			    NULL_TREE); }
-    ;
+any_word:
+	  identifier
+	| SCSPEC
+	| TYPESPEC
+	| TYPE_QUAL
+	;
 
 /* A nonempty list of identifiers, including typenames.  */
 identifiers_or_typenames:
@@ -2663,7 +2650,7 @@ new_type_id:
 	   non-constant dimension.  */
 	| '(' type_id ')' '[' expr ']'
 		{
-		  if (pedantic || flag_ansi)
+		  if (flag_ansi)
 		    pedwarn ("ANSI C++ forbids array dimensions with parenthesized type in new");
 		  $$ = build_parse_node (ARRAY_REF, TREE_VALUE ($2), $5);
 		  $$ = build_decl_list (TREE_PURPOSE ($2), $$);
@@ -3003,7 +2990,7 @@ errstmt:  error ';'
 maybe_label_decls:
 	  /* empty */
 	| label_decls
-		{ if (pedantic)
+		{ if (flag_ansi)
 		    pedwarn ("ANSI C++ forbids label declarations"); }
 	;
 
@@ -3040,6 +3027,10 @@ compstmt: '{' .pushlevel '}'
 		{ expand_end_bindings (getdecls (), kept_level_p(), 1);
 		  $$ = poplevel (kept_level_p (), 1, 0);
 		  pop_momentary (); }
+	| '{' .pushlevel maybe_label_decls stmts error '}'
+		{ expand_end_bindings (getdecls (), kept_level_p(), 1);
+		  $$ = poplevel (kept_level_p (), 0, 0);
+		  pop_momentary (); }
 	| '{' .pushlevel maybe_label_decls error '}'
 		{ expand_end_bindings (getdecls (), kept_level_p(), 1);
 		  $$ = poplevel (kept_level_p (), 0, 0);
@@ -3051,7 +3042,7 @@ simple_if:
 		{ cond_stmt_keyword = "if"; }
 	  .pushlevel paren_cond_or_null
 		{ emit_line_note (input_filename, lineno);
-		  expand_start_cond (truthvalue_conversion ($4), 0); }
+		  expand_start_cond (bool_truthvalue_conversion ($4), 0); }
 	  implicitly_scoped_stmt
 	;
 
@@ -3059,7 +3050,7 @@ implicitly_scoped_stmt:
 	  compstmt
 		{ finish_stmt (); }
 	| .pushlevel simple_stmt
-		{ expand_end_bindings (getdecls (), getdecls() != NULL_TREE, 1);
+		{ expand_end_bindings (getdecls (), kept_level_p (), 1);
 		  $$ = poplevel (kept_level_p (), 1, 0);
 		  pop_momentary (); }
 	;
@@ -3106,7 +3097,7 @@ simple_stmt:
 		  expand_start_loop (1);
 		  cond_stmt_keyword = "while"; }
 	  .pushlevel paren_cond_or_null
-		{ expand_exit_loop_if_false (0, truthvalue_conversion ($4)); }
+		{ expand_exit_loop_if_false (0, bool_truthvalue_conversion ($4)); }
 	  already_scoped_stmt
 		{ expand_end_bindings (getdecls (), kept_level_p (), 1);
 		  poplevel (kept_level_p (), 1, 0);
@@ -3122,7 +3113,7 @@ simple_stmt:
 		  cond_stmt_keyword = "do"; }
 	  paren_expr_or_null ';'
 		{ emit_line_note (input_filename, lineno);
-		  expand_exit_loop_if_false (0, truthvalue_conversion ($6));
+		  expand_exit_loop_if_false (0, bool_truthvalue_conversion ($6));
 		  expand_end_loop ();
 		  clear_momentary ();
 		  finish_stmt (); }
@@ -3133,7 +3124,7 @@ simple_stmt:
 		  expand_start_loop_continue_elsewhere (1); }
 	  .pushlevel xcond ';'
 		{ emit_line_note (input_filename, lineno);
-		  if ($4) expand_exit_loop_if_false (0, truthvalue_conversion ($4)); }
+		  if ($4) expand_exit_loop_if_false (0, bool_truthvalue_conversion ($4)); }
 	  xexpr ')'
 		/* Don't let the tree nodes for $7 be discarded
 		   by clear_momentary during the parsing of the next stmt.  */
@@ -3154,7 +3145,7 @@ simple_stmt:
 		  expand_start_loop_continue_elsewhere (1); }
 	  .pushlevel xcond ';'
 		{ emit_line_note (input_filename, lineno);
-		  if ($4) expand_exit_loop_if_false (0, truthvalue_conversion ($4)); }
+		  if ($4) expand_exit_loop_if_false (0, bool_truthvalue_conversion ($4)); }
 	  xexpr ')'
 		/* Don't let the tree nodes for $7 be discarded
 		   by clear_momentary during the parsing of the next stmt.  */
@@ -3185,36 +3176,10 @@ simple_stmt:
 		  pop_momentary ();
 		  finish_stmt (); }
 	| CASE expr_no_commas ':'
-		{ register tree value = $2;
+		{ register tree value = check_cp_case_value ($2);
 		  register tree label
 		    = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
 
-		  /* build_c_cast puts on a NOP_EXPR to make a non-lvalue.
-		     Strip such NOP_EXPRs.  */
-		  if (TREE_CODE (value) == NOP_EXPR
-		      && TREE_TYPE (value) == TREE_TYPE (TREE_OPERAND (value, 0)))
-		    value = TREE_OPERAND (value, 0);
-
-		  if (TREE_READONLY_DECL_P (value))
-		    {
-		      value = decl_constant_value (value);
-		      /* build_c_cast puts on a NOP_EXPR to make a non-lvalue.
-			 Strip such NOP_EXPRs.  */
-		      if (TREE_CODE (value) == NOP_EXPR
-			  && TREE_TYPE (value) == TREE_TYPE (TREE_OPERAND (value, 0)))
-			value = TREE_OPERAND (value, 0);
-		    }
-		  value = fold (value);
-
-		  if (TREE_CODE (value) != INTEGER_CST
-		      && value != error_mark_node)
-		    {
-		      cp_error ("case label `%E' does not reduce to an integer constant", $2);
-		      value = error_mark_node;
-		    }
-		  else
-		    /* Promote char or short to int.  */
-		    value = default_conversion (value);
 		  if (value != error_mark_node)
 		    {
 		      tree duplicate;
@@ -3236,61 +3201,13 @@ simple_stmt:
 		}
 	  stmt
 	| CASE expr_no_commas RANGE expr_no_commas ':'
-		{ register tree value1 = $2;
-		  register tree value2 = $4;
+		{ register tree value1 = check_cp_case_value ($2);
+		  register tree value2 = check_cp_case_value ($4);
 		  register tree label
 		    = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
 
-		  if (pedantic)
+		  if (flag_ansi)
 		    pedwarn ("ANSI C++ forbids range expressions in switch statement");
-
-		  /* build_c_cast puts on a NOP_EXPR to make a non-lvalue.
-		     Strip such NOP_EXPRs.  */
-		  if (TREE_CODE (value1) == NOP_EXPR
-		      && TREE_TYPE (value1) == TREE_TYPE (TREE_OPERAND (value1, 0)))
-		    value1 = TREE_OPERAND (value1, 0);
-
-		  if (TREE_READONLY_DECL_P (value1))
-		    {
-		      value1 = decl_constant_value (value1);
-		      /* build_c_cast puts on a NOP_EXPR to make a non-lvalue.
-			 Strip such NOP_EXPRs.  */
-		      if (TREE_CODE (value1) == NOP_EXPR
-			  && TREE_TYPE (value1) == TREE_TYPE (TREE_OPERAND (value1, 0)))
-			value1 = TREE_OPERAND (value1, 0);
-		    }
-		  value1 = fold (value1);
-
-		  /* build_c_cast puts on a NOP_EXPR to make a non-lvalue.
-		     Strip such NOP_EXPRs.  */
-		  if (TREE_CODE (value2) == NOP_EXPR
-		      && TREE_TYPE (value2) == TREE_TYPE (TREE_OPERAND (value2, 0)))
-		    value2 = TREE_OPERAND (value2, 0);
-
-		  if (TREE_READONLY_DECL_P (value2))
-		    {
-		      value2 = decl_constant_value (value2);
-		      /* build_c_cast puts on a NOP_EXPR to make a non-lvalue.
-			 Strip such NOP_EXPRs.  */
-		      if (TREE_CODE (value2) == NOP_EXPR
-			  && TREE_TYPE (value2) == TREE_TYPE (TREE_OPERAND (value2, 0)))
-			value2 = TREE_OPERAND (value2, 0);
-		    }
-		  value2 = fold (value2);
-
-
-		  if (TREE_CODE (value1) != INTEGER_CST
-		      && value1 != error_mark_node)
-		    {
-		      error ("case label does not reduce to an integer constant");
-		      value1 = error_mark_node;
-		    }
-		  if (TREE_CODE (value2) != INTEGER_CST
-		      && value2 != error_mark_node)
-		    {
-		      error ("case label does not reduce to an integer constant");
-		      value2 = error_mark_node;
-		    }
 		  if (value1 != error_mark_node
 		      && value2 != error_mark_node)
 		    {

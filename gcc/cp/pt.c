@@ -782,6 +782,7 @@ uses_template_parms (t)
     case REAL_TYPE:
     case VOID_TYPE:
     case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
       return 0;
 
       /* constants */
@@ -1142,6 +1143,7 @@ tsubst (t, args, nargs, in_decl)
     case VOID_TYPE:
     case REAL_TYPE:
     case ENUMERAL_TYPE:
+    case BOOLEAN_TYPE:
     case INTEGER_CST:
     case REAL_CST:
     case STRING_CST:
@@ -1350,6 +1352,11 @@ tsubst (t, args, nargs, in_decl)
 		  r = build_decl_overload (r, TYPE_VALUES (type),
 					   DECL_CONTEXT (t) != NULL_TREE);
 		  r = build_lang_decl (FUNCTION_DECL, r, type);
+		}
+	      else if (DECL_INLINE (r) && DECL_SAVED_INSNS (r))
+		{
+		  /* This overrides the template version, use it. */
+		  return r;
 		}
 	    }
 	  }
@@ -1638,8 +1645,10 @@ instantiate_template (tmpl, targ_ptr)
       DECL_ARGUMENTS (fndecl) = TREE_CHAIN (DECL_ARGUMENTS (fndecl));
     }
      
+  /* If we have a preexisting version of this function, don't expand
+     the template version, use the other instead.  */
   t = DECL_TEMPLATE_INFO (tmpl);
-  if (t->text)
+  if (t->text && !(DECL_INLINE (fndecl) && DECL_SAVED_INSNS (fndecl)))
     {
       p = (struct pending_inline *) permalloc (sizeof (struct pending_inline));
       p->parm_vec = t->parm_vec;

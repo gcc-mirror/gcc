@@ -366,6 +366,11 @@ build_overload_value (type, value)
 	icat (TREE_INT_CST_LOW (value));
 	return;
       }
+    case BOOLEAN_TYPE:
+      {
+	icat (TREE_INT_CST_LOW (value));
+	return;
+      }
 #ifndef REAL_IS_NOT_DOUBLE
     case REAL_TYPE:
       {
@@ -587,10 +592,7 @@ build_overload_name (parmtypes, begin, end)
 
 	    OB_PUTC ('A');
 	    if (TYPE_DOMAIN (parmtype) == NULL_TREE)
-	      {
-		error ("parameter type with unspecified array bounds invalid");
-		icat (1);
-	      }
+	      error ("pointer or reference to array of unknown bound in parm type");
 	    else
 	      {
 		length = array_type_nelts (parmtype);
@@ -699,6 +701,10 @@ build_overload_name (parmtypes, begin, end)
 #endif
 	  else
 	    my_friendly_abort (73);
+	  break;
+
+	case BOOLEAN_TYPE:
+	  OB_PUTC ('b');
 	  break;
 
 	case REAL_TYPE:
@@ -1703,7 +1709,7 @@ emit_thunk (thunk_fndecl)
   int delta = THUNK_DELTA (thunk_fndecl);
   int tem;
   int failure = 0;
-  extern int current_call_is_indirect; /* Needed for (at least) HPPA. */
+  int current_call_is_indirect = 0;	/* needed for HPPA FUNCTION_ARG */
 
   /* Used to remember which regs we need to emit a USE rtx for. */
   rtx need_use[FIRST_PSEUDO_REGISTER];

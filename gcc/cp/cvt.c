@@ -186,7 +186,7 @@ cp_convert_to_pointer (type, expr)
       return expr;
     }
 
-  if (form == INTEGER_TYPE || form == ENUMERAL_TYPE)
+  if (INTEGRAL_CODE_P (form))
     {
       if (type_precision (intype) == POINTER_SIZE)
 	return build1 (CONVERT_EXPR, type, expr);
@@ -950,16 +950,11 @@ convert_to_aggr (type, expr, msgp, protect)
       {
 	function = fndecl;
 	cp->h_len = 2;
-	if (flag_ansi_overloading)
-	  cp->v.ansi_harshness = (struct harshness_code *)
-	    alloca (3 * sizeof (struct harshness_code));
-	else
-	  cp->v.old_harshness = (unsigned short *)
-	    alloca (3 * sizeof (short));
+	cp->harshness = (struct harshness_code *)
+	  alloca (3 * sizeof (struct harshness_code));
 
 	compute_conversion_costs (fndecl, parmlist, cp, 2);
-	if ((flag_ansi_overloading && (cp->h.code & EVIL_CODE) == 0)
-	    || (!flag_ansi_overloading && cp->evil == 0))
+	if ((cp->h.code & EVIL_CODE) == 0)
 	  {
 	    cp->u.field = fndecl;
 	    if (protect)
@@ -983,10 +978,7 @@ convert_to_aggr (type, expr, msgp, protect)
 		   || purpose_member (basetype, DECL_ACCESS (fndecl)))
 		: 1)
 	      {
-		if ((flag_ansi_overloading && cp->h.code <= TRIVIAL_CODE)
-		    || (!flag_ansi_overloading
-			&& cp->user == 0 && cp->b_or_d == 0
-			&& cp->easy <= 1))
+		if (cp->h.code <= TRIVIAL_CODE)
 		  goto found_and_ok;
 		cp++;
 	      }
@@ -1014,8 +1006,7 @@ convert_to_aggr (type, expr, msgp, protect)
 		 rank_for_overload); /* int (*compar)() */
 
 	--cp;
-	if ((flag_ansi_overloading && (cp->h.code & EVIL_CODE))
-	    || (!flag_ansi_overloading && cp->evil > 1))
+	if (cp->h.code & EVIL_CODE)
 	  {
 	    if (msgp)
 	      *msgp = "ambiguous type conversion possible for `%s'";
@@ -1235,15 +1226,14 @@ cp_convert (type, expr, convtype, flags)
   else if (TREE_CODE (TREE_TYPE (e)) == REFERENCE_TYPE)
     e = convert_from_reference (e);
 
-  if (code == INTEGER_TYPE || code == ENUMERAL_TYPE)
+  if (INTEGRAL_CODE_P (code))
     {
       tree intype = TREE_TYPE (expr);
       enum tree_code form = TREE_CODE (intype);
       /* enum = enum, enum = int, enum = float are all errors. */
       if (flag_int_enum_equivalence == 0
 	  && TREE_CODE (type) == ENUMERAL_TYPE
-	  && (form == INTEGER_TYPE || form == REAL_TYPE
-	      || form == ENUMERAL_TYPE))
+	  && ARITHMETIC_TYPE_P (intype))
 	{
 	  cp_pedwarn ("conversion from `%#T' to `%#T'", intype, type);
 
@@ -1258,8 +1248,22 @@ cp_convert (type, expr, convtype, flags)
 	  tree rval;
 	  rval = build_type_conversion (CONVERT_EXPR, type, expr, 1);
 	  if (rval) return rval;
-	  cp_error ("`%#T' used where an `int' was expected", intype);
+	  if (code == BOOLEAN_TYPE)
+	    cp_error ("`%#T' used where a `bool' was expected", intype);
+	  else
+	    cp_error ("`%#T' used where an `int' was expected", intype);
 	  return error_mark_node;
+	}
+      if (code == BOOLEAN_TYPE)
+	{
+	  tree newe = truthvalue_conversion (e);
+	  /* Avoid stupid (infinite) recursion from backend. */
+	  if (TREE_CODE (newe) != NOP_EXPR || e != TREE_OPERAND (newe, 0))
+	    e = newe;
+	  if (TREE_TYPE (e) == bool_type_node)
+	    return e;
+	  else
+	    return build1 (NOP_EXPR, bool_type_node, e);
 	}
       return fold (convert_to_integer (type, e));
     }
@@ -1554,6 +1558,14 @@ build_type_conversion (code, xtype, expr, for_sure)
   if (TREE_CODE (basetype) == REFERENCE_TYPE)
     basetype = TREE_TYPE (basetype);
 
+  if (TYPE_PTRMEMFUNC_P (basetype) && TREE_CODE (xtype) == BOOLEAN_TYPE)
+    {
+      /* We convert a pointer to member function into a boolean,
+	 by just checking the index value, for == 0, we want false, for
+	 != 0, we want true.  */
+      return convert (xtype, build_component_ref (expr, index_identifier, 0, 0));
+    }
+
   basetype = TYPE_MAIN_VARIANT (basetype);
   if (! TYPE_LANG_SPECIFIC (basetype) || ! TYPE_HAS_CONVERSION (basetype))
     return NULL_TREE;
@@ -1651,6 +1663,30 @@ build_type_conversion (code, xtype, expr, for_sure)
   if (exact_conversion)
     return NULL_TREE;
 
+  if (TREE_CODE (type) == BOOLEAN_TYPE)
+    {
+      tree as_int = build_type_conversion (code, long_long_unsigned_type_node, expr, 0);
+      tree as_ptr = build_type_conversion (code, ptr_type_node, expr, 0);
+      /* We are missing the conversion to pointer to member type. */
+      /* We are missing the conversion to floating type. */
+      if (as_int && as_ptr && for_sure)
+	{
+	  cp_error ("ambiguous conversion from `%T' to `bool', can convert to integral type or pointer", TREE_TYPE (expr));
+	  return error_mark_node;
+	}
+      if (as_int)
+	{
+	  as_int = build_type_conversion (code, long_long_unsigned_type_node, expr, for_sure+exact_conversion*2);
+	  return convert (xtype, as_int);
+	}
+      if (as_ptr)
+	{
+	  as_ptr = build_type_conversion (code, ptr_type_node, expr, for_sure+exact_conversion*2);
+	  return convert (xtype, as_ptr);
+	}
+      return NULL_TREE;
+    }
+
   /* No perfect match found, try default.  */
 #if 0 /* This is wrong; there is no standard conversion from void* to
          anything.  -jason */
@@ -1685,8 +1721,6 @@ build_type_conversion (code, xtype, expr, for_sure)
 	    break;
 	}
     }
-
- try_pointer:
 
   if (TREE_CODE (type) == POINTER_TYPE && TYPE_READONLY (TREE_TYPE (type)))
     {
@@ -1747,7 +1781,7 @@ build_type_conversion (code, xtype, expr, for_sure)
     {
       /* Only accept using an operator double() if there isn't a conflicting
 	 operator int().  */
-      if (flag_ansi_overloading && TYPE_HAS_INT_CONVERSION (basetype))
+      if (TYPE_HAS_INT_CONVERSION (basetype))
 	{
 	  error ("two possible conversions for type `%s'",
 		 TYPE_NAME_STRING (type));
@@ -1758,17 +1792,6 @@ build_type_conversion (code, xtype, expr, for_sure)
       return build_type_conversion_1 (xtype, basetype, expr, typename, for_sure);
     }
 
-  /* THIS IS A KLUDGE.  */
-  if (TREE_CODE (type) != POINTER_TYPE
-      && (code == TRUTH_ANDIF_EXPR
-	  || code == TRUTH_ORIF_EXPR
-	  || code == TRUTH_NOT_EXPR))
-    {
-      /* Here's when we can convert to a pointer.  */
-      type = ptr_type_node;
-      goto try_pointer;
-    }
-
   /* THESE ARE TOTAL KLUDGES.  */
   /* Default promotion yields no new alternatives, try
      conversions which are anti-default, such as
@@ -1777,7 +1800,7 @@ build_type_conversion (code, xtype, expr, for_sure)
 
      */
   if (type_default == type
-      && (TREE_CODE (type) == INTEGER_TYPE || TREE_CODE (type) == REAL_TYPE))
+      && (INTEGRAL_TYPE_P (type) || TREE_CODE (type) == REAL_TYPE))
     {
       int not_again = 0;
 
@@ -1819,19 +1842,10 @@ build_type_conversion (code, xtype, expr, for_sure)
   /* Now, try C promotions...
 
      float -> int
-     int -> float, void *
-     void * -> int
-
-     Truthvalue conversions let us try to convert
-     to pointer if we were going for int, and to int
-     if we were looking for pointer.  */
+     int -> float  */
 
     basetype = save_basetype;
-    if (TREE_CODE (type) == REAL_TYPE
-	|| (TREE_CODE (type) == POINTER_TYPE
-	    && (code == TRUTH_ANDIF_EXPR
-		|| code == TRUTH_ORIF_EXPR
-		|| code == TRUTH_NOT_EXPR)))
+    if (TREE_CODE (type) == REAL_TYPE)
       type = integer_type_node;
     else if (TREE_CODE (type) == INTEGER_TYPE)
       if (TYPE_HAS_REAL_CONVERSION (basetype))
@@ -1917,11 +1931,17 @@ build_default_binary_type_conversion (code, arg1, arg2)
       return 0;
     }
 
-  if (TYPE_HAS_INT_CONVERSION (type1) && TYPE_HAS_REAL_CONVERSION (type1))
-    cp_warning ("ambiguous type conversion for type `%T', defaulting to int",
-		type1);
-  if (TYPE_HAS_INT_CONVERSION (type1))
+  if (code == TRUTH_ANDIF_EXPR
+      || code == TRUTH_ORIF_EXPR)
     {
+      *arg1 = convert (bool_type_node, *arg1);
+      *arg2 = convert (bool_type_node, *arg2);
+    }
+  else if (TYPE_HAS_INT_CONVERSION (type1))
+    {
+      if (TYPE_HAS_REAL_CONVERSION (type1))
+	cp_pedwarn ("ambiguous type conversion for type `%T', defaulting to int",
+		    type1);
       *arg1 = build_type_conversion (code, integer_type_node, *arg1, 1);
       *arg2 = build_type_conversion (code, integer_type_node, *arg2, 1);
     }
@@ -1956,7 +1976,7 @@ build_default_binary_type_conversion (code, arg1, arg2)
   return 1;
 }
 
-/* Must convert two aggregate types to non-aggregate type.
+/* Must convert an aggregate type to non-aggregate type.
    Attempts to find a non-ambiguous, "best" type conversion.
 
    Return 1 on success, 0 on failure.
@@ -1970,21 +1990,22 @@ build_default_unary_type_conversion (code, arg)
      tree *arg;
 {
   tree type = TREE_TYPE (*arg);
-  tree id = TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-    ? TYPE_IDENTIFIER (type) : TYPE_NAME (type);
-  char *name = IDENTIFIER_POINTER (id);
 
   if (! TYPE_HAS_CONVERSION (type))
     {
-      error ("type conversion required for type `%s'", name);
+      cp_error ("type conversion required for type `%T'", type);
       return 0;
     }
 
-  if (TYPE_HAS_INT_CONVERSION (type) && TYPE_HAS_REAL_CONVERSION (type))
-    warning ("ambiguous type conversion for type `%s', defaulting to int",
-	     name);
-  if (TYPE_HAS_INT_CONVERSION (type))
-    *arg = build_type_conversion (code, integer_type_node, *arg, 1);
+  if (code == TRUTH_NOT_EXPR)
+    *arg = convert (bool_type_node, *arg);
+  else if (TYPE_HAS_INT_CONVERSION (type))
+    {
+      if (TYPE_HAS_REAL_CONVERSION (type))
+	cp_pedwarn ("ambiguous type conversion for type `%T', defaulting to int",
+		    type);
+      *arg = build_type_conversion (code, integer_type_node, *arg, 1);
+    }
   else if (TYPE_HAS_REAL_CONVERSION (type))
     *arg = build_type_conversion (code, double_type_node, *arg, 1);
   else
@@ -1995,7 +2016,7 @@ build_default_unary_type_conversion (code, arg)
     }
   if (*arg == NULL_TREE)
     {
-      error ("default type conversion for type `%s' failed", name);
+      cp_error ("default type conversion for type `%T' failed", type);
       return 0;
     }
   return 1;
@@ -2009,17 +2030,21 @@ type_promotes_to (type)
   int constp = TYPE_READONLY (type);
   int volatilep = TYPE_VOLATILE (type);
   type = TYPE_MAIN_VARIANT (type);
-  
-  /* Normally convert enums to int,
-     but convert wide enums to something wider.  */
-  if (TREE_CODE (type) == ENUMERAL_TYPE
-      || type == wchar_type_node)
-    type = type_for_size (MAX (TYPE_PRECISION (type),
-			       TYPE_PRECISION (integer_type_node)),
-			  ((flag_traditional
-			    || (TYPE_PRECISION (type)
-				>= TYPE_PRECISION (integer_type_node)))
-			   && TREE_UNSIGNED (type)));
+
+  /* bool always promotes to int (not unsigned), even if it's the same
+     size.  */
+  if (type == bool_type_node)
+    type = integer_type_node;
+
+  /* Normally convert enums to int, but convert wide enums to something
+     wider.  */
+  else if (TREE_CODE (type) == ENUMERAL_TYPE
+	   || type == wchar_type_node)
+    type = type_for_size
+      (MAX (TYPE_PRECISION (type), TYPE_PRECISION (integer_type_node)),
+       (flag_traditional
+	|| (TYPE_PRECISION (type) >= TYPE_PRECISION (integer_type_node)))
+       && TREE_UNSIGNED (type));
   else if (C_PROMOTING_INTEGER_TYPE_P (type))
     {
       /* Traditionally, unsignedness is preserved in default promotions.

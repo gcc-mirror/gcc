@@ -26,6 +26,7 @@ enum rid
 {
   RID_UNUSED,
   RID_INT,
+  RID_BOOL,
   RID_CHAR,
   RID_WCHAR,
   RID_FLOAT,

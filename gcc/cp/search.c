@@ -2426,7 +2426,7 @@ dfs_init_vbase_pointers (binfo)
 
   this_vbase_ptr = vbase_decl_ptr_intermediate;
 
-  if (TYPE_POINTER_TO (type) != TREE_TYPE (this_vbase_ptr))
+  if (TYPE_POINTER_TO (type) != TYPE_MAIN_VARIANT (TREE_TYPE (this_vbase_ptr)))
     my_friendly_abort (125);
 
   while (fields && DECL_NAME (fields)
@@ -2525,9 +2525,30 @@ expand_indirect_vtbls_init (binfo, true_exp, decl_ptr, use_computed_offsets)
 	  if (use_computed_offsets)
 	    addr = (tree)CLASSTYPE_SEARCH_SLOT (BINFO_TYPE (vbases));
 	  else
-	    addr = convert_pointer_to_real (vbases, vbase_decl_ptr);
-	  if (addr == error_mark_node)
-	    continue;
+	    {
+	      tree vbinfo = get_binfo (TREE_TYPE (vbases),
+				       TREE_TYPE (vbase_decl),
+				       0);
+
+	      /* See is we can get lucky.  */
+	      if (TREE_VIA_VIRTUAL (vbinfo))
+		addr = convert_pointer_to_real (vbinfo, vbase_decl_ptr);
+	      else
+		{
+		  /* We go through all these contortions to avoid this
+		     call, as it will fail when the virtual base type
+		     is ambiguous from here.  We don't yet have a way
+		     to search for and find just an instance of the
+		     virtual base class.  Searching for the binfo in
+		     vbases won't work, as we don't have the vbase
+		     pointer field, for all vbases in the main class,
+		     only direct vbases.  */
+		  addr = convert_pointer_to_real (TREE_TYPE (vbases),
+						  vbase_decl_ptr);
+		  if (addr == error_mark_node)
+		    continue;
+		}
+	    }
 
 	  /* Do all vtables from this virtual base. */
 	  /* This assumes that virtual bases can never serve as parent
@@ -2877,12 +2898,16 @@ dfs_pushdecls (binfo)
 		{
 		  /* Only complain if we shadow something we can access.  */
 		  if (old
+		      && warn_shadow
 		      && ((DECL_LANG_SPECIFIC (old)
 			   && DECL_CLASS_CONTEXT (old) == current_class_type)
 			  || ! TREE_PRIVATE (old)))
 		    /* Should figure out access control more accurately.  */
-		    cp_warning ("shadowing member `%#D' with member function `%#D'",
-				old, *methods);
+		    {
+		      cp_warning_at ("member `%#D' is shadowed", old);
+		      cp_warning_at ("by member function `%#D'", *methods);
+		      warning ("in this context");
+		    }
 		  tmp = build_tree_list (DECL_NAME (*methods), *methods);
 		}
 	      pop_obstacks ();

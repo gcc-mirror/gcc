@@ -39,34 +39,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    and one uses pointers of strictly higher type (derived where
    another uses base), then that alternative is silently chosen.
 
-   If two candidates have a non-monotonic derived/base pointer
-   relationship, and/or a non-monotonic easy conversion relationship,
-   then a warning is emitted to show which paths are possible, and
-   which one is being chosen.
-
-   For example:
-
-   int i;
-   double x;
-
-   overload f;
-   int f (int, int);
-   double f (double, double);
-
-   f (i, x);	// draws a warning
-
-   struct B
-   {
-     f (int);
-   } *bb;
-   struct D : B
-   {
-     f (double);
-   } *dd;
-
-   dd->f (x);	// exact match
-   dd->f (i);	// draws warning
-
    Note that this technique really only works for 255 arguments.  Perhaps
    this is not enough.  */
 
@@ -102,36 +74,19 @@ struct harshness_code
 
 struct candidate
 {
-  /* OLD METHOD */
-  unsigned char evil;	      /* !0 if this will never convert.  */
-  unsigned char ellipsis;     /* !0 if a match against an ellipsis occurred */
-  unsigned char user;	      /* !0 if at least one user-defined type conv.  */
-  unsigned short b_or_d;      /* count number of derived->base or
-				 base->derived conv.  */
-  unsigned short easy;	      /* count number of builtin type conv.  */
-
-  /* NEW METHOD */
   struct harshness_code h;	/* Used for single-argument conversions.  */
 
   int h_len;			/* The length of the harshness vector.  */
 
-  /* Both methods.  */
   tree function;		/* A FUNCTION_DECL */
   tree basetypes;		/* The path to function. */
   tree arg;			/* first parm to function.  */
 
-  /* This union is only here while we maintain both the old and new
-     argument matching schemes.  When it goes away, all v.ansi_harshness
-     references will be just `harshness'.  */
-  union
-    {
-      /* Indexed by argument number, encodes evil, user, d_to_b, and easy
-	 strikes for that argument.  At end of array, we store the index+1
-	 of where we started using default parameters, or 0 if there are
-	 none.  */
-      struct harshness_code *ansi_harshness; /* NEW METHOD */
-      unsigned short *old_harshness;  /* OLD METHOD */
-    } v;
+  /* Indexed by argument number, encodes evil, user, d_to_b, and easy
+     strikes for that argument.  At end of array, we store the index+1
+     of where we started using default parameters, or 0 if there are
+     none.  */
+  struct harshness_code *harshness;
 
   union
     {

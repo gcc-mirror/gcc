@@ -94,6 +94,9 @@ lvalue_p (ref)
 	  return (lvalue_p (TREE_OPERAND (ref, 1))
 		  && lvalue_p (TREE_OPERAND (ref, 2)));
 
+	case MODIFY_EXPR:
+	  return 1;
+
 	case COMPOUND_EXPR:
 	  return lvalue_p (TREE_OPERAND (ref, 1));
 	}
@@ -111,7 +114,7 @@ lvalue_or_else (ref, string)
 {
   int win = lvalue_p (ref);
   if (! win)
-    error ("invalid lvalue in %s", string);
+    error ("non-lvalue in %s", string);
   return win;
 }
 
@@ -305,13 +308,7 @@ build_cplus_method_type (basetype, rettype, argtypes)
   else
     {
       ptype = build_pointer_type (basetype);
-#if 0
-      /* it is wrong to flag the object the pointer points to as readonly
-	 when flag_this_is_variable is 0. */
-      ptype = build_type_variant (ptype, flag_this_is_variable <= 0, 0);
-#else
-      ptype = build_type_variant (ptype, 0, 0);
-#endif
+      ptype = build_type_variant (ptype, 1, 0);
     }
   /* The actual arglist for this function includes a "hidden" argument
      which is "this".  Put it into the list of argument types.  */

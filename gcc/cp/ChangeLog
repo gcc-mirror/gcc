@@ -1,3 +1,207 @@
+Thu May 19 12:08:48 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* cvt.c (type_promotes_to): Make sure bool promotes to int rather
+	than unsigned on platforms where sizeof(char)==sizeof(int).
+
+Wed May 18 14:27:06 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* typeck.c (build_c_cast): Tack on a NOP_EXPR when casting to
+	another variant.
+	(build_modify_expr): Don't strip NOP_EXPRs, and don't get tricky
+	and treat them as lvalues.
+
+	* decl.c (shadow_tag): Do complain about forward declarations of
+	enums and empty declarations.
+	* parse.y: Don't complain about forward declarations of enums and
+	empty declarations.
+
+	* typeck.c (convert_for_assignment): Complain about changing
+	the signedness of a pointer's target type.
+
+	* parse.y (stmt): Move duplicated code for checking case values from
+	here.
+	* decl2.c (check_cp_case_value): To here.  And add a call to
+	constant_expression_warning.
+
+	* typeck.c (convert_for_assignment): Don't complain about assigning
+	a negative value to bool.
+
+	* decl.c (init_decl_processing): Make bool unsigned.
+
+	* class.c (finish_struct): Allow bool bitfields.
+
+Wed May 18 14:41:59 1994  Mike Stump  (mrs@cygnus.com)
+
+	* class.c (finish_base_struct): Make sure we set BINFO_VTABLE and
+	BINFO_VIRTUALS when we choose a new base class to inherit from.
+	* class.c (modify_one_vtable): Use get_vfield_offset to get the
+	offset to the most base class subobject that we derived this binfo
+	from.
+	* class.c (finish_struct): Move code to calculate the
+	DECL_FIELD_BITPOS of the vfield up, as we need might need it for
+	new calls to get_vfield_offset in modify_one_vtable.
+
+Wed May 18 12:35:27 1994  Ian Lance Taylor  (ian@tweedledumb.cygnus.com)
+
+	* Make-lang.in (c++.install-man): Get g++.1 from $(srcdir)/cp.
+
+Wed May 18 03:28:35 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* cvt.c (build_type_conversion): Lose special handling of
+	truthvalues.
+
+	* search.c (dfs_pushdecls): Improve shadowing warning.
+
+Tue May 17 13:34:46 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* init.c (build_delete): Throw away const and volatile on `this'.
+
+	* decl.c (finish_enum): Put the constants in TYPE_VALUES again,
+	rather than the enumerators.
+	(pushtag): s/cdecl/c_decl/g
+
+Mon May 16 23:04:01 1994  Stephen R. van den Berg  (berg@pool.informatik.rwth-aachen.de)
+
+        * cp/typeck.c (common_type): Attribute merging.
+        (comp_types): Utilise COMP_TYPE_ATTRIBUTES macro.
+
+        * cp/parse.y: Revamp attribute parsing.
+
+Mon May 16 01:40:34 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* decl.c (shadow_tag): Also check for inappropriate use of auto and
+	register.
+
+	* method.c (build_overload_name): Clarify that the illegal case is a
+	pointer or reference to array of unknown bound.
+
+	* error.c (dump_type_prefix): Print references to arrays properly.
+
+	* typeck.c (various): Be more helpful in pointer
+	comparison diagnostics.
+
+	* tree.c (lvalue_p): MODIFY_EXPRs are lvalues again.  Isn't this
+	fun?
+
+	* parse.y: Also catch an error after valid stmts.
+
+	* search.c (dfs_init_vbase_pointers): Don't abort because `this' is
+	const.
+
+	* typeck.c (convert_for_initialization): If call to
+	convert_to_reference generated a diagnostic, print out the parm
+	number and function decl if any.
+
+	* errfn.c (cp_thing): Check atarg1 to determine whether or not we're
+	specifying a line, not atarg.
+
+	* tree.c (build_cplus_method_type): Always make `this' const.
+
+	* decl2.c (grokclassfn): If -fthis-is-variable and this function is
+	a constructor or destructor, make `this' non-const.
+
+	* typeck.c (build_modify_expr): Don't warn specially about
+	assignment to `this' here anymore, since it will be caught by the
+	usual machinery.
+
+	* various: Disallow specific GNU extensions (variable-size arrays,
+	etc.) when flag_ansi is set, not necessarily when pedantic is set,
+	so that people can compile with -pedantic-errors for tighter const
+	checking and such without losing desirable extensions.
+
+	* typeck2.c (build_functional_cast): Call build_method_call with
+	LOOKUP_PROTECT.
+	(process_init_constructor): Only process FIELD_DECLs.
+
+	* decl.c (finish_decl): Also force static consts with no explicit
+	initializer that need constructing into the data segment.
+
+	* init.c (build_delete): Undo last patch, as it interferes with
+	automatic cleanups.
+
+Sat May 14 01:59:31 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* call.c, class.h, cp-tree.h, cvt.c, decl2.c: Lose old overloading
+	code.
+
+	* init.c (build_delete): pedwarn about using plain delete to delete
+	an array.
+
+Fri May 13 16:45:07 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* typeck.c (comp_target_types): Be more helpful in contravariance
+	warnings, and make them pedwarns.
+
+	* decl.c (grokdeclarator): Use decl_context to decide whether or not
+	this is an access declaration.
+
+	* class.c (finish_struct_bits): Set TYPE_HAS_INT_CONVERSION if it
+	has a conversion to enum or bool, too.
+
+Fri May 13 16:31:27 1994  Mike Stump  (mrs@cygnus.com)
+
+	* method.c (emit_thunk):  Make declaration for
+	current_call_is_indirect local (needed for hppa).
+
+Fri May 13 16:16:37 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* pt.c (uses_template_parms): Grok BOOLEAN_TYPE.
+	(tsubst): Ditto.
+
+Fri May 13 16:23:32 1994  Mike Stump  (mrs@cygnus.com)
+
+	* pt.c (tsubst): If there is already a function for this expansion,
+	use it.
+	* pt.c (instantiate_template): Ditto.
+
+Fri May 13 10:30:42 1994  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* parse.y (implicitly_scoped_stmt, simple_stmt case): Use
+	kept_level_p for MARK_ENDS argument to expand_end_bindings, to avoid
+	generating debug info for unemitted symbols on some systems.
+
+	* cp-tree.h (build_static_cast, build_reinterpret_cast,
+	build_const_cast): Add declarations.
+
+Fri May 13 09:50:31 1994  Mike Stump  (mrs@cygnus.com)
+
+	* search.c (expand_indirect_vtbls_init): Fix breakage from Apr 27
+	fix.  We now try get_binfo, and if that doesn't find what we want,
+	we go back to the old method, which still sometimes fails.
+
+Fri May 13 01:43:18 1994  Jason Merrill  (jason@deneb.cygnus.com)
+
+	* parse.y (initdcl): Call cplus_decl_attributes on the right
+	variable.
+	* decl2.c (cplus_decl_attributes): Don't call decl_attributes for
+	void_type_node.
+
+	* typeck.c (build_binary_op_nodefault): Change result_type for
+	comparison ops to bool.
+	(build_binary_op): Convert args of && and || to bool.
+	* cvt.c (build_default_binary_type_conversion): Convert args of &&
+	and || to bool.
+	(build_default_unary_type_conversion): Convert arg of ! to bool.
+	(type_promotes_to): bool promotes to int.
+
+Fri May 13 01:43:18 1994  Mike Stump  (mrs@cygnus.com)
+
+	Implement the new builtin `bool' type.
+	* typeck.c (build_binary_op_nodefault): Convert args of && and || to
+	bool.
+	(build_unary_op): Convert arg of ! to bool.
+	* parse.y: Know true and false.  Use bool_truthvalue_conversion.
+	* method.c (build_overload_value): Know bool.
+	(build_overload_name): Ditto.
+	* lex.c (init_lex): Set up RID_BOOL.
+	* gxx.gperf: Add bool, true, false.
+	* error.c (*): Know bool.
+	* decl.c (init_decl_processing): Set up bool, true, false.
+	* cvt.c (cp_convert): Handle conversion to bool.
+	(build_type_conversion): Ditto.
+	* *.c: Accept bool where integers and enums are accepted (use
+	INTEGRAL_CODE_P macro).
+
 Thu May 12 19:13:54 1994  Richard Earnshaw  (rwe11@cl.cam.ac.uk)
 
 	* g++.c: Use #ifdef for __MSDOS__, not #if.
