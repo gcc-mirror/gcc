@@ -1,3 +1,8 @@
+2003-12-19  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* java/awt/FlowLayout.java (layoutContainer): Let components
+	assume their preferred height.  Centre components vertically.
+
 2003-12-19  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/ChannelInputStream.java: New file.
