@@ -3888,6 +3888,11 @@ static sbitmap *pre_pavout;
 static sbitmap *pre_ppin;
 static sbitmap *pre_ppout;
 
+/* Nonzero for expressions that are transparent at the end of the block.
+   This is only zero for expressions killed by abnormal critical edge
+   created by a calls.  */
+static sbitmap *pre_transpout;
+
 /* Used while performing PRE to denote which insns are redundant.  */
 static sbitmap pre_redundant;
 
@@ -3910,6 +3915,8 @@ alloc_pre_mem (n_blocks, n_exprs)
   pre_pavout = sbitmap_vector_alloc (n_blocks, n_exprs);
   pre_ppin = sbitmap_vector_alloc (n_blocks, n_exprs);
   pre_ppout = sbitmap_vector_alloc (n_blocks, n_exprs);
+
+  pre_transpout = sbitmap_vector_alloc (n_blocks, n_exprs);
 }
 
 /* Free vars used for PRE analysis.  */
@@ -3920,7 +3927,6 @@ free_pre_mem ()
   free (pre_transp);
   free (pre_comp);
   free (pre_antloc);
-
   free (pre_avin);
   free (pre_avout);
   free (pre_antin);
@@ -3930,6 +3936,7 @@ free_pre_mem ()
   free (pre_pavout);
   free (pre_ppin);
   free (pre_ppout);
+  free (pre_transpout);
 }
 
 /* Dump PRE data.  */
@@ -3962,6 +3969,9 @@ dump_pre_data (file)
 		       pre_ppin, n_basic_blocks);
   dump_sbitmap_vector (file, "PRE placement possible on outgoing", "BB",
 		       pre_ppout, n_basic_blocks);
+
+  dump_sbitmap_vector (file, "PRE transparent on outgoing", "BB",
+		       pre_transpout, n_basic_blocks);
 }
 
 /* Compute the local properties of each recorded expression.
@@ -4129,6 +4139,57 @@ compute_pre_pavinout ()
     fprintf (gcse_file, "partially avail expr computation: %d passes\n", passes);
 }
 
+/* Compute transparent outgoing information for each block.
+
+   An expression is transparent to an edge unless it is killed by
+   the edge itself.  This can only happen with abnormal control flow,
+   when the edge is traversed through a call.  This happens with
+   non-local labels and exceptions.
+
+   This would not be necessary if we split the edge.  While this is
+   normally impossible for abnormal critical edges, with some effort
+   it should be possible with exception handling, since we still have
+   control over which handler should be invoked.  But due to increased
+   EH table sizes, this may not be worthwhile.  */
+
+static void
+compute_pre_transpout ()
+{
+  int bb;
+
+  sbitmap_vector_ones (pre_transpout, n_basic_blocks);
+
+  for (bb = 0; bb < n_basic_blocks; ++bb)
+    {
+      int i;
+
+      /* Note that flow inserted a nop a the end of basic blocks that
+	 end in call instructions for reasons other than abnormal
+	 control flow.  */
+      if (GET_CODE (BLOCK_END (bb)) != CALL_INSN)
+	continue;
+
+      for (i = 0; i < expr_hash_table_size; i++)
+	{
+	  struct expr *expr;
+	  for (expr = expr_hash_table[i]; expr ; expr = expr->next_same_hash)
+	    if (GET_CODE (expr->expr) == MEM)
+	      {
+		rtx addr = XEXP (expr->expr, 0);
+
+		if (GET_CODE (addr) == SYMBOL_REF
+		    && CONSTANT_POOL_ADDRESS_P (addr))
+		  continue;
+		
+		/* ??? Optimally, we would use interprocedural alias
+		   analysis to determine if this mem is actually killed
+		   by this call.  */
+		RESET_BIT (pre_transpout[bb], expr->bitmap_index);
+	      }
+	}
+    }
+}   
+
 /* Compute "placement possible" information on entrance and exit of
    each block.
 
@@ -4209,11 +4270,12 @@ compute_pre_ppinout ()
       for (bb = 0; bb < n_basic_blocks - 1; bb++)
 	{
 	  sbitmap_ptr ppout = pre_ppout[bb]->elms;
+	  sbitmap_ptr transpout = pre_transpout[bb]->elms;
 
 	  for (i = 0; i < size; i++)
 	    {
 	      int_list_ptr succ;
-	      SBITMAP_ELT_TYPE tmp = -1L;
+	      SBITMAP_ELT_TYPE tmp = *transpout;
 
 	      for (succ = s_succs[bb]; succ != NULL; succ = succ->next)
 		{
@@ -4226,13 +4288,14 @@ compute_pre_ppinout ()
 		  ppin = pre_ppin[succ_bb]->elms + i;
 		  tmp &= *ppin;
 		}
+
 	      if (*ppout != tmp)
 		{
 		  changed = 1;
-		  *ppout++ = tmp;
+		  *ppout = tmp;
 		}
-	      else
-		ppout++;
+
+	      ppout++; transpout++;
 	    }
 	}
 
@@ -4252,6 +4315,7 @@ compute_pre_data ()
   compute_pre_avinout ();
   compute_pre_antinout ();
   compute_pre_pavinout ();
+  compute_pre_transpout ();
   compute_pre_ppinout ();
   if (gcse_file)
     fprintf (gcse_file, "\n");
@@ -4376,10 +4440,7 @@ pre_insert_insn (expr, bb)
     }
   /* Likewise if the last insn is a call, as will happen in the presence
      of exception handling.  */
-  /* ??? The flag_exceptions test is not exact.  We don't know if we are
-     actually in an eh region.  Fix flow to tell us this.  */
-  else if (GET_CODE (insn) == CALL_INSN
-	   && (current_function_has_nonlocal_label || flag_exceptions))
+  else if (GET_CODE (insn) == CALL_INSN)
     {
       HARD_REG_SET parm_regs;
       int nparm_regs;
@@ -4409,7 +4470,7 @@ pre_insert_insn (expr, bb)
 	  {
 	    int regno = REGNO (XEXP (XEXP (p, 0), 0));
 	    if (regno >= FIRST_PSEUDO_REGISTER)
-	      abort();
+	      abort ();
 	    SET_HARD_REG_BIT (parm_regs, regno);
 	    nparm_regs++;
 	  }
