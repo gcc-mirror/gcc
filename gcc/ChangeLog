@@ -1,5 +1,10 @@
 2002-05-17  Richard Henderson  <rth@redhat.com>
 
+	* config/ia64/ia64.md: Use braced strings instead of quoted strings
+	for code blocks.  Tidy whitespace.
+
+2002-05-17  Richard Henderson  <rth@redhat.com>
+
 	* hooks.c (hook_tree_bool_false): New.
 	* hooks.h: Declare it.
 	* target-def.h (TARGET_ASM_SELECT_SECTION): New.
