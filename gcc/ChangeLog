@@ -1,5 +1,21 @@
 2003-06-16  Roger Sayle  <roger@eyesopen.com>
 
+	* optabs.h (enum optab_index): Add new OTI_tan and OTI_atan.
+	(tan_optab, atan_optab): Define corresponding macros.
+	* optabs.c (init_optabs): Initialize tan_optab and atan_optab.
+	* genopinit.c (optabs): Implement tan_optab and atan_optab
+	using tan?f2 and atan?f2 patterns.
+	* builtins.c (expand_builtin_mathfn): Handle BUILT_IN_TAN{,F,L}
+	using tan_optab, and BUILT_IN_ATAN{,F,L} using atan_optab.
+	Change the default value of errno_set to false.
+	(expand_builtin): Expand BUILT_IN_TAN{,F,L} and BUILT_IN_ATAN{,F,L}
+	using expand_builtin_mathfn.
+
+	* config/i386/i386.md (atansf2, atandf2, atanxf2, atantf2): New
+	expander patterns implemented using existing atan2?f3 patterns.
+
+2003-06-16  Roger Sayle  <roger@eyesopen.com>
+
 	* expr.c (expand_expr <PLUS_EXPR>): If operand_equal_p considers
 	both operands of the addition equal, reuse the expanded RTL.
 	(expand_expr <MULT_EXPR>): Likewise for multiplication.

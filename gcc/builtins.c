@@ -1702,7 +1702,7 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
   tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
   tree arglist = TREE_OPERAND (exp, 1);
   enum machine_mode argmode;
-  bool errno_set = true;
+  bool errno_set = false;
 
   if (!validate_arglist (arglist, REAL_TYPE, VOID_TYPE))
     return 0;
@@ -1744,35 +1744,43 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
     case BUILT_IN_SQRT:
     case BUILT_IN_SQRTF:
     case BUILT_IN_SQRTL:
-      builtin_optab = sqrt_optab; break;
+      errno_set = true; builtin_optab = sqrt_optab; break;
     case BUILT_IN_EXP:
     case BUILT_IN_EXPF:
     case BUILT_IN_EXPL:
-      builtin_optab = exp_optab; break;
+      errno_set = true; builtin_optab = exp_optab; break;
     case BUILT_IN_LOG:
     case BUILT_IN_LOGF:
     case BUILT_IN_LOGL:
-      builtin_optab = log_optab; break;
+      errno_set = true; builtin_optab = log_optab; break;
+    case BUILT_IN_TAN:
+    case BUILT_IN_TANF:
+    case BUILT_IN_TANL:
+      builtin_optab = tan_optab; break;
+    case BUILT_IN_ATAN:
+    case BUILT_IN_ATANF:
+    case BUILT_IN_ATANL:
+      builtin_optab = atan_optab; break;
     case BUILT_IN_FLOOR:
     case BUILT_IN_FLOORF:
     case BUILT_IN_FLOORL:
-      errno_set = false ; builtin_optab = floor_optab; break;
+      builtin_optab = floor_optab; break;
     case BUILT_IN_CEIL:
     case BUILT_IN_CEILF:
     case BUILT_IN_CEILL:
-      errno_set = false ; builtin_optab = ceil_optab; break;
+      builtin_optab = ceil_optab; break;
     case BUILT_IN_TRUNC:
     case BUILT_IN_TRUNCF:
     case BUILT_IN_TRUNCL:
-      errno_set = false ; builtin_optab = trunc_optab; break;
+      builtin_optab = trunc_optab; break;
     case BUILT_IN_ROUND:
     case BUILT_IN_ROUNDF:
     case BUILT_IN_ROUNDL:
-      errno_set = false ; builtin_optab = round_optab; break;
+      builtin_optab = round_optab; break;
     case BUILT_IN_NEARBYINT:
     case BUILT_IN_NEARBYINTF:
     case BUILT_IN_NEARBYINTL:
-      errno_set = false ; builtin_optab = nearbyint_optab; break;
+      builtin_optab = nearbyint_optab; break;
     default:
       abort ();
     }
@@ -4416,6 +4424,12 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_LOG:
     case BUILT_IN_LOGF:
     case BUILT_IN_LOGL:
+    case BUILT_IN_TAN:
+    case BUILT_IN_TANF:
+    case BUILT_IN_TANL:
+    case BUILT_IN_ATAN:
+    case BUILT_IN_ATANF:
+    case BUILT_IN_ATANL:
       /* Treat these like sqrt only if unsafe math optimizations are allowed,
 	 because of possible accuracy problems.  */
       if (! flag_unsafe_math_optimizations)

@@ -1,3 +1,9 @@
+2003-06-16  Roger Sayle  <roger@eyesopen.com>
+
+	* gcc.dg/i386-387-5.c: New test case.
+	* gcc.dg/i386-387-6.c: New test case.
+	* gcc.dg/builtins-23.c: New test case.
+
 2003-06-15  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/builtins-22.c: New test case.
