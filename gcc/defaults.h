@@ -737,4 +737,8 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)
 #endif
 
+#ifndef REVERSIBLE_CC_MODE
+#define REVERSIBLE_CC_MODE(MODE) 0
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */

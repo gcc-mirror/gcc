@@ -1,5 +1,11 @@
 2004-03-15  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* defaults.h (REVERSIBLE_CC_MODE): Define.
+	* jump.c (reversed_comparison_code_parts): Don't check if
+	REVERSIBLE_CC_MODE is defined.
+
+2004-03-15  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* c-incpath.c, c-incpath.h, c-pch.c, c.opt, cppexp.c,
 	et-forest.h, genattr.c, ggc-none.c, hosthooks-def.h,
 	hosthooks.h, params.h, ra-colorize.c, web.c,

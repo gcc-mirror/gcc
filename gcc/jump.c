@@ -648,7 +648,6 @@ reversed_comparison_code_parts (enum rtx_code code, rtx arg0, rtx arg1, rtx insn
   /* First see if machine description supply us way to reverse the comparison.
      Give it priority over everything else to allow machine description to do
      tricks.  */
-#ifdef REVERSIBLE_CC_MODE
   if (GET_MODE_CLASS (mode) == MODE_CC
       && REVERSIBLE_CC_MODE (mode))
     {
@@ -657,7 +656,6 @@ reversed_comparison_code_parts (enum rtx_code code, rtx arg0, rtx arg1, rtx insn
 #endif
       return reverse_condition (code);
     }
-#endif
 
   /* Try a few special cases based on the comparison code.  */
   switch (code)
