@@ -1018,6 +1018,25 @@ replace_immediate_uses (tree var, tree repl)
 	      propagate_value (use_p, repl);
 	}
 
+      /* FIXME.  If REPL is a constant, we need to fold STMT.
+	 However, fold_stmt wants a pointer to the statement, because
+	 it may happen that it needs to replace the whole statement
+	 with a new expression.  Since the current def-use machinery
+	 does not return pointers to statements, we call fold_stmt
+	 with the address of a local temporary, if that call changes
+	 the temporary then we fall on our swords.
+
+	 Note that all this will become unnecessary soon.  This
+	 pass is being replaced with a proper copy propagation pass
+	 for 4.1 (dnovillo, 2004-09-17).  */
+      if (TREE_CODE (repl) != SSA_NAME)
+	{
+	  tree tmp = stmt;
+	  fold_stmt (&tmp);
+	  if (tmp != stmt)
+	    abort ();
+	}
+
       /* If REPL is a pointer, it may have different memory tags associated
 	 with it.  For instance, VAR may have had a name tag while REPL
 	 only had a type tag.  In these cases, the virtual operands (if
