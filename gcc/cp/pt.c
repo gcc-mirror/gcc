@@ -3581,9 +3581,16 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
     }
   else if (TREE_CODE (d1) == TYPE_DECL && IS_AGGR_TYPE (TREE_TYPE (d1)))
     {
-      if (CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (d1)))
+      tree type = TREE_TYPE (d1);
+
+      /* If we are declaring a constructor, say A<T>::A<T>, we will get
+	 an implicit typename for the second A.  Deal with it.  */
+      if (TREE_CODE (type) == TYPENAME_TYPE && TREE_TYPE (type))
+	type = TREE_TYPE (type);
+	
+      if (CLASSTYPE_TEMPLATE_INFO (type))
 	{
-	  template = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (d1));
+	  template = CLASSTYPE_TI_TEMPLATE (type);
 	  d1 = DECL_NAME (template);
 	}
     }
