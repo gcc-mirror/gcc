@@ -1,3 +1,9 @@
+Wed Oct 13 01:44:29 1999  Carol LePage  <carolo@hal.com>
+
+        * configure.in (sparc-hal-solaris2*): Fix xm_file, xm_defines,
+	float_format and thread_file definitions.
+	* configure: Rebuilt.
+
 Wed Oct 13 09:25:03 1999  Niels Möller <nisse@lysator.liu.se>
 
 	* extend.texi (Function Names): Document types of function names.
