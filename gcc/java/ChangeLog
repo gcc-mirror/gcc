@@ -1,3 +1,9 @@
+2002-03-22  Mark Wielaard  <mark@klomp.org>
+
+	Fix for PR java/5368:
+	* parse.y (resolve_qualified_expression_name): Use decl not field_decl
+	when printing error message.
+
 2002-03-25  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* decl.c (maybe_build_cleanup): Remove.

@@ -9804,7 +9804,7 @@ resolve_qualified_expression_name (wfl, found_decl, where_found, type_found)
 		    (qual_wfl, "Attempt to reference field `%s' in `%s %s'",
 		     IDENTIFIER_POINTER (EXPR_WFL_NODE (qual_wfl)),
 		     lang_printable_name (type, 0),
-		     IDENTIFIER_POINTER (DECL_NAME (field_decl)));
+		     IDENTIFIER_POINTER (DECL_NAME (decl)));
 		  return 1;
 		}
 	      
