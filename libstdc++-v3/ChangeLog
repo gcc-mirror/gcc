@@ -1,3 +1,7 @@
+2004-01-31  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.tcc (_Rep::_S_create): Minor tweak.
+
 2004-01-30  Paolo Carlini  <pcarlini@suse.de>
 
 	* testsuite/21_strings/basic_string/cons/char/6.cc: New.

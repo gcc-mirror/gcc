@@ -514,11 +514,10 @@ namespace std
       // Whew. Seemingly so needy, yet so elemental.
       size_type __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
 
-      if (__size + __malloc_header_size > __pagesize)
+      const size_type __adj_size = __size + __malloc_header_size;
+      if (__adj_size > __pagesize)
 	{
-	  const size_type __extra = (__pagesize
-				     - (__size + __malloc_header_size)
-				     % __pagesize);
+	  const size_type __extra = __pagesize - __adj_size % __pagesize;
 	  __capacity += __extra / sizeof(_CharT);
 	  // Never allocate a string bigger than _S_max_size.
 	  if (__capacity > _S_max_size)
@@ -527,9 +526,7 @@ namespace std
 	}
       else if (__size > __subpagesize)
 	{
-	  const size_type __extra = (__subpagesize
-				     - (__size + __malloc_header_size)
-				     % __subpagesize);
+	  const size_type __extra = __subpagesize - __adj_size % __subpagesize;
 	  __capacity += __extra / sizeof(_CharT);
 	  __size = (__capacity + 1) * sizeof(_CharT) + sizeof(_Rep);
 	}
