@@ -1,5 +1,10 @@
 2000-02-10  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
+	* fixinc/server.c (load_data): Return NULL if the marker line is
+	not found.
+	(run_shell): If load_data returns NULL, retry the command once, in
+	a new shell.
+
 	* configure: Rebuilt.
 
 2000-02-09  Bruce Korb  <bkorb@gnu.org>
