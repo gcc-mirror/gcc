@@ -1,3 +1,7 @@
+2005-02-18  Jason Merrill  <jason@redhat.com>
+
+	* gimplify.c (gimplify_modify_expr_rhs) [CALL_EXPR]: Revert again.
+
 2005-02-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm/lib1funcs.asm (FUNC_ALIAS): New macro.
