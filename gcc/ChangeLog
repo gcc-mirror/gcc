@@ -1,3 +1,8 @@
+Thu Sep  9 17:23:19 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* except.c (call_get_eh_context): Add root when allocating static
+	tree variable.
+
 Thu Sep  9 15:24:59 BST 1999  Richard Earnshaw <rearnsha@arm.com>
 
 	* arm.c: Include "ggc.h".

@@ -1101,6 +1101,8 @@ call_get_eh_context ()
       make_decl_rtl (fn, NULL_PTR, 1);
       assemble_external (fn);
       pop_obstacks ();
+
+      ggc_add_tree_root (&fn, 1);
     }
 
   expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
