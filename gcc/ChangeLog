@@ -1,18 +1,12 @@
+2002-04-16  Hartmut Penner <hpenner@de.ibm.com>
+
+	PR target/6305
+	* config/s390/s390.md (mulsidi3): Set both subregs of the
+	multiword register. 
+
 2002-04-16  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/altivec.h (vec_addc): Type check.
-
-2002-04-16  Jakub Jelinek  <jakub@redhat.com>
-
-	PR target/6303
-	* dwarf2out.c (rtl_for_decl_location): Call ASM_SIMPLIFY_DWARF_ADDR
-	before returning.
-	* config/i386/i386.c (i386_simplify_dwarf_addr): Simplify @GOT only
-	when inside of MEM by eliminating the indirection too.
-	* config/s390/s390.h (ASM_SIMPLIFY_DWARF_ADDR): Define.
-	* config/s390/s390.c (s390_simplify_dwarf_addr): New.
-	* config/s390/s390-protos.h (s390_simplify_dwarf_addr): Add
-	prototype.
 
 2002-04-16  Jakub Jelinek  <jakub@redhat.com>
 
