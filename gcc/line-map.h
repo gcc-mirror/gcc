@@ -61,6 +61,8 @@ struct line_maps
   unsigned int allocated;
   unsigned int used;
 
+  unsigned int cache;
+
   /* The most recently listed include stack, if any, starts with
      LAST_LISTED as the topmost including file.  -1 indicates nothing
      has been listed yet.  */
