@@ -1,0 +1,6 @@
+# Override t-linux.  We don't want -fPIC.
+CRTSTUFF_T_CFLAGS_S =
+TARGET_LIBGCC2_CFLAGS =
+
+# Modify the shared lib version file
+SHLIB_MKMAP_OPTS = -v dotsyms=1
