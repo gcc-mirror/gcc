@@ -1,5 +1,5 @@
 /* Generate code from machine description to compute values of attributes.
-   Copyright (C) 1989, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1992 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -1072,12 +1072,12 @@ fill_attr (attr)
     }
 }
 
-/* Given an expression EXP, see if it is a COND that has a test that checks
-   relative positions of insns (uses MATCH_DUP or PC).  If so, replace it
-   with what is obtained by passing the expression to ADDRESS_FN.  If not
-   but it is a COND, call this routine recursively on each value (including
-   the default value).  Otherwise, return the value returned by NO_ADDRESS_FN
-   applied to EXP.  */
+/* Given an expression EXP, see if it is a COND or IF_THEN_ELSE that has a
+   test that checks relative positions of insns (uses MATCH_DUP or PC).
+   If so, replace it with what is obtained by passing the expression to
+   ADDRESS_FN.  If not but it is a COND or IF_THEN_ELSE, call this routine
+   recursively on each value (including the default value).  Otherwise,
+   return the value returned by NO_ADDRESS_FN applied to EXP.  */
 
 static rtx
 substitute_address (exp, no_address_fn, address_fn)
@@ -1088,32 +1088,52 @@ substitute_address (exp, no_address_fn, address_fn)
   int i;
   rtx newexp;
 
-  if (GET_CODE (exp) != COND)
-    return (*no_address_fn) (exp);
-
-  /* See if any tests use addresses.  */
-  address_used = 0;
-  for (i = 0; i < XVECLEN (exp, 0); i += 2)
-    walk_attr_value (XVECEXP (exp, 0, i));
-
-  if (address_used)
-    return (*address_fn) (exp);
-
-  /* Make a new copy of this COND, replacing each element.  */
-  newexp = rtx_alloc (COND);
-  XVEC (newexp, 0) = rtvec_alloc (XVECLEN (exp, 0));
-  for (i = 0; i < XVECLEN (exp, 0); i += 2)
+  if (GET_CODE (exp) == COND)
     {
-      XVECEXP (newexp, 0, i) = XVECEXP (exp, 0, i);
-      XVECEXP (newexp, 0, i + 1) = substitute_address (XVECEXP (exp, 0, i + 1),
-						       no_address_fn,
-						       address_fn);
+      /* See if any tests use addresses.  */
+      address_used = 0;
+      for (i = 0; i < XVECLEN (exp, 0); i += 2)
+	walk_attr_value (XVECEXP (exp, 0, i));
+
+      if (address_used)
+	return (*address_fn) (exp);
+
+      /* Make a new copy of this COND, replacing each element.  */
+      newexp = rtx_alloc (COND);
+      XVEC (newexp, 0) = rtvec_alloc (XVECLEN (exp, 0));
+      for (i = 0; i < XVECLEN (exp, 0); i += 2)
+	{
+	  XVECEXP (newexp, 0, i) = XVECEXP (exp, 0, i);
+	  XVECEXP (newexp, 0, i + 1)
+	    = substitute_address (XVECEXP (exp, 0, i + 1),
+				  no_address_fn, address_fn);
+	}
+
+      XEXP (newexp, 1) = substitute_address (XEXP (exp, 1),
+					     no_address_fn, address_fn);
+
+      return newexp;
     }
 
-  XEXP (newexp, 1) = substitute_address (XEXP (exp, 1),
-					 no_address_fn, address_fn);
+  else if (GET_CODE (exp) == IF_THEN_ELSE)
+    {
+      address_used = 0;
+      walk_attr_value (XEXP (exp, 0));
+      if (address_used)
+	return (*address_fn) (exp);
 
-  return newexp;
+      newexp = rtx_alloc (IF_THEN_ELSE);
+      XEXP (newexp, 0) = substitute_address (XEXP (exp, 0),
+					     no_address_fn, address_fn);
+      XEXP (newexp, 1) = substitute_address (XEXP (exp, 1),
+					     no_address_fn, address_fn);
+      XEXP (newexp, 2) = substitute_address (XEXP (exp, 2),
+					     no_address_fn, address_fn);
+
+      return newexp;
+    }
+
+  return (*no_address_fn) (exp);
 }
 
 /* Make new attributes from the `length' attribute.  The following are made,

@@ -1,7 +1,7 @@
 /* Generate from machine description:
 
    - some #define configuration flags.
-   Copyright (C) 1987 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

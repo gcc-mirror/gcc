@@ -2,7 +2,7 @@
 
    - some macros CODE_FOR_... giving the insn_code_number value
    for each of the defined standard insn names.
-   Copyright (C) 1987 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1991 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
