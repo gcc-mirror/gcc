@@ -109,16 +109,16 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    ASM_OUTPUT_LABEL ((FILE), (NAME)),			\
    fprintf ((FILE), "\t.set .,.+%u\n", (ROUNDED)))
 
-/* Define a few machine-specific details
-   of the implementation of constructors.  */
+/* Define a few machine-specific details of the implementation of
+   constructors.  */
 
 #undef INIT_SECTION_ASM_OP
 #define INIT_SECTION_ASM_OP     ".section .init,\"x\""
 
-#define CTORS_SECTION_ASM_OP \
-  INIT_SECTION_ASM_OP "\n"	\
-  "\tpushl $0\n\t"		\
-  DATA_SECTION_ASM_OP
+#define CTOR_LIST_BEGIN				\
+  asm (INIT_SECTION_ASM_OP);			\
+  asm ("pushl $0")
+#define CTOR_LIST_END CTOR_LIST_BEGIN
 
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
   do {						\
