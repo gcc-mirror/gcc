@@ -1,3 +1,7 @@
+Sun Jul 30 20:21:54 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* loop.c (express_from_1): Fix call of simplify_gen_binary.
+
 Sun Jul 30 20:08:37 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* simplify-rtx.c (simplify_relational_operation): Verify that mode ==
