@@ -2019,8 +2019,8 @@ This attribute specifies a minimum alignment (in bytes) for variables
 of the specified type.  For example, the declarations:
 
 @smallexample
-struct S @{ short f[3]; @} __attribute__ ((aligned (8));
-typedef int more_aligned_int __attribute__ ((aligned (8));
+struct S @{ short f[3]; @} __attribute__ ((aligned (8)));
+typedef int more_aligned_int __attribute__ ((aligned (8)));
 @end smallexample
 
 @noindent
