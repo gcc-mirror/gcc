@@ -1,3 +1,18 @@
+Sat Feb 22 02:35:07 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (def_builtin):  Special case 64bit builtins.
+	(MASK_SSE164, MASK_SSE264): New constants.
+	(builtin_description): Add 64bit builtins.
+	(ix86_init_mmx_sse_builtins): Likewise.
+	* i386.h (enum ix86_builtins): Likewise.
+	* i386.md (cvtss2siq, cvttss2siq, cvtsd2siq, cvttsd2siq, cvtsi2sdq,
+	sse2_movq2dq_rex64, sse2_movsq2q_rex64): New.
+	(sse2_movq2dq, sse2_movsq2q): Disable for 64bit.
+	* mmintrin.h (_mm_cvtsi64x_si64, _mm_set_pi64x, _mm_cvtsi64_si64x): New.
+	* xmmintrin.h (_mm_cvtss_si64x, _mm_cvttss_si64x, _mm_cvtsi64x_ss,
+	_mm_set_epi64x, _mm_set1_epi64x, _mm_cvtsd_si64x, _mm_cvttsd_si64x,
+	_mm_cvtsi64x_sd, _mm_cvtsi64x_si128, _mm_cvtsi128_si64x): New.
+
 Sat Feb 22 00:48:22 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (builtin_description): Add __builtin_ia32_paddq and

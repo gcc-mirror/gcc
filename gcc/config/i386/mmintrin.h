@@ -56,6 +56,22 @@ _mm_cvtsi32_si64 (int __i)
   return (__m64) __tmp;
 }
 
+#ifdef __x86_64__
+/* Convert I to a __m64 object.  */
+static __inline __m64 
+_mm_cvtsi64x_si64 (long long __i)
+{
+  return (__m64) __i;
+}
+
+/* Convert I to a __m64 object.  */
+static __inline __m64 
+_mm_set_pi64x (long long __i)
+{
+  return (__m64) __i;
+}
+#endif
+
 /* Convert the lower 32 bits of the __m64 object into an integer.  */
 static __inline int
 _mm_cvtsi64_si32 (__m64 __i)
@@ -63,6 +79,15 @@ _mm_cvtsi64_si32 (__m64 __i)
   long long __tmp = (long long)__i;
   return __tmp;
 }
+
+#ifdef __x86_64__
+/* Convert the lower 32 bits of the __m64 object into an integer.  */
+static __inline long long
+_mm_cvtsi64_si64x (__m64 __i)
+{
+  return (long long)__i;
+}
+#endif
 
 /* Pack the four 16-bit values from M1 into the lower four 8-bit values of
    the result, and the four 16-bit values from M2 into the upper four 8-bit
