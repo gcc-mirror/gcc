@@ -1,3 +1,11 @@
+2004-01-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (h8300_return_in_memory): New.
+	(TARGET_STRUCT_VALUE_RTX): Likewise.
+	(TARGET_RETURN_IN_MEMORY): Likewise.
+	* config/h8300/h8300.h (STRUCT_VALUE): Remove.
+	(RETURN_IN_MEMORY): Likewise.
+
 2004-01-15  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR optimization/13375

@@ -4564,6 +4564,13 @@ h8300_init_libfuncs (void)
   set_optab_libfunc (umod_optab, HImode, "__umodhi3");
 }
 
+static bool
+h8300_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+{
+  return (TYPE_MODE (type) == BLKmode
+	  || GET_MODE_SIZE (TYPE_MODE (type)) > (TARGET_H8300 ? 4 : 8));
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE h8300_attribute_table
@@ -4590,5 +4597,10 @@ h8300_init_libfuncs (void)
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS h8300_init_libfuncs
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX hook_rtx_tree_int_null
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY h8300_return_in_memory
 
 struct gcc_target targetm = TARGET_INITIALIZER;
