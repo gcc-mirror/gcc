@@ -350,7 +350,7 @@ save_for_inline_nocopy (fndecl)
      for the parms, prior to elimination of virtual registers.
      These values are needed for substituting parms properly.  */
 
-  parmdecl_map = (tree *) alloca (max_parm_reg * sizeof (tree));
+  parmdecl_map = (tree *) xmalloc (max_parm_reg * sizeof (tree));
 
   /* Make and emit a return-label if we have not already done so.  */
 
@@ -401,6 +401,9 @@ save_for_inline_nocopy (fndecl)
   current_function->original_arg_vector = argvec;
   current_function->original_decl_initial = DECL_INITIAL (fndecl);
   DECL_SAVED_INSNS (fndecl) = current_function;
+
+  /* Clean up.  */
+  free (parmdecl_map);
 }
 
 /* Note whether a parameter is modified or not.  */
@@ -566,8 +569,8 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   /* Expand the function arguments.  Do this first so that any
      new registers get created before we allocate the maps.  */
 
-  arg_vals = (rtx *) alloca (nargs * sizeof (rtx));
-  arg_trees = (tree *) alloca (nargs * sizeof (tree));
+  arg_vals = (rtx *) xmalloc (nargs * sizeof (rtx));
+  arg_trees = (tree *) xmalloc (nargs * sizeof (tree));
 
   for (formal = DECL_ARGUMENTS (fndecl), actual = parms, i = 0;
        formal;
@@ -649,11 +652,10 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	
   /* Allocate the structures we use to remap things.  */
 
-  map = (struct inline_remap *) alloca (sizeof (struct inline_remap));
+  map = (struct inline_remap *) xmalloc (sizeof (struct inline_remap));
   map->fndecl = fndecl;
 
-  map->reg_map = (rtx *) alloca (max_regno * sizeof (rtx));
-  bzero ((char *) map->reg_map, max_regno * sizeof (rtx));
+  map->reg_map = (rtx *) xcalloc (max_regno, sizeof (rtx));
 
   /* We used to use alloca here, but the size of what it would try to
      allocate would occasionally cause it to exceed the stack limit and
@@ -663,8 +665,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   map->label_map = real_label_map;
 
   inl_max_uid = (inl_f->emit->x_cur_insn_uid + 1);
-  map->insn_map = (rtx *) alloca (inl_max_uid * sizeof (rtx));
-  bzero ((char *) map->insn_map, inl_max_uid * sizeof (rtx));
+  map->insn_map = (rtx *) xcalloc (inl_max_uid, sizeof (rtx));
   map->min_insnno = 0;
   map->max_insnno = inl_max_uid;
 
@@ -1356,8 +1357,13 @@ expand_inline_function (fndecl, parms, target, ignore, type,
   /* Make sure we free the things we explicitly allocated with xmalloc.  */
   if (real_label_map)
     free (real_label_map);
-  if (map)
-    VARRAY_FREE (map->const_equiv_varray);
+  VARRAY_FREE (map->const_equiv_varray);
+  free (map->reg_map);
+  free (map->insn_map);
+  free (map);
+  free (arg_vals);
+  free (arg_trees);
+
   inlining = inlining_previous;
 
   return target;

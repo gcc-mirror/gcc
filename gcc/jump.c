@@ -205,8 +205,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
   /* Leave some extra room for labels and duplicate exit test insns
      we make.  */
   max_jump_chain = max_uid * 14 / 10;
-  jump_chain = (rtx *) alloca (max_jump_chain * sizeof (rtx));
-  bzero ((char *) jump_chain, max_jump_chain * sizeof (rtx));
+  jump_chain = (rtx *) xcalloc (max_jump_chain, sizeof (rtx));
 
   mark_all_labels (f, cross_jump);
 
@@ -227,7 +226,7 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
   /* Quit now if we just wanted to rebuild the JUMP_LABEL and REG_LABEL
      notes and recompute LABEL_NUSES.  */
   if (mark_labels_only)
-    return;
+    goto end;
 
   exception_optimize ();
 
@@ -245,10 +244,8 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
       /* Zero the "deleted" flag of all the "deleted" insns.  */
       for (insn = f; insn; insn = NEXT_INSN (insn))
 	INSN_DELETED_P (insn) = 0;
-
-      /* Show that the jump chain is not valid.  */
-      jump_chain = 0;
-      return;
+      
+      goto end;
     }
 
 #ifdef HAVE_return
@@ -2301,7 +2298,9 @@ jump_optimize_1 (f, cross_jump, noop_moves, after_regscan, mark_labels_only)
   if (calculate_can_reach_end (last_insn, 0, 1))
     can_reach_end = 1;
 
-  /* Show JUMP_CHAIN no longer valid.  */
+end:
+  /* Clean up.  */
+  free (jump_chain);
   jump_chain = 0;
 }
 
@@ -2872,10 +2871,7 @@ duplicate_loop_exit_test (loop_start)
 	    /* We can do the replacement.  Allocate reg_map if this is the
 	       first replacement we found.  */
 	    if (reg_map == 0)
-	      {
-		reg_map = (rtx *) alloca (max_reg * sizeof (rtx));
-		bzero ((char *) reg_map, max_reg * sizeof (rtx));
-	      }
+	      reg_map = (rtx *) xcalloc (max_reg, sizeof (rtx));
 
 	    REG_LOOP_TEST_P (reg) = 1;
 
@@ -2986,6 +2982,10 @@ duplicate_loop_exit_test (loop_start)
   emit_note_before (NOTE_INSN_LOOP_VTOP, exitcode);
 
   delete_insn (next_nonnote_insn (loop_start));
+  
+  /* Clean up.  */
+  if (reg_map)
+    free (reg_map);
 
   return 1;
 }
@@ -5182,9 +5182,9 @@ thread_jumps (f, max_reg, flag_before_loop)
   int *all_reset;
 
   /* Allocate register tables and quick-reset table.  */
-  modified_regs = (char *) alloca (max_reg * sizeof (char));
-  same_regs = (int *) alloca (max_reg * sizeof (int));
-  all_reset = (int *) alloca (max_reg * sizeof (int));
+  modified_regs = (char *) xmalloc (max_reg * sizeof (char));
+  same_regs = (int *) xmalloc (max_reg * sizeof (int));
+  all_reset = (int *) xmalloc (max_reg * sizeof (int));
   for (i = 0; i < max_reg; i++)
     all_reset[i] = -1;
     
@@ -5342,6 +5342,11 @@ thread_jumps (f, max_reg, flag_before_loop)
 	    }
 	}
     }
+
+  /* Clean up.  */
+  free (modified_regs);
+  free (same_regs);
+  free (all_reset);
 }
 
 /* This is like RTX_EQUAL_P except that it knows about our handling of

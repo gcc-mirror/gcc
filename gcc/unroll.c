@@ -682,7 +682,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   max_labelno = max_label_num ();
   max_insnno = get_max_uid ();
 
-  map = (struct inline_remap *) alloca (sizeof (struct inline_remap));
+  map = (struct inline_remap *) xmalloc (sizeof (struct inline_remap));
 
   map->integrating = 0;
   map->const_equiv_varray = 0;
@@ -691,10 +691,9 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
   if (max_labelno > 0)
     {
-      map->label_map = (rtx *) alloca (max_labelno * sizeof (rtx));
+      map->label_map = (rtx *) xmalloc (max_labelno * sizeof (rtx));
 
-      local_label = (char *) alloca (max_labelno);
-      bzero (local_label, max_labelno);
+      local_label = (char *) xcalloc (max_labelno, sizeof (char));
     }
   else
     map->label_map = 0;
@@ -742,7 +741,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
   /* Allocate space for the insn map.  */
 
-  map->insn_map = (rtx *) alloca (max_insnno * sizeof (rtx));
+  map->insn_map = (rtx *) xmalloc (max_insnno * sizeof (rtx));
 
   /* Set this to zero, to indicate that we are doing loop unrolling,
      not function inlining.  */
@@ -768,17 +767,12 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
      preconditioning code and find_splittable_regs will never be used
      to access the splittable_regs[] and addr_combined_regs[] arrays.  */
 
-  splittable_regs = (rtx *) alloca (maxregnum * sizeof (rtx));
-  bzero ((char *) splittable_regs, maxregnum * sizeof (rtx));
-  derived_regs = (char *) alloca (maxregnum);
-  bzero (derived_regs, maxregnum);
-  splittable_regs_updates = (int *) alloca (maxregnum * sizeof (int));
-  bzero ((char *) splittable_regs_updates, maxregnum * sizeof (int));
+  splittable_regs = (rtx *) xcalloc (maxregnum, sizeof (rtx));
+  derived_regs = (char *) xcalloc (maxregnum, sizeof (char));
+  splittable_regs_updates = (int *) xcalloc (maxregnum, sizeof (int));
   addr_combined_regs
-    = (struct induction **) alloca (maxregnum * sizeof (struct induction *));
-  bzero ((char *) addr_combined_regs, maxregnum * sizeof (struct induction *));
-  local_regno = (char *) alloca (maxregnum);
-  bzero (local_regno, maxregnum);
+    = (struct induction **) xcalloc (maxregnum, sizeof (struct induction *));
+  local_regno = (char *) xcalloc (maxregnum, sizeof (char));
 
   /* Mark all local registers, i.e. the ones which are referenced only
      inside the loop.  */
@@ -884,7 +878,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	  rtx *labels;
 	  int abs_inc, neg_inc;
 
-	  map->reg_map = (rtx *) alloca (maxregnum * sizeof (rtx));
+	  map->reg_map = (rtx *) xmalloc (maxregnum * sizeof (rtx));
 
 	  VARRAY_CONST_EQUIV_INIT (map->const_equiv_varray, maxregnum,
 				   "unroll_loop");
@@ -930,7 +924,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	  /* Now emit a sequence of branches to jump to the proper precond
 	     loop entry point.  */
 
-	  labels = (rtx *) alloca (sizeof (rtx) * unroll_number);
+	  labels = (rtx *) xmalloc (sizeof (rtx) * unroll_number);
 	  for (i = 0; i < unroll_number; i++)
 	    labels[i] = gen_label_rtx ();
 
@@ -1109,6 +1103,9 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	  /* Set unroll type to MODULO now.  */
 	  unroll_type = UNROLL_MODULO;
 	  loop_preconditioned = 1;
+
+	  /* Clean up.  */
+	  free (labels);
 	}
     }
 
@@ -1146,7 +1143,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
      the constant maps also.  */
 
   maxregnum = max_reg_num ();
-  map->reg_map = (rtx *) alloca (maxregnum * sizeof (rtx));
+  map->reg_map = (rtx *) xmalloc (maxregnum * sizeof (rtx));
 
   init_reg_map (map, maxregnum);
 
@@ -1286,8 +1283,22 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
     emit_label_after (exit_label, loop_end);
 
  egress:
-  if (map && map->const_equiv_varray)
+  if (map->const_equiv_varray)
     VARRAY_FREE (map->const_equiv_varray);
+  if (map->label_map)
+    {
+      free (map->label_map);
+      free (local_label);
+    }
+  free (map->insn_map);
+  free (splittable_regs);
+  free (derived_regs);
+  free (splittable_regs_updates);
+  free (addr_combined_regs);
+  free (local_regno);
+  if (map->reg_map)
+    free (map->reg_map);
+  free (map);
 }
 
 /* Return true if the loop can be safely, and profitably, preconditioned

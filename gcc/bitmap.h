@@ -114,6 +114,10 @@ extern void debug_bitmap PROTO((bitmap));
 #define BITMAP_ALLOCA()						\
   bitmap_initialize ((bitmap) alloca (sizeof (bitmap_head)))
 
+/* Allocate a bitmap with xmalloc.  */
+#define BITMAP_XMALLOC()                                        \
+  bitmap_initialize ((bitmap) xmalloc (sizeof (bitmap_head)))
+
 /* Do any cleanup needed on a bitmap when it is no longer used.  */
 #define BITMAP_FREE(BITMAP)					\
 do {				\

@@ -464,9 +464,6 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
 
   max_reg_before_loop = max_reg_num ();
 
-  moved_once = (char *) alloca (max_reg_before_loop);
-  bzero (moved_once, max_reg_before_loop);
-
   regs_may_share = 0;
 
   /* Count the number of loops.  */
@@ -483,31 +480,29 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
   if (max_loop_num == 0)
     return;
 
+  moved_once = (char *) xcalloc (max_reg_before_loop, sizeof (char));
+
   /* Get size to use for tables indexed by uids.
      Leave some space for labels allocated by find_and_verify_loops.  */
   max_uid_for_loop = get_max_uid () + 1 + max_loop_num * 32;
 
-  uid_luid = (int *) alloca (max_uid_for_loop * sizeof (int));
-  uid_loop_num = (int *) alloca (max_uid_for_loop * sizeof (int));
-
-  bzero ((char *) uid_luid, max_uid_for_loop * sizeof (int));
-  bzero ((char *) uid_loop_num, max_uid_for_loop * sizeof (int));
+  uid_luid = (int *) xcalloc (max_uid_for_loop, sizeof (int));
+  uid_loop_num = (int *) xcalloc (max_uid_for_loop, sizeof (int));
 
   /* Allocate tables for recording each loop.  We set each entry, so they need
      not be zeroed.  */
-  loop_number_loop_starts = (rtx *) alloca (max_loop_num * sizeof (rtx));
-  loop_number_loop_ends = (rtx *) alloca (max_loop_num * sizeof (rtx));
-  loop_number_loop_cont = (rtx *) alloca (max_loop_num * sizeof (rtx));
-  loop_number_cont_dominator = (rtx *) alloca (max_loop_num * sizeof (rtx));
-  loop_outer_loop = (int *) alloca (max_loop_num * sizeof (int));
-  loop_invalid = (char *) alloca (max_loop_num * sizeof (char));
-  loop_number_exit_labels = (rtx *) alloca (max_loop_num * sizeof (rtx));
-  loop_number_exit_count = (int *) alloca (max_loop_num * sizeof (int));
+  loop_number_loop_starts = (rtx *) xmalloc (max_loop_num * sizeof (rtx));
+  loop_number_loop_ends = (rtx *) xmalloc (max_loop_num * sizeof (rtx));
+  loop_number_loop_cont = (rtx *) xmalloc (max_loop_num * sizeof (rtx));
+  loop_number_cont_dominator = (rtx *) xmalloc (max_loop_num * sizeof (rtx));
+  loop_outer_loop = (int *) xmalloc (max_loop_num * sizeof (int));
+  loop_invalid = (char *) xmalloc (max_loop_num * sizeof (char));
+  loop_number_exit_labels = (rtx *) xmalloc (max_loop_num * sizeof (rtx));
+  loop_number_exit_count = (int *) xmalloc (max_loop_num * sizeof (int));
 
 #ifdef HAVE_decrement_and_branch_on_count
   /* Allocate for BCT optimization */
-  loop_used_count_register = (int *) alloca (max_loop_num * sizeof (int));
-  bzero ((char *) loop_used_count_register, max_loop_num * sizeof (int));
+  loop_used_count_register = (int *) xcalloc (max_loop_num, sizeof (int));
 #endif  /* HAVE_decrement_and_branch_on_count */
 
   /* Find and process each loop.
@@ -574,6 +569,23 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
     unroll_block_trees ();
 
   end_alias_analysis ();
+
+  /* Clean up.  */
+  free (moved_once);
+  free (uid_luid);
+  free (uid_loop_num);
+  free (loop_number_loop_starts);
+  free (loop_number_loop_ends);
+  free (loop_number_loop_cont);
+  free (loop_number_cont_dominator);
+  free (loop_outer_loop);
+  free (loop_invalid);
+  free (loop_number_exit_labels);
+  free (loop_number_exit_count);
+#ifdef HAVE_decrement_and_branch_on_count
+  free (loop_used_count_register);
+#endif  /* HAVE_decrement_and_branch_on_count */
+
 }
 
 /* Returns the next insn, in execution order, after INSN.  START and
@@ -7116,11 +7128,8 @@ combine_givs (bl)
     if (!g1->ignore)
       giv_array[i++] = g1;
 
-  stats = (struct combine_givs_stats *) alloca (giv_count * sizeof (*stats));
-  bzero ((char *) stats, giv_count * sizeof (*stats));
-
-  can_combine = (rtx *) alloca (giv_count * giv_count * sizeof(rtx));
-  bzero ((char *) can_combine, giv_count * giv_count * sizeof(rtx));
+  stats = (struct combine_givs_stats *) xcalloc (giv_count, sizeof (*stats));
+  can_combine = (rtx *) xcalloc (giv_count, giv_count * sizeof(rtx));
 
   for (i = 0; i < giv_count; i++)
     {
@@ -7250,6 +7259,10 @@ restart:
 	  goto restart;
 	}
     }
+
+  /* Clean up.  */
+  free (stats);
+  free (can_combine);
 }
 
 struct recombine_givs_stats
@@ -7387,8 +7400,8 @@ recombine_givs (bl, loop_start, loop_end, unroll_p)
 	giv_count++;
     }
   giv_array
-    = (struct induction **) alloca (giv_count * sizeof (struct induction *));
-  stats = (struct recombine_givs_stats *) alloca (giv_count * sizeof *stats);
+    = (struct induction **) xmalloc (giv_count * sizeof (struct induction *));
+  stats = (struct recombine_givs_stats *) xmalloc (giv_count * sizeof *stats);
 
   /* Initialize stats and set up the ix field for each giv in stats to name
      the corresponding index into stats.  */
@@ -7679,6 +7692,10 @@ recombine_givs (bl, loop_start, loop_end, unroll_p)
 	    rescan = i;
 	}
     }
+
+  /* Clean up.  */
+  free (giv_array);
+  free (stats);
 }
 
 /* EMIT code before INSERT_BEFORE to set REG = B * M + A.  */

@@ -1,5 +1,26 @@
 Mon Nov  1 15:41:01 1999  Mark P. Mitchell  <mark@codesourcery.com>
 
+	* bitmap.h (BITMAP_XMALLOC): New macro.
+	* flow.c (CLEAN_ALLOCA): Remove.
+	(delete_unreachable_blocks): Use xmalloc/xcalloc instead of alloca.
+	(life_analysis): Likewise.
+	(update_life_info): Don't use CLEAN_ALLOCA.
+	(life_analysis_1): Use xmalloc/xcalloc instead of alloca.
+	(calculate_global_regs_live): Likewise.
+	(print_rtl_with_bb): Likewise.
+	(verify_flow_info): Likewise.
+	* global.c (global_alloc): Likewise.
+	(global_conflicts): Likewise.
+	* integrate.c (save_for_inline_nocopy): Likewise.
+	(expand_inline_function): Likewise.
+	* jump.c (jump_optimize_1): Likewise.
+	(duplicate_loop_exit_test): Likewise.
+	(thread_jumps): Likewise.
+	* loop.c (loop_optimize): Likewise.
+	(combine_givs): Likewise.
+	(recombine_givs): Likewise.
+	* reorg.c (dbr_schedule): Likewise.
+
 	* combine.c (combine_instructions): Use xmalloc instead of alloca.
 
 Mon Nov  1 13:22:30 1999  Richard Henderson  <rth@cygnus.com>

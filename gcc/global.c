@@ -372,15 +372,14 @@ global_alloc (file)
   /* Establish mappings from register number to allocation number
      and vice versa.  In the process, count the allocnos.  */
 
-  reg_allocno = (int *) alloca (max_regno * sizeof (int));
+  reg_allocno = (int *) xmalloc (max_regno * sizeof (int));
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     reg_allocno[i] = -1;
 
   /* Initialize the shared-hard-reg mapping
      from the list of pairs that may share.  */
-  reg_may_share = (int *) alloca (max_regno * sizeof (int));
-  bzero ((char *) reg_may_share, max_regno * sizeof (int));
+  reg_may_share = (int *) xcalloc (max_regno, sizeof (int));
   for (x = regs_may_share; x; x = XEXP (XEXP (x, 1), 1))
     {
       int r1 = REGNO (XEXP (x, 0));
@@ -411,15 +410,11 @@ global_alloc (file)
     else
       reg_allocno[i] = -1;
 
-  allocno_reg = (int *) alloca (max_allocno * sizeof (int));
-  allocno_size = (int *) alloca (max_allocno * sizeof (int));
-  allocno_calls_crossed = (int *) alloca (max_allocno * sizeof (int));
-  allocno_n_refs = (int *) alloca (max_allocno * sizeof (int));
-  allocno_live_length = (int *) alloca (max_allocno * sizeof (int));
-  bzero ((char *) allocno_size, max_allocno * sizeof (int));
-  bzero ((char *) allocno_calls_crossed, max_allocno * sizeof (int));
-  bzero ((char *) allocno_n_refs, max_allocno * sizeof (int));
-  bzero ((char *) allocno_live_length, max_allocno * sizeof (int));
+  allocno_reg = (int *) xmalloc (max_allocno * sizeof (int));
+  allocno_size = (int *) xcalloc (max_allocno, sizeof (int));
+  allocno_calls_crossed = (int *) xcalloc (max_allocno, sizeof (int));
+  allocno_n_refs = (int *) xcalloc (max_allocno, sizeof (int));
+  allocno_live_length = (int *) xcalloc (max_allocno, sizeof (int));
 
   for (i = FIRST_PSEUDO_REGISTER; i < (size_t) max_regno; i++)
     if (reg_allocno[i] >= 0)
@@ -461,26 +456,15 @@ global_alloc (file)
      initialize them.  */
 
   hard_reg_conflicts
-    = (HARD_REG_SET *) alloca (max_allocno * sizeof (HARD_REG_SET));
-  bzero ((char *) hard_reg_conflicts, max_allocno * sizeof (HARD_REG_SET));
-
+    = (HARD_REG_SET *) xcalloc (max_allocno, sizeof (HARD_REG_SET));
   hard_reg_preferences
-    = (HARD_REG_SET *) alloca (max_allocno * sizeof (HARD_REG_SET));
-  bzero ((char *) hard_reg_preferences, max_allocno * sizeof (HARD_REG_SET));
-  
+    = (HARD_REG_SET *) xcalloc (max_allocno, sizeof (HARD_REG_SET));
   hard_reg_copy_preferences
-    = (HARD_REG_SET *) alloca (max_allocno * sizeof (HARD_REG_SET));
-  bzero ((char *) hard_reg_copy_preferences,
-	 max_allocno * sizeof (HARD_REG_SET));
-  
+    = (HARD_REG_SET *) xcalloc (max_allocno, sizeof (HARD_REG_SET));
   hard_reg_full_preferences
-    = (HARD_REG_SET *) alloca (max_allocno * sizeof (HARD_REG_SET));
-  bzero ((char *) hard_reg_full_preferences,
-	 max_allocno * sizeof (HARD_REG_SET));
-  
+    = (HARD_REG_SET *) xcalloc (max_allocno, sizeof (HARD_REG_SET));
   regs_someone_prefers
-    = (HARD_REG_SET *) alloca (max_allocno * sizeof (HARD_REG_SET));
-  bzero ((char *) regs_someone_prefers, max_allocno * sizeof (HARD_REG_SET));
+    = (HARD_REG_SET *) xcalloc (max_allocno, sizeof (HARD_REG_SET));
 
   allocno_row_words = (max_allocno + INT_BITS - 1) / INT_BITS;
 
@@ -490,7 +474,7 @@ global_alloc (file)
   conflicts = (INT_TYPE *) xcalloc (max_allocno * allocno_row_words,
 				    sizeof (INT_TYPE));
 
-  allocnos_live = (INT_TYPE *) alloca (allocno_row_words * sizeof (INT_TYPE));
+  allocnos_live = (INT_TYPE *) xmalloc (allocno_row_words * sizeof (INT_TYPE));
 
   /* If there is work to be done (at least one reg to allocate),
      perform global conflict analysis and allocate the regs.  */
@@ -523,7 +507,7 @@ global_alloc (file)
 
       /* Determine the order to allocate the remaining pseudo registers.  */
 
-      allocno_order = (int *) alloca (max_allocno * sizeof (int));
+      allocno_order = (int *) xmalloc (max_allocno * sizeof (int));
       for (i = 0; i < (size_t) max_allocno; i++)
 	allocno_order[i] = i;
 
@@ -568,6 +552,8 @@ global_alloc (file)
 	    if (reg_alternate_class (allocno_reg[allocno_order[i]]) != NO_REGS)
 	      find_reg (allocno_order[i], 0, 1, 0, 0);
 	  }
+
+      free (allocno_order);
     }
 
   /* Do the reloads now while the allocno data still exist, so that we can
@@ -582,7 +568,22 @@ global_alloc (file)
       retval = reload (get_insns (), 1, file);
     }
 
+  /* Clean up.  */
+  free (reg_allocno);
+  free (reg_may_share);
+  free (allocno_reg);
+  free (allocno_size);
+  free (allocno_calls_crossed);
+  free (allocno_n_refs);
+  free (allocno_live_length);
+  free (hard_reg_conflicts);
+  free (hard_reg_preferences);
+  free (hard_reg_copy_preferences);
+  free (hard_reg_full_preferences);
+  free (regs_someone_prefers);
   free (conflicts);
+  free (allocnos_live);
+
   return retval;
 }
 
@@ -626,9 +627,9 @@ global_conflicts ()
   int *block_start_allocnos;
 
   /* Make a vector that mark_reg_{store,clobber} will store in.  */
-  regs_set = (rtx *) alloca (max_parallel * sizeof (rtx) * 2);
+  regs_set = (rtx *) xmalloc (max_parallel * sizeof (rtx) * 2);
 
-  block_start_allocnos = (int *) alloca (max_allocno * sizeof (int));
+  block_start_allocnos = (int *) xmalloc (max_allocno * sizeof (int));
 
   for (b = 0; b < n_basic_blocks; b++)
     {
@@ -788,6 +789,10 @@ global_conflicts ()
 	  insn = NEXT_INSN (insn);
 	}
     }
+
+  /* Clean up.  */
+  free (block_start_allocnos);
+  free (regs_set);
 }
 /* Expand the preference information by looking for cases where one allocno
    dies in an insn that sets an allocno.  If those two allocnos don't conflict,

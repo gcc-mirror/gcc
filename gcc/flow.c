@@ -157,13 +157,6 @@ Boston, MA 02111-1307, USA.  */
 #define HAVE_prologue 0
 #endif
 
-#ifdef USE_C_ALLOCA
-#define CLEAN_ALLOCA  alloca (0)
-#else
-#define CLEAN_ALLOCA
-#endif
-
-
 /* The contents of the current function definition are allocated
    in this obstack, and all are freed at the end of the function.
    For top-level functions, this is temporary_obstack.
@@ -1668,7 +1661,7 @@ delete_unreachable_blocks ()
   int i, n;
 
   n = n_basic_blocks;
-  tos = worklist = (basic_block *) alloca (sizeof (basic_block) * n);
+  tos = worklist = (basic_block *) xmalloc (sizeof (basic_block) * n);
 
   /* Use basic_block->aux as a marker.  Clear them all.  */
 
@@ -1752,6 +1745,8 @@ delete_unreachable_blocks ()
      blocks to remove as well. */
   if (deleted_handler)
     delete_eh_regions ();
+
+  free (worklist);
 }
 
 /* Find EH regions for which there is no longer a handler, and delete them.  */
@@ -2453,7 +2448,7 @@ life_analysis (f, nregs, file, remove_dead_code)
 #endif
 
   /* Allocate a bitmap to be filled in by record_volatile_insns.  */
-  uid_volatile = BITMAP_ALLOCA ();
+  uid_volatile = BITMAP_XMALLOC ();
 
   /* We want alias analysis information for local dead store elimination.  */
   init_alias_analysis ();
@@ -2472,6 +2467,7 @@ life_analysis (f, nregs, file, remove_dead_code)
     dump_flow_info (file);
 
   BITMAP_FREE (uid_volatile);
+  free (uid_volatile);
   free_basic_block_vars (1);
 }
 
@@ -2601,8 +2597,6 @@ update_life_info (blocks, extent, prop_flags)
 
       if (extent == UPDATE_LIFE_LOCAL)
 	verify_local_live_at_start (tmp, bb);
-
-      CLEAN_ALLOCA;
     });
 
   FREE_REG_SET (tmp);
@@ -2916,8 +2910,7 @@ life_analysis_1 (f, nregs, flags)
   allocate_reg_life_data ();
   allocate_bb_life_data ();
 
-  reg_next_use = (rtx *) alloca (nregs * sizeof (rtx));
-  memset (reg_next_use, 0, nregs * sizeof (rtx));
+  reg_next_use = (rtx *) xcalloc (nregs, sizeof (rtx));
 
   /* Assume that the stack pointer is unchanging if alloca hasn't been used.
      This will be cleared by record_volatile_insns if it encounters an insn
@@ -2971,8 +2964,6 @@ life_analysis_1 (f, nregs, flags)
 
 	COPY_REG_SET (tmp, bb->global_live_at_end);
 	propagate_block (tmp, bb->head, bb->end, (regset) NULL, i, flags);
-
-	CLEAN_ALLOCA;
       }
 
     FREE_REG_SET (tmp);
@@ -3000,6 +2991,8 @@ life_analysis_1 (f, nregs, flags)
   if (reload_completed)
     memcpy (regs_ever_live, save_regs_ever_live, sizeof (regs_ever_live));
 
+  /* Clean up.  */
+  free (reg_next_use);
   reg_next_use = NULL;
 }
 
@@ -3022,7 +3015,7 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
   /* Create a worklist.  Allocate an extra slot for ENTRY_BLOCK, and one
      because the `head == tail' style test for an empty queue doesn't 
      work with a full queue.  */
-  queue = (basic_block *) alloca ((n_basic_blocks + 2) * sizeof (*queue));
+  queue = (basic_block *) xmalloc ((n_basic_blocks + 2) * sizeof (*queue));
   qtail = queue;
   qhead = qend = queue + n_basic_blocks + 2;
 
@@ -3158,6 +3151,8 @@ calculate_global_regs_live (blocks_in, blocks_out, flags)
       basic_block bb = BASIC_BLOCK (i);
       FREE_REG_SET (bb->local_set);
     });
+
+  free (queue);
 }
 
 /* Subroutines of life analysis.  */
@@ -5069,15 +5064,11 @@ print_rtl_with_bb (outf, rtx_first)
       enum bb_state { NOT_IN_BB, IN_ONE_BB, IN_MULTIPLE_BB };
       int max_uid = get_max_uid ();
       basic_block *start = (basic_block *)
-	alloca (max_uid * sizeof (basic_block));
+	xcalloc (max_uid, sizeof (basic_block));
       basic_block *end = (basic_block *)
-	alloca (max_uid * sizeof (basic_block));
+	xcalloc (max_uid, sizeof (basic_block));
       enum bb_state *in_bb_p = (enum bb_state *)
-	alloca (max_uid * sizeof (enum bb_state));
-
-      memset (start, 0, max_uid * sizeof (basic_block));
-      memset (end, 0, max_uid * sizeof (basic_block));
-      memset (in_bb_p, 0, max_uid * sizeof (enum bb_state));
+	xcalloc (max_uid, sizeof (enum bb_state));
 
       for (i = n_basic_blocks - 1; i >= 0; i--)
 	{
@@ -5134,6 +5125,10 @@ print_rtl_with_bb (outf, rtx_first)
 	  if (did_output)
 	    putc ('\n', outf);
 	}
+
+      free (start);
+      free (end);
+      free (in_bb_p);
     }
 
   if (current_function_epilogue_delay_list != 0)
@@ -5878,8 +5873,7 @@ verify_flow_info ()
   rtx x;
   int i, err = 0;
 
-  bb_info = (basic_block *) alloca (max_uid * sizeof (basic_block));
-  memset (bb_info, 0, max_uid * sizeof (basic_block));
+  bb_info = (basic_block *) xcalloc (max_uid, sizeof (basic_block));
 
   /* First pass check head/end pointers and set bb_info array used by
      later passes.  */
@@ -6074,6 +6068,9 @@ verify_flow_info ()
 
   if (err)
     abort ();
+
+  /* Clean up.  */
+  free (bb_info);
 }
 
 /* Functions to access an edge list with a vector representation.
