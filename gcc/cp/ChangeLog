@@ -1,3 +1,10 @@
+2004-02-29  Mark Mitchell  <mark@codesourcery.com>
+
+	PR debug/12103
+	* class.c (update_vtable_entry_for_fn): Do not go through
+	covariance machinery if the type returned by an overrider is the
+	same as the original.
+
 2004-02-29  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* call.c: Fix a comment typo.
