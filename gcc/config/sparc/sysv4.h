@@ -184,3 +184,16 @@ do { long value[2];							\
 
 #endif /* word order matches */
 #endif /* HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT */
+
+/* This is how to output an assembler line defining a `long double'
+   constant.  */
+
+#undef ASM_OUTPUT_LONG_DOUBLE
+#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)				\
+do { long value[4];							\
+     REAL_VALUE_TO_TARGET_LONG_DOUBLE ((VALUE), value);			\
+     fprintf((FILE), "\t.long\t0x%x\n", value[0]);			\
+     fprintf((FILE), "\t.long\t0x%x\n", value[1]);			\
+     fprintf((FILE), "\t.long\t0x%x\n", value[2]);			\
+     fprintf((FILE), "\t.long\t0x%x\n", value[3]);			\
+   } while (0)
