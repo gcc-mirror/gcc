@@ -1,3 +1,8 @@
+2003-03-10  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* gcc.dg/ppc-sdata-1.c: New test.
+	* gcc.dg/ppc-sdata-2.c: New test.
+
 2003-03-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9373
