@@ -4539,6 +4539,13 @@ expand_expr (exp, target, tmode, modifier)
 		    MEM_IN_STRUCT_P (target) = 1;
 		}
 	    }
+
+	  if (TREE_READONLY (exp))
+	    {
+	      target = copy_rtx (target);
+	      RTX_UNCHANGING_P (target) = 1;
+	    }
+
 	  store_constructor (exp, target);
 	  return target;
 	}
