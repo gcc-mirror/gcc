@@ -576,6 +576,7 @@ struct lang_decl_var
    for non primitive types when compiling to bytecode. */
 #define TYPE_DOT_CLASS(T)        (TYPE_LANG_SPECIFIC(T)->dot_class)
 #define TYPE_PRIVATE_INNER_CLASS(T) (TYPE_LANG_SPECIFIC(T)->pic)
+#define TYPE_PROTECTED_INNER_CLASS(T) (TYPE_LANG_SPECIFIC(T)->poic)
 
 struct lang_type
 {
@@ -591,6 +592,7 @@ struct lang_type
 				   compiling to bytecode to implement
 				   <non_primitive_type>.class */
   unsigned pic:1;		/* Private Inner Class. */
+  unsigned poic:1;		/* Protected Inner Class. */
 };
 
 #ifdef JAVA_USE_HANDLES
@@ -840,6 +842,7 @@ struct rtx_def * java_lang_expand_expr PARAMS ((tree, rtx, enum machine_mode,
 #define CLASS_SUPER(DECL) DECL_LANG_FLAG_6 (DECL)
 #define CLASS_STATIC(DECL) DECL_LANG_FLAG_7 (DECL)
 #define CLASS_PRIVATE(DECL) (TYPE_PRIVATE_INNER_CLASS (TREE_TYPE (DECL)))
+#define CLASS_PROTECTED(DECL) (TYPE_PROTECTED_INNER_CLASS (TREE_TYPE (DECL)))
 
 /* @deprecated marker flag on methods, fields and classes */
 

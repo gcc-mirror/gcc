@@ -401,6 +401,7 @@ set_super_info (access_flags, this_class, super_class, interfaces_count)
   if (access_flags & ACC_ABSTRACT)  CLASS_ABSTRACT (class_decl) = 1;
   if (access_flags & ACC_STATIC)    CLASS_STATIC (class_decl) = 1;
   if (access_flags & ACC_PRIVATE)   CLASS_PRIVATE (class_decl) = 1;
+  if (access_flags & ACC_PROTECTED) CLASS_PROTECTED (class_decl) = 1;
 }
 
 /* Return length of inheritance chain of CLAS, where java.lang.Object is 0,
@@ -493,7 +494,7 @@ enclosing_context_p (type1, type2)
 int common_enclosing_context_p (type1, type2)
      tree type1, type2;
 {
-  if (!PURE_INNER_CLASS_TYPE_P (type1) && !PURE_INNER_CLASS_TYPE_P (type2))
+  if (!PURE_INNER_CLASS_TYPE_P (type1) || !PURE_INNER_CLASS_TYPE_P (type2))
     return 0;
   
   for (type1 = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (type1))); type1; 
@@ -1075,6 +1076,10 @@ get_access_flags_from_decl (decl)
 	access_flags |= ACC_ABSTRACT;
       if (CLASS_STATIC (decl))
 	access_flags |= ACC_STATIC;
+      if (CLASS_PRIVATE (decl))
+	access_flags |= ACC_PRIVATE;
+      if (CLASS_PROTECTED (decl))
+	access_flags |= ACC_PROTECTED;
       return access_flags;
     }
   if (TREE_CODE (decl) == FUNCTION_DECL)
