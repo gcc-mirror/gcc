@@ -139,49 +139,55 @@ bool trapping(const Operation& op)
     return false;
 }
 
-template<typename T> struct division_by_zero {
+template<typename T> 
+  struct division_by_zero 
+  {
     void operator() () const
     {
-        volatile T zero = T();
-        volatile T one = T(1);
-        volatile T infinity = one / zero;
+      volatile T zero = T();
+      volatile T one = T(1);
+      volatile T infinity = one / zero;
     }
-};
+  };
 
-template<typename T> struct overflow {
+template<typename T> 
+  struct overflow 
+  {
     void operator() () const
     {
-        T i = T(1);
-        T j = T();
-        while (i>j) {
-            j = i;
-            i = i * 2 + 1;
-        }
+      T i = T(1);
+      T j = T();
+      while (i>j) {
+	j = i;
+	i = i * 2 + 1;
+      }
     }
-};
+  };
 
-template<typename T> struct underflow {};
+template<typename T> struct underflow { };
 
 // traps
 template<typename T> void traps()
 {
-    signal_adapter (signal, SIGFPE, signal_handler);
-    signal_adapter (signal, SIGTRAP, signal_handler);
-    bool trap_flag = trapping(division_by_zero<T>());
-    signal_adapter (signal, SIGFPE, signal_handler);
-    signal_adapter (signal, SIGTRAP, signal_handler);
-    trap_flag = trap_flag || trapping(overflow<T>());
-    const char* p = bool_alpha[trap_flag];
-    printf("%s%s = %s;\n", tab2, "static const bool traps", p);    
+  fflush(NULL);
+  signal_adapter (signal, SIGFPE, signal_handler);
+  signal_adapter (signal, SIGTRAP, signal_handler);
+  bool trap_flag = trapping(division_by_zero<T>());
+  signal_adapter (signal, SIGFPE, signal_handler);
+  signal_adapter (signal, SIGTRAP, signal_handler);
+  trap_flag = trap_flag || trapping(overflow<T>());
+  const char* p = bool_alpha[trap_flag];
+  printf("%s%s = %s;\n", tab2, "static const bool traps", p);    
 }
 
 #define SPECIALIZE_TRAPPING(T)                                          \
 template<> void traps< T >()                                            \
-{                                                                       \
-    signal_adapter (signal, SIGFPE, signal_handler);                    \
-    signal_adapter (signal, SIGTRAP, signal_handler);                    \
-    const char* p = bool_alpha[trapping(division_by_zero<T>())];        \
-    printf("%s%s = %s;\n", tab2, "static const bool traps", p);         \
+{       								\
+  fflush(NULL);                                                         \
+  signal_adapter (signal, SIGFPE, signal_handler);                      \
+  signal_adapter (signal, SIGTRAP, signal_handler);                     \
+  const char* p = bool_alpha[trapping(division_by_zero<T>())];          \
+  printf("%s%s = %s;\n", tab2, "static const bool traps", p);           \
 }
 
 SPECIALIZE_TRAPPING(unsigned char);
@@ -194,10 +200,12 @@ SPECIALIZE_TRAPPING(unsigned long long);
 
 #undef SPECIALIZE_TRAPPING
 
-template<typename T> struct type_name_trait {
+template<typename T> 
+  struct type_name_trait 
+  {
     static const char type_name[];
     static const char trait_name[];
-};
+  };
 
 #define DEFINED_TYPE_NAME(T)                                            \
 const char type_name_trait< T >::type_name[] = #T;                      \
@@ -225,40 +233,41 @@ DEFINED_TYPE_NAME(long double);
 #undef DEFINED_TYPE_NAME
 
 // declarator
-template<typename T> struct declarator : type_name_trait<T> {
+template<typename T> 
+  struct declarator : type_name_trait<T> 
+  {
     typedef type_name_trait<T> base;
     static void start()
-    {
-        printf("%s%s %s %s\n", tab, "template<> struct",
-               base::trait_name, "{");
+    { 
+      printf("%s%s %s %s\n", tab, "template<> struct", base::trait_name, "{"); 
     }
-
+    
     static void end()
-    {
-        printf("%s};\n\n", tab);
-    }
-};
+    { printf("%s};\n\n", tab); }
+  };
 
 
 //
 // Predicates
 // 
-template<typename T> struct predicate {
+template<typename T> 
+  struct predicate 
+  {
     static const bool is_signed;
     static const bool is_integer;
     static const bool is_exact;
-
+    
     static const bool has_infinity;
     static const bool has_quiet_nan;
     static const bool has_signaling_nan;
     static const bool has_denorm;
     static const bool has_denorm_loss;
-
+    
     static const bool is_iec559;
     static const bool is_bounded;
-
+    
     static const bool traps;
-};
+  };
 
 template<typename T>
 const bool predicate<T>::is_signed = T(-1) < 0;
@@ -321,23 +330,24 @@ SPECIALIZE_IEC559(unsigned long long);
 //
 // Values
 // 
-
-template<typename T> struct value {
+template<typename T> 
+  struct value 
+  {
     static const char min[];
     static const char max[];
-
+    
     static const int digits;
     static const int digits10;
     
     static const int radix;
     static const char epsilon[];
     static const char round_error[];
-
+    
     static const int min_exponent;
     static const int min_exponent10;
     static const int max_exponent;
     static const int max_exponent10;
-};
+  };
 
 #define DEFINE_EXTREMA(T, m, M)  DO_DEFINE_EXTREMA(T, m, M)
 #define DO_DEFINE_EXTREMA(T, m, M)					\
@@ -507,283 +517,285 @@ SPECIALIZE_EXPONENTS(long double, LDBL_MIN_EXP, LDBL_MIN_10_EXP,
 
 template<typename T> void is_signed()
 {
-    printf("%s%s = %s;\n", tab2, "static const bool is_signed",
-           bool_alpha[predicate<T>::is_signed]);
+  printf("%s%s = %s;\n", tab2, "static const bool is_signed",
+	 bool_alpha[predicate<T>::is_signed]);
 }
 
 // a fundamental type is modulo iff it isn't signed
 template<typename T> void is_modulo()
 {
-    printf("%s%s = %s;\n", tab2, "static const bool is_modulo",
-           bool_alpha[! predicate<T>::is_signed]);
+  printf("%s%s = %s;\n", tab2, "static const bool is_modulo",
+	 bool_alpha[! predicate<T>::is_signed]);
 }
 
 template<typename T>
 void min()
 {
-    printf("%s%s%s%s\n%s%s%s%s\n", tab2, "static ", declarator<T>::type_name,
-           " min() throw()", tab2, "{ return ", value<T>::min, "; }");
+  printf("%s%s%s%s\n%s%s%s%s\n", tab2, "static ", declarator<T>::type_name,
+	 " min() throw()", tab2, "{ return ", value<T>::min, "; }");
 }
 
 template<typename T>
 void max()
 {
-    printf("%s%s%s%s\n%s%s%s%s\n", tab2, "static ", declarator<T>::type_name,
-           " max() throw()", tab2, "{ return ", value<T>::max, "; }");
+  printf("%s%s%s%s\n%s%s%s%s\n", tab2, "static ", declarator<T>::type_name,
+	 " max() throw()", tab2, "{ return ", value<T>::max, "; }");
 }
 
 template<typename T>
 void is_integer()
 {
-    printf("%s%s = %s;\n", tab2, "static const bool is_integer",
-           bool_alpha[predicate<T>::is_integer]);        
+  printf("%s%s = %s;\n", tab2, "static const bool is_integer",
+	 bool_alpha[predicate<T>::is_integer]);        
 }
 
 template<typename T>
 void is_exact()
 {
-    printf("%s%s = %s;\n", tab2, "static const bool is_exact",
-           bool_alpha[predicate<T>::is_exact]);    
+  printf("%s%s = %s;\n", tab2, "static const bool is_exact",
+	 bool_alpha[predicate<T>::is_exact]);    
 }
 
 template<typename T>
 void digits()
 {
-    printf("%s%s = %d;\n", tab2, "static const int digits",
-           value<T>::digits);
+  printf("%s%s = %d;\n", tab2, "static const int digits",
+	 value<T>::digits);
 }
 
 template<typename T>
 void digits10()
 {
-    printf("%s%s = %d;\n", tab2, "static const int digits10",
-           int(log10_of_two * value<T>::digits));
+  printf("%s%s = %d;\n", tab2, "static const int digits10",
+	 int(log10_of_two * value<T>::digits));
 }
 
 template<typename T>
 void radix()
 {
-    printf("%s%s = %d;\n", tab2, "static const int radix",
-           value<T>::radix);
+  printf("%s%s = %d;\n", tab2, "static const int radix",
+	 value<T>::radix);
 }
 
 template<typename T>
 void epsilon()
 {
-    printf("%s%s %s %s\n%s%s %s%s\n", tab2, "static",
-           declarator<T>::type_name, "epsilon() throw()",
-           tab2, "{ return", value<T>::epsilon, "; }");
+  printf("%s%s %s %s\n%s%s %s%s\n", tab2, "static",
+	 declarator<T>::type_name, "epsilon() throw()",
+	 tab2, "{ return", value<T>::epsilon, "; }");
 }
 
 template<typename T>
 void round_error()
 {
-    printf("%s%s %s %s\n%s%s %s%s\n", tab2, "static",
-           declarator<T>::type_name, "round_error() throw()",
-           tab2, "{ return", value<T>::round_error, "; }");
+  printf("%s%s %s %s\n%s%s %s%s\n", tab2, "static",
+	 declarator<T>::type_name, "round_error() throw()",
+	 tab2, "{ return", value<T>::round_error, "; }");
 }
 
 template<typename T>
 void min_exponent()
 {
-    printf("%s%s = %d;\n", tab2, "static const int min_exponent",
-           value<T>::min_exponent);    
+  printf("%s%s = %d;\n", tab2, "static const int min_exponent",
+	 value<T>::min_exponent);    
 }
 
 template<typename T>
 void min_exponent10()
 {
-    printf("%s%s = %d;\n", tab2, "static const int min_exponent10",
-           value<T>::min_exponent10);    
+  printf("%s%s = %d;\n", tab2, "static const int min_exponent10",
+	 value<T>::min_exponent10);    
 }
 
 template<typename T>
 void max_exponent()
 {
-    printf("%s%s = %d;\n", tab2, "static const int max_exponent",
-           value<T>::max_exponent);    
+  printf("%s%s = %d;\n", tab2, "static const int max_exponent",
+	 value<T>::max_exponent);    
 }
 
 template<typename T>
 void max_exponent10()
 {
-    printf("%s%s = %d;\n", tab2, "static const int max_exponent10",
-           value<T>::max_exponent10);    
+  printf("%s%s = %d;\n", tab2, "static const int max_exponent10",
+	 value<T>::max_exponent10);    
 }
 
 template<typename T>
 void has_infinity()
 {
-    printf("%s%s = %s;\n", tab2, "static const bool has_infinity",
-           bool_alpha[predicate<T>::has_infinity]);
+  printf("%s%s = %s;\n", tab2, "static const bool has_infinity",
+	 bool_alpha[predicate<T>::has_infinity]);
 }
 
 template<typename T>
 void has_quiet_nan()
 {
-    printf("%s%s = %s;\n", tab2, "static const bool has_quiet_NaN",
-           bool_alpha[predicate<T>::has_quiet_nan]);
+  printf("%s%s = %s;\n", tab2, "static const bool has_quiet_NaN",
+	 bool_alpha[predicate<T>::has_quiet_nan]);
 }
 
 template<typename T>
 void has_signaling_nan()
 {
-    printf("%s%s = %s;\n", tab2, "static const bool has_signaling_NaN",
-           bool_alpha[predicate<T>::has_signaling_nan]);
+  printf("%s%s = %s;\n", tab2, "static const bool has_signaling_NaN",
+	 bool_alpha[predicate<T>::has_signaling_nan]);
 }
 
 template<typename T>
 void has_denorm_loss()
 {
-    printf("%s%s = %s;\n", tab2, "static const bool has_denorm_loss",
-           bool_alpha[predicate<T>::has_denorm_loss]);
+  printf("%s%s = %s;\n", tab2, "static const bool has_denorm_loss",
+	 bool_alpha[predicate<T>::has_denorm_loss]);
 }
 
-template<typename T> struct infinity_trait {
+template<typename T> 
+  struct infinity_trait 
+  {
     static void has_denorm()
     {
-        printf("%s%s;\n", tab2, "static const float_denorm_style "
-               "has_denorm = denorm_absent");
+      printf("%s%s;\n", tab2, "static const float_denorm_style "
+	     "has_denorm = denorm_absent");
     }
-
+    
     static void infinity()
     {
-        printf("%s%s %s %s\n%s%s%s%s\n", tab2, "static",
-               declarator<T>::type_name, "infinity() throw()",
-               tab2, "{ return static_cast<", declarator<T>::type_name, 
-	       ">(0); }");
+      printf("%s%s %s %s\n%s%s%s%s\n", tab2, "static",
+	     declarator<T>::type_name, "infinity() throw()", tab2, 
+	     "{ return static_cast<", declarator<T>::type_name, ">(0); }");
     }
 
     static void quiet_NaN()
     {
-        printf("%s%s %s %s\n%s%s%s%s\n", tab2, "static",
-               declarator<T>::type_name, "quiet_NaN() throw()",
-               tab2, "{ return static_cast<", declarator<T>::type_name, 
-	       ">(0); }");
+      printf("%s%s %s %s\n%s%s%s%s\n", tab2, "static",
+	     declarator<T>::type_name, "quiet_NaN() throw()",
+	     tab2, "{ return static_cast<", declarator<T>::type_name, 
+	     ">(0); }");
     }
-
+    
     static void signaling_NaN()
     {
-        printf("%s%s %s %s\n%s%s%s%s\n", tab2, "static",
-               declarator<T>::type_name, "signaling_NaN() throw()",
-               tab2, "{ return static_cast<", declarator<T>::type_name, 
-	       ">(0); }");
+      printf("%s%s %s %s\n%s%s%s%s\n", tab2, "static",
+	     declarator<T>::type_name, "signaling_NaN() throw()",
+	     tab2, "{ return static_cast<", declarator<T>::type_name, 
+	     ">(0); }");
     }
 
     static void denorm_min()
     {
-        printf("%s%s %s %s\n%s%s%s%s\n", tab2, "static",
-               declarator<T>::type_name, "denorm_min() throw()",
-               tab2, "{ return static_cast<", declarator<T>::type_name, 
-	       ">(0); }");
+      printf("%s%s %s %s\n%s%s%s%s\n", tab2, "static",
+	     declarator<T>::type_name, "denorm_min() throw()",
+	     tab2, "{ return static_cast<", declarator<T>::type_name, 
+	     ">(0); }");
     }
-};
+  };
 
 
 template<typename T>
 void is_iec559()
 {
-    printf("%s%s = %s;\n", tab2, "static const bool is_iec559",
-           bool_alpha[predicate<T>::is_iec559]);
+  printf("%s%s = %s;\n", tab2, "static const bool is_iec559",
+	 bool_alpha[predicate<T>::is_iec559]);
 }
 
 // tinyness_before
 template<typename T>
 void tinyness_before()
 {
-    printf("%s%s;\n", tab2, "static const bool tinyness_before = false");
+  printf("%s%s;\n", tab2, "static const bool tinyness_before = false");
 }
 
 // round style
 template<typename T>
 void round_style()
 {
-    printf("%s%s;\n", tab2, "static const float_round_style "
-           "round_style = round_toward_zero");    
+  printf("%s%s;\n", tab2, "static const float_round_style "
+	 "round_style = round_toward_zero");    
 }
 
 
 
 // type traits
-template<typename T> struct type_trait {
-    
+template<typename T> 
+  struct type_trait 
+  {
     type_trait()
     {
-        declarator<T>::start();
-        printf("%s%s;\n\n", tab2, "static const bool is_specialized = true");
-        min<T>();
-        max<T>();
-        printf("\n");
-        digits<T>();
-        digits10<T>();
-        is_signed<T>();
-        is_integer<T>();
-        is_exact<T>();
-        radix<T>();
-        epsilon<T>();
-        round_error<T>();
-        printf("\n");
-        min_exponent<T>();
-        min_exponent10<T>();
-        max_exponent<T>();
-        max_exponent10<T>();
-        printf("\n");
-        has_infinity<T>();
-        has_quiet_nan<T>();
-        has_signaling_nan<T>();
-        infinity_trait<T>::has_denorm();
-        has_denorm_loss<T>();
-        printf("\n");
-        infinity_trait<T>::infinity();
-        infinity_trait<T>::quiet_NaN();
-        infinity_trait<T>::signaling_NaN();
-        infinity_trait<T>::denorm_min();
-        printf("\n");
-        is_iec559<T>();
-        printf("%s%s;\n", tab2, "static const bool is_bounded = true");
-        is_modulo<T>();
-        printf("\n");
-        traps<T>();
-        tinyness_before<T>();
-        round_style<T>();
-        declarator<T>::end();
+      declarator<T>::start();
+      printf("%s%s;\n\n", tab2, "static const bool is_specialized = true");
+      min<T>();
+      max<T>();
+      printf("\n");
+      digits<T>();
+      digits10<T>();
+      is_signed<T>();
+      is_integer<T>();
+      is_exact<T>();
+      radix<T>();
+      epsilon<T>();
+      round_error<T>();
+      printf("\n");
+      min_exponent<T>();
+      min_exponent10<T>();
+      max_exponent<T>();
+      max_exponent10<T>();
+      printf("\n");
+      has_infinity<T>();
+      has_quiet_nan<T>();
+      has_signaling_nan<T>();
+      infinity_trait<T>::has_denorm();
+      has_denorm_loss<T>();
+      printf("\n");
+      infinity_trait<T>::infinity();
+      infinity_trait<T>::quiet_NaN();
+      infinity_trait<T>::signaling_NaN();
+      infinity_trait<T>::denorm_min();
+      printf("\n");
+      is_iec559<T>();
+      printf("%s%s;\n", tab2, "static const bool is_bounded = true");
+      is_modulo<T>();
+      printf("\n");
+      traps<T>();
+      tinyness_before<T>();
+      round_style<T>();
+      declarator<T>::end();
     }
-};
+  };
 
 int main()
 {
-    type_trait<bool>();
-
-    type_trait<char>();
-    type_trait<signed char>();
-    type_trait<unsigned char>();
+  type_trait<bool>();
+  
+  type_trait<char>();
+  type_trait<signed char>();
+  type_trait<unsigned char>();
 #if defined( _GLIBCPP_USE_WCHAR_T) 
-    type_trait<wchar_t>();
+  type_trait<wchar_t>();
 #endif
-    
-    type_trait<short>();
-    type_trait<unsigned short>();
-
-    type_trait<int>();
-    type_trait<unsigned int>();
-
-    type_trait<long>();
-    type_trait<unsigned long>();
-
+  
+  type_trait<short>();
+  type_trait<unsigned short>();
+  
+  type_trait<int>();
+  type_trait<unsigned int>();
+  
+  type_trait<long>();
+  type_trait<unsigned long>();
+  
 #ifdef _GLIBCPP_USE_LONG_LONG
-    type_trait<long long>();
-    type_trait<unsigned long long>();
+  type_trait<long long>();
+  type_trait<unsigned long long>();
 #endif
 
-    type_trait<float>();
-    type_trait<double>();
-    type_trait<long double>();
-
-    // x86/linux gets this weirdness for the min/max functions:
-    // static long double min() throw()
-    // { return (__extension__ ((union __convert_long_double) 
-    // {__convert_long_double_i: {0x0, 0x80000000, 0x1, 0x0}})
-    // .__convert_long_double_d); }
+  type_trait<float>();
+  type_trait<double>();
+  type_trait<long double>();
+  
+  // x86/linux gets this weirdness for the min/max functions:
+  // static long double min() throw()
+  // { return (__extension__ ((union __convert_long_double) 
+  // {__convert_long_double_i: {0x0, 0x80000000, 0x1, 0x0}})
+  // .__convert_long_double_d); }
 }
 
 // G++ doesn't have support for automatic instantiation of static data
