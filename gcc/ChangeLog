@@ -1,3 +1,8 @@
+2003-03-15  Glen Nakamura  <glen@imodulo.com>
+
+	* reload1.c (choose_reload_regs): Use && instead of ||
+	with REG_CANNOT_CHANGE_MODE_P condition.
+
 2003-03-15  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	PR optimization/9387
