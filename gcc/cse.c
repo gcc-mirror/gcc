@@ -2595,6 +2595,7 @@ canon_reg (x, insn)
       if (fmt[i] == 'e')
 	{
 	  rtx new = canon_reg (XEXP (x, i), insn);
+	  int insn_code;
 
 	  /* If replacing pseudo with hard reg or vice versa, ensure the
 	     insn remains valid.  Likewise if the insn has MATCH_DUPs.  */
@@ -2602,7 +2603,8 @@ canon_reg (x, insn)
 	      && GET_CODE (new) == REG && GET_CODE (XEXP (x, i)) == REG
 	      && (((REGNO (new) < FIRST_PSEUDO_REGISTER)
 		   != (REGNO (XEXP (x, i)) < FIRST_PSEUDO_REGISTER))
-		  || insn_n_dups[recog_memoized (insn)] > 0))
+		  || (insn_code = recog_memoized (insn)) < 0
+		  || insn_n_dups[insn_code] > 0))
 	    validate_change (insn, &XEXP (x, i), new, 1);
 	  else
 	    XEXP (x, i) = new;
@@ -6328,11 +6330,13 @@ cse_insn (insn, in_libcall_block)
       rtx dest = SET_DEST (sets[i].rtl);
       rtx src = SET_SRC (sets[i].rtl);
       rtx new = canon_reg (src, insn);
+      int insn_code;
 
       if ((GET_CODE (new) == REG && GET_CODE (src) == REG
 	   && ((REGNO (new) < FIRST_PSEUDO_REGISTER)
 	       != (REGNO (src) < FIRST_PSEUDO_REGISTER)))
-	  || insn_n_dups[recog_memoized (insn)] > 0)
+	  || (insn_code = recog_memoized (insn)) < 0
+	  || insn_n_dups[insn_code] > 0)
 	validate_change (insn, &SET_SRC (sets[i].rtl), new, 1);
       else
 	SET_SRC (sets[i].rtl) = new;
