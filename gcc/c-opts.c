@@ -740,7 +740,7 @@ c_common_handle_option (size_t scode, const char *arg, int value)
       break;
 
     case OPT_fdump_:
-      if (!dump_switch_p (option->opt_text + strlen ("f")))
+      if (!dump_switch_p (arg))
 	result = 0;
       break;
 

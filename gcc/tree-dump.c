@@ -646,11 +646,11 @@ struct dump_file_info
    TREE_DUMP_INDEX enumeration in tree.h */
 static struct dump_file_info dump_files[TDI_end] =
 {
-  {".tu", "dump-translation-unit", 0, 0},
-  {".class", "dump-class-hierarchy", 0, 0},
-  {".original", "dump-tree-original", 0, 0},
-  {".optimized", "dump-tree-optimized", 0, 0},
-  {".inlined", "dump-tree-inlined", 0, 0},
+  {".tu", "translation-unit", 0, 0},
+  {".class", "class-hierarchy", 0, 0},
+  {".original", "tree-original", 0, 0},
+  {".optimized", "tree-optimized", 0, 0},
+  {".inlined", "tree-inlined", 0, 0},
 };
 
 /* Define a name->number mapping for a dump flag value.  */
@@ -758,7 +758,7 @@ dump_switch_p (const char *arg)
 		  flags |= option_ptr->value;
 		  goto found;
 		}
-	    warning ("ignoring unknown option `%.*s' in `-f%s'",
+	    warning ("ignoring unknown option `%.*s' in `-fdump-%s'",
 		     length, ptr, dump_files[ix].swtch);
 	  found:;
 	    ptr = end_ptr;
