@@ -1,3 +1,8 @@
+Wed Sep 22 19:50:12 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.h (EXPAND_BUILTIN_VA_START): Call c4x_va_start.
+	* config/c4x/c4x.c (c4x_va_start): New function.
+
 Tue Sep 21 18:40:01 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* genrecog.c (not_both_true): Handle correctly cases when called for

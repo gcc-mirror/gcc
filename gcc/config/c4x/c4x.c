@@ -588,6 +588,17 @@ c4x_function_arg (cum, mode, type, named)
     return NULL_RTX;
 }
 
+void
+c4x_va_start (stdarg_p, valist, nextarg)
+     int stdarg_p;
+     tree valist;
+     rtx nextarg;
+{
+  nextarg = plus_constant (nextarg, stdarg_p ? 0 : UNITS_PER_WORD * 2);
+
+  std_expand_builtin_va_start (stdarg_p, valist, nextarg);
+}
+
 /* C[34]x arguments grow in weird ways (downwards) that the standard
    varargs stuff can't handle. */
 
