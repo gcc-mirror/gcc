@@ -4297,10 +4297,6 @@ override_options ()
   else if (optimize)
     target_flags |= MASK_GPOPT;
 
-#ifndef MIPS_ISA_DEFAULT
-#define MIPS_ISA_DEFAULT 1
-#endif
-
   /* If both single-float and soft-float are set, then clear the one that
      was set by TARGET_DEFAULT, leaving the one that was set by the
      user.  We assume here that the specs prevent both being set by the 

@@ -464,6 +464,10 @@ extern void		sbss_section PARAMS ((void));
 #endif
 #endif
 
+#ifndef MIPS_ISA_DEFAULT
+#define MIPS_ISA_DEFAULT 1
+#endif
+
 #ifndef MULTILIB_ENDIAN_DEFAULT
 #if TARGET_ENDIAN_DEFAULT == 0
 #define MULTILIB_ENDIAN_DEFAULT "EL"
@@ -472,8 +476,22 @@ extern void		sbss_section PARAMS ((void));
 #endif
 #endif
 
+#ifndef MULTILIB_ISA_DEFAULT
+#if MIPS_ISA_DEFAULT == 1
+#define MULTILIB_ISA_DEFAULT "mips1"
+#elif MIPS_ISA_DEFAULT == 2
+#define MULTILIB_ISA_DEFAULT "mips2"
+#elif MIPS_ISA_DEFAULT == 3
+#define MULTILIB_ISA_DEFAULT "mips3"
+#elif MIPS_ISA_DEFAULT == 4
+#define MULTILIB_ISA_DEFAULT "mips4"
+#else
+#define MULTILIB_ISA_DEFAULT "mips1"
+#endif
+#endif
+
 #ifndef MULTILIB_DEFAULTS
-#define MULTILIB_DEFAULTS { MULTILIB_ENDIAN_DEFAULT, "mips1" }
+#define MULTILIB_DEFAULTS { MULTILIB_ENDIAN_DEFAULT, MULTILIB_ISA_DEFAULT }
 #endif
 
 /* We must pass -EL to the linker by default for little endian embedded
