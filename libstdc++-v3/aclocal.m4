@@ -368,8 +368,7 @@ AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
   fi
 
   # Set linker optimization flags.
-  if test x"$with_gnu_ld" = x"yes" &&
-     test x"$enable_debug" = x"no"; then
+  if test x"$with_gnu_ld" = x"yes" && test x"$enable_debug" = x"no"; then
     OPT_LDFLAGS="-Wl,-O1 $OPT_LDFLAGS"
   fi
 
@@ -1180,7 +1179,7 @@ AC_DEFUN(GLIBCPP_ENABLE_CLOCALE, [
       CNUMERIC_CC=config/locale/gnu/numeric_members.cc
       CTIME_CC=config/locale/gnu/time_members.cc
       ;;
-    xieee_1003.1)
+    xieee_1003.1-2001)
       AC_MSG_RESULT(generic)
 
       # Don't use gettext.
@@ -2074,7 +2073,9 @@ enable_symvers=GLIBCPP_ENABLE_SYMVERS_DEFAULT)dnl
 
 # If we never went through the GLIBCPP_CHECK_LINKER_FEATURES macro, then we
 # don't know enough about $LD to do tricks... 
-if test $enable_shared = no || test x$LD = x ; then
+if test x$enable_shared = xno || 
+	test x$LD = x || 
+	test x$glibcpp_gnu_ld_version = x; then
   enable_symvers=no
 fi
 
@@ -2136,7 +2137,6 @@ AM_CONDITIONAL(GLIBCPP_BUILD_VERSIONED_SHLIB, test $enable_symvers != no)
 AC_MSG_CHECKING([versioning on shared library symbols])
 AC_MSG_RESULT($enable_symvers)
 ])
-
 
 
 #serial 1
