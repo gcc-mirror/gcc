@@ -1,3 +1,7 @@
+2000-11-04  Neil Booth  <neilb@earthling.net>
+
+        * gcc.dg/cpp/include2.c: New tests.
+
 Fri Nov  3 13:32:14 2000  Mark P Mitchell  <mark@codesourcery.com>
 
 	* lib/g++.exp (g++_set_ld_library_path): New function.
