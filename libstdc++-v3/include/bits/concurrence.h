@@ -62,4 +62,26 @@ __gthread_mutex_lock(&NAME)
 
 #endif
 
+namespace __gnu_cxx
+{
+  class lock
+  {
+    // Externally defined and initialized.
+    __gthread_mutex_t* device;
+
+  public:
+    // Acquire the mutex here with a constructor call.  This ensures
+    // that it is released in exit or during stack unwinding.
+    explicit lock(__gthread_mutex_t& name) : device(&name)
+    { __glibcxx_mutex_lock(*device); }
+
+    ~lock() throw()
+    { __glibcxx_mutex_unlock(*device); }
+
+  private:
+    lock(const lock&);
+    lock& operator=(const lock&);
+  };
+}
+
 #endif

@@ -143,7 +143,6 @@ GLIBCXX_3.4 {
     _ZNSt12__basic_fileIcE6xsputn*;
     _ZNSt12__basic_fileIcE7seekoff*;
     _ZNSt12__basic_fileIcE8sys_openE*St13_Ios_Openmode;
-    _ZNSt12__basic_fileIcE8sys_openEiSt13_Ios_Openmode;
     _ZNSt12__basic_fileIcE8xsputn_2*;
     _ZNSt12__basic_fileIcE9showmanycEv;
     _ZNSt12__basic_fileIcEC*;
@@ -257,10 +256,10 @@ GLIBCXX_3.4.1 {
  
 GLIBCXX_3.4.2 {
 
-    _ZN9__gnu_cxx11__pool_base5_Lock7_S_lockE;
-    _ZN9__gnu_cxx11__pool_base9_M_refillEj;
-    _ZN9__gnu_cxx11__pool_base16_M_get_free_listEj;
- 
+    _ZN9__gnu_cxx11__pool_base9_M_refillE[jm];
+    _ZN9__gnu_cxx11__pool_base16_M_get_free_listE[jm];
+    _ZN9__gnu_cxx11__pool_base12_M_get_mutexEv;
+
 } GLIBCXX_3.4.1;
 
 # Symbols in the support library (libsupc++) have their own tag.

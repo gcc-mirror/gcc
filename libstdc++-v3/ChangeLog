@@ -1,3 +1,20 @@
+2004-06-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/concurrence.h (__gnu_cxx::lock): New.
+	* include/ext/pool_allocator.h (__pool_base::_Lock::_S_lock): Remove.
+	(__pool_base::_M_get_mutex): New.
+	* include/bits/allocator.h: Tweak.
+	* src/allocator.cc (__pool_base::_M_get_free_list): Correct offset.
+	* config/linker-map.gnu: Remove __pool_base::_Lock::_S_lock.
+	* include/bits/stl_threads.h: Remove.
+	* include/Makefile.am: Also here.
+	* include/Makefile.in: Regenerate.
+
+	* src/locale_init.cc: Use __gnu_cxx::lock.
+
+	* src/allocator.cc: Move all instantiations...
+	* src/allocator-inst.cc: ...here.
+	
 2004-06-23  Andrew Pinski  <apinski@apple.com>
 
 	* linkage.m4: Remove check for libmx.	

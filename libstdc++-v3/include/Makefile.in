@@ -357,7 +357,6 @@ bits_headers = \
 	${bits_srcdir}/stl_set.h \
 	${bits_srcdir}/stl_stack.h \
 	${bits_srcdir}/stl_tempbuf.h \
-	${bits_srcdir}/stl_threads.h \
 	${bits_srcdir}/stl_tree.h \
 	${bits_srcdir}/stl_uninitialized.h \
 	${bits_srcdir}/stl_vector.h \

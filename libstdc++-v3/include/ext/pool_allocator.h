@@ -50,8 +50,8 @@
 #include <bits/c++config.h>
 #include <new>
 #include <bits/functexcept.h>
-#include <bits/stl_threads.h>
 #include <bits/atomicity.h>
+#include <bits/concurrence.h>
 
 namespace __gnu_cxx
 {
@@ -80,15 +80,6 @@ namespace __gnu_cxx
       enum { _S_max_bytes = 128 };
       enum { _S_free_list_size = _S_max_bytes / _S_align };
       
-      // It would be nice to use _STL_auto_lock here.  But we need a
-      // test whether threads are in use.
-      struct _Lock
-      {
-	static _STL_mutex_lock        _S_lock;
-	_Lock() { _S_lock._M_acquire_lock(); }
-	~_Lock() { _S_lock._M_release_lock(); }
-      };
-
       union _Obj
       {
 	union _Obj* _M_free_list_link;
@@ -96,7 +87,7 @@ namespace __gnu_cxx
       };
       
       static _Obj* volatile         _S_free_list[_S_free_list_size];
-      
+
       // Chunk allocation state.
       static char*                  _S_start_free;
       static char*                  _S_end_free;
@@ -109,6 +100,9 @@ namespace __gnu_cxx
       _Obj* volatile*
       _M_get_free_list(size_t __bytes);
     
+      __gthread_mutex_t&
+      _M_get_mutex();
+
       // Returns an object of size __n, and optionally adds to size __n
       // free list.
       void*
@@ -216,10 +210,7 @@ namespace __gnu_cxx
 		{
 		  _Obj* volatile* __free_list = _M_get_free_list(__bytes);
 
-		  // Acquire the lock here with a constructor call.  This
-		  // ensures that it is released in exit or during stack
-		  // unwinding.
-		  _Lock __lock_instance;
+		  lock sentry(_M_get_mutex());
 		  _Obj* __restrict__ __result = *__free_list;
 		  if (__builtin_expect(__result == 0, 0))
 		    __ret = static_cast<_Tp*>(_M_refill(_M_round_up(__bytes)));
@@ -252,10 +243,7 @@ namespace __gnu_cxx
 	      _Obj* volatile* __free_list = _M_get_free_list(__bytes);
 	      _Obj* __q = reinterpret_cast<_Obj*>(__p);
 
-	      // Acquire the lock here with a constructor call.  This
-	      // ensures that it is released in exit or during stack
-	      // unwinding.
-	      _Lock __lock_instance;
+	      lock sentry(_M_get_mutex());
 	      __q ->_M_free_list_link = *__free_list;
 	      *__free_list = __q;
 	    }
