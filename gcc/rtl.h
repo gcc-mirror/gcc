@@ -114,10 +114,9 @@ typedef struct rtx_def
 #else
   enum machine_mode mode : 8;
 #endif
-  /* 1 in an INSN if it can alter flow of control
-     within this function.  Not yet used!  */
+  /* LINK_COST_ZERO in an INSN_LIST.  */
   unsigned int jump : 1;
-  /* 1 in an INSN if it can call another function.  Not yet used!  */
+  /* LINK_COST_FREE in an INSN_LIST.  */
   unsigned int call : 1;
   /* 1 in a MEM or REG if value of this expression will never change
      during the current function, even though it is not

@@ -1,3 +1,7 @@
+Sun Apr 11 10:24:18 1999  Mark Mitchell  <mark@codesourcery.com>
+
+	* rtl.h (rtx_def): Update documentation for jump and call.
+
 Sun Apr 11 07:43:44 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* jump.c (jump_optimize_1): Make the definition static to match
