@@ -1777,16 +1777,6 @@ struct tree_type GTY(())
 #define DECL_POINTER_ALIAS_SET_KNOWN_P(NODE) \
   (DECL_POINTER_ALIAS_SET (NODE) != - 1)
 
-/* The pointer_depth field comprises two bits for values in the range
-   0..3.  The value is normally equal to TYPE_POINTER_DEPTH of decl's
-   type node, but for functions it migth be greater.  For example,
-   this can happen when the function is declared to accept a parameter
-   of type void* (depth=1), but is actually called with an argument of
-   type foo** (depth=2).  The function type will get the formal
-   parameter's depth, but the function decl will get the actual
-   argument's depth.  */
-#define DECL_POINTER_DEPTH(DECL) (DECL_CHECK (DECL)->decl.pointer_depth)
-
 struct function;
 
 struct tree_decl GTY(())
@@ -1823,13 +1813,13 @@ struct tree_decl GTY(())
   ENUM_BITFIELD(built_in_class) built_in_class : 2;
   unsigned pure_flag : 1;
 
-  unsigned pointer_depth : 2;
   unsigned non_addressable : 1;
   unsigned user_align : 1;
   unsigned uninlinable : 1;
   unsigned thread_local_flag : 1;
   unsigned inlined_function_flag : 1;
-  /* One unused bit.  */
+  unsigned unused : 3;
+  /* three unused bits.  */
 
   unsigned lang_flag_0 : 1;
   unsigned lang_flag_1 : 1;
