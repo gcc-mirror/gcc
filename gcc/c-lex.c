@@ -1585,6 +1585,9 @@ yylex ()
 		&& !warn)
 	      pedwarn ("integer constant out of range");
 
+	    if (base == 10 && ! spec_unsigned && TREE_UNSIGNED (type))
+	      warning ("integer constant is so large that it is unsigned");
+
 	    if (flag_traditional && !int_fits_type_p (yylval.ttype, type))
 	      /* The traditional constant 0x80000000 is signed
 		 but doesn't fit in the range of int.
