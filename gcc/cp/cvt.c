@@ -267,7 +267,7 @@ cp_convert_to_pointer (type, expr)
     }
 
   if (type_unknown_p (expr))
-    return instantiate_type (type, expr, itf_no_attributes);
+    return instantiate_type (type, expr, itf_complain);
 
   cp_error ("cannot convert `%E' from type `%T' to type `%T'",
 	    expr, intype, type);

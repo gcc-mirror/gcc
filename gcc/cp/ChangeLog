@@ -2,6 +2,9 @@
 
 	* class.c (instantiate_type): Reinstate local variable
 	deleted in previous change.
+	
+	* cvt.c (cp_convert_to_pointer): Pass itf_complain, not
+	itf_no_attributes.
 
 2000-08-17  Nathan Sidwell  <nathan@codesourcery.com>
 
