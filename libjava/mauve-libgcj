@@ -22,4 +22,3 @@ java.text.StringCharacterIterator.iter
 !java.text.AttributedCharacterIterator
 !java.text.resources
 !java.text.DateFormat
-!java.util.zip
