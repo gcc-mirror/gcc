@@ -1,3 +1,9 @@
+2000-05-18  Chris Demetriou  <cgd@sibyte.com>
+
+	* com.h (FFECOM_f2cINTEGER, FFECOM_f2cLONGINT): Note that
+	these types correspond to built-in types now defined in
+	the C front end (for libf2c).
+
 Wed May 17 17:27:44 2000  Andrew Cagney  <cagney@b1.cygnus.com>
 
 	* top.c (ffe_decode_option): Update -Wall unused flags by calling
