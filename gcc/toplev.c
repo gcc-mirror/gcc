@@ -2275,6 +2275,10 @@ compile_file (name)
     for (i = 0; i < len; i++)
       {
 	decl = vec[i];
+
+	/* We're not deferring this any longer.  */
+	DECL_DEFER_OUTPUT (decl) = 0;
+
 	if (TREE_CODE (decl) == VAR_DECL && DECL_SIZE (decl) == 0
 	    && incomplete_decl_finalize_hook != 0)
 	  (*incomplete_decl_finalize_hook) (decl);
@@ -2323,6 +2327,7 @@ compile_file (name)
 	    && ! TREE_ASM_WRITTEN (decl)
 	    && DECL_INITIAL (decl) != 0
 	    && (TREE_ADDRESSABLE (decl)
+		|| flag_keep_inline_functions
 		|| TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (decl)))
 	    && ! DECL_EXTERNAL (decl))
 	  {
@@ -2710,6 +2715,7 @@ rest_of_compilation (decl)
       if ((specd || DECL_INLINE (decl))
 	  && ((! TREE_PUBLIC (decl) && ! TREE_ADDRESSABLE (decl)
 	       && ! flag_keep_inline_functions)
+	      || DECL_DEFER_OUTPUT (decl)
 	      || DECL_EXTERNAL (decl)))
 	{
 #ifdef DWARF_DEBUGGING_INFO
@@ -2748,6 +2754,9 @@ rest_of_compilation (decl)
 	  TIMEVAR (integration_time, save_for_inline_copying (decl));
 	}
     }
+
+  if (DECL_DEFER_OUTPUT (decl))
+    goto exit_rest_of_compilation;
 
   TREE_ASM_WRITTEN (decl) = 1;
 
