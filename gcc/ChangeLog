@@ -4,6 +4,9 @@
 	(flow_delete_insn): Decrement LABEL_NUSES when deleting insns that
 	reference labels.
 
+	* fold-const.c (extract_muldiv): Apply type check for defined
+	overflow to multiply as well as divide.
+
 2000-03-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* emit-rtl.c (remove_unncessary_notes): Check that all
