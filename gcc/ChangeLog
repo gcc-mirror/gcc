@@ -1,5 +1,10 @@
 2000-09-15  Richard Henderson  <rth@cygnus.com>
 
+	* expmed.c (store_bit_field): Consider naturally aligned
+	memory for direct reference.
+
+2000-09-15  Richard Henderson  <rth@cygnus.com>
+
 	* config/alpha/alpha.c (alpha_expand_unaligned_load): Force all
 	AND addresses into alias set 0.
 	(alpha_expand_unaligned_store): Likewise.
