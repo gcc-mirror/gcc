@@ -1,3 +1,11 @@
+Sat Apr 18 01:23:11 1998  John Carr  <jfc@mit.edu>
+
+	* sparc.c, sparc.h, sparc.md, sol2.h: Many changes related to V9
+	code generation.  Use 64 bit instructions in 32 bit mode when
+	possible.  Use V9 return instruction.  UltraSPARC optimizations.
+
+        * sparc.h: Change gen_rtx (CODE to gen_rtx_CODE (.
+
 Fri Apr 17 22:38:17 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* global.c (global_alloc): Don't pass HARD_CONST (0) to find_reg,
