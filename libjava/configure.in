@@ -109,7 +109,7 @@ LIBDATASTARTSPEC=
 NEEDS_DATA_START=
 AC_TRY_LINK([extern int data_start;], [return ((int) &data_start);],
   [AC_MSG_RESULT(found it)],
-  [LIBDATASTARTSPEC="-u data_start -lgcjdata"
+  [LIBDATASTARTSPEC="-u data_start libgcjdata.a%s"
    NEEDS_DATA_START=yes	
    AC_MSG_RESULT(missing)])
 AC_SUBST(LIBDATASTARTSPEC)
@@ -580,14 +580,28 @@ else
       AC_CHECK_LIB(dl, main, SYSTEMSPEC="$SYSTEMSPEC -ldl")
    fi
 
-   if test -d "$libgcj_basedir/../gcc/java"; then
-      GCJ=
+   if test -z "${with_multisubdir}"; then
+      builddotdot=.
+   else
+changequote(<<,>>)
+      builddotdot=`echo ${with_multisubdir} | sed -e 's:[^/][^/]*:..:g'`
+changequote([,])
+   fi
+   dir="`cd ${builddotdot}/../../gcc && pwd`"
+   if test -x "${dir}/gcj"; then
+      GCJ="$dir/gcj -B`pwd`/ -B$dir/"
    else
       CANADIAN=yes
       NULL_TARGET=yes
-      GCJ=gcj
+      GCJ="gcj -B`pwd`/"
    fi
 fi
+
+# Create it, so that compile/link tests don't fail
+test -f libgcj.spec || touch libgcj.spec
+GCJ="$GCJ -I$srcdir"
+
+LT_AC_PROG_GCJ
 
 dnl FIXME: cross compilation
 AC_CHECK_SIZEOF(void *)
@@ -619,17 +633,6 @@ AM_CONDITIONAL(NEEDS_DATA_START, test "$NEEDS_DATA_START" = yes && test "$NATIVE
 AC_SUBST(EH_COMMON_INCLUDE)
 
 # Determine gcj version number.
-if test "$GCJ" = ""; then
-   if test -z "${with_multisubdir}"; then
-      builddotdot=.
-   else
-changequote(<<,>>)
-      builddotdot=`echo ${with_multisubdir} | sed -e 's:[^/][^/]*:..:g'`
-changequote([,])
-   fi
-   dir="`cd ${builddotdot}/../../gcc && pwd`"
-   GCJ="$dir/gcj -B$dir/"
-fi
 changequote(<<,>>)
 gcjvers="`$GCJ -v 2>&1 | sed -n 's/^.*version \([^ ]*\).*$/\1/p'`"
 changequote([,])
