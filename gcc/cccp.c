@@ -5905,16 +5905,10 @@ comp_def_part (first, beg1, len1, beg2, len2, last)
    MACRONAME is the macro name itself (so we can avoid recursive expansion)
    and NAMELEN is its length in characters.
    
-Note that comments and backslash-newlines have already been deleted
-from the argument.  */
+Note that comments, backslash-newlines, and leading white space
+have already been deleted from the argument.  */
 
-/* Leading and trailing Space, Tab, etc. are converted to markers
-   Newline Space, Newline Tab, etc.
-   Newline Space makes a space in the final output
-   but is discarded if stringified.  (Newline Tab is similar but
-   makes a Tab instead.)
-
-   If there is no trailing whitespace, a Newline Space is added at the end
+/* If there is no trailing whitespace, a Newline Space is added at the end
    to prevent concatenation that would be contrary to the standard.  */
 
 static DEFINITION *
@@ -5945,33 +5939,21 @@ collect_expansion (buf, end, nargs, arglist)
     abort ();
 
   /* Find the beginning of the trailing whitespace.  */
-  /* Find end of leading whitespace.  */
   limit = end;
   p = buf;
   while (p < limit && is_space[limit[-1]]) limit--;
-  while (p < limit && is_space[*p]) p++;
 
   /* Allocate space for the text in the macro definition.
-     Leading and trailing whitespace chars need 2 bytes each.
-     Each other input char may or may not need 1 byte,
+     Each input char may or may not need 1 byte,
      so this is an upper bound.
-     The extra 2 are for invented trailing newline-marker and final null.  */
+     The extra 3 are for invented trailing newline-marker and final null.  */
   maxsize = (sizeof (DEFINITION)
-	     + 2 * (end - limit) + 2 * (p - buf)
 	     + (limit - p) + 3);
   defn = (DEFINITION *) xcalloc (1, maxsize);
 
   defn->nargs = nargs;
   exp_p = defn->expansion = (U_CHAR *) defn + sizeof (DEFINITION);
   lastp = exp_p;
-
-  p = buf;
-
-  /* Convert leading whitespace to Newline-markers.  */
-  while (p < limit && is_space[*p]) {
-    *exp_p++ = '\n';
-    *exp_p++ = *p++;
-  }
 
   if (p[0] == '#'
       ? p[1] == '#'
