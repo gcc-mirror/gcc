@@ -268,7 +268,7 @@ namespace std
   {
     template<typename _Tp>
       bool operator()(const _Tp& __x, const _Tp& __y) const
-      { return __x == __y; }
+      { return __x != __y; }
   };
 
   struct __less
@@ -457,7 +457,7 @@ namespace std
       _UnBase(const _Arg& __e) : _M_expr(__e) {}
 
       value_type operator[](size_t __i) const
-      { return _M_expr[__i]; }
+      { return _Oper()(_M_expr[__i]); }
 
       size_t size() const { return _M_expr.size(); }
 
