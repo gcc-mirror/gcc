@@ -2,6 +2,7 @@
    the low part of u.ll on little-endian 32-bit targets.  */
 /* { dg-do run { target mips*-*-* } } */
 
+#if !defined(__mips16)
 unsigned int g;
 
 unsigned long long f (unsigned int x)
@@ -22,3 +23,6 @@ int main ()
     abort ();
   exit (0);
 }
+#else
+int main () { exit (0); }
+#endif
