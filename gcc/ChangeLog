@@ -1,5 +1,6 @@
 2003-12-30  Jan Hubicka  <jh@suse.cz>
 
+	PR target/13456
 	* i386.md (allocate_stack_worker):  Use different pattern for pre and
 	post reload expansion.
 	(allocate_stack_worker_1, allocate_stack_worker_rex64): Use
