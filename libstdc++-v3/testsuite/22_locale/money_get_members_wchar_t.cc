@@ -552,15 +552,19 @@ void test08()
 {
   bool test = true;
 
-  std::string loc1 = setlocale(LC_ALL, "ja_JP.eucjp");
-  test01();
-  test02();
-  test03();
-  test05();
-  test06();
-  test07();
-  std::string loc2 = setlocale(LC_ALL, NULL);
-  VERIFY( loc1 == loc2 );
+  const char* tentLANG = setlocale(LC_ALL, "ja_JP.eucjp");
+  if (tentLANG != NULL)
+    {
+      std::string preLANG = tentLANG;
+      test01();
+      test02();
+      test03();
+      test05();
+      test06();
+      test07();
+      std::string postLANG = setlocale(LC_ALL, NULL);
+      VERIFY( preLANG == postLANG );
+    }
 }
 #endif
 
