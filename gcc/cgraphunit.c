@@ -183,7 +183,7 @@ cgraph_finalize_function (tree decl, bool nested)
       memset (&node->rtl, 0, sizeof (node->rtl));
       node->analyzed = false;
       while (node->callees)
-	cgraph_remove_call (node->decl, node->callees->callee->decl);
+	cgraph_remove_edge (node, node->callees->callee);
 
       /* We may need to re-queue the node for assembling in case
          we already proceeded it and ignored as not needed.  */

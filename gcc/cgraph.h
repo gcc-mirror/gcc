@@ -150,6 +150,7 @@ extern GTY(()) struct cgraph_varpool_node *cgraph_varpool_nodes_queue;
 
 /* In cgraph.c  */
 void dump_cgraph (FILE *);
+void cgraph_remove_edge (struct cgraph_node *, struct cgraph_node *);
 void cgraph_remove_call (tree, tree);
 void cgraph_remove_node (struct cgraph_node *);
 struct cgraph_edge *cgraph_record_call (tree, tree);

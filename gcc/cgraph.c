@@ -68,7 +68,6 @@ static GTY(())  struct cgraph_varpool_node *cgraph_varpool_nodes;
 
 static struct cgraph_edge *create_edge (struct cgraph_node *,
 					struct cgraph_node *);
-static void cgraph_remove_edge (struct cgraph_node *, struct cgraph_node *);
 static hashval_t hash_node (const void *);
 static int eq_node (const void *, const void *);
 
@@ -180,7 +179,7 @@ create_edge (struct cgraph_node *caller, struct cgraph_node *callee)
 
 /* Remove the edge from CALLER to CALLEE in the cgraph.  */
 
-static void
+void
 cgraph_remove_edge (struct cgraph_node *caller, struct cgraph_node *callee)
 {
   struct cgraph_edge **edge, **edge2;
