@@ -1,3 +1,10 @@
+Sat Nov 29 12:45:51 1997  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* config/i386/cygwin32.h (DWARF2_UNWIND): Exception handling 
+	doesn't work with it yet, so set it to 0.
+	* config/i386/x-cygwin32 (USE_COLLECT2): Delete.
+	* config/i386/xm-cygwin32.h (NO_SYS_SIGLIST): Define.
+
 Fri Feb 13 01:29:29 1998 Franz Sirl <franz.sirl-kernel@lauterbach.com>
 
 	* rs6000/sysv4.h (ENDFILE_SPEC): add missing %(endfile_linux)
