@@ -2553,6 +2553,9 @@ stage1-start:
 	-rm -f stage1/libgcc.a
 	-cp libgcc.a stage1
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage1/libgcc.a; else true; fi
+	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
+	  cp stage1/$${f} . ; \
+	fi; done
 stage1: force stage1-start lang.stage1
 
 stage2-start:
@@ -2570,6 +2573,9 @@ stage2-start:
 	-rm -f stage2/libgcc.a
 	-cp libgcc.a stage2
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage2/libgcc.a; else true; fi
+	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
+	  cp stage2/$${f} . ; \
+	fi; done
 stage2: force stage2-start lang.stage2
 
 stage3-start:
@@ -2587,6 +2593,9 @@ stage3-start:
 	-rm -f stage3/libgcc.a
 	-cp libgcc.a stage3
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage3/libgcc.a; else true; fi
+	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
+	  cp stage3/$${f} . ; \
+	fi; done
 stage3: force stage3-start lang.stage3
 
 stage4-start:
@@ -2604,6 +2613,9 @@ stage4-start:
 	-rm -f stage4/libgcc.a
 	-cp libgcc.a stage4
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage4/libgcc.a; else true; fi
+	-for f in .. $(EXTRA_MULTILIB_PARTS); do if [ x$${f} != x.. ]; then \
+	  cp stage4/$${f} . ; \
+	fi; done
 stage4: force stage4-start lang.stage4
 
 # Copy just the executable files from a particular stage into a subdirectory,
