@@ -5417,9 +5417,12 @@ choose_reload_regs (chain)
 			      || (rld[r].out && rld[r].reg_rtx
 				  && rtx_equal_p (rld[r].out, rld[r].reg_rtx)))
 			    {
-			      reload_override_in[r] = last_reg;
-			      reload_inheritance_insn[r]
-				= reg_reloaded_insn[i];
+			      if (! rld[r].optional)
+				{
+				  reload_override_in[r] = last_reg;
+				  reload_inheritance_insn[r]
+				    = reg_reloaded_insn[i];
+				}
 			    }
 			  else
 			    {
@@ -5518,7 +5521,8 @@ choose_reload_regs (chain)
 		  if (reg_overlap_mentioned_for_reload_p (equiv,
 							  reload_earlyclobbers[i]))
 		    {
-		      reload_override_in[r] = equiv;
+		      if (! rld[r].optional)
+			reload_override_in[r] = equiv;
 		      equiv = 0;
 		      break;
 		    }
@@ -5541,7 +5545,8 @@ choose_reload_regs (chain)
 		    case RELOAD_OTHER:
 		    case RELOAD_FOR_INPUT:
 		    case RELOAD_FOR_OPERAND_ADDRESS:
-		      reload_override_in[r] = equiv;
+		      if (! rld[r].optional)
+			reload_override_in[r] = equiv;
 		      /* Fall through.  */
 		    default:
 		      equiv = 0;
