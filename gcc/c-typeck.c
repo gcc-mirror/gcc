@@ -3590,7 +3590,7 @@ build_conditional_expr (ifexp, op1, op2)
       && TREE_CODE (TREE_TYPE (op1)) != FUNCTION_TYPE)
     {
       if (TREE_CODE (ifexp) == INTEGER_CST)
-	return (integer_zerop (ifexp) ? op2 : op1);
+	return pedantic_non_lvalue (integer_zerop (ifexp) ? op2 : op1);
 
       return fold (build (COND_EXPR, TREE_TYPE (op1), ifexp, op1, op2));
     }
@@ -3715,7 +3715,7 @@ build_conditional_expr (ifexp, op1, op2)
     {
       result_type = TREE_TYPE (op1);
       if (TREE_CONSTANT (ifexp))
-	return (integer_zerop (ifexp) ? op2 : op1);
+	return pedantic_non_lvalue (integer_zerop (ifexp) ? op2 : op1);
 
       if (TYPE_MODE (result_type) == BLKmode)
 	{
@@ -3748,7 +3748,7 @@ build_conditional_expr (ifexp, op1, op2)
 #endif /* 0 */
     
   if (TREE_CODE (ifexp) == INTEGER_CST)
-    return integer_zerop (ifexp) ? op2 : op1;
+    return pedantic_non_lvalue (integer_zerop (ifexp) ? op2 : op1);
 
   return fold (build (COND_EXPR, result_type, ifexp, op1, op2));
 }
