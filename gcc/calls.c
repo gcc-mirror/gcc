@@ -2635,9 +2635,7 @@ expand_call (exp, target, ignore)
 	 is subject to race conditions, just as with multithreaded
 	 programs.  */
 
-      emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__gcov_flush"),
-		      	 LCT_ALWAYS_RETURN,
-			 VOIDmode, 0);
+      emit_library_call (gcov_flush_libfunc, LCT_ALWAYS_RETURN, VOIDmode, 0);
     }
 
   /* Ensure current function's preferred stack boundary is at least

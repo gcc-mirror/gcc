@@ -1,3 +1,14 @@
+2003-04-11  Richard Henderson  <rth@redhat.com>
+
+	* libfuncs.h (LTI_setbits, LTI_gcov_flush, LTI_gcov_init): New.
+	(setbits_libfunc, gcov_flush_libfunc, gcov_init_libfunc): New.
+	* optabs.c (init_optabs): Initialize them.
+	(init_libfuncs): Use init_one_libfunc.
+	* calls.c (expand_call): Use gcov_flush_libfunc.
+	* expr.c (store_constructor): Use setbits_libfunc.
+	* function.c (expand_main_function): Use init_one_libfunc.
+	* profile.c (create_profiler): Use gcov_init_libfunc and DECL_RTL.
+
 2003-04-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* doc/c-tree.texi (Functions): Remove DECL_REAL_CONTEXT

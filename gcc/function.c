@@ -6470,8 +6470,7 @@ expand_main_function ()
 #endif
 
 #ifndef HAS_INIT_SECTION
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, NAME__MAIN), LCT_NORMAL,
-		     VOIDmode, 0);
+  emit_library_call (init_one_libfunc (NAME__MAIN), LCT_NORMAL, VOIDmode, 0);
 #endif
 }
 

@@ -5329,8 +5329,7 @@ init_libfuncs (optable, first_mode, last_mode, opname, suffix)
       *p = '\0';
 
       optable->handlers[(int) mode].libfunc
-	= gen_rtx_SYMBOL_REF (Pmode, ggc_alloc_string (libfunc_name,
-						       p - libfunc_name));
+	= init_one_libfunc (ggc_alloc_string (libfunc_name, p - libfunc_name));
     }
 }
 
@@ -5647,6 +5646,7 @@ init_optabs ()
   bcmp_libfunc = init_one_libfunc ("__gcc_bcmp");
   memset_libfunc = init_one_libfunc ("memset");
   bzero_libfunc = init_one_libfunc ("bzero");
+  setbits_libfunc = init_one_libfunc ("__setbits");
 
   unwind_resume_libfunc = init_one_libfunc (USING_SJLJ_EXCEPTIONS
 					    ? "_Unwind_SjLj_Resume"
@@ -5755,6 +5755,9 @@ init_optabs ()
     = init_one_libfunc ("__cyg_profile_func_enter");
   profile_function_exit_libfunc
     = init_one_libfunc ("__cyg_profile_func_exit");
+
+  gcov_flush_libfunc = init_one_libfunc ("__gcov_flush");
+  gcov_init_libfunc = init_one_libfunc ("__gcov_init");
 
 #ifdef HAVE_conditional_trap
   init_traps ();

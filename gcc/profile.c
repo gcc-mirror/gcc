@@ -1979,13 +1979,8 @@ create_profiler ()
   cfun->arc_profile = 0;
 
   /* Actually generate the code to call __gcov_init.  */
-  gcov_info_address = force_reg (Pmode,
-				 gen_rtx_SYMBOL_REF (
-					Pmode,
-					IDENTIFIER_POINTER (
-						DECL_NAME (gcov_info))));
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__gcov_init"),
-		     LCT_NORMAL, VOIDmode, 1,
+  gcov_info_address = force_reg (Pmode, XEXP (DECL_RTL (gcov_info), 0));
+  emit_library_call (gcov_init_libfunc, LCT_NORMAL, VOIDmode, 1,
 		     gcov_info_address, Pmode);
 
   expand_function_end (input_filename, lineno, 0);
