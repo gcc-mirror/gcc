@@ -1,3 +1,10 @@
+2003-07-19  Jeroen Frijters <jeroen@sumatra.nl>
+
+	* java/net/URLClassLoader.java (addURL): Moved implementation to
+	private addURLImpl() to avoid calling addURL from the constructor.
+	(addURLImpl): Contains the code that was previously in addURL.
+	(addURLs): Call addURLImpl(), not addURL().
+
 2003-07-18  Graydon Hoare  <graydon@redhat.com>
 
 	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollBarPeer.c: 

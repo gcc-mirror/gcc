@@ -311,6 +311,9 @@ public class URLClassLoader extends SecureClassLoader
       if (jarfile == null)
 	return null;
 
+      if (name.startsWith("/"))
+        name = name.substring(1);
+
       JarEntry je = jarfile.getJarEntry(name);
       if(je != null)
 	return new JarURLResource(this, name, je);
@@ -654,6 +657,11 @@ public class URLClassLoader extends SecureClassLoader
    */
   protected void addURL(URL newUrl)
   {
+    addURLImpl(newUrl);
+  }
+
+  private void addURLImpl(URL newUrl)
+  {
     synchronized(urlloaders)
       {
 	if (newUrl == null)
@@ -690,7 +698,7 @@ public class URLClassLoader extends SecureClassLoader
   {
     for (int i = 0; i < newUrls.length; i++)
     {
-      addURL(newUrls[i]);
+      addURLImpl(newUrls[i]);
     }
   }
 
