@@ -88,19 +88,36 @@ cpp_file_line_for_message (pfile, filename, line, column)
     fprintf (stderr, "%s:%d: ", filename, line);
 }
 
-/* IS_ERROR is 1 for error, 0 for warning */
+/* IS_ERROR is 2 for "fatal" error, 1 for error, 0 for warning */
 void cpp_message (pfile, is_error, msg, arg1, arg2, arg3)
      int is_error;
      cpp_reader *pfile;
      char *msg;
      char *arg1, *arg2, *arg3;
 {
-  if (is_error)
-    pfile->errors++;
-  else
+  if (!is_error)
     fprintf (stderr, "warning: ");
+  else if (is_error == 2)
+    pfile->errors = CPP_FATAL_LIMIT;
+  else if (pfile->errors < CPP_FATAL_LIMIT)
+    pfile->errors++;
   fprintf (stderr, msg, arg1, arg2, arg3);
   fprintf (stderr, "\n");
+}
+
+/* Same as cpp_error, except we consider the error to be "fatal",
+   such as inconsistent options.  I.e. there is little point in continuing.
+   (We do not exit, to support use of cpplib as a library.
+   Instead, it is the caller's responsibility to check
+   CPP_FATAL_ERRORS.  */
+
+void
+cpp_fatal (pfile, str, arg)
+     cpp_reader *pfile;
+     char *str, *arg;
+{
+  fprintf (stderr, "%s: ", progname);
+  cpp_message (pfile, 2, str, arg);
 }
 
 void
