@@ -1,3 +1,7 @@
+2004-12-30  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* news.texi: Change GCC 3.5 to GCC 4.0
+
 2004-11-04  Release Manager
 
 	* GCC 3.4.3 released.

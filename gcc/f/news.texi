@@ -11,7 +11,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995,1996,1997,1998,1999,2000,2001,2002,2003,2004
 
-@set last-update-news 2004-06-17
+@set last-update-news 2004-12-29
 
 @ifset DOC-NEWS
 @include root.texi
@@ -62,7 +62,7 @@ such changes to @command{g77}.
 
 @ifclear USERVISONLY
 
-@emph{@code{GCC} 3.4.x is the last edition of @code{GCC} to contain @command{g77} - from @code{GCC} 3.5 onwards, use @command{gfortran}}
+@emph{@code{GCC} 3.4.x is the last edition of @code{GCC} to contain @command{g77} - from @code{GCC} 4.0 onwards, use @command{gfortran}}
 
 Changes made to recent versions of GNU Fortran are listed
 below, with the most recent version first.
