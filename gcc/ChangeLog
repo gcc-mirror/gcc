@@ -1,3 +1,14 @@
+Sun Apr 12 07:33:46 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* reload.c (reload_nongroup): New variable.
+	(push{_secondary,}_reload): Initialize it.
+	(find_reloads): Compute it.
+	(debug_reload): Print it.
+	* reload.h (reload_nongroup): Declare.
+	* reload1.c (reload): Use reload_nongroup instead of local computation.
+	Check caller_save_spill_class against any nongroup reloads.
+	(reloads_conflict): No longer static.
+
 Sun Apr 12 05:52:18 1998  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* vax.md (call patterns): Operand 1 is always a CONST_INT.
