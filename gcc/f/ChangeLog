@@ -1,3 +1,8 @@
+Thu Aug  5 02:40:42 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* g77spec.c: Update URLS and mail addresses.
+	* root.texi: Update URLS and mail addresses.
+
 1999-07-25  Richard Henderson  <rth@cygnus.com>
 
 	* com.c (ptr_type_node, va_list_type_node): New.
