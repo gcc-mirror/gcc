@@ -1221,7 +1221,7 @@ private:
 	last_was_jsr = false;
 
 	start_PC = PC;
-	unsigned char opcode = bytecode[PC++];
+	java_opcode opcode = (java_opcode) bytecode[PC++];
 	switch (opcode)
 	  {
 	  case op_nop:
@@ -1472,9 +1472,9 @@ private:
 
 	  case op_wide:
 	    {
-	      opcode = get_byte ();
+	      opcode = (java_opcode) get_byte ();
 	      get_short ();
-	      if (opcode == (unsigned char) op_iinc)
+	      if (opcode == op_iinc)
 		get_short ();
 	    }
 	    break;
@@ -1777,7 +1777,7 @@ private:
 	  }
 
 	start_PC = PC;
-	unsigned char opcode = bytecode[PC++];
+	java_opcode opcode = (java_opcode) bytecode[PC++];
 	switch (opcode)
 	  {
 	  case op_nop:
@@ -2377,11 +2377,11 @@ private:
 	      _Jv_Utf8Const *method_name, *method_signature;
 	      type class_type
 		= check_method_constant (get_ushort (),
-					 opcode == (unsigned char) op_invokeinterface,
+					 opcode == op_invokeinterface,
 					 &method_name,
 					 &method_signature);
 	      int arg_count = _Jv_count_arguments (method_signature);
-	      if (opcode == (unsigned char) op_invokeinterface)
+	      if (opcode == op_invokeinterface)
 		{
 		  int nargs = get_byte ();
 		  if (nargs == 0)
@@ -2399,7 +2399,7 @@ private:
 	      if (_Jv_equalUtf8Consts (method_name, gcj::init_name))
 		{
 		  is_init = true;
-		  if (opcode != (unsigned char) op_invokespecial)
+		  if (opcode != op_invokespecial)
 		    verify_fail ("can't invoke <init>", start_PC);
 		}
 	      else if (method_name->data[0] == '<')
@@ -2412,7 +2412,7 @@ private:
 	      for (int i = arg_count - 1; i >= 0; --i)
 		pop_type (arg_types[i]);
 
-	      if (opcode != (unsigned char) op_invokestatic)
+	      if (opcode != op_invokestatic)
 		{
 		  type t = class_type;
 		  if (is_init)

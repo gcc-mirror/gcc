@@ -1,3 +1,12 @@
+2001-11-22  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (_Jv_BytecodeVerifier::branch_prepass): Use
+	java_opcode as type for switch.
+	[op_wide]: Likewise.
+	(_Jv_BytecodeVerifier::verify_instructions_0): Likewise.
+	[op_invokevirtual]: Likewise.
+	* include/java-insns.h (java_opcode): Give enum a name.
+
 2001-11-25  Tom Tromey  <tromey@redhat.com>
 
 	Fix for PR libgcj/4583:
