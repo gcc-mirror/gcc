@@ -1067,6 +1067,29 @@ package body Exp_Ch11 is
       Str   : String_Id;
 
    begin
+      --  If a string expression is present, then the raise statement is
+      --  converted to a call:
+
+      --     Raise_Exception (exception-name'Identity, string);
+
+      --  and there is nothing else to do
+
+      if Present (Expression (N)) then
+         Rewrite (N,
+           Make_Procedure_Call_Statement (Loc,
+             Name => New_Occurrence_Of (RTE (RE_Raise_Exception), Loc),
+             Parameter_Associations => New_List (
+               Make_Attribute_Reference (Loc,
+                 Prefix => Name (N),
+                 Attribute_Name => Name_Identity),
+               Expression (N))));
+         Analyze (N);
+         return;
+      end if;
+
+      --  Remaining processing is for the case where no string expression
+      --  is present.
+
       --  There is no expansion needed for statement "raise <exception>;" when
       --  compiling for the JVM since the JVM has a built-in exception
       --  mechanism. However we need the keep the expansion for "raise;"

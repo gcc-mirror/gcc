@@ -381,7 +381,7 @@ extern Node_Id Current_Error_Node;
 #define Field24(N)    (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.field6)
 #define Field25(N)    (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.field7)
 #define Field26(N)    (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.field8)
-#define Field27(N)    (Nodes_Ptr[(N) - First_Node_Id + 3].V.EX.field9)
+#define Field27(N)    (Nodes_Ptr[(N) - First_Node_Id + 4].V.EX.field9)
 
 #define Node1(N)      Field1  (N)
 #define Node2(N)      Field2  (N)
@@ -425,9 +425,11 @@ extern Node_Id Current_Error_Node;
 #define Elist8(N)     Field8  (N)
 #define Elist13(N)    Field13 (N)
 #define Elist15(N)    Field15 (N)
+#define Elist16(N)    Field16 (N)
 #define Elist18(N)    Field18 (N)
 #define Elist21(N)    Field21 (N)
 #define Elist23(N)    Field23 (N)
+#define Elist24(N)    Field24 (N)
 
 #define Name1(N)      Field1  (N)
 #define Name2(N)      Field2  (N)

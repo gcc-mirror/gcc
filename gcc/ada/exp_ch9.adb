@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -162,7 +162,7 @@ package body Exp_Ch9 is
       Pid       : Node_Id;
       N_Op_Spec : Node_Id) return Node_Id;
    --  This function is used to construct the protected version of a protected
-   --  subprogram. Its statement sequence first defers abortion, then locks
+   --  subprogram. Its statement sequence first defers abort, then locks
    --  the associated protected object, and then enters a block that contains
    --  a call to the unprotected version of the subprogram (for details, see
    --  Build_Unprotected_Subprogram_Body). This block statement requires
@@ -2531,10 +2531,9 @@ package body Exp_Ch9 is
    -----------------------------------
 
    function Build_Task_Proc_Specification (T : Entity_Id) return Node_Id is
-      Loc  : constant Source_Ptr := Sloc (T);
-      Nam  : constant Name_Id    := Chars (T);
-      Tdec : constant Node_Id    := Declaration_Node (T);
-      Ent  : Entity_Id;
+      Loc : constant Source_Ptr := Sloc (T);
+      Nam : constant Name_Id    := Chars (T);
+      Ent : Entity_Id;
 
    begin
       Ent :=
@@ -2545,8 +2544,8 @@ package body Exp_Ch9 is
       --  Associate the procedure with the task, if this is the declaration
       --  (and not the body) of the procedure.
 
-      if No (Task_Body_Procedure (Tdec)) then
-         Set_Task_Body_Procedure (Tdec, Ent);
+      if No (Task_Body_Procedure (T)) then
+         Set_Task_Body_Procedure (T, Ent);
       end if;
 
       return
@@ -4255,7 +4254,7 @@ package body Exp_Ch9 is
                New_Reference_To (Cancel_Param, Loc)),
              Then_Statements => Tstats));
 
-         --  Protected the call against abortion
+         --  Protected the call against abort
 
          Prepend_To (Stmts,
            Make_Procedure_Call_Statement (Loc,

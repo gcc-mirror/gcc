@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -363,7 +363,7 @@ package body Sem_Ch11 is
 
    procedure Analyze_Raise_Statement (N : Node_Id) is
       Exception_Id   : constant Node_Id := Name (N);
-      Exception_Name : Entity_Id := Empty;
+      Exception_Name : Entity_Id        := Empty;
       P              : Node_Id;
       Nkind_P        : Node_Kind;
 
@@ -444,6 +444,10 @@ package body Sem_Ch11 is
          then
             Error_Msg_N
               ("exception name expected in raise statement", Exception_Id);
+         end if;
+
+         if Present (Expression (N)) then
+            Analyze_And_Resolve (Expression (N), Standard_String);
          end if;
       end if;
    end Analyze_Raise_Statement;

@@ -288,7 +288,7 @@ package body Exp_Disp is
             --     typ!(Displaced_This (Address!(Param)))
 
             if Param = Ctrl_Arg
-              and then DTC_Entity (Subp) /= Tag_Component (Typ)
+              and then DTC_Entity (Subp) /= First_Tag_Component (Typ)
             then
                Append_To (New_Params,
 
@@ -390,14 +390,16 @@ package body Exp_Disp is
                          Make_Selected_Component (Loc,
                            Prefix => New_Value (Ctrl_Arg),
                            Selector_Name =>
-                             New_Reference_To (Tag_Component (Typ), Loc)),
+                             New_Reference_To
+                               (First_Tag_Component (Typ), Loc)),
 
                        Right_Opnd =>
                          Make_Selected_Component (Loc,
                            Prefix =>
                              Unchecked_Convert_To (Typ, New_Value (Param)),
                            Selector_Name =>
-                             New_Reference_To (Tag_Component (Typ), Loc))),
+                             New_Reference_To
+                               (First_Tag_Component (Typ), Loc))),
 
                    Then_Statements =>
                      New_List (New_Constraint_Error (Loc))));
@@ -545,7 +547,8 @@ package body Exp_Disp is
                          Make_Selected_Component (Loc,
                            Prefix => New_Value (Param),
                            Selector_Name =>
-                             New_Reference_To (Tag_Component (Typ), Loc)),
+                             New_Reference_To
+                               (First_Tag_Component (Typ), Loc)),
 
                        Right_Opnd =>
                          Make_Selected_Component (Loc,
@@ -553,7 +556,8 @@ package body Exp_Disp is
                              Unchecked_Convert_To (Typ,
                                New_Value (Next_Actual (Param))),
                            Selector_Name =>
-                             New_Reference_To (Tag_Component (Typ), Loc))),
+                             New_Reference_To
+                               (First_Tag_Component (Typ), Loc))),
 
                 Right_Opnd => New_Call);
          end if;
@@ -579,7 +583,8 @@ package body Exp_Disp is
       return Node_Id
    is
       Typ    : constant Entity_Id := Scope (DTC_Entity (Prim));
-      DT_Ptr : constant Entity_Id := Access_Disp_Table (Typ);
+      DT_Ptr : constant Entity_Id := Node (First_Elmt
+                                           (Access_Disp_Table (Typ)));
 
    begin
       return
@@ -619,8 +624,9 @@ package body Exp_Disp is
    function Make_DT (Typ : Entity_Id) return List_Id is
       Loc : constant Source_Ptr := Sloc (Typ);
 
-      Result    : constant List_Id := New_List;
-      Elab_Code : constant List_Id := New_List;
+      ADT_List  : constant Elist_Id := New_Elmt_List;
+      Result    : constant List_Id  := New_List;
+      Elab_Code : constant List_Id  := New_List;
 
       Tname       : constant Name_Id := Chars (Typ);
       Name_DT     : constant Name_Id := New_External_Name (Tname, 'T');
@@ -684,7 +690,7 @@ package body Exp_Disp is
                 Make_DT_Access_Action (Typ, DT_Entry_Size, No_List),
               Right_Opnd =>
                 Make_Integer_Literal (Loc,
-                  DT_Entry_Count (Tag_Component (Typ)))));
+                  DT_Entry_Count (First_Tag_Component (Typ)))));
 
       Append_To (Result,
         Make_Object_Declaration (Loc,
@@ -748,7 +754,8 @@ package body Exp_Disp is
 
       --  Set Access_Disp_Table field to be the dispatch table pointer
 
-      Set_Access_Disp_Table (Typ, DT_Ptr);
+      Append_Elmt (DT_Ptr, ADT_List);
+      Set_Access_Disp_Table (Typ, ADT_List);
 
       --  Count ancestors to compute the inheritance depth. For private
       --  extensions, always go to the full view in order to compute the real
@@ -840,12 +847,15 @@ package body Exp_Disp is
              Make_Integer_Literal (Loc, 0));
 
       else
-         Old_Tag := New_Reference_To (Access_Disp_Table (Etype (Typ)), Loc);
+         Old_Tag :=
+           New_Reference_To
+             (Node (First_Elmt (Access_Disp_Table (Etype (Typ)))), Loc);
          Old_TSD :=
            Make_DT_Access_Action (Typ,
              Action => Get_TSD,
              Args   => New_List (
-               New_Reference_To (Access_Disp_Table (Etype (Typ)), Loc)));
+               New_Reference_To
+                 (Node (First_Elmt (Access_Disp_Table (Etype (Typ)))), Loc)));
       end if;
 
       --  Generate: Inherit_DT (parent'tag, DT_Ptr, nb_prim of parent);
@@ -857,7 +867,7 @@ package body Exp_Disp is
             Node1 => Old_Tag,
             Node2 => New_Reference_To (DT_Ptr, Loc),
             Node3 => Make_Integer_Literal (Loc,
-                       DT_Entry_Count (Tag_Component (Etype (Typ)))))));
+                       DT_Entry_Count (First_Tag_Component (Etype (Typ)))))));
 
       --  Generate: Inherit_TSD (Get_TSD (parent), DT_Ptr);
 
@@ -1107,7 +1117,7 @@ package body Exp_Disp is
       Parent_Typ : constant Entity_Id := Etype (Typ);
       Root_Typ   : constant Entity_Id := Root_Type (Typ);
       First_Prim : constant Elmt_Id := First_Elmt (Primitive_Operations (Typ));
-      The_Tag    : constant Entity_Id := Tag_Component (Typ);
+      The_Tag    : constant Entity_Id := First_Tag_Component (Typ);
       Adjusted   : Boolean := False;
       Finalized  : Boolean := False;
       Parent_EC  : Int;
@@ -1120,9 +1130,10 @@ package body Exp_Disp is
       --  Get Entry_Count of the parent
 
       if Parent_Typ /= Typ
-        and then DT_Entry_Count (Tag_Component (Parent_Typ)) /= No_Uint
+        and then DT_Entry_Count (First_Tag_Component (Parent_Typ)) /= No_Uint
       then
-         Parent_EC := UI_To_Int (DT_Entry_Count (Tag_Component (Parent_Typ)));
+         Parent_EC := UI_To_Int (DT_Entry_Count
+                                   (First_Tag_Component (Parent_Typ)));
       else
          Parent_EC := 0;
       end if;
@@ -1327,7 +1338,7 @@ package body Exp_Disp is
 
          pragma Assert (
            DT_Entry_Count (The_Tag) >=
-           DT_Entry_Count (Tag_Component (Parent_Typ)));
+           DT_Entry_Count (First_Tag_Component (Parent_Typ)));
       end if;
    end Set_All_DT_Position;
 

@@ -122,13 +122,6 @@ package body Exp_Attr is
    --  A reference to a type within its own scope is resolved to a reference
    --  to the current instance of the type in its initialization procedure.
 
-   function Find_Inherited_TSS
-     (Typ : Entity_Id;
-      Nam : TSS_Name_Type) return Entity_Id;
-   --  Returns the TSS of name Nam of Typ, or of its closest ancestor defining
-   --  such a TSS. Empty is returned is neither Typ nor any of its ancestors
-   --  have such a TSS.
-
    function Find_Stream_Subprogram
      (Typ : Entity_Id;
       Nam : TSS_Name_Type) return Entity_Id;
@@ -3510,7 +3503,8 @@ package body Exp_Attr is
             if not Java_VM then
                Rewrite (N,
                  Unchecked_Convert_To (RTE (RE_Tag),
-                   New_Reference_To (Access_Disp_Table (Ttyp), Loc)));
+                   New_Reference_To
+                     (Node (First_Elmt (Access_Disp_Table (Ttyp))), Loc)));
                Analyze_And_Resolve (N, RTE (RE_Tag));
             end if;
 
@@ -3519,7 +3513,7 @@ package body Exp_Attr is
               Make_Selected_Component (Loc,
                 Prefix => Relocate_Node (Pref),
                 Selector_Name =>
-                  New_Reference_To (Tag_Component (Ttyp), Loc)));
+                  New_Reference_To (First_Tag_Component (Ttyp), Loc)));
             Analyze_And_Resolve (N, RTE (RE_Tag));
          end if;
       end Tag;
@@ -4422,41 +4416,6 @@ package body Exp_Attr is
                   Attribute_Name => Cnam)),
           Reason => CE_Overflow_Check_Failed));
    end Expand_Pred_Succ;
-
-   ------------------------
-   -- Find_Inherited_TSS --
-   ------------------------
-
-   function Find_Inherited_TSS
-     (Typ : Entity_Id;
-      Nam : TSS_Name_Type) return Entity_Id
-   is
-      Btyp : Entity_Id := Typ;
-      Proc : Entity_Id;
-
-   begin
-      loop
-         Btyp := Base_Type (Btyp);
-         Proc :=  TSS (Btyp, Nam);
-
-         exit when Present (Proc)
-           or else not Is_Derived_Type (Btyp);
-
-         --  If Typ is a derived type, it may inherit attributes from
-         --  some ancestor.
-
-         Btyp := Etype (Btyp);
-      end loop;
-
-      if No (Proc) then
-
-         --  If nothing else, use the TSS of the root type
-
-         Proc := TSS (Base_Type (Underlying_Type (Typ)), Nam);
-      end if;
-
-      return Proc;
-   end Find_Inherited_TSS;
 
    ----------------------------
    -- Find_Stream_Subprogram --

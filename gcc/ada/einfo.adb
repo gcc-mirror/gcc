@@ -129,7 +129,7 @@ package body Einfo is
    --    String_Literal_Low_Bound        Node15
    --    Shared_Var_Read_Proc            Node15
 
-   --    Access_Disp_Table               Node16
+   --    Access_Disp_Table               Elist16
    --    Cloned_Subtype                  Node16
    --    DTC_Entity                      Node16
    --    Entry_Formal                    Node16
@@ -210,9 +210,13 @@ package body Einfo is
    --    Protected_Operation             Node23
 
    --    Obsolescent_Warning             Node24
+   --    Task_Body_Procedure             Node24
+   --    Abstract_Interfaces             Node24
 
-   --    (unused)                        Node25
+   --    Abstract_Interface_Alias        Node25
+
    --    (unused)                        Node26
+
    --    (unused)                        Node27
 
    ---------------------------------------------
@@ -428,8 +432,8 @@ package body Einfo is
    --    Must_Be_On_Byte_Boundary       Flag183
    --    Has_Stream_Size_Clause         Flag184
    --    Is_Ada_2005                    Flag185
+   --    Is_Interface                   Flag186
 
-   --    (unused)                       Flag186
    --    (unused)                       Flag187
    --    (unused)                       Flag188
    --    (unused)                       Flag189
@@ -494,15 +498,31 @@ package body Einfo is
    -- Attribute Access Functions --
    --------------------------------
 
+   function Abstract_Interfaces (Id : E) return L is
+   begin
+      pragma Assert (Ekind (Id) = E_Record_Type
+                       or else Ekind (Id) = E_Record_Subtype
+                       or else Ekind (Id) = E_Record_Type_With_Private
+                       or else Ekind (Id) = E_Record_Subtype_With_Private);
+      return Elist24 (Id);
+   end Abstract_Interfaces;
+
+   function Abstract_Interface_Alias (Id : E) return E is
+   begin
+      pragma Assert
+        (Ekind (Id) = E_Procedure or Ekind (Id) = E_Function);
+      return Node25 (Id);
+   end Abstract_Interface_Alias;
+
    function Accept_Address (Id : E) return L is
    begin
       return Elist21 (Id);
    end Accept_Address;
 
-   function Access_Disp_Table (Id : E) return E is
+   function Access_Disp_Table (Id : E) return L is
    begin
       pragma Assert (Is_Tagged_Type (Id));
-      return Node16 (Implementation_Base_Type (Id));
+      return Elist16 (Implementation_Base_Type (Id));
    end Access_Disp_Table;
 
    function Actual_Subtype (Id : E) return E is
@@ -1551,6 +1571,16 @@ package body Einfo is
       return Flag11 (Id);
    end Is_Inlined;
 
+   function Is_Interface (Id : E) return B is
+   begin
+      pragma Assert (Ekind (Id) = E_Record_Type
+                       or else Ekind (Id) = E_Record_Subtype
+                       or else Ekind (Id) = E_Record_Type_With_Private
+                       or else Ekind (Id) = E_Record_Subtype_With_Private
+                       or else Ekind (Id) = E_Class_Wide_Type);
+      return Flag186 (Id);
+   end Is_Interface;
+
    function Is_Instantiated (Id : E) return B is
    begin
       return Flag126 (Id);
@@ -2207,6 +2237,13 @@ package body Einfo is
       return Flag165 (Id);
    end Suppress_Style_Checks;
 
+   function Task_Body_Procedure (Id : E) return N is
+   begin
+      pragma Assert (Ekind (Id) = E_Task_Type
+                      or else Ekind (Id) = E_Task_Subtype);
+      return Node24 (Id);
+   end Task_Body_Procedure;
+
    function Treat_As_Volatile (Id : E) return B is
    begin
       return Flag41 (Id);
@@ -2434,15 +2471,31 @@ package body Einfo is
    -- Attribute Set Procedures --
    ------------------------------
 
+   procedure Set_Abstract_Interfaces (Id : E; V : L) is
+   begin
+      pragma Assert (Ekind (Id) = E_Record_Type
+                       or else Ekind (Id) = E_Record_Subtype
+                       or else Ekind (Id) = E_Record_Type_With_Private
+                       or else Ekind (Id) = E_Record_Subtype_With_Private);
+      Set_Elist24 (Id, V);
+   end Set_Abstract_Interfaces;
+
+   procedure Set_Abstract_Interface_Alias (Id : E; V : E) is
+   begin
+      pragma Assert
+        (Ekind (Id) = E_Procedure or Ekind (Id) = E_Function);
+      Set_Node25 (Id, V);
+   end Set_Abstract_Interface_Alias;
+
    procedure Set_Accept_Address (Id : E; V : L) is
    begin
       Set_Elist21 (Id, V);
    end Set_Accept_Address;
 
-   procedure Set_Access_Disp_Table (Id : E; V : E) is
+   procedure Set_Access_Disp_Table (Id : E; V : L) is
    begin
       pragma Assert (Is_Tagged_Type (Id) and then Id = Base_Type (Id));
-      Set_Node16 (Id, V);
+      Set_Elist16 (Id, V);
    end Set_Access_Disp_Table;
 
    procedure Set_Associated_Final_Chain (Id : E; V : E) is
@@ -3527,6 +3580,15 @@ package body Einfo is
       Set_Flag11 (Id, V);
    end Set_Is_Inlined;
 
+   procedure Set_Is_Interface (Id : E; V : B := True) is
+   begin
+      pragma Assert (Ekind (Id) = E_Record_Type
+                       or else Ekind (Id) = E_Record_Subtype
+                       or else Ekind (Id) = E_Record_Type_With_Private
+                       or else Ekind (Id) = E_Record_Subtype_With_Private);
+      Set_Flag186 (Id, V);
+   end Set_Is_Interface;
+
    procedure Set_Is_Instantiated (Id : E; V : B := True) is
    begin
       Set_Flag126 (Id, V);
@@ -4193,6 +4255,13 @@ package body Einfo is
    begin
       Set_Flag165 (Id, V);
    end Set_Suppress_Style_Checks;
+
+   procedure Set_Task_Body_Procedure (Id : E; V : N) is
+   begin
+      pragma Assert (Ekind (Id) = E_Task_Type
+                      or else Ekind (Id) = E_Task_Subtype);
+      Set_Node24 (Id, V);
+   end Set_Task_Body_Procedure;
 
    procedure Set_Treat_As_Volatile (Id : E; V : B := True) is
    begin
@@ -6039,11 +6108,11 @@ package body Einfo is
       return Kind;
    end Subtype_Kind;
 
-   -------------------
-   -- Tag_Component --
-   -------------------
+   -------------------------
+   -- First_Tag_Component --
+   -------------------------
 
-   function Tag_Component (Id : E) return E is
+   function First_Tag_Component (Id : E) return E is
       Comp : Entity_Id;
       Typ  : Entity_Id := Id;
 
@@ -6070,7 +6139,34 @@ package body Einfo is
       --  No tag component found
 
       return Empty;
-   end Tag_Component;
+   end First_Tag_Component;
+
+   ------------------------
+   -- Next_Tag_Component --
+   ------------------------
+
+   function Next_Tag_Component (Id : E) return E is
+      Comp : Entity_Id;
+      Typ  : constant Entity_Id := Scope (Id);
+
+   begin
+      pragma Assert (Ekind (Id) = E_Component
+                       and then Is_Tagged_Type (Typ));
+
+      Comp := Next_Entity (Id);
+      while Present (Comp) loop
+         if Is_Tag (Comp) then
+            pragma Assert (Chars (Comp) /= Name_uTag);
+            return Comp;
+         end if;
+
+         Comp := Next_Entity (Comp);
+      end loop;
+
+      --  No tag component found
+
+      return Empty;
+   end Next_Tag_Component;
 
    ---------------------
    -- Type_High_Bound --
@@ -6311,6 +6407,7 @@ package body Einfo is
       W ("Is_Imported",                   Flag24  (Id));
       W ("Is_Inlined",                    Flag11  (Id));
       W ("Is_Instantiated",               Flag126 (Id));
+      W ("Is_Interface",                  Flag186 (Id));
       W ("Is_Internal",                   Flag17  (Id));
       W ("Is_Interrupt_Handler",          Flag89  (Id));
       W ("Is_Intrinsic_Subprogram",       Flag64  (Id));
@@ -6939,7 +7036,7 @@ package body Einfo is
               E_Procedure                                =>
             Write_Str ("Alias");
 
-         when E_Record_Type                =>
+         when E_Record_Type                              =>
             Write_Str ("Corresponding_Concurrent_Type");
 
          when E_Entry_Index_Parameter                    =>
@@ -7255,8 +7352,17 @@ package body Einfo is
    procedure Write_Field24_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when E_Record_Type                              |
+              E_Record_Subtype                           |
+              E_Record_Type_With_Private                 |
+              E_Record_Subtype_With_Private              =>
+            Write_Str ("Abstract_Interfaces");
+
          when Subprogram_Kind                            =>
             Write_Str ("Obsolescent_Warning");
+
+         when Task_Kind                                  =>
+            Write_Str ("Task_Body_Procedure");
 
          when others                                     =>
             Write_Str ("Field24??");
@@ -7270,6 +7376,10 @@ package body Einfo is
    procedure Write_Field25_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when E_Procedure                                |
+              E_Function                                 =>
+            Write_Str ("Abstract_Interface_Alias");
+
          when others                                     =>
             Write_Str ("Field25??");
       end case;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -53,7 +53,7 @@ package body Ch9 is
 
    --  TASK_TYPE_DECLARATION ::=
    --    task type DEFINING_IDENTIFIER [KNOWN_DISCRIMINANT_PART]
-   --      [is TASK_DEFINITION];
+   --      [is [new INTERFACE_LIST with] TASK_DEFINITION];
 
    --  SINGLE_TASK_DECLARATION ::=
    --    task DEFINING_IDENTIFIER [is TASK_DEFINITION];
@@ -161,6 +161,32 @@ package body Ch9 is
             end if;
          else
             TF_Is; -- must have IS if no semicolon
+
+            --  Ada 2005 (AI-345)
+
+            if Token = Tok_New then
+               Scan; --  past NEW
+
+               if Ada_Version < Ada_05 then
+                  Error_Msg_SP ("task interface is an Ada 2005 extension");
+                  Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
+               end if;
+
+               Set_Interface_List (Task_Node, New_List);
+
+               loop
+                  Append (P_Qualified_Simple_Name, Interface_List (Task_Node));
+                  exit when Token /= Tok_And;
+                  Scan; --  past AND
+               end loop;
+
+               if Token /= Tok_With then
+                  Error_Msg_SC ("WITH expected");
+               end if;
+
+               Scan; -- past WITH
+            end if;
+
             Set_Task_Definition (Task_Node, P_Task_Definition);
          end if;
 
@@ -308,7 +334,7 @@ package body Ch9 is
 
    --  PROTECTED_TYPE_DECLARATION ::=
    --    protected type DEFINING_IDENTIFIER [KNOWN_DISCRIMINANT_PART]
-   --      is PROTECTED_DEFINITION;
+   --      is [new INTERFACE_LIST with] PROTECTED_DEFINITION;
 
    --  SINGLE_PROTECTED_DECLARATION ::=
    --    protected DEFINING_IDENTIFIER is PROTECTED_DEFINITION;
@@ -402,6 +428,34 @@ package body Ch9 is
          end if;
 
          T_Is;
+
+         --  Ada 2005 (AI-345)
+
+         if Token = Tok_New then
+            Scan; --  past NEW
+
+            if Ada_Version < Ada_05 then
+               Error_Msg_SP ("task interface is an Ada 2005 extension");
+               Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
+            end if;
+
+            Set_Interface_List (Protected_Node, New_List);
+
+            loop
+               Append (P_Qualified_Simple_Name,
+                 Interface_List (Protected_Node));
+
+               exit when Token /= Tok_And;
+               Scan; --  past AND
+            end loop;
+
+            if Token /= Tok_With then
+               Error_Msg_SC ("WITH expected");
+            end if;
+
+            Scan; -- past WITH
+         end if;
+
          Set_Protected_Definition (Protected_Node, P_Protected_Definition);
          return Protected_Node;
       end if;

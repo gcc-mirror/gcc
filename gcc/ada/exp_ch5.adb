@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,6 +27,7 @@
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Einfo;    use Einfo;
+with Elists;   use Elists;
 with Exp_Aggr; use Exp_Aggr;
 with Exp_Ch7;  use Exp_Ch7;
 with Exp_Ch11; use Exp_Ch11;
@@ -454,13 +455,13 @@ package body Exp_Ch5 is
             end if;
          end Check_Unconstrained_Bit_Packed_Array;
 
-      --  Gigi can always handle the assignment if the right side is a string
-      --  literal (note that overlap is definitely impossible in this case).
-      --  If the type is packed, a string literal is always converted into a
-      --  aggregate, except in the case of a null slice, for which no aggregate
-      --  can be written. In that case, rewrite the assignment as a null
-      --  statement, a length check has already been emitted to verify that
-      --  the range of the left-hand side is empty.
+      --  The back end can always handle the assignment if the right side is a
+      --  string literal (note that overlap is definitely impossible in this
+      --  case). If the type is packed, a string literal is always converted
+      --  into aggregate, except in the case of a null slice, for which no
+      --  aggregate can be written. In that case, rewrite the assignment as a
+      --  null statement, a length check has already been emitted to verify
+      --  that the range of the left-hand side is empty.
 
       --  Note that this code is not executed if we had an assignment of
       --  a string literal to a non-bit aligned component of a record, a
@@ -479,7 +480,7 @@ package body Exp_Ch5 is
       --  If either operand is bit packed, then we need a loop, since we
       --  can't be sure that the slice is byte aligned. Similarly, if either
       --  operand is a possibly unaligned slice, then we need a loop (since
-      --  gigi cannot handle unaligned slices).
+      --  the back end cannot handle unaligned slices).
 
       elsif Is_Bit_Packed_Array (L_Type)
         or else Is_Bit_Packed_Array (R_Type)
@@ -490,7 +491,7 @@ package body Exp_Ch5 is
 
       --  If we are not bit-packed, and we have only one slice, then no
       --  overlap is possible except in the parameter case, so we can let
-      --  gigi handle things.
+      --  the back end handle things.
 
       elsif not (L_Slice and R_Slice) then
          if Forwards_OK (N) then
@@ -641,7 +642,6 @@ package body Exp_Ch5 is
          if not Loop_Required then
             if Forwards_OK (N) then
                return;
-
             else
                null;
                --  Here is where a memmove would be appropriate ???
@@ -843,7 +843,7 @@ package body Exp_Ch5 is
             then
 
                --  Call TSS procedure for array assignment, passing the
-               --  the explicit bounds of right- and left-hand side.
+               --  the explicit bounds of right and left hand sides.
 
                declare
                   Proc    : constant Node_Id :=
@@ -999,12 +999,19 @@ package body Exp_Ch5 is
            Make_Assignment_Statement (Loc,
              Name =>
                Make_Indexed_Component (Loc,
-                 Prefix => Duplicate_Subexpr (Larray, Name_Req => True),
+                 Prefix      => Duplicate_Subexpr (Larray, Name_Req => True),
                  Expressions => ExprL),
              Expression =>
                Make_Indexed_Component (Loc,
-                 Prefix => Duplicate_Subexpr (Rarray, Name_Req => True),
+                 Prefix      => Duplicate_Subexpr (Rarray, Name_Req => True),
                  Expressions => ExprR));
+
+         --  We set assignment OK, since there are some cases, e.g. in object
+         --  declarations, where we are actually assigning into a constant.
+         --  If there really is an illegality, it was caught long before now,
+         --  and was flagged when the original assignment was analyzed.
+
+         Set_Assignment_OK (Name (Assign));
 
          --  Propagate the No_Ctrl_Actions flag to individual assignments
 
@@ -1356,9 +1363,8 @@ package body Exp_Ch5 is
    -- Expand_N_Assignment_Statement --
    -----------------------------------
 
-   --  For array types, deal with slice assignments and setting the flags
-   --  to indicate if it can be statically determined which direction the
-   --  move should go in. Also deal with generating range/length checks.
+   --  This procedure implements various cases where an assignment statement
+   --  cannot just be passed on to the back end in untransformed state.
 
    procedure Expand_N_Assignment_Statement (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
@@ -1469,7 +1475,8 @@ package body Exp_Ch5 is
 
             declare
                Uses_Transient_Scope : constant Boolean :=
-                  Scope_Is_Transient and then N = Node_To_Be_Wrapped;
+                                        Scope_Is_Transient
+                                          and then N = Node_To_Be_Wrapped;
 
             begin
                if Uses_Transient_Scope then
@@ -1647,8 +1654,6 @@ package body Exp_Ch5 is
          Expand_Bit_Packed_Element_Set (N);
          return;
 
-      --  Case of tagged type assignment
-
       elsif Is_Tagged_Type (Typ)
         or else (Controlled_Type (Typ) and then not Is_Array_Type (Typ))
       then
@@ -1673,19 +1678,23 @@ package body Exp_Ch5 is
 
             if Is_Class_Wide_Type (Typ)
 
-            --  If the type is tagged, we may as well use the predefined
-            --  primitive assignment. This avoids inlining a lot of code
-            --  and in the class-wide case, the assignment is replaced by
-            --  a dispatch call to _assign. Note that this cannot be done
-            --  when discriminant checks are locally suppressed (as in
-            --  extension aggregate expansions) because otherwise the
-            --  discriminant check will be performed within the _assign
-            --  call.
+               --  If the type is tagged, we may as well use the predefined
+               --  primitive assignment. This avoids inlining a lot of code
+               --  and in the class-wide case, the assignment is replaced by
+               --  dispatch call to _assign. Note that this cannot be done
+               --  when discriminant checks are locally suppressed (as in
+               --  extension aggregate expansions) because otherwise the
+               --  discriminant check will be performed within the _assign
+               --  call. It is also suppressed for assignmments created by the
+               --  expander that correspond to initializations, where we do
+               --  want to copy the tag (No_Ctrl_Actions flag set True).
+               --  by the expander and we do not need to mess with tags ever
+               --  (Expand_Ctrl_Actions flag is set True in this case).
 
-            or else (Is_Tagged_Type (Typ)
-              and then Chars (Current_Scope) /= Name_uAssign
-              and then Expand_Ctrl_Actions
-              and then not Discriminant_Checks_Suppressed (Empty))
+               or else (Is_Tagged_Type (Typ)
+                          and then Chars (Current_Scope) /= Name_uAssign
+                          and then Expand_Ctrl_Actions
+                          and then not Discriminant_Checks_Suppressed (Empty))
             then
                --  Fetch the primitive op _assign and proper type to call
                --  it. Because of possible conflits between private and
@@ -1787,8 +1796,8 @@ package body Exp_Ch5 is
             then
                declare
                   Blk : constant Entity_Id :=
-                    New_Internal_Entity (
-                      E_Block, Current_Scope, Sloc (N), 'B');
+                          New_Internal_Entity
+                            (E_Block, Current_Scope, Sloc (N), 'B');
 
                begin
                   Set_Scope (Blk, Current_Scope);
@@ -2784,11 +2793,13 @@ package body Exp_Ch5 is
                       Make_Selected_Component (Loc,
                         Prefix => Duplicate_Subexpr (Exp),
                         Selector_Name =>
-                          New_Reference_To (Tag_Component (Utyp), Loc)),
+                          New_Reference_To (First_Tag_Component (Utyp), Loc)),
                     Right_Opnd =>
                       Unchecked_Convert_To (RTE (RE_Tag),
                         New_Reference_To
-                          (Access_Disp_Table (Base_Type (Utyp)), Loc))),
+                          (Node (First_Elmt
+                                  (Access_Disp_Table (Base_Type (Utyp)))),
+                           Loc))),
                 Reason => CE_Tag_Check_Failed));
 
          --  If the result type is a specific nonlimited tagged type,
@@ -3155,7 +3166,8 @@ package body Exp_Ch5 is
              Expression =>
                Make_Selected_Component (Loc,
                  Prefix        => Duplicate_Subexpr_No_Checks (L),
-                 Selector_Name => New_Reference_To (Tag_Component (T), Loc))));
+                 Selector_Name => New_Reference_To (First_Tag_Component (T),
+                                                    Loc))));
 
       --  Otherwise Tag_Tmp not used
 
@@ -3194,7 +3206,8 @@ package body Exp_Ch5 is
             --  Index of first byte to be copied after outermost record
             --  controller data.
 
-            Expr, Source_Size      : Node_Id;
+            Expr, Source_Size     : Node_Id;
+            Source_Actual_Subtype : Entity_Id;
             --  Used for computation of the size of the data to be copied
 
             Range_Type  : Entity_Id;
@@ -3269,26 +3282,27 @@ package body Exp_Ch5 is
                Expr := Expression (Expr);
             end if;
 
+            Source_Actual_Subtype := Etype (Expr);
+
+            if Has_Discriminants (Source_Actual_Subtype)
+              and then not Is_Constrained (Source_Actual_Subtype)
+            then
+               Append_To (Res,
+                 Build_Actual_Subtype (Source_Actual_Subtype, Expr));
+               Source_Actual_Subtype := Defining_Identifier (Last (Res));
+            end if;
+
             Source_Size :=
               Make_Op_Add (Loc,
                 Left_Opnd =>
                   Make_Attribute_Reference (Loc,
                     Prefix =>
-                      Expr,
+                      New_Occurrence_Of (Source_Actual_Subtype, Loc),
                     Attribute_Name =>
                       Name_Size),
                 Right_Opnd =>
                   Make_Integer_Literal (Loc,
                   System_Storage_Unit - 1));
-
-            --  If Expr is a type conversion, standard Ada does not allow
-            --  'Size to be taken on it, but Gigi can handle this case,
-            --  and thus we can determine the amount of data to be copied.
-            --  The appropriate circuitry is enabled only for conversions
-            --  that do not Come_From_Source.
-
-            Set_Comes_From_Source (Prefix (Left_Opnd (Source_Size)), False);
-
             Source_Size :=
               Make_Op_Divide (Loc,
                 Left_Opnd => Source_Size,
@@ -3484,7 +3498,8 @@ package body Exp_Ch5 is
              Name =>
                Make_Selected_Component (Loc,
                  Prefix        => Duplicate_Subexpr_No_Checks (L),
-                 Selector_Name => New_Reference_To (Tag_Component (T), Loc)),
+                 Selector_Name => New_Reference_To (First_Tag_Component (T),
+                                                    Loc)),
              Expression => New_Reference_To (Tag_Tmp, Loc)));
       end if;
 

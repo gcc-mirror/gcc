@@ -266,7 +266,7 @@ package body Exp_Dist is
    procedure Set_Renaming_TSS
      (Typ     : Entity_Id;
       Nam     : Entity_Id;
-      TSS_Nam : Name_Id);
+      TSS_Nam : TSS_Name_Type);
    --  Create a renaming declaration of subprogram Nam,
    --  and register it as a TSS for Typ with name TSS_Nam.
 
@@ -1866,7 +1866,7 @@ package body Exp_Dist is
               Prefix =>
                 New_Occurrence_Of (Pointer, Loc),
               Selector_Name =>
-                New_Occurrence_Of (Tag_Component
+                New_Occurrence_Of (First_Tag_Component
                   (Designated_Type (Etype (Pointer))), Loc)),
           Expression =>
             Make_Attribute_Reference (Loc,
@@ -5467,7 +5467,7 @@ package body Exp_Dist is
          Insert_After (Declaration_Node (RACW_Type), Func_Decl);
          Append_To (Declarations, Func_Body);
 
-         Set_Renaming_TSS (RACW_Type, Fnam, Name_uFrom_Any);
+         Set_Renaming_TSS (RACW_Type, Fnam, TSS_From_Any);
       end Add_RACW_From_Any;
 
       -----------------------------
@@ -5781,7 +5781,7 @@ package body Exp_Dist is
          Insert_After (Declaration_Node (RACW_Type), Func_Decl);
          Append_To (Declarations, Func_Body);
 
-         Set_Renaming_TSS (RACW_Type, Fnam, Name_uTo_Any);
+         Set_Renaming_TSS (RACW_Type, Fnam, TSS_To_Any);
       end Add_RACW_To_Any;
 
       -----------------------
@@ -5855,7 +5855,7 @@ package body Exp_Dist is
          Insert_After (Declaration_Node (RACW_Type), Func_Decl);
          Append_To (Declarations, Func_Body);
 
-         Set_Renaming_TSS (RACW_Type, Fnam, Name_uTypeCode);
+         Set_Renaming_TSS (RACW_Type, Fnam, TSS_TypeCode);
       end Add_RACW_TypeCode;
 
       ------------------------------
@@ -6369,7 +6369,7 @@ package body Exp_Dist is
          Insert_After (Declaration_Node (RAS_Type), Func_Decl);
          Append_To (Declarations, Func_Body);
 
-         Set_Renaming_TSS (RAS_Type, Fnam, Name_uFrom_Any);
+         Set_Renaming_TSS (RAS_Type, Fnam, TSS_From_Any);
       end Add_RAS_From_Any;
 
       --------------------
@@ -6461,7 +6461,7 @@ package body Exp_Dist is
          Insert_After (Declaration_Node (RAS_Type), Func_Decl);
          Append_To (Declarations, Func_Body);
 
-         Set_Renaming_TSS (RAS_Type, Fnam, Name_uTo_Any);
+         Set_Renaming_TSS (RAS_Type, Fnam, TSS_To_Any);
       end Add_RAS_To_Any;
 
       ----------------------
@@ -6550,7 +6550,7 @@ package body Exp_Dist is
          Insert_After (Declaration_Node (RAS_Type), Func_Decl);
          Append_To (Declarations, Func_Body);
 
-         Set_Renaming_TSS (RAS_Type, Fnam, Name_uTypeCode);
+         Set_Renaming_TSS (RAS_Type, Fnam, TSS_TypeCode);
       end Add_RAS_TypeCode;
 
       -----------------------------------------
@@ -8099,13 +8099,6 @@ package body Exp_Dist is
          -- Local Subprograms --
          -----------------------
 
-         function Find_Inherited_TSS
-           (Typ : Entity_Id;
-            Nam : Name_Id) return Entity_Id;
-         --  A TSS reference for a representation aspect of a derived tagged
-         --  type must take into account inheritance of that aspect from
-         --  ancestor types. (copied from exp_attr.adb, should be shared???)
-
          function Find_Numeric_Representation
            (Typ : Entity_Id) return Entity_Id;
          --  Given a numeric type Typ, return the smallest integer or floarting
@@ -8236,7 +8229,7 @@ package body Exp_Dist is
             --  First simple case where the From_Any function is present
             --  in the type's TSS.
 
-            Fnam := Find_Inherited_TSS (U_Type, Name_uFrom_Any);
+            Fnam := Find_Inherited_TSS (U_Type, TSS_From_Any);
 
             if Sloc (U_Type) <= Standard_Location then
                U_Type := Base_Type (U_Type);
@@ -8373,7 +8366,6 @@ package body Exp_Dist is
 
             pragma Assert
               (not (Is_Remote_Access_To_Class_Wide_Type (Typ)));
-
 
             if Is_Derived_Type (Typ)
               and then not Is_Tagged_Type (Typ)
@@ -9017,7 +9009,7 @@ package body Exp_Dist is
             --  First simple case where the To_Any function is present
             --  in the type's TSS.
 
-            Fnam := Find_Inherited_TSS (U_Type, Name_uTo_Any);
+            Fnam := Find_Inherited_TSS (U_Type, TSS_To_Any);
 
             --  Check first for Boolean and Character. These are enumeration
             --  types, but we treat them specially, since they may require
@@ -9686,7 +9678,7 @@ package body Exp_Dist is
                --  First simple case where the TypeCode is present
                --  in the type's TSS.
 
-               Fnam := Find_Inherited_TSS (U_Type, Name_uTypeCode);
+               Fnam := Find_Inherited_TSS (U_Type, TSS_TypeCode);
 
                if Present (Fnam) then
 
@@ -10346,52 +10338,6 @@ package body Exp_Dist is
                     Statements => Stms));
          end Build_TypeCode_Function;
 
-         ------------------------
-         -- Find_Inherited_TSS --
-         ------------------------
-
-         function Find_Inherited_TSS
-           (Typ : Entity_Id;
-            Nam : Name_Id) return Entity_Id
-         is
-            P_Type : Entity_Id := Typ;
-            Proc   : Entity_Id;
-
-         begin
-            Proc :=  TSS (Base_Type (Typ), Nam);
-
-            --  Check first if there is a TSS given for the type itself
-
-            if Present (Proc) then
-               return Proc;
-            end if;
-
-            --  If Typ is a derived type, it may inherit attributes from some
-            --  ancestor which is not the ultimate underlying one. If Typ is a
-            --  derived tagged type, The corresponding primitive operation has
-            --  been created explicitly.
-
-            if Is_Derived_Type (P_Type) then
-               if Is_Tagged_Type (P_Type) then
-                  return Find_Prim_Op (P_Type, Nam);
-               else
-                  while Is_Derived_Type (P_Type) loop
-                     Proc :=  TSS (Base_Type (Etype (Typ)), Nam);
-
-                     if Present (Proc) then
-                        return Proc;
-                     else
-                        P_Type := Base_Type (Etype (P_Type));
-                     end if;
-                  end loop;
-               end if;
-            end if;
-
-            --  If nothing else, use the TSS of the root type
-
-            return TSS (Base_Type (Underlying_Type (Typ)), Nam);
-         end Find_Inherited_TSS;
-
          ---------------------------------
          -- Find_Numeric_Representation --
          ---------------------------------
@@ -10634,7 +10580,6 @@ package body Exp_Dist is
                  Counter => Counter,
                  Datum   => New_Occurrence_Of (Inner_Any, Loc));
 
-
                Append_To (Stmts,
                  Make_Block_Statement (Loc,
                    Declarations =>
@@ -10769,7 +10714,7 @@ package body Exp_Dist is
    procedure Set_Renaming_TSS
      (Typ     : Entity_Id;
       Nam     : Entity_Id;
-      TSS_Nam : Name_Id)
+      TSS_Nam : TSS_Name_Type)
    is
       Loc  : constant Source_Ptr := Sloc (Nam);
       Spec : constant Node_Id := Parent (Nam);
@@ -10779,7 +10724,7 @@ package body Exp_Dist is
                      Specification =>
                        Copy_Specification (Loc,
                          Spec     => Spec,
-                         New_Name => TSS_Nam),
+                         New_Name => Make_TSS_Name (Typ, TSS_Nam)),
                        Name => New_Occurrence_Of (Nam, Loc));
 
       Snam : constant Entity_Id :=
