@@ -3299,6 +3299,13 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       /* build_function_call changes these into ABS_EXPR.  */
       abort ();
 
+    case BUILT_IN_CONJ:
+    case BUILT_IN_CREAL:
+    case BUILT_IN_CIMAG:
+      /* expand_tree_builtin changes these into CONJ_EXPR, REALPART_EXPR
+	 and IMAGPART_EXPR.  */
+      abort ();
+
     case BUILT_IN_SIN:
     case BUILT_IN_COS:
       /* Treat these like sqrt, but only if the user asks for them.  */

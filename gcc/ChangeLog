@@ -1,3 +1,15 @@
+2001-01-05  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* builtins.def (BUILT_IN_CONJ, BUILT_IN_CREAL, BUILT_IN_CIMAG):
+	Define.
+	* builtins.c (expand_builtin): Abort on BUILT_IN_CONJ,
+	BUILT_IN_CREAL and BUILT_IN_CIMAG.
+	* c-common.c (c_common_nodes_and_builtins): Create builtin conjf,
+	conj, conjl, crealf, creal, creall, cimagf, cimag and cimagl.
+	(expand_tree_builtin): Handle BUILT_IN_CONJ, BUILT_IN_CREAL and
+	BUILT_IN_CIMAG.
+	* extend.texi: Document these builtins.
+
 2001-01-05  Daniel Berlin  <dberlin@redhat.com>
 
 	* c-common.c (lang_get_alias_set): Say we know nothing of

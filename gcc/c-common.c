@@ -5134,6 +5134,8 @@ c_common_nodes_and_builtins ()
   tree void_ftype_any, void_ftype_int, int_ftype_any;
   tree double_ftype_double, double_ftype_double_double;
   tree float_ftype_float, ldouble_ftype_ldouble;
+  tree cfloat_ftype_cfloat, cdouble_ftype_cdouble, cldouble_ftype_cldouble;
+  tree float_ftype_cfloat, double_ftype_cdouble, ldouble_ftype_cldouble;
   tree int_ftype_cptr_cptr_sizet, sizet_ftype_cstring_cstring;
   tree int_ftype_cstring_cstring, string_ftype_string_cstring;
   tree string_ftype_cstring_int, string_ftype_cstring_cstring;
@@ -5357,6 +5359,32 @@ c_common_nodes_and_builtins ()
     = build_function_type (double_type_node,
 			   tree_cons (NULL_TREE, double_type_node,
 				      double_endlink));
+
+  cfloat_ftype_cfloat
+    = build_function_type (complex_float_type_node,
+			   tree_cons (NULL_TREE, complex_float_type_node,
+				      endlink));
+  cdouble_ftype_cdouble
+    = build_function_type (complex_double_type_node,
+			   tree_cons (NULL_TREE, complex_double_type_node,
+				      endlink));
+  cldouble_ftype_cldouble
+    = build_function_type (complex_long_double_type_node,
+			   tree_cons (NULL_TREE, complex_long_double_type_node,
+				      endlink));
+
+  float_ftype_cfloat
+    = build_function_type (float_type_node,
+			   tree_cons (NULL_TREE, complex_float_type_node,
+				      endlink));
+  double_ftype_cdouble
+    = build_function_type (double_type_node,
+			   tree_cons (NULL_TREE, complex_double_type_node,
+				      endlink));
+  ldouble_ftype_cldouble
+    = build_function_type (long_double_type_node,
+			   tree_cons (NULL_TREE, complex_long_double_type_node,
+				      endlink));
 
   int_ftype_int
     = build_function_type (integer_type_node, int_endlink);
@@ -5748,6 +5776,36 @@ c_common_nodes_and_builtins ()
   builtin_function_2 ("__builtin_cosl", "cosl",
 		      ldouble_ftype_ldouble, ldouble_ftype_ldouble,
 		      BUILT_IN_COS, BUILT_IN_NORMAL, 1, 0, 0);
+
+  /* ISO C99 complex arithmetic functions.  */
+  builtin_function_2 ("__builtin_conjf", "conjf",
+		      cfloat_ftype_cfloat, cfloat_ftype_cfloat,
+		      BUILT_IN_CONJ, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
+  builtin_function_2 ("__builtin_conj", "conj",
+		      cdouble_ftype_cdouble, cdouble_ftype_cdouble,
+		      BUILT_IN_CONJ, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
+  builtin_function_2 ("__builtin_conjl", "conjl",
+		      cldouble_ftype_cldouble, cldouble_ftype_cldouble,
+		      BUILT_IN_CONJ, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
+  builtin_function_2 ("__builtin_crealf", "crealf",
+		      float_ftype_cfloat, float_ftype_cfloat,
+		      BUILT_IN_CREAL, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
+  builtin_function_2 ("__builtin_creal", "creal",
+		      double_ftype_cdouble, double_ftype_cdouble,
+		      BUILT_IN_CREAL, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
+  builtin_function_2 ("__builtin_creall", "creall",
+		      ldouble_ftype_cldouble, ldouble_ftype_cldouble,
+		      BUILT_IN_CREAL, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
+  builtin_function_2 ("__builtin_cimagf", "cimagf",
+		      float_ftype_cfloat, float_ftype_cfloat,
+		      BUILT_IN_CIMAG, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
+  builtin_function_2 ("__builtin_cimag", "cimag",
+		      double_ftype_cdouble, double_ftype_cdouble,
+		      BUILT_IN_CIMAG, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
+  builtin_function_2 ("__builtin_cimagl", "cimagl",
+		      ldouble_ftype_cldouble, ldouble_ftype_cldouble,
+		      BUILT_IN_CIMAG, BUILT_IN_NORMAL, 0, !flag_isoc99, 0);
+
   built_in_decls[BUILT_IN_PUTCHAR] =
     builtin_function ("__builtin_putchar", int_ftype_int,
 		      BUILT_IN_PUTCHAR, BUILT_IN_NORMAL, "putchar");
@@ -5966,6 +6024,21 @@ expand_tree_builtin (function, params, coerced_params)
       if (coerced_params == 0)
 	return integer_zero_node;
       return build_unary_op (ABS_EXPR, TREE_VALUE (coerced_params), 0);
+
+    case BUILT_IN_CONJ:
+      if (coerced_params == 0)
+	return integer_zero_node;
+      return build_unary_op (CONJ_EXPR, TREE_VALUE (coerced_params), 0);
+
+    case BUILT_IN_CREAL:
+      if (coerced_params == 0)
+	return integer_zero_node;
+      return build_unary_op (REALPART_EXPR, TREE_VALUE (coerced_params), 0);
+
+    case BUILT_IN_CIMAG:
+      if (coerced_params == 0)
+	return integer_zero_node;
+      return build_unary_op (IMAGPART_EXPR, TREE_VALUE (coerced_params), 0);
 
     case BUILT_IN_ISGREATER:
       if (TARGET_FLOAT_FORMAT == IEEE_FLOAT_FORMAT)
