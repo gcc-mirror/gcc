@@ -136,7 +136,7 @@ public abstract class BreakIterator implements Cloneable
       {
 	ResourceBundle res
 	  = ResourceBundle.getBundle("gnu.java.locale.LocaleInformation",
-				     loc, BreakIterator.class.getClassLoader());
+				     loc, ClassLoader.getSystemClassLoader());
 	className = res.getString(type);
       }
     catch (MissingResourceException x)

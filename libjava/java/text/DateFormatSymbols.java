@@ -99,7 +99,7 @@ public class DateFormatSymbols implements java.io.Serializable, Cloneable
   {
     ResourceBundle res
       = ResourceBundle.getBundle("gnu.java.locale.LocaleInformation", locale,
-      				 getClass().getClassLoader());
+      				 ClassLoader.getSystemClassLoader());
 
     ampms = res.getStringArray ("ampms");
     eras = res.getStringArray ("eras");

@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 /**
@@ -377,7 +378,7 @@ public abstract class Calendar implements Serializable, Cloneable
   private static ResourceBundle getBundle(Locale locale) 
   {
     return ResourceBundle.getBundle(bundleName, locale,
-      Calendar.class.getClassLoader());
+      ClassLoader.getSystemClassLoader());
   }
 
   /**

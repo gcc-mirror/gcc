@@ -55,7 +55,7 @@ public final class Currency implements Serializable
   {
     this.locale = loc;
     this.res = ResourceBundle.getBundle ("gnu.java.locale.LocaleInformation", 
-      locale, Currency.class.getClassLoader());
+      locale, ClassLoader.getSystemClassLoader());
   }
 
   /**
