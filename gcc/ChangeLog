@@ -1,3 +1,10 @@
+2002-07-11  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa.md (adddi3): Change predicate of operand 2 to adddi3_operand
+	and delete code to force constant to register.
+	* pa-protos.h (adddi3_operand): Add prototype.
+	* pa.c (adddi3_operand): New function.
+
 2002-07-11  Roger Sayle  <roger@eyesopen.com>
 
 	* c-decl.c (duplicate_decls): Preserve the noreturn attribute on

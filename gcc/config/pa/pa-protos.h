@@ -63,6 +63,7 @@ extern rtx legitimize_pic_address PARAMS ((rtx, enum machine_mode, rtx));
 extern struct rtx_def *gen_cmp_fp PARAMS ((enum rtx_code, rtx, rtx));
 extern void hppa_encode_label PARAMS ((rtx));
 extern int arith11_operand PARAMS ((rtx, enum machine_mode));
+extern int adddi3_operand PARAMS ((rtx, enum machine_mode));
 extern int symbolic_expression_p PARAMS ((rtx));
 extern int hppa_address_cost PARAMS ((rtx));
 extern int symbolic_memory_operand PARAMS ((rtx, enum machine_mode));
