@@ -69,6 +69,7 @@ Permission is granted to copy and distribute translations of this manual
 into another language, under the above conditions for modified versions.
 @c man end
 @end titlepage
+@contents
 @page
 
 @node Top, Global Actions,, (DIR)
@@ -3730,5 +3731,4 @@ common extension.
 @unnumbered Index of Directives, Macros and Options
 @printindex fn
 
-@contents
 @bye

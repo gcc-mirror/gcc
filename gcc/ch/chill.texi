@@ -15,6 +15,7 @@ END-INFO-DIR-ENTRY
 @title GNU Chill
 @author William Cox, Per Bothner, Wilfried Moser
 @end titlepage
+@contents
 
 @ifinfo
 @node Top
@@ -1227,5 +1228,4 @@ than most.  The User's Guide is more readable by far, but doesn't
 cover the whole language.  Our copies of these documents came through
 Global Engineering Documents, in Irvine, CA, USA. (714)261-1455.
 
-@contents
 @bye
