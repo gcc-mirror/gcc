@@ -1,5 +1,8 @@
 Thu Dec 16 11:33:57 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
+	* toplev.c (rest_of_compilation): Run branch shortening after
+	reg-stack.
+
 	* regclass.c (loop_depth): Remove
 	(scan_one_insn): Do not handle LOOP_NOTE insns.
 	(regclass): Go through basic blocks and set loop_cost
