@@ -1,3 +1,12 @@
+2000-11-23  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/util/Vector.java: Improve exception messages.
+	(Vector): Check initialCapacity for IllegalArgumentException.
+	(tromToSize): Don't check for elementCount == elementData.length
+	case.
+	(toArray): Don't try to set null marker if target array is the same
+	length as the vector.
+
 2000-11-22  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* Makefile.in: Rebuilt.
