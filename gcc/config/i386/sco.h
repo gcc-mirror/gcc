@@ -8,9 +8,9 @@
 /* Use crt1.o as a startup file and crtn.o as a closing file.  */
 
 #undef STARTFILE_SPEC
-#define STARTFILE_SPEC  "%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}}"
+#define STARTFILE_SPEC  "%{pg:gcrt1.o%s}%{!pg:%{p:mcrt1.o%s}%{!p:crt1.o%s}} crtbegin.o%s"
 
-#define ENDFILE_SPEC "crtn.o%s"
+#define ENDFILE_SPEC "crtend.o%s crtn.o%s"
 
 /* Library spec, including SCO international language support. */
 
@@ -23,6 +23,7 @@
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dunix -Di386 -DM_UNIX -DM_I386 -DM_COFF -DM_WORDSWAP"
 
+#undef CPP_SPEC
 #define CPP_SPEC "%{scointl:-DM_INTERNAT}"
 
 /* Use atexit for static destructors, instead of defining
@@ -46,3 +47,17 @@
 		     && GET_MODE_UNIT_SIZE (MODE) <= 8)			\
    : (MODE) != QImode)
 #endif
+
+/* caller has to pop the extra argument passed to functions that return
+   structures. */
+
+#undef RETURN_POPS_ARGS
+#define RETURN_POPS_ARGS(FUNTYPE,SIZE)   \
+  (TREE_CODE (FUNTYPE) == IDENTIFIER_NODE ? 0			\
+   : (TARGET_RTD						\
+      && (TYPE_ARG_TYPES (FUNTYPE) == 0				\
+	  || (TREE_VALUE (tree_last (TYPE_ARG_TYPES (FUNTYPE)))	\
+	      == void_type_node))) ? (SIZE)			\
+   : 0)
+/* On other 386 systems, the last line looks like this:
+   : (aggregate_value_p (FUNTYPE)) ? GET_MODE_SIZE (Pmode) : 0)  */
