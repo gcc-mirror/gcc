@@ -5092,6 +5092,21 @@ instantiate_type (lhstype, rhs, complain)
 	return rhs;
       }
 
+    case SCOPE_REF:
+      {
+	/* This can happen if we are forming a pointer-to-member for a
+	   member template.  */
+	tree template_id_expr = TREE_OPERAND (rhs, 1);
+	tree name;
+	my_friendly_assert (TREE_CODE (template_id_expr) == TEMPLATE_ID_EXPR,
+			    0);
+	explicit_targs = TREE_OPERAND (template_id_expr, 1);
+	name = TREE_OPERAND (template_id_expr, 0);
+	my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 0);
+	rhs = lookup_fnfields (TYPE_BINFO (TREE_OPERAND (rhs, 0)), name, 1);
+	goto overload;
+      }
+
     case TEMPLATE_ID_EXPR:
       {
 	explicit_targs = TREE_OPERAND (rhs, 1);
@@ -5101,6 +5116,7 @@ instantiate_type (lhstype, rhs, complain)
       my_friendly_assert (TREE_CODE (rhs) == OVERLOAD, 980401);
 
     case OVERLOAD:
+    overload:
       {
 	tree elem, elems;
 
@@ -5112,7 +5128,8 @@ instantiate_type (lhstype, rhs, complain)
 	if (lhstype == error_mark_node)
 	  return lhstype;
 
-	if (TREE_CODE (lhstype) != FUNCTION_TYPE)
+	if (TREE_CODE (lhstype) != FUNCTION_TYPE
+	    && TREE_CODE (lhstype) != METHOD_TYPE)
 	  {
 	    rhs = DECL_NAME (OVL_FUNCTION (rhs));
 	    if (complain)
