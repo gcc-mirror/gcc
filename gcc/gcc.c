@@ -365,6 +365,7 @@ or with constant text in a single argument.
  %{S|P:X} substitutes X if either -S or -P was given to CC.  This may be
 	  combined with ! and . as above binding stronger than the OR.
  %(Spec) processes a specification defined in a specs file as *Spec:
+ %[Spec] as above, but put __ around -D arguments
 
 The conditional text X in a %{S:X} or %{!S:X} construct may contain
 other nested % constructs or spaces, or even newlines.  They are
@@ -1110,7 +1111,8 @@ skip_whitespace (p)
 }
 
 /* Structure to keep track of the specs that have been defined so far.
-   These are accessed using %(specname) in a compiler or link spec.  */
+   These are accessed using %(specname) or %[specname] in a compiler
+   or link spec.  */
 
 struct spec_list
 {
@@ -4034,7 +4036,11 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	    /* Process a string found as the value of a spec given by name.
 	       This feature allows individual machine descriptions
-	       to add and use their own specs.  */
+	       to add and use their own specs.
+	       %[...] modifies -D options the way %P does;
+	       %(...) uses the spec unmodified.  */
+	  case '[':
+	    warning ("use of obsolete %%[ operator in specs");
 	  case '(':
 	    {
 	      char *name = p;
@@ -4043,7 +4049,7 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 
 	      /* The string after the S/P is the name of a spec that is to be
 		 processed.  */
-	      while (*p && *p != ')')
+	      while (*p && *p != ')' && *p != ']')
 		p++;
 
 	      /* See if it's in the list */
@@ -4052,31 +4058,66 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		  {
 		    name = *(sl->ptr_spec);
 #ifdef DEBUG_SPECS
-		    fprintf (stderr, "Processing spec %s, which is '%s'\n",
-			     sl->name, name);
+		    fprintf (stderr, "Processing spec %c%s%c, which is '%s'\n",
+			     c, sl->name, (c == '(') ? ')' : ']', name);
 #endif
 		    break;
 		  }
 
 	      if (sl)
 		{
-		  value = do_spec_1 (name, 0, NULL_PTR);
-		  if (value != 0)
-		    return value;
+		  if (c == '(')
+		    {
+		      value = do_spec_1 (name, 0, NULL_PTR);
+		      if (value != 0)
+			return value;
+		    }
+		  else
+		    {
+		      char *x = (char *) alloca (strlen (name) * 2 + 1);
+		      char *buf = x;
+		      char *y = name;
+		      int flag = 0;
+
+		      /* Copy all of NAME into BUF, but put __ after
+			 every -D and at the end of each arg,  */
+		      while (1)
+			{
+			  if (! strncmp (y, "-D", 2))
+			    {
+			      *x++ = '-';
+			      *x++ = 'D';
+			      *x++ = '_';
+			      *x++ = '_';
+			      y += 2;
+			      flag = 1;
+			      continue;
+			    }
+                          else if (flag && (*y == ' ' || *y == '\t' || *y == '='
+                                            || *y == '}' || *y == 0))
+			    {
+			      *x++ = '_';
+			      *x++ = '_';
+			      flag = 0;
+			    }
+                          if (*y == 0)
+			    break;
+			  else
+			    *x++ = *y++;
+			}
+		      *x = 0;
+
+		      value = do_spec_1 (buf, 0, NULL_PTR);
+		      if (value != 0)
+			return value;
+		    }
 		}
 
-	      /* Discard the closing paren.  */
+	      /* Discard the closing paren or bracket.  */
 	      if (*p)
 		p++;
 	    }
 	    break;
-
-	    /* This used to be like %(, except that it modified -D options
-	       the same way as %P.  This has been obsoleted, as it was not
-	       useful for obtaining correct ISO C semantics for defines.  */
-	  case '[':
-	    error ("use of obsolete %[ operator in specs");
-	    return -1;
 
 	  case 'v':
 	    {
