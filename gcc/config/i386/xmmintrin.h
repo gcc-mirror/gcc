@@ -245,13 +245,21 @@ _mm_cmple_ss (__m128 __A, __m128 __B)
 static __inline __m128
 _mm_cmpgt_ss (__m128 __A, __m128 __B)
 {
-  return (__m128) __builtin_ia32_cmpgtss ((__v4sf)__A, (__v4sf)__B);
+  return (__m128) __builtin_ia32_movss ((__v4sf) __A,
+					(__v4sf)
+					__builtin_ia32_cmpltss ((__v4sf) __B,
+								(__v4sf)
+								__A));
 }
 
 static __inline __m128
 _mm_cmpge_ss (__m128 __A, __m128 __B)
 {
-  return (__m128) __builtin_ia32_cmpgess ((__v4sf)__A, (__v4sf)__B);
+  return (__m128) __builtin_ia32_movss ((__v4sf) __A,
+					(__v4sf)
+					__builtin_ia32_cmpless ((__v4sf) __B,
+								(__v4sf)
+								__A));
 }
 
 static __inline __m128
@@ -275,13 +283,21 @@ _mm_cmpnle_ss (__m128 __A, __m128 __B)
 static __inline __m128
 _mm_cmpngt_ss (__m128 __A, __m128 __B)
 {
-  return (__m128) __builtin_ia32_cmpngtss ((__v4sf)__A, (__v4sf)__B);
+  return (__m128) __builtin_ia32_movss ((__v4sf) __A,
+					(__v4sf)
+					__builtin_ia32_cmpnltss ((__v4sf) __B,
+								 (__v4sf)
+								 __A));
 }
 
 static __inline __m128
 _mm_cmpnge_ss (__m128 __A, __m128 __B)
 {
-  return (__m128) __builtin_ia32_cmpngess ((__v4sf)__A, (__v4sf)__B);
+  return (__m128) __builtin_ia32_movss ((__v4sf) __A,
+					(__v4sf)
+					__builtin_ia32_cmpnless ((__v4sf) __B,
+								 (__v4sf)
+								 __A));
 }
 
 static __inline __m128
@@ -1270,13 +1286,21 @@ _mm_cmple_sd (__m128d __A, __m128d __B)
 static __inline __m128d
 _mm_cmpgt_sd (__m128d __A, __m128d __B)
 {
-  return (__m128d)__builtin_ia32_cmpgtsd ((__v2df)__A, (__v2df)__B);
+  return (__m128d) __builtin_ia32_movsd ((__v2df) __A,
+					 (__v2df)
+					 __builtin_ia32_cmpltsd ((__v2df) __B,
+								 (__v2df)
+								 __A));
 }
 
 static __inline __m128d
 _mm_cmpge_sd (__m128d __A, __m128d __B)
 {
-  return (__m128d)__builtin_ia32_cmpgesd ((__v2df)__A, (__v2df)__B);
+  return (__m128d) __builtin_ia32_movsd ((__v2df) __A,
+					 (__v2df)
+					 __builtin_ia32_cmplesd ((__v2df) __B,
+								 (__v2df)
+								 __A));
 }
 
 static __inline __m128d
@@ -1300,13 +1324,21 @@ _mm_cmpnle_sd (__m128d __A, __m128d __B)
 static __inline __m128d
 _mm_cmpngt_sd (__m128d __A, __m128d __B)
 {
-  return (__m128d)__builtin_ia32_cmpngtsd ((__v2df)__A, (__v2df)__B);
+  return (__m128d) __builtin_ia32_movsd ((__v2df) __A,
+					 (__v2df)
+					 __builtin_ia32_cmpnltsd ((__v2df) __B,
+								  (__v2df)
+								  __A));
 }
 
 static __inline __m128d
 _mm_cmpnge_sd (__m128d __A, __m128d __B)
 {
-  return (__m128d)__builtin_ia32_cmpngesd ((__v2df)__A, (__v2df)__B);
+  return (__m128d) __builtin_ia32_movsd ((__v2df) __A,
+					 (__v2df)
+					 __builtin_ia32_cmpnlesd ((__v2df) __B,
+								  (__v2df)
+								  __A));
 }
 
 static __inline __m128d
