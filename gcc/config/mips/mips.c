@@ -5802,6 +5802,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		  rtx mem_rtx = gen_rtx (MEM, word_mode,
 					 gen_rtx (PLUS, Pmode, base_reg_rtx,
 						  GEN_INT (gp_offset - base_offset)));
+		  RTX_UNCHANGING_P (mem_rtx) = 1;
 
 		  /* The mips16 does not have an instruction to load
                      $31, so we load $7 instead, and work things out
@@ -6006,6 +6007,7 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 		  rtx mem_rtx = gen_rtx (MEM, sz,
 					 gen_rtx (PLUS, Pmode, base_reg_rtx,
 						  GEN_INT (fp_offset - base_offset)));
+		  RTX_UNCHANGING_P (mem_rtx) = 1;
 
 		  if (store_p)
 		    {
