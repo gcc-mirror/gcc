@@ -1,5 +1,9 @@
 2002-12-23  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* gcj.texi: Include Cover Texts in man page.
+
+2002-12-23  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* gcj.texi: Include gcc-common.texi.
 	* Make-lang.in ($(srcdir)/java/gcj.info, java/gcj.dvi): Depend on
 	$(srcdir)/doc/include/gcc-common.texi.
