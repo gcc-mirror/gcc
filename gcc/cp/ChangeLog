@@ -1,3 +1,8 @@
+1999-01-25  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* tree.c (equal_functions): New function.
+	(ovl_member): Call it.
+
 1999-01-24  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cvt.c (cp_convert_to_pointer): Fix conversion of 0 to pmf.
