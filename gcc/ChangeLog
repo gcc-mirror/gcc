@@ -1,3 +1,7 @@
+Fri Apr 20 12:22:15 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* config/pa/som.h (NM_FLAGS): Define.
+
 2001-04-20  Bernd Schmidt  <bernds@redhat.com>
 
 	* ia64.c (ia64_flag_schedule_insns2): New variable.
