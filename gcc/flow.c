@@ -3492,20 +3492,31 @@ sbitmap *
 sbitmap_vector_alloc (n_vecs, n_elms)
      int n_vecs, n_elms;
 {
-  int i, bytes, offset, elm_bytes, size, amt;
+  int i, bytes, offset, elm_bytes, size, amt, vector_bytes;
   sbitmap *bitmap_vector;
 
   size = SBITMAP_SET_SIZE (n_elms);
   bytes = size * sizeof (SBITMAP_ELT_TYPE);
   elm_bytes = (sizeof (struct simple_bitmap_def)
 	       + bytes - sizeof (SBITMAP_ELT_TYPE));
-  amt = (n_vecs * sizeof (sbitmap *)) + (n_vecs * elm_bytes);
+  vector_bytes = n_vecs * sizeof (sbitmap *);
+
+  /* Round up `vector_bytes' to account for the alignment requirements
+     of an sbitmap.  One could allocate the vector-table and set of sbitmaps
+     separately, but that requires maintaining two pointers or creating
+     a cover struct to hold both pointers (so our result is still just
+     one pointer).  Neither is a bad idea, but this is simpler for now.  */
+  {
+    /* Based on DEFAULT_ALIGNMENT computation in obstack.c.  */
+    struct { char x; SBITMAP_ELT_TYPE y; } align;
+    int alignment = (char *) & align.y - & align.x;
+    vector_bytes = (vector_bytes + alignment - 1) & ~ (alignment - 1);
+  }
+
+  amt = vector_bytes + (n_vecs * elm_bytes);
   bitmap_vector = (sbitmap *) xmalloc (amt);
 
-  /* ??? There may be alignment problems, `offset' should be rounded up
-     each time to account for alignment.  Later [if ever].  */
-
-  for (i = 0, offset = n_vecs * sizeof (sbitmap *);
+  for (i = 0, offset = vector_bytes;
        i < n_vecs;
        i++, offset += elm_bytes)
     {
