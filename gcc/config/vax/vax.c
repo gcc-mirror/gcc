@@ -577,6 +577,66 @@ vax_rtx_cost (x)
     }
   return c;
 }
+
+/* Check a `double' value for validity for a particular machine mode.  */
+
+static char *float_strings[] =
+{
+   "1.70141173319264430e+38", /* 2^127 (2^24 - 1) / 2^24 */
+  "-1.70141173319264430e+38",
+   "2.93873587705571877e-39", /* 2^-128 */
+  "-2.93873587705571877e-39"
+};
+
+static REAL_VALUE_TYPE float_values[4];
+
+static int inited_float_values = 0;
+
+
+void
+check_float_value (mode, d)
+     enum machine_mode mode;
+     REAL_VALUE_TYPE *d;
+{
+
+  if (inited_float_values == 0)
+    {
+      int i;
+      for (i = 0; i < 4; i++)
+	{
+	  float_values[i] = REAL_VALUE_ATOF (float_strings[i], DFmode);
+	}
+    inited_float_values = 1;
+    }
+
+  if ((mode) == SFmode)
+    {
+      REAL_VALUE_TYPE r;
+      bcopy (d, &r, sizeof (REAL_VALUE_TYPE));
+      if (REAL_VALUES_LESS (float_values[0], r))
+	{
+	  error ("magnitude of constant too large for `float'");
+	  bcopy (&float_values[0], d, sizeof (REAL_VALUE_TYPE));
+	}
+      else if (REAL_VALUES_LESS (r, float_values[1]))
+	{
+	  error ("magnitude of constant too large for `float'");
+	  bcopy (&float_values[1], d, sizeof (REAL_VALUE_TYPE));
+	}
+      else if (REAL_VALUES_LESS (dconst0, r)
+		&& REAL_VALUES_LESS (r, float_values[2]))
+	{
+	  warning ("`float' constant truncated to zero");
+	  bcopy (&dconst0, d, sizeof (REAL_VALUE_TYPE));
+	}
+      else if (REAL_VALUES_LESS (r, dconst0)
+		&& REAL_VALUES_LESS (float_values[3], r))
+	{
+	  warning ("`float' constant truncated to zero");
+	  bcopy (&dconst0, d, sizeof (REAL_VALUE_TYPE));
+	}
+    }
+}
 
 /* Linked list of all externals that are to be emitted when optimizing
    for the global pointer if they haven't been declared by the end of
