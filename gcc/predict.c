@@ -255,6 +255,7 @@ estimate_probability (loops_info)
 {
   sbitmap *dominators, *post_dominators;
   int i;
+  int found_noreturn = 0;
 
   dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
   post_dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
@@ -309,9 +310,15 @@ estimate_probability (loops_info)
       /* If block has no sucessor, predict all possible paths to
          it as improbable, as the block contains a call to a noreturn
 	 function and thus can be executed only once.  */
-      if (bb->succ == NULL)
+      if (bb->succ == NULL && !found_noreturn)
 	{
 	  int y;
+
+	  /* ??? Postdominator claims each noreturn block to be postdominated
+	     by each, so we need to run only once.  This needs to be changed
+	     once postdominace algorithm is updated to say something more sane.
+	     */
+	  found_noreturn = 1;
 	  for (y = 0; y < n_basic_blocks; y++)
 	    if (!TEST_BIT (post_dominators[y], i))
 	      {
