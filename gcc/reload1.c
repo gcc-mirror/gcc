@@ -4634,12 +4634,18 @@ choose_reload_regs (insn, avoid_return_reg)
 	  && reload_reg_rtx[r] != 0)
 	{
 	  register int nregno = REGNO (reload_out[r]);
-	  int nr = HARD_REGNO_NREGS (nregno, reload_mode[r]);
+	  int nr = 1;
+
+	  if (nregno < FIRST_PSEUDO_REGISTER)
+	    nr = HARD_REGNO_NREGS (nregno, reload_mode[r]);
 
 	  while (--nr >= 0)
+	    reg_has_output_reload[nregno + nr] = 1;
+
+	  if (i >= 0)
 	    {
-	      reg_has_output_reload[nregno + nr] = 1;
-	      if (i >= 0)
+	      nr = HARD_REGNO_NREGS (spill_regs[i], reload_mode[r]);
+	      while (--nr >= 0)
 		SET_HARD_REG_BIT (reg_is_output_reload, spill_regs[i] + nr);
 	    }
 
