@@ -1,3 +1,7 @@
+2004-11-27  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* pt.c: Fix a comment typo.
+
 2004-11-27  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	Friend class name lookup 4/n
