@@ -1,3 +1,116 @@
+2003-11-17  Jerome Guitton  <guitton@act-europe.fr>
+
+	* 5zthrini.adb: Remove the call to Init_RTS at elaboration, as it is
+	already called in System.Threads.
+
+	* 5ztiitho.adb (Initialize_Task_Hooks): Remove the registration of the
+	environment task, as it has been moved to System.Threads.Initialization.
+
+2003-11-17  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* adaint.c (__gnatlib_install_locks): Only reference
+	__gnat_install_locks on VMS, since other platforms can avoid using
+	--enable-threads=gnat
+
+2003-11-17  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* ada-tree.h: (TYPE_IS_PACKED_ARRAY_TYPE_P): New macro.
+
+	* decl.c (gnat_to_gnu_entity, case E_Array_Subtype): Set
+	TYPE_PACKED_ARRAY_TYPE_P.
+	(validate_size): Do not verify size if TYPE_IS_PACKED_ARRAY_TYPE_P.
+
+	Part of PR ada/12806
+	* utils.c (float_type_for_precision): Renamed from float_type_for_size.
+	Use GET_MODE_PRECISION instead of GET_MODE_BITSIZE.
+
+2003-11-17  Vincent Celier  <celier@gnat.com>
+
+	* gnatchop.adb (Error_Msg): New Boolean parameter Warning, defaulted
+	to False.
+	Do not set exit status to Failure when Warning is True.
+	(Gnatchop): Make errors "no compilation units found" and
+	"no source files written" warnings only.
+
+	* make.adb (Gnatmake): When using a project file, set
+	Look_In_Primary_Dir to False.
+	(Configuration_Pragmas_Switch): Check for Global_Configuration_Pragmas
+	and Local_Configuration_Pragmas in the project where they are declared
+	not an extending project which might have inherited them.
+
+	* osint.adb (Locate_File): If Name is already an absolute path, do not
+	look for a directory.
+
+	* par-ch10.adb (P_Compilation_Unit): If source contains no token, and
+	-gnats (Check_Syntax) is used, issue only a warning, not an error.
+
+	* prj.adb (Register_Default_Naming_Scheme): Add new component Project
+	in objects of type Variable_Value.
+
+	* prj.ads: (Variable_Value): New component Project
+
+	* prj-nmsc.adb (Ada_Check.Warn_If_Not_Sources): No warning if source
+	is in a project extended by Project.
+
+	* prj-proc.adb (Add_Attributes): New parameter Project. Set component
+	Project of Variable_Values to this new parameter value.
+	(Expression): Set component Project of Variable_Values.
+	(Process_Declarative_Items): Call Add_Attributes with parameter Project.
+	Set the component Project in array elements.
+
+2003-11-17  Sergey Rybin  <rybin@act-europe.fr>
+
+	* errout.adb: (Initialize): Add initialization for error nodes.
+
+	* sem_ch12.adb (Initialize): Add missing initializations for
+	Exchanged_Views and Hidden_Entities.
+
+2003-11-17  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch12.adb (Copy_Generic_Node): Preserve entity when copying an
+	already instantiated tree for use in subsequent inlining.
+	(Analyze_Associations, Instantiate_Formal_Subprogram,
+	Instantiate_Object): improve error message for mismatch in
+	instantiations.
+
+	* sem_ch6.adb (Build_Body_To_Inline): Major cleanup to handle
+	instantiations of subprograms declared in instances.
+
+2003-11-17  Javier Miranda  <miranda@gnat.com>
+
+	* sem_ch4.adb (Analyze_Allocator): Previous modification must be
+	executed only under the Extensions_Allowed flag.
+
+2003-11-17  Robert Dewar  <dewar@gnat.com>
+
+	* a-exexda.adb (Address_Image): Fix documentation to indicate leading
+	zeroes suppressed.
+	(Address_Image): Fix bug of returning 0x instead of 0x0
+	Minor reformatting (function specs).
+
+	* einfo.ads: Minor fix for documentation of Is_Bit_Packed_Array
+	(missed case of 33-63)
+
+	* freeze.adb, sem_ch13.adb: Properly check size of packed bit array
+
+	* s-thread.adb: Add comments for pragma Restriction
+
+	* exp_aggr.adb, g-debuti.adb, par-ch4.adb, sem_aggr.adb,
+	sem_ch6.adb, sprint.adb, xref_lib.adb: Minor reformatting
+
+2003-11-17  Ed Falis  <falis@gnat.com>
+
+	* s-thread.adb: Added No_Tasking restriction for this implementation.
+
+2003-11-17  Emmanuel Briot  <briot@act-europe.fr>
+
+	* xref_lib.adb (Parse_Identifier_Info): Add handling of generic
+	instanciation references in the parent type description.
+
+2003-11-17  GNAT Script  <nobody@gnat.com>
+
+	* Make-lang.in: Makefile automatically updated
+
 2003-11-16  Jason Merrill  <jason@redhat.com>
 
 	* Make-lang.in (ada.tags): Create TAGS.sub files in each directory
