@@ -1,5 +1,5 @@
 // Methods for type_info for -*- C++ -*- Run Time Type Identification.
-// Copyright (C) 1994, 1996, 1998 Free Software Foundation
+// Copyright (C) 1994, 1996, 1998, 1999 Free Software Foundation
 
 // This file is part of GNU CC.
 
@@ -63,43 +63,66 @@ __rtti_user (void *addr, const char *name)
 { new (addr) __user_type_info (name); }
 
 // dynamic_cast helper methods.
-// Returns a pointer to the desired sub-object or 0.
+// Returns 1 if the cast succeeds, 0 otherwise.  Stores the adjusted value
+// in VALP.
 
-void * __user_type_info::
-dcast (const type_info& to, int, void *addr, const type_info *, void *) const
-{ return (*this == to) ? addr : 0; }
+int __user_type_info::
+dcast (const type_info& to, int, void *addr, void **valp,
+       const type_info *, void *) const
+{
+  *valp = addr;
+  return (*this == to);
+}
 
-void * __si_type_info::
-dcast (const type_info& to, int require_public, void *addr,
+int __si_type_info::
+dcast (const type_info& to, int require_public, void *addr, void **valp,
        const type_info *sub, void *subptr) const
 {
   if (*this == to)
-    return addr;
-  return base.dcast (to, require_public, addr, sub, subptr);
+    {
+      *valp = addr;
+      return 1;
+    }
+  return base.dcast (to, require_public, addr, valp, sub, subptr);
 }
 
-void* __class_type_info::
-dcast (const type_info& desired, int is_public, void *objptr,
+int __class_type_info::
+dcast (const type_info& desired, int is_public, void *objptr, void **valp,
        const type_info *sub, void *subptr) const
 {
-  if (*this == desired)
-    return objptr;
+  *valp = objptr;
 
-  void *match_found = 0;
+  if (*this == desired)
+    return 1;
+
+  int match_found = 0;
+  void *match = 0;
+
   for (size_t i = 0; i < n_bases; i++)
     {
       if (is_public && base_list[i].access != PUBLIC)
 	continue;
 
-      void *p = (char *)objptr + base_list[i].offset;
-      if (base_list[i].is_virtual)
-	p = *(void **)p;
-      p = base_list[i].base->dcast (desired, is_public, p, sub, subptr);
-      if (p)
+      void *p;
+
+      if (objptr)
 	{
-	  if (match_found == 0)
-	    match_found = p;
-	  else if (match_found != p)
+	  p = (char *)objptr + base_list[i].offset;
+	  if (base_list[i].is_virtual)
+	    p = *(void **)p;
+	}
+      else
+	/* Preserve null pointer.  */
+	p = objptr;
+
+      if (base_list[i].base->dcast (desired, is_public, p, &p, sub, subptr))
+	{
+	  if (! match_found)
+	    {
+	      match_found = 1;
+	      match = p;
+	    }
+	  else if (match != p)
 	    {
 	      if (sub)
 		{
@@ -109,26 +132,30 @@ dcast (const type_info& desired, int is_public, void *objptr,
 		  const __user_type_info &d =
 		    static_cast <const __user_type_info &> (desired);
 
-		  void *os = d.dcast (*sub, 1, match_found);
-		  void *ns = d.dcast (*sub, 1, p);
+		  void *os;
+		  d.dcast (*sub, 1, match, &os);
+		  void *ns;
+		  d.dcast (*sub, 1, p, &ns);
 
 		  if (os == ns)
-		    /* ambiguous -- subptr is a virtual base */;
+		    // Both have the same subobject, so we can't disambiguate;
+		    // i.e. subptr is a virtual base.
+		    return 0;
 		  else if (os == subptr)
 		    continue;
 		  else if (ns == subptr)
 		    {
-		      match_found = p;
+		      match = p;
 		      continue;
 		    }
 		}
-
-	      // base found at two different pointers,
-	      // conversion is not unique
-	      return 0;
+	      else
+		// We're not downcasting, so we can't disambiguate.
+		return 0;
 	    }
 	}
     }
 
+  *valp = match;
   return match_found;
 }

@@ -1,5 +1,5 @@
 // Methods for type_info for -*- C++ -*- Run Time Type Identification.
-// Copyright (C) 1994, 96-97, 1998 Free Software Foundation
+// Copyright (C) 1994, 96-97, 1998, 1999 Free Software Foundation
 
 // This file is part of GNU CC.
 
@@ -93,28 +93,23 @@ struct __array_type_info : public type_info {
 /* Low level match routine used by compiler to match types of catch
    variables and thrown objects.  */
 
-extern "C" void*
-__throw_type_match_rtti (const void *catch_type_r, const void *throw_type_r,
-			 void *objptr)
+extern "C" int
+__throw_type_match_rtti_2 (const void *catch_type_r, const void *throw_type_r,
+			 void *objptr, void **valp)
 {
   const type_info &catch_type = *(const type_info *)catch_type_r;
   const type_info &throw_type = *(const type_info *)throw_type_r;
-  
+
+  *valp = objptr;
+
   if (catch_type == throw_type)
-    return objptr;
+    return 1;
   
-#if 0
-  printf ("We want to match a %s against a %s!\n",
-	  throw_type.name (), catch_type.name ());
-#endif
-
-  void *new_objptr = 0;
-
   if (const __user_type_info *p
       = dynamic_cast <const __user_type_info *> (&throw_type))
     {
       /* The 1 skips conversions to private bases. */
-      new_objptr = p->dcast (catch_type, 1, objptr);
+      return p->dcast (catch_type, 1, objptr, valp);
     }
   else if (const __pointer_type_info *fr =
 	   dynamic_cast <const __pointer_type_info *> (&throw_type))
@@ -123,7 +118,7 @@ __throw_type_match_rtti (const void *catch_type_r, const void *throw_type_r,
 	   dynamic_cast <const __pointer_type_info *> (&catch_type);
 
       if (! to)
-	goto fail;
+	return 0;
 
       const type_info *subfr = &fr->type, *subto = &to->type;
       __attr_type_info::cv cvfrom, cvto;
@@ -150,18 +145,18 @@ __throw_type_match_rtti (const void *catch_type_r, const void *throw_type_r,
 	   > (cvto & __attr_type_info::CONST))
 	  || ((cvfrom & __attr_type_info::VOLATILE)
 	      > (cvto & __attr_type_info::VOLATILE)))
-	goto fail;
+	return 0;
 
       if (*subto == *subfr)
-	new_objptr = objptr;
+	return 1;
       else if (*subto == typeid (void)
 	       && dynamic_cast <const __func_type_info *> (subfr) == 0)
-	new_objptr = objptr;
+	return 1;
       else if (const __user_type_info *p
 	       = dynamic_cast <const __user_type_info *> (subfr))
 	{
 	  /* The 1 skips conversions to private bases. */
-	  new_objptr = p->dcast (*subto, 1, objptr);
+	  return p->dcast (*subto, 1, objptr, valp);
 	}
       else if (const __pointer_type_info *pfr
 	       = dynamic_cast <const __pointer_type_info *> (subfr))
@@ -172,7 +167,7 @@ __throw_type_match_rtti (const void *catch_type_r, const void *throw_type_r,
 	    = dynamic_cast <const __pointer_type_info *> (subto);
 
 	  if (! pto)
-	    goto fail;
+	    return 0;
 	    
 	  bool constp = (cvto & __attr_type_info::CONST);
 	  for (subto = &pto->type, subfr = &pfr->type; ;
@@ -200,38 +195,42 @@ __throw_type_match_rtti (const void *catch_type_r, const void *throw_type_r,
 		   > (cvto & __attr_type_info::CONST))
 		  || ((cvfrom & __attr_type_info::VOLATILE)
 		      > (cvto & __attr_type_info::VOLATILE)))
-		goto fail;
+		return 0;
 
 	      if (! constp
 		  && (((cvfrom & __attr_type_info::CONST)
 		       < (cvto & __attr_type_info::CONST))
 		      || ((cvfrom & __attr_type_info::VOLATILE)
 			  < (cvto & __attr_type_info::VOLATILE))))
-		goto fail;
+		return 0;
 
 	      if (*subto == *subfr)
-		{
-		  new_objptr = objptr;
-		  break;
-		}
+		return 1;
 
 	      pto = dynamic_cast <const __pointer_type_info *> (subto);
 	      pfr = dynamic_cast <const __pointer_type_info *> (subfr);
 	      if (! pto || ! pfr)
-		goto fail;		
+		return 0;		
 
 	      if (! (cvto & __attr_type_info::CONST))
 		constp = false;
 	    }
 	}
     }
- fail:
 
-#if 0
-  if (new_objptr)
-    printf ("It converts, delta is %d\n", new_objptr-objptr);
-#endif
-  return new_objptr;
+  return 0;
+}
+
+/* Backward compatibility wrapper.  */
+
+extern "C" void*
+__throw_type_match_rtti (const void *catch_type_r, const void *throw_type_r,
+			 void *objptr)
+{
+  void *ret;
+  if (__throw_type_match_rtti_2 (catch_type_r, throw_type_r, objptr, &ret))
+    return ret;
+  return NULL;
 }
 
 /* Called from __cp_pop_exception.  Is P the type_info node for a pointer
@@ -278,8 +277,11 @@ __dynamic_cast (const type_info& (*from)(void), const type_info& (*to)(void),
 		int require_public, void *address,
 		const type_info & (*sub)(void), void *subptr)
 {
-  return static_cast <const __user_type_info &> (from ()).dcast
-    (to (), require_public, address, &(sub ()), subptr);
+  void *ret;
+  if (static_cast <const __user_type_info &> (from ()).dcast
+      (to (), require_public, address, &ret, &(sub ()), subptr))
+    return ret;
+  return 0;
 }
 
 // type_info nodes and functions for the builtin types.  The mangling here

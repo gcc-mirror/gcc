@@ -165,12 +165,14 @@ __eh_free (void *p)
   free (p);
 }
 
+extern "C" int __throw_type_match_rtti_2 (const void *, const void *,
+					 void *, void **);
+
 extern "C" void *
 __cplus_type_matcher (__eh_info *info_, void *match_info,
-                                 exception_descriptor *exception_table)
+		      exception_descriptor *exception_table)
 {
   cp_eh_info *info = (cp_eh_info *)info_;
-  void *ret;
 
   /* No exception table implies the old style mechanism, so don't check. */
   if (exception_table != NULL 
@@ -178,18 +180,19 @@ __cplus_type_matcher (__eh_info *info_, void *match_info,
     return NULL;
 
   if (match_info == CATCH_ALL_TYPE)
-    return info->value;
+    return (void *)1;
 
   /* we don't worry about version info yet, there is only one version! */
   
   void *match_type = ((void *(*)())match_info) ();
-  ret = __throw_type_match_rtti (match_type, info->type, info->original_value);
-  /* change value of exception */
-  if (ret)
-    info->value = ret;
-  return ret;
-}
 
+  if (__throw_type_match_rtti_2 (match_type, info->type,
+				 info->original_value, &info->value))
+    // Arbitrary non-null pointer.
+    return (void *)1;
+  else
+    return NULL;
+}
 
 /* Compiler hook to push a new exception onto the stack.
    Used by expand_throw().  */
@@ -278,10 +281,11 @@ extern "C" void
 __check_eh_spec (int n, const void **spec)
 {
   cp_eh_info *p = CP_EH_INFO;
+  void *d;
 
   for (int i = 0; i < n; ++i)
     {
-      if (__throw_type_match_rtti (spec[i], p->type, p->value))
+      if (__throw_type_match_rtti_2 (spec[i], p->type, p->value, &d))
 	throw;
     }
 
@@ -297,7 +301,7 @@ __check_eh_spec (int n, const void **spec)
 	  p = __exception_info;
 	  for (int i = 0; i < n; ++i)
 	    {
-	      if (__throw_type_match_rtti (spec[i], p->type, p->value))
+	      if (__throw_type_match_rtti_2 (spec[i], p->type, p->value, &d))
 		throw;
 	    }
 	}
@@ -305,7 +309,7 @@ __check_eh_spec (int n, const void **spec)
       const std::type_info &bad_exc = typeid (std::bad_exception);
       for (int i = 0; i < n; ++i)
 	{
-	  if (__throw_type_match_rtti (spec[i], &bad_exc, p->value))
+	  if (__throw_type_match_rtti_2 (spec[i], &bad_exc, p->value, &d))
 	    throw std::bad_exception ();
 	}
 

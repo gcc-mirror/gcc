@@ -155,25 +155,12 @@ asm (TEXT_SECTION_ASM_OP);
 /* local globals for function calls
    ====================================================================== */
 
-/* Used to cache "terminate" and "__throw_type_match*".  */
-static tree Terminate, CatchMatch;
-
-/* Used to cache __find_first_exception_table_match for throw.  */
-static tree FirstExceptionMatch;
-
-/* Used to cache a call to __unwind_function.  */
-static tree Unwind;
+static tree Terminate;
 
 /* ====================================================================== */
 
-
-/* ========================================================================= */
-
 /* sets up all the global eh stuff that needs to be initialized at the
-   start of compilation.
-
-   This includes:
-		- Setting up all the function call trees.  */
+   start of compilation.  */
 
 void
 init_exception_processing ()
@@ -189,35 +176,8 @@ init_exception_processing ()
   if (flag_honor_std)
     pop_namespace ();
 
-  push_lang_context (lang_name_c);
-
   set_exception_lang_code (EH_LANG_C_plus_plus);
   set_exception_version_code (1);
-
-  CatchMatch
-    = builtin_function (flag_rtti
-			? "__throw_type_match_rtti"
-			: "__throw_type_match",
-			build_function_type (ptr_type_node,
-					     tree_cons (NULL_TREE, const_ptr_type_node,
-							tree_cons (NULL_TREE, const_ptr_type_node,
-								   tree_cons (NULL_TREE, ptr_type_node,
-									      void_list_node)))),
-			NOT_BUILT_IN, NULL_PTR);
-  FirstExceptionMatch
-    = builtin_function ("__find_first_exception_table_match",
-			build_function_type (ptr_type_node,
-					     tree_cons (NULL_TREE, ptr_type_node,
-							void_list_node)),
-			NOT_BUILT_IN, NULL_PTR);
-  Unwind
-    = builtin_function ("__unwind_function",
-			build_function_type (void_type_node,
-					     tree_cons (NULL_TREE, ptr_type_node,
-							void_list_node)),
-			NOT_BUILT_IN, NULL_PTR);
-
-  pop_lang_context ();
 
   /* If we use setjmp/longjmp EH, arrange for all cleanup actions to
      be protected with __terminate.  */
