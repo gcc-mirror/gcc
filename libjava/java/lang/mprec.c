@@ -296,7 +296,7 @@ _DEFUN (lo0bits, (y), unsigned long *y)
     {
       k++;
       x >>= 1;
-      if (!x & 1)
+      if (!(x & 1))
 	return 32;
     }
   *y = x;
