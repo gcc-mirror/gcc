@@ -1505,7 +1505,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
       if (! IS_AGGR_TYPE_CODE (TREE_CODE (TREE_OPERAND (declarator, 0))))
 	;
       else if (TREE_COMPLEXITY (declarator) == current_class_depth)
-	pop_nested_class (1);
+	pop_nested_class ();
       return do_class_using_decl (declarator);
     }
 
@@ -4380,7 +4380,7 @@ pop_scope (t)
   if (TREE_CODE (t) == NAMESPACE_DECL)
     pop_decl_namespace ();
   else
-    popclass (1);
+    popclass ();
 }
 
 /* [basic.lookup.koenig] */

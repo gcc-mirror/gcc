@@ -1888,7 +1888,7 @@ do_pending_defargs ()
 	}
 
       poplevel (0, 0, 0);
-      pop_nested_class (1);
+      pop_nested_class ();
     }
 }
 

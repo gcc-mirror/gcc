@@ -4737,7 +4737,6 @@ instantiate_class_template (type)
   TYPE_BEING_DEFINED (type) = 1;
 
   maybe_push_to_top_level (uses_template_parms (type));
-  pushclass (type, 0);
 
   if (t)
     {
@@ -4881,6 +4880,13 @@ instantiate_class_template (type)
 		      type,
 		      base_list);
     }
+
+  /* Now that our base classes are set up, enter the scope of the
+     class, so that name lookups into base classes, etc. will work
+     corectly.  This is precisely analagous to what we do in
+     begin_class_definition when defining an ordinary non-template
+     class.  */
+  pushclass (type, 1);
 
   for (t = CLASSTYPE_TAGS (pattern); t; t = TREE_CHAIN (t))
     {
@@ -5058,7 +5064,7 @@ instantiate_class_template (type)
   TYPE_BEING_DEFINED (type) = 0;
   repo_template_used (type);
 
-  popclass (0);
+  popclass ();
   pop_from_top_level ();
   pop_tinst_level ();
 
@@ -9077,7 +9083,7 @@ regenerate_decl_from_template (decl, tmpl)
 	tsubst_expr (DECL_INITIAL (code_pattern), args, 
 		     /*complain=*/1, DECL_TI_TEMPLATE (decl));
       /* Pop the class context we pushed above.  */
-      popclass (1);
+      popclass ();
     }
   else if (TREE_CODE (decl) == FUNCTION_DECL)
     {
