@@ -1,5 +1,9 @@
 2002-11-21  Phil Edwards  <pme@gcc.gnu.org>
 
+	* docs/html/documentation.html:  Fix broken/thinko'd URL.
+
+2002-11-21  Phil Edwards  <pme@gcc.gnu.org>
+
 	* docs/doxygen/run_doxygen:  Tighter search expression for sed.
 	* docs/doxygen/stdheader.cc:  Handle the case of good headers.
 
