@@ -1611,28 +1611,6 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
     return spec_target;
   if (GET_MODE (target) != tmode && GET_MODE (target) != mode)
     {
-      /* If the target mode is complex, then extract the two scalar elements
-	 from the value now.  Creating (subreg:SC (reg:DI) 0), as we would do
-	 with the clause below, will cause gen_realpart or gen_imagpart to
-	 fail, since those functions must return lvalues.  */
-      if (COMPLEX_MODE_P (tmode))
-	{
-	  rtx realpart, imagpart;
-	  enum machine_mode itmode = GET_MODE_INNER (tmode);
-
-	  target = convert_to_mode (mode_for_size (GET_MODE_BITSIZE (tmode),
-						   MODE_INT, 0),
-				    target, unsignedp);
-
-	  realpart = extract_bit_field (target, GET_MODE_BITSIZE (itmode), 0,
-					unsignedp, NULL, itmode, itmode);
-	  imagpart = extract_bit_field (target, GET_MODE_BITSIZE (itmode),
-					GET_MODE_BITSIZE (itmode), unsignedp,
-					NULL, itmode, itmode);
-
-	  return gen_rtx_CONCAT (tmode, realpart, imagpart);
-	}
-
       /* If the target mode is not a scalar integral, first convert to the
 	 integer mode of that size and then access it as a floating-point
 	 value via a SUBREG.  */

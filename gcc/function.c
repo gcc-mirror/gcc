@@ -2869,10 +2869,11 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 	{
 	  enum machine_mode submode
 	    = GET_MODE_INNER (GET_MODE (parmreg));
-	  int regnor = REGNO (gen_realpart (submode, parmreg));
-	  int regnoi = REGNO (gen_imagpart (submode, parmreg));
-	  rtx stackr = gen_realpart (submode, data->stack_parm);
-	  rtx stacki = gen_imagpart (submode, data->stack_parm);
+	  int regnor = REGNO (XEXP (parmreg, 0));
+	  int regnoi = REGNO (XEXP (parmreg, 1));
+	  rtx stackr = adjust_address_nv (data->stack_parm, submode, 0);
+	  rtx stacki = adjust_address_nv (data->stack_parm, submode,
+					  GET_MODE_SIZE (submode));
 
 	  /* Scan backwards for the set of the real and
 	     imaginary parts.  */
