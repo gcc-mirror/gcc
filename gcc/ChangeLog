@@ -1,3 +1,12 @@
+2004-02-07  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (negate_expr_p, negate_expr): Optimize -(A+B) into
+	either (-A)-B or (-B)-A, if A or B is easily negated respectively.
+	(fold) <MINUS_EXPR>: Optimize (A*C) - (B*C) -> (A-B)*C for both
+	integer types and floating point with unsafe_math_optimizations.
+	Add similar optimization for (A*C1) - (A*C2) -> A*(C1-C2).
+	Optimize A - B as A + (-B), if B is easily negated.
+
 2004-02-07  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-ppoutput.c, cfganal.c, diagnostic.h, print-rtl.c,
