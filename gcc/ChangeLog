@@ -1,3 +1,8 @@
+1997-09-18  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* configure.in, configure: Make sure to create the stage* and include
+	symbolic links in each subdirectory.
+
 Thu Sep 18 01:47:06 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.md (reload_peepholes): Don't allow addresses with side
@@ -17,12 +22,6 @@ Wed Sep 17 18:33:59 1997  Jeffrey A Law  (law@cygnus.com)
 	* mips.h (LONG_MAX_SPEC): Define.
 	(CPP_SPEC): Include long_max_spec.
 	(EXTRA_SPECS): Include long_max_spec.
-
-1997-09-17  Brendan Kehoe  <brendan@lisa.cygnus.com>
-
-	* configure.in, configure: Make sure to create the stage* and include
-	symbolic links in each subdirectory, as we do in configure.lang for
-	non-autoconf configurations.
 
 Wed Sep 17 14:11:38 1997  Jeffrey A Law  (law@cygnus.com)
 
