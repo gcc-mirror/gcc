@@ -331,6 +331,10 @@ DEFTREECODE (VAR_DECL, "var_decl", 'd', 0)
 DEFTREECODE (PARM_DECL, "parm_decl", 'd', 0)
 DEFTREECODE (RESULT_DECL, "result_decl", 'd', 0)
 DEFTREECODE (FIELD_DECL, "field_decl", 'd', 0)
+
+/* A namespace declaration.  Namespaces appear in DECL_CONTEXT of other
+   _DECLs, providing a hierarchy of names.  */
+DEFTREECODE (NAMESPACE_DECL, "namespace_decl", 'd', 0)
 
 /* References to storage.  */
 

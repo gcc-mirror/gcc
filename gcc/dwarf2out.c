@@ -7523,6 +7523,8 @@ push_decl_scope (scope)
   /* The normal case.  */
   if (decl_scope_depth == 0
       || containing_scope == NULL_TREE
+      /* Ignore namespaces for the moment.  */
+      || TREE_CODE (containing_scope) == NAMESPACE_DECL
       || containing_scope == decl_scope_table[decl_scope_depth - 1].scope)
     decl_scope_table[decl_scope_depth].previous = decl_scope_depth - 1;
   else
@@ -7541,7 +7543,7 @@ push_decl_scope (scope)
   decl_scope_depth++;
 }
 
-/* Return the DIE for the scope the immediately contains this declaration.  */
+/* Return the DIE for the scope that immediately contains this declaration.  */
 
 static dw_die_ref
 scope_die_for (t, context_die)
@@ -7560,6 +7562,10 @@ scope_die_for (t, context_die)
     containing_scope = decl_class_context (t);
   else
     containing_scope = DECL_CONTEXT (t);
+
+  /* Ignore namespaces for the moment.  */
+  if (containing_scope && TREE_CODE (containing_scope) == NAMESPACE_DECL)
+    containing_scope = NULL_TREE;
 
   /* Function-local tags and functions get stuck in limbo until they are
      fixed up by decls_for_scope.  */

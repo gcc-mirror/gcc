@@ -156,6 +156,10 @@ INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/.. -I$(srcdir)/../config
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
+# The only suffixes we want for implicit rules are .c and .o.
+.SUFFIXES:
+.SUFFIXES: .c .o
+
 # This tells GNU make version 3 not to export all the variables
 # defined in this file into the environment.
 .NOEXPORT:
