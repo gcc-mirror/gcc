@@ -412,30 +412,30 @@ static const short yyrline[] = { 0,
    422,   425,   426,   428,   435,   442,   448,   451,   453,   461,
    477,   493,   494,   497,   500,   504,   506,   507,   511,   513,
    516,   526,   528,   531,   533,   539,   542,   546,   548,   549,
-   550,   554,   556,   559,   561,   565,   567,   572,   574,   576,
-   577,   581,   583,   586,   588,   591,   593,   596,   598,   599,
-   600,   603,   607,   612,   614,   615,   616,   619,   621,   625,
-   627,   630,   632,   635,   637,   638,   641,   645,   648,   652,
-   654,   655,   656,   657,   658,   661,   663,   664,   665,   666,
-   669,   671,   672,   673,   674,   675,   676,   677,   678,   679,
-   680,   683,   687,   692,   696,   702,   706,   708,   709,   710,
-   711,   712,   713,   716,   720,   724,   728,   732,   734,   735,
-   736,   739,   741,   744,   749,   751,   754,   756,   759,   763,
-   767,   771,   775,   779,   781,   784,   786,   789,   793,   796,
-   797,   798,   801,   802,   805,   807,   810,   812,   815,   817,
-   820,   822,   825,   829,   831,   834,   839,   841,   842,   845,
-   847,   850,   854,   859,   861,   864,   866,   867,   868,   869,
-   870,   871,   875,   877,   879,   883,   887,   889,   893,   894,
-   898,   899,   900,   901,   904,   907,   910,   912,   913,   916,
-   918,   919,   920,   923,   924,   927,   929,   932,   936,   938,
-   941,   943,   946,   949,   951,   952,   953,   954,   957,   960,
-   963,   965,   967,   968,   971,   975,   979,   981,   982,   983,
-   984,   987,   991,   995,   997,   998,   999,  1002,  1004,  1005,
-  1006,  1009,  1011,  1012,  1013,  1016,  1018,  1019,  1022,  1024,
-  1025,  1026,  1029,  1031,  1032,  1033,  1034,  1035,  1038,  1040,
-  1041,  1044,  1046,  1049,  1051,  1054,  1056,  1059,  1061,  1064,
-  1066,  1069,  1071,  1074,  1076,  1079,  1083,  1086,  1087,  1090,
-  1092,  1095,  1099
+   550,   554,   556,   559,   561,   565,   567,   572,   575,   577,
+   579,   583,   585,   588,   590,   593,   595,   598,   600,   601,
+   602,   605,   609,   614,   616,   617,   618,   621,   623,   627,
+   629,   632,   634,   637,   639,   640,   643,   647,   650,   654,
+   656,   657,   658,   659,   660,   663,   665,   666,   667,   668,
+   671,   673,   674,   675,   676,   677,   678,   679,   680,   681,
+   682,   685,   689,   694,   698,   704,   708,   710,   711,   712,
+   713,   714,   715,   718,   722,   726,   730,   734,   736,   737,
+   738,   741,   743,   746,   751,   753,   756,   758,   761,   765,
+   769,   773,   777,   781,   783,   786,   788,   791,   795,   798,
+   799,   800,   803,   804,   807,   809,   812,   814,   817,   819,
+   822,   824,   827,   831,   833,   836,   841,   843,   844,   847,
+   849,   852,   856,   861,   863,   866,   868,   869,   870,   871,
+   872,   873,   877,   879,   881,   885,   889,   891,   895,   896,
+   900,   901,   902,   903,   906,   909,   912,   914,   915,   918,
+   920,   921,   922,   925,   926,   929,   931,   934,   938,   940,
+   943,   945,   948,   951,   953,   954,   955,   956,   959,   962,
+   965,   967,   969,   970,   973,   977,   981,   983,   984,   985,
+   986,   989,   993,   997,   999,  1000,  1001,  1004,  1006,  1007,
+  1008,  1011,  1013,  1014,  1015,  1018,  1020,  1021,  1024,  1026,
+  1027,  1028,  1031,  1033,  1034,  1035,  1036,  1037,  1040,  1042,
+  1043,  1046,  1048,  1051,  1053,  1056,  1058,  1061,  1063,  1066,
+  1068,  1071,  1073,  1076,  1078,  1081,  1085,  1088,  1089,  1092,
+  1094,  1097,  1101
 };
 #endif
 
@@ -1375,7 +1375,7 @@ static const short yycheck[] = {     3,
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/local/gnu/share/bison.simple"
+#line 3 "/x1/java/install/share/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -1568,7 +1568,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/local/gnu/share/bison.simple"
+#line 196 "/x1/java/install/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -2086,69 +2086,77 @@ case 115:
 #line 562 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
+case 118:
+#line 574 "./parse-scan.y"
+{ report_class_declaration (yyvsp[-1].node); modifier_value = 0; ;
+    break;}
 case 119:
-#line 575 "./parse-scan.y"
-{ modifier_value = 0; ;
+#line 576 "./parse-scan.y"
+{ report_class_declaration (yyvsp[-1].node); modifier_value = 0; ;
+    break;}
+case 120:
+#line 578 "./parse-scan.y"
+{ report_class_declaration (yyvsp[-2].node); modifier_value = 0; ;
     break;}
 case 121:
-#line 578 "./parse-scan.y"
-{ modifier_value = 0; ;
+#line 580 "./parse-scan.y"
+{ report_class_declaration (yyvsp[-2].node); modifier_value = 0; ;
     break;}
 case 148:
-#line 647 "./parse-scan.y"
+#line 649 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 149:
-#line 649 "./parse-scan.y"
+#line 651 "./parse-scan.y"
 { modifier_value = 0; ;
     break;}
 case 173:
-#line 689 "./parse-scan.y"
+#line 691 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 226:
-#line 836 "./parse-scan.y"
+#line 838 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 243:
-#line 876 "./parse-scan.y"
-{ USE_ABSORBER; ;
-    break;}
-case 244:
 #line 878 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
+case 244:
+#line 880 "./parse-scan.y"
+{ USE_ABSORBER; ;
+    break;}
 case 246:
-#line 884 "./parse-scan.y"
+#line 886 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 255:
-#line 906 "./parse-scan.y"
+#line 908 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 273:
-#line 948 "./parse-scan.y"
-{ USE_ABSORBER; ;
-    break;}
-case 274:
 #line 950 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
+case 274:
+#line 952 "./parse-scan.y"
+{ USE_ABSORBER; ;
+    break;}
 case 279:
-#line 959 "./parse-scan.y"
+#line 961 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 282:
-#line 966 "./parse-scan.y"
+#line 968 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 case 337:
-#line 1085 "./parse-scan.y"
+#line 1087 "./parse-scan.y"
 { USE_ABSORBER; ;
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/local/gnu/share/bison.simple"
+#line 498 "/x1/java/install/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -2344,7 +2352,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 1103 "./parse-scan.y"
+#line 1105 "./parse-scan.y"
 
 
 #include "lex.c"
