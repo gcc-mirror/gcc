@@ -2283,8 +2283,19 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	  /* If *SPLIT is a paradoxical SUBREG, when we split it, it should
 	     be written as a ZERO_EXTEND.  */
 	  if (split_code == SUBREG && GET_CODE (SUBREG_REG (*split)) == MEM)
-	    SUBST (*split, gen_rtx_ZERO_EXTEND  (split_mode,
-						 SUBREG_REG (*split)));
+	    {
+#ifdef LOAD_EXTEND_OP
+	      /* Or as a SIGN_EXTEND if LOAD_EXTEND_OP says that that's
+		 what it really is.  */
+	      if (LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (*split)))
+		  == SIGN_EXTEND)
+		SUBST (*split, gen_rtx_SIGN_EXTEND (split_mode,
+						    SUBREG_REG (*split)));
+	      else
+#endif
+		SUBST (*split, gen_rtx_ZERO_EXTEND (split_mode,
+						    SUBREG_REG (*split)));
+	    }
 #endif
 
 	  newi2pat = gen_rtx_SET (VOIDmode, newdest, *split);
