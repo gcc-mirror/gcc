@@ -442,6 +442,8 @@ EOF
 	  echo "${UNAME_MACHINE}-pc-linux-gnuaout" ; exit 0
 	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: i.86coff"; then
 	  echo "${UNAME_MACHINE}-pc-linux-gnucoff" ; exit 0
+	elif echo $ld_help_string | grep >/dev/null 2>&1 "supported emulations:sparclinux"; then
+	  echo "${UNAME_MACHINE}-unknown-linux-gnuaout" ; exit 0
 	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: m68kelf"; then
 	  echo "${UNAME_MACHINE}-unknown-linux-gnu" ; exit 0
 	elif echo "$ld_help_string" | grep >/dev/null 2>&1 "supported emulations: m68klinux"; then
@@ -450,13 +452,11 @@ EOF
 	  echo "powerpc-unknown-linux-gnu" ; exit 0
 	elif test "${UNAME_MACHINE}" = "alpha" ; then
 	  echo alpha-unknown-linux-gnu ; exit 0
-	elif test "${UNAME_MACHINE}" = "sparc" ; then
-	  echo sparc-unknown-linux-gnu ; exit 0
 	elif test "${UNAME_MACHINE}" = "mips" ; then
 	  cat >dummy.c <<EOF
 main(argc, argv)
-int argc;
-char *argv[];
+     int argc;
+     char *argv[];
 {
 #ifdef __MIPSEB__
   printf ("%s-unknown-linux-gnu\n", argv[1]);
@@ -470,18 +470,36 @@ EOF
 	  ${CC-cc} dummy.c -o dummy 2>/dev/null && ./dummy "${UNAME_MACHINE}" && rm dummy.c dummy && exit 0
 	  rm -f dummy.c dummy
 	else
-	  # Either a pre-BFD a.out linker (linux-gnuoldld) or one that does not give us
-	  # useful --help.  Gcc wants to distinguish between linux-gnuoldld and linux-gnuaout.
+	  # Either a pre-BFD a.out linker (linux-gnuoldld)
+	  # or one that does not give us useful --help.
+	  # Gcc wants to distinguish between linux-gnuoldld and linux-gnuaout.
 	  test ! -d /usr/lib/ldscripts/. \
 	    && echo "${UNAME_MACHINE}-pc-linux-gnuoldld" && exit 0
+	  case "${UNAME_MACHINE}" in
+	  i.86)
+	    VENDOR=pc;
+	    ;;
+	  *)
+	    VENDOR=unknown;
+	    ;;
+	  esac
 	  # Determine whether the default compiler is a.out or elf
 	  cat >dummy.c <<EOF
+#include <features.h>
 main(argc, argv)
-int argc;
-char *argv[];
+     int argc;
+     char *argv[];
 {
 #ifdef __ELF__
-  printf ("%s-pc-linux-gnu\n", argv[1]);
+# ifdef __GLIBC__
+#  if __GLIBC__ >= 2
+    printf ("%s-${VENDOR}-linux-gnu\n", argv[1]);
+#  else
+    printf ("%s-${VENDOR}-linux-gnulibc1\n", argv[1]);
+#  endif
+# else
+   printf ("%s-${VENDOR}-linux-gnulibc1\n", argv[1]);
+# endif
 #else
   printf ("%s-pc-linux-gnuaout\n", argv[1]);
 #endif
