@@ -79,7 +79,7 @@
 @c \global\normaloffset =0.75in
 @c @end tex
 
-@ifinfo
+@ifnottex
 @dircategory Programming
 @direntry
 * gcc: (gcc).                  The GNU Compiler Collection.
@@ -95,17 +95,17 @@ This file documents the internals of the GNU compiler.
 @ifclear INTERNALS
 This file documents the use of the GNU compiler.
 @end ifclear
-
-Published by the Free Software Foundation
-59 Temple Place - Suite 330
+@sp 1
+Published by the Free Software Foundation@*
+59 Temple Place - Suite 330@*
 Boston, MA 02111-1307 USA
-
+@sp 1
 Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
-
+@sp 1
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
 are preserved on all copies.
-
+@sp 1
 @ignore
 Permission is granted to process this file through Tex and print the
 results, provided the printed document carries copying permission
@@ -119,14 +119,14 @@ sections entitled ``GNU General Public License'' and ``Funding for Free
 Software'' are included exactly as in the original, and provided that 
 the entire resulting derived work is distributed under the terms of a 
 permission notice identical to this one.
-
+@sp 1
 Permission is granted to copy and distribute translations of this manual
 into another language, under the above conditions for modified versions,
 except that the sections entitled ``GNU General Public License'' and
 ``Funding for Free Software'', and this permission notice, may be 
 included in translations approved by the Free Software Foundation 
 instead of in the original English.
-@end ifinfo
+@end ifnottex
 
 @setchapternewpage odd
 @c @finalout
@@ -184,7 +184,7 @@ instead of in the original English.
 @end titlepage
 @page
 
-@ifinfo
+@ifnottex
 
 @node Top, G++ and GCC,, (DIR)
 @top Introduction
@@ -209,7 +209,7 @@ as well as its new features and incompatibilities, and how to report
 bugs.  It corresponds to GCC version 2.96.
 @end ifclear
 
-@end ifinfo
+@end ifnottex
 @menu
 @ifset USING
 * G++ and GCC::     You can compile C or C++ programs.
@@ -4359,9 +4359,9 @@ modification follow.
 @iftex
 @unnumberedsec TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
 @end iftex
-@ifinfo
+@ifnottex
 @center TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
-@end ifinfo
+@end ifnottex
 
 @enumerate 0
 @item
@@ -4584,9 +4584,9 @@ of promoting the sharing and reuse of software generally.
 @iftex
 @heading NO WARRANTY
 @end iftex
-@ifinfo
+@ifnottex
 @center NO WARRANTY
-@end ifinfo
+@end ifnottex
 
 @item
 BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
@@ -4614,9 +4614,9 @@ POSSIBILITY OF SUCH DAMAGES.
 @iftex
 @heading END OF TERMS AND CONDITIONS
 @end iftex
-@ifinfo
+@ifnottex
 @center END OF TERMS AND CONDITIONS
-@end ifinfo
+@end ifnottex
 
 @page
 @unnumberedsec How to Apply These Terms to Your New Programs
