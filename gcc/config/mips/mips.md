@@ -168,11 +168,12 @@
 	  ;; Note that this value does not account for the delay slot
 	  ;; instruction, whose length is added separately.  If the RTL
 	  ;; pattern has no explicit delay slot, mips_adjust_insn_length
-	  ;; will add the length of the implicit nop.
+	  ;; will add the length of the implicit nop.  The values for
+	  ;; forward and backward branches will be different as well.
 	  (eq_attr "type" "branch")
-          (cond [(lt (abs (minus (match_dup 1) (plus (pc) (const_int 4))))
-                     (const_int 131072))
-                 (const_int 4)
+	  (cond [(and (le (minus (match_dup 1) (pc)) (const_int 131064))
+                      (le (minus (pc) (match_dup 1)) (const_int 131068)))
+                  (const_int 4)
 		 (ne (symbol_ref "flag_pic") (const_int 0))
 		 (const_int 24)
 		 ] (const_int 12))
@@ -6143,7 +6144,7 @@ sra\t%M0,%M1,%2\n\
 ;; to make it simple enough for combine to understand.
 ;;
 ;; The length here is the worst case: the length of the split version
-;; will be more accurate. 
+;; will be more accurate.
 (define_insn_and_split ""
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(lshiftrt:SI (match_operand:SI 1 "memory_operand" "m")
