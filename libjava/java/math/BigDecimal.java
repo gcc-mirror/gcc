@@ -146,7 +146,7 @@ public class BigDecimal extends Number implements Comparable {
     if (power < 0)
       {
 	// Effectively increase the scale of val to avoid an
-	// IllegalArgumentException for a negative power.
+	// ArithmeticException for a negative power.
         valIntVal = valIntVal.multiply (BigInteger.valueOf (10).pow (-power));
 	power = 0;
       }

@@ -1,5 +1,9 @@
 2001-01-10  Warren Levy  <warrenl@redhat.com>
 
+	* java/math/BigDecimal.java (divide): Fixed comment.
+
+2001-01-10  Warren Levy  <warrenl@redhat.com>
+
 	Fix for PR libgcj/1596:
 	* java/math/BigDecimal.java (divide): Check newScale for validity.
 	Ensure that BigInteger.pow() is called with a non-negative value.
