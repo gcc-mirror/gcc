@@ -2559,7 +2559,7 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
       if (SET_DEST (x) == virtual_incoming_args_rtx)
 	new = arg_pointer_rtx, offset = - in_arg_offset;
       else if (SET_DEST (x) == virtual_stack_vars_rtx)
-	new = frame_pointer_rtx, offset = - var_offset;
+	new = hard_frame_pointer_rtx, offset = - var_offset;
       else if (SET_DEST (x) == virtual_stack_dynamic_rtx)
 	new = stack_pointer_rtx, offset = - dynamic_offset;
       else if (SET_DEST (x) == virtual_outgoing_args_rtx)
