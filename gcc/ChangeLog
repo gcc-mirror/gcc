@@ -1,3 +1,31 @@
+2002-08-13  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-opts.c (deps_seen, deps_file, deferred_count, deferred_size,
+	handle_deferred_opts, sanitize_cpp_opts, defer_opt,
+	struct deferred_opt): New.
+	(COMMAND_LINE_OPTIONS): Add -M*.
+	(missing_arg): Update.
+	(c_common_decode_option): Handle -M*.
+	(c_common_post_options): Handle -M*.  Use sanitize_cpp_opts;
+	don't call cpp_post_options.
+	(c_common_finish, check_deps_environment_vars): Update.
+	* cppfiles.c (stack_include_file, handle_missing_header): Update.
+	* cpphash.h (CPP_PRINT_DEPS): Remove.
+	* cppinit.c: Don't include version.h.
+	(cpp_create_reader): Don't call deps_init.  Initialize
+	warn_long_long.
+	(cpp_read_main_file): Init deps if necessary.
+	(cpp_destroy): Conditionally free deps.
+	(cpp_finish): Update.
+	(no_tgt): Remove.
+	(COMMAND_LINE_OPTIONS, cpp_handle_option): Remove -M*.
+	(cpp_post_options): Rename post_options.
+	* cpplib.h (struct cpp_options): Remove some dependency options;
+	move others to a new structure.
+	(cpp_post_options): Remove.
+	(cpp_finish): Comment.
+	* fix-header.c (read_scan_file): Don't call cpp_post_options.
+
 2002-08-12  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/mmix/mmix.md (define_constants): Add MMIX_rR_REGNUM.

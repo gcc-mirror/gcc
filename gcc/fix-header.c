@@ -632,7 +632,6 @@ read_scan_file (in_fname, argc, argv)
   i = cpp_handle_options (scan_in, argc, argv);
   if (i < argc)
     cpp_error (scan_in, DL_ERROR, "invalid option `%s'", argv[i]);
-  cpp_post_options (scan_in);
   if (cpp_errors (scan_in))
     exit (FATAL_EXIT_CODE);
 
