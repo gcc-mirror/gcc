@@ -22,7 +22,9 @@ void foo ()
   c = L"\U1234"[0];	/* { dg-error "incomplete" "incompete UCN 2" } */
 
   c = L'\u000x';	/* { dg-error "non-hex" "non-hex digit in UCN" } */
-			/* { dg-warning "too long" "" { target *-*-* } 24 } */
+  /* If sizeof(HOST_WIDE_INT) > sizeof(wchar_t), we can get a multi-character
+     constant warning even for wide characters.  */
+  /* { dg-warning "too long|multi-character" "" { target *-*-* } 24 } */
 
   c = '\u0024';		/* { dg-bogus "invalid" "0024 is a valid UCN" } */
   c = "\u0040"[0];	/* { dg-bogus "invalid" "0040 is a valid UCN" } */
