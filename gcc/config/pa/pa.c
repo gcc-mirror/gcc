@@ -3987,6 +3987,16 @@ shadd_operand (op, mode)
   return (GET_CODE (op) == CONST_INT && shadd_constant_p (INTVAL (op)));
 }
 
+/* Return 1 if this operand is anything other than a hard register.  */
+
+int
+non_hard_reg_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return ! (GET_CODE (op) == REG && REGNO (op) < FIRST_PSEUDO_REGISTER);
+}
+
 /* Return 1 if INSN branches forward.  Should be using insn_addresses
    to avoid walking through all the insns... */
 int
