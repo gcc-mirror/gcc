@@ -64,13 +64,13 @@ inform() {
 
 usage() {
 cat <<EOF
-gcc_release -r release [further options]
-gcc_release -s [further options]
+gcc_release -r release [-f] [further options]
+gcc_release -s name:cvsbranch [further options]
 
 Options:
 
   -r release           Version of the form X.Y or X.Y.Z.
-  -s                   Create a snapshot, not a real release.
+  -s name:cvsbranch    Create a snapshot, not a real release.
 
   -d destination       Local working directory where we will build the release
                        (default=${HOME}).
@@ -503,14 +503,17 @@ TAR="${TAR:-tar}"
 ########################################################################
 
 # Parse the options.
-while getopts "d:fr:u:t:p:sl" ARG; do
+while getopts "d:fr:u:t:p:s:l" ARG; do
     case $ARG in
     d)    DESTINATION="${OPTARG}";;
     r)    RELEASE="${OPTARG}";;
     t)    TAG="${OPTARG}";;
     u)    CVS_USERNAME="${OPTARG}";;
     f)    FINAL=1;;
-    s)    SNAPSHOT=1;;
+    s)    SNAPSHOT=1
+          BRANCH=${OPTARG%:*}
+          CVSBRANCH=${OPTARG#*:}
+          ;;
     l)    LOCAL=1
 	  SCP=cp
 	  FTP_PATH=~ftp/pub/gcc
@@ -585,13 +588,11 @@ if [ $SNAPSHOT -eq 0 ]; then
     FTP_PATH="${FTP_PATH}/releases/gcc-${RELEASE}/"
   fi
 else
-  # For now snapshots come from the 3.3 branch.
-  BRANCH="3.3"
-  CVSBRANCH=gcc-3_3-branch
-
   RELEASE=${BRANCH}-${DATE}
   FTP_PATH="${FTP_PATH}/snapshots/${RELEASE}"
-  TAG=gcc-ss-`echo ${RELEASE} | tr '.' '_'`
+  if [ ${CVSBRANCH} != "HEAD" ]; then
+    TAG=gcc-ss-`echo ${RELEASE} | tr '.' '_'`
+  fi
 
   # Building locally on gcc.gnu.org, we know what the last snapshot date
   # was.
