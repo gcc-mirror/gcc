@@ -24,6 +24,7 @@ $ RENAME=	"rename/New_Version"
 $ LINK	=	"link"
 $ EDIT	=	"edit"
 $ SEARCH=	"search"
+$ ABORT	=	"exit %x002C"
 $ echo	=	"write sys$output"
 $!
 $!	Compiler options
@@ -192,8 +193,9 @@ $	read ifile$ bc_line
 $	close ifile$
 $	bc_index = 0
 $bc_loop:
-$	tfile = f$element(bc_index, " ", bc_line)
-$	if tfile.eqs." " then goto bc_done
+$	tfile = f$element(bc_index, ",", bc_line)
+$	if tfile.eqs."," then goto bc_done
+$	if f$locate(".",tfile).eq.f$length(tfile) then tfile = tfile + ".h"
 $	call bc_generate 'tfile' "bi_all.opt/opt,"
 $	bc_index = bc_index + 1
 $	goto bc_loop
@@ -341,9 +343,15 @@ $if f$locate(flnm,p2).lt.f$length(p2) then goto loop1
 $! check for front-end subdirectory: "[.prfx]flnm"
 $prfx = ""
 $k = f$locate("]",flnm)
-$if k.eq.1 then  goto loop1	![]c-common for [.cp]
-$if k.lt.f$length(flnm) then  prfx = f$extract(2,k-2,flnm)
-$if k.lt.f$length(flnm) then  flnm = f$extract(k+1,99,flnm)
+$if k.eq.1	![]c-common for [.cp]
+$then
+$ if f$search(f$parse(".obj",flnm)).nes."" then  goto loop1
+$ flnm = f$extract(2,999,flnm)
+$else if k.lt.f$length(flnm)
+$ then	prfx = f$extract(2,k-2,flnm)
+$	flnm = f$extract(k+1,99,flnm)
+$ endif
+$endif
 $ if prfx.nes.""
 $ then	set default [.'prfx']	!push
 $	save_cflags = CFLAGS
@@ -389,7 +397,7 @@ $! In case of error or abort, go here (In order to close file).
 $!
 $c_err: !'f$verify(0)
 $close ifile$
-$exit %x2c
+$ABORT
 $!
 $c_done:
 $close ifile$
@@ -405,7 +413,7 @@ $subroutine
 $if f$extract(0,5,p1).nes."INSN-"
 $	then
 $	write sys$error "Unknown file passed to generate."
-$	exit 1
+$	ABORT
 $	endif
 $root1=f$parse(f$extract(5,255,p1),,,"NAME")
 $	set verify
@@ -429,8 +437,8 @@ $bc_generate:
 $subroutine
 $if f$extract(0,3,p1).nes."BC-"
 $	then
-$	write sys$error "Unknown file passed to generate."
-$	exit 1
+$	write sys$error "Unknown file passed to bc_generate."
+$	ABORT
 $	endif
 $root1=f$parse(f$extract(3,255,p1),,,"NAME")
 $	set verify
