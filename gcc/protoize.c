@@ -3970,7 +3970,9 @@ do_cleaning (new_clean_text_base, new_clean_text_limit)
                 if (++scan_p >= new_clean_text_limit)
                   abort ();
               }
-            *scan_p++ = ' ';
+	    if (!isspace (*scan_p))
+	      *scan_p = ' ';
+	    scan_p++;
             break;
 
           case '\\':			/* Handle line continuations.  */
