@@ -612,12 +612,14 @@ push_reload (in, out, inloc, outloc, class,
 	out = gen_rtx (MEM, GET_MODE (out), XEXP (XEXP (out, 0), 0));
     }
 
-  /* If we are reloading a (SUBREG (MEM ...) ...) or (SUBREG constant ...),
-     really reload just the inside expression in its own mode.
-     If we have (SUBREG:M1 (REG:M2 ...) ...) with M1 wider than M2 and the
-     register is a pseudo, this will become the same as the above case.
+  /* If we are reloading a (SUBREG constant ...), really reload just the
+     inside expression in its own mode.
+     If we have (SUBREG:M1 (MEM:M2 ...) ...) (or an inner REG that is still
+     a pseudo and hence will become a MEM) with M1 wider than M2 and the
+     register is a pseudo, also reload the inside expression.
      For machines that extend byte loads, do this for any SUBREG of a pseudo
-     where both M1 and M2 are a word or smaller.
+     where both M1 and M2 are a word or smaller unless they are the same
+     size.
      Similar issue for (SUBREG:M1 (REG:M2 ...) ...) for a hard register R where
      either M1 is not valid for R or M2 is wider than a word but we only
      need one word to store an M2-sized quantity in R.
@@ -634,19 +636,23 @@ push_reload (in, out, inloc, outloc, class,
      reload but the SUBREG does.  */
 
   if (in != 0 && GET_CODE (in) == SUBREG
-      && (GET_CODE (SUBREG_REG (in)) != REG
+      && (CONSTANT_P (SUBREG_REG (in))
 	  || strict_low
-	  || (GET_CODE (SUBREG_REG (in)) == REG
-	      && REGNO (SUBREG_REG (in)) >= FIRST_PSEUDO_REGISTER
+	  || (((GET_CODE (SUBREG_REG (in)) == REG
+		&& REGNO (SUBREG_REG (in)) >= FIRST_PSEUDO_REGISTER)
+	       || GET_CODE (SUBREG_REG (in)) == MEM)
 #if defined(BYTE_LOADS_ZERO_EXTEND) || defined(BYTE_LOADS_SIGN_EXTEND)
 	      && GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
 	      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))) <= UNITS_PER_WORD
+	      && (GET_MODE_SIZE (inmode)
+		  != GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))))
 #else
 	      && (GET_MODE_SIZE (inmode)
 		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))))
 #endif
 	      )
-	  || (REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
+	  || (GET_CODE (SUBREG_REG (in)) == REG
+	      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
 	      /* The case where out is nonzero
 		 is handled differently in the following statement.  */
 	      && (out == 0 || SUBREG_WORD (in) == 0)
@@ -713,13 +719,16 @@ push_reload (in, out, inloc, outloc, class,
      (except in the case of STRICT_LOW_PART,
      and in that case the constraint should label it input-output.)  */
   if (out != 0 && GET_CODE (out) == SUBREG
-      && (GET_CODE (SUBREG_REG (out)) != REG
+      && (CONSTANT_P (SUBREG_REG (out))
 	  || strict_low
-	  || (GET_CODE (SUBREG_REG (out)) == REG
-	      && REGNO (SUBREG_REG (out)) >= FIRST_PSEUDO_REGISTER
+	  || (((GET_CODE (SUBREG_REG (out)) == REG
+		&& REGNO (SUBREG_REG (out)) >= FIRST_PSEUDO_REGISTER)
+	       || GET_CODE (SUBREG_REG (out)) == MEM)
 #if defined(BYTE_LOADS_ZERO_EXTEND) || defined(BYTE_LOADS_SIGN_EXTEND)
 	      && GET_MODE_SIZE (outmode) <= UNITS_PER_WORD
 	      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))) <= UNITS_PER_WORD
+	      && (GET_MODE_SIZE (outmode)
+		  != GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))))
 #else
 	      && (GET_MODE_SIZE (outmode)
 		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))))
@@ -2540,25 +2549,30 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	    {
 	      offset += SUBREG_WORD (operand);
 	      operand = SUBREG_REG (operand);
-	      /* Force reload if this is not a register or if there may may
-		 be a problem accessing the register in the outer mode.  */
-	      if (GET_CODE (operand) != REG
+	      /* Force reload if this is a constant or if there may may
+		 be a problem accessing OPERAND in the outer mode.  */
+	      if (CONSTANT_P (operand)
 #if defined(BYTE_LOADS_ZERO_EXTEND) || defined(BYTE_LOADS_SIGN_EXTEND)
 		  /* If we have a SUBREG where both the inner and outer
-		     modes are different but no wider than a word, combine.c
-		     has made assumptions about the behavior of the machine
-		     in such register access.  If the data is, in fact, in
-		     memory we must always load using the size assumed to
-		     be in the register and let the insn do the different-sized
-		     accesses.  */
-		  || (REGNO (operand) >= FIRST_PSEUDO_REGISTER
+		     modes are different size but no wider than a word,
+		     combine.c has made assumptions about the behavior of
+		     the machine in such register access.  If the data is,
+		     in fact, in memory we must always load using the size
+		     assumed to be in the register and let the insn do the
+		     different-sized accesses.  */
+		  || ((GET_CODE (operand) == MEM
+		       || (GET_CODE (operand)== REG
+			   && REGNO (operand) >= FIRST_PSEUDO_REGISTER))
 		      && GET_MODE_SIZE (operand_mode[i]) <= UNITS_PER_WORD
-		      && GET_MODE_SIZE (GET_MODE (operand)) <= UNITS_PER_WORD)
+		      && GET_MODE_SIZE (GET_MODE (operand)) <= UNITS_PER_WORD
+		      && (GET_MODE_SIZE (operand_mode[i])
+			  != GET_MODE_SIZE (GET_MODE (operand))))
 #endif
 		  /* Subreg of a hard reg which can't handle the subreg's mode
 		     or which would handle that mode in the wrong number of
 		     registers for subregging to work.  */
-		  || (REGNO (operand) < FIRST_PSEUDO_REGISTER
+		  || (GET_CODE (operand) == REG
+		      && REGNO (operand) < FIRST_PSEUDO_REGISTER
 		      && ((GET_MODE_SIZE (operand_mode[i]) <= UNITS_PER_WORD
 			   && (GET_MODE_SIZE (GET_MODE (operand))
 			       > UNITS_PER_WORD)
