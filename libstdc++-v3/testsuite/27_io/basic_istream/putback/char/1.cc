@@ -27,8 +27,6 @@
 void
 test01()
 {
-  typedef std::ios::traits_type traits_type;
-
   bool test __attribute__((unused)) = true;
   const std::string str_01;
   const std::string str_02("soul eyes: john coltrane quartet");
@@ -41,9 +39,7 @@ test01()
   std::istream is_00(&isbuf_05);
   std::istream is_03(&isbuf_03);
   std::istream is_04(&isbuf_04);
-  std::ios_base::iostate state1, state2, statefail, stateeof;
-  statefail = std::ios_base::failbit;
-  stateeof = std::ios_base::eofbit;
+  std::ios_base::iostate state1, state2;
 
   // istream& putback(char c)
   is_04.ignore(30);

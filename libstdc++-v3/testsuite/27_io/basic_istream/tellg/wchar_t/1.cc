@@ -1,6 +1,4 @@
-// 2000-06-29 bkoz
-
-// Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation
+// Copyright (C) 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,27 +22,44 @@
 // @diff@ %-*.tst %-*.txt
 
 #include <istream>
+#include <sstream>
 #include <fstream>
 #include <testsuite_hooks.h>
 
-// fstreams
-void test04(void)
+void test01()
 {
+  using namespace std;
+  typedef ios::off_type off_type;
+  typedef ios::pos_type pos_type;
+
   bool test __attribute__((unused)) = true;
-  std::istream::pos_type pos01, pos02;
-  const char str_lit01[] = "istream_seeks-1.txt";
-  std::ifstream if01(str_lit01, std::ios_base::in | std::ios_base::out);
- 
-  // libstdc++/6414
-  if01.seekg(0, std::ios_base::beg);
-  pos01 = if01.tellg();
-  if01.peek();
-  pos02 = if01.tellg();
-  VERIFY( pos02 == pos01 );
+  const char str_lit01[] = "wistream_seeks-1.tst";
+
+  // in
+  wistringstream ist1;
+  pos_type p3 = ist1.tellg();
+
+  wifstream ifs1;
+  pos_type p4 = ifs1.tellg();
+
+  // N.B. We implement the resolution of DR 453 and
+  // istringstream::tellg() doesn't fail.
+  VERIFY( p3 == pos_type(off_type(0)) );
+  VERIFY( p4 == pos_type(off_type(-1)) );
+
+  // in
+  // test ctors leave things in the same positions...
+  wistringstream ist2(L"bob_marley:kaya");
+  p3 = ist2.tellg();
+
+  wifstream ifs2(str_lit01);
+  p4 = ifs2.tellg();
+
+  VERIFY( p3 == p4 );
 }
 
 int main()
 {
-  test04();
+  test01();
   return 0;
 }

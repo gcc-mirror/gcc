@@ -28,7 +28,7 @@
 void test02() 
 {
   bool test __attribute__((unused)) = true;
-  const char name_01[] = "istream_extractor_other-1.txt"; //read 
+  const char name_01[] = "wistream_extractor_other-1.txt"; //read 
   const char name_02[] = "wistream_extractor_other-2.txt"; //write
 
   std::wfilebuf fbin, fbout;
