@@ -127,6 +127,7 @@ do {									\
 
 #define ASM_OUTPUT_ASCII(file, p, size)			\
 {							\
+  int i;						\
   for (i = 0; i < (size); i++)				\
     {							\
       register int c = (p)[i];				\
