@@ -121,6 +121,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   if (DECL_EXTERNAL (decl) && TREE_PUBLIC (decl)) 		\
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1; 
 
+/* This is how to output a command to make the user-level label named NAME
+   defined for reference from other files.  */
+
+#undef ASM_GLOBALIZE_LABEL
+#define ASM_GLOBALIZE_LABEL(FILE,NAME)		\
+  do { fputs (".globl ", FILE);			\
+       assemble_name (FILE, NAME);		\
+       fputs ("\n", FILE);			\
+       vms_check_external (NAME);		\
+     } while (0)
+
 /* Under VMS we write the actual size of the storage to be allocated even
    though the symbol is external.  Although it is possible to give external
    symbols a size of 0 (as unix does), the VMS linker does not make the
@@ -144,7 +155,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    since the size of its definition was not likewise rounded up.  */
 
 #define ASM_OUTPUT_EXTERNAL(FILE,DECL,NAME)				\
-{ if (DECL_INITIAL (DECL) == 0 && TREE_CODE (DECL) != FUNCTION_DECL)	\
+{ if (DECL_INITIAL (DECL) == 0 && TREE_CODE (DECL) != FUNCTION_DECL	\
+      && ! vms_check_external (NAME))					\
     {									\
       if (TREE_READONLY (decl) && ! TREE_THIS_VOLATILE (decl))		\
 	const_section ();						\
