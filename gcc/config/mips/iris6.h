@@ -125,6 +125,13 @@ Boston, MA 02111-1307, USA.  */
      if (!ISA_MIPS1 && !ISA_MIPS2)			\
 	builtin_define ("_COMPILER_VERSION=601");	\
 							\
+     /* IRIX 6.5.18 and above provide many ISO C99	\
+	features protected by the __c99 macro.		\
+	libstdc++ v3 needs them as well.  */		\
+     if ((c_language == clk_c && flag_isoc99)		\
+	 || c_language == clk_cplusplus)		\
+	builtin_define ("__c99");			\
+							\
      if (c_language == clk_cplusplus)			\
       {							\
 	builtin_define ("__EXTENSIONS__");		\
