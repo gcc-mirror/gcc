@@ -32,9 +32,10 @@ enum cmp_type				/* comparison type */
 #define DEFAULT_GDB_EXTENSIONS 0
 
 #if (TARGET_DEFAULT & 1) == 0
-#define CPP_SPEC "%{msnake:-D__hp9000s700 -D_PA_RISC1_1}"
+#define CPP_SPEC "%{msnake:-D__hp9000s700 -D_PA_RISC1_1}\
+ %{mpa-risc-1-1:-D__hp9000s700 -D_PA_RISC1_1}"
 #else
-#define CPP_SPEC "-D__hp9000s700 -D_PA_RISC1_1"
+#define CPP_SPEC "%{!mpa-risc-1-0:-D__hp9000s700 -D_PA_RISC1_1}"
 #endif
 
 /* Defines for a K&R CC */
@@ -99,6 +100,9 @@ extern int target_flags;
 
 #define TARGET_SWITCHES \
   {{"snake", 1},	\
+   {"nosnake", -1},	\
+   {"pa-risc-1-0", -1},	\
+   {"pa-risc-1-1", 1},	\
    {"no-bss", 2},	\
    { "", TARGET_DEFAULT}}
 
@@ -777,7 +781,7 @@ extern enum cmp_type hppa_branch_type;
 	 tree parm;							\
 	 int i;								\
 	 if (TREE_PUBLIC (DECL))					\
-	   {								\
+	   { extern int current_function_varargs;			\
 	     fputs ("\t.EXPORT ", FILE); assemble_name (FILE, NAME);	\
 	     fputs (",PRIV_LEV=3", FILE);				\
 	     for (parm = DECL_ARGUMENTS (DECL), i = 0; parm && i < 4;	\
@@ -813,9 +817,10 @@ extern enum cmp_type hppa_branch_type;
 		   }							\
 	       }							\
 	     /* anonymous args */					\
-	     if (TYPE_ARG_TYPES (tree_type) != 0			\
-		 && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (tree_type)))\
-		     != void_type_node))				\
+	     if ((TYPE_ARG_TYPES (tree_type) != 0			\
+		  && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (tree_type)))\
+		      != void_type_node))				\
+		 || current_function_varargs)				\
 	       {							\
 		 for (; i < 4; i++)					\
 		   fprintf (FILE, ",ARGW%d=GR", i);			\
@@ -1705,3 +1710,5 @@ extern char *output_mod_insn ();
 extern void output_arg_descriptor ();
 extern void output_global_address ();
 extern struct rtx_def *legitimize_pic_address ();
+extern struct rtx_def *gen_cmp_fp ();
+extern struct rtx_def *gen_scond_fp ();
