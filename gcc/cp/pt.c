@@ -273,7 +273,7 @@ finish_member_template_decl (decl)
    that, for example, `template_class_depth (current_class_type)' is
    always safe.  */
 
-int 
+static int 
 template_class_depth_real (type, count_specializations)
      tree type;
      int count_specializations;
@@ -587,7 +587,7 @@ begin_template_parm_list ()
 /* This routine is called when a specialization is declared.  If it is
    illegal to declare a specialization here, an error is reported.  */
 
-void
+static void
 check_specialization_scope ()
 {
   tree scope = current_scope ();
@@ -920,7 +920,7 @@ print_candidates (fns)
    If it is impossible to determine the result, an error message is
    issued.  The error_mark_node is returned to indicate failure.  */
 
-tree
+static tree
 determine_specialization (template_id, decl, targs_out, 
 			  need_member_template)
      tree template_id;
@@ -1950,7 +1950,7 @@ mark_template_parm (t, data)
 
 /* Process the partial specialization DECL.  */
 
-tree
+static tree
 process_partial_specialization (decl)
      tree decl;
 {
@@ -3462,7 +3462,7 @@ lookup_template_function (fns, arglist)
    return the associated TEMPLATE_DECL.  Otherwise, the original
    DECL is returned.  */
 
-tree
+static tree
 maybe_get_template_decl_from_type_decl (decl)
      tree decl;
 {
@@ -3912,7 +3912,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
    returned by for_each_template_parm is 0.  If FN is NULL, it is
    considered to be the function which always returns 1.  */
 
-int
+static int
 for_each_template_parm (t, fn, data)
      tree t;
      tree_fn_t fn;
@@ -5091,7 +5091,7 @@ innermost_args (args)
 
 /* Substitute ARGS into the vector of template arguments T.  */
 
-tree
+static tree
 tsubst_template_arg_vector (t, args, complain)
      tree t;
      tree args;
@@ -5134,7 +5134,7 @@ tsubst_template_arg_vector (t, args, complain)
    template <T*, U, class V>' and ARGS is {{int}, {double}} then the
    result will be `template <int*, double, class V>'.  */
 
-tree
+static tree
 tsubst_template_parms (parms, args, complain)
      tree parms;
      tree args;
@@ -5181,7 +5181,7 @@ tsubst_template_parms (parms, args, complain)
    ENTERING_SCOPE is non-zero, T is the context for a template which
    we are presently tsubst'ing.  Return the subsituted value.  */
 
-tree
+static tree
 tsubst_aggr_type (t, args, complain, in_decl, entering_scope)
      tree t;
      tree args;
@@ -5253,7 +5253,7 @@ tsubst_aggr_type (t, args, complain, in_decl, entering_scope)
    appropriate.  Return the result of the substitution.  IN_DECL is as
    for tsubst.  */
 
-tree
+static tree
 tsubst_decl (t, args, type, in_decl)
      tree t;
      tree args;
@@ -5771,7 +5771,7 @@ tsubst_decl (t, args, type, in_decl)
 
 /* Substitue into the ARG_TYPES of a function type.  */
 
-tree
+static tree
 tsubst_arg_types (arg_types, args, complain, in_decl)
      tree arg_types;
      tree args;
@@ -5878,7 +5878,7 @@ tsubst_function_type (t, args, complain, in_decl)
 
 /* Substitute into the PARMS of a call-declarator.  */
 
-tree
+static tree
 tsubst_call_declarator_parms (parms, args, complain, in_decl)
      tree parms;
      tree args;
@@ -7305,7 +7305,7 @@ fn_type_unification (fn, explicit_targs, targs, args, return_type,
    the argument passed to the call, or the type of the value
    intialized with the result of the conversion function.  */
 
-void
+static void
 maybe_adjust_types_for_deduction (strict, parm, arg)
      unification_kind_t strict;
      tree* parm;
@@ -7847,7 +7847,7 @@ get_template_base (tparms, targs, parm, arg)
 
 /* Returns the level of DECL, which declares a template parameter.  */
 
-int
+static int
 template_decl_level (decl)
      tree decl;
 {
@@ -7870,7 +7870,7 @@ template_decl_level (decl)
    cv-qualifiers of each type, given STRICT as documented for unify.
    Returns non-zero iff the unification is OK on that basis.*/
 
-int
+static int
 check_cv_quals_for_unify (strict, arg, parm)
      int strict;
      tree arg;
@@ -7900,7 +7900,7 @@ check_cv_quals_for_unify (strict, arg, parm)
        Allow any integral type to be deduced.  See the TEMPLATE_PARM_INDEX
        case for more information.  */
 
-int
+static int
 unify (tparms, targs, parm, arg, strict)
      tree tparms, targs, parm, arg;
      int strict;
@@ -8612,7 +8612,7 @@ most_specialized_instantiation (instantiations, explicit_args)
    produce an instantiation matching DECL, given the explicit template
    arguments EXPLICIT_ARGS.  */
 
-tree
+static tree
 most_specialized (fns, decl, explicit_args)
      tree fns, decl, explicit_args;
 {
@@ -8646,7 +8646,7 @@ most_specialized (fns, decl, explicit_args)
    if TMPL is `template <class U> void S<int*>::f(U)' this will return
    `template <class T> template <class U> S<T*>::f(U)'.  */
 
-tree
+static tree
 most_general_template (decl)
      tree decl;
 {
@@ -8660,7 +8660,7 @@ most_general_template (decl)
    of TMPL which can produce an instantiation matching ARGS, or
    error_mark_node if the choice is ambiguous.  */
 
-tree
+static tree
 most_specialized_class (tmpl, args)
      tree tmpl;
      tree args;
@@ -8991,7 +8991,7 @@ do_type_instantiation (t, storage)
    first parameter, and the wrong type for the second.  So, when we go
    to instantiate the DECL, we regenerate it.  */
 
-void
+static void
 regenerate_decl_from_template (decl, tmpl)
      tree decl;
      tree tmpl;

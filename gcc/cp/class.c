@@ -1450,7 +1450,7 @@ alter_access (t, binfo, fdecl, access)
 /* Process the USING_DECL, which is a member of T.  The METHOD_VEC, if
    non-NULL, is the methods of T.  The FIELDS are the fields of T.  */
 
-void
+static void
 handle_using_decl (using_decl, t, method_vec, fields)
      tree using_decl;
      tree t;
