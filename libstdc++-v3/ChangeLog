@@ -1,5 +1,12 @@
 2003-12-17  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc (time_get::_M_extract_via_format):
+	Use narrow to get from __format[__i] a char __c representing a
+	formatting code, don't use it to compare *__beg to __format[__i].
+	* testsuite/22_locale/time_get/get_date/wchar_t/4.cc: New.
+
+2003-12-17  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/performance/container_benchmark.cc: Tweak outputs.
 
 	* testsuite/performance/list_create_fill_sort.cc: Shrink a
