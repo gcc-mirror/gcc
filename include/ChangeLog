@@ -1,5 +1,8 @@
 2004-01-12  Ian Lance Taylor  <ian@wasabisystems.com>
 
+	* demangle.h: Instead of checking ANSI_PROTOTYPES, just include
+	"libiberty.h".
+
 	* demangle.h: If ANSI_PROTOTYPES is defined, include <stddef.h>.
 
 	* demangle.h (enum demangle_component_type): Define.

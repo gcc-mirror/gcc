@@ -21,12 +21,7 @@
 #if !defined (DEMANGLE_H)
 #define DEMANGLE_H
 
-#include "ansidecl.h"
-
-#ifdef ANSI_PROTOTYPES
-/* Get a definition for size_t.  */
-#include <stddef.h>
-#endif
+#include "libiberty.h"
 
 #ifdef __cplusplus
 extern "C" {
