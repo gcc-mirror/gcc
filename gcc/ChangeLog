@@ -1,3 +1,8 @@
+2003-11-27  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* cse.c (cse_set_around_loop): When changing a constant load
+	to a register -register copy, add a REG_EQUAL note.
+
 2003-11-27  Randolph Chung  <tausq@debian.org>
 	    John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
