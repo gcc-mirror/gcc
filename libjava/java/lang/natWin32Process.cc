@@ -230,7 +230,7 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
       if (i > 0)
         *cmdLineCurPos++ = ' ';
       jsize s = _Jv_GetStringUTFLength (elts[i]);
-      _Jv_GetStringUTFRegion (elts[i], 0, s, cmdLineCurPos);
+      _Jv_GetStringUTFRegion (elts[i], 0, elts[i]->length(), cmdLineCurPos);
       cmdLineCurPos += s;
     }
   *cmdLineCurPos = '\0';
@@ -251,7 +251,7 @@ java::lang::ConcreteProcess::startProcess (jstringArray progarray,
       for (int i = 0; i < envp->length; ++i)
         {
           jsize s = _Jv_GetStringUTFLength (elts[i]);
-          _Jv_GetStringUTFRegion (elts[i], 0, s, (env + j));
+          _Jv_GetStringUTFRegion (elts[i], 0, elts[i]->length(), (env + j));
 
           j += s;
           *(env + j) = '\0';

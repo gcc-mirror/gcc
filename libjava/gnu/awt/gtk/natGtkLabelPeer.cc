@@ -20,7 +20,7 @@ gnu::awt::gtk::GtkLabelPeer::setText (java::lang::String *text)
   // even though it is slower.
   char buf[len + 1];
   if (text)
-    JvGetStringUTFRegion (text, 0, len, buf);
+    JvGetStringUTFRegion (text, 0, text->length(), buf);
   buf[len] = '\0';
   gtk_label_set_text (GTK_LABEL (ptr), buf);
 }

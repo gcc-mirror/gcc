@@ -71,7 +71,7 @@ java::lang::Class::forName (jstring className, jboolean initialize,
 
   jsize length = _Jv_GetStringUTFLength (className);
   char buffer[length];
-  _Jv_GetStringUTFRegion (className, 0, length, buffer);
+  _Jv_GetStringUTFRegion (className, 0, className->length(), buffer);
 
   _Jv_Utf8Const *name = _Jv_makeUtf8Const (buffer, length);
 
