@@ -334,21 +334,53 @@ extern void i386_pe_unique_section ();
    NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
    define this macro in such cases.  */
 #undef ASM_OUTPUT_SECTION_NAME
-#define ASM_OUTPUT_SECTION_NAME(STREAM, DECL, NAME, RELOC)	\
-do {								\
-  if ((DECL) && TREE_CODE (DECL) == FUNCTION_DECL)		\
-    fprintf (STREAM, "\t.section %s,\"x\"\n", (NAME));		\
-  else if ((DECL) && DECL_READONLY_SECTION (DECL, RELOC))	\
-    fprintf (STREAM, "\t.section %s,\"\"\n", (NAME));		\
-  else								\
-    fprintf (STREAM, "\t.section %s,\"w\"\n", (NAME));		\
-  /* Functions may have been compiled at various levels of	\
-     optimization so we can't use `same_size' here.  Instead,	\
-     have the linker pick one.  */				\
-  if ((DECL) && DECL_ONE_ONLY (DECL))				\
-    fprintf (STREAM, "\t.linkonce %s\n",			\
-	     TREE_CODE (DECL) == FUNCTION_DECL			\
-	     ? "discard" : "same_size");			\
+#define ASM_OUTPUT_SECTION_NAME(STREAM, DECL, NAME, RELOC)		\
+do {									\
+  static struct section_info						\
+    {									\
+      struct section_info *next;					\
+      char *name;							\
+      enum sect_enum {SECT_RW, SECT_RO, SECT_EXEC} type;		\
+    } *sections;							\
+  struct section_info *s;						\
+  char *mode;								\
+  enum sect_enum type;							\
+									\
+  for (s = sections; s; s = s->next)					\
+    if (!strcmp (NAME, s->name))					\
+      break;								\
+									\
+  if (DECL && TREE_CODE (DECL) == FUNCTION_DECL)			\
+    type = SECT_EXEC, mode = "x";					\
+  else if (DECL && DECL_READONLY_SECTION (DECL, RELOC))			\
+    type = SECT_RO, mode = "";						\
+  else									\
+    type = SECT_RW, mode = "w";						\
+									\
+  if (s == 0)								\
+    {									\
+      s = (struct section_info *) xmalloc (sizeof (struct section_info)); \
+      s->name = xmalloc ((strlen (NAME) + 1) * sizeof (*NAME));		\
+      strcpy (s->name, NAME);						\
+      s->type = type;							\
+      s->next = sections;						\
+      sections = s;							\
+      fprintf (STREAM, ".section\t%s,\"%s\"\n", NAME, mode);		\
+      /* Functions may have been compiled at various levels of		\
+         optimization so we can't use `same_size' here.  Instead,	\
+         have the linker pick one.  */					\
+      if ((DECL) && DECL_ONE_ONLY (DECL))				\
+        fprintf (STREAM, "\t.linkonce %s\n",				\
+	         TREE_CODE (DECL) == FUNCTION_DECL			\
+	         ? "discard" : "same_size");				\
+    }									\
+  else									\
+    {									\
+      if (DECL && s->type != type)					\
+	error_with_decl (DECL, "%s causes a section type conflict");	\
+									\
+      fprintf (STREAM, ".section\t%s,\"%s\"\n", NAME, mode);		\
+    }									\
 } while (0)
 
 /* Write the extra assembler code needed to declare a function
