@@ -27,6 +27,7 @@ Boston, MA 02111-1307, USA.  */
 #include "bitmap.h"
 #include "ggc.h"
 #include "obstack.h"
+#include "toplev.h"
 #define	obstack_chunk_alloc	xmalloc
 #define	obstack_chunk_free	free
 
@@ -1242,9 +1243,6 @@ trim_filename (name)
 
 /* Report an internal compiler error in a friendly manner and without
    dumping core.  */
-
-extern void fatal PVPROTO ((const char *, ...))
-  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 
 void
 fancy_abort (file, line, function)
