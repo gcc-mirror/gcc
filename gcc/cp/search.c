@@ -1406,9 +1406,9 @@ lookup_member (xbasetype, name, protect, want_type)
     {
       if (lfi.ambiguous)
 	{
-	  /* This flag tells hack_identifier that the lookup is
-	     ambiguous.  */
-	  TREE_NONLOCAL_FLAG (lfi.ambiguous) = 1;
+	  /* An ERROR_MARK for the TREE_TYPE tells hack_identifier
+	     that the lookup is ambiguous.  */
+	  TREE_TYPE (lfi.ambiguous) = error_mark_node;
 	  return scratch_tree_cons (error_mark_node,
 				    lfi.ambiguous,
 				    NULL_TREE);

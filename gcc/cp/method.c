@@ -2007,7 +2007,8 @@ hack_identifier (value, name)
 	    return error_mark_node;
 	}
     }
-  else if (TREE_CODE (value) == TREE_LIST && TREE_NONLOCAL_FLAG (value))
+  else if (TREE_CODE (value) == TREE_LIST 
+	   && TREE_TYPE (value) == error_mark_node)
     {
       error ("request for member `%s' is ambiguous in multiple inheritance lattice",
 	     IDENTIFIER_POINTER (name));
