@@ -1,3 +1,10 @@
+2001-12-05  Ed Schonberg <schonber@gnat.com>
+
+	* sem_ch3.adb (Build_Derived_Concurrent_Type): If derivation imposes a
+	constraint, introduce explicit subtype declaration and derive from it.
+	
+	* sem_ch3.adb: Minor reformatting
+
 2001-12-05  Robert Dewar <dewar@gnat.com>
 
 	* checks.adb (Determine_Range): Increase cache size for checks. 
