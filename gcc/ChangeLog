@@ -83,7 +83,6 @@ Wed Nov  8 21:53:41 MET 2000  Jan Hubicka  <jh@suse.cz>
 	* expr.c (expand_expr) [ADDR_EXPR]: Handle when op0 is RETURN_DECL
 	passed in multiple non-contiguous locations.
 
->>>>>>> 1.8198
 2000-11-08  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 	
 	* README.gnat: Remove file.
